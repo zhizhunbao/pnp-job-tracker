@@ -2,13 +2,13 @@
 /**
  * 分省概览「省份」列的单元格:通行短名主文案 + 省码灰注,中韩界面下再挂一行译名
  * (#146 站规:英文在前,中韩括注译名;NL 用通行短名,悬停仍显全名)。
- * 2026-08-28 换装批自 Pulse.tsx 的 prov 列 render 提出成文件。
+ * 2026-08-28 换装批自 Pulse.tsx 的 prov 列 render 提出成文件;2026-09-06 省份段重做后由招聘对比横表消费,形状收成三格 GeoNameRow。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { TEXT_NONE } from './constants'
-import type { ProvCellRow } from './types'
+import type { GeoNameRow } from './types'
 import css from './start.module.css'
 
 /**
@@ -17,7 +17,7 @@ import css from './start.module.css'
  * @param r 这一行的展示行。
  * @returns 省名 + 省码,以及非英文界面下的译名行。
  */
-export function ProvNameCell(r: ProvCellRow) {
+export function ProvNameCell(r: GeoNameRow) {
   return (
     <div>
       <span className={css.provName}>{r.name}</span>

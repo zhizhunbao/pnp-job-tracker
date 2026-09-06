@@ -44,6 +44,8 @@ export {
   IconSettings,
   IconSquare,
   IconStar,
+  IconTable,
+  IconTrend,
   IconTarget,
   IconThumbDown,
   IconThumbUp,

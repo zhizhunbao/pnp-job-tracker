@@ -433,6 +433,19 @@ export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FRO
  */
 export const PROVINCES_INFO = `SELECT code, info FROM provinces`
 
+/**
+ * 宏观序列全表(2026-09-06 省份段 = 宏观统计):StatCan 人口 / 临时居民 / GDP / 失业率 + IRCC 学签新签 / PR / 配额 + EE 邀请,
+ * 一行一点(geo, key, period);numeric 列转 float8 省得消费端再洗字串。进程内 10 分钟缓存(把脉页门)。
+ */
+export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS value, as_of FROM macro_series`
+
+/**
+ * 各省省级运营指标(配额 / 已发提名 / 剩余名额;scope 空 = 全省口径,不取通道级行)—— 宏观表「已发 / 剩余」两行。
+ */
+export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM pnp_ops_stats
+     WHERE (scope_kind = '' OR scope_kind IS NULL)
+       AND metric IN ('allocation','issued','nominations_issued','nominations_ytd','remaining')`
+
 // =========================================================================
 // 9. 雇主 —— 官方名录 / 在招 / 担保
 // =========================================================================

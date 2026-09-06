@@ -19,7 +19,7 @@ export { Pulse } from './pulse'
 export {
   cachedHomeOf, emptyCityRows, emptyDailyRows, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
   emptyText,
-  homeCoreOf, homeStatsOf, nullProof, nullUser, provPresetOf, putHomeCache,
+  homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from './functions'
 export { DRAWS_LIMIT, START_META } from './constants'
 export type { HomeStats } from './types'

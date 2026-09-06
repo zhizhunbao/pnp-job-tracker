@@ -62,11 +62,6 @@ export type SponsorRowList = SponsorEmployerRow[]
 export type ProvExtraMap = Record<string, ProvExtra>
 
 /**
- * 省卡 IRCC 体量里能取的那四格。
- */
-export type ProvInfoKey = 'study' | 'tfwp' | 'imp' | 'pnpPr'
-
-/**
  * 单元格渲染器的形状(一个参数收这一行,哑单元格的签名天然就是它)。
  */
 export type CellFn<T> = (r: T) => React.ReactNode
@@ -118,11 +113,6 @@ export type StartCol<T> = {
 export type ClickFn = () => void
 
 /**
- * 原生下拉的换值手柄(切省下拉与条数下拉都是这一形)。
- */
-export type SelectChangeFn = (e: React.ChangeEvent<HTMLSelectElement>) => void
-
-/**
  * 筛选下拉交回新值的手柄。
  */
 export type FilterFn = (v: string) => void
@@ -136,11 +126,6 @@ export type PageFn = (p: number) => void
  * 显示名函数(值 → 人话名)。
  */
 export type LabelFn = (v: string) => string
-
-/**
- * 省 chips 逐项的点击手柄工厂。
- */
-export type ProvPickFn = (p: string) => ClickFn
 
 /**
  * effect 交回的清理函数(解绑监听、取消动画帧、中止请求)。
@@ -337,9 +322,14 @@ export type HomeStats = {
   city: CityRow[]
 
   /**
-   * S4 预选省(档案省;匿名为空 → 默认 ON。禁 IP 定位)。
+   * macro_series 全量点(省份段宏观按年表,2026-09-06)。
    */
-  provPreset: string
+  macro: MacroPoint[]
+
+  /**
+   * pnp_ops_stats 省级点(宏观表已发 / 剩余两行)。
+   */
+  ops: OpsPoint[]
 
   /**
    * 数据抓取时刻。
@@ -350,7 +340,7 @@ export type HomeStats = {
 /**
  * 进程内缓存里那份聚合(逐用户的两格不进缓存:预选省与抓取时刻)。
  */
-export type HomeStatsCore = Omit<HomeStats, 'checkedAt' | 'provPreset'>
+export type HomeStatsCore = Omit<HomeStats, 'checkedAt'>
 
 /**
  * 首页聚合缓存的一格。
@@ -413,16 +403,6 @@ export type StartUser = {
 }
 
 /**
- * `provPresetOf` 的入参。
- */
-export type ProvPresetIn = {
-  /**
-   * 当前会话用户;null = 匿名。
-   */
-  user: StartUser | null
-}
-
-/**
  * 首页聚合缓存的一格。
  */
 export type HomeCoreIn = {
@@ -480,6 +460,16 @@ export type HomeCoreIn = {
    * 抽选下发条数上限。
    */
   drawsLimit: number
+
+  /**
+   * macro_series 全表(pg 原始)。
+   */
+  macroRows: MacroDbRow[]
+
+  /**
+   * pnp_ops_stats 省级指标行(pg 原始)。
+   */
+  opsRows: OpsDbRow[]
 }
 
 /**
@@ -490,11 +480,6 @@ export type HomeStatsOfIn = {
    * 那份聚合。
    */
   core: HomeStatsCore
-
-  /**
-   * 预选省。
-   */
-  provPreset: string
 
   /**
    * 抓取时刻。
@@ -949,176 +934,6 @@ export type OccColsIn = {
 }
 
 /**
- * 分省概览一行的展示行。
- */
-export type ProvCellRow = {
-  /**
-   * 行键(两位省码)。
-   */
-  key: string
-
-  /**
-   * 省名(卡上用通行短名)。
-   */
-  name: string
-
-  /**
-   * 省名排序键(省全名)。
-   */
-  nameSort: string
-
-  /**
-   * 两位省码(灰注)。
-   */
-  code: string
-
-  /**
-   * 省份译名灰注;空串 = 英文界面不出。
-   */
-  localeName: string
-
-  /**
-   * 难度档;空串 = 没算出来(单元格显横杠)。
-   */
-  tier: string
-
-  /**
-   * 难度档的显示名。
-   */
-  tierText: string
-
-  /**
-   * 难度档胶囊在表格里的类名;空串 = 不渲胶囊。
-   */
-  tierCls: string
-
-  /**
-   * 难度档胶囊在省卡上的类名(多一格推到最右)。
-   */
-  tierCardCls: string
-
-  /**
-   * 难度档排序键;表外的档给 null 沉底。
-   */
-  tierSort: number | null
-
-  /**
-   * 在招岗数;没算给横杠。
-   */
-  openText: string
-
-  /**
-   * 在招岗数排序键。
-   */
-  openSort: number | null
-
-  /**
-   * 具名通道岗数;空串 = 没清单(单元格改显「无清单」)。
-   */
-  namedText: string
-
-  /**
-   * 「无清单」那句词。
-   */
-  noListText: string
-
-  /**
-   * 具名通道岗数排序键。
-   */
-  namedSort: number
-
-  /**
-   * 工签体量(TFWP + IMP);没算给横杠。
-   */
-  workText: string
-
-  /**
-   * 工签体量排序键;没算给 null 沉底。
-   */
-  workSort: number | null
-
-  /**
-   * 学签体量;没算给横杠。
-   */
-  studyText: string
-
-  /**
-   * 学签体量排序键。
-   */
-  studySort: number | null
-
-  /**
-   * 省提名拿到 PR;没算给横杠。
-   */
-  prText: string
-
-  /**
-   * QC 那一句「不适用」(它走自己的体系,不属 PNP —— 与「本站没有」意思相反)。
-   */
-  prNaText: string
-
-  /**
-   * 省提名那一格出不出「不适用」。
-   */
-  prNotApplicable: boolean
-
-  /**
-   * 省提名拿到 PR 排序键。
-   */
-  prSort: number | null
-}
-
-/**
- * `toProvCellRows` 的入参。
- */
-export type ProvCellRowsIn = {
-  /**
-   * 省 × 大类汇总行。
-   */
-  rows: StatRowList
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 省卡增补(IRCC 体量 + 难度档)。
-   */
-  provExtra: ProvExtraMap
-}
-
-/**
- * `toProvCellRow` 的入参(逐行,其余同 `toProvCellRows`)。
- */
-export type ProvCellRowIn = {
-  /**
-   * 这一行省 × 大类汇总行。
-   */
-  r: StatRowOne
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 省卡增补。
-   */
-  provExtra: ProvExtraMap
-}
-
-/**
  * `provTierTextOf` 的入参。
  */
 export type TierTextIn = {
@@ -1141,16 +956,6 @@ export type TierClsIn = {
    * 难度档;空串 = 没算出来。
    */
   tier: string
-}
-
-/**
- * `provColsOf` 的入参。
- */
-export type ProvColsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 }
 
 /**
@@ -1299,51 +1104,6 @@ export type NocProvsIn = {
   occ: OccRowList | null
 }
 
-/**
- * `provStatOf` 的入参。
- */
-export type ProvStatIn = {
-  /**
-   * 分省概览的行。
-   */
-  rows: StatRowList
-
-  /**
-   * 当前省。
-   */
-  prov: string
-}
-
-/**
- * `provOccOf` 的入参。
- */
-export type ProvOccIn = {
-  /**
-   * 主图四份数据;null = 还没到。
-   */
-  market: MarketData | null
-
-  /**
-   * 当前省。
-   */
-  prov: string
-}
-
-/**
- * `provOccHitOf` 的入参。
- */
-export type ProvOccHitIn = {
-  /**
-   * 这一行职业统计行。
-   */
-  o: OccRowOne
-
-  /**
-   * 当前省。
-   */
-  prov: string
-}
-
 
 
 /**
@@ -1410,36 +1170,6 @@ export type NavLinkClsIn = {
    * 是不是当前分区。
    */
   on: boolean
-}
-
-/**
- * `provCardClsOf` 的入参。
- */
-export type ProvCardClsIn = {
-  /**
-   * 是不是当前省。
-   */
-  on: boolean
-}
-
-/**
- * `makeProvPick` 的入参。
- */
-export type ProvPickIn = {
-  /**
-   * 换省的落格。
-   */
-  setProv: FilterFn
-}
-
-/**
- * `makeSelectChange` 的入参(原生下拉的事件拆包)。
- */
-export type SelectChangeIn = {
-  /**
-   * 换值的落格。
-   */
-  set: FilterFn
 }
 
 /**
@@ -1555,34 +1285,14 @@ export type PulsePanel = {
   nocProvs: NocProvsMap
 
   /**
-   * 分省概览的行。
+   * 省份段地区块(全国 + 十省的宏观按年表)。
    */
-  provRows: StatRowList
+  macroGeos: MacroGeo[]
 
   /**
-   * 当前省的统计行;null = 还没到或没有。
+   * 招聘对比横表行(market 到手才有)。
    */
-  provStat: StatRowOne | null
-
-  /**
-   * 当前省的职业榜;null = 还没到。
-   */
-  provOcc: OccRowList | null
-
-  /**
-   * 当前省码。
-   */
-  prov: string
-
-  /**
-   * 省下拉的换值手柄。
-   */
-  onProvSelect: SelectChangeFn
-
-  /**
-   * 省卡的点击手柄工厂。
-   */
-  provPickOf: ProvPickFn
+  jobsRows: JobsRow[]
 
   /**
    * 城市段的行(按在招排);null = 主图数据还没到。
@@ -1867,77 +1577,6 @@ export type OccCardIn = {
 }
 
 /**
- * ProvSection(S4a 分省概览:桌面表格 + 手机省卡)的 props。
- */
-export type ProvSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
-   * 挂在分区标题行右槽 —— 桌面表与手机卡是同一份数据的两副面孔,整区一枚。
-   */
-  updatedAt: string
-
-  /**
-   * 主图数据到了没(没到出占位块)。
-   */
-  loading: boolean
-
-  /**
-   * 省 × 大类汇总行。
-   */
-  rows: StatRowList
-
-  /**
-   * 省卡增补。
-   */
-  provExtra: ProvExtraMap
-
-  /**
-   * 当前省(卡片高亮用)。
-   */
-  prov: string
-
-  /**
-   * 省卡逐张的点击手柄工厂。
-   */
-  provPickOf: ProvPickFn
-}
-
-/**
- * ProvCard(一张省卡)的 props。
- */
-export type ProvCardIn = {
-  /**
-   * 这一行的展示行。
-   */
-  row: ProvCellRow
-
-  /**
-   * 是不是当前省。
-   */
-  on: boolean
-
-  /**
-   * 点击手柄(切省)。
-   */
-  onPick: ClickFn
-
-  /**
-   * 取词函数(卡内五行键值的键)。
-   */
-  t: TFn
-}
-
-/**
  * KvRow(省卡里的一行键值)的 props。
  */
 export type KvRowIn = {
@@ -1950,101 +1589,6 @@ export type KvRowIn = {
    * 值(右)。
    */
   v: React.ReactNode
-}
-
-/**
- * ProvOccSection(S4b 省内职业榜)的 props。2026-09-04:分布探索图撤出把脉页,market 格随之撤。
- */
-export type ProvOccSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 当前省码。
-   */
-  prov: string
-
-  /**
-   * 省下拉的换值手柄。
-   */
-  onProvSelect: SelectChangeFn
-
-  /**
-   * 省胶囊的点击手柄工厂。
-   */
-  provPickOf: ProvPickFn
-
-  /**
-   * 当前省的统计行;null = 还没到或没有。
-   */
-  provStat: StatRowOne | null
-
-  /**
-   * 当前省的职业榜;null = 还没到。
-   */
-  provOcc: OccRowList | null
-
-  /**
-   * NOC → 可提名省份清单。
-   */
-  nocProvs: NocProvsMap
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
-}
-
-/**
- * ProvChips(切省下拉 + 十省 chips)的 props。
- */
-export type ProvChipsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 当前省。
-   */
-  prov: string
-
-  /**
-   * 切省下拉的换值手柄。
-   */
-  onProvSelect: SelectChangeFn
-
-  /**
-   * 省 chips 逐项的点击手柄工厂。
-   */
-  provPickOf: ProvPickFn
-}
-
-/**
- * ProvStreams(该省提名通道那一行)的 props。
- */
-export type ProvStreamsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 通道名清单串(与 /stats 省页同源 stream_labels)。
-   */
-  labels: string
 }
 
 /**
@@ -3721,4 +3265,919 @@ export type AliasIn = {
    * 界面语言。
    */
   lang: StartLang
+}
+
+/**
+ * macro_series 表的一行(pg 原始;省份段宏观按年表的数据源,2026-09-06)。
+ */
+export type MacroDbRow = {
+  /**
+   * 地区码(CA / 十省两位码)。
+   */
+  geo: string
+
+  /**
+   * 数据键(pop / npr / workOnly …,见 constants 的 MK_*)。
+   */
+  key: string
+
+  /**
+   * 期键:季度 / 月度 = YYYY-MM-DD,年度 = YYYY。
+   */
+  period: string
+
+  /**
+   * 频率码 Q / M / A。
+   */
+  freq: string
+
+  /**
+   * 值(numeric 列 pg 给字串)。
+   */
+  value: number | string | null
+
+  /**
+   * 数据截至(年度 YTD 为 YYYY-MM,其余同 period)。
+   */
+  as_of: string | null
+}
+
+/**
+ * macro_series 洗净的一点。
+ */
+export type MacroPoint = {
+  /**
+   * 地区码。
+   */
+  geo: string
+
+  /**
+   * 数据键。
+   */
+  key: string
+
+  /**
+   * 期键。
+   */
+  period: string
+
+  /**
+   * 频率码。
+   */
+  freq: string
+
+  /**
+   * 值。
+   */
+  value: number
+
+  /**
+   * 数据截至。
+   */
+  asOf: string
+}
+
+/**
+ * pnp_ops_stats 省级指标的一行(pg 原始;宏观表「已发提名 / 剩余名额」两行的数据源)。
+ */
+export type OpsDbRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 指标名(allocation / issued / nominations_ytd / remaining …)。
+   */
+  metric: string
+
+  /**
+   * 值。
+   */
+  value: number | string | null
+
+  /**
+   * 官方标注的截至日。
+   */
+  as_of: string | null
+
+  /**
+   * 官方标注的期间(2026 Jan-Jun / 2026Q2 / 2025)。
+   */
+  period: string | null
+}
+
+/**
+ * pnp_ops_stats 洗净的一点。
+ */
+export type OpsPoint = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 指标名。
+   */
+  metric: string
+
+  /**
+   * 值。
+   */
+  value: number
+
+  /**
+   * 截至日(空串 = 官方没标)。
+   */
+  asOf: string
+
+  /**
+   * 期间原文(空串 = 官方没标)。
+   */
+  period: string
+}
+
+/**
+ * 宏观表的一格:某行某年的值与显示。
+ */
+export type MacroCell = {
+  /**
+   * 原值(趋势图用)。
+   */
+  value: number
+
+  /**
+   * 显示文案(千分位 / 百分数)。
+   */
+  text: string
+
+  /**
+   * 灰注(进行年的「04 月」「至 6 月」;完整年空串)。
+   */
+  note: string
+}
+
+/**
+ * 宏观表的一行(一个指标 × 各年)。
+ */
+export type MacroRow = {
+  /**
+   * 行键(MACRO_ROW_ORDER 里的一个)。
+   */
+  key: string
+
+  /**
+   * 行名(i18n)。
+   */
+  label: string
+
+  /**
+   * 来源注(表号代码或 i18n 文案)。
+   */
+  src: string
+
+  /**
+   * 是不是「其中」缩进行。
+   */
+  sub: boolean
+
+  /**
+   * 「指标」单元格的容器类(缩进行带缩进类;单元格件不回头 import functions,免循环依赖)。
+   */
+  keyCls: string
+
+  /**
+   * 年 → 格。
+   */
+  cells: Record<string, MacroCell>
+
+  /**
+   * 最新一格(手机卡显示;一格都没有则 null)。
+   */
+  latest: MacroCell | null
+}
+
+/**
+ * 省份段的一个地区块(全国或一省):标题三格 + 竞争度 + 年份列 + 行。
+ */
+export type MacroGeo = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 锚点 id(pl-prov-<码小写>)。
+   */
+  anchor: string
+
+  /**
+   * 显示名(全国取词;省用通行短名)。
+   */
+  name: string
+
+  /**
+   * 译名(英文界面空串;全国也空串)。
+   */
+  localeName: string
+
+  /**
+   * 竞争度胶囊类;没档空串(全国无档)。
+   */
+  tierCls: string
+
+  /**
+   * 竞争度显示名;没档空串。
+   */
+  tierText: string
+
+  /**
+   * 年份列(升序,含进行年)。
+   */
+  years: string[]
+
+  /**
+   * 行(有格的才在)。
+   */
+  rows: MacroRow[]
+}
+
+/**
+ * `macroGeosOf` 的入参。
+ */
+export type MacroGeosIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+
+  /**
+   * macro_series 全量点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * pnp_ops_stats 省级点。
+   */
+  ops: OpsPoint[]
+
+  /**
+   * 省卡增补(竞争度档在这里)。
+   */
+  provExtra: ProvExtraMap
+}
+
+/**
+ * `macroGeoOf` 的入参(逐地区,其余同 `MacroGeosIn`)。
+ */
+export type MacroGeoIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+
+  /**
+   * 该地区的点。
+   */
+  points: MacroPoint[]
+
+  /**
+   * 该地区的运营点。
+   */
+  ops: OpsPoint[]
+
+  /**
+   * 省卡增补。
+   */
+  provExtra: ProvExtraMap
+}
+
+/**
+ * `macroRowOf` 的入参。
+ */
+export type MacroRowIn = {
+  /**
+   * 行键。
+   */
+  key: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 该地区的点。
+   */
+  points: MacroPoint[]
+
+  /**
+   * 该地区的运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * `cellsOfKey` 的入参:某数据键的点 → 年 → 格。
+ */
+export type CellsOfKeyIn = {
+  /**
+   * 数据键。
+   */
+  key: string
+
+  /**
+   * 该地区的点。
+   */
+  points: MacroPoint[]
+
+  /**
+   * 取词函数(进行年灰注)。
+   */
+  t: TFn
+}
+
+/**
+ * `sumCellsOf` 的入参:两个数据键逐年相加(其中工签 / 其中学签)。
+ */
+export type SumCellsIn = {
+  /**
+   * 第一个数据键。
+   */
+  a: string
+
+  /**
+   * 第二个数据键。
+   */
+  b: string
+
+  /**
+   * 该地区的点。
+   */
+  points: MacroPoint[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `macroCellOf` 的入参:一点 → 一格。
+ */
+export type MacroCellIn = {
+  /**
+   * 数据键(决定显示格式:失业率百分数,其余千分位)。
+   */
+  key: string
+
+  /**
+   * 值。
+   */
+  value: number
+
+  /**
+   * 灰注。
+   */
+  note: string
+}
+
+/**
+ * `yearOfPoint` 的出参:一点落在哪一年、是不是完整年。
+ */
+export type PointYear = {
+  /**
+   * 年份(YYYY)。
+   */
+  year: string
+
+  /**
+   * 是不是完整年(年末 / 完整年度)。
+   */
+  full: boolean
+
+  /**
+   * 进行年灰注(完整年空串)。
+   */
+  note: string
+}
+
+/**
+ * `yearOfPoint` 的入参。
+ */
+export type YearOfPointIn = {
+  /**
+   * 一点。
+   */
+  p: MacroPoint
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `opsCellOf` 的入参:pnp_ops_stats 一点 → 一格(年从 period / as_of 里取)。
+ */
+export type OpsCellIn = {
+  /**
+   * 运营点。
+   */
+  p: OpsPoint
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `opsCellOf` 的出参;年取不出来给 null。
+ */
+export type MaybeOpsCell = {
+  /**
+   * 年份。
+   */
+  year: string
+
+  /**
+   * 格。
+   */
+  cell: MacroCell
+} | null
+
+/**
+ * `remainingCellsOf` 的入参:剩余名额 = 官方直给,缺则 配额 − 已发。
+ */
+export type RemainingIn = {
+  /**
+   * 官方直给的剩余(年 → 格)。
+   */
+  direct: Record<string, MacroCell>
+
+  /**
+   * 配额(年 → 格)。
+   */
+  alloc: Record<string, MacroCell>
+
+  /**
+   * 已发(年 → 格)。
+   */
+  issued: Record<string, MacroCell>
+}
+
+/**
+ * `macroColsOf` 的入参。
+ */
+export type MacroColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 年份列。
+   */
+  years: string[]
+}
+
+/**
+ * 通用表格序列能力要的文案(桶不携词,由本域取词后传入)。
+ */
+export type SeriesWords = {
+  /**
+   * 「表」。
+   */
+  table: string
+
+  /**
+   * 「趋势」。
+   */
+  chart: string
+
+  /**
+   * 「近 5 年」。
+   */
+  recent: string
+
+  /**
+   * 「全部」。
+   */
+  all: string
+
+  /**
+   * 指数说明。
+   */
+  indexNote: string
+}
+
+/**
+ * `MacroSection` 的入参。
+ */
+export type MacroSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * ETL 心跳。
+   */
+  updatedAt: string
+
+  /**
+   * 地区块。
+   */
+  geos: MacroGeo[]
+
+  /**
+   * 招聘对比:数据还没到。
+   */
+  jobsLoading: boolean
+
+  /**
+   * 招聘对比行。
+   */
+  jobsRows: JobsRow[]
+}
+
+/**
+ * `MacroBlock` 的入参。
+ */
+export type MacroBlockIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区块。
+   */
+  geo: MacroGeo
+
+  /**
+   * ETL 心跳。
+   */
+  updatedAt: string
+}
+
+/**
+ * `MacroCard` 的入参(手机形态:最新值 + 表 / 趋势切换)。
+ */
+export type MacroCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区块。
+   */
+  geo: MacroGeo
+}
+
+/**
+ * `GeoTitle` 的入参(地区块标题:名 + 码 + 译名 + 竞争度)。
+ */
+export type GeoTitleIn = {
+  /**
+   * 地区块。
+   */
+  geo: MacroGeo
+}
+
+/**
+ * 地区名单元格读的三格(招聘对比的省份列;`ProvNameCell`)。
+ */
+export type GeoNameRow = {
+  /**
+   * 通行短名。
+   */
+  name: string
+
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 译名(英文界面空串)。
+   */
+  localeName: string
+}
+
+/**
+ * 招聘对比横表的一行(一省)。
+ */
+export type JobsRow = {
+  /**
+   * 行身份 = 省码。
+   */
+  key: string
+
+  /**
+   * 通行短名。
+   */
+  name: string
+
+  /**
+   * 省码。
+   */
+  code: string
+
+  /**
+   * 译名。
+   */
+  localeName: string
+
+  /**
+   * 全名(排序键)。
+   */
+  nameSort: string
+
+  /**
+   * 在招职位文案。
+   */
+  openText: string
+
+  /**
+   * 在招职位排序键。
+   */
+  openSort: number | null
+
+  /**
+   * 近 7 天发布文案。
+   */
+  new7Text: string
+
+  /**
+   * 近 7 天发布排序键。
+   */
+  new7Sort: number | null
+
+  /**
+   * 中位年薪文案。
+   */
+  wageText: string
+
+  /**
+   * 中位年薪排序键。
+   */
+  wageSort: number | null
+
+  /**
+   * AIP 指定雇主岗文案(非大西洋省横杠)。
+   */
+  aipText: string
+
+  /**
+   * AIP 指定雇主岗排序键。
+   */
+  aipSort: number | null
+
+  /**
+   * 看岗位地址(职位板带省)。
+   */
+  href: string
+
+  /**
+   * 看岗位文案。
+   */
+  actText: string
+
+  /**
+   * 操作钮类。
+   */
+  actBtnCls: string
+}
+
+/**
+ * `toJobsRows` 的入参。
+ */
+export type JobsRowsIn = {
+  /**
+   * 省 × 大类汇总行(broad=all)。
+   */
+  rows: StatRowList
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
+
+/**
+ * `toJobsRow` 的入参。
+ */
+export type JobsRowIn = {
+  /**
+   * 这一行。
+   */
+  r: StatRowOne
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
+
+/**
+ * `jobsColsOf` 的入参。
+ */
+export type JobsColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `JobsSection` 的入参。
+ */
+export type JobsSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * ETL 心跳。
+   */
+  updatedAt: string
+
+  /**
+   * 数据还没到。
+   */
+  loading: boolean
+
+  /**
+   * 行。
+   */
+  rows: JobsRow[]
+}
+
+/**
+ * `JobsCard` 的入参。
+ */
+export type JobsCardIn = {
+  /**
+   * 这一行。
+   */
+  row: JobsRow
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `geoNameOf` 的入参。
+ */
+export type GeoNameIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `geoLocaleOf` 的入参。
+ */
+export type GeoLocaleIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `geoTierOf` 的入参。
+ */
+export type GeoTierIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 省卡增补。
+   */
+  provExtra: ProvExtraMap
+}
+
+/**
+ * `opsCellsOf` 的入参。
+ */
+export type OpsCellsIn = {
+  /**
+   * 指标名清单(各省叫法不同)。
+   */
+  metrics: string[]
+
+  /**
+   * 该省的运营点。
+   */
+  ops: OpsPoint[]
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * `macroKeyClsOf` 的入参。
+ */
+export type MacroKeyClsIn = {
+  /**
+   * 是不是「其中」缩进行。
+   */
+  sub: boolean
+}
+
+/**
+ * `macroSeriesOf` 的入参。
+ */
+export type MacroSeriesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区块。
+   */
+  geo: MacroGeo
+}
+
+/**
+ * 喂通用表格序列能力的声明(全格照抄 components/table 的 TableSeriesIn<MacroRow>;跨域形状本域自声明)。
+ */
+export type MacroSeriesSpec = {
+  /**
+   * 时间点列的 key(年份,升序)。
+   */
+  pointKeys: string[]
+
+  /**
+   * 取一行某年原值(通用表格契约两参)。
+   */
+  valueOf: (r: MacroRow, key: string) => number | null
+
+  /**
+   * 图例名。
+   */
+  labelOf: (r: MacroRow) => string
+
+  /**
+   * 「近 N 期」默认显示几列。
+   */
+  recent: number
+
+  /**
+   * 工具条与图的文案。
+   */
+  words: SeriesWords
 }

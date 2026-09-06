@@ -268,6 +268,11 @@ export const TBL_PILOT_OCCUPATIONS = 'pilot_occupations'
 export const TBL_PILOT_QUOTA = 'pilot_quota'
 
 /**
+ * 宏观时间序列长表(把脉页省份段 2026-09-06;一行 = 一个 geo × key × period 的点)。
+ */
+export const TBL_MACRO_SERIES = 'macro_series'
+
+/**
  * 职业在招量聚合表(2026-08-12)。
  */
 export const TBL_NOC_OPENINGS = 'noc_openings'
@@ -477,6 +482,12 @@ export const COLS_PILOT_OCCUPATIONS = ['community', 'province', 'type', 'noc', '
  * 映射器里禁折默认值(cellOf 保 null)。
  */
 export const COLS_PILOT_QUOTA = ['community', 'province', 'type', 'noc', 'status', 'first_come', 'first_come_quote', 'first_come_url', 'per_intake', 'per_intake_quote', 'per_intake_url', 'remaining', 'remaining_quote', 'remaining_url', 'quote', 'url', 'as_of']
+
+/**
+ * macro_series 列。⚠️ **先在生产跑 docs/sql/macro-series.sql**(建表 + 唯一索引 + 锁表补列)。
+ * ⚠️ value 保持可空 —— 官方缺位的点在 ETL 侧根本不出行,映射器里禁折 0(折 0 = 替官方编数)。
+ */
+export const COLS_MACRO_SERIES = ['geo', 'key', 'period', 'freq', 'value', 'as_of', 'unit', 'source', 'fetched']
 
 /**
  * noc_openings 列。⚠️ **先在生产跑 docs/sql/noc-openings.sql**(建表 + 补

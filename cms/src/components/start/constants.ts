@@ -69,11 +69,6 @@ export const ID_BOARDS = 'pl-boards'
 export const ID_PROV = 'pl-prov'
 
 /**
- * 省内职业榜区的锚点 id。
- */
-export const ID_PROVOCC = 'pl-provocc'
-
-/**
  * 城市概览区的锚点 id(2026-09-04 新段)。
  */
 export const ID_CITY = 'pl-city'
@@ -151,26 +146,9 @@ export const LANG_EN = 'en'
 export const LANG_KO = 'ko'
 
 /**
- * 全国档的省值(切省下拉的第一项)。
- */
-export const PROV_ALL = 'ALL'
-
-/**
  * occ 表里全国行的省字段值(E13-02 若改出 'ALL' 大写也吃得下,比对前统一转小写)。
  */
 export const PROV_ALL_LOWER = 'all'
-
-/**
- * 匿名用户的默认省(S4 设计 §1 拍板 4:**已建档按档案省,匿名默认 ON —— 不许按 IP 判**;
- * 站内零 geo 能力,且主力受众在境外,同 i18n「不许按 IP 判语言」同族红线)。
- */
-export const PROV_DEFAULT = 'ON'
-
-/**
- * 魁北克的省码 —— 省提名那一格对它出「不适用」而不是横杠:QC 走自己的移民体系,
- * 不属 PNP。两者在用户那里意思相反,不许合成一个横杠。
- */
-export const PROV_QC = 'QC'
 
 /**
  * 省 × 大类汇总行的大类值(分省概览只取这一档)。
@@ -181,18 +159,6 @@ export const BROAD_ALL = 'all'
  * 省 × 大类汇总行的中类值(旧行未落 mid 列时读取层回填的也是它)。
  */
 export const MID_ALL = 'all'
-
-/**
- * 全国榜的样本门槛:在架 ≥30 才进榜(设计 §3,禁上榜噪音)。
- * S2/S3 的 ≥100 大盘门槛 2026-08-07 撤(Frank「榜单去 ≥100 门槛、全 NOC 显示」E13-08);
- * 小样本环比仍被 mom14d 的 prev<5→null 守着,不出噪音数。
- */
-export const NAT_MIN_OPEN = 30
-
-/**
- * 省级榜的样本门槛:在架 ≥10 才进榜(设计 §3)。
- */
-export const PROV_MIN_OPEN = 10
 
 /**
  * 环比持平的基准(等于它既不算涨也不算跌,配色走中性灰)。
@@ -315,26 +281,6 @@ export const KEY_PR_HEAD = 'pr.'
 export const KEY_DIFF_HEAD = 'diff.'
 
 /**
- * 省卡 IRCC 体量里的学签那一格。
- */
-export const INFO_STUDY = 'study'
-
-/**
- * 省卡 IRCC 体量里的 TFWP 工签那一格。
- */
-export const INFO_TFWP = 'tfwp'
-
-/**
- * 省卡 IRCC 体量里的 IMP 工签那一格。
- */
-export const INFO_IMP = 'imp'
-
-/**
- * 省卡 IRCC 体量里的「省提名拿到 PR」那一格。
- */
-export const INFO_PNP_PR = 'pnpPr'
-
-/**
  * 可提名省份排序键里直可省数的权重(直可省数主键、有条件省数副键,
  * 乘它就能把两者压成一个可比的数)。
  */
@@ -369,26 +315,6 @@ export const SHORT_PROV: Record<string, string> = {
    * 纽芬兰与拉布拉多:官方全名太长,榜上会把列撑破,卡与 chips 用通行短名。
    */
   NL: 'Newfoundland',
-}
-
-/**
- * 难度档的排序键(easy 最松、tight 最紧;表外的档给 null 沉底)。
- */
-export const DIFF_ORDER: Record<string, number> = {
-  /**
-   * 宽松:排最前。
-   */
-  easy: 0,
-
-  /**
-   * 中等。
-   */
-  mid: 1,
-
-  /**
-   * 紧:排最后。
-   */
-  tight: 2,
 }
 
 /**
@@ -472,31 +398,6 @@ export const COL_SPONSOR_RATE = 'sponsorRate'
 export const COL_PROV = 'prov'
 
 /**
- * 表格列的 key:难度档。
- */
-export const COL_DIFF = 'diff'
-
-/**
- * 表格列的 key:具名通道岗数。
- */
-export const COL_NAMED = 'named'
-
-/**
- * 表格列的 key:工签体量。
- */
-export const COL_WORK = 'work'
-
-/**
- * 表格列的 key:学签体量。
- */
-export const COL_STUDY = 'study'
-
-/**
- * 表格列的 key:省提名拿到 PR。
- */
-export const COL_PR = 'pr'
-
-/**
  * 职业榜区的加载占位高(px)。
  */
 export const PH_BOARDS = 480
@@ -505,11 +406,6 @@ export const PH_BOARDS = 480
  * 分省概览的加载占位高(px)。
  */
 export const PH_PROV = 420
-
-/**
- * 省内职业榜的加载占位高(px)。
- */
-export const PH_PROVOCC = 320
 
 /**
  * 正文轨的上内衬档(px;色带自己管上下距,轨上下都贴满)。
@@ -525,17 +421,6 @@ export const SHELL_BOTTOM = 0
  * banner 的模块名(取本模块那组图)。
  */
 export const BANNER_MODULE = 'home'
-
-/**
- * 该省提名通道那一行标签的色档。
- */
-export const TAG_VARIANT_WARN = 'warn'
-
-/**
- * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」——
- * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形。
- */
-export const PLAIN_BTN_KIND = 'ghost'
 
 /**
  * 表格操作小钮走 button 桶的 mini 档(2026-09-05 Frank「按钮样式不能全站统一吗」:与职位板操作列同一颗)。
@@ -1112,3 +997,333 @@ export const BRIEF_TAG_WHAT = '[WHAT]'
  * AI 简介里任一段标记(切出 [WHAT] 段的右界)。
  */
 export const BRIEF_TAG_RE = /\[(BASE|SIZE|FOUNDED|NOTE|WHAT)\]/
+
+/**
+ * 省份段「招聘对比」横表的锚点(二级导航子项;宏观按年表的锚点 = ID_PROV_GEO_HEAD + 地区码小写)。
+ * 2026-09-06 Frank 拍板省份段 = 宏观统计(含联邦):全国 + 十省各一张按年表 + 一张招聘对比横表。
+ */
+export const ID_PROV_JOBS = 'pl-prov-jobs'
+
+/**
+ * 省份段地区块锚点的头(拼上地区码小写:pl-prov-ca / pl-prov-on)。
+ */
+export const ID_PROV_GEO_HEAD = 'pl-prov-'
+
+/**
+ * 全国的地区码(macro_series 的 geo;与十省两位码并列)。
+ */
+export const GEO_CA = 'CA'
+
+/**
+ * 省份段地区块的顺序:全国打头,十省按 2026-09-06 在招量降序钉死(锚点要稳,不随日更漂)。
+ */
+export const MACRO_GEO_ORDER = ['CA', 'ON', 'QC', 'BC', 'AB', 'SK', 'NS', 'MB', 'NB', 'NL', 'PE']
+
+/**
+ * 宏观表行名 i18n 键的头(拼上行键)。
+ */
+export const KEY_MACRO_HEAD = 'pulse.m.'
+
+/**
+ * 宏观表来源注 i18n 键的头(拼上来源键;表号类来源直接写代码不进 i18n)。
+ */
+export const KEY_MACRO_SRC_HEAD = 'pulse.m.src.'
+
+/**
+ * macro_series 的频率码:季度。
+ */
+export const FREQ_Q = 'Q'
+
+/**
+ * macro_series 的频率码:月度。
+ */
+export const FREQ_M = 'M'
+
+/**
+ * macro_series 的频率码:年度。
+ */
+export const FREQ_A = 'A'
+
+/**
+ * 季度键「YYYY 年末」= 次年 1 月 1 日参考日,期键的尾。
+ */
+export const PERIOD_JAN_TAIL = '-01-01'
+
+/**
+ * 月度键「YYYY 年末」= 当年 12 月,期键的尾。
+ */
+export const PERIOD_DEC_TAIL = '-12-01'
+
+/**
+ * 期键里年份的长度(YYYY)。
+ */
+export const YEAR_LEN = 4
+
+/**
+ * 期键里月份两位的起始下标(YYYY-MM-DD 的 MM)。
+ */
+export const MONTH_START = 5
+
+/**
+ * 期键里月份两位的结束下标(不含)。
+ */
+export const MONTH_END = 7
+
+/**
+ * 宏观表默认显示的年份列数:5 个年末 + 进行年(工具条「近 5 年」)。
+ */
+export const MACRO_RECENT = 6
+
+/**
+ * macro_series 数据键:总人口(StatCan 17-10-0009)。
+ */
+export const MK_POP = 'pop'
+
+/**
+ * macro_series 数据键:临时居民总数(StatCan 17-10-0121)。
+ */
+export const MK_NPR = 'npr'
+
+/**
+ * macro_series 数据键:仅持工签。
+ */
+export const MK_WORK_ONLY = 'workOnly'
+
+/**
+ * macro_series 数据键:仅持学签。
+ */
+export const MK_STUDY_ONLY = 'studyOnly'
+
+/**
+ * macro_series 数据键:工签学签双持(算工签也算学签)。
+ */
+export const MK_WORK_STUDY = 'workStudy'
+
+/**
+ * macro_series 数据键:难民申请人及相关群体。
+ */
+export const MK_ASYLUM = 'asylum'
+
+/**
+ * macro_series 数据键:学签新签(IRCC 年度)。
+ */
+export const MK_STUDY_NEW = 'studyNew'
+
+/**
+ * macro_series 数据键:GDP(StatCan 36-10-0222,2017 链式美元,百万)。
+ */
+export const MK_GDP = 'gdp'
+
+/**
+ * macro_series 数据键:失业率(StatCan 14-10-0287,季调,百分数)。
+ */
+export const MK_UNEMP = 'unemp'
+
+/**
+ * macro_series 数据键:省提名配额(各省官方)。
+ */
+export const MK_ALLOC = 'alloc'
+
+/**
+ * macro_series 数据键:PR 获批(IRCC 年度,全部类别)。
+ */
+export const MK_PR_ALL = 'prAll'
+
+/**
+ * macro_series 数据键:PR 获批里的省提名类别。
+ */
+export const MK_PR_PNP = 'prPnp'
+
+/**
+ * macro_series 数据键:联邦 EE 邀请人数(仅全国)。
+ */
+export const MK_EE = 'eeInvites'
+
+/**
+ * 宏观表派生行键:其中工签 = workOnly + workStudy。
+ */
+export const MR_WORK = 'work'
+
+/**
+ * 宏观表派生行键:其中学签 = studyOnly + workStudy。
+ */
+export const MR_STUDY = 'study'
+
+/**
+ * 宏观表行键:已发提名(pnp_ops_stats,进行年)。
+ */
+export const MR_ISSUED = 'issued'
+
+/**
+ * 宏观表行键:剩余名额(pnp_ops_stats 官方直给,缺则 配额 − 已发)。
+ */
+export const MR_REMAINING = 'remaining'
+
+/**
+ * 宏观表行序(行键;数据键与派生行键混排,i18n 行名 = KEY_MACRO_HEAD + 行键)。
+ * 「其中」三行挂在临时居民下缩进(Frank 2026-09-06:两个「持有」相加会超过临时居民,写「其中」防止用户加减)。
+ */
+export const MACRO_ROW_ORDER = [
+  'pop', 'npr', 'work', 'study', 'asylum', 'studyNew', 'gdp', 'unemp',
+  'alloc', 'issued', 'remaining', 'prAll', 'prPnp', 'eeInvites',
+]
+
+/**
+ * 宏观表里缩进显示的「其中」行。
+ */
+export const MACRO_SUB_ROWS = ['work', 'study', 'asylum']
+
+/**
+ * 宏观表行的来源注:表号类是代码原样显示,其余是 KEY_MACRO_SRC_HEAD 下的 i18n 键尾。
+ */
+export const MACRO_ROW_SRC: Record<string, string> = {
+  /**
+   * 总人口。
+   */
+  pop: 'StatCan 17-10-0009',
+
+  /**
+   * 临时居民。
+   */
+  npr: 'StatCan 17-10-0121',
+
+  /**
+   * 其中工签。
+   */
+  work: 'StatCan 17-10-0121',
+
+  /**
+   * 其中学签。
+   */
+  study: 'StatCan 17-10-0121',
+
+  /**
+   * 其中难民申请人。
+   */
+  asylum: 'StatCan 17-10-0121',
+
+  /**
+   * 学签新签。
+   */
+  studyNew: 'ircc',
+
+  /**
+   * GDP。
+   */
+  gdp: 'StatCan 36-10-0222',
+
+  /**
+   * 失业率。
+   */
+  unemp: 'StatCan 14-10-0287',
+
+  /**
+   * 省提名配额。
+   */
+  alloc: 'prov',
+
+  /**
+   * 已发提名。
+   */
+  issued: 'prov',
+
+  /**
+   * 剩余名额。
+   */
+  remaining: 'prov',
+
+  /**
+   * PR 获批。
+   */
+  prAll: 'ircc',
+
+  /**
+   * 其中省提名。
+   */
+  prPnp: 'ircc',
+
+  /**
+   * EE 邀请。
+   */
+  eeInvites: 'ee',
+}
+
+/**
+ * 来源注是代码(不进 i18n)的判据:以此开头。
+ */
+export const SRC_CODE_HEAD = 'StatCan'
+
+/**
+ * pnp_ops_stats 的省级指标名:年度配额。
+ */
+export const OPS_ALLOCATION = 'allocation'
+
+/**
+ * pnp_ops_stats 的省级指标名:已发提名(各省叫法不同,三个名字都算)。
+ */
+export const OPS_ISSUED_METRICS = ['issued', 'nominations_issued', 'nominations_ytd']
+
+/**
+ * pnp_ops_stats 的省级指标名:官方直给的剩余名额。
+ */
+export const OPS_REMAINING = 'remaining'
+
+/**
+ * 百分数的小数位(失业率)。
+ */
+export const PCT_DIGITS = 1
+
+/**
+ * 金额前缀(中位年薪)。
+ */
+export const CURRENCY_MARK = '$'
+
+/**
+ * 招聘对比横表列键:在招职位。
+ */
+export const COL_JOBS_OPEN = 'open'
+
+/**
+ * 招聘对比横表列键:近 7 天发布。
+ */
+export const COL_JOBS_NEW7 = 'new7'
+
+/**
+ * 招聘对比横表列键:中位年薪(ESDC)。
+ */
+export const COL_JOBS_WAGE = 'wage'
+
+/**
+ * 招聘对比横表列键:AIP 指定雇主岗。
+ */
+export const COL_JOBS_AIP = 'aip'
+
+/**
+ * 招聘对比「看岗位」落到职位板的地址头(拼省码;参数名 = lib/jobs 的 P_PROV)。
+ */
+export const URL_HOME_PROV_HEAD = '/?prov='
+
+/**
+ * 宏观表「指标」列宽(其余列均分)。
+ */
+export const W_MACRO_KEY = '22%'
+
+/**
+ * 宏观表「指标」列键。
+ */
+export const COL_MACRO_KEY = 'k'
+
+/**
+ * pnp_ops_stats 期间原文里的四位年份(2026 Jan-Jun / 2026Q2 / 2025)。
+ */
+export const OPS_YEAR_RE = /\d{4}/
+
+/**
+ * 通用表格序列能力的视图态:表(与 components/table 的 SeriesView 字面量同值,本域自抄)。
+ */
+export const SERIES_VIEW_TABLE = 'table'
+
+/**
+ * 通用表格序列能力的视图态:趋势图。
+ */
+export const SERIES_VIEW_CHART = 'chart'

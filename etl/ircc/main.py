@@ -15,7 +15,7 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 `--only difficulty` 照样单跑。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
-    python etl/ircc/main.py                # 默认链(6 步)
+    python etl/ircc/main.py                # 默认链(4 步;2026-09-06 段3/段4 搬去 statcan 域后由 6 步减为 4)
     python etl/ircc/main.py --only fees    # 单步调试(见 TOOLS)
 """
 import sys
@@ -25,13 +25,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from ircc.functions import (
     build_ircc_difficulty, build_ircc_fees, build_ircc_pgwp_rules, scrape_ircc_stats,
-    scrape_statcan_npr, scrape_statcan_tr_prov,
 )
 
 SCHEDULED = [
     ("stats", scrape_ircc_stats),
-    ("npr", scrape_statcan_npr),
-    ("tr_prov", scrape_statcan_tr_prov),
     ("difficulty", build_ircc_difficulty),
     ("pgwp", build_ircc_pgwp_rules),
     ("fees", build_ircc_fees),
@@ -40,9 +37,14 @@ SCHEDULED = [
 2026-08-30 批C 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
 
   scrape_ircc_stats       IRCC 官方 XLSX:学签/工签年末存量 + PNP 登陆数 + 新发学签流量
+  build_ircc_difficulty   重算九省移民难度因子(纯算件,消费上面这步的 raw + statcan 域落的
+                          分省临时居民存量 + pnp draws)
+
+2026-09-06 段3/段4 搬去 statcan 域(产物路径不动):本链去掉的两步原文照录,现住
+etl/statcan/main.py 的 SCHEDULED —— 它们抓的是 StatCan 的表,不是 IRCC 开放数据。
+
   scrape_statcan_npr      NPR 占总人口比(联邦「临时人口降到 5%」目标的唯一可核验刻度)
   scrape_statcan_tr_prov  StatCan 分省临时居民存量(IRCC 年末存量停在 2024 后的唯一分省刻度)
-  build_ircc_difficulty   重算九省移民难度因子(纯算件,消费上面三步的 raw + pnp draws)
 
 ↓ 自校失败会 exit 1 的步骤钉在最后:本域是「一步失败就中止本轮」,排前面会把后面的一起拖掉。
 
@@ -52,13 +54,12 @@ SCHEDULED = [
 
 TOOLS = {
     "stats": scrape_ircc_stats,
-    "npr": scrape_statcan_npr,
-    "tr_prov": scrape_statcan_tr_prov,
     "difficulty": build_ircc_difficulty,
     "pgwp": build_ircc_pgwp_rules,
     "fees": build_ircc_fees,
 }
-"""全部可 --only 点名的步(与默认链同一份六步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步(与默认链同一份四步,本域没有不进链的手动件)。
+2026-09-06:npr / tr_prov 两键随段3/段4 搬去 statcan 域,那边叫 npr_share / tr_prov。"""
 
 
 def main() -> int:

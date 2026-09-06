@@ -11,6 +11,10 @@ etl/ircc/build_ircc_difficulty.py 由门直调,包装没有存在的理由。原
 成**段7**(编号接段尾,不插回链序位:它是零网络纯算件,与前六段的「抓官方源」不同类)。
 批H2 判它「独立成步骤文件更好单跑」的理由已不成立:门 `--only difficulty` 直调段函数一样单跑。
 沿革全文(含批F 换解释器那条坑)逐字随迁进段7 入口函数的 docstring,一条不丢。
+⚠ 2026-09-06:段3(NPR 占总人口比)与段4(StatCan 分省临时居民存量)整段搬去 etl/statcan 域
+(那两张表是 StatCan 的数据,不是 IRCC 开放数据;新域另加四张宏观表)。**产物路径不动**——
+仍写 raw/ircc/npr_share.json 与 raw/ircc/statcan_tr_prov.json,段7 难度指数照旧读后者。
+段号留空位不前移(理由见 3.+4. 那处空位注释);latest_ref_of 随段4 搬走,段7 只读 latestRefPer。
 **零字符串令**:字面量全住 constants(文案 *_TPL 模板、JSON 键 K_ 词族、官方原句在 *_RULES);
 **显式循环令**:禁推导/genexp/lambda;**内嵌禁令**:内部函数出户成顶层具名函数;
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut。
@@ -44,50 +48,48 @@ from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
     ACTIVITY_DAYS, ACTIVITY_EASY, ACTIVITY_TIGHT, ASOF_MONTH_LEN, COMP_EASY, COMP_ROUND,
-    COMP_TIGHT, DIFF_DONE_TPL, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
+    COMP_TIGHT, DIFF_DONE_TPL, DIFF_NO_LATEST_REF, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
     FACTOR_COMP, FACTOR_QUOTA_TREND, FACTOR_SCORE_LEVEL, IN_ALLOC, IN_DRAWS, IN_TR_PROV, K_SCALE,
     OUT_DIFFICULTY, QUOTA_YEAR_LATEST, QUOTA_YEAR_PREV, SCORE_DAYS, SCORE_EASY_PCT,
     SCORE_MIN_DRAWS, SCORE_TIGHT_PCT, TIER_EASY, TIER_MID, TIER_TIGHT, TREND_ROUND, TREND_TIGHT,
-    BLANK_VALUES, COMMA, COORD_SEP, COORD_TPL, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
+    BLANK_VALUES, COMMA, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
     FEES_DONE_TPL, FEES_DROP_TAGS, FEES_FAIL_HEADER, FEES_ITEMS, FEES_NOTE, FEES_PRINT_OUT_TPL,
     FEES_PROBLEM_ITEM_TPL, FEES_PROBLEM_NO_SECTION_TPL, FEES_PROBLEM_RPRF_TPL, FEES_PROGRAM,
     FEES_SECTION, FEES_SECTION_BIO, FEES_SEG_LEN, FEES_SOURCE, FEES_TIMEOUT_S, FEES_URL,
     FEES_VALUE_CLIP, FLOW_BLANKS, FLOW_TAIL_PARTIAL_TPL, FLOW_TAIL_SEP, FLOW_TAIL_TPL,
-    FLOW_TAIL_YEARS, FLOW_YEAR_ROW_MIN, GEO_DIM, HDR_MIN_DIGITS, HDR_PROBE_YEAR, INDENT_1,
+    FLOW_TAIL_YEARS, FLOW_YEAR_ROW_MIN, HDR_MIN_DIGITS, HDR_PROBE_YEAR, INDENT_1,
     K_APPLIES_AREA, K_APPLIES_NOC, K_APPLIES_TEER, K_BASIS, K_BY_PROV, K_BY_YEAR, K_COMPLETE,
-    K_COORDINATE, K_DIMENSION, K_DIMENSION_NAME_EN, K_EFFECTIVE, K_EXCLUDES_NOC, K_FACTOR,
-    K_FAMILY_SIZE, K_FETCHED, K_FETCHED_AT, K_GAP_TO_TARGET, K_LABEL, K_LATEST, K_LATEST_N,
-    K_LATEST_REF_PER, K_MEMBER, K_MEMBER_ID, K_MEMBER_NAME_EN, K_N, K_NOTE, K_NPR, K_OBJECT, K_OP,
-    K_PAGE, K_PEAK, K_PER_QUARTER_CHANGE, K_POPULATION, K_PRODUCT_ID, K_PROGRAM, K_PROVINCE,
-    K_QUARTERS, K_QUARTERS_TO_TARGET, K_QUOTE, K_REF_PER, K_REQUIREMENTS, K_SECTION, K_SHARE,
-    K_SOURCE, K_STATUS, K_STREAM, K_STUDY_ONLY, K_SUBJECT, K_TARGET, K_THROUGH_MONTH, K_TYPES,
-    K_UNIT, K_URL, K_VALUE, K_VALUE_TEXT, K_VECTOR_DATA_POINT, K_VECTOR_ID, K_WORK_ONLY,
-    K_WORK_STUDY, K_YEAR, MONTH_SPAN, MONTHS, MONTHS_FULL, NPR_DONE_TPL, NPR_FAIL_TPL,
-    NPR_LATEST_TPL, NPR_MIN_QUARTERS, NPR_NOTE, NPR_PEAK_TPL, NPR_PRINT_OUT_TPL, NPR_QUARTERS,
-    NPR_SPAN, NPR_SPEED_TPL, NPR_SRC_URLS, NPR_TARGET, NPR_TIMEOUT_S, NPR_TOO_FEW_TPL, NPR_UA,
-    NPR_WDS, OUT_FEES, OUT_FLOW, OUT_NPR, OUT_PGWP, OUT_PNP, OUT_TR, OUT_TR_PROV, PCT_SCALE,
+    K_EFFECTIVE, K_EXCLUDES_NOC, K_FACTOR,
+    K_FAMILY_SIZE, K_FETCHED, K_LABEL,
+    K_LATEST_REF_PER, K_N, K_NOTE, K_OP,
+    K_PAGE, K_PR_ALL, K_PR_PNP,
+    K_PROGRAM, K_PROVINCE, K_YTD_YEAR,
+    K_QUOTE, K_REQUIREMENTS, K_SECTION,
+    K_SOURCE, K_STREAM, K_SUBJECT, K_THROUGH_MONTH,
+    K_UNIT, K_URL, K_VALUE, K_VALUE_TEXT,
+    K_YEAR, MONTH_SPAN, MONTHS, MONTHS_FULL,
+    OUT_FEES, OUT_FLOW, OUT_PGWP, OUT_PNP, OUT_PNP_YEARS, OUT_TR,
+    PCT_SCALE,
     PGWP_DONE_TPL, PGWP_MISSING_ROW_TPL, PGWP_MISSING_TPL, PGWP_NOTE, PGWP_PAGE_ABOUT,
     PGWP_PAGE_ELIG, PGWP_PRINT_OUT_TPL, PGWP_PROGRAM, PGWP_QUOTE_CLIP, PGWP_RULES, PGWP_STAR,
     PGWP_TIMEOUT_S, PGWP_URL_ABOUT, PGWP_URL_ELIG, PNP_CATEGORY_WORD, PROV_CODE, PROV_ON,
-    PROVINCE_FED, QUARTERS_ROUND, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT, QUOTE_STRAIGHT, SHARE_ROUND,
+    PROVINCE_FED, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT, QUOTE_STRAIGHT,
     SPACE, STATS_FLOW_NOTE, STATS_FLOW_TPL, STATS_NO_FLOW_HEADER, STATS_NO_HEADER,
-    STATS_NO_PNP_HEADER, STATS_PNP_NOTE, STATS_PNP_TPL, STATS_PRINT_OUT_TPL, STATS_SRC,
+    STATS_NO_PNP_HEADER, STATS_PNP_NOTE, STATS_PNP_TPL, STATS_PNP_YEARS_NOTE, STATS_PNP_YEARS_TPL,
+    STATS_PRINT_OUT_TPL, STATS_SRC,
     STATS_STOCK_TPL, STATS_TIMEOUT_S, STATS_TR_NOTE, STATS_UA, STATS_YEAR_ALERT_TPL,
-    SRC_PR, SRC_STUDY_FLOW, STATUS_SUCCESS, STOCK_KEYS, STREAM_PRINCIPAL,
-    STREAM_PRINCIPAL_NO_RPRF, SUBJECT_APPLICANT, TIMESPEC_SECONDS, TOTAL_DASH_SUFFIX, TOTAL_SUFFIX,
-    TOTAL_WORD, TRP_COORD_FAIL_TPL, TRP_DATA_TIMEOUT_S, TRP_DATA_URL, TRP_DIM_FAIL_TPL,
-    TRP_DONE_TPL, TRP_FAIL_TPL, TRP_META_TIMEOUT_S, TRP_META_URL, TRP_MIN_PROV, TRP_MIN_TYPES,
-    TRP_NOTE, TRP_ON_MIN, TRP_PID, TRP_PRINT_OUT_TPL, TRP_QUARTERS, TRP_ROW_TPL, TRP_SANITY_FAIL,
-    TRP_SRC_URL, TRP_TYPES, TRP_UA, TYPE_DIM_WORD, V_NPR, V_POP, WDS_STATUS_FAIL_TPL,
-    WDS_VECTOR_FAIL_TPL, YEAR_PREFIX, YEAR_TOTAL_OFFSET,
+    SRC_PR, SRC_STUDY_FLOW, STOCK_KEYS, STREAM_PRINCIPAL,
+    STREAM_PRINCIPAL_NO_RPRF, SUBJECT_APPLICANT, TOTAL_DASH_SUFFIX, TOTAL_SUFFIX,
+    TOTAL_WORD,
+    YEAR_PREFIX, YEAR_TOTAL_OFFSET,
 )
 from ircc.scheme import (
     SheetLike,
-    ActivityFactorIn, ActivityIn, ByProvIn, CellAtIn, CompFactorIn, CompIn, CoordIn, DiffDocIn,
+    ActivityFactorIn, ActivityIn, CellAtIn, CompFactorIn, CompIn, DiffDocIn,
     DiffProvIn, DiffProvOut, DiffRowIn, DrawRow, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn,
-    FlowTailIn, FlowYearIn, ItemsOut, MemberIds, NprRowsIn, PgwpReqIn, PoolOut, QuartersIn,
-    QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn, TrendFactorIn,
-    YearTotals,
+    FlowTailIn, FlowYearIn, ItemsOut, PgwpReqIn, PnpYearsOut, PoolOut,
+    QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn,
+    TrendFactorIn, YearCellsIn, YearTotals,
 )
 
 # =========================================================================
@@ -295,6 +297,83 @@ def pnp_latest_full_year(ws: SheetLike) -> YearTotals:
     return YearTotals(year=year, by_prov=out)
 
 
+def year_total_header_of(rows: list) -> list:
+    """PR 表 → 含「YYYY Total」的表头行;找不到即报错(源表改版当场炸,不静默出空表)。
+
+    ⚠ pnp_latest_full_year 里有一份同判据的行内查找(2026-09-06 把脉页派工范围「只加函数
+    不改既有函数」,那份留在原地)—— 两处同源,改判据要一起改。
+    """
+    for r in rows:
+        if is_year_total_row(r):
+            return r
+    raise RuntimeError(STATS_NO_PNP_HEADER)
+
+
+def year_cells_of(x: YearCellsIn) -> dict:
+    """一行 × 一组年列 → {年: 整数}。
+
+    空格不出键(官方尚未发布的年份是占位空列);'--' 小值抑制按 0,与 all_year_totals 同口径。
+    """
+    out: dict = {}
+    for i, y in x.columns:
+        if i < len(x.row) and cell_text(x.row[i]) != "":
+            out[y] = cell_at(CellAtIn(row=x.row, index=i))
+    return out
+
+
+def nonempty_years(by_year: dict) -> dict:
+    """整年全 0 的年份剔掉(发布年占位列)—— 同 all_year_totals 的 kept 判据。"""
+    out: dict = {}
+    for y, m in by_year.items():
+        if any(m.values()):
+            out[y] = m
+    return out
+
+
+def pnp_all_years(ws: SheetLike) -> PnpYearsOut:
+    """PR 按省×类别表:Provincial Nominee 组行 × **全部**「YYYY Total」列 → {年: {省: 人数}}。
+
+    块判据同 pnp_latest_full_year:类别行…「省 - Total」收尾,同块 PNP 行成对出现、值相同,
+    留最后一次。表头最后一个 Total 列 = 进行年(年内累计 YTD,与完整年不可直接比较),
+    随出参一并交回,由消费端标注口径。
+    """
+    rows = sheet_rows(ws)
+    totals = year_total_columns_of(year_total_header_of(rows))
+    out: dict = {}
+    pend = None
+    for r in rows:
+        if len(r) == 0:
+            continue
+        if has_pnp_cell(r):
+            pend = year_cells_of(YearCellsIn(row=r, columns=totals))
+        name = cell_text(r[0]).replace(TOTAL_DASH_SUFFIX, "").strip()
+        if name in PROV_CODE and pend is not None:
+            for y, v in pend.items():
+                out.setdefault(y, {})[PROV_CODE[name]] = v
+            pend = None
+    return PnpYearsOut(by_year=nonempty_years(out), ytd_year=totals[-1][1])
+
+
+def prov_total_all_years(ws: SheetLike) -> dict:
+    """PR 按省×类别表:「省 - Total」行(全部移民类别)× 全部年列 → {年: {省: 人数}}。
+
+    只认带「 - Total」尾巴的行:块内还有同名类别行,不加这道尾巴判据会拿类别值当省总数。
+    """
+    rows = sheet_rows(ws)
+    totals = year_total_columns_of(year_total_header_of(rows))
+    out: dict = {}
+    for r in rows:
+        if len(r) == 0:
+            continue
+        raw = cell_text(r[0])
+        name = raw.replace(TOTAL_DASH_SUFFIX, "").strip()
+        if name not in PROV_CODE or TOTAL_DASH_SUFFIX not in raw:
+            continue
+        for y, v in year_cells_of(YearCellsIn(row=r, columns=totals)).items():
+            out.setdefault(y, {})[PROV_CODE[name]] = v
+    return nonempty_years(out)
+
+
 def is_flow_year_row(r: list) -> bool:
     """流量表的年份行:20xx 纯数字格超过防线。"""
     n = 0
@@ -462,6 +541,36 @@ def write_pnp_admissions(fetched: str) -> None:
     say(STATS_PNP_TPL.format(year=pnp.year, n=len(pnp.by_prov), on=pnp.by_prov.get(PROV_ON)))
 
 
+def latest_full_year_of(x: PnpYearsOut) -> str:
+    """按年表里最新的**完整**年(进行年 YTD 列不算)—— 收尾报数的核对锚点。"""
+    years = sorted(x.by_year)
+    if len(years) >= 2 and years[-1] == x.ytd_year:
+        return years[-2]
+    return years[-1]
+
+
+def write_pnp_admissions_years(fetched: str) -> None:
+    """PR 按省×类别表 → OUT_PNP_YEARS(全部年列:省 Total 行 + Provincial Nominee 组行)。
+
+    2026-09-06 把脉页省份段:省份表要「PR 获批 / 其中省提名」两行按年铺开,既有 OUT_PNP
+    只留最新完整年一格,不够铺。核对锚点:本表最新完整年的 prPnp 应与 OUT_PNP 逐省同值。
+    ⚠ 与 write_pnp_admissions 各自取一次同一张 XLSX(一步两下载):沿 write_stock_table /
+    write_pnp_admissions / write_study_flow「一函数一张表、自己取自己的表」的既有形;
+    要省这一次下载得把两个函数并成一个,本批范围「不改既有函数」,另立批次。
+    """
+    ws = fetch_sheet(STATS_SRC[SRC_PR])
+    pnp = pnp_all_years(ws)
+    all_years = prov_total_all_years(ws)
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_YEARS, payload={
+        K_FETCHED: fetched, K_SOURCE: STATS_SRC[SRC_PR], K_YTD_YEAR: pnp.ytd_year,
+        K_PR_ALL: all_years, K_PR_PNP: pnp.by_year, K_NOTE: STATS_PNP_YEARS_NOTE,
+    }, indent=INDENT_1))
+    years = sorted(pnp.by_year)
+    full = latest_full_year_of(pnp)
+    say(STATS_PNP_YEARS_TPL.format(first=years[0], last=years[-1], ytd=pnp.ytd_year,
+                                   year=full, on=pnp.by_year[full].get(PROV_ON)))
+
+
 def write_study_flow(fetched: str) -> None:
     """新发学签流量表 → OUT_FLOW(月度粒度,进行年为 YTD)。"""
     flow = study_flow(fetch_sheet(STATS_SRC[SRC_STUDY_FLOW]))
@@ -482,223 +591,28 @@ def scrape_ircc_stats() -> None:
     数字口径=IRCC 四舍五入到 5、小值 '--' 抑制 → 当 0,比值用途足够,绝对数不作精算
     (脚本与前端口径注一致)。
     配额不在此抓:raw/ircc/pnp_allocations.json 是人工核对维护表。
+    2026-09-06 把脉页省份段加第四张产出:PR 登陆数**按年**(OUT_PNP_YEARS,同一张 PR 表的
+    全部年列,省 Total 行 + PNP 组行),给省份表的「PR 获批 / 其中省提名」两行铺时间轴。
     """
     say(STATS_PRINT_OUT_TPL.format(tr=OUT_TR, pnp=OUT_PNP))
     paths.IRCC.mkdir(parents=True, exist_ok=True)
     fetched = utc_today_iso()
     write_stock_table(fetched)
     write_pnp_admissions(fetched)
+    write_pnp_admissions_years(fetched)
     write_study_flow(fetched)
 
 
 # =========================================================================
-# 3. NPR 占总人口比(联邦「临时人口降到 5%」目标的唯一可核验刻度)
+# 3.+4.(已迁出)NPR 占总人口比 / StatCan 分省临时居民存量
+#      —— 2026-09-06 两段整段搬去 etl/statcan/functions.py 的段3、段4(函数体与注释一字未改,
+#      **产物路径不动**:仍写 raw/ircc/npr_share.json 与 raw/ircc/statcan_tr_prov.json)。
+#      段号留空位不前移:存量注释(main.py 步骤表、constants/scheme 的段注、批H2/批I3 的沿革)
+#      到处引用「段5/段6/段7」,前移会让它们集体失真。
+#      latest_ref_of 随段4 搬走;段7 改成只读 raw 里的 latestRefPer(缺了当场炸),不再兜底重算。
 # =========================================================================
 
 
-def series(vector: int) -> dict:
-    """一条 WDS 向量 → {季度参考日: 值}(非 SUCCESS 即抛,交调用方保留旧表)。"""
-    r = httpx.post(NPR_WDS, json=[{K_VECTOR_ID: vector, K_LATEST_N: NPR_QUARTERS}],
-                   headers={HDR_UA: NPR_UA}, timeout=NPR_TIMEOUT_S)
-    r.raise_for_status()
-    blk = r.json()[0]
-    if blk.get(K_STATUS) != STATUS_SUCCESS:
-        raise RuntimeError(WDS_VECTOR_FAIL_TPL.format(status=blk.get(K_STATUS), vector=vector))
-    out: dict = {}
-    for p in blk[K_OBJECT][K_VECTOR_DATA_POINT]:
-        if p.get(K_VALUE) is not None:
-            out[p[K_REF_PER]] = float(p[K_VALUE])
-    return out
-
-
-def npr_rows_of(x: NprRowsIn) -> list:
-    """两条序列 → 季度行(只留两边都有的季度)。"""
-    rows = []
-    for q in sorted(x.npr):
-        if q not in x.pop:
-            continue
-        rows.append({K_REF_PER: q, K_POPULATION: int(x.pop[q]), K_NPR: int(x.npr[q]),
-                     K_SHARE: round(x.npr[q] / x.pop[q], SHARE_ROUND)})
-    return rows
-
-
-def share_of(row: dict) -> float:
-    """峰值排序键(原 lambda 出户成具名)。"""
-    return row[K_SHARE]
-
-
-def quarters_to_target_of(x: QuartersIn) -> float | None:
-    """按最近四季降速线性外推到 5% 还要几个季度;没在降 → None(不外推)。"""
-    if x.per_q < 0:
-        return round((NPR_TARGET - x.share) / x.per_q, QUARTERS_ROUND)
-    return None
-
-
-def scrape_statcan_npr() -> None:
-    """StatCan 非永久居民(NPR)占总人口比 → raw/ircc/npr_share.json。
-
-    IN : StatCan WDS(免密钥 REST):v1=加拿大季度总人口 / v1566927590=非永久居民(NPR)总数
-    OUT: raw/ircc/npr_share.json(季度序列 + 最新占比 + 距 5% 目标的人数缺口)
-    """
-    say(NPR_PRINT_OUT_TPL.format(path=OUT_NPR))
-    paths.IRCC.mkdir(parents=True, exist_ok=True)
-    try:
-        pop = series(V_POP)
-        npr = series(V_NPR)
-    except Exception as e:  # noqa: BLE001
-        say(NPR_FAIL_TPL.format(name=type(e).__name__, detail=e))
-        return
-    rows = npr_rows_of(NprRowsIn(pop=pop, npr=npr))
-    if len(rows) < NPR_MIN_QUARTERS:
-        say(NPR_TOO_FEW_TPL.format(n=len(rows)))
-        return
-    latest = rows[-1]
-    peak = max(rows, key=share_of)
-    span = rows
-    if len(rows) >= NPR_SPAN:
-        span = rows[-NPR_SPAN:]
-    per_q = (span[-1][K_SHARE] - span[0][K_SHARE]) / max(len(span) - 1, 1)
-    gap_people = int(latest[K_NPR] - latest[K_POPULATION] * NPR_TARGET)
-    quarters = quarters_to_target_of(QuartersIn(share=latest[K_SHARE], per_q=per_q))
-    paths.write_json(paths.WriteJsonIn(path=OUT_NPR, payload={
-        K_SOURCE: NPR_SRC_URLS, K_FETCHED: today_iso(),
-        K_FETCHED_AT: datetime.now(timezone.utc).isoformat(timespec=TIMESPEC_SECONDS),
-        K_TARGET: NPR_TARGET, K_QUARTERS: rows,
-        K_LATEST: latest, K_PEAK: peak,
-        K_PER_QUARTER_CHANGE: round(per_q, SHARE_ROUND),
-        K_GAP_TO_TARGET: gap_people,
-        K_QUARTERS_TO_TARGET: quarters,
-        K_NOTE: NPR_NOTE,
-    }, indent=INDENT_1))
-    say(NPR_DONE_TPL.format(n=len(rows), out=OUT_NPR.name))
-    say(NPR_LATEST_TPL.format(ref=latest[K_REF_PER], pct=latest[K_SHARE] * PCT_SCALE,
-                              npr=latest[K_NPR], pop=latest[K_POPULATION]))
-    say(NPR_PEAK_TPL.format(ref=peak[K_REF_PER], pct=peak[K_SHARE] * PCT_SCALE, gap=gap_people))
-    say(NPR_SPEED_TPL.format(per=per_q * PCT_SCALE, quarters=quarters))
-
-
-# =========================================================================
-# 4. StatCan 分省临时居民存量(IRCC 年末存量停在 2024 后唯一的官方分省刻度)
-# =========================================================================
-
-
-def member_ids() -> MemberIds:
-    """metadata 解析省/证型的 memberId(不写死:StatCan 重排成员时坐标会静默错位)。"""
-    r = httpx.post(TRP_META_URL, json=[{K_PRODUCT_ID: TRP_PID}], headers={HDR_UA: TRP_UA},
-                   timeout=TRP_META_TIMEOUT_S)
-    r.raise_for_status()
-    geo: dict = {}
-    typ: dict = {}
-    for d in r.json()[0][K_OBJECT][K_DIMENSION]:
-        name = d[K_DIMENSION_NAME_EN]
-        if name == GEO_DIM:
-            for m in d[K_MEMBER]:
-                geo[m[K_MEMBER_NAME_EN]] = int(m[K_MEMBER_ID])
-        if TYPE_DIM_WORD in name.lower():
-            for m in d[K_MEMBER]:
-                typ[m[K_MEMBER_NAME_EN]] = int(m[K_MEMBER_ID])
-    geo_ids: dict = {}
-    for name, code in PROV_CODE.items():
-        if name in geo:
-            geo_ids[code] = geo[name]
-    typ_ids: dict = {}
-    for key, name in TRP_TYPES.items():
-        if name in typ:
-            typ_ids[key] = typ[name]
-    return MemberIds(geo=geo_ids, types=typ_ids)
-
-
-def coord_of(x: CoordIn) -> str:
-    """(省 memberId, 证型 memberId) → WDS 十维坐标串。"""
-    return COORD_TPL.format(geo=x.geo, typ=x.typ)
-
-
-def tr_prov_requests(ids: MemberIds) -> list:
-    """省 × 证型 的取数请求(一发全取)。"""
-    reqs = []
-    for g in ids.geo.values():
-        for t in ids.types.values():
-            reqs.append({K_PRODUCT_ID: TRP_PID, K_COORDINATE: coord_of(CoordIn(geo=g, typ=t)),
-                         K_LATEST_N: TRP_QUARTERS})
-    return reqs
-
-
-def tr_prov_by_prov(x: ByProvIn) -> dict:
-    """响应块 → {省码: {季度: {证型: 值}}}。
-
-    响应块**不按请求顺序**回来(实测乱序)—— 只能从块自带 coordinate 反解 (省, 证型)。
-    """
-    prov_of: dict = {}
-    for p, g in x.ids.geo.items():
-        prov_of[g] = p
-    key_of: dict = {}
-    for k, t in x.ids.types.items():
-        key_of[t] = k
-    by_prov: dict = {}
-    for blk in x.blocks:
-        if blk.get(K_STATUS) != STATUS_SUCCESS:
-            raise RuntimeError(WDS_STATUS_FAIL_TPL.format(status=blk.get(K_STATUS)))
-        o = blk[K_OBJECT]
-        parts = o[K_COORDINATE].split(COORD_SEP)
-        prov = prov_of.get(int(parts[0]))
-        key = key_of.get(int(parts[1]))
-        if prov is None or key is None:
-            raise RuntimeError(TRP_COORD_FAIL_TPL.format(coord=o[K_COORDINATE]))
-        for p in o[K_VECTOR_DATA_POINT]:
-            if p.get(K_VALUE) is not None:
-                by_prov.setdefault(prov, {}).setdefault(p[K_REF_PER], {})[key] = int(p[K_VALUE])
-    return by_prov
-
-
-def latest_ref_of(by_prov: dict) -> str:
-    """全部省里最新的那个季度参考日。"""
-    quarters = []
-    for p in by_prov.values():
-        for q in p:
-            quarters.append(q)
-    return max(quarters)
-
-
-def scrape_statcan_tr_prov() -> None:
-    """StatCan 分省临时居民存量(季度)→ raw/ircc/statcan_tr_prov.json。
-
-    IN : StatCan WDS getCubeMetadata + getDataFromCubePidCoordAndLatestNPeriods (pid 17100121)
-    OUT: raw/ircc/statcan_tr_prov.json
-    抓取失败 / 维度缺位 / 量级失真 → 保留旧表(宁可留旧也不留空)。
-    """
-    say(TRP_PRINT_OUT_TPL.format(path=OUT_TR_PROV))
-    paths.IRCC.mkdir(parents=True, exist_ok=True)
-    try:
-        ids = member_ids()
-        if len(ids.geo) < TRP_MIN_PROV or len(ids.types) < TRP_MIN_TYPES:
-            raise RuntimeError(TRP_DIM_FAIL_TPL.format(geo=len(ids.geo), typ=len(ids.types)))
-        r = httpx.post(TRP_DATA_URL, json=tr_prov_requests(ids), headers={HDR_UA: TRP_UA},
-                       timeout=TRP_DATA_TIMEOUT_S)
-        r.raise_for_status()
-        by_prov = tr_prov_by_prov(ByProvIn(blocks=r.json(), ids=ids))
-        latest = latest_ref_of(by_prov)
-        checked = by_prov.get(PROV_ON, {}).get(latest, {})
-        if (checked.get(K_STUDY_ONLY) or 0) < TRP_ON_MIN:
-            raise RuntimeError(TRP_SANITY_FAIL)
-    except Exception as e:  # noqa: BLE001
-        say(TRP_FAIL_TPL.format(name=type(e).__name__, detail=e))
-        return
-    types: dict = {}
-    for k in ids.types:
-        types[k] = TRP_TYPES[k]
-    paths.write_json(paths.WriteJsonIn(path=OUT_TR_PROV, payload={
-        K_SOURCE: TRP_SRC_URL, K_FETCHED: today_iso(),
-        K_TYPES: types,
-        K_BY_PROV: by_prov, K_LATEST_REF_PER: latest,
-        K_NOTE: TRP_NOTE,
-    }, indent=INDENT_1))
-    on = by_prov.get(PROV_ON, {}).get(latest, {})
-    say(TRP_DONE_TPL.format(n=len(by_prov), q=TRP_QUARTERS, out=OUT_TR_PROV.name))
-    say(TRP_ROW_TPL.format(ref=latest, study=on.get(K_STUDY_ONLY, 0),
-                           work=on.get(K_WORK_ONLY, 0), both=on.get(K_WORK_STUDY, 0)))
-
-
-# =========================================================================
 # 5. PGWP 规则库(B1-4;quote-anchored,引用消失即保留旧表 exit 1)
 # =========================================================================
 
@@ -937,7 +851,9 @@ def build_ircc_difficulty() -> None:
         by_prov = {}
     latest_ref = tr.get(K_LATEST_REF_PER)
     if not latest_ref:
-        latest_ref = latest_ref_of(by_prov)
+        # 2026-09-06:statcan 域段4 每轮都写 latestRefPer;缺了 = 上游契约破了,当场炸,不在本域重算一份
+        # (域间不互借函数,重算 = 行为复制)。
+        raise RuntimeError(DIFF_NO_LATEST_REF)
     today = date.today()
     tr_asof = latest_ref[:ASOF_MONTH_LEN]
     rows = []
@@ -1192,3 +1108,4 @@ def to_difficulty_row(x: DiffRowIn) -> dict:
 def to_difficulty_doc(x: DiffDocIn) -> dict:
     """落盘表。"""
     return {"generated": x.generated, "trAsOf": x.tr_asof, "rows": x.rows}
+

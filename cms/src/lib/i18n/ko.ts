@@ -546,7 +546,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'cell.pnpExcl': '제외 목록', 'cell.aipBlocked': '직종 접수 제외',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpSkilledProv': '{p} 지명 가능', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.your': '이 채용', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
-
   'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님',
   'pnpdraws.title': '최근 추첨 {label}', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
@@ -762,6 +761,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tagline': '매일 업데이트, 캐나다 전역, 이민 가치 관점',
   'res.title': '공식 자료 안내', 'res.sub': '캐나다 이민 공식 링크 한 페이지 모음', 'res.go': '공식', 'res.entry': '공식 자료', 'res.search': '공식 자료 검색…', 'res.empty': '일치하는 자료 없음',
   'res.cat.federal': '연방 이민', 'res.cat.pnp': '주 지명(PNP)', 'res.cat.study': '유학·DLI', 'res.cat.language': '어학 시험', 'res.cat.wage': '임금·직업 데이터', 'res.cat.lmia': 'LMIA·고용주 지원', 'res.cat.authority': '권위·규정',
+  'res.rules': '이민 경로 요건', 'res.rules.prov': '{prov} 주 지명', 'res.prog.AIP': 'AIP 대서양 이민 프로그램', 'res.prog.RCIP': 'RCIP 농촌 지역 이민 파일럿', 'res.prog.FCIP': 'FCIP 프랑스어 커뮤니티 이민 파일럿', 'res.prog.PGWP': 'PGWP 졸업 후 취업허가', 'res.prog.CEC': 'CEC 캐나다 경력 이민', 'res.prog.FSW': 'FSW 연방 기술 이민', 'res.prog.FST': 'FST 연방 기능직 이민', 'res.prog.PR-fees': '연방 신청 수수료',
   'clear': '필터 초기화',
   'empty': '일치하는 공고 없음', 'allShown': '전체 {total}개 표시', 'loadMore': '더 보기 (남은 {n}개)',
   'chart.back': '뒤로', 'chart.drillHint': '막대를 클릭하면 상세 정보 보기', 'chart.other': '기타', 'chart.loading': '불러오는 중…', 'nav.account': '계정', 'nav.acctTab': '내 계정',
@@ -822,7 +822,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.col.provs': '수요 목록 등재 주',
   'pulse.col.pnpProvs': '지명 가능한 주',
   'pulse.col.teer': 'TEER 등급',
-  'pulse.s4b': '주별 직업 랭킹', 'pulse.s4.prov': '주', 'pulse.s4.diff': '경쟁도',
+  'pulse.s4.prov': '주', 
   'pulse.col.tier': '이민 경로', 'pulse.tier.both': '주+연방 수요 목록', 'pulse.tier.prov': '주 수요 목록',
   'pulse.tier.fed': '연방 수요 목록', 'pulse.tier.ee': 'EE 가능', 'pulse.tier.employer': '고용주 오퍼만',
   'pulse.dr.read': '해석',
@@ -834,8 +834,10 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.ask.lmia': 'LMIA 승인 고용주 표가 제 이민 구직에 어떤 도움이 되나요?',
   'se.ask.named': '구인 직종이 수요 목록에 오른 고용주는 저에게 어떤 의미인가요?',
   'se.ask.aip': 'AIP 지정 고용주란 무엇인가요? 저에게 도움이 되나요?',
-  'pulse.s4': '주별 개요',
-  'pulse.s4.streams': '이 주의 지명 스트림', 'pulse.s4.all': '전국',
+  'pulse.s4.all': '전국',
+  // 2026-09-06 省份段 = 宏观统计(含联邦):地区块按年表 + 招聘对比横表;表 / 趋势、近 5 年 / 全部 是通用表格序列能力的文案
+  'pulse.s4j': '주별 채용 비교', 'pulse.m.key': '지표', 'pulse.m.month': '{m}월', 'pulse.m.thru': '{m}월까지', 'pulse.m.table': '표', 'pulse.m.chart': '추세', 'pulse.m.recent': '최근 5년', 'pulse.m.all': '전체', 'pulse.m.index': '지수: 첫 데이터 연도 = 100',
+  'pulse.m.pop': '총인구', 'pulse.m.npr': '임시 거주자', 'pulse.m.work': '그중 워크퍼밋', 'pulse.m.study': '그중 학생비자', 'pulse.m.asylum': '그중 난민 신청자', 'pulse.m.studyNew': '신규 학생비자', 'pulse.m.gdp': 'GDP(백만 CAD)', 'pulse.m.unemp': '실업률', 'pulse.m.alloc': '주정부 지명 할당', 'pulse.m.issued': '발급된 지명', 'pulse.m.remaining': '잔여 할당', 'pulse.m.prAll': 'PR 승인', 'pulse.m.prPnp': '그중 PNP', 'pulse.m.eeInvites': 'EE 초청', 'pulse.m.src.ircc': 'IRCC 연간', 'pulse.m.src.prov': '주정부 공식', 'pulse.m.src.ee': 'IRCC 추첨',
   'pulse.s5': '최근 추첨',
   'pulse.dr.note': '최근 {n}회 {min}–{max}점, {min}점 미만은 초청 없음',
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',
@@ -851,7 +853,6 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다',
   'de.hiringNeed': '주와 직업을 선택하면 채용 중 고용주가 표시됩니다',
   'pro.unlock': 'Pro 잠금해제',
-
   'home.cta2.t': '매일 갱신되는 캐나다 전역 채용 공고', 'home.cta2.s': '주, 직업, PNP 신호로 필터링, 무료',
   'home.st.jobs': '채용 중', 'home.st.aip': 'AIP 고용주', 'home.st.dli': 'DLI',
   'home.st.new': '오늘 신규', 'home.st.elig': 'PNP 대상',
@@ -929,7 +930,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA 승인(2년)', 'se.col.w1': 'LMIA 최근 분기', 'se.col.w2': 'LMIA 6개월', 'se.col.w4': 'LMIA 1년',
   'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': '구인 직종이 수요 목록에 오른 고용주', 'pulse.nav.boards': '직업 보드',
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
-  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.provocc': '주별 직업', 'pulse.nav.draws': '추첨',
+  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.draws': '추첨',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
   'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
   'pulse.city': '도시 개요', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
@@ -954,7 +955,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'mkt.search': '직업·도시 검색', 'mkt.more': '필터 더보기', 'mkt.chan': '경로', 'mkt.chan.all': '전체 직업', 'mkt.chan.pnp': 'PNP 목록에 있는 직업', 'mkt.chan.ee': 'EE 카테고리 해당 직업', 'mkt.chan.occOnly': '경로 필터는 X축이 직종일 때만 적용', 'mkt.minJobs': '최소 채용 공고 수', 'mkt.broad': '대분류', 'mkt.mid': '중분류', 'mkt.fine': '소분류', 'mkt.cat.all': '전체', 'mkt.y2.off': '숨기기', 'mkt.medLink': '주별 중위', 'mkt.sort': '정렬', 'mkt.sort.desc': '높은 순', 'mkt.sort.asc': '낮은 순',
   'mkt.fs': '전체 화면', 'mkt.fs.exit': '전체 화면 종료',
   'mkt.note': '캐나다 공식 Job Bank 기준. 현재 채용 중인 공고 수이며 인력 부족을 뜻하지 않습니다',
-  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList': '목록 없음', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc': '해당없음', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 'stats.cardWork': '취업비자 보유량(TFWP+IMP)', 'stats.cardStudy': '학생비자 보유량', 'stats.cardPr': 'PNP 영주권 승인(연간)',
+  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.aip': 'AIP 지정 고용주 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 
 }
 
 // =========================================================================
@@ -987,12 +988,10 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   // 오류 문구는 20자 이내: 375에서 오류 박스의 가용 폭은 약 265px(넘으면 줄바꿈)
 
   'chat.err.limit': '오늘 질문 한도에 도달했습니다',
-
   'chat.err.net': '서비스에 연결하지 못했습니다',
   // 빈 화면 예시 3개:실제 사람이 처음 꺼내는 한 문장(졸업 직후 / 오퍼 보유 / 에이전트 견적)
 
   'chat.opt.rec': '추천',
-
   'chat.retry': '다시 시도',
   'chat.hello': '안녕하세요, 사이트 안내입니다. 보고 싶은 것을 말하면 그 페이지로 안내합니다. 질문과 제안도 여기에 적어 주세요. 모두 기록합니다.',
   'chat.why': '무엇을 찾으세요?', 'chat.ask': '질문과 제안은 바로 적어 주세요',
@@ -1006,7 +1005,6 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',
   'guide.dest.rankings': '순위', 'guide.dest.timeline': '타임라인', 'guide.dest.resources': '자료실', 'guide.dest.pricing': '요금',
   'guide.dest.account': '내 계정',
-
   'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
 }
 

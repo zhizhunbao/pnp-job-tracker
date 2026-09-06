@@ -161,6 +161,12 @@ services:
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=ircc 域 META(86400;#128 文字随迁)
       TZ: EST5EDT
 
+  statcan:                         # StatCan WDS 日更:人口 / 临时居民 / GDP / 失业率(2026-09-06 自 ircc 搬出两段 + 新增四表)
+    <<: *etl
+    environment:
+      SOURCE: statcan
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:

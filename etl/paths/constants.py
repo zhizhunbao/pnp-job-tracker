@@ -43,6 +43,12 @@ EE = RAW / "ee"
 IRCC = RAW / "ircc"
 """IRCC 开放数据(E12-07:学签/工签存量、PNP 登陆数)+ pnp_allocations.json 配额维护表。"""
 
+STATCAN = RAW / "statcan"
+"""StatCan WDS 表(2026-09-06 立 statcan 域):一表一文件 <pid>.json —— 人口 17100009 /
+临时居民 17100121 / GDP 36100222 / 失业率 14100287,形见
+docs/design/把脉页省份段-契约-20260906.md §1。
+⚠ 同域另两张老表(npr_share.json / statcan_tr_prov.json)产物路径不动,仍在 raw/ircc/。"""
+
 NOC = RAW / "noc"
 """NOC 2021 官方职业名+主要职责(StatCan Elements 开放 CSV)。"""
 

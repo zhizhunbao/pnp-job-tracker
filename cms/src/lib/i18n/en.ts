@@ -549,7 +549,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'cell.pnpExcl': 'Excluded', 'cell.aipBlocked': 'Not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.your': 'This job', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
-
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
@@ -767,6 +766,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tagline': 'All of Canada, updated daily',
   'res.title': 'Official resources', 'res.sub': 'Official immigration links in one place', 'res.go': 'Official', 'res.entry': 'Official resources', 'res.search': 'Search official resources…', 'res.empty': 'No matching resources',
   'res.cat.federal': 'Federal immigration', 'res.cat.pnp': 'Provincial nominees (PNP)', 'res.cat.study': 'Study & DLI', 'res.cat.language': 'Language tests', 'res.cat.wage': 'Wage & occupation data', 'res.cat.lmia': 'LMIA & employer sponsorship', 'res.cat.authority': 'Authority & compliance',
+  'res.rules': 'Pathway requirements', 'res.rules.prov': '{prov} nomination', 'res.prog.AIP': 'Atlantic Immigration Program (AIP)', 'res.prog.RCIP': 'Rural Community Immigration Pilot (RCIP)', 'res.prog.FCIP': 'Francophone Community Immigration Pilot (FCIP)', 'res.prog.PGWP': 'Post-Graduation Work Permit (PGWP)', 'res.prog.CEC': 'Canadian Experience Class (CEC)', 'res.prog.FSW': 'Federal Skilled Worker (FSW)', 'res.prog.FST': 'Federal Skilled Trades (FST)', 'res.prog.PR-fees': 'Federal application fees',
   'clear': 'Clear filters',
   'empty': 'No matching jobs', 'allShown': 'All {total} shown', 'loadMore': 'Load more ({n} left)',
   'chart.back': 'Back', 'chart.drillHint': 'Click a bar to drill down', 'chart.other': 'Other', 'chart.loading': 'Loading…', 'nav.account': 'Account', 'nav.acctTab': 'My account',
@@ -828,7 +828,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.col.provs': 'In-demand list provinces',
   'pulse.col.pnpProvs': 'Provinces that can nominate you',
   'pulse.col.teer': 'TEER',
-  'pulse.s4b': 'Occupations by province', 'pulse.s4.prov': 'Province', 'pulse.s4.diff': 'Competition',
+  'pulse.s4.prov': 'Province', 
   'pulse.col.tier': 'Immigration pathway', 'pulse.tier.both': 'Prov + federal in-demand', 'pulse.tier.prov': 'Province in-demand list',
   'pulse.tier.fed': 'Federal in-demand list', 'pulse.tier.ee': 'EE open', 'pulse.tier.employer': 'Employer offer only',
   'pulse.dr.read': 'Read',
@@ -841,8 +841,10 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'se.ask.lmia': 'How does the LMIA-approved employer table help my immigration job search?',
   'se.ask.named': 'What does an employer with jobs on a shortage list mean for me?',
   'se.ask.aip': 'What is an AIP designated employer? Is it useful to me?',
-  'pulse.s4': 'Province overview',
-  'pulse.s4.streams': 'Nominee streams here', 'pulse.s4.all': 'Canada',
+  'pulse.s4.all': 'Canada',
+  // 2026-09-06 省份段 = 宏观统计(含联邦):地区块按年表 + 招聘对比横表;表 / 趋势、近 5 年 / 全部 是通用表格序列能力的文案
+  'pulse.s4j': 'Hiring by province', 'pulse.m.key': 'Indicator', 'pulse.m.month': 'month {m}', 'pulse.m.thru': 'to month {m}', 'pulse.m.table': 'Table', 'pulse.m.chart': 'Trend', 'pulse.m.recent': 'Last 5 years', 'pulse.m.all': 'All', 'pulse.m.index': 'Index: first year with data = 100',
+  'pulse.m.pop': 'Population', 'pulse.m.npr': 'Temporary residents', 'pulse.m.work': 'of which work permits', 'pulse.m.study': 'of which study permits', 'pulse.m.asylum': 'of which asylum claimants', 'pulse.m.studyNew': 'New study permits', 'pulse.m.gdp': 'GDP (C$ millions)', 'pulse.m.unemp': 'Unemployment rate', 'pulse.m.alloc': 'PNP allocation', 'pulse.m.issued': 'Nominations issued', 'pulse.m.remaining': 'Remaining allocation', 'pulse.m.prAll': 'PR admissions', 'pulse.m.prPnp': 'of which PNP', 'pulse.m.eeInvites': 'EE invitations', 'pulse.m.src.ircc': 'IRCC annual', 'pulse.m.src.prov': 'Provincial official', 'pulse.m.src.ee': 'IRCC draws',
   'pulse.s5': 'Recent draws',
   'pulse.dr.note': 'Last {n} draws {min}–{max}. Nobody got in below {min}',
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
@@ -858,7 +860,6 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'de.emptyFiltered': 'No employer matches these filters',
   'de.hiringNeed': 'Pick a province and an occupation to see employers hiring',
   'pro.unlock': 'Unlock Pro',
-
   'home.cta2.t': 'Canada-wide jobs, updated daily', 'home.cta2.s': 'Filter by province, occupation and PNP signals — free',
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
   'home.st.new': 'new today', 'home.st.elig': 'PNP-eligible',
@@ -936,7 +937,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA approved (2 yrs)', 'se.col.w1': 'LMIA last quarter', 'se.col.w2': 'LMIA 6 months', 'se.col.w4': 'LMIA 1 year',
   'se.grp.aip': 'AIP designated employers', 'se.grp.lmia': 'LMIA-approved employers (2 yrs)', 'se.grp.named': 'Employers with jobs on shortage lists', 'pulse.nav.boards': 'Occupation boards',
   // #312 secondary-nav short labels (TOC differentiated from full section h2 wording)
-  'pulse.nav.se': 'Employers', 'pulse.nav.occ': 'Occupations', 'pulse.nav.prov': 'Provinces', 'pulse.nav.provocc': 'Provincial jobs', 'pulse.nav.draws': 'Draws',
+  'pulse.nav.se': 'Employers', 'pulse.nav.occ': 'Occupations', 'pulse.nav.prov': 'Provinces', 'pulse.nav.draws': 'Draws',
   // 2026-09-04 pulse page rebuild (docs/design/把脉页重构-20260904.md): six-section nav + per-industry tables + city / trend sections
   'pulse.nav.city': 'Cities', 'pulse.nav.trend': 'Trends',
   'pulse.city': 'City overview', 'pulse.trend': 'Open jobs over time', 'pulse.trend.nat': 'Canada',
@@ -961,7 +962,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'mkt.search': 'Search occupation or city', 'mkt.more': 'More filters', 'mkt.chan': 'Stream', 'mkt.chan.all': 'All occupations', 'mkt.chan.pnp': 'On a PNP occupation list', 'mkt.chan.ee': 'Covered by an EE category', 'mkt.chan.occOnly': 'Stream filter applies when the x axis is Occupation', 'mkt.minJobs': 'Min open jobs', 'mkt.broad': 'Group', 'mkt.mid': 'Sub-group', 'mkt.fine': 'Category', 'mkt.cat.all': 'All', 'mkt.y2.off': 'Hide', 'mkt.medLink': 'Median by province', 'mkt.sort': 'Sort', 'mkt.sort.desc': 'High to low', 'mkt.sort.asc': 'Low to high',
   'mkt.fs': 'Fullscreen', 'mkt.fs.exit': 'Exit fullscreen',
   'mkt.note': 'From Canada’s official Job Bank. Open postings — not a measure of labour shortage',
-  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList': 'No list', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc': 'N/A', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 'stats.cardWork': 'Work permits (TFWP+IMP)', 'stats.cardStudy': 'Study permits', 'stats.cardPr': 'PNP admissions (yr)',
+  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.aip': 'AIP designated-employer jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 
 }
 
 // =========================================================================
@@ -994,12 +995,10 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   // Keep every error under ~38 chars: the error box has ~265px of writable width at 375
 
   'chat.err.limit': "That's a lot for today — try tomorrow",
-
   'chat.err.net': 'Could not reach the service — retry',
   // 空态三条示例:真人开口的第一句,三类人各一条(刚毕业没工作 / 有 offer / 中介开价)
 
   'chat.opt.rec': 'Recommended',
-
   'chat.retry': 'Retry',
   'chat.hello': 'Hi, I am the site guide. Tell me what you want to see and I will take you there. Questions and suggestions go here too, I note them all.',
   'chat.why': 'What are you looking for?', 'chat.ask': 'Questions and suggestions go here',
@@ -1013,7 +1012,6 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',
   'guide.dest.rankings': 'rankings', 'guide.dest.timeline': 'the timeline', 'guide.dest.resources': 'resources', 'guide.dest.pricing': 'pricing',
   'guide.dest.account': 'your account',
-
   'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
 }
 

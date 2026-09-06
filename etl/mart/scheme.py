@@ -2350,3 +2350,107 @@ class PilotVerdictOut:
 # =========================================================================
 # 20. cities 步(纯常量段,无形状 —— 镜像占位)
 # =========================================================================
+
+
+# =========================================================================
+# 21. mart:宏观时间序列(macro_series 长表,把脉页省份段 2026-09-06)
+# =========================================================================
+
+
+@dataclass
+class MacroRowIn:
+    """to_macro_row() 入参 —— 一行 = 一个(geo, key, period)点。"""
+
+    geo: str
+    """CA 或两位省码。"""
+
+    key: str
+    """指标键(契约 §3 键表)。"""
+
+    period: str
+    """季/月度 = `YYYY-MM-DD`(refPer),年度 = `YYYY`。"""
+
+    freq: str
+    """Q / M / A。"""
+
+    value: float
+    """值(官方缺位的点根本不出行,不折 0)。"""
+
+    as_of: str
+    """该点数据截至:完整年 = `YYYY`,进行年 YTD = `YYYY-MM`,季/月 = period 本身。"""
+
+    unit: str
+    """people / dollars_millions / percent / nominations。"""
+
+    source: str
+    """官方页 URL。"""
+
+    fetched: str
+    """raw 抓取日。"""
+
+
+@dataclass
+class StatcanPeriodIn:
+    """statcan_period_of() 入参(文件自报的频率 + 该点的 refPer)。"""
+
+    freq: str
+    """Q / M / A。"""
+
+    ref_per: str
+    """WDS 的参考日(`YYYY-MM-DD`)。"""
+
+
+@dataclass
+class StudyAsOfIn:
+    """study_as_of_of() 入参(年 + 该年的流量块)。"""
+
+    year: str
+    """年份。"""
+
+    block: dict
+    """study_flow 的年块({n, complete, throughMonth})。"""
+
+
+@dataclass
+class PrBlockIn:
+    """macro_pr_block_rows() 入参:PR 按年表的一块(prAll / prPnp 同一套解法)。"""
+
+    by_year: dict
+    """年 → {省码: 人数}。"""
+
+    key: str
+    """落盘键(prAll / prPnp)。"""
+
+    ytd_year: str
+    """进行年(该年 as_of 取抓取日的年月)。"""
+
+    source: str
+    """官方页 URL。"""
+
+    fetched: str
+    """raw 抓取日。"""
+
+
+@dataclass
+class EeWindowIn:
+    """ee_window_start() 入参(覆盖窗起点 = 抓取日回推 24 个月 与 各类别都盖住的起点 的较晚者)。"""
+
+    fetched: str
+    """raw 抓取日(`YYYY-MM-DD`)。"""
+
+    covered_from: str
+    """各类别都盖得住的起点(被 12 轮上限截断的类别里最晚的那个「最早一行」)。"""
+
+
+@dataclass
+class EeYearIn:
+    """ee_year_as_of_of() 入参:这一年该出行吗、as_of 写什么。"""
+
+    year: str
+    """年份。"""
+
+    window_start: str
+    """覆盖窗起点。"""
+
+    fetched: str
+    """raw 抓取日(既是窗末,也是进行年的 as_of 来源)。"""

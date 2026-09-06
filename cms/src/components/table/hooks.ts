@@ -10,12 +10,13 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
 import {
-  COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT, SIG_SEP, SIG_TAIL,
+  COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT,
+  SERIES_RANGE_ALL, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, SIG_SEP, SIG_TAIL,
 } from './constants'
 import { sortRows } from './functions'
 import type {
   AllExplicitIn, Col, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn, PxAtIn, ResizeIn, RowsIn, RowsOut,
-  RunResizeIn, SnapIn, SortState,
+  RunResizeIn, SeriesRange, SeriesView, SnapIn, SortState, UseSeriesViewOut,
 } from './types'
 
 /**
@@ -310,4 +311,35 @@ function pxAt(x: PxAtIn): number {
     return COL_W_FALLBACK
   }
   return v
+}
+
+/**
+ * 序列表的两个开关整机(视图 表/趋势 + 时间窗 近N期/全部)。
+ * 两态都是「这张表现在给你看哪一段」,同一台机器交回 —— 手机卡与桌面表复用同一枚,
+ * 两处的开关行为就不会各写一份(契约 §4「桶导出 useSeriesView」)。
+ * 默认落在「表 + 近 N 期」:先给最容易读懂的那一屏,趋势与全量都是用户主动要的。
+ *
+ * @returns 机器面板(当前两态与四枚切换手柄)。
+ */
+export function useSeriesView(): UseSeriesViewOut {
+  const [view, setView] = useState<SeriesView>(SERIES_VIEW_TABLE)
+  const [range, setRange] = useState<SeriesRange>(SERIES_RANGE_RECENT)
+
+  function onTable() {
+    setView(SERIES_VIEW_TABLE)
+  }
+
+  function onChart() {
+    setView(SERIES_VIEW_CHART)
+  }
+
+  function onRecent() {
+    setRange(SERIES_RANGE_RECENT)
+  }
+
+  function onAll() {
+    setRange(SERIES_RANGE_ALL)
+  }
+
+  return { view, range, onTable, onChart, onRecent, onAll }
 }

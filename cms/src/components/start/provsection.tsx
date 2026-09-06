@@ -1,57 +1,38 @@
 'use client'
 /**
- * 域内小件:S4a 分省概览(Frank 2026-08-06「省卡改表格吧 拆两个 section」)——
- * 桌面 = 可排序 Table(10 省 × 混量纲指标,表格才排得动),手机 = 原省卡
- * (站规「电脑表格手机卡片」)。
- * 表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips;手机卡片保留点卡切省。
- * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
- * 2026-09-03 Frank「所有的 table 右上角都应该有一个更新时间」:挂分区标题行右槽,
- * 整区一枚(桌面表与手机卡是同一份数据的两副面孔)。
+ * 域内小件:省份段 —— 宏观统计(含联邦)。全国 + 十省各一个地区块(按年表),末尾一张招聘对比横表。
+ * 2026-09-06 Frank 十一轮拍板重做(设计稿 docs/design/把脉页省份段-20260906.md):原七列混表
+ * (在招 / 紧缺岗 / 2024 存量 / 2025 PR 揉一张)、省卡、切省下拉与 chips、省内职业榜全部撤;
+ * 「省份主要是一个宏观的统计包括联邦」「省份的就没必要细分到职位了」。
+ * 2026-08-28 换装批自 Pulse.tsx 提出成文件(旧形留 git)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { Table } from '@/components/table'
-import { Updated } from '@/components/time'
-import { ID_PROV, PH_PROV } from './constants'
-import { provColsOf, provRowKeyOf, toProvCellRows } from './functions'
+import { ID_PROV } from './constants'
 import { Band } from './band'
-import { Placeholder } from './placeholder'
-import { ProvCard } from './provcard'
-import { Sec } from './sec'
-import type { ProvCellRow, ProvSectionIn } from './types'
-import css from './start.module.css'
+import { JobsSection } from './jobssection'
+import { MacroBlock } from './macroblock'
+import type { MacroSectionIn } from './types'
 
 /**
- * 渲染分省概览区。
+ * 渲染省份段。
  *
- * @param props 取词函数、界面语言、更新时刻、加载态、汇总行、省卡增补、当前省与切省手柄工厂。
- * @returns 色带;数据到了而一行都没有时给 null。
+ * @param props 取词函数、更新时刻、地区块与招聘对比行。
+ * @returns 一条色带;一个地区块都没有且招聘表也空时给 null。
  */
-export function ProvSection({ t, lang, updatedAt, loading, rows, provExtra, prov, provPickOf }: ProvSectionIn) {
-  if (loading === false && rows.length === 0) {
+export function ProvSection({ t, updatedAt, geos, jobsLoading, jobsRows }: MacroSectionIn) {
+  if (geos.length === 0 && jobsLoading === false && jobsRows.length === 0) {
     return null
   }
-  const cells = toProvCellRows({ rows, t, lang, provExtra })
-  const cards = []
-  for (const c of cells) {
-    cards.push(<ProvCard key={c.key} row={c} on={c.key === prov} onPick={provPickOf(c.key)} t={t} />)
+  const blocks = []
+  for (const g of geos) {
+    blocks.push(<MacroBlock key={g.code} t={t} geo={g} updatedAt={updatedAt} />)
   }
   return (
     <Band id={ID_PROV}>
-      <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
-        {loading && <Placeholder size={PH_PROV} />}
-        {cells.length > 0 && (
-          <div className={css.table}>
-            <Table<ProvCellRow> rows={cells} cols={provColsOf({ t })} rowKey={provRowKeyOf} />
-          </div>
-        )}
-        {cells.length > 0 && (
-          <div className={css.cards}>
-            <div className={css.provCards}>{cards}</div>
-          </div>
-        )}
-      </Sec>
+      {blocks}
+      <JobsSection t={t} updatedAt={updatedAt} loading={jobsLoading} rows={jobsRows} />
     </Band>
   )
 }

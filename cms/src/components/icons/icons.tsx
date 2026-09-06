@@ -10,10 +10,10 @@
  * @time 2026-08-24 04:30:00
  */
 import {
-  ArrowUp, ChartColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList, Compass, Lock, Mail,
-  Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize, Minus, Newspaper, Paperclip, Pause, Play,
-  Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Target, ThumbsDown, ThumbsUp, TriangleAlert, User,
-  Users, Volume2, X,
+  ArrowUp, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
+  Compass, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize, Minus, Newspaper,
+  Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Table, Target, ThumbsDown,
+  ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -222,3 +222,13 @@ export const IconWarn = makeIcon(TriangleAlert)
  * 关闭(弹框、抽屉、筛选清除;2026-08-24 替 × ✕ 字符)。
  */
 export const IconX = makeIcon(X)
+
+/**
+ * 表态(序列表工具条左边那枚:列是时间点时切回一格一个原值的表)。
+ */
+export const IconTable = makeIcon(Table)
+
+/**
+ * 趋势态(序列表工具条右边那枚:表体换成多折线指数图)。
+ */
+export const IconTrend = makeIcon(ChartLine)

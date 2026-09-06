@@ -47,6 +47,14 @@ from mart.constants import (
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
+    ALLOC_YEAR_PREFIX, EE_HIST_DAYS_PER_MONTH, EE_HIST_MONTHS, EE_HIST_PER_CAT,
+    EE_YEAR_FIRST_DAY_TPL, EE_YEAR_LAST_DAY_TPL, IN_IRCC_PR_YEARS, IN_STATCAN_DIR, K_BY_GEO,
+    K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_SIZE, K_YTD_YEAR,
+    MACRO_ANCHOR_GEOS,
+    MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
+    MACRO_EMPTY_MSG, MACRO_FREQ_ANNUAL, MACRO_GEO_CA, MACRO_KEY_ALLOC, MACRO_KEY_EE_INVITES,
+    MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEY_STUDY_NEW, MACRO_MONTH_LEN, MACRO_MONTH_NUM,
+    MACRO_MONTH_TPL, MACRO_UNIT, MACRO_UNIT_TPL, MACRO_YEAR_LEN,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
     BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
@@ -159,6 +167,7 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
+    EeWindowIn, EeYearIn, MacroRowIn, PrBlockIn, StatcanPeriodIn, StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
     NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
@@ -3057,7 +3066,7 @@ def to_closed_job_row(x: ClosedJobIn) -> dict:
 
 
 # =========================================================================
-# 14. mart:装配与落盘(27 张表一次算齐;跨源汇装的收口点)
+# 14. mart:装配与落盘(28 张表一次算齐;跨源汇装的收口点)
 # =========================================================================
 
 
@@ -3100,7 +3109,7 @@ def say_mart_tallies(ctx: MartCtx) -> None:
 
 
 def to_mart_tables() -> dict:
-    """跨源汇装:27 张表一次算齐 → {表名: 行清单}。
+    """跨源汇装:28 张表一次算齐 → {表名: 行清单}。
 
     名字带 to_ 前缀是方言律⑩的直接后果:这个 dict 的**键就是落盘文件名 = DB 表名**,
     是 json 边界的键,只许住行构造器 —— 它构造的「行」正好是一整轮 mart 的清单。
@@ -3157,6 +3166,7 @@ def to_mart_tables() -> dict:
         "field_sources": build_field_sources(),
         "dli": build_dli(),
         "news": build_news(),
+        "macro_series": build_macro_series(),
     }
 
 
@@ -4604,3 +4614,290 @@ def to_city_i18n(table: dict) -> dict:
     for key, names in table.items():
         out[key] = {"zh": names[0], "ko": names[1]}
     return out
+
+
+# =========================================================================
+# 21. mart:宏观时间序列(macro_series 长表,把脉页省份段 2026-09-06)
+# =========================================================================
+
+
+def build_macro_series() -> list:
+    """五路官方序列 → macro_series 长表(一行 = 一个 geo × key × period 的点)。
+
+    契约 docs/design/把脉页省份段-契约-20260906.md §2/§3:statcan 四表(人口/临时居民/GDP/
+    失业率,目录驱动:加一张表 = 丢一个 json)+ ircc 三表(新发学签流量 / PR 按年 / 配额)
+    + ee 历次抽选。**官方缺位的点不出行**(不折 0 —— 折了就是替官方编数)。
+    五路输入全缺 → [](seed 侧 -1 跳过保留旧行);输入在而 0 行 → 抛错断整个 mart,
+    不许「清空+重灌 0 行」把生产表静默抹掉(同 build_pilot_quota 的空灌防线)。
+    ⚠ 段号接在段尾不插回建表段群里(同 ircc 批I3 的先例):存量注释里到处引用「段9/段14/段16」,
+    插号要全仓改引用,得不偿失;三件仍同名同序镜像。
+    """
+    if not macro_sources_live():
+        return []
+    out: list = []
+    if IN_STATCAN_DIR.exists():
+        for src in sorted(IN_STATCAN_DIR.glob(GLOB_JSON)):
+            out.extend(macro_statcan_rows(src))
+    out.extend(macro_study_rows())
+    out.extend(macro_pr_rows())
+    out.extend(macro_alloc_rows())
+    out.extend(macro_ee_rows())
+    check_macro_series(out)
+    return out
+
+
+def macro_sources_live() -> bool:
+    """五路输入里还有活的文件吗(全缺才允许出空表)。"""
+    for p in (IN_IRCC_FLOW, IN_IRCC_PR_YEARS, IN_IRCC_ALLOC, IN_EE_DRAWS):
+        if p.exists():
+            return True
+    if IN_STATCAN_DIR.exists():
+        for _src in IN_STATCAN_DIR.glob(GLOB_JSON):
+            return True
+    return False
+
+
+def macro_statcan_rows(src: Path) -> list:
+    """一份 raw/statcan/<pid>.json → 行清单(每个 geo × 每期 × 每键一行)。
+
+    值缺位的点在 statcan 域就不落键(契约 §1),这里照单全收即不补 0。
+    季/月度点的 as_of 就是 period 本身:那一期的存量/率没有「截至几月」之说。
+    """
+    data = read_table(src)
+    freq = data.get(K_FREQ, "")
+    source = data.get(K_SOURCE, "")
+    fetched = data.get(K_FETCHED, "")
+    out: list = []
+    for geo, periods in (data.get(K_BY_GEO) or {}).items():
+        for ref_per, cells in periods.items():
+            period = statcan_period_of(StatcanPeriodIn(freq=freq, ref_per=ref_per))
+            for key, value in cells.items():
+                out.append(to_macro_row(MacroRowIn(
+                    geo=geo, key=key, period=period, freq=freq, value=value, as_of=period,
+                    unit=MACRO_UNIT.get(key, ""), source=source, fetched=fetched)))
+    return out
+
+
+def statcan_period_of(x: StatcanPeriodIn) -> str:
+    """statcan 的期键 → 落盘 period。
+
+    契约 §1 的 byGeo 期键一律是 refPer(`YYYY-MM-DD`),§2 的 period 则规定年度表只写 `YYYY`
+    —— 归一在这一层做:年度点截到年,季/月度点照抄。
+    """
+    if x.freq == MACRO_FREQ_ANNUAL:
+        return x.ref_per[:MACRO_YEAR_LEN]
+    return x.ref_per
+
+
+def macro_study_rows() -> list:
+    """新发学签流量 → studyNew 行(年度;进行年的 as_of 标到月)。
+
+    口径独立不混用:流量 = 当期新发,存量(temp_residents)= 在库人数,两者不是一回事。
+    """
+    if not IN_IRCC_FLOW.exists():
+        return []
+    data = read_table(IN_IRCC_FLOW)
+    source = data.get(K_SOURCE, "")
+    fetched = data.get(K_FETCHED, "")
+    out: list = []
+    for geo, years in (data.get(K_BY_PROV) or {}).items():
+        for year, block in years.items():
+            out.append(to_macro_row(MacroRowIn(
+                geo=geo, key=MACRO_KEY_STUDY_NEW, period=year, freq=MACRO_FREQ_ANNUAL,
+                value=block[K_N], as_of=study_as_of_of(StudyAsOfIn(year=year, block=block)),
+                unit=UNIT_PEOPLE, source=source, fetched=fetched)))
+    return out
+
+
+def study_as_of_of(x: StudyAsOfIn) -> str:
+    """新发学签的 as_of:整年 = `YYYY`;进行年 = `YYYY-MM`(throughMonth 英文月名转月号)。
+
+    月名认不得就抛:悄悄按整年落 as_of = 把 YTD 说成全年,前端会拿半年的数跟整年比。
+    """
+    if x.block.get(K_COMPLETE) is True:
+        return x.year
+    name = str(x.block.get(K_THROUGH_MONTH) or "")
+    month = MACRO_MONTH_NUM.get(name, "")
+    if month == "":
+        raise RuntimeError(MACRO_MONTH_TPL.format(year=x.year, month=name))
+    return MACRO_ASOF_TPL.format(year=x.year, month=month)
+
+
+def macro_pr_rows() -> list:
+    """PR 登陆数按年 → prAll(全部类别)/ prPnp(省提名)两族行。"""
+    if not IN_IRCC_PR_YEARS.exists():
+        return []
+    data = read_table(IN_IRCC_PR_YEARS)
+    out: list = []
+    for key in (MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP):
+        out.extend(macro_pr_block_rows(PrBlockIn(
+            by_year=data.get(key) or {}, key=key, ytd_year=data.get(K_YTD_YEAR, ""),
+            source=data.get(K_SOURCE, ""), fetched=data.get(K_FETCHED, ""))))
+    return out
+
+
+def macro_pr_block_rows(x: PrBlockIn) -> list:
+    """PR 按年表的一块 → 行清单(prAll / prPnp 同一套解法)。
+
+    进行年那一年是年内累计,as_of 取抓取日的年月 —— 不标出来就会被当成完整年比。
+    """
+    ytd = x.fetched[:MACRO_MONTH_LEN]
+    out: list = []
+    for year, by_prov in x.by_year.items():
+        as_of = year
+        if year == x.ytd_year:
+            as_of = ytd
+        for geo, value in by_prov.items():
+            out.append(to_macro_row(MacroRowIn(
+                geo=geo, key=x.key, period=year, freq=MACRO_FREQ_ANNUAL, value=value,
+                as_of=as_of, unit=UNIT_PEOPLE, source=x.source, fetched=x.fetched)))
+    return out
+
+
+def macro_alloc_rows() -> list:
+    """PNP 年度提名配额(人工核对维护表)→ alloc 行。
+
+    每一年的出处页各归各的(sources 逐年一格):数字出自哪一年的 Program Updates 页就挂哪页,
+    别拿另一年的页给它背书。官方没给的年 = 该格为空 = 不出行。
+    """
+    if not IN_IRCC_ALLOC.exists():
+        return []
+    data = read_table(IN_IRCC_ALLOC)
+    fetched = data.get(K_CHECKED_AT, "")
+    out: list = []
+    for r in data.get(K_ROWS, []):
+        srcs = r.get(K_SOURCES) or {}
+        for col, value in r.items():
+            year = alloc_year_of(col)
+            if year == "" or value is None:
+                continue
+            out.append(to_macro_row(MacroRowIn(
+                geo=r.get(K_PROV, ""), key=MACRO_KEY_ALLOC, period=year,
+                freq=MACRO_FREQ_ANNUAL, value=value, as_of=year, unit=UNIT_NOMINATIONS,
+                source=srcs.get(col, ""), fetched=fetched)))
+    return out
+
+
+def alloc_year_of(col: str) -> str:
+    """配额表的列名 → 年份(y2026 → 2026);不是年列给空串。"""
+    n = len(ALLOC_YEAR_PREFIX)
+    rest = col[n:]
+    if col[:n] == ALLOC_YEAR_PREFIX and rest.isdigit():
+        return rest
+    return ""
+
+
+def macro_ee_rows() -> list:
+    """EE 历次抽选 → eeInvites 行(仅 CA:联邦邀请不按省发)。
+
+    只出**窗口内完整年 + 进行年 YTD**:history 只留最近 24 个月,窗口没盖住的年份是残缺
+    合计,出了就是拿半年的邀请数冒充全年。单位借 people(契约 §2 的四词表里没有「邀请」,
+    一份邀请对应一个人)。
+    """
+    if not IN_EE_DRAWS.exists():
+        return []
+    data = read_table(IN_EE_DRAWS)
+    history = data.get(K_HISTORY) or {}
+    if len(history) == 0:
+        return []
+    fetched = data.get(K_FETCHED, "")
+    start = ee_window_start(EeWindowIn(fetched=fetched, covered_from=ee_covered_from(history)))
+    out: list = []
+    for year, total in ee_sizes_by_year(history).items():
+        as_of = ee_year_as_of_of(EeYearIn(year=year, window_start=start, fetched=fetched))
+        if as_of == "":
+            continue
+        out.append(to_macro_row(MacroRowIn(
+            geo=MACRO_GEO_CA, key=MACRO_KEY_EE_INVITES, period=year, freq=MACRO_FREQ_ANNUAL,
+            value=total, as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
+            fetched=fetched)))
+    return out
+
+
+def ee_sizes_by_year(history: dict) -> dict:
+    """历次抽选 → {年: 邀请数合计}(各类别的行按日期年份求和)。"""
+    out: dict = {}
+    for rows in history.values():
+        for r in rows:
+            day = str(r.get(K_DATE) or "")
+            n = r.get(K_SIZE)
+            if day == "" or n is None:
+                continue
+            year = day[:MACRO_YEAR_LEN]
+            out[year] = out.get(year, 0) + n
+    return out
+
+
+def ee_covered_from(history: dict) -> str:
+    """各类别都盖得住的起点 = **被截断**的类别里最晚的那个「最早一行」。
+
+    ee 域每类别只留 12 轮(HIST_PER_CAT):轮次密的类别(cec/pnp/french)最早那行已经被截掉,
+    拿全表最早一行当窗起点会把「只剩今年」的类别算成盖满 —— 2026-09-06 实撞:那样算出来的
+    2025 合计只有三成,当完整年画进图里就是替官方编数。没有类别被截断 → 空串(窗由月数定)。
+    """
+    out = ""
+    for rows in history.values():
+        if len(rows) < EE_HIST_PER_CAT:
+            continue
+        first = ""
+        for r in rows:
+            day = str(r.get(K_DATE) or "")
+            if day == "":
+                continue
+            if first == "" or day < first:
+                first = day
+        if first > out:
+            out = first
+    return out
+
+
+def ee_window_start(x: EeWindowIn) -> str:
+    """覆盖窗起点 = 抓取日回推 24 个月 与 各类别都盖住的起点 的**较晚**者。
+
+    两道边界各管一半:月数管「太老的不留」,截断点管「密的类别其实只剩今年」。
+    """
+    cut = date.fromisoformat(x.fetched) - timedelta(days=EE_HIST_MONTHS * EE_HIST_DAYS_PER_MONTH)
+    floor = cut.isoformat()
+    if x.covered_from > floor:
+        return x.covered_from
+    return floor
+
+
+def ee_year_as_of_of(x: EeYearIn) -> str:
+    """这一年的 as_of:进行年 = `YYYY-MM`;窗内完整年 = `YYYY`;窗没盖住 = 空串(不出行)。"""
+    if x.year == x.fetched[:MACRO_YEAR_LEN]:
+        return x.fetched[:MACRO_MONTH_LEN]
+    head = EE_YEAR_FIRST_DAY_TPL.format(year=x.year) >= x.window_start
+    tail = EE_YEAR_LAST_DAY_TPL.format(year=x.year) <= x.fetched
+    if head and tail:
+        return x.year
+    return ""
+
+
+def check_macro_series(rows: list) -> None:
+    """脚本级自检(抽取器契约,坏一行整步失败,别带病入库)。
+
+    三道:① 源在就不许 0 行 ② 每行有单位(MACRO_UNIT 表外的新键当场炸)
+    ③ (geo, key, period) 唯一(DB 侧同名唯一索引)+ CA/ON 的 pop 与 npr 四格齐 ——
+    那两格是省份段每一行的分母,缺了整张表没有意义。
+    """
+    assert rows, MACRO_EMPTY_MSG
+    seen = set()
+    dup = []
+    anchors = set()
+    for r in rows:
+        assert r[K_UNIT], MACRO_UNIT_TPL.format(row=r)
+        cell = (r[K_GEO], r[K_KEY], r[K_PERIOD])
+        if cell in seen:
+            dup.append(cell)
+        seen.add(cell)
+        if r[K_GEO] in MACRO_ANCHOR_GEOS and r[K_KEY] in MACRO_ANCHOR_KEYS:
+            anchors.add((r[K_GEO], r[K_KEY]))
+    assert len(dup) == 0, MACRO_DUP_TPL.format(dup=dup[:MACRO_DUP_SHOW])
+    assert len(anchors) == len(MACRO_ANCHOR_GEOS) * len(MACRO_ANCHOR_KEYS), MACRO_ANCHOR_MSG
+
+
+def to_macro_row(x: MacroRowIn) -> dict:
+    """macro_series 表的一行(唯一键 geo+key+period;键序即落盘列序)。"""
+    return {"geo": x.geo, "key": x.key, "period": x.period, "freq": x.freq, "value": x.value,
+            "asOf": x.as_of, "unit": x.unit, "source": x.source, "fetched": x.fetched}

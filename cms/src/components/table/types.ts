@@ -110,6 +110,12 @@ export type TableIn<T> = {
    * 表已经嵌在调用方的白卡里 → 不再套自己的卡壳(否则双层描边)。
    */
   bare?: boolean
+
+  /**
+   * 列是时间点时传它:表壳内长出「表 / 趋势」与「近 N 期 / 全部」两个开关
+   * (2026-09-06 把脉页省份段契约 §4)。缺席 = 普通表,一切照旧。
+   */
+  series?: TableSeriesIn<T>
 }
 
 /**
@@ -502,4 +508,572 @@ export type WidthStyleIn<T> = {
    * 本列声明。
    */
   col: Col<T>
+}
+
+/**
+ * 序列表的声明(2026-09-06 把脉页省份段契约 §4):列是时间点的表自带
+ * 「表 / 趋势」与「近 N 期 / 全部」两个开关。传了这一格,Table 才长出工具条。
+ */
+export type TableSeriesIn<T> = {
+  /**
+   * 时间点列的 key,升序;不在这张清单里的列(指标名这类)固定显示。
+   */
+  pointKeys: string[]
+
+  /**
+   * 取某行某个时间点的原值;null = 官方这一点没有值(不折 0)。
+   */
+  valueOf: (r: T, key: string) => number | null
+
+  /**
+   * 图例名(趋势态每条线的名字)。
+   */
+  labelOf: (r: T) => string
+
+  /**
+   * 「近 N 期」这一档显示末几列。
+   */
+  recent: number
+
+  /**
+   * 工具条与图上的字(桶不携词,全部由调用方经这一格给)。
+   */
+  words: SeriesWords
+}
+
+/**
+ * 序列表要用到的字。契约 §4 把它写成 `words` 的内联对象,这里起个名字
+ * 只为让每一格有地方挂注释,格与格逐字相同。
+ */
+export type SeriesWords = {
+  /**
+   * 「表」态图标钮的无障碍名(图标钮没有可读文本,读屏只能靠它)。
+   */
+  table: string
+
+  /**
+   * 「趋势」态图标钮的无障碍名。
+   */
+  chart: string
+
+  /**
+   * 「近 N 期」那一档的文字(N 由调用方填好,如「近 5 年」)。
+   */
+  recent: string
+
+  /**
+   * 「全部」那一档的文字。
+   */
+  all: string
+
+  /**
+   * 图上方那行小字(如「指数:首个有值年份 = 100」)。
+   */
+  indexNote: string
+}
+
+/**
+ * 视图两态:表 / 趋势。
+ */
+export type SeriesView = 'table' | 'chart'
+
+/**
+ * 时间窗两态:近 N 期 / 全部。
+ */
+export type SeriesRange = 'recent' | 'all'
+
+/**
+ * useSeriesView 交回的机器面板(两个开关一台机器:都在决定「这张表现在给你看哪一段」)。
+ */
+export type UseSeriesViewOut = {
+  /**
+   * 当前视图。
+   */
+  view: SeriesView
+
+  /**
+   * 当前时间窗。
+   */
+  range: SeriesRange
+
+  /**
+   * 切到表态。
+   */
+  onTable: ClickFn
+
+  /**
+   * 切到趋势态。
+   */
+  onChart: ClickFn
+
+  /**
+   * 切到「近 N 期」。
+   */
+  onRecent: ClickFn
+
+  /**
+   * 切到「全部」。
+   */
+  onAll: ClickFn
+}
+
+/**
+ * SeriesToolbar 的 props。
+ */
+export type SeriesToolbarIn = {
+  /**
+   * 当前视图(定两枚图标钮谁亮)。
+   */
+  view: SeriesView
+
+  /**
+   * 当前时间窗(定两档文字谁深)。
+   */
+  range: SeriesRange
+
+  /**
+   * 四枚钮的字。
+   */
+  words: SeriesWords
+
+  /**
+   * 只出两枚视图图标、不出时间窗两档(手机卡头:一行里只放得下两枚图标)。
+   * 缺席 = 出全套。
+   */
+  rangeless?: boolean
+
+  /**
+   * 切到表态。
+   */
+  onTable: ClickFn
+
+  /**
+   * 切到趋势态。
+   */
+  onChart: ClickFn
+
+  /**
+   * 切到「近 N 期」。
+   */
+  onRecent: ClickFn
+
+  /**
+   * 切到「全部」。
+   */
+  onAll: ClickFn
+}
+
+/**
+ * SeriesChart 的 props。
+ */
+export type SeriesChartIn<T> = {
+  /**
+   * 时间点列的 key,升序。
+   */
+  pointKeys: string[]
+
+  /**
+   * x 轴刻度文本,与 pointKeys 同序(桌面表取点列的 label,手机卡直接给期名)。
+   */
+  pointLabels: string[]
+
+  /**
+   * 数据行(一行一条线)。
+   */
+  rows: T[]
+
+  /**
+   * 取某行某点的原值;null = 没有这一点。
+   */
+  valueOf: (r: T, key: string) => number | null
+
+  /**
+   * 图例名。
+   */
+  labelOf: (r: T) => string
+
+  /**
+   * 图上要用的字(这里只读 indexNote —— 图上方那行小字)。
+   */
+  words: SeriesWords
+}
+
+/**
+ * 一条线上的一个点(算好指数、还没落到画布上)。
+ */
+export type SeriesRawPoint = {
+  /**
+   * 点身份 = 时间点列的 key。
+   */
+  key: string
+
+  /**
+   * 它是第几个时间点(x 轴位置按这个数算,缺点不占位会把线画歪)。
+   */
+  at: number
+
+  /**
+   * 官方原值(悬停显示的就是它)。
+   */
+  value: number
+
+  /**
+   * 指数 = 原值 / 本行首个有值点 × 100。
+   */
+  index: number
+}
+
+/**
+ * 一行洗成的线(有值点不足 SERIES_MIN_POINTS 的行不出线)。
+ */
+export type SeriesRawLine = {
+  /**
+   * 图例名。
+   */
+  label: string
+
+  /**
+   * 这一行的有值点(按时间升序)。
+   */
+  points: SeriesRawPoint[]
+}
+
+/**
+ * y 轴的指数上下界(取到 SERIES_GRID_STEP 的整倍数)。
+ */
+export type SeriesBounds = {
+  /**
+   * 下界。
+   */
+  lo: number
+
+  /**
+   * 上界(恒 > lo)。
+   */
+  hi: number
+}
+
+/**
+ * 落到画布上的一个点。
+ */
+export type SeriesDot = {
+  /**
+   * 点身份(拼 React key 用)。
+   */
+  key: string
+
+  /**
+   * 画布 x。
+   */
+  cx: number
+
+  /**
+   * 画布 y。
+   */
+  cy: number
+
+  /**
+   * 悬停显示的原值(千分位)。
+   */
+  title: string
+}
+
+/**
+ * 落到画布上的一条线。
+ */
+export type SeriesLine = {
+  /**
+   * 图例名。
+   */
+  label: string
+
+  /**
+   * 线色(按行序自配色表取)。
+   */
+  color: string
+
+  /**
+   * 折线的 path d 串。
+   */
+  path: string
+
+  /**
+   * 线上的点。
+   */
+  dots: SeriesDot[]
+
+  /**
+   * 图例上跟在名字后面的最新原值(千分位)。
+   */
+  lastText: string
+}
+
+/**
+ * 一条 y 轴网格线。
+ */
+export type SeriesGrid = {
+  /**
+   * 画布 y。
+   */
+  y: number
+
+  /**
+   * 刻度文本(指数值)。
+   */
+  text: string
+}
+
+/**
+ * 一个 x 轴刻度。
+ */
+export type SeriesTick = {
+  /**
+   * 画布 x。
+   */
+  x: number
+
+  /**
+   * 刻度文本(点列的 label)。
+   */
+  text: string
+}
+
+/**
+ * 一张画好的图(seriesPlotOf 的产物:tsx 只负责把它摆成 JSX)。
+ */
+export type SeriesPlot = {
+  /**
+   * 画布 viewBox。
+   */
+  viewBox: string
+
+  /**
+   * 各条线。
+   */
+  lines: SeriesLine[]
+
+  /**
+   * y 轴网格。
+   */
+  grid: SeriesGrid[]
+
+  /**
+   * x 轴刻度。
+   */
+  ticks: SeriesTick[]
+
+  /**
+   * 折线区左边界的画布 x(y 轴网格线自这里起画)。
+   */
+  left: number
+
+  /**
+   * 折线区右边界的画布 x。
+   */
+  right: number
+}
+
+/**
+ * seriesPlotOf 的入参。
+ */
+export type SeriesPlotIn<T> = {
+  /**
+   * x 轴刻度文本,与 pointKeys 同序。
+   */
+  pointLabels: string[]
+
+  /**
+   * 时间点列的 key,升序。
+   */
+  pointKeys: string[]
+
+  /**
+   * 数据行。
+   */
+  rows: T[]
+
+  /**
+   * 取某行某点的原值;null = 没有这一点。
+   */
+  valueOf: (r: T, key: string) => number | null
+
+  /**
+   * 图例名。
+   */
+  labelOf: (r: T) => string
+}
+
+/**
+ * seriesLinesOf 的入参。
+ */
+export type SeriesLinesIn<T> = {
+  /**
+   * 时间点列的 key,升序。
+   */
+  pointKeys: string[]
+
+  /**
+   * 数据行。
+   */
+  rows: T[]
+
+  /**
+   * 取某行某点的原值。
+   */
+  valueOf: (r: T, key: string) => number | null
+
+  /**
+   * 图例名。
+   */
+  labelOf: (r: T) => string
+}
+
+/**
+ * rawPointsOf 的入参。
+ */
+export type RawPointsIn<T> = {
+  /**
+   * 本行。
+   */
+  row: T
+
+  /**
+   * 时间点列的 key,升序。
+   */
+  pointKeys: string[]
+
+  /**
+   * 取某行某点的原值。
+   */
+  valueOf: (r: T, key: string) => number | null
+}
+
+/**
+ * boundsOf 的入参。
+ */
+export type BoundsIn = {
+  /**
+   * 全部线(取所有点的指数算上下界)。
+   */
+  lines: SeriesRawLine[]
+}
+
+/**
+ * plotLineOf 的入参。
+ */
+export type PlotLineIn = {
+  /**
+   * 要落到画布上的那条线。
+   */
+  line: SeriesRawLine
+
+  /**
+   * 它是第几条(定颜色)。
+   */
+  at: number
+
+  /**
+   * y 轴上下界。
+   */
+  bounds: SeriesBounds
+
+  /**
+   * 一共几个时间点(定 x 步长)。
+   */
+  count: number
+}
+
+/**
+ * xAtOf 的入参。
+ */
+export type XAtIn = {
+  /**
+   * 第几个时间点。
+   */
+  at: number
+
+  /**
+   * 一共几个时间点。
+   */
+  count: number
+}
+
+/**
+ * yAtOf 的入参。
+ */
+export type YAtIn = {
+  /**
+   * 指数值。
+   */
+  index: number
+
+  /**
+   * y 轴上下界。
+   */
+  bounds: SeriesBounds
+}
+
+/**
+ * seriesPathOf 的入参。
+ */
+export type SeriesPathIn = {
+  /**
+   * 按序落好坐标的点。
+   */
+  dots: SeriesDot[]
+}
+
+/**
+ * gridOf 的入参。
+ */
+export type GridIn = {
+  /**
+   * y 轴上下界。
+   */
+  bounds: SeriesBounds
+}
+
+/**
+ * ticksOf 的入参。
+ */
+export type TicksIn = {
+  /**
+   * x 轴刻度文本,按时间升序。
+   */
+  pointLabels: string[]
+}
+
+/**
+ * shownColsOf 的入参。
+ */
+export type ShownColsIn<T> = {
+  /**
+   * 全部列声明。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 序列声明;缺席 = 这张表不是序列表,列原样全显。
+   */
+  series?: TableSeriesIn<T>
+
+  /**
+   * 当前时间窗。
+   */
+  range: SeriesRange
+}
+
+/**
+ * pointLabelsOf 的入参。
+ */
+export type PointLabelsIn<T> = {
+  /**
+   * 全部列声明(自里面挑点列)。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 时间点列的 key,升序。
+   */
+  pointKeys: string[]
 }

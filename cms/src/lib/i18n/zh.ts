@@ -596,7 +596,6 @@ export const jobsZh = {
   'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
-
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
@@ -842,6 +841,7 @@ export const siteZh = {
   'tagline': '每日更新、全加拿大全职业、移民价值视角',
   'res.title': '官方资源导航', 'res.sub': '加拿大移民官方入口一页汇总', 'res.go': '官方页', 'res.entry': '官方资源', 'res.search': '搜索官方资源…', 'res.empty': '没有匹配的资源',
   'res.cat.federal': '联邦移民', 'res.cat.pnp': '各省提名(PNP)', 'res.cat.study': '留学 DLI', 'res.cat.language': '语言考试', 'res.cat.wage': '工资与职业数据', 'res.cat.lmia': 'LMIA 与雇主担保', 'res.cat.authority': '权威与合规',
+  'res.rules': '通道门槛', 'res.rules.prov': '{prov} 省提名', 'res.prog.AIP': 'AIP 大西洋移民计划', 'res.prog.RCIP': 'RCIP 偏远社区移民试点', 'res.prog.FCIP': 'FCIP 法语社区移民试点', 'res.prog.PGWP': 'PGWP 毕业工签', 'res.prog.CEC': 'CEC 加拿大经验类', 'res.prog.FSW': 'FSW 联邦技术移民', 'res.prog.FST': 'FST 联邦技工类', 'res.prog.PR-fees': '联邦申请费',
   'clear': '清除筛选',
   'empty': '无匹配职位', 'allShown': '已全部显示 {total} 个', 'loadMore': '显示更多(还有 {n} 条)',
   'chart.back': '返回', 'chart.drillHint': '点条形可下钻', 'chart.other': '其他', 'chart.loading': '加载中…', 'nav.account': '账户', 'nav.acctTab': '我的账户',
@@ -907,7 +907,7 @@ export const siteZh = {
   'pulse.col.provs': '紧缺清单省份',
   'pulse.col.pnpProvs': '可提名省份',
   'pulse.col.teer': 'TEER 档',
-  'pulse.s4b': '省内职业榜', 'pulse.s4.prov': '省份', 'pulse.s4.diff': '竞争度',
+  'pulse.s4.prov': '省份', 
   // 药丸措辞 08-08 Frank 拍板:「点名」(内部黑话)→ 对齐全站「紧缺清单」
   'pulse.col.tier': '移民通道', 'pulse.tier.both': '省+联邦紧缺清单', 'pulse.tier.prov': '省紧缺清单',
   'pulse.tier.fed': '联邦紧缺清单', 'pulse.tier.ee': '可走 EE', 'pulse.tier.employer': '仅雇主担保',
@@ -923,8 +923,10 @@ export const siteZh = {
   'se.ask.lmia': 'LMIA 获批雇主的表对我找工作移民有什么用?',
   'se.ask.named': '在招岗命中紧缺清单的雇主,对我意味着什么?',
   'se.ask.aip': 'AIP 指定雇主是什么?对我有用吗?',
-  'pulse.s4': '分省概览',
-  'pulse.s4.streams': '该省提名通道', 'pulse.s4.all': '全国',
+  'pulse.s4.all': '全国',
+  // 2026-09-06 省份段 = 宏观统计(含联邦):地区块按年表 + 招聘对比横表;表 / 趋势、近 5 年 / 全部 是通用表格序列能力的文案
+  'pulse.s4j': '招聘对比', 'pulse.m.key': '指标', 'pulse.m.month': '{m} 月', 'pulse.m.thru': '至 {m} 月', 'pulse.m.table': '表', 'pulse.m.chart': '趋势', 'pulse.m.recent': '近 5 年', 'pulse.m.all': '全部', 'pulse.m.index': '指数:首个有值年份 = 100',
+  'pulse.m.pop': '总人口', 'pulse.m.npr': '临时居民', 'pulse.m.work': '其中工签', 'pulse.m.study': '其中学签', 'pulse.m.asylum': '其中难民申请人', 'pulse.m.studyNew': '学签新签', 'pulse.m.gdp': 'GDP(百万加元)', 'pulse.m.unemp': '失业率', 'pulse.m.alloc': '省提名配额', 'pulse.m.issued': '已发提名', 'pulse.m.remaining': '剩余名额', 'pulse.m.prAll': 'PR 获批', 'pulse.m.prPnp': '其中省提名', 'pulse.m.eeInvites': 'EE 邀请', 'pulse.m.src.ircc': 'IRCC 年度', 'pulse.m.src.prov': '各省官方', 'pulse.m.src.ee': 'IRCC 抽选',
   'pulse.s5': '近期抽选',
   'pulse.dr.note': '近 {n} 期 {min}–{max} 分,低于 {min} 没进过',
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
@@ -941,7 +943,6 @@ export const siteZh = {
   'de.emptyFiltered': '当前筛选查无匹配',
   'de.hiringNeed': '选择省与职业后显示在招雇主',
   'pro.unlock': '解锁 Pro',
-
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',
   // Hero 胶囊(2026-08-04 合并:原「今日日更」节撤,三个数并进胶囊)——讲的都是「日更职位板」这一件事;
   // AIP/DLI 两个存量数不驱动动作,从胶囊撤下(aip/dli 键留着,别处仍在用)
@@ -1027,7 +1028,7 @@ export const siteZh = {
   'se.col.lmia': 'LMIA 获批(近两年)', 'se.col.w1': 'LMIA 最近一季', 'se.col.w2': 'LMIA 近半年', 'se.col.w4': 'LMIA 近一年',
   'se.grp.aip': 'AIP 指定雇主', 'se.grp.lmia': 'LMIA 获批雇主(近两年)', 'se.grp.named': '在招岗命中紧缺清单的雇主', 'pulse.nav.boards': '职业榜',
   // #312 二级导航短词(TOC 与分区 h2 全称差异化,同屏同一事实只说一次)
-  'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.provocc': '省内职业', 'pulse.nav.draws': '抽选',
+  'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.draws': '抽选',
   // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
   'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
   'pulse.city': '城市概览', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
@@ -1053,7 +1054,7 @@ export const siteZh = {
   'mkt.search': '搜职业、城市', 'mkt.more': '更多筛选', 'mkt.chan': '通道', 'mkt.chan.all': '全部职业', 'mkt.chan.pnp': '省提名清单上的职业', 'mkt.chan.ee': 'EE 类别覆盖的职业', 'mkt.chan.occOnly': '通道筛选只在横轴=职业时生效', 'mkt.minJobs': '最低在招岗数', 'mkt.broad': '大类', 'mkt.mid': '中类', 'mkt.fine': '小类', 'mkt.cat.all': '全部', 'mkt.y2.off': '不显示', 'mkt.medLink': '各省中位', 'mkt.sort': '排序', 'mkt.sort.desc': '从高到低', 'mkt.sort.asc': '从低到高',
   'mkt.fs': '全屏看图', 'mkt.fs.exit': '退出全屏',
   'mkt.note': '数据来自官方 Job Bank;在招量=当前在招职位数,不等于「缺人」',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList': '无清单', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc': '不适用', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 'stats.cardWork': '工签存量(TFWP+IMP)', 'stats.cardStudy': '学签存量', 'stats.cardPr': 'PNP 拿到 PR(年)',
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.aip': 'AIP 指定雇主岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 
 }
 
 // =========================================================================
@@ -1093,7 +1094,6 @@ export const consultZh = {
   // 错误文案一律 ≤20 字:375 上错误框可写宽约 265px,超了就折行(文案一行放下站规)
 
   'chat.err.limit': '今天问得有点多,明天再来',
-
   'chat.err.net': '没连上服务,请重试',
   // 空态三条示例(2026-08-04 对话形态重做):照案例库原话形状写成**真人会说的一句话**,
   // 覆盖三类人 —— 刚毕业没工作(C06)、有 offer 不知道够不够(C13)、中介开价该不该信(C01/C14)。

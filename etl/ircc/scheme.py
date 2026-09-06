@@ -10,6 +10,7 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 直接读),行构造留在 functions 的各段里按 K_ 键逐格写全,校验靠各步自校硬闸。
 段编号 2026-08-31 批H2 随 functions/constants 同步前移:原段5(04e 包装,本段无形状)退役,
 原段6/7 成段5/6。
+⚠ 2026-09-06:段3/段4 的形状随那两段整段搬去 statcan 域(产物路径不动);段号留空位不前移。
 2026-08-31 批I3 溶段:build_ircc_difficulty.py(批H2 归户时留的步骤文件)溶成段7,
 本段的形状全是新增 —— 落盘行仍走 to_* 行构造器逐格写全(json 键只许住 to_*)。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
@@ -58,6 +59,28 @@ class YearTotals:
 
     by_prov: dict
     """省码 → 人数。"""
+
+
+@dataclass
+class YearCellsIn:
+    """year_cells_of() 入参(一行 × 一组年列 → {年: 值})。"""
+
+    row: list
+    """一行原格。"""
+
+    columns: list
+    """年列 [(列下标, 年份)]。"""
+
+
+@dataclass
+class PnpYearsOut:
+    """pnp_all_years() 出参(按年的 PNP 组行 + 哪一年是进行年)。"""
+
+    by_year: dict
+    """年 → {省码: 人数}。"""
+
+    ytd_year: str
+    """进行年(表头最后一个「YYYY Total」列 = 年内累计,不是完整年)。"""
 
 
 @dataclass
@@ -119,68 +142,11 @@ class FlowTailIn:
 
 
 # =========================================================================
-# 3. NPR 占总人口比
+# 3.+4.(已迁出)NPR 占总人口比 / StatCan 分省临时居民存量
+#      —— 2026-09-06 两段的形状(NprRowsIn / QuartersIn / MemberIds / CoordIn / ByProvIn)
+#      随函数整段搬去 etl/statcan/scheme.py 的段3、段4,docstring 一字未改。
+#      段号留空位不前移(存量注释里到处引用「段5/段6/段7」)。
 # =========================================================================
-
-
-@dataclass
-class NprRowsIn:
-    """npr_rows_of() 入参:两条序列(总人口 / NPR)。"""
-
-    pop: dict
-    """季度参考日 → 总人口。"""
-
-    npr: dict
-    """季度参考日 → 非永久居民数。"""
-
-
-@dataclass
-class QuartersIn:
-    """quarters_to_target_of() 入参。"""
-
-    share: float
-    """最新一季的占比。"""
-
-    per_q: float
-    """每季度变化(负=在降)。"""
-
-
-# =========================================================================
-# 4. StatCan 分省临时居民存量
-# =========================================================================
-
-
-@dataclass
-class MemberIds:
-    """member_ids() 出参(原 (geo, typ) 元组收编)。"""
-
-    geo: dict
-    """省码 → StatCan memberId。"""
-
-    types: dict
-    """证型键 → StatCan memberId。"""
-
-
-@dataclass
-class CoordIn:
-    """coord_of() 入参:WDS 坐标的前两维。"""
-
-    geo: int
-    """省的 memberId。"""
-
-    typ: int
-    """证型的 memberId。"""
-
-
-@dataclass
-class ByProvIn:
-    """tr_prov_by_prov() 入参:响应块 + 成员 id(响应乱序,靠 id 反解)。"""
-
-    blocks: list
-    """WDS 响应块清单。"""
-
-    ids: MemberIds
-    """请求时用的成员 id。"""
 
 
 # =========================================================================

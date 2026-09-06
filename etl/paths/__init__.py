@@ -36,6 +36,7 @@ from paths.constants import (
     RAW_KANATA,
     RCIP,
     ROOT,
+    STATCAN,
     WAGES,
 )
 from paths.functions import jobbank_store_lock, write_json, write_text
@@ -70,6 +71,7 @@ BUCKET = (
     RAW_KANATA,
     RCIP,
     ROOT,
+    STATCAN,
     WAGES,
     WriteJsonIn,
     WriteTextIn,

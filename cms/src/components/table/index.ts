@@ -10,5 +10,10 @@
  * @author Frank
  * @time 2026-08-24 02:30:00
  */
-export type { Col, TableIn } from './types'
+export type {
+  Col, SeriesChartIn, SeriesRange, SeriesToolbarIn, SeriesView, SeriesWords, TableIn, TableSeriesIn, UseSeriesViewOut,
+} from './types'
 export { Table } from './table'
+export { SeriesChart } from './serieschart'
+export { SeriesToolbar } from './seriestoolbar'
+export { useSeriesView } from './hooks'

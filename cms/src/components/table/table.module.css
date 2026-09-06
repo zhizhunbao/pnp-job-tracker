@@ -108,3 +108,146 @@
   padding: 8px 12px;
   border-top: 1px solid #f3f4f6;
 }
+
+/*
+ * 序列表工具条:表壳内、网格之上的右对齐一行(2026-09-06 契约 §4)。
+ */
+.seriesBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+/*
+ * 时间窗两档的文字(未选中档:灰、可点)。
+ */
+.seriesRange {
+  font-size: 12.5px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/*
+ * 时间窗当前档:深色加粗。
+ */
+.seriesRangeOn {
+  color: #374151;
+  font-weight: 700;
+}
+
+/*
+ * 两档之间的记号。
+ */
+.seriesSep {
+  font-size: 12.5px;
+  color: #d1d5db;
+}
+
+/*
+ * 视图图标钮:28 见方的描边方钮(表 / 趋势各一枚)。
+ */
+.seriesIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #9ca3af;
+  background: #ffffff;
+}
+
+/*
+ * 视图当前态:品牌蓝描边 + 蓝图标 + 极浅蓝底。
+ */
+.seriesIconOn {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #eff6ff;
+}
+
+/*
+ * 趋势态的图区(表体的位置)。
+ */
+.chart {
+  padding: 4px 12px 12px;
+}
+
+/*
+ * 图上方那行小字(指数口径)。
+ */
+.chartNote {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/*
+ * 图例:一行横排,窄屏折行。
+ */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 6px 0 4px;
+  font-size: 12.5px;
+}
+
+/*
+ * 图例一项:色块 + 行名 + 最新原值。
+ */
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/*
+ * 图例色块(一截与线同色的短横杠)。
+ */
+.legendDash {
+  width: 14px;
+  height: 3px;
+  flex: none;
+}
+
+/*
+ * 图例里的行名。
+ */
+.legendName {
+  color: #374151;
+}
+
+/*
+ * 图例里的最新原值。
+ */
+.legendVal {
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 折线图本体:按 viewBox 自适应容器宽。
+ */
+.chartSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * y 轴网格线。
+ */
+.gridLine {
+  stroke: #f3f4f6;
+}
+
+/*
+ * 两轴的刻度文字。
+ */
+.axisText {
+  fill: #9ca3af;
+  font-size: 11px;
+}

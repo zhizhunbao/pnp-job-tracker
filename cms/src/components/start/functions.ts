@@ -11,9 +11,10 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { drawStreamNote, eeKeyDisplay, normalizeProfile, streamDisplay } from '@/lib/jobs'
+import { drawStreamNote, eeKeyDisplay, streamDisplay } from '@/lib/jobs'
+import { numOrNull, text } from '@/lib/db'
 import { makeT } from '@/lib/i18n'
-import { PROVS, PROV_NAME } from '@/lib/stats'
+import { PROV_NAME } from '@/lib/stats'
 import { track } from '@/lib/track'
 import { ymd } from '@/lib/time'
 import { btnClsOf } from '@/components/button'
@@ -21,18 +22,16 @@ import { cssOf } from '@/components/css'
 import { shortOcc } from '@/components/quiz'
 import {
   ANCHOR_HEAD, BROAD_ALL, CARD_GAP,
-  CLS_CARD_HOVER, CLS_MKT_CTL, CLS_SEP, COL_DEAD, COL_DIFF,
-  COL_HOT,
-  COL_MOM, COL_NAMED, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PR, COL_PROV,
-  COL_SAL, COL_SPONSOR_RATE, COL_STUDY, COL_TEER, COL_WORK, DASH_MARK,
-  DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_ORDER, DIFF_TIGHT, EV_SCROLL,
-  HOME_TTL_MS, INFO_IMP, INFO_PNP_PR, INFO_STUDY, INFO_TFWP,
-  ID_BOARDS, ID_PROV, ID_PROVOCC, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
+  CLS_CARD_HOVER, CLS_SEP, COL_DEAD, COL_HOT,
+  COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
+  COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
+  DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
+  HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
-  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAT_MIN_OPEN, NAV_IDS, NAV_TOP_LINE,
-  NOC_HEAD, NUM_LOCALE, PAREN_L, PAREN_R, PCT_MARK, PCT_SCALE,
-  PNP_SORT_SCALE, PROV_ALL, PROV_ALL_LOWER,
-  PROV_DEFAULT, PROV_MIN_OPEN, PROV_QC, RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
+  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAV_IDS, NAV_TOP_LINE,
+  NOC_HEAD, NUM_LOCALE, PCT_MARK, PCT_SCALE,
+  PNP_SORT_SCALE, PROV_ALL_LOWER,
+  RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
@@ -51,6 +50,11 @@ import {
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
+  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MACRO_SRC_HEAD, FREQ_Q, FREQ_M,
+  PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_WORK_ONLY, MK_STUDY_ONLY,
+  MK_WORK_STUDY, MK_ALLOC, MK_UNEMP, MR_WORK, MR_STUDY, MR_ISSUED, MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
+  MACRO_ROW_SRC, SRC_CODE_HEAD, OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
+  COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
@@ -58,15 +62,14 @@ import { EmpBriefCell } from './empbriefcell'
 import { EmpNameCell } from './empnamecell'
 import { EmpHiringCell } from './emphiringcell'
 import { OccActCell } from './occactcell'
-import { DiffCell } from './diffcell'
 import { HotCell } from './hotcell'
 import { MomCell } from './momcell'
-import { NamedCell } from './namedcell'
 import { OccNameCell } from './occnamecell'
-import { OpenStrongCell } from './openstrongcell'
 import { PnpCell } from './pnpcell'
 import { ProgCell } from './progcell'
-import { PrCell } from './prcell'
+import { JobsActCell } from './jobsactcell'
+import { MacroKeyCell } from './macrokeycell'
+import { makeMacroYearCell } from './macroyearcell'
 import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
@@ -83,13 +86,10 @@ import type {
   GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccCellRow, OccCellRowIn,
   OccCellRowsIn, OccColsIn,
   OccNameIn, OccRowList, OccRowOne,
-  PlaceholderClsIn, ProvCardClsIn, ProvCellRow, ProvCellRowIn,
-  ProvCellRowsIn, ProvColsIn, ProvExtraMap, ProvInfoKey, ProvLabelOfIn, ProvLocaleIn, ProvOccHitIn,
-  ProvOccIn, ProvPickFn, ProvPickIn, ProvPresetIn, ProvStatIn, ProvsOfOccIn,
-  PulseScalars, PulseScalarsIn, SecHeadClsIn, SelectChangeFn, SelectChangeIn,
-  SponsorFullProbe, SponsorGroup, SponsorLoadIn,
-  SponsorRowList, StartCol, StartPill, StartProfileObj,
-  StatRowList, StatRowOne,
+  PlaceholderClsIn, ProvExtraMap, ProvLabelOfIn, ProvLocaleIn, ProvsOfOccIn,
+  PulseScalars, PulseScalarsIn, SecHeadClsIn, SponsorFullProbe, SponsorGroup, SponsorLoadIn,
+  SponsorRowList, StartCol, StartPill,
+  StatRowList,
   StreamLabelIn, TierClsIn, TierTextIn,
   CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
@@ -102,6 +102,10 @@ import type {
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
+  MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn, MacroRowIn, MacroRow, MacroGeo, MacroCell,
+  CellsOfKeyIn, SumCellsIn, MacroCellIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn, RemainingIn,
+  MacroColsIn, SeriesWords, GeoNameIn, GeoLocaleIn, GeoTierIn, JobsRow, JobsRowsIn, JobsRowIn,
+  JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
 } from './types'
 import css from './start.module.css'
 
@@ -180,16 +184,6 @@ export function emptyText(): string {
   return TEXT_NONE
 }
 
-/**
- * 会话解析挂了 = 当匿名(S4 省份预选:已建档按档案省,匿名默认 ON —— **不许按 IP 判**;
- * 站内零 geo 能力,且主力受众在境外,同 i18n「不许按 IP 判语言」同族红线)。
- *
- * @returns 没有登录用户。
- */
-export function nullUser(): null {
-  return null
-}
-
 
 /**
  * 首页聚合的组装(纯函数;进程内缓存存的就是它的返回)。
@@ -234,6 +228,8 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     natOcc,
     nocProvs: Object.fromEntries(nocProvsOf({ occ: x.occRows })),
     city: x.cityRows,
+    macro: toMacroPoints(x.macroRows),
+    ops: toOpsPoints(x.opsRows),
   }
 }
 
@@ -259,7 +255,8 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     natOcc: x.core.natOcc,
     nocProvs: x.core.nocProvs,
     city: x.core.city,
-    provPreset: x.provPreset,
+    macro: x.core.macro,
+    ops: x.core.ops,
     checkedAt: x.checkedAt,
   }
 }
@@ -408,29 +405,6 @@ export function nocCatOf(x: NocCatOfIn): Record<string, NocCat> {
     }
   }
   return out
-}
-
-/**
- * S4 省份预选(设计 §1 拍板 4):**已建档按档案省,匿名默认 ON —— 不许按 IP 判**
- * (站内零 geo 能力,且主力受众在境外;同 i18n「不许按 IP 判语言」同族红线)。
- * 跨域形状接缝:quota 域声明的 users.profile 允许嵌套对象,jobs 域的 ProfileJson 只到扁平格
- * (两域各自声明自己的形状,不互相取 —— 宪法)。断言只住这一处,收窄由 normalizeProfile 逐格做。
- *
- * @param x 当前会话用户。
- * @returns 档案里第一个受支持的目标省;没有则空串(视图落到默认省)。
- */
-export function provPresetOf(x: ProvPresetIn): string {
-  let raw: StartProfileObj | null = null
-  if (x.user != null) {
-    raw = x.user.profile
-  }
-  const profile = raw as Parameters<typeof normalizeProfile>[0]
-  for (const p of normalizeProfile(profile).targetProvinces) {
-    if (PROVS.includes(p)) {
-      return p
-    }
-  }
-  return TEXT_NONE
 }
 
 
@@ -605,34 +579,6 @@ export function provLocaleOf(x: ProvLocaleIn): string {
 }
 
 /**
- * 省 chips 上的整段文字:英文在前,中韩括注译名(#146 站规)。
- *
- * @param x 取词函数、界面语言与省码。
- * @returns chips 文字。
- */
-export function provChipTextOf(x: ProvLocaleIn): string {
-  const en = provShortOf(x.code)
-  const loc = provLocaleOf(x)
-  if (loc === TEXT_NONE) {
-    return en
-  }
-  return en + PAREN_L + loc + PAREN_R
-}
-
-/**
- * 切省的初值:已建档按档案省,匿名(空串)落默认省 —— **不许按 IP 判**。
- *
- * @param preset 服务端算好的预选省;'' = 匿名或档案里没写。
- * @returns 初值省。
- */
-export function provInitOf(preset: string): string {
-  if (preset === TEXT_NONE) {
-    return PROV_DEFAULT
-  }
-  return preset
-}
-
-/**
  * 按 NOC 筛过的职位板地址(每行可溯源)。
  *
  * @param noc NOC 码。
@@ -688,10 +634,7 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
     return empSubsOf(x.t)
   }
   if (x.navSec === ID_PROV) {
-    return [
-      { id: ID_PROV, label: x.t('pulse.s4') },
-      { id: ID_PROVOCC, label: x.t('pulse.s4b') },
-    ]
+    return macroSubsOf(x.t)
   }
   return []
 }
@@ -1056,161 +999,6 @@ function occRateChipOf(x: OccCellRowIn): string {
 }
 
 /**
- * 洗一整批省份。
- *
- * @param x 省 × 大类汇总行、取词函数、界面语言与省卡增补。
- * @returns 展示行。
- */
-export function toProvCellRows(x: ProvCellRowsIn): ProvCellRow[] {
-  const out: ProvCellRow[] = []
-  for (const r of x.rows) {
-    out.push(toProvCellRow({ r, t: x.t, lang: x.lang, provExtra: x.provExtra }))
-  }
-  return out
-}
-
-/**
- * 洗一行省份:省名三格、难度档、四个体量数值一次算清。
- *
- * @param x 这一行与洗行要的上下文。
- * @returns 展示行。
- */
-export function toProvCellRow(x: ProvCellRowIn): ProvCellRow {
-  const tier = provTierOf(x)
-  const work = provWorkOf(x)
-  const study = provInfoOf(x, INFO_STUDY)
-  const pnpPr = provInfoOf(x, INFO_PNP_PR)
-  let namedText = TEXT_NONE
-  if (x.r.namedJobs != null && x.r.namedJobs > 0) {
-    namedText = numOf(x.r.namedJobs)
-  }
-  return {
-    key: x.r.province,
-    name: provShortOf(x.r.province),
-    nameSort: provFullOf(x.r.province),
-    code: x.r.province,
-    localeName: provLocaleOf({ t: x.t, lang: x.lang, code: x.r.province }),
-    tier,
-    tierText: provTierTextOf({ t: x.t, tier }),
-    tierCls: diffClsOf({ tier }),
-    tierCardCls: diffCardClsOf({ tier }),
-    tierSort: diffSortOf(tier),
-    openText: numTextOf(x.r.openJobs),
-    openSort: x.r.openJobs,
-    namedText,
-    noListText: x.t('stats.noList'),
-    namedSort: namedSortOf(x.r.namedJobs),
-    workText: volTextOf(work),
-    workSort: work,
-    studyText: volTextOf(study),
-    studySort: study,
-    prText: volTextOf(pnpPr),
-    prNaText: x.t('stats.naQc'),
-    prNotApplicable: volTextOf(pnpPr) === DASH_MARK && x.r.province === PROV_QC,
-    prSort: pnpPr,
-  }
-}
-
-/**
- * 难度档的显示名;没算出来不取词(单元格根本不渲这一粒)。
- *
- * @param x 取词函数与难度档。
- * @returns 显示名;没有则空串。
- */
-function provTierTextOf(x: TierTextIn): string {
-  if (x.tier === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return x.t(KEY_DIFF_HEAD + x.tier)
-}
-
-/**
- * 该省的难度档(stats.difficulty broad=all 行的 tier);没算出来或不是三档之一给空串。
- *
- * @param x 这一行与省卡增补。
- * @returns 难度档;没有则空串。
- */
-function provTierOf(x: ProvCellRowIn): string {
-  const ex = x.provExtra[x.r.province]
-  if (ex == null || ex.tier == null) {
-    return TEXT_NONE
-  }
-  if (ex.tier === DIFF_EASY || ex.tier === DIFF_MID || ex.tier === DIFF_TIGHT) {
-    return ex.tier
-  }
-  return TEXT_NONE
-}
-
-/**
- * 工签体量 = TFWP + IMP;两格都缺(或都是 0)给 null(单元格显横杠,不折 0)。
- *
- * @param x 这一行与省卡增补。
- * @returns 工签体量;没有则 null。
- */
-function provWorkOf(x: ProvCellRowIn): number | null {
-  const tfwp = provInfoOf(x, INFO_TFWP)
-  const imp = provInfoOf(x, INFO_IMP)
-  let sum = 0
-  if (tfwp != null) {
-    sum += tfwp
-  }
-  if (imp != null) {
-    sum += imp
-  }
-  if (sum === 0) {
-    return null
-  }
-  return sum
-}
-
-/**
- * 省卡 IRCC 体量里的一格(学签 / TFWP / IMP / 省提名拿到 PR);官方缺位保 null。
- *
- * @param x 这一行与省卡增补。
- * @param key 取哪一格。
- * @returns 那一格的数;没有则 null。
- */
-// eslint-disable-next-line local/one-parameter -- 第二参是取哪一格的键名字面量(TS 靠它选属性),不是业务入参
-function provInfoOf(x: ProvCellRowIn, key: ProvInfoKey): number | null {
-  const ex = x.provExtra[x.r.province]
-  if (ex == null || ex.info == null) {
-    return null
-  }
-  const slot = ex.info[key]
-  if (slot == null) {
-    return null
-  }
-  return slot.n
-}
-
-/**
- * 难度档的排序键;表外的档给 null 沉底。
- *
- * @param tier 难度档。
- * @returns 排序键。
- */
-function diffSortOf(tier: string): number | null {
-  const rank = DIFF_ORDER[tier]
-  if (rank == null) {
-    return null
-  }
-  return rank
-}
-
-/**
- * 具名通道岗数的排序键(没清单的省按 0 排)。
- *
- * @param n 具名通道岗数。
- * @returns 排序键。
- */
-function namedSortOf(n: number | null): number {
-  if (n == null) {
-    return 0
-  }
-  return n
-}
-
-/**
  * S1 四张脉象卡(契约 v3):体量 / 近 14 天新发 / 平均在架天数 / PNP 命中率。
  * 逐卡 null 守卫 —— 缺数的卡整张不出。净值卡(在架存量差)本批**不做**:
  * 7-25 起验尸排水清了 2.7 万死帖,存量下跌是数据清洗不是市场收缩,上线 = 撒谎(后置 E13-04)。
@@ -1336,57 +1124,6 @@ export function provRowsOf(x: MarketIn): StatRowList {
   return out
 }
 
-/**
- * 当前省的统计行。
- *
- * @param x 汇总行与当前省。
- * @returns 那一行;没有则 null。
- */
-export function provStatOf(x: ProvStatIn): StatRowOne | null {
-  for (const r of x.rows) {
-    if (r.province === x.prov) {
-      return r
-    }
-  }
-  return null
-}
-
-/**
- * 省内职业榜:全国档吃全国行(在架 ≥30),省档吃该省行(在架 ≥10)。
- * Frank 2026-08-06「命中率 0 还排第一?」:省级小样本里 pulse 的动量分被小基数环比打爆
- * (SK 收银员 7→19 = +171% 骑上榜首)—— 省榜回归**体量榜**(按在架量,「该省职业真榜」本义),
- * 环比 / 占比 / 判决当信息列;pulse 排序只留全国降温 / 升温榜。
- *
- * @param x 主图四份数据与当前省。
- * @returns 榜行;数据还没到则 null。
- */
-export function provOccOf(x: ProvOccIn): OccRowList | null {
-  if (x.market == null) {
-    return null
-  }
-  const out: OccRowList = []
-  for (const o of x.market.occ) {
-    if (provOccHitOf({ o, prov: x.prov })) {
-      out.push(o)
-    }
-  }
-  out.sort(byOpenDesc)
-  return out
-}
-
-/**
- * 这一行进不进省内职业榜(全国档与省档两套样本门槛,设计 §3)。
- *
- * @param x 这一行与当前省。
- * @returns 进不进。
- */
-function provOccHitOf(x: ProvOccHitIn): boolean {
-  if (x.prov === PROV_ALL) {
-    return isAllProv(x.o.province) && openOf(x.o) >= NAT_MIN_OPEN
-  }
-  return x.o.province === x.prov && openOf(x.o) >= PROV_MIN_OPEN
-}
-
 
 
 /**
@@ -1446,26 +1183,6 @@ function occTailColOf(x: OccColsIn): StartCol<OccCellRow> | null {
     return { key: COL_PNP_PROVS, label: x.t('pulse.col.pnpProvs'), sort: occPnpSortKeyOf, render: PnpCell }
   }
   return null
-}
-
-/**
- * 分省概览的列组(2026-08-06 Frank「省卡改表格吧 拆两个 section」:
- * 桌面 = 可排序表格(10 省 × 混量纲指标,表格才排得动),手机 = 原省卡;
- * 表格行不可点(E8-08 站规「可点才有态」),切省统一走 S4b 的 chips)。
- *
- * @param x 取词函数。
- * @returns 列组。
- */
-export function provColsOf(x: ProvColsIn): StartCol<ProvCellRow>[] {
-  return [
-    { key: COL_PROV, label: x.t('pulse.s4.prov'), sort: provNameSortOf, render: ProvNameCell },
-    { key: COL_DIFF, label: x.t('pulse.s4.diff'), nowrap: true, sort: provTierSortOf, render: DiffCell },
-    { key: COL_OPEN, label: x.t('stats.openJobs'), nowrap: true, sort: provOpenSortOf, render: OpenStrongCell },
-    { key: COL_NAMED, label: x.t('stats.named'), nowrap: true, sort: provNamedSortOf, render: NamedCell },
-    { key: COL_WORK, label: x.t('stats.cardWork'), nowrap: true, sort: provWorkSortOf, render: provWorkTextOf },
-    { key: COL_STUDY, label: x.t('stats.cardStudy'), nowrap: true, sort: provStudySortOf, render: provStudyTextOf },
-    { key: COL_PR, label: x.t('stats.cardPr'), nowrap: true, sort: provPrSortOf, render: PrCell },
-  ]
 }
 
 /**
@@ -1626,106 +1343,6 @@ export function occRateOf(r: OccCellRow): string {
  * @returns 行键。
  */
 export function occRowKeyOf(r: OccCellRow): string {
-  return r.key
-}
-
-/**
- * 省名的排序键(按省全名,与显示的通行短名分开)。
- *
- * @param r 这一行。
- * @returns 省全名。
- */
-export function provNameSortOf(r: ProvCellRow): string {
-  return r.nameSort
-}
-
-/**
- * 难度档的排序键。
- *
- * @param r 这一行。
- * @returns 排序键。
- */
-export function provTierSortOf(r: ProvCellRow): number | null {
-  return r.tierSort
-}
-
-/**
- * 在招岗数的排序键。
- *
- * @param r 这一行。
- * @returns 在招岗数。
- */
-export function provOpenSortOf(r: ProvCellRow): number | null {
-  return r.openSort
-}
-
-/**
- * 具名通道岗数的排序键。
- *
- * @param r 这一行。
- * @returns 排序键。
- */
-export function provNamedSortOf(r: ProvCellRow): number {
-  return r.namedSort
-}
-
-/**
- * 工签体量的排序键。
- *
- * @param r 这一行。
- * @returns 排序键。
- */
-export function provWorkSortOf(r: ProvCellRow): number | null {
-  return r.workSort
-}
-
-/**
- * 工签体量单元格。
- *
- * @param r 这一行。
- * @returns 数值文案。
- */
-export function provWorkTextOf(r: ProvCellRow): string {
-  return r.workText
-}
-
-/**
- * 学签体量的排序键。
- *
- * @param r 这一行。
- * @returns 排序键。
- */
-export function provStudySortOf(r: ProvCellRow): number | null {
-  return r.studySort
-}
-
-/**
- * 学签体量单元格。
- *
- * @param r 这一行。
- * @returns 数值文案。
- */
-export function provStudyTextOf(r: ProvCellRow): string {
-  return r.studyText
-}
-
-/**
- * 省提名拿到 PR 的排序键。
- *
- * @param r 这一行。
- * @returns 排序键。
- */
-export function provPrSortOf(r: ProvCellRow): number | null {
-  return r.prSort
-}
-
-/**
- * 分省概览的行身份。
- *
- * @param r 这一行。
- * @returns 行键。
- */
-export function provRowKeyOf(r: ProvCellRow): string {
   return r.key
 }
 
@@ -1975,29 +1592,6 @@ export function numCardClsOf(): string {
 }
 
 /**
- * 一张省卡的类:基座 + 选中档 + 全局 hover 高亮。
- *
- * @param x 是不是当前省。
- * @returns className。
- */
-export function provCardClsOf(x: ProvCardClsIn): string {
-  const cls = [cssOf(css.provCard), CLS_CARD_HOVER]
-  if (x.on) {
-    cls.push(cssOf(css.provCardOn))
-  }
-  return joinCls(cls)
-}
-
-/**
- * 切省下拉的类:同上。
- *
- * @returns className。
- */
-export function provSelClsOf(): string {
-  return joinCls([CLS_MKT_CTL, cssOf(css.provSel)])
-}
-
-/**
  * CTA 大钮的类:基座 + 主色档。
  *
  * @returns className。
@@ -2006,32 +1600,6 @@ export function ctaBtnClsOf(): string {
   return joinCls([cssOf(css.btn), cssOf(css.ctaBtn)])
 }
 
-
-/**
- * 省 chips 逐项的点击手柄工厂。
- *
- * @param x 换省的落格。
- * @returns 手柄工厂。
- */
-export function makeProvPick(x: ProvPickIn): ProvPickFn {
-  return function pickOf(p: string): ClickFn {
-    return function pick(): void {
-      x.setProv(p)
-    }
-  }
-}
-
-/**
- * 原生下拉的换值手柄(把事件拆成值)。
- *
- * @param x 换值的落格。
- * @returns 换值手柄。
- */
-export function makeSelectChange(x: SelectChangeIn): SelectChangeFn {
-  return function onChange(e: React.ChangeEvent<HTMLSelectElement>): void {
-    x.set(e.target.value)
-  }
-}
 
 /**
  * #313:橱窗三分表挂载后拉全量换掉 SSR 那几十行(手法照 occ 大表的 /api/stats/market);
@@ -3714,4 +3282,766 @@ function aliasOf(x: AliasIn): string {
     return x.r.aliasKo
   }
   return TEXT_NONE
+}
+
+/**
+ * 洗 macro_series 全表(2026-09-06 省份段 = 宏观统计):值缺位的行不进点集(官方缺位不折 0)。
+ *
+ * @param rows pg 原始行。
+ * @returns 洗净的点。
+ */
+export function toMacroPoints(rows: MacroDbRow[]): MacroPoint[] {
+  const out: MacroPoint[] = []
+  for (const r of rows) {
+    const p = toMacroPoint(r)
+    if (p != null) {
+      out.push(p)
+    }
+  }
+  return out
+}
+
+/**
+ * 洗 macro_series 一行。
+ *
+ * @param r pg 原始行。
+ * @returns 一点;值缺位给 null。
+ */
+function toMacroPoint(r: MacroDbRow): MacroPoint | null {
+  const value = numOrNull(r.value)
+  if (value == null) {
+    return null
+  }
+  return {
+    geo: text(r.geo),
+    key: text(r.key),
+    period: text(r.period),
+    freq: text(r.freq),
+    value,
+    asOf: text(r.as_of),
+  }
+}
+
+/**
+ * 洗 pnp_ops_stats 省级指标行。
+ *
+ * @param rows pg 原始行。
+ * @returns 洗净的点。
+ */
+export function toOpsPoints(rows: OpsDbRow[]): OpsPoint[] {
+  const out: OpsPoint[] = []
+  for (const r of rows) {
+    const p = toOpsPoint(r)
+    if (p != null) {
+      out.push(p)
+    }
+  }
+  return out
+}
+
+/**
+ * 洗 pnp_ops_stats 一行。
+ *
+ * @param r pg 原始行。
+ * @returns 一点;值缺位给 null。
+ */
+function toOpsPoint(r: OpsDbRow): OpsPoint | null {
+  const value = numOrNull(r.value)
+  if (value == null) {
+    return null
+  }
+  return {
+    province: text(r.province),
+    metric: text(r.metric),
+    value,
+    asOf: text(r.as_of),
+    period: text(r.period),
+  }
+}
+
+/**
+ * 省份段的地区块清单:全国打头,十省按钉死顺序;一行数据都没有的地区不出块。
+ *
+ * @param x 两份点集、省卡增补与取词上下文。
+ * @returns 地区块。
+ */
+export function macroGeosOf(x: MacroGeosIn): MacroGeo[] {
+  const out: MacroGeo[] = []
+  for (const code of MACRO_GEO_ORDER) {
+    const points: MacroPoint[] = []
+    for (const p of x.macro) {
+      if (p.geo === code) {
+        points.push(p)
+      }
+    }
+    const ops: OpsPoint[] = []
+    for (const o of x.ops) {
+      if (o.province === code) {
+        ops.push(o)
+      }
+    }
+    const geo = macroGeoOf({ code, t: x.t, lang: x.lang, points, ops, provExtra: x.provExtra })
+    if (geo != null) {
+      out.push(geo)
+    }
+  }
+  return out
+}
+
+/**
+ * 一个地区块:按 MACRO_ROW_ORDER 逐行洗,收年份并集。
+ *
+ * @param x 该地区的点与上下文。
+ * @returns 地区块;没有一行有格给 null。
+ */
+function macroGeoOf(x: MacroGeoIn): MacroGeo | null {
+  const rows: MacroRow[] = []
+  for (const key of MACRO_ROW_ORDER) {
+    const row = macroRowOf({ key, t: x.t, points: x.points, ops: x.ops })
+    if (row != null) {
+      rows.push(row)
+    }
+  }
+  if (rows.length === 0) {
+    return null
+  }
+  const tier = geoTierOf({ code: x.code, provExtra: x.provExtra })
+  return {
+    code: x.code,
+    anchor: geoAnchorOf(x.code),
+    name: geoNameOf({ code: x.code, t: x.t }),
+    localeName: geoLocaleOf({ code: x.code, lang: x.lang, t: x.t }),
+    tierCls: diffClsOf({ tier }),
+    tierText: tierTextOf({ t: x.t, tier }),
+    years: yearsOf(rows),
+    rows,
+  }
+}
+
+/**
+ * 地区块的锚点 id。
+ *
+ * @param code 地区码。
+ * @returns pl-prov-<码小写>。
+ */
+export function geoAnchorOf(code: string): string {
+  return ID_PROV_GEO_HEAD + code.toLowerCase()
+}
+
+/**
+ * 地区块的显示名:全国取词,省用通行短名。
+ *
+ * @param x 地区码与取词函数。
+ * @returns 显示名。
+ */
+function geoNameOf(x: GeoNameIn): string {
+  if (x.code === GEO_CA) {
+    return x.t('pulse.s4.all')
+  }
+  return provShortOf(x.code)
+}
+
+/**
+ * 地区块的译名:全国不带,省照省名单元格规矩(英文界面空串)。
+ *
+ * @param x 地区码、语言与取词函数。
+ * @returns 译名;不带给空串。
+ */
+function geoLocaleOf(x: GeoLocaleIn): string {
+  if (x.code === GEO_CA) {
+    return TEXT_NONE
+  }
+  return provLocaleOf({ t: x.t, lang: x.lang, code: x.code })
+}
+
+/**
+ * 地区的竞争度档(stats.difficulty tier;全国无档)。
+ *
+ * @param x 地区码与省卡增补。
+ * @returns 三档之一;没有给空串。
+ */
+function geoTierOf(x: GeoTierIn): string {
+  const ex = x.provExtra[x.code]
+  if (ex == null || ex.tier == null) {
+    return TEXT_NONE
+  }
+  if (ex.tier === DIFF_EASY || ex.tier === DIFF_MID || ex.tier === DIFF_TIGHT) {
+    return ex.tier
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 竞争度档的显示名;没档不取词。
+ *
+ * @param x 取词函数与档。
+ * @returns 显示名;没档空串。
+ */
+function tierTextOf(x: TierTextIn): string {
+  if (x.tier === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return x.t(KEY_DIFF_HEAD + x.tier)
+}
+
+/**
+ * 宏观表的一行:直读键 / 派生键 / 运营键三路各取各的格。
+ *
+ * @param x 行键与该地区的两份点。
+ * @returns 一行;一格都没有给 null。
+ */
+function macroRowOf(x: MacroRowIn): MacroRow | null {
+  const cells = macroCellsOf(x)
+  const years = Object.keys(cells)
+  if (years.length === 0) {
+    return null
+  }
+  return {
+    key: x.key,
+    label: x.t(KEY_MACRO_HEAD + x.key),
+    src: macroSrcOf(x),
+    sub: MACRO_SUB_ROWS.includes(x.key),
+    keyCls: macroKeyClsOf({ sub: MACRO_SUB_ROWS.includes(x.key) }),
+    cells,
+    latest: latestCellOf(cells),
+  }
+}
+
+/**
+ * 一行的年 → 格:派生行相加,运营行读 pnp_ops_stats,其余直读同名数据键。
+ *
+ * @param x 行键与两份点。
+ * @returns 年 → 格。
+ */
+function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
+  if (x.key === MR_WORK) {
+    return sumCellsOf({ a: MK_WORK_ONLY, b: MK_WORK_STUDY, points: x.points, t: x.t })
+  }
+  if (x.key === MR_STUDY) {
+    return sumCellsOf({ a: MK_STUDY_ONLY, b: MK_WORK_STUDY, points: x.points, t: x.t })
+  }
+  if (x.key === MR_ISSUED) {
+    return opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t })
+  }
+  if (x.key === MR_REMAINING) {
+    return remainingCellsOf({
+      direct: opsCellsOf({ metrics: [OPS_REMAINING], ops: x.ops, t: x.t }),
+      alloc: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
+      issued: opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t }),
+    })
+  }
+  return cellsOfKey({ key: x.key, points: x.points, t: x.t })
+}
+
+/**
+ * 一行的来源注:表号类原样(代码不进 i18n),其余取词。
+ *
+ * @param x 行键与取词函数。
+ * @returns 来源注。
+ */
+function macroSrcOf(x: MacroRowIn): string {
+  const src = MACRO_ROW_SRC[x.key]
+  if (src == null) {
+    return TEXT_NONE
+  }
+  if (src.startsWith(SRC_CODE_HEAD)) {
+    return src
+  }
+  return x.t(KEY_MACRO_SRC_HEAD + src)
+}
+
+/**
+ * 某数据键的点 → 年 → 格:完整年(年末 / 完整年度)各占一格;进行年只取最新一点并带灰注。
+ *
+ * @param x 数据键与该地区的点。
+ * @returns 年 → 格。
+ */
+function cellsOfKey(x: CellsOfKeyIn): Record<string, MacroCell> {
+  const cells: Record<string, MacroCell> = {}
+  let newest: MacroPoint | null = null
+  for (const p of x.points) {
+    if (p.key !== x.key) {
+      continue
+    }
+    const y = yearOfPoint({ p, t: x.t })
+    if (y.full) {
+      cells[y.year] = macroCellOf({ key: x.key, value: p.value, note: TEXT_NONE })
+    } else if (newest == null || p.period > newest.period) {
+      newest = p
+    }
+  }
+  if (newest != null) {
+    const y = yearOfPoint({ p: newest, t: x.t })
+    if (cells[y.year] == null) {
+      cells[y.year] = macroCellOf({ key: x.key, value: newest.value, note: y.note })
+    }
+  }
+  return cells
+}
+
+/**
+ * 一点落在哪一年:季度以次年 1 月 1 日为年末,月度以 12 月为年末,年度看 as_of 是否整年。
+ *
+ * @param x 一点与取词函数。
+ * @returns 年份、是否完整年、进行年灰注。
+ */
+function yearOfPoint(x: YearOfPointIn): PointYear {
+  const head = x.p.period.slice(0, YEAR_LEN)
+  if (x.p.freq === FREQ_Q) {
+    if (x.p.period.endsWith(PERIOD_JAN_TAIL)) {
+      return { year: String(Number(head) - 1), full: true, note: TEXT_NONE }
+    }
+    return { year: head, full: false, note: x.t('pulse.m.month', { m: monthOf(x.p.period) }) }
+  }
+  if (x.p.freq === FREQ_M) {
+    if (x.p.period.endsWith(PERIOD_DEC_TAIL)) {
+      return { year: head, full: true, note: TEXT_NONE }
+    }
+    return { year: head, full: false, note: x.t('pulse.m.month', { m: monthOf(x.p.period) }) }
+  }
+  if (x.p.asOf === TEXT_NONE || x.p.asOf === x.p.period) {
+    return { year: head, full: true, note: TEXT_NONE }
+  }
+  return { year: head, full: false, note: x.t('pulse.m.thru', { m: monthOf(x.p.asOf) }) }
+}
+
+/**
+ * 期键里的月份(去前导零)。
+ *
+ * @param period YYYY-MM 或 YYYY-MM-DD。
+ * @returns 月份数。
+ */
+function monthOf(period: string): number {
+  return Number(period.slice(MONTH_START, MONTH_END))
+}
+
+/**
+ * 一格的显示:失业率一位小数带百分号,其余千分位。
+ *
+ * @param x 数据键、值与灰注。
+ * @returns 一格。
+ */
+function macroCellOf(x: MacroCellIn): MacroCell {
+  if (x.key === MK_UNEMP) {
+    return { value: x.value, text: x.value.toFixed(PCT_DIGITS) + PCT_MARK, note: x.note }
+  }
+  return { value: x.value, text: numOf(x.value), note: x.note }
+}
+
+/**
+ * 两个数据键逐年相加(两边同年都有才出格;灰注取任一边)。
+ *
+ * @param x 两个数据键与该地区的点。
+ * @returns 年 → 格。
+ */
+function sumCellsOf(x: SumCellsIn): Record<string, MacroCell> {
+  const a = cellsOfKey({ key: x.a, points: x.points, t: x.t })
+  const b = cellsOfKey({ key: x.b, points: x.points, t: x.t })
+  const out: Record<string, MacroCell> = {}
+  for (const y of Object.keys(a)) {
+    const ca = a[y]
+    const cb = b[y]
+    if (ca != null && cb != null) {
+      out[y] = macroCellOf({ key: x.a, value: ca.value + cb.value, note: ca.note })
+    }
+  }
+  return out
+}
+
+/**
+ * pnp_ops_stats 若干指标名 → 年 → 格(同年多点取最大;各省叫法不同故传清单)。
+ *
+ * @param x 指标名清单与该省的运营点。
+ * @returns 年 → 格。
+ */
+function opsCellsOf(x: OpsCellsIn): Record<string, MacroCell> {
+  const out: Record<string, MacroCell> = {}
+  for (const p of x.ops) {
+    if (x.metrics.includes(p.metric) === false) {
+      continue
+    }
+    const c = opsCellOf({ p, t: x.t })
+    if (c == null) {
+      continue
+    }
+    const had = out[c.year]
+    if (had == null || c.cell.value > had.value) {
+      out[c.year] = c.cell
+    }
+  }
+  return out
+}
+
+/**
+ * 运营点的年与格:年从 period 里的四位数字取,取不到看 as_of;灰注 = 截至日,没有就用期间原文。
+ *
+ * @param x 运营点与取词函数。
+ * @returns 年与格;年取不出给 null。
+ */
+function opsCellOf(x: OpsCellIn): MaybeOpsCell {
+  const m = OPS_YEAR_RE.exec(x.p.period)
+  let year = TEXT_NONE
+  if (m != null && m[0] != null) {
+    year = m[0]
+  } else if (x.p.asOf.length >= YEAR_LEN) {
+    year = x.p.asOf.slice(0, YEAR_LEN)
+  }
+  if (year === TEXT_NONE) {
+    return null
+  }
+  let note = x.p.asOf
+  if (note === TEXT_NONE) {
+    note = x.p.period
+  }
+  return { year, cell: { value: x.p.value, text: numOf(x.p.value), note } }
+}
+
+/**
+ * 剩余名额:官方直给优先;没有的年用 配额 − 已发(两边同年都有且不为负)。
+ *
+ * @param x 直给、配额、已发三份格。
+ * @returns 年 → 格。
+ */
+function remainingCellsOf(x: RemainingIn): Record<string, MacroCell> {
+  const out: Record<string, MacroCell> = {}
+  for (const y of Object.keys(x.direct)) {
+    const c = x.direct[y]
+    if (c != null) {
+      out[y] = c
+    }
+  }
+  for (const y of Object.keys(x.alloc)) {
+    const a = x.alloc[y]
+    const i = x.issued[y]
+    if (out[y] == null && a != null && i != null && a.value - i.value >= 0) {
+      out[y] = { value: a.value - i.value, text: numOf(a.value - i.value), note: i.note }
+    }
+  }
+  return out
+}
+
+/**
+ * 一行里最新一年的格(手机卡显示)。
+ *
+ * @param cells 年 → 格。
+ * @returns 最新格;空表给 null。
+ */
+function latestCellOf(cells: Record<string, MacroCell>): MacroCell | null {
+  let best: string | null = null
+  for (const y of Object.keys(cells)) {
+    if (best == null || y > best) {
+      best = y
+    }
+  }
+  if (best == null) {
+    return null
+  }
+  const c = cells[best]
+  if (c == null) {
+    return null
+  }
+  return c
+}
+
+/**
+ * 地区块的年份列 = 各行年份并集,升序。
+ *
+ * @param rows 行。
+ * @returns 年份。
+ */
+function yearsOf(rows: MacroRow[]): string[] {
+  const set = new Set<string>()
+  for (const r of rows) {
+    for (const y of Object.keys(r.cells)) {
+      set.add(y)
+    }
+  }
+  return Array.from(set).sort()
+}
+
+/**
+ * 宏观表的列组:指标列 + 各年一列(表头只写年:存量行取年末值、流量行取全年值,格内灰注标进行年截至月)。
+ *
+ * @param x 取词函数与年份列。
+ * @returns 列组。
+ */
+export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
+  const out: StartCol<MacroRow>[] = [
+    { key: COL_MACRO_KEY, label: x.t('pulse.m.key'), render: MacroKeyCell, width: W_MACRO_KEY },
+  ]
+  for (const y of x.years) {
+    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell(y) })
+  }
+  return out
+}
+
+/**
+ * 宏观表行身份。
+ *
+ * @param r 一行。
+ * @returns 行键。
+ */
+export function macroRowKeyOf(r: MacroRow): string {
+  return r.key
+}
+
+/**
+ * 序列图取一行某年的原值(通用表格序列契约:(行, 列键) 两参)。
+ *
+ * @param r 一行。
+ * @param key 年份列键。
+ * @returns 原值;该年没格给 null。
+ */
+// eslint-disable-next-line local/one-parameter -- 通用表格序列契约 valueOf 定死 (行, 列键) 两参(components/table TableSeriesIn)
+export function macroValueOf(r: MacroRow, key: string): number | null {
+  const c = r.cells[key]
+  if (c == null) {
+    return null
+  }
+  return c.value
+}
+
+/**
+ * 序列图图例名 = 行名。
+ *
+ * @param r 一行。
+ * @returns 行名。
+ */
+export function macroLabelOf(r: MacroRow): string {
+  return r.label
+}
+
+/**
+ * 通用表格序列能力要的五句文案(桶不携词)。
+ *
+ * @param t 取词函数。
+ * @returns 文案。
+ */
+export function seriesWordsOf(t: TFn): SeriesWords {
+  return {
+    table: t('pulse.m.table'),
+    chart: t('pulse.m.chart'),
+    recent: t('pulse.m.recent'),
+    all: t('pulse.m.all'),
+    indexNote: t('pulse.m.index'),
+  }
+}
+
+/**
+ * 省份段的子项:全国 + 十省(省码)+ 招聘对比。
+ *
+ * @param t 取词函数。
+ * @returns 子项清单。
+ */
+function macroSubsOf(t: TFn): NavItem[] {
+  const out: NavItem[] = []
+  for (const code of MACRO_GEO_ORDER) {
+    let label = code
+    if (code === GEO_CA) {
+      label = t('pulse.s4.all')
+    }
+    out.push({ id: geoAnchorOf(code), label })
+  }
+  out.push({ id: ID_PROV_JOBS, label: t('pulse.s4j') })
+  return out
+}
+
+/**
+ * 洗招聘对比横表(省 × 大类汇总行 → 展示行)。
+ *
+ * @param x 汇总行与取词上下文。
+ * @returns 展示行。
+ */
+export function toJobsRows(x: JobsRowsIn): JobsRow[] {
+  const out: JobsRow[] = []
+  for (const r of x.rows) {
+    out.push(toJobsRow({ r, t: x.t, lang: x.lang }))
+  }
+  return out
+}
+
+/**
+ * 洗招聘对比一行:省名三格、四个数值、看岗位链接。
+ *
+ * @param x 这一行与上下文。
+ * @returns 展示行。
+ */
+function toJobsRow(x: JobsRowIn): JobsRow {
+  return {
+    key: x.r.province,
+    name: provShortOf(x.r.province),
+    code: x.r.province,
+    localeName: provLocaleOf({ t: x.t, lang: x.lang, code: x.r.province }),
+    nameSort: provFullOf(x.r.province),
+    openText: numTextOf(x.r.openJobs),
+    openSort: x.r.openJobs,
+    new7Text: numTextOf(x.r.new7d),
+    new7Sort: x.r.new7d,
+    wageText: wageTextOf(x.r.medianWageAnnual),
+    wageSort: x.r.medianWageAnnual,
+    aipText: volTextOf(x.r.aipJobs),
+    aipSort: x.r.aipJobs,
+    href: URL_HOME_PROV_HEAD + x.r.province,
+    actText: x.t('pulse.act.jobs'),
+    actBtnCls: actBtnClsOf(),
+  }
+}
+
+/**
+ * 中位年薪文案(整数加元);没有横杠。
+ *
+ * @param n 年薪。
+ * @returns 文案。
+ */
+function wageTextOf(n: number | null): string {
+  if (n == null) {
+    return DASH_MARK
+  }
+  return CURRENCY_MARK + numOf(n)
+}
+
+/**
+ * 招聘对比横表的列组:省份 / 在招 / 近 7 天 / 中位年薪 / AIP 岗 / 操作(Frank 2026-09-06「紧缺清单岗不需要这一列」)。
+ *
+ * @param x 取词函数。
+ * @returns 列组。
+ */
+export function jobsColsOf(x: JobsColsIn): StartCol<JobsRow>[] {
+  return [
+    { key: COL_PROV, label: x.t('pulse.s4.prov'), sort: jobsNameSortOf, render: ProvNameCell },
+    { key: COL_JOBS_OPEN, label: x.t('stats.openJobs'), nowrap: true, sort: jobsOpenSortOf, render: jobsOpenTextOf },
+    { key: COL_JOBS_NEW7, label: x.t('stats.new7d'), nowrap: true, sort: jobsNew7SortOf, render: jobsNew7TextOf },
+    { key: COL_JOBS_WAGE, label: x.t('stats.medWage'), nowrap: true, sort: jobsWageSortOf, render: jobsWageTextOf },
+    { key: COL_JOBS_AIP, label: x.t('stats.aip'), nowrap: true, sort: jobsAipSortOf, render: jobsAipTextOf },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: JobsActCell },
+  ]
+}
+
+/**
+ * 省名的排序键(全名)。
+ *
+ * @param r 一行。
+ * @returns 全名。
+ */
+export function jobsNameSortOf(r: JobsRow): string {
+  return r.nameSort
+}
+
+/**
+ * 在招职位排序键。
+ *
+ * @param r 一行。
+ * @returns 在招职位。
+ */
+export function jobsOpenSortOf(r: JobsRow): number | null {
+  return r.openSort
+}
+
+/**
+ * 在招职位单元格。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function jobsOpenTextOf(r: JobsRow): string {
+  return r.openText
+}
+
+/**
+ * 近 7 天发布排序键。
+ *
+ * @param r 一行。
+ * @returns 近 7 天发布。
+ */
+export function jobsNew7SortOf(r: JobsRow): number | null {
+  return r.new7Sort
+}
+
+/**
+ * 近 7 天发布单元格。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function jobsNew7TextOf(r: JobsRow): string {
+  return r.new7Text
+}
+
+/**
+ * 中位年薪排序键。
+ *
+ * @param r 一行。
+ * @returns 中位年薪。
+ */
+export function jobsWageSortOf(r: JobsRow): number | null {
+  return r.wageSort
+}
+
+/**
+ * 中位年薪单元格。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function jobsWageTextOf(r: JobsRow): string {
+  return r.wageText
+}
+
+/**
+ * AIP 指定雇主岗排序键。
+ *
+ * @param r 一行。
+ * @returns AIP 岗数。
+ */
+export function jobsAipSortOf(r: JobsRow): number | null {
+  return r.aipSort
+}
+
+/**
+ * AIP 指定雇主岗单元格。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function jobsAipTextOf(r: JobsRow): string {
+  return r.aipText
+}
+
+/**
+ * 招聘对比行身份。
+ *
+ * @param r 一行。
+ * @returns 省码。
+ */
+export function jobsRowKeyOf(r: JobsRow): string {
+  return r.key
+}
+
+/**
+ * 宏观表「指标」单元格的类:「其中」行缩进。
+ *
+ * @param x 是不是缩进行。
+ * @returns 类名。
+ */
+function macroKeyClsOf(x: MacroKeyClsIn): string {
+  if (x.sub) {
+    return cssOf(css.macroSub)
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 地区块表格的序列声明(喂通用表格的序列能力;形状本域自声明,全格照抄 components/table 的 TableSeriesIn)。
+ *
+ * @param x 取词函数与地区块。
+ * @returns 序列声明。
+ */
+export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
+  return {
+    pointKeys: x.geo.years,
+    valueOf: macroValueOf,
+    labelOf: macroLabelOf,
+    recent: MACRO_RECENT,
+    words: seriesWordsOf(x.t),
+  }
 }

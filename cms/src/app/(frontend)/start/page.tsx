@@ -1,8 +1,8 @@
 /**
  * E13-03 把脉首页(/start)的门 —— 2026-09-04 重构后:职业 / 雇主 / LMIA / 省份 / 城市 / 趋势六段
  * (设计:docs/design/把脉页重构-20260904.md;E13 原设计 docs/implementation/E13-把脉首页/00_总设计与口径.md)。
- * 本门只做 SSR 取数与拼装:判决区的证据数(proof)、省卡的 IRCC 体量与难度档、担保雇主三分表、
- * 职业统计标量、趋势段的逐日在招量。
+ * 本门只做 SSR 取数与拼装:判决区的证据数(proof)、省份段的难度档与宏观序列(macro_series,2026-09-06)与
+ * 省级运营指标(pnp_ops_stats)、担保雇主三分表、职业统计标量、趋势段的逐日在招量。
  * 红线:数字全部来自库内聚合查询,不写死;单项查询失败 → 该行 / 该块整条不渲染,
  * 绝不显示 0(每条查询各自兜空,一张表缺只丢它自己那块)。
  * SSR 瘦身照旧:职业大表(occ ~3400 行,含 E13-03 派生列)不进 HTML,
@@ -15,7 +15,6 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
@@ -25,13 +24,12 @@ import { Frame } from '@/components/shell'
 import {
   DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyCityRows, emptyDailyRows, emptyOccRows, emptyProvExtra,
   emptyQueryResult,
-  emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, nullUser, provPresetOf, putHomeCache,
+  emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from '@/components/start'
 import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
-import { getUser } from '@/lib/quota/server'
 import { employerVerdict } from '@/lib/ruling/server'
 import { loadCityStats, loadDailySeries, loadOccStats, loadProvExtra } from '@/lib/stats/server'
 
@@ -40,9 +38,9 @@ export const dynamic = 'force-dynamic'
 export const metadata = START_META
 
 /**
- * 把脉首页的门:进程内缓存没命中就八条查询并发取数 → 纯函数组装 → 拼大写组件。
- * 缓存口径与旧版一字未改:10 分钟内给同一份,过期现查再存;抓取时刻与预选省是逐用户 /
- * 逐请求的,不进缓存(前者 lib/jobs 自带 30s 缓存,后者按会话算)。
+ * 把脉首页的门:进程内缓存没命中就十一条查询并发取数 → 纯函数组装 → 拼大写组件。
+ * 缓存口径与旧版一字未改:10 分钟内给同一份,过期现查再存;抓取时刻逐请求不进缓存
+ * (lib/jobs 自带 30s 缓存)。预选省 2026-09-06 随省内职业榜退役(省份段不再切省),getUser 一并撤。
  *
  * @returns 整页。
  */
@@ -51,7 +49,7 @@ export default async function PulsePage() {
   const db = dbOf(payload)
   let core = cachedHomeOf()
   if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
+    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes, macroRes, opsRes] = await Promise.all([
       loadTotalAndProof(db).catch(nullProof),
       loadProvExtra(db).catch(emptyProvExtra),
       loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
@@ -61,6 +59,8 @@ export default async function PulsePage() {
       db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
       db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
       db.query(SQL.COMPANY_BRIEFS).catch(emptyQueryResult),
+      db.query(SQL.MACRO_SERIES).catch(emptyQueryResult),
+      db.query(SQL.PNP_OPS_PROV).catch(emptyQueryResult),
     ])
     core = putHomeCache(homeCoreOf({
       proof,
@@ -74,14 +74,15 @@ export default async function PulsePage() {
       drawsLimit: DRAWS_LIMIT,
       pilotRows: pilotRes.rows,
       briefRows: briefRes.rows,
+      macroRows: macroRes.rows,
+      opsRows: opsRes.rows,
     }))
   }
-  const user = await getUser(await headers()).catch(nullUser)
   const upd = await checkedAt(db).catch(emptyText)
   return (
     <Frame>
       <Header />
-      <Pulse stats={homeStatsOf({ core, provPreset: provPresetOf({ user }), checkedAt: upd })} />
+      <Pulse stats={homeStatsOf({ core, checkedAt: upd })} />
       <Footer />
     </Frame>
   )

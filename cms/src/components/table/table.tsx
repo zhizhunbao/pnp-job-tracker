@@ -18,9 +18,11 @@ import { useRef } from 'react'
 
 import { cssOf } from '@/components/css'
 import { Pager } from '@/components/pager'
-import { ALIGN_RIGHT } from './constants'
-import { cellOf, cls } from './functions'
-import { useColWidths, useRows } from './hooks'
+import { ALIGN_RIGHT, SERIES_VIEW_CHART } from './constants'
+import { cellOf, cls, pointLabelsOf, shownColsOf } from './functions'
+import { useColWidths, useRows, useSeriesView } from './hooks'
+import { SeriesChart } from './serieschart'
+import { SeriesToolbar } from './seriestoolbar'
 import { TableHead } from './tablehead'
 import type { TableIn } from './types'
 import css from './table.module.css'
@@ -34,30 +36,24 @@ import css from './table.module.css'
  * @returns 表格。
  */
 export function Table<T>({
-  cols,
-  rows,
-  rowKey,
-  empty,
-  header,
-  minWidth,
-  pageSize,
-  footerNote,
-  foot,
-  bare = false,
+  cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote, foot, bare = false, series,
 }: TableIn<T>) {
   let pageSizeIn: number | null = null
   if (pageSize != null) {
     pageSizeIn = pageSize
   }
-  const r = useRows({ cols, rows, pageSize: pageSizeIn })
+  const s = useSeriesView()
+  const shown = shownColsOf({ cols, series, range: s.range })
+  const r = useRows({ cols: shown, rows, pageSize: pageSizeIn })
   const tableRef = useRef<HTMLTableElement | null>(null)
-  const widths = useColWidths({ cols, rowCount: rows.length, tableRef })
+  const widths = useColWidths({ cols: shown, rowCount: rows.length, tableRef })
+  const chart = s.view === SERIES_VIEW_CHART
 
   const trs = []
   let i = 0
   for (const row of r.paged) {
     const tds = []
-    for (const c of cols) {
+    for (const c of shown) {
       tds.push(
         <td key={c.key}
           className={cls(
@@ -77,14 +73,33 @@ export function Table<T>({
   return (
     <div className={cls(cssOf(css.shell), bare && css.bare)}>
       {header}
-      {/* eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是运行时数据(量宽完成才锁 fixed) */}
-      <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
-        <TableHead cols={cols} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
-        <tbody>
-          {trs}
-          {foot}
-        </tbody>
-      </table>
+      {series != null && (
+        <SeriesToolbar view={s.view}
+          range={s.range}
+          words={series.words}
+          onTable={s.onTable}
+          onChart={s.onChart}
+          onRecent={s.onRecent}
+          onAll={s.onAll} />
+      )}
+      {chart && series != null && (
+        <SeriesChart pointKeys={series.pointKeys}
+          pointLabels={pointLabelsOf({ cols, pointKeys: series.pointKeys })}
+          rows={rows}
+          valueOf={series.valueOf}
+          labelOf={series.labelOf}
+          words={series.words} />
+      )}
+      {chart === false && (
+        // eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是运行时数据(量宽完成才锁 fixed)
+        <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
+          <TableHead cols={shown} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
+          <tbody>
+            {trs}
+            {foot}
+          </tbody>
+        </table>
+      )}
       {rows.length === 0 && <div className={css.empty}>{empty}</div>}
       {pageSize != null && rows.length > 0 && (
         <div className={css.foot}>

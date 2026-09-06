@@ -1878,7 +1878,7 @@ K_CLOSED_AT = "closedAt"
 
 
 # =========================================================================
-# 14. mart:装配与落盘(27 张表一次算齐;跨源汇装的收口点)
+# 14. mart:装配与落盘(28 张表一次算齐;跨源汇装的收口点)
 # =========================================================================
 
 IN_SCORED = OUT_SCORED
@@ -2598,3 +2598,136 @@ CITIES_OUT_TPL = "OUT: {path}"
 
 CITIES_DONE_TPL = "✓ {n} 个城市(人工核定;表外城市留空,前端只显英文)"
 """段20 收尾报数。"""
+
+
+# =========================================================================
+# 21. mart:宏观时间序列(macro_series 长表,把脉页省份段 2026-09-06)
+# =========================================================================
+
+IN_STATCAN_DIR = paths.STATCAN
+"""StatCan 四张表的落地目录(statcan 域产,一表一文件 raw/statcan/<pid>.json)。
+目录驱动扫表:加一张表 = 丢一个 json,本段不改代码(同 raw/pnp/*.json 的惯例)。"""
+
+IN_IRCC_PR_YEARS = paths.IRCC / "pnp_admissions_years.json"
+"""PR 登陆数按年(ircc 域段2 产,2026-09-06 加):prAll = 省 Total 行(全部类别),
+prPnp = Provincial Nominee 组行;ytdYear 那年是年内累计。"""
+
+MACRO_GEO_CA = "CA"
+"""全国的 geo 码(省用两位省码;领地不收)。"""
+
+MACRO_FREQ_ANNUAL = "A"
+"""年度频率(statcan 之外的四个键全是年度;季/月度频率由各 statcan 文件自报)。"""
+
+MACRO_UNIT_DOLLARS_MILLIONS = "dollars_millions"
+"""GDP 的单位(官方发什么记什么,不换算成绝对元)。"""
+
+MACRO_UNIT = {
+    "pop": UNIT_PEOPLE, "npr": UNIT_PEOPLE, "asylum": UNIT_PEOPLE, "workOnly": UNIT_PEOPLE,
+    "studyOnly": UNIT_PEOPLE, "workStudy": UNIT_PEOPLE, "other": UNIT_PEOPLE,
+    "gdp": MACRO_UNIT_DOLLARS_MILLIONS, "unemp": UNIT_PERCENT,
+}
+"""statcan 各键 → 单位(契约 §3 键表)。表外的新键 → 单位空 → check_macro_series 当场炸:
+单位靠猜 = 前端把百万元当人数画进同一张图。"""
+
+MACRO_KEY_STUDY_NEW = "studyNew"
+"""键:新发学签(ircc study_flow,按许可生效月份的流量,不是年末存量)。"""
+
+MACRO_KEY_PR_ALL = "prAll"
+"""键:PR 获批(省 Total 行,全部移民类别)。"""
+
+MACRO_KEY_PR_PNP = "prPnp"
+"""键:其中省提名(Provincial Nominee 组行)。"""
+
+MACRO_KEY_ALLOC = "alloc"
+"""键:省提名年度配额(人工核对维护表,每年自带出处页)。"""
+
+MACRO_KEY_EE_INVITES = "eeInvites"
+"""键:EE 邀请数(仅 CA;联邦历次抽选按年求和)。"""
+
+MACRO_MONTH_NUM = {
+    "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
+    "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12",
+}
+"""study_flow 的 throughMonth(英文月名)→ 两位月号(进行年 as_of = `YYYY-MM`)。"""
+
+MACRO_ASOF_TPL = "{year}-{month}"
+"""进行年的 as_of 形(年 + 两位月号)。"""
+
+MACRO_MONTH_LEN = 7
+"""fetched(`YYYY-MM-DD`)取到月的长度 —— PR/EE 进行年的 as_of 口径。"""
+
+MACRO_YEAR_LEN = 4
+"""期串取年的长度。"""
+
+ALLOC_YEAR_PREFIX = "y"
+"""配额维护表的年列前缀(y2024 / y2025 / y2026;加一年 = 多一格,本段不改代码)。"""
+
+K_CHECKED_AT = "checkedAt"
+"""配额维护表的人工核对日(表级 fetched 的来源)。"""
+
+K_BY_GEO = "byGeo"
+"""statcan 文件的主体:geo → 期 → {键: 值}。"""
+
+K_FREQ = "freq"
+"""statcan 文件自报的频率(Q/M/A)。"""
+
+K_GEO = "geo"
+"""落盘列:CA 或两位省码。"""
+
+K_PERIOD = "period"
+"""落盘列:季/月度 = `YYYY-MM-DD`(refPer),年度 = `YYYY`。"""
+
+K_SIZE = "size"
+"""EE 抽选的邀请数。"""
+
+K_N = "n"
+"""study_flow 年块的人数(整年=官方年总计,进行年=已公布月份求和)。"""
+
+K_COMPLETE = "complete"
+"""study_flow 年块:这一年 12 个月齐不齐。"""
+
+K_YTD_YEAR = "ytdYear"
+"""PR 按年表:哪一年是进行年(年内累计)。"""
+
+EE_HIST_MONTHS = 24
+"""EE history 的覆盖窗(月)—— ee 域自留的 HIST_MONTHS 同值本域自抄:
+域之间不互取常量,窗口口径变了两边都要改(判据写在这两条 docstring 里)。"""
+
+EE_HIST_DAYS_PER_MONTH = 31
+"""月→天(窗起点 = fetched − EE_HIST_MONTHS × 本值,与 ee 域同式)。"""
+
+EE_HIST_PER_CAT = 12
+"""ee 域每类别保留的轮次上限(HIST_PER_CAT 同值本域自抄)。行数刚好等于本值 = 这个类别被截断了,
+它的最早一行就是它真正的覆盖起点 —— 判「哪一年抽全了」全靠这一条。"""
+
+EE_YEAR_FIRST_DAY_TPL = "{year}-01-01"
+"""完整年判据的年初日(要落在覆盖窗内才算这一年抽全了)。"""
+
+EE_YEAR_LAST_DAY_TPL = "{year}-12-31"
+"""完整年判据的年末日(同上)。"""
+
+MACRO_EMPTY_MSG = ("macro_series: 源文件在但 0 行 —— 抽取器契约破了,不许空灌"
+                   "(同 pilot_quota 的 22c8d6a 空灌防线)")
+"""空灌防线:输入全缺 → [](seed 侧 -1 跳过保留旧行);输入在而 0 行 → 抛错断整个 mart。"""
+
+MACRO_ANCHOR_MSG = ("macro_series: CA/ON 的 pop 与 npr 四格缺任一 —— statcan 两张季度表没进来,"
+                    "省份段的分母就没了")
+"""地基断言:全国与安省的人口/临时居民是省份段每一行的分母,缺了整张表没有意义。"""
+
+MACRO_DUP_SHOW = 5
+"""报错里最多列几个重复键(够定位是哪一路在抢格,不刷屏)。"""
+
+MACRO_DUP_TPL = "macro_series (geo, key, period) 重复: {dup}"
+"""唯一键断言(DB 侧同名唯一索引;重复 = 两个源在抢同一格)。"""
+
+MACRO_UNIT_TPL = "macro_series 缺单位: {row}"
+"""单位断言(MACRO_UNIT 表外的新键 → 当场炸,不许无单位入库)。"""
+
+MACRO_MONTH_TPL = "macro_series studyNew {year} 的 throughMonth 认不得: {month}"
+"""进行年的截至月认不得就抛:悄悄按完整年落 as_of = 把 YTD 说成全年。"""
+
+MACRO_ANCHOR_KEYS = ("pop", "npr")
+"""地基断言查的两个键。"""
+
+MACRO_ANCHOR_GEOS = (MACRO_GEO_CA, "ON")
+"""地基断言查的两个 geo。"""

@@ -65,17 +65,9 @@ K_YEAR = "year"
 K_BY_PROV = "byProv"
 """表键:按省的值。"""
 
-K_STATUS = "status"
-"""StatCan WDS 响应块键:成功与否。"""
 
-K_OBJECT = "object"
-"""StatCan WDS 响应块键:数据体。"""
 
-K_VECTOR_DATA_POINT = "vectorDataPoint"
-"""StatCan WDS 数据体键:时点序列。"""
 
-K_REF_PER = "refPer"
-"""StatCan 时点键:季度参考日(1/1、4/1、7/1、10/1)。"""
 
 K_VALUE = "value"
 """StatCan 时点键 / 门槛行键:数值。"""
@@ -122,11 +114,7 @@ K_QUOTE = "quote"
 K_PAGE = "page"
 """规则表内键:该引用出自哪一页。"""
 
-STATUS_SUCCESS = "SUCCESS"
-"""StatCan WDS 的成功状态字。"""
 
-WDS_STATUS_FAIL_TPL = "WDS 返回 {status}"
-"""WDS 非成功状态的报错(分省存量段用;NPR 段带 vector 另有模板)。"""
 
 
 # =========================================================================
@@ -175,6 +163,11 @@ OUT_PNP = paths.IRCC / "pnp_admissions.json"
 
 OUT_FLOW = paths.IRCC / "study_flow.json"
 """段2 输出:新发学签流量(月度,进行年为 YTD)。"""
+
+OUT_PNP_YEARS = paths.IRCC / "pnp_admissions_years.json"
+"""段2 输出:PR 登陆数**按年**(2026-09-06 把脉页省份段):同一张 PR 按省×类别表,
+既有 OUT_PNP 只留最新完整年一格,本表留全部年列 —— 省 Total 行(全部类别)与
+Provincial Nominee 组行各一块,进行年(表头最后一个 Total 列)在 ytdYear 里标出。"""
 
 STATS_UA = "offer2pr-difficulty/1.0"
 """开放数据下载的自报家门 UA(不伪装:官方开放数据平台不需要)。"""
@@ -226,6 +219,15 @@ PNP_CATEGORY_WORD = "Provincial Nominee"
 K_BY_YEAR = "byYear"
 """存量表键:全年份序列(2026-08-14 竞争卡年份筛选)。"""
 
+K_YTD_YEAR = "ytdYear"
+"""PR 按年表键:哪一年是进行年(表头最后一个「YYYY Total」列 = 年内累计,不是完整年)。"""
+
+K_PR_ALL = "prAll"
+"""PR 按年表键:省 Total 行(全部类别)× 全部年列。"""
+
+K_PR_PNP = "prPnp"
+"""PR 按年表键:Provincial Nominee 组行 × 全部年列(含进行年 YTD 列)。"""
+
 K_N = "n"
 """流量年块键:人数(整年=官方年总计,进行年=已公布月份求和)。"""
 
@@ -273,6 +275,11 @@ STATS_TR_NOTE = "IRCC 年末存量(Dec 31 holders);数值官方四舍五入到 5
 STATS_PNP_NOTE = "PNP 类别 PR 登陆数(含随行家属,人头口径)最新完整年"
 """PNP 登陆数口径注。"""
 
+STATS_PNP_YEARS_NOTE = ("PR 登陆数按年:prAll = 省 Total 行(全部移民类别),prPnp = Provincial Nominee "
+                        "组行;两者同为含随行家属的人头口径。ytdYear 那一年是年内累计(YTD),"
+                        "与完整年不可直接比较。数值官方四舍五入到 5,'--' 小值抑制当 0。")
+"""PR 按年表口径注。"""
+
 STATS_FLOW_NOTE = ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "
                    "n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:"
                    "存量=在库人数(竞争比分母),流量=当期新增趋势。")
@@ -293,267 +300,21 @@ STATS_STOCK_TPL = "{key}: {year} · {n} 省 · ON={on} · 序列 {first}–{last
 STATS_PNP_TPL = "pnp admissions: {year} · {n} 省 · ON={on}"
 """PNP 登陆数收尾报数。"""
 
+STATS_PNP_YEARS_TPL = "pnp admissions years: {first}–{last} · YTD {ytd} · ON {year}={on}"
+"""PR 按年表收尾报数(核对锚点:ON 的最新完整年 prPnp 应与 OUT_PNP 同值)。"""
+
 STATS_FLOW_TPL = "study flow: {n} 省 · 年份 {first}–{last} · ON {tail}"
 """流量表收尾报数。"""
 
 
 # =========================================================================
-# 3. NPR 占总人口比(联邦「临时人口降到 5%」目标的唯一可核验刻度)
+# 3.+4.(已迁出)NPR 占总人口比 / StatCan 分省临时居民存量
+#      —— 2026-09-06 两段常量整批搬去 etl/statcan/constants.py 的段3、段4(docstring 一字未改,
+#      **产物路径不动**:OUT_NPR / OUT_TR_PROV 仍指 paths.IRCC 下的原文件名)。
+#      段号留空位不前移(存量注释里到处引用「段5/段6/段7」);段1 里只被这两段消费的
+#      WDS 响应键(K_STATUS / K_OBJECT / K_VECTOR_DATA_POINT / K_REF_PER / STATUS_SUCCESS /
+#      WDS_STATUS_FAIL_TPL)随迁,PCT_SCALE 与 K_LATEST_REF_PER 因段7 仍在用而留守(住段7 末尾)。
 # =========================================================================
-
-OUT_NPR = paths.IRCC / "npr_share.json"
-"""段3 输出:季度序列 + 最新占比 + 距 5% 目标的人数缺口。
-2026-08-03 立项(Frank:「政府说要把临时人口降低到 5% 以下,现在是多少了」)。这个数
-**不在 IRCC 口径里**:IRCC 开放数据给的是学签/工签**许可持有人**(会重复计人、不含访客与
-庇护申请人),分母「加拿大总人口」它也不发。占比只能取 StatCan 季度人口估算。
-为什么值钱:它是各省提名配额被砍、PNP 越来越卷的**上游原因**。峰值 2024-10 的 7.59% →
-2026-04 的 6.18%,配额同步下滑;用户在报告里看到的「难度」变化,根子在这条曲线上。"""
-
-NPR_WDS = "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorsAndLatestNPeriods"
-"""StatCan WDS(免密钥 REST)的取序列端点。"""
-
-V_POP = 1
-"""向量号:加拿大总人口(季度)。"""
-
-V_NPR = 1566927590
-"""向量号:非永久居民(NPR)总数(季度)。"""
-
-NPR_QUARTERS = 20
-"""取近 5 年,够画趋势也够算年化降速。
-口径注:refPer 是季度**参考日**(1/1、4/1、7/1、10/1),StatCan 每季度发布并会修订前序季度 →
-本段每次全量重取近 N 个季度,不做增量拼接(修订才不会被旧值盖住)。"""
-
-NPR_TARGET = 0.05
-"""联邦目标:临时人口占比 5%。"""
-
-NPR_SRC_URLS = {
-    "population": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901",
-    "npr": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101",
-}
-"""两条序列的人可读出处页(落盘 source 块)。"""
-
-NPR_UA = "offer2pr-npr/1.0"
-"""段3 的自报家门 UA。"""
-
-NPR_TIMEOUT_S = 60
-"""WDS 取序列超时。"""
-
-NPR_MIN_QUARTERS = 4
-"""季度数防线(少于这个疑似 WDS 改版 → 保留旧表)。"""
-
-NPR_SPAN = 5
-"""年化降速的取样跨度:最近 4 个季度(5 个点)。"""
-
-SHARE_ROUND = 5
-"""占比与降速的小数位。"""
-
-QUARTERS_ROUND = 1
-"""外推季度数的小数位。"""
-
-TIMESPEC_SECONDS = "seconds"
-"""fetchedAt 的时间精度。"""
-
-K_VECTOR_ID = "vectorId"
-"""WDS 请求键:向量号。"""
-
-K_LATEST_N = "latestN"
-"""WDS 请求键:取最近几期。"""
-
-K_POPULATION = "population"
-"""季度行键:总人口。"""
-
-K_NPR = "npr"
-"""季度行键:非永久居民数。"""
-
-K_SHARE = "share"
-"""季度行键:占比。"""
-
-K_TARGET = "target"
-"""表键:5% 目标。"""
-
-K_QUARTERS = "quarters"
-"""表键:季度序列。"""
-
-K_LATEST = "latest"
-"""表键:最新一季。"""
-
-K_PEAK = "peak"
-"""表键:峰值那一季。"""
-
-K_PER_QUARTER_CHANGE = "perQuarterChange"
-"""表键:每季度变化(负=在降)。"""
-
-K_GAP_TO_TARGET = "gapToTargetPeople"
-"""表键:距 5% 目标还差多少人。"""
-
-K_QUARTERS_TO_TARGET = "quartersToTarget"
-"""表键:按最近四季降速线性外推还需几季(不降=None)。"""
-
-K_FETCHED_AT = "fetchedAt"
-"""表键:抓取时刻(秒级 UTC)。"""
-
-NPR_NOTE = ("NPR=非永久居民(含学签/工签持有人及其家属、访客、庇护申请人),分母=StatCan 季度总人口估算。"
-            "**与 IRCC 许可持有人数不可混用**(后者会重复计人且不含访客/庇护)。"
-            "StatCan 每季度发布并修订前序季度,故每轮全量重取。quartersToTarget 是按最近四季降速的"
-            "线性外推,不是官方预测。")
-"""段3 表级口径注。"""
-
-WDS_VECTOR_FAIL_TPL = "WDS 返回 {status} (vector {vector})"
-"""某条向量取回失败。"""
-
-NPR_PRINT_OUT_TPL = "OUT={path}"
-"""段3 开工报输出(原脚本模块级 print,溶后挪进入口函数首行)。"""
-
-NPR_FAIL_TPL = "  ✗ StatCan 抓取失败: {name} {detail}(保留旧表)"
-"""抓取失败 → 保留旧表(宁可留旧也不留空)。"""
-
-NPR_TOO_FEW_TPL = "  ✗ 只取到 {n} 个季度(<4,疑似 WDS 改版)—— 保留旧表"
-"""季度数不足 → 保留旧表。"""
-
-NPR_DONE_TPL = "  ✓ NPR 占比 {n} 个季度 → {out}"
-"""段3 收尾报数。"""
-
-NPR_LATEST_TPL = "      最新 {ref}: {pct:.2f}%  ({npr:,} / {pop:,})"
-"""段3 收尾:最新一季。"""
-
-NPR_PEAK_TPL = "      峰值 {ref}: {pct:.2f}%   目标 5% 还差 {gap:,} 人"
-"""段3 收尾:峰值与缺口。"""
-
-NPR_SPEED_TPL = "      降速 {per:+.2f} 个百分点/季度 → 按此外推还需约 {quarters} 个季度"
-"""段3 收尾:降速与外推。"""
-
-PCT_SCALE = 100
-"""占比 → 百分数的倍率。"""
-
-
-# =========================================================================
-# 4. StatCan 分省临时居民存量(IRCC 年末存量停在 2024 后唯一的官方分省刻度)
-# =========================================================================
-
-OUT_TR_PROV = paths.IRCC / "statcan_tr_prov.json"
-"""段4 输出:分省 × 证型 × 季度的常住估算。
-2026-08-14 立项(竞争卡年份列缺口探索):StatCan 表 17-10-0121-01 分省 × 证型
-(仅学签 / 仅工签 / 学+工)× 季度,WDS 免密钥,最新参考日领先 IRCC 年末表一年半。
-**口径与 IRCC 不可混列**:StatCan=常住人口估算(净掉已离境/未入境),IRCC=有效许可持有人 ——
-ON 学签 IRCC 2024-12=482,100 vs StatCan 同期常住估算约六成。竞争卡要不要用、怎么标注
-是产品拍板(2026-08-14 Frank 批的是「接入落 raw」),本段不进 mart、不灌库。
-口径注:refPer 是季度参考日(1/1、4/1、7/1、10/1);"2026-01-01" ≈ 2025 年末快照。
-StatCan 每季度发布并修订前序季度 → 每轮全量重取近 N 季,不做增量拼接。"""
-
-TRP_META_URL = "https://www150.statcan.gc.ca/t1/wds/rest/getCubeMetadata"
-"""WDS 表元数据端点(解析维度成员 id)。"""
-
-TRP_DATA_URL = "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods"
-"""WDS 按坐标取数端点。"""
-
-TRP_PID = 17100121
-"""StatCan 表号 17-10-0121-01。"""
-
-TRP_QUARTERS = 8
-"""近 2 年:覆盖「IRCC 停更后」的全部空窗。"""
-
-TRP_SRC_URL = "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710012101"
-"""人可读出处页。"""
-
-TRP_UA = "offer2pr-tr-prov/1.0"
-"""段4 的自报家门 UA。"""
-
-TRP_TYPES = {
-    "studyOnly": "Study permit holders only",
-    "workOnly": "Work permit holders only",
-    "workStudy": "Work and study permit holders",
-}
-"""输出键 → StatCan 维度成员名(改名=改版,靠 metadata 解析兜住)。"""
-
-TRP_META_TIMEOUT_S = 60
-"""元数据请求超时。"""
-
-TRP_DATA_TIMEOUT_S = 120
-"""取数请求超时(30 个坐标一发)。"""
-
-GEO_DIM = "Geography"
-"""地理维度名(精确匹配)。"""
-
-TYPE_DIM_WORD = "type"
-"""证型维度名的判词(小写含它即认)。"""
-
-COORD_TPL = "{geo}.{typ}.0.0.0.0.0.0.0.0"
-"""WDS 坐标形(前两维=省/证型,其余补零)。"""
-
-COORD_SEP = "."
-"""坐标分隔符。"""
-
-TRP_MIN_PROV = 10
-"""省维度成员数防线。"""
-
-TRP_MIN_TYPES = 3
-"""证型维度成员数防线。"""
-
-TRP_ON_MIN = 50000
-"""ON 最新学签存量的量级防线(低于此疑似坐标错位/表改版)。"""
-
-K_PRODUCT_ID = "productId"
-"""WDS 请求键:表号。"""
-
-K_COORDINATE = "coordinate"
-"""WDS 请求/响应键:坐标。"""
-
-K_DIMENSION = "dimension"
-"""元数据键:维度清单。"""
-
-K_DIMENSION_NAME_EN = "dimensionNameEn"
-"""元数据键:维度英文名。"""
-
-K_MEMBER = "member"
-"""元数据键:维度成员清单。"""
-
-K_MEMBER_NAME_EN = "memberNameEn"
-"""元数据键:成员英文名。"""
-
-K_MEMBER_ID = "memberId"
-"""元数据键:成员 id。"""
-
-K_STUDY_ONLY = "studyOnly"
-"""证型键:仅学签。"""
-
-K_WORK_ONLY = "workOnly"
-"""证型键:仅工签。"""
-
-K_WORK_STUDY = "workStudy"
-"""证型键:学+工双持。"""
-
-K_TYPES = "types"
-"""表键:证型键 → StatCan 成员名。"""
-
-K_LATEST_REF_PER = "latestRefPer"
-"""表键:最新季度参考日。"""
-
-TRP_DIM_FAIL_TPL = "维度成员缺位(省 {geo}/10,证型 {typ}/3)—— 疑似表改版"
-"""维度成员数不足。"""
-
-TRP_COORD_FAIL_TPL = "响应坐标 {coord} 对不上请求的省/证型"
-"""响应块**不按请求顺序**回来(实测乱序)—— 只能从块自带 coordinate 反解 (省, 证型);
-反解不出即报错。"""
-
-TRP_SANITY_FAIL = "ON 最新学签存量 <5 万 —— 量级失真,疑似坐标错位/表改版"
-"""收口探针未过。"""
-
-TRP_NOTE = ("StatCan 17-10-0121-01 分省临时居民**常住估算**(季度参考日快照;每季修订前序,故每轮全量重取)。"
-            "**与 IRCC 有效许可持有人口径不可混列**(后者不净离境,量级高约四成)。"
-            "refPer 2026-01-01 ≈ 2025 年末。消费端待拍板:落 raw 不进 mart。")
-"""段4 表级口径注。"""
-
-TRP_PRINT_OUT_TPL = "OUT={path}"
-"""段4 开工报输出(原脚本模块级 print,溶后挪进入口函数首行)。"""
-
-TRP_FAIL_TPL = "  ✗ StatCan 分省存量抓取失败: {name} {detail}(保留旧表)"
-"""抓取失败 → 保留旧表(宁可留旧也不留空)。"""
-
-TRP_DONE_TPL = "  ✓ 分省存量 {n} 省 × {q} 季 → {out}"
-"""段4 收尾报数。"""
-
-TRP_ROW_TPL = "      最新 {ref}: ON 仅学签 {study:,} · 仅工签 {work:,} · 学+工 {both:,}"
-"""段4 收尾:ON 三档抽样。"""
 
 
 # =========================================================================
@@ -798,9 +559,11 @@ FEES_DONE_TPL = "✓ {n} 条费用: {by}"
 # 7. 省移民难度指数(E12-07;纯算件,零网络,只吃前三步落好的 raw + pnp draws)
 # =========================================================================
 
-IN_TR_PROV = OUT_TR_PROV
+IN_TR_PROV = paths.IRCC / "statcan_tr_prov.json"
 """段7 输入①:段4 自己落的分省临时居民存量(域内前后步,同一文件两个身份 —— 路径写两遍
 就是两份真相,故取别名不复制)。
+2026-09-06 段4 搬去 statcan 域后,别名的另一头(OUT_TR_PROV)不在本域了 —— 域间不互取常量,
+故这里写回字面路径。**产物路径不动**是两域共同的契约:那边写它,这边读它。
 2026-08-15 方案C(Frank「那就换 C 吧」):竞争比分子整体换 StatCan 常住估算口径 ——
 IRCC 年末许可表停在 2024 且高估(含已离境者),StatCan 季度估算的才是「还在境内抢名额的人」。
 temp_residents.json(IRCC)不再进本段;其余消费端(省弹框体量卡等)不受影响。"""
@@ -900,3 +663,15 @@ DIFF_ROW_TPL = "{prov}: tier={tier} comp={comp} factors={n}"
 
 DIFF_DONE_TPL = "done → {path}"
 """段7 收尾报输出路径。"""
+
+K_LATEST_REF_PER = "latestRefPer"
+"""表键:最新季度参考日。
+2026-09-06 段4 迁出后留守:段7 读 statcan 域落的表要用它,statcan 侧另有一份同名件(叶子律)。"""
+
+DIFF_NO_LATEST_REF = ("difficulty: raw/ircc/statcan_tr_prov.json 缺 latestRefPer —— statcan 域段4 契约破了,"
+                      "不在本域重算(域间不互借)")
+"""段7 读 StatCan 分省表最新参考日的硬闸文案(2026-09-06 latest_ref_of 随段4 搬去 statcan 后立)。"""
+
+PCT_SCALE = 100
+"""占比 → 百分数的倍率。
+2026-09-06 段3 迁出后留守:段7 的分数线水位分位换算要用它。"""

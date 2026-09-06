@@ -31,6 +31,7 @@ import { EmployerPoolBuckets } from './collections/EmployerPoolBuckets'
 import { PilotCommunities } from './collections/PilotCommunities'
 import { PilotOccupations } from './collections/PilotOccupations'
 import { PilotQuota } from './collections/PilotQuota'
+import { MacroSeries } from './collections/MacroSeries'
 import { PteTypes } from './collections/PteTypes'
 import { PteQuestions } from './collections/PteQuestions'
 import { Provinces } from './collections/Provinces'
@@ -60,7 +61,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, EmployerPool, EmployerPoolBuckets, PilotCommunities, PilotOccupations, PilotQuota, PteTypes, PteQuestions, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs, Asks],
+  collections: [Users, Media, Companies, Jobs, PnpOccupations, PnpDraws, PnpScoreFactors, PnpRequirements, PnpOpsStats, Dli, EeCategories, EePointsGrid, NocDescriptions, NocOpenings, PolicyDocs, DesignatedEmployers, EmployerPool, EmployerPoolBuckets, PilotCommunities, PilotOccupations, PilotQuota, MacroSeries, PteTypes, PteQuestions, Provinces, Cities, Districts, NocCategories, Sources, ExperienceLevels, FieldSources, Rankings, Stats, StatsDaily, StatsOccupation, StatsCity, SavedSearches, SavedJobs, News, Comments, ChatLogs, Asks],
   editor: lexicalEditor(),
   // E3-07:邮件适配器=包一层现成 lib/mailer(Resend HTTP 直调,零新依赖);目前只有 forgot-password 走这里。
   // RESEND_API_KEY 未设 → sendMail 返回 false 不发信(dry-run 语义,与 alerts 一致)。

@@ -613,6 +613,7 @@
    * 卡里主文案字号。
    */
   font-size: 13.5px;
+
 }
 
 /*
@@ -1579,7 +1580,10 @@
 }
 
 /*
- * 一张省卡(整卡可点 = 切省)。
+ * 省卡头一行:省名 + 省码 + 难度档胶囊。
+ */
+/*
+ * 一张可点的卡(2026-09-06 省卡随省内职业榜退役后,只剩城市卡 cityCardClsOf 消费;类名留原名不改,免动消费者)。
  * 类名写两遍抬权重:本卡经 Button(kind ghost)渲染(裸 <button> 禁令),
  * 要稳赢 button 域 .btn/.ghost 的同权重声明且不赌打包顺序。
  */
@@ -1637,24 +1641,6 @@
   color: #1f2937;
 }
 
-/*
- * 选中那张省卡:淡蓝底 + 蓝描边。
- */
-.provCardOn.provCardOn {
-  /*
-   * 淡蓝底(blue-50)。
-   */
-  background: #eff6ff;
-
-  /*
-   * 蓝描边(blue-200)。
-   */
-  border: 1px solid #bfdbfe;
-}
-
-/*
- * 省卡头一行:省名 + 省码 + 难度档胶囊。
- */
 .provCardHead {
   /*
    * 一行排开,按基线对齐(省名与省码字号不同)。
@@ -1801,121 +1787,6 @@
 /*
  * ── S4b 省内职业榜 ────────────────────────────────────────────
  */
-
-/*
- * 切省那一行(全国档下拉 + 十省 chips)。原 .plProvChips。
- */
-.provChips {
-  /*
-   * 一行排开,放不下折行。
-   */
-  display: flex;
-  flex-wrap: wrap;
-
-  /*
-   * 项间距。
-   */
-  gap: 8px;
-
-  /*
-   * 上下留白。
-   */
-  margin: 4px 0 8px;
-
-  /*
-   * 竖直居中。
-   */
-  align-items: center;
-}
-
-/*
- * #300(第 38 轮):S4b 省 chips 与表题旁链接同款触控靶(默认手机 44,桌面收回)。
- */
-.provChips button {
-  /*
-   * 手机触控靶 ≥44px。
-   */
-  min-height: 44px;
-}
-
-/*
- * 切省下拉(全国档打头 —— 2026-08-06 Frank「全国 省份 城市 都需要」;
- * 职业×城市粒度现库没有,ETL 侧排下一批,不瞎猜)。
- */
-.provSel {
-  /*
-   * 控件高。
-   */
-  height: 32px;
-
-  /*
-   * 描边。
-   */
-  border: 1px solid var(--border);
-
-  /*
-   * 圆角。
-   */
-  border-radius: 8px;
-
-  /*
-   * 白底。
-   */
-  background: #ffffff;
-
-  /*
-   * 控件字号。
-   */
-  font-size: 13px;
-
-  /*
-   * 深灰字(gray-700)。
-   */
-  color: #374151;
-
-  /*
-   * 左右内衬。
-   */
-  padding: 0 8px;
-
-  /*
-   * 长省名不许把控件撑破整行。
-   */
-  max-width: 100%;
-}
-
-/*
- * 该省提名通道那一行(与 /stats 省页同源 stream_labels;无清单的省整行不出,
- * 不写「暂无」)。
- */
-.streams {
-  /*
-   * 一行排开,放不下折行。
-   */
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-
-  /*
-   * 项间距。
-   */
-  gap: 6px;
-
-  /*
-   * 与下面职业榜的间距。
-   */
-  margin: 0 0 10px;
-
-  /*
-   * 行字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 次级文字灰。
-   */
-  color: var(--text2);
-}
 
 /*
  * 分布主图那一层包裹。
@@ -2596,20 +2467,7 @@
   }
 
   .navLink {
-    /*
-     * 桌面收回触控靶。
-     */
-    min-height: auto;
-  }
-
-  .provChips button {
-    /*
-     * 桌面收回触控靶。
-     */
-    min-height: auto;
-  }
-
-  .moreLink {
+    .moreLink {
     /*
      * 桌面收回触控靶。
      */
@@ -2821,4 +2679,55 @@
    * 与行业名的距离。
    */
   margin-left: 6px;
+}
+
+/*
+ * 省份段地区块(2026-09-06 宏观统计版):块与块之间留白,锚点跳转时标题不贴粘条。
+ */
+.macroBlock {
+  /*
+   * 块间距。
+   */
+  margin-top: 8px;
+}
+
+/*
+ * 宏观表「指标」列的「其中」行:缩进一格表示挂在临时居民下(两个持有相加会超过临时居民,别让用户加减)。
+ */
+.macroSub {
+  /*
+   * 缩进。
+   */
+  padding-left: 14px;
+}
+
+/*
+ * 手机端不可点的卡(地区卡 / 招聘对比省卡;可点的省卡 2026-09-06 随省内职业榜退役)。
+ * 形照 .provCard:白底、描边、12 圆角。
+ */
+.card {
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 描边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角。
+   */
+  border-radius: 12px;
+
+  /*
+   * 内距。
+   */
+  padding: 12px 14px;
+
+  /*
+   * 卡间距(地区卡单张时与标题的间距)。
+   */
+  margin-top: 12px;
 }
