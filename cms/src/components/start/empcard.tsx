@@ -22,7 +22,7 @@ import css from './start.module.css'
  */
 export function EmpCard({ t, row, kind }: EmpCardIn) {
   const kv = []
-  kv.push({ k: t('pulse.col.biz'), v: EmpBriefCell(row), wide: true })
+  kv.push({ k: t('pulse.col.biz'), v: <div className={css.briefCard}>{EmpBriefCell(row)}</div>, wide: true })
   if (kind === ID_NOWP) {
     kv.push({ k: t('se.col.w2'), v: row.lmia2qText })
     kv.push({ k: t('se.col.w4'), v: row.lmia4qText })
