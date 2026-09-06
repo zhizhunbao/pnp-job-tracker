@@ -21,9 +21,9 @@
   padding: 36px 0;
 
   /*
-   * 锚点跳转时给顶部粘条让位(二级导航条高约 52,2026-09-06 加子项行后约 84)。
+   * 锚点跳转时给顶部粘条让位(二级导航条高约 52,2026-09-06 加子项行后约 102,让位 104)。
    */
-  scroll-margin-top: 84px;
+  scroll-margin-top: 104px;
 }
 
 /*
@@ -31,9 +31,9 @@
  */
 .subAnchor {
   /*
-   * 主项行 + 子项行两层粘条的高度。
+   * 主项行 + 子项行两层粘条的高度(约 102)再留 2px。
    */
-  scroll-margin-top: 84px;
+  scroll-margin-top: 104px;
 }
 
 /*
@@ -876,6 +876,11 @@
   padding: 3px 0;
 
   /*
+   * 藏滚动条(Firefox;与子项行同款,2026-09-06)。
+   */
+  scrollbar-width: none;
+
+  /*
    * 一行排开。
    */
   display: flex;
@@ -910,6 +915,17 @@
  * 条首的属主项「就业把脉」(2026-08-08 Frank「二级标题应该只属于这个一级标题」):
  * 深色粗体,不是链接 —— 蓝色留给「你现在在哪」。
  */
+/*
+ * 藏滚动条(Chrome / Safari;两行导航横滑靠手势,不出灰条)。
+ */
+.navRow::-webkit-scrollbar,
+.navSubRow::-webkit-scrollbar {
+  /*
+   * 不画。
+   */
+  display: none;
+}
+
 .navOwner {
   /*
    * 加粗。
@@ -1004,6 +1020,11 @@
    * 手机档溢出横滑,不折行。
    */
   overflow-x: auto;
+
+  /*
+   * 藏滚动条(Firefox;滚动手势仍可用。2026-09-06 Frank 实拍:手机端出了一条灰滚动条)。
+   */
+  scrollbar-width: none;
 
   /*
    * 不折行。

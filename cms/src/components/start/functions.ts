@@ -660,6 +660,20 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
 }
 
 /**
+ * 导航当前分区:还没滚到任何分区('')时当作第一段职业(2026-09-06 Frank「默认在哪个部位,就把子项显示出来吧」),
+ * 主项高亮与子项行都按它。
+ *
+ * @param navSec 滚动跟随给的分区 id;'' = 还没滚到。
+ * @returns 用来高亮与出子项的分区 id。
+ */
+export function navSecOrFirstOf(navSec: string): string {
+  if (navSec === TEXT_NONE) {
+    return ID_BOARDS
+  }
+  return navSec
+}
+
+/**
  * 二级导航当前分区的子项(2026-09-06 Frank「这个应该加子项,要不然手机端没法跳转」):
  * 职业 = 两榜 + 8 行业;雇主 = 8 行业 + 三试点;省份 = 分省概览 / 省内职业榜;城市、趋势没有分表给空。
  *

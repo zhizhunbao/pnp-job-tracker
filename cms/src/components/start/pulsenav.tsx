@@ -16,7 +16,7 @@
 import { LinkButton } from '@/components/button'
 import { Shell } from '@/components/shell'
 import { SHELL_BOTTOM, SHELL_TOP } from './constants'
-import { anchorOf, navItemsOf, navLinkClsOf, navSubItemsOf } from './functions'
+import { anchorOf, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubItemsOf } from './functions'
 import type { PulseNavIn } from './types'
 import css from './start.module.css'
 
@@ -27,16 +27,17 @@ import css from './start.module.css'
  * @returns 粘顶的导航条。
  */
 export function PulseNav({ t, navSec }: PulseNavIn) {
+  const sec = navSecOrFirstOf(navSec)
   const items = []
   for (const it of navItemsOf({ t })) {
     items.push(
-      <LinkButton key={it.id} href={anchorOf(it.id)} className={navLinkClsOf({ on: navSec === it.id })}>
+      <LinkButton key={it.id} href={anchorOf(it.id)} className={navLinkClsOf({ on: sec === it.id })}>
         {it.label}
       </LinkButton>,
     )
   }
   const subs = []
-  for (const it of navSubItemsOf({ t, navSec })) {
+  for (const it of navSubItemsOf({ t, navSec: sec })) {
     subs.push(
       <LinkButton key={it.id} href={anchorOf(it.id)} className={css.navSubLink}>
         {it.label}

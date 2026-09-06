@@ -98,8 +98,10 @@ export const SUB_ID_SEP = '-'
 
 /**
  * 滚动跟随的判定线(px):当前分区 = 顶部粘条下沿以上最后一个分区标题。
+ * 2026-09-06 加子项行后粘条两层高约 102,判定线与 .band / .subAnchor 的 scroll-margin-top 同抬到 104
+ *(此前 60:锚点跳到 84 落在线下,高亮与子项不跟着切,Frank 实拍)。
  */
-export const NAV_TOP_LINE = 96
+export const NAV_TOP_LINE = 104
 
 /**
  * 滚动监听的事件名(打错是静默失效 —— 监听器绑不上不报错)。
