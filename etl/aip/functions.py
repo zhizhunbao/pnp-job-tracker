@@ -23,17 +23,13 @@ aip.scheme。产物路径一字不动(raw/aip/ 两件 + raw/ircc/aip_rules.json)
 import html as html_lib
 import json
 import time
-from datetime import date
-from typing import cast
 
 import pymupdf
 import httpx
-from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
-from crawl.functions import get_cached_page
 from names.functions import norm_name
 from noc.functions import teer_of
 from aip.constants import (
@@ -42,24 +38,22 @@ from aip.constants import (
     K_AIP, K_JOBS,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
     EMP_TIMEOUT_S, ENC_UTF8, GUARD_KEEP_TPL, GUARD_NO_OLD, GUARD_WARN_TPL,
-    HTML_PARSER, IN_NL_EMPLOYERS, IN_URL_ELIG, K_EMPLOYER, K_EMPLOYERS, K_FACTOR, K_FAMILY_SIZE, K_LOCATION,
+    IN_NL_EMPLOYERS, K_EMPLOYER, K_EMPLOYERS, K_LOCATION,
     K_NAME, K_NOC, K_NOCS,
-    K_PAGE, K_PROVINCE, K_QUOTE, K_STREAM, K_TECH, K_TEXT, MAIN_TAG, MD_HEAD,
+    K_PROVINCE, K_TECH, MD_HEAD,
     MD_LINE_SEP, MD_ROW_EMPTY_TPL, MD_ROW_TPL, MD_TAIL, MD_TECH_COLS, MD_TECH_HEAD_TPL,
-    MD_TECH_ROW_TPL, MIN_ROWS, MISSING_QUOTE_LEN, NAME_MIN_LEN, NAME_TRIM_CHARS,
+    MD_TECH_ROW_TPL, MIN_ROWS, NAME_MIN_LEN, NAME_TRIM_CHARS,
     NOISE_RE, NS_LOC_RE, OUT_AIP_DIR,
-    OUT_AIP_JSON, OUT_AIP_MD, OUT_AIP_RULES, PAGE_URLS, PDF_FAIL_TPL, PDF_FILETYPE, PDFS,
+    OUT_AIP_JSON, OUT_AIP_MD, PDF_FAIL_TPL, PDF_FILETYPE, PDFS,
     HTTP_OK, PE_ALL_FAIL_MSG, PE_FAIL_TPL, PE_LI_RE, PE_MIN_ROWS, PE_NAME_MAX_LEN, PE_NAV_RE,
     PE_OK_TPL, PE_PAGE, PE_SNAP_RETRY_TPL, PE_SNAP_THIN_TPL, PE_TS_LEN, WAYBACK_RETRY_S, WAYBACK_TRIES, PERCENT_BASE, PROV_NAME, PROV_NL, PROV_NS, PROV_ORDER_ALL,
-    PROV_ORDER_TECH, PROV_PE, QUOTE_FIXES, RULES, RULES_DONE_TPL, RULES_IN_TPL,
-    RULES_MISSING_ROW_TPL, RULES_MISSING_TPL, RULES_NO_CACHE_TPL, RULES_OUT_NOTE, RULES_OUT_TPL,
-    RULES_PROGRAM, RULES_PROVINCE, SKIP_WORDS, SUBJECT_APPLICANT, TECH_NAME, TECH_NOC,
+    PROV_ORDER_TECH, PROV_PE,
+    SKIP_WORDS, TECH_NAME, TECH_NOC,
     WAYBACK_TIMEOUT_S, WAYBACK_TPL,
 )
 from aip.scheme import (
-    SoupNodeLike,
-    AipHitIn, FlagOut, GuardIn, MdRowIn, NlRowIn, PageEntryIn, PageOut, PdfBulletsIn, PdfRowIn,
-    PeRowIn, RequirementIn, RulesDocIn,
+    AipHitIn, FlagOut, GuardIn, MdRowIn, NlRowIn, PdfBulletsIn, PdfRowIn,
+    PeRowIn,
 )
 
 # =========================================================================
@@ -347,97 +341,7 @@ def employer_key(row: dict) -> str:
 
 
 # =========================================================================
-# 3. aip_rules 步(AIP 申请人门槛库,quote-anchored)
-# =========================================================================
-
-
-def build_aip_rules() -> None:
-    """AIP 申请人门槛库 → aip_rules.json(入口,门直调)。
-
-    **每轮逐条验证官方引用仍逐字存在于对应页面**:页面改版引用消失 → 保留旧表 + exit 1,
-    绝不拿半份数据盖好数据(门见 SystemExit 直接中止本轮)。
-    """
-    say(RULES_OUT_TPL.format(path=OUT_AIP_RULES))
-    pages: dict = {}
-    for key, url in PAGE_URLS.items():
-        got = load(url)
-        pages[key] = to_page_entry(PageEntryIn(url=url, fetched=got.fetched, text=got.text))
-        say(RULES_IN_TPL.format(url=url, fetched=got.fetched))
-    missing: list = []
-    for r in RULES:
-        if norm(str(r[K_QUOTE])) not in pages[r[K_PAGE]][K_TEXT]:
-            missing.append(r)
-    if len(missing) > 0:
-        report_missing(missing)
-    reqs: list = []
-    for r in RULES:
-        reqs.append(to_requirement(RequirementIn(rule=r, page=pages[r[K_PAGE]])))
-    OUT_AIP_RULES.parent.mkdir(parents=True, exist_ok=True)
-    paths.write_text(paths.WriteTextIn(path=OUT_AIP_RULES,
-                                       text=json.dumps(to_rules_doc(RulesDocIn(requirements=reqs)),
-                                                       ensure_ascii=False, indent=1)))
-    say(RULES_DONE_TPL.format(n=len(reqs), name=OUT_AIP_RULES.name))
-
-
-def report_missing(missing: list) -> None:
-    """引用消失时逐条点名后 exit 1(保留旧表,人工重核)。"""
-    say(RULES_MISSING_TPL.format(n=len(missing), total=len(RULES)))
-    for r in missing:
-        say(RULES_MISSING_ROW_TPL.format(factor=r[K_FACTOR], stream=r.get(K_STREAM, ""),
-                                         quote=r[K_QUOTE][:MISSING_QUOTE_LEN]))
-    raise SystemExit(1)
-
-
-def load(url: str) -> PageOut:
-    """只走 crawl 缓存:没爬到就报错,不偷偷 httpx 补(那正是「猜 URL」的老病根)。"""
-    hit = get_cached_page(url)
-    if not hit.html:
-        raise SystemExit(RULES_NO_CACHE_TPL.format(url=url))
-    main = cast(SoupNodeLike, BeautifulSoup(hit.html, HTML_PARSER).find(MAIN_TAG))
-    return PageOut(text=norm(main.get_text(SPACE_SEP, strip=True)), fetched=hit.fetched)
-
-
-def norm(t: str) -> str:
-    """归一化后再比对:弯引号→直引号、压空白 —— 引用核对不被排版噪音干扰
-    (同 build_pgwp / build_ee_rules)。"""
-    out = t
-    for bad, good in QUOTE_FIXES:
-        out = out.replace(bad, good)
-    return WS_RE.sub(SPACE_SEP, out).strip()
-
-
-def to_page_entry(x: PageEntryIn) -> dict:
-    """一页在 pages 表里的记录(键词汇只住行构造器)。"""
-    return {"url": x.url, "fetched": x.fetched, "text": x.text}
-
-
-def to_requirement(x: RequirementIn) -> dict:
-    """一条规则 + 它所属页 → 产出行。
-
-    familySize 只有安家资金分档规则才有,条件加键(键序照旧:label 之后、url 之前)。
-    """
-    out = {
-        "stream": x.rule.get("stream", ""), "subject": SUBJECT_APPLICANT,
-        "factor": x.rule["factor"], "op": x.rule["op"],
-        "value": x.rule["value"], "valueText": x.rule["quote"], "unit": x.rule["unit"],
-        "basis": x.rule.get("basis", ""), "label": x.rule["label"],
-    }
-    if K_FAMILY_SIZE in x.rule:
-        out["familySize"] = x.rule["familySize"]
-    out["url"] = x.page["url"]
-    out["fetched"] = x.page["fetched"]
-    return out
-
-
-def to_rules_doc(x: RulesDocIn) -> dict:
-    """aip_rules.json 的文档形。"""
-    return {"province": RULES_PROVINCE, "program": RULES_PROGRAM, "url": IN_URL_ELIG,
-            "fetched": date.today().isoformat(),
-            "note": RULES_OUT_NOTE, "requirements": x.requirements}
-
-
-# =========================================================================
-# 4. flag 步(官方名录 × 岗位雇主名 → 岗位表的 aip 字段)
+# 3. flag 步(官方名录 × 岗位雇主名 → 岗位表的 aip 字段)
 # =========================================================================
 
 

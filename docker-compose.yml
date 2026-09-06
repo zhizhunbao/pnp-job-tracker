@@ -49,6 +49,12 @@ services:
       SOURCE: aip
       TZ: EST5EDT
 
+  rules:                           # 联邦试点申请人门槛库(AIP/RCIP/FCIP quote-anchored;2026-09-06 立域,aip 域规则步搬入)
+    <<: *etl
+    environment:
+      SOURCE: rules
+      TZ: EST5EDT
+
   citations:                       # 官方引用着陆页核验(field-sources 32 行;原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:

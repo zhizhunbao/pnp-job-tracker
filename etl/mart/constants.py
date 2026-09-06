@@ -1317,13 +1317,16 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
                  paths.PNP / "sk-req.json", paths.PNP / "mb-req.json", paths.PNP / "ns-req.json",
                  paths.PNP / "nb-req.json", paths.PNP / "pe-req.json", paths.PNP / "nl-req.json",
                  paths.IRCC / "pgwp_rules.json", paths.IRCC / "fees.json",
-                 paths.EE / "fed-eligibility.json", paths.IRCC / "aip_rules.json"]
+                 paths.EE / "fed-eligibility.json", paths.IRCC / "aip_rules.json",
+                 paths.IRCC / "rcip_rules.json", paths.IRCC / "fcip_rules.json"]
 """省提名官方**门槛**(规则引擎第一刀)—— 打分表管「能打几分」,这张管「打分之前先要满足什么」。
 一省一个文件,加省=往这个 list 里加一个(pnp 域 build_<省>_req 产,列同一套)。后四份是联邦段:
   B1-4 PGWP 规则库(province='FED' program='PGWP',ircc 域产,quote-anchored)——
        走同一张表=引擎 facts.requirements 免费拿到;FED 行不会漏进省级门槛节(那边按省名挑行);
   G8  联邦段官方规费(program='PR-fees',ircc 域产)—— 第三次复用,同上安全;
   G9  联邦 Express Entry 三个项目的资格门槛(province='FED',ee 域产,quote-anchored)。
+  2026-09-06 再加 rcip_rules / fcip_rules(rules 域产,program='RCIP'/'FCIP',与 aip_rules 同形,
+       aip_rules 本身也随 aip 域规则步搬入 rules 域,路径不变)。
       **一个文件三个项目** → program 逐行写在 requirements[].program('CEC'/'FSW'/'FST'),
       表级只有 province —— 按行覆盖 program,零新表;
   G-AIP 联邦大西洋移民计划(AIP)申请人门槛(province='FED' program='AIP',aip 域产,

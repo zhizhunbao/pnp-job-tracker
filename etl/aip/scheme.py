@@ -10,21 +10,11 @@ crawl 缓存页 / 既有 raw json)一律 dict 直读,键词汇住 constants 的 
 dataclass 名、字段名、每条 docstring 逐字未改。
 """
 from dataclasses import dataclass
-from typing import Protocol
 
 # =========================================================================
 # 1. 共享词汇(纯常量段,无形状 —— 镜像占位)
 # =========================================================================
 
-
-class SoupNodeLike(Protocol):
-    """bs4 标签节点形 —— Protocol 自声明只真用的格(ee/pnp scheme 同款;叶子律下
-    scheme 不 import bs4,裸 object 又让检查器判不动 —— 2026-08-31 批G 补形)。
-    本域只用来压平 crawl 缓存页的正文;方法签名库定死,一参令例外。"""
-
-    def get_text(self, *args: object, **kwargs: object) -> str:
-        """压平文本。"""
-        ...
 
 # =========================================================================
 # 2. employers 步(AIP 官方指定雇主名录)
@@ -103,55 +93,7 @@ class MdRowIn:
 
 
 # =========================================================================
-# 3. aip_rules 步(AIP 申请人门槛库)
-# =========================================================================
-
-@dataclass
-class PageOut:
-    """load 的出参:一页官方正文 + 它的 crawl 轮次日期。"""
-
-    text: str
-    """归一化后的 <main> 纯文本(引用核对的底本)。"""
-
-    fetched: str
-    """该页被 crawl 取回的日期(不是脚本跑的今天)。"""
-
-
-@dataclass
-class PageEntryIn:
-    """to_page_entry 的入参:一页在 pages 表里的三格。"""
-
-    url: str
-    """官方 URL。"""
-
-    fetched: str
-    """crawl 轮次日期。"""
-
-    text: str
-    """归一化正文。"""
-
-
-@dataclass
-class RequirementIn:
-    """to_requirement 的入参:一条规则 + 它所属页的记录。"""
-
-    rule: dict
-    """RULES 里的一条(键词汇只在行构造器体内出现)。"""
-
-    page: dict
-    """该规则 page 键对应的 pages 记录(给 url/fetched)。"""
-
-
-@dataclass
-class RulesDocIn:
-    """to_rules_doc 的入参:落盘文档的变量格。"""
-
-    requirements: list
-    """核验通过的全部门槛行。"""
-
-
-# =========================================================================
-# 4. flag 步(官方名录 × 岗位雇主名)
+# 3. flag 步(官方名录 × 岗位雇主名)
 # =========================================================================
 
 

@@ -20,11 +20,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from aip.functions import build_aip_rules, flag_aip_jobs, scrape_aip_employers
+from aip.functions import flag_aip_jobs, scrape_aip_employers
 
 SCHEDULED = [
     ("employers", scrape_aip_employers),
-    ("rules", build_aip_rules),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮(原 pilot 链的第一步,批E 拆域后独立成链)。
 
@@ -35,13 +34,12 @@ rules 2026-08-31 批O 收编进链(原「随 crawl 缓存轮次手动重跑」�
 
 TOOLS = {
     "employers": scrape_aip_employers,
-    "rules": build_aip_rules,
     "flag": flag_aip_jobs,
 }
 """全部可 --only 点名的步(含两个不进默认链的件):
   employers  AIP 四省官方指定雇主名录 → raw/aip/aip-designated-employers.{json,md}
-  rules      AIP 申请人门槛库(引用核验未过即 exit 1)→ raw/ircc/aip_rules.json
-             (原 pilot 域 TOOLS 键叫 aip_rules,批E 拆域后域名已说 AIP,键收成 rules)
+  (rules     AIP 申请人门槛库 2026-09-06 整段搬去 rules 域 —— Frank「这种不同省的规则也需要一个
+             单独模块维护吧」;产物 raw/ircc/aip_rules.json 路径不变,入口 python etl/rules/main.py --only aip)
   flag       employers 名单 × 岗位雇主名 → 就地写回 postings.json / ATS jobs.json 的 aip
              (原 clean/05c_flag_aip.py,2026-08-31 批H2 归户、批I3 溶成 functions 段4;
              归 load 建表链排序,不进本域默认链)
