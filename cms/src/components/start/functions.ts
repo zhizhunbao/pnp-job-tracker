@@ -297,6 +297,7 @@ export function sponsorSeedOf(x: SponsorSeedIn): SponsorBoards {
     lmia: seedGroupOf({ group: x.boards.lmia, keep }),
     named: seedGroupOf({ group: x.boards.named, keep }),
     aip: seedGroupOf({ group: x.boards.aip, keep }),
+    pilot: seedGroupOf({ group: x.boards.pilot, keep }),
   }
 }
 
@@ -1971,7 +1972,9 @@ export function makeSponsorLoad(x: SponsorLoadIn): () => CleanupFn {
         if (j == null || j.lmia == null || j.lmia.top.length === 0) {
           return
         }
-        x.setSponsorFull({ lmia: j.lmia, named: groupOrEmpty(j.named), aip: groupOrEmpty(j.aip) })
+        x.setSponsorFull({
+          lmia: j.lmia, named: groupOrEmpty(j.named), aip: groupOrEmpty(j.aip), pilot: groupOrEmpty(j.pilot),
+        })
       } catch {
         return
       }
@@ -2803,7 +2806,7 @@ export function empSecsOf(x: EmpSecsIn): EmpSec[] {
 }
 
 /**
- * 三分表并成一份,按雇主名去重(一家可能同时在 LMIA 表与紧缺表)。
+ * 四分表并成一份,按雇主名去重(一家可能同时在 LMIA 表与紧缺表;pilot 表 2026-09-06 加)。
  *
  * @param sponsor 三分表。
  * @returns 去重后的事实行。
@@ -2811,7 +2814,7 @@ export function empSecsOf(x: EmpSecsIn): EmpSec[] {
 function unionSponsorRows(sponsor: SponsorBoards): SponsorRowList {
   const seen = new Set<string>()
   const out: SponsorRowList = []
-  for (const g of [sponsor.lmia, sponsor.named, sponsor.aip]) {
+  for (const g of [sponsor.lmia, sponsor.named, sponsor.aip, sponsor.pilot]) {
     for (const r of g.top) {
       if (seen.has(r.name) === false) {
         seen.add(r.name)

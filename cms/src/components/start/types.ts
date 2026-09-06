@@ -212,6 +212,11 @@ export type SponsorBoards = {
    * 去海洋省那张(AIP 指定雇主)。
    */
   aip: SponsorGroup
+
+  /**
+   * RCIP / FCIP 那张(社区指定雇主且在该社区有在招岗;2026-09-06)。
+   */
+  pilot: SponsorGroup
 }
 
 /**
@@ -232,6 +237,11 @@ export type SponsorFullProbe = {
    * 去海洋省那张。
    */
   aip: SponsorGroup | null
+
+  /**
+   * RCIP / FCIP 那张。
+   */
+  pilot: SponsorGroup | null
 } | null
 
 /**

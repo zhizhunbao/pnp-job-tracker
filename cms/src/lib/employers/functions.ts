@@ -602,7 +602,23 @@ function factColsFragment(cols: StrList): string {
  * @returns 三分表。
  */
 export function buildSponsorBoards(rows: SponsorRows): SponsorBoards {
-  return { lmia: lmiaBoard(rows), named: namedBoard(rows), aip: aipBoard(rows) }
+  return { lmia: lmiaBoard(rows), named: namedBoard(rows), aip: aipBoard(rows), pilot: pilotBoard(rows) }
+}
+
+/**
+ * RCIP / FCIP 表:在该试点社区有在招岗的社区指定雇主行,保持聚合序(2026-09-06)。
+ *
+ * @param rows 缓存全量行。
+ * @returns 该表数据。
+ */
+function pilotBoard(rows: SponsorRows): SponsorBoardData {
+  const hit: SponsorEmployerRow[] = []
+  for (const r of rows) {
+    if (r.openJobsRcip > 0 || r.openJobsFcip > 0) {
+      hit.push(r)
+    }
+  }
+  return { top: hit.map(toSlimSponsorRow), total: hit.length }
 }
 
 /**

@@ -67,7 +67,7 @@ export async function employersRoute(req: Request): Promise<Response> {
 }
 
 /**
- * GET /api/employers/sponsors:把脉页(/start)橱窗三分表(lmia/named/aip)全量。
+ * GET /api/employers/sponsors:把脉页(/start)橱窗四分表(lmia/named/aip/pilot,pilot 2026-09-06 加)全量。
  * #313(LCP 7.15s 真因):三表 16,430 行全量序列化进 /start 的 RSC payload,SSR 文档
  * 6.92MB —— 拆法照 /api/stats/market:SSR 只带每表前 SE_SSR_ROWS 行 + total,
  * 全量改挂载后后台拉。进程内 10 分钟缓存(CACHE.boards)+ 浏览器侧 5 分钟 + SWR;
@@ -83,7 +83,7 @@ export async function employersSponsorsRoute(_req: Request): Promise<Response> {
       CACHE.boards = { v: buildSponsorBoards(rows), ts: Date.now() }
     } catch {
       const empty = { top: [], total: 0 }
-      return Response.json({ lmia: empty, named: empty, aip: empty })
+      return Response.json({ lmia: empty, named: empty, aip: empty, pilot: empty })
     }
   }
   return Response.json(CACHE.boards.v, { headers: { [HDR_CACHE_CONTROL]: SPONSORS_CACHE_CONTROL } })

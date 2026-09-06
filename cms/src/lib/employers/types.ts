@@ -551,6 +551,12 @@ export type SponsorBoards = {
    * AIP 表,保持聚合序。
    */
   aip: SponsorBoardData
+
+  /**
+   * RCIP / FCIP 那张:社区指定雇主且在该社区有在招岗(2026-09-06;只有社区指定资格的雇主不在前三张里,
+   * 把脉页 RCIP / FCIP 表从这张取)。
+   */
+  pilot: SponsorBoardData
 }
 
 /**
