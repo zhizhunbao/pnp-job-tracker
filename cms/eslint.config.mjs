@@ -38,6 +38,7 @@ const ALLOW = [
   '!**/lib/quiz/server', '!./quiz/server', '!../quiz/server',
   '!**/lib/stats/server', '!./stats/server', '!../stats/server',
   '!**/lib/quota/server', '!./quota/server', '!../quota/server',
+  '!**/lib/official/server', '!./official/server', '!../official/server',
   '!**/lib/pathways/server', '!./pathways/server', '!../pathways/server',
   '!**/lib/agent/server', '!./agent/server', '!../agent/server',
   '!**/lib/db/server', '!./db/server', '!../db/server',

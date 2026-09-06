@@ -29,6 +29,21 @@ export const TEXT_NONE = ''
 export const CAT_KEY_HEAD = 'res.cat.'
 
 /**
+ * 通道门槛卡的锚点 id 头(把脉页试点表题、PNP 弹框链到 /resources#rules-AIP 这种)。
+ */
+export const RULES_ANCHOR_HEAD = 'rules-'
+
+/**
+ * 联邦通道名的文案键头(res.prog.AIP …;键尾 = pnp_requirements 的 program 值)。
+ */
+export const PROG_KEY_HEAD = 'res.prog.'
+
+/**
+ * 联邦段门槛行的 province 值。
+ */
+export const RULES_PROVINCE_FED = 'FED'
+
+/**
  * 整卡可点的全局 hover 类(卡 = 蓝框 + 浅底)。真身在 main.css,靠 `!important` 压行内,
  * 全站共用 —— 留全局,不进本域。
  * 本域原先那套 resTile 自有 hover 已退役换成它(hover统一-20260731,值相同零视觉变化)。

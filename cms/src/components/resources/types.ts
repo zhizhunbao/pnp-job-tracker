@@ -44,6 +44,111 @@ export type ResItem = {
 /**
  * 一个资源分组(镜像 lib/official 的 `ResGroup`)。
  */
+export type ResRuleRow = {
+  /**
+   * 分流('' = 不分)。
+   */
+  stream: string
+
+  /**
+   * 人话标签(英文)。
+   */
+  label: string
+
+  /**
+   * 官方原句。
+   */
+  quote: string
+
+  /**
+   * 官方页 URL。
+   */
+  url: string
+}
+
+/**
+ * 一个通道(或一省)的门槛清单(与 lib/official RuleGroup 全格照抄,本域自声明)。
+ */
+export type ResRuleGroup = {
+  /**
+   * 组键:联邦段 = 通道码,省段 = 省码。
+   */
+  key: string
+
+  /**
+   * 省码(联邦段 FED)。
+   */
+  province: string
+
+  /**
+   * 通道码(省段空串)。
+   */
+  program: string
+
+  /**
+   * 门槛行。
+   */
+  rows: ResRuleRow[]
+}
+
+/**
+ * `Resources` 的 props。
+ */
+export type ResourcesIn = {
+  /**
+   * 通道门槛分组(页面门连库注入;空数组 = 段不出)。
+   */
+  rules: ResRuleGroup[]
+}
+
+/**
+ * `ResRules` 的 props。
+ */
+export type ResRulesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 分组清单。
+   */
+  groups: ResRuleGroup[]
+}
+
+/**
+ * `ResRuleCard` 的 props。
+ */
+export type ResRuleCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一组。
+   */
+  group: ResRuleGroup
+}
+
+/**
+ * `ruleTitleOf` 的入参。
+ */
+export type RuleTitleIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一组。
+   */
+  group: ResRuleGroup
+}
+
+/**
+ * 一类官方资源(分类键 + 该类的条目)。
+ */
 export type ResGroup = {
   /**
    * 分组名(federal/pnp/wage… —— 拼上前缀就是它的 i18n 键)。

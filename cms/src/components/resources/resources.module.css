@@ -244,3 +244,218 @@
    */
   white-space: nowrap;
 }
+
+/*
+ * 通道门槛段(2026-09-06):折叠卡竖排,一卡一通道 / 一省。
+ */
+.ruleGrid {
+  /*
+   * 竖排,卡间距。
+   */
+  display: grid;
+
+  /*
+   * 单列。
+   */
+  grid-template-columns: 1fr;
+
+  /*
+   * 卡间距。
+   */
+  gap: 8px;
+}
+
+/*
+ * 一张折叠卡(原生 details)。
+ */
+.ruleCard {
+  /*
+   * 卡底。
+   */
+  background: var(--card);
+
+  /*
+   * 卡边。
+   */
+  border: 1px solid var(--border);
+
+  /*
+   * 圆角同官方入口卡。
+   */
+  border-radius: 10px;
+
+  /*
+   * 内边距。
+   */
+  padding: 10px 14px;
+}
+
+/*
+ * 摘要行:通道名 + 条数,整行可点。
+ */
+.ruleSummary {
+  /*
+   * 手指。
+   */
+  cursor: pointer;
+
+  /*
+   * 名与数两端。
+   */
+  display: flex;
+
+  /*
+   * 垂直居中。
+   */
+  align-items: center;
+
+  /*
+   * 两端。
+   */
+  justify-content: space-between;
+
+  /*
+   * 触控靶。
+   */
+  min-height: 32px;
+}
+
+/*
+ * 通道名。
+ */
+.ruleTitle {
+  /*
+   * 加粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 条数(灰)。
+ */
+.ruleCount {
+  /*
+   * 灰字。
+   */
+  color: #6b7280;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 门槛清单。
+ */
+.ruleList {
+  /*
+   * 去默认圆点与缩进。
+   */
+  list-style: none;
+
+  /*
+   * 去默认边距。
+   */
+  margin: 8px 0 0;
+
+  /*
+   * 去默认缩进。
+   */
+  padding: 0;
+}
+
+/*
+ * 一条门槛:标签、原句、链接竖排。
+ */
+.ruleRow {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 竖向。
+   */
+  flex-direction: column;
+
+  /*
+   * 行内间距。
+   */
+  gap: 2px;
+
+  /*
+   * 行间分隔。
+   */
+  padding: 8px 0;
+
+  /*
+   * 分隔线。
+   */
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * 分流名(灰小字)。
+ */
+.ruleStream {
+  /*
+   * 灰字。
+   */
+  color: #6b7280;
+
+  /*
+   * 小字。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 人话标签。
+ */
+.ruleLabel {
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13.5px;
+}
+
+/*
+ * 官方原句(灰注)。
+ */
+.ruleQuote {
+  /*
+   * 灰字。
+   */
+  color: #6b7280;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 官方页链接(靠左,不撑满)。
+ */
+.ruleLink {
+  /*
+   * 靠左收窄。
+   */
+  align-self: flex-start;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+}

@@ -10,6 +10,11 @@
 import type { LangCode, ResGroup } from './types'
 
 /**
+ * 联邦段门槛行的 province 值(pnp_requirements 里 AIP / RCIP / FCIP / PGWP / EE 三项 / 规费都落 FED)。
+ */
+export const RULES_PROVINCE_FED = 'FED'
+
+/**
  * 官方原文尾部悬空的「, or」(表格排版残留,显示时摘掉):那个 or 是官方**表格排版**
  * 留下的(下一行接着念),单拎出来放进选项就是个悬空的 or(英文界面实拍:
  * 「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。

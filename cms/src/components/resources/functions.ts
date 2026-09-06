@@ -14,9 +14,11 @@ import { cssOf } from '@/components/css'
 import {
   CAT_KEY_HEAD, CLS_CARD_HOVER, CLS_SEP, LD_CONTEXT, LD_KEY_CONTEXT, LD_KEY_ELEMENTS, LD_KEY_NAME,
   LD_KEY_POSITION, LD_KEY_TYPE, LD_KEY_URL, LD_POS_FIRST, LD_TYPE_ITEM, LD_TYPE_LIST, TEXT_NONE,
+  PROG_KEY_HEAD, RULES_ANCHOR_HEAD, RULES_PROVINCE_FED,
 } from './constants'
+import { PROV_NAME } from '@/lib/stats'
 import type {
-  CatKeyOfIn, GroupsOfIn, HitOfIn, QueryChangeFn, QueryChangeIn, ResGroup, ResItem,
+  CatKeyOfIn, GroupsOfIn, HitOfIn, QueryChangeFn, QueryChangeIn, ResGroup, ResItem, RuleTitleIn,
 } from './types'
 import css from './resources.module.css'
 
@@ -27,6 +29,43 @@ import css from './resources.module.css'
  * @param x 搜索框现值。
  * @returns 筛过的分组;整份都没命中时给空列表(消费端出空态)。
  */
+/**
+ * 通道门槛卡的标题:联邦段用通道名(res.prog.<码>),省段用「<省名> 省提名」。
+ *
+ * @param x 取词函数与这一组。
+ * @returns 标题。
+ */
+export function ruleTitleOf(x: RuleTitleIn): string {
+  if (x.group.province === RULES_PROVINCE_FED) {
+    return x.t(PROG_KEY_HEAD + x.group.program)
+  }
+  return x.t('res.rules.prov', { prov: provNameOf(x.group.province) })
+}
+
+/**
+ * 省全名(PROV_NAME 词表;查不到给省码)。
+ *
+ * @param code 省码。
+ * @returns 省全名。
+ */
+function provNameOf(code: string): string {
+  const name = PROV_NAME[code]
+  if (name == null) {
+    return code
+  }
+  return name
+}
+
+/**
+ * 通道门槛卡的锚点 id。
+ *
+ * @param key 组键。
+ * @returns 锚点 id。
+ */
+export function ruleAnchorOf(key: string): string {
+  return RULES_ANCHOR_HEAD + key
+}
+
 export function groupsOf(x: GroupsOfIn): ResGroup[] {
   const needle = x.query.trim().toLowerCase()
   const groups: ResGroup[] = []

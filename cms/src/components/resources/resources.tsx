@@ -19,6 +19,8 @@ import { SectionTabs } from '@/components/tabs'
 import { BANNER_MODULE, LIB_URL_CASES, LIB_URL_OCC, LIB_URL_RESOURCES, SHELL_TOP } from './constants'
 import { useResources } from './hooks'
 import { ResCategory } from './rescategory'
+import { ResRules } from './resrules'
+import type { ResourcesIn } from './types'
 import css from './resources.module.css'
 
 /**
@@ -26,7 +28,7 @@ import css from './resources.module.css'
  *
  * @returns 正文(Shell 轨往下)。
  */
-export function Resources() {
+export function Resources({ rules }: ResourcesIn) {
   const { t, lang, query, groups, onQueryChange } = useResources()
   const sections = []
   for (const group of groups) {
@@ -49,6 +51,7 @@ export function Resources() {
       </div>
       {groups.length === 0 && <p className={css.empty}>{t('res.empty')}</p>}
       {sections}
+      <ResRules t={t} groups={rules} />
     </Shell>
   )
 }

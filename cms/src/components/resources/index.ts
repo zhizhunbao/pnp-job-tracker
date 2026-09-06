@@ -12,4 +12,5 @@
  */
 export { RES_META_DESC, RES_META_TITLE } from './constants'
 export { Resources } from './resources'
+export type { ResRuleGroup } from './types'
 export { resItemListJsonOf } from './functions'

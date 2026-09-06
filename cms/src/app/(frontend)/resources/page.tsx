@@ -15,6 +15,8 @@ import { Header } from '@/components/header'
 import { RES_META_DESC, RES_META_TITLE, Resources, resItemListJsonOf } from '@/components/resources'
 import { JsonLd } from '@/components/jsonld'
 import { Frame } from '@/components/shell'
+import { getDb } from '@/lib/db/server'
+import { loadRuleGroups } from '@/lib/official/server'
 
 /**
  * 页面元信息(两句话的值在 components/resources 的 constants.ts 挂注释)。
@@ -22,17 +24,23 @@ import { Frame } from '@/components/shell'
 export const metadata: Metadata = { title: RES_META_TITLE, description: RES_META_DESC }
 
 /**
+ * 通道门槛连库现查,页面按请求渲染。
+ */
+export const dynamic = 'force-dynamic'
+
+/**
  * 官方资源导航页的门:结构化数据 + 顶栏 / 正文 / 页脚三段。
  *
  * @returns 整页。
  */
-export default function ResourcesPage() {
+export default async function ResourcesPage() {
+  const rules = await loadRuleGroups({ db: await getDb() })
   return (
     <>
       <JsonLd json={resItemListJsonOf()} />
       <Frame>
         <Header />
-        <Resources />
+        <Resources rules={rules} />
         <Footer />
       </Frame>
     </>
