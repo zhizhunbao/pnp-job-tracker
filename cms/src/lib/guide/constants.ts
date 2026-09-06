@@ -1,6 +1,6 @@
 /**
- * 站内向导的死值:目的地目录、模型预算、边界上限、字面量。
- * 设计稿 docs/design/顾问改向导-20260904.md;2026-09-05 批二立域,替换 lib/consult。
+ * 站内向导的死值:目的地目录、模型预算、站内事实(题目 → 表)、边界上限、字面量。
+ * 设计稿 docs/design/顾问改向导-20260904.md;2026-09-05 批二立域,替换 lib/consult;2026-09-06 答题批(§9)。
  * 🔵 留痕不在这儿:日志字面量在 `lib/log`(GUIDE_LOG);SQL 文本在 `lib/db/sql` §29。
  *
  * @author Frank
@@ -177,8 +177,94 @@ export const MAX_TOKENS = 300
  */
 export const TEMPERATURE = 0
 
+/**
+ * 向导走 Anthropic 通道(2026-09-06 Frank 拍板):friend 网关(朋友的 ngrok qwen3.6)2~10 秒、同句不同判、
+ * 整段提示词缓存粘住,ngrok 掉线即全判成「问题」;Haiku 结构化输出稳且 1~2 秒。与 `lib/agent` 同用
+ * `ANTHROPIC_MODEL` 这一个 env key。
+ */
+export const PROVIDER = 'anthropic'
+
 // =========================================================================
-// 3. 边界上限(请求体、留痕、线程)
+// 3. 站内事实(2026-09-06 答题批:问题类先按题目取库、拼 FACTS、第二次调用只组织不添)
+// =========================================================================
+
+/**
+ * 三个题目:模型只在 kind=question 时填,决定去哪张表取事实。
+ */
+export const TOPIC = {
+  /**
+   * 省提名要什么条件 / 有哪些通道 → pnp_requirements 按省。
+   */
+  pnp: 'pnp',
+
+  /**
+   * 哪些雇主拿过 LMIA / 谁担保 → companies 的 LMIA 列 × 在招岗。
+   */
+  lmia: 'lmia',
+
+  /**
+   * 某职业在招多少 / 行情 → jobs 按职业码。
+   */
+  jobs: 'jobs',
+} as const
+
+/**
+ * 合法题目清单(校验模型输出用)。
+ */
+export const TOPICS = ['pnp', 'lmia', 'jobs']
+
+/**
+ * 题目 → 答完挂哪张「打开 X」卡:省提名门槛落 PR 决策页(拿门槛对照本人情况的地方),LMIA 落雇主榜,职业落职位板。
+ */
+export const TOPIC_DEST: Record<string, string> = {
+  /**
+   * 省提名门槛 → PR 决策页。
+   */
+  pnp: 'plan_pr',
+
+  /**
+   * LMIA 雇主 → 在招雇主榜。
+   */
+  lmia: 'employers_hiring',
+
+  /**
+   * 职业行情 → 职位板。
+   */
+  jobs: 'jobs',
+}
+
+/**
+ * 门槛条文最多取几行(MB 有 163 条,全喂等于把上下文塞满;按 seq 取前 N 条即各通道的主条款)。
+ */
+export const REQ_ROWS_MAX = 24
+
+/**
+ * LMIA 雇主最多取几家。
+ */
+export const LMIA_ROWS_MAX = 8
+
+/**
+ * 职业省分布最多列几省。
+ */
+export const PROV_ROWS_MAX = 5
+
+/**
+ * 组织答案那次调用的输出上限:六行短句够了。
+ */
+export const ANSWER_MAX_TOKENS = 600
+
+/**
+ * 答案见客截断(模型偶发长篇)。
+ */
+export const ANSWER_CAP = 900
+
+/**
+ * 答案最多留几行(超出的行砍掉:提示词说六行,模型偶尔不听)。
+ */
+export const ANSWER_LINES_MAX = 6
+
+// =========================================================================
+// 4. 边界上限(请求体、留痕、线程)
 // =========================================================================
 
 /**
@@ -262,6 +348,12 @@ export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const PROV_RE = /^[A-Z]{2}$/
 
 /**
+ * 关键词槽位里的项目名(2026-09-06 生产实拍:带路 URL 带了 `?q=LMIA`,提示词明令禁止也挡不住):
+ * 命中即整格丢弃 —— 目的地页本身就按这些项目筛,拿它当关键词搜只会搜空。
+ */
+export const PROGRAMME_Q_RE = /^(lmia|pnp|aip|rcip|fcip|ee|express\s*entry|pr|pgwp|ita|crs|noc|teer)$/i
+
+/**
  * asks.id 形状(正整数)。
  */
 export const ID_RE = /^[1-9]\d{0,9}$/
@@ -302,7 +394,7 @@ export const LANG_NAME: Record<string, string> = {
 export const PRO_LIMIT_PREFIX = 'guide:pro:'
 
 // =========================================================================
-// 4. 字面量(functions.ts 里不许有裸字符串)
+// 5. 字面量(functions.ts 里不许有裸字符串)
 // =========================================================================
 
 /**
@@ -324,6 +416,101 @@ export const ERR_LLM = 'llm'
  * 留痕 err 列:模型答了但不是合法 JSON。
  */
 export const ERR_PARSE = 'parse'
+
+/**
+ * 留痕 err 列:取到了事实但组织答案那次调用失败(这一轮退回「记下」)。
+ */
+export const ERR_ANSWER = 'answer'
+
+/**
+ * 留痕 err 列:取事实的库查询失败。
+ */
+export const ERR_FACTS = 'facts'
+
+/**
+ * FACTS 段每行的开头。
+ */
+export const FACT_HEAD = '- '
+
+/**
+ * 事实行里字段之间的分隔。
+ */
+export const FACT_SEP = ', '
+
+/**
+ * 事实行里名与值之间的分隔。
+ */
+export const FACT_KV = ': '
+
+/**
+ * 门槛条文行:通道名后接条文。
+ */
+export const REQ_LINE_SEP = ' — '
+
+/**
+ * 门槛条文行:主体是雇主时的标记(用户问的是本人条件,雇主侧条款标出来让模型分开说)。
+ */
+export const REQ_EMPLOYER_TAG = ' (employer-side)'
+
+/**
+ * pnp_requirements.subject 里「雇主侧」的值。
+ */
+export const SUBJECT_EMPLOYER = 'employer'
+
+/**
+ * LMIA 雇主行各段的英文措辞(FACTS 只给模型看,不见客)。
+ */
+export const LMIA_WORDS = {
+  /**
+   * TEER 0-3 岗位数。
+   */
+  skilled: ' skilled LMIA positions',
+
+  /**
+   * 总岗位数。
+   */
+  total: ' LMIA positions in total',
+
+  /**
+   * 最近季度。
+   */
+  quarter: 'latest quarter ',
+
+  /**
+   * 本站在招岗数。
+   */
+  open: ' open postings on this site',
+} as const
+
+/**
+ * 职业行情行各段的英文措辞。
+ */
+export const JOBS_WORDS = {
+  /**
+   * 在招总数。
+   */
+  open: ' open postings for NOC ',
+
+  /**
+   * 可提名数。
+   */
+  eligible: ' flagged PNP-eligible',
+
+  /**
+   * 中位年薪。
+   */
+  median: 'median salary CAD ',
+
+  /**
+   * 中位年薪没算出来。
+   */
+  medianNone: 'median salary not available',
+
+  /**
+   * 省分布行的开头。
+   */
+  byProv: 'by province: ',
+} as const
 
 /**
  * 多轮消息的角色名。
@@ -406,6 +593,16 @@ export const CAT_PARAMS_SEP = ', '
 export const SUB_HEAD = ' sub values: '
 
 /**
+ * 子项说明的左括号(`ra (Read Aloud, Speaking)`)。
+ */
+export const SUB_DESC_OPEN = ' ('
+
+/**
+ * 子项说明的右括号。
+ */
+export const SUB_DESC_CLOSE = ')'
+
+/**
  * 模型回包的键名(与 prompts 的 OUTPUT_SHAPE 一致;校验逐键取)。
  */
 export const REPLY_KEY = {
@@ -443,6 +640,11 @@ export const REPLY_KEY = {
    * 子路径。
    */
   sub: 'sub',
+
+  /**
+   * 题目(只在 question 时有意义)。
+   */
+  topic: 'topic',
 
   /**
    * 向导那一句。

@@ -1778,3 +1778,23 @@ export const ASK_INSERT = `INSERT INTO asks (thread, turn, lang, path, question,
  */
 export const ASK_SET_EMAIL = `UPDATE asks SET email = $3, updated_at = now() WHERE id = $1 AND thread = $2 RETURNING id`
 
+/**
+ * 向导答题·某省的官方门槛条文(2026-09-06 Frank 拍板「问题类先用站内数据答再记」:「安省提名要什么条件」
+ * 此前按规则一律记成「站上没有」,而 pnp_requirements 里 ON 有 13 条)。$1=省码,$2=行数。
+ */
+export const GUIDE_REQ_BY_PROV = `SELECT stream, subject, factor, op, value, value_text, unit, applies_teer, label
+     FROM pnp_requirements WHERE province = $1 ORDER BY seq LIMIT $2`
+
+/**
+ * 向导答题·拿过 LMIA 且当前在招的雇主。按 **TEER 0-3 岗位数**排(裸 LMIA 总量永不入排序:农业 / 医疗水量霸榜,
+ * CLAUDE.md 雇主机会口径);$1=省码或空串(空串 = 全国),$2=职业码或空串(给了就只算该职业在招的雇主),$3=行数。
+ */
+export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter,
+            COUNT(*)::int AS open_jobs
+     FROM companies c JOIN jobs j ON j.company_id = c.id
+     WHERE COALESCE(j.status, 'open') <> 'closed' AND COALESCE(c.lmia_positions, 0) > 0
+       AND ($1 = '' OR j.province = $1) AND ($2 = '' OR j.noc = $2)
+     GROUP BY c.id, c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter
+     ORDER BY COALESCE(c.lmia_positions_skilled, 0) DESC, open_jobs DESC, c.name ASC
+     LIMIT $3`
+

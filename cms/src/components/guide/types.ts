@@ -95,17 +95,17 @@ export type GuideReply = {
   kind: GuideKind
 
   /**
-   * 目的地键;非 nav 是 null。
+   * 目的地键;带路与用站内事实答上来的问题有,其余 null。
    */
   dest: string | null
 
   /**
-   * 带参站内路径;非 nav 是 null。
+   * 带参站内路径;dest 为 null 时也是 null。
    */
   url: string | null
 
   /**
-   * 向导那一句;问题与建议是空串。
+   * 向导那几行;没答上来的问题与建议是空串。
    */
   say: string
 }

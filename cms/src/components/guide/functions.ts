@@ -164,7 +164,8 @@ function ignoreErr(): void {
 }
 
 /**
- * 这一轮向导那行字:故障 → 错误句;带路 / 闲聊 → 模型那句;问题 / 建议 → 固定文案;还没回来 → 空串。
+ * 这一轮向导那行字:故障 → 错误句;带路 / 闲聊 → 模型那句;问题 → 答上来的几行,没答上来是固定文案;
+ * 建议 → 固定文案;还没回来 → 空串。
  *
  * @param input 取词函数与这一轮。
  * @returns 那行字。
@@ -180,7 +181,7 @@ export function replyTextOf(input: ReplyTextIn): string {
   if (r == null) {
     return TEXT_NONE
   }
-  if (r.kind === KIND.question) {
+  if (r.kind === KIND.question && r.say === TEXT_NONE) {
     return input.t('chat.noted')
   }
   if (r.kind === KIND.suggestion) {
@@ -237,7 +238,8 @@ export function destLabelOf(input: DestLabelIn): string {
 }
 
 /**
- * 这一轮要不要出「留个邮箱」:只有问题与建议,且服务端真记下了(有 id)。
+ * 这一轮要不要出「留个邮箱」:只有没答上来的问题与建议,且服务端真记下了(有 id)。
+ * 用站内事实答上来的问题(say 非空)不要邮箱 —— 答了就是答了,没有「上线通知」可等。
  *
  * @param turn 这一轮。
  * @returns 要不要。
@@ -247,7 +249,10 @@ export function wantsEmail(turn: GuideTurn): boolean {
   if (r == null || r.id == null) {
     return false
   }
-  return r.kind === KIND.question || r.kind === KIND.suggestion
+  if (r.kind === KIND.question) {
+    return r.say === TEXT_NONE
+  }
+  return r.kind === KIND.suggestion
 }
 
 /**
@@ -523,11 +528,11 @@ export function toReply(w: ReplyWire): GuideReply {
     thread = w.thread
   }
   let dest: string | null = null
-  if (typeof w.dest === 'string' && kind === KIND.nav) {
+  if (typeof w.dest === 'string' && (kind === KIND.nav || kind === KIND.question)) {
     dest = w.dest
   }
   let url: string | null = null
-  if (typeof w.url === 'string' && kind === KIND.nav) {
+  if (typeof w.url === 'string' && (kind === KIND.nav || kind === KIND.question)) {
     url = w.url
   }
   let say = TEXT_NONE

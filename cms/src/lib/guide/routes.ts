@@ -1,7 +1,8 @@
 /**
  * 站内向导的 HTTP 芯(第十一抽屉):POST /api/guide 一轮带路 / 记下;POST /api/guide/email 给那一轮留邮箱。
- * 这里只管鉴权 / 限流 / 传输形状 / 注入:模型走 lib/llm 的 completeText,职业检索走 lib/jobs 的
- * searchNocByTitle,两者包成函数注给 functions 的 guide(方案 A:functions 不碰模型域与业务域)。
+ * 这里只管鉴权 / 限流 / 传输形状 / 注入:模型走 lib/llm 的 completeText(通道钉死 Anthropic,见 constants
+ * PROVIDER;2026-09-06),职业检索走 lib/jobs 的 searchNocByTitle,两者包成函数注给 functions 的 guide
+ * (方案 A:functions 不碰模型域与业务域)。分类与组织答案共用同一把 complete,输出上限由调用点带。
  * 三层帽只防滥用(功能免费):匿名按 IP、免费登录按账号(freeGate 统一池)、Pro 按 PRO_CHAT_DAILY。
  * 体内 `await req.json() as GuideBody` / `as EmailBody` 是跨边界断言:网络 body 先按声明形状收下,
  * 逐格验形在 to* 里做。
@@ -16,9 +17,9 @@ import { searchNocByTitle } from '../jobs/server'
 import { completeText } from '../llm'
 import { checkLimit, freeGate, getUserOrNull, isPro } from '../quota/server'
 import { PRO_CHAT_DAILY } from '../quota'
-import { E_BAD, E_LIMIT, MAX_TOKENS, PRO_LIMIT_PREFIX, TEMPERATURE, TEXT_NONE } from './constants'
+import { E_BAD, E_LIMIT, PRO_LIMIT_PREFIX, PROVIDER, TEMPERATURE, TEXT_NONE } from './constants'
 import { attachEmail, guide, toEmailInput, toInput } from './functions'
-import type { ChatMessage, EmailBody, GuideBody, NocPick } from './types'
+import type { CompleteIn, EmailBody, GuideBody, NocPick } from './types'
 
 /**
  * POST /api/guide:body { text, lang, path?, history? } → { id, thread, turn, kind, dest, url, say, noc, prov }。
@@ -47,8 +48,8 @@ export async function guideRoute(req: Request): Promise<Response> {
     return Response.json({ error: E_LIMIT }, { status: TOO_MANY })
   }
   const db = await getDb()
-  async function complete(messages: ChatMessage[]): Promise<string> {
-    return completeText({ messages: messages, maxTokens: MAX_TOKENS, temperature: TEMPERATURE })
+  async function complete(input: CompleteIn): Promise<string> {
+    return completeText({ messages: input.messages, maxTokens: input.maxTokens, temperature: TEMPERATURE, provider: PROVIDER })
   }
   async function resolveNoc(q: string): Promise<NocPick[]> {
     return searchNocByTitle({ db: db, q: q })

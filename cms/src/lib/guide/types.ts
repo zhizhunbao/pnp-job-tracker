@@ -77,6 +77,21 @@ export type SubOfIn = {
   sub: string | null
 }
 
+/**
+ * `subLineOf` 的入参:目录里一个子项。
+ */
+export type SubLineIn = {
+  /**
+   * 目的地键。
+   */
+  dest: string
+
+  /**
+   * 子项 slug。
+   */
+  sub: string
+}
+
 // =========================================================================
 // 2. 类别与模型(镜像 constants §2)
 // =========================================================================
@@ -90,6 +105,11 @@ export type Lang = 'zh' | 'en' | 'ko'
  * 四类。
  */
 export type Kind = 'nav' | 'question' | 'suggestion' | 'chat'
+
+/**
+ * 三个题目(问题类先按题目取站内事实;2026-09-06 答题批)。
+ */
+export type Topic = 'pnp' | 'lmia' | 'jobs'
 
 /**
  * 喂模型的一条消息(与 lib/llm 的 ChatMessage 同形,本域自声明)。
@@ -107,9 +127,24 @@ export type ChatMessage = {
 }
 
 /**
+ * 一次整段补全的入参:整轮消息与输出上限(分类 300、组织答案 600,同一把注入函数两处用)。
+ */
+export type CompleteIn = {
+  /**
+   * 整轮消息。
+   */
+  messages: ChatMessage[]
+
+  /**
+   * 输出 token 上限。
+   */
+  maxTokens: number
+}
+
+/**
  * 一次整段补全:由路由把 lib/llm 的 completeText 包好注进来,functions 不碰模型域。
  */
-export type CompleteFn = (messages: ChatMessage[]) => Promise<string>
+export type CompleteFn = (input: CompleteIn) => Promise<string>
 
 /**
  * 职业检索命中:向导只认这两格。
@@ -209,6 +244,11 @@ export type ModelReply = {
    * 子路径。
    */
   sub: string | null
+
+  /**
+   * 题目;非 question 或模型没填是 null。
+   */
+  topic: Topic | null
 
   /**
    * 向导那一句;问题与建议是空串。
@@ -332,7 +372,341 @@ export type ResolveSlotsIn = {
 export type ResolveSlotsOut = Promise<ResolvedSlots>
 
 // =========================================================================
-// 3. 请求体、线程与留痕(镜像 constants §3)
+// 3. 站内事实(镜像 constants §3;2026-09-06 答题批)
+// =========================================================================
+
+/**
+ * `GUIDE_REQ_BY_PROV` 回来的一行原始列(pg 原始,每格可能空)。
+ */
+export type ReqDbRow = {
+  /**
+   * 通道名。
+   */
+  stream: string | null
+
+  /**
+   * 主体:applicant / employer。
+   */
+  subject: string | null
+
+  /**
+   * 官方条文原句。
+   */
+  label: string | null
+}
+
+/**
+ * 洗净的门槛条文:只留拼 FACTS 行要的三格。
+ */
+export type ReqFact = {
+  /**
+   * 通道名;官方没分通道是空串。
+   */
+  stream: string
+
+  /**
+   * 是不是雇主侧条款。
+   */
+  employerSide: boolean
+
+  /**
+   * 官方条文原句。
+   */
+  label: string
+}
+
+/**
+ * `GUIDE_LMIA_EMPLOYERS` 回来的一行原始列。
+ */
+export type LmiaDbRow = {
+  /**
+   * 雇主名。
+   */
+  name: string | null
+
+  /**
+   * LMIA 岗位总数。
+   */
+  lmia_positions: number | string | null
+
+  /**
+   * TEER 0-3 岗位数。
+   */
+  lmia_positions_skilled: number | string | null
+
+  /**
+   * 最近季度。
+   */
+  lmia_last_quarter: string | null
+
+  /**
+   * 本站在招岗数。
+   */
+  open_jobs: number | string | null
+}
+
+/**
+ * 洗净的 LMIA 雇主行。
+ */
+export type LmiaFact = {
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * LMIA 岗位总数。
+   */
+  positions: number
+
+  /**
+   * TEER 0-3 岗位数;官方没拆是 null。
+   */
+  skilled: number | null
+
+  /**
+   * 最近季度;没有是空串。
+   */
+  quarter: string
+
+  /**
+   * 本站在招岗数。
+   */
+  openJobs: number
+}
+
+/**
+ * `QUIZ_FACTS_TOTALS` 回来的一行原始列。
+ */
+export type JobsTotalsDbRow = {
+  /**
+   * 在招总数。
+   */
+  open: number | string | null
+
+  /**
+   * 可提名数。
+   */
+  eligible: number | string | null
+
+  /**
+   * 中位年薪。
+   */
+  med: number | string | null
+}
+
+/**
+ * 洗净的职业总量行。
+ */
+export type JobsTotalsFact = {
+  /**
+   * 在招总数。
+   */
+  open: number
+
+  /**
+   * 可提名数。
+   */
+  eligible: number
+
+  /**
+   * 中位年薪;算不出是 null(薪资全空的职业)。
+   */
+  median: number | null
+}
+
+/**
+ * `QUIZ_FACTS_BY_PROV` 回来的一行原始列。
+ */
+export type JobsProvDbRow = {
+  /**
+   * 省码。
+   */
+  province: string | null
+
+  /**
+   * 该省在招数。
+   */
+  n: number | string | null
+}
+
+/**
+ * 洗净的职业省分布行。
+ */
+export type JobsProvFact = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 该省在招数。
+   */
+  n: number
+}
+
+/**
+ * `loadFacts` 的入参:题目 + 解析完的槽位 + 库。
+ */
+export type LoadFactsIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 题目。
+   */
+  topic: Topic
+
+  /**
+   * 解析完的槽位(省 / 职业码决定取哪一片)。
+   */
+  slots: ResolvedSlots
+}
+
+/**
+ * 取到的事实:FACTS 行(已带行首)与失败码。取不到是空数组;库挂了空数组 + err=facts。
+ */
+export type Facts = {
+  /**
+   * FACTS 行。
+   */
+  lines: string[]
+
+  /**
+   * 失败码(facts);正常 null。
+   */
+  err: string | null
+}
+
+/**
+ * `loadFacts` 的返回。
+ */
+export type LoadFactsOut = Promise<Facts>
+
+/**
+ * 三个取事实函数(reqFacts / lmiaFacts / jobsFacts)的返回:FACTS 行。
+ */
+export type FactLinesOut = Promise<string[]>
+
+/**
+ * 省分布行清单(已截)。
+ */
+export type JobsProvFacts = JobsProvFact[]
+
+/**
+ * `jobsTotalsLineOf` 的入参。
+ */
+export type JobsTotalsLineIn = {
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 总量行。
+   */
+  fact: JobsTotalsFact
+}
+
+/**
+ * `answerFromFacts` 的入参:取事实要的 + 组织答案要的。
+ */
+export type AnswerFromFactsIn = {
+  /**
+   * 库连接。
+   */
+  db: Db
+
+  /**
+   * 题目。
+   */
+  topic: Topic
+
+  /**
+   * 解析完的槽位。
+   */
+  slots: ResolvedSlots
+
+  /**
+   * 用户原话。
+   */
+  text: string
+
+  /**
+   * 回复语种。
+   */
+  lang: Lang
+
+  /**
+   * 整段补全函数(注入)。
+   */
+  complete: CompleteFn
+}
+
+/**
+ * `answerSystemOf` 的入参。
+ */
+export type AnswerSystemIn = {
+  /**
+   * 回复语种。
+   */
+  lang: Lang
+
+  /**
+   * FACTS 行。
+   */
+  facts: string[]
+}
+
+/**
+ * `answer` 的入参。
+ */
+export type AnswerIn = {
+  /**
+   * 用户原话。
+   */
+  text: string
+
+  /**
+   * 回复语种。
+   */
+  lang: Lang
+
+  /**
+   * FACTS 行(非空,调用方已验)。
+   */
+  facts: string[]
+
+  /**
+   * 整段补全函数(注入)。
+   */
+  complete: CompleteFn
+}
+
+/**
+ * `answer` 的结果:答案与失败码。调用失败不抛 —— 答案空串,这一轮退回「记下」。
+ */
+export type Answered = {
+  /**
+   * 见客的几行(已截);空串 = 没答上来。
+   */
+  say: string
+
+  /**
+   * 失败码(answer);成功是 null。
+   */
+  err: string | null
+}
+
+/**
+ * `answer` 的返回。
+ */
+export type AnswerOut = Promise<Answered>
+
+// =========================================================================
+// 4. 请求体、线程与留痕(镜像 constants §4)
 // =========================================================================
 
 /**
@@ -515,17 +889,17 @@ export type GuideResult = {
   kind: Kind
 
   /**
-   * 目的地键;非 nav 是 null。
+   * 目的地键:带路是模型选的页;用站内事实答上来的问题是题目对应的页(TOPIC_DEST);其余 null。
    */
   dest: string | null
 
   /**
-   * 带参的站内路径;非 nav 是 null。
+   * 带参的站内路径;dest 为 null 时也是 null。
    */
   url: string | null
 
   /**
-   * 向导那一句;问题与建议是空串(前端用固定文案)。
+   * 向导那几行:带路 / 闲聊是模型那句;答上来的问题是按 FACTS 组织的几行;没答上来的问题与建议是空串(前端用固定文案)。
    */
   say: string
 

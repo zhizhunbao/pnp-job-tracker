@@ -793,5 +793,15 @@ export const GUIDE_LOG = {
    * 留邮箱写库失败。
    */
   emailFailed: 'asks email update failed: ',
+
+  /**
+   * 站内事实取库失败:这一轮退回「记下」(2026-09-06 答题批)。
+   */
+  factsFailed: 'facts query failed, recorded as question: ',
+
+  /**
+   * 组织答案那次调用失败:同样退回「记下」。
+   */
+  answerFailed: 'answer call failed, recorded as question: ',
 } as const
 

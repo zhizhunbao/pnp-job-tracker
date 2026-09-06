@@ -4,8 +4,11 @@
 import { describe, expect, it } from 'vitest'
 import { DEST_ROUTE, DEST_SUB, DEST_URL_KEYS } from '@/lib/guide'
 import type { ResolvedSlots } from '@/lib/guide'
-import { DEST_DESC } from '@/lib/guide/prompts'
-import { jsonOf, messagesOf, systemOf, toEmailInput, toInput, toModelReply, toTurns, urlOf } from '@/lib/guide/functions'
+import { DEST_DESC, SUB_DESC } from '@/lib/guide/prompts'
+import {
+  answer, answerSystemOf, answerTextOf, jobsProvLineOf, jobsTotalsLineOf, jsonOf, lmiaLineOf, messagesOf, reqLineOf,
+  resolveSlots, systemOf, toEmailInput, toInput, toJobsTotalsFact, toLmiaFact, toModelReply, toReqFact, toTurns, urlOf,
+} from '@/lib/guide/functions'
 
 const EMPTY: ResolvedSlots = { noc: null, prov: null, city: null, q: null, sub: null }
 
@@ -64,7 +67,7 @@ describe('urlOf —— 穷举每个目的地', () => {
 describe('toModelReply —— 金标', () => {
   it('带路:四格照收,省码大写', () => {
     const r = toModelReply({ kind: 'nav', dest: 'jobs', occupation: 'carpenter', prov: 'bc', city: null, q: null, sub: null, say: '职位板。' })
-    expect(r).toEqual({ kind: 'nav', dest: 'jobs', occupation: 'carpenter', prov: 'BC', city: null, q: null, sub: null, say: '职位板。' })
+    expect(r).toEqual({ kind: 'nav', dest: 'jobs', occupation: 'carpenter', prov: 'BC', city: null, q: null, sub: null, topic: null, say: '职位板。' })
   })
 
   it('问题与建议:dest 清空、say 清空', () => {
@@ -170,5 +173,107 @@ describe('toInput / toTurns / toEmailInput —— 请求体校验', () => {
     expect(toEmailInput({ id: 1, thread: 'short', email: 'a@b.co' })).toBe(null)
     expect(toEmailInput({ id: 1, thread: 'a'.repeat(16), email: 'not-an-email' })).toBe(null)
     expect(toEmailInput(null)).toBe(null)
+  })
+})
+
+// ---- 2026-09-06 答题批:题目校验、q 过滤项目名、PTE 子项带分部、FACTS 行、答案收口(模型仍是注入的假函数) ----
+
+describe('toModelReply —— topic(答题批)', () => {
+  it('question 带合法题目照收;不合法 → null', () => {
+    expect(toModelReply({ kind: 'question', topic: 'pnp', prov: 'on' }).topic).toBe('pnp')
+    expect(toModelReply({ kind: 'question', topic: 'weather' }).topic).toBe(null)
+    expect(toModelReply({ kind: 'question' }).topic).toBe(null)
+  })
+
+  it('非 question 一律 null(带路 / 建议 / 闲聊不取事实)', () => {
+    expect(toModelReply({ kind: 'nav', dest: 'jobs', topic: 'jobs' }).topic).toBe(null)
+    expect(toModelReply({ kind: 'suggestion', topic: 'pnp' }).topic).toBe(null)
+    expect(toModelReply({ kind: 'chat', topic: 'lmia' }).topic).toBe(null)
+  })
+})
+
+describe('resolveSlots —— 关键词里的项目名整格丢弃', () => {
+  const reply = { kind: 'nav' as const, dest: 'employers_hiring', occupation: null, prov: null, city: null, sub: null, topic: null, say: '' }
+  async function noNoc(): Promise<never[]> {
+    return []
+  }
+
+  it('LMIA / PNP / express entry 大小写都丢;真关键词留', async () => {
+    for (const bad of ['LMIA', 'lmia', 'PNP', 'Express Entry', 'ee ']) {
+      const s = await resolveSlots({ reply: { ...reply, q: bad }, resolveNoc: noNoc })
+      expect(s.q).toBe(null)
+    }
+    const s = await resolveSlots({ reply: { ...reply, q: 'truck driver' }, resolveNoc: noNoc })
+    expect(s.q).toBe('truck driver')
+  })
+})
+
+describe('目录 —— PTE 子项带题型与分部', () => {
+  it('SUB_DESC 覆盖 DEST_SUB 每个子项,system 里 sst 标成 Listening、ra 标成 Speaking', () => {
+    for (const [dest, subs] of Object.entries(DEST_SUB)) {
+      for (const sub of subs) {
+        expect(SUB_DESC[dest]?.[sub]).toBeDefined()
+      }
+    }
+    const sys = systemOf({ lang: 'zh', path: '' })
+    expect(sys).toContain('sst (Summarize Spoken Text, Listening)')
+    expect(sys).toContain('ra (Read Aloud, Speaking)')
+    expect(sys).toContain('TOPIC.')
+  })
+})
+
+describe('FACTS 行 —— 数字原样、空格保 null', () => {
+  it('门槛行:通道 — 条文,雇主侧带标记,没通道就只剩条文', () => {
+    expect(reqLineOf({ stream: 'OINP Workforce Priority', employerSide: false, label: 'CLB 6 in all four' })).toBe('- OINP Workforce Priority — CLB 6 in all four')
+    expect(reqLineOf({ stream: '', employerSide: true, label: 'revenue $1,000,000' })).toBe('- revenue $1,000,000 (employer-side)')
+  })
+
+  it('LMIA 雇主行:skilled 为 null 就不写那段(不折 0)', () => {
+    expect(lmiaLineOf({ name: 'Acme', positions: 30, skilled: 12, quarter: '2026Q1', openJobs: 5 }))
+      .toBe('- Acme: 12 skilled LMIA positions, 30 LMIA positions in total, latest quarter 2026Q1, 5 open postings on this site')
+    expect(lmiaLineOf({ name: 'Acme', positions: 30, skilled: null, quarter: '', openJobs: 0 }))
+      .toBe('- Acme: 30 LMIA positions in total, 0 open postings on this site')
+  })
+
+  it('职业行:中位薪资算不出写 not available;省分布空是空串', () => {
+    expect(jobsTotalsLineOf({ noc: '72310', fact: { open: 120, eligible: 80, median: 61234.6 } }))
+      .toBe('- 120 open postings for NOC 72310, 80 flagged PNP-eligible, median salary CAD 61235')
+    expect(jobsTotalsLineOf({ noc: '72310', fact: { open: 1, eligible: 0, median: null } })).toContain('median salary not available')
+    expect(jobsProvLineOf([])).toBe('')
+    expect(jobsProvLineOf([{ province: 'ON', n: 50 }, { province: 'BC', n: 20 }])).toBe('- by province: ON: 50, BC: 20')
+  })
+
+  it('行构造器:空格与 NULL 走词汇表', () => {
+    expect(toReqFact({ stream: null, subject: 'employer', label: null })).toEqual({ stream: '', employerSide: true, label: '' })
+    expect(toLmiaFact({ name: 'A', lmia_positions: '3', lmia_positions_skilled: null, lmia_last_quarter: null, open_jobs: 2 }))
+      .toEqual({ name: 'A', positions: 3, skilled: null, quarter: '', openJobs: 2 })
+    expect(toJobsTotalsFact({ open: '7', eligible: null, med: null })).toEqual({ open: 7, eligible: 0, median: null })
+  })
+})
+
+describe('answer —— 第二次调用的收口', () => {
+  it('system 含铁律、FACTS 与语种;答案去空行、最多 6 行', async () => {
+    const sys = answerSystemOf({ lang: 'ko', facts: ['- a', '- b'] })
+    expect(sys).toContain('FACTS:\n- a\n- b')
+    expect(sys).toContain('Korean')
+    expect(sys).toContain('empty string')
+    async function fake(): Promise<string> {
+      return '\n- 1\n\n- 2\n- 3\n- 4\n- 5\n- 6\n- 7\n'
+    }
+    const a = await answer({ text: 'q', lang: 'zh', facts: ['- a'], complete: fake })
+    expect(a.err).toBe(null)
+    expect(a.say.split('\n')).toEqual(['- 1', '- 2', '- 3', '- 4', '- 5', '- 6'])
+  })
+
+  it('模型挂了:say 空串 + err=answer(不抛,退回「记下」)', async () => {
+    async function boom(): Promise<string> {
+      throw new Error('down')
+    }
+    const a = await answer({ text: 'q', lang: 'en', facts: ['- a'], complete: boom })
+    expect(a).toEqual({ say: '', err: 'answer' })
+  })
+
+  it('模型回空串:say 空串(事实不够答就退回「记下」)', () => {
+    expect(answerTextOf('   \n  ')).toBe('')
   })
 })

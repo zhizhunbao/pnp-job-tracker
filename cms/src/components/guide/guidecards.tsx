@@ -1,6 +1,7 @@
 'use client'
 /**
- * 答复下的卡:带路 → 「打开 X」(推荐徽标,站内链接);问题 / 建议 → 「留个邮箱,上线通知我」→ 邮箱框 → 已记。
+ * 答复下的卡:带路 → 「打开 X」(推荐徽标,站内链接);用站内事实答上来的问题(服务端给了 url)→ 同一张「打开 X」
+ * (2026-09-06 答题批,卡形不变);没答上来的问题 / 建议 → 「留个邮箱,上线通知我」→ 邮箱框 → 已记。
  * 闲聊 → 站内地图(主要页面各一卡);故障不出卡。
  *
  * @author Frank
@@ -26,7 +27,7 @@ export function GuideCards({ p, turn, i }: GuideCardsIn) {
   if (r == null) {
     return null
   }
-  if (r.kind === KIND.nav && r.url != null && r.dest != null) {
+  if ((r.kind === KIND.nav || r.kind === KIND.question) && r.url != null && r.dest != null) {
     const recCls = `${cssOf(css.cbOpt)} ${cssOf(css.cbOptRec)}`
     return (
       <div className={css.cbOpts}>
