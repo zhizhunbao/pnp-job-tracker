@@ -252,28 +252,23 @@ RCIP_URL_BASE = ("https://www.canada.ca/en/immigration-refugees-citizenship/serv
 """RCIP/FCIP 两条社区试点的官方页前缀。
 RCIP(Rural / Francophone Community Immigration Pilots)不是 Express Entry 项目,不挂在
 EE_URL_BASE 前缀下,但门槛表同样落 province='FED'、同一份 fed-eligibility.json
-(C5b-0,2026-08-05)。"""
+(C5b-0,2026-08-05)。
+2026-09-06 两试点的门槛行(RCIP 5 条、FCIP 3 条)整段退役 —— eligibility 域立域后按试点各自全量抄
+(RCIP 28 条、FCIP 25 条,raw/ircc/rcip_rules.json / fcip_rules.json),同一门槛两处落行进库就是两行
+(pnp_requirements 实撞 RCIP 33 = 28 + 5)。本域只留两条试点的资格页 URL 给 programs 块当出处;
+Franco 经验页交叉核验、两试点语言页随行退役。"""
 
 IN_URL_RCIP_RURAL = RCIP_URL_BASE + "rural-immigration/eligibility/work-experience.html"
 """RCIP(Rural)工作经验页 —— 两条 pilot 的「Work experience」页文案逐字相同
 (已用 fed-rcip crawl 缓存核对),Rural 页作为 quote 出处。"""
 
-IN_URL_RCIP_FRANCO = RCIP_URL_BASE + "franco-immigration/eligibility/work-experience.html"
-"""RCIP(Franco)工作经验页 —— 只做交叉核验(见 build_ircc_ee_rules 里的 missing_franco 检查),
-不重复落两条一样的行。"""
 
-IN_URL_RCIP_LANG = RCIP_URL_BASE + "rural-immigration/eligibility/language-test.html"
-"""RCIP(Rural)语言门槛页(2026-08-14 L2-09 用例横测暴露:库里没有语言行 → 引擎把「没收录」
-当成「不要求」,语言没考的人也看到「即可申请」)。Franco 试点语言规则不同(NCLC 5 一刀切,
-纯法语),不共享这批行 —— 交叉核验只对经验行。"""
 
 IN_URL_FCIP_ELIG = RCIP_URL_BASE + "franco-immigration/eligibility.html"
 """FCIP(法语社区试点)资格页。2026-08-15 立成独立通道(Frank「还有法语区,都拆成不同的
 策略文件吧」)。**不与 RCIP 共享语言行**:官方 NCLC 5 一刀切、且是法语;经验页文案与 Rural 页
 逐字相同,但落成 program='FCIP' 自己的行 —— 两条 pilot 的社区名单、名额、语言尺子都不是一回事。"""
 
-IN_URL_FCIP_LANG = RCIP_URL_BASE + "franco-immigration/eligibility/language-test.html"
-"""FCIP 语言门槛页。"""
 
 IN_URL_LANG = EE_URL_BASE + "documents/language-test.html"
 """三个项目的最低 CLB/NCLC 门槛表 + T4–T26 成绩换算表。"""
@@ -555,28 +550,20 @@ PAGE_LANG = "lang"
 PAGE_RCIP_RURAL = "rcip_rural"
 """页键:RCIP(Rural)工作经验页。"""
 
-PAGE_RCIP_FRANCO = "rcip_franco"
-"""页键:RCIP(Franco)工作经验页(交叉核验用)。"""
 
-PAGE_RCIP_LANG = "rcip_lang"
-"""页键:RCIP 语言门槛页。"""
 
 PAGE_FCIP_ELIG = "fcip_elig"
 """页键:FCIP 资格页。"""
 
-PAGE_FCIP_LANG = "fcip_lang"
-"""页键:FCIP 语言门槛页。"""
 
 RULE_PAGES = (
     (PAGE_CEC, IN_URL_CEC), (PAGE_FSW, IN_URL_FSW), (PAGE_FST, IN_URL_FST), (PAGE_LANG, IN_URL_LANG),
-    (PAGE_RCIP_RURAL, IN_URL_RCIP_RURAL), (PAGE_RCIP_FRANCO, IN_URL_RCIP_FRANCO),
-    (PAGE_RCIP_LANG, IN_URL_RCIP_LANG),
-    (PAGE_FCIP_ELIG, IN_URL_FCIP_ELIG), (PAGE_FCIP_LANG, IN_URL_FCIP_LANG),
+    (PAGE_RCIP_RURAL, IN_URL_RCIP_RURAL), (PAGE_FCIP_ELIG, IN_URL_FCIP_ELIG),
 )
 """规则核验要载入的页(页键 → URL;顺序即原脚本的加载序)。"""
 
 IN_URL_PRINTED = (IN_URL_CRS, IN_URL_CEC, IN_URL_FSW, IN_URL_FST, IN_URL_LANG, IN_URL_ECA,
-                  IN_URL_RCIP_RURAL, IN_URL_RCIP_FRANCO)
+                  IN_URL_RCIP_RURAL)
 """开工时逐行打印的输入页清单(原脚本原序原样)。"""
 
 PROGRAM_RCIP = "RCIP"
@@ -677,11 +664,6 @@ QUOTE_MISSING_ROW_TPL = "✗   [{program}/{factor}] {quote}"
 QUOTE_CLIP = 90
 """未过引用在日志里的截断长度。"""
 
-FRANCO_MISSING_HEADER = ("✗ RCIP 引用在 Franco pilot 页上对不上(Rural/Franco 文案已经不一致?)"
-                         "—— 保留旧表,人工重核:")
-"""RCIP 两条 pilot 共享**经验**文案:Rural 页(上面已核验)之外,交叉核验 Franco 页也逐字命中,
-否则「两条 pilot 都是 1,560 小时」这个结论只验证了一半就写进了库。
-语言行不进这道闸:Franco 是 NCLC 5 一刀切(纯法语),与 Rural 的 TEER 分档不同源。"""
 
 RULES = (
     {"program": "CEC", "page": "cec", "factor": "workTeer", "op": "in", "value": "0,1,2,3", "unit": "TEER",
@@ -761,37 +743,9 @@ RULES = (
     {"program": "FST", "page": "lang", "factor": "language", "stream": "reading-writing", "op": ">=", "value": 4, "unit": "CLB",
      "label": "FST: CLB/NCLC 4 for reading and writing",
      "quote": "English Reading and writing CLB 4"},
-
-    {"program": "RCIP", "page": "rcip_rural", "factor": "workHours", "op": ">=", "value": 1560, "unit": "hours",
-     "basis": "windowYears=3;minYears=1",
-     "label": "RCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
-     "quote": "you need at least 1 year (1,560 hours) of related work experience in the past 3 years"},
-    {"program": "RCIP", "page": "rcip_rural", "factor": "workSelfEmployed", "op": "rule", "value": "excluded", "unit": "",
-     "label": "RCIP: self-employed work does not count toward the experience requirement",
-     "quote": "not be from a self-employed job"},
-    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-0-1", "op": ">=", "value": 6, "unit": "CLB",
-     "label": "RCIP: TEER 0 or 1 job offer needs CLB 6",
-     "quote": "TEER 0 or 1: CLB 6"},
-    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-2-3", "op": ">=", "value": 5, "unit": "CLB",
-     "label": "RCIP: TEER 2 or 3 job offer needs CLB 5",
-     "quote": "TEER 2 or 3: CLB 5"},
-    {"program": "RCIP", "page": "rcip_lang", "factor": "language", "stream": "teer-4-5", "op": ">=", "value": 4, "unit": "CLB",
-     "label": "RCIP: TEER 4 or 5 job offer needs CLB 4",
-     "quote": "TEER 4 or 5: CLB 4"},
-
-    {"program": "FCIP", "page": "fcip_elig", "factor": "workHours", "op": ">=", "value": 1560, "unit": "hours",
-     "basis": "windowYears=3;minYears=1",
-     "label": "FCIP: 1 year (1,560 hours) of related work experience in the past 3 years",
-     "quote": "have at least 1 year (1,560 hours) of related work experience in the past 3 years"},
-    {"program": "FCIP", "page": "fcip_elig", "factor": "offerDesignatedEmployer", "op": "rule", "value": "required", "unit": "",
-     "label": "FCIP: job offer must come from a designated employer in the community",
-     "quote": "have a valid job offer from a designated employer in the community"},
-    {"program": "FCIP", "page": "fcip_lang", "factor": "language", "op": ">=", "value": 5, "unit": "NCLC",
-     "label": "FCIP: NCLC 5 in all 4 abilities (French)",
-     "quote": "You need a minimum score of NCLC 5 in all 4 abilities to apply for the Francophone Community Immigration Pilot (FCIP)."},
 )
 """资格规则:人从官方原文抄的结构化行,机器只管「原文没变」(照 build_pgwp)。
-page: cec/fsw/fst/lang/rcip_rural/rcip_lang/fcip_elig/fcip_lang · quote 必须逐字(归一化后)
+page: cec/fsw/fst/lang(rcip_rural/fcip_elig 2026-09-06 起只给 programs 块当出处,不再有行)· quote 必须逐字(归一化后)
 出现在该页上,否则整表不更新。缺 stream/basis 的行落盘时补空串(原脚本 `.get(...,"")` 同义)。
 
 分组沿革(原表内分隔注释 2026-08-30 批C 逐字折进本 docstring —— 方言律「注释只许 docstring」):

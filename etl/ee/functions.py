@@ -32,8 +32,7 @@ from ee.constants import (
     CRS_MIN_ROWS, CRS_NOTE, CRS_PRINT_DONE_TPL, CRS_PROBLEM_TPL, CRS_SOURCE, DRAWS_CAT_MAP,
     DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_ROW_TPL, DRAWS_SOURCE, DRAWS_TIMEOUT_S, DRAWS_URL,
     ECA_EXPECTED, ECA_FACTOR, ECA_MIN_ROWS, ECA_PROBLEM_NO_TABLE, ECA_PROBLEM_ROWS_TPL,
-    ELIG_NOTE, ELIG_PRINT_DONE_TPL, ELIG_PROGRAMS, ELIG_SOURCE, FRANCO_MISSING_HEADER,
-    FSW_SECTION_LABEL, FSW_SECTION_LETTER, FSW_SEL_MIN_ROWS, FSW_SEL_PROBLEM_TPL, GCDS_DATE_TAG,
+    ELIG_NOTE, ELIG_PRINT_DONE_TPL, ELIG_PROGRAMS, ELIG_SOURCE,     FSW_SECTION_LABEL, FSW_SECTION_LETTER, FSW_SEL_MIN_ROWS, FSW_SEL_PROBLEM_TPL, GCDS_DATE_TAG,
     HEAD_TAGS_23, HEAD_TAGS_234, HIST_DAYS_PER_MONTH, HIST_MONTHS, HIST_PER_CAT, IN_CRAWL_EE,
     IN_URL_CRS, IN_URL_ECA, IN_URL_LANG, IN_URL_PRINTED, INDENT_1, INDENT_2, K_BASIS,
     K_BENCHMARK, K_BY_CATEGORY, K_CATEGORIES, K_CELLS, K_CODE, K_COLUMN, K_CRITERION, K_CRS,
@@ -47,8 +46,8 @@ from ee.constants import (
     LANG_PRINT_DONE_TPL, LANG_PROBLEM_COLS_TPL, LANG_PROBLEM_COUNT_TPL, LANG_PROBLEM_CTX_TPL,
     LANG_SOURCE, LANG_TABLE_N, LANG_TABLE_START, MAX_QUOTE_RE, NOC5_RE, NOC_TEER_HEADER,
     NUM_1_5_RE, OUT_CATEGORIES, OUT_CRS, OUT_DRAWS, OUT_ELIG, OUT_LANG, PAGE_FSW, PAGE_LANG,
-    PAGE_RCIP_FRANCO, PAGE_RCIP_RURAL, POINTS_RE, PRINT_IN_TPL, PRINT_IN_URL_TPL, PRINT_OUT_TPL,
-    PROGRAM_HEADINGS, PROGRAM_RCIP, PROVINCE_FED, QUOTE_CLIP, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT,
+    POINTS_RE, PRINT_IN_TPL, PRINT_IN_URL_TPL, PRINT_OUT_TPL,
+    PROGRAM_HEADINGS, PROVINCE_FED, QUOTE_CLIP, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT,
     QUOTE_MISSING_ROW_TPL, QUOTE_MISSING_TPL, QUOTE_STRAIGHT, DQUOTE_CURLY_LEFT,
     DQUOTE_CURLY_RIGHT, DQUOTE_STRAIGHT, RECENT_N, RULE_PAGES, RULES, SECTION_RE,
     SUBJECT_APPLICANT, TAG_H3, TAG_H4, TAG_MAIN, TAG_TABLE, TAG_TD, TAG_TR, TEER_RE, TEST_NAMES,
@@ -624,20 +623,6 @@ def missing_quotes(pages: dict) -> list:
     return out
 
 
-def franco_missing_quotes(pages: dict) -> list:
-    """RCIP 经验行的交叉核验:Rural 页的原句在 Franco 页上也必须逐字命中。"""
-    franco = pages[PAGE_RCIP_FRANCO].text
-    out = []
-    for r in RULES:
-        if r[K_PROGRAM] != PROGRAM_RCIP:
-            continue
-        if r[K_PAGE] != PAGE_RCIP_RURAL:
-            continue
-        if norm(str(r[K_QUOTE])) not in franco:
-            out.append(r)
-    return out
-
-
 def say_missing(x: MissingSayIn) -> None:
     """核验未过:抬头 + 逐条明细 → 退出码 1(**保留旧表不覆盖**)。
 
@@ -709,9 +694,6 @@ def build_ee_eligibility(pages: dict) -> None:
     if len(missing) > 0:
         say_missing(MissingSayIn(header=QUOTE_MISSING_TPL.format(n=len(missing), total=len(RULES)),
                                  rules=missing))
-    franco = franco_missing_quotes(pages)
-    if len(franco) > 0:
-        say_missing(MissingSayIn(header=FRANCO_MISSING_HEADER, rules=franco))
     reqs = []
     for r in RULES:
         reqs.append(to_req_row(ReqRowIn(rule=r, page=pages[r[K_PAGE]])))
