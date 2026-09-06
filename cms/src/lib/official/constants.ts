@@ -15,6 +15,12 @@ import type { LangCode, ResGroup } from './types'
 export const RULES_PROVINCE_FED = 'FED'
 
 /**
+ * 资料库通道门槛卡的联邦段顺序(2026-09-06):雇主担保三试点在前,再毕业工签,再 EE 三项,规费殿后;
+ * 不在表里的通道排最后(保库内序)。
+ */
+export const FED_PROGRAM_ORDER = ['AIP', 'RCIP', 'FCIP', 'PGWP', 'CEC', 'FSW', 'FST', 'PR-fees']
+
+/**
  * 官方原文尾部悬空的「, or」(表格排版残留,显示时摘掉):那个 or 是官方**表格排版**
  * 留下的(下一行接着念),单拎出来放进选项就是个悬空的 or(英文界面实拍:
  * 「Post-secondary education completed in B.C., or」)。二选一改由 UI 表达,尾巴去掉。

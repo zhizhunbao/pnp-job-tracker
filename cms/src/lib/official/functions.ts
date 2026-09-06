@@ -6,7 +6,7 @@
  */
 
 import { queryRowsOrEmpty, SQL, text } from '../db'
-import { LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE, RULES_PROVINCE_FED } from './constants'
+import { FED_PROGRAM_ORDER, LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE, RULES_PROVINCE_FED } from './constants'
 import type {
   LangCode, LoadRuleGroupsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut, RuleRow,
 } from './types'
@@ -16,7 +16,7 @@ import type {
  * pnp_requirements 早已一行一条带原句与 URL,只差一个人能看的地方)。
  *
  * @param x 连接。
- * @returns 分组清单,联邦通道在前(按库内序),省在后(按省码序)。
+ * @returns 分组清单,联邦通道在前(按 FED_PROGRAM_ORDER),省在后(按省码序)。
  */
 export async function loadRuleGroups(x: LoadRuleGroupsIn): RuleGroupsOut {
   const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRuleGroupSeed })
@@ -38,12 +38,39 @@ export async function loadRuleGroups(x: LoadRuleGroupsIn): RuleGroupsOut {
       provs.push(g)
     }
   }
+  fed.sort(byFedOrder)
   provs.sort(byProvince)
   return fed.concat(provs)
 }
 
 /**
- * 省段按省码字母序(联邦段保持库内序:AIP / RCIP / FCIP / PGWP / EE 三项 / 规费)。
+ * 联邦段按 FED_PROGRAM_ORDER 排(表外的排最后)。
+ *
+ * @param a 一组。
+ * @param b 另一组。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byFedOrder(a: RuleGroup, b: RuleGroup): number {
+  return fedRankOf(a.program) - fedRankOf(b.program)
+}
+
+/**
+ * 联邦通道在顺序表里的位置;表外给表长(排最后)。
+ *
+ * @param program 通道码。
+ * @returns 位置。
+ */
+function fedRankOf(program: string): number {
+  const i = FED_PROGRAM_ORDER.indexOf(program)
+  if (i < 0) {
+    return FED_PROGRAM_ORDER.length
+  }
+  return i
+}
+
+/**
+ * 省段按省码字母序。
  *
  * @param a 一组。
  * @param b 另一组。
