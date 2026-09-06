@@ -16,7 +16,7 @@ import type {
  * pnp_requirements 早已一行一条带原句与 URL,只差一个人能看的地方)。
  *
  * @param x 连接。
- * @returns 分组清单,联邦通道在前(按库内序),省在后。
+ * @returns 分组清单,联邦通道在前(按库内序),省在后(按省码序)。
  */
 export async function loadRuleGroups(x: LoadRuleGroupsIn): RuleGroupsOut {
   const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.PNP_REQUIREMENTS_ALL, params: [], map: toRuleGroupSeed })
@@ -29,7 +29,29 @@ export async function loadRuleGroups(x: LoadRuleGroupsIn): RuleGroupsOut {
       g.rows.push(r.row)
     }
   }
-  return Array.from(groups.values())
+  const fed: RuleGroup[] = []
+  const provs: RuleGroup[] = []
+  for (const g of groups.values()) {
+    if (g.province === RULES_PROVINCE_FED) {
+      fed.push(g)
+    } else {
+      provs.push(g)
+    }
+  }
+  provs.sort(byProvince)
+  return fed.concat(provs)
+}
+
+/**
+ * 省段按省码字母序(联邦段保持库内序:AIP / RCIP / FCIP / PGWP / EE 三项 / 规费)。
+ *
+ * @param a 一组。
+ * @param b 另一组。
+ * @returns 比较结果。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byProvince(a: RuleGroup, b: RuleGroup): number {
+  return a.province.localeCompare(b.province)
 }
 
 /**
