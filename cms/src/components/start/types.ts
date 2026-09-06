@@ -2074,6 +2074,16 @@ export type EmpCellRow = {
   alias: string
 
   /**
+   * 连锁记号文案(试点表里连锁雇主给「连锁」,其余行 '' 不出胶囊;2026-09-06)。
+   */
+  chainText: string
+
+  /**
+   * 连锁胶囊的 tooltip。
+   */
+  chainTip: string
+
+  /**
    * 「看岗位」:职位板按雇主名筛。
    */
   jobsHref: string
@@ -3564,26 +3574,6 @@ export type PilotPickIn = {
 }
 
 /**
- * 试点表的一「份」:一个试点出一张表,AIP 拆本地 / 连锁两张(2026-09-05)。
- */
-export type PilotPart = {
-  /**
-   * 表键(表题文案 = KEY_PILOT_HEAD + 键)。
-   */
-  key: string
-
-  /**
-   * 试点键(inPilotOf 按它判名单)。
-   */
-  pilot: string
-
-  /**
-   * 连锁筛:true 只留连锁、false 只留本地、null 不筛(RCIP / FCIP)。
-   */
-  chain: boolean | null
-}
-
-/**
  * `pilotCellsOf` 的入参。
  */
 export type PilotCellsIn = {
@@ -3598,9 +3588,29 @@ export type PilotCellsIn = {
   rows: SponsorRowList
 
   /**
-   * 这一份表。
+   * 试点键(inPilotOf 按它判进表,取值只看该试点的岗)。
    */
-  part: PilotPart
+  pilot: string
+}
+
+/**
+ * `chainTextOf` 的入参。
+ */
+export type ChainTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这家是不是连锁。
+   */
+  chain: boolean
+
+  /**
+   * 试点键;PILOT_NONE(行业表)不出记号。
+   */
+  pick: string
 }
 
 /**

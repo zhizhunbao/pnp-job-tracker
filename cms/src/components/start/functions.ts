@@ -50,7 +50,7 @@ import {
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
-  AIP_SEC_LOCAL, AIP_SEC_CHAIN, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP,
+  KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
@@ -101,7 +101,7 @@ import type {
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
-  PilotPickIn, PilotPart, PilotCellsIn,
+  PilotPickIn, PilotCellsIn, ChainTextIn,
 } from './types'
 import css from './start.module.css'
 
@@ -2965,6 +2965,8 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     key: r.name,
     name: displayNameOf(r.name),
     alias: aliasOf({ r, lang: x.lang }),
+    chainText: chainTextOf({ t: x.t, chain: r.chain, pick: x.pick }),
+    chainTip: x.t(KEY_CHAIN_TIP),
     jobsHref: empJobsHrefOf({ r, pick: x.pick }),
     companyHref: URL_COMPANY_HEAD + r.slug,
     open,
@@ -2991,6 +2993,19 @@ function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
     actBtnCls: actBtnClsOf(),
     onView: trackEmpClick,
   }
+}
+
+/**
+ * 连锁记号:试点表里连锁雇主给「连锁」,本地雇主与行业表的行给 ''(2026-09-06 Frank 拍板合表挂胶囊)。
+ *
+ * @param x 取词函数、连锁与否与试点键。
+ * @returns 记号文案或 ''。
+ */
+function chainTextOf(x: ChainTextIn): string {
+  if (x.pick === PILOT_NONE || x.chain === false) {
+    return TEXT_NONE
+  }
+  return x.t(KEY_CHAIN)
 }
 
 /**
@@ -3491,57 +3506,36 @@ function isDesignated(x: DesignatedIn): boolean {
 }
 
 /**
- * 三试点指定雇主表(AIP 本地 / AIP 连锁 / RCIP / FCIP 四张,在招的;不分身份档不分行业,按在招降序;
- * 每张在招只算该试点的岗)。
+ * 三试点指定雇主表(AIP / RCIP / FCIP 各一张,在招的;不分身份档不分行业,按在招降序;每张在招只算该试点的岗;
+ * 连锁雇主名旁挂记号,不再拆表 —— 2026-09-05 曾拆本地 / 连锁两张,09-06 Frank 拍板合回)。
  *
- * @param x 三分表、分类映射、职业表与试点集合。
- * @returns 四张表(凑不出一行的不出)。
+ * @param x 四分表、分类映射、职业表与试点集合。
+ * @returns 三张表(凑不出一行的不出)。
  */
 export function pilotSecsOf(x: PilotSecsIn): EmpSec[] {
   const rows = unionSponsorRows(x.sponsor)
   const out: EmpSec[] = []
   for (const pilot of PILOT_KEYS) {
-    for (const part of pilotPartsOf(pilot)) {
-      const cells = pilotCellsOf({ x, rows, part })
-      if (cells.length === 0) {
-        continue
-      }
-      cells.sort(byOpenDescEmp)
-      out.push({ key: part.key, title: x.t(KEY_PILOT_HEAD + part.key), rows: cells })
+    const cells = pilotCellsOf({ x, rows, pilot })
+    if (cells.length === 0) {
+      continue
     }
+    cells.sort(byOpenDescEmp)
+    out.push({ key: pilot, title: x.t(KEY_PILOT_HEAD + pilot), rows: cells })
   }
   return out
 }
 
 /**
- * 一个试点拆成几份表:AIP 拆本地 / 连锁两份(2026-09-05 Frank「AIP 应该是分两部分吧」),其余一份不筛。
+ * 一张试点表的展示行:有该试点在招岗的雇主。
  *
- * @param pilot 试点键。
- * @returns 份表清单(顺序即页面顺序)。
- */
-function pilotPartsOf(pilot: string): PilotPart[] {
-  if (pilot === PILOT_KEY_AIP) {
-    return [
-      { key: AIP_SEC_LOCAL, pilot, chain: false },
-      { key: AIP_SEC_CHAIN, pilot, chain: true },
-    ]
-  }
-  return [{ key: pilot, pilot, chain: null }]
-}
-
-/**
- * 一份试点表的展示行:在该试点名单上、且过连锁筛(有筛时)的雇主。
- *
- * @param x 试点表入参、事实行与这一份表。
+ * @param x 试点表入参、事实行与试点键。
  * @returns 展示行(未排序)。
  */
 function pilotCellsOf(x: PilotCellsIn): EmpCellRow[] {
   const cells: EmpCellRow[] = []
   for (const r of x.rows) {
-    if (inPilotOf({ r, pilot: x.part.pilot, extra: x.x.extra }) === false) {
-      continue
-    }
-    if (x.part.chain != null && r.chain !== x.part.chain) {
+    if (inPilotOf({ r, pilot: x.pilot, extra: x.x.extra }) === false) {
       continue
     }
     const ind = indOfNocs({ nocs: r.nocs, nocCat: x.x.nocCat })
@@ -3553,7 +3547,7 @@ function pilotCellsOf(x: PilotCellsIn): EmpCellRow[] {
       nocCat: x.x.nocCat,
       extra: x.x.extra,
       lang: x.x.lang,
-      pick: x.part.pilot,
+      pick: x.pilot,
     }))
   }
   return cells

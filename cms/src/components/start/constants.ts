@@ -1025,15 +1025,16 @@ export const PILOT_FCIP = 'FCIP'
 export const TABLE_PILOT = 'pilot'
 
 /**
- * AIP 表的两半之一:本地雇主(在招岗没出大西洋,或只出了一省);表题文案 = KEY_PILOT_HEAD + 键。
- * 拆表理由见 lib/employers CHAIN_PROVS_MIN(Frank 2026-09-05「当地的企业更容易 AIP 吧」)。
+ * 连锁记号的文案键(2026-09-06 Frank 拍板:AIP 本地 / 连锁两张表合回一张,连锁雇主名旁挂灰胶囊 + tooltip
+ * —— 两张表只差一个词,用户不知道为什么分;胶囊在他需要的那一刻说「按门店逐家指定,投前核对门店」。
+ * 连锁判据见 lib/employers CHAIN_PROVS_MIN;三试点表都挂,行业表不挂)。
  */
-export const AIP_SEC_LOCAL = 'aipLocal'
+export const KEY_CHAIN = 'pulse.chain'
 
 /**
- * AIP 表的两半之一:连锁雇主(在招岗覆盖大西洋以外 ≥ 2 省,品牌名匹配是模糊命中)。
+ * 连锁胶囊 tooltip 的文案键(允许的四类文案之一:tooltip)。
  */
-export const AIP_SEC_CHAIN = 'aipChain'
+export const KEY_CHAIN_TIP = 'pulse.chain.tip'
 
 /**
  * 三试点的键(顺序即三张表的顺序);表题文案 = KEY_PILOT_HEAD + 键。

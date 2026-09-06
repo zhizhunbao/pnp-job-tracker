@@ -36,7 +36,10 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
   kv.push({ k: t('pulse.col.open'), v: <strong>{row.openText}</strong> })
   return (
     <Card>
-      <div className={css.empCardTitle}>{row.name}</div>
+      <div className={css.empCardTitle}>
+        {row.name}
+        {row.chainText !== TEXT_NONE && <span className={css.chipGray} title={row.chainTip}>{row.chainText}</span>}
+      </div>
       {row.alias !== TEXT_NONE && <div className={css.note}>{row.alias}</div>}
       <CardKV items={kv} />
       <CardAction>{EmpActCell(row)}</CardAction>

@@ -20,6 +20,7 @@ export function EmpNameCell(r: EmpCellRow) {
   return (
     <div>
       <span>{r.name}</span>
+      {r.chainText !== TEXT_NONE && <span className={css.chipGray} title={r.chainTip}>{r.chainText}</span>}
       {r.alias !== TEXT_NONE && <span className={css.note}>{r.alias}</span>}
     </div>
   )
