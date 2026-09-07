@@ -419,6 +419,11 @@ export const TBL_DEAD_EXT = 'dead_ext'
 export const MART_SEEN_IDS = 'seen_ids'
 
 /**
+ * /seed 响应 counts 里「本轮见过但没进 mart、打了 is_dup」的岗数键(2026-09-06)。
+ */
+export const COUNT_HIDDEN_DUPS = 'hiddenDups'
+
+/**
  * mart 文件:verify_expired 逐帖 GET 实测判死的岗(2026-08-03,立即下架不等 30 天)。
  */
 export const MART_CLOSED_JOBS = 'closed_jobs'

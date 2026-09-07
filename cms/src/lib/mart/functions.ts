@@ -38,7 +38,7 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, JSON_EXT, LOCAL_MART_REL, MART_CLOSED_JOBS, MART_DIR_NAME,
+  COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, JSON_EXT, LOCAL_MART_REL, MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
   TBL_CITIES, TBL_COMPANIES, TBL_DESIGNATED_EMPLOYERS, TBL_DISTRICTS, TBL_DLI, TBL_DEAD_EXT, TBL_EE_CATEGORIES,
@@ -54,7 +54,7 @@ import type {
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
   SeedStatsDailyIn, SeenPool, SeenPoolOut, TableExistsIn, ToCompanyIn, ToJobIn, ToNewsIn, ToStatsDailyIn,
-  TokenGateIn,
+  TokenGateIn, MarkHiddenIn,
 } from './types'
 
 // =========================================================================
@@ -923,7 +923,8 @@ export function dimSpecs(): DimSpecs {
 
 /**
  * seed 一轮:维度表全量重建 → stats_daily 追加 → news upsert →(reset 时清事实表)→
- * companies/jobs 批量 upsert → 实测判死下架 → 「本次未见 + 超 30 天」下架 → 重复标记 → 心跳。
+ * companies/jobs 批量 upsert → 实测判死下架 → 「本次未见 + 超 30 天」下架 → 重复标记 →
+ * 「本轮见过但没进 mart」打 is_dup(2026-09-06)→ 心跳。
  * 全程单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)。
  *
  * @param x 连接池与 reset 开关(池由路由注入)。
@@ -950,12 +951,17 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     if (x.reset === false) {
       closedDead = await closeDeadJobs({ client: client, now: now })
     }
+    const martCount = seen.ids.length
     unionSeenIds(seen)
     counts[MART_SEEN_IDS] = seen.ids.length
     if (x.reset === false && seen.ids.length > 0) {
       closed = await closeStaleJobs({ client: client, now: now, ids: seen.ids })
     }
     await client.query(SQL.MARK_DUPS)
+    const hidden = seen.ids.slice(martCount)
+    if (x.reset === false && hidden.length > 0) {
+      counts[COUNT_HIDDEN_DUPS] = await markHiddenDups({ client: client, now: now, ids: hidden })
+    }
     await client.query(SQL.CLEAR_DUPS_CLOSED)
     await writeHeartbeat(client)
     await client.query(SQL.TX_COMMIT)
@@ -1277,6 +1283,24 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
   await x.client.query(SQL.SEEN_EXT_INSERT, [x.ids])
   await x.client.query(SQL.ANALYZE_SEEN_EXT)
   const res = await x.client.query(SQL.CLOSE_STALE, [x.now, cutoff])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 本轮源数据见过、但被 mart 展示去重吞掉没进 mart 的岗打 is_dup(2026-09-06 Frank「怎么有两个」的尾巴:
+ * 公司并名后 Tim Horton's 的帖在 mart 里被同题的 Tim Hortons 帖吞掉,库里旧行既不关也不重挂,挂着「在招 18」)。
+ * 名单 = unionSeenIds 并进来的那一截(seen_ids.json 有、mart 行没有);临时表反连接同 closeStaleJobs 的做法。
+ *
+ * @param x 事务连接、时刻与名单。
+ * @returns 打标行数。
+ */
+async function markHiddenDups(x: MarkHiddenIn): CountOut {
+  await x.client.query(SQL.TEMP_HIDDEN_EXT)
+  await x.client.query(SQL.HIDDEN_EXT_INSERT, [x.ids])
+  const res = await x.client.query(SQL.MARK_HIDDEN_DUPS, [x.now])
   if (res.rowCount != null) {
     return res.rowCount
   }

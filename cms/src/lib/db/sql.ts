@@ -1452,6 +1452,26 @@ export const MARK_DUPS = `UPDATE jobs SET is_dup = x.dup FROM (
 export const CLEAR_DUPS_CLOSED = `UPDATE jobs SET is_dup = false WHERE status <> 'open' AND is_dup`
 
 /**
+ * 本轮源数据见过、但没进 mart 的岗打 is_dup(2026-09-06):mart 汇装按「公司 slug + 标题」展示去重,被吞掉的帖
+ * 不在 mart 里、却在 seen_ids 里 —— CLOSE_STALE 视为「本轮见过」不关,MARK_DUPS 只在同一 company_id 内比对也
+ * 看不见它(公司并名后 Tim Horton's 那 18 条挂在旧公司行上一直「在招」,实撞)。对账面 = hidden_ext 临时表。
+ * 放在 MARK_DUPS 之后:MARK_DUPS 会按分区结果把 is_dup 整列重算,先算它再补这一笔。
+ */
+export const MARK_HIDDEN_DUPS = `UPDATE jobs SET is_dup = true, updated_at = $1
+         WHERE status = 'open' AND COALESCE(is_dup, false) = false
+           AND EXISTS (SELECT 1 FROM hidden_ext h WHERE h.external_id = jobs.external_id)`
+
+/**
+ * 本轮见过但没进 mart 的 external_id 入临时表(MARK_HIDDEN_DUPS 的对账面)。$1=id 数组。
+ */
+export const HIDDEN_EXT_INSERT = `INSERT INTO hidden_ext (external_id) SELECT unnest($1::text[])`
+
+/**
+ * hidden_ext 临时表(事务结束即丢)。
+ */
+export const TEMP_HIDDEN_EXT = `CREATE TEMP TABLE hidden_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
+
+/**
  * seed 成功心跳 upsert。
  */
 export const HEARTBEAT_UPSERT = `INSERT INTO etl_heartbeat (id, last_seed) VALUES (1, now())

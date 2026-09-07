@@ -342,6 +342,26 @@ export type CloseDeadIn = {
 }
 
 /**
+ * `markHiddenDups` 的入参。
+ */
+export type MarkHiddenIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳。
+   */
+  now: string
+
+  /**
+   * 本轮源数据见过、但没进 mart 的 external_id(非空才会走到这一步)。
+   */
+  ids: string[]
+}
+
+/**
  * `closeStaleJobs` 的入参。
  */
 export type CloseStaleIn = {
