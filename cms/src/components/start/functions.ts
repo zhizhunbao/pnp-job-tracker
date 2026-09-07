@@ -3673,7 +3673,8 @@ function opsCellsOf(x: OpsCellsIn): Record<string, MacroCell> {
 }
 
 /**
- * 运营点的年与格:年从 period 里的四位数字取,取不到看 as_of;灰注 = 截至日,没有就用期间原文。
+ * 运营点的年与格:年从 period 里的四位数字取,取不到看 as_of;灰注 = 截至日,没有就用期间原文;
+ * 期间原文就是那个年份时不注(与列头重复,Frank 2026-09-06 实拍「6,850 / 2018」)。
  *
  * @param x 运营点与取词函数。
  * @returns 年与格;年取不出给 null。
@@ -3692,6 +3693,9 @@ function opsCellOf(x: OpsCellIn): MaybeOpsCell {
   let note = x.p.asOf
   if (note === TEXT_NONE) {
     note = x.p.period
+  }
+  if (note === year) {
+    note = TEXT_NONE
   }
   return { year, cell: { value: x.p.value, text: numOf(x.p.value), note } }
 }
