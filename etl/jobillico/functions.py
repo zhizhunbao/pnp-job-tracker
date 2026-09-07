@@ -1,6 +1,6 @@
 """
-jobillico 域函数 —— 四段与 constants.py / scheme.py 同名同序镜像:站点地图枚举 → 详情原文抓取
-→ 详情解析 → postings 仓。顶层只有 function;常量归 constants,形状归 scheme。
+jobillico 域函数 —— 六段与 constants.py / scheme.py 同名同序镜像:站点地图枚举 → 详情原文抓取
+→ 详情解析 → 标题英译 → postings 仓。顶层只有 function;常量归 constants,形状归 scheme。
 
 数据链(2026-09-02 铁律):详情页原文经 crawl 批量写门进 data/crawl/board-jobillico/,抽出的
 事实进 data/raw/jobillico/jobs.json,归一后的行进 data/processed/jobillico/postings.json;
@@ -9,12 +9,15 @@ jobillico 域函数 —— 四段与 constants.py / scheme.py 同名同序镜像
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from html import unescape
 from pathlib import Path
 from typing import cast
+
+import httpx
 
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
@@ -28,7 +31,7 @@ from jobillico.constants import (
     FLUSH_EVERY, HOURS_OF_TYPE, IN_JOBS, IN_URLS, JOB_URL_RE, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE,
     K_DESCRIPTION, K_DIRECT, K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM,
     K_INDUSTRY, K_LANG, K_LAST_SEEN, K_NOC, K_POSTING_ID, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE,
-    K_URL, K_VALID_THROUGH, LANG_EN, LD_ADDRESS, LD_BASE_SALARY, LD_COUNTRY, LD_DATE_POSTED,
+    K_TITLE_ORIG, K_URL, K_VALID_THROUGH, LANG_EN, LD_ADDRESS, LD_BASE_SALARY, LD_COUNTRY, LD_DATE_POSTED,
     LD_DESCRIPTION, LD_EMPLOYMENT_TYPE, LD_HIRING_ORG, LD_INDUSTRY, LD_JOB_LOCATION, LD_JOB_POSTING,
     LD_LOCALITY, LD_MAX, LD_MIN, LD_NAME, LD_POSTAL, LD_REGION, LD_SCRIPT_RE, LD_STREET, LD_TITLE,
     LD_TYPE, LD_UNIT, LD_URL, LD_VALID_THROUGH, LD_VALUE, LOC_RE, MONEY_FMT, OUT_JOBS, OUT_POSTINGS,
@@ -37,10 +40,17 @@ from jobillico.constants import (
     SALARY_RANGE_TPL, SALARY_TPL, SALARY_UNIT_WORD, SECONDS_FMT, SITEMAP_INDEX_URL, SITEMAP_JOBS_RE,
     SLUG_CRAWL, SOURCE_LABEL, SPACE, TAG_RE, TERM_OF_TYPE, UTC_Z, WS_RE,
 )
+from jobillico.constants import (
+    GEN_URL_TPL, IN_TITLES, K_MODEL, K_OPTIONS, K_PROMPT, K_RESPONSE, K_STREAM, K_TEMPERATURE, K_THINK,
+    LANG_FR, NL, OLLAMA_DEFAULT, OLLAMA_ENV, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL,
+    PRINT_TITLES_TICK_TPL, TITLE_BATCH, TITLE_LINE_RE, TITLE_LINE_TPL, TITLE_MAX_LEN, TITLE_MODEL,
+    TITLE_PROMPT_TPL, TITLE_TICK_BATCHES, TITLE_TIMEOUT_S, TITLES_PER_RUN,
+)
 from jobillico.scheme import (
     DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     SalaryTextIn, SitemapIn, StoreTally,
 )
+from jobillico.scheme import HttpJsonClientLike, TitleBatchIn, TitleTally
 
 
 # =========================================================================
@@ -280,7 +290,85 @@ def plain_text_of(html: str) -> str:
 
 
 # =========================================================================
-# 5. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
+# 5. 标题英译(仅法文帖的标题 → 英文职位名;本地模型,缓存只译一次)
+# =========================================================================
+
+
+def translate_jobillico_titles() -> None:
+    """本域步骤入口:事实表里法文帖、译文缓存里还没有的 → 本地模型批译 → 增量写 titles_en.json。"""
+    facts = load_json_dict(IN_JOBS)
+    titles = load_json_dict(IN_TITLES)
+    fr = 0
+    todo: list = []
+    for pid, raw in facts.items():
+        if raw.get(K_LANG) != LANG_FR or raw.get(K_TITLE, "") == "":
+            continue
+        fr += 1
+        if pid not in titles and len(todo) < TITLES_PER_RUN:
+            todo.append(pid)
+    say(PRINT_TITLES_HEAD_TPL.format(todo=len(todo), fr=fr, have=len(titles), cap=TITLES_PER_RUN))
+    tally = TitleTally(made=0, fail=0)
+    with httpx.Client(timeout=TITLE_TIMEOUT_S) as raw_client:
+        client = cast(HttpJsonClientLike, raw_client)
+        for at in range(0, len(todo), TITLE_BATCH):
+            batch = todo[at:at + TITLE_BATCH]
+            names: list = []
+            for pid in batch:
+                names.append(facts[pid][K_TITLE])
+            got = translate_titles(TitleBatchIn(client=client, titles=names))
+            if len(got) == 0:
+                tally.fail += 1
+                continue
+            for pid, name in zip(batch, got):
+                titles[pid] = name
+                tally.made += 1
+            if (at // TITLE_BATCH) % TITLE_TICK_BATCHES == 0:
+                say(PRINT_TITLES_TICK_TPL.format(done=min(at + TITLE_BATCH, len(todo)), todo=len(todo)))
+    OUT_TITLES.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_TITLES, payload=titles, indent=JSON_INDENT))
+    say(PRINT_TITLES_DONE_TPL.format(made=tally.made, fail=tally.fail, out=OUT_TITLES))
+
+
+def translate_titles(x: TitleBatchIn) -> list:
+    """一批标题编号送模型,按编号解析回来;行数、编号或长度对不上给空清单(调用方计失败批)。"""
+    lines: list = []
+    for i, name in enumerate(x.titles):
+        lines.append(TITLE_LINE_TPL.format(n=i + 1, text=name))
+    body = {K_MODEL: TITLE_MODEL, K_PROMPT: TITLE_PROMPT_TPL.format(lines=NL.join(lines)),
+            K_STREAM: False, K_THINK: False, K_OPTIONS: {K_TEMPERATURE: 0}}
+    try:
+        resp = x.client.post(GEN_URL_TPL.format(base=ollama_base()), json=body)
+        raw = dict_of(resp.json()).get(K_RESPONSE)
+    except Exception as e:  # noqa: BLE001 — 网络 / 解析失败留痕,整批不中止
+        err(GEN_URL_TPL.format(base=ollama_base()), e)
+        return []
+    text = ""
+    if isinstance(raw, str):
+        text = raw
+    got: dict = {}
+    for line in text.split(NL):
+        m = TITLE_LINE_RE.match(line)
+        if m is not None:
+            got[int(m.group(1))] = m.group(2).strip()
+    out: list = []
+    for i in range(len(x.titles)):
+        name = got.get(i + 1, "")
+        if name == "" or len(name) > TITLE_MAX_LEN:
+            return []
+        out.append(name)
+    return out
+
+
+def ollama_base() -> str:
+    """本地模型地址(OLLAMA_URL 环境变量,缺/空退默认盒子;与 noc 域同名同义)。"""
+    base = os.environ.get(OLLAMA_ENV)
+    if base is None or base == "":
+        return OLLAMA_DEFAULT
+    return base
+
+
+# =========================================================================
+# 6. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
 
@@ -292,6 +380,7 @@ def build_jobillico_postings() -> None:
     未清洗的行(2026-08-05 薪资实撞同款病)。"""
     urls = load_json_dict(IN_URLS)
     facts = load_json_dict(IN_JOBS)
+    titles = load_json_dict(IN_TITLES)
     seen_at = datetime.now(timezone.utc).strftime(SECONDS_FMT) + UTC_Z
     today = date.today().isoformat()
     tally = StoreTally(rows=0, gone=0, expired=0, blank=0)
@@ -307,7 +396,8 @@ def build_jobillico_postings() -> None:
         if fact.valid_through != "" and fact.valid_through < today:
             tally.expired += 1
             continue
-        rows.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at)))
+        rows.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at,
+                                                title_en=titles.get(fact.posting_id, ""))))
     rows.sort(key=date_key_of, reverse=True)
     tally.rows = len(rows)
     OUT_POSTINGS.parent.mkdir(parents=True, exist_ok=True)
@@ -328,10 +418,16 @@ def date_key_of(row: dict) -> str:
 
 
 def to_posting_row(x: PostingRowIn) -> dict:
-    """事实 → Job Bank 仓同形的行(键序即落盘列序;mart 的 to_jb_job_fields 按这些键取)。"""
+    """事实 → Job Bank 仓同形的行(键序即落盘列序;mart 的 to_jb_job_fields 按这些键取)。
+    有英译的帖 title 换英文、原文留 title_orig(分类器与英文界面用英文;法文原题不丢)。"""
     f = x.fact
+    title = f.title
+    title_orig = ""
+    if x.title_en != "":
+        title = x.title_en
+        title_orig = f.title
     return {
-        K_POSTING_ID: f.posting_id, K_TITLE: f.title, K_EMPLOYER: f.employer,
+        K_POSTING_ID: f.posting_id, K_TITLE: title, K_TITLE_ORIG: title_orig, K_EMPLOYER: f.employer,
         K_CITY: f.city, K_PROVINCE: f.province,
         K_SALARY: salary_text_of(SalaryTextIn(lo=f.salary_lo, hi=f.salary_hi, unit=f.salary_unit)),
         K_DATE: f.date_posted, K_SOURCE: SOURCE_LABEL, K_DIRECT: False, K_URL: f.url,

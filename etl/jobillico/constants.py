@@ -189,7 +189,93 @@ PRINT_PARSE_DONE_TPL = "[OK] 解析 {parsed} 张(跳过已解析 {skipped},无 J
 """解析收尾。"""
 
 # =========================================================================
-# 5. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
+# 5. 标题英译(仅法文帖的标题 → 英文职位名;本地模型,缓存只译一次)
+# =========================================================================
+
+OUT_TITLES = paths.RAW_JOBILLICO / "titles_en.json"
+"""标题英译缓存:帖号 → 英文职位名。为什么有这一步(2026-09-06 Frank「能修复吗」):站点地图 13,265 条
+仅法文帖,NOC 分类器对法文标题只中 9%(140 条 13 中;英文 54~59%),不译就大面积「未分类」——
+无 TEER、无评分、pnpEligible 恒假。译文只给分类与展示用,原标题留 title_orig。"""
+
+IN_TITLES = OUT_TITLES
+"""建仓段读它(有译文的帖 title 换英文);英译段读它做增量。"""
+
+LANG_FR = "fr"
+"""要译的语言(只译法文版页的标题;英文版页由雇主自填英文)。"""
+
+OLLAMA_ENV = "OLLAMA_URL"
+"""本地模型地址的环境变量名(与 noc 域同名同义;缺/空退默认盒子)。"""
+
+OLLAMA_DEFAULT = "http://192.168.1.150:11434"
+"""默认盒子(2026-08-19 起当自己基建用;翻译类一律本地模型不烧付费 API)。"""
+
+GEN_URL_TPL = "{base}/api/generate"
+"""Ollama 生成端点。"""
+
+TITLE_MODEL = "qwen3.6:latest"
+"""翻译模型(与 pte 域整句中文同一只)。"""
+
+TITLE_BATCH = 20
+"""一次送多少条标题(编号行协议,照 pte 域 pte-zh 的形;标题短,20 条一批)。"""
+
+TITLES_PER_RUN = 4000
+"""每轮最多译多少条(约 200 批;首轮 1.3 万条分四轮,之后只译新帖)。"""
+
+TITLE_TIMEOUT_S = 180.0
+"""一批的超时。"""
+
+TITLE_MAX_LEN = 120
+"""译文长度上限(超过 = 模型在解释不是在译,整条弃)。"""
+
+TITLE_PROMPT_TPL = ("Translate each numbered French job title into the standard English job title used on Canadian "
+                    "job boards. Keep each one a short title, not a sentence; keep proper nouns. "
+                    "Output exactly one line per input, formatted as `<number>. <title>`, nothing else.\n\n{lines}")
+"""翻译提示(编号行协议)。"""
+
+TITLE_LINE_TPL = "{n}. {text}"
+"""编号行。"""
+
+TITLE_LINE_RE = re.compile(r"^\s*(\d+)\s*[.、:：)]\s*(.+)$")
+"""解析输出行:编号 + 译文。"""
+
+K_MODEL = "model"
+"""Ollama 请求体:模型名。"""
+
+K_PROMPT = "prompt"
+"""Ollama 请求体:提示。"""
+
+K_STREAM = "stream"
+"""Ollama 请求体:流式开关(关)。"""
+
+K_THINK = "think"
+"""Ollama 请求体:思维链开关(关)。"""
+
+K_OPTIONS = "options"
+"""Ollama 请求体:采样选项。"""
+
+K_TEMPERATURE = "temperature"
+"""采样选项:温度(0 求稳定)。"""
+
+K_RESPONSE = "response"
+"""Ollama 响应体:生成文本。"""
+
+NL = "\n"
+"""编号行之间的换行。"""
+
+PRINT_TITLES_HEAD_TPL = "[titles] 待译 {todo}(法文帖 {fr},已译 {have},本轮上限 {cap})"
+"""英译起手。"""
+
+PRINT_TITLES_TICK_TPL = "  [{done}/{todo}] 已译"
+"""英译心跳(每批一行太吵,每 N 批一行)。"""
+
+TITLE_TICK_BATCHES = 10
+"""每 N 批报一行心跳。"""
+
+PRINT_TITLES_DONE_TPL = "[OK] 英译 {made} 条(失败批 {fail})→ {out}"
+"""英译收尾。"""
+
+# =========================================================================
+# 6. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
 K_POSTING_ID = "posting_id"
@@ -251,6 +337,9 @@ K_INDUSTRY = "industry"
 
 K_EMPLOYER_URL = "employer_url"
 """Jobillico 公司页地址。"""
+
+K_TITLE_ORIG = "title_orig"
+"""原标题(title 换成英译时留原文;没译的帖此格空串)。"""
 
 SOURCE_LABEL = "Jobillico"
 """来源板名(jobs.source;显示标签由 mart 的 source_label 决定)。"""
