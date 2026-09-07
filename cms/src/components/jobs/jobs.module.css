@@ -1832,3 +1832,22 @@
   padding: 4px 0;
 }
 
+
+/*
+ * 手机(≤640)横幅三条事实放不下一行(生产 375 实拍第三条被截成「8848 家…」)→ 一条一行;桌面仍一行。
+ */
+@media (width <= 640px) {
+  .factLine {
+    /*
+     * 一条一行。
+     */
+    display: block;
+  }
+
+  .factLine + .factLine {
+    /*
+     * 竖排不要横向间距。
+     */
+    margin-left: 0;
+  }
+}
