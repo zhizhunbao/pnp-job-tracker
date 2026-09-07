@@ -478,7 +478,7 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
  * jobsEn: 词表块(与 zh.ts 同名块逐键对齐)。
  */
 export const jobsEn: Record<keyof typeof jobsZh, string> = {
-  'subtitle.count': '{n} jobs', 'subtitle.board': 'Jobs across Canada, updated daily',
+  'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
   'subtitle.named': '{named} on provincial PNP lists', 'subtitle.lmia': '{lmia} employers with LMIA records',
   'mv.today': 'High matches for you: {h}', 'up.matchN': 'You have {h} high-match jobs — free plan shows only the first {n}',

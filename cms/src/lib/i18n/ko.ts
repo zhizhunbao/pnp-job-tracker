@@ -475,7 +475,7 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
  * jobsKo: 词表块(与 zh.ts 同名块逐键对齐)。
  */
 export const jobsKo: Record<keyof typeof jobsZh, string> = {
-  'subtitle.count': '{n}개 공고', 'subtitle.board': '캐나다 전역 채용공고 매일 갱신',
+  'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
   'subtitle.named': 'PNP 목록 {named}건', 'subtitle.lmia': 'LMIA 기록 고용주 {lmia}곳',
   'mv.today': '높은 매칭: {h}건', 'up.matchN': '높은 매칭 {h}건 — 무료 버전은 상위 {n}건만 표시',

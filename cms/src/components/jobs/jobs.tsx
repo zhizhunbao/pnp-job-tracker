@@ -28,7 +28,9 @@ import { BANNER_IMGS, Banner } from '@/components/banner'
 import { cssOf } from '@/components/css'
 import { IconClipboard } from '@/components/icons'
 import { BANNER_MODULE } from './constants'
-import { mvBarTextOf } from './functions'
+import {
+  lmiaTextOf, mvBarTextOf, namedTextOf, subTextOf,
+} from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
 import { BoardFilters } from './boardfilters'
@@ -37,6 +39,7 @@ import { BoardModals } from './boardmodals'
 import { BoardTable } from './boardtable'
 import { MatchBar } from './matchbar'
 import { MatchEntry } from './matchentry'
+import { BannerFacts } from './bannerfacts'
 import { MatchGate } from './matchgate'
 import { MoreLine } from './moreline'
 import type { JobsIn } from './types'
@@ -56,7 +59,11 @@ export function Jobs(props: JobsIn) {
         <Banner module={BANNER_MODULE}
           icon={<IconClipboard />}
           title={b.t('nav.jobs')}
-          sub={b.t('subtitle.board')}
+          sub={(
+            <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })}
+              named={namedTextOf({ t: b.t, named: b.proof.named })}
+              lmia={lmiaTextOf({ t: b.t, lmia: b.proof.lmia })} />
+          )}
           images={BANNER_IMGS.jobs} />
         <BoardFilters b={b} boxRef={boxRef} />
         {b.matchView === false && <MatchEntry label={b.t('mv.entry')} onClick={b.gate.onToggle} />}

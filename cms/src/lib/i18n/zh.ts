@@ -514,7 +514,7 @@ export const reportZh = {
  * 这里只装职位板这条线上的东西。
  */
 export const jobsZh = {
-  'subtitle.count': '{n} 个职位', 'subtitle.board': '全加拿大职位每日更新',
+  'subtitle.count': '{n} 个职位',
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
   'subtitle.named': '{named} 岗命中省提名清单', 'subtitle.lmia': '{lmia} 家雇主有外劳雇佣记录',

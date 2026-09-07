@@ -1251,9 +1251,9 @@ export type AccountAreaIn = {
 }
 
 /**
- * BoardCounts(筛选行计数)的 props(2026-09-05 自 BoardSubIn 改名:数字出横幅进筛选行)。
+ * `BannerFacts` 的入参:横幅副标题三条事实的文案(2026-09-07 自筛选行 BoardCounts 搬回横幅)。
  */
-export type BoardCountsIn = {
+export type BannerFactsIn = {
   /**
    * 第一条:库内总数 / 筛选命中数。
    */
