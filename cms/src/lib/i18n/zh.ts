@@ -925,7 +925,8 @@ export const siteZh = {
   'se.ask.aip': 'AIP 指定雇主是什么?对我有用吗?',
   'pulse.s4.all': '全国',
   // 2026-09-06 省份段 = 宏观统计(含联邦):地区块按年表 + 招聘对比横表;表 / 趋势、近 5 年 / 全部 是通用表格序列能力的文案
-  'pulse.s4j': '招聘对比', 'pulse.m.key': '指标', 'pulse.m.month': '{m} 月', 'pulse.m.thru': '至 {m} 月', 'pulse.m.table': '表', 'pulse.m.chart': '趋势', 'pulse.m.recent': '近 5 年', 'pulse.m.all': '全部', 'pulse.m.index': '指数:首个有值年份 = 100',
+  'pulse.s4j': '招聘对比', 'pulse.m.key': '指标', 'pulse.m.month': '{mon}', 'pulse.m.thru': '至 {mon}',
+  'pulse.m.mon1': '1 月', 'pulse.m.mon2': '2 月', 'pulse.m.mon3': '3 月', 'pulse.m.mon4': '4 月', 'pulse.m.mon5': '5 月', 'pulse.m.mon6': '6 月', 'pulse.m.mon7': '7 月', 'pulse.m.mon8': '8 月', 'pulse.m.mon9': '9 月', 'pulse.m.mon10': '10 月', 'pulse.m.mon11': '11 月', 'pulse.m.mon12': '12 月', 'pulse.m.table': '表', 'pulse.m.chart': '趋势', 'pulse.m.recent': '近 5 年', 'pulse.m.all': '全部', 'pulse.m.index': '指数:首个有值年份 = 100',
   'pulse.m.pop': '总人口', 'pulse.m.npr': '临时居民', 'pulse.m.work': '其中工签', 'pulse.m.study': '其中学签', 'pulse.m.asylum': '其中难民申请人', 'pulse.m.studyNew': '学签新签', 'pulse.m.gdp': 'GDP(百万加元)', 'pulse.m.unemp': '失业率', 'pulse.m.alloc': '省提名配额', 'pulse.m.issued': '已发提名', 'pulse.m.remaining': '剩余名额', 'pulse.m.prAll': 'PR 获批', 'pulse.m.prPnp': '其中省提名', 'pulse.m.eeInvites': 'EE 邀请', 'pulse.m.src.ircc': 'IRCC 年度', 'pulse.m.src.prov': '各省官方', 'pulse.m.src.ee': 'IRCC 抽选',
   'pulse.s5': '近期抽选',
   'pulse.dr.note': '近 {n} 期 {min}–{max} 分,低于 {min} 没进过',

@@ -50,7 +50,8 @@ import {
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
-  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MACRO_SRC_HEAD, FREQ_Q, FREQ_M,
+  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MACRO_SRC_HEAD, KEY_MON_HEAD, FREQ_Q,
+  FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_WORK_ONLY, MK_STUDY_ONLY,
   MK_WORK_STUDY, MK_ALLOC, MK_UNEMP, MR_WORK, MR_STUDY, MR_ISSUED, MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
   MACRO_ROW_SRC, SRC_CODE_HEAD, OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
@@ -103,7 +104,8 @@ import type {
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn, MacroRowIn, MacroRow, MacroGeo, MacroCell,
-  CellsOfKeyIn, SumCellsIn, MacroCellIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn, RemainingIn,
+  CellsOfKeyIn, SumCellsIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
+  RemainingIn,
   MacroColsIn, SeriesWords, GeoNameIn, GeoLocaleIn, GeoTierIn, JobsRow, JobsRowsIn, JobsRowIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
 } from './types'
@@ -3591,28 +3593,28 @@ function yearOfPoint(x: YearOfPointIn): PointYear {
     if (x.p.period.endsWith(PERIOD_JAN_TAIL)) {
       return { year: String(Number(head) - 1), full: true, note: TEXT_NONE }
     }
-    return { year: head, full: false, note: x.t('pulse.m.month', { m: monthOf(x.p.period) }) }
+    return { year: head, full: false, note: x.t('pulse.m.month', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
   }
   if (x.p.freq === FREQ_M) {
     if (x.p.period.endsWith(PERIOD_DEC_TAIL)) {
       return { year: head, full: true, note: TEXT_NONE }
     }
-    return { year: head, full: false, note: x.t('pulse.m.month', { m: monthOf(x.p.period) }) }
+    return { year: head, full: false, note: x.t('pulse.m.month', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
   }
   if (x.p.asOf === TEXT_NONE || x.p.asOf === x.p.period) {
     return { year: head, full: true, note: TEXT_NONE }
   }
-  return { year: head, full: false, note: x.t('pulse.m.thru', { m: monthOf(x.p.asOf) }) }
+  return { year: head, full: false, note: x.t('pulse.m.thru', { mon: monTextOf({ t: x.t, period: x.p.asOf }) }) }
 }
 
 /**
- * 期键里的月份(去前导零)。
+ * 期键里的月份缩写(取词:英文 Apr、中文 4 月、韩文 4월)。
  *
- * @param period YYYY-MM 或 YYYY-MM-DD。
- * @returns 月份数。
+ * @param x 取词函数与期键(YYYY-MM 或 YYYY-MM-DD)。
+ * @returns 月份缩写。
  */
-function monthOf(period: string): number {
-  return Number(period.slice(MONTH_START, MONTH_END))
+function monTextOf(x: MonTextIn): string {
+  return x.t(KEY_MON_HEAD + Number(x.period.slice(MONTH_START, MONTH_END)))
 }
 
 /**

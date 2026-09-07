@@ -4181,3 +4181,18 @@ export type MacroSeriesSpec = {
    */
   words: SeriesWords
 }
+
+/**
+ * `monTextOf` 的入参。
+ */
+export type MonTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 期键(YYYY-MM 或 YYYY-MM-DD)。
+   */
+  period: string
+}

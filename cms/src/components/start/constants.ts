@@ -1025,6 +1025,11 @@ export const MACRO_GEO_ORDER = ['CA', 'ON', 'QC', 'BC', 'AB', 'SK', 'NS', 'MB', 
 export const KEY_MACRO_HEAD = 'pulse.m.'
 
 /**
+ * 月份缩写 i18n 键的头(拼上 1–12;进行年灰注「Apr」「至 6 月」)。
+ */
+export const KEY_MON_HEAD = 'pulse.m.mon'
+
+/**
  * 宏观表来源注 i18n 键的头(拼上来源键;表号类来源直接写代码不进 i18n)。
  */
 export const KEY_MACRO_SRC_HEAD = 'pulse.m.src.'
