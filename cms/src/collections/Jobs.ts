@@ -39,7 +39,7 @@ export const Jobs: CollectionConfig = {
     { name: 'datePosted', type: 'date' },
     { name: 'source', type: 'text', admin: { description: '原始来源板:indeed.com/Talent.com/lever/bamboohr…' } },
     { name: 'sourceLabel', type: 'text', index: true, admin: { description: '显示来源标签(mart 洗:JB→Job Bank、ATS板美化)' } },
-    { name: 'origin', type: 'select', index: true, options: ['jobbank', 'ats', 'directory'], admin: { description: '数据渠道:raw 下哪个来源' } },
+    { name: 'origin', type: 'select', index: true, options: ['jobbank', 'ats', 'directory', 'jobillico', 'jobboom'], admin: { description: '数据渠道:raw 下哪个来源(jobillico / jobboom 2026-09-06 随两域立域加,枚举 DDL 见 docs/sql/jobs-origin-jobillico-jobboom.sql)' } },
     { name: 'isAgency', type: 'checkbox', defaultValue: false },
     { name: 'policyRefs', type: 'relationship', relationTo: 'policy-docs', hasMany: true },
     {
