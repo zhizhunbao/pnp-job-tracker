@@ -960,7 +960,9 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     await client.query(SQL.MARK_DUPS)
     const hidden = seen.ids.slice(martCount)
     if (x.reset === false && hidden.length > 0) {
-      counts[COUNT_HIDDEN_DUPS] = await markHiddenDups({ client: client, now: now, ids: hidden })
+      counts[COUNT_HIDDEN_DUPS] = await markHiddenDups({
+        client: client, now: now, ids: hidden, slugs: Object.keys(companies.idBySlug),
+      })
     }
     await client.query(SQL.CLEAR_DUPS_CLOSED)
     await writeHeartbeat(client)
@@ -1293,6 +1295,7 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
  * 本轮源数据见过、但被 mart 展示去重吞掉没进 mart 的岗打 is_dup(2026-09-06 Frank「怎么有两个」的尾巴:
  * 公司并名后 Tim Horton's 的帖在 mart 里被同题的 Tim Hortons 帖吞掉,库里旧行既不关也不重挂,挂着「在招 18」)。
  * 名单 = unionSeenIds 并进来的那一截(seen_ids.json 有、mart 行没有);临时表反连接同 closeStaleJobs 的做法。
+ * 只标公司已不在本轮 mart 的孤儿岗(2026-09-07 收窄:照单全标会把连锁按城市分开的真岗也吞掉,一轮 3,661 条)。
  *
  * @param x 事务连接、时刻与名单。
  * @returns 打标行数。
@@ -1300,7 +1303,7 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
 async function markHiddenDups(x: MarkHiddenIn): CountOut {
   await x.client.query(SQL.TEMP_HIDDEN_EXT)
   await x.client.query(SQL.HIDDEN_EXT_INSERT, [x.ids])
-  const res = await x.client.query(SQL.MARK_HIDDEN_DUPS, [x.now])
+  const res = await x.client.query(SQL.MARK_HIDDEN_DUPS, [x.now, x.slugs])
   if (res.rowCount != null) {
     return res.rowCount
   }

@@ -1456,10 +1456,14 @@ export const CLEAR_DUPS_CLOSED = `UPDATE jobs SET is_dup = false WHERE status <>
  * 不在 mart 里、却在 seen_ids 里 —— CLOSE_STALE 视为「本轮见过」不关,MARK_DUPS 只在同一 company_id 内比对也
  * 看不见它(公司并名后 Tim Horton's 那 18 条挂在旧公司行上一直「在招」,实撞)。对账面 = hidden_ext 临时表。
  * 放在 MARK_DUPS 之后:MARK_DUPS 会按分区结果把 is_dup 整列重算,先算它再补这一笔。
+ * 只收「公司本身已不在本轮 mart 里」的孤儿岗($2 = 本轮 mart 公司 slug 清单):mart 的展示去重按「公司 + 标题」
+ * 不分城市,连锁在百城招同一岗会被它吞成一条,若照单全标,Tim Hortons 可见从 191 掉到 43(2026-09-07 实撞,
+ * 一轮标了 3,661 条);库里 MARK_DUPS 的「公司 + 标题 + 城市」才是展示口径,这里不越过它。
  */
 export const MARK_HIDDEN_DUPS = `UPDATE jobs SET is_dup = true, updated_at = $1
          WHERE status = 'open' AND COALESCE(is_dup, false) = false
-           AND EXISTS (SELECT 1 FROM hidden_ext h WHERE h.external_id = jobs.external_id)`
+           AND EXISTS (SELECT 1 FROM hidden_ext h WHERE h.external_id = jobs.external_id)
+           AND NOT EXISTS (SELECT 1 FROM companies c WHERE c.id = jobs.company_id AND c.slug = ANY($2::text[]))`
 
 /**
  * 本轮见过但没进 mart 的 external_id 入临时表(MARK_HIDDEN_DUPS 的对账面)。$1=id 数组。

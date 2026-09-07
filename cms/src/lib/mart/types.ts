@@ -359,6 +359,11 @@ export type MarkHiddenIn = {
    * 本轮源数据见过、但没进 mart 的 external_id(非空才会走到这一步)。
    */
   ids: string[]
+
+  /**
+   * 本轮 mart 里的公司 slug 清单(公司还在的岗不标:那是 mart 不分城市的去重吞的,库里按城市另判)。
+   */
+  slugs: string[]
 }
 
 /**
