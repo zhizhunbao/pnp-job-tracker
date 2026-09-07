@@ -11,7 +11,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 
 import {
   COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT,
-  SERIES_RANGE_ALL, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, SIG_SEP, SIG_TAIL,
+  SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, SIG_SEP, SIG_TAIL,
 } from './constants'
 import { sortRows } from './functions'
 import type {
@@ -337,9 +337,13 @@ export function useSeriesView(): UseSeriesViewOut {
     setRange(SERIES_RANGE_RECENT)
   }
 
+  function onMore() {
+    setRange(SERIES_RANGE_MORE)
+  }
+
   function onAll() {
     setRange(SERIES_RANGE_ALL)
   }
 
-  return { view, range, onTable, onChart, onRecent, onAll }
+  return { view, range, onTable, onChart, onRecent, onMore, onAll }
 }

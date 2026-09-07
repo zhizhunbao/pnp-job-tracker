@@ -12,7 +12,7 @@ import type { Col } from '@/components/table/types'
 type Row = { name: string; vals: Record<string, number | null> }
 
 const YEARS = ['y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7']
-const WORDS = { table: '表', chart: '趋势', recent: '近 5 期', all: '全部', indexNote: '指数' }
+const WORDS = { table: '表', chart: '趋势', recent: '近 5 期', more: '近 10 期', all: '全部', indexNote: '指数' }
 
 function valueOf(r: Row, key: string): number | null {
   const v = r.vals[key]
@@ -93,7 +93,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('近 N 期:时间点列只留末 5 个,非时间点列原样留下', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', 'y3', 'y4', 'y5', 'y6', 'y7'])
@@ -102,7 +102,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('全部:一列不切', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, words: WORDS },
       range: 'all',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS])
@@ -111,7 +111,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('N 比时间点数还大:全给,不报错也不补空列', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 20, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 20, more: 10, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS])

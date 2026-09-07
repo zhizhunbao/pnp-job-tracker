@@ -10,7 +10,7 @@
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import { ID_PROV_JOBS, PH_PROV } from './constants'
-import { jobsColsOf, jobsRowKeyOf } from './functions'
+import { boardGapClsOf, jobsColsOf, jobsRowKeyOf } from './functions'
 import { JobsCard } from './jobscard'
 import { Placeholder } from './placeholder'
 import { Sec } from './sec'
@@ -23,7 +23,7 @@ import css from './start.module.css'
  * @param props 取词函数、更新时刻、加载态与行。
  * @returns 带锚点的块;数据到了而一行都没有时给 null。
  */
-export function JobsSection({ t, updatedAt, loading, rows }: JobsSectionIn) {
+export function JobsSection({ t, updatedAt, loading, rows, gap }: JobsSectionIn) {
   if (loading === false && rows.length === 0) {
     return null
   }
@@ -32,8 +32,9 @@ export function JobsSection({ t, updatedAt, loading, rows }: JobsSectionIn) {
     cards.push(<JobsCard key={r.key} row={r} t={t} />)
   }
   return (
-    <div id={ID_PROV_JOBS} className={css.macroBlock}>
-      <Sec title={t('pulse.s4j')} right={<Updated iso={updatedAt} t={t} />}>
+    <div id={ID_PROV_JOBS} className={css.subAnchor}>
+      <div className={boardGapClsOf({ gap })}>
+      <Sec title={t('pulse.s4j')} right={<Updated iso={updatedAt} t={t} />} sub>
         {loading && <Placeholder size={PH_PROV} />}
         {rows.length > 0 && (
           <div className={css.table}>
@@ -46,6 +47,7 @@ export function JobsSection({ t, updatedAt, loading, rows }: JobsSectionIn) {
           </div>
         )}
       </Sec>
+      </div>
     </div>
   )
 }

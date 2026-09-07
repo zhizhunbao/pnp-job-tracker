@@ -50,11 +50,12 @@ import {
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
-  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MACRO_SRC_HEAD, KEY_MON_HEAD, FREQ_Q,
+  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MON_HEAD, MACRO_PARENT_ROW,
+  MACRO_MORE, FREQ_Q,
   FREQ_M,
-  PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_WORK_ONLY, MK_STUDY_ONLY,
-  MK_WORK_STUDY, MK_ALLOC, MK_UNEMP, MR_WORK, MR_STUDY, MR_ISSUED, MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
-  MACRO_ROW_SRC, SRC_CODE_HEAD, OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
+  PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MK_UNEMP, MR_ISSUED,
+  MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
+  OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
 } from './constants'
 import { DeadCell } from './deadcell'
@@ -104,9 +105,9 @@ import type {
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn, MacroRowIn, MacroRow, MacroGeo, MacroCell,
-  CellsOfKeyIn, SumCellsIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
+  CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
-  MacroColsIn, SeriesWords, GeoNameIn, GeoLocaleIn, GeoTierIn, JobsRow, JobsRowsIn, JobsRowIn,
+  MacroColsIn, SeriesWords, GeoNameIn, GeoTierIn, MacroRowsShownIn, JobsRow, JobsRowsIn, JobsRowIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
 } from './types'
 import css from './start.module.css'
@@ -3412,7 +3413,6 @@ function macroGeoOf(x: MacroGeoIn): MacroGeo | null {
     code: x.code,
     anchor: geoAnchorOf(x.code),
     name: geoNameOf({ code: x.code, t: x.t }),
-    localeName: geoLocaleOf({ code: x.code, lang: x.lang, t: x.t }),
     tierCls: diffClsOf({ tier }),
     tierText: tierTextOf({ t: x.t, tier }),
     years: yearsOf(rows),
@@ -3431,7 +3431,7 @@ export function geoAnchorOf(code: string): string {
 }
 
 /**
- * 地区块的显示名:全国取词,省用通行短名。
+ * 地区块的显示名:全国取词,省用界面语言的全称(Frank 2026-09-06「留一个全称就行」)。
  *
  * @param x 地区码与取词函数。
  * @returns 显示名。
@@ -3440,20 +3440,7 @@ function geoNameOf(x: GeoNameIn): string {
   if (x.code === GEO_CA) {
     return x.t('pulse.s4.all')
   }
-  return provShortOf(x.code)
-}
-
-/**
- * 地区块的译名:全国不带,省照省名单元格规矩(英文界面空串)。
- *
- * @param x 地区码、语言与取词函数。
- * @returns 译名;不带给空串。
- */
-function geoLocaleOf(x: GeoLocaleIn): string {
-  if (x.code === GEO_CA) {
-    return TEXT_NONE
-  }
-  return provLocaleOf({ t: x.t, lang: x.lang, code: x.code })
+  return provLabelOf({ t: x.t, code: x.code })
 }
 
 /**
@@ -3501,27 +3488,22 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
   return {
     key: x.key,
     label: x.t(KEY_MACRO_HEAD + x.key),
-    src: macroSrcOf(x),
     sub: MACRO_SUB_ROWS.includes(x.key),
     keyCls: macroKeyClsOf({ sub: MACRO_SUB_ROWS.includes(x.key) }),
+    toggle: null,
+    expanded: false,
     cells,
     latest: latestCellOf(cells),
   }
 }
 
 /**
- * 一行的年 → 格:派生行相加,运营行读 pnp_ops_stats,其余直读同名数据键。
+ * 一行的年 → 格:运营行读 pnp_ops_stats,其余直读同名数据键(「其中」五行是 StatCan 的互斥拆分,直读即可加总)。
  *
  * @param x 行键与两份点。
  * @returns 年 → 格。
  */
 function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
-  if (x.key === MR_WORK) {
-    return sumCellsOf({ a: MK_WORK_ONLY, b: MK_WORK_STUDY, points: x.points, t: x.t })
-  }
-  if (x.key === MR_STUDY) {
-    return sumCellsOf({ a: MK_STUDY_ONLY, b: MK_WORK_STUDY, points: x.points, t: x.t })
-  }
   if (x.key === MR_ISSUED) {
     return opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t })
   }
@@ -3533,23 +3515,6 @@ function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
     })
   }
   return cellsOfKey({ key: x.key, points: x.points, t: x.t })
-}
-
-/**
- * 一行的来源注:表号类原样(代码不进 i18n),其余取词。
- *
- * @param x 行键与取词函数。
- * @returns 来源注。
- */
-function macroSrcOf(x: MacroRowIn): string {
-  const src = MACRO_ROW_SRC[x.key]
-  if (src == null) {
-    return TEXT_NONE
-  }
-  if (src.startsWith(SRC_CODE_HEAD)) {
-    return src
-  }
-  return x.t(KEY_MACRO_SRC_HEAD + src)
 }
 
 /**
@@ -3593,13 +3558,13 @@ function yearOfPoint(x: YearOfPointIn): PointYear {
     if (x.p.period.endsWith(PERIOD_JAN_TAIL)) {
       return { year: String(Number(head) - 1), full: true, note: TEXT_NONE }
     }
-    return { year: head, full: false, note: x.t('pulse.m.month', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
+    return { year: head, full: false, note: x.t('pulse.m.thru', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
   }
   if (x.p.freq === FREQ_M) {
     if (x.p.period.endsWith(PERIOD_DEC_TAIL)) {
       return { year: head, full: true, note: TEXT_NONE }
     }
-    return { year: head, full: false, note: x.t('pulse.m.month', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
+    return { year: head, full: false, note: x.t('pulse.m.thru', { mon: monTextOf({ t: x.t, period: x.p.period }) }) }
   }
   if (x.p.asOf === TEXT_NONE || x.p.asOf === x.p.period) {
     return { year: head, full: true, note: TEXT_NONE }
@@ -3628,26 +3593,6 @@ function macroCellOf(x: MacroCellIn): MacroCell {
     return { value: x.value, text: x.value.toFixed(PCT_DIGITS) + PCT_MARK, note: x.note }
   }
   return { value: x.value, text: numOf(x.value), note: x.note }
-}
-
-/**
- * 两个数据键逐年相加(两边同年都有才出格;灰注取任一边)。
- *
- * @param x 两个数据键与该地区的点。
- * @returns 年 → 格。
- */
-function sumCellsOf(x: SumCellsIn): Record<string, MacroCell> {
-  const a = cellsOfKey({ key: x.a, points: x.points, t: x.t })
-  const b = cellsOfKey({ key: x.b, points: x.points, t: x.t })
-  const out: Record<string, MacroCell> = {}
-  for (const y of Object.keys(a)) {
-    const ca = a[y]
-    const cb = b[y]
-    if (ca != null && cb != null) {
-      out[y] = macroCellOf({ key: x.a, value: ca.value + cb.value, note: ca.note })
-    }
-  }
-  return out
 }
 
 /**
@@ -3828,6 +3773,7 @@ export function seriesWordsOf(t: TFn): SeriesWords {
     table: t('pulse.m.table'),
     chart: t('pulse.m.chart'),
     recent: t('pulse.m.recent'),
+    more: t('pulse.m.more'),
     all: t('pulse.m.all'),
     indexNote: t('pulse.m.index'),
   }
@@ -4048,6 +3994,43 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     valueOf: macroValueOf,
     labelOf: macroLabelOf,
     recent: MACRO_RECENT,
+    more: MACRO_MORE,
     words: seriesWordsOf(x.t),
   }
+}
+
+/**
+ * 地区块当前显示的行:折叠时藏起「其中」五行,父行(临时居民)挂上切换手柄与展开态。
+ *
+ * @param x 全部行、展开态与切换手柄。
+ * @returns 显示行。
+ */
+export function macroRowsShownOf(x: MacroRowsShownIn): MacroRow[] {
+  const out: MacroRow[] = []
+  let hasSub = false
+  for (const r of x.rows) {
+    if (r.sub) {
+      hasSub = true
+    }
+  }
+  for (const r of x.rows) {
+    if (r.sub && x.expanded === false) {
+      continue
+    }
+    if (r.key === MACRO_PARENT_ROW && hasSub) {
+      out.push({
+        key: r.key,
+        label: r.label,
+        sub: r.sub,
+        keyCls: r.keyCls,
+        toggle: x.onToggle,
+        expanded: x.expanded,
+        cells: r.cells,
+        latest: r.latest,
+      })
+    } else {
+      out.push(r)
+    }
+  }
+  return out
 }

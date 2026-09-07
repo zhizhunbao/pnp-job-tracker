@@ -836,9 +836,9 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.ask.aip': 'AIP 지정 고용주란 무엇인가요? 저에게 도움이 되나요?',
   'pulse.s4.all': '전국',
   // 2026-09-06 省份段 = 宏观统计(含联邦):地区块按年表 + 招聘对比横表;表 / 趋势、近 5 年 / 全部 是通用表格序列能力的文案
-  'pulse.s4j': '주별 채용 비교', 'pulse.m.key': '지표', 'pulse.m.month': '{mon}', 'pulse.m.thru': '{mon}까지',
-  'pulse.m.mon1': '1월', 'pulse.m.mon2': '2월', 'pulse.m.mon3': '3월', 'pulse.m.mon4': '4월', 'pulse.m.mon5': '5월', 'pulse.m.mon6': '6월', 'pulse.m.mon7': '7월', 'pulse.m.mon8': '8월', 'pulse.m.mon9': '9월', 'pulse.m.mon10': '10월', 'pulse.m.mon11': '11월', 'pulse.m.mon12': '12월', 'pulse.m.table': '표', 'pulse.m.chart': '추세', 'pulse.m.recent': '최근 5년', 'pulse.m.all': '전체', 'pulse.m.index': '지수: 첫 데이터 연도 = 100',
-  'pulse.m.pop': '총인구', 'pulse.m.npr': '임시 거주자', 'pulse.m.work': '그중 워크퍼밋', 'pulse.m.study': '그중 학생비자', 'pulse.m.asylum': '그중 난민 신청자', 'pulse.m.studyNew': '신규 학생비자', 'pulse.m.gdp': 'GDP(백만 CAD)', 'pulse.m.unemp': '실업률', 'pulse.m.alloc': '주정부 지명 할당', 'pulse.m.issued': '발급된 지명', 'pulse.m.remaining': '잔여 할당', 'pulse.m.prAll': 'PR 승인', 'pulse.m.prPnp': '그중 PNP', 'pulse.m.eeInvites': 'EE 초청', 'pulse.m.src.ircc': 'IRCC 연간', 'pulse.m.src.prov': '주정부 공식', 'pulse.m.src.ee': 'IRCC 추첨',
+  'pulse.s4': '주별 거시 통계', 'pulse.s4j': '주별 채용 비교', 'pulse.m.key': '지표', 'pulse.m.thru': '{mon}까지',
+  'pulse.m.mon1': '1월', 'pulse.m.mon2': '2월', 'pulse.m.mon3': '3월', 'pulse.m.mon4': '4월', 'pulse.m.mon5': '5월', 'pulse.m.mon6': '6월', 'pulse.m.mon7': '7월', 'pulse.m.mon8': '8월', 'pulse.m.mon9': '9월', 'pulse.m.mon10': '10월', 'pulse.m.mon11': '11월', 'pulse.m.mon12': '12월', 'pulse.m.table': '표', 'pulse.m.chart': '추세', 'pulse.m.recent': '최근 5년', 'pulse.m.more': '최근 10년', 'pulse.m.all': '전체', 'pulse.m.index': '지수: 첫 데이터 연도 = 100',
+  'pulse.m.pop': '총인구', 'pulse.m.npr': '임시 거주자', 'pulse.m.workOnly': '그중 워크퍼밋만', 'pulse.m.studyOnly': '그중 학생비자만', 'pulse.m.workStudy': '그중 두 비자 동시', 'pulse.m.asylum': '그중 난민 신청자', 'pulse.m.other': '그중 기타 허가·가족', 'pulse.m.studyNew': '신규 학생비자', 'pulse.m.gdp': 'GDP(백만 CAD)', 'pulse.m.unemp': '실업률', 'pulse.m.alloc': '주정부 지명 할당', 'pulse.m.issued': '발급된 지명', 'pulse.m.remaining': '잔여 할당', 'pulse.m.prAll': 'PR 승인', 'pulse.m.prPnp': '그중 PNP', 'pulse.m.eeInvites': 'EE 초청',
   'pulse.s5': '최근 추첨',
   'pulse.dr.note': '최근 {n}회 {min}–{max}점, {min}점 미만은 초청 없음',
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',

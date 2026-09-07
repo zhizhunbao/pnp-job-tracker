@@ -1,6 +1,7 @@
 'use client'
 /**
- * 域内小件:省份段 —— 宏观统计(含联邦)。全国 + 十省各一个地区块(按年表),末尾一张招聘对比横表。
+ * 域内小件:省份段 —— 宏观统计(含联邦)。段标题一枚,下面全国 + 十省各一个地区子块(按年表)+ 一张招聘对比横表,
+ * 子块标题与间距照职业段的行业表(Sec sub + boardGap;Frank 2026-09-06「title 大小、表格之间的距离应该保持一致」)。
  * 2026-09-06 Frank 十一轮拍板重做(设计稿 docs/design/把脉页省份段-20260906.md):原七列混表
  * (在招 / 紧缺岗 / 2024 存量 / 2025 PR 揉一张)、省卡、切省下拉与 chips、省内职业榜全部撤;
  * 「省份主要是一个宏观的统计包括联邦」「省份的就没必要细分到职位了」。
@@ -9,10 +10,12 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
+import { Updated } from '@/components/time'
 import { ID_PROV } from './constants'
 import { Band } from './band'
 import { JobsSection } from './jobssection'
 import { MacroBlock } from './macroblock'
+import { Sec } from './sec'
 import type { MacroSectionIn } from './types'
 
 /**
@@ -26,13 +29,17 @@ export function ProvSection({ t, updatedAt, geos, jobsLoading, jobsRows }: Macro
     return null
   }
   const blocks = []
+  let gap = false
   for (const g of geos) {
-    blocks.push(<MacroBlock key={g.code} t={t} geo={g} updatedAt={updatedAt} />)
+    blocks.push(<MacroBlock key={g.code} t={t} geo={g} updatedAt={updatedAt} gap={gap} />)
+    gap = true
   }
   return (
     <Band id={ID_PROV}>
-      {blocks}
-      <JobsSection t={t} updatedAt={updatedAt} loading={jobsLoading} rows={jobsRows} />
+      <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
+        {blocks}
+        <JobsSection t={t} updatedAt={updatedAt} loading={jobsLoading} rows={jobsRows} gap={gap} />
+      </Sec>
     </Band>
   )
 }

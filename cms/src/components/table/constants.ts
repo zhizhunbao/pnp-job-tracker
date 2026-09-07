@@ -107,6 +107,11 @@ export const SERIES_RANGE_RECENT = 'recent'
 export const SERIES_RANGE_ALL = 'all'
 
 /**
+ * 时间窗:「近 M 期」(比 recent 更长的一档;Frank 2026-09-06「全部 table 的话就跑偏了,加一个近十年」)。
+ */
+export const SERIES_RANGE_MORE = 'more'
+
+/**
  * 两态时间窗之间的记号(`近 5 年 · 全部`)。它是**控件记号**不是文案 ——
  * 分隔的是同一个开关的两档,不是把两条信息挤成一行(全站「禁 ·」那条禁的是后者),
  * 所以不进 words:调用方给的是两档的名字,记号是控件自己的形。

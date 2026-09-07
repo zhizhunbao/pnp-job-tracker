@@ -9,7 +9,8 @@
  */
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
-import { macroColsOf, macroRowKeyOf, macroSeriesOf } from './functions'
+import { boardGapClsOf, macroColsOf, macroRowKeyOf, macroRowsShownOf, macroSeriesOf } from './functions'
+import { useMacroExpand } from './hooks'
 import { GeoTitle } from './geotitle'
 import { MacroCard } from './macrocard'
 import { Sec } from './sec'
@@ -22,21 +23,25 @@ import css from './start.module.css'
  * @param props 取词函数、地区块与更新时刻。
  * @returns 带锚点的块。
  */
-export function MacroBlock({ t, geo, updatedAt }: MacroBlockIn) {
+export function MacroBlock({ t, geo, updatedAt, gap }: MacroBlockIn) {
+  const ex = useMacroExpand()
+  const rows = macroRowsShownOf({ rows: geo.rows, expanded: ex.expanded, onToggle: ex.onToggle })
   return (
-    <div id={geo.anchor} className={css.macroBlock}>
-      <Sec title={<GeoTitle geo={geo} />} right={<Updated iso={updatedAt} t={t} />}>
+    <div id={geo.anchor} className={css.subAnchor}>
+      <div className={boardGapClsOf({ gap })}>
+      <Sec title={<GeoTitle geo={geo} />} right={<Updated iso={updatedAt} t={t} />} sub>
         <div className={css.table}>
           <Table<MacroRow>
-            rows={geo.rows}
+            rows={rows}
             cols={macroColsOf({ t, years: geo.years })}
             rowKey={macroRowKeyOf}
             series={macroSeriesOf({ t, geo })} />
         </div>
         <div className={css.cards}>
-          <MacroCard t={t} geo={geo} />
+          <MacroCard t={t} geo={geo} rows={rows} />
         </div>
       </Sec>
+      </div>
     </div>
   )
 }

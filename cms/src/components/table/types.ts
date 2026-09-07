@@ -536,6 +536,11 @@ export type TableSeriesIn<T> = {
   recent: number
 
   /**
+   * 「近 M 期」显示末 M 列(M > recent;工具条三态 近 N · 近 M · 全部)。
+   */
+  more: number
+
+  /**
    * 工具条与图上的字(桶不携词,全部由调用方经这一格给)。
    */
   words: SeriesWords
@@ -562,6 +567,11 @@ export type SeriesWords = {
   recent: string
 
   /**
+   * 「近 M 期」(如「近 10 年」)。
+   */
+  more: string
+
+  /**
    * 「全部」那一档的文字。
    */
   all: string
@@ -580,7 +590,7 @@ export type SeriesView = 'table' | 'chart'
 /**
  * 时间窗两态:近 N 期 / 全部。
  */
-export type SeriesRange = 'recent' | 'all'
+export type SeriesRange = 'recent' | 'more' | 'all'
 
 /**
  * useSeriesView 交回的机器面板(两个开关一台机器:都在决定「这张表现在给你看哪一段」)。
@@ -610,6 +620,11 @@ export type UseSeriesViewOut = {
    * 切到「近 N 期」。
    */
   onRecent: ClickFn
+
+  /**
+   * 切到「近 M 期」。
+   */
+  onMore: ClickFn
 
   /**
    * 切到「全部」。
@@ -656,6 +671,11 @@ export type SeriesToolbarIn = {
    * 切到「近 N 期」。
    */
   onRecent: ClickFn
+
+  /**
+   * 切到「近 M 期」。
+   */
+  onMore: ClickFn
 
   /**
    * 切到「全部」。

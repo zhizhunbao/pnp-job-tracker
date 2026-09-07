@@ -11,6 +11,7 @@ import { SeriesChart, SeriesToolbar, useSeriesView } from '@/components/table'
 import { SERIES_VIEW_CHART, SERIES_VIEW_TABLE } from './constants'
 import { macroLabelOf, macroValueOf, seriesWordsOf } from './functions'
 import { KvRow } from './kvrow'
+import { MacroKeyCell } from './macrokeycell'
 import { MacroLatestCell } from './macrolatestcell'
 import type { MacroCardIn, MacroRow } from './types'
 import css from './start.module.css'
@@ -21,25 +22,28 @@ import css from './start.module.css'
  * @param props 取词函数与地区块。
  * @returns 卡。
  */
-export function MacroCard({ t, geo }: MacroCardIn) {
+export function MacroCard(x: MacroCardIn) {
+  const t = x.t
+  const geo = x.geo
+  const shown = x.rows
   const v = useSeriesView()
   const words = seriesWordsOf(t)
   const rows = []
-  for (const r of geo.rows) {
-    rows.push(<KvRow key={r.key} k={<span className={r.keyCls}>{r.label}</span>} v={MacroLatestCell(r)} />)
+  for (const r of shown) {
+    rows.push(<KvRow key={r.key} k={MacroKeyCell(r)} v={MacroLatestCell(r)} />)
   }
   return (
     <div className={css.card}>
       <div className={css.provCardHead}>
         <span className={css.headRight}>
           <SeriesToolbar view={v.view} range={v.range} words={words} rangeless
-            onTable={v.onTable} onChart={v.onChart} onRecent={v.onRecent} onAll={v.onAll} />
+            onTable={v.onTable} onChart={v.onChart} onRecent={v.onRecent} onMore={v.onMore} onAll={v.onAll} />
         </span>
       </div>
       {v.view === SERIES_VIEW_TABLE && <div className={css.provCardBody}>{rows}</div>}
       {v.view === SERIES_VIEW_CHART && (
         <SeriesChart<MacroRow>
-          rows={geo.rows}
+          rows={shown}
           pointKeys={geo.years}
           pointLabels={geo.years}
           valueOf={macroValueOf}

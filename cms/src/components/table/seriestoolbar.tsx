@@ -11,7 +11,9 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconTable, IconTrend } from '@/components/icons'
-import { SERIES_BTN_KIND, SERIES_RANGE_RECENT, SERIES_RANGE_SEP, SERIES_VIEW_TABLE } from './constants'
+import {
+  SERIES_BTN_KIND, SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_RANGE_SEP, SERIES_VIEW_TABLE,
+} from './constants'
 import { cls } from './functions'
 import type { SeriesToolbarIn } from './types'
 import css from './table.module.css'
@@ -23,9 +25,11 @@ import css from './table.module.css'
  * @returns 工具条。
  */
 export function SeriesToolbar({
-  view, range, words, rangeless = false, onTable, onChart, onRecent, onAll,
+  view, range, words, rangeless = false, onTable, onChart, onRecent, onMore, onAll,
 }: SeriesToolbarIn) {
   const recentOn = range === SERIES_RANGE_RECENT
+  const moreOn = range === SERIES_RANGE_MORE
+  const allOn = range === SERIES_RANGE_ALL
   const tableOn = view === SERIES_VIEW_TABLE
   const showRange = rangeless === false
   return (
@@ -36,8 +40,13 @@ export function SeriesToolbar({
       )}
       {showRange && <span className={css.seriesSep}>{SERIES_RANGE_SEP}</span>}
       {showRange && (
-        <Button kind={SERIES_BTN_KIND} sm onClick={onAll} pressed={recentOn === false}
-          className={cls(cssOf(css.seriesRange), recentOn === false && css.seriesRangeOn)}>{words.all}</Button>
+        <Button kind={SERIES_BTN_KIND} sm onClick={onMore} pressed={moreOn}
+          className={cls(cssOf(css.seriesRange), moreOn && css.seriesRangeOn)}>{words.more}</Button>
+      )}
+      {showRange && <span className={css.seriesSep}>{SERIES_RANGE_SEP}</span>}
+      {showRange && (
+        <Button kind={SERIES_BTN_KIND} sm onClick={onAll} pressed={allOn}
+          className={cls(cssOf(css.seriesRange), allOn && css.seriesRangeOn)}>{words.all}</Button>
       )}
       <Button kind={SERIES_BTN_KIND} onClick={onTable} pressed={tableOn} ariaLabel={words.table}
         className={cls(cssOf(css.seriesIcon), tableOn && css.seriesIconOn)}><IconTable /></Button>

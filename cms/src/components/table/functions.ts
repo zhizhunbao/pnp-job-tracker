@@ -11,7 +11,7 @@ import {
   CLS_SEP, EMPTY_MARK, SERIES_BOX_SEP, SERIES_CHART_H, SERIES_CHART_W, SERIES_COLOR_FALLBACK, SERIES_COLORS,
   SERIES_GRID_MAX_LINES, SERIES_GRID_STEP, SERIES_GRID_STEPS, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS,
   SERIES_PAD_B, SERIES_PAD_L, SERIES_PAD_R,
-  SERIES_PAD_T, SERIES_PATH_GAP, SERIES_PATH_LINE, SERIES_PATH_MOVE, SERIES_RANGE_ALL, SERIES_ROUND,
+  SERIES_PAD_T, SERIES_PATH_GAP, SERIES_PATH_LINE, SERIES_PATH_MOVE, SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_ROUND,
 } from './constants'
 import type {
   BoundsIn, CellIn, ClickFn, Col, GridIn, GripFn, GripIn, HeadClickIn, PlotLineIn, PointLabelsIn, RawPointsIn,
@@ -175,7 +175,11 @@ export function shownColsOf<T>(x: ShownColsIn<T>): Col<T>[] {
   if (x.range === SERIES_RANGE_ALL) {
     return x.cols
   }
-  const keep = x.series.pointKeys.slice(-x.series.recent)
+  let count = x.series.recent
+  if (x.range === SERIES_RANGE_MORE) {
+    count = x.series.more
+  }
+  const keep = x.series.pointKeys.slice(-count)
   const out: Col<T>[] = []
   for (const c of x.cols) {
     if (x.series.pointKeys.includes(c.key) === false || keep.includes(c.key)) {

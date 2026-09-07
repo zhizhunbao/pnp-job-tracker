@@ -1030,11 +1030,6 @@ export const KEY_MACRO_HEAD = 'pulse.m.'
 export const KEY_MON_HEAD = 'pulse.m.mon'
 
 /**
- * 宏观表来源注 i18n 键的头(拼上来源键;表号类来源直接写代码不进 i18n)。
- */
-export const KEY_MACRO_SRC_HEAD = 'pulse.m.src.'
-
-/**
  * macro_series 的频率码:季度。
  */
 export const FREQ_Q = 'Q'
@@ -1145,14 +1140,24 @@ export const MK_PR_PNP = 'prPnp'
 export const MK_EE = 'eeInvites'
 
 /**
- * 宏观表派生行键:其中工签 = workOnly + workStudy。
+ * macro_series 数据键:其他许可持有人及家属(临时居民里工签 / 学签 / 难民之外的一小块)。
  */
-export const MR_WORK = 'work'
+export const MK_OTHER = 'other'
 
 /**
- * 宏观表派生行键:其中学签 = studyOnly + workStudy。
+ * 宏观表「近 10 年」显示的年份列数:10 个年末 + 进行年(Frank 2026-09-06「全部 table 的话就跑偏了,加一个近十年」)。
  */
-export const MR_STUDY = 'study'
+export const MACRO_MORE = 11
+
+/**
+ * 宏观表里带折叠的父行(临时居民;点它展开 / 收起下面五条「其中」)。
+ */
+export const MACRO_PARENT_ROW = 'npr'
+
+/**
+ * 折叠钮的 button 族档(与序列表工具条同档)。
+ */
+export const TOGGLE_BTN_KIND = 'ghost'
 
 /**
  * 宏观表行键:已发提名(pnp_ops_stats,进行年)。
@@ -1166,97 +1171,18 @@ export const MR_REMAINING = 'remaining'
 
 /**
  * 宏观表行序(行键;数据键与派生行键混排,i18n 行名 = KEY_MACRO_HEAD + 行键)。
- * 「其中」三行挂在临时居民下缩进(Frank 2026-09-06:两个「持有」相加会超过临时居民,写「其中」防止用户加减)。
+ * 「其中」五行挂在临时居民下缩进且可折叠(Frank 2026-09-06「是不是带折叠展开的好一些」)。
  */
 export const MACRO_ROW_ORDER = [
-  'pop', 'npr', 'work', 'study', 'asylum', 'studyNew', 'gdp', 'unemp',
+  'pop', 'npr', 'workOnly', 'studyOnly', 'workStudy', 'asylum', 'other', 'studyNew', 'gdp', 'unemp',
   'alloc', 'issued', 'remaining', 'prAll', 'prPnp', 'eeInvites',
 ]
 
 /**
- * 宏观表里缩进显示的「其中」行。
+ * 宏观表里缩进显示的「其中」行:五块加起来 = 临时居民(StatCan 17-10-0121 的互斥拆分;
+ * Frank 2026-09-06「这个加一起也不等啊」—— 原先工签 / 学签各含双持,相加会超)。默认折叠在临时居民下。
  */
-export const MACRO_SUB_ROWS = ['work', 'study', 'asylum']
-
-/**
- * 宏观表行的来源注:表号类是代码原样显示,其余是 KEY_MACRO_SRC_HEAD 下的 i18n 键尾。
- */
-export const MACRO_ROW_SRC: Record<string, string> = {
-  /**
-   * 总人口。
-   */
-  pop: 'StatCan 17-10-0009',
-
-  /**
-   * 临时居民。
-   */
-  npr: 'StatCan 17-10-0121',
-
-  /**
-   * 其中工签。
-   */
-  work: 'StatCan 17-10-0121',
-
-  /**
-   * 其中学签。
-   */
-  study: 'StatCan 17-10-0121',
-
-  /**
-   * 其中难民申请人。
-   */
-  asylum: 'StatCan 17-10-0121',
-
-  /**
-   * 学签新签。
-   */
-  studyNew: 'ircc',
-
-  /**
-   * GDP。
-   */
-  gdp: 'StatCan 36-10-0222',
-
-  /**
-   * 失业率。
-   */
-  unemp: 'StatCan 14-10-0287',
-
-  /**
-   * 省提名配额。
-   */
-  alloc: 'prov',
-
-  /**
-   * 已发提名。
-   */
-  issued: 'prov',
-
-  /**
-   * 剩余名额。
-   */
-  remaining: 'prov',
-
-  /**
-   * PR 获批。
-   */
-  prAll: 'ircc',
-
-  /**
-   * 其中省提名。
-   */
-  prPnp: 'ircc',
-
-  /**
-   * EE 邀请。
-   */
-  eeInvites: 'ee',
-}
-
-/**
- * 来源注是代码(不进 i18n)的判据:以此开头。
- */
-export const SRC_CODE_HEAD = 'StatCan'
+export const MACRO_SUB_ROWS = ['workOnly', 'studyOnly', 'workStudy', 'asylum', 'other']
 
 /**
  * pnp_ops_stats 的省级指标名:年度配额。

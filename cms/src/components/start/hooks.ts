@@ -24,7 +24,7 @@ import {
 import type {
   CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel,
   SponsorBoards, TFn,
-  NocProvsMap,
+  NocProvsMap, MacroExpandPanel,
 } from './types'
 
 /**
@@ -190,4 +190,19 @@ export function usePulse(x: PulseIn): PulsePanel {
     tEn,
     navSec,
   }
+}
+
+/**
+ * 地区块「其中」五行的折叠态(默认收起;一块一份)。
+ *
+ * @returns 展开态与切换手柄。
+ */
+export function useMacroExpand(): MacroExpandPanel {
+  const [expanded, setExpanded] = useState(false)
+
+  function onToggle() {
+    setExpanded(expanded === false)
+  }
+
+  return { expanded, onToggle }
 }

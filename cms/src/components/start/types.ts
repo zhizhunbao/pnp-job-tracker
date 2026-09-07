@@ -3432,11 +3432,6 @@ export type MacroRow = {
   label: string
 
   /**
-   * 来源注(表号代码或 i18n 文案)。
-   */
-  src: string
-
-  /**
    * 是不是「其中」缩进行。
    */
   sub: boolean
@@ -3445,6 +3440,16 @@ export type MacroRow = {
    * 「指标」单元格的容器类(缩进行带缩进类;单元格件不回头 import functions,免循环依赖)。
    */
   keyCls: string
+
+  /**
+   * 父行的折叠 / 展开手柄(只有临时居民那行有;其余 null)。
+   */
+  toggle: ClickFn | null
+
+  /**
+   * 父行当前是否展开。
+   */
+  expanded: boolean
 
   /**
    * 年 → 格。
@@ -3475,11 +3480,6 @@ export type MacroGeo = {
    * 显示名(全国取词;省用通行短名)。
    */
   name: string
-
-  /**
-   * 译名(英文界面空串;全国也空串)。
-   */
-  localeName: string
 
   /**
    * 竞争度胶囊类;没档空串(全国无档)。
@@ -3608,31 +3608,6 @@ export type CellsOfKeyIn = {
 
   /**
    * 取词函数(进行年灰注)。
-   */
-  t: TFn
-}
-
-/**
- * `sumCellsOf` 的入参:两个数据键逐年相加(其中工签 / 其中学签)。
- */
-export type SumCellsIn = {
-  /**
-   * 第一个数据键。
-   */
-  a: string
-
-  /**
-   * 第二个数据键。
-   */
-  b: string
-
-  /**
-   * 该地区的点。
-   */
-  points: MacroPoint[]
-
-  /**
-   * 取词函数。
    */
   t: TFn
 }
@@ -3777,6 +3752,11 @@ export type SeriesWords = {
   recent: string
 
   /**
+   * 「近 10 年」。
+   */
+  more: string
+
+  /**
    * 「全部」。
    */
   all: string
@@ -3835,6 +3815,11 @@ export type MacroBlockIn = {
    * ETL 心跳。
    */
   updatedAt: string
+
+  /**
+   * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。
+   */
+  gap: boolean
 }
 
 /**
@@ -3847,9 +3832,49 @@ export type MacroCardIn = {
   t: TFn
 
   /**
-   * 地区块。
+   * 地区块(年份列与图用)。
    */
   geo: MacroGeo
+
+  /**
+   * 当前显示的行(折叠态已过滤,与桌面表同一份)。
+   */
+  rows: MacroRow[]
+}
+
+/**
+ * `macroRowsShownOf` 的入参。
+ */
+export type MacroRowsShownIn = {
+  /**
+   * 地区块全部行。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 「其中」行是否展开。
+   */
+  expanded: boolean
+
+  /**
+   * 折叠 / 展开手柄(挂到父行)。
+   */
+  onToggle: ClickFn
+}
+
+/**
+ * `useMacroExpand` 的出参。
+ */
+export type MacroExpandPanel = {
+  /**
+   * 是否展开。
+   */
+  expanded: boolean
+
+  /**
+   * 切换。
+   */
+  onToggle: ClickFn
 }
 
 /**
@@ -4040,6 +4065,11 @@ export type JobsSectionIn = {
    * 行。
    */
   rows: JobsRow[]
+
+  /**
+   * 上面有地区块时加块间距。
+   */
+  gap: boolean
 }
 
 /**
@@ -4065,26 +4095,6 @@ export type GeoNameIn = {
    * 地区码。
    */
   code: string
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * `geoLocaleOf` 的入参。
- */
-export type GeoLocaleIn = {
-  /**
-   * 地区码。
-   */
-  code: string
-
-  /**
-   * 界面语言。
-   */
-  lang: string
 
   /**
    * 取词函数。
@@ -4175,6 +4185,11 @@ export type MacroSeriesSpec = {
    * 「近 N 期」默认显示几列。
    */
   recent: number
+
+  /**
+   * 「近 M 期」显示几列。
+   */
+  more: number
 
   /**
    * 工具条与图的文案。

@@ -80,6 +80,7 @@ export function Table<T>({
           onTable={s.onTable}
           onChart={s.onChart}
           onRecent={s.onRecent}
+          onMore={s.onMore}
           onAll={s.onAll} />
       )}
       {chart && series != null && (
