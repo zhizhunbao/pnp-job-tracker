@@ -22,7 +22,7 @@ export function MacroLatestCell(r: MacroRow) {
   return (
     <span className={css.nowrap}>
       {r.latest.text}
-      {r.latest.note !== TEXT_NONE && <span className={css.note}>{r.latest.note}</span>}
+      {r.latest.note !== TEXT_NONE && <span className={css.noteInline}>{r.latest.note}</span>}
     </span>
   )
 }

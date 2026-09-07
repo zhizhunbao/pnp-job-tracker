@@ -6,7 +6,7 @@
  * @author Frank
  * @time 2026-09-06 22:00:00
  */
-import { TEXT_NONE } from './constants'
+import { GEO_CA, TEXT_NONE } from './constants'
 import type { GeoTitleIn } from './types'
 import css from './start.module.css'
 
@@ -20,7 +20,7 @@ export function GeoTitle({ geo }: GeoTitleIn) {
   return (
     <>
       <span className={css.provName}>{geo.name}</span>
-      {geo.code !== geo.name && <span className={css.provCode}>{geo.code}</span>}
+      {geo.code !== GEO_CA && <span className={css.provCode}>{geo.code}</span>}
       {geo.localeName !== TEXT_NONE && <span className={css.note}>{geo.localeName}</span>}
       {geo.tierCls !== TEXT_NONE && <span className={geo.tierCls}>{geo.tierText}</span>}
     </>

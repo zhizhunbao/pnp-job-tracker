@@ -9,7 +9,8 @@
  */
 import {
   CLS_SEP, EMPTY_MARK, SERIES_BOX_SEP, SERIES_CHART_H, SERIES_CHART_W, SERIES_COLOR_FALLBACK, SERIES_COLORS,
-  SERIES_GRID_STEP, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS, SERIES_PAD_B, SERIES_PAD_L, SERIES_PAD_R,
+  SERIES_GRID_MAX_LINES, SERIES_GRID_STEP, SERIES_GRID_STEPS, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS,
+  SERIES_PAD_B, SERIES_PAD_L, SERIES_PAD_R,
   SERIES_PAD_T, SERIES_PATH_GAP, SERIES_PATH_LINE, SERIES_PATH_MOVE, SERIES_RANGE_ALL, SERIES_ROUND,
 } from './constants'
 import type {
@@ -300,14 +301,36 @@ export function boundsOf(x: BoundsIn): SeriesBounds {
     }
   }
   if (Number.isFinite(lo) === false || Number.isFinite(hi) === false) {
-    return { lo: SERIES_INDEX_BASE - SERIES_GRID_STEP, hi: SERIES_INDEX_BASE + SERIES_GRID_STEP }
+    return {
+      lo: SERIES_INDEX_BASE - SERIES_GRID_STEP, hi: SERIES_INDEX_BASE + SERIES_GRID_STEP, step: SERIES_GRID_STEP,
+    }
   }
-  const down = Math.floor(lo / SERIES_GRID_STEP) * SERIES_GRID_STEP
-  const up = Math.ceil(hi / SERIES_GRID_STEP) * SERIES_GRID_STEP
+  const step = gridStepOf(hi - lo)
+  const down = Math.floor(lo / step) * step
+  const up = Math.ceil(hi / step) * step
   if (up === down) {
-    return { lo: down - SERIES_GRID_STEP, hi: up + SERIES_GRID_STEP }
+    return { lo: down - step, hi: up + step, step }
   }
-  return { lo: down, hi: up }
+  return { lo: down, hi: up, step }
+}
+
+/**
+ * 按跨度挑网格步长:阶梯里第一个让网格线不超过上限的档;都超就取最大档。
+ *
+ * @param span 上下界跨度(指数点)。
+ * @returns 步长。
+ */
+function gridStepOf(span: number): number {
+  for (const step of SERIES_GRID_STEPS) {
+    if (span / step <= SERIES_GRID_MAX_LINES - 1) {
+      return step
+    }
+  }
+  const last = SERIES_GRID_STEPS[SERIES_GRID_STEPS.length - 1]
+  if (last == null) {
+    return SERIES_GRID_STEP
+  }
+  return last
 }
 
 /**
@@ -391,7 +414,7 @@ export function gridOf(x: GridIn): SeriesGrid[] {
   let at = x.bounds.lo
   while (at <= x.bounds.hi) {
     out.push({ y: yAtOf({ index: at, bounds: x.bounds }), text: String(at) })
-    at = at + SERIES_GRID_STEP
+    at = at + x.bounds.step
   }
   return out
 }

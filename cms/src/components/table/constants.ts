@@ -160,6 +160,17 @@ export const SERIES_MIN_POINTS = 2
 export const SERIES_GRID_STEP = 20
 
 /**
+ * y 轴网格步长的阶梯(指数点):按上下界跨度挑第一个让网格线不超过 SERIES_GRID_MAX_LINES 的档
+ * (2026-09-06 生产实拍 ON 十几条线跨 0–720 时 20 一格挤成一团)。
+ */
+export const SERIES_GRID_STEPS = [20, 50, 100, 200, 500, 1000, 2000, 5000]
+
+/**
+ * y 轴网格线最多几条(含上下界)。
+ */
+export const SERIES_GRID_MAX_LINES = 8
+
+/**
  * 画布宽(viewBox 坐标,不是像素):svg 按 viewBox 自适应容器宽,
  * 这个数只决定「横向有多少格可用」,越大线越平滑。
  */

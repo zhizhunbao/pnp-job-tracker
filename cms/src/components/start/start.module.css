@@ -2731,3 +2731,28 @@
    */
   margin-top: 12px;
 }
+
+/*
+ * 与值同行的灰注(手机地区卡:值后跟「4 月」不另起一行;.note 是块级,表格格里才用)。
+ */
+.noteInline {
+  /*
+   * 同行。
+   */
+  display: inline;
+
+  /*
+   * 与值的间距。
+   */
+  margin-left: 6px;
+
+  /*
+   * 小字。
+   */
+  font-size: 11.5px;
+
+  /*
+   * 灰。
+   */
+  color: var(--text3);
+}

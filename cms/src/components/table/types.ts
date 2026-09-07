@@ -739,7 +739,7 @@ export type SeriesRawLine = {
 }
 
 /**
- * y 轴的指数上下界(取到 SERIES_GRID_STEP 的整倍数)。
+ * y 轴的指数上下界(取到所选步长的整倍数)与步长。
  */
 export type SeriesBounds = {
   /**
@@ -751,6 +751,11 @@ export type SeriesBounds = {
    * 上界(恒 > lo)。
    */
   hi: number
+
+  /**
+   * 网格步长(SERIES_GRID_STEPS 里挑出的那一档)。
+   */
+  step: number
 }
 
 /**
