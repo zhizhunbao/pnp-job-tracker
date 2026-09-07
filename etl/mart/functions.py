@@ -4856,6 +4856,9 @@ def macro_pr_block_rows(x: PrBlockIn) -> list:
         if year == x.ytd_year:
             as_of = ytd
         for geo, value in by_prov.items():
+            if x.key == MACRO_KEY_PR_PNP and geo in NON_PNP_PROV:
+                # 魁省不参加省提名,IRCC 表里那格恒 0 是「不适用」不是事实值(Frank 2026-09-06「魁北克不是省提名吧」)
+                continue
             out.append(to_macro_row(MacroRowIn(
                 geo=geo, key=x.key, period=year, freq=MACRO_FREQ_ANNUAL, value=value,
                 as_of=as_of, unit=UNIT_PEOPLE, source=x.source, fetched=x.fetched)))

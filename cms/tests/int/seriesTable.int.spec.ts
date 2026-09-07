@@ -99,13 +99,13 @@ describe('shownColsOf:表态的列过滤', () => {
     expect(keysOf(out)).toEqual(['name', 'y3', 'y4', 'y5', 'y6', 'y7'])
   })
 
-  it('全部:一列不切', () => {
+  it('全部:表态按「近 M 期」显示(全部年份只在趋势态画,表态摆全会横滚)', () => {
     const out = shownColsOf({
       cols,
       series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, words: WORDS },
       range: 'all',
     })
-    expect(keysOf(out)).toEqual(['name', ...YEARS])
+    expect(keysOf(out)).toEqual(['name', ...YEARS.slice(-10)])
   })
 
   it('N 比时间点数还大:全给,不报错也不补空列', () => {

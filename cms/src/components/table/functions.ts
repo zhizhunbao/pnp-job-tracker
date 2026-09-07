@@ -172,11 +172,8 @@ export function shownColsOf<T>(x: ShownColsIn<T>): Col<T>[] {
   if (x.series == null) {
     return x.cols
   }
-  if (x.range === SERIES_RANGE_ALL) {
-    return x.cols
-  }
   let count = x.series.recent
-  if (x.range === SERIES_RANGE_MORE) {
+  if (x.range === SERIES_RANGE_MORE || x.range === SERIES_RANGE_ALL) {
     count = x.series.more
   }
   const keep = x.series.pointKeys.slice(-count)

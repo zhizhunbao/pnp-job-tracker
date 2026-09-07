@@ -5,6 +5,8 @@
  * 列是时间点的表才有它(2026-09-06 把脉页省份段契约 §4);文案全部由调用方经 words 给,
  * 桶不携词。四枚钮都走 button 桶的幽灵档 + 本域的加倍类 —— 钮形全站只有那一个出口。
  *
+ * 「全部」只在趋势态出:表态摆全部年份会横滚(Frank 2026-09-06「点全部这个跑偏啊」),表态里 all 按「近 M 期」显示。
+ *
  * @author Frank
  * @time 2026-09-06 21:00:00
  */
@@ -27,11 +29,12 @@ import css from './table.module.css'
 export function SeriesToolbar({
   view, range, words, rangeless = false, onTable, onChart, onRecent, onMore, onAll,
 }: SeriesToolbarIn) {
-  const recentOn = range === SERIES_RANGE_RECENT
-  const moreOn = range === SERIES_RANGE_MORE
-  const allOn = range === SERIES_RANGE_ALL
   const tableOn = view === SERIES_VIEW_TABLE
+  const recentOn = range === SERIES_RANGE_RECENT
+  const allOn = range === SERIES_RANGE_ALL && tableOn === false
+  const moreOn = range === SERIES_RANGE_MORE || (range === SERIES_RANGE_ALL && tableOn)
   const showRange = rangeless === false
+  const showAll = showRange && tableOn === false
   return (
     <div className={css.seriesBar}>
       {showRange && (
@@ -43,8 +46,8 @@ export function SeriesToolbar({
         <Button kind={SERIES_BTN_KIND} sm onClick={onMore} pressed={moreOn}
           className={cls(cssOf(css.seriesRange), moreOn && css.seriesRangeOn)}>{words.more}</Button>
       )}
-      {showRange && <span className={css.seriesSep}>{SERIES_RANGE_SEP}</span>}
-      {showRange && (
+      {showAll && <span className={css.seriesSep}>{SERIES_RANGE_SEP}</span>}
+      {showAll && (
         <Button kind={SERIES_BTN_KIND} sm onClick={onAll} pressed={allOn}
           className={cls(cssOf(css.seriesRange), allOn && css.seriesRangeOn)}>{words.all}</Button>
       )}
