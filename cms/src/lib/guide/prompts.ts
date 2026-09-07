@@ -38,7 +38,10 @@ export const RULE_KIND =
   + '(2) "question" for anything that needs an answer about their own case — eligibility, chances, requirements, wait '
   + 'times, whether something is true — or any topic no listed page covers. '
   + '(3) "suggestion" when they want the site to add, change or do something. '
-  + '(4) "chat" only when the whole message contains no request at all: a bare greeting, thanks, or asking what you can do.'
+  + '(4) "reply" when the message is about the conversation itself rather than a new request: they ask what your '
+  + 'previous reply meant, say it did not answer them, say you got it wrong, or ask you to repeat or explain — '
+  + 'anything that only makes sense after reading the previous turns. '
+  + '(5) "chat" only when the whole message contains no request at all: a bare greeting, thanks, or asking what you can do.'
 
 /**
  * 目的地只能从目录里选。
@@ -77,7 +80,9 @@ export const RULE_TOPIC =
 export const RULE_SAY =
   'SAY. For "nav": one sentence in the reply language telling them which page this is and how it is filtered for them. '
   + 'For "chat": one sentence in the reply language saying you can take them to any page of this site and will note down '
-  + 'questions and suggestions. For "question" and "suggestion": an empty string. '
+  + 'questions and suggestions. For "reply": one or two sentences in the reply language that actually answer what they '
+  + 'said, referring to your previous reply — restate plainly what it meant and which page it pointed to, or if you got '
+  + 'it wrong say so and ask them to say what they want to see or ask. For "question" and "suggestion": an empty string. '
   + 'Never write a number, a judgement, a promise, a URL, or a five-digit code in say.'
 
 /**
@@ -85,12 +90,12 @@ export const RULE_SAY =
  */
 export const OUTPUT_SHAPE =
   'OUTPUT. Exactly this JSON object with exactly these keys: '
-  + '{"kind":"nav|question|suggestion|chat","dest":"<catalogue key or null>","occupation":"<text or null>",'
+  + '{"kind":"nav|question|suggestion|chat|reply","dest":"<catalogue key or null>","occupation":"<text or null>",'
   + '"prov":"<code or null>","city":"<text or null>","q":"<text or null>","sub":"<text or null>",'
   + '"topic":"pnp|lmia|jobs|null","say":"<text>"}'
 
 /**
- * 四个示例:带路、带题目的问题、站上没有的问题、建议。小模型没有示例会把「问题」当「带路」。
+ * 五个示例:带路、带题目的问题、站上没有的问题、建议、追问。小模型没有示例会把「问题」当「带路」、把追问当闲聊。
  */
 export const EXAMPLES =
   'EXAMPLES.\n'
@@ -101,7 +106,10 @@ export const EXAMPLES =
   + 'User: 两个 1 年的课程可以申请 3 年的 PGWP 吧 → {"kind":"question","dest":null,"occupation":null,"prov":null,'
   + '"city":null,"q":null,"sub":null,"topic":null,"say":""}\n'
   + 'User: Could you alert me when a BC draw comes out → {"kind":"suggestion","dest":null,"occupation":null,'
-  + '"prov":null,"city":null,"q":null,"sub":null,"topic":null,"say":""}'
+  + '"prov":null,"city":null,"q":null,"sub":null,"topic":null,"say":""}\n'
+  + 'User (right after you said the job board is set to BC + carpenter): 什么意思 → {"kind":"reply","dest":null,'
+  + '"occupation":null,"prov":null,"city":null,"q":null,"sub":null,"topic":null,'
+  + '"say":"上一句是说职位板已经按 BC 省和木匠筛好了,点上面的「打开职位板」就能看到这些岗位。"}'
 
 // =========================================================================
 // 2. 目录说明(键必须与 constants 的 DEST_ROUTE 一一对应,测试断言)

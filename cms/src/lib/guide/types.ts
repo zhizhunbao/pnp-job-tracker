@@ -104,7 +104,7 @@ export type Lang = 'zh' | 'en' | 'ko'
 /**
  * 四类。
  */
-export type Kind = 'nav' | 'question' | 'suggestion' | 'chat'
+export type Kind = 'nav' | 'question' | 'suggestion' | 'chat' | 'reply'
 
 /**
  * 三个题目(问题类先按题目取站内事实;2026-09-06 答题批)。

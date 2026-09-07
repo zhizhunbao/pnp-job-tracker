@@ -18,7 +18,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 /**
  * 四类。
  */
-export type GuideKind = 'nav' | 'question' | 'suggestion' | 'chat'
+export type GuideKind = 'nav' | 'question' | 'suggestion' | 'chat' | 'reply'
 
 /**
  * 留邮箱状态。

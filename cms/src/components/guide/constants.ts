@@ -65,6 +65,11 @@ export const KIND = {
    * 打招呼、问向导能干什么。
    */
   chat: 'chat',
+
+  /**
+   * 追问(接着上一轮说的话):只显示模型那一两句,不弹地图、不出卡。
+   */
+  reply: 'reply',
 } as const
 
 /**

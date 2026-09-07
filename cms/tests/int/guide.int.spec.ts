@@ -79,6 +79,13 @@ describe('toModelReply —— 金标', () => {
   it('闲聊:say 保留', () => {
     expect(toModelReply({ kind: 'chat', dest: null, occupation: null, prov: null, city: null, q: null, sub: null, say: 'hi' }).say).toBe('hi')
   })
+
+  it('追问:say 保留、dest 空(2026-09-07 追问曾被当闲聊弹地图)', () => {
+    const r = toModelReply({ kind: 'reply', dest: 'jobs', say: '上一句是说职位板已经筛好了。' })
+    expect(r.kind).toBe('reply')
+    expect(r.dest).toBe(null)
+    expect(r.say).toBe('上一句是说职位板已经筛好了。')
+  })
 })
 
 describe('toModelReply —— 变异探针', () => {

@@ -164,7 +164,7 @@ function ignoreErr(): void {
 }
 
 /**
- * 这一轮向导那行字:故障 → 错误句;带路 / 闲聊 → 模型那句;问题 → 答上来的几行,没答上来是固定文案;
+ * 这一轮向导那行字:故障 → 错误句;带路 / 闲聊 / 追问 → 模型那句;问题 → 答上来的几行,没答上来是固定文案;
  * 建议 → 固定文案;还没回来 → 空串。
  *
  * @param input 取词函数与这一轮。
@@ -516,7 +516,7 @@ export function makeCoarseEffect(x: CoarseIn): VoidFn {
  */
 export function toReply(w: ReplyWire): GuideReply {
   let kind: GuideKind = KIND.question
-  if (w.kind === KIND.nav || w.kind === KIND.suggestion || w.kind === KIND.chat) {
+  if (w.kind === KIND.nav || w.kind === KIND.suggestion || w.kind === KIND.chat || w.kind === KIND.reply) {
     kind = w.kind
   }
   let id: number | null = null

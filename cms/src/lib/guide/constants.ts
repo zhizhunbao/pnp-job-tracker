@@ -160,12 +160,18 @@ export const KIND = {
    * 打招呼、问向导能干什么。
    */
   chat: 'chat',
+
+  /**
+   * 追问:接着上一轮说的话(「什么意思」「答非所问」「再说一遍」)。模型看着历史用一两句话回应,不弹地图、不出卡。
+   * 2026-09-07 Frank 实拍:追问被判成闲聊,两次弹出站内地图 ——「你得正常跟用户沟通啊」。
+   */
+  reply: 'reply',
 } as const
 
 /**
  * 合法类别清单(校验模型输出用)。
  */
-export const KINDS = ['nav', 'question', 'suggestion', 'chat']
+export const KINDS = ['nav', 'question', 'suggestion', 'chat', 'reply']
 
 /**
  * 模型只出一个小 JSON,300 够;多给只是多花钱。

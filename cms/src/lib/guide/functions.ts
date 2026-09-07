@@ -844,7 +844,7 @@ export function toModelReply(obj: JsonObject): ModelReply {
   }
   let say = TEXT_NONE
   const sayCell = cellOf({ obj: obj, key: REPLY_KEY.say, cap: SAY_CAP })
-  if (sayCell != null && (kind === KIND.nav || kind === KIND.chat)) {
+  if (sayCell != null && (kind === KIND.nav || kind === KIND.chat || kind === KIND.reply)) {
     say = sayCell
   }
   let topic: Topic | null = null
