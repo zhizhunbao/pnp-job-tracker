@@ -31,14 +31,14 @@ export function ProvSection({ t, updatedAt, geos, jobsLoading, jobsRows }: Macro
   const blocks = []
   let gap = false
   for (const g of geos) {
-    blocks.push(<MacroBlock key={g.code} t={t} geo={g} updatedAt={updatedAt} gap={gap} />)
+    blocks.push(<MacroBlock key={g.code} t={t} geo={g} gap={gap} />)
     gap = true
   }
   return (
     <Band id={ID_PROV}>
       <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
         {blocks}
-        <JobsSection t={t} updatedAt={updatedAt} loading={jobsLoading} rows={jobsRows} gap={gap} />
+        <JobsSection t={t} loading={jobsLoading} rows={jobsRows} gap={gap} />
       </Sec>
     </Band>
   )

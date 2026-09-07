@@ -3812,11 +3812,6 @@ export type MacroBlockIn = {
   geo: MacroGeo
 
   /**
-   * ETL 心跳。
-   */
-  updatedAt: string
-
-  /**
    * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。
    */
   gap: boolean
@@ -4050,11 +4045,6 @@ export type JobsSectionIn = {
    * 取词函数。
    */
   t: TFn
-
-  /**
-   * ETL 心跳。
-   */
-  updatedAt: string
 
   /**
    * 数据还没到。

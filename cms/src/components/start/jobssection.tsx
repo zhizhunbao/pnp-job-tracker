@@ -8,7 +8,6 @@
  * @time 2026-09-06 22:00:00
  */
 import { Table } from '@/components/table'
-import { Updated } from '@/components/time'
 import { ID_PROV_JOBS, PH_PROV } from './constants'
 import { boardGapClsOf, jobsColsOf, jobsRowKeyOf } from './functions'
 import { JobsCard } from './jobscard'
@@ -20,10 +19,10 @@ import css from './start.module.css'
 /**
  * 渲染招聘对比。
  *
- * @param props 取词函数、更新时刻、加载态与行。
+ * @param props 取词函数、加载态、行与块间距开关(更新时间只在段标题出一枚)。
  * @returns 带锚点的块;数据到了而一行都没有时给 null。
  */
-export function JobsSection({ t, updatedAt, loading, rows, gap }: JobsSectionIn) {
+export function JobsSection({ t, loading, rows, gap }: JobsSectionIn) {
   if (loading === false && rows.length === 0) {
     return null
   }
@@ -34,7 +33,7 @@ export function JobsSection({ t, updatedAt, loading, rows, gap }: JobsSectionIn)
   return (
     <div id={ID_PROV_JOBS} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
-      <Sec title={t('pulse.s4j')} right={<Updated iso={updatedAt} t={t} />} sub>
+      <Sec title={t('pulse.s4j')} sub>
         {loading && <Placeholder size={PH_PROV} />}
         {rows.length > 0 && (
           <div className={css.table}>
