@@ -1012,17 +1012,25 @@ def add_company(x: CompanyExtraIn) -> None:
     """一家公司进 companies(首次见到才建行;富化只填空,来源侧已有的不覆盖)。
 
     Job Bank 公司无 profile;ATS 已自带 profile 的 description/sectors 优先。
+    官网自富化缓存进来也过 website_of(2026-09-08:老 enrich 步把帖子里的脏网址原样抄进了缓存,
+    首轮闸只挡了来源侧四处,这一路漏了 5 家)。
     """
     if x.slug in x.ctx.companies:
         return
     en = x.ctx.enrich.get(x.slug, {})
     for k in ENRICH_KEYS:
-        if not x.extra.get(k) and en.get(k):
-            x.extra[k] = en[k]
-            if k == K_DESCRIPTION:
-                x.extra[k] = strip_wp_tail(x.extra[k])
-            if k == K_WEBSITE and en.get(K_FOUND):
+        if x.extra.get(k) or not en.get(k):
+            continue
+        value = en[k]
+        if k == K_DESCRIPTION:
+            value = strip_wp_tail(value)
+        if k == K_WEBSITE:
+            value = website_of(value)
+            if value is None:
+                continue
+            if en.get(K_FOUND):
                 x.extra[K_WEBSITE_SOURCE] = en[K_FOUND]
+        x.extra[k] = value
     fill_places(x)
     fill_brief(x)
     x.extra[K_SECTOR] = sector_of(x.name)
@@ -1046,8 +1054,9 @@ def fill_places(x: CompanyExtraIn) -> None:
     pl = x.ctx.places.get(x.slug)
     if pl is None:
         return
-    if not x.extra.get(K_WEBSITE) and pl.get(K_WEBSITE):
-        x.extra[K_WEBSITE] = pl[K_WEBSITE]
+    site = website_of(pl.get(K_WEBSITE))
+    if not x.extra.get(K_WEBSITE) and site is not None:
+        x.extra[K_WEBSITE] = site
         x.extra[K_WEBSITE_SOURCE] = FOUND_PLACES
     if not x.extra.get(K_ADDRESS) and pl.get(K_ADDRESS):
         x.extra[K_ADDRESS] = pl[K_ADDRESS]
