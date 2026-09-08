@@ -158,7 +158,7 @@ WEBSITE_TLDS = frozenset((
     "software", "solutions", "quebec", "dev", "xyz", "clinic", "dental", "restaurant", "cafe", "pizza", "law",
     "design", "studio", "photography", "travel", "hotel", "consulting", "services", "education", "academy",
     "school", "church", "ngo", "foundation", "network", "systems", "digital", "media", "marketing", "energy",
-    "construction", "plumbing", "io", "ai", "co", "me", "tv", "cc", "crs",
+    "construction", "plumbing", "io", "ai", "co", "me", "tv", "cc", "crs", "company",
 ))
 """三字母以上末段的放行表(真顶级域;2026-09-08 Frank「修」:companies 13,599 个官网里末段 127 种,
 三字母以上的一半是邮箱域黏了后面的字 —— cawe / cafax / cathe / comby / caapplications / cadeadline…,
