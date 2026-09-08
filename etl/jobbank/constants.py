@@ -540,8 +540,11 @@ HTTP_PREFIX = "http"
 HTTP_SCHEME = "http://"
 """从邮箱域名推官网时补的协议头。"""
 
-EMAIL_DOMAIN_RE = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
-"""申请邮箱的域名(hr@apollophysio.ca → apollophysio.ca)。"""
+EMAIL_DOMAIN_RE = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.(?:[a-z]{2,}|[A-Z]{2,}))(?![A-Za-z0-9])")
+"""申请邮箱的域名(hr@apollophysio.ca → apollophysio.ca)。
+2026-09-08 收紧(Frank「修」):原式贪婪吞掉紧黏在邮箱后面的字 —— `info@krg.caFax:` 抽成 krg.cafax、
+`careers@flyjazz.ca.Jazz Aviation` 抽成 flyjazz.ca.jazz(把脉页主营业务链抓官网实撞)。顶级域只许整段小写或
+整段大写(黏字必混大小写),且后面不能再跟字母数字;对不上宁可留空不瞎猜。"""
 
 OFFICIAL_DOMAINS = ("jobbank.gc.ca", "canada.ca")
 """官网判定要排除的官方域名(帖子自己的链接不算雇主官网)。"""

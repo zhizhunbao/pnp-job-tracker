@@ -124,6 +124,46 @@ DATE_FMTS = (DATE_FMT_LONG, DATE_FMT_ISO)
 DATE_LEN = 10
 """ISO 日期的长度(带时区的时间戳只取日期部分)。"""
 
+WEBSITE_HOST_RE = re.compile(r"^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$")
+"""官网主机名的形状:点分多段、每段字母数字连字符、末段纯字母 ≥2(website_of 的判据;
+2026-09-08 Frank「修」:来源侧把邮箱当网址填进 href(http://info@alfiri.com)、多斜杠(http:///www.x.ca)、
+尾点(https://x.com.)、字黏尾(krg.cafax 过不了这条 —— 靠 jobbank 侧正则挡)全归这一道跨源闸)。"""
+
+WEBSITE_SCHEMES = ("http", "https")
+"""官网只认这两种协议(mailto: / ftp: / 裸串一律不算)。"""
+
+URL_SCHEME_SEP = "://"
+"""协议与主机之间的分隔(website_of 重拼 URL 用)。"""
+
+URL_QUERY_SEP = "?"
+"""路径与查询串之间的分隔。"""
+
+HOST_AT_MARK = "@"
+"""主机名里出现 @ = 雇主把邮箱填进了网址栏。"""
+
+HOST_PORT_SEP = ":"
+"""主机名里出现 : = 带端口,官网不该有。"""
+
+HOST_TAIL_DOT = "."
+"""主机名尾点(https://x.com. 这种句末点混进来的)去掉再判。"""
+
+TLD_CC_LEN = 2
+"""两字母末段一律当国家域放行(ca / us / fr / de…,不逐个列)。"""
+
+WEBSITE_TLDS = frozenset((
+    "com", "net", "org", "edu", "gov", "info", "biz", "coop", "mobi", "pro", "aero", "app", "site", "online",
+    "store", "shop", "tech", "cloud", "club", "bar", "pub", "farm", "vet", "care", "health", "healthcare",
+    "catering", "events", "games", "life", "live", "work", "one", "space", "earth", "eco", "green", "guru",
+    "ink", "buzz", "ltd", "inc", "group", "agency", "auto", "autos", "homes", "realestate", "engineering",
+    "software", "solutions", "quebec", "dev", "xyz", "clinic", "dental", "restaurant", "cafe", "pizza", "law",
+    "design", "studio", "photography", "travel", "hotel", "consulting", "services", "education", "academy",
+    "school", "church", "ngo", "foundation", "network", "systems", "digital", "media", "marketing", "energy",
+    "construction", "plumbing", "io", "ai", "co", "me", "tv", "cc", "crs",
+))
+"""三字母以上末段的放行表(真顶级域;2026-09-08 Frank「修」:companies 13,599 个官网里末段 127 种,
+三字母以上的一半是邮箱域黏了后面的字 —— cawe / cafax / cathe / comby / caapplications / cadeadline…,
+这些永远不在表里;表照 2026-09-08 现场真出现过的合法域 + 常见 gTLD 列,漏的宁可留空)。"""
+
 WS_RE = re.compile(r"\s+")
 """连续空白(压平成一个空格 / 数值化前整段清空)。"""
 

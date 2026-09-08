@@ -36,6 +36,7 @@ import statistics
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 import paths
 from log.functions import err, say
@@ -99,7 +100,8 @@ from mart.constants import (
     K_SECTION, K_SECTOR, K_SECTORS, K_SEEN_IDS, K_SELECTION_FACTORS, K_SLUG, K_SOURCE,
     K_SOURCE_LABEL, K_STAGE, K_STATUS, K_STREAM, K_STREAMS, K_STREAM_KEY, K_STUDY_FLOW, K_SUMMARY,
     K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE,
-    K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS,
+    K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
+    HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
@@ -312,6 +314,33 @@ def say_table_counts(x: SayCountsIn) -> None:
     """收尾逐表报行数(etl 版四道闸地基:行数异常当场看得见,不静默入库)。"""
     for table, rows in x.tables.items():
         say(TABLE_COUNT_TPL.format(table=table.ljust(x.width), n=str(len(rows)).rjust(COUNT_WIDTH)))
+
+
+def website_of(raw: object) -> str | None:
+    """来源侧的官网串 → 有效 URL 或 None(跨源闸,ATS / JB 公司行与岗位 officialUrl 四处同过)。
+
+    只认 http(s) + 合法主机名(WEBSITE_HOST_RE)+ 末段是两字母国家域或 WEBSITE_TLDS 里的真顶级域;
+    带 @(邮箱当网址)、空 netloc(http:///)、带端口、末段黏字(krg.cafax)一律 None —— 宁可留空不瞎猜。
+    """
+    if not isinstance(raw, str) or raw.strip() == "":
+        return None
+    parsed = urlparse(raw.strip())
+    if parsed.scheme not in WEBSITE_SCHEMES:
+        return None
+    host = parsed.netloc.lower().rstrip(HOST_TAIL_DOT)
+    if host == "" or HOST_AT_MARK in host or HOST_PORT_SEP in host:
+        return None
+    if WEBSITE_HOST_RE.match(host) is None or not is_known_tld(host.rsplit(HOST_TAIL_DOT, 1)[-1]):
+        return None
+    path = parsed.path
+    if parsed.query != "":
+        path = path + URL_QUERY_SEP + parsed.query
+    return parsed.scheme + URL_SCHEME_SEP + host + path
+
+
+def is_known_tld(tld: str) -> bool:
+    """末段放行判据:两字母国家域,或真顶级域表里有。"""
+    return len(tld) == TLD_CC_LEN or tld in WEBSITE_TLDS
 
 
 # =========================================================================
@@ -1170,7 +1199,7 @@ def to_company_row(x: CompanyRowIn) -> dict:
 
 def to_ats_company_extra(prof: dict) -> dict:
     """ATS 公司档 → companies 行的补充列(键序即落盘列序)。"""
-    return {"website": prof.get("website"), "email": prof.get("email"),
+    return {"website": website_of(prof.get("website")), "email": prof.get("email"),
             "address": prof.get("address"), "sectors": prof.get("sectors"),
             "description": prof.get("description"), "region": prof.get("region"),
             "source": ORIGIN_ATS}
@@ -1178,7 +1207,7 @@ def to_ats_company_extra(prof: dict) -> dict:
 
 def to_jb_company_extra(j: dict) -> dict:
     """Job Bank 帖 → companies 行的补充列(JB 无 profile,只有这四格)。"""
-    return {"website": j.get("website"), "address": j.get("address"),
+    return {"website": website_of(j.get("website")), "address": j.get("address"),
             "region": j.get("province"), "source": ORIGIN_JOBBANK}
 
 
@@ -1511,7 +1540,7 @@ def to_ats_job_fields(x: AtsJobIn) -> dict:
         "province": x.job.get("province") or guess_prov(x.job.get("location", "")),
         "city": x.job.get("city"), "district": x.job.get("district"),
         "address": x.job.get("address"),
-        "applyUrl": x.job.get("url"), "officialUrl": x.website,
+        "applyUrl": x.job.get("url"), "officialUrl": website_of(x.website),
         "salary": x.job.get("salary"), "salaryAnnual": x.job.get("salaryAnnual"),
         "salaryText": x.job.get("salaryText"),
         "aip": bool(x.job.get("aip")), "pilot": x.job.get("pilot") or "",
@@ -1528,7 +1557,7 @@ def to_jb_job_fields(j: dict) -> dict:
         "origin": ORIGIN_JOBBANK, "country": j.get("country"),
         "province": j.get("province") or guess_prov(j.get("city", "")),
         "city": j.get("city"), "district": j.get("district"), "address": j.get("address"),
-        "applyUrl": j.get("url"), "officialUrl": j.get("website"),
+        "applyUrl": j.get("url"), "officialUrl": website_of(j.get("website")),
         "salary": j.get("salary"), "salaryAnnual": j.get("salaryAnnual"),
         "salaryText": j.get("salaryText"),
         "aip": bool(j.get("aip")), "pilot": j.get("pilot") or "",
