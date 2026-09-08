@@ -5590,6 +5590,9 @@ BC_NOM_YEAR_RE = re.compile(r"^20\d\d$")
 BC_NOM_NUM_RE = re.compile(r"^\d{1,3}(?:,\d{3})*$")
 """表里的千分位数字行。"""
 
+BC_NOM_THOUSANDS_SEP = ","
+"""千分位分隔符(转 int 前剥掉;形制闸:functions 体内零字符串)。"""
+
 BC_NOM_TITLE_SCAN = 6
 """标题行之后最多再看几行找第一个年份(中间只隔一行「Program Component」)。"""
 

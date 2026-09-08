@@ -6003,7 +6003,8 @@ def gate_sentences(text: str) -> list:
 from pnp.constants import (  # noqa: E402 — 段37 常量单列一块(同段35/36 先例:主块 230 行按字母序排满)
     BC_ARCHIVES_URL, BC_NOM_LABEL_TPL, BC_NOM_NO_REPORT, BC_NOM_NO_TABLE, BC_NOM_NOTE, BC_NOM_NUM_RE,
     BC_NOM_PAIR_TPL, BC_NOM_PRINT_FAIL_TPL, BC_NOM_PRINT_OK_TPL, BC_NOM_SECTION_TPL, BC_NOM_TABLE_TITLE,
-    BC_NOM_TIMEOUT_S, BC_NOM_TITLE_SCAN, BC_NOM_TOTAL_ROW, BC_NOM_YEAR_RE, BC_REPORT_HREF_RE, BC_SITE_BASE,
+    BC_NOM_THOUSANDS_SEP, BC_NOM_TIMEOUT_S, BC_NOM_TITLE_SCAN, BC_NOM_TOTAL_ROW, BC_NOM_YEAR_RE, BC_REPORT_HREF_RE,
+    BC_SITE_BASE,
     K_NS_CERTS, NS_STATS_API, NS_STATS_LABEL_TPL, NS_STATS_MIN_YEARS, NS_STATS_NOTE, NS_STATS_PAGE,
     NS_STATS_PRINT_FAIL_TPL, NS_STATS_PRINT_OK_TPL, NS_STATS_TITLE, OUT_BC_NOMINATIONS, OUT_NS_STATS,
 )
@@ -6101,7 +6102,7 @@ def bc_nominations_of(text: str) -> dict:
     for year, value in zip(years, values):
         if BC_NOM_NUM_RE.match(value) is None:
             return {}
-        out[year] = int(value.replace(",", ""))
+        out[year] = int(value.replace(BC_NOM_THOUSANDS_SEP, ""))
     return out
 
 
