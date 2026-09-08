@@ -2468,25 +2468,42 @@ class PrBlockIn:
 
 
 @dataclass
-class EeWindowIn:
-    """ee_window_start() 入参(覆盖窗起点 = 抓取日回推 24 个月 与 各类别都盖住的起点 的较晚者)。"""
+class CompPoolIn:
+    """macro_comp_pool_of() 入参:一地区一配额年的分子该取哪一期。"""
 
-    fetched: str
-    """raw 抓取日(`YYYY-MM-DD`)。"""
+    index: dict
+    """(geo, key) → {period: 行} 的点索引(macro_point_index 产)。"""
 
-    covered_from: str
-    """各类别都盖得住的起点(被 12 轮上限截断的类别里最晚的那个「最早一行」)。"""
+    geo: str
+    """地区码。"""
+
+    year: str
+    """配额年(alloc 行的 period)。"""
 
 
 @dataclass
-class EeYearIn:
-    """ee_year_as_of_of() 入参:这一年该出行吗、as_of 写什么。"""
+class CompPoolOut:
+    """macro_comp_pool_of() / macro_pool_at() 出参:分子与它的口径。"""
 
-    year: str
-    """年份。"""
+    pool: float
+    """在库人头(三键之和)。"""
 
-    window_start: str
-    """覆盖窗起点。"""
+    as_of: str
+    """年末期 = 年(`YYYY`);进行年退到年内最新一期 = `YYYY-MM`;macro_pool_at 里先放期键,由调用方定。"""
 
-    fetched: str
-    """raw 抓取日(既是窗末,也是进行年的 as_of 来源)。"""
+    source: str
+    """分子那期的出处(StatCan 表页)。"""
+
+
+@dataclass
+class PoolAtIn:
+    """macro_pool_at() 入参:一地区一期。"""
+
+    index: dict
+    """点索引(同 CompPoolIn.index)。"""
+
+    geo: str
+    """地区码。"""
+
+    period: str
+    """期键(`YYYY-MM-DD`)。"""

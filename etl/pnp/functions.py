@@ -5995,3 +5995,145 @@ def gate_sentences(text: str) -> list:
         if GQ_SENT_MIN <= len(s) <= GQ_SENT_MAX:
             out.append(s)
     return out
+
+
+# =========================================================================
+# 37. NS / BC 已发提名数(把脉页省份段「已发提名」缺行;2026-09-08 /fe 拍板「缺数据的都补上」)
+# =========================================================================
+from pnp.constants import (  # noqa: E402 — 段37 常量单列一块(同段35/36 先例:主块 230 行按字母序排满)
+    BC_ARCHIVES_URL, BC_NOM_LABEL_TPL, BC_NOM_NO_REPORT, BC_NOM_NO_TABLE, BC_NOM_NOTE, BC_NOM_NUM_RE,
+    BC_NOM_PAIR_TPL, BC_NOM_PRINT_FAIL_TPL, BC_NOM_PRINT_OK_TPL, BC_NOM_SECTION_TPL, BC_NOM_TABLE_TITLE,
+    BC_NOM_TIMEOUT_S, BC_NOM_TITLE_SCAN, BC_NOM_TOTAL_ROW, BC_NOM_YEAR_RE, BC_REPORT_HREF_RE, BC_SITE_BASE,
+    K_NS_CERTS, NS_STATS_API, NS_STATS_LABEL_TPL, NS_STATS_MIN_YEARS, NS_STATS_NOTE, NS_STATS_PAGE,
+    NS_STATS_PRINT_FAIL_TPL, NS_STATS_PRINT_OK_TPL, NS_STATS_TITLE, OUT_BC_NOMINATIONS, OUT_NS_STATS,
+)
+from pnp.scheme import BcReportOut, BcYearRowsIn, YearRowIn, YearStatsIn  # noqa: E402 — 同上
+
+
+def to_year_row(x: YearRowIn) -> dict:
+    """运营统计逐年数一行(键序与 ON 的 on_issued_row 出参一致,mart 的 fill_year_metric_ops 同一套读法)。"""
+    return {K_YEAR: x.year, K_LABEL: x.label, K_VALUE: x.value, K_UNIT: ONS_UNIT_NOMINATIONS,
+            K_SECTION: x.section, K_URL: x.url, K_FETCHED: x.fetched}
+
+
+def write_year_stats(x: YearStatsIn) -> None:
+    """一省运营统计文件(形同 on-stats.json;processing / allocation 留空 —— 配额另有人工核对表,不重复)。"""
+    x.path.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=x.path, payload={
+        K_PROVINCE: x.prov, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: x.source, K_URL: x.url, K_NOTE: x.note,
+        K_AS_OF_LOWER: "", K_FETCHED: today_iso(),
+        K_PROCESSING: [],
+        K_ALLOCATION: [],
+        K_NOMINATIONS_ISSUED: x.rows,
+    }, indent=INDENT_2))
+    say(PRINT_DONE_PATH_TPL.format(path=x.path))
+
+
+def ns_issued_rows(rows: list) -> list:
+    """Socrata 行 → 逐年已发提名行(年降序;年或数缺的行跳过)。"""
+    out: list = []
+    today = today_iso()
+    for row in rows:
+        year = str(row.get(K_ALLOC_YEAR, "")).strip()
+        n = row.get(K_NS_CERTS)
+        if not year.isdigit() or n is None:
+            continue
+        out.append(to_year_row(YearRowIn(
+            year=int(year), label=NS_STATS_LABEL_TPL.format(year=year), value=int(n),
+            section=NS_STATS_TITLE, url=NS_STATS_PAGE, fetched=today)))
+    return sorted(out, key=neg_year_of)
+
+
+def scrape_ns_stats() -> None:
+    """NS 已发提名数入口:Socrata 直取 → raw/pnp/ns-stats.json。序列异常 / 网络错 → 保留旧表不拦役。"""
+    say(PRINT_OUT_TPL.format(path=OUT_NS_STATS))
+    try:
+        r = httpx.get(NS_STATS_API, timeout=NS_ALLOC_TIMEOUT_S, headers={HDR_UA: NS_ALLOC_UA})
+        r.raise_for_status()
+        rows = ns_issued_rows(r.json())
+        if len(rows) < NS_STATS_MIN_YEARS:
+            raise RuntimeError(NS_ALLOC_BAD_TPL.format(n=len(rows), latest=NS_ALLOC_NO_YEAR))
+    except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_ns_allocations
+        say(NS_STATS_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    write_year_stats(YearStatsIn(path=OUT_NS_STATS, prov=PROV_NS, source=NS_STATS_TITLE,
+                                 url=NS_STATS_PAGE, note=NS_STATS_NOTE, rows=rows))
+    say(NS_STATS_PRINT_OK_TPL.format(n=len(rows), first=rows[-1][K_YEAR], last=rows[0][K_YEAR],
+                                     value=rows[0][K_VALUE]))
+
+
+def bc_report_of(html: str) -> BcReportOut | None:
+    """入口页 → 最新一年的 Statistical Report(报告年 + PDF 地址);没链接给 None。"""
+    best: BcReportOut | None = None
+    for m in BC_REPORT_HREF_RE.finditer(html):
+        year = int(m.group(2))
+        if best is None or year > best.year:
+            best = BcReportOut(year=year, url=BC_SITE_BASE + m.group(1))
+    return best
+
+
+def bc_nominations_of(text: str) -> dict:
+    """报告全文 → {年: Total 行提名数}。
+
+    表在文本里的形(2025 版实测):标题行 → 「Program Component」→ 连续四个年份行 → 各组件行与数字
+    → 「Total」行 → 与年份同样多个数字。标题后几行内找不到年份、或 Total 行后数字不够 → 空表(报错由调用方)。
+    """
+    lines: list = []
+    for raw in text.splitlines():
+        lines.append(raw.strip())
+    if BC_NOM_TABLE_TITLE not in lines:
+        return {}
+    start = lines.index(BC_NOM_TABLE_TITLE) + 1
+    years: list = []
+    k = start
+    while k < len(lines) and (len(years) > 0 or k - start < BC_NOM_TITLE_SCAN):
+        if BC_NOM_YEAR_RE.match(lines[k]):
+            years.append(int(lines[k]))
+        elif len(years) > 0:
+            break
+        k += 1
+    if len(years) == 0 or BC_NOM_TOTAL_ROW not in lines[k:]:
+        return {}
+    t = lines.index(BC_NOM_TOTAL_ROW, k) + 1
+    values = lines[t:t + len(years)]
+    out: dict = {}
+    for year, value in zip(years, values):
+        if BC_NOM_NUM_RE.match(value) is None:
+            return {}
+        out[year] = int(value.replace(",", ""))
+    return out
+
+
+def bc_year_rows(x: BcYearRowsIn) -> list:
+    """表里的年 → 合计 → 逐年已发提名行(年降序;section 记出自哪年报告)。"""
+    out: list = []
+    today = today_iso()
+    for year, value in x.by_year.items():
+        out.append(to_year_row(YearRowIn(
+            year=year, label=BC_NOM_LABEL_TPL.format(year=year), value=value,
+            section=BC_NOM_SECTION_TPL.format(report=x.report.year), url=x.report.url, fetched=today)))
+    return sorted(out, key=neg_year_of)
+
+
+def scrape_bc_nominations() -> None:
+    """BC 已发提名数入口:入口页找最新报告 → PDF 文本 → 「Total BC PNP Nominations」表 → raw/pnp/bc-nominations.json。
+    入口页 / 报告改版或网络错 → 保留旧表不拦役。"""
+    say(PRINT_OUT_TPL.format(path=OUT_BC_NOMINATIONS))
+    try:
+        report = bc_report_of(fetch_html(FetchHtmlIn(url=BC_ARCHIVES_URL, timeout_s=BC_NOM_TIMEOUT_S)))
+        if report is None:
+            raise RuntimeError(BC_NOM_NO_REPORT)
+        by_year = bc_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=report.url, timeout_s=BC_NOM_TIMEOUT_S))))
+        if len(by_year) == 0:
+            raise RuntimeError(BC_NOM_NO_TABLE)
+    except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_ns_stats
+        say(BC_NOM_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    rows = bc_year_rows(BcYearRowsIn(by_year=by_year, report=report))
+    write_year_stats(YearStatsIn(path=OUT_BC_NOMINATIONS, prov=PROV_BC, source=BC_NOM_TABLE_TITLE,
+                                 url=report.url, note=BC_NOM_NOTE, rows=rows))
+    pairs: list = []
+    for r in rows:
+        pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
+    say(BC_NOM_PRINT_OK_TPL.format(report=report.year, pairs=SEMI_JOIN_SEP.join(pairs)))

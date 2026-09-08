@@ -5530,3 +5530,97 @@ GQ_P_UNKNOWN_TPL = "未知通道 {key}"
 GQ_STAMP_LEN = 10
 """取证页时间戳截断长度(ISO 日期前 10 位;原共用段37 的 FRESH_STAMP_LEN,
 2026-08-31 批O 哨兵迁 sched 后本段自持一份标量)。"""
+
+
+# =========================================================================
+# 37. NS / BC 已发提名数(把脉页省份段「已发提名」缺行;2026-09-08 /fe 拍板「缺数据的都补上」)
+# =========================================================================
+
+NS_STATS_API = "https://data.novascotia.ca/resource/e2e6-8py7.json"
+"""NS 省官方开放数据「Nomination Certificates Issued」(年 × 提名证书数,2003 起;Socrata 直取,
+同 NS_ALLOC_API 一个平台一种取法)。"""
+
+NS_STATS_PAGE = "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7"
+"""同一数据集的人可读页(行内 url 挂它,API 只是取数门)。"""
+
+NS_STATS_TITLE = "Nomination Certificates Issued"
+"""数据集官方标题(section 与 label 用它,不改写)。"""
+
+K_NS_CERTS = "nomination_certificates_issued"
+"""Socrata 行里的提名证书数字段。"""
+
+OUT_NS_STATS = paths.PNP / "ns-stats.json"
+"""NS 运营统计落盘处(形同 on-stats.json:processing / allocation 留空,只有 nominationsIssued;
+配额另在 ns_allocations.json,不重复)。"""
+
+NS_STATS_NOTE = ("NS 已发提名数 = 省官方开放数据 Nomination Certificates Issued(按年,2003 起,与配额数据集 "
+                 "8rf7-hw2p 同平台不同表);当年数官方年末才发,缺 = 未公布。")
+"""NS 运营统计口径注。"""
+
+NS_STATS_LABEL_TPL = "Nomination Certificates Issued, {year}"
+"""一行的 label(数据集标题 + 年;开放数据没有整句可引,不编句子)。"""
+
+NS_STATS_MIN_YEARS = 5
+"""序列少于这么多年 = 数据集改版,保留旧表(同 NS_ALLOC_MIN_YEARS 判据)。"""
+
+NS_STATS_PRINT_OK_TPL = "  ✓ NS 已发提名 {n} 年({first}–{last}) · {last}={value:,}"
+"""收尾报数。"""
+
+NS_STATS_PRINT_FAIL_TPL = "  ✗ NS 已发提名抓取失败: {name} {detail}(保留旧表)"
+"""失败留痕(不拦役)。"""
+
+BC_ARCHIVES_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/archives"
+"""BC PNP 历年 Statistical Report(PDF,2016 起一年一份)的入口页。"""
+
+BC_REPORT_HREF_RE = re.compile(r'href="(/immigrate-to-b-c/bc-pnp-statistical-report-(\d{4})-pdf)"')
+"""入口页里报告链接的形(相对路径 + 报告年)。"""
+
+BC_SITE_BASE = "https://www.welcomebc.ca"
+"""报告相对路径的站根。"""
+
+BC_NOM_TABLE_TITLE = "Total BC PNP Nominations"
+"""报告里那张表的标题(Program Component × 年;Total 行 = 全部提名,最新一份盖最近四年)。"""
+
+BC_NOM_TOTAL_ROW = "Total"
+"""表里合计行的行名。"""
+
+BC_NOM_YEAR_RE = re.compile(r"^20\d\d$")
+"""表列头的年份行。"""
+
+BC_NOM_NUM_RE = re.compile(r"^\d{1,3}(?:,\d{3})*$")
+"""表里的千分位数字行。"""
+
+BC_NOM_TITLE_SCAN = 6
+"""标题行之后最多再看几行找第一个年份(中间只隔一行「Program Component」)。"""
+
+BC_NOM_SECTION_TPL = "BC PNP Statistical Report {report}: Total BC PNP Nominations"
+"""一行的 section(哪一年的报告、哪张表)。"""
+
+BC_NOM_LABEL_TPL = "Total BC PNP Nominations, {year}"
+"""一行的 label(表名 + 年;表格没有整句可引)。"""
+
+OUT_BC_NOMINATIONS = paths.PNP / "bc-nominations.json"
+"""BC 已发提名数落盘处(与 bc-stats.json 分家:那份是 SIRS 池分布 + 审理时长,两步各写各的文件)。"""
+
+BC_NOM_NOTE = ("BC 已发提名数 = 官方年度 Statistical Report PDF 里「Total BC PNP Nominations」表的 Total 行"
+               "(最新一份报告盖最近四年);报告年中出上一年(2025 版 2026-08-26 发),当年数缺 = 未公布。"
+               "PDF 原件不进 crawl 层(put_cached_page 只收文本),报告 URL 逐年稳定可复取。")
+"""BC 已发提名口径注。"""
+
+BC_NOM_TIMEOUT_S = 120
+"""入口页与 PDF 各一次请求的超时。"""
+
+BC_NOM_PRINT_OK_TPL = "  ✓ BC 已发提名 报告 {report}:{pairs}"
+"""收尾报数。"""
+
+BC_NOM_PRINT_FAIL_TPL = "  ✗ BC 已发提名抓取失败: {name} {detail}(保留旧表)"
+"""失败留痕(不拦役)。"""
+
+BC_NOM_PAIR_TPL = "{year}={value:,}"
+"""收尾报数里的一对。"""
+
+BC_NOM_NO_REPORT = "入口页没找到 Statistical Report 链接"
+"""入口页改版的报错文案。"""
+
+BC_NOM_NO_TABLE = "报告里没找到「Total BC PNP Nominations」表"
+"""报告改版的报错文案。"""

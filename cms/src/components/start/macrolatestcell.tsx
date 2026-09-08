@@ -1,6 +1,7 @@
 'use client'
 /**
- * 手机地区卡里一行的值:最新一年的格(值 + 灰注);一格都没有的行不会进卡,这里只兜类型。
+ * 手机地区卡里一行的值:最新一年的格(值 + 年份灰注,进行年再带「至 X 月」;Frank 2026-09-08 实拍
+ * 配额 2026 / 已发 2025 / 剩余 0 并排无年份读成「今年已发完」);一格都没有的行显缺数据的词。
  *
  * @author Frank
  * @time 2026-09-06 22:00:00
@@ -17,11 +18,15 @@ import css from './start.module.css'
  */
 export function MacroLatestCell(r: MacroRow) {
   if (r.latest == null) {
+    if (r.missing !== TEXT_NONE) {
+      return <span className={css.dim}>{r.missing}</span>
+    }
     return <span className={css.dim}>{DASH_MARK}</span>
   }
   return (
     <span className={css.nowrap}>
       {r.latest.text}
+      <span className={css.noteInline}>{r.latestYear}</span>
       {r.latest.note !== TEXT_NONE && <span className={css.noteInline}>{r.latest.note}</span>}
     </span>
   )

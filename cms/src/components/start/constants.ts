@@ -1140,6 +1140,73 @@ export const MK_PR_PNP = 'prPnp'
 export const MK_EE = 'eeInvites'
 
 /**
+ * macro_series 数据键:名额竞争比(省级一年一格 = 该年年末在库学签 + 工签人头 ÷ 该年省提名配额;
+ * Frank 2026-09-08「每年的竞争是不是不一样,每一年都得算吧」)。最新一年这格就是竞争度胶囊的依据。
+ */
+export const MK_COMP = 'comp'
+
+/**
+ * 竞争比格的尾巴(「67.1 : 1」)。
+ */
+export const RATIO_TAIL = ' : 1'
+
+/**
+ * 竞争比的小数位。
+ */
+export const RATIO_DIGITS = 1
+
+/**
+ * 各地区**不适用**的宏观行(没数据时不出「未公布」,有数据照出):全国没有「已发提名 / 剩余名额」
+ * (提名是省发的);魁省自成体系不参加省提名,配额 / 竞争比 / 已发 / 剩余 / 其中省提名 五行都不适用
+ * (Frank 2026-09-06「魁北克不是省提名吧」)。
+ */
+export const MACRO_NA_ROWS: Record<string, string[]> = {
+  /**
+   * 全国:提名是省发的,没有全国「配额 / 已发 / 剩余 / 竞争比」—— 联邦只发接纳目标(pnpTarget,人头口径),
+   * 与省的提名证书个数不是一个单位,不硬套进 alloc。
+   */
+  CA: ['alloc', 'comp', 'issued', 'remaining'],
+
+  /**
+   * 魁省:自成体系不参加省提名。
+   */
+  QC: ['alloc', 'comp', 'issued', 'remaining', 'prPnp'],
+}
+
+/**
+ * 只有全国才有的宏观行(EE 邀请是联邦发的,不按省;省块缺它不算缺)。
+ */
+export const MACRO_CA_ONLY_ROWS = ['eeInvites', 'pnpTarget']
+
+/**
+ * 官方**未公布**的格(地区 → 行键):没数据时显「未公布」而不是「本站未收录」。两词在用户那里意思相反
+ * (前者 = 官方的问题、该警惕中介报数;后者 = 本站的问题、该去官网),所以每个键都要举证,举不出的不进表。
+ * - PE alloc / comp / remaining:PE 官方只发布 PNP + AIP 合并名额,PNP 单列历年无拆分
+ *   (CBC 2025-12-04 省移民办官员实名引语;原句与链接存 `data/raw/ircc/pnp_allocations.json` PE 行 note)。
+ *   PE 的 issued 不在表里:省官网在 Radware 反爬后面抓不到,是「本站未收录」不是「未公布」。
+ * - NB issued / remaining:gnb.ca 移民版块只发逐轮「Invitations issued」
+ *   (invitation-selection-rounds 页表头 Date of draw / Pathways / Invitations issued),无年度已发提名数(2026-09-08 逐页核)。
+ * - NL issued / remaining:gov.nl.ca/immigration 只发逐轮「Number of ITAs Issued」(invitations-to-apply-updates 页),
+ *   2026-01-26 的 NLPNP 独立审计报告原句「post-nomination outcomes … are not systematically monitored」(2026-09-08 核)。
+ */
+export const MACRO_UNPUBLISHED: Record<string, string[]> = {
+  /**
+   * 爱德华王子岛:配额只发合并数。
+   */
+  PE: ['alloc', 'comp', 'remaining'],
+
+  /**
+   * 新不伦瑞克:只发逐轮邀请数。
+   */
+  NB: ['issued', 'remaining'],
+
+  /**
+   * 纽芬兰:只发逐轮邀请数。
+   */
+  NL: ['issued', 'remaining'],
+}
+
+/**
  * macro_series 数据键:其他许可持有人及家属(临时居民里工签 / 学签 / 难民之外的一小块)。
  */
 export const MK_OTHER = 'other'
@@ -1175,7 +1242,7 @@ export const MR_REMAINING = 'remaining'
  */
 export const MACRO_ROW_ORDER = [
   'pop', 'npr', 'workOnly', 'studyOnly', 'workStudy', 'asylum', 'other', 'studyNew', 'gdp', 'unemp',
-  'alloc', 'issued', 'remaining', 'prAll', 'prPnp', 'eeInvites',
+  'alloc', 'issued', 'remaining', 'comp', 'pnpTarget', 'prAll', 'prPnp', 'eeInvites',
 ]
 
 /**

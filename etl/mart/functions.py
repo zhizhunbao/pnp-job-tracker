@@ -48,9 +48,10 @@ from mart.constants import (
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
-    ALLOC_YEAR_PREFIX, EE_HIST_DAYS_PER_MONTH, EE_HIST_MONTHS, EE_HIST_PER_CAT,
-    EE_YEAR_FIRST_DAY_TPL, EE_YEAR_LAST_DAY_TPL, IN_IRCC_PR_YEARS, IN_STATCAN_DIR, K_BY_GEO,
-    K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_SIZE, K_YTD_YEAR,
+    ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
+    K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_YTD_YEAR,
+    MACRO_COMP_DIGITS, MACRO_COMP_POOL_KEYS, MACRO_KEY_COMP, MACRO_YEAR_END_TPL, UNIT_RATIO,
+    IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, PROV_NS,
     MACRO_ANCHOR_GEOS,
     MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
     MACRO_EMPTY_MSG, MACRO_FREQ_ANNUAL, MACRO_GEO_CA, MACRO_KEY_ALLOC, MACRO_KEY_EE_INVITES,
@@ -171,7 +172,7 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    EeWindowIn, EeYearIn, MacroRowIn, PrBlockIn, StatcanPeriodIn, StudyAsOfIn,
+    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, StatcanPeriodIn, StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
     NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
@@ -2343,6 +2344,13 @@ def fill_on_ops(x: OpsProvIn) -> None:
     配额/历年提名数出自逐年 Program Updates 页 —— 每条自带出处页,用自己的 url/fetched,
     别拿顶层(已下线那页)给数字背书。label = 官方原句(quote-anchored)。
     """
+    fill_year_metric_ops(x)
+
+
+def fill_year_metric_ops(x: OpsProvIn) -> None:
+    """逐年指标通用填法(allocation / nominationsIssued 两个清单 → 一年一行):ON 原有的读法,
+    2026-09-08 NS(ns-stats.json)与 BC(bc-nominations.json)接入后三省同一套,不各抄一份。
+    每条自带出处页,用自己的 url/fetched。"""
     for m, key in ON_YEAR_METRICS:
         for e in x.data.get(key, []):
             add_ops_row(OpsRowIn(
@@ -2394,6 +2402,12 @@ def build_pnp_ops_stats(files: list) -> list:
             fill_mb_ops(arg)
         elif prov == PROV_ON:
             fill_on_ops(arg)
+        elif prov == PROV_NS:
+            fill_year_metric_ops(arg)
+        if prov == PROV_BC:
+            # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
+            # 后者没有这些键 → 这一步对它是空转,不重复出行
+            fill_year_metric_ops(arg)
     warn_stream_key_clash(ctx.rows)
     return ctx.rows
 
@@ -4778,7 +4792,9 @@ def build_macro_series() -> list:
     out.extend(macro_study_rows())
     out.extend(macro_pr_rows())
     out.extend(macro_alloc_rows())
+    out.extend(macro_levels_rows())
     out.extend(macro_ee_rows())
+    out.extend(macro_comp_rows(out))
     check_macro_series(out)
     return out
 
@@ -4927,91 +4943,116 @@ def alloc_year_of(col: str) -> str:
     return ""
 
 
+def macro_levels_rows() -> list:
+    """移民水平计划的全国 PNP 接纳目标(人工核对表)→ pnpTarget 行(仅 CA;2026-09-08 把脉页全国块)。
+
+    人头口径(含随行家属),与省 alloc 的提名证书个数不是一个单位,另立一键。每行出处 = 该年所在计划的
+    supplementary information 页;target 缺 → 不出行。
+    """
+    if not IN_IRCC_LEVELS.exists():
+        return []
+    data = read_table(IN_IRCC_LEVELS)
+    fetched = data.get(K_CHECKED_AT, "")
+    out: list = []
+    for r in data.get(K_ROWS, []):
+        value = r.get(K_TARGET)
+        if value is None:
+            continue
+        year = str(r.get(K_YEAR, ""))
+        out.append(to_macro_row(MacroRowIn(
+            geo=MACRO_GEO_CA, key=MACRO_KEY_PNP_TARGET, period=year, freq=MACRO_FREQ_ANNUAL,
+            value=value, as_of=year, unit=UNIT_PEOPLE, source=r.get(K_URL, ""), fetched=fetched)))
+    return out
+
+
 def macro_ee_rows() -> list:
     """EE 历次抽选 → eeInvites 行(仅 CA:联邦邀请不按省发)。
 
-    只出**窗口内完整年 + 进行年 YTD**:history 只留最近 24 个月,窗口没盖住的年份是残缺
-    合计,出了就是拿半年的邀请数冒充全年。单位借 people(契约 §2 的四词表里没有「邀请」,
-    一份邀请对应一个人)。
+    读 ee 域的 byYear 块(全部轮次按年求和,官方 JSON 自 2015 起):完整年 as_of = 年;抓取年是
+    进行年,as_of = 抓取年月。2026-09-08 起不再从 history 推「哪一年抽全了」—— history 只留 24 个月 /
+    每类 12 轮,推出来只剩 2026 一点;ee_covered_from / ee_window_start / ee_year_as_of_of /
+    ee_sizes_by_year 四件与 EE_HIST_* 五常量、EeWindowIn / EeYearIn 两形随之退役。
+    单位借 people(契约 §2 的四词表里没有「邀请」,一份邀请对应一个人)。
     """
     if not IN_EE_DRAWS.exists():
         return []
     data = read_table(IN_EE_DRAWS)
-    history = data.get(K_HISTORY) or {}
-    if len(history) == 0:
+    by_year = data.get(K_BY_YEAR) or {}
+    if len(by_year) == 0:
         return []
     fetched = data.get(K_FETCHED, "")
-    start = ee_window_start(EeWindowIn(fetched=fetched, covered_from=ee_covered_from(history)))
     out: list = []
-    for year, total in ee_sizes_by_year(history).items():
-        as_of = ee_year_as_of_of(EeYearIn(year=year, window_start=start, fetched=fetched))
-        if as_of == "":
-            continue
+    for year, block in by_year.items():
+        as_of = year
+        if year == fetched[:MACRO_YEAR_LEN]:
+            as_of = fetched[:MACRO_MONTH_LEN]
         out.append(to_macro_row(MacroRowIn(
             geo=MACRO_GEO_CA, key=MACRO_KEY_EE_INVITES, period=year, freq=MACRO_FREQ_ANNUAL,
-            value=total, as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
+            value=block[K_INVITATIONS], as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
             fetched=fetched)))
     return out
 
 
-def ee_sizes_by_year(history: dict) -> dict:
-    """历次抽选 → {年: 邀请数合计}(各类别的行按日期年份求和)。"""
-    out: dict = {}
-    for rows in history.values():
-        for r in rows:
-            day = str(r.get(K_DATE) or "")
-            n = r.get(K_SIZE)
-            if day == "" or n is None:
-                continue
-            year = day[:MACRO_YEAR_LEN]
-            out[year] = out.get(year, 0) + n
-    return out
+def macro_comp_rows(rows: list) -> list:
+    """名额竞争比按年 → comp 行(省级一年一格;2026-09-08 Frank「每年的竞争是不是不一样,每一年都得算吧」)。
 
-
-def ee_covered_from(history: dict) -> str:
-    """各类别都盖得住的起点 = **被截断**的类别里最晚的那个「最早一行」。
-
-    ee 域每类别只留 12 轮(HIST_PER_CAT):轮次密的类别(cec/pnp/french)最早那行已经被截掉,
-    拿全表最早一行当窗起点会把「只剩今年」的类别算成盖满 —— 2026-09-06 实撞:那样算出来的
-    2025 合计只有三成,当完整年画进图里就是替官方编数。没有类别被截断 → 空串(窗由月数定)。
+    分母 = 该年省提名配额(alloc 行);分子 = 该年年末(次年 1 月 1 日那期)的仅工签 + 仅学签 + 双持
+    在库人头;年末那期还没发(进行年)就退到该年内最新一期,as_of 标到月。与 ircc 域 difficulty 的
+    竞争比同一公式同一分子(to_pool 合计 2026-09-08 起同为人头去重),最新一年这格 = 竞争度胶囊的依据。
+    三键缺一 / 配额缺 → 不出格(不折 0)。出处挂分子那期的 StatCan 表页(分母的出处在 alloc 行上)。
     """
-    out = ""
-    for rows in history.values():
-        if len(rows) < EE_HIST_PER_CAT:
+    index = macro_point_index(rows)
+    out: list = []
+    for r in rows:
+        if r[K_KEY] != MACRO_KEY_ALLOC or not r[K_VALUE]:
             continue
-        first = ""
-        for r in rows:
-            day = str(r.get(K_DATE) or "")
-            if day == "":
-                continue
-            if first == "" or day < first:
-                first = day
-        if first > out:
-            out = first
+        got = macro_comp_pool_of(CompPoolIn(index=index, geo=r[K_GEO], year=r[K_PERIOD]))
+        if got is None:
+            continue
+        out.append(to_macro_row(MacroRowIn(
+            geo=r[K_GEO], key=MACRO_KEY_COMP, period=r[K_PERIOD], freq=MACRO_FREQ_ANNUAL,
+            value=round(got.pool / r[K_VALUE], MACRO_COMP_DIGITS), as_of=got.as_of,
+            unit=UNIT_RATIO, source=got.source, fetched=r[K_FETCHED])))
     return out
 
 
-def ee_window_start(x: EeWindowIn) -> str:
-    """覆盖窗起点 = 抓取日回推 24 个月 与 各类别都盖住的起点 的**较晚**者。
-
-    两道边界各管一半:月数管「太老的不留」,截断点管「密的类别其实只剩今年」。
-    """
-    cut = date.fromisoformat(x.fetched) - timedelta(days=EE_HIST_MONTHS * EE_HIST_DAYS_PER_MONTH)
-    floor = cut.isoformat()
-    if x.covered_from > floor:
-        return x.covered_from
-    return floor
+def macro_point_index(rows: list) -> dict:
+    """(geo, key) → {period: 行} 的点索引(comp 行取分子用)。"""
+    out: dict = {}
+    for r in rows:
+        out.setdefault((r[K_GEO], r[K_KEY]), {})[r[K_PERIOD]] = r
+    return out
 
 
-def ee_year_as_of_of(x: EeYearIn) -> str:
-    """这一年的 as_of:进行年 = `YYYY-MM`;窗内完整年 = `YYYY`;窗没盖住 = 空串(不出行)。"""
-    if x.year == x.fetched[:MACRO_YEAR_LEN]:
-        return x.fetched[:MACRO_MONTH_LEN]
-    head = EE_YEAR_FIRST_DAY_TPL.format(year=x.year) >= x.window_start
-    tail = EE_YEAR_LAST_DAY_TPL.format(year=x.year) <= x.fetched
-    if head and tail:
-        return x.year
-    return ""
+def macro_comp_pool_of(x: CompPoolIn) -> CompPoolOut | None:
+    """一地区一配额年的分子:年末期三键之和;年末期没有就退到该年内最新一期(as_of 到月)。"""
+    year_end = MACRO_YEAR_END_TPL.format(year=int(x.year) + 1)
+    got = macro_pool_at(PoolAtIn(index=x.index, geo=x.geo, period=year_end))
+    if got is not None:
+        return CompPoolOut(pool=got.pool, as_of=x.year, source=got.source)
+    latest = ""
+    for period in (x.index.get((x.geo, MACRO_COMP_POOL_KEYS[0])) or {}):
+        if period[:MACRO_YEAR_LEN] == x.year and period > latest:
+            latest = period
+    if latest == "":
+        return None
+    got = macro_pool_at(PoolAtIn(index=x.index, geo=x.geo, period=latest))
+    if got is None:
+        return None
+    return CompPoolOut(pool=got.pool, as_of=latest[:MACRO_MONTH_LEN], source=got.source)
+
+
+def macro_pool_at(x: PoolAtIn) -> CompPoolOut | None:
+    """一地区一期的三键之和(as_of 先放期键,由调用方定口径);任一键缺 → None。"""
+    total = 0.0
+    source = ""
+    for key in MACRO_COMP_POOL_KEYS:
+        row = (x.index.get((x.geo, key)) or {}).get(x.period)
+        if row is None:
+            return None
+        total += row[K_VALUE]
+        source = row[K_SOURCE]
+    return CompPoolOut(pool=total, as_of=x.period, source=source)
 
 
 def check_macro_series(rows: list) -> None:

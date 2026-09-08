@@ -57,6 +57,7 @@ import {
   MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
+  MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
 import { EmpActCell } from './empactcell'
@@ -104,7 +105,8 @@ import type {
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
-  MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn, MacroRowIn, MacroRow, MacroGeo, MacroCell,
+  MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn,
+  MacroMissingIn, MacroRowApplyIn, MacroRowIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
   MacroColsIn, SeriesWords, GeoNameIn, GeoTierIn, MacroRowsShownIn, JobsRow, JobsRowsIn, JobsRowIn,
@@ -3400,7 +3402,7 @@ export function macroGeosOf(x: MacroGeosIn): MacroGeo[] {
 function macroGeoOf(x: MacroGeoIn): MacroGeo | null {
   const rows: MacroRow[] = []
   for (const key of MACRO_ROW_ORDER) {
-    const row = macroRowOf({ key, t: x.t, points: x.points, ops: x.ops })
+    const row = macroRowOf({ key, code: x.code, t: x.t, points: x.points, ops: x.ops })
     if (row != null) {
       rows.push(row)
     }
@@ -3481,8 +3483,8 @@ function tierTextOf(x: TierTextIn): string {
  */
 function macroRowOf(x: MacroRowIn): MacroRow | null {
   const cells = macroCellsOf(x)
-  const years = Object.keys(cells)
-  if (years.length === 0) {
+  const has = Object.keys(cells).length > 0
+  if (has === false && macroRowAppliesTo({ code: x.code, key: x.key }) === false) {
     return null
   }
   return {
@@ -3494,7 +3496,44 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
     expanded: false,
     cells,
     latest: latestCellOf(cells),
+    latestYear: latestYearOf(cells),
+    missing: macroMissingTextOf({ t: x.t, code: x.code, key: x.key, has }),
   }
+}
+
+/**
+ * 这一行对该地区适不适用(不适用的行没数据就不出,不算「缺」;Frank 2026-09-08「没公布的就写 未公布」
+ * 只针对适用的行)。
+ *
+ * @param x 地区码与行键。
+ * @returns 适用给 true。
+ */
+function macroRowAppliesTo(x: MacroRowApplyIn): boolean {
+  if (MACRO_CA_ONLY_ROWS.includes(x.key)) {
+    return x.code === GEO_CA
+  }
+  const na = MACRO_NA_ROWS[x.code]
+  if (na != null && na.includes(x.key)) {
+    return false
+  }
+  return true
+}
+
+/**
+ * 一格都没有时该显哪个词:官方未公布(举证在 MACRO_UNPUBLISHED)还是本站未收录;有格给空串。
+ *
+ * @param x 取词函数、地区码、行键与有没有格。
+ * @returns 词或空串。
+ */
+function macroMissingTextOf(x: MacroMissingIn): string {
+  if (x.has) {
+    return TEXT_NONE
+  }
+  const up = MACRO_UNPUBLISHED[x.code]
+  if (up != null && up.includes(x.key)) {
+    return x.t('pulse.m.unpub')
+  }
+  return x.t('pulse.m.notCollected')
 }
 
 /**
@@ -3592,6 +3631,9 @@ function macroCellOf(x: MacroCellIn): MacroCell {
   if (x.key === MK_UNEMP) {
     return { value: x.value, text: x.value.toFixed(PCT_DIGITS) + PCT_MARK, note: x.note }
   }
+  if (x.key === MK_COMP) {
+    return { value: x.value, text: x.value.toFixed(RATIO_DIGITS) + RATIO_TAIL, note: x.note }
+  }
   return { value: x.value, text: numOf(x.value), note: x.note }
 }
 
@@ -3678,13 +3720,8 @@ function remainingCellsOf(x: RemainingIn): Record<string, MacroCell> {
  * @returns 最新格;空表给 null。
  */
 function latestCellOf(cells: Record<string, MacroCell>): MacroCell | null {
-  let best: string | null = null
-  for (const y of Object.keys(cells)) {
-    if (best == null || y > best) {
-      best = y
-    }
-  }
-  if (best == null) {
+  const best = latestYearOf(cells)
+  if (best === TEXT_NONE) {
     return null
   }
   const c = cells[best]
@@ -3692,6 +3729,22 @@ function latestCellOf(cells: Record<string, MacroCell>): MacroCell | null {
     return null
   }
   return c
+}
+
+/**
+ * 一行里最新的年份(手机卡格旁标年用)。
+ *
+ * @param cells 年 → 格。
+ * @returns 年份;空表给空串。
+ */
+function latestYearOf(cells: Record<string, MacroCell>): string {
+  let best = TEXT_NONE
+  for (const y of Object.keys(cells)) {
+    if (best === TEXT_NONE || y > best) {
+      best = y
+    }
+  }
+  return best
 }
 
 /**
@@ -3721,7 +3774,8 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
     { key: COL_MACRO_KEY, label: x.t('pulse.m.key'), render: MacroKeyCell, width: W_MACRO_KEY },
   ]
   for (const y of x.years) {
-    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell(y) })
+    const last = y === x.years[x.years.length - 1]
+    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell({ year: y, last }) })
   }
   return out
 }
@@ -4027,6 +4081,8 @@ export function macroRowsShownOf(x: MacroRowsShownIn): MacroRow[] {
         expanded: x.expanded,
         cells: r.cells,
         latest: r.latest,
+        latestYear: r.latestYear,
+        missing: r.missing,
       })
     } else {
       out.push(r)

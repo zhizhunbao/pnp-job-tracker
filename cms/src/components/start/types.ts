@@ -3460,6 +3460,16 @@ export type MacroRow = {
    * 最新一格(手机卡显示;一格都没有则 null)。
    */
   latest: MacroCell | null
+
+  /**
+   * 最新一格的年份(手机卡每格带年,Frank 2026-09-08:配额 2026 / 已发 2025 并排无年份读成「已发完」);没格空串。
+   */
+  latestYear: string
+
+  /**
+   * 一格都没有时显示的词(「未公布」/「本站未收录」);有格空串。
+   */
+  missing: string
 }
 
 /**
@@ -3575,6 +3585,11 @@ export type MacroRowIn = {
    * 行键。
    */
   key: string
+
+  /**
+   * 地区码(判这行对该地区适不适用、缺格该显哪个词)。
+   */
+  code: string
 
   /**
    * 取词函数。
@@ -3715,6 +3730,61 @@ export type RemainingIn = {
    * 已发(年 → 格)。
    */
   issued: Record<string, MacroCell>
+}
+
+/**
+ * `macroRowAppliesTo` 的入参。
+ */
+export type MacroRowApplyIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 行键。
+   */
+  key: string
+}
+
+/**
+ * `macroMissingTextOf` 的入参。
+ */
+export type MacroMissingIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 行键。
+   */
+  key: string
+
+  /**
+   * 这行有没有格。
+   */
+  has: boolean
+}
+
+/**
+ * `makeMacroYearCell` 的入参。
+ */
+export type MacroYearCellIn = {
+  /**
+   * 年份列键。
+   */
+  year: string
+
+  /**
+   * 是不是最后一列(整行没格时,缺数据的词只在这一列显一次)。
+   */
+  last: boolean
 }
 
 /**

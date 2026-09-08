@@ -1,0 +1,49 @@
+{
+  "province": "BC",
+  "program": "PNP",
+  "source": "Total BC PNP Nominations",
+  "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+  "note": "BC 已发提名数 = 官方年度 Statistical Report PDF 里「Total BC PNP Nominations」表的 Total 行(最新一份报告盖最近四年);报告年中出上一年(2025 版 2026-08-26 发),当年数缺 = 未公布。PDF 原件不进 crawl 层(put_cached_page 只收文本),报告 URL 逐年稳定可复取。",
+  "asOf": "",
+  "fetched": "2026-09-08",
+  "processing": [],
+  "allocation": [],
+  "nominationsIssued": [
+    {
+      "year": 2025,
+      "label": "Total BC PNP Nominations, 2025",
+      "value": 6214,
+      "unit": "nominations",
+      "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2024,
+      "label": "Total BC PNP Nominations, 2024",
+      "value": 8000,
+      "unit": "nominations",
+      "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2023,
+      "label": "Total BC PNP Nominations, 2023",
+      "value": 8200,
+      "unit": "nominations",
+      "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2022,
+      "label": "Total BC PNP Nominations, 2022",
+      "value": 7000,
+      "unit": "nominations",
+      "section": "BC PNP Statistical Report 2025: Total BC PNP Nominations",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf",
+      "fetched": "2026-09-08"
+    }
+  ]
+}

@@ -210,6 +210,20 @@ K_HISTORY = "history"
 K_RECENT = "recent"
 """表键:全类别混合最近 N 轮。"""
 
+K_BY_YEAR = "byYear"
+"""按年合计块(2026-09-08 把脉页全国块「EE 邀请」历年):年 → {invitations, draws},由**全部**轮次
+(官方 JSON 自 2015 起)求和,不受 history 的 24 个月 / 每类 12 轮上限约束 —— 那两道上限是给
+分数线时间线用的,mart 拿 history 算年合计只剩 2026 一点(2026-09-06 实撞)。"""
+
+K_INVITATIONS = "invitations"
+"""byYear 年块:该年邀请数合计(drawSize 求和)。"""
+
+K_DRAWS = "draws"
+"""byYear 年块:该年抽选次数。"""
+
+DRAW_YEAR_LEN = 4
+"""drawDate(`YYYY-MM-DD`)取年的长度。"""
+
 DRAWS_SOURCE = "Express Entry rounds of invitations"
 """段3 表级来源名。"""
 

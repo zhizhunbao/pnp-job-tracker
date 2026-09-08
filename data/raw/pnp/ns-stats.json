@@ -1,0 +1,220 @@
+{
+  "province": "NS",
+  "program": "PNP",
+  "source": "Nomination Certificates Issued",
+  "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+  "note": "NS 已发提名数 = 省官方开放数据 Nomination Certificates Issued(按年,2003 起,与配额数据集 8rf7-hw2p 同平台不同表);当年数官方年末才发,缺 = 未公布。",
+  "asOf": "",
+  "fetched": "2026-09-08",
+  "processing": [],
+  "allocation": [],
+  "nominationsIssued": [
+    {
+      "year": 2025,
+      "label": "Nomination Certificates Issued, 2025",
+      "value": 3368,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2024,
+      "label": "Nomination Certificates Issued, 2024",
+      "value": 3573,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2023,
+      "label": "Nomination Certificates Issued, 2023",
+      "value": 4307,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2022,
+      "label": "Nomination Certificates Issued, 2022",
+      "value": 3829,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2021,
+      "label": "Nomination Certificates Issued, 2021",
+      "value": 2443,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2020,
+      "label": "Nomination Certificates Issued, 2020",
+      "value": 1900,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2019,
+      "label": "Nomination Certificates Issued, 2019",
+      "value": 1610,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2018,
+      "label": "Nomination Certificates Issued, 2018",
+      "value": 1399,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2017,
+      "label": "Nomination Certificates Issued, 2017",
+      "value": 1451,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2016,
+      "label": "Nomination Certificates Issued, 2016",
+      "value": 1383,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2015,
+      "label": "Nomination Certificates Issued, 2015",
+      "value": 1350,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2014,
+      "label": "Nomination Certificates Issued, 2014",
+      "value": 717,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2013,
+      "label": "Nomination Certificates Issued, 2013",
+      "value": 630,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2012,
+      "label": "Nomination Certificates Issued, 2012",
+      "value": 725,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2011,
+      "label": "Nomination Certificates Issued, 2011",
+      "value": 525,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2010,
+      "label": "Nomination Certificates Issued, 2010",
+      "value": 500,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2009,
+      "label": "Nomination Certificates Issued, 2009",
+      "value": 367,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2008,
+      "label": "Nomination Certificates Issued, 2008",
+      "value": 309,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2007,
+      "label": "Nomination Certificates Issued, 2007",
+      "value": 405,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2006,
+      "label": "Nomination Certificates Issued, 2006",
+      "value": 400,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2005,
+      "label": "Nomination Certificates Issued, 2005",
+      "value": 303,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2004,
+      "label": "Nomination Certificates Issued, 2004",
+      "value": 117,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    },
+    {
+      "year": 2003,
+      "label": "Nomination Certificates Issued, 2003",
+      "value": 23,
+      "unit": "nominations",
+      "section": "Nomination Certificates Issued",
+      "url": "https://data.novascotia.ca/Immigration-and-Migration/Nomination-Certificates-Issued/e2e6-8py7",
+      "fetched": "2026-09-08"
+    }
+  ]
+}

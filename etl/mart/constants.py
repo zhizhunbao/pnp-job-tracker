@@ -1164,6 +1164,9 @@ PROV_SK = "SK"
 PROV_BC = "BC"
 """不列颠哥伦比亚(同上)。"""
 
+PROV_NS = "NS"
+"""NS 省码(ops 统计分发用;2026-09-08 ns-stats.json 接入)。"""
+
 PROV_MB = "MB"
 """曼尼托巴(同上)。"""
 
@@ -1425,7 +1428,8 @@ OP_GTE = ">="
 
 IN_PNP_STATS = [paths.PNP / "ab-stats.json", paths.PNP / "sk-stats.json",
                 paths.PNP / "bc-stats.json", paths.PNP / "mb-stats.json",
-                paths.PNP / "on-stats.json"]
+                paths.PNP / "on-stats.json", paths.PNP / "ns-stats.json",
+                paths.PNP / "bc-nominations.json"]
 """G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派。"""
 
@@ -1710,6 +1714,12 @@ K_BY_CATEGORY = "byCategory"
 
 K_HISTORY = "history"
 """历次抽选(#135 时间线页的料)。"""
+
+K_BY_YEAR = "byYear"
+"""ee 域 draws.json 的按年合计块(全部轮次求和;把脉页全国块 EE 邀请历年,2026-09-08)。"""
+
+K_INVITATIONS = "invitations"
+"""byYear 年块:该年邀请数合计。"""
 
 IN_EE_CRS = paths.EE / "crs-grid.json"
 """G9 联邦官方计分表之 CRS 排名分 A/B/C/D 四段(ee 域 build 产,只读 crawl 缓存)。"""
@@ -2700,6 +2710,35 @@ MACRO_KEY_ALLOC = "alloc"
 MACRO_KEY_EE_INVITES = "eeInvites"
 """键:EE 邀请数(仅 CA;联邦历次抽选按年求和)。"""
 
+MACRO_KEY_PNP_TARGET = "pnpTarget"
+"""键:全国省提名接纳目标(IRCC 移民水平计划里 PNP 行的目标值,**人头**含随行家属;仅 CA。
+与省的 alloc(提名证书个数)不是一个单位,所以另立一键不并进 alloc —— 2026-09-08 把脉页全国块补齐。"""
+
+IN_IRCC_LEVELS = paths.IRCC / "levels_plan.json"
+"""移民水平计划 PNP 目标的人工核对表(一年一行:year / target / low / high / plan / url / quote;
+2026-09-08 立,出处逐行挂 canada.ca supplementary information 页;同一年被后一版计划下修时只记最新版,
+被覆盖的旧值写 note)。"""
+
+K_TARGET = "target"
+"""levels_plan 行:目标值。"""
+
+MACRO_KEY_COMP = "comp"
+"""键:名额竞争比(省级,一年一格;2026-09-08 Frank「每年的竞争是不是不一样,每一年都得算吧」)
+= 该年年末在库人头(仅工签 + 仅学签 + 双持)÷ 该年省提名配额;与 ircc 域 difficulty 的竞争比同一公式,
+最新一年这格就是竞争度胶囊的依据。"""
+
+UNIT_RATIO = "ratio"
+"""comp 的单位:比值(x : 1),不是人数也不是百分数 —— 趋势图按指数化画,表里带「: 1」显。"""
+
+MACRO_COMP_POOL_KEYS = ("workOnly", "studyOnly", "workStudy")
+"""竞争比分子的三键(StatCan 17-10-0121 互斥拆分,三格之和 = 学签 / 工签持有者人头,不重复计双持)。"""
+
+MACRO_YEAR_END_TPL = "{year}-01-01"
+"""一年的「年末」期 = 次年 1 月 1 日那期(StatCan 季度估计的期键;与前端 yearOfPoint 同判据)。"""
+
+MACRO_COMP_DIGITS = 1
+"""竞争比保留一位小数(与 ircc 域 COMP_ROUND 同值本域自抄)。"""
+
 MACRO_MONTH_NUM = {
     "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
     "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12",
@@ -2733,9 +2772,6 @@ K_GEO = "geo"
 K_PERIOD = "period"
 """落盘列:季/月度 = `YYYY-MM-DD`(refPer),年度 = `YYYY`。"""
 
-K_SIZE = "size"
-"""EE 抽选的邀请数。"""
-
 K_N = "n"
 """study_flow 年块的人数(整年=官方年总计,进行年=已公布月份求和)。"""
 
@@ -2744,23 +2780,6 @@ K_COMPLETE = "complete"
 
 K_YTD_YEAR = "ytdYear"
 """PR 按年表:哪一年是进行年(年内累计)。"""
-
-EE_HIST_MONTHS = 24
-"""EE history 的覆盖窗(月)—— ee 域自留的 HIST_MONTHS 同值本域自抄:
-域之间不互取常量,窗口口径变了两边都要改(判据写在这两条 docstring 里)。"""
-
-EE_HIST_DAYS_PER_MONTH = 31
-"""月→天(窗起点 = fetched − EE_HIST_MONTHS × 本值,与 ee 域同式)。"""
-
-EE_HIST_PER_CAT = 12
-"""ee 域每类别保留的轮次上限(HIST_PER_CAT 同值本域自抄)。行数刚好等于本值 = 这个类别被截断了,
-它的最早一行就是它真正的覆盖起点 —— 判「哪一年抽全了」全靠这一条。"""
-
-EE_YEAR_FIRST_DAY_TPL = "{year}-01-01"
-"""完整年判据的年初日(要落在覆盖窗内才算这一年抽全了)。"""
-
-EE_YEAR_LAST_DAY_TPL = "{year}-12-31"
-"""完整年判据的年末日(同上)。"""
 
 MACRO_EMPTY_MSG = ("macro_series: 源文件在但 0 行 —— 抽取器契约破了,不许空灌"
                    "(同 pilot_quota 的 22c8d6a 空灌防线)")

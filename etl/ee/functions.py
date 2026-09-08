@@ -35,7 +35,7 @@ from ee.constants import (
     ELIG_NOTE, ELIG_PRINT_DONE_TPL, ELIG_PROGRAMS, ELIG_SOURCE,     FSW_SECTION_LABEL, FSW_SECTION_LETTER, FSW_SEL_MIN_ROWS, FSW_SEL_PROBLEM_TPL, GCDS_DATE_TAG,
     HEAD_TAGS_23, HEAD_TAGS_234, HIST_DAYS_PER_MONTH, HIST_MONTHS, HIST_PER_CAT, IN_CRAWL_EE,
     IN_URL_CRS, IN_URL_ECA, IN_URL_LANG, IN_URL_PRINTED, INDENT_1, INDENT_2, K_BASIS,
-    K_BENCHMARK, K_BY_CATEGORY, K_CATEGORIES, K_CELLS, K_CODE, K_COLUMN, K_CRITERION, K_CRS,
+    K_BENCHMARK, K_BY_CATEGORY, K_BY_YEAR, K_DRAWS, K_INVITATIONS, DRAW_YEAR_LEN, K_CATEGORIES, K_CELLS, K_CODE, K_COLUMN, K_CRITERION, K_CRS,
     K_DATE, K_DRAW_CRS, K_DRAW_DATE, K_DRAW_NAME, K_DRAW_NUMBER, K_DRAW_SIZE, K_FACTOR, K_FETCHED,
     K_HEADERS, K_HEADING, K_HISTORY, K_KEY, K_KIND, K_LABEL, K_LETTER, K_LEVEL_TEXT, K_MAX_QUOTES,
     K_NAME, K_NOC, K_NOC_TEER, K_NOTE, K_NUMBER, K_OCCUPATIONS, K_OP, K_PAGE, K_PAGE_UPDATED,
@@ -244,11 +244,22 @@ def to_recent_row(rd: dict) -> dict:
 
 
 def collect_draws(rounds: list) -> DrawsOut:
-    """全部轮次 → 每类别最近一次 + 每类别历次(源已按 drawNumber 降序,最新在前)。"""
+    """全部轮次 → 每类别最近一次 + 每类别历次 + 按年合计(源已按 drawNumber 降序,最新在前)。
+
+    按年合计在类别过滤**之前**累加:认不出类别的轮次(早年无类别名的通轮)一样是邀请,
+    年合计要全口径(2026-09-08 把脉页 EE 邀请历年)。
+    """
     cutoff = (date.today() - timedelta(days=HIST_MONTHS * HIST_DAYS_PER_MONTH)).isoformat()
     by_cat: dict = {}
     history: dict = {}
+    by_year: dict = {}
     for rd in rounds:
+        day = str(rd.get(K_DRAW_DATE) or "")
+        size = int_or_none(rd.get(K_DRAW_SIZE))
+        if day != "" and size is not None:
+            year = by_year.setdefault(day[:DRAW_YEAR_LEN], {K_INVITATIONS: 0, K_DRAWS: 0})
+            year[K_INVITATIONS] += size
+            year[K_DRAWS] += 1
         key = draw_cat_key(rd.get(K_DRAW_NAME))
         if key == "":
             continue
@@ -258,7 +269,7 @@ def collect_draws(rounds: list) -> DrawsOut:
         h = history.setdefault(key, [])
         if len(h) < HIST_PER_CAT and (row[K_DATE] or "") >= cutoff:
             h.append(row)
-    return DrawsOut(by_cat=by_cat, history=history)
+    return DrawsOut(by_cat=by_cat, history=history, by_year=by_year)
 
 
 def build_ircc_ee_draws() -> None:
@@ -280,6 +291,7 @@ def build_ircc_ee_draws() -> None:
         K_SOURCE: DRAWS_SOURCE, K_URL: DRAWS_URL,
         K_FETCHED: today_iso(),
         K_BY_CATEGORY: got.by_cat, K_HISTORY: got.history, K_RECENT: recent,
+        K_BY_YEAR: got.by_year,
     }, indent=INDENT_2))
     hist_n = 0
     for rows in got.history.values():

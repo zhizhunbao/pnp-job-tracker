@@ -14,12 +14,12 @@
 CREATE TABLE IF NOT EXISTS macro_series (
   id serial PRIMARY KEY,
   geo varchar NOT NULL,        -- CA | 十省两位码(领地不收)
-  key varchar NOT NULL,        -- pop|npr|asylum|workOnly|studyOnly|workStudy|other|gdp|unemp|studyNew|prAll|prPnp|alloc|eeInvites
+  key varchar NOT NULL,        -- pop|npr|asylum|workOnly|studyOnly|workStudy|other|gdp|unemp|studyNew|prAll|prPnp|alloc|eeInvites|comp(2026-09-08 名额竞争比,省级按年)
   period varchar NOT NULL,     -- 季/月度 YYYY-MM-DD;年度 YYYY
   freq varchar,                -- Q | M | A
   value numeric,               -- 值;官方缺位的点不出行,不折 0
   as_of varchar,               -- 该点数据截至(YYYY / YYYY-MM / YYYY-MM-DD)
-  unit varchar,                -- people | dollars_millions | percent | nominations
+  unit varchar,                -- people | dollars_millions | percent | nominations | ratio(comp,x : 1)
   source varchar,              -- 官方页 URL(alloc 逐年各归各的出处页)
   fetched varchar,             -- raw 抓取日
   updated_at timestamptz DEFAULT now(),

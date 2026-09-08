@@ -73,6 +73,7 @@ from ircc.constants import (
     PGWP_DONE_TPL, PGWP_MISSING_ROW_TPL, PGWP_MISSING_TPL, PGWP_NOTE, PGWP_PAGE_ABOUT,
     PGWP_PAGE_ELIG, PGWP_PRINT_OUT_TPL, PGWP_PROGRAM, PGWP_QUOTE_CLIP, PGWP_RULES, PGWP_STAR,
     PGWP_TIMEOUT_S, PGWP_URL_ABOUT, PGWP_URL_ELIG, PNP_CATEGORY_WORD, PROV_CODE, PROV_ON,
+    CA_PR_TOTAL_ROW, CA_STUDY_TOTAL_ROW, GEO_CA,
     PROVINCE_FED, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT, QUOTE_STRAIGHT,
     SPACE, STATS_FLOW_NOTE, STATS_FLOW_TPL, STATS_NO_FLOW_HEADER, STATS_NO_HEADER,
     STATS_NO_PNP_HEADER, STATS_PNP_NOTE, STATS_PNP_TPL, STATS_PNP_YEARS_NOTE, STATS_PNP_YEARS_TPL,
@@ -336,6 +337,9 @@ def pnp_all_years(ws: SheetLike) -> PnpYearsOut:
     块判据同 pnp_latest_full_year:类别行…「省 - Total」收尾,同块 PNP 行成对出现、值相同,
     留最后一次。表头最后一个 Total 列 = 进行年(年内累计 YTD,与完整年不可直接比较),
     随出参一并交回,由消费端标注口径。
+
+    2026-09-08 加全国 CA:表里没有全国 PNP 单行,CA = 每个「xxx - Total」块(十省 + 三领地 +
+    省份未注明)的 PNP 行相加 —— 官方行的加法不是估算;'--' 小值抑制按 0,合计至多少算几十人。
     """
     rows = sheet_rows(ws)
     totals = year_total_columns_of(year_total_header_of(rows))
@@ -346,10 +350,15 @@ def pnp_all_years(ws: SheetLike) -> PnpYearsOut:
             continue
         if has_pnp_cell(r):
             pend = year_cells_of(YearCellsIn(row=r, columns=totals))
-        name = cell_text(r[0]).replace(TOTAL_DASH_SUFFIX, "").strip()
-        if name in PROV_CODE and pend is not None:
+        raw = cell_text(r[0])
+        name = raw.replace(TOTAL_DASH_SUFFIX, "").strip()
+        if TOTAL_DASH_SUFFIX in raw and pend is not None:
             for y, v in pend.items():
-                out.setdefault(y, {})[PROV_CODE[name]] = v
+                block = out.setdefault(y, {})
+                block[GEO_CA] = block.get(GEO_CA, 0) + v
+            if name in PROV_CODE:
+                for y, v in pend.items():
+                    out.setdefault(y, {})[PROV_CODE[name]] = v
             pend = None
     return PnpYearsOut(by_year=nonempty_years(out), ytd_year=totals[-1][1])
 
@@ -358,6 +367,7 @@ def prov_total_all_years(ws: SheetLike) -> dict:
     """PR 按省×类别表:「省 - Total」行(全部移民类别)× 全部年列 → {年: {省: 人数}}。
 
     只认带「 - Total」尾巴的行:块内还有同名类别行,不加这道尾巴判据会拿类别值当省总数。
+    表尾裸「Total」行 = 全国合计 → CA(2026-09-08 把脉页全国块)。
     """
     rows = sheet_rows(ws)
     totals = year_total_columns_of(year_total_header_of(rows))
@@ -365,13 +375,26 @@ def prov_total_all_years(ws: SheetLike) -> dict:
     for r in rows:
         if len(r) == 0:
             continue
-        raw = cell_text(r[0])
-        name = raw.replace(TOTAL_DASH_SUFFIX, "").strip()
-        if name not in PROV_CODE or TOTAL_DASH_SUFFIX not in raw:
+        geo = pr_total_geo_of(cell_text(r[0]))
+        if geo == "":
             continue
         for y, v in year_cells_of(YearCellsIn(row=r, columns=totals)).items():
-            out.setdefault(y, {})[PROV_CODE[name]] = v
+            out.setdefault(y, {})[geo] = v
     return nonempty_years(out)
+
+
+def pr_total_geo_of(raw: str) -> str:
+    """PR 表一行的名格 → 地区码:「省 - Total」给省码,表尾裸「Total」给 CA;类别行 / 领地 /
+    省份未注明给空串。
+
+    全国行不是各省之和的替代:官方合计含领地与「省份未注明」,自己加十省会少算。
+    """
+    if raw.strip() == CA_PR_TOTAL_ROW:
+        return GEO_CA
+    name = raw.replace(TOTAL_DASH_SUFFIX, "").strip()
+    if name in PROV_CODE and TOTAL_DASH_SUFFIX in raw:
+        return PROV_CODE[name]
+    return ""
 
 
 def is_flow_year_row(r: list) -> bool:
@@ -444,9 +467,8 @@ def study_flow(ws: SheetLike) -> dict:
     for r in rows:
         if len(r) == 0:
             continue
-        raw = str(r[0] or "")
-        name = raw.replace(TOTAL_SUFFIX, "").strip()
-        if name not in PROV_CODE or TOTAL_WORD not in raw:
+        geo = flow_row_geo_of(str(r[0] or ""))
+        if geo == "":
             continue
         prov: dict = {}
         for y, s0 in starts.items():
@@ -456,8 +478,19 @@ def study_flow(ws: SheetLike) -> dict:
                 continue
             prov[y] = flow_year_row(FlowYearIn(row=r, start=s0, got=got))
         if len(prov) > 0:
-            out[PROV_CODE[name]] = prov
+            out[geo] = prov
     return out
+
+
+def flow_row_geo_of(raw: str) -> str:
+    """流量表一行的名格 → 地区码:「省 Total」给省码,表尾「Total - All Canada」给 CA
+    (2026-09-08 把脉页全国块);领地 / 省份未注明 / 倒数第二行裸「Total」给空串。"""
+    if raw.strip() == CA_STUDY_TOTAL_ROW:
+        return GEO_CA
+    name = raw.replace(TOTAL_SUFFIX, "").strip()
+    if name in PROV_CODE and TOTAL_WORD in raw:
+        return PROV_CODE[name]
+    return ""
 
 
 def flow_years_of(flow: dict) -> list:
@@ -1058,7 +1091,10 @@ def to_pool(cell: dict) -> PoolOut:
     work_only = cell.get("workOnly") or 0
     study = study_only + work_study
     work = work_only + work_study
-    return PoolOut(study=study, work=work, total=study + work)
+    # 2026-09-08 合计改按人头去重:双持者此前在学签池与工签池各计一次再相加,ON 多算约 10 万人
+    # (把脉页竞争比按年铺开、与 mart 的「仅工签 + 仅学签 + 双持」对不上才发现)。学签池 / 工签池两格
+    # 仍各含双持(它们是「持有该类许可的人数」),只有合计是「人头」。
+    return PoolOut(study=study, work=work, total=study_only + work_only + work_study)
 
 
 def to_quota(row: dict) -> QuotaOut:

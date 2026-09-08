@@ -18,6 +18,16 @@ import paths
 # 1. 共享词汇(≥2 段消费:省码表 / 落盘缩进 / JSON 键词表 K_* / 自校抬头)
 # =========================================================================
 
+GEO_CA = "CA"
+"""全国的地区码(2026-09-08 把脉页全国块补 PR 获批 / 其中省提名 / 新发学签):PR 年表与学签流量表的
+全国合计行落这个键,与十省码同住一张 byProv / 按年表 —— 消费端按 geo 取,不用另开一块。"""
+
+CA_PR_TOTAL_ROW = "Total"
+"""PR 按省×类别表尾的全国合计行名(裸「Total」;省行是「省 - Total」,靠尾巴区分)。"""
+
+CA_STUDY_TOTAL_ROW = "Total - All Canada"
+"""新发学签流量表尾的全国合计行名(倒数第二行裸「Total」与之同值,认这个更稳)。"""
+
 PROV_CODE = {
     "Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS",
     "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB",
@@ -277,12 +287,14 @@ STATS_PNP_NOTE = "PNP 类别 PR 登陆数(含随行家属,人头口径)最新完
 
 STATS_PNP_YEARS_NOTE = ("PR 登陆数按年:prAll = 省 Total 行(全部移民类别),prPnp = Provincial Nominee "
                         "组行;两者同为含随行家属的人头口径。ytdYear 那一年是年内累计(YTD),"
-                        "与完整年不可直接比较。数值官方四舍五入到 5,'--' 小值抑制当 0。")
+                        "与完整年不可直接比较。数值官方四舍五入到 5,'--' 小值抑制当 0。"
+                        "CA = 全国:prAll 取表尾 Total 行(含领地与省份未注明),prPnp = 各块 PNP 行之和"
+                        "(十省 + 三领地 + 未注明,表里没有全国 PNP 单行)。")
 """PR 按年表口径注。"""
 
 STATS_FLOW_NOTE = ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "
                    "n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:"
-                   "存量=在库人数(竞争比分母),流量=当期新增趋势。")
+                   "存量=在库人数(竞争比分母),流量=当期新增趋势。CA = 全国(表尾 Total - All Canada 行)。")
 """流量表口径注。"""
 
 STATS_PRINT_OUT_TPL = "OUT_TR={tr}\nOUT_PNP={pnp}"

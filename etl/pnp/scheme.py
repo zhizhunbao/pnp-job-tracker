@@ -13,6 +13,7 @@ import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
+from pathlib import Path
 from typing import Callable, Iterator, Protocol
 
 from pnp.constants import GQ_SKIP_TAGS
@@ -1348,3 +1349,76 @@ class GateText(HTMLParser):
         """不在跳过层的非空文本收进 buf。"""
         if not self.skip and data.strip():
             self.buf.append(data.strip())
+
+
+# =========================================================================
+# 37. NS / BC 已发提名数(2026-09-08)
+# =========================================================================
+
+
+@dataclass
+class YearRowIn:
+    """to_year_row() 入参:运营统计的一条逐年数(形同 ON 的 on_issued_row 出参)。"""
+
+    year: int
+    """年份。"""
+
+    label: str
+    """官方措辞(数据集标题 / 表名 + 年)。"""
+
+    value: int
+    """提名数。"""
+
+    section: str
+    """出处小标题(数据集标题 / 报告名 + 表名)。"""
+
+    url: str
+    """出处页。"""
+
+    fetched: str
+    """抓取日。"""
+
+
+@dataclass
+class YearStatsIn:
+    """write_year_stats() 入参:一省只有 nominationsIssued 的运营统计文件。"""
+
+    path: Path
+    """落盘处。"""
+
+    prov: str
+    """省码。"""
+
+    source: str
+    """来源名。"""
+
+    url: str
+    """来源页。"""
+
+    note: str
+    """口径注。"""
+
+    rows: list
+    """逐年已发提名行(年降序)。"""
+
+
+@dataclass
+class BcReportOut:
+    """bc_report_of() 出参:最新一份 Statistical Report。"""
+
+    year: int
+    """报告年。"""
+
+    url: str
+    """PDF 地址。"""
+
+
+@dataclass
+class BcYearRowsIn:
+    """bc_year_rows() 入参:表里的年 → 合计 + 出自哪份报告。"""
+
+    by_year: dict
+    """年 → Total 行提名数。"""
+
+    report: BcReportOut
+    """报告(section 与 url 用)。"""
