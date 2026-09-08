@@ -28,7 +28,7 @@ SCHEDULED = [
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮(_steps 同款语义)。
 2026-09-05 Frank「不花钱就跑呗」「最好能定时跑」:把脉页雇主数据链四步进链(Places 两档只吃当月免费额、
-DDG 每轮 60 家、正文 400 家、qwen 简介 400 家),enrich 容器亮回;老 enrich 步(首页 meta 简介)退出默认链
+搜索每轮 Google 25 家 / DDG 60 家、正文 400 家、qwen 简介 400 家),enrich 容器亮回;老 enrich 步(首页 meta 简介)退出默认链
 留作手动件 —— about 步抓的正文盖过它,且两步都打 DDG 会双倍撞限流。"""
 
 TOOLS = {
@@ -54,11 +54,13 @@ TOOLS = {
          懒查询禁批量预抓),放量改 constants.PLACES_LIMIT。
 
   sites  在招担保雇主补官网(2026-09-04 Frank「走 DuckDuckGo 跑起来」):复用 enrich 的
-         D2 阶梯(JD 线索 → DDG),免费,命中记 found 进 company_enrich.json 等 build 合并;
-         预算 constants.SITES_LIMIT。手动件。
+         D2 阶梯(JD 线索 → 搜索),免费,命中记 found 进 company_enrich.json 等 build 合并;
+         2026-09-08 Frank /fe 拍板换源:搜索后端有 GOOGLE_CSE_KEY/CX 走 Google Programmable
+         Search(每轮 CSE_LIMIT),缺席退 DDG(SITES_LIMIT);只补各大类前 PULSE_RANK_MAX 名。
 
   about  官网正文(2026-09-05 Frank「可以」):首页 + About 页原文进 crawl 层,剥标签裁长;
-         预算 constants.ABOUT_LIMIT。手动件。
+         预算 constants.ABOUT_LIMIT。手动件。2026-09-08 起前 PULSE_RANK_MAX 名 403 / 验证壳 /
+         JS 壳走 crawl 域有头浏览器兜底(company 容器改用 crawl 重镜像)。
   brief  五节简介:about 正文 → 本地 qwen 五节英文 + 中文(NEWS_LLM_BASE 盒子);
          预算 constants.BRIEF_LIMIT。手动件;产出由 build 汇装进 companies.ai_brief。
 

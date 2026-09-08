@@ -14,6 +14,7 @@ wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案�
 库类型经 scheme 的 Protocol(HttpClientLike/TagLike),cast 只住装配点。
 依赖单边:本文件 → constants/scheme + 基础设施叶子(paths)。
 """
+import asyncio
 import html as html_lib
 import json
 import os
@@ -31,13 +32,14 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from crawl.functions import get_cached_page, is_challenge_html, put_cached_page
+from crawl.functions import (browser_live, browser_ok, close_browser, fetch_browser_html, get_cached_page,
+                             is_challenge_html, put_cached_page)
 from crawl.scheme import CachePutIn
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
     ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
     CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE, CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S,
-    CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, DDG_QUERY_TPL,
+    CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, SEARCH_QUERY_TPL,
     DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
     DOT_SEP, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS,
     FACTS_COMMA, FACTS_INDENT, FACTS_SUFFIX_RE, FACTS_TICK, FETCH_SLEEP_S, FETCH_TIMEOUT_S,
@@ -83,10 +85,12 @@ from company.constants import (
     PRINT_BRIEF_DONE_TPL, PRINT_BRIEF_ROW_TPL, PRINT_BRIEF_TARGETS_TPL, P_MODEL, P_NUM_PREDICT, P_OPTIONS,
     NEWLINE, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, STRIP_TAGS, THINK_RE, URL_TAIL_SLASH,
     BRIEF_KO_PROMPT_TPL, BRIEF_KO_TOKENS, NOTE_KO_MARKERS, PRINT_BRIEF_KO_TPL,
-    DDG_BACKOFF_S, DDG_FAIL_STOP, DDG_NO_RESULTS_MARK, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_DDG_STOP_TPL,
+    DDG_BACKOFF_S, DDG_FAIL_STOP, DDG_NO_RESULTS_MARK, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_SEARCH_STOP_TPL,
     PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
     JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA, TEER_SKILLED,
+    BACKEND_CSE, BACKEND_DDG, CSE_LIMIT, CSE_NUM, CSE_TIMEOUT_S, CSE_URL, ENV_CSE_CX, ENV_CSE_KEY, HTTP_FORBIDDEN,
+    NOTE_NO_CSE, P_CSE_CX, P_CSE_KEY, P_CSE_NUM, PRINT_ABOUT_BROWSER_TPL, PULSE_RANK_MAX,
 )
 from company.scheme import (
     CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
@@ -95,9 +99,10 @@ from company.scheme import (
     MartJob, PickPlacesIn, PlaceCompany, PlaceRecord, PlacesCandsIn, PlacesEnvelope, PlacesSearchIn,
     PlaceTarget, PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, SkipPlacesIn,
     TagLike, ToPlaceIn, WikiProbe, WpEnvelope,
-    AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, DdgLoopIn, DdgOut,
+    AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, SearchLoopIn, SearchOut,
     JobCounts, LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
     BriefKoIn, PickKoIn,
+    AboutTextIn, AboutTextOut, CseCfg, CseEnvelope, CseFindIn, FindSiteIn, SiteOfLinksIn,
 )
 
 # =========================================================================
@@ -469,34 +474,80 @@ def jd_domain_hints() -> dict[str, set[str]]:
     return hints
 
 
-def ddg_find(x: DdgFindIn) -> DdgOut:
-    """找官网②:DDG HTML 搜索兜底,前几个非聚合域逐个过护栏(含首页标题复核)。
+def find_site(x: FindSiteIn) -> SearchOut:
+    """找官网②的分派门:有 CSE 凭据走 Google Programmable Search,没有走 DDG(2026-09-08 换源批)。"""
+    if x.cse is None:
+        return ddg_find(DdgFindIn(client=x.client, name=x.name, province=x.province))
+    return cse_find(CseFindIn(client=x.client, name=x.name, province=x.province, cfg=x.cse))
+
+
+def cse_find(x: CseFindIn) -> SearchOut:
+    """找官网②(Google 后端):Programmable Search JSON API 取前几条落地链接,过同一道护栏。
+
+    非 2xx(含 429 配额尽、403 密钥错)回 failed=True —— 与 DDG 同律,调用方不得记 nosite。
+    """
+    try:
+        query = SEARCH_QUERY_TPL.format(name=x.name, province=x.province)
+        r = x.client.get(CSE_URL, params={P_CSE_KEY: x.cfg.key, P_CSE_CX: x.cfg.cx, P_QUERY: query,
+                                          P_CSE_NUM: CSE_NUM}, timeout=CSE_TIMEOUT_S)
+        if not r.is_success:
+            return SearchOut(site="", failed=True)
+        env = CseEnvelope.model_validate(r.json())
+    except Exception as e:  # noqa: BLE001
+        err(x.name, e)
+        return SearchOut(site="", failed=True)
+    links: list[str] = []
+    for item in env.items:
+        links.append(item.link)
+    return SearchOut(site=site_of_links(SiteOfLinksIn(client=x.client, name=x.name, links=links)), failed=False)
+
+
+def ddg_find(x: DdgFindIn) -> SearchOut:
+    """找官网②(DDG 后端):DDG HTML 搜索,解跳转后过同一道护栏。
 
     传输失败(异常/非 2xx)回 failed=True —— 调用方不得记 nosite(2026-09-05 限流实撞)。
     """
     try:
-        query = DDG_QUERY_TPL.format(name=x.name, province=x.province)
+        query = SEARCH_QUERY_TPL.format(name=x.name, province=x.province)
         r = x.client.get(DDG_HTML_URL, params={P_QUERY: query}, timeout=DDG_TIMEOUT_S)
         if not r.is_success:
-            return DdgOut(site="", failed=True)
+            return SearchOut(site="", failed=True)
     except Exception as e:  # noqa: BLE001
         err(x.name, e)
-        return DdgOut(site="", failed=True)
+        return SearchOut(site="", failed=True)
     hrefs = DDG_RESULT_RE.findall(r.text)
     if len(hrefs) == 0 and DDG_NO_RESULTS_MARK not in r.text:
-        return DdgOut(site="", failed=True)
-    seen: list[str] = []
-    for href in hrefs[:DDG_SCAN_N]:
+        return SearchOut(site="", failed=True)
+    links: list[str] = []
+    for href in hrefs:
         target = href
         if DDG_REDIRECT_PARAM in href:
             target = unquote(parse_qs(urlparse(href).query).get(DDG_REDIRECT_PARAM, [""])[0])
+        links.append(target)
+    return SearchOut(site=site_of_links(SiteOfLinksIn(client=x.client, name=x.name, links=links)), failed=False)
+
+
+def site_of_links(x: SiteOfLinksIn) -> str:
+    """搜索结果 → 官网:前 DDG_SCAN_N 条里挑非聚合域(去重),前 DDG_GUARD_N 个逐个过护栏(含首页标题复核);
+    都不过回空串(= 查无)。DDG / CSE 两后端共用这一道(行为只许一份)。"""
+    seen: list[str] = []
+    for target in x.links[:DDG_SCAN_N]:
         dom = domain_of(target)
         if dom and dom not in seen and not is_blocked_domain(dom):
             seen.append(dom)
     for dom in seen[:DDG_GUARD_N]:
         if guard_match(GuardMatchIn(client=x.client, name=x.name, dom=dom)):
-            return DdgOut(site=HTTPS_PREFIX + dom, failed=False)
-    return DdgOut(site="", failed=False)
+            return HTTPS_PREFIX + dom
+    return ""
+
+
+def cse_config() -> CseCfg | None:
+    """读环境定 Google Programmable Search 凭据;两格缺一回 None(sites 步退回 DDG)。"""
+    key = os.environ.get(ENV_CSE_KEY, "").strip()
+    cx = os.environ.get(ENV_CSE_CX, "").strip()
+    if key == "" or cx == "":
+        return None
+    return CseCfg(key=key, cx=cx)
 
 
 def now_iso() -> str:
@@ -592,13 +643,14 @@ def should_skip_find(x: SkipFindIn) -> bool:
     return bool(c.website or days_since(c.fetched) <= RETRY_NOSITE_DAYS)
 
 
-def nosite_priority_of(kv: tuple) -> int:
-    """无官网公司的搜索优先级键:岗多的先搜=价值密度高(lambda 退役)。"""
-    return -kv[1].jobs
+def nosite_priority_of(kv: tuple) -> tuple:
+    """无官网公司的搜索优先级键:先本大类名次(把脉页各行业表头部先填;老 enrich 步恒 0 退化为只看岗数),
+    再岗多的先搜=价值密度高(lambda 退役)。"""
+    return (kv[1].rank, -kv[1].jobs)
 
 
 def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
-    """D2 找官网阶梯:① JD 线索(全量,便宜)→ ② DDG 搜索(限量,礼貌限速)。
+    """D2 找官网阶梯:① JD 线索(全量,便宜)→ ② 搜索(限量;有 CSE 凭据走 Google,否则 DDG)。
 
     命中 → 进 targets(带 found 标记)并立即记缓存(status=found,防本轮 limit
     截断丢结果);搜不到 → 记 nosite 冷却 RETRY_NOSITE_DAYS。
@@ -617,14 +669,15 @@ def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
                                                status=ST_FOUND, fetched=now_iso())
                     found_jd += 1
                     break
-        found_search = ddg_search_loop(DdgLoopIn(client=cast(HttpClientLike, client), cache=x.cache,
-                                                 targets=x.targets, nosite=x.nosite, find_limit=x.find_limit))
+        found_search = search_loop(SearchLoopIn(cse=x.cse, client=cast(HttpClientLike, client), cache=x.cache,
+                                                targets=x.targets, nosite=x.nosite, find_limit=x.find_limit))
     return found_jd, found_search
 
 
-def ddg_search_loop(x: DdgLoopIn) -> int:
-    """阶梯②的循环:按岗数排队逐家 DDG;命中记 found、查无记 nosite、传输失败不记并歇 DDG_BACKOFF_S,
-    连续 DDG_FAIL_STOP 次失败熔断;每 FIND_FLUSH_N 家落一次盘。返回本轮命中数。"""
+def search_loop(x: SearchLoopIn) -> int:
+    """阶梯②的循环:按名次、岗数排队逐家搜(find_site 分派后端);命中记 found、查无记 nosite、
+    传输失败不记并歇 DDG_BACKOFF_S,连续 DDG_FAIL_STOP 次失败熔断(CSE 撞配额是 429,同一条路停);
+    每 FIND_FLUSH_N 家落一次盘。返回本轮命中数。"""
     found = done = fails = 0
     budget = x.find_limit
     for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
@@ -633,12 +686,12 @@ def ddg_search_loop(x: DdgLoopIn) -> int:
         if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)):
             continue
         budget -= 1
-        got = ddg_find(DdgFindIn(client=x.client, name=v.name, province=v.province))
+        got = find_site(FindSiteIn(client=x.client, name=v.name, province=v.province, cse=x.cse))
         if got.failed:
             fails += 1
             say(PRINT_FIND_ROW_TPL.format(status=ST_FAIL, name=v.name, site=""))
             if fails >= DDG_FAIL_STOP:
-                say(PRINT_DDG_STOP_TPL.format(n=fails, done=done))
+                say(PRINT_SEARCH_STOP_TPL.format(n=fails, done=done))
                 break
             time.sleep(DDG_BACKOFF_S)
             continue
@@ -1055,22 +1108,41 @@ def lookup_sponsor_websites() -> None:
         companies.append(PlaceCompany.model_validate(d))
     cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
     nosite = sponsor_nosite_of(cands)
-    say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), nosite=len(nosite), cache=len(cache), limit=SITES_LIMIT))
+    cse = cse_config()
+    if cse is None:
+        say(NOTE_NO_CSE)
+    limit = sites_limit_of(cse)
+    say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), rank=PULSE_RANK_MAX, nosite=len(nosite), cache=len(cache),
+                                       backend=sites_backend_of(cse), limit=limit))
     targets: dict[str, SiteLead] = {}
-    found_jd, found_search = find_websites(FindWebsitesIn(cache=cache, targets=targets,
-                                                          nosite=nosite, find_limit=SITES_LIMIT))
+    found_jd, found_search = find_websites(FindWebsitesIn(cse=cse, cache=cache, targets=targets,
+                                                          nosite=nosite, find_limit=limit))
     total_ok = write_enrich_cache(cache)
     say(PRINT_SITES_DONE_TPL.format(jd=found_jd, search=found_search, total=total_ok, n=len(cache),
                                     out=OUT_ENRICH_CACHE.name))
 
 
 def sponsor_nosite_of(cands: list[PlaceTarget]) -> dict[str, NositeLead]:
-    """候选里缺官网的 → find_websites 要的 nosite 表(在招数当岗数 = 搜索优先级)。"""
+    """候选里缺官网且在本大类前 PULSE_RANK_MAX 名的 → find_websites 要的 nosite 表(名次、在招数 = 搜索优先级)。"""
     nosite: dict[str, NositeLead] = {}
     for t in cands:
-        if t.website == "":
-            nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs)
+        if t.website == "" and t.rank < PULSE_RANK_MAX:
+            nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs, rank=t.rank)
     return nosite
+
+
+def sites_limit_of(cse: CseCfg | None) -> int:
+    """本轮搜索预算:Google 走日配额切片 CSE_LIMIT,DDG 走 SITES_LIMIT。"""
+    if cse is None:
+        return SITES_LIMIT
+    return CSE_LIMIT
+
+
+def sites_backend_of(cse: CseCfg | None) -> str:
+    """报数用的后端名。"""
+    if cse is None:
+        return BACKEND_DDG
+    return BACKEND_CSE
 
 
 def read_places_cache() -> dict[str, PlaceRecord]:
@@ -1271,25 +1343,35 @@ def crawl_company_about() -> None:
     """about 步入口:有官网的在招担保雇主,抓首页找 About 页,两页正文合成一份落 OUT_ABOUT。
 
     原文一律经 crawl 层读写门(有缓存不重抓);单家失败只记 status 不炸整轮。
+    2026-09-08 起前 PULSE_RANK_MAX 名 403 / 验证壳 / JS 壳走 crawl 域有头浏览器兜底(async 单例),
+    所以本步是 asyncio 壳(pte 域 run_xj_lists 同形);无 playwright 的镜像按原样只走 httpx。
     """
+    asyncio.run(about_round())
+
+
+async def about_round() -> None:
+    """about 步主体:候选 → 逐家 fetch_about → 落盘;浏览器收摊在 finally(断网/断链都不留窗)。"""
     cache = read_about_cache()
     targets = about_targets()
-    todo = pick_about_todo(PickAboutIn(cache=cache, targets=targets, limit=ABOUT_LIMIT))
+    todo = pick_about_todo(PickAboutIn(cache=cache, targets=targets, limit=ABOUT_LIMIT, browser=browser_ok()))
     say(PRINT_ABOUT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ABOUT_LIMIT))
     ok = fail = 0
-    with make_polite_client(timeout=ABOUT_TIMEOUT_S) as client:
-        for t in todo:
-            rec = fetch_about(AboutFetchIn(client=cast(HttpClientLike, client), target=t))
-            cache[t.slug] = rec
-            if rec.status == ST_OK:
-                ok += 1
-            else:
-                fail += 1
-            say(PRINT_ABOUT_ROW_TPL.format(status=rec.status, name=t.name, about=rec.about_url or rec.note,
-                                           chars=len(rec.text)))
-            if (ok + fail) % FIND_FLUSH_N == 0:
-                write_about_cache(cache)
-            time.sleep(ABOUT_SLEEP_S)
+    try:
+        with make_polite_client(timeout=ABOUT_TIMEOUT_S) as client:
+            for t in todo:
+                rec = await fetch_about(AboutFetchIn(client=cast(HttpClientLike, client), target=t))
+                cache[t.slug] = rec
+                if rec.status == ST_OK:
+                    ok += 1
+                else:
+                    fail += 1
+                say(PRINT_ABOUT_ROW_TPL.format(status=rec.status, name=t.name, about=rec.about_url or rec.note,
+                                               chars=len(rec.text)))
+                if (ok + fail) % FIND_FLUSH_N == 0:
+                    write_about_cache(cache)
+                time.sleep(ABOUT_SLEEP_S)
+    finally:
+        await close_browser()
     total = write_about_cache(cache)
     say(PRINT_ABOUT_DONE_TPL.format(ok=ok, fail=fail, total=total, n=len(cache), out=OUT_ABOUT.name))
 
@@ -1332,12 +1414,13 @@ def about_targets() -> list[AboutTarget]:
         if site == "" and t.slug in enrich:
             site = enrich[t.slug].website
         if site != "":
-            out.append(AboutTarget(slug=t.slug, name=t.name, website=site))
+            out.append(AboutTarget(slug=t.slug, name=t.name, website=site, rank=t.rank))
     return out
 
 
 def pick_about_todo(x: PickAboutIn) -> list[AboutTarget]:
-    """按序挑本轮要抓的:ok 未过期与失败冷却中的跳过,凑够 limit 即止。"""
+    """按序挑本轮要抓的:ok 未过期与失败冷却中的跳过,凑够 limit 即止。
+    例外(2026-09-08):有浏览器时,前 PULSE_RANK_MAX 名「失败且没试过浏览器」的不等冷却,本轮就重排。"""
     todo: list[AboutTarget] = []
     for t in x.targets:
         if len(todo) >= x.limit:
@@ -1346,51 +1429,92 @@ def pick_about_todo(x: PickAboutIn) -> list[AboutTarget]:
         if c is not None:
             if c.status == ST_OK and days_since(c.fetched) <= ABOUT_REFRESH_DAYS:
                 continue
-            if c.status == ST_FAIL and days_since(c.fetched) <= RETRY_FAILED_DAYS:
+            retry_now = x.browser and t.rank < PULSE_RANK_MAX and not c.browser
+            if c.status == ST_FAIL and days_since(c.fetched) <= RETRY_FAILED_DAYS and not retry_now:
                 continue
         todo.append(t)
     return todo
 
 
-def fetch_about(x: AboutFetchIn) -> AboutRecord:
-    """抓一家:首页 → 找 About 链接 → About 页;两页正文合一(短于 ABOUT_TEXT_MIN 记 fail)。"""
+async def fetch_about(x: AboutFetchIn) -> AboutRecord:
+    """抓一家:首页 → 找 About 链接 → About 页;两页正文合一(短于 ABOUT_TEXT_MIN 记 fail)。
+    前 PULSE_RANK_MAX 名:httpx 拿不到转浏览器;拿到了但正文太短(JS 壳)再用浏览器渲染一次。
+    rec.browser 只记「浏览器真跑过」(profile 被别的容器占着而起不来 ≠ 试过,下轮还排)。"""
     rec = AboutRecord(name=x.target.name, website=x.target.website, fetched=now_iso())
-    home = fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name))
+    allow = x.target.rank < PULSE_RANK_MAX
+    home = await fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name,
+                                        browser=allow, force=False))
+    rec.browser = home.tried
     if home.html == "":
         rec.status = ST_FAIL
         rec.note = home.note
         return rec
-    text = page_text_of(PageTextIn(html=home.html, limit=HOME_TEXT_MAX))
-    about_url = about_link_of(AboutLinkIn(html=home.html, base=x.target.website))
-    if about_url != "" and about_url != x.target.website:
-        about = fetch_site_page(PageIn(client=x.client, url=about_url, title=x.target.name))
-        if about.html != "":
-            rec.about_url = about_url
-            text = text + PAGE_SEP + page_text_of(PageTextIn(html=about.html, limit=ABOUT_TEXT_MAX))
-    if len(text.strip()) < ABOUT_TEXT_MIN:
+    got = await about_text_of(AboutTextIn(client=x.client, target=x.target, home_html=home.html, browser=home.rendered))
+    if len(got.text.strip()) < ABOUT_TEXT_MIN and allow and not home.rendered:
+        shown = await fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name,
+                                             browser=True, force=True))
+        rec.browser = shown.tried
+        if shown.html != "":
+            got = await about_text_of(AboutTextIn(client=x.client, target=x.target, home_html=shown.html, browser=True))
+    if len(got.text.strip()) < ABOUT_TEXT_MIN:
         rec.status = ST_FAIL
         rec.note = NOTE_NO_TEXT
         return rec
-    rec.text = text.strip()
+    rec.about_url = got.about_url
+    rec.text = got.text.strip()
     rec.status = ST_OK
     return rec
 
 
-def fetch_site_page(x: PageIn) -> PageOut:
-    """一页官网:crawl 层有原文直接用;没有才 GET,过人机验证判词后落 crawl 层。"""
-    hit = get_cached_page(x.url)
-    if hit.html is not None:
-        return PageOut(html=hit.html, note="")
+async def about_text_of(x: AboutTextIn) -> AboutTextOut:
+    """首页原文 → 正文 + 找到的 About 页(有则抓来并上正文;首页是渲染态则 About 页也直接渲染)。"""
+    text = page_text_of(PageTextIn(html=x.home_html, limit=HOME_TEXT_MAX))
+    about_url = about_link_of(AboutLinkIn(html=x.home_html, base=x.target.website))
+    if about_url == "" or about_url == x.target.website:
+        return AboutTextOut(text=text, about_url="")
+    about = await fetch_site_page(PageIn(client=x.client, url=about_url, title=x.target.name,
+                                         browser=x.browser, force=x.browser))
+    if about.html == "":
+        return AboutTextOut(text=text, about_url="")
+    return AboutTextOut(text=text + PAGE_SEP + page_text_of(PageTextIn(html=about.html, limit=ABOUT_TEXT_MAX)),
+                        about_url=about_url)
+
+
+async def fetch_site_page(x: PageIn) -> PageOut:
+    """一页官网:crawl 层有原文直接用;没有才 GET,过人机验证判词后落 crawl 层。
+    browser=True 时 403 / 验证壳 / 断连转浏览器渲染;force=True 跳过缓存与 httpx 直接渲染
+    (渲染态同样落 crawl 层,按 url 盖掉先前的壳)。"""
+    got = PageOut(html="", note=NOTE_NO_TEXT, rendered=False, tried=False)
+    if not x.force:
+        hit = get_cached_page(x.url)
+        if hit.html is not None:
+            return PageOut(html=hit.html, note="", rendered=False, tried=False)
+        got = httpx_page(x)
+        if got.html != "":
+            return got
+    if not x.browser:
+        return got
+    say(PRINT_ABOUT_BROWSER_TPL.format(name=x.title, url=x.url, why=got.note))
+    html = await fetch_browser_html(x.url)
+    tried = browser_live()
+    if html is None or html == "" or is_challenge_html(html):
+        return PageOut(html="", note=got.note, rendered=False, tried=tried)
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG_COMPANIES, url=x.url, html=html, title=x.title))
+    return PageOut(html=html, note="", rendered=True, tried=tried)
+
+
+def httpx_page(x: PageIn) -> PageOut:
+    """httpx 取一页:2xx 且不是验证壳才落 crawl 层并回原文;否则回原因(403 单列,是浏览器兜底的主因)。"""
     try:
         r = x.client.get(x.url)
     except Exception as e:  # noqa: BLE001
-        return PageOut(html="", note=type(e).__name__)
-    if not r.is_success or r.text == "":
-        return PageOut(html="", note=NOTE_HTTP_TPL.format(status=r.status_code))
+        return PageOut(html="", note=type(e).__name__, rendered=False, tried=False)
+    if r.status_code == HTTP_FORBIDDEN or not r.is_success or r.text == "":
+        return PageOut(html="", note=NOTE_HTTP_TPL.format(status=r.status_code), rendered=False, tried=False)
     if is_challenge_html(r.text):
-        return PageOut(html="", note=NOTE_CHALLENGE)
+        return PageOut(html="", note=NOTE_CHALLENGE, rendered=False, tried=False)
     put_cached_page(CachePutIn(slug=CRAWL_SLUG_COMPANIES, url=x.url, html=r.text, title=x.title))
-    return PageOut(html=r.text, note="")
+    return PageOut(html=r.text, note="", rendered=False, tried=False)
 
 
 def about_link_of(x: AboutLinkIn) -> str:

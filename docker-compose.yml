@@ -143,14 +143,22 @@ services:
 
   # enrich 批量爬虫 2026-07-20 退役(#110 Frank「不要提前跑,公司详情全懒」),2026-09-05 亮回
   # (Frank「不花钱就跑呗」「最好能定时跑」):跑的不是全量预抓,是把脉页雇主段两栏的母集
-  # (在招且 有 LMIA 或 在招 TEER 0-3),四步 places(Google 免费额内)/ sites(DDG 每轮 60)/
-  # about(官网正文进 crawl 层)/ brief(局域网 qwen 五节简介);节奏在 company 域 META(6h)。
+  # (在招且 有 LMIA 或 在招 TEER 0-3),四步 places(Google 免费额内)/ sites(Google Programmable
+  # Search 每轮 25,凭据缺席退 DDG 每轮 60)/ about(官网正文进 crawl 层;前 100 名 403/JS 壳走浏览器兜底)/
+  # brief(局域网 qwen 五节简介);节奏在 company 域 META(6h)。
+  # 2026-09-08 换 crawl 重镜像(Playwright + Xvfb 有头):about 步兜底要浏览器;持久 profile 与 crawl
+  # 容器同一份 bind-mount(chromium 单例锁:两容器撞上时后起的那个 launch 失败、本轮只走 httpx,不双开)。
   company:                         # 把脉页雇主数据链(role=enrich;company 域 SCHEDULED 四步)
     <<: *etl
+    build:
+      context: .
+      dockerfile: etl/crawl/Dockerfile
     environment:
       SOURCE: enrich
       HEALTHCHECK_PING_ENRICH: ${HEALTHCHECK_PING_ENRICH:-}
       GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
+      GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,与 CX 缺一=sites 步退 DDG
+      GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT

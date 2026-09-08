@@ -431,6 +431,22 @@ async def rewrite_route(route: object) -> None:
     await rewrite_script(ScriptRewriteIn(route=cast(BrowserRouteLike, route), patches=CACHE.patches))
 
 
+def browser_ok() -> bool:
+    """playwright 可导入即 True(缺席是预期形态:轻镜像不装浏览器;消费方据此决定要不要把
+    「等浏览器」的活排进本轮 —— 2026-09-08 company 域 about 步兜底批加,基建叶的探针住基建)。"""
+    try:
+        import playwright.async_api  # noqa: F401 — 只探可用性
+    except ImportError:
+        return False
+    return True
+
+
+def browser_live() -> bool:
+    """浏览器单例当前是不是活的(启动过且没被判不可用);消费方用来区分「兜底跑了没拿到」与
+    「压根没起来」(profile 被别的容器占着时 launch 失败 → unavailable),后者不该消耗重试机会。"""
+    return CACHE.page is not None and not CACHE.unavailable
+
+
 async def get_browser_page() -> PageLike | None:
     """浏览器单例标签(带单件缓存;launch 一次,cf_clearance 随 profile 落盘复用);
     playwright 缺席/启动失败 → None(警告一次,后续 403 页跳过)。"""

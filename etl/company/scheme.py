@@ -294,6 +294,9 @@ class NositeLead(BaseModel):
     jobs: int = 0
     """该雇主的岗数(价值密度,岗多先搜)。"""
 
+    rank: int = 0
+    """在本大类里的名次(sites 步排队第一键:各行业头部先搜;老 enrich 步不排名次,恒 0)。"""
+
 
 class EnrichRecord(BaseModel):
     """官网富化缓存一行(company_enrich.json 的值;对外文件契约,09 汇装直读)。
@@ -421,6 +424,85 @@ class GuardMatchIn:
 
 
 @dataclass
+class CseCfg:
+    """Google Programmable Search 的凭据(cse_config 的出参;两格都非空才成立)。"""
+
+    key: str
+    """API 密钥。"""
+
+    cx: str
+    """搜索引擎 ID。"""
+
+
+class CseItem(BaseModel):
+    """CSE 响应里一条结果(只读落地链接)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    link: str = ""
+    """结果落地 URL;缺格空串。"""
+
+
+class CseEnvelope(BaseModel):
+    """CSE 响应外壳(items 缺席 = 零结果,这是 API 的真语义,不是传输失败)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    items: list[CseItem] = []
+    """结果数组。"""
+
+
+@dataclass
+class CseFindIn:
+    """cse_find 的入参。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    name: str
+    """公司名。"""
+
+    province: str
+    """省码(进搜索词)。"""
+
+    cfg: CseCfg
+    """凭据。"""
+
+
+@dataclass
+class SiteOfLinksIn:
+    """site_of_links 的入参(DDG / CSE 两个后端拿到候选链接后同一道护栏)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端(护栏复核抓首页)。"""
+
+    name: str
+    """公司名。"""
+
+    links: list
+    """候选落地 URL(已解跳转),按搜索结果序。"""
+
+
+@dataclass
+class FindSiteIn:
+    """find_site 的入参(按有无凭据分派后端)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    name: str
+    """公司名。"""
+
+    province: str
+    """省码。"""
+
+    cse: CseCfg | None
+    """CSE 凭据;None = 走 DDG。"""
+
+
+@dataclass
 class DdgFindIn:
     """ddg_find 的入参。"""
 
@@ -435,8 +517,9 @@ class DdgFindIn:
 
 
 @dataclass
-class DdgOut:
-    """ddg_find 的出参:命中站点或空串;failed 区分「查无」与「传输失败」(后者不记 nosite)。"""
+class SearchOut:
+    """ddg_find / cse_find 的出参:命中站点或空串;failed 区分「查无」与「传输失败」(后者不记 nosite)。
+    2026-09-08 自 DdgOut 改名:两个搜索后端同一出参。"""
 
     site: str
     """命中的官网(https://域);空串 = 没命中。"""
@@ -446,8 +529,12 @@ class DdgOut:
 
 
 @dataclass
-class DdgLoopIn:
-    """ddg_search_loop 的入参(find_websites 的第二阶梯,2026-09-05 拆出以放熔断与分批落盘)。"""
+class SearchLoopIn:
+    """search_loop 的入参(find_websites 的第二阶梯,2026-09-05 拆出以放熔断与分批落盘;
+    2026-09-08 自 DdgLoopIn 改名,后端由 cse 格分派)。"""
+
+    cse: CseCfg | None
+    """CSE 凭据;None = 走 DDG。"""
 
     client: HttpClientLike
     """复用的 httpx 客户端。"""
@@ -462,7 +549,7 @@ class DdgLoopIn:
     """slug → NositeLead。"""
 
     find_limit: int
-    """本轮 DDG 预算。"""
+    """本轮搜索预算(CSE 走 CSE_LIMIT,DDG 走 SITES_LIMIT / FIND_LIMIT)。"""
 
 
 @dataclass
@@ -479,7 +566,10 @@ class FindWebsitesIn:
     """slug → NositeLead。"""
 
     find_limit: int = 0
-    """本轮 DDG 预算。"""
+    """本轮搜索预算。"""
+
+    cse: CseCfg | None = None
+    """CSE 凭据;None = 搜索阶梯走 DDG(老 enrich 手动件不传,免得吃掉 sites 步的日配额)。"""
 
 
 @dataclass
@@ -999,6 +1089,10 @@ class AboutRecord(BaseModel):
     text: str = ""
     """首页 + About 页正文(剥标签、折空白、裁长)。"""
 
+    browser: bool = False
+    """本记录是否已试过浏览器兜底(2026-09-08):失败且没试过、又在前 PULSE_RANK_MAX 名的,
+    冷却期内也重排;试过再失败才按 RETRY_FAILED_DAYS 冷却。老记录缺格 = 没试过。"""
+
     status: str = ""
     """ok / fail。"""
 
@@ -1056,6 +1150,9 @@ class AboutTarget:
     website: str
     """官网 URL(库里的或 sites 步刚找到的)。"""
 
+    rank: int = 0
+    """在本大类里的名次(前 PULSE_RANK_MAX 名才给浏览器兜底)。"""
+
 
 @dataclass
 class PickAboutIn:
@@ -1069,6 +1166,9 @@ class PickAboutIn:
 
     limit: int
     """本轮最多抓几家。"""
+
+    browser: bool
+    """本轮有没有浏览器可用:有才把「失败且没试过浏览器」的前排重排进来。"""
 
 
 @dataclass
@@ -1095,6 +1195,12 @@ class PageIn:
     title: str
     """crawl manifest 页行的标题(公司名)。"""
 
+    browser: bool
+    """httpx 拿不到(403 / 验证壳 / 断连)时允不允许转浏览器。"""
+
+    force: bool
+    """跳过缓存与 httpx 直接浏览器渲染(httpx 拿回的是 JS 壳、正文太短时的第二次)。"""
+
 
 @dataclass
 class PageOut:
@@ -1105,6 +1211,40 @@ class PageOut:
 
     note: str
     """没拿到的原因;拿到为空串。"""
+
+    rendered: bool
+    """这份原文是不是浏览器渲染态(是则正文短也不再第二次渲染)。"""
+
+    tried: bool
+    """浏览器真跑过一次(不管成没成);起不来(缺 playwright / profile 被占)算没跑,记录不标 browser。"""
+
+
+@dataclass
+class AboutTextIn:
+    """about_text_of 的入参。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    target: AboutTarget
+    """这一家。"""
+
+    home_html: str
+    """首页原文(已拿到)。"""
+
+    browser: bool
+    """About 页允不允许转浏览器(首页是渲染态 = About 页也直接渲染)。"""
+
+
+@dataclass
+class AboutTextOut:
+    """about_text_of 的出参。"""
+
+    text: str
+    """首页 + About 页正文。"""
+
+    about_url: str
+    """About 页 URL;空串 = 没露出。"""
 
 
 @dataclass

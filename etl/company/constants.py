@@ -36,7 +36,7 @@ P_PAGE_SIZE = "posts_per_page"
 """WP 每页条数参数名。"""
 
 P_QUERY = "q"
-"""DDG 搜索词参数名。"""
+"""搜索词参数名(DDG HTML 版与 Google Programmable Search 同名同用)。"""
 
 HREF_ATTR = "href"
 """链接节点的属性名(a[HREF_ATTR])。"""
@@ -85,6 +85,11 @@ SLUG_LEN_MAX = 60
 
 SLUG_FALLBACK = "company"
 """名字洗空后的兜底 slug。"""
+
+PULSE_RANK_MAX = 100
+"""把脉页雇主链只补各大类前多少名(sites 步搜官网、about 步浏览器兜底两段同用)。
+2026-09-08 Frank /fe 拍板「各表前 100 名」:页面 Top 100 档能看到的全部;母集 24,587 家里
+前 100 名 2,616 家(有官网 40%、简介成 30%),再往下是没人翻到的行,不烧配额。"""
 
 
 # =========================================================================
@@ -291,8 +296,8 @@ FIND_FLUSH_N = 50
 PRINT_FIND_ROW_TPL = "  {status:6} {name} → {site}"
 """DDG 每查一家报一行(status = found / nosite / fail)。"""
 
-PRINT_DDG_STOP_TPL = "DDG 连续 {n} 次传输失败,本轮停止(已查 {done} 家;剩余不记 nosite,下轮续)"
-"""DDG 熔断出口一句。"""
+PRINT_SEARCH_STOP_TPL = "搜索连续 {n} 次传输失败,本轮停止(已查 {done} 家;剩余不记 nosite,下轮续)"
+"""搜索熔断出口一句(DDG 与 Google 同用;2026-09-08 自 PRINT_DDG_STOP_TPL 改名)。"""
 
 FETCH_SLEEP_S = 0.2
 """抓首页限速(礼貌:轻微)。"""
@@ -361,8 +366,9 @@ MD_GLOB = "*.md"
 JD_URL_LINE_RE = re.compile(r"^url:\s*(.+)$", re.M)
 """JD .md 头部的 url: 行(反查 posting ↔ 文件)。"""
 
-DDG_QUERY_TPL = '"{name}" {province} Canada'
-"""DDG 搜索词:公司名精确短语 + 省 + 国名。"""
+SEARCH_QUERY_TPL = '"{name}" {province} Canada'
+"""搜索词:公司名精确短语 + 省 + 国名(DDG 与 Google Programmable Search 同一句;
+2026-09-08 自 DDG_QUERY_TPL 改名,两个后端共用)。"""
 
 DDG_REDIRECT_PARAM = "uddg"
 """DDG 跳转链里的真实目标参数名(/l/?uddg=<encoded>)。"""
@@ -386,7 +392,7 @@ FOUND_JD = "jd"
 """EnrichRecord.found:官网来路 = JD 正文线索。"""
 
 FOUND_SEARCHED = "searched"
-"""EnrichRecord.found:官网来路 = DDG 搜索(前端加小字标注)。"""
+"""EnrichRecord.found:官网来路 = 搜索出来的(DDG 或 Google Programmable Search;前端加小字标注)。"""
 
 NOTE_NO_META = "no meta"
 """富化失败原因:首页没有可提取的 meta。"""
@@ -861,11 +867,50 @@ SITES_LIMIT = 60
 """sites 步一轮的 DDG 预算。2026-09-04 首跑排 2,600 家一口气清 → 中途被 DDG 按 IP 封;
 09-05 进定时链后改成细水长流:每轮 60 家(与老 enrich 步的 FIND_LIMIT 同量,从没触发过封禁)。"""
 
-PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 缺官网 {nosite} · 缓存 {cache}(limit {limit})"
-"""sites 步报候选与缺官网数。"""
+PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 前 {rank} 名缺官网 {nosite} · 缓存 {cache} · 搜索走 {backend}(limit {limit})"
+"""sites 步报候选、缺官网数与本轮搜索后端。"""
 
-PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · DDG +{search} · 累计成功 {total}/{n} 家 → {out}"
+PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · 搜索 +{search} · 累计成功 {total}/{n} 家 → {out}"
 """sites 步收尾报数(found 记录由下一轮 build 合并官网进 companies)。"""
+
+ENV_CSE_KEY = "GOOGLE_CSE_KEY"
+"""Google Programmable Search JSON API 密钥的环境变量名(仓库根 .env;Frank 亲手开,代码与日志不落值)。
+2026-09-08 Frank /fe 拍板「换官网源」:DDG 自 09-05 起每轮「连续 3 次传输失败」、Places 免费额月中用尽且
+Pro 档不回官网 —— 官方接口免费档每天 100 次、不按 IP 封。"""
+
+ENV_CSE_CX = "GOOGLE_CSE_CX"
+"""Programmable Search 引擎 ID(cx)的环境变量名;与密钥缺一即整段走 DDG。"""
+
+CSE_URL = "https://www.googleapis.com/customsearch/v1"
+"""Programmable Search JSON API 端点。"""
+
+P_CSE_KEY = "key"
+"""CSE 查询参数:密钥。"""
+
+P_CSE_CX = "cx"
+"""CSE 查询参数:引擎 ID。"""
+
+P_CSE_NUM = "num"
+"""CSE 查询参数:返回条数。"""
+
+CSE_NUM = 5
+"""每次搜索要几条结果(护栏只看前 DDG_GUARD_N 个非聚合域,5 条够挑)。"""
+
+CSE_TIMEOUT_S = 12
+"""CSE 一次搜索的超时。"""
+
+CSE_LIMIT = 25
+"""sites 步走 CSE 时一轮的搜索预算:免费档每天 100 次 ÷ 6h 一轮 4 轮 = 25,永不撞配额
+(撞了是 429 → 记传输失败 → 熔断,浪费三次退避)。"""
+
+BACKEND_CSE = "Google Programmable Search"
+"""sites 步报数用的后端名。"""
+
+BACKEND_DDG = "DuckDuckGo"
+"""sites 步报数用的后端名(密钥未设时的退路)。"""
+
+NOTE_NO_CSE = "GOOGLE_CSE_KEY / GOOGLE_CSE_CX 未设,sites 步搜索走 DDG"
+"""密钥缺席的出口一句(不炸:退回 DDG,只是那条路当前基本封死)。"""
 
 
 # =========================================================================
@@ -922,6 +967,13 @@ NOTE_NO_TEXT = "no text"
 
 PRINT_ABOUT_TARGETS_TPL = "有官网的在招担保雇主 {targets} 家 · 缓存 {cache} · 本轮抓 {todo}(limit {limit})"
 """about 步报候选与本轮量。"""
+
+HTTP_FORBIDDEN = 403
+"""WAF 拒 httpx 的状态码:前 PULSE_RANK_MAX 名转浏览器兜底(2026-09-08 Frank /fe 拍板;母集里 403 704 家、
+JS 渲染壳「no text」733 家,前 100 名合计 165 家 —— crawl 域有头浏览器件同款,同一份 profile)。"""
+
+PRINT_ABOUT_BROWSER_TPL = "  浏览器兜底 {name} → {url}({why})"
+"""about 步每次转浏览器报一行(why = 403 / 验证壳 / 无正文,试跑期人眼复核)。"""
 
 PRINT_ABOUT_ROW_TPL = "  {status:4} {name} → {about} ({chars} 字)"
 """每抓一家报一行(试跑期人眼复核)。"""
