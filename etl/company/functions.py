@@ -90,7 +90,7 @@ from company.constants import (
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
     JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA, TEER_SKILLED,
     BACKEND_CSE, BACKEND_DDG, CSE_LIMIT, CSE_NUM, CSE_TIMEOUT_S, CSE_URL, ENV_CSE_CX, ENV_CSE_KEY, HTTP_FORBIDDEN,
-    NOTE_NO_CSE, P_CSE_CX, P_CSE_KEY, P_CSE_NUM, PRINT_ABOUT_BROWSER_TPL, PULSE_RANK_MAX,
+    NOTE_NO_CSE, P_CSE_CX, P_CSE_KEY, P_CSE_NUM, PRINT_ABOUT_BROWSER_TPL, PULSE_RANK_MAX, BROWSER_SKIP_NOTES,
 )
 from company.scheme import (
     CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
@@ -1492,7 +1492,7 @@ async def fetch_site_page(x: PageIn) -> PageOut:
         got = httpx_page(x)
         if got.html != "":
             return got
-    if not x.browser:
+    if not x.browser or got.note in BROWSER_SKIP_NOTES:
         return got
     say(PRINT_ABOUT_BROWSER_TPL.format(name=x.title, url=x.url, why=got.note))
     html = await fetch_browser_html(x.url)

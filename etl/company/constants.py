@@ -972,6 +972,11 @@ HTTP_FORBIDDEN = 403
 """WAF 拒 httpx 的状态码:前 PULSE_RANK_MAX 名转浏览器兜底(2026-09-08 Frank /fe 拍板;母集里 403 704 家、
 JS 渲染壳「no text」733 家,前 100 名合计 165 家 —— crawl 域有头浏览器件同款,同一份 profile)。"""
 
+BROWSER_SKIP_NOTES = ["ConnectError", "ConnectTimeout"]
+"""httpx 这两类失败不转浏览器:域名死了 / 连不上,浏览器一样连不上,只白等 45s 导航超时
+(2026-09-08 重镜像首跑实录:ConnectError 三家全是死站或脏网址,零回收;ReadTimeout 反而救回 Home Depot、
+McDonald's 两家 —— 所以只排这两类,超时照转)。"""
+
 PRINT_ABOUT_BROWSER_TPL = "  浏览器兜底 {name} → {url}({why})"
 """about 步每次转浏览器报一行(why = 403 / 验证壳 / 无正文,试跑期人眼复核)。"""
 
