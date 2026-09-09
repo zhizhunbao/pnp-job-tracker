@@ -3530,17 +3530,19 @@ function indRowOf(x: IndRowIn): MacroRow {
 }
 
 /**
- * 全表的同比年:各行「最新完整年」里最大的那个(格的灰注为空 = 完整年)。
+ * 全表的同比年:各行「最新完整年」里最大的那个(格的灰注为空 = 完整年);未来年(接纳目标这类计划值)不算 ——
+ * 2026-09-09 生产实拍目标表拿 2027 对 2026 算同比。
  *
  * @param rows 行。
  * @returns 年;一格完整年都没有给空串。
  */
 function yoyYearOf(rows: MacroRow[]): string {
+  const now = thisYearOf()
   let best = TEXT_NONE
   for (const r of rows) {
     for (const y of Object.keys(r.cells)) {
       const c = r.cells[y]
-      if (c != null && c.note === TEXT_NONE && (best === TEXT_NONE || y > best)) {
+      if (c != null && c.note === TEXT_NONE && y <= now && (best === TEXT_NONE || y > best)) {
         best = y
       }
     }
