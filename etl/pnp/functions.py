@@ -6064,14 +6064,19 @@ def scrape_ns_stats() -> None:
                                      value=rows[0][K_VALUE]))
 
 
-def bc_report_of(html: str) -> BcReportOut | None:
-    """入口页 → 最新一年的 Statistical Report(报告年 + PDF 地址);没链接给 None。"""
-    best: BcReportOut | None = None
+def bc_reports_of(html: str) -> list:
+    """入口页 → 全部年份的 Statistical Report(报告年 + PDF 地址),按报告年升序;没链接给空清单。
+
+    2026-09-09 由「只取最新一份」扩成读全部:一份报告只盖最近四年,历年已发提名要把 2016 起的报告都读一遍
+    (Frank「没抓到就去抓」);同一年被多份报告覆盖时以更新的报告为准(升序处理,后写覆盖前写)。
+    """
+    seen: dict = {}
     for m in BC_REPORT_HREF_RE.finditer(html):
-        year = int(m.group(2))
-        if best is None or year > best.year:
-            best = BcReportOut(year=year, url=BC_SITE_BASE + m.group(1))
-    return best
+        seen[int(m.group(2))] = BC_SITE_BASE + m.group(1)
+    out: list = []
+    for year in sorted(seen):
+        out.append(BcReportOut(year=year, url=seen[year]))
+    return out
 
 
 def bc_nominations_of(text: str) -> dict:
@@ -6121,20 +6126,26 @@ def scrape_bc_nominations() -> None:
     """BC 已发提名数入口:入口页找最新报告 → PDF 文本 → 「Total BC PNP Nominations」表 → raw/pnp/bc-nominations.json。
     入口页 / 报告改版或网络错 → 保留旧表不拦役。"""
     say(PRINT_OUT_TPL.format(path=OUT_BC_NOMINATIONS))
+    rows: list = []
     try:
-        report = bc_report_of(fetch_html(FetchHtmlIn(url=BC_ARCHIVES_URL, timeout_s=BC_NOM_TIMEOUT_S)))
-        if report is None:
+        reports = bc_reports_of(fetch_html(FetchHtmlIn(url=BC_ARCHIVES_URL, timeout_s=BC_NOM_TIMEOUT_S)))
+        if len(reports) == 0:
             raise RuntimeError(BC_NOM_NO_REPORT)
-        by_year = bc_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=report.url, timeout_s=BC_NOM_TIMEOUT_S))))
-        if len(by_year) == 0:
+        by_year_rows: dict = {}
+        for report in reports:
+            by_year = bc_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=report.url, timeout_s=BC_NOM_TIMEOUT_S))))
+            for r in bc_year_rows(BcYearRowsIn(by_year=by_year, report=report)):
+                by_year_rows[r[K_YEAR]] = r
+        if len(by_year_rows) == 0:
             raise RuntimeError(BC_NOM_NO_TABLE)
+        rows = sorted(by_year_rows.values(), key=neg_year_of)
     except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_ns_stats
         say(BC_NOM_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
         return
-    rows = bc_year_rows(BcYearRowsIn(by_year=by_year, report=report))
+    latest = reports[-1]
     write_year_stats(YearStatsIn(path=OUT_BC_NOMINATIONS, prov=PROV_BC, source=BC_NOM_TABLE_TITLE,
-                                 url=report.url, note=BC_NOM_NOTE, rows=rows))
+                                 url=latest.url, note=BC_NOM_NOTE, rows=rows))
     pairs: list = []
     for r in rows:
         pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
-    say(BC_NOM_PRINT_OK_TPL.format(report=report.year, pairs=SEMI_JOIN_SEP.join(pairs)))
+    say(BC_NOM_PRINT_OK_TPL.format(report=latest.year, pairs=SEMI_JOIN_SEP.join(pairs)))
