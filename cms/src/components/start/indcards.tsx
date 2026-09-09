@@ -30,9 +30,7 @@ export function IndCards(x: MacroCardIn) {
   for (const r of shown) {
     cards.push(
       <div key={r.key} className={css.indCard}>
-        <div className={css.provCardHead}>
-          <span className={css.provCardName}>{r.label}</span>
-        </div>
+        <div className={css.indName}>{r.label}</div>
         <div className={css.provCardBody}>
           <div>{MacroLatestCell(r)}</div>
           <div>{MacroYoyCell(r)}</div>

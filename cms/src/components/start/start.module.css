@@ -2820,3 +2820,15 @@
   border-radius: 12px;
   padding: 8px 10px;
 }
+
+/*
+ * 省卡的省名:加粗,长名折行不截(「名字不截断」;.provCardName 带省略号,这里不用它)。
+ */
+.indName {
+  /*
+   * 加粗、允许折行。
+   */
+  font-weight: 700;
+  white-space: normal;
+  line-height: 1.35;
+}
