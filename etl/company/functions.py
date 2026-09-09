@@ -542,8 +542,10 @@ def site_of_links(x: SiteOfLinksIn) -> str:
 
 
 def cse_config() -> CseCfg | None:
-    """读环境定 Google Programmable Search 凭据;两格缺一回 None(sites 步退回 DDG)。"""
+    """读环境定 Google Programmable Search 凭据;key 空则复用 Places 那把;仍缺一格回 None(sites 步退回 DDG)。"""
     key = os.environ.get(ENV_CSE_KEY, "").strip()
+    if key == "":
+        key = os.environ.get(ENV_PLACES_KEY, "").strip()
     cx = os.environ.get(ENV_CSE_CX, "").strip()
     if key == "" or cx == "":
         return None

@@ -875,11 +875,13 @@ PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · 搜索 +{search} · 累计成�
 
 ENV_CSE_KEY = "GOOGLE_CSE_KEY"
 """Google Programmable Search JSON API 密钥的环境变量名(仓库根 .env;Frank 亲手开,代码与日志不落值)。
+留空就复用 ENV_PLACES_KEY 那把(2026-09-09 Frank「可以用一个 key 吗」:同一 Cloud 项目启用 Custom Search API
+即可共用,只有引擎 ID 是新的)。
 2026-09-08 Frank /fe 拍板「换官网源」:DDG 自 09-05 起每轮「连续 3 次传输失败」、Places 免费额月中用尽且
 Pro 档不回官网 —— 官方接口免费档每天 100 次、不按 IP 封。"""
 
 ENV_CSE_CX = "GOOGLE_CSE_CX"
-"""Programmable Search 引擎 ID(cx)的环境变量名;与密钥缺一即整段走 DDG。"""
+"""Programmable Search 引擎 ID(cx)的环境变量名;缺它(或两把 key 都空)整段走 DDG。"""
 
 CSE_URL = "https://www.googleapis.com/customsearch/v1"
 """Programmable Search JSON API 端点。"""
@@ -909,7 +911,7 @@ BACKEND_CSE = "Google Programmable Search"
 BACKEND_DDG = "DuckDuckGo"
 """sites 步报数用的后端名(密钥未设时的退路)。"""
 
-NOTE_NO_CSE = "GOOGLE_CSE_KEY / GOOGLE_CSE_CX 未设,sites 步搜索走 DDG"
+NOTE_NO_CSE = "GOOGLE_CSE_CX 未设(或 GOOGLE_CSE_KEY / GOOGLE_PLACES_KEY 都空),sites 步搜索走 DDG"
 """密钥缺席的出口一句(不炸:退回 DDG,只是那条路当前基本封死)。"""
 
 

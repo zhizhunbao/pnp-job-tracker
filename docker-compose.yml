@@ -157,7 +157,7 @@ services:
       SOURCE: enrich
       HEALTHCHECK_PING_ENRICH: ${HEALTHCHECK_PING_ENRICH:-}
       GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
-      GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,与 CX 缺一=sites 步退 DDG
+      GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,空=复用 GOOGLE_PLACES_KEY;CX 缺=sites 步退 DDG
       GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}

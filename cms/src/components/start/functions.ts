@@ -3732,17 +3732,29 @@ function latestCellOf(cells: Record<string, MacroCell>): MacroCell | null {
 }
 
 /**
- * 一行里最新的年份(手机卡格旁标年用)。
+ * 一行里「最新」的年份(手机卡取格与标年用):当年及以前里最新的一年;未来年(接纳目标这类
+ * 计划值)不算最新 —— Frank 2026-09-09 实拍全国块显 2027 目标「这不废话吗」;整行只有未来年才取最近的那年。
  *
  * @param cells 年 → 格。
  * @returns 年份;空表给空串。
  */
 function latestYearOf(cells: Record<string, MacroCell>): string {
+  const now = String(new Date().getFullYear())
   let best = TEXT_NONE
+  let future = TEXT_NONE
   for (const y of Object.keys(cells)) {
+    if (y > now) {
+      if (future === TEXT_NONE || y < future) {
+        future = y
+      }
+      continue
+    }
     if (best === TEXT_NONE || y > best) {
       best = y
     }
+  }
+  if (best === TEXT_NONE) {
+    return future
   }
   return best
 }
