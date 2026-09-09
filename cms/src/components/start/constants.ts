@@ -1238,9 +1238,8 @@ export const MACRO_CA_ONLY_ROWS = ['eeInvites', 'pnpTarget']
 /**
  * 官方**未公布**的格(地区 → 行键):没数据时显「未公布」而不是「本站未收录」。两词在用户那里意思相反
  * (前者 = 官方的问题、该警惕中介报数;后者 = 本站的问题、该去官网),所以每个键都要举证,举不出的不进表。
- * - PE alloc / comp / remaining:PE 官方只发布 PNP + AIP 合并名额,PNP 单列历年无拆分
- *   (CBC 2025-12-04 省移民办官员实名引语;原句与链接存 `data/raw/ircc/pnp_allocations.json` PE 行 note)。
- *   PE 的 issued 不在表里:省官网在 Radware 反爬后面抓不到,是「本站未收录」不是「未公布」。
+ * - PE remaining / useRate:已发提名数省官网在 Radware 反爬后面抓不到;配额本身 2026-09-09 已从省 IIDI 年报
+ *   Table 1 拆出 PNP 单列(2021–2024,证伪此前「PE 只发合并名额」的记录),2025 / 2026 年报未出 → 格上「未发布」。
  * - NB issued / remaining:gnb.ca 移民版块只发逐轮「Invitations issued」
  *   (invitation-selection-rounds 页表头 Date of draw / Pathways / Invitations issued),无年度已发提名数(2026-09-08 逐页核)。
  * - NL issued / remaining:gov.nl.ca/immigration 只发逐轮「Number of ITAs Issued」(invitations-to-apply-updates 页),
@@ -1250,7 +1249,7 @@ export const MACRO_UNPUBLISHED: Record<string, string[]> = {
   /**
    * 爱德华王子岛:配额只发合并数。
    */
-  PE: ['alloc', 'comp', 'remaining', 'useRate'],
+  PE: ['remaining', 'useRate'],
 
   /**
    * 新不伦瑞克:只发逐轮邀请数。

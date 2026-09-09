@@ -1,8 +1,38 @@
 {
  "source": "IRCC Immigration Levels Plan — supplementary information(PNP 行目标值)",
- "checkedAt": "2026-09-08",
- "note": "人工核对维护表(2026-09-08 立,把脉页全国块「省提名接纳目标」)。口径:①人头(permanent resident admissions,含随行家属),不是提名证书个数,所以不并进 pnp_allocations;②同一年被后一版计划改写只记**最新版**,被覆盖的旧值写在 superseded;③2026–2028 计划(2025 年报附件)只发大类 Economic Immigration(2026=239,800 / 2027=244,700 / 2028=244,700),没有 PNP 单列 —— 2026/2027 沿用 2025–2027 计划的 55,000,2028 不编。",
+ "checkedAt": "2026-09-09",
+ "note": "人工核对维护表(2026-09-08 立,把脉页全国块「省提名接纳目标」)。口径:①人头(permanent resident admissions,含随行家属),不是提名证书个数,所以不并进 pnp_allocations;②同一年被后一版计划改写只记**最新版**,被覆盖的旧值写在 superseded;③2026–2028 计划(2025 年报附件)只发大类 Economic Immigration(2026=239,800 / 2027=244,700 / 2028=244,700),没有 PNP 单列 —— 2026/2027 沿用 2025–2027 计划的 55,000,2028 不编。 2026-09-09 补 2021–2023(各年取覆盖它的最新一版计划:2021←2021–2023、2022←2022–2024、2023←2023–2025,被覆盖旧值在 superseded)。",
  "rows": [
+  {
+   "year": 2021,
+   "target": 80800,
+   "low": 64000,
+   "high": 81500,
+   "plan": "2021-2023",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2021-2023.html",
+   "quote": "Provincial Nominee Program | 80,800 | 64,000 | 81,500",
+   "superseded": null
+  },
+  {
+   "year": 2022,
+   "target": 83500,
+   "low": 80000,
+   "high": 95000,
+   "plan": "2022-2024",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2022-2024.html",
+   "quote": "Provincial Nominee Program | 83,500 | 80,000 | 95,000",
+   "superseded": "2021–2023 计划原定 81,500(63,600–82,500)"
+  },
+  {
+   "year": 2023,
+   "target": 105500,
+   "low": 91000,
+   "high": 110000,
+   "plan": "2023-2025",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2023-2025.html",
+   "quote": "Provincial Nominee Program | 105,500 | 91,000 | 110,000",
+   "superseded": "2022–2024 计划原定 86,000(82,000–95,000)"
+  },
   {
    "year": 2024,
    "target": 110000,
@@ -11,7 +41,7 @@
    "plan": "2024-2026",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2024-2026.html",
    "quote": "Provincial Nominee Program | 110,000 | 105,500 | 117,000",
-   "superseded": null
+   "superseded": "2023–2025 计划原定 110,000(105,500–120,000),与 2024–2026 计划同值"
   },
   {
    "year": 2025,
