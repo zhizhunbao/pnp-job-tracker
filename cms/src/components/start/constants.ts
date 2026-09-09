@@ -1183,6 +1183,16 @@ export const KEY_IND_SHORT_HEAD = 'pulse.i.'
 export const YOY_FLAT_PCT = 0.3
 
 /**
+ * 表格里跟在数后面的灰注左括号(「60.0 : 1 (至 4 月)」一行写完不折行;Frank 2026-09-09「后面加个括号,不要换行」)。
+ */
+export const NOTE_OPEN = ' ('
+
+/**
+ * 灰注右括号。
+ */
+export const NOTE_CLOSE = ')'
+
+/**
  * 「涨了是坏事」的指标:同比颜色反着给(竞争比涨、失业率涨显红;Frank 2026-09-09「竞争激烈还显示绿色?」)。
  */
 export const MACRO_BAD_UP_KEYS = ['comp', 'unemp']

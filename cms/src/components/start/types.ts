@@ -3497,9 +3497,15 @@ export type MacroGeo = {
   rows: MacroRow[]
 
   /**
-   * 同比列名(「同比 25/24」);省块空串 = 不出这列。
+   * 同比列名(「同比 25/24」);空串 = 不出这列。
    */
   yoyLabel: string
+
+  /**
+   * 年 → 全列共用的灰注(整列有数的格都是同一个「至 X 月」时提到列头一次,格里不再重复;
+   * 各省截止不一致的列给空串,灰注留在格里。Frank 2026-09-09「至 4 月这种放到标题上如何」)。
+   */
+  yearNotes: Record<string, string>
 }
 
 /**
@@ -3755,6 +3761,11 @@ export type MacroYearCellIn = {
    * 「未发布」的词:行里最后一个有数年之后、当前年之前(含)的空格 = 官方还没发(Frank 2026-09-09「没发布应该写 未发布」)。
    */
   unreleased: string
+
+  /**
+   * 这一列已提到列头的灰注;格里的灰注与它相同就不再显示;空串 = 列头没有。
+   */
+  note: string
 }
 
 /**
@@ -3893,6 +3904,51 @@ export type YoyClsIn = {
 }
 
 /**
+ * `yearNotesOf` 的入参。
+ */
+export type YearNotesIn = {
+  /**
+   * 行。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 年份列。
+   */
+  years: string[]
+}
+
+/**
+ * `yearNoteOf` 的入参。
+ */
+export type YearNoteIn = {
+  /**
+   * 年 → 列头灰注。
+   */
+  yearNotes: Record<string, string>
+
+  /**
+   * 年。
+   */
+  year: string
+}
+
+/**
+ * `yearColLabelOf` 的入参。
+ */
+export type YearColLabelIn = {
+  /**
+   * 年。
+   */
+  year: string
+
+  /**
+   * 列头灰注;空串就只写年。
+   */
+  note: string
+}
+
+/**
  * `yoyLabelOf` 的入参。
  */
 export type YoyLabelIn = {
@@ -3961,6 +4017,11 @@ export type MacroColsIn = {
    * 同比列名;空串不出这列。
    */
   yoyLabel: string
+
+  /**
+   * 年 → 列头共用灰注(空串 = 灰注留在格里)。
+   */
+  yearNotes: Record<string, string>
 }
 
 /**

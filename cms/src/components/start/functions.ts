@@ -110,7 +110,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  UseRateIn, YoyCellIn, YoyClsIn, YoyLabelIn, MacroRow, MacroGeo, MacroCell,
+  UseRateIn, YearColLabelIn, YearNoteIn, YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
   MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn,
@@ -3446,14 +3446,49 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   for (const b of bases) {
     rows.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key }))
   }
+  const years = yearsOf(rows)
   return {
     code: x.key,
     anchor: ID_IND_HEAD + x.key,
     name: x.t(KEY_MACRO_HEAD + x.key),
-    years: yearsOf(rows),
+    years,
     rows,
     yoyLabel: yoyLabelOf({ t: x.t, year }),
+    yearNotes: yearNotesOf({ rows, years }),
   }
+}
+
+/**
+ * 每一年整列共用的灰注:该年有数的格全带同一个非空灰注才提到列头;有一格不同(含完整年的空注)
+ * 就给空串,灰注留在各格 —— 各省截止月可能不一样,不硬统一。
+ *
+ * @param x 行与年份列。
+ * @returns 年 → 灰注。
+ */
+function yearNotesOf(x: YearNotesIn): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const y of x.years) {
+    let shared = TEXT_NONE
+    let same = true
+    for (const r of x.rows) {
+      const c = r.cells[y]
+      if (c == null) {
+        continue
+      }
+      if (shared === TEXT_NONE) {
+        shared = c.note
+      }
+      if (c.note !== shared) {
+        same = false
+      }
+    }
+    if (same) {
+      out[y] = shared
+    } else {
+      out[y] = TEXT_NONE
+    }
+  }
+  return out
 }
 
 /**
@@ -3937,12 +3972,45 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   const unreleased = x.t('pulse.m.unreleased')
   for (const y of x.years) {
     const last = y === x.years[x.years.length - 1]
-    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell({ year: y, last, now, unreleased }) })
+    const note = yearNoteOf({ yearNotes: x.yearNotes, year: y })
+    out.push({
+      key: y,
+      label: yearColLabelOf({ year: y, note }),
+      nowrap: true,
+      render: makeMacroYearCell({ year: y, last, now, unreleased, note }),
+    })
   }
   if (x.yoyLabel !== TEXT_NONE) {
     out.push({ key: COL_YOY, label: x.yoyLabel, nowrap: true, render: MacroYoyCell })
   }
   return out
+}
+
+/**
+ * 某一年的列头灰注(表里没这年给空串)。
+ *
+ * @param x 年 → 灰注表与年。
+ * @returns 灰注。
+ */
+function yearNoteOf(x: YearNoteIn): string {
+  const n = x.yearNotes[x.year]
+  if (n == null) {
+    return TEXT_NONE
+  }
+  return n
+}
+
+/**
+ * 年份列的列头:有共用灰注就「2026 至 4 月」,没有就只写年。
+ *
+ * @param x 年与灰注。
+ * @returns 列头。
+ */
+function yearColLabelOf(x: YearColLabelIn): string {
+  if (x.note === TEXT_NONE) {
+    return x.year
+  }
+  return x.year + SPACE_SEP + x.note
 }
 
 /**
