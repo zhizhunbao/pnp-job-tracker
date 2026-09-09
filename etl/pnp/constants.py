@@ -4078,6 +4078,14 @@ ONS_SEED_URL = "https://www.ontario.ca/page/oinp-application-processing-times-an
 ONS_UPDATES_URL_TPL = "https://www.ontario.ca/page/{year}-ontario-immigrant-nominee-program-updates"
 """逐年更新页(官方每年新开一页)。"""
 
+ONS_WAYBACK_TPL = "https://web.archive.org/web/{stamp}/{url}"
+"""逐年页被 Radware 挡(缓存与实抓都拿不到真内容)时退到 Wayback(2026-09-09 Frank「没抓到就去抓」:
+2020 / 2022–2024 的已发提名数只有这条路)。快照时间戳取**次年 6 月**:年末追加句要到年底才上页,而
+最新快照多半已是官方归档后的跳转页;快照本身若也是拦截页,is_blocked_page 一样拦下。"""
+
+ONS_WAYBACK_STAMP_TPL = "{year}0601"
+"""Wayback 快照时间戳(次年 6 月 1 日,Wayback 会就近取)。"""
+
 OUT_ON_STATS = paths.PNP / "on-stats.json"
 """ON 运营统计落盘处。
 ⚠️ 这一段一上来就撞见一个「页面没了」:官方原本有一页专门叫「OINP Application

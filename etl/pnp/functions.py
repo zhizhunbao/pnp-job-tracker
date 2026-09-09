@@ -197,7 +197,8 @@ from pnp.constants import (
     ONR_WAGE_RE, ONS_ALLOC_RE, ONS_BLOCK_KW_CAPTCHA, ONS_BLOCK_KW_RADWARE, ONS_HTTP_OK, ONS_ISSUED_RE, ONS_NOTE,
     ONS_PRINT_ALLOC_TPL, ONS_PRINT_ISSUED_TPL, ONS_PRINT_NO_PROCESSING, ONS_PRINT_REDIRECT_TPL,
     ONS_PRINT_SKIPPED_TPL, ONS_PRINT_YEAR_VALUE_TPL, ONS_PROBLEM_EMPTY, ONS_REACHED_RE, ONS_REDIRECT_FAILED,
-    ONS_SECTION_TPL, ONS_SEED_URL, ONS_SOURCE, ONS_TIMEOUT_S, ONS_UNIT_NOMINATIONS, ONS_UPDATES_URL_TPL,
+    ONS_SECTION_TPL, ONS_SEED_URL, ONS_SOURCE, ONS_TIMEOUT_S, ONS_UNIT_NOMINATIONS, ONS_UPDATES_URL_TPL, ONS_WAYBACK_STAMP_TPL,
+    ONS_WAYBACK_TPL,
     ONS_YEARS_BACK, ON_BLOB_AHEAD_NEW, ON_BLOB_AHEAD_OLD, ON_ENTRY_DATE_TPL, ON_ENTRY_NOYEAR_RE, ON_ENTRY_RE,
     ON_INV_DATE_COL, ON_INV_DATE_KW, ON_INV_HEAD_KW, ON_INV_HEAD_TAGS, ON_INV_NOTES_KW, ON_INV_NUM_COL,
     ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
@@ -273,7 +274,7 @@ from pnp.scheme import (
     OnEntryIn, OnYearIn, PageTextIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut, RowsByLabelsIn,
     ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn, SirsSectionIn, SkAllocCheckIn,
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
-    TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
+    OnWaybackIn, TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
 )
 from pnp.constants import (
     C01_APPLIES_JO, C01_APPLIES_OIDEE, C01_BAD_TPL, C01_D_COUNT_TPL, C01_D_JULY_TPL,
@@ -4397,12 +4398,29 @@ def fetch_on_year_page(year: int) -> YearPageOut:
                 fetched = today_iso()
         except httpx.HTTPError as e:
             err(url, e)
-    if not html:
+    text = ""
+    if html:
+        text = text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True))
+    if not html or is_blocked_page(text):
+        return fetch_on_year_wayback(OnWaybackIn(url=url, year=year))
+    return YearPageOut(text=text, url=url, fetched=fetched)
+
+
+def fetch_on_year_wayback(x: OnWaybackIn) -> YearPageOut:
+    """逐年页的 Wayback 兜底:取次年 6 月附近的快照;取不到或快照也是拦截页 → text=None(出处 url 仍记官方原页)。"""
+    url = x.url
+    wb = ONS_WAYBACK_TPL.format(stamp=ONS_WAYBACK_STAMP_TPL.format(year=x.year + 1), url=url)
+    try:
+        r = httpx.get(wb, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=ONS_TIMEOUT_S)
+    except httpx.HTTPError as e:
+        err(wb, e)
         return YearPageOut(text=None, url=url, fetched="")
-    text = text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True))
+    if r.status_code != ONS_HTTP_OK:
+        return YearPageOut(text=None, url=url, fetched="")
+    text = text_of_html(TextOfHtmlIn(html=r.text, drop_junk=True, main_only=True))
     if is_blocked_page(text):
         return YearPageOut(text=None, url=url, fetched="")
-    return YearPageOut(text=text, url=url, fetched=fetched)
+    return YearPageOut(text=text, url=url, fetched=today_iso())
 
 
 def check_on_redirect() -> dict:

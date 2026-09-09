@@ -3976,7 +3976,7 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   ]
   const now = thisYearOf()
   const unreleased = x.t('pulse.m.unreleased')
-  const notCollected = TEXT_NONE
+  const notCollected = unreleased
   for (const y of x.years) {
     const last = y === x.years[x.years.length - 1]
     const note = yearNoteOf({ yearNotes: x.yearNotes, year: y })

@@ -992,6 +992,17 @@ class OnYearIn:
 
 
 @dataclass
+class OnWaybackIn:
+    """fetch_on_year_wayback() 入参:官方原页与年份(快照时间戳按次年算)。"""
+
+    url: str
+    """官方逐年页 URL。"""
+
+    year: int
+    """该页对应的年份。"""
+
+
+@dataclass
 class YearValuesIn:
     """say_year_values() 入参:逐年数字一行。"""
 
