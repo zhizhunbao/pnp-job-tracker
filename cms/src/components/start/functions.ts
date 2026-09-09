@@ -54,7 +54,7 @@ import {
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MR_ISSUED,
-  MR_REMAINING, MACRO_SUB_ROWS,
+  MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
@@ -3714,14 +3714,14 @@ function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
   if (x.key === MR_USE_RATE) {
     return quotaUsedCellsOf({
       alloc: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
-      issued: opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t }),
+      issued: opsCellsOf({ metrics: OPS_ISSUED_CAL_METRICS, ops: x.ops, t: x.t }),
     })
   }
   if (x.key === MR_REMAINING) {
     return remainingCellsOf({
       direct: opsCellsOf({ metrics: [OPS_REMAINING], ops: x.ops, t: x.t }),
       alloc: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
-      issued: opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t }),
+      issued: opsCellsOf({ metrics: OPS_ISSUED_CAL_METRICS, ops: x.ops, t: x.t }),
     })
   }
   return cellsOfKey({ key: x.key, points: x.points, t: x.t })

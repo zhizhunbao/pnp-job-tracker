@@ -1301,7 +1301,13 @@ export const OPS_ALLOCATION = 'allocation'
 /**
  * pnp_ops_stats 的省级指标名:已发提名(各省叫法不同,三个名字都算)。
  */
-export const OPS_ISSUED_METRICS = ['issued', 'nominations_issued', 'nominations_ytd']
+export const OPS_ISSUED_METRICS = ['issued', 'nominations_issued', 'nominations_ytd', 'nominations_issued_fy']
+
+/**
+ * 能和自然年配额相除的已发指标(算剩余 / 用尽率用):PE 的 nominations_issued_fy 是财年数,不进这里
+ * (2026-09-09;它只在「已发提名」行里显示,格上带 FY 灰注)。
+ */
+export const OPS_ISSUED_CAL_METRICS = ['issued', 'nominations_issued', 'nominations_ytd']
 
 /**
  * pnp_ops_stats 的省级指标名:官方直给的剩余名额。

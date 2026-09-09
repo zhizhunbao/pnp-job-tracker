@@ -8,7 +8,7 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 不被 `except Exception` 接住,进程当场退出 1 —— 与旧的「子进程 exit 1 即中止」逐字同义。)
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
-    python etl/pnp/main.py                     # 默认链(27 步)
+    python etl/pnp/main.py                     # 默认链(28 步)
     python etl/pnp/main.py --only draws        # 单步调试 / 手动工具(见 TOOLS)
 """
 import sys
@@ -23,7 +23,7 @@ from pnp.functions import (
     build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points,
     build_on_req, build_on_stats, build_pe, build_pe_req, build_sk, build_sk_joboffer,
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes,
-    scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, translate_draw_streams,
+    scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
     watch_prov_allocations,
 )
 
@@ -55,6 +55,7 @@ SCHEDULED = [
     ("bc_stats", build_bc_stats),
     ("ns_stats", scrape_ns_stats),
     ("bc_nominations", scrape_bc_nominations),
+    ("pe_iidi", scrape_pe_iidi),
     ("watch_allocations", watch_prov_allocations),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
@@ -109,6 +110,7 @@ SCHEDULED = [
 
   scrape_ns_stats        NS 已发提名数(省开放数据 Socrata,与 ns_allocations 同平台;2026-09-08 把脉页缺行)
   scrape_bc_nominations  BC 已发提名数(官方年度 Statistical Report PDF 的 Total 行;同日同因)
+  scrape_pe_iidi         PE 配额(自然年)与已发提名(财年)—— 省 IIDI 年报 PDF(2026-09-09,PE 官网在墙后但 PDF 直链不在)
   watch_allocations      名额公告哨兵(只提醒不写表;自身失败不拦役 —— 函数体内自 catch)
   check_freshness        曾钉本链最末(B3-1 哨兵);2026-08-31 批O 迁 sched 的 ping 门口
                          (全域保鲜闸,source_manifest 退役、契约进各域 META),本链不再带它
@@ -143,6 +145,7 @@ TOOLS = {
     "bc_stats": build_bc_stats,
     "ns_stats": scrape_ns_stats,
     "bc_nominations": scrape_bc_nominations,
+    "pe_iidi": scrape_pe_iidi,
     "bc_stats_processing": build_bc_stats_processing,
     "on_stats": build_on_stats,
     "mb_stats": build_mb_stats,
@@ -155,7 +158,7 @@ TOOLS = {
     "c01_gold": audit_c01_gold,
     "gate_quotes": gate_quotes,
 }
-"""全部可 --only 点名的步(默认链 27 步 + 不进链的手动件)。
+"""全部可 --only 点名的步(默认链 28 步 + 不进链的手动件)。
 不进默认链的十个及其理由:
   bc_stats_processing  只重算 BC 处理时长(纯读 crawl 缓存;原 --processing-only 开关)
   mb_req_swm           只重算 MB SWM 在职时长(纯读 crawl 缓存;原 --swm-only 开关)

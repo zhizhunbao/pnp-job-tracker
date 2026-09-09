@@ -2381,7 +2381,7 @@ def fill_year_metric_ops(x: OpsProvIn) -> None:
     for m, key in ON_YEAR_METRICS:
         for e in x.data.get(key, []):
             add_ops_row(OpsRowIn(
-                ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of="")),
+                ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of=e.get(K_AS_OF, ""))),
                 metric=m, scope="", kind="", label=e.get(K_LABEL, ""), raw=e.get(K_VALUE),
                 unit=e.get(K_UNIT, UNIT_NOMINATIONS), text="", section=e.get(K_SECTION, ""),
                 period=str(e.get(K_YEAR) or "")))
@@ -2429,7 +2429,7 @@ def build_pnp_ops_stats(files: list) -> list:
             fill_mb_ops(arg)
         elif prov == PROV_ON:
             fill_on_ops(arg)
-        elif prov == PROV_NS:
+        elif prov == PROV_NS or prov == PROV_PE:
             fill_year_metric_ops(arg)
         if prov == PROV_BC:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,

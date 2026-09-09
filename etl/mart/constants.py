@@ -1429,7 +1429,7 @@ OP_GTE = ">="
 IN_PNP_STATS = [paths.PNP / "ab-stats.json", paths.PNP / "sk-stats.json",
                 paths.PNP / "bc-stats.json", paths.PNP / "mb-stats.json",
                 paths.PNP / "on-stats.json", paths.PNP / "ns-stats.json",
-                paths.PNP / "bc-nominations.json"]
+                paths.PNP / "bc-nominations.json", paths.PNP / "pe-stats.json"]
 """G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派。"""
 
@@ -1689,8 +1689,10 @@ MB_ANNUAL_PROC_METRICS = (("processing_days", "overallDays", "Overall Average"),
 MB_PROC_LABEL_TPL = "{stream} — {kind}: {days} days"
 """MB 年报处理天数的 label 形。"""
 
-ON_YEAR_METRICS = (("allocation", "allocation"), ("nominations_issued", "nominationsIssued"))
-"""ON 逐年 Program Updates 页的两个(指标名, 源键)。"""
+ON_YEAR_METRICS = (("allocation", "allocation"), ("nominations_issued", "nominationsIssued"),
+                   ("nominations_issued_fy", "nominationsIssuedFiscal"))
+"""逐年清单的(指标名, 源键):ON 两个;第三个是 PE 按**财年**的已发提名(pe-stats.json,2026-09-09),
+指标名另立 —— 消费端拿自然年配额算用尽率时不能混进财年数。"""
 
 ON_PROCESSING_NOTE = (
     "ON(C4-W5):官方「审理时长与提名数」专页 2026 改制后已 302 下线(raw 的 pageRedirect 存了"

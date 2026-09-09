@@ -5635,3 +5635,101 @@ BC_NOM_NO_REPORT = "入口页没找到 Statistical Report 链接"
 
 BC_NOM_NO_TABLE = "报告里没找到「Total BC PNP Nominations」表"
 """报告改版的报错文案。"""
+
+
+# =========================================================================
+# 38. PE 配额与已发提名(省 IIDI 年报 PDF;2026-09-09 Frank「没抓到就去抓」「有墙的统一用 profile」—— PDF 直链不在墙后)
+# =========================================================================
+
+PE_IIDI_REPORT_URLS = (
+    "https://www.princeedwardisland.ca/sites/default/files/publications/2020-2021_iidi_annual_report.pdf",
+    "https://www.princeedwardisland.ca/sites/default/files/publications/final_2021-22_iidi_annual_report.pdf",
+    "https://www.princeedwardisland.ca/sites/default/files/publications/2022-2023_iidi_annual_report.pdf",
+    "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
+)
+"""已核实存在的 IIDI(Island Investment Development Inc.)年报 PDF(2026-09-09 逐个 GET 200)。省站的出版物搜索是
+Drupal 全文检索且在 Radware 后面,列不出这批;新一年的报告用下面两种已见过的命名式样探(HEAD),探到就并入。"""
+
+PE_IIDI_NAME_TPLS = (
+    "https://www.princeedwardisland.ca/sites/default/files/publications/{y1}-{y2}_iidi_annual_report.pdf",
+    "https://www.princeedwardisland.ca/sites/default/files/publications/final_{y1}-{y2s}_iidi_annual_report.pdf",
+)
+"""年报 PDF 的两种命名式样(y1 = 财年起始年,y2 = 结束年四位,y2s = 结束年两位),只探这两种,不猜别的。"""
+
+PE_IIDI_PROBE_FROM = 2024
+"""从哪个财年起始年开始探新报告(2023–24 已在已核实清单里)。"""
+
+PE_IIDI_PROBE_YEARS = 3
+"""往后探几个财年(当年 + 两年,报告滞后一年多)。"""
+
+PE_IIDI_TIMEOUT_S = 120
+"""PDF 下载超时。"""
+
+PE_IIDI_SOURCE = "IIDI Annual Report"
+"""来源名(出版机构 Island Investment Development Inc.,PEI 省提名的运营主体)。"""
+
+PE_IIDI_NOTE = ("PE 配额与已发提名 = 省 IIDI 年报:Table「Allocations」按自然年分列 Base PNP / (NOC C Initiative) / "
+                "Express Entry / Atlantic Immigration,PNP 单列 = 非 AIP 各行之和,同一年有 Revised 列取 Revised;"
+                "Table「Nominations by Category/Stream」按**财年**(4 月–次年 3 月)给各类别提名家庭数,PNP 已发 = Total − Atlantic,"
+                "记到财年起始年,asOf 标 FY,不折成自然年(展示层带括号灰注)。2021–22 年报是扫描件,文字层错乱,解析不出就跳过。")
+"""口径注。"""
+
+OUT_PE_STATS = paths.PNP / "pe-stats.json"
+"""落盘处(形同 on-stats.json,多一块 allocation)。"""
+
+PE_ALLOC_TITLE_RE = re.compile(r"^Table \d+:.*Allocations", re.I)
+"""配额表标题行。"""
+
+PE_NOM_TITLE_RE = re.compile(r"^Table \d+:\s*(\d{4})-(\d{2})\s+Nominations by", re.I)
+"""已发表标题行(捕获财年「2023-24」两段)。"""
+
+PE_YEAR_TOKEN_RE = re.compile(r"^(20\d\d)(\*)?$")
+"""配额表列头的年份格(尾星 = 修订列)。"""
+
+PE_REVISED_WORD = "(Revised)"
+"""配额表列头修订列的另一种写法(紧跟在年份格后面单独一行)。"""
+
+PE_NUM_RE = re.compile(r"^\d{1,3}(?:,\d{3})*$|^\d+$")
+"""表里的数字格。"""
+
+PE_ROW_TOTAL = "Total"
+"""合计行名。"""
+
+PE_ROW_AIP_HEAD = "Atlantic Immigration"
+"""AIP 行名前缀(Pilot / Program 两种写法)。"""
+
+PE_ROW_STREAM_HEAD = "Stream"
+"""表头行首格。"""
+
+PE_TABLE_SCAN = 40
+"""标题行之后最多看多少行(两张表都在一页内)。"""
+
+PE_ALLOC_LABEL_TPL = "{section}: PNP {value} = non-AIP streams sum ({parts})"
+"""配额行 label(表名 + 各非 AIP 行相加过程,官方表格没有整句可引)。"""
+
+PE_NOM_LABEL_TPL = "{section}: PNP {value} = Total {total} - Atlantic {aip}"
+"""已发行 label(财年;Total 减 AIP)。"""
+
+PE_FY_ASOF_TPL = "FY {y1}-{y2}"
+"""已发行的 asOf:财年标签(展示层原样带括号显示,提醒这不是自然年)。"""
+
+PE_PARTS_SEP = " + "
+"""label 里各行相加的连接符。"""
+
+PE_PART_TPL = "{name} {value}"
+"""label 里的一项。"""
+
+K_NOMINATIONS_ISSUED_FISCAL = "nominationsIssuedFiscal"
+"""pe-stats.json 里按财年的已发提名清单键(与自然年的 nominationsIssued 分开,消费端不混算用尽率)。"""
+
+PE_PRINT_REPORT_TPL = "  ✓ {url}  alloc {alloc} · FY nominations {nom}"
+"""逐份报告报数。"""
+
+PE_PRINT_SKIP_TPL = "  - {url}  没解析出表(扫描件或改版):{why}"
+"""跳过一份报告的留痕。"""
+
+PE_IIDI_PRINT_FAIL_TPL = "  ✗ PE IIDI 抓取失败: {name} {detail}(保留旧表)"
+"""整步失败留痕(不拦役)。"""
+
+PE_NO_TABLE = "no table"
+"""跳过原因:两张表都没有。"""

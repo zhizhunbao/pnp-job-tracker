@@ -1433,3 +1433,106 @@ class BcYearRowsIn:
 
     report: BcReportOut
     """报告(section 与 url 用)。"""
+
+
+# =========================================================================
+# 38. PE 配额与已发提名(2026-09-09)
+# =========================================================================
+
+
+@dataclass
+class PeTablesOut:
+    """pe_tables_of() 出参:一份年报解析出的配额行与财年已发行。"""
+
+    allocation: list
+    """配额行(自然年,形同 to_year_row)。"""
+
+    nominations: list
+    """已发行(财年起始年,asOf 带 FY 标签)。"""
+
+
+@dataclass
+class PeAllocColsOut:
+    """pe_alloc_cols_of() 出参:配额表的列头。"""
+
+    years: list
+    """按列序的年份(字符串)。"""
+
+    revised: list
+    """按列序的是否修订列。"""
+
+    next_line: int
+    """列头之后第一行的下标。"""
+
+
+@dataclass
+class PeRowsIn:
+    """pe_table_rows_of() 入参:从某行起读「行名 + N 个数」直到 Total 行。"""
+
+    lines: list
+    """整页行。"""
+
+    start: int
+    """起读下标。"""
+
+    ncols: int
+    """每行几个数。"""
+
+
+@dataclass
+class PeAllocRowsIn:
+    """pe_alloc_rows_of() 入参。"""
+
+    lines: list
+    """整页行。"""
+
+    title: int
+    """标题行下标。"""
+
+    section: str
+    """标题原文(进 section)。"""
+
+    url: str
+    """报告 URL。"""
+
+
+@dataclass
+class PeNomRowIn:
+    """pe_nomination_row_of() 入参。"""
+
+    lines: list
+    """整页行。"""
+
+    title: int
+    """标题行下标。"""
+
+    y1: str
+    """财年起始年。"""
+
+    y2: str
+    """财年结束年两位。"""
+
+    url: str
+    """报告 URL。"""
+
+
+@dataclass
+class PeAllocColsIn:
+    """pe_alloc_cols_of() 入参:整页行与配额表标题行下标。"""
+
+    lines: list
+    """整页行。"""
+
+    title: int
+    """标题行下标。"""
+
+
+@dataclass
+class PeTablesIn:
+    """pe_tables_of() 入参:一份年报全文与它的 URL。"""
+
+    text: str
+    """PDF 全文。"""
+
+    url: str
+    """报告 URL(进每行出处)。"""

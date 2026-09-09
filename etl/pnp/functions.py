@@ -6167,3 +6167,183 @@ def scrape_bc_nominations() -> None:
     for r in rows:
         pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
     say(BC_NOM_PRINT_OK_TPL.format(report=latest.year, pairs=SEMI_JOIN_SEP.join(pairs)))
+
+
+# =========================================================================
+# 38. PE 配额与已发提名(省 IIDI 年报 PDF;2026-09-09)
+# =========================================================================
+from pnp.constants import (  # noqa: E402 — 段38 常量单列一块(同段35–37 先例)
+    K_NOMINATIONS_ISSUED_FISCAL, OUT_PE_STATS, PE_ALLOC_LABEL_TPL, PE_ALLOC_TITLE_RE, PE_FY_ASOF_TPL, PE_IIDI_NAME_TPLS,
+    PE_IIDI_NOTE, PE_IIDI_PROBE_FROM, PE_IIDI_PROBE_YEARS, PE_IIDI_REPORT_URLS, PE_IIDI_SOURCE, PE_IIDI_TIMEOUT_S,
+    PE_NO_TABLE, PE_NOM_LABEL_TPL, PE_NOM_TITLE_RE, PE_NUM_RE, PE_PART_TPL, PE_PARTS_SEP, PE_IIDI_PRINT_FAIL_TPL,
+    PE_PRINT_REPORT_TPL, PE_PRINT_SKIP_TPL, PE_REVISED_WORD, PE_ROW_AIP_HEAD, PE_ROW_STREAM_HEAD, PE_ROW_TOTAL,
+    PE_TABLE_SCAN, PE_YEAR_TOKEN_RE,
+)
+from pnp.scheme import PeAllocColsIn, PeAllocColsOut, PeAllocRowsIn, PeNomRowIn, PeRowsIn, PeTablesIn, PeTablesOut  # noqa: E402 — 同上
+
+
+def pe_report_urls() -> list:
+    """已核实的年报清单 + 按两种已见命名式样探未来财年(HEAD 200 才算);升序。"""
+    out = list(PE_IIDI_REPORT_URLS)
+    for y1 in range(PE_IIDI_PROBE_FROM, PE_IIDI_PROBE_FROM + PE_IIDI_PROBE_YEARS):
+        y2 = y1 + 1
+        for tpl in PE_IIDI_NAME_TPLS:
+            url = tpl.format(y1=y1, y2=y2, y2s=str(y2)[-2:])
+            if url in out:
+                continue
+            try:
+                r = httpx.head(url, timeout=PE_IIDI_TIMEOUT_S, follow_redirects=True, headers={HDR_UA: BROWSER_UA})
+            except httpx.HTTPError as e:
+                err(url, e)
+                continue
+            if r.status_code == ONS_HTTP_OK:
+                out.append(url)
+    return out
+
+
+def pe_table_rows_of(x: PeRowsIn) -> dict:
+    """从 start 起逐行读「行名 + ncols 个数」,读到 Total 行(含)为止 → {行名: [数…]};数不够的行跳过。"""
+    out: dict = {}
+    i = x.start
+    end = min(len(x.lines), x.start + PE_TABLE_SCAN)
+    while i < end:
+        name = x.lines[i]
+        nums: list = []
+        j = i + 1
+        while j < len(x.lines) and len(nums) < x.ncols and PE_NUM_RE.match(x.lines[j]):
+            nums.append(int(x.lines[j].replace(",", "")))
+            j += 1
+        if len(nums) == x.ncols and not PE_NUM_RE.match(name):
+            out[name] = nums
+            if name == PE_ROW_TOTAL:
+                break
+            i = j
+            continue
+        i += 1
+    return out
+
+
+def pe_alloc_cols_of(x: PeAllocColsIn) -> PeAllocColsOut:
+    """配额表列头:标题后「Stream」行之后连续的年份格(尾星或下一行「(Revised)」= 修订列)。"""
+    years: list = []
+    revised: list = []
+    i = x.title + 1
+    while i < len(x.lines) and x.lines[i] != PE_ROW_STREAM_HEAD and i - x.title < PE_TABLE_SCAN:
+        i += 1
+    i += 1
+    while i < len(x.lines):
+        m = PE_YEAR_TOKEN_RE.match(x.lines[i])
+        if m is not None:
+            years.append(m.group(1))
+            revised.append(m.group(2) is not None)
+        elif x.lines[i] == PE_REVISED_WORD and len(revised) > 0:
+            revised[-1] = True
+        else:
+            break
+        i += 1
+    return PeAllocColsOut(years=years, revised=revised, next_line=i)
+
+
+def pe_alloc_rows_of(x: PeAllocRowsIn) -> list:
+    """配额表 → 逐自然年配额行:PNP = 非 AIP 各行之和;同一年有修订列取修订列。"""
+    cols = pe_alloc_cols_of(PeAllocColsIn(lines=x.lines, title=x.title))
+    if len(cols.years) == 0:
+        return []
+    table = pe_table_rows_of(PeRowsIn(lines=x.lines, start=cols.next_line, ncols=len(cols.years)))
+    if PE_ROW_TOTAL not in table:
+        return []
+    pick: dict = {}
+    for idx, year in enumerate(cols.years):
+        if year not in pick or cols.revised[idx]:
+            pick[year] = idx
+    out: list = []
+    today = today_iso()
+    for year, idx in pick.items():
+        parts: list = []
+        total = 0
+        for name, nums in table.items():
+            if name == PE_ROW_TOTAL or name.startswith(PE_ROW_AIP_HEAD):
+                continue
+            parts.append(PE_PART_TPL.format(name=name, value=nums[idx]))
+            total += nums[idx]
+        if total == 0:
+            continue
+        out.append(to_year_row(YearRowIn(
+            year=int(year), value=total, section=x.section, url=x.url, fetched=today,
+            label=PE_ALLOC_LABEL_TPL.format(section=x.section, value=total, parts=PE_PARTS_SEP.join(parts)))))
+    return out
+
+
+def pe_nomination_row_of(x: PeNomRowIn) -> dict | None:
+    """已发表 → 一条财年行:PNP = Total − Atlantic;记到财年起始年,asOf = FY 标签。"""
+    table = pe_table_rows_of(PeRowsIn(lines=x.lines, start=x.title + 1, ncols=1))
+    if PE_ROW_TOTAL not in table:
+        return None
+    total = table[PE_ROW_TOTAL][0]
+    aip = 0
+    for name, nums in table.items():
+        if name.startswith(PE_ROW_AIP_HEAD):
+            aip = nums[0]
+    value = total - aip
+    section = x.lines[x.title]
+    row = to_year_row(YearRowIn(
+        year=int(x.y1), value=value, section=section, url=x.url, fetched=today_iso(),
+        label=PE_NOM_LABEL_TPL.format(section=section, value=value, total=total, aip=aip)))
+    row[K_AS_OF_LOWER] = PE_FY_ASOF_TPL.format(y1=x.y1, y2=x.y2)
+    return row
+
+
+def pe_tables_of(x: PeTablesIn) -> PeTablesOut:
+    """一份年报全文 → 配额行 + 财年已发行(两张表各找标题行;没有就各自为空)。"""
+    lines: list = []
+    for raw in x.text.splitlines():
+        if raw.strip():
+            lines.append(raw.strip())
+    allocation: list = []
+    nominations: list = []
+    for i, line in enumerate(lines):
+        if PE_ALLOC_TITLE_RE.match(line):
+            allocation += pe_alloc_rows_of(PeAllocRowsIn(lines=lines, title=i, section=line, url=x.url))
+            continue
+        m = PE_NOM_TITLE_RE.match(line)
+        if m is not None and len(nominations) == 0:
+            row = pe_nomination_row_of(PeNomRowIn(lines=lines, title=i, y1=m.group(1), y2=m.group(2), url=x.url))
+            if row is not None:
+                nominations.append(row)
+    return PeTablesOut(allocation=allocation, nominations=nominations)
+
+
+def scrape_pe_iidi() -> None:
+    """PE 配额与已发提名入口:逐份 IIDI 年报 PDF → raw/pnp/pe-stats.json。同一年被多份报告覆盖时以更新的报告为准。"""
+    say(PRINT_OUT_TPL.format(path=OUT_PE_STATS))
+    alloc_by_year: dict = {}
+    nom_by_year: dict = {}
+    last_url = ""
+    try:
+        for url in pe_report_urls():
+            got = pe_tables_of(PeTablesIn(text=pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=PE_IIDI_TIMEOUT_S))), url=url))
+            if len(got.allocation) == 0 and len(got.nominations) == 0:
+                say(PE_PRINT_SKIP_TPL.format(url=url, why=PE_NO_TABLE))
+                continue
+            for r in got.allocation:
+                alloc_by_year[r[K_YEAR]] = r
+            for r in got.nominations:
+                nom_by_year[r[K_YEAR]] = r
+            last_url = url
+            say(PE_PRINT_REPORT_TPL.format(url=url, alloc=len(got.allocation), nom=len(got.nominations)))
+        if len(alloc_by_year) == 0 and len(nom_by_year) == 0:
+            raise RuntimeError(PE_NO_TABLE)
+    except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_ns_stats
+        say(PE_IIDI_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    OUT_PE_STATS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_PE_STATS, payload={
+        K_PROVINCE: PROV_PE, K_PROGRAM: PROGRAM_PNP,
+        K_SOURCE: PE_IIDI_SOURCE, K_URL: last_url, K_NOTE: PE_IIDI_NOTE,
+        K_AS_OF_LOWER: "", K_FETCHED: today_iso(),
+        K_PROCESSING: [],
+        K_ALLOCATION: sorted(alloc_by_year.values(), key=neg_year_of),
+        K_NOMINATIONS_ISSUED: [],
+        K_NOMINATIONS_ISSUED_FISCAL: sorted(nom_by_year.values(), key=neg_year_of),
+    }, indent=INDENT_2))
+    say(PRINT_DONE_PATH_TPL.format(path=OUT_PE_STATS))
