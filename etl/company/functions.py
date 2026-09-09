@@ -691,7 +691,7 @@ def wiki_loop(x: WikiLoopIn) -> int:
     for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
         if budget <= 0:
             break
-        if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)) or wiki_recently_missed(x.cache.get(sl)):
+        if sl in x.targets or wiki_skip(x.cache.get(sl)):
             continue
         budget -= 1
         got = wiki_find(WikiFindIn(client=x.client, name=v.name))
@@ -716,17 +716,21 @@ def wiki_loop(x: WikiLoopIn) -> int:
                 rec = EnrichRecord(name=v.name)
             rec.wiki_checked = now_iso()
             x.cache[sl] = rec
+            say(PRINT_FIND_ROW_TPL.format(status=ST_MISS, name=v.name, site=""))
         if done % FIND_FLUSH_N == 0:
             write_enrich_cache(x.cache)
         time.sleep(WIKI_SLEEP_S)
     return found
 
 
-def wiki_recently_missed(rec: EnrichRecord | None) -> bool:
-    """这家 RETRY_NOSITE_DAYS 内已查过 Wikidata 且没命中(本轮不再查)。"""
-    if rec is None or rec.wiki_checked == "":
+def wiki_skip(rec: EnrichRecord | None) -> bool:
+    """阶梯②要不要跳过这家:已有官网,或 RETRY_NOSITE_DAYS 内查过 Wikidata 没命中。
+    **不看搜索记的 nosite**(2026-09-09 首轮实撞:Fraser Health 等大户 7 月被 DDG 记了 nosite,Wikidata 明明有却没问)。"""
+    if rec is None:
         return False
-    return days_since(rec.wiki_checked) <= RETRY_NOSITE_DAYS
+    if rec.website != "":
+        return True
+    return rec.wiki_checked != "" and days_since(rec.wiki_checked) <= RETRY_NOSITE_DAYS
 
 
 def wiki_find(x: WikiFindIn) -> SearchOut:
