@@ -394,6 +394,41 @@ FOUND_JD = "jd"
 FOUND_SEARCHED = "searched"
 """EnrichRecord.found:官网来路 = 搜索出来的(DDG 或 Google Programmable Search;前端加小字标注)。"""
 
+FOUND_WIKI = "wikidata"
+"""EnrichRecord.found:官网来路 = Wikidata 官网属性(P856)。2026-09-09 Frank「能用 wiki 尽量用 wiki」:
+Google Custom Search JSON API 已对新项目关闭(2027-01-01 停服,新引擎「搜索整个网络」开关禁用)、DDG 封 IP;
+Wikidata 免费稳定,公共机构(市政府 / 卫生局 / 学区 / 省政府)条目齐全 —— 进阶梯②,搜索退到③兜底。"""
+
+WIKI_LIMIT = 300
+"""sites 步一轮最多查多少家 Wikidata(每家 2 发 API + 护栏抓一次首页 ≈ 2s,300 家 ≈ 10 分钟)。"""
+
+WIKI_FAIL_STOP = 3
+"""Wikidata 连续几次请求失败就跳过本轮阶梯②(网络/限速;不记任何缓存,下轮续)。"""
+
+WIKI_BACKOFF_S = 60
+"""Wikidata 一次请求失败后歇多久再试(2026-09-09 冒烟两次实撞 429:10 发/4s、12 发/10s 都撞)。"""
+
+WIKI_SLEEP_S = 3.0
+"""阶梯②两家之间的间隔(每家 2 发 API ≈ 0.6 发/s;WD_SLEEP_S 0.6 是别名步的节奏,1.5s 仍撞 429,再放慢一倍)。"""
+
+WD_SITE_PROPS = "labels|aliases|claims"
+"""找官网那一发 wbgetentities 要的属性(claims 里取 P856;不要 sitelinks —— 官网与「知名」不是一个门槛)。"""
+
+PROP_WEBSITE = "P856"
+"""Wikidata 属性:官方网站。"""
+
+K_CLAIMS = "claims"
+"""实体里的声明表键。"""
+
+K_MAINSNAK = "mainsnak"
+"""一条声明的主值键。"""
+
+K_DATAVALUE = "datavalue"
+"""主值里的数据值键(字符串属性的 value 直接是 URL)。"""
+
+PRINT_WIKI_STOP_TPL = "Wikidata 连续 {n} 次请求失败,本轮阶梯②跳过(已查 {done} 家)"
+"""Wikidata 熔断出口一句。"""
+
 NOTE_NO_META = "no meta"
 """富化失败原因:首页没有可提取的 meta。"""
 
@@ -406,7 +441,7 @@ PRINT_ENRICH_SKIP_TPL = "距上次官网富化 {mins:.0f} 分钟(< {limit} 分�
 PRINT_ENRICH_IN_TPL = "IN postings : {path}"
 """富化步开工报输入。"""
 
-PRINT_FIND_TPL = "找官网: 无官网公司 {n} · 本轮 JD 线索 +{jd} · DDG +{search}(find-limit {limit})"
+PRINT_FIND_TPL = "找官网: 无官网公司 {n} · 本轮 JD 线索 +{jd} · Wikidata +{wiki} · 搜索 +{search}(find-limit {limit})"
 """找官网阶梯报数。"""
 
 PRINT_TARGETS_TPL = "目标公司(有官网,非 ATS): {targets} · 缓存: {cache} · 本轮抓: {todo}(limit {limit})"
@@ -529,7 +564,7 @@ WD_API_URL = "https://www.wikidata.org/w/api.php"
 改 K 懒探索时并行查(cms/src/lib/companyResearch.ts,一家一生一次);**本段别再批量跑
 Wikidata**(1668 家网络失败近千,跑不完)。行业那半边(本地 mart 零网络)保留可手动重跑。"""
 
-WD_UA = "offer2pr-company-facts/1.0 (data enrichment; contact via site)"
+WD_UA = "offer2pr-company-facts/1.0 (https://offer2pr.com; data enrichment)"
 """自报家门(本役身份)。"""
 
 HDR_USER_AGENT = "User-Agent"
@@ -870,7 +905,7 @@ SITES_LIMIT = 60
 PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 前 {rank} 名缺官网 {nosite} · 缓存 {cache} · 搜索走 {backend}(limit {limit})"
 """sites 步报候选、缺官网数与本轮搜索后端。"""
 
-PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · 搜索 +{search} · 累计成功 {total}/{n} 家 → {out}"
+PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · Wikidata +{wiki} · 搜索 +{search} · 累计成功 {total}/{n} 家 → {out}"
 """sites 步收尾报数(found 记录由下一轮 build 合并官网进 companies)。"""
 
 ENV_CSE_KEY = "GOOGLE_CSE_KEY"

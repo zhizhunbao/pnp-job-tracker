@@ -54,9 +54,10 @@ TOOLS = {
          懒查询禁批量预抓),放量改 constants.PLACES_LIMIT。
 
   sites  在招担保雇主补官网(2026-09-04 Frank「走 DuckDuckGo 跑起来」):复用 enrich 的
-         D2 阶梯(JD 线索 → 搜索),免费,命中记 found 进 company_enrich.json 等 build 合并;
-         2026-09-08 Frank /fe 拍板换源:搜索后端有 GOOGLE_CSE_KEY/CX 走 Google Programmable
-         Search(每轮 CSE_LIMIT),缺席退 DDG(SITES_LIMIT);只补各大类前 PULSE_RANK_MAX 名。
+         D2 阶梯(JD 线索 → Wikidata 官网属性 → 搜索),免费,命中记 found 进 company_enrich.json
+         等 build 合并;只补各大类前 PULSE_RANK_MAX 名。2026-09-09 Frank「能用 wiki 尽量用 wiki」:
+         Google Custom Search JSON API 对新项目已关闭,Wikidata 成主力(每轮 WIKI_LIMIT),搜索兜底
+         (有 GOOGLE_CSE_KEY/CX 走 Google,缺席退 DDG)。
 
   about  官网正文(2026-09-05 Frank「可以」):首页 + About 页原文进 crawl 层,剥标签裁长;
          预算 constants.ABOUT_LIMIT。手动件。2026-09-08 起前 PULSE_RANK_MAX 名 403 / 验证壳 /

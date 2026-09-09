@@ -314,10 +314,14 @@ class EnrichRecord(BaseModel):
     """官网 URL。"""
 
     found: str = ""
-    """官网来路(jd/searched;空=自带)。"""
+    """官网来路(jd/wikidata/searched;空=自带)。"""
 
     status: str = ""
     """found/ok/fail/nosite(词表见 constants.ST_*)。"""
+
+    wiki_checked: str = ""
+    """上次查 Wikidata 没命中的时刻(ISO;2026-09-09);空=没查过;RETRY_NOSITE_DAYS 内不再查。
+    只记「查过没有」,不记 nosite —— 阶梯③搜索还要试。"""
 
     note: str = ""
     """失败原因。"""
@@ -550,6 +554,62 @@ class SearchLoopIn:
 
     find_limit: int
     """本轮搜索预算(CSE 走 CSE_LIMIT,DDG 走 SITES_LIMIT / FIND_LIMIT)。"""
+
+
+@dataclass
+class WikiFindIn:
+    """wiki_find 的入参。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端(护栏复核抓首页;Wikidata 本身走 wd_get)。"""
+
+    name: str
+    """公司名。"""
+
+
+@dataclass
+class EntitySiteIn:
+    """entity_site_of 的入参:一个 Wikidata 实体 + 归一后的目标名。"""
+
+    entity: dict
+    """wbgetentities 返回的一个实体(带 claims)。"""
+
+    target: str
+    """归一后的公司名(严格相等才收)。"""
+
+
+@dataclass
+class WikiLoopIn:
+    """wiki_loop 的入参(find_websites 的阶梯②,2026-09-09)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    cache: dict
+    """slug → EnrichRecord(原地更新)。"""
+
+    targets: dict
+    """slug → SiteLead(原地更新)。"""
+
+    nosite: dict
+    """slug → NositeLead。"""
+
+    limit: int
+    """本轮 Wikidata 预算。"""
+
+
+@dataclass
+class FindOut:
+    """find_websites 的出参:三级阶梯各命中几家。"""
+
+    jd: int
+    """JD 线索命中。"""
+
+    wiki: int
+    """Wikidata 命中。"""
+
+    search: int
+    """搜索命中。"""
 
 
 @dataclass

@@ -143,8 +143,9 @@ services:
 
   # enrich 批量爬虫 2026-07-20 退役(#110 Frank「不要提前跑,公司详情全懒」),2026-09-05 亮回
   # (Frank「不花钱就跑呗」「最好能定时跑」):跑的不是全量预抓,是把脉页雇主段两栏的母集
-  # (在招且 有 LMIA 或 在招 TEER 0-3),四步 places(Google 免费额内)/ sites(Google Programmable
-  # Search 每轮 25,凭据缺席退 DDG 每轮 60)/ about(官网正文进 crawl 层;前 100 名 403/JS 壳走浏览器兜底)/
+  # (在招且 有 LMIA 或 在招 TEER 0-3),四步 places(Google 免费额内)/ sites(JD 线索 → Wikidata 官网属性
+  # 每轮 300 → 搜索兜底;Google Custom Search 对新项目已关,实际退 DDG)/ about(官网正文进 crawl 层;前 100 名
+  # 403/JS 壳走浏览器兜底)/
   # brief(局域网 qwen 五节简介);节奏在 company 域 META(6h)。
   # 2026-09-08 换 crawl 重镜像(Playwright + Xvfb 有头):about 步兜底要浏览器;持久 profile 与 crawl
   # 容器同一份 bind-mount(chromium 单例锁:两容器撞上时后起的那个 launch 失败、本轮只走 httpx,不双开)。

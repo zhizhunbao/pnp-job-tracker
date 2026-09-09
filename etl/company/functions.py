@@ -91,6 +91,8 @@ from company.constants import (
     JSON_INDENT, PLACES_CACHE_URL_TPL, COUNTRY_CA, K_COUNTRY, NOTE_OUTSIDE_CA, TEER_SKILLED,
     BACKEND_CSE, BACKEND_DDG, CSE_LIMIT, CSE_NUM, CSE_TIMEOUT_S, CSE_URL, ENV_CSE_CX, ENV_CSE_KEY, HTTP_FORBIDDEN,
     NOTE_NO_CSE, P_CSE_CX, P_CSE_KEY, P_CSE_NUM, PRINT_ABOUT_BROWSER_TPL, PULSE_RANK_MAX, BROWSER_SKIP_NOTES,
+    FOUND_WIKI, K_CLAIMS, K_DATAVALUE, K_MAINSNAK, PRINT_WIKI_STOP_TPL, PROP_WEBSITE, WD_SITE_PROPS, WIKI_BACKOFF_S,
+    WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
     CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
@@ -103,6 +105,7 @@ from company.scheme import (
     JobCounts, LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
     BriefKoIn, PickKoIn,
     AboutTextIn, AboutTextOut, CseCfg, CseEnvelope, CseFindIn, FindSiteIn, SiteOfLinksIn,
+    EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
 )
 
 # =========================================================================
@@ -651,13 +654,14 @@ def nosite_priority_of(kv: tuple) -> tuple:
     return (kv[1].rank, -kv[1].jobs)
 
 
-def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
-    """D2 找官网阶梯:① JD 线索(全量,便宜)→ ② 搜索(限量;有 CSE 凭据走 Google,否则 DDG)。
+def find_websites(x: FindWebsitesIn) -> FindOut:
+    """D2 找官网阶梯:① JD 线索(全量,便宜)→ ② Wikidata 官网属性(限量,免费;2026-09-09 Frank
+    「能用 wiki 尽量用 wiki」)→ ③ 搜索(限量;有 CSE 凭据走 Google,否则 DDG)。
 
     命中 → 进 targets(带 found 标记)并立即记缓存(status=found,防本轮 limit
-    截断丢结果);搜不到 → 记 nosite 冷却 RETRY_NOSITE_DAYS。
+    截断丢结果);③ 搜不到 → 记 nosite 冷却 RETRY_NOSITE_DAYS(② 查无只记 wiki_checked)。
     """
-    found_jd = found_search = 0
+    found_jd = 0
     hints = jd_domain_hints()
     with make_polite_client(timeout=FIND_CLIENT_TIMEOUT_S) as client:
         for sl, v in x.nosite.items():
@@ -671,9 +675,98 @@ def find_websites(x: FindWebsitesIn) -> tuple[int, int]:
                                                status=ST_FOUND, fetched=now_iso())
                     found_jd += 1
                     break
+        found_wiki = wiki_loop(WikiLoopIn(client=cast(HttpClientLike, client), cache=x.cache, targets=x.targets,
+                                          nosite=x.nosite, limit=WIKI_LIMIT))
         found_search = search_loop(SearchLoopIn(cse=x.cse, client=cast(HttpClientLike, client), cache=x.cache,
                                                 targets=x.targets, nosite=x.nosite, find_limit=x.find_limit))
-    return found_jd, found_search
+    return FindOut(jd=found_jd, wiki=found_wiki, search=found_search)
+
+
+def wiki_loop(x: WikiLoopIn) -> int:
+    """阶梯②的循环:按名次、岗数排队逐家查 Wikidata 官网属性;命中记 found(来路 wikidata),查无记
+    wiki_checked(RETRY_NOSITE_DAYS 内不再查,不记 nosite —— 留给阶梯③),请求失败不记并歇 WIKI_BACKOFF_S,
+    连续 WIKI_FAIL_STOP 次熔断;每 FIND_FLUSH_N 家落一次盘。返回本轮命中数。"""
+    found = done = fails = 0
+    budget = x.limit
+    for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
+        if budget <= 0:
+            break
+        if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)) or wiki_recently_missed(x.cache.get(sl)):
+            continue
+        budget -= 1
+        got = wiki_find(WikiFindIn(client=x.client, name=v.name))
+        if got.failed:
+            fails += 1
+            if fails >= WIKI_FAIL_STOP:
+                say(PRINT_WIKI_STOP_TPL.format(n=fails, done=done))
+                break
+            time.sleep(WIKI_BACKOFF_S)
+            continue
+        fails = 0
+        done += 1
+        if got.site != "":
+            x.targets[sl] = SiteLead(name=v.name, website=got.site, found=FOUND_WIKI)
+            x.cache[sl] = EnrichRecord(name=v.name, website=got.site, found=FOUND_WIKI,
+                                       status=ST_FOUND, fetched=now_iso())
+            found += 1
+            say(PRINT_FIND_ROW_TPL.format(status=ST_FOUND, name=v.name, site=got.site))
+        else:
+            rec = x.cache.get(sl)
+            if rec is None:
+                rec = EnrichRecord(name=v.name)
+            rec.wiki_checked = now_iso()
+            x.cache[sl] = rec
+        if done % FIND_FLUSH_N == 0:
+            write_enrich_cache(x.cache)
+        time.sleep(WIKI_SLEEP_S)
+    return found
+
+
+def wiki_recently_missed(rec: EnrichRecord | None) -> bool:
+    """这家 RETRY_NOSITE_DAYS 内已查过 Wikidata 且没命中(本轮不再查)。"""
+    if rec is None or rec.wiki_checked == "":
+        return False
+    return days_since(rec.wiki_checked) <= RETRY_NOSITE_DAYS
+
+
+def wiki_find(x: WikiFindIn) -> SearchOut:
+    """阶梯②(Wikidata):按名搜前 WD_SEARCH_LIMIT 个条目,en 标签/别名归一后等于公司名的取官网属性 P856,
+    候选链接过 site_of_links 同一道护栏(宁缺勿错)。请求失败 failed=True(不记,下轮重试)。"""
+    try:
+        hits = wd_get(search_params(x.name)).get(K_SEARCH, [])
+        ids: list = []
+        for h in hits:
+            ids.append(h[K_ID])
+        if len(ids) == 0:
+            return SearchOut(site="", failed=False)
+        ents = wd_get(site_entity_params(ids)).get(K_ENTITIES, {})
+    except Exception as e:  # noqa: BLE001 — 网络/限速什么错都可能,一律当失败保留活口
+        err(x.name, e)
+        return SearchOut(site="", failed=True)
+    target = norm_company_name(x.name)
+    links: list = []
+    for eid in ids:
+        url = entity_site_of(EntitySiteIn(entity=ents.get(eid) or {}, target=target))
+        if url != "":
+            links.append(url)
+    return SearchOut(site=site_of_links(SiteOfLinksIn(client=x.client, name=x.name, links=links)), failed=False)
+
+
+def site_entity_params(ids: list) -> dict:
+    """找官网那一发 wbgetentities 的查询参数(标签 + 别名 + 声明,只要英文)。"""
+    return {P_ACTION: ACT_GET_ENTITIES, P_IDS: ID_SEP.join(ids), P_PROPS: WD_SITE_PROPS,
+            P_LANGUAGES: LANG_EN}
+
+
+def entity_site_of(x: EntitySiteIn) -> str:
+    """一个实体:名字严格对得上才读官网属性 P856 的第一条;否则空串。"""
+    if not entity_name_matches(EntityIn(entity=x.entity, target=x.target)):
+        return ""
+    for claim in x.entity.get(K_CLAIMS, {}).get(PROP_WEBSITE, []):
+        url = claim.get(K_MAINSNAK, {}).get(K_DATAVALUE, {}).get(K_VALUE, "")
+        if isinstance(url, str) and url != "":
+            return url
+    return ""
 
 
 def search_loop(x: SearchLoopIn) -> int:
@@ -770,12 +863,11 @@ def enrich_company_websites() -> None:
             cache[sl] = EnrichRecord.model_validate(d)
     targets, nosite = company_targets()
     say(PRINT_ENRICH_IN_TPL.format(path=IN_ENRICH_POSTINGS))
-    found_jd, found_search = find_websites(FindWebsitesIn(cache=cache, targets=targets,
-                                                          nosite=nosite, find_limit=FIND_LIMIT))
+    got = find_websites(FindWebsitesIn(cache=cache, targets=targets, nosite=nosite, find_limit=FIND_LIMIT))
     for sl, c in cache.items():
         if sl not in targets and c.website and c.found:
             targets[sl] = SiteLead(name=c.name or sl, website=c.website, found=c.found)
-    say(PRINT_FIND_TPL.format(n=len(nosite), jd=found_jd, search=found_search, limit=FIND_LIMIT))
+    say(PRINT_FIND_TPL.format(n=len(nosite), jd=got.jd, wiki=got.wiki, search=got.search, limit=FIND_LIMIT))
     todo = pick_todo(PickTodoIn(cache=cache, targets=targets,
                                 refresh_days=ENRICH_REFRESH_DAYS))[:ENRICH_LIMIT]
     say(PRINT_TARGETS_TPL.format(targets=len(targets), cache=len(cache), todo=len(todo), limit=ENRICH_LIMIT))
@@ -819,7 +911,8 @@ def enrich_company_facts() -> None:
     ① 行业 = 该雇主在库开放岗的 NOC 大类多数派(mart/jobs.json,零新抓取);
     ② 别名 = Wikidata 跨语言标签(zh/ko 官方条目名,不机翻;严格名称匹配,宁缺勿滥);
     ③ 知名 = 有英文 Wikipedia 条目(sitelink)。
-    ⛔ ②③ 已退役(#109/#111,2026-07-20 Frank「不要提前跑」)——**别再批量跑 Wikidata**;
+    ⛔ ②③ 已退役(#109/#111,2026-07-20 Frank「不要提前跑」)——**别再批量跑 Wikidata**
+    (指别名/知名这两格全量预抓;2026-09-09 sites 步按把脉页母集查官网属性 P856 是另一件,Frank 点名);
     ①(本地 mart 零网络)保留可手动重跑,apply 手法 = scratchpad apply_company_facts.mjs
     (STATUS 有记)。2026-08-31 批J 自 clean/_enrich_company_facts.py 归户全溶
     (判据:逐公司抓数据 = 公司域的活;下划线私件名随溶解消失),故只进 TOOLS 不进默认链。
@@ -960,15 +1053,7 @@ def entity_probe(x: EntityIn) -> WikiProbe:
     无英文维基条目 = 不算知名,别名也不收(知名徽标与别名同一门槛)。
     """
     labels = x.entity.get(K_LABELS, {})
-    names: list = [labels.get(LANG_EN, {}).get(K_VALUE, "")]
-    for alias in x.entity.get(K_ALIASES, {}).get(LANG_EN, []):
-        names.append(alias.get(K_VALUE, ""))
-    matched = False
-    for one in names:
-        if one and norm_company_name(one) == x.target:
-            matched = True
-            break
-    if not matched:
+    if not entity_name_matches(x):
         return WikiProbe(failed=False, found=False, zh="", ko="", wiki="")
     title = x.entity.get(K_SITELINKS, {}).get(K_ENWIKI, {}).get(K_TITLE)
     if not title:
@@ -978,6 +1063,27 @@ def entity_probe(x: EntityIn) -> WikiProbe:
                      ko=labels.get(LANG_KO, {}).get(K_VALUE, ""),
                      wiki=WIKI_URL_PREFIX + urllib.parse.quote(
                          title.replace(WIKI_SPACE, WIKI_UNDERSCORE)))
+
+
+def entity_name_matches(x: EntityIn) -> bool:
+    """实体的 en 标签归一后严格等于目标名 → 收;靠别名对上的,还要标签的每个词都在目标名里
+    (Fraser Health ⊂ Fraser Health Authority 收;Vancouver Civic Theatres 挂着别名 City of Vancouver 不收 ——
+    2026-09-09 冒烟实撞,别名段与官网段共用这一道)。"""
+    labels = x.entity.get(K_LABELS, {})
+    label = norm_company_name(labels.get(LANG_EN, {}).get(K_VALUE, ""))
+    if label != "" and label == x.target:
+        return True
+    if label == "":
+        return False
+    words = x.target.split(TEXT_JOIN_SEP)
+    for alias in x.entity.get(K_ALIASES, {}).get(LANG_EN, []):
+        if norm_company_name(alias.get(K_VALUE, "")) != x.target:
+            continue
+        for w in label.split(TEXT_JOIN_SEP):
+            if w not in words:
+                return False
+        return True
+    return False
 
 
 def norm_company_name(s: str) -> str:
@@ -1117,10 +1223,9 @@ def lookup_sponsor_websites() -> None:
     say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), rank=PULSE_RANK_MAX, nosite=len(nosite), cache=len(cache),
                                        backend=sites_backend_of(cse), limit=limit))
     targets: dict[str, SiteLead] = {}
-    found_jd, found_search = find_websites(FindWebsitesIn(cse=cse, cache=cache, targets=targets,
-                                                          nosite=nosite, find_limit=limit))
+    got = find_websites(FindWebsitesIn(cse=cse, cache=cache, targets=targets, nosite=nosite, find_limit=limit))
     total_ok = write_enrich_cache(cache)
-    say(PRINT_SITES_DONE_TPL.format(jd=found_jd, search=found_search, total=total_ok, n=len(cache),
+    say(PRINT_SITES_DONE_TPL.format(jd=got.jd, wiki=got.wiki, search=got.search, total=total_ok, n=len(cache),
                                     out=OUT_ENRICH_CACHE.name))
 
 
