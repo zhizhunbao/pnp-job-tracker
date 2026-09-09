@@ -11,7 +11,7 @@ import { SERIES_VIEW_CHART, SERIES_VIEW_TABLE } from './constants'
 import { macroLabelOf, macroValueOf, seriesWordsOf } from './functions'
 import { MacroLatestCell } from './macrolatestcell'
 import { MacroYoyCell } from './macroyoycell'
-import type { MacroCardIn, MacroRow } from './types'
+import type { IndCardsIn, MacroRow } from './types'
 import css from './start.module.css'
 
 /**
@@ -20,7 +20,7 @@ import css from './start.module.css'
  * @param x 取词函数、指标表与要显示的行。
  * @returns 工具条 + 省卡格 / 趋势图。
  */
-export function IndCards(x: MacroCardIn) {
+export function IndCards(x: IndCardsIn) {
   const t = x.t
   const geo = x.geo
   const shown = x.rows

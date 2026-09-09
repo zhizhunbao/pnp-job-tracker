@@ -276,11 +276,6 @@ export const KEY_PROV_HEAD = 'prov.'
 export const KEY_PR_HEAD = 'pr.'
 
 /**
- * 难度档名 i18n 键的头(拼上档位)。
- */
-export const KEY_DIFF_HEAD = 'diff.'
-
-/**
  * 可提名省份排序键里直可省数的权重(直可省数主键、有条件省数副键,
  * 乘它就能把两者压成一个可比的数)。
  */
@@ -1005,11 +1000,6 @@ export const BRIEF_TAG_RE = /\[(BASE|SIZE|FOUNDED|NOTE|WHAT)\]/
 export const ID_PROV_JOBS = 'pl-prov-jobs'
 
 /**
- * 省份段地区块锚点的头(拼上地区码小写:pl-prov-ca / pl-prov-on)。
- */
-export const ID_PROV_GEO_HEAD = 'pl-prov-'
-
-/**
  * 全国的地区码(macro_series 的 geo;与十省两位码并列)。
  */
 export const GEO_CA = 'CA'
@@ -1169,10 +1159,12 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
 /**
  * 「按指标」视图的九张表及其序(Frank 2026-09-09 拍板:一张表回答一个问题,按用户问的先后 ——
  * 挤不挤 → 发多少 → 还有没有 → 走哪条路 → 人在减少吗 → 新人速度 → 落地多少 → 下一刀砍谁 → 找工作难不难)。
- * 总人口垫底当背景数(Frank 2026-09-09「全国人口也需要列出来」);GDP 只留在省块;EE 邀请 / 接纳目标只有全国一行不横铺。
+ * 2026-09-09 Frank「之前安省的可以删掉了吧」「包含对比才有意义」:省块视图撤,原来只在省块里的
+ * 已发提名 / 其中省提名 / EE 邀请 / 接纳目标 / 总人口 / GDP 也各成一表(后四张只有全国一行或是背景数,垫底)。
  */
 export const IND_ORDER = [
-  'comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'nprShare', 'unemp', 'pop',
+  'comp', 'alloc', 'issued', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
+  'nprShare', 'unemp', 'pop', 'gdp',
 ]
 
 /**
@@ -1191,19 +1183,14 @@ export const KEY_IND_SHORT_HEAD = 'pulse.i.'
 export const YOY_FLAT_PCT = 0.3
 
 /**
+ * 「涨了是坏事」的指标:同比颜色反着给(竞争比涨、失业率涨显红;Frank 2026-09-09「竞争激烈还显示绿色?」)。
+ */
+export const MACRO_BAD_UP_KEYS = ['comp', 'unemp']
+
+/**
  * 同比列名里年份取后两位(「同比 25/24」)。
  */
 export const YOY_YEAR_TAIL = 2
-
-/**
- * 省份段视图:按指标(默认;九张「省 × 年」表)。
- */
-export const MACRO_VIEW_IND = 'ind'
-
-/**
- * 省份段视图:按省(一省画像,原十一块)。
- */
-export const MACRO_VIEW_GEO = 'geo'
 
 /**
  * 竞争比格的尾巴(「67.1 : 1」)。
@@ -1277,11 +1264,6 @@ export const MK_OTHER = 'other'
 export const MACRO_MORE = 11
 
 /**
- * 宏观表里带折叠的父行(临时居民;点它展开 / 收起下面五条「其中」)。
- */
-export const MACRO_PARENT_ROW = 'npr'
-
-/**
  * 折叠钮的 button 族档(与序列表工具条同档)。
  */
 export const TOGGLE_BTN_KIND = 'ghost'
@@ -1295,17 +1277,6 @@ export const MR_ISSUED = 'issued'
  * 宏观表行键:剩余名额(pnp_ops_stats 官方直给,缺则 配额 − 已发)。
  */
 export const MR_REMAINING = 'remaining'
-
-/**
- * 宏观表行序(行键;数据键与派生行键混排,i18n 行名 = KEY_MACRO_HEAD + 行键)。
- * 「其中」五行挂在临时居民下缩进且可折叠(Frank 2026-09-06「是不是带折叠展开的好一些」)。
- * EE 邀请排在 PR 获批之前(邀请 → 目标 → 获批的先后):它是邀请数不是登陆数,原先垫在「其中省提名」
- * 下面被读成 PR 获批的第二个分项(Frank 2026-09-09「下面两个和不等于上面的啊」)。
- */
-export const MACRO_ROW_ORDER = [
-  'pop', 'npr', 'workOnly', 'studyOnly', 'workStudy', 'asylum', 'other', 'studyNew', 'gdp', 'unemp',
-  'eeInvites', 'alloc', 'issued', 'remaining', 'comp', 'pnpTarget', 'prAll', 'prPnp',
-]
 
 /**
  * 宏观表里缩进显示的「其中」行:五块加起来 = 临时居民(StatCan 17-10-0121 的互斥拆分;

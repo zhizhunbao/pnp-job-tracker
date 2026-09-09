@@ -8,12 +8,9 @@
  * @time 2026-09-06 22:00:00
  */
 import { Table } from '@/components/table'
-import { TEXT_NONE } from './constants'
-import { boardGapClsOf, macroColsOf, macroRowKeyOf, macroRowsShownOf, macroSeriesOf } from './functions'
-import { useMacroExpand } from './hooks'
-import { GeoTitle } from './geotitle'
+import { Updated } from '@/components/time'
+import { boardGapClsOf, macroColsOf, macroRowKeyOf, macroSeriesOf } from './functions'
 import { IndCards } from './indcards'
-import { MacroCard } from './macrocard'
 import { Sec } from './sec'
 import type { MacroBlockIn, MacroRow } from './types'
 import css from './start.module.css'
@@ -24,14 +21,12 @@ import css from './start.module.css'
  * @param props 取词函数、地区块与块间距开关(更新时间只在段标题出一枚,Frank 2026-09-06「多了一个更新时间」)。
  * @returns 带锚点的块。
  */
-export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
-  const ex = useMacroExpand()
-  const rows = macroRowsShownOf({ rows: geo.rows, expanded: ex.expanded, onToggle: ex.onToggle })
+export function MacroBlock({ t, geo, gap, updatedAt }: MacroBlockIn) {
+  const rows = geo.rows
   return (
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
-      <Sec title={<GeoTitle geo={geo} />} sub>
-        {geo.verdict !== TEXT_NONE && <p className={css.verdict}>{geo.verdict}</p>}
+      <Sec title={geo.name} right={<Updated iso={updatedAt} t={t} />} sub>
         <div className={css.table}>
           <Table<MacroRow>
             rows={rows}
@@ -40,8 +35,7 @@ export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
             series={macroSeriesOf({ t, geo })} />
         </div>
         <div className={css.cards}>
-          {geo.ind === false && <MacroCard t={t} geo={geo} rows={rows} />}
-          {geo.ind && <IndCards t={t} geo={geo} rows={rows} />}
+          <IndCards t={t} geo={geo} rows={rows} />
         </div>
       </Sec>
       </div>

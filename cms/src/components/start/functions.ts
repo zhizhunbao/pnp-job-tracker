@@ -26,7 +26,7 @@ import {
   COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
   COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
-  HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_SE, KEY_DIFF_HEAD, KEY_PROV_HEAD,
+  HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_SE, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
   LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAV_IDS, NAV_TOP_LINE,
   NOC_HEAD, NUM_LOCALE, PCT_MARK, PCT_SCALE,
@@ -50,15 +50,15 @@ import {
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
-  ID_PROV_JOBS, ID_PROV_GEO_HEAD, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MON_HEAD, MACRO_PARENT_ROW,
+  ID_PROV_JOBS, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MON_HEAD,
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MR_ISSUED,
-  MR_REMAINING, MACRO_ROW_ORDER, MACRO_SUB_ROWS,
+  MR_REMAINING, MACRO_SUB_ROWS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
-  COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_PCT_KEYS, MACRO_VIEW_IND, MR_USE_RATE, YOY_FLAT_PCT,
+  COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
   YOY_YEAR_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
@@ -96,7 +96,7 @@ import type {
   PulseScalars, PulseScalarsIn, SecHeadClsIn, SponsorFullProbe, SponsorGroup, SponsorLoadIn,
   SponsorRowList, StartCol, StartPill,
   StatRowList,
-  StreamLabelIn, TierClsIn, TierTextIn,
+  StreamLabelIn, TierClsIn,
   CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
@@ -108,12 +108,12 @@ import type {
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
-  MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn, MacroGeoIn,
-  MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn, MacroViewGeosIn,
-  CaVerdictIn, UseRateIn, VerdictIn, ViewPickFn, ViewPickIn, YoyCellIn, YoyLabelIn, MacroRow, MacroGeo, MacroCell,
+  MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
+  MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
+  UseRateIn, YoyCellIn, YoyClsIn, YoyLabelIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
-  MacroColsIn, SeriesWords, GeoNameIn, GeoTierIn, MacroRowsShownIn, JobsRow, JobsRowsIn, JobsRowIn,
+  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
 } from './types'
 import css from './start.module.css'
@@ -642,11 +642,8 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
   if (x.navSec === ID_SE) {
     return empSubsOf(x.t)
   }
-  if (x.navSec === ID_PROV && x.macroView === MACRO_VIEW_IND) {
-    return indSubsOf(x.t)
-  }
   if (x.navSec === ID_PROV) {
-    return macroSubsOf(x.t)
+    return indSubsOf(x.t)
   }
   return []
 }
@@ -3387,24 +3384,6 @@ function toOpsPoint(r: OpsDbRow): OpsPoint | null {
 }
 
 /**
- * 省份段的地区块清单:全国打头,十省按钉死顺序;一行数据都没有的地区不出块。
- *
- * @param x 两份点集、省卡增补与取词上下文。
- * @returns 地区块。
- */
-export function macroGeosOf(x: MacroGeosIn): MacroGeo[] {
-  const out: MacroGeo[] = []
-  for (const code of MACRO_GEO_ORDER) {
-    const gp = geoPointsOf({ code, macro: x.macro, ops: x.ops })
-    const geo = macroGeoOf({ code, t: x.t, lang: x.lang, points: gp.points, ops: gp.ops, provExtra: x.provExtra })
-    if (geo != null) {
-      out.push(geo)
-    }
-  }
-  return out
-}
-
-/**
  * 一个地区的两份点(宏观点按 geo、运营点按 province 各筛一遍)。
  *
  * @param x 地区码与全部点。
@@ -3465,18 +3444,14 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   const year = yoyYearOf(indBaseRowsOf(bases))
   const rows: MacroRow[] = []
   for (const b of bases) {
-    rows.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year }))
+    rows.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key }))
   }
   return {
     code: x.key,
     anchor: ID_IND_HEAD + x.key,
     name: x.t(KEY_MACRO_HEAD + x.key),
-    tierCls: TEXT_NONE,
-    tierText: TEXT_NONE,
     years: yearsOf(rows),
     rows,
-    ind: true,
-    verdict: verdictOf({ t: x.t, rows, year }),
     yoyLabel: yoyLabelOf({ t: x.t, year }),
   }
 }
@@ -3515,7 +3490,7 @@ function indRowOf(x: IndRowIn): MacroRow {
     latestYear: x.base.latestYear,
     missing: x.base.missing,
     yoy,
-    yoyCls: yoyClsOf(yoy),
+    yoyCls: yoyClsOf({ cell: yoy, key: x.key }),
   }
 }
 
@@ -3572,17 +3547,21 @@ function yoyTextOf(pct: number): string {
 }
 
 /**
- * 同比格的色类:持平幅度内素色,涨绿跌红(借月环比的三态类);没格给空串。算在数据里而不是
- * 单元格里取:格件 import functions、functions 又 import 格件就成环。
+ * 同比格的色类:持平幅度内素色,涨绿跌红(借月环比的三态类);「涨了是坏事」的指标反着给;没格给空串。
+ * 算在数据里而不是单元格里取:格件 import functions、functions 又 import 格件就成环。
  *
- * @param c 同比格。
+ * @param x 同比格与指标键。
  * @returns 类名。
  */
-function yoyClsOf(c: MacroCell | null): string {
-  if (c == null) {
+function yoyClsOf(x: YoyClsIn): string {
+  if (x.cell == null) {
     return TEXT_NONE
   }
-  return momClsOf({ mom: c.value, flatDelta: Math.abs(c.value) < YOY_FLAT_PCT })
+  let signed = x.cell.value
+  if (MACRO_BAD_UP_KEYS.includes(x.key)) {
+    signed = -signed
+  }
+  return momClsOf({ mom: signed, flatDelta: Math.abs(x.cell.value) < YOY_FLAT_PCT })
 }
 
 /**
@@ -3600,123 +3579,6 @@ function yoyLabelOf(x: YoyLabelIn): string {
 }
 
 /**
- * 一张表的判词:全国方向(持平幅度内说持平)+ 领涨省 + 领跌省,三段能凑几段凑几段,逗号相连;
- * 一段都没有给空串。数字全部来自表里的同比格,模板住 i18n,不上 LLM。
- *
- * @param x 地区行与同比年。
- * @returns 判词。
- */
-function verdictOf(x: VerdictIn): string {
-  const parts: string[] = []
-  let up: MacroRow | null = null
-  let down: MacroRow | null = null
-  for (const r of x.rows) {
-    if (r.yoy == null) {
-      continue
-    }
-    if (r.key === GEO_CA) {
-      parts.push(caVerdictOf({ t: x.t, year: x.year, yoy: r.yoy }))
-      continue
-    }
-    if (up == null || (up.yoy != null && r.yoy.value > up.yoy.value)) {
-      up = r
-    }
-    if (down == null || (down.yoy != null && r.yoy.value < down.yoy.value)) {
-      down = r
-    }
-  }
-  if (up != null && up.yoy != null && up.yoy.value > YOY_FLAT_PCT) {
-    parts.push(x.t('pulse.v.up', { prov: up.label, p: up.yoy.text }))
-  }
-  if (down != null && down.yoy != null && down.yoy.value < -YOY_FLAT_PCT) {
-    parts.push(x.t('pulse.v.down', { prov: down.label, p: down.yoy.text }))
-  }
-  return parts.join(x.t('pulse.v.sep'))
-}
-
-/**
- * 判词的全国一段:持平幅度内说持平,否则报同比。
- *
- * @param x 取词函数、同比年与全国的同比格。
- * @returns 一段。
- */
-function caVerdictOf(x: CaVerdictIn): string {
-  if (Math.abs(x.yoy.value) < YOY_FLAT_PCT) {
-    return x.t('pulse.v.caFlat', { y: x.year })
-  }
-  return x.t('pulse.v.ca', { y: x.year, p: x.yoy.text })
-}
-
-/**
- * 省份段当前视图该显示哪组块。
- *
- * @param x 视图与两组块。
- * @returns 要显示的块。
- */
-export function macroViewGeosOf(x: MacroViewGeosIn): MacroGeo[] {
-  if (x.view === MACRO_VIEW_IND) {
-    return x.indGeos
-  }
-  return x.geos
-}
-
-/**
- * 视图切换手柄工厂(形同 makeKindPick)。
- *
- * @param x 写视图的 setter。
- * @returns 给视图码回点击手柄的函数。
- */
-export function makeViewPick(x: ViewPickIn): ViewPickFn {
-  return function pickOf(v: string): ClickFn {
-    return function pick(): void {
-      x.setView(v)
-    }
-  }
-}
-
-/**
- * 一个地区块:按 MACRO_ROW_ORDER 逐行洗,收年份并集。
- *
- * @param x 该地区的点与上下文。
- * @returns 地区块;没有一行有格给 null。
- */
-function macroGeoOf(x: MacroGeoIn): MacroGeo | null {
-  const rows: MacroRow[] = []
-  for (const key of MACRO_ROW_ORDER) {
-    const row = macroRowOf({ key, code: x.code, t: x.t, points: x.points, ops: x.ops })
-    if (row != null) {
-      rows.push(row)
-    }
-  }
-  if (rows.length === 0) {
-    return null
-  }
-  const tier = geoTierOf({ code: x.code, provExtra: x.provExtra })
-  return {
-    code: x.code,
-    anchor: geoAnchorOf(x.code),
-    name: geoNameOf({ code: x.code, t: x.t }),
-    tierCls: diffClsOf({ tier }),
-    tierText: tierTextOf({ t: x.t, tier }),
-    years: yearsOf(rows),
-    rows,
-    ind: false,
-    verdict: TEXT_NONE,
-    yoyLabel: TEXT_NONE,
-  }
-}
-
-/**
- * 地区块的锚点 id。
- *
- * @param code 地区码。
- * @returns pl-prov-<码小写>。
- */
-export function geoAnchorOf(code: string): string {
-  return ID_PROV_GEO_HEAD + code.toLowerCase()
-}
-
-/**
  * 地区块的显示名:全国取词,省用界面语言的全称(Frank 2026-09-06「留一个全称就行」)。
  *
  * @param x 地区码与取词函数。
@@ -3730,36 +3592,6 @@ function geoNameOf(x: GeoNameIn): string {
 }
 
 /**
- * 地区的竞争度档(stats.difficulty tier;全国无档)。
- *
- * @param x 地区码与省卡增补。
- * @returns 三档之一;没有给空串。
- */
-function geoTierOf(x: GeoTierIn): string {
-  const ex = x.provExtra[x.code]
-  if (ex == null || ex.tier == null) {
-    return TEXT_NONE
-  }
-  if (ex.tier === DIFF_EASY || ex.tier === DIFF_MID || ex.tier === DIFF_TIGHT) {
-    return ex.tier
-  }
-  return TEXT_NONE
-}
-
-/**
- * 竞争度档的显示名;没档不取词。
- *
- * @param x 取词函数与档。
- * @returns 显示名;没档空串。
- */
-function tierTextOf(x: TierTextIn): string {
-  if (x.tier === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return x.t(KEY_DIFF_HEAD + x.tier)
-}
-
-/**
  * 宏观表的一行:直读键 / 派生键 / 运营键三路各取各的格。
  *
  * @param x 行键与该地区的两份点。
@@ -3768,9 +3600,10 @@ function tierTextOf(x: TierTextIn): string {
 function macroRowOf(x: MacroRowIn): MacroRow | null {
   const cells = macroCellsOf(x)
   const has = Object.keys(cells).length > 0
-  if (has === false && macroRowAppliesTo({ code: x.code, key: x.key }) === false) {
+  if (has === false && MACRO_CA_ONLY_ROWS.includes(x.key) && x.code !== GEO_CA) {
     return null
   }
+  const applies = macroRowAppliesTo({ code: x.code, key: x.key })
   return {
     key: x.key,
     label: x.t(KEY_MACRO_HEAD + x.key),
@@ -3781,15 +3614,15 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
     cells,
     latest: latestCellOf(cells),
     latestYear: latestYearOf(cells),
-    missing: macroMissingTextOf({ t: x.t, code: x.code, key: x.key, has }),
+    missing: macroMissingTextOf({ t: x.t, code: x.code, key: x.key, has, applies }),
     yoy: null,
     yoyCls: TEXT_NONE,
   }
 }
 
 /**
- * 这一行对该地区适不适用(不适用的行没数据就不出,不算「缺」;Frank 2026-09-08「没公布的就写 未公布」
- * 只针对适用的行)。
+ * 这一行对该地区适不适用(不适用 = 显「不适用」而不是「未公布」:魁省不参加省提名、全国没有省级行;
+ * Frank 2026-09-09「不是 10 个省吗为什么只显示 9 个省」—— 十省一行不少)。
  *
  * @param x 地区码与行键。
  * @returns 适用给 true。
@@ -3814,6 +3647,9 @@ function macroRowAppliesTo(x: MacroRowApplyIn): boolean {
 function macroMissingTextOf(x: MacroMissingIn): string {
   if (x.has) {
     return TEXT_NONE
+  }
+  if (x.applies === false) {
+    return x.t('pulse.m.na')
   }
   const up = MACRO_UNPUBLISHED[x.code]
   if (up != null && up.includes(x.key)) {
@@ -4185,25 +4021,6 @@ export function seriesWordsOf(t: TFn): SeriesWords {
 }
 
 /**
- * 省份段的子项:全国 + 十省(省码)+ 招聘对比。
- *
- * @param t 取词函数。
- * @returns 子项清单。
- */
-function macroSubsOf(t: TFn): NavItem[] {
-  const out: NavItem[] = []
-  for (const code of MACRO_GEO_ORDER) {
-    let label = code
-    if (code === GEO_CA) {
-      label = t('pulse.s4.all')
-    }
-    out.push({ id: geoAnchorOf(code), label })
-  }
-  out.push({ id: ID_PROV_JOBS, label: t('pulse.s4j') })
-  return out
-}
-
-/**
  * 洗招聘对比横表(省 × 大类汇总行 → 展示行)。
  *
  * @param x 汇总行与取词上下文。
@@ -4402,44 +4219,4 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     more: MACRO_MORE,
     words: seriesWordsOf(x.t),
   }
-}
-
-/**
- * 地区块当前显示的行:折叠时藏起「其中」五行,父行(临时居民)挂上切换手柄与展开态。
- *
- * @param x 全部行、展开态与切换手柄。
- * @returns 显示行。
- */
-export function macroRowsShownOf(x: MacroRowsShownIn): MacroRow[] {
-  const out: MacroRow[] = []
-  let hasSub = false
-  for (const r of x.rows) {
-    if (r.sub) {
-      hasSub = true
-    }
-  }
-  for (const r of x.rows) {
-    if (r.sub && x.expanded === false) {
-      continue
-    }
-    if (r.key === MACRO_PARENT_ROW && hasSub) {
-      out.push({
-        key: r.key,
-        label: r.label,
-        sub: r.sub,
-        keyCls: r.keyCls,
-        toggle: x.onToggle,
-        expanded: x.expanded,
-        cells: r.cells,
-        latest: r.latest,
-        latestYear: r.latestYear,
-        missing: r.missing,
-        yoy: r.yoy,
-        yoyCls: r.yoyCls,
-      })
-    } else {
-      out.push(r)
-    }
-  }
-  return out
 }

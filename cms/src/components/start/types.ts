@@ -934,21 +934,6 @@ export type OccColsIn = {
 }
 
 /**
- * `provTierTextOf` 的入参。
- */
-export type TierTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 难度档;空串 = 没算出来。
-   */
-  tier: string
-}
-
-/**
  * `diffClsOf` / `diffCardClsOf` 的入参。
  */
 export type TierClsIn = {
@@ -1047,11 +1032,6 @@ export type NavSubItemsIn = {
    * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
    */
   navSec: string
-
-  /**
-   * 省份段当前视图(按指标 / 按省),二级导航跟着换子项。
-   */
-  macroView: string
 }
 
 /**
@@ -1290,11 +1270,6 @@ export type PulsePanel = {
   nocProvs: NocProvsMap
 
   /**
-   * 省份段地区块(全国 + 十省的宏观按年表)。
-   */
-  macroGeos: MacroGeo[]
-
-  /**
    * 招聘对比横表行(market 到手才有)。
    */
   jobsRows: JobsRow[]
@@ -1325,16 +1300,6 @@ export type PulsePanel = {
    * 「按指标」视图的九张表。
    */
   indGeos: MacroGeo[]
-
-  /**
-   * 省份段当前视图。
-   */
-  macroView: string
-
-  /**
-   * 视图切换手柄工厂。
-   */
-  viewPickOf: ViewPickFn
 }
 
 
@@ -1427,11 +1392,6 @@ export type PulseNavIn = {
    * 当前所在分区的锚点 id。
    */
   navSec: string
-
-  /**
-   * 省份段当前视图。
-   */
-  macroView: string
 }
 
 /**
@@ -3527,16 +3487,6 @@ export type MacroGeo = {
   name: string
 
   /**
-   * 竞争度胶囊类;没档空串(全国无档)。
-   */
-  tierCls: string
-
-  /**
-   * 竞争度显示名;没档空串。
-   */
-  tierText: string
-
-  /**
    * 年份列(升序,含进行年)。
    */
   years: string[]
@@ -3545,16 +3495,6 @@ export type MacroGeo = {
    * 行(有格的才在)。
    */
   rows: MacroRow[]
-
-  /**
-   * 是不是「按指标」视图的表(行 = 地区;手机出省卡格、表尾带同比列、标题下带判词)。
-   */
-  ind: boolean
-
-  /**
-   * 判词(模板填槽:全国方向 + 领涨 + 领跌;没同比可算给空串)。
-   */
-  verdict: string
 
   /**
    * 同比列名(「同比 25/24」);省块空串 = 不出这列。
@@ -3588,41 +3528,6 @@ export type MacroGeosIn = {
 
   /**
    * 省卡增补(竞争度档在这里)。
-   */
-  provExtra: ProvExtraMap
-}
-
-/**
- * `macroGeoOf` 的入参(逐地区,其余同 `MacroGeosIn`)。
- */
-export type MacroGeoIn = {
-  /**
-   * 地区码。
-   */
-  code: string
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 该地区的点。
-   */
-  points: MacroPoint[]
-
-  /**
-   * 该地区的运营点。
-   */
-  ops: OpsPoint[]
-
-  /**
-   * 省卡增补。
    */
   provExtra: ProvExtraMap
 }
@@ -3820,6 +3725,11 @@ export type MacroMissingIn = {
    * 这行有没有格。
    */
   has: boolean
+
+  /**
+   * 这行对该地区适不适用(不适用 = 显「不适用」,如魁省的省提名行、全国的省级行)。
+   */
+  applies: boolean
 }
 
 /**
@@ -3845,21 +3755,6 @@ export type MacroYearCellIn = {
    * 「未发布」的词:行里最后一个有数年之后、当前年之前(含)的空格 = 官方还没发(Frank 2026-09-09「没发布应该写 未发布」)。
    */
   unreleased: string
-}
-
-/**
- * 视图切换手柄工厂:给视图码,回点击手柄。
- */
-export type ViewPickFn = (v: string) => ClickFn
-
-/**
- * `makeViewPick` 的入参。
- */
-export type ViewPickIn = {
-  /**
-   * 写视图码的 setter。
-   */
-  setView: (v: string) => void
 }
 
 /**
@@ -3960,6 +3855,11 @@ export type IndRowIn = {
    * 块的同比年;空串 = 没同比。
    */
   year: string
+
+  /**
+   * 指标键(同比颜色要知道涨了是好是坏)。
+   */
+  key: string
 }
 
 /**
@@ -3978,43 +3878,18 @@ export type YoyCellIn = {
 }
 
 /**
- * `verdictOf` 的入参。
+ * `yoyClsOf` 的入参。
  */
-export type VerdictIn = {
+export type YoyClsIn = {
   /**
-   * 取词函数。
+   * 同比格;null 给空串。
    */
-  t: TFn
+  cell: MacroCell | null
 
   /**
-   * 地区行(已带同比格)。
+   * 指标键(在 MACRO_BAD_UP_KEYS 里的反色)。
    */
-  rows: MacroRow[]
-
-  /**
-   * 同比年。
-   */
-  year: string
-}
-
-/**
- * `caVerdictOf` 的入参。
- */
-export type CaVerdictIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 同比年。
-   */
-  year: string
-
-  /**
-   * 全国的同比格。
-   */
-  yoy: MacroCell
+  key: string
 }
 
 /**
@@ -4049,23 +3924,23 @@ export type UseRateIn = {
 }
 
 /**
- * `macroViewGeosOf` 的入参。
+ * `IndCards` 的入参。
  */
-export type MacroViewGeosIn = {
+export type IndCardsIn = {
   /**
-   * 当前视图。
+   * 取词函数。
    */
-  view: string
-
-  /**
-   * 省块。
-   */
-  geos: MacroGeo[]
+  t: TFn
 
   /**
    * 指标表。
    */
-  indGeos: MacroGeo[]
+  geo: MacroGeo
+
+  /**
+   * 要显示的行。
+   */
+  rows: MacroRow[]
 }
 
 /**
@@ -4138,11 +4013,6 @@ export type MacroSectionIn = {
   updatedAt: string
 
   /**
-   * 地区块。
-   */
-  geos: MacroGeo[]
-
-  /**
    * 招聘对比:数据还没到。
    */
   jobsLoading: boolean
@@ -4156,16 +4026,6 @@ export type MacroSectionIn = {
    * 「按指标」视图的九张表。
    */
   indGeos: MacroGeo[]
-
-  /**
-   * 当前视图。
-   */
-  view: string
-
-  /**
-   * 视图切换手柄工厂。
-   */
-  viewPickOf: ViewPickFn
 }
 
 /**
@@ -4186,71 +4046,11 @@ export type MacroBlockIn = {
    * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。
    */
   gap: boolean
-}
-
-/**
- * `MacroCard` 的入参(手机形态:最新值 + 表 / 趋势切换)。
- */
-export type MacroCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
 
   /**
-   * 地区块(年份列与图用)。
+   * 数据更新时刻(表右上角「更新时间」,与别的段同位)。
    */
-  geo: MacroGeo
-
-  /**
-   * 当前显示的行(折叠态已过滤,与桌面表同一份)。
-   */
-  rows: MacroRow[]
-}
-
-/**
- * `macroRowsShownOf` 的入参。
- */
-export type MacroRowsShownIn = {
-  /**
-   * 地区块全部行。
-   */
-  rows: MacroRow[]
-
-  /**
-   * 「其中」行是否展开。
-   */
-  expanded: boolean
-
-  /**
-   * 折叠 / 展开手柄(挂到父行)。
-   */
-  onToggle: ClickFn
-}
-
-/**
- * `useMacroExpand` 的出参。
- */
-export type MacroExpandPanel = {
-  /**
-   * 是否展开。
-   */
-  expanded: boolean
-
-  /**
-   * 切换。
-   */
-  onToggle: ClickFn
-}
-
-/**
- * `GeoTitle` 的入参(地区块标题:名 + 码 + 译名 + 竞争度)。
- */
-export type GeoTitleIn = {
-  /**
-   * 地区块。
-   */
-  geo: MacroGeo
+  updatedAt: string
 }
 
 /**
@@ -4461,21 +4261,6 @@ export type GeoNameIn = {
    * 取词函数。
    */
   t: TFn
-}
-
-/**
- * `geoTierOf` 的入参。
- */
-export type GeoTierIn = {
-  /**
-   * 地区码。
-   */
-  code: string
-
-  /**
-   * 省卡增补。
-   */
-  provExtra: ProvExtraMap
 }
 
 /**

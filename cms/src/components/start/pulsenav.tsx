@@ -26,7 +26,7 @@ import css from './start.module.css'
  * @param props 取词函数与当前所在分区。
  * @returns 粘顶的导航条。
  */
-export function PulseNav({ t, navSec, macroView }: PulseNavIn) {
+export function PulseNav({ t, navSec }: PulseNavIn) {
   const sec = navSecOrFirstOf(navSec)
   const items = []
   for (const it of navItemsOf({ t })) {
@@ -37,7 +37,7 @@ export function PulseNav({ t, navSec, macroView }: PulseNavIn) {
     )
   }
   const subs = []
-  for (const it of navSubItemsOf({ t, navSec: sec, macroView })) {
+  for (const it of navSubItemsOf({ t, navSec: sec })) {
     subs.push(
       <LinkButton key={it.id} href={anchorOf(it.id)} className={css.navSubLink}>
         {it.label}

@@ -16,15 +16,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { ID_PGWP, LANG_EN, MACRO_VIEW_IND, TEXT_NONE } from './constants'
+import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, indicatorGeosOf, macroGeosOf, makeKindPick, makeNavWatch, makeSponsorLoad, makeViewPick,
+  cityRowsOf, empSecsOf, indicatorGeosOf, makeKindPick, makeNavWatch, makeSponsorLoad,
   nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
   CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel,
   SponsorBoards, TFn,
-  NocProvsMap, MacroExpandPanel,
+  NocProvsMap,
 } from './types'
 
 /**
@@ -156,14 +156,9 @@ export function usePulse(x: PulseIn): PulsePanel {
     return numCardsOf({ t, total: x.stats.total, named: x.stats.named, pulse: x.stats.pulse })
   }, [t, x.stats.total, x.stats.named, x.stats.pulse])
 
-  const macroGeos = useMemo(function pickMacroGeos() {
-    return macroGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops, provExtra: x.stats.provExtra })
-  }, [t, lang, x.stats.macro, x.stats.ops, x.stats.provExtra])
-
   const indGeos = useMemo(function pickIndGeos() {
     return indicatorGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops, provExtra: x.stats.provExtra })
   }, [t, lang, x.stats.macro, x.stats.ops, x.stats.provExtra])
-  const [macroView, setMacroView] = useState(MACRO_VIEW_IND)
 
   const jobsRows = useMemo(function pickJobsRows() {
     return toJobsRows({ rows: provRowsOf({ market }), t, lang })
@@ -188,29 +183,11 @@ export function usePulse(x: PulseIn): PulsePanel {
     empKind,
     kindPickOf: makeKindPick({ setKind: setEmpKind }),
     nocProvs,
-    macroGeos,
     indGeos,
-    macroView,
-    viewPickOf: makeViewPick({ setView: setMacroView }),
     jobsRows,
     cityRows,
     trend,
     tEn,
     navSec,
   }
-}
-
-/**
- * 地区块「其中」五行的折叠态(默认收起;一块一份)。
- *
- * @returns 展开态与切换手柄。
- */
-export function useMacroExpand(): MacroExpandPanel {
-  const [expanded, setExpanded] = useState(false)
-
-  function onToggle() {
-    setExpanded(expanded === false)
-  }
-
-  return { expanded, onToggle }
 }
