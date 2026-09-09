@@ -1169,9 +1169,9 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
 /**
  * 「按指标」视图的九张表及其序(Frank 2026-09-09 拍板:一张表回答一个问题,按用户问的先后 ——
  * 挤不挤 → 发多少 → 还有没有 → 走哪条路 → 人在减少吗 → 新人速度 → 落地多少 → 下一刀砍谁 → 找工作难不难)。
- * 总人口 / GDP 是背景数只留在省块;EE 邀请 / 接纳目标只有全国一行不横铺。
+ * 总人口垫底当背景数(Frank 2026-09-09「全国人口也需要列出来」);GDP 只留在省块;EE 邀请 / 接纳目标只有全国一行不横铺。
  */
-export const IND_ORDER = ['comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'nprShare', 'unemp']
+export const IND_ORDER = ['comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'nprShare', 'unemp', 'pop']
 
 /**
  * 指标表的锚点前缀(pl-ind-<键>)。
