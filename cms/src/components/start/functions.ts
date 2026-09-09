@@ -3739,7 +3739,7 @@ function latestCellOf(cells: Record<string, MacroCell>): MacroCell | null {
  * @returns 年份;空表给空串。
  */
 function latestYearOf(cells: Record<string, MacroCell>): string {
-  const now = String(new Date().getFullYear())
+  const now = thisYearOf()
   let best = TEXT_NONE
   let future = TEXT_NONE
   for (const y of Object.keys(cells)) {
@@ -3785,11 +3785,22 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   const out: StartCol<MacroRow>[] = [
     { key: COL_MACRO_KEY, label: x.t('pulse.m.key'), render: MacroKeyCell, width: W_MACRO_KEY },
   ]
+  const now = thisYearOf()
+  const unreleased = x.t('pulse.m.unreleased')
   for (const y of x.years) {
     const last = y === x.years[x.years.length - 1]
-    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell({ year: y, last }) })
+    out.push({ key: y, label: y, nowrap: true, render: makeMacroYearCell({ year: y, last, now, unreleased }) })
   }
   return out
+}
+
+/**
+ * 当前年(四位串;年份列与行年份同为字符串比较)。
+ *
+ * @returns 当前年。
+ */
+function thisYearOf(): string {
+  return String(new Date().getFullYear())
 }
 
 /**

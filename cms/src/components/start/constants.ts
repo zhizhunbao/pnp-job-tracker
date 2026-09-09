@@ -1239,10 +1239,12 @@ export const MR_REMAINING = 'remaining'
 /**
  * 宏观表行序(行键;数据键与派生行键混排,i18n 行名 = KEY_MACRO_HEAD + 行键)。
  * 「其中」五行挂在临时居民下缩进且可折叠(Frank 2026-09-06「是不是带折叠展开的好一些」)。
+ * EE 邀请排在 PR 获批之前(邀请 → 目标 → 获批的先后):它是邀请数不是登陆数,原先垫在「其中省提名」
+ * 下面被读成 PR 获批的第二个分项(Frank 2026-09-09「下面两个和不等于上面的啊」)。
  */
 export const MACRO_ROW_ORDER = [
   'pop', 'npr', 'workOnly', 'studyOnly', 'workStudy', 'asylum', 'other', 'studyNew', 'gdp', 'unemp',
-  'alloc', 'issued', 'remaining', 'comp', 'pnpTarget', 'prAll', 'prPnp', 'eeInvites',
+  'eeInvites', 'alloc', 'issued', 'remaining', 'comp', 'pnpTarget', 'prAll', 'prPnp',
 ]
 
 /**
