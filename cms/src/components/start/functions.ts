@@ -3679,7 +3679,8 @@ function macroRowAppliesTo(x: MacroRowApplyIn): boolean {
 }
 
 /**
- * 一格都没有时该显哪个词:官方未公布(举证在 MACRO_UNPUBLISHED)还是本站未收录;有格给空串。
+ * 一格都没有时该显哪个词:不适用 / 未发布(官方不发或还没发,举证在 MACRO_UNPUBLISHED);本站没抓到的
+ * 留白不写字 —— Frank 2026-09-09「不要写不收录,没抓到就去抓。只有未发布和不适用两种状态」;有格给空串。
  *
  * @param x 取词函数、地区码、行键与有没有格。
  * @returns 词或空串。
@@ -3693,9 +3694,9 @@ function macroMissingTextOf(x: MacroMissingIn): string {
   }
   const up = MACRO_UNPUBLISHED[x.code]
   if (up != null && up.includes(x.key)) {
-    return x.t('pulse.m.unpub')
+    return x.t('pulse.m.unreleased')
   }
-  return x.t('pulse.m.notCollected')
+  return TEXT_NONE
 }
 
 /**
@@ -3975,7 +3976,7 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   ]
   const now = thisYearOf()
   const unreleased = x.t('pulse.m.unreleased')
-  const notCollected = x.t('pulse.m.notCollected')
+  const notCollected = TEXT_NONE
   for (const y of x.years) {
     const last = y === x.years[x.years.length - 1]
     const note = yearNoteOf({ yearNotes: x.yearNotes, year: y })

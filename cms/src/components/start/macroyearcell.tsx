@@ -24,10 +24,10 @@ export function makeMacroYearCell(x: MacroYearCellIn): CellFn<MacroRow> {
   return function MacroYearCell(r: MacroRow) {
     const c = r.cells[x.year]
     if (c == null) {
-      if (r.missing !== TEXT_NONE) {
-        if (x.last) {
-          return <span className={css.dim}>{r.missing}</span>
-        }
+      if (r.missing !== TEXT_NONE && x.last) {
+        return <span className={css.dim}>{r.missing}</span>
+      }
+      if (r.latestYear === TEXT_NONE) {
         return <span className={css.dim}>{TEXT_NONE}</span>
       }
       if (x.year > x.now) {

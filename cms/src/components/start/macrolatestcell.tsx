@@ -6,7 +6,7 @@
  * @author Frank
  * @time 2026-09-06 22:00:00
  */
-import { DASH_MARK, TEXT_NONE } from './constants'
+import { TEXT_NONE } from './constants'
 import type { MacroRow } from './types'
 import css from './start.module.css'
 
@@ -18,10 +18,7 @@ import css from './start.module.css'
  */
 export function MacroLatestCell(r: MacroRow) {
   if (r.latest == null) {
-    if (r.missing !== TEXT_NONE) {
-      return <span className={css.dim}>{r.missing}</span>
-    }
-    return <span className={css.dim}>{DASH_MARK}</span>
+    return <span className={css.dim}>{r.missing}</span>
   }
   return (
     <span className={css.nowrap}>
