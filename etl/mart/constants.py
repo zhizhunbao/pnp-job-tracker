@@ -1968,6 +1968,10 @@ MART_LATE_SALARY_TPL = "  薪资兜底: {n} 个新帖在 04d 之后落盘,09 现
 """薪资兜底留痕:这个数 = 本轮抢在 04d 之后落盘的新帖。恒为 0 说明窗口已关;持续偏大 =
 抓取与建表撞得厉害,该去看编排顺序而不是加大兜底。"""
 
+MART_NO_SALARY_TPL = "  无薪资闸: {n} 个帖雇主未标薪资,不进 mart 并下发 closed_jobs(2026-09-09 Frank 拍板)"
+"""无薪资闸留痕(三源合计)。Job Bank 强制填工资应恒为 0 贡献;数字几乎全来自 jobillico / jobboom
+(魁北克无薪酬透明法,八成帖「Salaire à discuter」)与少量 ATS 直招帖。"""
+
 MART_SEEN_TPL = ("  seen_ids(本轮见过): {seen} · mart.jobs(展示去重后): {jobs} · "
                  "见过但不进 mart(展示去重/同 ext 重复): {gap}")
 """见过集与展示集的差额留痕。"""
@@ -2738,6 +2742,22 @@ MACRO_YEAR_END_TPL = "{year}-01-01"
 
 MACRO_COMP_DIGITS = 1
 """竞争比保留一位小数(与 ircc 域 COMP_ROUND 同值本域自抄)。"""
+
+MACRO_KEY_NPR = "npr"
+"""键:临时居民(statcan 17-10-0121 季度存量;占比行的分子)。"""
+
+MACRO_KEY_POP = "pop"
+"""键:总人口(statcan 季度估计;占比行的分母)。"""
+
+MACRO_KEY_PNP_SHARE = "pnpShare"
+"""键:省提名依赖度(%)= 其中省提名 ÷ PR 获批 × 100,一年一格(2026-09-09 Frank 九张表拍板:
+「该走 PNP 还是 EE」看这个);同地区同年两行都在才出。"""
+
+MACRO_KEY_NPR_SHARE = "nprShare"
+"""键:临时居民占人口比(%)= 临时居民 ÷ 总人口 × 100,按季(同期两行都在才出;「下一刀砍谁」看这个)。"""
+
+MACRO_SHARE_DIGITS = 1
+"""两个占比键保留一位小数。"""
 
 MACRO_MONTH_NUM = {
     "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",

@@ -1047,6 +1047,11 @@ export type NavSubItemsIn = {
    * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
    */
   navSec: string
+
+  /**
+   * 省份段当前视图(按指标 / 按省),二级导航跟着换子项。
+   */
+  macroView: string
 }
 
 /**
@@ -1315,6 +1320,21 @@ export type PulsePanel = {
    * 当前所在分区的锚点 id;'' = 还没滚到任何分区。
    */
   navSec: string
+
+  /**
+   * 「按指标」视图的九张表。
+   */
+  indGeos: MacroGeo[]
+
+  /**
+   * 省份段当前视图。
+   */
+  macroView: string
+
+  /**
+   * 视图切换手柄工厂。
+   */
+  viewPickOf: ViewPickFn
 }
 
 
@@ -1407,6 +1427,11 @@ export type PulseNavIn = {
    * 当前所在分区的锚点 id。
    */
   navSec: string
+
+  /**
+   * 省份段当前视图。
+   */
+  macroView: string
 }
 
 /**
@@ -3470,6 +3495,16 @@ export type MacroRow = {
    * 一格都没有时显示的词(「未公布」/「本站未收录」);有格空串。
    */
   missing: string
+
+  /**
+   * 同比格(指标表:块的最新完整年对上一年的相对变化,百分数);省块与没配对年份的行 null。
+   */
+  yoy: MacroCell | null
+
+  /**
+   * 同比格的色类(持平素色、涨绿跌红);没同比格空串。
+   */
+  yoyCls: string
 }
 
 /**
@@ -3510,6 +3545,21 @@ export type MacroGeo = {
    * 行(有格的才在)。
    */
   rows: MacroRow[]
+
+  /**
+   * 是不是「按指标」视图的表(行 = 地区;手机出省卡格、表尾带同比列、标题下带判词)。
+   */
+  ind: boolean
+
+  /**
+   * 判词(模板填槽:全国方向 + 领涨 + 领跌;没同比可算给空串)。
+   */
+  verdict: string
+
+  /**
+   * 同比列名(「同比 25/24」);省块空串 = 不出这列。
+   */
+  yoyLabel: string
 }
 
 /**
@@ -3798,6 +3848,227 @@ export type MacroYearCellIn = {
 }
 
 /**
+ * 视图切换手柄工厂:给视图码,回点击手柄。
+ */
+export type ViewPickFn = (v: string) => ClickFn
+
+/**
+ * `makeViewPick` 的入参。
+ */
+export type ViewPickIn = {
+  /**
+   * 写视图码的 setter。
+   */
+  setView: (v: string) => void
+}
+
+/**
+ * `geoPointsOf` 的入参。
+ */
+export type GeoPointsIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * `geoPointsOf` 的出参:一个地区的两份点。
+ */
+export type GeoPoints = {
+  /**
+   * 该地区的宏观点。
+   */
+  points: MacroPoint[]
+
+  /**
+   * 该地区的运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * `indGeoOf` 的入参:一张指标表。
+ */
+export type IndGeoIn = {
+  /**
+   * 指标键。
+   */
+  key: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * 指标表构造中途的一对:地区码 + 按省块算法出的底行。
+ */
+export type IndBase = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 底行(键 / 名还是指标的)。
+   */
+  row: MacroRow
+}
+
+/**
+ * `indRowOf` 的入参:省块形的一行改成地区行。
+ */
+export type IndRowIn = {
+  /**
+   * 指标键下按该地区算出的行(键 / 名还是指标的)。
+   */
+  base: MacroRow
+
+  /**
+   * 地区码(成为行键)。
+   */
+  code: string
+
+  /**
+   * 地区名(成为行名)。
+   */
+  name: string
+
+  /**
+   * 块的同比年;空串 = 没同比。
+   */
+  year: string
+}
+
+/**
+ * `yoyCellOf` 的入参。
+ */
+export type YoyCellIn = {
+  /**
+   * 年 → 格。
+   */
+  cells: Record<string, MacroCell>
+
+  /**
+   * 同比年(与它前一年配对;两格都得是完整年)。
+   */
+  year: string
+}
+
+/**
+ * `verdictOf` 的入参。
+ */
+export type VerdictIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区行(已带同比格)。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 同比年。
+   */
+  year: string
+}
+
+/**
+ * `caVerdictOf` 的入参。
+ */
+export type CaVerdictIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 同比年。
+   */
+  year: string
+
+  /**
+   * 全国的同比格。
+   */
+  yoy: MacroCell
+}
+
+/**
+ * `yoyLabelOf` 的入参。
+ */
+export type YoyLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 同比年;空串给空串。
+   */
+  year: string
+
+}
+
+/**
+ * `quotaUsedCellsOf` 的入参。
+ */
+export type UseRateIn = {
+  /**
+   * 配额格(年 → 格)。
+   */
+  alloc: Record<string, MacroCell>
+
+  /**
+   * 已发格(年 → 格)。
+   */
+  issued: Record<string, MacroCell>
+}
+
+/**
+ * `macroViewGeosOf` 的入参。
+ */
+export type MacroViewGeosIn = {
+  /**
+   * 当前视图。
+   */
+  view: string
+
+  /**
+   * 省块。
+   */
+  geos: MacroGeo[]
+
+  /**
+   * 指标表。
+   */
+  indGeos: MacroGeo[]
+}
+
+/**
  * `macroColsOf` 的入参。
  */
 export type MacroColsIn = {
@@ -3810,6 +4081,11 @@ export type MacroColsIn = {
    * 年份列。
    */
   years: string[]
+
+  /**
+   * 同比列名;空串不出这列。
+   */
+  yoyLabel: string
 }
 
 /**
@@ -3875,6 +4151,21 @@ export type MacroSectionIn = {
    * 招聘对比行。
    */
   jobsRows: JobsRow[]
+
+  /**
+   * 「按指标」视图的九张表。
+   */
+  indGeos: MacroGeo[]
+
+  /**
+   * 当前视图。
+   */
+  view: string
+
+  /**
+   * 视图切换手柄工厂。
+   */
+  viewPickOf: ViewPickFn
 }
 
 /**

@@ -16,9 +16,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
+import { ID_PGWP, LANG_EN, MACRO_VIEW_IND, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, macroGeosOf, makeKindPick, makeNavWatch, makeSponsorLoad,
+  cityRowsOf, empSecsOf, indicatorGeosOf, macroGeosOf, makeKindPick, makeNavWatch, makeSponsorLoad, makeViewPick,
   nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
@@ -160,6 +160,11 @@ export function usePulse(x: PulseIn): PulsePanel {
     return macroGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops, provExtra: x.stats.provExtra })
   }, [t, lang, x.stats.macro, x.stats.ops, x.stats.provExtra])
 
+  const indGeos = useMemo(function pickIndGeos() {
+    return indicatorGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops, provExtra: x.stats.provExtra })
+  }, [t, lang, x.stats.macro, x.stats.ops, x.stats.provExtra])
+  const [macroView, setMacroView] = useState(MACRO_VIEW_IND)
+
   const jobsRows = useMemo(function pickJobsRows() {
     return toJobsRows({ rows: provRowsOf({ market }), t, lang })
   }, [market, t, lang])
@@ -184,6 +189,9 @@ export function usePulse(x: PulseIn): PulsePanel {
     kindPickOf: makeKindPick({ setKind: setEmpKind }),
     nocProvs,
     macroGeos,
+    indGeos,
+    macroView,
+    viewPickOf: makeViewPick({ setView: setMacroView }),
     jobsRows,
     cityRows,
     trend,

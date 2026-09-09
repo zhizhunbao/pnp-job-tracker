@@ -2770,3 +2770,53 @@
    */
   font-weight: 400;
 }
+
+/*
+ * 指标表标题下的一句判词(模板填槽;2026-09-09)。
+ */
+.verdict {
+  /*
+   * 二级文字,比正文小半号,与下面的表留一点缝。
+   */
+  color: var(--text2);
+  font-size: 13px;
+  margin: -2px 0 10px;
+}
+
+/*
+ * 省份段标题右侧:视图切换两枚胶囊 + 更新时间,一行排开。
+ */
+.viewRow {
+  /*
+   * 横排,按中线对齐。
+   */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*
+ * 指标表手机形态的省卡格:自适应列数(375px 卡体内宽 276px,130px 一格正好两列;长省名折两行不截)。
+ */
+.indGrid {
+  /*
+   * 网格。
+   */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 130px), 1fr));
+  gap: 8px;
+  padding: 10px 12px 12px;
+}
+
+/*
+ * 指标表里的一张省卡(与 .provCard 同貌,但它不是钮,不给手型)。
+ */
+.indCard {
+  /*
+   * 白底圆角细边。
+   */
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 10px;
+}

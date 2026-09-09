@@ -562,6 +562,11 @@ class MartCtx:
     late_salary: int
     """本轮抢在 04d 之后落盘、由 09 现算现补的新帖数(报数用)。"""
 
+    no_salary: list
+    """本轮被无薪资闸拦下的 externalId(2026-09-09 Frank 拍板「没薪资的就过滤掉」:雇主不给数字 =
+    LMIA 广告用不上、vs 中位算不出,对读者没有可判断的东西)。三源同一把尺子;不进 seen_ids
+    (否则 seed 视作「见过」永不下架),整批下发 closed_jobs 让 seed 当轮置 closed(不然要等 30 天规则)。"""
+
 
 @dataclass
 class CompanyExtraIn:
@@ -1558,6 +1563,17 @@ class ClosedJobIn:
     """判死时刻。"""
 
 
+@dataclass
+class NoSalaryClosedIn:
+    """to_no_salary_closed_row() 入参(无薪资闸拦下的帖 → closed_jobs 行,2026-09-09)。"""
+
+    ext: str
+    """完整 externalId(jb: / 板名: 前缀形,或 ATS 的帖 URL —— 三源各自的 ext 原样)。"""
+
+    closed_at: str
+    """本轮汇装时刻(= 本站停止收录的时刻;喂 JSON-LD validThrough)。"""
+
+
 # =========================================================================
 # 14. mart:装配与落盘
 # =========================================================================
@@ -2493,6 +2509,23 @@ class CompPoolOut:
 
     source: str
     """分子那期的出处(StatCan 表页)。"""
+
+
+@dataclass
+class RatioRowsIn:
+    """macro_ratio_rows() 入参:分子键 ÷ 分母键 → 百分比行。"""
+
+    index: dict
+    """(geo, key) → {period: 行} 的点索引(macro_point_index 产)。"""
+
+    num_key: str
+    """分子键。"""
+
+    den_key: str
+    """分母键。"""
+
+    out_key: str
+    """产出键。"""
 
 
 @dataclass

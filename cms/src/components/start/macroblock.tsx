@@ -8,9 +8,11 @@
  * @time 2026-09-06 22:00:00
  */
 import { Table } from '@/components/table'
+import { TEXT_NONE } from './constants'
 import { boardGapClsOf, macroColsOf, macroRowKeyOf, macroRowsShownOf, macroSeriesOf } from './functions'
 import { useMacroExpand } from './hooks'
 import { GeoTitle } from './geotitle'
+import { IndCards } from './indcards'
 import { MacroCard } from './macrocard'
 import { Sec } from './sec'
 import type { MacroBlockIn, MacroRow } from './types'
@@ -29,15 +31,17 @@ export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
       <Sec title={<GeoTitle geo={geo} />} sub>
+        {geo.verdict !== TEXT_NONE && <p className={css.verdict}>{geo.verdict}</p>}
         <div className={css.table}>
           <Table<MacroRow>
             rows={rows}
-            cols={macroColsOf({ t, years: geo.years })}
+            cols={macroColsOf({ t, years: geo.years, yoyLabel: geo.yoyLabel })}
             rowKey={macroRowKeyOf}
             series={macroSeriesOf({ t, geo })} />
         </div>
         <div className={css.cards}>
-          <MacroCard t={t} geo={geo} rows={rows} />
+          {geo.ind === false && <MacroCard t={t} geo={geo} rows={rows} />}
+          {geo.ind && <IndCards t={t} geo={geo} rows={rows} />}
         </div>
       </Sec>
       </div>

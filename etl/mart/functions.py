@@ -52,6 +52,7 @@ from mart.constants import (
     K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_YTD_YEAR,
     MACRO_COMP_DIGITS, MACRO_COMP_POOL_KEYS, MACRO_KEY_COMP, MACRO_YEAR_END_TPL, UNIT_RATIO,
     IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, PROV_NS,
+    MACRO_KEY_NPR, MACRO_KEY_NPR_SHARE, MACRO_KEY_PNP_SHARE, MACRO_KEY_POP, MACRO_SHARE_DIGITS, UNIT_PERCENT,
     MACRO_ANCHOR_GEOS,
     MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
     MACRO_EMPTY_MSG, MACRO_FREQ_ANNUAL, MACRO_GEO_CA, MACRO_KEY_ALLOC, MACRO_KEY_EE_INVITES,
@@ -109,7 +110,7 @@ from mart.constants import (
     K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
-    LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
+    LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL, MART_NO_SALARY_TPL,
     MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS, MB_EOI_SECTION_TPL,
     MB_GROUP_LABEL_TPL, MB_INVENTORY_METRICS, MB_PROC_LABEL_TPL, MB_SECTION_TPL, MB_YTD_GROUPS,
     MB_YTD_TPL, METRIC_ALLOCATION, METRIC_ASSESSING, METRIC_EOI_POOL, METRIC_EOI_POOL_TOTAL,
@@ -172,10 +173,10 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, StatcanPeriodIn, StudyAsOfIn,
+    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, RatioRowsIn, StatcanPeriodIn, StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
-    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
+    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoSalaryClosedIn, NoticeRowIn, NumericRangeOut,
     OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut,
     OttawaLocIn, PilotEmployerIn, PilotFlagIn, PilotOccIn, PilotQuotaIn, PilotRowIn, PilotTally,
     PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
@@ -1383,6 +1384,9 @@ def collect_ats_rows(ctx: MartCtx) -> None:
         for j in jd[K_JOBS]:
             key = DEDUP_KEY_TPL.format(slug=slug, title=norm_title(j.get(K_TITLE, "")))
             ext = j.get(K_URL) or key
+            if not has_listed_salary(j):
+                ctx.no_salary.append(ext)
+                continue
             if ext not in ctx.expired:
                 ctx.seen_ids.add(ext)
             if key in ctx.seen:
@@ -1410,6 +1414,9 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
         cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
         key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
         ext = mart_jb_ext_of(JbExtIn(job=j, key=key))
+        if not has_listed_salary(j):
+            ctx.no_salary.append(ext)
+            continue
         if ext not in ctx.expired:
             ctx.seen_ids.add(ext)
         if key in ctx.seen:
@@ -1440,6 +1447,9 @@ def collect_board_rows(ctx: MartCtx) -> None:
             cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
             key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
             ext = board_ext_of(BoardJobIn(job=j, origin=origin))
+            if not has_listed_salary(j):
+                ctx.no_salary.append(ext)
+                continue
             ctx.seen_ids.add(ext)
             if key in ctx.seen:
                 continue
@@ -1449,6 +1459,14 @@ def collect_board_rows(ctx: MartCtx) -> None:
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
             add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=cslug,
                              fields=to_board_job_fields(BoardJobIn(job=j, origin=origin))))
+
+
+def has_listed_salary(j: dict) -> bool:
+    """无薪资闸(2026-09-09 Frank 拍板「没薪资的就过滤掉」「没有薪资的工作就是有猫腻」):
+    雇主在帖子上标了工资原文才算(三源同键 salary;板域把「Salaire à discuter」抽成空串)。
+    判的是「标没标」不是「算没算出」—— 原文在而归一失败的帖仍放行,那是尺子的事不是雇主的事。
+    """
+    return bool(j.get(K_SALARY))
 
 
 def mart_jb_ext_of(x: JbExtIn) -> str:
@@ -3079,8 +3097,8 @@ def sql_median_of(sal: list) -> float | None:
     return (ordered[mid - 1] + ordered[mid]) / 2
 
 
-def build_closed_jobs() -> list:
-    """判死名单显式下发(2026-08-03)。
+def build_closed_jobs(no_salary: list) -> list:
+    """判死名单显式下发(2026-08-03)+ 无薪资闸拦下的帖(2026-09-09)。
 
     光把死帖剔出 mart 不够 —— seed 的下架规则还要求「发布>30 天」,于是 28 天前就死掉的岗一直
     挂着「在招」(Fort Qu'Appelle 用户点两次申请撞过期页的那一单)。验尸拿到的 410/过期页是
@@ -3088,6 +3106,9 @@ def build_closed_jobs() -> list:
     seed 见名单即置 closed,closedAt 用判死时刻(喂 JSON-LD 的 validThrough)。
     """
     rows: list = []
+    now = datetime.now(timezone.utc).isoformat()
+    for ext in no_salary:
+        rows.append(to_no_salary_closed_row(NoSalaryClosedIn(ext=ext, closed_at=now)))
     if not IN_EXPIRED.exists():
         return rows
     for pid, ts in read_table(IN_EXPIRED).get(K_DEAD, {}).items():
@@ -3177,6 +3198,11 @@ def to_closed_job_row(x: ClosedJobIn) -> dict:
     return {"externalId": JB_EXT_TPL.format(pid=x.pid), "closedAt": x.closed_at}
 
 
+def to_no_salary_closed_row(x: NoSalaryClosedIn) -> dict:
+    """closed_jobs 表的一行(无薪资闸;ext 已是完整前缀形,不再加 jb:)。"""
+    return {"externalId": x.ext, "closedAt": x.closed_at}
+
+
 # =========================================================================
 # 14. mart:装配与落盘(28 张表一次算齐;跨源汇装的收口点)
 # =========================================================================
@@ -3201,11 +3227,12 @@ def new_mart_ctx() -> MartCtx:
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), briefs=load_briefs(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
-                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)
+                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0,
+                   no_salary=[])
 
 
 def say_mart_tallies(ctx: MartCtx) -> None:
-    """本轮汇装的三个留痕数(验尸剔除 / 薪资兜底 / 见过但不进 mart)。
+    """本轮汇装的四个留痕数(验尸剔除 / 薪资兜底 / 无薪资闸 / 见过但不进 mart)。
 
     薪资兜底恒为 0 说明抓取与建表的窗口已关;持续偏大 = 撞得厉害,该去看编排顺序而不是加大兜底。
     「本轮见过」名单(2026-08-04):seed 的下架对账**只**认它,不再拿去重后的 mart.jobs 当见过集。
@@ -3216,6 +3243,8 @@ def say_mart_tallies(ctx: MartCtx) -> None:
         say(MART_EXPIRED_TPL.format(n=ctx.dropped_expired))
     if ctx.late_salary:
         say(MART_LATE_SALARY_TPL.format(n=ctx.late_salary))
+    if ctx.no_salary:
+        say(MART_NO_SALARY_TPL.format(n=len(ctx.no_salary)))
     say(MART_SEEN_TPL.format(seen=len(ctx.seen_ids), jobs=len(ctx.jobs),
                              gap=len(ctx.seen_ids) - len(ctx.jobs)))
 
@@ -3248,7 +3277,7 @@ def to_mart_tables() -> dict:
     universe = load_noc_universe()
     return {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
-        "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
+        "closed_jobs": build_closed_jobs(ctx.no_salary), "seen_ids": sorted(ctx.seen_ids),
         "provinces": build_provinces(prov_info()),
         "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n)),
         "districts": build_districts(ctx.jobs),
@@ -4804,6 +4833,11 @@ def build_macro_series() -> list:
     out.extend(macro_levels_rows())
     out.extend(macro_ee_rows())
     out.extend(macro_comp_rows(out))
+    index = macro_point_index(out)
+    out.extend(macro_ratio_rows(RatioRowsIn(index=index, num_key=MACRO_KEY_PR_PNP, den_key=MACRO_KEY_PR_ALL,
+                                            out_key=MACRO_KEY_PNP_SHARE)))
+    out.extend(macro_ratio_rows(RatioRowsIn(index=index, num_key=MACRO_KEY_NPR, den_key=MACRO_KEY_POP,
+                                            out_key=MACRO_KEY_NPR_SHARE)))
     check_macro_series(out)
     return out
 
@@ -5022,6 +5056,28 @@ def macro_comp_rows(rows: list) -> list:
             geo=r[K_GEO], key=MACRO_KEY_COMP, period=r[K_PERIOD], freq=MACRO_FREQ_ANNUAL,
             value=round(got.pool / r[K_VALUE], MACRO_COMP_DIGITS), as_of=got.as_of,
             unit=UNIT_RATIO, source=got.source, fetched=r[K_FETCHED])))
+    return out
+
+
+def macro_ratio_rows(x: RatioRowsIn) -> list:
+    """分子键 ÷ 分母键 → 百分比行(2026-09-09 省提名依赖度 / 临时居民占比两键同一套解法)。
+
+    同地区同期两边都在才出一格,分母为 0 或缺 → 不出(不折 0);期、频率、as_of、抓取日全随分子行,
+    出处挂分子行(分母的出处在它自己那行上)。
+    """
+    out: list = []
+    for (geo, key), by_period in x.index.items():
+        if key != x.num_key:
+            continue
+        dens = x.index.get((geo, x.den_key)) or {}
+        for period, r in by_period.items():
+            d = dens.get(period)
+            if d is None or not d[K_VALUE]:
+                continue
+            out.append(to_macro_row(MacroRowIn(
+                geo=geo, key=x.out_key, period=period, freq=r[K_FREQ],
+                value=round(r[K_VALUE] / d[K_VALUE] * PCT_SCALE, MACRO_SHARE_DIGITS), as_of=r[K_AS_OF],
+                unit=UNIT_PERCENT, source=r[K_SOURCE], fetched=r[K_FETCHED])))
     return out
 
 

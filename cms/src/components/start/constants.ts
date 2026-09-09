@@ -1146,6 +1146,64 @@ export const MK_EE = 'eeInvites'
 export const MK_COMP = 'comp'
 
 /**
+ * macro_series 数据键:省提名依赖度(%)= 其中省提名 ÷ PR 获批(mart 算;Frank 2026-09-09 九张表拍板:「该走 PNP 还是 EE」看它)。
+ */
+export const MK_PNP_SHARE = 'pnpShare'
+
+/**
+ * macro_series 数据键:临时居民占人口比(%)= 临时居民 ÷ 总人口(mart 算,按季;「下一刀砍谁」看它)。
+ */
+export const MK_NPR_SHARE = 'nprShare'
+
+/**
+ * 派生行键:配额用尽率(%)= 已发提名 ÷ 配额。与「剩余名额」同源同处派生:已发在 pnp_ops_stats、配额在
+ * macro_series,两表只在这里相遇(2026-09-06 剩余名额的先例)。
+ */
+export const MR_USE_RATE = 'useRate'
+
+/**
+ * 按百分数显示的行键(一位小数 + %)。
+ */
+export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
+
+/**
+ * 「按指标」视图的九张表及其序(Frank 2026-09-09 拍板:一张表回答一个问题,按用户问的先后 ——
+ * 挤不挤 → 发多少 → 还有没有 → 走哪条路 → 人在减少吗 → 新人速度 → 落地多少 → 下一刀砍谁 → 找工作难不难)。
+ * 总人口 / GDP 是背景数只留在省块;EE 邀请 / 接纳目标只有全国一行不横铺。
+ */
+export const IND_ORDER = ['comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'nprShare', 'unemp']
+
+/**
+ * 指标表的锚点前缀(pl-ind-<键>)。
+ */
+export const ID_IND_HEAD = 'pl-ind-'
+
+/**
+ * 指标短名(二级导航胶囊)的 i18n 键头(KEY_IND_HEAD 是行业组的,另起一个)。
+ */
+export const KEY_IND_SHORT_HEAD = 'pulse.i.'
+
+/**
+ * 同比在这个幅度内算持平(判词不说涨跌;单位百分数)。
+ */
+export const YOY_FLAT_PCT = 0.3
+
+/**
+ * 同比列名里年份取后两位(「同比 25/24」)。
+ */
+export const YOY_YEAR_TAIL = 2
+
+/**
+ * 省份段视图:按指标(默认;九张「省 × 年」表)。
+ */
+export const MACRO_VIEW_IND = 'ind'
+
+/**
+ * 省份段视图:按省(一省画像,原十一块)。
+ */
+export const MACRO_VIEW_GEO = 'geo'
+
+/**
  * 竞争比格的尾巴(「67.1 : 1」)。
  */
 export const RATIO_TAIL = ' : 1'
@@ -1165,12 +1223,12 @@ export const MACRO_NA_ROWS: Record<string, string[]> = {
    * 全国:提名是省发的,没有全国「配额 / 已发 / 剩余 / 竞争比」—— 联邦只发接纳目标(pnpTarget,人头口径),
    * 与省的提名证书个数不是一个单位,不硬套进 alloc。
    */
-  CA: ['alloc', 'comp', 'issued', 'remaining'],
+  CA: ['alloc', 'comp', 'issued', 'remaining', 'useRate'],
 
   /**
    * 魁省:自成体系不参加省提名。
    */
-  QC: ['alloc', 'comp', 'issued', 'remaining', 'prPnp'],
+  QC: ['alloc', 'comp', 'issued', 'remaining', 'prPnp', 'useRate', 'pnpShare'],
 }
 
 /**
@@ -1193,17 +1251,17 @@ export const MACRO_UNPUBLISHED: Record<string, string[]> = {
   /**
    * 爱德华王子岛:配额只发合并数。
    */
-  PE: ['alloc', 'comp', 'remaining'],
+  PE: ['alloc', 'comp', 'remaining', 'useRate'],
 
   /**
    * 新不伦瑞克:只发逐轮邀请数。
    */
-  NB: ['issued', 'remaining'],
+  NB: ['issued', 'remaining', 'useRate'],
 
   /**
    * 纽芬兰:只发逐轮邀请数。
    */
-  NL: ['issued', 'remaining'],
+  NL: ['issued', 'remaining', 'useRate'],
 }
 
 /**
@@ -1277,6 +1335,11 @@ export const PCT_DIGITS = 1
  * 金额前缀(中位年薪)。
  */
 export const CURRENCY_MARK = '$'
+
+/**
+ * 指标表的同比列键。
+ */
+export const COL_YOY = 'yoy'
 
 /**
  * 招聘对比横表列键:在招职位。

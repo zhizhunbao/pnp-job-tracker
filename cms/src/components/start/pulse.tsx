@@ -43,7 +43,7 @@ export function Pulse({ stats }: PulseIn) {
   const v = usePulse({ stats })
   return (
     <>
-      <PulseNav t={v.t} navSec={v.navSec} />
+      <PulseNav t={v.t} navSec={v.navSec} macroView={v.macroView} />
       <main className={css.main}>
         <Hero t={v.t} cards={v.numCards} />
         <BoardsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} secs={v.occSecs} nocProvs={v.nocProvs} />
@@ -56,6 +56,9 @@ export function Pulse({ stats }: PulseIn) {
         <ProvSection t={v.t}
           updatedAt={stats.checkedAt}
           geos={v.macroGeos}
+          indGeos={v.indGeos}
+          view={v.macroView}
+          viewPickOf={v.viewPickOf}
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
         <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} rows={v.cityRows} />
