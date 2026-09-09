@@ -3631,6 +3631,8 @@ function geoNameOf(x: GeoNameIn): string {
  *
  * @param x 行键与该地区的两份点。
  * @returns 一行;一格都没有给 null。
+ * 全国不适用的行(省级配额 / 已发 / 竞争 / 用尽率)整行不出;省的不适用照显「不适用」,十省不缺
+ * (Frank 2026-09-09「全国如果不适用,是不是不用显示了」)。
  */
 function macroRowOf(x: MacroRowIn): MacroRow | null {
   const cells = macroCellsOf(x)
@@ -3640,8 +3642,6 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
   }
   const applies = macroRowAppliesTo({ code: x.code, key: x.key })
   if (has === false && applies === false && x.code === GEO_CA) {
-    // 全国不适用的行(省级配额 / 已发 / 竞争 / 用尽率)整行不出;省的不适用照显「不适用」,十省不缺
-    // (Frank 2026-09-09「全国如果不适用,是不是不用显示了」)
     return null
   }
   return {
