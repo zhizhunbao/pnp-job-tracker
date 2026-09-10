@@ -23,13 +23,17 @@ import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+from typing import cast
 
 import httpx
 
 import paths
-from log.functions import say
+from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA
 from noc.constants import (
+    EN_TITLE_BATCH, EN_TITLE_LINE_RE, EN_TITLE_LINE_TPL, EN_TITLE_MAX_LEN, EN_TITLE_MODEL,
+    EN_TITLE_PROMPT_TPL, EN_TITLE_TICK_BATCHES, EN_TITLE_TICK_TPL, EN_TITLE_TIMEOUT_S,
+    K_MODEL, K_OPTIONS, K_PROMPT, K_STREAM, K_TEMPERATURE, K_THINK,
     ARG_FORCE, ARG_LANG, ARG_SEP, CHAT_FAIL_TPL, CHAT_TEMPERATURE,
     CHAT_TIMEOUT_S, CHAT_URL_TPL, LANG_EN, LATIN3_RE,
     OUT_TITLES_I18N, ROLE_USER, SHORT_DONE_TPL, SHORT_DUP_OK_TPL,
@@ -72,9 +76,10 @@ from noc.constants import (
 )
 from noc.scheme import (
     AskCountOut, AskShortIn, AskTitleIn, AuditRow, AuditSeedIn, BroadI18nIn, ChatIn, CheckIn,
-    DescSeedIn, DupReportIn, ElementRow, FillIn, FineIn, LabelIn, LevelSeedIn, MidIn, OllamaIn,
-    ParseIn, ShortLangIn, ShortOkIn, ShortSpec, ShortSrcIn, ShortTodo, SmellHit, TitleOkIn,
-    TitlesTodoIn, TranslateIn, TranslateTodoIn,
+    DescSeedIn, DupReportIn, ElementRow, FillIn, FineIn, HttpJsonClientLike, LabelIn, LevelSeedIn, MidIn,
+    OllamaIn,
+    ParseIn, ShortLangIn, ShortOkIn, ShortSpec, ShortSrcIn, ShortTodo, SmellHit, TitleBatchIn, TitleOkIn,
+    TitlesTodoIn, TitleTodoOut, TranslateIn, TranslateTodoIn,
 )
 from noc.variables import CACHE
 
@@ -1290,3 +1295,78 @@ def example_texts(desc: str) -> list:
     if TITLE_MANWOMAN in desc:
         return [desc.replace(TITLE_MANWOMAN, TITLE_MAN), desc.replace(TITLE_MANWOMAN, TITLE_WOMAN)]
     return [desc]
+
+
+# =========================================================================
+# 9. 板帖标题英译(法文标题 → 英文职称;本地模型批译,供 jobillico / jobboom 两域)
+# =========================================================================
+
+
+def translate_title_todo(todo: dict) -> TitleTodoOut:
+    """{帖号: 标题} → 本地模型分批英译 → {帖号: 英文职称} + 没译成的条数;板域只管挑哪些帖要译、
+    译文缓存落哪。一批对不上就二分重试到单条(2026-09-10:分组固定 + 整批弃 = 同一批每轮都失败,
+    40 条卡了一整天),只弃真译不出的那条,下轮再试。"""
+    pids = list(todo.keys())
+    names: dict = {}
+    fail = 0
+    with httpx.Client(timeout=EN_TITLE_TIMEOUT_S) as raw_client:
+        client = cast(HttpJsonClientLike, raw_client)
+        for at in range(0, len(pids), EN_TITLE_BATCH):
+            batch = pids[at:at + EN_TITLE_BATCH]
+            titles: list = []
+            for pid in batch:
+                titles.append(todo[pid])
+            got = translate_split(TitleBatchIn(client=client, titles=titles))
+            for pid, name in zip(batch, got):
+                if name == "":
+                    fail += 1
+                    continue
+                names[pid] = name
+            if (at // EN_TITLE_BATCH) % EN_TITLE_TICK_BATCHES == 0:
+                say(EN_TITLE_TICK_TPL.format(done=min(at + EN_TITLE_BATCH, len(pids)), todo=len(pids)))
+    return TitleTodoOut(names=names, fail=fail)
+
+
+def translate_split(x: TitleBatchIn) -> list:
+    """一批译不齐就对半再试,直到单条;返回与入参等长的译文清单,空串 = 这条没译成。"""
+    got = translate_titles(x)
+    if len(got) == len(x.titles):
+        return got
+    if len(x.titles) == 1:
+        return [""]
+    mid = len(x.titles) // 2
+    head = translate_split(TitleBatchIn(client=x.client, titles=x.titles[:mid]))
+    tail = translate_split(TitleBatchIn(client=x.client, titles=x.titles[mid:]))
+    return head + tail
+
+
+def translate_titles(x: TitleBatchIn) -> list:
+    """一批标题编号送模型,按编号解析回来;行数、编号或长度对不上给空清单(调用方二分重试)。"""
+    lines: list = []
+    for i, name in enumerate(x.titles):
+        lines.append(EN_TITLE_LINE_TPL.format(n=i + 1, text=name))
+    body = {K_MODEL: EN_TITLE_MODEL, K_PROMPT: EN_TITLE_PROMPT_TPL.format(lines=NL.join(lines)),
+            K_STREAM: False, K_THINK: False, K_OPTIONS: {K_TEMPERATURE: 0}}
+    raw: object = None
+    try:
+        data = x.client.post(GEN_URL_TPL.format(base=ollama_base()), json=body).json()
+        if isinstance(data, dict):
+            raw = data.get(K_RESPONSE)
+    except Exception as e:  # noqa: BLE001 — 网络 / 解析失败留痕,整批不中止
+        err(GEN_URL_TPL.format(base=ollama_base()), e)
+        return []
+    text = ""
+    if isinstance(raw, str):
+        text = raw
+    got: dict = {}
+    for line in text.split(NL):
+        m = re.match(EN_TITLE_LINE_RE, line)
+        if m is not None:
+            got[int(m.group(1))] = m.group(2).strip()
+    out: list = []
+    for i in range(len(x.titles)):
+        name = got.get(i + 1, "")
+        if name == "" or len(name) > EN_TITLE_MAX_LEN:
+            return []
+        out.append(name)
+    return out

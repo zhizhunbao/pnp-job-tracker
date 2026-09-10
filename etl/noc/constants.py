@@ -1249,3 +1249,55 @@ TITLE_PLURAL_SUFFIX = "s"
 
 TITLE_SPACE = " "
 """词间连接符。"""
+
+# =========================================================================
+# 9. 板帖标题英译(法文标题 → 英文职称;本地模型批译,供 jobillico / jobboom 两域;2026-09-10 自 jobillico 段 5 搬入)
+# =========================================================================
+
+EN_TITLE_MODEL = "qwen3.6:latest"
+"""翻译模型(与 pte 域整句中文同一只;不走 OLLAMA_MODEL 环境变量,与段 6 的中韩译名各自定模)。"""
+
+EN_TITLE_BATCH = 20
+"""一次送多少条标题(编号行协议,照 pte 域 pte-zh 的形;标题短,20 条一批)。"""
+
+EN_TITLE_TIMEOUT_S = 180.0
+"""一批的超时。"""
+
+EN_TITLE_MAX_LEN = 120
+"""译文长度上限(超过 = 模型在解释不是在译,整条弃)。"""
+
+EN_TITLE_PROMPT_TPL = ("Translate each numbered job title (mostly French) into the standard English job title used on "
+                       "Canadian job boards. Keep each one a short title, not a sentence; keep proper nouns; "
+                       "if a title is already English, return it unchanged. "
+                       "Output exactly one line per input, formatted as `<number>. <title>`, nothing else.\n\n{lines}")
+"""翻译提示(编号行协议;2026-09-10 加「已是英文原样返回」一句 —— jobboom 不分语言版,整仓送译)。"""
+
+EN_TITLE_LINE_TPL = "{n}. {text}"
+"""编号行。"""
+
+EN_TITLE_LINE_RE = r"^\s*(\d+)\s*[.、:：)]\s*(.+)$"
+"""解析输出行:编号 + 译文。"""
+
+EN_TITLE_TICK_BATCHES = 10
+"""每 N 批报一行心跳。"""
+
+EN_TITLE_TICK_TPL = "  [{done}/{todo}] 已译"
+"""英译心跳(每批一行太吵,每 N 批一行)。"""
+
+K_MODEL = "model"
+"""Ollama 请求体:模型名。"""
+
+K_PROMPT = "prompt"
+"""Ollama 请求体:提示。"""
+
+K_STREAM = "stream"
+"""Ollama 请求体:流式开关(关)。"""
+
+K_THINK = "think"
+"""Ollama 请求体:思维链开关(关)。"""
+
+K_OPTIONS = "options"
+"""Ollama 请求体:采样选项。"""
+
+K_TEMPERATURE = "temperature"
+"""采样选项:温度(0 求稳定)。"""

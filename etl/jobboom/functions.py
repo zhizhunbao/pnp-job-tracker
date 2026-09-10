@@ -28,7 +28,7 @@ from jobboom.constants import (
     FLUSH_EVERY, HOURS_OF_TYPE, IN_JOBS, IN_URLS, JOB_URL_RE, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE,
     K_DESCRIPTION, K_DIRECT, K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM,
     K_INDUSTRY, K_LANG, K_LAST_SEEN, K_NOC, K_POSTING_ID, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE,
-    K_URL, K_VALID_THROUGH, LANG_EN, LD_ADDRESS, LD_BASE_SALARY, LD_COUNTRY, LD_DATE_POSTED,
+    K_TITLE_ORIG, K_URL, K_VALID_THROUGH, LANG_EN, LD_ADDRESS, LD_BASE_SALARY, LD_COUNTRY, LD_DATE_POSTED,
     LD_DESCRIPTION, LD_EMPLOYMENT_TYPE, LD_HIRING_ORG, LD_INDUSTRY, LD_JOB_LOCATION, LD_JOB_POSTING,
     LD_LOCALITY, LD_MAX, LD_MIN, LD_NAME, LD_POSTAL, LD_REGION, LD_SCRIPT_RE, LD_STREET, LD_TITLE,
     LD_TYPE, LD_UNIT, LD_URL, LD_VALID_THROUGH, LD_VALUE, LOC_RE, MONEY_FMT, OUT_JOBS, OUT_POSTINGS,
@@ -37,6 +37,8 @@ from jobboom.constants import (
     SALARY_RANGE_TPL, SALARY_TPL, SALARY_UNIT_WORD, SECONDS_FMT, SITEMAP_INDEX_URL, SITEMAP_JOBS_RE,
     SLUG_CRAWL, SOURCE_LABEL, SPACE, SYNDICATED_EMPLOYER, TAG_RE, TERM_OF_TYPE, UTC_Z, WS_RE,
 )
+from jobboom.constants import IN_TITLES, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL, TITLES_PER_RUN
+from noc.functions import translate_title_todo
 from jobboom.scheme import (
     DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     SalaryTextIn, SitemapIn, StoreTally, UrlsOut,
@@ -276,7 +278,32 @@ def plain_text_of(html: str) -> str:
 
 
 # =========================================================================
-# 5. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
+# 5. 标题英译(全仓标题 → 英文职位名;批译住 noc 域段 9,本段只管挑帖与缓存)
+# =========================================================================
+
+
+def translate_jobboom_titles() -> None:
+    """本域步骤入口:事实表里译文缓存还没有的帖(不分语言版,标题几乎全法文)→ noc 域本地模型批译
+    → 增量写 titles_en.json。"""
+    facts = load_json_dict(IN_JOBS)
+    titles = load_json_dict(IN_TITLES)
+    todo: dict = {}
+    for pid, raw in facts.items():
+        if raw.get(K_TITLE, "") == "":
+            continue
+        if pid not in titles and len(todo) < TITLES_PER_RUN:
+            todo[pid] = raw[K_TITLE]
+    say(PRINT_TITLES_HEAD_TPL.format(todo=len(todo), all=len(facts), have=len(titles), cap=TITLES_PER_RUN))
+    got = translate_title_todo(todo)
+    for pid, name in got.names.items():
+        titles[pid] = name
+    OUT_TITLES.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_TITLES, payload=titles, indent=JSON_INDENT))
+    say(PRINT_TITLES_DONE_TPL.format(made=len(got.names), fail=got.fail, out=OUT_TITLES))
+
+
+# =========================================================================
+# 6. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
 
@@ -288,6 +315,7 @@ def build_jobboom_postings() -> None:
     未清洗的行(2026-08-05 薪资实撞同款病)。"""
     urls = load_json_dict(IN_URLS)
     facts = load_json_dict(IN_JOBS)
+    titles = load_json_dict(IN_TITLES)
     seen_at = datetime.now(timezone.utc).strftime(SECONDS_FMT) + UTC_Z
     today = date.today().isoformat()
     tally = StoreTally(rows=0, gone=0, expired=0, blank=0)
@@ -303,7 +331,8 @@ def build_jobboom_postings() -> None:
         if fact.valid_through != "" and fact.valid_through < today:
             tally.expired += 1
             continue
-        rows.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at)))
+        rows.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at,
+                                                title_en=titles.get(fact.posting_id, ""))))
     rows.sort(key=date_key_of, reverse=True)
     tally.rows = len(rows)
     OUT_POSTINGS.parent.mkdir(parents=True, exist_ok=True)
@@ -324,10 +353,16 @@ def date_key_of(row: dict) -> str:
 
 
 def to_posting_row(x: PostingRowIn) -> dict:
-    """事实 → Job Bank 仓同形的行(键序即落盘列序;mart 的 to_jb_job_fields 按这些键取)。"""
+    """事实 → Job Bank 仓同形的行(键序即落盘列序;mart 的 to_jb_job_fields 按这些键取)。
+    有英译的帖 title 换英文、原文留 title_orig(分类器与英文界面用英文;法文原题不丢)。"""
     f = x.fact
+    title = f.title
+    title_orig = ""
+    if x.title_en != "":
+        title = x.title_en
+        title_orig = f.title
     return {
-        K_POSTING_ID: f.posting_id, K_TITLE: f.title, K_EMPLOYER: f.employer,
+        K_POSTING_ID: f.posting_id, K_TITLE: title, K_TITLE_ORIG: title_orig, K_EMPLOYER: f.employer,
         K_CITY: f.city, K_PROVINCE: f.province,
         K_SALARY: salary_text_of(SalaryTextIn(lo=f.salary_lo, hi=f.salary_hi, unit=f.salary_unit)),
         K_DATE: f.date_posted, K_SOURCE: SOURCE_LABEL, K_DIRECT: False, K_URL: f.url,

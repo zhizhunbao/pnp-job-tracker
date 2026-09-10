@@ -9,15 +9,12 @@ jobillico 域函数 —— 六段与 constants.py / scheme.py 同名同序镜像
 from __future__ import annotations
 
 import json
-import os
 import time
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from html import unescape
 from pathlib import Path
 from typing import cast
-
-import httpx
 
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
@@ -41,16 +38,13 @@ from jobillico.constants import (
     SLUG_CRAWL, SOURCE_LABEL, SPACE, TAG_RE, TERM_OF_TYPE, UTC_Z, WS_RE,
 )
 from jobillico.constants import (
-    GEN_URL_TPL, IN_TITLES, K_MODEL, K_OPTIONS, K_PROMPT, K_RESPONSE, K_STREAM, K_TEMPERATURE, K_THINK,
-    LANG_FR, NL, OLLAMA_DEFAULT, OLLAMA_ENV, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL,
-    PRINT_TITLES_TICK_TPL, TITLE_BATCH, TITLE_LINE_RE, TITLE_LINE_TPL, TITLE_MAX_LEN, TITLE_MODEL,
-    TITLE_PROMPT_TPL, TITLE_TICK_BATCHES, TITLE_TIMEOUT_S, TITLES_PER_RUN,
+    IN_TITLES, LANG_FR, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL, TITLES_PER_RUN,
 )
+from noc.functions import translate_title_todo
 from jobillico.scheme import (
     DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     SalaryTextIn, SitemapIn, StoreTally,
 )
-from jobillico.scheme import HttpJsonClientLike, TitleBatchIn, TitleTally
 
 
 # =========================================================================
@@ -295,76 +289,24 @@ def plain_text_of(html: str) -> str:
 
 
 def translate_jobillico_titles() -> None:
-    """本域步骤入口:事实表里法文帖、译文缓存里还没有的 → 本地模型批译 → 增量写 titles_en.json。"""
+    """本域步骤入口:事实表里法文帖、译文缓存里还没有的 → noc 域本地模型批译 → 增量写 titles_en.json。"""
     facts = load_json_dict(IN_JOBS)
     titles = load_json_dict(IN_TITLES)
     fr = 0
-    todo: list = []
+    todo: dict = {}
     for pid, raw in facts.items():
         if raw.get(K_LANG) != LANG_FR or raw.get(K_TITLE, "") == "":
             continue
         fr += 1
         if pid not in titles and len(todo) < TITLES_PER_RUN:
-            todo.append(pid)
+            todo[pid] = raw[K_TITLE]
     say(PRINT_TITLES_HEAD_TPL.format(todo=len(todo), fr=fr, have=len(titles), cap=TITLES_PER_RUN))
-    tally = TitleTally(made=0, fail=0)
-    with httpx.Client(timeout=TITLE_TIMEOUT_S) as raw_client:
-        client = cast(HttpJsonClientLike, raw_client)
-        for at in range(0, len(todo), TITLE_BATCH):
-            batch = todo[at:at + TITLE_BATCH]
-            names: list = []
-            for pid in batch:
-                names.append(facts[pid][K_TITLE])
-            got = translate_titles(TitleBatchIn(client=client, titles=names))
-            if len(got) == 0:
-                tally.fail += 1
-                continue
-            for pid, name in zip(batch, got):
-                titles[pid] = name
-                tally.made += 1
-            if (at // TITLE_BATCH) % TITLE_TICK_BATCHES == 0:
-                say(PRINT_TITLES_TICK_TPL.format(done=min(at + TITLE_BATCH, len(todo)), todo=len(todo)))
+    got = translate_title_todo(todo)
+    for pid, name in got.names.items():
+        titles[pid] = name
     OUT_TITLES.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_TITLES, payload=titles, indent=JSON_INDENT))
-    say(PRINT_TITLES_DONE_TPL.format(made=tally.made, fail=tally.fail, out=OUT_TITLES))
-
-
-def translate_titles(x: TitleBatchIn) -> list:
-    """一批标题编号送模型,按编号解析回来;行数、编号或长度对不上给空清单(调用方计失败批)。"""
-    lines: list = []
-    for i, name in enumerate(x.titles):
-        lines.append(TITLE_LINE_TPL.format(n=i + 1, text=name))
-    body = {K_MODEL: TITLE_MODEL, K_PROMPT: TITLE_PROMPT_TPL.format(lines=NL.join(lines)),
-            K_STREAM: False, K_THINK: False, K_OPTIONS: {K_TEMPERATURE: 0}}
-    try:
-        resp = x.client.post(GEN_URL_TPL.format(base=ollama_base()), json=body)
-        raw = dict_of(resp.json()).get(K_RESPONSE)
-    except Exception as e:  # noqa: BLE001 — 网络 / 解析失败留痕,整批不中止
-        err(GEN_URL_TPL.format(base=ollama_base()), e)
-        return []
-    text = ""
-    if isinstance(raw, str):
-        text = raw
-    got: dict = {}
-    for line in text.split(NL):
-        m = TITLE_LINE_RE.match(line)
-        if m is not None:
-            got[int(m.group(1))] = m.group(2).strip()
-    out: list = []
-    for i in range(len(x.titles)):
-        name = got.get(i + 1, "")
-        if name == "" or len(name) > TITLE_MAX_LEN:
-            return []
-        out.append(name)
-    return out
-
-
-def ollama_base() -> str:
-    """本地模型地址(OLLAMA_URL 环境变量,缺/空退默认盒子;与 noc 域同名同义)。"""
-    base = os.environ.get(OLLAMA_ENV)
-    if base is None or base == "":
-        return OLLAMA_DEFAULT
-    return base
+    say(PRINT_TITLES_DONE_TPL.format(made=len(got.names), fail=got.fail, out=OUT_TITLES))
 
 
 # =========================================================================

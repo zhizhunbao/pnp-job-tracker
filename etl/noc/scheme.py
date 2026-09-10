@@ -12,6 +12,7 @@ noc 域形状(照 pnp/company 样张;2026-08-31 并域批C)。
 """
 import re
 from dataclasses import dataclass
+from typing import Protocol
 
 # =========================================================================
 # 1. 分类库(NOC → TEER/大类/中类/小类)
@@ -450,3 +451,46 @@ class DupReportIn:
 
     done: dict
     """产出表当前态。"""
+
+
+# =========================================================================
+# 9. 板帖标题英译(法文标题 → 英文职称;供 jobillico / jobboom 两域)
+# =========================================================================
+
+
+class HttpJsonResponseLike(Protocol):
+    """POST 的响应里真用的一格。"""
+
+    def json(self) -> object:
+        """响应体解析(真身是 dict,收窄住 translate_titles)。"""
+        ...
+
+
+class HttpJsonClientLike(Protocol):
+    """httpx 客户端里英译段真用的一门(POST JSON 体)。"""
+
+    def post(self, url: str, json: dict) -> HttpJsonResponseLike:
+        """POST 一个 JSON 体(库定死签名:json 是关键字参数)。"""
+        ...
+
+
+@dataclass
+class TitleBatchIn:
+    """translate_titles() 入参(一批法文标题)。"""
+
+    client: HttpJsonClientLike
+    """已构造的客户端(POST Ollama)。"""
+
+    titles: list
+    """待译标题(≤ EN_TITLE_BATCH 条,顺序即编号)。"""
+
+
+@dataclass
+class TitleTodoOut:
+    """translate_title_todo() 出参。"""
+
+    names: dict
+    """帖号 → 英文职称(只含译成的)。"""
+
+    fail: int
+    """二分到单条仍译不出的条数(不进缓存,调用方下轮重试)。"""

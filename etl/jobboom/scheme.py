@@ -196,13 +196,16 @@ class ParseTally:
 
 @dataclass
 class PostingRowIn:
-    """to_posting_row() 入参(一条事实 + 本轮时刻)。"""
+    """to_posting_row() 入参(一条事实 + 本轮时刻 + 英译)。"""
 
     fact: JobFact
     """归一后的事实。"""
 
     seen_at: str
     """本轮建仓时刻(ISO Z)。"""
+
+    title_en: str
+    """英译标题(缓存里有才非空;空串 = 用原标题)。"""
 
 
 @dataclass

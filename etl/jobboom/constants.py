@@ -199,7 +199,10 @@ K_POSTING_ID = "posting_id"
 """帖号(mart externalId 的料)。"""
 
 K_TITLE = "title"
-"""标题。"""
+"""标题(有英译时为英文职位名)。"""
+
+K_TITLE_ORIG = "title_orig"
+"""原标题(title 被英译替换时留法文原题;没译过为空串)。"""
 
 K_EMPLOYER = "employer"
 """雇主名。"""
@@ -305,3 +308,24 @@ ADDRESS_SEP = ", "
 
 PRINT_STORE_DONE_TPL = "[OK] postings 仓 {rows} 行(剔:不在站点地图 {gone} / 已过截止日 {expired} / 无标题 {blank})→ {out}"
 """建仓收尾。"""
+
+# =========================================================================
+# 6. 标题英译(全仓标题 → 英文职位名;批译住 noc 域段 9,本段只管挑帖与缓存;2026-09-10 照 jobillico 段 5 接)
+# =========================================================================
+
+OUT_TITLES = paths.RAW_JOBBOOM / "titles_en.json"
+"""标题英译缓存:帖号 → 英文职位名。为什么有这一步(2026-09-10 Frank「魁北克的工作都是未分类」):
+Jobboom 不分语言版(lang 恒 en)但标题几乎全法文,NOC 分类器认不出,68% 落「未分类」;
+整仓送译(已是英文的模型原样返回),译文只给分类与展示用,原标题留 title_orig。"""
+
+IN_TITLES = OUT_TITLES
+"""建仓段读它(有译文的帖 title 换英文);英译段读它做增量。"""
+
+TITLES_PER_RUN = 4000
+"""每轮最多译多少条(直发帖约 3.3k,首轮一次跑完;之后只译新帖)。"""
+
+PRINT_TITLES_HEAD_TPL = "[titles] 待译 {todo}(全仓 {all},已译 {have},本轮上限 {cap})"
+"""英译起手。"""
+
+PRINT_TITLES_DONE_TPL = "[OK] 英译 {made} 条(没译成 {fail})→ {out}"
+"""英译收尾。"""

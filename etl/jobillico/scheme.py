@@ -179,49 +179,6 @@ class ParseTally:
 
 
 # =========================================================================
-# 5. 标题英译
-# =========================================================================
-
-
-class HttpJsonResponseLike(Protocol):
-    """POST 的响应里真用的一格。"""
-
-    def json(self) -> object:
-        """响应体解析(真身是 dict,收窄住 translate_titles)。"""
-        ...
-
-
-class HttpJsonClientLike(Protocol):
-    """httpx 客户端里英译段真用的一门(POST JSON 体)。"""
-
-    def post(self, url: str, json: dict) -> HttpJsonResponseLike:
-        """POST 一个 JSON 体(库定死签名:json 是关键字参数)。"""
-        ...
-
-
-@dataclass
-class TitleBatchIn:
-    """translate_titles() 入参(一批法文标题)。"""
-
-    client: HttpJsonClientLike
-    """已构造的客户端(POST Ollama)。"""
-
-    titles: list
-    """待译标题(≤ TITLE_BATCH 条,顺序即编号)。"""
-
-
-@dataclass
-class TitleTally:
-    """translate_jobillico_titles() 的计数器。"""
-
-    made: int
-    """本轮译成的条数。"""
-
-    fail: int
-    """行数或编号对不上的批数(整批弃,下轮重试)。"""
-
-
-# =========================================================================
 # 6. postings 仓
 # =========================================================================
 

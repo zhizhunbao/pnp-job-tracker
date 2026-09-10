@@ -32,7 +32,7 @@ SCHEDULED = [
   sitemap  索引 → sitemap_job_postings_N.xml → raw/jobillico/urls.json(帖号 → 英文版优先的详情 URL)
   details  枚举表里未缓存的帖 → 详情原文进 crawl/board-jobillico/(每轮 DETAILS_PER_RUN 张)
   parse    缓存原文 → ld+json JobPosting → raw/jobillico/jobs.json(增量,已解析不重解)
-  titles   仅法文帖的标题 → 英文职位名(本地 qwen,20 条一批编号行协议)→ raw/jobillico/titles_en.json(增量)
+  titles   仅法文帖的标题 → 英文职位名(noc 域本地 qwen 批译,20 条一批编号行协议)→ raw/jobillico/titles_en.json(增量)
   store    事实 × 枚举 → processed/jobillico/postings.json(当前态,Job Bank 仓同形)
 """
 
