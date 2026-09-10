@@ -53,6 +53,13 @@ const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.s
  */
 export const DEDUPE_COND = `coalesce(j.is_dup, false) = false`
 
+/**
+ * 同日排序的来源档(2026-09-10 Frank 拍板「魁北克板帖别压顶」):Job Bank 与雇主直招(ats / directory)
+ * 为 0 档,第三方招聘板(jobillico / jobboom)为 1 档;同日先按档再按 first_seen 滚动。
+ * 带尾逗号,直接拼在 first_seen 决胜列前面。
+ */
+export const BOARD_TIER = `CASE WHEN j.origin IN ('jobillico','jobboom') THEN 1 ELSE 0 END ASC, `
+
 // =========================================================================
 // 2. 职位 —— 列表 / 分页 / 匹配
 // =========================================================================
@@ -61,7 +68,7 @@ export const DEDUPE_COND = `coalesce(j.is_dup, false) = false`
  * 首屏最近 N 行(SSR 秒开用)
  */
 export const JOB_ROWS_LATEST = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`
+     ORDER BY j.date_posted DESC NULLS LAST, ${BOARD_TIER}j.first_seen DESC NULLS LAST, j.id DESC LIMIT $1`
 
 /**
  * 分页列表。where/cond/order 都是**结构**片段(buildJobsWhere / orderByClause 产出),值仍在 params 里
@@ -91,7 +98,7 @@ export const jobsPageCount = (where: string, dedupe: string) =>
  */
 export const MATCH_PAGE = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
        WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2) OR LEFT(j.noc,3) = ANY($3))
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $4`
+       ORDER BY j.date_posted DESC NULLS LAST, ${BOARD_TIER}j.first_seen DESC NULLS LAST, j.id DESC LIMIT $4`
 
 /**
  * 排序子句:列与方向都来自白名单(SORT_COLUMNS),不是用户原样字符串

@@ -845,7 +845,8 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
 }
 
 /**
- * 排序指令 → ORDER BY 子句(白名单防注入;#159:同日兜底 first_seen DESC 让榜单随抓取滚动)。
+ * 排序指令 → ORDER BY 子句(白名单防注入;#159:同日兜底 first_seen DESC 让榜单随抓取滚动;
+ * 2026-09-10 同日先按来源档 BOARD_TIER,第三方板帖沉到当天块尾)。
  *
  * @param input 排序指令与付费态。
  * @returns ORDER BY 子句。
@@ -869,9 +870,9 @@ function orderByClause(input: OrderByIn): string {
   if (dir === FV.asc) {
     d = DIR_ASC
   }
-  let tail = ORDER_FRESH
+  let tail = SQL.BOARD_TIER + ORDER_FRESH
   if (col !== ORDER_DEFAULT_COL) {
-    tail = ORDER_DATE_TAIL + ORDER_FRESH
+    tail = ORDER_DATE_TAIL + SQL.BOARD_TIER + ORDER_FRESH
   }
   return SQL.orderBy(col, d, tail)
 }
