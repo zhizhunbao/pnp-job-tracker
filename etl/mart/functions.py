@@ -42,7 +42,7 @@ import paths
 from log.functions import err, say
 from names.functions import norm_name
 from noc.constants import SLUGS as NOC_BROAD_SLUG
-from noc.functions import broad_of, classify, teer_of
+from noc.functions import broad_of, classify, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
@@ -688,12 +688,14 @@ def load_pnp_tables() -> PnpTables:
 
 
 def classify_title(title: str) -> str:
-    """标题关键词 → NOC(用于推断 TEER 和职业紧缺度);没命中=空串。"""
+    """标题 → NOC(用于推断 TEER 和职业紧缺度):先过 NOC_RULES 关键词正则(手定口径优先,
+    存量命中不动),没命中再查 noc 域的官方示例职称表(2026-09-10 Frank「未分类太多」);
+    两处都空=空串。"""
     t = title.lower()
     for pat, noc in NOC_RULES:
         if re.search(pat, t):
             return noc
-    return ""
+    return noc_of_title(title)
 
 
 def teer_of_noc(noc: str) -> int | None:

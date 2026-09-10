@@ -19,6 +19,7 @@ import datetime
 import io
 import json
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -60,6 +61,10 @@ from noc.constants import (
     PROGRESS_TPL, PROMPT_TPL, PROVINCE_ALL, QUOTE_STRIP, SEC1_HEAD, SEC2_HEAD, SEC3_HEAD, SMELL,
     SRC_ITEM_TPL, SRC_SEP, STRUCT_CACHE_MIN_BYTES, STRUCT_DONE_TPL, STRUCT_ENV,
     STRUCT_TIMEOUT_S, STRUCTURE_URL, TEER_TPL, TITLE_FALLBACK, TITLE_SHOW_LEN, TODO_TPL,
+    TITLE_ACRONYMS, TITLE_AMP, TITLE_AND, TITLE_CORE_MIN_WORDS, TITLE_EXAMPLE_TYPES, TITLE_MAN,
+    TITLE_MANWOMAN, TITLE_MODIFIERS,
+    TITLE_NGRAM_MIN, TITLE_NONWORD_RE, TITLE_PAREN_RE, TITLE_PHRASES, TITLE_PLURAL_SUFFIX,
+    TITLE_QUAL_SEP, TITLE_SPACE, TITLE_SPELLING, TITLE_SPLIT_RE, TITLE_WOMAN,
     TRANSLATE_FAIL_TPL, TRANSLATE_TIMEOUT_S, TSV_DONE_TPL, TSV_HEADER, TSV_ROW_TPL,
     UI_BANNED, UI_FIX, UI_KEY_BY_LANG, UI_KEY_DEFAULT,
     UI_MAX_LEN, UI_PROMPT_TPL, UNCLASSIFIED, UNIT_LEVEL, WANT_ELEMENTS, WANT_LEVELS, ZH_MAX_LEN,
@@ -1145,3 +1150,143 @@ def to_en_of(rows: list) -> dict:
     for row in rows:
         en_of[row.get("noc", "")] = row.get("title", "")
     return en_of
+
+
+# =========================================================================
+# 8. 标题查表(官方示例职称 → NOC;2026-09-10)
+# =========================================================================
+
+
+def noc_of_title(title: str) -> str:
+    """帖子标题 → NOC(官方示例职称查表):主名剥修饰后整名相等(全名表、核心名表)→ 剥复数
+    → 全标题里最长的多词全名;都没有给空串(消费方按「未分类」处理,不硬塞)。"""
+    full = get_title_index()
+    cores = get_core_index()
+    for cand in title_candidates(norm_title(title)):
+        noc = full.get(cand)
+        if noc is None:
+            noc = cores.get(cand)
+        if noc is not None:
+            return noc
+    whole = strip_modifiers(fold_title(title))
+    for gram in title_ngrams(whole):
+        noc = full.get(gram)
+        if noc is not None:
+            return noc
+    return ""
+
+
+def norm_title(title: str) -> str:
+    """帖子标题的主名:第一段(分段符前)归一。"""
+    parts = re.split(TITLE_SPLIT_RE, re.sub(TITLE_PAREN_RE, TITLE_SPACE, title), maxsplit=1)
+    return fold_title(parts[0])
+
+
+def fold_title(text: str) -> str:
+    """任一职称的归一形:剥括号、小写、& → and、字母数字外折空格、美式拼法换加式、去纯数字词。"""
+    low = re.sub(TITLE_PAREN_RE, TITLE_SPACE, text).lower().replace(TITLE_AMP, TITLE_AND)
+    words: list = []
+    for w in re.sub(TITLE_NONWORD_RE, TITLE_SPACE, low).split():
+        if w.isdigit():
+            continue
+        words.append(TITLE_ACRONYMS.get(w, TITLE_SPELLING.get(w, w)))
+    return TITLE_SPACE.join(words)
+
+
+def title_candidates(main: str) -> list:
+    """主名的整名候选(按序):剥修饰形 → 原形 → 各自剥复数;去重保序。
+    剥修饰后空(标题只剩「Intern」「Senior」这种)= 没有职业内容,不出候选(官方示例里
+    intern 是医学实习生,撞不得)。"""
+    bare = strip_modifiers(main)
+    if bare == "":
+        return []
+    out: list = []
+    for form in (bare, main):
+        for cand in (form, singular_of(form)):
+            if cand not in out:
+                out.append(cand)
+    return out
+
+
+def strip_modifiers(norm: str) -> str:
+    """剥掉不改职业的修饰:先整段多词短语,再逐词。"""
+    text = norm
+    for phrase in TITLE_PHRASES:
+        text = text.replace(phrase, TITLE_SPACE)
+    words: list = []
+    for w in text.split():
+        if w not in TITLE_MODIFIERS:
+            words.append(w)
+    return TITLE_SPACE.join(words)
+
+
+def singular_of(norm: str) -> str:
+    """末词剥复数尾 s(Welders → Welder);不是复数原样返回。"""
+    if norm.endswith(TITLE_PLURAL_SUFFIX):
+        return norm[:-1]
+    return norm
+
+
+def title_ngrams(norm: str) -> list:
+    """全标题的多词片段,长的在前(≥ TITLE_NGRAM_MIN 词;单词示例不许在长标题里捞)。"""
+    words = norm.split()
+    out: list = []
+    for n in range(len(words), TITLE_NGRAM_MIN - 1, -1):
+        for at in range(0, len(words) - n + 1):
+            out.append(TITLE_SPACE.join(words[at:at + n]))
+    return out
+
+
+def get_title_index() -> dict:
+    """官方示例职称全名 → NOC 的查表(进程内建一次进 CACHE.titles,核心名表同批建进 CACHE.cores)。"""
+    idx = CACHE.titles
+    if idx is None:
+        build_title_indexes()
+        idx = CACHE.titles
+    if idx is None:
+        return {}
+    return idx
+
+
+def get_core_index() -> dict:
+    """去限定语的核心名 → NOC 的查表(只供整名相等;与全名表同批建)。"""
+    idx = CACHE.cores
+    if idx is None:
+        build_title_indexes()
+        idx = CACHE.cores
+    if idx is None:
+        return {}
+    return idx
+
+
+def build_title_indexes() -> None:
+    """Elements CSV 的示例职称 → 两张查表进 CACHE:全名表、核心名表;一名多码的形不入表。"""
+    full_of: dict = defaultdict(set)
+    core_of: dict = defaultdict(set)
+    for r in csv.DictReader(io.StringIO(fetch_elements_csv())):
+        row = to_element_row(r)
+        if row.level != UNIT_LEVEL or row.etype not in TITLE_EXAMPLE_TYPES or row.desc == "":
+            continue
+        for text in example_texts(row.desc):
+            full_of[fold_title(text)].add(row.noc)
+            core = fold_title(text.split(TITLE_QUAL_SEP, 1)[0])
+            if len(core.split()) >= TITLE_CORE_MIN_WORDS:
+                core_of[core].add(row.noc)
+    CACHE.titles = unique_of(full_of)
+    CACHE.cores = unique_of(core_of)
+
+
+def unique_of(nocs_of: dict) -> dict:
+    """{形: NOC 集} → {形: NOC},只留恰好一码的形。"""
+    idx: dict = {}
+    for form, nocs in nocs_of.items():
+        if len(nocs) == 1 and form != "":
+            idx[form] = next(iter(nocs))
+    return idx
+
+
+def example_texts(desc: str) -> list:
+    """一条官方示例职称的原文形:两性写法(chairman/woman)拆成两条,其余原样一条。"""
+    if TITLE_MANWOMAN in desc:
+        return [desc.replace(TITLE_MANWOMAN, TITLE_MAN), desc.replace(TITLE_MANWOMAN, TITLE_WOMAN)]
+    return [desc]

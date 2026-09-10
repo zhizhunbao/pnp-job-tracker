@@ -1167,3 +1167,85 @@ SHORT_HAVE_TPL = "  [{lang}] 累计有短名 {n} 条"
 
 SHORT_DONE_TPL = "✓ {path}"
 """段7 收尾报产出路径。"""
+
+# =========================================================================
+# 8. 标题查表(官方示例职称 → NOC;2026-09-10 Frank「未分类太多」:mart 关键词正则没命中后的兜底)
+# =========================================================================
+
+TITLE_EXAMPLE_TYPES = ("All examples", "Illustrative example(s)")
+"""Elements CSV 里当职称用的两类元素(官方示例职称 27935 条,原表无一名多码)。"""
+
+TITLE_QUAL_SEP = " - "
+"""示例职称的限定语分隔(「executive director - government services」的后半);去限定语的核心名
+在多个 NOC 之间撞车时不入表,只信唯一的。"""
+
+TITLE_MANWOMAN = "man/woman"
+"""示例职称的两性写法(chairman/woman、foreman/woman)→ 拆成 -man 与 -woman 两条。"""
+
+TITLE_MAN = "man"
+"""两性写法拆出的第一形。"""
+
+TITLE_WOMAN = "woman"
+"""两性写法拆出的第二形。"""
+
+TITLE_PAREN_RE = r"\([^)]*\)"
+"""括号连内容整个剥掉(示例里的缩写「(CEO)」、帖子里的班次「(night shift)」、法文性别「(euse)」)。"""
+
+TITLE_SPLIT_RE = r"\s+[-–—|:;,/]\s+|\s*[|:;]\s*"
+"""帖子标题的分段符:「CNC Machinist - Night Shift」「Clerk | Montréal」第一段当主名;
+连字符两侧必须有空格才算分段(「co-op」「full-time」不切)。"""
+
+TITLE_AMP = "&"
+"""标题里的与号。"""
+
+TITLE_AND = " and "
+"""与号的词形(示例职称一律写 and)。"""
+
+TITLE_NONWORD_RE = r"[^a-z0-9]+"
+"""归一:小写后字母数字之外全折成单空格(连字符、撇号、点号一律不区分)。"""
+
+TITLE_SPELLING = {
+    "labor": "labour", "laborer": "labourer", "laborers": "labourers",
+    "center": "centre", "centers": "centres",
+    "jewelry": "jewellery", "counselor": "counsellor", "counselors": "counsellors",
+}
+"""美式拼法 → 官方加式拼法(NOC 用 labourer / centre / jewellery / counsellor),两边同洗。"""
+
+TITLE_PHRASES = (
+    "part time", "full time", "night shift", "evening shift", "weekend shift", "rotating shift",
+    "temporary contract", "fixed term", "co op", "work from home",
+)
+"""帖子标题里不改职业的多词修饰(先于单词修饰整段剥掉)。"""
+
+TITLE_MODIFIERS = frozenset({
+    "senior", "sr", "junior", "jr", "lead", "principal", "intern", "internship",
+    "temporary", "permanent", "contract", "casual", "seasonal", "summer",
+    "bilingual", "remote", "hybrid", "onsite", "night", "nights", "evening", "evenings",
+    "weekend", "weekends", "shift", "shifts", "urgent", "immediate", "new", "experienced",
+    "wanted", "needed", "hiring", "position", "positions", "job", "jobs", "opportunity",
+    "i", "ii", "iii", "iv", "level",
+})
+"""帖子标题里不改职业的单词修饰(资历、班次、雇佣形式、语言、招聘套话、等级);纯数字词一并剥。"""
+
+TITLE_ACRONYMS = {
+    "hr": "human resources", "it": "information technology", "qa": "quality assurance",
+    "qc": "quality control", "cnc": "computer numerical control",
+    "hvac": "heating ventilation and air conditioning", "rn": "registered nurse",
+    "lpn": "licensed practical nurse", "rpn": "registered practical nurse",
+    "ceo": "chief executive officer", "cfo": "chief financial officer",
+    "coo": "chief operating officer", "cto": "chief technology officer",
+}
+"""帖子标题里的缩写 → 官方示例的全写(示例把缩写放括号里,归一时括号已剥,只剩全写);
+只收官方示例真用全写的那几个。"""
+
+TITLE_NGRAM_MIN = 2
+"""子串匹配的最短词数:单词示例(driver / clerk / manager)只许整名相等,不许在长标题里捞。"""
+
+TITLE_CORE_MIN_WORDS = 2
+"""核心名(去限定语)入表的最少词数:单词核心名(technician / operator / manager)太泛不入表。"""
+
+TITLE_PLURAL_SUFFIX = "s"
+"""复数职称(Welders)剥尾 s 再查一次。"""
+
+TITLE_SPACE = " "
+"""词间连接符。"""
