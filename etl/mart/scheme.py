@@ -2512,6 +2512,17 @@ class CompPoolOut:
 
 
 @dataclass
+class PrefixedYearIn:
+    """prefixed_year_of() 入参:列名与期望前缀。"""
+
+    col: str
+    """列名(y2026 / c2023)。"""
+
+    prefix: str
+    """前缀。"""
+
+
+@dataclass
 class RatioRowsIn:
     """macro_ratio_rows() 入参:分子键 ÷ 分母键 → 百分比行。"""
 

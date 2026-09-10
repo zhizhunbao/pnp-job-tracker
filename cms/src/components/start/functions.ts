@@ -60,7 +60,7 @@ import {
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
   COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_LOWER_BETTER, REC_SKIP_KEYS,
-  REC_TOP_N,
+  REC_TOP_N, FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
@@ -113,7 +113,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
+  AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
@@ -3463,7 +3463,21 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     yoyLabel: yoyLabelOf({ t: x.t, year }),
     yearNotes: yearNotesOf({ rows, years }),
     recLabel: recLabelOf({ t: x.t, key: x.key }),
+    formula: formulaOf({ t: x.t, key: x.key }),
   }
+}
+
+/**
+ * 标题下的公式行:只有竞争表有。
+ *
+ * @param x 取词函数与指标键。
+ * @returns 公式或空串。
+ */
+function formulaOf(x: RecLabelIn): string {
+  if (x.key === FORMULA_KEY) {
+    return x.t('pulse.m.compFormula')
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -3847,6 +3861,13 @@ function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
   if (x.key === MR_ISSUED) {
     return opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t })
   }
+  if (x.key === MK_ALLOC) {
+    return allocCellsOf({
+      single: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
+      incl: cellsOfKey({ key: MK_ALLOC_INCL, points: x.points, t: x.t }),
+      note: x.t('pulse.m.inclAip'),
+    })
+  }
   if (x.key === MR_USE_RATE) {
     return quotaUsedCellsOf({
       alloc: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
@@ -4015,6 +4036,29 @@ function remainingCellsOf(x: RemainingIn): Record<string, MacroCell> {
     const i = x.issued[y]
     if (out[y] == null && a != null && i != null && a.value - i.value >= 0) {
       out[y] = { value: a.value - i.value, text: numOf(a.value - i.value), note: i.note }
+    }
+  }
+  return out
+}
+
+/**
+ * 配额表的格:单列数优先;官方只发合并数的年份用合并数顶上并带「含 AIP」灰注(NB / NL / PE)。
+ *
+ * @param x 单列格、合并格与灰注文案。
+ * @returns 年 → 格。
+ */
+function allocCellsOf(x: AllocCellsIn): Record<string, MacroCell> {
+  const out: Record<string, MacroCell> = {}
+  for (const y of Object.keys(x.single)) {
+    const c = x.single[y]
+    if (c != null) {
+      out[y] = c
+    }
+  }
+  for (const y of Object.keys(x.incl)) {
+    const c = x.incl[y]
+    if (c != null && out[y] == null) {
+      out[y] = { value: c.value, text: c.text, note: x.note }
     }
   }
   return out

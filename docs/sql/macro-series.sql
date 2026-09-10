@@ -14,7 +14,7 @@
 CREATE TABLE IF NOT EXISTS macro_series (
   id serial PRIMARY KEY,
   geo varchar NOT NULL,        -- CA | 十省两位码(领地不收)
-  key varchar NOT NULL,        -- pop|npr|asylum|workOnly|studyOnly|workStudy|other|gdp|unemp|studyNew|prAll|prPnp|alloc|eeInvites|comp(2026-09-08 名额竞争比,省级按年)|pnpShare|nprShare(2026-09-09 两个百分比派生:省提名÷PR、临时居民÷人口)
+  key varchar NOT NULL,        -- pop|npr|asylum|workOnly|studyOnly|workStudy|other|gdp|unemp|studyNew|prAll|prPnp|alloc|eeInvites|comp(2026-09-08 名额竞争比,省级按年)|pnpShare|nprShare(2026-09-09 两个百分比派生:省提名÷PR、临时居民÷人口)|allocIncl(PNP+AIP 合并配额,官方不拆的年份)
   period varchar NOT NULL,     -- 季/月度 YYYY-MM-DD;年度 YYYY
   freq varchar,                -- Q | M | A
   value numeric,               -- 值;官方缺位的点不出行,不折 0

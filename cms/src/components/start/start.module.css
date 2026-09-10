@@ -2810,3 +2810,15 @@
   white-space: normal;
   line-height: 1.35;
 }
+
+/*
+ * 竞争表标题下的公式行(Frank 2026-09-09:页面自己说清「在库 ÷ 配额」)。
+ */
+.formula {
+  /*
+   * 二级文字,比正文小半号,与下面的表留一点缝。
+   */
+  color: var(--text2);
+  font-size: 13px;
+  margin: -2px 0 10px;
+}

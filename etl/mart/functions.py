@@ -48,7 +48,7 @@ from mart.constants import (
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
-    ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
+    ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
     K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_YTD_YEAR,
     MACRO_COMP_DIGITS, MACRO_COMP_POOL_KEYS, MACRO_KEY_COMP, MACRO_YEAR_END_TPL, UNIT_RATIO,
     IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, PROV_NS,
@@ -173,7 +173,8 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, RatioRowsIn, StatcanPeriodIn, StudyAsOfIn,
+    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
+    StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
     NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoSalaryClosedIn, NoticeRowIn, NumericRangeOut,
@@ -4968,10 +4969,14 @@ def macro_alloc_rows() -> list:
         srcs = r.get(K_SOURCES) or {}
         for col, value in r.items():
             year = alloc_year_of(col)
+            key = MACRO_KEY_ALLOC
+            if year == "":
+                year = alloc_incl_year_of(col)
+                key = MACRO_KEY_ALLOC_INCL
             if year == "" or value is None:
                 continue
             out.append(to_macro_row(MacroRowIn(
-                geo=r.get(K_PROV, ""), key=MACRO_KEY_ALLOC, period=year,
+                geo=r.get(K_PROV, ""), key=key, period=year,
                 freq=MACRO_FREQ_ANNUAL, value=value, as_of=year, unit=UNIT_NOMINATIONS,
                 source=srcs.get(col, ""), fetched=fetched)))
     return out
@@ -4979,9 +4984,19 @@ def macro_alloc_rows() -> list:
 
 def alloc_year_of(col: str) -> str:
     """配额表的列名 → 年份(y2026 → 2026);不是年列给空串。"""
-    n = len(ALLOC_YEAR_PREFIX)
-    rest = col[n:]
-    if col[:n] == ALLOC_YEAR_PREFIX and rest.isdigit():
+    return prefixed_year_of(PrefixedYearIn(col=col, prefix=ALLOC_YEAR_PREFIX))
+
+
+def alloc_incl_year_of(col: str) -> str:
+    """配额表的合并数列名 → 年份(c2023 → 2023);不是合并数列给空串(2026-09-09)。"""
+    return prefixed_year_of(PrefixedYearIn(col=col, prefix=ALLOC_INCL_PREFIX))
+
+
+def prefixed_year_of(x: PrefixedYearIn) -> str:
+    """「前缀 + 四位年」的列名 → 年;前缀不对或后面不是数字给空串。"""
+    n = len(x.prefix)
+    rest = x.col[n:]
+    if x.col[:n] == x.prefix and rest.isdigit():
         return rest
     return ""
 

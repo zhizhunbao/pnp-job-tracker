@@ -3521,6 +3521,11 @@ export type MacroGeo = {
    * 推荐列名;空串 = 不出这列。
    */
   recLabel: string
+
+  /**
+   * 标题下的公式行(只有竞争表);空串不显。
+   */
+  formula: string
 }
 
 /**
@@ -4108,6 +4113,26 @@ export type YoyLabelIn = {
    */
   year: string
 
+}
+
+/**
+ * `allocCellsOf` 的入参。
+ */
+export type AllocCellsIn = {
+  /**
+   * 单列配额格(年 → 格)。
+   */
+  single: Record<string, MacroCell>
+
+  /**
+   * 合并配额格(年 → 格;官方不拆的年份)。
+   */
+  incl: Record<string, MacroCell>
+
+  /**
+   * 「含 AIP」灰注文案。
+   */
+  note: string
 }
 
 /**

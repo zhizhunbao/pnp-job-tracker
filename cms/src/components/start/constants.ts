@@ -1136,6 +1136,12 @@ export const MK_EE = 'eeInvites'
 export const MK_COMP = 'comp'
 
 /**
+ * macro_series 数据键:省提名 + AIP 合并配额(NB / NL / PE 官方不拆的年份;配额表单列缺格时顶上带「含 AIP」灰注,
+ * 竞争比不用它;2026-09-09)。
+ */
+export const MK_ALLOC_INCL = 'allocIncl'
+
+/**
  * macro_series 数据键:省提名依赖度(%)= 其中省提名 ÷ PR 获批(mart 算;Frank 2026-09-09 九张表拍板:「该走 PNP 还是 EE」看它)。
  */
 export const MK_PNP_SHARE = 'pnpShare'
@@ -1160,12 +1166,18 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
  * 「按指标」视图的九张表及其序(Frank 2026-09-09 拍板:一张表回答一个问题,按用户问的先后 ——
  * 挤不挤 → 发多少 → 还有没有 → 走哪条路 → 人在减少吗 → 新人速度 → 落地多少 → 下一刀砍谁 → 找工作难不难)。
  * 2026-09-09 Frank「之前安省的可以删掉了吧」「包含对比才有意义」:省块视图撤,原来只在省块里的
- * 已发提名 / 其中省提名 / EE 邀请 / 接纳目标 / 总人口 / GDP 也各成一表(后四张只有全国一行或是背景数,垫底)。
+ * 其中省提名 / EE 邀请 / 接纳目标 / 总人口 / GDP 也各成一表(后四张只有全国一行或是背景数,垫底);
+ * 已发提名同日撤(「有意义吗」—— 九成年份等于配额,今年用到哪已在用尽率里),数据留库给用尽率。
  */
 export const IND_ORDER = [
-  'comp', 'alloc', 'issued', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
+  'comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
   'nprShare', 'unemp', 'pop', 'gdp',
 ]
+
+/**
+ * 标题下带一行公式的指标(只有竞争表:Frank 2026-09-09 三次问「公式是什么」—— 页面该自己说)。
+ */
+export const FORMULA_KEY = 'comp'
 
 /**
  * 指标表的锚点前缀(pl-ind-<键>)。

@@ -2779,6 +2779,13 @@ MACRO_YEAR_LEN = 4
 ALLOC_YEAR_PREFIX = "y"
 """配额维护表的年列前缀(y2024 / y2025 / y2026;加一年 = 多一格,本段不改代码)。"""
 
+ALLOC_INCL_PREFIX = "c"
+"""配额维护表的**合并数**列前缀(c2023 = 该年 PNP+AIP 合并配额;NB / NL / PE 官方只发合并数的年份填这里,
+2026-09-09 Frank「有数总比没数强」)。出成独立键 allocIncl,页面在单列缺格时顶上并标「含 AIP」;竞争比只用单列。"""
+
+MACRO_KEY_ALLOC_INCL = "allocIncl"
+"""键:省提名 + AIP 合并配额(只有官方不拆的年份有)。"""
+
 K_CHECKED_AT = "checkedAt"
 """配额维护表的人工核对日(表级 fetched 的来源)。"""
 

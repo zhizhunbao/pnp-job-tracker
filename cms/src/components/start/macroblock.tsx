@@ -9,6 +9,7 @@
  */
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
+import { TEXT_NONE } from './constants'
 import { boardGapClsOf, macroColsOf, macroRowKeyOf, macroSeriesOf } from './functions'
 import { IndCards } from './indcards'
 import { Sec } from './sec'
@@ -27,6 +28,7 @@ export function MacroBlock({ t, geo, gap, updatedAt }: MacroBlockIn) {
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={boardGapClsOf({ gap })}>
       <Sec title={geo.name} right={<Updated iso={updatedAt} t={t} />} sub>
+        {geo.formula !== TEXT_NONE && <p className={css.formula}>{geo.formula}</p>}
         <div className={css.table}>
           <Table<MacroRow>
             rows={rows}
