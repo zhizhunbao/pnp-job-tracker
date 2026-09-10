@@ -10,13 +10,16 @@
 import {
   CLS_SEP, EMPTY_MARK, SERIES_BOX_SEP, SERIES_CHART_H, SERIES_CHART_W, SERIES_COLOR_FALLBACK, SERIES_COLORS,
   SERIES_GRID_MAX_LINES, SERIES_GRID_STEP, SERIES_GRID_STEPS, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS,
-  SERIES_PAD_B, SERIES_PAD_L, SERIES_PAD_R,
+  SERIES_ANCHOR_LAST, SERIES_ANCHOR_MID, SERIES_BAR_FILL, SERIES_BAR_GAP, SERIES_CHAR_W, SERIES_HALF, SERIES_PAD_B,
+  SERIES_PAD_L, SERIES_PAD_R, SERIES_TEXT_GAP,
   SERIES_PAD_T, SERIES_PATH_GAP, SERIES_PATH_LINE, SERIES_PATH_MOVE, SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_ROUND,
 } from './constants'
 import type {
-  BoundsIn, CellIn, ClickFn, Col, GridIn, GripFn, GripIn, HeadClickIn, PlotLineIn, PointLabelsIn, RawPointsIn,
-  SeriesBounds, SeriesDot, SeriesGrid, SeriesLine, SeriesLinesIn, SeriesPathIn, SeriesPlot, SeriesPlotIn,
-  SeriesRawLine, SeriesRawPoint, SeriesTick, ShownColsIn, SortRowsIn, TicksIn, WidthStyleIn, XAtIn, YAtIn,
+  BarGeomIn, BarGeomOut, BoundsIn, CellIn, ChartWindowIn, ChartWindowOut, ClickFn, Col, GridIn, GripFn, GripIn,
+  GroupCenterIn, HeadClickIn,
+  IndexOfIn, LeftPadIn, PlotLineIn, PointLabelsIn, RawPointsIn,
+  SeriesBar, SeriesBounds, SeriesDot, SeriesGrid, SeriesLine, SeriesLinesIn, SeriesPathIn, SeriesPlot, SeriesPlotIn,
+  SeriesRawLine, SeriesRawPoint, SeriesTick, ShownColsIn, SortRowsIn, TickAnchor, TicksIn, WidthStyleIn, XAtIn, YAtIn,
 } from './types'
 
 /**
@@ -187,6 +190,23 @@ export function shownColsOf<T>(x: ShownColsIn<T>): Col<T>[] {
 }
 
 /**
+ * 趋势态按时间窗切时间点:「近 N 期」末 N 个、「近 M 期」末 M 个、「全部」全留(表态的全部按近 M 显示,图不横滚所以真全部)。
+ *
+ * @param x 全部时间点、刻度文本与时间窗。
+ * @returns 窗内的时间点与刻度文本。
+ */
+export function chartWindowOf(x: ChartWindowIn): ChartWindowOut {
+  if (x.range === SERIES_RANGE_ALL) {
+    return { keys: x.pointKeys, labels: x.pointLabels }
+  }
+  let count = x.recent
+  if (x.range === SERIES_RANGE_MORE) {
+    count = x.more
+  }
+  return { keys: x.pointKeys.slice(-count), labels: x.pointLabels.slice(-count) }
+}
+
+/**
  * 趋势态的 x 轴刻度文本:按 pointKeys 取各点列的 label。
  * label 是 ReactNode(调用方可能塞了两行 JSX),取不到纯文本就退回列 key ——
  * x 轴一格只放得下一个词,拿 key 也比渲一坨节点强。
@@ -209,39 +229,58 @@ export function pointLabelsOf<T>(x: PointLabelsIn<T>): string[] {
 }
 
 /**
- * 把一批行画成一张图:先洗成指数线,再按上下界落到画布坐标上。
- * 指数而不是原值 —— 理由见 SERIES_INDEX_BASE 的注释。
+ * 把一批行画成一张图:先洗成指数线(或原值线,看 indexed),再按上下界落到画布坐标上。
+ * 指数而不是原值 —— 理由见 SERIES_INDEX_BASE 的注释;同单位的比值 / 百分比类画原值。
  *
  * @param x 刻度文本、时间点 key、行与两枚取值器。
  * @returns 画布数据(tsx 只负责摆成 JSX)。
  */
 export function seriesPlotOf<T>(x: SeriesPlotIn<T>): SeriesPlot {
-  const lines = seriesLinesOf({ pointKeys: x.pointKeys, rows: x.rows, valueOf: x.valueOf, labelOf: x.labelOf })
-  const bounds = boundsOf({ lines })
+  const lines = seriesLinesOf({
+    pointKeys: x.pointKeys, rows: x.rows, valueOf: x.valueOf, labelOf: x.labelOf, indexed: x.indexed,
+  })
+  const bounds = boundsOf({ lines, fromZero: x.indexed === false })
+  const grid = gridOf({ bounds })
+  const left = leftPadOf({ grid })
   const count = x.pointKeys.length
   const plotted: SeriesLine[] = []
   let at = 0
   for (const line of lines) {
-    plotted.push(plotLineOf({ line, at, bounds, count }))
+    plotted.push(plotLineOf({ line, at, bounds, count, indexed: x.indexed, lineCount: lines.length, left }))
     at = at + 1
   }
   const viewBox = [0, 0, SERIES_CHART_W, SERIES_CHART_H].join(SERIES_BOX_SEP)
   return {
     viewBox,
     lines: plotted,
-    grid: gridOf({ bounds }),
-    ticks: ticksOf({ pointLabels: x.pointLabels }),
-    left: SERIES_PAD_L,
+    grid,
+    ticks: ticksOf({ pointLabels: x.pointLabels, centered: x.indexed === false, left }),
+    left,
+    textX: left - SERIES_TEXT_GAP,
     right: SERIES_CHART_W - SERIES_PAD_R,
   }
 }
 
 /**
- * 行 → 指数线:每行取各时间点的原值,首个有值点记作 100,其余按比例换算。
- * 有值点不足两个的行不出线(一个点连不成线);首个有值点是 0 的行也不出线
+ * 折线区左边界:y 轴最长的刻度文字 × 每字宽 + 间隙,不低于 SERIES_PAD_L。
+ *
+ * @param x y 轴网格。
+ * @returns 画布 x。
+ */
+export function leftPadOf(x: LeftPadIn): number {
+  let chars = 0
+  for (const g of x.grid) {
+    chars = Math.max(chars, g.text.length)
+  }
+  return Math.max(SERIES_PAD_L, roundOf(chars * SERIES_CHAR_W + SERIES_TEXT_GAP))
+}
+
+/**
+ * 行 → 线:每行取各时间点的原值;指数模式下首个有值点记作 100 其余按比例换算,原值模式下 y 就是原值。
+ * 有值点不足两个的行不出线(一个点连不成线);指数模式下首个有值点是 0 的行也不出线
  * —— 除以 0 只会得出一排 Infinity,那不是「涨了很多」,是没法算。
  *
- * @param x 时间点 key、行与两枚取值器。
+ * @param x 时间点 key、行、两枚取值器与指数开关。
  * @returns 各条线(顺序同 rows,不出线的行跳过)。
  */
 export function seriesLinesOf<T>(x: SeriesLinesIn<T>): SeriesRawLine[] {
@@ -252,16 +291,30 @@ export function seriesLinesOf<T>(x: SeriesLinesIn<T>): SeriesRawLine[] {
       continue
     }
     const base = raw[0]
-    if (base == null || base.value === 0) {
+    if (base == null || (x.indexed && base.value === 0)) {
       continue
     }
     const points: SeriesRawPoint[] = []
     for (const p of raw) {
-      points.push({ key: p.key, at: p.at, value: p.value, index: p.value / base.value * SERIES_INDEX_BASE })
+      const index = indexOf({ value: p.value, base: base.value, indexed: x.indexed })
+      points.push({ key: p.key, at: p.at, value: p.value, index })
     }
     out.push({ label: x.labelOf(row), points })
   }
   return out
+}
+
+/**
+ * 一个点落在 y 轴上的数:指数模式 = 原值 / 首点 × 100,原值模式 = 原值本身。
+ *
+ * @param x 原值、首点原值与指数开关。
+ * @returns y 轴上的数。
+ */
+function indexOf(x: IndexOfIn): number {
+  if (x.indexed) {
+    return x.value / x.base * SERIES_INDEX_BASE
+  }
+  return x.value
 }
 
 /**
@@ -285,7 +338,7 @@ export function rawPointsOf<T>(x: RawPointsIn<T>): SeriesRawPoint[] {
 }
 
 /**
- * y 轴上下界:取所有点指数的最小最大,各自扩到 20 的整倍数。
+ * y 轴上下界:取所有点指数的最小最大,各自扩到网格步长的整倍数;柱状态下界压到 0。
  * 一条线都没有(或所有线都平在基准上)时给基准上下各一格 —— 空图也得有刻度,
  * 否则除以 0 的高度会把所有点画到同一行。
  *
@@ -305,6 +358,9 @@ export function boundsOf(x: BoundsIn): SeriesBounds {
     return {
       lo: SERIES_INDEX_BASE - SERIES_GRID_STEP, hi: SERIES_INDEX_BASE + SERIES_GRID_STEP, step: SERIES_GRID_STEP,
     }
+  }
+  if (x.fromZero) {
+    lo = Math.min(lo, 0)
   }
   const step = gridStepOf(hi - lo)
   const down = Math.floor(lo / step) * step
@@ -335,21 +391,25 @@ function gridStepOf(span: number): number {
 }
 
 /**
- * 一条指数线落到画布上:逐点算坐标、拼折线路径、备好图例上的最新原值。
+ * 一条线落到画布上:指数模式逐点算坐标拼折线路径;原值模式每点一根柱并排进该时间点的组;
+ * 两种都备好图例上的最新原值。
  *
- * @param x 线、它是第几条、上下界与时间点总数。
+ * @param x 线、它是第几条、上下界、时间点总数与模式。
  * @returns 画布上的线。
  */
 export function plotLineOf(x: PlotLineIn): SeriesLine {
   const dots: SeriesDot[] = []
+  const bars: SeriesBar[] = []
+  const floor = yAtOf({ index: x.bounds.lo, bounds: x.bounds })
   let last = 0
   for (const p of x.line.points) {
-    dots.push({
-      key: p.key,
-      cx: xAtOf({ at: p.at, count: x.count }),
-      cy: yAtOf({ index: p.index, bounds: x.bounds }),
-      title: numTextOf(p.value),
-    })
+    const y = yAtOf({ index: p.index, bounds: x.bounds })
+    if (x.indexed) {
+      dots.push({ key: p.key, cx: xAtOf({ at: p.at, count: x.count, left: x.left }), cy: y, title: numTextOf(p.value) })
+    } else {
+      const g = barGeomOf({ at: p.at, count: x.count, lineAt: x.at, lineCount: x.lineCount, left: x.left })
+      bars.push({ key: p.key, x: g.x, y, w: g.w, h: roundOf(floor - y), title: numTextOf(p.value) })
+    }
     last = p.value
   }
   return {
@@ -357,8 +417,36 @@ export function plotLineOf(x: PlotLineIn): SeriesLine {
     color: colorAtOf(x.at),
     path: seriesPathOf({ dots }),
     dots,
+    bars,
     lastText: numTextOf(last),
   }
+}
+
+/**
+ * 一根柱的横向位置:折线区按时间点数等分成组,组内留 SERIES_BAR_FILL 给柱、各线并排均分,柱间让一点空。
+ *
+ * @param x 第几组、组数、组内第几根与根数。
+ * @returns 柱左沿 x 与柱宽。
+ */
+export function barGeomOf(x: BarGeomIn): BarGeomOut {
+  const span = SERIES_CHART_W - x.left - SERIES_PAD_R
+  const groupW = span / Math.max(1, x.count)
+  const fillW = groupW * SERIES_BAR_FILL
+  const slot = fillW / Math.max(1, x.lineCount)
+  const left = x.left + x.at * groupW + (groupW - fillW) * SERIES_HALF + x.lineAt * slot
+  return { x: roundOf(left), w: roundOf(Math.max(SERIES_BAR_GAP, slot - SERIES_BAR_GAP)) }
+}
+
+/**
+ * 第几组 → 组中心画布 x(柱状态的 x 轴刻度落在这)。
+ *
+ * @param x 第几组与组数。
+ * @returns 画布 x。
+ */
+export function groupCenterOf(x: GroupCenterIn): number {
+  const span = SERIES_CHART_W - x.left - SERIES_PAD_R
+  const groupW = span / Math.max(1, x.count)
+  return roundOf(x.left + (x.at + SERIES_HALF) * groupW)
 }
 
 /**
@@ -387,9 +475,9 @@ export function seriesPathOf(x: SeriesPathIn): string {
  * @returns 画布 x。
  */
 export function xAtOf(x: XAtIn): number {
-  const span = SERIES_CHART_W - SERIES_PAD_L - SERIES_PAD_R
+  const span = SERIES_CHART_W - x.left - SERIES_PAD_R
   const step = span / Math.max(1, x.count - 1)
-  return roundOf(SERIES_PAD_L + x.at * step)
+  return roundOf(x.left + x.at * step)
 }
 
 /**
@@ -405,7 +493,7 @@ export function yAtOf(x: YAtIn): number {
 }
 
 /**
- * y 轴网格:自下界到上界每 20 一根,带刻度文字。
+ * y 轴网格:自下界到上界每步长一根,带刻度文字(千分位,人口的百万级才读得出)。
  *
  * @param x 上下界。
  * @returns 网格线。
@@ -414,7 +502,7 @@ export function gridOf(x: GridIn): SeriesGrid[] {
   const out: SeriesGrid[] = []
   let at = x.bounds.lo
   while (at <= x.bounds.hi) {
-    out.push({ y: yAtOf({ index: at, bounds: x.bounds }), text: String(at) })
+    out.push({ y: yAtOf({ index: at, bounds: x.bounds }), text: numTextOf(at) })
     at = at + x.bounds.step
   }
   return out
@@ -428,12 +516,30 @@ export function gridOf(x: GridIn): SeriesGrid[] {
  */
 export function ticksOf(x: TicksIn): SeriesTick[] {
   const out: SeriesTick[] = []
+  const count = x.pointLabels.length
   let at = 0
   for (const text of x.pointLabels) {
-    out.push({ x: xAtOf({ at, count: x.pointLabels.length }), text })
+    let tx = xAtOf({ at, count, left: x.left })
+    if (x.centered) {
+      tx = groupCenterOf({ at, count, left: x.left })
+    }
+    out.push({ x: tx, text, last: x.centered === false && at === count - 1 })
     at = at + 1
   }
   return out
+}
+
+/**
+ * x 轴刻度的锚点:最后一个右对齐收进画布,其余居中。
+ *
+ * @param t 刻度。
+ * @returns 锚点。
+ */
+export function tickAnchorOf(t: SeriesTick): TickAnchor {
+  if (t.last) {
+    return SERIES_ANCHOR_LAST
+  }
+  return SERIES_ANCHOR_MID
 }
 
 /**

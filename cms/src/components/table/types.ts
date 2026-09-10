@@ -541,6 +541,12 @@ export type TableSeriesIn<T> = {
   more: number
 
   /**
+   * 画指数还是原值:true = 每行首个有值点记 100 按比例换算(量级悬殊的计数类,人口 vs 配额);
+   * false = y 轴直接画官方原值(同单位的比值 / 百分比类;Frank 2026-09-10「这个 y 轴也不对啊」)。
+   */
+  indexed: boolean
+
+  /**
    * 工具条与图上的字(桶不携词,全部由调用方经这一格给)。
    */
   words: SeriesWords
@@ -713,9 +719,75 @@ export type SeriesChartIn<T> = {
   labelOf: (r: T) => string
 
   /**
+   * 画指数还是原值:true = 每行首个有值点记 100 按比例换算(量级悬殊的计数类,人口 vs 配额);
+   * false = y 轴直接画官方原值(同单位的比值 / 百分比类;Frank 2026-09-10「这个 y 轴也不对啊」)。
+   */
+  indexed: boolean
+
+  /**
+   * 当前时间窗(近 N / 近 M / 全部):图和表切同一个窗(Frank 2026-09-10「为什么 5 年还是显示 10 年的」)。
+   */
+  range: SeriesRange
+
+  /**
+   * 「近 N 期」的 N。
+   */
+  recent: number
+
+  /**
+   * 「近 M 期」的 M。
+   */
+  more: number
+
+  /**
    * 图上要用的字(这里只读 indexNote —— 图上方那行小字)。
    */
   words: SeriesWords
+}
+
+/**
+ * chartWindowOf 的入参:按时间窗切时间点。
+ */
+export type ChartWindowIn = {
+  /**
+   * 全部时间点 key,升序。
+   */
+  pointKeys: string[]
+
+  /**
+   * 与 pointKeys 同序的刻度文本。
+   */
+  pointLabels: string[]
+
+  /**
+   * 当前时间窗。
+   */
+  range: SeriesRange
+
+  /**
+   * 「近 N 期」的 N。
+   */
+  recent: number
+
+  /**
+   * 「近 M 期」的 M。
+   */
+  more: number
+}
+
+/**
+ * chartWindowOf 的出参:窗内的时间点与刻度文本。
+ */
+export type ChartWindowOut = {
+  /**
+   * 窗内时间点 key。
+   */
+  keys: string[]
+
+  /**
+   * 窗内刻度文本,与 keys 同序。
+   */
+  labels: string[]
 }
 
 /**
@@ -806,6 +878,41 @@ export type SeriesDot = {
 /**
  * 落到画布上的一条线。
  */
+/**
+ * 柱状态的一根柱(原值模式:同一时间点各行的柱并排成一组)。
+ */
+export type SeriesBar = {
+  /**
+   * 柱身份(拼 React key 用)= 时间点 key。
+   */
+  key: string
+
+  /**
+   * 柱左沿画布 x。
+   */
+  x: number
+
+  /**
+   * 柱顶画布 y。
+   */
+  y: number
+
+  /**
+   * 柱宽。
+   */
+  w: number
+
+  /**
+   * 柱高(到 y 轴下界)。
+   */
+  h: number
+
+  /**
+   * 悬停显示的原值(千分位)。
+   */
+  title: string
+}
+
 export type SeriesLine = {
   /**
    * 图例名。
@@ -823,9 +930,14 @@ export type SeriesLine = {
   path: string
 
   /**
-   * 线上的点。
+   * 线上的点(柱状态为空)。
    */
   dots: SeriesDot[]
+
+  /**
+   * 柱状态的柱(折线态为空;Frank 2026-09-10「折线要不改成柱状图吧」:原值模式画柱,指数模式仍画线)。
+   */
+  bars: SeriesBar[]
 
   /**
    * 图例上跟在名字后面的最新原值(千分位)。
@@ -849,6 +961,11 @@ export type SeriesGrid = {
 }
 
 /**
+ * x 轴刻度文字的锚点(svg textAnchor 的两档:末刻度右对齐收进画布,其余居中)。
+ */
+export type TickAnchor = 'end' | 'middle'
+
+/**
  * 一个 x 轴刻度。
  */
 export type SeriesTick = {
@@ -861,6 +978,11 @@ export type SeriesTick = {
    * 刻度文本(点列的 label)。
    */
   text: string
+
+  /**
+   * 是不是最后一个刻度:文字改成右对齐收在画布里(「2026 至 4 月」居中会被裁成「2026 至」)。
+   */
+  last: boolean
 }
 
 /**
@@ -888,9 +1010,14 @@ export type SeriesPlot = {
   ticks: SeriesTick[]
 
   /**
-   * 折线区左边界的画布 x(y 轴网格线自这里起画)。
+   * 折线区左边界的画布 x(y 轴网格线自这里起画;按最长刻度文字算出,人口的「16,000,000」比「100」宽得多)。
    */
   left: number
+
+  /**
+   * y 轴刻度文字的右沿画布 x(右对齐到折线区左边界之前一点)。
+   */
+  textX: number
 
   /**
    * 折线区右边界的画布 x。
@@ -906,6 +1033,12 @@ export type SeriesPlotIn<T> = {
    * x 轴刻度文本,与 pointKeys 同序。
    */
   pointLabels: string[]
+
+  /**
+   * 画指数还是原值:true = 每行首个有值点记 100 按比例换算(量级悬殊的计数类,人口 vs 配额);
+   * false = y 轴直接画官方原值(同单位的比值 / 百分比类;Frank 2026-09-10「这个 y 轴也不对啊」)。
+   */
+  indexed: boolean
 
   /**
    * 时间点列的 key,升序。
@@ -938,6 +1071,12 @@ export type SeriesLinesIn<T> = {
   pointKeys: string[]
 
   /**
+   * 画指数还是原值:true = 每行首个有值点记 100 按比例换算(量级悬殊的计数类,人口 vs 配额);
+   * false = y 轴直接画官方原值(同单位的比值 / 百分比类;Frank 2026-09-10「这个 y 轴也不对啊」)。
+   */
+  indexed: boolean
+
+  /**
    * 数据行。
    */
   rows: T[]
@@ -951,6 +1090,26 @@ export type SeriesLinesIn<T> = {
    * 图例名。
    */
   labelOf: (r: T) => string
+}
+
+/**
+ * indexOf 的入参。
+ */
+export type IndexOfIn = {
+  /**
+   * 这一点的原值。
+   */
+  value: number
+
+  /**
+   * 本行首个有值点的原值(指数模式的基准)。
+   */
+  base: number
+
+  /**
+   * 指数模式开关。
+   */
+  indexed: boolean
 }
 
 /**
@@ -981,6 +1140,11 @@ export type BoundsIn = {
    * 全部线(取所有点的指数算上下界)。
    */
   lines: SeriesRawLine[]
+
+  /**
+   * 下界压到 0(柱状图的柱必须从 0 起,截了底的柱高会骗人)。
+   */
+  fromZero: boolean
 }
 
 /**
@@ -1006,6 +1170,86 @@ export type PlotLineIn = {
    * 一共几个时间点(定 x 步长)。
    */
   count: number
+
+  /**
+   * 指数模式画折线;原值模式画柱。
+   */
+  indexed: boolean
+
+  /**
+   * 一共几条线(柱状态一组里并排几根柱)。
+   */
+  lineCount: number
+
+  /**
+   * 折线区左边界的画布 x(y 轴刻度文字越长越靠右,按最长刻度算出)。
+   */
+  left: number
+}
+
+/**
+ * barGeomOf 的入参:一根柱在画布上的横向位置。
+ */
+export type BarGeomIn = {
+  /**
+   * 第几个时间点(第几组)。
+   */
+  at: number
+
+  /**
+   * 时间点总数(组数)。
+   */
+  count: number
+
+  /**
+   * 这条线是第几条(组内第几根)。
+   */
+  lineAt: number
+
+  /**
+   * 线总数(组内几根)。
+   */
+  lineCount: number
+
+  /**
+   * 折线区左边界的画布 x(y 轴刻度文字越长越靠右,按最长刻度算出)。
+   */
+  left: number
+}
+
+/**
+ * barGeomOf 的出参。
+ */
+export type BarGeomOut = {
+  /**
+   * 柱左沿画布 x。
+   */
+  x: number
+
+  /**
+   * 柱宽。
+   */
+  w: number
+}
+
+/**
+ * groupCenterOf 的入参:第几组的组中心 x。
+ */
+export type GroupCenterIn = {
+  /**
+   * 第几个时间点(第几组)。
+   */
+  at: number
+
+  /**
+   * 时间点总数(组数)。
+   */
+  count: number
+
+  /**
+   * 折线区左边界的画布 x(y 轴刻度文字越长越靠右,按最长刻度算出)。
+   */
+  left: number
 }
 
 /**
@@ -1021,6 +1265,11 @@ export type XAtIn = {
    * 一共几个时间点。
    */
   count: number
+
+  /**
+   * 折线区左边界的画布 x(y 轴刻度文字越长越靠右,按最长刻度算出)。
+   */
+  left: number
 }
 
 /**
@@ -1049,6 +1298,16 @@ export type SeriesPathIn = {
 }
 
 /**
+ * leftPadOf 的入参:按 y 轴刻度文字算折线区左边界。
+ */
+export type LeftPadIn = {
+  /**
+   * y 轴网格(取最长的 text)。
+   */
+  grid: SeriesGrid[]
+}
+
+/**
  * gridOf 的入参。
  */
 export type GridIn = {
@@ -1066,6 +1325,16 @@ export type TicksIn = {
    * x 轴刻度文本,按时间升序。
    */
   pointLabels: string[]
+
+  /**
+   * 刻度落在组中心(柱状态)还是折线的点上(折线态:首点贴左、末点贴右)。
+   */
+  centered: boolean
+
+  /**
+   * 折线区左边界的画布 x(y 轴刻度文字越长越靠右,按最长刻度算出)。
+   */
+  left: number
 }
 
 /**

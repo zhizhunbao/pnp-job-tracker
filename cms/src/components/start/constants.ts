@@ -1168,9 +1168,11 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
  * 2026-09-09 Frank「之前安省的可以删掉了吧」「包含对比才有意义」:省块视图撤,原来只在省块里的
  * 其中省提名 / EE 邀请 / 接纳目标 / 总人口 / GDP 也各成一表(后四张只有全国一行或是背景数,垫底);
  * 已发提名同日撤(「有意义吗」—— 九成年份等于配额,今年用到哪已在用尽率里),数据留库给用尽率。
+ * 2026-09-10 Frank「这个没必要显示」:用尽率表也撤(历史年份几乎全 100%,今年只三省有进度),数据仍留库。
+ * 2026-09-10 Frank「省提名依赖度 删掉」:依赖度表撤,数据仍留库。
  */
 export const IND_ORDER = [
-  'comp', 'alloc', 'useRate', 'pnpShare', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
+  'comp', 'alloc', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
   'nprShare', 'unemp', 'pop', 'gdp',
 ]
 
@@ -1219,8 +1221,16 @@ export const MACRO_FLOW_KEYS = ['studyNew', 'prAll', 'prPnp', 'eeInvites', 'issu
 /**
  * 不出「推荐」列的指标:只有全国一行,没得比(Frank 2026-09-09「每个统计维度表都有一个推荐,这样就可以最终综合打分了」——
  * 其余每张表都按最新值给十省排名出推荐,综合打分后面在这些列上做)。
+ * 2026-09-10 Frank「你这个推荐不是乱写的吗」改成只在比值表上出(见 REC_KEYS):计数表「盘子大 = 推荐」站不住
+ * (临时居民多是竞争大),这张跳过表退役。
  */
 export const REC_SKIP_KEYS = ['pnpTarget', 'eeInvites']
+
+/**
+ * 出「推荐」列的指标(2026-09-10 拍板):本身就是判断的比值表 —— 竞争比、失业率、临时居民占比,都越低越好;
+ * 计数表(配额、人口、PR、学签…)不出。
+ */
+export const REC_KEYS = ['comp', 'unemp', 'nprShare']
 
 /**
  * 「越低越好」的指标:竞争比、失业率、临时居民占比、配额用尽率;不在表里的都按越高越好(配额、已发、依赖度、
@@ -1230,8 +1240,10 @@ export const REC_LOWER_BETTER = ['comp', 'unemp', 'nprShare', 'useRate']
 
 /**
  * 推荐列的档:排名前这么多省「推荐」、末这么多省「不推荐」,中间「一般」。
+ * 2026-09-10 Frank「把一般删了,只有推荐和不推荐」:改成对半 —— 名次在前一半「推荐」,其余「不推荐」
+ * (参评省数为奇数时中位那省算前一半);REC_TOP_N 退役,分界见 REC_HALF。
  */
-export const REC_TOP_N = 3
+export const REC_HALF = 0.5
 
 /**
  * 指标表的地区行序:全国 + 九省。魁北克撤出(Frank 2026-09-09「魁北克如果是专项的话,可以把其他 table 的魁北克行去掉」:

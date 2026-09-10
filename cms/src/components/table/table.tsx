@@ -76,7 +76,7 @@ export function Table<T>({
       {series != null && (
         <SeriesToolbar view={s.view}
           range={s.range}
-          words={series.words}
+          words={series.words} rangeless={series.pointKeys.length <= series.recent}
           onTable={s.onTable}
           onChart={s.onChart}
           onRecent={s.onRecent}
@@ -88,7 +88,7 @@ export function Table<T>({
           pointLabels={pointLabelsOf({ cols, pointKeys: series.pointKeys })}
           rows={rows}
           valueOf={series.valueOf}
-          labelOf={series.labelOf}
+          labelOf={series.labelOf} indexed={series.indexed} range={s.range} recent={series.recent} more={series.more}
           words={series.words} />
       )}
       {chart === false && (

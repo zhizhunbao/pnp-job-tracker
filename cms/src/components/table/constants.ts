@@ -167,8 +167,38 @@ export const SERIES_GRID_STEP = 20
 /**
  * y 轴网格步长的阶梯(指数点):按上下界跨度挑第一个让网格线不超过 SERIES_GRID_MAX_LINES 的档
  * (2026-09-06 生产实拍 ON 十几条线跨 0–720 时 20 一格挤成一团)。
+ * 2026-09-10 前面补 1 / 2 / 5 / 10 四档:原值图(失业率 3–9、竞争比 5–84)跨度小,20 一格全压在底下;
+ * 后面补到 5,000,000:全部表改画原值柱(人口 1,600 万)后 5000 一格会画三千根网格线。
  */
-export const SERIES_GRID_STEPS = [20, 50, 100, 200, 500, 1000, 2000, 5000]
+export const SERIES_GRID_STEPS = [
+  1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000,
+  5000000,
+]
+
+/**
+ * 空 path(柱状态的线没有折线路径;tsx 据此不渲 path)。
+ */
+export const SERIES_PATH_EMPTY = ''
+
+/**
+ * 半格:组中心 = 组左沿 + 半个组宽。
+ */
+export const SERIES_HALF = 0.5
+
+/**
+ * 柱状态一组柱占组宽的比例(其余是组与组之间的空);组内柱之间再各让 1 画布单位。
+ */
+export const SERIES_BAR_FILL = 0.8
+
+/**
+ * 柱状态组内相邻柱的间隙(画布单位)。
+ */
+export const SERIES_BAR_GAP = 1
+
+/**
+ * x 轴最后一个刻度的锚点:右对齐收进画布(2026-09-10 实拍「2026 至 4 月」居中被裁成「2026 至」)。
+ */
+export const SERIES_ANCHOR_LAST = 'end'
 
 /**
  * y 轴网格线最多几条(含上下界)。
@@ -187,9 +217,19 @@ export const SERIES_CHART_W = 1000
 export const SERIES_CHART_H = 300
 
 /**
- * 左内衬:留给 y 轴刻度数字(三位数 + 一点余量)。
+ * 左内衬下限:留给 y 轴刻度数字(三位数 + 一点余量);刻度更长时按 SERIES_CHAR_W 算出更宽的(见 leftPadOf)。
  */
 export const SERIES_PAD_L = 44
+
+/**
+ * y 轴刻度文字每个字符占的画布宽(11px 数字与千分位逗号的均宽,按画布 1000 宽估);左内衬 = 字数 × 它 + 间隙。
+ */
+export const SERIES_CHAR_W = 6.5
+
+/**
+ * y 轴刻度文字右沿到折线区左边界的间隙。
+ */
+export const SERIES_TEXT_GAP = 8
 
 /**
  * 右内衬:最后一个点的圆点半径 + 一点余量,免得贴边被裁。
@@ -271,11 +311,6 @@ export const SERIES_DASH_W = 14
  * 图例色块的高(画布坐标,与 SERIES_DASH_BOX 的格子等高)。
  */
 export const SERIES_DASH_H = 3
-
-/**
- * y 轴刻度文字的画布 x:落在左内衬里、右对齐到折线区左边界前 8 格。
- */
-export const SERIES_TEXT_X = 36
 
 /**
  * x 轴刻度文字的画布 y:落在下内衬里,离底边一行字的高度。

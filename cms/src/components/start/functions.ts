@@ -59,8 +59,8 @@ import {
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
-  COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_LOWER_BETTER, REC_SKIP_KEYS,
-  REC_TOP_N, FORMULA_KEY, MK_ALLOC_INCL,
+  COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_KEYS, REC_LOWER_BETTER,
+  REC_HALF, FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
@@ -114,7 +114,7 @@ import type {
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
-  YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn,
+  YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
@@ -1588,6 +1588,20 @@ export function boardGapClsOf(x: GapClsIn): string {
     return cssOf(css.boardGap)
   }
   return TEXT_NONE
+}
+
+/**
+ * 指标块外层类:标题行贴表(2026-09-10「左边 title 也要紧贴表格」)+ 非首块的块间距。
+ *
+ * @param x 块间距开关。
+ * @returns 类名串。
+ */
+export function macroWrapClsOf(x: GapClsIn): string {
+  const out = [cssOf(css.macroTight)]
+  if (x.gap) {
+    out.push(cssOf(css.boardGap))
+  }
+  return out.join(CLS_SEP)
 }
 
 /**
@@ -3450,7 +3464,9 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   const year = yoyYearOf({ rows: indBaseRowsOf(bases), flow })
   const plain: MacroRow[] = []
   for (const b of bases) {
-    plain.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key }))
+    plain.push(indRowOf({
+      base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key, t: x.t,
+    }))
   }
   const rows = recRowsOf({ t: x.t, rows: plain, key: x.key })
   const years = yearsOf(rows)
@@ -3464,6 +3480,7 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     yearNotes: yearNotesOf({ rows, years }),
     recLabel: recLabelOf({ t: x.t, key: x.key }),
     formula: formulaOf({ t: x.t, key: x.key }),
+    indexed: false,
   }
 }
 
@@ -3487,7 +3504,7 @@ function formulaOf(x: RecLabelIn): string {
  * @returns 列名或空串。
  */
 function recLabelOf(x: RecLabelIn): string {
-  if (REC_SKIP_KEYS.includes(x.key)) {
+  if (REC_KEYS.includes(x.key) === false) {
     return TEXT_NONE
   }
   return x.t('pulse.m.rec')
@@ -3495,32 +3512,51 @@ function recLabelOf(x: RecLabelIn): string {
 
 /**
  * 每张表的推荐列:有最新值的**省**(全国不参评)按最新值排名 —— 越低越好的指标升序、其余降序;
- * 前 REC_TOP_N「推荐」、末 REC_TOP_N「不推荐」、中间「一般」;只有全国一行的表不出。
+ * 名次在前一半「推荐」、其余「不推荐」(2026-09-10 Frank「把一般删了」,两档);只有全国一行的表不出。
  * 名次 = 比它更好的省数(并列同名次),不用比较器排序(一函数一参)。
+ * 只在**最新年份一致**的省之间排(2026-09-10 Frank「这个推荐合理吗」:PE 2024 与 ON 2026 年 4 月同榜、
+ * 去年用完的 100% 输给今年没用完的 69%,是拿不同年份比);年份落后的省推荐格空着。
  *
  * @param x 取词函数、行与指标键。
  * @returns 带推荐格的行。
  */
 function recRowsOf(x: RecRowsIn): MacroRow[] {
-  if (REC_SKIP_KEYS.includes(x.key)) {
+  if (REC_KEYS.includes(x.key) === false) {
     return x.rows
   }
   const lower = REC_LOWER_BETTER.includes(x.key)
+  const year = recYearOf(x.rows)
   const provs: MacroRow[] = []
   for (const r of x.rows) {
-    if (r.latest != null && r.key !== GEO_CA) {
+    if (r.latest != null && r.key !== GEO_CA && r.latestYear === year) {
       provs.push(r)
     }
   }
   const out: MacroRow[] = []
   for (const r of x.rows) {
     let rec: RecOut = { text: TEXT_NONE, cls: TEXT_NONE }
-    if (r.latest != null && r.key !== GEO_CA) {
+    if (r.latest != null && r.key !== GEO_CA && r.latestYear === year) {
       rec = recOfRank({ t: x.t, rank: recRankOf({ row: r, rows: provs, lower }), n: provs.length })
     }
     out.push(withRec({ row: r, rec }))
   }
   return out
+}
+
+/**
+ * 参评年份 = 各省最新格年份里最大的那个(字符串比:年份四位数或「2026-04」形,同长按字典序即按时间序)。
+ *
+ * @param rows 地区行。
+ * @returns 年份;没有省有格给空串。
+ */
+function recYearOf(rows: MacroRow[]): string {
+  let year = TEXT_NONE
+  for (const r of rows) {
+    if (r.latest != null && r.key !== GEO_CA && r.latestYear > year) {
+      year = r.latestYear
+    }
+  }
+  return year
 }
 
 /**
@@ -3555,19 +3591,16 @@ function macroLatestValueOf(r: MacroRow): number {
 }
 
 /**
- * 名次 → 推荐档(借竞争度三色胶囊)。
+ * 名次 → 推荐档(借竞争度胶囊的绿 / 红两色):前一半「推荐」,其余「不推荐」;奇数省时中位那省归前一半。
  *
  * @param x 名次与总数。
  * @returns 文案与类。
  */
 function recOfRank(x: RecRankIn): RecOut {
-  if (x.rank < REC_TOP_N) {
+  if (x.rank < Math.ceil(x.n * REC_HALF)) {
     return { text: x.t('pulse.r.yes'), cls: diffClsOf({ tier: DIFF_EASY }) }
   }
-  if (x.rank >= x.n - REC_TOP_N) {
-    return { text: x.t('pulse.r.no'), cls: diffClsOf({ tier: DIFF_TIGHT }) }
-  }
-  return { text: x.t('pulse.r.mid'), cls: diffClsOf({ tier: DIFF_MID }) }
+  return { text: x.t('pulse.r.no'), cls: diffClsOf({ tier: DIFF_TIGHT }) }
 }
 
 /**
@@ -3649,7 +3682,7 @@ function indBaseRowsOf(bases: IndBase[]): MacroRow[] {
  * @returns 地区行。
  */
 function indRowOf(x: IndRowIn): MacroRow {
-  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(x.key) })
+  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(x.key), t: x.t })
   return {
     key: x.code,
     label: x.name,
@@ -3714,18 +3747,23 @@ function yoyCellOf(x: YoyCellIn): MacroCell | null {
     return null
   }
   const pct = (a.value / b.value - 1) * PCT_SCALE
-  return { value: pct, text: yoyTextOf(pct), note: TEXT_NONE }
+  return { value: pct, text: yoyTextOf({ pct, t: x.t }), note: TEXT_NONE }
 }
 
 /**
- * 同比文案:带正负号的一位小数百分数(「+1.2%」「-0.7%」)。
+ * 同比文案:带正负号的一位小数百分数(「+1.2%」「-0.7%」);一位小数四舍五入到 0 出「持平」
+ * (Frank 2026-09-10「+0.0% 这个显示有什么意义」→「持平」)。
  *
- * @param pct 百分数。
+ * @param x 百分数与取词函数。
  * @returns 文案。
  */
-function yoyTextOf(pct: number): string {
-  const body = Math.abs(pct).toFixed(PCT_DIGITS) + PCT_MARK
-  if (pct < 0) {
+function yoyTextOf(x: YoyTextIn): string {
+  const abs = Math.abs(x.pct).toFixed(PCT_DIGITS)
+  if (Number(abs) === 0) {
+    return x.t('pulse.m.flat')
+  }
+  const body = abs + PCT_MARK
+  if (x.pct < 0) {
     return SIGN_MINUS + body
   }
   return SIGN_PLUS + body
@@ -3853,6 +3891,8 @@ function macroMissingTextOf(x: MacroMissingIn): string {
 
 /**
  * 一行的年 → 格:运营行读 pnp_ops_stats,其余直读同名数据键(「其中」五行是 StatCan 的互斥拆分,直读即可加总)。
+ * 配额行合并数(PNP+AIP)不再挂「含 AIP」注(Frank 2026-09-10「去掉 AIP 字样,知道一个总配额即可」),
+ * 拆分口径仍在 pnp_allocations.json 的 c<年> 列与 note 里。
  *
  * @param x 行键与两份点。
  * @returns 年 → 格。
@@ -3865,7 +3905,7 @@ function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
     return allocCellsOf({
       single: cellsOfKey({ key: MK_ALLOC, points: x.points, t: x.t }),
       incl: cellsOfKey({ key: MK_ALLOC_INCL, points: x.points, t: x.t }),
-      note: x.t('pulse.m.inclAip'),
+      note: TEXT_NONE,
     })
   }
   if (x.key === MR_USE_RATE) {
@@ -4239,13 +4279,18 @@ export function macroRowKeyOf(r: MacroRow): string {
 
 /**
  * 序列图取一行某年的原值(通用表格序列契约:(行, 列键) 两参)。
+ * 全国行一律给 null → 通用件按「有值点不足两个」跳过这条,图上不出全国(Frank 2026-09-10「图表去掉全国」:
+ * 全国柱是各省之和,把省的柱全压扁);表里全国行照旧。
  *
  * @param r 一行。
  * @param key 年份列键。
- * @returns 原值;该年没格给 null。
+ * @returns 原值;该年没格或是全国行给 null。
  */
 // eslint-disable-next-line local/one-parameter -- 通用表格序列契约 valueOf 定死 (行, 列键) 两参(components/table TableSeriesIn)
 export function macroValueOf(r: MacroRow, key: string): number | null {
+  if (r.key === GEO_CA) {
+    return null
+  }
   const c = r.cells[key]
   if (c == null) {
     return null
@@ -4477,6 +4522,7 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     labelOf: macroLabelOf,
     recent: MACRO_RECENT,
     more: MACRO_MORE,
+    indexed: x.geo.indexed,
     words: seriesWordsOf(x.t),
   }
 }

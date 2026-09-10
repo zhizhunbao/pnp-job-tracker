@@ -185,14 +185,19 @@
 }
 
 /*
- * 图例:一行横排,窄屏折行。
+ * 图例:一行横排,窄屏折行;在图下方(2026-09-10 Frank「上面的标,放到下面吧」)。
  */
 .legend {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
-  margin: 6px 0 4px;
+  margin: 8px 0 0;
   font-size: 12.5px;
+
+  /*
+   * 居中(2026-09-10 Frank「居中」)。
+   */
+  justify-content: center;
 }
 
 /*

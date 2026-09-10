@@ -7,7 +7,7 @@
  * @time 2026-09-09 03:00:00
  */
 import { SeriesChart, SeriesToolbar, useSeriesView } from '@/components/table'
-import { SERIES_VIEW_CHART, SERIES_VIEW_TABLE, TEXT_NONE } from './constants'
+import { MACRO_MORE, MACRO_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, TEXT_NONE } from './constants'
 import { macroLabelOf, macroValueOf, seriesWordsOf } from './functions'
 import { MacroLatestCell } from './macrolatestcell'
 import { MacroRecCell } from './macroreccell'
@@ -56,6 +56,10 @@ export function IndCards(x: IndCardsIn) {
           pointLabels={geo.years}
           valueOf={macroValueOf}
           labelOf={macroLabelOf}
+          indexed={geo.indexed}
+          range={v.range}
+          recent={MACRO_RECENT}
+          more={MACRO_MORE}
           words={words} />
       )}
     </div>

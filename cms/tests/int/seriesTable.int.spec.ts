@@ -45,7 +45,7 @@ function keysOf(cols: Col<Row>[]): string[] {
 describe('seriesLinesOf:指数换算', () => {
   it('首个有值点记作 100,其余按比例', () => {
     const rows = [rowOf('人口', { y1: 200, y2: 300, y3: 100 })]
-    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })
+    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })
     expect(lines).toHaveLength(1)
     expect(lines[0]?.label).toBe('人口')
     expect(lines[0]?.points.map((p) => p.index)).toEqual([100, 150, 50])
@@ -53,13 +53,13 @@ describe('seriesLinesOf:指数换算', () => {
 
   it('首个有值点不是第一期时,它才是基准(前面的空期不参与)', () => {
     const rows = [rowOf('学签', { y3: 50, y4: 75 })]
-    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })
+    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })
     expect(lines[0]?.points.map((p) => p.index)).toEqual([100, 150])
   })
 
   it('缺的点跳过,但 x 位置仍按原来的第几期算(不左移)', () => {
     const rows = [rowOf('EE', { y1: 10, y3: 20, y6: 30 })]
-    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })
+    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })
     expect(lines[0]?.points.map((p) => p.at)).toEqual([0, 2, 5])
     expect(lines[0]?.points.map((p) => p.key)).toEqual(['y1', 'y3', 'y6'])
     expect(lines[0]?.points.map((p) => p.value)).toEqual([10, 20, 30])
@@ -67,12 +67,12 @@ describe('seriesLinesOf:指数换算', () => {
 
   it('有值点不足两个的行不出线(一个点连不成线,零个点更不行)', () => {
     const rows = [rowOf('只有一点', { y2: 5 }), rowOf('一点没有', { y1: null, y2: null })]
-    expect(seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })).toEqual([])
+    expect(seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })).toEqual([])
   })
 
   it('首个有值点是 0 的行不出线(除以 0 得不出趋势,只会得出一排 Infinity)', () => {
     const rows = [rowOf('从零起', { y1: 0, y2: 100 })]
-    expect(seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })).toEqual([])
+    expect(seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })).toEqual([])
   })
 
   it('多行:出线的行按原顺序,跳过的行不占位', () => {
@@ -81,7 +81,7 @@ describe('seriesLinesOf:指数换算', () => {
       rowOf('乙', { y1: 1 }),
       rowOf('丙', { y2: 8, y3: 4 }),
     ]
-    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf })
+    const lines = seriesLinesOf({ pointKeys: YEARS, rows, valueOf, labelOf, indexed: true })
     expect(lines.map((l) => l.label)).toEqual(['甲', '丙'])
     expect(lines[1]?.points.map((p) => p.index)).toEqual([100, 50])
   })
@@ -93,7 +93,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('近 N 期:时间点列只留末 5 个,非时间点列原样留下', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, indexed: true, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', 'y3', 'y4', 'y5', 'y6', 'y7'])
@@ -102,7 +102,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('全部:表态按「近 M 期」显示(全部年份只在趋势态画,表态摆全会横滚)', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, indexed: true, words: WORDS },
       range: 'all',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS.slice(-10)])
@@ -111,7 +111,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('N 比时间点数还大:全给,不报错也不补空列', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 20, more: 10, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, recent: 20, more: 10, indexed: true, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS])

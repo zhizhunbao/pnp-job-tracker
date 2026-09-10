@@ -3526,6 +3526,12 @@ export type MacroGeo = {
    * 标题下的公式行(只有竞争表);空串不显。
    */
   formula: string
+
+  /**
+   * 趋势图画指数还是原值:把脉页全部画原值柱(Frank 2026-09-10「这个 y 轴也不对啊」→ 比值表先改,
+   * 「其他的表也这个样」→ 计数表也改;指数折线只留在通用件里)。
+   */
+  indexed: boolean
 }
 
 /**
@@ -3897,6 +3903,11 @@ export type IndRowIn = {
    * 指标键(同比颜色要知道涨了是好是坏)。
    */
   key: string
+
+  /**
+   * 取词函数(同比「持平」一词)。
+   */
+  t: TFn
 }
 
 /**
@@ -4037,6 +4048,26 @@ export type YoyCellIn = {
    * 流量类:两头都得是完整年;存量 / 比值类:最新一期(可为进行年)对上一整年。
    */
   flow: boolean
+
+  /**
+   * 取词函数(同比「持平」一词)。
+   */
+  t: TFn
+}
+
+/**
+ * `yoyTextOf` 的入参。
+ */
+export type YoyTextIn = {
+  /**
+   * 同比百分数。
+   */
+  pct: number
+
+  /**
+   * 取词函数(一位小数四舍五入到 0 时不出「+0.0%」,出「持平」;Frank 2026-09-10「这个显示有什么意义」)。
+   */
+  t: TFn
 }
 
 /**
@@ -4573,6 +4604,11 @@ export type MacroSeriesSpec = {
    * 「近 M 期」显示几列。
    */
   more: number
+
+  /**
+   * 趋势图画指数还是原值(照 geo.indexed)。
+   */
+  indexed: boolean
 
   /**
    * 工具条与图的文案。
