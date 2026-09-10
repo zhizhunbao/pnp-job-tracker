@@ -30,7 +30,9 @@ export function MacroBlock({ t, geo, gap, updatedAt }: MacroBlockIn) {
         <div className={css.table}>
           <Table<MacroRow>
             rows={rows}
-            cols={macroColsOf({ t, years: geo.years, yoyLabel: geo.yoyLabel, yearNotes: geo.yearNotes })}
+            cols={macroColsOf({
+              t, years: geo.years, yoyLabel: geo.yoyLabel, yearNotes: geo.yearNotes, recLabel: geo.recLabel,
+            })}
             rowKey={macroRowKeyOf}
             series={macroSeriesOf({ t, geo })} />
         </div>

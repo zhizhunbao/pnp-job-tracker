@@ -1198,6 +1198,41 @@ export const NOTE_CLOSE = ')'
 export const MACRO_BAD_UP_KEYS = ['comp', 'unemp']
 
 /**
+ * 流量类指标(一年一个累计数):同比只拿最近两个完整年比 —— 进行年是「到 X 月的累计」,对上一整年会算出假暴跌。
+ * 不在表里的是存量 / 比值类(人口、在库、竞争比、失业率、配额、目标),最新一期直接对上一年
+ * (Frank 2026-09-09「应该用最近一年的和之前年份的比」)。
+ */
+export const MACRO_FLOW_KEYS = ['studyNew', 'prAll', 'prPnp', 'eeInvites', 'issued']
+
+/**
+ * 不出「推荐」列的指标:只有全国一行,没得比(Frank 2026-09-09「每个统计维度表都有一个推荐,这样就可以最终综合打分了」——
+ * 其余每张表都按最新值给十省排名出推荐,综合打分后面在这些列上做)。
+ */
+export const REC_SKIP_KEYS = ['pnpTarget', 'eeInvites']
+
+/**
+ * 「越低越好」的指标:竞争比、失业率、临时居民占比、配额用尽率;不在表里的都按越高越好(配额、已发、依赖度、
+ * 人口、GDP、PR 获批 —— 盘子大 / 名额多 / 靠省提名多的省对申请人有利)。
+ */
+export const REC_LOWER_BETTER = ['comp', 'unemp', 'nprShare', 'useRate']
+
+/**
+ * 推荐列的档:排名前这么多省「推荐」、末这么多省「不推荐」,中间「一般」。
+ */
+export const REC_TOP_N = 3
+
+/**
+ * 指标表的地区行序:全国 + 九省。魁北克撤出(Frank 2026-09-09「魁北克如果是专项的话,可以把其他 table 的魁北克行去掉」:
+ * 它自成体系,另立专项;数据仍在库里)。
+ */
+export const IND_GEO_ORDER = ['CA', 'ON', 'BC', 'AB', 'SK', 'NS', 'MB', 'NB', 'NL', 'PE']
+
+/**
+ * 指标表的推荐列键。
+ */
+export const COL_REC = 'rec'
+
+/**
  * 同比列名里年份取后两位(「同比 25/24」)。
  */
 export const YOY_YEAR_TAIL = 2
@@ -1208,9 +1243,9 @@ export const YOY_YEAR_TAIL = 2
 export const RATIO_TAIL = ' : 1'
 
 /**
- * 竞争比的小数位。
+ * 竞争比的小数位:整数(Frank 2026-09-09「竞争比需要小数吗」—— 60 : 1 和 60.0 : 1 对用户是一个意思)。
  */
-export const RATIO_DIGITS = 1
+export const RATIO_DIGITS = 0
 
 /**
  * 各地区**不适用**的宏观行(没数据时不出「未公布」,有数据照出):全国没有「已发提名 / 剩余名额」

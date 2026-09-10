@@ -50,7 +50,7 @@ import {
   COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
-  ID_PROV_JOBS, GEO_CA, MACRO_GEO_ORDER, KEY_MACRO_HEAD, KEY_MON_HEAD,
+  ID_PROV_JOBS, GEO_CA, KEY_MACRO_HEAD, KEY_MON_HEAD,
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MR_ISSUED,
@@ -59,6 +59,8 @@ import {
   COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
+  COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_LOWER_BETTER, REC_SKIP_KEYS,
+  REC_TOP_N,
   YOY_YEAR_TAIL,
 } from './constants'
 import { DeadCell } from './deadcell'
@@ -76,6 +78,7 @@ import { JobsActCell } from './jobsactcell'
 import { MacroKeyCell } from './macrokeycell'
 import { makeMacroYearCell } from './macroyearcell'
 import { MacroYoyCell } from './macroyoycell'
+import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
@@ -110,7 +113,9 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  UseRateIn, YearColLabelIn, YearNoteIn, YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, MacroRow, MacroGeo, MacroCell,
+  RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
+  YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn,
+  YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
   MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn,
@@ -3431,7 +3436,7 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
  */
 function indGeoOf(x: IndGeoIn): MacroGeo | null {
   const bases: IndBase[] = []
-  for (const code of MACRO_GEO_ORDER) {
+  for (const code of IND_GEO_ORDER) {
     const gp = geoPointsOf({ code, macro: x.macro, ops: x.ops })
     const base = macroRowOf({ key: x.key, code, t: x.t, points: gp.points, ops: gp.ops })
     if (base != null) {
@@ -3441,11 +3446,13 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   if (bases.length === 0) {
     return null
   }
-  const year = yoyYearOf(indBaseRowsOf(bases))
-  const rows: MacroRow[] = []
+  const flow = MACRO_FLOW_KEYS.includes(x.key)
+  const year = yoyYearOf({ rows: indBaseRowsOf(bases), flow })
+  const plain: MacroRow[] = []
   for (const b of bases) {
-    rows.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key }))
+    plain.push(indRowOf({ base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key }))
   }
+  const rows = recRowsOf({ t: x.t, rows: plain, key: x.key })
   const years = yearsOf(rows)
   return {
     code: x.key,
@@ -3455,6 +3462,122 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     rows,
     yoyLabel: yoyLabelOf({ t: x.t, year }),
     yearNotes: yearNotesOf({ rows, years }),
+    recLabel: recLabelOf({ t: x.t, key: x.key }),
+  }
+}
+
+/**
+ * 推荐列名:只有竞争表有。
+ *
+ * @param x 取词函数与指标键。
+ * @returns 列名或空串。
+ */
+function recLabelOf(x: RecLabelIn): string {
+  if (REC_SKIP_KEYS.includes(x.key)) {
+    return TEXT_NONE
+  }
+  return x.t('pulse.m.rec')
+}
+
+/**
+ * 每张表的推荐列:有最新值的**省**(全国不参评)按最新值排名 —— 越低越好的指标升序、其余降序;
+ * 前 REC_TOP_N「推荐」、末 REC_TOP_N「不推荐」、中间「一般」;只有全国一行的表不出。
+ * 名次 = 比它更好的省数(并列同名次),不用比较器排序(一函数一参)。
+ *
+ * @param x 取词函数、行与指标键。
+ * @returns 带推荐格的行。
+ */
+function recRowsOf(x: RecRowsIn): MacroRow[] {
+  if (REC_SKIP_KEYS.includes(x.key)) {
+    return x.rows
+  }
+  const lower = REC_LOWER_BETTER.includes(x.key)
+  const provs: MacroRow[] = []
+  for (const r of x.rows) {
+    if (r.latest != null && r.key !== GEO_CA) {
+      provs.push(r)
+    }
+  }
+  const out: MacroRow[] = []
+  for (const r of x.rows) {
+    let rec: RecOut = { text: TEXT_NONE, cls: TEXT_NONE }
+    if (r.latest != null && r.key !== GEO_CA) {
+      rec = recOfRank({ t: x.t, rank: recRankOf({ row: r, rows: provs, lower }), n: provs.length })
+    }
+    out.push(withRec({ row: r, rec }))
+  }
+  return out
+}
+
+/**
+ * 一行的名次 = 比它更好的省数(越低越好时「更好」= 值更小)。
+ *
+ * @param x 该行、参评行与方向。
+ * @returns 名次(0 起)。
+ */
+function recRankOf(x: RecRankOfIn): number {
+  const v = macroLatestValueOf(x.row)
+  let better = 0
+  for (const o of x.rows) {
+    const w = macroLatestValueOf(o)
+    if ((x.lower && w < v) || (x.lower === false && w > v)) {
+      better = better + 1
+    }
+  }
+  return better
+}
+
+/**
+ * 一行最新格的值(没格给 0;只在已筛掉空行的排序里用)。
+ *
+ * @param r 一行。
+ * @returns 值。
+ */
+function macroLatestValueOf(r: MacroRow): number {
+  if (r.latest == null) {
+    return 0
+  }
+  return r.latest.value
+}
+
+/**
+ * 名次 → 推荐档(借竞争度三色胶囊)。
+ *
+ * @param x 名次与总数。
+ * @returns 文案与类。
+ */
+function recOfRank(x: RecRankIn): RecOut {
+  if (x.rank < REC_TOP_N) {
+    return { text: x.t('pulse.r.yes'), cls: diffClsOf({ tier: DIFF_EASY }) }
+  }
+  if (x.rank >= x.n - REC_TOP_N) {
+    return { text: x.t('pulse.r.no'), cls: diffClsOf({ tier: DIFF_TIGHT }) }
+  }
+  return { text: x.t('pulse.r.mid'), cls: diffClsOf({ tier: DIFF_MID }) }
+}
+
+/**
+ * 一行加上推荐格(字段写全,不展开)。
+ *
+ * @param x 行与推荐格。
+ * @returns 新行。
+ */
+function withRec(x: WithRecIn): MacroRow {
+  return {
+    key: x.row.key,
+    label: x.row.label,
+    sub: x.row.sub,
+    keyCls: x.row.keyCls,
+    toggle: x.row.toggle,
+    expanded: x.row.expanded,
+    cells: x.row.cells,
+    latest: x.row.latest,
+    latestYear: x.row.latestYear,
+    missing: x.row.missing,
+    yoy: x.row.yoy,
+    yoyCls: x.row.yoyCls,
+    rec: x.rec.text,
+    recCls: x.rec.cls,
   }
 }
 
@@ -3512,7 +3635,7 @@ function indBaseRowsOf(bases: IndBase[]): MacroRow[] {
  * @returns 地区行。
  */
 function indRowOf(x: IndRowIn): MacroRow {
-  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year })
+  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(x.key) })
   return {
     key: x.code,
     label: x.name,
@@ -3526,23 +3649,31 @@ function indRowOf(x: IndRowIn): MacroRow {
     missing: x.base.missing,
     yoy,
     yoyCls: yoyClsOf({ cell: yoy, key: x.key }),
+    rec: TEXT_NONE,
+    recCls: TEXT_NONE,
   }
 }
 
 /**
- * 全表的同比年:各行「最新完整年」里最大的那个(格的灰注为空 = 完整年);未来年(接纳目标这类计划值)不算 ——
- * 2026-09-09 生产实拍目标表拿 2027 对 2026 算同比。
+ * 全表的同比年:流量类取各行「最新完整年」里最大的(格的灰注为空 = 完整年);存量 / 比值类最新一期也算
+ * (Frank 2026-09-09「用最近一年的和之前年份的比」);未来年(接纳目标这类计划值)不算。
  *
  * @param rows 行。
  * @returns 年;一格完整年都没有给空串。
  */
-function yoyYearOf(rows: MacroRow[]): string {
+function yoyYearOf(x: YoyYearIn): string {
   const now = thisYearOf()
   let best = TEXT_NONE
-  for (const r of rows) {
+  for (const r of x.rows) {
     for (const y of Object.keys(r.cells)) {
       const c = r.cells[y]
-      if (c != null && c.note === TEXT_NONE && y <= now && (best === TEXT_NONE || y > best)) {
+      if (c == null || y > now) {
+        continue
+      }
+      if (x.flow && c.note !== TEXT_NONE) {
+        continue
+      }
+      if (best === TEXT_NONE || y > best) {
         best = y
       }
     }
@@ -3562,7 +3693,10 @@ function yoyCellOf(x: YoyCellIn): MacroCell | null {
   }
   const a = x.cells[x.year]
   const b = x.cells[String(Number(x.year) - 1)]
-  if (a == null || b == null || a.note !== TEXT_NONE || b.note !== TEXT_NONE || b.value === 0) {
+  if (a == null || b == null || b.note !== TEXT_NONE || b.value === 0) {
+    return null
+  }
+  if (x.flow && a.note !== TEXT_NONE) {
     return null
   }
   const pct = (a.value / b.value - 1) * PCT_SCALE
@@ -3659,6 +3793,8 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
     missing: macroMissingTextOf({ t: x.t, code: x.code, key: x.key, has, applies }),
     yoy: null,
     yoyCls: TEXT_NONE,
+    rec: TEXT_NONE,
+    recCls: TEXT_NONE,
   }
 }
 
@@ -3991,6 +4127,9 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   }
   if (x.yoyLabel !== TEXT_NONE) {
     out.push({ key: COL_YOY, label: x.yoyLabel, nowrap: true, render: MacroYoyCell })
+  }
+  if (x.recLabel !== TEXT_NONE) {
+    out.push({ key: COL_REC, label: x.recLabel, nowrap: true, render: MacroRecCell })
   }
   return out
 }

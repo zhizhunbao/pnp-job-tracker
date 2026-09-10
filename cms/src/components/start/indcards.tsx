@@ -7,9 +7,10 @@
  * @time 2026-09-09 03:00:00
  */
 import { SeriesChart, SeriesToolbar, useSeriesView } from '@/components/table'
-import { SERIES_VIEW_CHART, SERIES_VIEW_TABLE } from './constants'
+import { SERIES_VIEW_CHART, SERIES_VIEW_TABLE, TEXT_NONE } from './constants'
 import { macroLabelOf, macroValueOf, seriesWordsOf } from './functions'
 import { MacroLatestCell } from './macrolatestcell'
+import { MacroRecCell } from './macroreccell'
 import { MacroYoyCell } from './macroyoycell'
 import type { IndCardsIn, MacroRow } from './types'
 import css from './start.module.css'
@@ -34,6 +35,7 @@ export function IndCards(x: IndCardsIn) {
         <div className={css.provCardBody}>
           <div>{MacroLatestCell(r)}</div>
           <div>{MacroYoyCell(r)}</div>
+          {r.rec !== TEXT_NONE && <div>{MacroRecCell(r)}</div>}
         </div>
       </div>,
     )

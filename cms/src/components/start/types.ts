@@ -3465,6 +3465,16 @@ export type MacroRow = {
    * 同比格的色类(持平素色、涨绿跌红);没同比格空串。
    */
   yoyCls: string
+
+  /**
+   * 推荐列文案(竞争表:推荐 / 可选 / 拥挤);别的表与没数的行空串。
+   */
+  rec: string
+
+  /**
+   * 推荐列胶囊类(借竞争度三色);空串 = 不显。
+   */
+  recCls: string
 }
 
 /**
@@ -3506,6 +3516,11 @@ export type MacroGeo = {
    * 各省截止不一致的列给空串,灰注留在格里。Frank 2026-09-09「至 4 月这种放到标题上如何」)。
    */
   yearNotes: Record<string, string>
+
+  /**
+   * 推荐列名;空串 = 不出这列。
+   */
+  recLabel: string
 }
 
 /**
@@ -3880,6 +3895,126 @@ export type IndRowIn = {
 }
 
 /**
+ * `yoyYearOf` 的入参。
+ */
+export type YoyYearIn = {
+  /**
+   * 行。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 流量类(只认完整年)还是存量 / 比值类(最新一期也算)。
+   */
+  flow: boolean
+}
+
+/**
+ * `recRowsOf` 的入参。
+ */
+export type RecRowsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 地区行(已带最新格)。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 指标键(只有竞争表出推荐)。
+   */
+  key: string
+}
+
+/**
+ * `recLabelOf` 的入参。
+ */
+export type RecLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 指标键。
+   */
+  key: string
+}
+
+/**
+ * `withRec` 的入参。
+ */
+export type WithRecIn = {
+  /**
+   * 原行。
+   */
+  row: MacroRow
+
+  /**
+   * 推荐格。
+   */
+  rec: RecOut
+}
+
+/**
+ * `recRankOf` 的入参。
+ */
+export type RecRankOfIn = {
+  /**
+   * 这一行。
+   */
+  row: MacroRow
+
+  /**
+   * 参评的省行(都有最新值)。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 越低越好。
+   */
+  lower: boolean
+}
+
+/**
+ * `recOfRank` 的入参。
+ */
+export type RecRankIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 该行在有数行里按最新值升序的名次(0 起)。
+   */
+  rank: number
+
+  /**
+   * 有数的行数。
+   */
+  n: number
+}
+
+/**
+ * `recOfRank` 的出参。
+ */
+export type RecOut = {
+  /**
+   * 文案。
+   */
+  text: string
+
+  /**
+   * 胶囊类。
+   */
+  cls: string
+}
+
+/**
  * `yoyCellOf` 的入参。
  */
 export type YoyCellIn = {
@@ -3892,6 +4027,11 @@ export type YoyCellIn = {
    * 同比年(与它前一年配对;两格都得是完整年)。
    */
   year: string
+
+  /**
+   * 流量类:两头都得是完整年;存量 / 比值类:最新一期(可为进行年)对上一整年。
+   */
+  flow: boolean
 }
 
 /**
@@ -4028,6 +4168,11 @@ export type MacroColsIn = {
    * 年 → 列头共用灰注(空串 = 灰注留在格里)。
    */
   yearNotes: Record<string, string>
+
+  /**
+   * 推荐列名;空串不出这列。
+   */
+  recLabel: string
 }
 
 /**
