@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 
 from paths import JOBBANK_STORE_LOCK, WriteTextIn, jobbank_store_lock, write_text
 from log.functions import err, say
-from fetch.functions import make_client
+from fetch.functions import make_client, make_tls_context
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
     ABS_FLOOR, ADDRESS_CLIP, ALL_PROVINCES, APPRENTICE_TITLE_RE, APPRENTICE_URL_RE, ATLANTIC,
@@ -1250,7 +1250,7 @@ def verify_batch(x: VerifyIn) -> VerifyOut:
     errs = 0
     sleep_s = float(os.environ.get(ENV_VERIFY_SLEEP, VERIFY_SLEEP_DEFAULT))
     with httpx.Client(headers={HDR_UA: VERIFY_UA}, timeout=VERIFY_TIMEOUT_S,
-                      follow_redirects=True) as client:
+                      follow_redirects=True, verify=make_tls_context()) as client:
         for _key, pid, url in x.cands:
             try:
                 r = client.get(url)

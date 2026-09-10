@@ -12,6 +12,7 @@ news 母框架(run/SOURCE 契约/增量合并/防线)同日迁回 etl/news/funct
 from __future__ import annotations
 
 import email.utils
+import ssl
 import time
 from datetime import datetime
 
@@ -35,7 +36,19 @@ from fetch.constants import (ATTR_CONTENT, ATTR_HREF, BODY_TAGS, BROWSER_UA, BUL
 
 def make_client(timeout: float) -> httpx.Client:
     """伪装档客户端(gov 目录站/官网对无头 UA 挑剔);批A 起全站构造客户端只走这两个门。"""
-    return httpx.Client(headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=timeout)
+    return httpx.Client(headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=timeout,
+                        verify=make_tls_context())
+
+
+def make_tls_context() -> ssl.SSLContext:
+    """默认校验的 TLS 上下文,握手封顶 TLS 1.2。
+    2026-09-10 实撞:Job Bank 前端对 Python 默认(off 1.3)的 ClientHello 直接 reset,本机与容器
+    3/3 复现,十省抓取与验尸整日报 ConnectError;封顶 1.2 或换 cipher 清单都 3/3 通,curl / 浏览器
+    不受影响 —— 是握手指纹拦截不是协议故障。全站客户端统一走这一门(jobbank 验尸自建客户端也
+    用它),别每域各开一个。"""
+    ctx = ssl.create_default_context()
+    ctx.maximum_version = ssl.TLSVersion.TLSv1_2
+    return ctx
 
 
 def make_polite_client(timeout: float) -> httpx.Client:
