@@ -444,7 +444,7 @@ export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS val
  */
 export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM pnp_ops_stats
      WHERE (scope_kind = '' OR scope_kind IS NULL)
-       AND metric IN ('allocation','issued','nominations_issued','nominations_ytd','remaining')`
+       AND metric IN ('allocation','issued','nominations_issued','nominations_ytd','nominations_issued_fy','remaining')`
 
 // =========================================================================
 // 9. 雇主 —— 官方名录 / 在招 / 担保
