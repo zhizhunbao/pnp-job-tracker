@@ -2682,7 +2682,8 @@ IN_STATCAN_DIR = paths.STATCAN
 
 IN_IRCC_PR_YEARS = paths.IRCC / "pnp_admissions_years.json"
 """PR 登陆数按年(ircc 域段2 产,2026-09-06 加):prAll = 省 Total 行(全部类别),
-prPnp = Provincial Nominee 组行;ytdYear 那年是年内累计。"""
+prPnp = Provincial Nominee 组行;ytdYear 那年是年内累计。
+2026-09-10 再加四个类别组键:prEcon / prFamily / prRefugee / prOtherCat(同一张官方表的组行)。"""
 
 MACRO_GEO_CA = "CA"
 """全国的 geo 码(省用两位省码;领地不收)。"""
@@ -2709,6 +2710,22 @@ MACRO_KEY_PR_ALL = "prAll"
 
 MACRO_KEY_PR_PNP = "prPnp"
 """键:其中省提名(Provincial Nominee 组行)。"""
+
+MACRO_KEY_PR_ECON = "prEcon"
+"""键:其中经济类(Economic 组行)。省提名是它的子项 —— prPnp 已含在内,两者相加会重复计人。"""
+
+MACRO_KEY_PR_FAMILY = "prFamily"
+"""键:其中家庭团聚(Sponsored Family 组行)。"""
+
+MACRO_KEY_PR_REFUGEE = "prRefugee"
+"""键:其中难民与受保护人(Resettled Refugee & Protected Person in Canada 组行)。"""
+
+MACRO_KEY_PR_OTHER_CAT = "prOtherCat"
+"""键:其他类(All Other Immigration 组行)。"""
+
+MACRO_KEYS_PR = (MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEY_PR_ECON, MACRO_KEY_PR_FAMILY,
+                 MACRO_KEY_PR_REFUGEE, MACRO_KEY_PR_OTHER_CAT)
+"""PR 按年表要发的全部键(同一份 raw、同一套解法);raw 里没有的键自然 0 行。"""
 
 MACRO_KEY_ALLOC = "alloc"
 """键:省提名年度配额(人工核对维护表,每年自带出处页)。"""

@@ -1297,9 +1297,14 @@ export type PulsePanel = {
   navSec: string
 
   /**
-   * 「按指标」视图的九张表。
+   * 「按指标」视图的指标表(PR 不在其列,单独一段)。
    */
   indGeos: MacroGeo[]
+
+  /**
+   * PR 段的每地区小表(2026-09-10 Frank「pr 是不是单独列一个大项」:自省份段拆出)。
+   */
+  prGeos: MacroGeo[]
 }
 
 
@@ -3937,6 +3942,11 @@ export type PrGeosIn = {
   t: TFn
 
   /**
+   * 界面语言(段首配额 / EE 两张指标表的省译名行要判英文界面不出)。
+   */
+  lang: string
+
+  /**
    * 全部宏观点。
    */
   macro: MacroPoint[]
@@ -4000,26 +4010,6 @@ export type CardPair = {
    * 该年的值文案(已带单位格式)。
    */
   text: string
-}
-
-/**
- * `eeTargetRowOf` 的入参。
- */
-export type EeTargetRowIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 全部宏观点。
-   */
-  macro: MacroPoint[]
-
-  /**
-   * 全部运营点。
-   */
-  ops: OpsPoint[]
 }
 
 /**
@@ -4398,9 +4388,29 @@ export type MacroSectionIn = {
   jobsRows: JobsRow[]
 
   /**
-   * 「按指标」视图的九张表。
+   * 「按指标」视图的指标表(PR 不在其列,单独一段)。
    */
   indGeos: MacroGeo[]
+}
+
+/**
+ * `PrSection` 的入参(2026-09-10 PR 自省份段拆出成段)。
+ */
+export type PrSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * ETL 心跳。
+   */
+  updatedAt: string
+
+  /**
+   * 每地区一张小表(全国 + 九省)。
+   */
+  prGeos: MacroGeo[]
 }
 
 /**

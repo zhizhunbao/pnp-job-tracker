@@ -69,6 +69,12 @@ export const ID_BOARDS = 'pl-boards'
 export const ID_PROV = 'pl-prov'
 
 /**
+ * PR 段的锚点 id(2026-09-10 Frank「pr 是不是单独列一个大项」「pr 拆成和省一个级别的」:
+ * 每地区一张小表自省份段拆出,与省份平级)。
+ */
+export const ID_PR_BAND = 'pl-pr'
+
+/**
  * 城市概览区的锚点 id(2026-09-04 新段)。
  */
 export const ID_CITY = 'pl-city'
@@ -79,10 +85,11 @@ export const ID_CITY = 'pl-city'
 export const ID_TREND = 'pl-trend'
 
 /**
- * 二级导航条上的六个分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
- * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航)。
+ * 二级导航条上的分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
+ * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航);
+ * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」)。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_TREND]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_PR_BAND, ID_CITY, ID_TREND]
 
 /**
  * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。
@@ -1141,10 +1148,22 @@ export const MK_PNP_TARGET = 'pnpTarget'
 export const MK_EE_TARGET = 'eeTarget'
 
 /**
- * PR 每省小表的行键序(2026-09-10 Frank「拆成每个省一个表」:一地区一张小表,
- * 行 = PR 获批 + 其中省提名,列 = 年)。
+ * PR 每省小表的行键序(2026-09-10 Frank「拆成每个省一个表」:一地区一张小表,列 = 年;
+ * 同日「其他的项的 pr 人数是不是也需要列一下」补四个类别行 —— 总数 / 经济类 / 其中省提名(经济类子项,
+ * 与后三行相加会重复计人)/ 家庭团聚 / 难民与保护 / 其他;数据 = IRCC PR 按省按类别表的组行)。
  */
-export const PR_ROW_KEYS = ['prAll', 'prPnp']
+export const PR_ROW_KEYS = ['prAll', 'prEcon', 'prPnp', 'prFamily', 'prRefugee', 'prOtherCat']
+
+/**
+ * PR 段打头的指标表(2026-09-10 Frank「配额 ee 是不是也都迁移到 pr」:配额与 EE 邀请自省份段迁入;
+ * 随后「这两个应该合并吧」:EE 邀请撤单表并进全国 PR 小表当两行 —— 见 PR_CA_EXTRA_KEYS,这里只剩配额)。
+ */
+export const PR_LEAD_KEYS = ['alloc']
+
+/**
+ * 全国 PR 小表在类别行之后追加的联邦行(EE 邀请 + EE 接纳目标;联邦线不按省发,只有全国那张有)。
+ */
+export const PR_CA_EXTRA_KEYS = ['eeInvites', 'eeTarget']
 
 /**
  * 宏观表行键:工签(2026-09-10 Frank 重排清单点名;数据键 = workOnly 只持工签存量,行键另起
@@ -1197,9 +1216,11 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
  * 照单排;竞争比留在 PNP 配额旁(判断表,由配额派生);临时居民占比跟在临时居民后;
  * 工签 = 只持工签存量单独成表(行键 work,数据键 workOnly);旅游签本站无数据,进数据补全清单不上表;
  * 接纳目标并进配额表当全国行(「这四个都是一回事」),其中省提名并进 PR 表当缩进行,单行表清零。
+ * 同日 PR 自本清单拆出(「pr 拆成和省一个级别的」自成一段,prGeosOf),prAll 不再在此;
+ * 随后「配额 ee 是不是也都迁移到 pr」:配额表与 EE 表也迁 PR 段(竞争比是判断表留省份段)。
  */
 export const IND_ORDER = [
-  'pop', 'gdp', 'unemp', 'npr', 'nprShare', 'eeInvites', 'alloc', 'comp', 'studyNew', 'work', 'prAll',
+  'pop', 'gdp', 'unemp', 'npr', 'nprShare', 'comp', 'studyNew', 'work',
 ]
 
 /**

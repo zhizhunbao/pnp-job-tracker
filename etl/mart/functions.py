@@ -56,7 +56,8 @@ from mart.constants import (
     MACRO_ANCHOR_GEOS,
     MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
     MACRO_EMPTY_MSG, MACRO_FREQ_ANNUAL, MACRO_GEO_CA, MACRO_KEY_ALLOC, MACRO_KEY_EE_INVITES,
-    MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEY_STUDY_NEW, MACRO_MONTH_LEN, MACRO_MONTH_NUM,
+    MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEYS_PR, MACRO_KEY_STUDY_NEW, MACRO_MONTH_LEN,
+    MACRO_MONTH_NUM,
     MACRO_MONTH_TPL, MACRO_UNIT, MACRO_UNIT_TPL, MACRO_YEAR_LEN,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
     BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
@@ -4924,12 +4925,17 @@ def study_as_of_of(x: StudyAsOfIn) -> str:
 
 
 def macro_pr_rows() -> list:
-    """PR 登陆数按年 → prAll(全部类别)/ prPnp(省提名)两族行。"""
+    """PR 登陆数按年 → prAll(全部类别)/ prPnp(省提名)+ 四个类别组族行。
+
+    2026-09-10 Frank「其他的项的 pr 人数是不是也需要列一下」:把脉页每省小表补
+    「其中家庭团聚 / 其中难民 / 其他类」。raw 里没有的键不出行(官方那版表没出那一组)。
+    ⚠ prEcon 含 prPnp(省提名是经济类的子项),两族相加会重复计人 —— 前端别拿它们求和。
+    """
     if not IN_IRCC_PR_YEARS.exists():
         return []
     data = read_table(IN_IRCC_PR_YEARS)
     out: list = []
-    for key in (MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP):
+    for key in MACRO_KEYS_PR:
         out.extend(macro_pr_block_rows(PrBlockIn(
             by_year=data.get(key) or {}, key=key, ytd_year=data.get(K_YTD_YEAR, ""),
             source=data.get(K_SOURCE, ""), fetched=data.get(K_FETCHED, ""))))

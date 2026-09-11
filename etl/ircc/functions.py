@@ -62,7 +62,7 @@ from ircc.constants import (
     K_EFFECTIVE, K_EXCLUDES_NOC, K_FACTOR,
     K_FAMILY_SIZE, K_FETCHED, K_LABEL,
     K_LATEST_REF_PER, K_N, K_NOTE, K_OP,
-    K_PAGE, K_PR_ALL, K_PR_PNP,
+    K_PAGE, K_PR_ALL, K_PR_PNP, PR_CAT_COL, PR_CAT_KEY,
     K_PROGRAM, K_PROVINCE, K_YTD_YEAR,
     K_QUOTE, K_REQUIREMENTS, K_SECTION,
     K_SOURCE, K_STREAM, K_SUBJECT, K_THROUGH_MONTH,
@@ -77,7 +77,7 @@ from ircc.constants import (
     PROVINCE_FED, QUOTE_CURLY_LEFT, QUOTE_CURLY_RIGHT, QUOTE_STRAIGHT,
     SPACE, STATS_FLOW_NOTE, STATS_FLOW_TPL, STATS_NO_FLOW_HEADER, STATS_NO_HEADER,
     STATS_NO_PNP_HEADER, STATS_PNP_NOTE, STATS_PNP_TPL, STATS_PNP_YEARS_NOTE, STATS_PNP_YEARS_TPL,
-    STATS_PRINT_OUT_TPL, STATS_SRC,
+    STATS_PR_CAT_TPL, STATS_PRINT_OUT_TPL, STATS_SRC,
     STATS_STOCK_TPL, STATS_TIMEOUT_S, STATS_TR_NOTE, STATS_UA, STATS_YEAR_ALERT_TPL,
     SRC_PR, SRC_STUDY_FLOW, STOCK_KEYS, STREAM_PRINCIPAL,
     STREAM_PRINCIPAL_NO_RPRF, SUBJECT_APPLICANT, TOTAL_DASH_SUFFIX, TOTAL_SUFFIX,
@@ -86,9 +86,9 @@ from ircc.constants import (
 )
 from ircc.scheme import (
     SheetLike,
-    ActivityFactorIn, ActivityIn, CellAtIn, CompFactorIn, CompIn, DiffDocIn,
+    ActivityFactorIn, ActivityIn, CatBlockIn, CellAtIn, CompFactorIn, CompIn, DiffDocIn,
     DiffProvIn, DiffProvOut, DiffRowIn, DrawRow, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn,
-    FlowTailIn, FlowYearIn, ItemsOut, PgwpReqIn, PnpYearsOut, PoolOut,
+    FlowTailIn, FlowYearIn, ItemsOut, PgwpReqIn, PnpYearsOut, PoolOut, PrCatsSayIn,
     QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn,
     TrendFactorIn, YearCellsIn, YearTotals,
 )
@@ -397,6 +397,63 @@ def pr_total_geo_of(raw: str) -> str:
     return ""
 
 
+def pr_cat_key_of(r: list) -> str:
+    """PR 表一行 → 类别组落盘键(PR_CAT_KEY);不是类别组行给空串。"""
+    if len(r) <= PR_CAT_COL:
+        return ""
+    return PR_CAT_KEY.get(cell_text(r[PR_CAT_COL]), "")
+
+
+def cat_all_years(ws: SheetLike) -> dict:
+    """PR 按省×类别表:四个类别组行 × 全部年列 → {落盘键: {年: {地区码: 人数}}}。
+
+    块形同 pnp_all_years:组行在前、「省 - Total」行收尾,收尾时把本块攒下的几组一次落定。
+    表里没有的组不出键(官方哪年加一类,自然多一个键);「省份未注明」块官方不出类别明细,
+    攒不到即不落键 —— 补 0 = 替官方编数。
+    2026-09-10 Frank「其他的项的 pr 人数是不是也需要列一下」:把脉页每省小表要加
+    「其中家庭团聚 / 其中难民 / 其他类」三行。
+    """
+    rows = sheet_rows(ws)
+    totals = year_total_columns_of(year_total_header_of(rows))
+    out: dict = {}
+    pend: dict = {}
+    for r in rows:
+        if len(r) == 0:
+            continue
+        key = pr_cat_key_of(r)
+        if key != "":
+            pend[key] = year_cells_of(YearCellsIn(row=r, columns=totals))
+        raw = cell_text(r[0])
+        if TOTAL_DASH_SUFFIX in raw:
+            put_cat_block(CatBlockIn(out=out, pend=pend,
+                                     name=raw.replace(TOTAL_DASH_SUFFIX, "").strip()))
+            pend = {}
+    return cat_nonempty_years(out)
+
+
+def put_cat_block(x: CatBlockIn) -> None:
+    """一个省块攒下的类别组值 → 落进总表(该省各一格 + 逐块累进 CA)。
+
+    CA 只能逐块相加:表尾裸「Total」行只有省总数,官方没出全国的类别组行 —— 同 pnp_all_years。
+    PROV_CODE 之外的块(三领地、省份未注明)只进 CA 不单独出省格。
+    """
+    for key, by_year in x.pend.items():
+        block = x.out.setdefault(key, {})
+        for y, v in by_year.items():
+            geos = block.setdefault(y, {})
+            geos[GEO_CA] = geos.get(GEO_CA, 0) + v
+            if x.name in PROV_CODE:
+                geos[PROV_CODE[x.name]] = v
+
+
+def cat_nonempty_years(by_key: dict) -> dict:
+    """逐键剔掉整年全 0 的年份(发布年占位列)—— 同 nonempty_years 的判据。"""
+    out: dict = {}
+    for key, by_year in by_key.items():
+        out[key] = nonempty_years(by_year)
+    return out
+
+
 def is_flow_year_row(r: list) -> bool:
     """流量表的年份行:20xx 纯数字格超过防线。"""
     n = 0
@@ -590,18 +647,32 @@ def write_pnp_admissions_years(fetched: str) -> None:
     ⚠ 与 write_pnp_admissions 各自取一次同一张 XLSX(一步两下载):沿 write_stock_table /
     write_pnp_admissions / write_study_flow「一函数一张表、自己取自己的表」的既有形;
     要省这一次下载得把两个函数并成一个,本批范围「不改既有函数」,另立批次。
+    2026-09-10 加四个类别组键(prEcon / prFamily / prRefugee / prOtherCat,见 cat_all_years):
+    同一张表同一次取,不多打一次官方站。
     """
     ws = fetch_sheet(STATS_SRC[SRC_PR])
     pnp = pnp_all_years(ws)
     all_years = prov_total_all_years(ws)
-    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_YEARS, payload={
-        K_FETCHED: fetched, K_SOURCE: STATS_SRC[SRC_PR], K_YTD_YEAR: pnp.ytd_year,
-        K_PR_ALL: all_years, K_PR_PNP: pnp.by_year, K_NOTE: STATS_PNP_YEARS_NOTE,
-    }, indent=INDENT_1))
+    cats = cat_all_years(ws)
+    payload: dict = {K_FETCHED: fetched, K_SOURCE: STATS_SRC[SRC_PR], K_YTD_YEAR: pnp.ytd_year,
+                     K_PR_ALL: all_years, K_PR_PNP: pnp.by_year}
+    for key, by_year in cats.items():
+        payload[key] = by_year
+    payload[K_NOTE] = STATS_PNP_YEARS_NOTE
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_YEARS, payload=payload, indent=INDENT_1))
     years = sorted(pnp.by_year)
     full = latest_full_year_of(pnp)
     say(STATS_PNP_YEARS_TPL.format(first=years[0], last=years[-1], ytd=pnp.ytd_year,
                                    year=full, on=pnp.by_year[full].get(PROV_ON)))
+    say_pr_cats(PrCatsSayIn(cats=cats, year=full))
+
+
+def say_pr_cats(x: PrCatsSayIn) -> None:
+    """类别组键逐键报数(键、年份跨度、省数、ON 最新完整年的值)。"""
+    for key, by_year in x.cats.items():
+        ys = sorted(by_year)
+        say(STATS_PR_CAT_TPL.format(key=key, first=ys[0], last=ys[-1], n=len(by_year[x.year]),
+                                    year=x.year, on=by_year[x.year].get(PROV_ON)))
 
 
 def write_study_flow(fetched: str) -> None:

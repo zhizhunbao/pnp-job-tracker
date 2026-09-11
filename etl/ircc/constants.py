@@ -238,6 +238,35 @@ K_PR_ALL = "prAll"
 K_PR_PNP = "prPnp"
 """PR 按年表键:Provincial Nominee 组行 × 全部年列(含进行年 YTD 列)。"""
 
+K_PR_ECON = "prEcon"
+"""PR 按年表键:「Economic - Total」组行(经济类合计)× 全部年列。
+省提名是它的子项:prPnp 已含在 prEcon 里,两者相加会重复计人。"""
+
+K_PR_FAMILY = "prFamily"
+"""PR 按年表键:「Sponsored Family - Total」组行(家庭团聚)× 全部年列。"""
+
+K_PR_REFUGEE = "prRefugee"
+"""PR 按年表键:「Resettled Refugee & Protected Person in Canada - Total」组行
+(境外安置难民 + 境内受保护人)× 全部年列。"""
+
+K_PR_OTHER_CAT = "prOtherCat"
+"""PR 按年表键:「All Other Immigration - Total」组行(其他类)× 全部年列。"""
+
+PR_CAT_COL = 1
+"""PR 表里类别组行名格的列下标(第 2 格)。省行名住第 1 格、细类行住第 3/4 格,
+组行是全表唯一用第 2 格的行 —— 认列即认行,不会跟省行/细类行串味。"""
+
+PR_CAT_KEY = {
+    "Economic - Total": K_PR_ECON,
+    "Sponsored Family - Total": K_PR_FAMILY,
+    "Resettled Refugee & Protected Person in Canada - Total": K_PR_REFUGEE,
+    "All Other Immigration - Total": K_PR_OTHER_CAT,
+}
+"""PR 表的四个类别组行名 → 落盘键(2026-09-10 Frank「其他的项的 pr 人数是不是也需要列一下」:
+把脉页每省小表原来只有「PR 获批 / 其中省提名」两行,补齐其余类别组)。
+官方原名照抄不转述;表里没有的组不出键 —— 官方改名即少一键(前端少一行),
+不会拿错行的数顶上。2026-09-10 实测 ON 2024 四组之和 205,850 与省 Total 逐位相等。"""
+
 K_N = "n"
 """流量年块键:人数(整年=官方年总计,进行年=已公布月份求和)。"""
 
@@ -289,7 +318,12 @@ STATS_PNP_YEARS_NOTE = ("PR 登陆数按年:prAll = 省 Total 行(全部移民�
                         "组行;两者同为含随行家属的人头口径。ytdYear 那一年是年内累计(YTD),"
                         "与完整年不可直接比较。数值官方四舍五入到 5,'--' 小值抑制当 0。"
                         "CA = 全国:prAll 取表尾 Total 行(含领地与省份未注明),prPnp = 各块 PNP 行之和"
-                        "(十省 + 三领地 + 未注明,表里没有全国 PNP 单行)。")
+                        "(十省 + 三领地 + 未注明,表里没有全国 PNP 单行)。"
+                        "prEcon / prFamily / prRefugee / prOtherCat = 同一张表的四个类别组行"
+                        "(Economic / Sponsored Family / Resettled Refugee & Protected Person in Canada / "
+                        "All Other Immigration),口径与 CA 算法同 prPnp。四组之和 ≈ prAll"
+                        "(差额 = 官方舍入到 5、'--' 小值抑制当 0、以及「省份未注明」块官方不出类别明细);"
+                        "prPnp 是 prEcon 的子项,与 prEcon 相加会重复计人。")
 """PR 按年表口径注。"""
 
 STATS_FLOW_NOTE = ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "
@@ -314,6 +348,9 @@ STATS_PNP_TPL = "pnp admissions: {year} · {n} 省 · ON={on}"
 
 STATS_PNP_YEARS_TPL = "pnp admissions years: {first}–{last} · YTD {ytd} · ON {year}={on}"
 """PR 按年表收尾报数(核对锚点:ON 的最新完整年 prPnp 应与 OUT_PNP 同值)。"""
+
+STATS_PR_CAT_TPL = "  {key}: {first}–{last} · {n} 省 · ON {year}={on}"
+"""类别组行逐键收尾报数(2026-09-10)。少一行 = 那一组官方这版表没出,不是抽空了。"""
 
 STATS_FLOW_TPL = "study flow: {n} 省 · 年份 {first}–{last} · ON {tail}"
 """流量表收尾报数。"""

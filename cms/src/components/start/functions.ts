@@ -26,7 +26,7 @@ import {
   COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
   COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
-  HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_SE, KEY_PROV_HEAD,
+  HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_PR_BAND, ID_SE, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
   LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAV_IDS, NAV_TOP_LINE,
   NOC_HEAD, NUM_LOCALE, PCT_MARK, PCT_SCALE,
@@ -54,7 +54,7 @@ import {
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, CARD_YEARS, MK_ALLOC, MR_ISSUED,
-  MK_PR_ALL, MK_PNP_TARGET, MK_EE, MK_EE_TARGET, MK_WORK_ONLY, MR_WORK, PR_ROW_KEYS,
+  MK_PR_ALL, MK_PNP_TARGET, MK_WORK_ONLY, MR_WORK, PR_ROW_KEYS, PR_LEAD_KEYS, PR_CA_EXTRA_KEYS,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
@@ -113,7 +113,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  PrGeosIn, PrRowIn, AllocTargetRowIn, EeTargetRowIn, CardPair,
+  PrGeosIn, PrRowIn, AllocTargetRowIn, CardPair,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
@@ -601,6 +601,7 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
     { id: ID_BOARDS, label: x.t('pulse.nav.occ') },
     { id: ID_SE, label: x.t('pulse.nav.se') },
     { id: ID_PROV, label: x.t('pulse.nav.prov') },
+    { id: ID_PR_BAND, label: x.t('pulse.nav.pr') },
     { id: ID_CITY, label: x.t('pulse.nav.city') },
     { id: ID_TREND, label: x.t('pulse.nav.trend') },
   ]
@@ -637,7 +638,28 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
   if (x.navSec === ID_PROV) {
     return indSubsOf(x.t)
   }
+  if (x.navSec === ID_PR_BAND) {
+    return prSubsOf(x.t)
+  }
   return []
+}
+
+/**
+ * PR 段的子项:配额 / EE 两张指标表 + 全国 + 九省(各自表的锚点;2026-09-10 PR 自省份段拆出成段,
+ * 配额与 EE 随后迁入)。
+ *
+ * @param t 取词函数。
+ * @returns 子项清单。
+ */
+function prSubsOf(t: TFn): NavItem[] {
+  const out: NavItem[] = []
+  for (const key of PR_LEAD_KEYS) {
+    out.push({ id: ID_IND_HEAD + key, label: t(KEY_IND_SHORT_HEAD + key) })
+  }
+  for (const code of IND_GEO_ORDER) {
+    out.push({ id: prAnchorOf(code), label: prGeoNameOf({ code, t }) })
+  }
+  return out
 }
 
 /**
@@ -3421,12 +3443,6 @@ function geoPointsOf(x: GeoPointsIn): GeoPoints {
 export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
   const out: MacroGeo[] = []
   for (const key of IND_ORDER) {
-    if (key === MK_PR_ALL) {
-      for (const geo of prGeosOf({ t: x.t, macro: x.macro, ops: x.ops })) {
-        out.push(geo)
-      }
-      continue
-    }
     const geo = indGeoOf({ key, t: x.t, lang: x.lang, macro: x.macro, ops: x.ops })
     if (geo != null) {
       out.push(geo)
@@ -3436,22 +3452,30 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
 }
 
 /**
- * PR 段:每个地区一张小表(全国打头 + 九省;行 = PR 获批 / 其中省提名,列 = 年 + 同比)——
- * 2026-09-10 Frank「这个还是拆成每个省一个表好一些吧」,推翻同日早些的单表缩进行混排。
- * 首列叫「指标」;第一张(全国)的锚点沿用 pl-ind-prAll,二级导航胶囊落在段首。
+ * PR 段的全部表:配额表 + EE 邀请表打头(2026-09-10 Frank「配额 ee 是不是也都迁移到 pr」,
+ * 自省份段迁入,锚点与形制不变),后接每个地区一张 PR 小表(全国 + 九省;行 = PR 获批 / 其中省提名,
+ * 列 = 年 + 同比)—— 同日三连拍:「拆成每个省一个表」「单独列一个大项」「和省一个级别的」。
+ * PR 小表首列叫「指标」;全国那张锚点沿用 pl-ind-prAll。
  *
- * @param x 取词函数与全部点。
- * @returns 每地区一张表(一行都没有的地区不出)。
+ * @param x 取词函数、界面语言与全部点。
+ * @returns 段内表清单(没数的表不出)。
  */
-function prGeosOf(x: PrGeosIn): MacroGeo[] {
+export function prGeosOf(x: PrGeosIn): MacroGeo[] {
   const out: MacroGeo[] = []
+  for (const key of PR_LEAD_KEYS) {
+    const geo = indGeoOf({ key, t: x.t, lang: x.lang, macro: x.macro, ops: x.ops })
+    if (geo != null) {
+      out.push(geo)
+    }
+  }
   for (const code of IND_GEO_ORDER) {
     const gp = geoPointsOf({ code, macro: x.macro, ops: x.ops })
+    const keys = prRowKeysOf(code)
     const bases: MacroRow[] = []
-    for (const key of PR_ROW_KEYS) {
+    for (const key of keys) {
       const base = macroRowOf({ key, code, t: x.t, points: gp.points, ops: gp.ops })
       if (base != null && base.latest != null) {
-        bases.push(base)
+        bases.push(dropFutureYearsOf(base))
       }
     }
     if (bases.length === 0) {
@@ -3478,6 +3502,27 @@ function prGeosOf(x: PrGeosIn): MacroGeo[] {
     })
   }
   return out
+}
+
+/**
+ * 一张 PR 小表的行键:全国 = 类别行 + 联邦两行(EE 邀请 / EE 接纳目标,2026-09-10 Frank
+ * 「这两个应该合并吧」自单表并入);省 = 类别行。
+ *
+ * @param code 地区码。
+ * @returns 行键序。
+ */
+function prRowKeysOf(code: string): string[] {
+  if (code === GEO_CA) {
+    const out: string[] = []
+    for (const key of PR_ROW_KEYS) {
+      out.push(key)
+    }
+    for (const key of PR_CA_EXTRA_KEYS) {
+      out.push(key)
+    }
+    return out
+  }
+  return PR_ROW_KEYS
 }
 
 /**
@@ -3572,12 +3617,6 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
       plain.unshift(target)
     }
   }
-  if (x.key === MK_EE) {
-    const target = eeTargetRowOf({ t: x.t, macro: x.macro, ops: x.ops })
-    if (target != null) {
-      plain.push(target)
-    }
-  }
   const rows = recRowsOf({ t: x.t, rows: plain, key: x.key })
   const years = yearsOf(rows)
   return {
@@ -3610,7 +3649,7 @@ function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
     return null
   }
   return indRowOf({
-    base,
+    base: dropFutureYearsOf(base),
     code: GEO_CA,
     name: x.t('pulse.s4.all'),
     localeName: x.t(KEY_MACRO_HEAD + MK_PNP_TARGET),
@@ -3621,34 +3660,37 @@ function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
 }
 
 /**
- * EE 表的第二行 = EE 接纳目标(2026-09-10 补:邀请是实际、目标是预算,同表对照;
- * 行名「全国」照配额表全国行的形,译名行位标「EE 接纳目标(人)」;mart 还没灌 eeTarget 键时不出)。
+ * 一行去掉未来年格(2026-09-10 Frank「这个格式」实拍:接纳目标 2027/2028 计划年把配额表
+ * 年窗顶右移,九个省行在那两列全空 —— 并进省级表的全国行只保留到当前年,计划年不进这张表)。
  *
- * @param x 取词函数与全部点。
- * @returns 目标行;没数给 null。
+ * @param base 省块形底行。
+ * @returns 只剩当前年及以前格的行。
  */
-function eeTargetRowOf(x: EeTargetRowIn): MacroRow | null {
-  const gp = geoPointsOf({ code: GEO_CA, macro: x.macro, ops: x.ops })
-  const base = macroRowOf({ key: MK_EE_TARGET, code: GEO_CA, t: x.t, points: gp.points, ops: gp.ops })
-  if (base == null || base.latest == null) {
-    return null
+function dropFutureYearsOf(base: MacroRow): MacroRow {
+  const now = thisYearOf()
+  const cells: Record<string, MacroCell> = {}
+  for (const y of Object.keys(base.cells)) {
+    const c = base.cells[y]
+    if (c != null && y <= now) {
+      cells[y] = c
+    }
   }
   return {
-    key: MK_EE_TARGET,
-    label: x.t('pulse.s4.all'),
-    localeName: x.t(KEY_MACRO_HEAD + MK_EE_TARGET),
-    sub: false,
+    key: base.key,
+    label: base.label,
+    localeName: base.localeName,
+    sub: base.sub,
     keyCls: base.keyCls,
-    toggle: null,
-    expanded: false,
-    cells: base.cells,
-    latest: base.latest,
-    latestYear: base.latestYear,
+    toggle: base.toggle,
+    expanded: base.expanded,
+    cells,
+    latest: latestCellOf(cells),
+    latestYear: latestYearOf(cells),
     missing: base.missing,
-    yoy: null,
-    yoyCls: TEXT_NONE,
-    rec: TEXT_NONE,
-    recCls: TEXT_NONE,
+    yoy: base.yoy,
+    yoyCls: base.yoyCls,
+    rec: base.rec,
+    recCls: base.recCls,
   }
 }
 

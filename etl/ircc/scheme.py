@@ -84,6 +84,31 @@ class PnpYearsOut:
 
 
 @dataclass
+class CatBlockIn:
+    """put_cat_block() 入参(一个省块攒下的类别组值 → 落进总表)。"""
+
+    out: dict
+    """累计中的总表:落盘键 → {年: {地区码: 人数}}(就地改)。"""
+
+    pend: dict
+    """本块攒下的类别组值:落盘键 → {年: 人数}。"""
+
+    name: str
+    """本块收尾行的地名(已去掉「 - Total」尾巴);PROV_CODE 之外的块只进 CA。"""
+
+
+@dataclass
+class PrCatsSayIn:
+    """say_pr_cats() 入参(类别组键的收尾报数)。"""
+
+    cats: dict
+    """cat_all_years() 的出参:落盘键 → {年: {地区码: 人数}}。"""
+
+    year: str
+    """报哪一年(最新完整年)。"""
+
+
+@dataclass
 class CellAtIn:
     """cell_at() 入参(原 study_flow 的内嵌 at() 出户后的载体)。"""
 
