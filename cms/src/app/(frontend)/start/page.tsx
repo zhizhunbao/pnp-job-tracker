@@ -49,7 +49,7 @@ export default async function PulsePage() {
   const db = dbOf(payload)
   let core = cachedHomeOf()
   if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes, macroRes, opsRes] = await Promise.all([
+    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
       loadTotalAndProof(db).catch(nullProof),
       loadProvExtra(db).catch(emptyProvExtra),
       loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
@@ -59,8 +59,6 @@ export default async function PulsePage() {
       db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
       db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
       db.query(SQL.COMPANY_BRIEFS).catch(emptyQueryResult),
-      db.query(SQL.MACRO_SERIES).catch(emptyQueryResult),
-      db.query(SQL.PNP_OPS_PROV).catch(emptyQueryResult),
     ])
     core = putHomeCache(homeCoreOf({
       proof,
@@ -74,8 +72,6 @@ export default async function PulsePage() {
       drawsLimit: DRAWS_LIMIT,
       pilotRows: pilotRes.rows,
       briefRows: briefRes.rows,
-      macroRows: macroRes.rows,
-      opsRows: opsRes.rows,
     }))
   }
   const upd = await checkedAt(db).catch(emptyText)

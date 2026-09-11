@@ -17,4 +17,9 @@ export const CACHE: StatsCache = {
    * /api/stats/market 的四件套缓存(occ ~3400 行是最重的一坨;10 分钟 TTL)。
    */
   market: null,
+
+  /**
+   * /api/stats/macro 的宏观两份缓存(macro_series + pnp_ops_stats;10 分钟 TTL)。
+   */
+  macroStats: null,
 }

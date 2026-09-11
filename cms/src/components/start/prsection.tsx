@@ -9,9 +9,10 @@
  * @time 2026-09-10 22:00:00
  */
 import { Updated } from '@/components/time'
-import { ID_PR_BAND } from './constants'
+import { ID_PR_BAND, PH_PROV } from './constants'
 import { Band } from './band'
 import { MacroBlock } from './macroblock'
+import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { PrSectionIn } from './types'
 
@@ -21,8 +22,8 @@ import type { PrSectionIn } from './types'
  * @param props 取词函数、更新时刻与每地区小表。
  * @returns 一条色带;一张表都没有时给 null。
  */
-export function PrSection({ t, updatedAt, prGeos }: PrSectionIn) {
-  if (prGeos.length === 0) {
+export function PrSection({ t, updatedAt, prGeos, loading }: PrSectionIn) {
+  if (prGeos.length === 0 && loading === false) {
     return null
   }
   const blocks = []
@@ -34,6 +35,7 @@ export function PrSection({ t, updatedAt, prGeos }: PrSectionIn) {
   return (
     <Band id={ID_PR_BAND}>
       <Sec title={t('pulse.spr')} right={<Updated iso={updatedAt} t={t} />}>
+        {loading && <Placeholder size={PH_PROV} />}
         {blocks}
       </Sec>
     </Band>

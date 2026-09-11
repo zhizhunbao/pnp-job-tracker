@@ -165,6 +165,17 @@ export const MARKET_TTL_MS = 10 * 60_000
 export const MARKET_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
 
 /**
+ * /api/stats/macro 进程内缓存 TTL(2026-09-10 SSR 瘦身:macro_series 长到 ~5,000 行把 /start
+ * HTML 撑到 5MB+、水合卡死点击 —— 照 market 的形搬出 SSR 挂载后拉;与 homeCache 同 10 分钟)。
+ */
+export const MACRO_TTL_MS = 10 * 60_000
+
+/**
+ * /api/stats/macro 的浏览器侧缓存头(与 market 同口径)。
+ */
+export const MACRO_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
  * 下钻参数没带时的初值(`?prov` `?broad` `?mid` 三处共用)。
  * 与「带了但是空」落成同一个值:三参缺一律 400 ——
  * 少一个维度查出来的就不是这张下钻表,宁可不给也不给半张。

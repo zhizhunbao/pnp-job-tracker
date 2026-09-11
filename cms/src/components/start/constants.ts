@@ -49,6 +49,12 @@ export const URL_NEWS = '/news'
 export const URL_SPONSORS_API = '/api/employers/sponsors'
 
 /**
+ * 宏观两份接口(2026-09-10 SSR 瘦身:macro_series 通道树批后 ~7,400 行把 /start HTML 撑到 5MB+、
+ * 水合卡死点击 —— 照 market / sponsors 的形挂载后拉,省份 / PR 两段等它)。
+ */
+export const URL_MACRO_API = '/api/stats/macro'
+
+/**
  * 锚点地址的头(拼上分区 id)。
  */
 export const ANCHOR_HEAD = '#'
@@ -1185,6 +1191,29 @@ export const PR_LEAD_KEYS = ['alloc']
  * 全国 PR 小表在类别行之后追加的联邦行(EE 邀请 + EE 接纳目标;联邦线不按省发,只有全国那张有)。
  */
 export const PR_CA_EXTRA_KEYS = ['eeInvites', 'eeTarget']
+
+/**
+ * PR 类别行的折叠树(2026-09-10 Frank「他这个几个通道 我们能把它捋顺了吗」→「做」):
+ * 键 = 可展开的大类行,值 = 点开后出的通道细行(IRCC 同表三、四级行;省提名已是常驻行不进树;
+ * 商业线出合计一行,四个存量老通道不铺开;难民与保护点开 = 三种安置 + 境内保护)。
+ * 默认全收,表不变长;展开态每表自管(useFold)。
+ */
+export const PR_FOLD: Record<string, string[]> = {
+  /**
+   * 经济类:打工线八条 + 商业线合计 + 临时转永居。
+   */
+  prEcon: ['prCec', 'prFsw', 'prFst', 'prCaregiver', 'prAgriFood', 'prAtlantic', 'prRnip', 'prEmpp', 'prBusiness', 'prTr2pr'],
+
+  /**
+   * 家庭团聚:四种亲属。
+   */
+  prFamily: ['prSpouse', 'prChildren', 'prPgp', 'prExtFamily'],
+
+  /**
+   * 难民与保护:三种境外安置 + 境内获保护。
+   */
+  prRefugee: ['prGar', 'prPsr', 'prBsr', 'prProtected'],
+}
 
 /**
  * 宏观表行键:工签(2026-09-10 Frank 重排清单点名;数据键 = workOnly 只持工签存量,行键另起

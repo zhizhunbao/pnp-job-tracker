@@ -11,4 +11,4 @@ export {
   loadChannelNocs, loadCityStats, loadDailySeries, loadFineCounts, loadOccStats, loadProvExtra, loadStats,
   loadStatSources,
 } from './functions'
-export { statsDataRoute, statsFineRoute, statsMarketRoute } from './routes'
+export { statsDataRoute, statsFineRoute, statsMacroRoute, statsMarketRoute } from './routes'

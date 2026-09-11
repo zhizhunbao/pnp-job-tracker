@@ -859,13 +859,33 @@ export type MarketSlot = {
 }
 
 /**
- * 统计域全部可变状态的形状（住 variables.ts 的 CACHE）。
+ * /api/stats/macro 两份数据缓存的一格(形状同 MarketSlot:v 透传 json)。
+ */
+export type MacroStatsSlot = {
+  /**
+   * 缓存的两份(macro_series 行 + pnp_ops_stats 行,原样 json)。
+   */
+  v: object
+
+  /**
+   * 写入时刻(ms)。
+   */
+  ts: number
+}
+
+/**
+ * 统计域全部可变状态的形状(住 variables.ts 的 CACHE)。
  */
 export type StatsCache = {
   /**
    * market 四件套；没拉过/过期由 TTL 判。
    */
   market: MarketSlot | null
+
+  /**
+   * macro 两份;没拉过/过期由 TTL 判。
+   */
+  macroStats: MacroStatsSlot | null
 }
 
 /**

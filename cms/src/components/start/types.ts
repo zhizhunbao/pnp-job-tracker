@@ -321,15 +321,6 @@ export type HomeStats = {
    */
   city: CityRow[]
 
-  /**
-   * macro_series 全量点(省份段宏观按年表,2026-09-06)。
-   */
-  macro: MacroPoint[]
-
-  /**
-   * pnp_ops_stats 省级点(宏观表已发 / 剩余两行)。
-   */
-  ops: OpsPoint[]
 
   /**
    * 数据抓取时刻。
@@ -461,15 +452,6 @@ export type HomeCoreIn = {
    */
   drawsLimit: number
 
-  /**
-   * macro_series 全表(pg 原始)。
-   */
-  macroRows: MacroDbRow[]
-
-  /**
-   * pnp_ops_stats 省级指标行(pg 原始)。
-   */
-  opsRows: OpsDbRow[]
 }
 
 /**
@@ -1168,6 +1150,46 @@ export type SponsorLoadIn = {
 }
 
 /**
+ * 挂载后拉回来的宏观两份(已洗成点;2026-09-10 SSR 瘦身自 HomeStats 拆出)。
+ */
+export type MacroData = {
+  /**
+   * macro_series 全量点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * pnp_ops_stats 省级点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * `makeMacroLoad` 的入参。
+ */
+export type MacroLoadIn = {
+  /**
+   * 两份到手后的落格。
+   */
+  setMacroData: (v: MacroData) => void
+}
+
+/**
+ * /api/stats/macro 回包的探针形(服务端恒发两键;防坏包按 null 读,`== null` 双杀缺键)。
+ */
+export type MacroStatsProbe = {
+  /**
+   * macro_series 原样行。
+   */
+  macro: MacroDbRow[] | null
+
+  /**
+   * pnp_ops_stats 原样行。
+   */
+  ops: OpsDbRow[] | null
+}
+
+/**
  * `makeNavWatch` 的入参(二级导航的滚动跟随)。
  */
 export type NavWatchIn = {
@@ -1305,6 +1327,11 @@ export type PulsePanel = {
    * PR 段的每地区小表(2026-09-10 Frank「pr 是不是单独列一个大项」:自省份段拆出)。
    */
   prGeos: MacroGeo[]
+
+  /**
+   * 宏观两份还在路上(SSR 瘦身批:省份 / PR 两段渲占位)。
+   */
+  macroLoading: boolean
 }
 
 
@@ -3428,6 +3455,12 @@ export type MacroRow = {
   localeName: string
 
   /**
+   * 折叠树里的父行键(PR 通道细行才有;空串 = 顶级行,恒显)。子行只在父行展开时上表,
+   * 手机卡与趋势图照旧走 nonSubRowsOf 不收细行。
+   */
+  parent: string
+
+  /**
    * 是不是「其中」缩进行。
    */
   sub: boolean
@@ -3566,12 +3599,12 @@ export type MacroGeosIn = {
   lang: string
 
   /**
-   * macro_series 全量点。
+   * macro_series 全量点(SSR 瘦身批起由挂载后拉取注入)。
    */
   macro: MacroPoint[]
 
   /**
-   * pnp_ops_stats 省级点。
+   * pnp_ops_stats 省级点(同上)。
    */
   ops: OpsPoint[]
 
@@ -3980,6 +4013,126 @@ export type PrRegionGeoIn = {
    * 全部运营点。
    */
   ops: OpsPoint[]
+}
+
+/**
+ * `withFoldParent` 的入参。
+ */
+export type WithFoldParentIn = {
+  /**
+   * 通道细行。
+   */
+  row: MacroRow
+
+  /**
+   * 折叠树父键。
+   */
+  parent: string
+}
+
+/**
+ * `foldRowsOf` 的入参。
+ */
+export type FoldRowsIn = {
+  /**
+   * 全部行(含收着的细行)。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 开合表(键 = 大类行键;不在表里 = 收着)。
+   */
+  open: Record<string, boolean>
+
+  /**
+   * 翻转一个键的回调(useFold 给)。
+   */
+  flip: FoldFlipFn
+}
+
+/**
+ * 折叠翻转回调(收一个大类行键)。
+ */
+export type FoldFlipFn = (key: string) => void
+
+/**
+ * `hasFoldChildRow` 的入参。
+ */
+export type HasFoldChildIn = {
+  /**
+   * 全部行。
+   */
+  rows: MacroRow[]
+
+  /**
+   * 父键。
+   */
+  key: string
+}
+
+/**
+ * `makeFoldFlip` 的入参。
+ */
+export type MakeFoldFlipIn = {
+  /**
+   * 行键。
+   */
+  key: string
+
+  /**
+   * 翻转回调。
+   */
+  flip: FoldFlipFn
+}
+
+/**
+ * `withFoldToggle` 的入参。
+ */
+export type WithFoldToggleIn = {
+  /**
+   * 大类行。
+   */
+  row: MacroRow
+
+  /**
+   * 折叠钮回调。
+   */
+  toggle: ClickFn
+
+  /**
+   * 当前开合态。
+   */
+  expanded: boolean
+}
+
+/**
+ * `foldFlippedOf` 的入参。
+ */
+export type FoldFlippedIn = {
+  /**
+   * 现开合表。
+   */
+  prev: Record<string, boolean>
+
+  /**
+   * 要翻的键。
+   */
+  key: string
+}
+
+/**
+ * `useFold` 的出参:一张表的折叠状态机。
+ */
+export type FoldOut = {
+  /**
+   * 开合表。
+   */
+  open: Record<string, boolean>
+
+  /**
+   * 翻转一个键。
+   */
+  flip: FoldFlipFn
 }
 
 /**
@@ -4416,6 +4569,11 @@ export type MacroSectionIn = {
    * 「按指标」视图的指标表(PR 不在其列,单独一段)。
    */
   indGeos: MacroGeo[]
+
+  /**
+   * 宏观两份还在路上(SSR 瘦身批:指标表区渲占位)。
+   */
+  indLoading: boolean
 }
 
 /**
@@ -4436,6 +4594,11 @@ export type PrSectionIn = {
    * 每地区一张小表(全国 + 九省)。
    */
   prGeos: MacroGeo[]
+
+  /**
+   * 宏观两份还在路上(渲占位)。
+   */
+  loading: boolean
 }
 
 /**

@@ -12,10 +12,11 @@
  * @time 2026-08-28 14:20:00
  */
 import { Updated } from '@/components/time'
-import { ID_PROV } from './constants'
+import { ID_PROV, PH_PROV } from './constants'
 import { Band } from './band'
 import { JobsSection } from './jobssection'
 import { MacroBlock } from './macroblock'
+import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { MacroSectionIn } from './types'
 
@@ -25,8 +26,8 @@ import type { MacroSectionIn } from './types'
  * @param props 取词函数、更新时刻、地区块与招聘对比行。
  * @returns 一条色带;一个地区块都没有且招聘表也空时给 null。
  */
-export function ProvSection({ t, updatedAt, indGeos, jobsLoading, jobsRows }: MacroSectionIn) {
-  if (indGeos.length === 0 && jobsLoading === false && jobsRows.length === 0) {
+export function ProvSection({ t, updatedAt, indGeos, indLoading, jobsLoading, jobsRows }: MacroSectionIn) {
+  if (indGeos.length === 0 && indLoading === false && jobsLoading === false && jobsRows.length === 0) {
     return null
   }
   const blocks = []
@@ -38,6 +39,7 @@ export function ProvSection({ t, updatedAt, indGeos, jobsLoading, jobsRows }: Ma
   return (
     <Band id={ID_PROV}>
       <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
+        {indLoading && <Placeholder size={PH_PROV} />}
         {blocks}
         <JobsSection t={t} loading={jobsLoading} rows={jobsRows} gap={gap} />
       </Sec>

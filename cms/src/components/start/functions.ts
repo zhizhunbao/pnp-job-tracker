@@ -33,7 +33,7 @@ import {
   PNP_SORT_SCALE, PROV_ALL_LOWER,
   RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
-  TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY,
+  TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
   EMPTY_CITY_ROWS, KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
@@ -54,7 +54,7 @@ import {
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, CARD_YEARS, MK_ALLOC, MR_ISSUED,
-  MK_PR_ALL, MK_PNP_TARGET, MK_WORK_ONLY, MR_WORK, PR_ROW_KEYS, PR_LEAD_KEYS, PR_CA_EXTRA_KEYS,
+  MK_PR_ALL, MK_PNP_TARGET, MK_WORK_ONLY, MR_WORK, PR_ROW_KEYS, PR_LEAD_KEYS, PR_CA_EXTRA_KEYS, PR_FOLD,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
@@ -114,13 +114,14 @@ import type {
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
   PrGeosIn, PrRowIn, PrRegionGeoIn, AllocTargetRowIn, CardPair,
+  WithFoldParentIn, FoldRowsIn, HasFoldChildIn, MakeFoldFlipIn, WithFoldToggleIn, FoldFlippedIn,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
   MacroColsIn, SeriesWords, GeoNameIn, GeoLocaleIn, JobsRow, JobsRowsIn, JobsRowIn,
-  JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
+  JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec, MacroData, MacroLoadIn, MacroStatsProbe,
 } from './types'
 import css from './start.module.css'
 
@@ -243,8 +244,6 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     natOcc,
     nocProvs: Object.fromEntries(nocProvsOf({ occ: x.occRows })),
     city: x.cityRows,
-    macro: toMacroPoints(x.macroRows),
-    ops: toOpsPoints(x.opsRows),
   }
 }
 
@@ -270,8 +269,6 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     natOcc: x.core.natOcc,
     nocProvs: x.core.nocProvs,
     city: x.core.city,
-    macro: x.core.macro,
-    ops: x.core.ops,
     checkedAt: x.checkedAt,
   }
 }
@@ -1688,6 +1685,90 @@ export function makeSponsorLoad(x: SponsorLoadIn): () => CleanupFn {
       ctrl.abort()
     }
   }
+}
+
+/**
+ * 宏观两份的挂载后拉取工厂(2026-09-10 SSR 瘦身:形照 makeSponsorLoad;拉挂 / 空表落空份,
+ * 两段渲空不渲错;行构造 toMacroPoints/toOpsPoints 在这里做完,消费端只见点)。
+ *
+ * @param x 两份到手后的落格。
+ * @returns effect 的本体(交回清理函数)。
+ */
+export function makeMacroLoad(x: MacroLoadIn): () => CleanupFn {
+  return function run(): CleanupFn {
+    const ctrl = new AbortController()
+    async function pull(): Promise<void> {
+      try {
+        const res = await fetch(URL_MACRO_API, { signal: ctrl.signal })
+        if (res.ok === false) {
+          x.setMacroData({ macro: [], ops: [] })
+          return
+        }
+        const j: MacroStatsProbe = await res.json()
+        x.setMacroData({ macro: toMacroPoints(macroRowsOrEmpty(j.macro)), ops: toOpsPoints(opsRowsOrEmpty(j.ops)) })
+      } catch {
+        if (ctrl.signal.aborted === false) {
+          x.setMacroData({ macro: [], ops: [] })
+        }
+      }
+    }
+    void pull()
+    return function abort(): void {
+      ctrl.abort()
+    }
+  }
+}
+
+/**
+ * 拉回来的宏观点;还在路上给空清单(两段先渲占位)。
+ *
+ * @param d 两份点;null = 加载中。
+ * @returns 宏观点。
+ */
+export function macroPointsOf(d: MacroData | null): MacroPoint[] {
+  if (d == null) {
+    return []
+  }
+  return d.macro
+}
+
+/**
+ * 拉回来的运营点;还在路上给空清单。
+ *
+ * @param d 两份点;null = 加载中。
+ * @returns 运营点。
+ */
+export function opsPointsOf(d: MacroData | null): OpsPoint[] {
+  if (d == null) {
+    return []
+  }
+  return d.ops
+}
+
+/**
+ * 接口给的宏观行清单;没给就当空清单(不闪不塌)。
+ *
+ * @param rows 行清单;null = 接口没给。
+ * @returns 行清单。
+ */
+function macroRowsOrEmpty(rows: MacroDbRow[] | null): MacroDbRow[] {
+  if (rows == null) {
+    return []
+  }
+  return rows
+}
+
+/**
+ * 接口给的运营行清单;没给就当空清单。
+ *
+ * @param rows 行清单;null = 接口没给。
+ * @returns 行清单。
+ */
+function opsRowsOrEmpty(rows: OpsDbRow[] | null): OpsDbRow[] {
+  if (rows == null) {
+    return []
+  }
+  return rows
 }
 
 /**
@@ -3534,6 +3615,12 @@ function prRegionGeoOf(x: PrRegionGeoIn): MacroGeo | null {
     const base = macroRowOf({ key, code: x.code, t: x.t, points: gp.points, ops: gp.ops })
     if (base != null && base.latest != null) {
       bases.push(dropFutureYearsOf(base))
+      for (const childKey of prFoldChildrenOf(key)) {
+        const child = macroRowOf({ key: childKey, code: x.code, t: x.t, points: gp.points, ops: gp.ops })
+        if (child != null && child.latest != null) {
+          bases.push(withFoldParent({ row: dropFutureYearsOf(child), parent: key }))
+        }
+      }
     }
   }
   if (bases.length === 0) {
@@ -3557,6 +3644,138 @@ function prRegionGeoOf(x: PrRegionGeoIn): MacroGeo | null {
     recLabel: TEXT_NONE,
     formula: TEXT_NONE,
     indexed: false,
+  }
+}
+
+/**
+ * 折叠展开态下这张表真正上屏的行:通道细行只在父行展开时出;有细行可展的大类行配上
+ * 折叠钮与当前开合态(2026-09-10 通道树批;没有细行的表原样通过 —— 全站 MacroBlock 共用)。
+ *
+ * @param x 全部行、开合表与翻转回调。
+ * @returns 上屏行。
+ */
+export function foldRowsOf(x: FoldRowsIn): MacroRow[] {
+  const out: MacroRow[] = []
+  for (const r of x.rows) {
+    if (r.parent !== TEXT_NONE && x.open[r.parent] !== true) {
+      continue
+    }
+    if (hasFoldChildRow({ rows: x.rows, key: r.key })) {
+      out.push(withFoldToggle({ row: r, toggle: makeFoldFlip({ key: r.key, flip: x.flip }), expanded: x.open[r.key] === true }))
+      continue
+    }
+    out.push(r)
+  }
+  return out
+}
+
+/**
+ * 表里有没有挂在该键下的通道细行(有才配折叠钮 —— 树里有名但该地区没数就不出钮)。
+ *
+ * @param x 全部行与父键。
+ * @returns 有给 true。
+ */
+function hasFoldChildRow(x: HasFoldChildIn): boolean {
+  for (const r of x.rows) {
+    if (r.parent === x.key) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 折叠钮点击回调工厂(工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param x 行键与翻转回调。
+ * @returns 点击回调。
+ */
+function makeFoldFlip(x: MakeFoldFlipIn): ClickFn {
+  return function onFlip() {
+    x.flip(x.key)
+  }
+}
+
+/**
+ * 一行配上折叠钮与开合态(字段写全,不展开)。
+ *
+ * @param x 行、钮与开合态。
+ * @returns 新行。
+ */
+function withFoldToggle(x: WithFoldToggleIn): MacroRow {
+  return {
+    key: x.row.key,
+    label: x.row.label,
+    localeName: x.row.localeName,
+    parent: x.row.parent,
+    sub: x.row.sub,
+    keyCls: x.row.keyCls,
+    toggle: x.toggle,
+    expanded: x.expanded,
+    cells: x.row.cells,
+    latest: x.row.latest,
+    latestYear: x.row.latestYear,
+    missing: x.row.missing,
+    yoy: x.row.yoy,
+    yoyCls: x.row.yoyCls,
+    rec: x.row.rec,
+    recCls: x.row.recCls,
+  }
+}
+
+/**
+ * 开合表翻转一格(纯函数;禁展开,逐键复制)。
+ *
+ * @param x 现开合表与要翻的键。
+ * @returns 新开合表。
+ */
+export function foldFlippedOf(x: FoldFlippedIn): Record<string, boolean> {
+  const out: Record<string, boolean> = {}
+  for (const k of Object.keys(x.prev)) {
+    out[k] = x.prev[k] === true
+  }
+  out[x.key] = x.prev[x.key] !== true
+  return out
+}
+
+/**
+ * 一个大类行的通道细行键(PR_FOLD 树;不是可展开的大类给空清单)。
+ *
+ * @param key 行键。
+ * @returns 细行键清单。
+ */
+function prFoldChildrenOf(key: string): string[] {
+  const children = PR_FOLD[key]
+  if (children == null) {
+    return []
+  }
+  return children
+}
+
+/**
+ * 一行标上折叠树里的父键并转缩进形(通道细行;字段写全,不展开)。
+ *
+ * @param x 行与父键。
+ * @returns 新行。
+ */
+function withFoldParent(x: WithFoldParentIn): MacroRow {
+  return {
+    key: x.row.key,
+    label: x.row.label,
+    localeName: x.row.localeName,
+    parent: x.parent,
+    sub: true,
+    keyCls: macroKeyClsOf({ sub: true }),
+    toggle: x.row.toggle,
+    expanded: x.row.expanded,
+    cells: x.row.cells,
+    latest: x.row.latest,
+    latestYear: x.row.latestYear,
+    missing: x.row.missing,
+    yoy: x.row.yoy,
+    yoyCls: x.row.yoyCls,
+    rec: x.row.rec,
+    recCls: x.row.recCls,
   }
 }
 
@@ -3619,6 +3838,7 @@ function prRowOf(x: PrRowIn): MacroRow {
     key: x.base.key,
     label: x.base.label,
     localeName: x.base.localeName,
+    parent: x.base.parent,
     sub: x.base.sub,
     keyCls: x.base.keyCls,
     toggle: x.base.toggle,
@@ -3735,6 +3955,7 @@ function dropFutureYearsOf(base: MacroRow): MacroRow {
     key: base.key,
     label: base.label,
     localeName: base.localeName,
+    parent: base.parent,
     sub: base.sub,
     keyCls: base.keyCls,
     toggle: base.toggle,
@@ -3929,6 +4150,7 @@ function withRec(x: WithRecIn): MacroRow {
     key: x.row.key,
     label: x.row.label,
     localeName: x.row.localeName,
+    parent: x.row.parent,
     sub: x.row.sub,
     keyCls: x.row.keyCls,
     toggle: x.row.toggle,
@@ -4003,6 +4225,7 @@ function indRowOf(x: IndRowIn): MacroRow {
     key: x.code,
     label: x.name,
     localeName: x.localeName,
+    parent: TEXT_NONE,
     sub: false,
     keyCls: x.base.keyCls,
     toggle: null,
@@ -4163,6 +4386,7 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
     key: x.key,
     label: x.t(KEY_MACRO_HEAD + x.key),
     localeName: TEXT_NONE,
+    parent: TEXT_NONE,
     sub: MACRO_SUB_ROWS.includes(x.key),
     keyCls: macroKeyClsOf({ sub: MACRO_SUB_ROWS.includes(x.key) }),
     toggle: null,

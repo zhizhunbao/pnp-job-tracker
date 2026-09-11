@@ -125,6 +125,29 @@ export async function loadOccStats(db: Db): OccRowsOut {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 城市统计行(按在招量取前 CITY_LIMIT)。
  */
+/**
+ * 宏观序列原样行(macro_series,SQL 侧已收窄;/api/stats/macro 透传给把脉页,
+ * 行构造在消费端 toMacroPoints —— 2026-09-10 SSR 瘦身批,这里不洗不拼)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 原样行。
+ */
+export async function loadMacroRows(db: Db): Promise<object[]> {
+  const res = await db.query(SQL.MACRO_SERIES)
+  return res.rows
+}
+
+/**
+ * 省级运营指标原样行(pnp_ops_stats;/api/stats/macro 透传给把脉页,行构造在消费端 toOpsPoints)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 原样行。
+ */
+export async function loadPnpOpsRows(db: Db): Promise<object[]> {
+  const res = await db.query(SQL.PNP_OPS_PROV)
+  return res.rows
+}
+
 export async function loadCityStats(db: Db): CityRowsOut {
   try {
     return await queryRows({ db: db, sql: SQL.CITY_STATS, params: [CITY_LIMIT], map: toCityRow })

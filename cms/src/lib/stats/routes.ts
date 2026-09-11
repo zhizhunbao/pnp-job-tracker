@@ -11,8 +11,14 @@ import { BAD_REQUEST, HDR_CACHE_CONTROL } from '../http'
 import { normalizeProfile } from '../jobs'
 import type { ProfileJson } from '../jobs'
 import { getUser, isPro } from '../quota/server'
-import { MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, PARAM_NONE, P_BROAD, P_MID, P_PROV } from './constants'
-import { emptyChannels, emptyRows, loadChannelNocs, loadCityStats, loadFineCounts, loadOccStats, loadStats, loadStatSources } from './functions'
+import {
+  MACRO_CACHE_CONTROL, MACRO_TTL_MS, MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, PARAM_NONE,
+  P_BROAD, P_MID, P_PROV,
+} from './constants'
+import {
+  emptyChannels, emptyRows, loadChannelNocs, loadCityStats, loadFineCounts, loadMacroRows, loadOccStats,
+  loadPnpOpsRows, loadStats, loadStatSources,
+} from './functions'
 import { CACHE } from './variables'
 
 /**
@@ -91,4 +97,25 @@ export async function statsMarketRoute(_req: Request): Promise<Response> {
     CACHE.market = { v: { occ, city, rows, channels }, ts: Date.now() }
   }
   return Response.json(CACHE.market.v, { headers: { [HDR_CACHE_CONTROL]: MARKET_CACHE_CONTROL } })
+}
+
+/**
+ * GET /api/stats/macro:把脉页省份 / PR 两段的宏观两份 macro/ops(macro_series + pnp_ops_stats 原样行)。
+ * 2026-09-10 SSR 瘦身:通道树批后 macro_series 到 ~7,400 行(SQL 收窄后仍 ~5,000 行进 HTML),
+ * /start 直出 5MB+、水合把主线程卡死(Frank「点 pr 也不跳啊 而且很卡」)—— 照 market 的形
+ * 拆出 SSR 挂载后拉。进程内 10 分钟缓存 + 浏览器侧 SWR 头;两份各自吞错空值,本路由永不 500。
+ *
+ * @param _req 请求(不读参数)。
+ * @returns 两份 json(带 SWR 缓存头)。
+ */
+export async function statsMacroRoute(_req: Request): Promise<Response> {
+  if (CACHE.macroStats == null || Date.now() - CACHE.macroStats.ts >= MACRO_TTL_MS) {
+    const db = await getDb()
+    const [macro, ops] = await Promise.all([
+      loadMacroRows(db).catch(emptyRows),
+      loadPnpOpsRows(db).catch(emptyRows),
+    ])
+    CACHE.macroStats = { v: { macro, ops }, ts: Date.now() }
+  }
+  return Response.json(CACHE.macroStats.v, { headers: { [HDR_CACHE_CONTROL]: MACRO_CACHE_CONTROL } })
 }

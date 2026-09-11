@@ -9,7 +9,8 @@
  */
 import { Table } from '@/components/table'
 import { TEXT_NONE } from './constants'
-import { macroColsOf, macroRowKeyOf, macroSeriesOf, macroWrapClsOf } from './functions'
+import { foldRowsOf, macroColsOf, macroRowKeyOf, macroSeriesOf, macroWrapClsOf } from './functions'
+import { useFold } from './hooks'
 import { IndCards } from './indcards'
 import { Sec } from './sec'
 import type { MacroBlockIn, MacroRow } from './types'
@@ -25,7 +26,8 @@ import css from './start.module.css'
  * @returns 带锚点的块。
  */
 export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
-  const rows = geo.rows
+  const f = useFold()
+  const rows = foldRowsOf({ rows: geo.rows, open: f.open, flip: f.flip })
   return (
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={macroWrapClsOf({ gap })}>

@@ -18,12 +18,13 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, indicatorGeosOf, prGeosOf, trackSecView, makeKindPick, makeNavWatch, makeSponsorLoad,
-  nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
+  cityRowsOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeMacroLoad, opsPointsOf, prGeosOf,
+  trackSecView, makeKindPick, makeNavWatch,
+  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
-  CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, NocCatMap, OccBoardPanel, PulseIn, PulsePanel,
-  SponsorBoards, TFn,
+  CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
+  PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
 } from './types'
 
@@ -48,6 +49,41 @@ export function useSponsorFull(): SponsorBoards | null {
  *
  * @returns 当前所在分区的锚点 id;'' = 还没滚到任何分区。
  */
+/**
+ * 宏观两份的挂载后拉取(2026-09-10 SSR 瘦身:macro_series 通道树批后 ~7,400 行把 /start
+ * HTML 撑到 5MB+、水合卡死点击 —— 照 useMarketStats 的形拆出;null = 还在路上,
+ * 省份 / PR 两段渲占位)。
+ *
+ * @returns 两份点;null = 加载中。
+ */
+export function useMacroStats(): MacroData | null {
+  const [macroData, setMacroData] = useState<MacroData | null>(null)
+
+  useEffect(function loadMacro() {
+    return makeMacroLoad({ setMacroData })()
+  }, [])
+
+  return macroData
+}
+
+/**
+ * 一张表的折叠状态机(2026-09-10 PR 通道树批:大类行点开出通道细行;开合表按行键记,
+ * 默认全收;一表一份,互不牵连)。
+ *
+ * @returns 开合表与翻转回调。
+ */
+export function useFold(): FoldOut {
+  const [open, setOpen] = useState<Record<string, boolean>>({})
+
+  function flip(key: string): void {
+    setOpen(function flipKey(prev) {
+      return foldFlippedOf({ prev, key })
+    })
+  }
+
+  return { open, flip }
+}
+
 export function useNavSec(): string {
   const [navSec, setNavSec] = useState(TEXT_NONE)
 
@@ -140,6 +176,7 @@ export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
 export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
   const market = useMarketStats()
+  const macroData = useMacroStats()
   const [empKind, setEmpKind] = useState<EmpKind>(ID_PGWP)
   const emp = useEmpSecs({ stats: x.stats, lang, kind: empKind })
   const navSec = useNavSec()
@@ -157,12 +194,12 @@ export function usePulse(x: PulseIn): PulsePanel {
   }, [t, x.stats.total, x.stats.named, x.stats.pulse])
 
   const indGeos = useMemo(function pickIndGeos() {
-    return indicatorGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops, provExtra: x.stats.provExtra })
-  }, [t, lang, x.stats.macro, x.stats.ops, x.stats.provExtra])
+    return indicatorGeosOf({ t, lang, macro: macroPointsOf(macroData), ops: opsPointsOf(macroData), provExtra: x.stats.provExtra })
+  }, [t, lang, macroData, x.stats.provExtra])
 
   const prGeos = useMemo(function pickPrGeos() {
-    return prGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops })
-  }, [t, lang, x.stats.macro, x.stats.ops])
+    return prGeosOf({ t, lang, macro: macroPointsOf(macroData), ops: opsPointsOf(macroData) })
+  }, [t, lang, macroData])
 
   useEffect(function trackSecChange() {
     if (navSec !== TEXT_NONE) {
@@ -200,5 +237,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     trend,
     tEn,
     navSec,
+    macroLoading: macroData == null,
   }
 }
