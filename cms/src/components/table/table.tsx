@@ -86,7 +86,7 @@ export function Table<T>({
       {chart && series != null && (
         <SeriesChart pointKeys={series.pointKeys}
           pointLabels={pointLabelsOf({ cols, pointKeys: series.pointKeys })}
-          rows={rows}
+          rows={series.chartRows}
           valueOf={series.valueOf}
           labelOf={series.labelOf} indexed={series.indexed} range={s.range} recent={series.recent} more={series.more}
           words={series.words} />

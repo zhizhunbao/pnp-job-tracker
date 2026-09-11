@@ -2,13 +2,14 @@
 /**
  * 宏观表「指标」列的单元格:行名;「其中」行缩进(来源表号 Frank 2026-09-06「没必要显示给用户」撤);
  * 临时居民那行是折叠钮(Frank 同日「是不是带折叠展开的好一些」),点开下面五条「其中」。
+ * 省行带码灰注 + 译名行,与招聘对比省份列同一套三格(2026-09-10 Frank「这种是不是应该统一一下」)。
  *
  * @author Frank
  * @time 2026-09-06 22:00:00
  */
 import { Button } from '@/components/button'
 import { IconChevronDown, IconChevronRight } from '@/components/icons'
-import { TOGGLE_BTN_KIND } from './constants'
+import { TEXT_NONE, TOGGLE_BTN_KIND } from './constants'
 import type { MacroRow } from './types'
 import css from './start.module.css'
 
@@ -31,6 +32,8 @@ export function MacroKeyCell(r: MacroRow) {
   return (
     <div className={r.keyCls}>
       <span className={css.provName}>{r.label}</span>
+      {r.geoCode !== TEXT_NONE && <span className={css.provCode}>{r.geoCode}</span>}
+      {r.localeName !== TEXT_NONE && <span className={css.note}>{r.localeName}</span>}
     </div>
   )
 }

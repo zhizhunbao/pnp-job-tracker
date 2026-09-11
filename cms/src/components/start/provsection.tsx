@@ -1,6 +1,7 @@
 'use client'
 /**
- * 域内小件:省份段 —— 宏观统计(含联邦)。段标题一枚,下面全国 + 十省各一个地区子块(按年表)+ 一张招聘对比横表,
+ * 域内小件:省份段 —— 宏观统计(含联邦)。段标题一枚(右侧更新时间,2026-09-10 评估批收回一枚:
+ * 值全段相同,每表一枚重复十几次),下面**一指标一张表**(行 = 全国 + 九省,2026-09-09 重排)+ 一张招聘对比横表,
  * 子块标题与间距照职业段的行业表(Sec sub + boardGap;Frank 2026-09-06「title 大小、表格之间的距离应该保持一致」)。
  * 2026-09-06 Frank 十一轮拍板重做(设计稿 docs/design/把脉页省份段-20260906.md):原七列混表
  * (在招 / 紧缺岗 / 2024 存量 / 2025 PR 揉一张)、省卡、切省下拉与 chips、省内职业榜全部撤;
@@ -10,6 +11,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
+import { Updated } from '@/components/time'
 import { ID_PROV } from './constants'
 import { Band } from './band'
 import { JobsSection } from './jobssection'
@@ -30,12 +32,12 @@ export function ProvSection({ t, updatedAt, indGeos, jobsLoading, jobsRows }: Ma
   const blocks = []
   let gap = false
   for (const g of indGeos) {
-    blocks.push(<MacroBlock key={g.code} t={t} geo={g} gap={gap} updatedAt={updatedAt} />)
+    blocks.push(<MacroBlock key={g.code} t={t} geo={g} gap={gap} />)
     gap = true
   }
   return (
     <Band id={ID_PROV}>
-      <Sec title={t('pulse.s4')}>
+      <Sec title={t('pulse.s4')} right={<Updated iso={updatedAt} t={t} />}>
         {blocks}
         <JobsSection t={t} loading={jobsLoading} rows={jobsRows} gap={gap} />
       </Sec>

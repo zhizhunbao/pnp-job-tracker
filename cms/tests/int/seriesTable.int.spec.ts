@@ -93,7 +93,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('近 N 期:时间点列只留末 5 个,非时间点列原样留下', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, indexed: true, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, chartRows: [], recent: 5, more: 10, indexed: true, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', 'y3', 'y4', 'y5', 'y6', 'y7'])
@@ -102,7 +102,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('全部:表态按「近 M 期」显示(全部年份只在趋势态画,表态摆全会横滚)', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 5, more: 10, indexed: true, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, chartRows: [], recent: 5, more: 10, indexed: true, words: WORDS },
       range: 'all',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS.slice(-10)])
@@ -111,7 +111,7 @@ describe('shownColsOf:表态的列过滤', () => {
   it('N 比时间点数还大:全给,不报错也不补空列', () => {
     const out = shownColsOf({
       cols,
-      series: { pointKeys: YEARS, valueOf, labelOf, recent: 20, more: 10, indexed: true, words: WORDS },
+      series: { pointKeys: YEARS, valueOf, labelOf, chartRows: [], recent: 20, more: 10, indexed: true, words: WORDS },
       range: 'recent',
     })
     expect(keysOf(out)).toEqual(['name', ...YEARS])

@@ -3417,6 +3417,17 @@ export type MacroRow = {
   label: string
 
   /**
+   * 地区码灰注(2026-09-10 Frank「这种是不是应该统一一下」:指标表地区行与招聘对比同形 ——
+   * 通行短名 + 码 + 译名三格;全国行与指标行不带,空串 = 行名单独显示)。
+   */
+  geoCode: string
+
+  /**
+   * 译名行(中韩界面的省译名;英文界面与非省行空串)。
+   */
+  localeName: string
+
+  /**
    * 是不是「其中」缩进行。
    */
   sub: boolean
@@ -3790,14 +3801,9 @@ export type MacroYearCellIn = {
 
   /**
    * 这一列已提到列头的灰注;格里的灰注与它相同就不再显示;空串 = 列头没有。
+   * (原「本站未收录」词格 2026-09-10 撤:没抓到的空档一律留白,「未发布」必须举证。)
    */
   note: string
-
-  /**
-   * 「本站未收录」的词:行里第一个有数年之前的空格 = 官方有、本站没往前收(Frank 2026-09-09「— 是未发布还是不适用」:
-   * 年份列里不再用横杠,空格三选一)。
-   */
-  notCollected: string
 }
 
 /**
@@ -3850,6 +3856,11 @@ export type IndGeoIn = {
   t: TFn
 
   /**
+   * 界面语言(省译名行要判英文界面不出)。
+   */
+  lang: string
+
+  /**
    * 全部宏观点。
    */
   macro: MacroPoint[]
@@ -3890,9 +3901,14 @@ export type IndRowIn = {
   code: string
 
   /**
-   * 地区名(成为行名)。
+   * 地区名(成为行名;2026-09-10 起 = 通行短名,与招聘对比同形)。
    */
   name: string
+
+  /**
+   * 译名行(中韩界面;英文界面空串)。
+   */
+  localeName: string
 
   /**
    * 块的同比年;空串 = 没同比。
@@ -3908,6 +3924,56 @@ export type IndRowIn = {
    * 取词函数(同比「持平」一词)。
    */
   t: TFn
+}
+
+/**
+ * `prSubRowOf` 的入参。
+ */
+export type PrSubRowIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 表的同比年;空串 = 没同比。
+   */
+  year: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
+ * `allocTargetRowOf` 的入参。
+ */
+export type AllocTargetRowIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
 }
 
 /**
@@ -4311,14 +4377,9 @@ export type MacroBlockIn = {
   geo: MacroGeo
 
   /**
-   * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。
+   * 不是段内第一块时加块间距(照职业段行业表的 boardGap;更新时间 2026-09-10 收回段首,块不再收)。
    */
   gap: boolean
-
-  /**
-   * 数据更新时刻(表右上角「更新时间」,与别的段同位)。
-   */
-  updatedAt: string
 }
 
 /**
@@ -4396,34 +4457,9 @@ export type JobsRow = {
   wageText: string
 
   /**
-   * 中位年薪排序键。
+   * 中位年薪排序键(AIP 岗与操作两列 2026-09-10 Frank「这两列 删掉」撤,行只剩三个数)。
    */
   wageSort: number | null
-
-  /**
-   * AIP 指定雇主岗文案(非大西洋省横杠)。
-   */
-  aipText: string
-
-  /**
-   * AIP 指定雇主岗排序键。
-   */
-  aipSort: number | null
-
-  /**
-   * 看岗位地址(职位板带省)。
-   */
-  href: string
-
-  /**
-   * 看岗位文案。
-   */
-  actText: string
-
-  /**
-   * 操作钮类。
-   */
-  actBtnCls: string
 }
 
 /**
@@ -4532,6 +4568,26 @@ export type GeoNameIn = {
 }
 
 /**
+ * `geoLocaleOf` 的入参。
+ */
+export type GeoLocaleIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(英文界面不出译名行)。
+   */
+  lang: string
+}
+
+/**
  * `opsCellsOf` 的入参。
  */
 export type OpsCellsIn = {
@@ -4594,6 +4650,11 @@ export type MacroSeriesSpec = {
    * 图例名。
    */
   labelOf: (r: MacroRow) => string
+
+  /**
+   * 趋势态画的行(滤掉「其中」缩进行;照通用表格契约)。
+   */
+  chartRows: MacroRow[]
 
   /**
    * 「近 N 期」默认显示几列。

@@ -531,6 +531,12 @@ export type TableSeriesIn<T> = {
   labelOf: (r: T) => string
 
   /**
+   * 趋势态画哪些行:表态照 Table 的 rows,图另给一份 —— 表里的「其中」缩进行在图上
+   * 一省两线且图例同名,调用方在这里滤掉(2026-09-10 PR 表并入省提名缩进行时加)。
+   */
+  chartRows: T[]
+
+  /**
    * 「近 N 期」这一档显示末几列。
    */
   recent: number

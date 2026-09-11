@@ -441,10 +441,18 @@ export const PROV_DIFFICULTY_FETCHED = `SELECT province, difficulty, fetched FRO
 export const PROVINCES_INFO = `SELECT code, info FROM provinces`
 
 /**
- * 宏观序列全表(2026-09-06 省份段 = 宏观统计):StatCan 人口 / 临时居民 / GDP / 失业率 + IRCC 学签新签 / PR / 配额 + EE 邀请,
+ * 宏观序列(2026-09-06 省份段 = 宏观统计):StatCan 人口 / 临时居民 / GDP / 失业率 + IRCC 学签新签 / PR / 配额 + EE 邀请,
  * 一行一点(geo, key, period);numeric 列转 float8 省得消费端再洗字串。进程内 10 分钟缓存(把脉页门)。
+ * 2026-09-10 评估批从全表 SELECT 收窄(原样进 HTML 481 KB,页面 6.29 MB):魁北克整地区不上表
+ * (IND_GEO_ORDER 已撤,QC 专项另说)、依赖度键已撤表(数据留库)、失业率月度只留年末 12 月
+ * 与进行年各月(表格取年末值 + 进行年最新月,历史年其余月份消费端从未读过)。
  */
-export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS value, as_of FROM macro_series`
+export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS value, as_of FROM macro_series
+     WHERE geo <> 'QC'
+       AND key <> 'pnpShare'
+       AND NOT (key = 'unemp' AND freq = 'M'
+            AND substring(period from 6 for 2) <> '12'
+            AND substring(period from 1 for 4) < to_char(now(), 'YYYY'))`
 
 /**
  * 各省省级运营指标(配额 / 已发提名 / 剩余名额;scope 空 = 全省口径,不取通道级行)—— 宏观表「已发 / 剩余」两行。

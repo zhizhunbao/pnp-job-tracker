@@ -1130,6 +1130,17 @@ export const MK_PR_PNP = 'prPnp'
 export const MK_EE = 'eeInvites'
 
 /**
+ * macro_series 数据键:省提名接纳目标(联邦人头口径;2026-09-10 起并进配额表当全国行,不再单独成表)。
+ */
+export const MK_PNP_TARGET = 'pnpTarget'
+
+/**
+ * 宏观表行键:工签(2026-09-10 Frank 重排清单点名;数据键 = workOnly 只持工签存量,行键另起
+ * 免得沿用「其中只持工签」的行名与缩进样式)。
+ */
+export const MR_WORK = 'work'
+
+/**
  * macro_series 数据键:名额竞争比(省级一年一格 = 该年年末在库学签 + 工签人头 ÷ 该年省提名配额;
  * Frank 2026-09-08「每年的竞争是不是不一样,每一年都得算吧」)。最新一年这格就是竞争度胶囊的依据。
  */
@@ -1170,10 +1181,13 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
  * 已发提名同日撤(「有意义吗」—— 九成年份等于配额,今年用到哪已在用尽率里),数据留库给用尽率。
  * 2026-09-10 Frank「这个没必要显示」:用尽率表也撤(历史年份几乎全 100%,今年只三省有进度),数据仍留库。
  * 2026-09-10 Frank「省提名依赖度 删掉」:依赖度表撤,数据仍留库。
+ * 2026-09-10 Frank 重排清单「人口 gdp 失业率 临时居民 EE配额 PNP配额 学签 工签 旅游签 pr 招聘」:
+ * 照单排;竞争比留在 PNP 配额旁(判断表,由配额派生);临时居民占比跟在临时居民后;
+ * 工签 = 只持工签存量单独成表(行键 work,数据键 workOnly);旅游签本站无数据,进数据补全清单不上表;
+ * 接纳目标并进配额表当全国行(「这四个都是一回事」),其中省提名并进 PR 表当缩进行,单行表清零。
  */
 export const IND_ORDER = [
-  'comp', 'alloc', 'npr', 'studyNew', 'prAll', 'prPnp', 'eeInvites', 'pnpTarget',
-  'nprShare', 'unemp', 'pop', 'gdp',
+  'pop', 'gdp', 'unemp', 'npr', 'nprShare', 'eeInvites', 'alloc', 'comp', 'studyNew', 'work', 'prAll',
 ]
 
 /**
@@ -1399,19 +1413,9 @@ export const COL_JOBS_OPEN = 'open'
 export const COL_JOBS_NEW7 = 'new7'
 
 /**
- * 招聘对比横表列键:中位年薪(ESDC)。
+ * 招聘对比横表列键:中位年薪(ESDC)。AIP 岗列键与「看岗位」地址头 2026-09-10 Frank「这两列 删掉」随列同撤。
  */
 export const COL_JOBS_WAGE = 'wage'
-
-/**
- * 招聘对比横表列键:AIP 指定雇主岗。
- */
-export const COL_JOBS_AIP = 'aip'
-
-/**
- * 招聘对比「看岗位」落到职位板的地址头(拼省码;参数名 = lib/jobs 的 P_PROV)。
- */
-export const URL_HOME_PROV_HEAD = '/?prov='
 
 /**
  * 宏观表「指标」列宽(其余列均分)。

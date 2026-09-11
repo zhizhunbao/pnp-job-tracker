@@ -665,6 +665,17 @@
 }
 
 /*
+ * 推荐胶囊的不折行档:.pill 的折行是给韩文职业名的,推荐词(Not recommended)是短语,
+ * 375px 英文界面被连坐断成两截圆角块(2026-09-10 实撞),推荐胶囊叠这档收回 nowrap。
+ */
+.recPill {
+  /*
+   * 短语一行放下,不折。
+   */
+  white-space: nowrap;
+}
+
+/*
  * 省紧缺胶囊(绿):这个省的紧缺清单命中了在架岗。
  */
 .pillProv {
@@ -1088,9 +1099,20 @@
   font-size: 12px;
 
   /*
-   * 下沿留白,与粘条底线分开。
+   * 下沿留白,与粘条底线分开;右沿留一段空,让右缘渐隐只盖住留白不吃字
+   * (2026-09-10 实拍:375px 下子项被硬裁,后面还有一排指标看不出可横滑)。
    */
-  padding: 0 0 4px;
+  padding: 0 24px 4px 0;
+
+  /*
+   * 右缘渐隐 = 「后面还有」的提示;滑到底时渐隐落在右沿留白上,末项不糊。
+   */
+  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+
+  /*
+   * Safari 前缀。
+   */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
 }
 
 /*

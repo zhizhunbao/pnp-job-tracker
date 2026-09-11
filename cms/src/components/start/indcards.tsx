@@ -2,13 +2,14 @@
 /**
  * 指标表的手机形态:一地区一张小卡(省名 + 最新值带年 + 同比),自适应两列;工具条切表 / 趋势
  * (Frank 2026-09-09「手机端还是用卡片显示比较清晰,不应该用列表」)。
+ * 卡名与桌面表同一套三格(通行短名 + 码 + 译名,2026-09-10 Frank「这种是不是应该统一一下」)。
  *
  * @author Frank
  * @time 2026-09-09 03:00:00
  */
 import { SeriesChart, SeriesToolbar, useSeriesView } from '@/components/table'
 import { MACRO_MORE, MACRO_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, TEXT_NONE } from './constants'
-import { macroLabelOf, macroValueOf, seriesWordsOf } from './functions'
+import { macroLabelOf, macroValueOf, nonSubRowsOf, seriesWordsOf } from './functions'
 import { MacroLatestCell } from './macrolatestcell'
 import { MacroRecCell } from './macroreccell'
 import { MacroYoyCell } from './macroyoycell'
@@ -24,14 +25,18 @@ import css from './start.module.css'
 export function IndCards(x: IndCardsIn) {
   const t = x.t
   const geo = x.geo
-  const shown = x.rows
+  const shown = nonSubRowsOf(x.rows)
   const v = useSeriesView()
   const words = seriesWordsOf(t)
   const cards = []
   for (const r of shown) {
     cards.push(
       <div key={r.key} className={css.indCard}>
-        <div className={css.indName}>{r.label}</div>
+        <div className={css.indName}>
+          <span className={css.provName}>{r.label}</span>
+          {r.geoCode !== TEXT_NONE && <span className={css.provCode}>{r.geoCode}</span>}
+          {r.localeName !== TEXT_NONE && <span className={css.note}>{r.localeName}</span>}
+        </div>
         <div className={css.provCardBody}>
           <div>{MacroLatestCell(r)}</div>
           <div>{MacroYoyCell(r)}</div>

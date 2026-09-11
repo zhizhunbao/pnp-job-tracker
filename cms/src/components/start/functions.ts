@@ -54,9 +54,10 @@ import {
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MR_ISSUED,
+  MK_PR_ALL, MK_PR_PNP, MK_PNP_TARGET, MK_WORK_ONLY, MR_WORK,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
-  COL_JOBS_NEW7, COL_JOBS_WAGE, COL_JOBS_AIP, URL_HOME_PROV_HEAD, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
+  COL_JOBS_NEW7, COL_JOBS_WAGE, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
   COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_KEYS, REC_LOWER_BETTER,
@@ -74,7 +75,6 @@ import { MomCell } from './momcell'
 import { OccNameCell } from './occnamecell'
 import { PnpCell } from './pnpcell'
 import { ProgCell } from './progcell'
-import { JobsActCell } from './jobsactcell'
 import { MacroKeyCell } from './macrokeycell'
 import { makeMacroYearCell } from './macroyearcell'
 import { MacroYoyCell } from './macroyoycell'
@@ -113,12 +113,13 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
+  PrSubRowIn, AllocTargetRowIn,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
-  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn,
+  MacroColsIn, SeriesWords, GeoNameIn, GeoLocaleIn, JobsRow, JobsRowsIn, JobsRowIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec,
 } from './types'
 import css from './start.module.css'
@@ -440,20 +441,6 @@ export function numOf(n: number): string {
  */
 function numTextOf(n: number | null): string {
   if (n == null) {
-    return DASH_MARK
-  }
-  return numOf(n)
-}
-
-/**
- * IRCC 体量那几格的显示串:官方缺位与 0 都给横杠 —— 这几格的 0 也是「没这个数」
- * (省份不可能一年零学签),照原实现同口径。
- *
- * @param n 数;null = 官方缺位。
- * @returns 显示串。
- */
-function volTextOf(n: number | null): string {
-  if (n == null || n === 0) {
     return DASH_MARK
   }
   return numOf(n)
@@ -3434,7 +3421,7 @@ function geoPointsOf(x: GeoPointsIn): GeoPoints {
 export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
   const out: MacroGeo[] = []
   for (const key of IND_ORDER) {
-    const geo = indGeoOf({ key, t: x.t, macro: x.macro, ops: x.ops })
+    const geo = indGeoOf({ key, t: x.t, lang: x.lang, macro: x.macro, ops: x.ops })
     if (geo != null) {
       out.push(geo)
     }
@@ -3444,6 +3431,8 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
 
 /**
  * 一张指标表:逐地区按省块同一套算法出行,再改成地区行并配同比;同比年 = 全表最新的完整年。
+ * 2026-09-10 Frank「这四个都是一回事」两处并表:配额表全国行 = 接纳目标(联邦不发省级配额,
+ * 人头口径在译名行标明);PR 表每个地区行下挂「其中省提名」缩进行,单行表清零。
  *
  * @param x 指标键与全部点。
  * @returns 指标表;没有一行给 null。
@@ -3465,8 +3454,21 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   const plain: MacroRow[] = []
   for (const b of bases) {
     plain.push(indRowOf({
-      base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }), year, key: x.key, t: x.t,
+      base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }),
+      localeName: geoLocaleOf({ code: b.code, t: x.t, lang: x.lang }), year, key: x.key, t: x.t,
     }))
+    if (x.key === MK_PR_ALL) {
+      const sub = prSubRowOf({ code: b.code, year, t: x.t, macro: x.macro, ops: x.ops })
+      if (sub != null) {
+        plain.push(sub)
+      }
+    }
+  }
+  if (x.key === MK_ALLOC) {
+    const target = allocTargetRowOf({ t: x.t, macro: x.macro, ops: x.ops })
+    if (target != null) {
+      plain.unshift(target)
+    }
   }
   const rows = recRowsOf({ t: x.t, rows: plain, key: x.key })
   const years = yearsOf(rows)
@@ -3482,6 +3484,77 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     formula: formulaOf({ t: x.t, key: x.key }),
     indexed: false,
   }
+}
+
+/**
+ * PR 表某地区行下的「其中省提名」缩进行(2026-09-10 并表):值照 prPnp 键取,行名固定,
+ * 键 = 地区码 + 分隔 + 键名保证唯一;该地区没有省提名数时不出。
+ *
+ * @param x 地区码、同比年与全部点。
+ * @returns 缩进行;没数给 null。
+ */
+function prSubRowOf(x: PrSubRowIn): MacroRow | null {
+  const gp = geoPointsOf({ code: x.code, macro: x.macro, ops: x.ops })
+  const base = macroRowOf({ key: MK_PR_PNP, code: x.code, t: x.t, points: gp.points, ops: gp.ops })
+  if (base == null) {
+    return null
+  }
+  const yoy = yoyCellOf({ cells: base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(MK_PR_PNP), t: x.t })
+  return {
+    key: x.code + SUB_ID_SEP + MK_PR_PNP,
+    label: x.t(KEY_MACRO_HEAD + MK_PR_PNP),
+    geoCode: TEXT_NONE,
+    localeName: TEXT_NONE,
+    sub: true,
+    keyCls: macroKeyClsOf({ sub: true }),
+    toggle: null,
+    expanded: false,
+    cells: base.cells,
+    latest: base.latest,
+    latestYear: base.latestYear,
+    missing: base.missing,
+    yoy,
+    yoyCls: yoyClsOf({ cell: yoy, key: MK_PR_PNP }),
+    rec: TEXT_NONE,
+    recCls: TEXT_NONE,
+  }
+}
+
+/**
+ * 配额表的全国行 = 省提名接纳目标(2026-09-10 并表):联邦不发省级配额证书数,只发接纳目标
+ * (人头口径,与省的提名证书不是一个单位 —— 2026-09-09 已注明不硬套,所以行名「全国」下
+ * 用译名行位标明「省提名接纳目标(人)」,不冒充证书数)。
+ *
+ * @param x 取词函数与全部点。
+ * @returns 全国行;没数给 null。
+ */
+function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
+  const gp = geoPointsOf({ code: GEO_CA, macro: x.macro, ops: x.ops })
+  const base = macroRowOf({ key: MK_PNP_TARGET, code: GEO_CA, t: x.t, points: gp.points, ops: gp.ops })
+  if (base == null) {
+    return null
+  }
+  return indRowOf({
+    base, code: GEO_CA, name: x.t('pulse.s4.all'), localeName: x.t(KEY_MACRO_HEAD + MK_PNP_TARGET),
+    year: TEXT_NONE, key: MK_PNP_TARGET, t: x.t,
+  })
+}
+
+/**
+ * 表里的非缩进行(手机卡与趋势图用:「其中省提名」缩进行在卡上没有省名、在图上一省两线,
+ * 都只留地区主行)。
+ *
+ * @param rows 全部行。
+ * @returns 非缩进行。
+ */
+export function nonSubRowsOf(rows: MacroRow[]): MacroRow[] {
+  const out: MacroRow[] = []
+  for (const r of rows) {
+    if (r.sub === false) {
+      out.push(r)
+    }
+  }
+  return out
 }
 
 /**
@@ -3598,9 +3671,20 @@ function macroLatestValueOf(r: MacroRow): number {
  */
 function recOfRank(x: RecRankIn): RecOut {
   if (x.rank < Math.ceil(x.n * REC_HALF)) {
-    return { text: x.t('pulse.r.yes'), cls: diffClsOf({ tier: DIFF_EASY }) }
+    return { text: x.t('pulse.r.yes'), cls: recClsOf(DIFF_EASY) }
   }
-  return { text: x.t('pulse.r.no'), cls: diffClsOf({ tier: DIFF_TIGHT }) }
+  return { text: x.t('pulse.r.no'), cls: recClsOf(DIFF_TIGHT) }
+}
+
+/**
+ * 推荐胶囊的类:难度档配色再叠不折行档 —— .pill 为韩文职业名放开了折行,推荐词是短语,
+ * 375px 英文界面「Not recommended」被连坐断成两截(2026-09-10 实撞),推荐胶囊单独收回 nowrap。
+ *
+ * @param tier 难度档。
+ * @returns className。
+ */
+function recClsOf(tier: string): string {
+  return joinCls([diffClsOf({ tier }), cssOf(css.recPill)])
 }
 
 /**
@@ -3613,6 +3697,8 @@ function withRec(x: WithRecIn): MacroRow {
   return {
     key: x.row.key,
     label: x.row.label,
+    geoCode: x.row.geoCode,
+    localeName: x.row.localeName,
     sub: x.row.sub,
     keyCls: x.row.keyCls,
     toggle: x.row.toggle,
@@ -3676,6 +3762,19 @@ function indBaseRowsOf(bases: IndBase[]): MacroRow[] {
 }
 
 /**
+ * 地区行的码灰注:省行给码(三格形),全国行不带(行名「全国」本身自明)。
+ *
+ * @param code 地区码。
+ * @returns 码或空串。
+ */
+function indGeoCodeOf(code: string): string {
+  if (code === GEO_CA) {
+    return TEXT_NONE
+  }
+  return code
+}
+
+/**
  * 省块形的一行 → 地区行:键与名换成地区,其余照抄,再配同比格。
  *
  * @param x 底行、地区与同比年。
@@ -3686,6 +3785,8 @@ function indRowOf(x: IndRowIn): MacroRow {
   return {
     key: x.code,
     label: x.name,
+    geoCode: indGeoCodeOf(x.code),
+    localeName: x.localeName,
     sub: false,
     keyCls: x.base.keyCls,
     toggle: null,
@@ -3811,7 +3912,21 @@ function geoNameOf(x: GeoNameIn): string {
   if (x.code === GEO_CA) {
     return x.t('pulse.s4.all')
   }
-  return provLabelOf({ t: x.t, code: x.code })
+  return provShortOf(x.code)
+}
+
+/**
+ * 地区行的译名行:省给中韩界面的译名(英文界面空串),全国行不带
+ * (2026-09-10 Frank「这种是不是应该统一一下」:指标表地区行改招聘对比的三格形,主名 = 通行短名)。
+ *
+ * @param x 地区码、取词函数与界面语言。
+ * @returns 译名或空串。
+ */
+function geoLocaleOf(x: GeoLocaleIn): string {
+  if (x.code === GEO_CA) {
+    return TEXT_NONE
+  }
+  return provLocaleOf({ t: x.t, lang: x.lang, code: x.code })
 }
 
 /**
@@ -3835,6 +3950,8 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
   return {
     key: x.key,
     label: x.t(KEY_MACRO_HEAD + x.key),
+    geoCode: TEXT_NONE,
+    localeName: TEXT_NONE,
     sub: MACRO_SUB_ROWS.includes(x.key),
     keyCls: macroKeyClsOf({ sub: MACRO_SUB_ROWS.includes(x.key) }),
     toggle: null,
@@ -3900,6 +4017,9 @@ function macroMissingTextOf(x: MacroMissingIn): string {
 function macroCellsOf(x: MacroRowIn): Record<string, MacroCell> {
   if (x.key === MR_ISSUED) {
     return opsCellsOf({ metrics: OPS_ISSUED_METRICS, ops: x.ops, t: x.t })
+  }
+  if (x.key === MR_WORK) {
+    return cellsOfKey({ key: MK_WORK_ONLY, points: x.points, t: x.t })
   }
   if (x.key === MK_ALLOC) {
     return allocCellsOf({
@@ -4198,7 +4318,6 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   ]
   const now = thisYearOf()
   const unreleased = x.t('pulse.m.unreleased')
-  const notCollected = unreleased
   for (const y of x.years) {
     const last = y === x.years[x.years.length - 1]
     const note = yearNoteOf({ yearNotes: x.yearNotes, year: y })
@@ -4206,7 +4325,7 @@ export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
       key: y,
       label: yearColLabelOf({ year: y, note }),
       nowrap: true,
-      render: makeMacroYearCell({ year: y, last, now, unreleased, note, notCollected }),
+      render: makeMacroYearCell({ year: y, last, now, unreleased, note }),
     })
   }
   if (x.yoyLabel !== TEXT_NONE) {
@@ -4340,7 +4459,7 @@ export function toJobsRows(x: JobsRowsIn): JobsRow[] {
 }
 
 /**
- * 洗招聘对比一行:省名三格、四个数值、看岗位链接。
+ * 洗招聘对比一行:省名三格、三个数值(AIP 岗与看岗位 2026-09-10 Frank「这两列 删掉」撤)。
  *
  * @param x 这一行与上下文。
  * @returns 展示行。
@@ -4358,11 +4477,6 @@ function toJobsRow(x: JobsRowIn): JobsRow {
     new7Sort: x.r.new7d,
     wageText: wageTextOf(x.r.medianWageAnnual),
     wageSort: x.r.medianWageAnnual,
-    aipText: volTextOf(x.r.aipJobs),
-    aipSort: x.r.aipJobs,
-    href: URL_HOME_PROV_HEAD + x.r.province,
-    actText: x.t('pulse.act.jobs'),
-    actBtnCls: actBtnClsOf(),
   }
 }
 
@@ -4380,7 +4494,8 @@ function wageTextOf(n: number | null): string {
 }
 
 /**
- * 招聘对比横表的列组:省份 / 在招 / 近 7 天 / 中位年薪 / AIP 岗 / 操作(Frank 2026-09-06「紧缺清单岗不需要这一列」)。
+ * 招聘对比横表的列组:省份 / 在招 / 近 7 天 / 中位年薪(Frank 2026-09-06「紧缺清单岗不需要这一列」;
+ * AIP 岗与操作两列 2026-09-10 Frank「这两列 删掉」同撤,横杠居多、看岗位与省名跳转重复)。
  *
  * @param x 取词函数。
  * @returns 列组。
@@ -4391,8 +4506,6 @@ export function jobsColsOf(x: JobsColsIn): StartCol<JobsRow>[] {
     { key: COL_JOBS_OPEN, label: x.t('stats.openJobs'), nowrap: true, sort: jobsOpenSortOf, render: jobsOpenTextOf },
     { key: COL_JOBS_NEW7, label: x.t('stats.new7d'), nowrap: true, sort: jobsNew7SortOf, render: jobsNew7TextOf },
     { key: COL_JOBS_WAGE, label: x.t('stats.medWage'), nowrap: true, sort: jobsWageSortOf, render: jobsWageTextOf },
-    { key: COL_JOBS_AIP, label: x.t('stats.aip'), nowrap: true, sort: jobsAipSortOf, render: jobsAipTextOf },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: JobsActCell },
   ]
 }
 
@@ -4467,26 +4580,6 @@ export function jobsWageTextOf(r: JobsRow): string {
 }
 
 /**
- * AIP 指定雇主岗排序键。
- *
- * @param r 一行。
- * @returns AIP 岗数。
- */
-export function jobsAipSortOf(r: JobsRow): number | null {
-  return r.aipSort
-}
-
-/**
- * AIP 指定雇主岗单元格。
- *
- * @param r 一行。
- * @returns 文案。
- */
-export function jobsAipTextOf(r: JobsRow): string {
-  return r.aipText
-}
-
-/**
  * 招聘对比行身份。
  *
  * @param r 一行。
@@ -4520,6 +4613,7 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     pointKeys: x.geo.years,
     valueOf: macroValueOf,
     labelOf: macroLabelOf,
+    chartRows: nonSubRowsOf(x.geo.rows),
     recent: MACRO_RECENT,
     more: MACRO_MORE,
     indexed: x.geo.indexed,
