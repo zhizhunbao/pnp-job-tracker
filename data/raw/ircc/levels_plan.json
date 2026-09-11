@@ -1,7 +1,7 @@
 {
  "source": "IRCC Immigration Levels Plan — supplementary information(PNP 行目标值)",
  "checkedAt": "2026-09-09",
- "note": "人工核对维护表(2026-09-08 立,把脉页全国块「省提名接纳目标」)。口径:①人头(permanent resident admissions,含随行家属),不是提名证书个数,所以不并进 pnp_allocations;②同一年被后一版计划改写只记**最新版**,被覆盖的旧值写在 superseded;③2026–2028 计划(2025 年报附件)只发大类 Economic Immigration(2026=239,800 / 2027=244,700 / 2028=244,700),没有 PNP 单列 —— 2026/2027 沿用 2025–2027 计划的 55,000,2028 不编。 2026-09-09 补 2021–2023(各年取覆盖它的最新一版计划:2021←2021–2023、2022←2022–2024、2023←2023–2025,被覆盖旧值在 superseded)。",
+ "note": "人工核对维护表(2026-09-08 立,把脉页全国块「省提名接纳目标」)。口径:①人头(permanent resident admissions,含随行家属),不是提名证书个数,所以不并进 pnp_allocations;②同一年被后一版计划改写只记**最新版**,被覆盖的旧值写在 superseded;③2026–2028 计划的 supplementary information 页在 corporate/mandate/corporate-initiatives/levels/ 下(news/notices 索引里没有,2026-09-10 定位),PNP 单列回归:2026=91,500 / 2027=92,500 / 2028=92,500,2026/2027 已按最新版改写(此前一度以为只发大类沿用 55,000,同日更正)。 2026-09-09 补 2021–2023(各年取覆盖它的最新一版计划:2021←2021–2023、2022←2022–2024、2023←2023–2025,被覆盖旧值在 superseded)。 2026-09-10 补 eeRows(EE 联邦高技术线接纳目标,口径同 rows:人头含随行家属;各年取覆盖它的最新一版计划,官方行名记在 label —— 各版名称不同,quote 抄原句原名)。2025 年不编行:2025–2027 计划取消了 Federal High Skilled 单列,拆成 Federal Economic Priorities(41,700 / 30,000–62,000,脚注 = EE 系统里部长设定的类别定向邀请)与 In-Canada Focus(82,980 / 39,000–89,000,脚注 = 主要来自 CEC 与其他区域通道,也可能来自 FSW/FST),后者混入非 EE 通道,没有任何一行等于 EE 接纳目标,举不出原句故不编。⚠️ 2026–2028 计划的 supplementary information 页确实存在(不在 news/notices 下,路径见 eeRows 的 url),Federal High Skilled 单列回归(脚注 = FSW+FST+CEC),且有 Provincial Nominee Program 单列 91,500 / 92,500 / 92,500(2026/2027/2028)—— 据此 2026-09-10 同日把 rows 的 2026/2027 改写为 91,500 / 92,500 并补 2028 行(旧 55,000 入 superseded),第 ③ 条一并更正。",
  "rows": [
   {
    "year": 2021,
@@ -55,23 +55,101 @@
   },
   {
    "year": 2026,
-   "target": 55000,
-   "low": 20000,
-   "high": 65000,
-   "plan": "2025-2027",
-   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2025-2027.html",
-   "quote": "Provincial Nominee Program | 55,000 | 20,000 | 65,000",
-   "superseded": "2024–2026 计划原定 120,000(113,000–130,000)"
+   "target": 91500,
+   "low": 82000,
+   "high": 105000,
+   "plan": "2026-2028",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/corporate-initiatives/levels/supplementary-immigration-levels-2026-2028.html",
+   "quote": "Provincial Nominee Program | 91,500 | 82,000 | 105,000",
+   "superseded": "2025–2027 计划原定 55,000(20,000–65,000);2024–2026 计划原定 120,000(113,000–130,000)"
   },
   {
    "year": 2027,
-   "target": 55000,
-   "low": 20000,
-   "high": 65000,
-   "plan": "2025-2027",
-   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2025-2027.html",
-   "quote": "Provincial Nominee Program | 55,000 | 20,000 | 65,000",
+   "target": 92500,
+   "low": 82000,
+   "high": 106000,
+   "plan": "2026-2028",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/corporate-initiatives/levels/supplementary-immigration-levels-2026-2028.html",
+   "quote": "Provincial Nominee Program | 92,500 | 82,000 | 106,000",
+   "superseded": "2025–2027 计划原定 55,000(20,000–65,000)"
+  },
+  {
+   "year": 2028,
+   "target": 92500,
+   "low": 82000,
+   "high": 106000,
+   "plan": "2026-2028",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/corporate-initiatives/levels/supplementary-immigration-levels-2026-2028.html",
+   "quote": "Provincial Nominee Program | 92,500 | 82,000 | 106,000",
    "superseded": null
+  }
+ ],
+ "eeRows": [
+  {
+   "year": 2021,
+   "target": 108500,
+   "low": 81000,
+   "high": 110250,
+   "plan": "2021-2023",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2021-2023.html",
+   "quote": "Federal High Skilled | 108,500 | 81,000 | 110,250",
+   "superseded": null
+  },
+  {
+   "year": 2022,
+   "target": 55900,
+   "low": 52000,
+   "high": 64000,
+   "plan": "2022-2024",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2022-2024.html",
+   "quote": "Federal High Skilled | 55,900 | 52,000 | 64,000",
+   "superseded": "2021–2023 计划原定 110,500(96,250–112,900)"
+  },
+  {
+   "year": 2023,
+   "target": 82880,
+   "low": 67750,
+   "high": 88000,
+   "plan": "2023-2025",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2023-2025.html",
+   "quote": "Federal High Skilled | 82,880 | 67,750 | 88,000",
+   "superseded": "2022–2024 计划原定 75,750(63,000–84,000)"
+  },
+  {
+   "year": 2024,
+   "target": 110770,
+   "low": 90000,
+   "high": 116000,
+   "plan": "2024-2026",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/supplementary-immigration-levels-2024-2026.html",
+   "quote": "Federal High Skilled | 110,770 | 90,000 | 116,000",
+   "superseded": "2023–2025 计划原定 109,020(89,500–115,750)"
+  },
+  {
+   "year": 2026,
+   "target": 109000,
+   "low": 85000,
+   "high": 120000,
+   "plan": "2026-2028",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/corporate-initiatives/levels/supplementary-immigration-levels-2026-2028.html",
+   "quote": "Federal High Skilled | 109,000 | 85,000 | 120,000",
+   "superseded": "2025–2027 计划无 EE 单列(拆成 Federal Economic Priorities 47,400 与 In-Canada Focus 75,830);2024–2026 计划原定 Federal High Skilled 117,500(96,500–124,000)"
+  },
+  {
+   "year": 2027,
+   "target": 111000,
+   "low": 86000,
+   "high": 122000,
+   "plan": "2026-2028",
+   "label": "Federal High Skilled",
+   "url": "https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/corporate-initiatives/levels/supplementary-immigration-levels-2026-2028.html",
+   "quote": "Federal High Skilled | 111,000 | 86,000 | 122,000",
+   "superseded": "2025–2027 计划无 EE 单列(拆成 Federal Economic Priorities 47,800 与 In-Canada Focus 70,930)"
   }
  ]
 }

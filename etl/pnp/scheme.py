@@ -323,6 +323,20 @@ class MergeDrawsIn:
 
 
 @dataclass
+class PeDrawRowsIn:
+    """pe_draw_rows() 入参:PE 表的一个邀请日 → 该日的抽选行(两类邀请各一行)。"""
+
+    date: str
+    """ISO 邀请日。"""
+
+    row: list
+    """expand_table 展开后的整行(列位见 DRAWS_PE_*_COL)。"""
+
+    note: str
+    """该轮的选择依据原文(官方 Selection Attributes 列,已截断)。"""
+
+
+@dataclass
 class OnDrawsOut:
     """parse_on() 出参(原 `return draws, notice` 元组)。"""
 

@@ -70,9 +70,12 @@ from pnp.constants import (
     DRAWS_BC_SCALE, DRAWS_BC_URL, DRAWS_MAX_PER_PROV, DRAWS_MB_LABEL, DRAWS_MB_SCALE, DRAWS_MB_URL, DRAWS_NB_LABEL,
     DRAWS_NB_MAX, DRAWS_NB_PREV_URL, DRAWS_NB_URL, DRAWS_NL_LABEL, DRAWS_NL_URL, DRAWS_NOTE_CLIP,
     DRAWS_NOTICE_CLIP, DRAWS_NUM_STRIP_RE, DRAWS_ON_INV_URL, DRAWS_ON_LABEL, DRAWS_ON_SCALE, DRAWS_ON_URL,
-    DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_EMPTY_TPL, DRAWS_PRINT_FAIL_TPL, DRAWS_PRINT_MERGE_TPL,
-    DRAWS_PRINT_NB_FAIL_TPL, DRAWS_PRINT_NB_OK_TPL, DRAWS_PRINT_NB_PARTIAL_TPL, DRAWS_PRINT_OK_TPL,
-    DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY, DRAWS_PRINT_ON_OK_TPL,
+    DRAWS_PE_BIZ_COL, DRAWS_PE_BIZ_SCORE_COL, DRAWS_PE_BIZ_STREAM, DRAWS_PE_DATE_FMT, DRAWS_PE_HEAD_KW,
+    DRAWS_PE_LABEL, DRAWS_PE_LABOUR_COL, DRAWS_PE_LABOUR_STREAM, DRAWS_PE_MIN_COLS, DRAWS_PE_NOTE_COL,
+    DRAWS_PE_SCALE, DRAWS_PE_URL, DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_EMPTY_TPL, DRAWS_PRINT_FAIL_TPL,
+    DRAWS_PRINT_MERGE_TPL, DRAWS_PRINT_NB_FAIL_TPL, DRAWS_PRINT_NB_OK_TPL, DRAWS_PRINT_NB_PARTIAL_TPL,
+    DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
+    DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
     FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
@@ -271,8 +274,9 @@ from pnp.scheme import (
     MbBlockNameIn, MbFactorOut, MbIdolOut, MbInventoryIn, MbMonthlyIn, MbMonthlyOut, MbPageOut, MbPlanIn,
     MbPlanOut, MbSayIn, MbSimpleIn, MergeDrawsIn, NbGuidesOut, NbSegPickIn, NbSegsOut, NbStreamIn,
     NlEmployerStatsIn, NlIgIn, NlpCheckIn, NocLinesIn, NoticeOfIn, OccProbeIn, OnChunkIn, OnColIn, OnDrawsOut,
-    OnEntryIn, OnYearIn, PageTextIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut, RowsByLabelsIn,
-    ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn, SirsSectionIn, SkAllocCheckIn,
+    OnEntryIn, OnYearIn, PageTextIn, PeDrawRowsIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut,
+    RowsByLabelsIn, ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn,
+    SirsSectionIn, SkAllocCheckIn,
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
     OnWaybackIn, TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
 )
@@ -1143,7 +1147,7 @@ def build_pe() -> None:
 
 
 # =========================================================================
-# 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL 最近抽选 + ON 改制通告)
+# 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
 
 
@@ -1677,6 +1681,80 @@ def build_nb_draws(old: dict) -> dict:
     return {K_LABEL: DRAWS_NB_LABEL, K_SCALE: None, K_URL: DRAWS_NB_URL, K_DRAWS: merged}
 
 
+def iso_pe_of(s: str) -> str | None:
+    """PE 官方日期格「1/15/2026」(月/日/年)→ ISO;认不出返回 None(不猜)。
+    表末的年度汇总行日期格写的是「Total」,正好在这里被挡掉。"""
+    try:
+        return datetime.strptime(s.strip(), DRAWS_PE_DATE_FMT).date().isoformat()
+    except ValueError:
+        return None
+
+
+def pe_draw_rows(x: PeDrawRowsIn) -> list:
+    """一个邀请日 → 该日**真发出过邀请**的行(企业家一行 + 劳工/EE 一行)。
+    某类当天是 0 就不落行:官方写的就是 0,落一行 inv=0 是噪音不是事实。
+    分数线只有企业家那类有(官方 Minimum Point Threshold 列),劳工/EE 那类恒 None。"""
+    out: list = []
+    biz = int_of(x.row[DRAWS_PE_BIZ_COL])
+    if biz:
+        out.append({K_DATE: x.date, K_STREAM: DRAWS_PE_BIZ_STREAM, K_NOTE: x.note,
+                    K_SCORE: int_of(x.row[DRAWS_PE_BIZ_SCORE_COL]), K_INVITATIONS: biz})
+    labour = int_of(x.row[DRAWS_PE_LABOUR_COL])
+    if labour:
+        out.append({K_DATE: x.date, K_STREAM: DRAWS_PE_LABOUR_STREAM, K_NOTE: x.note,
+                    K_SCORE: None, K_INVITATIONS: labour})
+    return out
+
+
+def parse_pe_draws(html: str) -> list:
+    """PE「Office of Immigration Invitations to Apply」表(表头含「Invitation date」):
+    一行一个邀请日、两类邀请各一列,选择依据列官方用 rowspan 跨整年 → 走 expand_table 展开。
+    年度小计列(Invitation Totals)不取 —— 那是这一行两类之和,不是第三类邀请。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
+    for table in soup.find_all(TAG_TABLE):
+        grid = expand_table(table)
+        if not grid or DRAWS_PE_HEAD_KW not in TEXT_JOIN_SEP.join(grid[0]).lower():
+            continue
+        draws: list = []
+        for row in grid[1:]:
+            if len(row) < DRAWS_PE_MIN_COLS:
+                continue
+            d = iso_pe_of(row[0])
+            if not d:
+                continue
+            note = ""
+            if len(row) > DRAWS_PE_NOTE_COL:
+                note = row[DRAWS_PE_NOTE_COL][:DRAWS_NOTE_CLIP]
+            draws += pe_draw_rows(PeDrawRowsIn(date=d, row=row, note=note))
+        draws.sort(key=draw_date_of, reverse=True)
+        return draws[:DRAWS_MAX_PER_PROV]
+    return []
+
+
+def build_pe_draws(old: dict) -> dict:
+    """PE:**只读 crawl 缓存**(官网在 Radware 墙后,定向直抓拿回的是拦截页)。
+    缓存里没有这页 / 解析不出 → 保留旧数据(宁可留旧不留错,与别省的兜底同语义)。"""
+    hit = get_cached_page(DRAWS_PE_URL)
+    if not hit.html:
+        say(DRAWS_PRINT_PE_NO_CACHE_TPL.format(url=DRAWS_PE_URL))
+        return old.get(PROV_PE) or {}
+    draws = parse_pe_draws(hit.html)
+    if not draws:
+        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_PE))
+        return old.get(PROV_PE) or {}
+    scored = 0
+    for d in draws:
+        if d[K_SCORE] is not None:
+            scored += 1
+    say(DRAWS_PRINT_PE_OK_TPL.format(n=len(draws), scored=scored, date=draws[0][K_DATE],
+                                     stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                     inv=draws[0][K_INVITATIONS], fetched=hit.fetched))
+    scale = None
+    if scored:
+        scale = DRAWS_PE_SCALE
+    return {K_LABEL: DRAWS_PE_LABEL, K_SCALE: scale, K_URL: DRAWS_PE_URL, K_DRAWS: draws}
+
+
 def old_on_draws(old: dict) -> list:
     """上一轮 ON 的抽选行(invitations 页抓不到时退回,不清空)。"""
     return (old.get(PROV_ON) or {}).get(K_DRAWS) or []
@@ -1742,7 +1820,8 @@ def old_provinces() -> dict:
 
 
 def build_draws() -> None:
-    """省抽选事实入口:五省实抓 + ON 通告,逐省并回历史后整表落盘。"""
+    """省抽选事实入口:五省实抓 + ON 通告 + PE 读缓存,逐省并回历史后整表落盘。
+    (PE 2026-09-10 接入,是唯一不发请求的一省 —— 官网在 Radware 墙后,原文只能从 crawl 层取。)"""
     say(PRINT_OUT_TPL.format(path=OUT_DRAWS))
     old = old_provinces()
     provinces = {
@@ -1756,6 +1835,7 @@ def build_draws() -> None:
         PROV_NL: province_draws(ProvinceDrawsIn(prov=PROV_NL, url=DRAWS_NL_URL, parse=parse_nl_draws,
                                                 scale=None, label=DRAWS_NL_LABEL, old=old)),
         PROV_NB: build_nb_draws(old),
+        PROV_PE: build_pe_draws(old),
     }
     for p, v in provinces.items():
         if isinstance(v, dict) and v.get(K_DRAWS):

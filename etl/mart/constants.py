@@ -2728,6 +2728,13 @@ IN_IRCC_LEVELS = paths.IRCC / "levels_plan.json"
 K_TARGET = "target"
 """levels_plan 行:目标值。"""
 
+MACRO_KEY_EE_TARGET = "eeTarget"
+"""键:全国 EE(联邦高技术线)接纳目标(levels_plan 的 eeRows;人头含随行家属,仅 CA。
+2026-09-10 补 —— 把脉页 EE 表的「预算」行,与 eeInvites(实际发出的邀请)对照)。"""
+
+K_EE_ROWS = "eeRows"
+"""levels_plan 顶层:EE 接纳目标数组(行形同 rows,另带官方行名 label —— 各版计划里这一行叫法不同)。"""
+
 MACRO_KEY_COMP = "comp"
 """键:名额竞争比(省级,一年一格;2026-09-08 Frank「每年的竞争是不是不一样,每一年都得算吧」)
 = 该年年末在库人头(仅工签 + 仅学签 + 双持)÷ 该年省提名配额;与 ircc 域 difficulty 的竞争比同一公式,

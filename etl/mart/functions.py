@@ -51,7 +51,7 @@ from mart.constants import (
     ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
     K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_YTD_YEAR,
     MACRO_COMP_DIGITS, MACRO_COMP_POOL_KEYS, MACRO_KEY_COMP, MACRO_YEAR_END_TPL, UNIT_RATIO,
-    IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, PROV_NS,
+    IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, MACRO_KEY_EE_TARGET, K_EE_ROWS, PROV_NS,
     MACRO_KEY_NPR, MACRO_KEY_NPR_SHARE, MACRO_KEY_PNP_SHARE, MACRO_KEY_POP, MACRO_SHARE_DIGITS, UNIT_PERCENT,
     MACRO_ANCHOR_GEOS,
     MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
@@ -4834,6 +4834,7 @@ def build_macro_series() -> list:
     out.extend(macro_pr_rows())
     out.extend(macro_alloc_rows())
     out.extend(macro_levels_rows())
+    out.extend(macro_ee_target_rows())
     out.extend(macro_ee_rows())
     out.extend(macro_comp_rows(out))
     index = macro_point_index(out)
@@ -5021,6 +5022,29 @@ def macro_levels_rows() -> list:
         year = str(r.get(K_YEAR, ""))
         out.append(to_macro_row(MacroRowIn(
             geo=MACRO_GEO_CA, key=MACRO_KEY_PNP_TARGET, period=year, freq=MACRO_FREQ_ANNUAL,
+            value=value, as_of=year, unit=UNIT_PEOPLE, source=r.get(K_URL, ""), fetched=fetched)))
+    return out
+
+
+def macro_ee_target_rows() -> list:
+    """移民水平计划的全国 EE 接纳目标(levels_plan 的 eeRows)→ eeTarget 行(仅 CA;2026-09-10 补)。
+
+    口径同 pnpTarget:人头含随行家属;各版计划里这一行叫法不同(Federal High Skilled / Federal
+    Economic 等),官方行名在 eeRows 的 label 里、原句在 quote 里,这里只取数;target 缺 → 不出行
+    (2025 官方无 EE 单列,数组里本就没有那年)。
+    """
+    if not IN_IRCC_LEVELS.exists():
+        return []
+    data = read_table(IN_IRCC_LEVELS)
+    fetched = data.get(K_CHECKED_AT, "")
+    out: list = []
+    for r in data.get(K_EE_ROWS, []):
+        value = r.get(K_TARGET)
+        if value is None:
+            continue
+        year = str(r.get(K_YEAR, ""))
+        out.append(to_macro_row(MacroRowIn(
+            geo=MACRO_GEO_CA, key=MACRO_KEY_EE_TARGET, period=year, freq=MACRO_FREQ_ANNUAL,
             value=value, as_of=year, unit=UNIT_PEOPLE, source=r.get(K_URL, ""), fetched=fetched)))
     return out
 

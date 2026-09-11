@@ -1468,7 +1468,7 @@ PE_PRINT_OCC_TPL = "      · {noc} {name}"
 """逐条报数。"""
 
 # =========================================================================
-# 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL 最近抽选 + ON 改制通告)
+# 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
 
 OUT_DRAWS = paths.PNP / "draws.json"
@@ -1527,6 +1527,15 @@ DRAWS_NB_PREV_URL = "https://www.gnb.ca/en/topic/family-home-community/immigrati
 随 www2 退役)。两常量同值:build_nb_draws 的双页循环 + 去重语义原样,只是第二趟命中缓存
 级重复、全被 seen 滤掉 —— 不为省一次请求改函数形。"""
 
+DRAWS_PE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws"
+"""PE EOI 抽选页(2026-09-10 接入,海洋四省第三份)。
+⚠ **只读 crawl 缓存,永不直抓**:PE 官网挂 Radware 反爬,定向 httpx 拿回的是拦截页
+(整站同此,build_pe / build_pe_req 才绕道官方指南 PDF)。原文由 crawl 役过墙那几轮
+落在 data/crawl/pe-imm/html_cache/,本域走读门 get_cached_page 取。
+表形:一行一个邀请日,两类邀请各一列(Business Work Permit 企业家 / Labour & Express
+Entry),**分数线官方只对 Business 那一类公布**(Minimum Point Threshold),
+Labour 那类恒 None —— 不是抓漏了,是官方不发。末行是年度 Total 汇总,不是抽选。"""
+
 DRAWS_NUM_STRIP_RE = re.compile(r"[,\s]")
 """数字里的千分位逗号与空白(int_of 先剥再转)。"""
 
@@ -1536,11 +1545,17 @@ DRAWS_BC_HEAD_KW = "ita type"
 DRAWS_AB_HEAD_KW = "draw date"
 """AB 表头判词(线性,无 rowspan)。"""
 
+DRAWS_PE_HEAD_KW = "invitation date"
+"""PE 表头判词(页上只有这一张表,判词仍照 BC/AB 的形取,改版了宁可解析空)。"""
+
 DRAWS_BC_MIN_COLS = 5
 """BC 一行至少几格才当数据行。"""
 
 DRAWS_AB_MIN_COLS = 4
 """AB 一行至少几格才当数据行。"""
+
+DRAWS_PE_MIN_COLS = 5
+"""PE 一行至少几格才当数据行(日期 + 企业家邀请数 + 企业家分数线 + 劳工/EE 邀请数 + 年度小计)。"""
 
 DRAWS_NOTE_CLIP = 160
 """note 截断长度。"""
@@ -1580,6 +1595,35 @@ DRAWS_ON_LABEL = "OINP"
 
 DRAWS_ON_SCALE = "OINP EOI"
 """ON 的省自评分制名(与 BC SIRS / AB WEOI 互不可比,前端必须带标注)。"""
+
+DRAWS_PE_LABEL = "PEI PNP Expressions of Interest"
+"""PE 抽选块的前端族名。"""
+
+DRAWS_PE_SCALE = "PEI EOI"
+"""PE 的省自评分制名。**只有当本轮真解析到分数线时才挂上**(照 ON 的形):
+PE 的分数线只对企业家邀请公布,劳工/EE 那类官方不发 —— 一年到头企业家邀请都是 0 时
+挂着 scale 等于替官方凭空造一列「分数线」。"""
+
+DRAWS_PE_DATE_FMT = "%m/%d/%Y"
+"""PE 日期格的写法(官方写「1/15/2026」= 月/日/年,不是别省的「June 24, 2026」)。"""
+
+DRAWS_PE_BIZ_COL = 1
+"""企业家(Business Work Permit)邀请数所在列。"""
+
+DRAWS_PE_BIZ_SCORE_COL = 2
+"""企业家邀请的最低分门槛所在列(没发企业家邀请时官方写「-」→ int_of 归 None)。"""
+
+DRAWS_PE_LABOUR_COL = 3
+"""劳工与快速通道(Labour & Express Entry)邀请数所在列。"""
+
+DRAWS_PE_NOTE_COL = 5
+"""选择依据(Selection Attributes)所在列 —— 官方用 rowspan 跨多轮,expand_table 展开后逐行都有。"""
+
+DRAWS_PE_BIZ_STREAM = "Business Work Permit (Entrepreneur)"
+"""企业家那类邀请的通道名(官方表头原文压成一行)。"""
+
+DRAWS_PE_LABOUR_STREAM = "Labour & Express Entry"
+"""劳工与快速通道那类邀请的通道名(官方表头原文)。"""
 
 DRAWS_SOURCE = "Provincial nominee program draw results (BC/AB/MB official pages)"
 """表级来源名。"""
@@ -1809,6 +1853,13 @@ DRAWS_PRINT_ON_INV_FAIL_TPL = "  ✗ ON invitations 页抓取失败: {name} {det
 
 DRAWS_PRINT_ON_OK_TPL = "  ✓ ON  {n:>2} 条抽选(其中 {scored} 条带分数线)  最新通告 {date} {note}"
 """ON 收尾报数。"""
+
+DRAWS_PRINT_PE_NO_CACHE_TPL = "  ✗ PE 抽选页不在 crawl 缓存里: {url}(保留旧数据)"
+"""PE 读门落空的报数(官网在 Radware 墙后,只能等 crawl 役过墙那轮;不退化成直抓)。"""
+
+DRAWS_PRINT_PE_OK_TPL = ("  ✓ PE  {n:>2} 条(其中 {scored} 条带分数线)  最近 {date} {stream}"
+                         "  inv={inv}  缓存 {fetched}")
+"""PE 收尾报数(带缓存日期 —— 这一省的数据新鲜度取决于 crawl 役哪天过的墙)。"""
 
 DRAWS_PRINT_MERGE_TPL = "  [merge] {prov} 本轮解析 {new} 条,并回历史后 {out} 条"
 """并回历史的报数。

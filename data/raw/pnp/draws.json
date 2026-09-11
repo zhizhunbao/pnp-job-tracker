@@ -1,12 +1,40 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-08-31",
+  "fetched": "2026-09-10",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
       "scale": "SIRS",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
       "draws": [
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 99,
+          "invitations": 182
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 76,
+          "invitations": 143
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 90,
+          "invitations": null
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 94,
+          "invitations": 104
+        },
         {
           "date": "2026-08-20",
           "stream": "Innovate: High Economic Impact",
@@ -148,6 +176,27 @@
       "url": "https://www.alberta.ca/aaip-processing-information",
       "draws": [
         {
+          "date": "2026-09-09",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 60,
+          "invitations": 51
+        },
+        {
+          "date": "2026-09-03",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 60,
+          "invitations": 96
+        },
+        {
+          "date": "2026-09-01",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 56,
+          "invitations": 575
+        },
+        {
           "date": "2026-08-19",
           "stream": "Dedicated Health Care Pathway – non-Express Entry",
           "note": "",
@@ -287,6 +336,34 @@
       "scale": "MPNP EOI",
       "url": "https://immigratemanitoba.com/draws/",
       "draws": [
+        {
+          "date": "2026-09-10",
+          "stream": "Occupation-specific selections",
+          "note": "Draw #279",
+          "score": null,
+          "invitations": 233
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Francophone selection",
+          "note": "Draw #279",
+          "score": null,
+          "invitations": 11
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Completed post-secondary study in Manitoba",
+          "note": "Draw #279",
+          "score": 825,
+          "invitations": 508
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #279",
+          "score": null,
+          "invitations": 41
+        },
         {
           "date": "2026-08-27",
           "stream": "Occupation-specific selections",
@@ -501,6 +578,20 @@
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-09-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 36",
+          "score": null,
+          "invitations": 36
+        },
+        {
+          "date": "2026-09-04",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 97",
+          "score": null,
+          "invitations": 97
+        },
         {
           "date": "2026-08-26",
           "stream": "NLPNP + AIP (ITA batch)",
@@ -836,6 +927,69 @@
           "note": "Categories: All sectors",
           "score": null,
           "invitations": 115
+        }
+      ]
+    },
+    "PE": {
+      "label": "PEI PNP Expressions of Interest",
+      "scale": null,
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
+      "draws": [
+        {
+          "date": "2026-08-20",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 181
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 195
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 182
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 113
+        },
+        {
+          "date": "2026-04-16",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 127
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 101
+        },
+        {
+          "date": "2026-02-19",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 109
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 26
         }
       ]
     }
