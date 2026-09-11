@@ -62,7 +62,8 @@ from ircc.constants import (
     K_EFFECTIVE, K_EXCLUDES_NOC, K_FACTOR,
     K_FAMILY_SIZE, K_FETCHED, K_LABEL,
     K_LATEST_REF_PER, K_N, K_NOTE, K_OP,
-    K_PAGE, K_PR_ALL, K_PR_PNP, PR_CAT_COL, PR_CAT_KEY,
+    K_PAGE, K_PR_ALL, K_PR_PNP, PR_CAT_COL, PR_CAT_KEY, PR_MID_COL, PR_MID_KEY,
+    PR_SUB_COL, PR_SUB_KEY,
     K_PROGRAM, K_PROVINCE, K_YTD_YEAR,
     K_QUOTE, K_REQUIREMENTS, K_SECTION,
     K_SOURCE, K_STREAM, K_SUBJECT, K_THROUGH_MONTH,
@@ -88,7 +89,8 @@ from ircc.scheme import (
     SheetLike,
     ActivityFactorIn, ActivityIn, CatBlockIn, CellAtIn, CompFactorIn, CompIn, DiffDocIn,
     DiffProvIn, DiffProvOut, DiffRowIn, DrawRow, FailIn, FeeRowIn, FlowGotIn, FlowMonthsIn,
-    FlowTailIn, FlowYearIn, ItemsOut, PgwpReqIn, PnpYearsOut, PoolOut, PrCatsSayIn,
+    FlowTailIn, FlowYearIn, ItemsOut, PendRowIn, PgwpReqIn, PnpYearsOut, PoolOut, PrCatsSayIn,
+    PrKeyAtIn,
     QuotaOut, ScoreFactorIn, ScoreLevelIn, ScoredDraw, ScoredIn, SectionItemsIn,
     TrendFactorIn, YearCellsIn, YearTotals,
 )
@@ -399,19 +401,43 @@ def pr_total_geo_of(raw: str) -> str:
 
 def pr_cat_key_of(r: list) -> str:
     """PR 表一行 → 类别组落盘键(PR_CAT_KEY);不是类别组行给空串。"""
-    if len(r) <= PR_CAT_COL:
+    return pr_key_at(PrKeyAtIn(row=r, col=PR_CAT_COL, table=PR_CAT_KEY))
+
+
+def pr_row_key_of(r: list) -> str:
+    """PR 表一行 → 落盘键,三级依次查(大组 col1 → 中类 col2 → 细类 col3);都不是给空串。
+
+    一行只在其中一级有名字(其余格空),依次查即认级,不会一行落两个键。
+    2026-09-10 加中类与细类两级(原只查大组)。
+    """
+    key = pr_cat_key_of(r)
+    if key != "":
+        return key
+    key = pr_key_at(PrKeyAtIn(row=r, col=PR_MID_COL, table=PR_MID_KEY))
+    if key != "":
+        return key
+    return pr_key_at(PrKeyAtIn(row=r, col=PR_SUB_COL, table=PR_SUB_KEY))
+
+
+def pr_key_at(x: PrKeyAtIn) -> str:
+    """PR 表一行的某一级名格 → 该级的落盘键;列越界或名字不在该级表里给空串。"""
+    if len(x.row) <= x.col:
         return ""
-    return PR_CAT_KEY.get(cell_text(r[PR_CAT_COL]), "")
+    return x.table.get(cell_text(x.row[x.col]), "")
 
 
 def cat_all_years(ws: SheetLike) -> dict:
-    """PR 按省×类别表:四个类别组行 × 全部年列 → {落盘键: {年: {地区码: 人数}}}。
+    """PR 按省×类别表:三级类别行 × 全部年列 → {落盘键: {年: {地区码: 人数}}}。
 
-    块形同 pnp_all_years:组行在前、「省 - Total」行收尾,收尾时把本块攒下的几组一次落定。
-    表里没有的组不出键(官方哪年加一类,自然多一个键);「省份未注明」块官方不出类别明细,
+    块形同 pnp_all_years:类别行在前、「省 - Total」行收尾,收尾时把本块攒下的各键一次落定。
+    表里没有的类别不出键(官方哪年加一类,自然多一个键);「省份未注明」块官方不出类别明细,
     攒不到即不落键 —— 补 0 = 替官方编数。
     2026-09-10 Frank「其他的项的 pr 人数是不是也需要列一下」:把脉页每省小表要加
     「其中家庭团聚 / 其中难民 / 其他类」三行。
+    2026-09-10 再往下抽两级(中类 PR_MID_KEY + 细类 PR_SUB_KEY):同一趟扫行、同一套块判据,
+    只把「一行 → 一个键」的查法从单级换成三级(pr_row_key_of)。
+    **同键多行按相加落定**(put_pend_row):当前只有 prAtlantic 一个键由官方两行接力组成,
+    别的键一块里只出现一行,相加等同赋值 —— 各级仍是官方原行,父级永不由子级求和。
     """
     rows = sheet_rows(ws)
     totals = year_total_columns_of(year_total_header_of(rows))
@@ -420,15 +446,26 @@ def cat_all_years(ws: SheetLike) -> dict:
     for r in rows:
         if len(r) == 0:
             continue
-        key = pr_cat_key_of(r)
+        key = pr_row_key_of(r)
         if key != "":
-            pend[key] = year_cells_of(YearCellsIn(row=r, columns=totals))
+            put_pend_row(PendRowIn(pend=pend, key=key,
+                                   cells=year_cells_of(YearCellsIn(row=r, columns=totals))))
         raw = cell_text(r[0])
         if TOTAL_DASH_SUFFIX in raw:
             put_cat_block(CatBlockIn(out=out, pend=pend,
                                      name=raw.replace(TOTAL_DASH_SUFFIX, "").strip()))
             pend = {}
     return cat_nonempty_years(out)
+
+
+def put_pend_row(x: PendRowIn) -> None:
+    """一行的年值攒进本块的待落表:同键相加(prAtlantic 的官方两行同键)。
+
+    空格在 year_cells_of 那一步就不出键,这里只加真有数的年 —— 不会把「官方没发布」加成 0。
+    """
+    by_year = x.pend.setdefault(x.key, {})
+    for y, v in x.cells.items():
+        by_year[y] = by_year.get(y, 0) + v
 
 
 def put_cat_block(x: CatBlockIn) -> None:
@@ -649,6 +686,9 @@ def write_pnp_admissions_years(fetched: str) -> None:
     要省这一次下载得把两个函数并成一个,本批范围「不改既有函数」,另立批次。
     2026-09-10 加四个类别组键(prEcon / prFamily / prRefugee / prOtherCat,见 cat_all_years):
     同一张表同一次取,不多打一次官方站。
+    2026-09-10 再加中类五键(prWorker / prBusiness / prTr2pr / prResettled / prProtected)与
+    细类十九键(prCec … prBsr,见 PR_SUB_KEY):仍是同一张表同一次取、同一个 cat_all_years,
+    payload 里各键平铺不套层级 —— 层级是消费端的展示事,落盘只记官方原行。
     """
     ws = fetch_sheet(STATS_SRC[SRC_PR])
     pnp = pnp_all_years(ws)

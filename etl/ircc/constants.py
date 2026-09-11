@@ -267,6 +267,138 @@ PR_CAT_KEY = {
 官方原名照抄不转述;表里没有的组不出键 —— 官方改名即少一键(前端少一行),
 不会拿错行的数顶上。2026-09-10 实测 ON 2024 四组之和 205,850 与省 Total 逐位相等。"""
 
+K_PR_WORKER = "prWorker"
+"""PR 按年表键:「Worker Program」中类行(经济类里的打工线合计)× 全部年列。
+prEcon 的子项之一,与 prEcon 相加会重复计人。"""
+
+K_PR_BUSINESS = "prBusiness"
+"""PR 按年表键:「Business」中类行(经济类里的商业线合计)× 全部年列。"""
+
+K_PR_TR2PR = "prTr2pr"
+"""PR 按年表键:「Temporary Resident to Permanent Resident Pathway」中类行(2021 年
+一次性临转永通道)× 全部年列。"""
+
+K_PR_RESETTLED = "prResettled"
+"""PR 按年表键:「Resettled Refugee」中类行(境外安置难民合计)× 全部年列。
+prRefugee 的子项之一(另一半是 prProtected)。"""
+
+K_PR_PROTECTED = "prProtected"
+"""PR 按年表键:「Protected Person in Canada」中类行(境内受保护人)× 全部年列。
+这一中类官方不再往下拆细类 —— 表里它下面没有第四级行。"""
+
+PR_MID_COL = 2
+"""PR 表里中类行名格的列下标(第 3 格)。四级列结构:第 1 格地区、第 2 格大组、
+第 3 格中类、第 4 格细类 —— 认列即认级,不会跟别级串味。"""
+
+PR_MID_KEY = {
+    "Worker Program": K_PR_WORKER,
+    "Business": K_PR_BUSINESS,
+    "Temporary Resident to Permanent Resident Pathway": K_PR_TR2PR,
+    "Resettled Refugee": K_PR_RESETTLED,
+    "Protected Person in Canada": K_PR_PROTECTED,
+}
+"""PR 表的中类行名 → 落盘键(2026-09-10 抽第三级)。
+表里第 3 格还有另外两个名字**故意不收**:「Provincial Nominee Program」= 已有的 prPnp
+(同块同值,收了就是同一条线出两个键)、「Sponsored Family」= 已有的 prFamily
+(2026-09-10 实测逐省逐年与大组行「Sponsored Family - Total」同值)。"""
+
+K_PR_CEC = "prCec"
+"""PR 按年表键:「Canadian Experience」细类行(加拿大经验类 CEC)× 全部年列。"""
+
+K_PR_FSW = "prFsw"
+"""PR 按年表键:「Skilled Worker」细类行 × 全部年列。官方把联邦技术移民 FSW 与魁省技术工人
+装在同一个名字里:2026-09-10 实测 QC 2024 这一格 35,735、同块 CEC 恒 0(魁省不走联邦线),
+别把它当纯联邦 FSW 读。"""
+
+K_PR_FST = "prFst"
+"""PR 按年表键:「Skilled Trade」细类行(联邦技工类 FST)× 全部年列。"""
+
+K_PR_CAREGIVER = "prCaregiver"
+"""PR 按年表键:「Caregiver」细类行(护理类各代通道合计)× 全部年列。"""
+
+K_PR_AGRI_FOOD = "prAgriFood"
+"""PR 按年表键:「Agri-Food Pilot」细类行(农业食品试点)× 全部年列。"""
+
+K_PR_ATLANTIC = "prAtlantic"
+"""PR 按年表键:大西洋四省雇主担保线 × 全部年列 —— **官方两行之和**
+(「Atlantic Immigration Pilot Programs」试点期 + 「Atlantic Immigration Programs」转常设后)。
+合并理由见 PR_SUB_KEY 的 docstring 与 cat_all_years。"""
+
+K_PR_RNIP = "prRnip"
+"""PR 按年表键:「Rural and Northern Immigration」细类行(乡村北部试点 RNIP)× 全部年列。
+表里它住 Worker Program 中类下(2026-09-10 逐块实测)。"""
+
+K_PR_EMPP = "prEmpp"
+"""PR 按年表键:「Federal Economic Mobility Pathways Pilot」细类行(难民技术通道 EMPP)× 全部年列。
+表里它住 Worker Program 中类下(2026-09-10 逐块实测)。"""
+
+K_PR_STARTUP = "prStartup"
+"""PR 按年表键:「Start-up Business」细类行(创业签证 SUV)× 全部年列。"""
+
+K_PR_SELF_EMP = "prSelfEmp"
+"""PR 按年表键:「Self-Employed」细类行(自雇类)× 全部年列。"""
+
+K_PR_ENTREPRENEUR = "prEntrepreneur"
+"""PR 按年表键:「Entrepreneur」细类行(企业家类旧线,存量登陆)× 全部年列。
+表里它住 Business 中类下(2026-09-10 逐块实测)。"""
+
+K_PR_INVESTOR = "prInvestor"
+"""PR 按年表键:「Investor」细类行(投资移民旧线,存量登陆)× 全部年列。
+表里它住 Business 中类下(2026-09-10 逐块实测)。"""
+
+K_PR_SPOUSE = "prSpouse"
+"""PR 按年表键:「Sponsored Spouse or Partner」细类行(配偶团聚)× 全部年列。"""
+
+K_PR_CHILDREN = "prChildren"
+"""PR 按年表键:「Sponsored Children」细类行(子女团聚)× 全部年列。"""
+
+K_PR_PGP = "prPgp"
+"""PR 按年表键:「Sponsored Parent or Grandparent」细类行(父母祖父母团聚 PGP)× 全部年列。"""
+
+K_PR_EXT_FAMILY = "prExtFamily"
+"""PR 按年表键:「Sponsored Extended Family Member」细类行(其他亲属团聚)× 全部年列。"""
+
+K_PR_GAR = "prGar"
+"""PR 按年表键:「Government-Assisted Refugee」细类行(政府担保难民 GAR)× 全部年列。"""
+
+K_PR_PSR = "prPsr"
+"""PR 按年表键:「Privately Sponsored Refugee」细类行(私人担保难民 PSR)× 全部年列。"""
+
+K_PR_BSR = "prBsr"
+"""PR 按年表键:「Blended Sponsorship Refugee」细类行(混合担保难民 BVOR)× 全部年列。"""
+
+PR_SUB_COL = 3
+"""PR 表里细类行名格的列下标(第 4 格)。"""
+
+PR_SUB_KEY = {
+    "Canadian Experience": K_PR_CEC,
+    "Skilled Worker": K_PR_FSW,
+    "Skilled Trade": K_PR_FST,
+    "Caregiver": K_PR_CAREGIVER,
+    "Agri-Food Pilot": K_PR_AGRI_FOOD,
+    "Atlantic Immigration Pilot Programs": K_PR_ATLANTIC,
+    "Atlantic Immigration Programs": K_PR_ATLANTIC,
+    "Rural and Northern Immigration": K_PR_RNIP,
+    "Federal Economic Mobility Pathways Pilot": K_PR_EMPP,
+    "Start-up Business": K_PR_STARTUP,
+    "Self-Employed": K_PR_SELF_EMP,
+    "Entrepreneur": K_PR_ENTREPRENEUR,
+    "Investor": K_PR_INVESTOR,
+    "Sponsored Spouse or Partner": K_PR_SPOUSE,
+    "Sponsored Children": K_PR_CHILDREN,
+    "Sponsored Parent or Grandparent": K_PR_PGP,
+    "Sponsored Extended Family Member": K_PR_EXT_FAMILY,
+    "Government-Assisted Refugee": K_PR_GAR,
+    "Privately Sponsored Refugee": K_PR_PSR,
+    "Blended Sponsorship Refugee": K_PR_BSR,
+}
+"""PR 表的细类行名 → 落盘键(2026-09-10 抽第四级)。
+**两个名字映同一个键**:Atlantic 试点期与转常设后是同一条线的两个阶段,官方在表里
+留了两行。2026-09-10 逐块逐年实测四个大西洋省:试点行 2017–2022 有量、2023 起衰减到
+个位数,常设行 2022 起冒头(NB/NS 2022 仅 0~10)—— 是接力不是并行,相加即这条线的全量
+(最大重叠年 NS 2023 = 试点 435 + 常设 830,试点尾巴是试点期获批者后到的登陆,不是重复计人)。
+表里第 4 格的「Provincial Nominee Program」不收:与中类同块同值,已有 prPnp。"""
+
 K_N = "n"
 """流量年块键:人数(整年=官方年总计,进行年=已公布月份求和)。"""
 
@@ -323,7 +455,13 @@ STATS_PNP_YEARS_NOTE = ("PR 登陆数按年:prAll = 省 Total 行(全部移民�
                         "(Economic / Sponsored Family / Resettled Refugee & Protected Person in Canada / "
                         "All Other Immigration),口径与 CA 算法同 prPnp。四组之和 ≈ prAll"
                         "(差额 = 官方舍入到 5、'--' 小值抑制当 0、以及「省份未注明」块官方不出类别明细);"
-                        "prPnp 是 prEcon 的子项,与 prEcon 相加会重复计人。")
+                        "prPnp 是 prEcon 的子项,与 prEcon 相加会重复计人。"
+                        "2026-09-10 再加中类与细类两级(见 PR_MID_KEY / PR_SUB_KEY):"
+                        "prWorker / prBusiness / prPnp / prTr2pr 之和 ≈ prEcon;"
+                        "prResettled + prProtected ≈ prRefugee;打工线细类(prCec / prFsw / prFst / "
+                        "prCaregiver / prAgriFood / prAtlantic / prRnip / prEmpp)之和 ≈ prWorker。"
+                        "各级只发官方原行,**父级永不由子级求和**,差额同上三条口径。"
+                        "prAtlantic = 官方两行(试点期 + 转常设后)之和,其余键一行一键。")
 """PR 按年表口径注。"""
 
 STATS_FLOW_NOTE = ("新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 "

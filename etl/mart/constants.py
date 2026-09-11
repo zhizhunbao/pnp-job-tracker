@@ -2683,7 +2683,8 @@ IN_STATCAN_DIR = paths.STATCAN
 IN_IRCC_PR_YEARS = paths.IRCC / "pnp_admissions_years.json"
 """PR 登陆数按年(ircc 域段2 产,2026-09-06 加):prAll = 省 Total 行(全部类别),
 prPnp = Provincial Nominee 组行;ytdYear 那年是年内累计。
-2026-09-10 再加四个类别组键:prEcon / prFamily / prRefugee / prOtherCat(同一张官方表的组行)。"""
+2026-09-10 再加四个类别组键:prEcon / prFamily / prRefugee / prOtherCat(同一张官方表的组行)。
+2026-09-10 再往下两级:中类五键 + 细类十九键(同一张表的第 3、第 4 级行,全键见 MACRO_KEYS_PR)。"""
 
 MACRO_GEO_CA = "CA"
 """全国的 geo 码(省用两位省码;领地不收)。"""
@@ -2723,9 +2724,94 @@ MACRO_KEY_PR_REFUGEE = "prRefugee"
 MACRO_KEY_PR_OTHER_CAT = "prOtherCat"
 """键:其他类(All Other Immigration 组行)。"""
 
+MACRO_KEY_PR_WORKER = "prWorker"
+"""键:经济类里的打工线(Worker Program 中类行)。prEcon 的子项。"""
+
+MACRO_KEY_PR_BUSINESS = "prBusiness"
+"""键:经济类里的商业线(Business 中类行)。prEcon 的子项。"""
+
+MACRO_KEY_PR_TR2PR = "prTr2pr"
+"""键:临转永通道(Temporary Resident to Permanent Resident Pathway 中类行,2021 年一次性)。"""
+
+MACRO_KEY_PR_RESETTLED = "prResettled"
+"""键:境外安置难民(Resettled Refugee 中类行)。prRefugee 的子项。"""
+
+MACRO_KEY_PR_PROTECTED = "prProtected"
+"""键:境内受保护人(Protected Person in Canada 中类行)。prRefugee 的子项,官方不再往下拆。"""
+
+MACRO_KEY_PR_CEC = "prCec"
+"""键:加拿大经验类 CEC(Canadian Experience 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_FSW = "prFsw"
+"""键:技术移民 FSW(Skilled Worker 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_FST = "prFst"
+"""键:联邦技工 FST(Skilled Trade 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_CAREGIVER = "prCaregiver"
+"""键:护理类(Caregiver 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_AGRI_FOOD = "prAgriFood"
+"""键:农业食品试点(Agri-Food Pilot 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_ATLANTIC = "prAtlantic"
+"""键:大西洋四省雇主担保线(官方两行之和:试点期 Atlantic Immigration Pilot Programs +
+转常设后 Atlantic Immigration Programs)。prWorker 的子项;合并依据在 ircc 域 PR_SUB_KEY。"""
+
+MACRO_KEY_PR_RNIP = "prRnip"
+"""键:乡村北部试点 RNIP(Rural and Northern Immigration 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_EMPP = "prEmpp"
+"""键:难民技术通道 EMPP(Federal Economic Mobility Pathways Pilot 细类行)。prWorker 的子项。"""
+
+MACRO_KEY_PR_STARTUP = "prStartup"
+"""键:创业签证 SUV(Start-up Business 细类行)。prBusiness 的子项。"""
+
+MACRO_KEY_PR_SELF_EMP = "prSelfEmp"
+"""键:自雇类(Self-Employed 细类行)。prBusiness 的子项。"""
+
+MACRO_KEY_PR_ENTREPRENEUR = "prEntrepreneur"
+"""键:企业家类旧线(Entrepreneur 细类行)。prBusiness 的子项。"""
+
+MACRO_KEY_PR_INVESTOR = "prInvestor"
+"""键:投资移民旧线(Investor 细类行)。prBusiness 的子项。"""
+
+MACRO_KEY_PR_SPOUSE = "prSpouse"
+"""键:配偶团聚(Sponsored Spouse or Partner 细类行)。prFamily 的子项。"""
+
+MACRO_KEY_PR_CHILDREN = "prChildren"
+"""键:子女团聚(Sponsored Children 细类行)。prFamily 的子项。"""
+
+MACRO_KEY_PR_PGP = "prPgp"
+"""键:父母祖父母团聚 PGP(Sponsored Parent or Grandparent 细类行)。prFamily 的子项。"""
+
+MACRO_KEY_PR_EXT_FAMILY = "prExtFamily"
+"""键:其他亲属团聚(Sponsored Extended Family Member 细类行)。prFamily 的子项。"""
+
+MACRO_KEY_PR_GAR = "prGar"
+"""键:政府担保难民 GAR(Government-Assisted Refugee 细类行)。prResettled 的子项。"""
+
+MACRO_KEY_PR_PSR = "prPsr"
+"""键:私人担保难民 PSR(Privately Sponsored Refugee 细类行)。prResettled 的子项。"""
+
+MACRO_KEY_PR_BSR = "prBsr"
+"""键:混合担保难民 BVOR(Blended Sponsorship Refugee 细类行)。prResettled 的子项。"""
+
 MACRO_KEYS_PR = (MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEY_PR_ECON, MACRO_KEY_PR_FAMILY,
-                 MACRO_KEY_PR_REFUGEE, MACRO_KEY_PR_OTHER_CAT)
-"""PR 按年表要发的全部键(同一份 raw、同一套解法);raw 里没有的键自然 0 行。"""
+                 MACRO_KEY_PR_REFUGEE, MACRO_KEY_PR_OTHER_CAT,
+                 MACRO_KEY_PR_WORKER, MACRO_KEY_PR_BUSINESS, MACRO_KEY_PR_TR2PR,
+                 MACRO_KEY_PR_RESETTLED, MACRO_KEY_PR_PROTECTED,
+                 MACRO_KEY_PR_CEC, MACRO_KEY_PR_FSW, MACRO_KEY_PR_FST, MACRO_KEY_PR_CAREGIVER,
+                 MACRO_KEY_PR_AGRI_FOOD, MACRO_KEY_PR_ATLANTIC, MACRO_KEY_PR_RNIP,
+                 MACRO_KEY_PR_EMPP, MACRO_KEY_PR_STARTUP, MACRO_KEY_PR_SELF_EMP,
+                 MACRO_KEY_PR_ENTREPRENEUR, MACRO_KEY_PR_INVESTOR,
+                 MACRO_KEY_PR_SPOUSE, MACRO_KEY_PR_CHILDREN, MACRO_KEY_PR_PGP,
+                 MACRO_KEY_PR_EXT_FAMILY,
+                 MACRO_KEY_PR_GAR, MACRO_KEY_PR_PSR, MACRO_KEY_PR_BSR)
+"""PR 按年表要发的全部键(同一份 raw、同一套解法);raw 里没有的键自然 0 行。
+四级:省 Total(prAll)→ 大组四键 → 中类五键 → 细类十九键;**父键永不由子键求和**,
+每一键都是官方原行(prAtlantic 除外,见 MACRO_KEY_PR_ATLANTIC)。
+前端拿它们求和前先看层级:同级才可加,跨级相加会重复计人。"""
 
 MACRO_KEY_ALLOC = "alloc"
 """键:省提名年度配额(人工核对维护表,每年自带出处页)。"""

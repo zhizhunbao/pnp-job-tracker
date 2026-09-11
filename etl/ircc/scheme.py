@@ -98,6 +98,34 @@ class CatBlockIn:
 
 
 @dataclass
+class PrKeyAtIn:
+    """pr_key_at() 入参(一行的某一级名格 → 该级的落盘键)。"""
+
+    row: list
+    """一行原格。"""
+
+    col: int
+    """名格的列下标(大组 / 中类 / 细类各占一列)。"""
+
+    table: dict
+    """该级的「官方行名 → 落盘键」表。"""
+
+
+@dataclass
+class PendRowIn:
+    """put_pend_row() 入参(一行的年值 → 攒进本块的待落表)。"""
+
+    pend: dict
+    """本块攒中的:落盘键 → {年: 人数}(就地改)。"""
+
+    key: str
+    """这一行的落盘键。"""
+
+    cells: dict
+    """这一行的 {年: 人数}。"""
+
+
+@dataclass
 class PrCatsSayIn:
     """say_pr_cats() 入参(类别组键的收尾报数)。"""
 
