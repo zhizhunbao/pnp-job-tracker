@@ -37,7 +37,6 @@ export function IndCards(x: IndCardsIn) {
       <div key={r.key} className={css.indCard}>
         <div className={css.indName}>
           <span className={css.provName}>{r.label}</span>
-          {r.geoCode !== TEXT_NONE && <span className={css.provCode}>{r.geoCode}</span>}
           {r.localeName !== TEXT_NONE && <span className={css.note}>{r.localeName}</span>}
         </div>
         <div className={css.provCardBody}>

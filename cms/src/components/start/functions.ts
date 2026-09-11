@@ -54,13 +54,13 @@ import {
   MACRO_MORE, FREQ_Q,
   FREQ_M,
   PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, CARD_YEARS, MK_ALLOC, MR_ISSUED,
-  MK_PR_ALL, MK_PR_PNP, MK_PNP_TARGET, MK_EE, MK_EE_TARGET, MK_WORK_ONLY, MR_WORK,
+  MK_PR_ALL, MK_PNP_TARGET, MK_EE, MK_EE_TARGET, MK_WORK_ONLY, MR_WORK, PR_ROW_KEYS,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
-  COL_REC, IND_GEO_ORDER, MACRO_FLOW_KEYS, REC_KEYS, REC_LOWER_BETTER,
+  COL_REC, IND_GEO_ORDER, REC_KEYS, REC_LOWER_BETTER,
   REC_HALF, FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
 } from './constants'
@@ -113,7 +113,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  PrSubRowIn, AllocTargetRowIn, EeTargetRowIn, CardPair,
+  PrGeosIn, PrRowIn, AllocTargetRowIn, EeTargetRowIn, CardPair,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
@@ -3421,6 +3421,12 @@ function geoPointsOf(x: GeoPointsIn): GeoPoints {
 export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
   const out: MacroGeo[] = []
   for (const key of IND_ORDER) {
+    if (key === MK_PR_ALL) {
+      for (const geo of prGeosOf({ t: x.t, macro: x.macro, ops: x.ops })) {
+        out.push(geo)
+      }
+      continue
+    }
     const geo = indGeoOf({ key, t: x.t, lang: x.lang, macro: x.macro, ops: x.ops })
     if (geo != null) {
       out.push(geo)
@@ -3430,9 +3436,107 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
 }
 
 /**
+ * PR 段:每个地区一张小表(全国打头 + 九省;行 = PR 获批 / 其中省提名,列 = 年 + 同比)——
+ * 2026-09-10 Frank「这个还是拆成每个省一个表好一些吧」,推翻同日早些的单表缩进行混排。
+ * 首列叫「指标」;第一张(全国)的锚点沿用 pl-ind-prAll,二级导航胶囊落在段首。
+ *
+ * @param x 取词函数与全部点。
+ * @returns 每地区一张表(一行都没有的地区不出)。
+ */
+function prGeosOf(x: PrGeosIn): MacroGeo[] {
+  const out: MacroGeo[] = []
+  for (const code of IND_GEO_ORDER) {
+    const gp = geoPointsOf({ code, macro: x.macro, ops: x.ops })
+    const bases: MacroRow[] = []
+    for (const key of PR_ROW_KEYS) {
+      const base = macroRowOf({ key, code, t: x.t, points: gp.points, ops: gp.ops })
+      if (base != null && base.latest != null) {
+        bases.push(base)
+      }
+    }
+    if (bases.length === 0) {
+      continue
+    }
+    const year = yoyYearOf({ rows: bases })
+    const rows: MacroRow[] = []
+    for (const b of bases) {
+      rows.push(prRowOf({ base: b, year, t: x.t }))
+    }
+    const years = yearsOf(rows)
+    out.push({
+      code: MK_PR_ALL + SUB_ID_SEP + code,
+      anchor: prAnchorOf(code),
+      name: prGeoNameOf({ code, t: x.t }),
+      years,
+      rows,
+      yoyLabel: yoyLabelOf({ t: x.t, year }),
+      keyLabel: x.t('pulse.m.key'),
+      yearNotes: yearNotesOf({ rows, years }),
+      recLabel: TEXT_NONE,
+      formula: TEXT_NONE,
+      indexed: false,
+    })
+  }
+  return out
+}
+
+/**
+ * PR 小表的锚点:全国沿用 pl-ind-prAll(二级导航「PR」胶囊落这),省带码后缀保证唯一。
+ *
+ * @param code 地区码。
+ * @returns 锚点 id。
+ */
+function prAnchorOf(code: string): string {
+  if (code === GEO_CA) {
+    return ID_IND_HEAD + MK_PR_ALL
+  }
+  return ID_IND_HEAD + MK_PR_ALL + SUB_ID_SEP + code.toLowerCase()
+}
+
+/**
+ * PR 小表的标题:全国取词,省用界面语言全名(标题行是本地语言,不用行内的通行短名形)。
+ *
+ * @param x 地区码与取词函数。
+ * @returns 标题。
+ */
+function prGeoNameOf(x: GeoNameIn): string {
+  if (x.code === GEO_CA) {
+    return x.t('pulse.s4.all')
+  }
+  return provLabelOf({ t: x.t, code: x.code })
+}
+
+/**
+ * PR 小表的一行:省块形底行照抄,配上同比格(行名就是指标名,不换)。
+ *
+ * @param x 底行与同比年。
+ * @returns 带同比的行。
+ */
+function prRowOf(x: PrRowIn): MacroRow {
+  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, t: x.t })
+  return {
+    key: x.base.key,
+    label: x.base.label,
+    localeName: x.base.localeName,
+    sub: x.base.sub,
+    keyCls: x.base.keyCls,
+    toggle: x.base.toggle,
+    expanded: x.base.expanded,
+    cells: x.base.cells,
+    latest: x.base.latest,
+    latestYear: x.base.latestYear,
+    missing: x.base.missing,
+    yoy,
+    yoyCls: yoyClsOf({ cell: yoy, key: x.base.key }),
+    rec: TEXT_NONE,
+    recCls: TEXT_NONE,
+  }
+}
+
+/**
  * 一张指标表:逐地区按省块同一套算法出行,再改成地区行并配同比;同比年 = 全表最新的完整年。
  * 2026-09-10 Frank「这四个都是一回事」两处并表:配额表全国行 = 接纳目标(联邦不发省级配额,
- * 人头口径在译名行标明);PR 表每个地区行下挂「其中省提名」缩进行,单行表清零。
+ * 人头口径在译名行标明);EE 表第二行 = EE 接纳目标(PR 走 prGeosOf 每省一张小表,不走这里)。
  *
  * @param x 指标键与全部点。
  * @returns 指标表;没有一行给 null。
@@ -3449,8 +3553,7 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   if (bases.length === 0) {
     return null
   }
-  const flow = MACRO_FLOW_KEYS.includes(x.key)
-  const year = yoyYearOf({ rows: indBaseRowsOf(bases), flow })
+  const year = yoyYearOf({ rows: indBaseRowsOf(bases) })
   const plain: MacroRow[] = []
   for (const b of bases) {
     plain.push(indRowOf({
@@ -3462,12 +3565,6 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
       key: x.key,
       t: x.t,
     }))
-    if (x.key === MK_PR_ALL) {
-      const sub = prSubRowOf({ code: b.code, year, t: x.t, macro: x.macro, ops: x.ops })
-      if (sub != null) {
-        plain.push(sub)
-      }
-    }
   }
   if (x.key === MK_ALLOC) {
     const target = allocTargetRowOf({ t: x.t, macro: x.macro, ops: x.ops })
@@ -3490,44 +3587,11 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
     years,
     rows,
     yoyLabel: yoyLabelOf({ t: x.t, year }),
+    keyLabel: x.t('pulse.m.geo'),
     yearNotes: yearNotesOf({ rows, years }),
     recLabel: recLabelOf({ t: x.t, key: x.key }),
     formula: formulaOf({ t: x.t, key: x.key }),
     indexed: false,
-  }
-}
-
-/**
- * PR 表某地区行下的「其中省提名」缩进行(2026-09-10 并表):值照 prPnp 键取,行名固定,
- * 键 = 地区码 + 分隔 + 键名保证唯一;该地区没有省提名数时不出。
- *
- * @param x 地区码、同比年与全部点。
- * @returns 缩进行;没数给 null。
- */
-function prSubRowOf(x: PrSubRowIn): MacroRow | null {
-  const gp = geoPointsOf({ code: x.code, macro: x.macro, ops: x.ops })
-  const base = macroRowOf({ key: MK_PR_PNP, code: x.code, t: x.t, points: gp.points, ops: gp.ops })
-  if (base == null) {
-    return null
-  }
-  const yoy = yoyCellOf({ cells: base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(MK_PR_PNP), t: x.t })
-  return {
-    key: x.code + SUB_ID_SEP + MK_PR_PNP,
-    label: x.t(KEY_MACRO_HEAD + MK_PR_PNP),
-    geoCode: TEXT_NONE,
-    localeName: TEXT_NONE,
-    sub: true,
-    keyCls: macroKeyClsOf({ sub: true }),
-    toggle: null,
-    expanded: false,
-    cells: base.cells,
-    latest: base.latest,
-    latestYear: base.latestYear,
-    missing: base.missing,
-    yoy,
-    yoyCls: yoyClsOf({ cell: yoy, key: MK_PR_PNP }),
-    rec: TEXT_NONE,
-    recCls: TEXT_NONE,
   }
 }
 
@@ -3542,7 +3606,7 @@ function prSubRowOf(x: PrSubRowIn): MacroRow | null {
 function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
   const gp = geoPointsOf({ code: GEO_CA, macro: x.macro, ops: x.ops })
   const base = macroRowOf({ key: MK_PNP_TARGET, code: GEO_CA, t: x.t, points: gp.points, ops: gp.ops })
-  if (base == null) {
+  if (base == null || base.latest == null) {
     return null
   }
   return indRowOf({
@@ -3566,13 +3630,12 @@ function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
 function eeTargetRowOf(x: EeTargetRowIn): MacroRow | null {
   const gp = geoPointsOf({ code: GEO_CA, macro: x.macro, ops: x.ops })
   const base = macroRowOf({ key: MK_EE_TARGET, code: GEO_CA, t: x.t, points: gp.points, ops: gp.ops })
-  if (base == null) {
+  if (base == null || base.latest == null) {
     return null
   }
   return {
     key: MK_EE_TARGET,
     label: x.t('pulse.s4.all'),
-    geoCode: TEXT_NONE,
     localeName: x.t(KEY_MACRO_HEAD + MK_EE_TARGET),
     sub: false,
     keyCls: base.keyCls,
@@ -3767,7 +3830,6 @@ function withRec(x: WithRecIn): MacroRow {
   return {
     key: x.row.key,
     label: x.row.label,
-    geoCode: x.row.geoCode,
     localeName: x.row.localeName,
     sub: x.row.sub,
     keyCls: x.row.keyCls,
@@ -3832,30 +3894,16 @@ function indBaseRowsOf(bases: IndBase[]): MacroRow[] {
 }
 
 /**
- * 地区行的码灰注:省行给码(三格形),全国行不带(行名「全国」本身自明)。
- *
- * @param code 地区码。
- * @returns 码或空串。
- */
-function indGeoCodeOf(code: string): string {
-  if (code === GEO_CA) {
-    return TEXT_NONE
-  }
-  return code
-}
-
-/**
  * 省块形的一行 → 地区行:键与名换成地区,其余照抄,再配同比格。
  *
  * @param x 底行、地区与同比年。
  * @returns 地区行。
  */
 function indRowOf(x: IndRowIn): MacroRow {
-  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, flow: MACRO_FLOW_KEYS.includes(x.key), t: x.t })
+  const yoy = yoyCellOf({ cells: x.base.cells, year: x.year, t: x.t })
   return {
     key: x.code,
     label: x.name,
-    geoCode: indGeoCodeOf(x.code),
     localeName: x.localeName,
     sub: false,
     keyCls: x.base.keyCls,
@@ -3873,11 +3921,12 @@ function indRowOf(x: IndRowIn): MacroRow {
 }
 
 /**
- * 全表的同比年:流量类取各行「最新完整年」里最大的(格的灰注为空 = 完整年);存量 / 比值类最新一期也算
- * (Frank 2026-09-09「用最近一年的和之前年份的比」);未来年(接纳目标这类计划值)不算。
+ * 全表的同比年 = 各行有数年份里最新的一个(含进行年;未来年 —— 接纳目标这类计划值 —— 不算)。
+ * 2026-09-10 Frank「所有的都用 26 比 25 的,也就是最新的比去年的。这个是自动更新的」:
+ * 原「流量类只认完整年」口径作废,进行年累计照比(列头「至 X 月」已标口径),随年份自动走。
  *
  * @param rows 行。
- * @returns 年;一格完整年都没有给空串。
+ * @returns 年;一格都没有给空串。
  */
 function yoyYearOf(x: YoyYearIn): string {
   const now = thisYearOf()
@@ -3886,9 +3935,6 @@ function yoyYearOf(x: YoyYearIn): string {
     for (const y of Object.keys(r.cells)) {
       const c = r.cells[y]
       if (c == null || y > now) {
-        continue
-      }
-      if (x.flow && c.note !== TEXT_NONE) {
         continue
       }
       if (best === TEXT_NONE || y > best) {
@@ -3900,7 +3946,8 @@ function yoyYearOf(x: YoyYearIn): string {
 }
 
 /**
- * 一行的同比格:同比年与前一年两格都是完整年才算,相对变化取一位小数带正负号。
+ * 一行的同比格:同比年(可为进行年,2026-09-10「最新的比去年的」)对前一个完整年,
+ * 相对变化取一位小数带正负号。
  *
  * @param x 年 → 格与同比年。
  * @returns 同比格;算不出给 null。
@@ -3912,9 +3959,6 @@ function yoyCellOf(x: YoyCellIn): MacroCell | null {
   const a = x.cells[x.year]
   const b = x.cells[String(Number(x.year) - 1)]
   if (a == null || b == null || b.note !== TEXT_NONE || b.value === 0) {
-    return null
-  }
-  if (x.flow && a.note !== TEXT_NONE) {
     return null
   }
   const pct = (a.value / b.value - 1) * PCT_SCALE
@@ -4020,7 +4064,6 @@ function macroRowOf(x: MacroRowIn): MacroRow | null {
   return {
     key: x.key,
     label: x.t(KEY_MACRO_HEAD + x.key),
-    geoCode: TEXT_NONE,
     localeName: TEXT_NONE,
     sub: MACRO_SUB_ROWS.includes(x.key),
     keyCls: macroKeyClsOf({ sub: MACRO_SUB_ROWS.includes(x.key) }),
@@ -4384,7 +4427,7 @@ function yearsOf(rows: MacroRow[]): string[] {
  */
 export function macroColsOf(x: MacroColsIn): StartCol<MacroRow>[] {
   const out: StartCol<MacroRow>[] = [
-    { key: COL_MACRO_KEY, label: macroKeyLabelOf(x), render: MacroKeyCell, width: W_MACRO_KEY },
+    { key: COL_MACRO_KEY, label: x.keyLabel, render: MacroKeyCell, width: W_MACRO_KEY },
   ]
   const now = thisYearOf()
   const unreleased = x.t('pulse.m.unreleased')
@@ -4432,19 +4475,6 @@ function yearColLabelOf(x: YearColLabelIn): string {
     return x.year
   }
   return x.year + SPACE_SEP + x.note
-}
-
-/**
- * 首列列名:指标表的行是地区,省块的行是指标(同比列名非空 = 指标表)。
- *
- * @param x 取词函数与同比列名。
- * @returns 列名。
- */
-function macroKeyLabelOf(x: MacroColsIn): string {
-  if (x.yoyLabel !== TEXT_NONE) {
-    return x.t('pulse.m.geo')
-  }
-  return x.t('pulse.m.key')
 }
 
 /**

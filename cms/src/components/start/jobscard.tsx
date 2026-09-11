@@ -22,7 +22,6 @@ export function JobsCard({ row, t }: JobsCardIn) {
     <div className={css.card}>
       <div className={css.provCardHead}>
         <span className={css.provCardName}>{row.name}</span>
-        <span className={css.provCardCode}>{row.code}</span>
         {row.localeName !== TEXT_NONE && <span className={css.note}>{row.localeName}</span>}
       </div>
       <div className={css.provCardBody}>

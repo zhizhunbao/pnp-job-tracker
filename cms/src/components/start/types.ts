@@ -3417,13 +3417,8 @@ export type MacroRow = {
   label: string
 
   /**
-   * 地区码灰注(2026-09-10 Frank「这种是不是应该统一一下」:指标表地区行与招聘对比同形 ——
-   * 通行短名 + 码 + 译名三格;全国行与指标行不带,空串 = 行名单独显示)。
-   */
-  geoCode: string
-
-  /**
-   * 译名行(中韩界面的省译名;英文界面与非省行空串)。
+   * 译名行(中韩界面的省译名;英文界面与非省行空串。2026-09-10「这种是不是应该统一一下」
+   * 指标表地区行改招聘对比同形,同日「可以改成去掉缩写」省码灰注撤,行名两格 = 通行短名 + 译名)。
    */
   localeName: string
 
@@ -3521,6 +3516,12 @@ export type MacroGeo = {
    * 同比列名(「同比 25/24」);空串 = 不出这列。
    */
   yoyLabel: string
+
+  /**
+   * 首列列名:指标表的行是地区(「地区」),PR 每省小表的行是指标(「指标」)——
+   * 2026-09-10 PR 表拆每省一表后由建表方定,不再按有没有同比列猜。
+   */
+  keyLabel: string
 
   /**
    * 年 → 全列共用的灰注(整列有数的格都是同一个「至 X 月」时提到列头一次,格里不再重复;
@@ -3927,19 +3928,9 @@ export type IndRowIn = {
 }
 
 /**
- * `prSubRowOf` 的入参。
+ * `prGeosOf` 的入参。
  */
-export type PrSubRowIn = {
-  /**
-   * 地区码。
-   */
-  code: string
-
-  /**
-   * 表的同比年;空串 = 没同比。
-   */
-  year: string
-
+export type PrGeosIn = {
   /**
    * 取词函数。
    */
@@ -3954,6 +3945,26 @@ export type PrSubRowIn = {
    * 全部运营点。
    */
   ops: OpsPoint[]
+}
+
+/**
+ * `prRowOf` 的入参。
+ */
+export type PrRowIn = {
+  /**
+   * 省块形底行(行名 = 指标名)。
+   */
+  base: MacroRow
+
+  /**
+   * 表的同比年;空串 = 没同比。
+   */
+  year: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**
@@ -4016,14 +4027,9 @@ export type EeTargetRowIn = {
  */
 export type YoyYearIn = {
   /**
-   * 行。
+   * 行(流量 / 存量之分 2026-09-10 撤:一律最新年比去年)。
    */
   rows: MacroRow[]
-
-  /**
-   * 流量类(只认完整年)还是存量 / 比值类(最新一期也算)。
-   */
-  flow: boolean
 }
 
 /**
@@ -4141,14 +4147,9 @@ export type YoyCellIn = {
   cells: Record<string, MacroCell>
 
   /**
-   * 同比年(与它前一年配对;两格都得是完整年)。
+   * 同比年(与它前一个完整年配对;可为进行年 —— 2026-09-10「最新的比去年的」,流量档撤)。
    */
   year: string
-
-  /**
-   * 流量类:两头都得是完整年;存量 / 比值类:最新一期(可为进行年)对上一整年。
-   */
-  flow: boolean
 
   /**
    * 取词函数(同比「持平」一词)。
@@ -4320,6 +4321,11 @@ export type MacroColsIn = {
    * 同比列名;空串不出这列。
    */
   yoyLabel: string
+
+  /**
+   * 首列列名(「地区」或「指标」,由建表方定)。
+   */
+  keyLabel: string
 
   /**
    * 年 → 列头共用灰注(空串 = 灰注留在格里)。

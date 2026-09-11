@@ -1141,6 +1141,12 @@ export const MK_PNP_TARGET = 'pnpTarget'
 export const MK_EE_TARGET = 'eeTarget'
 
 /**
+ * PR 每省小表的行键序(2026-09-10 Frank「拆成每个省一个表」:一地区一张小表,
+ * 行 = PR 获批 + 其中省提名,列 = 年)。
+ */
+export const PR_ROW_KEYS = ['prAll', 'prPnp']
+
+/**
  * 宏观表行键:工签(2026-09-10 Frank 重排清单点名;数据键 = workOnly 只持工签存量,行键另起
  * 免得沿用「其中只持工签」的行名与缩进样式)。
  */
@@ -1235,6 +1241,8 @@ export const MACRO_BAD_UP_KEYS = ['comp', 'unemp']
  * 流量类指标(一年一个累计数):同比只拿最近两个完整年比 —— 进行年是「到 X 月的累计」,对上一整年会算出假暴跌。
  * 不在表里的是存量 / 比值类(人口、在库、竞争比、失业率、配额、目标),最新一期直接对上一年
  * (Frank 2026-09-09「应该用最近一年的和之前年份的比」)。
+ * 2026-09-10 Frank「所有的都用 26 比 25 的…最新的比去年的。这个是自动更新的」:同比不再分流量 / 存量,
+ * 上一条口径作废,本表退出同比判据成零消费者;表留档(哪些键是一年一个累计数的事实不变),再有消费者直接复用。
  */
 export const MACRO_FLOW_KEYS = ['studyNew', 'prAll', 'prPnp', 'eeInvites', 'issued']
 

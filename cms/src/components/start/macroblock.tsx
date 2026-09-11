@@ -35,7 +35,12 @@ export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
           <Table<MacroRow>
             rows={rows}
             cols={macroColsOf({
-              t, years: geo.years, yoyLabel: geo.yoyLabel, yearNotes: geo.yearNotes, recLabel: geo.recLabel,
+              t,
+              years: geo.years,
+              yoyLabel: geo.yoyLabel,
+              keyLabel: geo.keyLabel,
+              yearNotes: geo.yearNotes,
+              recLabel: geo.recLabel,
             })}
             rowKey={macroRowKeyOf}
             series={macroSeriesOf({ t, geo })} />

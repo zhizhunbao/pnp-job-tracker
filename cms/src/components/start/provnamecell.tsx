@@ -3,6 +3,7 @@
  * 分省概览「省份」列的单元格:通行短名主文案 + 省码灰注,中韩界面下再挂一行译名
  * (#146 站规:英文在前,中韩括注译名;NL 用通行短名,悬停仍显全名)。
  * 2026-08-28 换装批自 Pulse.tsx 的 prov 列 render 提出成文件;2026-09-06 省份段重做后由招聘对比横表消费,形状收成三格 GeoNameRow。
+ * 2026-09-10 Frank「可以改成去掉缩写」:省码灰注撤(全段统一,指标表/手机卡同撤)。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -21,7 +22,6 @@ export function ProvNameCell(r: GeoNameRow) {
   return (
     <div>
       <span className={css.provName}>{r.name}</span>
-      <span className={css.provCode}>{r.code}</span>
       {r.localeName !== TEXT_NONE && <span className={css.note}>{r.localeName}</span>}
     </div>
   )
