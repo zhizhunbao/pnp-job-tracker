@@ -303,7 +303,11 @@ function toProvince(r: MartRow): MartRow {
  * @returns 库行。
  */
 function toCity(r: MartRow): MartRow {
-  return { name: cellOf(r.name), province: cellOf(r.province), name_zh: cellOf(r.nameZh), name_ko: cellOf(r.nameKo) }
+  return {
+    name: cellOf(r.name), province: cellOf(r.province), name_zh: cellOf(r.nameZh), name_ko: cellOf(r.nameKo),
+    population: cellOf(r.population), pop_period: cellOf(r.popPeriod),
+    unemp_rate: cellOf(r.unempRate), unemp_period: cellOf(r.unempPeriod), cma: cellOf(r.cma),
+  }
 }
 
 /**

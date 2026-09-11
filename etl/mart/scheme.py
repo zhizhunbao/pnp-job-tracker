@@ -939,6 +939,9 @@ class CityBuildIn:
     i18n: dict
     """城市译名表。"""
 
+    macro: dict
+    """城市刻度表(City|PP → 行;statcan 段6 产,2026-09-11 城市段批二;缺文件传空表)。"""
+
 @dataclass
 class CityRowIn:
     """to_city_row() 入参。"""
@@ -951,6 +954,9 @@ class CityRowIn:
 
     i18n: dict
     """城市译名表。"""
+
+    macro: dict
+    """城市刻度表(City|PP → 行)。"""
 
 @dataclass
 class DistrictRowIn:

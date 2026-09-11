@@ -1233,6 +1233,26 @@ FLOW_SERIES_YEARS = 5
 CITY_I18N_KEY_TPL = "{city}|{province}"
 """城市译名表的键形。"""
 
+IN_CITY_MACRO = paths.STATCAN / "city_macro.json"
+"""段9 输入:城市刻度(statcan 域段6 产,CSD 人口 + CMA 失业率;2026-09-11 城市段批二)。
+文件缺席 = 五格全空(维度装配照跑,城市段人口/失业率列整列不渲)。"""
+
+K_CM_POP = "population"
+"""city_macro 行键 / cities 行键:CSD 人口(官方没有 = null,不折 0)。"""
+
+K_CM_POP_PERIOD = "popPeriod"
+"""city_macro 行键 / cities 行键:人口期标。"""
+
+K_CM_UNEMP_RATE = "unempRate"
+"""city_macro 行键 / cities 行键:所在 CMA 失业率(百分点;🔴 CMA 口径,展示层列名必须写
+「都会区失业率」;不在 CMA = null)。"""
+
+K_CM_UNEMP_PERIOD = "unempPeriod"
+"""city_macro 行键 / cities 行键:失业率期标(月)。"""
+
+K_CM_CMA = "cma"
+"""city_macro 行键 / cities 行键:所在 CMA 成员名。"""
+
 TEER_NONE_SORT = -1
 """noc_categories 去重排序时 TEER=None 的替身(落盘时还原成 None)。"""
 

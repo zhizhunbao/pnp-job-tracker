@@ -8,3 +8,16 @@
 
 ALTER TABLE stats_city ADD COLUMN IF NOT EXISTS pilot varchar;
 ALTER TABLE stats_city ADD COLUMN IF NOT EXISTS pilot_community varchar;
+
+-- 同日当晚追加:大类分布随快照聚合(jsonb {大类: 在招数})——「行业对比」表改读快照,
+-- 原 jobs 现查在 IO 弱库上一次缓存失效全表扫 ~30s(pg_stat_activity 实拍),城市段从此零现查。
+ALTER TABLE stats_city ADD COLUMN IF NOT EXISTS by_broad jsonb;
+
+-- 批二(同日晚,Frank「城市的人口 gdp 失业率 没有吗」):cities 维度挂五格城市刻度
+-- (statcan 域段6:CSD 人口 17-10-0155 + CMA 失业率 14-10-0459;GDP 城市级止 2022 评估不上)。
+-- 🔴 unemp_rate 是 CMA 口径(素里=温哥华都会区值),展示层列名写「都会区失业率」。
+ALTER TABLE cities ADD COLUMN IF NOT EXISTS population integer;
+ALTER TABLE cities ADD COLUMN IF NOT EXISTS pop_period varchar;
+ALTER TABLE cities ADD COLUMN IF NOT EXISTS unemp_rate numeric;
+ALTER TABLE cities ADD COLUMN IF NOT EXISTS unemp_period varchar;
+ALTER TABLE cities ADD COLUMN IF NOT EXISTS cma varchar;

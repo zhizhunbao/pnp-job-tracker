@@ -501,3 +501,255 @@ CUBES_FAIL_TPL = "✗ {n}/{total} 张表未更新(见上)—— 保留旧表,本
 
 CUBES_DONE_TPL = "✓ {n} 张表全过 → {path}"
 """段5 收尾报数。"""
+
+# =========================================================================
+# 6. 城市刻度(把脉页城市段批二:CSD 人口 + CMA 失业率;2026-09-11 Frank「城市的人口 gdp 失业率 没有吗」)
+# =========================================================================
+
+CITY_POP_PID = 17100155
+"""CSD 人口表(Population estimates, July 1, by census subdivision, 2021 boundaries;年度,CURRENT)。
+2026-09-11 WDS metadata 现查定案:前代 17100142(2016 边界)已 inactive 止于 2022。"""
+
+CITY_UNEMP_PID = 14100459
+"""CMA 失业率表(Labour force characteristics by census metropolitan area, three-month moving
+average, seasonally adjusted;月度,CURRENT,现查数据到 2026-08)。前代 14100380 已 inactive。
+🔴 口径:失业率官方只到都会区(CMA)级 —— 素里显示的是温哥华都会区的值,展示层列名必须
+写「都会区失业率」,不假装是本市;不在任何 CMA 的城市这格留空(宁缺不混省级口径,省级在省份段)。
+GDP 同日评估结论:城市级只有 36100468(CMA 年度)且现查止于 2022(滞后 4 年)—— 不上,省级已有。"""
+
+CITY_LF_DIM = "Labour force characteristics"
+"""14100459 的特征维名。"""
+
+CITY_LF_MEMBER = "Unemployment rate"
+"""特征维成员:失业率。"""
+
+CITY_STAT_DIM = "Statistics"
+"""14100459 的统计维名。"""
+
+CITY_STAT_MEMBER = "Estimate"
+"""统计维成员:估计值。"""
+
+CITY_DT_DIM = "Data type"
+"""14100459 的数据类型维名。"""
+
+CITY_DT_MEMBER = "Seasonally adjusted"
+"""数据类型维成员:季调。"""
+
+CITY_POP_LATEST_N = 2
+"""人口取最近两期(最新期偶有空点,退一期)。"""
+
+CITY_UNEMP_LATEST_N = 3
+"""失业率取最近三月(月度表,最新月偶有空点)。"""
+
+CITY_KEY_SEP = "|"
+"""城市键分隔(City|省码;与 mart 译名表同形)。"""
+
+CSD_NAME_RE = r"^(?P<base>.+?) \((?P<typ>[^()]*)\), (?P<prov>[A-Za-z .]+)$"
+"""CSD 成员名拆形('Surrey (CY), British Columbia' → base + 市制类型 + 省全名;双语名 base
+再取 ' / ' 前的英文半)。base 里带逗号的('Thunder Bay, Unorganized')自然匹配不上任何城市键,
+不用另滤。"""
+
+CSD_TYPE_PREF = ("CV", "CY", "C", "V", "RGM", "SM", "T", "MU", "VL", "DM")
+"""同省同名多个 CSD 时的市制优先序(城 > 镇 > 区):Langley 城(CY)与 Langley 乡(DM)、
+North Vancouver 城与区、Hamilton 城(C)与乡镇(TP)、Moncton/Bathurst 城(C)与堂区(P)同名 ——
+取排前的;优先序里都没有或同级撞名 = 歧义整城丢弃(打 ⚠ 不猜)。首跑实撞补 C(安省/NB 的
+「City」在这张表缩写 C 不是 CY)。"""
+
+CSD_BILINGUAL_SEP = " / "
+"""双语 CSD 名分隔('Greater Sudbury / Grand Sudbury')。"""
+
+OUT_CITY_MACRO = paths.STATCAN / "city_macro.json"
+"""段6 输出:一城一行(population/popPeriod/unempRate/unempPeriod/cma;官方没有 = null,
+不折 0)。消费端 = mart 段9 维度装配并进 cities 表。"""
+
+CITY_MACRO_SRC = (
+    "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015501",
+    "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410045901",
+)
+"""两张表的官方页(落盘 source;URL→数据→SQL 铁律的 URL 一环)。"""
+
+CITY_CMA = {
+    # ── 大多伦多(Toronto CMA)──
+    "Toronto|ON": "Toronto, Ontario", "Mississauga|ON": "Toronto, Ontario",
+    "Brampton|ON": "Toronto, Ontario", "Markham|ON": "Toronto, Ontario",
+    "Vaughan|ON": "Toronto, Ontario", "Richmond Hill|ON": "Toronto, Ontario",
+    "Oakville|ON": "Toronto, Ontario", "Milton|ON": "Toronto, Ontario",
+    "Pickering|ON": "Toronto, Ontario", "Ajax|ON": "Toronto, Ontario",
+    "Newmarket|ON": "Toronto, Ontario", "Aurora|ON": "Toronto, Ontario",
+    "Caledon|ON": "Toronto, Ontario", "Halton Hills|ON": "Toronto, Ontario",
+    "Stouffville|ON": "Toronto, Ontario", "Georgetown|ON": "Toronto, Ontario",
+    "Bolton|ON": "Toronto, Ontario",
+    "Scarborough|ON": "Toronto, Ontario", "North York|ON": "Toronto, Ontario",
+    "Etobicoke|ON": "Toronto, Ontario", "East York|ON": "Toronto, Ontario",
+    "York|ON": "Toronto, Ontario", "Thornhill|ON": "Toronto, Ontario",
+    "Concord|ON": "Toronto, Ontario", "Woodbridge|ON": "Toronto, Ontario",
+    "Maple|ON": "Toronto, Ontario",
+    # ── 安省其余 CMA ──
+    "Oshawa|ON": "Oshawa, Ontario", "Whitby|ON": "Oshawa, Ontario",
+    "Hamilton|ON": "Hamilton, Ontario", "Burlington|ON": "Hamilton, Ontario",
+    "Stoney Creek|ON": "Hamilton, Ontario",
+    "Kitchener|ON": "Kitchener-Cambridge-Waterloo, Ontario",
+    "Waterloo|ON": "Kitchener-Cambridge-Waterloo, Ontario",
+    "Cambridge|ON": "Kitchener-Cambridge-Waterloo, Ontario",
+    "St. Catharines|ON": "St. Catharines-Niagara, Ontario",
+    "Niagara Falls|ON": "St. Catharines-Niagara, Ontario",
+    "Welland|ON": "St. Catharines-Niagara, Ontario",
+    "Niagara-on-the-Lake|ON": "St. Catharines-Niagara, Ontario",
+    "London|ON": "London, Ontario", "Windsor|ON": "Windsor, Ontario",
+    "Guelph|ON": "Guelph, Ontario", "Brantford|ON": "Brantford, Ontario",
+    "Kingston|ON": "Kingston, Ontario", "Peterborough|ON": "Peterborough, Ontario",
+    "Barrie|ON": "Barrie, Ontario", "Belleville|ON": "Belleville - Quinte West, Ontario",
+    "Greater Sudbury|ON": "Greater Sudbury, Ontario", "Sudbury|ON": "Greater Sudbury, Ontario",
+    "Thunder Bay|ON": "Thunder Bay, Ontario",
+    "Ottawa|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    "Nepean|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    "Kanata|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    "Orléans|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    "Gloucester|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    "Stittsville|ON": "Ottawa-Gatineau, Ontario part, Ontario/Quebec",
+    # ── 魁省 ──
+    "Gatineau|QC": "Ottawa-Gatineau, Quebec part, Ontario/Quebec",
+    "Montréal|QC": "Montréal, Quebec", "Laval|QC": "Montréal, Quebec",
+    "Longueuil|QC": "Montréal, Quebec", "Brossard|QC": "Montréal, Quebec",
+    "Terrebonne|QC": "Montréal, Quebec", "Repentigny|QC": "Montréal, Quebec",
+    "Dorval|QC": "Montréal, Quebec", "Pointe-Claire|QC": "Montréal, Quebec",
+    "Westmount|QC": "Montréal, Quebec", "Mont-Royal|QC": "Montréal, Quebec",
+    "Outremont|QC": "Montréal, Quebec", "LaSalle|QC": "Montréal, Quebec",
+    "Lachine|QC": "Montréal, Quebec", "Saint-Laurent|QC": "Montréal, Quebec",
+    "Saint-Léonard|QC": "Montréal, Quebec", "Anjou|QC": "Montréal, Quebec",
+    "Côte-Saint-Luc|QC": "Montréal, Quebec", "Cote-Saint-Luc|QC": "Montréal, Quebec",
+    "Hampstead|QC": "Montréal, Quebec", "Boucherville|QC": "Montréal, Quebec",
+    "Saint-Hubert|QC": "Montréal, Quebec", "Sainte-Julie|QC": "Montréal, Quebec",
+    "La Prairie|QC": "Montréal, Quebec", "Vaudreuil-Dorion|QC": "Montréal, Quebec",
+    "Mirabel|QC": "Montréal, Quebec", "Blainville|QC": "Montréal, Quebec",
+    "Boisbriand|QC": "Montréal, Quebec", "Mascouche|QC": "Montréal, Quebec",
+    "Saint-Eustache|QC": "Montréal, Quebec", "Beloeil|QC": "Montréal, Quebec",
+    "Saint-Bruno-de-Montarville|QC": "Montréal, Quebec",
+    "Pointe-aux-Trembles|QC": "Montréal, Quebec",
+    "Québec|QC": "Québec, Quebec", "Quebec City|QC": "Québec, Quebec",
+    "Lévis|QC": "Québec, Quebec", "L'Ancienne-Lorette|QC": "Québec, Quebec",
+    "Saint-Augustin-de-Desmaures|QC": "Québec, Quebec",
+    "Sherbrooke|QC": "Sherbrooke, Quebec", "Magog|QC": "Sherbrooke, Quebec",
+    "Trois-Rivières|QC": "Trois-Rivières, Quebec", "Bécancour|QC": "Trois-Rivières, Quebec",
+    "Saguenay|QC": "Saguenay, Quebec", "Chicoutimi|QC": "Saguenay, Quebec",
+    "Jonquière|QC": "Saguenay, Quebec", "Drummondville|QC": "Drummondville, Québec",
+    # ── 草原三省 ──
+    "Winnipeg|MB": "Winnipeg, Manitoba", "Rosser|MB": "Winnipeg, Manitoba",
+    "Regina|SK": "Regina, Saskatchewan", "Saskatoon|SK": "Saskatoon, Saskatchewan",
+    "Calgary|AB": "Calgary, Alberta", "Airdrie|AB": "Calgary, Alberta",
+    "Chestermere|AB": "Calgary, Alberta", "Rocky View|AB": "Calgary, Alberta",
+    "Edmonton|AB": "Edmonton, Alberta", "St. Albert|AB": "Edmonton, Alberta",
+    "Sherwood Park|AB": "Edmonton, Alberta", "Spruce Grove|AB": "Edmonton, Alberta",
+    "Leduc|AB": "Edmonton, Alberta", "Nisku|AB": "Edmonton, Alberta",
+    "Lethbridge|AB": "Lethbridge, Alberta", "Red Deer|AB": "Red Deer, Alberta",
+    # ── BC ──
+    "Vancouver|BC": "Vancouver, British Columbia", "Surrey|BC": "Vancouver, British Columbia",
+    "Burnaby|BC": "Vancouver, British Columbia", "Richmond|BC": "Vancouver, British Columbia",
+    "Coquitlam|BC": "Vancouver, British Columbia",
+    "Port Coquitlam|BC": "Vancouver, British Columbia",
+    "Langley|BC": "Vancouver, British Columbia", "Aldergrove|BC": "Vancouver, British Columbia",
+    "Delta|BC": "Vancouver, British Columbia",
+    "North Vancouver|BC": "Vancouver, British Columbia",
+    "West Vancouver|BC": "Vancouver, British Columbia",
+    "New Westminster|BC": "Vancouver, British Columbia",
+    "Maple Ridge|BC": "Vancouver, British Columbia",
+    "Pitt Meadows|BC": "Vancouver, British Columbia",
+    "Port Moody|BC": "Vancouver, British Columbia",
+    "White Rock|BC": "Vancouver, British Columbia",
+    "Abbotsford|BC": "Abbotsford-Mission, British Columbia",
+    "Mission|BC": "Abbotsford-Mission, British Columbia",
+    "Kelowna|BC": "Kelowna, British Columbia", "West Kelowna|BC": "Kelowna, British Columbia",
+    "Kamloops|BC": "Kamloops, British Columbia", "Chilliwack|BC": "Chilliwack, British Columbia",
+    "Nanaimo|BC": "Nanaimo, British Columbia",
+    "Victoria|BC": "Victoria, British Columbia", "Saanich|BC": "Victoria, British Columbia",
+    "Saanichton|BC": "Victoria, British Columbia", "Langford|BC": "Victoria, British Columbia",
+    "Sidney|BC": "Victoria, British Columbia", "Esquimalt|BC": "Victoria, British Columbia",
+    # ── 大西洋四省 ──
+    "Halifax|NS": "Halifax, Nova Scotia", "Dartmouth|NS": "Halifax, Nova Scotia",
+    "Bedford|NS": "Halifax, Nova Scotia", "Lower Sackville|NS": "Halifax, Nova Scotia",
+    "Moncton|NB": "Moncton, New Brunswick", "Dieppe|NB": "Moncton, New Brunswick",
+    "Saint John|NB": "Saint John, New Brunswick", "Fredericton|NB": "Fredericton, New Brunswick",
+    "St. John's|NL": "St. John's, Newfoundland and Labrador",
+    "Mount Pearl|NL": "St. John's, Newfoundland and Labrador",
+}
+"""城市 → 所在 CMA 的 Geography 成员名(14100459 逐字)。人工核定表(机制照译名表 #151:
+只收拿得准的 2021 普查 CMA 构成,拿不准不收显空;多伦多市内社区/自治市并 Toronto CMA,
+渥太华社区并 Ottawa-Gatineau 安省半)。2026-09-11 lead 逐键核定。"""
+
+CITY_POP_EXTRA = (
+    "Fort McMurray|AB", "Grande Prairie|AB", "Medicine Hat|AB", "Cold Lake|AB", "Canmore|AB",
+    "Banff|AB", "Okotoks|AB",
+    "Moose Jaw|SK", "Prince Albert|SK", "Swift Current|SK", "Yorkton|SK", "North Battleford|SK",
+    "Estevan|SK", "Weyburn|SK",
+    "Brandon|MB", "Steinbach|MB", "Altona|MB",
+    "Sault Ste. Marie|ON", "North Bay|ON", "Timmins|ON", "Cornwall|ON", "Sarnia|ON",
+    "Woodstock|ON", "Stratford|ON", "Collingwood|ON", "Orillia|ON", "Leamington|ON",
+    "Orangeville|ON",
+    "Prince George|BC", "Vernon|BC", "Penticton|BC", "Squamish|BC", "Whistler|BC",
+    "Courtenay|BC", "Campbell River|BC", "Duncan|BC", "Fernie|BC", "Cranbrook|BC",
+    "Revelstoke|BC", "Prince Rupert|BC", "Fort St. John|BC", "Dawson Creek|BC",
+    "Williams Lake|BC", "Terrace|BC", "Golden|BC", "Parksville|BC", "Port Alberni|BC",
+    "Rimouski|QC", "Granby|QC", "Victoriaville|QC", "Val-d'Or|QC", "Rouyn-Noranda|QC",
+    "Sept-Îles|QC", "Shawinigan|QC", "Joliette|QC", "Saint-Georges|QC", "Saint-Hyacinthe|QC",
+    "Saint-Jean-sur-Richelieu|QC", "Salaberry-de-Valleyfield|QC", "Alma|QC", "Baie-Comeau|QC",
+    "Thetford Mines|QC", "Matane|QC", "Saint-Jérôme|QC", "Montmagny|QC",
+    "Truro|NS", "Summerside|PE", "Charlottetown|PE", "Corner Brook|NL", "Gander|NL",
+    "Bathurst|NB", "Miramichi|NB",
+)
+"""CMA 外还要人口的城市(试点社区 + 职位板长尾大城;失业率无 CMA 口径留空)。
+CSD 表里没有同名条目的(如 Fort McMurray 归 Wood Buffalo 特设市)自然落空,不做别名映射 ——
+拿不准不编(#151 同判)。"""
+
+CITY_POP_PROBE_CITY = "Toronto|ON"
+"""人口自校抽样键。"""
+
+CITY_POP_PROBE_MIN = 2_000_000
+"""多伦多市人口量级线(2021 普查 279 万;低于 200 万 = 坐标错位/表改版)。"""
+
+CITY_UNEMP_PROBE_CMA = "Toronto, Ontario"
+"""失业率自校抽样 CMA。"""
+
+CITY_UNEMP_PROBE_MIN = 2.0
+"""失业率下限(百分点;低于 2 = 疑似取错格)。"""
+
+CITY_UNEMP_PROBE_MAX = 25.0
+"""失业率上限(高于 25 = 疑似取错格)。"""
+
+CITY_PRINT_OUT_TPL = "OUT={path}"
+"""段6 开工报输出。"""
+
+CITY_DONE_TPL = "✓ city_macro: {rows} 城(人口 {pops} 城 / 失业率 {unemps} 城,CMA {cmas} 个)→ {out}"
+"""段6 收尾报数。"""
+
+CITY_AMBIG_TPL = "  ⚠ CSD 同名歧义丢弃: {key}"
+"""同省同名多个 CSD(不猜哪个,整城留空)。"""
+
+CITY_PROBE_FAIL_TPL = "city_macro 自校未过: {what}={value}"
+"""段6 自校报错。"""
+
+K_CITY_ROWS = "rows"
+"""city_macro 落盘键:行清单。"""
+
+K_CITY = "city"
+"""行键:城市英文名。"""
+
+K_PROVINCE = "province"
+"""行键:两位省码。"""
+
+K_POP_VAL = "population"
+"""行键:CSD 人口(官方没有 = null)。"""
+
+K_POP_PERIOD = "popPeriod"
+"""行键:人口的期标(refPer)。"""
+
+K_UNEMP_RATE = "unempRate"
+"""行键:所在 CMA 失业率(百分点;不在 CMA = null)。"""
+
+K_UNEMP_PERIOD = "unempPeriod"
+"""行键:失业率的期标(refPer,月)。"""
+
+K_CMA = "cma"
+"""行键:所在 CMA 成员名(有失业率才有)。"""
+
+K_PIDS = "pids"
+"""city_macro 落盘键:两张表号。"""

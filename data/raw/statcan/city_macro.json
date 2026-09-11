@@ -1,0 +1,2065 @@
+{
+ "source": [
+  "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710015501",
+  "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410045901"
+ ],
+ "pids": [
+  17100155,
+  14100459
+ ],
+ "fetched": "2026-09-11",
+ "rows": [
+  {
+   "city": "Abbotsford",
+   "province": "BC",
+   "population": 175358,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Abbotsford-Mission, British Columbia"
+  },
+  {
+   "city": "Airdrie",
+   "province": "AB",
+   "population": 92544,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Calgary, Alberta"
+  },
+  {
+   "city": "Ajax",
+   "province": "ON",
+   "population": 141111,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Aldergrove",
+   "province": "BC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Alma",
+   "province": "QC",
+   "population": 30659,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Altona",
+   "province": "MB",
+   "population": 4989,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Anjou",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Aurora",
+   "province": "ON",
+   "population": 67385,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Baie-Comeau",
+   "province": "QC",
+   "population": 20660,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Banff",
+   "province": "AB",
+   "population": 11402,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Barrie",
+   "province": "ON",
+   "population": 174469,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.1,
+   "unempPeriod": "2026-08-01",
+   "cma": "Barrie, Ontario"
+  },
+  {
+   "city": "Bathurst",
+   "province": "NB",
+   "population": 13331,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Bedford",
+   "province": "NS",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Halifax, Nova Scotia"
+  },
+  {
+   "city": "Belleville",
+   "province": "ON",
+   "population": 62914,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Belleville - Quinte West, Ontario"
+  },
+  {
+   "city": "Beloeil",
+   "province": "QC",
+   "population": 25240,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Blainville",
+   "province": "QC",
+   "population": 61739,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Boisbriand",
+   "province": "QC",
+   "population": 29830,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Bolton",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Boucherville",
+   "province": "QC",
+   "population": 41910,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Brampton",
+   "province": "ON",
+   "population": 777759,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Brandon",
+   "province": "MB",
+   "population": 59444,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Brantford",
+   "province": "ON",
+   "population": 123521,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Brantford, Ontario"
+  },
+  {
+   "city": "Brossard",
+   "province": "QC",
+   "population": 97597,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Burlington",
+   "province": "ON",
+   "population": 197737,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Hamilton, Ontario"
+  },
+  {
+   "city": "Burnaby",
+   "province": "BC",
+   "population": 299682,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Bécancour",
+   "province": "QC",
+   "population": 14943,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Trois-Rivières, Quebec"
+  },
+  {
+   "city": "Caledon",
+   "province": "ON",
+   "population": 90201,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Calgary",
+   "province": "AB",
+   "population": 1612834,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Calgary, Alberta"
+  },
+  {
+   "city": "Cambridge",
+   "province": "ON",
+   "population": 165354,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kitchener-Cambridge-Waterloo, Ontario"
+  },
+  {
+   "city": "Campbell River",
+   "province": "BC",
+   "population": 38300,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Canmore",
+   "province": "AB",
+   "population": 17341,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Charlottetown",
+   "province": "PE",
+   "population": 48118,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Chestermere",
+   "province": "AB",
+   "population": 31671,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Calgary, Alberta"
+  },
+  {
+   "city": "Chicoutimi",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 3.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Saguenay, Quebec"
+  },
+  {
+   "city": "Chilliwack",
+   "province": "BC",
+   "population": 105520,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Chilliwack, British Columbia"
+  },
+  {
+   "city": "Cold Lake",
+   "province": "AB",
+   "population": 17798,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Collingwood",
+   "province": "ON",
+   "population": 28366,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Concord",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Coquitlam",
+   "province": "BC",
+   "population": 173599,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Corner Brook",
+   "province": "NL",
+   "population": 20549,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Cornwall",
+   "province": "ON",
+   "population": 54346,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Cote-Saint-Luc",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Courtenay",
+   "province": "BC",
+   "population": 32869,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Cranbrook",
+   "province": "BC",
+   "population": 22703,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Côte-Saint-Luc",
+   "province": "QC",
+   "population": 37901,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Dartmouth",
+   "province": "NS",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Halifax, Nova Scotia"
+  },
+  {
+   "city": "Dawson Creek",
+   "province": "BC",
+   "population": 13635,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Delta",
+   "province": "BC",
+   "population": 124670,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Dieppe",
+   "province": "NB",
+   "population": 35986,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Moncton, New Brunswick"
+  },
+  {
+   "city": "Dorval",
+   "province": "QC",
+   "population": 21062,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Drummondville",
+   "province": "QC",
+   "population": 85560,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Drummondville, Québec"
+  },
+  {
+   "city": "Duncan",
+   "province": "BC",
+   "population": 5745,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "East York",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Edmonton",
+   "province": "AB",
+   "population": 1238295,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "Esquimalt",
+   "province": "BC",
+   "population": 19512,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Estevan",
+   "province": "SK",
+   "population": 11391,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Etobicoke",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Fernie",
+   "province": "BC",
+   "population": 7086,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Fort McMurray",
+   "province": "AB",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Fort St. John",
+   "province": "BC",
+   "population": 24383,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Fredericton",
+   "province": "NB",
+   "population": 74655,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6,
+   "unempPeriod": "2026-08-01",
+   "cma": "Fredericton, New Brunswick"
+  },
+  {
+   "city": "Gander",
+   "province": "NL",
+   "population": 12707,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Gatineau",
+   "province": "QC",
+   "population": 306105,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Quebec part, Ontario/Quebec"
+  },
+  {
+   "city": "Georgetown",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Gloucester",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "Golden",
+   "province": "BC",
+   "population": 4433,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Granby",
+   "province": "QC",
+   "population": 72180,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Grande Prairie",
+   "province": "AB",
+   "population": 71160,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Greater Sudbury",
+   "province": "ON",
+   "population": 188504,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Greater Sudbury, Ontario"
+  },
+  {
+   "city": "Guelph",
+   "province": "ON",
+   "population": 160760,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Guelph, Ontario"
+  },
+  {
+   "city": "Halifax",
+   "province": "NS",
+   "population": 516822,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Halifax, Nova Scotia"
+  },
+  {
+   "city": "Halton Hills",
+   "province": "ON",
+   "population": 68265,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Hamilton",
+   "province": "ON",
+   "population": 640465,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Hamilton, Ontario"
+  },
+  {
+   "city": "Hampstead",
+   "province": "QC",
+   "population": 7464,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Joliette",
+   "province": "QC",
+   "population": 22408,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Jonquière",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 3.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Saguenay, Quebec"
+  },
+  {
+   "city": "Kamloops",
+   "province": "BC",
+   "population": 108793,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kamloops, British Columbia"
+  },
+  {
+   "city": "Kanata",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "Kelowna",
+   "province": "BC",
+   "population": 167654,
+   "popPeriod": "2025-01-01",
+   "unempRate": 9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kelowna, British Columbia"
+  },
+  {
+   "city": "Kingston",
+   "province": "ON",
+   "population": 149527,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kingston, Ontario"
+  },
+  {
+   "city": "Kitchener",
+   "province": "ON",
+   "population": 323917,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kitchener-Cambridge-Waterloo, Ontario"
+  },
+  {
+   "city": "L'Ancienne-Lorette",
+   "province": "QC",
+   "population": 17876,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Québec, Quebec"
+  },
+  {
+   "city": "La Prairie",
+   "province": "QC",
+   "population": 27159,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "LaSalle",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Lachine",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Langford",
+   "province": "BC",
+   "population": 59664,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Langley",
+   "province": "BC",
+   "population": 35444,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Laval",
+   "province": "QC",
+   "population": 461509,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Leamington",
+   "province": "ON",
+   "population": 34653,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Leduc",
+   "province": "AB",
+   "population": 39966,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "Lethbridge",
+   "province": "AB",
+   "population": 113671,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.6,
+   "unempPeriod": "2026-08-01",
+   "cma": "Lethbridge, Alberta"
+  },
+  {
+   "city": "London",
+   "province": "ON",
+   "population": 494785,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "London, Ontario"
+  },
+  {
+   "city": "Longueuil",
+   "province": "QC",
+   "population": 268530,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Lower Sackville",
+   "province": "NS",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Halifax, Nova Scotia"
+  },
+  {
+   "city": "Lévis",
+   "province": "QC",
+   "population": 160882,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Québec, Quebec"
+  },
+  {
+   "city": "Magog",
+   "province": "QC",
+   "population": 30764,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Sherbrooke, Quebec"
+  },
+  {
+   "city": "Maple Ridge",
+   "province": "BC",
+   "population": 105925,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Maple",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Markham",
+   "province": "ON",
+   "population": 371504,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Mascouche",
+   "province": "QC",
+   "population": 56897,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Matane",
+   "province": "QC",
+   "population": 14180,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Medicine Hat",
+   "province": "AB",
+   "population": 68714,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Milton",
+   "province": "ON",
+   "population": 157345,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Mirabel",
+   "province": "QC",
+   "population": 68471,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Miramichi",
+   "province": "NB",
+   "population": 19402,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Mission",
+   "province": "BC",
+   "population": 47280,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Abbotsford-Mission, British Columbia"
+  },
+  {
+   "city": "Mississauga",
+   "province": "ON",
+   "population": 764597,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Moncton",
+   "province": "NB",
+   "population": 102378,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Moncton, New Brunswick"
+  },
+  {
+   "city": "Mont-Royal",
+   "province": "QC",
+   "population": 22821,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Montmagny",
+   "province": "QC",
+   "population": 11326,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Montréal",
+   "province": "QC",
+   "population": 1915366,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Moose Jaw",
+   "province": "SK",
+   "population": 36337,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Mount Pearl",
+   "province": "NL",
+   "population": 24266,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. John's, Newfoundland and Labrador"
+  },
+  {
+   "city": "Nanaimo",
+   "province": "BC",
+   "population": 111845,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Nanaimo, British Columbia"
+  },
+  {
+   "city": "Nepean",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "New Westminster",
+   "province": "BC",
+   "population": 92124,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Newmarket",
+   "province": "ON",
+   "population": 95763,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Niagara Falls",
+   "province": "ON",
+   "population": 113983,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. Catharines-Niagara, Ontario"
+  },
+  {
+   "city": "Niagara-on-the-Lake",
+   "province": "ON",
+   "population": 20080,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. Catharines-Niagara, Ontario"
+  },
+  {
+   "city": "Nisku",
+   "province": "AB",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "North Battleford",
+   "province": "SK",
+   "population": 14882,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "North Bay",
+   "province": "ON",
+   "population": 62062,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "North Vancouver",
+   "province": "BC",
+   "population": 66624,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "North York",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Oakville",
+   "province": "ON",
+   "population": 243107,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Okotoks",
+   "province": "AB",
+   "population": 33482,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Orangeville",
+   "province": "ON",
+   "population": 33070,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Orillia",
+   "province": "ON",
+   "population": 37735,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Orléans",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "Oshawa",
+   "province": "ON",
+   "population": 213592,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Oshawa, Ontario"
+  },
+  {
+   "city": "Ottawa",
+   "province": "ON",
+   "population": 1188114,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "Outremont",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Parksville",
+   "province": "BC",
+   "population": 15371,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Penticton",
+   "province": "BC",
+   "population": 39068,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Peterborough",
+   "province": "ON",
+   "population": 97834,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Peterborough, Ontario"
+  },
+  {
+   "city": "Pickering",
+   "province": "ON",
+   "population": 118378,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Pitt Meadows",
+   "province": "BC",
+   "population": 20892,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Pointe-Claire",
+   "province": "QC",
+   "population": 37437,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Pointe-aux-Trembles",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Port Alberni",
+   "province": "BC",
+   "population": 19671,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Port Coquitlam",
+   "province": "BC",
+   "population": 67724,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Port Moody",
+   "province": "BC",
+   "population": 38285,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Prince Albert",
+   "province": "SK",
+   "population": 40728,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Prince George",
+   "province": "BC",
+   "population": 85944,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Prince Rupert",
+   "province": "BC",
+   "population": 12903,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Quebec City",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 4.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Québec, Quebec"
+  },
+  {
+   "city": "Québec",
+   "province": "QC",
+   "population": 592658,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Québec, Quebec"
+  },
+  {
+   "city": "Red Deer",
+   "province": "AB",
+   "population": 115409,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Red Deer, Alberta"
+  },
+  {
+   "city": "Regina",
+   "province": "SK",
+   "population": 263419,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Regina, Saskatchewan"
+  },
+  {
+   "city": "Repentigny",
+   "province": "QC",
+   "population": 91290,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Revelstoke",
+   "province": "BC",
+   "population": 9464,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Richmond Hill",
+   "province": "ON",
+   "population": 222031,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Richmond",
+   "province": "BC",
+   "population": 239584,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Rimouski",
+   "province": "QC",
+   "population": 51756,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Rocky View",
+   "province": "AB",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Calgary, Alberta"
+  },
+  {
+   "city": "Rosser",
+   "province": "MB",
+   "population": 1481,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Winnipeg, Manitoba"
+  },
+  {
+   "city": "Rouyn-Noranda",
+   "province": "QC",
+   "population": 43270,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saanichton",
+   "province": "BC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Saanich",
+   "province": "BC",
+   "population": 126011,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Saguenay",
+   "province": "QC",
+   "population": 151972,
+   "popPeriod": "2025-01-01",
+   "unempRate": 3.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Saguenay, Quebec"
+  },
+  {
+   "city": "Saint John",
+   "province": "NB",
+   "population": 79371,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Saint John, New Brunswick"
+  },
+  {
+   "city": "Saint-Augustin-de-Desmaures",
+   "province": "QC",
+   "population": 20864,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Québec, Quebec"
+  },
+  {
+   "city": "Saint-Bruno-de-Montarville",
+   "province": "QC",
+   "population": 26786,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Saint-Eustache",
+   "province": "QC",
+   "population": 47562,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Saint-Georges",
+   "province": "QC",
+   "population": 33881,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saint-Hubert",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Saint-Hyacinthe",
+   "province": "QC",
+   "population": 60874,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saint-Jean-sur-Richelieu",
+   "province": "QC",
+   "population": 100806,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saint-Jérôme",
+   "province": "QC",
+   "population": 85160,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saint-Laurent",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Saint-Léonard",
+   "province": "QC",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Sainte-Julie",
+   "province": "QC",
+   "population": 30981,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Salaberry-de-Valleyfield",
+   "province": "QC",
+   "population": 47002,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Sarnia",
+   "province": "ON",
+   "population": 80539,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Saskatoon",
+   "province": "SK",
+   "population": 318067,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.6,
+   "unempPeriod": "2026-08-01",
+   "cma": "Saskatoon, Saskatchewan"
+  },
+  {
+   "city": "Sault Ste. Marie",
+   "province": "ON",
+   "population": 81182,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Scarborough",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Sept-Îles",
+   "province": "QC",
+   "population": 24483,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Shawinigan",
+   "province": "QC",
+   "population": 51739,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Sherbrooke",
+   "province": "QC",
+   "population": 184135,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Sherbrooke, Quebec"
+  },
+  {
+   "city": "Sherwood Park",
+   "province": "AB",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "Sidney",
+   "province": "BC",
+   "population": 13445,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Spruce Grove",
+   "province": "AB",
+   "population": 44575,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "Squamish",
+   "province": "BC",
+   "population": 28578,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "St. Albert",
+   "province": "AB",
+   "population": 74621,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Edmonton, Alberta"
+  },
+  {
+   "city": "St. Catharines",
+   "province": "ON",
+   "population": 153865,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. Catharines-Niagara, Ontario"
+  },
+  {
+   "city": "St. John's",
+   "province": "NL",
+   "population": 128693,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. John's, Newfoundland and Labrador"
+  },
+  {
+   "city": "Steinbach",
+   "province": "MB",
+   "population": 21671,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Stittsville",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 7.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Ottawa-Gatineau, Ontario part, Ontario/Quebec"
+  },
+  {
+   "city": "Stoney Creek",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Hamilton, Ontario"
+  },
+  {
+   "city": "Stouffville",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Stratford",
+   "province": "ON",
+   "population": 36097,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Sudbury",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Greater Sudbury, Ontario"
+  },
+  {
+   "city": "Summerside",
+   "province": "PE",
+   "population": 19006,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Surrey",
+   "province": "BC",
+   "population": 703531,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Swift Current",
+   "province": "SK",
+   "population": 18154,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Terrace",
+   "province": "BC",
+   "population": 13648,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Terrebonne",
+   "province": "QC",
+   "population": 126872,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Thetford Mines",
+   "province": "QC",
+   "population": 27155,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Thornhill",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Thunder Bay",
+   "province": "ON",
+   "population": 117671,
+   "popPeriod": "2025-01-01",
+   "unempRate": 4.7,
+   "unempPeriod": "2026-08-01",
+   "cma": "Thunder Bay, Ontario"
+  },
+  {
+   "city": "Timmins",
+   "province": "ON",
+   "population": 45569,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Toronto",
+   "province": "ON",
+   "population": 3271830,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Trois-Rivières",
+   "province": "QC",
+   "population": 149934,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Trois-Rivières, Quebec"
+  },
+  {
+   "city": "Truro",
+   "province": "NS",
+   "population": 14652,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Val-d'Or",
+   "province": "QC",
+   "population": 33353,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Vancouver",
+   "province": "BC",
+   "population": 740454,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Vaudreuil-Dorion",
+   "province": "QC",
+   "population": 46413,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Vaughan",
+   "province": "ON",
+   "population": 358535,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Vernon",
+   "province": "BC",
+   "population": 49527,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Victoriaville",
+   "province": "QC",
+   "population": 49863,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Victoria",
+   "province": "BC",
+   "population": 103888,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Victoria, British Columbia"
+  },
+  {
+   "city": "Waterloo",
+   "province": "ON",
+   "population": 142450,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.2,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kitchener-Cambridge-Waterloo, Ontario"
+  },
+  {
+   "city": "Welland",
+   "province": "ON",
+   "population": 66480,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "St. Catharines-Niagara, Ontario"
+  },
+  {
+   "city": "West Kelowna",
+   "province": "BC",
+   "population": 40274,
+   "popPeriod": "2025-01-01",
+   "unempRate": 9,
+   "unempPeriod": "2026-08-01",
+   "cma": "Kelowna, British Columbia"
+  },
+  {
+   "city": "West Vancouver",
+   "province": "BC",
+   "population": 47929,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Westmount",
+   "province": "QC",
+   "population": 20377,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.3,
+   "unempPeriod": "2026-08-01",
+   "cma": "Montréal, Quebec"
+  },
+  {
+   "city": "Weyburn",
+   "province": "SK",
+   "population": 11871,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Whistler",
+   "province": "BC",
+   "population": 15090,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Whitby",
+   "province": "ON",
+   "population": 162413,
+   "popPeriod": "2025-01-01",
+   "unempRate": 8.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Oshawa, Ontario"
+  },
+  {
+   "city": "White Rock",
+   "province": "BC",
+   "population": 25057,
+   "popPeriod": "2025-01-01",
+   "unempRate": 6.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Vancouver, British Columbia"
+  },
+  {
+   "city": "Williams Lake",
+   "province": "BC",
+   "population": 11462,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Windsor",
+   "province": "ON",
+   "population": 269614,
+   "popPeriod": "2025-01-01",
+   "unempRate": 7.5,
+   "unempPeriod": "2026-08-01",
+   "cma": "Windsor, Ontario"
+  },
+  {
+   "city": "Winnipeg",
+   "province": "MB",
+   "population": 850260,
+   "popPeriod": "2025-01-01",
+   "unempRate": 5.4,
+   "unempPeriod": "2026-08-01",
+   "cma": "Winnipeg, Manitoba"
+  },
+  {
+   "city": "Woodbridge",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  },
+  {
+   "city": "Woodstock",
+   "province": "ON",
+   "population": 55572,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "Yorkton",
+   "province": "SK",
+   "population": 17543,
+   "popPeriod": "2025-01-01",
+   "unempRate": null,
+   "unempPeriod": null,
+   "cma": null
+  },
+  {
+   "city": "York",
+   "province": "ON",
+   "population": null,
+   "popPeriod": null,
+   "unempRate": 6.8,
+   "unempPeriod": "2026-08-01",
+   "cma": "Toronto, Ontario"
+  }
+ ]
+}

@@ -656,14 +656,19 @@ export const CITY_KIND_SEARCH = 'search'
 export const COL_CITY = 'city'
 
 /**
- * 城市表列键:专属通道(RCIP / FCIP 试点)。
- */
-export const COL_CITY_PILOT = 'pilot'
-
-/**
  * 城市表列键:中位年薪(城市段用年薪口径,与招聘对比横表的时薪三列各自成列)。
  */
 export const COL_CITY_WAGE = 'wage'
+
+/**
+ * 城市表列键:人口(2026-09-11 批二,StatCan CSD 年度估计)。
+ */
+export const COL_CITY_POP = 'pop'
+
+/**
+ * 城市表列键:都会区失业率(🔴 CMA 口径不是本市,列名自带「都会区」;手机档藏)。
+ */
+export const COL_CITY_UNEMP = 'unemp'
 
 /**
  * 试点社区表列键:社区名。

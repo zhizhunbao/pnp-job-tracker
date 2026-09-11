@@ -17,6 +17,7 @@ docs/design/把脉页省份段-契约-20260906.md §1:四张宏观表 → raw/st
 段3/段4 沿用搬来前的口径(抓取失败即 return,保留旧表)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
 """
+import re
 import sys
 from datetime import date, datetime, timezone
 
@@ -48,11 +49,19 @@ from statcan.constants import (
     TRP_ROW_TPL, TRP_SANITY_FAIL, TRP_SRC_URL, TRP_TYPES, TRP_UA, TYPE_DIM_WORD, V_NPR, V_POP,
     WDS_DATA_TIMEOUT_S, WDS_DATA_URL, WDS_META_TIMEOUT_S, WDS_META_URL, WDS_STATUS_FAIL_TPL,
     WDS_UA, WDS_VECTOR_FAIL_TPL,
+    CITY_AMBIG_TPL, CITY_CMA, CITY_DONE_TPL, CITY_DT_DIM, CITY_DT_MEMBER, CITY_KEY_SEP,
+    CITY_LF_DIM, CITY_LF_MEMBER, CITY_MACRO_SRC, CITY_POP_EXTRA, CITY_POP_LATEST_N,
+    CITY_POP_PID, CITY_POP_PROBE_CITY, CITY_POP_PROBE_MIN, CITY_PRINT_OUT_TPL,
+    CITY_PROBE_FAIL_TPL, CITY_STAT_DIM, CITY_STAT_MEMBER, CITY_UNEMP_LATEST_N,
+    CITY_UNEMP_PID, CITY_UNEMP_PROBE_CMA, CITY_UNEMP_PROBE_MAX, CITY_UNEMP_PROBE_MIN,
+    CSD_BILINGUAL_SEP, CSD_NAME_RE, CSD_TYPE_PREF, K_CITY, K_CITY_ROWS, K_CMA, K_PIDS,
+    K_POP_PERIOD, K_POP_VAL, K_PROVINCE, K_UNEMP_PERIOD, K_UNEMP_RATE, OUT_CITY_MACRO,
 )
 from statcan.scheme import (
     ByProvIn, CoordIn, CubeCheckIn, CubeDocIn, CubeMeta, CubePlanIn, CubePlanOut, CubePointsIn,
     DimMembers, DimOfIn, GeoIdsIn, LabelsIn, MemberIdIn, MemberIds, NprRowsIn, QuartersIn, SigIn,
     WdsDataIn, WdsDataOut,
+    CityPointsIn, CityProbeIn, CityRowIn, CsdPickIn,
 )
 
 # =========================================================================
@@ -510,3 +519,226 @@ def scrape_statcan_cubes() -> None:
         say(CUBES_FAIL_TPL.format(n=failed, total=len(CUBES)))
         sys.exit(1)
     say(CUBES_DONE_TPL.format(n=len(CUBES), path=paths.STATCAN))
+
+# =========================================================================
+# 6. 城市刻度(把脉页城市段批二:CSD 人口 + CMA 失业率 → raw/statcan/city_macro.json)
+# =========================================================================
+
+
+def city_keys() -> list:
+    """要出行的城市键全集(CITY_CMA 键 ∪ CITY_POP_EXTRA,排序去重)。"""
+    seen: set = set()
+    out: list = []
+    for key in list(CITY_CMA.keys()) + list(CITY_POP_EXTRA):
+        if key not in seen:
+            seen.add(key)
+            out.append(key)
+    out.sort()
+    return out
+
+
+def csd_key_of(member_name: str) -> str | None:
+    """一个 CSD 成员名 → 城市键(City|PP);拆不出/省不在十省表 = None。"""
+    m = re.match(CSD_NAME_RE, member_name)
+    if m is None:
+        return None
+    prov = PROV_CODE.get(m.group("prov"))
+    if prov is None:
+        return None
+    base = m.group("base")
+    if CSD_BILINGUAL_SEP in base:
+        base = base.split(CSD_BILINGUAL_SEP)[0]
+    return base + CITY_KEY_SEP + prov
+
+
+def csd_type_rank(typ: str) -> int:
+    """市制类型 → 优先序位(不在优先表 = 排最后)。"""
+    i = 0
+    for t in CSD_TYPE_PREF:
+        if t == typ:
+            return i
+        i += 1
+    return len(CSD_TYPE_PREF)
+
+
+def csd_pick(x: CsdPickIn) -> dict:
+    """Geography 维 → {城市键: memberId},只收 wanted 里的键。
+    同键多条按 CSD_TYPE_PREF 取排前的(Langley 城/乡、North Vancouver 城/区);
+    同级撞名 = 歧义整城丢弃(打 ⚠ 不猜)。"""
+    best: dict = {}
+    ambig: set = set()
+    for name, mid in x.dim.ids.items():
+        m = re.match(CSD_NAME_RE, name)
+        key = csd_key_of(name)
+        if key is None or key not in x.wanted or m is None:
+            continue
+        rank = csd_type_rank(m.group("typ"))
+        got = best.get(key)
+        if got is None or rank < got[0]:
+            best[key] = (rank, int(mid))
+            ambig.discard(key)
+            continue
+        if rank == got[0]:
+            ambig.add(key)
+    out: dict = {}
+    for key, pair in best.items():
+        if key in ambig:
+            say(CITY_AMBIG_TPL.format(key=key))
+            continue
+        out[key] = pair[1]
+    return out
+
+
+def latest_point_of(points: list) -> tuple | None:
+    """一串 vectorDataPoint → (值, refPer);全空 = None(不折 0)。"""
+    best: tuple | None = None
+    for p in points:
+        if p.get(K_VALUE) is None:
+            continue
+        ref = p.get(K_REF_PER)
+        if best is None or str(ref) > str(best[1]):
+            best = (to_number(p[K_VALUE]), str(ref))
+    return best
+
+
+def city_points_of(x: CityPointsIn) -> dict:
+    """响应块 → {geo memberId: (值, refPer)}(从块自带 coordinate 首段反解;空块不落键)。"""
+    out: dict = {}
+    for blk in x.blocks:
+        if blk.get(K_STATUS) != STATUS_SUCCESS:
+            raise RuntimeError(WDS_STATUS_FAIL_TPL.format(status=blk.get(K_STATUS)))
+        o = blk[K_OBJECT]
+        gid = int(o[K_COORDINATE].split(COORD_SEP)[0])
+        got = latest_point_of(o[K_VECTOR_DATA_POINT])
+        if got is not None:
+            out[gid] = got
+    return out
+
+
+def to_city_row(x: CityRowIn) -> dict:
+    """一城一行(键序即文件契约;官方没有 = null 不折 0)。"""
+    city, prov = x.key.split(CITY_KEY_SEP)
+    pop = None
+    pop_period = None
+    if x.pop is not None:
+        pop = x.pop[0]
+        pop_period = x.pop[1]
+    rate = None
+    rate_period = None
+    if x.unemp is not None:
+        rate = x.unemp[0]
+        rate_period = x.unemp[1]
+    return {
+        K_CITY: city, K_PROVINCE: prov,
+        K_POP_VAL: pop, K_POP_PERIOD: pop_period,
+        K_UNEMP_RATE: rate, K_UNEMP_PERIOD: rate_period,
+        K_CMA: x.cma,
+    }
+
+
+def scrape_statcan_city() -> None:
+    """城市刻度两张表 → raw/statcan/city_macro.json。
+
+    IN : WDS 17100155(CSD 人口,年度)+ 14100459(CMA 失业率,月度三月均季调)
+    OUT: raw/statcan/city_macro.json(一城一行;人工核定城市清单 CITY_CMA ∪ CITY_POP_EXTRA)
+    🔴 失业率是 CMA 口径(素里=温哥华都会区值),行里带 cma 名,展示层列名写「都会区失业率」;
+    不在 CMA 的城市该格 null。任一步抛错即整表不更新(保留旧文件)。
+    """
+    say(CITY_PRINT_OUT_TPL.format(path=OUT_CITY_MACRO))
+    wanted_list = city_keys()
+    wanted: set = set(wanted_list)
+
+    pop_meta = wds_meta(CITY_POP_PID)
+    pop_dim = dim_of(DimOfIn(meta=pop_meta, name=GEO_DIM, pid=CITY_POP_PID))
+    pop_ids = csd_pick(CsdPickIn(dim=pop_dim, wanted=wanted))
+    pop_requests: list = []
+    for mid in pop_ids.values():
+        pop_requests.append({K_PRODUCT_ID: CITY_POP_PID, K_COORDINATE: coord_str([mid]),
+                             K_LATEST_N: CITY_POP_LATEST_N})
+    pop_got = wds_data(WdsDataIn(requests=pop_requests))
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG,
+                               url=CACHE_URL_TPL.format(url=WDS_DATA_URL, pid=CITY_POP_PID),
+                               html=pop_got.text, title=pop_meta.title))
+    pop_points = city_points_of(CityPointsIn(blocks=pop_got.blocks, pid=CITY_POP_PID))
+
+    un_meta = wds_meta(CITY_UNEMP_PID)
+    un_geo = dim_of(DimOfIn(meta=un_meta, name=GEO_DIM, pid=CITY_UNEMP_PID))
+    lf = member_id_of(MemberIdIn(dim=dim_of(DimOfIn(meta=un_meta, name=CITY_LF_DIM,
+                                                    pid=CITY_UNEMP_PID)),
+                                 member=CITY_LF_MEMBER, pid=CITY_UNEMP_PID))
+    stat = member_id_of(MemberIdIn(dim=dim_of(DimOfIn(meta=un_meta, name=CITY_STAT_DIM,
+                                                      pid=CITY_UNEMP_PID)),
+                                   member=CITY_STAT_MEMBER, pid=CITY_UNEMP_PID))
+    dt = member_id_of(MemberIdIn(dim=dim_of(DimOfIn(meta=un_meta, name=CITY_DT_DIM,
+                                                    pid=CITY_UNEMP_PID)),
+                                 member=CITY_DT_MEMBER, pid=CITY_UNEMP_PID))
+    cma_ids: dict = {}
+    for cma_name in CITY_CMA.values():
+        if cma_name in cma_ids:
+            continue
+        cma_ids[cma_name] = member_id_of(MemberIdIn(dim=un_geo, member=cma_name,
+                                                    pid=CITY_UNEMP_PID))
+    un_requests: list = []
+    for gid in cma_ids.values():
+        un_requests.append({K_PRODUCT_ID: CITY_UNEMP_PID,
+                            K_COORDINATE: coord_str([gid, lf, stat, dt]),
+                            K_LATEST_N: CITY_UNEMP_LATEST_N})
+    un_got = wds_data(WdsDataIn(requests=un_requests))
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG,
+                               url=CACHE_URL_TPL.format(url=WDS_DATA_URL, pid=CITY_UNEMP_PID),
+                               html=un_got.text, title=un_meta.title))
+    un_points = city_points_of(CityPointsIn(blocks=un_got.blocks, pid=CITY_UNEMP_PID))
+
+    check_city_probe(CityProbeIn(pop_ids=pop_ids, pop_points=pop_points, cma_ids=cma_ids,
+                                 un_points=un_points))
+
+    rows: list = []
+    pops = 0
+    unemps = 0
+    for key in wanted_list:
+        pop = None
+        mid = pop_ids.get(key)
+        if mid is not None:
+            pop = pop_points.get(mid)
+        cma = CITY_CMA.get(key)
+        unemp = None
+        if cma is not None:
+            gid = cma_ids.get(cma)
+            if gid is not None:
+                unemp = un_points.get(gid)
+        if unemp is None:
+            cma = None
+        if pop is not None:
+            pops += 1
+        if unemp is not None:
+            unemps += 1
+        rows.append(to_city_row(CityRowIn(key=key, pop=pop, unemp=unemp, cma=cma)))
+    payload = {
+        K_SOURCE: list(CITY_MACRO_SRC),
+        K_PIDS: [CITY_POP_PID, CITY_UNEMP_PID],
+        K_FETCHED: today_iso(),
+        K_CITY_ROWS: rows,
+    }
+    paths.write_json(paths.WriteJsonIn(path=OUT_CITY_MACRO, payload=payload, indent=INDENT_1))
+    say(CITY_DONE_TPL.format(rows=len(rows), pops=pops, unemps=unemps, cmas=len(cma_ids),
+                             out=OUT_CITY_MACRO.name))
+
+
+def check_city_probe(x: CityProbeIn) -> None:
+    """自校:多伦多市人口过量级线 + 多伦多 CMA 失业率在合理带(未过即抛保留旧表)。"""
+    mid = x.pop_ids.get(CITY_POP_PROBE_CITY)
+    pop = None
+    if mid is not None:
+        got = x.pop_points.get(mid)
+        if got is not None:
+            pop = got[0]
+    if pop is None or pop <= CITY_POP_PROBE_MIN:
+        raise RuntimeError(CITY_PROBE_FAIL_TPL.format(what=CITY_POP_PROBE_CITY, value=pop))
+    gid = x.cma_ids.get(CITY_UNEMP_PROBE_CMA)
+    rate = None
+    if gid is not None:
+        got = x.un_points.get(gid)
+        if got is not None:
+            rate = got[0]
+    if rate is None or rate < CITY_UNEMP_PROBE_MIN or rate > CITY_UNEMP_PROBE_MAX:
+        raise RuntimeError(CITY_PROBE_FAIL_TPL.format(what=CITY_UNEMP_PROBE_CMA, value=rate))

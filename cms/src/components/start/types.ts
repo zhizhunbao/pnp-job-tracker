@@ -2174,9 +2174,24 @@ export type CityMainRow = {
   wageText: string
 
   /**
-   * 专属通道文案(RCIP / FCIP 试点);没有给 DASH_MARK。
+   * 人口(排序键;StatCan CSD 年度估计,人工核定城市清单外 null)。
    */
-  pilotText: string
+  pop: number | null
+
+  /**
+   * 人口文案;没有给 DASH_MARK。
+   */
+  popText: string
+
+  /**
+   * 都会区失业率(排序键;CMA 口径,不在 CMA null)。
+   */
+  unemp: number | null
+
+  /**
+   * 都会区失业率文案;没有给 DASH_MARK。
+   */
+  unempText: string
 }
 
 /**
@@ -2467,6 +2482,12 @@ export type CityMatchRow = {
    * 落职位板。
    */
   href: string
+
+  /**
+   * 试点绿标(RCIP / FCIP 试点;2026-09-11 通道列撤出表 1 后,试点信号在搜索建议里给);
+   * 没有是空串不渲。
+   */
+  pilotText: string
 }
 
 /**
@@ -2487,6 +2508,11 @@ export type CityMatchesIn = {
    * 界面语言。
    */
   lang: StartLang
+
+  /**
+   * 取词函数(试点绿标文案)。
+   */
+  t: TFn
 }
 
 /**

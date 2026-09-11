@@ -62,6 +62,7 @@ from mart.constants import (
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
     BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
+    IN_CITY_MACRO, K_CM_CMA, K_CM_POP, K_CM_POP_PERIOD, K_CM_UNEMP_PERIOD, K_CM_UNEMP_RATE,
     COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN, DAILY_N,
     DAILY_ROWS_TPL, DAILY_SCORE_GATE, DAILY_SLUG_TPL, DATE_FMTS, DATE_FMT_ISO, DATE_FMT_LONG,
     DATE_LEN, DEDUP_KEY_TPL, DESIGNATED_DEDUP_TPL, DIGIT_RE, DRAW_KIND_DRAW, DRAW_KIND_NOTICE,
@@ -1784,7 +1785,8 @@ def build_cities(x: CityBuildIn) -> list:
             keys.add((j.get(K_CITY), j.get(K_PROVINCE)))
     rows = []
     for c, p in sorted(keys, key=city_key_of):
-        rows.append(to_city_row(CityRowIn(name=c, province=p or "", i18n=x.i18n)))
+        rows.append(to_city_row(CityRowIn(name=c, province=p or "", i18n=x.i18n,
+                                          macro=x.macro)))
     return rows
 
 
@@ -1936,10 +1938,27 @@ def to_province_row(x: ProvinceRowIn) -> dict:
 
 
 def to_city_row(x: CityRowIn) -> dict:
-    """cities 表的一行(译名按 `<市>|<省>` 查表)。"""
-    tr = x.i18n.get(CITY_I18N_KEY_TPL.format(city=x.name, province=x.province), {})
+    """cities 表的一行(译名按 `<市>|<省>` 查表;2026-09-11 城市段批二再挂五格城市刻度 ——
+    statcan 段6 的 CSD 人口 + CMA 失业率,表外城市/官方没有 = null 不折 0)。"""
+    key = CITY_I18N_KEY_TPL.format(city=x.name, province=x.province)
+    tr = x.i18n.get(key, {})
+    m = x.macro.get(key, {})
     return {"name": x.name, "province": x.province,
-            "nameZh": tr.get("zh", ""), "nameKo": tr.get("ko", "")}
+            "nameZh": tr.get("zh", ""), "nameKo": tr.get("ko", ""),
+            K_CM_POP: m.get(K_CM_POP), K_CM_POP_PERIOD: m.get(K_CM_POP_PERIOD),
+            K_CM_UNEMP_RATE: m.get(K_CM_UNEMP_RATE), K_CM_UNEMP_PERIOD: m.get(K_CM_UNEMP_PERIOD),
+            K_CM_CMA: m.get(K_CM_CMA)}
+
+
+def load_city_macro() -> dict:
+    """城市刻度表 → {City|PP: 行}(文件缺席回空表 —— 维度装配照跑,五格整列空)。"""
+    if not IN_CITY_MACRO.exists():
+        return {}
+    doc = read_table(IN_CITY_MACRO)
+    out: dict = {}
+    for r in doc.get(K_ROWS, []):
+        out[CITY_I18N_KEY_TPL.format(city=r.get(K_CITY, ""), province=r.get(K_PROVINCE, ""))] = r
+    return out
 
 
 def to_district_row(x: DistrictRowIn) -> dict:
@@ -3283,7 +3302,8 @@ def to_mart_tables() -> dict:
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
         "closed_jobs": build_closed_jobs(ctx.no_salary), "seen_ids": sorted(ctx.seen_ids),
         "provinces": build_provinces(prov_info()),
-        "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n)),
+        "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n,
+                                           macro=load_city_macro())),
         "districts": build_districts(ctx.jobs),
         "designated_employers": build_designated(),
         "pilot_communities": build_pilot_communities(),

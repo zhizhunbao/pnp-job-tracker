@@ -722,6 +722,17 @@ export type CityRow = {
    * 城市级专属通道(RCIP / FCIP / RCIP+FCIP,mart 段19 城×省打标聚合);没有专属通道是 null。
    */
   pilot: string | null
+
+  /**
+   * CSD 人口(StatCan 17-10-0155 年度估计,2026-09-11 城市段批二;人工核定城市清单外是 null)。
+   */
+  population: number | null
+
+  /**
+   * 🔴 所在都会区(CMA)失业率(14-10-0459 月度季调)—— CMA 口径不是本市,展示层列名必须写
+   * 「都会区失业率」;不在任何 CMA 是 null。
+   */
+  unempRate: number | null
 }
 
 /**
@@ -775,9 +786,35 @@ export type CityIndustryRow = {
 }
 
 /**
+ * 城 × 大类计数行的复数。
+ */
+export type CityIndustryRows = CityIndustryRow[]
+
+/**
  * `loadCityIndustry` 的返回。
  */
-export type CityIndustryOut = Promise<CityIndustryRow[]>
+export type CityIndustryOut = Promise<CityIndustryRows>
+
+/**
+ * 城市快照的大类分布一行(SQL.CITY_INDUSTRY 的原始行;by_broad 是 seed 聚合的 jsonb,
+ * pg 驱动已解析成对象 —— 跨边界形状,读取层展开时逐格收窄)。
+ */
+export type CityBroadDbRow = {
+  /**
+   * 城市英文名(库里可空)。
+   */
+  city: string | null
+
+  /**
+   * 两位省码(库里可空)。
+   */
+  province: string | null
+
+  /**
+   * 大类 → 在招数(jsonb;没聚合到是 null)。
+   */
+  by_broad: Record<string, number | string | null> | null
+}
 
 /**
  * 大类三语名一行(SQL.CITY_BROAD_LABELS;行业对比列头)。

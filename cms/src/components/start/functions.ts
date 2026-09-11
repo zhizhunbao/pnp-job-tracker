@@ -39,7 +39,8 @@ import {
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
   TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
   BROAD_UNCLASSIFIED, CITY_IND_COLS, CITY_IND_COLS_M, CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
-  CITY_SEARCH_MAX, CITY_UTM_TAIL, COL_CITY, COL_CITY_PILOT, COL_COMM, COL_COMM_TYPE, COL_DLI_GRAD, COL_DLI_N,
+  CITY_SEARCH_MAX, CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_COMM, COL_COMM_TYPE,
+  COL_DLI_GRAD, COL_DLI_N,
   COL_CITY_WAGE, COL_DLI_PUB, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
   AXIS_CATEGORY, AXIS_VALUE, CHART_TRIGGER_AXIS, SERIES_LINE_TYPE, TREND_LINE_WIDTH, WAGE_K,
@@ -87,7 +88,6 @@ import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
 import { CityNameCell } from './citynamecell'
-import { CityPilotCell } from './citypilotcell'
 import { CityPilotTypeCell } from './citypilottypecell'
 import type { ChartOption } from '@/components/stats'
 import type { BroadLabelRow, CityRow, DailyRow, DliCityRow } from '@/lib/stats'
@@ -2108,12 +2108,15 @@ export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
       href: cityHrefOf(r.city),
       onOpen,
       open: r.openJobs,
-openText: numOrDashOf(r.openJobs),
+      openText: numOrDashOf(r.openJobs),
       new7: r.new7d,
-new7Text: numOrDashOf(r.new7d),
+      new7Text: numOrDashOf(r.new7d),
       wage: r.medianWageAnnual,
-wageText: wageOrDashOf(r.medianWageAnnual),
-      pilotText: pilotTextOf({ t: x.t, pilot: r.pilot }),
+      wageText: wageOrDashOf(r.medianWageAnnual),
+      pop: r.population,
+      popText: numOrDashOf(r.population),
+      unemp: r.unempRate,
+      unempText: pctOrDashOf(r.unempRate),
     })
   }
   return out
@@ -2133,7 +2136,9 @@ function pilotTextOf(x: PilotTextIn): string {
 }
 
 /**
- * 表 1 的列(城市 / 在招 / 近 7 天 / 中位年薪 / 专属通道;近 7 天手机档藏)。
+ * 表 1 的列(城市 / 在招 / 近 7 天 / 中位年薪;近 7 天手机档藏)。
+ * 2026-09-11 Frank「专属通道怎么是空的」:通道列撤出表 1 —— 试点全在小城长尾,首页前十城整列显杠
+ * 读作坏了;试点信号归表 3,搜索建议带试点绿标(搜到 Kelowna 可见 FCIP)。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -2151,14 +2156,56 @@ export function cityMainColsOf(x: CityColsIn): StartCol<CityMainRow>[] {
       className: cssOf(css.cityWide),
     },
     { key: COL_CITY_WAGE, label: x.t('pulse.city.wage'), nowrap: true, sort: cityWageSortOf, render: cityWageTextOf },
+    { key: COL_CITY_POP, label: x.t('pulse.city.pop'), nowrap: true, sort: cityPopSortOf, render: cityPopTextOf },
     {
-      key: COL_CITY_PILOT,
-      label: x.t('pulse.city.channel'),
+      key: COL_CITY_UNEMP,
+      label: x.t('pulse.city.unemp'),
       nowrap: true,
-      sort: cityPilotSortOf,
-      render: CityPilotCell,
+      sort: cityUnempSortOf,
+      render: cityUnempTextOf,
+      className: cssOf(css.cityWide),
     },
   ]
+}
+
+/**
+ * 表 1 人口排序键(2026-09-11 批二:StatCan CSD 年度估计)。
+ *
+ * @param r 一行。
+ * @returns 人口。
+ */
+export function cityPopSortOf(r: CityMainRow): number | null {
+  return r.pop
+}
+
+/**
+ * 表 1 人口格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function cityPopTextOf(r: CityMainRow): string {
+  return r.popText
+}
+
+/**
+ * 表 1 都会区失业率排序键(CMA 口径,列名已标都会区)。
+ *
+ * @param r 一行。
+ * @returns 失业率。
+ */
+export function cityUnempSortOf(r: CityMainRow): number | null {
+  return r.unemp
+}
+
+/**
+ * 表 1 都会区失业率格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function cityUnempTextOf(r: CityMainRow): string {
+  return r.unempText
 }
 
 /**
@@ -2229,16 +2276,6 @@ export function cityWageSortOf(r: CityMainRow): number | null {
  */
 export function cityWageTextOf(r: CityMainRow): string {
   return r.wageText
-}
-
-/**
- * 表 1 专属通道排序键(有通道排前靠文案,杠排后)。
- *
- * @param r 一行。
- * @returns 通道文案。
- */
-export function cityPilotSortOf(r: CityMainRow): string {
-  return r.pilotText
 }
 
 /**
@@ -2599,16 +2636,18 @@ grad: r.gradN,
 function dliAsCityRowOf(r: DliCityRow): CityRow {
   return {
     city: r.city,
-cityZh: r.cityZh,
-cityKo: r.cityKo,
-province: r.province,
+    cityZh: r.cityZh,
+    cityKo: r.cityKo,
+    province: r.province,
     openJobs: null,
-new7d: null,
-medianWageAnnual: null,
-medianSalaryAnnual: null,
-salaryN: null,
-namedJobs: null,
+    new7d: null,
+    medianWageAnnual: null,
+    medianSalaryAnnual: null,
+    salaryN: null,
+    namedJobs: null,
     pilot: null,
+    population: null,
+    unempRate: null,
   }
 }
 
@@ -2725,11 +2764,16 @@ export function cityMatchesOf(x: CityMatchesIn): CityMatchRow[] {
     const hitZh = r.cityZh !== TEXT_NONE && r.cityZh.includes(x.q.trim())
     const hitKo = r.cityKo !== TEXT_NONE && r.cityKo.includes(x.q.trim())
     if (hitEn || hitZh || hitKo) {
+      let pilotText = TEXT_NONE
+      if (r.pilot != null) {
+        pilotText = pilotTextOf({ t: x.t, pilot: r.pilot })
+      }
       out.push({
         key: r.city + KEY_SEP + r.province,
         name: cityNameOf({ r, lang: x.lang }),
         note: cityNoteOf({ r, lang: x.lang }) + SPACE_SEP + numOrDashOf(r.openJobs),
         href: cityHrefOf(r.city),
+        pilotText,
       })
     }
   }
@@ -2828,6 +2872,19 @@ function wageOrDashOf(n: number | null): string {
     return DASH_MARK
   }
   return WAGE_SIGN + numOf(n)
+}
+
+/**
+ * 可空失业率 → 百分号文案;null 给 DASH_MARK(不在 CMA 的城市不编数)。
+ *
+ * @param n 可空百分点。
+ * @returns 文案。
+ */
+function pctOrDashOf(n: number | null): string {
+  if (n == null) {
+    return DASH_MARK
+  }
+  return String(n) + PCT_MARK
 }
 
 /**

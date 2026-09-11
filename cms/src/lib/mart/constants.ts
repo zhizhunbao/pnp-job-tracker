@@ -461,7 +461,7 @@ export const COLS_PROVINCES = ['code', 'name', 'info']
 /**
  * cities 列。
  */
-export const COLS_CITIES = ['name', 'province', 'name_zh', 'name_ko']
+export const COLS_CITIES = ['name', 'province', 'name_zh', 'name_ko', 'population', 'pop_period', 'unemp_rate', 'unemp_period', 'cma']
 
 /**
  * districts 列。

@@ -20,8 +20,9 @@ import {
   PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
 import type {
-  BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityIndustryOut,
-  CityIndustryRow, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliCityRow, EmptyList,
+  BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
+  CityIndustryOut,
+  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliCityRow, EmptyList,
   FineCountsIn, FineRowsOut,
   MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
   StatsIn, StatsOut, StrList, StrListOut,
@@ -170,14 +171,22 @@ export async function loadCityStats(input: CityStatsIn): CityRowsOut {
 
 /**
  * 城市 × 大类在招(城市段「行业对比」表;取在招量前 CITY_IND_TOP 的城市,列由前端按体量挑)。
- * 缺表容错同 loadCityStats。
+ * 2026-09-11 当晚收紧:改读快照 by_broad(jsonb),这里把一城一格展开成一大类一行
+ * (为什么不再现查见 SQL.CITY_INDUSTRY 注释)。缺表容错同 loadCityStats。
  *
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 城 × 大类计数行。
  */
 export async function loadCityIndustry(db: Db): CityIndustryOut {
   try {
-    return await queryRows({ db: db, sql: SQL.CITY_INDUSTRY, params: [CITY_IND_TOP], map: toCityIndustryRow })
+    const res = await db.query(SQL.CITY_INDUSTRY, [CITY_IND_TOP])
+    const out: CityIndustryRow[] = []
+    for (const r of res.rows) {
+      for (const row of toCityIndustryRows(r as CityBroadDbRow)) {
+        out.push(row)
+      }
+    }
+    return out
   } catch (e) {
     if (e instanceof Error) {
       const code = pgCodeOf(e)
@@ -420,17 +429,30 @@ export function toCityRow(r: Row): CityRow {
     medianWageAnnual: numOrNull(r.median_wage_annual), medianSalaryAnnual: numOrNull(r.median_salary_annual),
     salaryN: numOrNull(r.salary_n), namedJobs: numOrNull(r.named_jobs),
     pilot: textOrNull(r.pilot),
+    population: numOrNull(r.population), unempRate: numOrNull(r.unemp_rate),
   }
 }
 
 /**
- * 一行城 × 大类计数(SQL.CITY_INDUSTRY)→ `CityIndustryRow`。
+ * 一行城市快照的 by_broad 格(SQL.CITY_INDUSTRY)→ 一大类一行的 `CityIndustryRow` 清单
+ * (jsonb 展开与数值收窄都在这里做完;非数值格丢弃不编 0)。
  *
- * @param r 库里的一行。
- * @returns 洗净的一行。
+ * @param r 库里的一行(city / province / by_broad)。
+ * @returns 洗净的行清单。
  */
-export function toCityIndustryRow(r: Row): CityIndustryRow {
-  return { city: text(r.city), province: text(r.province), broad: text(r.broad), n: count(r.n) }
+export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
+  const out: CityIndustryRow[] = []
+  const city = text(r.city)
+  const province = text(r.province)
+  if (r.by_broad == null) {
+    return out
+  }
+  for (const [broad, n] of Object.entries(r.by_broad)) {
+    if (typeof n === 'number' && broad !== '') {
+      out.push({ city, province, broad, n })
+    }
+  }
+  return out
 }
 
 /**

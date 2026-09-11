@@ -18,12 +18,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from statcan.functions import scrape_statcan_cubes, scrape_statcan_npr, scrape_statcan_tr_prov
+from statcan.functions import scrape_statcan_city, scrape_statcan_cubes, scrape_statcan_npr, scrape_statcan_tr_prov
 
 SCHEDULED = [
     ("npr_share", scrape_statcan_npr),
     ("tr_prov", scrape_statcan_tr_prov),
     ("cubes", scrape_statcan_cubes),
+    ("city", scrape_statcan_city),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步说明:
 
@@ -33,14 +34,16 @@ SCHEDULED = [
 ↓ 自校失败会 exit 1 的步骤钉在最后:排前面会把后面的一起拖掉。
 
   scrape_statcan_cubes    四张宏观表(人口 / 临时居民 / GDP / 失业率)→ raw/statcan/<pid>.json
+  scrape_statcan_city     城市刻度(CSD 人口 + CMA 失业率;2026-09-11 城市段批二)→ city_macro.json
 """
 
 TOOLS = {
     "npr_share": scrape_statcan_npr,
     "tr_prov": scrape_statcan_tr_prov,
     "cubes": scrape_statcan_cubes,
+    "city": scrape_statcan_city,
 }
-"""全部可 --only 点名的步(与默认链同一份三步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步(与默认链同一份四步,本域没有不进链的手动件)。"""
 
 
 def main() -> int:

@@ -12,6 +12,7 @@ export const StatsCity: CollectionConfig = {
     { name: 'openJobs', type: 'number' }, { name: 'new7d', type: 'number' },
     { name: 'medianWageAnnual', type: 'number' }, { name: 'medianSalaryAnnual', type: 'number' }, { name: 'salaryN', type: 'number' }, { name: 'namedJobs', type: 'number' },
     { name: 'pilot', type: 'text' }, { name: 'pilotCommunity', type: 'text' },
+    { name: 'byBroad', type: 'json' },
     { name: 'fetched', type: 'text' },
   ],
 }

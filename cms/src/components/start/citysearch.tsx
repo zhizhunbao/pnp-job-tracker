@@ -25,11 +25,12 @@ export function CitySearch({ t, lang, rows }: CitySearchIn) {
   const s = useCityQuery()
   const onOpen = makeCityTrack(CITY_KIND_SEARCH)
   const items = []
-  for (const m of cityMatchesOf({ rows, q: s.q, lang })) {
+  for (const m of cityMatchesOf({ rows, q: s.q, lang, t })) {
     items.push(
       <div key={m.key} className={css.citySearchItem}>
         <LinkButton href={m.href} onClick={onOpen} className={cssOf(css.occLink)}>{m.name}</LinkButton>
         <span className={css.note}>{m.note}</span>
+        {m.pilotText !== TEXT_NONE && <span className={css.momUp}>{m.pilotText}</span>}
       </div>,
     )
   }

@@ -272,3 +272,59 @@ class CubeDocIn:
 
     fetched: str
     """本轮抓取日。"""
+
+
+@dataclass
+class CsdPickIn:
+    """csd_pick() 入参:CSD 成员表按城市键选定(段6)。"""
+
+    dim: DimMembers
+    """17100155 的 Geography 维。"""
+
+    wanted: set
+    """要匹配的城市键集(City|PP)。"""
+
+
+@dataclass
+class CityPointsIn:
+    """city_points_of() 入参:响应块 → geoId → 最新点。"""
+
+    blocks: list
+    """WDS 响应块清单。"""
+
+    pid: int
+    """表号(报错用)。"""
+
+
+@dataclass
+class CityRowIn:
+    """to_city_row() 入参:一城一行的各格。"""
+
+    key: str
+    """城市键(City|PP)。"""
+
+    pop: tuple | None
+    """(人口, 期标);没匹配上/官方空点 = None。"""
+
+    unemp: tuple | None
+    """(失业率, 期标);不在 CMA/空点 = None。"""
+
+    cma: str | None
+    """所在 CMA 成员名;不在 CMA = None。"""
+
+
+@dataclass
+class CityProbeIn:
+    """check_city_probe() 入参:段6 自校的四张索引。"""
+
+    pop_ids: dict
+    """城市键 → CSD memberId。"""
+
+    pop_points: dict
+    """CSD memberId → (人口, 期标)。"""
+
+    cma_ids: dict
+    """CMA 成员名 → memberId。"""
+
+    un_points: dict
+    """CMA memberId → (失业率, 期标)。"""

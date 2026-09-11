@@ -771,7 +771,8 @@ export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
  * 另一个数;每请求现算又撞 IO(jobs 表 768MB,一条聚合冷读 29s 实测)—— 聚合下沉到 seed 时刻,
  * 这里只剩毫秒级快照读。pilot 列 = 城市级专属通道信号(RCIP / FCIP / RCIP+FCIP)。
  */
-export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs, s.pilot
+export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs, s.pilot,
+              c.population, c.unemp_rate
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
@@ -786,31 +787,39 @@ export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
  * 的教训)、$2=fetched 日期串。中位数取整:快照列是 integer,percentile_cont 回 double。
  * pilot / pilot_community 取城内非空打标的 MAX(同城打标同值,MAX 只是聚合语法要求)。
  */
-export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, fetched, updated_at, created_at)
-       SELECT j.city, j.province, COUNT(*)::int,
-              COUNT(*) FILTER (WHERE j.date_posted >= $1)::int,
-              ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_med_annual))::numeric)::int,
-              ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual))::numeric)::int,
-              COUNT(j.salary_annual)::int,
-              COUNT(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int,
-              MAX(NULLIF(j.pilot, '')),
-              MAX(NULLIF(j.pilot_community, '')),
-              $2, now(), now()
-       FROM jobs j
-       WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
-       GROUP BY j.city, j.province`
+export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, fetched, updated_at, created_at)
+       SELECT g.city, g.province, g.open_jobs, g.new7d, g.median_wage_annual, g.median_salary_annual,
+              g.salary_n, g.named_jobs, g.pilot, g.pilot_community, b.by_broad, $2, now(), now()
+       FROM (
+         SELECT j.city, j.province, COUNT(*)::int AS open_jobs,
+                COUNT(*) FILTER (WHERE j.date_posted >= $1)::int AS new7d,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_med_annual))::numeric)::int AS median_wage_annual,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual))::numeric)::int AS median_salary_annual,
+                COUNT(j.salary_annual)::int AS salary_n,
+                COUNT(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int AS named_jobs,
+                MAX(NULLIF(j.pilot, '')) AS pilot,
+                MAX(NULLIF(j.pilot_community, '')) AS pilot_community
+         FROM jobs j
+         WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
+         GROUP BY j.city, j.province) g
+       LEFT JOIN (
+         SELECT city, province, jsonb_object_agg(broad, n) AS by_broad FROM (
+           SELECT city, province, broad, COUNT(*)::int AS n FROM jobs
+           WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(city, '') <> '' AND COALESCE(broad, '') <> ''
+           GROUP BY city, province, broad) t
+         GROUP BY city, province) b
+       ON b.city = g.city AND b.province = g.province`
 
 /**
  * 城市 × 大类在招(城市段「行业对比」表;2026-09-11)。$1=取快照在招量前几的城市。
- * 前十城锚定快照(毫秒),计数走 jobs 现查(idx_jobs_city 逐城点查,口径与职位板同一份 WHERE);
- * 大类空串(未分类)不出行,列由前端按体量挑。
+ * 2026-09-11 当晚收紧:原「前十城锚定快照 + jobs 现查」在 IO 弱库上一次缓存失效全表扫 ~30s
+ * (pg_stat_activity 实拍,与 seed 叠上就是 pool-wedge 前兆)—— 大类分布随 REFRESH_CITY_STATS
+ * 聚合进快照 by_broad(jsonb {大类: 在招数}),这里退回毫秒级快照读,城市段从此零现查。
+ * 行展开(jsonb → 一大类一行)在读取层做。
  */
-export const CITY_INDUSTRY = `SELECT j.city, j.province, j.broad, COUNT(*)::int AS n
-       FROM jobs j JOIN (
-         SELECT city, province FROM stats_city ORDER BY open_jobs DESC NULLS LAST LIMIT $1) t
-         ON t.city = j.city AND t.province = j.province
-       WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.broad, '') <> ''
-       GROUP BY j.city, j.province, j.broad`
+export const CITY_INDUSTRY = `SELECT city, province, by_broad FROM stats_city
+       WHERE by_broad IS NOT NULL
+       ORDER BY open_jobs DESC NULLS LAST LIMIT $1`
 
 /**
  * 大类三语名(城市段行业对比的列头;noc_categories 一大类多行,去重取三语)。

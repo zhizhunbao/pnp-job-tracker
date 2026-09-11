@@ -1656,6 +1656,26 @@ export interface City {
    * 城市韩文通行译名(显示用灰注)
    */
   nameKo?: string | null;
+  /**
+   * CSD 人口(StatCan 17-10-0155 年度估计)
+   */
+  population?: number | null;
+  /**
+   * 人口期标(refPer)
+   */
+  popPeriod?: string | null;
+  /**
+   * 🔴 所在都会区(CMA)失业率,非本市口径(14-10-0459 月度季调)
+   */
+  unempRate?: number | null;
+  /**
+   * 失业率期标(月)
+   */
+  unempPeriod?: string | null;
+  /**
+   * 所在 CMA 成员名
+   */
+  cma?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2000,6 +2020,17 @@ export interface StatsCity {
   medianSalaryAnnual?: number | null;
   salaryN?: number | null;
   namedJobs?: number | null;
+  pilot?: string | null;
+  pilotCommunity?: string | null;
+  byBroad?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   fetched?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -3135,6 +3166,11 @@ export interface CitiesSelect<T extends boolean = true> {
   province?: T;
   nameZh?: T;
   nameKo?: T;
+  population?: T;
+  popPeriod?: T;
+  unempRate?: T;
+  unempPeriod?: T;
+  cma?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3320,6 +3356,9 @@ export interface StatsCitySelect<T extends boolean = true> {
   medianSalaryAnnual?: T;
   salaryN?: T;
   namedJobs?: T;
+  pilot?: T;
+  pilotCommunity?: T;
+  byBroad?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;
