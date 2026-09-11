@@ -3454,8 +3454,13 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
   const plain: MacroRow[] = []
   for (const b of bases) {
     plain.push(indRowOf({
-      base: b.row, code: b.code, name: geoNameOf({ code: b.code, t: x.t }),
-      localeName: geoLocaleOf({ code: b.code, t: x.t, lang: x.lang }), year, key: x.key, t: x.t,
+      base: b.row,
+      code: b.code,
+      name: geoNameOf({ code: b.code, t: x.t }),
+      localeName: geoLocaleOf({ code: b.code, t: x.t, lang: x.lang }),
+      year,
+      key: x.key,
+      t: x.t,
     }))
     if (x.key === MK_PR_ALL) {
       const sub = prSubRowOf({ code: b.code, year, t: x.t, macro: x.macro, ops: x.ops })
@@ -3535,8 +3540,13 @@ function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
     return null
   }
   return indRowOf({
-    base, code: GEO_CA, name: x.t('pulse.s4.all'), localeName: x.t(KEY_MACRO_HEAD + MK_PNP_TARGET),
-    year: TEXT_NONE, key: MK_PNP_TARGET, t: x.t,
+    base,
+    code: GEO_CA,
+    name: x.t('pulse.s4.all'),
+    localeName: x.t(KEY_MACRO_HEAD + MK_PNP_TARGET),
+    year: TEXT_NONE,
+    key: MK_PNP_TARGET,
+    t: x.t,
   })
 }
 
