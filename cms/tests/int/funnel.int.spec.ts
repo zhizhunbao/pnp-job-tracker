@@ -55,11 +55,14 @@ describe('漏斗事件白名单', () => {
     // 登录态 umami 一条条翻 session)—— 同样**追加在尾部**,自成一条并行链,不进前五步的相邻计算。
     // 2026-09-04(/fe 雇主模块):雇主板四事件进白名单 —— 它们**不是一条链**,只做计数,
     // 同样追加在尾部,不动前面任何下标切片。
+    // 2026-09-10(/fe 省份批收口):把脉段级三事件进白名单(滚到段 / 点子导航 / 切表图年窗,
+    // kind 装低基数枚举)—— 同雇主板只计数不成链,追加在尾部。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click',
       'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
       'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done',
       'pulse-card', 'pulse-occ', 'pulse-cta',
-      'emp-search', 'emp-filter', 'emp-row', 'emp-page'])
+      'emp-search', 'emp-filter', 'emp-row', 'emp-page',
+      'pulse-sec', 'pulse-subnav', 'pulse-series'])
   })
 
   it('把脉页三点击各自归位(2026-09-04),调用点沿用下划线原名', () => {

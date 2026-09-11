@@ -16,7 +16,7 @@
 import { LinkButton } from '@/components/button'
 import { Shell } from '@/components/shell'
 import { SHELL_BOTTOM, SHELL_TOP } from './constants'
-import { anchorOf, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubItemsOf } from './functions'
+import { anchorOf, makeSubnavTrack, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubItemsOf } from './functions'
 import type { PulseNavIn } from './types'
 import css from './start.module.css'
 
@@ -39,7 +39,7 @@ export function PulseNav({ t, navSec }: PulseNavIn) {
   const subs = []
   for (const it of navSubItemsOf({ t, navSec: sec })) {
     subs.push(
-      <LinkButton key={it.id} href={anchorOf(it.id)} className={css.navSubLink}>
+      <LinkButton key={it.id} href={anchorOf(it.id)} onClick={makeSubnavTrack(it.id)} className={css.navSubLink}>
         {it.label}
       </LinkButton>,
     )

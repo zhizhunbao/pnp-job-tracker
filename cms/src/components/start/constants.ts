@@ -473,6 +473,27 @@ export const TRACK_OCC = 'pulse_occ_click'
  */
 export const TRACK_CTA = 'landing_cta_browse'
 
+/**
+ * 埋点名:滚到了某一段(2026-09-10 /fe 省份批收口:这段此前零埋点,「投还是砍」无从判;
+ * kind = 段锚点 id;计数不成链,照雇主板四事件形)。
+ */
+export const TRACK_SEC = 'pulse-sec'
+
+/**
+ * 埋点名:点了二级导航子项胶囊(kind = 目标锚点 id)。
+ */
+export const TRACK_SUBNAV = 'pulse-subnav'
+
+/**
+ * 埋点名:切了序列表的视图或年窗(kind = table / chart / recent / more / all)。
+ */
+export const TRACK_SERIES = 'pulse-series'
+
+/**
+ * 埋点附加值的键(与雇主板 EV_PROP_KEY 同名同义:低基数枚举装 kind 一格)。
+ */
+export const TRACK_PROP_KEY = 'kind'
+
 
 
 /**

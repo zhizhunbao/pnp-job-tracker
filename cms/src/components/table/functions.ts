@@ -16,6 +16,7 @@ import {
 } from './constants'
 import type {
   BarGeomIn, BarGeomOut, BoundsIn, CellIn, ChartWindowIn, ChartWindowOut, ClickFn, Col, GridIn, GripFn, GripIn,
+  SeriesSwitchIn,
   GroupCenterIn, HeadClickIn,
   IndexOfIn, LeftPadIn, PlotLineIn, PointLabelsIn, RawPointsIn,
   SeriesBar, SeriesBounds, SeriesDot, SeriesGrid, SeriesLine, SeriesLinesIn, SeriesPathIn, SeriesPlot, SeriesPlotIn,
@@ -214,6 +215,20 @@ export function chartWindowOf(x: ChartWindowIn): ChartWindowOut {
  * @param x 全部列与时间点列的 key。
  * @returns 与 pointKeys 同序的刻度文本。
  */
+/**
+ * 序列工具条一个钮的点击包装工厂:先切档,再把档名报给调用方的通知回调
+ * (2026-09-10 把脉埋点批;桶不携业务,含义由调用方定;工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param x 原切档回调、档名与通知回调。
+ * @returns 包好的点击回调。
+ */
+export function makeSeriesSwitch(x: SeriesSwitchIn): ClickFn {
+  return function onSwitch() {
+    x.on()
+    x.notify(x.kind)
+  }
+}
+
 export function pointLabelsOf<T>(x: PointLabelsIn<T>): string[] {
   const out: string[] = []
   for (const key of x.pointKeys) {

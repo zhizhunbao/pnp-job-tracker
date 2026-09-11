@@ -18,8 +18,10 @@ import { useRef } from 'react'
 
 import { cssOf } from '@/components/css'
 import { Pager } from '@/components/pager'
-import { ALIGN_RIGHT, SERIES_VIEW_CHART } from './constants'
-import { cellOf, cls, pointLabelsOf, shownColsOf } from './functions'
+import {
+  ALIGN_RIGHT, SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE,
+} from './constants'
+import { cellOf, cls, makeSeriesSwitch, pointLabelsOf, shownColsOf } from './functions'
 import { useColWidths, useRows, useSeriesView } from './hooks'
 import { SeriesChart } from './serieschart'
 import { SeriesToolbar } from './seriestoolbar'
@@ -77,11 +79,11 @@ export function Table<T>({
         <SeriesToolbar view={s.view}
           range={s.range}
           words={series.words} rangeless={series.pointKeys.length <= series.recent}
-          onTable={s.onTable}
-          onChart={s.onChart}
-          onRecent={s.onRecent}
-          onMore={s.onMore}
-          onAll={s.onAll} />
+          onTable={makeSeriesSwitch({ on: s.onTable, kind: SERIES_VIEW_TABLE, notify: series.onSwitch })}
+          onChart={makeSeriesSwitch({ on: s.onChart, kind: SERIES_VIEW_CHART, notify: series.onSwitch })}
+          onRecent={makeSeriesSwitch({ on: s.onRecent, kind: SERIES_RANGE_RECENT, notify: series.onSwitch })}
+          onMore={makeSeriesSwitch({ on: s.onMore, kind: SERIES_RANGE_MORE, notify: series.onSwitch })}
+          onAll={makeSeriesSwitch({ on: s.onAll, kind: SERIES_RANGE_ALL, notify: series.onSwitch })} />
       )}
       {chart && series != null && (
         <SeriesChart pointKeys={series.pointKeys}

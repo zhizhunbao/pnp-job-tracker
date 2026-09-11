@@ -16,7 +16,7 @@
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。后接雇主线三步与 PR 评估四步(各自成链)。
  */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -78,6 +78,9 @@ export const ALIAS: Record<string, FunnelStep> = {
   'emp-filter': 'emp-filter',
   'emp-row': 'emp-row',
   'emp-page': 'emp-page',
+  'pulse-sec': 'pulse-sec',
+  'pulse-subnav': 'pulse-subnav',
+  'pulse-series': 'pulse-series',
 }
 
 /**

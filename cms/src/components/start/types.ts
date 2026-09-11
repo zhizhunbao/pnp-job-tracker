@@ -3958,6 +3958,31 @@ export type PrGeosIn = {
 }
 
 /**
+ * `prRegionGeoOf` 的入参(一个地区的 PR 小表)。
+ */
+export type PrRegionGeoIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
  * `prRowOf` 的入参。
  */
 export type PrRowIn = {
@@ -4706,6 +4731,11 @@ export type MacroSeriesSpec = {
    * 趋势态画的行(滤掉「其中」缩进行;照通用表格契约)。
    */
   chartRows: MacroRow[]
+
+  /**
+   * 视图 / 年窗切换的通知回调(埋点 pulse-series;照通用表格契约)。
+   */
+  onSwitch: (kind: string) => void
 
   /**
    * 「近 N 期」默认显示几列。

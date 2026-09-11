@@ -18,7 +18,7 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, indicatorGeosOf, prGeosOf, makeKindPick, makeNavWatch, makeSponsorLoad,
+  cityRowsOf, empSecsOf, indicatorGeosOf, prGeosOf, trackSecView, makeKindPick, makeNavWatch, makeSponsorLoad,
   nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
@@ -163,6 +163,12 @@ export function usePulse(x: PulseIn): PulsePanel {
   const prGeos = useMemo(function pickPrGeos() {
     return prGeosOf({ t, lang, macro: x.stats.macro, ops: x.stats.ops })
   }, [t, lang, x.stats.macro, x.stats.ops])
+
+  useEffect(function trackSecChange() {
+    if (navSec !== TEXT_NONE) {
+      trackSecView(navSec)
+    }
+  }, [navSec])
 
   const jobsRows = useMemo(function pickJobsRows() {
     return toJobsRows({ rows: provRowsOf({ market }), t, lang })

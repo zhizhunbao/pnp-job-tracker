@@ -455,6 +455,26 @@ export type MeasureIn<T> = {
 export type ClickFn = () => void
 
 /**
+ * `makeSeriesSwitch` 的入参(序列工具条钮的埋点包装)。
+ */
+export type SeriesSwitchIn = {
+  /**
+   * 原切档回调(useSeriesView 的 onTable / onChart / onRecent / onMore / onAll 之一)。
+   */
+  on: ClickFn
+
+  /**
+   * 档名(table / chart / recent / more / all,原样报给通知回调)。
+   */
+  kind: string
+
+  /**
+   * 调用方的切换通知回调(TableSeriesIn.onSwitch)。
+   */
+  notify: (kind: string) => void
+}
+
+/**
  * 列宽拖手的手柄形状(指针按下即起手拖)。
  */
 export type GripFn = (e: React.PointerEvent) => void
@@ -535,6 +555,12 @@ export type TableSeriesIn<T> = {
    * 一省两线且图例同名,调用方在这里滤掉(2026-09-10 PR 表并入省提名缩进行时加)。
    */
   chartRows: T[]
+
+  /**
+   * 视图 / 年窗切换的通知回调(2026-09-10 把脉埋点批加:桶不携业务,切到哪个档
+   * —— table / chart / recent / more / all —— 原样报给调用方,含义由调用方定)。
+   */
+  onSwitch: (kind: string) => void
 
   /**
    * 「近 N 期」这一档显示末几列。

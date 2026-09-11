@@ -33,7 +33,7 @@ import {
   PNP_SORT_SCALE, PROV_ALL_LOWER,
   RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
-  TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA,
+  TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
   EMPTY_CITY_ROWS, KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
@@ -113,7 +113,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  PrGeosIn, PrRowIn, AllocTargetRowIn, CardPair,
+  PrGeosIn, PrRowIn, PrRegionGeoIn, AllocTargetRowIn, CardPair,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
@@ -652,11 +652,14 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
  * @returns 子项清单。
  */
 function prSubsOf(t: TFn): NavItem[] {
-  const out: NavItem[] = []
+  const out: NavItem[] = [{ id: prAnchorOf(GEO_CA), label: prGeoNameOf({ code: GEO_CA, t }) }]
   for (const key of PR_LEAD_KEYS) {
     out.push({ id: ID_IND_HEAD + key, label: t(KEY_IND_SHORT_HEAD + key) })
   }
   for (const code of IND_GEO_ORDER) {
+    if (code === GEO_CA) {
+      continue
+    }
     out.push({ id: prAnchorOf(code), label: prGeoNameOf({ code, t }) })
   }
   return out
@@ -1763,6 +1766,38 @@ export function trackOccClick(): void {
  */
 export function trackCtaClick(): void {
   track(TRACK_CTA)
+}
+
+/**
+ * 埋点:滚到了某一段(useNavSec 的分区跟随变化时打;kind = 段锚点 id)。
+ *
+ * @param id 段锚点 id。
+ * @returns 无。
+ */
+export function trackSecView(id: string): void {
+  track(TRACK_SEC, { [TRACK_PROP_KEY]: id })
+}
+
+/**
+ * 二级导航子项胶囊的点击埋点工厂(kind = 目标锚点 id;工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param id 目标锚点 id。
+ * @returns 点击回调。
+ */
+export function makeSubnavTrack(id: string): ClickFn {
+  return function onSubnav() {
+    track(TRACK_SUBNAV, { [TRACK_PROP_KEY]: id })
+  }
+}
+
+/**
+ * 序列表视图 / 年窗切换的埋点(喂通用表格的 onSwitch 回调;kind = table / chart / recent / more / all)。
+ *
+ * @param kind 切到的档。
+ * @returns 无。
+ */
+export function seriesSwitchTrack(kind: string): void {
+  track(TRACK_SERIES, { [TRACK_PROP_KEY]: kind })
 }
 
 
@@ -3452,9 +3487,9 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
 }
 
 /**
- * PR 段的全部表:配额表 + EE 邀请表打头(2026-09-10 Frank「配额 ee 是不是也都迁移到 pr」,
- * 自省份段迁入,锚点与形制不变),后接每个地区一张 PR 小表(全国 + 九省;行 = PR 获批 / 其中省提名,
- * 列 = 年 + 同比)—— 同日三连拍:「拆成每个省一个表」「单独列一个大项」「和省一个级别的」。
+ * PR 段的全部表:全国 PR 小表打头(2026-09-10 Frank「全国应该放到最上面吧」),其次配额表
+ * (「配额 ee 是不是也都迁移到 pr」自省份段迁入;EE 已并进全国小表),后接九省各一张 PR 小表
+ * (行 = 类别行,列 = 年 + 同比)—— 同日三连拍:「拆成每个省一个表」「单独列一个大项」「和省一个级别的」。
  * PR 小表首列叫「指标」;全国那张锚点沿用 pl-ind-prAll。
  *
  * @param x 取词函数、界面语言与全部点。
@@ -3462,6 +3497,10 @@ export function indicatorGeosOf(x: MacroGeosIn): MacroGeo[] {
  */
 export function prGeosOf(x: PrGeosIn): MacroGeo[] {
   const out: MacroGeo[] = []
+  const ca = prRegionGeoOf({ code: GEO_CA, t: x.t, macro: x.macro, ops: x.ops })
+  if (ca != null) {
+    out.push(ca)
+  }
   for (const key of PR_LEAD_KEYS) {
     const geo = indGeoOf({ key, t: x.t, lang: x.lang, macro: x.macro, ops: x.ops })
     if (geo != null) {
@@ -3469,39 +3508,56 @@ export function prGeosOf(x: PrGeosIn): MacroGeo[] {
     }
   }
   for (const code of IND_GEO_ORDER) {
-    const gp = geoPointsOf({ code, macro: x.macro, ops: x.ops })
-    const keys = prRowKeysOf(code)
-    const bases: MacroRow[] = []
-    for (const key of keys) {
-      const base = macroRowOf({ key, code, t: x.t, points: gp.points, ops: gp.ops })
-      if (base != null && base.latest != null) {
-        bases.push(dropFutureYearsOf(base))
-      }
-    }
-    if (bases.length === 0) {
+    if (code === GEO_CA) {
       continue
     }
-    const year = yoyYearOf({ rows: bases })
-    const rows: MacroRow[] = []
-    for (const b of bases) {
-      rows.push(prRowOf({ base: b, year, t: x.t }))
+    const geo = prRegionGeoOf({ code, t: x.t, macro: x.macro, ops: x.ops })
+    if (geo != null) {
+      out.push(geo)
     }
-    const years = yearsOf(rows)
-    out.push({
-      code: MK_PR_ALL + SUB_ID_SEP + code,
-      anchor: prAnchorOf(code),
-      name: prGeoNameOf({ code, t: x.t }),
-      years,
-      rows,
-      yoyLabel: yoyLabelOf({ t: x.t, year }),
-      keyLabel: x.t('pulse.m.key'),
-      yearNotes: yearNotesOf({ rows, years }),
-      recLabel: TEXT_NONE,
-      formula: TEXT_NONE,
-      indexed: false,
-    })
   }
   return out
+}
+
+/**
+ * 一个地区的 PR 小表(2026-09-10 Frank「全国应该放到最上面吧」:全国那张提到段首、配额表其次,
+ * 建单表的活从 prGeosOf 拆出来复用)。
+ *
+ * @param x 地区码与全部点。
+ * @returns 一张小表;一行都没有给 null。
+ */
+function prRegionGeoOf(x: PrRegionGeoIn): MacroGeo | null {
+  const gp = geoPointsOf({ code: x.code, macro: x.macro, ops: x.ops })
+  const keys = prRowKeysOf(x.code)
+  const bases: MacroRow[] = []
+  for (const key of keys) {
+    const base = macroRowOf({ key, code: x.code, t: x.t, points: gp.points, ops: gp.ops })
+    if (base != null && base.latest != null) {
+      bases.push(dropFutureYearsOf(base))
+    }
+  }
+  if (bases.length === 0) {
+    return null
+  }
+  const year = yoyYearOf({ rows: bases })
+  const rows: MacroRow[] = []
+  for (const b of bases) {
+    rows.push(prRowOf({ base: b, year, t: x.t }))
+  }
+  const years = yearsOf(rows)
+  return {
+    code: MK_PR_ALL + SUB_ID_SEP + x.code,
+    anchor: prAnchorOf(x.code),
+    name: prGeoNameOf({ code: x.code, t: x.t }),
+    years,
+    rows,
+    yoyLabel: yoyLabelOf({ t: x.t, year }),
+    keyLabel: x.t('pulse.m.key'),
+    yearNotes: yearNotesOf({ rows, years }),
+    recLabel: TEXT_NONE,
+    formula: TEXT_NONE,
+    indexed: false,
+  }
 }
 
 /**
@@ -4756,6 +4812,7 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     valueOf: macroValueOf,
     labelOf: macroLabelOf,
     chartRows: nonSubRowsOf(x.geo.rows),
+    onSwitch: seriesSwitchTrack,
     recent: MACRO_RECENT,
     more: MACRO_MORE,
     indexed: x.geo.indexed,
