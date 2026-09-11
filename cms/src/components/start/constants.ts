@@ -1135,6 +1135,12 @@ export const MK_EE = 'eeInvites'
 export const MK_PNP_TARGET = 'pnpTarget'
 
 /**
+ * macro_series 数据键:EE 接纳目标(水平计划联邦高技术线,人头口径;2026-09-10 补,
+ * 进 EE 表当第二行 —— 邀请是实际、目标是预算,同表对照)。
+ */
+export const MK_EE_TARGET = 'eeTarget'
+
+/**
  * 宏观表行键:工签(2026-09-10 Frank 重排清单点名;数据键 = workOnly 只持工签存量,行键另起
  * 免得沿用「其中只持工签」的行名与缩进样式)。
  */
@@ -1344,6 +1350,12 @@ export const MK_OTHER = 'other'
  * 宏观表「近 10 年」显示的年份列数:10 个年末 + 进行年(Frank 2026-09-06「全部 table 的话就跑偏了,加一个近十年」)。
  */
 export const MACRO_MORE = 11
+
+/**
+ * 手机省卡迷你格显示的年数(2026-09-10「手机用卡片 手机不用显示图」:趋势图撤出手机,
+ * 逐年对比由卡下缘近几年格承担;四年一排正好占满卡宽)。
+ */
+export const CARD_YEARS = 4
 
 /**
  * 折叠钮的 button 族档(与序列表工具条同档)。

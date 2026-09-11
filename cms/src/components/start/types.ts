@@ -3977,6 +3977,41 @@ export type AllocTargetRowIn = {
 }
 
 /**
+ * 手机省卡迷你格的一格(`cardPairsOf` 的出参项)。
+ */
+export type CardPair = {
+  /**
+   * 年份(格键)。
+   */
+  year: string
+
+  /**
+   * 该年的值文案(已带单位格式)。
+   */
+  text: string
+}
+
+/**
+ * `eeTargetRowOf` 的入参。
+ */
+export type EeTargetRowIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 全部宏观点。
+   */
+  macro: MacroPoint[]
+
+  /**
+   * 全部运营点。
+   */
+  ops: OpsPoint[]
+}
+
+/**
  * `yoyYearOf` 的入参。
  */
 export type YoyYearIn = {

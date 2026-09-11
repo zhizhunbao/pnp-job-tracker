@@ -53,8 +53,8 @@ import {
   ID_PROV_JOBS, GEO_CA, KEY_MACRO_HEAD, KEY_MON_HEAD,
   MACRO_MORE, FREQ_Q,
   FREQ_M,
-  PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, MK_ALLOC, MR_ISSUED,
-  MK_PR_ALL, MK_PR_PNP, MK_PNP_TARGET, MK_WORK_ONLY, MR_WORK,
+  PERIOD_JAN_TAIL, PERIOD_DEC_TAIL, YEAR_LEN, MONTH_START, MONTH_END, MACRO_RECENT, CARD_YEARS, MK_ALLOC, MR_ISSUED,
+  MK_PR_ALL, MK_PR_PNP, MK_PNP_TARGET, MK_EE, MK_EE_TARGET, MK_WORK_ONLY, MR_WORK,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
   COL_JOBS_NEW7, COL_JOBS_WAGE, W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
@@ -113,7 +113,7 @@ import type {
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
   MacroMissingIn, MacroRowApplyIn, MacroRowIn, GeoPoints, GeoPointsIn, IndBase, IndGeoIn, IndRowIn,
-  PrSubRowIn, AllocTargetRowIn,
+  PrSubRowIn, AllocTargetRowIn, EeTargetRowIn, CardPair,
   AllocCellsIn, RecLabelIn, RecOut, RecRankIn, RecRankOfIn, RecRowsIn, UseRateIn, WithRecIn, YearColLabelIn, YearNoteIn,
   YearNotesIn, YoyCellIn, YoyClsIn, YoyLabelIn, YoyTextIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
@@ -3475,6 +3475,12 @@ function indGeoOf(x: IndGeoIn): MacroGeo | null {
       plain.unshift(target)
     }
   }
+  if (x.key === MK_EE) {
+    const target = eeTargetRowOf({ t: x.t, macro: x.macro, ops: x.ops })
+    if (target != null) {
+      plain.push(target)
+    }
+  }
   const rows = recRowsOf({ t: x.t, rows: plain, key: x.key })
   const years = yearsOf(rows)
   return {
@@ -3548,6 +3554,60 @@ function allocTargetRowOf(x: AllocTargetRowIn): MacroRow | null {
     key: MK_PNP_TARGET,
     t: x.t,
   })
+}
+
+/**
+ * EE 表的第二行 = EE 接纳目标(2026-09-10 补:邀请是实际、目标是预算,同表对照;
+ * 行名「全国」照配额表全国行的形,译名行位标「EE 接纳目标(人)」;mart 还没灌 eeTarget 键时不出)。
+ *
+ * @param x 取词函数与全部点。
+ * @returns 目标行;没数给 null。
+ */
+function eeTargetRowOf(x: EeTargetRowIn): MacroRow | null {
+  const gp = geoPointsOf({ code: GEO_CA, macro: x.macro, ops: x.ops })
+  const base = macroRowOf({ key: MK_EE_TARGET, code: GEO_CA, t: x.t, points: gp.points, ops: gp.ops })
+  if (base == null) {
+    return null
+  }
+  return {
+    key: MK_EE_TARGET,
+    label: x.t('pulse.s4.all'),
+    geoCode: TEXT_NONE,
+    localeName: x.t(KEY_MACRO_HEAD + MK_EE_TARGET),
+    sub: false,
+    keyCls: base.keyCls,
+    toggle: null,
+    expanded: false,
+    cells: base.cells,
+    latest: base.latest,
+    latestYear: base.latestYear,
+    missing: base.missing,
+    yoy: null,
+    yoyCls: TEXT_NONE,
+    rec: TEXT_NONE,
+    recCls: TEXT_NONE,
+  }
+}
+
+/**
+ * 手机省卡的「年 × 值」迷你格:取该行有数的末几年(含进行年与计划年),年头一排、值一排
+ * (2026-09-10「手机用卡片 手机不用显示图」)。
+ *
+ * @param r 一行。
+ * @returns 年与值文案的清单(最多 CARD_YEARS 个)。
+ */
+export function cardPairsOf(r: MacroRow): CardPair[] {
+  const years = Object.keys(r.cells).sort()
+  const tail = years.slice(-CARD_YEARS)
+  const out: CardPair[] = []
+  for (const y of tail) {
+    const c = r.cells[y]
+    if (c == null) {
+      continue
+    }
+    out.push({ year: y, text: c.text })
+  }
+  return out
 }
 
 /**
