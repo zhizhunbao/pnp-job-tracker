@@ -14,7 +14,9 @@
  * @time 2026-08-28 14:20:00
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
-import type { CityRow, DailyRow, OccRow, ProvExtra, StatRow } from '@/lib/stats'
+import type {
+  BroadLabelRow, CityIndustryRow, CityRow, DailyRow, DliCityRow, OccRow, PilotCommRow, ProvExtra, StatRow,
+} from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'
 // eslint-disable-next-line local/no-import-in-leaf -- components/stats 取数钩子的返回,原样交给 MarketChart 的四份数据
@@ -105,6 +107,11 @@ export type StartCol<T> = {
    * 显式列宽(百分比);给了就不进自动量宽锁列(抽选表这类固定版式)。
    */
   width?: string
+
+  /**
+   * 列级 class(2026-09-11 城市段批:窄屏藏宽列交给 .cityWide,与 table 域 Col 同名格)。
+   */
+  className?: string
 }
 
 /**
@@ -317,12 +324,6 @@ export type HomeStats = {
   nocProvs: Record<string, string[]>
 
   /**
-   * 城市统计行(城市段直出,同上)。
-   */
-  city: CityRow[]
-
-
-  /**
    * 数据抓取时刻。
    */
   checkedAt: string
@@ -418,11 +419,6 @@ export type HomeCoreIn = {
   boards: SponsorBoards
 
   /**
-   * 城市统计行(城市段 SSR 直出,2026-09-05)。
-   */
-  cityRows: CityRow[]
-
-  /**
    * 职业统计行(中间两卡与分类映射的原料)。
    */
   occRows: OccRowList
@@ -507,16 +503,6 @@ export type SeedGroupIn = {
    * 要留的雇主名(原样,= EmpCellRow.key)。
    */
   keep: Set<string>
-}
-
-/**
- * `cityRowsOf` 的入参。
- */
-export type CityRowsIn = {
-  /**
-   * 城市统计行。
-   */
-  city: CityRow[]
 }
 
 /**
@@ -1297,11 +1283,6 @@ export type PulsePanel = {
   jobsRows: JobsRow[]
 
   /**
-   * 城市段的行(按在招排);null = 主图数据还没到。
-   */
-  cityRows: CityRow[] | null
-
-  /**
    * 趋势段:全国线 + 行业小图;null = 逐日数据不够画。
    */
   trend: TrendPanel | null
@@ -2038,58 +2019,154 @@ export type LineOptionIn = {
 }
 
 /**
- * `toCityCellRows` 的入参。
+ * 城市段五份数据(2026-09-11 重设计批:/api/stats/city 挂载后到手的整包)。
  */
-export type CityCellRowsIn = {
+export type CityData = {
   /**
-   * 城市统计行。
+   * 城市全量榜(按在招降序;表 1 + 搜索 + 表 1 通道列都吃它)。
    */
-  rows: CityRow[]
+  cities: CityRow[]
 
   /**
-   * 取词函数。
+   * 城 × 大类在招(表 2 行业对比)。
    */
-  t: TFn
+  industry: CityIndustryRow[]
 
   /**
-   * 界面语言(城市译名按语言取)。
+   * 大类三语名(表 2 列头)。
    */
-  lang: StartLang
+  broads: BroadLabelRow[]
+
+  /**
+   * 试点社区行(表 3)。
+   */
+  pilots: PilotCommRow[]
+
+  /**
+   * 城市 DLI 行(表 4 留学城市)。
+   */
+  dli: DliCityRow[]
 }
 
 /**
- * 城市卡的展示行。
+ * /api/stats/city 拉回的 json 探针(线格式:缺席 = 不发键)。
  */
-export type CityCellRow = {
+export type CityStatsProbe = {
+  /**
+   * 城市全量榜。
+   */
+  cities?: CityRow[]
+
+  /**
+   * 城 × 大类在招。
+   */
+  industry?: CityIndustryRow[]
+
+  /**
+   * 大类三语名。
+   */
+  broads?: BroadLabelRow[]
+
+  /**
+   * 试点社区行。
+   */
+  pilots?: PilotCommRow[]
+
+  /**
+   * 城市 DLI 行。
+   */
+  dli?: DliCityRow[]
+}
+
+/**
+ * `makeCityLoad` 的入参。
+ */
+export type CityLoadIn = {
+  /**
+   * 五份到手落进段状态。
+   */
+  setCityData: (d: CityData) => void
+}
+
+/**
+ * 城市段各表「城市名」格的公共形(名字链接 + 灰注;四张表的展示行都含这四格,
+ * 单元格组件按这个形收窄)。
+ */
+export type CityLinkRow = {
+  /**
+   * 主文案(界面语言有译名用译名,否则英文)。
+   */
+  name: string
+
+  /**
+   * 灰注(英文名 + 省码;主文案就是英文时只剩省码)。
+   */
+  note: string
+
+  /**
+   * 落职位板按城市筛(带来源标记)。
+   */
+  href: string
+
+  /**
+   * 点击埋点(city-open,kind 按表)。
+   */
+  onOpen: ClickFn
+}
+
+/**
+ * 表 1(主要城市)的展示行。
+ */
+export type CityMainRow = {
   /**
    * 行键(城市 + 省)。
    */
   key: string
 
   /**
-   * 城市名(界面语言有译名用译名,否则英文)。
+   * 城市名主文案。
    */
   name: string
 
   /**
-   * 省全名。
+   * 灰注(英文名 + 省码)。
    */
-  provName: string
+  note: string
 
   /**
-   * 省码(灰字小注)。
+   * 落职位板。
    */
-  provCode: string
+  href: string
 
   /**
-   * 在招数文案。
+   * 点击埋点。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 在招数(排序键);没算 null。
+   */
+  open: number | null
+
+  /**
+   * 在招数文案;没有给 DASH_MARK。
    */
   openText: string
 
   /**
-   * 近 7 天新增文案;没有给 DASH_MARK。
+   * 近 7 天新增(排序键);没算 null。
+   */
+  new7: number | null
+
+  /**
+   * 近 7 天文案;没有给 DASH_MARK。
    */
   new7Text: string
+
+  /**
+   * 中位年薪(排序键);没算 null。
+   */
+  wage: number | null
 
   /**
    * 中位年薪文案;没有给 DASH_MARK。
@@ -2097,14 +2174,465 @@ export type CityCellRow = {
   wageText: string
 
   /**
-   * 紧缺清单岗文案;没有给 DASH_MARK。
+   * 专属通道文案(RCIP / FCIP 试点);没有给 DASH_MARK。
    */
-  namedText: string
+  pilotText: string
+}
+
+/**
+ * `toCityMainRows` 的入参。
+ */
+export type CityMainRowsIn = {
+  /**
+   * 城市全量榜。
+   */
+  rows: CityRow[]
 
   /**
-   * 点卡落到职位板按城市筛。
+   * 取词函数(通道文案)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(译名按语言取)。
+   */
+  lang: StartLang
+}
+
+/**
+ * `cityMainColsOf` / `pilotColsOf` / `dliColsOf` 的入参。
+ */
+export type CityColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 表 2(行业对比)的展示行。
+ */
+export type CityIndRow = {
+  /**
+   * 行键(城市 + 省)。
+   */
+  key: string
+
+  /**
+   * 城市名主文案。
+   */
+  name: string
+
+  /**
+   * 灰注。
+   */
+  note: string
+
+  /**
+   * 落职位板。
    */
   href: string
+
+  /**
+   * 点击埋点。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 大类 → 在招数(没有的大类不设键)。
+   */
+  byBroad: Record<string, number>
+}
+
+/**
+ * `toCityIndRows` 的入参。
+ */
+export type CityIndRowsIn = {
+  /**
+   * 城 × 大类计数行。
+   */
+  rows: CityIndustryRow[]
+
+  /**
+   * 城市全量榜(译名与行序借它;表 2 行序 = 表 1 的在招序)。
+   */
+  cities: CityRow[]
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * 行业对比的一根列(键 = 大类数据值,标头 = 界面语言大类名)。
+ */
+export type IndBroadCol = {
+  /**
+   * 大类数据值(中文,= CityIndustryRow.broad)。
+   */
+  key: string
+
+  /**
+   * 界面语言列头。
+   */
+  label: string
+}
+
+/**
+ * `indBroadColsOf` 的入参。
+ */
+export type IndBroadColsIn = {
+  /**
+   * 城 × 大类计数行(按体量挑列)。
+   */
+  rows: CityIndustryRow[]
+
+  /**
+   * 大类三语名。
+   */
+  broads: BroadLabelRow[]
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * `cityIndColsOf` 的入参。
+ */
+export type CityIndColsIn = {
+  /**
+   * 取词函数(城市列头)。
+   */
+  t: TFn
+
+  /**
+   * 挑好的大类列。
+   */
+  broadCols: IndBroadCol[]
+}
+
+/**
+ * 表 3(试点社区)的展示行。
+ */
+export type CityPilotRow = {
+  /**
+   * 行键(社区名 + 类型)。
+   */
+  key: string
+
+  /**
+   * 社区名主文案(有译名用译名)。
+   */
+  name: string
+
+  /**
+   * 灰注(英文名 + 省码)。
+   */
+  note: string
+
+  /**
+   * 落职位板(按社区主城筛)。
+   */
+  href: string
+
+  /**
+   * 点击埋点。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 通道类型文案(RCIP 试点 / FCIP 试点)。
+   */
+  typeText: string
+
+  /**
+   * 在招数(排序键;0 是事实)。
+   */
+  open: number
+
+  /**
+   * 在招数文案。
+   */
+  openText: string
+}
+
+/**
+ * `toCityPilotRows` 的入参。
+ */
+export type CityPilotRowsIn = {
+  /**
+   * 试点社区行。
+   */
+  pilots: PilotCommRow[]
+
+  /**
+   * 城市全量榜(译名借它)。
+   */
+  cities: CityRow[]
+
+  /**
+   * 取词函数(类型文案)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * 表 4(留学城市)的展示行。
+ */
+export type CityDliRow = {
+  /**
+   * 行键(城市 + 省)。
+   */
+  key: string
+
+  /**
+   * 城市名主文案。
+   */
+  name: string
+
+  /**
+   * 灰注。
+   */
+  note: string
+
+  /**
+   * 落职位板。
+   */
+  href: string
+
+  /**
+   * 点击埋点。
+   */
+  onOpen: ClickFn
+
+  /**
+   * DLI 院校数。
+   */
+  n: number
+
+  /**
+   * 其中公立。
+   */
+  pub: number
+
+  /**
+   * 毕业可申工签。
+   */
+  grad: number
+}
+
+/**
+ * `toCityDliRows` 的入参。
+ */
+export type CityDliRowsIn = {
+  /**
+   * 城市 DLI 行。
+   */
+  rows: DliCityRow[]
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * 搜索建议一条。
+ */
+export type CityMatchRow = {
+  /**
+   * 行键(城市 + 省)。
+   */
+  key: string
+
+  /**
+   * 主文案(译名或英文)。
+   */
+  name: string
+
+  /**
+   * 灰注(英文名 + 省码 + 在招数)。
+   */
+  note: string
+
+  /**
+   * 落职位板。
+   */
+  href: string
+}
+
+/**
+ * `cityMatchesOf` 的入参。
+ */
+export type CityMatchesIn = {
+  /**
+   * 城市全量榜。
+   */
+  rows: CityRow[]
+
+  /**
+   * 输入串(原样;体内小写去空格)。
+   */
+  q: string
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * `makeSearchChange` 的入参(受控输入框的 onChange 工厂)。
+ */
+export type SearchChangeIn = {
+  /**
+   * 写输入串。
+   */
+  setQ: (v: string) => void
+}
+
+/**
+ * CitySearch(城市搜索)的 props。
+ */
+export type CitySearchIn = {
+  /**
+   * 取词函数(占位文案)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+
+  /**
+   * 城市全量榜(本地过滤,不打接口)。
+   */
+  rows: CityRow[]
+}
+
+/**
+ * `pilotTextOf` 的入参。
+ */
+export type PilotTextIn = {
+  /**
+   * 取词函数(「试点」词条)。
+   */
+  t: TFn
+
+  /**
+   * 城市的试点打标(RCIP / FCIP / RCIP+FCIP);没有是 null。
+   */
+  pilot: string | null
+}
+
+/**
+ * `broadLabelOf` 的入参。
+ */
+export type BroadLabelOfIn = {
+  /**
+   * 大类数据值(中文)。
+   */
+  key: string
+
+  /**
+   * 大类 → 三语名。
+   */
+  labels: Map<string, BroadLabelRow>
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * 搜索输入框 change 事件的最小形(结构兼容 React.ChangeEvent<HTMLInputElement>,
+ * functions 不背 React 命名空间)。
+ */
+export type SearchChangeEvent = {
+  /**
+   * 事件目标(只读 value 一格)。
+   */
+  target: {
+    /**
+     * 输入框当前值。
+     */
+    value: string
+  }
+}
+
+/**
+ * `useCityQuery` 交回的面板(搜索输入串一台小机器)。
+ */
+export type CityQueryPanel = {
+  /**
+   * 当前输入串。
+   */
+  q: string
+
+  /**
+   * 输入框 onChange。
+   */
+  onChange: (e: SearchChangeEvent) => void
+}
+
+/**
+ * `useCityPanel` 的入参。
+ */
+export type CityPanelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+}
+
+/**
+ * `useCityPanel` 交回的面板(五份数据 + 四张表的展示行与行业列)。
+ */
+export type CityPanel = {
+  /**
+   * 五份数据;null = 还在路上(渲占位)。
+   */
+  data: CityData | null
+
+  /**
+   * 表 1 展示行。
+   */
+  mainRows: CityMainRow[]
+
+  /**
+   * 表 2 的大类列(按体量挑好)。
+   */
+  broadCols: IndBroadCol[]
+
+  /**
+   * 表 2 展示行。
+   */
+  indRows: CityIndRow[]
+
+  /**
+   * 表 3 展示行。
+   */
+  pilotRows: CityPilotRow[]
+
+  /**
+   * 表 4 展示行。
+   */
+  dliRows: CityDliRow[]
 }
 
 /**
@@ -2234,7 +2762,8 @@ export type EmpCardIn = {
 }
 
 /**
- * CitySection(城市段)的 props。
+ * CitySection(城市段)的 props(2026-09-11 重设计:数据不再从 props 进 —— 段内自拉
+ * /api/stats/city,SSR 契约与 400 张卡一并退役)。
  */
 export type CitySectionIn = {
   /**
@@ -2251,26 +2780,6 @@ export type CitySectionIn = {
    * 数据更新时刻(ISO;'' 不渲)。
    */
   updatedAt: string
-
-  /**
-   * 城市统计行(按在招排);null = 主图数据还没到。
-   */
-  rows: CityRow[] | null
-}
-
-/**
- * CityCard(城市卡)的 props。
- */
-export type CityCardIn = {
-  /**
-   * 取词函数(卡内四行键值的键)。
-   */
-  t: TFn
-
-  /**
-   * 这一行。
-   */
-  row: CityCellRow
 }
 
 /**

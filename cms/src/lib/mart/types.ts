@@ -387,6 +387,21 @@ export type CloseStaleIn = {
 }
 
 /**
+ * `refreshCityStats` 的入参(2026-09-11 城市段重设计批:seed 收尾在库内重算城市快照)。
+ */
+export type RefreshCityIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳(近 7 天口径与 fetched 都从它截)。
+   */
+  now: string
+}
+
+/**
  * `insertBatch` 的入参。
  */
 export type InsertBatchIn = {

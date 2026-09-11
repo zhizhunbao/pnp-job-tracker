@@ -22,7 +22,7 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import {
-  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyCityRows, emptyDailyRows, emptyOccRows, emptyProvExtra,
+  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyDailyRows, emptyOccRows, emptyProvExtra,
   emptyQueryResult,
   emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from '@/components/start'
@@ -31,14 +31,15 @@ import { dbOf } from '@/lib/db/server'
 import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
 import { employerVerdict } from '@/lib/ruling/server'
-import { loadCityStats, loadDailySeries, loadOccStats, loadProvExtra } from '@/lib/stats/server'
+import { loadDailySeries, loadOccStats, loadProvExtra } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = START_META
 
 /**
- * 把脉首页的门:进程内缓存没命中就十一条查询并发取数 → 纯函数组装 → 拼大写组件。
+ * 把脉首页的门:进程内缓存没命中就八条查询并发取数 → 纯函数组装 → 拼大写组件。
+ * 城市行 2026-09-11 城市段重设计批自 SSR 退役(段内挂载后拉 /api/stats/city,400 张卡不再进 HTML)。
  * 缓存口径与旧版一字未改:10 分钟内给同一份,过期现查再存;抓取时刻逐请求不进缓存
  * (lib/jobs 自带 30s 缓存)。预选省 2026-09-06 随省内职业榜退役(省份段不再切省),getUser 一并撤。
  *
@@ -49,12 +50,11 @@ export default async function PulsePage() {
   const db = dbOf(payload)
   let core = cachedHomeOf()
   if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, cityRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
+    const [proof, provExtra, sponsorRows, occRows, dailyRows, drawRes, pilotRes, briefRes] = await Promise.all([
       loadTotalAndProof(db).catch(nullProof),
       loadProvExtra(db).catch(emptyProvExtra),
       loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
       loadOccStats(db).catch(emptyOccRows),
-      loadCityStats(db).catch(emptyCityRows),
       loadDailySeries(db).catch(emptyDailyRows),
       db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
       db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
@@ -66,7 +66,6 @@ export default async function PulsePage() {
       sponsorRows,
       boards: buildSponsorBoards(sponsorRows),
       occRows,
-      cityRows,
       dailyRows,
       drawRows: drawRes.rows,
       drawsLimit: DRAWS_LIMIT,

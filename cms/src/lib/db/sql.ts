@@ -765,10 +765,81 @@ export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
 
 /**
  * 城市统计榜(带中文/韩文城市名)。$1=行数。
+ * 2026-09-11 城市段重设计批:快照内容改由 seed 收尾在库内重算(REFRESH_CITY_STATS,
+ * 与职位板同一份 WHERE)—— 原 mart 快照走当轮汇装,而下架规则是「本次未见**且**发布超 30 天」
+ * 才关,库里 open 天然比它多 18~22%(Toronto 1,245 vs 1,427 实测),用户卡上看一个数点进职位板
+ * 另一个数;每请求现算又撞 IO(jobs 表 768MB,一条聚合冷读 29s 实测)—— 聚合下沉到 seed 时刻,
+ * 这里只剩毫秒级快照读。pilot 列 = 城市级专属通道信号(RCIP / FCIP / RCIP+FCIP)。
  */
-export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs
+export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs, s.pilot
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
+
+/**
+ * 清空城市快照(REFRESH_CITY_STATS 的前半;seed 事务内两句连发,失败整体回滚不留空表)。
+ */
+export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
+
+/**
+ * 城市快照重算(2026-09-11;seed 收尾在库内按职位板同口径聚合,CITY_STATS 注释有取舍全文)。
+ * $1=近 7 天口径的日期串(YYYY-MM-DD;date_posted 是 varchar 按字典序比,同 STATS_DAILY_SERIES
+ * 的教训)、$2=fetched 日期串。中位数取整:快照列是 integer,percentile_cont 回 double。
+ * pilot / pilot_community 取城内非空打标的 MAX(同城打标同值,MAX 只是聚合语法要求)。
+ */
+export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, fetched, updated_at, created_at)
+       SELECT j.city, j.province, COUNT(*)::int,
+              COUNT(*) FILTER (WHERE j.date_posted >= $1)::int,
+              ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_med_annual))::numeric)::int,
+              ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual))::numeric)::int,
+              COUNT(j.salary_annual)::int,
+              COUNT(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int,
+              MAX(NULLIF(j.pilot, '')),
+              MAX(NULLIF(j.pilot_community, '')),
+              $2, now(), now()
+       FROM jobs j
+       WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
+       GROUP BY j.city, j.province`
+
+/**
+ * 城市 × 大类在招(城市段「行业对比」表;2026-09-11)。$1=取快照在招量前几的城市。
+ * 前十城锚定快照(毫秒),计数走 jobs 现查(idx_jobs_city 逐城点查,口径与职位板同一份 WHERE);
+ * 大类空串(未分类)不出行,列由前端按体量挑。
+ */
+export const CITY_INDUSTRY = `SELECT j.city, j.province, j.broad, COUNT(*)::int AS n
+       FROM jobs j JOIN (
+         SELECT city, province FROM stats_city ORDER BY open_jobs DESC NULLS LAST LIMIT $1) t
+         ON t.city = j.city AND t.province = j.province
+       WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.broad, '') <> ''
+       GROUP BY j.city, j.province, j.broad`
+
+/**
+ * 大类三语名(城市段行业对比的列头;noc_categories 一大类多行,去重取三语)。
+ */
+export const CITY_BROAD_LABELS = `SELECT DISTINCT broad, broad_en, broad_ko FROM noc_categories WHERE COALESCE(broad, '') <> ''`
+
+/**
+ * 试点社区 20 行 + 各社区在招(城市段「试点社区」表;2026-09-11)。
+ * 在招 = 快照按 pilot_community 汇总(打标即用 pilot_communities.name,join 键同源);
+ * 同名双制(Sudbury RCIP 与 FCIP)各出一行同一个数 —— 两条通道是两个事实。
+ * 0 是事实不是缺格(JB 全省全职业覆盖)。
+ */
+export const CITY_PILOTS = `SELECT p.name, p.province, p.type, COALESCE(SUM(s.open_jobs), 0)::int AS open_jobs
+       FROM pilot_communities p LEFT JOIN stats_city s ON s.pilot_community = p.name
+       GROUP BY p.name, p.province, p.type
+       ORDER BY open_jobs DESC, p.name ASC, p.type ASC`
+
+/**
+ * 城市 DLI 统计(城市段「留学城市」表;2026-09-11)。$1=行数。
+ * n=院校数、public_n=其中公立、grad_n=毕业可申工签(PGWP 资格);译名借 cities 维度。
+ */
+export const CITY_DLI_STATS = `SELECT d.city, d.province, c.name_zh, c.name_ko,
+              COUNT(*)::int AS n,
+              COUNT(*) FILTER (WHERE d.is_public)::int AS public_n,
+              COUNT(*) FILTER (WHERE d.grad_program)::int AS grad_n
+       FROM dli d LEFT JOIN cities c ON c.name = d.city AND c.province = d.province
+       WHERE COALESCE(d.city, '') <> ''
+       GROUP BY d.city, d.province, c.name_zh, c.name_ko
+       ORDER BY n DESC, d.city ASC LIMIT $1`
 
 /**
  * 把脉页趋势段·逐日在招量(2026-09-04 Frank「趋势先一张全国,再按行业拆」)。

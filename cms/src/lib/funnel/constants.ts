@@ -16,7 +16,7 @@
  * `docs/design/对话即产品-20260803.md` §六:两形态的转化对照才是撤旧页的判据,
  * 塞进同一条链会把两套口径搅成一锅。后接雇主线三步与 PR 评估四步(各自成链)。
  */
-export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series'] as const
+export const FUNNEL_STEPS = ['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click', 'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs', 'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done', 'pulse-card', 'pulse-occ', 'pulse-cta', 'emp-search', 'emp-filter', 'emp-row', 'emp-page', 'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open'] as const
 
 /**
  * 漏斗步骤名(从白名单数组派生 —— 类型与它派生自的数组同居,派生即护栏:加一步只改数组)。
@@ -48,6 +48,9 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * 与 se-view-jobs 同属**参照**。同样追加在尾部,免得动了前面的下标切片。
  * prop 是低基数枚举:搜索 / 点名 / 翻页记口径(designated|hiring),换筛选记的是**哪一格**
  * (mode|prov|program|city|noc)—— 🔴 搜索词与雇主名永不进 prop,高基数会把日聚合撑成明细表。
+ * 城市段一事件(2026-09-11 城市段重设计批):city-open = 从城市段落去职位板,
+ * prop 记从哪张表走的(main|industry|pilot|dli|search)—— 旧城市卡零埋点 40 天零交互不可测,
+ * 本批四表全部挂点;只计数不成链,城市名永不进 prop(高基数)。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',
@@ -81,6 +84,7 @@ export const ALIAS: Record<string, FunnelStep> = {
   'pulse-sec': 'pulse-sec',
   'pulse-subnav': 'pulse-subnav',
   'pulse-series': 'pulse-series',
+  'city-open': 'city-open',
 }
 
 /**

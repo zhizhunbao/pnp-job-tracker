@@ -128,6 +128,12 @@ export const STEP_LABEL: Record<string, string> = {
    * 把脉页切了序列表的视图或年窗(kind = table / chart / recent / more / all)。
    */
   'pulse-series': '把脉 · 切表图年窗',
+
+  /**
+   * 从城市段落去职位板(2026-09-11 城市段重设计批;kind = main / industry / pilot / dli / search,
+   * 只计数不成链,城市名永不进 kind)。
+   */
+  'city-open': '把脉 · 城市落板',
 }
 
 /**

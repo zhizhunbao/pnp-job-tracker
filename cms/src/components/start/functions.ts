@@ -36,8 +36,12 @@ import {
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
-  EMPTY_CITY_ROWS, KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
+  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
   TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
+  BROAD_UNCLASSIFIED, CITY_IND_COLS, CITY_IND_COLS_M, CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
+  CITY_SEARCH_MAX, CITY_UTM_TAIL, COL_CITY, COL_CITY_PILOT, COL_COMM, COL_COMM_TYPE, COL_DLI_GRAD, COL_DLI_N,
+  COL_CITY_WAGE, COL_DLI_PUB, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
+  URL_CITY_API,
   AXIS_CATEGORY, AXIS_VALUE, CHART_TRIGGER_AXIS, SERIES_LINE_TYPE, TREND_LINE_WIDTH, WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
   HIST_WINDOW, HIST_MIN_N, TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, COL_READ, W_DATE,
@@ -82,8 +86,11 @@ import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
+import { CityNameCell } from './citynamecell'
+import { CityPilotCell } from './citypilotcell'
+import { CityPilotTypeCell } from './citypilottypecell'
 import type { ChartOption } from '@/components/stats'
-import type { CityRow, DailyRow } from '@/lib/stats'
+import type { BroadLabelRow, CityRow, DailyRow, DliCityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
   BandClsIn, CleanupFn,
@@ -100,10 +107,13 @@ import type {
   SponsorRowList, StartCol, StartPill,
   StatRowList,
   StreamLabelIn, TierClsIn,
-  CityCellRow, CityCellRowsIn, CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
+  CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
-  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CityRowsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
+  AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
+  BroadLabelOfIn, CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndRowsIn,
+  CityLoadIn, CityMainRow, CityMainRowsIn, CityMatchRow, CityMatchesIn, CityPilotRow, CityPilotRowsIn,
+  CityStatsProbe, IndBroadCol, IndBroadColsIn, PilotTextIn, SearchChangeEvent, SearchChangeIn,
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
   TrendSmallIn, ValuableIn,
@@ -243,7 +253,6 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     provExtra: x.provExtra,
     natOcc,
     nocProvs: Object.fromEntries(nocProvsOf({ occ: x.occRows })),
-    city: x.cityRows,
   }
 }
 
@@ -268,7 +277,6 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     provExtra: x.core.provExtra,
     natOcc: x.core.natOcc,
     nocProvs: x.core.nocProvs,
-    city: x.core.city,
     checkedAt: x.checkedAt,
   }
 }
@@ -324,15 +332,6 @@ function seedGroupOf(x: SeedGroupIn): SponsorGroup {
     }
   }
   return { top, total: x.group.total }
-}
-
-/**
- * 城市统计行的空表(城市段取数挂了给它,段整段不出)。
- *
- * @returns 空表。
- */
-export function emptyCityRows(): CityRow[] {
-  return []
 }
 
 /**
@@ -638,7 +637,25 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
   if (x.navSec === ID_PR_BAND) {
     return prSubsOf(x.t)
   }
+  if (x.navSec === ID_CITY) {
+    return citySubsOf(x.t)
+  }
   return []
+}
+
+/**
+ * 城市段的子项:四张表的锚点(2026-09-11 重设计批;此前城市段是唯一没有子导航的有内容段)。
+ *
+ * @param t 取词函数。
+ * @returns 子项清单。
+ */
+function citySubsOf(t: TFn): NavItem[] {
+  return [
+    { id: ID_CITY_MAIN, label: t('pulse.city.main') },
+    { id: ID_CITY_IND, label: t('pulse.city.ind') },
+    { id: ID_CITY_PILOT, label: t('pulse.city.pilot') },
+    { id: ID_CITY_DLI, label: t('pulse.city.dli') },
+  ]
 }
 
 /**
@@ -1982,76 +1999,791 @@ function byWageDesc(a: OccRowOne, b: OccRowOne): number {
 
 
 /**
- * 城市段的候选行:主图的 city 行按在招降序(全量,视图分页);主图没到给 null。
+ * 城市段五份的挂载后拉取工厂(2026-09-11 重设计批,照 makeMacroLoad 的形;
+ * 拉挂给五份全空 —— 段渲空态不渲占位死等)。
  *
- * @param x 主图四份数据。
- * @returns 城市行或 null。
+ * @param x 落数回调。
+ * @returns 启动函数(返回中止清理)。
  */
-export function cityRowsOf(x: CityRowsIn): CityRow[] | null {
-  const rows = x.city.slice()
-  rows.sort(byCityOpenDesc)
-  return rows
-}
-
-/**
- * 在招(null 当 0,只用于排序)。
- *
- * @param r 一行。
- * @returns 在招数。
- */
-function cityOpenOf(r: CityRow): number {
-  if (r.openJobs == null) {
-    return 0
+export function makeCityLoad(x: CityLoadIn): () => CleanupFn {
+  return function run(): CleanupFn {
+    const ctrl = new AbortController()
+    async function pull(): Promise<void> {
+      try {
+        const res = await fetch(URL_CITY_API, { signal: ctrl.signal })
+        if (res.ok === false) {
+          x.setCityData(cityListsOf({}))
+          return
+        }
+        const j: CityStatsProbe = await res.json()
+        x.setCityData(cityListsOf(j))
+      } catch {
+        if (ctrl.signal.aborted === false) {
+          x.setCityData(cityListsOf({}))
+        }
+      }
+    }
+    void pull()
+    return function abort(): void {
+      ctrl.abort()
+    }
   }
-  return r.openJobs
 }
 
 /**
- * 按在招降序。
+ * 拉回的探针 → 五份齐整(缺键给空清单;每份独立,缺一份只丢那张表)。
  *
- * @param a 一行。
- * @param b 另一行。
- * @returns 比较结果。
+ * @param j 拉回的 json 探针。
+ * @returns 五份数据。
  */
-// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byCityOpenDesc(a: CityRow, b: CityRow): number {
-  return cityOpenOf(b) - cityOpenOf(a)
-}
-
-/**
- * 城市统计行 → 城市卡展示行(值级清洗全在这里)。
- *
- * @param x 城市行、取词函数与语言。
- * @returns 展示行。
- */
-export function toCityCellRows(x: CityCellRowsIn): CityCellRow[] {
-  const out: CityCellRow[] = []
-  for (const r of x.rows) {
-    out.push(toCityCellRow(r, x))
+function cityListsOf(j: CityStatsProbe): CityData {
+  const out: CityData = { cities: [], industry: [], broads: [], pilots: [], dli: [] }
+  if (j.cities != null) {
+    out.cities = j.cities
+  }
+  if (j.industry != null) {
+    out.industry = j.industry
+  }
+  if (j.broads != null) {
+    out.broads = j.broads
+  }
+  if (j.pilots != null) {
+    out.pilots = j.pilots
+  }
+  if (j.dli != null) {
+    out.dli = j.dli
   }
   return out
 }
 
 /**
- * 一行城市统计 → 展示行。
+ * 城市段落职位板的地址(按城市筛 + 来源标记)。
  *
- * @param r 城市统计行。
- * @param x 取词函数与语言。
+ * @param city 城市英文名。
+ * @returns 地址。
+ */
+function cityHrefOf(city: string): string {
+  return URL_HOME_CITY_HEAD + encodeURIComponent(city) + CITY_UTM_TAIL
+}
+
+/**
+ * 城市段点击埋点的手柄工厂(city-open,kind 按表;工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param kind 从哪张表走的(main / industry / pilot / dli / search)。
+ * @returns 点击回调。
+ */
+export function makeCityTrack(kind: string): ClickFn {
+  return function onCityOpen() {
+    track(TRACK_CITY, { [TRACK_PROP_KEY]: kind })
+  }
+}
+
+/**
+ * 城市名的灰注:主文案是译名时给「英文名 + 省码」,主文案就是英文时只剩省码。
+ *
+ * @param x 城市行与语言。
+ * @returns 灰注。
+ */
+function cityNoteOf(x: CityNameIn): string {
+  if (cityNameOf(x) === x.r.city) {
+    return x.r.province
+  }
+  return x.r.city + SPACE_SEP + x.r.province
+}
+
+/**
+ * 城市全量榜 → 表 1(主要城市)展示行(值级清洗全在这里;行序 = 服务端在招降序)。
+ *
+ * @param x 城市行、取词函数与语言。
  * @returns 展示行。
  */
-// eslint-disable-next-line local/one-parameter -- 行构造器照 toOccCellRow 的形:行 + 上下文两参
-function toCityCellRow(r: CityRow, x: CityCellRowsIn): CityCellRow {
-  return {
-    key: r.city + KEY_SEP + r.province,
-    name: cityNameOf({ r, lang: x.lang }),
-    provName: provLabelOf({ t: x.t, code: r.province }),
-    provCode: r.province,
-    openText: numOrDashOf(r.openJobs),
-    new7Text: numOrDashOf(r.new7d),
-    wageText: wageOrDashOf(r.medianWageAnnual),
-    namedText: numOrDashOf(r.namedJobs),
-    href: URL_HOME_CITY_HEAD + encodeURIComponent(r.city),
+export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
+  const onOpen = makeCityTrack(CITY_KIND_MAIN)
+  const out: CityMainRow[] = []
+  for (const r of x.rows) {
+    out.push({
+      key: r.city + KEY_SEP + r.province,
+      name: cityNameOf({ r, lang: x.lang }),
+      note: cityNoteOf({ r, lang: x.lang }),
+      href: cityHrefOf(r.city),
+      onOpen,
+      open: r.openJobs,
+openText: numOrDashOf(r.openJobs),
+      new7: r.new7d,
+new7Text: numOrDashOf(r.new7d),
+      wage: r.medianWageAnnual,
+wageText: wageOrDashOf(r.medianWageAnnual),
+      pilotText: pilotTextOf({ t: x.t, pilot: r.pilot }),
+    })
   }
+  return out
+}
+
+/**
+ * 专属通道文案:RCIP / FCIP / 双制按词条拼;没有给 DASH_MARK。
+ *
+ * @param x 取词函数与打标值。
+ * @returns 文案。
+ */
+function pilotTextOf(x: PilotTextIn): string {
+  if (x.pilot == null) {
+    return DASH_MARK
+  }
+  return x.pilot + SPACE_SEP + x.t('pulse.city.pilotTag')
+}
+
+/**
+ * 表 1 的列(城市 / 在招 / 近 7 天 / 中位年薪 / 专属通道;近 7 天手机档藏)。
+ *
+ * @param x 取词函数。
+ * @returns 列声明。
+ */
+export function cityMainColsOf(x: CityColsIn): StartCol<CityMainRow>[] {
+  return [
+    { key: COL_CITY, label: x.t('pulse.city.name'), sort: cityNameSortOf, render: CityNameCell },
+    { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: cityOpenSortOf, render: cityOpenTextOf },
+    {
+      key: COL_JOBS_NEW7,
+      label: x.t('stats.new7d'),
+      nowrap: true,
+      sort: cityNew7SortOf,
+      render: cityNew7TextOf,
+      className: cssOf(css.cityWide),
+    },
+    { key: COL_CITY_WAGE, label: x.t('stats.medWage'), nowrap: true, sort: cityWageSortOf, render: cityWageTextOf },
+    {
+      key: COL_CITY_PILOT,
+      label: x.t('pulse.city.channel'),
+      nowrap: true,
+      sort: cityPilotSortOf,
+      render: CityPilotCell,
+    },
+  ]
+}
+
+/**
+ * 表 1 城市名排序键(主文案)。
+ *
+ * @param r 一行。
+ * @returns 主文案。
+ */
+export function cityNameSortOf(r: CityMainRow): string {
+  return r.name
+}
+
+/**
+ * 表 1 在招排序键。
+ *
+ * @param r 一行。
+ * @returns 在招数。
+ */
+export function cityOpenSortOf(r: CityMainRow): number | null {
+  return r.open
+}
+
+/**
+ * 表 1 在招格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function cityOpenTextOf(r: CityMainRow): string {
+  return r.openText
+}
+
+/**
+ * 表 1 近 7 天排序键。
+ *
+ * @param r 一行。
+ * @returns 近 7 天数。
+ */
+export function cityNew7SortOf(r: CityMainRow): number | null {
+  return r.new7
+}
+
+/**
+ * 表 1 近 7 天格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function cityNew7TextOf(r: CityMainRow): string {
+  return r.new7Text
+}
+
+/**
+ * 表 1 中位年薪排序键。
+ *
+ * @param r 一行。
+ * @returns 中位年薪。
+ */
+export function cityWageSortOf(r: CityMainRow): number | null {
+  return r.wage
+}
+
+/**
+ * 表 1 中位年薪格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function cityWageTextOf(r: CityMainRow): string {
+  return r.wageText
+}
+
+/**
+ * 表 1 专属通道排序键(有通道排前靠文案,杠排后)。
+ *
+ * @param r 一行。
+ * @returns 通道文案。
+ */
+export function cityPilotSortOf(r: CityMainRow): string {
+  return r.pilotText
+}
+
+/**
+ * 行业对比的大类列:按全表体量降序挑前 CITY_IND_COLS(未分类不进),列头按界面语言取。
+ *
+ * @param x 计数行、大类三语名与语言。
+ * @returns 大类列清单。
+ */
+export function indBroadColsOf(x: IndBroadColsIn): IndBroadCol[] {
+  const sums = new Map<string, number>()
+  for (const r of x.rows) {
+    if (r.broad === BROAD_UNCLASSIFIED) {
+      continue
+    }
+    let s = sums.get(r.broad)
+    if (s == null) {
+      s = 0
+    }
+    sums.set(r.broad, s + r.n)
+  }
+  const keys = [...sums.keys()]
+  keys.sort(makeBySumDesc(sums))
+  const labels = new Map<string, BroadLabelRow>()
+  for (const b of x.broads) {
+    labels.set(b.broad, b)
+  }
+  const out: IndBroadCol[] = []
+  for (const key of keys.slice(0, CITY_IND_COLS)) {
+    out.push({ key, label: broadLabelOf({ key, labels, lang: x.lang }) })
+  }
+  return out
+}
+
+/**
+ * 大类体量比较器工厂(降序;工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param sums 大类 → 体量。
+ * @returns 比较器。
+ */
+function makeBySumDesc(sums: Map<string, number>): (a: string, b: string) => number {
+
+  return function bySumDesc(a: string, b: string): number {
+    let sa = sums.get(a)
+    if (sa == null) {
+      sa = 0
+    }
+    let sb = sums.get(b)
+    if (sb == null) {
+      sb = 0
+    }
+    return sb - sa
+  }
+}
+
+/**
+ * 一个大类的界面语言列头(中文用数据值本身,英/韩借 noc_categories 的三语名;缺译回中文)。
+ *
+ * @param x 大类键、三语名表与语言。
+ * @returns 列头。
+ */
+function broadLabelOf(x: BroadLabelOfIn): string {
+  const hit = x.labels.get(x.key)
+  if (hit == null) {
+    return x.key
+  }
+  if (x.lang === LANG_EN && hit.broadEn !== TEXT_NONE) {
+    return hit.broadEn
+  }
+  if (x.lang === LANG_KO && hit.broadKo !== TEXT_NONE) {
+    return hit.broadKo
+  }
+  return x.key
+}
+
+/**
+ * 城 × 大类计数行 → 表 2(行业对比)展示行(行序 = 表 1 的在招序,借城市全量榜)。
+ *
+ * @param x 计数行、城市榜与语言。
+ * @returns 展示行。
+ */
+export function toCityIndRows(x: CityIndRowsIn): CityIndRow[] {
+  const onOpen = makeCityTrack(CITY_KIND_IND)
+  const byCity = new Map<string, CityIndRow>()
+  const out: CityIndRow[] = []
+  for (const c of x.cities) {
+    const key = c.city + KEY_SEP + c.province
+    const row: CityIndRow = {
+      key,
+      name: cityNameOf({ r: c, lang: x.lang }),
+      note: cityNoteOf({ r: c, lang: x.lang }),
+      href: cityHrefOf(c.city),
+      onOpen,
+      byBroad: {},
+    }
+    byCity.set(key, row)
+  }
+  for (const r of x.rows) {
+    const hit = byCity.get(r.city + KEY_SEP + r.province)
+    if (hit != null) {
+      hit.byBroad[r.broad] = r.n
+      if (out.includes(hit) === false) {
+        out.push(hit)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 表 2 的列(城市 + 挑好的大类列;手机档只显体量前 CITY_IND_COLS_M 列大类)。
+ *
+ * @param x 取词函数与大类列。
+ * @returns 列声明。
+ */
+export function cityIndColsOf(x: CityIndColsIn): StartCol<CityIndRow>[] {
+  const out: StartCol<CityIndRow>[] = [
+    { key: COL_CITY, label: x.t('pulse.city.name'), sort: indNameSortOf, render: CityNameCell },
+  ]
+  let at = 0
+  for (const b of x.broadCols) {
+    let cls = TEXT_NONE
+    if (at >= CITY_IND_COLS_M) {
+      cls = cssOf(css.cityWide)
+    }
+    out.push({
+      key: b.key,
+      label: b.label,
+      nowrap: true,
+      sort: makeIndSortOf(b.key),
+      render: makeIndTextOf(b.key),
+      className: cls,
+    })
+    at = at + 1
+  }
+  return out
+}
+
+/**
+ * 表 2 城市名排序键。
+ *
+ * @param r 一行。
+ * @returns 主文案。
+ */
+export function indNameSortOf(r: CityIndRow): string {
+  return r.name
+}
+
+/**
+ * 表 2 某大类列的排序键工厂(工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param key 大类键。
+ * @returns 排序取值器。
+ */
+function makeIndSortOf(key: string): (r: CityIndRow) => number {
+  return function indSortOf(r: CityIndRow): number {
+    const n = r.byBroad[key]
+    if (n == null) {
+      return 0
+    }
+    return n
+  }
+}
+
+/**
+ * 表 2 某大类列的格文案工厂(没有的格给 0 —— 该城该大类在招为零是事实,JB 全省全职业覆盖)。
+ *
+ * @param key 大类键。
+ * @returns 取文案函数。
+ */
+function makeIndTextOf(key: string): (r: CityIndRow) => string {
+  return function indTextOf(r: CityIndRow): string {
+    const n = r.byBroad[key]
+    if (n == null) {
+      return numOf(0)
+    }
+    return numOf(n)
+  }
+}
+
+/**
+ * 试点社区名去省尾巴('Sudbury, ON' → 'Sudbury';join 键仍用全名)。
+ *
+ * @param name 社区官方名。
+ * @returns 短名。
+ */
+function pilotShortNameOf(name: string): string {
+  const at = name.indexOf(PILOT_NAME_SEP)
+  if (at < 0) {
+    return name
+  }
+  return name.slice(0, at)
+}
+
+/**
+ * 试点社区行 → 表 3 展示行。社区短名与城市榜同名时借译名并给落板链接;
+ * 对不上名的(社区 ≠ 单一城市,如 Pictou County)不给链接 —— 落到空职位板比不链更糟。
+ *
+ * @param x 试点行、城市榜、取词函数与语言。
+ * @returns 展示行。
+ */
+export function toCityPilotRows(x: CityPilotRowsIn): CityPilotRow[] {
+  const onOpen = makeCityTrack(CITY_KIND_PILOT)
+  const byCity = new Map<string, CityRow>()
+  for (const c of x.cities) {
+    byCity.set(c.city + KEY_SEP + c.province, c)
+  }
+  const out: CityPilotRow[] = []
+  for (const p of x.pilots) {
+    const short = pilotShortNameOf(p.name)
+    const hit = byCity.get(short + KEY_SEP + p.province)
+    let name = short
+    let note = p.province
+    let href = TEXT_NONE
+    if (hit != null) {
+      name = cityNameOf({ r: hit, lang: x.lang })
+      note = cityNoteOf({ r: hit, lang: x.lang })
+      href = cityHrefOf(hit.city)
+    }
+    out.push({
+      key: p.name + KEY_SEP + p.type,
+      name,
+note,
+href,
+onOpen,
+      typeText: p.type + SPACE_SEP + x.t('pulse.city.pilotTag'),
+      open: p.openJobs,
+openText: numOf(p.openJobs),
+    })
+  }
+  return out
+}
+
+/**
+ * 表 3 的列(社区 / 省 / 通道 / 在招;省列手机档藏 —— 省码已在灰注里)。
+ *
+ * @param x 取词函数。
+ * @returns 列声明。
+ */
+export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
+  return [
+    { key: COL_COMM, label: x.t('pulse.city.comm'), sort: pilotNameSortOf, render: CityNameCell },
+    {
+      key: COL_PROV,
+      label: x.t('pulse.s4.prov'),
+      nowrap: true,
+      sort: pilotProvSortOf,
+      render: pilotProvTextOf,
+      className: cssOf(css.cityWide),
+    },
+    {
+      key: COL_COMM_TYPE,
+      label: x.t('pulse.city.channel'),
+      nowrap: true,
+      sort: pilotTypeSortOf,
+      render: CityPilotTypeCell,
+    },
+    { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
+  ]
+}
+
+/**
+ * 表 3 社区名排序键。
+ *
+ * @param r 一行。
+ * @returns 主文案。
+ */
+export function pilotNameSortOf(r: CityPilotRow): string {
+  return r.name
+}
+
+/**
+ * 表 3 省列排序键与文案(灰注最后一段即省码;单独存列免得排序键混译名)。
+ *
+ * @param r 一行。
+ * @returns 省码。
+ */
+export function pilotProvSortOf(r: CityPilotRow): string {
+  return pilotProvTextOf(r)
+}
+
+/**
+ * 表 3 省格文案(灰注尾段的省码)。
+ *
+ * @param r 一行。
+ * @returns 省码。
+ */
+export function pilotProvTextOf(r: CityPilotRow): string {
+  const at = r.note.lastIndexOf(SPACE_SEP)
+  if (at < 0) {
+    return r.note
+  }
+  return r.note.slice(at + 1)
+}
+
+/**
+ * 表 3 通道排序键。
+ *
+ * @param r 一行。
+ * @returns 通道文案。
+ */
+export function pilotTypeSortOf(r: CityPilotRow): string {
+  return r.typeText
+}
+
+/**
+ * 表 3 在招排序键。
+ *
+ * @param r 一行。
+ * @returns 在招数。
+ */
+export function pilotOpenSortOf(r: CityPilotRow): number {
+  return r.open
+}
+
+/**
+ * 表 3 在招格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function pilotOpenTextOf(r: CityPilotRow): string {
+  return r.openText
+}
+
+/**
+ * 城市 DLI 行 → 表 4(留学城市)展示行。
+ *
+ * @param x DLI 行与语言。
+ * @returns 展示行。
+ */
+export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
+  const onOpen = makeCityTrack(CITY_KIND_DLI)
+  const out: CityDliRow[] = []
+  for (const r of x.rows) {
+    const link: CityNameIn = { r: dliAsCityRowOf(r), lang: x.lang }
+    out.push({
+      key: r.city + KEY_SEP + r.province,
+      name: cityNameOf(link),
+      note: cityNoteOf(link),
+      href: cityHrefOf(r.city),
+      onOpen,
+      n: r.n,
+pub: r.publicN,
+grad: r.gradN,
+    })
+  }
+  return out
+}
+
+/**
+ * DLI 行借城市名取值器的形(cityNameOf 只读名字五格;数字格喂 null 不参与)。
+ *
+ * @param r DLI 行。
+ * @returns 名字五格齐整的城市行。
+ */
+function dliAsCityRowOf(r: DliCityRow): CityRow {
+  return {
+    city: r.city,
+cityZh: r.cityZh,
+cityKo: r.cityKo,
+province: r.province,
+    openJobs: null,
+new7d: null,
+medianWageAnnual: null,
+medianSalaryAnnual: null,
+salaryN: null,
+namedJobs: null,
+    pilot: null,
+  }
+}
+
+/**
+ * 表 4 的列(城市 / DLI 院校 / 其中公立 / 可申工签;公立列手机档藏)。
+ *
+ * @param x 取词函数。
+ * @returns 列声明。
+ */
+export function cityDliColsOf(x: CityColsIn): StartCol<CityDliRow>[] {
+  return [
+    { key: COL_CITY, label: x.t('pulse.city.name'), sort: dliNameSortOf, render: CityNameCell },
+    { key: COL_DLI_N, label: x.t('pulse.city.dliN'), nowrap: true, sort: dliNSortOf, render: dliNTextOf },
+    {
+      key: COL_DLI_PUB,
+      label: x.t('pulse.city.dliPub'),
+      nowrap: true,
+      sort: dliPubSortOf,
+      render: dliPubTextOf,
+      className: cssOf(css.cityWide),
+    },
+    { key: COL_DLI_GRAD, label: x.t('pulse.city.dliGrad'), nowrap: true, sort: dliGradSortOf, render: dliGradTextOf },
+  ]
+}
+
+/**
+ * 表 4 城市名排序键。
+ *
+ * @param r 一行。
+ * @returns 主文案。
+ */
+export function dliNameSortOf(r: CityDliRow): string {
+  return r.name
+}
+
+/**
+ * 表 4 院校数排序键。
+ *
+ * @param r 一行。
+ * @returns 院校数。
+ */
+export function dliNSortOf(r: CityDliRow): number {
+  return r.n
+}
+
+/**
+ * 表 4 院校数格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function dliNTextOf(r: CityDliRow): string {
+  return numOf(r.n)
+}
+
+/**
+ * 表 4 公立数排序键。
+ *
+ * @param r 一行。
+ * @returns 公立数。
+ */
+export function dliPubSortOf(r: CityDliRow): number {
+  return r.pub
+}
+
+/**
+ * 表 4 公立数格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function dliPubTextOf(r: CityDliRow): string {
+  return numOf(r.pub)
+}
+
+/**
+ * 表 4 可申工签数排序键。
+ *
+ * @param r 一行。
+ * @returns 可申工签院校数。
+ */
+export function dliGradSortOf(r: CityDliRow): number {
+  return r.grad
+}
+
+/**
+ * 表 4 可申工签数格文案。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function dliGradTextOf(r: CityDliRow): string {
+  return numOf(r.grad)
+}
+
+/**
+ * 搜索建议:输入串小写含于 英文名 / 译名 任一即命中,按在招序取前 CITY_SEARCH_MAX 条;
+ * 空串给空清单(不出全量)。本地过滤不打接口 —— 全量榜就在手上。
+ *
+ * @param x 城市榜、输入串与语言。
+ * @returns 建议清单。
+ */
+export function cityMatchesOf(x: CityMatchesIn): CityMatchRow[] {
+  const q = x.q.trim().toLowerCase()
+  const out: CityMatchRow[] = []
+  if (q === '') {
+    return out
+  }
+  for (const r of x.rows) {
+    if (out.length >= CITY_SEARCH_MAX) {
+      break
+    }
+    const hitEn = r.city.toLowerCase().includes(q)
+    const hitZh = r.cityZh !== TEXT_NONE && r.cityZh.includes(x.q.trim())
+    const hitKo = r.cityKo !== TEXT_NONE && r.cityKo.includes(x.q.trim())
+    if (hitEn || hitZh || hitKo) {
+      out.push({
+        key: r.city + KEY_SEP + r.province,
+        name: cityNameOf({ r, lang: x.lang }),
+        note: cityNoteOf({ r, lang: x.lang }) + SPACE_SEP + numOrDashOf(r.openJobs),
+        href: cityHrefOf(r.city),
+      })
+    }
+  }
+  return out
+}
+
+/**
+ * 搜索输入框的 onChange 工厂(工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param x 写输入串。
+ * @returns onChange 回调。
+ */
+export function makeSearchChange(x: SearchChangeIn): (e: SearchChangeEvent) => void {
+  return function onSearchChange(e: SearchChangeEvent): void {
+    x.setQ(e.target.value)
+  }
+}
+
+/**
+ * 表 1 行身份。
+ *
+ * @param r 一行。
+ * @returns 城市 + 省。
+ */
+export function cityRowKeyOf(r: CityMainRow): string {
+  return r.key
+}
+
+/**
+ * 表 2 行身份。
+ *
+ * @param r 一行。
+ * @returns 城市 + 省。
+ */
+export function indRowKeyOf(r: CityIndRow): string {
+  return r.key
+}
+
+/**
+ * 表 3 行身份。
+ *
+ * @param r 一行。
+ * @returns 社区 + 类型。
+ */
+export function pilotRowKeyOf(r: CityPilotRow): string {
+  return r.key
+}
+
+/**
+ * 表 4 行身份。
+ *
+ * @param r 一行。
+ * @returns 城市 + 省。
+ */
+export function dliRowKeyOf(r: CityDliRow): string {
+  return r.key
 }
 
 /**
@@ -2095,16 +2827,6 @@ function wageOrDashOf(n: number | null): string {
   }
   return WAGE_SIGN + numOf(n)
 }
-
-/**
- * 城市卡的类(与省卡同形,不带选中态)。
- *
- * @returns 类名。
- */
-export function cityCardClsOf(): string {
-  return joinCls([cssOf(css.provCard), cssOf(css.cityCard), CLS_CARD_HOVER])
-}
-
 
 /**
  * 趋势段的数据:全国线(stats_daily 的 'all' 汇总行按日加总)+ 每个行业组一条线(组内大类按日加总)。
@@ -2564,18 +3286,6 @@ export function drawRowClsOf(x: DrawRowClsIn): string {
   return joinCls(cls)
 }
 
-/**
- * 城市行还没到时给页态一份空清单(useCardPage 要一份稳定身份的数组比对;null 不能比)。
- *
- * @param rows 城市行或 null。
- * @returns 原清单,或空清单。
- */
-export function rowsOrEmpty(rows: CityRow[] | null): CityRow[] {
-  if (rows == null) {
-    return EMPTY_CITY_ROWS
-  }
-  return rows
-}
 
 /**
  * 雇主段的分表(按身份档)。三分表并成一份(按雇主名去重)后按档筛、按档排、按行业分:
@@ -3661,7 +4371,11 @@ export function foldRowsOf(x: FoldRowsIn): MacroRow[] {
       continue
     }
     if (hasFoldChildRow({ rows: x.rows, key: r.key })) {
-      out.push(withFoldToggle({ row: r, toggle: makeFoldFlip({ key: r.key, flip: x.flip }), expanded: x.open[r.key] === true }))
+      out.push(withFoldToggle({
+        row: r,
+        toggle: makeFoldFlip({ key: r.key, flip: x.flip }),
+        expanded: x.open[r.key] === true,
+      }))
       continue
     }
     out.push(r)

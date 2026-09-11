@@ -38,7 +38,9 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, JSON_EXT, LOCAL_MART_REL, MART_CLOSED_JOBS, MART_DIR_NAME,
+  CITY_NEW7_DAYS, COUNT_CITY_REFRESH,
+  COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
+  MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
   TBL_CITIES, TBL_COMPANIES, TBL_DESIGNATED_EMPLOYERS, TBL_DISTRICTS, TBL_DLI, TBL_DEAD_EXT, TBL_EE_CATEGORIES,
@@ -51,6 +53,7 @@ import {
 } from './constants'
 import type {
   BoolOut, CaughtError, CloseDeadIn, CloseStaleIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
+  RefreshCityIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
   SeedStatsDailyIn, SeenPool, SeenPoolOut, TableExistsIn, ToCompanyIn, ToJobIn, ToNewsIn, ToStatsDailyIn,
@@ -965,6 +968,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
       })
     }
     await client.query(SQL.CLEAR_DUPS_CLOSED)
+    counts[COUNT_CITY_REFRESH] = await refreshCityStats({ client: client, now: now })
     await writeHeartbeat(client)
     await client.query(SQL.TX_COMMIT)
   } catch (e) {
@@ -1285,6 +1289,26 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
   await x.client.query(SQL.SEEN_EXT_INSERT, [x.ids])
   await x.client.query(SQL.ANALYZE_SEEN_EXT)
   const res = await x.client.query(SQL.CLOSE_STALE, [x.now, cutoff])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 城市快照重算(2026-09-11 城市段重设计批):seed 收尾把 stats_city 清掉,按职位板同一份
+ * WHERE(status + is_dup)在库内重聚合 —— mart 侧快照与 DB 差 18~22% 的口径根因、
+ * 以及为什么不每请求现算(768MB 表冷读 29s 实撞),全文见 SQL.CITY_STATS 注释。
+ * 事务内两句连发:失败整体回滚,不留空表窗口。段19 的试点打标(pilot / pilot_community)
+ * 随行聚合进快照,表 1 通道列与表 3 社区在招都吃它。
+ *
+ * @param x 事务连接与本轮时刻。
+ * @returns 快照行数。
+ */
+async function refreshCityStats(x: RefreshCityIn): CountOut {
+  const cutoff = new Date(Date.parse(x.now) - CITY_NEW7_DAYS * DAY_MS).toISOString().slice(0, ISO_DATE_LEN)
+  await x.client.query(SQL.CLEAR_CITY_STATS)
+  const res = await x.client.query(SQL.REFRESH_CITY_STATS, [cutoff, x.now.slice(0, ISO_DATE_LEN)])
   if (res.rowCount != null) {
     return res.rowCount
   }

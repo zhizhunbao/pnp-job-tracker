@@ -22,4 +22,9 @@ export const CACHE: StatsCache = {
    * /api/stats/macro 的宏观两份缓存(macro_series + pnp_ops_stats;10 分钟 TTL)。
    */
   macroStats: null,
+
+  /**
+   * /api/stats/city 的城市段五份缓存(2026-09-11 城市段重设计批;10 分钟 TTL)。
+   */
+  cityStats: null,
 }

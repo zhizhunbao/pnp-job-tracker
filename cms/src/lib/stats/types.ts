@@ -654,6 +654,17 @@ export type OccRows = OccRow[]
 export type OccRowsOut = Promise<OccRows>
 
 /**
+ * 宏观原样行的透传形(macro_series / pnp_ops_stats 零读格透传给 /api/stats/macro,
+ * 行构造在消费端 —— 不透明化 `= object` 的既有先例;2026-09-11 lint 收账补名)。
+ */
+export type RawRows = object[]
+
+/**
+ * `loadMacroRows` / `loadPnpOpsRows` 的返回。
+ */
+export type RawRowsOut = Promise<RawRows>
+
+/**
  * E8-14 统计主图·城市粒度一行(城市译名借 cities 维度表,小镇留空 → 前端回退英文原名)。
  */
 export type CityRow = {
@@ -706,6 +717,11 @@ export type CityRow = {
    * 具名通道岗数;没算保 null。
    */
   namedJobs: number | null
+
+  /**
+   * 城市级专属通道(RCIP / FCIP / RCIP+FCIP,mart 段19 城×省打标聚合);没有专属通道是 null。
+   */
+  pilot: string | null
 }
 
 /**
@@ -714,9 +730,154 @@ export type CityRow = {
 export type CityRows = CityRow[]
 
 /**
+ * `loadCityStats` 的入参(limit 分口径:market 主图取前 CITY_LIMIT,城市段全量取 CITY_ALL_LIMIT)。
+ */
+export type CityStatsIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 最多取几行。
+   */
+  limit: number
+}
+
+/**
  * `loadCityStats` 的返回。
  */
 export type CityRowsOut = Promise<CityRows>
+
+/**
+ * 城市 × 大类在招一行(SQL.CITY_INDUSTRY;城市段「行业对比」表)。
+ */
+export type CityIndustryRow = {
+  /**
+   * 城市英文名。
+   */
+  city: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 本站大类(数据值,中文;三语列头借 BroadLabelRow)。
+   */
+  broad: string
+
+  /**
+   * 该城该大类在招岗数。
+   */
+  n: number
+}
+
+/**
+ * `loadCityIndustry` 的返回。
+ */
+export type CityIndustryOut = Promise<CityIndustryRow[]>
+
+/**
+ * 大类三语名一行(SQL.CITY_BROAD_LABELS;行业对比列头)。
+ */
+export type BroadLabelRow = {
+  /**
+   * 本站大类(数据值,中文)。
+   */
+  broad: string
+
+  /**
+   * 英文名。
+   */
+  broadEn: string
+
+  /**
+   * 韩文名。
+   */
+  broadKo: string
+}
+
+/**
+ * `loadBroadLabels` 的返回。
+ */
+export type BroadLabelsOut = Promise<BroadLabelRow[]>
+
+/**
+ * 试点社区一行(SQL.CITY_PILOTS;城市段「试点社区」表)。
+ */
+export type PilotCommRow = {
+  /**
+   * 社区官方名(含省尾巴,形如 'Sudbury, ON';展示层去尾)。
+   */
+  name: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 通道类型(RCIP / FCIP)。
+   */
+  type: string
+
+  /**
+   * 社区覆盖城市的在招岗数(0 是事实:JB 全省全职业覆盖)。
+   */
+  openJobs: number
+}
+
+/**
+ * `loadCityPilots` 的返回。
+ */
+export type PilotCommsOut = Promise<PilotCommRow[]>
+
+/**
+ * 城市 DLI 统计一行(SQL.CITY_DLI_STATS;城市段「留学城市」表)。
+ */
+export type DliCityRow = {
+  /**
+   * 城市英文名。
+   */
+  city: string
+
+  /**
+   * 城市中文名(借 cities 维度,缺则空串)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文名(同上)。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * DLI 院校数。
+   */
+  n: number
+
+  /**
+   * 其中公立。
+   */
+  publicN: number
+
+  /**
+   * 其中毕业可申工签(PGWP 资格)。
+   */
+  gradN: number
+}
+
+/**
+ * `loadDliCities` 的返回。
+ */
+export type DliCitiesOut = Promise<DliCityRow[]>
 
 /**
  * 把脉页趋势段·逐日在招量一行(SQL.STATS_DAILY_SERIES:日期 × 大类,十省已加总)。
@@ -874,6 +1035,21 @@ export type MacroStatsSlot = {
 }
 
 /**
+ * /api/stats/city 五份数据缓存的一格(形状同 MarketSlot:v 透传 json)。
+ */
+export type CityStatsSlot = {
+  /**
+   * 缓存的五份(cities / industry / broads / pilots / dli,原样 json)。
+   */
+  v: object
+
+  /**
+   * 写入时刻(ms)。
+   */
+  ts: number
+}
+
+/**
  * 统计域全部可变状态的形状(住 variables.ts 的 CACHE)。
  */
 export type StatsCache = {
@@ -886,6 +1062,11 @@ export type StatsCache = {
    * macro 两份;没拉过/过期由 TTL 判。
    */
   macroStats: MacroStatsSlot | null
+
+  /**
+   * city 五份(城市段);没拉过/过期由 TTL 判。
+   */
+  cityStats: CityStatsSlot | null
 }
 
 /**

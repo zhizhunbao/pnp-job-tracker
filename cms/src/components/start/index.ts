@@ -17,7 +17,7 @@
  */
 export { Pulse } from './pulse'
 export {
-  cachedHomeOf, emptyCityRows, emptyDailyRows, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
+  cachedHomeOf, emptyDailyRows, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
   emptyText,
   homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from './functions'

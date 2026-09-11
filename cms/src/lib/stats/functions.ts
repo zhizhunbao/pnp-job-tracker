@@ -6,6 +6,7 @@
  * 2026-08-22 十件套定型时的两处收窄:`loadStats` 的 where/params 两个参数
  * 全站调用从来都是空 —— 收成 `{db, withMid}`;`loadCityStats` 的 limit 全站只用默认 400 ——
  * 收成常量 `CITY_LIMIT`。要变的那天再还给入参,别让没人用的自由度撑着签名。
+ * 2026-09-11「那一天」到了:城市段重设计要全量口径(CITY_ALL_LIMIT),limit 还给入参 `CityStatsIn`。
  *
  * @author Frank
  * @time 2026-08-22 14:00:00
@@ -14,13 +15,16 @@
 import { queryRows, queryRowsOrEmpty, SQL, count, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import {
-  CITY_LIMIT, DAILY_DAYS_BACK, OCC_COL_NONE, OCC_COL_PREFIX, OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
+  CITY_DLI_LIMIT, CITY_IND_TOP, DAILY_DAYS_BACK, OCC_COL_NONE, OCC_COL_PREFIX,
+  OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
   PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
 import type {
-  CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityRowsOut, DailyRow, DailyRowsOut, EmptyList,
+  BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityIndustryOut,
+  CityIndustryRow, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliCityRow, EmptyList,
   FineCountsIn, FineRowsOut,
-  MaybeStr, OccRowsOut, PgFailure, ProvExtraMap, ProvExtraOut, SrcRowsOut, StatsIn, StatsOut, StrList, StrListOut,
+  MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
+  StatsIn, StatsOut, StrList, StrListOut,
   CityRow, FineRow, MaybeProvVol, MaybeProvVolJson, MaybeProvVolNum, MaybeProvVolNumJson, MaybeStatDiff, OccRow, Row,
   SrcRow, StatDbRow, StatDifficulty, StatProvDiffDbRow, StatProvDiffFact, StatProvInfoDbRow, StatProvInfoFact,
   StatRow,
@@ -119,20 +123,13 @@ export async function loadOccStats(db: Db): OccRowsOut {
 }
 
 /**
- * E8-14 统计主图·城市粒度(城市译名借 cities 维度表:48 个主要城市有中/韩名,
- * 小镇留空 → 前端回退英文原名)。缺表容错同 loadOccStats。
- *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 城市统计行(按在招量取前 CITY_LIMIT)。
- */
-/**
  * 宏观序列原样行(macro_series,SQL 侧已收窄;/api/stats/macro 透传给把脉页,
  * 行构造在消费端 toMacroPoints —— 2026-09-10 SSR 瘦身批,这里不洗不拼)。
  *
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 原样行。
  */
-export async function loadMacroRows(db: Db): Promise<object[]> {
+export async function loadMacroRows(db: Db): RawRowsOut {
   const res = await db.query(SQL.MACRO_SERIES)
   return res.rows
 }
@@ -143,14 +140,104 @@ export async function loadMacroRows(db: Db): Promise<object[]> {
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 原样行。
  */
-export async function loadPnpOpsRows(db: Db): Promise<object[]> {
+export async function loadPnpOpsRows(db: Db): RawRowsOut {
   const res = await db.query(SQL.PNP_OPS_PROV)
   return res.rows
 }
 
-export async function loadCityStats(db: Db): CityRowsOut {
+/**
+ * E8-14 统计主图·城市粒度(城市译名借 cities 维度表,小镇留空 → 前端回退英文原名)。
+ * 2026-09-11 城市段重设计批:快照内容改由 seed 收尾在库内按职位板同口径重算
+ * (取舍全文见 SQL.CITY_STATS 注释);limit 分口径由调用方给(market 主图 CITY_LIMIT,
+ * 城市段全量 CITY_ALL_LIMIT)。缺表容错同 loadOccStats。
+ *
+ * @param input 连接与行数上限。
+ * @returns 城市统计行(按在招量降序)。
+ */
+export async function loadCityStats(input: CityStatsIn): CityRowsOut {
   try {
-    return await queryRows({ db: db, sql: SQL.CITY_STATS, params: [CITY_LIMIT], map: toCityRow })
+    return await queryRows({ db: input.db, sql: SQL.CITY_STATS, params: [input.limit], map: toCityRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 城市 × 大类在招(城市段「行业对比」表;取在招量前 CITY_IND_TOP 的城市,列由前端按体量挑)。
+ * 缺表容错同 loadCityStats。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 城 × 大类计数行。
+ */
+export async function loadCityIndustry(db: Db): CityIndustryOut {
+  try {
+    return await queryRows({ db: db, sql: SQL.CITY_INDUSTRY, params: [CITY_IND_TOP], map: toCityIndustryRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 大类三语名(行业对比列头;noc_categories 去重)。缺表容错同 loadCityStats。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 大类三语名行。
+ */
+export async function loadBroadLabels(db: Db): BroadLabelsOut {
+  try {
+    return await queryRows({ db: db, sql: SQL.CITY_BROAD_LABELS, params: [], map: toBroadLabelRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 试点社区 20 行 + 各社区在招(城市段「试点社区」表)。缺表容错同 loadCityStats。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 试点社区行(按在招降序)。
+ */
+export async function loadCityPilots(db: Db): PilotCommsOut {
+  try {
+    return await queryRows({ db: db, sql: SQL.CITY_PILOTS, params: [], map: toPilotCommRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 城市 DLI 统计(城市段「留学城市」表)。缺表容错同 loadCityStats。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 城市 DLI 行(按院校数降序,前 CITY_DLI_LIMIT)。
+ */
+export async function loadDliCities(db: Db): DliCitiesOut {
+  try {
+    return await queryRows({ db: db, sql: SQL.CITY_DLI_STATS, params: [CITY_DLI_LIMIT], map: toDliCityRow })
   } catch (e) {
     if (e instanceof Error) {
       const code = pgCodeOf(e)
@@ -332,6 +419,50 @@ export function toCityRow(r: Row): CityRow {
     province: text(r.province), openJobs: numOrNull(r.open_jobs), new7d: numOrNull(r.new7d),
     medianWageAnnual: numOrNull(r.median_wage_annual), medianSalaryAnnual: numOrNull(r.median_salary_annual),
     salaryN: numOrNull(r.salary_n), namedJobs: numOrNull(r.named_jobs),
+    pilot: textOrNull(r.pilot),
+  }
+}
+
+/**
+ * 一行城 × 大类计数(SQL.CITY_INDUSTRY)→ `CityIndustryRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toCityIndustryRow(r: Row): CityIndustryRow {
+  return { city: text(r.city), province: text(r.province), broad: text(r.broad), n: count(r.n) }
+}
+
+/**
+ * 一行大类三语名(SQL.CITY_BROAD_LABELS)→ `BroadLabelRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toBroadLabelRow(r: Row): BroadLabelRow {
+  return { broad: text(r.broad), broadEn: text(r.broad_en), broadKo: text(r.broad_ko) }
+}
+
+/**
+ * 一行试点社区(SQL.CITY_PILOTS)→ `PilotCommRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toPilotCommRow(r: Row): PilotCommRow {
+  return { name: text(r.name), province: text(r.province), type: text(r.type), openJobs: count(r.open_jobs) }
+}
+
+/**
+ * 一行城市 DLI 统计(SQL.CITY_DLI_STATS)→ `DliCityRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+export function toDliCityRow(r: Row): DliCityRow {
+  return {
+    city: text(r.city), cityZh: text(r.name_zh), cityKo: text(r.name_ko), province: text(r.province),
+    n: count(r.n), publicN: count(r.public_n), gradN: count(r.grad_n),
   }
 }
 

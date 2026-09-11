@@ -62,7 +62,7 @@ export function Pulse({ stats }: PulseIn) {
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
         <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
-        <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} rows={v.cityRows} />
+        <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} />
         <TrendSection t={v.t} updatedAt={stats.checkedAt} trend={v.trend} />
         <DrawsSection t={v.t}
           tEn={v.tEn}

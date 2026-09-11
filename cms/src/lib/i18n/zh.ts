@@ -1029,10 +1029,15 @@ export const siteZh = {
   'se.col.lmia': 'LMIA 获批(近两年)', 'se.col.w1': 'LMIA 最近一季', 'se.col.w2': 'LMIA 近半年', 'se.col.w4': 'LMIA 近一年',
   'se.grp.aip': 'AIP 指定雇主', 'se.grp.lmia': 'LMIA 获批雇主(近两年)', 'se.grp.named': '在招岗命中紧缺清单的雇主', 'pulse.nav.boards': '职业榜',
   // #312 二级导航短词(TOC 与分区 h2 全称差异化,同屏同一事实只说一次)
-  'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR 获批', 'pulse.nav.draws': '抽选',
+  'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '获批', 'pulse.nav.draws': '抽选',
   // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
   'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
-  'pulse.city': '城市概览', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
+  'pulse.city': '选城市', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
+  // 2026-09-11 城市段重设计(docs/design/把脉页城市段-20260911.md):一搜四表
+  'pulse.city.main': '主要城市', 'pulse.city.ind': '行业对比', 'pulse.city.pilot': '试点社区', 'pulse.city.dli': '留学城市',
+  'pulse.city.search': '搜索城市', 'pulse.city.name': '城市', 'pulse.city.open': '在招',
+  'pulse.city.channel': '专属通道', 'pulse.city.pilotTag': '试点', 'pulse.city.comm': '社区',
+  'pulse.city.dliN': 'DLI 院校', 'pulse.city.dliPub': '其中公立', 'pulse.city.dliGrad': '可申工签',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
   'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',

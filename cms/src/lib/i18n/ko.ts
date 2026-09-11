@@ -931,10 +931,15 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA 승인(2년)', 'se.col.w1': 'LMIA 최근 분기', 'se.col.w2': 'LMIA 6개월', 'se.col.w4': 'LMIA 1년',
   'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': '구인 직종이 수요 목록에 오른 고용주', 'pulse.nav.boards': '직업 보드',
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
-  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR 승인', 'pulse.nav.draws': '추첨',
+  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '승인', 'pulse.nav.draws': '추첨',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
   'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
-  'pulse.city': '도시 개요', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
+  'pulse.city': '도시 선택', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
+  // 2026-09-11 도시 섹션 개편(docs/design/把脉页城市段-20260911.md): 검색 + 표 4장
+  'pulse.city.main': '주요 도시', 'pulse.city.ind': '업종 비교', 'pulse.city.pilot': '시범 커뮤니티', 'pulse.city.dli': '유학 도시',
+  'pulse.city.search': '도시 검색', 'pulse.city.name': '도시', 'pulse.city.open': '채용 중',
+  'pulse.city.channel': '시범 프로그램', 'pulse.city.pilotTag': '파일럿', 'pulse.city.comm': '커뮤니티',
+  'pulse.city.dliN': 'DLI 학교', 'pulse.city.dliPub': '공립', 'pulse.city.dliGrad': 'PGWP 가능',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
   'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직',
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',

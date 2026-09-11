@@ -18,12 +18,15 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  cityRowsOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeMacroLoad, opsPointsOf, prGeosOf,
+  empSecsOf, foldFlippedOf, indBroadColsOf, indicatorGeosOf, macroPointsOf, makeCityLoad, makeMacroLoad,
+  makeSearchChange, opsPointsOf, prGeosOf,
+  toCityDliRows, toCityIndRows, toCityMainRows, toCityPilotRows,
   trackSecView, makeKindPick, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
-  CardPageIn, EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
+  CardPageIn, CityData, CityPanel, CityPanelIn, CityQueryPanel,
+  EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
 } from './types'
@@ -64,6 +67,79 @@ export function useMacroStats(): MacroData | null {
   }, [])
 
   return macroData
+}
+
+/**
+ * 城市段五份的挂载后拉取(2026-09-11 重设计批,照 useMacroStats 的形;
+ * null = 还在路上,段渲占位)。
+ *
+ * @returns 五份数据;null = 加载中。
+ */
+export function useCityStats(): CityData | null {
+  const [cityData, setCityData] = useState<CityData | null>(null)
+
+  useEffect(function loadCity() {
+    return makeCityLoad({ setCityData })()
+  }, [])
+
+  return cityData
+}
+
+/**
+ * 城市搜索输入串的一台小机器(状态住段里,输入只重渲搜索块自己)。
+ *
+ * @returns 输入串与 onChange。
+ */
+export function useCityQuery(): CityQueryPanel {
+  const [q, setQ] = useState(TEXT_NONE)
+  return { q, onChange: makeSearchChange({ setQ }) }
+}
+
+/**
+ * 城市段整机:五份数据 + 四张表的展示行与行业列(派生全 useMemo,滚动跟随重渲不重算 2,700 行)。
+ *
+ * @param x 取词函数与语言。
+ * @returns 城市段面板。
+ */
+export function useCityPanel(x: CityPanelIn): CityPanel {
+  const data = useCityStats()
+
+  const mainRows = useMemo(function pickCityMain() {
+    if (data == null) {
+      return []
+    }
+    return toCityMainRows({ rows: data.cities, t: x.t, lang: x.lang })
+  }, [data, x.t, x.lang])
+
+  const broadCols = useMemo(function pickBroadCols() {
+    if (data == null) {
+      return []
+    }
+    return indBroadColsOf({ rows: data.industry, broads: data.broads, lang: x.lang })
+  }, [data, x.lang])
+
+  const indRows = useMemo(function pickIndRows() {
+    if (data == null) {
+      return []
+    }
+    return toCityIndRows({ rows: data.industry, cities: data.cities, lang: x.lang })
+  }, [data, x.lang])
+
+  const pilotRows = useMemo(function pickPilotRows() {
+    if (data == null) {
+      return []
+    }
+    return toCityPilotRows({ pilots: data.pilots, cities: data.cities, t: x.t, lang: x.lang })
+  }, [data, x.t, x.lang])
+
+  const dliRows = useMemo(function pickDliRows() {
+    if (data == null) {
+      return []
+    }
+    return toCityDliRows({ rows: data.dli, lang: x.lang })
+  }, [data, x.lang])
+
+  return { data, mainRows, broadCols, indRows, pilotRows, dliRows }
 }
 
 /**
@@ -194,7 +270,13 @@ export function usePulse(x: PulseIn): PulsePanel {
   }, [t, x.stats.total, x.stats.named, x.stats.pulse])
 
   const indGeos = useMemo(function pickIndGeos() {
-    return indicatorGeosOf({ t, lang, macro: macroPointsOf(macroData), ops: opsPointsOf(macroData), provExtra: x.stats.provExtra })
+    return indicatorGeosOf({
+      t,
+      lang,
+      macro: macroPointsOf(macroData),
+      ops: opsPointsOf(macroData),
+      provExtra: x.stats.provExtra,
+    })
   }, [t, lang, macroData, x.stats.provExtra])
 
   const prGeos = useMemo(function pickPrGeos() {
@@ -210,10 +292,6 @@ export function usePulse(x: PulseIn): PulsePanel {
   const jobsRows = useMemo(function pickJobsRows() {
     return toJobsRows({ rows: provRowsOf({ market }), t, lang })
   }, [market, t, lang])
-
-  const cityRows = useMemo(function pickCityRows() {
-    return cityRowsOf({ city: x.stats.city })
-  }, [x.stats.city])
 
   const trend = useMemo(function pickTrend() {
     return trendOf({ t, daily: x.stats.daily })
@@ -233,7 +311,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     indGeos,
     prGeos,
     jobsRows,
-    cityRows,
     trend,
     tEn,
     navSec,

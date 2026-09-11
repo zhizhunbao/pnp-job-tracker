@@ -86,6 +86,27 @@ export const ID_PR_BAND = 'pl-pr'
 export const ID_CITY = 'pl-city'
 
 /**
+ * 城市段四块的子锚点 id(2026-09-11 重设计批:一搜四表,设计稿 docs/design/把脉页城市段-20260911.md;
+ * 原 400 张四数字卡 + 40 页翻页整体退役 —— /fe 取证 40 天零交互、2,205 城截断永不可见)。
+ */
+export const ID_CITY_MAIN = 'pl-city-main'
+
+/**
+ * 行业对比块。
+ */
+export const ID_CITY_IND = 'pl-city-ind'
+
+/**
+ * 试点社区块。
+ */
+export const ID_CITY_PILOT = 'pl-city-pilot'
+
+/**
+ * 留学城市块。
+ */
+export const ID_CITY_DLI = 'pl-city-dli'
+
+/**
  * 趋势区的锚点 id(2026-09-04 新段:全国一条线 + 行业小图)。
  */
 export const ID_TREND = 'pl-trend'
@@ -583,9 +604,126 @@ export const SEC_TOP_WAGE = 'topWage'
 export const COL_EMP = 'emp'
 
 /**
- * 职位板按城市筛的地址头(城市卡下钻:该市全部在招岗)。
+ * 职位板按城市筛的地址头(城市段下钻:该市全部在招岗)。
  */
 export const URL_HOME_CITY_HEAD = '/?city='
+
+/**
+ * 城市段落地职位板的来源标记尾巴(2026-09-11:旧城市卡落地不带来源,职位板侧认不出;
+ * utm 由 Umami 自动收,funnel 另有 city-open 第一方计数)。
+ */
+export const CITY_UTM_TAIL = '&utm_source=pulse_city'
+
+/**
+ * /api/stats/city(城市段五份,挂载后拉 —— 照 macro 的形;SSR 不再直出 400 张城市卡)。
+ */
+export const URL_CITY_API = '/api/stats/city'
+
+/**
+ * 埋点名:从城市段落去职位板(kind = main / industry / pilot / dli / search;
+ * 只计数不成链,城市名永不进 kind —— 高基数)。
+ */
+export const TRACK_CITY = 'city-open'
+
+/**
+ * city-open 的 kind:主要城市表行。
+ */
+export const CITY_KIND_MAIN = 'main'
+
+/**
+ * kind:行业对比表行。
+ */
+export const CITY_KIND_IND = 'industry'
+
+/**
+ * kind:试点社区表行。
+ */
+export const CITY_KIND_PILOT = 'pilot'
+
+/**
+ * kind:留学城市表行。
+ */
+export const CITY_KIND_DLI = 'dli'
+
+/**
+ * kind:搜索建议项。
+ */
+export const CITY_KIND_SEARCH = 'search'
+
+/**
+ * 城市表列键:城市名。
+ */
+export const COL_CITY = 'city'
+
+/**
+ * 城市表列键:专属通道(RCIP / FCIP 试点)。
+ */
+export const COL_CITY_PILOT = 'pilot'
+
+/**
+ * 城市表列键:中位年薪(城市段用年薪口径,与招聘对比横表的时薪三列各自成列)。
+ */
+export const COL_CITY_WAGE = 'wage'
+
+/**
+ * 试点社区表列键:社区名。
+ */
+export const COL_COMM = 'comm'
+
+/**
+ * 试点社区表列键:通道类型。
+ */
+export const COL_COMM_TYPE = 'type'
+
+/**
+ * 留学城市表列键:DLI 院校数。
+ */
+export const COL_DLI_N = 'dliN'
+
+/**
+ * 留学城市表列键:其中公立。
+ */
+export const COL_DLI_PUB = 'dliPub'
+
+/**
+ * 留学城市表列键:毕业可申工签。
+ */
+export const COL_DLI_GRAD = 'dliGrad'
+
+/**
+ * 行业对比表最多出几列大类(城市列除外;按全表体量降序挑,效果图取九)。
+ */
+export const CITY_IND_COLS = 9
+
+/**
+ * 行业对比手机档只显体量前几列大类(375 宽的列数上限)。
+ */
+export const CITY_IND_COLS_M = 3
+
+/**
+ * 未分类大类的数据值(不进行业对比列 —— 「未分类」不是行业)。
+ */
+export const BROAD_UNCLASSIFIED = '未分类'
+
+/**
+ * 试点社区官方名的省尾巴分隔('Sudbury, ON' → 'Sudbury';展示层去尾,join 键仍用全名)。
+ */
+export const PILOT_NAME_SEP = ','
+
+/**
+ * 搜索建议最多几条。
+ */
+export const CITY_SEARCH_MAX = 8
+
+/**
+ * 城市搜索输入框的 type 属性(原生 search:手机键盘带搜索键、自带清空叉)。
+ */
+export const CITY_INPUT_TYPE = 'search'
+
+/**
+ * 留学城市表每页几行(表 1 / 表 3 用 CARD_PAGE_SIZE 的 10;这张表块小,8 行一屏收住)。
+ */
+export const DLI_PAGE_SIZE = 8
 
 /**
  * 趋势主图(全国)高度(px)。
@@ -1202,7 +1340,8 @@ export const PR_FOLD: Record<string, string[]> = {
   /**
    * 经济类:打工线八条 + 商业线合计 + 临时转永居。
    */
-  prEcon: ['prCec', 'prFsw', 'prFst', 'prCaregiver', 'prAgriFood', 'prAtlantic', 'prRnip', 'prEmpp', 'prBusiness', 'prTr2pr'],
+  prEcon: ['prCec', 'prFsw', 'prFst', 'prCaregiver', 'prAgriFood', 'prAtlantic', 'prRnip', 'prEmpp',
+    'prBusiness', 'prTr2pr'],
 
   /**
    * 家庭团聚:四种亲属。

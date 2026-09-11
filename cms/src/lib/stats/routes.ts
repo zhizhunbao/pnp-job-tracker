@@ -12,11 +12,13 @@ import { normalizeProfile } from '../jobs'
 import type { ProfileJson } from '../jobs'
 import { getUser, isPro } from '../quota/server'
 import {
+  CITY_ALL_LIMIT, CITY_CACHE_CONTROL, CITY_LIMIT, CITY_TTL_MS,
   MACRO_CACHE_CONTROL, MACRO_TTL_MS, MARKET_CACHE_CONTROL, MARKET_TTL_MS, PARAM_LEN_MAX, PARAM_NONE,
   P_BROAD, P_MID, P_PROV,
 } from './constants'
 import {
-  emptyChannels, emptyRows, loadChannelNocs, loadCityStats, loadFineCounts, loadMacroRows, loadOccStats,
+  emptyChannels, emptyRows, loadBroadLabels, loadChannelNocs, loadCityIndustry, loadCityPilots, loadCityStats,
+  loadDliCities, loadFineCounts, loadMacroRows, loadOccStats,
   loadPnpOpsRows, loadStats, loadStatSources,
 } from './functions'
 import { CACHE } from './variables'
@@ -90,7 +92,7 @@ export async function statsMarketRoute(_req: Request): Promise<Response> {
     const db = await getDb()
     const [occ, city, rows, channels] = await Promise.all([
       loadOccStats(db).catch(emptyRows),
-      loadCityStats(db).catch(emptyRows),
+      loadCityStats({ db: db, limit: CITY_LIMIT }).catch(emptyRows),
       loadStats({ db: db, withMid: true }).catch(emptyRows),
       loadChannelNocs(db).catch(emptyChannels),
     ])
@@ -118,4 +120,29 @@ export async function statsMacroRoute(_req: Request): Promise<Response> {
     CACHE.macroStats = { v: { macro, ops }, ts: Date.now() }
   }
   return Response.json(CACHE.macroStats.v, { headers: { [HDR_CACHE_CONTROL]: MACRO_CACHE_CONTROL } })
+}
+
+/**
+ * GET /api/stats/city:把脉页城市段五份(2026-09-11 城市段重设计批,设计稿
+ * docs/design/把脉页城市段-20260911.md)—— 城市全量榜(表 1 + 搜索)/ 城 × 大类(表 2)/
+ * 大类三语名(表 2 列头)/ 试点社区(表 3)/ 城市 DLI(表 4)。全部 jobs/dli 现查聚合,
+ * 口径与职位板同一份 WHERE(快照口径差 18~22% 的根因见 SQL.CITY_STATS);
+ * 照 market 的形:进程内 10 分钟缓存 + 浏览器侧 SWR 头,每份独立吞错空值,本路由永不 500。
+ *
+ * @param _req 请求(不读参数)。
+ * @returns 五份 json(带 SWR 缓存头)。
+ */
+export async function statsCityRoute(_req: Request): Promise<Response> {
+  if (CACHE.cityStats == null || Date.now() - CACHE.cityStats.ts >= CITY_TTL_MS) {
+    const db = await getDb()
+    const [cities, industry, broads, pilots, dli] = await Promise.all([
+      loadCityStats({ db: db, limit: CITY_ALL_LIMIT }).catch(emptyRows),
+      loadCityIndustry(db).catch(emptyRows),
+      loadBroadLabels(db).catch(emptyRows),
+      loadCityPilots(db).catch(emptyRows),
+      loadDliCities(db).catch(emptyRows),
+    ])
+    CACHE.cityStats = { v: { cities, industry, broads, pilots, dli }, ts: Date.now() }
+  }
+  return Response.json(CACHE.cityStats.v, { headers: { [HDR_CACHE_CONTROL]: CITY_CACHE_CONTROL } })
 }

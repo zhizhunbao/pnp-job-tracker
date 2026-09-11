@@ -2736,21 +2736,6 @@
 }
 
 /*
- * 城市卡:省卡的形套在链接上 —— 链接的下划线与主色不许漫到卡内四行键值。
- */
-.cityCard.cityCard {
-  /*
-   * 去下划线。
-   */
-  text-decoration: none;
-
-  /*
-   * 字色跟省卡走,不用链接色。
-   */
-  color: inherit;
-}
-
-/*
  * 操作格:看岗位 / 看公司两个钮并排。
  */
 .acts {
@@ -2936,4 +2921,72 @@
    */
   margin: 0 0 4px;
   line-height: 1.15;
+}
+
+/*
+ * ── 城市段(2026-09-11 重设计:一搜四表;设计稿 docs/design/把脉页城市段-20260911.md)──
+ * 手机档出精简列表格(效果图拍板),与「电脑表格手机卡片」站规的分野:宽列藏、窄列留,
+ * 断点同站规 900。
+ */
+
+/*
+ * 搜索块(输入框 + 命中建议)。
+ */
+.citySearch {
+  margin: 10px 0 4px;
+}
+
+/*
+ * 搜索输入框(描边圆角档;手机通栏,桌面收窄见下方媒体块)。
+ */
+.citySearchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/*
+ * 命中建议列(一行一城)。
+ */
+.citySearchList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/*
+ * 一条建议(名字链接 + 灰注同行)。
+ */
+.citySearchItem {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/*
+ * 宽列(近 7 天 / 省 / 其中公立 / 行业对比体量第 4 名起):手机档藏。
+ */
+.cityWide {
+  display: none;
+}
+
+@media (width >= 900px) {
+  .citySearchInput {
+    /*
+     * 桌面收窄成一手宽。
+     */
+    width: 360px;
+  }
+
+  .cityWide {
+    /*
+     * 桌面档全列出。
+     */
+    display: table-cell;
+  }
 }

@@ -194,5 +194,397 @@
  "St. John's|NL": {
   "zh": "圣约翰斯",
   "ko": "세인트존스"
+ },
+ "Thunder Bay|ON": {
+  "zh": "桑德贝",
+  "ko": "선더베이"
+ },
+ "Sudbury|ON": {
+  "zh": "萨德伯里",
+  "ko": "서드베리"
+ },
+ "Greater Sudbury|ON": {
+  "zh": "大萨德伯里",
+  "ko": ""
+ },
+ "Timmins|ON": {
+  "zh": "蒂明斯",
+  "ko": ""
+ },
+ "Sault Ste. Marie|ON": {
+  "zh": "苏圣玛丽",
+  "ko": ""
+ },
+ "North Bay|ON": {
+  "zh": "北湾",
+  "ko": ""
+ },
+ "Barrie|ON": {
+  "zh": "巴里",
+  "ko": "배리"
+ },
+ "Milton|ON": {
+  "zh": "米尔顿",
+  "ko": "밀턴"
+ },
+ "Whitby|ON": {
+  "zh": "惠特比",
+  "ko": "휘트비"
+ },
+ "Ajax|ON": {
+  "zh": "阿贾克斯",
+  "ko": "에이잭스"
+ },
+ "Pickering|ON": {
+  "zh": "皮克林",
+  "ko": "피커링"
+ },
+ "Newmarket|ON": {
+  "zh": "纽马克特",
+  "ko": "뉴마켓"
+ },
+ "Aurora|ON": {
+  "zh": "奥罗拉",
+  "ko": "오로라"
+ },
+ "Thornhill|ON": {
+  "zh": "桑希尔",
+  "ko": "손힐"
+ },
+ "Concord|ON": {
+  "zh": "康山",
+  "ko": ""
+ },
+ "Stouffville|ON": {
+  "zh": "斯托夫维尔",
+  "ko": ""
+ },
+ "Cambridge|ON": {
+  "zh": "剑桥",
+  "ko": "케임브리지"
+ },
+ "St. Catharines|ON": {
+  "zh": "圣凯瑟琳斯",
+  "ko": ""
+ },
+ "Brantford|ON": {
+  "zh": "布兰特福德",
+  "ko": ""
+ },
+ "Belleville|ON": {
+  "zh": "贝尔维尔",
+  "ko": ""
+ },
+ "Peterborough|ON": {
+  "zh": "彼得伯勒",
+  "ko": ""
+ },
+ "Sarnia|ON": {
+  "zh": "萨尼亚",
+  "ko": ""
+ },
+ "Cornwall|ON": {
+  "zh": "康沃尔",
+  "ko": ""
+ },
+ "Woodstock|ON": {
+  "zh": "伍德斯托克",
+  "ko": ""
+ },
+ "Leamington|ON": {
+  "zh": "利明顿",
+  "ko": ""
+ },
+ "Welland|ON": {
+  "zh": "韦兰",
+  "ko": ""
+ },
+ "Georgetown|ON": {
+  "zh": "乔治敦",
+  "ko": ""
+ },
+ "Collingwood|ON": {
+  "zh": "科林伍德",
+  "ko": ""
+ },
+ "Stratford|ON": {
+  "zh": "斯特拉特福",
+  "ko": ""
+ },
+ "Orillia|ON": {
+  "zh": "奥里利亚",
+  "ko": ""
+ },
+ "Niagara-on-the-Lake|ON": {
+  "zh": "滨湖尼亚加拉",
+  "ko": ""
+ },
+ "York|ON": {
+  "zh": "约克",
+  "ko": ""
+ },
+ "East York|ON": {
+  "zh": "东约克",
+  "ko": ""
+ },
+ "Nepean|ON": {
+  "zh": "尼皮恩",
+  "ko": ""
+ },
+ "North Vancouver|BC": {
+  "zh": "北温哥华",
+  "ko": "노스밴쿠버"
+ },
+ "West Vancouver|BC": {
+  "zh": "西温哥华",
+  "ko": "웨스트밴쿠버"
+ },
+ "New Westminster|BC": {
+  "zh": "新西敏",
+  "ko": "뉴웨스트민스터"
+ },
+ "Langley|BC": {
+  "zh": "兰里",
+  "ko": "랭리"
+ },
+ "Delta|BC": {
+  "zh": "三角洲",
+  "ko": "델타"
+ },
+ "Maple Ridge|BC": {
+  "zh": "枫树岭",
+  "ko": "메이플리지"
+ },
+ "Port Moody|BC": {
+  "zh": "满地宝",
+  "ko": "포트무디"
+ },
+ "Mission|BC": {
+  "zh": "米逊",
+  "ko": ""
+ },
+ "Chilliwack|BC": {
+  "zh": "奇利瓦克",
+  "ko": "칠리왁"
+ },
+ "Kamloops|BC": {
+  "zh": "坎卢普斯",
+  "ko": "캠룹스"
+ },
+ "Prince George|BC": {
+  "zh": "乔治王子城",
+  "ko": ""
+ },
+ "Vernon|BC": {
+  "zh": "弗农",
+  "ko": ""
+ },
+ "Penticton|BC": {
+  "zh": "彭蒂克顿",
+  "ko": ""
+ },
+ "Whistler|BC": {
+  "zh": "惠斯勒",
+  "ko": "휘슬러"
+ },
+ "Squamish|BC": {
+  "zh": "斯阔米什",
+  "ko": ""
+ },
+ "Campbell River|BC": {
+  "zh": "坎贝尔里弗",
+  "ko": ""
+ },
+ "Courtenay|BC": {
+  "zh": "考特尼",
+  "ko": ""
+ },
+ "Duncan|BC": {
+  "zh": "邓肯",
+  "ko": ""
+ },
+ "Langford|BC": {
+  "zh": "兰福德",
+  "ko": ""
+ },
+ "Sidney|BC": {
+  "zh": "西德尼",
+  "ko": ""
+ },
+ "Fernie|BC": {
+  "zh": "弗尼",
+  "ko": ""
+ },
+ "Cranbrook|BC": {
+  "zh": "克兰布鲁克",
+  "ko": ""
+ },
+ "Revelstoke|BC": {
+  "zh": "雷夫尔斯托克",
+  "ko": ""
+ },
+ "Prince Rupert|BC": {
+  "zh": "鲁珀特王子港",
+  "ko": ""
+ },
+ "Fort St. John|BC": {
+  "zh": "圣约翰堡",
+  "ko": ""
+ },
+ "Dawson Creek|BC": {
+  "zh": "道森克里克",
+  "ko": ""
+ },
+ "Fort McMurray|AB": {
+  "zh": "麦克默里堡",
+  "ko": ""
+ },
+ "Grande Prairie|AB": {
+  "zh": "大草原城",
+  "ko": ""
+ },
+ "Medicine Hat|AB": {
+  "zh": "梅迪辛哈特",
+  "ko": ""
+ },
+ "St. Albert|AB": {
+  "zh": "圣艾伯特",
+  "ko": ""
+ },
+ "Sherwood Park|AB": {
+  "zh": "舍伍德公园",
+  "ko": ""
+ },
+ "Banff|AB": {
+  "zh": "班夫",
+  "ko": "밴프"
+ },
+ "Canmore|AB": {
+  "zh": "坎莫尔",
+  "ko": ""
+ },
+ "Cold Lake|AB": {
+  "zh": "冷湖",
+  "ko": ""
+ },
+ "Moose Jaw|SK": {
+  "zh": "穆斯乔",
+  "ko": ""
+ },
+ "Prince Albert|SK": {
+  "zh": "阿尔伯特王子城",
+  "ko": ""
+ },
+ "Brandon|MB": {
+  "zh": "布兰登",
+  "ko": ""
+ },
+ "Steinbach|MB": {
+  "zh": "斯坦巴克",
+  "ko": ""
+ },
+ "Altona|MB": {
+  "zh": "阿尔托纳",
+  "ko": ""
+ },
+ "Lévis|QC": {
+  "zh": "莱维斯",
+  "ko": ""
+ },
+ "Trois-Rivières|QC": {
+  "zh": "三河市",
+  "ko": ""
+ },
+ "Saguenay|QC": {
+  "zh": "萨格奈",
+  "ko": ""
+ },
+ "Chicoutimi|QC": {
+  "zh": "希库蒂米",
+  "ko": ""
+ },
+ "Longueuil|QC": {
+  "zh": "隆格伊",
+  "ko": ""
+ },
+ "Brossard|QC": {
+  "zh": "布罗萨尔",
+  "ko": ""
+ },
+ "Saint-Laurent|QC": {
+  "zh": "圣洛朗",
+  "ko": ""
+ },
+ "Westmount|QC": {
+  "zh": "西山",
+  "ko": ""
+ },
+ "Mont-Royal|QC": {
+  "zh": "皇家山",
+  "ko": ""
+ },
+ "Dorval|QC": {
+  "zh": "多瓦尔",
+  "ko": ""
+ },
+ "LaSalle|QC": {
+  "zh": "拉萨尔",
+  "ko": ""
+ },
+ "Granby|QC": {
+  "zh": "格兰比",
+  "ko": ""
+ },
+ "Rimouski|QC": {
+  "zh": "里穆斯基",
+  "ko": ""
+ },
+ "Sept-Îles|QC": {
+  "zh": "七岛市",
+  "ko": ""
+ },
+ "Mirabel|QC": {
+  "zh": "米拉贝尔",
+  "ko": ""
+ },
+ "Quebec City|QC": {
+  "zh": "魁北克市",
+  "ko": "퀘벡시티"
+ },
+ "Dartmouth|NS": {
+  "zh": "达特茅斯",
+  "ko": ""
+ },
+ "Sydney|NS": {
+  "zh": "悉尼",
+  "ko": ""
+ },
+ "Bedford|NS": {
+  "zh": "贝德福德",
+  "ko": ""
+ },
+ "Truro|NS": {
+  "zh": "特鲁罗",
+  "ko": ""
+ },
+ "Saint John|NB": {
+  "zh": "圣约翰",
+  "ko": ""
+ },
+ "Bathurst|NB": {
+  "zh": "巴瑟斯特",
+  "ko": ""
+ },
+ "Corner Brook|NL": {
+  "zh": "科纳布鲁克",
+  "ko": ""
+ },
+ "Gander|NL": {
+  "zh": "甘德",
+  "ko": ""
+ },
+ "Summerside|PE": {
+  "zh": "萨默塞德",
+  "ko": ""
  }
 }

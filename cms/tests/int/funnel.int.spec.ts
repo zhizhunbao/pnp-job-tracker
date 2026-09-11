@@ -57,12 +57,15 @@ describe('漏斗事件白名单', () => {
     // 同样追加在尾部,不动前面任何下标切片。
     // 2026-09-10(/fe 省份批收口):把脉段级三事件进白名单(滚到段 / 点子导航 / 切表图年窗,
     // kind 装低基数枚举)—— 同雇主板只计数不成链,追加在尾部。
+    // 2026-09-11(城市段重设计批):city-open 进白名单(从城市段落去职位板,
+    // kind = main/industry/pilot/dli/search)—— 旧城市卡零埋点 40 天零交互,四表全部挂点;
+    // 只计数不成链,城市名永不进 kind,追加在尾部。
     expect([...FUNNEL_STEPS]).toEqual(['jd-open', 'report-open', 'lock-seen', 'pricing-open', 'pay-click',
       'chat-open', 'chat-answer', 'chat-feedback', 'modal-pnp', 'pnp-employer-click', 'se-view-jobs',
       'dp-open', 'dp-quiz-done', 'dp-score-start', 'dp-score-done',
       'pulse-card', 'pulse-occ', 'pulse-cta',
       'emp-search', 'emp-filter', 'emp-row', 'emp-page',
-      'pulse-sec', 'pulse-subnav', 'pulse-series'])
+      'pulse-sec', 'pulse-subnav', 'pulse-series', 'city-open'])
   })
 
   it('把脉页三点击各自归位(2026-09-04),调用点沿用下划线原名', () => {

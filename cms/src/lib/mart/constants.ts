@@ -424,6 +424,22 @@ export const MART_SEEN_IDS = 'seen_ids'
 export const COUNT_HIDDEN_DUPS = 'hiddenDups'
 
 /**
+ * /seed 响应里「城市快照重算」那一格的键(2026-09-11 城市段重设计批:seed 收尾在库内
+ * 按职位板同口径重算 stats_city,值 = 快照行数;取舍全文见 SQL.CITY_STATS)。
+ */
+export const COUNT_CITY_REFRESH = 'cityStatsRefreshed'
+
+/**
+ * 城市快照「近 7 天」口径回看几天(date_posted 是 YYYY-MM-DD varchar,折日期串按字典序比)。
+ */
+export const CITY_NEW7_DAYS = 7
+
+/**
+ * ISO 时刻截成日期串(YYYY-MM-DD)的长度(近 7 天口径与 fetched 两处用)。
+ */
+export const ISO_DATE_LEN = 10
+
+/**
  * mart 文件:verify_expired 逐帖 GET 实测判死的岗(2026-08-03,立即下架不等 30 天)。
  */
 export const MART_CLOSED_JOBS = 'closed_jobs'

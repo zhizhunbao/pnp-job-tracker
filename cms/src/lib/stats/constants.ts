@@ -100,9 +100,25 @@ export const OCC_EXTRA_COLUMNS = [
 export const OCC_COL_PREFIX = ', s.'
 
 /**
- * 城市统计榜取几行。
+ * 城市统计榜取几行(market 主图口径)。
  */
 export const CITY_LIMIT = 400
+
+/**
+ * 城市段全量口径取几行(/api/stats/city:表 1 全量分页 + 搜索都吃这一份;
+ * 库内不同城市 ~2,700,3000 = 全量 + 余量,防意外行数把响应撑爆)。
+ */
+export const CITY_ALL_LIMIT = 3000
+
+/**
+ * 行业对比表取在招量前几的城市。
+ */
+export const CITY_IND_TOP = 10
+
+/**
+ * 留学城市表最多取几城(有 DLI 的城市全量 ~200 以内;视图端分页)。
+ */
+export const CITY_DLI_LIMIT = 200
 
 /**
  * 把脉页趋势段回看几天(stats_daily 自 2026-07-28 起逐日;90 天足够画一季走势)。
@@ -174,6 +190,17 @@ export const MACRO_TTL_MS = 10 * 60_000
  * /api/stats/macro 的浏览器侧缓存头(与 market 同口径)。
  */
 export const MACRO_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
+
+/**
+ * /api/stats/city 进程内缓存 TTL(2026-09-11 城市段重设计批:五份现查聚合,照 market 的形;
+ * 与 homeCache 同 10 分钟)。
+ */
+export const CITY_TTL_MS = 10 * 60_000
+
+/**
+ * /api/stats/city 的浏览器侧缓存头(与 market 同口径)。
+ */
+export const CITY_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'
 
 /**
  * 下钻参数没带时的初值(`?prov` `?broad` `?mid` 三处共用)。
