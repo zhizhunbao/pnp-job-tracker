@@ -2,11 +2,14 @@
 /**
  * 域内小件:城市段(2026-09-11 重设计批,设计稿 docs/design/把脉页城市段-20260911.md)。
  * Frank 拍板:「大家选地方的时候,城市才是主要考虑的问题,比省份要具体;省份只是宏观的」——
- * 原 400 张四数字卡 + 40 页翻页(/fe 取证 40 天零交互)整体退役,换成一搜四表:
- * 搜索(全量直达)→ 主要城市(在招/近7天/中位年薪/专属通道)→ 行业对比(城 × 大类)→
- * 试点社区(城市级唯一专属通道)→ 留学城市(DLI 三数)。
- * 数据挂载后拉 /api/stats/city(jobs 现查,口径与职位板同一份 WHERE;SSR 直出的城市行同批退役);
- * 没到渲占位,五份各自独立 —— 缺一份只丢那张表,四张全空才整段不出。
+ * 原 400 张四数字卡 + 40 页翻页(/fe 取证 40 天零交互)整体退役,换成四组表:
+ * 主要城市(在招/近7天/中位年薪/人口/都会区失业率)→ 行业对比(2026-09-11 当晚 Frank
+ * 「这个应该每个行业一个表吧」「要和雇主的那个行业保持一致吧」:一行业组一张小表照雇主板形,
+ * 组与表题 = 全站八行业组 IND_KEYS,原城 × 九业横表退役)→
+ * 试点社区(城市级唯一专属通道)→ 留学城市(DLI 三数)。段首搜索框同晚 Frank「这个删掉」退役
+ * (试点绿标建议随之下线,试点信号全归表 3)。
+ * 数据挂载后拉 /api/stats/city(读 stats_city 快照;SSR 直出的城市行同批退役);
+ * 没到渲占位,五份各自独立 —— 缺一份只丢那组表,全空才整段不出。
  *
  * @author Frank
  * @time 2026-09-04 22:10:00
@@ -22,7 +25,6 @@ import {
 } from './functions'
 import { useCityPanel } from './hooks'
 import { Band } from './band'
-import { CitySearch } from './citysearch'
 import { Placeholder } from './placeholder'
 import { Sec } from './sec'
 import type { CityDliRow, CityIndRow, CityMainRow, CityPilotRow, CitySectionIn } from './types'
@@ -39,11 +41,23 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
   if (v.data != null && v.mainRows.length === 0 && v.pilotRows.length === 0 && v.dliRows.length === 0) {
     return null
   }
+  const indCols = cityIndColsOf({ t })
+  const indBlocks = []
+  for (const tb of v.indTables) {
+    indBlocks.push(
+      <div key={tb.key} className={boardGapClsOf({ gap: true })}>
+        <Sec title={tb.label} sub>
+          <Table<CityIndRow> rows={tb.rows}
+            cols={indCols}
+            rowKey={indRowKeyOf} />
+        </Sec>
+      </div>,
+    )
+  }
   return (
     <Band id={ID_CITY}>
       <Sec title={t('pulse.city')} right={<Updated iso={updatedAt} t={t} />}>
         {v.data == null && <Placeholder size={PH_PROV} />}
-        {v.data != null && v.mainRows.length > 0 && <CitySearch t={t} lang={lang} rows={v.data.cities} />}
         {v.data != null && v.mainRows.length > 0 && (
           <div id={ID_CITY_MAIN} className={css.subAnchor}>
             <Sec title={t('pulse.city.main')} sub>
@@ -54,16 +68,8 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
             </Sec>
           </div>
         )}
-        {v.data != null && v.indRows.length > 0 && (
-          <div id={ID_CITY_IND} className={css.subAnchor}>
-            <div className={boardGapClsOf({ gap: true })}>
-              <Sec title={t('pulse.city.ind')} sub>
-                <Table<CityIndRow> rows={v.indRows}
-                  cols={cityIndColsOf({ t, broadCols: v.broadCols })}
-                  rowKey={indRowKeyOf} />
-              </Sec>
-            </div>
-          </div>
+        {v.data != null && indBlocks.length > 0 && (
+          <div id={ID_CITY_IND} className={css.subAnchor}>{indBlocks}</div>
         )}
         {v.data != null && v.pilotRows.length > 0 && (
           <div id={ID_CITY_PILOT} className={css.subAnchor}>

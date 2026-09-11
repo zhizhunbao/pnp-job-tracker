@@ -15,7 +15,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
 import type {
-  BroadLabelRow, CityIndustryRow, CityRow, DailyRow, DliCityRow, OccRow, PilotCommRow, ProvExtra, StatRow,
+  CityIndustryRow, CityRow, DailyRow, DliCityRow, OccRow, PilotCommRow, ProvExtra, StatRow,
 } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'
@@ -2023,19 +2023,14 @@ export type LineOptionIn = {
  */
 export type CityData = {
   /**
-   * 城市全量榜(按在招降序;表 1 + 搜索 + 表 1 通道列都吃它)。
+   * 城市全量榜(按在招降序;表 1 与行业小表的译名灰注都吃它)。
    */
   cities: CityRow[]
 
   /**
-   * 城 × 大类在招(表 2 行业对比)。
+   * 城 × 大类在招(行业对比;大类 → 八行业组的归组在展示行做)。
    */
   industry: CityIndustryRow[]
-
-  /**
-   * 大类三语名(表 2 列头)。
-   */
-  broads: BroadLabelRow[]
 
   /**
    * 试点社区行(表 3)。
@@ -2061,11 +2056,6 @@ export type CityStatsProbe = {
    * 城 × 大类在招。
    */
   industry?: CityIndustryRow[]
-
-  /**
-   * 大类三语名。
-   */
-  broads?: BroadLabelRow[]
 
   /**
    * 试点社区行。
@@ -2225,7 +2215,8 @@ export type CityColsIn = {
 }
 
 /**
- * 表 2(行业对比)的展示行。
+ * 行业对比小表的展示行(2026-09-11 Frank「这个应该每个行业一个表吧」「要和雇主的那个行业
+ * 保持一致吧」:城 × 九业横表退役,一行业组一张小表,行 = 城,值 = 组内在招求和)。
  */
 export type CityIndRow = {
   /**
@@ -2254,59 +2245,49 @@ export type CityIndRow = {
   onOpen: ClickFn
 
   /**
-   * 大类 → 在招数(没有的大类不设键)。
+   * 该行业组在招数(组内大类求和)。
    */
-  byBroad: Record<string, number>
+  n: number
 }
 
 /**
- * `toCityIndRows` 的入参。
+ * 行业对比的一张小表(键 = 行业组键,题 = 界面语言组名 —— 与职业/雇主段同词)。
  */
-export type CityIndRowsIn = {
+export type CityIndTable = {
+  /**
+   * 行业组键(IND_KEYS 之一)。
+   */
+  key: string
+
+  /**
+   * 表题(界面语言组名,KEY_IND_HEAD 词条)。
+   */
+  label: string
+
+  /**
+   * 行(该组有在招的城,按在招降序)。
+   */
+  rows: CityIndRow[]
+}
+
+/**
+ * `cityIndTablesOf` 的入参。
+ */
+export type CityIndTablesIn = {
   /**
    * 城 × 大类计数行。
    */
   rows: CityIndustryRow[]
 
   /**
-   * 城市全量榜(译名与行序借它;表 2 行序 = 表 1 的在招序)。
+   * 城市全量榜(译名与灰注借它)。
    */
   cities: CityRow[]
 
   /**
-   * 界面语言。
+   * 取词函数(行业组表题,KEY_IND_HEAD + 组键)。
    */
-  lang: StartLang
-}
-
-/**
- * 行业对比的一根列(键 = 大类数据值,标头 = 界面语言大类名)。
- */
-export type IndBroadCol = {
-  /**
-   * 大类数据值(中文,= CityIndustryRow.broad)。
-   */
-  key: string
-
-  /**
-   * 界面语言列头。
-   */
-  label: string
-}
-
-/**
- * `indBroadColsOf` 的入参。
- */
-export type IndBroadColsIn = {
-  /**
-   * 城 × 大类计数行(按体量挑列)。
-   */
-  rows: CityIndustryRow[]
-
-  /**
-   * 大类三语名。
-   */
-  broads: BroadLabelRow[]
+  t: TFn
 
   /**
    * 界面语言。
@@ -2319,14 +2300,9 @@ export type IndBroadColsIn = {
  */
 export type CityIndColsIn = {
   /**
-   * 取词函数(城市列头)。
+   * 取词函数(城市 / 在招两列头)。
    */
   t: TFn
-
-  /**
-   * 挑好的大类列。
-   */
-  broadCols: IndBroadCol[]
 }
 
 /**
@@ -2460,158 +2436,6 @@ export type CityDliRowsIn = {
 }
 
 /**
- * 搜索建议一条。
- */
-export type CityMatchRow = {
-  /**
-   * 行键(城市 + 省)。
-   */
-  key: string
-
-  /**
-   * 主文案(译名或英文)。
-   */
-  name: string
-
-  /**
-   * 灰注(英文名 + 省码 + 在招数)。
-   */
-  note: string
-
-  /**
-   * 落职位板。
-   */
-  href: string
-
-  /**
-   * 试点绿标(RCIP / FCIP 试点;2026-09-11 通道列撤出表 1 后,试点信号在搜索建议里给);
-   * 没有是空串不渲。
-   */
-  pilotText: string
-}
-
-/**
- * `cityMatchesOf` 的入参。
- */
-export type CityMatchesIn = {
-  /**
-   * 城市全量榜。
-   */
-  rows: CityRow[]
-
-  /**
-   * 输入串(原样;体内小写去空格)。
-   */
-  q: string
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 取词函数(试点绿标文案)。
-   */
-  t: TFn
-}
-
-/**
- * `makeSearchChange` 的入参(受控输入框的 onChange 工厂)。
- */
-export type SearchChangeIn = {
-  /**
-   * 写输入串。
-   */
-  setQ: (v: string) => void
-}
-
-/**
- * CitySearch(城市搜索)的 props。
- */
-export type CitySearchIn = {
-  /**
-   * 取词函数(占位文案)。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-
-  /**
-   * 城市全量榜(本地过滤,不打接口)。
-   */
-  rows: CityRow[]
-}
-
-/**
- * `pilotTextOf` 的入参。
- */
-export type PilotTextIn = {
-  /**
-   * 取词函数(「试点」词条)。
-   */
-  t: TFn
-
-  /**
-   * 城市的试点打标(RCIP / FCIP / RCIP+FCIP);没有是 null。
-   */
-  pilot: string | null
-}
-
-/**
- * `broadLabelOf` 的入参。
- */
-export type BroadLabelOfIn = {
-  /**
-   * 大类数据值(中文)。
-   */
-  key: string
-
-  /**
-   * 大类 → 三语名。
-   */
-  labels: Map<string, BroadLabelRow>
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
-}
-
-/**
- * 搜索输入框 change 事件的最小形(结构兼容 React.ChangeEvent<HTMLInputElement>,
- * functions 不背 React 命名空间)。
- */
-export type SearchChangeEvent = {
-  /**
-   * 事件目标(只读 value 一格)。
-   */
-  target: {
-    /**
-     * 输入框当前值。
-     */
-    value: string
-  }
-}
-
-/**
- * `useCityQuery` 交回的面板(搜索输入串一台小机器)。
- */
-export type CityQueryPanel = {
-  /**
-   * 当前输入串。
-   */
-  q: string
-
-  /**
-   * 输入框 onChange。
-   */
-  onChange: (e: SearchChangeEvent) => void
-}
-
-/**
  * `useCityPanel` 的入参。
  */
 export type CityPanelIn = {
@@ -2627,7 +2451,7 @@ export type CityPanelIn = {
 }
 
 /**
- * `useCityPanel` 交回的面板(五份数据 + 四张表的展示行与行业列)。
+ * `useCityPanel` 交回的面板(五份数据 + 各表展示行;行业对比一大类一张表)。
  */
 export type CityPanel = {
   /**
@@ -2641,14 +2465,9 @@ export type CityPanel = {
   mainRows: CityMainRow[]
 
   /**
-   * 表 2 的大类列(按体量挑好)。
+   * 行业对比的表清单(2026-09-11 一大类一张表)。
    */
-  broadCols: IndBroadCol[]
-
-  /**
-   * 表 2 展示行。
-   */
-  indRows: CityIndRow[]
+  indTables: CityIndTable[]
 
   /**
    * 表 3 展示行。

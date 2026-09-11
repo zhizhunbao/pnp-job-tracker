@@ -646,11 +646,6 @@ export const CITY_KIND_PILOT = 'pilot'
 export const CITY_KIND_DLI = 'dli'
 
 /**
- * kind:搜索建议项。
- */
-export const CITY_KIND_SEARCH = 'search'
-
-/**
  * 城市表列键:城市名。
  */
 export const COL_CITY = 'city'
@@ -696,34 +691,9 @@ export const COL_DLI_PUB = 'dliPub'
 export const COL_DLI_GRAD = 'dliGrad'
 
 /**
- * 行业对比表最多出几列大类(城市列除外;按全表体量降序挑,效果图取九)。
- */
-export const CITY_IND_COLS = 9
-
-/**
- * 行业对比手机档只显体量前几列大类(375 宽的列数上限)。
- */
-export const CITY_IND_COLS_M = 3
-
-/**
- * 未分类大类的数据值(不进行业对比列 —— 「未分类」不是行业)。
- */
-export const BROAD_UNCLASSIFIED = '未分类'
-
-/**
  * 试点社区官方名的省尾巴分隔('Sudbury, ON' → 'Sudbury';展示层去尾,join 键仍用全名)。
  */
 export const PILOT_NAME_SEP = ','
-
-/**
- * 搜索建议最多几条。
- */
-export const CITY_SEARCH_MAX = 8
-
-/**
- * 城市搜索输入框的 type 属性(原生 search:手机键盘带搜索键、自带清空叉)。
- */
-export const CITY_INPUT_TYPE = 'search'
 
 /**
  * 留学城市表每页几行(表 1 / 表 3 用 CARD_PAGE_SIZE 的 10;这张表块小,8 行一屏收住)。

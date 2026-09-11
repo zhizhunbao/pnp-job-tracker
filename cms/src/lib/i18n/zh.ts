@@ -1035,7 +1035,7 @@ export const siteZh = {
   'pulse.city': '选城市', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
   // 2026-09-11 城市段重设计(docs/design/把脉页城市段-20260911.md):一搜四表
   'pulse.city.main': '主要城市', 'pulse.city.ind': '行业对比', 'pulse.city.pilot': '试点社区', 'pulse.city.dli': '留学城市',
-  'pulse.city.search': '搜索城市', 'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
+  'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
   'pulse.city.pop': '人口', 'pulse.city.unemp': '都会区失业率',
   'pulse.city.channel': '专属通道', 'pulse.city.pilotTag': '试点', 'pulse.city.comm': '社区',
   'pulse.city.dliN': 'DLI 院校', 'pulse.city.dliPub': '其中公立', 'pulse.city.dliGrad': '可申工签',

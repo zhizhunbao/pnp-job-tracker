@@ -18,14 +18,15 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
 import {
-  empSecsOf, foldFlippedOf, indBroadColsOf, indicatorGeosOf, macroPointsOf, makeCityLoad, makeMacroLoad,
-  makeSearchChange, opsPointsOf, prGeosOf,
-  toCityDliRows, toCityIndRows, toCityMainRows, toCityPilotRows,
+  cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
+  makeMacroLoad,
+  opsPointsOf, prGeosOf,
+  toCityDliRows, toCityMainRows, toCityPilotRows,
   trackSecView, makeKindPick, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
-  CardPageIn, CityData, CityPanel, CityPanelIn, CityQueryPanel,
+  CardPageIn, CityData, CityPanel, CityPanelIn,
   EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
@@ -86,17 +87,7 @@ export function useCityStats(): CityData | null {
 }
 
 /**
- * 城市搜索输入串的一台小机器(状态住段里,输入只重渲搜索块自己)。
- *
- * @returns 输入串与 onChange。
- */
-export function useCityQuery(): CityQueryPanel {
-  const [q, setQ] = useState(TEXT_NONE)
-  return { q, onChange: makeSearchChange({ setQ }) }
-}
-
-/**
- * 城市段整机:五份数据 + 四张表的展示行与行业列(派生全 useMemo,滚动跟随重渲不重算 2,700 行)。
+ * 城市段整机:五份数据 + 各表展示行(派生全 useMemo,滚动跟随重渲不重算 2,700 行)。
  *
  * @param x 取词函数与语言。
  * @returns 城市段面板。
@@ -111,19 +102,12 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     return toCityMainRows({ rows: data.cities, t: x.t, lang: x.lang })
   }, [data, x.t, x.lang])
 
-  const broadCols = useMemo(function pickBroadCols() {
+  const indTables = useMemo(function pickIndTables() {
     if (data == null) {
       return []
     }
-    return indBroadColsOf({ rows: data.industry, broads: data.broads, lang: x.lang })
-  }, [data, x.lang])
-
-  const indRows = useMemo(function pickIndRows() {
-    if (data == null) {
-      return []
-    }
-    return toCityIndRows({ rows: data.industry, cities: data.cities, lang: x.lang })
-  }, [data, x.lang])
+    return cityIndTablesOf({ rows: data.industry, cities: data.cities, t: x.t, lang: x.lang })
+  }, [data, x.t, x.lang])
 
   const pilotRows = useMemo(function pickPilotRows() {
     if (data == null) {
@@ -139,7 +123,7 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     return toCityDliRows({ rows: data.dli, lang: x.lang })
   }, [data, x.lang])
 
-  return { data, mainRows, broadCols, indRows, pilotRows, dliRows }
+  return { data, mainRows, indTables, pilotRows, dliRows }
 }
 
 /**
