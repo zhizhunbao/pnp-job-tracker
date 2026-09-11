@@ -2150,7 +2150,7 @@ export function cityMainColsOf(x: CityColsIn): StartCol<CityMainRow>[] {
       render: cityNew7TextOf,
       className: cssOf(css.cityWide),
     },
-    { key: COL_CITY_WAGE, label: x.t('stats.medWage'), nowrap: true, sort: cityWageSortOf, render: cityWageTextOf },
+    { key: COL_CITY_WAGE, label: x.t('pulse.city.wage'), nowrap: true, sort: cityWageSortOf, render: cityWageTextOf },
     {
       key: COL_CITY_PILOT,
       label: x.t('pulse.city.channel'),
@@ -2322,7 +2322,6 @@ function broadLabelOf(x: BroadLabelOfIn): string {
 export function toCityIndRows(x: CityIndRowsIn): CityIndRow[] {
   const onOpen = makeCityTrack(CITY_KIND_IND)
   const byCity = new Map<string, CityIndRow>()
-  const out: CityIndRow[] = []
   for (const c of x.cities) {
     const key = c.city + KEY_SEP + c.province
     const row: CityIndRow = {
@@ -2339,9 +2338,12 @@ export function toCityIndRows(x: CityIndRowsIn): CityIndRow[] {
     const hit = byCity.get(r.city + KEY_SEP + r.province)
     if (hit != null) {
       hit.byBroad[r.broad] = r.n
-      if (out.includes(hit) === false) {
-        out.push(hit)
-      }
+    }
+  }
+  const out: CityIndRow[] = []
+  for (const row of byCity.values()) {
+    if (Object.keys(row.byBroad).length > 0) {
+      out.push(row)
     }
   }
   return out
