@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "intouchinsight",
-  "count": 3,
+  "count": 2,
   "jobs": [
     {
       "title": "Sales Manager",
@@ -11,7 +11,16 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Part-Time Scheduling Agent",
@@ -21,17 +30,18 @@
       "posted": "",
       "address": "",
       "salary": "$17-$19 per hour",
-      "tech": false
-    },
-    {
-      "title": "Part-Time Scheduling Agent",
-      "location": "",
-      "url": "https://intouchinsight.bamboohr.com/careers/141",
-      "department": "Operations - Schedulers",
-      "posted": "",
-      "address": "",
-      "salary": "$14-$16 per hour",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 37440,
+      "salaryText": "$17–$19/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "martello",
-  "count": 2,
+  "count": 3,
   "jobs": [
     {
       "title": "VP Product",
@@ -11,7 +11,16 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Finance Associate, Shared Services",
@@ -21,7 +30,37 @@
       "posted": "",
       "address": "",
       "salary": "$60,000-$80,000",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "salaryAnnual": 70000,
+      "salaryText": "$60K–$80K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Software Developer Term",
+      "location": "Kanata, Ontario",
+      "url": "https://martello.bamboohr.com/careers/210",
+      "department": "R&D",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

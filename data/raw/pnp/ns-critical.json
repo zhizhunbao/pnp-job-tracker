@@ -4,8 +4,16 @@
   "province": "NS",
   "type": "indemand",
   "url": "https://liveinnovascotia.com/critical-vacancies",
-  "fetched": "2026-08-31",
+  "fetched": "2026-09-12",
   "occupations": [
+    {
+      "noc": "22300",
+      "name": "Civil Engineering Technologists and Technicians"
+    },
+    {
+      "noc": "32101",
+      "name": "Licensed Practical Nurse"
+    },
     {
       "noc": "33102",
       "name": "Nurse aides, orderlies and patient service associates"
@@ -23,6 +31,10 @@
       "name": "Contractors and supervisors, mechanic trades"
     },
     {
+      "noc": "72100",
+      "name": "Machinists and machining and tooling inspectors"
+    },
+    {
       "noc": "72104",
       "name": "Structural metal and platework fabricators and fitters"
     },
@@ -33,6 +45,10 @@
     {
       "noc": "72310",
       "name": "Carpenters"
+    },
+    {
+      "noc": "72401",
+      "name": "Heavy-Duty Equipment Mechanics"
     },
     {
       "noc": "72410",

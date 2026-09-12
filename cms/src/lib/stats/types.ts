@@ -82,6 +82,21 @@ export type StatRow = {
   medianWageAnnual: number | null
 
   /**
+   * ESDC 低位时薪(官方工资带下端,桶内中位;2026-09-11 时薪三件);没算保 null。
+   */
+  wageLowHourly: number | null
+
+  /**
+   * ESDC 中位时薪(同上);没算保 null。
+   */
+  wageMedHourly: number | null
+
+  /**
+   * ESDC 高位时薪(同上);没算保 null。
+   */
+  wageHighHourly: number | null
+
+  /**
    * 中位年薪(标注年薪的岗);没算保 null。
    */
   medianSalaryAnnual: number | null
@@ -156,6 +171,21 @@ export type StatDbRow = {
    * 中位年化时薪折算。
    */
   median_wage_annual: number | string | null
+
+  /**
+   * ESDC 低位时薪(2026-09-11 时薪三件;降级查询没这列 = 缺席)。
+   */
+  wage_low_hourly?: number | string | null
+
+  /**
+   * ESDC 中位时薪(同上)。
+   */
+  wage_med_hourly?: number | string | null
+
+  /**
+   * ESDC 高位时薪(同上)。
+   */
+  wage_high_hourly?: number | string | null
 
   /**
    * 中位年薪。
@@ -969,6 +999,11 @@ export type CitySchoolRow = {
   name: string
 
   /**
+   * 通行中文译名(人工核定表;没有是空串,前端回退英文)。
+   */
+  nameZh: string
+
+  /**
    * 公立与否。
    */
   isPublic: boolean
@@ -1070,23 +1105,19 @@ export type PilotCommRow = {
 export type PilotCommsOut = Promise<PilotCommRow[]>
 
 /**
- * 城市 DLI 统计一行(SQL.CITY_DLI_STATS;城市段「留学城市」表)。
+ * DLI 院校榜一行(SQL.DLI_SCHOOLS;城市段「留学院校」表 —— 2026-09-12 Frank
+ * 「要不每个学校单独一行怎么样 再加上 qs 排名」,原城市聚合行 DliCityRow 同批退役)。
  */
-export type DliCityRow = {
+export type DliSchoolRow = {
   /**
-   * 城市英文名。
+   * 院校官方名。
    */
-  city: string
+  name: string
 
   /**
-   * 城市中文名(借 cities 维度,缺则空串)。
+   * 通行中文译名(人工核定表;没有是空串,前端回退英文)。
    */
-  cityZh: string
-
-  /**
-   * 城市韩文名(同上)。
-   */
-  cityKo: string
+  nameZh: string
 
   /**
    * 两位省码。
@@ -1094,25 +1125,35 @@ export type DliCityRow = {
   province: string
 
   /**
-   * DLI 院校数。
+   * 校区城清单(按名序;2026-09-12 粒度改校 × 城后,一校一行表在这格收回多城)。
    */
-  n: number
+  cities: string[]
 
   /**
-   * 其中公立。
+   * 公立与否。
    */
-  publicN: number
+  isPublic: boolean
 
   /**
-   * 其中毕业可申工签(PGWP 资格)。
+   * 毕业可申工签(PGWP 资格)与否。
    */
-  gradN: number
+  gradProgram: boolean
+
+  /**
+   * QS 世界大学排名名次(排序用纯数;榜外 null,「官方没有」不是零)。
+   */
+  qsRank: number | null
+
+  /**
+   * QS 展示名次(如 "=45";榜外空串)。
+   */
+  qsRankDisplay: string
 }
 
 /**
- * `loadDliCities` 的返回。
+ * `loadDliCities` 的返回(2026-09-12 起 = 一校一行的院校榜)。
  */
-export type DliCitiesOut = Promise<DliCityRow[]>
+export type DliCitiesOut = Promise<DliSchoolRow[]>
 
 /**
  * 把脉页趋势段·逐日在招量一行(SQL.STATS_DAILY_SERIES:日期 × 大类,十省已加总)。

@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-01",
+ "fetched": "2026-09-11",
  "source": "https://www.ircc.canada.ca/opendata-donneesouvertes/data/EN_ODP-TR-Study-IS_PT_study_level_sign.xlsx",
  "byProv": {
   "NL": {
@@ -621,7 +621,69 @@
     "complete": false,
     "throughMonth": "Jun"
    }
+  },
+  "CA": {
+   "2015": {
+    "n": 219030,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2016": {
+    "n": 264270,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2017": {
+    "n": 314970,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2018": {
+    "n": 354260,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2019": {
+    "n": 400570,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2020": {
+    "n": 255525,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2021": {
+    "n": 443495,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2022": {
+    "n": 547980,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2023": {
+    "n": 680670,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2024": {
+    "n": 514635,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2025": {
+    "n": 380680,
+    "complete": true,
+    "throughMonth": "Dec"
+   },
+   "2026": {
+    "n": 152295,
+    "complete": false,
+    "throughMonth": "Jun"
+   }
   }
  },
- "note": "新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:存量=在库人数(竞争比分母),流量=当期新增趋势。"
+ "note": "新发学签**流量**(按许可生效月份,非年末存量)。月度粒度,进行年为 YTD(complete=false 时 n 是已公布月份求和,throughMonth 是最后一个有数月份)。与存量口径不可混用:存量=在库人数(竞争比分母),流量=当期新增趋势。CA = 全国(表尾 Total - All Canada 行)。"
 }

@@ -54,6 +54,7 @@ etl/ (Python: 抓取 → 清洗 → 评分, 写 data/) ──> cms/ (Payload + N
 
 - `etl/` 域即役(一域一门,调度看各域 META/METAS;2026-08-31 批C~L 十一批收官:**全部代码住域,每域五件套** constants/scheme/functions/main/__init__,根上零散件清零),`etl/paths/` 是**唯一路径真相**(任何脚本不写死路径)。
 - **分层(数据仓库式)**:raw(抽取)→ clean/(清洗按关注点)→ **mart(`09_build_mart.py` 产出 data/mart/,列对齐 DB,一文件=一张表)** → load(seed)。
+- **抓取链四层(2026-09-02 Frank 拍板)**:**crawl**(页面原文缓存 `data/crawl/<slug>/html_cache/` + manifest,写门 `crawl.put_cached_page` / 读门 `get_cached_page`;httpx 响应与浏览器渲染态 outerHTML 同此)→ **raw**(各域抽出的 json)→ **processed** → **mart**。原文不落 crawl 就抽字段 = 解析一错整批重爬(duoink 370 页实撞)。
 - `lib/mart`(壳在 `app/api/seed`)是**纯加载器**:只读 mart json → 灌库,不拼装不清洗。不带 `?reset=1` = 增量对账(未出现的岗 → closed)。
 - **DB**:事实表 jobs/companies;维度表 provinces/cities/districts/noc_categories/sources/experience_levels/designated_employers。Payload 管 schema/admin。
 - **分类/标签在数据层算**:NOC 大中小类+TEER 在 `etl/noc.py`(单一来源);来源显示标签在 mart 洗。前端只读字段,筛选选项读维度表(颜色等纯显示留前端)。

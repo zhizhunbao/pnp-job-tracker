@@ -14,6 +14,7 @@ import {
   PCT_MARK, SPACE_SEP,
   TEXT_NONE, URL_HOME_CITY_HEAD,
 } from './constants'
+import { SchoolNameCell } from './schoolnamecell'
 import type {
   CityTitleIn, CityTitleOut, FactRow, FactRowsIn, GroupColsIn, GroupRow, GroupRowsIn, LocalNameIn, SchoolColsIn,
   SchoolRow, SchoolRowsIn,
@@ -209,9 +210,11 @@ export function groupRowKeyOf(r: GroupRow): string {
 }
 
 /**
- * DLI 名单表的行(公立在前的库序照抄;类型与工签格文案化)。
+ * DLI 名单表的行(公立在前的库序照抄;类型与工签格文案化;院校名 2026-09-12
+ * Frank「大学名 最好也加上中文翻译吧」:中文界面有译名走「译名主文案 + 英文灰注」双行,
+ * 译名表外与 en/ko 界面一律英文单行 —— 照城市名双行约定)。
  *
- * @param x 取词函数与名单。
+ * @param x 取词函数、名单与界面语言。
  * @returns 展示行。
  */
 export function schoolRowsOf(x: SchoolRowsIn): SchoolRow[] {
@@ -225,7 +228,13 @@ export function schoolRowsOf(x: SchoolRowsIn): SchoolRow[] {
     if (s.gradProgram) {
       gradText = CHECK_MARK
     }
-    out.push({ key: s.name, name: s.name, typeText, gradText })
+    let name = s.name
+    let note = TEXT_NONE
+    if (x.lang === LANG_ZH && s.nameZh !== TEXT_NONE) {
+      name = s.nameZh
+      note = s.name
+    }
+    out.push({ key: s.name, name, note, typeText, gradText })
   }
   return out
 }
@@ -238,7 +247,7 @@ export function schoolRowsOf(x: SchoolRowsIn): SchoolRow[] {
  */
 export function schoolColsOf(x: SchoolColsIn): Col<SchoolRow>[] {
   return [
-    { key: COL_NAME, label: x.t('city.school'), sort: schoolNameOf, render: schoolNameOf },
+    { key: COL_NAME, label: x.t('city.school'), sort: schoolNameOf, render: SchoolNameCell },
     { key: COL_TYPE, label: x.t('city.schoolType'), nowrap: true, sort: schoolTypeOf, render: schoolTypeOf },
     { key: COL_GRAD, label: x.t('pulse.city.dliGrad'), nowrap: true, render: schoolGradOf },
   ]

@@ -444,12 +444,13 @@ export const PROVINCES_INFO = `SELECT code, info FROM provinces`
  * 宏观序列(2026-09-06 省份段 = 宏观统计):StatCan 人口 / 临时居民 / GDP / 失业率 + IRCC 学签新签 / PR / 配额 + EE 邀请,
  * 一行一点(geo, key, period);numeric 列转 float8 省得消费端再洗字串。进程内 10 分钟缓存(把脉页门)。
  * 2026-09-10 评估批从全表 SELECT 收窄(原样进 HTML 481 KB,页面 6.29 MB):魁北克整地区不上表
- * (IND_GEO_ORDER 已撤,QC 专项另说)、依赖度键已撤表(数据留库)、失业率月度只留年末 12 月
- * 与进行年各月(表格取年末值 + 进行年最新月,历史年其余月份消费端从未读过)。
+ * (IND_GEO_ORDER 已撤,QC 专项另说)、失业率月度只留年末 12 月与进行年各月
+ * (表格取年末值 + 进行年最新月,历史年其余月份消费端从未读过)。
+ * 2026-09-11 pnpShare 键回归(Frank「应该知道省提名的比例才是有意义的」:省 PR 小表的占比行;
+ * 09-10 曾随依赖度表撤而排除)。数据已走 /api/stats/macro 不进 HTML,行数敏感度降了一档。
  */
 export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS value, as_of FROM macro_series
      WHERE geo <> 'QC'
-       AND key <> 'pnpShare'
        AND NOT (key = 'unemp' AND freq = 'M'
             AND substring(period from 6 for 2) <> '12'
             AND substring(period from 1 for 4) < to_char(now(), 'YYYY'))`
@@ -723,6 +724,7 @@ export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE ap
  * 两个模板函数的 WHERE 片段全站只用过两种取值,固化成下面三条常量,模板退役。
  */
 export const STATS_WITH_MID = `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
+              wage_low_hourly, wage_med_hourly, wage_high_hourly,
               named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
        FROM stats ORDER BY open_jobs DESC NULLS LAST`
 
@@ -730,6 +732,7 @@ export const STATS_WITH_MID = `SELECT province, broad, mid, open_jobs, new7d, me
  * 统计页·大类层行(mid='all' 或 NULL;省页/对比/表格口径,不重复计数)。
  */
 export const STATS_BROAD_ROWS = `SELECT province, broad, mid, open_jobs, new7d, median_wage_annual, median_salary_annual,
+              wage_low_hourly, wage_med_hourly, wage_high_hourly,
               named_jobs, stream_labels, aip_jobs, top_cities, fetched, difficulty
        FROM stats WHERE (mid = 'all' OR mid IS NULL) ORDER BY open_jobs DESC NULLS LAST`
 
@@ -847,17 +850,21 @@ export const CITY_PILOTS = `SELECT p.name, p.province, p.type, COALESCE(SUM(s.op
        ORDER BY open_jobs DESC, p.name ASC, p.type ASC`
 
 /**
- * 城市 DLI 统计(城市段「留学城市」表;2026-09-11)。$1=行数。
- * n=院校数、public_n=其中公立、grad_n=毕业可申工签(PGWP 资格);译名借 cities 维度。
+ * DLI 院校榜(城市段「留学院校」表;2026-09-12 Frank「要不每个学校单独一行怎么样
+ * 再加上 qs 排名」—— 一校一行替换城市聚合行 + 点开胶囊形,原 CITY_DLI_STATS 同批退役)。
+ * $1=行数。校 × 城行按 DLI# 收回校级:cities=校区城清单(按名序),QS 两格全校同值取 min,
+ * 榜外 NULL/空串前端显杠;序 = QS 名次升序榜外沉底,再按校名。
  */
-export const CITY_DLI_STATS = `SELECT d.city, d.province, c.name_zh, c.name_ko,
-              COUNT(*)::int AS n,
-              COUNT(*) FILTER (WHERE d.is_public)::int AS public_n,
-              COUNT(*) FILTER (WHERE d.grad_program)::int AS grad_n
-       FROM dli d LEFT JOIN cities c ON c.name = d.city AND c.province = d.province
+export const DLI_SCHOOLS = `SELECT d.dli_number, d.name, d.name_zh, d.province,
+              bool_or(d.is_public) AS is_public,
+              bool_or(d.grad_program) AS grad_program,
+              min(d.qs_rank)::int AS qs_rank,
+              min(d.qs_rank_display) AS qs_rank_display,
+              json_agg(d.city ORDER BY d.city ASC) AS cities
+       FROM dli d
        WHERE COALESCE(d.city, '') <> ''
-       GROUP BY d.city, d.province, c.name_zh, c.name_ko
-       ORDER BY n DESC, d.city ASC LIMIT $1`
+       GROUP BY d.dli_number, d.name, d.name_zh, d.province
+       ORDER BY min(d.qs_rank) ASC NULLS LAST, d.name ASC LIMIT $1`
 
 /**
  * 城市详情页基面(2026-09-12 批三首件):cities 维度打底 LEFT JOIN 快照 ——
@@ -870,9 +877,10 @@ export const CITY_DETAIL = `SELECT c.name AS city, c.province, c.name_zh, c.name
        WHERE c.name = $1 AND c.province = $2`
 
 /**
- * 城市详情页·该城 DLI 名单(公立在前再按名序;表 4 只有计数,名单在详情页给)。
+ * 城市详情页·该城 DLI 名单(公立在前再按名序;表 4 只有计数,名单在详情页给;
+ * name_zh 2026-09-12 随人工核定译名列挂上)。
  */
-export const CITY_DLI_LIST = `SELECT name, is_public, grad_program, url FROM dli
+export const CITY_DLI_LIST = `SELECT name, name_zh, is_public, grad_program, url FROM dli
        WHERE city = $1 AND province = $2
        ORDER BY is_public DESC, name ASC`
 

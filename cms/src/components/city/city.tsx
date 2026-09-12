@@ -14,7 +14,7 @@ import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
-import { SHELL_TOP, URL_BACK } from './constants'
+import { DLI_PAGE_SIZE, SHELL_TOP, URL_BACK } from './constants'
 import {
   cityJobsHrefOf, cityTitleOf, factRowsOf, groupColsOf, groupRowKeyOf, groupRowsOf, schoolColsOf, schoolRowKeyOf,
   schoolRowsOf,
@@ -41,7 +41,7 @@ export function City({ city, schools, pilotTypes, missing, updatedAt }: CityIn) 
   }
   const facts = factRowsOf({ t, city, pilotTypes })
   const groups = groupRowsOf({ t, groups: city.groups })
-  const schoolRows = schoolRowsOf({ t, schools })
+  const schoolRows = schoolRowsOf({ t, schools, lang })
   const factItems = []
   for (const f of facts) {
     factItems.push(
@@ -82,7 +82,10 @@ export function City({ city, schools, pilotTypes, missing, updatedAt }: CityIn) 
             <h2 className={css.secTitle}>{t('pulse.city.dliN')}</h2>
             <Updated iso={updatedAt} t={t} />
           </div>
-          <Table<SchoolRow> rows={schoolRows} cols={schoolColsOf({ t })} rowKey={schoolRowKeyOf} />
+          <Table<SchoolRow> rows={schoolRows}
+            cols={schoolColsOf({ t })}
+            rowKey={schoolRowKeyOf}
+            pageSize={DLI_PAGE_SIZE} />
         </div>
       )}
     </Shell>

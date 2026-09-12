@@ -2,7 +2,7 @@
  "province": "FED",
  "program": "RCIP",
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility.html",
- "fetched": "2026-09-06",
+ "fetched": "2026-09-12",
  "note": "quote-anchored:valueText=官方原文,本步每轮验证其仍逐字在页面上;字段语义见 basis。覆盖 job offer(社区指定雇主/社区推荐/优先行业或职业)、工作经验(1,560 小时/3 年窗/TEER 相近表/TEER 5 同码/社区毕业生豁免)、语言(CLB 按 TEER 三档)、学历(境内高中或以上/境外 ECA)、安家资金(fundsMinimum 按 familySize 分档,fundsPerAdditionalMember 是超 7 人后的每人递增)。RCIP 是社区推荐制:哪个社区、优先职业、指定雇主名单不在本表,那是 rcip 域三份清单的事。",
  "requirements": [
   {
@@ -16,7 +16,7 @@
    "basis": "",
    "label": "Job offer must come from an employer designated by the recommending community",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -29,7 +29,7 @@
    "basis": "",
    "label": "The designated employer sends the community recommendation application to the community for review",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/job-offer.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -42,7 +42,7 @@
    "basis": "",
    "label": "The community checks that the job is in a priority sector or occupation and the offer is real",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/job-offer.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -55,7 +55,7 @@
    "basis": "windowYears=3;minYears=1",
    "label": "At least 1 year (1,560 hours) of related work experience in the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -68,7 +68,7 @@
    "basis": "",
    "label": "Work experience must be paid; volunteer work and unpaid internships don't count",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -81,7 +81,7 @@
    "basis": "",
    "label": "Self-employment does not count toward the work experience requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -94,7 +94,7 @@
    "basis": "jobOfferTeer0,1->workTeer0,1,2,3;jobOfferTeer2->workTeer1,2,3,4;jobOfferTeer3,4->workTeer2,3,4;jobOfferTeer5->sameNoc5",
    "label": "Work experience must be in a similar TEER to the job offer (official table; TEER 5 offers need the same 5-digit NOC)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -107,7 +107,7 @@
    "basis": "appliesTo=jobOfferTeer5",
    "label": "For a TEER 5 job offer the work experience must be in the same 5-digit NOC code",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -120,7 +120,7 @@
    "basis": "",
    "label": "International students who graduated from a public post-secondary school in the community are exempt from the work experience requirement",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -133,7 +133,7 @@
    "basis": "appliesTo=workExemptGrad",
    "label": "Exemption credential must be from a program of 2 years or longer (or a master's or higher of 2 years or less)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -146,7 +146,7 @@
    "basis": "appliesTo=workExemptGrad",
    "label": "Exemption credential must have been received no more than 18 months before applying for PR",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -159,7 +159,7 @@
    "basis": "appliesTo=workExemptGrad;windowMonths=24",
    "label": "Must have been in the community for at least 16 of the last 24 months while studying",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/work-experience.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "teer-0-1",
@@ -172,7 +172,7 @@
    "basis": "",
    "label": "CLB 6 minimum for a job offer in TEER 0 or 1",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "teer-2-3",
@@ -185,7 +185,7 @@
    "basis": "",
    "label": "CLB 5 minimum for a job offer in TEER 2 or 3",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "teer-4-5",
@@ -198,7 +198,7 @@
    "basis": "",
    "label": "CLB 4 minimum for a job offer in TEER 4 or 5",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -211,7 +211,7 @@
    "basis": "",
    "label": "Language test results must be less than 2 years old when you apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/language-test.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -224,7 +224,7 @@
    "basis": "",
    "label": "Education in Canada: a Canadian secondary school (high school) diploma or a recognized post-secondary credential",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/education-assessment.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -237,7 +237,7 @@
    "basis": "",
    "label": "Education outside Canada: an educational credential assessment (ECA) from a designated organization",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/education-assessment.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -250,7 +250,7 @@
    "basis": "appliesTo=educationForeignEca",
    "label": "The ECA must be less than 5 years old on the date you apply",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/education-assessment.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -263,7 +263,7 @@
    "basis": "",
    "label": "No proof of funds needed if already working in Canada with a valid work permit",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -276,7 +276,7 @@
    "basis": "beyondFamilySize=7;asOf=2025-07-29",
    "label": "For each family member beyond 7, add $2,831 CAD",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -290,7 +290,7 @@
    "label": "Minimum settlement funds for a family of 1: $10,507 CAD",
    "familySize": 1,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -304,7 +304,7 @@
    "label": "Minimum settlement funds for a family of 2: $13,080 CAD",
    "familySize": 2,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -318,7 +318,7 @@
    "label": "Minimum settlement funds for a family of 3: $16,080 CAD",
    "familySize": 3,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -332,7 +332,7 @@
    "label": "Minimum settlement funds for a family of 4: $19,524 CAD",
    "familySize": 4,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -346,7 +346,7 @@
    "label": "Minimum settlement funds for a family of 5: $22,143 CAD",
    "familySize": 5,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -360,7 +360,7 @@
    "label": "Minimum settlement funds for a family of 6: $24,975 CAD",
    "familySize": 6,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   },
   {
    "stream": "",
@@ -374,7 +374,7 @@
    "label": "Minimum settlement funds for a family of 7: $27,806 CAD",
    "familySize": 7,
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration/eligibility/proof-funds.html",
-   "fetched": "2026-09-06"
+   "fetched": "2026-09-12"
   }
  ]
 }

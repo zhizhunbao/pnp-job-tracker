@@ -41,6 +41,11 @@ RAW_JOBBOOM = RAW / "jobboom"
 """jobboom 域抽出的表(2026-09-06 立域,与 jobillico 同形):urls.json + jobs.json;原文在 crawl/board-jobboom/。
 Job Bank 转载条(站点地图 URL 含 /job-bank/,占 86%)在枚举时就剔,不进这里(Frank 2026-09-06「剔 Job Bank 转载」)。"""
 
+RAW_CAREERBEACON = RAW / "careerbeacon"
+"""careerbeacon 域抽出的表(2026-09-11 立域,大西洋四省板):urls.json(省列表页分页枚举:帖号 → 详情 URL)
++ jobs.json(详情页 ld+json JobPosting 抽出的事实,帖号为键);原文在 crawl/board-careerbeacon/。
+只收 NS/NB/NL/PE 四省列表页,站上其余约 8 万全国聚合岗不进这里(2026-09-11 拍板)。"""
+
 
 PNP = RAW / "pnp"
 """各省 PNP 维护表(aaip-ineligible/sk-*.json 等)。"""
@@ -133,6 +138,10 @@ PROCESSED_JOBILLICO = PROCESSED / "jobillico"
 
 PROCESSED_JOBBOOM = PROCESSED / "jobboom"
 """jobboom 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径)。"""
+
+PROCESSED_CAREERBEACON = PROCESSED / "careerbeacon"
+"""careerbeacon 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;
+当前态 = 只留本轮省列表页仍在列且未过截止日的帖)。"""
 
 PROCESSED_PTE = PROCESSED / "pte"
 """pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +

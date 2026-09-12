@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "solace",
-  "count": 23,
+  "count": 10,
   "jobs": [
     {
       "title": "Senior Software Developer",
@@ -11,7 +11,18 @@
       "posted": "",
       "address": "",
       "salary": "$135,000 to $165,000",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 150000,
+      "salaryText": "$135K–$165K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior Cloud Site Reliability Engineer",
@@ -21,7 +32,16 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Principal Software Developer",
@@ -31,47 +51,18 @@
       "posted": "",
       "address": "",
       "salary": "$155,000 to $180,000",
-      "tech": true
-    },
-    {
-      "title": "Solutions Engineer - EMEA",
-      "location": "Paris, France",
-      "url": "https://solace.bamboohr.com/careers/745",
-      "department": "Sales Engineers",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": true
-    },
-    {
-      "title": "Sales Director - Germany",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/746",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Director - APAC",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/747",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Senior Cloud Site Reliability Engineer",
-      "location": "Singapore , Singapore",
-      "url": "https://solace.bamboohr.com/careers/749",
-      "department": "Support",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 167500,
+      "salaryText": "$155K–$180K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Senior DevOps Engineer",
@@ -81,67 +72,18 @@
       "posted": "",
       "address": "",
       "salary": "$115,000 to $140,000",
-      "tech": true
-    },
-    {
-      "title": "Sales Director - SoCal",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/762",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Director - Mexico City",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/763",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Director - Chicago",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/764",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Director - Austin",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/765",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Sales Director - Philadelphia",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/767",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Field Marketing Manager",
-      "location": "London, London, City of",
-      "url": "https://solace.bamboohr.com/careers/769",
-      "department": "Marketing",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 127500,
+      "salaryText": "$115K–$140K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer (Junior)",
@@ -151,7 +93,18 @@
       "posted": "",
       "address": "",
       "salary": "$85,000 to $105,000",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 95000,
+      "salaryText": "$85K–$105K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer - Full Stack (temporary 10-12 months)",
@@ -161,7 +114,18 @@
       "posted": "",
       "address": "",
       "salary": "$95",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 197600,
+      "salaryText": "$95/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Software Developer",
@@ -171,27 +135,18 @@
       "posted": "",
       "address": "",
       "salary": "$95,000",
-      "tech": true
-    },
-    {
-      "title": "Sales Development Representative",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/780",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Senior Graphic Designer",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/782",
-      "department": "Marketing",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 95000,
+      "salaryText": "$95K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Product Operations Lead (8-10 month Contract)",
@@ -201,27 +156,18 @@
       "posted": "",
       "address": "",
       "salary": "$105,000 to $125,000,",
-      "tech": false
-    },
-    {
-      "title": "Solutions Engineer",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/784",
-      "department": "Sales Engineers",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": true
-    },
-    {
-      "title": "Director, Analyst Relations",
-      "location": "",
-      "url": "https://solace.bamboohr.com/careers/785",
-      "department": "Marketing",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": true
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 115000,
+      "salaryText": "$105K–$125K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
       "title": "Payroll Coordinator",
@@ -231,7 +177,37 @@
       "posted": "",
       "address": "",
       "salary": "$65,000-75,000",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 70000,
+      "salaryText": "$65K–$75K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Junior Software Engineer",
+      "location": "Ottawa, Ontario",
+      "url": "https://solace.bamboohr.com/careers/789",
+      "department": "R&D",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

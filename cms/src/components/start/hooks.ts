@@ -16,18 +16,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { ID_PGWP, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
+import { LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, toCityDliRows, toCityMainRows,
-  trackSecView, makeKindPick, makeNavWatch,
+  trackSecView, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
-  EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
+  EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
 } from './types'
@@ -128,8 +128,8 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     if (data == null) {
       return []
     }
-    return toCityDliRows({ rows: data.dli, lang: x.lang })
-  }, [data, x.lang])
+    return toCityDliRows({ rows: data.dli, t: x.t, lang: x.lang })
+  }, [data, x.t, x.lang])
 
   return { data, mainRows, indTables, pilotTables, dliRows }
 }
@@ -211,10 +211,11 @@ export function useCardPage(x: CardPageIn): OccBoardPanel {
 }
 
 /**
- * 雇主段的行业分表(按当前身份档)+ 三试点表;担保雇主全量到手前用 SSR 那几十行。
+ * 雇主段的行业分表 + 三试点表;担保雇主全量到手前用 SSR 那几十行
+ * (身份档 2026-09-12 Frank「用一张表就行了」随两档合并退役)。
  *
- * @param x SSR 数据、主图、语言与身份档。
- * @returns 当前档的分表。
+ * @param x SSR 数据、主图与语言。
+ * @returns 分表。
  */
 export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
   const [, , t] = useLang()
@@ -242,8 +243,8 @@ export function useEmpSecs(x: EmpSecsHookIn): EmpSecsPanel {
   }, [x.stats.rcipNames, x.stats.fcipNames, x.stats.briefs])
 
   const secs = useMemo(function pickEmpSecs() {
-    return empSecsOf({ t, sponsor, nocCat, nocInfo, extra, kind: x.kind, lang: x.lang })
-  }, [t, sponsor, nocCat, nocInfo, extra, x.kind, x.lang])
+    return empSecsOf({ t, sponsor, nocCat, nocInfo, extra, lang: x.lang })
+  }, [t, sponsor, nocCat, nocInfo, extra, x.lang])
 
   const pilotSecs = useMemo(function pickPilotSecs() {
     return pilotSecsOf({ t, sponsor, nocCat, nocInfo, extra, lang: x.lang })
@@ -263,8 +264,7 @@ export function usePulse(x: PulseIn): PulsePanel {
   const [lang, , t] = useLang()
   const market = useMarketStats()
   const macroData = useMacroStats()
-  const [empKind, setEmpKind] = useState<EmpKind>(ID_PGWP)
-  const emp = useEmpSecs({ stats: x.stats, lang, kind: empKind })
+  const emp = useEmpSecs({ stats: x.stats, lang })
   const navSec = useNavSec()
   const tEn = useEnglishT()
   const nocProvs: NocProvsMap = useMemo(function pickNocProvs() {
@@ -315,8 +315,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     occSecs,
     empSecs: emp.secs,
     pilotSecs: emp.pilotSecs,
-    empKind,
-    kindPickOf: makeKindPick({ setKind: setEmpKind }),
     nocProvs,
     indGeos,
     prGeos,

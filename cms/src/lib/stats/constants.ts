@@ -116,9 +116,10 @@ export const CITY_ALL_LIMIT = 3000
 export const CITY_IND_TOP = 10
 
 /**
- * 留学城市表最多取几城(有 DLI 的城市全量 ~200 以内;视图端分页)。
+ * 留学院校表最多取几行(2026-09-12 一校一行:PGWP 子集全量 ~296 所,原 200 截尾实撞;
+ * 视图端分页)。
  */
-export const CITY_DLI_LIMIT = 200
+export const CITY_DLI_LIMIT = 400
 
 /**
  * 把脉页趋势段回看几天(stats_daily 自 2026-07-28 起逐日;90 天足够画一季走势)。

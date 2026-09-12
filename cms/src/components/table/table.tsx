@@ -19,13 +19,15 @@ import { useRef } from 'react'
 import { cssOf } from '@/components/css'
 import { Pager } from '@/components/pager'
 import {
-  ALIGN_RIGHT, SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE,
+  SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART,
+  SERIES_VIEW_TABLE,
 } from './constants'
-import { cellOf, cls, makeSeriesSwitch, pointLabelsOf, shownColsOf } from './functions'
+import { cls, makeSeriesSwitch, pointLabelsOf, shownColsOf } from './functions'
 import { useColWidths, useRows, useSeriesView } from './hooks'
 import { SeriesChart } from './serieschart'
 import { SeriesToolbar } from './seriestoolbar'
 import { TableHead } from './tablehead'
+import { TableRows } from './tablerows'
 import type { TableIn } from './types'
 import css from './table.module.css'
 
@@ -38,7 +40,7 @@ import css from './table.module.css'
  * @returns 表格。
  */
 export function Table<T>({
-  cols, rows, rowKey, empty, header, minWidth, pageSize, footerNote, foot, bare = false, series,
+  cols, rows, rowKey, detailOf, empty, header, minWidth, pageSize, footerNote, foot, bare = false, series,
 }: TableIn<T>) {
   let pageSizeIn: number | null = null
   if (pageSize != null) {
@@ -50,27 +52,6 @@ export function Table<T>({
   const tableRef = useRef<HTMLTableElement | null>(null)
   const widths = useColWidths({ cols: shown, rowCount: rows.length, tableRef })
   const chart = s.view === SERIES_VIEW_CHART
-
-  const trs = []
-  let i = 0
-  for (const row of r.paged) {
-    const tds = []
-    for (const c of shown) {
-      tds.push(
-        <td key={c.key}
-          className={cls(
-            cssOf(css.td),
-            c.align === ALIGN_RIGHT && css.right,
-            c.nowrap === true && css.nowrap,
-            c.className,
-          )}>
-          {cellOf({ row, col: c })}
-        </td>,
-      )
-    }
-    trs.push(<tr key={rowKey(row, i)}>{tds}</tr>)
-    i = i + 1
-  }
 
   return (
     <div className={cls(cssOf(css.shell), bare && css.bare)}>
@@ -98,7 +79,7 @@ export function Table<T>({
         <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
           <TableHead cols={shown} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
           <tbody>
-            {trs}
+            <TableRows<T> cols={shown} rows={r.paged} rowKey={rowKey} detailOf={detailOf} />
             {foot}
           </tbody>
         </table>

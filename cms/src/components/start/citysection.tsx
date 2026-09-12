@@ -20,19 +20,19 @@
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import {
-  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PH_PROV,
-  PILOT_AIP,
+  CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, PH_PROV,
 } from './constants'
 import {
   boardGapClsOf, cityAipColsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf,
   dliRowKeyOf,
-  indRowKeyOf, pilotRowKeyOf, subIdOf,
+  indRowKeyOf, subIdOf,
 } from './functions'
 import { useCityPanel } from './hooks'
 import { Band } from './band'
+import { CityPilotBlock } from './citypilotblock'
 import { Placeholder } from './placeholder'
 import { Sec } from './sec'
-import type { CityDliRow, CityIndRow, CityMainRow, CityPilotRow, CitySectionIn } from './types'
+import type { CityDliRow, CityIndRow, CityMainRow, CitySectionIn } from './types'
 import css from './start.module.css'
 
 /**
@@ -65,20 +65,8 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
   const aipCols = cityAipColsOf({ t })
   const pilotBlocks = []
   for (const tb of v.pilotTables) {
-    let cols = pilotCols
-    if (tb.key === PILOT_AIP) {
-      cols = aipCols
-    }
     pilotBlocks.push(
-      <div key={tb.key} id={subIdOf({ band: ID_CITY_PILOT, key: tb.key })} className={css.subAnchor}>
-        <div className={boardGapClsOf({ gap: true })}>
-          <Sec title={tb.key} right={<Updated iso={updatedAt} t={t} />} sub>
-            <Table<CityPilotRow> rows={tb.rows}
-              cols={cols}
-              rowKey={pilotRowKeyOf} />
-          </Sec>
-        </div>
-      </div>,
+      <CityPilotBlock key={tb.key} t={t} tb={tb} pilotCols={pilotCols} aipCols={aipCols} updatedAt={updatedAt} />,
     )
   }
   return (

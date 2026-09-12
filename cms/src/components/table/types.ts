@@ -58,6 +58,31 @@ export type Col<T> = {
 }
 
 /**
+ * TableRows(行体:一页数据行 + 可选跨列细行;2026-09-12 随 detailOf 提出)的 props。
+ */
+export type TableRowsIn<T> = {
+  /**
+   * 上屏列(已按视图筛过)。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 这一页的行。
+   */
+  rows: T[]
+
+  /**
+   * 行身份取值器。
+   */
+  rowKey: (r: T, i: number) => string
+
+  /**
+   * 行细节渲染器(回非 null 的行下追加跨全列细行;可省)。
+   */
+  detailOf?: (r: T) => React.ReactNode
+}
+
+/**
  * Table 的 props。
  */
 export type TableIn<T> = {
@@ -75,6 +100,12 @@ export type TableIn<T> = {
    * 行身份取值器。
    */
   rowKey: (r: T, i: number) => string
+
+  /**
+   * 行细节渲染器(2026-09-12 城市段 DLI 胶囊批加的通用能力):给了就在每行下面探一次,
+   * 回非 null 时该行下追加一条跨全列的细行(展开态由调用方在行数据里管,组件不管开合)。
+   */
+  detailOf?: (r: T) => React.ReactNode
 
   /**
    * 空态内容。

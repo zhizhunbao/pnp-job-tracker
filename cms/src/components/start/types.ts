@@ -15,7 +15,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
 import type {
-  CityIndustryRow, CityRow, DailyRow, DliCityRow, OccRow, PilotCommRow, ProvExtra, StatRow,
+  CityIndustryRow, CityRow, DailyRow, DliSchoolRow, OccRow, PilotCommRow, ProvExtra, StatRow,
 } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'
@@ -572,7 +572,7 @@ export type StreamLabelIn = {
 }
 
 /**
- * `provLocaleOf` / `provChipTextOf` 的入参。
+ * `provDisplayOf` 的入参(单一省名,按界面语言;2026-09-11「按国际化来」,原 provLocaleOf 译名灰注随双行形退役)。
  */
 export type ProvLocaleIn = {
   /**
@@ -1284,7 +1284,7 @@ export type PulsePanel = {
   occSecs: OccSec[] | null
 
   /**
-   * 雇主段的行业分表(按当前身份档算好)。
+   * 雇主段的行业分表(2026-09-12 Frank「有工签 和 没工签 用一张表就行了」:两档并一张,身份档退役)。
    */
   empSecs: EmpSec[]
 
@@ -1292,16 +1292,6 @@ export type PulsePanel = {
    * 雇主段的三试点指定雇主表。
    */
   pilotSecs: EmpSec[]
-
-  /**
-   * 当前身份档。
-   */
-  empKind: EmpKind
-
-  /**
-   * 切身份档的手柄工厂。
-   */
-  kindPickOf: KindPickFn
 
   /**
    * NOC → 可提名省份清单。
@@ -1652,14 +1642,12 @@ export type OccSec = {
 }
 
 /**
- * 身份档:没工签 / PGWP 或工签(2026-09-05 Frank「雇主需要按身份筛」;学签在读档等兼职与 co-op 数据到位再开)。
+ * 雇主表的表种:行业表或三试点指定雇主表(列集各自不同)。
+ * 两个身份档(nowp / pgwp,2026-09-05「雇主需要按身份筛」)2026-09-12 Frank
+ * 「有工签 和 没工签 用一张表就行了,只是多加一个 lima 的列,但是这个列带排序的」合并退役:
+ * 行业表一张,LMIA 列常驻带排序。
  */
-export type EmpKind = 'nowp' | 'pgwp'
-
-/**
- * 雇主表的表种:两个身份档的行业表,或三试点指定雇主表(列集各自不同)。
- */
-export type EmpTableKind = EmpKind | 'pilot'
+export type EmpTableKind = 'ind' | 'pilot'
 
 /**
  * 雇主表的展示行(值级清洗在 toEmpCellRow 做完)。一格一个事实(2026-09-05 Frank「一个字段怎么包含这么多信息」)。
@@ -1949,11 +1937,6 @@ export type EmpSecsIn = {
   extra: EmpExtra
 
   /**
-   * 身份档(决定入选口径、把脉规则与排序)。
-   */
-  kind: EmpKind
-
-  /**
    * 界面语言(别名取哪种)。
    */
   lang: StartLang
@@ -2069,9 +2052,9 @@ export type CityData = {
   pilots: PilotCommRow[]
 
   /**
-   * 城市 DLI 行(表 4 留学城市)。
+   * DLI 院校行(表 4 留学院校;2026-09-12 一校一行)。
    */
-  dli: DliCityRow[]
+  dli: DliSchoolRow[]
 }
 
 /**
@@ -2094,9 +2077,9 @@ export type CityStatsProbe = {
   pilots?: PilotCommRow[]
 
   /**
-   * 城市 DLI 行。
+   * DLI 院校行。
    */
-  dli?: DliCityRow[]
+  dli?: DliSchoolRow[]
 }
 
 /**
@@ -2464,6 +2447,36 @@ export type CityPilotTable = {
 }
 
 /**
+ * CityPilotBlock(城市段一张试点/AIP 表块;2026-09-12 AIP 挂分页后自 CitySection 提出)的 props。
+ */
+export type CityPilotBlockIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这张表。
+   */
+  tb: CityPilotTable
+
+  /**
+   * 试点社区表的列集。
+   */
+  pilotCols: StartCol<CityPilotRow>[]
+
+  /**
+   * AIP 城市表的列集。
+   */
+  aipCols: StartCol<CityPilotRow>[]
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+}
+
+/**
  * `cityPilotTablesOf` 的入参。
  */
 export type CityPilotRowsIn = {
@@ -2494,48 +2507,54 @@ export type CityAipTableIn = {
 }
 
 /**
- * 表 4(留学城市)的展示行。
+ * 表 4(留学院校)的展示行(2026-09-12 Frank「要不每个学校单独一行怎么样 再加上 qs 排名」:
+ * 一校一行,当天早间的城市聚合 + 点开胶囊形同日退役 —— 折叠/胶囊/落板链整链撤)。
  */
 export type CityDliRow = {
   /**
-   * 行键(城市 + 省)。
+   * 行键(DLI 校名)。
    */
   key: string
 
   /**
-   * 城市名主文案。
+   * 院校名主文案(中文界面有译名用译名,否则官方英文)。
    */
   name: string
 
   /**
-   * 灰注。
+   * 灰注(主文案是译名时给官方英文名,否则空串不出行 —— 照城市名双行约定)。
    */
   note: string
 
   /**
-   * 落职位板。
+   * 省列文案(两位省码;紧凑格约定用码)。
    */
-  href: string
+  provText: string
 
   /**
-   * 点击埋点。
+   * 校区城列文案(英文名,多个顿号相接 —— 枚举用顿号站规)。
    */
-  onOpen: ClickFn
+  citiesText: string
 
   /**
-   * DLI 院校数。
+   * 类型文案(公立 / 私立)。
    */
-  n: number
+  typeText: string
 
   /**
-   * 其中公立。
+   * 毕业可申工签文案(勾 / 杠)。
    */
-  pub: number
+  gradText: string
 
   /**
-   * 毕业可申工签。
+   * QS 排名文案(展示名次如 "=45";榜外杠)。
    */
-  grad: number
+  qsText: string
+
+  /**
+   * QS 排名排序键(纯数;榜外 null 沉底)。
+   */
+  qsSort: number | null
 }
 
 /**
@@ -2543,12 +2562,17 @@ export type CityDliRow = {
  */
 export type CityDliRowsIn = {
   /**
-   * 城市 DLI 行。
+   * DLI 院校行(一校一行)。
    */
-  rows: DliCityRow[]
+  rows: DliSchoolRow[]
 
   /**
-   * 界面语言。
+   * 取词函数(公立 / 私立词条)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(译名取舍)。
    */
   lang: StartLang
 }
@@ -2599,7 +2623,7 @@ export type CityPanel = {
 }
 
 /**
- * EmpSection(雇主段:行业各一表,子标题下身份胶囊)的 props。
+ * EmpSection(雇主段:行业各一表;身份胶囊 2026-09-12 随两档合并退役)的 props。
  */
 export type EmpSectionIn = {
   /**
@@ -2613,7 +2637,7 @@ export type EmpSectionIn = {
   updatedAt: string
 
   /**
-   * 行业分表(已按当前身份档算好)。
+   * 行业分表(两档并一张)。
    */
   secs: EmpSec[]
 
@@ -2621,20 +2645,10 @@ export type EmpSectionIn = {
    * 三试点指定雇主表(AIP / RCIP / FCIP,在招的;不分档不分行业)。
    */
   pilotSecs: EmpSec[]
-
-  /**
-   * 当前身份档。
-   */
-  kind: EmpKind
-
-  /**
-   * 切身份档的手柄工厂。
-   */
-  kindPickOf: KindPickFn
 }
 
 /**
- * EmpBoardSec(一张雇主分表:子标题 + 身份胶囊行 + 表)的 props。
+ * EmpBoardSec(一张雇主分表:子标题 + 表;身份胶囊行 2026-09-12 随两档合并退役)的 props。
  */
 export type EmpBoardSecIn = {
   /**
@@ -2651,21 +2665,6 @@ export type EmpBoardSecIn = {
    * 这张表。
    */
   sec: EmpSec
-
-  /**
-   * 当前身份档。
-   */
-  kind: EmpKind
-
-  /**
-   * 切身份档的手柄工厂。
-   */
-  kindPickOf: KindPickFn
-
-  /**
-   * 出不出身份胶囊(行业表出,试点表不出)。
-   */
-  chips: boolean
 
   /**
    * 表种(决定列集)。
@@ -2864,11 +2863,6 @@ export type ValuableIn = {
    * 这一行事实。
    */
   r: SponsorEmployerRow
-
-  /**
-   * 身份档。
-   */
-  kind: EmpKind
 
   /**
    * 试点名单两集合与简介表。
@@ -3260,11 +3254,6 @@ export type EmpSecsHookIn = {
    * 界面语言。
    */
   lang: StartLang
-
-  /**
-   * 当前身份档。
-   */
-  kind: EmpKind
 }
 /**
  * `empColsOf` 的入参。
@@ -3402,41 +3391,6 @@ export type PulseIn2 = {
 }
 
 /**
- * 切身份档的手柄工厂(每个胶囊一只)。
- */
-export type KindPickFn = (k: EmpKind) => ClickFn
-
-/**
- * `makeKindPick` 的入参。
- */
-export type KindPickIn = {
-  /**
-   * 落身份档。
-   */
-  setKind: (k: EmpKind) => void
-}
-
-/**
- * IdChips(身份胶囊行)的 props。
- */
-export type IdChipsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 当前身份档。
-   */
-  kind: EmpKind
-
-  /**
-   * 切身份档的手柄工厂。
-   */
-  kindPickOf: KindPickFn
-}
-
-/**
  * `hiringMoreOf` 的入参。
  */
 export type HiringMoreIn = {
@@ -3449,21 +3403,6 @@ export type HiringMoreIn = {
    * 在招职业总数。
    */
   n: number
-}
-
-/**
- * 身份胶囊一枚(键是两档字面量之一,切档工厂直接吃)。
- */
-export type KindChip = {
-  /**
-   * 身份档键。
-   */
-  key: EmpKind
-
-  /**
-   * 胶囊文案。
-   */
-  text: string
 }
 
 /**
@@ -4608,6 +4547,21 @@ export type FoldOut = {
 }
 
 /**
+ * `prGeoNameOf` 的入参(PR 小表标题;导航子项处没有 lang,标题词全由 t 决定)。
+ */
+export type PrGeoNameIn = {
+  /**
+   * 地区码。
+   */
+  code: string
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
  * `prRowOf` 的入参。
  */
 export type PrRowIn = {
@@ -5088,7 +5042,13 @@ export type MacroBlockIn = {
   geo: MacroGeo
 
   /**
-   * 不是段内第一块时加块间距(照职业段行业表的 boardGap;更新时间 2026-09-10 收回段首,块不再收)。
+   * 数据更新时刻(ISO;2026-09-11 Frank「这个更新时间要紧贴在表格上面,说了多少遍」:
+   * 09-10 评估批收回段首一枚是违规,退回 09-03 铁律「表右上角 Updated」—— 每表标题行右侧一枚)。
+   */
+  updatedAt: string
+
+  /**
+   * 不是段内第一块时加块间距(照职业段行业表的 boardGap)。
    */
   gap: boolean
 }
@@ -5179,14 +5139,35 @@ export type JobsRow = {
   new7Sort: number | null
 
   /**
-   * 中位年薪文案。
+   * 最低时薪文案(ESDC 官方工资带下端;2026-09-11 Frank「中位时薪,最低时薪 最高时薪」——
+   * 原中位年薪一列换时薪三列;AIP 岗与操作两列 2026-09-10「这两列 删掉」撤)。
    */
-  wageText: string
+  wageLowText: string
 
   /**
-   * 中位年薪排序键(AIP 岗与操作两列 2026-09-10 Frank「这两列 删掉」撤,行只剩三个数)。
+   * 最低时薪排序键。
    */
-  wageSort: number | null
+  wageLowSort: number | null
+
+  /**
+   * 中位时薪文案。
+   */
+  wageMedText: string
+
+  /**
+   * 中位时薪排序键。
+   */
+  wageMedSort: number | null
+
+  /**
+   * 最高时薪文案。
+   */
+  wageHighText: string
+
+  /**
+   * 最高时薪排序键。
+   */
+  wageHighSort: number | null
 }
 
 /**
@@ -5292,24 +5273,9 @@ export type GeoNameIn = {
    * 取词函数。
    */
   t: TFn
-}
-
-/**
- * `geoLocaleOf` 的入参。
- */
-export type GeoLocaleIn = {
-  /**
-   * 地区码。
-   */
-  code: string
 
   /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言(英文界面不出译名行)。
+   * 界面语言(省名单一显示名按它挑词)。
    */
   lang: string
 }

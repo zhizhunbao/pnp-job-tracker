@@ -42,9 +42,14 @@ cms/dev.log
 /data/raw/jobbank/
 /data/raw/oinp/
 /data/raw/aaip/
+# jobillico 大板同 jobbank 待遇(raw jobs.json 187MB 超 GitHub 100MB 硬线,2026-09-12 收口 push 实撞)
+/data/raw/jobillico/
 # processed 累积 store(从快照重建)+ mart 集市层(09 衍生)
 /data/processed/jobbank/
+/data/processed/jobillico/
 /data/mart/
+# paths 域写权探针残留(不该入库)
+.write_probe
 # GeoNames 源(可从 download.geonames.org/export/zip/CA.zip 重下;衍生表 fsa/fsa-districts.json 跟踪)
 /data/raw/fsa/CA.txt
 # ESDC 工资源 CSV(可从 open.canada.ca 重下;衍生表 wages/wages.json 跟踪)

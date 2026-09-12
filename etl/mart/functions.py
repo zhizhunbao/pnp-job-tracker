@@ -49,6 +49,7 @@ from mart.constants import (
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
     ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
+    EE_INV_CAT_KEY, K_INV_BY_YEAR,
     K_CHECKED_AT, K_COMPLETE, K_FREQ, K_GEO, K_N, K_PERIOD, K_YTD_YEAR,
     MACRO_COMP_DIGITS, MACRO_COMP_POOL_KEYS, MACRO_KEY_COMP, MACRO_YEAR_END_TPL, UNIT_RATIO,
     IN_IRCC_LEVELS, K_TARGET, MACRO_KEY_PNP_TARGET, MACRO_KEY_EE_TARGET, K_EE_ROWS, PROV_NS,
@@ -56,6 +57,7 @@ from mart.constants import (
     MACRO_ANCHOR_GEOS,
     MACRO_ANCHOR_KEYS, MACRO_ANCHOR_MSG, MACRO_ASOF_TPL, MACRO_DUP_SHOW, MACRO_DUP_TPL,
     MACRO_EMPTY_MSG, MACRO_FREQ_ANNUAL, MACRO_GEO_CA, MACRO_KEY_ALLOC, MACRO_KEY_EE_INVITES,
+    MACRO_KEY_EE_POOL,
     MACRO_KEY_PR_ALL, MACRO_KEY_PR_PNP, MACRO_KEYS_PR, MACRO_KEY_STUDY_NEW, MACRO_MONTH_LEN,
     MACRO_MONTH_NUM,
     MACRO_MONTH_TPL, MACRO_UNIT, MACRO_UNIT_TPL, MACRO_YEAR_LEN,
@@ -83,7 +85,8 @@ from mart.constants import (
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
     JB_EXT_TPL, JB_LOC_TPL, JD_DEDUP_MIN, JD_HEAD_LEN, JD_MATCH_TPL, JD_NOISE, JOBBANK_HOST,
     JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
-    K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_ATS, K_BLOCKED,
+    K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_AS_ON,
+    K_ATS, K_BLOCKED,
     K_BODY_EN, K_BROAD, K_BROAD_EN, K_BROAD_KO, K_BY_CATEGORY, K_BY_NOC, K_BY_PROV, K_BY_SLUG,
     K_CAPPED_SECTORS, K_CATEGORIES, K_CATEGORY, K_CELLS, K_CITIES, K_CITY, K_CITY_RAW, K_CLOSED30D,
     K_CLOSED_AT, K_COMMITMENT_LABEL, K_COMMITMENT_MONTHS, K_COMMUNITIES, K_COMMUNITY,
@@ -104,8 +107,10 @@ from mart.constants import (
     K_SALARY, K_SALARY_ANNUAL, K_SALARY_TEXT, K_SCOPE, K_SCORE, K_SCORE_RANGE, K_SEARCH_OCCUPATION,
     K_SECTION, K_SECTOR, K_SECTORS, K_SEEN_IDS, K_SELECTION_FACTORS, K_SLUG, K_SOURCE,
     K_SOURCE_LABEL, K_STAGE, K_STATUS, K_STREAM, K_STREAMS, K_STREAM_KEY, K_STUDY_FLOW, K_SUMMARY,
-    K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TR_SERIES, K_TYPE, K_UNIT, K_URL, K_VALUE,
-    K_WAGE_HIGH_ANNUAL, K_WAGE_LOW_ANNUAL, K_WAGE_MED_ANNUAL, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
+    K_TABLES, K_TEER, K_THROUGH_MONTH, K_TITLE, K_TOTAL, K_TR_SERIES, K_TYPE, K_UNIT, K_URL,
+    K_VALUE,
+    K_WAGE_HIGH_ANNUAL, K_WAGE_HIGH_HOURLY, K_WAGE_LOW_ANNUAL, K_WAGE_LOW_HOURLY,
+    K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
@@ -4213,7 +4218,12 @@ def to_difficulty_cell(x: DifficultyIn) -> dict:
 
 
 def to_stats_row(x: StatsRowIn) -> dict:
-    """stats 表的一行(topCities = 桶内在招量前 5 的城市;difficulty 只挂省级汇总行)。"""
+    """stats 表的一行(topCities = 桶内在招量前 5 的城市;difficulty 只挂省级汇总行)。
+
+    时薪三列(2026-09-11 Frank「中位时薪,最低时薪 最高时薪」+「有些工作比最低时薪还低」):
+    ESDC 官方工资带的低/中/高位时薪,算法同 medianWageAnnual —— 每岗按 NOC×省 查官方表,
+    桶内取中位;不是在招岗的极值,是官方带两端(拿 offer 对照官方低位,低于它的岗一眼现形)。
+    """
     prov, broad, mid = x.key
     streams: set = set()
     for j in x.jobs:
@@ -4237,6 +4247,12 @@ def to_stats_row(x: StatsRowIn) -> dict:
             "new7d": count_new7d(StatsAggIn(jobs=x.jobs, cut7=x.cut7)),
             "medianWageAnnual": median_or_none(column_of(ColumnIn(jobs=x.jobs,
                                                                   key=K_WAGE_MED_ANNUAL))),
+            "wageLowHourly": median_or_none(column_of(ColumnIn(jobs=x.jobs,
+                                                               key=K_WAGE_LOW_HOURLY))),
+            "wageMedHourly": median_or_none(column_of(ColumnIn(jobs=x.jobs,
+                                                               key=K_WAGE_MED_HOURLY))),
+            "wageHighHourly": median_or_none(column_of(ColumnIn(jobs=x.jobs,
+                                                                key=K_WAGE_HIGH_HOURLY))),
             "medianSalaryAnnual": median_or_none(column_of(ColumnIn(jobs=x.jobs,
                                                                     key=K_SALARY_ANNUAL))),
             "namedJobs": count_named(x.jobs), "streamLabels": SEP_ZH.join(sorted(streams)),
@@ -4887,6 +4903,8 @@ def build_macro_series() -> list:
     out.extend(macro_levels_rows())
     out.extend(macro_ee_target_rows())
     out.extend(macro_ee_rows())
+    out.extend(macro_ee_inv_cat_rows())
+    out.extend(macro_ee_pool_rows())
     out.extend(macro_comp_rows(out))
     index = macro_point_index(out)
     out.extend(macro_ratio_rows(RatioRowsIn(index=index, num_key=MACRO_KEY_PR_PNP, den_key=MACRO_KEY_PR_ALL,
@@ -5134,6 +5152,82 @@ def macro_ee_rows() -> list:
             value=block[K_INVITATIONS], as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
             fetched=fetched)))
     return out
+
+
+def macro_ee_inv_cat_rows() -> list:
+    """EE 历次抽选按专场拆行 → eeInv* 行(仅 CA;2026-09-11 Frank「EE 的还是拆一下吧」)。
+
+    读 ee 域 draws.json 的 invByYear 块(年 × 专场,全口径,各类求和恒等 byYear 总数),
+    专场 key 经 EE_INV_CAT_KEY 转 macro 键 —— 展示端挂在 eeInvites 行的折叠树下当细行。
+    as_of 口径同 eeInvites:完整年 = 年,进行年 = 抓取年月。单位借 people(一份邀请一个人)。
+    """
+    if not IN_EE_DRAWS.exists():
+        return []
+    data = read_table(IN_EE_DRAWS)
+    inv_by_year = data.get(K_INV_BY_YEAR) or {}
+    if len(inv_by_year) == 0:
+        return []
+    fetched = data.get(K_FETCHED, "")
+    out: list = []
+    for year, cats in inv_by_year.items():
+        as_of = year
+        if year == fetched[:MACRO_YEAR_LEN]:
+            as_of = fetched[:MACRO_MONTH_LEN]
+        for cat, value in cats.items():
+            key = EE_INV_CAT_KEY.get(cat)
+            if key is None:
+                continue
+            out.append(to_macro_row(MacroRowIn(
+                geo=MACRO_GEO_CA, key=key, period=year, freq=MACRO_FREQ_ANNUAL,
+                value=value, as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
+                fetched=fetched)))
+    return out
+
+
+def macro_ee_pool_rows() -> list:
+    """EE 池子存量 → eePool 行(仅 CA:联邦池子不按省分)。
+
+    读 ee 域 draws.json 的 pool 块(一轮一格 CRS 池快照)。口径是**存量**不是流量:一年一格取
+    **该年最后一轮**的池子总数(年末排队人数,与 npr/pop 那些存量键同判据);进行年就是最新一轮。
+    完整年 as_of = 年,进行年 as_of 标到快照日所在月 —— 用快照自己的 asOn 不用 fetched
+    (官方那份分布「a few days before an invitation round」,九月初抓到的是八月底的池子,
+    标成抓取月会把时点说晚)。
+    官方 2022-01-19 那轮起才发分布,pool 块里本就没有更早的轮,所以这一键自然从 2022 起
+    (不补 0)。单位借 people(一个候选人一格)。
+    """
+    if not IN_EE_DRAWS.exists():
+        return []
+    data = read_table(IN_EE_DRAWS)
+    pool = data.get(K_POOL) or []
+    if len(pool) == 0:
+        return []
+    fetched = data.get(K_FETCHED, "")
+    last: dict = {}
+    for r in pool:
+        year = str(r.get(K_DATE) or "")[:MACRO_YEAR_LEN]
+        if len(year) < MACRO_YEAR_LEN or r.get(K_TOTAL) is None:
+            continue
+        keep = last.get(year)
+        if keep is None or str(r[K_DATE]) > str(keep[K_DATE]):
+            last[year] = r
+    out: list = []
+    for year, r in last.items():
+        as_of = year
+        if year == fetched[:MACRO_YEAR_LEN]:
+            as_of = macro_ee_pool_as_of(r)
+        out.append(to_macro_row(MacroRowIn(
+            geo=MACRO_GEO_CA, key=MACRO_KEY_EE_POOL, period=year, freq=MACRO_FREQ_ANNUAL,
+            value=r[K_TOTAL], as_of=as_of, unit=UNIT_PEOPLE, source=data.get(K_URL, ""),
+            fetched=fetched)))
+    return out
+
+
+def macro_ee_pool_as_of(row: dict) -> str:
+    """一条池快照的 as_of(`YYYY-MM`):快照截至日所在月;asOn 缺 → 退到抽选日所在月。"""
+    as_on = row.get(K_AS_ON)
+    if as_on is None or as_on == "":
+        return str(row.get(K_DATE) or "")[:MACRO_MONTH_LEN]
+    return str(as_on)[:MACRO_MONTH_LEN]
 
 
 def macro_comp_rows(rows: list) -> list:

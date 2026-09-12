@@ -240,7 +240,11 @@ K_FINE = "fine"
 """职业小类。"""
 
 K_DATE = "date"
-"""日期(postings 的发布日 / 新闻发布日)。"""
+"""日期(postings 的发布日 / 新闻发布日 / EE 一轮的抽选日)。"""
+
+K_POOL = "pool"
+"""池分布块(BC 的 SIRS 池 / ee draws.json 的 CRS 池快照清单)。
+2026-09-11 从 BC 段搬来段1:第二个消费者(EE 池存量)进来后它就是共用键词了。"""
 
 K_VALUE = "value"
 """官方给的数值。"""
@@ -933,6 +937,15 @@ K_WAGE_LOW_ANNUAL = "wageLowAnnual"
 K_WAGE_HIGH_ANNUAL = "wageHighAnnual"
 """岗位行的 ESDC 高位年薪。"""
 
+K_WAGE_MED_HOURLY = "wageMedHourly"
+"""岗位行的 ESDC 中位时薪(2026-09-11 Frank 把脉页招聘对比改时薪三件,省级聚合取列用)。"""
+
+K_WAGE_LOW_HOURLY = "wageLowHourly"
+"""岗位行的 ESDC 低位时薪(同上)。"""
+
+K_WAGE_HIGH_HOURLY = "wageHighHourly"
+"""岗位行的 ESDC 高位时薪(同上)。"""
+
 K_AIP = "aip"
 """岗位行的 AIP 指定雇主位。"""
 
@@ -952,11 +965,13 @@ ORIGIN_JOBBANK = "jobbank"
 """来源渠道:Job Bank。"""
 
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
-                   (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"))
+                   (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
+                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"))
 """第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
 Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
 三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
-写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行。"""
+写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行
+(2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
@@ -1596,9 +1611,6 @@ K_PRIORITY_SECTORS = "prioritySectors"
 METRIC_PRIORITY_SECTOR = "priority_sector"
 """优先行业的标记行指标名。"""
 
-K_POOL = "pool"
-"""BC 的 SIRS 池分布块。"""
-
 K_SCORE_RANGE = "scoreRange"
 """BC 池分布的分数段。"""
 
@@ -1742,6 +1754,29 @@ K_BY_YEAR = "byYear"
 
 K_INVITATIONS = "invitations"
 """byYear 年块:该年邀请数合计。"""
+
+K_INV_BY_YEAR = "invByYear"
+"""ee 域 draws.json 的年 × 专场合计块(2026-09-11 Frank「EE 的还是拆一下吧」:
+年 → {专场 key → 邀请合计},全口径,各类求和恒等 byYear.invitations)。"""
+
+EE_INV_CAT_KEY = {
+    "cec": "eeInvCec", "french": "eeInvFrench", "healthcare": "eeInvHealth", "pnp": "eeInvPnp",
+    "general": "eeInvGeneral", "trade": "eeInvTrade", "stem": "eeInvStem",
+    "education": "eeInvEdu", "agriculture": "eeInvAgri", "physicians": "eeInvPhys",
+    "senior-managers": "eeInvMgr", "transport": "eeInvTransport", "military": "eeInvMilitary",
+    "fsw": "eeInvFsw", "fst": "eeInvFst", "other": "eeInvOther",
+}
+"""invByYear 专场 key → macro_series 键(eeInvites 的折叠细行;全史实出现 14 类,fst/other
+两键当前 0 行,词表补齐防漏)。⚠ 早年 FST 项目专轮的 drawName 含「Trades」,在 ee 域词表里
+先命中 trade(顺序即语义的既有契约)—— trade 行 2023 前 = FST 项目轮、2023 起 = 技工类定向轮,
+两者都是「技工向」专轮,同键不拆。词表认不出的新专场名归 other(ee 域落格时已兜底)。"""
+
+K_AS_ON = "asOn"
+"""ee 域 draws.json 的 pool 行:这份池快照的截至日(ISO;比抽选日早几天,官方原话
+「a few days before an invitation round」)。解析不出 = None。"""
+
+K_TOTAL = "total"
+"""ee 域 draws.json 的 pool 行:池子总人数(官方 CRS 分布表的 Total 行)。"""
 
 IN_EE_CRS = paths.EE / "crs-grid.json"
 """G9 联邦官方计分表之 CRS 排名分 A/B/C/D 四段(ee 域 build 产,只读 crawl 缓存)。"""
@@ -2960,6 +2995,12 @@ MACRO_KEY_ALLOC = "alloc"
 
 MACRO_KEY_EE_INVITES = "eeInvites"
 """键:EE 邀请数(仅 CA;联邦历次抽选按年求和)。"""
+
+MACRO_KEY_EE_POOL = "eePool"
+"""键:EE 池子在库人数(仅 CA;**存量**,一年一格取该年最后一轮发的池快照总数 —— 与 npr/pop
+同判据,年末那一刻有多少人在排队)。与 eeInvites(该年流量)并排看才是「池子涨了还是发多了」。
+官方只从 2022-01-19 那轮起发 CRS 分布,更早的轮次 dd 全是占位 0,所以这一键**没有 2022 之前的年**
+(不折 0 —— 折了就是替官方编「2015 年池子里没人」)。"""
 
 MACRO_KEY_PNP_TARGET = "pnpTarget"
 """键:全国省提名接纳目标(IRCC 移民水平计划里 PNP 行的目标值,**人头**含随行家属;仅 CA。

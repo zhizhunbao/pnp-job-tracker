@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "rockportnetworks",
-  "count": 4,
+  "count": 2,
   "jobs": [
     {
       "title": "General Application - Future Opportunities",
@@ -11,37 +11,37 @@
       "posted": "",
       "address": "",
       "salary": "",
-      "tech": false
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     },
     {
-      "title": "Enterprise Account Executive (Boston)",
-      "location": "",
-      "url": "https://rockportnetworks.bamboohr.com/careers/296",
-      "department": "Sales",
+      "title": "Marketing Programs Manager",
+      "location": "Ottawa, Ontario",
+      "url": "https://rockportnetworks.bamboohr.com/careers/303",
+      "department": "Marketing",
       "posted": "",
       "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Enterprise Account Executive (Chicago)",
-      "location": "",
-      "url": "https://rockportnetworks.bamboohr.com/careers/298",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
-    },
-    {
-      "title": "Enterprise Account Executive (Calgary)",
-      "location": "",
-      "url": "https://rockportnetworks.bamboohr.com/careers/299",
-      "department": "Sales",
-      "posted": "",
-      "address": "",
-      "salary": "",
-      "tech": false
+      "salary": "$120,000 - $150,000",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 135000,
+      "salaryText": "$120K–$150K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

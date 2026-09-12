@@ -1,0 +1,90 @@
+{
+  "province": "PE",
+  "program": "PNP",
+  "source": "IIDI Annual Report",
+  "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
+  "note": "PE 配额与已发提名 = 省 IIDI 年报:Table「Allocations」按自然年分列 Base PNP / (NOC C Initiative) / Express Entry / Atlantic Immigration,PNP 单列 = 非 AIP 各行之和,同一年有 Revised 列取 Revised;Table「Nominations by Category/Stream」按**财年**(4 月–次年 3 月)给各类别提名家庭数,PNP 已发 = Total − Atlantic,记到财年起始年,asOf 标 FY,不折成自然年(展示层带括号灰注)。2021–22 年报是扫描件,文字层错乱,解析不出就跳过。",
+  "asOf": "",
+  "fetched": "2026-09-12",
+  "processing": [],
+  "allocation": [
+    {
+      "year": 2024,
+      "label": "Table 1: Allocations 2023-2024: PNP 1600 = non-AIP streams sum (Base PNP 1200 + Express Entry 400)",
+      "value": 1600,
+      "unit": "nominations",
+      "section": "Table 1: Allocations 2023-2024",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
+      "fetched": "2026-09-12"
+    },
+    {
+      "year": 2023,
+      "label": "Table 1: Allocations 2023-2024: PNP 1800 = non-AIP streams sum (Base PNP 1400 + Express Entry 400)",
+      "value": 1800,
+      "unit": "nominations",
+      "section": "Table 1: Allocations 2023-2024",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
+      "fetched": "2026-09-12"
+    },
+    {
+      "year": 2022,
+      "label": "Table 1: 2022 and 2023 Allocations: PNP 1369 = non-AIP streams sum (Base PNP 995 + Express Entry 374)",
+      "value": 1369,
+      "unit": "nominations",
+      "section": "Table 1: 2022 and 2023 Allocations",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2022-2023_iidi_annual_report.pdf",
+      "fetched": "2026-09-12"
+    },
+    {
+      "year": 2021,
+      "label": "Table 7: Provincial Permanent Resident Allocations: PNP 1210 = non-AIP streams sum (Provincial Nominee Programs 860 + Express Entry 350)",
+      "value": 1210,
+      "unit": "nominations",
+      "section": "Table 7: Provincial Permanent Resident Allocations",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2020-2021_iidi_annual_report.pdf",
+      "fetched": "2026-09-12"
+    },
+    {
+      "year": 2020,
+      "label": "Table 7: Provincial Permanent Resident Allocations: PNP 1150 = non-AIP streams sum (Provincial Nominee Programs 800 + Express Entry 350)",
+      "value": 1150,
+      "unit": "nominations",
+      "section": "Table 7: Provincial Permanent Resident Allocations",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2020-2021_iidi_annual_report.pdf",
+      "fetched": "2026-09-12"
+    }
+  ],
+  "nominationsIssued": [],
+  "nominationsIssuedFiscal": [
+    {
+      "year": 2023,
+      "label": "Table 2: 2023-24 Nominations by Category: PNP 1760 = Total 2053 - Atlantic 293",
+      "value": 1760,
+      "unit": "nominations",
+      "section": "Table 2: 2023-24 Nominations by Category",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
+      "fetched": "2026-09-12",
+      "asOf": "FY 2023-24"
+    },
+    {
+      "year": 2022,
+      "label": "Table 2: 2022-23 Nominations by Category: PNP 1596 = Total 1874 - Atlantic 278",
+      "value": 1596,
+      "unit": "nominations",
+      "section": "Table 2: 2022-23 Nominations by Category",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2022-2023_iidi_annual_report.pdf",
+      "fetched": "2026-09-12",
+      "asOf": "FY 2022-23"
+    },
+    {
+      "year": 2020,
+      "label": "Table 1: 2020-21 Nominations by Stream: PNP 1225 = Total 1395 - Atlantic 170",
+      "value": 1225,
+      "unit": "nominations",
+      "section": "Table 1: 2020-21 Nominations by Stream",
+      "url": "https://www.princeedwardisland.ca/sites/default/files/publications/2020-2021_iidi_annual_report.pdf",
+      "fetched": "2026-09-12",
+      "asOf": "FY 2020-21"
+    }
+  ]
+}

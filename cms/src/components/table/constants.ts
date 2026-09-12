@@ -21,6 +21,11 @@ export const COL_W_FALLBACK = 100
 export const PCT_DECIMALS = 3
 
 /**
+ * 细行的行键尾巴(detailOf 追加的跨列细行,键 = 父行键 + 这截;2026-09-12 DLI 胶囊批)。
+ */
+export const DETAIL_KEY_TAIL = '-detail'
+
+/**
  * 量宽签名的列间分隔符(列 key 拼串比对;数据换了才重量)。
  */
 export const SIG_SEP = '|'

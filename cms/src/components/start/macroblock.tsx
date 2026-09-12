@@ -8,6 +8,7 @@
  * @time 2026-09-06 22:00:00
  */
 import { Table } from '@/components/table'
+import { Updated } from '@/components/time'
 import { TEXT_NONE } from './constants'
 import { foldRowsOf, macroColsOf, macroRowKeyOf, macroSeriesOf, macroWrapClsOf } from './functions'
 import { useFold } from './hooks'
@@ -19,19 +20,21 @@ import css from './start.module.css'
 /**
  * 渲染一个地区块。
  *
- * @param props 取词函数、地区块与块间距开关(更新时间只出一枚,Frank 2026-09-06「多了一个更新时间」;
+ * @param props 取词函数、地区块、更新时刻与块间距开关(更新时间只出一枚,Frank 2026-09-06「多了一个更新时间」;
  *   2026-09-10 Frank「时间要贴在表格上面」「左边 title 也要紧贴表格」:标题行左标题右时间,整行贴表卡 4px,
  *   公式行(只竞争表)夹在中间也只留 4px;同日评估批按 09-06 那句收回段首一枚 —— 值全段相同,
- *   每表一枚 = 重复十几次,块里不再挂)。
+ *   每表一枚 = 重复十几次,块里不再挂;
+ *   2026-09-11 Frank「这个更新时间要紧贴在表格上面,说了多少遍」:收回段首是错改,退回 09-10 那形 ——
+ *   每表标题行右侧一枚,段首不再挂)。
  * @returns 带锚点的块。
  */
-export function MacroBlock({ t, geo, gap }: MacroBlockIn) {
+export function MacroBlock({ t, geo, updatedAt, gap }: MacroBlockIn) {
   const f = useFold()
   const rows = foldRowsOf({ rows: geo.rows, open: f.open, flip: f.flip })
   return (
     <div id={geo.anchor} className={css.subAnchor}>
       <div className={macroWrapClsOf({ gap })}>
-      <Sec title={geo.name} sub>
+      <Sec title={geo.name} right={<Updated iso={updatedAt} t={t} />} sub>
         {geo.formula !== TEXT_NONE && <p className={css.formula}>{geo.formula}</p>}
         <div className={css.table}>
           <Table<MacroRow>

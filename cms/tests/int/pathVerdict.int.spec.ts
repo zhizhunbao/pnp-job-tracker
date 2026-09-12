@@ -110,12 +110,18 @@ describe('mart 实况', () => {
     // 2026-08-14 L2-09 用例横测补 RCIP 语言 3 行(TEER 档 CLB 6/5/4)→ 303
     // 2026-08-15 FCIP 立成通道,补它自己的 3 行(1,560 小时 / 指定雇主 offer / NCLC 5 法语)→ 306
     // 2026-08-15 #320:AAIP 补一条「或款」——近 18 个月内在阿省满 12 个月(24 那行保留)→ 307
-    expect(data.requirements).toHaveLength(307)
+    // 2026-09-11 金标追平:08-15 以来 pnp 域一串补数批(PE EOI 接抽选、BC 九年 Statistical
+    // Report、ON Wayback 补年、MB 规则扩抽等,commit 06a16d07…58957c41)累计 +45 → 352
+    expect(data.requirements).toHaveLength(352)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
-    expect(data.requirements.filter((r) => r.program === 'FCIP')).toHaveLength(3)
+    // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
+    // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
+    expect(data.requirements.filter((r) => r.program === 'FCIP')).toHaveLength(25)
     expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
     expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
-    expect(data.occupations).toHaveLength(630)
+    // 2026-09-11 630 → 634:省清单周更净增 4(mart 不进 git 无旧快照可逐行对;当日分布
+    // SK 257 / MB 158 / AB 78 / BC 72 / NB 43 / NS 18 / PE 8,下次漂移按省对这里)。
+    expect(data.occupations).toHaveLength(634)
     // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
     // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
     const byProvince: Record<string, number> = {}
@@ -289,12 +295,14 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   // 在曼就业 top-scoring 专场,score 731)与 2026-07-30 Draw #276(同型,632),原文在
   // data/raw/pnp/draws.json。同日 Frank 判定旧 score-gulf 规则为 bug:专场线只展示不排除
   //(见 lib/ruling verdictReasons 的 gulfLineApplies 注),故 MB-swm 维持 viable。
-  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 731 与 632', () => {
+  // 2026-09-11 再换届:官方 2026-09-10 抽选出「Completed post-secondary study in Manitoba」
+  // 专场 score 825 —— MB 单池单分制全省回退(refDraw 注)取最新有分线的一轮,参照线 825/731。
+  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 825 与 731', () => {
     const mb = byKey(list, 'MB-swm')
     expect(mb.score?.system).toBe('MPNP EOI')
     expect(mb.score?.value).toBe(695)
     expect(mb.score?.ceiling).toBe(715)
-    expect(mb.score?.refLine).toBe(731)
+    expect(mb.score?.refLine).toBe(825)
 
     const study = mb.reasons.find((r) => (r.quote ?? '') === 'Studies in another province')
     expect(study, '外省学习 −100 必须带官方档位标签').toBeTruthy()
@@ -306,8 +314,8 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
 
     const lines = mb.reasons.find((r) => /上界 715/.test(r.text))
     expect(lines).toBeTruthy()
+    expect(lines!.text).toContain('825')
     expect(lines!.text).toContain('731')
-    expect(lines!.text).toContain('632')
     expect(lines!.evidence?.url).toContain('immigratemanitoba.com')
 
     // 曼省的自雇/在学期间经验不计,官方原句在库里

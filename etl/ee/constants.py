@@ -163,13 +163,17 @@ DRAWS_CAT_MAP = (
     ("senior manager", "senior-managers"), ("research", "researchers"), ("military", "military"),
     ("agricul", "agriculture"), ("french", "french"), ("canadian experience", "cec"),
     ("provincial nominee", "pnp"),
-    ("federal skilled trades", "fst"), ("federal skilled", "fsw"), ("general", "general"),
+    ("federal skilled trades", "fst"), ("federal skilled", "fsw"),
+    ("no program specified", "general"), ("general", "general"),
 )
 """drawName 关键词 → 类别 key。前 9 个与 _fetch_ee_categories 的 CAT_MAP 对齐
 (能 join 进 ee_categories);其余(agriculture/french/cec/pnp/general 等)无 NOC 清单不 join,
 仅留作 recent 参考。
 ⚠ E6-10:「Federal Skilled Trades」含「federal skilled」,必须排在 fsw 前面,
-否则技工类被并进 FSW —— 本表顺序即语义,别按字母序整理。"""
+否则技工类被并进 FSW —— 本表顺序即语义,别按字母序整理。
+2026-09-11 补「No Program Specified」→ general:2023 年中前官方通轮的旧名(源 JSON 里
+2023-06 前全叫它、2023-07 起换牌 General,同概念改名换牌,同年两名并存即改名切换的骑缝),
+不并则 invByYear 年合计对不上 byYear 总数。老通轮全在 24 个月窗外,byCategory/history 不受影响。"""
 
 K_ROUNDS = "rounds"
 """源 JSON 顶层键:轮次清单(已按 drawNumber 降序,最新在前)。"""
@@ -218,11 +222,98 @@ K_BY_YEAR = "byYear"
 K_INVITATIONS = "invitations"
 """byYear 年块:该年邀请数合计(drawSize 求和)。"""
 
+K_INV_BY_YEAR = "invByYear"
+"""年 × 专场合计块(2026-09-11 Frank「EE 的还是拆一下吧」:把脉页 EE 邀请行折叠拆专场):
+年 → {类别 key → drawSize 求和},全部轮次全口径 —— 词表认不出的轮归 DRAWS_OTHER_KEY 不丢量,
+所以每年各类求和**恒等** byYear.invitations(同一循环同一条件,构造即恒等)。"""
+
+DRAWS_OTHER_KEY = "other"
+"""invByYear 兜底类别:DRAWS_CAT_MAP 认不出的 drawName(官方上新专场名时先落这格,
+收尾打 ⚠ 提醒补词表,不静默丢量)。"""
+
+DRAWS_PRINT_OTHER_TPL = "⚠ {n} 个轮次名不在词表,invByYear 落 other(去 DRAWS_CAT_MAP 补词):{names}"
+"""收尾警示:出现认不出的 drawName。"""
+
+DRAWS_OTHER_SEP = "; "
+"""上条警示里多个轮次名的连接符(名字含空格,不能用单空格连)。"""
+
 K_DRAWS = "draws"
 """byYear 年块:该年抽选次数。"""
 
 DRAW_YEAR_LEN = 4
 """drawDate(`YYYY-MM-DD`)取年的长度。"""
+
+K_POOL_AS_ON = "drawDistributionAsOn"
+"""源轮次键:CRS 池分布这份快照的**截至日**(英文长日期,如 `August 30, 2026`)。
+官方页原句:池子数字「reflect the total number of people in the pool overall, a few days
+before an invitation round」—— 所以它比 drawDate 早几天,存量的真实时点是它不是抽选日。"""
+
+K_POOL_TOTAL = "dd18"
+"""源轮次键:CRS 池分布表的 **Total 行**(池子总人数)。"""
+
+POOL_BANDS = (
+    ("dd1", "601-1200", False),
+    ("dd2", "501-600", False),
+    ("dd3", "451-500", False),
+    ("dd4", "491-500", True),
+    ("dd5", "481-490", True),
+    ("dd6", "471-480", True),
+    ("dd7", "461-470", True),
+    ("dd8", "451-460", True),
+    ("dd9", "401-450", False),
+    ("dd10", "441-450", True),
+    ("dd11", "431-440", True),
+    ("dd12", "421-430", True),
+    ("dd13", "411-420", True),
+    ("dd14", "401-410", True),
+    ("dd15", "351-400", False),
+    ("dd16", "301-350", False),
+    ("dd17", "0-300", False),
+)
+"""CRS 分数段词表:源轮次键 → (分数段标签, 是不是明细行)。**顺序即官方表行序**,别按数值整理。
+
+标签不是猜的:官方 JSON 只给 dd1…dd18 裸键,段名住渲染它的官方页
+`rounds-invitations.html` 的 `data-json-replace` 表格里(crawl 缓存 data/crawl/fed-ee/,
+2026-09-11 逐行比对抄下)。detail=True 的五 + 五行是上面那条 **粗体行的细分**
+(官方原话「The table numbers not in bold are a detailed breakdown of the bold number
+immediately above」):dd4–dd8 细分 dd3,dd10–dd14 细分 dd9。
+⚠ 消费端求和只许加 detail=False 的七行(= dd18),混加明细行会重复计人
+(2026-09-11 实证 442/442 轮 dd1+dd2+dd3+dd9+dd15+dd16+dd17 恒等于 dd18)。"""
+
+POOL_MONTH_NUM = {
+    "January": "01", "February": "02", "March": "03", "April": "04",
+    "May": "05", "June": "06", "July": "07", "August": "08",
+    "September": "09", "October": "10", "November": "11", "December": "12",
+}
+"""drawDistributionAsOn 的英文月全名 → 两位月号(源里 224 个有分布的轮全用全名,无缩写)。"""
+
+AS_ON_RE = re.compile(r"^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$")
+"""英文长日期 `August 30, 2026` 的三格(月名 / 日 / 年);对不上就不猜,落 None。"""
+
+AS_ON_ISO_TPL = "{year}-{month}-{day:0>2}"
+"""英文长日期 → ISO(日补零)。"""
+
+K_POOL = "pool"
+"""表键:CRS 池分布快照清单(2026-09-11 新块,一轮一格,源序即新在前)。
+只收**官方真发过分布**的轮 —— 2015–2021 那 213 轮 dd1…dd18 全是占位 0,不是「池子里没人」。"""
+
+K_AS_ON = "asOn"
+"""pool 行键:这份快照的截至日(ISO;解析不出 = None,不猜)。"""
+
+K_TOTAL = "total"
+"""pool 行键:池子总人数(源 dd18)。"""
+
+K_BANDS = "bands"
+"""pool 行键:分数段清单(行序同 POOL_BANDS,即官方表行序)。"""
+
+K_RANGE = "range"
+"""分数段行键:CRS 分数段标签(官方页原文)。"""
+
+K_COUNT = "count"
+"""分数段行键:该段人数。"""
+
+K_DETAIL = "detail"
+"""分数段行键:是不是上一条粗体行的细分(True 的行不参与求和)。"""
 
 DRAWS_SOURCE = "Express Entry rounds of invitations"
 """段3 表级来源名。"""
@@ -232,6 +323,9 @@ DRAWS_PRINT_DONE_TPL = "✓ {out}  ({cats} 类别有最近抽选 / {hist} 条历
 
 DRAWS_PRINT_ROW_TPL = "  {key:16} CRS {crs} · {date} · {size} ITAs · 历史 {n} 轮"
 """段3 收尾逐类别报数。"""
+
+DRAWS_PRINT_POOL_TPL = "  池分布 {n} 轮(最新 {date} 截至 {as_on}:{total} 人在池)"
+"""段3 收尾报池分布块。"""
 
 
 # =========================================================================

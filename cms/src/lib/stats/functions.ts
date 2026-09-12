@@ -23,7 +23,8 @@ import type {
   BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
   CityDetail, CityDetailIn, CityDetailOut, CityKeyIn, CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
   CityIndustryOut,
-  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliCityRow, EmptyList,
+  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliSchoolRow,
+  EmptyList,
   FineCountsIn, FineRowsOut,
   MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
   StatsIn, StatsOut, StrList, StrListOut,
@@ -240,14 +241,15 @@ export async function loadCityPilots(db: Db): PilotCommsOut {
 }
 
 /**
- * 城市 DLI 统计(城市段「留学城市」表)。缺表容错同 loadCityStats。
+ * DLI 院校榜(城市段「留学院校」表;2026-09-12 Frank「要不每个学校单独一行怎么样
+ * 再加上 qs 排名」—— 一校一行替换城市聚合)。缺表容错同 loadCityStats。
  *
  * @param db 数据库连接(池由调用方注进来)。
- * @returns 城市 DLI 行(按院校数降序,前 CITY_DLI_LIMIT)。
+ * @returns 院校行(QS 名次升序榜外沉底,前 CITY_DLI_LIMIT)。
  */
 export async function loadDliCities(db: Db): DliCitiesOut {
   try {
-    return await queryRows({ db: db, sql: SQL.CITY_DLI_STATS, params: [CITY_DLI_LIMIT], map: toDliCityRow })
+    return await queryRows({ db: db, sql: SQL.DLI_SCHOOLS, params: [CITY_DLI_LIMIT], map: toDliSchoolRow })
   } catch (e) {
     if (e instanceof Error) {
       const code = pgCodeOf(e)
@@ -373,7 +375,10 @@ export function toStatRow(r: StatDbRow): StatRow {
   return {
     province: text(r.province), broad: text(r.broad), mid: mid,
     openJobs: numOrNull(r.open_jobs), new7d: numOrNull(r.new7d),
-    medianWageAnnual: numOrNull(r.median_wage_annual), medianSalaryAnnual: numOrNull(r.median_salary_annual),
+    medianWageAnnual: numOrNull(r.median_wage_annual),
+    wageLowHourly: numOrNull(r.wage_low_hourly), wageMedHourly: numOrNull(r.wage_med_hourly),
+    wageHighHourly: numOrNull(r.wage_high_hourly),
+    medianSalaryAnnual: numOrNull(r.median_salary_annual),
     namedJobs: numOrNull(r.named_jobs), streamLabels: text(r.stream_labels),
     aipJobs: numOrNull(r.aip_jobs),
     topCities: topCities, fetched: text(r.fetched),
@@ -571,6 +576,7 @@ export async function loadCityDliList(x: CityKeyIn): CitySchoolsOut {
 function toCitySchoolRow(r: Row): CitySchoolRow {
   return {
     name: text(r.name),
+    nameZh: text(r.name_zh),
     isPublic: r.is_public === true,
     gradProgram: r.grad_program === true,
     url: text(r.url),
@@ -619,15 +625,26 @@ export function toPilotCommRow(r: Row): PilotCommRow {
 }
 
 /**
- * 一行城市 DLI 统计(SQL.CITY_DLI_STATS)→ `DliCityRow`。
+ * 一行 DLI 院校榜(SQL.DLI_SCHOOLS)→ `DliSchoolRow`。
+ * cities 格的 `as` 是跨边界断言:json_agg 列在泛型 Row 上没有形状,
+ * 形状由 SQL(全 string 列聚合)保证;解析坏行经 jsonOrNull 留痕落空清单。
  *
  * @param r 库里的一行。
  * @returns 洗净的一行。
  */
-export function toDliCityRow(r: Row): DliCityRow {
+export function toDliSchoolRow(r: Row): DliSchoolRow {
+  const cities: string[] = []
+  const parsed = jsonOrNull<string[]>(r.cities as string[] | string | null)
+  if (parsed != null) {
+    for (const p of parsed) {
+      cities.push(text(p))
+    }
+  }
   return {
-    city: text(r.city), cityZh: text(r.name_zh), cityKo: text(r.name_ko), province: text(r.province),
-    n: count(r.n), publicN: count(r.public_n), gradN: count(r.grad_n),
+    name: text(r.name), nameZh: text(r.name_zh), province: text(r.province),
+    cities: cities,
+    isPublic: r.is_public === true, gradProgram: r.grad_program === true,
+    qsRank: numOrNull(r.qs_rank), qsRankDisplay: text(r.qs_rank_display),
   }
 }
 

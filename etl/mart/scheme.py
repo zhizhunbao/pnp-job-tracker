@@ -816,7 +816,7 @@ class BoardJobIn:
     """板仓的一行(与 Job Bank 仓同键)。"""
 
     origin: str
-    """板名(jobillico / jobboom;IN_BOARD_STORES 表里的第二格)。"""
+    """板名(jobillico / jobboom / careerbeacon;IN_BOARD_STORES 表里的第二格)。"""
 
 
 @dataclass

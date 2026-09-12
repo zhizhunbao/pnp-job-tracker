@@ -102,13 +102,19 @@ export type CityFace = {
 }
 
 /**
- * DLI 一行(lib/stats CitySchoolRow 里本桶真读的三格)。
+ * DLI 一行(lib/stats CitySchoolRow 里本桶真读的四格)。
  */
 export type CitySchoolIn = {
   /**
    * 院校官方名。
    */
   name: string
+
+  /**
+   * 通行中文译名(人工核定表;没有是空串,回退英文;2026-09-12
+   * Frank「大学名 最好也加上中文翻译吧」)。
+   */
+  nameZh: string
 
   /**
    * 公立与否。
@@ -326,9 +332,14 @@ export type SchoolRow = {
   key: string
 
   /**
-   * 院校官方名。
+   * 院校名主文案(中文界面有译名用译名,否则官方英文;2026-09-12 译名批)。
    */
   name: string
+
+  /**
+   * 灰注(主文案是译名时给官方英文名,否则空串不出行 —— 照城市名双行约定)。
+   */
+  note: string
 
   /**
    * 类型文案(公立 / 私立)。
@@ -354,4 +365,9 @@ export type SchoolRowsIn = {
    * DLI 名单。
    */
   schools: CitySchoolIn[]
+
+  /**
+   * 界面语言(译名取舍)。
+   */
+  lang: CityLang
 }

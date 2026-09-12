@@ -6,7 +6,8 @@
  * 只有十几次浏览零交互,20 屏长页先刷三张雇主表才到职业榜。Frank 拍板**按类型分段,段内按行业出表,
  * 不让用户筛**:首屏(轮播 + 四卡)→ 职业(全职业两榜 + 行业各一表)→ 雇主(在招且带担保信号,行业各一表)
  * → LMIA(技能类获批,行业各一表)→ 省份(2026-09-06 起 = 宏观统计含联邦:全国 + 十省按年表 + 招聘对比横表;分省概览 + 省内职业榜退役)
- * → PR(2026-09-10 Frank「pr 拆成和省一个级别的」:每地区一张 PR 获批 / 其中省提名小表,自省份段拆出)→ 城市 → 趋势(全国一条线 + 行业小图)
+ * → 城市 → PR(2026-09-10 Frank「pr 拆成和省一个级别的」:每地区一张 PR 获批 / 其中省提名小表,自省份段拆出;
+ * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前)→ 趋势(全国一条线 + 行业小图)
  * → 近期抽选表(Frank 走查要求保留)→ 一行政策动态链接 → 职位板入口。每张表全量,每页 10 行分页(Frank 同日撤 Top N)。
  * 撤掉:四榜、雇主表的筛选下拉与「问 AI 顾问」钮、抽选表与政策动态段、把脉页上的分布探索图。
  * 信条不变:**「难听,但没骗你」—— 数据保守,每个数字可溯源**;
@@ -52,17 +53,15 @@ export function Pulse({ stats }: PulseIn) {
         <EmpSection t={v.t}
           updatedAt={stats.checkedAt}
           secs={v.empSecs}
-          pilotSecs={v.pilotSecs}
-          kind={v.empKind}
-          kindPickOf={v.kindPickOf} />
+          pilotSecs={v.pilotSecs} />
         <ProvSection t={v.t}
           updatedAt={stats.checkedAt}
           indGeos={v.indGeos}
           indLoading={v.macroLoading}
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
-        <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
         <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} />
+        <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
         <TrendSection t={v.t} updatedAt={stats.checkedAt} trend={v.trend} />
         <DrawsSection t={v.t}
           tEn={v.tEn}

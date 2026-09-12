@@ -1,7 +1,8 @@
 'use client'
 /**
- * 域内小件:招聘对比的一张省卡(手机形态):省名三格 + 三个数
- * (AIP 岗行与看岗位钮 2026-09-10 Frank「这两列 删掉」随桌面两列同撤,表卡同形)。
+ * 域内小件:招聘对比的一张省卡(手机形态):省名三格 + 五个数
+ * (AIP 岗行与看岗位钮 2026-09-10 Frank「这两列 删掉」随桌面两列同撤,表卡同形;
+ * 2026-09-11 Frank「中位时薪,最低时薪 最高时薪」中位年薪行换时薪三行)。
  *
  * @author Frank
  * @time 2026-09-06 22:00:00
@@ -27,7 +28,9 @@ export function JobsCard({ row, t }: JobsCardIn) {
       <div className={css.provCardBody}>
         <KvRow k={t('stats.openJobs')} v={<strong>{row.openText}</strong>} />
         <KvRow k={t('stats.new7d')} v={row.new7Text} />
-        <KvRow k={t('stats.medWage')} v={row.wageText} />
+        <KvRow k={t('stats.wageLowH')} v={row.wageLowText} />
+        <KvRow k={t('stats.wageMedH')} v={row.wageMedText} />
+        <KvRow k={t('stats.wageHighH')} v={row.wageHighText} />
       </div>
     </div>
   )

@@ -26,16 +26,20 @@ from log.functions import say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, WS_RE
 from crawl.functions import get_cached_page
 from ee.constants import (
+    AS_ON_ISO_TPL, AS_ON_RE, DRAWS_PRINT_POOL_TPL, K_AS_ON, K_BANDS, K_COUNT, K_DETAIL, K_POOL,
+    K_POOL_AS_ON, K_POOL_TOTAL, K_RANGE, K_TOTAL, POOL_BANDS, POOL_MONTH_NUM,
     BENCHMARK_CLB, BENCHMARK_CLB_PREFIX, BENCHMARK_HEADERS, BENCHMARK_NCLC, BREAKDOWN_WORD,
     CACHE_MISS_TPL, CAT_HEAD_TAGS, CAT_MAP, CAT_MIN_CELLS, CAT_PRINT_DONE_TPL, CAT_PRINT_EMPTY_TPL,
     CAT_PRINT_ROW_TPL, CAT_SOURCE, CAT_TIMEOUT_S, CAT_URL, CELL_TAGS, COMMA, CRS_LETTERS,
     CRS_MIN_ROWS, CRS_NOTE, CRS_PRINT_DONE_TPL, CRS_PROBLEM_TPL, CRS_SOURCE, DRAWS_CAT_MAP,
-    DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_ROW_TPL, DRAWS_SOURCE, DRAWS_TIMEOUT_S, DRAWS_URL,
+    DRAWS_OTHER_KEY, DRAWS_OTHER_SEP, DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_OTHER_TPL,
+    DRAWS_PRINT_ROW_TPL, DRAWS_SOURCE, DRAWS_TIMEOUT_S, DRAWS_URL,
     ECA_EXPECTED, ECA_FACTOR, ECA_MIN_ROWS, ECA_PROBLEM_NO_TABLE, ECA_PROBLEM_ROWS_TPL,
     ELIG_NOTE, ELIG_PRINT_DONE_TPL, ELIG_PROGRAMS, ELIG_SOURCE,     FSW_SECTION_LABEL, FSW_SECTION_LETTER, FSW_SEL_MIN_ROWS, FSW_SEL_PROBLEM_TPL, GCDS_DATE_TAG,
     HEAD_TAGS_23, HEAD_TAGS_234, HIST_DAYS_PER_MONTH, HIST_MONTHS, HIST_PER_CAT, IN_CRAWL_EE,
     IN_URL_CRS, IN_URL_ECA, IN_URL_LANG, IN_URL_PRINTED, INDENT_1, INDENT_2, K_BASIS,
-    K_BENCHMARK, K_BY_CATEGORY, K_BY_YEAR, K_DRAWS, K_INVITATIONS, DRAW_YEAR_LEN, K_CATEGORIES, K_CELLS, K_CODE, K_COLUMN, K_CRITERION, K_CRS,
+    K_BENCHMARK, K_BY_CATEGORY, K_BY_YEAR, K_DRAWS, K_INV_BY_YEAR, K_INVITATIONS, DRAW_YEAR_LEN,
+    K_CATEGORIES, K_CELLS, K_CODE, K_COLUMN, K_CRITERION, K_CRS,
     K_DATE, K_DRAW_CRS, K_DRAW_DATE, K_DRAW_NAME, K_DRAW_NUMBER, K_DRAW_SIZE, K_FACTOR, K_FETCHED,
     K_HEADERS, K_HEADING, K_HISTORY, K_KEY, K_KIND, K_LABEL, K_LETTER, K_LEVEL_TEXT, K_MAX_QUOTES,
     K_NAME, K_NOC, K_NOC_TEER, K_NOTE, K_NUMBER, K_OCCUPATIONS, K_OP, K_PAGE, K_PAGE_UPDATED,
@@ -244,23 +248,35 @@ def to_recent_row(rd: dict) -> dict:
 
 
 def collect_draws(rounds: list) -> DrawsOut:
-    """全部轮次 → 每类别最近一次 + 每类别历次 + 按年合计(源已按 drawNumber 降序,最新在前)。
+    """全部轮次 → 每类别最近一次 + 每类别历次 + 按年合计 + 年×专场合计(源已按 drawNumber 降序,最新在前)。
 
     按年合计在类别过滤**之前**累加:认不出类别的轮次(早年无类别名的通轮)一样是邀请,
     年合计要全口径(2026-09-08 把脉页 EE 邀请历年)。
+    年×专场(2026-09-11 Frank「EE 的还是拆一下吧」)同一循环同一条件累加,认不出的归 other
+    兜底不丢量 —— 各类求和恒等年合计,构造即恒等,不另设自校。
     """
     cutoff = (date.today() - timedelta(days=HIST_MONTHS * HIST_DAYS_PER_MONTH)).isoformat()
     by_cat: dict = {}
     history: dict = {}
     by_year: dict = {}
+    inv_by_year: dict = {}
+    other_names: list = []
     for rd in rounds:
         day = str(rd.get(K_DRAW_DATE) or "")
         size = int_or_none(rd.get(K_DRAW_SIZE))
+        key = draw_cat_key(rd.get(K_DRAW_NAME))
         if day != "" and size is not None:
             year = by_year.setdefault(day[:DRAW_YEAR_LEN], {K_INVITATIONS: 0, K_DRAWS: 0})
             year[K_INVITATIONS] += size
             year[K_DRAWS] += 1
-        key = draw_cat_key(rd.get(K_DRAW_NAME))
+            inv_cat = key
+            if inv_cat == "":
+                inv_cat = DRAWS_OTHER_KEY
+                name = str(rd.get(K_DRAW_NAME) or "")
+                if name not in other_names:
+                    other_names.append(name)
+            cats = inv_by_year.setdefault(day[:DRAW_YEAR_LEN], {})
+            cats[inv_cat] = cats.get(inv_cat, 0) + size
         if key == "":
             continue
         row = to_draw_row(rd)
@@ -269,14 +285,58 @@ def collect_draws(rounds: list) -> DrawsOut:
         h = history.setdefault(key, [])
         if len(h) < HIST_PER_CAT and (row[K_DATE] or "") >= cutoff:
             h.append(row)
-    return DrawsOut(by_cat=by_cat, history=history, by_year=by_year)
+    return DrawsOut(by_cat=by_cat, history=history, by_year=by_year,
+                    inv_by_year=inv_by_year, other_names=other_names)
+
+
+def as_on_iso(s: str | None) -> str | None:
+    """`August 30, 2026` → `2026-08-30`;缺格 / 月名不认 / 格式对不上 → None(不猜)。"""
+    m = AS_ON_RE.match((s or "").strip())
+    if m is None:
+        return None
+    month = POOL_MONTH_NUM.get(m.group(1))
+    if month is None:
+        return None
+    return AS_ON_ISO_TPL.format(year=m.group(3), month=month, day=m.group(2))
+
+
+def to_pool_row(rd: dict) -> dict:
+    """源轮次 → pool 行(键序即文件契约)。
+
+    drawNumber 这里**原样留字符串**(不走 int_or_none):源里有 `91b` 这类带字母的补轮号,
+    转数字会整格落 None。byCategory / history / recent 三块转数字是既有契约,别顺手统一。
+    """
+    bands = []
+    for field, label, detail in POOL_BANDS:
+        bands.append({K_RANGE: label, K_COUNT: int_or_none(rd.get(field)), K_DETAIL: detail})
+    return {
+        K_DATE: rd.get(K_DRAW_DATE), K_DRAW_NUMBER: rd.get(K_DRAW_NUMBER),
+        K_AS_ON: as_on_iso(rd.get(K_POOL_AS_ON)), K_TOTAL: int_or_none(rd.get(K_POOL_TOTAL)),
+        K_BANDS: bands,
+    }
+
+
+def collect_pool(rounds: list) -> list:
+    """全部轮次 → 发布过 CRS 池分布的那几轮(源序即新在前)。
+
+    Total 为 0 = 官方**那轮没发**分布(2015–2021 全部 213 轮 + 2022 年内 5 轮都是占位 0),
+    不是「池子里没人」—— 整轮跳过,不落 0 行;折 0 就是替官方编数。
+    """
+    out: list = []
+    for rd in rounds:
+        total = int_or_none(rd.get(K_POOL_TOTAL))
+        if total is None or total == 0:
+            continue
+        out.append(to_pool_row(rd))
+    return out
 
 
 def build_ircc_ee_draws() -> None:
-    """联邦 Express Entry「抽选轮次」→ raw/ee/draws.json(byCategory / history / recent 三块)。
+    """联邦 Express Entry「抽选轮次」→ raw/ee/draws.json(byCategory / history / recent / byYear / pool 五块)。
 
     2026-08-31 批M:原 DRAWS_UA 是裸 "Mozilla/5.0"(开放 JSON 端点不挑 UA),
     并进 BROWSER_UA 完整串。
+    2026-09-11:补 pool 块(每轮 CRS 池分布快照 —— 源里 dd1…dd18 一直都在,老解析全抽丢了)。
     """
     r = httpx.get(DRAWS_URL, timeout=DRAWS_TIMEOUT_S, follow_redirects=True,
                   headers={HDR_UA: BROWSER_UA})
@@ -286,13 +346,17 @@ def build_ircc_ee_draws() -> None:
     recent = []
     for rd in rounds[:RECENT_N]:
         recent.append(to_recent_row(rd))
+    pool = collect_pool(rounds)
     OUT_DRAWS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_DRAWS, payload={
         K_SOURCE: DRAWS_SOURCE, K_URL: DRAWS_URL,
         K_FETCHED: today_iso(),
         K_BY_CATEGORY: got.by_cat, K_HISTORY: got.history, K_RECENT: recent,
-        K_BY_YEAR: got.by_year,
+        K_BY_YEAR: got.by_year, K_INV_BY_YEAR: got.inv_by_year, K_POOL: pool,
     }, indent=INDENT_2))
+    if len(got.other_names) > 0:
+        say(DRAWS_PRINT_OTHER_TPL.format(n=len(got.other_names),
+                                         names=DRAWS_OTHER_SEP.join(got.other_names)))
     hist_n = 0
     for rows in got.history.values():
         hist_n += len(rows)
@@ -301,6 +365,9 @@ def build_ircc_ee_draws() -> None:
     for k, v in got.by_cat.items():
         say(DRAWS_PRINT_ROW_TPL.format(key=k, crs=v[K_CRS], date=v[K_DATE], size=v[K_SIZE],
                                        n=len(got.history.get(k, []))))
+    if len(pool) > 0:
+        say(DRAWS_PRINT_POOL_TPL.format(n=len(pool), date=pool[0][K_DATE],
+                                        as_on=pool[0][K_AS_ON], total=pool[0][K_TOTAL]))
 
 
 # =========================================================================

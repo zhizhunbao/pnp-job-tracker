@@ -114,9 +114,10 @@ export const ID_TREND = 'pl-trend'
 /**
  * 二级导航条上的分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
  * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航);
- * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」)。
+ * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」);
+ * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前(省份 → 城市 → PR)。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_PR_BAND, ID_CITY, ID_TREND]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_TREND]
 
 /**
  * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。
@@ -669,11 +670,6 @@ export const CITY_KIND_IND = 'industry'
 export const CITY_KIND_PILOT = 'pilot'
 
 /**
- * kind:留学城市表行。
- */
-export const CITY_KIND_DLI = 'dli'
-
-/**
  * 城市表列键:城市名。
  */
 export const COL_CITY = 'city'
@@ -711,17 +707,28 @@ export const COL_CITY_UNEMP = 'unemp'
 export const COL_COMM = 'comm'
 
 /**
- * 留学城市表列键:DLI 院校数。
+ * 留学院校表列键:院校名(2026-09-12 Frank「要不每个学校单独一行怎么样」:一校一行,
+ * 原城市聚合行的 COL_DLI_N 院校数列与 CITY_KIND_DLI 落板埋点随形退役)。
  */
-export const COL_DLI_N = 'dliN'
+export const COL_SCHOOL = 'school'
 
 /**
- * 留学城市表列键:其中公立。
+ * 留学院校表列键:QS 世界大学排名(同日「再加上 qs 排名」;带表头排序,榜外沉底)。
  */
-export const COL_DLI_PUB = 'dliPub'
+export const COL_QS = 'qs'
 
 /**
- * 留学城市表列键:毕业可申工签。
+ * 留学院校表列键:省(两位码,紧凑格约定)。
+ */
+export const COL_DLI_PROV = 'prov'
+
+/**
+ * 留学院校表列键:类型(公立 / 私立)。
+ */
+export const COL_TYPE = 'type'
+
+/**
+ * 留学院校表列键:毕业可申工签。
  */
 export const COL_DLI_GRAD = 'dliGrad'
 
@@ -731,9 +738,10 @@ export const COL_DLI_GRAD = 'dliGrad'
 export const PILOT_NAME_SEP = ','
 
 /**
- * 留学城市表每页几行(表 1 / 表 3 用 CARD_PAGE_SIZE 的 10;这张表块小,8 行一屏收住)。
+ * 留学院校表每页几行(表 1 / 表 3 用 CARD_PAGE_SIZE 的 10;原城市聚合形 8 行一屏,
+ * 2026-09-12 一校一行后行数 ~300,10 行与全站对齐)。
  */
-export const DLI_PAGE_SIZE = 8
+export const DLI_PAGE_SIZE = 10
 
 /**
  * 趋势主图(全国)高度(px)。
@@ -915,22 +923,6 @@ export const CLS_ROW_HOVER = 'rowHover'
 export const EMPTY_CITY_ROWS: never[] = []
 
 /**
- * 身份档:没工签(境外或访客)—— 看雇主办过 LMIA 没有、在不在 AIP / RCIP 名单。
- */
-export const ID_NOWP = 'nowp'
-
-/**
- * 身份档:PGWP 或其他工签 —— 看雇主招不招 TEER 0-3、岗位在不在省清单、雇主够不够省提名门槛。
- * 默认档:本站主流量是学签转 PGWP 的人群(2026-09-05 Frank「我应该选什么雇主是根据我的身份来的」)。
- */
-export const ID_PGWP = 'pgwp'
-
-/**
- * 身份档的文案键头(拼上档键)。
- */
-export const KEY_ID_HEAD = 'pulse.id.'
-
-/**
  * 雇主表列键:近一年 LMIA 获批。
  */
 export const COL_LMIA_4Q = 'lmia4q'
@@ -1071,7 +1063,8 @@ export const PULSE_RANK: Record<string, number> = {
 export const CHECK_MARK = '✓'
 
 /**
- * 雇主表列键:近半年 LMIA 获批(没工签档显示这一档;入选看近一年)。
+ * 雇主表列键:近半年 LMIA 获批(入选看近一年;原只在没工签档出,
+ * 2026-09-12 Frank「用一张表就行了,只是多加一个 lima 的列,但是这个列带排序的」两档合并后行业表常驻)。
  */
 export const COL_LMIA_2Q = 'lmia2q'
 
@@ -1101,6 +1094,12 @@ export const PILOT_FCIP = 'FCIP'
  * 不要和一般走 PNP 的雇主放到一起」)。
  */
 export const TABLE_PILOT = 'pilot'
+
+/**
+ * 雇主表的表种:行业表(2026-09-12 两档身份合并后只剩这一种非试点表;
+ * 原身份档常量 ID_NOWP / ID_PGWP 与胶囊随之退役)。
+ */
+export const TABLE_IND = 'ind'
 
 /**
  * 连锁记号的文案键(2026-09-06 Frank 拍板:AIP 本地 / 连锁两张表合回一张,连锁雇主名旁挂灰胶囊 + tooltip
@@ -1329,11 +1328,20 @@ export const MK_PNP_TARGET = 'pnpTarget'
 export const MK_EE_TARGET = 'eeTarget'
 
 /**
- * PR 每省小表的行键序(2026-09-10 Frank「拆成每个省一个表」:一地区一张小表,列 = 年;
- * 同日「其他的项的 pr 人数是不是也需要列一下」补四个类别行 —— 总数 / 经济类 / 其中省提名(经济类子项,
- * 与后三行相加会重复计人)/ 家庭团聚 / 难民与保护 / 其他;数据 = IRCC PR 按省按类别表的组行)。
+ * 全国「获批」表的行键序(2026-09-10 Frank「拆成每个省一个表」立表;「其他的项的 pr 人数
+ * 是不是也需要列一下」补类别行 —— 总数 / 经济类 / 其中省提名(经济类子项,与后三行相加会
+ * 重复计人)/ 家庭团聚 / 难民与保护 / 其他;数据 = IRCC PR 按省按类别表的组行)。
+ * 2026-09-11 Frank「怎么联邦的项目也放到省里了」:类别与通道行只住全国表,省表另走 PR_PROV_ROW_KEYS。
  */
 export const PR_ROW_KEYS = ['prAll', 'prEcon', 'prPnp', 'prFamily', 'prRefugee', 'prOtherCat']
+
+/**
+ * 省 PR 小表的行键序(2026-09-11 Frank「省里的只能走省提名吧」「应该知道省提名的比例才是有意义的」:
+ * 省政府自己的通道只有省提名,联邦通道与类别拆分不进省表;同日「省的还是需要一个总的 pr 数」
+ * 总量行回归 —— 省表 = 该省 PR 总量 + 省提名绝对数 + 省提名占比(%);
+ * 占比是数据层派生键 pnpShare = 省提名 ÷ 该省 PR,原「依赖度」,随省表回归)。
+ */
+export const PR_PROV_ROW_KEYS = ['prAll', 'prPnp', 'pnpShare']
 
 /**
  * PR 段打头的指标表(2026-09-10 Frank「配额 ee 是不是也都迁移到 pr」:配额与 EE 邀请自省份段迁入;
@@ -1342,15 +1350,26 @@ export const PR_ROW_KEYS = ['prAll', 'prEcon', 'prPnp', 'prFamily', 'prRefugee',
 export const PR_LEAD_KEYS = ['alloc']
 
 /**
- * 全国 PR 小表在类别行之后追加的联邦行(EE 邀请 + EE 接纳目标;联邦线不按省发,只有全国那张有)。
+ * 联邦 EE 表的行键序(2026-09-11 Frank「需要一个单独的 联邦 EE table 吧」「挪过去 EE 的都放联邦 EE 表」:
+ * EE 是递交系统不是获批类别,EE 的数全住这一张 —— EE 邀请(年度 ITA 份数,自获批表挪入)+
+ * EE 接纳目标(水平计划人头,自配额表挪入)+ EE 在池人数(池内存量,ee 域扩抽后自动出)。
+ * 原 PR_CA_EXTRA_KEYS(获批表联邦行)随之退役。
  */
-export const PR_CA_EXTRA_KEYS = ['eeInvites', 'eeTarget']
+export const FED_EE_ROW_KEYS = ['eeInvites', 'eeTarget', 'eePool']
+
+/**
+ * 联邦 EE 表的表键(锚点 pl-ind-<键>)。
+ */
+export const FED_EE_CODE = 'fedEe'
 
 /**
  * PR 类别行的折叠树(2026-09-10 Frank「他这个几个通道 我们能把它捋顺了吗」→「做」):
  * 键 = 可展开的大类行,值 = 点开后出的通道细行(IRCC 同表三、四级行;省提名已是常驻行不进树;
  * 商业线出合计一行,四个存量老通道不铺开;难民与保护点开 = 三种安置 + 境内保护)。
  * 默认全收,表不变长;展开态每表自管(useFold)。
+ * 2026-09-11 Frank「EE 的还是拆一下吧」加 eeInvites 支:联邦 EE 表的邀请行点开出各专场行
+ * (官方每轮 drawName 归类,数据层 invByYear 全口径,各专场求和恒等总数;fst / other 两键防漏,
+ * 当前 0 行不上屏)。
  */
 export const PR_FOLD: Record<string, string[]> = {
   /**
@@ -1368,6 +1387,13 @@ export const PR_FOLD: Record<string, string[]> = {
    * 难民与保护:三种境外安置 + 境内获保护。
    */
   prRefugee: ['prGar', 'prPsr', 'prBsr', 'prProtected'],
+
+  /**
+   * EE 邀请:抽签专场(大头四场 + 综合轮 + 定向职业类,尾巴按近年量级排)。
+   */
+  eeInvites: ['eeInvCec', 'eeInvFrench', 'eeInvHealth', 'eeInvPnp', 'eeInvGeneral', 'eeInvTrade',
+    'eeInvStem', 'eeInvEdu', 'eeInvAgri', 'eeInvPhys', 'eeInvMgr', 'eeInvTransport',
+    'eeInvMilitary', 'eeInvFsw', 'eeInvFst', 'eeInvOther'],
 }
 
 /**
@@ -1659,9 +1685,26 @@ export const COL_JOBS_OPEN = 'open'
 export const COL_JOBS_NEW7 = 'new7'
 
 /**
- * 招聘对比横表列键:中位年薪(ESDC)。AIP 岗列键与「看岗位」地址头 2026-09-10 Frank「这两列 删掉」随列同撤。
+ * 招聘对比横表列键:最低时薪(ESDC 官方工资带下端)。AIP 岗列键与「看岗位」地址头 2026-09-10
+ * Frank「这两列 删掉」随列同撤;2026-09-11 Frank「中位时薪,最低时薪 最高时薪」——
+ * 原中位年薪一列换成时薪三列(COL_JOBS_WAGE='wage' 随之退役)。
  */
-export const COL_JOBS_WAGE = 'wage'
+export const COL_JOBS_WAGE_LOW = 'wageLow'
+
+/**
+ * 招聘对比横表列键:中位时薪(ESDC)。
+ */
+export const COL_JOBS_WAGE_MED = 'wageMed'
+
+/**
+ * 招聘对比横表列键:最高时薪(ESDC 官方工资带上端)。
+ */
+export const COL_JOBS_WAGE_HIGH = 'wageHigh'
+
+/**
+ * 时薪文案的小数位(两位,列内位数齐)。
+ */
+export const HOURLY_DIGITS = 2
 
 /**
  * 宏观表「指标」列宽(其余列均分)。

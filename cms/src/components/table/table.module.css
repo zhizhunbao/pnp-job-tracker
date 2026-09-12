@@ -84,6 +84,16 @@
   border-right: 1px solid #f3f4f6;
 }
 
+/**
+ * detailOf 追加的跨列细行格(2026-09-12 DLI 胶囊批):底色略沉说明从属于上一行,
+ * 内容自带布局(胶囊流等),这里只给留白与分隔线。
+ */
+.detailTd {
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
+}
+
 .nowrap {
   white-space: nowrap;
 }

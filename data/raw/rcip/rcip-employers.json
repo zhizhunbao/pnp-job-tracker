@@ -1,5 +1,5 @@
 {
- "fetched": "2026-08-31",
+ "fetched": "2026-09-12",
  "note": "各社区官方公示的指定雇主名单(批C 自动刷新,pilot_extractors 逐社区抽取;塌方保旧)。『指定』≠『在招』;excluded/de-designated 已在抽取层剔除;Peace Liard 官方待公示。",
  "rows": [
   {
@@ -2387,6 +2387,14 @@
    "url": "https://nbrcip.ca/designated-employers/"
   },
   {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Sturgeon Dental",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "RCIP",
@@ -2528,6 +2536,14 @@
    "type": "RCIP",
    "name": "Sky Story Creative",
    "location": "73 Elm St, Greater Sudbury, ON P3C 1R6",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "The Social Soulpreneur",
+   "location": "1521 Fairburn St Sudbury ON p3a1n6",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -2830,6 +2846,14 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "RCIP",
+   "name": "Dr. M. Samodee Dentistry Professional Corporation",
+   "location": "1650 Lasalle Blvd, Greater Sudbury ON P3A 2A1",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
    "name": "Dr. Scott C. Keenan Dentistry Professional Corpporation",
    "location": "1545 Regent Stret, Unit 101, Sudbury. Ontario P3E 3Z7",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
@@ -2864,6 +2888,14 @@
    "type": "RCIP",
    "name": "Extendicare York",
    "location": "333 York Street, Sudbury, ON P3E 5J3",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "F.H.R. Construction Ltd",
+   "location": "F421-1290 Bancroft Drive, Sudbury, Ontario P3B 4G9",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -3008,6 +3040,14 @@
    "type": "RCIP",
    "name": "Motion LP",
    "location": "747 Notre Dame Ave., Sudbury, ON, P3A 2T2.",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "NEOMO Medical",
+   "location": "40-275 Elm St, Sudbury, ON , P3C 1S 8",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -3558,8 +3598,24 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "RCIP",
+   "name": "Sudbury Young Women’s Christian Association (YWCA Sudbury)",
+   "location": "370 St. Raphael Street, Sudbury, On P3B 4K7",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
    "name": "Summit Human Services Sudbury – 1425169 ONTARIO LIMITED",
    "location": "1579 Bellevue Street, Sudbury <Ontario P3B 3G5",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "the Children’s Aid Society of the Districts of Sudbury and Manitoulin",
+   "location": "303 York Street, Sudbury, ON, P3E2A5",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -3632,6 +3688,14 @@
    "type": "RCIP",
    "name": "669–Heat – Northern Air & Mechanical Systems Inc.",
    "location": "1360 Kelly Lake Rd unit 3, Greater Sudbury, ON P3E 5P4",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "705 Painting Inc.",
+   "location": "160 Copper Street, Sudbury, ON P3E 2C2",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -4630,6 +4694,14 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "RCIP",
+   "name": "Reliance Home Comfort",
+   "location": "955 Cambrian Heights Drive, Sudbury On P3C 5M6",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
    "name": "Repairtech RX Inc.",
    "location": "1212 Lasalle Boulevard, Unit A, Sudbury, Ontario P3A 1Y5",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
@@ -5182,6 +5254,14 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "FCIP",
+   "name": "The Social Soulpreneur",
+   "location": "1521 Fairburn St Sudbury ON p3a1n6",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
    "name": "Orix Geoscience 2018 Inc.",
    "location": "Unit A - 1300 Kelly Lake Rd., Sudbury ON P3E 5P4",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
@@ -5230,8 +5310,24 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "FCIP",
+   "name": "Dr. M. Samodee Dentistry Professional Corporation",
+   "location": "1650 Lasalle Blvd, Greater Sudbury ON P3A 2A1",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
    "name": "ELMHUB – RBois Speech & Language Services d’orthophonie",
    "location": "229 Elm St, Unit 2B, Sudbury ON, P3C1T8",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "F.H.R. Construction Ltd",
+   "location": "F421-1290 Bancroft Drive, Sudbury, Ontario P3B 4G9",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -5550,6 +5646,14 @@
    "community": "Sudbury, ON",
    "province": "ON",
    "type": "FCIP",
+   "name": "705 Painting Inc.",
+   "location": "160 Copper Street, Sudbury, ON P3E 2C2",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
    "name": "Access Industrial Grand Sudbury – Access Industrial Mining Inc",
    "location": "1106 Webbwood Drive, Sudbury, Onario P3C 3B7",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
@@ -5568,6 +5672,14 @@
    "type": "FCIP",
    "name": "Barne Building and Construction Inc",
    "location": "109 Elm Street, Suite 206, Sudbury, ON P3C 1T4",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Boyuk Towing – 2591519 Ontario Inc.",
+   "location": "130 Magill Street, Lively ON P3Y 1K7",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -5720,6 +5832,14 @@
    "type": "FCIP",
    "name": "R.M. Belanger Limited – Belanger Construction",
    "location": "100 Radisson Avenue, Chelmsford, ON P0M 1L0",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "FCIP",
+   "name": "Reliance Home Comfort",
+   "location": "955 Cambrian Heights Drive, Sudbury On P3C 5M6",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -11640,7 +11760,15 @@
    "type": "RCIP",
    "name": "1st Choice Convenience",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
+  },
+  {
+   "community": "Steinbach, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "name": "Barnala Driver Training Academy",
+   "location": "",
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11648,7 +11776,7 @@
    "type": "RCIP",
    "name": "Big Freight",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11656,7 +11784,7 @@
    "type": "RCIP",
    "name": "Boston Pizza",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11664,7 +11792,7 @@
    "type": "RCIP",
    "name": "CDO Oriental Store Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11672,15 +11800,7 @@
    "type": "RCIP",
    "name": "Children of the Universe",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
-  },
-  {
-   "community": "Steinbach, MB",
-   "province": "MB",
-   "type": "RCIP",
-   "name": "Church Renewal",
-   "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11688,7 +11808,7 @@
    "type": "RCIP",
    "name": "Clearly Family Beverage Company ULC",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11696,7 +11816,7 @@
    "type": "RCIP",
    "name": "Co-Care Health Group Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11704,7 +11824,7 @@
    "type": "RCIP",
    "name": "C.P. Loewen Enterprises Ltd (Loewen Windows & Doors)",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11712,7 +11832,7 @@
    "type": "RCIP",
    "name": "Esso Gas Station",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11720,7 +11840,7 @@
    "type": "RCIP",
    "name": "Frantz Inn",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11728,15 +11848,7 @@
    "type": "RCIP",
    "name": "Garderie Les Petits Amis Day Care Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
-  },
-  {
-   "community": "Steinbach, MB",
-   "province": "MB",
-   "type": "RCIP",
-   "name": "GNM Fine Jewellers",
-   "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11744,7 +11856,7 @@
    "type": "RCIP",
    "name": "Hanover Grinding",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11752,7 +11864,7 @@
    "type": "RCIP",
    "name": "Happy Feet Early Learning Centre Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11760,7 +11872,7 @@
    "type": "RCIP",
    "name": "HyLife Ltd.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11768,7 +11880,7 @@
    "type": "RCIP",
    "name": "Imperial Metal Industries",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11776,7 +11888,7 @@
    "type": "RCIP",
    "name": "Kinder Korner Early Learning Centre Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11784,7 +11896,7 @@
    "type": "RCIP",
    "name": "Kroeker Roofing Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11792,15 +11904,7 @@
    "type": "RCIP",
    "name": "Landmark Child Care Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
-  },
-  {
-   "community": "Steinbach, MB",
-   "province": "MB",
-   "type": "RCIP",
-   "name": "Legacy Children's Centre",
-   "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11808,7 +11912,7 @@
    "type": "RCIP",
    "name": "Manitoba Health - Health Protection/Environmental Health",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11816,7 +11920,7 @@
    "type": "RCIP",
    "name": "MECCCC General Service Ltd.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11824,7 +11928,7 @@
    "type": "RCIP",
    "name": "Metalmasters Auto Body",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11832,7 +11936,7 @@
    "type": "RCIP",
    "name": "Moonshadow Holsteins Inc.",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11840,7 +11944,15 @@
    "type": "RCIP",
    "name": "Mr. Q",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
+  },
+  {
+   "community": "Steinbach, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "name": "Nature's Farm",
+   "location": "",
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11848,7 +11960,7 @@
    "type": "RCIP",
    "name": "Old Church Bakery",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11856,7 +11968,7 @@
    "type": "RCIP",
    "name": "Penn-co Construction Canada (2003) Ltd",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11864,7 +11976,7 @@
    "type": "RCIP",
    "name": "Penner Group of Companies",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11872,7 +11984,7 @@
    "type": "RCIP",
    "name": "Prairie Truck Service",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11880,7 +11992,7 @@
    "type": "RCIP",
    "name": "Racka Roofing",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11888,7 +12000,7 @@
    "type": "RCIP",
    "name": "Santa Lucia Steinbach",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11896,7 +12008,7 @@
    "type": "RCIP",
    "name": "Silver Lining Care",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11904,7 +12016,15 @@
    "type": "RCIP",
    "name": "Smitty's Steinbach",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
+  },
+  {
+   "community": "Steinbach, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "name": "Southpaw Ventures Inc.",
+   "location": "",
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11912,7 +12032,7 @@
    "type": "RCIP",
    "name": "SRR Transport",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11920,7 +12040,7 @@
    "type": "RCIP",
    "name": "Steinbach Aquatic Centre",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11928,7 +12048,7 @@
    "type": "RCIP",
    "name": "Steinbach Dental Clinic",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11936,7 +12056,7 @@
    "type": "RCIP",
    "name": "Stellar Exteriors",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11944,7 +12064,7 @@
    "type": "RCIP",
    "name": "Steve's Livestock",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11952,7 +12072,7 @@
    "type": "RCIP",
    "name": "The Pickup Storehouse",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11960,15 +12080,7 @@
    "type": "RCIP",
    "name": "Three Way Builders",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
-  },
-  {
-   "community": "Steinbach, MB",
-   "province": "MB",
-   "type": "RCIP",
-   "name": "Treasure Keepers",
-   "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11976,7 +12088,7 @@
    "type": "RCIP",
    "name": "Westland Insurance",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11984,7 +12096,7 @@
    "type": "RCIP",
    "name": "Wings Over Kississing",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -11992,7 +12104,7 @@
    "type": "RCIP",
    "name": "WS Steel",
    "location": "",
-   "url": "https://steinbachedc.com/wp-content/uploads/2026/08/RCIP-Designated-Employers.pdf"
+   "url": "https://steinbachedc.com/wp-content/uploads/2026/09/RCIP-Designated-Employers-1.pdf"
   },
   {
    "community": "Altona/Rhineland, MB",
@@ -12054,7 +12166,7 @@
    "community": "Altona/Rhineland, MB",
    "province": "MB",
    "type": "RCIP",
-   "name": "Access Credit Union Ltd. (Altona)",
+   "name": "Access Credit Union Ltd. (Altona) – Not Currently Hiring",
    "location": "",
    "url": "https://ared-rpga.com/immigration/rcip-employers/"
   },
@@ -12487,6 +12599,14 @@
    "province": "MB",
    "type": "RCIP",
    "name": "Atom - Jet",
+   "location": "",
+   "url": "https://economicdevelopmentbrandon.com/rcip/rcip-list-of-designated-employers"
+  },
+  {
+   "community": "Brandon, MB",
+   "province": "MB",
+   "type": "RCIP",
+   "name": "Princess Dental",
    "location": "",
    "url": "https://economicdevelopmentbrandon.com/rcip/rcip-list-of-designated-employers"
   },

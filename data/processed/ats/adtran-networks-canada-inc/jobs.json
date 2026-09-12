@@ -1,7 +1,7 @@
 {
   "ats": "myworkdayjobs",
   "token": "",
-  "count": 1,
+  "count": 2,
   "jobs": [
     {
       "title": "Senior Hardware Engineer",
@@ -11,7 +11,35 @@
       "posted": "2026-08-24",
       "address": "",
       "salary": "",
-      "tech": true
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Senior Optics Engineer",
+      "location": "Ottawa, ON",
+      "url": "https://adtran.wd3.myworkdayjobs.com/ADTRAN/job/Ottawa-ON/Senior-Optics-Engineer_R005774",
+      "department": "",
+      "posted": "2026-07-27",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
     }
   ]
 }

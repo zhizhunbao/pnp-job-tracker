@@ -1,0 +1,26 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Electrical Design Engineer II",
+      "location": "Ottawa",
+      "url": "https://jabil.wd5.myworkdayjobs.com/Jabil_Careers/job/Ottawa/Lead-Firmware-Engineer_J2460092",
+      "department": "",
+      "posted": "2026-09-04",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
+}

@@ -73,6 +73,12 @@ export const CHECK_MARK = '✓'
 export const HOURLY_DIGITS = 2
 
 /**
+ * DLI 院校表每页几行(2026-09-12 Frank「城市的 table 怎么没带分页」:大城 DLI 上百家,
+ * 照把脉页表的 10 行分页形;行业分布固定八组不挂)。
+ */
+export const DLI_PAGE_SIZE = 10
+
+/**
  * 行业组名的 i18n 键头(与把脉页四段同一份词条;键头常量各域自抄)。
  */
 export const KEY_IND_HEAD = 'pulse.ind.'
