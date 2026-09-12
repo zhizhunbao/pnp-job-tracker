@@ -943,10 +943,10 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.nav.city': 'Cities', 'pulse.nav.trend': 'Trends',
   'pulse.city': 'Pick a city', 'pulse.trend': 'Open jobs over time', 'pulse.trend.nat': 'Canada',
   // 2026-09-11 city section redesign (docs/design/把脉页城市段-20260911.md): search + four tables
-  'pulse.city.main': 'Top cities', 'pulse.city.pilot': 'Pilot communities', 'pulse.city.dli': 'Study cities',
+  'pulse.city.main': 'Top cities', 'pulse.city.dli': 'Study cities',
   'pulse.city.name': 'City', 'pulse.city.open': 'Jobs', 'pulse.city.wage': 'Median wage',
-  'pulse.city.pop': 'Population', 'pulse.city.unemp': 'CMA unemployment',
-  'pulse.city.channel': 'Pilot', 'pulse.city.pilotTag': 'pilot', 'pulse.city.comm': 'Community',
+  'pulse.city.pop': 'Population', 'pulse.city.unemp': 'Unemployment',
+  'pulse.city.comm': 'Community',
   'pulse.city.dliN': 'DLI schools', 'pulse.city.dliPub': 'Public', 'pulse.city.dliGrad': 'PGWP eligible',
   'pulse.top.open': 'Most jobs', 'pulse.top.wage': 'Highest wage',
   'pulse.ind.health': 'Healthcare', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': 'Trades',

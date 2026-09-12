@@ -28,7 +28,7 @@ import {
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
   HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_PR_BAND, ID_SE, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
-  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAV_IDS, NAV_TOP_LINE,
+  LANG_EN, LANG_KO, LANG_ZH, MID_ALL, MOM_FLAT, NAV_TOP_LINE,
   NOC_HEAD, NUM_LOCALE, PCT_MARK, PCT_SCALE,
   PNP_SORT_SCALE, PROV_ALL_LOWER,
   RATE_DIGITS, RATE_MAX, RATE_OVER_TEXT,
@@ -39,7 +39,7 @@ import {
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
   TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
   CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
-  CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_COMM, COL_COMM_TYPE,
+  CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_COMM,
   COL_DLI_GRAD, COL_DLI_N,
   COL_CITY_WAGE, COL_DLI_PUB, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
@@ -88,7 +88,6 @@ import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
 import { CityNameCell } from './citynamecell'
-import { CityPilotTypeCell } from './citypilottypecell'
 import type { ChartOption } from '@/components/stats'
 import type { CityRow, DailyRow, DliCityRow } from '@/lib/stats'
 import { CACHE } from './variables'
@@ -97,7 +96,7 @@ import type {
   ClickFn,
   HomeCoreIn, HomeStats, HomeStatsCore, HomeStatsOfIn, HotPillsIn, LabelFn,
   MomClsIn,
-  MarketIn, NatOccIn, NavLinkClsIn, NavWatchIn,
+  MarketIn, NatOccIn, NavLinkClsIn, NavSubOrFirstIn, NavWatchIn,
   NocCat, NocCatOfIn, NocProvsIn, NocProvsMap,
   GapClsIn, NavItem, NavItemsIn, NumCardRow, NumCardsIn, OccCellRow, OccCellRowIn,
   OccCellRowsIn, OccColsIn,
@@ -113,7 +112,7 @@ import type {
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
   CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable,
   CityIndTablesIn,
-  CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn,
+  CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn, CityPilotTable,
   CityStatsProbe,
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
@@ -657,7 +656,8 @@ function citySubsOf(t: TFn): NavItem[] {
   for (const key of IND_KEYS) {
     out.push({ id: subIdOf({ band: ID_CITY_IND, key }), label: t(KEY_IND_HEAD + key) })
   }
-  out.push({ id: ID_CITY_PILOT, label: t('pulse.city.pilot') })
+  out.push({ id: subIdOf({ band: ID_CITY_PILOT, key: PILOT_RCIP }), label: PILOT_RCIP })
+  out.push({ id: subIdOf({ band: ID_CITY_PILOT, key: PILOT_FCIP }), label: PILOT_FCIP })
   out.push({ id: ID_CITY_DLI, label: t('pulse.city.dli') })
   return out
 }
@@ -1595,6 +1595,53 @@ export function navLinkClsOf(x: NavLinkClsIn): string {
 }
 
 /**
+ * 子项清单 → 锚点 id 清单(子导航滚动跟随的输入)。
+ *
+ * @param items 子项清单。
+ * @returns 锚点 id 清单。
+ */
+export function navSubIdsOf(items: NavItem[]): string[] {
+  const out: string[] = []
+  for (const it of items) {
+    out.push(it.id)
+  }
+  return out
+}
+
+/**
+ * 要点亮的子项:跟随机有值用跟随机,还没滚过任何子锚点时点亮第一个子项
+ * (2026-09-11 Frank「一级标题点过来的时候应该 第一个子标题亮吧」—— 刚落到段首不留全灰)。
+ *
+ * @param x 跟随机的当前值与子项清单。
+ * @returns 要点亮的子项 id;子项清单为空时空串。
+ */
+export function navSubOrFirstOf(x: NavSubOrFirstIn): string {
+  if (x.subSec !== TEXT_NONE) {
+    return x.subSec
+  }
+  const first = x.items[0]
+  if (first == null) {
+    return TEXT_NONE
+  }
+  return first.id
+}
+
+/**
+ * 子导航项的类:基座 + 当前档(2026-09-11 Frank「页面滚动时候 这部分也得亮」——
+ * 子行与主行同一套「蓝 = 你现在在哪」)。
+ *
+ * @param x 是不是当前子分区。
+ * @returns className。
+ */
+export function navSubLinkClsOf(x: NavLinkClsIn): string {
+  const cls = [cssOf(css.navSubLink)]
+  if (x.on) {
+    cls.push(cssOf(css.navLinkOn))
+  }
+  return joinCls(cls)
+}
+
+/**
  * 橱窗第二张起的表与上一张的间距。
  *
  * @param x 留不留间距。
@@ -1809,8 +1856,10 @@ function groupOrEmpty(g: SponsorGroup | null): SponsorGroup {
  * 二级导航的滚动跟随(2026-08-09 Frank「这个地方的高亮也不对啊」:原先五个锚点永远灰、
  * 属主永远蓝 = 看着像永远停在第一项)。当前分区 = 顶部粘条下沿(~96px)以上最后一个分区标题;
  * scroll 监听 + rAF 节流;分区可能条件不渲(榜全空),getElementById 空安全。
+ * 2026-09-11 Frank「页面滚动时候 这部分也得亮」:锚点清单改传入 —— 主行传 NAV_IDS,
+ * 子导航行传当前段的子锚点,同一台跟随机两处用。
  *
- * @param x 当前分区的落格。
+ * @param x 锚点清单与当前分区的落格。
  * @returns effect 的本体(交回清理函数)。
  */
 export function makeNavWatch(x: NavWatchIn): () => CleanupFn {
@@ -1819,7 +1868,7 @@ export function makeNavWatch(x: NavWatchIn): () => CleanupFn {
     function pick(): void {
       raf = 0
       let cur = TEXT_NONE
-      for (const id of NAV_IDS) {
+      for (const id of x.ids) {
         const el = document.getElementById(id)
         if (el != null && el.getBoundingClientRect().top <= NAV_TOP_LINE) {
           cur = id
@@ -2392,40 +2441,47 @@ function pilotShortNameOf(name: string): string {
 }
 
 /**
- * 试点社区行 → 表 3 展示行。社区名一律英文主文案 + 省码灰注(2026-09-11 Frank
- * 「试点社区 城市 都用英文名吧。是不是都没有中文名?」—— 试点多是 147 城译名表外的小地方,
- * 原「撞上译名表借中文」的混排退役);与城市榜同名时给落板链接,对不上名的
- * (社区 ≠ 单一城市,如 Pictou County)不给链接 —— 落到空职位板比不链更糟。
+ * 试点社区行 → 表清单:RCIP / FCIP 一制一张小表(2026-09-11 Frank「这个拆成两个表 RCIP FCIP」,
+ * 照雇主段三试点表形,表题 = 制度名,通道列随拆退役)。社区名一律英文主文案 + 省码灰注
+ * (同日 Frank「试点社区 城市 都用英文名吧」—— 试点多是 147 城译名表外的小地方,混排退役);
+ * 与城市榜同名时给落板链接,对不上名的(社区 ≠ 单一城市,如 Pictou County)不给链接 ——
+ * 落到空职位板比不链更糟。双制社区(如 Sudbury)两表各出一行。
  *
- * @param x 试点行、城市榜、取词函数与语言。
- * @returns 展示行。
+ * @param x 试点行与城市榜。
+ * @returns 表清单(空制不出)。
  */
-export function toCityPilotRows(x: CityPilotRowsIn): CityPilotRow[] {
+export function cityPilotTablesOf(x: CityPilotRowsIn): CityPilotTable[] {
   const onOpen = makeCityTrack(CITY_KIND_PILOT)
   const byCity = new Map<string, CityRow>()
   for (const c of x.cities) {
     byCity.set(c.city + KEY_SEP + c.province, c)
   }
-  const out: CityPilotRow[] = []
-  for (const p of x.pilots) {
-    const short = pilotShortNameOf(p.name)
-    const hit = byCity.get(short + KEY_SEP + p.province)
-    let href = TEXT_NONE
-    if (hit != null) {
-      href = cityHrefOf(hit.city)
+  const out: CityPilotTable[] = []
+  for (const type of [PILOT_RCIP, PILOT_FCIP]) {
+    const rows: CityPilotRow[] = []
+    for (const p of x.pilots) {
+      if (p.type !== type) {
+        continue
+      }
+      const short = pilotShortNameOf(p.name)
+      const hit = byCity.get(short + KEY_SEP + p.province)
+      let href = TEXT_NONE
+      if (hit != null) {
+        href = cityHrefOf(hit.city)
+      }
+      rows.push({
+        key: p.name + KEY_SEP + p.type,
+        name: short,
+        note: p.province,
+        href,
+        onOpen,
+        open: p.openJobs,
+        openText: numOf(p.openJobs),
+      })
     }
-    const name = short
-    const note = p.province
-    out.push({
-      key: p.name + KEY_SEP + p.type,
-      name,
-note,
-href,
-onOpen,
-      typeText: p.type + SPACE_SEP + x.t('pulse.city.pilotTag'),
-      open: p.openJobs,
-openText: numOf(p.openJobs),
-    })
+    if (rows.length > 0) {
+      out.push({ key: type, rows })
+    }
   }
   return out
 }
@@ -2439,21 +2495,6 @@ openText: numOf(p.openJobs),
 export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
   return [
     { key: COL_COMM, label: x.t('pulse.city.comm'), sort: pilotNameSortOf, render: CityNameCell },
-    {
-      key: COL_PROV,
-      label: x.t('pulse.s4.prov'),
-      nowrap: true,
-      sort: pilotProvSortOf,
-      render: pilotProvTextOf,
-      className: cssOf(css.cityWide),
-    },
-    {
-      key: COL_COMM_TYPE,
-      label: x.t('pulse.city.channel'),
-      nowrap: true,
-      sort: pilotTypeSortOf,
-      render: CityPilotTypeCell,
-    },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
   ]
 }
@@ -2466,40 +2507,6 @@ export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
  */
 export function pilotNameSortOf(r: CityPilotRow): string {
   return r.name
-}
-
-/**
- * 表 3 省列排序键与文案(灰注最后一段即省码;单独存列免得排序键混译名)。
- *
- * @param r 一行。
- * @returns 省码。
- */
-export function pilotProvSortOf(r: CityPilotRow): string {
-  return pilotProvTextOf(r)
-}
-
-/**
- * 表 3 省格文案(灰注尾段的省码)。
- *
- * @param r 一行。
- * @returns 省码。
- */
-export function pilotProvTextOf(r: CityPilotRow): string {
-  const at = r.note.lastIndexOf(SPACE_SEP)
-  if (at < 0) {
-    return r.note
-  }
-  return r.note.slice(at + 1)
-}
-
-/**
- * 表 3 通道排序键。
- *
- * @param r 一行。
- * @returns 通道文案。
- */
-export function pilotTypeSortOf(r: CityPilotRow): string {
-  return r.typeText
 }
 
 /**

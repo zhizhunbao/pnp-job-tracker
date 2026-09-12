@@ -1180,9 +1180,40 @@ export type MacroStatsProbe = {
  */
 export type NavWatchIn = {
   /**
+   * 跟随的锚点 id 清单(2026-09-11 Frank「页面滚动时候 这部分也得亮」:子导航行复用同一台
+   * 跟随机,主行传 NAV_IDS、子行传当前段的子锚点)。
+   */
+  ids: string[]
+
+  /**
    * 当前分区的落格。
    */
   setNavSec: FilterFn
+}
+
+/**
+ * `useNavSub` 的入参(子导航行的滚动跟随)。
+ */
+export type NavSubIn = {
+  /**
+   * 当前段子项的锚点 id 清单(段切换时整份换)。
+   */
+  ids: string[]
+}
+
+/**
+ * `navSubOrFirstOf` 的入参。
+ */
+export type NavSubOrFirstIn = {
+  /**
+   * 跟随机交回的当前子分区 id;'' = 还没滚过任何子锚点。
+   */
+  subSec: string
+
+  /**
+   * 当前段的子项清单。
+   */
+  items: NavItem[]
 }
 
 
@@ -2335,11 +2366,6 @@ export type CityPilotRow = {
   onOpen: ClickFn
 
   /**
-   * 通道类型文案(RCIP 试点 / FCIP 试点)。
-   */
-  typeText: string
-
-  /**
    * 在招数(排序键;0 是事实)。
    */
   open: number
@@ -2351,7 +2377,23 @@ export type CityPilotRow = {
 }
 
 /**
- * `toCityPilotRows` 的入参。
+ * 试点社区的一张小表(2026-09-11 Frank「这个拆成两个表 RCIP FCIP」:一制一张,
+ * 表题 = 制度名三语同形,照雇主段三试点表)。
+ */
+export type CityPilotTable = {
+  /**
+   * 制度名(RCIP / FCIP;即表题与分表锚键)。
+   */
+  key: string
+
+  /**
+   * 行(该制的社区,双制社区两表各出)。
+   */
+  rows: CityPilotRow[]
+}
+
+/**
+ * `cityPilotTablesOf` 的入参。
  */
 export type CityPilotRowsIn = {
   /**
@@ -2363,11 +2405,6 @@ export type CityPilotRowsIn = {
    * 城市全量榜(落板链接借它对名)。
    */
   cities: CityRow[]
-
-  /**
-   * 取词函数(类型文案)。
-   */
-  t: TFn
 }
 
 /**
@@ -2465,9 +2502,9 @@ export type CityPanel = {
   indTables: CityIndTable[]
 
   /**
-   * 表 3 展示行。
+   * 试点社区的表清单(2026-09-11 一制一张:RCIP / FCIP)。
    */
-  pilotRows: CityPilotRow[]
+  pilotTables: CityPilotTable[]
 
   /**
    * 表 4 展示行。

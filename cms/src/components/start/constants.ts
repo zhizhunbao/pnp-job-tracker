@@ -126,6 +126,12 @@ export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_PR_BAND, ID_CITY, ID_TREND
 export const SUB_ID_SEP = '-'
 
 /**
+ * 子导航跟随 effect 的依赖键连接符(锚点 id 清单拼串;id 里不会出现逗号,拼串可逆)。
+ * 2026-09-11 Frank「页面滚动时候 这部分也得亮」。
+ */
+export const SUB_IDS_SEP = ','
+
+/**
  * 滚动跟随的判定线(px):当前分区 = 顶部粘条下沿以上最后一个分区标题。
  * 2026-09-06 加子项行后粘条两层高 87(藏滚动条后),.band / .subAnchor 的 scroll-margin-top 92、判定线 96:
  * 让位比粘条多 5px,判定线再比让位多 4px —— 锚点跳到的位置带小数(104.4 > 104 实撞,高亮与子项不跟着切),
@@ -661,7 +667,9 @@ export const COL_CITY_WAGE = 'wage'
 export const COL_CITY_POP = 'pop'
 
 /**
- * 城市表列键:都会区失业率(🔴 CMA 口径不是本市,列名自带「都会区」;手机档藏)。
+ * 城市表列键:失业率(数据是所在 CMA 都会区口径不是本市 —— 官方没有城市级失业率;
+ * 列名原带「都会区」,2026-09-11 Frank「就叫失业率 不行吗」拍板短化:就业市场按都会区一体,
+ * 口径记录留此注释与 cities.cma 字段。手机档藏)。
  */
 export const COL_CITY_UNEMP = 'unemp'
 
@@ -669,11 +677,6 @@ export const COL_CITY_UNEMP = 'unemp'
  * 试点社区表列键:社区名。
  */
 export const COL_COMM = 'comm'
-
-/**
- * 试点社区表列键:通道类型。
- */
-export const COL_COMM_TYPE = 'type'
 
 /**
  * 留学城市表列键:DLI 院校数。

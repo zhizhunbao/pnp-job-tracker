@@ -16,12 +16,17 @@
 import { LinkButton } from '@/components/button'
 import { Shell } from '@/components/shell'
 import { SHELL_BOTTOM, SHELL_TOP } from './constants'
-import { anchorOf, makeSubnavTrack, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubItemsOf } from './functions'
+import {
+  anchorOf, makeSubnavTrack, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubIdsOf, navSubItemsOf,
+  navSubLinkClsOf, navSubOrFirstOf,
+} from './functions'
+import { useNavSub } from './hooks'
 import type { PulseNavIn } from './types'
 import css from './start.module.css'
 
 /**
- * 渲染二级导航条。
+ * 渲染二级导航条(2026-09-11 Frank「页面滚动时候 这部分也得亮」:子项行也挂滚动跟随,
+ * 当前子分区同主行一样亮蓝)。
  *
  * @param props 取词函数与当前所在分区。
  * @returns 粘顶的导航条。
@@ -36,10 +41,14 @@ export function PulseNav({ t, navSec }: PulseNavIn) {
       </LinkButton>,
     )
   }
+  const subItems = navSubItemsOf({ t, navSec: sec })
+  const subSec = useNavSub({ ids: navSubIdsOf(subItems) })
+  const subOn = navSubOrFirstOf({ subSec, items: subItems })
   const subs = []
-  for (const it of navSubItemsOf({ t, navSec: sec })) {
+  for (const it of subItems) {
     subs.push(
-      <LinkButton key={it.id} href={anchorOf(it.id)} onClick={makeSubnavTrack(it.id)} className={css.navSubLink}>
+      <LinkButton key={it.id} href={anchorOf(it.id)} onClick={makeSubnavTrack(it.id)}
+        className={navSubLinkClsOf({ on: subOn === it.id })}>
         {it.label}
       </LinkButton>,
     )

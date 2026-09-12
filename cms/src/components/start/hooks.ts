@@ -16,19 +16,19 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { ID_PGWP, LANG_EN, TEXT_NONE } from './constants'
+import { ID_PGWP, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
   cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
-  toCityDliRows, toCityMainRows, toCityPilotRows,
+  cityPilotTablesOf, toCityDliRows, toCityMainRows,
   trackSecView, makeKindPick, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
   CardPageIn, CityData, CityPanel, CityPanelIn,
   EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
-  PulseIn, PulsePanel, SponsorBoards, TFn,
+  NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
 } from './types'
 
@@ -109,12 +109,12 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     return cityIndTablesOf({ rows: data.industry, cities: data.cities, t: x.t, lang: x.lang })
   }, [data, x.t, x.lang])
 
-  const pilotRows = useMemo(function pickPilotRows() {
+  const pilotTables = useMemo(function pickPilotTables() {
     if (data == null) {
       return []
     }
-    return toCityPilotRows({ pilots: data.pilots, cities: data.cities, t: x.t })
-  }, [data, x.t])
+    return cityPilotTablesOf({ pilots: data.pilots, cities: data.cities })
+  }, [data])
 
   const dliRows = useMemo(function pickDliRows() {
     if (data == null) {
@@ -123,7 +123,7 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     return toCityDliRows({ rows: data.dli, lang: x.lang })
   }, [data, x.lang])
 
-  return { data, mainRows, indTables, pilotRows, dliRows }
+  return { data, mainRows, indTables, pilotTables, dliRows }
 }
 
 /**
@@ -148,10 +148,28 @@ export function useNavSec(): string {
   const [navSec, setNavSec] = useState(TEXT_NONE)
 
   useEffect(function watchNav() {
-    return makeNavWatch({ setNavSec })()
+    return makeNavWatch({ ids: NAV_IDS, setNavSec })()
   }, [])
 
   return navSec
+}
+
+/**
+ * 子导航行的滚动跟随(2026-09-11 Frank「页面滚动时候 这部分也得亮」):跟随机同 useNavSec,
+ * 锚点清单 = 当前段的子项,段切换整份换(依赖键 = 清单拼串,同段重渲不重挂监听)。
+ *
+ * @param x 子锚点清单。
+ * @returns 当前子分区 id;'' = 还没滚到任何子锚点。
+ */
+export function useNavSub(x: NavSubIn): string {
+  const [subSec, setSubSec] = useState(TEXT_NONE)
+  const key = x.ids.join(SUB_IDS_SEP)
+
+  useEffect(function watchSub() {
+    return makeNavWatch({ ids: key.split(SUB_IDS_SEP), setNavSec: setSubSec })()
+  }, [key])
+
+  return subSec
 }
 
 /**

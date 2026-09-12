@@ -41,7 +41,7 @@ import css from './start.module.css'
  */
 export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
   const v = useCityPanel({ t, lang })
-  if (v.data != null && v.mainRows.length === 0 && v.pilotRows.length === 0 && v.dliRows.length === 0) {
+  if (v.data != null && v.mainRows.length === 0 && v.pilotTables.length === 0 && v.dliRows.length === 0) {
     return null
   }
   const indCols = cityIndColsOf({ t })
@@ -54,6 +54,21 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
             <Table<CityIndRow> rows={tb.rows}
               cols={indCols}
               rowKey={indRowKeyOf} />
+          </Sec>
+        </div>
+      </div>,
+    )
+  }
+  const pilotCols = cityPilotColsOf({ t })
+  const pilotBlocks = []
+  for (const tb of v.pilotTables) {
+    pilotBlocks.push(
+      <div key={tb.key} id={subIdOf({ band: ID_CITY_PILOT, key: tb.key })} className={css.subAnchor}>
+        <div className={boardGapClsOf({ gap: true })}>
+          <Sec title={tb.key} right={<Updated iso={updatedAt} t={t} />} sub>
+            <Table<CityPilotRow> rows={tb.rows}
+              cols={pilotCols}
+              rowKey={pilotRowKeyOf} />
           </Sec>
         </div>
       </div>,
@@ -74,17 +89,7 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
           </div>
         )}
         {v.data != null && indBlocks}
-        {v.data != null && v.pilotRows.length > 0 && (
-          <div id={ID_CITY_PILOT} className={css.subAnchor}>
-            <div className={boardGapClsOf({ gap: true })}>
-              <Sec title={t('pulse.city.pilot')} right={<Updated iso={updatedAt} t={t} />} sub>
-                <Table<CityPilotRow> rows={v.pilotRows}
-                  cols={cityPilotColsOf({ t })}
-                  rowKey={pilotRowKeyOf} />
-              </Sec>
-            </div>
-          </div>
-        )}
+        {v.data != null && pilotBlocks}
         {v.data != null && v.dliRows.length > 0 && (
           <div id={ID_CITY_DLI} className={css.subAnchor}>
             <div className={boardGapClsOf({ gap: true })}>
