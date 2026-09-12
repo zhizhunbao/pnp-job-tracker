@@ -50,7 +50,9 @@ class DliSourceRow(BaseModel):
 
 
 class DliRow(BaseModel):
-    """院校级产出行(字段序 = 落盘键序;驼峰键住 serialization_alias)。"""
+    """校 × 城产出行(字段序 = 落盘键序;驼峰键住 serialization_alias)。
+    2026-09-12 粒度改「一校一城一行」:原「同号取首行主城」把 U of T 记在 Mississauga、
+    McGill 记在 Sainte-Anne-de-Bellevue、UBC 整串没拆(Frank「dli 院校没有大学吗」实撞)。"""
 
     model_config = MODEL_CFG
 
@@ -60,14 +62,17 @@ class DliRow(BaseModel):
     name: str
     """校名。"""
 
+    name_zh: str = Field(serialization_alias="nameZh")
+    """通行中文译名(NAME_ZH 人工核定表查得;表外留空,前端回退英文原名)。"""
+
     dli_number: str = Field(serialization_alias="dliNumber")
     """DLI 编号。"""
 
     city: str
-    """主城(同 DLI# 多校区取首行)。"""
+    """校区城(源 City 逗号串拆开,一城一行;同校多城多行)。"""
 
     campuses: int
-    """同 DLI# 下的校区数(首行建档记 1,后续行累加)。"""
+    """同 DLI# 下的源校区行数(全校总数,该校每行同值)。"""
 
     is_public: bool = Field(serialization_alias="isPublic")
     """是不是公立。"""
@@ -102,13 +107,16 @@ class DliFile(BaseModel):
 
 @dataclass
 class DliRowIn:
-    """to_dli_row() 入参(省码已由调用方查表兜过)。"""
+    """to_dli_row() 入参(省码已由调用方查表兜过,城已从逗号串拆出)。"""
 
     source: DliSourceRow
     """源行。"""
 
     province: str
     """查表得到的省码。"""
+
+    city: str
+    """这一行的校区城(拆串后的单城)。"""
 
 
 @dataclass

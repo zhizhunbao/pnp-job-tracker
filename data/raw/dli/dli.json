@@ -1,10 +1,11 @@
 {
  "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html",
- "fetched": "2026-08-31",
+ "fetched": "2026-09-12",
  "rows": [
   {
    "province": "AB",
    "name": "Adventure Aviation",
+   "nameZh": "",
    "dliNumber": "O140240413612",
    "city": "Grande Prairie",
    "campuses": 1,
@@ -14,6 +15,7 @@
   {
    "province": "AB",
    "name": "Alberta University of the Arts",
+   "nameZh": "阿尔伯塔艺术大学",
    "dliNumber": "O18760756062",
    "city": "Calgary",
    "campuses": 1,
@@ -23,6 +25,7 @@
   {
    "province": "AB",
    "name": "Athabasca University",
+   "nameZh": "阿萨巴斯卡大学",
    "dliNumber": "O19092373272",
    "city": "Athabasca",
    "campuses": 2,
@@ -31,7 +34,18 @@
   },
   {
    "province": "AB",
+   "name": "Athabasca University",
+   "nameZh": "阿萨巴斯卡大学",
+   "dliNumber": "O19092373272",
+   "city": "Edmonton",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "AB",
    "name": "Bow Valley College",
+   "nameZh": "弓谷学院",
    "dliNumber": "O19273769422",
    "city": "Calgary",
    "campuses": 1,
@@ -41,6 +55,7 @@
   {
    "province": "AB",
    "name": "Burman University",
+   "nameZh": "伯曼大学",
    "dliNumber": "O19390898172",
    "city": "Lacombe",
    "campuses": 1,
@@ -50,6 +65,7 @@
   {
    "province": "AB",
    "name": "CFI Flight Academy",
+   "nameZh": "",
    "dliNumber": "O269322839472",
    "city": "Claresholm",
    "campuses": 2,
@@ -58,7 +74,18 @@
   },
   {
    "province": "AB",
+   "name": "CFI Flight Academy",
+   "nameZh": "",
+   "dliNumber": "O269322839472",
+   "city": "Okotoks",
+   "campuses": 2,
+   "isPublic": false,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Canadian Flight Centre",
+   "nameZh": "",
    "dliNumber": "O177438981742",
    "city": "Springbrook",
    "campuses": 1,
@@ -68,6 +95,7 @@
   {
    "province": "AB",
    "name": "Concordia University of Edmonton",
+   "nameZh": "埃德蒙顿康考迪亚大学",
    "dliNumber": "O19073475522",
    "city": "Edmonton",
    "campuses": 1,
@@ -77,6 +105,7 @@
   {
    "province": "AB",
    "name": "Kanata Aviation Training Inc.",
+   "nameZh": "",
    "dliNumber": "O269325462572",
    "city": "High River",
    "campuses": 1,
@@ -86,6 +115,7 @@
   {
    "province": "AB",
    "name": "Keyano College",
+   "nameZh": "",
    "dliNumber": "O19283886532",
    "city": "Fort McMurray",
    "campuses": 1,
@@ -95,6 +125,7 @@
   {
    "province": "AB",
    "name": "Lakeland College",
+   "nameZh": "",
    "dliNumber": "O18777577472",
    "city": "Lloydminster",
    "campuses": 2,
@@ -103,7 +134,18 @@
   },
   {
    "province": "AB",
+   "name": "Lakeland College",
+   "nameZh": "",
+   "dliNumber": "O18777577472",
+   "city": "Vermillion",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Lethbridge Polytechnic",
+   "nameZh": "莱斯布里奇理工学院",
    "dliNumber": "O19391056756",
    "city": "Lethbridge",
    "campuses": 1,
@@ -113,6 +155,7 @@
   {
    "province": "AB",
    "name": "MaKami College",
+   "nameZh": "",
    "dliNumber": "O113097545597",
    "city": "Calgary",
    "campuses": 2,
@@ -121,7 +164,18 @@
   },
   {
    "province": "AB",
+   "name": "MaKami College",
+   "nameZh": "",
+   "dliNumber": "O113097545597",
+   "city": "Edmonton",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "MacEwan University",
+   "nameZh": "麦科文大学",
    "dliNumber": "O19092022262",
    "city": "Edmonton",
    "campuses": 1,
@@ -131,6 +185,7 @@
   {
    "province": "AB",
    "name": "Medicine Hat College",
+   "nameZh": "梅迪辛哈特学院",
    "dliNumber": "O18795445892",
    "city": "Brooks",
    "campuses": 2,
@@ -139,7 +194,18 @@
   },
   {
    "province": "AB",
+   "name": "Medicine Hat College",
+   "nameZh": "梅迪辛哈特学院",
+   "dliNumber": "O18795445892",
+   "city": "Medicine Hat",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Mount Royal University",
+   "nameZh": "皇家山大学",
    "dliNumber": "O18761482032",
    "city": "Calgary",
    "campuses": 1,
@@ -149,6 +215,7 @@
   {
    "province": "AB",
    "name": "NAIT (Northern Alberta Institute of Technology)",
+   "nameZh": "北阿尔伯塔理工学院",
    "dliNumber": "O18713200642",
    "city": "Edmonton",
    "campuses": 3,
@@ -157,7 +224,18 @@
   },
   {
    "province": "AB",
+   "name": "NAIT (Northern Alberta Institute of Technology)",
+   "nameZh": "北阿尔伯塔理工学院",
+   "dliNumber": "O18713200642",
+   "city": "St. Albert",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
    "dliNumber": "O18795996622",
    "city": "Drayton Valley",
    "campuses": 6,
@@ -166,7 +244,88 @@
   },
   {
    "province": "AB",
+   "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
+   "dliNumber": "O18795996622",
+   "city": "Edmonton",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
+   "dliNumber": "O18795996622",
+   "city": "Stony Plain",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
+   "dliNumber": "O18795996622",
+   "city": "Westlock",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
+   "dliNumber": "O18795996622",
+   "city": "Wetaskiwin",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "NorQuest College",
+   "nameZh": "诺奎斯特学院",
+   "dliNumber": "O18795996622",
+   "city": "Whitecourt",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Athabasca",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Fort Vermillion",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Grande Prairie",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
    "dliNumber": "O19391056848",
    "city": "Grouard",
    "campuses": 10,
@@ -175,7 +334,68 @@
   },
   {
    "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "High Level",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "High Prairie",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Peace River",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Slave Lake",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Valleyview",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Northern Lakes College",
+   "nameZh": "",
+   "dliNumber": "O19391056848",
+   "city": "Wabasca",
+   "campuses": 10,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Northwestern Polytechnic",
+   "nameZh": "",
    "dliNumber": "O19391056654",
    "city": "Fairview",
    "campuses": 2,
@@ -184,7 +404,38 @@
   },
   {
    "province": "AB",
+   "name": "Northwestern Polytechnic",
+   "nameZh": "",
+   "dliNumber": "O19391056654",
+   "city": "Grand Prairie",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
    "name": "Olds College",
+   "nameZh": "",
+   "dliNumber": "O18713227822",
+   "city": "Calgary",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "AB",
+   "name": "Olds College",
+   "nameZh": "",
+   "dliNumber": "O18713227822",
+   "city": "Edmonton",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "AB",
+   "name": "Olds College",
+   "nameZh": "",
    "dliNumber": "O18713227822",
    "city": "Olds",
    "campuses": 3,
@@ -194,8 +445,29 @@
   {
    "province": "AB",
    "name": "Portage College",
+   "nameZh": "",
    "dliNumber": "O111010246767",
-   "city": "Lac La Biche,\nCold Lake,\nSt.Paul",
+   "city": "Cold Lake",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Portage College",
+   "nameZh": "",
+   "dliNumber": "O111010246767",
+   "city": "Lac La Biche",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "AB",
+   "name": "Portage College",
+   "nameZh": "",
+   "dliNumber": "O111010246767",
+   "city": "St.Paul",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -203,6 +475,7 @@
   {
    "province": "AB",
    "name": "Red Deer Polytechnic",
+   "nameZh": "红鹿理工学院",
    "dliNumber": "O19391056880",
    "city": "Red Deer",
    "campuses": 1,
@@ -212,6 +485,7 @@
   {
    "province": "AB",
    "name": "Southern Alberta Institute of Technology (SAIT Polytechnic)",
+   "nameZh": "南阿尔伯塔理工学院",
    "dliNumber": "O18761749692",
    "city": "Calgary",
    "campuses": 1,
@@ -221,6 +495,7 @@
   {
    "province": "AB",
    "name": "St. Mary’s University",
+   "nameZh": "圣玛丽大学",
    "dliNumber": "O19273782872",
    "city": "Calgary",
    "campuses": 1,
@@ -230,6 +505,7 @@
   {
    "province": "AB",
    "name": "The King’s University",
+   "nameZh": "",
    "dliNumber": "O18713250142",
    "city": "Edmonton",
    "campuses": 1,
@@ -239,6 +515,7 @@
   {
    "province": "AB",
    "name": "University of Alberta",
+   "nameZh": "阿尔伯塔大学",
    "dliNumber": "O19257171832",
    "city": "Camrose",
    "campuses": 2,
@@ -247,7 +524,18 @@
   },
   {
    "province": "AB",
+   "name": "University of Alberta",
+   "nameZh": "阿尔伯塔大学",
+   "dliNumber": "O19257171832",
+   "city": "Edmonton",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "AB",
    "name": "University of Calgary",
+   "nameZh": "卡尔加里大学",
    "dliNumber": "O18886830282",
    "city": "Calgary",
    "campuses": 1,
@@ -257,6 +545,7 @@
   {
    "province": "AB",
    "name": "University of Lethbridge",
+   "nameZh": "莱斯布里奇大学",
    "dliNumber": "O18776949622",
    "city": "Calgary",
    "campuses": 2,
@@ -264,10 +553,51 @@
    "gradProgram": true
   },
   {
+   "province": "AB",
+   "name": "University of Lethbridge",
+   "nameZh": "莱斯布里奇大学",
+   "dliNumber": "O18776949622",
+   "city": "Lethbridge",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
    "province": "BC",
    "name": "British Columbia Institute of Technology",
+   "nameZh": "英属哥伦比亚理工学院",
    "dliNumber": "O19330128542",
-   "city": "Burnaby, North Vancouver, Richmond, Vancouver",
+   "city": "Burnaby",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "British Columbia Institute of Technology",
+   "nameZh": "英属哥伦比亚理工学院",
+   "dliNumber": "O19330128542",
+   "city": "North Vancouver",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "British Columbia Institute of Technology",
+   "nameZh": "英属哥伦比亚理工学院",
+   "dliNumber": "O19330128542",
+   "city": "Richmond",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "British Columbia Institute of Technology",
+   "nameZh": "英属哥伦比亚理工学院",
+   "dliNumber": "O19330128542",
+   "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -275,6 +605,7 @@
   {
    "province": "BC",
    "name": "Camosun College",
+   "nameZh": "卡莫森学院",
    "dliNumber": "O19361235542",
    "city": "Victoria",
    "campuses": 1,
@@ -284,8 +615,19 @@
   {
    "province": "BC",
    "name": "Capilano University",
+   "nameZh": "卡皮拉诺大学",
    "dliNumber": "O19280078102",
-   "city": "North Vancouver, Sechelt",
+   "city": "North Vancouver",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Capilano University",
+   "nameZh": "卡皮拉诺大学",
+   "dliNumber": "O19280078102",
+   "city": "Sechelt",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -293,8 +635,79 @@
   {
    "province": "BC",
    "name": "Coast Mountain College",
+   "nameZh": "",
    "dliNumber": "O110095977911",
-   "city": "Hazelton, Houston, Kitimat, Prince Rupert, Masset (Haida Gwaii), Queen Charlotte, Smithers, Terrace",
+   "city": "Hazelton",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Houston",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Kitimat",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Masset (Haida Gwaii)",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Prince Rupert",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Queen Charlotte",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Smithers",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Coast Mountain College",
+   "nameZh": "",
+   "dliNumber": "O110095977911",
+   "city": "Terrace",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -302,8 +715,79 @@
   {
    "province": "BC",
    "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
    "dliNumber": "O19360977332",
-   "city": "Burns Lake, Fort St. James, Fraser Lake, Mackenzie, Prince George, Quesnel, Vanderhoof, Valemount",
+   "city": "Burns Lake",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Fort St. James",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Fraser Lake",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Mackenzie",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Prince George",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Quesnel",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Valemount",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of New Caledonia",
+   "nameZh": "新喀里多尼亚学院",
+   "dliNumber": "O19360977332",
+   "city": "Vanderhoof",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -311,8 +795,59 @@
   {
    "province": "BC",
    "name": "College of the Rockies",
+   "nameZh": "落基山学院",
    "dliNumber": "O19377233362",
-   "city": "Cranbrook, Creston, Fernie, Golden, Invermere, Kimberley",
+   "city": "Cranbrook",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of the Rockies",
+   "nameZh": "落基山学院",
+   "dliNumber": "O19377233362",
+   "city": "Creston",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of the Rockies",
+   "nameZh": "落基山学院",
+   "dliNumber": "O19377233362",
+   "city": "Fernie",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of the Rockies",
+   "nameZh": "落基山学院",
+   "dliNumber": "O19377233362",
+   "city": "Golden",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of the Rockies",
+   "nameZh": "落基山学院",
+   "dliNumber": "O19377233362",
+   "city": "Invermere",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "College of the Rockies",
+   "nameZh": "落基山学院",
+   "dliNumber": "O19377233362",
+   "city": "Kimberley",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -320,8 +855,29 @@
   {
    "province": "BC",
    "name": "Douglas College",
+   "nameZh": "道格拉斯学院",
    "dliNumber": "O19360973702",
-   "city": "Coquitlam, New Westminster, Surrey",
+   "city": "Coquitlam",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Douglas College",
+   "nameZh": "道格拉斯学院",
+   "dliNumber": "O19360973702",
+   "city": "New Westminster",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Douglas College",
+   "nameZh": "道格拉斯学院",
+   "dliNumber": "O19360973702",
+   "city": "Surrey",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -329,6 +885,7 @@
   {
    "province": "BC",
    "name": "Emily Carr University of Art and Design",
+   "nameZh": "艾米丽卡尔艺术与设计大学",
    "dliNumber": "O19361259712",
    "city": "Vancouver",
    "campuses": 1,
@@ -338,8 +895,49 @@
   {
    "province": "BC",
    "name": "Justice Institute of British Columbia",
+   "nameZh": "",
    "dliNumber": "O19394941140",
-   "city": "Chilliwack, Kelowna, Maple Ridge, New Westminster, Victoria",
+   "city": "Chilliwack",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Justice Institute of British Columbia",
+   "nameZh": "",
+   "dliNumber": "O19394941140",
+   "city": "Kelowna",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Justice Institute of British Columbia",
+   "nameZh": "",
+   "dliNumber": "O19394941140",
+   "city": "Maple Ridge",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Justice Institute of British Columbia",
+   "nameZh": "",
+   "dliNumber": "O19394941140",
+   "city": "New Westminster",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Justice Institute of British Columbia",
+   "nameZh": "",
+   "dliNumber": "O19394941140",
+   "city": "Victoria",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -347,8 +945,39 @@
   {
    "province": "BC",
    "name": "Kwantlen Polytechnic University",
+   "nameZh": "昆特兰理工大学",
    "dliNumber": "O19350676872",
-   "city": "Cloverdale, Langley, Richmond,Surrey",
+   "city": "Cloverdale",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Kwantlen Polytechnic University",
+   "nameZh": "昆特兰理工大学",
+   "dliNumber": "O19350676872",
+   "city": "Langley",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Kwantlen Polytechnic University",
+   "nameZh": "昆特兰理工大学",
+   "dliNumber": "O19350676872",
+   "city": "Richmond",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Kwantlen Polytechnic University",
+   "nameZh": "昆特兰理工大学",
+   "dliNumber": "O19350676872",
+   "city": "Surrey",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -356,6 +985,7 @@
   {
    "province": "BC",
    "name": "Langara College",
+   "nameZh": "兰加拉学院",
    "dliNumber": "O19319074622",
    "city": "Vancouver",
    "campuses": 1,
@@ -365,8 +995,49 @@
   {
    "province": "BC",
    "name": "North Island College",
+   "nameZh": "北岛学院",
    "dliNumber": "O19301182602",
-   "city": "Campbell River, Courtenay/Comox Valley, Port Alberni, Port Hardy, Ucluelet",
+   "city": "Campbell River",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "North Island College",
+   "nameZh": "北岛学院",
+   "dliNumber": "O19301182602",
+   "city": "Courtenay/Comox Valley",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "North Island College",
+   "nameZh": "北岛学院",
+   "dliNumber": "O19301182602",
+   "city": "Port Alberni",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "North Island College",
+   "nameZh": "北岛学院",
+   "dliNumber": "O19301182602",
+   "city": "Port Hardy",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "North Island College",
+   "nameZh": "北岛学院",
+   "dliNumber": "O19301182602",
+   "city": "Ucluelet",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -374,8 +1045,49 @@
   {
    "province": "BC",
    "name": "Northern Lights College",
+   "nameZh": "北极光学院",
    "dliNumber": "O19395299444",
-   "city": "Chetwynd, Dawson Creek, Fort Nelson, Fort St John, Tumbler Ridge",
+   "city": "Chetwynd",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Northern Lights College",
+   "nameZh": "北极光学院",
+   "dliNumber": "O19395299444",
+   "city": "Dawson Creek",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Northern Lights College",
+   "nameZh": "北极光学院",
+   "dliNumber": "O19395299444",
+   "city": "Fort Nelson",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Northern Lights College",
+   "nameZh": "北极光学院",
+   "dliNumber": "O19395299444",
+   "city": "Fort St John",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Northern Lights College",
+   "nameZh": "北极光学院",
+   "dliNumber": "O19395299444",
+   "city": "Tumbler Ridge",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -383,8 +1095,69 @@
   {
    "province": "BC",
    "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
    "dliNumber": "O19395299488",
-   "city": "Kelowna, Oliver, Penticton, Revelstoke, Salmon Arm, Summerland, Vernon",
+   "city": "Kelowna",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Oliver",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Penticton",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Revelstoke",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Salmon Arm",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Summerland",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Okanagan College",
+   "nameZh": "欧肯纳根学院",
+   "dliNumber": "O19395299488",
+   "city": "Vernon",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -392,6 +1165,7 @@
   {
    "province": "BC",
    "name": "Royal Roads University",
+   "nameZh": "皇家路大学",
    "dliNumber": "O19330635812",
    "city": "Victoria",
    "campuses": 1,
@@ -401,8 +1175,59 @@
   {
    "province": "BC",
    "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
    "dliNumber": "O19360990072",
-   "city": "Castlegar, Grand Forks, Kaslo Centre, Nakusp, Nelson, Trail",
+   "city": "Castlegar",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
+   "dliNumber": "O19360990072",
+   "city": "Grand Forks",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
+   "dliNumber": "O19360990072",
+   "city": "Kaslo Centre",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
+   "dliNumber": "O19360990072",
+   "city": "Nakusp",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
+   "dliNumber": "O19360990072",
+   "city": "Nelson",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "BC",
+   "name": "Selkirk College",
+   "nameZh": "塞尔柯克学院",
+   "dliNumber": "O19360990072",
+   "city": "Trail",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -410,8 +1235,29 @@
   {
    "province": "BC",
    "name": "Simon Fraser University (SFU)",
+   "nameZh": "西蒙菲莎大学",
    "dliNumber": "O18781994282",
-   "city": "Burnaby, Surrey, Vancouver",
+   "city": "Burnaby",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Simon Fraser University (SFU)",
+   "nameZh": "西蒙菲莎大学",
+   "dliNumber": "O18781994282",
+   "city": "Surrey",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Simon Fraser University (SFU)",
+   "nameZh": "西蒙菲莎大学",
+   "dliNumber": "O18781994282",
+   "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -419,8 +1265,19 @@
   {
    "province": "BC",
    "name": "Thompson Rivers University",
+   "nameZh": "汤普森河大学",
    "dliNumber": "O19395299610",
-   "city": "Kamloops, Williams Lake",
+   "city": "Kamloops",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Thompson Rivers University",
+   "nameZh": "汤普森河大学",
+   "dliNumber": "O19395299610",
+   "city": "Williams Lake",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -428,8 +1285,19 @@
   {
    "province": "BC",
    "name": "University of British Columbia (UBC)",
+   "nameZh": "英属哥伦比亚大学",
    "dliNumber": "O19330231062",
-   "city": "Kelowna, Vancouver",
+   "city": "Kelowna",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of British Columbia (UBC)",
+   "nameZh": "英属哥伦比亚大学",
+   "dliNumber": "O19330231062",
+   "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -437,8 +1305,39 @@
   {
    "province": "BC",
    "name": "University of Northern British Columbia",
+   "nameZh": "北英属哥伦比亚大学",
    "dliNumber": "O19283889692",
-   "city": "Fort St. John, Prince George, Quesnel, Terrace",
+   "city": "Fort St. John",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of Northern British Columbia",
+   "nameZh": "北英属哥伦比亚大学",
+   "dliNumber": "O19283889692",
+   "city": "Prince George",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of Northern British Columbia",
+   "nameZh": "北英属哥伦比亚大学",
+   "dliNumber": "O19283889692",
+   "city": "Quesnel",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of Northern British Columbia",
+   "nameZh": "北英属哥伦比亚大学",
+   "dliNumber": "O19283889692",
+   "city": "Terrace",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -446,6 +1345,7 @@
   {
    "province": "BC",
    "name": "University of Victoria",
+   "nameZh": "维多利亚大学",
    "dliNumber": "O19280533442",
    "city": "Victoria",
    "campuses": 1,
@@ -455,8 +1355,39 @@
   {
    "province": "BC",
    "name": "University of the Fraser Valley",
+   "nameZh": "菲莎河谷大学",
    "dliNumber": "O19395299642",
-   "city": "Abbotsford, Chilliwack, Hope, Mission",
+   "city": "Abbotsford",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of the Fraser Valley",
+   "nameZh": "菲莎河谷大学",
+   "dliNumber": "O19395299642",
+   "city": "Chilliwack",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of the Fraser Valley",
+   "nameZh": "菲莎河谷大学",
+   "dliNumber": "O19395299642",
+   "city": "Hope",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "University of the Fraser Valley",
+   "nameZh": "菲莎河谷大学",
+   "dliNumber": "O19395299642",
+   "city": "Mission",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -464,6 +1395,7 @@
   {
    "province": "BC",
    "name": "Vancouver Community College",
+   "nameZh": "温哥华社区学院",
    "dliNumber": "O19279717512",
    "city": "Vancouver",
    "campuses": 1,
@@ -473,8 +1405,39 @@
   {
    "province": "BC",
    "name": "Vancouver Island University",
+   "nameZh": "温哥华岛大学",
    "dliNumber": "O19395299688",
-   "city": "Duncan, Nanaimo, Parksville, Powell River",
+   "city": "Duncan",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Vancouver Island University",
+   "nameZh": "温哥华岛大学",
+   "dliNumber": "O19395299688",
+   "city": "Nanaimo",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Vancouver Island University",
+   "nameZh": "温哥华岛大学",
+   "dliNumber": "O19395299688",
+   "city": "Parksville",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "BC",
+   "name": "Vancouver Island University",
+   "nameZh": "温哥华岛大学",
+   "dliNumber": "O19395299688",
+   "city": "Powell River",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": true
@@ -482,6 +1445,27 @@
   {
    "province": "MB",
    "name": "Assiniboine Community College",
+   "nameZh": "阿西尼博因社区学院",
+   "dliNumber": "O19201282282",
+   "city": "Brandon",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "MB",
+   "name": "Assiniboine Community College",
+   "nameZh": "阿西尼博因社区学院",
+   "dliNumber": "O19201282282",
+   "city": "Dauphin",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "MB",
+   "name": "Assiniboine Community College",
+   "nameZh": "阿西尼博因社区学院",
    "dliNumber": "O19201282282",
    "city": "Winnipeg",
    "campuses": 3,
@@ -491,6 +1475,7 @@
   {
    "province": "MB",
    "name": "Brandon University",
+   "nameZh": "布兰登大学",
    "dliNumber": "O19201298932",
    "city": "Brandon",
    "campuses": 1,
@@ -500,6 +1485,7 @@
   {
    "province": "MB",
    "name": "Canadian Forces School of Aerospace Studies",
+   "nameZh": "",
    "dliNumber": "O214392246052",
    "city": "Winnipeg",
    "campuses": 1,
@@ -509,6 +1495,7 @@
   {
    "province": "MB",
    "name": "Canadian Mennonite University",
+   "nameZh": "",
    "dliNumber": "O19021102272",
    "city": "Winnipeg",
    "campuses": 1,
@@ -518,6 +1505,7 @@
   {
    "province": "MB",
    "name": "Louis Riel School Division Arts and Technology Centre",
+   "nameZh": "",
    "dliNumber": "O19708693987",
    "city": "Winnipeg",
    "campuses": 1,
@@ -527,6 +1515,7 @@
   {
    "province": "MB",
    "name": "Manitoba Institute of Trades and Technology",
+   "nameZh": "",
    "dliNumber": "O19391828428",
    "city": "Winnipeg",
    "campuses": 1,
@@ -536,6 +1525,7 @@
   {
    "province": "MB",
    "name": "Red River College Polytechnic",
+   "nameZh": "红河理工学院",
    "dliNumber": "O19305836302",
    "city": "Winnipeg",
    "campuses": 1,
@@ -545,6 +1535,7 @@
   {
    "province": "MB",
    "name": "University College of the North",
+   "nameZh": "",
    "dliNumber": "O19283880122",
    "city": "The Pas",
    "campuses": 1,
@@ -554,6 +1545,7 @@
   {
    "province": "MB",
    "name": "University of Manitoba",
+   "nameZh": "曼尼托巴大学",
    "dliNumber": "O19091528512",
    "city": "Winnipeg",
    "campuses": 1,
@@ -563,6 +1555,7 @@
   {
    "province": "MB",
    "name": "University of Winnipeg",
+   "nameZh": "温尼伯大学",
    "dliNumber": "O19147986012",
    "city": "Winnipeg",
    "campuses": 1,
@@ -572,6 +1565,7 @@
   {
    "province": "MB",
    "name": "Université de Saint-Boniface",
+   "nameZh": "圣博尼法斯大学",
    "dliNumber": "O19126670302",
    "city": "Winnipeg",
    "campuses": 1,
@@ -581,6 +1575,7 @@
   {
    "province": "NB",
    "name": "Collège communautaire du Nouveau-Brunswick (CCNB)",
+   "nameZh": "",
    "dliNumber": "O19391556654",
    "city": "Bathurst",
    "campuses": 5,
@@ -589,7 +1584,58 @@
   },
   {
    "province": "NB",
+   "name": "Collège communautaire du Nouveau-Brunswick (CCNB)",
+   "nameZh": "",
+   "dliNumber": "O19391556654",
+   "city": "Campbellton",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "Collège communautaire du Nouveau-Brunswick (CCNB)",
+   "nameZh": "",
+   "dliNumber": "O19391556654",
+   "city": "Dieppe",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "Collège communautaire du Nouveau-Brunswick (CCNB)",
+   "nameZh": "",
+   "dliNumber": "O19391556654",
+   "city": "Edmundston",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "Collège communautaire du Nouveau-Brunswick (CCNB)",
+   "nameZh": "",
+   "dliNumber": "O19391556654",
+   "city": "Shippagan",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
    "name": "Crandall University",
+   "nameZh": "",
+   "dliNumber": "O19391275763",
+   "city": "Moncton",
+   "campuses": 2,
+   "isPublic": false,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "Crandall University",
+   "nameZh": "",
    "dliNumber": "O19391275763",
    "city": "Sussex",
    "campuses": 2,
@@ -599,6 +1645,7 @@
   {
    "province": "NB",
    "name": "Kingswood University",
+   "nameZh": "",
    "dliNumber": "O19348776942",
    "city": "Sussex",
    "campuses": 1,
@@ -608,6 +1655,7 @@
   {
    "province": "NB",
    "name": "Maritime College of Forest Technology / Collège de Technologie Forestière des Maritimes",
+   "nameZh": "",
    "dliNumber": "O19391276070",
    "city": "Bathurst",
    "campuses": 2,
@@ -616,7 +1664,18 @@
   },
   {
    "province": "NB",
+   "name": "Maritime College of Forest Technology / Collège de Technologie Forestière des Maritimes",
+   "nameZh": "",
+   "dliNumber": "O19391276070",
+   "city": "Fredericton",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
    "name": "Mount Allison University",
+   "nameZh": "蒙特爱立森大学",
    "dliNumber": "O19273922302",
    "city": "Sackville",
    "campuses": 1,
@@ -626,6 +1685,7 @@
   {
    "province": "NB",
    "name": "New Brunswick Bible Institute Inc.",
+   "nameZh": "",
    "dliNumber": "O111394075331",
    "city": "Victoria Corner",
    "campuses": 1,
@@ -635,6 +1695,7 @@
   {
    "province": "NB",
    "name": "New Brunswick College of Craft and Design",
+   "nameZh": "",
    "dliNumber": "O19391556333",
    "city": "Fredericton",
    "campuses": 1,
@@ -644,6 +1705,7 @@
   {
    "province": "NB",
    "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
    "dliNumber": "O19391556439",
    "city": "Fredericton",
    "campuses": 6,
@@ -652,7 +1714,58 @@
   },
   {
    "province": "NB",
+   "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
+   "dliNumber": "O19391556439",
+   "city": "Miramichi",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
+   "dliNumber": "O19391556439",
+   "city": "Moncton",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
+   "dliNumber": "O19391556439",
+   "city": "Saint John",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
+   "dliNumber": "O19391556439",
+   "city": "St. Andrews",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
+   "name": "New Brunswick Community College (NBCC)",
+   "nameZh": "新不伦瑞克社区学院",
+   "dliNumber": "O19391556439",
+   "city": "Woodstock",
+   "campuses": 6,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NB",
    "name": "St. Thomas University",
+   "nameZh": "圣托马斯大学",
    "dliNumber": "O19391556376",
    "city": "Fredericton",
    "campuses": 1,
@@ -662,6 +1775,7 @@
   {
    "province": "NB",
    "name": "University of New Brunswick",
+   "nameZh": "新不伦瑞克大学",
    "dliNumber": "O19348802512",
    "city": "Fredericton",
    "campuses": 2,
@@ -670,7 +1784,18 @@
   },
   {
    "province": "NB",
+   "name": "University of New Brunswick",
+   "nameZh": "新不伦瑞克大学",
+   "dliNumber": "O19348802512",
+   "city": "Saint John",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "NB",
    "name": "Université de Moncton",
+   "nameZh": "蒙克顿大学",
    "dliNumber": "O19391556532",
    "city": "Edmundston",
    "campuses": 3,
@@ -678,8 +1803,29 @@
    "gradProgram": true
   },
   {
+   "province": "NB",
+   "name": "Université de Moncton",
+   "nameZh": "蒙克顿大学",
+   "dliNumber": "O19391556532",
+   "city": "Moncton",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "NB",
+   "name": "Université de Moncton",
+   "nameZh": "蒙克顿大学",
+   "dliNumber": "O19391556532",
+   "city": "Shippagan",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
    "province": "NL",
    "name": "Centre for Nursing Studies",
+   "nameZh": "",
    "dliNumber": "O19441089096",
    "city": "St. John’s",
    "campuses": 1,
@@ -689,6 +1835,7 @@
   {
    "province": "NL",
    "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
    "dliNumber": "O19441088976",
    "city": "Baie Verte",
    "campuses": 16,
@@ -697,7 +1844,158 @@
   },
   {
    "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Bonavista",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Burin Bay Arm",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Carbonear",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Clarenville",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Conception Bay South",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Cornerbrook",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Gander",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Grand Falls-Windsor",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Happy Valley-Goose Bay",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Labrador City",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Placentia",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Port aux Basques",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "St. Anthony",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "St. John’s",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
+   "name": "College of the North Atlantic",
+   "nameZh": "北大西洋学院",
+   "dliNumber": "O19441088976",
+   "city": "Stephenville",
+   "campuses": 16,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NL",
    "name": "Memorial University of Newfoundland",
+   "nameZh": "纽芬兰纪念大学",
    "dliNumber": "O19440995346",
    "city": "Corner Brook",
    "campuses": 2,
@@ -706,7 +2004,18 @@
   },
   {
    "province": "NL",
+   "name": "Memorial University of Newfoundland",
+   "nameZh": "纽芬兰纪念大学",
+   "dliNumber": "O19440995346",
+   "city": "St. John’s",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "NL",
    "name": "Queen’s College",
+   "nameZh": "",
    "dliNumber": "O19441168228",
    "city": "St. John’s",
    "campuses": 1,
@@ -716,6 +2025,7 @@
   {
    "province": "NL",
    "name": "Western Regional School of Nursing",
+   "nameZh": "",
    "dliNumber": "O19441148519",
    "city": "Corner Brook",
    "campuses": 1,
@@ -725,6 +2035,7 @@
   {
    "province": "NS",
    "name": "Acadia University",
+   "nameZh": "阿卡迪亚大学",
    "dliNumber": "O19391556792",
    "city": "Wolfville",
    "campuses": 1,
@@ -734,6 +2045,7 @@
   {
    "province": "NS",
    "name": "Atlantic School of Theology",
+   "nameZh": "",
    "dliNumber": "O19391556837",
    "city": "Halifax",
    "campuses": 1,
@@ -743,6 +2055,7 @@
   {
    "province": "NS",
    "name": "Cape Breton University",
+   "nameZh": "卡普顿大学",
    "dliNumber": "O19391556824",
    "city": "Sydney",
    "campuses": 1,
@@ -752,6 +2065,7 @@
   {
    "province": "NS",
    "name": "Dalhousie University",
+   "nameZh": "达尔豪斯大学",
    "dliNumber": "O19209939282",
    "city": "Halifax",
    "campuses": 1,
@@ -761,6 +2075,7 @@
   {
    "province": "NS",
    "name": "Mount Saint Vincent University",
+   "nameZh": "圣文森特山大学",
    "dliNumber": "O19301947442",
    "city": "Halifax",
    "campuses": 1,
@@ -770,6 +2085,7 @@
   {
    "province": "NS",
    "name": "NSCAD University (Nova Scotia College of Art and Design)",
+   "nameZh": "新斯科舍艺术与设计大学",
    "dliNumber": "O19021269652",
    "city": "Halifax",
    "campuses": 1,
@@ -779,6 +2095,7 @@
   {
    "province": "NS",
    "name": "Nova Scotia Community College",
+   "nameZh": "新斯科舍社区学院",
    "dliNumber": "O19091820452",
    "city": "Halifax",
    "campuses": 1,
@@ -788,6 +2105,7 @@
   {
    "province": "NS",
    "name": "Saint Mary’s University",
+   "nameZh": "圣玛丽大学",
    "dliNumber": "O19021279692",
    "city": "Halifax",
    "campuses": 1,
@@ -797,6 +2115,7 @@
   {
    "province": "NS",
    "name": "St. Francis Xavier University",
+   "nameZh": "圣弗朗西斯泽维尔大学",
    "dliNumber": "O19391556899",
    "city": "Antigonish",
    "campuses": 1,
@@ -806,6 +2125,7 @@
   {
    "province": "NS",
    "name": "University of King’s College",
+   "nameZh": "国王学院大学",
    "dliNumber": "O19391556768",
    "city": "Halifax",
    "campuses": 1,
@@ -815,6 +2135,7 @@
   {
    "province": "NS",
    "name": "Université Sainte-Anne",
+   "nameZh": "圣安妮大学",
    "dliNumber": "O19391556726",
    "city": "Church Point",
    "campuses": 1,
@@ -824,6 +2145,7 @@
   {
    "province": "NT",
    "name": "Aurora College",
+   "nameZh": "",
    "dliNumber": "O19348462392",
    "city": "Fort Smith",
    "campuses": 3,
@@ -831,8 +2153,29 @@
    "gradProgram": false
   },
   {
+   "province": "NT",
+   "name": "Aurora College",
+   "nameZh": "",
+   "dliNumber": "O19348462392",
+   "city": "Inuvik",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "NT",
+   "name": "Aurora College",
+   "nameZh": "",
+   "dliNumber": "O19348462392",
+   "city": "Yellowknife",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
    "province": "ON",
    "name": "Algoma University",
+   "nameZh": "阿尔戈马大学",
    "dliNumber": "O19395422197",
    "city": "Brampton",
    "campuses": 3,
@@ -841,7 +2184,28 @@
   },
   {
    "province": "ON",
+   "name": "Algoma University",
+   "nameZh": "阿尔戈马大学",
+   "dliNumber": "O19395422197",
+   "city": "Sault Ste. Marie",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Algoma University",
+   "nameZh": "阿尔戈马大学",
+   "dliNumber": "O19395422197",
+   "city": "Timmins",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Algonquin College",
+   "nameZh": "亚岗昆学院",
    "dliNumber": "O19358971022",
    "city": "Ottawa",
    "campuses": 3,
@@ -850,7 +2214,28 @@
   },
   {
    "province": "ON",
+   "name": "Algonquin College",
+   "nameZh": "亚岗昆学院",
+   "dliNumber": "O19358971022",
+   "city": "Pembroke",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Algonquin College",
+   "nameZh": "亚岗昆学院",
+   "dliNumber": "O19358971022",
+   "city": "Perth",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Brock University",
+   "nameZh": "布鲁克大学",
    "dliNumber": "O19394569014",
    "city": "Hamilton",
    "campuses": 2,
@@ -859,7 +2244,18 @@
   },
   {
    "province": "ON",
+   "name": "Brock University",
+   "nameZh": "布鲁克大学",
+   "dliNumber": "O19394569014",
+   "city": "St. Catharines",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Cambrian College of Applied Arts and Technology",
+   "nameZh": "",
    "dliNumber": "O19394699409",
    "city": "Sudbury",
    "campuses": 1,
@@ -869,6 +2265,7 @@
   {
    "province": "ON",
    "name": "Canadian Forces College",
+   "nameZh": "",
    "dliNumber": "O19994256968",
    "city": "North York",
    "campuses": 1,
@@ -878,6 +2275,7 @@
   {
    "province": "ON",
    "name": "Canadore College",
+   "nameZh": "",
    "dliNumber": "O19395535239",
    "city": "North Bay",
    "campuses": 2,
@@ -886,7 +2284,18 @@
   },
   {
    "province": "ON",
+   "name": "Canadore College of Applied Arts and Technology",
+   "nameZh": "",
+   "dliNumber": "O19395535239",
+   "city": "Parry Sound",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Carleton University",
+   "nameZh": "卡尔顿大学",
    "dliNumber": "O19332687812",
    "city": "Ottawa",
    "campuses": 1,
@@ -896,6 +2305,7 @@
   {
    "province": "ON",
    "name": "Centennial College",
+   "nameZh": "百年理工学院",
    "dliNumber": "O19394700003",
    "city": "Toronto",
    "campuses": 1,
@@ -905,6 +2315,17 @@
   {
    "province": "ON",
    "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Alfred",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
    "dliNumber": "O19395678039",
    "city": "Barrie",
    "campuses": 14,
@@ -913,7 +2334,178 @@
   },
   {
    "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Hamilton",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Hearst",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Kapuskasing",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "London",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "New Liskeard",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Niagara",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Ottawa",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Sturgeon Falls",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Sudbury",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Timmins",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Toronto",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Collège Boréal",
+   "nameZh": "",
+   "dliNumber": "O19395678039",
+   "city": "Windsor",
+   "campuses": 14,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Brantford",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Cambridge",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Guelph",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Ingersoll",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Kitchener",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
    "dliNumber": "O19376158572",
    "city": "Milton",
    "campuses": 8,
@@ -922,7 +2514,68 @@
   },
   {
    "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Stratford",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Conestoga College",
+   "nameZh": "康尼斯托加学院",
+   "dliNumber": "O19376158572",
+   "city": "Waterloo",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Confederation College",
+   "nameZh": "联邦学院",
+   "dliNumber": "O19376986752",
+   "city": "Dryden",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Confederation College",
+   "nameZh": "联邦学院",
+   "dliNumber": "O19376986752",
+   "city": "Fort Frances",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Confederation College",
+   "nameZh": "联邦学院",
+   "dliNumber": "O19376986752",
+   "city": "Geraldton",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Confederation College",
+   "nameZh": "联邦学院",
+   "dliNumber": "O19376986752",
+   "city": "Kenora",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Confederation College",
+   "nameZh": "联邦学院",
    "dliNumber": "O19376986752",
    "city": "Thunder Bay",
    "campuses": 5,
@@ -932,6 +2585,7 @@
   {
    "province": "ON",
    "name": "Conrad Grebel University College",
+   "nameZh": "",
    "dliNumber": "O19305471522",
    "city": "Waterloo",
    "campuses": 8,
@@ -941,6 +2595,7 @@
   {
    "province": "ON",
    "name": "Durham College",
+   "nameZh": "杜伦学院",
    "dliNumber": "O19361081012",
    "city": "Oshawa",
    "campuses": 3,
@@ -949,7 +2604,28 @@
   },
   {
    "province": "ON",
+   "name": "Durham College",
+   "nameZh": "杜伦学院",
+   "dliNumber": "O19361081012",
+   "city": "Pickering",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Durham College",
+   "nameZh": "杜伦学院",
+   "dliNumber": "O19361081012",
+   "city": "Whitby",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Durham Flight Centre Inc.",
+   "nameZh": "",
    "dliNumber": "O142270514172",
    "city": "Oshawa",
    "campuses": 1,
@@ -959,6 +2635,7 @@
   {
    "province": "ON",
    "name": "Emmanuel College of Victoria University",
+   "nameZh": "",
    "dliNumber": "O19359108312",
    "city": "Toronto",
    "campuses": 1,
@@ -968,6 +2645,7 @@
   {
    "province": "ON",
    "name": "Fanshawe College",
+   "nameZh": "范莎学院",
    "dliNumber": "O19361039982",
    "city": "London",
    "campuses": 1,
@@ -977,6 +2655,7 @@
   {
    "province": "ON",
    "name": "Fleming College",
+   "nameZh": "弗莱明学院",
    "dliNumber": "O19303189722",
    "city": "Cobourg",
    "campuses": 4,
@@ -985,7 +2664,38 @@
   },
   {
    "province": "ON",
+   "name": "Fleming College",
+   "nameZh": "弗莱明学院",
+   "dliNumber": "O19303189722",
+   "city": "Haliburton",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Fleming College",
+   "nameZh": "弗莱明学院",
+   "dliNumber": "O19303189722",
+   "city": "Lindsay",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Fleming College",
+   "nameZh": "弗莱明学院",
+   "dliNumber": "O19303189722",
+   "city": "Peterborough",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "George Brown College",
+   "nameZh": "乔治布朗学院",
    "dliNumber": "O19283850612",
    "city": "Toronto",
    "campuses": 1,
@@ -995,6 +2705,7 @@
   {
    "province": "ON",
    "name": "Georgian College",
+   "nameZh": "乔治亚学院",
    "dliNumber": "O19395677361",
    "city": "Barrie",
    "campuses": 7,
@@ -1003,7 +2714,78 @@
   },
   {
    "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "Bracebridge",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "Midland",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "Orangeville",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "Orillia",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "Owen Sound",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Georgian College",
+   "nameZh": "乔治亚学院",
+   "dliNumber": "O19395677361",
+   "city": "South Georgian Bay",
+   "campuses": 7,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Herzing College",
+   "nameZh": "",
+   "dliNumber": "O19397544252",
+   "city": "Toronto",
+   "campuses": 1,
+   "isPublic": false,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Humber College",
+   "nameZh": "汉博学院",
    "dliNumber": "O19376943122",
    "city": "Toronto",
    "campuses": 2,
@@ -1013,6 +2795,7 @@
   {
    "province": "ON",
    "name": "Huron University College",
+   "nameZh": "",
    "dliNumber": "O19332573852",
    "city": "London",
    "campuses": 1,
@@ -1022,6 +2805,7 @@
   {
    "province": "ON",
    "name": "King’s University College",
+   "nameZh": "",
    "dliNumber": "O19376872842",
    "city": "London",
    "campuses": 1,
@@ -1031,6 +2815,7 @@
   {
    "province": "ON",
    "name": "Knox College",
+   "nameZh": "",
    "dliNumber": "O19859651317",
    "city": "Toronto",
    "campuses": 1,
@@ -1040,6 +2825,7 @@
   {
    "province": "ON",
    "name": "La Cité collégiale",
+   "nameZh": "",
    "dliNumber": "O19395422135",
    "city": "Alfred",
    "campuses": 3,
@@ -1048,7 +2834,38 @@
   },
   {
    "province": "ON",
+   "name": "La Cité collégiale",
+   "nameZh": "",
+   "dliNumber": "O19395422135",
+   "city": "Hawkesbury",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "La Cité collégiale",
+   "nameZh": "",
+   "dliNumber": "O19395422135",
+   "city": "Ottawa",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Lakehead University",
+   "nameZh": "湖首大学",
+   "dliNumber": "O19396019447",
+   "city": "Orillia",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Lakehead University",
+   "nameZh": "湖首大学",
    "dliNumber": "O19396019447",
    "city": "Thunder Bay",
    "campuses": 2,
@@ -1058,6 +2875,7 @@
   {
    "province": "ON",
    "name": "Lambton College",
+   "nameZh": "兰布顿学院",
    "dliNumber": "O19305293332",
    "city": "Ottawa",
    "campuses": 2,
@@ -1066,7 +2884,18 @@
   },
   {
    "province": "ON",
+   "name": "Lambton College",
+   "nameZh": "兰布顿学院",
+   "dliNumber": "O19305293332",
+   "city": "Sarnia",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Laurentian University",
+   "nameZh": "劳伦森大学",
    "dliNumber": "O19304259382",
    "city": "Sudbury",
    "campuses": 2,
@@ -1075,7 +2904,38 @@
   },
   {
    "province": "ON",
+   "name": "Laurentian University",
+   "nameZh": "劳伦森大学",
+   "dliNumber": "O19304259382",
+   "city": "Timmins",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Loyalist College",
+   "nameZh": "",
+   "dliNumber": "O19359011572",
+   "city": "Bancroft",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Loyalist College",
+   "nameZh": "",
+   "dliNumber": "O19359011572",
+   "city": "Belleville",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Loyalist College",
+   "nameZh": "",
    "dliNumber": "O19359011572",
    "city": "Port Hope",
    "campuses": 3,
@@ -1085,6 +2945,7 @@
   {
    "province": "ON",
    "name": "McMaster Divinity College",
+   "nameZh": "",
    "dliNumber": "O19395535687",
    "city": "Hamilton",
    "campuses": 1,
@@ -1094,6 +2955,17 @@
   {
    "province": "ON",
    "name": "McMaster University",
+   "nameZh": "麦克马斯特大学",
+   "dliNumber": "O19395535729",
+   "city": "Burlington",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "McMaster University",
+   "nameZh": "麦克马斯特大学",
    "dliNumber": "O19395535729",
    "city": "Hamilton",
    "campuses": 4,
@@ -1102,7 +2974,28 @@
   },
   {
    "province": "ON",
+   "name": "McMaster University",
+   "nameZh": "麦克马斯特大学",
+   "dliNumber": "O19395535729",
+   "city": "Kitchener",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "McMaster University",
+   "nameZh": "麦克马斯特大学",
+   "dliNumber": "O19395535729",
+   "city": "St. Catharines",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Mohawk College",
+   "nameZh": "莫霍克学院",
    "dliNumber": "O19376045902",
    "city": "Brantford",
    "campuses": 3,
@@ -1111,7 +3004,28 @@
   },
   {
    "province": "ON",
+   "name": "Mohawk College",
+   "nameZh": "莫霍克学院",
+   "dliNumber": "O19376045902",
+   "city": "Hamilton",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Mohawk College",
+   "nameZh": "莫霍克学院",
+   "dliNumber": "O19376045902",
+   "city": "Stoney Creek",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "National Helicopters Inc",
+   "nameZh": "",
    "dliNumber": "O260020165732",
    "city": "Kleinburg",
    "campuses": 1,
@@ -1121,6 +3035,27 @@
   {
    "province": "ON",
    "name": "Niagara College Canada",
+   "nameZh": "尼亚加拉学院",
+   "dliNumber": "O19396019469",
+   "city": "Niagara-On-The-Lake",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Niagara College Canada",
+   "nameZh": "尼亚加拉学院",
+   "dliNumber": "O19396019469",
+   "city": "St. Catharines",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Niagara College Canada",
+   "nameZh": "尼亚加拉学院",
    "dliNumber": "O19396019469",
    "city": "Virgil",
    "campuses": 4,
@@ -1129,7 +3064,18 @@
   },
   {
    "province": "ON",
+   "name": "Niagara College Canada",
+   "nameZh": "尼亚加拉学院",
+   "dliNumber": "O19396019469",
+   "city": "Welland",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Niagara University",
+   "nameZh": "尼亚加拉大学",
    "dliNumber": "O268049601572",
    "city": "Vaughan",
    "campuses": 1,
@@ -1139,6 +3085,27 @@
   {
    "province": "ON",
    "name": "Nipissing University",
+   "nameZh": "尼皮辛大学",
+   "dliNumber": "O19395535971",
+   "city": "Bracebridge",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Nipissing University",
+   "nameZh": "尼皮辛大学",
+   "dliNumber": "O19395535971",
+   "city": "Brantford",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Nipissing University",
+   "nameZh": "尼皮辛大学",
    "dliNumber": "O19395535971",
    "city": "North Bay",
    "campuses": 3,
@@ -1148,6 +3115,7 @@
   {
    "province": "ON",
    "name": "Northern College",
+   "nameZh": "",
    "dliNumber": "O19315830082",
    "city": "Kirkland Lake",
    "campuses": 3,
@@ -1156,7 +3124,28 @@
   },
   {
    "province": "ON",
+   "name": "Northern College",
+   "nameZh": "",
+   "dliNumber": "O19315830082",
+   "city": "South Porcupine",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Northern College",
+   "nameZh": "",
+   "dliNumber": "O19315830082",
+   "city": "Temiskaming Shores",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "OCAD University",
+   "nameZh": "安大略艺术设计大学",
    "dliNumber": "O19332928222",
    "city": "Toronto",
    "campuses": 1,
@@ -1166,6 +3155,7 @@
   {
    "province": "ON",
    "name": "Ontario Tech University",
+   "nameZh": "安大略理工大学",
    "dliNumber": "O19315945002",
    "city": "Oshawa",
    "campuses": 1,
@@ -1175,6 +3165,7 @@
   {
    "province": "ON",
    "name": "Queen’s University",
+   "nameZh": "女王大学",
    "dliNumber": "O19376023352",
    "city": "Kingston",
    "campuses": 2,
@@ -1183,7 +3174,18 @@
   },
   {
    "province": "ON",
+   "name": "Queen’s University",
+   "nameZh": "女王大学",
+   "dliNumber": "O19376023352",
+   "city": "Toronto",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Regis College",
+   "nameZh": "",
    "dliNumber": "O19358972972",
    "city": "Toronto",
    "campuses": 1,
@@ -1193,6 +3195,7 @@
   {
    "province": "ON",
    "name": "Renison University College",
+   "nameZh": "",
    "dliNumber": "O19395281561",
    "city": "Waterloo",
    "campuses": 1,
@@ -1202,6 +3205,7 @@
   {
    "province": "ON",
    "name": "Royal Military College of Canada",
+   "nameZh": "加拿大皇家军事学院",
    "dliNumber": "O19993856974",
    "city": "Kingston",
    "campuses": 1,
@@ -1211,6 +3215,7 @@
   {
    "province": "ON",
    "name": "Sault College",
+   "nameZh": "",
    "dliNumber": "O19395677683",
    "city": "Sault Ste. Marie",
    "campuses": 3,
@@ -1219,7 +3224,38 @@
   },
   {
    "province": "ON",
+   "name": "Sault College",
+   "nameZh": "",
+   "dliNumber": "O19395677683",
+   "city": "Sudbury",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Sault College",
+   "nameZh": "",
+   "dliNumber": "O19395677683",
+   "city": "Toronto",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "Seneca College",
+   "nameZh": "圣力嘉学院",
+   "dliNumber": "O19395536013",
+   "city": "King City",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Seneca College",
+   "nameZh": "圣力嘉学院",
    "dliNumber": "O19395536013",
    "city": "Markham",
    "campuses": 4,
@@ -1228,7 +3264,38 @@
   },
   {
    "province": "ON",
+   "name": "Seneca College",
+   "nameZh": "圣力嘉学院",
+   "dliNumber": "O19395536013",
+   "city": "Peterborough",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Seneca College",
+   "nameZh": "圣力嘉学院",
+   "dliNumber": "O19395536013",
+   "city": "Toronto",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Sheridan College",
+   "nameZh": "谢尔丹学院",
+   "dliNumber": "O19385946782",
+   "city": "Brampton",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "Sheridan College",
+   "nameZh": "谢尔丹学院",
    "dliNumber": "O19385946782",
    "city": "Mississauga",
    "campuses": 3,
@@ -1237,7 +3304,18 @@
   },
   {
    "province": "ON",
+   "name": "Sheridan College",
+   "nameZh": "谢尔丹学院",
+   "dliNumber": "O19385946782",
+   "city": "Oakville",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Southeast College",
+   "nameZh": "",
    "dliNumber": "O145024872092",
    "city": "Weyburn Estevan",
    "campuses": 2,
@@ -1247,6 +3325,17 @@
   {
    "province": "ON",
    "name": "St. Augustine’s Seminary of Toronto",
+   "nameZh": "",
+   "dliNumber": "O19361100382",
+   "city": "Scarborough",
+   "campuses": 2,
+   "isPublic": false,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "St. Augustine’s Seminary of Toronto",
+   "nameZh": "",
    "dliNumber": "O19361100382",
    "city": "Toronto",
    "campuses": 2,
@@ -1256,6 +3345,7 @@
   {
    "province": "ON",
    "name": "St. Clair College",
+   "nameZh": "圣克莱尔学院",
    "dliNumber": "O19395083703",
    "city": "Chatham",
    "campuses": 2,
@@ -1264,7 +3354,18 @@
   },
   {
    "province": "ON",
+   "name": "St. Clair College",
+   "nameZh": "圣克莱尔学院",
+   "dliNumber": "O19395083703",
+   "city": "Windsor",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "St. Lawrence College",
+   "nameZh": "圣劳伦斯学院",
    "dliNumber": "O19332845222",
    "city": "Brockville",
    "campuses": 3,
@@ -1273,7 +3374,28 @@
   },
   {
    "province": "ON",
+   "name": "St. Lawrence College",
+   "nameZh": "圣劳伦斯学院",
+   "dliNumber": "O19332845222",
+   "city": "Cornwall",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
+   "name": "St. Lawrence College",
+   "nameZh": "圣劳伦斯学院",
+   "dliNumber": "O19332845222",
+   "city": "Kingston",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "ON",
    "name": "The Michener Institute for Applied Health Sciences",
+   "nameZh": "",
    "dliNumber": "O19395677373",
    "city": "Toronto",
    "campuses": 1,
@@ -1283,6 +3405,7 @@
   {
    "province": "ON",
    "name": "Toronto Metropolitan University (TMU)",
+   "nameZh": "多伦多都会大学",
    "dliNumber": "O19395677651",
    "city": "Toronto",
    "campuses": 1,
@@ -1292,6 +3415,7 @@
   {
    "province": "ON",
    "name": "Trent University",
+   "nameZh": "特伦特大学",
    "dliNumber": "O19395164223",
    "city": "Oshawa",
    "campuses": 2,
@@ -1300,7 +3424,28 @@
   },
   {
    "province": "ON",
+   "name": "Trent University",
+   "nameZh": "特伦特大学",
+   "dliNumber": "O19395164223",
+   "city": "Peterborough",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "University of Guelph",
+   "nameZh": "圭尔夫大学",
+   "dliNumber": "O19305391192",
+   "city": "Alfred",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Guelph",
+   "nameZh": "圭尔夫大学",
    "dliNumber": "O19305391192",
    "city": "Guelph",
    "campuses": 5,
@@ -1309,7 +3454,38 @@
   },
   {
    "province": "ON",
+   "name": "University of Guelph",
+   "nameZh": "圭尔夫大学",
+   "dliNumber": "O19305391192",
+   "city": "Kemptville",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Guelph",
+   "nameZh": "圭尔夫大学",
+   "dliNumber": "O19305391192",
+   "city": "Ridgetown",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Guelph",
+   "nameZh": "圭尔夫大学",
+   "dliNumber": "O19305391192",
+   "city": "Toronto",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "University of Niagara Falls Canada",
+   "nameZh": "",
    "dliNumber": "O287430643972",
    "city": "Niagara Falls",
    "campuses": 1,
@@ -1319,6 +3495,7 @@
   {
    "province": "ON",
    "name": "University of St. Michael’s College",
+   "nameZh": "",
    "dliNumber": "O19303916042",
    "city": "Toronto",
    "campuses": 1,
@@ -1328,6 +3505,7 @@
   {
    "province": "ON",
    "name": "University of Toronto",
+   "nameZh": "多伦多大学",
    "dliNumber": "O19332746152",
    "city": "Mississauga",
    "campuses": 3,
@@ -1336,7 +3514,18 @@
   },
   {
    "province": "ON",
+   "name": "University of Toronto",
+   "nameZh": "多伦多大学",
+   "dliNumber": "O19332746152",
+   "city": "Toronto",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "University of Trinity College",
+   "nameZh": "",
    "dliNumber": "O211893245447",
    "city": "Toronto",
    "campuses": 1,
@@ -1345,7 +3534,48 @@
   },
   {
    "province": "ON",
+   "name": "University of Waterloo",
+   "nameZh": "",
+   "dliNumber": "O19305471522",
+   "city": "Breslau",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Waterloo",
+   "nameZh": "",
+   "dliNumber": "O19305471522",
+   "city": "Cambridge",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Waterloo",
+   "nameZh": "",
+   "dliNumber": "O19305471522",
+   "city": "Stratford",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "University of Waterloo",
+   "nameZh": "",
+   "dliNumber": "O19305471522",
+   "city": "Toronto",
+   "campuses": 8,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "University of Windsor",
+   "nameZh": "温莎大学",
    "dliNumber": "O19358946722",
    "city": "Windsor",
    "campuses": 1,
@@ -1355,6 +3585,7 @@
   {
    "province": "ON",
    "name": "Université Saint-Paul/St. Paul University",
+   "nameZh": "",
    "dliNumber": "O19395164265",
    "city": "Ottawa",
    "campuses": 1,
@@ -1364,6 +3595,7 @@
   {
    "province": "ON",
    "name": "Université de Hearst",
+   "nameZh": "",
    "dliNumber": "O19395677925",
    "city": "Hearst",
    "campuses": 3,
@@ -1372,7 +3604,28 @@
   },
   {
    "province": "ON",
+   "name": "Université de Hearst",
+   "nameZh": "",
+   "dliNumber": "O19395677925",
+   "city": "Kapuskasing",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Université de Hearst",
+   "nameZh": "",
+   "dliNumber": "O19395677925",
+   "city": "Timmins",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Université de l'Ontario français",
+   "nameZh": "",
    "dliNumber": "O146030735072",
    "city": "Toronto",
    "campuses": 1,
@@ -1382,6 +3635,7 @@
   {
    "province": "ON",
    "name": "Université d’Ottawa/University of Ottawa",
+   "nameZh": "渥太华大学",
    "dliNumber": "O19397188593",
    "city": "Ottawa",
    "campuses": 4,
@@ -1390,7 +3644,38 @@
   },
   {
    "province": "ON",
+   "name": "Université d’Ottawa/University of Ottawa",
+   "nameZh": "渥太华大学",
+   "dliNumber": "O19397188593",
+   "city": "Pembroke",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Université d’Ottawa/University of Ottawa",
+   "nameZh": "渥太华大学",
+   "dliNumber": "O19397188593",
+   "city": "Toronto",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Université d’Ottawa/University of Ottawa",
+   "nameZh": "渥太华大学",
+   "dliNumber": "O19397188593",
+   "city": "Windsor",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Waterloo Lutheran Seminary (Wilfred Laurier University)",
+   "nameZh": "",
    "dliNumber": "O19395164307",
    "city": "Waterloo",
    "campuses": 5,
@@ -1400,6 +3685,7 @@
   {
    "province": "ON",
    "name": "Western University",
+   "nameZh": "西安大略大学",
    "dliNumber": "O19375892122",
    "city": "London",
    "campuses": 1,
@@ -1408,7 +3694,38 @@
   },
   {
    "province": "ON",
+   "name": "Wilfrid Laurier University",
+   "nameZh": "",
+   "dliNumber": "O19395164307",
+   "city": "Brantford",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Wilfrid Laurier University",
+   "nameZh": "",
+   "dliNumber": "O19395164307",
+   "city": "Kitchener",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
+   "name": "Wilfrid Laurier University",
+   "nameZh": "",
+   "dliNumber": "O19395164307",
+   "city": "Toronto",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "ON",
    "name": "Wycliffe College",
+   "nameZh": "",
    "dliNumber": "O19572552822",
    "city": "Toronto",
    "campuses": 1,
@@ -1418,6 +3735,7 @@
   {
    "province": "ON",
    "name": "York University",
+   "nameZh": "约克大学",
    "dliNumber": "O19361109242",
    "city": "Toronto",
    "campuses": 1,
@@ -1427,6 +3745,7 @@
   {
    "province": "PE",
    "name": "Collège de l’Île",
+   "nameZh": "",
    "dliNumber": "O19220114112",
    "city": "Charlottetown",
    "campuses": 3,
@@ -1435,7 +3754,28 @@
   },
   {
    "province": "PE",
+   "name": "Collège de l’Île",
+   "nameZh": "",
+   "dliNumber": "O19220114112",
+   "city": "DeBlois",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Collège de l’Île",
+   "nameZh": "",
+   "dliNumber": "O19220114112",
+   "city": "Wellington",
+   "campuses": 3,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
    "name": "Holland College",
+   "nameZh": "荷兰学院",
    "dliNumber": "O19220082122",
    "city": "Alberton",
    "campuses": 9,
@@ -1444,7 +3784,88 @@
   },
   {
    "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Charlottetown",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Georgetown",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Montague",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "O’Leary",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Slemon Park",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Souris",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Summerside",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
+   "name": "Holland College",
+   "nameZh": "荷兰学院",
+   "dliNumber": "O19220082122",
+   "city": "Tignish",
+   "campuses": 9,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "PE",
    "name": "University of Prince Edward Island",
+   "nameZh": "爱德华王子岛大学",
    "dliNumber": "O19220071452",
    "city": "Charlottetown",
    "campuses": 1,
@@ -1454,6 +3875,17 @@
   {
    "province": "QC",
    "name": "ACCESS Royal Oak (Commission scolaire Riverside)",
+   "nameZh": "",
+   "dliNumber": "O175260700912",
+   "city": "Brossard",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
+   "name": "ACCESS Royal Oak (Commission scolaire Riverside)",
+   "nameZh": "",
    "dliNumber": "O175260700912",
    "city": "Saint-Hubert",
    "campuses": 2,
@@ -1463,6 +3895,7 @@
   {
    "province": "QC",
    "name": "Bishop's University",
+   "nameZh": "主教大学",
    "dliNumber": "O19359010995",
    "city": "Sherbrooke",
    "campuses": 1,
@@ -1472,6 +3905,7 @@
   {
    "province": "QC",
    "name": "Centre Expertise en Transport – ACCESS (Commission scolaire Riverside)",
+   "nameZh": "",
    "dliNumber": "O175260701325",
    "city": "Longueuil (Saint-Hubert)",
    "campuses": 2,
@@ -1480,7 +3914,18 @@
   },
   {
    "province": "QC",
+   "name": "Centre Expertise en Transport – ACCESS (Commission scolaire Riverside)",
+   "nameZh": "",
+   "dliNumber": "O175260701325",
+   "city": "Sainte Julie",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
    "name": "Centre Frère-Moffet",
+   "nameZh": "",
    "dliNumber": "O246881964161",
    "city": "Ville-Marie",
    "campuses": 1,
@@ -1490,6 +3935,7 @@
   {
    "province": "QC",
    "name": "Centre d'excellence en formation industrielle",
+   "nameZh": "",
    "dliNumber": "O246881964146",
    "city": "Windsor",
    "campuses": 1,
@@ -1499,6 +3945,7 @@
   {
    "province": "QC",
    "name": "Centre de Formation Professionnelle à La Prairie (FP)",
+   "nameZh": "",
    "dliNumber": "O246876616939",
    "city": "La Prairie",
    "campuses": 1,
@@ -1508,6 +3955,7 @@
   {
    "province": "QC",
    "name": "Centre de formation agricole",
+   "nameZh": "",
    "dliNumber": "O246876616749",
    "city": "Saint-Anselme",
    "campuses": 1,
@@ -1517,6 +3965,7 @@
   {
    "province": "QC",
    "name": "Centre de formation agricole de Mirabel",
+   "nameZh": "",
    "dliNumber": "O246876616844",
    "city": "Mirabel",
    "campuses": 1,
@@ -1526,6 +3975,7 @@
   {
    "province": "QC",
    "name": "Centre de formation des Nouvelles-Technologies",
+   "nameZh": "",
    "dliNumber": "O246876797012",
    "city": "Sainte-Thérèse",
    "campuses": 1,
@@ -1535,6 +3985,7 @@
   {
    "province": "QC",
    "name": "Centre de formation en montage de lignes",
+   "nameZh": "",
    "dliNumber": "O246876985654",
    "city": "Lévis",
    "campuses": 1,
@@ -1544,6 +3995,7 @@
   {
    "province": "QC",
    "name": "Centre de formation horticole de Laval",
+   "nameZh": "",
    "dliNumber": "O246876985953",
    "city": "Laval",
    "campuses": 1,
@@ -1553,6 +4005,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle André-Morissette",
+   "nameZh": "",
    "dliNumber": "O246877185984",
    "city": "Plessisville",
    "campuses": 1,
@@ -1562,6 +4015,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle Compétences Outaouais",
+   "nameZh": "",
    "dliNumber": "O246877856332",
    "city": "Gatineau",
    "campuses": 1,
@@ -1571,6 +4025,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle Kajusivik",
+   "nameZh": "",
    "dliNumber": "O246878245974",
    "city": "Kuujjuaq",
    "campuses": 1,
@@ -1580,6 +4035,37 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle Matanie - Vallée et Foresterie",
+   "nameZh": "",
+   "dliNumber": "O246878951530",
+   "city": "Amqui",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
+   "name": "Centre de formation professionnelle Matanie - Vallée et Foresterie",
+   "nameZh": "",
+   "dliNumber": "O246878951530",
+   "city": "Causapscal",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
+   "name": "Centre de formation professionnelle Matanie - Vallée et Foresterie",
+   "nameZh": "",
+   "dliNumber": "O246878951530",
+   "city": "Dégelis",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
+   "name": "Centre de formation professionnelle Matanie - Vallée et Foresterie",
+   "nameZh": "",
    "dliNumber": "O246878951530",
    "city": "Matane",
    "campuses": 4,
@@ -1589,6 +4075,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle Paul-Gérin-Lajoie",
+   "nameZh": "",
    "dliNumber": "O246881575948",
    "city": "Vaudreuil-Dorion",
    "campuses": 1,
@@ -1598,6 +4085,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle Place Cartier",
+   "nameZh": "",
    "dliNumber": "O270911936510",
    "city": "Pointe-Claire",
    "campuses": 1,
@@ -1607,6 +4095,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle de Grosse-Île",
+   "nameZh": "",
    "dliNumber": "O246878245849",
    "city": "Grosse-Île",
    "campuses": 1,
@@ -1616,6 +4105,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle de Mont-Joli-Mitis",
+   "nameZh": "",
    "dliNumber": "O246879455601",
    "city": "Mont-Joli",
    "campuses": 1,
@@ -1625,6 +4115,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle de Nicolet",
+   "nameZh": "",
    "dliNumber": "O246879455706",
    "city": "Nicolet",
    "campuses": 1,
@@ -1634,6 +4125,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle de Northern Lights",
+   "nameZh": "",
    "dliNumber": "O246879455741",
    "city": "Sept-Îles",
    "campuses": 1,
@@ -1643,6 +4135,7 @@
   {
    "province": "QC",
    "name": "Centre de formation professionnelle des Laurentides",
+   "nameZh": "",
    "dliNumber": "O246879963015",
    "city": "Sainte-Agathe-des-Monts",
    "campuses": 1,
@@ -1652,6 +4145,7 @@
   {
    "province": "QC",
    "name": "Centre de services scolaire de Montréal",
+   "nameZh": "",
    "dliNumber": "O246882792844",
    "city": "Montréal",
    "campuses": 9,
@@ -1661,6 +4155,7 @@
   {
    "province": "QC",
    "name": "Centre des services aux entreprises",
+   "nameZh": "",
    "dliNumber": "O246881964036",
    "city": "Alma",
    "campuses": 1,
@@ -1670,6 +4165,7 @@
   {
    "province": "QC",
    "name": "Centre intégré de mécanique, de métallurgie et d'électricité (CIMME)",
+   "nameZh": "",
    "dliNumber": "O246881964176",
    "city": "Montréal",
    "campuses": 1,
@@ -1679,6 +4175,7 @@
   {
    "province": "QC",
    "name": "Centre l'Envol",
+   "nameZh": "",
    "dliNumber": "O246881964206",
    "city": "Témiscamingue",
    "campuses": 1,
@@ -1688,6 +4185,7 @@
   {
    "province": "QC",
    "name": "Centre régional de formation à distance du Grand-Montréal",
+   "nameZh": "",
    "dliNumber": "O246881964329",
    "city": "Montréal",
    "campuses": 1,
@@ -1697,6 +4195,7 @@
   {
    "province": "QC",
    "name": "Centre sectoriel des plastiques",
+   "nameZh": "",
    "dliNumber": "O246881964359",
    "city": "Saint-Damien-de-Buckland",
    "campuses": 1,
@@ -1706,6 +4205,7 @@
   {
    "province": "QC",
    "name": "Champlain Regional College",
+   "nameZh": "",
    "dliNumber": "O19359201407",
    "city": "Sherbrooke",
    "campuses": 1,
@@ -1715,6 +4215,7 @@
   {
    "province": "QC",
    "name": "Collège Dawson",
+   "nameZh": "道森学院",
    "dliNumber": "O19359201433",
    "city": "Montréal",
    "campuses": 1,
@@ -1724,6 +4225,7 @@
   {
    "province": "QC",
    "name": "Collège Héritage",
+   "nameZh": "",
    "dliNumber": "O19359201551",
    "city": "Gatineau",
    "campuses": 1,
@@ -1733,6 +4235,7 @@
   {
    "province": "QC",
    "name": "Collège Presbytérien",
+   "nameZh": "",
    "dliNumber": "O2116973542782",
    "city": "Montréal",
    "campuses": 1,
@@ -1742,6 +4245,7 @@
   {
    "province": "QC",
    "name": "Collège Shawinigan",
+   "nameZh": "",
    "dliNumber": "O19359201819",
    "city": "Shawinigan",
    "campuses": 1,
@@ -1751,6 +4255,7 @@
   {
    "province": "QC",
    "name": "Collège d’Alma",
+   "nameZh": "",
    "dliNumber": "O19359201344",
    "city": "Alma",
    "campuses": 1,
@@ -1760,6 +4265,7 @@
   {
    "province": "QC",
    "name": "Concordia University",
+   "nameZh": "康考迪亚大学",
    "dliNumber": "O19359011007",
    "city": "Montréal",
    "campuses": 1,
@@ -1769,6 +4275,7 @@
   {
    "province": "QC",
    "name": "Conservatoire d'art dramatique de Montréal",
+   "nameZh": "",
    "dliNumber": "O293775204175",
    "city": "Montréal",
    "campuses": 1,
@@ -1778,6 +4285,7 @@
   {
    "province": "QC",
    "name": "Conservatoire d'art dramatique de Québec",
+   "nameZh": "",
    "dliNumber": "O293775204142",
    "city": "Québec",
    "campuses": 1,
@@ -1787,6 +4295,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Gatineau",
+   "nameZh": "",
    "dliNumber": "O19359010871",
    "city": "Gatineau",
    "campuses": 1,
@@ -1796,6 +4305,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Montréal",
+   "nameZh": "",
    "dliNumber": "O19359010884",
    "city": "Montréal",
    "campuses": 1,
@@ -1805,6 +4315,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Québec",
+   "nameZh": "",
    "dliNumber": "O19359010897",
    "city": "Québec",
    "campuses": 1,
@@ -1814,6 +4325,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Rimouski",
+   "nameZh": "",
    "dliNumber": "O19359010910",
    "city": "Rimouski",
    "campuses": 1,
@@ -1823,6 +4335,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Saguenay",
+   "nameZh": "",
    "dliNumber": "O19359010858",
    "city": "Saguenay",
    "campuses": 1,
@@ -1832,6 +4345,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Trois-Rivières",
+   "nameZh": "",
    "dliNumber": "O19359010924",
    "city": "Trois-Rivières",
    "campuses": 1,
@@ -1841,6 +4355,7 @@
   {
    "province": "QC",
    "name": "Conservatoire de musique de Val-d'Or",
+   "nameZh": "",
    "dliNumber": "O19359010937",
    "city": "Val-d'Or",
    "campuses": 1,
@@ -1850,6 +4365,7 @@
   {
    "province": "QC",
    "name": "Cégep André-Laurendeau",
+   "nameZh": "",
    "dliNumber": "O19359201356",
    "city": "Montréal",
    "campuses": 1,
@@ -1859,6 +4375,7 @@
   {
    "province": "QC",
    "name": "Cégep Beauce-Appalaches",
+   "nameZh": "",
    "dliNumber": "O19359201381",
    "city": "Saint-Georges",
    "campuses": 1,
@@ -1868,6 +4385,7 @@
   {
    "province": "QC",
    "name": "Cégep François-Xavier Garneau",
+   "nameZh": "",
    "dliNumber": "O19359201499",
    "city": "Québec",
    "campuses": 1,
@@ -1877,6 +4395,7 @@
   {
    "province": "QC",
    "name": "Cégep Gérald-Godin",
+   "nameZh": "",
    "dliNumber": "O19359201525",
    "city": "Montréal",
    "campuses": 1,
@@ -1886,6 +4405,7 @@
   {
    "province": "QC",
    "name": "Cégep John Abbott",
+   "nameZh": "",
    "dliNumber": "O19359201601",
    "city": "Sainte-Anne-de-Bellevue",
    "campuses": 1,
@@ -1895,6 +4415,7 @@
   {
    "province": "QC",
    "name": "Cégep Limoilou",
+   "nameZh": "",
    "dliNumber": "O19359201678",
    "city": "Québec",
    "campuses": 1,
@@ -1904,6 +4425,7 @@
   {
    "province": "QC",
    "name": "Cégep Lionel Groulx",
+   "nameZh": "",
    "dliNumber": "O19359201692",
    "city": "Sainte-Thérèse",
    "campuses": 1,
@@ -1913,6 +4435,7 @@
   {
    "province": "QC",
    "name": "Cégep Marie-Victorin",
+   "nameZh": "",
    "dliNumber": "O19359201717",
    "city": "Montréal",
    "campuses": 1,
@@ -1922,6 +4445,7 @@
   {
    "province": "QC",
    "name": "Cégep Montmorency",
+   "nameZh": "",
    "dliNumber": "O19359201744",
    "city": "Laval",
    "campuses": 1,
@@ -1931,6 +4455,7 @@
   {
    "province": "QC",
    "name": "Cégep Saint-Jean-sur-Richelieu",
+   "nameZh": "",
    "dliNumber": "O19359201577",
    "city": "Saint-Jean-sur-Richelieu",
    "campuses": 1,
@@ -1940,6 +4465,7 @@
   {
    "province": "QC",
    "name": "Cégep d'Ahuntsic",
+   "nameZh": "",
    "dliNumber": "O19359201331",
    "city": "Montréal",
    "campuses": 1,
@@ -1949,6 +4475,7 @@
   {
    "province": "QC",
    "name": "Cégep de Baie-Comeau",
+   "nameZh": "",
    "dliNumber": "O19359201369",
    "city": "Baie-Comeau",
    "campuses": 1,
@@ -1958,6 +4485,7 @@
   {
    "province": "QC",
    "name": "Cégep de Bois-de-Boulogne",
+   "nameZh": "",
    "dliNumber": "O19359201394",
    "city": "Montréal",
    "campuses": 1,
@@ -1967,6 +4495,7 @@
   {
    "province": "QC",
    "name": "Cégep de Chicoutimi",
+   "nameZh": "",
    "dliNumber": "O19359201420",
    "city": "Saguenay",
    "campuses": 1,
@@ -1976,6 +4505,7 @@
   {
    "province": "QC",
    "name": "Cégep de Drummondville",
+   "nameZh": "",
    "dliNumber": "O19359201445",
    "city": "Drummondville",
    "campuses": 1,
@@ -1985,6 +4515,7 @@
   {
    "province": "QC",
    "name": "Cégep de Granby-Haute-Yamaska",
+   "nameZh": "",
    "dliNumber": "O19359201538",
    "city": "Granby",
    "campuses": 1,
@@ -1994,6 +4525,7 @@
   {
    "province": "QC",
    "name": "Cégep de Jonquière",
+   "nameZh": "",
    "dliNumber": "O19359201614",
    "city": "Saguenay",
    "campuses": 1,
@@ -2003,6 +4535,7 @@
   {
    "province": "QC",
    "name": "Cégep de La Pocatière",
+   "nameZh": "",
    "dliNumber": "O19359201640",
    "city": "La Pocatière",
    "campuses": 1,
@@ -2012,6 +4545,7 @@
   {
    "province": "QC",
    "name": "Cégep de Lévis-Lauzon",
+   "nameZh": "",
    "dliNumber": "O19359201666",
    "city": "Lévis",
    "campuses": 1,
@@ -2021,6 +4555,7 @@
   {
    "province": "QC",
    "name": "Cégep de Maisonneuve",
+   "nameZh": "",
    "dliNumber": "O19359201705",
    "city": "Montréal",
    "campuses": 1,
@@ -2030,6 +4565,7 @@
   {
    "province": "QC",
    "name": "Cégep de Matane",
+   "nameZh": "",
    "dliNumber": "O19359201731",
    "city": "Matane",
    "campuses": 1,
@@ -2039,6 +4575,7 @@
   {
    "province": "QC",
    "name": "Cégep de Rimouski",
+   "nameZh": "",
    "dliNumber": "O19359201769",
    "city": "Rimouski",
    "campuses": 1,
@@ -2048,6 +4585,7 @@
   {
    "province": "QC",
    "name": "Cégep de Rivière-du-Loup",
+   "nameZh": "",
    "dliNumber": "O19359201780",
    "city": "Rivière-du-Loup",
    "campuses": 1,
@@ -2057,6 +4595,7 @@
   {
    "province": "QC",
    "name": "Cégep de Rosemont",
+   "nameZh": "",
    "dliNumber": "O19359201793",
    "city": "Montréal",
    "campuses": 1,
@@ -2066,6 +4605,7 @@
   {
    "province": "QC",
    "name": "Cégep de Saint-Jérôme",
+   "nameZh": "",
    "dliNumber": "O19359201588",
    "city": "Saint-Jérôme",
    "campuses": 1,
@@ -2075,6 +4615,7 @@
   {
    "province": "QC",
    "name": "Cégep de Saint-Laurent",
+   "nameZh": "",
    "dliNumber": "O19359201653",
    "city": "Montréal",
    "campuses": 1,
@@ -2084,6 +4625,7 @@
   {
    "province": "QC",
    "name": "Cégep de Sainte-Foy",
+   "nameZh": "",
    "dliNumber": "O19359201485",
    "city": "Québec",
    "campuses": 1,
@@ -2093,6 +4635,7 @@
   {
    "province": "QC",
    "name": "Cégep de Sept-Îles",
+   "nameZh": "",
    "dliNumber": "O19359201806",
    "city": "Sept-Îles",
    "campuses": 1,
@@ -2102,6 +4645,7 @@
   {
    "province": "QC",
    "name": "Cégep de Sherbrooke",
+   "nameZh": "",
    "dliNumber": "O19359201832",
    "city": "Sherbrooke",
    "campuses": 1,
@@ -2111,6 +4655,7 @@
   {
    "province": "QC",
    "name": "Cégep de Sorel-Tracy",
+   "nameZh": "",
    "dliNumber": "O19359201845",
    "city": "Sorel-Tracy",
    "campuses": 1,
@@ -2120,6 +4665,7 @@
   {
    "province": "QC",
    "name": "Cégep de St-Félicien",
+   "nameZh": "",
    "dliNumber": "O19359201472",
    "city": "Saint-Félicien",
    "campuses": 1,
@@ -2129,6 +4675,7 @@
   {
    "province": "QC",
    "name": "Cégep de St-Hyacinthe",
+   "nameZh": "",
    "dliNumber": "O19359201564",
    "city": "Saint-Hyacinthe",
    "campuses": 1,
@@ -2138,6 +4685,7 @@
   {
    "province": "QC",
    "name": "Cégep de Thetford",
+   "nameZh": "",
    "dliNumber": "O19359201858",
    "city": "Thetford Mines",
    "campuses": 1,
@@ -2147,6 +4695,7 @@
   {
    "province": "QC",
    "name": "Cégep de Trois-Rivières",
+   "nameZh": "",
    "dliNumber": "O19359201871",
    "city": "Trois-Rivières",
    "campuses": 1,
@@ -2156,6 +4705,7 @@
   {
    "province": "QC",
    "name": "Cégep de Valleyfield",
+   "nameZh": "",
    "dliNumber": "O19359201884",
    "city": "Salaberry-de-Valleyfield",
    "campuses": 1,
@@ -2165,6 +4715,7 @@
   {
    "province": "QC",
    "name": "Cégep de Victoriaville",
+   "nameZh": "",
    "dliNumber": "O19359201910",
    "city": "Victoriaville",
    "campuses": 1,
@@ -2174,6 +4725,17 @@
   {
    "province": "QC",
    "name": "Cégep de la Gaspésie et des Îles",
+   "nameZh": "",
+   "dliNumber": "O19359201512",
+   "city": "Gaspé",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "QC",
+   "name": "Cégep de la Gaspésie et des Îles",
+   "nameZh": "",
    "dliNumber": "O19359201512",
    "city": "Montréal",
    "campuses": 2,
@@ -2183,6 +4745,7 @@
   {
    "province": "QC",
    "name": "Cégep de l’Abitibi-Témiscamingue",
+   "nameZh": "",
    "dliNumber": "O19359201318",
    "city": "Rouyn-Noranda",
    "campuses": 1,
@@ -2192,6 +4755,7 @@
   {
    "province": "QC",
    "name": "Cégep de l’Outaouais",
+   "nameZh": "",
    "dliNumber": "O19359201757",
    "city": "Gatineau",
    "campuses": 1,
@@ -2201,6 +4765,7 @@
   {
    "province": "QC",
    "name": "Cégep du Vieux Montréal",
+   "nameZh": "",
    "dliNumber": "O19359201923",
    "city": "Montréal",
    "campuses": 1,
@@ -2210,6 +4775,7 @@
   {
    "province": "QC",
    "name": "Cégep régional de Lanaudière",
+   "nameZh": "",
    "dliNumber": "O19359201627",
    "city": "Repentigny",
    "campuses": 1,
@@ -2219,6 +4785,7 @@
   {
    "province": "QC",
    "name": "Cégep Édouard Montpetit",
+   "nameZh": "",
    "dliNumber": "O19359201458",
    "city": "Longueuil",
    "campuses": 1,
@@ -2228,6 +4795,7 @@
   {
    "province": "QC",
    "name": "Eastern Townships Adult General Education - New Horizons",
+   "nameZh": "",
    "dliNumber": "O184670232658",
    "city": "Sherbrooke",
    "campuses": 1,
@@ -2237,6 +4805,7 @@
   {
    "province": "QC",
    "name": "Eastern Townships School Board Brome-Missisquoi Campus",
+   "nameZh": "",
    "dliNumber": "O176143347092",
    "city": "Québec",
    "campuses": 1,
@@ -2246,6 +4815,7 @@
   {
    "province": "QC",
    "name": "Institut de formation théologique de Montréal",
+   "nameZh": "",
    "dliNumber": "O19359201258",
    "city": "Montréal",
    "campuses": 1,
@@ -2255,6 +4825,7 @@
   {
    "province": "QC",
    "name": "Institut de technologie agroalimentaire",
+   "nameZh": "",
    "dliNumber": "O19359010950",
    "city": "La Pocatière",
    "campuses": 1,
@@ -2264,6 +4835,7 @@
   {
    "province": "QC",
    "name": "Institut de technologie agroalimentaire",
+   "nameZh": "",
    "dliNumber": "O19359010967",
    "city": "Saint-Hyacinthe",
    "campuses": 1,
@@ -2273,6 +4845,7 @@
   {
    "province": "QC",
    "name": "Institut de tourisme et d'hôtellerie du Québec",
+   "nameZh": "",
    "dliNumber": "O110173474479",
    "city": "Montréal",
    "campuses": 1,
@@ -2282,6 +4855,7 @@
   {
    "province": "QC",
    "name": "Institut national de la recherche scientifique",
+   "nameZh": "国立科学研究院",
    "dliNumber": "O19359011185",
    "city": "Québec",
    "campuses": 1,
@@ -2291,6 +4865,7 @@
   {
    "province": "QC",
    "name": "Kanatamat Tshitipenitamunu",
+   "nameZh": "",
    "dliNumber": "O246882793443",
    "city": "Schefferville",
    "campuses": 1,
@@ -2300,6 +4875,7 @@
   {
    "province": "QC",
    "name": "Maison familiale rurale du Granit",
+   "nameZh": "",
    "dliNumber": "O246882793473",
    "city": "Saint-Romain",
    "campuses": 1,
@@ -2309,6 +4885,17 @@
   {
    "province": "QC",
    "name": "McGill University",
+   "nameZh": "麦吉尔大学",
+   "dliNumber": "O19359011033",
+   "city": "Montréal",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "QC",
+   "name": "McGill University",
+   "nameZh": "麦吉尔大学",
    "dliNumber": "O19359011033",
    "city": "Sainte-Anne-de-Bellevue",
    "campuses": 2,
@@ -2318,6 +4905,7 @@
   {
    "province": "QC",
    "name": "Royal Military College Saint-Jean",
+   "nameZh": "圣让皇家军事学院",
    "dliNumber": "O19993116991",
    "city": "Saint-Jean-sur-Richelieu",
    "campuses": 1,
@@ -2327,6 +4915,7 @@
   {
    "province": "QC",
    "name": "Séminaire diocésain de Montréal",
+   "nameZh": "",
    "dliNumber": "O2116973543399",
    "city": "Montréal",
    "campuses": 1,
@@ -2336,6 +4925,7 @@
   {
    "province": "QC",
    "name": "Télé-université",
+   "nameZh": "",
    "dliNumber": "O19359201245",
    "city": "Québec",
    "campuses": 1,
@@ -2345,6 +4935,7 @@
   {
    "province": "QC",
    "name": "Université Laval",
+   "nameZh": "拉瓦尔大学",
    "dliNumber": "O19359011020",
    "city": "Québec",
    "campuses": 1,
@@ -2354,6 +4945,7 @@
   {
    "province": "QC",
    "name": "Université de Montréal",
+   "nameZh": "蒙特利尔大学",
    "dliNumber": "O19359011045",
    "city": "Montréal",
    "campuses": 1,
@@ -2363,6 +4955,7 @@
   {
    "province": "QC",
    "name": "Université de Sherbrooke",
+   "nameZh": "舍布鲁克大学",
    "dliNumber": "O19359011083",
    "city": "Sherbrooke",
    "campuses": 1,
@@ -2372,6 +4965,7 @@
   {
    "province": "QC",
    "name": "Université du Québec",
+   "nameZh": "魁北克大学",
    "dliNumber": "O19359011096",
    "city": "Québec",
    "campuses": 1,
@@ -2381,6 +4975,7 @@
   {
    "province": "QC",
    "name": "Université du Québec en Abitibi-Témiscamingue",
+   "nameZh": "",
    "dliNumber": "O19359011109",
    "city": "Rouyn-Noranda",
    "campuses": 1,
@@ -2390,6 +4985,7 @@
   {
    "province": "QC",
    "name": "Université du Québec en Outaouais Pavillon Alexandre-Taché",
+   "nameZh": "",
    "dliNumber": "O19359011146",
    "city": "Gatineau",
    "campuses": 1,
@@ -2399,6 +4995,7 @@
   {
    "province": "QC",
    "name": "Université du Québec à Chicoutimi",
+   "nameZh": "魁北克大学希库蒂米分校",
    "dliNumber": "O19359011122",
    "city": "Saguenay",
    "campuses": 1,
@@ -2408,6 +5005,7 @@
   {
    "province": "QC",
    "name": "Université du Québec à Montréal",
+   "nameZh": "魁北克大学蒙特利尔分校",
    "dliNumber": "O19359011134",
    "city": "Montréal",
    "campuses": 1,
@@ -2417,6 +5015,7 @@
   {
    "province": "QC",
    "name": "Université du Québec à Rimouski",
+   "nameZh": "魁北克大学里穆斯基分校",
    "dliNumber": "O19359011159",
    "city": "Rimouski",
    "campuses": 1,
@@ -2426,6 +5025,7 @@
   {
    "province": "QC",
    "name": "Université du Québec à Trois-Rivières",
+   "nameZh": "魁北克大学三河分校",
    "dliNumber": "O19359011172",
    "city": "Trois-Rivières",
    "campuses": 1,
@@ -2435,6 +5035,7 @@
   {
    "province": "QC",
    "name": "Vanier College",
+   "nameZh": "",
    "dliNumber": "O19359201897",
    "city": "Montréal",
    "campuses": 1,
@@ -2444,6 +5045,7 @@
   {
    "province": "QC",
    "name": "École Manikanetish du conseil des Montagnais de Sept-Îles et Maliotenam",
+   "nameZh": "",
    "dliNumber": "O246882793194",
    "city": "Sept-Îles",
    "campuses": 1,
@@ -2453,6 +5055,7 @@
   {
    "province": "QC",
    "name": "École Polytechnique de Montréal",
+   "nameZh": "蒙特利尔工学院",
    "dliNumber": "O19359011070",
    "city": "Montréal",
    "campuses": 1,
@@ -2462,6 +5065,7 @@
   {
    "province": "QC",
    "name": "École de foresterie de Duchesnay",
+   "nameZh": "",
    "dliNumber": "O246882792619",
    "city": "Sainte-Catherine-de-la-Jacques-Cartier",
    "campuses": 1,
@@ -2471,6 +5075,7 @@
   {
    "province": "QC",
    "name": "École de technologie supérieure",
+   "nameZh": "高等技术学院",
    "dliNumber": "O19359201210",
    "city": "Montréal",
    "campuses": 1,
@@ -2480,6 +5085,7 @@
   {
    "province": "QC",
    "name": "École des Hautes Études Commerciales de Montréal (HEC Montréal)",
+   "nameZh": "蒙特利尔高等商学院",
    "dliNumber": "O19359011058",
    "city": "Montréal",
    "campuses": 1,
@@ -2489,6 +5095,7 @@
   {
    "province": "QC",
    "name": "École des pêches et de l'aquaculture du Québec",
+   "nameZh": "",
    "dliNumber": "O246882793009",
    "city": "Grande-Rivière",
    "campuses": 1,
@@ -2498,6 +5105,7 @@
   {
    "province": "QC",
    "name": "École hôtelière de la Capitale",
+   "nameZh": "",
    "dliNumber": "O246882793109",
    "city": "Québec",
    "campuses": 1,
@@ -2507,6 +5115,7 @@
   {
    "province": "QC",
    "name": "École hôtelière et d'administration de Laval",
+   "nameZh": "",
    "dliNumber": "O246882793144",
    "city": "Laval",
    "campuses": 1,
@@ -2516,6 +5125,7 @@
   {
    "province": "QC",
    "name": "École nationale d'administration publique",
+   "nameZh": "",
    "dliNumber": "O19359011197",
    "city": "Québec",
    "campuses": 1,
@@ -2525,6 +5135,7 @@
   {
    "province": "SK",
    "name": "Briercrest College and Seminary",
+   "nameZh": "",
    "dliNumber": "O19425193620",
    "city": "Caronport",
    "campuses": 1,
@@ -2534,6 +5145,7 @@
   {
    "province": "SK",
    "name": "Carlton Trail College",
+   "nameZh": "",
    "dliNumber": "O165662884902",
    "city": "Humboldt",
    "campuses": 1,
@@ -2543,6 +5155,7 @@
   {
    "province": "SK",
    "name": "College of Emmanuel and St Chad",
+   "nameZh": "",
    "dliNumber": "O122051172047",
    "city": "Saskatoon",
    "campuses": 1,
@@ -2552,6 +5165,7 @@
   {
    "province": "SK",
    "name": "Collège Mathieu",
+   "nameZh": "",
    "dliNumber": "O242735687677",
    "city": "Gravelbourg",
    "campuses": 1,
@@ -2561,6 +5175,7 @@
   {
    "province": "SK",
    "name": "Great Plains College",
+   "nameZh": "",
    "dliNumber": "O214383061827",
    "city": "Swift Current",
    "campuses": 1,
@@ -2570,6 +5185,7 @@
   {
    "province": "SK",
    "name": "Horizon College and Seminary Inc.",
+   "nameZh": "",
    "dliNumber": "O214426376877",
    "city": "Saskatoon",
    "campuses": 1,
@@ -2579,6 +5195,7 @@
   {
    "province": "SK",
    "name": "Lutheran Theological Seminary",
+   "nameZh": "",
    "dliNumber": "O213779356297",
    "city": "Saskatoon",
    "campuses": 1,
@@ -2588,8 +5205,19 @@
   {
    "province": "SK",
    "name": "North West College",
+   "nameZh": "",
    "dliNumber": "O265527598312",
-   "city": "North Battleford, Meadow Lake",
+   "city": "Meadow Lake",
+   "campuses": 1,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "North West College",
+   "nameZh": "",
+   "dliNumber": "O265527598312",
+   "city": "North Battleford",
    "campuses": 1,
    "isPublic": true,
    "gradProgram": false
@@ -2597,6 +5225,7 @@
   {
    "province": "SK",
    "name": "Saskatchewan Polytechnic",
+   "nameZh": "萨斯喀彻温理工学院",
    "dliNumber": "O19425521849",
    "city": "Moose Jaw",
    "campuses": 4,
@@ -2605,7 +5234,98 @@
   },
   {
    "province": "SK",
+   "name": "Saskatchewan Polytechnic",
+   "nameZh": "萨斯喀彻温理工学院",
+   "dliNumber": "O19425521849",
+   "city": "Prince Albert",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "SK",
+   "name": "Saskatchewan Polytechnic",
+   "nameZh": "萨斯喀彻温理工学院",
+   "dliNumber": "O19425521849",
+   "city": "Regina",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "SK",
+   "name": "Saskatchewan Polytechnic",
+   "nameZh": "萨斯喀彻温理工学院",
+   "dliNumber": "O19425521849",
+   "city": "Saskatoon",
+   "campuses": 4,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Assiniboia",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Estevan",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Indian Head",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Moosomin",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Weyburn",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Southeast College",
+   "nameZh": "",
+   "dliNumber": "O145024872092",
+   "city": "Whitewood",
+   "campuses": 2,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
    "name": "St. Andrew’s College",
+   "nameZh": "",
    "dliNumber": "O212421811707",
    "city": "Saskatoon",
    "campuses": 1,
@@ -2615,6 +5335,7 @@
   {
    "province": "SK",
    "name": "St. Peter’s College",
+   "nameZh": "",
    "dliNumber": "O115221677157",
    "city": "Muenster",
    "campuses": 1,
@@ -2624,6 +5345,7 @@
   {
    "province": "SK",
    "name": "Suncrest College",
+   "nameZh": "",
    "dliNumber": "O19425521569",
    "city": "Mel fort",
    "campuses": 5,
@@ -2632,7 +5354,38 @@
   },
   {
    "province": "SK",
+   "name": "Suncrest College",
+   "nameZh": "",
+   "dliNumber": "O19425521569",
+   "city": "Nipa win",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Suncrest College",
+   "nameZh": "",
+   "dliNumber": "O19425521569",
+   "city": "Tisdale",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
+   "name": "Suncrest College",
+   "nameZh": "",
+   "dliNumber": "O19425521569",
+   "city": "Yorkton",
+   "campuses": 5,
+   "isPublic": true,
+   "gradProgram": false
+  },
+  {
+   "province": "SK",
    "name": "University of Regina, including Campion College, First Nations University of Canada and Luther College",
+   "nameZh": "里贾纳大学",
    "dliNumber": "O19425660270",
    "city": "Regina",
    "campuses": 1,
@@ -2642,6 +5395,7 @@
   {
    "province": "SK",
    "name": "University of Saskatchewan, including St. Thomas More College",
+   "nameZh": "萨斯喀彻温大学",
    "dliNumber": "O19425660421",
    "city": "Saskatoon",
    "campuses": 1,
@@ -2651,8 +5405,119 @@
   {
    "province": "YT",
    "name": "Yukon University",
+   "nameZh": "育空大学",
    "dliNumber": "O19604209351",
    "city": "Carcross",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Carmacks",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Dawson City",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Faro",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Haines Junction",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Mayo",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Old Crow",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Pelly Crossing",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Ross River",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Teslin",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Watson Lake",
+   "campuses": 12,
+   "isPublic": true,
+   "gradProgram": true
+  },
+  {
+   "province": "YT",
+   "name": "Yukon University",
+   "nameZh": "育空大学",
+   "dliNumber": "O19604209351",
+   "city": "Whitehorse",
    "campuses": 12,
    "isPublic": true,
    "gradProgram": true

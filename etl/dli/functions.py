@@ -20,7 +20,7 @@ import paths
 from log.functions import say
 from fetch.constants import HDR_UA, POLITE_UA
 from dli.constants import (
-    ATLANTIC, FETCH_TIMEOUT_S, IN_TPL, IN_URL, LANDING, MIN_ROWS, OUT_FILE, OUT_INDENT, OUT_TPL,
+    ATLANTIC, CITY_SEP, FETCH_TIMEOUT_S, IN_TPL, IN_URL, LANDING, MIN_ROWS, NAME_ZH, OUT_FILE, OUT_INDENT, OUT_TPL,
     PROV_CODE, PUBLIC_TOKEN, SKIPPED_TPL, SOURCE_ROWS_TPL, TEXT_ENCODING, TOO_FEW_TPL,
     WROTE_TPL, YES,
 )
@@ -35,17 +35,29 @@ from dli.scheme import (
 
 
 def dli_sort_key(row: DliRow) -> tuple:
-    """落盘排序键:省码 + 校名(原 lambda 出户成具名)。"""
-    return (row.province, row.name)
+    """落盘排序键:省码 + 校名 + 校区城(2026-09-12 粒度改校 × 城,城殿后稳序)。"""
+    return (row.province, row.name, row.city)
+
+
+def split_cities(raw: str) -> list[str]:
+    """源 City 格 → 单城清单:按逗号拆、去首尾空白、丢空段(一行可带多城逗号串)。"""
+    out: list[str] = []
+    for piece in raw.split(CITY_SEP):
+        city = piece.strip()
+        if city != "":
+            out.append(city)
+    return out
 
 
 def to_dli_row(x: DliRowIn) -> DliRow:
-    """源行 + 已查得的省码 → 院校行(首行建档,campuses 从 1 起)。"""
+    """源行 + 已查得的省码与单城 → 校 × 城行(campuses 由调用方统好后回填)。"""
+    name = x.source.institution.strip()
     return DliRow(
         province=x.province,
-        name=x.source.institution.strip(),
+        name=name,
+        name_zh=NAME_ZH.get(name, ""),
         dli_number=x.source.dli_number.strip(),
-        city=x.source.city.strip(),
+        city=x.city,
         campuses=1,
         is_public=PUBLIC_TOKEN in x.source.sector,
         grad_program=x.source.grad_program == YES,
@@ -53,11 +65,16 @@ def to_dli_row(x: DliRowIn) -> DliRow:
 
 
 def fold_pgwp_rows(rows: list[DliSourceRow]) -> DliFold:
-    """全量源行 → 院校级行:只留 PGWP=Yes,按 DLI# 去重(同号多校区记 campuses,主城取首行)。
+    """全量源行 → 校 × 城行:只留 PGWP=Yes,按 (DLI#, 城) 去重。
 
+    2026-09-12 重写(Frank「dli 院校没有大学吗」实撞):原「同号取首行主城」把
+    U of T 记在 Mississauga、McGill 记在 Macdonald 校区城、UBC 的 "Kelowna, Vancouver"
+    整串对不上任何城 —— 改为源 City 逗号串拆开,一校区城一行;campuses 仍记该校
+    源行总数(全校同值,先数后回填)。
     未知省名不猜,记进 skipped 交调用方留痕;DLI# 为空的行丢弃(去重键缺了没法建档)。
     """
-    by_dli: dict[str, DliRow] = {}
+    campus_n: dict[str, int] = {}
+    by_key: dict[tuple[str, str], DliRow] = {}
     skipped: list[str] = []
     for row in rows:
         if row.pgwp != YES:
@@ -70,24 +87,29 @@ def fold_pgwp_rows(rows: list[DliSourceRow]) -> DliFold:
         num = row.dli_number.strip()
         if num == "":
             continue
-        cur = by_dli.get(num)
-        if cur is None:
-            by_dli[num] = to_dli_row(DliRowIn(source=row, province=prov))
-        else:
-            cur.campuses += 1
-    return DliFold(rows=list(by_dli.values()), skipped=skipped)
+        campus_n[num] = campus_n.get(num, 0) + 1
+        for city in split_cities(row.city):
+            key = (num, city)
+            if key not in by_key:
+                by_key[key] = to_dli_row(DliRowIn(source=row, province=prov, city=city))
+    out: list[DliRow] = []
+    for (num, _), built in by_key.items():
+        built.campuses = campus_n[num]
+        out.append(built)
+    return DliFold(rows=out, skipped=skipped)
 
 
 def count_public(rows: list[DliRow]) -> PublicCount:
-    """收口探针:公立院校数 + 大西洋四省公立院校数。"""
-    public = 0
-    atlantic = 0
+    """收口探针:公立院校数 + 大西洋四省公立院校数(按 DLI# 去重 ——
+    2026-09-12 粒度改校 × 城后,一校多城多行,直接数行会虚高)。"""
+    public: set[str] = set()
+    atlantic: set[str] = set()
     for row in rows:
         if row.is_public:
-            public += 1
+            public.add(row.dli_number)
             if row.province in ATLANTIC:
-                atlantic += 1
-    return PublicCount(public=public, atlantic=atlantic)
+                atlantic.add(row.dli_number)
+    return PublicCount(public=len(public), atlantic=len(atlantic))
 
 
 def build_ircc_dli_pgwp() -> None:
