@@ -1945,6 +1945,28 @@ NEWS_SLUG_N_TPL = "{date}-{title}-{n}"
 IN_DLI = paths.DLI / "dli.json"
 """PGWP 可申 DLI 子集(dli 域 build_ircc_dli_pgwp 产,E12-03;已过滤去重,汇装层直通)。"""
 
+IN_QS = paths.QS / "qs.json"
+"""QS 世界大学排名·加拿大子集(qs 域产;2026-09-12 Frank「再加上 qs 排名」——
+装配层按 dliName 给 dli 行挂 qsRank/qsRankDisplay,榜外留空)。"""
+
+K_DLI_NAME = "dliName"
+"""qs 行里「IRCC DLI 名单侧校名」键(join 键)。"""
+
+K_QS_RANK = "qsRank"
+"""dli 行产出键:QS 名次(排序用纯数;榜外 None)。"""
+
+K_QS_RANK_DISPLAY = "qsRankDisplay"
+"""dli 行产出键:QS 展示名次(如 "=45";榜外空串)。"""
+
+K_RANK = "rank"
+"""qs 行里名次键。"""
+
+K_RANK_DISPLAY = "rankDisplay"
+"""qs 行里展示名次键。"""
+
+TABLE_DLI = "dli"
+"""dli 表名(单表增量件 build_dli_table 落盘用;与 to_mart_tables 字典键同字)。"""
+
 IN_FIELD_SOURCES = paths.RAW / "sources" / "field-sources.json"
 """字段级来源注册表(citations 域 verify_field_source_pages 产,E4-04;汇装层直通)。"""
 

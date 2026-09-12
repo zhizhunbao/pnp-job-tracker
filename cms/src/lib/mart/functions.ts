@@ -607,8 +607,8 @@ function toNocDescription(r: MartRow): MartRow {
 }
 
 /**
- * dli 行(E12-03;2026-09-12 粒度改校 × 城一行 + name_zh 人工核定译名列,
- * Frank「dli 院校没有大学吗」「大学名 最好也加上中文翻译吧」)。
+ * dli 行(E12-03;2026-09-12 粒度改校 × 城一行 + name_zh 人工核定译名列 + QS 两格,
+ * Frank「dli 院校没有大学吗」「大学名 最好也加上中文翻译吧」「再加上 qs 排名」)。
  *
  * @param r mart 行。
  * @returns 库行。
@@ -618,6 +618,7 @@ function toDli(r: MartRow): MartRow {
     province: cellOf(r.province), name: cellOf(r.name), name_zh: cellOf(r.nameZh),
     dli_number: cellOf(r.dliNumber), city: cellOf(r.city),
     campuses: cellOf(r.campuses), is_public: cellOf(r.isPublic), grad_program: cellOf(r.gradProgram),
+    qs_rank: cellOf(r.qsRank), qs_rank_display: cellOf(r.qsRankDisplay),
     url: cellOf(r.url), fetched: cellOf(r.fetched),
   }
 }

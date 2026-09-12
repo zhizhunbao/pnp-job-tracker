@@ -1,0 +1,186 @@
+{
+ "url": "https://www.topuniversities.com/world-university-rankings",
+ "fetched": "2026-09-12",
+ "rows": [
+  {
+   "name": "McGill University",
+   "dliName": "McGill University",
+   "rank": 30,
+   "rankDisplay": "30"
+  },
+  {
+   "name": "University of Toronto",
+   "dliName": "University of Toronto",
+   "rank": 32,
+   "rankDisplay": "32"
+  },
+  {
+   "name": "University of British Columbia",
+   "dliName": "University of British Columbia (UBC)",
+   "rank": 46,
+   "rankDisplay": "=45"
+  },
+  {
+   "name": "University of Alberta",
+   "dliName": "University of Alberta",
+   "rank": 96,
+   "rankDisplay": "96"
+  },
+  {
+   "name": "University of Waterloo",
+   "dliName": "University of Waterloo",
+   "rank": 114,
+   "rankDisplay": "=113"
+  },
+  {
+   "name": "Western University",
+   "dliName": "Western University",
+   "rank": 144,
+   "rankDisplay": "=142"
+  },
+  {
+   "name": "Université de Montréal",
+   "dliName": "Université de Montréal",
+   "rank": 162,
+   "rankDisplay": "=162"
+  },
+  {
+   "name": "McMaster University",
+   "dliName": "McMaster University",
+   "rank": 175,
+   "rankDisplay": "=174"
+  },
+  {
+   "name": "Queen's University at Kingston",
+   "dliName": "Queen’s University",
+   "rank": 181,
+   "rankDisplay": "=179"
+  },
+  {
+   "name": "University of Ottawa",
+   "dliName": "Université d’Ottawa/University of Ottawa",
+   "rank": 229,
+   "rankDisplay": "=228"
+  },
+  {
+   "name": "University of Calgary",
+   "dliName": "University of Calgary",
+   "rank": 249,
+   "rankDisplay": "249"
+  },
+  {
+   "name": "Dalhousie University",
+   "dliName": "Dalhousie University",
+   "rank": 298,
+   "rankDisplay": "298"
+  },
+  {
+   "name": "Simon Fraser University",
+   "dliName": "Simon Fraser University (SFU)",
+   "rank": 312,
+   "rankDisplay": "312"
+  },
+  {
+   "name": "York University",
+   "dliName": "York University",
+   "rank": 324,
+   "rankDisplay": "=322"
+  },
+  {
+   "name": "University of Victoria (UVic)",
+   "dliName": "University of Victoria",
+   "rank": 373,
+   "rankDisplay": "=370"
+  },
+  {
+   "name": "University of Saskatchewan",
+   "dliName": "University of Saskatchewan, including St. Thomas More College",
+   "rank": 414,
+   "rankDisplay": "=411"
+  },
+  {
+   "name": "Concordia University",
+   "dliName": "Concordia University",
+   "rank": 497,
+   "rankDisplay": "=497"
+  },
+  {
+   "name": "Université Laval",
+   "dliName": "Université Laval",
+   "rank": 527,
+   "rankDisplay": "=526"
+  },
+  {
+   "name": "University of Windsor",
+   "dliName": "University of Windsor",
+   "rank": 539,
+   "rankDisplay": "=537"
+  },
+  {
+   "name": "University of Guelph",
+   "dliName": "University of Guelph",
+   "rank": 548,
+   "rankDisplay": "=546"
+  },
+  {
+   "name": "University of Manitoba",
+   "dliName": "University of Manitoba",
+   "rank": 561,
+   "rankDisplay": "=560"
+  },
+  {
+   "name": "Toronto Metropolitan University (formerly Ryerson University)",
+   "dliName": "Toronto Metropolitan University (TMU)",
+   "rank": 669,
+   "rankDisplay": "669"
+  },
+  {
+   "name": "University of New Brunswick",
+   "dliName": "University of New Brunswick",
+   "rank": 681,
+   "rankDisplay": "=677"
+  },
+  {
+   "name": "Memorial University of Newfoundland",
+   "dliName": "Memorial University of Newfoundland",
+   "rank": 728,
+   "rankDisplay": "721-730"
+  },
+  {
+   "name": "Carleton University",
+   "dliName": "Carleton University",
+   "rank": 812,
+   "rankDisplay": "801-850"
+  },
+  {
+   "name": "Université de Sherbrooke",
+   "dliName": "Université de Sherbrooke",
+   "rank": 988,
+   "rankDisplay": "951-1000"
+  },
+  {
+   "name": "Université du Québec",
+   "dliName": "Université du Québec",
+   "rank": 989,
+   "rankDisplay": "951-1000"
+  },
+  {
+   "name": "University of Regina",
+   "dliName": "University of Regina, including Campion College, First Nations University of Canada and Luther College",
+   "rank": 1182,
+   "rankDisplay": "1001-1200"
+  },
+  {
+   "name": "Brock University",
+   "dliName": "Brock University",
+   "rank": 1219,
+   "rankDisplay": "1201-1400"
+  },
+  {
+   "name": "University of Northern British Columbia",
+   "dliName": "University of Northern British Columbia",
+   "rank": 1379,
+   "rankDisplay": "1201-1400"
+  }
+ ]
+}

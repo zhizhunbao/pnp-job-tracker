@@ -74,7 +74,8 @@ from mart.constants import (
     FRONT_URL_RE, FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GLOB_MD, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
-    IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG,
+    IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
+    K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_JD_ROOTS, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
     IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
@@ -3026,16 +3027,39 @@ def build_news() -> list:
     return rows
 
 
+def load_qs_ranks() -> dict:
+    """QS 榜(qs 域产)→ DLI 校名 → 榜行;缺文件空表(qs_rank 全空,宁可留空)。"""
+    if not IN_QS.exists():
+        return {}
+    out: dict = {}
+    for r in read_table_soft(IN_QS).get(K_ROWS, []):
+        out[r.get(K_DLI_NAME, "")] = r
+    return out
+
+
 def build_dli() -> list:
-    """PGWP 可申 DLI 子集(E12-03):上游已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处)。"""
+    """PGWP 可申 DLI 子集(E12-03):上游已过滤去重,这里直通并带上着陆页 url+抓取日期(逐行出处);
+    2026-09-12 Frank「再加上 qs 排名」:按校名 join QS 榜挂 qsRank/qsRankDisplay(榜外留空)。"""
     if not IN_DLI.exists():
         return []
     dd = read_table_soft(IN_DLI)
+    qs = load_qs_ranks()
     rows: list = []
     for r in dd.get(K_ROWS, []):
         rows.append(to_dli_row(DliRowIn(row=r, url=dd.get(K_URL, ""),
-                                        fetched=dd.get(K_FETCHED, ""))))
+                                        fetched=dd.get(K_FETCHED, ""),
+                                        qs=qs.get(r.get(K_NAME, "")))))
     return rows
+
+
+def build_dli_table() -> None:
+    """单表增量:只重建 data/mart/dli.json(2026-09-12 Frank「不要全量 改哪个更新哪个」——
+    直通表改动不再陪跑 ~9 分钟跨源汇装;上传仍全目录(分钟级),seed 端本就按表哈希增量,
+    没变的表自动跳过。直通表的单表件照此形逐个加(build_xxx + 一行注册),不预铺。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_DLI: build_dli()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
 
 def build_field_sources() -> list:
@@ -3173,9 +3197,15 @@ def to_news_row(x: NewsRowIn) -> dict:
 
 
 def to_dli_row(x: DliRowIn) -> dict:
-    """dli 表的一行(上游行直通 + 逐行出处)。"""
+    """dli 表的一行(上游行直通 + 逐行出处 + QS 两格;榜外 None/空串,前端显杠)。"""
     row = dict(x.row)
-    row.update({"url": x.url, "fetched": x.fetched})
+    qs_rank = None
+    qs_display = ""
+    if x.qs is not None:
+        qs_rank = x.qs.get(K_RANK)
+        qs_display = x.qs.get(K_RANK_DISPLAY, "")
+    row.update({"url": x.url, "fetched": x.fetched,
+                K_QS_RANK: qs_rank, K_QS_RANK_DISPLAY: qs_display})
     return row
 
 

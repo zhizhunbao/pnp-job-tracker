@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
-    build_city_names, build_mart, build_mart_rankings, build_mart_stats, clean_job_locations,
+    build_city_names, build_dli_table, build_mart, build_mart_rankings, build_mart_stats, clean_job_locations,
     clean_job_salary, flag_job_pilot, score_mart_jobs,
 )
 
@@ -47,8 +47,9 @@ TOOLS = {
     "salary": clean_job_salary,
     "pilot_flag": flag_job_pilot,
     "cities": build_city_names,
+    "dli_table": build_dli_table,
 }
-"""全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 一个手动件:
+"""全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 两个手动件:
 
   locations   ATS/JB 同一套地点清洗(country/province/city/district/address;ATS 岗筛焦点区)
   salary      ATS/JB 同一套薪资归一(salaryAnnual / salaryText + 五道护栏)
@@ -60,11 +61,15 @@ TOOLS = {
 
   cities      城市中/韩通行译名(人工核定表,不用模型;2026-08-31 Frank 拍板自 noc 域迁入 ——
               城市是 DB 维度,译名是维度装配的料,本域段 9 自己读。手动件,不进任何链)
+  dli_table   单表增量:只重建 mart/dli.json(2026-09-12 Frank「不要全量 改哪个更新哪个」;
+              直通表改动的快路 = 本步 + load --only upload + seed,seed 端按表哈希自动跳没变的。
+              手动件,不进任何链)
 
 ⚠ --only 是子串匹配(门形样张同款):`--only mart` 只命中 mart 本身,`--only s` 会同时
 命中 score / stats / salary —— 要单点请写全名。批J 三个新键与既有四键互不误命中
 (逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含);cities 与
-七个既有键同样逐对核过互不含。
+七个既有键同样逐对核过互不含;dli_table 与八个既有键逐对核过互不含(⚠ `--only dli`
+会命中它,但 dli 域自己的门键在 etl/dli/main.py,两门不撞)。
 """
 
 

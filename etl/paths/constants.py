@@ -91,6 +91,9 @@ POLICY = RAW / "policy"
 DLI = RAW / "dli"
 """PGWP 可申 DLI 子集(dli.json,build_dli.py 产,E12-03)。"""
 
+QS = RAW / "qs"
+"""QS 世界大学排名·加拿大子集(qs.json,qs 域产;2026-09-12 Frank「再加上 qs 排名」)。"""
+
 NEWS = RAW / "news"
 """官方移民新闻累积表(news.json,news 域产,E12-06)。"""
 

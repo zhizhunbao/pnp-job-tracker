@@ -594,7 +594,7 @@ export const COLS_NOC_DESCRIPTIONS = ['noc', 'title', 'title_zh', 'title_zh_shor
 /**
  * dli 列。
  */
-export const COLS_DLI = ['province', 'name', 'name_zh', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'url', 'fetched']
+export const COLS_DLI = ['province', 'name', 'name_zh', 'dli_number', 'city', 'campuses', 'is_public', 'grad_program', 'qs_rank', 'qs_rank_display', 'url', 'fetched']
 
 /**
  * pte_types 列。⚠️ **先在生产跑 docs/sql/pte-tables.sql**(建两表 + 锁表各补一列)。

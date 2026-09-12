@@ -1522,6 +1522,9 @@ class DliRowIn:
     fetched: str
     """抓取日。"""
 
+    qs: dict | None
+    """该校命中的 QS 榜行(按 dliName 对上;榜外 None,qsRank 留空不瞎猜)。"""
+
 @dataclass
 class NocDescIn:
     """build_noc_descriptions() 入参。"""
