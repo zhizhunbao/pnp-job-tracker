@@ -645,18 +645,21 @@ export function navSubItemsOf(x: NavSubItemsIn): NavItem[] {
 }
 
 /**
- * 城市段的子项:四张表的锚点(2026-09-11 重设计批;此前城市段是唯一没有子导航的有内容段)。
+ * 城市段的子项:主要城市 + 八行业组各一项 + 试点社区 + 留学城市(2026-09-11 重设计批;
+ * 当晚 Frank「改成具体的分类 多个分类」:原「行业对比」一项拆成一业一项,照职业/雇主段形,
+ * 锚点 = ID_CITY_IND 打头的分表锚)。
  *
  * @param t 取词函数。
  * @returns 子项清单。
  */
 function citySubsOf(t: TFn): NavItem[] {
-  return [
-    { id: ID_CITY_MAIN, label: t('pulse.city.main') },
-    { id: ID_CITY_IND, label: t('pulse.city.ind') },
-    { id: ID_CITY_PILOT, label: t('pulse.city.pilot') },
-    { id: ID_CITY_DLI, label: t('pulse.city.dli') },
-  ]
+  const out: NavItem[] = [{ id: ID_CITY_MAIN, label: t('pulse.city.main') }]
+  for (const key of IND_KEYS) {
+    out.push({ id: subIdOf({ band: ID_CITY_IND, key }), label: t(KEY_IND_HEAD + key) })
+  }
+  out.push({ id: ID_CITY_PILOT, label: t('pulse.city.pilot') })
+  out.push({ id: ID_CITY_DLI, label: t('pulse.city.dli') })
+  return out
 }
 
 /**

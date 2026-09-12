@@ -7,7 +7,10 @@
  * 「这个应该每个行业一个表吧」「要和雇主的那个行业保持一致吧」:一行业组一张小表照雇主板形,
  * 组与表题 = 全站八行业组 IND_KEYS,原城 × 九业横表退役)→
  * 试点社区(城市级唯一专属通道)→ 留学城市(DLI 三数)。段首搜索框同晚 Frank「这个删掉」退役
- * (试点绿标建议随之下线,试点信号全归表 3)。
+ * (试点绿标建议随之下线,试点信号全归表 3)。同晚两补:「改成具体的分类 多个分类」——
+ * 子导航「行业对比」拆一业一项,行业小表各挂分表锚(subIdOf,照职业/雇主段);
+ * 「这个 更新时间 应该紧贴着 table」—— 段首 Updated 撤,每张表标题行右侧一枚(照雇主板,
+ * 09-03「表右上角 Updated」铁律)。
  * 数据挂载后拉 /api/stats/city(读 stats_city 快照;SSR 直出的城市行同批退役);
  * 没到渲占位,五份各自独立 —— 缺一份只丢那组表,全空才整段不出。
  *
@@ -21,7 +24,7 @@ import {
 } from './constants'
 import {
   boardGapClsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf, dliRowKeyOf,
-  indRowKeyOf, pilotRowKeyOf,
+  indRowKeyOf, pilotRowKeyOf, subIdOf,
 } from './functions'
 import { useCityPanel } from './hooks'
 import { Band } from './band'
@@ -45,22 +48,24 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
   const indBlocks = []
   for (const tb of v.indTables) {
     indBlocks.push(
-      <div key={tb.key} className={boardGapClsOf({ gap: true })}>
-        <Sec title={tb.label} sub>
-          <Table<CityIndRow> rows={tb.rows}
-            cols={indCols}
-            rowKey={indRowKeyOf} />
-        </Sec>
+      <div key={tb.key} id={subIdOf({ band: ID_CITY_IND, key: tb.key })} className={css.subAnchor}>
+        <div className={boardGapClsOf({ gap: true })}>
+          <Sec title={tb.label} right={<Updated iso={updatedAt} t={t} />} sub>
+            <Table<CityIndRow> rows={tb.rows}
+              cols={indCols}
+              rowKey={indRowKeyOf} />
+          </Sec>
+        </div>
       </div>,
     )
   }
   return (
     <Band id={ID_CITY}>
-      <Sec title={t('pulse.city')} right={<Updated iso={updatedAt} t={t} />}>
+      <Sec title={t('pulse.city')}>
         {v.data == null && <Placeholder size={PH_PROV} />}
         {v.data != null && v.mainRows.length > 0 && (
           <div id={ID_CITY_MAIN} className={css.subAnchor}>
-            <Sec title={t('pulse.city.main')} sub>
+            <Sec title={t('pulse.city.main')} right={<Updated iso={updatedAt} t={t} />} sub>
               <Table<CityMainRow> rows={v.mainRows}
                 cols={cityMainColsOf({ t })}
                 rowKey={cityRowKeyOf}
@@ -68,13 +73,11 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
             </Sec>
           </div>
         )}
-        {v.data != null && indBlocks.length > 0 && (
-          <div id={ID_CITY_IND} className={css.subAnchor}>{indBlocks}</div>
-        )}
+        {v.data != null && indBlocks}
         {v.data != null && v.pilotRows.length > 0 && (
           <div id={ID_CITY_PILOT} className={css.subAnchor}>
             <div className={boardGapClsOf({ gap: true })}>
-              <Sec title={t('pulse.city.pilot')} sub>
+              <Sec title={t('pulse.city.pilot')} right={<Updated iso={updatedAt} t={t} />} sub>
                 <Table<CityPilotRow> rows={v.pilotRows}
                   cols={cityPilotColsOf({ t })}
                   rowKey={pilotRowKeyOf} />
@@ -85,7 +88,7 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
         {v.data != null && v.dliRows.length > 0 && (
           <div id={ID_CITY_DLI} className={css.subAnchor}>
             <div className={boardGapClsOf({ gap: true })}>
-              <Sec title={t('pulse.city.dli')} sub>
+              <Sec title={t('pulse.city.dli')} right={<Updated iso={updatedAt} t={t} />} sub>
                 <Table<CityDliRow> rows={v.dliRows}
                   cols={cityDliColsOf({ t })}
                   rowKey={dliRowKeyOf}
