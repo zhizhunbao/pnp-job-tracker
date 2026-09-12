@@ -945,7 +945,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   // 2026-09-11 city section redesign (docs/design/把脉页城市段-20260911.md): search + four tables
   'pulse.city.main': 'Top cities', 'pulse.city.dli': 'Study cities',
   'pulse.city.name': 'City', 'pulse.city.open': 'Jobs', 'pulse.city.wage': 'Median wage',
-  'pulse.city.pop': 'Population', 'pulse.city.unemp': 'Unemployment',
+  'pulse.city.pop': 'Population', 'pulse.city.unemp': 'Unemployment', 'pulse.city.wageH': 'Median hourly',
   'pulse.city.comm': 'Community',
   'pulse.city.dliN': 'DLI schools', 'pulse.city.dliPub': 'Public', 'pulse.city.dliGrad': 'PGWP eligible',
   'pulse.top.open': 'Most jobs', 'pulse.top.wage': 'Highest wage',

@@ -667,6 +667,16 @@ export const COL_CITY_WAGE = 'wage'
 export const COL_CITY_POP = 'pop'
 
 /**
+ * 城市行业小表列键:中位时薪(2026-09-12 随组聚合快照挂列)。
+ */
+export const COL_CITY_WAGE_H = 'wageH'
+
+/**
+ * 城市组时薪文案的小数位(并行批的 HOURLY_DIGITS 落地后收拢去重)。
+ */
+export const CITY_HOURLY_DIGITS = 2
+
+/**
  * 城市表列键:失业率(数据是所在 CMA 都会区口径不是本市 —— 官方没有城市级失业率;
  * 列名原带「都会区」,2026-09-11 Frank「就叫失业率 不行吗」拍板短化:就业市场按都会区一体,
  * 口径记录留此注释与 cities.cma 字段。手机档藏)。
@@ -1047,6 +1057,12 @@ export const COL_LMIA_2Q = 'lmia2q'
  * 雇主表列键:业务(公司简介)。
  */
 export const COL_BIZ = 'biz'
+
+/**
+ * AIP 城市表的制度名(表题/分表锚键;2026-09-12 Frank「AIP 也需要一个城市的表」——
+ * AIP 是常设雇主指定制不是试点、没有社区清单,城市行从快照 aipJobs 出)。
+ */
+export const PILOT_AIP = 'AIP'
 
 /**
  * 试点名单 source 里认 RCIP 的记号。

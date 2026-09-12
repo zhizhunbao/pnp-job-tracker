@@ -2290,6 +2290,16 @@ export type CityIndRow = {
    * 中位年薪文案(没有显杠)。
    */
   wageText: string
+
+  /**
+   * 该城该组中位时薪(同口径,两位小数;旧快照过渡期是 null 不编)。
+   */
+  hourly: number | null
+
+  /**
+   * 中位时薪文案(没有显杠)。
+   */
+  hourlyText: string
 }
 
 /**
@@ -2325,6 +2335,11 @@ export type IndCityCell = {
    * 中位年薪;旧形快照过渡兜底不可拼 = null。
    */
   wage: number | null
+
+  /**
+   * 中位时薪;旧形快照过渡兜底不可拼 = null。
+   */
+  hourly: number | null
 }
 
 /**
@@ -2431,6 +2446,21 @@ export type CityPilotRowsIn = {
    * 城市全量榜(落板链接借它对名)。
    */
   cities: CityRow[]
+}
+
+/**
+ * `cityAipTableOf` 的入参。
+ */
+export type CityAipTableIn = {
+  /**
+   * 城市全量榜(aipJobs 快照格与双行名都从这来)。
+   */
+  cities: CityRow[]
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
 }
 
 /**

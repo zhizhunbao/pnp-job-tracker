@@ -39,7 +39,7 @@ import {
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
   TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
   CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
-  CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_COMM,
+  CITY_HOURLY_DIGITS, CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H, COL_COMM,
   COL_DLI_GRAD, COL_DLI_N,
   COL_CITY_WAGE, COL_DLI_PUB, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
@@ -52,7 +52,7 @@ import {
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
   VERDICT_PUBLIC, VERDICT_SHORT, MINI_BTN_KIND, W_EMP_ACT, CARD_PAGE_SIZE, COL_SECTOR, KEY_SECTOR_HEAD,
   SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_PRIVATE, SECTOR_PUBLIC,
-  COL_BIZ, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
+  COL_BIZ, PILOT_AIP, PILOT_FCIP, PILOT_RCIP, KEY_PILOT_HEAD, PILOT_KEYS, PILOT_KEY_AIP, PILOT_KEY_RCIP, TABLE_PILOT,
   SPACE_SEP, ACRONYM_MAX, CORP_SUFFIXES, NON_LETTER_RE, BRIEF_TAG_RE, BRIEF_TAG_WHAT,
   KEY_CHAIN, KEY_CHAIN_TIP, URL_AIP_TAIL, URL_PILOT_TAIL, PILOT_NONE, PILOT_KEY_FCIP, SUB_ID_SEP,
   ID_PROV_JOBS, GEO_CA, KEY_MACRO_HEAD, KEY_MON_HEAD,
@@ -112,7 +112,7 @@ import type {
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
   CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
-  CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn, CityPilotTable,
+  CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn, CityPilotTable,
   CityStatsProbe,
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
@@ -656,6 +656,7 @@ function citySubsOf(t: TFn): NavItem[] {
   for (const key of IND_KEYS) {
     out.push({ id: subIdOf({ band: ID_CITY_IND, key }), label: t(KEY_IND_HEAD + key) })
   }
+  out.push({ id: subIdOf({ band: ID_CITY_PILOT, key: PILOT_AIP }), label: PILOT_AIP })
   out.push({ id: subIdOf({ band: ID_CITY_PILOT, key: PILOT_RCIP }), label: PILOT_RCIP })
   out.push({ id: subIdOf({ band: ID_CITY_PILOT, key: PILOT_FCIP }), label: PILOT_FCIP })
   out.push({ id: ID_CITY_DLI, label: t('pulse.city.dli') })
@@ -2342,7 +2343,7 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
     const sums = new Map<string, IndCityCell>()
     for (const r of x.rows) {
       if (r.broad === key) {
-        sums.set(r.city + KEY_SEP + r.province, { n: r.n, wage: r.wage })
+        sums.set(r.city + KEY_SEP + r.province, { n: r.n, wage: r.wage, hourly: r.hourly })
         continue
       }
       if (broads.includes(r.broad) === false) {
@@ -2351,7 +2352,7 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
       const ck = r.city + KEY_SEP + r.province
       const cur = sums.get(ck)
       if (cur == null) {
-        sums.set(ck, { n: r.n, wage: null })
+        sums.set(ck, { n: r.n, wage: null, hourly: null })
       } else {
         cur.n = cur.n + r.n
       }
@@ -2371,6 +2372,8 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
         n: cell.n,
         wage: cell.wage,
         wageText: wageOrDashOf(cell.wage),
+        hourly: cell.hourly,
+        hourlyText: hourlyOrDashOf(cell.hourly),
       })
     }
     rows.sort(byIndOpenDesc)
@@ -2403,6 +2406,13 @@ export function cityIndColsOf(x: CityIndColsIn): StartCol<CityIndRow>[] {
   return [
     { key: COL_CITY, label: x.t('pulse.city.name'), sort: indNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: indOpenSortOf, render: indOpenTextOf },
+    {
+      key: COL_CITY_WAGE_H,
+      label: x.t('pulse.city.wageH'),
+      nowrap: true,
+      sort: indHourlySortOf,
+      render: indHourlyTextOf,
+    },
     { key: COL_CITY_WAGE, label: x.t('pulse.city.wage'), nowrap: true, sort: indWageSortOf, render: indWageTextOf },
   ]
 }
@@ -2459,6 +2469,42 @@ function indWageSortOf(r: CityIndRow): number {
  */
 function indWageTextOf(r: CityIndRow): string {
   return r.wageText
+}
+
+/**
+ * 行业小表中位时薪排序键(没有的行按 0 排,只影响排序位)。
+ *
+ * @param r 一行。
+ * @returns 中位时薪。
+ */
+function indHourlySortOf(r: CityIndRow): number {
+  if (r.hourly == null) {
+    return 0
+  }
+  return r.hourly
+}
+
+/**
+ * 行业小表中位时薪列文案。
+ *
+ * @param r 一行。
+ * @returns 美元文案;没有显杠。
+ */
+function indHourlyTextOf(r: CityIndRow): string {
+  return r.hourlyText
+}
+
+/**
+ * 中位时薪文案(两位小数带币记;2026-09-12 城市组时薪列)。
+ *
+ * @param n 时薪;没有 null。
+ * @returns 美元文案;没有显杠。
+ */
+function hourlyOrDashOf(n: number | null): string {
+  if (n == null) {
+    return DASH_MARK
+  }
+  return CURRENCY_MARK + n.toFixed(CITY_HOURLY_DIGITS)
 }
 
 /**
@@ -2545,6 +2591,50 @@ export function pilotNameSortOf(r: CityPilotRow): string {
 }
 
 /**
+ * 城市榜 → AIP 城市表(2026-09-12 Frank「AIP 也需要一个城市的表」:AIP 是常设雇主指定制、
+ * 没有社区清单,行 = 快照 aipJobs > 0 的城按 AIP 岗数降序;城市名照双行约定,
+ * 挂在试点表清单头上与 RCIP / FCIP 并排,表题 = 制度名)。
+ *
+ * @param x 城市榜与界面语言。
+ * @returns 一张表;没有任何城有 AIP 岗时 null。
+ */
+export function cityAipTableOf(x: CityAipTableIn): CityPilotTable | null {
+  const onOpen = makeCityTrack(CITY_KIND_PILOT)
+  const rows: CityPilotRow[] = []
+  for (const c of x.cities) {
+    if (c.aipJobs == null || c.aipJobs === 0) {
+      continue
+    }
+    rows.push({
+      key: c.city + KEY_SEP + c.province + KEY_SEP + PILOT_AIP,
+      name: cityNameOf({ r: c, lang: x.lang }),
+      note: cityNoteOf({ r: c, lang: x.lang }),
+      href: cityHrefOf(c.city),
+      onOpen,
+      open: c.aipJobs,
+      openText: numOf(c.aipJobs),
+    })
+  }
+  if (rows.length === 0) {
+    return null
+  }
+  rows.sort(byPilotOpenDesc)
+  return { key: PILOT_AIP, rows }
+}
+
+/**
+ * AIP 城市表的行序:AIP 岗数降序。
+ *
+ * @param a 一行。
+ * @param b 另一行。
+ * @returns 比较值。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byPilotOpenDesc(a: CityPilotRow, b: CityPilotRow): number {
+  return b.open - a.open
+}
+
+/**
  * 表 3 在招排序键。
  *
  * @param r 一行。
@@ -2608,6 +2698,7 @@ function dliAsCityRowOf(r: DliCityRow): CityRow {
     salaryN: null,
     namedJobs: null,
     pilot: null,
+    aipJobs: null,
     population: null,
     unempRate: null,
   }

@@ -772,7 +772,7 @@ export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
  * 这里只剩毫秒级快照读。pilot 列 = 城市级专属通道信号(RCIP / FCIP / RCIP+FCIP)。
  */
 export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs, s.pilot,
-              c.population, c.unemp_rate
+              s.aip_jobs, c.population, c.unemp_rate
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
@@ -787,12 +787,14 @@ export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
  * 的教训)、$2=fetched 日期串。中位数取整:快照列是 integer,percentile_cont 回 double。
  * pilot / pilot_community 取城内非空打标的 MAX(同城打标同值,MAX 只是聚合语法要求)。
  * $3=大类→行业组的 jsonb 归组表(lib/stats BROAD_TO_GROUP;2026-09-11 Frank「带行业的中位薪
- * 才有意义」「今晚按八组直接算」:by_broad 从 {大类: 岗数} 改 {组: {n, wage}} —— 组内所有岗
- * 的真中位年薪,中位数不可由大类中位数拼出所以在 SQL 里按组聚合;表外大类(未分类)不进)。
+ * 才有意义」「今晚按八组直接算」:by_broad 从 {大类: 岗数} 改 {组: {n, wage, hourly}} —— 组内
+ * 所有岗的真中位年薪与真中位时薪(jobs.wage_med_hourly 每轮 seed 已灌;中位数不可由大类中位数
+ * 拼出所以在 SQL 里按组聚合;表外大类(未分类)不进)。aip_jobs = 城内在招 AIP 资格岗数
+ * (2026-09-12 Frank「AIP 也需要一个城市的表」)。
  */
-export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, fetched, updated_at, created_at)
+export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, aip_jobs, fetched, updated_at, created_at)
        SELECT g.city, g.province, g.open_jobs, g.new7d, g.median_wage_annual, g.median_salary_annual,
-              g.salary_n, g.named_jobs, g.pilot, g.pilot_community, b.by_broad, $2, now(), now()
+              g.salary_n, g.named_jobs, g.pilot, g.pilot_community, b.by_broad, g.aip_jobs, $2, now(), now()
        FROM (
          SELECT j.city, j.province, COUNT(*)::int AS open_jobs,
                 COUNT(*) FILTER (WHERE j.date_posted >= $1)::int AS new7d,
@@ -801,14 +803,16 @@ export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_
                 COUNT(j.salary_annual)::int AS salary_n,
                 COUNT(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int AS named_jobs,
                 MAX(NULLIF(j.pilot, '')) AS pilot,
-                MAX(NULLIF(j.pilot_community, '')) AS pilot_community
+                MAX(NULLIF(j.pilot_community, '')) AS pilot_community,
+                COUNT(*) FILTER (WHERE j.aip = true)::int AS aip_jobs
          FROM jobs j
          WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
          GROUP BY j.city, j.province) g
        LEFT JOIN (
-         SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage)) AS by_broad FROM (
+         SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage, 'hourly', hourly)) AS by_broad FROM (
            SELECT city, province, ($3::jsonb ->> broad) AS grp, COUNT(*)::int AS n,
-                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_annual))::numeric)::int AS wage
+                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_annual))::numeric)::int AS wage,
+                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_hourly))::numeric, 2)::float8 AS hourly
            FROM jobs
            WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(city, '') <> '' AND ($3::jsonb ? COALESCE(broad, ''))
            GROUP BY city, province, grp) t

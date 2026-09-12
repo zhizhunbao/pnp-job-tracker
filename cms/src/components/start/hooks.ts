@@ -18,7 +18,7 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { ID_PGWP, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
-  cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
+  cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, toCityDliRows, toCityMainRows,
@@ -26,7 +26,7 @@ import {
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
 import type {
-  CardPageIn, CityData, CityPanel, CityPanelIn,
+  CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpKind, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
   NocProvsMap,
@@ -113,8 +113,16 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     if (data == null) {
       return []
     }
-    return cityPilotTablesOf({ pilots: data.pilots, cities: data.cities })
-  }, [data])
+    const out: CityPilotTable[] = []
+    const aip = cityAipTableOf({ cities: data.cities, lang: x.lang })
+    if (aip != null) {
+      out.push(aip)
+    }
+    for (const tb of cityPilotTablesOf({ pilots: data.pilots, cities: data.cities })) {
+      out.push(tb)
+    }
+    return out
+  }, [data, x.lang])
 
   const dliRows = useMemo(function pickDliRows() {
     if (data == null) {

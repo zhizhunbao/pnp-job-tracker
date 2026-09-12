@@ -724,6 +724,12 @@ export type CityRow = {
   pilot: string | null
 
   /**
+   * 城内在招 AIP 资格岗数(2026-09-12 Frank「AIP 也需要一个城市的表」;快照重算聚合,
+   * 旧快照过渡期是 null)。
+   */
+  aipJobs: number | null
+
+  /**
    * CSD 人口(StatCan 17-10-0155 年度估计,2026-09-11 城市段批二;人工核定城市清单外是 null)。
    */
   population: number | null
@@ -789,6 +795,11 @@ export type CityIndustryRow = {
    * 该城该组中位年薪(组内所有岗的 ESDC 官方中位年薪取中位;旧快照没有 = null 不编)。
    */
   wage: number | null
+
+  /**
+   * 该城该组中位时薪(同口径取中位,两位小数;旧快照没有 = null 不编)。
+   */
+  hourly: number | null
 }
 
 /**
@@ -836,6 +847,11 @@ export type CityBroadCell = {
    * 该组中位年薪。
    */
   wage?: number | null
+
+  /**
+   * 该组中位时薪(两位小数)。
+   */
+  hourly?: number | null
 }
 
 /**

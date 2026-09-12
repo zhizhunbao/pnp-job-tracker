@@ -938,7 +938,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   // 2026-09-11 도시 섹션 개편(docs/design/把脉页城市段-20260911.md): 검색 + 표 4장
   'pulse.city.main': '주요 도시', 'pulse.city.dli': '유학 도시',
   'pulse.city.name': '도시', 'pulse.city.open': '채용', 'pulse.city.wage': '중위 연봉',
-  'pulse.city.pop': '인구', 'pulse.city.unemp': '실업률',
+  'pulse.city.pop': '인구', 'pulse.city.unemp': '실업률', 'pulse.city.wageH': '중위 시급',
   'pulse.city.comm': '커뮤니티',
   'pulse.city.dliN': 'DLI 학교', 'pulse.city.dliPub': '공립', 'pulse.city.dliGrad': 'PGWP 가능',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',

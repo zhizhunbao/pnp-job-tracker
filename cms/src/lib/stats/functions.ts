@@ -429,6 +429,7 @@ export function toCityRow(r: Row): CityRow {
     medianWageAnnual: numOrNull(r.median_wage_annual), medianSalaryAnnual: numOrNull(r.median_salary_annual),
     salaryN: numOrNull(r.salary_n), namedJobs: numOrNull(r.named_jobs),
     pilot: textOrNull(r.pilot),
+    aipJobs: numOrNull(r.aip_jobs),
     population: numOrNull(r.population), unempRate: numOrNull(r.unemp_rate),
   }
 }
@@ -453,7 +454,7 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
       continue
     }
     if (typeof cell === 'number') {
-      out.push({ city, province, broad, n: cell, wage: null })
+      out.push({ city, province, broad, n: cell, wage: null, hourly: null })
       continue
     }
     if (cell == null || typeof cell !== 'object') {
@@ -466,7 +467,11 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
     if (typeof cell.wage === 'number') {
       wage = cell.wage
     }
-    out.push({ city, province, broad, n: cell.n, wage })
+    let hourly: number | null = null
+    if (typeof cell.hourly === 'number') {
+      hourly = cell.hourly
+    }
+    out.push({ city, province, broad, n: cell.n, wage, hourly })
   }
   return out
 }
