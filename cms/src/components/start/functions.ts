@@ -38,7 +38,7 @@ import {
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
   TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, URL_HOME_PROV_HEAD,
-  PROV_UTM_TAIL, WAGE_MIN_OPEN,
+  PROV_UTM_TAIL, URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
   CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
   CITY_HOURLY_DIGITS, CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H, COL_COMM,
   COL_DLI_GRAD, COL_DLI_N,
@@ -115,7 +115,8 @@ import type {
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
   CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
-  CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn, CityPilotTable,
+  CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPageHrefIn, CityPilotRow, CityPilotRowsIn,
+  CityPilotTable,
   CityStatsProbe,
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
@@ -2111,6 +2112,16 @@ function cityListsOf(j: CityStatsProbe): CityData {
 }
 
 /**
+ * 城市详情页的地址(/city/省码/城名;2026-09-12 表 1 城市名的落点)。
+ *
+ * @param x 城名与省码。
+ * @returns 地址。
+ */
+function cityPageHrefOf(x: CityPageHrefIn): string {
+  return URL_CITY_PAGE_HEAD + x.province + URL_PATH_SEP + encodeURIComponent(x.city)
+}
+
+/**
  * 城市段落职位板的地址(按城市筛 + 来源标记)。
  *
  * @param city 城市英文名。
@@ -2159,7 +2170,8 @@ export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
       key: r.city + KEY_SEP + r.province,
       name: cityNameOf({ r, lang: x.lang }),
       note: cityNoteOf({ r, lang: x.lang }),
-      href: cityHrefOf(r.city),
+      href: cityPageHrefOf({ city: r.city, province: r.province }),
+      jobsHref: cityHrefOf(r.city),
       onOpen,
       open: r.openJobs,
       openText: numOrDashOf(r.openJobs),

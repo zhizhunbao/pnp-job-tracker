@@ -21,7 +21,7 @@ import css from './start.module.css'
 export function CityActCell(r: CityMainRow) {
   return (
     <span className={css.acts}>
-      <LinkButton href={r.href} onClick={r.onOpen} className={r.actBtnCls} target={NEW_TAB}>
+      <LinkButton href={r.jobsHref} onClick={r.onOpen} className={r.actBtnCls} target={NEW_TAB}>
         {r.actText}
       </LinkButton>
     </span>

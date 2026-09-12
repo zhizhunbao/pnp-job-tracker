@@ -626,6 +626,17 @@ export const URL_HOME_PROV_HEAD = '/?prov='
 export const PROV_UTM_TAIL = '&utm_source=pulse_prov'
 
 /**
+ * 城市详情页地址头(2026-09-12 批三首件上线:表 1 城市名改落详情页,职位板归看岗位钮 ——
+ * 照雇主板「名字进详情、操作进板」的形;行业/试点/留学三组表的名字仍落板,详情页入口一处即可)。
+ */
+export const URL_CITY_PAGE_HEAD = '/city/'
+
+/**
+ * 城市详情页地址的段分隔(省码 / 城名)。
+ */
+export const URL_PATH_SEP = '/'
+
+/**
  * 城市段落地职位板的来源标记尾巴(2026-09-11:旧城市卡落地不带来源,职位板侧认不出;
  * utm 由 Umami 自动收,funnel 另有 city-open 第一方计数)。
  */

@@ -940,7 +940,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.city.name': '도시', 'pulse.city.open': '채용', 'pulse.city.wage': '중위 연봉',
   'pulse.city.pop': '인구', 'pulse.city.unemp': '실업률', 'pulse.city.wageH': '중위 시급',
   'pulse.city.comm': '커뮤니티',
-  'pulse.city.dliN': 'DLI 학교', 'pulse.city.dliPub': '공립', 'pulse.city.dliGrad': 'PGWP 가능',
+  'pulse.city.dliN': 'DLI 학교', 'city.facts': '개요', 'city.byInd': '업종 분포', 'city.byIndCol': '업종', 'city.channel': '전용 채널', 'city.school': '학교', 'city.schoolType': '유형', 'city.pub': '공립', 'city.priv': '사립', 'city.none': '수록되지 않은 도시입니다', 'pulse.city.dliPub': '공립', 'pulse.city.dliGrad': 'PGWP 가능',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
   'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직',
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',

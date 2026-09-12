@@ -8,7 +8,8 @@
  */
 
 export {
-  loadChannelNocs, loadCityStats, loadDailySeries, loadFineCounts, loadOccStats, loadProvExtra, loadStats,
+  loadChannelNocs, loadCityDetail, loadCityDliList, loadCityPilotTypes, loadCityStats, loadDailySeries,
+  loadFineCounts, loadOccStats, loadProvExtra, loadStats,
   loadStatSources,
 } from './functions'
 export { statsCityRoute, statsDataRoute, statsFineRoute, statsMacroRoute, statsMarketRoute } from './routes'

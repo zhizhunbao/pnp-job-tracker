@@ -860,6 +860,30 @@ export const CITY_DLI_STATS = `SELECT d.city, d.province, c.name_zh, c.name_ko,
        ORDER BY n DESC, d.city ASC LIMIT $1`
 
 /**
+ * 城市详情页基面(2026-09-12 批三首件):cities 维度打底 LEFT JOIN 快照 ——
+ * 有城无在招也给页(快照格空着显杠),查无城 0 行页走 Notice。$1=城英文名、$2=省码。
+ */
+export const CITY_DETAIL = `SELECT c.name AS city, c.province, c.name_zh, c.name_ko,
+              c.population, c.pop_period, c.unemp_rate, c.unemp_period, c.cma,
+              s.open_jobs, s.new7d, s.median_wage_annual, s.pilot, s.aip_jobs, s.by_broad
+       FROM cities c LEFT JOIN stats_city s ON s.city = c.name AND s.province = c.province
+       WHERE c.name = $1 AND c.province = $2`
+
+/**
+ * 城市详情页·该城 DLI 名单(公立在前再按名序;表 4 只有计数,名单在详情页给)。
+ */
+export const CITY_DLI_LIST = `SELECT name, is_public, grad_program, url FROM dli
+       WHERE city = $1 AND province = $2
+       ORDER BY is_public DESC, name ASC`
+
+/**
+ * 城市详情页·该城命中的试点通道(社区官方名 = 城名或「城名, 省」打头;双制城出两行)。
+ */
+export const CITY_PILOT_TYPES = `SELECT type FROM pilot_communities
+       WHERE province = $2 AND (name = $1 OR name LIKE $1 || ',%')
+       ORDER BY type ASC`
+
+/**
  * 把脉页趋势段·逐日在招量(2026-09-04 Frank「趋势先一张全国,再按行业拆」)。
  * stats_daily 一行 = 日期 × 省 × 大类,大类含汇总行 'all';这里按日期 × 大类把十省加总,
  * 全国线取 broad='all',行业线由前端按 9 组再加总。$1=回看天数。

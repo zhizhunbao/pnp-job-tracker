@@ -21,6 +21,7 @@ import {
 } from './constants'
 import type {
   BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
+  CityDetail, CityDetailIn, CityDetailOut, CityKeyIn, CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
   CityIndustryOut,
   CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliCityRow, EmptyList,
   FineCountsIn, FineRowsOut,
@@ -484,6 +485,127 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
  */
 export function toBroadLabelRow(r: Row): BroadLabelRow {
   return { broad: text(r.broad), broadEn: text(r.broad_en), broadKo: text(r.broad_ko) }
+}
+
+/**
+ * 城市详情页基面(2026-09-12 批三首件):cities 打底 LEFT JOIN 快照,行业分布随行展开。
+ * 查无城回 null(页面走 Notice);缺表容错同 loadCityStats。
+ *
+ * @param x 连接池与城市定位。
+ * @returns 基面;查无城 null。
+ */
+export async function loadCityDetail(x: CityDetailIn): CityDetailOut {
+  try {
+    const res = await x.db.query(SQL.CITY_DETAIL, [x.city, x.province])
+    const r = res.rows[0]
+    if (r == null) {
+      return null
+    }
+    return toCityDetail(r)
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return null
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 城市详情基面一行 → `CityDetail`(值级清洗;by_broad 组格复用行业展开器)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的基面。
+ */
+function toCityDetail(r: Row): CityDetail {
+  const city = text(r.city)
+  const province = text(r.province)
+  return {
+    city,
+    cityZh: text(r.name_zh),
+    cityKo: text(r.name_ko),
+    province,
+    population: numOrNull(r.population),
+    popPeriod: textOrNull(r.pop_period),
+    unempRate: numOrNull(r.unemp_rate),
+    unempPeriod: textOrNull(r.unemp_period),
+    cma: textOrNull(r.cma),
+    openJobs: numOrNull(r.open_jobs),
+    new7d: numOrNull(r.new7d),
+    medianWageAnnual: numOrNull(r.median_wage_annual),
+    pilot: textOrNull(r.pilot),
+    aipJobs: numOrNull(r.aip_jobs),
+    groups: toCityIndustryRows({ city, province, by_broad: r.by_broad } as CityBroadDbRow),
+  }
+}
+
+/**
+ * 城市详情页·该城 DLI 名单(公立在前;表 4 只有计数,名单只在详情页给)。
+ * 缺表容错同 loadCityStats。
+ *
+ * @param x 连接池与城市定位。
+ * @returns 院校清单。
+ */
+export async function loadCityDliList(x: CityKeyIn): CitySchoolsOut {
+  try {
+    return await queryRows({ db: x.db, sql: SQL.CITY_DLI_LIST, params: [x.city, x.province], map: toCitySchoolRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * DLI 一行 → `CitySchoolRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+function toCitySchoolRow(r: Row): CitySchoolRow {
+  return {
+    name: text(r.name),
+    isPublic: r.is_public === true,
+    gradProgram: r.grad_program === true,
+    url: text(r.url),
+  }
+}
+
+/**
+ * 城市详情页·该城命中的试点通道名(社区官方名 = 城名或「城名, 省」打头;双制城两行)。
+ * 缺表容错同 loadCityStats。
+ *
+ * @param x 连接池与城市定位。
+ * @returns 通道名清单(RCIP / FCIP)。
+ */
+export async function loadCityPilotTypes(x: CityKeyIn): CityPilotTypesOut {
+  try {
+    return await queryRows({ db: x.db, sql: SQL.CITY_PILOT_TYPES, params: [x.city, x.province], map: toPilotTypeText })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 试点行 → 通道名一串。
+ *
+ * @param r 库里的一行。
+ * @returns 通道名。
+ */
+function toPilotTypeText(r: Row): string {
+  return text(r.type)
 }
 
 /**

@@ -1,0 +1,115 @@
+/*
+ * 城市详情页样式(2026-09-12 批三首件;骨架照职位详情页规:H1 + 白卡,手机优先)。
+ */
+
+/*
+ * 标题行:左 H1 双行、右看岗位钮,手机同排换行安全。
+ */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 14px;
+}
+
+/*
+ * H1(照详情页 H1 规格)。
+ */
+.title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+/*
+ * H1 灰注(英文名 省码)。
+ */
+.note {
+  margin-top: 2px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/*
+ * 看岗位钮(描边胶囊,不与 H1 抢重量)。
+ */
+.jobsBtn {
+  flex: none;
+  padding: 6px 14px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*
+ * 白卡(块与块之间留距)。
+ */
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  margin-bottom: 14px;
+}
+
+/*
+ * 块标题行:左题右更新时间,贴表 4px(09-03 铁律「表右上角 Updated」)。
+ */
+.secHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+/*
+ * 块标题。
+ */
+.secTitle {
+  margin: 0;
+  font-size: 15px;
+}
+
+/*
+ * 概览:手机一列、桌面两列网格,一行一条。
+ */
+.facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px 24px;
+}
+
+/*
+ * 概览一行(标签左、值右)。
+ */
+.factRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+/*
+ * 概览标签(灰)。
+ */
+.factLabel {
+  color: #6b7280;
+}
+
+/*
+ * 概览值(数字右对齐读得快)。
+ */
+.factValue {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (width >= 900px) {
+  .facts {
+    /*
+     * 桌面两列。
+     */
+    grid-template-columns: 1fr 1fr;
+  }
+}

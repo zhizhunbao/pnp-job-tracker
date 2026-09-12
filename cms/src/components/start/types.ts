@@ -2223,6 +2223,11 @@ export type CityMainRow = {
    * 看岗位钮的类。
    */
   actBtnCls: string
+
+  /**
+   * 看岗位钮的地址(职位板按城市筛;名字链接 href 归详情页,照雇主板「名字进详情、操作进板」)。
+   */
+  jobsHref: string
 }
 
 /**
@@ -2330,6 +2335,21 @@ export type CityIndTable = {
    * 行(该组有在招的城,按在招降序)。
    */
   rows: CityIndRow[]
+}
+
+/**
+ * `cityPageHrefOf` 的入参。
+ */
+export type CityPageHrefIn = {
+  /**
+   * 城英文名。
+   */
+  city: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
 }
 
 /**

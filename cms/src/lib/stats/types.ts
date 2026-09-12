@@ -855,6 +855,166 @@ export type CityBroadCell = {
 }
 
 /**
+ * `loadCityDetail` 的入参(2026-09-12 城市详情页首件)。
+ */
+export type CityDetailIn = {
+  /**
+   * 注入的连接池。
+   */
+  db: Db
+
+  /**
+   * 城英文名(路由段解码后的原名)。
+   */
+  city: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+}
+
+/**
+ * 城市详情页基面(cities 维度打底 LEFT JOIN 快照;无在招时快照格 null 显杠)。
+ */
+export type CityDetail = {
+  /**
+   * 城英文名。
+   */
+  city: string
+
+  /**
+   * 中文译名;没有是空串。
+   */
+  cityZh: string
+
+  /**
+   * 韩文译名;没有是空串。
+   */
+  cityKo: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * CSD 人口;官方没有 null。
+   */
+  population: number | null
+
+  /**
+   * 人口期标;没有 null。
+   */
+  popPeriod: string | null
+
+  /**
+   * 所在都会区失业率(CMA 口径);不在 CMA null。
+   */
+  unempRate: number | null
+
+  /**
+   * 失业率期标(月);没有 null。
+   */
+  unempPeriod: string | null
+
+  /**
+   * 所在都会区名;不在 CMA null。
+   */
+  cma: string | null
+
+  /**
+   * 在招岗数;无快照 null。
+   */
+  openJobs: number | null
+
+  /**
+   * 近 7 天发布;无快照 null。
+   */
+  new7d: number | null
+
+  /**
+   * 全城中位年薪;无快照 null。
+   */
+  medianWageAnnual: number | null
+
+  /**
+   * 城市级专属通道打标(RCIP / FCIP / RCIP+FCIP);没有 null。
+   */
+  pilot: string | null
+
+  /**
+   * 城内在招 AIP 资格岗数;无快照 null。
+   */
+  aipJobs: number | null
+
+  /**
+   * 行业分布(by_broad 组格展开,一组一行)。
+   */
+  groups: CityIndustryRow[]
+}
+
+/**
+ * `loadCityDetail` 的返回。
+ */
+export type CityDetailOut = Promise<CityDetail | null>
+
+/**
+ * 城市详情页·DLI 一行(名单;表 4 只有计数)。
+ */
+export type CitySchoolRow = {
+  /**
+   * 院校官方名。
+   */
+  name: string
+
+  /**
+   * 公立与否。
+   */
+  isPublic: boolean
+
+  /**
+   * 毕业可申工签(PGWP 资格)与否。
+   */
+  gradProgram: boolean
+
+  /**
+   * 官网;没有是空串。
+   */
+  url: string
+}
+
+/**
+ * `loadCityDliList` 的返回。
+ */
+export type CitySchoolsOut = Promise<CitySchoolRow[]>
+
+/**
+ * `loadCityDliList` / `loadCityPilotTypes` 的入参(同城定位)。
+ */
+export type CityKeyIn = {
+  /**
+   * 注入的连接池。
+   */
+  db: Db
+
+  /**
+   * 城英文名。
+   */
+  city: string
+
+  /**
+   * 两位省码。
+   */
+  province: string
+}
+
+/**
+ * `loadCityPilotTypes` 的返回(该城命中的试点通道名清单)。
+ */
+export type CityPilotTypesOut = Promise<string[]>
+
+/**
  * 大类三语名一行(SQL.CITY_BROAD_LABELS;行业对比列头)。
  */
 export type BroadLabelRow = {

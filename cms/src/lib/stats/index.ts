@@ -14,6 +14,7 @@
 
 export { BROAD_SLUGS, BROAD_TO_GROUP, PROVS, PROV_NAME } from './constants'
 export type {
-  BroadLabelRow, ChannelNocs, CityIndustryRow, CityRow, DailyRow, DliCityRow, OccRow, PilotCommRow, ProvExtra,
+  BroadLabelRow, ChannelNocs, CityDetail, CityIndustryRow, CityRow, CitySchoolRow, DailyRow, DliCityRow, OccRow,
+  PilotCommRow, ProvExtra,
   ProvVol, ProvVolNum, SrcRow, StatRow,
 } from './types'

@@ -1038,7 +1038,7 @@ export const siteZh = {
   'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
   'pulse.city.pop': '人口', 'pulse.city.unemp': '失业率', 'pulse.city.wageH': '中位时薪',
   'pulse.city.comm': '社区',
-  'pulse.city.dliN': 'DLI 院校', 'pulse.city.dliPub': '其中公立', 'pulse.city.dliGrad': '可申工签',
+  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.none': '本站未收录该城市', 'pulse.city.dliPub': '其中公立', 'pulse.city.dliGrad': '可申工签',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
   'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',
