@@ -13,9 +13,11 @@ import path from 'path'
 import { gunzipSync } from 'zlib'
 
 import { getDb } from '../db/server'
+import { DB_LOG, log } from '@/lib/log'
 import {
-  BYTE_LBRACKET, BYTE_RBRACKET, BYTE_WS_MAX, E_BAD_GZIP, E_BAD_NAME, E_NOT_ARRAY, GZIP_HEAD_LEN, GZIP_MAGIC_0,
-  GZIP_MAGIC_1, JSON_EXT, P_RESET, P_TOKEN, S_BAD_REQUEST, S_UNAUTHORIZED, T_UNAUTHORIZED, TABLE_NAME_RE,
+  BYTE_LBRACKET, BYTE_RBRACKET, BYTE_WS_MAX, E_BAD_GZIP, E_BAD_NAME, E_NOT_ARRAY, E_SEED_FAIL, GZIP_HEAD_LEN,
+  GZIP_MAGIC_0,
+  GZIP_MAGIC_1, JSON_EXT, P_RESET, P_TOKEN, S_BAD_REQUEST, S_INTERNAL, S_UNAUTHORIZED, T_UNAUTHORIZED, TABLE_NAME_RE,
   TMP_PREFIX, TMP_SUFFIX,
 } from './constants'
 import { martCounterpart, martTmpDir, runSeed, seedTokenOk } from './functions'
@@ -105,6 +107,15 @@ export async function seedRoute(req: Request): Promise<Response> {
     reset = true
   }
   const db = await getDb()
-  const out = await runSeed({ db: db, reset: reset })
-  return Response.json(out)
+  try {
+    const out = await runSeed({ db: db, reset: reset })
+    return Response.json(out)
+  } catch (e) {
+    let msg = String(e)
+    if (e instanceof Error) {
+      msg = e.message
+    }
+    log({ tag: DB_LOG.tag, text: E_SEED_FAIL + msg })
+    return Response.json({ ok: false, error: E_SEED_FAIL + msg }, { status: S_INTERNAL })
+  }
 }

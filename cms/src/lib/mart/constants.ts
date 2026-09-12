@@ -98,6 +98,17 @@ export const E_BAD_NAME = 'bad table name'
 export const E_BAD_GZIP = 'bad gzip: '
 
 /**
+ * seed 入口 catch 的错误前缀(2026-09-12 加:此前 runSeed 裸 throw → Next 空 500,
+ * 生产只能进仪表盘捞栈;现在留痕 + 消息随响应回来)。
+ */
+export const E_SEED_FAIL = 'seed: '
+
+/**
+ * 服务端错(seed 入口 catch 的状态码)。
+ */
+export const S_INTERNAL = 500
+
+/**
  * 错误体:载荷不是 JSON 数组(完整性由 gzip CRC 保证,这里只查首尾括号 ——
  * 全量 parse 在 512MB 实例上内存翻几倍,上线首日 502 实撞)。
  */
