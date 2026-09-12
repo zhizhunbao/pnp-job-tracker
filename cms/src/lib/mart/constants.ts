@@ -654,7 +654,7 @@ export const COLS_STATS_CITY = ['city', 'province', 'open_jobs', 'new7d', 'media
 /**
  * stats 列(E5-04 地区统计)。
  */
-export const COLS_STATS = ['province', 'broad', 'mid', 'open_jobs', 'new7d', 'median_wage_annual', 'median_salary_annual', 'named_jobs', 'stream_labels', 'aip_jobs', 'top_cities', 'fetched', 'difficulty']
+export const COLS_STATS = ['province', 'broad', 'mid', 'open_jobs', 'new7d', 'median_wage_annual', 'wage_low_hourly', 'wage_med_hourly', 'wage_high_hourly', 'median_salary_annual', 'named_jobs', 'stream_labels', 'aip_jobs', 'top_cities', 'fetched', 'difficulty']
 
 /**
  * stats_daily 列(含时间戳;按 (date,province,broad) UPSERT,一天多跑几轮只更新今天这批)。
