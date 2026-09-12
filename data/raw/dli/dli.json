@@ -3535,7 +3535,7 @@
   {
    "province": "ON",
    "name": "University of Waterloo",
-   "nameZh": "",
+   "nameZh": "滑铁卢大学",
    "dliNumber": "O19305471522",
    "city": "Breslau",
    "campuses": 8,
@@ -3545,7 +3545,7 @@
   {
    "province": "ON",
    "name": "University of Waterloo",
-   "nameZh": "",
+   "nameZh": "滑铁卢大学",
    "dliNumber": "O19305471522",
    "city": "Cambridge",
    "campuses": 8,
@@ -3555,7 +3555,7 @@
   {
    "province": "ON",
    "name": "University of Waterloo",
-   "nameZh": "",
+   "nameZh": "滑铁卢大学",
    "dliNumber": "O19305471522",
    "city": "Stratford",
    "campuses": 8,
@@ -3565,7 +3565,7 @@
   {
    "province": "ON",
    "name": "University of Waterloo",
-   "nameZh": "",
+   "nameZh": "滑铁卢大学",
    "dliNumber": "O19305471522",
    "city": "Toronto",
    "campuses": 8,
@@ -3585,7 +3585,7 @@
   {
    "province": "ON",
    "name": "Université Saint-Paul/St. Paul University",
-   "nameZh": "",
+   "nameZh": "圣保罗大学",
    "dliNumber": "O19395164265",
    "city": "Ottawa",
    "campuses": 1,
@@ -3625,7 +3625,7 @@
   {
    "province": "ON",
    "name": "Université de l'Ontario français",
-   "nameZh": "",
+   "nameZh": "安大略法语大学",
    "dliNumber": "O146030735072",
    "city": "Toronto",
    "campuses": 1,
@@ -3695,7 +3695,7 @@
   {
    "province": "ON",
    "name": "Wilfrid Laurier University",
-   "nameZh": "",
+   "nameZh": "劳里埃大学",
    "dliNumber": "O19395164307",
    "city": "Brantford",
    "campuses": 5,
@@ -3705,7 +3705,7 @@
   {
    "province": "ON",
    "name": "Wilfrid Laurier University",
-   "nameZh": "",
+   "nameZh": "劳里埃大学",
    "dliNumber": "O19395164307",
    "city": "Kitchener",
    "campuses": 5,
@@ -3715,7 +3715,7 @@
   {
    "province": "ON",
    "name": "Wilfrid Laurier University",
-   "nameZh": "",
+   "nameZh": "劳里埃大学",
    "dliNumber": "O19395164307",
    "city": "Toronto",
    "campuses": 5,
@@ -4925,7 +4925,7 @@
   {
    "province": "QC",
    "name": "Télé-université",
-   "nameZh": "",
+   "nameZh": "魁北克远程大学",
    "dliNumber": "O19359201245",
    "city": "Québec",
    "campuses": 1,
