@@ -113,8 +113,8 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     if (data == null) {
       return []
     }
-    return toCityPilotRows({ pilots: data.pilots, cities: data.cities, t: x.t, lang: x.lang })
-  }, [data, x.t, x.lang])
+    return toCityPilotRows({ pilots: data.pilots, cities: data.cities, t: x.t })
+  }, [data, x.t])
 
   const dliRows = useMemo(function pickDliRows() {
     if (data == null) {

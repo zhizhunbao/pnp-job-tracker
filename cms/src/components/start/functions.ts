@@ -2392,8 +2392,10 @@ function pilotShortNameOf(name: string): string {
 }
 
 /**
- * 试点社区行 → 表 3 展示行。社区短名与城市榜同名时借译名并给落板链接;
- * 对不上名的(社区 ≠ 单一城市,如 Pictou County)不给链接 —— 落到空职位板比不链更糟。
+ * 试点社区行 → 表 3 展示行。社区名一律英文主文案 + 省码灰注(2026-09-11 Frank
+ * 「试点社区 城市 都用英文名吧。是不是都没有中文名?」—— 试点多是 147 城译名表外的小地方,
+ * 原「撞上译名表借中文」的混排退役);与城市榜同名时给落板链接,对不上名的
+ * (社区 ≠ 单一城市,如 Pictou County)不给链接 —— 落到空职位板比不链更糟。
  *
  * @param x 试点行、城市榜、取词函数与语言。
  * @returns 展示行。
@@ -2408,14 +2410,12 @@ export function toCityPilotRows(x: CityPilotRowsIn): CityPilotRow[] {
   for (const p of x.pilots) {
     const short = pilotShortNameOf(p.name)
     const hit = byCity.get(short + KEY_SEP + p.province)
-    let name = short
-    let note = p.province
     let href = TEXT_NONE
     if (hit != null) {
-      name = cityNameOf({ r: hit, lang: x.lang })
-      note = cityNoteOf({ r: hit, lang: x.lang })
       href = cityHrefOf(hit.city)
     }
+    const name = short
+    const note = p.province
     out.push({
       key: p.name + KEY_SEP + p.type,
       name,

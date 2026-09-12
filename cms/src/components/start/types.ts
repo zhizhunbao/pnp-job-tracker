@@ -2315,12 +2315,12 @@ export type CityPilotRow = {
   key: string
 
   /**
-   * 社区名主文案(有译名用译名)。
+   * 社区名主文案(一律英文短名,2026-09-11 Frank「都用英文名吧」—— 试点多在译名表外,不混排)。
    */
   name: string
 
   /**
-   * 灰注(英文名 + 省码)。
+   * 灰注(省码)。
    */
   note: string
 
@@ -2360,7 +2360,7 @@ export type CityPilotRowsIn = {
   pilots: PilotCommRow[]
 
   /**
-   * 城市全量榜(译名借它)。
+   * 城市全量榜(落板链接借它对名)。
    */
   cities: CityRow[]
 
@@ -2368,11 +2368,6 @@ export type CityPilotRowsIn = {
    * 取词函数(类型文案)。
    */
   t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: StartLang
 }
 
 /**
