@@ -2279,6 +2279,17 @@ export type CityIndRow = {
    * 该行业组在招数(组内大类求和)。
    */
   n: number
+
+  /**
+   * 该城该组中位年薪(2026-09-11 Frank「带行业的 中位时薪 和 年薪 才有意义是吧」;
+   * 快照按组聚合的真中位数,旧快照过渡期与无薪组是 null 不编)。
+   */
+  wage: number | null
+
+  /**
+   * 中位年薪文案(没有显杠)。
+   */
+  wageText: string
 }
 
 /**
@@ -2299,6 +2310,21 @@ export type CityIndTable = {
    * 行(该组有在招的城,按在招降序)。
    */
   rows: CityIndRow[]
+}
+
+/**
+ * `cityIndTablesOf` 组内聚合的中间格(一城一组)。
+ */
+export type IndCityCell = {
+  /**
+   * 在招岗数。
+   */
+  n: number
+
+  /**
+   * 中位年薪;旧形快照过渡兜底不可拼 = null。
+   */
+  wage: number | null
 }
 
 /**

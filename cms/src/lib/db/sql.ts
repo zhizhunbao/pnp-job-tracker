@@ -786,6 +786,9 @@ export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
  * $1=近 7 天口径的日期串(YYYY-MM-DD;date_posted 是 varchar 按字典序比,同 STATS_DAILY_SERIES
  * 的教训)、$2=fetched 日期串。中位数取整:快照列是 integer,percentile_cont 回 double。
  * pilot / pilot_community 取城内非空打标的 MAX(同城打标同值,MAX 只是聚合语法要求)。
+ * $3=大类→行业组的 jsonb 归组表(lib/stats BROAD_TO_GROUP;2026-09-11 Frank「带行业的中位薪
+ * 才有意义」「今晚按八组直接算」:by_broad 从 {大类: 岗数} 改 {组: {n, wage}} —— 组内所有岗
+ * 的真中位年薪,中位数不可由大类中位数拼出所以在 SQL 里按组聚合;表外大类(未分类)不进)。
  */
 export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, fetched, updated_at, created_at)
        SELECT g.city, g.province, g.open_jobs, g.new7d, g.median_wage_annual, g.median_salary_annual,
@@ -803,10 +806,12 @@ export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_
          WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
          GROUP BY j.city, j.province) g
        LEFT JOIN (
-         SELECT city, province, jsonb_object_agg(broad, n) AS by_broad FROM (
-           SELECT city, province, broad, COUNT(*)::int AS n FROM jobs
-           WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(city, '') <> '' AND COALESCE(broad, '') <> ''
-           GROUP BY city, province, broad) t
+         SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage)) AS by_broad FROM (
+           SELECT city, province, ($3::jsonb ->> broad) AS grp, COUNT(*)::int AS n,
+                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_annual))::numeric)::int AS wage
+           FROM jobs
+           WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(city, '') <> '' AND ($3::jsonb ? COALESCE(broad, ''))
+           GROUP BY city, province, grp) t
          GROUP BY city, province) b
        ON b.city = g.city AND b.province = g.province`
 

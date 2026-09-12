@@ -434,8 +434,9 @@ export function toCityRow(r: Row): CityRow {
 }
 
 /**
- * 一行城市快照的 by_broad 格(SQL.CITY_INDUSTRY)→ 一大类一行的 `CityIndustryRow` 清单
- * (jsonb 展开与数值收窄都在这里做完;非数值格丢弃不编 0)。
+ * 一行城市快照的 by_broad 格(SQL.CITY_INDUSTRY)→ 一组一行的 `CityIndustryRow` 清单
+ * (jsonb 展开与数值收窄都在这里做完;非数值格丢弃不编 0)。2026-09-11 组聚合改版:
+ * 新形一格 = {n, wage},旧形一格 = 纯在招数(换版到下轮重算之间还在库里)→ wage 补 null。
  *
  * @param r 库里的一行(city / province / by_broad)。
  * @returns 洗净的行清单。
@@ -447,10 +448,25 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
   if (r.by_broad == null) {
     return out
   }
-  for (const [broad, n] of Object.entries(r.by_broad)) {
-    if (typeof n === 'number' && broad !== '') {
-      out.push({ city, province, broad, n })
+  for (const [broad, cell] of Object.entries(r.by_broad)) {
+    if (broad === '') {
+      continue
     }
+    if (typeof cell === 'number') {
+      out.push({ city, province, broad, n: cell, wage: null })
+      continue
+    }
+    if (cell == null || typeof cell !== 'object') {
+      continue
+    }
+    if (typeof cell.n !== 'number') {
+      continue
+    }
+    let wage: number | null = null
+    if (typeof cell.wage === 'number') {
+      wage = cell.wage
+    }
+    out.push({ city, province, broad, n: cell.n, wage })
   }
   return out
 }

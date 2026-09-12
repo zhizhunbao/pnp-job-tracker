@@ -110,7 +110,7 @@ import type {
   HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
   EmpKind, HiringOccIn, KindChip, KindPickFn, KindPickIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
-  CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable,
+  CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
   CityLoadIn, CityMainRow, CityMainRowsIn, CityPilotRow, CityPilotRowsIn, CityPilotTable,
   CityStatsProbe,
@@ -2316,10 +2316,13 @@ export function cityWageTextOf(r: CityMainRow): string {
 }
 
 /**
- * 城 × 大类计数行 → 行业对比的表清单(2026-09-11 Frank「这个应该每个行业一个表吧」+
+ * 城 × 行业组计数行 → 行业对比的表清单(2026-09-11 Frank「这个应该每个行业一个表吧」+
  * 「要和雇主的那个行业保持一致吧」:一组一张小表照雇主板形,组 = 全站八行业组
  * (IND_KEYS / IND_BROADS,职业/雇主/LMIA/趋势四段同一份),表题同词(KEY_IND_HEAD);
- * 行 = 该组有在招的城,组内大类求和,按在招降序;「未分类」不属任何组自然不出)。
+ * 行 = 该组有在招的城,按在招降序;「未分类」不属任何组自然不出)。
+ * 同日追加中位年薪列(Frank「带行业的 中位时薪 和 年薪 才有意义是吧」):快照已按组聚合,
+ * 行的 broad = 组键、n / wage 直取;旧形快照(换版到下轮重算之间,格 = 17 大类 × 纯岗数)
+ * 走过渡兜底 —— 大类映射进组、岗数求和、中位薪不可由大类中位数拼出留 null,下轮重算自然消失。
  *
  * @param x 计数行、城市榜、取词函数与语言。
  * @returns 表清单(空组不出)。
@@ -2336,20 +2339,25 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
     if (broads == null) {
       continue
     }
-    const sums = new Map<string, number>()
+    const sums = new Map<string, IndCityCell>()
     for (const r of x.rows) {
+      if (r.broad === key) {
+        sums.set(r.city + KEY_SEP + r.province, { n: r.n, wage: r.wage })
+        continue
+      }
       if (broads.includes(r.broad) === false) {
         continue
       }
       const ck = r.city + KEY_SEP + r.province
-      let s = sums.get(ck)
-      if (s == null) {
-        s = 0
+      const cur = sums.get(ck)
+      if (cur == null) {
+        sums.set(ck, { n: r.n, wage: null })
+      } else {
+        cur.n = cur.n + r.n
       }
-      sums.set(ck, s + r.n)
     }
     const rows: CityIndRow[] = []
-    for (const [ck, n] of sums) {
+    for (const [ck, cell] of sums) {
       const c = byCity.get(ck)
       if (c == null) {
         continue
@@ -2360,7 +2368,9 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
         note: cityNoteOf({ r: c, lang: x.lang }),
         href: cityHrefOf(c.city),
         onOpen,
-        n,
+        n: cell.n,
+        wage: cell.wage,
+        wageText: wageOrDashOf(cell.wage),
       })
     }
     rows.sort(byIndOpenDesc)
@@ -2393,6 +2403,7 @@ export function cityIndColsOf(x: CityIndColsIn): StartCol<CityIndRow>[] {
   return [
     { key: COL_CITY, label: x.t('pulse.city.name'), sort: indNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: indOpenSortOf, render: indOpenTextOf },
+    { key: COL_CITY_WAGE, label: x.t('pulse.city.wage'), nowrap: true, sort: indWageSortOf, render: indWageTextOf },
   ]
 }
 
@@ -2424,6 +2435,30 @@ function indOpenSortOf(r: CityIndRow): number {
  */
 function indOpenTextOf(r: CityIndRow): string {
   return numOf(r.n)
+}
+
+/**
+ * 行业小表中位年薪排序键(2026-09-11 Frank「带行业的 中位时薪 和 年薪 才有意义是吧」;
+ * 没有的行按 0 排,不编数只影响排序位)。
+ *
+ * @param r 一行。
+ * @returns 中位年薪。
+ */
+function indWageSortOf(r: CityIndRow): number {
+  if (r.wage == null) {
+    return 0
+  }
+  return r.wage
+}
+
+/**
+ * 行业小表中位年薪列文案。
+ *
+ * @param r 一行。
+ * @returns 美元文案;没有显杠。
+ */
+function indWageTextOf(r: CityIndRow): string {
+  return r.wageText
 }
 
 /**

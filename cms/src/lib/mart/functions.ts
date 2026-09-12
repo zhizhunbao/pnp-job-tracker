@@ -28,6 +28,9 @@ import os from 'os'
 import path from 'path'
 
 import { martMetaError, martShardError, martSourceError } from '@/lib/error'
+// 跨域取常量的逐行特批(2026-09-11):BROAD_TO_GROUP 是行业归组表的过渡家(终局下沉
+// etl/noc 成 noc_categories 组列,届时此行随迁移删),seed 收尾重算按组聚合要喂给 $3。
+import { BROAD_TO_GROUP } from '@/lib/stats'
 import { DAY_MS } from '@/lib/time'
 import { SQL, type DbClient, type SqlParam } from '../db'
 import {
@@ -1312,7 +1315,7 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
 async function refreshCityStats(x: RefreshCityIn): CountOut {
   const cutoff = new Date(Date.parse(x.now) - CITY_NEW7_DAYS * DAY_MS).toISOString().slice(0, ISO_DATE_LEN)
   await x.client.query(SQL.CLEAR_CITY_STATS)
-  const res = await x.client.query(SQL.REFRESH_CITY_STATS, [cutoff, x.now.slice(0, ISO_DATE_LEN)])
+  const res = await x.client.query(SQL.REFRESH_CITY_STATS, [cutoff, x.now.slice(0, ISO_DATE_LEN), JSON.stringify(BROAD_TO_GROUP)])
   if (res.rowCount != null) {
     return res.rowCount
   }

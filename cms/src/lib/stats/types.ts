@@ -761,7 +761,8 @@ export type CityStatsIn = {
 export type CityRowsOut = Promise<CityRows>
 
 /**
- * 城市 × 大类在招一行(SQL.CITY_INDUSTRY;城市段「行业对比」表)。
+ * 城市 × 行业组在招一行(SQL.CITY_INDUSTRY;城市段行业小表。2026-09-11 起 by_broad 按
+ * 八行业组聚合,broad 格装组键;换版到下轮重算之间的旧快照仍是 17 大类键,读取层兜底)。
  */
 export type CityIndustryRow = {
   /**
@@ -775,14 +776,19 @@ export type CityIndustryRow = {
   province: string
 
   /**
-   * 本站大类(数据值,中文;三语列头借 BroadLabelRow)。
+   * 行业组键(IND_KEYS 之一;旧快照过渡期间可能是 17 大类中文数据值)。
    */
   broad: string
 
   /**
-   * 该城该大类在招岗数。
+   * 该城该组在招岗数。
    */
   n: number
+
+  /**
+   * 该城该组中位年薪(组内所有岗的 ESDC 官方中位年薪取中位;旧快照没有 = null 不编)。
+   */
+  wage: number | null
 }
 
 /**
@@ -811,9 +817,25 @@ export type CityBroadDbRow = {
   province: string | null
 
   /**
-   * 大类 → 在招数(jsonb;没聚合到是 null)。
+   * 行业组 → {n, wage} 格(jsonb;没聚合到是 null)。旧快照(2026-09-11 改组聚合前)
+   * 的值是纯在招数,读取层兜底成 wage=null,下轮重算自然消失。
    */
-  by_broad: Record<string, number | string | null> | null
+  by_broad: Record<string, number | string | CityBroadCell | null> | null
+}
+
+/**
+ * by_broad 一格的新形(线格式,归一前形状:jsonb 出来的字段都可能缺)。
+ */
+export type CityBroadCell = {
+  /**
+   * 该组在招岗数。
+   */
+  n?: number | null
+
+  /**
+   * 该组中位年薪。
+   */
+  wage?: number | null
 }
 
 /**
