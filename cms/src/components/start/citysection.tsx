@@ -21,9 +21,11 @@ import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import {
   CARD_PAGE_SIZE, DLI_PAGE_SIZE, ID_CITY, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PH_PROV,
+  PILOT_AIP,
 } from './constants'
 import {
-  boardGapClsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf, dliRowKeyOf,
+  boardGapClsOf, cityAipColsOf, cityDliColsOf, cityIndColsOf, cityMainColsOf, cityPilotColsOf, cityRowKeyOf,
+  dliRowKeyOf,
   indRowKeyOf, pilotRowKeyOf, subIdOf,
 } from './functions'
 import { useCityPanel } from './hooks'
@@ -60,14 +62,19 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
     )
   }
   const pilotCols = cityPilotColsOf({ t })
+  const aipCols = cityAipColsOf({ t })
   const pilotBlocks = []
   for (const tb of v.pilotTables) {
+    let cols = pilotCols
+    if (tb.key === PILOT_AIP) {
+      cols = aipCols
+    }
     pilotBlocks.push(
       <div key={tb.key} id={subIdOf({ band: ID_CITY_PILOT, key: tb.key })} className={css.subAnchor}>
         <div className={boardGapClsOf({ gap: true })}>
           <Sec title={tb.key} right={<Updated iso={updatedAt} t={t} />} sub>
             <Table<CityPilotRow> rows={tb.rows}
-              cols={pilotCols}
+              cols={cols}
               rowKey={pilotRowKeyOf} />
           </Sec>
         </div>

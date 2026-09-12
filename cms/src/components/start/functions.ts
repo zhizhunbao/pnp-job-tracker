@@ -37,7 +37,8 @@ import {
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
-  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, WAGE_MIN_OPEN,
+  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, URL_HOME_PROV_HEAD,
+  PROV_UTM_TAIL, WAGE_MIN_OPEN,
   CITY_KIND_DLI, CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
   CITY_HOURLY_DIGITS, CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H, COL_COMM,
   COL_DLI_GRAD, COL_DLI_N,
@@ -87,7 +88,9 @@ import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
 import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
+import { CityActCell } from './cityactcell'
 import { CityNameCell } from './citynamecell'
+import { JobsActCell } from './jobsactcell'
 import type { ChartOption } from '@/components/stats'
 import type { CityRow, DailyRow, DliCityRow } from '@/lib/stats'
 import { CACHE } from './variables'
@@ -2168,6 +2171,8 @@ export function toCityMainRows(x: CityMainRowsIn): CityMainRow[] {
       popText: numOrDashOf(r.population),
       unemp: r.unempRate,
       unempText: pctOrDashOf(r.unempRate),
+      actText: x.t('pulse.act.jobs'),
+      actBtnCls: actBtnClsOf(),
     })
   }
   return out
@@ -2203,6 +2208,7 @@ export function cityMainColsOf(x: CityColsIn): StartCol<CityMainRow>[] {
       render: cityUnempTextOf,
       className: cssOf(css.cityWide),
     },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2576,6 +2582,20 @@ export function cityPilotTablesOf(x: CityPilotRowsIn): CityPilotTable[] {
 export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
   return [
     { key: COL_COMM, label: x.t('pulse.city.comm'), sort: pilotNameSortOf, render: CityNameCell },
+    { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
+  ]
+}
+
+/**
+ * AIP 城市表的列(城市 / 在招 —— 行是城不是社区,列头用「城市」;2026-09-12 列头修正,
+ * 其余同试点表)。
+ *
+ * @param x 取词函数。
+ * @returns 列声明。
+ */
+export function cityAipColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
+  return [
+    { key: COL_CITY, label: x.t('pulse.city.name'), sort: pilotNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
   ]
 }
@@ -5670,6 +5690,9 @@ function toJobsRow(x: JobsRowIn): JobsRow {
     code: x.r.province,
     localeName: provLocaleOf({ t: x.t, lang: x.lang, code: x.r.province }),
     nameSort: provFullOf(x.r.province),
+    actHref: URL_HOME_PROV_HEAD + x.r.province + PROV_UTM_TAIL,
+    actText: x.t('pulse.act.jobs'),
+    actBtnCls: actBtnClsOf(),
     openText: numTextOf(x.r.openJobs),
     openSort: x.r.openJobs,
     new7Text: numTextOf(x.r.new7d),
@@ -5705,6 +5728,7 @@ export function jobsColsOf(x: JobsColsIn): StartCol<JobsRow>[] {
     { key: COL_JOBS_OPEN, label: x.t('stats.openJobs'), nowrap: true, sort: jobsOpenSortOf, render: jobsOpenTextOf },
     { key: COL_JOBS_NEW7, label: x.t('stats.new7d'), nowrap: true, sort: jobsNew7SortOf, render: jobsNew7TextOf },
     { key: COL_JOBS_WAGE, label: x.t('stats.medWage'), nowrap: true, sort: jobsWageSortOf, render: jobsWageTextOf },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: JobsActCell },
   ]
 }
 

@@ -615,6 +615,17 @@ export const COL_EMP = 'emp'
 export const URL_HOME_CITY_HEAD = '/?city='
 
 /**
+ * 职位板按省筛的地址头(招聘对比表看岗位钮;2026-09-12 Frank「省份和城市也需要 这个
+ * 看岗位的功能吧」)。
+ */
+export const URL_HOME_PROV_HEAD = '/?prov='
+
+/**
+ * 省表看岗位钮的来源标记(照 CITY_UTM_TAIL 形)。
+ */
+export const PROV_UTM_TAIL = '&utm_source=pulse_prov'
+
+/**
  * 城市段落地职位板的来源标记尾巴(2026-09-11:旧城市卡落地不带来源,职位板侧认不出;
  * utm 由 Umami 自动收,funnel 另有 city-open 第一方计数)。
  */

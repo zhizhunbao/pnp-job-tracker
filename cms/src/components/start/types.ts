@@ -2213,6 +2213,16 @@ export type CityMainRow = {
    * 都会区失业率文案;没有给 DASH_MARK。
    */
   unempText: string
+
+  /**
+   * 看岗位钮文案(2026-09-12 Frank「省份和城市也需要 这个 看岗位的功能吧」,照雇主板操作列)。
+   */
+  actText: string
+
+  /**
+   * 看岗位钮的类。
+   */
+  actBtnCls: string
 }
 
 /**
@@ -5111,6 +5121,22 @@ export type JobsRow = {
    * 全名(排序键)。
    */
   nameSort: string
+
+  /**
+   * 看岗位钮的地址(职位板按省筛 + 来源标记;2026-09-12 Frank「省份和城市也需要 这个
+   * 看岗位的功能吧」,照雇主板操作列)。
+   */
+  actHref: string
+
+  /**
+   * 看岗位钮文案。
+   */
+  actText: string
+
+  /**
+   * 看岗位钮的类。
+   */
+  actBtnCls: string
 
   /**
    * 在招职位文案。
