@@ -966,14 +966,16 @@ ORIGIN_JOBBANK = "jobbank"
 
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
                    (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
-                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"),
-                   (paths.PROCESSED_HIREAC / "postings.json", "hireac"))
+                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"))
 """第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
 Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
 三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
 写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行
-(2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形;2026-09-13 hireac 照此加行:Algonquin 校内板登录源,
-本机手动跑,仓文件不更新时这里读到的就是上一轮当前态;枚举值 DDL 见 docs/sql/jobs-origin-hireac.sql)。"""
+(2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形)。
+🔴 hireac(Algonquin 校内板登录源,2026-09-13 立域,仓 paths.PROCESSED_HIREAC / "postings.json")**暂不进这张表**:
+当晚加行后 376 帖上了公开职位板(渠道列还显裸键 origin.hireac),Frank「不应该放到职位里面吧」—— 校内板帖要走
+一级导航自己的页,等 cms 侧「校内板」页 + 职位板剔 origin=hireac 上线后再回来加行
+(枚举值 DDL 已落生产 docs/sql/jobs-origin-hireac.sql)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
