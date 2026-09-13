@@ -24,7 +24,6 @@
 import { BoardsSection } from './boardssection'
 import { CitySection } from './citysection'
 import { CtaBand } from './ctaband'
-import { DrawsLink } from './drawslink'
 import { DrawsSection } from './drawssection'
 import { NewsSection } from './newssection'
 import { EmpSection } from './empsection'
@@ -37,7 +36,7 @@ import type { PulseIn } from './types'
 import css from './start.module.css'
 
 /**
- * 把脉首页正文。
+ * 把脉首页正文(2026-09-13 Frank「这个按钮可以去掉了」(「全部动态」那一行链接;政策动态表已回到页上))。
  *
  * @param props 页面门取好的那份 SSR 数据(逐格注释见 HomeStats)。
  * @returns 二级导航条 + 八个分区。
@@ -68,7 +67,6 @@ export function Pulse({ stats }: PulseIn) {
           updatedAt={stats.checkedAt}
           draws={stats.draws} />
         <NewsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} news={stats.news} />
-        <DrawsLink t={v.t} />
         <CtaBand t={v.t} />
       </main>
     </>

@@ -797,7 +797,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'home.daily': '오늘 갱신', 'home.daily.new': '신규 공고', 'home.daily.elig': 'PNP 대상', 'home.daily.total': '전체 채용 중',
   'home.draws': '최근 추첨',
   'home.dr.date': '날짜', 'home.dr.prog': '프로그램', 'home.dr.stream': '스트림', 'home.dr.score': '커트라인', 'home.dr.inv': '초청',
-  'home.policy': '정책 소식', 'pulse.news.region': '지역', 'pulse.news.title': '제목', 'home.pulse.all': '전체 소식', 'home.stats.more': '전체 통계',
+  'home.policy': '정책 소식', 'pulse.news.region': '지역', 'pulse.news.title': '제목', 'home.stats.more': '전체 통계',
   'home.jobs': '채용 랭킹', 'home.jobs.new': '최신', 'home.jobs.paid': '고연봉', 'home.jobs.most': '최다 채용', 'home.jobs.med': '중위 {v}', 'home.jobs.rangeTip': 'ESDC 공식 연봉 범위(하위–상위)', 'home.jobs.all': '전체 공고',
   // E13-03 취업 진단 랜딩(/start)
   'pulse.entry': '취업 진단', 'pulse.bnSub': '주별 채용과 인력 부족',
@@ -929,7 +929,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'se.col.lmia': 'LMIA 승인(2년)', 'se.col.w1': 'LMIA 최근 분기', 'se.col.w2': 'LMIA 6개월', 'se.col.w4': 'LMIA 1년',
   'se.grp.aip': 'AIP 지정 고용주', 'se.grp.lmia': 'LMIA 승인 고용주(2년)', 'se.grp.named': '구인 직종이 수요 목록에 오른 고용주', 'pulse.nav.boards': '직업 보드',
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
-  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '승인', 'pulse.nav.draws': '추첨',
+  'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '승인', 'pulse.nav.draws': '추첨', 'pulse.nav.news': '정책', 'pulse.nav.top': '맨 위로',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
   'pulse.nav.city': '도시',
   'pulse.city': '도시',

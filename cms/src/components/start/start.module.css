@@ -1232,6 +1232,16 @@
   flex-shrink: 0;
 }
 
+/*
+ * 导航条尾「回到顶部」:推到右端(2026-09-13 Frank「加一个回到顶部的功能 页面太长了」)。
+ */
+.navTop {
+  /*
+   * 吃掉左侧全部剩余空间。
+   */
+  margin-left: auto;
+}
+
 .navLinkOn {
   /*
    * 品牌蓝。
@@ -2574,27 +2584,6 @@
    * 加粗。
    */
   font-weight: 600;
-}
-
-/*
- * 抽选与政策动态那一行链接。
- */
-.drawsLink.drawsLink {
-  /*
-   * 整行可点。
-   */
-  display: block;
-
-  /*
-   * 字号与加粗(与 CTA 标题同档)。
-   */
-  font-size: 15px;
-  font-weight: 600;
-
-  /*
-   * 主色。
-   */
-  color: var(--primary);
 }
 
 /*

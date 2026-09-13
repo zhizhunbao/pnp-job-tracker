@@ -37,11 +37,6 @@ export const URL_AIP_TAIL = '&aip=yes'
 export const URL_PILOT_TAIL = '&pilot=yes'
 
 /**
- * 移民动态列表页(政策动态标题旁那条外链,也是无 slug 时的兜底去处)。
- */
-export const URL_NEWS = '/news'
-
-/**
  * 橱窗三分表全量接口。#313(LCP 7.15s 真因):三表全量 16,430 行序列化进 RSC payload
  * 把 SSR 文档撑到 6.92MB ——「全量可翻页」拍板不动,只换运输方式:SSR 只带每表前
  * SE_SSR_ROWS 行 + total,挂载后拉这条接口换全量(手法照 occ 大表的 /api/stats/market)。
@@ -123,6 +118,12 @@ export const ID_NEWS = 'pl-news'
 export const NEWS_LIMIT = 10
 
 /**
+ * 二级导航条尾「回到顶部」的地址(空锚 = 页顶;2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」:把脉页太长,
+ * 不另造浮钮 —— 条本来就是常驻的,右端放一枚即可,也不撞右下角的聊天气泡)。
+ */
+export const NAV_TOP_HREF = '#'
+
+/**
  * 新闻标题去重时剥掉的尾巴(括号里的省名/日期等;同题多省只出一条)。
  */
 export const NEWS_TAIL_RE = /\s*[(（][^)）]*[)）]\s*$/
@@ -153,9 +154,10 @@ export const URL_NEWS_HEAD = '/news/'
  * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」);
  * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前(省份 → 城市 → PR);
  * 2026-09-12 Frank「在招走势 删了」:接新源就多一个台阶,画的是接入节奏不是市场;stats_daily 采集照跑,
- * 段与读端撤(趋势项与 ID_TREND 退役);2026-09-12 Frank「title 应该加到这里」(指二级导航条):抽选段进导航殿后。
+ * 段与读端撤(趋势项与 ID_TREND 退役);2026-09-12 Frank「title 应该加到这里」(指二级导航条):抽选段进导航殿后;
+ * 2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」:政策动态项殿后,条尾一枚「回到顶部」(NAV_TOP_HREF)。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_DRAWS]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_DRAWS, ID_NEWS]
 
 /**
  * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。

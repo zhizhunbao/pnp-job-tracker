@@ -2845,16 +2845,6 @@ export type CitySectionIn = {
   updatedAt: string
 }
 
-/**
- * DrawsLink(抽选与政策动态那一行链接)的 props。
- */
-export type DrawsLinkIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
 
 /**
  * `cityNameOf` 的入参。

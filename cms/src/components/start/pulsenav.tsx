@@ -10,15 +10,17 @@
  * 措辞差异化:导航用短词(pulse.nav.*),h2 保全称(se.title / pulse.s4 等不动)。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
  *
+ * 2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」:条尾一枚「回到顶部」(空锚,不另造浮钮)。
+ *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
 import { LinkButton } from '@/components/button'
 import { Shell } from '@/components/shell'
-import { SHELL_BOTTOM, SHELL_TOP } from './constants'
+import { NAV_TOP_HREF, SHELL_BOTTOM, SHELL_TOP } from './constants'
 import {
   anchorOf, makeSubnavTrack, navItemsOf, navLinkClsOf, navSecOrFirstOf, navSubIdsOf, navSubItemsOf,
-  navSubLinkClsOf, navSubOrFirstOf,
+  navSubLinkClsOf, navSubOrFirstOf, navTopClsOf,
 } from './functions'
 import { useNavSub } from './hooks'
 import type { PulseNavIn } from './types'
@@ -58,6 +60,7 @@ export function PulseNav({ t, navSec }: PulseNavIn) {
       <Shell top={SHELL_TOP} bottom={SHELL_BOTTOM}>
         <div className={css.navRow}>
           {items}
+          <LinkButton href={NAV_TOP_HREF} className={navTopClsOf()}>{t('pulse.nav.top')}</LinkButton>
         </div>
         {subs.length > 0 && <div className={css.navSubRow}>{subs}</div>}
       </Shell>

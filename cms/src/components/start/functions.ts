@@ -35,7 +35,7 @@ import {
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
-  COL_EMP, ID_CITY, ID_DRAWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
+  COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
   COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
@@ -648,6 +648,7 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
     { id: ID_CITY, label: x.t('pulse.nav.city') },
     { id: ID_PR_BAND, label: x.t('pulse.nav.pr') },
     { id: ID_DRAWS, label: x.t('pulse.nav.draws') },
+    { id: ID_NEWS, label: x.t('pulse.nav.news') },
   ]
 }
 
@@ -1642,6 +1643,15 @@ export function navLinkClsOf(x: NavLinkClsIn): string {
     cls.push(cssOf(css.navLinkOn))
   }
   return joinCls(cls)
+}
+
+/**
+ * 导航条尾「回到顶部」的类(普通项的形 + 推到右端;2026-09-13 Frank「加上 政策动态 title,然后在加一个回到顶部的功能 页面太长了」)。
+ *
+ * @returns 类名。
+ */
+export function navTopClsOf(): string {
+  return joinCls([cssOf(css.navLink), cssOf(css.navTop)])
 }
 
 /**
@@ -3142,15 +3152,6 @@ function pctOrDashOf(n: number | null): string {
     return DASH_MARK
   }
   return String(n) + PCT_MARK
-}
-
-/**
- * 抽选与政策动态那一行链接的类。
- *
- * @returns 类名。
- */
-export function drawsLinkClsOf(): string {
-  return cssOf(css.drawsLink)
 }
 
 /**
