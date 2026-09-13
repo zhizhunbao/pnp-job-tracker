@@ -35,7 +35,7 @@ import {
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
-  COL_EMP, ID_CITY, IND_BROADS, IND_KEYS,
+  COL_EMP, ID_CITY, ID_DRAWS, IND_BROADS, IND_KEYS, NEWS_LIMIT,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
@@ -47,8 +47,8 @@ URL_HOME_CITY_HEAD,
   URL_CITY_API,
 WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
-  HIST_WINDOW, HIST_MIN_N, TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, COL_READ, W_DATE,
-  W_PROG, W_STREAM, W_SCORE, W_INV, W_READ,
+TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
+  W_PROG, W_STREAM, W_SCORE, W_INV,
   COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
   PULSE_CEC, PULSE_CHECK, PULSE_OK, PULSE_RANK, PULSE_SHORT, TEER_PNP_MAX, URL_COMPANY_HEAD, VERDICT_MET,
@@ -89,12 +89,12 @@ import { makeMacroYearCell } from './macroyearcell'
 import { MacroYoyCell } from './macroyoycell'
 import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
-import { ReadCell } from './readcell'
 import { StreamCell } from './streamcell'
 import { CityActCell } from './cityactcell'
 import { CityNameCell } from './citynamecell'
 import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
+import type { NewsCard, NewsCmtCounts } from '@/components/news'
 import { CACHE } from './variables'
 import type {
   BandClsIn, CleanupFn,
@@ -123,7 +123,7 @@ import type {
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
 ValuableIn,
-  EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
+  EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
@@ -208,6 +208,24 @@ export function emptyOccRows(): OccRowList {
 }
 
 /**
+ * 新闻卡查询挂了的空清单(政策动态区整块不出,页面照常;2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)。
+ *
+ * @returns 空清单。
+ */
+export function emptyNewsRows(): NewsCard[] {
+  return []
+}
+
+/**
+ * 新闻评论计数查询挂了的空表(角标不出,页面照常)。
+ *
+ * @returns 空表。
+ */
+export function emptyNewsCmts(): NewsCmtCounts {
+  return {}
+}
+
+/**
  * 抓取时刻查询挂了的空串。
  *
  * @returns 空串。
@@ -251,7 +269,9 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     sponsor: sponsorSeedOf({ boards: x.boards, nocCat, natOcc, extra }),
     pulse: pulseScalarsOf({ occ: x.occRows }),
     nocCat,
-    draws: toDrawsWithHistory({ rows: x.drawRows, limit: x.drawsLimit }),
+    draws: toPulseDraws({ rows: x.drawRows, limit: x.drawsLimit }),
+    news: x.newsRows.slice(0, NEWS_LIMIT),
+    newsCmts: x.newsCmts,
     rcipNames,
     fcipNames,
     briefs,
@@ -275,6 +295,8 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     pulse: x.core.pulse,
     nocCat: x.core.nocCat,
     draws: x.core.draws,
+    news: x.core.news,
+    newsCmts: x.core.newsCmts,
     rcipNames: x.core.rcipNames,
     fcipNames: x.core.fcipNames,
     briefs: x.core.briefs,
@@ -588,6 +610,7 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
     { id: ID_PROV, label: x.t('pulse.nav.prov') },
     { id: ID_CITY, label: x.t('pulse.nav.city') },
     { id: ID_PR_BAND, label: x.t('pulse.nav.pr') },
+    { id: ID_DRAWS, label: x.t('pulse.nav.draws') },
   ]
 }
 
@@ -3104,95 +3127,27 @@ export function emptyQueryResult(): EmptyQueryResult {
 }
 
 /**
- * 抽选表 + 冷解读三标量。冷解读的口径(设计 §4):当期分数线 vs **近 12 期同通道**的区间
- * —— 在服务端算完只带三个标量下去(histN/histMin/histMax),而不是把 400 行抽选史塞进 HTML。
+ * 抽选表的前 N 期。冷解读三标量(当期分数线 vs 近 12 期同通道区间)2026-09-12 Frank「这个解读 解读了个寂寞」
+ * 撤:库里每条通道只有两期有分,永远够不到 4 期门槛,整列空着;分组 / 回看 / 门槛机关随列退役。
  *
  * @param x 抽选原始行与下发条数上限。
- * @returns 前 N 期(每期挂好三标量)。
+ * @returns 前 N 期。
  */
-export function toDrawsWithHistory(x: DrawsIn): PulseDraw[] {
-  const groups = new Map<string, DrawDbRow[]>()
-  for (const r of x.rows) {
-    const k = drawGroupKeyOf(r)
-    const g = groups.get(k)
-    if (g == null) {
-      groups.set(k, [r])
-    } else {
-      g.push(r)
-    }
-  }
-  const hist = new Map<DrawDbRow, DrawHist | null>()
-  for (const g of groups.values()) {
-    for (let i = 0; i < g.length; i += 1) {
-      const r = g[i]
-      if (r != null) {
-        hist.set(r, drawHistOf({ group: g, i }))
-      }
-    }
-  }
+export function toPulseDraws(x: DrawsIn): PulseDraw[] {
   const out: PulseDraw[] = []
   for (const r of x.rows.slice(0, x.limit)) {
-    let h = hist.get(r)
-    if (h == null) {
-      h = null
-    }
-    out.push(toPulseDraw({ r, hist: h }))
+    out.push(toPulseDraw({ r }))
   }
   return out
 }
 
 /**
- * 抽选分组键:省 + 通道(同省同通道才算「同一条通道」,冷解读只在组内回看)。
- *
- * @param r 一期抽选原始行。
- * @returns 分组键。
- */
-function drawGroupKeyOf(r: DrawDbRow): string {
-  let stream = r.stream
-  if (stream == null || stream === TEXT_NONE) {
-    stream = r.label
-  }
-  if (stream == null) {
-    stream = TEXT_NONE
-  }
-  return r.province + KEY_SEP + stream
-}
-
-/**
- * 从本期往回数 12 期(含本期):只统计有分数线的期次;有效期数不足门槛给 null
- * (样本太少的「区间」是噪音,宁可不说)。行已按日期降序,组内自然也降序。
- *
- * @param x 本组与本期在组内的位置。
- * @returns 期数与区间;样本不足则 null。
- */
-function drawHistOf(x: DrawHistIn): DrawHist | null {
-  const scores: number[] = []
-  for (const r of x.group.slice(x.i, x.i + HIST_WINDOW)) {
-    if (r.score != null) {
-      scores.push(r.score)
-    }
-  }
-  if (scores.length < HIST_MIN_N) {
-    return null
-  }
-  return { n: scores.length, min: Math.min(...scores), max: Math.max(...scores) }
-}
-
-/**
  * 洗一期抽选:各格照实兜空,数值列保 null(官方没公布不折 0)。
  *
- * @param x 这一期原始行与它的回看三标量。
+ * @param x 这一期原始行。
  * @returns 一期抽选。
  */
 function toPulseDraw(x: PulseDrawIn): PulseDraw {
-  let histN: number | null = null
-  let histMin: number | null = null
-  let histMax: number | null = null
-  if (x.hist != null) {
-    histN = x.hist.n
-    histMin = x.hist.min
-    histMax = x.hist.max
-  }
   let streamZh = TEXT_NONE
   if (x.r.stream_zh != null) {
     streamZh = x.r.stream_zh
@@ -3205,9 +3160,6 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     label: textOf(x.r.label),
     score: numOrNullOf(x.r.score),
     invitations: numOrNullOf(x.r.invitations),
-    histN,
-    histMin,
-    histMax,
   }
 }
 
@@ -3255,7 +3207,7 @@ export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
 }
 
 /**
- * 洗一期抽选:官方英文名主文案 + 界面语言译名灰注(与旧版同口径),外加冷解读。
+ * 洗一期抽选:官方英文名主文案 + 界面语言译名灰注(与旧版同口径)。
  *
  * @param x 这一期与洗行要的上下文。
  * @returns 展示行。
@@ -3273,7 +3225,6 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     note: drawNoteOf(x),
     score: numTextOf(x.r.score),
     invitations: numTextOf(x.r.invitations),
-    read: drawReadOf(x),
   }
 }
 
@@ -3336,21 +3287,7 @@ function drawLangOf(lang: string): DrawLang {
 }
 
 /**
- * 冷解读:当期分数线 vs 近 12 期同通道区间(服务端算好的三标量填槽)。
- * 样本不足 → 不出这句(整格留空,不编一句话)。
- *
- * @param x 这一期与取词函数。
- * @returns 冷解读;样本不足时空串。
- */
-function drawReadOf(x: DrawCellRowIn): string {
-  if (x.r.histN == null || x.r.histMin == null || x.r.histMax == null) {
-    return TEXT_NONE
-  }
-  return x.t('pulse.dr.note', { n: x.r.histN, min: numOf(x.r.histMin), max: numOf(x.r.histMax) })
-}
-
-/**
- * 抽选表的列组。列宽写死(冷解读吃最宽一列,它是这张表的结论);百分比固定布局永不横滚。
+ * 抽选表的列组。列宽写死;百分比固定布局永不横滚(冷解读列 2026-09-12 Frank「这个解读 解读了个寂寞」 撤,宽度并给通道列)。
  * 2026-08-11(Frank「都改成一套」):自造裸 table → 公共 Table(bare = 外面那层就是卡壳)。
  *
  * @param x 取词函数。
@@ -3363,7 +3300,6 @@ export function drawColsOf(x: DrawColsIn): StartCol<DrawCellRow>[] {
     { key: COL_STREAM, label: x.t('home.dr.stream'), width: W_STREAM, render: StreamCell },
     { key: COL_SCORE, label: x.t('home.dr.score'), width: W_SCORE, render: drawScoreOf },
     { key: COL_INV, label: x.t('home.dr.inv'), width: W_INV, render: drawInvOf },
-    { key: COL_READ, label: x.t('pulse.dr.read'), width: W_READ, render: ReadCell },
   ]
 }
 

@@ -26,6 +26,7 @@ import { CitySection } from './citysection'
 import { CtaBand } from './ctaband'
 import { DrawsLink } from './drawslink'
 import { DrawsSection } from './drawssection'
+import { NewsSection } from './newssection'
 import { EmpSection } from './empsection'
 import { Hero } from './hero'
 import { PrSection } from './prsection'
@@ -66,6 +67,7 @@ export function Pulse({ stats }: PulseIn) {
           lang={v.lang}
           updatedAt={stats.checkedAt}
           draws={stats.draws} />
+        <NewsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} news={stats.news} cmts={stats.newsCmts} />
         <DrawsLink t={v.t} />
         <CtaBand t={v.t} />
       </main>

@@ -21,6 +21,8 @@ import type {
 import type { SponsorEmployerRow } from '@/lib/employers'
 // eslint-disable-next-line local/no-import-in-leaf -- components/stats 取数钩子的返回,原样交给 MarketChart 的四份数据
 import type { MarketData } from '@/components/stats'
+// eslint-disable-next-line local/no-import-in-leaf -- components/news 的新闻卡与评论计数,原样透传给 news 桶的日分组行(政策动态区 2026-09-12 复位)
+import type { NewsCard, NewsCmtCounts } from '@/components/news'
 
 /**
  * 界面语言(三字面量各域自抄)。
@@ -319,6 +321,16 @@ export type HomeStats = {
   nocProvs: Record<string, string[]>
 
   /**
+   * 政策动态区的最新几条新闻卡(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)。
+   */
+  news: NewsCard[]
+
+  /**
+   * 新闻评论计数(slug → 条数;日分组行的评论角标读它)。
+   */
+  newsCmts: NewsCmtCounts
+
+  /**
    * 数据抓取时刻。
    */
   checkedAt: string
@@ -438,6 +450,15 @@ export type HomeCoreIn = {
    */
   drawsLimit: number
 
+  /**
+   * 新闻卡全量(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」;homeCoreOf 只留最新 NEWS_LIMIT 条)。
+   */
+  newsRows: NewsCard[]
+
+  /**
+   * 新闻评论计数(slug → 条数)。
+   */
+  newsCmts: NewsCmtCounts
 }
 
 /**
@@ -2944,21 +2965,6 @@ export type PulseDraw = {
    * 邀请数;官方没公布保 null。
    */
   invitations: number | null
-
-  /**
-   * 回看窗内有分数线的期数;不足门槛给 null(整句解读不出)。
-   */
-  histN: number | null
-
-  /**
-   * 回看窗内的最低分;同上。
-   */
-  histMin: number | null
-
-  /**
-   * 回看窗内的最高分;同上。
-   */
-  histMax: number | null
 }
 
 /**
@@ -3004,42 +3010,7 @@ export type DrawDbRow = {
 }
 
 /**
- * 一期抽选的回看三标量。
- */
-export type DrawHist = {
-  /**
-   * 回看窗内有分数线的期数。
-   */
-  n: number
-
-  /**
-   * 回看窗内的最低分。
-   */
-  min: number
-
-  /**
-   * 回看窗内的最高分。
-   */
-  max: number
-}
-
-/**
- * `drawHistOf` 的入参。
- */
-export type DrawHistIn = {
-  /**
-   * 同省同通道的那一组(已按日期降序)。
-   */
-  group: DrawDbRow[]
-
-  /**
-   * 本期在组内的位置。
-   */
-  i: number
-}
-
-/**
- * `toDrawsWithHistory` 的入参。
+ * `toPulseDraws` 的入参。
  */
 export type DrawsIn = {
   /**
@@ -3061,11 +3032,6 @@ export type PulseDrawIn = {
    * 这一期原始行。
    */
   r: DrawDbRow
-
-  /**
-   * 它的回看三标量;样本不足则 null。
-   */
-  hist: DrawHist | null
 }
 
 /**
@@ -3106,11 +3072,6 @@ export type DrawCellRow = {
    * 邀请数;官方没公布给横杠。
    */
   invitations: string
-
-  /**
-   * 冷解读(当期分数线 vs 近 12 期同通道区间);空串 = 样本不足,整格留空不编话。
-   */
-  read: string
 }
 
 /**
@@ -3227,6 +3188,36 @@ export type DrawCardIn = {
    * 取词函数。
    */
   t: TFn
+}
+
+/**
+ * NewsSection(政策动态区,2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)的 props。
+ */
+export type NewsSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: StartLang
+
+  /**
+   * 数据更新时刻(ISO;'' 不渲)。
+   */
+  updatedAt: string
+
+  /**
+   * 最新几条新闻卡。
+   */
+  news: NewsCard[]
+
+  /**
+   * 新闻评论计数。
+   */
+  cmts: NewsCmtCounts
 }
 
 /**

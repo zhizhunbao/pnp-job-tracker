@@ -22,7 +22,7 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import {
-  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyOccRows, emptyProvExtra,
+  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyNewsCmts, emptyNewsRows, emptyOccRows, emptyProvExtra,
   emptyQueryResult,
   emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from '@/components/start'
@@ -30,6 +30,7 @@ import { SQL } from '@/lib/db'
 import { dbOf } from '@/lib/db/server'
 import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
+import { loadNewsCards, loadNewsCommentCounts } from '@/components/news'
 import { employerVerdict } from '@/lib/ruling/server'
 import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 
@@ -50,7 +51,7 @@ export default async function PulsePage() {
   const db = dbOf(payload)
   let core = cachedHomeOf()
   if (core == null) {
-    const [proof, provExtra, sponsorRows, occRows, drawRes, pilotRes, briefRes] = await Promise.all([
+    const [proof, provExtra, sponsorRows, occRows, drawRes, pilotRes, briefRes, newsRows, newsCmts] = await Promise.all([
       loadTotalAndProof(db).catch(nullProof),
       loadProvExtra(db).catch(emptyProvExtra),
       loadSponsorEmployers({ db, judge: employerVerdict }).catch(emptySponsorRows),
@@ -58,6 +59,8 @@ export default async function PulsePage() {
       db.query(SQL.PNP_DRAWS_RECENT).catch(emptyQueryResult),
       db.query(SQL.DESIGNATED_PILOT_NAMES).catch(emptyQueryResult),
       db.query(SQL.COMPANY_BRIEFS).catch(emptyQueryResult),
+      loadNewsCards({ db }).catch(emptyNewsRows),
+      loadNewsCommentCounts({ db }).catch(emptyNewsCmts),
     ])
     core = putHomeCache(homeCoreOf({
       proof,
@@ -69,6 +72,8 @@ export default async function PulsePage() {
       drawsLimit: DRAWS_LIMIT,
       pilotRows: pilotRes.rows,
       briefRows: briefRes.rows,
+      newsRows,
+      newsCmts,
     }))
   }
   const upd = await checkedAt(db).catch(emptyText)

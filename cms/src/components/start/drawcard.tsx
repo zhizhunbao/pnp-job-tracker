@@ -1,7 +1,7 @@
 'use client'
 /**
  * 域内小件:抽选表手机形态的一条(通道名 + 译名灰注 + 省标签 / 日期 / 分数线 / 邀请数
- * + 冷解读)。末条不出分隔线 —— 白卡自己有描边。
+ * ;冷解读 2026-09-12 Frank「这个解读 解读了个寂寞」 撤)。末条不出分隔线 —— 白卡自己有描边。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
  *
  * @author Frank
@@ -34,7 +34,6 @@ export function DrawCard({ row, last, t }: DrawCardIn) {
           {t('home.dr.inv')}<span className={css.drawVal}>{row.invitations}</span>
         </span>
       </div>
-      {row.read !== TEXT_NONE && <div className={css.drawRead}>{row.read}</div>}
     </div>
   )
 }

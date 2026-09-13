@@ -1,4 +1,6 @@
 /**
+ * 2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」:把脉页政策动态区复位,借本桶的日分组行 NewsDayGroupRows 与 dayGroupsOf
+ * (列表形单一出口,start 桶只消费)。
  * news 页面域的桶 —— /news 移民动态列表与 /news/[slug] 单条详情两块视图,
  * 外加两边共用的库行形状与地区取名。
  * 2026-08-26 自 app/(frontend)/news/ 整体迁入(原文件头 @author Claude
@@ -21,7 +23,8 @@
 export { META_DESC_LEN_MAX, NEWS_META } from './constants'
 export { News } from './news'
 export { NewsDetail } from './newsdetail'
+export { NewsDayGroupRows } from './newsdaygrouprows'
 export {
-  loadNewsCards, loadNewsCommentCounts, loadNewsComments, loadNewsHeroes, loadNewsRow, regionNameOf,
+  dayGroupsOf, loadNewsCards, loadNewsCommentCounts, loadNewsComments, loadNewsHeroes, loadNewsRow, regionNameOf,
 } from './functions'
-export type { NewsCard, NewsComment, NewsDbRow, NewsHero } from './types'
+export type { NewsCard, NewsCmtCounts, NewsComment, NewsDbRow, NewsHero } from './types'

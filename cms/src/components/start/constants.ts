@@ -107,13 +107,30 @@ export const ID_CITY_PILOT = 'pl-city-pilot'
 export const ID_CITY_DLI = 'pl-city-dli'
 
 /**
+ * 抽选尺子区的锚点 id(2026-09-12 随导航项提到 NAV_IDS 之前 —— 常量按引用序声明)。
+ */
+export const ID_DRAWS = 'pl-draws'
+
+/**
+ * 政策动态区的锚点 id(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」:09-04 重构撤掉的政策动态段复位,
+ * 住抽选表下面、「全部动态」链接上面;列表形照 /news 页的日分组行,通用件不另造)。
+ */
+export const ID_NEWS = 'pl-news'
+
+/**
+ * 政策动态区下发条数(最新几条;全量在 /news)。
+ */
+export const NEWS_LIMIT = 10
+
+/**
  * 二级导航条上的分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
  * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航);
  * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」);
  * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前(省份 → 城市 → PR);
- * 2026-09-12 Frank「在招走势 删了」:接新源就多一个台阶,画的是接入节奏不是市场;stats_daily 采集照跑,段与读端撤(趋势项与 ID_TREND 退役)。
+ * 2026-09-12 Frank「在招走势 删了」:接新源就多一个台阶,画的是接入节奏不是市场;stats_daily 采集照跑,
+ * 段与读端撤(趋势项与 ID_TREND 退役);2026-09-12 Frank「title 应该加到这里」(指二级导航条):抽选段进导航殿后。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_DRAWS]
 
 /**
  * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。
@@ -796,21 +813,6 @@ export const SERIES_LINE_TYPE = 'line'
 export const DRAWS_LIMIT = 50
 
 /**
- * 抽选尺子区的锚点 id。
- */
-export const ID_DRAWS = 'pl-draws'
-
-/**
- * 冷解读的回看窗(设计 §4):当期分数线 vs **近 12 期同通道**的区间。
- */
-export const HIST_WINDOW = 12
-
-/**
- * 冷解读的样本门槛:同通道有效期数 <4 不出解读(样本太少的「区间」是噪音,宁可不说)。
- */
-export const HIST_MIN_N = 4
-
-/**
  * 联邦抽选在表上显示的标签(省码那一格)。
  */
 export const TAG_FED = 'EE'
@@ -856,11 +858,6 @@ export const COL_SCORE = 'score'
 export const COL_INV = 'inv'
 
 /**
- * 表格列的 key:冷解读。
- */
-export const COL_READ = 'read'
-
-/**
  * 抽选表日期列的列宽(百分比;列宽写死,冷解读吃最宽一列 —— 它是这张表的结论。
  * 百分比固定布局永不横滚)。
  */
@@ -872,9 +869,9 @@ export const W_DATE = '12%'
 export const W_PROG = '8%'
 
 /**
- * 抽选表通道名列的列宽。
+ * 抽选表通道列的列宽(2026-09-12 Frank「这个解读 解读了个寂寞」:冷解读列撤,其 38% 并入本列,原 22%)。
  */
-export const W_STREAM = '22%'
+export const W_STREAM = '60%'
 
 /**
  * 抽选表分数线列的列宽。
@@ -885,11 +882,6 @@ export const W_SCORE = '10%'
  * 抽选表邀请数列的列宽。
  */
 export const W_INV = '10%'
-
-/**
- * 抽选表冷解读列的列宽。
- */
-export const W_READ = '38%'
 
 /**
  * 行 hover 高亮的全局规范类(同上)。
