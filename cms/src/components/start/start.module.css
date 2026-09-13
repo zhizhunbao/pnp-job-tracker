@@ -2806,3 +2806,141 @@
   }
 }
 
+
+/*
+ * 门槛弹框的条文清单(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」;行形照资源页门槛卡)。
+ */
+.rulesList {
+  /*
+   * 去默认圆点与缩进。
+   */
+  list-style: none;
+
+  /*
+   * 去默认边距。
+   */
+  margin: 8px 0 0;
+
+  /*
+   * 去默认缩进。
+   */
+  padding: 0;
+}
+
+/*
+ * 门槛弹框的一条。
+ */
+.rulesRow {
+  /*
+   * 竖排。
+   */
+  display: flex;
+  flex-direction: column;
+
+  /*
+   * 行内间距。
+   */
+  gap: 2px;
+
+  /*
+   * 条与条之间一条细线。
+   */
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * 门槛弹框一条的分流名(灰小字)。
+ */
+.rulesStream {
+  /*
+   * 三级文字浅灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小字。
+   */
+  font-size: 11px;
+}
+
+/*
+ * 门槛弹框一条的人话标签。
+ */
+.rulesLabel {
+  /*
+   * 正文色。
+   */
+  color: var(--text);
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13.5px;
+}
+
+/*
+ * 门槛弹框一条的官方原句(灰注)。
+ */
+.rulesQuote {
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 门槛弹框里的链接(每条的官方页 / 脚上的资料库)。
+ */
+.rulesLink {
+  /*
+   * 靠左收窄。
+   */
+  align-self: flex-start;
+
+  /*
+   * 品牌蓝,不出下划线。
+   */
+  color: var(--primary);
+  text-decoration: none;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 门槛弹框的加载中 / 空态一行。
+ */
+.rulesNote {
+  /*
+   * 次级文字灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 小一号。
+   */
+  font-size: 13px;
+
+  /*
+   * 与标题的间距。
+   */
+  margin: 12px 0 0;
+}
+
+/*
+ * 门槛弹框脚上的一行(资料库链接)。
+ */
+.rulesFoot {
+  /*
+   * 与清单的间距。
+   */
+  margin-top: 12px;
+}

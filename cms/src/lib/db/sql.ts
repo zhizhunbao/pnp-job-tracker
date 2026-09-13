@@ -1507,6 +1507,12 @@ export const PNP_REQUIREMENTS_ALL = `SELECT province, program, stream, subject, 
             FROM pnp_requirements q ORDER BY province, seq`
 
 /**
+ * 某省的门槛条文(把脉页抽选表「门槛」弹框懒查;2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。$1=省码。
+ */
+export const PNP_REQUIREMENTS_BY_PROV = `SELECT stream, label, value_text, url, seq
+            FROM pnp_requirements WHERE province = $1 ORDER BY seq`
+
+/**
  * 清单收录全列(ruling 判定底表)。
  */
 export const PNP_OCCUPATIONS_FULL = `SELECT province, stream, label, program, type, applies_to, noc, name, gta_restricted, url, fetched

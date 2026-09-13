@@ -8,7 +8,8 @@
 import { count, queryRowsOrEmpty, SQL, text } from '../db'
 import { FED_PROGRAM_ORDER, LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE, RULES_PROVINCE_FED } from './constants'
 import type {
-  LangCode, LoadRuleGroupsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut, RuleRow,
+  LangCode, LoadRuleGroupsIn, LoadRuleRowsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut,
+  RuleLineDbRow, RuleRow, RuleRows, RuleRowsOut,
 } from './types'
 
 /**
@@ -90,13 +91,43 @@ function byProvince(a: RuleGroup, b: RuleGroup): number {
 function toRuleGroupSeed(r: RuleDbRow): RuleGroupSeed {
   const province = text(r.province)
   const program = text(r.program)
-  const row: RuleRow = {
-    stream: text(r.stream), label: text(r.label), quote: text(r.value_text), url: text(r.url), seq: count(r.seq),
-  }
+  const row = toRuleRow(r)
   if (province === RULES_PROVINCE_FED) {
     return { key: program, province, program, row }
   }
   return { key: province, province, program, row }
+}
+
+/**
+ * 一行门槛条文:库格 → 洗净行(值级清洗只在这里做)。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净行。
+ */
+function toRuleRow(r: RuleLineDbRow): RuleRow {
+  return {
+    stream: text(r.stream), label: text(r.label), quote: text(r.value_text), url: text(r.url), seq: count(r.seq),
+  }
+}
+
+/**
+ * 某省的门槛条文(把脉页抽选表「门槛」弹框懒查)。
+ *
+ * @param x 池与省码。
+ * @returns 该省门槛行,按库内 seq 序;没有给空清单。
+ */
+export function loadRuleRows(x: LoadRuleRowsIn): RuleRowsOut {
+  return queryRowsOrEmpty({ db: x.db, sql: SQL.PNP_REQUIREMENTS_BY_PROV, params: [x.province], map: toRuleRow })
+}
+
+/**
+ * 查询挂了给空清单(路由永不 500;错误已由 db 层留痕)。
+ *
+ * @param _e 错误。
+ * @returns 空清单。
+ */
+export function emptyRuleRows(_e: Error): RuleRows {
+  return []
 }
 
 /**

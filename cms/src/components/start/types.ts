@@ -3068,9 +3068,14 @@ export type DrawCellRow = {
   href: string
 
   /**
-   * 「门槛」钮去处:资源页该省门槛卡的锚点;联邦 EE 类别抽选没有对应门槛组给 TEXT_NONE(不出钮)。
+   * 「门槛」钮开哪省的弹框(两位省码);联邦 EE 类别抽选没有对应门槛组给 TEXT_NONE(不出钮)。
    */
-  rulesHref: string
+  rulesProv: string
+
+  /**
+   * 「门槛」钮点击:开该省弹框(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。
+   */
+  onRules: ClickFn
 
   /**
    * 「官方页」钮文案。
@@ -3116,6 +3121,11 @@ export type DrawCellRowIn = {
    * 界面语言。
    */
   lang: string
+
+  /**
+   * 开门槛弹框的手柄(收省码)。
+   */
+  onRules: RulesOpenFn
 }
 
 /**
@@ -3141,6 +3151,156 @@ export type DrawCellRowsIn = {
    * 界面语言。
    */
   lang: string
+
+  /**
+   * 开门槛弹框的手柄(收省码)。
+   */
+  onRules: RulesOpenFn
+}
+
+/**
+ * 开门槛弹框的手柄:收两位省码。
+ */
+export type RulesOpenFn = (prov: string) => void
+
+/**
+ * /api/rules 拉回的一条门槛(线格式,与 lib/official 的 RuleRow 同格,本域自抄)。
+ */
+export type RuleLineJson = {
+  /**
+   * 分流('' = 不分)。
+   */
+  stream: string
+
+  /**
+   * 人话标签(英文)。
+   */
+  label: string
+
+  /**
+   * 官方原句。
+   */
+  quote: string
+
+  /**
+   * 官方页 URL。
+   */
+  url: string
+
+  /**
+   * 库内序(当行键)。
+   */
+  seq: number
+}
+
+/**
+ * /api/rules 拉回的 json 探针(线格式:缺席 = 不发键)。
+ */
+export type RulesProbe = {
+  /**
+   * 门槛行。
+   */
+  rows?: RuleLineJson[]
+}
+
+/**
+ * 门槛弹框的数据:该省门槛行;null = 加载中。
+ */
+export type MaybeRuleLines = RuleLineJson[] | null
+
+/**
+ * `makeRulesLoad` 的入参。
+ */
+export type RulesLoadIn = {
+  /**
+   * 两位省码。
+   */
+  province: string
+
+  /**
+   * 交回门槛行。
+   */
+  setRows: (rows: MaybeRuleLines) => void
+}
+
+/**
+ * `makeRulesOpen` 的入参。
+ */
+export type RulesOpenIn = {
+  /**
+   * 开门槛弹框的手柄。
+   */
+  open: RulesOpenFn
+
+  /**
+   * 这一行的省码。
+   */
+  province: string
+}
+
+/**
+ * `useRulesModal` 的出参:门槛弹框的状态与手柄。
+ */
+export type RulesPanel = {
+  /**
+   * 开着哪省(TEXT_NONE = 没开)。
+   */
+  prov: string
+
+  /**
+   * 该省门槛行;null = 加载中。
+   */
+  rows: MaybeRuleLines
+
+  /**
+   * 开某省的弹框。
+   */
+  open: RulesOpenFn
+
+  /**
+   * 关弹框。
+   */
+  close: ClickFn
+}
+
+/**
+ * `rulesTitleOf` 的入参。
+ */
+export type RulesTitleIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 两位省码。
+   */
+  prov: string
+}
+
+/**
+ * RulesModal(抽选表「门槛」弹框)的 props。
+ */
+export type RulesModalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 两位省码。
+   */
+  prov: string
+
+  /**
+   * 该省门槛行;null = 加载中。
+   */
+  rows: MaybeRuleLines
+
+  /**
+   * 关弹框。
+   */
+  onClose: ClickFn
 }
 
 /**

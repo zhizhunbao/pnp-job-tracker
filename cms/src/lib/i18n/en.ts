@@ -953,6 +953,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.col.biz': 'Main business', 'pulse.col.sector': 'Employer type', 'pulse.sector.private': 'Private',
   'pulse.sector.public': 'Public institution', 'pulse.sector.government': 'Provincial or municipal', 'pulse.sector.federal': 'Federal government', 'pulse.pilot.aip': 'AIP designated employers', 'pulse.chain': 'Chain', 'pulse.chain.tip': 'Designated per location. Confirm the store before applying.', 'pulse.pilot.rcip': 'RCIP designated employers', 'pulse.pilot.fcip': 'FCIP designated employers',   'pulse.id.nowp': 'No work permit', 'pulse.id.pgwp': 'Work permit',
   'pulse.col.hiringOcc': 'Hiring for', 'pulse.nocMore': '{n} in total', 'pulse.act.jobs': 'Jobs', 'pulse.act.company': 'Company', 'pulse.act.link': 'Official', 'pulse.act.rules': 'Rules',
+  'pulse.rules.title': '{prov} stream rules', 'pulse.rules.loading': 'Loading…', 'pulse.rules.empty': 'Not collected yet', 'pulse.rules.more': 'Resource library',
   // B4 employer PNP bar check (design/雇主省提名门槛判定-20260808.md): three states + public-sector bypass, a check against the bar, not an official certification
   'se.col.verdict': 'Employer bar', 'se.verdict.met': 'Meets bar', 'se.verdict.short': 'Short on {items}', 'se.verdict.unknown': 'Pending', 'se.verdict.public': 'Public sector',
   'se.verdict.factor.years': 'years operating', 'se.verdict.factor.staff': 'staff count',

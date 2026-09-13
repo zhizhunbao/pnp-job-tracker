@@ -701,3 +701,18 @@ export const LABEL_MISS = ''
  * (拼进选项、进比较、进 key 时都是隐患)。
  */
 export const OR_TAIL_DROP = ''
+
+/**
+ * /api/rules 的查询参数名:省码(把脉页抽选表「门槛」弹框懒查;2026-09-13)。
+ */
+export const P_PROV = 'prov'
+
+/**
+ * 省码的形:两位大写字母(不合形直接 400,不进库)。
+ */
+export const PROV_CODE_RE = /^[A-Z]{2}$/
+
+/**
+ * /api/rules 的浏览器侧缓存头(门槛条文周更,与 stats 的 city 同口径)。
+ */
+export const RULES_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=3600'

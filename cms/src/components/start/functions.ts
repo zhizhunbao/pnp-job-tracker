@@ -37,6 +37,7 @@ import {
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
   COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL, W_DRAW_ACT, W_NEWS_ACT, URL_RULES_HEAD,
+  URL_RULES_API_HEAD,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
@@ -131,7 +132,7 @@ import type {
   Teer03In, VerdictTextIn,
 ValuableIn,
   EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
-  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
+  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesLoadIn, RulesOpenIn, RulesProbe, RuleLineJson, RulesTitleIn,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
@@ -3243,7 +3244,7 @@ export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
   for (let i = 0; i < x.rows.length; i += 1) {
     const r = x.rows[i]
     if (r != null) {
-      out.push(toDrawCellRow({ r, i, t: x.t, tEn: x.tEn, lang: x.lang }))
+      out.push(toDrawCellRow({ r, i, t: x.t, tEn: x.tEn, lang: x.lang, onRules: x.onRules }))
     }
   }
   return out
@@ -3269,7 +3270,8 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     score: numTextOf(x.r.score),
     invitations: numTextOf(x.r.invitations),
     href: x.r.url,
-    rulesHref: drawRulesHrefOf(x.r.province),
+    rulesProv: drawRulesProvOf(x.r.province),
+    onRules: makeRulesOpen({ open: x.onRules, province: x.r.province }),
     actLinkText: x.t('pulse.act.link'),
     actRulesText: x.t('pulse.act.rules'),
     actBtnCls: actBtnClsOf(),
@@ -3277,16 +3279,93 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
 }
 
 /**
- * 「门槛」钮去处:省抽选落资源页该省门槛卡;联邦 EE 类别抽选没有对应门槛组,不出钮。
+ * 「门槛」钮开哪省:省抽选开该省弹框;联邦 EE 类别抽选没有对应门槛组,不出钮。
  *
  * @param province 两位省码或 FED。
- * @returns 锚点地址;不出钮时 TEXT_NONE。
+ * @returns 省码;不出钮时 TEXT_NONE。
  */
-function drawRulesHrefOf(province: string): string {
+function drawRulesProvOf(province: string): string {
   if (province === PROV_FED) {
     return TEXT_NONE
   }
-  return URL_RULES_HEAD + province
+  return province
+}
+
+/**
+ * 「门槛」钮的点击手柄工厂:把这一行的省码喂给开弹框的手柄。
+ *
+ * @param x 开弹框手柄与省码。
+ * @returns 点击手柄。
+ */
+function makeRulesOpen(x: RulesOpenIn): ClickFn {
+  return function onRules(): void {
+    x.open(x.province)
+  }
+}
+
+/**
+ * 门槛弹框的懒查工厂(形照 makeCityLoad):挂上就拉该省门槛条文,卸下就中止;
+ * 拉挂了给空清单(弹框出空态,不静默转圈)。
+ *
+ * @param x 省码与交回手柄。
+ * @returns effect 体:跑起来返回中止函数。
+ */
+export function makeRulesLoad(x: RulesLoadIn): () => CleanupFn {
+  return function run(): CleanupFn {
+    const ctrl = new AbortController()
+    async function pull(): Promise<void> {
+      try {
+        const res = await fetch(URL_RULES_API_HEAD + x.province, { signal: ctrl.signal })
+        if (res.ok === false) {
+          x.setRows([])
+          return
+        }
+        const j: RulesProbe = await res.json()
+        x.setRows(rulesRowsOf(j))
+      } catch {
+        if (ctrl.signal.aborted === false) {
+          x.setRows([])
+        }
+      }
+    }
+    void pull()
+    return function abort(): void {
+      ctrl.abort()
+    }
+  }
+}
+
+/**
+ * 拉回的探针 → 门槛行(缺键给空清单)。
+ *
+ * @param j 拉回的 json 探针。
+ * @returns 门槛行。
+ */
+function rulesRowsOf(j: RulesProbe): RuleLineJson[] {
+  if (j.rows == null) {
+    return []
+  }
+  return j.rows
+}
+
+/**
+ * 门槛弹框标题:界面语言省名 + 「通道门槛」。
+ *
+ * @param x 取词函数与省码。
+ * @returns 标题。
+ */
+export function rulesTitleOf(x: RulesTitleIn): string {
+  return x.t('pulse.rules.title', { prov: provLabelOf({ t: x.t, code: x.prov }) })
+}
+
+/**
+ * 门槛弹框脚上「资料库」链接去处:资源页该省门槛卡。
+ *
+ * @param prov 两位省码。
+ * @returns 地址。
+ */
+export function rulesMoreHrefOf(prov: string): string {
+  return URL_RULES_HEAD + prov
 }
 
 /**

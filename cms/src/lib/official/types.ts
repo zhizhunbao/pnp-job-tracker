@@ -154,6 +154,61 @@ export type RuleGroups = RuleGroup[]
 export type RuleGroupsOut = Promise<RuleGroups>
 
 /**
+ * `SQL.PNP_REQUIREMENTS_BY_PROV` 回来的一行(只声明真读的格;RuleDbRow 是它的超集,同走 toRuleRow)。
+ */
+export type RuleLineDbRow = {
+  /**
+   * 分流。
+   */
+  stream: string | null
+
+  /**
+   * 人话标签。
+   */
+  label: string | null
+
+  /**
+   * 官方原句。
+   */
+  value_text: string | null
+
+  /**
+   * 官方页 URL。
+   */
+  url: string | null
+
+  /**
+   * 库内序。
+   */
+  seq: number | string | null
+}
+
+/**
+ * `loadRuleRows` 的入参。
+ */
+export type LoadRuleRowsIn = {
+  /**
+   * 能打 SQL 的东西(池由路由注入)。
+   */
+  db: Db
+
+  /**
+   * 两位省码。
+   */
+  province: string
+}
+
+/**
+ * 门槛行清单(某省的全部条文)。
+ */
+export type RuleRows = RuleRow[]
+
+/**
+ * `loadRuleRows` 的出参。
+ */
+export type RuleRowsOut = Promise<RuleRows>
+
+/**
  * `toRuleGroupSeed` 的出参:分组前的一行。
  */
 export type RuleGroupSeed = {

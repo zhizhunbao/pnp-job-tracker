@@ -922,9 +922,19 @@ export const W_DRAW_ACT = '150px'
 export const W_NEWS_ACT = '110px'
 
 /**
- * 资源页「通道门槛」卡的锚点地址头(后接省码;与 resources 域 RULES_ANCHOR_HEAD 同值,本域自抄)。
+ * 资源页「通道门槛」卡的锚点地址头(后接省码;弹框脚上「资料库」链接去处;与 resources 域 RULES_ANCHOR_HEAD 同值,本域自抄)。
  */
 export const URL_RULES_HEAD = '/resources#rules-'
+
+/**
+ * 某省门槛条文接口地址头(后接省码;2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」:门槛钮改弹框懒查)。
+ */
+export const URL_RULES_API_HEAD = '/api/rules?prov='
+
+/**
+ * 门槛弹框的宽档(官方原句长,取最宽)。
+ */
+export const RULES_MODAL_SIZE = 'lg'
 
 /**
  * 行 hover 高亮的全局规范类(同上)。

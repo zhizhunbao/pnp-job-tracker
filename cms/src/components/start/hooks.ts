@@ -19,13 +19,14 @@ import { makeT } from '@/lib/i18n'
 import { DLI_KIND_ALL, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
-  makeMacroLoad,
+  makeMacroLoad, makeRulesLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
 import type {
+  MaybeRuleLines, RulesPanel,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
@@ -324,4 +325,33 @@ export function usePulse(x: PulseIn): PulsePanel {
     navSec,
     macroLoading: macroData == null,
   }
+}
+
+/**
+ * 抽选表「门槛」弹框的机器:开着哪省一格 + 该省门槛行一格;省码一变就懒查 /api/rules
+ * (2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。关弹框把省码清空,行清 null。
+ *
+ * @returns 开着哪省、门槛行与开关手柄。
+ */
+export function useRulesModal(): RulesPanel {
+  const [prov, setProv] = useState(TEXT_NONE)
+  const [rows, setRows] = useState<MaybeRuleLines>(null)
+
+  useEffect(function loadRules() {
+    if (prov === TEXT_NONE) {
+      return
+    }
+    return makeRulesLoad({ province: prov, setRows })()
+  }, [prov])
+
+  function open(p: string): void {
+    setRows(null)
+    setProv(p)
+  }
+
+  function close(): void {
+    setProv(TEXT_NONE)
+  }
+
+  return { prov, rows, open, close }
 }

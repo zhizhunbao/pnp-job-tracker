@@ -8,9 +8,9 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 import { Tag } from '@/components/tag'
-import { NEW_TAB, TEXT_NONE } from './constants'
+import { MINI_BTN_KIND, NEW_TAB, TEXT_NONE } from './constants'
 import { drawRowClsOf } from './functions'
 import type { DrawCardIn } from './types'
 import css from './start.module.css'
@@ -39,8 +39,8 @@ export function DrawCard({ row, last, t }: DrawCardIn) {
       <div className={css.drawActs}>
         <span className={css.acts}>
           <LinkButton href={row.href} className={row.actBtnCls} target={NEW_TAB}>{row.actLinkText}</LinkButton>
-          {row.rulesHref !== TEXT_NONE && (
-            <LinkButton href={row.rulesHref} className={row.actBtnCls} target={NEW_TAB}>{row.actRulesText}</LinkButton>
+          {row.rulesProv !== TEXT_NONE && (
+            <Button kind={MINI_BTN_KIND} onClick={row.onRules}>{row.actRulesText}</Button>
           )}
         </span>
       </div>
