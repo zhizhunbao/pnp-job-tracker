@@ -118,7 +118,7 @@ from mart.constants import (
     K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
-    LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL, MART_NO_SALARY_TPL,
+    LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
     MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS, MB_EOI_SECTION_TPL,
     MB_GROUP_LABEL_TPL, MB_INVENTORY_METRICS, MB_PROC_LABEL_TPL, MB_SECTION_TPL, MB_YTD_GROUPS,
     MB_YTD_TPL, METRIC_ALLOCATION, METRIC_ASSESSING, METRIC_EOI_POOL, METRIC_EOI_POOL_TOTAL,
@@ -185,7 +185,7 @@ from mart.scheme import (
     StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
-    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoSalaryClosedIn, NoticeRowIn, NumericRangeOut,
+    NocDescRowIn, NocOpeningIn, NocOpeningsIn, NoticeRowIn, NumericRangeOut,
     OccBaseIn, OccBuildIn, OccNationalIn, OccRowIn, OpsCtx, OpsProvIn, OpsRowIn, OpsRowOut,
     OttawaLocIn, PilotEmployerIn, PilotFlagIn, PilotOccIn, PilotQuotaIn, PilotRowIn, PilotTally,
     PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
@@ -1395,9 +1395,6 @@ def collect_ats_rows(ctx: MartCtx) -> None:
         for j in jd[K_JOBS]:
             key = DEDUP_KEY_TPL.format(slug=slug, title=norm_title(j.get(K_TITLE, "")))
             ext = j.get(K_URL) or key
-            if not has_listed_salary(j):
-                ctx.no_salary.append(ext)
-                continue
             if ext not in ctx.expired:
                 ctx.seen_ids.add(ext)
             if key in ctx.seen:
@@ -1425,9 +1422,6 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
         cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
         key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
         ext = mart_jb_ext_of(JbExtIn(job=j, key=key))
-        if not has_listed_salary(j):
-            ctx.no_salary.append(ext)
-            continue
         if ext not in ctx.expired:
             ctx.seen_ids.add(ext)
         if key in ctx.seen:
@@ -1458,9 +1452,6 @@ def collect_board_rows(ctx: MartCtx) -> None:
             cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
             key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
             ext = board_ext_of(BoardJobIn(job=j, origin=origin))
-            if not has_listed_salary(j):
-                ctx.no_salary.append(ext)
-                continue
             ctx.seen_ids.add(ext)
             if key in ctx.seen:
                 continue
@@ -1470,14 +1461,6 @@ def collect_board_rows(ctx: MartCtx) -> None:
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
             add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=cslug,
                              fields=to_board_job_fields(BoardJobIn(job=j, origin=origin))))
-
-
-def has_listed_salary(j: dict) -> bool:
-    """无薪资闸(2026-09-09 Frank 拍板「没薪资的就过滤掉」「没有薪资的工作就是有猫腻」):
-    雇主在帖子上标了工资原文才算(三源同键 salary;板域把「Salaire à discuter」抽成空串)。
-    判的是「标没标」不是「算没算出」—— 原文在而归一失败的帖仍放行,那是尺子的事不是雇主的事。
-    """
-    return bool(j.get(K_SALARY))
 
 
 def mart_jb_ext_of(x: JbExtIn) -> str:
@@ -3149,8 +3132,10 @@ def sql_median_of(sal: list) -> float | None:
     return (ordered[mid - 1] + ordered[mid]) / 2
 
 
-def build_closed_jobs(no_salary: list) -> list:
-    """判死名单显式下发(2026-08-03)+ 无薪资闸拦下的帖(2026-09-09)。
+def build_closed_jobs() -> list:
+    """判死名单显式下发(2026-08-03)。无薪资闸(2026-09-09「没薪资的就过滤掉」)2026-09-12 Frank「无薪资的 就留着 别过滤」
+    撤:Jobillico 八成帖「Salaire à discuter」被闸关了 19k、Jobboom 1.9k 实撞,雇主不标薪资照收;
+    闸撤后这些岗重新进 mart,seed 的 upsert 把 status 翻回 open(status 不在固定列)。
 
     光把死帖剔出 mart 不够 —— seed 的下架规则还要求「发布>30 天」,于是 28 天前就死掉的岗一直
     挂着「在招」(Fort Qu'Appelle 用户点两次申请撞过期页的那一单)。验尸拿到的 410/过期页是
@@ -3158,9 +3143,6 @@ def build_closed_jobs(no_salary: list) -> list:
     seed 见名单即置 closed,closedAt 用判死时刻(喂 JSON-LD 的 validThrough)。
     """
     rows: list = []
-    now = datetime.now(timezone.utc).isoformat()
-    for ext in no_salary:
-        rows.append(to_no_salary_closed_row(NoSalaryClosedIn(ext=ext, closed_at=now)))
     if not IN_EXPIRED.exists():
         return rows
     for pid, ts in read_table(IN_EXPIRED).get(K_DEAD, {}).items():
@@ -3256,11 +3238,6 @@ def to_closed_job_row(x: ClosedJobIn) -> dict:
     return {"externalId": JB_EXT_TPL.format(pid=x.pid), "closedAt": x.closed_at}
 
 
-def to_no_salary_closed_row(x: NoSalaryClosedIn) -> dict:
-    """closed_jobs 表的一行(无薪资闸;ext 已是完整前缀形,不再加 jb:)。"""
-    return {"externalId": x.ext, "closedAt": x.closed_at}
-
-
 # =========================================================================
 # 14. mart:装配与落盘(28 张表一次算齐;跨源汇装的收口点)
 # =========================================================================
@@ -3285,12 +3262,11 @@ def new_mart_ctx() -> MartCtx:
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), briefs=load_briefs(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
-                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0,
-                   no_salary=[])
+                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)
 
 
 def say_mart_tallies(ctx: MartCtx) -> None:
-    """本轮汇装的四个留痕数(验尸剔除 / 薪资兜底 / 无薪资闸 / 见过但不进 mart)。
+    """本轮汇装的三个留痕数(验尸剔除 / 薪资兜底 / 见过但不进 mart;无薪资闸 2026-09-12 Frank「无薪资的 就留着 别过滤」 撤)。
 
     薪资兜底恒为 0 说明抓取与建表的窗口已关;持续偏大 = 撞得厉害,该去看编排顺序而不是加大兜底。
     「本轮见过」名单(2026-08-04):seed 的下架对账**只**认它,不再拿去重后的 mart.jobs 当见过集。
@@ -3301,8 +3277,6 @@ def say_mart_tallies(ctx: MartCtx) -> None:
         say(MART_EXPIRED_TPL.format(n=ctx.dropped_expired))
     if ctx.late_salary:
         say(MART_LATE_SALARY_TPL.format(n=ctx.late_salary))
-    if ctx.no_salary:
-        say(MART_NO_SALARY_TPL.format(n=len(ctx.no_salary)))
     say(MART_SEEN_TPL.format(seen=len(ctx.seen_ids), jobs=len(ctx.jobs),
                              gap=len(ctx.seen_ids) - len(ctx.jobs)))
 
@@ -3335,7 +3309,7 @@ def to_mart_tables() -> dict:
     universe = load_noc_universe()
     return {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
-        "closed_jobs": build_closed_jobs(ctx.no_salary), "seen_ids": sorted(ctx.seen_ids),
+        "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
         "provinces": build_provinces(prov_info()),
         "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n,
                                            macro=load_city_macro())),

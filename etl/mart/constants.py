@@ -2047,10 +2047,6 @@ MART_LATE_SALARY_TPL = "  薪资兜底: {n} 个新帖在 04d 之后落盘,09 现
 """薪资兜底留痕:这个数 = 本轮抢在 04d 之后落盘的新帖。恒为 0 说明窗口已关;持续偏大 =
 抓取与建表撞得厉害,该去看编排顺序而不是加大兜底。"""
 
-MART_NO_SALARY_TPL = "  无薪资闸: {n} 个帖雇主未标薪资,不进 mart 并下发 closed_jobs(2026-09-09 Frank 拍板)"
-"""无薪资闸留痕(三源合计)。Job Bank 强制填工资应恒为 0 贡献;数字几乎全来自 jobillico / jobboom
-(魁北克无薪酬透明法,八成帖「Salaire à discuter」)与少量 ATS 直招帖。"""
-
 MART_SEEN_TPL = ("  seen_ids(本轮见过): {seen} · mart.jobs(展示去重后): {jobs} · "
                  "见过但不进 mart(展示去重/同 ext 重复): {gap}")
 """见过集与展示集的差额留痕。"""
