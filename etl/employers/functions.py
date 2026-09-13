@@ -24,11 +24,11 @@ from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
                                  K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
-                                 LEGAL_SUFFIX_RE, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
+                                 LEGAL_SUFFIX_RE, LOC_PROV_SEP, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
                                  PRINT_POOL_DONE_TPL, PRINT_SOURCES_TPL, SKILLED_TEER_MAX,
                                  STAR_ENTRY, STAR_LOW, STAR_MID, STAR_TOP, STAR_TRACE,
                                  STATUS_OPEN, TOP_TITLES_N, WAGE_INDEX_BASE, OUT_BUCKETS, OUT_POOL)
-from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeOut,
+from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeCityIn, HomeOut,
                               KeyIn, PoolCtx, PoolRow, ScanOut, StarIn)
 
 
@@ -207,31 +207,48 @@ def star_of(x: StarIn) -> int:
 
 
 def home_of(x: KeyIn) -> HomeOut:
-    """主场判定:在招岗最多的省市;无岗雇主按指定行、companies 维表兜底。"""
+    """主场判定:在招岗最多的省,再在**该省的岗里**数最多的市(2026-09-13 批二生产实拍 "Dartmouth, ON" /
+    "Montréal, ON":省市分开数会把 A 省的市配给 B 省);无岗雇主按指定行、companies 维表兜底。"""
+    province = home_province_of(x)
+    city = home_city_of(HomeCityIn(ctx=x.ctx, key=x.key, province=province))
+    return HomeOut(province=province or None, city=city or None)
+
+
+def home_province_of(x: KeyIn) -> str | None:
+    """主省:在招岗最多的省;无岗按指定行、companies 维表兜底。"""
     ctx = x.ctx
-    des_rows = ctx.designated_by_key.get(x.key) or []
-    comp = ctx.companies_by_slug.get(x.key) or {}
     prov_count: Counter = Counter()
-    city_count: Counter = Counter()
     for rows in (ctx.open_by_key.get(x.key) or {}).values():
         for row in rows:
             if row.get(K_PROVINCE):
                 prov_count[row[K_PROVINCE]] += 1
-            if row.get(K_CITY):
-                city_count[row[K_CITY]] += 1
-    province = None
     if prov_count:
-        province = prov_count.most_common(1)[0][0]
-    elif des_rows:
-        province = des_rows[0].get(K_PROVINCE)
-    elif comp.get(K_REGION):
-        province = comp.get(K_REGION)
-    city = None
+        return prov_count.most_common(1)[0][0]
+    des_rows = ctx.designated_by_key.get(x.key) or []
+    if des_rows:
+        return des_rows[0].get(K_PROVINCE)
+    comp = ctx.companies_by_slug.get(x.key) or {}
+    return comp.get(K_REGION) or None
+
+
+def home_city_of(x: HomeCityIn) -> str | None:
+    """主市:只在主省的在招岗里数最多的市;无岗按指定行地点兜底,地点自带的 ", 省码" 尾巴剥掉
+    (省码由 province 格给,不重复;实拍 "Peace Liard, BC, BC")。"""
+    ctx = x.ctx
+    city_count: Counter = Counter()
+    for rows in (ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            if row.get(K_CITY) and row.get(K_PROVINCE) == x.province:
+                city_count[row[K_CITY]] += 1
     if city_count:
-        city = city_count.most_common(1)[0][0]
-    elif des_rows:
-        city = des_rows[0].get(K_LOCATION)
-    return HomeOut(province=province or None, city=city or None)
+        return city_count.most_common(1)[0][0]
+    des_rows = ctx.designated_by_key.get(x.key) or []
+    if not des_rows:
+        return None
+    city = des_rows[0].get(K_LOCATION) or None
+    if city and x.province and city.endswith(LOC_PROV_SEP + x.province):
+        city = city[:-len(LOC_PROV_SEP + x.province)]
+    return city
 
 
 def designated_summary_of(des_rows: list) -> DesignatedOut:

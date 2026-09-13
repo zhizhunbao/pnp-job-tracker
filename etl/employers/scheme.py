@@ -172,6 +172,20 @@ class KeyIn:
 
 
 @dataclass
+class HomeCityIn:
+    """home_city_of() 入参:主省已定,再在该省的岗里数市。"""
+
+    ctx: PoolCtx
+    """聚合上下文。"""
+
+    key: str
+    """池主键。"""
+
+    province: str | None
+    """主省(None = 三源都没给省)。"""
+
+
+@dataclass
 class HomeOut:
     """主场判定出参(在招最多的省市;无岗按指定/公司维表兜底)。"""
 

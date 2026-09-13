@@ -173,3 +173,7 @@ K_EMPLOYERS_TABLE = "employers"
 
 NAME_SEP = " "
 """归一名的词间分隔(折叠目标)。"""
+
+LOC_PROV_SEP = ", "
+"""designated 行地点里「市, 省码」的分隔(2026-09-13 批二生产实拍 "Peace Liard, BC, BC":名单地点自带省码,
+主场市取它时要剥掉尾巴,省码由 province 格单独给)。"""
