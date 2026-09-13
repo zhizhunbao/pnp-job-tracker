@@ -1,24 +1,32 @@
 {
  "Alberta Express Entry Stream – Accelerated Tech Pathway": {
   "streams": [
+   "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway",
+   "AAIP Alberta Express Entry Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
  },
  "Alberta Express Entry Stream – Priority Sectors (Agriculture)": {
   "streams": [
+   "AAIP Alberta Express Entry Stream — Priority Sectors",
+   "AAIP Alberta Express Entry Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
  },
  "Alberta Express Entry Stream – Priority Sectors (Construction)": {
   "streams": [
+   "AAIP Alberta Express Entry Stream — Priority Sectors",
+   "AAIP Alberta Express Entry Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
  },
  "Alberta Express Entry Stream – Priority Sectors (Health Care)": {
   "streams": [
+   "AAIP Alberta Express Entry Stream — Priority Sectors",
+   "AAIP Alberta Express Entry Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
@@ -74,26 +82,37 @@
  },
  "Dedicated Health Care Pathway – Express Entry": {
   "streams": [
+   "AAIP Alberta Express Entry Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
  },
  "Dedicated Health Care Pathway – non-Express Entry": {
   "streams": [
+   "AAIP Alberta Opportunity Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"
  },
  "Employer Job Offer: Foreign Worker stream": {
-  "streams": [],
+  "streams": [
+   "OINP Employer Job Offer: Foreign Worker stream",
+   "Ontario Workforce Priority stream"
+  ],
   "checkedAt": "2026-09-13"
  },
  "Employer Job Offer: In-Demand Skills stream": {
-  "streams": [],
+  "streams": [
+   "OINP Employer Job Offer: In-Demand Skills stream",
+   "Ontario Workforce Priority stream"
+  ],
   "checkedAt": "2026-09-13"
  },
  "Employer Job Offer: International Student stream": {
-  "streams": [],
+  "streams": [
+   "OINP Employer Job Offer: International Student stream",
+   "Ontario Workforce Priority stream"
+  ],
   "checkedAt": "2026-09-13"
  },
  "Employment in New Brunswick": {
@@ -198,6 +217,7 @@
  },
  "Rural Renewal Stream": {
   "streams": [
+   "AAIP Rural Renewal Stream",
    "AAIP (job offer & employer requirements, all streams)"
   ],
   "checkedAt": "2026-09-13"

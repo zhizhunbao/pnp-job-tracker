@@ -675,6 +675,58 @@ FACTOR_EMP_STAFF = "empStaff"
 FACTOR_EMP_REVENUE = "empRevenue"
 """门槛因素:雇主营业额。"""
 
+OP_RULE = "rule"
+"""比较符:条文型(没有数值可比,原句整条即门槛;与联邦段 fed-eligibility 的 rule 行同形)。"""
+
+FACTOR_STREAM_CLOSED = "streamClosed"
+"""门槛因素:通道已关闭的官方通告(2026-09-13 ON 三条 Employer Job Offer 流随 OINP 重组关闭,
+抽选表还有它们 4 月的旧轮 —— 关闭事实本身就是这条通道的「门槛」)。"""
+
+FACTOR_CRS = "crs"
+"""门槛因素:联邦 CRS 分数下限(AB Express Entry 流 300)。"""
+
+FACTOR_EE_PROFILE = "eeProfile"
+"""门槛因素:须有联邦 Express Entry 档案。"""
+
+FACTOR_EE_PROGRAM = "eeProgram"
+"""门槛因素:须满足联邦三项目之一(CEC / FSW / FST)的资格。"""
+
+FACTOR_OCC_PATHWAY = "occupationPathway"
+"""门槛因素:职业须落在该通道 / 专线点名的职业范围内。"""
+
+FACTOR_JOB_OFFER = "jobOffer"
+"""门槛因素:雇主 offer / 在职(条文型;时长型的归 experience + basis=employerTenure)。"""
+
+FACTOR_INTENT = "intent"
+"""门槛因素:定居意向。"""
+
+FACTOR_ENDORSEMENT = "communityEndorsement"
+"""门槛因素:社区背书信(AB 乡村振兴流)。"""
+
+FACTOR_EDUCATION = "education"
+"""门槛因素:学历(条文型;与联邦段同名)。"""
+
+FACTOR_FUNDS = "fundsMinimum"
+"""门槛因素:安家资金(条文型;与联邦段同名)。"""
+
+FACTOR_WORK_EXEMPT_GRAD = "workExemptGrad"
+"""门槛因素:毕业生免经验条款(与联邦段同名)。"""
+
+FACTOR_INTERNSHIP = "internship"
+"""门槛因素:实习(MB 研究生实习路径的 Mitacs 实习)。"""
+
+FACTOR_BUSINESS = "business"
+"""门槛因素:经营要求(MB 留学生创业路径)。"""
+
+FACTOR_AGE = "age"
+"""门槛因素:年龄区间。"""
+
+FACTOR_LICENSING = "licensing"
+"""门槛因素:执业资格 / 行业证照。"""
+
+UNIT_CRS = "CRS"
+"""单位:联邦 CRS 分。"""
+
 UNIT_CLB = "CLB"
 """单位:加拿大语言基准。"""
 
@@ -2145,6 +2197,32 @@ ONR_TIMEOUT_S = 40
 ONR_STREAM = "Ontario Workforce Priority stream"
 """通道名。"""
 
+ONR_EJO_PAGES = (
+    ("OINP Employer Job Offer: Foreign Worker stream",
+     "https://www.ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream"),
+    ("OINP Employer Job Offer: International Student stream",
+     "https://www.ontario.ca/page/oinp-employer-job-offer-international-student-stream"),
+    ("OINP Employer Job Offer: In-Demand Skills stream",
+     "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream"),
+)
+"""三条 Employer Job Offer 流的官方页(已归档;2026-09-13 Frank「抓」:抽选表还挂着它们 4 月的旧轮,
+把脉页门槛弹框对不上通道)。页面明写 2026-05-30 随 OINP 重组关闭 —— 抓的是**关闭通告**这一行,
+不抓已作废的资格条文;弹框里关闭行在前、现行 Workforce Priority 流条文在后。
+只读 crawl 缓存(on-oinp 役周更),不直连。"""
+
+ONR_CLOSED_RE = re.compile(
+    r"Please note that this stream was closed as of ([A-Z][a-z]+ \d{1,2}, \d{4}), as part of the OINP redesign\.")
+"""关闭通告原句(带日期)。"""
+
+ONR_SECTION_CLOSED = "Stream closed"
+"""关闭通告的段名(照官方页小标题)。"""
+
+ONR_CLOSED_LABEL_TPL = "Stream closed as of {date} (OINP redesign) — current employer-offer path: Ontario Workforce Priority stream"
+"""关闭行的人话标签。"""
+
+ONR_PROBLEM_CLOSED_TPL = "EJO 关闭通告没解析到:{stream}"
+"""硬闸:关闭句没匹配到(页面改版)。"""
+
 AREA_GTA = "gta"
 """区域键:多伦多市 + Durham/Halton/Peel/York。"""
 
@@ -2877,6 +2955,131 @@ ABR_WHAT_EMP_REVENUE = "营业额"
 ABR_WHAT_EMP_STAFF = "全职雇员数"
 """雇主侧自校的中文项名:全职雇员数。"""
 
+AB_EE_URL = "https://www.alberta.ca/aaip-alberta-express-entry-stream-eligibility"
+"""AAIP Express Entry 流资格页(2026-09-13 Frank「抓」:抽选表的 Accelerated Tech / Priority Sectors /
+Dedicated Health Care – Express Entry 三类专线全在这条流下;在 ab-aaip crawl 缓存里)。"""
+
+AB_RR_URL = "https://www.alberta.ca/aaip-rural-renewal-stream-eligibility"
+"""AAIP 乡村振兴流资格页(同批;在 ab-aaip crawl 缓存里)。Dedicated Health Care Pathway 自己那页
+不在缓存里 —— 未收录,对照表把它对到 Express Entry 流的最低要求(EE 版)/ AOS(非 EE 版)。"""
+
+ABR_EE_STREAM = "AAIP Alberta Express Entry Stream"
+"""通道名:Express Entry 流(最低评估要求,全部专线共用)。"""
+
+ABR_EE_TECH_STREAM = "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway"
+"""通道名:Express Entry 流 · 科技加速专线。"""
+
+ABR_EE_SECTORS_STREAM = "AAIP Alberta Express Entry Stream — Priority Sectors"
+"""通道名:Express Entry 流 · 优先行业抽选(建筑 / 农业 / 航空)。"""
+
+ABR_RR_STREAM = "AAIP Rural Renewal Stream"
+"""通道名:乡村振兴流。"""
+
+ABR_SECTION_EE_MIN = "Alberta Express Entry Stream — Minimum assessment requirements"
+"""段名:EE 流最低评估要求。"""
+
+ABR_SECTION_EE_TECH = "Alberta Express Entry Stream — Accelerated Tech Pathway requirements"
+"""段名:科技加速专线要求。"""
+
+ABR_SECTION_EE_SECTORS = "Alberta Express Entry Stream — Priority sectors"
+"""段名:优先行业抽选要求。"""
+
+ABR_SECTION_RR = "Rural Renewal Stream — Requirements"
+"""段名:乡村振兴流要求(社区背书 / offer / 经验 / 学历 / 资金)。"""
+
+ABR_SECTION_RR_LANG = "Rural Renewal Stream — Language requirements (Table 3)"
+"""段名:乡村振兴流语言表。"""
+
+ABR_EE_RULES = (
+    (re.compile(r"you must have an active Express Entry profile in the federal Express Entry pool"),
+     FACTOR_EE_PROFILE, "", "Active federal Express Entry profile required", "EE 档案要求没解析到"),
+    (re.compile(r"you meet the criteria of at least one of the federal immigration programs managed by Express Entry"),
+     FACTOR_EE_PROGRAM, "", "Must qualify for CEC, FSW or FST", "联邦项目资格要求没解析到"),
+    (re.compile(r"you must have a minimum Comprehensive Ranking System score of (\d+)"),
+     FACTOR_CRS, UNIT_CRS, "Minimum CRS score of {n}", "CRS 下限没解析到"),
+    (re.compile(r"your primary occupation in your federal Express Entry profile must be included as part of a specific "
+                r"Express Entry stream pathway, or is identified as an occupation connected to a provincial economic, "
+                r"sector or occupational priority"),
+     FACTOR_OCC_PATHWAY, "", "Primary occupation must be in a stream pathway or a provincial priority occupation",
+     "职业范围要求没解析到"),
+    (re.compile(r"you and your Alberta employer must meet all the requirements outlined on Alberta Job Offer and "
+                r"Employment Requirements, if you are invited based on having an Alberta job offer"),
+     FACTOR_JOB_OFFER, "", "Alberta job offer and employer requirements apply if invited on a job offer",
+     "offer 要求没解析到"),
+    (re.compile(r"you must intend to and be able to live and work permanently in Alberta and have stated an interest "
+                r"in immigrating permanently to Alberta"),
+     FACTOR_INTENT, "", "Intend to live and work permanently in Alberta", "定居意向要求没解析到"),
+)
+"""EE 流最低评估要求六条:(原句正则, factor, 单位, 人话标签, 没解析到的问题句)。单位非空 = 数值行
+(正则第一组是数),空 = 条文行(原句整条进 valueText)。"""
+
+ABR_EE_TECH_RULES = (
+    (re.compile(r"you must be working full-time in Alberta under an employment contract or have a bona fide job offer "
+                r"signed by you and your employer that: .{0,200}? is in an occupation on the list of eligible "
+                r"Accelerated Tech Pathway occupations is for an Alberta employer whose primary business activities "
+                r"belong to the Alberta tech industry"),
+     FACTOR_JOB_OFFER, "", "Full-time Alberta job or job offer in an eligible tech occupation with an Alberta tech-industry employer",
+     "科技专线 offer 要求没解析到"),
+    (re.compile(r"your primary occupation in your Express Entry profile must be the same occupation as your current "
+                r"Alberta employment or job offer"),
+     FACTOR_OCC_PATHWAY, "", "Express Entry primary occupation must match the Alberta job", "科技专线职业一致要求没解析到"),
+)
+"""科技加速专线两条。"""
+
+ABR_EE_SECTORS_RULES = (
+    (re.compile(r"your primary occupation in your Express Entry profile must be an eligible construction, agriculture "
+                r"or aviation occupation"),
+     FACTOR_OCC_PATHWAY, "", "Primary occupation must be an eligible construction, agriculture or aviation occupation",
+     "优先行业职业要求没解析到"),
+)
+"""优先行业抽选一条。"""
+
+ABR_RR_RULES = (
+    (re.compile(r"All candidates must have an Endorsement of Candidate letter from their Designated Community\. "
+                r"Endorsement of Candidate letter is only valid for one year from the date of issuance\."),
+     FACTOR_ENDORSEMENT, "", "Endorsement of Candidate letter from the Designated Community (valid one year)",
+     "社区背书信要求没解析到"),
+    (re.compile(r"you must have a full-time job offer or employment contract from an Alberta employer to work in an "
+                r"eligible occupation within an established business operation in your Designated Community"),
+     FACTOR_JOB_OFFER, "", "Full-time job offer in an eligible occupation within the Designated Community",
+     "乡村振兴 offer 要求没解析到"),
+    (re.compile(r"you must have a minimum of (\d+) months full-time work experience in an eligible occupation within "
+                r"the last \d+ months prior to your application"),
+     FACTOR_EXPERIENCE, UNIT_MONTHS, "{n} months of full-time work experience in an eligible occupation (last 18 months)",
+     "乡村振兴经验要求没解析到"),
+    (re.compile(r"Post-Graduation Work Permit holders who have completed a 2-year post-secondary education program at "
+                r"an IRCC designated learning institution in their Designated Community are not required to meet the "
+                r"12 months of work experience criterion"),
+     FACTOR_WORK_EXEMPT_GRAD, "", "PGWP holders with a 2-year program from a DLI in the Designated Community are exempt from the experience requirement",
+     "乡村振兴毕业生免经验条款没解析到"),
+    (re.compile(r"you must have completed a minimum of high school education equivalent to the Canadian education standard"),
+     FACTOR_EDUCATION, "", "Minimum high school education equivalent to the Canadian standard", "乡村振兴学历要求没解析到"),
+    (re.compile(r"you must demonstrate that you have sufficient funds to support yourself and your family members to "
+                r"settle in your designated community if: you are not residing in Canada, or you are currently in "
+                r"Canada but are not working"),
+     FACTOR_FUNDS, "", "Settlement funds required if outside Canada or in Canada but not working",
+     "乡村振兴安家资金要求没解析到"),
+    (re.compile(r"You must have the required licensing, registration or certification to work in your current "
+                r"occupation in Alberta or occupation in your Alberta job offer"),
+     FACTOR_LICENSING, "", "Required licensing, registration or certification for the occupation",
+     "乡村振兴执照要求没解析到"),
+)
+"""乡村振兴流七条(经验行是数值行,其余条文行)。"""
+
+ABR_RR_LANG_RE = re.compile(
+    r"If your job offer is for NOC (0, 1, 2 or 3) occupation Minimum of (\d) for each English language skill.{0,80}?"
+    r"If your job offer is for NOC (4 or 5) occupation Minimum of (\d) for each English language skill")
+"""乡村振兴流语言表(Table 3)两档:TEER 0-3 / TEER 4-5 各一个 CLB。"""
+
+ABR_RR_LANG_LABEL_TPL = "CLB {clb} in each skill (job offer at TEER {band})"
+"""乡村振兴语言行标签。"""
+
+ABR_PROBLEM_RR_LANG = "乡村振兴语言表没解析到"
+"""硬闸:语言表两档没匹配到。"""
+
+ABR_RR_EXP_BASIS = "windowMonths=18"
+"""乡村振兴经验行的口径:近 18 个月内。"""
+
 ABR_SOURCE = "AAIP — Alberta Opportunity Stream eligibility"
 """表级来源名。"""
 
@@ -3052,6 +3255,59 @@ MBR_IDOL_STREAM = "MPNP In-Demand Occupations List"
 
 MBR_SWO_STREAM = "MPNP Skilled Worker Overseas"
 """SWO 语言下限那行的通道名。"""
+
+MBR_IES_PATHWAYS = (
+    ("MPNP International Education Stream — Career Employment Pathway (CEP)",
+     "https://immigratemanitoba.com/mpnp/ies/cep/eligibility"),
+    ("MPNP International Education Stream — Graduate Internship Pathway (GIP)",
+     "https://immigratemanitoba.com/mpnp/ies/gip/eligibility"),
+    ("MPNP International Education Stream — International Student Entrepreneur Pathway (ISEP)",
+     "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"),
+)
+"""国际教育流三条路径的资格页(2026-09-13 Frank「真要给曼省毕业生看门槛,国际教育流那三条路得补」「抓」)。
+三页同形:「Criterion | Minimum Requirement」两列表,一行一条门槛,原句整条即 label。在 mb-mpnp crawl 缓存里。"""
+
+MBR_IES_ROW_RE = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$")
+"""md 表格行:标准 | 最低要求。"""
+
+MBR_IES_HEAD = "Criterion"
+"""表头首格(跳过)。"""
+
+MBR_IES_RULE_MARK = "---"
+"""表头分隔行(跳过)。"""
+
+MBR_IES_FACTOR_OF = {
+    "Education": FACTOR_EDUCATION,
+    "Official Languages Proficiency": FACTOR_LANGUAGE,
+    "Current Employment in Manitoba": FACTOR_JOB_OFFER,
+    "Employment in Manitoba": FACTOR_JOB_OFFER,
+    "Internship in Manitoba": FACTOR_INTERNSHIP,
+    "Settlement Funds": FACTOR_FUNDS,
+    "Net Worth/Settlement Funds": FACTOR_FUNDS,
+    "Adaptability": FACTOR_RESIDENCE,
+    "Business Experience": FACTOR_BUSINESS,
+    "Business Performance Agreement": FACTOR_BUSINESS,
+    "Age": FACTOR_AGE,
+}
+"""官方「标准」格 → factor(表外的标准 = 页面改版,硬闸报错不猜)。"""
+
+MBR_IES_CLB_RE = re.compile(r"CLB/NCLC (\d)")
+"""语言行里的 CLB 数。"""
+
+MBR_IES_SECTION_TPL = "Eligibility — {pathway}: {criterion}"
+"""IES 行的段名。"""
+
+MBR_IES_MIN_ROWS = 4
+"""硬闸:每条路径至少要解析到的行数(三页各 5~7 行)。"""
+
+MBR_PROBLEM_IES_ROWS_TPL = "IES {pathway} 只解析到 {n} 行(下限 {min_n})"
+"""硬闸:行数不够。"""
+
+MBR_PROBLEM_IES_FACTOR_TPL = "IES {pathway} 标准「{criterion}」没有 factor 映射"
+"""硬闸:官方加了新标准。"""
+
+MBR_PROBLEM_IES_LANG_TPL = "IES {pathway} 语言行没解析到 CLB"
+"""硬闸:语言行没数。"""
 
 MBR_SWM_STREAM = "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway"
 """SWM 在职时长那几行的通道名。"""

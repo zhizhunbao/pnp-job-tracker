@@ -303,6 +303,18 @@ from pnp.constants import (
 """批D 三段(35 金标体检 / 36 门槛取证器 / 37 新鲜度哨兵)的常量单列一块 ——
 主 import 块 230 行按字母序排满,批量插名易错行;ruff 未启 isort,双块合法。"""
 from pnp.scheme import GateText, GoldCheckIn, PtsIn
+from pnp.constants import (
+    AB_EE_URL, AB_RR_URL, ABR_EE_RULES, ABR_EE_SECTORS_RULES, ABR_EE_SECTORS_STREAM, ABR_EE_STREAM,
+    ABR_EE_TECH_RULES, ABR_EE_TECH_STREAM, ABR_PROBLEM_RR_LANG, ABR_RR_EXP_BASIS, ABR_RR_LANG_LABEL_TPL,
+    ABR_RR_LANG_RE, ABR_RR_RULES, ABR_RR_STREAM, ABR_SECTION_EE_MIN, ABR_SECTION_EE_SECTORS, ABR_SECTION_EE_TECH,
+    ABR_SECTION_RR, ABR_SECTION_RR_LANG, FACTOR_STREAM_CLOSED, MBR_IES_CLB_RE, MBR_IES_FACTOR_OF, MBR_IES_HEAD,
+    MBR_IES_MIN_ROWS, MBR_IES_PATHWAYS, MBR_IES_ROW_RE, MBR_IES_RULE_MARK, MBR_IES_SECTION_TPL,
+    MBR_PROBLEM_IES_FACTOR_TPL, MBR_PROBLEM_IES_LANG_TPL, MBR_PROBLEM_IES_ROWS_TPL, ONR_CLOSED_LABEL_TPL,
+    ONR_CLOSED_RE, ONR_EJO_PAGES, ONR_PROBLEM_CLOSED_TPL, ONR_SECTION_CLOSED, OP_RULE,
+)
+"""2026-09-13「抓」批(ON 三条 EJO 流关闭通告 / AB Express Entry 流与乡村振兴流 / MB 国际教育流三路径)
+的常量单列一块 —— 同上一块的理由:主块按字母序排满,批量插名易错行;ruff 未启 isort,多块合法。"""
+from pnp.scheme import AbRuleRowsIn, MbIesTableIn
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -2312,8 +2324,25 @@ def on_tier_problems(reqs: list) -> list:
     return problems
 
 
+def on_closed_reqs() -> ReqsOut:
+    """三条 Employer Job Offer 流的关闭通告各落一行(只读 crawl 缓存;2026-09-13 Frank「抓」)。"""
+    rows: list = []
+    problems: list = []
+    for stream, url in ONR_EJO_PAGES:
+        txt = fold_ws(page_text(PageTextIn(url=url, timeout_s=ONR_TIMEOUT_S,
+                                           drop_junk=True, main_only=True, cache_first=True)))
+        m = ONR_CLOSED_RE.search(txt)
+        if m:
+            rows.append(to_on_req(ReqIn(stream=stream, factor=FACTOR_STREAM_CLOSED, op=OP_NONE,
+                                        value_text=m.group(0), section=ONR_SECTION_CLOSED,
+                                        label=ONR_CLOSED_LABEL_TPL.format(date=m.group(1)), url=url)))
+        else:
+            problems.append(ONR_PROBLEM_CLOSED_TPL.format(stream=stream))
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_on_req() -> None:
-    """ON 门槛入口:通道页(申请人侧)+ 雇主指南页(雇主侧)两页各抓一遍。"""
+    """ON 门槛入口:通道页(申请人侧)+ 雇主指南页(雇主侧)两页各抓一遍 + 三条已关闭 EJO 流的关闭通告。"""
     stream_txt = page_text(PageTextIn(url=ON_WORKFORCE_URL, timeout_s=ONR_TIMEOUT_S,
                                       drop_junk=False, main_only=True))
     emp_txt = page_text(PageTextIn(url=ONR_EMPLOYER_URL, timeout_s=ONR_TIMEOUT_S,
@@ -2321,7 +2350,7 @@ def build_on_req() -> None:
     reqs: list = []
     problems: list = []
     for part in (on_language_reqs(stream_txt), on_wage_reqs(emp_txt),
-                 on_experience_reqs(stream_txt), on_employer_reqs(emp_txt)):
+                 on_experience_reqs(stream_txt), on_employer_reqs(emp_txt), on_closed_reqs()):
         reqs += part.rows
         problems += part.problems
     problems += on_tier_problems(reqs)
@@ -3015,8 +3044,66 @@ def ab_employer_reqs(emp_txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def ab_rule_rows(x: AbRuleRowsIn) -> ReqsOut:
+    """一页上按规则清单逐条取原句:单位非空 = 数值行(第一组是数),空 = 条文行(原句整条进 valueText)。"""
+    rows: list = []
+    problems: list = []
+    for rule_re, factor, unit, label_tpl, problem in x.rules:
+        m = rule_re.search(x.txt)
+        if not m:
+            problems.append(problem)
+            continue
+        if unit:
+            rows.append(to_ab_req(ReqIn(stream=x.stream, factor=factor, value=int(m.group(1)), unit=unit,
+                                        value_text=m.group(0), section=x.section,
+                                        label=label_tpl.format(n=m.group(1)), url=x.url)))
+        else:
+            rows.append(to_ab_req(ReqIn(stream=x.stream, factor=factor, op=OP_RULE, value_text=m.group(0),
+                                        section=x.section, label=label_tpl, url=x.url)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ab_ee_reqs() -> ReqsOut:
+    """Express Entry 流:最低评估六条(全部专线共用)+ 科技加速专线两条 + 优先行业一条(读 crawl 缓存)。"""
+    txt = fold_ws(page_text(PageTextIn(url=AB_EE_URL, timeout_s=ABR_TIMEOUT_S,
+                                       drop_junk=True, main_only=True, cache_first=True)))
+    rows: list = []
+    problems: list = []
+    for part in (ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_STREAM, url=AB_EE_URL,
+                                           section=ABR_SECTION_EE_MIN, rules=ABR_EE_RULES)),
+                 ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_TECH_STREAM, url=AB_EE_URL,
+                                           section=ABR_SECTION_EE_TECH, rules=ABR_EE_TECH_RULES)),
+                 ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_SECTORS_STREAM, url=AB_EE_URL,
+                                           section=ABR_SECTION_EE_SECTORS, rules=ABR_EE_SECTORS_RULES))):
+        rows += part.rows
+        problems += part.problems
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ab_rr_reqs() -> ReqsOut:
+    """乡村振兴流:七条要求 + 语言表两档(读 crawl 缓存)。"""
+    txt = fold_ws(page_text(PageTextIn(url=AB_RR_URL, timeout_s=ABR_TIMEOUT_S,
+                                       drop_junk=True, main_only=True, cache_first=True)))
+    part = ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_RR_STREAM, url=AB_RR_URL,
+                                     section=ABR_SECTION_RR, rules=ABR_RR_RULES))
+    rows = part.rows
+    problems = part.problems
+    for r in rows:
+        if r[K_FACTOR] == FACTOR_EXPERIENCE:
+            r[K_BASIS] = ABR_RR_EXP_BASIS
+    m = ABR_RR_LANG_RE.search(txt)
+    if m:
+        for band, clb in ((m.group(1), m.group(2)), (m.group(3), m.group(4))):
+            rows.append(to_ab_req(ReqIn(stream=ABR_RR_STREAM, factor=FACTOR_LANGUAGE, value=int(clb), unit=UNIT_CLB,
+                                        applies_teer=teers(band), section=ABR_SECTION_RR_LANG,
+                                        label=ABR_RR_LANG_LABEL_TPL.format(clb=clb, band=band), url=AB_RR_URL)))
+    else:
+        problems.append(ABR_PROBLEM_RR_LANG)
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_ab_req() -> None:
-    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)。"""
+    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_REQ))
     txt = page_text(PageTextIn(url=AB_AOS_URL, timeout_s=ABR_TIMEOUT_S,
                                drop_junk=False, main_only=True))
@@ -3030,6 +3117,9 @@ def build_ab_req() -> None:
     employer = ab_employer_reqs(emp_txt)
     reqs += employer.rows
     problems += employer.problems
+    for part in (ab_ee_reqs(), ab_rr_reqs()):
+        reqs += part.rows
+        problems += part.problems
     if problems:
         fail_zh(problems)
     OUT_AB_REQ.parent.mkdir(parents=True, exist_ok=True)
@@ -3322,8 +3412,53 @@ def mb_edi_reqs() -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def mb_ies_reqs() -> ReqsOut:
+    """国际教育流三条路径:每页「Criterion | Minimum Requirement」表一行一条(读 crawl 缓存;2026-09-13 Frank「抓」)。"""
+    rows: list = []
+    problems: list = []
+    for pathway, url in MBR_IES_PATHWAYS:
+        hit = get_cached_page(url)
+        html = hit.html
+        if not html:
+            html = fetch_html(FetchHtmlIn(url=url, timeout_s=MBR_TIMEOUT_S))
+        part = mb_ies_table(MbIesTableIn(md=convert_md(ConvertIn(html=html, url=url, selector=None, removes=())),
+                                         pathway=pathway, url=url))
+        rows += part.rows
+        problems += part.problems
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def mb_ies_table(x: MbIesTableIn) -> ReqsOut:
+    """一条路径的表 → 行:语言行取 CLB 数,其余条文行;标准表外 / 行数不够 / 语言没数都是硬闸。"""
+    rows: list = []
+    problems: list = []
+    for ln in x.md.splitlines():
+        m = MBR_IES_ROW_RE.match(ln.strip())
+        if not m or m.group(1) == MBR_IES_HEAD or m.group(1) == MBR_IES_RULE_MARK:
+            continue
+        criterion = fold_ws(m.group(1))
+        req = fold_ws(m.group(2))
+        factor = MBR_IES_FACTOR_OF.get(criterion)
+        if factor is None:
+            problems.append(MBR_PROBLEM_IES_FACTOR_TPL.format(pathway=x.pathway, criterion=criterion))
+            continue
+        section = MBR_IES_SECTION_TPL.format(pathway=x.pathway, criterion=criterion)
+        if factor == FACTOR_LANGUAGE:
+            clb = MBR_IES_CLB_RE.search(req)
+            if not clb:
+                problems.append(MBR_PROBLEM_IES_LANG_TPL.format(pathway=x.pathway))
+                continue
+            rows.append(to_mb_req(ReqIn(stream=x.pathway, factor=factor, value=int(clb.group(1)), unit=UNIT_CLB,
+                                        section=section, label=req, url=x.url)))
+            continue
+        rows.append(to_mb_req(ReqIn(stream=x.pathway, factor=factor, op=OP_RULE, section=section, label=req, url=x.url)))
+    if len(rows) < MBR_IES_MIN_ROWS:
+        problems.append(MBR_PROBLEM_IES_ROWS_TPL.format(pathway=x.pathway, n=len(rows), min_n=MBR_IES_MIN_ROWS))
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_mb_req() -> None:
-    """MB 门槛入口:SWM 在职时长 + SWO 语言下限 + 逐职业 Minimum CLB + EDI 雇主年限。"""
+    """MB 门槛入口:SWM 在职时长 + SWO 语言下限 + 逐职业 Minimum CLB + EDI 雇主年限 + 国际教育流三路径。"""
     say(PRINT_OUT_TPL.format(path=OUT_MB_REQ))
     reqs: list = []
     problems: list = []
@@ -3346,6 +3481,9 @@ def build_mb_req() -> None:
     edi = mb_edi_reqs()
     reqs += edi.rows
     problems += edi.problems
+    ies = mb_ies_reqs()
+    reqs += ies.rows
+    problems += ies.problems
     if problems:
         fail_zh(problems)
     OUT_MB_REQ.parent.mkdir(parents=True, exist_ok=True)

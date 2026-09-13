@@ -698,6 +698,38 @@ class OnColIn:
 
 
 @dataclass
+class MbIesTableIn:
+    """mb_ies_table() 入参:一条路径的资格页 md + 路径名 + 出处。"""
+
+    md: str
+    """资格页转成的 markdown(表格行以 | 开头)。"""
+
+    pathway: str
+    """路径名(即通道名)。"""
+
+    url: str
+    """出处页。"""
+
+@dataclass
+class AbRuleRowsIn:
+    """ab_rule_rows() 入参:一页折成一行的正文 + 落到哪条通道 + 规则清单。"""
+
+    txt: str
+    """页面正文(已 fold_ws 成一行)。"""
+
+    stream: str
+    """通道名。"""
+
+    url: str
+    """出处页。"""
+
+    section: str
+    """段名。"""
+
+    rules: tuple
+    """(原句正则, factor, 单位, 标签模板, 问题句) 五元组清单。"""
+
+@dataclass
 class ReqsOut:
     """一组门槛的产出(行 + 自校问题;七省门槛步的分段拼装口)。"""
 

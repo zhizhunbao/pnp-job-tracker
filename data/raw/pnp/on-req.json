@@ -5,7 +5,7 @@
   "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
   "pageUrl": "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide",
   "guideEffective": "",
-  "fetched": "2026-09-12",
+  "fetched": "2026-09-13",
   "requirements": [
     {
       "stream": "Ontario Workforce Priority stream",
@@ -253,6 +253,63 @@
       "section": "Employer guide — Full-time employee requirements",
       "url": "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide",
       "factor": "empStaff"
+    },
+    {
+      "stream": "OINP Employer Job Offer: Foreign Worker stream",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "Please note that this stream was closed as of May 30, 2026, as part of the OINP redesign.",
+      "unit": "",
+      "appliesTeer": "",
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Stream closed as of May 30, 2026 (OINP redesign) — current employer-offer path: Ontario Workforce Priority stream",
+      "section": "Stream closed",
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream",
+      "factor": "streamClosed"
+    },
+    {
+      "stream": "OINP Employer Job Offer: International Student stream",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "Please note that this stream was closed as of May 30, 2026, as part of the OINP redesign.",
+      "unit": "",
+      "appliesTeer": "",
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Stream closed as of May 30, 2026 (OINP redesign) — current employer-offer path: Ontario Workforce Priority stream",
+      "section": "Stream closed",
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-international-student-stream",
+      "factor": "streamClosed"
+    },
+    {
+      "stream": "OINP Employer Job Offer: In-Demand Skills stream",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "Please note that this stream was closed as of May 30, 2026, as part of the OINP redesign.",
+      "unit": "",
+      "appliesTeer": "",
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Stream closed as of May 30, 2026 (OINP redesign) — current employer-offer path: Ontario Workforce Priority stream",
+      "section": "Stream closed",
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-demand-skills-stream",
+      "factor": "streamClosed"
     }
   ]
 }
