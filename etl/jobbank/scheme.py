@@ -324,6 +324,9 @@ class EnrichIn:
     seen: set
     """本轮已用过的文件名主干(撞车时加帖号)。"""
 
+    index: "JdIndexUpdates"
+    """本轮的详情索引增量(写 .md 时顺手记一行,收尾一次落盘)。"""
+
 
 @dataclass
 class EmploymentOut:
@@ -379,6 +382,44 @@ class DetailMdIn:
 
     seen: set
     """本轮已用过的文件名主干(撞车时加帖号)。"""
+
+    index: "JdIndexUpdates"
+    """本轮的详情索引增量(2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5))。"""
+
+
+@dataclass
+class JdIndexUpdates:
+    """本轮新写 .md 的详情索引增量(parse_details 循环累加,收尾一次合并进 index.json 与正文桶;
+    2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5))。"""
+
+    entries: dict
+    """url → {pid, file, mtime, experience}。"""
+
+    bodies: dict
+    """正文桶名 → {url: 清洗后正文}。"""
+
+
+@dataclass
+class JdMdScan:
+    """回填件读一篇既有 .md 得到的一行(取不到 url 的 .md 不产此形)。"""
+
+    url: str
+    """frontmatter 的 url(索引键)。"""
+
+    pid: str
+    """帖号(url 里取;取不到空串)。"""
+
+    file: str
+    """.md 文件名。"""
+
+    mtime: str
+    """文件修改时刻(ISO,UTC)。"""
+
+    experience: str
+    """Experience 节短语。"""
+
+    body: str
+    """清洗后正文。"""
 
 
 @dataclass

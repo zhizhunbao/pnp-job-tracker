@@ -30,6 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from jobbank.functions import (
+    build_jd_index,
     audit_jobbank_data, build_jobbank_companies, flag_jobbank_apprentice,
     guard_jobbank_noc_sanity, parse_jobbank_details, parse_jobbank_postings,
     scrape_jobbank_details, scrape_jobbank_postings, verify_jobbank_expired,
@@ -60,8 +61,13 @@ TOOLS = {
     "expired": verify_jobbank_expired,
     "apprentice": flag_jobbank_apprentice,
     "noc_sanity": guard_jobbank_noc_sanity,
+    "jd_index": build_jd_index,
 }
-"""全部可 --only 点名的步 = 默认链四步 + 五个手动件:
+"""全部可 --only 点名的步 = 默认链四步 + 六个手动件:
+
+  jd_index   全扫 details/*.md 重建索引 index.json + 正文桶 bodies/(2026-09-12 汇装提速批 1:
+             只在首轮回填或索引损坏时跑;之后 parse_details 写 .md 时增量维护,apprentice / mart 读侧
+             只读索引)。
 
   companies  扁平 postings.json → 分省/市/雇主的公司目录(profile/jobs.json/jobs/*.md)。
              **不进链**:全仓 grep 零调度消费者(旧 sources/jobbank 与 sources/build

@@ -42,6 +42,7 @@ import paths
 from log.functions import err, say
 from names.functions import norm_name
 from noc.constants import SLUGS as NOC_BROAD_SLUG
+from jobbank.functions import clean_jd
 from noc.functions import broad_of, classify, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
@@ -62,7 +63,7 @@ from mart.constants import (
     MACRO_MONTH_NUM,
     MACRO_MONTH_TPL, MACRO_UNIT, MACRO_UNIT_TPL, MACRO_YEAR_LEN,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
-    BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
+    BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
     IN_CITY_MACRO, K_CM_CMA, K_CM_POP, K_CM_POP_PERIOD, K_CM_UNEMP_PERIOD, K_CM_UNEMP_RATE,
     COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN, DAILY_N,
@@ -83,7 +84,7 @@ from mart.constants import (
     IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
     IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
-    JB_EXT_TPL, JB_LOC_TPL, JD_DEDUP_MIN, JD_HEAD_LEN, JD_MATCH_TPL, JD_NOISE, JOBBANK_HOST,
+    JB_EXT_TPL, JB_LOC_TPL, JD_HEAD_LEN, JD_MATCH_TPL, JOBBANK_HOST,
     JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
     K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_AS_ON,
     K_ATS, K_BLOCKED,
@@ -1488,30 +1489,6 @@ def build_jd_index() -> dict:
             if m:
                 idx.setdefault(m.group(1).strip(), p)
     return idx
-
-
-def is_jd_noise(s: str) -> bool:
-    """这一行是不是 Job Bank 页面样板噪音(帮助浮层/通用解释/免责腿;原 any(genexp) 退役)。"""
-    for p in JD_NOISE:
-        if p.search(s):
-            return True
-    return False
-
-
-def clean_jd(text: str) -> str:
-    """剔样板行 + 去重复长行(同一行在正文出现多次=抓取浮层伪影,首现保留)。"""
-    seen: set = set()
-    out: list = []
-    for line in text.split(NL):
-        s = line.strip()
-        if s and is_jd_noise(s):
-            continue
-        if len(s) > JD_DEDUP_MIN:
-            if s in seen:
-                continue
-            seen.add(s)
-        out.append(line)
-    return BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip()
 
 
 def jd_body(path: Path) -> str | None:

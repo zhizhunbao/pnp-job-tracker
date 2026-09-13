@@ -350,6 +350,61 @@ PRINT_DETAIL_DONE_TPL = "Fetched {done} detail HTML (skipped {skipped}) · 省�
 OUT_DETAILS = paths.PROCESSED_JOBBANK / "details"
 """解析后的帖子详情 .md(命名沿用旧 05b,advisor 与公司档按 url 匹配)。"""
 
+OUT_JD_INDEX = OUT_DETAILS / "index.json"
+"""详情 .md 的索引:url → {pid, file, mtime, experience}(2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5))。
+写 .md 的那一步同时记一行,读侧(apprentice、mart)只读这一个文件 —— 原来每小时把 12 万个 .md
+逐个打开两遍(apprentice 全文 7.6 min、mart 头 600 字 + 3 万篇全文 9.5~37 min),走 Docker bind mount
+单文件 IO 贵,这就是链要跑半小时的根因。"""
+
+OUT_JD_BODIES = OUT_DETAILS / "bodies"
+"""清洗后的 JD 正文分桶目录:每桶一文件 {url: 正文},桶 = 帖号 // JD_BUCKET_DIV。
+在招岗集中在高帖号段,mart(批 2)只读命中的桶,不用把 12 万篇正文都装进内存。"""
+
+JD_BUCKET_DIV = 100000
+"""正文分桶的除数(帖号 8 位,除后约 90 桶,每桶 ~1.3k 篇 ~4 MB)。"""
+
+JD_BUCKET_TPL = "{bucket}.json"
+"""正文桶的文件名。"""
+
+JD_BUCKET_NO_PID = "0"
+"""取不到帖号的 .md 落的桶。"""
+
+K_JD_PID = "pid"
+"""索引行:帖号。"""
+
+K_JD_FILE = "file"
+"""索引行:.md 文件名(相对 details/)。"""
+
+K_JD_MTIME = "mtime"
+"""索引行:写入时刻(ISO,UTC)。"""
+
+K_JD_EXPERIENCE = "experience"
+"""索引行:JD 正文 Experience 节的短语(apprentice 打标读它;没有该节是空串)。"""
+
+FRONTMATTER_RE = re.compile(r"^---.*?\n---\s*", re.S)
+"""frontmatter 整块(只剥第一处;回填件从既有 .md 取正文用,同 mart 原式)。"""
+
+JD_NOISE = (
+    re.compile(r"–\s*Help\b", re.I),
+    re.compile(r"^Green jobs contribute to environmental", re.I),
+    re.compile(r"Learn more about green jobs", re.I),
+    re.compile(r"provided by the employer; it was not verified by Job Bank", re.I),
+)
+"""Job Bank 页面样板噪音(E8-04 文案审计,2026-07-07 用户点名「莫名其妙+重复」):
+帮助浮层(「Green job – Help」×3)/通用解释/免责腿被抓进 JD 正文。逐条:
+① tooltip 标题行(xxx – Help,JB 用长横线;**不匹配连字符**,防误杀「- Help customers」类真内容);
+② 通用解释(非本岗内容);③ 同上;④ 免责腿。
+2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5):自 mart 搬来 —— 清洗归写 .md 的这一域(谁的数据谁清洗),mart 改从本域 import。"""
+
+JD_DEDUP_MIN = 40
+"""只对长行去重(短行如 Yes/标签合法重复)。"""
+
+BLANK_RUN_RE = re.compile(r"\n{3,}")
+"""三个以上换行折成一个空行。"""
+
+PARA_SEP = "\n\n"
+"""段落分隔(清洗后正文里的空行)。"""
+
 GENERIC_EMAIL = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "live.com",
                  "icloud.com", "hotmail.ca", "yahoo.ca", "gmail.ca", "aol.com"}
 """公共邮箱域名 —— 从申请邮箱推官网时必须排除。"""
@@ -944,7 +999,21 @@ PRINT_APPRENTICE_OUT_TPL = "IN/OUT job bank : {out}"
 """同上,原地写回的 store 路径行。"""
 
 PRINT_APPRENTICE_PHRASES_TPL = "  md with Experience phrase: {n}"
-"""扫完 details md 的命中数一行。"""
+"""索引里带 Experience 短语的帖数一行(原来是扫完 details md 的命中数,数应相同)。"""
+
+PRINT_JD_INDEX_MISSING_TPL = ("✗ 详情索引不存在:{path} —— 先跑 python etl/jobbank/main.py --only jd_index 回填"
+                              "(2026-09-12 批 1 起读侧只认索引,不再扫 .md)")
+"""索引缺失时的中止行(不静默退回扫盘 —— 那正是要拆掉的半小时)。"""
+
+PRINT_JD_INDEX_IN_TPL = "IN  details md  : {dir}"
+"""回填件的输入路径行。"""
+
+PRINT_JD_INDEX_DONE_TPL = ("jd_index: {n} entries · {buckets} buckets · {skipped} md without url "
+                           "→ {index} / {bodies}")
+"""回填件收尾行。"""
+
+PRINT_DETAILS_INDEX_TPL = "  jd index +{n} entries · {buckets} buckets touched → {index}"
+"""详情解析收尾:本轮并进索引的行数与触及的正文桶数。"""
 
 PRINT_APPRENTICE_DONE_TPL = ("apprentice_friendly {flagged}/{total} jobs "
                              "(phrase {phrase} · title {title} · overlap {overlap}).")

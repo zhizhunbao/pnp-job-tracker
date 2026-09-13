@@ -39,7 +39,7 @@ from typing import cast
 import httpx
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-from paths import JOBBANK_STORE_LOCK, WriteTextIn, jobbank_store_lock, write_text
+from paths import JOBBANK_STORE_LOCK, WriteJsonIn, WriteTextIn, jobbank_store_lock, write_json, write_text
 from log.functions import err, say
 from fetch.functions import make_client, make_tls_context
 from jobbank import SINCE_DAYS
@@ -53,7 +53,10 @@ from jobbank.constants import (
     DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
     EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS, EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON,
     ENV_REPARSE, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
-    FILE_PROFILE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
+    FILE_PROFILE, FRONTMATTER_RE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
+    BLANK_RUN_RE, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_NOISE, K_JD_EXPERIENCE,
+    K_JD_FILE, K_JD_MTIME, K_JD_PID, OUT_JD_BODIES, OUT_JD_INDEX, PARA_SEP, PRINT_DETAILS_INDEX_TPL,
+    PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JD_INDEX_MISSING_TPL,
     HEADING_EXPERIENCE, HEAD_TAGS, HEADING_CERTIFICATES, HEADING_EDUCATION, HDR_UA, HOURS_FULL,
     HOURS_FULL_MARK, HOURS_PART, HOURS_PART_MARK, HREF_ATTR, HTTP_PREFIX, HTTP_SCHEME,
     IN_ATS_COMPANIES, IN_DETAILS, IN_MART_OPEN_IDS, IN_POSTINGS, IN_SCORED, IN_SNAP_ROOT, IN_WAGES,
@@ -100,6 +103,7 @@ from jobbank.constants import (
 from jobbank.scheme import (
     AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
     CompanyIn, CutoffIn, DetailMdIn, DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn,
+    JdIndexUpdates, JdMdScan,
     FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
     PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
     SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
@@ -222,6 +226,31 @@ def detail_html_index() -> dict:
         for f in (date_dir / DIR_DETAILS).glob(GLOB_HTML):
             index[f.stem] = f
     return index
+
+
+def is_jd_noise(s: str) -> bool:
+    """这一行是不是 Job Bank 页面样板噪音(帮助浮层/通用解释/免责腿;2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5)
+    自 mart 搬来,mart 改 import 本域的 clean_jd —— 清洗归写 .md 的这一域)。"""
+    for p in JD_NOISE:
+        if p.search(s):
+            return True
+    return False
+
+
+def clean_jd(text: str) -> str:
+    """剔样板行 + 去重复长行(同一行在正文出现多次=抓取浮层伪影,首现保留)。"""
+    seen: set = set()
+    out: list = []
+    for line in text.split(LINE_BREAK):
+        s = line.strip()
+        if s and is_jd_noise(s):
+            continue
+        if len(s) > JD_DEDUP_MIN:
+            if s in seen:
+                continue
+            seen.add(s)
+        out.append(line)
+    return BLANK_RUN_RE.sub(PARA_SEP, LINE_BREAK.join(out)).strip()
 
 
 # =========================================================================
@@ -575,6 +604,7 @@ def parse_jobbank_details() -> None:
         OUT_DETAILS.mkdir(parents=True, exist_ok=True)
         have = detail_html_index()
         seen: set = set()
+        index = JdIndexUpdates(entries={}, bodies={})
         reparse = os.environ.get(ENV_REPARSE) == ENV_ON
         parsed = 0
         backfilled = 0
@@ -586,10 +616,11 @@ def parse_jobbank_details() -> None:
                 if backfilled >= DETAIL_BACKFILL_MAX:
                     continue
                 backfilled += 1
-            enrich_job(EnrichIn(job=job, raw_file=cast(Path, raw_file), seen=seen))
+            enrich_job(EnrichIn(job=job, raw_file=cast(Path, raw_file), seen=seen, index=index))
             parsed += 1
         if parsed > 0:
             write_enriched(jobs)
+            write_jd_index(index)
         tally = store_tally(jobs)
     say(PRINT_DETAILS_DONE_TPL.format(parsed=parsed, addrs=tally.addrs, webs=tally.webs,
                                       emp=tally.emp, certs=tally.certs, out=OUT_DETAILS))
@@ -643,7 +674,7 @@ def enrich_job(x: EnrichIn) -> None:
         req_section(ReqIn(soup=soup, heading=HEADING_EDUCATION)))
     x.job[K_DETAIL_FETCHED] = True
     write_detail_md(DetailMdIn(job=x.job, address=addr, website=web, posted=posted, desc=desc,
-                               seen=x.seen))
+                               seen=x.seen, index=x.index))
 
 
 def spaced_text(node: object) -> str:
@@ -827,6 +858,94 @@ def write_detail_md(x: DetailMdIn) -> None:
         name = STEM_DUP_TPL.format(stem=stem, pid=pid_of(x.job))
     x.seen.add(stem)
     write_text(WriteTextIn(path=OUT_DETAILS / name, text=md))
+    url = x.job.get(K_URL, "")
+    if url == "":
+        return
+    pid = pid_of(x.job)
+    x.index.entries[url] = {K_JD_PID: pid, K_JD_FILE: name,
+                            K_JD_MTIME: datetime.now(timezone.utc).isoformat(),
+                            K_JD_EXPERIENCE: experience_phrase(md)}
+    x.index.bodies.setdefault(jd_bucket_of(pid), {})[url] = clean_jd(x.desc.strip())
+
+
+def jd_bucket_of(pid: str) -> str:
+    """帖号 → 正文桶名(帖号 // JD_BUCKET_DIV;取不到帖号落 JD_BUCKET_NO_PID)。"""
+    if pid == "":
+        return JD_BUCKET_NO_PID
+    return str(int(pid) // JD_BUCKET_DIV)
+
+
+def write_jd_index(x: JdIndexUpdates) -> None:
+    """本轮索引增量并进 index.json 与触及的正文桶(调用方持仓锁;没有增量不动盘)。"""
+    if len(x.entries) == 0:
+        return
+    idx: dict = {}
+    if OUT_JD_INDEX.exists():
+        idx = json.loads(OUT_JD_INDEX.read_text(encoding=ENC_UTF8))
+    idx.update(x.entries)
+    write_json(WriteJsonIn(path=OUT_JD_INDEX, payload=idx, indent=0, compact=True))
+    OUT_JD_BODIES.mkdir(parents=True, exist_ok=True)
+    for bucket, rows in x.bodies.items():
+        path = OUT_JD_BODIES / JD_BUCKET_TPL.format(bucket=bucket)
+        cur: dict = {}
+        if path.exists():
+            cur = json.loads(path.read_text(encoding=ENC_UTF8))
+        cur.update(rows)
+        write_json(WriteJsonIn(path=path, payload=cur, indent=0, compact=True))
+    say(PRINT_DETAILS_INDEX_TPL.format(n=len(x.entries), buckets=len(x.bodies), index=OUT_JD_INDEX))
+
+
+def load_jd_index() -> dict:
+    """读详情索引(url → 行);索引不存在直接中止 —— 读侧不再退回扫盘,那正是要拆掉的半小时。"""
+    if not OUT_JD_INDEX.exists():
+        raise RuntimeError(PRINT_JD_INDEX_MISSING_TPL.format(path=OUT_JD_INDEX))
+    return json.loads(OUT_JD_INDEX.read_text(encoding=ENC_UTF8))
+
+
+def build_jd_index() -> None:
+    """本域手动件 `--only jd_index`:全扫既有 details/*.md 重建索引与正文桶(只在首轮回填、
+    或索引损坏时跑;12 万篇约 10 分钟)。持仓锁,与 parse_details 的增量写互斥;幂等。"""
+    say(PRINT_JD_INDEX_IN_TPL.format(dir=OUT_DETAILS))
+    with jobbank_store_lock(JOBBANK_STORE_LOCK):
+        entries: dict = {}
+        bodies: dict = {}
+        skipped = 0
+        for p in OUT_DETAILS.glob(GLOB_MD):
+            row = scan_jd_md(p)
+            if row is None:
+                skipped += 1
+                continue
+            entries[row.url] = {K_JD_PID: row.pid, K_JD_FILE: row.file, K_JD_MTIME: row.mtime,
+                                K_JD_EXPERIENCE: row.experience}
+            bodies.setdefault(jd_bucket_of(row.pid), {})[row.url] = row.body
+        write_json(WriteJsonIn(path=OUT_JD_INDEX, payload=entries, indent=0, compact=True))
+        OUT_JD_BODIES.mkdir(parents=True, exist_ok=True)
+        for bucket, rows in bodies.items():
+            write_json(WriteJsonIn(path=OUT_JD_BODIES / JD_BUCKET_TPL.format(bucket=bucket),
+                                   payload=rows, indent=0, compact=True))
+    say(PRINT_JD_INDEX_DONE_TPL.format(n=len(entries), buckets=len(bodies), skipped=skipped,
+                                       index=OUT_JD_INDEX, bodies=OUT_JD_BODIES))
+
+
+def scan_jd_md(p: Path) -> JdMdScan | None:
+    """一篇既有 .md → 索引行(frontmatter 没 url 的给 None;单篇读不动只跳过它)。"""
+    try:
+        raw = p.read_text(encoding=ENC_UTF8, errors="replace")
+    except OSError as e:
+        err(p, e)
+        return None
+    m = APPRENTICE_URL_RE.search(raw)
+    if m is None:
+        return None
+    url = m.group(1).strip()
+    pid = ""
+    pm = PID_URL_RE.search(url)
+    if pm is not None:
+        pid = pm.group(1)
+    mtime = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).isoformat()
+    body = clean_jd(FRONTMATTER_RE.sub("", raw, count=1).strip())
+    return JdMdScan(url=url, pid=pid, file=p.name, mtime=mtime, experience=experience_phrase(raw),
+                    body=body)
 
 
 def stem_of(x: StemIn) -> str:
@@ -1302,21 +1421,18 @@ def flag_jobbank_apprentice() -> None:
 
 
 def phrase_by_pid() -> dict:
-    """扫 details/*.md:frontmatter url 的帖子号 → Experience 短语(没有该节的不入映射)。"""
+    """详情索引 → 帖子号 → Experience 短语(没有该节的不入映射)。
+    2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5):原逐篇读 details/*.md(7.6 分钟),改读写侧维护的索引;
+    结果同一份(短语在写 .md 时已算好记进索引)。"""
     out: dict = {}
-    if not IN_DETAILS.exists():
-        return out
-    for f in IN_DETAILS.glob(GLOB_MD):
-        text = f.read_text(encoding=ENC_UTF8)
-        m = APPRENTICE_URL_RE.search(text)
-        if m is None:
+    for url, entry in load_jd_index().items():
+        phrase = entry.get(K_JD_EXPERIENCE, "")
+        if phrase == "":
             continue
-        pid = PID_URL_RE.search(m.group(1))
+        pid = PID_URL_RE.search(url)
         if pid is None:
             continue
-        phrase = experience_phrase(text)
-        if phrase != "":
-            out[pid.group(1)] = phrase
+        out[pid.group(1)] = phrase
     return out
 
 
