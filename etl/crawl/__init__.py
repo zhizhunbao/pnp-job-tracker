@@ -11,6 +11,14 @@ get_cached_page(读缓存)与 convert_md(HTML→md 现转);与 fetch 的分工 �
 META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/crawl/main.py。
 """
+import os
+
+BROWSER_CHANNEL = os.environ.get("BROWSER_CHANNEL", "")
+"""get_browser_page 起哪个浏览器:空串 = playwright 自带 chromium(容器);"chrome" = 系统 Chrome(本机)。
+2026-09-13 实撞:共享 profile 被 Chrome 151/152 打开过(09-09 Frank 亲手点验证 + hireac 探路),
+自带 chromium(1234 版)再开报 profile 降级 exit 33 —— 本机跑登录源(hireac)必须 BROWSER_CHANNEL=chrome;
+容器里 Linux 无 Chrome 仍走自带 chromium。真解法(升 playwright 或本机也改系统 Chrome)待 Frank 拍。"""
+
 META = {
     "role": "crawl",
     "method": "httpx",

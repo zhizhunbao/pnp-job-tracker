@@ -966,12 +966,14 @@ ORIGIN_JOBBANK = "jobbank"
 
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
                    (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
-                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"))
+                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"),
+                   (paths.PROCESSED_HIREAC / "postings.json", "hireac"))
 """第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
 Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
 三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
 写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行
-(2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形)。"""
+(2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形;2026-09-13 hireac 照此加行:Algonquin 校内板登录源,
+本机手动跑,仓文件不更新时这里读到的就是上一轮当前态;枚举值 DDL 见 docs/sql/jobs-origin-hireac.sql)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
@@ -1356,6 +1358,15 @@ IN_DRAW_STREAM_ZH = paths.PROCESSED / "draw_stream_zh.json"
 
 K_ZH = "zh"
 """译名缓存里的中文格。"""
+
+IN_DRAW_RULE_STREAMS = paths.PROCESSED / "draw_rule_streams.json"
+"""抽选类别 → 门槛通道对照表(人工核定,2026-09-13 Frank「你这个门槛 不是所有的门槛吧。只是这一个类别的门槛吧」):
+键=抽选类别官方名(pnp_draws.stream),值.streams=pnp_requirements 里的通道名清单。抽选公告的类别名与资格页的
+通道名两套叫法没有共同键,只能人工对。缺键=该类别没对过 → ruleStreams None(前端退回全省门槛);
+空清单=对过但门槛条文没抓(ON 的 EJO 三流)→ 前端出「本站未收录」。"""
+
+K_RULE_LIST = "streams"
+"""对照表里的通道名清单格。"""
 
 IN_PNP_DRAWS = paths.PNP / "draws.json"
 """省抽选事实(BC/AB/MB+ON 通告,pnp 域 build_draws 产,E6-04)。"""

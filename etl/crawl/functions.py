@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
+from crawl import BROWSER_CHANNEL
 from crawl.constants import (
     ACCEPT_HTML,
     ACCEPT_LANGUAGE,
@@ -464,6 +465,7 @@ async def get_browser_page() -> PageLike | None:
             CACHE.context = await CACHE.pw.chromium.launch_persistent_context(
                 str(PROFILE_DIR),
                 headless=False,  # 2026-09-01 Frank:全有头(无头基本被封),BROWSER_HEADLESS 开关废除;docker 靠 Xvfb 起显示
+                channel=channel_of(),  # 2026-09-13:本机 BROWSER_CHANNEL=chrome 绕 profile 降级(见 crawl/__init__)
                 args=list(BROWSER_ARGS),
                 user_agent=BROWSER_UA,
                 viewport={K_WIDTH: VIEWPORT_W, K_HEIGHT: VIEWPORT_H},
@@ -489,6 +491,13 @@ async def get_browser_page() -> PageLike | None:
             CACHE.unavailable = True
             err(PRINT_BROWSER_DOWN, e)
             return None
+
+
+def channel_of() -> str | None:
+    """launch 的 channel 参:BROWSER_CHANNEL 非空给它(系统 Chrome),空串给 None(自带 chromium)。"""
+    if BROWSER_CHANNEL == "":
+        return None
+    return BROWSER_CHANNEL
 
 
 async def is_page_challenged(page: PageLike) -> bool:

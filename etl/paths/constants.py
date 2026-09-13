@@ -46,6 +46,11 @@ RAW_CAREERBEACON = RAW / "careerbeacon"
 + jobs.json(详情页 ld+json JobPosting 抽出的事实,帖号为键);原文在 crawl/board-careerbeacon/。
 只收 NS/NB/NL/PE 四省列表页,站上其余约 8 万全国聚合岗不进这里(2026-09-11 拍板)。"""
 
+RAW_HIREAC = RAW / "hireac"
+"""hireac 域抽出的表(2026-09-13 立域,Algonquin College HireAC 岗位板,登录源):rows.json(列表翻页:
+行号 → 详情表单参数,会话级)+ jobs.json(详情页「标签: 值」表格抽出的事实,行号为键);原文在 crawl/board-hireac/。
+本地直投帖(数字号)与 Outcome Campus Connect 跨校联播帖(CC- 号)都收;只在 Frank 本机手动跑。"""
+
 
 PNP = RAW / "pnp"
 """各省 PNP 维护表(aaip-ineligible/sk-*.json 等)。"""
@@ -145,6 +150,10 @@ PROCESSED_JOBBOOM = PROCESSED / "jobboom"
 PROCESSED_CAREERBEACON = PROCESSED / "careerbeacon"
 """careerbeacon 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;
 当前态 = 只留本轮省列表页仍在列且未过截止日的帖)。"""
+
+PROCESSED_HIREAC = PROCESSED / "hireac"
+"""hireac 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;当前态 = 本轮列表在列且未过截止日的帖;
+薪资恒空 —— 板上只给「时薪/年薪」类型不给金额)。"""
 
 PROCESSED_PTE = PROCESSED / "pte"
 """pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +
