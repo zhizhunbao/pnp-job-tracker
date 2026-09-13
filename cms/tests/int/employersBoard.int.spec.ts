@@ -68,8 +68,8 @@ describe('三个态', () => {
 describe('行构造器', () => {
   it('numeric 列的字符串收成数,可空数值保 null,jsonb 清单成数组', () => {
     const r = toPoolRow({
-      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', province: 'ON', city: 'Ottawa',
-      designated: false, designated_programs: [], open_jobs_total: '40', fetched: '2026-09-13',
+      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', province: 'ON', city: 'Ottawa', locations: ['Ottawa, ON', 'Toronto, ON'],
+      designated: false, designated_programs: [], designated_provinces: [], open_jobs_total: '40', fetched: '2026-09-13', alias_zh: 'Shopify 公司', alias_ko: null,
       ind_group: 'stem', open_jobs: '35', latest_posted: '2026-09-12', top_titles: ['developer'], entry_jobs: '7',
       entry_share: '20', min_experience: 'junior', lmia_skilled: '3', lmia_last_quarter: '2026Q1', star: '4',
       wage_med_annual: null, wage_index_pct: null, total: '120',
@@ -78,22 +78,25 @@ describe('行构造器', () => {
     expect(r.entryShare).toBe(20)
     expect(r.star).toBe(4)
     expect(r.wageMedAnnual).toBeNull()
-    expect(r.wageIndexPct).toBeNull()
     expect(r.topTitles).toEqual(['developer'])
     expect(r.designated).toBe(false)
     expect(r.slug).toBe('shopify')
+    expect(r.locations).toEqual(['Ottawa, ON', 'Toronto, ON'])
+    expect(r.aliasZh).toBe('Shopify 公司')
+    expect(r.aliasKo).toBe('')
   })
 
   it('三源独有雇主:slug / 行业 / 季度 为 null 不折空串以外的东西', () => {
     const r = toPoolRow({
-      key: 'n:acme', slug: null, name: 'Acme', industry: null, province: 'NB', city: '', designated: true,
-      designated_programs: ['AIP', 'RCIP'], open_jobs_total: 0, fetched: '2026-09-13', ind_group: '', open_jobs: 0,
+      key: 'n:acme', slug: null, name: 'Acme', industry: null, province: 'NB', city: '', locations: null, designated: true,
+      designated_programs: ['AIP', 'RCIP'], designated_provinces: ['NS', 'NB'], open_jobs_total: 0, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: '', open_jobs: 0,
       latest_posted: null, top_titles: null, entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
       lmia_last_quarter: null, star: 3, wage_med_annual: null, wage_index_pct: null, total: 1,
     })
     expect(r.slug).toBeNull()
     expect(r.industry).toBeNull()
     expect(r.programs).toEqual(['AIP', 'RCIP'])
+    expect(r.designatedProvinces).toEqual(['NS', 'NB'])
     expect(r.designated).toBe(true)
     expect(r.entryShare).toBeNull()
   })
@@ -112,7 +115,7 @@ function fakePool(handler: (sql: string, params?: unknown[]) => QRows) {
 
 const bucketRow = (i: number, total: number) => ({
   key: `e${i}`, slug: null, name: `Employer ${String(i).padStart(3, '0')}`, industry: null, province: i % 2 ? 'NS' : 'NB',
-  city: '', designated: i % 3 === 0, designated_programs: [], open_jobs_total: i, fetched: '2026-09-13', ind_group: 'stem',
+  city: '', locations: [], designated: i % 3 === 0, designated_programs: [], designated_provinces: [], open_jobs_total: i, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: 'stem',
   open_jobs: i, latest_posted: null, top_titles: [], entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
   lmia_last_quarter: null, star: 2, wage_med_annual: null, wage_index_pct: null, total,
 })

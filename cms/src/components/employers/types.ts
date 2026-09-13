@@ -30,7 +30,7 @@ export type TFn = (key: string, vars?: TVars) => string
 /**
  * 雇主板排序主键(与 lib/employers 的 POOL_SORTS 逐字对齐;本域自抄)。
  */
-export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'wage' | 'name'
+export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'name'
 
 /**
  * 雇主板筛选(SSR 与 /api/employers 共用一份口径;本域原样收下八格。2026-09-13 雇主板批二)。
@@ -113,14 +113,34 @@ export type PoolRow = {
   city: string
 
   /**
+   * 多地点(「市, 省码」,主场第一,最多三处)。
+   */
+  locations: string[]
+
+  /**
    * 指定雇主命中。
    */
   designated: boolean
 
   /**
-   * 命中的项目清单(AIP/RCIP/FCIP;胶囊下的灰注)。
+   * 命中的项目清单(AIP/RCIP/FCIP;指定列的主文案)。
    */
   programs: string[]
+
+  /**
+   * 指定归属省清单(指定列的灰注 —— 主场省与指定省可以不同:Frank「地点在多伦多 也是 AIP?」)。
+   */
+  designatedProvinces: string[]
+
+  /**
+   * 公司官方中文名;空串 = 没有。
+   */
+  aliasZh: string
+
+  /**
+   * 公司官方韩文名;空串 = 没有。
+   */
+  aliasKo: string
 
   /**
    * 这一行所在的行业组键(行身份的另一半)。
@@ -151,11 +171,6 @@ export type PoolRow = {
    * 切面星 1-5。
    */
   star: number
-
-  /**
-   * 工资水位(vs 同组同省中位的百分比,100 = 持平);null = 分母缺。
-   */
-  wageIndexPct: number | null
 }
 
 /**
@@ -448,17 +463,22 @@ export type EmployerCellRow = {
   key: string
 
   /**
-   * 雇主名。
+   * 雇主名(表里不成链 —— 落点在操作列;2026-09-13 Frank「后面已经有操作列,没必要加 link」)。
    */
   name: string
 
   /**
-   * 雇主名的落点:有公司页进公司页,没有就落职位板按名搜。
+   * 界面语言的别名灰注(中文界面出官方中文名、韩文界面出韩文名、英文界面不出);空串 = 没有。
+   */
+  alias: string
+
+  /**
+   * 手机卡标题链的落点:有公司页进公司页,没有就落职位板按名搜(表里雇主名不用它)。
    */
   href: string
 
   /**
-   * 落点的悬停提示。
+   * 落点的悬停提示(手机卡标题链)。
    */
   hrefTitle: string
 
@@ -468,9 +488,14 @@ export type EmployerCellRow = {
   industry: string
 
   /**
-   * 所在地(市 + 省码;没市回落省名;都没有空串)。
+   * 手机卡的地点行(市 + 省码紧凑格;没市回落省名;都没有空串)。
    */
   where: string
+
+  /**
+   * 地点胶囊(「市, 省码」,主场第一,最多三枚);空数组 = 池里没记(渲横杠)。
+   */
+  locations: string[]
 
   /**
    * 星形文本(实心补空心到五枚)。
@@ -493,14 +518,20 @@ export type EmployerCellRow = {
   entryNote: string
 
   /**
-   * 指定雇主胶囊文案;空串 = 非指定(渲横杠)。
+   * 指定列主文案 = 项目清单(AIP、RCIP;列头已写「指定雇主」,不再重复一枚胶囊 —— 2026-09-13 Frank
+   * 「这个胶囊不重复吗」);指定但名单没写项目时退回「指定雇主」;空串 = 非指定(渲横杠)。
    */
   designatedText: string
 
   /**
-   * 指定项目灰注(顿号连);空串 = 不出。
+   * 指定列灰注 = 指定归属省码(顿号连;AIP 按省给资格,主场在多伦多也可能持 NS 的指定);空串 = 不出。
    */
-  programsNote: string
+  designatedNote: string
+
+  /**
+   * 手机卡上的指定胶囊文案(卡上没有列头撑着,还是写「指定雇主」);空串 = 非指定不出。
+   */
+  designatedChip: string
 
   /**
    * 技能类 LMIA 份数(0 交回空文本,渲横杠)。
@@ -511,11 +542,6 @@ export type EmployerCellRow = {
    * 最近获批季灰注;空串 = 不出。
    */
   lmiaNote: string
-
-  /**
-   * 工资水位文本(带符号百分比;无水位空文本渲横杠)。
-   */
-  wage: CellText
 
   /**
    * 「看岗位」的落点(职位板按雇主名搜)。
@@ -942,6 +968,11 @@ export type EmployerCellRowIn = {
   t: TFn
 
   /**
+   * 界面语言(别名按它取)。
+   */
+  lang: Lang
+
+  /**
    * 当前筛选(埋点分组值取行业组 / 查证态)。
    */
   f: PoolFilters
@@ -960,6 +991,11 @@ export type EmployerCellRowsIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
 
   /**
    * 当前筛选。

@@ -174,6 +174,9 @@ K_EMPLOYERS_TABLE = "employers"
 NAME_SEP = " "
 """归一名的词间分隔(折叠目标)。"""
 
+LOCATIONS_N = 3
+"""池行 locations 取在招岗最多的前几处(2026-09-13 Frank「多个地址用胶囊」;板上一行放得下三枚,其余归公司页)。"""
+
 LOC_PROV_SEP = ", "
 """designated 行地点里「市, 省码」的分隔(2026-09-13 批二生产实拍 "Peace Liard, BC, BC":名单地点自带省码,
 主场市取它时要剥掉尾巴,省码由 province 格单独给)。"""

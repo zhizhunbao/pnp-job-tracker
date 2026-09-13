@@ -931,7 +931,7 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colStar': '星级', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colWhere': '地点', 'de.colStar': '星级', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   'de.colLmia': '技能类 LMIA', 'de.stars': '{n} 星', 'de.entryN': '入门 {n}%', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '选择行业', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配',

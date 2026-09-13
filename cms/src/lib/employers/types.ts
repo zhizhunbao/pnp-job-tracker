@@ -21,7 +21,7 @@ import type { Db } from '../db'
 /**
  * 雇主板排序主键(与 constants.POOL_SORTS 逐字对齐;SQL 片段按键取)。
  */
-export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'wage' | 'name'
+export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'name'
 
 /**
  * 雇主板筛选(SSR 与 /api/employers 共用一份;2026-09-13 雇主板批二自 designated/hiring 双口径换成雇主池)。
@@ -104,6 +104,11 @@ export type PoolRow = {
   city: string
 
   /**
+   * 多地点(「市, 省码」,主场第一,最多三处;板上地点胶囊)。
+   */
+  locations: string[]
+
+  /**
    * 指定雇主命中(AIP/RCIP/FCIP 任一)。
    */
   designated: boolean
@@ -114,6 +119,11 @@ export type PoolRow = {
   programs: string[]
 
   /**
+   * 指定归属省清单(AIP 按省给资格;主场在多伦多的雇主也可能持 NS 的 AIP 指定)。
+   */
+  designatedProvinces: string[]
+
+  /**
    * 全桶在招总岗数。
    */
   openJobsTotal: number
@@ -122,6 +132,16 @@ export type PoolRow = {
    * 池构建日(YYYY-MM-DD)。
    */
   fetched: string
+
+  /**
+   * 公司官方中文名(companies.alias_zh,维基取的);空串 = 没有(名下不出灰注)。
+   */
+  aliasZh: string
+
+  /**
+   * 公司官方韩文名;空串 = 没有。
+   */
+  aliasKo: string
 
   /**
    * 这一行所在的行业组键(查证态 = 星级最高的桶;'' = 无线索通用桶,other = 未分类岗桶)。
@@ -1366,6 +1386,11 @@ export type PoolDbRow = {
   city: string | null
 
   /**
+   * 多地点(jsonb 数组)。
+   */
+  locations: string[] | null
+
+  /**
    * 指定命中。
    */
   designated: boolean | null
@@ -1376,6 +1401,11 @@ export type PoolDbRow = {
   designated_programs: string[] | null
 
   /**
+   * 指定归属省清单(jsonb 数组)。
+   */
+  designated_provinces: string[] | null
+
+  /**
    * 全桶在招总数。
    */
   open_jobs_total: number | string | null
@@ -1384,6 +1414,16 @@ export type PoolDbRow = {
    * 池构建日。
    */
   fetched: string | null
+
+  /**
+   * 公司中文别名(LEFT JOIN companies;无公司页 = null)。
+   */
+  alias_zh: string | null
+
+  /**
+   * 公司韩文别名。
+   */
+  alias_ko: string | null
 
   /**
    * 行业组键。

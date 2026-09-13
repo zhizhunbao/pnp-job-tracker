@@ -1246,9 +1246,10 @@ export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
 export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
     key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), industry: textOrNull(r.industry),
-    province: text(r.province), city: text(r.city), designated: r.designated === true,
-    programs: toStrList(r.designated_programs), openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
-    group: text(r.ind_group), openJobs: count(r.open_jobs), latestPosted: textOrNull(r.latest_posted),
+    province: text(r.province), city: text(r.city), locations: toStrList(r.locations), designated: r.designated === true,
+    programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
+    openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
+    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko), group: text(r.ind_group), openJobs: count(r.open_jobs), latestPosted: textOrNull(r.latest_posted),
     topTitles: toStrList(r.top_titles), entryJobs: count(r.entry_jobs), entryShare: numOrNull(r.entry_share),
     minExperience: textOrNull(r.min_experience), lmiaSkilled: count(r.lmia_skilled),
     lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),

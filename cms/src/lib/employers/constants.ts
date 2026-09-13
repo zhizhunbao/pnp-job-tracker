@@ -156,7 +156,7 @@ export const POOL_GROUPS = ['health', 'stem', 'trades', 'food', 'transport', 'ma
 /**
  * 雇主板可点的排序主键白名单(与 `PoolSort` 联合逐字对齐;SQL 片段在 lib/db/sql.ts EMPLOYER_POOL_ORDER 按键取)。
  */
-export const POOL_SORTS = ['star', 'open', 'lmia', 'designated', 'wage', 'name'] as const
+export const POOL_SORTS = ['star', 'open', 'lmia', 'designated', 'name'] as const
 
 /**
  * 雇主板默认排序:切面星级(设计稿:默认按星级排、点列头切主键)。

@@ -25,3 +25,7 @@ ALTER INDEX IF EXISTS employer_pool_buckets_broad_star_idx RENAME TO employer_po
 -- 同批(雇主板批二):noc_categories 加行业组键列 —— 板的 noc= 直达参数要把职业换算成组
 -- (noc → jobs.broad → noc_categories.ind_group),换算读库不再前端抄分组表。additive,随下轮 seed 灌值。
 ALTER TABLE noc_categories ADD COLUMN IF NOT EXISTS ind_group varchar;
+
+-- 同日(Frank「多个地址用胶囊」):雇主池加 locations —— 在招岗最多的前三处「市, 省码」(jsonb 数组),板上一行地点胶囊。
+-- additive,随下轮 seed 灌值。
+ALTER TABLE employer_pool ADD COLUMN IF NOT EXISTS locations jsonb;

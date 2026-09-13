@@ -262,14 +262,9 @@ export const BTN_PRO = 'pro'
 export const BTN_GHOST = 'ghost'
 
 /**
- * 雇主板筛选下拉的壳宽档(md = 170px,雇主板专属那一档)。
+ * 雇主板搜索框的尺寸档(sm,与职位板 filterrow 的搜索框同档;2026-09-13 Frank「宽度和 jobs 那个保持一致」)。
  */
-export const SEL_SIZE = 'md'
-
-/**
- * 雇主板搜索框的尺寸档(md,与同行下拉等高)。
- */
-export const SEARCH_SIZE = 'md'
+export const SEARCH_SIZE = 'sm'
 
 /**
  * 搜索框防抖窗口。每敲一个字打一次 API 是拿生产池当草稿纸(#313 性能红线),
@@ -511,7 +506,8 @@ export const DIM_BRIEF_KEY = 'brief'
 export const COL_NAME_KEY = 'name'
 
 /**
- * 雇主板列 key:所在地。
+ * 列 key:地点(担保雇主表与雇主板共用;雇主板 2026-09-13 一度拆省 / 市两列,同日 Frank
+ * 「要不然把省市合并成一个地址列」「多个地址用胶囊」合回一列,多地点成胶囊)。
  */
 export const COL_WHERE_KEY = 'where'
 
@@ -531,24 +527,20 @@ export const COL_STAR_KEY = 'star'
 export const COL_DESIGNATED_KEY = 'designated'
 
 /**
- * 雇主板列 key:工资水位(排序键 wage)。
- */
-export const COL_WAGE_KEY = 'wage'
-
-/**
  * 雇主板列 key:操作(看岗位 / 看公司两钮;不排序)。
  */
 export const COL_ACT_KEY = 'act'
 
 /**
- * 雇主板八列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给)。
+ * 雇主板七列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给;
+ * 同日工资水位列撤 —— Frank「工资水位 有必要吗」:全量榜算不出,全是横杠;地点一列放三枚胶囊)。
  */
-export const W_POOL_NAME = '24%'
+export const W_POOL_NAME = '22%'
 
 /**
- * 雇主板所在地列的宽。
+ * 雇主板地点列的宽(最多三枚「市, 省码」胶囊)。
  */
-export const W_POOL_WHERE = '14%'
+export const W_POOL_WHERE = '22%'
 
 /**
  * 雇主板星级列的宽(五枚星形字符)。
@@ -568,17 +560,12 @@ export const W_POOL_DESIGNATED = '12%'
 /**
  * 雇主板技能类 LMIA 列的宽(数字 + 季度灰注)。
  */
-export const W_POOL_LMIA = '10%'
-
-/**
- * 雇主板工资水位列的宽(带符号百分比)。
- */
-export const W_POOL_WAGE = '9%'
+export const W_POOL_LMIA = '11%'
 
 /**
  * 雇主板操作列的宽(两只 mini 钮并排)。
  */
-export const W_POOL_ACT = '12%'
+export const W_POOL_ACT = '14%'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。
@@ -659,21 +646,6 @@ export const STAR_ON = '★'
  * 空心星(补到满格)。
  */
 export const STAR_OFF = '☆'
-
-/**
- * 工资水位的基准(100 = 与同组同省中位持平;显示成相对基准的带符号百分比)。
- */
-export const WAGE_BASE = 100
-
-/**
- * 高于基准时的前缀符号(低于时 String 自带负号)。
- */
-export const PLUS_MARK = '+'
-
-/**
- * 百分比后缀。
- */
-export const PCT_MARK = '%'
 
 /**
  * 公司详情页的地址头(后接 slug;雇主名与「看公司」钮的落点)。

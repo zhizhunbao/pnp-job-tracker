@@ -27,12 +27,13 @@ import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
 import { SkilledLmiaCell } from './skilledlmiacell'
 import { StarCell } from './starcell'
-import { WageCell } from './wagecell'
+import { WhereCell } from './wherecell'
 import {
-  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_ACT_KEY, COL_DESIGNATED_KEY,
+  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_ACT_KEY,
+  COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_STAR_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_WAGE_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
+  COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
@@ -43,11 +44,11 @@ import {
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
-  MONEY_TAIL, PAGE_SIZE_FALLBACK, PCT_MARK, PLUS_MARK, PROV_KEY_HEAD, P_ENTRY, P_GROUP, P_PAGE, P_PROGRAM,
+  MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_ENTRY, P_GROUP, P_PAGE, P_PROGRAM,
   P_PROV, P_Q, P_SORT, QS_HEAD, STAR_MAX, STAR_OFF, STAR_ON, TAG_OK, TAG_REGION, TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
-  VERDICT_SHORT, VERDICT_UNKNOWN, WAGE_BASE, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED, W_POOL_LMIA,
-  W_POOL_NAME, W_POOL_OPEN, W_POOL_STAR, W_POOL_WAGE, W_POOL_WHERE,
+  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
+  W_POOL_LMIA, W_POOL_NAME, W_POOL_OPEN, W_POOL_STAR, W_POOL_WHERE,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -156,7 +157,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, f: x.f }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f }))
   }
   return out
 }
@@ -191,19 +192,21 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
+    alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     href,
     hrefTitle: x.t('pulse.act.company'),
     industry,
     where: empWhereTextOf({ t: x.t, r }),
+    locations: r.locations,
     starText: starTextOf(r.star),
     starTitle: x.t('de.stars', { n: r.star }),
     openText: String(r.openJobs),
     entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
-    programsNote: r.programs.join(x.t('de.sep')),
+    designatedNote: r.designatedProvinces.join(x.t('de.sep')),
+    designatedChip: designatedChipOf({ t: x.t, r }),
     lmia: { text: positiveTextOf(r.lmiaSkilled), cls: cssOf(css.teal) },
     lmiaNote,
-    wage: { text: wageTextOf(r.wageIndexPct), cls: cssOf(css.num) },
     jobsHref,
     companyHref,
     actJobsText: x.t('pulse.act.jobs'),
@@ -232,10 +235,10 @@ function kindOf(x: FiltersIn): string {
 }
 
 /**
- * 所在地文本:市 + 省码(紧凑格,站规「省份紧凑格用两位省码」);没市回落省全名;都没有空串。
+ * 手机卡地点行:市 + 省码(紧凑格,站规「省份紧凑格用两位省码」);没市回落省全名;都没有空串。
  *
  * @param x 取词函数与这一行。
- * @returns 所在地。
+ * @returns 地点行。
  */
 function empWhereTextOf(x: RowWordsIn): string {
   if (x.r.city !== TEXT_NONE && x.r.province !== TEXT_NONE) {
@@ -275,44 +278,32 @@ function entryNoteOf(x: RowWordsIn): string {
 }
 
 /**
- * 指定雇主胶囊文案:命中给「指定雇主」,否则空串(渲横杠)。
+ * 指定列主文案:项目清单顿号连(AIP、RCIP);指定但名单没写项目退回「指定雇主」;非指定空串(渲横杠)。
  *
  * @param x 取词函数与这一行。
  * @returns 文案或空串。
  */
 function designatedTextOf(x: RowWordsIn): string {
+  if (x.r.designated === false) {
+    return TEXT_NONE
+  }
+  if (x.r.programs.length === 0) {
+    return x.t('de.designated')
+  }
+  return x.r.programs.join(x.t('de.sep'))
+}
+
+/**
+ * 手机卡的指定胶囊文案:命中给「指定雇主」,否则空串(不出胶囊)。
+ *
+ * @param x 取词函数与这一行。
+ * @returns 文案或空串。
+ */
+function designatedChipOf(x: RowWordsIn): string {
   if (x.r.designated) {
     return x.t('de.designated')
   }
   return TEXT_NONE
-}
-
-/**
- * 工资水位 → 相对基准的带符号百分比(105 → +5%,92 → -8%,100 → 0%);无水位空串(渲横杠)。
- *
- * @param pct 水位;null = 分母缺。
- * @returns 文本或空串。
- */
-function wageTextOf(pct: number | null): string {
-  if (pct == null) {
-    return TEXT_NONE
-  }
-  const diff = pct - WAGE_BASE
-  let sign = TEXT_NONE
-  if (diff > 0) {
-    sign = PLUS_MARK
-  }
-  return sign + String(diff) + PCT_MARK
-}
-
-/**
- * 雇主板表格「所在地」列的取值(哑:行上已算好)。
- *
- * @param r 这一行展示行。
- * @returns 所在地。
- */
-export function empWhereOf(r: EmployerCellRow): string {
-  return r.where
 }
 
 /**
@@ -326,8 +317,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
 }
 
 /**
- * 雇主板的列组(设计稿七格 + 09-12 拍板把证据拆成「指定雇主」「技能类 LMIA」两枚带排序的列):
- * 雇主 / 所在地 / 星级 / 在招 / 指定雇主 / 技能类 LMIA / 工资水位 / 操作。
+ * 雇主板的列组(设计稿七格 + 09-12 拍板把证据拆成「指定雇主」「技能类 LMIA」两枚带排序的列,
+ * 09-13 Frank「把省市合并成一个地址列」「多个地址用胶囊」「工资水位 有必要吗」):雇主 / 地点 / 星级 / 在招 / 指定雇主 / 技能类 LMIA / 操作。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
  *
  * @param x 取词函数。
@@ -336,7 +327,7 @@ export function empRowKeyOf(r: EmployerCellRow): string {
 export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
   return [
     { key: COL_NAME_KEY, label: x.t('de.colName'), width: W_POOL_NAME, sortable: true, render: NameCell },
-    { key: COL_WHERE_KEY, label: x.t('de.colWhere'), width: W_POOL_WHERE, render: empWhereOf },
+    { key: COL_WHERE_KEY, label: x.t('de.colWhere'), width: W_POOL_WHERE, render: WhereCell },
     { key: COL_STAR_KEY, label: x.t('de.colStar'), width: W_POOL_STAR, nowrap: true, sortable: true, render: StarCell },
     {
       key: COL_OPEN_KEY,
@@ -362,15 +353,6 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       align: ALIGN_RIGHT,
       sortable: true,
       render: SkilledLmiaCell,
-    },
-    {
-      key: COL_WAGE_KEY,
-      label: x.t('de.colWage'),
-      width: W_POOL_WAGE,
-      nowrap: true,
-      align: ALIGN_RIGHT,
-      sortable: true,
-      render: WageCell,
     },
     { key: COL_ACT_KEY, label: x.t('col.actions'), width: W_POOL_ACT, nowrap: true, render: ActCell },
   ]

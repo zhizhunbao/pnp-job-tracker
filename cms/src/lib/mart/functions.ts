@@ -346,7 +346,7 @@ function toDesignatedEmployer(r: MartRow): MartRow {
 function toEmployerPool(r: MartRow): MartRow {
   return {
     key: cellOf(r.key), slug: cellOf(r.slug), name: cellOf(r.name), industry: cellOf(r.industry),
-    province: cellOf(r.province), city: cellOf(r.city), designated: truthyOf(r.designated),
+    province: cellOf(r.province), city: cellOf(r.city), locations: jsonTextOf(r.locations), designated: truthyOf(r.designated),
     designated_programs: jsonTextOf(r.designatedPrograms), designated_provinces: jsonTextOf(r.designatedProvinces),
     open_jobs_total: cellOf(r.openJobsTotal), hist_jobs: cellOf(r.histJobs),
     provinces_active: cellOf(r.provincesActive), cities_active: cellOf(r.citiesActive),

@@ -489,7 +489,7 @@ export const COLS_DESIGNATED_EMPLOYERS = ['name', 'province', 'location', 'is_te
  * 否则这段 INSERT 撞 42P01 → 整个 seed 事务回滚。
  * designated_programs / designated_provinces 是 jsonb,映射器走 jsonTextOf 传 JSON 串。
  */
-export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'fetched']
+export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'locations', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'fetched']
 
 /**
  * employer_pool_buckets 列。⚠️ 同上,建表走 docs/sql/employer-pool.sql。

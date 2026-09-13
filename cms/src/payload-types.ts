@@ -1318,6 +1318,18 @@ export interface EmployerPool {
     | boolean
     | null;
   /**
+   * 多地点 string[](市, 省码;主场第一)
+   */
+  locations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * 在招总量(全大类合计);裸 LMIA 总量永不入排序,这个才入
    */
   openJobsTotal?: number | null;
@@ -3039,6 +3051,7 @@ export interface EmployerPoolSelect<T extends boolean = true> {
   designated?: T;
   designatedPrograms?: T;
   designatedProvinces?: T;
+  locations?: T;
   openJobsTotal?: T;
   histJobs?: T;
   provincesActive?: T;

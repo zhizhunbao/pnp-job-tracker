@@ -35,6 +35,9 @@ class PoolRow(BaseModel):
     city: str | None
     """主市(同上口径)。"""
 
+    locations: list = []
+    """在招岗最多的前 LOCATIONS_N 处「市, 省码」(主场排第一;无在招雇主取指定名单地点;2026-09-13 板上多地点胶囊)。"""
+
     designated: bool
     """指定雇主命中(AIP/RCIP/FCIP 任一)。"""
 
