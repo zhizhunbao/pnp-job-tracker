@@ -1429,6 +1429,11 @@ export const MR_USE_RATE = 'useRate'
 export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
 
 /**
+ * 按加元时薪显示的指标键(两位小数带币记;2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批):省 × 年最低工资表)。
+ */
+export const MACRO_MONEY_KEYS = ['minWage']
+
+/**
  * 「按指标」视图的九张表及其序(Frank 2026-09-09 拍板:一张表回答一个问题,按用户问的先后 ——
  * 挤不挤 → 发多少 → 还有没有 → 走哪条路 → 人在减少吗 → 新人速度 → 落地多少 → 下一刀砍谁 → 找工作难不难)。
  * 2026-09-09 Frank「之前安省的可以删掉了吧」「包含对比才有意义」:省块视图撤,原来只在省块里的
@@ -1444,7 +1449,7 @@ export const MACRO_PCT_KEYS = ['unemp', 'pnpShare', 'nprShare', 'useRate']
  * 随后「配额 ee 是不是也都迁移到 pr」:配额表与 EE 表也迁 PR 段(竞争比是判断表留省份段)。
  */
 export const IND_ORDER = [
-  'pop', 'gdp', 'unemp', 'npr', 'nprShare', 'comp', 'studyNew', 'work',
+  'pop', 'gdp', 'unemp', 'minWage', 'npr', 'nprShare', 'comp', 'studyNew', 'work',
 ]
 
 /**
@@ -1684,6 +1689,12 @@ export const COL_JOBS_NEW7 = 'new7'
  * (COL_JOBS_WAGE_HIGH 与看岗位地址头 URL_HOME_PROV_HEAD / PROV_UTM_TAIL 随列退役)。
  */
 export const COL_JOBS_WAGE_LOW = 'wageLow'
+
+/**
+ * 招聘对比横表列键:法定最低时薪(ESDC 最低工资数据库的现行一般档;2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批) ——
+ * 挨着「最低时薪」(ESDC 工资带下端)放,两者的差 = 这个省的岗普遍比法定高多少)。
+ */
+export const COL_JOBS_MIN_WAGE = 'minWage'
 
 /**
  * 招聘对比横表列键:中位时薪(ESDC)。

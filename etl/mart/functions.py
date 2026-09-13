@@ -79,7 +79,9 @@ from mart.constants import (
     IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
-    IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
+    IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
+    K_MW_EFFECTIVE, K_MW_FETCHED, K_MW_FROM, K_MW_NEXT, K_MW_PROVINCE, K_MW_RATE, K_MW_ROWS, K_MW_SINCE,
+    MACRO_KEY_MIN_WAGE, MINWAGE_LANDING, MINWAGE_YEAR_END_TPL, UNIT_DOLLARS_HOURLY, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
     IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
     IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
@@ -182,7 +184,7 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JdRawIn, JdSources, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
+    CompPoolIn, CompPoolOut, MacroRowIn, MinWageYearIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
     StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
@@ -1758,7 +1760,47 @@ def prov_info() -> dict:
     fill_pnp_pr(info)
     fill_study_flow(info)
     fill_alloc(info)
+    fill_minwage(info)
     return info
+
+
+def fill_minwage(info: dict) -> None:
+    """各省法定最低工资现行档按省挂进 info(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批)):
+    {rate, since, next};next = 已公布、尚未生效的下一档(没有是 None)。文件缺席不挂(宁缺毋假)。"""
+    today = date.today().isoformat()
+    for c, rows in load_minwage().items():
+        if c not in info:
+            continue
+        cur = None
+        nxt = None
+        for r in rows:
+            if r[K_MW_EFFECTIVE] <= today:
+                cur = r
+            elif nxt is None:
+                nxt = r
+        if cur is None:
+            continue
+        cell: dict = {K_MW_RATE: cur[K_MW_RATE], K_MW_SINCE: cur[K_MW_EFFECTIVE], K_MW_NEXT: None}
+        if nxt is not None:
+            cell[K_MW_NEXT] = {K_MW_RATE: nxt[K_MW_RATE], K_MW_FROM: nxt[K_MW_EFFECTIVE]}
+        info[c][K_MIN_WAGE] = cell
+
+
+def load_minwage() -> dict:
+    """minwage 文件 → {地区码: 按生效日升序的调整行};文件缺席回空表。"""
+    if not IN_MINWAGE.exists():
+        return {}
+    out: dict = {}
+    for r in read_table(IN_MINWAGE).get(K_MW_ROWS, []):
+        out.setdefault(r[K_MW_PROVINCE], []).append(r)
+    for rows in out.values():
+        rows.sort(key=minwage_effective_of)
+    return out
+
+
+def minwage_effective_of(r: dict) -> str:
+    """调整行的排序键:生效日。"""
+    return r[K_MW_EFFECTIVE]
 
 
 def city_key_of(t: tuple) -> tuple:
@@ -4893,6 +4935,7 @@ def build_macro_series() -> list:
     out.extend(macro_ee_rows())
     out.extend(macro_ee_inv_cat_rows())
     out.extend(macro_ee_pool_rows())
+    out.extend(macro_minwage_rows())
     out.extend(macro_comp_rows(out))
     index = macro_point_index(out)
     out.extend(macro_ratio_rows(RatioRowsIn(index=index, num_key=MACRO_KEY_PR_PNP, den_key=MACRO_KEY_PR_ALL,
@@ -4905,7 +4948,7 @@ def build_macro_series() -> list:
 
 def macro_sources_live() -> bool:
     """五路输入里还有活的文件吗(全缺才允许出空表)。"""
-    for p in (IN_IRCC_FLOW, IN_IRCC_PR_YEARS, IN_IRCC_ALLOC, IN_EE_DRAWS):
+    for p in (IN_IRCC_FLOW, IN_IRCC_PR_YEARS, IN_IRCC_ALLOC, IN_EE_DRAWS, IN_MINWAGE):
         if p.exists():
             return True
     if IN_STATCAN_DIR.exists():
@@ -5048,6 +5091,41 @@ def macro_alloc_rows() -> list:
                 freq=MACRO_FREQ_ANNUAL, value=value, as_of=year, unit=UNIT_NOMINATIONS,
                 source=srcs.get(col, ""), fetched=fetched)))
     return out
+
+
+def macro_minwage_rows() -> list:
+    """各省法定最低工资 → 省 × 年 minWage 行(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。
+    一格 = 该年年末在效的一般档(一年内多次调整取年末那次;已公布的来年档也出,读者看得到下一步);
+    只出十省(联邦 CA 是联邦管辖行业的底线,不是「全国」,不进省表);文件缺席不出行。"""
+    if not IN_MINWAGE.exists():
+        return []
+    fetched = read_table(IN_MINWAGE).get(K_MW_FETCHED, "")
+    out: list = []
+    for c, rows in load_minwage().items():
+        if c not in PROV_FULL:
+            continue
+        first = int(rows[0][K_MW_EFFECTIVE][:YEAR_LEN])
+        last = int(rows[-1][K_MW_EFFECTIVE][:YEAR_LEN])
+        for y in range(first, last + 1):
+            year = str(y)
+            hit = minwage_year_rate_of(MinWageYearIn(rows=rows, year=year))
+            if hit is None:
+                continue
+            out.append(to_macro_row(MacroRowIn(
+                geo=c, key=MACRO_KEY_MIN_WAGE, period=year, freq=MACRO_FREQ_ANNUAL,
+                value=hit[K_MW_RATE], as_of=hit[K_MW_EFFECTIVE], unit=UNIT_DOLLARS_HOURLY,
+                source=MINWAGE_LANDING, fetched=fetched)))
+    return out
+
+
+def minwage_year_rate_of(x: MinWageYearIn) -> dict | None:
+    """该年年末在效的调整行(生效日 ≤ 该年 12-31 的最后一行);该年之前没有任何档给 None。"""
+    end = MINWAGE_YEAR_END_TPL.format(year=x.year)
+    hit = None
+    for r in x.rows:
+        if r[K_MW_EFFECTIVE] <= end:
+            hit = r
+    return hit
 
 
 def alloc_year_of(col: str) -> str:

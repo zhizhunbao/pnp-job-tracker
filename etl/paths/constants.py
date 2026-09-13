@@ -56,6 +56,9 @@ EE = RAW / "ee"
 IRCC = RAW / "ircc"
 """IRCC 开放数据(E12-07:学签/工签存量、PNP 登陆数)+ pnp_allocations.json 配额维护表。"""
 
+MINWAGE = RAW / "minwage"
+"""ESDC 最低工资数据库(2026-09-13 立 minwage 域):minimum_wage.json = 一般成人档逐次调整,1965 起。"""
+
 STATCAN = RAW / "statcan"
 """StatCan WDS 表(2026-09-06 立 statcan 域):一表一文件 <pid>.json —— 人口 17100009 /
 临时居民 17100121 / GDP 36100222 / 失业率 14100287,形见

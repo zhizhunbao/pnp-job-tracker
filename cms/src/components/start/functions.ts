@@ -66,10 +66,11 @@ TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
   FED_EE_ROW_KEYS, FED_EE_CODE, PR_FOLD,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
-  COL_JOBS_NEW7, COL_JOBS_WAGE_LOW, COL_JOBS_WAGE_MED, COL_JOBS_WAGE_YR, HOURLY_DIGITS,
+  COL_JOBS_NEW7, COL_JOBS_MIN_WAGE, COL_JOBS_WAGE_LOW, COL_JOBS_WAGE_MED, COL_JOBS_WAGE_YR, HOURLY_DIGITS,
   W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
-  COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
+  COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_MONEY_KEYS, MACRO_PCT_KEYS,
+  MR_USE_RATE, YOY_FLAT_PCT,
   COL_REC, IND_GEO_ORDER, REC_KEYS, REC_LOWER_BETTER,
   REC_HALF, FORMULA_KEY, MK_ALLOC_INCL,
   YOY_YEAR_TAIL,
@@ -140,7 +141,7 @@ ValuableIn,
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
-  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn, DliChip, DliChipsIn, DliKindPickIn,
+  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn, MinWageOfIn, DliChip, DliChipsIn, DliKindPickIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec, MacroData, MacroLoadIn, MacroStatsProbe,
 } from './types'
 import css from './start.module.css'
@@ -5417,7 +5418,7 @@ function monTextOf(x: MonTextIn): string {
 }
 
 /**
- * 一格的显示:失业率一位小数带百分号,其余千分位。
+ * 一格的显示:失业率一位小数带百分号,最低工资两位小数带币记,其余千分位。
  *
  * @param x 数据键、值与灰注。
  * @returns 一格。
@@ -5425,6 +5426,9 @@ function monTextOf(x: MonTextIn): string {
 function macroCellOf(x: MacroCellIn): MacroCell {
   if (MACRO_PCT_KEYS.includes(x.key)) {
     return { value: x.value, text: x.value.toFixed(PCT_DIGITS) + PCT_MARK, note: x.note }
+  }
+  if (MACRO_MONEY_KEYS.includes(x.key)) {
+    return { value: x.value, text: CURRENCY_MARK + x.value.toFixed(HOURLY_DIGITS), note: x.note }
   }
   if (x.key === MK_COMP) {
     return { value: x.value, text: x.value.toFixed(RATIO_DIGITS) + RATIO_TAIL, note: x.note }
@@ -5747,7 +5751,7 @@ export function seriesWordsOf(t: TFn): SeriesWords {
 export function toJobsRows(x: JobsRowsIn): JobsRow[] {
   const out: JobsRow[] = []
   for (const r of x.rows) {
-    out.push(toJobsRow({ r, t: x.t, lang: x.lang }))
+    out.push(toJobsRow({ r, t: x.t, lang: x.lang, extra: x.extra }))
   }
   return out
 }
@@ -5776,9 +5780,25 @@ function toJobsRow(x: JobsRowIn): JobsRow {
     wageLowSort: x.r.wageLowHourly,
     wageMedText: hourlyTextOf(x.r.wageMedHourly),
     wageMedSort: x.r.wageMedHourly,
+    minWageText: hourlyTextOf(minWageOf({ extra: x.extra, code: x.r.province })),
+    minWageSort: minWageOf({ extra: x.extra, code: x.r.province }),
     wageYrText: wageOrDashOf(x.r.medianWageAnnual),
     wageYrSort: x.r.medianWageAnnual,
   }
+}
+
+/**
+ * 一省的法定最低时薪(provinces.info.minWage 现行档;省不在表里或没挂给 null;2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。
+ *
+ * @param x 各省附加事实与省码。
+ * @returns 时薪或 null。
+ */
+function minWageOf(x: MinWageOfIn): number | null {
+  const e = x.extra[x.code]
+  if (e == null || e.info == null || e.info.minWage == null) {
+    return null
+  }
+  return e.info.minWage.rate
 }
 
 /**
@@ -5809,6 +5829,13 @@ export function jobsColsOf(x: JobsColsIn): StartCol<JobsRow>[] {
     { key: COL_PROV, label: x.t('pulse.s4.prov'), sort: jobsNameSortOf, render: ProvNameCell },
     { key: COL_JOBS_OPEN, label: x.t('stats.openJobs'), nowrap: true, sort: jobsOpenSortOf, render: jobsOpenTextOf },
     { key: COL_JOBS_NEW7, label: x.t('stats.new7d'), nowrap: true, sort: jobsNew7SortOf, render: jobsNew7TextOf },
+    {
+      key: COL_JOBS_MIN_WAGE,
+      label: x.t('stats.minWageH'),
+      nowrap: true,
+      sort: jobsMinWageSortOf,
+      render: jobsMinWageTextOf,
+    },
     {
       key: COL_JOBS_WAGE_LOW,
       label: x.t('stats.wageLowH'),
@@ -5881,6 +5908,26 @@ export function jobsNew7SortOf(r: JobsRow): number | null {
  */
 export function jobsNew7TextOf(r: JobsRow): string {
   return r.new7Text
+}
+
+/**
+ * 法定最低时薪排序键(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。
+ *
+ * @param r 一行。
+ * @returns 法定最低时薪。
+ */
+export function jobsMinWageSortOf(r: JobsRow): number | null {
+  return r.minWageSort
+}
+
+/**
+ * 法定最低时薪单元格。
+ *
+ * @param r 一行。
+ * @returns 文案。
+ */
+export function jobsMinWageTextOf(r: JobsRow): string {
+  return r.minWageText
 }
 
 /**

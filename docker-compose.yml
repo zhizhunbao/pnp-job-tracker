@@ -197,6 +197,12 @@ services:
       SOURCE: statcan
       TZ: EST5EDT
 
+  minwage:                         # ESDC 最低工资数据库日更:各省法定最低工资现行档 + 1965 起历次调整(2026-09-13 立域)
+    <<: *etl
+    environment:
+      SOURCE: minwage
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:

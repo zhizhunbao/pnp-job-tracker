@@ -23,7 +23,7 @@ import type {
   BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
   CityDetail, CityDetailIn, CityDetailOut, CityKeyIn, CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
   CityIndustryOut,
-  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DliCitiesOut, DliSchoolRow,
+  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DliCitiesOut, MaybeProvMinWage, MaybeProvMinWageJson, ProvMinWageNext, ProvVolJson, DliSchoolRow,
   EmptyList,
   FineCountsIn, FineRowsOut,
   MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
@@ -699,7 +699,10 @@ function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
   if (v == null) {
     return null
   }
-  return { study: toVolNum(v.study), tfwp: toVolNum(v.tfwp), imp: toVolNum(v.imp), pnpPr: toVolNum(v.pnpPr) }
+  return {
+    study: toVolNum(v.study), tfwp: toVolNum(v.tfwp), imp: toVolNum(v.imp), pnpPr: toVolNum(v.pnpPr),
+    minWage: toMinWage(minWageJsonOf(v)),
+  }
 }
 
 /**
@@ -707,6 +710,50 @@ function provVolOf(v: MaybeProvVolJson): MaybeProvVol {
  *
  * @param x json 里的体量格。
  * @returns 干净格;缺数是 null。
+ */
+/**
+ * 一格法定最低工资(provinces.info.minWage)→ `ProvMinWage`(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批);
+ * 旧快照没这键或官方缺位给 null;下一档没有给 null)。
+ *
+ * @param x 线格式的一格;缺席或 null。
+ * @returns 洗净的一格或 null。
+ */
+function toMinWage(x: MaybeProvMinWageJson): MaybeProvMinWage {
+  if (x == null) {
+    return null
+  }
+  const rate = numOrNull(x.rate)
+  if (rate == null) {
+    return null
+  }
+  let next: ProvMinWageNext | null = null
+  if (x.next != null) {
+    const nextRate = numOrNull(x.next.rate)
+    if (nextRate != null) {
+      next = { rate: nextRate, from: text(x.next.from) }
+    }
+  }
+  return { rate: rate, since: text(x.since), next: next }
+}
+
+/**
+ * 线格式里的 minWage 键(旧快照没这键 = 缺席)→ 有键给格、缺键给 null(语言给的 undefined 在这一行收掉)。
+ *
+ * @param v 省体量卡的线格式。
+ * @returns 一格或 null。
+ */
+function minWageJsonOf(v: ProvVolJson): MaybeProvMinWageJson {
+  if (v.minWage == null) {
+    return null
+  }
+  return v.minWage
+}
+
+/**
+ * 一格体量数(线格式 {n, year})→ `ProvVolNum`;n 不是数给 null。
+ *
+ * @param x 线格式的一格或 null。
+ * @returns 洗净的一格或 null。
  */
 function toVolNum(x: MaybeProvVolNumJson): MaybeProvVolNum {
   if (x == null) {

@@ -5265,6 +5265,16 @@ export type JobsRow = {
   wageMedSort: number | null
 
   /**
+   * 法定最低时薪文案(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批);省快照没挂显杠)。
+   */
+  minWageText: string
+
+  /**
+   * 法定最低时薪排序键。
+   */
+  minWageSort: number | null
+
+  /**
    * 中位年薪文案(ESDC;2026-09-12 Frank「加一个中位年薪」)。
    */
   wageYrText: string
@@ -5279,6 +5289,11 @@ export type JobsRow = {
  * `toJobsRows` 的入参。
  */
 export type JobsRowsIn = {
+  /**
+   * 各省附加事实(provinces.info;法定最低工资读它;2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。
+   */
+  extra: ProvExtraMap
+
   /**
    * 省 × 大类汇总行(broad=all)。
    */
@@ -5296,9 +5311,29 @@ export type JobsRowsIn = {
 }
 
 /**
+ * `minWageOf` 的入参。
+ */
+export type MinWageOfIn = {
+  /**
+   * 各省附加事实。
+   */
+  extra: ProvExtraMap
+
+  /**
+   * 省码。
+   */
+  code: string
+}
+
+/**
  * `toJobsRow` 的入参。
  */
 export type JobsRowIn = {
+  /**
+   * 各省附加事实(法定最低工资读它)。
+   */
+  extra: ProvExtraMap
+
   /**
    * 这一行。
    */

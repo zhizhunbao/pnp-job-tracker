@@ -305,8 +305,8 @@ export function usePulse(x: PulseIn): PulsePanel {
   }, [navSec])
 
   const jobsRows = useMemo(function pickJobsRows() {
-    return toJobsRows({ rows: provRowsOf({ market }), t, lang })
-  }, [market, t, lang])
+    return toJobsRows({ rows: provRowsOf({ market }), t, lang, extra: x.stats.provExtra })
+  }, [market, t, lang, x.stats.provExtra])
 
   return {
     t,

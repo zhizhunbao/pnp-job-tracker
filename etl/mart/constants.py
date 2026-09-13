@@ -2881,6 +2881,49 @@ IN_STATCAN_DIR = paths.STATCAN
 """StatCan 四张表的落地目录(statcan 域产,一表一文件 raw/statcan/<pid>.json)。
 目录驱动扫表:加一张表 = 丢一个 json,本段不改代码(同 raw/pnp/*.json 的惯例)。"""
 
+IN_MINWAGE = paths.MINWAGE / "minimum_wage.json"
+"""minwage 域产物:一般成人档逐次调整(province / effectiveDate / expiryDate / rate,1965 起;
+2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。缺席 → provinces.info 不挂现行档、macro_series 不出 minWage 行(宁缺毋假)。"""
+
+MINWAGE_LANDING = "https://minwage-salairemin.service.canada.ca/en/general.html"
+"""最低工资行的出处(官方「现行与即将生效」页;minwage 域 LANDING 本域自抄)。"""
+
+K_MW_ROWS = "rows"
+"""minwage 文件:行清单。"""
+
+K_MW_FETCHED = "fetched"
+"""minwage 文件:抓取日。"""
+
+K_MW_PROVINCE = "province"
+"""minwage 行:地区码。"""
+
+K_MW_EFFECTIVE = "effectiveDate"
+"""minwage 行:生效日(YYYY-MM-DD)。"""
+
+K_MW_RATE = "rate"
+"""minwage 行:时薪。"""
+
+K_MIN_WAGE = "minWage"
+"""provinces.info 的挂点:现行一般档 {rate, since, next};macro_series 的键同名。"""
+
+K_MW_SINCE = "since"
+"""现行档:生效日。"""
+
+K_MW_NEXT = "next"
+"""现行档:即将生效的下一档 {rate, from};没有是 None。"""
+
+K_MW_FROM = "from"
+"""下一档:生效日。"""
+
+MACRO_KEY_MIN_WAGE = "minWage"
+"""macro_series 键:省 × 年法定最低工资(年末在效档;一年内多次调整取年末那次)。"""
+
+MINWAGE_YEAR_END_TPL = "{year}-12-31"
+"""年末日期串(判「该年年末在效」用,ISO 串按字典序比)。"""
+
+UNIT_DOLLARS_HOURLY = "dollars_hourly"
+"""单位:加元 / 小时(法定最低工资)。"""
+
 IN_IRCC_PR_YEARS = paths.IRCC / "pnp_admissions_years.json"
 """PR 登陆数按年(ircc 域段2 产,2026-09-06 加):prAll = 省 Total 行(全部类别),
 prPnp = Provincial Nominee 组行;ytdYear 那年是年内累计。
@@ -2900,6 +2943,7 @@ MACRO_UNIT = {
     "pop": UNIT_PEOPLE, "npr": UNIT_PEOPLE, "asylum": UNIT_PEOPLE, "workOnly": UNIT_PEOPLE,
     "studyOnly": UNIT_PEOPLE, "workStudy": UNIT_PEOPLE, "other": UNIT_PEOPLE,
     "gdp": MACRO_UNIT_DOLLARS_MILLIONS, "unemp": UNIT_PERCENT,
+    "minWage": UNIT_DOLLARS_HOURLY,
 }
 """statcan 各键 → 单位(契约 §3 键表)。表外的新键 → 单位空 → check_macro_series 当场炸:
 单位靠猜 = 前端把百万元当人数画进同一张图。"""

@@ -30,6 +30,7 @@ export function JobsCard({ row, t }: JobsCardIn) {
       <div className={css.provCardBody}>
         <KvRow k={t('stats.openJobs')} v={<strong>{row.openText}</strong>} />
         <KvRow k={t('stats.new7d')} v={row.new7Text} />
+        <KvRow k={t('stats.minWageH')} v={row.minWageText} />
         <KvRow k={t('stats.wageLowH')} v={row.wageLowText} />
         <KvRow k={t('stats.wageMedH')} v={row.wageMedText} />
         <KvRow k={t('pulse.city.wage')} v={row.wageYrText} />

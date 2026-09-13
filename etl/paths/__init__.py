@@ -43,6 +43,7 @@ from paths.constants import (
     RAW_KANATA,
     RCIP,
     ROOT,
+    MINWAGE,
     STATCAN,
     WAGES,
 )
@@ -85,6 +86,7 @@ BUCKET = (
     RAW_KANATA,
     RCIP,
     ROOT,
+    MINWAGE,
     STATCAN,
     WAGES,
     WriteJsonIn,

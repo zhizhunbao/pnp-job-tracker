@@ -327,6 +327,47 @@ export type ProvVol = {
    * 省提名拿到 PR;官方缺位保 null。
    */
   pnpPr: ProvVolNum | null
+
+  /**
+   * 法定最低工资现行一般档(ESDC 最低工资数据库;2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批));
+   * 旧快照没挂或官方缺位保 null。
+   */
+  minWage: ProvMinWage | null
+}
+
+/**
+ * 法定最低工资现行档(to* 洗净)。
+ */
+export type ProvMinWage = {
+  /**
+   * 现行时薪(加元)。
+   */
+  rate: number
+
+  /**
+   * 现行档生效日(YYYY-MM-DD)。
+   */
+  since: string
+
+  /**
+   * 已公布、尚未生效的下一档;没有是 null。
+   */
+  next: ProvMinWageNext | null
+}
+
+/**
+ * 法定最低工资的下一档。
+ */
+export type ProvMinWageNext = {
+  /**
+   * 下一档时薪。
+   */
+  rate: number
+
+  /**
+   * 下一档生效日。
+   */
+  from: string
 }
 
 /**
@@ -382,7 +423,57 @@ export type ProvVolJson = {
    * 省提名拿到 PR。
    */
   pnpPr: ProvVolNumJson | null
+
+  /**
+   * 法定最低工资现行档(线格式:旧快照没这键 = 缺席)。
+   */
+  minWage?: ProvMinWageJson | null
 }
+
+/**
+ * 法定最低工资现行档的线格式(jsonb 出来的格都可能缺)。
+ */
+export type ProvMinWageJson = {
+  /**
+   * 现行时薪。
+   */
+  rate?: number | string | null
+
+  /**
+   * 生效日。
+   */
+  since?: string | null
+
+  /**
+   * 下一档。
+   */
+  next?: ProvMinWageNextJson | null
+}
+
+/**
+ * 下一档的线格式。
+ */
+export type ProvMinWageNextJson = {
+  /**
+   * 时薪。
+   */
+  rate?: number | string | null
+
+  /**
+   * 生效日。
+   */
+  from?: string | null
+}
+
+/**
+ * `ProvMinWageJson` 或没有。
+ */
+export type MaybeProvMinWageJson = ProvMinWageJson | null
+
+/**
+ * `ProvMinWage` 或没有。
+ */
+export type MaybeProvMinWage = ProvMinWage | null
 
 /**
  * info 一格的原料:json 列驱动可能已解析成对象,经文本列绕行时是字符串。
