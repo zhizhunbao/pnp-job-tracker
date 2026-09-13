@@ -775,7 +775,7 @@ export const statsOccupations = (a1: string) => `SELECT ${STATS_OCC_BASE}${a1}
  * 这里只剩毫秒级快照读。pilot 列 = 城市级专属通道信号(RCIP / FCIP / RCIP+FCIP)。
  */
 export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.open_jobs, s.new7d, s.median_wage_annual, s.median_salary_annual, s.salary_n, s.named_jobs, s.pilot,
-              s.aip_jobs, c.population, c.unemp_rate
+              s.aip_jobs, s.aip_wage_low_hourly, s.aip_wage_med_hourly, c.population, c.unemp_rate
        FROM stats_city s LEFT JOIN cities c ON c.name = s.city AND c.province = s.province
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
@@ -795,9 +795,10 @@ export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
  * 拼出所以在 SQL 里按组聚合;表外大类(未分类)不进)。aip_jobs = 城内在招 AIP 资格岗数
  * (2026-09-12 Frank「AIP 也需要一个城市的表」)。
  */
-export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, aip_jobs, fetched, updated_at, created_at)
+export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_jobs, new7d, median_wage_annual, median_salary_annual, salary_n, named_jobs, pilot, pilot_community, by_broad, aip_jobs, aip_wage_low_hourly, aip_wage_med_hourly, pilot_wage_low_hourly, pilot_wage_med_hourly, fetched, updated_at, created_at)
        SELECT g.city, g.province, g.open_jobs, g.new7d, g.median_wage_annual, g.median_salary_annual,
-              g.salary_n, g.named_jobs, g.pilot, g.pilot_community, b.by_broad, g.aip_jobs, $2, now(), now()
+              g.salary_n, g.named_jobs, g.pilot, g.pilot_community, b.by_broad, g.aip_jobs,
+              g.aip_wage_low_hourly, g.aip_wage_med_hourly, p.pilot_wage_low_hourly, p.pilot_wage_med_hourly, $2, now(), now()
        FROM (
          SELECT j.city, j.province, COUNT(*)::int AS open_jobs,
                 COUNT(*) FILTER (WHERE j.date_posted >= $1)::int AS new7d,
@@ -807,20 +808,31 @@ export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_
                 COUNT(*) FILTER (WHERE j.pnp_stream IS NOT NULL AND j.pnp_stream <> '')::int AS named_jobs,
                 MAX(NULLIF(j.pilot, '')) AS pilot,
                 MAX(NULLIF(j.pilot_community, '')) AS pilot_community,
-                COUNT(*) FILTER (WHERE j.aip = true)::int AS aip_jobs
+                COUNT(*) FILTER (WHERE j.aip = true)::int AS aip_jobs,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_low_hourly) FILTER (WHERE j.aip = true))::numeric, 2)::float8 AS aip_wage_low_hourly,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_med_hourly) FILTER (WHERE j.aip = true))::numeric, 2)::float8 AS aip_wage_med_hourly
          FROM jobs j
          WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
          GROUP BY j.city, j.province) g
        LEFT JOIN (
-         SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage, 'hourly', hourly)) AS by_broad FROM (
+         SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage, 'hourly', hourly, 'low', low)) AS by_broad FROM (
            SELECT city, province, ($3::jsonb ->> broad) AS grp, COUNT(*)::int AS n,
                   ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_annual))::numeric)::int AS wage,
-                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_hourly))::numeric, 2)::float8 AS hourly
+                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_hourly))::numeric, 2)::float8 AS hourly,
+                  ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_low_hourly))::numeric, 2)::float8 AS low
            FROM jobs
            WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(city, '') <> '' AND ($3::jsonb ? COALESCE(broad, ''))
            GROUP BY city, province, grp) t
          GROUP BY city, province) b
-       ON b.city = g.city AND b.province = g.province`
+       ON b.city = g.city AND b.province = g.province
+       LEFT JOIN (
+         SELECT pilot_community,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_low_hourly))::numeric, 2)::float8 AS pilot_wage_low_hourly,
+                ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY wage_med_hourly))::numeric, 2)::float8 AS pilot_wage_med_hourly
+         FROM jobs
+         WHERE status = 'open' AND coalesce(is_dup, false) = false AND COALESCE(pilot_community, '') <> ''
+         GROUP BY pilot_community) p
+       ON p.pilot_community = g.pilot_community`
 
 /**
  * 城市 × 大类在招(城市段「行业对比」表;2026-09-11)。$1=取快照在招量前几的城市。
@@ -843,8 +855,12 @@ export const CITY_BROAD_LABELS = `SELECT DISTINCT broad, broad_en, broad_ko FROM
  * 在招 = 快照按 pilot_community 汇总(打标即用 pilot_communities.name,join 键同源);
  * 同名双制(Sudbury RCIP 与 FCIP)各出一行同一个数 —— 两条通道是两个事实。
  * 0 是事实不是缺格(JB 全省全职业覆盖)。
+ * 2026-09-12 Frank「并加 最低时薪 和 中位时薪」:两列 = 社区覆盖城在招岗的 ESDC 官方带,
+ * REFRESH 按 pilot_community 一次算好写在每个城行上(同社区各城同值,MAX 只是聚合语法要求);
+ * DDL docs/sql/pulse-city-wage-hourly-20260912.sql 先行。
  */
-export const CITY_PILOTS = `SELECT p.name, p.province, p.type, COALESCE(SUM(s.open_jobs), 0)::int AS open_jobs
+export const CITY_PILOTS = `SELECT p.name, p.province, p.type, COALESCE(SUM(s.open_jobs), 0)::int AS open_jobs,
+              MAX(s.pilot_wage_low_hourly)::float8 AS wage_low_hourly, MAX(s.pilot_wage_med_hourly)::float8 AS wage_med_hourly
        FROM pilot_communities p LEFT JOIN stats_city s ON s.pilot_community = p.name
        GROUP BY p.name, p.province, p.type
        ORDER BY open_jobs DESC, p.name ASC, p.type ASC`
@@ -854,12 +870,14 @@ export const CITY_PILOTS = `SELECT p.name, p.province, p.type, COALESCE(SUM(s.op
  * 再加上 qs 排名」—— 一校一行替换城市聚合行 + 点开胶囊形,原 CITY_DLI_STATS 同批退役)。
  * $1=行数。校 × 城行按 DLI# 收回校级:cities=校区城清单(按名序),QS 两格全校同值取 min,
  * 榜外 NULL/空串前端显杠;序 = QS 名次升序榜外沉底,再按校名。
+ * kind = 院校种类(全校同值取 min;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」,DDL docs/sql/dli-kind.sql)。
  */
 export const DLI_SCHOOLS = `SELECT d.dli_number, d.name, d.name_zh, d.province,
               bool_or(d.is_public) AS is_public,
               bool_or(d.grad_program) AS grad_program,
               min(d.qs_rank)::int AS qs_rank,
               min(d.qs_rank_display) AS qs_rank_display,
+              min(d.kind) AS kind,
               json_agg(d.city ORDER BY d.city ASC) AS cities
        FROM dli d
        WHERE COALESCE(d.city, '') <> ''

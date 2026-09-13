@@ -10,7 +10,8 @@
    "city": "Grande Prairie",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -20,7 +21,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -30,7 +32,8 @@
    "city": "Athabasca",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -40,7 +43,8 @@
    "city": "Edmonton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -50,7 +54,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -60,7 +65,8 @@
    "city": "Lacombe",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -70,7 +76,8 @@
    "city": "Claresholm",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -80,7 +87,8 @@
    "city": "Okotoks",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -90,7 +98,8 @@
    "city": "Springbrook",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -100,7 +109,8 @@
    "city": "Edmonton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -110,7 +120,8 @@
    "city": "High River",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -120,7 +131,8 @@
    "city": "Fort McMurray",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -130,7 +142,8 @@
    "city": "Lloydminster",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -140,7 +153,8 @@
    "city": "Vermillion",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -150,7 +164,8 @@
    "city": "Lethbridge",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -160,7 +175,8 @@
    "city": "Calgary",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -170,7 +186,8 @@
    "city": "Edmonton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -180,7 +197,8 @@
    "city": "Edmonton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -190,7 +208,8 @@
    "city": "Brooks",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -200,7 +219,8 @@
    "city": "Medicine Hat",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -210,7 +230,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -220,7 +241,8 @@
    "city": "Edmonton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -230,7 +252,8 @@
    "city": "St. Albert",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -240,7 +263,8 @@
    "city": "Drayton Valley",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -250,7 +274,8 @@
    "city": "Edmonton",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -260,7 +285,8 @@
    "city": "Stony Plain",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -270,7 +296,8 @@
    "city": "Westlock",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -280,7 +307,8 @@
    "city": "Wetaskiwin",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -290,7 +318,8 @@
    "city": "Whitecourt",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -300,7 +329,8 @@
    "city": "Athabasca",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -310,7 +340,8 @@
    "city": "Fort Vermillion",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -320,7 +351,8 @@
    "city": "Grande Prairie",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -330,7 +362,8 @@
    "city": "Grouard",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -340,7 +373,8 @@
    "city": "High Level",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -350,7 +384,8 @@
    "city": "High Prairie",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -360,7 +395,8 @@
    "city": "Peace River",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -370,7 +406,8 @@
    "city": "Slave Lake",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -380,7 +417,8 @@
    "city": "Valleyview",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -390,7 +428,8 @@
    "city": "Wabasca",
    "campuses": 10,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -400,7 +439,8 @@
    "city": "Fairview",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -410,7 +450,8 @@
    "city": "Grand Prairie",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -420,7 +461,8 @@
    "city": "Calgary",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -430,7 +472,8 @@
    "city": "Edmonton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -440,7 +483,8 @@
    "city": "Olds",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -450,7 +494,8 @@
    "city": "Cold Lake",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -460,7 +505,8 @@
    "city": "Lac La Biche",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -470,7 +516,8 @@
    "city": "St.Paul",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "AB",
@@ -480,7 +527,8 @@
    "city": "Red Deer",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -490,7 +538,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "AB",
@@ -500,7 +549,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -510,7 +560,8 @@
    "city": "Edmonton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -520,7 +571,8 @@
    "city": "Camrose",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -530,7 +582,8 @@
    "city": "Edmonton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -540,7 +593,8 @@
    "city": "Calgary",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -550,7 +604,8 @@
    "city": "Calgary",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "AB",
@@ -560,7 +615,8 @@
    "city": "Lethbridge",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -570,7 +626,8 @@
    "city": "Burnaby",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -580,7 +637,8 @@
    "city": "North Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -590,7 +648,8 @@
    "city": "Richmond",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -600,7 +659,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -610,7 +670,8 @@
    "city": "Victoria",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -620,7 +681,8 @@
    "city": "North Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -630,7 +692,8 @@
    "city": "Sechelt",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -640,7 +703,8 @@
    "city": "Hazelton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -650,7 +714,8 @@
    "city": "Houston",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -660,7 +725,8 @@
    "city": "Kitimat",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -670,7 +736,8 @@
    "city": "Masset (Haida Gwaii)",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -680,7 +747,8 @@
    "city": "Prince Rupert",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -690,7 +758,8 @@
    "city": "Queen Charlotte",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -700,7 +769,8 @@
    "city": "Smithers",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -710,7 +780,8 @@
    "city": "Terrace",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -720,7 +791,8 @@
    "city": "Burns Lake",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -730,7 +802,8 @@
    "city": "Fort St. James",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -740,7 +813,8 @@
    "city": "Fraser Lake",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -750,7 +824,8 @@
    "city": "Mackenzie",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -760,7 +835,8 @@
    "city": "Prince George",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -770,7 +846,8 @@
    "city": "Quesnel",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -780,7 +857,8 @@
    "city": "Valemount",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -790,7 +868,8 @@
    "city": "Vanderhoof",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -800,7 +879,8 @@
    "city": "Cranbrook",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -810,7 +890,8 @@
    "city": "Creston",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -820,7 +901,8 @@
    "city": "Fernie",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -830,7 +912,8 @@
    "city": "Golden",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -840,7 +923,8 @@
    "city": "Invermere",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -850,7 +934,8 @@
    "city": "Kimberley",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -860,7 +945,8 @@
    "city": "Coquitlam",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -870,7 +956,8 @@
    "city": "New Westminster",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -880,7 +967,8 @@
    "city": "Surrey",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -890,7 +978,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -900,7 +989,8 @@
    "city": "Chilliwack",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -910,7 +1000,8 @@
    "city": "Kelowna",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -920,7 +1011,8 @@
    "city": "Maple Ridge",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -930,7 +1022,8 @@
    "city": "New Westminster",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -940,7 +1033,8 @@
    "city": "Victoria",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "BC",
@@ -950,7 +1044,8 @@
    "city": "Cloverdale",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -960,7 +1055,8 @@
    "city": "Langley",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -970,7 +1066,8 @@
    "city": "Richmond",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -980,7 +1077,8 @@
    "city": "Surrey",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -990,7 +1088,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1000,7 +1099,8 @@
    "city": "Campbell River",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1010,7 +1110,8 @@
    "city": "Courtenay/Comox Valley",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1020,7 +1121,8 @@
    "city": "Port Alberni",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1030,7 +1132,8 @@
    "city": "Port Hardy",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1040,7 +1143,8 @@
    "city": "Ucluelet",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1050,7 +1154,8 @@
    "city": "Chetwynd",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1060,7 +1165,8 @@
    "city": "Dawson Creek",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1070,7 +1176,8 @@
    "city": "Fort Nelson",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1080,7 +1187,8 @@
    "city": "Fort St John",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1090,7 +1198,8 @@
    "city": "Tumbler Ridge",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1100,7 +1209,8 @@
    "city": "Kelowna",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1110,7 +1220,8 @@
    "city": "Oliver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1120,7 +1231,8 @@
    "city": "Penticton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1130,7 +1242,8 @@
    "city": "Revelstoke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1140,7 +1253,8 @@
    "city": "Salmon Arm",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1150,7 +1264,8 @@
    "city": "Summerland",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1160,7 +1275,8 @@
    "city": "Vernon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1170,7 +1286,8 @@
    "city": "Victoria",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1180,7 +1297,8 @@
    "city": "Castlegar",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1190,7 +1308,8 @@
    "city": "Grand Forks",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1200,7 +1319,8 @@
    "city": "Kaslo Centre",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1210,7 +1330,8 @@
    "city": "Nakusp",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1220,7 +1341,8 @@
    "city": "Nelson",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1230,7 +1352,8 @@
    "city": "Trail",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1240,7 +1363,8 @@
    "city": "Burnaby",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1250,7 +1374,8 @@
    "city": "Surrey",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1260,7 +1385,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1270,7 +1396,8 @@
    "city": "Kamloops",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1280,7 +1407,8 @@
    "city": "Williams Lake",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1290,7 +1418,8 @@
    "city": "Kelowna",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1300,7 +1429,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1310,7 +1440,8 @@
    "city": "Fort St. John",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1320,7 +1451,8 @@
    "city": "Prince George",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1330,7 +1462,8 @@
    "city": "Quesnel",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1340,7 +1473,8 @@
    "city": "Terrace",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1350,7 +1484,8 @@
    "city": "Victoria",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1360,7 +1495,8 @@
    "city": "Abbotsford",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1370,7 +1506,8 @@
    "city": "Chilliwack",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1380,7 +1517,8 @@
    "city": "Hope",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1390,7 +1528,8 @@
    "city": "Mission",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1400,7 +1539,8 @@
    "city": "Vancouver",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "BC",
@@ -1410,7 +1550,8 @@
    "city": "Duncan",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1420,7 +1561,8 @@
    "city": "Nanaimo",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1430,7 +1572,8 @@
    "city": "Parksville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "BC",
@@ -1440,7 +1583,8 @@
    "city": "Powell River",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1450,7 +1594,8 @@
    "city": "Brandon",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "MB",
@@ -1460,7 +1605,8 @@
    "city": "Dauphin",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "MB",
@@ -1470,7 +1616,8 @@
    "city": "Winnipeg",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "MB",
@@ -1480,7 +1627,8 @@
    "city": "Brandon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1490,7 +1638,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "MB",
@@ -1500,7 +1649,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1510,7 +1660,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "MB",
@@ -1520,7 +1671,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "MB",
@@ -1530,7 +1682,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "MB",
@@ -1540,7 +1693,8 @@
    "city": "The Pas",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1550,7 +1704,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1560,7 +1715,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "MB",
@@ -1570,7 +1726,8 @@
    "city": "Winnipeg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1580,7 +1737,8 @@
    "city": "Bathurst",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1590,7 +1748,8 @@
    "city": "Campbellton",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1600,7 +1759,8 @@
    "city": "Dieppe",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1610,7 +1770,8 @@
    "city": "Edmundston",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1620,7 +1781,8 @@
    "city": "Shippagan",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1630,7 +1792,8 @@
    "city": "Moncton",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1640,7 +1803,8 @@
    "city": "Sussex",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1650,7 +1814,8 @@
    "city": "Sussex",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1660,7 +1825,8 @@
    "city": "Bathurst",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1670,7 +1836,8 @@
    "city": "Fredericton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1680,7 +1847,8 @@
    "city": "Sackville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1690,7 +1858,8 @@
    "city": "Victoria Corner",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "NB",
@@ -1700,7 +1869,8 @@
    "city": "Fredericton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1710,7 +1880,8 @@
    "city": "Fredericton",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1720,7 +1891,8 @@
    "city": "Miramichi",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1730,7 +1902,8 @@
    "city": "Moncton",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1740,7 +1913,8 @@
    "city": "Saint John",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1750,7 +1924,8 @@
    "city": "St. Andrews",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1760,7 +1935,8 @@
    "city": "Woodstock",
    "campuses": 6,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NB",
@@ -1770,7 +1946,8 @@
    "city": "Fredericton",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1780,7 +1957,8 @@
    "city": "Fredericton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1790,7 +1968,8 @@
    "city": "Saint John",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1800,7 +1979,8 @@
    "city": "Edmundston",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1810,7 +1990,8 @@
    "city": "Moncton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NB",
@@ -1820,7 +2001,8 @@
    "city": "Shippagan",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NL",
@@ -1830,7 +2012,8 @@
    "city": "St. John’s",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "NL",
@@ -1840,7 +2023,8 @@
    "city": "Baie Verte",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1850,7 +2034,8 @@
    "city": "Bonavista",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1860,7 +2045,8 @@
    "city": "Burin Bay Arm",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1870,7 +2056,8 @@
    "city": "Carbonear",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1880,7 +2067,8 @@
    "city": "Clarenville",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1890,7 +2078,8 @@
    "city": "Conception Bay South",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1900,7 +2089,8 @@
    "city": "Cornerbrook",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1910,7 +2100,8 @@
    "city": "Gander",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1920,7 +2111,8 @@
    "city": "Grand Falls-Windsor",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1930,7 +2122,8 @@
    "city": "Happy Valley-Goose Bay",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1940,7 +2133,8 @@
    "city": "Labrador City",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1950,7 +2144,8 @@
    "city": "Placentia",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1960,7 +2155,8 @@
    "city": "Port aux Basques",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1970,7 +2166,8 @@
    "city": "St. Anthony",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1980,7 +2177,8 @@
    "city": "St. John’s",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -1990,7 +2188,8 @@
    "city": "Stephenville",
    "campuses": 16,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -2000,7 +2199,8 @@
    "city": "Corner Brook",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NL",
@@ -2010,7 +2210,8 @@
    "city": "St. John’s",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NL",
@@ -2020,7 +2221,8 @@
    "city": "St. John’s",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NL",
@@ -2030,7 +2232,8 @@
    "city": "Corner Brook",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "NS",
@@ -2040,7 +2243,8 @@
    "city": "Wolfville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2050,7 +2254,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "NS",
@@ -2060,7 +2265,8 @@
    "city": "Sydney",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2070,7 +2276,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2080,7 +2287,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2090,7 +2298,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2100,7 +2309,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "NS",
@@ -2110,7 +2320,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2120,7 +2331,8 @@
    "city": "Antigonish",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2130,7 +2342,8 @@
    "city": "Halifax",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NS",
@@ -2140,7 +2353,8 @@
    "city": "Church Point",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "NT",
@@ -2150,7 +2364,8 @@
    "city": "Fort Smith",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NT",
@@ -2160,7 +2375,8 @@
    "city": "Inuvik",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "NT",
@@ -2170,7 +2386,8 @@
    "city": "Yellowknife",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2180,7 +2397,8 @@
    "city": "Brampton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2190,7 +2408,8 @@
    "city": "Sault Ste. Marie",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2200,7 +2419,8 @@
    "city": "Timmins",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2210,7 +2430,8 @@
    "city": "Ottawa",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2220,7 +2441,8 @@
    "city": "Pembroke",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2230,7 +2452,8 @@
    "city": "Perth",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2240,7 +2463,8 @@
    "city": "Hamilton",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2250,7 +2474,8 @@
    "city": "St. Catharines",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2260,7 +2485,8 @@
    "city": "Sudbury",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2270,7 +2496,8 @@
    "city": "North York",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2280,7 +2507,8 @@
    "city": "North Bay",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2290,7 +2518,8 @@
    "city": "Parry Sound",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2300,7 +2529,8 @@
    "city": "Ottawa",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2310,7 +2540,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2320,7 +2551,8 @@
    "city": "Alfred",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2330,7 +2562,8 @@
    "city": "Barrie",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2340,7 +2573,8 @@
    "city": "Hamilton",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2350,7 +2584,8 @@
    "city": "Hearst",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2360,7 +2595,8 @@
    "city": "Kapuskasing",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2370,7 +2606,8 @@
    "city": "London",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2380,7 +2617,8 @@
    "city": "New Liskeard",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2390,7 +2628,8 @@
    "city": "Niagara",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2400,7 +2639,8 @@
    "city": "Ottawa",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2410,7 +2650,8 @@
    "city": "Sturgeon Falls",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2420,7 +2661,8 @@
    "city": "Sudbury",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2430,7 +2672,8 @@
    "city": "Timmins",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2440,7 +2683,8 @@
    "city": "Toronto",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2450,7 +2694,8 @@
    "city": "Windsor",
    "campuses": 14,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2460,7 +2705,8 @@
    "city": "Brantford",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2470,7 +2716,8 @@
    "city": "Cambridge",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2480,7 +2727,8 @@
    "city": "Guelph",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2490,7 +2738,8 @@
    "city": "Ingersoll",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2500,7 +2749,8 @@
    "city": "Kitchener",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2510,7 +2760,8 @@
    "city": "Milton",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2520,7 +2771,8 @@
    "city": "Stratford",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2530,7 +2782,8 @@
    "city": "Waterloo",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2540,7 +2793,8 @@
    "city": "Dryden",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2550,7 +2804,8 @@
    "city": "Fort Frances",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2560,7 +2815,8 @@
    "city": "Geraldton",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2570,7 +2826,8 @@
    "city": "Kenora",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2580,7 +2837,8 @@
    "city": "Thunder Bay",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2590,7 +2848,8 @@
    "city": "Waterloo",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2600,7 +2859,8 @@
    "city": "Oshawa",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2610,7 +2870,8 @@
    "city": "Pickering",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2620,7 +2881,8 @@
    "city": "Whitby",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2630,7 +2892,8 @@
    "city": "Oshawa",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "ON",
@@ -2640,7 +2903,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2650,7 +2914,8 @@
    "city": "London",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2660,7 +2925,8 @@
    "city": "Cobourg",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2670,7 +2936,8 @@
    "city": "Haliburton",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2680,7 +2947,8 @@
    "city": "Lindsay",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2690,7 +2958,8 @@
    "city": "Peterborough",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2700,7 +2969,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2710,7 +2980,8 @@
    "city": "Barrie",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2720,7 +2991,8 @@
    "city": "Bracebridge",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2730,7 +3002,8 @@
    "city": "Midland",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2740,7 +3013,8 @@
    "city": "Orangeville",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2750,7 +3024,8 @@
    "city": "Orillia",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2760,7 +3035,8 @@
    "city": "Owen Sound",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2770,7 +3046,8 @@
    "city": "South Georgian Bay",
    "campuses": 7,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2780,7 +3057,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2790,7 +3068,8 @@
    "city": "Toronto",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2800,7 +3079,8 @@
    "city": "London",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2810,7 +3090,8 @@
    "city": "London",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2820,7 +3101,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2830,7 +3112,8 @@
    "city": "Alfred",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2840,7 +3123,8 @@
    "city": "Hawkesbury",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2850,7 +3134,8 @@
    "city": "Ottawa",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2860,7 +3145,8 @@
    "city": "Orillia",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2870,7 +3156,8 @@
    "city": "Thunder Bay",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2880,7 +3167,8 @@
    "city": "Ottawa",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2890,7 +3178,8 @@
    "city": "Sarnia",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2900,7 +3189,8 @@
    "city": "Sudbury",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2910,7 +3200,8 @@
    "city": "Timmins",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2920,7 +3211,8 @@
    "city": "Bancroft",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2930,7 +3222,8 @@
    "city": "Belleville",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2940,7 +3233,8 @@
    "city": "Port Hope",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2950,7 +3244,8 @@
    "city": "Hamilton",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -2960,7 +3255,8 @@
    "city": "Burlington",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2970,7 +3266,8 @@
    "city": "Hamilton",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2980,7 +3277,8 @@
    "city": "Kitchener",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -2990,7 +3288,8 @@
    "city": "St. Catharines",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3000,7 +3299,8 @@
    "city": "Brantford",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3010,7 +3310,8 @@
    "city": "Hamilton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3020,7 +3321,8 @@
    "city": "Stoney Creek",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3030,7 +3332,8 @@
    "city": "Kleinburg",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "ON",
@@ -3040,7 +3343,8 @@
    "city": "Niagara-On-The-Lake",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3050,7 +3354,8 @@
    "city": "St. Catharines",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3060,7 +3365,8 @@
    "city": "Virgil",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3070,7 +3376,8 @@
    "city": "Welland",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3080,7 +3387,8 @@
    "city": "Vaughan",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3090,7 +3398,8 @@
    "city": "Bracebridge",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3100,7 +3409,8 @@
    "city": "Brantford",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3110,7 +3420,8 @@
    "city": "North Bay",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3120,7 +3431,8 @@
    "city": "Kirkland Lake",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3130,7 +3442,8 @@
    "city": "South Porcupine",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3140,7 +3453,8 @@
    "city": "Temiskaming Shores",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3150,7 +3464,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3160,7 +3475,8 @@
    "city": "Oshawa",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3170,7 +3486,8 @@
    "city": "Kingston",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3180,7 +3497,8 @@
    "city": "Toronto",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3190,7 +3508,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3200,7 +3519,8 @@
    "city": "Waterloo",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3210,7 +3530,8 @@
    "city": "Kingston",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3220,7 +3541,8 @@
    "city": "Sault Ste. Marie",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3230,7 +3552,8 @@
    "city": "Sudbury",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3240,7 +3563,8 @@
    "city": "Toronto",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3250,7 +3574,8 @@
    "city": "King City",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3260,7 +3585,8 @@
    "city": "Markham",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3270,7 +3596,8 @@
    "city": "Peterborough",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3280,7 +3607,8 @@
    "city": "Toronto",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3290,7 +3618,8 @@
    "city": "Brampton",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3300,7 +3629,8 @@
    "city": "Mississauga",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3310,7 +3640,8 @@
    "city": "Oakville",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3320,7 +3651,8 @@
    "city": "Weyburn Estevan",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3330,7 +3662,8 @@
    "city": "Scarborough",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "ON",
@@ -3340,7 +3673,8 @@
    "city": "Toronto",
    "campuses": 2,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "ON",
@@ -3350,7 +3684,8 @@
    "city": "Chatham",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3360,7 +3695,8 @@
    "city": "Windsor",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3370,7 +3706,8 @@
    "city": "Brockville",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3380,7 +3717,8 @@
    "city": "Cornwall",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3390,7 +3728,8 @@
    "city": "Kingston",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3400,7 +3739,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "ON",
@@ -3410,7 +3750,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3420,7 +3761,8 @@
    "city": "Oshawa",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3430,7 +3772,8 @@
    "city": "Peterborough",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3440,7 +3783,8 @@
    "city": "Alfred",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3450,7 +3794,8 @@
    "city": "Guelph",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3460,7 +3805,8 @@
    "city": "Kemptville",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3470,7 +3816,8 @@
    "city": "Ridgetown",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3480,7 +3827,8 @@
    "city": "Toronto",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3490,7 +3838,8 @@
    "city": "Niagara Falls",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3500,7 +3849,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3510,7 +3860,8 @@
    "city": "Mississauga",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3520,7 +3871,8 @@
    "city": "Toronto",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3530,7 +3882,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3540,7 +3893,8 @@
    "city": "Breslau",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3550,7 +3904,8 @@
    "city": "Cambridge",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3560,7 +3915,8 @@
    "city": "Stratford",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3570,7 +3926,8 @@
    "city": "Toronto",
    "campuses": 8,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3580,7 +3937,8 @@
    "city": "Windsor",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3590,7 +3948,8 @@
    "city": "Ottawa",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3600,7 +3959,8 @@
    "city": "Hearst",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3610,7 +3970,8 @@
    "city": "Kapuskasing",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3620,7 +3981,8 @@
    "city": "Timmins",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3630,7 +3992,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3640,7 +4003,8 @@
    "city": "Ottawa",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3650,7 +4014,8 @@
    "city": "Pembroke",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3660,7 +4025,8 @@
    "city": "Toronto",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3670,7 +4036,8 @@
    "city": "Windsor",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3680,7 +4047,8 @@
    "city": "Waterloo",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3690,7 +4058,8 @@
    "city": "London",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3700,7 +4069,8 @@
    "city": "Brantford",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3710,7 +4080,8 @@
    "city": "Kitchener",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3720,7 +4091,8 @@
    "city": "Toronto",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "ON",
@@ -3730,7 +4102,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "ON",
@@ -3740,7 +4113,8 @@
    "city": "Toronto",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "PE",
@@ -3750,7 +4124,8 @@
    "city": "Charlottetown",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3760,7 +4135,8 @@
    "city": "DeBlois",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3770,7 +4146,8 @@
    "city": "Wellington",
    "campuses": 3,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3780,7 +4157,8 @@
    "city": "Alberton",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3790,7 +4168,8 @@
    "city": "Charlottetown",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3800,7 +4179,8 @@
    "city": "Georgetown",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3810,7 +4190,8 @@
    "city": "Montague",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3820,7 +4201,8 @@
    "city": "O’Leary",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3830,7 +4212,8 @@
    "city": "Slemon Park",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3840,7 +4223,8 @@
    "city": "Souris",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3850,7 +4234,8 @@
    "city": "Summerside",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3860,7 +4245,8 @@
    "city": "Tignish",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "PE",
@@ -3870,7 +4256,8 @@
    "city": "Charlottetown",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -3880,7 +4267,8 @@
    "city": "Brossard",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3890,7 +4278,8 @@
    "city": "Saint-Hubert",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3900,7 +4289,8 @@
    "city": "Sherbrooke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -3910,7 +4300,8 @@
    "city": "Longueuil (Saint-Hubert)",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3920,7 +4311,8 @@
    "city": "Sainte Julie",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3930,7 +4322,8 @@
    "city": "Ville-Marie",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3940,7 +4333,8 @@
    "city": "Windsor",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3950,7 +4344,8 @@
    "city": "La Prairie",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3960,7 +4355,8 @@
    "city": "Saint-Anselme",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3970,7 +4366,8 @@
    "city": "Mirabel",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3980,7 +4377,8 @@
    "city": "Sainte-Thérèse",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -3990,7 +4388,8 @@
    "city": "Lévis",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4000,7 +4399,8 @@
    "city": "Laval",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4010,7 +4410,8 @@
    "city": "Plessisville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4020,7 +4421,8 @@
    "city": "Gatineau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4030,7 +4432,8 @@
    "city": "Kuujjuaq",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4040,7 +4443,8 @@
    "city": "Amqui",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4050,7 +4454,8 @@
    "city": "Causapscal",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4060,7 +4465,8 @@
    "city": "Dégelis",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4070,7 +4476,8 @@
    "city": "Matane",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4080,7 +4487,8 @@
    "city": "Vaudreuil-Dorion",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4090,7 +4498,8 @@
    "city": "Pointe-Claire",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4100,7 +4509,8 @@
    "city": "Grosse-Île",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4110,7 +4520,8 @@
    "city": "Mont-Joli",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4120,7 +4531,8 @@
    "city": "Nicolet",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4130,7 +4542,8 @@
    "city": "Sept-Îles",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4140,7 +4553,8 @@
    "city": "Sainte-Agathe-des-Monts",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4150,7 +4564,8 @@
    "city": "Montréal",
    "campuses": 9,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4160,7 +4575,8 @@
    "city": "Alma",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4170,7 +4586,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4180,7 +4597,8 @@
    "city": "Témiscamingue",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4190,7 +4608,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4200,7 +4619,8 @@
    "city": "Saint-Damien-de-Buckland",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4210,7 +4630,8 @@
    "city": "Sherbrooke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4220,7 +4641,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4230,7 +4652,8 @@
    "city": "Gatineau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4240,7 +4663,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4250,7 +4674,8 @@
    "city": "Shawinigan",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4260,7 +4685,8 @@
    "city": "Alma",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4270,7 +4696,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4280,7 +4707,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4290,7 +4718,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4300,7 +4729,8 @@
    "city": "Gatineau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4310,7 +4740,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4320,7 +4751,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4330,7 +4762,8 @@
    "city": "Rimouski",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4340,7 +4773,8 @@
    "city": "Saguenay",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4350,7 +4784,8 @@
    "city": "Trois-Rivières",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4360,7 +4795,8 @@
    "city": "Val-d'Or",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4370,7 +4806,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4380,7 +4817,8 @@
    "city": "Saint-Georges",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4390,7 +4828,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4400,7 +4839,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4410,7 +4850,8 @@
    "city": "Sainte-Anne-de-Bellevue",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4420,7 +4861,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4430,7 +4872,8 @@
    "city": "Sainte-Thérèse",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4440,7 +4883,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4450,7 +4894,8 @@
    "city": "Laval",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4460,7 +4905,8 @@
    "city": "Saint-Jean-sur-Richelieu",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4470,7 +4916,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4480,7 +4927,8 @@
    "city": "Baie-Comeau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4490,7 +4938,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4500,7 +4949,8 @@
    "city": "Saguenay",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4510,7 +4960,8 @@
    "city": "Drummondville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4520,7 +4971,8 @@
    "city": "Granby",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4530,7 +4982,8 @@
    "city": "Saguenay",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4540,7 +4993,8 @@
    "city": "La Pocatière",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4550,7 +5004,8 @@
    "city": "Lévis",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4560,7 +5015,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4570,7 +5026,8 @@
    "city": "Matane",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4580,7 +5037,8 @@
    "city": "Rimouski",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4590,7 +5048,8 @@
    "city": "Rivière-du-Loup",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4600,7 +5059,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4610,7 +5070,8 @@
    "city": "Saint-Jérôme",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4620,7 +5081,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4630,7 +5092,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4640,7 +5103,8 @@
    "city": "Sept-Îles",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4650,7 +5114,8 @@
    "city": "Sherbrooke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4660,7 +5125,8 @@
    "city": "Sorel-Tracy",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4670,7 +5136,8 @@
    "city": "Saint-Félicien",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4680,7 +5147,8 @@
    "city": "Saint-Hyacinthe",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4690,7 +5158,8 @@
    "city": "Thetford Mines",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4700,7 +5169,8 @@
    "city": "Trois-Rivières",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4710,7 +5180,8 @@
    "city": "Salaberry-de-Valleyfield",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4720,7 +5191,8 @@
    "city": "Victoriaville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4730,7 +5202,8 @@
    "city": "Gaspé",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4740,7 +5213,8 @@
    "city": "Montréal",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4750,7 +5224,8 @@
    "city": "Rouyn-Noranda",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4760,7 +5235,8 @@
    "city": "Gatineau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4770,7 +5246,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4780,7 +5257,8 @@
    "city": "Repentigny",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4790,7 +5268,8 @@
    "city": "Longueuil",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4800,7 +5279,8 @@
    "city": "Sherbrooke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4810,7 +5290,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4820,7 +5301,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4830,7 +5312,8 @@
    "city": "La Pocatière",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4840,7 +5323,8 @@
    "city": "Saint-Hyacinthe",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4850,7 +5334,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4860,7 +5345,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4870,7 +5356,8 @@
    "city": "Schefferville",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4880,7 +5367,8 @@
    "city": "Saint-Romain",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4890,7 +5378,8 @@
    "city": "Montréal",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4900,7 +5389,8 @@
    "city": "Sainte-Anne-de-Bellevue",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4910,7 +5400,8 @@
    "city": "Saint-Jean-sur-Richelieu",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -4920,7 +5411,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -4930,7 +5422,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4940,7 +5433,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4950,7 +5444,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4960,7 +5455,8 @@
    "city": "Sherbrooke",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4970,7 +5466,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4980,7 +5477,8 @@
    "city": "Rouyn-Noranda",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -4990,7 +5488,8 @@
    "city": "Gatineau",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -5000,7 +5499,8 @@
    "city": "Saguenay",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -5010,7 +5510,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -5020,7 +5521,8 @@
    "city": "Rimouski",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -5030,7 +5532,8 @@
    "city": "Trois-Rivières",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "QC",
@@ -5040,7 +5543,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "QC",
@@ -5050,7 +5554,8 @@
    "city": "Sept-Îles",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5060,7 +5565,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5070,7 +5576,8 @@
    "city": "Sainte-Catherine-de-la-Jacques-Cartier",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5080,7 +5587,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5090,7 +5598,8 @@
    "city": "Montréal",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5100,7 +5609,8 @@
    "city": "Grande-Rivière",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5110,7 +5620,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5120,7 +5631,8 @@
    "city": "Laval",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "other"
   },
   {
    "province": "QC",
@@ -5130,7 +5642,8 @@
    "city": "Québec",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5140,7 +5653,8 @@
    "city": "Caronport",
    "campuses": 1,
    "isPublic": false,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5150,7 +5664,8 @@
    "city": "Humboldt",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5160,7 +5675,8 @@
    "city": "Saskatoon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5170,7 +5686,8 @@
    "city": "Gravelbourg",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5180,7 +5697,8 @@
    "city": "Swift Current",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5190,7 +5708,8 @@
    "city": "Saskatoon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5200,7 +5719,8 @@
    "city": "Saskatoon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5210,7 +5730,8 @@
    "city": "Meadow Lake",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5220,7 +5741,8 @@
    "city": "North Battleford",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5230,7 +5752,8 @@
    "city": "Moose Jaw",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5240,7 +5763,8 @@
    "city": "Prince Albert",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5250,7 +5774,8 @@
    "city": "Regina",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5260,7 +5785,8 @@
    "city": "Saskatoon",
    "campuses": 4,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "other"
   },
   {
    "province": "SK",
@@ -5270,7 +5796,8 @@
    "city": "Assiniboia",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5280,7 +5807,8 @@
    "city": "Estevan",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5290,7 +5818,8 @@
    "city": "Indian Head",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5300,7 +5829,8 @@
    "city": "Moosomin",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5310,7 +5840,8 @@
    "city": "Weyburn",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5320,7 +5851,8 @@
    "city": "Whitewood",
    "campuses": 2,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5330,7 +5862,8 @@
    "city": "Saskatoon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5340,7 +5873,8 @@
    "city": "Muenster",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5350,7 +5884,8 @@
    "city": "Mel fort",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5360,7 +5895,8 @@
    "city": "Nipa win",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5370,7 +5906,8 @@
    "city": "Tisdale",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5380,7 +5917,8 @@
    "city": "Yorkton",
    "campuses": 5,
    "isPublic": true,
-   "gradProgram": false
+   "gradProgram": false,
+   "kind": "college"
   },
   {
    "province": "SK",
@@ -5390,7 +5928,8 @@
    "city": "Regina",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "SK",
@@ -5400,7 +5939,8 @@
    "city": "Saskatoon",
    "campuses": 1,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5410,7 +5950,8 @@
    "city": "Carcross",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5420,7 +5961,8 @@
    "city": "Carmacks",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5430,7 +5972,8 @@
    "city": "Dawson City",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5440,7 +5983,8 @@
    "city": "Faro",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5450,7 +5994,8 @@
    "city": "Haines Junction",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5460,7 +6005,8 @@
    "city": "Mayo",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5470,7 +6016,8 @@
    "city": "Old Crow",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5480,7 +6027,8 @@
    "city": "Pelly Crossing",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5490,7 +6038,8 @@
    "city": "Ross River",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5500,7 +6049,8 @@
    "city": "Teslin",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5510,7 +6060,8 @@
    "city": "Watson Lake",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   },
   {
    "province": "YT",
@@ -5520,7 +6071,8 @@
    "city": "Whitehorse",
    "campuses": 12,
    "isPublic": true,
-   "gradProgram": true
+   "gradProgram": true,
+   "kind": "university"
   }
  ]
 }

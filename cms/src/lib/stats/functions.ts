@@ -436,6 +436,7 @@ export function toCityRow(r: Row): CityRow {
     salaryN: numOrNull(r.salary_n), namedJobs: numOrNull(r.named_jobs),
     pilot: textOrNull(r.pilot),
     aipJobs: numOrNull(r.aip_jobs),
+    aipWageLowHourly: numOrNull(r.aip_wage_low_hourly), aipWageMedHourly: numOrNull(r.aip_wage_med_hourly),
     population: numOrNull(r.population), unempRate: numOrNull(r.unemp_rate),
   }
 }
@@ -460,7 +461,7 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
       continue
     }
     if (typeof cell === 'number') {
-      out.push({ city, province, broad, n: cell, wage: null, hourly: null })
+      out.push({ city, province, broad, n: cell, wage: null, hourly: null, low: null })
       continue
     }
     if (cell == null || typeof cell !== 'object') {
@@ -477,7 +478,11 @@ export function toCityIndustryRows(r: CityBroadDbRow): CityIndustryRows {
     if (typeof cell.hourly === 'number') {
       hourly = cell.hourly
     }
-    out.push({ city, province, broad, n: cell.n, wage, hourly })
+    let low: number | null = null
+    if (typeof cell.low === 'number') {
+      low = cell.low
+    }
+    out.push({ city, province, broad, n: cell.n, wage, hourly, low })
   }
   return out
 }
@@ -621,7 +626,10 @@ function toPilotTypeText(r: Row): string {
  * @returns 洗净的一行。
  */
 export function toPilotCommRow(r: Row): PilotCommRow {
-  return { name: text(r.name), province: text(r.province), type: text(r.type), openJobs: count(r.open_jobs) }
+  return {
+    name: text(r.name), province: text(r.province), type: text(r.type), openJobs: count(r.open_jobs),
+    wageLowHourly: numOrNull(r.wage_low_hourly), wageMedHourly: numOrNull(r.wage_med_hourly),
+  }
 }
 
 /**
@@ -645,6 +653,7 @@ export function toDliSchoolRow(r: Row): DliSchoolRow {
     cities: cities,
     isPublic: r.is_public === true, gradProgram: r.grad_program === true,
     qsRank: numOrNull(r.qs_rank), qsRankDisplay: text(r.qs_rank_display),
+    kind: text(r.kind),
   }
 }
 

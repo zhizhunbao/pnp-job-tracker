@@ -37,10 +37,11 @@ import {
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
-  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD, URL_HOME_PROV_HEAD,
-  PROV_UTM_TAIL, URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
+  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD,
+  URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
   CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
-  CITY_HOURLY_DIGITS, CITY_UTM_TAIL, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H, COL_COMM,
+  CITY_HOURLY_DIGITS, CITY_UTM_TAIL, CITY_PILOT_PARAM_HEAD, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H,
+  COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KINDS, KEY_DLI_KIND_HEAD,
   COL_DLI_GRAD, COL_DLI_PROV, COL_QS, COL_SCHOOL, COL_TYPE,
   COL_CITY_WAGE, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
@@ -64,7 +65,7 @@ import {
   FED_EE_ROW_KEYS, FED_EE_CODE, PR_FOLD,
   MR_REMAINING, MACRO_SUB_ROWS, OPS_ISSUED_CAL_METRICS,
   OPS_ISSUED_METRICS, OPS_REMAINING, PCT_DIGITS, CURRENCY_MARK, COL_JOBS_OPEN,
-  COL_JOBS_NEW7, COL_JOBS_WAGE_LOW, COL_JOBS_WAGE_MED, COL_JOBS_WAGE_HIGH, HOURLY_DIGITS,
+  COL_JOBS_NEW7, COL_JOBS_WAGE_LOW, COL_JOBS_WAGE_MED, COL_JOBS_WAGE_YR, HOURLY_DIGITS,
   W_MACRO_KEY, COL_MACRO_KEY, OPS_YEAR_RE,
   MACRO_CA_ONLY_ROWS, MACRO_NA_ROWS, MACRO_UNPUBLISHED, MK_COMP, RATIO_DIGITS, RATIO_TAIL,
   COL_YOY, ID_IND_HEAD, IND_ORDER, KEY_IND_SHORT_HEAD, MACRO_BAD_UP_KEYS, MACRO_PCT_KEYS, MR_USE_RATE, YOY_FLAT_PCT,
@@ -93,7 +94,6 @@ import { StreamCell } from './streamcell'
 import { CityActCell } from './cityactcell'
 import { CityNameCell } from './citynamecell'
 import { DliSchoolCell } from './dlischoolcell'
-import { JobsActCell } from './jobsactcell'
 import type { ChartOption } from '@/components/stats'
 import type { CityRow, DailyRow } from '@/lib/stats'
 import { CACHE } from './variables'
@@ -137,7 +137,7 @@ import type {
   YoyYearIn, MacroRow, MacroGeo, MacroCell,
   CellsOfKeyIn, MacroCellIn, MonTextIn, PointYear, YearOfPointIn, OpsCellIn, MaybeOpsCell, OpsCellsIn,
   RemainingIn,
-  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn,
+  MacroColsIn, SeriesWords, GeoNameIn, JobsRow, JobsRowsIn, JobsRowIn, DliChip, DliChipsIn, DliKindPickIn,
   JobsColsIn, MacroKeyClsIn, MacroSeriesIn, MacroSeriesSpec, MacroData, MacroLoadIn, MacroStatsProbe,
 } from './types'
 import css from './start.module.css'
@@ -2331,6 +2331,7 @@ export function cityWageTextOf(r: CityMainRow): string {
  * 同日追加中位年薪列(Frank「带行业的 中位时薪 和 年薪 才有意义是吧」):快照已按组聚合,
  * 行的 broad = 组键、n / wage 直取;旧形快照(换版到下轮重算之间,格 = 17 大类 × 纯岗数)
  * 走过渡兜底 —— 大类映射进组、岗数求和、中位薪不可由大类中位数拼出留 null,下轮重算自然消失。
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:最低时薪列 + 看岗位钮;名字改落详情页、落板归钮(照表 1)。
  *
  * @param x 计数行、城市榜、取词函数与语言。
  * @returns 表清单(空组不出)。
@@ -2350,7 +2351,7 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
     const sums = new Map<string, IndCityCell>()
     for (const r of x.rows) {
       if (r.broad === key) {
-        sums.set(r.city + KEY_SEP + r.province, { n: r.n, wage: r.wage, hourly: r.hourly })
+        sums.set(r.city + KEY_SEP + r.province, { n: r.n, wage: r.wage, hourly: r.hourly, low: r.low })
         continue
       }
       if (broads.includes(r.broad) === false) {
@@ -2359,7 +2360,7 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
       const ck = r.city + KEY_SEP + r.province
       const cur = sums.get(ck)
       if (cur == null) {
-        sums.set(ck, { n: r.n, wage: null, hourly: null })
+        sums.set(ck, { n: r.n, wage: null, hourly: null, low: null })
       } else {
         cur.n = cur.n + r.n
       }
@@ -2374,9 +2375,14 @@ export function cityIndTablesOf(x: CityIndTablesIn): CityIndTable[] {
         key: ck,
         name: cityNameOf({ r: c, lang: x.lang }),
         note: cityNoteOf({ r: c, lang: x.lang }),
-        href: cityHrefOf(c.city),
+        href: cityPageHrefOf({ city: c.city, province: c.province }),
+        jobsHref: cityHrefOf(c.city),
         onOpen,
+        actText: x.t('pulse.act.jobs'),
+        actBtnCls: actBtnClsOf(),
         n: cell.n,
+        low: cell.low,
+        lowText: hourlyOrDashOf(cell.low),
         wage: cell.wage,
         wageText: wageOrDashOf(cell.wage),
         hourly: cell.hourly,
@@ -2404,7 +2410,9 @@ function byIndOpenDesc(a: CityIndRow, b: CityIndRow): number {
 }
 
 /**
- * 行业小表的列(城市 + 在招;每业一张,列头词条与表 1 同源)。
+ * 行业小表的列(城市 / 在招 / 最低时薪 / 中位时薪 / 中位年薪 / 操作;每业一张,列头词条与表 1 同源;
+ * 最低时薪与中位年薪手机档藏 —— 375px 六列城名逐字折行实撞,手机留 城市 / 在招 / 中位时薪 / 操作;
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -2414,14 +2422,53 @@ export function cityIndColsOf(x: CityIndColsIn): StartCol<CityIndRow>[] {
     { key: COL_CITY, label: x.t('pulse.city.name'), sort: indNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: indOpenSortOf, render: indOpenTextOf },
     {
+      key: COL_CITY_WAGE_L,
+      label: x.t('stats.wageLowH'),
+      nowrap: true,
+      sort: indLowSortOf,
+      render: indLowTextOf,
+      className: cssOf(css.cityWide),
+    },
+    {
       key: COL_CITY_WAGE_H,
       label: x.t('pulse.city.wageH'),
       nowrap: true,
       sort: indHourlySortOf,
       render: indHourlyTextOf,
     },
-    { key: COL_CITY_WAGE, label: x.t('pulse.city.wage'), nowrap: true, sort: indWageSortOf, render: indWageTextOf },
+    {
+      key: COL_CITY_WAGE,
+      label: x.t('pulse.city.wage'),
+      nowrap: true,
+      sort: indWageSortOf,
+      render: indWageTextOf,
+      className: cssOf(css.cityWide),
+    },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
+}
+
+/**
+ * 行业小表最低时薪排序键(没有的行按 0 排,只影响排序位;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+ *
+ * @param r 一行。
+ * @returns 最低时薪。
+ */
+function indLowSortOf(r: CityIndRow): number {
+  if (r.low == null) {
+    return 0
+  }
+  return r.low
+}
+
+/**
+ * 行业小表最低时薪列文案。
+ *
+ * @param r 一行。
+ * @returns 美元文案;没有显杠。
+ */
+function indLowTextOf(r: CityIndRow): string {
+  return r.lowText
 }
 
 /**
@@ -2534,6 +2581,8 @@ function pilotShortNameOf(name: string): string {
  * (同日 Frank「试点社区 城市 都用英文名吧」—— 试点多是 147 城译名表外的小地方,混排退役);
  * 与城市榜同名时给落板链接,对不上名的(社区 ≠ 单一城市,如 Pictou County)不给链接 ——
  * 落到空职位板比不链更糟。双制社区(如 Sudbury)两表各出一行。
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:名字改落详情页、看岗位钮落「城 + 该制」职位板,最低 / 中位时薪
+ * 两列 = 社区覆盖城在招岗的 ESDC 官方带(快照 pilot_wage_* 两列,seed 收尾按社区聚合)。
  *
  * @param x 试点行与城市榜。
  * @returns 表清单(空制不出)。
@@ -2554,17 +2603,26 @@ export function cityPilotTablesOf(x: CityPilotRowsIn): CityPilotTable[] {
       const short = pilotShortNameOf(p.name)
       const hit = byCity.get(short + KEY_SEP + p.province)
       let href = TEXT_NONE
+      let jobsHref = TEXT_NONE
       if (hit != null) {
-        href = cityHrefOf(hit.city)
+        href = cityPageHrefOf({ city: hit.city, province: hit.province })
+        jobsHref = cityHrefOf(hit.city) + CITY_PILOT_PARAM_HEAD + p.type
       }
       rows.push({
         key: p.name + KEY_SEP + p.type,
         name: short,
         note: p.province,
         href,
+        jobsHref,
         onOpen,
+        actText: x.t('pulse.act.jobs'),
+        actBtnCls: actBtnClsOf(),
         open: p.openJobs,
         openText: numOf(p.openJobs),
+        low: p.wageLowHourly,
+        lowText: hourlyOrDashOf(p.wageLowHourly),
+        hourly: p.wageMedHourly,
+        hourlyText: hourlyOrDashOf(p.wageMedHourly),
       })
     }
     if (rows.length > 0) {
@@ -2575,7 +2633,9 @@ export function cityPilotTablesOf(x: CityPilotRowsIn): CityPilotTable[] {
 }
 
 /**
- * 表 3 的列(社区 / 省 / 通道 / 在招;省列手机档藏 —— 省码已在灰注里)。
+ * 表 3 的列(社区 / 省 / 通道 / 在招;省列手机档藏 —— 省码已在灰注里;
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:最低 / 中位时薪 + 操作三列,AIP 表同形;
+ * 最低时薪手机档藏,375px 五列城名折行实撞)。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -2584,6 +2644,22 @@ export function cityPilotColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
   return [
     { key: COL_COMM, label: x.t('pulse.city.comm'), sort: pilotNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
+    {
+      key: COL_CITY_WAGE_L,
+      label: x.t('stats.wageLowH'),
+      nowrap: true,
+      sort: pilotLowSortOf,
+      render: pilotLowTextOf,
+      className: cssOf(css.cityWide),
+    },
+    {
+      key: COL_CITY_WAGE_H,
+      label: x.t('pulse.city.wageH'),
+      nowrap: true,
+      sort: pilotHourlySortOf,
+      render: pilotHourlyTextOf,
+    },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
 }
 
@@ -2598,7 +2674,69 @@ export function cityAipColsOf(x: CityColsIn): StartCol<CityPilotRow>[] {
   return [
     { key: COL_CITY, label: x.t('pulse.city.name'), sort: pilotNameSortOf, render: CityNameCell },
     { key: COL_JOBS_OPEN, label: x.t('pulse.city.open'), nowrap: true, sort: pilotOpenSortOf, render: pilotOpenTextOf },
+    {
+      key: COL_CITY_WAGE_L,
+      label: x.t('stats.wageLowH'),
+      nowrap: true,
+      sort: pilotLowSortOf,
+      render: pilotLowTextOf,
+      className: cssOf(css.cityWide),
+    },
+    {
+      key: COL_CITY_WAGE_H,
+      label: x.t('pulse.city.wageH'),
+      nowrap: true,
+      sort: pilotHourlySortOf,
+      render: pilotHourlyTextOf,
+    },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: CityActCell },
   ]
+}
+
+/**
+ * 试点 / AIP 表最低时薪排序键(没有的行按 0 排,只影响排序位;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+ *
+ * @param r 一行。
+ * @returns 最低时薪。
+ */
+function pilotLowSortOf(r: CityPilotRow): number {
+  if (r.low == null) {
+    return 0
+  }
+  return r.low
+}
+
+/**
+ * 试点 / AIP 表最低时薪列文案。
+ *
+ * @param r 一行。
+ * @returns 美元文案;没有显杠。
+ */
+function pilotLowTextOf(r: CityPilotRow): string {
+  return r.lowText
+}
+
+/**
+ * 试点 / AIP 表中位时薪排序键(没有的行按 0 排,只影响排序位)。
+ *
+ * @param r 一行。
+ * @returns 中位时薪。
+ */
+function pilotHourlySortOf(r: CityPilotRow): number {
+  if (r.hourly == null) {
+    return 0
+  }
+  return r.hourly
+}
+
+/**
+ * 试点 / AIP 表中位时薪列文案。
+ *
+ * @param r 一行。
+ * @returns 美元文案;没有显杠。
+ */
+function pilotHourlyTextOf(r: CityPilotRow): string {
+  return r.hourlyText
 }
 
 /**
@@ -2615,6 +2753,8 @@ export function pilotNameSortOf(r: CityPilotRow): string {
  * 城市榜 → AIP 城市表(2026-09-12 Frank「AIP 也需要一个城市的表」:AIP 是常设雇主指定制、
  * 没有社区清单,行 = 快照 aipJobs > 0 的城按 AIP 岗数降序;城市名照双行约定,
  * 挂在试点表清单头上与 RCIP / FCIP 并排,表题 = 制度名)。
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:名字改落详情页、看岗位钮落「城 + AIP」职位板,最低 / 中位时薪
+ * 两列 = 城内 AIP 资格岗的 ESDC 官方带(快照 aip_wage_* 两列)。
  *
  * @param x 城市榜与界面语言。
  * @returns 一张表;没有任何城有 AIP 岗时 null。
@@ -2630,10 +2770,17 @@ export function cityAipTableOf(x: CityAipTableIn): CityPilotTable | null {
       key: c.city + KEY_SEP + c.province + KEY_SEP + PILOT_AIP,
       name: cityNameOf({ r: c, lang: x.lang }),
       note: cityNoteOf({ r: c, lang: x.lang }),
-      href: cityHrefOf(c.city),
+      href: cityPageHrefOf({ city: c.city, province: c.province }),
+      jobsHref: cityHrefOf(c.city) + URL_AIP_TAIL,
       onOpen,
+      actText: x.t('pulse.act.jobs'),
+      actBtnCls: actBtnClsOf(),
       open: c.aipJobs,
       openText: numOf(c.aipJobs),
+      low: c.aipWageLowHourly,
+      lowText: hourlyOrDashOf(c.aipWageLowHourly),
+      hourly: c.aipWageMedHourly,
+      hourlyText: hourlyOrDashOf(c.aipWageMedHourly),
     })
   }
   if (rows.length === 0) {
@@ -2687,6 +2834,9 @@ export function pilotOpenTextOf(r: CityPilotRow): string {
 export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
   const out: CityDliRow[] = []
   for (const r of x.rows) {
+    if (x.kind !== DLI_KIND_ALL && r.kind !== x.kind) {
+      continue
+    }
     let name = r.name
     let note = TEXT_NONE
     if (x.lang === LANG_ZH && r.nameZh !== TEXT_NONE) {
@@ -2856,6 +3006,37 @@ export function indRowKeyOf(r: CityIndRow): string {
  */
 export function pilotRowKeyOf(r: CityPilotRow): string {
   return r.key
+}
+
+/**
+ * 留学院校表种类筛选的三枚胶囊(全部 / 大学 / 学院;当前档亮;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。
+ *
+ * @param x 取词函数、当前档与切档函数。
+ * @returns 胶囊清单。
+ */
+export function dliKindChipsOf(x: DliChipsIn): DliChip[] {
+  const out: DliChip[] = []
+  for (const key of DLI_KINDS) {
+    out.push({
+      key,
+      label: x.t(KEY_DLI_KIND_HEAD + key),
+      active: key === x.kind,
+      onClick: makeDliKindPick({ set: x.set, kind: key }),
+    })
+  }
+  return out
+}
+
+/**
+ * 切档回调的工厂(工厂体内的内嵌函数是宪法豁免形)。
+ *
+ * @param x 切档函数与这一档。
+ * @returns 点击回调。
+ */
+function makeDliKindPick(x: DliKindPickIn): ClickFn {
+  return function pickDliKind() {
+    x.set(x.kind)
+  }
 }
 
 /**
@@ -5683,9 +5864,10 @@ export function toJobsRows(x: JobsRowsIn): JobsRow[] {
 }
 
 /**
- * 洗招聘对比一行:省名三格、五个数值(AIP 岗与看岗位 2026-09-10 Frank「这两列 删掉」撤;
+ * 洗招聘对比一行:省名三格、四个数值(AIP 岗与看岗位 2026-09-10 Frank「这两列 删掉」撤;
  * 2026-09-11 Frank「中位时薪,最低时薪 最高时薪」+「有些工作比最低时薪还低」:中位年薪一列
- * 换 ESDC 官方工资带时薪三列 —— 拿 offer 对照官方低位,低于它的岗一眼现形)。
+ * 换 ESDC 官方工资带时薪三列 —— 拿 offer 对照官方低位,低于它的岗一眼现形;
+ * 2026-09-12 Frank「这两列 删了」再撤最高时薪与看岗位:省级最高=典型岗官方带上端的中位,读成极值误导;近 30 天只按省查岗位仅占 5%,最低、中位两列留)。
  *
  * @param x 这一行与上下文。
  * @returns 展示行。
@@ -5697,9 +5879,6 @@ function toJobsRow(x: JobsRowIn): JobsRow {
     code: x.r.province,
     localeName: TEXT_NONE,
     nameSort: provFullOf(x.r.province),
-    actHref: URL_HOME_PROV_HEAD + x.r.province + PROV_UTM_TAIL,
-    actText: x.t('pulse.act.jobs'),
-    actBtnCls: actBtnClsOf(),
     openText: numTextOf(x.r.openJobs),
     openSort: x.r.openJobs,
     new7Text: numTextOf(x.r.new7d),
@@ -5708,8 +5887,8 @@ function toJobsRow(x: JobsRowIn): JobsRow {
     wageLowSort: x.r.wageLowHourly,
     wageMedText: hourlyTextOf(x.r.wageMedHourly),
     wageMedSort: x.r.wageMedHourly,
-    wageHighText: hourlyTextOf(x.r.wageHighHourly),
-    wageHighSort: x.r.wageHighHourly,
+    wageYrText: wageOrDashOf(x.r.medianWageAnnual),
+    wageYrSort: x.r.medianWageAnnual,
   }
 }
 
@@ -5727,9 +5906,11 @@ function hourlyTextOf(n: number | null): string {
 }
 
 /**
- * 招聘对比横表的列组:省份 / 在招 / 近 7 天 / 时薪三列(Frank 2026-09-06「紧缺清单岗不需要这一列」;
+ * 招聘对比横表的列组:省份 / 在招 / 近 7 天 / 时薪两列(Frank 2026-09-06「紧缺清单岗不需要这一列」;
  * AIP 岗与操作两列 2026-09-10 Frank「这两列 删掉」同撤,横杠居多、看岗位与省名跳转重复;
- * 2026-09-11 Frank「中位时薪,最低时薪 最高时薪」中位年薪换 ESDC 工资带时薪三列,低→中→高升序排)。
+ * 2026-09-11 Frank「中位时薪,最低时薪 最高时薪」中位年薪换 ESDC 工资带时薪三列,低→中→高升序排;
+ * 2026-09-12 Frank「加一个中位年薪」:中位年薪列复位排末;
+ * 操作列 2026-09-12 凌晨随城市表复立、2026-09-12 Frank「这两列 删了」再撤最高时薪与看岗位:省级最高=典型岗官方带上端的中位,读成极值误导;近 30 天只按省查岗位仅占 5%)。
  *
  * @param x 取词函数。
  * @returns 列组。
@@ -5754,13 +5935,12 @@ export function jobsColsOf(x: JobsColsIn): StartCol<JobsRow>[] {
       render: jobsWageMedTextOf,
     },
     {
-      key: COL_JOBS_WAGE_HIGH,
-      label: x.t('stats.wageHighH'),
+      key: COL_JOBS_WAGE_YR,
+      label: x.t('pulse.city.wage'),
       nowrap: true,
-      sort: jobsWageHighSortOf,
-      render: jobsWageHighTextOf,
+      sort: jobsWageYrSortOf,
+      render: jobsWageYrTextOf,
     },
-    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, render: JobsActCell },
   ]
 }
 
@@ -5855,23 +6035,23 @@ export function jobsWageMedTextOf(r: JobsRow): string {
 }
 
 /**
- * 最高时薪排序键。
+ * 中位年薪排序键(2026-09-12 Frank「加一个中位年薪」)。
  *
  * @param r 一行。
- * @returns 最高时薪。
+ * @returns 中位年薪。
  */
-export function jobsWageHighSortOf(r: JobsRow): number | null {
-  return r.wageHighSort
+export function jobsWageYrSortOf(r: JobsRow): number | null {
+  return r.wageYrSort
 }
 
 /**
- * 最高时薪单元格。
+ * 中位年薪单元格。
  *
  * @param r 一行。
  * @returns 文案。
  */
-export function jobsWageHighTextOf(r: JobsRow): string {
-  return r.wageHighText
+export function jobsWageYrTextOf(r: JobsRow): string {
+  return r.wageYrText
 }
 
 /**

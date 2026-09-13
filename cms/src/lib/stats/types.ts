@@ -760,6 +760,17 @@ export type CityRow = {
   aipJobs: number | null
 
   /**
+   * 城内 AIP 资格岗的 ESDC 官方带下端中位时薪(2026-09-12 Frank「这些都加一个 查岗位的 操作列,
+   * 并加 最低时薪 和 中位时薪」;快照 aip_wage_low_hourly,旧快照过渡期是 null)。
+   */
+  aipWageLowHourly: number | null
+
+  /**
+   * 城内 AIP 资格岗的 ESDC 官方带中位时薪(同上,aip_wage_med_hourly)。
+   */
+  aipWageMedHourly: number | null
+
+  /**
    * CSD 人口(StatCan 17-10-0155 年度估计,2026-09-11 城市段批二;人工核定城市清单外是 null)。
    */
   population: number | null
@@ -830,6 +841,11 @@ export type CityIndustryRow = {
    * 该城该组中位时薪(同口径取中位,两位小数;旧快照没有 = null 不编)。
    */
   hourly: number | null
+
+  /**
+   * 该城该组最低时薪(组内所有岗的 ESDC 官方带下端取中位;2026-09-12 加,旧快照没有 = null 不编)。
+   */
+  low: number | null
 }
 
 /**
@@ -882,6 +898,11 @@ export type CityBroadCell = {
    * 该组中位时薪(两位小数)。
    */
   hourly?: number | null
+
+  /**
+   * 该组最低时薪(两位小数;2026-09-12 加)。
+   */
+  low?: number | null
 }
 
 /**
@@ -1097,6 +1118,17 @@ export type PilotCommRow = {
    * 社区覆盖城市的在招岗数(0 是事实:JB 全省全职业覆盖)。
    */
   openJobs: number
+
+  /**
+   * 社区覆盖城在招岗的 ESDC 官方带下端中位时薪(快照 pilot_wage_low_hourly,seed 收尾按社区聚合;
+   * 没算是 null;2026-09-12 Frank「并加 最低时薪 和 中位时薪」)。
+   */
+  wageLowHourly: number | null
+
+  /**
+   * 社区覆盖城在招岗的 ESDC 官方带中位时薪(同上,pilot_wage_med_hourly)。
+   */
+  wageMedHourly: number | null
 }
 
 /**
@@ -1148,6 +1180,11 @@ export type DliSchoolRow = {
    * QS 展示名次(如 "=45";榜外空串)。
    */
   qsRankDisplay: string
+
+  /**
+   * 院校种类(university / college / other;etl/dli 按校名派生;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。
+   */
+  kind: string
 }
 
 /**

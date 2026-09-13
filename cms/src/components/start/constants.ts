@@ -616,19 +616,10 @@ export const COL_EMP = 'emp'
 export const URL_HOME_CITY_HEAD = '/?city='
 
 /**
- * 职位板按省筛的地址头(招聘对比表看岗位钮;2026-09-12 Frank「省份和城市也需要 这个
- * 看岗位的功能吧」)。
- */
-export const URL_HOME_PROV_HEAD = '/?prov='
-
-/**
- * 省表看岗位钮的来源标记(照 CITY_UTM_TAIL 形)。
- */
-export const PROV_UTM_TAIL = '&utm_source=pulse_prov'
-
-/**
  * 城市详情页地址头(2026-09-12 批三首件上线:表 1 城市名改落详情页,职位板归看岗位钮 ——
  * 照雇主板「名字进详情、操作进板」的形;行业/试点/留学三组表的名字仍落板,详情页入口一处即可)。
+ * 同日晚 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:行业 / 试点两组表也照表 1 的形 —— 名字落详情页、落板归看岗位钮
+ * (一张表里名字与钮同落一处 = 两个入口一个去处)。
  */
 export const URL_CITY_PAGE_HEAD = '/city/'
 
@@ -642,6 +633,11 @@ export const URL_PATH_SEP = '/'
  * utm 由 Umami 自动收,funnel 另有 city-open 第一方计数)。
  */
 export const CITY_UTM_TAIL = '&utm_source=pulse_city'
+
+/**
+ * 职位板按试点筛的参数头(城市段 RCIP / FCIP 表看岗位钮:城 + 该制;AIP 表用 URL_AIP_TAIL;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+ */
+export const CITY_PILOT_PARAM_HEAD = '&pilot='
 
 /**
  * /api/stats/city(城市段五份,挂载后拉 —— 照 macro 的形;SSR 不再直出 400 张城市卡)。
@@ -690,6 +686,11 @@ export const COL_CITY_POP = 'pop'
 export const COL_CITY_WAGE_H = 'wageH'
 
 /**
+ * 城市行业 / 试点小表列键:最低时薪(ESDC 官方工资带下端的桶内中位,口径同招聘对比横表;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+ */
+export const COL_CITY_WAGE_L = 'wageL'
+
+/**
  * 城市组时薪文案的小数位(并行批的 HOURLY_DIGITS 落地后收拢去重)。
  */
 export const CITY_HOURLY_DIGITS = 2
@@ -705,6 +706,22 @@ export const COL_CITY_UNEMP = 'unemp'
  * 试点社区表列键:社区名。
  */
 export const COL_COMM = 'comm'
+
+/**
+ * 留学院校表种类筛选:全部档(2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」;胶囊三档,词条 KEY_DLI_KIND_HEAD + 键)。
+ */
+export const DLI_KIND_ALL = 'all'
+
+/**
+ * 留学院校表种类筛选的档(全部 / 大学 / 学院;后两档 = dli.kind 的值,etl/dli 按校名派生;
+ * 其它种类(职训中心、神学院、飞行学校)只在「全部」里出)。
+ */
+export const DLI_KINDS = ['all', 'university', 'college']
+
+/**
+ * 留学院校表种类档的词条前缀(+ 档键)。
+ */
+export const KEY_DLI_KIND_HEAD = 'city.kind.'
 
 /**
  * 留学院校表列键:院校名(2026-09-12 Frank「要不每个学校单独一行怎么样」:一校一行,
@@ -1687,7 +1704,8 @@ export const COL_JOBS_NEW7 = 'new7'
 /**
  * 招聘对比横表列键:最低时薪(ESDC 官方工资带下端)。AIP 岗列键与「看岗位」地址头 2026-09-10
  * Frank「这两列 删掉」随列同撤;2026-09-11 Frank「中位时薪,最低时薪 最高时薪」——
- * 原中位年薪一列换成时薪三列(COL_JOBS_WAGE='wage' 随之退役)。
+ * 原中位年薪一列换成时薪三列(COL_JOBS_WAGE='wage' 随之退役);2026-09-12 Frank「这两列 删了」再撤最高时薪与看岗位:省级最高=典型岗官方带上端的中位,读成极值误导;近 30 天只按省查岗位仅占 5%
+ * (COL_JOBS_WAGE_HIGH 与看岗位地址头 URL_HOME_PROV_HEAD / PROV_UTM_TAIL 随列退役)。
  */
 export const COL_JOBS_WAGE_LOW = 'wageLow'
 
@@ -1697,9 +1715,9 @@ export const COL_JOBS_WAGE_LOW = 'wageLow'
 export const COL_JOBS_WAGE_MED = 'wageMed'
 
 /**
- * 招聘对比横表列键:最高时薪(ESDC 官方工资带上端)。
+ * 招聘对比横表列键:中位年薪(ESDC;2026-09-12 Frank「加一个中位年薪」—— 09-11 换时薪三列时撤下的中位年薪复位,排中位时薪后)。
  */
-export const COL_JOBS_WAGE_HIGH = 'wageHigh'
+export const COL_JOBS_WAGE_YR = 'wageYr'
 
 /**
  * 时薪文案的小数位(两位,列内位数齐)。

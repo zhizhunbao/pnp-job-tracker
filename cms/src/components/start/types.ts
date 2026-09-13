@@ -2119,6 +2119,32 @@ export type CityLinkRow = {
 }
 
 /**
+ * 操作格读的四格 —— 主要城市 / 行业 / 试点三组表同用一枚 CityActCell(照表 1 的形;
+ * 2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+ */
+export type CityActRow = {
+  /**
+   * 看岗位钮落职位板的地址(TEXT_NONE 不出钮 —— 对不上城的试点社区没有落板处)。
+   */
+  jobsHref: string
+
+  /**
+   * 点击埋点。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 看岗位钮文案。
+   */
+  actText: string
+
+  /**
+   * 看岗位钮的类。
+   */
+  actBtnCls: string
+}
+
+/**
  * 表 1(主要城市)的展示行。
  */
 export type CityMainRow = {
@@ -2264,9 +2290,14 @@ export type CityIndRow = {
   note: string
 
   /**
-   * 落职位板。
+   * 落职位板(2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:改落城市详情页,落板归 jobsHref)。
    */
   href: string
+
+  /**
+   * 看岗位钮落职位板(按城筛;职位板只认单个大类、行业组筛不了,与表 1 同落全城)。
+   */
+  jobsHref: string
 
   /**
    * 点击埋点。
@@ -2274,9 +2305,29 @@ export type CityIndRow = {
   onOpen: ClickFn
 
   /**
+   * 看岗位钮文案。
+   */
+  actText: string
+
+  /**
+   * 看岗位钮的类。
+   */
+  actBtnCls: string
+
+  /**
    * 该行业组在招数(组内大类求和)。
    */
   n: number
+
+  /**
+   * 该城该组最低时薪(ESDC 官方带下端的组内中位;旧快照过渡期是 null 不编;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+   */
+  low: number | null
+
+  /**
+   * 最低时薪文案(没有显杠)。
+   */
+  lowText: string
 
   /**
    * 该城该组中位年薪(2026-09-11 Frank「带行业的 中位时薪 和 年薪 才有意义是吧」;
@@ -2353,6 +2404,11 @@ export type IndCityCell = {
    * 中位时薪;旧形快照过渡兜底不可拼 = null。
    */
   hourly: number | null
+
+  /**
+   * 最低时薪;旧形快照过渡兜底不可拼 = null。
+   */
+  low: number | null
 }
 
 /**
@@ -2410,14 +2466,29 @@ export type CityPilotRow = {
   note: string
 
   /**
-   * 落职位板(按社区主城筛)。
+   * 落职位板(按社区主城筛;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」:改落城市详情页,落板归 jobsHref)。
    */
   href: string
+
+  /**
+   * 看岗位钮落职位板(城 + 该制筛;对不上城 TEXT_NONE 不出钮)。
+   */
+  jobsHref: string
 
   /**
    * 点击埋点。
    */
   onOpen: ClickFn
+
+  /**
+   * 看岗位钮文案。
+   */
+  actText: string
+
+  /**
+   * 看岗位钮的类。
+   */
+  actBtnCls: string
 
   /**
    * 在招数(排序键;0 是事实)。
@@ -2428,6 +2499,26 @@ export type CityPilotRow = {
    * 在招数文案。
    */
   openText: string
+
+  /**
+   * 最低时薪(该制岗的 ESDC 官方带下端中位;快照没算是 null 不编;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+   */
+  low: number | null
+
+  /**
+   * 最低时薪文案(没有显杠)。
+   */
+  lowText: string
+
+  /**
+   * 中位时薪(同口径)。
+   */
+  hourly: number | null
+
+  /**
+   * 中位时薪文案(没有显杠)。
+   */
+  hourlyText: string
 }
 
 /**
@@ -2481,6 +2572,11 @@ export type CityPilotBlockIn = {
  */
 export type CityPilotRowsIn = {
   /**
+   * 取词函数(看岗位钮文案;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+   */
+  t: TFn
+
+  /**
    * 试点社区行。
    */
   pilots: PilotCommRow[]
@@ -2495,6 +2591,11 @@ export type CityPilotRowsIn = {
  * `cityAipTableOf` 的入参。
  */
 export type CityAipTableIn = {
+  /**
+   * 取词函数(看岗位钮文案;2026-09-12 Frank「这些都加一个 查岗位的 操作列,并加 最低时薪 和 中位时薪」)。
+   */
+  t: TFn
+
   /**
    * 城市全量榜(aipJobs 快照格与双行名都从这来)。
    */
@@ -2562,6 +2663,11 @@ export type CityDliRow = {
  */
 export type CityDliRowsIn = {
   /**
+   * 种类筛选档(DLI_KINDS 之一;全部档不筛;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。
+   */
+  kind: string
+
+  /**
    * DLI 院校行(一校一行)。
    */
   rows: DliSchoolRow[]
@@ -2593,6 +2699,66 @@ export type CityPanelIn = {
 }
 
 /**
+ * 留学院校表种类筛选的一枚胶囊(2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。
+ */
+export type DliChip = {
+  /**
+   * 档键(DLI_KINDS 之一)。
+   */
+  key: string
+
+  /**
+   * 胶囊文案(界面语言)。
+   */
+  label: string
+
+  /**
+   * 是不是当前档。
+   */
+  active: boolean
+
+  /**
+   * 点它切到这一档。
+   */
+  onClick: ClickFn
+}
+
+/**
+ * `dliKindChipsOf` 的入参。
+ */
+export type DliChipsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前档。
+   */
+  kind: string
+
+  /**
+   * 切档(hook 的 setState)。
+   */
+  set: FilterFn
+}
+
+/**
+ * `makeDliKindPick` 的入参。
+ */
+export type DliKindPickIn = {
+  /**
+   * 切档。
+   */
+  set: FilterFn
+
+  /**
+   * 这枚胶囊的档。
+   */
+  kind: string
+}
+
+/**
  * `useCityPanel` 交回的面板(五份数据 + 各表展示行;行业对比一大类一张表)。
  */
 export type CityPanel = {
@@ -2620,6 +2786,11 @@ export type CityPanel = {
    * 表 4 展示行。
    */
   dliRows: CityDliRow[]
+
+  /**
+   * 留学院校表种类筛选胶囊(全部 / 大学 / 学院;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。
+   */
+  dliChips: DliChip[]
 }
 
 /**
@@ -5103,23 +5274,7 @@ export type JobsRow = {
   nameSort: string
 
   /**
-   * 看岗位钮的地址(职位板按省筛 + 来源标记;2026-09-12 Frank「省份和城市也需要 这个
-   * 看岗位的功能吧」,照雇主板操作列)。
-   */
-  actHref: string
-
-  /**
-   * 看岗位钮文案。
-   */
-  actText: string
-
-  /**
-   * 看岗位钮的类。
-   */
-  actBtnCls: string
-
-  /**
-   * 在招职位文案。
+   * 在招职位文案(看岗位三格 2026-09-12 Frank「这两列 删了」再撤最高时薪与看岗位:省级最高=典型岗官方带上端的中位,读成极值误导;近 30 天只按省查岗位仅占 5%)。
    */
   openText: string
 
@@ -5160,14 +5315,14 @@ export type JobsRow = {
   wageMedSort: number | null
 
   /**
-   * 最高时薪文案。
+   * 中位年薪文案(ESDC;2026-09-12 Frank「加一个中位年薪」)。
    */
-  wageHighText: string
+  wageYrText: string
 
   /**
-   * 最高时薪排序键。
+   * 中位年薪排序键。
    */
-  wageHighSort: number | null
+  wageYrSort: number | null
 }
 
 /**

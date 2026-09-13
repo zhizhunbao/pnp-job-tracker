@@ -17,6 +17,7 @@ export const Dli: CollectionConfig = {
     { name: 'gradProgram', type: 'checkbox', admin: { description: '有免 PAL/TAL 的研究生学位项目(官方列标)' } },
     { name: 'qsRank', type: 'number', admin: { description: 'QS 世界大学排名名次(etl/qs 域,榜外空;排序用纯数)' } },
     { name: 'qsRankDisplay', type: 'text', admin: { description: 'QS 展示名次(如 =45;榜外空串)' } },
+    { name: 'kind', type: 'text', admin: { description: '院校种类(university / college / other;etl/dli 按校名派生,城市段留学院校表筛选用)' } },
     { name: 'url', type: 'text', admin: { description: '出处=IRCC DLI 名单页(着陆页)' } },
     { name: 'fetched', type: 'text' },
   ],

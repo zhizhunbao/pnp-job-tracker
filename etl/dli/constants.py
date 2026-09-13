@@ -7,6 +7,8 @@ dli 域常量 —— 域词汇表(五件全溶,照样张 etl/company/;2026-08-30
 原 build_ircc_dli_pgwp.py 的 IN_URL / LANDING / OUT_FILE / UA / PROV_CODE 原样搬来,
 函数体字面量(文案 f-string、"Yes"/"Public" 判词、防线阈值、超时)同批提名。
 """
+import re
+
 import paths
 
 IN_URL = "https://www.canada.ca/content/dam/ircc/documents/json/dli/dli-full-list.json"
@@ -172,6 +174,23 @@ YES = "Yes"
 
 PUBLIC_TOKEN = "Public"
 """Public/Private 格里判「公立」的子串(源里有 "Public"/"Private"/组合写法)。"""
+
+KIND_UNIVERSITY = "university"
+"""院校种类:大学(2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」;官方名单没有种类格,
+按校名判 —— 数据层派生一次,前端只读)。"""
+
+KIND_COLLEGE = "college"
+"""院校种类:学院(College / Collège / collégial / Cégep)。"""
+
+KIND_OTHER = "other"
+"""院校种类:其它(职训中心 CFP、Institut、神学院、飞行学校等;筛选只出大学与学院两档,其它归「全部」)。"""
+
+UNIVERSITY_RE = re.compile(r"universit", re.IGNORECASE)
+"""大学判词(英法同根:University / Université)。"""
+
+COLLEGE_RE = re.compile(r"coll[eè]ge|coll[eé]gial|c[eé]gep", re.IGNORECASE)
+"""学院判词(College / Collège / La Cité collégiale / Cégep)。大学判词先于它:
+"University College" 类名算大学。"""
 
 FETCH_TIMEOUT_S = 60
 """源 JSON 抓取超时(约 430KB,一次拿完)。"""

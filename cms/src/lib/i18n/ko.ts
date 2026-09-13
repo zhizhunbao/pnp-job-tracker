@@ -934,13 +934,13 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '승인', 'pulse.nav.draws': '추첨',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
   'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
-  'pulse.city': '도시 선택', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
+  'pulse.city': '도시', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
   // 2026-09-11 도시 섹션 개편(docs/design/把脉页城市段-20260911.md): 검색 + 표 4장
   'pulse.city.main': '주요 도시', 'pulse.city.dli': '유학 학교', 'pulse.city.qs': 'QS 순위',
   'pulse.city.name': '도시', 'pulse.city.open': '채용', 'pulse.city.wage': '중위 연봉',
   'pulse.city.pop': '인구', 'pulse.city.unemp': '실업률', 'pulse.city.wageH': '중위 시급',
   'pulse.city.comm': '커뮤니티',
-  'pulse.city.dliN': 'DLI 학교', 'city.facts': '개요', 'city.byInd': '업종 분포', 'city.byIndCol': '업종', 'city.channel': '전용 채널', 'city.school': '학교', 'city.schoolType': '유형', 'city.pub': '공립', 'city.priv': '사립', 'city.none': '수록되지 않은 도시입니다', 'pulse.city.dliGrad': 'PGWP 가능',
+  'pulse.city.dliN': 'DLI 학교', 'city.facts': '개요', 'city.byInd': '업종 분포', 'city.byIndCol': '업종', 'city.channel': '전용 채널', 'city.school': '학교', 'city.schoolType': '유형', 'city.pub': '공립', 'city.priv': '사립', 'city.kind.all': '전체', 'city.kind.university': '대학교', 'city.kind.college': '칼리지', 'city.none': '수록되지 않은 도시입니다', 'pulse.city.dliGrad': 'PGWP 가능',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
   'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직',
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',
@@ -962,7 +962,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'mkt.search': '직업·도시 검색', 'mkt.more': '필터 더보기', 'mkt.chan': '경로', 'mkt.chan.all': '전체 직업', 'mkt.chan.pnp': 'PNP 목록에 있는 직업', 'mkt.chan.ee': 'EE 카테고리 해당 직업', 'mkt.chan.occOnly': '경로 필터는 X축이 직종일 때만 적용', 'mkt.minJobs': '최소 채용 공고 수', 'mkt.broad': '대분류', 'mkt.mid': '중분류', 'mkt.fine': '소분류', 'mkt.cat.all': '전체', 'mkt.y2.off': '숨기기', 'mkt.medLink': '주별 중위', 'mkt.sort': '정렬', 'mkt.sort.desc': '높은 순', 'mkt.sort.asc': '낮은 순',
   'mkt.fs': '전체 화면', 'mkt.fs.exit': '전체 화면 종료',
   'mkt.note': '캐나다 공식 Job Bank 기준. 현재 채용 중인 공고 수이며 인력 부족을 뜻하지 않습니다',
-  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.wageLowH': '최저 시급', 'stats.wageMedH': '중위 시급', 'stats.wageHighH': '최고 시급', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 
+  'stats.title': '{prov} 채용 통계', 'stats.catTitle': '{prov} · {cat} 채용 통계', 'stats.openJobs': '채용 중', 'stats.new7d': '최근 7일 게시', 'stats.medWage': '중위 연봉(ESDC)', 'stats.wageLowH': '최저 시급', 'stats.wageMedH': '중위 시급', 'stats.medSalary': '게시된 중위 연봉', 'stats.named': '수요 목록 공고', 'stats.topCities': '주요 도시', 'stats.streams': '해당 스트림', 'stats.byCat': '직업 대분류별', 'stats.entry': '지역 통계', 'stats.toJobs': '이 공고 보기', 'stats.caliber': '산정 기준', 'stats.noList.tip': '해당 주는 현재 PNP 직업 목록을 공개하지 않습니다(예: OINP 2026-06 개편 후). TEER 등 조건으로 판단하며 데이터 누락이 아닙니다.', 'stats.naQc.tip': '퀘벡주는 PNP에 참여하지 않고 자체 선발 제도를 운영합니다.', 'stats.provIndex': '주 선택', 'stats.compare': '주 간 비교 (Pro)', 'stats.pickProv': '2–4개 주 선택', 'stats.myNoc': '내 프로필로 강조', 
 }
 
 // =========================================================================

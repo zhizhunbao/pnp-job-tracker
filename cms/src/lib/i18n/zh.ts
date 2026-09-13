@@ -1032,13 +1032,13 @@ export const siteZh = {
   'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '获批', 'pulse.nav.draws': '抽选',
   // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
   'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
-  'pulse.city': '选城市', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
+  'pulse.city': '城市', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
   // 2026-09-11 城市段重设计(docs/design/把脉页城市段-20260911.md):一搜四表
   'pulse.city.main': '主要城市', 'pulse.city.dli': '留学院校', 'pulse.city.qs': 'QS 排名',
   'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
   'pulse.city.pop': '人口', 'pulse.city.unemp': '失业率', 'pulse.city.wageH': '中位时薪',
   'pulse.city.comm': '社区',
-  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.none': '本站未收录该城市', 'pulse.city.dliGrad': '可申工签',
+  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.kind.all': '全部', 'city.kind.university': '大学', 'city.kind.college': '学院', 'city.none': '本站未收录该城市', 'pulse.city.dliGrad': '可申工签',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
   'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',
@@ -1061,7 +1061,7 @@ export const siteZh = {
   'mkt.search': '搜职业、城市', 'mkt.more': '更多筛选', 'mkt.chan': '通道', 'mkt.chan.all': '全部职业', 'mkt.chan.pnp': '省提名清单上的职业', 'mkt.chan.ee': 'EE 类别覆盖的职业', 'mkt.chan.occOnly': '通道筛选只在横轴=职业时生效', 'mkt.minJobs': '最低在招岗数', 'mkt.broad': '大类', 'mkt.mid': '中类', 'mkt.fine': '小类', 'mkt.cat.all': '全部', 'mkt.y2.off': '不显示', 'mkt.medLink': '各省中位', 'mkt.sort': '排序', 'mkt.sort.desc': '从高到低', 'mkt.sort.asc': '从低到高',
   'mkt.fs': '全屏看图', 'mkt.fs.exit': '退出全屏',
   'mkt.note': '数据来自官方 Job Bank;在招量=当前在招职位数,不等于「缺人」',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.wageLowH': '最低时薪', 'stats.wageMedH': '中位时薪', 'stats.wageHighH': '最高时薪', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.wageLowH': '最低时薪', 'stats.wageMedH': '中位时薪', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 
 }
 
 // =========================================================================

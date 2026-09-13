@@ -80,6 +80,9 @@ class DliRow(BaseModel):
     grad_program: bool = Field(serialization_alias="gradProgram")
     """有没有研究生项目。"""
 
+    kind: str
+    """院校种类(university / college / other;按校名派生,见 constants KIND_*;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。"""
+
 
 class DliSource(BaseModel):
     """源 JSON 外壳(DataTables 惯例:行住 data 键)。"""

@@ -1049,6 +1049,18 @@ export interface Dli {
    */
   gradProgram?: boolean | null;
   /**
+   * QS 世界大学排名名次(etl/qs 域,榜外空;排序用纯数)
+   */
+  qsRank?: number | null;
+  /**
+   * QS 展示名次(如 =45;榜外空串)
+   */
+  qsRankDisplay?: string | null;
+  /**
+   * 院校种类(university / college / other;etl/dli 按校名派生,城市段留学院校表筛选用)
+   */
+  kind?: string | null;
+  /**
    * 出处=IRCC DLI 名单页(着陆页)
    */
   url?: string | null;
@@ -2892,11 +2904,15 @@ export interface PnpOpsStatsSelect<T extends boolean = true> {
 export interface DliSelect<T extends boolean = true> {
   province?: T;
   name?: T;
+  nameZh?: T;
   dliNumber?: T;
   city?: T;
   campuses?: T;
   isPublic?: T;
   gradProgram?: T;
+  qsRank?: T;
+  qsRankDisplay?: T;
+  kind?: T;
   url?: T;
   fetched?: T;
   updatedAt?: T;

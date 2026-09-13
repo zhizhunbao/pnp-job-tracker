@@ -16,12 +16,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
-import { LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
+import { DLI_KIND_ALL, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
-  cityPilotTablesOf, toCityDliRows, toCityMainRows,
+  cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
 } from './functions'
@@ -114,24 +114,29 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
       return []
     }
     const out: CityPilotTable[] = []
-    const aip = cityAipTableOf({ cities: data.cities, lang: x.lang })
+    const aip = cityAipTableOf({ cities: data.cities, lang: x.lang, t: x.t })
     if (aip != null) {
       out.push(aip)
     }
-    for (const tb of cityPilotTablesOf({ pilots: data.pilots, cities: data.cities })) {
+    for (const tb of cityPilotTablesOf({ pilots: data.pilots, cities: data.cities, t: x.t })) {
       out.push(tb)
     }
     return out
-  }, [data, x.lang])
+  }, [data, x.lang, x.t])
 
+  const [dliKind, setDliKind] = useState(DLI_KIND_ALL)
   const dliRows = useMemo(function pickDliRows() {
     if (data == null) {
       return []
     }
-    return toCityDliRows({ rows: data.dli, t: x.t, lang: x.lang })
-  }, [data, x.t, x.lang])
+    return toCityDliRows({ rows: data.dli, t: x.t, lang: x.lang, kind: dliKind })
+  }, [data, x.t, x.lang, dliKind])
 
-  return { data, mainRows, indTables, pilotTables, dliRows }
+  const dliChips = useMemo(function pickDliChips() {
+    return dliKindChipsOf({ t: x.t, kind: dliKind, set: setDliKind })
+  }, [x.t, dliKind])
+
+  return { data, mainRows, indTables, pilotTables, dliRows, dliChips }
 }
 
 /**

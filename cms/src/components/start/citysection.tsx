@@ -13,10 +13,13 @@
  * 09-03「表右上角 Updated」铁律)。
  * 数据挂载后拉 /api/stats/city(读 stats_city 快照;SSR 直出的城市行同批退役);
  * 没到渲占位,五份各自独立 —— 缺一份只丢那组表,全空才整段不出。
+ * 2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」:留学院校表标题下一排胶囊(全部 / 大学 / 学院),
+ * 筛的是 dli.kind(etl/dli 按校名派生),客户端筛不回库。
  *
  * @author Frank
  * @time 2026-09-04 22:10:00
  */
+import { Chip } from '@/components/chip'
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import {
@@ -61,6 +64,10 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
       </div>,
     )
   }
+  const dliChipEls = []
+  for (const c of v.dliChips) {
+    dliChipEls.push(<Chip key={c.key} active={c.active} onClick={c.onClick}>{c.label}</Chip>)
+  }
   const pilotCols = cityPilotColsOf({ t })
   const aipCols = cityAipColsOf({ t })
   const pilotBlocks = []
@@ -85,10 +92,11 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
         )}
         {v.data != null && indBlocks}
         {v.data != null && pilotBlocks}
-        {v.data != null && v.dliRows.length > 0 && (
+        {v.data != null && v.data.dli.length > 0 && (
           <div id={ID_CITY_DLI} className={css.subAnchor}>
             <div className={boardGapClsOf({ gap: true })}>
               <Sec title={t('pulse.city.dli')} right={<Updated iso={updatedAt} t={t} />} sub>
+                <div className={css.filterRow}>{dliChipEls}</div>
                 <Table<CityDliRow> rows={v.dliRows}
                   cols={cityDliColsOf({ t })}
                   rowKey={dliRowKeyOf}

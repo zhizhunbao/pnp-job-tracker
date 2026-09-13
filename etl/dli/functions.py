@@ -20,6 +20,7 @@ import paths
 from log.functions import say
 from fetch.constants import HDR_UA, POLITE_UA
 from dli.constants import (
+    COLLEGE_RE, KIND_COLLEGE, KIND_OTHER, KIND_UNIVERSITY, UNIVERSITY_RE,
     ATLANTIC, CITY_SEP, FETCH_TIMEOUT_S, IN_TPL, IN_URL, LANDING, MIN_ROWS, NAME_ZH, OUT_FILE, OUT_INDENT, OUT_TPL,
     PROV_CODE, PUBLIC_TOKEN, SKIPPED_TPL, SOURCE_ROWS_TPL, TEXT_ENCODING, TOO_FEW_TPL,
     WROTE_TPL, YES,
@@ -49,6 +50,16 @@ def split_cities(raw: str) -> list[str]:
     return out
 
 
+def kind_of(name: str) -> str:
+    """校名 → 院校种类(2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」):官方名单没有种类格,
+    按校名判词派生 —— 大学判词优先("University College" 算大学),再学院,其余 other。"""
+    if UNIVERSITY_RE.search(name) is not None:
+        return KIND_UNIVERSITY
+    if COLLEGE_RE.search(name) is not None:
+        return KIND_COLLEGE
+    return KIND_OTHER
+
+
 def to_dli_row(x: DliRowIn) -> DliRow:
     """源行 + 已查得的省码与单城 → 校 × 城行(campuses 由调用方统好后回填)。"""
     name = x.source.institution.strip()
@@ -61,6 +72,7 @@ def to_dli_row(x: DliRowIn) -> DliRow:
         campuses=1,
         is_public=PUBLIC_TOKEN in x.source.sector,
         grad_program=x.source.grad_program == YES,
+        kind=kind_of(name),
     )
 
 
