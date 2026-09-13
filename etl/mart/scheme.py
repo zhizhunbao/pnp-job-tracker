@@ -2428,14 +2428,14 @@ class PilotVerdictOut:
 
 
 @dataclass
-class MinWageYearIn:
-    """minwage_year_rate_of() 入参:一省按生效日升序的调整行 + 要问的年。"""
+class MinWageAtIn:
+    """minwage_rate_at() 入参:一省按生效日升序的调整行 + 要问的那一天。"""
 
     rows: list
     """该省的调整行(minwage 文件形,已按生效日升序)。"""
 
-    year: str
-    """四位年。"""
+    day: str
+    """那一天(YYYY-MM-DD)。"""
 
 
 @dataclass

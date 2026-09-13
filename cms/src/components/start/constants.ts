@@ -1553,13 +1553,14 @@ export const RATIO_DIGITS = 0
  * 各地区**不适用**的宏观行(没数据时不出「未公布」,有数据照出):全国没有「已发提名 / 剩余名额」
  * (提名是省发的);魁省自成体系不参加省提名,配额 / 竞争比 / 已发 / 剩余 / 其中省提名 五行都不适用
  * (Frank 2026-09-06「魁北克不是省提名吧」)。
+  * 2026-09-13 minWage 加进 CA:联邦最低工资只管联邦管辖行业,不是「全国」,省表全国行显不适用。
  */
 export const MACRO_NA_ROWS: Record<string, string[]> = {
   /**
    * 全国:提名是省发的,没有全国「配额 / 已发 / 剩余 / 竞争比」—— 联邦只发接纳目标(pnpTarget,人头口径),
    * 与省的提名证书个数不是一个单位,不硬套进 alloc。
    */
-  CA: ['alloc', 'comp', 'issued', 'remaining', 'useRate'],
+  CA: ['alloc', 'comp', 'issued', 'remaining', 'useRate', 'minWage'],
 
   /**
    * 魁省:自成体系不参加省提名。

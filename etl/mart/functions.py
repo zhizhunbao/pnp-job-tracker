@@ -184,7 +184,7 @@ from mart.scheme import (
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
     JdFlagIn, JdRawIn, JdSources, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
-    CompPoolIn, CompPoolOut, MacroRowIn, MinWageYearIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
+    CompPoolIn, CompPoolOut, MacroRowIn, MinWageAtIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
     StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
     MoneyTextIn, MvScoreIn, NewsExcerptIn, NewsRowIn, NewsSlugIn, NlEmployerIn, NocDescIn,
@@ -5095,35 +5095,42 @@ def macro_alloc_rows() -> list:
 
 def macro_minwage_rows() -> list:
     """各省法定最低工资 → 省 × 年 minWage 行(2026-09-13 Frank「省的话 这个省的法律要求 最低工资 是有用的」(minwage 域立域批))。
-    一格 = 该年年末在效的一般档(一年内多次调整取年末那次;已公布的来年档也出,读者看得到下一步);
+    过去的年 = 该年年末在效的一般档(as_of = 年,前端当整年格);今年 = 今天在效的档(as_of = 今天,
+    前端当进行年带「至 N 月」灰注 —— 年度点的 as_of 不等于年会被当作进行年,只留最新一点);
+    已公布的来年档不出行(前端不出未来年;下一档挂在 provinces.info.minWage.next)。
     只出十省(联邦 CA 是联邦管辖行业的底线,不是「全国」,不进省表);文件缺席不出行。"""
     if not IN_MINWAGE.exists():
         return []
     fetched = read_table(IN_MINWAGE).get(K_MW_FETCHED, "")
+    today = date.today().isoformat()
+    this_year = int(today[:YEAR_LEN])
     out: list = []
     for c, rows in load_minwage().items():
         if c not in PROV_FULL:
             continue
         first = int(rows[0][K_MW_EFFECTIVE][:YEAR_LEN])
-        last = int(rows[-1][K_MW_EFFECTIVE][:YEAR_LEN])
-        for y in range(first, last + 1):
+        for y in range(first, this_year + 1):
             year = str(y)
-            hit = minwage_year_rate_of(MinWageYearIn(rows=rows, year=year))
+            end = MINWAGE_YEAR_END_TPL.format(year=year)
+            as_of = year
+            if y == this_year:
+                end = today
+                as_of = today
+            hit = minwage_rate_at(MinWageAtIn(rows=rows, day=end))
             if hit is None:
                 continue
             out.append(to_macro_row(MacroRowIn(
                 geo=c, key=MACRO_KEY_MIN_WAGE, period=year, freq=MACRO_FREQ_ANNUAL,
-                value=hit[K_MW_RATE], as_of=hit[K_MW_EFFECTIVE], unit=UNIT_DOLLARS_HOURLY,
+                value=hit[K_MW_RATE], as_of=as_of, unit=UNIT_DOLLARS_HOURLY,
                 source=MINWAGE_LANDING, fetched=fetched)))
     return out
 
 
-def minwage_year_rate_of(x: MinWageYearIn) -> dict | None:
-    """该年年末在效的调整行(生效日 ≤ 该年 12-31 的最后一行);该年之前没有任何档给 None。"""
-    end = MINWAGE_YEAR_END_TPL.format(year=x.year)
+def minwage_rate_at(x: MinWageAtIn) -> dict | None:
+    """某一天在效的调整行(生效日 ≤ 该日的最后一行);该日之前没有任何档给 None。"""
     hit = None
     for r in x.rows:
-        if r[K_MW_EFFECTIVE] <= end:
+        if r[K_MW_EFFECTIVE] <= x.day:
             hit = r
     return hit
 
