@@ -1232,6 +1232,71 @@ export type ProvsSlot = {
 export type PoolProvsOut = Promise<string[]>
 
 /**
+ * 全组页缓存的一份。
+ */
+export type PoolPageSlot = {
+  /**
+   * 灌入时刻(Date.now())。
+   */
+  at: number
+
+  /**
+   * 整页。
+   */
+  page: PoolPage
+}
+
+/**
+ * `pageOf` 的入参。
+ */
+export type PageOfIn = {
+  /**
+   * 原始行。
+   */
+  raw: PoolDbRows
+
+  /**
+   * 当前筛选。
+   */
+  filters: PoolFilters
+
+  /**
+   * 每页行数。
+   */
+  pageSize: number
+
+  /**
+   * 省选项。
+   */
+  provs: string[]
+}
+
+/**
+ * `fetchPoolAllPage` 的入参。
+ */
+export type PoolAllIn = {
+  /**
+   * 能打 SQL 的东西。
+   */
+  db: Db
+
+  /**
+   * 当前筛选。
+   */
+  filters: PoolFilters
+
+  /**
+   * 每页行数。
+   */
+  pageSize: number
+
+  /**
+   * 省选项(已取到,随页带回)。
+   */
+  provs: string[]
+}
+
+/**
  * `EMPLOYER_POOL_PROVS` 的原始行。
  */
 export type ProvDbRow = {
@@ -1449,6 +1514,11 @@ export type EmployersCache = {
    * 省选项刷新的单飞 promise;null = 没有在飞的。
    */
   poolProvsInflight: Promise<string[]> | null
+
+  /**
+   * 全组页缓存:参数键 → 整页(DISTINCT ON 扫桶表一遍 ~290ms,站级聚合禁每请求现算)。
+   */
+  poolPages: Map<string, PoolPageSlot>
 
   /**
    * 在招担保雇主聚合整表;null = 冷。

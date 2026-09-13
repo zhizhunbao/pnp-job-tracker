@@ -186,11 +186,6 @@ export type PoolPage = {
    * 省下拉的选项。
    */
   provs: string[]
-
-  /**
-   * 池构建日(筛选行尾那枚「抓取」日);'' = 本页无行。
-   */
-  fetched: string
 }
 
 /**
@@ -1525,6 +1520,11 @@ export type EmployersPanel = {
   qDraft: string
 
   /**
+   * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;筛选行尾那枚 Updated)。
+   */
+  updatedAt: string
+
+  /**
    * 表头排序态(由 f.sort 派生;表只渲标记,排序在服务端)。
    */
   sort: EmpSortState
@@ -1584,11 +1584,6 @@ export type EmployerCardsIn = {
    * 已洗好的展示行。
    */
   rows: EmployerCellRow[]
-
-  /**
-   * 计数文案(卡片形态没有表头,计数自己占一行)。
-   */
-  note: string
 
   /**
    * 空态文案。

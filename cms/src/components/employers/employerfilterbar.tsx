@@ -1,7 +1,8 @@
 'use client'
 /**
- * 雇主板的筛选区:常用一行(搜索 / 行业 / 省 / 「无经验可投」开关)+「清空」+ 池构建日 ——
- * 职位板同一套形态(站规 jobtable-is-the-standard)。
+ * 雇主板的筛选区:常用一行(搜索 / 行业 / 省 / 「无经验可投」开关)+「清空」+ 行尾更新时间 ——
+ * 职位板同一套形态(站规 jobtable-is-the-standard;2026-09-13 Frank「只需要一个时间即可」:池构建日撤,
+ * Updated 自 H1 下那行挪到这里,职位板同位)。
  * 2026-09-13 雇主板批二:口径下拉与「更多筛选」抽屉(社区 / 职业)退役 —— 行业组是板的第一维,
  * 指定 / LMIA 改成带排序的列(Frank 09-12 拍板合表 + 排序列),开关只留「无经验可投」一个
  * (身份预置用:应届 / 无加国经验的画像默认开)。
@@ -15,7 +16,8 @@ import { Button } from '@/components/button'
 import { Chip } from '@/components/chip'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
-import { BTN_SECONDARY, SEARCH_SIZE, SEL_SIZE, TEXT_NONE } from './constants'
+import { Updated } from '@/components/time'
+import { BTN_SECONDARY, SEARCH_SIZE, SEL_SIZE } from './constants'
 import { anyFilterOf, clearBtnClsOf, makeGroupLabel, makeProvLabel } from './functions'
 import type { EmployerPanelIn } from './types'
 import css from './employers.module.css'
@@ -49,9 +51,7 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
             {p.t('clear')}
           </Button>
         )}
-        {p.data.fetched !== TEXT_NONE && (
-          <span className={css.fetched}>{p.t('dir.occ.fetched', { d: p.data.fetched })}</span>
-        )}
+        <Updated iso={p.updatedAt} t={p.t} />
       </div>
     </div>
   )

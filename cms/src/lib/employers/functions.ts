@@ -22,7 +22,8 @@ import {
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
   EMP_SSR_ROWS, ENTRY_ON, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
   JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, NOC_LEN, NOC_RE, NOC_TEER_RE,
-  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, POOL_GROUPS, POOL_SORT_DEFAULT, POOL_SORTS, PROVINCE_NONE, PROV_RE, PUNCT_RE,
+  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, POOL_GROUPS, POOL_KEY_SEP, POOL_PAGES_MAX, POOL_SORT_DEFAULT, POOL_SORTS,
+  PROVINCE_NONE, PROV_RE, PUNCT_RE,
   Q_WILD_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE,
   SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
@@ -36,8 +37,8 @@ import type {
   CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow,
   CompareIn, CompareOut, CompareRow, EmptyPoolPageIn, EntityNameHitsIn, GroupOfNocDbRow, GroupOfNocIn, InvestigateIn,
   InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer,
-  GroupKeyOut, NormalizeFiltersIn, OccRowsOut, ParamGetter, PoolDbRow, PoolDbRows, PoolFilters, PoolPage, PoolProvsOut,
-  PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
+  GroupKeyOut, NormalizeFiltersIn, OccRowsOut, PageOfIn, ParamGetter, PoolAllIn, PoolDbRow, PoolDbRows, PoolFilters,
+  PoolPage, PoolProvsOut, PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
@@ -131,13 +132,14 @@ export function isSearchOf(f: PoolFilters): boolean {
 }
 
 /**
- * 榜态判据:选了行业组才摊表(首屏只出选择器 —— 「所有信号只在大类×省切面内呈现」,混屏病根除)。
+ * 组切面判据:选了行业组且没在搜 → 走桶表(组 × 省切面,有入门占比与水位);
+ * 否则走全组一家一行(2026-09-13 Frank「默认应该都显示啊」:首屏不再空着)。
  *
  * @param f 当前筛选。
- * @returns 是否榜态。
+ * @returns 是否组切面。
  */
 export function isScopedOf(f: PoolFilters): boolean {
-  return f.group !== FILTER_UNSET
+  return f.group !== FILTER_UNSET && f.q === FILTER_UNSET
 }
 
 // =========================================================================
@@ -162,8 +164,9 @@ export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
 }
 
 /**
- * 雇主板一页(SSR 与 /api/employers 共用)。三个态:查证态全库按名搜;榜态按 组 × 省 × 入门 × 制度 切面、
- * 服务端排序分页(桶表索引承接,单次往返带回窗口总数);首屏不查行,只回省下拉选项。
+ * 雇主板一页(SSR 与 /api/employers 共用)。两条路:选了组且没搜词 → 桶表按 组 × 省 × 入门 × 制度 切面
+ * (索引承接);其余(默认全组 / 查证态搜词)→ 全组一家一行,进程内按参数缓存整页(DISTINCT ON 扫桶表 ~290ms,
+ * 站级聚合禁每请求现算)。两条路都服务端排序分页,单次往返带回窗口总数。
  *
  * @param input 连接、筛选与页大小。
  * @returns 一页数据;挂了回空表并留痕。
@@ -176,22 +179,14 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   const db = input.db
   const provs = await fetchPoolProvs(db)
   try {
-    let raw: PoolDbRows = []
-    if (isSearchOf(f)) {
-      raw = await queryRows({
-        db: db, sql: SQL.EMPLOYER_POOL_SEARCH, params: [f.q, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
-      })
-    } else if (isScopedOf(f)) {
-      raw = await queryRows({
+    if (isScopedOf(f)) {
+      const raw = await queryRows({
         db: db, sql: SQL.employerPoolPage(poolOrderOf(f.sort)),
         params: [f.group, f.prov, f.entry, f.program, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
       })
+      return pageOf({ raw, filters: f, pageSize: input.pageSize, provs })
     }
-    const rows = raw.map(toPoolRow)
-    return {
-      rows: rows, total: poolTotalOf(raw), page: f.page, pageSize: input.pageSize, provs: provs,
-      fetched: latestFetchedOf(rows),
-    }
+    return fetchPoolAllPage({ db, filters: f, pageSize: input.pageSize, provs })
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
@@ -200,6 +195,64 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
     log({ tag: EMP_LOG.tag, text: `${EMP_LOG.pageQueryFailed}${why}` })
     return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: provs })
   }
+}
+
+/**
+ * 原始行 → 一页(窗口总数取第一行;构建日取本页最新)。
+ *
+ * @param input 原始行、筛选、页大小与省选项。
+ * @returns 一页。
+ */
+function pageOf(input: PageOfIn): PoolPage {
+  const rows = input.raw.map(toPoolRow)
+  return {
+    rows: rows, total: poolTotalOf(input.raw), page: input.filters.page, pageSize: input.pageSize, provs: input.provs,
+    fetched: latestFetchedOf(rows),
+  }
+}
+
+/**
+ * 全组一页带 TTL 缓存(键 = 词/省/开关/制度/排序/页码/页大小;池每小时才变,10 分钟内同参直接回旧页;
+ * 改 `CACHE.poolPages`)。查证态的搜词也走这条(词进键;只是进程内 Map,满 POOL_PAGES_MAX 清空重来)。
+ *
+ * @param input 连接、筛选、页大小与省选项。
+ * @returns 一页。
+ */
+async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
+  const f = input.filters
+  const key = [f.q, f.prov, String(f.entry), f.program, f.sort, String(f.page), String(input.pageSize)].join(POOL_KEY_SEP)
+  const hot = CACHE.poolPages.get(key)
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return hot.page
+  }
+  const raw = await queryRows({
+    db: input.db, sql: SQL.employerPoolAll(poolAllOrderOf(f.sort)),
+    params: [f.q, f.prov, f.entry, f.program, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+  })
+  const page = pageOf({ raw, filters: f, pageSize: input.pageSize, provs: input.provs })
+  if (CACHE.poolPages.size >= POOL_PAGES_MAX) {
+    CACHE.poolPages.clear()
+  }
+  CACHE.poolPages.set(key, { at: Date.now(), page })
+  return page
+}
+
+/**
+ * 全组排序键 → SQL 片段(EMPLOYER_POOL_ALL_ORDER;缺键回默认序)。
+ *
+ * @param sort 已收窄的排序键。
+ * @returns ORDER BY 片段。
+ */
+function poolAllOrderOf(sort: PoolSort): string {
+  const hit = SQL.EMPLOYER_POOL_ALL_ORDER[sort]
+  if (hit != null) {
+    return hit
+  }
+  const fallback = SQL.EMPLOYER_POOL_ALL_ORDER[POOL_SORT_DEFAULT]
+  if (fallback != null) {
+    return fallback
+  }
+  return SQL_FRAG_NONE
 }
 
 /**
@@ -1045,6 +1098,7 @@ export function loadOccupations(db: Db): OccRowsOut {
 export function resetEmployersCache(): void {
   CACHE.poolProvs = null
   CACHE.poolProvsInflight = null
+  CACHE.poolPages.clear()
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()

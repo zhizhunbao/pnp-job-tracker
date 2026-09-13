@@ -68,6 +68,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     data,
     loading,
     qDraft,
+    updatedAt: x.updatedAt,
     sort: sortStateOf({ f }),
     onQDraft: setQDraft,
     onGroup: makeGroup({ f, setF }),

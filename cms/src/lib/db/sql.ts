@@ -545,21 +545,66 @@ export const employerPoolPage = (order: string) => `
     LIMIT $5 OFFSET $6`
 
 /**
- * 查证态:按雇主名全库搜(不受行业/省筛选约束 —— 中介说的那家多半不在用户的筛选面里),
- * 每家带它星级最高的那个桶。$1=关键词(已去掉 % _ 通配),$2=每页行数,$3=偏移。
+ * 雇主池全组排序片段(不选行业时的默认榜,2026-09-13 Frank「默认应该都显示啊」:一家一行,b = 该雇主星级最高的桶;
+ * 在招 / LMIA 用池行的总量列;全组没有水位(水位是组内相对值),wage 键退回星级序)。
  */
-export const EMPLOYER_POOL_SEARCH = `
+export const EMPLOYER_POOL_ALL_ORDER: Record<string, string> = {
+  /**
+   * 默认:最高星,再看总在招。
+   */
+  star: 'b.star DESC, p.open_jobs_total DESC, p.name ASC',
+
+  /**
+   * 总在招岗数。
+   */
+  open: 'p.open_jobs_total DESC, b.star DESC, p.name ASC',
+
+  /**
+   * 技能类 LMIA 总份数,再看最近获批季。
+   */
+  lmia: 'p.lmia_skilled_total DESC, p.lmia_last_quarter DESC NULLS LAST, b.star DESC, p.name ASC',
+
+  /**
+   * 指定雇主在前。
+   */
+  designated: 'p.designated DESC, b.star DESC, p.open_jobs_total DESC, p.name ASC',
+
+  /**
+   * 全组无水位,退回星级序。
+   */
+  wage: 'b.star DESC, p.open_jobs_total DESC, p.name ASC',
+
+  /**
+   * 雇主名。
+   */
+  name: 'p.name ASC',
+}
+
+/**
+ * 雇主池全组一页(不选行业的默认榜,也是查证态的底:$1 有词就按名全库搜)。一家一行 × 它星级最高的桶
+ * (DISTINCT ON 扫桶表一遍,生产实测 ~290ms,lib/employers 进程内 TTL 缓存整页);在招 / LMIA 出池行总量,
+ * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
+ * $4=制度或 '',$5=每页行数,$6=偏移。
+ *
+ * @param order 排序片段(EMPLOYER_POOL_ALL_ORDER 之一)。
+ * @returns SELECT 语句。
+ */
+export const employerPoolAll = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.designated, p.designated_programs,
       p.open_jobs_total, p.fetched,
-      b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
-      b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
+      b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
+      NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
+      b.star, NULL::numeric AS wage_med_annual, NULL::numeric AS wage_index_pct,
       count(*) OVER()::int AS total
     FROM employer_pool p
-    LEFT JOIN LATERAL (SELECT * FROM employer_pool_buckets x WHERE x.employer_key = p.key
-                        ORDER BY x.star DESC, x.open_jobs DESC LIMIT 1) b ON true
-    WHERE p.name ILIKE '%' || $1 || '%'
-    ORDER BY p.designated DESC, p.open_jobs_total DESC, p.name ASC
-    LIMIT $2 OFFSET $3`
+    JOIN (SELECT DISTINCT ON (employer_key) * FROM employer_pool_buckets
+           ORDER BY employer_key, star DESC, open_jobs DESC) b ON b.employer_key = p.key
+    WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR p.province = $2)
+      AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))
+      AND ($4 = '' OR p.designated_programs ? $4)
+    ORDER BY ${order}
+    LIMIT $5 OFFSET $6`
 
 /**
  * companies 表列存在性探测(additive 列上生产前后代码都能跑)。$1=列名数组。

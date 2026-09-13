@@ -24,6 +24,11 @@ export const CACHE: EmployersCache = {
   poolProvsInflight: null,
 
   /**
+   * 全组页缓存(2026-09-13 默认全量出榜)。开机是空的。
+   */
+  poolPages: new Map(),
+
+  /**
    * 在招担保雇主聚合整表。开机是空的。
    */
   sponsors: null,

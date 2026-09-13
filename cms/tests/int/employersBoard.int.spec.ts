@@ -1,7 +1,7 @@
 // 雇主板筛选/分页口径闸(lib/employers 的纯函数 + loadEmployerPage 的假 pool)。
 // 2026-09-13 雇主板批二重写(板改读雇主池):
 //   ① 参数收窄:行业组 / 排序键只认白名单,不合法一律「不筛」不是「筛出空」;
-//   ② 三个态:搜索词非空 = 查证态全库搜(不带组/省条件);选了组 = 榜态(组 × 省 × 开关 × 制度);都没 = 首屏不查行;
+//   ② 两条路:选了组且没搜词 → 桶表(组 × 省 × 开关 × 制度);其余(默认全组 / 查证态搜词)→ 全组一家一行 DISTINCT ON;
 //   ③ #313 红线:一次只吐一页,total 报窗口总数 —— 回归成「整包」时这里当场红;
 //   ④ 排序主键只经白名单映射成 SQL 片段,用户输入永不拼进 ORDER BY。
 import { describe, expect, it } from 'vitest'
@@ -56,10 +56,11 @@ describe('参数规范化', () => {
 })
 
 describe('三个态', () => {
-  it('搜索词非空 = 查证态;选了组 = 榜态;都没 = 首屏', () => {
+  it('搜索词非空 = 查证态;选了组且没搜词 = 组切面;搜词压过组', () => {
     expect(isSearchOf(F({ q: 'tim' }))).toBe(true)
     expect(isSearchOf(F())).toBe(false)
     expect(isScopedOf(F({ group: 'stem' }))).toBe(true)
+    expect(isScopedOf(F({ group: 'stem', q: 'tim' }))).toBe(false)
     expect(isScopedOf(F())).toBe(false)
   })
 })
@@ -117,14 +118,28 @@ const bucketRow = (i: number, total: number) => ({
 })
 
 describe('loadEmployerPage', () => {
-  it('首屏(没组没词)不查行,只回省下拉;total 0', async () => {
+  it('默认(没组没词)= 全组一家一行:DISTINCT ON 查询,参数全空;省下拉照给;同参第二次走缓存不再查', async () => {
     resetEmployersCache()
-    const { pool, seen } = fakePool((sql) => (sql.includes('FROM employer_pool ') && sql.includes('GROUP BY province') ? { rows: [{ province: 'NS' }, { province: 'ON' }] } : { rows: [] }))
+    const { pool, seen } = fakePool((sql) => {
+      if (sql.includes('GROUP BY province')) {
+        return { rows: [{ province: 'NS' }, { province: 'ON' }] }
+      }
+      if (sql.includes('DISTINCT ON (employer_key)')) {
+        return { rows: [bucketRow(1, 6932)] }
+      }
+      return { rows: [] }
+    })
     const p = await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })
-    expect(p.rows).toEqual([])
-    expect(p.total).toBe(0)
+    expect(p.total).toBe(6932)
+    expect(p.rows).toHaveLength(1)
     expect(p.provs).toEqual(['NS', 'ON'])
-    expect(seen.some((s) => s.sql.includes('employer_pool_buckets'))).toBe(false)
+    const q = seen.find((s) => s.sql.includes('DISTINCT ON (employer_key)'))
+    expect(q?.params).toEqual(['', '', false, '', 50, 0])
+    expect(q?.sql).toContain('ORDER BY b.star DESC, p.open_jobs_total DESC')
+    expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
+    const before = seen.length
+    await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })
+    expect(seen.length).toBe(before)
   })
 
   it('🔴 榜态一次只吐一页,total 报窗口总数;参数带出去不拼串,排序片段来自白名单', async () => {
@@ -150,14 +165,14 @@ describe('loadEmployerPage', () => {
     expect(last.page).toBe(2)
   })
 
-  it('查证态:按名全库搜,不带组/省条件;词不拼进 SQL', async () => {
+  it('查证态:搜词压过组,走全组查询按名全库搜(省 / 开关照带);词不拼进 SQL', async () => {
     resetEmployersCache()
     const { pool, seen } = fakePool((sql) => (sql.includes('ILIKE') ? { rows: [bucketRow(1, 1)] } : { rows: [] }))
     const p = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', prov: 'NS', q: 'tim hortons' }), pageSize: 50 })
     expect(p.rows).toHaveLength(1)
     expect(p.total).toBe(1)
     const q = seen.find((s) => s.sql.includes('ILIKE'))
-    expect(q?.params).toEqual(['tim hortons', 50, 0])
+    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', 50, 0])
     expect(q?.sql).not.toContain('tim hortons')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
   })

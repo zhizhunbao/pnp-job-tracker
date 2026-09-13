@@ -174,6 +174,16 @@ export const ENTRY_ON = '1'
 export const Q_WILD_RE = /[%_]/g
 
 /**
+ * 全组页缓存键各段之间的分隔(竖线,词里出现也只是多一段,不撞键)。
+ */
+export const POOL_KEY_SEP = '|'
+
+/**
+ * 全组页缓存最多留几页(满了整个清空重来;查证态的搜词也进键,防 Map 无限长)。
+ */
+export const POOL_PAGES_MAX = 500
+
+/**
  * 担保筛选的凭证视图字面量。
  */
 export const VIEW = {

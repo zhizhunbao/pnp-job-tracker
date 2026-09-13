@@ -1551,26 +1551,13 @@ export function anyFilterOf(x: FiltersIn): boolean {
 }
 
 /**
- * 首屏判据:没选行业组也没在搜 = 只出选择器不摊表(设计稿五态之①,混屏病根除)。
- *
- * @param x 当前筛选。
- * @returns 是否首屏。
- */
-export function isFirstScreenOf(x: FiltersIn): boolean {
-  return x.f.group === TEXT_NONE && x.f.q === TEXT_NONE
-}
-
-/**
- * 表头上那行计数。
+ * banner 副题的计数(照职位板:筛过了报「命中 N 家」,否则报「N 家雇主」;选了行业组也算筛过)。
  *
  * @param x 取词函数、当前筛选与总数。
- * @returns 计数文案;首屏空串(不报数)。
+ * @returns 计数文案。
  */
 export function noteTextOf(x: NoteTextIn): string {
-  if (isFirstScreenOf({ f: x.f })) {
-    return TEXT_NONE
-  }
-  if (anyFilterOf({ f: x.f })) {
+  if (anyFilterOf({ f: x.f }) || x.f.group !== TEXT_NONE) {
     return x.t('de.hits', { n: x.total })
   }
   return x.t('de.count', { n: x.total })

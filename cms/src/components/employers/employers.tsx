@@ -12,8 +12,9 @@
  * 2026-08-27 换装批整体重写:状态进 hooks、筛选区与列表区各自成件、样式进 module.css。
  * 2026-09-03 Frank「所有主页面都不应该有返回按钮」:雇主板是顶栏一级页,H1 行尾的返回撤掉。
  * 同日「所有的 table 右上角都应该有一个更新时间」:标题行尾挂 Updated(time 桶)。
- * 2026-09-05 /fe banner(Frank「雇主页现在没有 banner」):H1 进 Banner 图版(雇主档三张),
- * Updated 独占原标题行靠右。
+ * 2026-09-05 /fe banner(Frank「雇主页现在没有 banner」):H1 进 Banner 图版(雇主档三张)。
+ * 2026-09-13 Frank「这种应该像 jobs 页面一样放到 banner」「只需要一个时间即可」:计数进 banner 副题(照职位板),
+ * 更新时间挂筛选行尾(职位板同位),表上方计数行与「抓取」日撤。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -21,16 +22,16 @@
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
-import { Updated } from '@/components/time'
 import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
+import { noteTextOf } from './functions'
 import { useEmployersPage } from './hooks'
 import type { EmployersIn } from './types'
 import css from './employers.module.css'
 
 /**
- * 雇主板正文:图版 + 更新时间行 + 一张白卡(筛选区 / 表与卡 / 口径注)。
+ * 雇主板正文:图版(副题 = 计数)+ 一张白卡(筛选区 / 表与卡 / 口径注)。
  *
  * @param props SSR 首帧的第一页与初始筛选(见 EmployersIn 逐格注释)。
  * @returns 雇主板正文。
@@ -43,11 +44,8 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
         <Banner module={BANNER_MODULE}
           icon={<IconUsers />}
           title={p.t('de.title')}
-          sub={p.t('de.bnSub')}
+          sub={noteTextOf({ t: p.t, f: p.f, total: p.data.total })}
           images={BANNER_IMGS.employers} />
-        <div className={css.head}>
-          <Updated iso={updatedAt} t={p.t} />
-        </div>
         <div className={css.card}>
           <EmployerFilterBar p={p} />
           <EmployerBoard p={p} />
