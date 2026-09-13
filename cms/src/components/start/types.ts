@@ -15,7 +15,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 引擎输出形状特批(先例 icons/types):lib/stats 契约,零处读格、原样透传同源 MarketChart
 import type {
-  CityIndustryRow, CityRow, DailyRow, DliSchoolRow, OccRow, PilotCommRow, ProvExtra, StatRow,
+  CityIndustryRow, CityRow, DliSchoolRow, OccRow, PilotCommRow, ProvExtra, StatRow,
 } from '@/lib/stats'
 // eslint-disable-next-line local/no-import-in-leaf -- lib/employers 的引擎契约,原样透传给 employers 桶的洗行函数与卡片
 import type { SponsorEmployerRow } from '@/lib/employers'
@@ -283,11 +283,6 @@ export type HomeStats = {
   nocCat: Record<string, NocCat>
 
   /**
-   * 逐日 × 大类的在招量(趋势段:全国线 + 行业小图)。
-   */
-  daily: DailyRow[]
-
-  /**
    * 担保雇主里在 RCIP 指定名单上的雇主名(小写;只带交集,名单本身两千多家不下发)。
    */
   rcipNames: string[]
@@ -422,11 +417,6 @@ export type HomeCoreIn = {
    * 职业统计行(中间两卡与分类映射的原料)。
    */
   occRows: OccRowList
-
-  /**
-   * 逐日 × 大类的在招量。
-   */
-  dailyRows: DailyRow[]
 
   /**
    * 社区试点指定雇主原始行(名小写 + source)。
@@ -1303,11 +1293,6 @@ export type PulsePanel = {
    */
   jobsRows: JobsRow[]
 
-  /**
-   * 趋势段:全国线 + 行业小图;null = 逐日数据不够画。
-   */
-  trend: TrendPanel | null
-
 
 
   /**
@@ -1843,56 +1828,6 @@ export type EmpSec = {
 }
 
 /**
- * 趋势段的一条线(全国,或一个行业组)。
- */
-export type TrendSeries = {
-  /**
-   * 线的键(BROAD_ALL 或行业组键)。
-   */
-  key: string
-
-  /**
-   * 标题(已取词)。
-   */
-  title: string
-
-  /**
-   * 横轴日期(YYYY-MM-DD,升序)。
-   */
-  dates: string[]
-
-  /**
-   * 逐日在招量,与 dates 等长。
-   */
-  values: number[]
-
-  /**
-   * 最新一日的在招量文案。
-   */
-  lastText: string
-}
-
-/**
- * 趋势段:全国一条线 + 行业小图。
- */
-export type TrendPanel = {
-  /**
-   * 全国线。
-   */
-  nat: TrendSeries
-
-  /**
-   * 行业线(按 IND_KEYS 序;点数不足的组不出)。
-   */
-  inds: TrendSeries[]
-}
-
-/**
- * 日期 → 在招量的累加器。
- */
-export type DateSum = Map<string, number>
-
-/**
  * `occSecsOf` 的入参。
  */
 export type OccSecsIn = {
@@ -2000,36 +1935,6 @@ export type EmpCellRowIn = {
    * 界面语言(取哪种别名)。
    */
   lang: StartLang
-}
-
-/**
- * `trendOf` 的入参。
- */
-export type TrendOfIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 逐日 × 大类的在招量。
-   */
-  daily: DailyRow[]
-}
-
-/**
- * `lineOptionOf` 的入参。
- */
-export type LineOptionIn = {
-  /**
-   * 这条线。
-   */
-  s: TrendSeries
-
-  /**
-   * 是不是行业小图(小图不出坐标轴)。
-   */
-  small: boolean
 }
 
 /**
@@ -2916,41 +2821,6 @@ export type CitySectionIn = {
 }
 
 /**
- * TrendSection(趋势段)的 props。
- */
-export type TrendSectionIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
-
-  /**
-   * 全国线 + 行业小图;null = 数据不够画,段整块不出。
-   */
-  trend: TrendPanel | null
-}
-
-/**
- * TrendCard(一条趋势线的卡:标题 + 最新值 + 图)的 props。
- */
-export type TrendCardIn = {
-  /**
-   * 这条线。
-   */
-  s: TrendSeries
-
-  /**
-   * 是不是行业小图。
-   */
-  small: boolean
-}
-
-/**
  * DrawsLink(抽选与政策动态那一行链接)的 props。
  */
 export type DrawsLinkIn = {
@@ -2960,16 +2830,6 @@ export type DrawsLinkIn = {
   t: TFn
 }
 
-
-/**
- * `trendCardClsOf` / `trendHeightOf` 的入参。
- */
-export type TrendSmallIn = {
-  /**
-   * 是不是行业小图。
-   */
-  small: boolean
-}
 
 /**
  * `cityNameOf` 的入参。
@@ -2984,31 +2844,6 @@ export type CityNameIn = {
    * 界面语言。
    */
   lang: StartLang
-}
-
-/**
- * `seriesOf` 的入参。
- */
-export type SeriesIn = {
-  /**
-   * 逐日 × 大类的在招量。
-   */
-  daily: DailyRow[]
-
-  /**
-   * 要加总的大类清单(全国线给 [BROAD_ALL])。
-   */
-  broads: string[]
-
-  /**
-   * 线的键。
-   */
-  key: string
-
-  /**
-   * 标题(已取词)。
-   */
-  title: string
 }
 
 /**

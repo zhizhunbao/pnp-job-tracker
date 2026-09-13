@@ -107,17 +107,13 @@ export const ID_CITY_PILOT = 'pl-city-pilot'
 export const ID_CITY_DLI = 'pl-city-dli'
 
 /**
- * 趋势区的锚点 id(2026-09-04 新段:全国一条线 + 行业小图)。
- */
-export const ID_TREND = 'pl-trend'
-
-/**
  * 二级导航条上的分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
  * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航);
  * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」);
- * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前(省份 → 城市 → PR)。
+ * 2026-09-12 Frank「这两个换个位置吧」:城市提到 PR 前(省份 → 城市 → PR);
+ * 2026-09-12 Frank「在招走势 删了」:接新源就多一个台阶,画的是接入节奏不是市场;stats_daily 采集照跑,段与读端撤(趋势项与 ID_TREND 退役)。
  */
-export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND, ID_TREND]
+export const NAV_IDS = [ID_BOARDS, ID_SE, ID_PROV, ID_CITY, ID_PR_BAND]
 
 /**
  * 分表锚点 id 的连接符:分区 id + 连接符 + 分表键(pl-se-health / pl-boards-topOpen)。
@@ -724,6 +720,12 @@ export const DLI_KINDS = ['all', 'university', 'college']
 export const KEY_DLI_KIND_HEAD = 'city.kind.'
 
 /**
+ * QS 展示名次里的并列记号(如 "=45";2026-09-12 Frank「这个怎么还有 = 号」:展示去掉记号只留数,
+ * 用展示串而不是 qs_rank 数值 —— 数值列记的是榜内位次,UBC "=45" 的位次是 46,拿它显会与官方名次打架)。
+ */
+export const QS_TIE_MARK = '='
+
+/**
  * 留学院校表列键:院校名(2026-09-12 Frank「要不每个学校单独一行怎么样」:一校一行,
  * 原城市聚合行的 COL_DLI_N 院校数列与 CITY_KIND_DLI 落板埋点随形退役)。
  */
@@ -760,41 +762,6 @@ export const PILOT_NAME_SEP = ','
  */
 export const DLI_PAGE_SIZE = 10
 
-/**
- * 趋势主图(全国)高度(px)。
- */
-export const TREND_H_MAIN = 220
-
-/**
- * 趋势行业小图高度(px)。
- */
-export const TREND_H_SMALL = 110
-
-/**
- * 趋势线颜色(与 stats 主图首色同,#2563eb = blue-600)。
- */
-export const TREND_COLOR = '#2563eb'
-
-/**
- * 趋势线下方淡填充的透明度。
- */
-export const TREND_AREA_OPACITY = 0.08
-
-/**
- * 趋势小图的四边留白(px):小图不出坐标轴,只留一点呼吸。
- */
-export const TREND_PAD_SMALL = 4
-
-/**
- * 趋势主图的四边留白(px):要放下坐标轴刻度。
- */
-export const TREND_PAD_MAIN = 28
-
-/**
- * 一条趋势线至少要几个点才画(一个点画不成线)。
- */
-export const TREND_MIN_POINTS = 2
-
 
 /**
  * 埋点名:点了雇主表 / LMIA 表里的雇主名(沿用 2026-08-08 起就在白名单里的 se-view-jobs,不另起名)。
@@ -821,11 +788,6 @@ export const AXIS_VALUE = 'value'
  * echarts 序列类型:折线。
  */
 export const SERIES_LINE_TYPE = 'line'
-
-/**
- * 趋势线线宽(px)。
- */
-export const TREND_LINE_WIDTH = 2
 
 /**
  * 抽选表下发条数上限(前端 Top N 下拉再切;冷解读要按通道回看 12 期,

@@ -910,19 +910,6 @@ export const CITY_PILOT_TYPES = `SELECT type FROM pilot_communities
        ORDER BY type ASC`
 
 /**
- * 把脉页趋势段·逐日在招量(2026-09-04 Frank「趋势先一张全国,再按行业拆」)。
- * stats_daily 一行 = 日期 × 省 × 大类,大类含汇总行 'all';这里按日期 × 大类把十省加总,
- * 全国线取 broad='all',行业线由前端按 9 组再加总。$1=回看天数。
- * date 列是 varchar(YYYY-MM-DD),不是 date 型 —— 比较把日期折成同形串(ISO 串按字典序即按日序),
- * 直接拿 date 型比会报「operator does not exist: character varying >= date」(2026-09-04 实撞)。
- */
-export const STATS_DAILY_SERIES = `SELECT date AS date, broad, SUM(open_jobs)::int AS open_jobs
-       FROM stats_daily
-       WHERE date >= to_char(CURRENT_DATE - $1::int, 'YYYY-MM-DD')
-       GROUP BY date, broad
-       ORDER BY date ASC, broad ASC`
-
-/**
  * 社区试点(RCIP / FCIP)指定雇主名(小写)与来源(把脉页雇主段的两格,按名与担保雇主取交集;
  * 一行可能同属两个试点,source 形如 'RCIP+FCIP',前端按包含判)。
  */

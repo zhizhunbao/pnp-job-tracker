@@ -23,7 +23,7 @@ import {
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
-  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, trendOf,
+  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
 import type {
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
@@ -308,10 +308,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     return toJobsRows({ rows: provRowsOf({ market }), t, lang })
   }, [market, t, lang])
 
-  const trend = useMemo(function pickTrend() {
-    return trendOf({ t, daily: x.stats.daily })
-  }, [t, x.stats.daily])
-
   return {
     t,
     lang,
@@ -324,7 +320,6 @@ export function usePulse(x: PulseIn): PulsePanel {
     indGeos,
     prGeos,
     jobsRows,
-    trend,
     tEn,
     navSec,
     macroLoading: macroData == null,

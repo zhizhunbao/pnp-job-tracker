@@ -35,17 +35,17 @@ import {
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
-  COL_EMP, ID_CITY, ID_TREND, IND_BROADS, IND_KEYS,
-  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP, TREND_AREA_OPACITY, TREND_COLOR, TREND_H_MAIN,
-  TREND_H_SMALL, TREND_MIN_POINTS, TREND_PAD_MAIN, TREND_PAD_SMALL, URL_HOME_CITY_HEAD,
+  COL_EMP, ID_CITY, IND_BROADS, IND_KEYS,
+  KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
+URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
   CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
   CITY_HOURLY_DIGITS, CITY_UTM_TAIL, CITY_PILOT_PARAM_HEAD, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H,
-  COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KINDS, KEY_DLI_KIND_HEAD,
+  COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KINDS, KEY_DLI_KIND_HEAD, QS_TIE_MARK,
   COL_DLI_GRAD, COL_DLI_PROV, COL_QS, COL_SCHOOL, COL_TYPE,
   COL_CITY_WAGE, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
-  AXIS_CATEGORY, AXIS_VALUE, CHART_TRIGGER_AXIS, SERIES_LINE_TYPE, TREND_LINE_WIDTH, WAGE_K,
+WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
   HIST_WINDOW, HIST_MIN_N, TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, COL_READ, W_DATE,
   W_PROG, W_STREAM, W_SCORE, W_INV, W_READ,
@@ -94,8 +94,7 @@ import { StreamCell } from './streamcell'
 import { CityActCell } from './cityactcell'
 import { CityNameCell } from './citynamecell'
 import { DliSchoolCell } from './dlischoolcell'
-import type { ChartOption } from '@/components/stats'
-import type { CityRow, DailyRow } from '@/lib/stats'
+import type { CityRow } from '@/lib/stats'
 import { CACHE } from './variables'
 import type {
   BandClsIn, CleanupFn,
@@ -112,8 +111,8 @@ import type {
   SponsorRowList, StartCol, StartPill,
   StatRowList,
   StreamLabelIn, TierClsIn,
-  CityNameIn, DateSum, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
-  HiringMoreIn, IndRowsIn, LineOptionIn, OccSec, OccSecsIn, SeriesIn, SponsorBoards, TrendOfIn, TrendPanel, TrendSeries,
+  CityNameIn, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
+  HiringMoreIn, IndRowsIn, OccSec, OccSecsIn, SponsorBoards,
   HiringOccIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
   CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
@@ -123,7 +122,7 @@ import type {
   CityStatsProbe,
   NocCatMap, DesignatedIn, InPilotIn, PilotNamesIn, PilotSecsIn,
   Teer03In, VerdictTextIn,
-  TrendSmallIn, ValuableIn,
+ValuableIn,
   EmptyQueryResult, PulseDraw, DrawDbRow, DrawHist, DrawHistIn, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang,
   TFn,
@@ -252,7 +251,6 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     sponsor: sponsorSeedOf({ boards: x.boards, nocCat, natOcc, extra }),
     pulse: pulseScalarsOf({ occ: x.occRows }),
     nocCat,
-    daily: x.dailyRows,
     draws: toDrawsWithHistory({ rows: x.drawRows, limit: x.drawsLimit }),
     rcipNames,
     fcipNames,
@@ -276,7 +274,6 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     sponsor: x.core.sponsor,
     pulse: x.core.pulse,
     nocCat: x.core.nocCat,
-    daily: x.core.daily,
     draws: x.core.draws,
     rcipNames: x.core.rcipNames,
     fcipNames: x.core.fcipNames,
@@ -591,7 +588,6 @@ export function navItemsOf(x: NavItemsIn): NavItem[] {
     { id: ID_PROV, label: x.t('pulse.nav.prov') },
     { id: ID_CITY, label: x.t('pulse.nav.city') },
     { id: ID_PR_BAND, label: x.t('pulse.nav.pr') },
-    { id: ID_TREND, label: x.t('pulse.nav.trend') },
   ]
 }
 
@@ -1685,15 +1681,6 @@ export function makeStreamLabel(x: StreamLabelIn): LabelFn {
   return function streamLabel(label: string): string {
     return streamDisplay({ t: x.t, label })
   }
-}
-
-/**
- * 逐日在招量查询挂了时的兜底:空清单(趋势段整块不渲,不显示 0)。
- *
- * @returns 空清单。
- */
-export function emptyDailyRows(): DailyRow[] {
-  return []
 }
 
 /**
@@ -2854,6 +2841,9 @@ export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
     let qsText = DASH_MARK
     if (r.qsRankDisplay !== TEXT_NONE) {
       qsText = r.qsRankDisplay
+      if (qsText.startsWith(QS_TIE_MARK)) {
+        qsText = qsText.slice(QS_TIE_MARK.length)
+      }
     }
     out.push({
       key: r.name,
@@ -2871,8 +2861,10 @@ export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
 }
 
 /**
- * 表 4 的列(院校双行 / QS 排名 / 省 / 校区城 / 类型 / 可申工签;QS 列带排序是本形的点 ——
- * 点一下榜内大学浮顶,榜外沉底)。
+ * 表 4 的列(院校双行 / QS 排名 / 省 / 校区城 / 类型 / 免 PAL 研究生项目;QS 列带排序是本形的点 ——
+ * 点一下榜内大学浮顶,榜外沉底)。末列 2026-09-12 自「可申工签」改名:数据源是 IRCC 名单的
+ * Grad Program 列(免 PAL/TAL 的研究生学位项目),整张表本就是 PGWP=Yes 子集,校级「可申工签」
+ * 对每行恒真、按专业的 PGWP 资格不在这份名单里(Frank「不是所有公立学院都能申请工签吧,是分专业的吧」)。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -3102,127 +3094,6 @@ function pctOrDashOf(n: number | null): string {
     return DASH_MARK
   }
   return String(n) + PCT_MARK
-}
-
-/**
- * 趋势段的数据:全国线(stats_daily 的 'all' 汇总行按日加总)+ 每个行业组一条线(组内大类按日加总)。
- * 全国线点数不足 TREND_MIN_POINTS 整段不出(给 null);点数不足的行业组只丢它自己。
- *
- * @param x 取词函数与逐日 × 大类在招量。
- * @returns 趋势面板或 null。
- */
-export function trendOf(x: TrendOfIn): TrendPanel | null {
-  const nat = seriesOf({ daily: x.daily, broads: [BROAD_ALL], key: BROAD_ALL, title: x.t('pulse.trend.nat') })
-  if (nat == null) {
-    return null
-  }
-  const inds: TrendSeries[] = []
-  for (const key of IND_KEYS) {
-    const broads = IND_BROADS[key]
-    if (broads == null) {
-      continue
-    }
-    const s = seriesOf({ daily: x.daily, broads, key, title: x.t(KEY_IND_HEAD + key) })
-    if (s != null) {
-      inds.push(s)
-    }
-  }
-  return { nat, inds }
-}
-
-/**
- * 一条线:把清单里的大类按日期加总,日期升序;点数不足给 null。
- *
- * @param x 逐日行、大类清单、键与标题。
- * @returns 一条线或 null。
- */
-function seriesOf(x: SeriesIn): TrendSeries | null {
-  const sum: DateSum = new Map()
-  for (const d of x.daily) {
-    if (x.broads.includes(d.broad) === false) {
-      continue
-    }
-    const cur = sum.get(d.date)
-    if (cur == null) {
-      sum.set(d.date, d.openJobs)
-    } else {
-      sum.set(d.date, cur + d.openJobs)
-    }
-  }
-  const dates = Array.from(sum.keys())
-  dates.sort()
-  if (dates.length < TREND_MIN_POINTS) {
-    return null
-  }
-  const values: number[] = []
-  for (const d of dates) {
-    const v = sum.get(d)
-    if (v != null) {
-      values.push(v)
-    }
-  }
-  const last = values[values.length - 1]
-  let lastText = DASH_MARK
-  if (last != null) {
-    lastText = numOf(last)
-  }
-  return { key: x.key, title: x.title, dates, values, lastText }
-}
-
-/**
- * 一条线的 echarts 配置:单序列平滑线 + 淡填充;主图带坐标轴与轴触发提示,小图只有线。
- *
- * @param x 这条线与是否小图。
- * @returns echarts 配置。
- */
-export function lineOptionOf(x: LineOptionIn): ChartOption {
-  let pad = TREND_PAD_MAIN
-  if (x.small) {
-    pad = TREND_PAD_SMALL
-  }
-  return {
-    animation: false,
-    grid: { left: pad, right: pad, top: pad, bottom: pad, containLabel: x.small === false },
-    tooltip: { trigger: CHART_TRIGGER_AXIS, show: x.small === false },
-    xAxis: { type: AXIS_CATEGORY, data: x.s.dates, show: x.small === false, boundaryGap: false },
-    yAxis: { type: AXIS_VALUE, scale: true, show: x.small === false },
-    series: [{
-      type: SERIES_LINE_TYPE,
-      data: x.s.values,
-      showSymbol: false,
-      smooth: true,
-      lineStyle: { width: TREND_LINE_WIDTH, color: TREND_COLOR },
-      itemStyle: { color: TREND_COLOR },
-      areaStyle: { color: TREND_COLOR, opacity: TREND_AREA_OPACITY },
-    }],
-  }
-}
-
-/**
- * 趋势卡的类:主图与小图共一个底,主图不进网格。
- *
- * @param x 是否小图。
- * @returns 类名。
- */
-export function trendCardClsOf(x: TrendSmallIn): string {
-  const cls = [cssOf(css.trendCard)]
-  if (x.small === false) {
-    cls.push(cssOf(css.trendCardMain))
-  }
-  return joinCls(cls)
-}
-
-/**
- * 趋势图高度(px)。
- *
- * @param x 是否小图。
- * @returns 高度。
- */
-export function trendHeightOf(x: TrendSmallIn): number {
-  if (x.small) {
-    return TREND_H_SMALL
-  }
-  return TREND_H_MAIN
 }
 
 /**

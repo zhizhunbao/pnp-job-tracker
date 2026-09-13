@@ -933,14 +933,14 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   // #312 보조 내비 짧은 라벨(TOC와 섹션 h2 전체 명칭 차별화)
   'pulse.nav.se': '고용주', 'pulse.nav.occ': '직업', 'pulse.nav.prov': '주별', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '승인', 'pulse.nav.draws': '추첨',
   // 2026-09-04 진단 페이지 재구성(docs/design/把脉页重构-20260904.md): 6개 섹션 내비 + 업종별 표 + 도시 / 추세 섹션
-  'pulse.nav.city': '도시', 'pulse.nav.trend': '추세',
-  'pulse.city': '도시', 'pulse.trend': '구인 추세', 'pulse.trend.nat': '전국',
+  'pulse.nav.city': '도시',
+  'pulse.city': '도시',
   // 2026-09-11 도시 섹션 개편(docs/design/把脉页城市段-20260911.md): 검색 + 표 4장
   'pulse.city.main': '주요 도시', 'pulse.city.dli': '유학 학교', 'pulse.city.qs': 'QS 순위',
   'pulse.city.name': '도시', 'pulse.city.open': '채용', 'pulse.city.wage': '중위 연봉',
   'pulse.city.pop': '인구', 'pulse.city.unemp': '실업률', 'pulse.city.wageH': '중위 시급',
   'pulse.city.comm': '커뮤니티',
-  'pulse.city.dliN': 'DLI 학교', 'city.facts': '개요', 'city.byInd': '업종 분포', 'city.byIndCol': '업종', 'city.channel': '전용 채널', 'city.school': '학교', 'city.schoolType': '유형', 'city.pub': '공립', 'city.priv': '사립', 'city.kind.all': '전체', 'city.kind.university': '대학교', 'city.kind.college': '칼리지', 'city.none': '수록되지 않은 도시입니다', 'pulse.city.dliGrad': 'PGWP 가능',
+  'pulse.city.dliN': 'DLI 학교', 'city.facts': '개요', 'city.byInd': '업종 분포', 'city.byIndCol': '업종', 'city.channel': '전용 채널', 'city.school': '학교', 'city.schoolType': '유형', 'city.pub': '공립', 'city.priv': '사립', 'city.kind.all': '전체', 'city.kind.university': '대학교', 'city.kind.college': '칼리지', 'city.none': '수록되지 않은 도시입니다', 'pulse.city.dliGrad': 'PAL 면제 대학원 과정',
   'pulse.top.open': '구인 최다', 'pulse.top.wage': '최고 임금',
   'pulse.ind.health': '의료', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '기능직',
   'pulse.ind.food': '요식 및 소매', 'pulse.ind.transport': '운송 및 물류', 'pulse.ind.manufacturing': '제조 및 자원',

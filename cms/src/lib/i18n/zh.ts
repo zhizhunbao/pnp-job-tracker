@@ -1031,14 +1031,14 @@ export const siteZh = {
   // #312 二级导航短词(TOC 与分区 h2 全称差异化,同屏同一事实只说一次)
   'pulse.nav.se': '雇主', 'pulse.nav.occ': '职业', 'pulse.nav.prov': '省份', 'pulse.nav.pr': 'PR', 'pulse.spr': 'PR', 'pulse.pr.approved': '获批', 'pulse.nav.draws': '抽选',
   // 2026-09-04 把脉页重构(docs/design/把脉页重构-20260904.md):六段导航 + 行业分表 + 城市 / 趋势两段
-  'pulse.nav.city': '城市', 'pulse.nav.trend': '趋势',
-  'pulse.city': '城市', 'pulse.trend': '在招走势', 'pulse.trend.nat': '全国',
+  'pulse.nav.city': '城市',
+  'pulse.city': '城市',
   // 2026-09-11 城市段重设计(docs/design/把脉页城市段-20260911.md):一搜四表
   'pulse.city.main': '主要城市', 'pulse.city.dli': '留学院校', 'pulse.city.qs': 'QS 排名',
   'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
   'pulse.city.pop': '人口', 'pulse.city.unemp': '失业率', 'pulse.city.wageH': '中位时薪',
   'pulse.city.comm': '社区',
-  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.kind.all': '全部', 'city.kind.university': '大学', 'city.kind.college': '学院', 'city.none': '本站未收录该城市', 'pulse.city.dliGrad': '可申工签',
+  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.kind.all': '全部', 'city.kind.university': '大学', 'city.kind.college': '学院', 'city.none': '本站未收录该城市', 'pulse.city.dliGrad': '免 PAL 研究生项目',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
   'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',

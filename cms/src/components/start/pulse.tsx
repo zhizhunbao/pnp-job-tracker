@@ -31,7 +31,6 @@ import { Hero } from './hero'
 import { PrSection } from './prsection'
 import { ProvSection } from './provsection'
 import { PulseNav } from './pulsenav'
-import { TrendSection } from './trendsection'
 import { usePulse } from './hooks'
 import type { PulseIn } from './types'
 import css from './start.module.css'
@@ -62,7 +61,6 @@ export function Pulse({ stats }: PulseIn) {
           jobsRows={v.jobsRows} />
         <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} />
         <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
-        <TrendSection t={v.t} updatedAt={stats.checkedAt} trend={v.trend} />
         <DrawsSection t={v.t}
           tEn={v.tEn}
           lang={v.lang}

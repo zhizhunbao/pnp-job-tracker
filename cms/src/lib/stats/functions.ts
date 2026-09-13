@@ -15,7 +15,7 @@
 import { queryRows, queryRowsOrEmpty, SQL, count, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type { Db } from '../db'
 import {
-  CITY_DLI_LIMIT, CITY_IND_TOP, DAILY_DAYS_BACK, OCC_COL_NONE, OCC_COL_PREFIX,
+  CITY_DLI_LIMIT, CITY_IND_TOP, OCC_COL_NONE, OCC_COL_PREFIX,
   OCC_EXTRA_COLUMNS, PG_UNDEFINED_COLUMN,
   PG_UNDEFINED_TABLE, PG_CODE_NONE, STAT_SOURCE_FIELDS, MAX_FINE_ROWS, EMPTY_TOP_CITIES, MID_ALL,
 } from './constants'
@@ -23,7 +23,7 @@ import type {
   BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
   CityDetail, CityDetailIn, CityDetailOut, CityKeyIn, CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
   CityIndustryOut,
-  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DailyRow, DailyRowsOut, DliCitiesOut, DliSchoolRow,
+  CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DliCitiesOut, DliSchoolRow,
   EmptyList,
   FineCountsIn, FineRowsOut,
   MaybeStr, OccRowsOut, PgFailure, PilotCommRow, PilotCommsOut, ProvExtraMap, ProvExtraOut, RawRowsOut, SrcRowsOut,
@@ -655,37 +655,6 @@ export function toDliSchoolRow(r: Row): DliSchoolRow {
     qsRank: numOrNull(r.qs_rank), qsRankDisplay: text(r.qs_rank_display),
     kind: text(r.kind),
   }
-}
-
-/**
- * 把脉页趋势段·逐日在招量(2026-09-04:先一张全国线,再按行业小图)。
- * 回看 DAILY_DAYS_BACK 天;缺表容错同 loadCityStats(stats_daily 未落地 → 空清单,段整块不渲染)。
- *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 逐日 × 大类的在招量,按日期升序。
- */
-export async function loadDailySeries(db: Db): DailyRowsOut {
-  try {
-    return await queryRows({ db: db, sql: SQL.STATS_DAILY_SERIES, params: [DAILY_DAYS_BACK], map: toDailyRow })
-  } catch (e) {
-    if (e instanceof Error) {
-      const code = pgCodeOf(e)
-      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
-        return []
-      }
-    }
-    throw e
-  }
-}
-
-/**
- * 一行逐日在招量(SQL.STATS_DAILY_SERIES)→ `DailyRow`。
- *
- * @param r 库里的一行。
- * @returns 洗净的一行。
- */
-export function toDailyRow(r: Row): DailyRow {
-  return { date: text(r.date), broad: text(r.broad), openJobs: count(r.open_jobs) }
 }
 
 /**
