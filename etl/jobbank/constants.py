@@ -33,6 +33,9 @@ OUT_SNAP_ROOT = IN_SNAP_ROOT
 """同一个快照根写入(列表抓取写 <今天>/,详情抓取写 <今天>/details/)。"""
 
 ENC_UTF8 = "utf-8"
+
+ERRORS_REPLACE = "replace"
+"""读既有 .md 的解码错误策略(单篇坏字节替换不中止;回填件用)。"""
 """全部读写的统一编码。"""
 
 JSON_INDENT = 2

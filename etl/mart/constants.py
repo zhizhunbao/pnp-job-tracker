@@ -1096,8 +1096,23 @@ FRONT_URL_RE = re.compile(r"^url:\s*(.+)$", re.M)
 FRONTMATTER_RE = re.compile(r"^---.*?\n---\s*", re.S)
 """frontmatter 整块(只剥第一处)。"""
 
-"""JD_NOISE / JD_DEDUP_MIN / BLANK_RUN_RE 三常量 2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5) 随 clean_jd 搬进 jobbank
-(谁写 .md 谁清洗),本域 jd_body 改 import jobbank.functions.clean_jd。"""
+JD_NOISE = (
+    re.compile(r"–\s*Help\b", re.I),
+    re.compile(r"^Green jobs contribute to environmental", re.I),
+    re.compile(r"Learn more about green jobs", re.I),
+    re.compile(r"provided by the employer; it was not verified by Job Bank", re.I),
+)
+"""Job Bank 页面样板噪音(E8-04 文案审计,2026-07-07 用户点名「莫名其妙+重复」):
+帮助浮层(「Green job – Help」×3)/通用解释/免责腿被抓进 JD 正文。逐条:
+① tooltip 标题行(xxx – Help,JB 用长横线;**不匹配连字符**,防误杀「- Help customers」类真内容);
+② 通用解释(非本岗内容);③ 同上;④ 免责腿。
+2026-09-12 汇装提速批 1:jobbank 已有同一份;过渡副本,批 2 随 mart 的 clean_jd 整段删。"""
+
+JD_DEDUP_MIN = 40
+"""只对长行去重(短行如 Yes/标签合法重复)。"""
+
+BLANK_RUN_RE = re.compile(r"\n{3,}")
+"""三个以上换行折成一个空行。"""
 
 
 
