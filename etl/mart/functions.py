@@ -118,7 +118,7 @@ from mart.constants import (
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
-    K_WIKI, K_YEAR, K_RULE_LIST, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
+    K_WIKI, K_YEAR, K_RULE_LIST, K_RULE_OCC, K_RULE_PROGRAMS, K_RULE_PROV, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
     LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
@@ -2108,15 +2108,18 @@ def load_draw_stream_zh() -> dict:
 
 
 def load_draw_rule_streams() -> dict:
-    """抽选类别 → 门槛通道对照(人工核定表,见 IN_DRAW_RULE_STREAMS 注)。
+    """抽选类别 → 门槛对照(人工核定表,见 IN_DRAW_RULE_STREAMS 注)。
 
-    值序列化成 JSON 串进 varchar 列;缺键的类别不进字典(row 取不到 = None,前端退回全省门槛)。
+    v2 对象 {prov, streams, programs, occStreams} 序列化成 JSON 串进 varchar 列;
+    缺键的类别不进字典(row 取不到 = None,前端退回全省门槛)。
     """
     out: dict = {}
     if not IN_DRAW_RULE_STREAMS.exists():
         return out
     for k, v in read_table_soft(IN_DRAW_RULE_STREAMS).items():
-        out[k] = json.dumps(v.get(K_RULE_LIST, []), ensure_ascii=False)
+        out[k] = json.dumps({K_RULE_PROV: v.get(K_RULE_PROV, ""), K_RULE_LIST: v.get(K_RULE_LIST, []),
+                             K_RULE_PROGRAMS: v.get(K_RULE_PROGRAMS, []), K_RULE_OCC: v.get(K_RULE_OCC, [])},
+                            ensure_ascii=False)
     return out
 
 
@@ -2151,7 +2154,7 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
     for cat_key, rounds in (x.ee_history or {}).items():
         for dr in rounds:
             rows.append(to_ee_draw_row(EeDrawIn(category=cat_key, draw=dr,
-                                                fetched=x.ee_fetched)))
+                                                fetched=x.ee_fetched, rule_streams=x.rule_streams)))
     return rows
 
 
@@ -2573,7 +2576,8 @@ def to_ee_draw_row(x: EeDrawIn) -> dict:
     return {"province": PROV_FED, "label": x.category, "scale": SCALE_CRS,
             "url": EE_ROUNDS_URL, "fetched": x.fetched, "kind": DRAW_KIND_DRAW,
             "drawDate": x.draw.get("date"), "stream": x.draw.get("drawName", ""),
-            "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": ""}
+            "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": "",
+            "ruleStreams": x.rule_streams.get(x.draw.get("drawName", ""))}
 
 
 def to_applies_rule(nocs: dict) -> dict:

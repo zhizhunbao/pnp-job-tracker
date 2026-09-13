@@ -30,8 +30,8 @@ from bs4 import BeautifulSoup
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
-from crawl.functions import convert_md, get_cached_page
-from crawl.scheme import ConvertIn
+from crawl.functions import convert_md, get_cached_page, put_cached_page
+from crawl.scheme import CachePutIn, ConvertIn
 from pnp.constants import (
     ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL, ABR_EMP_REVENUE_RE,
     ABR_EMP_STAFF_LABEL_TPL, ABR_EMP_STAFF_RE, ABR_EMP_STREAM, ABR_EMP_YEARS_LABEL_TPL, ABR_EMP_YEARS_RE,
@@ -310,11 +310,18 @@ from pnp.constants import (
     ABR_SECTION_RR, ABR_SECTION_RR_LANG, FACTOR_STREAM_CLOSED, MBR_IES_CLB_RE, MBR_IES_FACTOR_OF, MBR_IES_HEAD,
     MBR_IES_MIN_ROWS, MBR_IES_PATHWAYS, MBR_IES_ROW_RE, MBR_IES_RULE_MARK, MBR_IES_SECTION_TPL,
     MBR_PROBLEM_IES_FACTOR_TPL, MBR_PROBLEM_IES_LANG_TPL, MBR_PROBLEM_IES_ROWS_TPL, ONR_CLOSED_LABEL_TPL,
-    ONR_CLOSED_RE, ONR_EJO_PAGES, ONR_PROBLEM_CLOSED_TPL, ONR_SECTION_CLOSED, OP_RULE,
+    ONR_CLOSED_RE, ONR_EJO_PAGES, ONR_PROBLEM_CLOSED_TPL, ONR_SECTION_CLOSED, OP_RULE, FACTOR_OCC_PATHWAY,
+    AB_CRAWL_SLUG, AB_DHCP_URL, ABR_DHCP_COMMON_RULES, ABR_DHCP_EE_RULES, ABR_DHCP_EE_STREAM, ABR_DHCP_NON_EE_RULES,
+    ABR_DHCP_NON_EE_STREAM, ABR_DHCP_PROF_LABEL, ABR_DHCP_PROF_RE, ABR_DHCP_SPLIT, ABR_DHCP_TITLE,
+    ABR_PROBLEM_DHCP_PROF, ABR_PROBLEM_DHCP_SPLIT, ABR_SECTION_DHCP_EE, ABR_SECTION_DHCP_NON_EE, ABR_SECTION_DHCP_PROF,
+    NBR_EXP_PAGE_RULES, NBR_GRAD_RULES, NBR_GRADUATES_STREAM, NBR_PAGE_RULES,
+    NBR_PRIO_EXP_LABEL_TPL, NBR_PRIO_EXP_RE, NBR_PRIO_RULES, NBR_PRIORITY_STREAM, NBR_PROBLEM_PRIO_EXP,
+    NBR_PROBLEM_SEG_TPL, NBR_SECTION_PAGE, NBR_SECTION_PAGE_EXP, NBR_SECTION_PAGE_GRAD, NBR_SECTION_PAGE_PRIO,
+    NBR_SEG_EXP_RE, NBR_SEG_GENERAL_RE, NBR_SEG_GRAD_RE, NBR_SEG_PRIO_RE,
 )
 """2026-09-13「抓」批(ON 三条 EJO 流关闭通告 / AB Express Entry 流与乡村振兴流 / MB 国际教育流三路径)
 的常量单列一块 —— 同上一块的理由:主块按字母序排满,批量插名易错行;ruff 未启 isort,多块合法。"""
-from pnp.scheme import AbRuleRowsIn, MbIesTableIn
+from pnp.scheme import MbIesTableIn, RuleRowsIn
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -3044,8 +3051,9 @@ def ab_employer_reqs(emp_txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
-def ab_rule_rows(x: AbRuleRowsIn) -> ReqsOut:
-    """一页上按规则清单逐条取原句:单位非空 = 数值行(第一组是数),空 = 条文行(原句整条进 valueText)。"""
+def rule_rows(x: RuleRowsIn) -> ReqsOut:
+    """一页上按规则清单逐条取原句:单位非空 = 数值行(第一组是数),空 = 条文行(原句整条进 valueText)。
+    AB / NB 共用(2026-09-13 NB 三路径批从 ab_rule_rows 抽成通用件,行构造器由入参注入)。"""
     rows: list = []
     problems: list = []
     for rule_re, factor, unit, label_tpl, problem in x.rules:
@@ -3054,12 +3062,12 @@ def ab_rule_rows(x: AbRuleRowsIn) -> ReqsOut:
             problems.append(problem)
             continue
         if unit:
-            rows.append(to_ab_req(ReqIn(stream=x.stream, factor=factor, value=int(m.group(1)), unit=unit,
-                                        value_text=m.group(0), section=x.section,
-                                        label=label_tpl.format(n=m.group(1)), url=x.url)))
+            rows.append(x.to_row(ReqIn(stream=x.stream, factor=factor, value=int(m.group(1)), unit=unit,
+                                       value_text=m.group(0), section=x.section,
+                                       label=label_tpl.format(n=m.group(1)), url=x.url)))
         else:
-            rows.append(to_ab_req(ReqIn(stream=x.stream, factor=factor, op=OP_RULE, value_text=m.group(0),
-                                        section=x.section, label=label_tpl, url=x.url)))
+            rows.append(x.to_row(ReqIn(stream=x.stream, factor=factor, op=OP_RULE, value_text=m.group(0),
+                                       section=x.section, label=label_tpl, url=x.url)))
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -3069,12 +3077,12 @@ def ab_ee_reqs() -> ReqsOut:
                                        drop_junk=True, main_only=True, cache_first=True)))
     rows: list = []
     problems: list = []
-    for part in (ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_STREAM, url=AB_EE_URL,
-                                           section=ABR_SECTION_EE_MIN, rules=ABR_EE_RULES)),
-                 ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_TECH_STREAM, url=AB_EE_URL,
-                                           section=ABR_SECTION_EE_TECH, rules=ABR_EE_TECH_RULES)),
-                 ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_EE_SECTORS_STREAM, url=AB_EE_URL,
-                                           section=ABR_SECTION_EE_SECTORS, rules=ABR_EE_SECTORS_RULES))):
+    for part in (rule_rows(RuleRowsIn(to_row=to_ab_req, txt=txt, stream=ABR_EE_STREAM, url=AB_EE_URL,
+                                      section=ABR_SECTION_EE_MIN, rules=ABR_EE_RULES)),
+                 rule_rows(RuleRowsIn(to_row=to_ab_req, txt=txt, stream=ABR_EE_TECH_STREAM, url=AB_EE_URL,
+                                      section=ABR_SECTION_EE_TECH, rules=ABR_EE_TECH_RULES)),
+                 rule_rows(RuleRowsIn(to_row=to_ab_req, txt=txt, stream=ABR_EE_SECTORS_STREAM, url=AB_EE_URL,
+                                      section=ABR_SECTION_EE_SECTORS, rules=ABR_EE_SECTORS_RULES))):
         rows += part.rows
         problems += part.problems
     return ReqsOut(rows=rows, problems=problems)
@@ -3084,8 +3092,8 @@ def ab_rr_reqs() -> ReqsOut:
     """乡村振兴流:七条要求 + 语言表两档(读 crawl 缓存)。"""
     txt = fold_ws(page_text(PageTextIn(url=AB_RR_URL, timeout_s=ABR_TIMEOUT_S,
                                        drop_junk=True, main_only=True, cache_first=True)))
-    part = ab_rule_rows(AbRuleRowsIn(txt=txt, stream=ABR_RR_STREAM, url=AB_RR_URL,
-                                     section=ABR_SECTION_RR, rules=ABR_RR_RULES))
+    part = rule_rows(RuleRowsIn(to_row=to_ab_req, txt=txt, stream=ABR_RR_STREAM, url=AB_RR_URL,
+                                section=ABR_SECTION_RR, rules=ABR_RR_RULES))
     rows = part.rows
     problems = part.problems
     for r in rows:
@@ -3102,8 +3110,44 @@ def ab_rr_reqs() -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def ab_dhcp_text() -> str:
+    """医疗专线页正文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层(链自 EE 流资格页)。"""
+    hit = get_cached_page(AB_DHCP_URL)
+    html = hit.html
+    if not html:
+        html = fetch_html(FetchHtmlIn(url=AB_DHCP_URL, timeout_s=ABR_TIMEOUT_S))
+        put_cached_page(CachePutIn(slug=AB_CRAWL_SLUG, url=AB_DHCP_URL, html=html, title=ABR_DHCP_TITLE))
+    return fold_ws(text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True)))
+
+
+def ab_dhcp_reqs() -> ReqsOut:
+    """医疗专线两个选项:共用三条 + EE 版四条 / 非 EE 版两条 + 合格医疗职业清单各一行。"""
+    txt = ab_dhcp_text()
+    rows: list = []
+    problems: list = []
+    cut = txt.find(ABR_DHCP_SPLIT)
+    if cut < 0:
+        problems.append(ABR_PROBLEM_DHCP_SPLIT)
+        return ReqsOut(rows=rows, problems=problems)
+    halves = ((txt[:cut], ABR_DHCP_EE_STREAM, ABR_SECTION_DHCP_EE, ABR_DHCP_EE_RULES),
+              (txt[cut:], ABR_DHCP_NON_EE_STREAM, ABR_SECTION_DHCP_NON_EE, ABR_DHCP_NON_EE_RULES))
+    for half, stream, section, own in halves:
+        for rules in (ABR_DHCP_COMMON_RULES, own):
+            part = rule_rows(RuleRowsIn(to_row=to_ab_req, txt=half, stream=stream, url=AB_DHCP_URL,
+                                        section=section, rules=rules))
+            rows += part.rows
+            problems += part.problems
+        prof = ABR_DHCP_PROF_RE.search(half)
+        if prof:
+            rows.append(to_ab_req(ReqIn(stream=stream, factor=FACTOR_OCC_PATHWAY, op=OP_RULE, value_text=prof.group(1),
+                                        section=ABR_SECTION_DHCP_PROF, label=ABR_DHCP_PROF_LABEL, url=AB_DHCP_URL)))
+        else:
+            problems.append(ABR_PROBLEM_DHCP_PROF)
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_ab_req() -> None:
-    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流。"""
+    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流 + 医疗专线。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_REQ))
     txt = page_text(PageTextIn(url=AB_AOS_URL, timeout_s=ABR_TIMEOUT_S,
                                drop_junk=False, main_only=True))
@@ -3117,7 +3161,7 @@ def build_ab_req() -> None:
     employer = ab_employer_reqs(emp_txt)
     reqs += employer.rows
     problems += employer.problems
-    for part in (ab_ee_reqs(), ab_rr_reqs()):
+    for part in (ab_ee_reqs(), ab_rr_reqs(), ab_dhcp_reqs()):
         reqs += part.rows
         problems += part.problems
     if problems:
@@ -3738,8 +3782,56 @@ def nb_read_guides(urls: dict) -> NbGuidesOut:
     return NbGuidesOut(clbs=clbs, versions=versions, exp_txt=exp_txt, problems=problems)
 
 
+def nb_page_reqs() -> ReqsOut:
+    """通道页四段(总体 / Experience / Graduates / Priority Occupations)各按规则清单取原句
+    (读 crawl 缓存;2026-09-13 Frank「按那个 抽选 table 来 补数据」)。"""
+    txt = fold_ws(page_text(PageTextIn(url=NBR_PAGE_URL, timeout_s=NBR_TIMEOUT_S,
+                                       drop_junk=True, main_only=True, cache_first=True)))
+    rows: list = []
+    problems: list = []
+    segs = ((NBR_SEG_GENERAL_RE, NBR_STREAM, NBR_SECTION_PAGE, NBR_PAGE_RULES),
+            (NBR_SEG_EXP_RE, NBR_EXPERIENCE_STREAM, NBR_SECTION_PAGE_EXP, NBR_EXP_PAGE_RULES),
+            (NBR_SEG_GRAD_RE, NBR_GRADUATES_STREAM, NBR_SECTION_PAGE_GRAD, NBR_GRAD_RULES),
+            (NBR_SEG_PRIO_RE, NBR_PRIORITY_STREAM, NBR_SECTION_PAGE_PRIO, NBR_PRIO_RULES))
+    for seg_re, stream, section, rules in segs:
+        seg = seg_re.search(txt)
+        if not seg:
+            problems.append(NBR_PROBLEM_SEG_TPL.format(name=section))
+            continue
+        part = rule_rows(RuleRowsIn(to_row=to_nb_req, txt=seg.group(1), stream=stream, url=NBR_PAGE_URL,
+                                    section=section, rules=rules))
+        rows += part.rows
+        problems += part.problems
+        if stream == NBR_PRIORITY_STREAM:
+            prio = nb_prio_exp_rows(seg.group(1))
+            rows += prio.rows
+            problems += prio.problems
+    for r in rows:
+        if r[K_FACTOR] == FACTOR_EMP_YEARS:
+            r[K_SUBJECT] = REQ_SUBJECT_EMPLOYER
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_prio_exp_rows(seg: str) -> ReqsOut:
+    """Priority Occupations 的经验条文:官方写英文数词(one year)→ 月数。"""
+    rows: list = []
+    problems: list = []
+    m = NBR_PRIO_EXP_RE.search(seg)
+    years = None
+    if m:
+        years = word_n_of(m.group(1))
+    if m and years is not None:
+        months = years * MBR_MONTHS_PER_YEAR
+        rows.append(to_nb_req(ReqIn(stream=NBR_PRIORITY_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
+                                    value_text=m.group(0), section=NBR_SECTION_PAGE_PRIO,
+                                    label=NBR_PRIO_EXP_LABEL_TPL.format(n=months), url=NBR_PAGE_URL)))
+    else:
+        problems.append(NBR_PROBLEM_PRIO_EXP)
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_nb_req() -> None:
-    """NB 门槛入口:三份指南互校语言 + Experience pathway 的在职时长与居住时长。"""
+    """NB 门槛入口:三份指南互校语言 + Experience pathway 的在职时长与居住时长 + 通道页四段条文。"""
     say(PRINT_OUT_TPL.format(path=OUT_NB_REQ))
     urls = nb_guide_urls()
     missing: list = []
@@ -3779,6 +3871,9 @@ def build_nb_req() -> None:
                                     label=fold_ws(residence.group(0)).strip())))
     else:
         problems.append(NBR_PROBLEM_RESIDENCE)
+    page = nb_page_reqs()
+    reqs += page.rows
+    problems += page.problems
     if problems:
         fail_zh(problems)
     version = sorted(guides.versions)[-1]

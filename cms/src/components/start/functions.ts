@@ -133,7 +133,7 @@ import type {
 ValuableIn,
   EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesLoadIn, RulesOpenIn, RulesProbe, RuleLineJson, RulesTitleIn,
-  MaybeStreams, RulesOfDrawIn, RulesHeadIn,
+  MaybeRuleMap, RulesOfDrawIn, RulesHeadIn, RuleMap, OccsOfDrawIn, OccLineJson, RulesData,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
@@ -3206,25 +3206,29 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     invitations: numOrNullOf(x.r.invitations),
     url: textOf(x.r.url),
     note: textOf(x.r.note),
-    ruleStreams: ruleStreamsOf(x.r.rule_streams),
+    ruleMap: ruleMapOf(x.r.rule_streams),
   }
 }
 
 /**
- * 库里的门槛通道清单 JSON 串 → 清单;列不存在 / NULL / 坏串都是「没对照」= null。
+ * 库里的门槛对照 JSON 串 → 对照对象;列不存在 / NULL / 坏串 / 形不对都是「没对照」= null。
  *
  * @param v 库值。
- * @returns 通道名清单;没对照 null。
+ * @returns 对照对象;没对照 null。
  */
-function ruleStreamsOf(v: string | null | undefined): MaybeStreams {
+function ruleMapOf(v: string | null | undefined): MaybeRuleMap {
   if (v == null) {
     return null
   }
-  const parsed = jsonOrNull<string[]>(v)
-  if (parsed == null || Array.isArray(parsed) === false) {
+  const parsed = jsonOrNull<RuleMap>(v)
+  if (parsed == null || typeof parsed.prov !== 'string') {
     return null
   }
-  return parsed
+  if (Array.isArray(parsed.streams) === false || Array.isArray(parsed.programs) === false
+    || Array.isArray(parsed.occStreams) === false) {
+    return null
+  }
+  return { prov: parsed.prov, streams: parsed.streams, programs: parsed.programs, occStreams: parsed.occStreams }
 }
 
 /**
@@ -3290,10 +3294,10 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     score: numTextOf(x.r.score),
     invitations: numTextOf(x.r.invitations),
     href: x.r.url,
-    rulesProv: drawRulesProvOf(x.r.province),
+    rulesProv: drawRulesProvOf(x.r),
     onRules: noop,
     drawNote: x.r.note,
-    ruleStreams: x.r.ruleStreams,
+    ruleMap: x.r.ruleMap,
     actLinkText: x.t('pulse.act.link'),
     actRulesText: x.t('pulse.act.rules'),
     actBtnCls: actBtnClsOf(),
@@ -3312,16 +3316,20 @@ function noop(): void {
 }
 
 /**
- * 「门槛」钮开哪省:省抽选开该省弹框;联邦 EE 类别抽选没有对应门槛组,不出钮。
+ * 「门槛」钮开哪省:对照表说了算(联邦类别轮次与 NB 的 AIP 轮次去 FED 取);没对照的省抽选开本省;
+ * 没对照的联邦轮次没有对应门槛组,不出钮。
  *
- * @param province 两位省码或 FED。
+ * @param r 这一期。
  * @returns 省码;不出钮时 TEXT_NONE。
  */
-function drawRulesProvOf(province: string): string {
-  if (province === PROV_FED) {
+function drawRulesProvOf(r: PulseDraw): string {
+  if (r.ruleMap != null) {
+    return r.ruleMap.prov
+  }
+  if (r.province === PROV_FED) {
     return TEXT_NONE
   }
-  return province
+  return r.province
 }
 
 /**
@@ -3337,20 +3345,48 @@ function makeRulesOpen(x: RulesOpenIn): ClickFn {
 }
 
 /**
- * 弹框里该出哪些门槛:类别对到了通道就只留那些通道的行(按对照表顺序分组),没对照就整省全出。
+ * 弹框里该出哪些门槛:对到了通道 / 项目就只留那些行(按对照表顺序分组),没对照就整省全出。
  *
- * @param x 该省全部门槛行与对到的通道名。
+ * @param x 该省全部门槛行与对照。
  * @returns 要出的行。
  */
 export function rulesOfDraw(x: RulesOfDrawIn): RuleLineJson[] {
-  if (x.ruleStreams == null) {
+  if (x.ruleMap == null) {
     return x.lines
   }
   const out: RuleLineJson[] = []
-  for (const st of x.ruleStreams) {
+  for (const st of x.ruleMap.streams) {
     for (const r of x.lines) {
       if (r.stream === st) {
         out.push(r)
+      }
+    }
+  }
+  for (const pg of x.ruleMap.programs) {
+    for (const r of x.lines) {
+      if (r.program === pg) {
+        out.push(r)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 弹框里该出哪些限定职业:对照表点名的清单,按清单顺序;没对照 = 没有限定职业。
+ *
+ * @param x 该省全部清单职业与对照。
+ * @returns 要出的职业。
+ */
+export function occsOfDraw(x: OccsOfDrawIn): OccLineJson[] {
+  if (x.ruleMap == null) {
+    return []
+  }
+  const out: OccLineJson[] = []
+  for (const st of x.ruleMap.occStreams) {
+    for (const o of x.lines) {
+      if (o.stream === st) {
+        out.push(o)
       }
     }
   }
@@ -3371,14 +3407,14 @@ export function makeRulesLoad(x: RulesLoadIn): () => CleanupFn {
       try {
         const res = await fetch(URL_RULES_API_HEAD + x.province, { signal: ctrl.signal })
         if (res.ok === false) {
-          x.setRows([])
+          x.setRows(emptyRulesData())
           return
         }
         const j: RulesProbe = await res.json()
-        x.setRows(rulesRowsOf(j))
+        x.setRows(rulesDataOf(j))
       } catch {
         if (ctrl.signal.aborted === false) {
-          x.setRows([])
+          x.setRows(emptyRulesData())
         }
       }
     }
@@ -3390,16 +3426,30 @@ export function makeRulesLoad(x: RulesLoadIn): () => CleanupFn {
 }
 
 /**
- * 拉回的探针 → 门槛行(缺键给空清单)。
+ * 拉回的探针 → 门槛行 + 清单职业(缺键给空清单)。
  *
  * @param j 拉回的 json 探针。
- * @returns 门槛行。
+ * @returns 弹框数据。
  */
-function rulesRowsOf(j: RulesProbe): RuleLineJson[] {
-  if (j.rows == null) {
-    return []
+function rulesDataOf(j: RulesProbe): RulesData {
+  let rows: RuleLineJson[] = []
+  if (j.rows != null) {
+    rows = j.rows
   }
-  return j.rows
+  let occupations: OccLineJson[] = []
+  if (j.occupations != null) {
+    occupations = j.occupations
+  }
+  return { rows, occupations }
+}
+
+/**
+ * 拉挂了给的空数据(弹框出空态,不静默转圈)。
+ *
+ * @returns 空数据。
+ */
+function emptyRulesData(): RulesData {
+  return { rows: [], occupations: [] }
 }
 
 /**
@@ -3415,11 +3465,11 @@ export function rulesTitleOf(x: RulesTitleIn): string {
 /**
  * 弹框「通道资格」段的标题:对到了通道叫「通道资格」,没对照叫「全省门槛」(读的人要知道这不是筛过的)。
  *
- * @param x 取词函数与对到的通道名。
+ * @param x 取词函数与对照。
  * @returns 段标题。
  */
 export function rulesHeadOf(x: RulesHeadIn): string {
-  if (x.ruleStreams == null) {
+  if (x.ruleMap == null) {
     return x.t('pulse.rules.provAll')
   }
   return x.t('pulse.rules.pathway')

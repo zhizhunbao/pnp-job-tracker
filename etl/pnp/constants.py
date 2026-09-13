@@ -3080,6 +3080,77 @@ ABR_PROBLEM_RR_LANG = "乡村振兴语言表没解析到"
 ABR_RR_EXP_BASIS = "windowMonths=18"
 """乡村振兴经验行的口径:近 18 个月内。"""
 
+AB_DHCP_URL = "https://www.alberta.ca/dedicated-health-care-pathway"
+"""AAIP 医疗专线页(Express Entry / Non-Express Entry 两个选项同页)。地址来自 EE 流资格页正文里的链接
+(不是猜的);不在 ab-aaip crawl 缓存里 —— 首次直连取回后经 put_cached_page 落缓存,以后只读缓存
+(2026-09-13 Frank「按那个 抽选 table 来 补数据」)。"""
+
+AB_CRAWL_SLUG = "ab-aaip"
+"""alberta.ca AAIP 站在 crawl 层的 slug。"""
+
+ABR_DHCP_TITLE = "Dedicated Health Care Pathway | Alberta.ca"
+"""落缓存时的页标题。"""
+
+ABR_DHCP_EE_STREAM = "AAIP Dedicated Health Care Pathway — Express Entry"
+"""通道名:医疗专线 EE 版。"""
+
+ABR_DHCP_NON_EE_STREAM = "AAIP Dedicated Health Care Pathway — Non-Express Entry"
+"""通道名:医疗专线非 EE 版。"""
+
+ABR_SECTION_DHCP_EE = "Dedicated Health Care Pathway — Express Entry eligibility"
+"""段名:EE 版资格。"""
+
+ABR_SECTION_DHCP_NON_EE = "Dedicated Health Care Pathway — Non-Express Entry eligibility"
+"""段名:非 EE 版资格。"""
+
+ABR_SECTION_DHCP_PROF = "Dedicated Health Care Pathway — Eligible health care professions"
+"""段名:合格医疗职业。"""
+
+ABR_DHCP_SPLIT = "Non-Express Entry You can only apply"
+"""页面两半的分界句(前 = EE 版,后 = 非 EE 版)。"""
+
+ABR_DHCP_PROF_RE = re.compile(r"responsible for proof of ability to practice in Alberta, include: (.+?) National Occupation Classification")
+"""合格医疗职业清单原句(两半各有一份,取一次)。"""
+
+ABR_DHCP_PROF_LABEL = "Eligible health care professions (with the Alberta regulatory body for proof of ability to practice)"
+"""职业清单行标签。"""
+
+ABR_PROBLEM_DHCP_PROF = "医疗专线合格职业清单没解析到"
+"""硬闸:职业清单句没匹配。"""
+
+ABR_PROBLEM_DHCP_SPLIT = "医疗专线页没找到两半分界句"
+"""硬闸:页面结构变了。"""
+
+ABR_DHCP_COMMON_RULES = (
+    (re.compile(r"have a valid, verifiable job offer from an Alberta employer in the health sector .{0,80}?in an eligible health care occupation"),
+     FACTOR_JOB_OFFER, "", "Valid job offer from an Alberta health-sector employer in an eligible health care occupation", "医疗专线 offer 条文没解析到"),
+    (re.compile(r"provide verifiable proof of meeting the minimal requirements prescribed by the applicable regulatory organization to be able to practice the eligible health care profession in Alberta"),
+     FACTOR_LICENSING, "", "Proof of meeting the regulatory body's requirements to practice in Alberta", "医疗专线执业证明条文没解析到"),
+    (re.compile(r"intend to and be able to live and work permanently in Alberta and have stated an interest in immigrating permanently to Alberta"),
+     FACTOR_INTENT, "", "Intend to live and work permanently in Alberta", "医疗专线定居意向条文没解析到"),
+)
+"""两个选项共用的三条。"""
+
+ABR_DHCP_EE_RULES = (
+    (re.compile(r"have an active Express Entry profile in the federal Express Entry pool"),
+     FACTOR_EE_PROFILE, "", "Active federal Express Entry profile required", "医疗专线 EE 档案条文没解析到"),
+    (re.compile(r"have your primary occupation in the federal Express Entry profile portal be in an eligible health care occupation"),
+     FACTOR_OCC_PATHWAY, "", "Express Entry primary occupation must be an eligible health care occupation", "医疗专线职业条文没解析到"),
+    (re.compile(r"have a minimum federal Express Entry Comprehensive Ranking System score of (\d+)"),
+     FACTOR_CRS, UNIT_CRS, "Minimum CRS score of {n}", "医疗专线 CRS 条文没解析到"),
+    (re.compile(r"meet the criteria of at least one of the federal immigration programs managed by Express Entry"),
+     FACTOR_EE_PROGRAM, "", "Must qualify for CEC, FSW or FST", "医疗专线联邦项目条文没解析到"),
+)
+"""EE 版独有四条。"""
+
+ABR_DHCP_NON_EE_RULES = (
+    (re.compile(r"have a valid work permit or status maintained during processing \(formerly implied status\) if you are working in Alberta at the time you submit your application"),
+     FACTOR_JOB_OFFER, "", "Valid work permit or maintained status if working in Alberta at application", "医疗专线工签条文没解析到"),
+    (re.compile(r"demonstrate that you have Canadian Language Benchmark \(CLB\) Level of (\d) for all skill levels"),
+     FACTOR_LANGUAGE, UNIT_CLB, "CLB {n} in all skills (or language sufficient for licensure)", "医疗专线语言条文没解析到"),
+)
+"""非 EE 版独有两条(语言:CLB 5 或执业注册所需水平)。"""
+
 ABR_SOURCE = "AAIP — Alberta Opportunity Stream eligibility"
 """表级来源名。"""
 
@@ -3619,6 +3690,84 @@ NBR_EXPERIENCE_NAME = "New Brunswick Experience"
 """Experience 那条 pathway 的官方名(取它那份指南的正文)。"""
 
 NBR_EXPERIENCE_STREAM = "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+
+NBR_GRADUATES_STREAM = "New Brunswick Skilled Worker stream — New Brunswick Graduates pathway"
+"""通道名:毕业生路径(2026-09-13 Frank「按那个 抽选 table 来 补数据」:通道页三路径条文各落自己的通道)。"""
+
+NBR_PRIORITY_STREAM = "New Brunswick Skilled Worker stream — New Brunswick Priority Occupations pathway"
+"""通道名:优先职业路径。"""
+
+NBR_SECTION_PAGE = "Skilled Worker stream page — Eligibility"
+"""段名:通道页总体资格。"""
+
+NBR_SECTION_PAGE_EXP = "Skilled Worker stream page — New Brunswick Experience"
+"""段名:通道页 Experience 路径。"""
+
+NBR_SECTION_PAGE_GRAD = "Skilled Worker stream page — New Brunswick Graduates"
+"""段名:通道页 Graduates 路径。"""
+
+NBR_SECTION_PAGE_PRIO = "Skilled Worker stream page — New Brunswick Priority Occupations"
+"""段名:通道页 Priority Occupations 路径。"""
+
+NBR_SEG_GENERAL_RE = re.compile(r"To be eligible, you must: (.+?) In addition, there are specific requirements")
+"""通道页总体资格段。"""
+
+NBR_SEG_EXP_RE = re.compile(r"New Brunswick Experience To be eligible under this pathway, you must also: (.+?) Read the")
+"""通道页 Experience 段。"""
+
+NBR_SEG_GRAD_RE = re.compile(r"New Brunswick Graduates To be eligible under this pathway, you must also: (.+?) Read the")
+"""通道页 Graduates 段。"""
+
+NBR_SEG_PRIO_RE = re.compile(r"New Brunswick Priority Occupations To be eligible under this pathway, you must also: (.+?) Read the")
+"""通道页 Priority Occupations 段。"""
+
+NBR_PROBLEM_SEG_TPL = "通道页没找到「{name}」段"
+"""硬闸:段落没匹配到。"""
+
+NBR_PAGE_RULES = (
+    (re.compile(r"be at least (\d+) years old"), FACTOR_AGE, UNIT_YEARS, "At least {n} years old", "年龄下限没解析到"),
+    (re.compile(r"have the support of an eligible employer who has been actively operating in New Brunswick for the past (\d+) months"),
+     FACTOR_EMP_YEARS, UNIT_MONTHS, "Supporting employer actively operating in New Brunswick for the past {n} months",
+     "雇主经营时长没解析到"),
+    (re.compile(r"meet your New Brunswick job requirements, according to the National Occupational Classification and other applicable laws and regulations"),
+     FACTOR_LICENSING, "", "Meet the job requirements under the NOC and applicable laws", "岗位要求条文没解析到"),
+)
+"""通道页总体资格(语言 CLB 4 已由三份指南互校那一行覆盖,不重复)。"""
+
+NBR_EXP_PAGE_RULES = (
+    (re.compile(r"be working full time in a non-seasonal position for the employer who is supporting your application"),
+     FACTOR_JOB_OFFER, "", "Working full-time in a non-seasonal position for the supporting employer", "Experience 在职条文没解析到"),
+    (re.compile(r"have at least a high school diploma"), FACTOR_EDUCATION, "", "At least a high school diploma", "Experience 学历条文没解析到"),
+)
+"""Experience 路径(在职时长 / 居住时长两条由指南 PDF 那两行覆盖,不重复)。"""
+
+NBR_GRAD_RULES = (
+    (re.compile(r"have completed a program of study that is eligible for a post-graduation work permit at a designated learning institution located in New Brunswick"),
+     FACTOR_EDUCATION, "", "Completed a PGWP-eligible program at a New Brunswick designated learning institution", "Graduates 学历条文没解析到"),
+    (re.compile(r"be working in, or have accepted, a full time non-seasonal position for the employer who is supporting your application"),
+     FACTOR_JOB_OFFER, "", "Working in or accepted a full-time non-seasonal position with the supporting employer", "Graduates 在职条文没解析到"),
+)
+"""Graduates 路径两条。"""
+
+NBR_PRIO_RULES = (
+    (re.compile(r"have accepted a full-time, non-seasonal job offer from the employer who is supporting your application"),
+     FACTOR_JOB_OFFER, "", "Accepted a full-time, non-seasonal job offer from the supporting employer", "Priority offer 条文没解析到"),
+    (re.compile(r"have at least a high school diploma"), FACTOR_EDUCATION, "", "At least a high school diploma", "Priority 学历条文没解析到"),
+    (re.compile(r"the offer must be a direct result of a recruitment mission led by the Government of New Brunswick"),
+     FACTOR_JOB_OFFER, "", "Offer must result from a Government of New Brunswick recruitment mission", "Priority 招募团条文没解析到"),
+    (re.compile(r"the National Occupational Classification for the position must be one of the priority codes specified in the guide"),
+     FACTOR_OCC_PATHWAY, "", "Position NOC must be one of the priority codes in the guide", "Priority 职业码条文没解析到"),
+)
+"""Priority Occupations 路径四条(经验一年另走数词解析)。"""
+
+NBR_PRIO_EXP_RE = re.compile(r"have at least (\w+) years? of paid work experience related to this position")
+"""Priority Occupations 的经验条文(官方写英文数词 one year)。"""
+
+NBR_PRIO_EXP_LABEL_TPL = "At least {n} months of paid work experience related to the position"
+"""Priority 经验行标签。"""
+
+NBR_PROBLEM_PRIO_EXP = "Priority 经验条文没解析到"
+"""硬闸:经验句没匹配。"""
 """Experience pathway 专属的通道名。"""
 
 NBR_LANG_RE = re.compile(r"have (?:at least|a minimum of) Canadian Language Benchmarks \(CLB\) (\d) in listening", re.I)

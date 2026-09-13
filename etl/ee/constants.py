@@ -867,3 +867,82 @@ page: cec/fsw/fst/lang(rcip_rural/fcip_elig 2026-09-06 起只给 programs 块当
   ---- Francophone Community Immigration Pilot (FCIP) ----(末 3 条)
     2026-08-15:FCIP 立成第 14 条通道,门槛行**自己一份**(先前 program='FCIP' 一行都没有,
     判定层只能如实落「本站未收录」)。语言是它与 RCIP 最大的区别:NCLC 5 一刀切、且是**法语**。"""
+
+
+# =========================================================================
+# 12. 类别抽选资格规则(build_ircc_ee_category_rules;2026-09-13 Frank「按那个 抽选 table 来 补数据」)
+# =========================================================================
+
+OUT_CATEGORY_RULES = paths.EE / "category-rules.json"
+"""段12 输出:每个类别「谁有资格」那一小节的条文,一类别一条通道(stream = 官方类别名),
+program='EE-category',形状对齐 fed-eligibility.json(mart IN_REQ_TABLES 同一套列)。
+把脉页抽选表的联邦类别轮次此前一条门槛都没接(门槛钮不出),这张表补上。只读 crawl 缓存(fed-ee 役)。"""
+
+PROGRAM_EE_CATEGORY = "EE-category"
+"""类别规则行的项目码(与 CEC / FSW / FST 三项目并列;判定引擎的 reqPrograms 没点它,零影响)。"""
+
+CAT_RULES_SOURCE = "Express Entry category-based selection — who's eligible for each category"
+"""表级来源说明。"""
+
+CAT_RULES_NOTE = "One stream per category (official category name); occupation tables live in ee_categories."
+"""表级备注。"""
+
+CAT_HEAD_RE = re.compile(r"Who.s eligible for the (.+?) category", re.I)
+"""类别小节标题(h2/h3):「Who's eligible for the X category」。"""
+
+TAG_UL = "ul"
+"""标题后的第一张无序清单 = 该类别的资格条文。"""
+
+TAG_LI = "li"
+"""清单项。"""
+
+CAT_LANG_RE = re.compile(r"minimum score of (\d) in all 4 language abilities", re.I)
+"""法语类别的语言门槛:NCLC N 四项。"""
+
+CAT_EXP_RE = re.compile(r"within the past (\d) years, at least (\d+) months of full-time work experience", re.I)
+"""职业类别的经验门槛:近 N 年内 M 个月。"""
+
+CAT_SKIP_RE = re.compile(r"meet all (?:of )?the requirements in the instructions|meet all requirements in the instructions", re.I)
+"""「满足当轮指令」这一条是流程语,不是门槛,不落行。"""
+
+CAT_F_LANGUAGE = "language"
+"""factor:语言。"""
+
+CAT_F_EXPERIENCE = "experience"
+"""factor:经验。"""
+
+CAT_F_RULE = "categoryRule"
+"""factor:其余条文型。"""
+
+CAT_OP_GE = ">="
+"""比较符:下限。"""
+
+CAT_OP_RULE = "rule"
+"""比较符:条文。"""
+
+CAT_UNIT_NCLC = "NCLC"
+"""单位:法语基准。"""
+
+CAT_UNIT_MONTHS = "months"
+"""单位:月。"""
+
+CAT_BASIS_WINDOW_TPL = "windowYears={years}"
+"""经验行的口径:近 N 年。"""
+
+CAT_LANG_LABEL_TPL = "French: NCLC {n} in all 4 abilities"
+"""语言行标签。"""
+
+CAT_EXP_LABEL_TPL = "{months} months of full-time work experience in a listed occupation within the past {years} years"
+"""经验行标签。"""
+
+CAT_STREAM_TPL = "{name} category"
+"""通道名:官方类别名 + category(首字母照官方原样)。"""
+
+CAT_MIN_CATEGORIES = 9
+"""硬闸:类别小节至少这么多(官方现列 10 个)。"""
+
+CAT_RULES_PROBLEM_TPL = "类别抽选资格小节只解析到 {n} 个(下限 {min_n});页面改版?"
+"""硬闸失败句。"""
+
+CAT_RULES_PRINT_TPL = "✓ {out}  {cats} 个类别 / {rows} 条门槛"
+"""完成句。"""

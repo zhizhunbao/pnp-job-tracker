@@ -29,6 +29,10 @@ class SoupNodeLike(Protocol):
         """按标签名收后代清单。"""
         ...
 
+    def find_next(self, *args: object, **kwargs: object) -> "SoupNodeLike | None":
+        """文档序后面第一个匹配节点(类别页:标题后的第一张清单)。"""
+        ...
+
     def find_all_previous(self, *args: object, **kwargs: object) -> "list[SoupNodeLike]":
         """文档序向前收清单(表格找它上方最近的标题用)。"""
         ...
@@ -375,3 +379,17 @@ class EligFetchedIn:
 
     pages: dict
     """页键 → PageCtx。"""
+
+
+@dataclass
+class CatRuleRowIn:
+    """to_cat_rule_row() 入参:一条类别资格原句。"""
+
+    stream: str
+    """通道名(官方类别名 + category)。"""
+
+    quote: str
+    """官方原句(清单项全文)。"""
+
+    fetched: str
+    """取回日。"""

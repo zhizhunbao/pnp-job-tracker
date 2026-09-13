@@ -112,7 +112,10 @@ describe('mart 实况', () => {
     // 2026-08-15 #320:AAIP 补一条「或款」——近 18 个月内在阿省满 12 个月(24 那行保留)→ 307
     // 2026-09-11 金标追平:08-15 以来 pnp 域一串补数批(PE EOI 接抽选、BC 九年 Statistical
     // Report、ON Wayback 补年、MB 规则扩抽等,commit 06a16d07…58957c41)累计 +45 → 352
-    expect(data.requirements).toHaveLength(352)
+    // 2026-09-13 按抽选表补门槛(Frank「按那个 抽选 table 来 补数据」):ON 三条 EJO 流关闭通告 +3、
+    // AB EE 流 / 乡村振兴 / 医疗专线 +32、MB 国际教育流三路径 +18、NB 通道页三路径 +12、
+    // 联邦类别抽选资格(program='EE-category')+12 → 429
+    expect(data.requirements).toHaveLength(429)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。

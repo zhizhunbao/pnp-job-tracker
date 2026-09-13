@@ -6,6 +6,6 @@
  * @author Frank
  * @time 2026-09-06 23:30:00
  */
-export { loadRuleGroups, loadRuleRows } from './functions'
+export { loadOccLines, loadRuleGroups, loadRuleRows } from './functions'
 export { rulesRoute } from './routes'
 export type { RuleGroup, RuleRow } from './types'

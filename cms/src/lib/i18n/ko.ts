@@ -942,7 +942,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.col.biz': '주요 사업', 'pulse.col.sector': '고용주 유형', 'pulse.sector.private': '민간 기업',
   'pulse.sector.public': '공공 기관', 'pulse.sector.government': '주·시 정부', 'pulse.sector.federal': '연방 기관', 'pulse.pilot.aip': 'AIP 지정 고용주', 'pulse.chain': '체인', 'pulse.chain.tip': '매장별로 지정됩니다. 지원 전 해당 매장을 확인하세요.', 'pulse.pilot.rcip': 'RCIP 지정 고용주', 'pulse.pilot.fcip': 'FCIP 지정 고용주',   'pulse.id.nowp': '취업허가 없음', 'pulse.id.pgwp': '취업허가 있음',
   'pulse.col.hiringOcc': '채용 직종', 'pulse.nocMore': '총 {n}개', 'pulse.act.jobs': '채용 보기', 'pulse.act.company': '회사 보기', 'pulse.act.link': '공식 페이지', 'pulse.act.rules': '요건',
-  'pulse.rules.title': '{prov} 스트림 요건', 'pulse.rules.loading': '불러오는 중…', 'pulse.rules.empty': '미수록', 'pulse.rules.more': '자료실', 'pulse.rules.round': '이번 추첨', 'pulse.rules.pathway': '스트림 요건', 'pulse.rules.provAll': '주 전체 요건',
+  'pulse.rules.title': '{prov} 스트림 요건', 'pulse.rules.loading': '불러오는 중…', 'pulse.rules.empty': '미수록', 'pulse.rules.more': '자료실', 'pulse.rules.round': '이번 추첨', 'pulse.rules.pathway': '스트림 요건', 'pulse.rules.provAll': '주 전체 요건', 'pulse.rules.occ': '대상 직종',
   // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
   'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',
   'se.verdict.factor.years': '운영 연차', 'se.verdict.factor.staff': '직원 수',

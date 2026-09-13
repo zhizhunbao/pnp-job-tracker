@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from ee.functions import build_ircc_ee_categories, build_ircc_ee_draws, build_ircc_ee_rules
+from ee.functions import build_ircc_ee_categories, build_ircc_ee_category_rules, build_ircc_ee_draws, build_ircc_ee_rules
 
 SCHEDULED = [
     ("categories", build_ircc_ee_categories),
@@ -33,11 +33,13 @@ TOOLS = {
     "categories": build_ircc_ee_categories,
     "draws": build_ircc_ee_draws,
     "rules": build_ircc_ee_rules,
+    "category_rules": build_ircc_ee_category_rules,
 }
 """全部可 --only 点名的步(默认链 2 步 + 一个不进链的手动件)。
 不进默认链的那个及其理由:
   rules  联邦 EE 官方口径三表(CRS 计分 / 资格规则 / 语言换算)。纯读 crawl 缓存不发请求,
          节奏跟着 crawl 役走;且它自校失败会 exit 1,进链就会把后面的步骤一起拖掉。
+  category_rules  类别抽选「谁有资格」逐类别条文(2026-09-13,把脉页抽选表联邦轮次的门槛钮);同 rules 的理由不进链。
 """
 
 

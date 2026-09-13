@@ -1603,8 +1603,20 @@ export const PNP_REQUIREMENTS_ALL = `SELECT province, program, stream, subject, 
 /**
  * 某省的门槛条文(把脉页抽选表「门槛」弹框懒查;2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。$1=省码。
  */
-export const PNP_REQUIREMENTS_BY_PROV = `SELECT stream, label, value_text, url, seq
+export const PNP_REQUIREMENTS_BY_PROV = `SELECT stream, program, label, value_text, url, seq
             FROM pnp_requirements WHERE province = $1 ORDER BY seq`
+
+/**
+ * 某省的清单职业(把脉页抽选表「门槛」弹框「限定职业」层;不合格清单不算限定)。$1=省码。
+ */
+export const PNP_OCCUPATIONS_BY_PROV = `SELECT stream, noc, name FROM pnp_occupations
+            WHERE province = $1 AND type <> 'ineligible' ORDER BY stream, noc`
+
+/**
+ * 联邦类别抽选的职业清单(同上,联邦轮次按类别键筛;列名对齐 pnp_occupations 那句)。
+ */
+export const EE_CATEGORY_OCCUPATIONS = `SELECT category AS stream, noc, title AS name FROM ee_categories
+            WHERE noc <> '' ORDER BY category, noc`
 
 /**
  * 清单收录全列(ruling 判定底表)。

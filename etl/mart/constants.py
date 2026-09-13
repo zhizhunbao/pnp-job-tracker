@@ -1365,10 +1365,22 @@ IN_DRAW_RULE_STREAMS = paths.PROCESSED / "draw_rule_streams.json"
 """抽选类别 → 门槛通道对照表(人工核定,2026-09-13 Frank「你这个门槛 不是所有的门槛吧。只是这一个类别的门槛吧」):
 键=抽选类别官方名(pnp_draws.stream),值.streams=pnp_requirements 里的通道名清单。抽选公告的类别名与资格页的
 通道名两套叫法没有共同键,只能人工对。缺键=该类别没对过 → ruleStreams None(前端退回全省门槛);
-空清单=对过但门槛条文没抓(ON 的 EJO 三流)→ 前端出「本站未收录」。"""
+空清单=对过但门槛条文没抓 → 前端出「本站未收录」。
+2026-09-13 晚 v2:值从通道名清单扩成对象 {prov, streams, programs, occStreams}(prov = 去哪省取门槛,
+联邦类别轮次与 NB 的 AIP 轮次取 FED;programs = 按项目码筛的联邦行;occStreams = pnp_occupations /
+ee_categories 里该类别的限定职业清单名),整个对象序列化进同一列。"""
 
 K_RULE_LIST = "streams"
 """对照表里的通道名清单格。"""
+
+K_RULE_PROV = "prov"
+"""对照表 v2:去哪省取门槛(联邦类别轮次与 NB 的 AIP 轮次取 FED)。"""
+
+K_RULE_PROGRAMS = "programs"
+"""对照表 v2:按项目码筛的联邦行(CEC / AIP)。"""
+
+K_RULE_OCC = "occStreams"
+"""对照表 v2:该类别的限定职业清单名(pnp_occupations.stream 或 ee_categories.category)。"""
 
 IN_PNP_DRAWS = paths.PNP / "draws.json"
 """省抽选事实(BC/AB/MB+ON 通告,pnp 域 build_draws 产,E6-04)。"""
@@ -1458,7 +1470,7 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
                  paths.PNP / "sk-req.json", paths.PNP / "mb-req.json", paths.PNP / "ns-req.json",
                  paths.PNP / "nb-req.json", paths.PNP / "pe-req.json", paths.PNP / "nl-req.json",
                  paths.IRCC / "pgwp_rules.json", paths.IRCC / "fees.json",
-                 paths.EE / "fed-eligibility.json", paths.IRCC / "aip_rules.json",
+                 paths.EE / "fed-eligibility.json", paths.EE / "category-rules.json", paths.IRCC / "aip_rules.json",
                  paths.IRCC / "rcip_rules.json", paths.IRCC / "fcip_rules.json"]
 """省提名官方**门槛**(规则引擎第一刀)—— 打分表管「能打几分」,这张管「打分之前先要满足什么」。
 一省一个文件,加省=往这个 list 里加一个(pnp 域 build_<省>_req 产,列同一套)。后四份是联邦段:

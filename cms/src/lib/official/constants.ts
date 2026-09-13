@@ -708,9 +708,9 @@ export const OR_TAIL_DROP = ''
 export const P_PROV = 'prov'
 
 /**
- * 省码的形:两位大写字母(不合形直接 400,不进库)。
+ * 省码的形:两位大写字母,或 FED(联邦类别轮次与 NB 的 AIP 轮次去联邦段取;不合形直接 400,不进库)。
  */
-export const PROV_CODE_RE = /^[A-Z]{2}$/
+export const PROV_CODE_RE = /^[A-Z]{2,3}$/
 
 /**
  * /api/rules 的浏览器侧缓存头(门槛条文周更,与 stats 的 city 同口径)。

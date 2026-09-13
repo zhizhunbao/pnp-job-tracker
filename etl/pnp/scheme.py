@@ -711,8 +711,11 @@ class MbIesTableIn:
     """出处页。"""
 
 @dataclass
-class AbRuleRowsIn:
-    """ab_rule_rows() 入参:一页折成一行的正文 + 落到哪条通道 + 规则清单。"""
+class RuleRowsIn:
+    """rule_rows() 入参:一页折成一行的正文 + 落到哪条通道 + 规则清单 + 本省的行构造器。"""
+
+    to_row: Callable[[ReqIn], dict]
+    """本省的 to_*_req(行的键集各省不同,由它兜)。"""
 
     txt: str
     """页面正文(已 fold_ws 成一行)。"""

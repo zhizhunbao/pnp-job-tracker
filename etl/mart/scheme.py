@@ -1214,6 +1214,9 @@ class EeDrawIn:
 
     fetched: str
     """取回日。"""
+    rule_streams: dict
+    """抽选类别名 → 对照对象 JSON 串(联邦类别轮次按 drawName 对;对照表没有就留 None)。"""
+
 
 @dataclass
 class FactorBaseIn:

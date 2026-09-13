@@ -26,7 +26,7 @@ import {
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
 import type {
-  MaybeDrawCellRow, MaybeRuleLines, RulesPanel, DrawCellRow,
+  MaybeDrawCellRow, MaybeRulesData, RulesPanel, DrawCellRow,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
@@ -335,7 +335,7 @@ export function usePulse(x: PulseIn): PulsePanel {
  */
 export function useRulesModal(): RulesPanel {
   const [row, setRow] = useState<MaybeDrawCellRow>(null)
-  const [rows, setRows] = useState<MaybeRuleLines>(null)
+  const [rows, setRows] = useState<MaybeRulesData>(null)
 
   useEffect(function loadRules() {
     if (row == null) {

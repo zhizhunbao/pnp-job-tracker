@@ -2985,3 +2985,20 @@
    */
   margin: 16px 0 4px;
 }
+
+/*
+ * 门槛弹框「限定职业」一条:职业名主文案 + NOC 码灰注同行(代码不裸奔;2026-09-13 Frank「按那个 抽选 table 来 补数据」)。
+ */
+.rulesOccRow {
+  /*
+   * 一行,两件之间留一档。
+   */
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+
+  /*
+   * 行距。
+   */
+  padding: 3px 0;
+}

@@ -63,6 +63,14 @@ from ee.scheme import (
     LangBodyIn, LangCtx, LangCtxIn, LangRowIn, LangTableIn, LoadOut, MissingSayIn, PageCtx, PageIn,
     PreviousHeadingIn, ReqRowIn, SectionOfIn, TableOut, ValueColsIn,
 )
+from ee.constants import (
+    CAT_BASIS_WINDOW_TPL, CAT_EXP_LABEL_TPL, CAT_EXP_RE, CAT_F_EXPERIENCE, CAT_F_LANGUAGE, CAT_F_RULE,
+    CAT_HEAD_RE, CAT_LANG_LABEL_TPL, CAT_LANG_RE, CAT_MIN_CATEGORIES, CAT_OP_GE, CAT_OP_RULE,
+    CAT_RULES_NOTE, CAT_RULES_PRINT_TPL, CAT_RULES_PROBLEM_TPL, CAT_RULES_SOURCE, CAT_SKIP_RE, CAT_STREAM_TPL,
+    CAT_UNIT_MONTHS, CAT_UNIT_NCLC, OUT_CATEGORY_RULES, PROGRAM_EE_CATEGORY, TAG_LI, TAG_UL,
+)
+"""段12(类别抽选资格规则,2026-09-13)的常量单列一块 —— 主块按字母序排满,批量插名易错行;ruff 未启 isort,双块合法。"""
+from ee.scheme import CatRuleRowIn
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:落盘日戳)
@@ -840,3 +848,73 @@ def build_ircc_ee_rules() -> None:
     pages = load_rule_pages()
     build_ee_eligibility(pages)
     build_ee_language_grid(pages)
+
+
+# =========================================================================
+# 12. 类别抽选资格规则(2026-09-13 Frank「按那个 抽选 table 来 补数据」)
+# =========================================================================
+
+
+def build_ircc_ee_category_rules() -> None:
+    """类别页「Who's eligible for the X category」逐节 → 一类别一条通道的门槛行 → OUT_CATEGORY_RULES。
+
+    只读 crawl 缓存(fed-ee 役);小节数低于下限即 exit 1 保留旧表。「满足当轮指令」那条不落行。
+    """
+    page = load_page(CAT_URL)
+    rows: list = []
+    cats = 0
+    for h in page.main.find_all(CAT_HEAD_TAGS):
+        m = CAT_HEAD_RE.search(h.get_text(TEXT_JOIN_SEP, strip=True))
+        if not m:
+            continue
+        ul = h.find_next(TAG_UL)
+        if ul is None:
+            continue
+        cats += 1
+        stream = CAT_STREAM_TPL.format(name=m.group(1).strip())
+        for li in ul.find_all(TAG_LI, recursive=False):
+            quote = TEXT_JOIN_SEP.join(li.get_text(TEXT_JOIN_SEP, strip=True).split())
+            if CAT_SKIP_RE.search(quote):
+                continue
+            rows.append(to_cat_rule_row(CatRuleRowIn(stream=stream, quote=quote, fetched=page.fetched)))
+    if cats < CAT_MIN_CATEGORIES:
+        raise SystemExit(CAT_RULES_PROBLEM_TPL.format(n=cats, min_n=CAT_MIN_CATEGORIES))
+    paths.write_json(paths.WriteJsonIn(path=OUT_CATEGORY_RULES, payload={
+        K_SOURCE: CAT_RULES_SOURCE,
+        K_PROVINCE: PROVINCE_FED,
+        K_FETCHED: page.fetched,
+        K_NOTE: CAT_RULES_NOTE,
+        K_PROGRAMS: [PROGRAM_EE_CATEGORY],
+        K_REQUIREMENTS: rows,
+    }, indent=INDENT_1))
+    say(CAT_RULES_PRINT_TPL.format(out=OUT_CATEGORY_RULES.name, cats=cats, rows=len(rows)))
+
+
+def to_cat_rule_row(x: CatRuleRowIn) -> dict:
+    """一条类别资格原句 → 门槛行:法语分数 / 经验月数两种数值行,其余条文行(valueText = 原句一字不动)。"""
+    factor = CAT_F_RULE
+    op = CAT_OP_RULE
+    value = None
+    unit = ""
+    basis = ""
+    label = x.quote
+    lang = CAT_LANG_RE.search(x.quote)
+    exp = CAT_EXP_RE.search(x.quote)
+    if lang:
+        factor = CAT_F_LANGUAGE
+        op = CAT_OP_GE
+        value = int(lang.group(1))
+        unit = CAT_UNIT_NCLC
+        label = CAT_LANG_LABEL_TPL.format(n=lang.group(1))
+    elif exp:
+        factor = CAT_F_EXPERIENCE
+        op = CAT_OP_GE
+        value = int(exp.group(2))
+        unit = CAT_UNIT_MONTHS
+        basis = CAT_BASIS_WINDOW_TPL.format(years=exp.group(1))
+        label = CAT_EXP_LABEL_TPL.format(months=exp.group(2), years=exp.group(1))
+    return {
+        K_PROGRAM: PROGRAM_EE_CATEGORY, K_STREAM: x.stream, K_SUBJECT: SUBJECT_APPLICANT,
+        K_FACTOR: factor, K_OP: op, K_VALUE: value, K_VALUE_TEXT: x.quote, K_UNIT: unit, K_BASIS: basis,
+        K_LABEL: label, K_URL: CAT_URL, K_FETCHED: x.fetched,
+    }

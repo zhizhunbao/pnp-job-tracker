@@ -1,9 +1,10 @@
 'use client'
 /**
  * 域内小件:抽选表「门槛」弹框 —— 三层(2026-09-13 Frank「你这个门槛 不是所有的门槛吧。只是这一个类别的门槛吧」):
- * ① 本期:日期 / 分数线 / 邀请数 + 官方附注;② 通道资格:这一类别对到的门槛通道条文(对照表 data/processed/
+ * ① 本期:日期 / 分数线 / 邀请数 + 官方附注;② 限定职业:对照表点名的清单职业(BC 定向类别 / AB 科技专线 /
+ * 联邦类别,没有就不出这段);③ 通道资格:这一类别对到的门槛通道 / 联邦项目条文(对照表 data/processed/
  * draw_rule_streams.json;没对照退回全省并把段名改成「全省门槛」,对过但没抓出「本站未收录」);
- * ③ 脚上「资料库」链接落资源页该省卡(全量与联邦通道在那边)。
+ * ④ 脚上「资料库」链接落资源页该省卡(全量与联邦通道在那边)。2026-09-13 Frank「按那个 抽选 table 来 补数据」。
  * 壳走 modal 桶,标题走 title 桶,行形照资源页 ResRuleCard;本期一行照手机抽选卡的 meta 行。加载中占位。
  *
  * @author Frank
@@ -14,7 +15,7 @@ import { Modal } from '@/components/modal'
 import { Tag } from '@/components/tag'
 import { ModalTitle } from '@/components/title'
 import { NEW_TAB, RULES_MODAL_SIZE, TEXT_NONE } from './constants'
-import { rulesHeadOf, rulesMoreHrefOf, rulesOfDraw, rulesTitleOf } from './functions'
+import { occsOfDraw, rulesHeadOf, rulesMoreHrefOf, rulesOfDraw, rulesTitleOf } from './functions'
 import type { RulesModalIn } from './types'
 import css from './start.module.css'
 
@@ -26,9 +27,18 @@ import css from './start.module.css'
  */
 export function RulesModal({ t, row, rows, onClose }: RulesModalIn) {
   const items = []
+  const occs = []
   let shown = 0
   if (rows != null) {
-    for (const r of rulesOfDraw({ lines: rows, ruleStreams: row.ruleStreams })) {
+    for (const o of occsOfDraw({ lines: rows.occupations, ruleMap: row.ruleMap })) {
+      occs.push(
+        <li key={o.noc} className={css.rulesOccRow}>
+          <span className={css.rulesLabel}>{o.name}</span>
+          <span className={css.rulesStream}>{o.noc}</span>
+        </li>,
+      )
+    }
+    for (const r of rulesOfDraw({ lines: rows.rows, ruleMap: row.ruleMap })) {
       shown += 1
       items.push(
         <li key={r.seq} className={css.rulesRow}>
@@ -56,7 +66,9 @@ export function RulesModal({ t, row, rows, onClose }: RulesModalIn) {
         </span>
       </div>
       {row.drawNote !== TEXT_NONE && <p className={css.rulesQuote}>{row.drawNote}</p>}
-      <h4 className={css.rulesHead}>{rulesHeadOf({ t, ruleStreams: row.ruleStreams })}</h4>
+      {occs.length > 0 && <h4 className={css.rulesHead}>{t('pulse.rules.occ')}</h4>}
+      {occs.length > 0 && <ul className={css.rulesList}>{occs}</ul>}
+      <h4 className={css.rulesHead}>{rulesHeadOf({ t, ruleMap: row.ruleMap })}</h4>
       {rows == null && <p className={css.rulesNote}>{t('pulse.rules.loading')}</p>}
       {rows != null && shown === 0 && <p className={css.rulesNote}>{t('pulse.rules.empty')}</p>}
       {shown > 0 && <ul className={css.rulesList}>{items}</ul>}
