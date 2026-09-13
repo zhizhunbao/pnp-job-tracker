@@ -42,7 +42,7 @@ import paths
 from log.functions import err, say
 from names.functions import norm_name
 from noc.constants import SLUGS as NOC_BROAD_SLUG
-from noc.functions import broad_of, classify, noc_of_title, teer_of
+from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
@@ -2012,7 +2012,12 @@ def to_district_row(x: DistrictRowIn) -> dict:
 
 
 def to_noc_category_row(x: CatI18nIn) -> dict:
-    """noc_categories 表的一行(大/中/小 + TEER + 三级英韩名)。"""
+    """noc_categories 表的一行(大/中/小 + TEER + 三级英韩名 + 行业组键)。
+
+    indGroup(2026-09-13,雇主板批二):大类 → 8 行业组键(noc.group_of;未分类 = 空串)。
+    前端 noc → 大类 → 组 的换算从此读库(把脉页 IND_BROADS / lib/stats BROAD_TO_GROUP 两份副本的
+    数据层终局,消费者到齐后可退役)。
+    """
     b, m, f, t = x.keys
     teer = t
     if t < 0:
@@ -2020,7 +2025,8 @@ def to_noc_category_row(x: CatI18nIn) -> dict:
     return {"broad": b, "mid": m, "fine": f, "teer": teer,
             "broadEn": x.i18n.get(b, I18N_BLANK)[0], "broadKo": x.i18n.get(b, I18N_BLANK)[1],
             "midEn": x.i18n.get(m, I18N_BLANK)[0], "midKo": x.i18n.get(m, I18N_BLANK)[1],
-            "fineEn": x.i18n.get(f, I18N_BLANK)[0], "fineKo": x.i18n.get(f, I18N_BLANK)[1]}
+            "fineEn": x.i18n.get(f, I18N_BLANK)[0], "fineKo": x.i18n.get(f, I18N_BLANK)[1],
+            "indGroup": group_of(b)}
 
 
 def to_name_row(name: str) -> dict:

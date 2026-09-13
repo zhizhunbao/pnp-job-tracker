@@ -2,8 +2,9 @@
 /**
  * employers 域的状态机器:useEmployersPage 一台管整块雇主板(筛选态、搜索防抖、
  * 深链回写与懒取)。
- * 🔴 性能(#313 同款):名录 6,680 行不进 SSR payload —— SSR 只给第一页 + total,
- * 换筛选/翻页才打 /api/employers 懒取;失败保底继续显示手上这一页,不白屏。
+ * 🔴 性能(#313 同款):池表 8.8 万桶行不进 SSR payload —— SSR 只给第一页 + total,
+ * 换筛选/翻页/换排序才打 /api/employers 懒取;失败保底继续显示手上这一页,不白屏。
+ * 2026-09-13 雇主板批二:口径 / 社区 / 职业 / 抽屉四格状态退役,换成 行业组 / 开关 / 表头排序。
  * 体内不留任何函数体与带口径的注释 —— 步骤全在 ./functions 的工厂里(注释即它们的
  * JSDoc),这里只剩 useState、具名 effect 壳与工厂装配(样板 account/hooks.ts)。
  *
@@ -14,10 +15,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
-  boardUrlOf, loadBoard, makeCity, makeClear, makeDrawerToggle, makeMode, makeNoc, makePage, makeProgram,
-  makeProv, makeQCommit, qsOf,
+  boardUrlOf, loadBoard, makeClear, makeEntryToggle, makeGroup, makePage, makeProv, makeQCommit, makeSort, qsOf,
+  sortStateOf,
 } from './functions'
-import type { EmployerFilters, EmployerPage, EmployersIn, EmployersPanel } from './types'
+import type { EmployersIn, EmployersPanel, PoolFilters, PoolPage } from './types'
 
 /**
  * 雇主板整机:筛选态、搜索框防抖、筛选进 URL(replaceState —— 换筛选不该在历史里
@@ -29,10 +30,9 @@ import type { EmployerFilters, EmployerPage, EmployersIn, EmployersPanel } from 
  */
 export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [lang, , t] = useLang()
-  const [f, setF] = useState<EmployerFilters>(x.initialFilters)
-  const [data, setData] = useState<EmployerPage>(x.initial)
+  const [f, setF] = useState<PoolFilters>(x.initialFilters)
+  const [data, setData] = useState<PoolPage>(x.initial)
   const [loading, setLoading] = useState(false)
-  const [drawer, setDrawer] = useState(false)
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
   const first = useRef(true)
   const qs = qsOf({ f })
@@ -52,14 +52,14 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
       first.current = false
       return
     }
-    window.history.replaceState(null, TEXT_NONE, boardUrlOf({ mode: f.mode, qs }))
+    window.history.replaceState(null, TEXT_NONE, boardUrlOf({ qs }))
     const ctl = new AbortController()
     setLoading(true)
-    void loadBoard({ mode: f.mode, qs, signal: ctl.signal, setData, setLoading })
+    void loadBoard({ qs, signal: ctl.signal, setData, setLoading })
     return function abortLoad() {
       ctl.abort()
     }
-  }, [f.mode, qs])
+  }, [qs])
 
   return {
     lang,
@@ -67,15 +67,13 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     f,
     data,
     loading,
-    drawer,
     qDraft,
+    sort: sortStateOf({ f }),
     onQDraft: setQDraft,
-    onDrawer: makeDrawerToggle({ drawer, setDrawer }),
-    onMode: makeMode({ f, setF }),
+    onGroup: makeGroup({ f, setF }),
     onProv: makeProv({ f, setF }),
-    onProgram: makeProgram({ f, setF }),
-    onCity: makeCity({ f, setF }),
-    onNoc: makeNoc({ f, setF }),
+    onEntry: makeEntryToggle({ f, setF }),
+    onSort: makeSort({ f, setF }),
     onClear: makeClear({ f, setF, setQDraft }),
     onPage: makePage({ f, setF }),
   }

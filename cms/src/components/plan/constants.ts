@@ -203,12 +203,12 @@ export const NOC_SEP = ','
  * 官方指定雇主名录的地址头(后接制度名)。指定雇主是硬门槛的制度才给这条 ——
  * 普通省提名没有「指定雇主」这回事,给了等于凭空发明一道门槛。
  */
-export const URL_EMP_DESIGNATED_HEAD = '/employers/designated?program='
+export const URL_EMP_DESIGNATED_HEAD = '/employers?sort=designated&program='
 
 /**
  * 该省该职业在招雇主的地址头(后接省码)。普通省提名给的是这一条:他要投的人。
  */
-export const URL_EMP_HIRING_HEAD = '/employers/hiring?prov='
+export const URL_EMP_HIRING_HEAD = '/employers?prov='
 
 /**
  * 在招雇主地址的职业参数。

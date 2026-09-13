@@ -28,12 +28,12 @@ export const DEST_ROUTE: Record<string, string> = {
   /**
    * 在招雇主榜:有担保信号的雇主。
    */
-  employers_hiring: '/employers/hiring',
+  employers_hiring: '/employers?sort=open',
 
   /**
    * 指定雇主:AIP / RCIP / FCIP 试点名单。
    */
-  employers_designated: '/employers/designated',
+  employers_designated: '/employers?sort=designated',
 
   /**
    * 雇主对比。

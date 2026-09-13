@@ -1,5 +1,6 @@
 /**
- * 雇主域的行为:板取数与筛选、担保聚合、对照聚合、单公司背调、职业目录。
+ * 雇主域的行为:板取数与筛选(2026-09-13 起读雇主池,组 × 省切面服务端排序分页)、担保聚合、对照聚合、
+ * 单公司背调、职业目录。
  * 🔴 本文件**不 import payload**(宪法:取数函数收一个能 query 的东西当参数,池由调用方注进来)——
  * 边缘入口(`loadEmployerPage` / `loadSponsorEmployers` / `compareEmployers` / `companyRow` /
  * `investigateCompany` / `loadOccupations` / `employersBoardProps`)收 `db`,内部纯函数吃数据。
@@ -16,14 +17,14 @@ import type { MatchJob } from '../jobs'
 import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
-  ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_MODE, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE, CSV_QUOTE_ESC,
-  CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE8_DASHED, DATE8_RE, DATE_LEN, EMP_PROGRAMS,
-  EMP_SSR_ROWS, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
-  JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, MODE, NOC_LEN, NOC_RE, NOC_SPLIT_RE, NOC_TEER_RE,
-  NOC_TITLES_MAX,
-  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, PROVINCE_NONE, PROV_RE, PUNCT_RE,
-  RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE, SPACE_GLOBAL_RE,
+  ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
+  CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE,
+  CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
+  EMP_SSR_ROWS, ENTRY_ON, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
+  JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, NOC_LEN, NOC_RE, NOC_TEER_RE,
+  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, POOL_GROUPS, POOL_SORT_DEFAULT, POOL_SORTS, PROVINCE_NONE, PROV_RE, PUNCT_RE,
+  Q_WILD_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE,
+  SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
   WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE
@@ -31,17 +32,15 @@ import {
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
 import type {
-  ApplyEmployerFiltersIn, ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn,
+  ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn,
   CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow,
-  CompareIn, CompareOut, CompareRow, DesignatedRowsOut, EmployerFacets, EmployerFacetsIn, EmployerFilters,
-  DesignatedOpenDbRow, DesignatedOpenRow, DesignatedOpenRowsOut, DesignatedRows, WithDesignatedOpenIn,
-  EmployerMode, EmployerPage, EmployerRow, EmployerRows, EmptyPageIn, EntityNameHitsIn, InvestigateIn,
-  InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer, NocMatchesIn,
-  NocTitleMap, NocTitlesIn, NocTitlesOut, NormalizeFiltersIn, OccRowsOut, PageSliceIn, ParamGetter, ProgramMatchesIn,
-  ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow, SponsorRows,
-  SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow, CompareJob,
-  CompareJobDbRow, DesignatedDbRow, DesignatedRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
-  HiringDbRow, HiringRow, IdCell, MaybeStr, NocTitleDbRow, NocTitlePair, OccDbRow, OccRow, ReqDbRow, ReqRow,
+  CompareIn, CompareOut, CompareRow, EmptyPoolPageIn, EntityNameHitsIn, GroupOfNocDbRow, GroupOfNocIn, InvestigateIn,
+  InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer,
+  GroupKeyOut, NormalizeFiltersIn, OccRowsOut, ParamGetter, PoolDbRow, PoolDbRows, PoolFilters, PoolPage, PoolProvsOut,
+  PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
+  SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
+  CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
+  IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut,
 } from './types'
@@ -51,45 +50,61 @@ import { HDR_USER_AGENT } from '../http'
 // =========================================================================
 
 /**
- * URL 参数 → 规范化筛选(SSR 与 API 共用一份,避免两端口径漂移)。
- * 不合法的值一律落空/落默认,不瞎猜。
+ * URL/query 参数 → 规范化筛选(SSR 与 /api/employers 共用一份,避免两端口径漂移;
+ * 2026-09-13 雇主板批二:designated/hiring 双口径退役,板读雇主池)。
+ * 收窄:行业组、排序键只认白名单;省两位大写;制度三个之内;职业 5 位(只用于 SSR 一次性换算成组);
+ * entry 只认 ENTRY_ON;页码非负整数封顶;搜索词去掉 SQL 通配符。不合法一律落 FILTER_UNSET(这一格不筛)。
  *
- * @param input 参数取值器与默认口径。
+ * @param input 参数取值器。
  * @returns 规范化后的筛选。
  */
-export function normalizeEmployerFilters(input: NormalizeFiltersIn): EmployerFilters {
-  const modeRaw = clip({ value: input.get(PARAM.mode), max: CAP_MODE })
-  const program = clip({ value: input.get(PARAM.program), max: CAP_PROGRAM }).toUpperCase()
+export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
+  const group = clip({ value: input.get(PARAM.group), max: CAP_GROUP }).toLowerCase()
   const prov = clip({ value: input.get(PARAM.prov), max: CAP_PROV }).toUpperCase()
+  const program = clip({ value: input.get(PARAM.program), max: CAP_PROGRAM }).toUpperCase()
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
+  const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const page = Number(clip({ value: input.get(PARAM.page), max: CAP_PAGE }))
-  let mode: EmployerMode = input.defMode
-  if (modeRaw === MODE.hiring || modeRaw === MODE.designated) {
-    mode = modeRaw
-  }
-  let cleanProgram = FILTER_UNSET
-  if ((EMP_PROGRAMS as readonly string[]).includes(program)) {
-    cleanProgram = program
+  let cleanGroup = FILTER_UNSET
+  if ((POOL_GROUPS as readonly string[]).includes(group)) {
+    cleanGroup = group
   }
   let cleanProv = FILTER_UNSET
   if (PROV_RE.test(prov)) {
     cleanProv = prov
   }
+  let cleanProgram = FILTER_UNSET
+  if ((EMP_PROGRAMS as readonly string[]).includes(program)) {
+    cleanProgram = program
+  }
   let cleanNoc = FILTER_UNSET
   if (NOC_RE.test(noc)) {
     cleanNoc = noc
+  }
+  let cleanSort: PoolSort = POOL_SORT_DEFAULT
+  if (isPoolSort(sort)) {
+    cleanSort = sort
   }
   let cleanPage = 0
   if (Number.isFinite(page) && page > 0) {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
   }
   return {
-    mode: mode, program: cleanProgram, prov: cleanProv,
-    city: clip({ value: input.get(PARAM.city), max: CAP_TEXT }),
-    noc: cleanNoc,
-    q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }),
-    page: cleanPage,
+    group: cleanGroup, prov: cleanProv, program: cleanProgram, noc: cleanNoc,
+    entry: input.get(PARAM.entry) === ENTRY_ON,
+    q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }).replace(Q_WILD_RE, FILTER_UNSET),
+    sort: cleanSort, page: cleanPage,
   }
+}
+
+/**
+ * 排序键谓词:白名单收窄成 `PoolSort` 联合(谓词签名语言规定,一参一型的唯一例外形态)。
+ *
+ * @param v 原始串。
+ * @returns 是否在白名单里。
+ */
+export function isPoolSort(v: string): v is PoolSort {
+  return (POOL_SORTS as readonly string[]).includes(v)
 }
 
 /**
@@ -106,125 +121,23 @@ function clip(input: ClipIn): string {
 }
 
 /**
- * 按筛选过滤板上行(designated 口径;hiring 口径的职业筛在入口 noc 本身)。
+ * 查证态判据(设计稿故事四):搜索框有词 = 全库按名搜,不受行业/省约束 —— 中介说的那家多半不在用户的筛选面里。
  *
- * @param input 全量行与筛选。
- * @returns 命中的行。
+ * @param f 当前筛选。
+ * @returns 是否查证态。
  */
-export function applyEmployerFilters(input: ApplyEmployerFiltersIn): EmployerRows {
-  const f = input.filters
-  const q = f.q.trim().toLowerCase()
-  const out: EmployerRow[] = []
-  for (const r of input.rows) {
-    if (programMatches({ rowProgram: r.program, program: f.program }) === false) {
-      continue
-    }
-    if (f.prov !== '' && r.province !== f.prov) {
-      continue
-    }
-    if (f.city !== '' && r.where !== f.city) {
-      continue
-    }
-    if (nocMatches({ rowNocs: r.nocs, noc: f.noc }) === false) {
-      continue
-    }
-    if (q !== '' && r.name.toLowerCase().includes(q) === false) {
-      continue
-    }
-    out.push(r)
-  }
-  return out
+export function isSearchOf(f: PoolFilters): boolean {
+  return f.q !== FILTER_UNSET
 }
 
 /**
- * 职业匹配口径(**本域最要紧的一条**):名录**没写**职业的行,选了 NOC 时照常保留。
- * 空 nocs = 官方名录这一行没列职业清单(RCIP/FCIP 绝大多数如此),不是「该雇主不招这个职业」——
- * 当成不匹配剔掉 = 拿我们的数据缺口冒充官方的排除,用户会错过大半个名录。
+ * 榜态判据:选了行业组才摊表(首屏只出选择器 —— 「所有信号只在大类×省切面内呈现」,混屏病根除)。
  *
- * @param input 行的职业码与选中的职业码。
- * @returns 是否保留。
+ * @param f 当前筛选。
+ * @returns 是否榜态。
  */
-export function nocMatches(input: NocMatchesIn): boolean {
-  if (input.noc === '') {
-    return true
-  }
-  if (input.rowNocs.length === 0) {
-    return true
-  }
-  return input.rowNocs.includes(input.noc)
-}
-
-/**
- * 制度匹配:用**子串** —— 'RCIP+FCIP' 的双标社区对 RCIP 与 FCIP 两个筛选都算数。
- *
- * @param input 行的制度值与选中的制度。
- * @returns 是否保留。
- */
-export function programMatches(input: ProgramMatchesIn): boolean {
-  if (input.program === '') {
-    return true
-  }
-  return input.rowProgram.includes(input.program)
-}
-
-/**
- * 下拉选项:省/制度看整份数据(切了省也不能把省下拉自己清空),
- * 社区/职业看**已按省+制度收窄后**的数据(否则 NB 的社区会出现在 SK 的下拉里)。
- *
- * @param input 全量行与当前筛选。
- * @returns 四个下拉的选项。
- */
-export function employerFacets(input: EmployerFacetsIn): EmployerFacets {
-  const f = input.filters
-  const provs = new Set<string>()
-  const programs = new Set<string>()
-  const cities = new Set<string>()
-  const nocs = new Set<string>()
-  for (const r of input.rows) {
-    if (r.province !== '') {
-      provs.add(r.province)
-    }
-    for (const p of EMP_PROGRAMS) {
-      if (r.program.includes(p)) {
-        programs.add(p)
-      }
-    }
-    if (programMatches({ rowProgram: r.program, program: f.program }) === false) {
-      continue
-    }
-    if (f.prov !== '' && r.province !== f.prov) {
-      continue
-    }
-    if (r.where !== '') {
-      cities.add(r.where)
-    }
-    for (const n of r.nocs) {
-      nocs.add(n)
-    }
-  }
-  const orderedPrograms: string[] = []
-  for (const p of EMP_PROGRAMS) {
-    if (programs.has(p)) {
-      orderedPrograms.push(p)
-    }
-  }
-  return {
-    provs: Array.from(provs).sort(),
-    programs: orderedPrograms,
-    cities: Array.from(cities).sort(),
-    nocs: Array.from(nocs).sort(),
-  }
-}
-
-/**
- * 内存分页切片(#313:一次只吐一页)。
- *
- * @param input 筛后全量行、页码与页大小。
- * @returns 该页的行。
- */
-export function pageSlice(input: PageSliceIn): EmployerRows {
-  const p = Math.max(0, input.page)
-  return input.rows.slice(p * input.size, (p + 1) * input.size)
+export function isScopedOf(f: PoolFilters): boolean {
+  return f.group !== FILTER_UNSET
 }
 
 // =========================================================================
@@ -232,22 +145,25 @@ export function pageSlice(input: PageSliceIn): EmployerRows {
 // =========================================================================
 
 /**
- * 雇主板 SSR 首屏(两个入口路由共用一份;口径由**路径段**定,不由 query 改写 ——
- * 入口契约:/employers/designated?program=…&prov=… 与 /employers/hiring?prov=…&noc=… 必须直达且预置筛选)。
+ * 雇主板 SSR 首屏(/employers 一个入口;旧 /employers/designated|hiring 由 next.config 301 到这带参)。
+ * 入口契约:`?prov=SK&noc=72310` 直达时把职业换算成行业组预置(数据层 noc_categories.ind_group),
+ * `?program=AIP` 直达时预置制度筛选;换算只在 SSR 做一次,API 不认 noc。
  *
- * @param input searchParams、口径与连接。
+ * @param input searchParams 与连接。
  * @returns 第一页 + 预置筛选。
  */
 export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
-  const filters = normalizeEmployerFilters({ get: getterOf(input.sp), defMode: input.mode })
-  filters.mode = input.mode
+  const filters = normalizePoolFilters({ get: getterOf(input.sp) })
+  if (filters.group === FILTER_UNSET && filters.noc !== FILTER_UNSET && input.db != null) {
+    filters.group = await groupOfNoc({ db: input.db, noc: filters.noc })
+  }
   const initial = await loadEmployerPage({ db: input.db, filters: filters, pageSize: EMP_SSR_ROWS })
   return { initial: initial, initialFilters: filters }
 }
 
 /**
- * 雇主板一页(SSR 与 /api/employers 共用)。
- * hiring 口径:省+职业**两个都得有**才查 —— 少一个就是全省 GROUP BY 全表,那是站级聚合,禁每请求现算。
+ * 雇主板一页(SSR 与 /api/employers 共用)。三个态:查证态全库按名搜;榜态按 组 × 省 × 入门 × 制度 切面、
+ * 服务端排序分页(桶表索引承接,单次往返带回窗口总数);首屏不查行,只回省下拉选项。
  *
  * @param input 连接、筛选与页大小。
  * @returns 一页数据;挂了回空表并留痕。
@@ -255,60 +171,26 @@ export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
 export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerPageOut {
   const f = input.filters
   if (input.db == null) {
-    return emptyEmployerPage({ filters: f, pageSize: input.pageSize })
+    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: [] })
   }
   const db = input.db
+  const provs = await fetchPoolProvs(db)
   try {
-    if (f.mode === MODE.hiring) {
-      let raw: EmployerRows = []
-      if (PROV_RE.test(f.prov) && NOC_RE.test(f.noc)) {
-        const hiring = await queryRowsOrEmpty({ db: db, sql: SQL.HIRING_EMPLOYERS, params: [f.prov, f.noc], map: toHiringRow })
-        raw = hiring.map(hiringToEmployerRow)
-      }
-      const q = f.q.trim().toLowerCase()
-      const hit: EmployerRow[] = []
-      for (const r of raw) {
-        if (f.city !== '' && r.where !== f.city) {
-          continue
-        }
-        if (q !== '' && r.name.toLowerCase().includes(q) === false) {
-          continue
-        }
-        hit.push(r)
-      }
-      let facetProvs: string[] = []
-      if (f.prov !== '') {
-        facetProvs = [f.prov]
-      }
-      let facetNocs: string[] = []
-      let titleCodes: string[] = []
-      if (f.noc !== '') {
-        facetNocs = [f.noc]
-        titleCodes = [f.noc]
-      }
-      const cities = new Set<string>()
-      for (const r of raw) {
-        if (r.where !== '') {
-          cities.add(r.where)
-        }
-      }
-      return {
-        mode: MODE.hiring, rows: pageSlice({ rows: hit, page: f.page, size: input.pageSize }),
-        total: hit.length, page: f.page, pageSize: input.pageSize,
-        facets: { provs: facetProvs, programs: [], cities: Array.from(cities).sort(), nocs: facetNocs },
-        fetched: FETCHED_NONE, nocTitles: await nocTitlesOf({ db: db, codes: titleCodes }),
-      }
+    let raw: PoolDbRows = []
+    if (isSearchOf(f)) {
+      raw = await queryRows({
+        db: db, sql: SQL.EMPLOYER_POOL_SEARCH, params: [f.q, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+      })
+    } else if (isScopedOf(f)) {
+      raw = await queryRows({
+        db: db, sql: SQL.employerPoolPage(poolOrderOf(f.sort)),
+        params: [f.group, f.prov, f.entry, f.program, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+      })
     }
-    const raw = await fetchAllDesignated(db)
-    const openRows = await fetchDesignatedOpen(db)
-    const all = withDesignatedOpen({ rows: raw.map(toEmployerRow), openRows: openRows })
-    const facets = employerFacets({ rows: all, filters: f })
-    const hit = applyEmployerFilters({ rows: all, filters: f })
-    const fetched = latestFetchedOf(raw)
+    const rows = raw.map(toPoolRow)
     return {
-      mode: MODE.designated, rows: pageSlice({ rows: hit, page: f.page, size: input.pageSize }),
-      total: hit.length, page: f.page, pageSize: input.pageSize,
-      facets: facets, fetched: fetched, nocTitles: await nocTitlesOf({ db: db, codes: facets.nocs }),
+      rows: rows, total: poolTotalOf(raw), page: f.page, pageSize: input.pageSize, provs: provs,
+      fetched: latestFetchedOf(rows),
     }
   } catch (e) {
     let why = String(e)
@@ -316,129 +198,96 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
       why = e.message
     }
     log({ tag: EMP_LOG.tag, text: `${EMP_LOG.pageQueryFailed}${why}` })
-    return emptyEmployerPage({ filters: f, pageSize: input.pageSize })
+    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: provs })
   }
 }
 
 /**
- * 指定雇主名录整表(6,680 行 × 7 短字段)带 TTL 缓存取数。
- * 过期先回旧值、后台单飞刷新,只有冷启动第一请求真等(改 `CACHE.designated` / `CACHE.designatedInflight`)。
+ * 排序键 → SQL 片段(白名单键在 EMPLOYER_POOL_ORDER 里逐键有值;缺键回默认序,不让索引签名的 undefined 外泄)。
+ *
+ * @param sort 已收窄的排序键。
+ * @returns ORDER BY 片段。
+ */
+function poolOrderOf(sort: PoolSort): string {
+  const hit = SQL.EMPLOYER_POOL_ORDER[sort]
+  if (hit != null) {
+    return hit
+  }
+  const fallback = SQL.EMPLOYER_POOL_ORDER[POOL_SORT_DEFAULT]
+  if (fallback != null) {
+    return fallback
+  }
+  return SQL_FRAG_NONE
+}
+
+/**
+ * 窗口总数:每行同值,取第一行;没有行就是 0。
+ *
+ * @param raw 原始行。
+ * @returns 筛选后的总行数。
+ */
+function poolTotalOf(raw: PoolDbRows): number {
+  const first = raw[0]
+  if (first == null) {
+    return 0
+  }
+  return toPoolTotal(first)
+}
+
+/**
+ * 池省下拉选项带 TTL 缓存取数(过期先回旧值、后台单飞刷新,只有冷启动第一请求真等;
+ * 改 `CACHE.poolProvs` / `CACHE.poolProvsInflight`)。
  *
  * @param db 数据库连接(池由调用方注进来)。
- * @returns 名录整表。
+ * @returns 省码清单。
  */
-function fetchAllDesignated(db: Db): DesignatedRowsOut {
-  const hot = CACHE.designated
+function fetchPoolProvs(db: Db): PoolProvsOut {
+  const hot = CACHE.poolProvs
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
-    return Promise.resolve(hot.rows)
+    return Promise.resolve(hot.provs)
   }
-  if (CACHE.designatedInflight == null) {
-    CACHE.designatedInflight = queryRowsOrEmpty({ db: db, sql: SQL.DESIGNATED_ALL, params: [], map: toDesignatedRow })
-      .then(function remember(rows) {
-        CACHE.designated = { at: Date.now(), rows: rows }
-        return rows
+  if (CACHE.poolProvsInflight == null) {
+    CACHE.poolProvsInflight = queryRowsOrEmpty({ db: db, sql: SQL.EMPLOYER_POOL_PROVS, params: [], map: toProvCode })
+      .then(function remember(provs) {
+        CACHE.poolProvs = { at: Date.now(), provs: provs }
+        return provs
       })
       .finally(function clearInflight() {
-        CACHE.designatedInflight = null
+        CACHE.poolProvsInflight = null
       })
   }
   if (hot != null) {
-    return Promise.resolve(hot.rows)
+    return Promise.resolve(hot.provs)
   }
-  return CACHE.designatedInflight
+  return CACHE.poolProvsInflight
 }
 
 /**
- * 指定雇主在招数(雇主池 designated 且在招,~423 行)带 TTL 缓存取数,策略同 fetchAllDesignated
- * (改 `CACHE.designatedOpen` / `CACHE.designatedOpenInflight`)。池表未建/未灌 → 空表,名录页照常出。
+ * 直达参数 noc= → 行业组键(数据层单一分组:jobs.broad → noc_categories.ind_group)。
+ * 库里换算不出(职业没在招岗 / 未分类)回 FILTER_UNSET —— 板退回首屏让用户自己选,不硬猜。
  *
- * @param db 数据库连接(池由调用方注进来)。
- * @returns 在招数行。
+ * @param input 连接与职业码。
+ * @returns 行业组键或空串。
  */
-function fetchDesignatedOpen(db: Db): DesignatedOpenRowsOut {
-  const hot = CACHE.designatedOpen
-  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
-    return Promise.resolve(hot.rows)
+async function groupOfNoc(input: GroupOfNocIn): GroupKeyOut {
+  const rows = await queryRowsOrEmpty({ db: input.db, sql: SQL.EMPLOYER_GROUP_OF_NOC, params: [input.noc], map: toGroupKey })
+  const first = rows[0]
+  if (first == null || (POOL_GROUPS as readonly string[]).includes(first) === false) {
+    return FILTER_UNSET
   }
-  if (CACHE.designatedOpenInflight == null) {
-    CACHE.designatedOpenInflight = queryRowsOrEmpty({
-      db: db, sql: SQL.DESIGNATED_OPEN_JOBS, params: [], map: toDesignatedOpenRow,
-    })
-      .then(function remember(rows) {
-        CACHE.designatedOpen = { at: Date.now(), rows: rows }
-        return rows
-      })
-      .finally(function clearInflight() {
-        CACHE.designatedOpenInflight = null
-      })
-  }
-  if (hot != null) {
-    return Promise.resolve(hot.rows)
-  }
-  return CACHE.designatedOpenInflight
+  return first
 }
 
 /**
- * 名录行合上在招数并按在招优先排(2026-09-04 Frank「指定雇主也得显示在招的才有用」):
- * 在招多的在前,同数按名;只有指定资格没挂岗的**不剔除**(设计稿故事三:主动出击的对象,中档保底)。
+ * 本页最新的池构建日(每行同一轮构建,取最大值防混轮;无行回 FETCHED_NONE)。
  *
- * @param x 名录行与在招数行。
- * @returns 带在招数、排好序的新数组(不改入参)。
+ * @param rows 本页行。
+ * @returns YYYY-MM-DD 或空串。
  */
-function withDesignatedOpen(x: WithDesignatedOpenIn): EmployerRows {
-  const openBy = new Map<string, number>()
-  for (const o of x.openRows) {
-    openBy.set(o.name.toLowerCase().trim(), o.openJobs)
-  }
-  const out: EmployerRow[] = []
-  for (const r of x.rows) {
-    let open = 0
-    const hit = openBy.get(r.name.toLowerCase().trim())
-    if (hit != null) {
-      open = hit
-    }
-    out.push({
-      name: r.name, province: r.province, where: r.where, program: r.program, nocs: r.nocs, openJobs: open, url: r.url,
-    })
-  }
-  out.sort(byOpenDescThenName)
-  return out
-}
-
-/**
- * 在招数降序、同数按名升序(名录页默认序)。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负=a 在前,正=b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-function byOpenDescThenName(a: EmployerRow, b: EmployerRow): number {
-  let oa = 0
-  if (a.openJobs != null) {
-    oa = a.openJobs
-  }
-  let ob = 0
-  if (b.openJobs != null) {
-    ob = b.openJobs
-  }
-  if (oa !== ob) {
-    return ob - oa
-  }
-  return a.name.localeCompare(b.name)
-}
-
-/**
- * 名录的「抓取」日 = 全表最新一批(2026-09-04 修:原先取排序后第一条非空行,恰好撞上 PE 的
- * 4 月存档快照,把当天抓的 2,811 行显示成 04-19)。空串不参与。
- *
- * @param rows 名录整表(fetched 已归一成 YYYY-MM-DD)。
- * @returns 最新抓取日;全空回 FETCHED_NONE。
- */
-function latestFetchedOf(rows: DesignatedRows): string {
+function latestFetchedOf(rows: PoolRows): string {
   let latest = FETCHED_NONE
   for (const r of rows) {
-    if (r.fetched !== '' && r.fetched > latest) {
+    if (r.fetched > latest) {
       latest = r.fetched
     }
   }
@@ -446,42 +295,15 @@ function latestFetchedOf(rows: DesignatedRows): string {
 }
 
 /**
- * 职业人话名(站规:代码不裸奔)。查不到的码不进映射,展示层原样显示 5 位码。
+ * 空的一页(池没拿到 / 查挂了都回它,绝不 500 —— 前端保底继续用手上那一页;省下拉选项照给,
+ * 行查挂了不该把筛选器也清空)。
  *
- * @param input 能打 SQL 的东西与要查的码。
- * @returns 码 → 三语名。
- */
-async function nocTitlesOf(input: NocTitlesIn): NocTitlesOut {
-  const list: string[] = []
-  for (const c of input.codes) {
-    if (NOC_RE.test(c)) {
-      list.push(c)
-    }
-  }
-  const capped = list.slice(0, NOC_TITLES_MAX)
-  if (capped.length === 0) {
-    return {}
-  }
-  const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_FOR_EMPLOYERS, params: [capped], map: toNocTitlePair })
-  const out: NocTitleMap = {}
-  for (const p of pairs) {
-    if (p.noc !== '') {
-      out[p.noc] = p.title
-    }
-  }
-  return out
-}
-
-/**
- * 空的一页(池没拿到 / 查挂了都回它,绝不 500 —— 前端保底继续用 SSR 那一页)。
- *
- * @param input 当前筛选与页大小。
+ * @param input 当前筛选、页大小与省选项。
  * @returns 空表。
  */
-function emptyEmployerPage(input: EmptyPageIn): EmployerPage {
+function emptyPoolPage(input: EmptyPoolPageIn): PoolPage {
   return {
-    mode: input.filters.mode, rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize,
-    facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
+    rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize, provs: input.provs, fetched: FETCHED_NONE,
   }
 }
 
@@ -1221,8 +1043,8 @@ export function loadOccupations(db: Db): OccRowsOut {
  * @returns 无返回值。
  */
 export function resetEmployersCache(): void {
-  CACHE.designated = null
-  CACHE.designatedInflight = null
+  CACHE.poolProvs = null
+  CACHE.poolProvsInflight = null
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()
@@ -1361,99 +1183,63 @@ export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
 // =========================================================================
 
 /**
- * `DESIGNATED_ALL` 一行 → 干净的名录行。
+ * `employerPoolPage` / `EMPLOYER_POOL_SEARCH` 一行 → 板上一行事实(numeric 列 pg 回字符串,词汇表逐格收窄;
+ * 可空数值保 null 不折 0 —— 折 0 = 替数据层编数)。
  *
  * @param r 原始行。
- * @returns 收窄后的名录行。
+ * @returns 收窄后的池行。
  */
-export function toDesignatedRow(r: DesignatedDbRow): DesignatedRow {
+export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
-    name: text(r.name), province: text(r.province), location: text(r.location),
-    source: text(r.source), nocs: text(r.nocs), url: text(r.url), fetched: fmtFetched(text(r.fetched)),
+    key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), industry: textOrNull(r.industry),
+    province: text(r.province), city: text(r.city), designated: r.designated === true,
+    programs: toStrList(r.designated_programs), openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
+    group: text(r.ind_group), openJobs: count(r.open_jobs), latestPosted: textOrNull(r.latest_posted),
+    topTitles: toStrList(r.top_titles), entryJobs: count(r.entry_jobs), entryShare: numOrNull(r.entry_share),
+    minExperience: textOrNull(r.min_experience), lmiaSkilled: count(r.lmia_skilled),
+    lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),
+    wageIndexPct: numOrNull(r.wage_index_pct),
   }
 }
 
 /**
- * `DESIGNATED_OPEN_JOBS` 一行 → 干净的在招数行(名留原样,比对时再小写)。
+ * 池查询的原始行原样透传(queryRows 要一枚 map;窗口总数要在 to* 之前从原始行取,所以分两步)。
  *
  * @param r 原始行。
- * @returns 收窄后的行。
+ * @returns 同一行。
  */
-export function toDesignatedOpenRow(r: DesignatedOpenDbRow): DesignatedOpenRow {
-  return { name: text(r.name), openJobs: count(r.open_jobs) }
+export function passPoolDbRow(r: PoolDbRow): PoolDbRow {
+  return r
 }
 
 /**
- * 名录抓取日:库里两种写法(20260419 / 2026-04-19),归一在数据层做,展示层只显示。
- *
- * @param v 库里的原值。
- * @returns YYYY-MM-DD;识别不了就截前十位原样给。
- */
-export function fmtFetched(v: string): string {
-  const s = v.trim()
-  if (DATE8_RE.test(s)) {
-    return s.replace(DATE8_RE, DATE8_DASHED)
-  }
-  return s.slice(0, DATE_LEN)
-}
-
-/**
- * `HIRING_EMPLOYERS` 一行 → 干净的在招雇主行。open 是计数,0 无害。
+ * `EMPLOYER_POOL_PROVS` 一行 → 省码。
  *
  * @param r 原始行。
- * @returns 收窄后的在招行。
+ * @returns 省码。
  */
-export function toHiringRow(r: HiringDbRow): HiringRow {
-  return { name: text(r.name), province: text(r.province), location: text(r.location), openJobs: count(r.n) }
+export function toProvCode(r: ProvDbRow): string {
+  return text(r.province)
 }
 
 /**
- * 名录一行 → 板上一行(designated 口径:出制度+职业,在招数恒 null —— 名录不含在招信息)。
- *
- * @param r 干净的名录行。
- * @returns 板上一行。
- */
-export function toEmployerRow(r: DesignatedRow): EmployerRow {
-  return {
-    name: r.name, province: r.province, where: r.location,
-    program: r.source, nocs: nocList(r.nocs), openJobs: null, url: r.url,
-  }
-}
-
-/**
- * 名录 nocs 串 → 5 位码数组(逗号/空格/顿号混排都吃;非 5 位的碎片丢弃,不瞎猜)。
- *
- * @param nocs 名录原文。
- * @returns 去重后的 5 位码。
- */
-export function nocList(nocs: string): StrList {
-  const seen = new Set<string>()
-  for (const piece of nocs.split(NOC_SPLIT_RE)) {
-    if (NOC_RE.test(piece)) {
-      seen.add(piece)
-    }
-  }
-  return Array.from(seen)
-}
-
-/**
- * 在招一行 → 板上一行(hiring 口径:出在招岗数,制度/职业/URL 恒空 —— 不是名录数据)。
- *
- * @param r 干净的在招行。
- * @returns 板上一行。
- */
-export function hiringToEmployerRow(r: HiringRow): EmployerRow {
-  return { name: r.name, province: r.province, where: r.location, program: '', nocs: [], openJobs: r.openJobs, url: '' }
-}
-
-/**
- * `NOC_TITLES_FOR_EMPLOYERS` 一行 → 码与三语名(折成 Record 在调用处)。
+ * `EMPLOYER_GROUP_OF_NOC` 一行 → 行业组键。
  *
  * @param r 原始行。
- * @returns 码与三语名。
+ * @returns 组键(白名单校验在调用处)。
  */
-export function toNocTitlePair(r: NocTitleDbRow): NocTitlePair {
-  return { noc: text(r.noc), title: { en: text(r.en), zh: text(r.zh), ko: text(r.ko) } }
+export function toGroupKey(r: GroupOfNocDbRow): string {
+  return text(r.ind_group)
+}
+
+/**
+ * 池查询一行的窗口总数格 → 数(pg 的 count 回字符串;每行同值,取一行即可)。
+ *
+ * @param r 原始行。
+ * @returns 总行数。
+ */
+export function toPoolTotal(r: PoolDbRow): number {
+  return count(r.total)
 }
 
 /**

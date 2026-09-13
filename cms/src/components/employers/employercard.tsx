@@ -3,9 +3,8 @@
  * 雇主板的一张手机卡(全站唯一卡片件 JobCard 的一次装配)。
  * 手机触控靶:卡内标题链只有 23px 高 —— 整张卡都可点(卡本身 ≥70px),点在标题上时
  * 交给 `<a>` 自己走,不重复导航。
- * 名录口径与在招口径的差别只在「有没有职业说明」这一处,所以按它分两支返回:
- * 名录出职业说明与制度胶囊,在招出岗数 —— JobCard 的职业说明槽只认字符串,
- * 传空串会渲出一条空行,只能靠不传把它整条摘掉。
+ * 2026-09-13 雇主板批二:卡上四样 —— 名(落公司页)、行业注、所在地、在招话术;胶囊两枚:
+ * 星级与「指定雇主」(非指定不出)。
  * 2026-08-27 换装批自 Employers.tsx 的 JobCard 装配段提出成文件。
  *
  * @author Frank
@@ -24,32 +23,29 @@ import css from './employers.module.css'
  */
 export function EmployerCard({ r }: EmployerCardIn) {
   const title = { text: r.name, href: r.href, title: r.hrefTitle, onClick: r.onView }
-  const onCardClick = r.onCard
-  let salary = null
-  if (r.cardSalary !== TEXT_NONE) {
-    salary = r.cardSalary
-  }
-  let chips = null
-  if (r.programChip !== TEXT_NONE) {
-    chips = <span className={css.progChip}>{r.programChip}</span>
-  }
-  if (r.cardNote === TEXT_NONE) {
+  const chips = (
+    <>
+      <span className={css.star} title={r.starTitle}>{r.starText}</span>
+      {r.designatedText !== TEXT_NONE && <span className={css.progChip}>{r.designatedText}</span>}
+    </>
+  )
+  if (r.industry === TEXT_NONE) {
     return (
       <JobCard href={r.href}
-        onCardClick={onCardClick}
+        onCardClick={r.onCard}
         title={title}
         location={r.where}
-        salary={salary}
+        salary={r.cardSalary}
         chips={chips} />
     )
   }
   return (
     <JobCard href={r.href}
-      onCardClick={onCardClick}
+      onCardClick={r.onCard}
       title={title}
-      note={r.cardNote}
+      note={r.industry}
       location={r.where}
-      salary={salary}
+      salary={r.cardSalary}
       chips={chips} />
   )
 }

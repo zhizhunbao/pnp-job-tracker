@@ -42,21 +42,6 @@ export const COMPARE_TABLE_CLS = 'tcTableWrap'
 export const CTL_CLS = 'sbCtl'
 
 /**
- * 雇主板口径:官方指定名录。路径段与筛选值同一个词。
- */
-export const MODE_DESIGNATED = 'designated'
-
-/**
- * 雇主板口径:本站库内在招。
- */
-export const MODE_HIRING = 'hiring'
-
-/**
- * 口径下拉的选项清单(顺序即显示顺序:名录在前,在招在后)。
- */
-export const MODE_OPTS = [MODE_DESIGNATED, MODE_HIRING]
-
-/**
  * 担保雇主三分表的人群档:去大西洋省(AIP 指定)。
  */
 export const KIND_AIP = 'aip'
@@ -72,27 +57,22 @@ export const KIND_LMIA = 'lmia'
 export const KIND_NAMED = 'named'
 
 /**
- * 雇主板 API 的路径。换筛选/翻页打它懒取 —— 名录 6,680 行不进 SSR payload
+ * 雇主板 API 的路径。换筛选/翻页/换排序打它懒取 —— 池表 8.8 万桶行不进 SSR payload
  * (#313 同款性能红线),路径打错是静默 404,只能从这里取。
  */
 export const EMP_API_URL = '/api/employers'
 
 /**
- * 雇主板深链的路径前缀(后面接口径段:`/employers/designated`)。
- * 筛选态进 URL 走 replaceState,同职位板惯例。
- */
-export const EMP_PATH_HEAD = '/employers/'
-
-/**
- * 雇主板首页(对照页的「回名录」与清空对比栏后的落点)。
+ * 雇主板的路径(2026-09-13 雇主板批二:designated / hiring 两路由 301 合到这一块板,筛选态全走 query;
+ * 也是对照页「回雇主板」与清空对比栏后的落点)。
  * 旁边原有 EMP_BACK_URL('/plan/pr',雇主板右上角返回的落点 —— 初评表「查雇主」的来路),
  * 2026-09-03 撤编:Frank「所有主页面都不应该有返回按钮」,雇主板是顶栏一级页。
  */
 export const EMP_URL = '/employers'
 
 /**
- * 「看该雇主在招」的落点前缀:职位板按雇主名搜。雇主名本身就是这个直达 ——
- * 再单开一列同一个落点是 2026-08-10 拍过的重复入口,不做。
+ * 「看岗位」的落点前缀:职位板按雇主名搜(2026-09-13 雇主板批二:雇主名改落公司详情页,看岗位归操作列钮 ——
+ * 雇主板「名字进详情、操作进板」形,照城市段先例;此前 2026-08-10「雇主名即直达、不另开列」的判定随之作废)。
  */
 export const JOBS_SEARCH_HEAD = '/jobs?q='
 
@@ -115,54 +95,32 @@ export const EV_VIEW_JOBS = 'se-view-jobs'
 /**
  * 埋点事件名:雇主板搜索框落词(2026-09-04 /fe 雇主模块补)。防抖满了那一下才算一次,
  * 不是每敲一个字算一次。
- * 🔴 分组值是**口径**(designated / hiring),搜索词本身永不进埋点 —— 它是高基数自由文本,
+ * 🔴 分组值是**行业组键**(2026-09-13 前是口径 designated / hiring),搜索词本身永不进埋点 —— 它是高基数自由文本,
  * 进了漏斗日聚合表就把表撑成明细表(lib/funnel 的 PROP_OK 也不收),还踩隐私页那句承诺。
  */
 export const EV_SEARCH = 'emp-search'
 
 /**
- * 埋点事件名:雇主板换了任意一格筛选。分组值是**哪一格**(见 EV_PROP_* 一族),
+ * 埋点事件名:雇主板换了任意一格筛选或排序。分组值是**哪一格**(见 EV_PROP_* 一族),
  * 不是选了什么值 —— 省码尚可,职业码是高基数,同上。
  */
 export const EV_FILTER = 'emp-filter'
 
 /**
  * 埋点事件名:雇主板点雇主名去看在招岗(表格行、手机卡标题、整卡触控靶三处同一件事;
- * 整卡那处点在卡内链接上时交给链接自己记,不重复)。分组值是口径。
+ * 整卡那处点在卡内链接上时交给链接自己记,不重复)。分组值是行业组键(查证态 = search)。
  */
 export const EV_ROW = 'emp-row'
 
 /**
- * 埋点事件名:雇主板翻页。分组值是口径。
+ * 埋点事件名:雇主板翻页。分组值是行业组键(查证态 = search)。
  */
 export const EV_PAGE = 'emp-page'
-
-/**
- * 埋点分组值:换的是口径那一格。
- * 🔴 与查询参数名 `P_MODE` 恰好同字,但**各自声明一份**:改 URL 参数名不该顺手改埋点分组值 ——
- * 改了历史计数就断在半路,再也对不上。下面四格同理。
- */
-export const EV_PROP_MODE = 'mode'
 
 /**
  * 埋点分组值:换的是省那一格。
  */
 export const EV_PROP_PROV = 'prov'
-
-/**
- * 埋点分组值:换的是制度那一格。
- */
-export const EV_PROP_PROGRAM = 'program'
-
-/**
- * 埋点分组值:换的是社区那一格。
- */
-export const EV_PROP_CITY = 'city'
-
-/**
- * 埋点分组值:换的是职业那一格。
- */
-export const EV_PROP_NOC = 'noc'
 
 /**
  * 埋点附加值里承载低基数分组的那个键。lib/track 的 pickProp 只认 plan / kind / card 三个键,
@@ -191,25 +149,10 @@ export const VERDICT_NG_HEAD = '✗ '
 export const AIP_MARK = '✓'
 
 /**
- * 折叠抽屉收起态的箭头。
- */
-export const CARET_DOWN = '▼'
-
-/**
- * 折叠抽屉展开态的箭头。
- */
-export const CARET_UP = '▲'
-
-/**
  * 省名词条的键前缀(`pr.NS`)。拼出来的键查不到时原样显示省码 —— 字典缺词不该
  * 把省码吞掉。
  */
 export const PROV_KEY_HEAD = 'pr.'
-
-/**
- * 口径下拉选项名的键前缀(`de.mode.designated`)。
- */
-export const MODE_KEY_HEAD = 'de.mode.'
 
 /**
  * 行业大类名的键前缀(`broad.health`)。
@@ -299,9 +242,14 @@ export const TAG_OK = 'ok'
 export const NOTICE_INFO = 'info'
 
 /**
- * 白底描边钮的变体(「更多筛选」「清空」「回名录」)。
+ * 白底描边钮的变体(「清空」「回雇主板」)。
  */
 export const BTN_SECONDARY = 'secondary'
+
+/**
+ * 表格操作小钮走 button 桶的 mini 档(与职位板 / 把脉页雇主表操作列同一颗钮)。
+ */
+export const MINI_BTN_KIND = 'mini'
 
 /**
  * 付费琥珀钮的变体(样例表上的「解锁」)。
@@ -334,12 +282,6 @@ export const Q_DEBOUNCE_MS = 300
  * 除以 0 会算出 Infinity 页,翻页器当场废掉。
  */
 export const PAGE_SIZE_FALLBACK = 50
-
-/**
- * 一行的职业格最多显示几个职业名。名录里一家雇主挂十几个 NOC 是常态,
- * 全摆出来这一列会把表撑破;剩下的收成「+N」。
- */
-export const NOC_SHOW_MAX = 2
 
 /**
  * 所在地列最多平铺几个省码。1-3 省列两字码,≥4 省收「N 省」——
@@ -574,24 +516,69 @@ export const COL_NAME_KEY = 'name'
 export const COL_WHERE_KEY = 'where'
 
 /**
- * 雇主板列 key:制度(AIP/RCIP/FCIP)。
- */
-export const COL_PROGRAM_KEY = 'program'
-
-/**
- * 雇主板列 key:名录列明的职业。
- */
-export const COL_NOC_KEY = 'noc'
-
-/**
- * 雇主板列 key:名录出处链。
- */
-export const COL_LIST_KEY = 'list'
-
-/**
- * 雇主板列 key:在招岗数。
+ * 雇主板列 key:在招岗数(与排序键 open 同字 —— 表头点列直接当排序主键发给服务端)。
  */
 export const COL_OPEN_KEY = 'open'
+
+/**
+ * 雇主板列 key:切面星级(排序键 star,默认主键)。
+ */
+export const COL_STAR_KEY = 'star'
+
+/**
+ * 雇主板列 key:指定雇主(排序键 designated;旧 /employers/designated 路由 301 落到这一键)。
+ */
+export const COL_DESIGNATED_KEY = 'designated'
+
+/**
+ * 雇主板列 key:工资水位(排序键 wage)。
+ */
+export const COL_WAGE_KEY = 'wage'
+
+/**
+ * 雇主板列 key:操作(看岗位 / 看公司两钮;不排序)。
+ */
+export const COL_ACT_KEY = 'act'
+
+/**
+ * 雇主板八列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给)。
+ */
+export const W_POOL_NAME = '24%'
+
+/**
+ * 雇主板所在地列的宽。
+ */
+export const W_POOL_WHERE = '14%'
+
+/**
+ * 雇主板星级列的宽(五枚星形字符)。
+ */
+export const W_POOL_STAR = '10%'
+
+/**
+ * 雇主板在招列的宽(数字 + 入门占比灰注)。
+ */
+export const W_POOL_OPEN = '9%'
+
+/**
+ * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
+ */
+export const W_POOL_DESIGNATED = '12%'
+
+/**
+ * 雇主板技能类 LMIA 列的宽(数字 + 季度灰注)。
+ */
+export const W_POOL_LMIA = '10%'
+
+/**
+ * 雇主板工资水位列的宽(带符号百分比)。
+ */
+export const W_POOL_WAGE = '9%'
+
+/**
+ * 雇主板操作列的宽(两只 mini 钮并排)。
+ */
+export const W_POOL_ACT = '12%'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。
@@ -624,101 +611,109 @@ export const COL_SKILLED_KEY = 'skilled'
 export const COL_VERDICT_KEY = 'verdict'
 
 /**
- * 名录口径·带出处列时雇主名列的宽。五列版把宽度预算重新分一遍 ——
- * 名录出处只占 8%,省下的宽还给名字与职业两列。
- */
-export const W_NAME_LIST = '30%'
-
-/**
- * 名录口径·不带出处列时雇主名列的宽。
- */
-export const W_NAME_PLAIN = '33%'
-
-/**
- * 名录口径·带出处列时所在地列的宽。
- */
-export const W_WHERE_LIST = '19%'
-
-/**
- * 名录口径·不带出处列时所在地列的宽。
- */
-export const W_WHERE_PLAIN = '21%'
-
-/**
- * 名录口径·带出处列时制度列的宽。
- */
-export const W_PROGRAM_LIST = '11%'
-
-/**
- * 名录口径·不带出处列时制度列的宽。
- */
-export const W_PROGRAM_PLAIN = '12%'
-
-/**
- * 名录口径·带出处列时职业列的宽。
- */
-export const W_NOC_LIST = '21%'
-
-/**
- * 名录口径·不带出处列时职业列的宽。
- */
-export const W_NOC_PLAIN = '22%'
-
-/**
- * 名录口径·带出处列时在招列的宽(2026-09-04 名录页加在招列:六列 30/19/11/21/11/8,
- * 五列 33/21/12/22/12,每列都从原预算里让一点)。
- */
-export const W_OPEN_LIST = '11%'
-
-/**
- * 名录口径·不带出处列时在招列的宽。
- */
-export const W_OPEN_PLAIN = '12%'
-
-/**
- * 名录出处列的宽(只有一枚短链,给最窄那档)。
- */
-export const W_LIST = '8%'
-
-/**
- * 在招口径·雇主名列的宽(三列版,名字吃掉近一半)。
- */
-export const W_HIRE_NAME = '46%'
-
-/**
- * 在招口径·所在地列的宽。
- */
-export const W_HIRE_WHERE = '32%'
-
-/**
- * 在招口径·在招岗数列的宽。
- */
-export const W_HIRE_OPEN = '22%'
-
-/**
  * 数字列右对齐档(在招岗数那列;数字右对齐才连成竖线)。
  */
 export const ALIGN_RIGHT = 'right'
 
 /**
- * 查询参数名:制度。
+ * 查询参数名:制度(直达参数,决策页「查雇主」带进来;板上无选择器)。
  */
 export const P_PROGRAM = 'program'
+
+/**
+ * 查询参数名:行业组键(2026-09-13 雇主板批二,板的第一维)。
+ */
+export const P_GROUP = 'group'
+
+/**
+ * 查询参数名:只看无经验可投(值 ENTRY_ON)。
+ */
+export const P_ENTRY = 'entry'
+
+/**
+ * 查询参数名:排序主键(缺席 = 星级)。
+ */
+export const P_SORT = 'sort'
+
+/**
+ * entry 参数的开值(与 lib/employers 的 ENTRY_ON 逐字对齐:两端各自声明一份,改一处同步另一处)。
+ */
+export const ENTRY_ON = '1'
+
+/**
+ * 行业组名的键前缀(`pulse.ind.stem`,与把脉页同一套词条)。
+ */
+export const GROUP_KEY_HEAD = 'pulse.ind.'
+
+/**
+ * 星级满格数(数据层 1-5)。
+ */
+export const STAR_MAX = 5
+
+/**
+ * 实心星(星级格按星数重复)。
+ */
+export const STAR_ON = '★'
+
+/**
+ * 空心星(补到满格)。
+ */
+export const STAR_OFF = '☆'
+
+/**
+ * 工资水位的基准(100 = 与同组同省中位持平;显示成相对基准的带符号百分比)。
+ */
+export const WAGE_BASE = 100
+
+/**
+ * 高于基准时的前缀符号(低于时 String 自带负号)。
+ */
+export const PLUS_MARK = '+'
+
+/**
+ * 百分比后缀。
+ */
+export const PCT_MARK = '%'
+
+/**
+ * 公司详情页的地址头(后接 slug;雇主名与「看公司」钮的落点)。
+ */
+export const URL_COMPANY_HEAD = '/companies/'
+
+/**
+ * 所在地里市与省码之间的分隔(紧凑格「Surrey, BC」;两截是同一个地点的限定,不是多条信息杂糅)。
+ */
+export const WHERE_SEP = ', '
+
+/**
+ * 埋点分组值:换的是行业组那一格。
+ */
+export const EV_PROP_GROUP = 'group'
+
+/**
+ * 埋点分组值:拨的是「无经验可投」开关。
+ */
+export const EV_PROP_ENTRY = 'entry'
+
+/**
+ * 埋点分组值:点的是表头排序。
+ */
+export const EV_PROP_SORT = 'sort'
+
+/**
+ * 埋点分组值:查证态(搜索框有词)下的行点击 / 翻页,替代行业组键(词本身永不进埋点)。
+ */
+export const EV_KIND_SEARCH = 'search'
+
+/**
+ * 埋点分组值:首屏(还没选行业组)下的搜索落词。
+ */
+export const EV_KIND_NONE = 'none'
 
 /**
  * 查询参数名:省码。
  */
 export const P_PROV = 'prov'
-
-/**
- * 查询参数名:社区/城市。
- */
-export const P_CITY = 'city'
-
-/**
- * 查询参数名:职业码。
- */
-export const P_NOC = 'noc'
 
 /**
  * 查询参数名:雇主名关键词。
@@ -729,11 +724,6 @@ export const P_Q = 'q'
  * 查询参数名:页码。
  */
 export const P_PAGE = 'page'
-
-/**
- * 查询参数名:口径(打 API 时口径走 query,进 URL 时走路径段)。
- */
-export const P_MODE = 'mode'
 
 /**
  * 拼 query 时第一个参数前的问号。
@@ -813,12 +803,6 @@ export const QS_EQ = '='
 export const PRICING_Z = 60
 
 /**
- * 手机卡上「职业」列名与「未列明」之间的空格。它是**文案里的分隔**,
- * 与拼 className 的那一个不是同一件事,所以各有各的名字。
- */
-export const LABEL_SEP = ' '
-
-/**
  * 雇主门槛判定的一态:公共部门旁路 —— 它不走门槛,不该混进「达标」里。
  */
 export const VERDICT_PUBLIC = 'public'
@@ -863,40 +847,21 @@ export const COMPARE_META = {
 }
 
 /**
- * `/employers/designated` 标题里范围前缀之后的固定尾巴(前缀由省码与制度拼,见 designatedMetaOf)。
+ * `/employers` 标题里省码前缀之后的固定尾巴(前缀由省码拼,见 employersMetaOf)。
  */
-export const DESIGNATED_TITLE_TAIL = 'Designated employers | Offer2PR'
+export const EMPLOYERS_TITLE_TAIL = 'Employers | Offer2PR'
 
 /**
- * `/employers/designated` 的搜索结果摘要(英文优先 —— 88% 流量来自 Google;
- * 「被指定不等于在招」是站规四类保留解释里的口径说明,不许删成一句广告词)。
+ * `/employers` 的搜索结果摘要(英文优先 —— 88% 流量来自 Google;「≠资格认定」是站规保留的口径说明)。
  */
-export const DESIGNATED_DESC
-  = 'Employers designated under AIP / RCIP / FCIP, from official community and provincial lists.'
-  + ' Being designated does not mean the employer is hiring — check open jobs.'
-  + ' 指定雇主名录(AIP/RCIP/FCIP),官方名录周更;被指定不等于在招。'
+export const EMPLOYERS_DESC
+  = 'Employers ranked by immigration value within an industry and province: designated status (AIP / RCIP / FCIP),'
+  + ' open postings, entry-level share and skilled LMIA approvals.'
+  + ' Star rating is a reference, not an eligibility ruling.'
+  + ' 按行业与省份看谁最可能要你:指定资格、在招、入门岗占比、技能类 LMIA 记录;星级是机会参考,不等于资格认定。'
 
 /**
- * `/employers/hiring` 标题里范围前缀之后的固定尾巴(前缀是省码,见 hiringMetaOf)。
- */
-export const HIRING_TITLE_TAIL = 'Employers hiring now | Offer2PR'
-
-/**
- * `/employers/hiring` 的搜索结果摘要(口径:该省该职业正在招人的雇主来自本站每日职位库,
- * 不是官方名录 —— 两块视图共用一件,描述里必须把来源分清)。
- */
-export const HIRING_DESC
-  = 'Employers with open postings for this occupation in this province, from our daily job crawl.'
-  + ' 该省该职业正在招人的雇主,来自本站每日抓取的职位库。'
-
-/**
- * 标题里认得的三个指定制度码。URL 上 `?program=` 只有落在这三个里才进标题前缀 ——
- * 白名单之外一律当没带,免得把随手编的串渲进 `<title>`。
- */
-export const META_PROGRAMS = ['AIP', 'RCIP', 'FCIP']
-
-/**
- * 省码的形状(两位大写字母)。URL 上 `?prov=` 过不了它就当没带,同上。
+ * 省码的形状(两位大写字母)。URL 上 `?prov=` 过不了它就当没带 —— 随手编的参数不会被渲进 `<title>`。
  */
 export const META_PROV_RE = /^[A-Z]{2}$/
 

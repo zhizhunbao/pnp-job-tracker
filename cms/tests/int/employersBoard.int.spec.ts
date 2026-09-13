@@ -1,44 +1,38 @@
 // 雇主板筛选/分页口径闸(lib/employers 的纯函数 + loadEmployerPage 的假 pool)。
-// 立这道闸的两个理由:
-//   ① 🔴 名录**没写职业**的行(RCIP/FCIP 绝大多数)选 NOC 时必须照常保留 —— 当成不匹配剔掉
-//      = 拿我们的数据缺口冒充官方的排除,用户会错过大半个名录。
-//   ② #313 红线:SSR/API 一次只吐一页,total 报全量 —— 回归成「整包 6,680 行」时这里当场红。
+// 2026-09-13 雇主板批二重写(板改读雇主池):
+//   ① 参数收窄:行业组 / 排序键只认白名单,不合法一律「不筛」不是「筛出空」;
+//   ② 三个态:搜索词非空 = 查证态全库搜(不带组/省条件);选了组 = 榜态(组 × 省 × 开关 × 制度);都没 = 首屏不查行;
+//   ③ #313 红线:一次只吐一页,total 报窗口总数 —— 回归成「整包」时这里当场红;
+//   ④ 排序主键只经白名单映射成 SQL 片段,用户输入永不拼进 ORDER BY。
 import { describe, expect, it } from 'vitest'
 
 import type { Db } from '@/lib/db'
-import {
-  applyEmployerFilters, EMP_PAGE_SIZE, loadEmployerPage, normalizeEmployerFilters, resetEmployersCache,
-} from '@/lib/employers/server'
+import { loadEmployerPage, normalizePoolFilters, resetEmployersCache } from '@/lib/employers/server'
 // 测试例外:纯函数直接点文件(桶只走门的规矩不管测试)
-import { employerFacets, nocMatches, pageSlice, programMatches } from '@/lib/employers/functions'
-import { fmtFetched, nocList, toEmployerRow } from '@/lib/employers/functions'
-import type { EmployerFilters, EmployerRow } from '@/lib/employers'
+import { isPoolSort, isScopedOf, isSearchOf, toPoolRow } from '@/lib/employers/functions'
+import type { PoolFilters } from '@/lib/employers'
 
-const F = (p: Partial<EmployerFilters> = {}): EmployerFilters =>
-  ({ mode: 'designated', program: '', prov: '', city: '', noc: '', q: '', page: 0, ...p })
-
-// 行长得像真名录:AIP 行常带 nocs、按省;RCIP/FCIP 行按社区、nocs 多为空
-const D = (name: string, province: string, location: string, source: string, nocs = '') =>
-  toEmployerRow({ name, province, location, source, nocs, url: '', fetched: '2026-08-10' })
-
-const ROWS: EmployerRow[] = [
-  D('Grand View Manor', 'NS', '', 'AIP', '33102, 31301'),
-  D('Bell Farms Inc', 'NB', '', 'AIP', '85101'),
-  D('Sudbury Steel', 'ON', 'Greater Sudbury', 'RCIP+FCIP'),
-  D('Timmins Transit', 'ON', 'Timmins', 'RCIP'),
-  D('Cap-Acadie Bakery', 'NB', 'Cap-Acadie', 'FCIP'),
-  D('Moose Jaw Motors', 'SK', 'Moose Jaw', 'RCIP', '72410'),
-]
+const F = (p: Partial<PoolFilters> = {}): PoolFilters =>
+  ({ group: '', prov: '', program: '', noc: '', entry: false, q: '', sort: 'star', page: 0, ...p })
 
 describe('参数规范化', () => {
   const of = (o: Record<string, string>) =>
-    normalizeEmployerFilters({ get: (k) => (o[k] == null ? null : o[k]), defMode: 'designated' })
+    normalizePoolFilters({ get: (k) => (o[k] == null ? null : o[k]) })
 
-  it('口径缺省跟路径段走,query 只认两个合法值', () => {
-    expect(of({}).mode).toBe('designated')
-    expect(of({ mode: 'hiring' }).mode).toBe('hiring')
-    expect(of({ mode: 'nonsense' }).mode).toBe('designated')
-    expect(normalizeEmployerFilters({ get: () => null, defMode: 'hiring' }).mode).toBe('hiring')
+  it('行业组只认八个键,大小写归一', () => {
+    expect(of({ group: 'stem' }).group).toBe('stem')
+    expect(of({ group: 'STEM' }).group).toBe('stem')
+    expect(of({ group: 'IT' }).group).toBe('')
+    expect(of({}).group).toBe('')
+  })
+
+  it('排序键只认白名单,缺省星级', () => {
+    expect(of({}).sort).toBe('star')
+    expect(of({ sort: 'open' }).sort).toBe('open')
+    expect(of({ sort: 'designated' }).sort).toBe('designated')
+    expect(of({ sort: 'DROP TABLE' }).sort).toBe('star')
+    expect(isPoolSort('lmia')).toBe(true)
+    expect(isPoolSort('skilled')).toBe(false)
   })
 
   it('制度只认白名单,省只认两位码,职业只认 5 位', () => {
@@ -47,11 +41,13 @@ describe('参数规范化', () => {
     expect(of({ prov: 'ns' }).prov).toBe('NS')
     expect(of({ prov: 'Ontario' }).prov).toBe('')
     expect(of({ noc: '72310' }).noc).toBe('72310')
-    expect(of({ noc: '723' }).noc).toBe('')
     expect(of({ noc: "1' OR 1=1" }).noc).toBe('')
   })
 
-  it('页码负数/非数字回 0,上限封死', () => {
+  it('开关只认 1;搜索词去掉 SQL 通配符;页码负数/非数字回 0,上限封死', () => {
+    expect(of({ entry: '1' }).entry).toBe(true)
+    expect(of({ entry: 'true' }).entry).toBe(false)
+    expect(of({ q: '%tim_ hortons%' }).q).toBe('tim hortons')
     expect(of({ page: '-3' }).page).toBe(0)
     expect(of({ page: 'x' }).page).toBe(0)
     expect(of({ page: '7' }).page).toBe(7)
@@ -59,87 +55,46 @@ describe('参数规范化', () => {
   })
 })
 
-describe('名录职业串解析', () => {
-  it('逗号/空格/顿号混排都吃,去重', () => {
-    expect(nocList('33102, 31301')).toEqual(['33102', '31301'])
-    expect(nocList('33102 33102  31301')).toEqual(['33102', '31301'])
-  })
-
-  it('非 5 位的碎片丢弃,不瞎猜', () => {
-    expect(nocList('331, 3310299, abc')).toEqual([])
-    expect(nocList('')).toEqual([])
+describe('三个态', () => {
+  it('搜索词非空 = 查证态;选了组 = 榜态;都没 = 首屏', () => {
+    expect(isSearchOf(F({ q: 'tim' }))).toBe(true)
+    expect(isSearchOf(F())).toBe(false)
+    expect(isScopedOf(F({ group: 'stem' }))).toBe(true)
+    expect(isScopedOf(F())).toBe(false)
   })
 })
 
-describe('🔴 职业口径:名录没写 ≠ 不匹配', () => {
-  it('nocs 为空的行,选了任何职业都照常保留', () => {
-    expect(nocMatches({ rowNocs: [], noc: '72310' })).toBe(true)
-    expect(nocMatches({ rowNocs: [], noc: '' })).toBe(true)
+describe('行构造器', () => {
+  it('numeric 列的字符串收成数,可空数值保 null,jsonb 清单成数组', () => {
+    const r = toPoolRow({
+      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', province: 'ON', city: 'Ottawa',
+      designated: false, designated_programs: [], open_jobs_total: '40', fetched: '2026-09-13',
+      ind_group: 'stem', open_jobs: '35', latest_posted: '2026-09-12', top_titles: ['developer'], entry_jobs: '7',
+      entry_share: '20', min_experience: 'junior', lmia_skilled: '3', lmia_last_quarter: '2026Q1', star: '4',
+      wage_med_annual: null, wage_index_pct: null, total: '120',
+    })
+    expect(r.openJobs).toBe(35)
+    expect(r.entryShare).toBe(20)
+    expect(r.star).toBe(4)
+    expect(r.wageMedAnnual).toBeNull()
+    expect(r.wageIndexPct).toBeNull()
+    expect(r.topTitles).toEqual(['developer'])
+    expect(r.designated).toBe(false)
+    expect(r.slug).toBe('shopify')
   })
 
-  it('nocs 写了的行按清单判', () => {
-    expect(nocMatches({ rowNocs: ['33102'], noc: '33102' })).toBe(true)
-    expect(nocMatches({ rowNocs: ['33102'], noc: '72310' })).toBe(false)
-  })
-
-  it('整表筛职业:RCIP/FCIP 的空职业行不许被筛掉,写了别的职业的行要被筛掉', () => {
-    const hit = applyEmployerFilters({ rows: ROWS, filters: F({ noc: '33102' }) })
-    const names = hit.map((r) => r.name)
-    expect(names).toContain('Grand View Manor')      // 名录列了 33102
-    expect(names).toContain('Sudbury Steel')          // 名录没写职业 → 保留
-    expect(names).toContain('Cap-Acadie Bakery')      // 同上
-    expect(names).not.toContain('Bell Farms Inc')     // 名录写了 85101,不含 33102
-    expect(names).not.toContain('Moose Jaw Motors')   // 名录写了 72410
-  })
-})
-
-describe('筛选', () => {
-  it('制度用子串匹配:双标社区 RCIP+FCIP 对两个筛选都算数', () => {
-    expect(programMatches({ rowProgram: 'RCIP+FCIP', program: 'RCIP' })).toBe(true)
-    expect(programMatches({ rowProgram: 'RCIP+FCIP', program: 'FCIP' })).toBe(true)
-    expect(programMatches({ rowProgram: 'RCIP', program: 'FCIP' })).toBe(false)
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ program: 'FCIP' }) }).map((r) => r.name))
-      .toEqual(['Sudbury Steel', 'Cap-Acadie Bakery'])
-  })
-
-  it('省与社区各筛各的', () => {
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ prov: 'ON' }) }).map((r) => r.name)).toEqual(['Sudbury Steel', 'Timmins Transit'])
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ city: 'Timmins' }) }).map((r) => r.name)).toEqual(['Timmins Transit'])
-  })
-
-  it('关键词搜雇主名,大小写无关、可子串', () => {
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ q: 'manor' }) }).map((r) => r.name)).toEqual(['Grand View Manor'])
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ q: 'FARMS' }) }).map((r) => r.name)).toEqual(['Bell Farms Inc'])
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ q: '没有这家' }) })).toEqual([])
-  })
-
-  it('多维叠加取交集', () => {
-    expect(applyEmployerFilters({ rows: ROWS, filters: F({ prov: 'ON', program: 'RCIP', city: 'Timmins' }) }).map((r) => r.name))
-      .toEqual(['Timmins Transit'])
-  })
-})
-
-describe('下拉选项', () => {
-  it('省与制度看整份数据(切了省下拉不许自己清空)', () => {
-    const fc = employerFacets({ rows: ROWS, filters: F({ prov: 'ON' }) })
-    expect(fc.provs).toEqual(['NB', 'NS', 'ON', 'SK'])
-    expect(fc.programs).toEqual(['AIP', 'RCIP', 'FCIP'])
-  })
-
-  it('社区与职业按已选省与制度收窄', () => {
-    expect(employerFacets({ rows: ROWS, filters: F({ prov: 'ON' }) }).cities).toEqual(['Greater Sudbury', 'Timmins'])
-    expect(employerFacets({ rows: ROWS, filters: F({ prov: 'NS' }) }).nocs).toEqual(['31301', '33102'])
-    expect(employerFacets({ rows: ROWS, filters: F({ program: 'FCIP' }) }).cities).toEqual(['Cap-Acadie', 'Greater Sudbury'])
-  })
-})
-
-describe('分页', () => {
-  const many: EmployerRow[] = Array.from({ length: 120 }, (_, i) => D(`E${String(i).padStart(3, '0')}`, 'NS', '', 'AIP'))
-  it('按页切片,越界页给空数组而不是报错', () => {
-    expect(pageSlice({ rows: many, page: 0, size: 50 })).toHaveLength(50)
-    expect(pageSlice({ rows: many, page: 2, size: 50 })).toEqual(many.slice(100))
-    expect(pageSlice({ rows: many, page: 9, size: 50 })).toEqual([])
-    expect(pageSlice({ rows: many, page: -1, size: 50 })).toEqual(many.slice(0, 50))
+  it('三源独有雇主:slug / 行业 / 季度 为 null 不折空串以外的东西', () => {
+    const r = toPoolRow({
+      key: 'n:acme', slug: null, name: 'Acme', industry: null, province: 'NB', city: '', designated: true,
+      designated_programs: ['AIP', 'RCIP'], open_jobs_total: 0, fetched: '2026-09-13', ind_group: '', open_jobs: 0,
+      latest_posted: null, top_titles: null, entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
+      lmia_last_quarter: null, star: 3, wage_med_annual: null, wage_index_pct: null, total: 1,
+    })
+    expect(r.slug).toBeNull()
+    expect(r.industry).toBeNull()
+    expect(r.programs).toEqual(['AIP', 'RCIP'])
+    expect(r.designated).toBe(true)
+    expect(r.entryShare).toBeNull()
   })
 })
 
@@ -154,84 +109,66 @@ function fakePool(handler: (sql: string, params?: unknown[]) => QRows) {
   }
 }
 
-const BIG = Array.from({ length: 137 }, (_, i) => ({
-  name: `Employer ${String(i).padStart(3, '0')}`, province: i % 2 ? 'NS' : 'NB',
-  location: '', source: 'AIP', nocs: i % 3 === 0 ? '' : '33102', url: '', fetched: '2026-08-10',
-}))
+const bucketRow = (i: number, total: number) => ({
+  key: `e${i}`, slug: null, name: `Employer ${String(i).padStart(3, '0')}`, industry: null, province: i % 2 ? 'NS' : 'NB',
+  city: '', designated: i % 3 === 0, designated_programs: [], open_jobs_total: i, fetched: '2026-09-13', ind_group: 'stem',
+  open_jobs: i, latest_posted: null, top_titles: [], entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
+  lmia_last_quarter: null, star: 2, wage_med_annual: null, wage_index_pct: null, total,
+})
 
 describe('loadEmployerPage', () => {
-  it('🔴 一次只吐一页,total 报全量(#313:整包塞 payload 就是这里破的)', async () => {
+  it('首屏(没组没词)不查行,只回省下拉;total 0', async () => {
     resetEmployersCache()
-    const { pool } = fakePool((sql) => (sql.includes('designated_employers') ? { rows: BIG } : { rows: [] }))
+    const { pool, seen } = fakePool((sql) => (sql.includes('FROM employer_pool ') && sql.includes('GROUP BY province') ? { rows: [{ province: 'NS' }, { province: 'ON' }] } : { rows: [] }))
     const p = await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })
+    expect(p.rows).toEqual([])
+    expect(p.total).toBe(0)
+    expect(p.provs).toEqual(['NS', 'ON'])
+    expect(seen.some((s) => s.sql.includes('employer_pool_buckets'))).toBe(false)
+  })
+
+  it('🔴 榜态一次只吐一页,total 报窗口总数;参数带出去不拼串,排序片段来自白名单', async () => {
+    resetEmployersCache()
+    const { pool, seen } = fakePool((sql, params) => {
+      if (sql.includes('employer_pool_buckets b JOIN employer_pool p')) {
+        const size = Number(params?.[4])
+        return { rows: Array.from({ length: size }, (_, i) => bucketRow(i, 137)) }
+      }
+      return { rows: [] }
+    })
+    const p = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', prov: 'NS', entry: true, sort: 'open' }), pageSize: 50 })
     expect(p.rows).toHaveLength(50)
     expect(p.total).toBe(137)
     expect(p.pageSize).toBe(50)
-    const last = await loadEmployerPage({ db: pool, filters: F({ page: 2 }), pageSize: 50 })
-    expect(last.rows).toHaveLength(37)
-    expect(last.rows[0]?.name).not.toBe(p.rows[0]?.name)
+    const q = seen.find((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))
+    expect(q?.params).toEqual(['stem', 'NS', true, '', 50, 0])
+    expect(q?.sql).toContain('ORDER BY b.open_jobs DESC')
+    expect(q?.sql).not.toContain('DROP')
+    const last = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', page: 2 }), pageSize: 50 })
+    const q2 = seen.filter((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p')).at(-1)
+    expect(q2?.params).toEqual(['stem', '', false, '', 50, 100])
+    expect(last.page).toBe(2)
   })
 
-  it('筛选改变命中行数,且空职业行不被筛掉', async () => {
+  it('查证态:按名全库搜,不带组/省条件;词不拼进 SQL', async () => {
     resetEmployersCache()
-    const { pool } = fakePool((sql) => (sql.includes('designated_employers') ? { rows: BIG } : { rows: [] }))
-    const all = await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })
-    const ns = await loadEmployerPage({ db: pool, filters: F({ prov: 'NS' }), pageSize: 50 })
-    expect(ns.total).toBeLessThan(all.total)
-    expect(ns.rows.every((r) => r.province === 'NS')).toBe(true)
-    // 137 行里 46 行 nocs 为空(i%3===0),91 行写了 33102 —— 选 33102 应当 137 全中
-    const byNoc = await loadEmployerPage({ db: pool, filters: F({ noc: '33102' }), pageSize: 50 })
-    expect(byNoc.total).toBe(137)
-    const byOther = await loadEmployerPage({ db: pool, filters: F({ noc: '72310' }), pageSize: 50 })
-    expect(byOther.total).toBe(46)
+    const { pool, seen } = fakePool((sql) => (sql.includes('ILIKE') ? { rows: [bucketRow(1, 1)] } : { rows: [] }))
+    const p = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', prov: 'NS', q: 'tim hortons' }), pageSize: 50 })
+    expect(p.rows).toHaveLength(1)
+    expect(p.total).toBe(1)
+    const q = seen.find((s) => s.sql.includes('ILIKE'))
+    expect(q?.params).toEqual(['tim hortons', 50, 0])
+    expect(q?.sql).not.toContain('tim hortons')
+    expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
   })
 
-  it('在招口径:省或职业缺一个就不查(站级聚合禁每请求现算)', async () => {
+  it('池没拿到 / 查挂了都回空表,绝不抛', async () => {
     resetEmployersCache()
-    const { pool, seen } = fakePool(() => ({ rows: [] }))
-    const p = await loadEmployerPage({ db: pool, filters: F({ mode: 'hiring', prov: 'SK' }), pageSize: 50 })
-    expect(p.rows).toEqual([])
-    expect(p.total).toBe(0)
-    expect(seen.some((s) => s.sql.includes('FROM jobs'))).toBe(false)
-  })
-
-  it('在招口径:省+职业齐了才聚合,参数带出去不拼串', async () => {
-    resetEmployersCache()
-    const { pool, seen } = fakePool((sql) => (sql.includes('FROM jobs')
-      ? { rows: [{ name: 'A Co', province: 'SK', location: 'Regina', n: 4 }, { name: 'B Co', province: 'SK', location: 'Saskatoon', n: 1 }] }
-      : { rows: [] }))
-    const p = await loadEmployerPage({ db: pool, filters: F({ mode: 'hiring', prov: 'SK', noc: '72310' }), pageSize: 50 })
-    expect(p.mode).toBe('hiring')
-    expect(p.total).toBe(2)
-    expect(p.rows[0]).toMatchObject({ name: 'A Co', openJobs: 4, where: 'Regina' })
-    expect(seen.find((s) => s.sql.includes('FROM jobs'))?.params).toEqual(['SK', '72310'])
-    // 在招口径下社区筛选照常生效
-    const one = await loadEmployerPage({ db: pool, filters: F({ mode: 'hiring', prov: 'SK', noc: '72310', city: 'Regina' }), pageSize: 50 })
-    expect(one.total).toBe(1)
-  })
-
-  it('没有 db / 查询挂了都回空表,绝不抛', async () => {
-    resetEmployersCache()
-    expect((await loadEmployerPage({ db: null, filters: F(), pageSize: 50 })).total).toBe(0)
-    resetEmployersCache()
-    const boom = { query: () => Promise.reject(new Error('pool wedged')) } as unknown as Db
-    const p = await loadEmployerPage({ db: boom, filters: F(), pageSize: 50 })
-    expect(p.rows).toEqual([])
-    expect(p.total).toBe(0)
-  })
-
-  it('默认页大小是 50', () => {
-    expect(EMP_PAGE_SIZE).toBe(50)
-  })
-
-  it('抓取日归一在数据层做(生产库实测是 20260419 这种八位写法)', async () => {
-    expect(fmtFetched('20260419')).toBe('2026-04-19')
-    expect(fmtFetched('2026-04-19T00:00:00Z')).toBe('2026-04-19')
-    expect(fmtFetched('')).toBe('')
-    resetEmployersCache()
-    const { pool } = fakePool((sql) => (sql.includes('designated_employers')
-      ? { rows: [{ name: 'A', province: 'NS', location: '', source: 'AIP', nocs: '', url: '', fetched: '20260419' }] }
-      : { rows: [] }))
-    expect((await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })).fetched).toBe('2026-04-19')
+    const p0 = await loadEmployerPage({ db: null, filters: F({ group: 'stem' }), pageSize: 50 })
+    expect(p0.total).toBe(0)
+    const boom = { query: () => Promise.reject(new Error('down')) } as unknown as Db
+    const p1 = await loadEmployerPage({ db: boom, filters: F({ group: 'stem' }), pageSize: 50 })
+    expect(p1.rows).toEqual([])
+    expect(p1.total).toBe(0)
   })
 })

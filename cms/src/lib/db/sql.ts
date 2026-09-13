@@ -472,39 +472,94 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
 export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, name, url, fetched FROM pnp_occupations ORDER BY province ASC, stream ASC, noc ASC`
 
 /**
- * AIP 指定雇主名录全量。
+ * 雇主池省下拉的选项:池里雇主的主省分布(2026-09-13 雇主板批二;lib/employers 进程内 TTL 缓存)。
  */
-export const DESIGNATED_ALL = `SELECT name, province, location, source, nocs, url, fetched
-       FROM designated_employers
-      ORDER BY location ASC, name ASC`
+export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
 
 /**
- * 指定雇主里正在招人的那批(2026-09-04 Frank「指定雇主也得显示在招的才有用,不然一堆雇主不招人有什么用」):
- * 雇主池 designated 且 open_jobs_total > 0(~423 家),按名对回名录行。employer_pool 未建/未灌时查空,
- * 名录页照常出、在招一律 0 —— 走 queryRowsOrEmpty 兜底,不让新表拖垮旧页。
+ * 直达参数 noc= 换算成行业组:职业 → 在招岗上的本站大类 → noc_categories 的组键(分组只有数据层一份,
+ * 2026-09-13 起 etl/noc GROUP_KEYS 经 mart 落 noc_categories.ind_group)。$1=5 位 NOC。
  */
-export const DESIGNATED_OPEN_JOBS = `SELECT name, open_jobs_total::int AS open_jobs
-       FROM employer_pool
-      WHERE designated = true AND open_jobs_total > 0`
+export const EMPLOYER_GROUP_OF_NOC = `SELECT c.ind_group AS ind_group
+       FROM noc_categories c
+      WHERE COALESCE(c.ind_group, '') <> ''
+        AND c.broad = (SELECT j.broad FROM jobs j WHERE j.noc = $1 AND COALESCE(j.broad, '') <> '' LIMIT 1)
+      LIMIT 1`
 
 /**
- * 某省某职业当前在招的雇主榜(按在招数)。$1=省,$2=NOC。
+ * 雇主池桶表的排序片段(表头点列切主键;键先过 lib/employers 的白名单再到这,不拼用户输入)。
+ * 每个键都以星级、在招、名字收尾,同分行序稳定。
  */
-export const HIRING_EMPLOYERS = `SELECT c.name AS name, j.province AS province,
-            MIN(COALESCE(j.city, '')) AS location, COUNT(*)::int AS n
-       FROM jobs j JOIN companies c ON c.id = j.company_id
-      WHERE j.status = 'open' AND j.province = $1 AND j.noc = $2 AND COALESCE(c.name, '') <> ''
-      GROUP BY c.name, j.province
-      ORDER BY n DESC, c.name ASC
-      LIMIT 300`
+export const EMPLOYER_POOL_ORDER: Record<string, string> = {
+  /**
+   * 默认:切面星级(指定 >> 在招+入门 > 技能 LMIA)。
+   */
+  star: 'b.star DESC, b.open_jobs DESC, p.name ASC',
+
+  /**
+   * 在招岗数。
+   */
+  open: 'b.open_jobs DESC, b.star DESC, p.name ASC',
+
+  /**
+   * 技能类 LMIA 获批份数,再看最近获批季。
+   */
+  lmia: 'b.lmia_skilled DESC, b.lmia_last_quarter DESC NULLS LAST, b.star DESC, p.name ASC',
+
+  /**
+   * 指定雇主在前(旧 /employers/designated 路由 301 落到这一键)。
+   */
+  designated: 'p.designated DESC, b.star DESC, b.open_jobs DESC, p.name ASC',
+
+  /**
+   * 工资水位(vs 同组同省中位),无水位沉底。
+   */
+  wage: 'b.wage_index_pct DESC NULLS LAST, b.star DESC, p.name ASC',
+
+  /**
+   * 雇主名。
+   */
+  name: 'p.name ASC',
+}
 
 /**
- * 雇主页要的职业三语名(stats_occupation 英文名优先)。$1=码数组。
+ * 雇主池一页(桶行 × 池行;雇主板批二主查询,索引 employer_pool_buckets_ind_group_star_idx 承接)。
+ * $1=行业组键,$2=省码或 ''(不筛),$3=只看无经验可投,$4=制度或 ''(直达参数 program=,指定项目清单含它),
+ * $5=每页行数,$6=偏移。total 用窗口函数随行带回,一次往返。
+ *
+ * @param order 排序片段(EMPLOYER_POOL_ORDER 之一)。
+ * @returns SELECT 语句。
  */
-export const NOC_TITLES_FOR_EMPLOYERS = `SELECT s.noc AS noc, COALESCE(s.title_en, '') AS en,
-            COALESCE(s.title_zh_short, s.title_zh, '') AS zh, COALESCE(d.title_ko, '') AS ko
-       FROM stats_occupation s LEFT JOIN noc_descriptions d ON d.noc = s.noc
-      WHERE s.province = 'all' AND s.noc = ANY($1)`
+export const employerPoolPage = (order: string) => `
+    SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.designated, p.designated_programs,
+      p.open_jobs_total, p.fetched,
+      b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
+      b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
+      count(*) OVER()::int AS total
+    FROM employer_pool_buckets b JOIN employer_pool p ON p.key = b.employer_key
+    WHERE b.ind_group = $1
+      AND ($2 = '' OR p.province = $2)
+      AND ($3 = false OR b.entry_jobs > 0)
+      AND ($4 = '' OR p.designated_programs ? $4)
+    ORDER BY ${order}
+    LIMIT $5 OFFSET $6`
+
+/**
+ * 查证态:按雇主名全库搜(不受行业/省筛选约束 —— 中介说的那家多半不在用户的筛选面里),
+ * 每家带它星级最高的那个桶。$1=关键词(已去掉 % _ 通配),$2=每页行数,$3=偏移。
+ */
+export const EMPLOYER_POOL_SEARCH = `
+    SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.designated, p.designated_programs,
+      p.open_jobs_total, p.fetched,
+      b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
+      b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
+      count(*) OVER()::int AS total
+    FROM employer_pool p
+    LEFT JOIN LATERAL (SELECT * FROM employer_pool_buckets x WHERE x.employer_key = p.key
+                        ORDER BY x.star DESC, x.open_jobs DESC LIMIT 1) b ON true
+    WHERE p.name ILIKE '%' || $1 || '%'
+    ORDER BY p.designated DESC, p.open_jobs_total DESC, p.name ASC
+    LIMIT $2 OFFSET $3`
 
 /**
  * companies 表列存在性探测(additive 列上生产前后代码都能跑)。$1=列名数组。

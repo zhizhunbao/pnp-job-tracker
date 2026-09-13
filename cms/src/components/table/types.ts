@@ -32,6 +32,12 @@ export type Col<T> = {
   sort?: (r: T) => string | number | null
 
   /**
+   * 受控排序时表头可点的标记(2026-09-13 雇主板批二:排序在服务端做,行上没有取值器可给;
+   * 调用方同时传 TableIn 的 sort / onSort)。缺席 = 按有没有 sort 取值器判。
+   */
+  sortable?: boolean
+
+  /**
    * 单元格不换行。
    */
   nowrap?: boolean
@@ -147,6 +153,17 @@ export type TableIn<T> = {
    * (2026-09-06 把脉页省份段契约 §4)。缺席 = 普通表,一切照旧。
    */
   series?: TableSeriesIn<T>
+
+  /**
+   * 受控排序态(2026-09-13 雇主板批二:排序在服务端做,行已按序到手,表只渲表头标记)。
+   * 与 onSort 成对给;缺席 = 表自己客户端排序(sort 取值器那条路)。
+   */
+  sort?: SortState
+
+  /**
+   * 受控排序的表头点列回调(列 key 交给调用方去换排序主键);给了它,表内的客户端排序不再接手。
+   */
+  onSort?: (key: string) => void
 }
 
 /**

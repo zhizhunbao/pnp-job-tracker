@@ -40,7 +40,7 @@ import css from './table.module.css'
  * @returns 表格。
  */
 export function Table<T>({
-  cols, rows, rowKey, detailOf, empty, header, minWidth, pageSize, footerNote, foot, bare = false, series,
+  cols, rows, rowKey, detailOf, empty, header, minWidth, pageSize, footerNote, foot, bare = false, series, sort, onSort,
 }: TableIn<T>) {
   let pageSizeIn: number | null = null
   if (pageSize != null) {
@@ -49,6 +49,15 @@ export function Table<T>({
   const s = useSeriesView()
   const shown = shownColsOf({ cols, series, range: s.range })
   const r = useRows({ cols: shown, rows, pageSize: pageSizeIn })
+  let headSort = r.sort
+  let headToggle = r.toggleSort
+  if (onSort != null) {
+    headSort = null
+    if (sort != null) {
+      headSort = sort
+    }
+    headToggle = onSort
+  }
   const tableRef = useRef<HTMLTableElement | null>(null)
   const widths = useColWidths({ cols: shown, rowCount: rows.length, tableRef })
   const chart = s.view === SERIES_VIEW_CHART
@@ -77,7 +86,7 @@ export function Table<T>({
       {chart === false && (
         // eslint-disable-next-line react/forbid-dom-props -- 表最小宽与布局模式是运行时数据(量宽完成才锁 fixed)
         <table ref={tableRef} className={css.table} style={{ minWidth, tableLayout: widths.layout }}>
-          <TableHead cols={shown} sort={r.sort} toggleSort={r.toggleSort} widths={widths} />
+          <TableHead cols={shown} sort={headSort} toggleSort={headToggle} widths={widths} />
           <tbody>
             <TableRows<T> cols={shown} rows={r.paged} rowKey={rowKey} detailOf={detailOf} />
             {foot}

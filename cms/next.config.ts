@@ -37,7 +37,11 @@ const nextConfig: NextConfig = {
       // 货架页 08-08 拍板整页下架(「这个页面就不要了」):担保雇主唯一承载=把脉页三分表橱窗。
       // 2026-08-29 Frank「下架为什么不直接删了」:门文件删掉,308 降位成这行配置(随本族用 301,
       // 语义同为永久跳转);/employers/compare|designated|hiring 是子路径,source 精确匹配不误伤。
-      { source: '/employers', destination: '/start', statusCode: 301 },
+      // 2026-09-13 雇主板批二反转:/employers 本身成了板(读雇主池,组 × 省切面),上面那行 → /start 的 301 撤;
+      // 改成两个旧入口 301 进板并带上等价排序键(Frank 09-12「用一张表就行了,多加一个 LMIA 的列带排序」→
+      // 「只看在招 / 只看指定」两个开关不做,落成排序主键);来路上的 prov / noc / program 参数 Next 原样带过去。
+      { source: '/employers/designated', destination: '/employers?sort=designated', statusCode: 301 },
+      { source: '/employers/hiring', destination: '/employers?sort=open', statusCode: 301 },
       // PTE 门厅 2026-09-04 撤(Frank「这个页面怎么还存在」):题型面板已铺在题单页,/pte 直落默认型朗读。
       { source: '/pte', destination: '/pte/ra', statusCode: 301 },
       // /companies 本无列表页(公司数据懒查询,详情只从职位行进),裸地址原是 404 的洞

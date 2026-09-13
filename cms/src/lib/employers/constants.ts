@@ -1,5 +1,6 @@
 /**
- * 雇主域的死值:页大小、制度清单、缓存时长、收窄上限、正则。
+ * 雇主域的死值:页大小、制度清单、行业组与排序白名单、缓存时长、收窄上限、正则。
+ * 2026-09-13 雇主板批二:板改读雇主池(employer_pool / employer_pool_buckets),designated / hiring 双口径退役。
  *
  * @author Frank
  * @time 2026-08-21 23:20:43
@@ -90,12 +91,17 @@ export const VERDICT_ORDER: Record<string, number> = {
  */
 export const PARAM = {
   /**
-   * 口径。
+   * 行业组键(雇主板批二:板按 8 行业组切面;缺席 = 首屏只出选择器不摊表)。
    */
-  mode: 'mode',
+  group: 'group',
 
   /**
-   * 制度。
+   * 只看无经验可投(值 ENTRY_ON)。
+   */
+  entry: 'entry',
+
+  /**
+   * 制度(直达参数:决策页「查雇主」带 program=AIP 进来,筛指定项目清单含它的雇主)。
    */
   program: 'program',
 
@@ -135,25 +141,37 @@ export const PARAM = {
   f: 'f',
 
   /**
-   * 排序键(导出端点:open/skilled)。
+   * 排序键(雇主板:POOL_SORTS 之一;导出端点:open/skilled)。
    */
   sort: 'sort',
 } as const
 
 /**
- * 雇主板两种口径的字面量(与 `EmployerMode` 联合逐字对齐,比对时借它做类型收窄)。
+ * 雇主池的 8 行业组键(2026-09-13 Frank「八组」;顺序 = 下拉顺序;显示名走 i18n pulse.ind.*)。
+ * ⚠ 值表的家在数据层 etl/noc GROUP_KEYS(经 mart 落 employer_pool_buckets.ind_group 与 noc_categories.ind_group),
+ * 这里只是查询参数白名单的镜像;改组先改 noc 叶。
  */
-export const MODE = {
-  /**
-   * 本站库内在招。
-   */
-  hiring: 'hiring',
+export const POOL_GROUPS = ['health', 'stem', 'trades', 'food', 'transport', 'manufacturing', 'business', 'education'] as const
 
-  /**
-   * 官方指定名录。
-   */
-  designated: 'designated',
-} as const
+/**
+ * 雇主板可点的排序主键白名单(与 `PoolSort` 联合逐字对齐;SQL 片段在 lib/db/sql.ts EMPLOYER_POOL_ORDER 按键取)。
+ */
+export const POOL_SORTS = ['star', 'open', 'lmia', 'designated', 'wage', 'name'] as const
+
+/**
+ * 雇主板默认排序:切面星级(设计稿:默认按星级排、点列头切主键)。
+ */
+export const POOL_SORT_DEFAULT = 'star'
+
+/**
+ * entry 参数的开值(只认它;其余一律当没开)。
+ */
+export const ENTRY_ON = '1'
+
+/**
+ * 查证态搜索词里的 SQL 通配字符,去掉后再进 ILIKE(用户输 % 不是要通配)。
+ */
+export const Q_WILD_RE = /[%_]/g
 
 /**
  * 担保筛选的凭证视图字面量。
@@ -333,9 +351,14 @@ export const DATE8_DASHED = '$1-$2-$3'
 export const NOC_SPLIT_RE = /[^0-9]+/
 
 /**
- * URL 参数的保留长度:mode。
+ * URL 参数的保留长度:行业组键(最长键 manufacturing 13 位)。
  */
-export const CAP_MODE = 12
+export const CAP_GROUP = 16
+
+/**
+ * URL 参数的保留长度:排序键。
+ */
+export const CAP_SORT = 12
 
 /**
  * URL 参数的保留长度:制度。

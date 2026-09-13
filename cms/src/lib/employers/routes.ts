@@ -1,5 +1,5 @@
 /**
- * 雇主域的 HTTP 芯(第十一抽屉):/api/employers(名录懒取)、/api/employers/sponsors
+ * 雇主域的 HTTP 芯(第十一抽屉):/api/employers(雇主板懒取,2026-09-13 起读雇主池)、/api/employers/sponsors
  * (橱窗三分表)、/api/employers/export(付费 CSV 导出)、/api/employers/info(公司懒探索)。
  * 懒取与三分表挂了回空表保底,前端继续用 SSR 那一页,绝不 500(#313 拆运输方式那批的红线)。
  * employersInfoRoute 体内 `await req.json() as InfoBody` 是跨边界断言:网络来的 body
@@ -22,33 +22,31 @@ import {
 import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
-  EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, MODE, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
+  EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
   FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
-  loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizeEmployerFilters, saveCompanyBriefZh, sponsorCsvOf,
+  loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters } from './types'
 
 /**
- * GET /api/employers:雇主板懒取(2026-08-16,雇主页照职位板重做那批)。
- * #313 同款拆法:名录 6,680 行不进 SSR/RSC payload —— SSR 只带第一页 + total,
- * 换筛选/翻页由前端打本端点。筛选/分页口径全在 normalizeEmployerFilters(单一来源,不 fork)。
- * noc 口径红线:名录没写职业的行照常保留(空 = 官方没列清单,不是「不招这个职业」)。
+ * GET /api/employers:雇主板懒取(2026-08-16 立;2026-09-13 雇主板批二改读雇主池)。
+ * #313 同款拆法:SSR 只带第一页 + total,换筛选/翻页/换排序由前端打本端点。
+ * 筛选/分页口径全在 normalizePoolFilters(单一来源,不 fork);noc= 只在 SSR 门换算成组,本端点不认。
  *
- * @param req 请求(mode/program/prov/city/noc/q/page/pageSize)。
- * @returns 一页名录 json;查挂回空表(total 0)。
+ * @param req 请求(group/prov/entry/program/q/sort/page/pageSize)。
+ * @returns 一页 json;查挂回空表(total 0)。
  */
 export async function employersRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
-  const f = normalizeEmployerFilters({
+  const f = normalizePoolFilters({
     get: function get(k: string) {
       return sp.get(k)
     },
-    defMode: MODE.designated,
   })
   let pageSize = EMP_PAGE_SIZE
   const sizeRaw = Number(sp.get(PARAM.pageSize))
@@ -59,10 +57,7 @@ export async function employersRoute(req: Request): Promise<Response> {
     const data = await loadEmployerPage({ db: await getDb(), filters: f, pageSize: pageSize })
     return Response.json(data, { headers: { [HDR_CACHE_CONTROL]: EMP_CACHE_CONTROL } })
   } catch {
-    return Response.json({
-      mode: f.mode, rows: [], total: 0, page: f.page, pageSize: pageSize,
-      facets: { provs: [], programs: [], cities: [], nocs: [] }, fetched: FETCHED_NONE, nocTitles: {},
-    })
+    return Response.json({ rows: [], total: 0, page: f.page, pageSize: pageSize, provs: [], fetched: FETCHED_NONE })
   }
 }
 

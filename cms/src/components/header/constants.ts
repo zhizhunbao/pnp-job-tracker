@@ -44,9 +44,9 @@ export const PATH_START = '/start'
 export const PATH_PLAN_PR = '/plan/pr'
 
 /**
- * 雇主板(指定名录 + 在招雇主)。
+ * 雇主板(2026-09-13 批二:一个入口读雇主池;此前落 /employers/designated,旧路由已 301)。
  */
-export const PATH_EMPLOYERS = '/employers/designated'
+export const PATH_EMPLOYERS = '/employers'
 
 /**
  * 职业库。

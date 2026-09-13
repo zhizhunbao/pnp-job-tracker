@@ -456,7 +456,7 @@ function toNocCategory(r: MartRow): MartRow {
   return {
     broad: cellOf(r.broad), mid: cellOf(r.mid), fine: cellOf(r.fine), teer: cellOf(r.teer),
     broad_en: cellOf(r.broadEn), broad_ko: cellOf(r.broadKo), mid_en: cellOf(r.midEn), mid_ko: cellOf(r.midKo),
-    fine_en: cellOf(r.fineEn), fine_ko: cellOf(r.fineKo),
+    fine_en: cellOf(r.fineEn), fine_ko: cellOf(r.fineKo), ind_group: textOf(r.indGroup),
   }
 }
 

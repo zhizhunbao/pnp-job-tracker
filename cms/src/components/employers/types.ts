@@ -1,6 +1,6 @@
 /**
  * employers 页面域的形状。三段律走完整的一遍:lib 那边交回的**事实行**
- * (EmployerRow / SponsorEmployerRow / CompareRow,本域只声明真正读到的格 ——
+ * (PoolRow / SponsorEmployerRow / CompareRow,本域只声明真正读到的格 ——
  * 宪法 08-25「types 自声明」)→ 视图体内洗成**展示行**(XxxCellRow:每一格都已经
  * 算成文本与色档类)→ 单元格组件只读已经算好的那一项。
  * 🔴 洗行这一步是 2026-08-27 Frank 打回 make*Cell 工厂后定的形:单元格组件一律是顶层哑组件,
@@ -28,43 +28,49 @@ export type TVars = Record<string, string | number>
 export type TFn = (key: string, vars?: TVars) => string
 
 /**
- * 雇主板的两种口径:官方指定名录 / 本站库内在招。
+ * 雇主板排序主键(与 lib/employers 的 POOL_SORTS 逐字对齐;本域自抄)。
  */
-export type EmployerMode = 'designated' | 'hiring'
+export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'wage' | 'name'
 
 /**
- * 雇主板筛选(SSR 与 /api/employers 共用一份口径;本域原样收下七格)。
+ * 雇主板筛选(SSR 与 /api/employers 共用一份口径;本域原样收下八格。2026-09-13 雇主板批二)。
+ * 三个态由它推出:q 非空 = 查证态(全库按名搜);group 非空 = 榜态;都空 = 首屏只出选择器。
  */
-export type EmployerFilters = {
+export type PoolFilters = {
   /**
-   * 口径。由**路径段**定,不由 query 改写。
+   * 行业组键(8 组之一);空串 = 没选。
    */
-  mode: EmployerMode
+  group: string
 
   /**
-   * AIP | RCIP | FCIP;空串 = 全部制度(仅 designated 口径有意义)。
-   */
-  program: string
-
-  /**
-   * 省码;空串 = 全部省。
+   * 省码;空串 = 全国。
    */
   prov: string
 
   /**
-   * 社区/城市;空串 = 全部。
+   * 制度(直达参数);空串 = 不筛。板上没有它的选择器,只随 URL 进出。
    */
-  city: string
+  program: string
 
   /**
-   * 5 位职业码;空串 = 全部职业。
+   * 5 位职业码(直达参数,SSR 已换算成 group);本域只透传不读。
    */
   noc: string
 
   /**
-   * 雇主名关键词;空串 = 不筛。
+   * 只看无经验可投。
+   */
+  entry: boolean
+
+  /**
+   * 雇主名关键词;空串 = 不搜。
    */
   q: string
+
+  /**
+   * 排序主键。
+   */
+  sort: PoolSort
 
   /**
    * 页码,0 起。
@@ -73,103 +79,93 @@ export type EmployerFilters = {
 }
 
 /**
- * 职业码的三语人话名(字典查不到的码不返回,展示层原样显示 5 位码)。
+ * 雇主板的一行事实(lib/employers 的 PoolRow,本域只声明真正读到的格)。
  */
-export type NocTitle = {
+export type PoolRow = {
   /**
-   * 英文名。
+   * 池主键(行身份的一半;另一半是行业组)。
    */
-  en: string
-
-  /**
-   * 中文名。
-   */
-  zh: string
+  key: string
 
   /**
-   * 韩文名。
+   * 公司详情页 slug;null = 没有公司页(雇主名不成链,「看公司」钮不出)。
    */
-  ko: string
-}
+  slug: string | null
 
-/**
- * 职业码 → 三语人话名的字典。
- */
-export type NocTitles = Record<string, NocTitle>
-
-/**
- * 雇主板筛选下拉的选项(本域只读三格;制度下拉的选项另有 EMP_PROGRAMS 枚举兜着)。
- */
-export type EmployerFacets = {
-  /**
-   * 省下拉。
-   */
-  provs: string[]
-
-  /**
-   * 社区下拉。
-   */
-  cities: string[]
-
-  /**
-   * 职业下拉。
-   */
-  nocs: string[]
-}
-
-/**
- * 雇主板的一行事实。
- */
-export type EmployerRow = {
   /**
    * 雇主名。
    */
   name: string
 
   /**
-   * 省码(社区为空时所在地列回落它)。
+   * 行业;null = 无源(灰注不出)。
+   */
+  industry: string | null
+
+  /**
+   * 主省码;空串 = 池里没记。
    */
   province: string
 
   /**
-   * 社区/城市;名录没写社区时留空。
+   * 主市;空串 = 池里没记(所在地回落省名)。
    */
-  where: string
+  city: string
 
   /**
-   * designated:AIP/RCIP/FCIP(可双标);hiring:空串。
+   * 指定雇主命中。
    */
-  program: string
+  designated: boolean
 
   /**
-   * 名录列明的 NOC;**空 = 名录没写,不是没有限制**(展示「未列明」)。
+   * 命中的项目清单(AIP/RCIP/FCIP;胶囊下的灰注)。
    */
-  nocs: string[]
+  programs: string[]
 
   /**
-   * hiring:本站库内在招岗数;designated:null(名录不含在招信息)。
+   * 这一行所在的行业组键(行身份的另一半)。
    */
-  openJobs: number | null
+  group: string
 
   /**
-   * 名录官方页;hiring 口径为空串(整批都空则整列不出)。
+   * 桶内在招岗数。
    */
-  url: string
+  openJobs: number
+
+  /**
+   * 入门占比(百分比整数);null = 无在招不表态。
+   */
+  entryShare: number | null
+
+  /**
+   * 桶内技能类 LMIA 获批份数。
+   */
+  lmiaSkilled: number
+
+  /**
+   * 桶内最近 LMIA 获批季;null = 无记录。
+   */
+  lmiaLastQuarter: string | null
+
+  /**
+   * 切面星 1-5。
+   */
+  star: number
+
+  /**
+   * 工资水位(vs 同组同省中位的百分比,100 = 持平);null = 分母缺。
+   */
+  wageIndexPct: number | null
 }
 
 /**
  * 雇主板的一页(SSR 首帧与 /api/employers 交回同一形状)。
  */
-export type EmployerPage = {
-  /**
-   * 本页口径。
-   */
-  mode: EmployerMode
-
+export type PoolPage = {
   /**
    * 本页的行。
    */
-  rows: EmployerRow[]
+  rows: PoolRow[]
 
   /**
    * 筛选后的总行数(不是本页行数)。
@@ -187,20 +183,35 @@ export type EmployerPage = {
   pageSize: number
 
   /**
-   * 下拉选项。
+   * 省下拉的选项。
    */
-  facets: EmployerFacets
+  provs: string[]
 
   /**
-   * 名录抓取日期(designated;hiring 为空串)。
+   * 池构建日(筛选行尾那枚「抓取」日);'' = 本页无行。
    */
   fetched: string
+}
+
+/**
+ * 表头排序态(与 components/table 的 SortState 结构相同即兼容;本域自抄):按哪一列、什么方向;null = 未排序。
+ */
+export type EmpSortState = {
+  /**
+   * 排序列的 key(= 排序主键)。
+   */
+  key: string
 
   /**
-   * 职业码 → 三语人话名。
+   * 方向:1 升、-1 降(服务端定死,表头只渲方向标记)。
    */
-  nocTitles: NocTitles
-}
+  dir: 1 | -1
+} | null
+
+/**
+ * 表头点列的手柄形状(受控排序:列 key 交给整机去换排序主键)。
+ */
+export type HeadSortFn = (key: string) => void
 
 /**
  * 担保雇主三分表的人群档:aip 去大西洋省 / lmia 没工签要雇主办 LMIA /
@@ -433,11 +444,11 @@ export type CellTag = {
 }
 
 /**
- * 雇主板的一行**展示行**:每一项都已经算成文本(省名回落、职业名与码、横杠)。
+ * 雇主板的一行**展示行**:每一项都已经算成文本(省名回落、星形、带符号水位、横杠)。
  */
 export type EmployerCellRow = {
   /**
-   * 行身份(同名雇主可能落在不同社区,所以带上所在地)。
+   * 行身份(池键 + 行业组:查证态一家只出一行,榜态一家一组一行)。
    */
   key: string
 
@@ -447,7 +458,7 @@ export type EmployerCellRow = {
   name: string
 
   /**
-   * 雇主名的落点(职位板按名搜)。
+   * 雇主名的落点:有公司页进公司页,没有就落职位板按名搜。
    */
   href: string
 
@@ -457,86 +468,87 @@ export type EmployerCellRow = {
   hrefTitle: string
 
   /**
-   * 雇主名的排序键(小写 —— 全大写的公司名不该整批排到前面)。
+   * 行业灰注;空串 = 无源不出。
    */
-  nameSort: string
+  industry: string
 
   /**
-   * 所在地(名录写了社区就显社区,没写回落省名;显示与排序同值)。
+   * 所在地(市 + 省码;没市回落省名;都没有空串)。
    */
   where: string
 
   /**
-   * 制度(名录没写时已经是横杠)。
+   * 星形文本(实心补空心到五枚)。
    */
-  program: string
+  starText: string
 
   /**
-   * 制度的排序键(原值,不是横杠)。
+   * 星级格的悬停提示(「N 星」)。
    */
-  programSort: string
+  starTitle: string
 
   /**
-   * 「未列明」文案;空串 = 这一行有职业。
-   */
-  nocNone: string
-
-  /**
-   * 职业人话名(顿号连)。
-   */
-  nocNames: string
-
-  /**
-   * 职业 5 位码灰注(顿号连);空串 = 与人话名逐字相同,不再重复渲一遍。
-   */
-  nocCodes: string
-
-  /**
-   * 「+N」文案;空串 = 没有折起来的职业。
-   */
-  nocMore: string
-
-  /**
-   * 职业列的排序键(名录列明了几个职业)。
-   */
-  nocSort: number
-
-  /**
-   * 名录出处链;空串 = 这一行没有出处。
-   */
-  listUrl: string
-
-  /**
-   * 名录出处的链面文字。
-   */
-  listLabel: string
-
-  /**
-   * 在招岗数文本(0 也照显示 —— 库里真的一个都没有,不是缺数)。
+   * 在招岗数文本(0 也照显示 —— 桶里真的一个都没有,不是缺数)。
    */
   openText: string
 
   /**
-   * 在招岗数的排序键。
+   * 入门占比灰注(「入门 40%」);空串 = 无在招或占比为 0 不出。
    */
-  openSort: number
+  entryNote: string
 
   /**
-   * 制度原值(名录口径下当手机卡上的胶囊);空串 = 不出胶囊。
-   * 与 `program` 分两格:那一格是**表里显示的**(没写已经补成横杠),
-   * 而卡上的胶囊没写就整枚不出 —— 一枚写着横杠的胶囊比不出更糟。
+   * 指定雇主胶囊文案;空串 = 非指定(渲横杠)。
    */
-  programChip: string
+  designatedText: string
 
   /**
-   * 手机卡上的职业注(名录口径):卡上没有列名撑着,「未列明」单摆会被读成
-   * 「不知道这家招什么」—— 带上列名才说得清是名录没写。空串 = 在招口径不出这一行。
+   * 指定项目灰注(顿号连);空串 = 不出。
    */
-  cardNote: string
+  programsNote: string
 
   /**
-   * 手机卡右列的在招岗数话术(在招口径);空串 = 名录口径不出这一格
-   * (名录不含在招信息)。
+   * 技能类 LMIA 份数(0 交回空文本,渲横杠)。
+   */
+  lmia: CellText
+
+  /**
+   * 最近获批季灰注;空串 = 不出。
+   */
+  lmiaNote: string
+
+  /**
+   * 工资水位文本(带符号百分比;无水位空文本渲横杠)。
+   */
+  wage: CellText
+
+  /**
+   * 「看岗位」的落点(职位板按雇主名搜)。
+   */
+  jobsHref: string
+
+  /**
+   * 「看公司」的落点;空串 = 没有公司页,钮不出。
+   */
+  companyHref: string
+
+  /**
+   * 「看岗位」钮面。
+   */
+  actJobsText: string
+
+  /**
+   * 「看公司」钮面。
+   */
+  actCompanyText: string
+
+  /**
+   * 操作钮的类(button 桶 mini 档;哑单元格不 import functions,类随行带来)。
+   */
+  actBtnCls: string
+
+  /**
+   * 手机卡右列的在招话术。
    */
   cardSalary: string
 
@@ -845,9 +857,14 @@ export type EmpCol<T> = {
   render: CellFn<T>
 
   /**
-   * 排序取值器;不给就是不可排序。
+   * 排序取值器;不给就是不可排序(客户端排序的表:担保 / 对照)。
    */
   sort?: SortFn<T>
+
+  /**
+   * 受控排序时表头可点的标记(雇主板:排序在服务端做,行上没有取值器可给)。
+   */
+  sortable?: boolean
 
   /**
    * 单元格不换行。
@@ -922,7 +939,7 @@ export type EmployerCellRowIn = {
   /**
    * 这一行事实。
    */
-  r: EmployerRow
+  r: PoolRow
 
   /**
    * 取词函数。
@@ -930,19 +947,9 @@ export type EmployerCellRowIn = {
   t: TFn
 
   /**
-   * 界面语言。
+   * 当前筛选(埋点分组值取行业组 / 查证态)。
    */
-  lang: Lang
-
-  /**
-   * 当前筛选(职业格要按它决定只显选中那条)。
-   */
-  f: EmployerFilters
-
-  /**
-   * 职业名字典。
-   */
-  titles: NocTitles
+  f: PoolFilters
 }
 
 /**
@@ -950,9 +957,9 @@ export type EmployerCellRowIn = {
  */
 export type EmployerCellRowsIn = {
   /**
-   * 本页的行事实。
+   * 本页的行。
    */
-  rows: EmployerRow[]
+  rows: PoolRow[]
 
   /**
    * 取词函数。
@@ -960,19 +967,9 @@ export type EmployerCellRowsIn = {
   t: TFn
 
   /**
-   * 界面语言。
-   */
-  lang: Lang
-
-  /**
    * 当前筛选。
    */
-  f: EmployerFilters
-
-  /**
-   * 职业名字典。
-   */
-  titles: NocTitles
+  f: PoolFilters
 }
 
 /**
@@ -1070,20 +1067,9 @@ export type CompareCellRowsIn = {
  */
 export type EmployerColsIn = {
   /**
-   * 取词函数(列名)。
+   * 取词函数。
    */
   t: TFn
-
-  /**
-   * 口径(名录五列 / 在招三列)。
-   */
-  mode: EmployerMode
-
-  /**
-   * 本批有没有一行带名录出处 —— 一行都没有就整列不出
-   * (容缺先例同 hasVerdictSignal:不渲染一列全「—」)。
-   */
-  hasList: boolean
 }
 
 /**
@@ -1230,44 +1216,9 @@ export type ProvNameIn = {
 }
 
 /**
- * nocLabelOf 的入参。
- */
-export type NocLabelIn = {
-  /**
-   * 5 位职业码。
-   */
-  noc: string
-
-  /**
-   * 职业名字典。
-   */
-  titles: NocTitles
-
-  /**
-   * 界面语言。
-   */
-  lang: Lang
-}
-
-/**
  * 职业码 → 显示名(下拉的 labelOf 与洗行共用同一份口径)。
  */
 export type NocNameFn = (noc: string) => string
-
-/**
- * makeNocLabel 的入参。
- */
-export type NocLabelListIn = {
-  /**
-   * 职业名字典。
-   */
-  titles: NocTitles
-
-  /**
-   * 界面语言。
-   */
-  lang: Lang
-}
 
 /**
  * aliasOf 的入参。
@@ -1321,18 +1272,13 @@ export type FiltersIn = {
   /**
    * 当前筛选。
    */
-  f: EmployerFilters
+  f: PoolFilters
 }
 
 /**
  * boardUrlOf / apiUrlOf 的入参。
  */
 export type BoardUrlIn = {
-  /**
-   * 口径(深链走路径段、API 走 query)。
-   */
-  mode: EmployerMode
-
   /**
    * 已拼好的 query(空串 = 不带)。
    */
@@ -1343,11 +1289,6 @@ export type BoardUrlIn = {
  * loadBoard 的入参。
  */
 export type LoadBoardIn = {
-  /**
-   * 口径。
-   */
-  mode: EmployerMode
-
   /**
    * 已拼好的 query。
    */
@@ -1361,7 +1302,7 @@ export type LoadBoardIn = {
   /**
    * 数据落格。
    */
-  setData: (p: EmployerPage) => void
+  setData: (p: PoolPage) => void
 
   /**
    * 加载态落格。
@@ -1372,7 +1313,7 @@ export type LoadBoardIn = {
 /**
  * 筛选态落格的形状。
  */
-export type SetFilters = (f: EmployerFilters) => void
+export type SetFilters = (f: PoolFilters) => void
 
 /**
  * 换一格筛选的手柄形状(下拉的 onChange)。
@@ -1385,28 +1326,13 @@ export type PickFn = (v: string) => void
 export type PageFn = (p: number) => void
 
 /**
- * withQOf 的入参。
- */
-export type WithQIn = {
-  /**
-   * 当前筛选。
-   */
-  f: EmployerFilters
-
-  /**
-   * 防抖满了才落进来的搜索词。
-   */
-  q: string
-}
-
-/**
  * 换筛选一族工厂的入参。
  */
 export type FilterPickIn = {
   /**
    * 当前筛选(新值只改一格,其余原样抄回 —— 不用对象展开,字段写全)。
    */
-  f: EmployerFilters
+  f: PoolFilters
 
   /**
    * 筛选态落格。
@@ -1421,7 +1347,7 @@ export type ClearIn = {
   /**
    * 当前筛选(只留口径)。
    */
-  f: EmployerFilters
+  f: PoolFilters
 
   /**
    * 筛选态落格。
@@ -1435,21 +1361,6 @@ export type ClearIn = {
 }
 
 /**
- * makeDrawerToggle 的入参。
- */
-export type DrawerToggleIn = {
-  /**
-   * 抽屉现状。
-   */
-  drawer: boolean
-
-  /**
-   * 抽屉落格。
-   */
-  setDrawer: (v: boolean) => void
-}
-
-/**
  * makeCardClick 的入参。
  */
 export type CardClickIn = {
@@ -1459,9 +1370,9 @@ export type CardClickIn = {
   href: string
 
   /**
-   * 当前口径(emp-row 的分组值)。
+   * 埋点分组值(行业组键 / search)。
    */
-  mode: EmployerMode
+  kind: string
 }
 
 /**
@@ -1471,7 +1382,7 @@ export type QCommitIn = {
   /**
    * 当前筛选(口径当 emp-search 的分组值,其余原样抄回)。
    */
-  f: EmployerFilters
+  f: PoolFilters
 
   /**
    * 防抖满了才落进来的搜索词。🔴 它只进筛选,不进埋点(高基数自由文本)。
@@ -1489,25 +1400,15 @@ export type QCommitIn = {
  */
 export type RowViewIn = {
   /**
-   * 当前口径(emp-row 的分组值)。
+   * 埋点分组值(行业组键 / search)。
    */
-  mode: EmployerMode
+  kind: string
 }
 
 /**
  * 整卡点击手柄的形状(收原生事件,判点是不是落在卡内链接上)。
  */
 export type CardClickFn = (e: React.MouseEvent) => void
-
-/**
- * moreBtnClsOf 的入参。
- */
-export type MoreBtnClsIn = {
-  /**
-   * 抽屉展开着,或折叠里有生效的筛选 —— 两种情况钮都亮起来。
-   */
-  active: boolean
-}
 
 /**
  * listClsOf 的入参。
@@ -1531,7 +1432,7 @@ export type NoteTextIn = {
   /**
    * 当前筛选。
    */
-  f: EmployerFilters
+  f: PoolFilters
 
   /**
    * 筛选后的总行数。
@@ -1551,7 +1452,7 @@ export type TextByFiltersIn = {
   /**
    * 当前筛选。
    */
-  f: EmployerFilters
+  f: PoolFilters
 }
 
 /**
@@ -1574,14 +1475,14 @@ export type MaxPageIn = {
  */
 export type EmployersIn = {
   /**
-   * SSR 首帧的第一页 + total(名录 6,680 行不进 payload,换筛选打 API 懒取)。
+   * SSR 首帧的第一页 + total(池表不进 payload,换筛选打 API 懒取)。
    */
-  initial: EmployerPage
+  initial: PoolPage
 
   /**
-   * SSR 解析出的初始筛选(深链 `/employers/designated?program=AIP&prov=NS` 直达)。
+   * SSR 解析出的初始筛选(深链 `/employers?group=stem&prov=ON` 直达;noc= 已由门换算成 group)。
    */
-  initialFilters: EmployerFilters
+  initialFilters: PoolFilters
 
   /**
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
@@ -1594,7 +1495,7 @@ export type EmployersIn = {
  */
 export type EmployersPanel = {
   /**
-   * 界面语言(职业名按它取列)。
+   * 界面语言。
    */
   lang: Lang
 
@@ -1606,12 +1507,12 @@ export type EmployersPanel = {
   /**
    * 当前筛选。
    */
-  f: EmployerFilters
+  f: PoolFilters
 
   /**
    * 当前这一页数据(懒取失败时保留手上这一份,不白屏)。
    */
-  data: EmployerPage
+  data: PoolPage
 
   /**
    * 正在懒取(表格半透明 + 加载条)。
@@ -1619,14 +1520,14 @@ export type EmployersPanel = {
   loading: boolean
 
   /**
-   * 「更多筛选」抽屉展开着。
-   */
-  drawer: boolean
-
-  /**
    * 搜索框里的草稿(防抖满了才进筛选)。
    */
   qDraft: string
+
+  /**
+   * 表头排序态(由 f.sort 派生;表只渲标记,排序在服务端)。
+   */
+  sort: EmpSortState
 
   /**
    * 改搜索草稿。
@@ -1634,37 +1535,27 @@ export type EmployersPanel = {
   onQDraft: (v: string) => void
 
   /**
-   * 开合「更多筛选」抽屉。
+   * 换行业组(顺带回第一页)。
    */
-  onDrawer: ClickFn
+  onGroup: PickFn
 
   /**
-   * 换口径(顺带清社区;切到在招口径时制度筛选失效,一并清)。
-   */
-  onMode: PickFn
-
-  /**
-   * 换省(顺带清社区 —— 上一个省的社区在新省里不存在)。
+   * 换省(顺带回第一页)。
    */
   onProv: PickFn
 
   /**
-   * 换制度(顺带清社区,同上)。
+   * 拨「无经验可投」开关。
    */
-  onProgram: PickFn
+  onEntry: ClickFn
 
   /**
-   * 换社区。
+   * 表头点列换排序主键(再点当前列回默认星级)。
    */
-  onCity: PickFn
+  onSort: HeadSortFn
 
   /**
-   * 换职业。
-   */
-  onNoc: PickFn
-
-  /**
-   * 清空全部筛选(口径保留 —— 它是路径,不是筛选项)。
+   * 清空全部筛选(行业组保留 —— 它是板的第一维,不是筛选项)。
    */
   onClear: ClickFn
 
@@ -1831,57 +1722,6 @@ export type CompareHeadLabelIn = {
 }
 
 /**
- * toEmployerNocParts 交回的几段文本:雇主板「职业」列要显示的东西,
- * 外加手机卡上那条职业说明。
- */
-export type EmployerNocParts = {
-  /**
-   * 「未列明」文案;空串 = 这一行有职业。
-   */
-  none: string
-
-  /**
-   * 职业人话名(顿号连)。
-   */
-  names: string
-
-  /**
-   * 职业 5 位码灰注;空串 = 与人话名逐字相同,不再重复渲一遍。
-   */
-  codes: string
-
-  /**
-   * 「+N」文案;空串 = 没有折起来的职业。
-   */
-  more: string
-
-  /**
-   * 手机卡上的职业说明。
-   */
-  cardNote: string
-}
-
-/**
- * cardNoteOf 的入参。
- */
-export type CardNoteIn = {
-  /**
-   * 洗行的整包入参(这一行、取词函数、语言、筛选与字典)。
-   */
-  x: EmployerCellRowIn
-
-  /**
-   * 职业码 → 显示名。
-   */
-  labelOf: NocNameFn
-
-  /**
-   * 多个职业之间的顿号。
-   */
-  sep: string
-}
-
-/**
  * toCompareProv 交回的三样:对比表「主要省」那一项要显示的省名、难度档文案与标签变体。
  */
 export type CompareProvParts = {
@@ -1929,6 +1769,121 @@ export type SponsorColsWordsIn = {
    * 人群档(AIP 视图另有一条说明「只计四省内 AIP 岗」的词)。
    */
   kind: SponsorKind
+}
+
+/**
+ * 洗行小件的入参:取词函数 + 一行事实(所在地、入门灰注、指定文案共用)。
+ */
+export type RowWordsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一行事实。
+   */
+  r: PoolRow
+}
+
+/**
+ * withOf 的入参:当前筛选 + 要换的几格(缺席 = 这一格不换;手柄工厂共用这一枚,免得八格各抄一遍)。
+ */
+export type WithIn = {
+  /**
+   * 当前筛选。
+   */
+  f: PoolFilters
+
+  /**
+   * 换行业组。
+   */
+  group?: string
+
+  /**
+   * 换省。
+   */
+  prov?: string
+
+  /**
+   * 换制度。
+   */
+  program?: string
+
+  /**
+   * 换开关。
+   */
+  entry?: boolean
+
+  /**
+   * 换搜索词。
+   */
+  q?: string
+
+  /**
+   * 换排序主键。
+   */
+  sort?: PoolSort
+
+  /**
+   * 换页码。
+   */
+  page?: number
+}
+
+/**
+ * makeSort 的入参。
+ */
+export type SortPickIn = {
+  /**
+   * 当前筛选。
+   */
+  f: PoolFilters
+
+  /**
+   * 筛选落格。
+   */
+  setF: SetFilters
+}
+
+/**
+ * makeEntryToggle 的入参。
+ */
+export type EntryToggleIn = {
+  /**
+   * 当前筛选。
+   */
+  f: PoolFilters
+
+  /**
+   * 筛选落格。
+   */
+  setF: SetFilters
+}
+
+/**
+ * employersMetaOf 的入参:Next 递来的查询参数(await 之后的原样格;缺席 = 没带)。
+ */
+export type EmployersMetaIn = {
+  /**
+   * 省码原文。
+   */
+  prov?: string
+}
+
+/**
+ * employersMetaOf 的返回(Next Metadata 的两格)。
+ */
+export type EmployersMetaOut = {
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 描述。
+   */
+  description: string
 }
 
 /**
@@ -2039,40 +1994,3 @@ export type PageMeta = {
    */
   description: string
 }
-
-/**
- * designatedMetaOf 的入参 —— 归一前形状(Next 递来的查询参数原样格),所以带 `?:`。
- */
-export type DesignatedMetaIn = {
-  /**
-   * 直达链接上 `?program=` 那一格的原样值;落在三个指定制度码里才进标题前缀。
-   * 参数没带时这个键压根不存在(不是「空字符串」),照实写成真可选。
-   */
-  program?: string
-
-  /**
-   * 直达链接上 `?prov=` 那一格的原样值;两位大写省码才进标题前缀。同上,没带就是键不存在。
-   */
-  prov?: string
-}
-
-/**
- * designatedMetaOf 的出参。
- */
-export type DesignatedMetaOut = PageMeta
-
-/**
- * hiringMetaOf 的入参 —— 归一前形状(Next 递来的查询参数原样格),所以带 `?:`。
- */
-export type HiringMetaIn = {
-  /**
-   * 直达链接上 `?prov=` 那一格的原样值;两位大写省码才进标题前缀。
-   * 参数没带时这个键压根不存在(不是「空字符串」),照实写成真可选。
-   */
-  prov?: string
-}
-
-/**
- * hiringMetaOf 的出参。
- */
-export type HiringMetaOut = PageMeta

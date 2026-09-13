@@ -19,148 +19,49 @@
 import type { Db } from '../db'
 
 /**
- * 名录一行(SQL `DESIGNATED_ALL` 映射后的干净行)。
+ * 雇主板排序主键(与 constants.POOL_SORTS 逐字对齐;SQL 片段按键取)。
  */
-export type DesignatedRow = {
-  /**
-   * 雇主名,名录原文。
-   */
-  name: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 社区/城市(RCIP/FCIP 的名录按社区发,AIP 按省 —— 按省的行这一格是空串)。
-   */
-  location: string
-
-  /**
-   * 制度:AIP | RCIP | FCIP | RCIP+FCIP(双标社区)。
-   */
-  source: string
-
-  /**
-   * 逗号分隔 NOC 原文(AIP 名录部分行有;RCIP/FCIP 多为空 —— 空 = 名录没写,不是没有限制)。
-   */
-  nocs: string
-
-  /**
-   * 名录官方页。
-   */
-  url: string
-
-  /**
-   * 名录抓取日(已归一成 YYYY-MM-DD)。
-   */
-  fetched: string
-}
+export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'wage' | 'name'
 
 /**
- * `DesignatedRow` 的复数(数组进签名要有自己的名字)。
+ * 雇主板筛选(SSR 与 /api/employers 共用一份;2026-09-13 雇主板批二自 designated/hiring 双口径换成雇主池)。
+ * 三个态由它推出:q 非空 = 查证态(全库按名搜);group 非空 = 榜态;都空 = 首屏只出选择器。
  */
-export type DesignatedRows = DesignatedRow[]
-
-/**
- * 指定雇主的在招数一行(雇主池里 designated 且在招的那批,`DESIGNATED_OPEN_JOBS`)。
- */
-export type DesignatedOpenRow = {
+export type PoolFilters = {
   /**
-   * 雇主名(与名录行按名对上,比对时两边都小写去空白)。
+   * 行业组键(POOL_GROUPS 之一);空串 = 没选(首屏)。
    */
-  name: string
+  group: string
 
   /**
-   * 本站库内在招岗数(> 0 才有行)。
-   */
-  openJobs: number
-}
-
-/**
- * withDesignatedOpen 的入参:名录行与在招数行。
- */
-export type WithDesignatedOpenIn = {
-  /**
-   * 名录行(已洗)。
-   */
-  rows: EmployerRow[]
-
-  /**
-   * 雇主池里的在招数行。
-   */
-  openRows: DesignatedOpenRow[]
-}
-
-/**
- * 在招雇主一行(SQL `HIRING_EMPLOYERS` 映射后的干净行)。
- */
-export type HiringRow = {
-  /**
-   * 雇主名。
-   */
-  name: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 城市。
-   */
-  location: string
-
-  /**
-   * 本站库内在招岗数。
-   */
-  openJobs: number
-}
-
-/**
- * `HiringRow` 的复数。
- */
-export type HiringRows = HiringRow[]
-
-/**
- * 雇主板的两种口径:官方指定名录 / 本站库内在招。
- */
-export type EmployerMode = 'designated' | 'hiring'
-
-/**
- * 雇主板筛选(SSR 与 /api/employers 共用一份,避免两端口径漂移)。
- */
-export type EmployerFilters = {
-  /**
-   * 口径。由**路径段**定,不由 query 改写。
-   */
-  mode: EmployerMode
-
-  /**
-   * AIP | RCIP | FCIP;空串 = 全部制度(仅 designated 口径有意义)。
-   */
-  program: string
-
-  /**
-   * 省码;空串 = 全部省。
+   * 省码;空串 = 全国。
    */
   prov: string
 
   /**
-   * 社区/城市(名录 location 原值);空串 = 全部。
+   * 制度(AIP | RCIP | FCIP,直达参数);空串 = 不筛。
    */
-  city: string
+  program: string
 
   /**
-   * 5 位职业码;空串 = 全部职业。
+   * 5 位职业码(直达参数;SSR 一次性换算成组,不做行筛选);空串 = 没带。
    */
   noc: string
 
   /**
-   * 雇主名关键词;空串 = 不筛。
+   * 只看无经验可投(桶内入门岗 > 0)。
+   */
+  entry: boolean
+
+  /**
+   * 雇主名关键词(已去掉 SQL 通配符);空串 = 不搜。
    */
   q: string
+
+  /**
+   * 排序主键。
+   */
+  sort: PoolSort
 
   /**
    * 页码,0 起。
@@ -169,109 +70,133 @@ export type EmployerFilters = {
 }
 
 /**
- * 两种口径归一的板上一行(列随口径换:designated 出制度+职业,hiring 出在招岗数)。
+ * 雇主板一行事实 = 雇主池行 × 它在当前行业组的桶行(查证态取星级最高的桶)。
  */
-export type EmployerRow = {
+export type PoolRow = {
+  /**
+   * 池主键(slug 或 n:归一名)。
+   */
+  key: string
+
+  /**
+   * 公司详情页 slug;null = 三源独有、没有公司页。
+   */
+  slug: string | null
+
   /**
    * 雇主名。
    */
   name: string
 
   /**
-   * 省码。
+   * 行业(companies.sectors);null = 无源。
+   */
+  industry: string | null
+
+  /**
+   * 主省码;空串 = 池里没记。
    */
   province: string
 
   /**
-   * 社区/城市;名录没写社区时留空,由展示层回落省名。
+   * 主市;空串 = 池里没记。
    */
-  where: string
+  city: string
 
   /**
-   * designated:AIP/RCIP/FCIP(可双标);hiring:空串。
+   * 指定雇主命中(AIP/RCIP/FCIP 任一)。
    */
-  program: string
+  designated: boolean
 
   /**
-   * 名录列明的 NOC;**空 = 名录没写,不是没有限制**(展示「未列明」,筛职业时不许当不匹配剔掉)。
-   */
-  nocs: string[]
-
-  /**
-   * hiring:本站库内在招岗数;designated:雇主池对上的在招岗数,对不上或池未灌为 0
-   * (2026-09-04 起名录页在招优先;此前恒 null)。
-   */
-  openJobs: number | null
-
-  /**
-   * 名录官方页;hiring 口径为空串。
-   */
-  url: string
-}
-
-/**
- * `EmployerRow` 的复数。
- */
-export type EmployerRows = EmployerRow[]
-
-/**
- * 雇主板下拉选项。
- */
-export type EmployerFacets = {
-  /**
-   * 省下拉(看整份数据 —— 切了省也不能把省下拉自己清空)。
-   */
-  provs: string[]
-
-  /**
-   * 制度下拉(看整份数据)。
+   * 命中的项目清单(徽章灰注)。
    */
   programs: string[]
 
   /**
-   * 社区下拉(看**已按省+制度收窄后**的数据,否则 NB 的社区会出现在 SK 的下拉里)。
+   * 全桶在招总岗数。
    */
-  cities: string[]
+  openJobsTotal: number
 
   /**
-   * 职业下拉(收窄口径同社区)。
+   * 池构建日(YYYY-MM-DD)。
    */
-  nocs: string[]
+  fetched: string
+
+  /**
+   * 这一行所在的行业组键(查证态 = 星级最高的桶;'' = 无线索通用桶,other = 未分类岗桶)。
+   */
+  group: string
+
+  /**
+   * 桶内在招岗数。
+   */
+  openJobs: number
+
+  /**
+   * 桶内最新发布日;null = 无在招。
+   */
+  latestPosted: string | null
+
+  /**
+   * 桶内主要职业名(频次前 N)。
+   */
+  topTitles: string[]
+
+  /**
+   * 入门可及岗数。
+   */
+  entryJobs: number
+
+  /**
+   * 入门占比(百分比整数);null = 无在招不表态。
+   */
+  entryShare: number | null
+
+  /**
+   * 桶内已知最低经验档;null = 全 unknown 不表态。
+   */
+  minExperience: string | null
+
+  /**
+   * 桶内技能类 LMIA 获批份数。
+   */
+  lmiaSkilled: number
+
+  /**
+   * 桶内最近 LMIA 获批季;null = 无记录。
+   */
+  lmiaLastQuarter: string | null
+
+  /**
+   * 切面星 1-5(数据层算死;板只读)。
+   */
+  star: number
+
+  /**
+   * 桶内年薪中位;null = 无薪资数据。
+   */
+  wageMedAnnual: number | null
+
+  /**
+   * 工资水位(vs 同组同省中位的百分比,100 = 持平);null = 分母缺。
+   */
+  wageIndexPct: number | null
 }
 
 /**
- * 职业下拉的人话名(站规:代码不裸奔)。
+ * `PoolRow` 的复数。
  */
-export type NocTitle = {
-  /**
-   * 英文名。
-   */
-  en: string
-
-  /**
-   * 中文名。
-   */
-  zh: string
-
-  /**
-   * 韩文名。
-   */
-  ko: string
-}
+export type PoolRows = PoolRow[]
 
 /**
  * 雇主板一页(SSR 与 /api/employers 共用;#313 红线:一次只吐一页,total 报全量)。
  */
-export type EmployerPage = {
-  /**
-   * 本页口径。
-   */
-  mode: EmployerMode
-
+export type PoolPage = {
   /**
    * 本页的行。
    */
-  rows: EmployerRow[]
+  rows: PoolRow[]
 
   /**
    * 筛选后的总行数(不是本页行数)。
@@ -289,19 +214,14 @@ export type EmployerPage = {
   pageSize: number
 
   /**
-   * 下拉选项。
+   * 省下拉的选项(池里雇主的主省分布;进程内 TTL 缓存)。
    */
-  facets: EmployerFacets
+  provs: string[]
 
   /**
-   * 名录抓取日期(designated;hiring 为空串)。
+   * 池构建日(本页最新一行的;'' = 本页无行)。
    */
   fetched: string
-
-  /**
-   * 职业码 → 三语人话名;查不到的码不返回,展示层原样显示 5 位码。
-   */
-  nocTitles: Record<string, NocTitle>
 }
 
 /**
@@ -993,11 +913,6 @@ export type NormalizeFiltersIn = {
    * 参数取值器。
    */
   get: ParamGetter
-
-  /**
-   * mode 参数缺席/不合法时的默认口径(入口契约:路径段即口径)。
-   */
-  defMode: EmployerMode
 }
 
 /**
@@ -1016,86 +931,6 @@ export type ClipIn = {
 }
 
 /**
- * `nocMatches` 的入参。
- */
-export type NocMatchesIn = {
-  /**
-   * 该行列明的职业码(空数组 = 名录没写)。
-   */
-  rowNocs: string[]
-
-  /**
-   * 选中的职业码;空串 = 没筛职业。
-   */
-  noc: string
-}
-
-/**
- * `programMatches` 的入参。
- */
-export type ProgramMatchesIn = {
-  /**
-   * 该行的制度值(可双标,如 'RCIP+FCIP')。
-   */
-  rowProgram: string
-
-  /**
-   * 选中的制度;空串 = 没筛制度。
-   */
-  program: string
-}
-
-/**
- * `applyEmployerFilters` 的入参。
- */
-export type ApplyEmployerFiltersIn = {
-  /**
-   * 全量行。
-   */
-  rows: EmployerRow[]
-
-  /**
-   * 筛选。
-   */
-  filters: EmployerFilters
-}
-
-/**
- * `employerFacets` 的入参。
- */
-export type EmployerFacetsIn = {
-  /**
-   * 全量行(下拉选项从全量算,不从筛后算)。
-   */
-  rows: EmployerRow[]
-
-  /**
-   * 当前筛选(社区/职业下拉按省+制度收窄要用)。
-   */
-  filters: EmployerFilters
-}
-
-/**
- * `pageSlice` 的入参。
- */
-export type PageSliceIn = {
-  /**
-   * 筛选后的全量行。
-   */
-  rows: EmployerRow[]
-
-  /**
-   * 页码,0 起(负数当 0)。
-   */
-  page: number
-
-  /**
-   * 每页行数。
-   */
-  size: number
-}
-
-/**
  * `loadEmployerPage` 的入参。
  */
 export type LoadEmployerPageIn = {
@@ -1107,7 +942,7 @@ export type LoadEmployerPageIn = {
   /**
    * 规范化后的筛选。
    */
-  filters: EmployerFilters
+  filters: PoolFilters
 
   /**
    * 每页行数(API 允许调,SSR 用 EMP_SSR_ROWS)。
@@ -1118,7 +953,7 @@ export type LoadEmployerPageIn = {
 /**
  * `loadEmployerPage` 的返回。
  */
-export type LoadEmployerPageOut = Promise<EmployerPage>
+export type LoadEmployerPageOut = Promise<PoolPage>
 
 /**
  * Next 服务端组件的 searchParams 形状(Next 定死:缺席参数是 undefined)。
@@ -1136,11 +971,6 @@ export type BoardPropsIn = {
   sp: SearchParams
 
   /**
-   * 口径,由**路径段**定(/employers/designated 与 /employers/hiring 两个入口)。
-   */
-  mode: EmployerMode
-
-  /**
    * 能打 SQL 的东西;null = 池没拿到(照出空表)。
    */
   db: Db | null
@@ -1153,12 +983,12 @@ export type BoardProps = {
   /**
    * 第一页数据。
    */
-  initial: EmployerPage
+  initial: PoolPage
 
   /**
-   * 预置筛选(入口契约:/employers/designated?program=…&prov=… 必须直达且预置)。
+   * 预置筛选(入口契约:/employers?prov=…&noc=… / ?program=… 直达且预置;noc 已换算成 group)。
    */
-  initialFilters: EmployerFilters
+  initialFilters: PoolFilters
 }
 
 /**
@@ -1377,44 +1207,219 @@ export type SponsorsIn = {
 export type StrList = string[]
 
 /**
- * 库里的字符串数组格(array_agg 列;null = 没有)。
+ * 库里的字符串数组格(array_agg / jsonb 数组列;null = 没有)。
  */
 export type StrListCell = string[] | null
+
+/**
+ * 省下拉选项缓存的一份。
+ */
+export type ProvsSlot = {
+  /**
+   * 灌入时刻(Date.now())。
+   */
+  at: number
+
+  /**
+   * 省码清单(升序)。
+   */
+  provs: string[]
+}
+
+/**
+ * `fetchPoolProvs` 的返回。
+ */
+export type PoolProvsOut = Promise<string[]>
+
+/**
+ * `EMPLOYER_POOL_PROVS` 的原始行。
+ */
+export type ProvDbRow = {
+  /**
+   * 省码。
+   */
+  province: string | null
+}
+
+/**
+ * `groupOfNoc` 的入参。
+ */
+export type GroupOfNocIn = {
+  /**
+   * 能打 SQL 的东西。
+   */
+  db: Db
+
+  /**
+   * 5 位职业码(已过 NOC_RE)。
+   */
+  noc: string
+}
+
+/**
+ * `EMPLOYER_GROUP_OF_NOC` 的原始行。
+ */
+export type GroupOfNocDbRow = {
+  /**
+   * 行业组键。
+   */
+  ind_group: string | null
+}
+
+/**
+ * `employerPoolPage` / `EMPLOYER_POOL_SEARCH` 的原始行(池行 × 桶行 + 窗口总数;numeric 列 pg 回字符串)。
+ */
+export type PoolDbRow = {
+  /**
+   * 池主键。
+   */
+  key: string | null
+
+  /**
+   * 公司页 slug。
+   */
+  slug: string | null
+
+  /**
+   * 雇主名。
+   */
+  name: string | null
+
+  /**
+   * 行业。
+   */
+  industry: string | null
+
+  /**
+   * 主省码。
+   */
+  province: string | null
+
+  /**
+   * 主市。
+   */
+  city: string | null
+
+  /**
+   * 指定命中。
+   */
+  designated: boolean | null
+
+  /**
+   * 指定项目清单(jsonb 数组)。
+   */
+  designated_programs: string[] | null
+
+  /**
+   * 全桶在招总数。
+   */
+  open_jobs_total: number | string | null
+
+  /**
+   * 池构建日。
+   */
+  fetched: string | null
+
+  /**
+   * 行业组键。
+   */
+  ind_group: string | null
+
+  /**
+   * 桶内在招。
+   */
+  open_jobs: number | string | null
+
+  /**
+   * 桶内最新发布日。
+   */
+  latest_posted: string | null
+
+  /**
+   * 桶内主要职业名(jsonb 数组)。
+   */
+  top_titles: string[] | null
+
+  /**
+   * 入门岗数。
+   */
+  entry_jobs: number | string | null
+
+  /**
+   * 入门占比。
+   */
+  entry_share: number | string | null
+
+  /**
+   * 最低经验档。
+   */
+  min_experience: string | null
+
+  /**
+   * 技能类 LMIA 份数。
+   */
+  lmia_skilled: number | string | null
+
+  /**
+   * 最近获批季。
+   */
+  lmia_last_quarter: string | null
+
+  /**
+   * 切面星。
+   */
+  star: number | string | null
+
+  /**
+   * 年薪中位。
+   */
+  wage_med_annual: number | string | null
+
+  /**
+   * 工资水位。
+   */
+  wage_index_pct: number | string | null
+
+  /**
+   * 窗口总数(每行同值)。
+   */
+  total: number | string | null
+}
+
+/**
+ * `PoolDbRow` 的复数(数组进签名要有自己的名字)。
+ */
+export type PoolDbRows = PoolDbRow[]
+
+/**
+ * `groupOfNoc` 的返回(行业组键或空串)。
+ */
+export type GroupKeyOut = Promise<string>
+
+/**
+ * `emptyPoolPage` 的入参。
+ */
+export type EmptyPoolPageIn = {
+  /**
+   * 当前筛选(页码原样带回)。
+   */
+  filters: PoolFilters
+
+  /**
+   * 每页行数。
+   */
+  pageSize: number
+
+  /**
+   * 省下拉选项(已取到的照给;池没拿到时空数组)。
+   */
+  provs: string[]
+}
 
 /**
  * 省码 → 岗数的计数表(对照页主要省用)。
  */
 export type ProvTally = Record<string, number>
-
-/**
- * 名录整表缓存的一份。
- */
-export type DesignatedSlot = {
-  /**
-   * 灌入时刻(Date.now())。
-   */
-  at: number
-
-  /**
-   * 整表行。
-   */
-  rows: DesignatedRow[]
-}
-
-/**
- * 指定雇主在招数的缓存格。
- */
-export type DesignatedOpenSlot = {
-  /**
-   * 灌入时刻(Date.now())。
-   */
-  at: number
-
-  /**
-   * 在招数行。
-   */
-  rows: DesignatedOpenRow[]
-}
 
 /**
  * 担保聚合整表缓存的一份。
@@ -1436,24 +1441,14 @@ export type SponsorSlot = {
  */
 export type EmployersCache = {
   /**
-   * 指定雇主名录整表;null = 冷。
+   * 雇主池省下拉的选项(池里雇主的主省分布);null = 冷。
    */
-  designated: DesignatedSlot | null
+  poolProvs: ProvsSlot | null
 
   /**
-   * 名录刷新的单飞 promise;null = 没有在飞的。
+   * 省选项刷新的单飞 promise;null = 没有在飞的。
    */
-  designatedInflight: Promise<DesignatedRow[]> | null
-
-  /**
-   * 指定雇主在招数(雇主池 designated 且在招);null = 冷。
-   */
-  designatedOpen: DesignatedOpenSlot | null
-
-  /**
-   * 在招数刷新的单飞 promise;null = 没有在飞的。
-   */
-  designatedOpenInflight: Promise<DesignatedOpenRow[]> | null
+  poolProvsInflight: Promise<string[]> | null
 
   /**
    * 在招担保雇主聚合整表;null = 冷。
@@ -1480,16 +1475,6 @@ export type EmployersCache = {
    */
   briefTransBy: Map<string, string>
 }
-
-/**
- * `fetchAllDesignated` 的返回。
- */
-export type DesignatedRowsOut = Promise<DesignatedRow[]>
-
-/**
- * fetchDesignatedOpen 的出参。
- */
-export type DesignatedOpenRowsOut = Promise<DesignatedOpenRow[]>
 
 /**
  * `applySponsorFilters` 的入参。
@@ -1519,21 +1504,6 @@ export type ToSponsorRowIn = {
    * 雇主侧门槛判定(边缘算好传进来)。
    */
   verdict: SponsorVerdict
-}
-
-/**
- * 职业码与它的三语名(`toNocTitlePair` 的返回,调用处折成 Record)。
- */
-export type NocTitlePair = {
-  /**
-   * 职业码。
-   */
-  noc: string
-
-  /**
-   * 三语名。
-   */
-  title: NocTitle
 }
 
 /**
@@ -1594,111 +1564,6 @@ export type ToCompareRowIn = {
    * 该公司的岗位聚合。
    */
   agg: CompareAgg
-}
-
-/**
- * `DESIGNATED_ALL` 的原始行(consult 惯例:一条 SQL 一个列形状,收窄只在映射里做一次)。
- */
-export type DesignatedDbRow = {
-  /**
-   * 雇主名。
-   */
-  name: string | null
-
-  /**
-   * 省码。
-   */
-  province: string | null
-
-  /**
-   * 社区/城市。
-   */
-  location: string | null
-
-  /**
-   * 制度。
-   */
-  source: string | null
-
-  /**
-   * 逗号分隔 NOC 原文。
-   */
-  nocs: string | null
-
-  /**
-   * 名录官方页。
-   */
-  url: string | null
-
-  /**
-   * 抓取日(库里两种写法:20260419 / 2026-04-19,映射时归一)。
-   */
-  fetched: string | null
-}
-
-/**
- * `DESIGNATED_OPEN_JOBS` 的原始行。
- */
-export type DesignatedOpenDbRow = {
-  /**
-   * 雇主名。
-   */
-  name: string | null
-
-  /**
-   * 在招岗数。
-   */
-  open_jobs: number | null
-}
-
-/**
- * `HIRING_EMPLOYERS` 的原始行。
- */
-export type HiringDbRow = {
-  /**
-   * 雇主名。
-   */
-  name: string | null
-
-  /**
-   * 省码。
-   */
-  province: string | null
-
-  /**
-   * 城市。
-   */
-  location: string | null
-
-  /**
-   * 在招岗数(pg 计数常回字符串)。
-   */
-  n: number | string | null
-}
-
-/**
- * `NOC_TITLES_FOR_EMPLOYERS` 的原始行。
- */
-export type NocTitleDbRow = {
-  /**
-   * 职业码。
-   */
-  noc: string | null
-
-  /**
-   * 英文名。
-   */
-  en: string | null
-
-  /**
-   * 中文名。
-   */
-  zh: string | null
-
-  /**
-   * 韩文名。
-   */
-  ko: string | null
 }
 
 /**
@@ -2115,46 +1980,6 @@ export type CompareJobDbRow = {
    * AIP 标记。
    */
   aip: boolean | null
-}
-
-/**
- * 职业码 → 三语名的映射表。
- */
-export type NocTitleMap = Record<string, NocTitle>
-
-/**
- * `nocTitlesOf` 的入参。
- */
-export type NocTitlesIn = {
-  /**
-   * 数据库连接(池由调用方注进来)。
-   */
-  db: Db
-
-  /**
-   * 要查人话名的职业码(函数里过 5 位校验并封顶)。
-   */
-  codes: string[]
-}
-
-/**
- * `nocTitlesOf` 的返回。
- */
-export type NocTitlesOut = Promise<NocTitleMap>
-
-/**
- * `emptyEmployerPage` 的入参。
- */
-export type EmptyPageIn = {
-  /**
-   * 当前筛选(空表也要回显它)。
-   */
-  filters: EmployerFilters
-
-  /**
-   * 每页行数。
-   */
-  pageSize: number
 }
 
 /**

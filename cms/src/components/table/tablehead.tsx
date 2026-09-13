@@ -24,7 +24,7 @@ import css from './table.module.css'
 export function TableHead<T>({ cols, sort, toggleSort, widths }: TableHeadIn<T>) {
   const ths = []
   for (const c of cols) {
-    const sortable = c.sort != null
+    const sortable = c.sort != null || c.sortable === true
     let active = false
     let dir: 1 | -1 = -1
     if (sort != null && sort.key === c.key) {

@@ -14,24 +14,14 @@ import type { EmployersCache } from './types'
  */
 export const CACHE: EmployersCache = {
   /**
-   * 指定雇主名录整表(6,680 行 × 7 短字段)。开机是空的,第一次取的人负责灌。
+   * 雇主池省下拉的选项(2026-09-13 雇主板批二;原名录整表 / 指定在招数两对格随双口径退役)。开机是空的。
    */
-  designated: null,
+  poolProvs: null,
 
   /**
-   * 名录刷新的单飞 promise。
+   * 省选项刷新的单飞 promise。
    */
-  designatedInflight: null,
-
-  /**
-   * 指定雇主在招数(雇主池 designated 且在招,~423 行;2026-09-04 名录页在招优先)。开机是空的。
-   */
-  designatedOpen: null,
-
-  /**
-   * 在招数刷新的单飞 promise。
-   */
-  designatedOpenInflight: null,
+  poolProvsInflight: null,
 
   /**
    * 在招担保雇主聚合整表。开机是空的。

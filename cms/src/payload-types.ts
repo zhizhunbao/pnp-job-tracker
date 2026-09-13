@@ -1389,15 +1389,15 @@ export interface EmployerPoolBucket {
    */
   entryShare?: number | null;
   /**
-   * 该大类最低经验档;空 = 官方未写
+   * 该行业组最低经验档;空 = 官方未写
    */
   minExperience?: string | null;
   /**
-   * 该大类技能类 LMIA 获批数(旁证)
+   * 该行业组技能类 LMIA 获批数(旁证)
    */
   lmiaSkilled?: number | null;
   /**
-   * 该大类最近一期 LMIA 季度标;空 = 无记录
+   * 该行业组最近一期 LMIA 季度标;空 = 无记录
    */
   lmiaLastQuarter?: string | null;
   /**
@@ -1405,11 +1405,11 @@ export interface EmployerPoolBucket {
    */
   star?: number | null;
   /**
-   * 该大类年薪中位;空 = 无水位数据,不折 0
+   * 该行业组年薪中位;空 = 无水位数据,不折 0
    */
   wageMedAnnual?: number | null;
   /**
-   * vs 同大类中位的百分位;空 = 无水位数据
+   * vs 同行业组同省中位的百分位;空 = 无水位数据
    */
   wageIndexPct?: number | null;
   updatedAt: string;
@@ -1740,6 +1740,10 @@ export interface NocCategory {
    */
   fineEn?: string | null;
   fineKo?: string | null;
+  /**
+   * 行业组键(health/stem/…);空串 = 未分类
+   */
+  indGroup?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3216,6 +3220,7 @@ export interface NocCategoriesSelect<T extends boolean = true> {
   midKo?: T;
   fineEn?: T;
   fineKo?: T;
+  indGroup?: T;
   updatedAt?: T;
   createdAt?: T;
 }

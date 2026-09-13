@@ -531,7 +531,7 @@ export const COLS_NOC_OPENINGS = ['noc', 'open', 'eligible', 'median_salary', 'b
 /**
  * noc_categories 列。
  */
-export const COLS_NOC_CATEGORIES = ['broad', 'mid', 'fine', 'teer', 'broad_en', 'broad_ko', 'mid_en', 'mid_ko', 'fine_en', 'fine_ko']
+export const COLS_NOC_CATEGORIES = ['broad', 'mid', 'fine', 'teer', 'broad_en', 'broad_ko', 'mid_en', 'mid_ko', 'fine_en', 'fine_ko', 'ind_group']
 
 /**
  * sources 列。

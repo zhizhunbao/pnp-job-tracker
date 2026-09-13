@@ -17,5 +17,8 @@ export const NocCategories: CollectionConfig = {
     { name: 'midKo', type: 'text' },
     { name: 'fineEn', type: 'text', admin: { description: '小分类(官方英文名,去掉套话前缀)' } },
     { name: 'fineKo', type: 'text' },
+    // 2026-09-13 雇主板批二:大类所属的行业组键(8 组,etl/noc GROUP_KEYS;未分类 = 空串)——
+    // 前端 noc → 组 的换算读这一列,不再各自抄分组表。DDL docs/sql/employer-pool-groups-20260913.sql。
+    { name: 'indGroup', type: 'text', index: true, admin: { description: '行业组键(health/stem/…);空串 = 未分类' } },
   ],
 }
