@@ -552,7 +552,7 @@ export const COLS_PNP_OCCUPATIONS = ['province', 'stream', 'label', 'type', 'pro
  * pnp_draws 列。⚠️ stream_zh 是 #280 新列:必须先在生产跑 docs/sql/pnp-draws-stream-zh.sql,
  * 否则这一段撞 42703 → 整个 seed 事务回滚(表现为 /seed 500、无 body)。
  */
-export const COLS_PNP_DRAWS = ['province', 'kind', 'draw_date', 'stream', 'stream_zh', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched']
+export const COLS_PNP_DRAWS = ['province', 'kind', 'draw_date', 'stream', 'stream_zh', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched', 'rule_streams']
 
 /**
  * pnp_score_factors 列。

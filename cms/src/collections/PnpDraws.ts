@@ -13,6 +13,9 @@ export const PnpDraws: CollectionConfig = {
     // #280:中文灰注(本地 qwen 批译,etl/pnp/translate_draw_streams.py → data/processed/draw_stream_zh.json)。
     // ⚠️ 新列,生产库必须先手动跑 docs/sql/pnp-draws-stream-zh.sql,再部署本改动 + 灌 seed(顺序错了 42703)
     { name: 'streamZh', type: 'text', admin: { description: '流名中文灰注(zh 界面用,en/ko 不读)' } },
+    // 2026-09-13:抽选类别 → 门槛通道对照(人工核定表 data/processed/draw_rule_streams.json,mart 拼 JSON 串)。
+    // ⚠️ 新列,生产库必须先手动跑 docs/sql/pnp-draws-rule-streams-20260913.sql,再部署本改动 + 灌 seed。
+    { name: 'ruleStreams', type: 'text', admin: { description: '门槛通道名清单 JSON 串(把脉页门槛弹框按它筛;NULL=未对照,[]=未收录)' } },
     { name: 'score', type: 'number', admin: { description: '最低邀请分 — 省自评分制,非 CRS!展示必须带 scale' } },
     { name: 'scale', type: 'text', admin: { description: '分制名(SIRS/WEOI/MPNP EOI)' } },
     { name: 'invitations', type: 'number' },

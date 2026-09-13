@@ -9,7 +9,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
-import { ID_DRAWS, TEXT_NONE } from './constants'
+import { ID_DRAWS } from './constants'
 import { toDrawCellRows } from './functions'
 import { useRulesModal } from './hooks'
 import { Band } from './band'
@@ -39,7 +39,7 @@ export function DrawsSection({ t, tEn, lang, updatedAt, draws }: DrawsSectionIn)
           <DrawBoard t={t} rows={rows} />
         </div>
       </Sec>
-      {m.prov !== TEXT_NONE && <RulesModal t={t} prov={m.prov} rows={m.rows} onClose={m.close} />}
+      {m.row != null && <RulesModal t={t} row={m.row} rows={m.rows} onClose={m.close} />}
     </Band>
   )
 }

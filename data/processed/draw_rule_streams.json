@@ -1,0 +1,304 @@
+{
+ "Alberta Express Entry Stream – Accelerated Tech Pathway": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Agriculture)": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Construction)": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Health Care)": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Alberta Opportunity Stream": {
+  "streams": [
+   "AAIP Alberta Opportunity Stream",
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Build: Construction Trades": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Care: Childcare": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Care: Education": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Care: Health": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Care: Veterinary Care": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Completed post-secondary study in Manitoba": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Dedicated Health Care Pathway – Express Entry": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Dedicated Health Care Pathway – non-Express Entry": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Employer Job Offer: Foreign Worker stream": {
+  "streams": [],
+  "checkedAt": "2026-09-13"
+ },
+ "Employer Job Offer: In-Demand Skills stream": {
+  "streams": [],
+  "checkedAt": "2026-09-13"
+ },
+ "Employer Job Offer: International Student stream": {
+  "streams": [],
+  "checkedAt": "2026-09-13"
+ },
+ "Employment in New Brunswick": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Express Entry (Employment in New Brunswick)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Expression of Interest": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Francophone selection": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Francophone workers in New Brunswick + NB Francophone priorities": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Innovate: High Economic Impact": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Labour & Express Entry": {
+  "streams": [
+   "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+   "PEI PNP Workforce — Skilled Worker stream",
+   "PEI PNP Workforce — Employer Requirements (all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "NB Experience + NB Priorities": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "NB Graduates": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "NLPNP + AIP (ITA batch)": {
+  "streams": [
+   "NLPNP Skilled Worker Category",
+   "NLPNP International Graduate Category",
+   "NLPNP (employer criteria, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Occupation-specific selection": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Occupation-specific selections": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Rural Renewal Stream": {
+  "streams": [
+   "AAIP (job offer & employer requirements, all streams)"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker (NB Experience + NB Graduates)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker (NB Experience + NB Priorities)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker (NB Experience)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker (NB Graduates)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker (NB experience + NB graduates)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Skilled Worker Stream": {
+  "streams": [
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+   "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)",
+   "MPNP Skilled Worker Overseas"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (Francophone Workers in New Brunswick)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (Francophone workers in New Brunswick + NB Francophone priorities)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (NB Francophone Priorities + Francophone Workers in New Brunswick)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (NB Francophone Priorities)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (NB Francophone priorities)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Strategic Initiative (NB francophone priorities + Francophone workers in New Brunswick)": {
+  "streams": [
+   "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway"
+  ],
+  "checkedAt": "2026-09-13"
+ },
+ "Temporary Rural/Remote Health Support Initiative": {
+  "streams": [
+   "BC PNP Skills Immigration (all streams)",
+   "BC PNP Skilled Worker stream"
+  ],
+  "checkedAt": "2026-09-13"
+ }
+}

@@ -2949,7 +2949,22 @@ export type PulseDraw = {
    * 官方抽选页地址(每期都带,汇装写死到 mart;2026-09-13 Frank「这个加上 link 列」)。
    */
   url: string
+
+  /**
+   * 选择参数 / 期号(官方没写给空串)。
+   */
+  note: string
+
+  /**
+   * 这一类别对到的门槛通道名;null = 没对过(弹框退回全省),空清单 = 对过但条文没抓(弹框出未收录)。
+   */
+  ruleStreams: MaybeStreams
 }
+
+/**
+ * 门槛通道名清单;null = 没对照。
+ */
+export type MaybeStreams = string[] | null
 
 /**
  * `SQL.PNP_DRAWS_RECENT` 回来的那一行。列名即库列名;走 `SELECT *` 的容缺手法
@@ -2996,6 +3011,16 @@ export type DrawDbRow = {
    * 官方抽选页地址(库列可空,按事实保 null)。
    */
   url: string | null
+
+  /**
+   * 选择参数 / 期号(官方公告里这一路的附注;库里可空)。
+   */
+  note: string | null
+
+  /**
+   * 门槛通道名清单的 JSON 串 —— 2026-09-13 的列,DDL 没跑的库上这一格压根不存在;NULL = 未对照。
+   */
+  rule_streams?: string | null
 }
 
 /**
@@ -3073,9 +3098,19 @@ export type DrawCellRow = {
   rulesProv: string
 
   /**
-   * 「门槛」钮点击:开该省弹框(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。
+   * 「门槛」钮点击:开这一期的弹框(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。
    */
   onRules: ClickFn
+
+  /**
+   * 官方公告里这一路的附注(选择参数 / 期号);空串 = 不出。
+   */
+  drawNote: string
+
+  /**
+   * 这一类别对到的门槛通道名(弹框按它筛;见 PulseDraw.ruleStreams 三态)。
+   */
+  ruleStreams: MaybeStreams
 
   /**
    * 「官方页」钮文案。
@@ -3159,9 +3194,9 @@ export type DrawCellRowsIn = {
 }
 
 /**
- * 开门槛弹框的手柄:收两位省码。
+ * 开门槛弹框的手柄:收这一期的展示行(省码、类别、对照通道都在行上)。
  */
-export type RulesOpenFn = (prov: string) => void
+export type RulesOpenFn = (row: DrawCellRow) => void
 
 /**
  * /api/rules 拉回的一条门槛(线格式,与 lib/official 的 RuleRow 同格,本域自抄)。
@@ -3233,9 +3268,29 @@ export type RulesOpenIn = {
   open: RulesOpenFn
 
   /**
-   * 这一行的省码。
+   * 这一行(手柄闭包里持有,点击时整行交回)。
    */
-  province: string
+  row: DrawCellRow
+}
+
+/**
+ * 弹框开着的那一期;null = 没开。
+ */
+export type MaybeDrawCellRow = DrawCellRow | null
+
+/**
+ * `rulesOfDraw` 的入参。
+ */
+export type RulesOfDrawIn = {
+  /**
+   * 该省全部门槛行。
+   */
+  lines: RuleLineJson[]
+
+  /**
+   * 这一类别对到的通道名(null = 不筛)。
+   */
+  ruleStreams: MaybeStreams
 }
 
 /**
@@ -3243,9 +3298,9 @@ export type RulesOpenIn = {
  */
 export type RulesPanel = {
   /**
-   * 开着哪省(TEXT_NONE = 没开)。
+   * 开着哪一期(null = 没开)。
    */
-  prov: string
+  row: MaybeDrawCellRow
 
   /**
    * 该省门槛行;null = 加载中。
@@ -3279,6 +3334,21 @@ export type RulesTitleIn = {
 }
 
 /**
+ * `rulesHeadOf` 的入参。
+ */
+export type RulesHeadIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一类别对到的通道名(null = 没对照)。
+   */
+  ruleStreams: MaybeStreams
+}
+
+/**
  * RulesModal(抽选表「门槛」弹框)的 props。
  */
 export type RulesModalIn = {
@@ -3288,9 +3358,9 @@ export type RulesModalIn = {
   t: TFn
 
   /**
-   * 两位省码。
+   * 开着的这一期。
    */
-  prov: string
+  row: DrawCellRow
 
   /**
    * 该省门槛行;null = 加载中。

@@ -26,7 +26,7 @@ import {
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
 import type {
-  MaybeRuleLines, RulesPanel,
+  MaybeDrawCellRow, MaybeRuleLines, RulesPanel, DrawCellRow,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
@@ -328,30 +328,30 @@ export function usePulse(x: PulseIn): PulsePanel {
 }
 
 /**
- * 抽选表「门槛」弹框的机器:开着哪省一格 + 该省门槛行一格;省码一变就懒查 /api/rules
- * (2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。关弹框把省码清空,行清 null。
+ * 抽选表「门槛」弹框的机器:开着哪一期一格 + 该省门槛行一格;换期就按省码懒查 /api/rules
+ * (2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。关弹框把期清 null。
  *
  * @returns 开着哪省、门槛行与开关手柄。
  */
 export function useRulesModal(): RulesPanel {
-  const [prov, setProv] = useState(TEXT_NONE)
+  const [row, setRow] = useState<MaybeDrawCellRow>(null)
   const [rows, setRows] = useState<MaybeRuleLines>(null)
 
   useEffect(function loadRules() {
-    if (prov === TEXT_NONE) {
+    if (row == null) {
       return
     }
-    return makeRulesLoad({ province: prov, setRows })()
-  }, [prov])
+    return makeRulesLoad({ province: row.rulesProv, setRows })()
+  }, [row])
 
-  function open(p: string): void {
+  function open(r: DrawCellRow): void {
     setRows(null)
-    setProv(p)
+    setRow(r)
   }
 
   function close(): void {
-    setProv(TEXT_NONE)
+    setRow(null)
   }
 
-  return { prov, rows, open, close }
+  return { row, rows, open, close }
 }

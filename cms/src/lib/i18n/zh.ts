@@ -931,8 +931,8 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colWhere': '所在地', 'de.colStar': '星级', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
-  'de.colLmia': '技能类 LMIA', 'de.colWage': '工资水位', 'de.stars': '{n} 星', 'de.entryN': '入门 {n}%', 'de.designated': '指定雇主',
+  'de.colName': '雇主', 'de.colStar': '星级', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colLmia': '技能类 LMIA', 'de.stars': '{n} 星', 'de.entryN': '入门 {n}%', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '选择行业', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配',
   'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法',
@@ -1040,7 +1040,7 @@ export const siteZh = {
   'pulse.col.biz': '主营业务', 'pulse.col.sector': '雇主类别', 'pulse.sector.private': '私营企业',
   'pulse.sector.public': '公立机构', 'pulse.sector.government': '省市政府', 'pulse.sector.federal': '联邦机关', 'pulse.pilot.aip': 'AIP 指定雇主', 'pulse.chain': '连锁', 'pulse.chain.tip': '按门店逐家指定,投前核对门店', 'pulse.pilot.rcip': 'RCIP 指定雇主', 'pulse.pilot.fcip': 'FCIP 指定雇主',   'pulse.id.nowp': '没工签', 'pulse.id.pgwp': '有工签',
   'pulse.col.hiringOcc': '在招职业', 'pulse.nocMore': '等 {n} 个', 'pulse.act.jobs': '看岗位', 'pulse.act.company': '看公司', 'pulse.act.link': '官方页', 'pulse.act.rules': '门槛',
-  'pulse.rules.title': '{prov} 通道门槛', 'pulse.rules.loading': '加载中…', 'pulse.rules.empty': '本站未收录', 'pulse.rules.more': '资料库',
+  'pulse.rules.title': '{prov} 通道门槛', 'pulse.rules.loading': '加载中…', 'pulse.rules.empty': '本站未收录', 'pulse.rules.more': '资料库', 'pulse.rules.round': '本期', 'pulse.rules.pathway': '通道资格', 'pulse.rules.provAll': '全省门槛',
   // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
   'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',
   'se.verdict.factor.years': '年限', 'se.verdict.factor.staff': '雇员数',

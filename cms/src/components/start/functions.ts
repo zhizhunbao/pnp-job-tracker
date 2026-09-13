@@ -12,7 +12,7 @@
  * @time 2026-08-28 14:20:00
  */
 import { drawStreamNote, eeKeyDisplay, streamDisplay } from '@/lib/jobs'
-import { numOrNull, text } from '@/lib/db'
+import { jsonOrNull, numOrNull, text } from '@/lib/db'
 import { makeT } from '@/lib/i18n'
 import { PROV_NAME } from '@/lib/stats'
 import { track } from '@/lib/track'
@@ -133,6 +133,7 @@ import type {
 ValuableIn,
   EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
   DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesLoadIn, RulesOpenIn, RulesProbe, RuleLineJson, RulesTitleIn,
+  MaybeStreams, RulesOfDrawIn, RulesHeadIn,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
@@ -3204,7 +3205,26 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     score: numOrNullOf(x.r.score),
     invitations: numOrNullOf(x.r.invitations),
     url: textOf(x.r.url),
+    note: textOf(x.r.note),
+    ruleStreams: ruleStreamsOf(x.r.rule_streams),
   }
+}
+
+/**
+ * 库里的门槛通道清单 JSON 串 → 清单;列不存在 / NULL / 坏串都是「没对照」= null。
+ *
+ * @param v 库值。
+ * @returns 通道名清单;没对照 null。
+ */
+function ruleStreamsOf(v: string | null | undefined): MaybeStreams {
+  if (v == null) {
+    return null
+  }
+  const parsed = jsonOrNull<string[]>(v)
+  if (parsed == null || Array.isArray(parsed) === false) {
+    return null
+  }
+  return parsed
 }
 
 /**
@@ -3261,7 +3281,7 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
   if (x.r.province === PROV_FED) {
     prog = TAG_FED
   }
-  return {
+  const row: DrawCellRow = {
     key: String(x.i),
     date: ymd(x.r.date),
     prog,
@@ -3271,11 +3291,24 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     invitations: numTextOf(x.r.invitations),
     href: x.r.url,
     rulesProv: drawRulesProvOf(x.r.province),
-    onRules: makeRulesOpen({ open: x.onRules, province: x.r.province }),
+    onRules: noop,
+    drawNote: x.r.note,
+    ruleStreams: x.r.ruleStreams,
     actLinkText: x.t('pulse.act.link'),
     actRulesText: x.t('pulse.act.rules'),
     actBtnCls: actBtnClsOf(),
   }
+  row.onRules = makeRulesOpen({ open: x.onRules, row })
+  return row
+}
+
+/**
+ * 占位手柄:行先造出来再把自己交给点击手柄(手柄要持有整行)。
+ *
+ * @returns 无。
+ */
+function noop(): void {
+  return
 }
 
 /**
@@ -3292,15 +3325,36 @@ function drawRulesProvOf(province: string): string {
 }
 
 /**
- * 「门槛」钮的点击手柄工厂:把这一行的省码喂给开弹框的手柄。
+ * 「门槛」钮的点击手柄工厂:把这一行整行交给开弹框的手柄。
  *
- * @param x 开弹框手柄与省码。
+ * @param x 开弹框手柄与这一行。
  * @returns 点击手柄。
  */
 function makeRulesOpen(x: RulesOpenIn): ClickFn {
   return function onRules(): void {
-    x.open(x.province)
+    x.open(x.row)
   }
+}
+
+/**
+ * 弹框里该出哪些门槛:类别对到了通道就只留那些通道的行(按对照表顺序分组),没对照就整省全出。
+ *
+ * @param x 该省全部门槛行与对到的通道名。
+ * @returns 要出的行。
+ */
+export function rulesOfDraw(x: RulesOfDrawIn): RuleLineJson[] {
+  if (x.ruleStreams == null) {
+    return x.lines
+  }
+  const out: RuleLineJson[] = []
+  for (const st of x.ruleStreams) {
+    for (const r of x.lines) {
+      if (r.stream === st) {
+        out.push(r)
+      }
+    }
+  }
+  return out
 }
 
 /**
@@ -3356,6 +3410,19 @@ function rulesRowsOf(j: RulesProbe): RuleLineJson[] {
  */
 export function rulesTitleOf(x: RulesTitleIn): string {
   return x.t('pulse.rules.title', { prov: provLabelOf({ t: x.t, code: x.prov }) })
+}
+
+/**
+ * 弹框「通道资格」段的标题:对到了通道叫「通道资格」,没对照叫「全省门槛」(读的人要知道这不是筛过的)。
+ *
+ * @param x 取词函数与对到的通道名。
+ * @returns 段标题。
+ */
+export function rulesHeadOf(x: RulesHeadIn): string {
+  if (x.ruleStreams == null) {
+    return x.t('pulse.rules.provAll')
+  }
+  return x.t('pulse.rules.pathway')
 }
 
 /**

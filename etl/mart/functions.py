@@ -76,7 +76,7 @@ from mart.constants import (
     FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
-    IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
+    IN_DLI, IN_DRAW_RULE_STREAMS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
@@ -118,7 +118,7 @@ from mart.constants import (
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
-    K_WIKI, K_YEAR, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
+    K_WIKI, K_YEAR, K_RULE_LIST, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
     LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
@@ -2107,6 +2107,19 @@ def load_draw_stream_zh() -> dict:
     return out
 
 
+def load_draw_rule_streams() -> dict:
+    """抽选类别 → 门槛通道对照(人工核定表,见 IN_DRAW_RULE_STREAMS 注)。
+
+    值序列化成 JSON 串进 varchar 列;缺键的类别不进字典(row 取不到 = None,前端退回全省门槛)。
+    """
+    out: dict = {}
+    if not IN_DRAW_RULE_STREAMS.exists():
+        return out
+    for k, v in read_table_soft(IN_DRAW_RULE_STREAMS).items():
+        out[k] = json.dumps(v.get(K_RULE_LIST, []), ensure_ascii=False)
+    return out
+
+
 def draw_limit_of(prov: str) -> int:
     """截断放宽(C4):普通省 8→12;NB 按类别定向邀请、一轮拆多行,判定层要数「某职业类别
     2026 年被选中几轮」→ 给一年的量(48,与 build_draws 的 NB 上限一致)。
@@ -2131,7 +2144,8 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
             base = to_draw_base(DrawBaseIn(province=prov, table=v, fetched=pd.get(K_FETCHED, "")))
             for dr in v.get(K_DRAWS, [])[:draw_limit_of(prov)]:
                 rows.append(to_pnp_draw_row(DrawRowIn(base=base, draw=dr,
-                                                      stream_zh=x.stream_zh)))
+                                                      stream_zh=x.stream_zh,
+                                                      rule_streams=x.rule_streams)))
             if v.get(K_NOTICE):
                 rows.append(to_pnp_notice_row(NoticeRowIn(base=base, notice=v[K_NOTICE])))
     for cat_key, rounds in (x.ee_history or {}).items():
@@ -2540,7 +2554,8 @@ def to_pnp_draw_row(x: DrawRowIn) -> dict:
     stream = x.draw.get("stream", "")
     row.update({"kind": DRAW_KIND_DRAW, "drawDate": x.draw.get("date"), "stream": stream,
                 "streamZh": x.stream_zh.get(stream), "score": x.draw.get("score"),
-                "invitations": x.draw.get("invitations"), "note": x.draw.get("note", "")})
+                "invitations": x.draw.get("invitations"), "note": x.draw.get("note", ""),
+                "ruleStreams": x.rule_streams.get(stream)})
     return row
 
 
@@ -3388,6 +3403,7 @@ def to_mart_tables() -> dict:
             FieldValuesIn(jobs=ctx.jobs, key=K_ACCESSIBILITY))),
         "pnp_occupations": build_pnp_occupations(),
         "pnp_draws": build_pnp_draws(DrawsBuildIn(stream_zh=load_draw_stream_zh(),
+                                                  rule_streams=load_draw_rule_streams(),
                                                   ee_history=ee_draws.history,
                                                   ee_fetched=ee_draws.fetched)),
         "pnp_score_factors": build_pnp_score_factors(universe),
