@@ -5,7 +5,7 @@
  * @time 2026-08-22 22:00:00
  */
 
-import { queryRowsOrEmpty, SQL, text } from '../db'
+import { count, queryRowsOrEmpty, SQL, text } from '../db'
 import { FED_PROGRAM_ORDER, LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE, RULES_PROVINCE_FED } from './constants'
 import type {
   LangCode, LoadRuleGroupsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut, RuleRow,
@@ -90,7 +90,9 @@ function byProvince(a: RuleGroup, b: RuleGroup): number {
 function toRuleGroupSeed(r: RuleDbRow): RuleGroupSeed {
   const province = text(r.province)
   const program = text(r.program)
-  const row: RuleRow = { stream: text(r.stream), label: text(r.label), quote: text(r.value_text), url: text(r.url) }
+  const row: RuleRow = {
+    stream: text(r.stream), label: text(r.label), quote: text(r.value_text), url: text(r.url), seq: count(r.seq),
+  }
   if (province === RULES_PROVINCE_FED) {
     return { key: program, province, program, row }
   }

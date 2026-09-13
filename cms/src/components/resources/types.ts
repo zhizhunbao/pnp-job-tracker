@@ -64,6 +64,11 @@ export type ResRuleRow = {
    * 官方页 URL。
    */
   url: string
+
+  /**
+   * 库内序(全表唯一,当行键;2026-09-13 AB 两条门槛同标签同原句撞 key 实撞)。
+   */
+  seq: number
 }
 
 /**

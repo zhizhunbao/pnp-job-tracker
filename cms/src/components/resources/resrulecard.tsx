@@ -23,7 +23,7 @@ export function ResRuleCard({ t, group }: ResRuleCardIn) {
   const rows = []
   for (const r of group.rows) {
     rows.push(
-      <li key={r.label + r.quote} className={css.ruleRow}>
+      <li key={r.seq} className={css.ruleRow}>
         {r.stream !== TEXT_NONE && <span className={css.ruleStream}>{r.stream}</span>}
         <span className={css.ruleLabel}>{r.label}</span>
         <span className={css.ruleQuote}>{r.quote}</span>

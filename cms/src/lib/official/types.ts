@@ -81,6 +81,11 @@ export type RuleDbRow = {
    * 官方页 URL。
    */
   url: string | null
+
+  /**
+   * 库内序(全表唯一,当行身份;2026-09-13 AB 两条门槛同标签同原句撞 key 实撞)。
+   */
+  seq: number | string | null
 }
 
 /**
@@ -106,6 +111,11 @@ export type RuleRow = {
    * 官方页 URL。
    */
   url: string
+
+  /**
+   * 库内序(全表唯一,资源页拿它当行键;标签 + 原句不唯一 —— 官方一句「或」拆成两条规则时原句相同)。
+   */
+  seq: number
 }
 
 /**
