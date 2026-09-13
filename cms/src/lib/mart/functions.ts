@@ -365,7 +365,7 @@ function toEmployerPool(r: MartRow): MartRow {
  */
 function toEmployerPoolBucket(r: MartRow): MartRow {
   return {
-    employer_key: cellOf(r.employerKey), broad: textOf(r.broad), open_jobs: cellOf(r.openJobs),
+    employer_key: cellOf(r.employerKey), ind_group: textOf(r.indGroup), open_jobs: cellOf(r.openJobs),
     latest_posted: cellOf(r.latestPosted), top_titles: jsonTextOf(r.topTitles), entry_jobs: cellOf(r.entryJobs),
     entry_share: cellOf(r.entryShare), min_experience: cellOf(r.minExperience),
     lmia_skilled: cellOf(r.lmiaSkilled), lmia_last_quarter: cellOf(r.lmiaLastQuarter), star: cellOf(r.star),

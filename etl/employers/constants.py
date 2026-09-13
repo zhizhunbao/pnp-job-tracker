@@ -1,7 +1,9 @@
 """employers.constants — 雇主池词表(三源列键 / 入门档 / 星级权重 / 归一后缀表 / IN·OUT)。
 
 2026-08-30 立域(雇主板重构批一,设计稿 docs/design/雇主板重构-20260829.md):
-一行 = 一雇主(全局表)+ 雇主×大类分桶表;零新抓取,纯三源聚合(jobs/designated/LMIA)。
+一行 = 一雇主(全局表)+ 雇主×行业组分桶表;零新抓取,纯三源聚合(jobs/designated/LMIA)。
+2026-09-13 Frank「八组」:桶键由本站 27 大类改为 8 行业组(noc.group_of,与把脉页同一份分组),
+桶表列 broad → indGroup(DDL docs/sql/employer-pool-groups-20260913.sql);星级/水位/LMIA 归桶口径不变,只是桶更粗。
 🔴 口径红线(Frank 拍死):裸 LMIA 总量永不入星不入排序(技能类才是证据);
 星级权重 指定雇主 >> 在招活跃+入门可及 > 技能类 LMIA(旁证);机会参考 ≠ 资格认定。
 """
@@ -28,7 +30,7 @@ OUT_POOL = paths.MART / "employer_pool.json"
 """产出:雇主池全局表(一行=一雇主)。"""
 
 OUT_BUCKETS = paths.MART / "employer_pool_buckets.json"
-"""产出:雇主×大类分桶表(星级住这)。"""
+"""产出:雇主×行业组分桶表(星级住这;2026-09-13 起桶键 = 8 行业组)。"""
 
 K_SLUG = "slug"
 """companies 主键 / jobs 外键(companySlug)。"""
@@ -49,7 +51,15 @@ K_WEBSITE = "website"
 """companies 官网(规模代理:官网命中)。"""
 
 K_BROAD = "broad"
-"""本站大类桶键(jobs 已算好;LMIA 侧经 noc.broad_of 归桶)。"""
+"""jobs 行的本站大类(jobs 已算好);桶键 = noc.group_of(大类) 的行业组,LMIA/指定侧 NOC 经
+noc.broad_of → group_of 同一条路归桶(2026-09-13 改切八组)。"""
+
+GROUP_OTHER = "other"
+"""未分类岗位的桶键:大类查不到行业组(NOC 未匹配)的在招/LMIA/指定线索归此桶 ——
+板不提供这一组,但雇主的事实不丢(指定雇主只有未分类岗时靠它拿顶档星)。"""
+
+GROUP_NONE = ""
+"""无线索通用桶键:指定雇主既无在招、无技能 LMIA、名单也没申报 NOC 时的唯一桶(中档保底住这)。"""
 
 K_PROVINCE = "province"
 """省码。"""

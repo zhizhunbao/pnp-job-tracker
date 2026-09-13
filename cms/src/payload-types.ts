@@ -1357,19 +1357,19 @@ export interface EmployerPoolBucket {
    */
   employerKey: string;
   /**
-   * 本站大类;空串 = 指定雇主无线索通用桶
+   * 行业组键(8 组);other = 未分类岗桶;空串 = 指定雇主无线索通用桶
    */
-  broad?: string | null;
+  indGroup?: string | null;
   /**
-   * 该大类下在招量
+   * 该行业组下在招量
    */
   openJobs?: number | null;
   /**
-   * 该大类下最新发布日;空 = 无在招
+   * 该行业组下最新发布日;空 = 无在招
    */
   latestPosted?: string | null;
   /**
-   * 该大类下代表职位名 string[]
+   * 该行业组下代表职位名 string[]
    */
   topTitles?:
     | {
@@ -3052,7 +3052,7 @@ export interface EmployerPoolSelect<T extends boolean = true> {
  */
 export interface EmployerPoolBucketsSelect<T extends boolean = true> {
   employerKey?: T;
-  broad?: T;
+  indGroup?: T;
   openJobs?: T;
   latestPosted?: T;
   topTitles?: T;

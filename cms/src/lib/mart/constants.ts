@@ -493,10 +493,11 @@ export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province'
 
 /**
  * employer_pool_buckets 列。⚠️ 同上,建表走 docs/sql/employer-pool.sql。
+ * 2026-09-13 Frank「八组」:broad → ind_group(8 行业组键;DDL docs/sql/employer-pool-groups-20260913.sql RENAME COLUMN)。
  * ⚠️ entry_share / wage_med_annual / wage_index_pct 保持可空 —— 空 = 无在招/无水位不表态,
  * 映射器里走 cellOf 保 null,禁折 0(折 0 = 替官方编数)。top_titles 是 jsonb。
  */
-export const COLS_EMPLOYER_POOL_BUCKETS = ['employer_key', 'broad', 'open_jobs', 'latest_posted', 'top_titles', 'entry_jobs', 'entry_share', 'min_experience', 'lmia_skilled', 'lmia_last_quarter', 'star', 'wage_med_annual', 'wage_index_pct']
+export const COLS_EMPLOYER_POOL_BUCKETS = ['employer_key', 'ind_group', 'open_jobs', 'latest_posted', 'top_titles', 'entry_jobs', 'entry_share', 'min_experience', 'lmia_skilled', 'lmia_last_quarter', 'star', 'wage_med_annual', 'wage_index_pct']
 
 /**
  * pilot_communities 列。⚠️ **先在生产跑 docs/sql/e6-11-pilot.sql**(建表 + 锁表补列)。

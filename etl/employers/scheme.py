@@ -70,15 +70,15 @@ class PoolRow(BaseModel):
 
 
 class BucketRow(BaseModel):
-    """雇主×大类桶行(星级住这;板的默认切面)。"""
+    """雇主×行业组桶行(星级住这;板的默认切面;2026-09-13 桶键自 27 大类改切 8 行业组)。"""
 
     model_config = MODEL_CFG
 
     employerKey: str
     """池外键(= PoolRow.key)。"""
 
-    broad: str
-    """本站大类桶键(jobs.broad 词表;指定雇主无 NOC 线索且无在招 = 空串通用桶)。"""
+    indGroup: str
+    """行业组桶键(noc.GROUP_KEYS 八键;other = 未分类岗桶;空串 = 指定雇主无任何线索的通用桶)。"""
 
     openJobs: int
     """桶内在招岗数。"""
@@ -142,7 +142,7 @@ class PoolCtx:
     """归一名 → slug(designated/LMIA 挂靠用;残差不硬合)。"""
 
     open_by_key: dict = field(default_factory=dict)
-    """key → {broad → [岗行]}(在招)。"""
+    """key → {行业组 → [岗行]}(在招)。"""
 
     designated_by_key: dict = field(default_factory=dict)
     """key → [designated 行]。"""
@@ -157,7 +157,7 @@ class PoolCtx:
     """key → 显示名(三源择优)。"""
 
     wage_cells: dict = field(default_factory=dict)
-    """(broad, province) → [年薪中位值](水位分母语料)。"""
+    """(行业组, province) → [年薪中位值](水位分母语料)。"""
 
 
 @dataclass
@@ -209,7 +209,7 @@ class HistOut:
 
 @dataclass
 class BucketIn:
-    """bucket_row_of() 入参(一雇主一大类)。"""
+    """bucket_row_of() 入参(一雇主一行业组)。"""
 
     ctx: PoolCtx
     """聚合上下文。"""
@@ -217,8 +217,8 @@ class BucketIn:
     key: str
     """池主键。"""
 
-    broad: str
-    """大类桶键。"""
+    group: str
+    """行业组桶键。"""
 
 
 @dataclass

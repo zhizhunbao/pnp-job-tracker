@@ -141,6 +141,41 @@ NOC 是按「技能类型 + 教育层级」编的**统计口径**,不是按行�
 技工主管→技工),只有 000(立法与高级管理)独立成「管理层」。
 查表顺序:5 位 → 4 位 → 3 位。一个职业必须被覆盖(体检脚本硬检查,没有兜底)。"""
 
+GROUP_KEYS = [
+    "health", "stem", "trades", "food", "transport", "manufacturing", "business", "education",
+]
+"""行业组键(8 组)。2026-09-04 Frank「职业应该分行业,比如医疗、技工、STEM」立于把脉页
+(cms components/start 的 IND_KEYS,职业/雇主/LMIA/城市四段共用);2026-09-13 Frank「八组」拍板
+雇主池也按它分桶 —— 第三个消费者到,分组自展示层下沉成数据层事实,住 noc 叶(分类法归 noc)。
+值即库里存的键(employer_pool_buckets.ind_group),顺序 = 页面上的顺序;显示名走 i18n 的 pulse.ind.*。
+⚠ cms 侧 IND_BROADS / lib/stats BROAD_TO_GROUP 仍是同一份分组的两份副本(改一处必同步这里),
+终局 = noc_categories 加组列、前端只读(把脉页设计稿 §4 的原话)。"""
+
+GROUP_NONE = ""
+"""大类查不到行业组(未分类 / 非法大类)时 group_of 的出值:空串,不硬塞(消费端自决归哪)。"""
+
+BROAD_GROUP: dict[str, str] = {
+    # 医疗:大类只有一个
+    "医疗": "health",
+    # STEM:IT、工程、科学三大类并一组(Frank 点名的组)
+    "IT": "stem", "工程": "stem", "科学": "stem",
+    # 技工:技工 + 建筑并一组(2026-09-04 Frank「应该放一起,名字都叫技工」;官方 NOC 第 7 大类本就把两者编在一起)
+    "技工": "trades", "建筑": "trades",
+    # 餐饮零售:餐饮、住宿、零售、销售、生活服务五个服务业大类
+    "餐饮": "food", "住宿": "food", "零售": "food", "销售": "food", "生活服务": "food",
+    # 运输物流
+    "运输": "transport", "物流": "transport",
+    # 制造农矿:制造、农业、矿业三个一二产大类
+    "制造": "manufacturing", "农业": "manufacturing", "矿业": "manufacturing",
+    # 商务办公:管理层、商务、行政、文员、金融、会计、法律七个办公室大类
+    "管理层": "business", "商务": "business", "行政": "business", "文员": "business",
+    "金融": "business", "会计": "business", "法律": "business",
+    # 教育文体:教育、社会服务、艺术、体育
+    "教育": "education", "社会服务": "education", "艺术": "education", "体育": "education",
+}
+"""本站 27 大类 → 行业组键(BROADS 的 27 个键在此逐键有归属,2026-09-13 逐键核过;
+与 cms IND_BROADS 逐键同值)。UNCLASSIFIED 故意不在表里:未分类不是行业。"""
+
 BUCKETS3: dict[str, tuple[str, str]] = {
     "000": ("管理层", "高级管理"),
     "100": ("商务", "商务管理"), "200": ("工程", "科技管理"), "300": ("医疗", "医疗管理"),

@@ -2,6 +2,7 @@
 
 三源聚合零新抓取:jobs(在招/入门/工资)+ designated_employers(指定资格)+
 LMIA 事实(技能类旁证,逐 NOC 判 TEER≤3 归桶)+ postings 全史(规模代理)。
+桶键 = 8 行业组(2026-09-13 Frank「八组」;noc.group_of,三源全走 bucket_key_of 一条路)。
 🔴 红线:裸 LMIA 总量永不入星不入排序;公司名归一残差留空不硬合;
 口径只有本文件一份 —— 板与顾问工具只读(lib/ruling 先例)。
 """
@@ -15,9 +16,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
-from noc.functions import broad_of, teer_of
+from noc.functions import broad_of, group_of, teer_of
 from log.functions import say
-from employers.constants import (ENTRY_LEVELS, EXP_RANK, GUARD_FEW_TPL, GUARD_MIN_POOL,
+from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
@@ -62,17 +63,24 @@ def median_of(values: list) -> int | None:
     return round(vals[len(vals) // 2])
 
 
-def skilled_broads_of(lmia_row: dict) -> dict:
-    """LMIA 行的逐 NOC 份数 → {大类桶: 技能类份数}(TEER≤3 才算;裸总量不出此门)。"""
+def bucket_key_of(broad: str) -> str:
+    """本站大类 → 桶键:8 行业组键;查不到组(未分类 / 缺大类)→ other 桶(事实不丢,板不提供该组)。
+    三源(在招岗 / LMIA NOC / 指定名单 NOC)归桶只走这一条路 —— 口径单一红线在桶键上的兑现。"""
+    group = group_of(broad)
+    if group == GROUP_NONE:
+        return GROUP_OTHER
+    return group
+
+
+def skilled_groups_of(lmia_row: dict) -> dict:
+    """LMIA 行的逐 NOC 份数 → {行业组桶: 技能类份数}(TEER≤3 才算;裸总量不出此门)。"""
     out: dict = {}
     for code, n in (lmia_row.get(K_NOCS) or {}).items():
         teer = teer_of(code)
         if teer is None or teer > SKILLED_TEER_MAX:
             continue
-        broad = broad_of(code)
-        if not broad:
-            continue
-        out[broad] = out.get(broad, 0) + int(n)
+        group = bucket_key_of(broad_of(code))
+        out[group] = out.get(group, 0) + int(n)
     return out
 
 
@@ -97,7 +105,7 @@ def load_companies(ctx: PoolCtx) -> int:
 
 
 def load_jobs(ctx: PoolCtx) -> int:
-    """在招岗 → 雇主×桶索引 + 水位分母语料((broad, province) 全体中位)。"""
+    """在招岗 → 雇主×行业组索引 + 水位分母语料((行业组, province) 全体中位)。"""
     jobs = json.loads(IN_JOBS.read_text(encoding=ENC_UTF8))
     for row in jobs:
         if row.get(K_STATUS) != STATUS_OPEN:
@@ -105,12 +113,12 @@ def load_jobs(ctx: PoolCtx) -> int:
         key = row.get(K_COMPANY_SLUG)
         if not key:
             continue
-        broad = row.get(K_BROAD) or ""
+        group = bucket_key_of(row.get(K_BROAD) or GROUP_NONE)
         buckets = ctx.open_by_key.setdefault(key, {})
-        buckets.setdefault(broad, []).append(row)
+        buckets.setdefault(group, []).append(row)
         med = row.get(K_WAGE_MED)
         if med is not None:
-            cell = (broad, row.get(K_PROVINCE) or "")
+            cell = (group, row.get(K_PROVINCE) or "")
             ctx.wage_cells.setdefault(cell, []).append(med)
     return len(jobs)
 
@@ -268,7 +276,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
     for rows in (ctx.open_by_key.get(x.key) or {}).values():
         open_total += len(rows)
     skilled_total = 0
-    for n in skilled_broads_of(lmia_row).values():
+    for n in skilled_groups_of(lmia_row).values():
         skilled_total += n
     return PoolRow(
         key=x.key, slug=slug, name=ctx.names.get(x.key) or x.key,
@@ -319,9 +327,9 @@ def bucket_scan_of(rows: list) -> ScanOut:
 
 
 def bucket_row_of(x: BucketIn) -> BucketRow:
-    """一雇主一大类的桶行(切面星住这)。"""
+    """一雇主一行业组的桶行(切面星住这)。"""
     ctx = x.ctx
-    rows = (ctx.open_by_key.get(x.key) or {}).get(x.broad) or []
+    rows = (ctx.open_by_key.get(x.key) or {}).get(x.group) or []
     des_rows = ctx.designated_by_key.get(x.key) or []
     lmia_row = ctx.lmia_by_key.get(x.key) or {}
     scan = bucket_scan_of(rows)
@@ -331,17 +339,17 @@ def bucket_row_of(x: BucketIn) -> BucketRow:
     wage_med = median_of(scan.wages)
     index = None
     if wage_med is not None and scan.prov_top:
-        cell_med = median_of(ctx.wage_cells.get((x.broad, scan.prov_top)) or [])
+        cell_med = median_of(ctx.wage_cells.get((x.group, scan.prov_top)) or [])
         if cell_med:
             index = round(WAGE_INDEX_BASE * wage_med / cell_med)
-    lmia_n = skilled_broads_of(lmia_row).get(x.broad, 0)
+    lmia_n = skilled_groups_of(lmia_row).get(x.group, 0)
     star = star_of(StarIn(designated=len(des_rows) > 0, open_jobs=len(rows),
                           entry_jobs=scan.entry, lmia_skilled=lmia_n))
     quarter = None
     if lmia_n > 0:
         quarter = lmia_row.get(K_LAST_QUARTER) or None
     return BucketRow(
-        employerKey=x.key, broad=x.broad, openJobs=len(rows), latestPosted=scan.latest,
+        employerKey=x.key, indGroup=x.group, openJobs=len(rows), latestPosted=scan.latest,
         topTitles=scan.top_titles, entryJobs=scan.entry, entryShare=share,
         minExperience=scan.min_exp, lmiaSkilled=lmia_n, lmiaLastQuarter=quarter,
         star=star, wageMedAnnual=wage_med, wageIndexPct=index)
@@ -351,18 +359,16 @@ def bucket_rows_of(x: KeyIn) -> list:
     """一雇主的全部桶行(在招桶 ∪ 技能 LMIA 桶 ∪ 指定线索桶;全无线索的指定雇主给通用空桶)。"""
     ctx = x.ctx
     des_rows = ctx.designated_by_key.get(x.key) or []
-    broads = set(ctx.open_by_key.get(x.key) or {})
-    broads.update(skilled_broads_of(ctx.lmia_by_key.get(x.key) or {}))
+    groups = set(ctx.open_by_key.get(x.key) or {})
+    groups.update(skilled_groups_of(ctx.lmia_by_key.get(x.key) or {}))
     for row in des_rows:
         for code in row.get(K_NOCS) or []:
-            b = broad_of(code)
-            if b:
-                broads.add(b)
-    if not broads and des_rows:
-        broads.add("")
+            groups.add(bucket_key_of(broad_of(code)))
+    if not groups and des_rows:
+        groups.add(GROUP_NONE)
     out = []
-    for broad in sorted(broads):
-        out.append(bucket_row_of(BucketIn(ctx=ctx, key=x.key, broad=broad)))
+    for group in sorted(groups):
+        out.append(bucket_row_of(BucketIn(ctx=ctx, key=x.key, group=group)))
     return out
 
 
