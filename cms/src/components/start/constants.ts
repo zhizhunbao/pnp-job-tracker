@@ -896,9 +896,10 @@ export const W_DATE = '12%'
 export const W_PROG = '8%'
 
 /**
- * 抽选表通道列的列宽(2026-09-12 Frank「这个解读 解读了个寂寞」:冷解读列撤,其 38% 并入本列,原 22%)。
+ * 抽选表通道列的列宽(2026-09-12 Frank「这个解读 解读了个寂寞」:冷解读列撤,其 38% 并入本列,原 22%;
+ * 2026-09-13 Frank「列名应该叫操作,然后有两个按钮」:匀出宽度给操作列,60% → 50%)。
  */
-export const W_STREAM = '60%'
+export const W_STREAM = '50%'
 
 /**
  * 抽选表分数线列的列宽。
@@ -909,6 +910,21 @@ export const W_SCORE = '10%'
  * 抽选表邀请数列的列宽。
  */
 export const W_INV = '10%'
+
+/**
+ * 抽选表操作列的列宽(两枚钮:官方页 / 门槛,与雇主表操作列同宽;2026-09-13 Frank「列名应该叫操作,然后有两个按钮」)。
+ */
+export const W_DRAW_ACT = '150px'
+
+/**
+ * 政策动态表操作列的列宽(一枚钮:官方页;2026-09-13 Frank「政策动态 也加一个操作列」)。
+ */
+export const W_NEWS_ACT = '110px'
+
+/**
+ * 资源页「通道门槛」卡的锚点地址头(后接省码;与 resources 域 RULES_ANCHOR_HEAD 同值,本域自抄)。
+ */
+export const URL_RULES_HEAD = '/resources#rules-'
 
 /**
  * 行 hover 高亮的全局规范类(同上)。

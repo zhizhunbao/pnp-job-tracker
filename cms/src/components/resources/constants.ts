@@ -34,6 +34,11 @@ export const CAT_KEY_HEAD = 'res.cat.'
 export const RULES_ANCHOR_HEAD = 'rules-'
 
 /**
+ * 地址栏 hash 的井号(把脉页抽选表「门槛」钮直链本页门槛卡;2026-09-13 Frank「一个是门槛按钮」)。
+ */
+export const HASH_MARK = '#'
+
+/**
  * 联邦通道名的文案键头(res.prog.AIP …;键尾 = pnp_requirements 的 program 值)。
  */
 export const PROG_KEY_HEAD = 'res.prog.'

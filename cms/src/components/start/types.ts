@@ -2944,6 +2944,11 @@ export type PulseDraw = {
    * 邀请数;官方没公布保 null。
    */
   invitations: number | null
+
+  /**
+   * 官方抽选页地址(每期都带,汇装写死到 mart;2026-09-13 Frank「这个加上 link 列」)。
+   */
+  url: string
 }
 
 /**
@@ -2986,6 +2991,11 @@ export type DrawDbRow = {
    * 邀请数。
    */
   invitations: number | null
+
+  /**
+   * 官方抽选页地址(库列可空,按事实保 null)。
+   */
+  url: string | null
 }
 
 /**
@@ -3051,6 +3061,31 @@ export type DrawCellRow = {
    * 邀请数;官方没公布给横杠。
    */
   invitations: string
+
+  /**
+   * 官方抽选页地址(操作列「官方页」钮去处;2026-09-13 Frank「列名应该叫操作,然后有两个按钮」)。
+   */
+  href: string
+
+  /**
+   * 「门槛」钮去处:资源页该省门槛卡的锚点;联邦 EE 类别抽选没有对应门槛组给 TEXT_NONE(不出钮)。
+   */
+  rulesHref: string
+
+  /**
+   * 「官方页」钮文案。
+   */
+  actLinkText: string
+
+  /**
+   * 「门槛」钮文案。
+   */
+  actRulesText: string
+
+  /**
+   * 操作钮的类(哑单元格不 import functions,类随行带)。
+   */
+  actBtnCls: string
 }
 
 /**
@@ -3222,6 +3257,11 @@ export type NewsRecentDbRow = {
    * 详情页 slug(库里可空)。
    */
   slug: string | null
+
+  /**
+   * 官方来源页地址(库里可空;2026-09-13 Frank「政策动态 也加一个操作列」)。
+   */
+  url: string | null
 }
 
 /**
@@ -3252,6 +3292,11 @@ export type PulseNews = {
    * 详情页 slug。
    */
   slug: string
+
+  /**
+   * 官方来源页地址(库里没写给空串)。
+   */
+  url: string
 }
 
 /**
@@ -3302,6 +3347,21 @@ export type NewsCellRow = {
    * 详情页地址。
    */
   href: string
+
+  /**
+   * 官方来源页地址(操作列「官方页」钮去处)。
+   */
+  officialHref: string
+
+  /**
+   * 「官方页」钮文案。
+   */
+  actLinkText: string
+
+  /**
+   * 操作钮的类(哑单元格不 import functions,类随行带)。
+   */
+  actBtnCls: string
 }
 
 /**
@@ -3317,6 +3377,11 @@ export type NewsCellRowsIn = {
    * 界面语言(中文才出中文标题灰注)。
    */
   lang: StartLang
+
+  /**
+   * 取词函数(操作钮文案)。
+   */
+  t: TFn
 }
 
 /**

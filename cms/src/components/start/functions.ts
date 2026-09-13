@@ -36,7 +36,7 @@ import {
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
-  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL,
+  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL, W_DRAW_ACT, W_NEWS_ACT, URL_RULES_HEAD,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
@@ -92,6 +92,8 @@ import { MacroYoyCell } from './macroyoycell'
 import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
 import { StreamCell } from './streamcell'
+import { DrawActCell } from './drawactcell'
+import { NewsActCell } from './newsactcell'
 import { CityActCell } from './cityactcell'
 import { NewsTagCell } from './newstagcell'
 import { NewsTitleCell } from './newstitlecell'
@@ -262,6 +264,7 @@ function toPulseNews(r: NewsRecentDbRow): PulseNews {
     title: textOf(r.title),
     titleZh,
     slug: textOf(r.slug),
+    url: textOf(r.url),
   }
 }
 
@@ -3199,6 +3202,7 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     label: textOf(x.r.label),
     score: numOrNullOf(x.r.score),
     invitations: numOrNullOf(x.r.invitations),
+    url: textOf(x.r.url),
   }
 }
 
@@ -3264,7 +3268,25 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     note: drawNoteOf(x),
     score: numTextOf(x.r.score),
     invitations: numTextOf(x.r.invitations),
+    href: x.r.url,
+    rulesHref: drawRulesHrefOf(x.r.province),
+    actLinkText: x.t('pulse.act.link'),
+    actRulesText: x.t('pulse.act.rules'),
+    actBtnCls: actBtnClsOf(),
   }
+}
+
+/**
+ * 「门槛」钮去处:省抽选落资源页该省门槛卡;联邦 EE 类别抽选没有对应门槛组,不出钮。
+ *
+ * @param province 两位省码或 FED。
+ * @returns 锚点地址;不出钮时 TEXT_NONE。
+ */
+function drawRulesHrefOf(province: string): string {
+  if (province === PROV_FED) {
+    return TEXT_NONE
+  }
+  return URL_RULES_HEAD + province
 }
 
 /**
@@ -3339,6 +3361,7 @@ export function drawColsOf(x: DrawColsIn): StartCol<DrawCellRow>[] {
     { key: COL_STREAM, label: x.t('home.dr.stream'), width: W_STREAM, render: StreamCell },
     { key: COL_SCORE, label: x.t('home.dr.score'), width: W_SCORE, render: drawScoreOf },
     { key: COL_INV, label: x.t('home.dr.inv'), width: W_INV, render: drawInvOf },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_DRAW_ACT, render: DrawActCell },
   ]
 }
 
@@ -3359,13 +3382,24 @@ export function toNewsCellRows(x: NewsCellRowsIn): NewsCellRow[] {
     if (r.region === REGION_FEDERAL) {
       tag = TAG_IRCC
     }
-    out.push({ key: r.slug, date: ymd(r.date), tag, name: r.title, note, href: URL_NEWS_HEAD + r.slug })
+    out.push({
+      key: r.slug,
+      date: ymd(r.date),
+      tag,
+      name: r.title,
+      note,
+      href: URL_NEWS_HEAD + r.slug,
+      officialHref: r.url,
+      actLinkText: x.t('pulse.act.link'),
+      actBtnCls: actBtnClsOf(),
+    })
   }
   return out
 }
 
 /**
- * 政策动态表的列组(日期 / 地区 / 标题;列宽写死,百分比固定布局永不横滚)。
+ * 政策动态表的列组(日期 / 地区 / 标题 / 操作;列宽写死,百分比固定布局永不横滚;
+ * 操作列 2026-09-13 Frank「政策动态 也加一个操作列」)。
  *
  * @param x 取词函数。
  * @returns 列组。
@@ -3375,6 +3409,7 @@ export function newsColsOf(x: NewsColsIn): StartCol<NewsCellRow>[] {
     { key: COL_DATE, label: x.t('home.dr.date'), width: W_DATE, render: newsDateOf },
     { key: COL_NEWS_TAG, label: x.t('pulse.news.region'), width: W_NEWS_TAG, render: NewsTagCell },
     { key: COL_NEWS_TITLE, label: x.t('pulse.news.title'), render: NewsTitleCell },
+    { key: COL_ACT, label: x.t('col.actions'), nowrap: true, width: W_NEWS_ACT, render: NewsActCell },
   ]
 }
 

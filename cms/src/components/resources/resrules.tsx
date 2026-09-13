@@ -2,10 +2,12 @@
 /**
  * resources 页面域的一件:「通道门槛」段 —— 官方入口卡之下,每个联邦通道 / 每省一张折叠卡,
  * 数据来自 pnp_requirements(一行一条官方门槛,quote-anchored)。空清单整段不出。
+ * 挂载后按地址栏 hash 展开对应卡(把脉页抽选表「门槛」钮直链;2026-09-13)。
  *
  * @author Frank
  * @time 2026-09-06 23:30:00
  */
+import { useRuleHashOpen } from './hooks'
 import { ResRuleCard } from './resrulecard'
 import type { ResRulesIn } from './types'
 import css from './resources.module.css'
@@ -17,6 +19,7 @@ import css from './resources.module.css'
  * @returns 段;没有分组则 null。
  */
 export function ResRules({ t, groups }: ResRulesIn) {
+  useRuleHashOpen()
   if (groups.length === 0) {
     return null
   }

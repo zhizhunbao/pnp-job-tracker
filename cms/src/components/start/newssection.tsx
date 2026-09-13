@@ -26,7 +26,7 @@ export function NewsSection({ t, lang, updatedAt, news }: NewsSectionIn) {
   if (news.length === 0) {
     return null
   }
-  const rows = toNewsCellRows({ rows: news, lang })
+  const rows = toNewsCellRows({ rows: news, lang, t })
   return (
     <Band id={ID_NEWS}>
       <Sec title={t('home.policy')} right={<Updated iso={updatedAt} t={t} />}>

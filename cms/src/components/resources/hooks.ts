@@ -1,7 +1,7 @@
 'use client'
 /**
  * resources 域的状态机器:整页只有一格状态 —— 顶部搜索框里的词
- * (Frank「上面带一个文本框搜索」)。体内不留函数体:筛分组走 ./functions 的 groupsOf,
+ * (Frank「上面带一个文本框搜索」);外加门槛段挂载后按 hash 展开那张卡的 effect 壳(2026-09-13)。体内不留函数体:筛分组走 ./functions 的 groupsOf,
  * 改值手柄走那边的工厂(形制同 news 的 useNewsFilter)。
  * 语言/文案全站一处(LangProvider),初值由服务端 cookie 定,所以机器自己接 useLang。
  * 2026-08-28 换装批自 Resources.tsx 的组件体收进来。
@@ -9,10 +9,10 @@
  * @author Frank
  * @time 2026-08-28 12:39:03
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { TEXT_NONE } from './constants'
-import { groupsOf, makeQueryChange } from './functions'
+import { groupsOf, makeQueryChange, openRuleByHash } from './functions'
 import type { ResourcesPanel } from './types'
 
 /**
@@ -32,4 +32,13 @@ export function useResources(): ResourcesPanel {
     groups: groupsOf({ query }),
     onQueryChange: makeQueryChange({ setQuery }),
   }
+}
+
+/**
+ * 门槛段挂载后:地址栏 hash 指着哪张卡就展开哪张(把脉页抽选表「门槛」钮直链进来)。
+ *
+ * @returns 无。
+ */
+export function useRuleHashOpen(): void {
+  useEffect(openRuleByHash, [])
 }

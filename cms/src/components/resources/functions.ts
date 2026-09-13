@@ -14,7 +14,7 @@ import { cssOf } from '@/components/css'
 import {
   CAT_KEY_HEAD, CLS_CARD_HOVER, CLS_SEP, LD_CONTEXT, LD_KEY_CONTEXT, LD_KEY_ELEMENTS, LD_KEY_NAME,
   LD_KEY_POSITION, LD_KEY_TYPE, LD_KEY_URL, LD_POS_FIRST, LD_TYPE_ITEM, LD_TYPE_LIST, TEXT_NONE,
-  PROG_KEY_HEAD, RULES_ANCHOR_HEAD, RULES_PROVINCE_FED,
+  HASH_MARK, PROG_KEY_HEAD, RULES_ANCHOR_HEAD, RULES_PROVINCE_FED,
 } from './constants'
 import { PROV_NAME } from '@/lib/stats'
 import type {
@@ -64,6 +64,25 @@ function provNameOf(code: string): string {
  */
 export function ruleAnchorOf(key: string): string {
   return RULES_ANCHOR_HEAD + key
+}
+
+/**
+ * 地址栏 hash 指着哪张门槛卡就把它展开并滚到眼前(把脉页抽选表「门槛」钮直链进来;
+ * 浏览器的片段导航只展开目标的祖先 details,目标自己是 details 时不展开,所以要亲手开)。
+ * 只在挂载后的 effect 里调,不在渲染期碰 DOM。
+ *
+ * @returns 无。
+ */
+export function openRuleByHash(): void {
+  const hash = window.location.hash
+  if (hash === TEXT_NONE) {
+    return
+  }
+  const el = document.getElementById(hash.slice(HASH_MARK.length))
+  if (el instanceof HTMLDetailsElement) {
+    el.open = true
+    el.scrollIntoView()
+  }
 }
 
 export function groupsOf(x: GroupsOfIn): ResGroup[] {
