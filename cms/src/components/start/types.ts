@@ -2165,7 +2165,22 @@ export type CityMainRowsIn = {
 }
 
 /**
- * `cityMainColsOf` / `pilotColsOf` / `dliColsOf` 的入参。
+ * `cityDliColsOf` 的入参。
+ */
+export type CityDliColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前种类档(DLI_KINDS 之一;学院档不出 QS 列,2026-09-12 Frank「删掉。学院的 qs 删掉」)。
+   */
+  kind: string
+}
+
+/**
+ * 城市段各表列构造的入参(只要取词函数)。
  */
 export type CityColsIn = {
   /**
@@ -2548,11 +2563,6 @@ export type CityDliRow = {
   typeText: string
 
   /**
-   * 毕业可申工签文案(勾 / 杠)。
-   */
-  gradText: string
-
-  /**
    * QS 排名文案(展示名次如 "=45";榜外杠)。
    */
   qsText: string
@@ -2691,6 +2701,11 @@ export type CityPanel = {
    * 表 4 展示行。
    */
   dliRows: CityDliRow[]
+
+  /**
+   * 表 4 当前种类档(列构造要看它:学院档不出 QS 列;2026-09-12 Frank「删掉。学院的 qs 删掉」)。
+   */
+  dliKind: string
 
   /**
    * 留学院校表种类筛选胶囊(全部 / 大学 / 学院;2026-09-12 Frank「这个应该加一个 大学 和 学院的 筛选吧」)。

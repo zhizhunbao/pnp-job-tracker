@@ -947,7 +947,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.city.name': 'City', 'pulse.city.open': 'Jobs', 'pulse.city.wage': 'Median wage',
   'pulse.city.pop': 'Population', 'pulse.city.unemp': 'Unemployment', 'pulse.city.wageH': 'Median hourly',
   'pulse.city.comm': 'Community',
-  'pulse.city.dliN': 'DLI schools', 'city.facts': 'Overview', 'city.byInd': 'By industry', 'city.byIndCol': 'Industry', 'city.channel': 'Dedicated channels', 'city.school': 'School', 'city.schoolType': 'Type', 'city.pub': 'Public', 'city.priv': 'Private', 'city.kind.all': 'All', 'city.kind.university': 'University', 'city.kind.college': 'College', 'city.none': 'City not covered yet', 'pulse.city.dliGrad': 'PAL-exempt grad programs',
+  'pulse.city.dliN': 'DLI schools', 'city.facts': 'Overview', 'city.byInd': 'By industry', 'city.byIndCol': 'Industry', 'city.channel': 'Dedicated channels', 'city.school': 'School', 'city.schoolType': 'Type', 'city.pub': 'Public', 'city.priv': 'Private', 'city.kind.all': 'All', 'city.kind.university': 'University', 'city.kind.college': 'College', 'city.none': 'City not covered yet',
   'pulse.top.open': 'Most jobs', 'pulse.top.wage': 'Highest wage',
   'pulse.ind.health': 'Healthcare', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': 'Trades',
   'pulse.ind.food': 'Food & retail', 'pulse.ind.transport': 'Transport & logistics', 'pulse.ind.manufacturing': 'Manufacturing & resources',

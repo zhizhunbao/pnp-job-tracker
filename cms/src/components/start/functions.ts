@@ -24,7 +24,7 @@ import {
   ANCHOR_HEAD, BROAD_ALL, CARD_GAP,
   CLS_CARD_HOVER, CLS_SEP, COL_DEAD, COL_HOT,
   COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
-  CHECK_MARK, COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
+  COL_SAL, COL_SPONSOR_RATE, COL_TEER, DASH_MARK,
   DEAD_PROV_ORDER, DIFF_EASY, DIFF_MID, DIFF_TIGHT, EV_SCROLL,
   HOME_TTL_MS, ID_BOARDS, ID_PROV, ID_PR_BAND, ID_SE, KEY_PROV_HEAD,
   KEY_PR_HEAD, KEY_SEP, LABEL_NOC,
@@ -41,8 +41,8 @@ URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
   CITY_KIND_IND, CITY_KIND_MAIN, CITY_KIND_PILOT,
   CITY_HOURLY_DIGITS, CITY_UTM_TAIL, CITY_PILOT_PARAM_HEAD, COL_CITY, COL_CITY_POP, COL_CITY_UNEMP, COL_CITY_WAGE_H,
-  COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KINDS, KEY_DLI_KIND_HEAD, QS_TIE_MARK,
-  COL_DLI_GRAD, COL_DLI_PROV, COL_QS, COL_SCHOOL, COL_TYPE,
+  COL_CITY_WAGE_L, COL_COMM, DLI_KIND_ALL, DLI_KIND_COLLEGE, DLI_KINDS, KEY_DLI_KIND_HEAD, QS_TIE_MARK,
+  COL_DLI_PROV, COL_QS, COL_SCHOOL, COL_TYPE,
   COL_CITY_WAGE, ID_CITY_DLI, ID_CITY_IND, ID_CITY_MAIN, ID_CITY_PILOT, PILOT_NAME_SEP, TRACK_CITY,
   URL_CITY_API,
 WAGE_K,
@@ -115,7 +115,7 @@ import type {
   HiringMoreIn, IndRowsIn, OccSec, OccSecsIn, SponsorBoards,
   HiringOccIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
-  CityColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
+  CityColsIn, CityDliColsIn, CityData, CityDliRow, CityDliRowsIn, CityIndColsIn, CityIndRow, CityIndTable, IndCityCell,
   CityIndTablesIn,
   CityAipTableIn, CityLoadIn, CityMainRow, CityMainRowsIn, CityPageHrefIn, CityPilotRow, CityPilotRowsIn,
   CityPilotTable,
@@ -2834,10 +2834,6 @@ export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
     if (r.isPublic) {
       typeText = x.t('city.pub')
     }
-    let gradText = DASH_MARK
-    if (r.gradProgram) {
-      gradText = CHECK_MARK
-    }
     let qsText = DASH_MARK
     if (r.qsRankDisplay !== TEXT_NONE) {
       qsText = r.qsRankDisplay
@@ -2852,7 +2848,6 @@ export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
       provText: r.province,
       citiesText: r.cities.join(SEP_LIST),
       typeText,
-      gradText,
       qsText,
       qsSort: r.qsRank,
     })
@@ -2861,23 +2856,26 @@ export function toCityDliRows(x: CityDliRowsIn): CityDliRow[] {
 }
 
 /**
- * 表 4 的列(院校双行 / QS 排名 / 省 / 校区城 / 类型 / 免 PAL 研究生项目;QS 列带排序是本形的点 ——
- * 点一下榜内大学浮顶,榜外沉底)。末列 2026-09-12 自「可申工签」改名:数据源是 IRCC 名单的
- * Grad Program 列(免 PAL/TAL 的研究生学位项目),整张表本就是 PGWP=Yes 子集,校级「可申工签」
- * 对每行恒真、按专业的 PGWP 资格不在这份名单里(Frank「不是所有公立学院都能申请工签吧,是分专业的吧」)。
+ * 表 4 的列(院校双行 / QS 排名 / 省 / 校区城 / 类型;QS 列带排序是本形的点 ——
+ * 点一下榜内大学浮顶,榜外沉底)。2026-09-12 Frank「删掉。学院的 qs 删掉」:「免 PAL 研究生项目」列撤
+ * (09-12 早些时候自「可申工签」改名的那列,源是 IRCC Grad Program 列,读者用不上);
+ * 「学院」档不出 QS 列(QS 只排大学,学院档整列是杠)。
  *
- * @param x 取词函数。
+ * @param x 取词函数与当前种类档。
  * @returns 列声明。
  */
-export function cityDliColsOf(x: CityColsIn): StartCol<CityDliRow>[] {
-  return [
+export function cityDliColsOf(x: CityDliColsIn): StartCol<CityDliRow>[] {
+  const cols: StartCol<CityDliRow>[] = [
     { key: COL_SCHOOL, label: x.t('city.school'), sort: dliNameSortOf, render: DliSchoolCell },
-    { key: COL_QS, label: x.t('pulse.city.qs'), nowrap: true, sort: dliQsSortOf, render: dliQsTextOf },
+  ]
+  if (x.kind !== DLI_KIND_COLLEGE) {
+    cols.push({ key: COL_QS, label: x.t('pulse.city.qs'), nowrap: true, sort: dliQsSortOf, render: dliQsTextOf })
+  }
+  return cols.concat([
     { key: COL_DLI_PROV, label: x.t('col.province'), nowrap: true, sort: dliProvSortOf, render: dliProvTextOf },
     { key: COL_CITY, label: x.t('pulse.city.name'), render: dliCitiesTextOf, className: cssOf(css.cityWide) },
     { key: COL_TYPE, label: x.t('city.schoolType'), nowrap: true, sort: dliTypeSortOf, render: dliTypeTextOf },
-    { key: COL_DLI_GRAD, label: x.t('pulse.city.dliGrad'), nowrap: true, render: dliGradTextOf },
-  ]
+  ])
 }
 
 /**
@@ -2958,16 +2956,6 @@ function dliTypeSortOf(r: CityDliRow): string {
  */
 function dliTypeTextOf(r: CityDliRow): string {
   return r.typeText
-}
-
-/**
- * 表 4 可申工签格文案。
- *
- * @param r 一行。
- * @returns 勾 / 杠。
- */
-export function dliGradTextOf(r: CityDliRow): string {
-  return r.gradText
 }
 
 /**

@@ -136,7 +136,7 @@ export function useCityPanel(x: CityPanelIn): CityPanel {
     return dliKindChipsOf({ t: x.t, kind: dliKind, set: setDliKind })
   }, [x.t, dliKind])
 
-  return { data, mainRows, indTables, pilotTables, dliRows, dliChips }
+  return { data, mainRows, indTables, pilotTables, dliRows, dliChips, dliKind }
 }
 
 /**

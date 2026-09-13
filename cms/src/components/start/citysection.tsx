@@ -98,7 +98,7 @@ export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
               <Sec title={t('pulse.city.dli')} right={<Updated iso={updatedAt} t={t} />} sub>
                 <div className={css.filterRow}>{dliChipEls}</div>
                 <Table<CityDliRow> rows={v.dliRows}
-                  cols={cityDliColsOf({ t })}
+                  cols={cityDliColsOf({ t, kind: v.dliKind })}
                   rowKey={dliRowKeyOf}
                   pageSize={DLI_PAGE_SIZE} />
               </Sec>

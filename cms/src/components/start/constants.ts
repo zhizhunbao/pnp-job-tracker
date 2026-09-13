@@ -715,6 +715,11 @@ export const DLI_KIND_ALL = 'all'
 export const DLI_KINDS = ['all', 'university', 'college']
 
 /**
+ * 留学院校表种类档:学院(这一档不出 QS 列 —— QS 只排大学;2026-09-12 Frank「删掉。学院的 qs 删掉」)。
+ */
+export const DLI_KIND_COLLEGE = 'college'
+
+/**
  * 留学院校表种类档的词条前缀(+ 档键)。
  */
 export const KEY_DLI_KIND_HEAD = 'city.kind.'
@@ -745,11 +750,6 @@ export const COL_DLI_PROV = 'prov'
  * 留学院校表列键:类型(公立 / 私立)。
  */
 export const COL_TYPE = 'type'
-
-/**
- * 留学院校表列键:毕业可申工签。
- */
-export const COL_DLI_GRAD = 'dliGrad'
 
 /**
  * 试点社区官方名的省尾巴分隔('Sudbury, ON' → 'Sudbury';展示层去尾,join 键仍用全名)。
@@ -1035,11 +1035,6 @@ export const PULSE_RANK: Record<string, number> = {
    */
   cec: 3,
 }
-
-/**
- * 「是」的记号(与 DASH_MARK「没有」成对;在省清单 / AIP / RCIP 三格只放勾或杠)。
- */
-export const CHECK_MARK = '✓'
 
 /**
  * 雇主表列键:近半年 LMIA 获批(入选看近一年;原只在没工签档出,
