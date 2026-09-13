@@ -35,7 +35,8 @@ import {
   SEP_LIST, SHORT_PROV, SIGN_MINUS, SIGN_PLUS, TEER_HEAD, TEXT_NONE,
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
-  COL_EMP, ID_CITY, ID_DRAWS, IND_BROADS, IND_KEYS, NEWS_LIMIT,
+  COL_EMP, ID_CITY, ID_DRAWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
+  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
@@ -91,10 +92,11 @@ import { MacroRecCell } from './macroreccell'
 import { ProvNameCell } from './provnamecell'
 import { StreamCell } from './streamcell'
 import { CityActCell } from './cityactcell'
+import { NewsTagCell } from './newstagcell'
+import { NewsTitleCell } from './newstitlecell'
 import { CityNameCell } from './citynamecell'
 import { DliSchoolCell } from './dlischoolcell'
 import type { CityRow } from '@/lib/stats'
-import type { NewsCard, NewsCmtCounts } from '@/components/news'
 import { CACHE } from './variables'
 import type {
   BandClsIn, CleanupFn,
@@ -111,7 +113,9 @@ import type {
   SponsorRowList, StartCol, StartPill,
   StatRowList,
   StreamLabelIn, TierClsIn,
-  CityNameIn, EmpCellRow, EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
+  CityNameIn, EmpCellRow,
+  NewsRecentDbRow, PulseNews, NewsRowsIn, NewsCellRow, NewsCellRowsIn, NewsColsIn,
+  EmpCellRowIn, EmpColsIn, EmpSec, EmpSecsIn, IndOfIn,
   HiringMoreIn, IndRowsIn, OccSec, OccSecsIn, SponsorBoards,
   HiringOccIn, NocInfo, NocInfoIn, NocInfoMap, PulseIn2,
   AliasIn, BriefOfIn, BriefTextOut, BriefsIn, CompanyBrief, SeedGroupIn, SponsorSeedIn, EmpExtra,
@@ -208,21 +212,56 @@ export function emptyOccRows(): OccRowList {
 }
 
 /**
- * 新闻卡查询挂了的空清单(政策动态区整块不出,页面照常;2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)。
+ * 政策动态区的最新几条:按标题去重(同题多省只留最新一条)后截前 N(2026-09-12 Frank「政策动态改成之前的 table 不需要图片」:
+ * 09-04 重构撤掉的 toNewsRows 复位,原逻辑逐字)。
  *
- * @returns 空清单。
+ * @param x 原始行与条数上限。
+ * @returns 洗净的新闻条。
  */
-export function emptyNewsRows(): NewsCard[] {
-  return []
+export function toNewsRows(x: NewsRowsIn): PulseNews[] {
+  const seen = new Set<string>()
+  const out: PulseNews[] = []
+  for (const r of x.rows) {
+    if (out.length >= x.limit) {
+      return out
+    }
+    const k = newsKeyOf(textOf(r.title))
+    if (seen.has(k) === false) {
+      seen.add(k)
+      out.push(toPulseNews(r))
+    }
+  }
+  return out
 }
 
 /**
- * 新闻评论计数查询挂了的空表(角标不出,页面照常)。
+ * 新闻去重键(标题剥括号尾巴、压空白、小写)。
  *
- * @returns 空表。
+ * @param title 官方原标题。
+ * @returns 去重键。
  */
-export function emptyNewsCmts(): NewsCmtCounts {
-  return {}
+function newsKeyOf(title: string): string {
+  return title.replace(NEWS_TAIL_RE, TEXT_NONE).trim().toLowerCase()
+}
+
+/**
+ * 洗一条新闻:各格照实兜空。
+ *
+ * @param r 原始行。
+ * @returns 一条新闻。
+ */
+function toPulseNews(r: NewsRecentDbRow): PulseNews {
+  let titleZh = TEXT_NONE
+  if (r.title_zh != null) {
+    titleZh = r.title_zh
+  }
+  return {
+    date: String(r.date),
+    region: textOf(r.region),
+    title: textOf(r.title),
+    titleZh,
+    slug: textOf(r.slug),
+  }
 }
 
 /**
@@ -270,8 +309,7 @@ export function homeCoreOf(x: HomeCoreIn): HomeStatsCore {
     pulse: pulseScalarsOf({ occ: x.occRows }),
     nocCat,
     draws: toPulseDraws({ rows: x.drawRows, limit: x.drawsLimit }),
-    news: x.newsRows.slice(0, NEWS_LIMIT),
-    newsCmts: x.newsCmts,
+    news: toNewsRows({ rows: x.newsRows, limit: NEWS_LIMIT }),
     rcipNames,
     fcipNames,
     briefs,
@@ -296,7 +334,6 @@ export function homeStatsOf(x: HomeStatsOfIn): HomeStats {
     nocCat: x.core.nocCat,
     draws: x.core.draws,
     news: x.core.news,
-    newsCmts: x.core.newsCmts,
     rcipNames: x.core.rcipNames,
     fcipNames: x.core.fcipNames,
     briefs: x.core.briefs,
@@ -3301,6 +3338,62 @@ export function drawColsOf(x: DrawColsIn): StartCol<DrawCellRow>[] {
     { key: COL_SCORE, label: x.t('home.dr.score'), width: W_SCORE, render: drawScoreOf },
     { key: COL_INV, label: x.t('home.dr.inv'), width: W_INV, render: drawInvOf },
   ]
+}
+
+/**
+ * 政策动态表的展示行(2026-09-12 Frank「政策动态改成之前的 table 不需要图片」):日期 / 地区标签 / 标题双行链接。
+ *
+ * @param x 洗净的新闻条与界面语言。
+ * @returns 展示行。
+ */
+export function toNewsCellRows(x: NewsCellRowsIn): NewsCellRow[] {
+  const out: NewsCellRow[] = []
+  for (const r of x.rows) {
+    let note = TEXT_NONE
+    if (x.lang === LANG_ZH && r.titleZh !== TEXT_NONE) {
+      note = r.titleZh
+    }
+    let tag = r.region.toUpperCase()
+    if (r.region === REGION_FEDERAL) {
+      tag = TAG_IRCC
+    }
+    out.push({ key: r.slug, date: ymd(r.date), tag, name: r.title, note, href: URL_NEWS_HEAD + r.slug })
+  }
+  return out
+}
+
+/**
+ * 政策动态表的列组(日期 / 地区 / 标题;列宽写死,百分比固定布局永不横滚)。
+ *
+ * @param x 取词函数。
+ * @returns 列组。
+ */
+export function newsColsOf(x: NewsColsIn): StartCol<NewsCellRow>[] {
+  return [
+    { key: COL_DATE, label: x.t('home.dr.date'), width: W_DATE, render: newsDateOf },
+    { key: COL_NEWS_TAG, label: x.t('pulse.news.region'), width: W_NEWS_TAG, render: NewsTagCell },
+    { key: COL_NEWS_TITLE, label: x.t('pulse.news.title'), render: NewsTitleCell },
+  ]
+}
+
+/**
+ * 政策动态表日期单元格。
+ *
+ * @param r 一条。
+ * @returns 日期。
+ */
+function newsDateOf(r: NewsCellRow): string {
+  return r.date
+}
+
+/**
+ * 政策动态表行身份。
+ *
+ * @param r 一条。
+ * @returns slug。
+ */
+export function newsRowKeyOf(r: NewsCellRow): string {
+  return r.key
 }
 
 /**

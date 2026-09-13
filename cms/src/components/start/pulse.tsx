@@ -67,7 +67,7 @@ export function Pulse({ stats }: PulseIn) {
           lang={v.lang}
           updatedAt={stats.checkedAt}
           draws={stats.draws} />
-        <NewsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} news={stats.news} cmts={stats.newsCmts} />
+        <NewsSection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} news={stats.news} />
         <DrawsLink t={v.t} />
         <CtaBand t={v.t} />
       </main>

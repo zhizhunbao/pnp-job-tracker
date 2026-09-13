@@ -21,8 +21,6 @@ import type {
 import type { SponsorEmployerRow } from '@/lib/employers'
 // eslint-disable-next-line local/no-import-in-leaf -- components/stats 取数钩子的返回,原样交给 MarketChart 的四份数据
 import type { MarketData } from '@/components/stats'
-// eslint-disable-next-line local/no-import-in-leaf -- components/news 的新闻卡与评论计数,原样透传给 news 桶的日分组行(政策动态区 2026-09-12 复位)
-import type { NewsCard, NewsCmtCounts } from '@/components/news'
 
 /**
  * 界面语言(三字面量各域自抄)。
@@ -321,14 +319,9 @@ export type HomeStats = {
   nocProvs: Record<string, string[]>
 
   /**
-   * 政策动态区的最新几条新闻卡(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)。
+   * 政策动态区的最新几条(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」)。
    */
-  news: NewsCard[]
-
-  /**
-   * 新闻评论计数(slug → 条数;日分组行的评论角标读它)。
-   */
-  newsCmts: NewsCmtCounts
+  news: PulseNews[]
 
   /**
    * 数据抓取时刻。
@@ -451,14 +444,10 @@ export type HomeCoreIn = {
   drawsLimit: number
 
   /**
-   * 新闻卡全量(2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」;homeCoreOf 只留最新 NEWS_LIMIT 条)。
+   * 新闻原始行(SQL.NEWS_RECENT_80;2026-09-12 Frank「全部动态 的 table 也 加过来 之前给删了」,
+   * homeCoreOf 按标题去重后只留最新 NEWS_LIMIT 条)。
    */
-  newsRows: NewsCard[]
-
-  /**
-   * 新闻评论计数(slug → 条数)。
-   */
-  newsCmts: NewsCmtCounts
+  newsRows: NewsRecentDbRow[]
 }
 
 /**
@@ -3200,7 +3189,7 @@ export type NewsSectionIn = {
   t: TFn
 
   /**
-   * 界面语言。
+   * 界面语言(中文才出中文标题灰注)。
    */
   lang: StartLang
 
@@ -3210,14 +3199,144 @@ export type NewsSectionIn = {
   updatedAt: string
 
   /**
-   * 最新几条新闻卡。
+   * 最新几条(已去重截断)。
    */
-  news: NewsCard[]
+  news: PulseNews[]
+}
+
+/**
+ * 新闻表的一行原始格(SQL.NEWS_RECENT_80 的 SELECT *;跨边界形状,只声明真读的格)。
+ */
+export type NewsRecentDbRow = {
+  /**
+   * 发布日期(YYYY-MM-DD)。
+   */
+  date: string
 
   /**
-   * 新闻评论计数。
+   * 地区码(省码或 federal;库里可空)。
    */
-  cmts: NewsCmtCounts
+  region: string | null
+
+  /**
+   * 官方原标题(库里可空)。
+   */
+  title: string | null
+
+  /**
+   * 中文标题(数据层翻译;旧行没有此列)。
+   */
+  title_zh?: string | null
+
+  /**
+   * 详情页 slug(库里可空)。
+   */
+  slug: string | null
+}
+
+/**
+ * 政策动态区的一条(to* 洗净;2026-09-12 Frank「政策动态改成之前的 table 不需要图片」:09-04 前的表形复位,不带图)。
+ */
+export type PulseNews = {
+  /**
+   * 发布日期。
+   */
+  date: string
+
+  /**
+   * 地区码(省码或 federal)。
+   */
+  region: string
+
+  /**
+   * 官方原标题。
+   */
+  title: string
+
+  /**
+   * 中文标题;没有是空串。
+   */
+  titleZh: string
+
+  /**
+   * 详情页 slug。
+   */
+  slug: string
+}
+
+/**
+ * `toNewsRows` 的入参。
+ */
+export type NewsRowsIn = {
+  /**
+   * 新闻原始行(按日期降序)。
+   */
+  rows: NewsRecentDbRow[]
+
+  /**
+   * 下发条数上限。
+   */
+  limit: number
+}
+
+/**
+ * 政策动态表的展示行(日期 / 地区标签 / 标题双行链接)。
+ */
+export type NewsCellRow = {
+  /**
+   * 行键(slug)。
+   */
+  key: string
+
+  /**
+   * 日期文案。
+   */
+  date: string
+
+  /**
+   * 地区标签(省码;联邦是 TAG_IRCC)。
+   */
+  tag: string
+
+  /**
+   * 标题主文案(官方原题)。
+   */
+  name: string
+
+  /**
+   * 灰注(中文标题;英文界面或没有时空串)。
+   */
+  note: string
+
+  /**
+   * 详情页地址。
+   */
+  href: string
+}
+
+/**
+ * `toNewsCellRows` 的入参。
+ */
+export type NewsCellRowsIn = {
+  /**
+   * 洗净的新闻条。
+   */
+  rows: PulseNews[]
+
+  /**
+   * 界面语言(中文才出中文标题灰注)。
+   */
+  lang: StartLang
+}
+
+/**
+ * `newsColsOf` 的入参。
+ */
+export type NewsColsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
 }
 
 /**

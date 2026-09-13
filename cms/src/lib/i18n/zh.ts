@@ -880,7 +880,7 @@ export const siteZh = {
   'home.daily': '今日日更', 'home.daily.new': '新增岗位', 'home.daily.elig': '其中可提名', 'home.daily.total': '全站在招',
   'home.draws': '最近抽选',
   'home.dr.date': '日期', 'home.dr.prog': '项目', 'home.dr.stream': '通道', 'home.dr.score': '分数线', 'home.dr.inv': '邀请',
-  'home.policy': '政策动态', 'home.pulse.all': '全部动态', 'home.stats.more': '完整统计',
+  'home.policy': '政策动态', 'pulse.news.region': '地区', 'pulse.news.title': '标题', 'home.pulse.all': '全部动态', 'home.stats.more': '完整统计',
   'home.jobs': '职位榜', 'home.jobs.new': '最新', 'home.jobs.paid': '高薪', 'home.jobs.most': '最多', 'home.jobs.med': '中位 {v}', 'home.jobs.rangeTip': 'ESDC 官方年薪区间(低位–高位;各岗按所在省查表取中位)', 'home.jobs.all': '全部职位',
   // E13-03 把脉首页(/start = 开始规划+榜单+地区统计 三合一)
   // 判决语一律「模板 + 库内数字填槽」(E13-00 §1 拍板 7:LLM 不参与下结论);措辞冷,不许乐观修饰。

@@ -123,6 +123,31 @@ export const ID_NEWS = 'pl-news'
 export const NEWS_LIMIT = 10
 
 /**
+ * 新闻标题去重时剥掉的尾巴(括号里的省名/日期等;同题多省只出一条)。
+ */
+export const NEWS_TAIL_RE = /\s*[(（][^)）]*[)）]\s*$/
+
+/**
+ * 政策动态表列键:地区标签。
+ */
+export const COL_NEWS_TAG = 'tag'
+
+/**
+ * 政策动态表列键:标题。
+ */
+export const COL_NEWS_TITLE = 'title'
+
+/**
+ * 政策动态表地区列的列宽(日期列沿用 W_DATE,标题吃剩下的)。
+ */
+export const W_NEWS_TAG = '12%'
+
+/**
+ * 新闻详情页地址头(2026-09-12 Frank「政策动态改成之前的 table 不需要图片」;与 news 桶 URL_NEWS_HEAD 同值,本域自抄)。
+ */
+export const URL_NEWS_HEAD = '/news/'
+
+/**
  * 二级导航条上的分区 id(顺序即条上的顺序;分区可能条件不渲,取元素时空安全)。
  * 2026-09-04 重排:职业 → 雇主 → 省份 → 城市 → 趋势(LMIA 段 09-05 并回雇主段的没工签档;抽选段不进导航);
  * 2026-09-10 省份后插 PR 段(「pr 拆成和省一个级别的」);

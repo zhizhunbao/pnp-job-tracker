@@ -797,7 +797,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'home.daily': '오늘 갱신', 'home.daily.new': '신규 공고', 'home.daily.elig': 'PNP 대상', 'home.daily.total': '전체 채용 중',
   'home.draws': '최근 추첨',
   'home.dr.date': '날짜', 'home.dr.prog': '프로그램', 'home.dr.stream': '스트림', 'home.dr.score': '커트라인', 'home.dr.inv': '초청',
-  'home.policy': '정책 소식', 'home.pulse.all': '전체 소식', 'home.stats.more': '전체 통계',
+  'home.policy': '정책 소식', 'pulse.news.region': '지역', 'pulse.news.title': '제목', 'home.pulse.all': '전체 소식', 'home.stats.more': '전체 통계',
   'home.jobs': '채용 랭킹', 'home.jobs.new': '최신', 'home.jobs.paid': '고연봉', 'home.jobs.most': '최다 채용', 'home.jobs.med': '중위 {v}', 'home.jobs.rangeTip': 'ESDC 공식 연봉 범위(하위–상위)', 'home.jobs.all': '전체 공고',
   // E13-03 취업 진단 랜딩(/start)
   'pulse.entry': '취업 진단', 'pulse.bnSub': '주별 채용과 인력 부족',

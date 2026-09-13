@@ -23,8 +23,7 @@
 export { META_DESC_LEN_MAX, NEWS_META } from './constants'
 export { News } from './news'
 export { NewsDetail } from './newsdetail'
-export { NewsDayGroupRows } from './newsdaygrouprows'
 export {
-  dayGroupsOf, loadNewsCards, loadNewsCommentCounts, loadNewsComments, loadNewsHeroes, loadNewsRow, regionNameOf,
+  loadNewsCards, loadNewsCommentCounts, loadNewsComments, loadNewsHeroes, loadNewsRow, regionNameOf,
 } from './functions'
-export type { NewsCard, NewsCmtCounts, NewsComment, NewsDbRow, NewsHero } from './types'
+export type { NewsCard, NewsComment, NewsDbRow, NewsHero } from './types'

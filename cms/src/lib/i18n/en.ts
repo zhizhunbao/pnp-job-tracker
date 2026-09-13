@@ -803,7 +803,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'home.daily': 'Daily update', 'home.daily.new': 'new jobs', 'home.daily.elig': 'PNP-eligible', 'home.daily.total': 'total open',
   'home.draws': 'Recent draws',
   'home.dr.date': 'Date', 'home.dr.prog': 'Program', 'home.dr.stream': 'Stream', 'home.dr.score': 'Cutoff', 'home.dr.inv': 'Invites',
-  'home.policy': 'Policy updates', 'home.pulse.all': 'All updates', 'home.stats.more': 'Full stats',
+  'home.policy': 'Policy updates', 'pulse.news.region': 'Region', 'pulse.news.title': 'Title', 'home.pulse.all': 'All updates', 'home.stats.more': 'Full stats',
   'home.jobs': 'Job rankings', 'home.jobs.new': 'Newest', 'home.jobs.paid': 'Top paid', 'home.jobs.most': 'Most open', 'home.jobs.med': 'median {v}', 'home.jobs.rangeTip': 'ESDC annual wage range (low–high; per-posting provincial figures, median)', 'home.jobs.all': 'All jobs',
   // E13-03 Market Pulse landing (/start)
   'pulse.entry': 'Market Pulse', 'pulse.bnSub': 'Hiring and shortages by province',
