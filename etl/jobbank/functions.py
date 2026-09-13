@@ -103,7 +103,7 @@ from jobbank.constants import (
 from jobbank.scheme import (
     AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
     CompanyIn, CutoffIn, DetailMdIn, DetailTally, DupIn, EmploymentOut, FieldIn, EnrichIn, FlagIn,
-    JdIndexUpdates, JdMdScan,
+    JdIndexUpdates, JdMdScan, JdMergeIn,
     FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
     PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
     SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
@@ -915,9 +915,7 @@ def build_jd_index() -> None:
             if row is None:
                 skipped += 1
                 continue
-            entries[row.url] = {K_JD_PID: row.pid, K_JD_FILE: row.file, K_JD_MTIME: row.mtime,
-                                K_JD_EXPERIENCE: row.experience}
-            bodies.setdefault(jd_bucket_of(row.pid), {})[row.url] = row.body
+            merge_jd_scan(JdMergeIn(entries=entries, bodies=bodies, row=row))
         write_json(WriteJsonIn(path=OUT_JD_INDEX, payload=entries, indent=0, compact=True))
         OUT_JD_BODIES.mkdir(parents=True, exist_ok=True)
         for bucket, rows in bodies.items():
@@ -925,6 +923,23 @@ def build_jd_index() -> None:
                                    payload=rows, indent=0, compact=True))
     say(PRINT_JD_INDEX_DONE_TPL.format(n=len(entries), buckets=len(bodies), skipped=skipped,
                                        index=OUT_JD_INDEX, bodies=OUT_JD_BODIES))
+
+
+def merge_jd_scan(x: JdMergeIn) -> None:
+    """一行扫描结果并进回填累加器。同一 url 会有两份 .md(重名文件加帖号后缀那 2,198 对):
+    短语**非空优先**(复刻原逐文件扫的「空短语不覆盖非空」,基线 46,486 条逐个对上),
+    正文取 mtime 最新的那份(后解析的版本)。"""
+    cur = x.entries.get(x.row.url)
+    if cur is None or x.row.mtime >= cur[K_JD_MTIME]:
+        experience = x.row.experience
+        if experience == "" and cur is not None:
+            experience = cur[K_JD_EXPERIENCE]
+        x.entries[x.row.url] = {K_JD_PID: x.row.pid, K_JD_FILE: x.row.file, K_JD_MTIME: x.row.mtime,
+                                K_JD_EXPERIENCE: experience}
+        x.bodies.setdefault(jd_bucket_of(x.row.pid), {})[x.row.url] = x.row.body
+        return
+    if cur[K_JD_EXPERIENCE] == "" and x.row.experience != "":
+        cur[K_JD_EXPERIENCE] = x.row.experience
 
 
 def scan_jd_md(p: Path) -> JdMdScan | None:

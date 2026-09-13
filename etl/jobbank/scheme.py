@@ -400,6 +400,20 @@ class JdIndexUpdates:
 
 
 @dataclass
+class JdMergeIn:
+    """merge_jd_scan() 入参:回填累加器(索引行表 + 正文桶表)与这一篇的扫描结果。"""
+
+    entries: dict
+    """url → 索引行(原地合并)。"""
+
+    bodies: dict
+    """桶名 → {url: 正文}(原地合并)。"""
+
+    row: "JdMdScan"
+    """这一篇。"""
+
+
+@dataclass
 class JdMdScan:
     """回填件读一篇既有 .md 得到的一行(取不到 url 的 .md 不产此形)。"""
 
