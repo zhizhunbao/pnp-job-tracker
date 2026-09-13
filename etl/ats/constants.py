@@ -22,6 +22,43 @@ IN_COMPANIES = paths.COMPANIES
 抽薪资读 jobs/*.md,两段的输入都从这里进。"""
 
 OUT_COMPANIES = IN_COMPANIES
+
+OUT_JD_INDEX = IN_COMPANIES / "index.json"
+"""ATS 职位 .md 的索引:url → {file, mtime, body}(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」))。写 jobs/<id>.md 的那一步
+同时记一行,mart 只读这一个文件,不再 rglob 一千多个 .md;body 是去 frontmatter 的原文,清洗归 mart。"""
+
+JD_MD_GLOB = "*/jobs/*.md"
+"""回填件扫既有 .md 的匹配式(公司目录 / jobs / 一岗一篇)。"""
+
+FRONT_URL_RE = re.compile(r"^url:\s*(.+)$", re.M)
+"""frontmatter 里的 url 行(回填件取键用)。"""
+
+FRONTMATTER_RE = re.compile(r"^---.*?\n---\s*", re.S)
+"""frontmatter 整块(只剥第一处;回填件从既有 .md 取正文用)。"""
+
+K_JD_FILE = "file"
+"""索引行:.md 相对 companies 目录的路径。"""
+
+K_JD_MTIME = "mtime"
+"""索引行:写入时刻(ISO,UTC)。"""
+
+K_JD_BODY = "body"
+"""索引行:正文(去 frontmatter 原文)。"""
+
+ERRORS_REPLACE = "replace"
+"""读既有 .md 的解码错误策略(单篇坏字节替换不中止;回填件用)。"""
+
+JD_INDEX_INDENT = 0
+"""索引落盘不缩进(compact 档,indent 仅占位)。"""
+
+PRINT_JD_INDEX_IN_TPL = "IN  ats md      : {dir}"
+"""回填件的输入路径行。"""
+
+PRINT_JD_INDEX_DONE_TPL = "jd_index: {n} entries · {skipped} md without url → {out}"
+"""回填件收尾行。"""
+
+PRINT_JOBS_INDEX_TPL = "  jd index +{n} entries → {out}"
+"""抓岗落盘收尾:本轮并进索引的行数。"""
 """同一目录进同一目录出 —— 两段都是就地富化(写回 jobs.json / jobs/<职位>.md),
 沿用两个步骤文件各自的 IN/OUT 同址声明。"""
 

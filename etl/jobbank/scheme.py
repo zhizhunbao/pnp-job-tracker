@@ -396,7 +396,7 @@ class JdIndexUpdates:
     """url → {pid, file, mtime, experience}。"""
 
     bodies: dict
-    """正文桶名 → {url: 清洗后正文}。"""
+    """正文桶名 → {url: 正文(去 frontmatter 原文;清洗归 mart)}。"""
 
 
 @dataclass
@@ -433,7 +433,7 @@ class JdMdScan:
     """Experience 节短语。"""
 
     body: str
-    """清洗后正文。"""
+    """正文(去 frontmatter 原文)。"""
 
 
 @dataclass

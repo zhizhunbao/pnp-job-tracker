@@ -1162,6 +1162,31 @@ class DrawBaseIn:
     """表级取回日。"""
 
 @dataclass
+class JdSources:
+    """两份 JD 索引 + 正文桶缓存(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」);fill_jd_bodies 一轮一份)。"""
+
+    jb: dict
+    """Job Bank 索引:url → {pid, file, mtime, experience}。"""
+
+    ats: dict
+    """ATS 索引:url → {file, mtime, body}。"""
+
+    buckets: dict
+    """已读的正文桶:桶名 → {url: 原文}(懒读,同桶只读一次)。"""
+
+
+@dataclass
+class JdRawIn:
+    """jd_raw_of() 入参:索引来源与这一岗的 applyUrl。"""
+
+    src: "JdSources"
+    """两份索引 + 桶缓存。"""
+
+    url: str
+    """这一岗的 applyUrl。"""
+
+
+@dataclass
 class NoticeRowIn:
     """to_pnp_notice_row() 入参。"""
 

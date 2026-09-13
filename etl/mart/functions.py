@@ -70,20 +70,21 @@ from mart.constants import (
     DATE_LEN, DEDUP_KEY_TPL, DESIGNATED_DEDUP_TPL, DIGIT_RE, DRAW_KIND_DRAW, DRAW_KIND_NOTICE,
     DRAW_MAX, DRAW_MAX_WIDE, DRAW_WIDE_PROVS, EDGE_PUNCT_RE, EE_ROUNDS_URL, EMPTY_VALUES,
     EMP_DIRECT, EMP_FULL, EMP_HITS_GRADE, EMP_PERMANENT, EM_DASH, ENC_UTF8, ENRICH_KEYS, ENRICH_OK,
-    EN_DASH, ERRORS_REPLACE, ESCAPE_WINDOW, FAME_BIG_OPEN, FAME_MULTI_PROV, FAME_TINY_OPEN,
+    EN_DASH, ESCAPE_WINDOW, FAME_BIG_OPEN, FAME_MULTI_PROV, FAME_TINY_OPEN,
     FLAG_NO_SPONSORSHIP, FLAG_PR_REQUIRED, FLOW_14D, FLOW_28D, FLOW_30D, FLOW_60D, FLOW_BLANK,
-    FLOW_COUNT_TPL, FLOW_IN_TPL, FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS, FRONTMATTER_RE,
-    FRONT_URL_RE, FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GLOB_MD, GRADE_1, GRADE_2, GRADE_3,
+    FLOW_COUNT_TPL, FLOW_IN_TPL, FLOW_NO_POSTINGS_TPL, FLOW_SERIES_YEARS,
+    FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
-    IN_IRCC_TR, IN_JD_ROOTS, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
+    IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
     IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
     IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
-    JB_EXT_TPL, JB_LOC_TPL, JD_DEDUP_MIN, JD_HEAD_LEN, JD_MATCH_TPL, JD_NOISE, JOBBANK_HOST,
+    JB_EXT_TPL, JB_LOC_TPL, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_MATCH_TPL, JD_NOISE,
+    JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, DOMAIN_ATS, DOMAIN_JOBBANK,
     JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
     K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_AS_ON,
     K_ATS, K_BLOCKED,
@@ -180,7 +181,7 @@ from mart.scheme import (
     EePointsRowIn, ExpandAppliesIn, FactorBaseIn, FieldValuesIn, FillSalaryIn, FlowAddIn,
     FlowFinishIn, FlowOfIn, FlowRec, FlowStatsOut, FlowWindows, GradeActiveIn, GradeCellIn,
     GradeChannelIn, GradeEmpIn, GradeFameIn, GradeSalaryIn, GradeSponsorIn, JbExtIn, JbLocIn,
-    JdFlagIn, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
+    JdFlagIn, JdRawIn, JdSources, JobDetailIn, JobGradesIn, JobGradesOut, JobRowIn, LangCellIn, LmiaFillIn,
     CompPoolIn, CompPoolOut, MacroRowIn, PoolAtIn, PrBlockIn, PrefixedYearIn, RatioRowsIn, StatcanPeriodIn,
     StudyAsOfIn,
     LmiaWindows, LocKeptOut, MartCtx, MbAnnualIn, MbBlockIn, MomIn, MoneyIn,
@@ -1472,28 +1473,10 @@ def mart_jb_ext_of(x: JbExtIn) -> str:
     return x.job.get(K_URL) or x.key
 
 
-def build_jd_index() -> dict:
-    """扫已抓的 JD .md(processed/jobbank/details + processed/ats),按 frontmatter `url` 建 url→路径 索引。"""
-    idx: dict = {}
-    for root in IN_JD_ROOTS:
-        if not root.exists():
-            continue
-        for p in root.rglob(GLOB_MD):
-            try:
-                head = p.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)[:JD_HEAD_LEN]
-            except Exception as e:  # noqa: BLE001 — 单个 md 读不动只跳过它,不拖垮 43k 文件的索引
-                err(p, e)
-                continue
-            m = FRONT_URL_RE.search(head)
-            if m:
-                idx.setdefault(m.group(1).strip(), p)
-    return idx
-
-
 def is_jd_noise(s: str) -> bool:
     """这一行是不是 Job Bank 页面样板噪音(帮助浮层/通用解释/免责腿;原 any(genexp) 退役)。
-    2026-09-12 汇装提速批 1:jobbank 写侧已有同一份(谁写 .md 谁清洗),这里是过渡副本 —— 形制闸不许 mart 跨域
-    import jobbank;批 2 mart 改读 jobbank 的正文桶后本函数与 clean_jd 整段删。"""
+    2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):清洗的唯一家在这 —— 两源正文都存原文,跨源同一把尺子住 mart 段
+    (批 1 曾复制到 jobbank 写侧,形制闸不许 mart 跨域取回,已删)。"""
     for p in JD_NOISE:
         if p.search(s):
             return True
@@ -1516,30 +1499,59 @@ def clean_jd(text: str) -> str:
     return BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip()
 
 
-def jd_body(path: Path) -> str | None:
-    """读 .md → 去 frontmatter → 清样板噪音 → 正文(与 jobtext/advisor 同口径)。"""
-    try:
-        raw = path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)
-    except Exception as e:  # noqa: BLE001 — 单个 md 读不动 = 该岗没正文,不拖垮整轮
-        err(path, e)
+def load_jd_sources() -> JdSources:
+    """两份写侧维护的 JD 索引(jobbank details/index.json、ats companies/index.json)+ 空的正文桶缓存
+    (2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):原来每轮 rglob 12 万个 .md 各读头 600 字建索引,9.5~37 分钟;现在两次 json.load)。
+    任一索引缺失直接中止并提示回填 —— 不静默退回扫盘,那正是要拆掉的半小时。"""
+    if not IN_JB_JD_INDEX.exists():
+        raise RuntimeError(MART_JD_INDEX_MISSING_TPL.format(path=IN_JB_JD_INDEX, domain=DOMAIN_JOBBANK))
+    if not IN_ATS_JD_INDEX.exists():
+        raise RuntimeError(MART_JD_INDEX_MISSING_TPL.format(path=IN_ATS_JD_INDEX, domain=DOMAIN_ATS))
+    return JdSources(jb=json.loads(IN_JB_JD_INDEX.read_text(encoding=ENC_UTF8)),
+                     ats=json.loads(IN_ATS_JD_INDEX.read_text(encoding=ENC_UTF8)), buckets={})
+
+
+def jd_raw_of(x: JdRawIn) -> str | None:
+    """一岗的 JD 原文:ATS 索引直接带正文;Job Bank 索引给帖号 → 按桶懒读正文文件(同桶只读一次)。
+    两边都没有给 None(该岗没抓过详情)。"""
+    ats = x.src.ats.get(x.url)
+    if ats is not None:
+        return ats.get(K_JD_BODY, "")
+    entry = x.src.jb.get(x.url)
+    if entry is None:
         return None
-    body = FRONTMATTER_RE.sub("", raw, count=1).strip()
-    return clean_jd(body) or None
+    bucket = jd_bucket_of(entry.get(K_JD_PID, ""))
+    rows = x.src.buckets.get(bucket)
+    if rows is None:
+        rows = {}
+        path = IN_JB_JD_BODIES / JD_BUCKET_TPL.format(bucket=bucket)
+        if path.exists():
+            rows = json.loads(path.read_text(encoding=ENC_UTF8))
+        x.src.buckets[bucket] = rows
+    return rows.get(x.url)
+
+
+def jd_bucket_of(pid: str) -> str:
+    """帖号 → 正文桶名(jobbank 的分桶律本域自抄:帖号 // JD_BUCKET_DIV,取不到帖号落 JD_BUCKET_NO_PID)。"""
+    if pid == "":
+        return JD_BUCKET_NO_PID
+    return str(int(pid) // JD_BUCKET_DIV)
 
 
 def fill_jd_bodies(ctx: MartCtx) -> None:
-    """JD 正文下沉到 DB:按 applyUrl 匹配已抓的 .md → job.description(seed 自动透传;列表 SQL 不读它)。
+    """JD 正文下沉到 DB:按 applyUrl 从两份索引取原文、本域清洗 → job.description(seed 自动透传;列表 SQL 不读它)。
+    2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):不再扫 .md,读 jobbank / ats 写侧维护的索引与正文桶。
 
     GAP1③ 身份预筛在**同一循环**里跑(不另起脚本重扫 43k 文件 ——「拆成每字段一个脚本 =
     重复解析同一原料」反模式):「明确不担保/须 PR」红旗 + 命中原句(quote=可核验出处)。
     """
-    idx = build_jd_index()
+    src = load_jd_sources()
     tally = JdFlagIn(matched=0, no_sponsorship=0, pr_required=0)
     for j in ctx.jobs:
-        p = idx.get(j.get(K_APPLY_URL, ""))
-        if not p:
+        raw = jd_raw_of(JdRawIn(src=src, url=j.get(K_APPLY_URL, "")))
+        if raw is None:
             continue
-        body = jd_body(p)
+        body = clean_jd(raw)
         if not body:
             continue
         j[K_DESCRIPTION] = body

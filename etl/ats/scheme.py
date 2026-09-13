@@ -307,6 +307,23 @@ class WorkdayJobIn:
 
 
 @dataclass
+class JdMdScan:
+    """回填件读一篇既有 .md 得到的一行(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」);取不到 url 的 .md 不产此形)。"""
+
+    url: str
+    """frontmatter 的 url(索引键)。"""
+
+    file: str
+    """.md 相对 companies 目录的路径。"""
+
+    mtime: str
+    """文件修改时刻(ISO,UTC)。"""
+
+    body: str
+    """正文(去 frontmatter 原文)。"""
+
+
+@dataclass
 class WriteJobsIn:
     """write_company_jobs() 入参:把一家公司这轮抓到的岗落盘(jobs.json + jobs/*.md)。"""
 

@@ -19,14 +19,17 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import json
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import cast
 
 from fetch.constants import WS_RE
-from paths import WriteTextIn, write_text
+from paths import WriteJsonIn, WriteTextIn, write_json, write_text
 from fetch.functions import make_client
 from log.functions import err, say
 from ats.constants import (
+    ERRORS_REPLACE, FRONTMATTER_RE, FRONT_URL_RE, JD_INDEX_INDENT, JD_MD_GLOB, K_JD_BODY, K_JD_FILE, K_JD_MTIME,
+    OUT_JD_INDEX, PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JOBS_INDEX_TPL,
     ACCEPT_JSON, ADDR_RE, ADDR_STRIP_CHARS, ANCHORED_RE, ATS_BAMBOOHR, ATS_GREENHOUSE, ATS_LEVER,
     ATS_RECRUITEE, ATS_SMARTRECRUITERS, ATS_WORKABLE, BAD_AMOUNTS, BAMBOO_DETAIL_URL_TPL,
     BAMBOO_JOB_URL_TPL, BAMBOO_LIST_URL_TPL, BLANK_LINES_RE, CLIENT_TIMEOUT_S, DASH, DIR_JOBS,
@@ -53,6 +56,7 @@ from ats.constants import (
     WORKABLE_ACCOUNT_URL_TPL, WORKDAY, ISO_DATE_LEN,
 )
 from ats.scheme import (
+    JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
     WorkdayDetailIn, WorkdayFetchIn, WorkdayFindIn, WorkdayJobIn, WorkdayPageIn, WorkdaySiteIn,
@@ -510,15 +514,63 @@ def write_company_jobs(x: WriteJobsIn) -> None:
     md_dir = x.folder / DIR_JOBS
     md_dir.mkdir(exist_ok=True)
     rows = []
+    entries: dict = {}
     for job in x.jobs:
+        desc = plain_text_of(job.description)
         body = MD_TPL.format(title=job.title, company=x.folder.name, location=job.location,
-                             posted=job.posted, ats=x.ats, url=job.url,
-                             desc=plain_text_of(job.description))
-        write_text(WriteTextIn(path=md_dir / (job_id_of(job) + SUFFIX_MD), text=body))
+                             posted=job.posted, ats=x.ats, url=job.url, desc=desc)
+        name = job_id_of(job) + SUFFIX_MD
+        write_text(WriteTextIn(path=md_dir / name, text=body))
         rows.append(to_job_row(job))
+        if job.url != "":
+            entries[job.url] = {K_JD_FILE: str(Path(x.folder.name) / DIR_JOBS / name),
+                                K_JD_MTIME: datetime.now(timezone.utc).isoformat(), K_JD_BODY: desc.strip()}
     payload = {K_ATS: x.ats, K_TOKEN: x.token, K_COUNT: len(x.jobs), K_JOBS: rows}
     write_text(WriteTextIn(path=x.folder / FILE_JOBS_JSON,
                            text=json.dumps(payload, ensure_ascii=False, indent=JSON_INDENT)))
+    write_jd_index(entries)
+
+
+def write_jd_index(entries: dict) -> None:
+    """本家的索引增量并进 index.json(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」);没有增量不动盘;整文件读改写 —— 一千多行,毫秒级)。"""
+    if len(entries) == 0:
+        return
+    idx: dict = {}
+    if OUT_JD_INDEX.exists():
+        idx = json.loads(OUT_JD_INDEX.read_text(encoding=ENC_UTF8))
+    idx.update(entries)
+    write_json(WriteJsonIn(path=OUT_JD_INDEX, payload=idx, indent=JD_INDEX_INDENT, compact=True))
+    say(PRINT_JOBS_INDEX_TPL.format(n=len(entries), out=OUT_JD_INDEX))
+
+
+def build_jd_index() -> None:
+    """本域手动件 `--only jd_index`:全扫既有 companies/*/jobs/*.md 重建索引(首轮回填 / 索引损坏时;幂等)。"""
+    say(PRINT_JD_INDEX_IN_TPL.format(dir=IN_COMPANIES))
+    entries: dict = {}
+    skipped = 0
+    for p in IN_COMPANIES.glob(JD_MD_GLOB):
+        row = scan_jd_md(p)
+        if row is None:
+            skipped += 1
+            continue
+        entries[row.url] = {K_JD_FILE: row.file, K_JD_MTIME: row.mtime, K_JD_BODY: row.body}
+    write_json(WriteJsonIn(path=OUT_JD_INDEX, payload=entries, indent=JD_INDEX_INDENT, compact=True))
+    say(PRINT_JD_INDEX_DONE_TPL.format(n=len(entries), skipped=skipped, out=OUT_JD_INDEX))
+
+
+def scan_jd_md(p: Path) -> JdMdScan | None:
+    """一篇既有 .md → 索引行(frontmatter 没 url 的给 None;单篇读不动只跳过它)。"""
+    try:
+        raw = p.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)
+    except OSError as e:
+        err(p, e)
+        return None
+    m = FRONT_URL_RE.search(raw)
+    if m is None:
+        return None
+    return JdMdScan(url=m.group(1).strip(), file=str(p.relative_to(IN_COMPANIES)),
+                    mtime=datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).isoformat(),
+                    body=FRONTMATTER_RE.sub("", raw, count=1).strip())
 
 
 def job_id_of(job: AtsJob) -> str:

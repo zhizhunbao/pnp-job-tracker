@@ -1084,14 +1084,39 @@ DEDUP_KEY_TPL = "{slug}|{title}"
 """展示去重键(**只服务展示**:前端不该出现一堆同公司同岗名)。
 ⚠ 与「本轮见过」是两件事:见过集不受这把尺子影响(2026-08-04 数据销毁修)。"""
 
-IN_JD_ROOTS = (paths.PROCESSED / "jobbank" / "details", paths.PROCESSED_ATS)
-"""已抓的 JD .md 两个根(按 frontmatter `url` 建 url→路径 索引)。"""
+IN_JB_JD_INDEX = paths.PROCESSED_JOBBANK / "details" / "index.json"
+"""Job Bank 详情索引(url → {pid, file, mtime, experience};jobbank 写侧维护,2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」))。"""
 
-JD_HEAD_LEN = 600
-"""只读文件头这么多字找 frontmatter 的 url。"""
+IN_JB_JD_BODIES = paths.PROCESSED_JOBBANK / "details" / "bodies"
+"""Job Bank 正文桶目录(每桶 {url: 原文},桶 = 帖号 // JD_BUCKET_DIV;按命中懒读)。"""
 
-FRONT_URL_RE = re.compile(r"^url:\s*(.+)$", re.M)
-"""frontmatter 里的 url 行。"""
+IN_ATS_JD_INDEX = paths.PROCESSED_ATS / "index.json"
+"""ATS 职位索引(url → {file, mtime, body};ats 写侧维护)。"""
+
+JD_BUCKET_DIV = 100000
+"""正文分桶的除数(jobbank 的分桶律本域自抄;两边改要一起改)。"""
+
+JD_BUCKET_TPL = "{bucket}.json"
+"""正文桶的文件名。"""
+
+JD_BUCKET_NO_PID = "0"
+"""取不到帖号的帖落的桶。"""
+
+K_JD_PID = "pid"
+"""Job Bank 索引行:帖号。"""
+
+K_JD_BODY = "body"
+"""ATS 索引行:正文。"""
+
+DOMAIN_JOBBANK = "jobbank"
+"""索引缺失提示里的域名。"""
+
+DOMAIN_ATS = "ats"
+"""同上。"""
+
+MART_JD_INDEX_MISSING_TPL = ("✗ JD 索引不存在:{path} —— 先跑 python etl/{domain}/main.py --only jd_index 回填"
+                             "(2026-09-13 批 2 起 mart 只认索引,不再扫 .md)")
+"""索引缺失时的中止行。"""
 
 FRONTMATTER_RE = re.compile(r"^---.*?\n---\s*", re.S)
 """frontmatter 整块(只剥第一处)。"""

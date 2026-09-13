@@ -360,8 +360,10 @@ OUT_JD_INDEX = OUT_DETAILS / "index.json"
 单文件 IO 贵,这就是链要跑半小时的根因。"""
 
 OUT_JD_BODIES = OUT_DETAILS / "bodies"
-"""清洗后的 JD 正文分桶目录:每桶一文件 {url: 正文},桶 = 帖号 // JD_BUCKET_DIV。
-在招岗集中在高帖号段,mart(批 2)只读命中的桶,不用把 12 万篇正文都装进内存。"""
+"""JD 正文分桶目录:每桶一文件 {url: 正文},桶 = 帖号 // JD_BUCKET_DIV。
+在招岗集中在高帖号段,mart 只读命中的桶,不用把 12 万篇正文都装进内存。
+正文存**去 frontmatter 的原文**,样板噪音清洗留在 mart(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):清洗 12 万篇是
+跨源同一把尺子,住 mart 段;批 1 曾把 clean_jd 复制到本域,形制闸不许 mart 跨域取回,改为本域只存原文)。"""
 
 JD_BUCKET_DIV = 100000
 """正文分桶的除数(帖号 8 位,除后约 90 桶,每桶 ~1.3k 篇 ~4 MB)。"""
@@ -386,27 +388,6 @@ K_JD_EXPERIENCE = "experience"
 
 FRONTMATTER_RE = re.compile(r"^---.*?\n---\s*", re.S)
 """frontmatter 整块(只剥第一处;回填件从既有 .md 取正文用,同 mart 原式)。"""
-
-JD_NOISE = (
-    re.compile(r"–\s*Help\b", re.I),
-    re.compile(r"^Green jobs contribute to environmental", re.I),
-    re.compile(r"Learn more about green jobs", re.I),
-    re.compile(r"provided by the employer; it was not verified by Job Bank", re.I),
-)
-"""Job Bank 页面样板噪音(E8-04 文案审计,2026-07-07 用户点名「莫名其妙+重复」):
-帮助浮层(「Green job – Help」×3)/通用解释/免责腿被抓进 JD 正文。逐条:
-① tooltip 标题行(xxx – Help,JB 用长横线;**不匹配连字符**,防误杀「- Help customers」类真内容);
-② 通用解释(非本岗内容);③ 同上;④ 免责腿。
-2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5):自 mart 搬来 —— 清洗归写 .md 的这一域(谁的数据谁清洗),mart 改从本域 import。"""
-
-JD_DEDUP_MIN = 40
-"""只对长行去重(短行如 Yes/标签合法重复)。"""
-
-BLANK_RUN_RE = re.compile(r"\n{3,}")
-"""三个以上换行折成一个空行。"""
-
-PARA_SEP = "\n\n"
-"""段落分隔(清洗后正文里的空行)。"""
 
 GENERIC_EMAIL = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "live.com",
                  "icloud.com", "hotmail.ca", "yahoo.ca", "gmail.ca", "aol.com"}

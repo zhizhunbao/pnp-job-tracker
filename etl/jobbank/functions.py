@@ -54,8 +54,8 @@ from jobbank.constants import (
     EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS, EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON,
     ENV_REPARSE, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
     FILE_PROFILE, FRONTMATTER_RE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
-    BLANK_RUN_RE, ERRORS_REPLACE, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_NOISE, K_JD_EXPERIENCE,
-    K_JD_FILE, K_JD_MTIME, K_JD_PID, OUT_JD_BODIES, OUT_JD_INDEX, PARA_SEP, PRINT_DETAILS_INDEX_TPL,
+    ERRORS_REPLACE, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, K_JD_EXPERIENCE,
+    K_JD_FILE, K_JD_MTIME, K_JD_PID, OUT_JD_BODIES, OUT_JD_INDEX, PRINT_DETAILS_INDEX_TPL,
     PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JD_INDEX_MISSING_TPL,
     HEADING_EXPERIENCE, HEAD_TAGS, HEADING_CERTIFICATES, HEADING_EDUCATION, HDR_UA, HOURS_FULL,
     HOURS_FULL_MARK, HOURS_PART, HOURS_PART_MARK, HREF_ATTR, HTTP_PREFIX, HTTP_SCHEME,
@@ -226,31 +226,6 @@ def detail_html_index() -> dict:
         for f in (date_dir / DIR_DETAILS).glob(GLOB_HTML):
             index[f.stem] = f
     return index
-
-
-def is_jd_noise(s: str) -> bool:
-    """这一行是不是 Job Bank 页面样板噪音(帮助浮层/通用解释/免责腿;2026-09-12 汇装提速批 1(Frank「跑完,拆吧。不然每次都半小时等不起」,设计稿 docs/design/汇装提速-20260912.md §5)
-    自 mart 搬来,mart 改 import 本域的 clean_jd —— 清洗归写 .md 的这一域)。"""
-    for p in JD_NOISE:
-        if p.search(s):
-            return True
-    return False
-
-
-def clean_jd(text: str) -> str:
-    """剔样板行 + 去重复长行(同一行在正文出现多次=抓取浮层伪影,首现保留)。"""
-    seen: set = set()
-    out: list = []
-    for line in text.split(LINE_BREAK):
-        s = line.strip()
-        if s and is_jd_noise(s):
-            continue
-        if len(s) > JD_DEDUP_MIN:
-            if s in seen:
-                continue
-            seen.add(s)
-        out.append(line)
-    return BLANK_RUN_RE.sub(PARA_SEP, LINE_BREAK.join(out)).strip()
 
 
 # =========================================================================
@@ -865,7 +840,7 @@ def write_detail_md(x: DetailMdIn) -> None:
     x.index.entries[url] = {K_JD_PID: pid, K_JD_FILE: name,
                             K_JD_MTIME: datetime.now(timezone.utc).isoformat(),
                             K_JD_EXPERIENCE: experience_phrase(md)}
-    x.index.bodies.setdefault(jd_bucket_of(pid), {})[url] = clean_jd(x.desc.strip())
+    x.index.bodies.setdefault(jd_bucket_of(pid), {})[url] = x.desc.strip()
 
 
 def jd_bucket_of(pid: str) -> str:
@@ -958,7 +933,7 @@ def scan_jd_md(p: Path) -> JdMdScan | None:
     if pm is not None:
         pid = pm.group(1)
     mtime = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).isoformat()
-    body = clean_jd(FRONTMATTER_RE.sub("", raw, count=1).strip())
+    body = FRONTMATTER_RE.sub("", raw, count=1).strip()
     return JdMdScan(url=url, pid=pid, file=p.name, mtime=mtime, experience=experience_phrase(raw),
                     body=body)
 

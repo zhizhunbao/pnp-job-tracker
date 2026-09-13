@@ -26,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from ats.functions import extract_ats_salary, scrape_ats_jobs
+from ats.functions import build_jd_index, extract_ats_salary, scrape_ats_jobs
 
 SCHEDULED = [
     ("scrape", scrape_ats_jobs),
@@ -42,8 +42,13 @@ META.steps 一一对应,两步都不带实参(旧役册同样不带):
 TOOLS = {
     "scrape": scrape_ats_jobs,
     "salary": extract_ats_salary,
+    "jd_index": build_jd_index,
 }
-"""全部可 --only 点名的步(与默认链同一份两步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步 = 默认链两步 + 一个手动件:
+
+  jd_index   全扫 companies/*/jobs/*.md 重建索引 index.json(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):只在首轮回填
+             或索引损坏时跑;之后 scrape 落盘时增量维护,mart 读侧只读索引)。
+"""
 
 
 def main() -> int:
