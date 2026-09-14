@@ -57,7 +57,7 @@ import type {
   CountMap,
   CountOfIn, CoverageIn, DesigDim, DistrictCard, DistrictDim, DistrictEmployerRow, DliTop, DrawStreamNoteIn,
   DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
-  JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
+  JdByIdIn, JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
   JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut,
   JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, DesignatedIn, DesignatedOut, LmiaNocsOut, MatchDims, MatchDimsOut,
   MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel,
@@ -1842,6 +1842,24 @@ export async function searchNocByTitle(input: NocSearchIn): NocSearchOut {
 // =========================================================================
 // 9. JD 正文(取数 + #123 懒抓;lazy-first 铁律)
 // =========================================================================
+
+/**
+ * 按职位号取库里的 JD 正文,给详情页 SSR 直出用(2026-09-14 职位正文直出批:Google 抓到的
+ * HTML 正文位置原是「加载中…」,Soft 404 1,211 + 已抓取未收录 2,865 全是 open 岗)。
+ * 与 JSON-LD 同一份串,出口同 `jobDescription` 一样脱敏。**不懒抓** —— 懒抓是用户点开才做的事,
+ * 塞进每次页面渲染 TTFB 不可控(lazy-first 铁律);库里没有给空串,前端照旧走懒取路径。
+ *
+ * @param input 连接与职位号。
+ * @returns 脱敏后的正文;库里没有给空串。
+ */
+export async function loadJdTextById(input: JdByIdIn): JdOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_JOB_ID, params: [input.id], map: passRow })
+  const first = rows[0]
+  if (first != null && first.description != null && first.description !== '') {
+    return scrubPii(String(first.description).trim())
+  }
+  return JD_NONE
+}
 
 /**
  * 按 applyUrl 取 JD 正文(DB jobs.description,mart 灌入;空则懒抓)。出口统一脱敏 ——

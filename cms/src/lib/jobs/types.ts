@@ -2953,6 +2953,21 @@ export type JdIn = {
 }
 
 /**
+ * `loadJdTextById` 的入参(2026-09-14 职位正文直出批:详情页 SSR 按岗位号取库里的正文)。
+ */
+export type JdByIdIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 职位号。
+   */
+  id: number
+}
+
+/**
  * JD 正文的返回;抓不到空串(前端空态引导官方原帖)。
  */
 export type JdOut = Promise<string>

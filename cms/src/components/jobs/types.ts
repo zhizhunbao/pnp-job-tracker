@@ -1674,6 +1674,12 @@ export type JobIn = {
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO,页面门 SSR 取;'' = 还没拿到,不渲)。
    */
   updatedAt: string
+
+  /**
+   * 库里的 JD 正文,页面门 SSR 取(2026-09-14 职位正文直出批:爬虫拿到的 HTML 里就有正文);
+   * '' = 库里没有,正文区照旧客户端懒取。
+   */
+  jdText: string
 }
 
 /**
@@ -1809,6 +1815,11 @@ export type JobBodyIn = {
    * 额度可见化回传(弹框页眉用;页面不挂)。
    */
   onFreeLeft?: (n: number) => void
+
+  /**
+   * SSR 已拿到的 JD 正文(整页版由页面门传;弹框传 '' 走懒取)。
+   */
+  jdText: string
 }
 
 /**
@@ -4509,6 +4520,11 @@ export type JdTextHookIn = {
    * 额度可见化回传;缺席 = 不回传(整页版)。
    */
   onFreeLeft?: (n: number) => void
+
+  /**
+   * SSR 已拿到的正文;非空 = 初态就是「拿到了」,不发请求;'' = 懒取。
+   */
+  jdText: string
 }
 
 /**

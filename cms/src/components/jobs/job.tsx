@@ -37,8 +37,8 @@ import css from './jobs.module.css'
  * @param props 本岗、分层态、页面维度、相似职位与数据更新时刻。
  * @returns 正文轨里的窄读列。
  */
-export function Job({ job, plan, dims, related, updatedAt }: JobIn) {
-  const d = useJobDetail({ job, plan, dims, related, updatedAt })
+export function Job({ job, plan, dims, related, updatedAt, jdText }: JobIn) {
+  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText })
   return (
     <Shell top={DETAIL_SHELL_TOP} back={<BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />}>
       <div className={cssOf(css.detail)}>
@@ -47,7 +47,7 @@ export function Job({ job, plan, dims, related, updatedAt }: JobIn) {
         <div className={`${CARD_MD_CLS} ${cssOf(css.card)}`}>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
-          <JobBody job={job} lang={d.lang} plan={plan} />
+          <JobBody job={job} lang={d.lang} plan={plan} jdText={jdText} />
         </div>
         {showRelatedOf({ status: job.status, related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}

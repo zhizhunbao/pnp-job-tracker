@@ -1654,7 +1654,7 @@ async function saveQuizAnswers(): Promise<void> {
  */
 export function useJobBody(x: JobBodyIn): JobBodyPanel {
   const t = makeT(x.lang)
-  const jd = useJdText({ job: x.job, onFreeLeft: x.onFreeLeft })
+  const jd = useJdText({ job: x.job, onFreeLeft: x.onFreeLeft, jdText: x.jdText })
   const fmt = useJdFormat(x.job)
   const trans = useJdTrans({ job: x.job, lang: x.lang, resetKey: fmt.resetKey })
   const apply = useApplyHow(x.job)
@@ -1708,16 +1708,23 @@ function applyEmailPick(x: ApplyEmailPickIn): string {
 
 /**
  * 懒取 JD 正文(#126 同岗会话缓存);额度可见化回传(弹框页眉;页面不挂)。
+ * 2026-09-14 职位正文直出批:页面门 SSR 已把库里的正文传下来时,初态就是「拿到了」,
+ * effect 不清态不发请求 —— 服务端 HTML 与首帧一字不差(零水合差异),爬虫拿到的就是正文;
+ * 传空串(弹框、库里没有)照旧懒取。
  *
- * @param x 本岗与额度回传。
+ * @param x 本岗、SSR 正文与额度回传。
  * @returns 正文与取数态。
  */
 function useJdText(x: JdTextHookIn): JdTextPanel {
-  const [text, setText] = useState(TEXT_NONE)
-  const [status, setStatus] = useState<JdStatus>(JD_LOADING)
+  const [text, setText] = useState(x.jdText)
+  const [status, setStatus] = useState<JdStatus>(jdInitStatusOf(x.jdText))
   const url = strOf(x.job.applyUrl)
   const onFreeLeft = x.onFreeLeft
+  const ssrText = x.jdText
   useEffect(function loadJdText() {
+    if (ssrText !== TEXT_NONE) {
+      return
+    }
     const ctrl = new AbortController()
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉正文前的起手式:换岗先清上一岗的文,清和拉必须同一拍
     setStatus(JD_LOADING)
@@ -1742,8 +1749,21 @@ function useJdText(x: JdTextHookIn): JdTextPanel {
     return function stopJdText() {
       ctrl.abort()
     }
-  }, [url, onFreeLeft])
+  }, [url, onFreeLeft, ssrText])
   return { text, status }
+}
+
+/**
+ * SSR 正文决定的初态:传了正文就是「拿到了」,没传就是「在途」(等 effect 去懒取)。
+ *
+ * @param ssrText 页面门传下来的正文。
+ * @returns 初始取数态。
+ */
+function jdInitStatusOf(ssrText: string): JdStatus {
+  if (ssrText === TEXT_NONE) {
+    return JD_LOADING
+  }
+  return JD_DONE
 }
 
 /**

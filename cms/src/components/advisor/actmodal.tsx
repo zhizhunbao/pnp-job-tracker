@@ -11,7 +11,7 @@
  */
 import { JobBody } from '@/components/jobs/jobbody'
 import { makeT } from '@/lib/i18n'
-import { JD_PANEL_H, JD_PANEL_W, JD_PREF } from './constants'
+import { JD_PANEL_H, JD_PANEL_W, JD_PREF, TEXT_NONE } from './constants'
 import { ActHead } from './acthead'
 import { FloatPanel } from './floatpanel'
 import { firstTextOf, nocZhOf } from './functions'
@@ -35,7 +35,7 @@ export function ActModal({ job, lang, plan, nocDesc, onClose }: ActModalIn) {
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag>
-      <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} />
+      <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE} />
     </FloatPanel>
   )
 }

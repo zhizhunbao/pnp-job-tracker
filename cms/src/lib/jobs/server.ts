@@ -12,7 +12,7 @@ export {
   buildJobsWhere, checkedAt, companyJsonOf, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
   loadJobById, loadJobRows, loadJobsPage, loadMatchPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
-  getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf,
+  getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdTextById,
 } from './functions'
 export {
   loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,
