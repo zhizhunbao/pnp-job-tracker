@@ -2658,6 +2658,17 @@ export const MARK_TAIL = ']'
 export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/
 
 /**
+ * 整理版里贴在上一节正文尾巴上的节标记(2026-09-14 Frank「跑偏了」实撞:模型把五节挤在一行,翻译按行对位就把整篇
+ * 连标记一起塞进首节一行,标记还被译成「[要求]」;库里 310 条整理版没有换行)。读侧与写侧都按它把标记顶到行首。
+ */
+export const JD_MARK_INLINE_RE = /\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\])/g
+
+/**
+ * 顶到行首的节标记:换行 + 标记本身。
+ */
+export const JD_MARK_LINE_REPL = '\n$1'
+
+/**
  * JD 翻译的 IP 日限。
  */
 export const JDTR_IP_DAILY = 60
