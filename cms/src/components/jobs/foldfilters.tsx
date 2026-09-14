@@ -10,6 +10,7 @@
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
  * 2026-08-29 Frank 实拍:「仅雇主直发」「排除不担保/须 PR」两颗复选框的 title 悬浮提示撤掉 ——
  * 2026-08-06 拍板「消费页 tooltips 全撤,靠列名自解释」的两条漏网。只撤属性,label 文案照旧。
+ * 2026-09-14 Frank「全部市提到全部省后面吧」:市下拉升到常用一行紧挨省,地区行只剩区。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -20,7 +21,7 @@ import {
   ELIG_OK, FK, INPUT_CHECKBOX, K_EMP, K_SAL, K_VS, OPTS_EMP, OPTS_PILOT, OPTS_SAL, OPTS_VS, OPTS_YES_NO,
 } from './constants'
 import {
-  checkClsOf, makeCatLabel, makeCheckChange, makeCityChange, makeEligChange, makeMidChange, makeOptLabel,
+  checkClsOf, makeCatLabel, makeCheckChange, makeEligChange, makeMidChange, makeOptLabel,
   makePilotLabel, makePrefixLabel, makeSlotChange, slotOf,
 } from './functions'
 import type { BoardPanelIn } from './types'
@@ -38,8 +39,6 @@ export function FoldFilters({ b }: BoardPanelIn) {
     <div className={cssOf(css.fold)}>
       <div className={cssOf(css.ctl)}>
         <span className={cssOf(css.filtLabel)}>{b.t('filter.geo')}</span>
-        <Select value={slotOf({ fState: f.fState, k: FK.city })} onChange={makeCityChange(f.fState)}
-          opts={f.opts.city} all={b.t('all.city')} />
         <Select value={slotOf({ fState: f.fState, k: FK.district })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.district })}
           opts={f.opts.district} all={b.t('all.district')} />

@@ -3,7 +3,8 @@
  * 常用筛选一行(#59 筛选区重设计,2026-07-18 效果图过目后 Frank「可以」):5 行 label + 下拉
  * 收成「常用一行(搜索/省/大类;PNP/年薪 08-16 下沉)+ 更多筛选折叠(激活计数徽标)」;
  * 07-07 行序拍板与窄屏抽屉一并退役 —— 一行 + 折叠对窄屏同样成立,靠换行自然折。
- * 右端 = 更新时间 + 字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现。
+ * 右端 = 更新时间 + 字段钮(#56 拍板延续)。市/区、中/小类仍是省/大类的联动下级,只在折叠区出现
+ * (2026-09-14 Frank「全部市提到全部省后面吧」:市升到本行紧挨省;区、中/小类仍在折叠区)。
  * 「我的匹配」(2026-08-16 顶栏改「职位」后):切换落回板内 —— 它是这块板的一个视图,不是一个页面;
  * 桌面在这条筛选行,手机走窄屏入口条,两处不同时出现。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
@@ -24,8 +25,8 @@ import { Select } from '@/components/select'
 import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
-  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeProvChange, makeProvLabel, matchBtnClsOf,
-  matchLabelOf, slotOf,
+  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeCityChange, makeProvChange, makeProvLabel,
+  matchBtnClsOf, matchLabelOf, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -49,6 +50,10 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         opts={f.opts.prov}
         all={b.t('all.prov')}
         labelOf={makeProvLabel(b.t)} />
+      <Select value={slotOf({ fState: f.fState, k: FK.city })}
+        onChange={makeCityChange(f.fState)}
+        opts={f.opts.city}
+        all={b.t('all.city')} />
       <Select value={slotOf({ fState: f.fState, k: FK.broad })}
         onChange={makeBroadChange(f.fState)}
         opts={f.opts.broad}
