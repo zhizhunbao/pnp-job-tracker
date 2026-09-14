@@ -220,6 +220,12 @@ export const PG_UNDEFINED_TABLE = '42P01'
 export const STATUS_OPEN = 'open'
 
 /**
+ * 校内板帖的状态值(2026-09-13 第三态):mart 按渠道给,seed 照收 —— 不是 open(不上职位板、不进统计),
+ * 也不是 closed(详情页照看、对账照关);枚举 DDL docs/sql/jobs-status-campus.sql。
+ */
+export const STATUS_CAMPUS = 'campus'
+
+/**
  * pnp_occupations.program 的缺席默认(老数据没这一列,一律按 PNP 计)。
  */
 export const PROGRAM_PNP = 'PNP'

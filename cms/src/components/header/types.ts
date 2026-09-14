@@ -25,6 +25,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
  */
 export type ActiveKey =
   'rank' | 'stats' | 'account' | 'pathways' | 'news' | 'employers' | 'start' | 'match' | 'jobs' | 'library' | 'pte'
+  | 'coop'
 
 
 /**

@@ -28,27 +28,28 @@ from crawl.functions import close_browser, get_browser_page, load_cache_index, p
 from crawl.scheme import CachePage, CachePutManyIn
 from hireac import DETAILS_PER_RUN
 from hireac.constants import (
-    ADDRESS_SEP, CLICK_VIEW_ALL_JS, COLON, COMMA_SP, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
+    ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
     DETAIL_MARK, DETAIL_SLEEP_MS, DETAIL_TICK, ENC_UTF8, ERR_BROWSER_DOWN, ERR_LOGIN_TPL, ERR_NO_VIEW_ALL,
     ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
     F_APPLY_WEB, F_CATEGORY, F_CITY, F_COUNTRY, F_DEADLINE, F_DESCRIPTION, F_DESCRIPTION_CC, F_DIVISION, F_HOURS,
     F_JOB_TYPE, F_LANGUAGE, F_LOCATION, F_LOCATION_CC, F_ORG, F_POSITION_TYPE, F_POSTAL, F_PREFERRED,
     F_PROCEDURE, F_PROVINCE, F_QUALIFICATIONS, F_REQUIREMENTS, F_SALARY, F_TERM, F_TITLE, F_WEBSITE,
     FAIL_MAX, FETCH_JS, FIELD_RE, FLUSH_EVERY, FORM_RE, GROUP_KEY, GROUP_VALUE, HOURS_OF_KIND, HTTP_OK,
-    HTTP_PREFIX, IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT,
+    HOURLY_MAX, HOURLY_MIN, HTTP_PREFIX, IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT,
     K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_INDUSTRY, K_LANG, K_LAST_SEEN,
     K_NOC, K_POSTING_ID, K_POSTING_ID_FORM, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE, K_TITLE_ORIG, K_URL,
-    K_VALID_THROUGH, LANG_EN, LIST_KEY_TPL, LIST_SETTLE_MS, LOAD_PAGE_JS_TPL, LOGIN_HOST, NAV_TIMEOUT_MS,
+    K_VALID_THROUGH, KIND_HOURLY_KEY, KIND_SALARY_KEY, KIND_UNIT_WORD, LANG_EN, LIST_KEY_TPL, LIST_SETTLE_MS, LOAD_PAGE_JS_TPL, LOGIN_HOST, NAV_TIMEOUT_MS,
     NOT_LOGGED_PATH, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGE_NUM_RE, PAGE_ONE, PAGE_WAIT_STEP_MS,
     PAGE_WAIT_TRIES, PERCENT, POSTINGS_URL, PRINT_DETAIL_BAD_TPL, PRINT_DETAIL_DONE_TPL,
     PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL, PRINT_ROWS_DONE_TPL,
     PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, PROV_CODES, PROV_OF_CITY, QUOTE_DOUBLE, QUOTE_SINGLE,
-    RATE_FLOOR_S, ROW_RE, SCRIPT_RE, SECONDS_FMT, SETTLE_MS, SLUG_CRAWL, SOURCE_LABEL, SPACE, TAG_RE,
+    RATE_FLOOR_S, ROW_RE, SALARY_RANGE_TPL, SALARY_SNIPPET_RE, SALARY_TPL, SALARY_UNIT_WORD, SCRIPT_RE, SECONDS_FMT,
+    SETTLE_MS, SLUG_CRAWL, SOURCE_LABEL, SPACE, TAG_RE,
     TERM_OF_KIND, UTC_Z, VIEW_ALL_SETTLE_MS, WAIT_DOM, WS_RE,
 )
 from hireac.scheme import (
     BrowserPageLike, DetailBatchIn, DetailBatchOut, DetailFieldsIn, DetailKeyIn, JobFact, Location,
-    ParseTally, PickIn, PostingRowIn, StoreTally, WaitPageIn,
+    ParseTally, PickIn, PostingRowIn, StoreTally, UnitByKindIn, WaitPageIn,
 )
 
 
@@ -411,13 +412,43 @@ def to_posting_row(x: PostingRowIn) -> dict:
     f = x.fact
     return {
         K_POSTING_ID: f.posting_id, K_TITLE: f.title, K_TITLE_ORIG: "", K_EMPLOYER: f.employer,
-        K_CITY: f.city, K_PROVINCE: f.province, K_SALARY: "",
+        K_CITY: f.city, K_PROVINCE: f.province, K_SALARY: salary_text_of(f),
         K_DATE: f.first_seen, K_SOURCE: SOURCE_LABEL, K_DIRECT: False, K_URL: url_of(f),
         K_ADDRESS: address_of(f), K_NOC: "", K_LAST_SEEN: x.seen_at,
         K_EMPLOYMENT_TERM: TERM_OF_KIND.get(f.kind, ""), K_EMPLOYMENT_HOURS: HOURS_OF_KIND.get(f.kind, ""),
         K_DESCRIPTION: description_of(f), K_VALID_THROUGH: f.deadline, K_LANG: LANG_EN,
         K_INDUSTRY: f.category, K_EMPLOYER_URL: employer_url_of(f),
     }
+
+
+def salary_text_of(f: JobFact) -> str:
+    """正文里第一处薪资片段 → Job Bank 写法:带单位词照译;不带单位按板上类型格补,且金额要在该类型的
+    合理量级里(时薪 15–150、年薪 ≥ 2 万),否则当不是薪资(签约奖金、补贴)留空串。"""
+    m = SALARY_SNIPPET_RE.search(f.description + DESC_SEP + f.requirements)
+    if m is None:
+        return ""
+    lo = m.group(1)
+    hi = m.group(2)
+    unit = ""
+    if m.group(3) is not None:
+        unit = SALARY_UNIT_WORD.get(m.group(3).lower(), "")
+    if unit == "":
+        unit = unit_by_kind_of(UnitByKindIn(kind=f.salary_kind, amount=float(lo.replace(COMMA, ""))))
+    if unit == "":
+        return ""
+    if hi is None:
+        return SALARY_TPL.format(lo=lo, unit=unit)
+    return SALARY_RANGE_TPL.format(lo=lo, hi=hi, unit=unit)
+
+
+def unit_by_kind_of(x: UnitByKindIn) -> str:
+    """正文金额没带单位时,按板上 Salary 类型格补单位,金额量级不合该类型给空串(宁空不猜)。"""
+    unit = KIND_UNIT_WORD.get(x.kind, "")
+    if unit == KIND_UNIT_WORD[KIND_HOURLY_KEY] and HOURLY_MIN <= x.amount <= HOURLY_MAX:
+        return unit
+    if unit == KIND_UNIT_WORD[KIND_SALARY_KEY] and x.amount >= ANNUAL_MIN:
+        return unit
+    return ""
 
 
 def url_of(f: JobFact) -> str:

@@ -242,6 +242,17 @@ class PostingRowIn:
 
 
 @dataclass
+class UnitByKindIn:
+    """unit_by_kind_of() 入参(正文金额没带单位:按板上类型格与金额量级补)。"""
+
+    kind: str
+    """板上 Salary 类型格原文(Hourly / Salary / …)。"""
+
+    amount: float
+    """正文抽到的金额(低值)。"""
+
+
+@dataclass
 class StoreTally:
     """build_hireac_postings() 的计数器。"""
 

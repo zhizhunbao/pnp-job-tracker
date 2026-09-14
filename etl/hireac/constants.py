@@ -390,6 +390,54 @@ PRINT_PARSE_DONE_TPL = "[OK] 解析 {parsed} 张(跳过已解析 {skipped},无�
 # 4. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
+SALARY_SNIPPET_RE = re.compile(
+    r"\$\s?(\d[\d,]*(?:\.\d+)?)(?:\s?(?:-|–|to)\s?\$?\s?(\d[\d,]*(?:\.\d+)?))?"
+    r"(?:\s?(?:/|per|an|a)?\s?(hour|hr|h|year|yr|annum|annually|week|wk|month|mo))?",
+    re.I,
+)
+"""正文里的薪资片段:组 1 低值 / 组 2 高值(区间才有)/ 组 3 单位词(可无)。2026-09-13 Frank「这个详情页面是有薪职的啊」:
+板上 Salary 格只给「Hourly / Salary」类型,金额只在正文里(本地帖 64/153、联播帖 115/281 提到金额),
+这里抽第一处成 Job Bank 写法交 mart 薪资尺子归一;单位缺席时按类型格与金额量级补(见 salary_text_of)。"""
+
+SALARY_UNIT_WORD = {
+    "hour": "hourly", "hr": "hourly", "h": "hourly",
+    "year": "annually", "yr": "annually", "annum": "annually", "annually": "annually",
+    "week": "weekly", "wk": "weekly",
+    "month": "monthly", "mo": "monthly",
+}
+"""正文单位词 → Job Bank 单位词(mart 薪资段认这些词)。"""
+
+KIND_UNIT_WORD = {
+    "Hourly": "hourly",
+    "Salary": "annually",
+    "Salary plus commission": "annually",
+}
+"""板上 Salary 类型格 → 单位词(正文金额没带单位时按类型补)。"""
+
+KIND_HOURLY_KEY = "Hourly"
+"""KIND_UNIT_WORD 里时薪档的键(量级校验按档取词)。"""
+
+KIND_SALARY_KEY = "Salary"
+"""KIND_UNIT_WORD 里年薪档的键。"""
+
+HOURLY_MIN = 15.0
+"""无单位金额按时薪补单位的下限(低于安省最低工资的不是时薪)。"""
+
+HOURLY_MAX = 150.0
+"""无单位金额按时薪补单位的上限(再高就是年薪或奖金)。"""
+
+ANNUAL_MIN = 20000.0
+"""无单位金额按年薪补单位的下限(低于它的是签约奖金一类)。"""
+
+SALARY_TPL = "${lo} {unit}"
+"""单值薪资写法(照 Job Bank「$21.00 hourly」)。"""
+
+SALARY_RANGE_TPL = "${lo} to ${hi} {unit}"
+"""区间薪资写法(照 Job Bank「$18.00 to $24.00 hourly」)。"""
+
+COMMA = ","
+"""金额里的千分位(去掉再转数)。"""
+
 K_POSTING_ID = "posting_id"
 """帖号(mart externalId 的料;本地帖数字 / 联播帖 CC-数字)。"""
 
@@ -409,7 +457,7 @@ K_PROVINCE = "province"
 """省码。"""
 
 K_SALARY = "salary"
-"""薪资原文(本板详情只给「Hourly / Salary」类型不给金额,恒空串 —— 宁空不猜)。"""
+"""薪资原文(Job Bank 写法;板上 Salary 格只给类型,金额自正文抽,抽不到留空串 —— 宁空不猜)。"""
 
 K_DATE = "date"
 """发布日(ISO;板上不给发布日,取本站首见日)。"""

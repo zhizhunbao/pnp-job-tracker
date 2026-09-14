@@ -44,7 +44,7 @@ import {
   CITY_NEW7_DAYS, COUNT_CITY_REFRESH,
   COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
-  MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_OPEN,
+  MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
   TBL_CITIES, TBL_COMPANIES, TBL_DESIGNATED_EMPLOYERS, TBL_DISTRICTS, TBL_DLI, TBL_DEAD_EXT, TBL_EE_CATEGORIES,
   TBL_EE_POINTS_GRID, TBL_EMPLOYER_POOL, TBL_EMPLOYER_POOL_BUCKETS, TBL_EXPERIENCE_LEVELS, TBL_FIELD_SOURCES, TBL_JOBS, TBL_NEWS, TBL_NOC_CATEGORIES,
@@ -878,9 +878,23 @@ export function toJob(x: ToJobIn): MartRow {
     employment_hours: cellOf(x.r.employmentHours),
     who_can_apply: cellOf(x.r.whoCanApply), certificates: jsonTextOf(x.r.certificates),
     education: cellOf(x.r.education), eligibility_flag: cellOf(x.r.eligibilityFlag),
-    eligibility_quote: cellOf(x.r.eligibilityQuote), status: STATUS_OPEN, closed_at: null, first_seen: x.now,
+    eligibility_quote: cellOf(x.r.eligibilityQuote), status: jobStatusOf(x.r.status), closed_at: null, first_seen: x.now,
     last_seen: cellOf(x.r.lastSeen), created_at: x.now, updated_at: x.now,
   }
+}
+
+/**
+ * 一行的入库状态:mart 给 campus(校内板帖,2026-09-13 第三态)照收,其余一律 open(重灌即在招;
+ * 下架由 seed 尾的对账语句判,不看 mart)。
+ *
+ * @param x mart 行的 status 格。
+ * @returns campus 或 open。
+ */
+function jobStatusOf(x: MartCell): string {
+  if (x === STATUS_CAMPUS) {
+    return STATUS_CAMPUS
+  }
+  return STATUS_OPEN
 }
 
 // =========================================================================
