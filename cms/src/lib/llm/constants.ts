@@ -680,12 +680,6 @@ export const UPSTREAM_TEXT_NONE = ''
 export const TRANSLATED_EMPTY = ''
 
 /**
- * 译文版本号(2026-09-14 Frank「如果存进去的是翻译不全或者之前翻译错误呢」→「可以」):存库的译文带这个号,
- * 读时对不上就当没有、重翻覆盖;换模型 / 改提示词把它加一,存量自动作废。老批次机翻别名没版本 = 0,同样过期。
- */
-export const TRANS_V = 1
-
-/**
  * 中文译文至少要有一个汉字(写入闸)。
  */
 export const CJK_RE = /[一-鿿]/

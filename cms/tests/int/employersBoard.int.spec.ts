@@ -75,7 +75,7 @@ describe('三个态', () => {
 describe('行构造器', () => {
   it('numeric 列的字符串收成数,可空数值保 null,jsonb 清单成数组', () => {
     const r = toPoolRow({
-      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', province: 'ON', city: 'Ottawa', city_zh: '渥太华', city_ko: null,
+      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', province: 'ON', city: 'Ottawa', city_zh: '渥太华', city_ko: null, trans_v: 1,
       locations: ['Ottawa, ON', 'Toronto, ON'],
       designated: false, designated_programs: [], designated_provinces: [], open_jobs_total: '40', fetched: '2026-09-13', alias_zh: 'Shopify 公司', alias_ko: null,
       ind_group: 'stem', open_jobs: '35', latest_posted: '2026-09-12', top_titles: ['developer'], entry_jobs: '7',
@@ -98,7 +98,7 @@ describe('行构造器', () => {
 
   it('三源独有雇主:slug / 行业 / 季度 为 null 不折空串以外的东西', () => {
     const r = toPoolRow({
-      key: 'n:acme', slug: null, name: 'Acme', industry: null, province: 'NB', city: '', city_zh: null, city_ko: null, locations: null, designated: true,
+      key: 'n:acme', slug: null, name: 'Acme', industry: null, province: 'NB', city: '', city_zh: null, city_ko: null, trans_v: null, locations: null, designated: true,
       designated_programs: ['AIP', 'RCIP'], designated_provinces: ['NS', 'NB'], open_jobs_total: 0, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: '', open_jobs: 0,
       latest_posted: null, top_titles: null, entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
       lmia_last_quarter: null, star: 3, wage_med_annual: null, wage_index_pct: null, total: 1,

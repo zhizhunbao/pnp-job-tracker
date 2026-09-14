@@ -185,3 +185,20 @@ export type DbPool = Db & {
    */
   connect: () => Promise<DbClient>
 }
+
+/**
+ * vtext 的入参:带版本号的译文格。
+ */
+export type VtextIn = {
+  /**
+   * 行上的 trans_v(pg 原样:数字 / 串 / NULL;行索引缺席就是 undefined,同 text 的消化点)。
+   */
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+  v: string | number | boolean | null | undefined
+
+  /**
+   * 译文格原值。
+   */
+  // eslint-disable-next-line local/no-undefined-type -- 消化点:同 text(开灯批)
+  cell: string | number | boolean | null | undefined
+}

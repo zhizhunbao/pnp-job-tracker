@@ -3091,3 +3091,8 @@ export const TITLE_CTX_PREFIX = 'Job title: '
  * 译回来后剥掉语境头:第一个冒号(半角或全角)及其前面的字。
  */
 export const TITLE_CTX_STRIP_RE = /^[^:：]*[:：]\s*/
+
+/**
+ * 韩文语种码(译文两格按它选 ko 格)。
+ */
+export const LANG_KO_CODE = 'ko'

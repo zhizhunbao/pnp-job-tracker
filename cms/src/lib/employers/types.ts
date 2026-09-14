@@ -1524,6 +1524,11 @@ export type PoolDbRow = {
    * 窗口总数(每行同值)。
    */
   total: number | string | null
+
+  /**
+   * 译文版本;NULL = 老批次(别名过期)。
+   */
+  trans_v: number | string | null
 }
 
 /**
@@ -2000,6 +2005,11 @@ export type SponsorDbRow = {
    * 部门(探测列;'public' = 公共部门旁路)。
    */
   sector: string | null
+
+  /**
+   * 译文版本;NULL = 老批次(别名过期)。
+   */
+  trans_v: number | string | null
 }
 
 /**
@@ -2541,6 +2551,11 @@ export type AliasDbRow = {
    * 韩文别名;NULL = 没有。
    */
   alias_ko: string | null
+
+  /**
+   * 译文版本;NULL = 老批次。
+   */
+  trans_v: number | null
 }
 
 /**
@@ -2556,6 +2571,11 @@ export type AliasFact = {
    * 韩文别名;'' = 没有。
    */
   aliasKo: string
+
+  /**
+   * 译文版本;null = 老批次(读侧当过期)。
+   */
+  transV: number | null
 }
 
 /**
@@ -2611,4 +2631,34 @@ export type CompanyDescDbRow = {
    * 官网简介;NULL = 没有。
    */
   description: string | null
+}
+
+/**
+ * `saveCompanyDescZh` 的入参。
+ */
+export type SaveDescZhIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 译文。
+   */
+  text: string
+}
+
+/**
+ * companies 官网简介中文版单格(pg 原始行)。
+ */
+export type CompanyDescZhDbRow = {
+  /**
+   * 官网简介中文版;NULL = 没有。
+   */
+  description_zh: string | null
 }

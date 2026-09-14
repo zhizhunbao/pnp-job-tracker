@@ -9,7 +9,7 @@
  * @time 2026-08-21 23:20:43
  */
 
-import { firstOf, queryRows, queryRowsOrEmpty, SQL, count, numOrNull, text, textOrNull } from '../db'
+import { firstOf, queryRows, queryRowsOrEmpty, SQL, count, numOrNull, text, textOrNull, TRANS_V, vtext } from '../db'
 import type { Db } from '../db'
 import { ERR_NAME, fail } from '../error'
 import { hasProfile, match } from '../jobs'
@@ -46,7 +46,7 @@ import type {
   IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
-  CompanyDescDbRow,
+  CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1236,6 +1236,38 @@ function blankIfNull(v: MaybeNum): string {
 }
 
 /**
+ * 官网简介中文版(已落库且版本对得上的)。
+ *
+ * @param input 连接与公司名。
+ * @returns 译文;没有 / 过期给 null。
+ */
+export async function loadCompanyDescZh(input: CompanyBriefIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_DESC_ZH_BY_NAME, params: [input.name, TRANS_V],
+    map: toDescZhCell })
+  return firstOf(rows)
+}
+
+/**
+ * 官网简介中文版单格行 → 串。
+ *
+ * @param r 原始行。
+ * @returns 译文;NULL 给 null。
+ */
+function toDescZhCell(r: CompanyDescZhDbRow): MaybeStr {
+  return textOrNull(r.description_zh)
+}
+
+/**
+ * 官网简介中文版落库(带版本)。
+ *
+ * @param input 连接、公司名与译文。
+ * @returns 无。
+ */
+export async function saveCompanyDescZh(input: SaveDescZhIn): DoneOut {
+  await input.db.query(SQL.COMPANY_UPDATE_DESC_ZH, [input.text, input.name, TRANS_V])
+}
+
+/**
  * 公司 AI 检索简介（companies.ai_brief，五节标记；懒翻译的源 —— 只翻库内，
  * 不收任意文本防开放代理）。
  *
@@ -1286,7 +1318,10 @@ export async function loadCompanyAlias(input: CompanyBriefIn): AliasOut {
  * @returns 两格。
  */
 function toAliasFact(r: AliasDbRow): AliasFact {
-  return { aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko) }
+  return {
+    aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
+    transV: numOrNull(r.trans_v),
+  }
 }
 
 /**
@@ -1313,7 +1348,7 @@ export async function saveCompanyAlias(input: SaveAliasIn): DoneOut {
   if (input.lang === WD_LANG_KO) {
     sql = SQL.COMPANY_SET_ALIAS_KO
   }
-  await input.db.query(sql, [input.alias, input.name])
+  await input.db.query(sql, [input.alias, input.name, TRANS_V])
 }
 
 /**
@@ -1323,7 +1358,7 @@ export async function saveCompanyAlias(input: SaveAliasIn): DoneOut {
  * @returns 译文或 null。
  */
 export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name],
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name, TRANS_V],
     map: toBriefZhCell })
   return firstOf(rows)
 }
@@ -1335,7 +1370,7 @@ export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
  * @returns 无。
  */
 export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
-  await input.db.query(SQL.COMPANY_UPDATE_AI_BRIEF_ZH, [input.text, input.name])
+  await input.db.query(SQL.COMPANY_UPDATE_AI_BRIEF_ZH, [input.text, input.name, TRANS_V])
 }
 
 // =========================================================================
@@ -1356,7 +1391,8 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     locations: toStrList(r.locations), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
-    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko), group: text(r.ind_group), openJobs: count(r.open_jobs),
+    aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
+    group: text(r.ind_group), openJobs: count(r.open_jobs),
     latestPosted: textOrNull(r.latest_posted),
     topTitles: toStrList(r.top_titles), entryJobs: count(r.entry_jobs), entryShare: numOrNull(r.entry_share),
     minExperience: textOrNull(r.min_experience), lmiaSkilled: count(r.lmia_skilled),
@@ -1476,7 +1512,7 @@ export function toSponsorRow(input: ToSponsorRowIn): SponsorEmployerRow {
   const r = input.row
   return {
     name: text(r.name), slug: text(r.slug), industry: text(r.industry),
-    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko),
+    aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
     sponsorGrade: numOrNull(r.sponsor_grade),
     openJobs: count(r.open_jobs), city: text(r.city),
     provs: toStrList(r.provs), nocs: toStrList(r.nocs), cities: toStrList(r.cities),

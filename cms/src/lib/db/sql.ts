@@ -176,7 +176,7 @@ export const levelHasJobs = (levels: readonly string[]) =>
  * @returns 公司详情 SELECT 语句。
  */
 export const companyDetail = (cond: string) =>
-  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.wiki_url,
+  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.trans_v, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
             c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
      FROM companies c WHERE ${cond} LIMIT 1`
@@ -211,19 +211,19 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
 /**
  * 同区同行业、按担保档与在招量排的相似雇主
  */
-export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, count(j.id)::int open_count
+export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
      FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND j.mid = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko
+     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
      ORDER BY count(j.id) DESC, c.sponsor_grade DESC NULLS LAST LIMIT 6`
 
 /**
  * 相似雇主(公司页版):同省同行业桶;页上没有单一岗位,仍按 companies.industry 找。
  */
-export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, count(j.id)::int open_count
+export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
      FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko
+     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
 
 /**
@@ -555,7 +555,7 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
 export const employerPoolPage = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
       b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
       count(*) OVER()::int AS total
@@ -613,7 +613,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
 export const employerPoolAll = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
       NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
       b.star, NULL::numeric AS wage_med_annual, NULL::numeric AS wage_index_pct,
@@ -655,7 +655,7 @@ export const PNP_REQ_EMPLOYER = `SELECT province, factor, op, value, unit, appli
  * @returns 担保雇主榜 SELECT 语句。
  */
 export const sponsorEmployers = (a1: string, a2: string) => `
-    SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
+    SELECT c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.trans_v, c.sponsor_grade,
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
       c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${a1},
       COUNT(*)::int AS open_jobs,
@@ -676,7 +676,7 @@ export const sponsorEmployers = (a1: string, a2: string) => `
       COALESCE((ARRAY_AGG(j.city ORDER BY j.id) FILTER (WHERE COALESCE(j.city, '') <> ''))[1], '') AS city
     FROM jobs j JOIN companies c ON c.id = j.company_id
     WHERE COALESCE(j.status, 'open') <> 'closed'
-    GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.sponsor_grade,
+    GROUP BY c.id, c.name, c.slug, c.industry, c.alias_zh, c.alias_ko, c.trans_v, c.sponsor_grade,
       c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter, c.lmia_streams,
       c.lmia_positions_4q, c.lmia_positions_2q, c.lmia_positions_1q${a2}
     HAVING BOOL_OR(j.aip) OR BOOL_OR(COALESCE(j.pnp_stream, '') <> '') OR COALESCE(c.lmia_positions, 0) > 0
@@ -1236,7 +1236,54 @@ export const JD_SET_EMP_TERM = `UPDATE jobs SET employment_term = $1 WHERE id = 
 export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id = $2 AND (employment_hours IS NULL OR employment_hours = '')`
 
 /**
- * 按投递链接查 JD 整理状态(整理稿 + 两个雇佣列)。$1=apply_url。
+ * 职位对照两格 + 版本(2026-09-14 落库:换版不再清零)。
+ */
+export const JD_TRANS_BY_URL = `SELECT jd_trans_zh, jd_trans_ko, trans_v FROM jobs WHERE apply_url = $1 LIMIT 1`
+
+/**
+ * 职位对照中文版落库(同行其余译文若是旧版本一并清空,一行的译文永远同一个版本)。
+ */
+export const JD_TRANS_SAVE_ZH = `UPDATE jobs
+     SET jd_trans_zh = $1, trans_v = $3,
+         jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END,
+         title_zh = CASE WHEN trans_v = $3 THEN title_zh END, title_ko = CASE WHEN trans_v = $3 THEN title_ko END
+     WHERE apply_url = $2`
+
+/**
+ * 职位对照韩文版落库。
+ */
+export const JD_TRANS_SAVE_KO = `UPDATE jobs
+     SET jd_trans_ko = $1, trans_v = $3,
+         jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END,
+         title_zh = CASE WHEN trans_v = $3 THEN title_zh END, title_ko = CASE WHEN trans_v = $3 THEN title_ko END
+     WHERE apply_url = $2`
+
+/**
+ * 职位名译名(按标题找任一同名岗上现版本的译名)。
+ */
+export const TITLE_TRANS_BY_TITLE = `SELECT title_zh, title_ko FROM jobs
+     WHERE lower(title) = lower($1) AND trans_v = $2 AND (coalesce(title_zh, '') <> '' OR coalesce(title_ko, '') <> '') LIMIT 1`
+
+/**
+ * 职位名中文译名落库(同名岗全写;同行旧版本对照一并清空)。
+ */
+export const TITLE_TRANS_SAVE_ZH = `UPDATE jobs
+     SET title_zh = $1, trans_v = $3,
+         title_ko = CASE WHEN trans_v = $3 THEN title_ko END,
+         jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
+     WHERE lower(title) = lower($2)`
+
+/**
+ * 职位名韩文译名落库。
+ */
+export const TITLE_TRANS_SAVE_KO = `UPDATE jobs
+     SET title_ko = $1, trans_v = $3,
+         title_zh = CASE WHEN trans_v = $3 THEN title_zh END,
+         jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
+     WHERE lower(title) = lower($2)`
+
+/**
+ * JD 状态行:整理版 + 雇佣期 / 工时(懒整理的落格)。
  */
 export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
 
@@ -1578,27 +1625,53 @@ export const COMPANY_DESC_BY_NAME = `SELECT description FROM companies WHERE low
 /**
  * AI 简介中文版(已落库的)。
  */
-export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE lower(name) = lower($1) AND ai_brief_zh IS NOT NULL LIMIT 1`
+export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE lower(name) = lower($1) AND trans_v = $2 AND ai_brief_zh IS NOT NULL LIMIT 1`
 
 /**
  * 懒翻译翻完落库(同名多行一起写;下次直接读,不再过模型)。$1=译文,$2=公司名。
  */
-export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies SET ai_brief_zh = $1 WHERE lower(name) = lower($2)`
+export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies
+     SET ai_brief_zh = $1, trans_v = $3,
+         alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END,
+         description_zh = CASE WHEN trans_v = $3 THEN description_zh END
+     WHERE lower(name) = lower($2)`
+
+/**
+ * 官网简介中文版(版本对得上才算有)。
+ */
+export const COMPANY_DESC_ZH_BY_NAME = `SELECT description_zh FROM companies WHERE lower(name) = lower($1) AND trans_v = $2 AND coalesce(description_zh, '') <> '' LIMIT 1`
+
+/**
+ * 官网简介中文版落库(同行其余译文若是旧版本一并清空,一行的译文永远同一个版本)。
+ */
+export const COMPANY_UPDATE_DESC_ZH = `UPDATE companies
+     SET description_zh = $1, trans_v = $3,
+         alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END,
+         ai_brief_zh = CASE WHEN trans_v = $3 THEN ai_brief_zh END
+     WHERE lower(name) = lower($2)`
 
 /**
  * 公司别名两格(懒翻公司名前先查库,2026-09-14 Frank「这些相似雇主的中文名都加上懒加载翻译」)。
  */
-export const COMPANY_ALIAS_BY_NAME = `SELECT alias_zh, alias_ko FROM companies WHERE lower(name) = lower($1) LIMIT 1`
+export const COMPANY_ALIAS_BY_NAME = `SELECT alias_zh, alias_ko, trans_v FROM companies WHERE lower(name) = lower($1) LIMIT 1`
 
 /**
  * 懒翻出来的中文别名落库(只填空格,不覆盖已有)。
  */
-export const COMPANY_SET_ALIAS_ZH = `UPDATE companies SET alias_zh = $1 WHERE lower(name) = lower($2) AND coalesce(alias_zh, '') = ''`
+export const COMPANY_SET_ALIAS_ZH = `UPDATE companies
+     SET alias_zh = $1, trans_v = $3,
+         alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END, ai_brief_zh = CASE WHEN trans_v = $3 THEN ai_brief_zh END,
+         description_zh = CASE WHEN trans_v = $3 THEN description_zh END
+     WHERE lower(name) = lower($2)`
 
 /**
  * 懒翻出来的韩文别名落库(只填空格,不覆盖已有)。
  */
-export const COMPANY_SET_ALIAS_KO = `UPDATE companies SET alias_ko = $1 WHERE lower(name) = lower($2) AND coalesce(alias_ko, '') = ''`
+export const COMPANY_SET_ALIAS_KO = `UPDATE companies
+     SET alias_ko = $1, trans_v = $3,
+         alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, ai_brief_zh = CASE WHEN trans_v = $3 THEN ai_brief_zh END,
+         description_zh = CASE WHEN trans_v = $3 THEN description_zh END
+     WHERE lower(name) = lower($2)`
 
 /**
  * 职位的投递链接一列。$1=职位 id。

@@ -11,7 +11,9 @@
 import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translationOk,
 } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
-import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull } from '../db'
+import {
+  queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull, TRANS_V, vtext,
+} from '../db'
 import type {
   Db } from '../db'
 import { JOBS_LOG, log } from '../log'
@@ -49,7 +51,7 @@ import {
   STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
   TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE,
   TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  TITLE_BATCH_MAX, TITLE_MAX_LEN, TITLE_CTX_PREFIX, TITLE_CTX_STRIP_RE,
+  TITLE_BATCH_MAX, TITLE_MAX_LEN, TITLE_CTX_PREFIX, TITLE_CTX_STRIP_RE, LANG_KO_CODE,
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
@@ -78,6 +80,7 @@ import type {
   SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
   UrlHandle, WhereParam,
   JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow, TranslateTitlesIn, TitlesOut, TitleList, TitleTexts,
+  JdTransIn, JdTransOut, JdTransFact, JdTransCellIn, SaveJdTransIn, TitleTransIn, SaveTitleTransIn, DoneOut,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -3209,7 +3212,7 @@ export function toSimilar(r: Row): SimilarEmployer {
   return {
     slug: text(r.slug), name: text(r.name), industry: text(r.industry),
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
-    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko),
+    aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
   }
 }
 
@@ -4098,12 +4101,26 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
       miss.push(t)
     }
   }
-  if (miss.length === 0 || x.allowLlm === false) {
+  const still: TitleList = []
+  for (const t of miss) {
+    const stored = await loadTitleTrans({ db: x.db, title: t })
+    let cell = PARAM_NONE
+    if (stored != null) {
+      cell = jdTransCellOf({ fact: stored, lang: x.lang })
+    }
+    if (cell !== PARAM_NONE) {
+      CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, cell)
+      texts[t] = cell
+    } else {
+      still.push(t)
+    }
+  }
+  if (still.length === 0 || x.allowLlm === false) {
     return texts
   }
-  const got = await translateLinesAligned({ lines: miss.map(withTitleCtx), lang: x.lang,
+  const got = await translateLinesAligned({ lines: still.map(withTitleCtx), lang: x.lang,
     signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
-  for (const [i, t] of miss.entries()) {
+  for (const [i, t] of still.entries()) {
     const raw = got[i]
     if (raw == null) {
       continue
@@ -4114,6 +4131,7 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
     }
     CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, g)
     texts[t] = g
+    await saveTitleTrans({ db: x.db, title: t, lang: x.lang, text: g })
   }
   return texts
 }
@@ -4146,4 +4164,88 @@ export function withTitleCtx(title: string): string {
  */
 export function stripTitleCtx(line: string): string {
   return line.replace(TITLE_CTX_STRIP_RE, PARAM_NONE).trim()
+}
+
+/**
+ * 库里的职位对照两格(2026-09-14 落库):版本对得上才给,过期当没有。
+ *
+ * @param input 连接与原帖链接。
+ * @returns 两格;行不在给 null。
+ */
+export async function loadJdTrans(input: JdTransIn): JdTransOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_TRANS_BY_URL, params: [input.url], map: toJdTransFact })
+  return firstOf(rows)
+}
+
+/**
+ * 职位对照行 → 两格(过期 → '')。
+ *
+ * @param r 原始行。
+ * @returns 两格。
+ */
+function toJdTransFact(r: Row): JdTransFact {
+  return { zh: vtext({ v: r.trans_v, cell: r.jd_trans_zh }), ko: vtext({ v: r.trans_v, cell: r.jd_trans_ko }) }
+}
+
+/**
+ * 按语种取一格。
+ *
+ * @param x 两格与语种。
+ * @returns 那一格;'' = 没有。
+ */
+export function jdTransCellOf(x: JdTransCellIn): string {
+  if (x.lang === LANG_KO_CODE) {
+    return x.fact.ko
+  }
+  return x.fact.zh
+}
+
+/**
+ * 职位对照落库(带版本;同行旧版本译文一并清空)。
+ *
+ * @param input 连接、原帖链接、语种与译文。
+ * @returns 无。
+ */
+export async function saveJdTrans(input: SaveJdTransIn): DoneOut {
+  let sql = SQL.JD_TRANS_SAVE_ZH
+  if (input.lang === LANG_KO_CODE) {
+    sql = SQL.JD_TRANS_SAVE_KO
+  }
+  await input.db.query(sql, [input.text, input.url, TRANS_V])
+}
+
+/**
+ * 库里的职位名译名(任一同名岗、现版本)。
+ *
+ * @param input 连接与职位名。
+ * @returns 两格;没有给 null。
+ */
+export async function loadTitleTrans(input: TitleTransIn): JdTransOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.TITLE_TRANS_BY_TITLE, params: [input.title, TRANS_V],
+    map: toTitleTransFact })
+  return firstOf(rows)
+}
+
+/**
+ * 职位名译名行 → 两格(查询已按版本过滤)。
+ *
+ * @param r 原始行。
+ * @returns 两格。
+ */
+function toTitleTransFact(r: Row): JdTransFact {
+  return { zh: text(r.title_zh), ko: text(r.title_ko) }
+}
+
+/**
+ * 职位名译名落库(同名岗全写,带版本)。
+ *
+ * @param input 连接、职位名、语种与译名。
+ * @returns 无。
+ */
+export async function saveTitleTrans(input: SaveTitleTransIn): DoneOut {
+  let sql = SQL.TITLE_TRANS_SAVE_ZH
+  if (input.lang === LANG_KO_CODE) {
+    sql = SQL.TITLE_TRANS_SAVE_KO
+  }
+  await input.db.query(sql, [input.text, input.title, TRANS_V])
 }

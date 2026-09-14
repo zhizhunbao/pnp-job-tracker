@@ -4861,7 +4861,12 @@ export type JdTitleBody = {
  */
 export type TranslateTitlesIn = {
   /**
-   * 准不准烧模型(路由按 IP 限流后传进来;false = 只回缓存里有的)。
+   * 数据库连接(先查库里的译名,翻完写回)。
+   */
+  db: Db
+
+  /**
+   * 准不准烧模型(路由按 IP 限流后传进来;false = 只回缓存 / 库里有的)。
    */
   allowLlm: boolean
 
@@ -4890,3 +4895,123 @@ export type TitleTexts = Record<string, string>
  * translateTitles 的出参。
  */
 export type TitlesOut = Promise<TitleTexts>
+
+/**
+ * `loadJdTrans` 的入参。
+ */
+export type JdTransIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 原帖链接(jobs 的键)。
+   */
+  url: string
+}
+
+/**
+ * 译文两格(过期 → '')。
+ */
+export type JdTransFact = {
+  /**
+   * 中文。
+   */
+  zh: string
+
+  /**
+   * 韩文。
+   */
+  ko: string
+}
+
+/**
+ * `loadJdTrans` / `loadTitleTrans` 的出参:两格,行不在给 null。
+ */
+export type JdTransOut = Promise<JdTransFact | null>
+
+/**
+ * `jdTransCellOf` 的入参。
+ */
+export type JdTransCellIn = {
+  /**
+   * 两格。
+   */
+  fact: JdTransFact
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+}
+
+/**
+ * `saveJdTrans` 的入参。
+ */
+export type SaveJdTransIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 原帖链接。
+   */
+  url: string
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+
+  /**
+   * 译文。
+   */
+  text: string
+}
+
+/**
+ * `loadTitleTrans` 的入参。
+ */
+export type TitleTransIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 职位名。
+   */
+  title: string
+}
+
+/**
+ * `saveTitleTrans` 的入参。
+ */
+export type SaveTitleTransIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+
+  /**
+   * 译名。
+   */
+  text: string
+}
+
+/**
+ * 只落库不回值的出参。
+ */
+export type DoneOut = Promise<void>

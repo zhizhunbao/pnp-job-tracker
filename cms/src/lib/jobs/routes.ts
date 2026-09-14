@@ -34,7 +34,8 @@ import {
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
-  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx,
+  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, saveJdTrans, loadTitleTrans,
+  saveTitleTrans,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -432,7 +433,16 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
   }
-  const fmt = await loadJdFormatted({ db: await getDb(), url: url })
+  const db = await getDb()
+  const stored = await loadJdTrans({ db: db, url: url })
+  if (stored != null) {
+    const cell = jdTransCellOf({ fact: stored, lang: lang })
+    if (cell !== PARAM_NONE) {
+      CACHE.jdTransBy.set(ck, cell)
+      return Response.json({ ok: true, text: cell, cached: true })
+    }
+  }
+  const fmt = await loadJdFormatted({ db: db, url: url })
   if (fmt == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
@@ -446,6 +456,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
     })
     if (r.full) {
       CACHE.jdTransBy.set(ck, r.text)
+      await saveJdTrans({ db: db, url: url, lang: lang, text: r.text })
     }
     return Response.json({ ok: true, text: r.text, cached: false })
   } catch (e) {
@@ -491,7 +502,8 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   }
   if (titles.length > 0) {
     const allow = checkLimit([[TITLE_LIMIT_PREFIX + ipOf(req), TITLE_IP_DAILY]])
-    const batch = await translateTitles({ titles: titles, lang: lang, allowLlm: allow }).catch(emptyTexts)
+    const batch = await translateTitles({ db: await getDb(), titles: titles, lang: lang,
+      allowLlm: allow }).catch(emptyTexts)
     return Response.json({ ok: true, texts: batch })
   }
   if (title === PARAM_NONE) {
@@ -501,6 +513,15 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   const hit = CACHE.titleTransBy.get(ck)
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
+  }
+  const db = await getDb()
+  const stored = await loadTitleTrans({ db: db, title: title })
+  if (stored != null) {
+    const cell = jdTransCellOf({ fact: stored, lang: lang })
+    if (cell !== PARAM_NONE) {
+      CACHE.titleTransBy.set(ck, cell)
+      return Response.json({ ok: true, text: cell, cached: true })
+    }
   }
   if (checkLimit([[TITLE_LIMIT_PREFIX + ipOf(req), TITLE_IP_DAILY]]) === false) {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
@@ -517,6 +538,7 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     CACHE.titleTransBy.set(ck, clean)
+    await saveTitleTrans({ db: db, title: title, lang: lang, text: clean })
     return Response.json({ ok: true, text: clean, cached: false })
   } catch (e) {
     let msg = String(e)

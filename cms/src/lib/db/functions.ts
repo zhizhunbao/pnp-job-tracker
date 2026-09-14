@@ -15,9 +15,11 @@
  * 哪里不同,写进默认值架构卷宗的表格再加。
  */
 
+import { TRANS_V } from './constants'
 import { dbPoolError } from '../error'
 import { DB_LOG, log } from '../log'
-import type { DbPool, PayloadWithPool, QueryRowsIn } from './types'
+import type { DbPool, PayloadWithPool, QueryRowsIn, VtextIn,
+} from './types'
 
 /**
  * 从已有的 payload 实例取池。取不到直接抛 —— 60 个调用点里只有 4 个做了 `if (!pool)` 兜底,
@@ -247,4 +249,21 @@ export async function queryRows<R>(input: QueryRowsIn<R>): Promise<R[]> {
     out.push(input.map(row))
   }
   return out
+}
+
+/**
+ * 带版本的译文格(默认值词汇表第五词,2026-09-14):行上的 trans_v 等于当前 TRANS_V 才给译文,否则给空串 ——
+ * 过期的译文在读侧就当没有,消费端不用各自判版本。
+ *
+ * @param x 版本号格与译文格。
+ * @returns 译文;过期 / 缺给 ''。
+ */
+export function vtext(x: VtextIn): string {
+  if (x.v == null || Number(x.v) !== TRANS_V) {
+    return ''
+  }
+  if (x.cell == null) {
+    return ''
+  }
+  return String(x.cell).trim()
 }

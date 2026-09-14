@@ -17,7 +17,7 @@ export {
 } from './functions'
 
 export {
-  count, firstOf, firstOr, jsonOrNull, numOrNull, queryRows, queryRowsOrEmpty, show, text, textOrNull,
+  count, firstOf, firstOr, jsonOrNull, numOrNull, queryRows, queryRowsOrEmpty, show, text, textOrNull, vtext,
 } from './functions'
 
 export * as SQL from './sql'
@@ -25,3 +25,8 @@ export * as SQL from './sql'
 export type {
   Db, DbClient, DbPool, PayloadWithPool, QueryResult, QueryRowsIn, SqlParam,
 } from './types'
+
+/**
+ * 译文版本号(存储契约;读写两侧共用)。
+ */
+export { TRANS_V } from './constants'

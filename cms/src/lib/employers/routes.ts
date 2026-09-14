@@ -32,7 +32,7 @@ import {
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
-  aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc,
+  aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody,
@@ -367,7 +367,13 @@ export async function employersDescRoute(req: Request): Promise<Response> {
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
   }
-  const text = await loadCompanyDesc({ db: await getDb(), name: name })
+  const db = await getDb()
+  const stored = await loadCompanyDescZh({ db: db, name: name })
+  if (stored != null && lang === WD_LANG_ZH) {
+    CACHE.briefTransBy.set(ck, stored)
+    return Response.json({ ok: true, text: stored, cached: true })
+  }
+  const text = await loadCompanyDesc({ db: db, name: name })
   if (text == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
@@ -381,6 +387,9 @@ export async function employersDescRoute(req: Request): Promise<Response> {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     CACHE.briefTransBy.set(ck, r.text)
+    if (lang === WD_LANG_ZH) {
+      await saveCompanyDescZh({ db: db, name: name, text: r.text })
+    }
     return Response.json({ ok: true, text: r.text, cached: false })
   } catch (e) {
     let msg = String(e)
