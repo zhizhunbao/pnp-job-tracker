@@ -42,6 +42,11 @@ export type CoopJobDbRow = {
   employment_hours: string | null
 
   /**
+   * 雇佣期限词(permanent / term / seasonal / 空)。
+   */
+  employment_term: string | null
+
+  /**
    * 发布日(to_char 出的 YYYY-MM-DD;校内板 = 本站首见日)。
    */
   date_posted: string | null
@@ -80,6 +85,11 @@ export type CoopJobRow = {
    * 工时词(full / part / 空串)。
    */
   empHours: string
+
+  /**
+   * 雇佣期限词(permanent / term / seasonal / 空串)。
+   */
+  empTerm: string
 
   /**
    * 发布日 YYYY-MM-DD(空串 = 没记)。

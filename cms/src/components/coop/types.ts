@@ -46,6 +46,11 @@ export type CoopJobRow = {
   empHours: string
 
   /**
+   * 雇佣期限词(permanent / term / seasonal / 空串)。
+   */
+  empTerm: string
+
+  /**
    * 发布日 YYYY-MM-DD(空串 = 没记)。
    */
   datePosted: string
@@ -91,14 +96,24 @@ export type CoopCellRow = {
   company: string
 
   /**
-   * 城市文案(城市 + 空格 + 省码;都没有给空串)。
+   * 省名(界面语言,lib/location provName;没有给空串)。
+   */
+  provText: string
+
+  /**
+   * 城市(空串 = 没有)。
    */
   cityText: string
 
   /**
-   * 工时文案(词条译出;没有给空串)。
+   * 手机卡地点文案(城市 + 「, 」+ 省名;缺哪段省哪段)。
    */
-  hoursText: string
+  locText: string
+
+  /**
+   * 类型文案(工时词优先译 全职 / 兼职,没有再译雇佣期限 合同 / 季节;都没有给空串)。
+   */
+  kindText: string
 
   /**
    * 发布日文案(YYYY-MM-DD)。
@@ -132,9 +147,9 @@ export type CoopCellRowsIn = {
 }
 
 /**
- * hoursTextOf() 入参(工时词译文)。
+ * kindTextOf() / provTextOf() 入参(取词 + 一行)。
  */
-export type HoursTextIn = {
+export type RowTextIn = {
   /**
    * 取词函数。
    */

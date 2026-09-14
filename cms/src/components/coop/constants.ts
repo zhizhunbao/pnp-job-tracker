@@ -62,14 +62,19 @@ export const DETAIL_PATH = '/jobs/'
 export const K_EMP = 'emp.'
 
 /**
+ * 雇佣期限词的词条前缀(职位板同一份:term.permanent / term.term / term.seasonal)。
+ */
+export const K_TERM = 'term.'
+
+/**
+ * 手机卡地点格里城市与省名的分隔(照雇主板「Kelowna, BC」)。
+ */
+export const LOC_SEP = ', '
+
+/**
  * 表格操作小钮走 button 桶的 mini 档(与职位板 / 雇主板操作列同一颗钮)。
  */
 export const MINI_BTN_KIND = 'mini'
-
-/**
- * 城市与省码之间的空格(紧凑格「Ottawa ON」)。
- */
-export const CITY_SEP = ' '
 
 /**
  * 空串(没值的格)。
@@ -97,9 +102,14 @@ export const COL_TITLE = 'title'
 export const COL_CITY = 'city'
 
 /**
- * 列身份:工时。
+ * 列身份:省。
  */
-export const COL_HOURS = 'empHours'
+export const COL_PROV = 'province'
+
+/**
+ * 列身份:类型(工时词优先,没有再看雇佣期限词;2026-09-13 Frank「这个也不对啊」—— 合同帖工时列空着)。
+ */
+export const COL_KIND = 'kind'
 
 /**
  * 列身份:操作。

@@ -21,8 +21,8 @@ export function CoopCard({ r }: CoopCardIn) {
     return (
       <JobCard href={r.href}
         title={title}
-        location={r.cityText}
-        salary={r.hoursText}
+        location={r.locText}
+        salary={r.kindText}
         date={r.dateText} />
     )
   }
@@ -30,8 +30,8 @@ export function CoopCard({ r }: CoopCardIn) {
     <JobCard href={r.href}
       title={title}
       company={{ text: r.company }}
-      location={r.cityText}
-      salary={r.hoursText}
+      location={r.locText}
+      salary={r.kindText}
       date={r.dateText} />
   )
 }

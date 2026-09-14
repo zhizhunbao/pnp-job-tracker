@@ -41,6 +41,7 @@ export function toCoopJobRow(r: CoopJobDbRow): CoopJobRow {
     city: text(r.city),
     province: text(r.province),
     empHours: text(r.employment_hours),
+    empTerm: text(r.employment_term),
     datePosted: text(r.date_posted),
   }
 }

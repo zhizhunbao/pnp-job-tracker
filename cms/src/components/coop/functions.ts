@@ -8,13 +8,14 @@
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
 import type { Col } from '@/components/table'
+import { provName } from '@/lib/location'
 import {
-  BOARD_NAME, CITY_SEP, COL_ACTS, COL_CITY, COL_COMPANY, COL_DATE, COL_HOURS, COL_TITLE, DETAIL_PATH, K_EMP,
-  MINI_BTN_KIND, SCHOOL_NAME, TEXT_NONE,
+  BOARD_NAME, COL_ACTS, COL_CITY, COL_COMPANY, COL_DATE, COL_KIND, COL_PROV, COL_TITLE, DETAIL_PATH, K_EMP, K_TERM,
+  LOC_SEP, MINI_BTN_KIND, SCHOOL_NAME, TEXT_NONE,
 } from './constants'
 import { CoopActsCell } from './coopactscell'
 import { CoopTitleCell } from './cooptitlecell'
-import type { CoopCellRow, CoopCellRowsIn, CoopColsIn, CoopJobRow, CoopSubIn, HoursTextIn } from './types'
+import type { CoopCellRow, CoopCellRowsIn, CoopColsIn, CoopSubIn, RowTextIn } from './types'
 import css from './coop.module.css'
 
 
@@ -34,8 +35,10 @@ export function toCoopCellRows(x: CoopCellRowsIn): CoopCellRow[] {
       href: DETAIL_PATH + String(r.id),
       title: r.title,
       company: r.company,
-      cityText: cityTextOf(r),
-      hoursText: hoursTextOf({ t: x.t, row: r }),
+      provText: provTextOf({ t: x.t, row: r }),
+      cityText: r.city,
+      locText: locTextOf({ t: x.t, row: r }),
+      kindText: kindTextOf({ t: x.t, row: r }),
       dateText: r.datePosted,
       actBtnCls,
       actText,
@@ -54,37 +57,54 @@ function actBtnClsOf(): string {
 }
 
 /**
- * 城市文案:城市 + 空格 + 省码(紧凑格约定:城市当行主体时才双行,这里是列格)。
- *
- * @param r SSR 行。
- * @returns 文案;都没有给空串。
- */
-function cityTextOf(r: CoopJobRow): string {
-  if (r.city === TEXT_NONE) {
-    return r.province
-  }
-  if (r.province === TEXT_NONE) {
-    return r.city
-  }
-  return r.city + CITY_SEP + r.province
-}
-
-/**
- * 工时译文(职位板同一份词条 emp.full / emp.part)。
+ * 省名(界面语言;lib/location 同一把尺子,与职位板省列同形)。
  *
  * @param x 取词函数与行。
- * @returns 译文;没有工时词给空串。
+ * @returns 省名;没有省码给空串。
  */
-function hoursTextOf(x: HoursTextIn): string {
-  if (x.row.empHours === TEXT_NONE) {
+function provTextOf(x: RowTextIn): string {
+  if (x.row.province === TEXT_NONE) {
     return TEXT_NONE
   }
-  return x.t(K_EMP + x.row.empHours)
+  return provName({ t: x.t, code: x.row.province, localeOnly: true })
 }
 
+/**
+ * 手机卡地点:城市 + 「, 」+ 省名(缺哪段省哪段)。
+ *
+ * @param x 取词函数与行。
+ * @returns 地点文案。
+ */
+function locTextOf(x: RowTextIn): string {
+  const prov = provTextOf(x)
+  if (x.row.city === TEXT_NONE) {
+    return prov
+  }
+  if (prov === TEXT_NONE) {
+    return x.row.city
+  }
+  return x.row.city + LOC_SEP + prov
+}
 
 /**
- * 校内板的列。
+ * 类型:工时词优先(全职 / 兼职),没有再看雇佣期限词(合同 / 季节;职位板同一份词条)。
+ *
+ * @param x 取词函数与行。
+ * @returns 译文;两个词都没有给空串。
+ */
+function kindTextOf(x: RowTextIn): string {
+  if (x.row.empHours !== TEXT_NONE) {
+    return x.t(K_EMP + x.row.empHours)
+  }
+  if (x.row.empTerm !== TEXT_NONE) {
+    return x.t(K_TERM + x.row.empTerm)
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 校内板的列(2026-09-13 Frank「第一列应该还是日期」「省 市 要分开」:发布时间 / 职位 / 公司 / 省 / 市 / 类型 / 操作;
+ * 板上不给发布日,日期列是本站首次收录日 —— 日抓之后与发布日只差一天,列名照职位板叫发布时间)。
  *
  * @param x 取词函数。
  * @returns 列声明。
@@ -99,15 +119,16 @@ sort: dateSortOf,
 render: dateTextOf,
       className: cssOf(css.wide),
     },
-    { key: COL_COMPANY, label: x.t('col.company'), sort: companySortOf, render: companyTextOf },
     { key: COL_TITLE, label: x.t('col.title'), sort: titleSortOf, render: CoopTitleCell },
+    { key: COL_COMPANY, label: x.t('col.company'), sort: companySortOf, render: companyTextOf },
+    { key: COL_PROV, label: x.t('col.province'), nowrap: true, sort: provSortOf, render: provCellOf },
     { key: COL_CITY, label: x.t('col.city'), nowrap: true, sort: citySortOf, render: cityCellOf },
     {
-      key: COL_HOURS,
-label: x.t('col.empHours'),
+      key: COL_KIND,
+label: x.t('coop.kind'),
 nowrap: true,
-sort: hoursSortOf,
-render: hoursCellOf,
+sort: kindSortOf,
+render: kindCellOf,
       className: cssOf(css.wide),
     },
     { key: COL_ACTS, label: x.t('col.actions'), nowrap: true, render: CoopActsCell, className: cssOf(css.wide) },
@@ -185,23 +206,43 @@ function cityCellOf(r: CoopCellRow): string {
 }
 
 /**
- * 工时排序键。
+ * 省排序键。
  *
  * @param r 一行。
- * @returns 工时文案。
+ * @returns 省名。
  */
-function hoursSortOf(r: CoopCellRow): string {
-  return r.hoursText
+function provSortOf(r: CoopCellRow): string {
+  return r.provText
 }
 
 /**
- * 工时格。
+ * 省格。
  *
  * @param r 一行。
- * @returns 工时文案。
+ * @returns 省名。
  */
-function hoursCellOf(r: CoopCellRow): string {
-  return r.hoursText
+function provCellOf(r: CoopCellRow): string {
+  return r.provText
+}
+
+/**
+ * 类型排序键。
+ *
+ * @param r 一行。
+ * @returns 类型文案。
+ */
+function kindSortOf(r: CoopCellRow): string {
+  return r.kindText
+}
+
+/**
+ * 类型格。
+ *
+ * @param r 一行。
+ * @returns 类型文案。
+ */
+function kindCellOf(r: CoopCellRow): string {
+  return r.kindText
 }
 
 
