@@ -1335,7 +1335,6 @@ export type HeadCellIn = {
   h: HeadCellView
 }
 
-
 /**
  * SkeletonRow(换血中的骨架行)的 props。
  */
@@ -1962,11 +1961,6 @@ export type JdActsIn = {
    * 界面语言(英文界面不出中文对照)。
    */
   lang: Lang
-
-  /**
-   * 「打开完整页」的去处;'' = 不出这颗钮(整页版)。
-   */
-  fullHref: string
 }
 
 /**
@@ -2089,7 +2083,6 @@ export type JdPair = {
   zh: string
 }
 
-
 /**
  * ApplyBar(投递栏)的 props。
  */
@@ -2188,26 +2181,6 @@ export type ApplyBarPanel = {
    * 关/完成意向表单:都继续投递(投递必须丝滑)。
    */
   onIntentDone: ClickFn
-}
-
-/**
- * JdSource(底部来源行)的 props。
- */
-export type JdSourceIn = {
-  /**
-   * 「来源」标签。
-   */
-  label: string
-
-  /**
-   * 官方原帖链接。
-   */
-  url: string
-
-  /**
-   * 只报域名不铺整条链接(#239)。
-   */
-  host: string
 }
 
 /**
@@ -5151,46 +5124,6 @@ export type TransShownIn = {
    * 译文;null = 还没拉。
    */
   trans: string | null
-}
-
-/**
- * showSourceOf 的入参。
- */
-export type ShowSourceIn = {
-  /**
-   * 官方原帖链接;'' = 没有。
-   */
-  applyUrl: string
-
-  /**
-   * 取数态。
-   */
-  status: JdStatus
-
-  /**
-   * 整理版。
-   */
-  fmt: string | null | undefined
-
-  /**
-   * 在看原文没。
-   */
-  showOrig: boolean
-}
-
-/**
- * fullHrefOf 的入参。
- */
-export type FullHrefIn = {
-  /**
-   * 在不在弹框里。
-   */
-  inModal: boolean
-
-  /**
-   * 这一岗的号。
-   */
-  id: string | number
 }
 
 /**

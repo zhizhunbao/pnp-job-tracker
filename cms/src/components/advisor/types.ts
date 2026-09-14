@@ -810,31 +810,6 @@ export type CategoryPanelIn = {
 }
 
 /**
- * CategoryActs 的 props。
- */
-export type CategoryActsIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 界面语言(英文界面不出中文对照钮)。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 中文对照面板。
-   */
-  trans: NocTransPanel
-
-  /**
-   * AI 速读面板。
-   */
-  ai: AiReadPanel
-}
-
-/**
  * 身份卡的一行(点击字段=该行高亮;NOC 与职业名同属 'noc' 字段,点 NOC 两行齐亮)。
  */
 export type IdRowFact = {
@@ -1199,46 +1174,6 @@ export type LocationPanelIn = {
    * AIP 指定雇主名录(市级卡按 province + location 客户端筛,口径对齐后端)。
    */
   desigEmp: AdvisorDesigEmps
-}
-
-/**
- * LocationActs 的 props。
- */
-export type LocationActsIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 省码(拼「打开完整页」的地址;空串 = 整条钮行不出)。
-   */
-  province: string
-
-  /**
-   * 中文对照开着没有。
-   */
-  showZh: boolean
-
-  /**
-   * 中文对照开合。
-   */
-  onToggleZh: () => void
-
-  /**
-   * AI 解读面板。
-   */
-  ai: AiReadPanel
-
-  /**
-   * 事实块回来了没有(没回来不给点 AI —— 它解读的就是这些数)。
-   */
-  factsReady: boolean
 }
 
 /**
@@ -1826,31 +1761,6 @@ export type ActHeadIn = {
    * 剩余免费次数;null = 还没拿到(第 5 轮 #16 额度可见化,JobBody 回传)。
    */
   freeLeft: number | null
-}
-
-/**
- * FieldActs 的 props(字段事实弹框顶部的三钮栏)。
- */
-export type FieldActsIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 界面语言(英文界面不出中文对照钮)。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 中文对照开着没有。
-   */
-  showZh: boolean
-
-  /**
-   * 中文对照开合。
-   */
-  onToggleZh: () => void
 }
 
 /**

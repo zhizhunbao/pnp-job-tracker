@@ -11,6 +11,7 @@
  * (2026-07-06 用户拍板:合规统一在 footer 说明)。
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(浮层机器与三台状态机迁 hooks,
  * 页眉/钮栏/正文/AI 卡各成一件)。
+ * 2026-09-14 Frank「按钮都去掉」:字段弹框的钮条撤(FieldActs 件随撤);中 / 韩界面对照默认开(hooks)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -18,12 +19,11 @@
 import { MeansForMe } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import {
-  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_CATEGORY, GROUP_COMPANY, GROUP_IMMIGRATION, GROUP_LOCATION,
+  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION,
 } from './constants'
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
-import { FieldActs } from './fieldacts'
 import { FloatPanel } from './floatpanel'
 import { headSubOf, modalTitleOf, planClbOf } from './functions'
 import { useAdvisorModal, useFloatPanel } from './hooks'
@@ -72,10 +72,8 @@ export function AdvisorModal({
       sub={headSubOf({ group, nocDesc, job, lang })}
       freeLeft={m.freeLeft} />
   )
-  const ownActs = group === GROUP_CATEGORY || group === GROUP_LOCATION || group === GROUP_COMPANY
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}>
-      {ownActs === false && <FieldActs t={t} lang={lang} showZh={m.showZh} onToggleZh={m.onToggleZh} />}
       {group === GROUP_IMMIGRATION && (
         <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
       )}

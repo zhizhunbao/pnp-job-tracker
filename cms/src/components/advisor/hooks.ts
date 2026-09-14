@@ -15,7 +15,7 @@ import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
   ADV_DONE, ADV_ERROR, ADV_IDLE, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
-  GROUP_COMPANY, GROUP_IMMIGRATION, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE, TRACK_IMM_TRANSLATE,
+  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE, TRACK_IMM_TRANSLATE,
   TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
 } from './constants'
 import {
@@ -273,6 +273,16 @@ export function useNocTrans(x: NocTransIn): NocTransPanel {
   const [showTrans, setShow] = useState(false)
   const [status, setStatus] = useState<TransStatus>(TRANS_IDLE)
   const [trans, setTrans] = useState<NocTrans | null>(null)
+  const autoLoad = x.lang !== LANG_EN
+  const noc = x.noc
+  const lang = x.lang
+
+  useEffect(function loadOnOpen() {
+    if (autoLoad === false) {
+      return
+    }
+    makeLoadNocTrans({ noc, lang, setTrans, setShow, setStatus })()
+  }, [autoLoad, noc, lang])
 
   function onToggle(): void {
     if (trans != null) {
@@ -415,7 +425,7 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  */
 export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const long = useAdvisorLong({ group: x.group, job: x.job, lang: x.lang })
-  const [showZh, setShowZh] = useState(false)
+  const [showZh, setShowZh] = useState(x.lang !== LANG_EN)
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const isCompanyGroup = x.group === GROUP_COMPANY
   const group = x.group

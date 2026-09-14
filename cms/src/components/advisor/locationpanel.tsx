@@ -10,20 +10,19 @@
  * ⚠️ 中文对照开关(Frank 走查#2)是「以后加英文」的**前置占位** —— 切换态在、钮在,
  * 但地点内容现已本地化,所以它眼下只换钮上的字,待英文正文接入即生效。
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(两级取数与 AI 迁 hooks,三段卡组各成一件)。
+ * 2026-09-14 Frank「按钮都去掉」「中文或者韩文默认就显示对照」:钮条撤,对照随界面语定死(非英文即开)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { useState } from 'react'
 import { makeT } from '@/lib/i18n'
 import { parseLoc } from '@/lib/location'
-import { ADV_IDLE, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, TRACK_AI_READ } from './constants'
+import { ADV_IDLE, LANG_EN, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, TRACK_AI_READ } from './constants'
 import { AiReadCard } from './aireadcard'
 import { CityCards } from './citycards'
 import { DistrictCards } from './districtcards'
-import { aiFieldOf, aiIdOf, factsReadyOf, levelOf, makeToggle } from './functions'
+import { aiFieldOf, aiIdOf, levelOf } from './functions'
 import { useAiRead, useLocationData } from './hooks'
-import { LocationActs } from './locationacts'
 import { LocationCard } from './locationcard'
 import { ProvinceCards } from './provincecards'
 import type { LocationPanelIn } from './types'
@@ -45,14 +44,9 @@ export function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desig
     lang,
     trackName: TRACK_AI_READ,
   })
-  const [showZh, setShowZh] = useState(false)
+  const showZh = lang !== LANG_EN
   return (
     <>
-      <LocationActs t={t} lang={lang} province={job.province}
-        showZh={showZh}
-        onToggleZh={makeToggle({ on: showZh, set: setShowZh })}
-        ai={ai}
-        factsReady={factsReadyOf({ level, prov: data.prov, cityInfo: data.cityInfo })} />
       {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}
       <LocationCard t={t} job={job} srcField={srcField} />
       {level === LEVEL_PROVINCE && (

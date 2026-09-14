@@ -5,13 +5,13 @@
  * 行业中文已删(Frank)。知名章可点跳维基是 Frank「有 wiki 把 wiki 加进来」,
  * 章形不是裸链(循 #106)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
+ * 2026-09-14 Frank「也去掉」:「知名企业 ↗」章撤(弹框基本信息卡同撤),只剩政府机构章。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
-import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { ARROW_EXTERNAL, CLS_SEP, TARGET_BLANK, TEXT_NONE } from './constants'
+import { CLS_SEP } from './constants'
 import { isGovCompany } from './functions'
 import type { CompanyTopInfoIn } from './types'
 import css from './companies.module.css'
@@ -24,19 +24,12 @@ import css from './companies.module.css'
  */
 export function CompanyTopInfo({ company, t }: CompanyTopInfoIn) {
   const gov = isGovCompany({ name: company.name })
-  if (company.wikiUrl === TEXT_NONE && gov === false) {
+  if (gov === false) {
     return null
   }
   return (
     <div className={css.badges}>
       {gov && <span className={cssOf(css.badge) + CLS_SEP + cssOf(css.badgeGov)}>{t('co.gov')}</span>}
-      {company.wikiUrl !== TEXT_NONE && (
-        <LinkButton href={company.wikiUrl}
-          target={TARGET_BLANK}
-          className={cssOf(css.badge) + CLS_SEP + cssOf(css.badgeWiki)}>
-          {t('co.wellKnown')}{ARROW_EXTERNAL}
-        </LinkButton>
-      )}
     </div>
   )
 }

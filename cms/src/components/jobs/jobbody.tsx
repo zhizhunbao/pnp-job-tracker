@@ -9,19 +9,18 @@
  * 投递栏在整理进行中先藏(2026-07-25 用户「AI 整理的时候不要显示这个按钮,等整理完了再显示」)——
  * 有结果(整理版 / 失败 / 空态)才出,fmt 各路径都会落定,不会永久不显。
  * 2026-08-28 换装批自 Jd.tsx 重写落位。
+ * 2026-09-14 Frank「这个也去掉」:底部「来源: 域名」行撤(JdSource 件随撤);「打开完整页」钮同日撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, STATUS_CLOSED, UNDER_TITLE } from './constants'
-import { fullHrefOf, hostOf, showSourceOf } from './functions'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
 import { JdActs } from './jdacts'
 import { JdClosed } from './jdclosed'
 import { JdContent } from './jdcontent'
-import { JdSource } from './jdsource'
 import type { JobBodyIn } from './types'
 
 /**
@@ -35,7 +34,7 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
   return (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
-      <JdActs d={d} lang={lang} fullHref={fullHrefOf({ inModal, id: job.id })} />
+      <JdActs d={d} lang={lang} />
       {d.aiOn && (
         <div className={CARD_MD_CLS}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={d.t('cat.aiRead')}
@@ -43,9 +42,6 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
         </div>
       )}
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} />
-      {showSourceOf({ applyUrl: job.applyUrl, status: d.status, fmt: d.fmt, showOrig: d.showOrig }) && (
-        <JdSource label={d.t('src.label')} url={job.applyUrl} host={hostOf(job.applyUrl)} />
-      )}
       {d.fmt !== undefined && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
           onPage={inModal === false} />

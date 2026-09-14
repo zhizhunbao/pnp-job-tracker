@@ -6,6 +6,7 @@
  * 数据层只存英文,英文界面不出这个钮)/ AI 速读(点了才生成,复用顾问免费额度
  * field=occRead,按 NOC 缓存 —— 不点不烧,#176 零成本默认不破)。
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(两台机器迁 hooks 的 useNocTrans / useAiRead)。
+ * 2026-09-14 Frank「按钮都去掉」「中文或者韩文默认就显示对照」:钮条撤,对照由 useNocTrans 按界面语自动加载。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -13,7 +14,6 @@
 import { makeT } from '@/lib/i18n'
 import { ADV_IDLE, FIELD_OCC_READ, TEXT_NONE } from './constants'
 import { AiReadCard } from './aireadcard'
-import { CategoryActs } from './categoryacts'
 import { CategoryIdCard } from './categoryidcard'
 import { idRowsOf, listItemsOf, nocOf, zhItemsOf } from './functions'
 import { useAiRead, useNocTrans } from './hooks'
@@ -47,7 +47,6 @@ export function CategoryPanel({ job, lang, plan, nocDesc, srcField }: CategoryPa
   }
   return (
     <>
-      <CategoryActs t={t} lang={lang} trans={trans} ai={ai} />
       {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}
       <CategoryIdCard t={t} rows={idRowsOf({ t, job, noc })} srcField={srcField} />
       <NocList head={t('fact.nocDuties')} fetched={fetched}

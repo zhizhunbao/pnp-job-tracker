@@ -1413,18 +1413,21 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
 
   /**
    * 省 → 地点弹框(E8-12:格内文字仍是地图链接,两个动作分开)。
+   * 2026-09-14 Frank「这部分的弹框都删掉」:省 / 市 / 区不再开地点弹框,格内地图链接照旧。
    */
-  province: 'location',
+  province: 'none',
 
   /**
    * 市 → 地点弹框。
+   * 2026-09-14 同上。
    */
-  city: 'location',
+  city: 'none',
 
   /**
    * 区 → 地点弹框。
+   * 2026-09-14 同上。
    */
-  district: 'location',
+  district: 'none',
 
   /**
    * ⑤ PNP → 省提名弹框(2026-07-25 Frank 拆弹框:「xx 的内容只放 xx 的弹框」,
@@ -1449,28 +1452,33 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
 
   /**
    * ⑥ 薪资族 → 薪资弹框(帖面薪资 + 折算 + 当地 band + vs 中位一处看全)。
+   * 2026-09-14 Frank「这部分的弹框都删掉」:薪资族五格不再开薪资弹框,纯文本。
    */
-  vsMedian: 'salary',
+  vsMedian: 'none',
 
   /**
    * 薪资原文。
+   * 2026-09-14 同上。
    */
-  salary: 'salary',
+  salary: 'none',
 
   /**
    * 折算年薪。
+   * 2026-09-14 同上。
    */
-  salaryYr: 'salary',
+  salaryYr: 'none',
 
   /**
    * 当地中位时薪。
+   * 2026-09-14 同上。
    */
-  wageMedHr: 'salary',
+  wageMedHr: 'none',
 
   /**
    * 当地中位年薪。
+   * 2026-09-14 同上。
    */
-  wageMedYr: 'salary',
+  wageMedYr: 'none',
 
   /**
    * ② 「匹配」列 → 个人化解读弹框(2026-07-26:操作列「移民通道」钮下架后,
@@ -3155,6 +3163,18 @@ export const STATUS_CAMPUS = 'campus'
  * 校内板切面的 URL 状态键(URL_TO_FILTER 的 st;/coop 经 middleware 改写成 ?st=campus&org=hireac 进本板)。
  */
 export const URL_ST = 'st'
+
+/**
+ * 校内板切面的 URL 渠道键(URL_TO_FILTER 的 org;与 URL_ST 一起由 /coop 改写钉上)。
+ */
+export const URL_ORG = 'org'
+
+/**
+ * 校内板切面的路径。地址栏在这条路径上时 st / org 两把钥匙由路径承担,筛选回写地址栏不再重复写
+ * (2026-09-14 Frank 贴出 `/coop?st=campus&org=hireac`:dev StrictMode 双跑 effect 首写即漏,
+ * 生产上改任一筛选也会把这两键带进地址)。
+ */
+export const PATH_COOP = '/coop'
 
 /**
  * 校内板切面的 SEO 头(2026-09-13 Frank「直接复用职位板整套」:/coop 落地时替 BOARD_META,其余同一块板)。

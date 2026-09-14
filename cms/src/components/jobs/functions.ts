@@ -39,7 +39,7 @@ import {
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE,
   HTTP_PAYMENT, HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX,
-  JD_BULLET_RE, JD_DASH_PREFIX_RE, JD_DONE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_EMPTY, JD_ESC_RE, JD_ESC_TO,
+  JD_BULLET_RE, JD_DASH_PREFIX_RE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO,
   JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND,
   JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_MONEY_RE, JD_SEC_APPLY, JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE,
   JD_SEC_STEP, JD_SECS, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS, JD_TOP_HEADS,
@@ -58,7 +58,7 @@ import {
   TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_K_YEAR,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER, VAL_MATCH,
-  VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, WWW_PREFIX_RE, YEAR_MONTH_LEN,
+  VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
   ZEBRA_MOD,
 } from './constants'
 import type {
@@ -70,7 +70,7 @@ import type {
   ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, ColStatsIn, ColWant, ColWidthFnIn,
   ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn, DonorsIn, DragIn,
   FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts, FilterOptsIn,
-  FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, FullHrefIn, GapIn, HeadCellAtIn,
+  FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, GapIn, HeadCellAtIn,
   HeadCellView, HeadClsIn, HeadTitleIn, JdLinesIn, JdLineView, JdPair, JdPairsIn, JdPayIn, JdReIn,
   JdSecHeadIn, JdSecModeIn, JdSectionMode, JdSectionsIn, JdSectionView, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobsBoardPanel, JobsQueryIn, JobTextOut, KMoneyIn, MailBodyIn,
@@ -81,7 +81,7 @@ import type {
   RankOfIn,
   ResizeBindIn,
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
-  ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, ShowSourceIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
+  ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
   UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
@@ -1836,21 +1836,6 @@ export function jdPayFallbackOf(x: JdPayIn): string {
 }
 
 /**
- * URL → 域名(#239):来源行只报出处,不铺整条链接(整条 URL 在 375 上折两行又长又丑);
- * 解析失败退原串(宁可原样也不吞)。
- *
- * @param u 原帖链接。
- * @returns 域名。
- */
-export function hostOf(u: string): string {
-  try {
-    return new URL(u).host.replace(WWW_PREFIX_RE, TEXT_NONE)
-  } catch {
-    return u
-  }
-}
-
-/**
  * 懒取 JD 正文。#126 同岗会话缓存:三处调用点(事实块 / JD 弹框 / 详情页 JD 区)共用,
  * 同一岗反复开关不重复打端点烧额度。命中缓存时 freeLeft = null(没消耗,额度行不刷新)。
  * #134(Frank 报障「点了一些工作发现都是空的」):429 曾掉进「空」分支 —— 额度一用完,
@@ -3563,33 +3548,6 @@ export function showFormattedOf(x: ShowFormattedIn): boolean {
 export function transShownOf(x: TransShownIn): string {
   if (x.shown && x.trans != null) {
     return x.trans
-  }
-  return TEXT_NONE
-}
-
-/**
- * 底部来源行出不出:整理版在屏时「怎么投」整节已链官方原帖,出处不丢,就不再兜底
- * (#167③;2026-07-21 Frank「去掉 source 链接」);空态那一档也不出(它自己有官方页出口)。
- *
- * @param x 本岗、取数态、整理版与「在看原文」。
- * @returns 出 = true。
- */
-export function showSourceOf(x: ShowSourceIn): boolean {
-  if (x.applyUrl === TEXT_NONE || x.status === JD_EMPTY) {
-    return false
-  }
-  return (x.status === JD_DONE && showFormattedOf({ fmt: x.fmt, showOrig: x.showOrig })) === false
-}
-
-/**
- * 「打开完整页」的去处:只有弹框里出(整页版自己就是完整页)。
- *
- * @param x 在不在弹框里与这一岗的号。
- * @returns 去处;整页版给空串。
- */
-export function fullHrefOf(x: FullHrefIn): string {
-  if (x.inModal) {
-    return URL_JOB + String(x.id)
   }
   return TEXT_NONE
 }

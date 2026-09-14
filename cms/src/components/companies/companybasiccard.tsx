@@ -8,6 +8,7 @@
  * (与主表地点格同源 mapsUrl)。
  * #200:AI 检索声明从卡片上方的浮注挪进卡内、接在简介内容前(卡片化后浮注显孤)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
+ * 2026-09-14 Frank「也去掉」:卡题旁的「知名企业 ↗」章撤。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -56,13 +57,6 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
           <span className={cssOf(css.badge) + CLS_SEP + cssOf(css.badgeGov) + CLS_SEP + cssOf(css.badgeInHead)}>
             {t('co.gov')}
           </span>
-        )}
-        {hideTopInfo && company.wikiUrl !== TEXT_NONE && (
-          <LinkButton href={company.wikiUrl}
-            target={TARGET_BLANK}
-            className={cssOf(css.badge) + CLS_SEP + cssOf(css.badgeWiki) + CLS_SEP + cssOf(css.badgeInHead)}>
-            {t('co.wellKnown')}{ARROW_EXTERNAL}
-          </LinkButton>
         )}
       </div>
       <div>

@@ -12,6 +12,7 @@
  * (ghost + PILL_CLS,href 交 Button 转 LinkButton),蓝底 `.pillLink` 退役。
  * 2026-09-14 Frank「有 AI 整理就不需要 AI 速读了吧,重复的功能」:职位弹框的「AI 速读」钮撤(整理版已是 AI 产物);
  * 公司 / 地点 / 分类弹框没有整理版,它们的速读钮照旧。
+ * 2026-09-14 Frank「这个按钮去掉吧」:「打开完整页」也撤,钮行只剩中文对照。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -19,7 +20,7 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import {
-  BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, TARGET_BLANK, TEXT_NONE, TRANS_LOADING,
+  BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, TRANS_LOADING,
 } from './constants'
 import { transBusyClsOf, transLabelOf } from './functions'
 import type { JdActsIn } from './types'
@@ -28,10 +29,10 @@ import css from './jobs.module.css'
 /**
  * 渲染顶部钮行。
  *
- * @param props JD 身体状态机、界面语言与「打开完整页」的去处。
+ * @param props JD 身体状态机与界面语言。
  * @returns 一行胶囊钮。
  */
-export function JdActs({ d, lang, fullHref }: JdActsIn) {
+export function JdActs({ d, lang }: JdActsIn) {
   const ready = d.status !== JD_LOADING
   return (
     <div className={cssOf(css.acts)}>
@@ -39,11 +40,6 @@ export function JdActs({ d, lang, fullHref }: JdActsIn) {
         <Button kind={BTN_GHOST} disabled={d.transStatus === TRANS_LOADING} onClick={d.onToggleTrans}
           className={`${PILL_CLS} ${transBusyClsOf(d.transStatus)}`}>
           {transLabelOf({ t: d.t, status: d.transStatus, shown: d.showTrans })}
-        </Button>
-      )}
-      {fullHref !== TEXT_NONE && (
-        <Button kind={BTN_GHOST} href={fullHref} target={TARGET_BLANK} className={PILL_CLS}>
-          {d.t('detail.openFull')}
         </Button>
       )}
     </div>

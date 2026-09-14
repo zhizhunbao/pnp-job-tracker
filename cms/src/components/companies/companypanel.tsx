@@ -12,6 +12,7 @@
  * 仍然点**文件**不走 advisor 桶:桶里的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
  * 2026-09-03「表右上角挂更新时间」那一格弹框递空串:心跳是页面门 SSR 取的 checkedAt,
  * 弹框走客户端取数拿不到它,空串让那一行整个不出(不渲「更新时间 —」这种半句)。
+ * 2026-09-14 Frank「按钮都去掉」:顶部三钮条整排撤(CompanyPanelActs 件随撤);速读卡与对照开关的状态机先留。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -21,9 +22,8 @@ import { SponsorLeadCard } from '@/components/pnp'
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
-import { CompanyPanelActs } from './companypanelacts'
 import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
-import { canTransOf, makeResolveJob, panelSlugOf } from './functions'
+import { makeResolveJob } from './functions'
 import { useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 import css from './companies.module.css'
@@ -37,14 +37,6 @@ import css from './companies.module.css'
 export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job })
-  let company = null
-  if (p.data != null) {
-    company = p.data.company
-  }
-  let jobSlug = TEXT_NONE
-  if (job.companySlug !== TEXT_NONE) {
-    jobSlug = job.companySlug
-  }
   let body = <p className={css.note}>{t('act.loadingText')}</p>
   if (p.loading === false && p.data == null) {
     body = <p className={css.note}>{t('advisor.unavail')}</p>
@@ -64,13 +56,6 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelI
   }
   return (
     <>
-      <CompanyPanelActs t={t}
-        canTrans={canTransOf({ company, lang })}
-        showTrans={p.showTrans}
-        onToggleTrans={p.onToggleTrans}
-        aiOn={p.aiOn}
-        onToggleAi={p.onToggleAi}
-        slug={panelSlugOf({ jobSlug, company })} />
       {p.aiOn && (
         <div className={CARD_MD_CLS + CLS_SEP + cssOf(css.aiCard)}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field={AI_FIELD_CO_READ} />

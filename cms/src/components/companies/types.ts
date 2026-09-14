@@ -1162,46 +1162,6 @@ export type CompanyPanelIn = {
 }
 
 /**
- * CompanyPanelActs(弹框顶部三钮条)的 props。
- */
-export type CompanyPanelActsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 有可对照的中文(#196:AI 简介可翻,或在招职位有译名可显);false = 不出这个钮。
-   */
-  canTrans: boolean
-
-  /**
-   * 中文对照开着。
-   */
-  showTrans: boolean
-
-  /**
-   * 切中文对照。
-   */
-  onToggleTrans: GoBackFn
-
-  /**
-   * AI 速读开着。
-   */
-  aiOn: boolean
-
-  /**
-   * 切 AI 速读。
-   */
-  onToggleAi: GoBackFn
-
-  /**
-   * 公司 slug;'' = 没有完整页可去,那个钮不出。
-   */
-  slug: string
-}
-
-/**
  * briefSecsOf 的入参:一段带五节标记的文本。
  */
 export type BriefSecsIn = {
