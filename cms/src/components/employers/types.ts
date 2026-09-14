@@ -1346,6 +1346,26 @@ export type CellTextIn = {
 }
 
 /**
+ * searchNoteOf 的入参。
+ */
+export type SearchNoteIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当前筛选(只看 q 是否非空)。
+   */
+  f: PoolFilters
+
+  /**
+   * 本页的行(只看有没有指定雇主)。
+   */
+  rows: PoolRow[]
+}
+
+/**
  * qsOf / foldActiveOf / anyFilterOf / needScopeOf 的入参。
  */
 export type FiltersIn = {

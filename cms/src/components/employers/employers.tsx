@@ -15,6 +15,8 @@
  * 2026-09-05 /fe banner(Frank「雇主页现在没有 banner」):H1 进 Banner 图版(雇主档三张)。
  * 2026-09-13 Frank「这种应该像 jobs 页面一样放到 banner」「只需要一个时间即可」:计数进 banner 副题(照职位板),
  * 更新时间挂筛选行尾(职位板同位),表上方计数行与「抓取」日撤。
+ * 2026-09-13 晚 /fe 雇主页:查证态命中但全非指定时,口径注下再挂一行「不在官方指定雇主清单内」(searchNoteOf);
+ * 未命中改说「本站未收录」,不再把本站没收说成官方没有。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -22,10 +24,10 @@
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
-import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
+import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX, TEXT_NONE } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
-import { noteTextOf } from './functions'
+import { noteTextOf, searchNoteOf } from './functions'
 import { useEmployersPage } from './hooks'
 import type { EmployersIn } from './types'
 import css from './employers.module.css'
@@ -38,6 +40,7 @@ import css from './employers.module.css'
  */
 export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
   const p = useEmployersPage({ initial, initialFilters, updatedAt })
+  const hit = searchNoteOf({ t: p.t, f: p.f, rows: p.data.rows })
   return (
     <div className={css.body}>
       <Shell top={SHELL_TOP_PX} bottom={SHELL_BOTTOM_PX}>
@@ -50,6 +53,7 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
           <EmployerFilterBar p={p} />
           <EmployerBoard p={p} />
           <div className={css.foot}>{p.t('de.note')}</div>
+          {hit !== TEXT_NONE && <div className={css.foot}>{hit}</div>}
         </div>
       </Shell>
     </div>

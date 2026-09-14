@@ -935,7 +935,7 @@ export const siteZh = {
   'de.lmia': '有 LMIA 记录', 'de.entryN': '入门 {n}%', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '选择行业', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
-  'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法',
+  'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法', 'de.notCollected': '本站未收录该雇主',
   'de.note': '星级为机会参考,不等于资格认定;被指定不等于在招,在招数为本站职位库口径',
   'pro.unlock': '解锁 Pro',
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',

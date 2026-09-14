@@ -70,7 +70,8 @@ import type {
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn,
   NocNameFn, NoteTextIn, PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
-  PricingSetIn, QCommitIn, RowViewIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn,
+  PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
+  VerdictToneIn,
   WhereCellIn, WhereCellParts, WhereTextIn, WithIn,
   WordsIn,
 } from './types'
@@ -1644,17 +1645,38 @@ export function noteTextOf(x: NoteTextIn): string {
 }
 
 /**
- * 空态说清是哪一种:查证态未命中 = 不在官方指定雇主清单内(防坑定位,站规「≠资格认定」保留族);
- * 筛过了才空 = 查无匹配(改筛选再试)。
+ * 空态说清是哪一种:查证态未命中 = 本站未收录(搜的是全池 6.97 万家,不是指定雇主清单 —— 拼法不同 / 池里没收
+ * 都会落空,说成「不在官方清单」= 把本站的问题说成官方的问题,CLAUDE.md「两者在用户那里意思相反」;
+ * 2026-09-13 晚 /fe 雇主页 Frank 拍板改口);筛过了才空 = 查无匹配(改筛选再试)。
+ * 「不在官方指定雇主清单内」那句只在**命中且全非指定**时出,见 searchNoteOf。
  *
  * @param x 取词函数与当前筛选。
  * @returns 空态文案。
  */
 export function emptyTextOf(x: TextByFiltersIn): string {
   if (x.f.q !== TEXT_NONE) {
-    return x.t('de.notFound')
+    return x.t('de.notCollected')
   }
   return x.t('de.emptyFiltered')
+}
+
+/**
+ * 查证态的防坑句:搜到了雇主、但命中的没有一家是指定雇主 → 「不在官方指定雇主清单内,警惕担保说法」
+ * (站规「≠资格认定」保留族;命中里有指定的、或压根没搜、或没命中,都不出 —— 没命中归 emptyTextOf)。
+ *
+ * @param x 取词函数、当前筛选与本页的行。
+ * @returns 防坑句或空串。
+ */
+export function searchNoteOf(x: SearchNoteIn): string {
+  if (x.f.q === TEXT_NONE || x.rows.length === 0) {
+    return TEXT_NONE
+  }
+  for (const r of x.rows) {
+    if (r.designated) {
+      return TEXT_NONE
+    }
+  }
+  return x.t('de.notFound')
 }
 
 /**
