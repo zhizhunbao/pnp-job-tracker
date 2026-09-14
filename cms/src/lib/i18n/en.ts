@@ -878,6 +878,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tl.min': 'Min {n}', 'tl.notCrs': ', not CRS', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
   'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events', 'tl.hist': 'Draw history',
   'loading': 'Updating…',
+  'nav.coop': 'Campus board', 'coop.title': 'Campus board', 'coop.sub': '{school} {board}, {n} open', 'coop.empty': 'No postings', 'coop.view': 'View', 'origin.hireac': 'HireAC',
   'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'nav.pte': 'PTE practice', 'tl.tabNews': 'Latest updates',
   'rank.bnSub': 'Ranked by immigration-value score', 'rank.bnRows': '{n} jobs on board',
   'acct.hero.login': 'Welcome back', 'acct.hero.reg': 'Sign up free — see your match for every job',
@@ -949,7 +950,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.col.biz': 'Main business', 'pulse.col.sector': 'Employer type', 'pulse.sector.private': 'Private',
   'pulse.sector.public': 'Public institution', 'pulse.sector.government': 'Provincial or municipal', 'pulse.sector.federal': 'Federal government', 'pulse.pilot.aip': 'AIP designated employers', 'pulse.chain': 'Chain', 'pulse.chain.tip': 'Designated per location. Confirm the store before applying.', 'pulse.pilot.rcip': 'RCIP designated employers', 'pulse.pilot.fcip': 'FCIP designated employers',   'pulse.id.nowp': 'No work permit', 'pulse.id.pgwp': 'Work permit',
   'pulse.col.hiringOcc': 'Hiring for', 'pulse.nocMore': '{n} in total', 'pulse.act.jobs': 'Jobs', 'pulse.act.company': 'Company', 'pulse.act.link': 'Official', 'pulse.act.rules': 'Rules',
-  'pulse.rules.title': '{prov} stream rules', 'pulse.rules.loading': 'Loading…', 'pulse.rules.empty': 'Not collected yet', 'pulse.rules.more': 'Resource library', 'pulse.rules.round': 'This draw', 'pulse.rules.pathway': 'Stream eligibility', 'pulse.rules.provAll': 'All provincial rules', 'pulse.rules.occ': 'Eligible occupations',
+  'pulse.rules.empty': 'Not collected yet', 'pulse.rules.round': 'This draw',
   // B4 employer PNP bar check (design/雇主省提名门槛判定-20260808.md): three states + public-sector bypass, a check against the bar, not an official certification
   'se.col.verdict': 'Employer bar', 'se.verdict.met': 'Meets bar', 'se.verdict.short': 'Short on {items}', 'se.verdict.unknown': 'Pending', 'se.verdict.public': 'Public sector',
   'se.verdict.factor.years': 'years operating', 'se.verdict.factor.staff': 'staff count',

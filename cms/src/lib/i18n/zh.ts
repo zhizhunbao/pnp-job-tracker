@@ -964,6 +964,7 @@ export const siteZh = {
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
   'loading': '更新中…',
+  'nav.coop': '校内板', 'coop.title': '校内板', 'coop.sub': '{school} {board} {n} 条在招', 'coop.empty': '暂无岗位', 'coop.view': '看详情', 'origin.hireac': 'HireAC',
   'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告',
   'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
   // #54 登录改版(careerbeacon 骨架)
@@ -1040,7 +1041,7 @@ export const siteZh = {
   'pulse.col.biz': '主营业务', 'pulse.col.sector': '雇主类别', 'pulse.sector.private': '私营企业',
   'pulse.sector.public': '公立机构', 'pulse.sector.government': '省市政府', 'pulse.sector.federal': '联邦机关', 'pulse.pilot.aip': 'AIP 指定雇主', 'pulse.chain': '连锁', 'pulse.chain.tip': '按门店逐家指定,投前核对门店', 'pulse.pilot.rcip': 'RCIP 指定雇主', 'pulse.pilot.fcip': 'FCIP 指定雇主',   'pulse.id.nowp': '没工签', 'pulse.id.pgwp': '有工签',
   'pulse.col.hiringOcc': '在招职业', 'pulse.nocMore': '等 {n} 个', 'pulse.act.jobs': '看岗位', 'pulse.act.company': '看公司', 'pulse.act.link': '官方页', 'pulse.act.rules': '门槛',
-  'pulse.rules.title': '{prov} 通道门槛', 'pulse.rules.loading': '加载中…', 'pulse.rules.empty': '本站未收录', 'pulse.rules.more': '资料库', 'pulse.rules.round': '本期', 'pulse.rules.pathway': '通道资格', 'pulse.rules.provAll': '全省门槛', 'pulse.rules.occ': '限定职业',
+  'pulse.rules.empty': '本站未收录', 'pulse.rules.round': '本期',
   // B4 雇主省提名门槛判定(design/雇主省提名门槛判定-20260808.md):三态 + 公共部门旁路,判定≠官方认证
   'se.col.verdict': '雇主门槛', 'se.verdict.met': '达标', 'se.verdict.short': '差{items}', 'se.verdict.unknown': '待核', 'se.verdict.public': '公共部门',
   'se.verdict.factor.years': '年限', 'se.verdict.factor.staff': '雇员数',

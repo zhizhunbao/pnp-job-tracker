@@ -1603,23 +1603,6 @@ export const PNP_REQUIREMENTS_ALL = `SELECT province, program, stream, subject, 
                    applies_family_size, basis, label, section, seq, effective, url, page_url, fetched
             FROM pnp_requirements q ORDER BY province, seq`
 
-/**
- * 某省的门槛条文(把脉页抽选表「门槛」弹框懒查;2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。$1=省码。
- */
-export const PNP_REQUIREMENTS_BY_PROV = `SELECT stream, program, label, value_text, url, seq
-            FROM pnp_requirements WHERE province = $1 ORDER BY seq`
-
-/**
- * 某省的清单职业(把脉页抽选表「门槛」弹框「限定职业」层;不合格清单不算限定)。$1=省码。
- */
-export const PNP_OCCUPATIONS_BY_PROV = `SELECT stream, noc, name FROM pnp_occupations
-            WHERE province = $1 AND type <> 'ineligible' ORDER BY stream, noc`
-
-/**
- * 联邦类别抽选的职业清单(同上,联邦轮次按类别键筛;列名对齐 pnp_occupations 那句)。
- */
-export const EE_CATEGORY_OCCUPATIONS = `SELECT category AS stream, noc, title AS name FROM ee_categories
-            WHERE noc <> '' ORDER BY category, noc`
 
 /**
  * 清单收录全列(ruling 判定底表)。
@@ -1688,9 +1671,10 @@ export const CLOSE_DEAD_EXT = `UPDATE jobs SET status='closed', closed_at=COALES
 
 /**
  * 超龄且本轮没再见到的岗关掉。$1=时刻,$2=最早允许的发布日。
+ * campus(校内板帖,2026-09-13 第三态)与 open 一并收关:不在本轮列表即下架。
  */
 export const CLOSE_STALE = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
-         WHERE status='open' AND date_posted < $2
+         WHERE status IN ('open', 'campus') AND date_posted < $2
            AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
 
 /**
@@ -2091,3 +2075,16 @@ export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_pos
      ORDER BY COALESCE(c.lmia_positions_skilled, 0) DESC, open_jobs DESC, c.name ASC
      LIMIT $3`
 
+// =========================================================================
+// 30. 校内板(/coop;2026-09-13 hireac 域,设计稿 docs/design/coop域-20260913.md 第五轮)
+// =========================================================================
+
+/**
+ * 校内板在招帖。status=campus 是 jobs 的第三态(只这一页读;职位板 / 统计一切 status='open' 的查询天然不看它)。
+ * $1=渠道(origin,如 hireac),$2=行数上限。发布日新→旧、同日 id 倒序(与职位板同序);发布日 to_char 出 YYYY-MM-DD 串。
+ */
+export const COOP_JOBS = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province, j.employment_hours,
+            to_char(j.date_posted, 'YYYY-MM-DD') AS date_posted
+     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+     WHERE j.status = 'campus' AND j.origin = $1
+     ORDER BY j.date_posted DESC NULLS LAST, j.id DESC LIMIT $2`

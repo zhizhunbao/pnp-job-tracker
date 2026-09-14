@@ -39,7 +39,7 @@ export function DrawCard({ row, last, t }: DrawCardIn) {
       <div className={css.drawActs}>
         <span className={css.acts}>
           <LinkButton href={row.href} className={row.actBtnCls} target={NEW_TAB}>{row.actLinkText}</LinkButton>
-          {row.rulesProv !== TEXT_NONE && (
+          {row.hasChecklist && (
             <Button kind={MINI_BTN_KIND} onClick={row.onRules}>{row.actRulesText}</Button>
           )}
         </span>

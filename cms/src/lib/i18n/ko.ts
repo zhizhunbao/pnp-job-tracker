@@ -871,6 +871,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tl.min': '최저 {n}점', 'tl.notCrs': ', 비CRS', 'tl.inv': '초청 {n}명', 'tl.src': '공식 출처',
   'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음', 'tl.hist': '추첨 이력',
   'loading': '업데이트 중…',
+  'nav.coop': '교내 채용', 'coop.title': '교내 채용', 'coop.sub': '{school} {board} 채용 {n}건', 'coop.empty': '공고 없음', 'coop.view': '상세', 'origin.hireac': 'HireAC',
   'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'nav.pte': 'PTE 문제풀이', 'tl.tabNews': '최신 공지',
   'rank.bnSub': '이민 가치 점수순', 'rank.bnRows': '이 랭킹 공고 {n}건',
   'acct.hero.login': '다시 오신 것을 환영합니다', 'acct.hero.reg': '무료 가입 — 모든 공고의 매칭도를 확인하세요',
@@ -942,7 +943,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.col.biz': '주요 사업', 'pulse.col.sector': '고용주 유형', 'pulse.sector.private': '민간 기업',
   'pulse.sector.public': '공공 기관', 'pulse.sector.government': '주·시 정부', 'pulse.sector.federal': '연방 기관', 'pulse.pilot.aip': 'AIP 지정 고용주', 'pulse.chain': '체인', 'pulse.chain.tip': '매장별로 지정됩니다. 지원 전 해당 매장을 확인하세요.', 'pulse.pilot.rcip': 'RCIP 지정 고용주', 'pulse.pilot.fcip': 'FCIP 지정 고용주',   'pulse.id.nowp': '취업허가 없음', 'pulse.id.pgwp': '취업허가 있음',
   'pulse.col.hiringOcc': '채용 직종', 'pulse.nocMore': '총 {n}개', 'pulse.act.jobs': '채용 보기', 'pulse.act.company': '회사 보기', 'pulse.act.link': '공식 페이지', 'pulse.act.rules': '요건',
-  'pulse.rules.title': '{prov} 스트림 요건', 'pulse.rules.loading': '불러오는 중…', 'pulse.rules.empty': '미수록', 'pulse.rules.more': '자료실', 'pulse.rules.round': '이번 추첨', 'pulse.rules.pathway': '스트림 요건', 'pulse.rules.provAll': '주 전체 요건', 'pulse.rules.occ': '대상 직종',
+  'pulse.rules.empty': '미수록', 'pulse.rules.round': '이번 추첨',
   // B4 고용주 주정부 지명 기준 판정: 3단계 + 공공 부문 예외, 기준 대조일 뿐 공식 인증 아님
   'se.col.verdict': '고용주 기준', 'se.verdict.met': '기준 충족', 'se.verdict.short': '{items} 미달', 'se.verdict.unknown': '확인 중', 'se.verdict.public': '공공 부문',
   'se.verdict.factor.years': '운영 연차', 'se.verdict.factor.staff': '직원 수',

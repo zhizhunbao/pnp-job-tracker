@@ -922,16 +922,6 @@ export const W_DRAW_ACT = '150px'
 export const W_NEWS_ACT = '110px'
 
 /**
- * 资源页「通道门槛」卡的锚点地址头(后接省码;弹框脚上「资料库」链接去处;与 resources 域 RULES_ANCHOR_HEAD 同值,本域自抄)。
- */
-export const URL_RULES_HEAD = '/resources#rules-'
-
-/**
- * 某省门槛条文接口地址头(后接省码;2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」:门槛钮改弹框懒查)。
- */
-export const URL_RULES_API_HEAD = '/api/rules?prov='
-
-/**
  * 门槛弹框的宽档(官方原句长,取最宽)。
  */
 export const RULES_MODAL_SIZE = 'lg'
@@ -1762,3 +1752,34 @@ export const SERIES_VIEW_TABLE = 'table'
  * 通用表格序列能力的视图态:趋势图。
  */
 export const SERIES_VIEW_CHART = 'chart'
+
+/**
+ * 通用 tag 桶的变体名(2026-09-13「都按把脉页的来」:本域自画的 .pillProv / .pillFed / .pillEasy / .pillMid /
+ * .pillTight / .chipGray / .chipDanger 退役,值搬进通用桶,这里只剩变体名):省紧缺 / 易档 = region。
+ */
+export const TAG_V_PROV = 'region'
+
+/**
+ * 联邦紧缺 = federal。
+ */
+export const TAG_V_FED = 'federal'
+
+/**
+ * 难度易 = ok(与 region 同色系)。
+ */
+export const TAG_V_EASY = 'ok'
+
+/**
+ * 难度中 = warn。
+ */
+export const TAG_V_MID = 'warn'
+
+/**
+ * 难度紧 / 判死 = imp。
+ */
+export const TAG_V_TIGHT = 'imp'
+
+/**
+ * 中性事实标签(职业码 / TEER / 连锁 / 更多 N 个)= gray。
+ */
+export const TAG_V_GRAY = 'gray'

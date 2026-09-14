@@ -19,8 +19,10 @@ import { track } from '@/lib/track'
 import { ymd } from '@/lib/time'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
+import { tagClsOf } from '@/components/tag'
 import { shortOcc } from '@/components/quiz'
 import {
+  TAG_V_EASY, TAG_V_FED, TAG_V_GRAY, TAG_V_MID, TAG_V_PROV, TAG_V_TIGHT,
   ANCHOR_HEAD, BROAD_ALL, CARD_GAP,
   CLS_CARD_HOVER, CLS_SEP, COL_DEAD, COL_HOT,
   COL_MOM, COL_NOC, COL_OCC, COL_OPEN, COL_PNP_PROVS, COL_PROV,
@@ -36,8 +38,7 @@ import {
   TIER_BOTH, TIER_FED, TRACK_CARD, TRACK_CTA, TRACK_SEC, TRACK_SUBNAV, TRACK_SERIES, TRACK_PROP_KEY, URL_MACRO_API,
   TRACK_OCC, URL_HOME, URL_HOME_PNP, URL_HOME_Q_HEAD, URL_SPONSORS_API,
   COL_EMP, ID_CITY, ID_DRAWS, ID_NEWS, IND_BROADS, IND_KEYS, NEWS_LIMIT, NEWS_TAIL_RE, TAG_IRCC, COL_NEWS_TAG,
-  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL, W_DRAW_ACT, W_NEWS_ACT, URL_RULES_HEAD,
-  URL_RULES_API_HEAD,
+  COL_NEWS_TITLE, W_NEWS_TAG, URL_NEWS_HEAD, REGION_FEDERAL, W_DRAW_ACT, W_NEWS_ACT,
   KEY_IND_HEAD, SEC_TOP_OPEN, SEC_TOP_WAGE, TRACK_EMP,
 URL_HOME_CITY_HEAD,
   URL_CITY_PAGE_HEAD, URL_PATH_SEP, WAGE_MIN_OPEN,
@@ -132,8 +133,8 @@ import type {
   Teer03In, VerdictTextIn,
 ValuableIn,
   EmptyQueryResult, PulseDraw, DrawsIn, PulseDrawIn, DrawCellRow, DrawCellRowIn,
-  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesLoadIn, RulesOpenIn, RulesProbe, RuleLineJson, RulesTitleIn,
-  MaybeRuleMap, RulesOfDrawIn, RulesHeadIn, RuleMap, OccsOfDrawIn, OccLineJson, RulesData,
+  DrawCellRowsIn, DrawColsIn, DrawRowClsIn, DrawLang, RulesOpenIn,
+  MaybeChecklist, Checklist, ChecklistTextIn,
   TFn,
   PilotPickIn, PilotCellsIn, ChainTextIn, NavSubItemsIn, SubIdIn,
   MacroDbRow, MacroPoint, OpsDbRow, OpsPoint, MacroGeosIn,
@@ -1005,11 +1006,11 @@ function splitListOf(s: string): string[] {
 export function hotPillsOf(x: HotPillsIn): StartPill[] {
   const out: StartPill[] = []
   for (const p of x.provs) {
-    out.push({ key: p, text: x.t('pulse.tier.provOne', { p }), cls: pillClsOf(cssOf(css.pillProv)) })
+    out.push({ key: p, text: x.t('pulse.tier.provOne', { p }), cls: tagClsOf(TAG_V_PROV) })
   }
   if (x.o.channelTier === TIER_FED || x.o.channelTier === TIER_BOTH) {
     const text = x.t('pulse.tier.fedOne')
-    out.push({ key: text, text, cls: pillClsOf(cssOf(css.pillFed)) })
+    out.push({ key: text, text, cls: tagClsOf(TAG_V_FED) })
   }
   return out
 }
@@ -1570,31 +1571,21 @@ export function placeholderClsOf(x: PlaceholderClsIn): string {
 }
 
 /**
- * 一粒胶囊的类:形状基座 + 配色档。
- *
- * @param tone 配色档的类。
- * @returns className。
- */
-export function pillClsOf(tone: string): string {
-  return joinCls([cssOf(css.pill), tone])
-}
-
-/**
  * 难度档胶囊的类(easy 绿 / mid 黄 / tight 红,与 jobs/Advisor 的 DIFF_TAG 及原 /stats
- * 索引页省卡同值);没算出来给空串(单元格改渲横杠,不渲胶囊)。
+ * 索引页省卡同值;2026-09-13 起走通用 tag 桶的三档);没算出来给空串(单元格改渲横杠,不渲胶囊)。
  *
  * @param x 难度档。
  * @returns className;没有则空串。
  */
 export function diffClsOf(x: TierClsIn): string {
   if (x.tier === DIFF_EASY) {
-    return pillClsOf(cssOf(css.pillEasy))
+    return tagClsOf(TAG_V_EASY)
   }
   if (x.tier === DIFF_MID) {
-    return pillClsOf(cssOf(css.pillMid))
+    return tagClsOf(TAG_V_MID)
   }
   if (x.tier === DIFF_TIGHT) {
-    return pillClsOf(cssOf(css.pillTight))
+    return tagClsOf(TAG_V_TIGHT)
   }
   return TEXT_NONE
 }
@@ -3206,29 +3197,41 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     invitations: numOrNullOf(x.r.invitations),
     url: textOf(x.r.url),
     note: textOf(x.r.note),
-    ruleMap: ruleMapOf(x.r.rule_streams),
+    checklist: checklistOf(x.r.checklist),
   }
 }
 
 /**
- * 库里的门槛对照 JSON 串 → 对照对象;列不存在 / NULL / 坏串 / 形不对都是「没对照」= null。
+ * 库里的门槛清单 JSON 串 → 清单;列不存在 / NULL / 坏串 / 形不对都是「没写」= null。
  *
  * @param v 库值。
- * @returns 对照对象;没对照 null。
+ * @returns 清单;没写 null。
  */
-function ruleMapOf(v: string | null | undefined): MaybeRuleMap {
+function checklistOf(v: string | null | undefined): MaybeChecklist {
   if (v == null) {
     return null
   }
-  const parsed = jsonOrNull<RuleMap>(v)
-  if (parsed == null || typeof parsed.prov !== 'string') {
+  const parsed = jsonOrNull<Checklist>(v)
+  if (parsed == null || typeof parsed.url !== 'string' || Array.isArray(parsed.items) === false) {
     return null
   }
-  if (Array.isArray(parsed.streams) === false || Array.isArray(parsed.programs) === false
-    || Array.isArray(parsed.occStreams) === false) {
-    return null
+  return { url: parsed.url, items: parsed.items }
+}
+
+/**
+ * 一条门槛按界面语言取文案:中文 / 韩文(没翻回退英文)/ 其余英文。
+ *
+ * @param x 一条与界面语言。
+ * @returns 文案。
+ */
+export function checklistTextOf(x: ChecklistTextIn): string {
+  if (x.lang === LANG_ZH) {
+    return x.item.zh
   }
-  return { prov: parsed.prov, streams: parsed.streams, programs: parsed.programs, occStreams: parsed.occStreams }
+  if (x.lang === LANG_KO && x.item.ko !== TEXT_NONE) {
+    return x.item.ko
+  }
+  return x.item.en
 }
 
 /**
@@ -3294,10 +3297,10 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     score: numTextOf(x.r.score),
     invitations: numTextOf(x.r.invitations),
     href: x.r.url,
-    rulesProv: drawRulesProvOf(x.r),
+    hasChecklist: x.r.checklist != null,
     onRules: noop,
     drawNote: x.r.note,
-    ruleMap: x.r.ruleMap,
+    checklist: x.r.checklist,
     actLinkText: x.t('pulse.act.link'),
     actRulesText: x.t('pulse.act.rules'),
     actBtnCls: actBtnClsOf(),
@@ -3316,23 +3319,6 @@ function noop(): void {
 }
 
 /**
- * 「门槛」钮开哪省:对照表说了算(联邦类别轮次与 NB 的 AIP 轮次去 FED 取);没对照的省抽选开本省;
- * 没对照的联邦轮次没有对应门槛组,不出钮。
- *
- * @param r 这一期。
- * @returns 省码;不出钮时 TEXT_NONE。
- */
-function drawRulesProvOf(r: PulseDraw): string {
-  if (r.ruleMap != null) {
-    return r.ruleMap.prov
-  }
-  if (r.province === PROV_FED) {
-    return TEXT_NONE
-  }
-  return r.province
-}
-
-/**
  * 「门槛」钮的点击手柄工厂:把这一行整行交给开弹框的手柄。
  *
  * @param x 开弹框手柄与这一行。
@@ -3342,147 +3328,6 @@ function makeRulesOpen(x: RulesOpenIn): ClickFn {
   return function onRules(): void {
     x.open(x.row)
   }
-}
-
-/**
- * 弹框里该出哪些门槛:对到了通道 / 项目就只留那些行(按对照表顺序分组),没对照就整省全出。
- *
- * @param x 该省全部门槛行与对照。
- * @returns 要出的行。
- */
-export function rulesOfDraw(x: RulesOfDrawIn): RuleLineJson[] {
-  if (x.ruleMap == null) {
-    return x.lines
-  }
-  const out: RuleLineJson[] = []
-  for (const st of x.ruleMap.streams) {
-    for (const r of x.lines) {
-      if (r.stream === st) {
-        out.push(r)
-      }
-    }
-  }
-  for (const pg of x.ruleMap.programs) {
-    for (const r of x.lines) {
-      if (r.program === pg) {
-        out.push(r)
-      }
-    }
-  }
-  return out
-}
-
-/**
- * 弹框里该出哪些限定职业:对照表点名的清单,按清单顺序;没对照 = 没有限定职业。
- *
- * @param x 该省全部清单职业与对照。
- * @returns 要出的职业。
- */
-export function occsOfDraw(x: OccsOfDrawIn): OccLineJson[] {
-  if (x.ruleMap == null) {
-    return []
-  }
-  const out: OccLineJson[] = []
-  for (const st of x.ruleMap.occStreams) {
-    for (const o of x.lines) {
-      if (o.stream === st) {
-        out.push(o)
-      }
-    }
-  }
-  return out
-}
-
-/**
- * 门槛弹框的懒查工厂(形照 makeCityLoad):挂上就拉该省门槛条文,卸下就中止;
- * 拉挂了给空清单(弹框出空态,不静默转圈)。
- *
- * @param x 省码与交回手柄。
- * @returns effect 体:跑起来返回中止函数。
- */
-export function makeRulesLoad(x: RulesLoadIn): () => CleanupFn {
-  return function run(): CleanupFn {
-    const ctrl = new AbortController()
-    async function pull(): Promise<void> {
-      try {
-        const res = await fetch(URL_RULES_API_HEAD + x.province, { signal: ctrl.signal })
-        if (res.ok === false) {
-          x.setRows(emptyRulesData())
-          return
-        }
-        const j: RulesProbe = await res.json()
-        x.setRows(rulesDataOf(j))
-      } catch {
-        if (ctrl.signal.aborted === false) {
-          x.setRows(emptyRulesData())
-        }
-      }
-    }
-    void pull()
-    return function abort(): void {
-      ctrl.abort()
-    }
-  }
-}
-
-/**
- * 拉回的探针 → 门槛行 + 清单职业(缺键给空清单)。
- *
- * @param j 拉回的 json 探针。
- * @returns 弹框数据。
- */
-function rulesDataOf(j: RulesProbe): RulesData {
-  let rows: RuleLineJson[] = []
-  if (j.rows != null) {
-    rows = j.rows
-  }
-  let occupations: OccLineJson[] = []
-  if (j.occupations != null) {
-    occupations = j.occupations
-  }
-  return { rows, occupations }
-}
-
-/**
- * 拉挂了给的空数据(弹框出空态,不静默转圈)。
- *
- * @returns 空数据。
- */
-function emptyRulesData(): RulesData {
-  return { rows: [], occupations: [] }
-}
-
-/**
- * 门槛弹框标题:界面语言省名 + 「通道门槛」。
- *
- * @param x 取词函数与省码。
- * @returns 标题。
- */
-export function rulesTitleOf(x: RulesTitleIn): string {
-  return x.t('pulse.rules.title', { prov: provLabelOf({ t: x.t, code: x.prov }) })
-}
-
-/**
- * 弹框「通道资格」段的标题:对到了通道叫「通道资格」,没对照叫「全省门槛」(读的人要知道这不是筛过的)。
- *
- * @param x 取词函数与对照。
- * @returns 段标题。
- */
-export function rulesHeadOf(x: RulesHeadIn): string {
-  if (x.ruleMap == null) {
-    return x.t('pulse.rules.provAll')
-  }
-  return x.t('pulse.rules.pathway')
-}
-
-/**
- * 门槛弹框脚上「资料库」链接去处:资源页该省门槛卡。
- *
- * @param prov 两位省码。
- * @returns 地址。
- */
-export function rulesMoreHrefOf(prov: string): string {
-  return URL_RULES_HEAD + prov
 }
 
 /**
@@ -3854,7 +3699,7 @@ function pulseRankOf(pulse: string): number {
  */
 function toEmpCellRow(x: EmpCellRowIn): EmpCellRow {
   const r = x.r
-  const cls = pillClsOf(cssOf(css.pillProv))
+  const cls = tagClsOf(TAG_V_PROV)
   const nocs = empNocsOf({ r, pick: x.pick })
   const open = empOpenCountOf({ r, pick: x.pick })
   const teer03 = teer03Of({ nocs, nocInfo: x.nocInfo })
@@ -5222,20 +5067,9 @@ function macroLatestValueOf(r: MacroRow): number {
  */
 function recOfRank(x: RecRankIn): RecOut {
   if (x.rank < Math.ceil(x.n * REC_HALF)) {
-    return { text: x.t('pulse.r.yes'), cls: recClsOf(DIFF_EASY) }
+    return { text: x.t('pulse.r.yes'), cls: diffClsOf({ tier: DIFF_EASY }) }
   }
-  return { text: x.t('pulse.r.no'), cls: recClsOf(DIFF_TIGHT) }
-}
-
-/**
- * 推荐胶囊的类:难度档配色再叠不折行档 —— .pill 为韩文职业名放开了折行,推荐词是短语,
- * 375px 英文界面「Not recommended」被连坐断成两截(2026-09-10 实撞),推荐胶囊单独收回 nowrap。
- *
- * @param tier 难度档。
- * @returns className。
- */
-function recClsOf(tier: string): string {
-  return joinCls([diffClsOf({ tier }), cssOf(css.recPill)])
+  return { text: x.t('pulse.r.no'), cls: diffClsOf({ tier: DIFF_TIGHT }) }
 }
 
 /**

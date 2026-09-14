@@ -39,7 +39,7 @@ export function DrawsSection({ t, tEn, lang, updatedAt, draws }: DrawsSectionIn)
           <DrawBoard t={t} rows={rows} />
         </div>
       </Sec>
-      {m.row != null && <RulesModal t={t} row={m.row} rows={m.rows} onClose={m.close} />}
+      {m.row != null && <RulesModal t={t} lang={lang} row={m.row} onClose={m.close} />}
     </Band>
   )
 }

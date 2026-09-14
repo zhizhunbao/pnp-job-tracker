@@ -19,14 +19,14 @@ import { makeT } from '@/lib/i18n'
 import { DLI_KIND_ALL, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
   cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
-  makeMacroLoad, makeRulesLoad,
+  makeMacroLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
 import type {
-  MaybeDrawCellRow, MaybeRulesData, RulesPanel, DrawCellRow,
+  MaybeDrawCellRow, RulesPanel,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
@@ -328,30 +328,16 @@ export function usePulse(x: PulseIn): PulsePanel {
 }
 
 /**
- * 抽选表「门槛」弹框的机器:开着哪一期一格 + 该省门槛行一格;换期就按省码懒查 /api/rules
- * (2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。关弹框把期清 null。
+ * 抽选表「门槛」弹框的机器:开着哪一期一格(清单随行带来,不取数;2026-09-13 Frank「先简化」)。关弹框把期清 null。
  *
  * @returns 开着哪省、门槛行与开关手柄。
  */
 export function useRulesModal(): RulesPanel {
   const [row, setRow] = useState<MaybeDrawCellRow>(null)
-  const [rows, setRows] = useState<MaybeRulesData>(null)
-
-  useEffect(function loadRules() {
-    if (row == null) {
-      return
-    }
-    return makeRulesLoad({ province: row.rulesProv, setRows })()
-  }, [row])
-
-  function open(r: DrawCellRow): void {
-    setRows(null)
-    setRow(r)
-  }
 
   function close(): void {
     setRow(null)
   }
 
-  return { row, rows, open, close }
+  return { row, open: setRow, close }
 }

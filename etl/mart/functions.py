@@ -76,7 +76,7 @@ from mart.constants import (
     FSA_DISTRICT, FSA_PREFIX_LEN, GLOB_JSON, GRADE_1, GRADE_2, GRADE_3,
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
-    IN_DLI, IN_DRAW_RULE_STREAMS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
+    IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
@@ -118,7 +118,7 @@ from mart.constants import (
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
-    K_WIKI, K_YEAR, K_RULE_LIST, K_RULE_OCC, K_RULE_PROGRAMS, K_RULE_PROV, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
+    K_WIKI, K_YEAR, K_CL_ITEMS, K_CL_URL, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
     LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
@@ -131,7 +131,7 @@ from mart.constants import (
     NEWS_FROM_PREFIX, NEWS_MAX, NEWS_NOISE, NEWS_SLUG_N_TPL, NEWS_SLUG_TPL, NL, NOC_LEN,
     NOC_MAJOR_LEN, NOC_RE, NOC_RULES, NON_CITY_PREFIXES, NON_PNP_PROV, NON_WORD_RE, NORM_RE,
     NUM_EXACT_RE, NUM_MIN_RE, NUM_RANGE_MIN_RE, NUM_RANGE_RE, OCC_ROWS_TPL, ON_RE, ON_YEAR_METRICS,
-    OP_GTE, ORIGIN_ATS, ORIGIN_JOBBANK, OTTAWA_CITY, OTTAWA_CITY_LOWER, OTTAWA_CITY_NAMES,
+    OP_GTE, ORIGIN_ATS, ORIGIN_HIREAC, ORIGIN_JOBBANK, OTTAWA_CITY, OTTAWA_CITY_LOWER, OTTAWA_CITY_NAMES,
     OTTAWA_COMMUNITIES, OTTAWA_DISTRICTS, OTTAWA_DISTRICT_KEYS, OTTAWA_JB_FSA, OUT_CITY, OUT_DAILY,
     OUT_CITY_I18N, OUT_JOBBANK, OUT_MART, OUT_MART_OPEN_IDS, OUT_OCC, OUT_RANKINGS, OUT_SCORED,
     OUT_STATS,
@@ -163,7 +163,7 @@ from mart.constants import (
     SOURCE_JOB_BANK, SOURCE_PRETTY, SOURCE_RCIP, SPACE, SPONSOR_COUNT_TPL, SPONSOR_DONE_TPL,
     SPONSOR_IN_TPL, SPONSOR_N, SPONSOR_NO_QUARTER, SPONSOR_RATE_ROUND, SPONSOR_RECENT_Q,
     SPONSOR_SKILLED_HIGH, SPONSOR_STALE_Q, STATS_IN_TPL, STATS_NEW_DAYS, STATS_ROWS_TPL,
-    STATUS_CLOSED, STATUS_OPEN, STREAM_CLASH_TPL, STREAM_KEY_FIX, SUBJECT_APPLICANT,
+    STATUS_CAMPUS, STATUS_OPEN, STREAM_CLASH_TPL, STREAM_KEY_FIX, SUBJECT_APPLICANT,
     TABLE_COUNT_TPL, TABLE_FILE_TPL, TABLE_NAME_WIDTH, TEER_BASE, TEER_LABEL_TPL, TEER_NONE_SORT,
     TEER_SKILLED, TEER_SKILLED_MAX, TIER_BOTH, TIER_EE, TIER_EMPLOYER, TIER_FED, TIER_PROV,
     TOP_CITIES_N, TOTAL_WORD, TRIM_SPACE_COMMA, TR_SERIES_YEARS, TR_STOCK_KEYS, UNDERSCORE,
@@ -1635,9 +1635,19 @@ def to_job_row(x: JobRowIn) -> dict:
         "gradeChannel": x.grades.channel, "scoreDetail": x.grades.detail,
         "pnpEligible": bool(x.scored.get("pnpEligible")),
         "pnpStream": x.scored.get("pnpStream") or None,
-        "eeCategory": x.scored.get("eeCategory") or None, "status": STATUS_OPEN,
+        "eeCategory": x.scored.get("eeCategory") or None,
+        "status": status_of_origin(x.fields.get(K_ORIGIN, "")),
     })
     return row
+
+
+def status_of_origin(origin: str) -> str:
+    """一行的初始状态按渠道定(2026-09-13 Frank「不应该放到职位里面吧」):校内板 hireac 记 campus,
+    其余 open。campus 行照样入库(详情页免造),但本域三处只认 open 的聚合(榜单 / 统计 / 雇主池)与
+    cms 侧一切 status='open' 的查询都不看它;只有 /coop 页读 campus。"""
+    if origin == ORIGIN_HIREAC:
+        return STATUS_CAMPUS
+    return STATUS_OPEN
 
 
 # =========================================================================
@@ -2107,19 +2117,16 @@ def load_draw_stream_zh() -> dict:
     return out
 
 
-def load_draw_rule_streams() -> dict:
-    """抽选类别 → 门槛对照(人工核定表,见 IN_DRAW_RULE_STREAMS 注)。
+def load_draw_checklists() -> dict:
+    """抽选类别 → 门槛清单(人工核定表,见 IN_DRAW_CHECKLISTS 注)。
 
-    v2 对象 {prov, streams, programs, occStreams} 序列化成 JSON 串进 varchar 列;
-    缺键的类别不进字典(row 取不到 = None,前端退回全省门槛)。
+    {url, items} 序列化成 JSON 串进 varchar 列;缺键的类别不进字典(row 取不到 = None,弹框出未收录)。
     """
     out: dict = {}
-    if not IN_DRAW_RULE_STREAMS.exists():
+    if not IN_DRAW_CHECKLISTS.exists():
         return out
-    for k, v in read_table_soft(IN_DRAW_RULE_STREAMS).items():
-        out[k] = json.dumps({K_RULE_PROV: v.get(K_RULE_PROV, ""), K_RULE_LIST: v.get(K_RULE_LIST, []),
-                             K_RULE_PROGRAMS: v.get(K_RULE_PROGRAMS, []), K_RULE_OCC: v.get(K_RULE_OCC, [])},
-                            ensure_ascii=False)
+    for k, v in read_table_soft(IN_DRAW_CHECKLISTS).items():
+        out[k] = json.dumps({K_CL_URL: v.get(K_CL_URL, ""), K_CL_ITEMS: v.get(K_CL_ITEMS, [])}, ensure_ascii=False)
     return out
 
 
@@ -2148,13 +2155,13 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
             for dr in v.get(K_DRAWS, [])[:draw_limit_of(prov)]:
                 rows.append(to_pnp_draw_row(DrawRowIn(base=base, draw=dr,
                                                       stream_zh=x.stream_zh,
-                                                      rule_streams=x.rule_streams)))
+                                                      checklist=x.checklist)))
             if v.get(K_NOTICE):
                 rows.append(to_pnp_notice_row(NoticeRowIn(base=base, notice=v[K_NOTICE])))
     for cat_key, rounds in (x.ee_history or {}).items():
         for dr in rounds:
             rows.append(to_ee_draw_row(EeDrawIn(category=cat_key, draw=dr,
-                                                fetched=x.ee_fetched, rule_streams=x.rule_streams)))
+                                                fetched=x.ee_fetched, checklist=x.checklist)))
     return rows
 
 
@@ -2558,7 +2565,7 @@ def to_pnp_draw_row(x: DrawRowIn) -> dict:
     row.update({"kind": DRAW_KIND_DRAW, "drawDate": x.draw.get("date"), "stream": stream,
                 "streamZh": x.stream_zh.get(stream), "score": x.draw.get("score"),
                 "invitations": x.draw.get("invitations"), "note": x.draw.get("note", ""),
-                "ruleStreams": x.rule_streams.get(stream)})
+                "checklist": x.checklist.get(stream)})
     return row
 
 
@@ -2577,7 +2584,7 @@ def to_ee_draw_row(x: EeDrawIn) -> dict:
             "url": EE_ROUNDS_URL, "fetched": x.fetched, "kind": DRAW_KIND_DRAW,
             "drawDate": x.draw.get("date"), "stream": x.draw.get("drawName", ""),
             "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": "",
-            "ruleStreams": x.rule_streams.get(x.draw.get("drawName", ""))}
+            "checklist": x.checklist.get(x.draw.get("drawName", ""))}
 
 
 def to_applies_rule(nocs: dict) -> dict:
@@ -3407,7 +3414,7 @@ def to_mart_tables() -> dict:
             FieldValuesIn(jobs=ctx.jobs, key=K_ACCESSIBILITY))),
         "pnp_occupations": build_pnp_occupations(),
         "pnp_draws": build_pnp_draws(DrawsBuildIn(stream_zh=load_draw_stream_zh(),
-                                                  rule_streams=load_draw_rule_streams(),
+                                                  checklist=load_draw_checklists(),
                                                   ee_history=ee_draws.history,
                                                   ee_fetched=ee_draws.fetched)),
         "pnp_score_factors": build_pnp_score_factors(universe),
@@ -3497,7 +3504,7 @@ def build_weekly_top(jobs: list) -> list:
     cut = (date.today() - timedelta(days=WEEKLY_DAYS)).isoformat()
     pool = []
     for j in jobs:
-        if j.get(K_STATUS) != STATUS_CLOSED and (j.get(K_DATE_POSTED) or "") >= cut:
+        if j.get(K_STATUS) == STATUS_OPEN and (j.get(K_DATE_POSTED) or "") >= cut:  # 2026-09-13 只认 open(campus 是第三态)
             pool.append(j)
     pool.sort(key=rank_job_key)
     rows = []
@@ -3516,7 +3523,7 @@ def build_daily_top(jobs: list) -> list:
     dcut = (date.today() - timedelta(days=DAILY_DAYS)).isoformat()
     daily = []
     for j in jobs:
-        if (j.get(K_STATUS) != STATUS_CLOSED and (j.get(K_DATE_POSTED) or "") >= dcut
+        if (j.get(K_STATUS) == STATUS_OPEN and (j.get(K_DATE_POSTED) or "") >= dcut
                 and (j.get(K_SCORE) or 0) >= DAILY_SCORE_GATE):
             daily.append(j)
     daily.sort(key=rank_job_key)
@@ -3543,7 +3550,7 @@ def aggregate_sponsor_jobs(x: SponsorBuildIn) -> dict:
     """榜 2 的公司聚合:只收在招、有公司、公司名非中介、第一方直发的岗。"""
     agg: dict = {}
     for j in x.jobs:
-        if j.get(K_STATUS) == STATUS_CLOSED or not j.get(K_COMPANY_SLUG):
+        if j.get(K_STATUS) != STATUS_OPEN or not j.get(K_COMPANY_SLUG):
             continue
         name = j.get(K_COMPANY_NAME, "")
         if not name or MART_AGENCY_RE.search(name):
@@ -4187,7 +4194,7 @@ def build_mart_stats() -> None:
     say(STATS_IN_TPL.format(jobs=IN_MART_JOBS, out=OUT_STATS))
     jobs = []
     for j in read_rows(IN_MART_JOBS):
-        if j.get(K_STATUS) != STATUS_CLOSED:
+        if j.get(K_STATUS) == STATUS_OPEN:  # 2026-09-13 只认 open(campus 是第三态,不进统计)
             jobs.append(j)
     today = date.today().isoformat()
     cut7 = (date.today() - timedelta(days=STATS_NEW_DAYS)).isoformat()

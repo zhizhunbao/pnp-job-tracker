@@ -116,77 +116,7 @@ export type RuleRow = {
    * 库内序(全表唯一,资源页拿它当行键;标签 + 原句不唯一 —— 官方一句「或」拆成两条规则时原句相同)。
    */
   seq: number
-
-  /**
-   * 项目码(联邦行按它筛;省行都是 PNP)。
-   */
-  program: string
 }
-
-/**
- * `SQL.PNP_OCCUPATIONS_BY_PROV` / `SQL.EE_CATEGORY_OCCUPATIONS` 回来的一行(清单职业)。
- */
-export type OccLineDbRow = {
-  /**
-   * 清单名(pnp_occupations.stream 或 ee_categories.category)。
-   */
-  stream: string | null
-
-  /**
-   * NOC 码。
-   */
-  noc: string | null
-
-  /**
-   * 职业名。
-   */
-  name: string | null
-}
-
-/**
- * 一条清单职业(洗净)。
- */
-export type OccLine = {
-  /**
-   * 清单名。
-   */
-  stream: string
-
-  /**
-   * NOC 码。
-   */
-  noc: string
-
-  /**
-   * 职业名。
-   */
-  name: string
-}
-
-/**
- * 清单职业清单。
- */
-export type OccLines = OccLine[]
-
-/**
- * `loadOccLines` 的入参。
- */
-export type LoadOccLinesIn = {
-  /**
-   * 能打 SQL 的东西(池由路由注入)。
-   */
-  db: Db
-
-  /**
-   * 两位省码;FED = 联邦类别清单。
-   */
-  province: string
-}
-
-/**
- * `loadOccLines` 的出参。
- */
-export type OccLinesOut = Promise<OccLines>
 
 /**
  * 一个通道(或一省)的门槛清单。
@@ -224,18 +154,13 @@ export type RuleGroups = RuleGroup[]
 export type RuleGroupsOut = Promise<RuleGroups>
 
 /**
- * `SQL.PNP_REQUIREMENTS_BY_PROV` 回来的一行(只声明真读的格;RuleDbRow 是它的超集,同走 toRuleRow)。
+ * toRuleRow 真读的格(RuleDbRow 是它的超集)。
  */
 export type RuleLineDbRow = {
   /**
    * 分流。
    */
   stream: string | null
-
-  /**
-   * 项目码(联邦行按它筛:CEC / AIP / EE-category;省行都是 PNP)。
-   */
-  program: string | null
 
   /**
    * 人话标签。
@@ -257,31 +182,6 @@ export type RuleLineDbRow = {
    */
   seq: number | string | null
 }
-
-/**
- * `loadRuleRows` 的入参。
- */
-export type LoadRuleRowsIn = {
-  /**
-   * 能打 SQL 的东西(池由路由注入)。
-   */
-  db: Db
-
-  /**
-   * 两位省码。
-   */
-  province: string
-}
-
-/**
- * 门槛行清单(某省的全部条文)。
- */
-export type RuleRows = RuleRow[]
-
-/**
- * `loadRuleRows` 的出参。
- */
-export type RuleRowsOut = Promise<RuleRows>
 
 /**
  * `toRuleGroupSeed` 的出参:分组前的一行。

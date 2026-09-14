@@ -4,19 +4,23 @@
   "items": [
    {
     "zh": "有大西洋省份指定雇主的全职 offer",
-    "en": "Full-time job offer from a designated Atlantic employer"
+    "en": "Full-time job offer from a designated Atlantic employer",
+    "ko": ""
    },
    {
     "zh": "近 5 年有 1 年(1,560 小时)相关经验;大西洋院校国际毕业生免",
-    "en": "1 year (1,560 hours) of related work in the last 5 years; waived for international graduates of Atlantic institutions"
+    "en": "1 year (1,560 hours) of related work in the last 5 years; waived for international graduates of Atlantic institutions",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 5;TEER 4 岗位 CLB 4",
-    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4"
+    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4",
+    "ko": ""
    },
    {
     "zh": "学历:TEER 0 到 1 岗位要 1 年制专上;TEER 2 到 4 高中",
-    "en": "Education: 1-year post-secondary for TEER 0 to 1 jobs; high school for TEER 2 to 4"
+    "en": "Education: 1-year post-secondary for TEER 0 to 1 jobs; high school for TEER 2 to 4",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -26,19 +30,23 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一,CRS 不低于 300",
-    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300"
+    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300",
+    "ko": ""
    },
    {
     "zh": "在阿省科技行业雇主处全职工作或有其 offer,职业在科技专线清单内(44 个)",
-    "en": "Working full-time for, or holding an offer from, an Alberta tech-industry employer in one of the 44 Accelerated Tech Pathway occupations"
+    "en": "Working full-time for, or holding an offer from, an Alberta tech-industry employer in one of the 44 Accelerated Tech Pathway occupations",
+    "ko": ""
    },
    {
     "zh": "EE 档案主职业与阿省岗位一致",
-    "en": "Express Entry primary occupation matches the Alberta job"
+    "en": "Express Entry primary occupation matches the Alberta job",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -48,15 +56,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一,CRS 不低于 300",
-    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300"
+    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300",
+    "ko": ""
    },
    {
     "zh": "EE 档案主职业属于农业行业的合格职业(有阿省 offer 的,offer 岗位也须属该行业)",
-    "en": "Express Entry primary occupation is an eligible agriculture occupation (and so is the job offer, if invited on one)"
+    "en": "Express Entry primary occupation is an eligible agriculture occupation (and so is the job offer, if invited on one)",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -66,15 +77,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一,CRS 不低于 300",
-    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300"
+    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300",
+    "ko": ""
    },
    {
     "zh": "EE 档案主职业属于建筑行业的合格职业(有阿省 offer 的,offer 岗位也须属该行业)",
-    "en": "Express Entry primary occupation is an eligible construction occupation (and so is the job offer, if invited on one)"
+    "en": "Express Entry primary occupation is an eligible construction occupation (and so is the job offer, if invited on one)",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -84,15 +98,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一,CRS 不低于 300",
-    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300"
+    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300",
+    "ko": ""
    },
    {
     "zh": "EE 档案主职业属于医疗行业的合格职业(有阿省 offer 的,offer 岗位也须属该行业)",
-    "en": "Express Entry primary occupation is an eligible health care occupation (and so is the job offer, if invited on one)"
+    "en": "Express Entry primary occupation is an eligible health care occupation (and so is the job offer, if invited on one)",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -102,23 +119,28 @@
   "items": [
    {
     "zh": "有阿省雇主的全职 offer,岗位与雇主满足阿省 offer 与雇主要求",
-    "en": "Full-time job offer meeting Alberta job offer and employer requirements"
+    "en": "Full-time job offer meeting Alberta job offer and employer requirements",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 5;TEER 4 到 5 岗位 CLB 4",
-    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5"
+    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5",
+    "ko": ""
    },
    {
     "zh": "近 30 个月内有 24 个月本职业全职经验,或近 18 个月内在阿省有 12 个月",
-    "en": "24 months of full-time experience in the occupation in the last 30 months, or 12 months in Alberta in the last 18"
+    "en": "24 months of full-time experience in the occupation in the last 30 months, or 12 months in Alberta in the last 18",
+    "ko": ""
    },
    {
     "zh": "职业不在 AOS 不合格清单内",
-    "en": "Occupation not on the AOS ineligible list"
+    "en": "Occupation not on the AOS ineligible list",
+    "ko": ""
    },
    {
     "zh": "WEOI 分数不低于当期分数线",
-    "en": "WEOI score at or above the round cutoff"
+    "en": "WEOI score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -128,23 +150,28 @@
   "items": [
    {
     "zh": "职业在本类别定向清单内(9 个建筑技工职业)",
-    "en": "Occupation on the Build: Construction Trades targeted list (9 trades)"
+    "en": "Occupation on the Build: Construction Trades targeted list (9 trades)",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -154,19 +181,23 @@
   "items": [
    {
     "zh": "近 3 年内在加拿大有 1 年(1,560 小时)TEER 0 到 3 的合法工作经验;自雇和全职学生期间的工作不算",
-    "en": "1 year (1,560 hours) of authorized TEER 0 to 3 work in Canada in the last 3 years; self-employment and work during full-time study do not count"
+    "en": "1 year (1,560 hours) of authorized TEER 0 to 3 work in Canada in the last 3 years; self-employment and work during full-time study do not count",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 1 职业 CLB 7;TEER 2 到 3 职业 CLB 5",
-    "en": "Language: CLB 7 for TEER 0 to 1 occupations; CLB 5 for TEER 2 to 3"
+    "en": "Language: CLB 7 for TEER 0 to 1 occupations; CLB 5 for TEER 2 to 3",
+    "ko": ""
    },
    {
     "zh": "计划在魁北克以外定居",
-    "en": "Plan to live outside Quebec"
+    "en": "Plan to live outside Quebec",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -176,23 +207,28 @@
   "items": [
    {
     "zh": "职业为幼儿教育工作者(NOC 42202)",
-    "en": "Occupation is early childhood educator (NOC 42202)"
+    "en": "Occupation is early childhood educator (NOC 42202)",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -202,23 +238,28 @@
   "items": [
    {
     "zh": "职业在本类别定向清单内(法语教师 2 个职业)",
-    "en": "Occupation on the Care: Education targeted list (2 French-speaking teaching occupations)"
+    "en": "Occupation on the Care: Education targeted list (2 French-speaking teaching occupations)",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -228,23 +269,28 @@
   "items": [
    {
     "zh": "职业在本类别定向职业清单内(46 个医疗职业)",
-    "en": "Occupation on the Care: Health targeted list (46 health occupations)"
+    "en": "Occupation on the Care: Health targeted list (46 health occupations)",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -254,23 +300,28 @@
   "items": [
    {
     "zh": "职业在本类别定向清单内(兽医与动物保健 2 个职业)",
-    "en": "Occupation on the Care: Veterinary Care targeted list (2 occupations)"
+    "en": "Occupation on the Care: Veterinary Care targeted list (2 occupations)",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -280,19 +331,23 @@
   "items": [
    {
     "zh": "本人或配偶在曼省完成专上学业(申请时要交毕业证与成绩单)",
-    "en": "You or your spouse completed post-secondary education in Manitoba (diploma and transcript required)"
+    "en": "You or your spouse completed post-secondary education in Manitoba (diploma and transcript required)",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "EOI 分数不低于当期分数线(没有曼省雇主那 500 分够不着)",
-    "en": "EOI score at or above the round cutoff (the 500 points for Manitoba employment are essential)"
+    "en": "EOI score at or above the round cutoff (the 500 points for Manitoba employment are essential)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -302,19 +357,23 @@
   "items": [
    {
     "zh": "有阿省医疗雇主 offer,职业在 9 类合格医疗职业内(医生、注册护士、执业护士、护理师、医师助理、职业治疗师、物理治疗师、临床社工、心理师)",
-    "en": "Job offer from an Alberta health-sector employer in one of 9 eligible professions (physician, RN, LPN, NP, physician assistant, OT, PT, clinical social worker, psychologist)"
+    "en": "Job offer from an Alberta health-sector employer in one of 9 eligible professions (physician, RN, LPN, NP, physician assistant, OT, PT, clinical social worker, psychologist)",
+    "ko": ""
    },
    {
     "zh": "已满足阿省监管机构的执业要求并能出具证明",
-    "en": "Proof of meeting the Alberta regulatory body requirements to practise"
+    "en": "Proof of meeting the Alberta regulatory body requirements to practise",
+    "ko": ""
    },
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一,CRS 不低于 300",
-    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300"
+    "en": "Active Express Entry profile, eligible for CEC, FSW or FST, with CRS of at least 300",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -324,19 +383,23 @@
   "items": [
    {
     "zh": "有阿省医疗雇主 offer,职业在 9 类合格医疗职业内(医生、注册护士、执业护士、护理师、医师助理、职业治疗师、物理治疗师、临床社工、心理师)",
-    "en": "Job offer from an Alberta health-sector employer in one of 9 eligible professions (physician, RN, LPN, NP, physician assistant, OT, PT, clinical social worker, psychologist)"
+    "en": "Job offer from an Alberta health-sector employer in one of 9 eligible professions (physician, RN, LPN, NP, physician assistant, OT, PT, clinical social worker, psychologist)",
+    "ko": ""
    },
    {
     "zh": "已满足阿省监管机构的执业要求并能出具证明",
-    "en": "Proof of meeting the Alberta regulatory body requirements to practise"
+    "en": "Proof of meeting the Alberta regulatory body requirements to practise",
+    "ko": ""
    },
    {
     "zh": "语言 CLB 5 四项,或达到执业注册所需水平",
-    "en": "CLB 5 in all skills, or language sufficient for licensure"
+    "en": "CLB 5 in all skills, or language sufficient for licensure",
+    "ko": ""
    },
    {
     "zh": "在阿省工作的须持有效工签;CRS 能到 300 的必须走 EE 版",
-    "en": "Valid work permit if working in Alberta; anyone able to reach CRS 300 must use the Express Entry option"
+    "en": "Valid work permit if working in Alberta; anyone able to reach CRS 300 must use the Express Entry option",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -346,15 +409,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在教育类别的 5 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 5 listed education occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 5 listed education occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -364,23 +430,28 @@
   "items": [
    {
     "zh": "有安省雇主的全职 offer,在同雇主同岗位干满 6 个月(安省应届毕业生 3 个月)",
-    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)"
+    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 6;TEER 4 到 5 岗位 CLB 4",
-    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5"
+    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5",
+    "ko": ""
    },
    {
     "zh": "工资不低于该职业在该地区的中位工资",
-    "en": "Wage at or above the median wage for the occupation in that region"
+    "en": "Wage at or above the median wage for the occupation in that region",
+    "ko": ""
    },
    {
     "zh": "雇主经营满 3 年,达到营业额与全职雇员数门槛(大温多哥 $100 万 / 5 人,其他地区 $50 万或 $25 万 / 3 人)",
-    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)"
+    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)",
+    "ko": ""
    },
    {
     "zh": "OINP EOI 分数不低于当期分数线",
-    "en": "OINP EOI score at or above the round cutoff"
+    "en": "OINP EOI score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -390,23 +461,28 @@
   "items": [
    {
     "zh": "有安省雇主的全职 offer,在同雇主同岗位干满 6 个月(安省应届毕业生 3 个月)",
-    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)"
+    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 6;TEER 4 到 5 岗位 CLB 4",
-    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5"
+    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5",
+    "ko": ""
    },
    {
     "zh": "工资不低于该职业在该地区的中位工资",
-    "en": "Wage at or above the median wage for the occupation in that region"
+    "en": "Wage at or above the median wage for the occupation in that region",
+    "ko": ""
    },
    {
     "zh": "雇主经营满 3 年,达到营业额与全职雇员数门槛(大温多哥 $100 万 / 5 人,其他地区 $50 万或 $25 万 / 3 人)",
-    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)"
+    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)",
+    "ko": ""
    },
    {
     "zh": "OINP EOI 分数不低于当期分数线",
-    "en": "OINP EOI score at or above the round cutoff"
+    "en": "OINP EOI score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -416,23 +492,28 @@
   "items": [
    {
     "zh": "有安省雇主的全职 offer,在同雇主同岗位干满 6 个月(安省应届毕业生 3 个月)",
-    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)"
+    "en": "Full-time Ontario job offer with 6 months in the same job for the same employer (3 months for recent Ontario graduates)",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 6;TEER 4 到 5 岗位 CLB 4",
-    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5"
+    "en": "Language: CLB 6 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5",
+    "ko": ""
    },
    {
     "zh": "工资不低于该职业在该地区的中位工资",
-    "en": "Wage at or above the median wage for the occupation in that region"
+    "en": "Wage at or above the median wage for the occupation in that region",
+    "ko": ""
    },
    {
     "zh": "雇主经营满 3 年,达到营业额与全职雇员数门槛(大温多哥 $100 万 / 5 人,其他地区 $50 万或 $25 万 / 3 人)",
-    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)"
+    "en": "Employer in business for 3 years, meeting the revenue and staff thresholds ($1M / 5 staff in the GTA; $500k or $250k / 3 staff elsewhere)",
+    "ko": ""
    },
    {
     "zh": "OINP EOI 分数不低于当期分数线",
-    "en": "OINP EOI score at or above the round cutoff"
+    "en": "OINP EOI score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -442,19 +523,23 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -464,23 +549,28 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    },
    {
     "zh": "同时有联邦 Express Entry 档案",
-    "en": "Also has an Express Entry profile"
+    "en": "Also has an Express Entry profile",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -490,15 +580,18 @@
   "items": [
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "EOI 分数不低于当期分数线(没有曼省雇主那 500 分够不着)",
-    "en": "EOI score at or above the round cutoff (the 500 points for Manitoba employment are essential)"
+    "en": "EOI score at or above the round cutoff (the 500 points for Manitoba employment are essential)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -508,19 +601,23 @@
   "items": [
    {
     "zh": "与 MPNP 的沟通语言为法语,并有有效法语成绩",
-    "en": "French declared as language of communication with the MPNP, with a valid French test result"
+    "en": "French declared as language of communication with the MPNP, with a valid French test result",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "本类别全部邀请,不看分",
-    "en": "All qualifying profiles are invited; no score cutoff"
+    "en": "All qualifying profiles are invited; no score cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -530,15 +627,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -548,15 +648,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "法语四项均达到 NCLC 7",
-    "en": "NCLC 7 in all four French abilities"
+    "en": "NCLC 7 in all four French abilities",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -566,15 +669,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "法语四项均达到 NCLC 7",
-    "en": "NCLC 7 in all four French abilities"
+    "en": "NCLC 7 in all four French abilities",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -584,15 +690,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在医疗与社会服务类别的 37 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -602,15 +711,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在医疗与社会服务类别的 37 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -620,15 +732,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在医疗与社会服务类别的 37 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 37 listed healthcare and social services occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -638,23 +753,28 @@
   "items": [
    {
     "zh": "岗位属当轮公告点名的高经济影响定向邀请范围",
-    "en": "Job falls within the high economic impact targeted invitation defined in the round notice"
+    "en": "Job falls within the high economic impact targeted invitation defined in the round notice",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -664,19 +784,23 @@
   "items": [
    {
     "zh": "有爱德华王子岛雇主的全职 offer;雇主经营满 2 年",
-    "en": "Full-time job offer from a P.E.I. employer operating for at least 2 years"
+    "en": "Full-time job offer from a P.E.I. employer operating for at least 2 years",
+    "ko": ""
    },
    {
     "zh": "语言 CLB 4",
-    "en": "CLB 4"
+    "en": "CLB 4",
+    "ko": ""
    },
    {
     "zh": "技术工人流:近 5 年有 2 年全职经验",
-    "en": "Skilled Worker stream: 2 years of full-time experience in the last 5 years"
+    "en": "Skilled Worker stream: 2 years of full-time experience in the last 5 years",
+    "ko": ""
    },
    {
     "zh": "走 EE 的同时有联邦 Express Entry 档案",
-    "en": "Express Entry path also requires an Express Entry profile"
+    "en": "Express Entry path also requires an Express Entry profile",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -686,27 +810,33 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    },
    {
     "zh": "offer 来自 NB 政府招募团,岗位 NOC 在优先职业码清单内",
-    "en": "Offer results from a Government of New Brunswick recruitment mission and the NOC is a priority code"
+    "en": "Offer results from a Government of New Brunswick recruitment mission and the NOC is a priority code",
+    "ko": ""
    },
    {
     "zh": "有 1 年相关带薪经验,高中及以上学历",
-    "en": "At least 1 year of paid related work experience and a high school diploma"
+    "en": "At least 1 year of paid related work experience and a high school diploma",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -716,19 +846,23 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "在 NB 指定院校完成可申请毕业工签的项目",
-    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution"
+    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution",
+    "ko": ""
    },
    {
     "zh": "已在支持申请的雇主处全职、非季节性工作或已接受其 offer",
-    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer"
+    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -738,15 +872,18 @@
   "items": [
    {
     "zh": "有纽省雇主的全职 offer;雇主在纽省经营满 2 年",
-    "en": "Full-time job offer from a Newfoundland and Labrador employer operating for at least 2 years"
+    "en": "Full-time job offer from a Newfoundland and Labrador employer operating for at least 2 years",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 4 到 5 岗位 CLB 4;TEER 0 到 3 不强制成绩",
-    "en": "Language: CLB 4 for TEER 4 to 5 jobs; no test required for TEER 0 to 3"
+    "en": "Language: CLB 4 for TEER 4 to 5 jobs; no test required for TEER 0 to 3",
+    "ko": ""
    },
    {
     "zh": "省提名类与大西洋移民计划两条路同批发邀",
-    "en": "Invitations issued for both the NLPNP and the Atlantic Immigration Program in the same batch"
+    "en": "Invitations issued for both the NLPNP and the Atlantic Immigration Program in the same batch",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -756,19 +893,23 @@
   "items": [
    {
     "zh": "当前在曼省工作,职业属当轮公告点名的职业大类",
-    "en": "Currently employed in Manitoba in the occupational group named in the round notice"
+    "en": "Currently employed in Manitoba in the occupational group named in the round notice",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "是否看分以当轮公告为准(多数轮次全部邀请)",
-    "en": "Score cutoff only if the round notice says so (most rounds invite all)"
+    "en": "Score cutoff only if the round notice says so (most rounds invite all)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -778,19 +919,23 @@
   "items": [
    {
     "zh": "当前在曼省工作,职业属当轮公告点名的职业大类",
-    "en": "Currently employed in Manitoba in the occupational group named in the round notice"
+    "en": "Currently employed in Manitoba in the occupational group named in the round notice",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "是否看分以当轮公告为准(多数轮次全部邀请)",
-    "en": "Score cutoff only if the round notice says so (most rounds invite all)"
+    "en": "Score cutoff only if the round notice says so (most rounds invite all)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -800,19 +945,23 @@
   "items": [
    {
     "zh": "当前在曼省工作,职业属当轮公告点名的职业大类",
-    "en": "Currently employed in Manitoba in the occupational group named in the round notice"
+    "en": "Currently employed in Manitoba in the occupational group named in the round notice",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "是否看分以当轮公告为准(多数轮次全部邀请)",
-    "en": "Score cutoff only if the round notice says so (most rounds invite all)"
+    "en": "Score cutoff only if the round notice says so (most rounds invite all)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -822,19 +971,23 @@
   "items": [
    {
     "zh": "当前在曼省工作,职业属当轮公告点名的职业大类",
-    "en": "Currently employed in Manitoba in the occupational group named in the round notice"
+    "en": "Currently employed in Manitoba in the occupational group named in the round notice",
+    "ko": ""
    },
    {
     "zh": "在曼省雇主处连续全职工作满 6 个月,并拿到该雇主的长期全职 offer(外省毕业的要满 12 个月)",
-    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)"
+    "en": "At least 6 months of continuous full-time work for a Manitoba employer plus a long-term full-time offer from that employer (12 months if you graduated in another province)",
+    "ko": ""
    },
    {
     "zh": "持有效工签,当前在曼省工作",
-    "en": "Valid work permit and currently working in Manitoba"
+    "en": "Valid work permit and currently working in Manitoba",
+    "ko": ""
    },
    {
     "zh": "是否看分以当轮公告为准(多数轮次全部邀请)",
-    "en": "Score cutoff only if the round notice says so (most rounds invite all)"
+    "en": "Score cutoff only if the round notice says so (most rounds invite all)",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -844,15 +997,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在医生类别的 3 个职业清单内(只算加拿大境内)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 3 listed physician occupations in Canada"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 3 listed physician occupations in Canada",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -862,15 +1018,18 @@
   "items": [
    {
     "zh": "已拿到某省与 Express Entry 挂钩的省提名(CRS 加 600 分)",
-    "en": "Holds a provincial nomination linked to Express Entry (600 CRS points)"
+    "en": "Holds a provincial nomination linked to Express Entry (600 CRS points)",
+    "ko": ""
    },
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -880,23 +1039,28 @@
   "items": [
    {
     "zh": "持指定社区经济发展组织出具的背书信(一年内有效)",
-    "en": "Endorsement of Candidate letter from the designated community (valid one year)"
+    "en": "Endorsement of Candidate letter from the designated community (valid one year)",
+    "ko": ""
    },
    {
     "zh": "指定社区内雇主的全职 offer,职业合格",
-    "en": "Full-time job offer in an eligible occupation within the designated community"
+    "en": "Full-time job offer in an eligible occupation within the designated community",
+    "ko": ""
    },
    {
     "zh": "近 18 个月内有 12 个月全职经验(在指定社区 DLI 完成 2 年制项目的毕业生免)",
-    "en": "12 months of full-time experience in the last 18 months (waived for graduates of a 2-year program at a DLI in the community)"
+    "en": "12 months of full-time experience in the last 18 months (waived for graduates of a 2-year program at a DLI in the community)",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 0 到 3 岗位 CLB 5;TEER 4 到 5 岗位 CLB 4",
-    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5"
+    "en": "Language: CLB 5 for TEER 0 to 3 jobs; CLB 4 for TEER 4 to 5",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历;不在加拿大或未在工作的需安家资金",
-    "en": "High school education or above; settlement funds if outside Canada or not working"
+    "en": "High school education or above; settlement funds if outside Canada or not working",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -906,15 +1070,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在高管类别的 4 个职业清单内(只算加拿大境内)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 4 listed senior manager occupations in Canada"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 4 listed senior manager occupations in Canada",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -924,19 +1091,23 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "是加拿大军队认可的外籍技能军职申请人,并有加拿大武装部队的安排就业 offer",
-    "en": "Eligible Foreign Skilled Military Applicant with an arranged employment offer from the Canadian Armed Forces"
+    "en": "Eligible Foreign Skilled Military Applicant with an arranged employment offer from the Canadian Armed Forces",
+    "ko": ""
    },
    {
     "zh": "至少 2 年制专上学历",
-    "en": "At least a 2-year post-secondary credential"
+    "en": "At least a 2-year post-secondary credential",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -946,27 +1117,33 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    },
    {
     "zh": "在 NB 指定院校完成可申请毕业工签的项目",
-    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution"
+    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution",
+    "ko": ""
    },
    {
     "zh": "已在支持申请的雇主处全职、非季节性工作或已接受其 offer",
-    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer"
+    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -976,27 +1153,33 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    },
    {
     "zh": "offer 来自 NB 政府招募团,岗位 NOC 在优先职业码清单内",
-    "en": "Offer results from a Government of New Brunswick recruitment mission and the NOC is a priority code"
+    "en": "Offer results from a Government of New Brunswick recruitment mission and the NOC is a priority code",
+    "ko": ""
    },
    {
     "zh": "有 1 年相关带薪经验,高中及以上学历",
-    "en": "At least 1 year of paid related work experience and a high school diploma"
+    "en": "At least 1 year of paid related work experience and a high school diploma",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1006,19 +1189,23 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1028,19 +1215,23 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "在 NB 指定院校完成可申请毕业工签的项目",
-    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution"
+    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution",
+    "ko": ""
    },
    {
     "zh": "已在支持申请的雇主处全职、非季节性工作或已接受其 offer",
-    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer"
+    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1050,27 +1241,33 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "为该雇主全职、非季节性工作满 6 个月,并在 NB 居住满 6 个月",
-    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick"
+    "en": "At least 6 months of full-time non-seasonal work with the employer and 6 months living in New Brunswick",
+    "ko": ""
    },
    {
     "zh": "高中及以上学历",
-    "en": "At least a high school diploma"
+    "en": "At least a high school diploma",
+    "ko": ""
    },
    {
     "zh": "在 NB 指定院校完成可申请毕业工签的项目",
-    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution"
+    "en": "Completed a PGWP-eligible program at a New Brunswick designated learning institution",
+    "ko": ""
    },
    {
     "zh": "已在支持申请的雇主处全职、非季节性工作或已接受其 offer",
-    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer"
+    "en": "Working in or accepted a full-time non-seasonal position with the supporting employer",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1080,15 +1277,18 @@
   "items": [
    {
     "zh": "被曼省战略招募项目直接邀请(雇主服务、族裔社区、法语社区、地区社区)或走临时工签政策",
-    "en": "Directly invited under a Manitoba strategic recruitment initiative (Employer Services, Ethnocultural, Francophone or Regional Communities) or the TPP"
+    "en": "Directly invited under a Manitoba strategic recruitment initiative (Employer Services, Ethnocultural, Francophone or Regional Communities) or the TPP",
+    "ko": ""
    },
    {
     "zh": "属于技术工人曼省类或海外类",
-    "en": "Skilled Worker in Manitoba or Skilled Worker Overseas pathway"
+    "en": "Skilled Worker in Manitoba or Skilled Worker Overseas pathway",
+    "ko": ""
    },
    {
     "zh": "未被直邀的普通档案本期不抽",
-    "en": "Profiles without a direct invitation are not considered"
+    "en": "Profiles without a direct invitation are not considered",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1098,15 +1298,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1116,15 +1319,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1134,15 +1340,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1152,15 +1361,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1170,15 +1382,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1188,15 +1403,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1206,15 +1424,18 @@
   "items": [
    {
     "zh": "19 岁以上,语言 CLB 4",
-    "en": "At least 19 years old with CLB 4"
+    "en": "At least 19 years old with CLB 4",
+    "ko": ""
    },
    {
     "zh": "支持申请的雇主在 NB 持续经营满 24 个月",
-    "en": "Supporting employer has operated in New Brunswick for the past 24 months"
+    "en": "Supporting employer has operated in New Brunswick for the past 24 months",
+    "ko": ""
    },
    {
     "zh": "通过 NB 战略举措受邀(法语工作者 / 法语优先职业),以公告口径为准",
-    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice"
+    "en": "Invited under a New Brunswick strategic initiative (Francophone workers or Francophone priorities) as stated in the round notice",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1224,23 +1445,28 @@
   "items": [
    {
     "zh": "岗位在偏远地区医疗机构,职业在医疗定向清单内",
-    "en": "Job at a rural or remote health facility in a targeted health occupation"
+    "en": "Job at a rural or remote health facility in a targeted health occupation",
+    "ko": ""
    },
    {
     "zh": "有 BC 雇主的全职、无固定期限 offer;雇主在 BC 经营满 1 年,大温地区至少 5 名全职员工、其他地区至少 3 名",
-    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere"
+    "en": "Full-time, indeterminate job offer from a B.C. employer operating in B.C. for at least 1 year, with at least 5 full-time staff in Metro Vancouver or 3 elsewhere",
+    "ko": ""
    },
    {
     "zh": "语言:TEER 2 到 5 的岗位要 CLB 4;TEER 0 到 1 注册时不要求成绩",
-    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1"
+    "en": "Language: CLB 4 for TEER 2 to 5 jobs; no test required at registration for TEER 0 to 1",
+    "ko": ""
    },
    {
     "zh": "年收入不低于最低家庭收入线(1 人:大温 $31,264,其他地区 $26,057)",
-    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)"
+    "en": "Wage at or above the minimum family income (1 person: $31,264 in Metro Vancouver, $26,057 elsewhere)",
+    "ko": ""
    },
    {
     "zh": "SIRS 分数不低于当期分数线",
-    "en": "SIRS score at or above the round cutoff"
+    "en": "SIRS score at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1250,15 +1476,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在技工类别的 25 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1268,15 +1497,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在技工类别的 25 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1286,15 +1518,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在技工类别的 25 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 25 listed trade occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"
@@ -1304,15 +1539,18 @@
   "items": [
    {
     "zh": "有联邦 Express Entry 档案,满足 CEC、FSW、FST 之一",
-    "en": "Active Express Entry profile and eligible for CEC, FSW or FST"
+    "en": "Active Express Entry profile and eligible for CEC, FSW or FST",
+    "ko": ""
    },
    {
     "zh": "近 3 年内有 12 个月全职经验,职业在运输类别的 4 个职业清单内(境内外皆可)",
-    "en": "12 months of full-time work experience in the past 3 years in one of the 4 listed transport occupations in Canada or abroad"
+    "en": "12 months of full-time work experience in the past 3 years in one of the 4 listed transport occupations in Canada or abroad",
+    "ko": ""
    },
    {
     "zh": "CRS 不低于当期分数线",
-    "en": "CRS at or above the round cutoff"
+    "en": "CRS at or above the round cutoff",
+    "ko": ""
    }
   ],
   "checkedAt": "2026-09-13"

@@ -627,44 +627,6 @@
 }
 
 /*
- * ── 胶囊(药丸)──────────────────────────────────────────────
- * 一粒胶囊的形状收在 .pill,配色按语义分档叠在它上面。
- * 2026-08-08 Frank 走查连拍的口径:省紧缺绿 / 联邦紧缺青 / 代码灰 / 死路红,
- * 与难度档药丸(easy 绿 / mid 黄 / tight 红)同色系。
- * ⚠️ E13-07 通道档(2026-08-06 深夜四档拍板)原有 employer 红、ee 灰、fed 青、
- * prov 与 both 绿五档;通道档 pill 列 2026-08-08 三轮退役后,真正上屏的只剩
- * 省紧缺绿与联邦紧缺青两档,其余三档的配色随列一起退役,档次序仍活在
- * constants.ts 的 TIER_RANK(榜 B 行序按它排)。
- */
-.pill {
-  /*
-   * 胶囊内允许折行:在招职业胶囊装的是职业名,韩文名一条能到 20 字以上,固定列宽下不折就溢出到邻列
-   * (2026-09-05 Frank 韩语界面截图「韩语也跑出去了」);省码/联邦这类短胶囊天然不会折。名字禁截断。
-   */
-  white-space: normal;
-
-  /*
-   * 胶囊字号。
-   */
-  font-size: 11px;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 胶囊内衬。
-   */
-  padding: 1px 8px;
-
-  /*
-   * 全圆角。
-   */
-  border-radius: 999px;
-}
-
-/*
  * 手机省卡的「年 × 值」迷你格(2026-09-10「手机用卡片 手机不用显示图」):年头一排灰小字、
  * 值一排正文字,四列对齐,卡下缘细线隔开。
  */
@@ -742,117 +704,6 @@
 }
 
 /*
- * 推荐胶囊的不折行档:.pill 的折行是给韩文职业名的,推荐词(Not recommended)是短语,
- * 375px 英文界面被连坐断成两截圆角块(2026-09-10 实撞),推荐胶囊叠这档收回 nowrap。
- */
-.recPill {
-  /*
-   * 短语一行放下,不折。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 省紧缺胶囊(绿):这个省的紧缺清单命中了在架岗。
- */
-.pillProv {
-  /*
-   * 浅绿底(green-100)。
-   */
-  background: #dcfce7;
-
-  /*
-   * 深绿字(green-800)。
-   */
-  color: #166534;
-
-  /*
-   * 绿描边(green-200)。
-   */
-  border: 1px solid #bbf7d0;
-}
-
-/*
- * 联邦紧缺胶囊(青):联邦通道那一粒,与省紧缺绿区分开。
- */
-.pillFed {
-  /*
-   * 浅青底(teal-100)。
-   */
-  background: #ccfbf1;
-
-  /*
-   * 深青字(teal-700)。
-   */
-  color: #0f766e;
-
-  /*
-   * 青描边(teal-200)。
-   */
-  border: 1px solid #99f6e4;
-}
-
-/*
- * 难度档「宽松」(绿,与省紧缺同值 —— 都是「好消息」那一档)。
- */
-.pillEasy {
-  /*
-   * 浅绿底(green-100)。
-   */
-  background: #dcfce7;
-
-  /*
-   * 深绿字(green-800)。
-   */
-  color: #166534;
-
-  /*
-   * 绿描边(green-200)。
-   */
-  border: 1px solid #bbf7d0;
-}
-
-/*
- * 难度档「中等」(黄)。
- */
-.pillMid {
-  /*
-   * 浅黄底(yellow-100)。
-   */
-  background: #fef9c3;
-
-  /*
-   * 深黄字(yellow-800)。
-   */
-  color: #854d0e;
-
-  /*
-   * 黄描边(amber-200)。
-   */
-  border: 1px solid #fde68a;
-}
-
-/*
- * 难度档「紧」(红,与死路胶囊同值 —— 都是「别来」那一档)。
- */
-.pillTight {
-  /*
-   * 浅红底(red-100)。
-   */
-  background: #fee2e2;
-
-  /*
-   * 深红字(red-700)。
-   */
-  color: #b91c1c;
-
-  /*
-   * 红描边(red-200)。
-   */
-  border: 1px solid #fecaca;
-}
-
-/*
  * 省卡右上角的难度档胶囊:推到最右且不被压缩。
  */
 .pillRight {
@@ -885,93 +736,6 @@
    * 窄屏折行。
    */
   flex-wrap: wrap;
-}
-
-/*
- * 手机卡片上的代码胶囊(NOC / TEER / 担保率):中性灰,别抢通道档的色
- * (2026-08-08 Frank「手机端改成胶囊」「teer 也需要」)。
- */
-.chipGray {
-  /*
-   * 胶囊内不折行。
-   */
-  white-space: nowrap;
-
-  /*
-   * 胶囊字号。
-   */
-  font-size: 11px;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 胶囊内衬。
-   */
-  padding: 1px 8px;
-
-  /*
-   * 全圆角。
-   */
-  border-radius: 999px;
-
-  /*
-   * 浅灰底(gray-100)。
-   */
-  background: #f3f4f6;
-
-  /*
-   * 深灰字(gray-600)。
-   */
-  color: #4b5563;
-
-  /*
-   * 灰描边(gray-200)。
-   */
-  border: 1px solid #e5e7eb;
-}
-
-/*
- * 手机卡片上的死路胶囊(「NB 无通道」):红,且**允许折行** —— 最多 9 个省码,
- * 一行放不下宁可折行也不截断(与桌面的死路列同口径)。
- */
-.chipDanger {
-  /*
-   * 胶囊字号。
-   */
-  font-size: 11px;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 胶囊内衬。
-   */
-  padding: 1px 8px;
-
-  /*
-   * 全圆角。
-   */
-  border-radius: 999px;
-
-  /*
-   * 浅红底(red-100)。
-   */
-  background: #fee2e2;
-
-  /*
-   * 深红字(red-700)。
-   */
-  color: #b91c1c;
-
-  /*
-   * 红描边(red-200)。
-   */
-  border: 1px solid #fecaca;
 }
 
 /*
@@ -2808,78 +2572,6 @@
 
 
 /*
- * 门槛弹框的条文清单(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」;行形照资源页门槛卡)。
- */
-.rulesList {
-  /*
-   * 去默认圆点与缩进。
-   */
-  list-style: none;
-
-  /*
-   * 去默认边距。
-   */
-  margin: 8px 0 0;
-
-  /*
-   * 去默认缩进。
-   */
-  padding: 0;
-}
-
-/*
- * 门槛弹框的一条。
- */
-.rulesRow {
-  /*
-   * 竖排。
-   */
-  display: flex;
-  flex-direction: column;
-
-  /*
-   * 行内间距。
-   */
-  gap: 2px;
-
-  /*
-   * 条与条之间一条细线。
-   */
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-/*
- * 门槛弹框一条的分流名(灰小字)。
- */
-.rulesStream {
-  /*
-   * 三级文字浅灰。
-   */
-  color: var(--text3);
-
-  /*
-   * 小字。
-   */
-  font-size: 11px;
-}
-
-/*
- * 门槛弹框一条的人话标签。
- */
-.rulesLabel {
-  /*
-   * 正文色。
-   */
-  color: var(--text);
-
-  /*
-   * 正文字号。
-   */
-  font-size: 13.5px;
-}
-
-/*
  * 门槛弹框一条的官方原句(灰注)。
  */
 .rulesQuote {
@@ -2987,18 +2679,32 @@
 }
 
 /*
- * 门槛弹框「限定职业」一条:职业名主文案 + NOC 码灰注同行(代码不裸奔;2026-09-13 Frank「按那个 抽选 table 来 补数据」)。
+ * 门槛弹框的 1 2 3 清单(2026-09-13 Frank「比如 1 2 3 这种」)。
  */
-.rulesOccRow {
+.checkList {
   /*
-   * 一行,两件之间留一档。
+   * 编号在框内,留缩进。
    */
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
+  padding-left: 22px;
+
+  /*
+   * 与段标题贴着。
+   */
+  margin: 4px 0 0;
+}
+
+/*
+ * 门槛清单的一条。
+ */
+.checkItem {
+  /*
+   * 正文色、正文字号。
+   */
+  color: var(--text);
+  font-size: 13.5px;
 
   /*
    * 行距。
    */
-  padding: 3px 0;
+  padding: 4px 0;
 }

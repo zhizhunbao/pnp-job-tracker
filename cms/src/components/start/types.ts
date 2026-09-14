@@ -2956,40 +2956,65 @@ export type PulseDraw = {
   note: string
 
   /**
-   * 这一类别的门槛对照;null = 没对过(弹框退回全省),对过但 streams / programs 都空 = 条文没抓(弹框出未收录)。
+   * 这一类别的门槛清单;null = 没写(弹框出「本站未收录」)。
    */
-  ruleMap: MaybeRuleMap
+  checklist: MaybeChecklist
 }
 
 /**
- * 一个抽选类别的门槛对照(数据层人工核定表 draw_rule_streams.json 的一格,mart 拼进 pnp_draws.rule_streams)。
+ * 一条人话门槛(三语;韩文没翻时空串,显示回退英文)。
  */
-export type RuleMap = {
+export type ChecklistItem = {
   /**
-   * 去哪省取门槛(联邦类别轮次与 NB 的 AIP 轮次是 FED)。
+   * 中文。
    */
-  prov: string
+  zh: string
 
   /**
-   * 对到的门槛通道名(按序出)。
+   * 英文。
    */
-  streams: string[]
+  en: string
 
   /**
-   * 对到的联邦项目码(CEC / AIP;按序出)。
+   * 韩文(空串 = 未翻)。
    */
-  programs: string[]
-
-  /**
-   * 限定职业清单名(pnp_occupations.stream 或 ee_categories.category;按序出)。
-   */
-  occStreams: string[]
+  ko: string
 }
 
 /**
- * 门槛对照;null = 没对照。
+ * 一个抽选类别的门槛清单(人工核定表 draw_checklists.json 的一格,mart 拼进 pnp_draws.checklist)。
  */
-export type MaybeRuleMap = RuleMap | null
+export type Checklist = {
+  /**
+   * 官方页。
+   */
+  url: string
+
+  /**
+   * 3~5 条人话门槛,按序。
+   */
+  items: ChecklistItem[]
+}
+
+/**
+ * 门槛清单;null = 没写。
+ */
+export type MaybeChecklist = Checklist | null
+
+/**
+ * `checklistTextOf` 的入参。
+ */
+export type ChecklistTextIn = {
+  /**
+   * 一条。
+   */
+  item: ChecklistItem
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+}
 
 /**
  * `SQL.PNP_DRAWS_RECENT` 回来的那一行。列名即库列名;走 `SELECT *` 的容缺手法
@@ -3043,9 +3068,9 @@ export type DrawDbRow = {
   note: string | null
 
   /**
-   * 门槛对照对象的 JSON 串({prov, streams, programs, occStreams}) —— 2026-09-13 的列,DDL 没跑的库上这一格压根不存在;NULL = 未对照。
+   * 门槛清单 JSON 串({url, items:[{zh,en,ko}]}) —— 2026-09-13 的列,DDL 没跑的库上这一格压根不存在;NULL = 未收录。
    */
-  rule_streams?: string | null
+  checklist?: string | null
 }
 
 /**
@@ -3118,9 +3143,9 @@ export type DrawCellRow = {
   href: string
 
   /**
-   * 「门槛」钮开哪省的弹框(两位省码);联邦 EE 类别抽选没有对应门槛组给 TEXT_NONE(不出钮)。
+   * 有没有门槛清单(没有不出「门槛」钮 —— 落到空弹框比不出更糟)。
    */
-  rulesProv: string
+  hasChecklist: boolean
 
   /**
    * 「门槛」钮点击:开这一期的弹框(2026-09-13 Frank「点门槛 应该弹框吧 不应该跳页面吧」)。
@@ -3133,9 +3158,9 @@ export type DrawCellRow = {
   drawNote: string
 
   /**
-   * 这一类别的门槛对照(弹框按它筛;见 PulseDraw.ruleMap 三态)。
+   * 这一类别的门槛清单(弹框 1 2 3;null = 没写)。
    */
-  ruleMap: MaybeRuleMap
+  checklist: MaybeChecklist
 
   /**
    * 「官方页」钮文案。
@@ -3224,111 +3249,6 @@ export type DrawCellRowsIn = {
 export type RulesOpenFn = (row: DrawCellRow) => void
 
 /**
- * /api/rules 拉回的一条门槛(线格式,与 lib/official 的 RuleRow 同格,本域自抄)。
- */
-export type RuleLineJson = {
-  /**
-   * 分流('' = 不分)。
-   */
-  stream: string
-
-  /**
-   * 人话标签(英文)。
-   */
-  label: string
-
-  /**
-   * 官方原句。
-   */
-  quote: string
-
-  /**
-   * 官方页 URL。
-   */
-  url: string
-
-  /**
-   * 库内序(当行键)。
-   */
-  seq: number
-
-  /**
-   * 项目码(联邦行按它筛)。
-   */
-  program: string
-}
-
-/**
- * /api/rules 拉回的一条清单职业(线格式,与 lib/official 的 OccLine 同格,本域自抄)。
- */
-export type OccLineJson = {
-  /**
-   * 清单名。
-   */
-  stream: string
-
-  /**
-   * NOC 码。
-   */
-  noc: string
-
-  /**
-   * 职业名。
-   */
-  name: string
-}
-
-/**
- * /api/rules 拉回的 json 探针(线格式:缺席 = 不发键)。
- */
-export type RulesProbe = {
-  /**
-   * 门槛行。
-   */
-  rows?: RuleLineJson[]
-
-  /**
-   * 该省清单职业。
-   */
-  occupations?: OccLineJson[]
-}
-
-/**
- * 门槛弹框的数据:该省门槛行 + 清单职业(缺键给空清单)。
- */
-export type RulesData = {
-  /**
-   * 门槛行。
-   */
-  rows: RuleLineJson[]
-
-  /**
-   * 清单职业。
-   */
-  occupations: OccLineJson[]
-}
-
-/**
- * 门槛弹框的数据;null = 加载中。
- */
-export type MaybeRulesData = RulesData | null
-
-/**
- * `makeRulesLoad` 的入参。
- */
-export type RulesLoadIn = {
-  /**
-   * 两位省码。
-   */
-  province: string
-
-  /**
-   * 交回门槛行。
-   */
-  setRows: (rows: MaybeRulesData) => void
-}
-
-/**
  * `makeRulesOpen` 的入参。
  */
 export type RulesOpenIn = {
@@ -3349,36 +3269,6 @@ export type RulesOpenIn = {
 export type MaybeDrawCellRow = DrawCellRow | null
 
 /**
- * `rulesOfDraw` 的入参。
- */
-export type RulesOfDrawIn = {
-  /**
-   * 该省全部门槛行。
-   */
-  lines: RuleLineJson[]
-
-  /**
-   * 这一类别的门槛对照(null = 不筛)。
-   */
-  ruleMap: MaybeRuleMap
-}
-
-/**
- * `occsOfDraw` 的入参。
- */
-export type OccsOfDrawIn = {
-  /**
-   * 该省全部清单职业。
-   */
-  lines: OccLineJson[]
-
-  /**
-   * 这一类别的门槛对照(null = 没有限定职业)。
-   */
-  ruleMap: MaybeRuleMap
-}
-
-/**
  * `useRulesModal` 的出参:门槛弹框的状态与手柄。
  */
 export type RulesPanel = {
@@ -3388,12 +3278,7 @@ export type RulesPanel = {
   row: MaybeDrawCellRow
 
   /**
-   * 该省门槛行 + 清单职业;null = 加载中。
-   */
-  rows: MaybeRulesData
-
-  /**
-   * 开某省的弹框。
+   * 开某一期的弹框。
    */
   open: RulesOpenFn
 
@@ -3401,36 +3286,6 @@ export type RulesPanel = {
    * 关弹框。
    */
   close: ClickFn
-}
-
-/**
- * `rulesTitleOf` 的入参。
- */
-export type RulesTitleIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 两位省码。
-   */
-  prov: string
-}
-
-/**
- * `rulesHeadOf` 的入参。
- */
-export type RulesHeadIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这一类别的门槛对照(null = 没对照)。
-   */
-  ruleMap: MaybeRuleMap
 }
 
 /**
@@ -3443,14 +3298,14 @@ export type RulesModalIn = {
   t: TFn
 
   /**
+   * 界面语言(清单按它取一语)。
+   */
+  lang: string
+
+  /**
    * 开着的这一期。
    */
   row: DrawCellRow
-
-  /**
-   * 该省门槛行 + 清单职业;null = 加载中。
-   */
-  rows: MaybeRulesData
 
   /**
    * 关弹框。

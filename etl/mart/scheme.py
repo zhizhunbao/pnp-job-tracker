@@ -1122,8 +1122,8 @@ class DrawRowIn:
     stream_zh: dict
     """英文通道名 → 中文灰注(缓存没有就留 None)。"""
 
-    rule_streams: dict
-    """抽选类别名 → 门槛通道名清单的 JSON 串(对照表没有就留 None)。"""
+    checklist: dict
+    """抽选类别名 → 门槛清单 JSON 串(人工核定表没有就留 None)。"""
 
 @dataclass
 class PnpOccIn:
@@ -1145,8 +1145,8 @@ class DrawsBuildIn:
     stream_zh: dict
     """通道名中文灰注缓存。"""
 
-    rule_streams: dict
-    """抽选类别 → 门槛通道对照(人工核定表)。"""
+    checklist: dict
+    """抽选类别 → 门槛清单(人工核定表)。"""
 
     ee_history: dict
     """联邦 EE 历次抽选(#135:并进同一张表,province='FED')。"""
@@ -1214,8 +1214,8 @@ class EeDrawIn:
 
     fetched: str
     """取回日。"""
-    rule_streams: dict
-    """抽选类别名 → 对照对象 JSON 串(联邦类别轮次按 drawName 对;对照表没有就留 None)。"""
+    checklist: dict
+    """抽选类别名 → 门槛清单 JSON 串(联邦类别轮次按 drawName 对;没有就留 None)。"""
 
 
 @dataclass

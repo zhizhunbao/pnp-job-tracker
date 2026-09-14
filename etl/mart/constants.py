@@ -964,18 +964,23 @@ ORIGIN_ATS = "ats"
 ORIGIN_JOBBANK = "jobbank"
 """来源渠道:Job Bank。"""
 
+ORIGIN_HIREAC = "hireac"
+"""校内板渠道(2026-09-13 hireac 域;这一渠道的帖 status 记 campus 不记 open —— 只进 /coop 页,
+职位板 / 统计 / 榜单 / 雇主池按 status=open 取数时自然剔掉,Frank「不应该放到职位里面吧」)。"""
+
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
                    (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
-                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"))
+                   (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"),
+                   (paths.PROCESSED_HIREAC / "postings.json", ORIGIN_HIREAC))
 """第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
 Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
 三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
 写的板名。板帖不进验尸(过期由板域按 validThrough 出仓)。加第三个板 = 这里加一行
 (2026-09-11 careerbeacon 照此加行:大西洋四省板,仓同键同形)。
-🔴 hireac(Algonquin 校内板登录源,2026-09-13 立域,仓 paths.PROCESSED_HIREAC / "postings.json")**暂不进这张表**:
-当晚加行后 376 帖上了公开职位板(渠道列还显裸键 origin.hireac),Frank「不应该放到职位里面吧」—— 校内板帖要走
-一级导航自己的页,等 cms 侧「校内板」页 + 职位板剔 origin=hireac 上线后再回来加行
-(枚举值 DDL 已落生产 docs/sql/jobs-origin-hireac.sql)。"""
+2026-09-13 hireac(Algonquin 校内板登录源)加行:当晚首灌 376 帖上了公开职位板(渠道列显裸键 origin.hireac),
+Frank「不应该放到职位里面吧」→ 同日改成**按渠道给 status**(to_job_row:hireac → campus,其余 open):行照样进 jobs 表
+(详情页免造),但职位板 / 统计 / 榜单 / 雇主池全按 status=open 取数,campus 只进一级导航「校内板」页 /coop
+(枚举 DDL:docs/sql/jobs-origin-hireac.sql + jobs-status-campus.sql)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
@@ -1077,6 +1082,10 @@ K_OFFICIAL_URL = "officialUrl"
 
 STATUS_OPEN = "open"
 """岗位状态:在招(mart 只出在招行,下架由 seed 按 closed_jobs/seen_ids 对账)。"""
+
+STATUS_CAMPUS = "campus"
+"""校内板帖的状态值(2026-09-13):在 jobs 表里与 open 并列的第三态 —— 不是 open(不上职位板、不进统计),
+也不是 closed(详情页照常可看、seed 对账照常收关)。只有 ORIGIN_HIREAC 的帖用它。"""
 
 UTC_OFFSET = "+00:00"
 """isoformat 的 UTC 偏移写法。"""
@@ -1361,26 +1370,17 @@ IN_DRAW_STREAM_ZH = paths.PROCESSED / "draw_stream_zh.json"
 K_ZH = "zh"
 """译名缓存里的中文格。"""
 
-IN_DRAW_RULE_STREAMS = paths.PROCESSED / "draw_rule_streams.json"
-"""抽选类别 → 门槛通道对照表(人工核定,2026-09-13 Frank「你这个门槛 不是所有的门槛吧。只是这一个类别的门槛吧」):
-键=抽选类别官方名(pnp_draws.stream),值.streams=pnp_requirements 里的通道名清单。抽选公告的类别名与资格页的
-通道名两套叫法没有共同键,只能人工对。缺键=该类别没对过 → ruleStreams None(前端退回全省门槛);
-空清单=对过但门槛条文没抓 → 前端出「本站未收录」。
-2026-09-13 晚 v2:值从通道名清单扩成对象 {prov, streams, programs, occStreams}(prov = 去哪省取门槛,
-联邦类别轮次与 NB 的 AIP 轮次取 FED;programs = 按项目码筛的联邦行;occStreams = pnp_occupations /
-ee_categories 里该类别的限定职业清单名),整个对象序列化进同一列。"""
+IN_DRAW_CHECKLISTS = paths.PROCESSED / "draw_checklists.json"
+"""抽选类别门槛清单(人工核定表,2026-09-13 Frank「用户只想知道门槛是什么。比如 1 2 3 这种」「先简化」「先出一版」):
+键=抽选类别官方名(pnp_draws.stream),值 = {url: 官方页, items: [{zh, en, ko}]}。整个对象序列化成 JSON 串进 pnp_draws.checklist;
+缺键的类别留 None(弹框出「本站未收录」)。写清单的依据是 pnp_requirements 里抓的官方条文,条文本身不上页面。
+(前身:对照表 draw_rule_streams.json 按通道 / 项目 / 职业清单筛官方条文,同日 Frank「需要这么复杂吗」撤。)"""
 
-K_RULE_LIST = "streams"
-"""对照表里的通道名清单格。"""
+K_CL_URL = "url"
+"""清单里的官方页格。"""
 
-K_RULE_PROV = "prov"
-"""对照表 v2:去哪省取门槛(联邦类别轮次与 NB 的 AIP 轮次取 FED)。"""
-
-K_RULE_PROGRAMS = "programs"
-"""对照表 v2:按项目码筛的联邦行(CEC / AIP)。"""
-
-K_RULE_OCC = "occStreams"
-"""对照表 v2:该类别的限定职业清单名(pnp_occupations.stream 或 ee_categories.category)。"""
+K_CL_ITEMS = "items"
+"""清单里的条目格。"""
 
 IN_PNP_DRAWS = paths.PNP / "draws.json"
 """省抽选事实(BC/AB/MB+ON 通告,pnp 域 build_draws 产,E6-04)。"""

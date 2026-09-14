@@ -8,8 +8,8 @@
 import { count, queryRowsOrEmpty, SQL, text } from '../db'
 import { FED_PROGRAM_ORDER, LABEL_MISS, officialLabels, OR_TAIL_DROP, OR_TAIL_RE, RULES_PROVINCE_FED } from './constants'
 import type {
-  LangCode, LoadRuleGroupsIn, LoadRuleRowsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut,
-  RuleLineDbRow, RuleRow, RuleRows, RuleRowsOut, LoadOccLinesIn, OccLine, OccLineDbRow, OccLines, OccLinesOut,
+  LangCode, LoadRuleGroupsIn, OfficialLabelIn, RuleDbRow, RuleGroup, RuleGroupSeed, RuleGroupsOut,
+  RuleLineDbRow, RuleRow,
 } from './types'
 
 /**
@@ -107,61 +107,7 @@ function toRuleGroupSeed(r: RuleDbRow): RuleGroupSeed {
 function toRuleRow(r: RuleLineDbRow): RuleRow {
   return {
     stream: text(r.stream), label: text(r.label), quote: text(r.value_text), url: text(r.url), seq: count(r.seq),
-    program: text(r.program),
   }
-}
-
-/**
- * 一条清单职业:库格 → 洗净行。
- *
- * @param r 库里的一行。
- * @returns 洗净行。
- */
-function toOccLine(r: OccLineDbRow): OccLine {
-  return { stream: text(r.stream), noc: text(r.noc), name: text(r.name) }
-}
-
-/**
- * 某省的清单职业(把脉页门槛弹框「限定职业」层):省走 pnp_occupations,FED 走 ee_categories。
- *
- * @param x 池与省码。
- * @returns 清单职业;没有给空清单。
- */
-export function loadOccLines(x: LoadOccLinesIn): OccLinesOut {
-  if (x.province === RULES_PROVINCE_FED) {
-    return queryRowsOrEmpty({ db: x.db, sql: SQL.EE_CATEGORY_OCCUPATIONS, params: [], map: toOccLine })
-  }
-  return queryRowsOrEmpty({ db: x.db, sql: SQL.PNP_OCCUPATIONS_BY_PROV, params: [x.province], map: toOccLine })
-}
-
-/**
- * 查询挂了给空清单(路由永不 500)。
- *
- * @param _e 错误。
- * @returns 空清单。
- */
-export function emptyOccLines(_e: Error): OccLines {
-  return []
-}
-
-/**
- * 某省的门槛条文(把脉页抽选表「门槛」弹框懒查)。
- *
- * @param x 池与省码。
- * @returns 该省门槛行,按库内 seq 序;没有给空清单。
- */
-export function loadRuleRows(x: LoadRuleRowsIn): RuleRowsOut {
-  return queryRowsOrEmpty({ db: x.db, sql: SQL.PNP_REQUIREMENTS_BY_PROV, params: [x.province], map: toRuleRow })
-}
-
-/**
- * 查询挂了给空清单(路由永不 500;错误已由 db 层留痕)。
- *
- * @param _e 错误。
- * @returns 空清单。
- */
-export function emptyRuleRows(_e: Error): RuleRows {
-  return []
 }
 
 /**
