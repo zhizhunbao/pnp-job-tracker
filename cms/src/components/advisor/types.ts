@@ -3456,3 +3456,58 @@ export type ActModalPanel = {
    */
   onFreeLeft: (n: number) => void
 }
+
+/**
+ * makeLoadTitleTrans 的入参。
+ */
+export type LoadTitleTransIn = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 界面语言。
+   */
+  lang: AdvisorLang
+
+  /**
+   * 译名落格。
+   */
+  setText: (v: string) => void
+}
+
+/**
+ * 职位名懒翻接口的响应(线格式)。
+ */
+export type TitleTransJson = {
+  /**
+   * 翻成功了没有。
+   */
+  ok?: boolean
+
+  /**
+   * 译名。
+   */
+  text?: string | null
+} | null
+
+/**
+ * useTitleTrans 的入参。
+ */
+export type TitleTransHookIn = {
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 界面语言(英文不翻)。
+   */
+  lang: AdvisorLang
+
+  /**
+   * 现成副题(NOC 译名);'' = 没有,才懒翻标题。
+   */
+  cached: string
+}

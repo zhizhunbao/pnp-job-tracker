@@ -21,14 +21,14 @@ import {
 import {
   advisorKeyOf, centerPosOf, makeDragStart, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
   makeLoadProv, makeResizeStart, makeRunAiRead, makeRunLongAdvisor, panelStyleOf, readPrefOf, savePrefOf,
-  streamAdvisor, tickTypewriter,
+  streamAdvisor, tickTypewriter, makeLoadTitleTrans,
 } from './functions'
 import type {
   ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
   AdvisorModalHookIn,
   AdvisorModalPanel, AdvisorPanel, AdvisorReadStatus, AdvisorSectionIn, AdvisorStatus, AiReadIn, AiReadPanel,
   CityFact, DeadFlag, FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
-  NocTrans, NocTransIn, NocTransPanel, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus,
+  NocTrans, NocTransIn, NocTransPanel, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus, TitleTransHookIn,
 } from './types'
 import { CACHE } from './variables'
 
@@ -487,4 +487,30 @@ export function useActModal(): ActModalPanel {
   }, [])
 
   return { freeLeft, onFreeLeft: setFreeLeft }
+}
+
+/**
+ * 职位弹框标题下的副题:有 NOC 译名用它;没有且界面非英文,开框懒翻一次标题(2026-09-14 Frank「这个翻译呢」)。
+ *
+ * @param x 职位名、界面语言与现成副题。
+ * @returns 副题;'' = 还没有。
+ */
+export function useTitleTrans(x: TitleTransHookIn): string {
+  const [text, setText] = useState(x.cached)
+  const [prevCached, setPrevCached] = useState(x.cached)
+  if (prevCached !== x.cached) {
+    setPrevCached(x.cached)
+    setText(x.cached)
+  }
+  const title = x.title
+  const lang = x.lang
+  const want = text === TEXT_NONE && title !== TEXT_NONE && lang !== LANG_EN
+
+  useEffect(function loadTitle() {
+    if (want) {
+      makeLoadTitleTrans({ title, lang, setText })()
+    }
+  }, [want, title, lang])
+
+  return text
 }

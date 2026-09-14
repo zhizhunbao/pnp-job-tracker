@@ -220,6 +220,11 @@ export const EV_POINTER_UP = 'pointerup'
 export const URL_API_NOC_TRANSLATE = '/api/noc/translate'
 
 /**
+ * 职位名懒翻接口(2026-09-14:没 NOC 译名的帖用)。
+ */
+export const URL_API_JOBS_TITLE = '/api/jobs/title'
+
+/**
  * 省级面板的取数接口头(拼上编码后的省码)。
  */
 export const URL_API_PROVINCE = '/api/jobs/province?code='

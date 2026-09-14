@@ -43,7 +43,7 @@ import {
   TRANS_ERROR, TRANS_IDLE, TRANS_LOADING,
   TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR, URL_API_CITY, URL_API_JOBS_COMPANY, URL_API_NOC_TRANSLATE,
   URL_API_PROVINCE, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY,
-  VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
+  VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW, URL_API_JOBS_TITLE,
 } from './constants'
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn,
@@ -58,7 +58,7 @@ import type {
   MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OriginTextIn, PanelPos,
   PanelStyleIn, PointerHandlerFn, PrefFact, PrefJson, ProvJson, ProvStreamsIn, ResizeNextIn, ResizeNextOut,
   ResizeStartIn, RunAiReadIn, RunLongIn, SavePrefIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TransJobIn,
-  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn,
+  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, LoadTitleTransIn, TitleTransJson,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -1559,6 +1559,33 @@ export function makeLoadJobText(x: LoadJobTextIn): () => void {
     x.setText(TEXT_NONE)
   }
   return function loadJobText(): void {
+    pump().catch(fail)
+  }
+}
+
+/**
+ * 职位名懒翻(2026-09-14 Frank「这个翻译呢」):打 /api/jobs/title,回来落格;失败静默(标题下就不出副题)。
+ *
+ * @param x 职位名、界面语言与落格。
+ * @returns 取数函数。
+ */
+export function makeLoadTitleTrans(x: LoadTitleTransIn): () => void {
+  async function pump(): Promise<void> {
+    const res = await fetch(URL_API_JOBS_TITLE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ title: x.title, lang: x.lang }),
+    })
+    const d: TitleTransJson = await res.json()
+    if (d == null || d.ok !== true || d.text == null || d.text === TEXT_NONE) {
+      return
+    }
+    x.setText(d.text)
+  }
+  function fail(): void {
+    return
+  }
+  return function loadTitleTrans(): void {
     pump().catch(fail)
   }
 }

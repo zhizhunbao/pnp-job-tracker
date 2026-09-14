@@ -11,7 +11,8 @@
  * 2026-09-14 Frank「也去掉」:卡题旁的「知名企业 ↗」章撤。
  * 2026-09-14 Frank「基本信息部分默认要带地址」:地址行不再因 AI 简介里有「所在地」段而省略,一律出(无街址时退省名)。
  * 2026-09-14 Frank「这个也不需要显示」「这种地址有冲突的怎么解决」:「✨ AI 检索整理(非官方自述)+ 日期」一行撤;
- * 同日「这个地方用英文名」:公司名称行只出英文名(别名在页眉副题);「加上省市」「这个地点不一致这种怎么处理」:「省」「市」两行 = 招聘地点(companies.region 全名 / 该司在招岗的第一座城);
+ * 同日「删掉」:「官网为自动检索匹配…」那句注撤。「这个地方用英文名」:公司名称行只出英文名(别名在页眉副题);「加上省市」「这个地点不一致这种怎么处理」:「省」「市」两行 =
+ * 招聘地点(companies.region 全名 / 该司在招岗的第一座城);
  * 「地址」只在库里有街址时出(与简介之间的分割线只看有没有简介,身份行至少有公司名,Frank「横线又没了????」);AI 简介的「所在地」是模型查到的总部,留在简介段里不冒充地址(两种地点各归各,不再互相顶替)。
  *
  * @author Frank
@@ -23,7 +24,7 @@ import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
 import { CompanyIntro } from './companyintro'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, SITE_SRC_SEARCHED, TARGET_BLANK,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
 import { baseOverrideOf, baseOverrideZhOf, cityOf, hasDescOf, hasIdOf, isGovCompany, provFullOf } from './functions'
@@ -80,9 +81,6 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
               <IconMap /> {addr}
             </LinkButton>
           </Row>
-        )}
-        {company.website !== TEXT_NONE && company.websiteSource === SITE_SRC_SEARCHED && (
-          <div className={css.siteSearched}>{t('fact.siteSearched')}</div>
         )}
       </div>
       {hasBody && <div className={css.hr} />}

@@ -3597,6 +3597,11 @@ export type JobsCache = {
    * JD 整理版译文：url:lang → 全文（全量翻齐才进）。
    */
   jdTransBy: Map<string, string>
+
+  /**
+   * 职位名译名缓存:标题|语种 → 译名(2026-09-14 懒翻职位名;进程内,换版即空)。
+   */
+  titleTransBy: Map<string, string>
 }
 
 // =========================================================================
@@ -4829,4 +4834,19 @@ export type JobMeta = {
       alt: string
     }[]
   }
+}
+
+/**
+ * 职位名懒翻接口的请求体(线格式)。
+ */
+export type JdTitleBody = {
+  /**
+   * 职位名。
+   */
+  title?: string | null
+
+  /**
+   * 目标语种。
+   */
+  lang?: string | null
 }

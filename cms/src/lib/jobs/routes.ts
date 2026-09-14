@@ -18,19 +18,26 @@ import {
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
-  TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
+  TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned,
 } from '../llm'
 import { checkLimit, getUser, ipOf, isPro } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
+  DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
+  JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
+  PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
+  SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
+  TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage, loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage,
+  loadOccCompetition,
+  loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
+  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
 import type {
-  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
+  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson, JdTitleBody,
 } from './types'
 
 /**
@@ -103,16 +110,20 @@ export async function jobsRoute(req: Request): Promise<Response> {
   }
   if (sp.get(P_VIEW) === VIEW_MATCH) {
     if (profileOk === false) {
-      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: STAMP_NONE, matchHigh: 0, matchMid: 0 })
+      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: STAMP_NONE,
+        matchHigh: 0, matchMid: 0 })
     }
-    const m = await loadMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page, pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
-    return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
+    const m = await loadMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page,
+      pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
+    return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE,
+      updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
   }
   const out = await loadJobsPage({
     db: db, pro: pro, profile: profile, profileOk: profileOk, matchDims: matchDims, filters: filters,
     sort: { key: sortKey, dir: sortDir }, page: page, pageSize: JOBS_PAGE_SIZE,
   })
-  return Response.json({ rows: out.jobs, total: out.total, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: out.updatedAt })
+  return Response.json({ rows: out.jobs, total: out.total, page: page, pageSize: JOBS_PAGE_SIZE,
+    updatedAt: out.updatedAt })
 }
 
 /**
@@ -444,3 +455,56 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   }
 }
 
+
+/**
+ * 职位名懒翻(2026-09-14 Frank「这个翻译呢」:没 NOC 的帖(校内 / 联邦公务员)标题下没有职业译名,开框把标题当一行译;
+ * 进程内缓存,译名超长(模型在解释)不返回)。
+ *
+ * @param req 请求体 { title, lang }。
+ * @returns { ok, text, cached }。
+ */
+export async function jobsTitleRoute(req: Request): Promise<Response> {
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  let title = PARAM_NONE
+  let lang = PARAM_NONE
+  try {
+    const b = await req.json() as JdTitleBody
+    if (typeof b.title === 'string') {
+      title = b.title.trim()
+    }
+    if (typeof b.lang === 'string') {
+      lang = b.lang
+    }
+  } catch {
+    title = PARAM_NONE
+  }
+  if (title === PARAM_NONE || TRANS_LANGS.includes(lang) === false) {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  const ck = title.toLowerCase() + TRANS_KEY_SEP + lang
+  const hit = CACHE.titleTransBy.get(ck)
+  if (hit != null) {
+    return Response.json({ ok: true, text: hit, cached: true })
+  }
+  if (checkLimit([[TITLE_LIMIT_PREFIX + ipOf(req), TITLE_IP_DAILY]]) === false) {
+    return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
+  }
+  try {
+    const r = await translatePlainLines({ text: title, lang: lang,
+      signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
+    const first = r.text.split(NL)[0]
+    if (first == null || first.trim() === PARAM_NONE || first.trim().length > TITLE_MAX_LEN) {
+      return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+    }
+    CACHE.titleTransBy.set(ck, first.trim())
+    return Response.json({ ok: true, text: first.trim(), cached: false })
+  } catch (e) {
+    let msg = String(e)
+    if (e instanceof Error) {
+      msg = e.message
+    }
+    return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
+  }
+}

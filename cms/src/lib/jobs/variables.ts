@@ -77,4 +77,9 @@ export const CACHE: JobsCache = {
    * JD 整理版译文缓存。
    */
   jdTransBy: new Map(),
+
+  /**
+   * 职位名译名缓存(2026-09-14)。
+   */
+  titleTransBy: new Map(),
 }

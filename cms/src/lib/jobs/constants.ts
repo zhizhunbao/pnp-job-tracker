@@ -3061,3 +3061,18 @@ export const OG_IMG_H = 630
  * 职位分享图替代文本。
  */
 export const OG_IMG_ALT = 'Job posting on Offer2PR'
+
+/**
+ * 职位名懒翻的每 IP 日限(2026-09-14 Frank「这个翻译呢」:没 NOC 的帖标题下没有译名,开框懒翻一次)。
+ */
+export const TITLE_IP_DAILY = 200
+
+/**
+ * 职位名懒翻限流桶前缀。
+ */
+export const TITLE_LIMIT_PREFIX = 'jt:'
+
+/**
+ * 职位名译名最长;超过 = 模型在解释不是在译,丢弃。
+ */
+export const TITLE_MAX_LEN = 60
