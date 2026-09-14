@@ -178,12 +178,16 @@ export function hasDescOf(x: CompanyOnlyIn): boolean {
 }
 
 /**
- * 担保记录深块出不出:有 LMIA 获批岗位,或者是 AIP 指定雇主。
+ * 担保记录深块出不出:有 LMIA 获批岗位,或者是 AIP 指定雇主;2026-09-13 晚起雇主池里的指定雇主(AIP / RCIP / FCIP)也出 ——
+ * 板上说指定、落点页得能看见。
  *
  * @param x 公司档案。
  * @returns 出不出。
  */
 export function showSponsorOf(x: CompanyOnlyIn): boolean {
+  if (x.company.designatedPrograms.length > 0) {
+    return true
+  }
   let positions = 0
   if (x.company.lmiaPositions != null) {
     positions = x.company.lmiaPositions

@@ -2423,7 +2423,18 @@ export type CompanyDetail = {
   lmiaNocs: LmiaNocRow[]
 
   /**
-   * 在招总数。
+   * 指定雇主项目清单(AIP / RCIP / FCIP,雇主池按 slug;2026-09-13 晚 /fe 雇主页:板上说指定、落点页整页没这四个字);
+   * 空数组 = 非指定或池里没这家。
+   */
+  designatedPrograms: string[]
+
+  /**
+   * 指定归属省清单(AIP 按省给资格);空数组 = 非指定。
+   */
+  designatedProvinces: string[]
+
+  /**
+   * 在招总数(职位板同一份 WHERE:status = open 且非 is_dup;2026-09-13 晚统一口径)。
    */
   openCount: number
 
@@ -3355,6 +3366,41 @@ export type LmiaNocsIn = {
  * `lmiaNocsOf` 的返回;容缺空数组。
  */
 export type LmiaNocsOut = Promise<LmiaNocRow[]>
+
+/**
+ * `designatedOf` 的入参。
+ */
+export type DesignatedIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 公司 slug(雇主池按它挂公司页)。
+   */
+  slug: string
+}
+
+/**
+ * 一家公司的指定雇主事实(两清单皆空 = 非指定或池里没这家)。
+ */
+export type DesignatedFact = {
+  /**
+   * 项目清单(AIP / RCIP / FCIP)。
+   */
+  programs: string[]
+
+  /**
+   * 归属省清单。
+   */
+  provinces: string[]
+}
+
+/**
+ * `designatedOf` 的返回;容缺两清单皆空。
+ */
+export type DesignatedOut = Promise<DesignatedFact>
 
 /**
  * 拉一页 HTML 的返回;拉不到空串。

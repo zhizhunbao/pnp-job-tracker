@@ -560,7 +560,7 @@ export const jobsZh = {
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   // 股别名去黑话(Frank 08-09「高薪股是什么意思?用户一看就能明白」):「股」=stream 硬译,清出台面
   'co.spStream.high': '高薪岗', 'co.spStream.gts': '全球人才', 'co.spStream.pr': '支持 PR 申请', 'co.spStream.low': '低薪岗', 'co.spStream.agri': '农业岗',
-  'co.spSkilledTag': '技术类', 'co.spQuarter': '最近获批', 'co.spBatchN': '{n} 份 LMIA',
+  'co.spSkilledTag': '技术类', 'co.spQuarter': '最近获批', 'co.spBatchN': '{n} 份 LMIA', 'co.designated': '指定雇主',
   'co.spNocs': '获批职业(近两年)', 'co.spNocRest': '其余 {n} 个职业',
   'co.spSource': '来源:ESDC 正面 LMIA 雇主名录、IRCC',
   'co.similar': '相似雇主', 'co.similarSub': '同省同行业',

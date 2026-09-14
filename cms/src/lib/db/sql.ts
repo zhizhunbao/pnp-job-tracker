@@ -188,17 +188,20 @@ export const COMPANY_BY_JOB_ID_COND = `c.id = (SELECT company_id FROM jobs WHERE
 
 /**
  * 公司详情页的在招岗清单(带 NOC 三语名),最多 50 条。$1=公司 id。
+ * 2026-09-13 晚 /fe 雇主页:在招口径统一成职位板那一份 WHERE(status = open 且非 is_dup;原 <> closed 把校内帖与
+ * 展示去重吞掉的旧行也算进去,VON Canada 页头 209 vs 板上 129 实撞)—— 公司页清单 / 计数、相似雇主、雇主池
+ * 在招总量(REFRESH_EMPLOYER_POOL_OPEN)四处同一句。
  */
 export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
             nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
-     WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed'
+     WHERE j.company_id = $1 AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`
 
 /**
  * 公司在招岗总数。$1=公司 id。
  */
-export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs WHERE company_id = $1 AND COALESCE(status,'open') <> 'closed'`
+export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.company_id = $1 AND j.status = 'open' AND coalesce(j.is_dup, false) = false`
 
 /**
  * 公司的 LMIA 职业码 json 列(text 取出,消费端自己 parse)。$1=公司 id。
@@ -209,7 +212,7 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 同区同行业、按担保档与在招量排的相似雇主
  */
 export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed'
+     FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
      GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
@@ -475,6 +478,12 @@ export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, n
  * 雇主池省下拉的选项:池里雇主的主省分布(2026-09-13 雇主板批二;lib/employers 进程内 TTL 缓存)。
  */
 export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
+
+/**
+ * 一家公司在雇主池里的指定雇主事实(公司详情页「担保记录」卡补「指定雇主」行;2026-09-13 晚 /fe 雇主页:
+ * 板上说指定、落点页整页没这四个字)。$1=公司 slug;池里没这家就是零行。
+ */
+export const EMPLOYER_POOL_BY_SLUG = `SELECT designated, designated_programs, designated_provinces FROM employer_pool WHERE slug = $1 LIMIT 1`
 
 /**
  * 直达参数 noc= 换算成行业组:职业 → 在招岗上的本站大类 → noc_categories 的组键(分组只有数据层一份,
@@ -884,6 +893,18 @@ export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.op
  * 清空城市快照(REFRESH_CITY_STATS 的前半;seed 事务内两句连发,失败整体回滚不留空表)。
  */
 export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
+
+/**
+ * 雇主池在招总量按库内重算(2026-09-13 晚 /fe 雇主页;同 REFRESH_CITY_STATS 的根因与解法:mart 侧按「本次未见且发布超 30 天」
+ * 才关,库里 open 天然多 18~22%,板上 VON Canada 129 vs 公司页 209 实撞)。seed 收尾对有公司页的池行(slug 非空)
+ * 把 open_jobs_total 改成职位板同一份 WHERE 下按 company_id 的计数;没在招的归 0;三源独有(无 slug)的行不动。
+ * 桶行的 open_jobs 仍是 mart 口径(桶按行业组切,归组判定住 etl/employers,SQL 里不复制一份)。
+ */
+export const REFRESH_EMPLOYER_POOL_OPEN = `UPDATE employer_pool p SET open_jobs_total = COALESCE(q.n, 0)
+       FROM companies c LEFT JOIN (
+         SELECT j.company_id, count(*)::int AS n FROM jobs j WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false GROUP BY j.company_id
+       ) q ON q.company_id = c.id
+       WHERE c.slug = p.slug AND p.open_jobs_total <> COALESCE(q.n, 0)`
 
 /**
  * 城市快照重算(2026-09-11;seed 收尾在库内按职位板同口径聚合,CITY_STATS 注释有取舍全文)。

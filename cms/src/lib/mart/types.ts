@@ -402,6 +402,16 @@ export type RefreshCityIn = {
 }
 
 /**
+ * `refreshEmployerPoolOpen` 的入参(2026-09-13 晚 /fe 雇主页:seed 收尾按职位板口径改写池行在招总量)。
+ */
+export type RefreshPoolIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+}
+
+/**
  * `insertBatch` 的入参。
  */
 export type InsertBatchIn = {

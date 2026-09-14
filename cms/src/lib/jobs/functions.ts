@@ -59,7 +59,7 @@ import type {
   DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
   JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
   JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut,
-  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims, MatchDimsOut,
+  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, DesignatedIn, DesignatedOut, LmiaNocsOut, MatchDims, MatchDimsOut,
   MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel,
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn,
   NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn,
@@ -201,12 +201,13 @@ function maybeNumOf(v: ProfileJsonCell | undefined): MaybeNum {
  * 原始 JSON 的一格 → 干净字符串数组(非数组/非字符串元素全丢)。
  * 入参含 undefined:json 袋按键取值,键缺席就是 undefined —— 消化点照实收
  * (开灯批 2026-08-26:undefined 只许被消化,不许被传递;本函数就是消化点)。
+ * 2026-09-13 晚入参放宽到 JsonCell(雇主池 jsonb 清单列同一条清洗,不复制一份)。
  *
  * @param v 原始格;键缺席时 undefined。
  * @returns 干净数组。
  */
 // eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 袋索引缺席就是 undefined,照实收(开灯批)
-function strListOf(v: ProfileJsonCell | undefined): StrList {
+function strListOf(v: ProfileJsonCell | JsonCell | undefined): StrList {
   if (Array.isArray(v) === false) {
     return []
   }
@@ -1478,10 +1479,11 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     return null
   }
   const companyId = Number(c.id)
-  const [jr, cntRows, lmiaNocs] = await Promise.all([
+  const [jr, cntRows, lmiaNocs, designated] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_JOBS, params: [companyId], map: toCompanyJob }),
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_COUNT, params: [companyId], map: passRow }),
     lmiaNocsOf({ db: input.db, companyId: companyId }),
+    designatedOf({ db: input.db, slug: String(c.slug) }),
   ])
   let sources: string[] = []
   if (typeof c.ai_sources === 'string' && c.ai_sources !== '') {
@@ -1531,6 +1533,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     lmiaPositions: numCell(c.lmia_positions), lmiaLmias: numCell(c.lmia_lmias),
     lmiaLastQuarter: strCell(c.lmia_last_quarter),
     lmiaStreams: strCell(c.lmia_streams), lmiaSkilled: numCell(c.lmia_positions_skilled), lmiaNocs: lmiaNocs,
+    designatedPrograms: designated.programs, designatedProvinces: designated.provinces,
     openCount: openCount,
     jobs: jr,
   }
@@ -1601,6 +1604,32 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
     }
     log({ tag: JOBS_LOG.tag, text: JOBS_LOG.lmiaNocsProbeFailed + why })
     return []
+  }
+}
+
+/**
+ * 公司的指定雇主事实(AIP / RCIP / FCIP 项目与归属省;2026-09-13 晚 /fe 雇主页 Frank 拍板补:板上说「指定雇主」
+ * 而落点页整页没有这四个字)。读雇主池按 slug 一行;池里没这家或非指定 = 两清单皆空(那一行不渲)。
+ * 容缺同 lmiaNocsOf:employer_pool 没建 / 没灌时公司页照常出,不并主 SELECT。
+ *
+ * @param input 连接与公司 slug。
+ * @returns 项目与归属省清单;容缺皆空。
+ */
+async function designatedOf(input: DesignatedIn): DesignatedOut {
+  try {
+    const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_POOL_BY_SLUG, params: [input.slug], map: passJsonRow })
+    const first = rows[0]
+    if (first == null || first.designated !== true) {
+      return { programs: [], provinces: [] }
+    }
+    return { programs: strListOf(first.designated_programs), provinces: strListOf(first.designated_provinces) }
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: JOBS_LOG.tag, text: JOBS_LOG.designatedProbeFailed + why })
+    return { programs: [], provinces: [] }
   }
 }
 

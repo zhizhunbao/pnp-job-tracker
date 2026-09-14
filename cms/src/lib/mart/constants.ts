@@ -447,6 +447,12 @@ export const COUNT_HIDDEN_DUPS = 'hiddenDups'
 export const COUNT_CITY_REFRESH = 'cityStatsRefreshed'
 
 /**
+ * /seed 响应里「雇主池在招总量重算」那一格的键(2026-09-13 晚 /fe 雇主页:seed 收尾按职位板同口径
+ * 改写 employer_pool.open_jobs_total,值 = 改动行数;取舍见 SQL.REFRESH_EMPLOYER_POOL_OPEN)。
+ */
+export const COUNT_POOL_REFRESH = 'employerPoolOpenRefreshed'
+
+/**
  * 城市快照「近 7 天」口径回看几天(date_posted 是 YYYY-MM-DD varchar,折日期串按字典序比)。
  */
 export const CITY_NEW7_DAYS = 7

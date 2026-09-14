@@ -662,6 +662,11 @@ export const JOBS_LOG = {
   lmiaNocsProbeFailed: 'company lmia nocs probe failed, block hidden: ',
 
   /**
+   * 公司指定雇主事实探测挂了(雇主池没建 / 没灌 = 容缺,那一行不渲)。
+   */
+  designatedProbeFailed: 'company designated probe failed, row hidden: ',
+
+  /**
    * K 调查来源 JSON 解析不出(按无来源处理)。
    */
   sourcesParseFailed: 'company ai sources parse failed, treating as none: ',

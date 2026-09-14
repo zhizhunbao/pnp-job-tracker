@@ -41,7 +41,7 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  CITY_NEW7_DAYS, COUNT_CITY_REFRESH,
+  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_POOL_REFRESH,
   COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
@@ -56,7 +56,7 @@ import {
 } from './constants'
 import type {
   BoolOut, CaughtError, CloseDeadIn, CloseStaleIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
-  RefreshCityIn,
+  RefreshCityIn, RefreshPoolIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
   SeedStatsDailyIn, SeenPool, SeenPoolOut, TableExistsIn, ToCompanyIn, ToJobIn, ToNewsIn, ToStatsDailyIn,
@@ -997,6 +997,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     }
     await client.query(SQL.CLEAR_DUPS_CLOSED)
     counts[COUNT_CITY_REFRESH] = await refreshCityStats({ client: client, now: now })
+    counts[COUNT_POOL_REFRESH] = await refreshEmployerPoolOpen({ client: client })
     await writeHeartbeat(client)
     await client.query(SQL.TX_COMMIT)
   } catch (e) {
@@ -1337,6 +1338,22 @@ async function refreshCityStats(x: RefreshCityIn): CountOut {
   const cutoff = new Date(Date.parse(x.now) - CITY_NEW7_DAYS * DAY_MS).toISOString().slice(0, ISO_DATE_LEN)
   await x.client.query(SQL.CLEAR_CITY_STATS)
   const res = await x.client.query(SQL.REFRESH_CITY_STATS, [cutoff, x.now.slice(0, ISO_DATE_LEN), JSON.stringify(BROAD_TO_GROUP)])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 雇主池在招总量重算(2026-09-13 晚 /fe 雇主页):seed 收尾把有公司页的池行 open_jobs_total 改成职位板
+ * 同一份 WHERE 下按 company_id 的库内计数 —— 与 refreshCityStats 同一根因(mart 侧 30 天才关,库里 open
+ * 多 18~22%),板上「在招」与公司页页头才是同一个数;取舍全文见 SQL.REFRESH_EMPLOYER_POOL_OPEN。
+ *
+ * @param x 事务连接。
+ * @returns 改动的池行数。
+ */
+async function refreshEmployerPoolOpen(x: RefreshPoolIn): CountOut {
+  const res = await x.client.query(SQL.REFRESH_EMPLOYER_POOL_OPEN)
   if (res.rowCount != null) {
     return res.rowCount
   }

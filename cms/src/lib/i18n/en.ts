@@ -515,7 +515,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'co.crumb': 'Company', 'co.basic': 'Basic info', 'co.name': 'Company name', 'co.gov': 'Government', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
   'co.spSub': 'Approved LMIAs in the past two years (a historical fact, not a sponsorship promise)',
   'co.spStream.high': 'High Wage', 'co.spStream.gts': 'Global Talent', 'co.spStream.pr': 'PR-support', 'co.spStream.low': 'Low Wage', 'co.spStream.agri': 'Agriculture',
-  'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatchN': '{n} LMIAs',
+  'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatchN': '{n} LMIAs', 'co.designated': 'Designated employer',
   'co.spNocs': 'Approved occupations (2 yrs)', 'co.spNocRest': 'Other {n} occupations',
   'co.spSource': 'Source: ESDC positive-LMIA employer list, IRCC',
   'co.similar': 'Similar employers', 'co.similarSub': 'same province and industry',

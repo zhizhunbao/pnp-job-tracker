@@ -6,6 +6,8 @@
  * #200(Frank「这个废话不用加」):担保记录副标题(历史事实,非能担保判定)撤;
  * 来源行同批撤;结论彩条 2026-08-09 随「不要解释文字」拍板撤 —— 数据行自己说话。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(三列改本域自己的事实网格,见 .facts)。
+ * 2026-09-13 晚 /fe 雇主页 Frank 拍板:卡首补「指定雇主」一行(项目清单主值、归属省灰注;雇主池按 slug)——
+ * 雇主板卖的那个证据在落点页得能看见。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -37,6 +39,13 @@ export function CompanySponsorCard({ company, t, lang }: CompanySponsorCardIn) {
       <div className={CARD_HEAD_CLS}>{t('gr.dim.coSponsor')}</div>
       <div>
         <div className={css.facts}>
+          {company.designatedPrograms.length > 0 && (
+            <>
+              <span className={css.factK}>{t('co.designated')}</span>
+              <span className={css.factV}>{company.designatedPrograms.join(t('de.sep'))}</span>
+              <span className={css.factN}>{company.designatedProvinces.join(t('de.sep'))}</span>
+            </>
+          )}
           {rows}
           {company.lmiaLastQuarter !== TEXT_NONE && (
             <>

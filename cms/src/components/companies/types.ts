@@ -424,7 +424,17 @@ export type CompanyDetail = {
   lmiaNocs: LmiaNocRow[]
 
   /**
-   * 在招总数。
+   * 指定雇主项目清单(AIP / RCIP / FCIP);空数组 = 非指定(担保记录卡那一行不渲)。2026-09-13 晚 /fe 雇主页补。
+   */
+  designatedPrograms: string[]
+
+  /**
+   * 指定归属省清单(那一行的灰注);空数组 = 非指定。
+   */
+  designatedProvinces: string[]
+
+  /**
+   * 在招总数(职位板同一份口径,与雇主板同数)。
    */
   openCount: number
 

@@ -72,7 +72,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
         description: '', address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
-        lmiaNocs: [], openCount: 0, jobs: [],
+        lmiaNocs: [], designatedPrograms: [], designatedProvinces: [], openCount: 0, jobs: [],
       }} updatedAt={updatedAt} />
       <Footer />
     </Frame>
