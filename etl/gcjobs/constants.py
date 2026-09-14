@@ -223,6 +223,9 @@ F_TENURE = "Employment tenure"
 SECTION_START = "id=\"aboutPosition\""
 """正文各节起点(About the position)。"""
 
+TAG_CLOSE = ">"
+"""起点标签的闭合符:正文从它之后算,别把半截标签当正文(2026-09-14)。"""
+
 SECTION_ENDS = ["id=\"ourCommitment\"", "id=\"howToApply\"", "id=\"hiringOrgContact\""]
 """正文截止点(按先出现的用;承诺 / 投递方式 / 联系人不进描述)。"""
 

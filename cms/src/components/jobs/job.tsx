@@ -15,6 +15,8 @@
  * 卡内右上角那颗自绘返回钮撤,改递 Shell 的 back 槽(button 桶 BackButton,落点仍是 URL_BOARD_BACK);
  * 同日「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:相似职位卡的心跳
  * 由页面门取 checkedAt 递进来。
+ * 2026-09-14 Frank「返回按钮放到框的右上角」:钮从 Shell back 槽(轨右上角)收回白卡右上角
+ * (同一颗 BackButton,只换落点;`.cardBack` 绝对定位,H1 右侧重新留位)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -40,11 +42,14 @@ import css from './jobs.module.css'
 export function Job({ job, plan, dims, related, updatedAt, jdText }: JobIn) {
   const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText })
   return (
-    <Shell top={DETAIL_SHELL_TOP} back={<BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />}>
+    <Shell top={DETAIL_SHELL_TOP}>
       <div className={cssOf(css.detail)}>
         <JobCrumbs home={d.t('detail.crumbHome')} prov={d.view.provFull} provHref={d.view.provHref}
           segs={d.view.segs} />
         <div className={`${CARD_MD_CLS} ${cssOf(css.card)}`}>
+          <div className={cssOf(css.cardBack)}>
+            <BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />
+          </div>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
           <JobBody job={job} lang={d.lang} plan={plan} jdText={jdText} />

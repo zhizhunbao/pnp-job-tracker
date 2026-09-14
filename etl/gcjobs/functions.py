@@ -43,7 +43,7 @@ from gcjobs.constants import (
     PRINT_ROWS_DONE_TPL, PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, RATE_FLOOR_S, ROW_CELL_RE, ROW_LINK_RE, ROW_RE,
     SALARY_RANGE_TPL, SALARY_RE, SALARY_TPL, SCRIPT_RE, SEARCH_PATH, SECONDS_FMT, SECTION_ENDS, SECTION_START,
     SESSION_PATH_TPL, SHELL_QS, SID_RE, SITE_BASE, SLUG_CRAWL, SOURCE_LABEL, SPACE, STUDENT_MARK, TAG_RE, TERM_WORD,
-    TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
+    TAG_CLOSE, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
 )
 from gcjobs.scheme import (
     DetailBatchIn, DetailBatchOut, DetailIn, HttpClientLike, JobFact, ListRow, Location, MatchIn, PageIn, PagesOut,
@@ -393,10 +393,13 @@ def closing_iso_of(text: str) -> str:
 
 
 def description_of(html: str) -> str:
-    """正文各节(About the position 起,承诺 / 投递方式 / 联系人前止)→ 带段落的纯文本;站外帖给空串。"""
+    """正文各节(About the position 起,承诺 / 投递方式 / 联系人前止)→ 带段落的纯文本;站外帖给空串。
+    起点从 id 属性所在标签的 `>` 之后算(2026-09-14 Frank 实拍正文首行渲成「id="aboutPosition">」:
+    原来从属性名处切,半截标签剥不掉当正文;201 / 403 帖中招)。"""
     start = html.find(SECTION_START)
     if start < 0:
         return ""
+    start = html.find(TAG_CLOSE, start) + 1
     end = len(html)
     for mark in SECTION_ENDS:
         i = html.find(mark, start)

@@ -1775,10 +1775,22 @@
  */
 
 /*
+ * 返回钮的落点:白卡右上角(2026-09-14 Frank「返回按钮放到框的右上角」,从 Shell back 槽收回);
+ * 偏移 = 卡内衬 12/16。
+ */
+.cardBack {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+}
+
+/*
  * H1(2026-09-03 撤掉给卡内返回钮留位的 padding-right:120 —— 钮已不在卡内,再留右侧空档
  * 会把长职位名无谓地挤折行)。
+ * 2026-09-14 钮回到卡内,右侧重新留位:钮宽(6/14 内衬 + 两字)约 64,留 80。
  */
 .title {
+  padding-right: 80px;
   margin: 0 0 2px;
   font-size: 22px;
   line-height: 1.35;
