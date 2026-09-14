@@ -517,11 +517,6 @@ export const COL_WHERE_KEY = 'where'
 export const COL_OPEN_KEY = 'open'
 
 /**
- * 雇主板列 key:切面星级(排序键 star,默认主键)。
- */
-export const COL_STAR_KEY = 'star'
-
-/**
  * 雇主板列 key:指定雇主(排序键 designated;旧 /employers/designated 路由 301 落到这一键)。
  */
 export const COL_DESIGNATED_KEY = 'designated'
@@ -535,33 +530,29 @@ export const COL_ACT_KEY = 'act'
  * 雇主板六列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给;
  * 同日工资水位列撤 —— Frank「工资水位 有必要吗」:全量榜算不出,全是横杠;技能类 LMIA 列撤成开关 ——
  * 「这一列删掉,筛选加一个 LMIA 的筛选」;地点一列放三枚胶囊)。
+ * 2026-09-13 晚 /fe 雇主页星级列撤(退成纯排序键),11% 分给五列:名字 / 地点各 +2、在招 / 指定各 +2、操作 +3。
  */
-export const W_POOL_NAME = '24%'
+export const W_POOL_NAME = '26%'
 
 /**
  * 雇主板地点列的宽(最多三枚「市, 省码」胶囊)。
  */
-export const W_POOL_WHERE = '24%'
-
-/**
- * 雇主板星级列的宽(五枚星形字符)。
- */
-export const W_POOL_STAR = '11%'
+export const W_POOL_WHERE = '26%'
 
 /**
  * 雇主板在招列的宽(数字 + 入门占比灰注)。
  */
-export const W_POOL_OPEN = '10%'
+export const W_POOL_OPEN = '12%'
 
 /**
  * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
  */
-export const W_POOL_DESIGNATED = '14%'
+export const W_POOL_DESIGNATED = '16%'
 
 /**
  * 雇主板操作列的宽(两只 mini 钮并排)。
  */
-export const W_POOL_ACT = '17%'
+export const W_POOL_ACT = '20%'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。
@@ -639,11 +630,6 @@ export const ENTRY_ON = '1'
 export const GROUP_KEY_HEAD = 'pulse.ind.'
 
 /**
- * 星级满格数(数据层 1-5)。
- */
-export const STAR_MAX = 5
-
-/**
  * 表头排序标记的方向值:升序。
  */
 export const SORT_DIR_UP = 1
@@ -672,16 +658,6 @@ export const TAG_LOC = 'gray'
  * 手机卡「指定雇主」胶囊的通用 tag 变体(通过绿:资格类信号)。
  */
 export const TAG_DESIGNATED = 'ok'
-
-/**
- * 实心星(星级格按星数重复)。
- */
-export const STAR_ON = '★'
-
-/**
- * 空心星(补到满格)。
- */
-export const STAR_OFF = '☆'
 
 /**
  * 公司详情页的地址头(后接 slug;雇主名与「看公司」钮的落点)。

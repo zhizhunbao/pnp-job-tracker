@@ -156,11 +156,6 @@ export type PoolRow = {
    * 入门占比(百分比整数);null = 无在招不表态。
    */
   entryShare: number | null
-
-  /**
-   * 切面星 1-5。
-   */
-  star: number
 }
 
 /**
@@ -481,16 +476,6 @@ export type EmployerCellRow = {
    * 地点胶囊(「市, 省码」,主场第一,最多三枚);空数组 = 池里没记(渲横杠)。
    */
   locations: string[]
-
-  /**
-   * 星形文本(实心补空心到五枚)。
-   */
-  starText: string
-
-  /**
-   * 星级格的悬停提示(「N 星」)。
-   */
-  starTitle: string
 
   /**
    * 在招岗数文本(0 也照显示 —— 桶里真的一个都没有,不是缺数)。

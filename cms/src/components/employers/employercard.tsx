@@ -5,7 +5,7 @@
  * 交给 `<a>` 自己走,不重复导航。
  * 2026-09-13 雇主板批二:卡上四样 —— 名(落公司页)、注(界面语言别名,没有退行业)、所在地、在招话术;
  * 同日晚 /fe 雇主页砍中文别名(机翻硬错,见 namecell.tsx 头注):注只剩行业。
- * 胶囊两枚:星级与「指定雇主」(非指定不出)。
+ * 胶囊两枚:星级与「指定雇主」(非指定不出);同日晚 /fe 雇主页星级退成排序键(见 functions.ts employerColsOf 头注),卡上只剩指定胶囊。
  * 2026-08-27 换装批自 Employers.tsx 的 JobCard 装配段提出成文件。
  *
  * @author Frank
@@ -15,7 +15,6 @@ import { JobCard } from '@/components/card'
 import { Tag } from '@/components/tag'
 import { TAG_DESIGNATED, TEXT_NONE } from './constants'
 import type { EmployerCardIn } from './types'
-import css from './employers.module.css'
 
 /**
  * 雇主板的一张手机卡。
@@ -25,12 +24,7 @@ import css from './employers.module.css'
  */
 export function EmployerCard({ r }: EmployerCardIn) {
   const title = { text: r.name, href: r.href, title: r.hrefTitle, onClick: r.onView }
-  const chips = (
-    <>
-      <span className={css.star} title={r.starTitle}>{r.starText}</span>
-      {r.designatedChip !== TEXT_NONE && <Tag variant={TAG_DESIGNATED}>{r.designatedChip}</Tag>}
-    </>
-  )
+  const chips = <>{r.designatedChip !== TEXT_NONE && <Tag variant={TAG_DESIGNATED}>{r.designatedChip}</Tag>}</>
   if (r.industry === TEXT_NONE) {
     return (
       <JobCard href={r.href}

@@ -25,12 +25,11 @@ import { CompareSkilledCell } from './compareskilledcell'
 import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
-import { StarCell } from './starcell'
 import { WhereCell } from './wherecell'
 import {
   AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_ACT_KEY,
   COL_DESIGNATED_KEY,
-  COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_STAR_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
+  COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
   COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
@@ -46,11 +45,11 @@ import {
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_PROV, P_Q, P_SORT, QS_HEAD, SORT_DIR_DOWN, SORT_DIR_UP, STAR_MAX, STAR_OFF, STAR_ON, TAG_OK, TAG_REGION,
+  P_PROV, P_Q, P_SORT, QS_HEAD, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_NAME, W_POOL_OPEN, W_POOL_STAR, W_POOL_WHERE,
+  W_POOL_NAME, W_POOL_OPEN, W_POOL_WHERE,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -195,8 +194,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     industry,
     where: empWhereTextOf({ t: x.t, r }),
     locations: r.locations,
-    starText: starTextOf(r.star),
-    starTitle: x.t('de.stars', { n: r.star }),
     openText: String(r.openJobs),
     entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
@@ -245,17 +242,6 @@ function empWhereTextOf(x: RowWordsIn): string {
     return provNameOf({ t: x.t, code: x.r.province })
   }
   return TEXT_NONE
-}
-
-/**
- * 星数 → 星形文本(实心补空心到 STAR_MAX;越界钳到 0..STAR_MAX)。
- *
- * @param n 星数。
- * @returns 五枚星形字符。
- */
-function starTextOf(n: number): string {
-  const on = Math.max(0, Math.min(STAR_MAX, n))
-  return STAR_ON.repeat(on) + STAR_OFF.repeat(STAR_MAX - on)
 }
 
 /**
@@ -314,6 +300,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * 雇主板的列组(设计稿七格 + 09-12 拍板把证据拆成「指定雇主」「技能类 LMIA」两枚带排序的列,
  * 09-13 Frank「把省市合并成一个地址列」「多个地址用胶囊」「工资水位 有必要吗」「这一列删掉,筛选加一个 LMIA 的筛选」):
  * 雇主 / 地点 / 星级 / 在招 / 指定雇主 / 操作。
+ * 2026-09-13 晚 /fe 雇主页 Frank 拍板星级退成纯排序键不占列:5★ 只 423 家、2★ 占 75.8%,默认降序首屏 14 页清一色
+ * 五星,作列零信息量;默认排序仍是 star desc(lib/employers POOL_SORT_DEFAULT),表头无对应列就不出排序标记。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
  *
  * @param x 取词函数。
@@ -323,7 +311,6 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
   return [
     { key: COL_NAME_KEY, label: x.t('de.colName'), width: W_POOL_NAME, sortable: true, render: NameCell },
     { key: COL_WHERE_KEY, label: x.t('de.colWhere'), width: W_POOL_WHERE, render: WhereCell },
-    { key: COL_STAR_KEY, label: x.t('de.colStar'), width: W_POOL_STAR, nowrap: true, sortable: true, render: StarCell },
     {
       key: COL_OPEN_KEY,
       label: x.t('de.colOpen'),
