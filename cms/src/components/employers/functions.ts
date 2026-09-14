@@ -172,7 +172,10 @@ export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
  */
 export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   const r = x.r
-  const jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
+  let jobsHref = TEXT_NONE
+  if (r.openJobsTotal > 0) {
+    jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
+  }
   let companyHref = TEXT_NONE
   if (r.slug != null) {
     companyHref = URL_COMPANY_HEAD + r.slug
@@ -1592,6 +1595,9 @@ export function makeCardClick(x: CardClickIn): CardClickFn {
   function onCardClick(e: React.MouseEvent): void {
     const el = e.target
     if (el instanceof HTMLElement && el.closest(LINK_SELECTOR) != null) {
+      return
+    }
+    if (x.href === TEXT_NONE) {
       return
     }
     track(EV_ROW, { [EV_PROP_KEY]: x.kind })

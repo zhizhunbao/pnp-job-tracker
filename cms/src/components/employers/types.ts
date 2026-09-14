@@ -163,6 +163,12 @@ export type PoolRow = {
   openJobs: number
 
   /**
+   * 全桶在招总岗数(「看岗位」钮出不出看它 —— 落点是职位板按名搜全库,不分组;2026-09-13 晚 /fe 雇主页
+   * Frank 拍板无在招不渲「看岗位」:池里 50.8% 雇主无在招,点进去是空表)。
+   */
+  openJobsTotal: number
+
+  /**
    * 入门占比(百分比整数);null = 无在招不表态。
    */
   entryShare: number | null
@@ -463,7 +469,8 @@ export type EmployerCellRow = {
   name: string
 
   /**
-   * 手机卡标题链的落点:有公司页进公司页,没有就落职位板按名搜(表里雇主名不用它)。
+   * 手机卡标题链的落点:有公司页进公司页,没有就落职位板按名搜(表里雇主名不用它);
+   * 既无公司页也无在招 = 空串,卡不成链、整卡点击不导航(2026-09-13 晚 /fe 雇主页)。
    */
   href: string
 
@@ -520,7 +527,7 @@ export type EmployerCellRow = {
   designatedChip: string
 
   /**
-   * 「看岗位」的落点(职位板按雇主名搜)。
+   * 「看岗位」的落点(职位板按雇主名搜);空串 = 无在招,钮不出(2026-09-13 晚 /fe 雇主页:空表不给链)。
    */
   jobsHref: string
 
@@ -565,6 +572,32 @@ export type EmployerCellRow = {
  * 无参无返的手柄形状(埋点、抽屉开合、清空筛选都是这一形)。
  */
 export type ClickFn = () => void
+
+/**
+ * 手机卡标题的可点文本(与 card 桶 CardLink 结构相同即兼容;本域自抄真用的四格):
+ * 只给 text = 纯文本(既无公司页也无在招的雇主),其余三格一起给 = 链接。
+ */
+export type CardTitle = {
+  /**
+   * 标题文字。
+   */
+  text: string
+
+  /**
+   * 去处;缺席 = 纯文本。
+   */
+  href?: string
+
+  /**
+   * 悬停提示。
+   */
+  title?: string
+
+  /**
+   * 点击埋点。
+   */
+  onClick?: ClickFn
+}
 
 /**
  * 担保雇主的一行**展示行**。
