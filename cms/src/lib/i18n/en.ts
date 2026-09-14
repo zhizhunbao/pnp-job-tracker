@@ -849,7 +849,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
   'de.title': 'Employers', 'de.count': '{n} employers', 'de.hits': '{n} matched',
   'de.colName': 'Employer', 'de.colWhere': 'Location', 'de.colStar': 'Rating', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
-  'de.colLmia': 'Skilled LMIA', 'de.stars': '{n} stars', 'de.entryN': 'Entry {n}%', 'de.designated': 'Designated',
+  'de.lmia': 'Has LMIA record', 'de.stars': '{n} stars', 'de.entryN': 'Entry {n}%', 'de.designated': 'Designated',
   'de.qPh': 'Search employer', 'de.allGroup': 'Pick an industry', 'de.entry': 'No experience needed', 'de.sep': ', ',
   'de.emptyFiltered': 'No employer matches these filters',
   'de.notFound': 'Not on any official designated employer list. Be wary of anyone promising sponsorship.',

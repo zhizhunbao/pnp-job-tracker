@@ -21,7 +21,12 @@ import type { Db } from '../db'
 /**
  * 雇主板排序主键(与 constants.POOL_SORTS 逐字对齐;SQL 片段按键取)。
  */
-export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'name'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name'
+
+/**
+ * 排序方向(与 constants.POOL_DIRS 逐字对齐)。
+ */
+export type PoolDir = 'asc' | 'desc'
 
 /**
  * 雇主板筛选(SSR 与 /api/employers 共用一份;2026-09-13 雇主板批二自 designated/hiring 双口径换成雇主池)。
@@ -54,6 +59,11 @@ export type PoolFilters = {
   entry: boolean
 
   /**
+   * 只看有技能类 LMIA 记录(组切面看桶内份数,全组看池行总量)。
+   */
+  lmia: boolean
+
+  /**
    * 雇主名关键词(已去掉 SQL 通配符);空串 = 不搜。
    */
   q: string
@@ -62,6 +72,11 @@ export type PoolFilters = {
    * 排序主键。
    */
   sort: PoolSort
+
+  /**
+   * 排序方向(缺席时取该键的默认方向)。
+   */
+  dir: PoolDir
 
   /**
    * 页码,0 起。
@@ -1500,6 +1515,31 @@ export type PoolDbRows = PoolDbRow[]
  * `groupOfNoc` 的返回(行业组键或空串)。
  */
 export type GroupKeyOut = Promise<string>
+
+/**
+ * `orderOf` 的入参:主列表 + 收尾 + 键 + 方向 → ORDER BY 片段。
+ */
+export type OrderOfIn = {
+  /**
+   * 键 → 主列表(桶表或全组那份)。
+   */
+  cols: Record<string, string>
+
+  /**
+   * 同分收尾片段。
+   */
+  tie: string
+
+  /**
+   * 已收窄的排序键。
+   */
+  sort: PoolSort
+
+  /**
+   * 已收窄的方向。
+   */
+  dir: PoolDir
+}
 
 /**
  * `emptyPoolPage` 的入参。

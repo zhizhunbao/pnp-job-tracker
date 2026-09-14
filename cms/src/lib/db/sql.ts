@@ -487,42 +487,43 @@ export const EMPLOYER_GROUP_OF_NOC = `SELECT c.ind_group AS ind_group
       LIMIT 1`
 
 /**
- * 雇主池桶表的排序片段(表头点列切主键;键先过 lib/employers 的白名单再到这,不拼用户输入)。
- * 每个键都以星级、在招、名字收尾,同分行序稳定。
+ * 雇主池桶表各排序键的主列(表头点列切主键、再点切方向;键与方向先过 lib/employers 白名单再到这,
+ * 拼法 = 主列 + 方向 + NULLS LAST + EMPLOYER_POOL_TIE,不拼用户输入)。
  */
 export const EMPLOYER_POOL_ORDER: Record<string, string> = {
   /**
    * 默认:切面星级(指定 >> 在招+入门 > 技能 LMIA)。
    */
-  star: 'b.star DESC, b.open_jobs DESC, p.name ASC',
+  star: 'b.star',
 
   /**
-   * 在招岗数。
+   * 桶内在招岗数。
    */
-  open: 'b.open_jobs DESC, b.star DESC, p.name ASC',
+  open: 'b.open_jobs',
 
   /**
-   * 技能类 LMIA 获批份数,再看最近获批季。
+   * 指定雇主(旧 /employers/designated 路由 301 落到这一键)。
    */
-  lmia: 'b.lmia_skilled DESC, b.lmia_last_quarter DESC NULLS LAST, b.star DESC, p.name ASC',
-
-  /**
-   * 指定雇主在前(旧 /employers/designated 路由 301 落到这一键)。
-   */
-  designated: 'p.designated DESC, b.star DESC, b.open_jobs DESC, p.name ASC',
+  designated: 'p.designated',
 
   /**
    * 雇主名。
    */
-  name: 'p.name ASC',
+  name: 'p.name',
 }
+
+/**
+ * 桶表排序的同分收尾(星级 → 在招 → 名字),任何主键任何方向都接它,行序稳定。
+ */
+export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
 
 /**
  * 雇主池一页(桶行 × 池行 × companies 的中韩别名;雇主板批二主查询,索引 employer_pool_buckets_ind_group_star_idx 承接)。
  * $1=行业组键,$2=省码或 ''(不筛),$3=只看无经验可投,$4=制度或 ''(直达参数 program=,指定项目清单含它),
- * $5=每页行数,$6=偏移。total 用窗口函数随行带回,一次往返。
+ * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
+ * total 用窗口函数随行带回,一次往返。
  *
- * @param order 排序片段(EMPLOYER_POOL_ORDER 之一)。
+ * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolPage = (order: string) => `
@@ -538,47 +539,48 @@ export const employerPoolPage = (order: string) => `
       AND ($2 = '' OR p.province = $2)
       AND ($3 = false OR b.entry_jobs > 0)
       AND ($4 = '' OR p.designated_programs ? $4)
+      AND ($5 = false OR b.lmia_skilled > 0)
     ORDER BY ${order}
-    LIMIT $5 OFFSET $6`
+    LIMIT $6 OFFSET $7`
 
 /**
- * 雇主池全组排序片段(不选行业时的默认榜,2026-09-13 Frank「默认应该都显示啊」:一家一行,b = 该雇主星级最高的桶;
- * 在招 / LMIA 用池行的总量列)。
+ * 雇主池全组各排序键的主列(不选行业时的默认榜,2026-09-13 Frank「默认应该都显示啊」:一家一行,b = 该雇主星级最高的桶;
+ * 在招用池行的总量列)。拼法同 EMPLOYER_POOL_ORDER。
  */
 export const EMPLOYER_POOL_ALL_ORDER: Record<string, string> = {
   /**
-   * 默认:最高星,再看总在招。
+   * 默认:最高星。
    */
-  star: 'b.star DESC, p.open_jobs_total DESC, p.name ASC',
+  star: 'b.star',
 
   /**
    * 总在招岗数。
    */
-  open: 'p.open_jobs_total DESC, b.star DESC, p.name ASC',
+  open: 'p.open_jobs_total',
 
   /**
-   * 技能类 LMIA 总份数,再看最近获批季。
+   * 指定雇主。
    */
-  lmia: 'p.lmia_skilled_total DESC, p.lmia_last_quarter DESC NULLS LAST, b.star DESC, p.name ASC',
-
-  /**
-   * 指定雇主在前。
-   */
-  designated: 'p.designated DESC, b.star DESC, p.open_jobs_total DESC, p.name ASC',
+  designated: 'p.designated',
 
   /**
    * 雇主名。
    */
-  name: 'p.name ASC',
+  name: 'p.name',
 }
+
+/**
+ * 全组排序的同分收尾(星级 → 总在招 → 名字)。
+ */
+export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.name ASC'
 
 /**
  * 雇主池全组一页(不选行业的默认榜,也是查证态的底:$1 有词就按名全库搜)。一家一行 × 它星级最高的桶
  * (DISTINCT ON 扫桶表一遍,生产实测 ~290ms,lib/employers 进程内 TTL 缓存整页);在招 / LMIA 出池行总量,
  * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
- * $4=制度或 '',$5=每页行数,$6=偏移。
+ * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
  *
- * @param order 排序片段(EMPLOYER_POOL_ALL_ORDER 之一)。
+ * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolAll = (order: string) => `
@@ -597,8 +599,9 @@ export const employerPoolAll = (order: string) => `
       AND ($2 = '' OR p.province = $2)
       AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))
       AND ($4 = '' OR p.designated_programs ? $4)
+      AND ($5 = false OR p.lmia_skilled_total > 0)
     ORDER BY ${order}
-    LIMIT $5 OFFSET $6`
+    LIMIT $6 OFFSET $7`
 
 /**
  * companies 表列存在性探测(additive 列上生产前后代码都能跑)。$1=列名数组。

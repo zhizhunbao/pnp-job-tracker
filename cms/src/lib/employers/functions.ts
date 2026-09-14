@@ -18,12 +18,12 @@ import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE,
+  CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
   EMP_SSR_ROWS, ENTRY_ON, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
   JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, NOC_LEN, NOC_RE, NOC_TEER_RE,
-  NOT_FOUND_RE, PAGE_MAX, PARAM, PIPE, POOL_GROUPS, POOL_KEY_SEP, POOL_PAGES_MAX, POOL_SORT_DEFAULT, POOL_SORTS,
-  PROVINCE_NONE, PROV_RE, PUNCT_RE,
+  NOT_FOUND_RE, ORDER_NULLS_LAST, ORDER_SP, PAGE_MAX, PARAM, PIPE, POOL_DIR_DESC, POOL_DIR_SQL, POOL_DIRS, POOL_GROUPS,
+  POOL_KEY_SEP, POOL_PAGES_MAX, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS, PROVINCE_NONE, PROV_RE, PUNCT_RE,
   Q_WILD_RE, RESEARCH_TIMEOUT_MS, SITE_LINE_DROP, SITE_LINE_RE, SITE_PICK_RE, SORT_SKILLED, SPACE, SPACES_RE,
   SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
@@ -37,8 +37,8 @@ import type {
   CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow,
   CompareIn, CompareOut, CompareRow, EmptyPoolPageIn, EntityNameHitsIn, GroupOfNocDbRow, GroupOfNocIn, InvestigateIn,
   InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer,
-  GroupKeyOut, NormalizeFiltersIn, OccRowsOut, PageOfIn, ParamGetter, PoolAllIn, PoolDbRow, PoolDbRows, PoolFilters,
-  PoolPage, PoolProvsOut, PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
+  GroupKeyOut, NormalizeFiltersIn, OccRowsOut, OrderOfIn, PageOfIn, ParamGetter, PoolAllIn, PoolDbRow, PoolDbRows,
+  PoolDir, PoolFilters, PoolPage, PoolProvsOut, PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
@@ -53,8 +53,8 @@ import { HDR_USER_AGENT } from '../http'
 /**
  * URL/query 参数 → 规范化筛选(SSR 与 /api/employers 共用一份,避免两端口径漂移;
  * 2026-09-13 雇主板批二:designated/hiring 双口径退役,板读雇主池)。
- * 收窄:行业组、排序键只认白名单;省两位大写;制度三个之内;职业 5 位(只用于 SSR 一次性换算成组);
- * entry 只认 ENTRY_ON;页码非负整数封顶;搜索词去掉 SQL 通配符。不合法一律落 FILTER_UNSET(这一格不筛)。
+ * 收窄:行业组、排序键、方向只认白名单(方向不合法退该键默认方向);省两位大写;制度三个之内;职业 5 位(只用于 SSR
+ * 一次性换算成组);entry / lmia 只认 ENTRY_ON;页码非负整数封顶;搜索词去掉 SQL 通配符。不合法一律落 FILTER_UNSET(这一格不筛)。
  *
  * @param input 参数取值器。
  * @returns 规范化后的筛选。
@@ -65,6 +65,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const program = clip({ value: input.get(PARAM.program), max: CAP_PROGRAM }).toUpperCase()
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
+  const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
   const page = Number(clip({ value: input.get(PARAM.page), max: CAP_PAGE }))
   let cleanGroup = FILTER_UNSET
   if ((POOL_GROUPS as readonly string[]).includes(group)) {
@@ -86,6 +87,10 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   if (isPoolSort(sort)) {
     cleanSort = sort
   }
+  let cleanDir = defaultDirOf(cleanSort)
+  if (isPoolDir(dir)) {
+    cleanDir = dir
+  }
   let cleanPage = 0
   if (Number.isFinite(page) && page > 0) {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
@@ -93,9 +98,34 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   return {
     group: cleanGroup, prov: cleanProv, program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
+    lmia: input.get(PARAM.lmia) === ENTRY_ON,
     q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }).replace(Q_WILD_RE, FILTER_UNSET),
-    sort: cleanSort, page: cleanPage,
+    sort: cleanSort, dir: cleanDir, page: cleanPage,
   }
+}
+
+/**
+ * 排序键的默认方向(数字 / 布尔类降序,名字升序;表里缺键退降序 —— 白名单键全在表里,这是给索引签名的兜底)。
+ *
+ * @param sort 已收窄的排序键。
+ * @returns 方向。
+ */
+export function defaultDirOf(sort: PoolSort): PoolDir {
+  const hit = POOL_SORT_DIR[sort]
+  if (hit != null && isPoolDir(hit)) {
+    return hit
+  }
+  return POOL_DIR_DESC
+}
+
+/**
+ * 方向谓词:白名单收窄成 `PoolDir` 联合(谓词签名语言规定,一参一型的唯一例外形态)。
+ *
+ * @param v 原始串。
+ * @returns 是否在白名单里。
+ */
+export function isPoolDir(v: string): v is PoolDir {
+  return (POOL_DIRS as readonly string[]).includes(v)
 }
 
 /**
@@ -181,8 +211,8 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   try {
     if (isScopedOf(f)) {
       const raw = await queryRows({
-        db: db, sql: SQL.employerPoolPage(poolOrderOf(f.sort)),
-        params: [f.group, f.prov, f.entry, f.program, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+        db: db, sql: SQL.employerPoolPage(orderOf({ cols: SQL.EMPLOYER_POOL_ORDER, tie: SQL.EMPLOYER_POOL_TIE, sort: f.sort, dir: f.dir })),
+        params: [f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
       })
       return pageOf({ raw, filters: f, pageSize: input.pageSize, provs })
     }
@@ -220,14 +250,17 @@ function pageOf(input: PageOfIn): PoolPage {
  */
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
-  const key = [f.q, f.prov, String(f.entry), f.program, f.sort, String(f.page), String(input.pageSize)].join(POOL_KEY_SEP)
+  const key = [
+    f.q, f.prov, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page), String(input.pageSize),
+  ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
     return hot.page
   }
   const raw = await queryRows({
-    db: input.db, sql: SQL.employerPoolAll(poolAllOrderOf(f.sort)),
-    params: [f.q, f.prov, f.entry, f.program, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+    db: input.db,
+    sql: SQL.employerPoolAll(orderOf({ cols: SQL.EMPLOYER_POOL_ALL_ORDER, tie: SQL.EMPLOYER_POOL_ALL_TIE, sort: f.sort, dir: f.dir })),
+    params: [f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
   })
   const page = pageOf({ raw, filters: f, pageSize: input.pageSize, provs: input.provs })
   if (CACHE.poolPages.size >= POOL_PAGES_MAX) {
@@ -238,39 +271,28 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
 }
 
 /**
- * 全组排序键 → SQL 片段(EMPLOYER_POOL_ALL_ORDER;缺键回默认序)。
+ * 排序键 + 方向 → ORDER BY 片段:主列(白名单键在两张主列表里逐键有值;缺键回默认键的主列,不让索引签名的
+ * undefined 外泄)+ 方向关键字 + NULLS LAST + 同分收尾。用户输入永不进这里 —— 键与方向都已经过白名单。
  *
- * @param sort 已收窄的排序键。
+ * @param x 主列表、收尾、键与方向。
  * @returns ORDER BY 片段。
  */
-function poolAllOrderOf(sort: PoolSort): string {
-  const hit = SQL.EMPLOYER_POOL_ALL_ORDER[sort]
-  if (hit != null) {
-    return hit
+function orderOf(x: OrderOfIn): string {
+  let col = x.cols[x.sort]
+  if (col == null) {
+    col = x.cols[POOL_SORT_DEFAULT]
   }
-  const fallback = SQL.EMPLOYER_POOL_ALL_ORDER[POOL_SORT_DEFAULT]
-  if (fallback != null) {
-    return fallback
+  if (col == null) {
+    return x.tie
   }
-  return SQL_FRAG_NONE
-}
-
-/**
- * 排序键 → SQL 片段(白名单键在 EMPLOYER_POOL_ORDER 里逐键有值;缺键回默认序,不让索引签名的 undefined 外泄)。
- *
- * @param sort 已收窄的排序键。
- * @returns ORDER BY 片段。
- */
-function poolOrderOf(sort: PoolSort): string {
-  const hit = SQL.EMPLOYER_POOL_ORDER[sort]
-  if (hit != null) {
-    return hit
+  let dirSql = POOL_DIR_SQL[x.dir]
+  if (dirSql == null) {
+    dirSql = POOL_DIR_SQL[POOL_DIR_DESC]
   }
-  const fallback = SQL.EMPLOYER_POOL_ORDER[POOL_SORT_DEFAULT]
-  if (fallback != null) {
-    return fallback
+  if (dirSql == null) {
+    return x.tie
   }
-  return SQL_FRAG_NONE
+  return col + ORDER_SP + dirSql + ORDER_NULLS_LAST + x.tie
 }
 
 /**

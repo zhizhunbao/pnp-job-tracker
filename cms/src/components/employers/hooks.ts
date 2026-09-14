@@ -15,8 +15,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
-  boardUrlOf, loadBoard, makeClear, makeEntryToggle, makeGroup, makePage, makeProv, makeQCommit, makeSort, qsOf,
-  sortStateOf,
+  boardUrlOf, loadBoard, makeClear, makeEntryToggle, makeGroup, makeLmiaToggle, makePage, makeProv, makeQCommit,
+  makeSort,
+  qsOf, sortStateOf,
 } from './functions'
 import type { EmployersIn, EmployersPanel, PoolFilters, PoolPage } from './types'
 
@@ -74,6 +75,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onGroup: makeGroup({ f, setF }),
     onProv: makeProv({ f, setF }),
     onEntry: makeEntryToggle({ f, setF }),
+    onLmia: makeLmiaToggle({ f, setF }),
     onSort: makeSort({ f, setF }),
     onClear: makeClear({ f, setF, setQDraft }),
     onPage: makePage({ f, setF }),

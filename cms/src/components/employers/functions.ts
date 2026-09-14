@@ -12,7 +12,7 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORTS } from '@/lib/employers'
+import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
 import { track } from '@/lib/track'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
@@ -25,7 +25,6 @@ import { CompareSkilledCell } from './compareskilledcell'
 import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
-import { SkilledLmiaCell } from './skilledlmiacell'
 import { StarCell } from './starcell'
 import { WhereCell } from './wherecell'
 import {
@@ -38,17 +37,20 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CTL_CLS, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER, EV_KIND_NONE,
-  EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_PROV, EV_PROP_SORT, EV_ROW, EV_SEARCH,
+  CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
+  EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
+  EV_PROP_SORT,
+  EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
-  MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_ENTRY, P_GROUP, P_PAGE, P_PROGRAM,
-  P_PROV, P_Q, P_SORT, QS_HEAD, STAR_MAX, STAR_OFF, STAR_ON, TAG_OK, TAG_REGION, TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
+  MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
+  P_PROV, P_Q, P_SORT, QS_HEAD, SORT_DIR_DOWN, SORT_DIR_UP, STAR_MAX, STAR_OFF, STAR_ON, TAG_OK, TAG_REGION,
+  TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_LMIA, W_POOL_NAME, W_POOL_OPEN, W_POOL_STAR, W_POOL_WHERE,
+  W_POOL_NAME, W_POOL_OPEN, W_POOL_STAR, W_POOL_WHERE,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -67,7 +69,7 @@ import type {
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, HeadSortFn,
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn,
-  NocNameFn, NoteTextIn, PageFn, PickFn, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
+  NocNameFn, NoteTextIn, PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn,
   WhereTextIn, WithIn,
@@ -184,10 +186,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   if (r.industry != null) {
     industry = r.industry
   }
-  let lmiaNote = TEXT_NONE
-  if (r.lmiaSkilled > 0 && r.lmiaLastQuarter != null) {
-    lmiaNote = r.lmiaLastQuarter
-  }
   const kind = kindOf({ f: x.f })
   return {
     key: r.key + KEY_SEP + r.group,
@@ -203,10 +201,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     openText: String(r.openJobs),
     entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
-    designatedNote: r.designatedProvinces.join(x.t('de.sep')),
     designatedChip: designatedChipOf({ t: x.t, r }),
-    lmia: { text: positiveTextOf(r.lmiaSkilled), cls: cssOf(css.teal) },
-    lmiaNote,
     jobsHref,
     companyHref,
     actJobsText: x.t('pulse.act.jobs'),
@@ -318,7 +313,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
 
 /**
  * 雇主板的列组(设计稿七格 + 09-12 拍板把证据拆成「指定雇主」「技能类 LMIA」两枚带排序的列,
- * 09-13 Frank「把省市合并成一个地址列」「多个地址用胶囊」「工资水位 有必要吗」):雇主 / 地点 / 星级 / 在招 / 指定雇主 / 技能类 LMIA / 操作。
+ * 09-13 Frank「把省市合并成一个地址列」「多个地址用胶囊」「工资水位 有必要吗」「这一列删掉,筛选加一个 LMIA 的筛选」):
+ * 雇主 / 地点 / 星级 / 在招 / 指定雇主 / 操作。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
  *
  * @param x 取词函数。
@@ -345,15 +341,6 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       sortable: true,
       render: DesignatedCell,
     },
-    {
-      key: COL_LMIA_KEY,
-      label: x.t('de.colLmia'),
-      width: W_POOL_LMIA,
-      nowrap: true,
-      align: ALIGN_RIGHT,
-      sortable: true,
-      render: SkilledLmiaCell,
-    },
     { key: COL_ACT_KEY, label: x.t('col.actions'), width: W_POOL_ACT, nowrap: true, render: ActCell },
   ]
 }
@@ -368,16 +355,16 @@ function actBtnClsOf(): string {
 }
 
 /**
- * 表头排序态(由筛选里的排序主键派生;方向服务端定死:名字升序、其余降序)。
+ * 表头排序态(由筛选里的排序主键与方向派生;表只渲标记,排序在服务端)。
  *
  * @param x 当前筛选。
  * @returns 表头要渲的排序态。
  */
 export function sortStateOf(x: FiltersIn): EmpSortState {
-  if (x.f.sort === COL_NAME_KEY) {
-    return { key: x.f.sort, dir: 1 }
+  if (x.f.dir === DIR_ASC) {
+    return { key: x.f.sort, dir: SORT_DIR_UP }
   }
-  return { key: x.f.sort, dir: -1 }
+  return { key: x.f.sort, dir: SORT_DIR_DOWN }
 }
 
 /**
@@ -1274,8 +1261,14 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.q !== TEXT_NONE) {
     p.set(P_Q, x.f.q)
   }
+  if (x.f.lmia) {
+    p.set(P_LMIA, ENTRY_ON)
+  }
   if (x.f.sort !== POOL_SORT_DEFAULT) {
     p.set(P_SORT, x.f.sort)
+  }
+  if (x.f.dir !== defaultDirOf(x.f.sort)) {
+    p.set(P_DIR, x.f.dir)
   }
   if (x.f.page > 0) {
     p.set(P_PAGE, String(x.f.page))
@@ -1374,15 +1367,34 @@ function withOf(x: WithIn): PoolFilters {
   if (x.q != null) {
     q = x.q
   }
+  let lmia = x.f.lmia
+  if (x.lmia != null) {
+    lmia = x.lmia
+  }
   let sort = x.f.sort
   if (x.sort != null) {
     sort = x.sort
+  }
+  let dir = x.f.dir
+  if (x.dir != null) {
+    dir = x.dir
   }
   let page = x.f.page
   if (x.page != null) {
     page = x.page
   }
-  return { group, prov, program, noc: x.f.noc, entry, q, sort, page }
+  return {
+    group,
+    prov,
+    program,
+    noc: x.f.noc,
+    entry,
+    lmia,
+    q,
+    sort,
+    dir,
+    page,
+  }
 }
 
 /**
@@ -1428,8 +1440,8 @@ export function makeEntryToggle(x: EntryToggleIn): ClickFn {
 }
 
 /**
- * 造表头点列换排序的手柄:点一列 = 按它排(方向服务端定死);再点当前列 = 回默认星级;
- * 不是排序键的列(所在地、操作)点了不动。
+ * 造表头点列换排序的手柄(职位板惯例,2026-09-13 Frank「这个 table 排序也不对啊」):点一列 = 按它排、方向取
+ * 该键默认(数字降、名字升);再点当前列 = 反向;不是排序键的列(地点、操作)点了不动。回第一页。
  *
  * @param x 当前筛选与落格。
  * @returns 表头的 onSort。
@@ -1439,14 +1451,40 @@ export function makeSort(x: SortPickIn): HeadSortFn {
     if (isSortKeyOf(key) === false) {
       return
     }
-    let next: PoolSort = POOL_SORT_DEFAULT
-    if (key !== x.f.sort) {
-      next = key
+    let dir = defaultDirOf(key)
+    if (key === x.f.sort) {
+      dir = flippedOf(x.f.dir)
     }
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_SORT })
-    x.setF(withOf({ f: x.f, sort: next, page: 0 }))
+    x.setF(withOf({ f: x.f, sort: key, dir, page: 0 }))
   }
   return onSort
+}
+
+/**
+ * 排序键的默认方向(lib/employers 的 POOL_SORT_DIR;缺键退降序 —— 索引签名兜底,白名单键全在表里)。
+ *
+ * @param sort 排序键。
+ * @returns 方向。
+ */
+function defaultDirOf(sort: PoolSort): PoolDir {
+  if (POOL_SORT_DIR[sort] === DIR_ASC) {
+    return DIR_ASC
+  }
+  return DIR_DESC
+}
+
+/**
+ * 方向取反。
+ *
+ * @param dir 当前方向。
+ * @returns 反向。
+ */
+function flippedOf(dir: PoolDir): PoolDir {
+  if (dir === DIR_ASC) {
+    return DIR_DESC
+  }
+  return DIR_ASC
 }
 
 /**
@@ -1460,7 +1498,21 @@ function isSortKeyOf(v: string): v is PoolSort {
 }
 
 /**
- * 造清空筛选的手柄:省 / 开关 / 制度 / 搜索词 / 排序全清,行业组保留(它是板的第一维,不是筛选项)。
+ * 造「有 LMIA 记录」开关的手柄(拨一下取反,回第一页)。
+ *
+ * @param x 当前筛选与落格。
+ * @returns 胶囊的 onClick。
+ */
+export function makeLmiaToggle(x: EntryToggleIn): ClickFn {
+  function onLmia(): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_LMIA })
+    x.setF(withOf({ f: x.f, lmia: x.f.lmia === false, page: 0 }))
+  }
+  return onLmia
+}
+
+/**
+ * 造清空筛选的手柄:省 / 两个开关 / 制度 / 搜索词 / 排序全清,行业组保留(它是板的第一维,不是筛选项)。
  *
  * @param x 当前筛选、落格与搜索草稿落格。
  * @returns 钮的 onClick。
@@ -1469,7 +1521,15 @@ export function makeClear(x: ClearIn): ClickFn {
   function onClear(): void {
     x.setQDraft(TEXT_NONE)
     x.setF(withOf({
-      f: x.f, prov: TEXT_NONE, program: TEXT_NONE, entry: false, q: TEXT_NONE, sort: POOL_SORT_DEFAULT, page: 0,
+      f: x.f,
+      prov: TEXT_NONE,
+      program: TEXT_NONE,
+      entry: false,
+      lmia: false,
+      q: TEXT_NONE,
+      sort: POOL_SORT_DEFAULT,
+      dir: defaultDirOf(POOL_SORT_DEFAULT),
+      page: 0,
     }))
   }
   return onClear
@@ -1529,7 +1589,7 @@ export function makeRowView(x: RowViewIn): ClickFn {
  * @returns 有没有。
  */
 export function anyFilterOf(x: FiltersIn): boolean {
-  return x.f.prov !== TEXT_NONE || x.f.entry || x.f.program !== TEXT_NONE || x.f.q !== TEXT_NONE
+  return x.f.prov !== TEXT_NONE || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE || x.f.q !== TEXT_NONE
 }
 
 /**

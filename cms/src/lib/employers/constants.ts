@@ -101,6 +101,16 @@ export const PARAM = {
   entry: 'entry',
 
   /**
+   * 只看有技能类 LMIA 记录(值 ENTRY_ON;2026-09-13 Frank「筛选加一个 LMIA 的筛选」)。
+   */
+  lmia: 'lmia',
+
+  /**
+   * 排序方向(asc / desc;缺席 = 该键的默认方向)。
+   */
+  dir: 'dir',
+
+  /**
    * 制度(直达参数:决策页「查雇主」带 program=AIP 进来,筛指定项目清单含它的雇主)。
    */
   program: 'program',
@@ -156,7 +166,67 @@ export const POOL_GROUPS = ['health', 'stem', 'trades', 'food', 'transport', 'ma
 /**
  * 雇主板可点的排序主键白名单(与 `PoolSort` 联合逐字对齐;SQL 片段在 lib/db/sql.ts EMPLOYER_POOL_ORDER 按键取)。
  */
-export const POOL_SORTS = ['star', 'open', 'lmia', 'designated', 'name'] as const
+export const POOL_SORTS = ['star', 'open', 'designated', 'name'] as const
+
+/**
+ * 排序方向白名单(与 `PoolDir` 联合逐字对齐)。
+ */
+export const POOL_DIRS = ['asc', 'desc'] as const
+
+/**
+ * 各排序键的默认方向(首点表头按它;再点反向):数字 / 布尔类降序,名字升序。
+ */
+export const POOL_SORT_DIR: Record<string, string> = {
+  /**
+   * 星级高在前。
+   */
+  star: 'desc',
+
+  /**
+   * 在招多在前。
+   */
+  open: 'desc',
+
+  /**
+   * 指定在前。
+   */
+  designated: 'desc',
+
+  /**
+   * 名字 A→Z。
+   */
+  name: 'asc',
+}
+
+/**
+ * 方向键 → SQL 关键字(白名单之外到不了这)。
+ */
+export const POOL_DIR_SQL: Record<string, string> = {
+  /**
+   * 升序。
+   */
+  asc: 'ASC',
+
+  /**
+   * 降序。
+   */
+  desc: 'DESC',
+}
+
+/**
+ * 方向兜底:降序(白名单键的默认方向全在 POOL_SORT_DIR 里,这是给索引签名的兜底)。
+ */
+export const POOL_DIR_DESC = 'desc'
+
+/**
+ * ORDER BY 里主列之后的空值处理:无论升降,空值一律沉底。
+ */
+export const ORDER_NULLS_LAST = ' NULLS LAST, '
+
+/**
+ * 主列与方向之间的空格。
+ */
+export const ORDER_SP = ' '
 
 /**
  * 雇主板默认排序:切面星级(设计稿:默认按星级排、点列头切主键)。
@@ -164,7 +234,7 @@ export const POOL_SORTS = ['star', 'open', 'lmia', 'designated', 'name'] as cons
 export const POOL_SORT_DEFAULT = 'star'
 
 /**
- * entry 参数的开值(只认它;其余一律当没开)。
+ * 开关参数(entry / lmia)的开值(只认它;其余一律当没开)。
  */
 export const ENTRY_ON = '1'
 
@@ -369,6 +439,11 @@ export const CAP_GROUP = 16
  * URL 参数的保留长度:排序键。
  */
 export const CAP_SORT = 12
+
+/**
+ * URL 参数的保留长度:排序方向。
+ */
+export const CAP_DIR = 4
 
 /**
  * URL 参数的保留长度:制度。

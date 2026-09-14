@@ -532,40 +532,36 @@ export const COL_DESIGNATED_KEY = 'designated'
 export const COL_ACT_KEY = 'act'
 
 /**
- * 雇主板七列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给;
- * 同日工资水位列撤 —— Frank「工资水位 有必要吗」:全量榜算不出,全是横杠;地点一列放三枚胶囊)。
+ * 雇主板六列的宽(2026-09-13 雇主板批二;名字吃最大一份,数字列窄,操作列按两只 mini 钮的韩文宽度给;
+ * 同日工资水位列撤 —— Frank「工资水位 有必要吗」:全量榜算不出,全是横杠;技能类 LMIA 列撤成开关 ——
+ * 「这一列删掉,筛选加一个 LMIA 的筛选」;地点一列放三枚胶囊)。
  */
-export const W_POOL_NAME = '22%'
+export const W_POOL_NAME = '24%'
 
 /**
  * 雇主板地点列的宽(最多三枚「市, 省码」胶囊)。
  */
-export const W_POOL_WHERE = '22%'
+export const W_POOL_WHERE = '24%'
 
 /**
  * 雇主板星级列的宽(五枚星形字符)。
  */
-export const W_POOL_STAR = '10%'
+export const W_POOL_STAR = '11%'
 
 /**
  * 雇主板在招列的宽(数字 + 入门占比灰注)。
  */
-export const W_POOL_OPEN = '9%'
+export const W_POOL_OPEN = '10%'
 
 /**
  * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
  */
-export const W_POOL_DESIGNATED = '12%'
-
-/**
- * 雇主板技能类 LMIA 列的宽(数字 + 季度灰注)。
- */
-export const W_POOL_LMIA = '11%'
+export const W_POOL_DESIGNATED = '14%'
 
 /**
  * 雇主板操作列的宽(两只 mini 钮并排)。
  */
-export const W_POOL_ACT = '14%'
+export const W_POOL_ACT = '17%'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。
@@ -623,6 +619,16 @@ export const P_ENTRY = 'entry'
 export const P_SORT = 'sort'
 
 /**
+ * 查询参数名:排序方向(缺席 = 该键默认方向;与 lib/employers 的 POOL_SORT_DIR 同源)。
+ */
+export const P_DIR = 'dir'
+
+/**
+ * 查询参数名:只看有技能类 LMIA 记录(值 ENTRY_ON)。
+ */
+export const P_LMIA = 'lmia'
+
+/**
  * entry 参数的开值(与 lib/employers 的 ENTRY_ON 逐字对齐:两端各自声明一份,改一处同步另一处)。
  */
 export const ENTRY_ON = '1'
@@ -636,6 +642,36 @@ export const GROUP_KEY_HEAD = 'pulse.ind.'
  * 星级满格数(数据层 1-5)。
  */
 export const STAR_MAX = 5
+
+/**
+ * 表头排序标记的方向值:升序。
+ */
+export const SORT_DIR_UP = 1
+
+/**
+ * 表头排序标记的方向值:降序。
+ */
+export const SORT_DIR_DOWN = -1
+
+/**
+ * 升序的方向键(与 lib/employers 的 POOL_DIRS 逐字对齐;本域自声明一份)。
+ */
+export const DIR_ASC = 'asc'
+
+/**
+ * 降序的方向键。
+ */
+export const DIR_DESC = 'desc'
+
+/**
+ * 地点胶囊的通用 tag 变体(区域档 —— 地点是事实标签,不是资格)。
+ */
+export const TAG_LOC = 'region'
+
+/**
+ * 手机卡「指定雇主」胶囊的通用 tag 变体(通过绿:资格类信号)。
+ */
+export const TAG_DESIGNATED = 'ok'
 
 /**
  * 实心星(星级格按星数重复)。
@@ -671,6 +707,11 @@ export const EV_PROP_ENTRY = 'entry'
  * 埋点分组值:点的是表头排序。
  */
 export const EV_PROP_SORT = 'sort'
+
+/**
+ * 埋点分组值:拨的是「有 LMIA 记录」开关。
+ */
+export const EV_PROP_LMIA = 'lmia'
 
 /**
  * 埋点分组值:查证态(搜索框有词)下的行点击 / 翻页,替代行业组键(词本身永不进埋点)。

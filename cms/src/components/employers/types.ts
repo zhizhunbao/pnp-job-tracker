@@ -30,7 +30,12 @@ export type TFn = (key: string, vars?: TVars) => string
 /**
  * 雇主板排序主键(与 lib/employers 的 POOL_SORTS 逐字对齐;本域自抄)。
  */
-export type PoolSort = 'star' | 'open' | 'lmia' | 'designated' | 'name'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name'
+
+/**
+ * 排序方向(与 lib/employers 的 POOL_DIRS 逐字对齐;本域自抄)。
+ */
+export type PoolDir = 'asc' | 'desc'
 
 /**
  * 雇主板筛选(SSR 与 /api/employers 共用一份口径;本域原样收下八格。2026-09-13 雇主板批二)。
@@ -63,6 +68,11 @@ export type PoolFilters = {
   entry: boolean
 
   /**
+   * 只看有技能类 LMIA 记录。
+   */
+  lmia: boolean
+
+  /**
    * 雇主名关键词;空串 = 不搜。
    */
   q: string
@@ -71,6 +81,11 @@ export type PoolFilters = {
    * 排序主键。
    */
   sort: PoolSort
+
+  /**
+   * 排序方向。
+   */
+  dir: PoolDir
 
   /**
    * 页码,0 起。
@@ -128,11 +143,6 @@ export type PoolRow = {
   programs: string[]
 
   /**
-   * 指定归属省清单(指定列的灰注 —— 主场省与指定省可以不同:Frank「地点在多伦多 也是 AIP?」)。
-   */
-  designatedProvinces: string[]
-
-  /**
    * 公司官方中文名;空串 = 没有。
    */
   aliasZh: string
@@ -156,16 +166,6 @@ export type PoolRow = {
    * 入门占比(百分比整数);null = 无在招不表态。
    */
   entryShare: number | null
-
-  /**
-   * 桶内技能类 LMIA 获批份数。
-   */
-  lmiaSkilled: number
-
-  /**
-   * 桶内最近 LMIA 获批季;null = 无记录。
-   */
-  lmiaLastQuarter: string | null
 
   /**
    * 切面星 1-5。
@@ -524,24 +524,9 @@ export type EmployerCellRow = {
   designatedText: string
 
   /**
-   * 指定列灰注 = 指定归属省码(顿号连;AIP 按省给资格,主场在多伦多也可能持 NS 的指定);空串 = 不出。
-   */
-  designatedNote: string
-
-  /**
    * 手机卡上的指定胶囊文案(卡上没有列头撑着,还是写「指定雇主」);空串 = 非指定不出。
    */
   designatedChip: string
-
-  /**
-   * 技能类 LMIA 份数(0 交回空文本,渲横杠)。
-   */
-  lmia: CellText
-
-  /**
-   * 最近获批季灰注;空串 = 不出。
-   */
-  lmiaNote: string
 
   /**
    * 「看岗位」的落点(职位板按雇主名搜)。
@@ -1586,6 +1571,11 @@ export type EmployersPanel = {
   onEntry: ClickFn
 
   /**
+   * 拨「有 LMIA 记录」开关。
+   */
+  onLmia: ClickFn
+
+  /**
    * 表头点列换排序主键(再点当前列回默认星级)。
    */
   onSort: HeadSortFn
@@ -1842,9 +1832,14 @@ export type WithIn = {
   program?: string
 
   /**
-   * 换开关。
+   * 换「无经验可投」开关。
    */
   entry?: boolean
+
+  /**
+   * 换「有 LMIA 记录」开关。
+   */
+  lmia?: boolean
 
   /**
    * 换搜索词。
@@ -1855,6 +1850,11 @@ export type WithIn = {
    * 换排序主键。
    */
   sort?: PoolSort
+
+  /**
+   * 换排序方向。
+   */
+  dir?: PoolDir
 
   /**
    * 换页码。

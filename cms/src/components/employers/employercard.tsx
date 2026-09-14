@@ -11,7 +11,8 @@
  * @time 2026-08-27 23:30:00
  */
 import { JobCard } from '@/components/card'
-import { TEXT_NONE } from './constants'
+import { Tag } from '@/components/tag'
+import { TAG_DESIGNATED, TEXT_NONE } from './constants'
 import type { EmployerCardIn } from './types'
 import css from './employers.module.css'
 
@@ -26,7 +27,7 @@ export function EmployerCard({ r }: EmployerCardIn) {
   const chips = (
     <>
       <span className={css.star} title={r.starTitle}>{r.starText}</span>
-      {r.designatedChip !== TEXT_NONE && <span className={css.progChip}>{r.designatedChip}</span>}
+      {r.designatedChip !== TEXT_NONE && <Tag variant={TAG_DESIGNATED}>{r.designatedChip}</Tag>}
     </>
   )
   let note = r.alias
