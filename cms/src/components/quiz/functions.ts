@@ -9,6 +9,7 @@
  * @time 2026-08-26 15:28:17
  */
 import { OB_SEEN_KEY, POPULAR_NOCS } from '@/components/profile'
+import { chipClsOf } from '@/components/chip'
 import { cssOf } from '@/components/css'
 import { pickName } from '@/lib/noc'
 import { BROAD_SLUGS } from '@/lib/stats'
@@ -384,10 +385,7 @@ export function nextClsOf(x: OnClsIn): string {
  * @returns 类名。
  */
 export function provPillClsOf(x: OnClsIn): string {
-  if (x.on) {
-    return cssOf(css.provPill) + CLS_SEP + cssOf(css.provPillOn)
-  }
-  return cssOf(css.provPill)
+  return chipClsOf({ active: x.on, hot: false, extra: null })
 }
 
 /**

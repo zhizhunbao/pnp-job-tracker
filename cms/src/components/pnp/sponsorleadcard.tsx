@@ -10,7 +10,7 @@
  * @time 2026-08-28 17:59:16
  */
 import { LinkButton } from '@/components/button'
-import { cssOf } from '@/components/css'
+import { chipClsOf } from '@/components/chip'
 import { LINK_ARROW, TARGET_BLANK, TEXT_NONE } from './constants'
 import { makeSponsorClick, sponsorHrefOf, sponsorLinesOf, sponsorShows } from './functions'
 import type { SponsorLeadCardIn } from './types'
@@ -40,7 +40,7 @@ export function SponsorLeadCard({ job, t, src }: SponsorLeadCardIn) {
         <div className={css.splActs}>
           <LinkButton href={sponsorHrefOf(job)}
             target={TARGET_BLANK}
-            className={cssOf(css.pillLink)}
+            className={chipClsOf({ active: false, hot: false, extra: null })}
             onClick={makeSponsorClick(src)}>
             {t('spl.coJobs')}{LINK_ARROW}
           </LinkButton>

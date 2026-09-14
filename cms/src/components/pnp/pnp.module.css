@@ -708,67 +708,6 @@
 }
 
 /*
- * 药丸形的站内链接(Frank 2026-08-08「按钮风格保持一致」:与「打开完整页 ↗」同款)。
- * 自全局 .pill 抄值,再叠上原 .pnpPillLink 那三条(链接不出下划线、行内块、不折行)。
- */
-.pillLink {
-  /*
-   * 描边灰。
-   */
-  border: 1px solid var(--border);
-
-  /*
-   * 药丸圆角。
-   */
-  border-radius: 999px;
-
-  /*
-   * 药丸内衬。
-   */
-  padding: 5px 13px;
-
-  /*
-   * 小注字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 白底。
-   */
-  background: var(--card);
-
-  /*
-   * 深灰正文。
-   */
-  color: #374151;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 链接不出下划线。
-   */
-  text-decoration: none;
-
-  /*
-   * 行内块(内衬才吃得住)。
-   */
-  display: inline-block;
-
-  /*
-   * 钮文字不折行。
-   */
-  white-space: nowrap;
-}
-
-/*
  * 判定卡里的「凭什么」小字(通用档的说明、魁省的制度说明)。
  */
 .why {
@@ -991,31 +930,6 @@
    * 深琥珀字。
    */
   color: #92400e;
-}
-
-/*
- * 清单行末尾的小标(「你的职业」「GTA 限制」)。
- */
-.tagS {
-  /*
-   * 小字。
-   */
-  font-size: 11px;
-
-  /*
-   * 不折行。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 弱化档的小标(GTA 限制比「你的职业」浅一档)。
- */
-.tagS.muted {
-  /*
-   * 浅灰。
-   */
-  color: var(--text3);
 }
 
 /*
@@ -1903,96 +1817,6 @@
    * 不被压缩。
    */
   flex-shrink: 0;
-}
-
-/*
- * 依据链的判定药丸(底色随判定 —— 裸色字浮在白底上没有归属感)。
- */
-.vPill {
-  /*
-   * 半粗。
-   */
-  font-weight: 600;
-
-  /*
-   * 小注字号。
-   */
-  font-size: 11.5px;
-
-  /*
-   * 药丸内衬。
-   */
-  padding: 2px 8px;
-
-  /*
-   * 药丸圆角。
-   */
-  border-radius: 999px;
-
-  /*
-   * 结论不折行。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 符合:绿。
- */
-.vPill.pillPass {
-  /*
-   * 浅绿底。
-   */
-  background: #dcfce7;
-
-  /*
-   * 通过绿。
-   */
-  color: var(--ok);
-}
-
-/*
- * 提示:琥珀。
- */
-.vPill.pillWarn {
-  /*
-   * 浅琥珀底。
-   */
-  background: #fef3c7;
-
-  /*
-   * 警示琥珀。
-   */
-  color: var(--warn);
-}
-
-/*
- * 不符合:红。
- */
-.vPill.pillFail {
-  /*
-   * 浅红底。
-   */
-  background: #fee2e2;
-
-  /*
-   * 危险红。
-   */
-  color: var(--danger);
-}
-
-/*
- * 不适用:灰。
- */
-.vPill.pillNa {
-  /*
-   * 灰底。
-   */
-  background: var(--hairline);
-
-  /*
-   * 次级灰。
-   */
-  color: var(--text2);
 }
 
 /*

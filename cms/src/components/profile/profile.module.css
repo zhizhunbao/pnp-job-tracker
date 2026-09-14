@@ -259,36 +259,6 @@
 }
 
 /*
- * 一枚已选职业标签(淡靛底 + 靛字)。
- */
-.tagPill {
-  /*
-   * 淡靛底。
-   */
-  background: #eef2ff;
-
-  /*
-   * 靛字。
-   */
-  color: #3730a3;
-
-  /*
-   * 标签字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 标签内衬。
-   */
-  padding: 3px 8px;
-
-  /*
-   * 圆角。
-   */
-  border-radius: 6px;
-}
-
-/*
  * 标签上的 × 摘除钮。
  * 类名写两遍抬权重:本钮经 Button(kind ghost)渲染,要稳赢 button 域
  * .btn/.ghost 的同权重声明且不赌打包顺序(先例 .logoutBtn)。

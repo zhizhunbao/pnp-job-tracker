@@ -9,8 +9,9 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { DEL_MARK, PLAIN_BTN_KIND } from './constants'
+import { TAG_V_REGION, DEL_MARK, PLAIN_BTN_KIND } from './constants'
 import { makeNocDrop, nocTitleOf } from './functions'
+import { Tag } from '@/components/tag'
 import type { NocTagsIn } from './types'
 import css from './profile.module.css'
 
@@ -27,12 +28,12 @@ export function NocTags({ nocs, setNocs, opts, t }: NocTagsIn) {
   const tags = []
   for (const c of nocs) {
     tags.push(
-      <span key={c} className={css.tagPill}>
+      <Tag key={c} variant={TAG_V_REGION}>
         {nocTitleOf({ code: c, opts, t })}
         <Button kind={PLAIN_BTN_KIND} onClick={makeNocDrop({ code: c, nocs, setNocs })} className={cssOf(css.tagDel)}>
           {DEL_MARK}
         </Button>
-      </span>,
+      </Tag>,
     )
   }
   return <div className={css.tagRow}>{tags}</div>

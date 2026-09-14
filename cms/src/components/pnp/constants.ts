@@ -577,3 +577,24 @@ export const KEY_LMIA_NA = 'match.r.lmia.na'
  * 依据链键:雇主只有低薪股 LMIA 记录。
  */
 export const KEY_LMIA_LOWONLY = 'match.r.lmia.lowOnly'
+
+/**
+ * 通用 tag 桶的变体名(2026-09-13 胶囊统一第二批,Frank「都改成像这种的」:本域 .tagS / .muted / .vPill 四档退役):
+ * 「你的职业」标 = ok(绿)。
+ */
+export const TAG_V_OK = 'ok'
+
+/**
+ * 弱化附注标(GTA 限制那种)与判定「不适用」= gray。
+ */
+export const TAG_V_GRAY = 'gray'
+
+/**
+ * 判定「关注」= warn(黄)。
+ */
+export const TAG_V_WARN = 'warn'
+
+/**
+ * 判定「未过」= imp(红)。
+ */
+export const TAG_V_IMP = 'imp'

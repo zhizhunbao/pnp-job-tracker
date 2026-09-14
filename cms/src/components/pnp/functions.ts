@@ -12,12 +12,14 @@
  * @time 2026-08-28 17:59:16
  */
 import { cssOf } from '@/components/css'
+import { tagClsOf as baseTagClsOf } from '@/components/tag'
 import { eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
 import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
+  TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, COND_PROVS, DASH, DAY_START_SUFFIX, EE_DORMANT_MONTHS,
   EV_EMPLOYER_CLICK, EV_TV_ENTRY, FED_CAT_KEY, FED_MAX, FED_PROGRAM, FED_SHOW, FED_TYPE_COLOR,
@@ -1741,11 +1743,10 @@ export function occRowClsOf(x: HitClsIn): string {
  * @returns 类名。
  */
 export function tagClsOf(x: TagClsIn): string {
-  const cls = [cssOf(css.tagS)]
   if (x.muted) {
-    cls.push(cssOf(css.muted))
+    return baseTagClsOf(TAG_V_GRAY)
   }
-  return cls.join(CLS_SEP)
+  return baseTagClsOf(TAG_V_OK)
 }
 
 /**
@@ -1815,12 +1816,12 @@ export function verdictPillClsOf(tone: PnpTone): string {
  */
 export function mmPillClsOf(tone: MmTone): string {
   const toneCls: Record<MmTone, string> = {
-    pass: cssOf(css.pillPass),
-    warn: cssOf(css.pillWarn),
-    fail: cssOf(css.pillFail),
-    na: cssOf(css.pillNa),
+    pass: baseTagClsOf(TAG_V_OK),
+    warn: baseTagClsOf(TAG_V_WARN),
+    fail: baseTagClsOf(TAG_V_IMP),
+    na: baseTagClsOf(TAG_V_GRAY),
   }
-  return cssOf(css.vPill) + CLS_SEP + toneCls[tone]
+  return toneCls[tone]
 }
 
 /**

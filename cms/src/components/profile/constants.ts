@@ -433,3 +433,8 @@ export const OB_PERCENT_SIGN = '%'
  * 向导用的弹框宽度档(中档 560,一问一答的题面正好,再宽点选行就散了)。
  */
 export const OB_MODAL_SIZE = 'md'
+
+/**
+ * 档案职业标签走通用 tag 桶的 region 档(2026-09-13 胶囊统一第二批;本域 .tagPill 退役,删钮 .tagDel 照留)。
+ */
+export const TAG_V_REGION = 'region'

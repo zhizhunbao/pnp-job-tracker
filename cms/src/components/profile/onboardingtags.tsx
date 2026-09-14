@@ -10,8 +10,9 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { DEL_MARK, PLAIN_BTN_KIND } from './constants'
+import { TAG_V_REGION, DEL_MARK, PLAIN_BTN_KIND } from './constants'
 import { makeNocDrop, obNocLabelOf } from './functions'
+import { Tag } from '@/components/tag'
 import type { OnboardingStepIn } from './types'
 import css from './profile.module.css'
 
@@ -28,14 +29,14 @@ export function OnboardingTags({ p, t }: OnboardingStepIn) {
   const tags = []
   for (const code of p.nocs) {
     tags.push(
-      <span key={code} className={css.tagPill}>
+      <Tag key={code} variant={TAG_V_REGION}>
         {obNocLabelOf({ code, candidates: p.resume.candidates, t })}
         <Button kind={PLAIN_BTN_KIND}
           onClick={makeNocDrop({ code, nocs: p.nocs, setNocs: p.setNocs })}
           className={cssOf(css.tagDel)}>
           {DEL_MARK}
         </Button>
-      </span>,
+      </Tag>,
     )
   }
   return <div className={css.obTagRow}>{tags}</div>

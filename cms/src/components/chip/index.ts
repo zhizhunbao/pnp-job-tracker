@@ -7,5 +7,5 @@
  * @time 2026-08-24 04:30:00
  */
 export { Chip } from './chip'
-export { chipStyle } from './functions'
+export { chipClsOf, chipStyle } from './functions'
 export type { ChipIn } from './types'
