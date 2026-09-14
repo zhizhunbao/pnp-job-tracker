@@ -34,7 +34,7 @@ import {
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
-  translateTitles, emptyTexts,
+  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -506,15 +506,18 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
   }
   try {
-    const r = await translatePlainLines({ text: title, lang: lang,
+    const r = await translatePlainLines({ text: withTitleCtx(title), lang: lang,
       signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
     const first = r.text.split(NL)[0]
-    if (first == null || first.trim().length > TITLE_MAX_LEN
-      || translationOk({ src: title, out: first, lang: lang }) === false) {
+    if (first == null) {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
-    CACHE.titleTransBy.set(ck, first.trim())
-    return Response.json({ ok: true, text: first.trim(), cached: false })
+    const clean = stripTitleCtx(first)
+    if (clean.length > TITLE_MAX_LEN || translationOk({ src: title, out: clean, lang: lang }) === false) {
+      return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+    }
+    CACHE.titleTransBy.set(ck, clean)
+    return Response.json({ ok: true, text: clean, cached: false })
   } catch (e) {
     let msg = String(e)
     if (e instanceof Error) {

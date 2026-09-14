@@ -3081,3 +3081,13 @@ export const TITLE_MAX_LEN = 60
  * 一次批量懒翻的职位名上限(公司弹框在招清单最多五十条,2026-09-14 Frank「这个翻译老是翻译不全啊」)。
  */
 export const TITLE_BATCH_MAX = 60
+
+/**
+ * 职位名送翻前拼的语境头(翻译器只看一行,「Cook」会当人名译成「库克」;带上「Job title:」它才知道是职业)。
+ */
+export const TITLE_CTX_PREFIX = 'Job title: '
+
+/**
+ * 译回来后剥掉语境头:第一个冒号(半角或全角)及其前面的字。
+ */
+export const TITLE_CTX_STRIP_RE = /^[^:：]*[:：]\s*/

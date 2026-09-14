@@ -49,7 +49,7 @@ import {
   STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
   TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE,
   TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  TITLE_BATCH_MAX, TITLE_MAX_LEN,
+  TITLE_BATCH_MAX, TITLE_MAX_LEN, TITLE_CTX_PREFIX, TITLE_CTX_STRIP_RE,
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
@@ -4101,15 +4101,19 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
   if (miss.length === 0 || x.allowLlm === false) {
     return texts
   }
-  const got = await translateLinesAligned({ lines: miss, lang: x.lang,
+  const got = await translateLinesAligned({ lines: miss.map(withTitleCtx), lang: x.lang,
     signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
   for (const [i, t] of miss.entries()) {
-    const g = got[i]
-    if (g == null || g.trim().length > TITLE_MAX_LEN || translationOk({ src: t, out: g, lang: x.lang }) === false) {
+    const raw = got[i]
+    if (raw == null) {
       continue
     }
-    CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, g.trim())
-    texts[t] = g.trim()
+    const g = stripTitleCtx(raw)
+    if (g.length > TITLE_MAX_LEN || translationOk({ src: t, out: g, lang: x.lang }) === false) {
+      continue
+    }
+    CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, g)
+    texts[t] = g
   }
   return texts
 }
@@ -4122,4 +4126,24 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
  */
 export function emptyTexts(_e: Error): TitleTexts {
   return {}
+}
+
+/**
+ * 职位名前拼语境头(2026-09-14「Cook → 库克」实撞:翻译器把单词当人名)。
+ *
+ * @param title 职位名。
+ * @returns 「Job title: 职位名」。
+ */
+export function withTitleCtx(title: string): string {
+  return TITLE_CTX_PREFIX + title
+}
+
+/**
+ * 译文剥语境头:第一个冒号前的字丢掉;没有冒号就整行。
+ *
+ * @param line 译回来的一行。
+ * @returns 净译名。
+ */
+export function stripTitleCtx(line: string): string {
+  return line.replace(TITLE_CTX_STRIP_RE, PARAM_NONE).trim()
 }
