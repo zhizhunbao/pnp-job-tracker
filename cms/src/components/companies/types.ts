@@ -1224,6 +1224,11 @@ export type CompanyPanelIn = {
    * 档案到手后把中 / 韩别名交给页眉副题(2026-09-14 Frank「参考一下职位描述的弹框 css」)。
    */
   onAlias: (alias: string) => void
+
+  /**
+   * 管理员「重译」打完接口后的回调(2026-09-14:弹框重挂正文,不整页刷新)。
+   */
+  onRetranslated: GoBackFn
 }
 
 /**
@@ -2266,4 +2271,9 @@ export type RetranslateCompanyIn = {
    * 公司名。
    */
   name: string
+
+  /**
+   * 接口打完(成败都算)后的回调:弹框正文重挂重取。
+   */
+  onDone: GoBackFn
 }

@@ -30,7 +30,7 @@ export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   const t = makeT(lang)
   const a = useActModal()
   const panel = useFloatPanel({ prefKey: JD_PREF, defW: JD_PANEL_W, defH: JD_PANEL_H })
-  const sub = useTitleTrans({ title: job.title, lang, cached: TEXT_NONE })
+  const sub = useTitleTrans({ title: job.title, lang, cached: TEXT_NONE, gen: a.gen })
   const head = (
     <ActHead t={t} title={firstTextOf({ list: [job.title] })}
       sub={sub}
@@ -38,7 +38,8 @@ export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag>
-      <JobBody job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE} />
+      <JobBody key={a.gen} job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE}
+        onRetranslated={a.onRetranslated} />
     </FloatPanel>
   )
 }

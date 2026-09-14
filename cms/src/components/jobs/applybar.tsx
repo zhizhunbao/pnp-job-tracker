@@ -35,8 +35,8 @@ import css from './jobs.module.css'
  * @param props 本岗、投递邮箱、查完没、取词函数、分层态与在不在整页里。
  * @returns 投递栏 + 它的三层浮层;这一岗没有投递链接就整条不渲。
  */
-export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn) {
-  const a = useApplyBar({ job, email, emailDone, t, plan, onPage })
+export function ApplyBar({ job, email, emailDone, t, plan, onPage, onRetranslated }: ApplyBarIn) {
+  const a = useApplyBar({ job, email, emailDone, t, plan, onPage, onRetranslated })
   if (job.applyUrl === TEXT_NONE) {
     return null
   }
@@ -45,8 +45,8 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
       {a.fixedBar && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(a.fixedBar)}>
         {plan.isAdmin && (
-          <Button kind={BTN_GHOST} onClick={makeRetranslate({ url: job.applyUrl, title: job.title })}
-            className={PILL_CLS}>
+          <Button kind={BTN_GHOST} className={PILL_CLS}
+            onClick={makeRetranslate({ url: job.applyUrl, title: job.title, onDone: onRetranslated })}>
             {t('act.retrans')}
           </Button>
         )}

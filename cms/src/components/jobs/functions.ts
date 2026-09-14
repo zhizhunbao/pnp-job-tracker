@@ -5070,9 +5070,9 @@ export function adminOf(u: SessionUser | null): boolean {
 }
 
 /**
- * 管理员「重译」钮的点击(2026-09-14 Frank「加」):打接口清掉这一岗的译文,然后整页刷新,开框即重翻。
+ * 管理员「重译」钮的点击(2026-09-14 Frank「加」):打接口清掉这一岗的译文,然后交回调(弹框重挂正文 / 整页刷新)。
  *
- * @param x 原帖链接与职位名。
+ * @param x 原帖链接、职位名与完成回调。
  * @returns 点击处理。
  */
 export function makeRetranslate(x: RetranslateIn): ClickFn {
@@ -5081,15 +5081,15 @@ export function makeRetranslate(x: RetranslateIn): ClickFn {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ url: x.url, title: x.title }),
-    }).then(reloadPage).catch(reloadPage)
+    }).then(x.onDone).catch(x.onDone)
   }
 }
 
 /**
- * 整页刷新(重译后让弹框重新取数)。
+ * 整页刷新:整页版「重译」后重新取数(弹框版不走这里,弹框给回调让正文重挂;2026-09-14 Frank「应该是走重新加载吧」)。
  *
  * @returns 无。
  */
-function reloadPage(): void {
+export function reloadPage(): void {
   window.location.reload()
 }

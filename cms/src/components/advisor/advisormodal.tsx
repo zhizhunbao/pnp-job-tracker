@@ -81,6 +81,8 @@ export function AdvisorModal({
         companyJobs={m.companyJobs}
         onOpenJob={onOpenJob}
         onCompanyAlias={m.onCompanyAlias}
+        gen={m.gen}
+        onRetranslated={m.onRetranslated}
         f={f} />
       {m.aiOn && (
         <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />

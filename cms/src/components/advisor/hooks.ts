@@ -428,6 +428,7 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const [showZh, setShowZh] = useState(x.lang !== LANG_EN)
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
+  const [gen, setGen] = useState(0)
   const isCompanyGroup = x.group === GROUP_COMPANY
   const group = x.group
   const field = x.field
@@ -454,6 +455,11 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     setShowZh(showZh === false)
   }
 
+  function onRetranslated(): void {
+    setCompanyAlias(TEXT_NONE)
+    setGen(gen + 1)
+  }
+
   let companyJobs = companyJobsState
   if (isCompanyGroup === false || company === TEXT_NONE) {
     companyJobs = []
@@ -469,6 +475,8 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     companyJobs,
     companyAlias,
     onCompanyAlias: setCompanyAlias,
+    gen,
+    onRetranslated,
   }
 }
 
@@ -481,12 +489,17 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
  */
 export function useActModal(): ActModalPanel {
   const [freeLeft, setFreeLeft] = useState<number | null>(null)
+  const [gen, setGen] = useState(0)
+
+  function onRetranslated(): void {
+    setGen(gen + 1)
+  }
 
   useEffect(function trackOpen() {
     track(TRACK_MODAL_JD, { [TRACK_P_KIND]: TRACK_KIND_MODAL })
   }, [])
 
-  return { freeLeft, onFreeLeft: setFreeLeft }
+  return { freeLeft, onFreeLeft: setFreeLeft, gen, onRetranslated }
 }
 
 /**
@@ -501,6 +514,11 @@ export function useTitleTrans(x: TitleTransHookIn): string {
   if (prevCached !== x.cached) {
     setPrevCached(x.cached)
     setText(x.cached)
+  }
+  const [prevGen, setPrevGen] = useState(x.gen)
+  if (prevGen !== x.gen) {
+    setPrevGen(x.gen)
+    setText(TEXT_NONE)
   }
   const title = x.title
   const lang = x.lang

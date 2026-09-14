@@ -1213,15 +1213,6 @@ export function makeRetranslateCompany(x: RetranslateCompanyIn): GoBackFn {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ name: x.name }),
-    }).then(reloadPage).catch(reloadPage)
+    }).then(x.onDone).catch(x.onDone)
   }
-}
-
-/**
- * 整页刷新(重译后让弹框重新取数)。
- *
- * @returns 无。
- */
-function reloadPage(): void {
-  window.location.reload()
 }

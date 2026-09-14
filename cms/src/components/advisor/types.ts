@@ -1831,6 +1831,16 @@ export type AdvisorGroupBodyIn = {
    * 公司弹框把别名回传给页眉的口(2026-09-14)。
    */
   onCompanyAlias: (alias: string) => void
+
+  /**
+   * 重译代数(CompanyPanel 的 key,变了重挂重取)。
+   */
+  gen: number
+
+  /**
+   * 公司弹框「重译」打完接口后的回调(2026-09-14)。
+   */
+  onRetranslated: () => void
 }
 
 /**
@@ -1911,6 +1921,16 @@ export type AdvisorModalPanel = {
    * CompanyPanel 回传别名的口。
    */
   onCompanyAlias: (alias: string) => void
+
+  /**
+   * 重译代数(2026-09-14 Frank「怎么把弹框给我关了」:点「重译」不再整页刷新,代数加一让弹框正文与页眉副题重挂重取)。
+   */
+  gen: number
+
+  /**
+   * 「重译」打完接口后的回调:代数加一。
+   */
+  onRetranslated: () => void
 }
 
 /**
@@ -3455,6 +3475,16 @@ export type ActModalPanel = {
    * 剩余次数落格。
    */
   onFreeLeft: (n: number) => void
+
+  /**
+   * 重译代数(2026-09-14 Frank「怎么把弹框给我关了」:点「重译」不再整页刷新,代数加一让弹框正文与页眉副题重挂重取)。
+   */
+  gen: number
+
+  /**
+   * 「重译」打完接口后的回调:代数加一。
+   */
+  onRetranslated: () => void
 }
 
 /**
@@ -3510,4 +3540,9 @@ export type TitleTransHookIn = {
    * 现成副题(NOC 译名);'' = 没有,才懒翻标题。
    */
   cached: string
+
+  /**
+   * 重译代数:变了就清掉已翻的副题重翻一次(2026-09-14)。
+   */
+  gen: number
 }

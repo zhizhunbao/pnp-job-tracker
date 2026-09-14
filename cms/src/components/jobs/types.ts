@@ -1819,6 +1819,11 @@ export type JobBodyIn = {
    * SSR 已拿到的 JD 正文(整页版由页面门传;弹框传 '' 走懒取)。
    */
   jdText: string
+
+  /**
+   * 管理员「重译」打完接口后的回调;弹框传(让正文重挂),整页不传 = 整页刷新(2026-09-14)。
+   */
+  onRetranslated?: ClickFn
 }
 
 /**
@@ -2126,6 +2131,11 @@ export type ApplyBarIn = {
    * 在整页里(窄屏改 fixed 常驻视口底;弹框里维持 sticky)。
    */
   onPage: boolean
+
+  /**
+   * 管理员「重译」打完接口后的回调(2026-09-14)。
+   */
+  onRetranslated: ClickFn
 }
 
 /**
@@ -6208,4 +6218,9 @@ export type RetranslateIn = {
    * 职位名。
    */
   title: string
+
+  /**
+   * 接口打完(成败都算)后的回调:弹框里让正文重挂重取;整页里整页刷新。
+   */
+  onDone: ClickFn
 }

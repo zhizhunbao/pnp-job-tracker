@@ -42,7 +42,7 @@ import css from './companies.module.css'
  * @param props 当前职位、已载入职位、语言、付费态与点职位回调(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias, onRetranslated }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
   let cachedAlias = TEXT_NONE
@@ -74,14 +74,6 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: Comp
   }
   return (
     <>
-      {plan.isAdmin && companyName !== TEXT_NONE && (
-        <div className={cssOf(css.acts)}>
-          <Button kind={PLAIN_BTN_KIND} onClick={makeRetranslateCompany({ name: companyName })}
-            className={pillClsOf({ on: false })}>
-            {t('act.retrans')}
-          </Button>
-        </div>
-      )}
       {p.aiOn && (
         <div className={CARD_MD_CLS + CLS_SEP + cssOf(css.aiCard)}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field={AI_FIELD_CO_READ} />
@@ -89,6 +81,14 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: Comp
       )}
       {body}
       <SponsorLeadCard job={job} t={t} src={LEAD_SRC_COMPANY} />
+      {plan.isAdmin && companyName !== TEXT_NONE && (
+        <div className={cssOf(css.retransBar)}>
+          <Button kind={PLAIN_BTN_KIND} onClick={makeRetranslateCompany({ name: companyName, onDone: onRetranslated })}
+            className={pillClsOf({ on: false })}>
+            {t('act.retrans')}
+          </Button>
+        </div>
+      )}
     </>
   )
 }

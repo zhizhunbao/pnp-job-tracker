@@ -20,7 +20,7 @@
  */
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
-import { jdBusyOf } from './functions'
+import { jdBusyOf, reloadPage } from './functions'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
 import { JdAutoTrans } from './jdautotrans'
@@ -34,7 +34,9 @@ import type { JobBodyIn } from './types'
  * @param props 本岗、界面语言、分层态、在不在弹框里与额度回传。
  * @returns 整副身体。
  */
-export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }: JobBodyIn) {
+export function JobBody({
+  job, lang, plan, inModal = false, onFreeLeft, jdText, onRetranslated = reloadPage,
+}: JobBodyIn) {
   const d = useJobBody({ job, lang, plan, inModal, onFreeLeft, jdText })
   return (
     <>
@@ -49,7 +51,7 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
       {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
-          onPage={inModal === false} />
+          onPage={inModal === false} onRetranslated={onRetranslated} />
       )}
     </>
   )
