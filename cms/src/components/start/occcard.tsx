@@ -13,7 +13,8 @@
  * @time 2026-08-28 14:20:00
  */
 import { JobCard } from '@/components/card'
-import { TEXT_NONE } from './constants'
+import { tagClsOf } from '@/components/tag'
+import { TAG_V_GRAY, TAG_V_TIGHT, TEXT_NONE } from './constants'
 import { HotCell } from './hotcell'
 import { PnpCell } from './pnpcell'
 import type { OccCardIn } from './types'
@@ -50,11 +51,13 @@ export function OccCard({ row, showProvs, deadCol }: OccCardIn) {
       salary={salary}
       location={location}
       chips={<>
-        <span className={css.chipGray}>{row.nocChip}</span>
-        {row.teerChip !== TEXT_NONE && <span className={css.chipGray}>{row.teerChip}</span>}
+        <span className={tagClsOf(TAG_V_GRAY)}>{row.nocChip}</span>
+        {row.teerChip !== TEXT_NONE && <span className={tagClsOf(TAG_V_GRAY)}>{row.teerChip}</span>}
         {deadCol === false && showProvs && HotCell(row)}
-        {deadCol && row.deadText !== TEXT_NONE && <span className={css.chipDanger}>{row.deadText}</span>}
-        {showProvs === false && row.rateChip !== TEXT_NONE && <span className={css.chipGray}>{row.rateChip}</span>}
+        {deadCol && row.deadText !== TEXT_NONE && <span className={tagClsOf(TAG_V_TIGHT)}>{row.deadText}</span>}
+        {showProvs === false && row.rateChip !== TEXT_NONE && (
+          <span className={tagClsOf(TAG_V_GRAY)}>{row.rateChip}</span>
+        )}
       </>} />
   )
 }

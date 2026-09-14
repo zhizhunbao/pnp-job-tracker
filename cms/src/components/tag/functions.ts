@@ -24,6 +24,7 @@ export function tagClsOf(variant: TagVariant): string {
     warn: cssOf(css.warn),
     ok: cssOf(css.ok),
     pro: cssOf(css.pro),
+    gray: cssOf(css.gray),
   }
   return `${css.tag} ${variantCls[variant]}`
 }

@@ -6,10 +6,10 @@
  */
 
 /**
- * 标签变体(六种状态,一种一套配色):region 省/地区、federal 联邦、imp 重要、
- * warn 关注、ok 通过、pro 付费层。
+ * 标签变体(七种,一种一套配色,值 = 把脉页胶囊那套):region 省/地区(绿)、federal 联邦(青)、imp 重要/紧(红)、
+ * warn 关注/中(黄)、ok 通过/易(绿)、pro 付费层(金)、gray 中性事实标签(灰)。
  */
-export type TagVariant = 'region' | 'federal' | 'imp' | 'warn' | 'ok' | 'pro'
+export type TagVariant = 'region' | 'federal' | 'imp' | 'warn' | 'ok' | 'pro' | 'gray'
 
 /**
  * Tag 的 props。

@@ -6,7 +6,8 @@
  * @author Frank
  * @time 2026-09-05 02:40:00
  */
-import { TEXT_NONE } from './constants'
+import { tagClsOf } from '@/components/tag'
+import { TAG_V_GRAY, TEXT_NONE } from './constants'
 import type { EmpCellRow } from './types'
 import css from './start.module.css'
 
@@ -20,7 +21,7 @@ export function EmpNameCell(r: EmpCellRow) {
   return (
     <div>
       <span>{r.name}</span>
-      {r.chainText !== TEXT_NONE && <span className={css.chipGray} title={r.chainTip}>{r.chainText}</span>}
+      {r.chainText !== TEXT_NONE && <span className={tagClsOf(TAG_V_GRAY)} title={r.chainTip}>{r.chainText}</span>}
       {r.alias !== TEXT_NONE && <span className={css.note}>{r.alias}</span>}
     </div>
   )

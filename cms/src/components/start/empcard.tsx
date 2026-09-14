@@ -7,7 +7,8 @@
  * @time 2026-09-04 22:10:00
  */
 import { Card, CardAction, CardKV } from '@/components/card'
-import { TABLE_PILOT, TEXT_NONE } from './constants'
+import { tagClsOf } from '@/components/tag'
+import { TABLE_PILOT, TAG_V_GRAY, TEXT_NONE } from './constants'
 import { EmpActCell } from './empactcell'
 import { EmpBriefCell } from './empbriefcell'
 import { EmpHiringCell } from './emphiringcell'
@@ -39,7 +40,9 @@ export function EmpCard({ t, row, kind }: EmpCardIn) {
     <Card>
       <div className={css.empCardTitle}>
         {row.name}
-        {row.chainText !== TEXT_NONE && <span className={css.chipGray} title={row.chainTip}>{row.chainText}</span>}
+        {row.chainText !== TEXT_NONE && (
+          <span className={tagClsOf(TAG_V_GRAY)} title={row.chainTip}>{row.chainText}</span>
+        )}
       </div>
       {row.alias !== TEXT_NONE && <div className={css.note}>{row.alias}</div>}
       <CardKV items={kv} />

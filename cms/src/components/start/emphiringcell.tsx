@@ -6,7 +6,8 @@
  * @author Frank
  * @time 2026-09-05 01:10:00
  */
-import { TEXT_NONE } from './constants'
+import { tagClsOf } from '@/components/tag'
+import { TAG_V_GRAY, TEXT_NONE } from './constants'
 import type { EmpCellRow } from './types'
 import css from './start.module.css'
 
@@ -24,7 +25,7 @@ export function EmpHiringCell(r: EmpCellRow) {
   return (
     <span className={css.pills}>
       {pills}
-      {r.hiringMoreText !== TEXT_NONE && <span className={css.chipGray}>{r.hiringMoreText}</span>}
+      {r.hiringMoreText !== TEXT_NONE && <span className={tagClsOf(TAG_V_GRAY)}>{r.hiringMoreText}</span>}
     </span>
   )
 }

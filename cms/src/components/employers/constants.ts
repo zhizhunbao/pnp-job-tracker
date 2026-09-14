@@ -664,9 +664,9 @@ export const DIR_ASC = 'asc'
 export const DIR_DESC = 'desc'
 
 /**
- * 地点胶囊的通用 tag 变体(区域档 —— 地点是事实标签,不是资格)。
+ * 地点胶囊的通用 tag 变体(中性灰 —— 地点是事实标签,不是资格;把脉页 .chipGray 同档)。
  */
-export const TAG_LOC = 'region'
+export const TAG_LOC = 'gray'
 
 /**
  * 手机卡「指定雇主」胶囊的通用 tag 变体(通过绿:资格类信号)。
