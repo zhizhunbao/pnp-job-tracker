@@ -971,7 +971,8 @@ ORIGIN_HIREAC = "hireac"
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
                    (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
                    (paths.PROCESSED_CAREERBEACON / "postings.json", "careerbeacon"),
-                   (paths.PROCESSED_HIREAC / "postings.json", ORIGIN_HIREAC))
+                   (paths.PROCESSED_HIREAC / "postings.json", ORIGIN_HIREAC),
+                   (paths.PROCESSED_GCJOBS / "postings.json", "gcjobs"))
 """第三方招聘板的 postings 仓 → (路径, origin) 表(2026-09-06 jobillico/jobboom 立域,Frank「两站都接,
 Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归一成同形),评分 / 岗位装配 /
 三段跨源清洗都按这张表多走一轮;origin 记板名(jobs.origin 渠道筛选随之多两个值),source 是板域
@@ -980,7 +981,8 @@ Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归�
 2026-09-13 hireac(Algonquin 校内板登录源)加行:当晚首灌 376 帖上了公开职位板(渠道列显裸键 origin.hireac),
 Frank「不应该放到职位里面吧」→ 同日改成**按渠道给 status**(to_job_row:hireac → campus,其余 open):行照样进 jobs 表
 (详情页免造),但职位板 / 统计 / 榜单 / 雇主池全按 status=open 取数,campus 只进一级导航「校内板」页 /coop
-(枚举 DDL:docs/sql/jobs-origin-hireac.sql + jobs-status-campus.sql)。"""
+(枚举 DDL:docs/sql/jobs-origin-hireac.sql + jobs-status-campus.sql)。
+2026-09-13 gcjobs 照此加行(联邦公务员招聘站公开搜索 ≈ 400 帖,Frank「那 GC Jobs 接一下吧」;枚举 DDL jobs-origin-gcjobs.sql)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""

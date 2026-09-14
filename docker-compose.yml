@@ -113,6 +113,13 @@ services:
       DETAILS_PER_RUN: '3000'      # 每轮详情页上限(首轮约 1.2 万张分四五轮跑完;域 __init__ 同名默认值)
       TZ: EST5EDT
 
+  gcjobs:                          # GC Jobs 联邦公务员招聘站(2026-09-13 立域;会话式两拉:搜索分页 → 岗位页 → processed/gcjobs/)
+    <<: *etl
+    environment:
+      SOURCE: gcjobs
+      DETAILS_PER_RUN: '1000'      # 每轮岗位页上限(公开搜索约 400 帖,首轮一次抓完;域 __init__ 同名默认值)
+      TZ: EST5EDT
+
   crawl:                           # 九省官方站 URL 探索 + 站点地图 diff(政策雷达;只产 data/crawl/,不灌库)
     <<: *etl
     build:                         # 用带 Playwright 的重镜像(非 httpx 轻镜像):PE 在 Radware 后面,

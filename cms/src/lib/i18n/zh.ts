@@ -964,7 +964,7 @@ export const siteZh = {
   'tl.min': '最低分 {n}', 'tl.notCrs': ',非 CRS', 'tl.inv': '邀请 {n} 人', 'tl.src': '官方来源',
   'tl.entry': '抽选与政策时间线', 'tl.empty': '没有匹配的事件', 'tl.hist': '历次抽选',
   'loading': '更新中…',
-  'nav.coop': '校内板', 'coop.title': '校内板', 'origin.hireac': 'HireAC',
+  'nav.coop': '校内板', 'coop.title': '校内板', 'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告',
   'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
   // #54 登录改版(careerbeacon 骨架)

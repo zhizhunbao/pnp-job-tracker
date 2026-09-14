@@ -51,6 +51,10 @@ RAW_HIREAC = RAW / "hireac"
 行号 → 详情表单参数,会话级)+ jobs.json(详情页「标签: 值」表格抽出的事实,行号为键);原文在 crawl/board-hireac/。
 本地直投帖(数字号)与 Outcome Campus Connect 跨校联播帖(CC- 号)都收;只在 Frank 本机手动跑。"""
 
+RAW_GCJOBS = RAW / "gcjobs"
+"""gcjobs 域抽出的表(2026-09-13 立域,联邦公务员招聘站 GC Jobs 公开搜索):rows.json(搜索分页枚举:帖号 → 列表行,
+当前态)+ jobs.json(岗位页字段格与各节抽出的事实,帖号为键);原文在 crawl/board-gcjobs/。"""
+
 
 PNP = RAW / "pnp"
 """各省 PNP 维护表(aaip-ineligible/sk-*.json 等)。"""
@@ -154,6 +158,10 @@ PROCESSED_CAREERBEACON = PROCESSED / "careerbeacon"
 PROCESSED_HIREAC = PROCESSED / "hireac"
 """hireac 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;当前态 = 本轮列表在列且未过截止日的帖;
 薪资恒空 —— 板上只给「时薪/年薪」类型不给金额)。"""
+
+PROCESSED_GCJOBS = PROCESSED / "gcjobs"
+"""gcjobs 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;当前态 = 本轮搜索在列且未过截止日的帖;
+薪资按公务员薪资表年薪写法,站外跳转帖 url 给雇主外链)。"""
 
 PROCESSED_PTE = PROCESSED / "pte"
 """pte 域组织后产物(2026-09-01):ynwac 机经库解析分组(ynwac-bank.json,按题型分组 +

@@ -878,7 +878,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'tl.min': 'Min {n}', 'tl.notCrs': ', not CRS', 'tl.inv': '{n} invited', 'tl.src': 'Official source',
   'tl.entry': 'Draws & policy timeline', 'tl.empty': 'No matching events', 'tl.hist': 'Draw history',
   'loading': 'Updating…',
-  'nav.coop': 'Campus board', 'coop.title': 'Campus board', 'origin.hireac': 'HireAC',
+  'nav.coop': 'Campus board', 'coop.title': 'Campus board', 'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'nav.library': 'Library', 'nav.employers': 'Employers', 'nav.jobs': 'Jobs', 'nav.pte': 'PTE practice', 'tl.tabNews': 'Latest updates',
   'rank.bnSub': 'Ranked by immigration-value score', 'rank.bnRows': '{n} jobs on board',
   'acct.hero.login': 'Welcome back', 'acct.hero.reg': 'Sign up free — see your match for every job',
