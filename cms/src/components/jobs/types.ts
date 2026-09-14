@@ -5107,6 +5107,26 @@ export type NoTextIn = {
 }
 
 /**
+ * jdWaitingOf 的入参。
+ */
+export type JdWaitingIn = {
+  /**
+   * 取数态。
+   */
+  status: JdStatus
+
+  /**
+   * 整理版:undefined = 还没回,null = 没有 / 失败,串 = 就绪。
+   */
+  fmt: string | null | undefined
+
+  /**
+   * 对照翻译态。
+   */
+  transStatus: TransStatus
+}
+
+/**
  * jdBusyOf 的入参。
  */
 export type JdBusyIn = {

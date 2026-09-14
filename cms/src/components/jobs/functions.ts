@@ -60,7 +60,7 @@ import {
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER, VAL_MATCH,
   UNIT_HR_RE, UNIT_YR_RE, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN,
-  ZEBRA_MOD, JD_SEC_LOC, JD_LOC_PROV_KEY,
+  ZEBRA_MOD, JD_SEC_LOC, JD_LOC_PROV_KEY, JD_LOADING, JD_DONE,
 } from './constants'
 import type {
   BoardMeta, BoardTitleIn, SliceTextIn,
@@ -85,7 +85,7 @@ import type {
   JdBusyIn, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState,
   StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
-  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn, JdLocationSectionIn, JdLocationZhIn, PayPairsZhIn,
+  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn, JdLocationSectionIn, JdLocationZhIn, PayPairsZhIn, JdWaitingIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3556,6 +3556,34 @@ export function jdLocationZhOf(x: JdLocationZhIn): string {
 }
 
 /**
+ * 「工作地点」节的英文行(合成节只有一行;2026-09-14)。
+ *
+ * @param sec 这一节。
+ * @returns 英文地点;没有给空串。
+ */
+export function jdLocationTextOf(sec: JdSectionView): string {
+  const first = sec.pairs[0]
+  if (first == null) {
+    return TEXT_NONE
+  }
+  return first.en
+}
+
+/**
+ * 「工作地点」节的对照行。
+ *
+ * @param sec 这一节。
+ * @returns 对照;没有给空串。
+ */
+export function jdLocationZhTextOf(sec: JdSectionView): string {
+  const first = sec.pairs[0]
+  if (first == null) {
+    return TEXT_NONE
+  }
+  return first.zh
+}
+
+/**
  * 「工作地点」节(2026-09-14 Frank「应该单独一个分类吧」):不是原帖分出来的,由岗位地点字段合成一节,排在最前。
  *
  * @param x 取词函数、地点两版与节形状要的两格。
@@ -3627,6 +3655,23 @@ export function noTextOf(x: NoTextIn): string {
     return x.t('act.noText')
   }
   return x.t('act.noTextBlocked', { src: x.src })
+}
+
+/**
+ * 正文区从头到尾要不要出转圈行:取数在途、整理在途、翻译在途三段合一(2026-09-14 Frank「加载途中为什么会闪一下」:
+ * 三段各渲一条转圈,段切换那一瞬旧条卸新条挂就闪;合成一个判定一个元素就不闪)。
+ *
+ * @param x 取数态、整理版与翻译态。
+ * @returns 在途 = true。
+ */
+export function jdWaitingOf(x: JdWaitingIn): boolean {
+  if (x.status === JD_LOADING) {
+    return true
+  }
+  if (x.status !== JD_DONE) {
+    return false
+  }
+  return jdBusyOf({ fmt: x.fmt, transStatus: x.transStatus })
 }
 
 /**

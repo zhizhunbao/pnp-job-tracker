@@ -230,9 +230,11 @@ export const URL_API_PROVINCE = '/api/jobs/province?code='
 export const URL_API_CITY = '/api/jobs/city?'
 
 /**
- * 同公司在榜岗的取数接口头(E10-01 P3:blob 没了 → 打开公司弹框时按公司名现拉)。
+ * 公司在榜岗清单的接口头:走职位板的全文搜索参数 q(2026-09-14 Frank「这个为什么只有第一个改成弹框了」:
+ * 原写 `?company=`,接口没这个参数、整条被当无筛选,回来的是全站最新一页,只有恰好在那一页的岗才能解析成弹框,
+ * 其余落成整页跳转)。
  */
-export const URL_API_JOBS_COMPANY = '/api/jobs?company='
+export const URL_API_JOBS_COMPANY = '/api/jobs?q='
 
 /**
  * 同公司在榜岗只取第一页(弹框里是「还有哪些岗」的一瞥,不做分页)。
