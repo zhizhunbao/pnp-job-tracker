@@ -1662,7 +1662,12 @@ export type ResizeHandlesIn = {
 }
 
 /**
- * FloatPanel 的 props。
+ * 刷新钮的点击。
+ */
+export type RefreshFn = () => void
+
+/**
+ * FloatPanel 的 props(浮层壳)。
  */
 export type FloatPanelIn = {
   /**
@@ -1706,6 +1711,11 @@ export type FloatPanelIn = {
    * 正文。
    */
   children: React.ReactNode
+
+  /**
+   * 页眉右上角刷新钮的点击(管理员「重译」,2026-09-14);null = 不出这颗钮。
+   */
+  onRefresh: RefreshFn | null
 }
 
 /**
@@ -1837,10 +1847,6 @@ export type AdvisorGroupBodyIn = {
    */
   gen: number
 
-  /**
-   * 公司弹框「重译」打完接口后的回调(2026-09-14)。
-   */
-  onRetranslated: () => void
 }
 
 /**
@@ -3545,4 +3551,49 @@ export type TitleTransHookIn = {
    * 重译代数:变了就清掉已翻的副题重翻一次(2026-09-14)。
    */
   gen: number
+}
+
+/**
+ * jobRefreshOf 的入参。
+ */
+export type JobRefreshIn = {
+  /**
+   * 分层态(只对管理员出钮)。
+   */
+  plan: AdvisorPlan
+
+  /**
+   * 这一岗。
+   */
+  job: AdvisorJob
+
+  /**
+   * 接口打完后的回调(弹框代数加一)。
+   */
+  onDone: RefreshFn
+}
+
+/**
+ * companyRefreshOf 的入参。
+ */
+export type CompanyRefreshIn = {
+  /**
+   * 分层态(只对管理员出钮)。
+   */
+  plan: AdvisorPlan
+
+  /**
+   * 弹框分组(只有公司组出钮)。
+   */
+  group: string
+
+  /**
+   * 这一岗(取公司名)。
+   */
+  job: AdvisorJob
+
+  /**
+   * 接口打完后的回调(弹框代数加一)。
+   */
+  onDone: RefreshFn
 }

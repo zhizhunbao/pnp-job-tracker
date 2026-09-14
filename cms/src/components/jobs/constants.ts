@@ -2537,6 +2537,11 @@ export const LANG_EN = 'en'
 export const LANG_ZH = 'zh'
 
 /**
+ * 界面语言:韩文(2026-09-14:「工作地点」对照行市名按它取韩文译名)。
+ */
+export const LANG_KO = 'ko'
+
+/**
  * 中文的多值连接符(顿号)。
  */
 export const SEP_ZH = '、'
@@ -3286,11 +3291,6 @@ export const LD_MIME = 'application/ld+json'
  */
 export const FIRST_SCREEN_ROWS = 50
 
-
-/**
- * 管理员「重译」接口(2026-09-14)。
- */
-export const URL_API_JOBS_RETRANSLATE = '/api/jobs/retranslate'
 
 /**
  * 管理员角色值(与 Users 集合 role 字段同值)。

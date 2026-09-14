@@ -34,14 +34,17 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
   j.employment_term, j.employment_hours, j.who_can_apply, j.certificates, j.education, j.eligibility_flag,
   j.eligibility_quote,
   j.country, j.province, j.city, j.district, j.address, j.region,
+  ci.name_zh AS city_zh, ci.name_ko AS city_ko,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
   j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
   j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at`
 
 /**
- * 职位板的 FROM/JOIN 骨架:jobs 左连 companies。
+ * 职位板的 FROM/JOIN 骨架:jobs 左连 companies;2026-09-14 再左连 cities 带回人工核定的市译名 city_zh / city_ko
+ * (职位弹框「工作地点」对照行市名用界面语,Frank「可以」;同 09-13 雇主页那条 join)。
  */
-export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_id`
+export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+  LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province`
 
 /**
  * 相似/相关职位用的瘦列清单
@@ -193,8 +196,10 @@ export const COMPANY_BY_JOB_ID_COND = `c.id = (SELECT company_id FROM jobs WHERE
  * 在招总量(REFRESH_EMPLOYER_POOL_OPEN)四处同一句。
  */
 export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
-            nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko
+            nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko,
+            ci.name_zh AS city_zh, ci.name_ko AS city_ko
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
+       LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      WHERE j.company_id = $1 AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`
 

@@ -16,7 +16,7 @@ import { makeT } from '@/lib/i18n'
 import { JD_PANEL_H, JD_PANEL_W, JD_PREF, TEXT_NONE } from './constants'
 import { ActHead } from './acthead'
 import { FloatPanel } from './floatpanel'
-import { firstTextOf } from './functions'
+import { firstTextOf, jobRefreshOf } from './functions'
 import { useActModal, useFloatPanel, useTitleTrans } from './hooks'
 import type { ActModalIn } from './types'
 
@@ -37,9 +37,9 @@ export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
       freeLeft={a.freeLeft} />
   )
   return (
-    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag>
-      <JobBody key={a.gen} job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE}
-        onRetranslated={a.onRetranslated} />
+    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag
+      onRefresh={jobRefreshOf({ plan, job, onDone: a.onRetranslated })}>
+      <JobBody key={a.gen} job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE} />
     </FloatPanel>
   )
 }

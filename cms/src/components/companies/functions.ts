@@ -21,33 +21,30 @@ import { isJdNone } from '@/lib/jobs'
 import { provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import {
-  GRADE_AMBER_MIN, GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN,
-  GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
-  CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
-  CH_GRADE_AMBER_MIN, CH_GRADE_DEEP_MIN, CH_GRADE_GRAY_MIN, CH_GRADE_GREEN_MIN, CLS_SEP, CO_SEC_BASE,
-  CO_SEC_KEYS, CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE, CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN,
-  GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, HDR_CONTENT_TYPE, LANG_EN, SEC_PAIR_STEP,
-  HTTP_OK, HTTP_URL_RE, JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE, KEY_ACT_TIER_HEAD,
-  KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
-  KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, LANG_KO, LANG_ZH,
-  METHOD_POST, MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE, STREAM_GTS_RE,
-  STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, KEY_STREAM_AGRI, KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW,
-  KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
-  URL_CO_TRANSLATE,
-  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, URL_CO_ALIAS, PROV_PAREN_RE, LOC_JOIN, PROV_PAREN_INNER_RE,
-  YEAR_ONLY_RE, URL_CO_TITLES, URL_CO_DESC, URL_CO_RETRANSLATE,
+  BASE_CITY_PROV_RE, CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
+  CH_GRADE_AMBER_MIN, CH_GRADE_DEEP_MIN, CH_GRADE_GRAY_MIN, CH_GRADE_GREEN_MIN, CLS_SEP, CO_SEC_BASE, CO_SEC_KEYS,
+  CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE, CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN, GOV_BODY_RE,
+  GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN, GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE,
+  GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN, HDR_CONTENT_TYPE, HTTP_OK, HTTP_URL_RE, JD_ZH_CLS,
+  JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE, KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE,
+  KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE, KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE,
+  KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI, KEY_STREAM_GTS, KEY_STREAM_HIGH,
+  KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST, MIME_JSON, NOCS_TOP_N,
+  PROV_LOCALE_ONLY, PROV_PAREN_INNER_RE, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
+  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE,
+  TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
+  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, YEAR_ONLY_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
-  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasOfIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
-  CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream, DeadFlag,
-  DisplayNameIn,
-  FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn, JobNocNameIn, JobsShownIn,
-  LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenJobIn,
-  PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
-  JobsToggleLabelIn, SecKeyIn, SecTextIn, SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
-  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn, AliasJson, LoadAliasIn, BaseOverrideIn, LoadTitlesIn, TitlesJson,
-  SubOrTitleIn, UntitledIn, LoadDescTransIn, RetranslateCompanyIn,
+  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasJson, AliasOfIn, BaseOverrideIn, BaseZhIn, BriefJson, BriefSecsIn,
+  CanTransIn, ChColorIn, CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow,
+  CompanyOnlyIn, CompanyStream, DeadFlag, DisplayNameIn, FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn,
+  IsGovIn, JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
+  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelJson,
+  PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn,
+  SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson,
+  TransToggleIn, TvOpenIn, UntitledIn, ZhLineClsIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -231,6 +228,69 @@ export function cityOf(x: CompanyOnlyIn): string {
 }
 
 /**
+ * 「所在地」节的本地对照行(2026-09-14 Frank「这个需要加逗号吧」:模型把「Vancouver, British Columbia」译成
+ * 「不列颠哥伦比亚省温哥华市」一串):AI 那句是「市, 省」形且市在本公司在招岗里有这一市时,
+ * 拼「市译名, 省译名」(市译名取 cities 表核定,没核定照英文);拼出来和原句一样(英文界面)或对不上给空串。
+ *
+ * @param x 取词函数、界面语言与公司档案。
+ * @returns 对照行;'' = 照模型译文。
+ */
+export function baseZhOf(x: BaseZhIn): string {
+  const base = baseTextOf({ text: x.company.aiBrief })
+  const m = BASE_CITY_PROV_RE.exec(base)
+  if (m == null || m.groups == null || m.groups.city == null) {
+    return TEXT_NONE
+  }
+  const city = m.groups.city.trim().toLowerCase()
+  for (const j of x.company.jobs) {
+    if (j.city.toLowerCase() === city && j.province !== TEXT_NONE) {
+      const prov = provFullOf({ t: x.t, code: j.province })
+      if (prov === TEXT_NONE) {
+        return TEXT_NONE
+      }
+      const out = cityLocalOf({ j, lang: x.lang }) + LOC_JOIN + prov
+      if (out === base) {
+        return TEXT_NONE
+      }
+      return out
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 在招岗一行的市名界面语版:中 / 韩界面取核定译名,没核定或英文界面照英文。
+ *
+ * @param x 这一行与界面语言。
+ * @returns 市名。
+ */
+function cityLocalOf(x: CityLocalIn): string {
+  if (x.lang === LANG_ZH && x.j.cityZh !== TEXT_NONE) {
+    return x.j.cityZh
+  }
+  if (x.lang === LANG_KO && x.j.cityKo !== TEXT_NONE) {
+    return x.j.cityKo
+  }
+  return x.j.city
+}
+
+/**
+ * 基本信息卡的省码:与 cityOf 取同一行在招岗的省(2026-09-14 Frank「这个省不对啊」:BDO 档案省 AB、市却取到最新岗的 Toronto);
+ * 没有带市的岗才退回档案省。
+ *
+ * @param x 公司档案。
+ * @returns 省码;'' = 没有。
+ */
+export function homeProvinceOf(x: CompanyOnlyIn): string {
+  for (const j of x.company.jobs) {
+    if (j.city !== TEXT_NONE && j.province !== TEXT_NONE) {
+      return j.province
+    }
+  }
+  return x.company.province
+}
+
+/**
  * 「所在地」节要不要换成官方招聘地点(2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」):
  * AI 查到的总部若与招聘省(companies.region,官方)对不上,视为查错,该节改显「市, 省」这句官方地点;
  * 对得上或没有招聘省就照 AI 的。
@@ -239,15 +299,16 @@ export function cityOf(x: CompanyOnlyIn): string {
  * @returns 改显的句子;'' = 不改。
  */
 export function baseOverrideOf(x: BaseOverrideIn): string {
-  if (x.company.province === TEXT_NONE) {
+  const code = homeProvinceOf({ company: x.company })
+  if (code === TEXT_NONE) {
     return TEXT_NONE
   }
   const base = baseTextOf({ text: x.company.aiBrief })
   if (base === TEXT_NONE) {
     return TEXT_NONE
   }
-  const prov = provFullOf({ t: x.t, code: x.company.province })
-  if (prov === TEXT_NONE || base.includes(prov) || base.includes(x.company.province)) {
+  const prov = provFullOf({ t: x.t, code })
+  if (prov === TEXT_NONE || base.includes(prov) || base.includes(code)) {
     return TEXT_NONE
   }
   const city = cityOf({ company: x.company })
@@ -268,7 +329,7 @@ export function baseOverrideZhOf(x: BaseOverrideIn): string {
   if (baseOverrideOf(x) === TEXT_NONE) {
     return TEXT_NONE
   }
-  const full = provName({ t: x.t, code: x.company.province, localeOnly: PROV_LOCALE_ONLY })
+  const full = provName({ t: x.t, code: homeProvinceOf({ company: x.company }), localeOnly: PROV_LOCALE_ONLY })
   const m = PROV_PAREN_INNER_RE.exec(full)
   if (m == null || m.groups == null) {
     return TEXT_NONE
@@ -1201,18 +1262,3 @@ export function gradeColorOf(g: number | null | undefined): string {
   return GRADE_C_NONE
 }
 
-/**
- * 管理员「重译」钮的点击(2026-09-14 Frank「加」):清这家公司的译文,然后整页刷新。
- *
- * @param x 公司名。
- * @returns 点击处理。
- */
-export function makeRetranslateCompany(x: RetranslateCompanyIn): GoBackFn {
-  return function retranslate(): void {
-    fetch(URL_CO_RETRANSLATE, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ name: x.name }),
-    }).then(x.onDone).catch(x.onDone)
-  }
-}

@@ -57,7 +57,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
               t={d.t}
               fallbackPay={fallbackPayOf(job)}
               location={jdLocationOf(job)}
-              locationZh={jdLocationZhOf({ t: d.t, job })}
+              locationZh={jdLocationZhOf({ t: d.t, job, lang })}
               applyUrl={job.applyUrl}
               applyEmail={d.applyEmail}
               underTitle={underTitle}

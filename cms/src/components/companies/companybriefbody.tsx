@@ -24,7 +24,7 @@ import { cssOf } from '@/components/css'
  * @returns 内容体(散文一块,或逐节)。
  */
 export function CompanyBriefBody({
-  brief, trans, t, flat, skipBase, baseOverride, baseOverrideZh,
+  brief, trans, t, flat, skipBase, baseOverride, baseOverrideZh, baseZh,
 }: CompanyBriefBodyIn) {
   if (CO_SEC_HAS_RE.test(brief) === false) {
     let zh = TEXT_NONE
@@ -50,6 +50,9 @@ export function CompanyBriefBody({
     if (mark === CO_SEC_BASE && baseOverride !== TEXT_NONE) {
       text = baseOverride
       zh = baseOverrideZh
+    }
+    if (mark === CO_SEC_BASE && baseOverride === TEXT_NONE && baseZh !== TEXT_NONE) {
+      zh = baseZh
     }
     const skipped = skipBase && mark === CO_SEC_BASE
     if (hasSecOf({ secs, mark }) && skipped === false) {

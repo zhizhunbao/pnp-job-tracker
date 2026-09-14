@@ -36,56 +36,51 @@ import {
   COOKIE_SAMESITE, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN, DEFAULT_COLS,
   DIRECT_URL_KEY, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP, FIELD_GROUP,
   FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW, FROZEN_LINE_SHADOW,
-  FROZEN_Z, GC_MAIL_SUFFIX, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
-  JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE,
-  JD_DONE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
-  JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
-  JD_LOADING, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
-  JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
-  JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_ZH, LAYOUT_AUTO, LEVEL_BROAD,
-  LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK,
-  MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING,
-  MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS, MEASURE_ROWS, METHOD_POST,
-  MIME_JSON, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY,
-  PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_QC, PRO_COLS, PRO_MASK,
-  P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, P_VIEW, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN,
-  ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS,
-  SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON,
-  STATUS_CAMPUS, STATUS_CLOSED, SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN,
-  SUG_MARK, SUG_MAX_LEN, SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90,
-  TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB,
-  TRAIL_WS_RE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
-  UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOBS_RETRANSLATE, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD,
-  URL_BOARD_FINE, URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_ST,
-  URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
-  YEAR_MONTH_LEN, ZEBRA_MOD,
+  FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP,
+  JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE, JD_DONE, JD_DUP_MAX_LEN,
+  JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL,
+  JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOADING, JD_LOC_PROV_KEY,
+  JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP,
+  JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC,
+  K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC,
+  K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO, LANG_ZH, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID,
+  LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT,
+  MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT,
+  MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS, MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R,
+  PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY, PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP,
+  PREF_KEY, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, P_VIEW, QS_HEAD,
+  RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
+  SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
+  SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CAMPUS, STATUS_CLOSED, SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL,
+  SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN, SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL,
+  TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL,
+  TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR,
+  UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD,
+  URL_BOARD_BROAD, URL_BOARD_FINE, URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
+  URL_LEVEL_AMP, URL_ST, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK,
+  WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN, ZEBRA_MOD,
 } from './constants'
 import type {
-  BoardMeta, BoardTitleIn, SliceTextIn,
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoolFn,
-  CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView, CellWidthsIn, ChipClickIn,
-  ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn, ClearFiltersIn, ClickFn,
-  ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, ColStatsIn, ColWant, ColWidthFnIn,
-  ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn, DonorsIn, DragIn,
-  FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts, FilterOptsIn,
-  FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, GapIn, HeadCellAtIn,
-  HeadCellView, HeadClsIn, HeadTitleIn, JdLinesIn, JdLineView, JdPair, JdPairsIn, JdPayIn, JdReIn,
-  JdSecHeadIn, JdSecModeIn, JdSectionMode, JdSectionsIn, JdSectionView, JobColKey, JobDetailIn, JobDetailView,
-  JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobsBoardPanel, JobsQueryIn, JobTextOut, KMoneyIn, MailBodyIn,
-  MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
-  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NextSortIn, NocCategoryDoc, NocCatRow, NocDescDoc, NocDescFact,
-  NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn,
-  LmiaTextIn, NamedTextIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn,
-  RankOfIn,
-  ResizeBindIn,
-  RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
-  JdBusyIn, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState,
-  StickyOffsetsIn,
-  SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
-  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn, JdLocationSectionIn, JdLocationZhIn, PayPairsZhIn, JdWaitingIn,
-  RetranslateIn,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardMeta,
+  BoardTitleIn, BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
+  CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
+  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
+  ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn,
+  DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn, FilterCountIn,
+  FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, GapIn,
+  HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, JdBusyIn, JdCityLocalIn, JdLineView, JdLinesIn,
+  JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
+  JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters,
+  JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn, MailBodyIn, MailtoIn, MapHrefIn,
+  MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn, MeasureWordIn, MidOptsIn, MoreLabelIn,
+  MvBarTextIn, NamedTextIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn,
+  NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn,
+  PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn,
+  RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
+  ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SliceTextIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
+  SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus, UpsellKind,
+  UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3535,7 +3530,8 @@ export function aiNoteTextOf(x: AiNoteTextIn): string {
 }
 
 /**
- * 工作地点的界面语版(2026-09-14):市名照英文,省用 i18n 省译名;英文界面或译名缺给空串。
+ * 工作地点的界面语版(2026-09-14):市名用 cities 表人工核定译名(没核定照英文,Frank「可以」),省用 i18n 省译名;
+ * 英文界面或省译名缺给空串。
  *
  * @param x 取词函数与本岗。
  * @returns 界面语版;'' = 不出对照行。
@@ -3553,7 +3549,23 @@ export function jdLocationZhOf(x: JdLocationZhIn): string {
   if (x.job.city === TEXT_NONE) {
     return provZh
   }
-  return x.job.city + LOC_SEP + provZh
+  return jdCityLocalOf({ job: x.job, lang: x.lang }) + LOC_SEP + provZh
+}
+
+/**
+ * 市名的界面语版:中文 / 韩文界面取核定译名,没核定或英文界面照英文。
+ *
+ * @param x 本岗与界面语言。
+ * @returns 市名。
+ */
+export function jdCityLocalOf(x: JdCityLocalIn): string {
+  if (x.lang === LANG_ZH && x.job.cityZh !== TEXT_NONE) {
+    return x.job.cityZh
+  }
+  if (x.lang === LANG_KO && x.job.cityKo !== TEXT_NONE) {
+    return x.job.cityKo
+  }
+  return x.job.city
 }
 
 /**
@@ -5069,27 +5081,3 @@ export function adminOf(u: SessionUser | null): boolean {
   return u.role === ROLE_ADMIN
 }
 
-/**
- * 管理员「重译」钮的点击(2026-09-14 Frank「加」):打接口清掉这一岗的译文,然后交回调(弹框重挂正文 / 整页刷新)。
- *
- * @param x 原帖链接、职位名与完成回调。
- * @returns 点击处理。
- */
-export function makeRetranslate(x: RetranslateIn): ClickFn {
-  return function retranslate(): void {
-    fetch(URL_API_JOBS_RETRANSLATE, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ url: x.url, title: x.title }),
-    }).then(x.onDone).catch(x.onDone)
-  }
-}
-
-/**
- * 整页刷新:整页版「重译」后重新取数(弹框版不走这里,弹框给回调让正文重挂;2026-09-14 Frank「应该是走重新加载吧」)。
- *
- * @returns 无。
- */
-export function reloadPage(): void {
-  window.location.reload()
-}

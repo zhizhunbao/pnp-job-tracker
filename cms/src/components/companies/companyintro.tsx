@@ -26,7 +26,8 @@ import css from './companies.module.css'
  * @returns 简介;三条路都走不通(连公司名都没有)时不渲。
  */
 export function CompanyIntro({
-  company, t, lang, showTrans, trans, skipBase, baseOverride = TEXT_NONE, baseOverrideZh = TEXT_NONE, onBusy,
+  company, t, lang, showTrans, trans, skipBase, baseOverride = TEXT_NONE, baseOverrideZh = TEXT_NONE,
+  baseZh = TEXT_NONE, onBusy,
 }: CompanyIntroIn) {
   const descZh = useCompanyDescTrans({ name: company.name, lang, has: hasDescOf({ company }) })
   if (hasDescOf({ company })) {
@@ -54,7 +55,7 @@ export function CompanyIntro({
           bare
           skipBase={skipBase}
           baseOverride={baseOverride}
-          baseOverrideZh={baseOverrideZh} />
+          baseOverrideZh={baseOverrideZh} baseZh={baseZh} />
       </div>
     )
   }
@@ -63,7 +64,7 @@ export function CompanyIntro({
       <div className={css.descWrap}>
         <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase}
           baseOverride={baseOverride}
-          baseOverrideZh={baseOverrideZh} onBusy={onBusy} />
+          baseOverrideZh={baseOverrideZh} baseZh={baseZh} onBusy={onBusy} />
       </div>
     )
   }

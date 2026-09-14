@@ -251,6 +251,21 @@ export type CompanyJobRow = {
   city: string
 
   /**
+   * 省码(2026-09-14 Frank「这个省不对啊」:基本信息卡的省与市同取自这一行,不再各取各的)。
+   */
+  province: string
+
+  /**
+   * 城市中文译名(cities 表人工核定);'' = 没核定。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名;'' = 没核定。
+   */
+  cityKo: string
+
+  /**
    * NOC 官方英文名。
    */
   nocTitle: string
@@ -788,6 +803,11 @@ export type CompanyBriefCardsIn = {
    * 改显那句的界面语版(市 + 省译名);可省 = 不出对照行。
    */
   baseOverrideZh?: string
+
+  /**
+   * 「所在地」节的本地对照行;可省 = 照模型译文。
+   */
+  baseZh?: string
 }
 
 /**
@@ -828,6 +848,12 @@ export type CompanyBriefBodyIn = {
    * 改显那句的界面语版;'' = 不出对照行。
    */
   baseOverrideZh: string
+
+  /**
+   * 「所在地」节没被改显时的对照行(2026-09-14 Frank「这个需要加逗号吧」:AI 那句是「市, 省」形就本地拼
+   * 「市译名, 省译名」,不用模型把两个词粘成一串);'' = 照模型译文。
+   */
+  baseZh: string
 }
 
 /**
@@ -943,6 +969,11 @@ export type CompanyAiSectionIn = {
    * 改显那句的界面语版;可省 = 不出对照行。
    */
   baseOverrideZh?: string
+
+  /**
+   * 「所在地」节的本地对照行;可省 = 照模型译文。
+   */
+  baseZh?: string
 
   /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
@@ -1224,11 +1255,6 @@ export type CompanyPanelIn = {
    * 档案到手后把中 / 韩别名交给页眉副题(2026-09-14 Frank「参考一下职位描述的弹框 css」)。
    */
   onAlias: (alias: string) => void
-
-  /**
-   * 管理员「重译」打完接口后的回调(2026-09-14:弹框重挂正文,不整页刷新)。
-   */
-  onRetranslated: GoBackFn
 }
 
 /**
@@ -1731,6 +1757,11 @@ export type CompanyIntroIn = {
   baseOverrideZh: string
 
   /**
+   * 「所在地」节没被改显时的本地对照行;'' = 照模型译文(2026-09-14)。
+   */
+  baseZh: string
+
+  /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
    */
   onBusy?: (busy: boolean) => void
@@ -2124,6 +2155,41 @@ export type CompanyAliasHookIn = {
 }
 
 /**
+ * cityLocalOf 的入参。
+ */
+export type CityLocalIn = {
+  /**
+   * 在招岗一行。
+   */
+  j: CompanyJobRow
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+}
+
+/**
+ * baseZhOf 的入参。
+ */
+export type BaseZhIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(市译名按它取)。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 公司档案(AI 简介与在招岗)。
+   */
+  company: CompanyDetail
+}
+
+/**
  * baseOverrideOf 的入参。
  */
 export type BaseOverrideIn = {
@@ -2263,17 +2329,3 @@ export type DescTransHookIn = {
   has: boolean
 }
 
-/**
- * makeRetranslateCompany 的入参。
- */
-export type RetranslateCompanyIn = {
-  /**
-   * 公司名。
-   */
-  name: string
-
-  /**
-   * 接口打完(成败都算)后的回调:弹框正文重挂重取。
-   */
-  onDone: GoBackFn
-}

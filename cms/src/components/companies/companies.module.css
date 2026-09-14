@@ -1629,20 +1629,3 @@
   font-size: 14px;
   color: #6b7280;
 }
-
-/*
- * 管理员「重译」底栏(2026-09-14 Frank「放到这里不合适吧」:原先压在页眉下,改成与职位弹框「前往投递」底栏
- * 同位同形 —— 贴底、白底、上描边、右对齐;值照 jobs.module.css 的 .bar 抄,公司弹框没有投递栏所以本域自备一条)。
- */
-.retransBar {
-  position: sticky;
-  bottom: 0;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 12px;
-  padding: 10px 0 14px;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  z-index: 5;
-}

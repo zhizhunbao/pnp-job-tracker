@@ -2992,6 +2992,8 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     country: text(j.country),
     province: text(j.province),
     city: text(j.city),
+    cityZh: text(j.city_zh),
+    cityKo: text(j.city_ko),
     district: text(j.district),
     noc: text(j.noc),
     category: text(j.category),
@@ -3196,6 +3198,7 @@ export function toCompanyJob(j: Row): CompanyJobRow {
   const datePosted = iso(j.date_posted)
   return {
     id: count(j.id), title: text(j.title), city: text(j.city), province: text(j.province),
+    cityZh: text(j.city_zh), cityKo: text(j.city_ko),
     gradeChannel: numOrNull(j.grade_channel), noc: text(j.noc), nocTitle: text(j.noc_title),
     nocTitleZh: text(j.noc_title_zh), nocTitleKo: text(j.noc_title_ko),
     teer: numOrNull(j.teer), salaryText: salaryText, datePosted: datePosted,

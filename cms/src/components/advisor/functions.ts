@@ -23,42 +23,39 @@ import { catName, nocLocalTitle } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AIP_ON,
-  AREA_KEY_BROADS, AREA_KEY_MED,
-  AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CAT_NONE, CK_SEP, CLS_DEPTH_BROAD,
-  CLS_DEPTH_FINE, CLS_DEPTH_MID, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS,
-  DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE,
-  EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY,
-  FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY, FIELD_CITY_READ, FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_FINE,
-  FIELD_MID, FIELD_NOC, FIELD_PROVINCE, FIELD_PROV_READ, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN,
-  FIELD_WAGE_MED_HR, GROUP_COMPANY, GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY,
-  HUNDRED, ID_SEP, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT,
-  K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE,
-  LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD, CARET_DOWN, CARET_RIGHT, CENTER_DIV, COUNTRY_CANADA,
-  NEWLINE, OCC_TYPE_INELIGIBLE, PILOT_OCC_YES, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN,
-  PCT_TAIL,
-  PER_HOUR_TAIL, PER_YEAR_TAIL, PLUS_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD, ROW_KEY_FINE,
-  ROW_KEY_MID, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN, SUG_MARK,
-  TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
-  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING,
-  TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR, URL_API_CITY, URL_API_JOBS_COMPANY, URL_API_NOC_TRANSLATE,
-  URL_API_PROVINCE, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY,
-  VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW, URL_API_JOBS_TITLE,
+  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS,
+  AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT,
+  CAT_NONE, CENTER_DIV, CK_SEP, CLS_DEPTH_BROAD, CLS_DEPTH_FINE, CLS_DEPTH_MID, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP,
+  COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT,
+  DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE, EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY,
+  FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
+  FIELD_CITY_READ, FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_FINE, FIELD_MID, FIELD_NOC, FIELD_PROVINCE,
+  FIELD_PROV_READ, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
+  GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, ID_SEP, JOB_TEXT_LIMITED,
+  K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
+  K_TEER_HEAD, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD,
+  NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL,
+  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD,
+  ROW_KEY_FINE, ROW_KEY_MID, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
+  SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
+  TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR,
+  URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE, URL_API_JOBS_TITLE,
+  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR,
+  VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn,
-  AdvisorNocDesc, AdvisorPillFact,
-  AdvisorReadField, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AiIdIn, AllocRowIn, AreaRowsIn,
-  AipPillIn, CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, DaysUpIn, DeadFlag, DiffCellFact,
-  DiffCellsIn, FactsReadyIn, FullTitleIn, HasDrawsIn, HasNewsIn, HeadSubIn, LocNoteIn, PanelClsIn, PilotPillIn,
-  PlanClbIn, ToggleIn, TransLabelIn, TransPillIn, ZhLabelIn,
-  DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FieldFactsIn, FirstTextIn, GapClsIn,
-  GroupFactsIn, HeadClsIn, IdRowFact, IdRowsIn, JdBodyClsIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
-  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocRowFact, LocationLevel,
-  MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OriginTextIn, PanelPos,
-  PanelStyleIn, PointerHandlerFn, PrefFact, PrefJson, ProvJson, ProvStreamsIn, ResizeNextIn, ResizeNextOut,
-  ResizeStartIn, RunAiReadIn, RunLongIn, SavePrefIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TransJobIn,
-  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, LoadTitleTransIn, TitleTransJson,
+  ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
+  AdvisorPillFact, AdvisorReadField, AiIdIn, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn,
+  AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn,
+  DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact,
+  FactsReadyIn, FieldFactsIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn,
+  HeadSubIn, IdRowFact, IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
+  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocNoteIn,
+  LocRowFact, LocationLevel, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn,
+  OriginTextIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
+  ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunAiReadIn, RunLongIn, SavePrefIn,
+  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransLabelIn, TransPillIn,
+  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -2077,5 +2074,44 @@ export function makeActsDown(x: ActsDownIn): PointerHandlerFn {
 export function makeToggle(x: ToggleIn): () => void {
   return function toggle(): void {
     x.set(x.on === false)
+  }
+}
+
+/**
+ * 职位弹框右上角刷新钮(2026-09-14 Frank「右上角加一个刷新的按钮吧」):管理员才有;点了打「重译」接口清这一岗译文与版本,
+ * 成败都交回调让弹框代数加一、正文与副题重挂重翻。
+ *
+ * @param x 分层态、这一岗与回调。
+ * @returns 点击处理;非管理员 null。
+ */
+export function jobRefreshOf(x: JobRefreshIn): RefreshFn | null {
+  if (x.plan.isAdmin === false) {
+    return null
+  }
+  return function refreshJob(): void {
+    fetch(URL_API_JOBS_RETRANSLATE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ url: x.job.applyUrl, title: x.job.title }),
+    }).then(x.onDone).catch(x.onDone)
+  }
+}
+
+/**
+ * 公司弹框右上角刷新钮:管理员且是公司组才有;点了清这家公司别名 / 简介译文与版本,成败都交回调重挂正文。
+ *
+ * @param x 分层态、分组、这一岗与回调。
+ * @returns 点击处理;不出钮 null。
+ */
+export function companyRefreshOf(x: CompanyRefreshIn): RefreshFn | null {
+  if (x.plan.isAdmin === false || x.group !== GROUP_COMPANY || x.job.company === TEXT_NONE) {
+    return null
+  }
+  return function refreshCompany(): void {
+    fetch(URL_API_EMPLOYERS_RETRANSLATE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ name: x.job.company }),
+    }).then(x.onDone).catch(x.onDone)
   }
 }

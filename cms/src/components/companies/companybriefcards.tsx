@@ -33,13 +33,14 @@ export function CompanyBriefCards({
   skipBase = false,
   baseOverride = TEXT_NONE,
   baseOverrideZh = TEXT_NONE,
+  baseZh = TEXT_NONE,
 }: CompanyBriefCardsIn) {
   if (brief === TEXT_NONE) {
     return null
   }
   const body = (
     <CompanyBriefBody brief={brief} trans={trans} t={t} flat={flat} skipBase={skipBase} baseOverride={baseOverride}
-      baseOverrideZh={baseOverrideZh} />
+      baseOverrideZh={baseOverrideZh} baseZh={baseZh} />
   )
   if (bare) {
     return body

@@ -138,6 +138,16 @@ export type JobDbRow = {
   city: string | null
 
   /**
+   * 城市中文译名(cities 表人工核定;没核定的 NULL,2026-09-14)。
+   */
+  city_zh: string | null
+
+  /**
+   * 城市韩文译名(同上)。
+   */
+  city_ko: string | null
+
+  /**
    * 区(大渥太华社区等)。
    */
   district: string | null
@@ -445,6 +455,16 @@ export type JobRow = {
    * 城市。
    */
   city: string
+
+  /**
+   * 城市中文译名;'' = 没核定(2026-09-14)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名;'' = 没核定。
+   */
+  cityKo: string
 
   /**
    * 区。
@@ -2226,6 +2246,16 @@ export type CompanyJobRow = {
    * 省码。
    */
   province: string
+
+  /**
+   * 城市中文译名(cities 表人工核定);'' = 没核定(2026-09-14)。
+   */
+  cityZh: string
+
+  /**
+   * 城市韩文译名;'' = 没核定。
+   */
+  cityKo: string
 
   /**
    * 通道档;null=未评。

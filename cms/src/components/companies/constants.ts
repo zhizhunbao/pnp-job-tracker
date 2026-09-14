@@ -364,7 +364,6 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
  */
 export const MIME_JSON = 'application/json'
 
-
 /**
  * 「查到了」的状态码(K 调查接口 204/202 这类非 200 的成功码都算没查到,不渲孤儿块)。
  */
@@ -640,6 +639,11 @@ export const GRADE_C_NONE = 'var(--text3)'
 export const PROV_PAREN_RE = /\s*[(（][^()（）]*[)）]\s*$/
 
 /**
+ * AI 简介「所在地」那句的「市, 省」形(2026-09-14 Frank「这个需要加逗号吧」):首段是市,逗号后是省。
+ */
+export const BASE_CITY_PROV_RE = /^(?<city>[^,]+),\s*[^,]+$/
+
+/**
  * 官方招聘地点「市, 省」的连接符(2026-09-14 baseOverrideOf)。
  */
 export const LOC_JOIN = ', '
@@ -684,7 +688,3 @@ export const TITLES_KEY_SEP = '\u0001'
  */
 export const URL_CO_DESC = '/api/employers/desc'
 
-/**
- * 公司「重译」接口(2026-09-14,管理员)。
- */
-export const URL_CO_RETRANSLATE = '/api/employers/retranslate'

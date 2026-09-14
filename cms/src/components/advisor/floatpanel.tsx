@@ -13,7 +13,7 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconMaximize, IconMinimize } from '@/components/icons'
+import { IconMaximize, IconMinimize, IconRefresh } from '@/components/icons'
 import { overlayCls, useOverlayClose } from '@/components/modal'
 import { BTN_GHOST, CLOSE_MARK, CLS_SEP } from './constants'
 import { fullTitleOf, makeActsDown, panelBodyClsOf, panelClsOf, panelHeadClsOf, stopClick } from './functions'
@@ -27,7 +27,9 @@ import css from './advisor.module.css'
  * @param props 浮层机器、页眉左块、关闭回调与三个形态开关(逐格注释见 FloatPanelIn)。
  * @returns 遮罩 + 白卡。
  */
-export function FloatPanel({ panel, head, onClose, t, tight, jdBody, actsStopDrag, children }: FloatPanelIn) {
+export function FloatPanel({
+  panel, head, onClose, t, tight, jdBody, actsStopDrag, onRefresh, children,
+}: FloatPanelIn) {
   const ov = useOverlayClose(onClose)
   const fullLabel = fullTitleOf({ t, full: panel.full })
   return (
@@ -37,6 +39,12 @@ export function FloatPanel({ panel, head, onClose, t, tight, jdBody, actsStopDra
         <div onPointerDown={panel.onHeadDown} className={panelHeadClsOf({ full: panel.full, tight })}>
           {head}
           <div className={cssOf(css.winActs)} onPointerDown={makeActsDown({ stop: actsStopDrag })}>
+            {onRefresh != null && (
+              <Button kind={BTN_GHOST} onClick={onRefresh} title={t('act.retrans')} ariaLabel={t('act.retrans')}
+                className={cssOf(css.iconBtn)}>
+                <IconRefresh />
+              </Button>
+            )}
             {panel.narrow === false && (
               <Button kind={BTN_GHOST} onClick={panel.toggleFull} title={fullLabel} ariaLabel={fullLabel}
                 className={cssOf(css.iconBtn)}>

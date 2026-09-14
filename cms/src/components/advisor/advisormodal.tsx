@@ -25,7 +25,7 @@ import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { FloatPanel } from './floatpanel'
-import { headSubOf, modalTitleOf, planClbOf } from './functions'
+import { companyRefreshOf, headSubOf, modalTitleOf, planClbOf } from './functions'
 import { useAdvisorModal, useFloatPanel } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 
@@ -73,7 +73,8 @@ export function AdvisorModal({
       freeLeft={m.freeLeft} />
   )
   return (
-    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}>
+    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
+      onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}>
       {group === GROUP_IMMIGRATION && (
         <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
       )}
@@ -82,7 +83,6 @@ export function AdvisorModal({
         onOpenJob={onOpenJob}
         onCompanyAlias={m.onCompanyAlias}
         gen={m.gen}
-        onRetranslated={m.onRetranslated}
         f={f} />
       {m.aiOn && (
         <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />

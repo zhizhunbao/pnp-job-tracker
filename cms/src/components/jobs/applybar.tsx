@@ -21,10 +21,10 @@ import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, PILL_CLS, STATUS_CLOSED, TARGET_BLANK,
-  TEXT_NONE, URL_JOB,
+  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED, TARGET_BLANK, TEXT_NONE,
+  URL_JOB,
 } from './constants'
-import { applyLabelOf, barClsOf, makeRetranslate } from './functions'
+import { applyLabelOf, barClsOf } from './functions'
 import { useApplyBar } from './hooks'
 import type { ApplyBarIn } from './types'
 import css from './jobs.module.css'
@@ -35,8 +35,8 @@ import css from './jobs.module.css'
  * @param props 本岗、投递邮箱、查完没、取词函数、分层态与在不在整页里。
  * @returns 投递栏 + 它的三层浮层;这一岗没有投递链接就整条不渲。
  */
-export function ApplyBar({ job, email, emailDone, t, plan, onPage, onRetranslated }: ApplyBarIn) {
-  const a = useApplyBar({ job, email, emailDone, t, plan, onPage, onRetranslated })
+export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn) {
+  const a = useApplyBar({ job, email, emailDone, t, plan, onPage })
   if (job.applyUrl === TEXT_NONE) {
     return null
   }
@@ -44,12 +44,6 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage, onRetranslate
     <>
       {a.fixedBar && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(a.fixedBar)}>
-        {plan.isAdmin && (
-          <Button kind={BTN_GHOST} className={PILL_CLS}
-            onClick={makeRetranslate({ url: job.applyUrl, title: job.title, onDone: onRetranslated })}>
-            {t('act.retrans')}
-          </Button>
-        )}
         {job.status === STATUS_CLOSED && (
           <LinkButton href={job.applyUrl} target={TARGET_BLANK} className={cssOf(css.btnClosed)}>
             {t('act.seeOfficial')}

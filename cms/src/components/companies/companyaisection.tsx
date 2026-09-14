@@ -34,6 +34,7 @@ export function CompanyAiSection({
   skipBase = false,
   baseOverride = TEXT_NONE,
   baseOverrideZh = TEXT_NONE,
+  baseZh = TEXT_NONE,
   onBusy,
 }: CompanyAiSectionIn) {
   let hookLang: CompaniesLang | null = null
@@ -71,7 +72,8 @@ export function CompanyAiSection({
           bare
           skipBase={skipBase}
           baseOverride={baseOverride}
-          baseOverrideZh={baseOverrideZh} />
+          baseOverrideZh={baseOverrideZh}
+          baseZh={baseZh} />
       </>
     )
   }

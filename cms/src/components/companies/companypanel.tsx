@@ -22,16 +22,14 @@
  * @time 2026-08-28 18:13:09
  */
 import { useEffect } from 'react'
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Loading } from '@/components/loading'
 import { SponsorLeadCard } from '@/components/pnp'
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
-import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE, PLAIN_BTN_KIND,
-} from './constants'
-import { aliasOf, makeResolveJob, makeRetranslateCompany, pillClsOf } from './functions'
+import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
+import { aliasOf, makeResolveJob } from './functions'
 import { useCompanyAlias, useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 import css from './companies.module.css'
@@ -42,7 +40,7 @@ import css from './companies.module.css'
  * @param props 当前职位、已载入职位、语言、付费态与点职位回调(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias, onRetranslated }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
   let cachedAlias = TEXT_NONE
@@ -81,14 +79,6 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias, onRetr
       )}
       {body}
       <SponsorLeadCard job={job} t={t} src={LEAD_SRC_COMPANY} />
-      {plan.isAdmin && companyName !== TEXT_NONE && (
-        <div className={cssOf(css.retransBar)}>
-          <Button kind={PLAIN_BTN_KIND} onClick={makeRetranslateCompany({ name: companyName, onDone: onRetranslated })}
-            className={pillClsOf({ on: false })}>
-            {t('act.retrans')}
-          </Button>
-        </div>
-      )}
     </>
   )
 }

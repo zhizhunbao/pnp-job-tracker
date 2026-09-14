@@ -225,6 +225,16 @@ export const URL_API_NOC_TRANSLATE = '/api/noc/translate'
 export const URL_API_JOBS_TITLE = '/api/jobs/title'
 
 /**
+ * 管理员「重译」:清这一岗译文与版本(2026-09-14 Frank「右上角加一个刷新的按钮吧」「把重译去掉」:钮住浮层页眉右上角)。
+ */
+export const URL_API_JOBS_RETRANSLATE = '/api/jobs/retranslate'
+
+/**
+ * 管理员「重译」:清这家公司别名 / 简介译文与版本。
+ */
+export const URL_API_EMPLOYERS_RETRANSLATE = '/api/employers/retranslate'
+
+/**
  * 省级面板的取数接口头(拼上编码后的省码)。
  */
 export const URL_API_PROVINCE = '/api/jobs/province?code='

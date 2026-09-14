@@ -27,7 +27,9 @@ import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
-import { baseOverrideOf, baseOverrideZhOf, cityOf, hasDescOf, hasIdOf, isGovCompany, provFullOf } from './functions'
+import {
+  baseOverrideOf, baseOverrideZhOf, baseZhOf, cityOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, provFullOf,
+} from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
 import css from './companies.module.css'
@@ -43,7 +45,8 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
   const hasRealAddr = company.address !== TEXT_NONE
-  const hasId = hasIdOf({ company, addr }) || company.province !== TEXT_NONE
+  const prov = homeProvinceOf({ company })
+  const hasId = hasIdOf({ company, addr }) || prov !== TEXT_NONE
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
     return null
@@ -69,9 +72,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
             </LinkButton>
           </Row>
         )}
-        {company.province !== TEXT_NONE && (
-          <Row k={t('col.province')}>{provFullOf({ t, code: company.province })}</Row>
-        )}
+        {prov !== TEXT_NONE && <Row k={t('col.province')}>{provFullOf({ t, code: prov })}</Row>}
         {cityOf({ company }) !== TEXT_NONE && <Row k={t('col.city')}>{cityOf({ company })}</Row>}
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
@@ -92,6 +93,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
         skipBase={hasRealAddr}
         baseOverride={baseOverrideOf({ t, company })}
         baseOverrideZh={baseOverrideZhOf({ t, company })}
+        baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy} />
     </div>
   )
