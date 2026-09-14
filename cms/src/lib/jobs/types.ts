@@ -2534,14 +2534,39 @@ export type SimilarIn = {
   province: string
 
   /**
-   * 行业。
+   * 行业桶(公司页用:页上没有单一岗位,退回同省同行业桶)。
    */
   industry: string
+
+  /**
+   * 这一岗的中类(弹框用,2026-09-14 Frank「这个相似雇主也不是同行业的啊」);不传 = 按行业桶。
+   */
+  mid?: string
 
   /**
    * 排除自身的 slug。
    */
   excludeSlug: string
+}
+
+/**
+ * `loadJobMid` 的出参:中类键,查不到给空串。
+ */
+export type MidOut = Promise<string>
+
+/**
+ * `loadJobMid` 的入参。
+ */
+export type JobMidIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 岗位号。
+   */
+  jobId: number
 }
 
 /**

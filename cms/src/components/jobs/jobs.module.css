@@ -1860,3 +1860,15 @@
     margin-left: 0;
   }
 }
+
+/*
+ * 职位描述顶上的工作地点行(2026-09-14 Frank「职位描述里也应该显示工作地点吧」):灰小字 + 地图图标。
+ */
+.jdLoc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #6b7280;
+}

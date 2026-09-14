@@ -22,7 +22,9 @@ import css from './companies.module.css'
  * @param props 公司档案、取词函数、界面语言与对照三格(逐格注释见 CompanyIntroIn)。
  * @returns 简介;三条路都走不通(连公司名都没有)时不渲。
  */
-export function CompanyIntro({ company, t, lang, showTrans, trans, skipBase }: CompanyIntroIn) {
+export function CompanyIntro({
+  company, t, lang, showTrans, trans, skipBase, baseOverride = TEXT_NONE, baseOverrideZh = TEXT_NONE, onBusy,
+}: CompanyIntroIn) {
   if (hasDescOf({ company })) {
     return (
       <div className={css.descWrap}>
@@ -45,14 +47,18 @@ export function CompanyIntro({ company, t, lang, showTrans, trans, skipBase }: C
           trans={shown}
           sources={company.aiSources}
           bare
-          skipBase={skipBase} />
+          skipBase={skipBase}
+          baseOverride={baseOverride}
+          baseOverrideZh={baseOverrideZh} />
       </div>
     )
   }
   if (company.name !== TEXT_NONE) {
     return (
       <div className={css.descWrap}>
-        <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase} />
+        <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase}
+          baseOverride={baseOverride}
+          baseOverrideZh={baseOverrideZh} onBusy={onBusy} />
       </div>
     )
   }

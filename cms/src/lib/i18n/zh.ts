@@ -563,7 +563,7 @@ export const jobsZh = {
   'co.spSkilledTag': '技术类', 'co.spQuarter': '最近获批', 'co.spBatchN': '{n} 份 LMIA', 'co.designated': '指定雇主',
   'co.spNocs': '获批职业(近两年)', 'co.spNocRest': '其余 {n} 个职业',
   'co.spSource': '来源:ESDC 正面 LMIA 雇主名录、IRCC',
-  'co.similar': '相似雇主', 'co.similarSub': '同省同行业',
+  'co.similar': '相似雇主', 'co.similarSub': '同省同类岗位',
   'gr.dim.coSponsor': '担保记录', 'gr.dim.coActive': '在库活跃', 'gr.dim.coSalary': '薪资水平', 'gr.dim.coFame': '规模知名',
   'gr.co.sp.d': '近两年获批 {total} 岗(技能岗 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录',
   'gr.co.act.d': '在招 {open} 岗,近 30 天新发 {n}', 'gr.co.act.d1': '在招 1 岗,近 30 天新发 {n}', 'gr.co.sal.d': '在招岗帖面薪资平均较当地中位 {pct}%',
@@ -613,7 +613,7 @@ export const jobsZh = {
   'eelist.hist': '看历次 {n} 轮', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '发出 {n} 邀请',
   'eelist.allCats': '看全部 {n} 个类别',   // #155 未命中时全景默认收起
   'eelist.occTitle': '包含职业',
-  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
+  'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.collapse': '收起 ▴', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
@@ -655,7 +655,7 @@ export const jobsZh = {
   'col.empHours': '工时', 'col.empTerm': '雇佣期', 'col.whoCanApply': '谁能投', 'fact.unstated': '原帖未标注',
   // 2026-09-14 Frank「改成 今日 AI 次数已用完, 请登录」:aiQuota 去「明天重置」,aiQuotaLogin 改「请登录」(只对匿名出)
   'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.seeOrig': '看原文 ▾', 'act.seeFmt': '看整理版 ▴', 'act.aiWorking': 'AI 整理中…', 'act.aiFail': 'AI 整理没成功',
-  'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
+  'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工时地点', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
   'fact.aiSrc': '看来源 ▾', 'fact.aiSrcHide': '收起来源 ▴',   // #191 懒查来源可验证(对齐 JD「看原文」)
@@ -851,7 +851,7 @@ export const siteZh = {
   'nav.login': '登录', 'nav.register': '注册', 'acct.title': '账户',
   'acct.email': '邮箱', 'acct.password': '密码',
   'acct.login': '登录', 'acct.register': '注册', 'acct.submitReg': '注册并登录',
-  'acct.toReg': '还没有账号?免费注册', 'acct.toLogin': '已有账号?登录',
+  'acct.toReg': '免费注册', 'acct.toLogin': '已有账号?',   // 2026-09-14 Frank「改成免费注册」「把登录两个字删了」
   'acct.err.cred': '邮箱或密码不正确', 'acct.err.exists': '该邮箱已注册,请直接登录', 'acct.err.weakPw': '密码不够强:至少 8 位', 'acct.err.generic': '操作失败,请稍后再试', 'acct.err.oauth': 'Google 登录没成功,请重试或用邮箱登录',
   'acct.pw.short': '太短:至少 8 位', 'acct.pw.weak': '弱', 'acct.pw.medium': '中', 'acct.pw.strong': '强', 'acct.pw.hint': '建议混合大小写、数字或符号',
   'acct.plan.free': '免费版', 'acct.plan.pro': '有效期至 {d}',

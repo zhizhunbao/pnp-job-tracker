@@ -25,7 +25,8 @@ import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX, DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT, JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC, SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH,
 } from './constants'
 import {
-  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobsPage, loadMatchPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage, loadOccCompetition,
+  loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard, loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -170,7 +171,10 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
   if (company == null) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const similar = await loadSimilarEmployers({ db: db, province: company.province, industry: company.industry, excludeSlug: company.slug }).catch(emptySimilar)
+  const mid = await loadJobMid({ db: db, jobId: jobId }).catch(emptyMid)
+  const similar = await loadSimilarEmployers({
+    db: db, province: company.province, industry: company.industry, mid: mid, excludeSlug: company.slug,
+  }).catch(emptySimilar)
   return Response.json({ company, similar })
 }
 

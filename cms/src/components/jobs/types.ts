@@ -2066,6 +2066,16 @@ export type JdFormattedViewIn = {
    * 同结构译文(行位保真);'' = 不出对照。
    */
   trans: string
+
+  /**
+   * 工作地点一句(街址或市 + 省;'' = 不出「工作地点」节,2026-09-14)。
+   */
+  location: string
+
+  /**
+   * 工作地点的界面语版;'' = 不出对照行。
+   */
+  locationZh: string
 }
 
 /**
@@ -4816,6 +4826,11 @@ export type JdSectionView = {
   payFallback: string
 
   /**
+   * 薪资兜底行的界面语版(2026-09-14);'' = 不出。
+   */
+  payFallbackZh: string
+
+  /**
    * 官方原帖链接;'' = 没有。
    */
   applyUrl: string
@@ -4902,26 +4917,6 @@ export type JdSecLinesIn = {
 }
 
 /**
- * JdApplyLines(「怎么投」的正文行)的 props。
- */
-export type JdApplyLinesIn = {
-  /**
-   * 这一节的行。
-   */
-  pairs: JdPair[]
-
-  /**
-   * 官方原帖链接。
-   */
-  applyUrl: string
-
-  /**
-   * 投递邮箱;'' = 没抽到。
-   */
-  applyEmail: string
-}
-
-/**
  * jdSecHeadOf 的入参。
  */
 export type JdSecHeadIn = {
@@ -4974,6 +4969,36 @@ export type JdSecModeIn = {
    * 帖面薪资;'' = 没有。
    */
   fallbackPay: string
+}
+
+/**
+ * payPairsZhOf 的入参。
+ */
+export type PayPairsZhIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 薪资节的行。
+   */
+  pairs: JdPair[]
+}
+
+/**
+ * payFallbackZhOf 的入参。
+ */
+export type PayFallbackZhIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 兜底薪资原文;'' = 没有。
+   */
+  text: string
 }
 
 /**
@@ -5094,21 +5119,6 @@ export type JdBusyIn = {
    * 对照翻译态。
    */
   transStatus: TransStatus
-}
-
-/**
- * jdBusyTextOf 的入参。
- */
-export type JdBusyTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 整理版(同 JdBusyIn.fmt)。
-   */
-  fmt: string | null | undefined
 }
 
 /**
@@ -6088,4 +6098,49 @@ export type SliceTextIn = {
    * 原句(全站数拼好的)。
    */
   text: string
+}
+
+/**
+ * jdLocationZhOf 的入参。
+ */
+export type JdLocationZhIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: JobFact
+}
+
+/**
+ * jdLocationSectionOf 的入参。
+ */
+export type JdLocationSectionIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 工作地点一句;'' = 不出节。
+   */
+  location: string
+
+  /**
+   * 界面语版;'' = 不出对照行。
+   */
+  locationZh: string
+
+  /**
+   * 官方原帖链接(节形状要求的格,本节不用)。
+   */
+  applyUrl: string
+
+  /**
+   * 投递邮箱(节形状要求的格,本节不用)。
+   */
+  applyEmail: string
 }

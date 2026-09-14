@@ -653,6 +653,18 @@
   flex: 1;
   overflow-y: auto;
   padding: 4px 20px 20px;
+
+  /*
+   * 竖向滚动条不画(2026-09-14 Frank「这个竖条也去掉」):照滚,只是不占宽不露轨。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * WebKit 一侧同样不画滚动条(Firefox 走上面的 scrollbar-width)。
+ */
+.panelBody::-webkit-scrollbar {
+  display: none;
 }
 
 /*
@@ -670,17 +682,8 @@
 }
 
 /*
- * 右下角的拉伸视觉提示三角(只是提示,事件走下面那八块透明手柄)。
+ * 右下角斜纹抓手 2026-09-14 退役(Frank「改成这种干净的」);边拉手柄在 ResizeHandles,不靠它。
  */
-.grip {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-  background: linear-gradient(135deg, transparent 50%, #cbd5e1 50%);
-}
 
 /*
  * 八向拉伸手柄的底座(透明,只吃指针事件;各向的边距与光标见下面八条)。

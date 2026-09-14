@@ -6,6 +6,7 @@
  * 窄屏(E8-03)强制全屏:不出全屏钮、不出拉伸手柄。
  * 2026-08-28 换装批自 Advisor.tsx 两个弹框逐字重复的浮层壳合成一件
  * (白卡与窗口钮的规范值从 modal 域的 CARD / iconBtn 逐格抄进 .panel / .iconBtn)。
+ * 2026-09-14 Frank「右下角的这个半个背景的去掉」「改成这种干净的」:右下角斜纹抓手撤(八向边拉照旧,只是不再画角标)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -47,7 +48,6 @@ export function FloatPanel({ panel, head, onClose, t, tight, jdBody, actsStopDra
           </div>
         </div>
         <div className={panelBodyClsOf({ jd: jdBody })}>{children}</div>
-        {panel.full === false && <div className={cssOf(css.grip)} />}
         {panel.full === false && <ResizeHandles onEdgeDown={panel.onEdgeDown} />}
       </div>
     </div>

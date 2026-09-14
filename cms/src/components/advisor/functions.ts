@@ -1925,7 +1925,7 @@ export function planClbOf(x: PlanClbIn): number | null {
  */
 export function headSubOf(x: HeadSubIn): string {
   if (x.group === GROUP_COMPANY) {
-    return TEXT_NONE
+    return x.companyAlias
   }
   return nocZhOf({ nocDesc: x.nocDesc, noc: x.job.noc, lang: x.lang, title: x.job.title })
 }

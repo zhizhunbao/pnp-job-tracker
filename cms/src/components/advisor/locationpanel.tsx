@@ -17,7 +17,7 @@
  */
 import { makeT } from '@/lib/i18n'
 import { parseLoc } from '@/lib/location'
-import { ADV_IDLE, LANG_EN, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, TRACK_AI_READ } from './constants'
+import { ADV_IDLE, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, TRACK_AI_READ } from './constants'
 import { AiReadCard } from './aireadcard'
 import { CityCards } from './citycards'
 import { DistrictCards } from './districtcards'
@@ -44,7 +44,6 @@ export function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desig
     lang,
     trackName: TRACK_AI_READ,
   })
-  const showZh = lang !== LANG_EN
   return (
     <>
       {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}

@@ -18,7 +18,8 @@ import { friendChat } from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL, CSV_QUOTE,
+  CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
+  CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
   EMP_SSR_ROWS, ENTRY_ON, ENWIKI_BASE, FACT_COLS, FETCHED_NONE, FILTER_UNSET, FORMAT_JSON, FORMAT_KEY, HTTP_URL_RE,
   JOIN_COMMA, LEVEL, LMIA_QUARTER_NONE, MEDIAN_HALF, NOC_LEN, NOC_RE, NOC_TEER_RE,
@@ -38,12 +39,13 @@ import type {
   CompareIn, CompareOut, CompareRow, EmptyPoolPageIn, EntityNameHitsIn, GroupOfNocDbRow, GroupOfNocIn, InvestigateIn,
   InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer,
   GroupKeyOut, NormalizeFiltersIn, OccRowsOut, OrderOfIn, PageOfIn, ParamGetter, PoolAllIn, PoolDbRow, PoolDbRows,
-  PoolDir, PoolFilters, PoolPage, PoolProvsOut, PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor, SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
+  PoolDir, PoolFilters, PoolPage, PoolProvsOut, PoolRow, PoolRows, PoolSort, ProvDbRow, ProvTally, RankedSponsor,
+  SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
-  CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut,
+  CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -211,8 +213,10 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   try {
     if (isScopedOf(f)) {
       const raw = await queryRows({
-        db: db, sql: SQL.employerPoolPage(orderOf({ cols: SQL.EMPLOYER_POOL_ORDER, tie: SQL.EMPLOYER_POOL_TIE, sort: f.sort, dir: f.dir })),
-        params: [f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+        db: db, sql: SQL.employerPoolPage(orderOf({ cols: SQL.EMPLOYER_POOL_ORDER, tie: SQL.EMPLOYER_POOL_TIE,
+          sort: f.sort, dir: f.dir })),
+        params: [f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize],
+        map: passPoolDbRow,
       })
       return pageOf({ raw, filters: f, pageSize: input.pageSize, provs })
     }
@@ -259,7 +263,8 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   }
   const raw = await queryRows({
     db: input.db,
-    sql: SQL.employerPoolAll(orderOf({ cols: SQL.EMPLOYER_POOL_ALL_ORDER, tie: SQL.EMPLOYER_POOL_ALL_TIE, sort: f.sort, dir: f.dir })),
+    sql: SQL.employerPoolAll(orderOf({ cols: SQL.EMPLOYER_POOL_ALL_ORDER, tie: SQL.EMPLOYER_POOL_ALL_TIE,
+      sort: f.sort, dir: f.dir })),
     params: [f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
   })
   const page = pageOf({ raw, filters: f, pageSize: input.pageSize, provs: input.provs })
@@ -345,7 +350,8 @@ function fetchPoolProvs(db: Db): PoolProvsOut {
  * @returns 行业组键或空串。
  */
 async function groupOfNoc(input: GroupOfNocIn): GroupKeyOut {
-  const rows = await queryRowsOrEmpty({ db: input.db, sql: SQL.EMPLOYER_GROUP_OF_NOC, params: [input.noc], map: toGroupKey })
+  const rows = await queryRowsOrEmpty({ db: input.db, sql: SQL.EMPLOYER_GROUP_OF_NOC, params: [input.noc],
+    map: toGroupKey })
   const first = rows[0]
   if (first == null || (POOL_GROUPS as readonly string[]).includes(first) === false) {
     return FILTER_UNSET
@@ -447,7 +453,8 @@ export function loadSponsorEmployers(input: SponsorsIn): SponsorRowsOut {
  */
 async function loadSponsors(input: SponsorsIn): SponsorRowsOut {
   const db = input.db
-  const probed = await queryRowsOrEmpty({ db: db, sql: SQL.COMPANIES_HAS_COLUMNS, params: [Array.from(FACT_COLS)], map: toColumnName })
+  const probed = await queryRowsOrEmpty({ db: db, sql: SQL.COMPANIES_HAS_COLUMNS, params: [Array.from(FACT_COLS)],
+    map: toColumnName })
   const cols: string[] = []
   for (const c of probed) {
     if (c !== '') {
@@ -653,7 +660,8 @@ export async function compareEmployers(input: CompareIn): CompareOut {
   for (const n of capped) {
     lower.push(n.toLowerCase())
   }
-  const cos = await queryRows({ db: input.db, sql: SQL.COMPANIES_FOR_COMPARE, params: [lower], map: passCompareCompany })
+  const cos = await queryRows({ db: input.db, sql: SQL.COMPANIES_FOR_COMPARE, params: [lower],
+    map: passCompareCompany })
   const out: CompareRow[] = []
   for (const name of capped) {
     let company: CompareCompanyDbRow | null = null
@@ -666,8 +674,10 @@ export async function compareEmployers(input: CompareIn): CompareOut {
     if (company == null) {
       continue
     }
-    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [toCompanyId(company)], map: toCompareJob })
-    out.push(toCompareRow({ company: company, agg: companyAggOf({ jobs: jobs, profile: input.profile, dims: input.dims }) }))
+    const jobs = await queryRows({ db: input.db, sql: SQL.COMPANY_JOBS_FOR_COMPARE, params: [toCompanyId(company)],
+      map: toCompareJob })
+    out.push(toCompareRow({ company: company, agg: companyAggOf({ jobs: jobs, profile: input.profile,
+      dims: input.dims }) }))
   }
   const provSet = new Set<string>()
   for (const r of out) {
@@ -676,7 +686,8 @@ export async function compareEmployers(input: CompareIn): CompareOut {
     }
   }
   if (provSet.size > 0) {
-    const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY_ANY, params: [Array.from(provSet)], map: toDifficultyPair })
+    const pairs = await queryRowsOrEmpty({ db: input.db, sql: SQL.PROV_DIFFICULTY_ANY, params: [Array.from(provSet)],
+      map: toDifficultyPair })
     for (const r of out) {
       for (const p of pairs) {
         if (p.province === r.mainProvince) {
@@ -732,7 +743,8 @@ function companyAggOf(input: CompanyAggIn): CompareAgg {
       const mj: MatchJob = {
         noc: j.noc, teer: teerOf(j.noc), province: j.province, pnpEligible: j.pnpEligible,
         pnpStream: j.pnpStream, eeCategory: j.eeCategory, salaryAnnual: j.salaryAnnual,
-        wageMedAnnual: j.wageMedAnnual, lmiaPositions: null, lmiaLastQuarter: LMIA_QUARTER_NONE, lmiaPositionsSkilled: null,
+        wageMedAnnual: j.wageMedAnnual, lmiaPositions: null, lmiaLastQuarter: LMIA_QUARTER_NONE,
+        lmiaPositionsSkilled: null,
       }
       const m = match({ profile: input.profile, job: mj, dims: input.dims })
       if (m.level === LEVEL.high) {
@@ -829,7 +841,8 @@ export async function companyRow(input: CompanyRowIn): CompanyRowOut {
   let row = firstOf(rows)
   if (row == null) {
     try {
-      const ins = await queryRows({ db: input.db, sql: SQL.COMPANY_INSERT_LAZY, params: [input.name], map: passCompanyBrief })
+      const ins = await queryRows({ db: input.db, sql: SQL.COMPANY_INSERT_LAZY, params: [input.name],
+        map: passCompanyBrief })
       const insFirst = firstOf(ins)
       if (insFirst == null) {
         return null
@@ -1234,13 +1247,62 @@ export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
 }
 
 /**
+ * 公司别名两格(懒翻前先查库)。
+ *
+ * @param input 连接与公司名。
+ * @returns 两格;公司不在库给 null。
+ */
+export async function loadCompanyAlias(input: CompanyBriefIn): AliasOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_ALIAS_BY_NAME, params: [input.name], map: toAliasFact })
+  return firstOf(rows)
+}
+
+/**
+ * 别名两格 → 洗净(NULL → '')。
+ *
+ * @param r 原始行。
+ * @returns 两格。
+ */
+function toAliasFact(r: AliasDbRow): AliasFact {
+  return { aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko) }
+}
+
+/**
+ * 按语种取一格。
+ *
+ * @param x 两格与语种。
+ * @returns 那一格;'' = 没有。
+ */
+export function aliasCellOf(x: AliasCellIn): string {
+  if (x.lang === WD_LANG_KO) {
+    return x.fact.aliasKo
+  }
+  return x.fact.aliasZh
+}
+
+/**
+ * 懒翻出来的别名落库(只填空格)。
+ *
+ * @param input 连接、公司名、语种与译名。
+ * @returns 无。
+ */
+export async function saveCompanyAlias(input: SaveAliasIn): DoneOut {
+  let sql = SQL.COMPANY_SET_ALIAS_ZH
+  if (input.lang === WD_LANG_KO) {
+    sql = SQL.COMPANY_SET_ALIAS_KO
+  }
+  await input.db.query(sql, [input.alias, input.name])
+}
+
+/**
  * 库内已落的简介中文译文(2026-09-05 ai_brief_zh 落库:批量由本地 qwen3.6 翻,懒翻译路由翻完也写回);没翻过 null。
  *
  * @param input 连接与公司名。
  * @returns 译文或 null。
  */
 export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name], map: toBriefZhCell })
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name],
+    map: toBriefZhCell })
   return firstOf(rows)
 }
 
@@ -1272,7 +1334,8 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     locations: toStrList(r.locations), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
-    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko), group: text(r.ind_group), openJobs: count(r.open_jobs), latestPosted: textOrNull(r.latest_posted),
+    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko), group: text(r.ind_group), openJobs: count(r.open_jobs),
+    latestPosted: textOrNull(r.latest_posted),
     topTitles: toStrList(r.top_titles), entryJobs: count(r.entry_jobs), entryShare: numOrNull(r.entry_share),
     minExperience: textOrNull(r.min_experience), lmiaSkilled: count(r.lmia_skilled),
     lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),

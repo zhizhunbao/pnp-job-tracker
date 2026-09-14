@@ -67,7 +67,8 @@ import type {
   PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts,
   ProvinceCardIn, ProvinceCardOut, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount,
   QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, ReqStreamDisplayIn, ResolveQIn,
-  ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn,
+  JobMidIn, MidOut, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut,
+  SortValIn,
   SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
   UrlHandle, WhereParam,
   JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow,
@@ -1640,10 +1641,43 @@ async function designatedOf(input: DesignatedIn): DesignatedOut {
  * @returns 相似雇主行。
  */
 export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
-  if (input.province === '' || input.industry === '') {
+  if (input.province === PARAM_NONE) {
     return []
   }
-  return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, input.industry, input.excludeSlug], map: toSimilar })
+  if (input.mid != null && input.mid !== PARAM_NONE) {
+    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, input.mid, input.excludeSlug], map: toSimilar })
+  }
+  if (input.industry === PARAM_NONE) {
+    return []
+  }
+  return queryRows({
+    db: input.db, sql: SQL.SIMILAR_EMPLOYERS_BY_INDUSTRY, params: [input.province, input.industry, input.excludeSlug], map: toSimilar,
+  })
+}
+
+/**
+ * 这一岗的中类(相似雇主的锚,2026-09-14);查不到给空串。
+ *
+ * @param input 连接与岗位号。
+ * @returns 中类键或空串。
+ */
+export async function loadJobMid(input: JobMidIn): MidOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JOB_MID_BY_ID, params: [input.jobId], map: toMidCell })
+  const first = rows[0]
+  if (first == null) {
+    return PARAM_NONE
+  }
+  return first
+}
+
+/**
+ * 中类单格行 → 字符串。
+ *
+ * @param r 原始行。
+ * @returns 中类键。
+ */
+function toMidCell(r: Row): string {
+  return text(r.mid)
 }
 
 /**
@@ -2689,6 +2723,16 @@ function pickMail(s: string): string {
  */
 export function emptySimilar(_e: Error): SimilarList {
   return []
+}
+
+/**
+ * 岗位中类查挂时的空串兜底(相似雇主随之为空,弹框主体照常给)。
+ *
+ * @param _e 捕到的错(查询层已留痕)。
+ * @returns 空串。
+ */
+export function emptyMid(_e: Error): string {
+  return PARAM_NONE
 }
 
 /**

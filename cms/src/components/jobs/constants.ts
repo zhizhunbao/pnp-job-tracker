@@ -2331,6 +2331,16 @@ export const JD_SEC_PAY = 'PAY'
 export const JD_SEC_APPLY = 'APPLY'
 
 /**
+ * 「工作地点」节的键(2026-09-14 Frank「应该单独一个分类吧」:不在原帖分节里,由岗位地点字段合成)。
+ */
+export const JD_SEC_LOC = 'LOC'
+
+/**
+ * 省译名的 i18n 键头(lib/location 的 PROV_KEY 没出桶,本域自抄)。
+ */
+export const JD_LOC_PROV_KEY = 'prov.'
+
+/**
  * 分节时相邻两片(标记、正文)的步长。
  */
 export const JD_SEC_STEP = 2
@@ -3031,6 +3041,16 @@ export const SEC_MODE = {
    */
   lines: 'lines',
 } as const
+
+/**
+ * 帖面薪资里的时薪单位(2026-09-14 Frank「薪资福利这个也需要加翻译」:换成界面语单位另出一行)。
+ */
+export const UNIT_HR_RE = /\/hr/g
+
+/**
+ * 帖面薪资里的年薪单位。
+ */
+export const UNIT_YR_RE = /\/yr/g
 
 /**
  * 「打开完整页」的箭头。

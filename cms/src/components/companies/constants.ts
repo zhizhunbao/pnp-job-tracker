@@ -320,6 +320,11 @@ export const URL_CO_INFO = '/api/employers/info'
 export const URL_CO_TRANSLATE = '/api/employers/translate'
 
 /**
+ * 懒翻公司名接口(2026-09-14)。
+ */
+export const URL_CO_ALIAS = '/api/employers/alias'
+
+/**
  * 公司弹框取数接口(与 /companies/[slug] 页面同一份 CompanyDetail,免额度)。
  */
 export const URL_JOBS_COMPANY = '/api/jobs/company'
@@ -628,3 +633,23 @@ export const GRADE_C_2 = 'var(--warn)'
  * 1 档/缺档色:灰(gray-400)。
  */
 export const GRADE_C_NONE = 'var(--text3)'
+
+/**
+ * 省全名尾巴的「(中文名)」(2026-09-14 Frank「这个中文翻译去掉」:公司弹框省名只留英文)。
+ */
+export const PROV_PAREN_RE = /\s*[(（][^()（）]*[)）]\s*$/
+
+/**
+ * 官方招聘地点「市, 省」的连接符(2026-09-14 baseOverrideOf)。
+ */
+export const LOC_JOIN = ', '
+
+/**
+ * 雇主板(公司详情面包屑的上一级,2026-09-14)。
+ */
+export const URL_EMPLOYERS = '/employers'
+
+/**
+ * 省全名括号里的译名(baseOverrideZhOf 取对照行用)。
+ */
+export const PROV_PAREN_INNER_RE = /[(（](?<zh>[^()（）]+)[)）]\s*$/

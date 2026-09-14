@@ -13,19 +13,23 @@
  * 2026-09-03「表右上角挂更新时间」那一格弹框递空串:心跳是页面门 SSR 取的 checkedAt,
  * 弹框走客户端取数拿不到它,空串让那一行整个不出(不渲「更新时间 —」这种半句)。
  * 2026-09-14 Frank「按钮都去掉」:顶部三钮条整排撤(CompanyPanelActs 件随撤);速读卡与对照开关的状态机先留。
- * 2026-09-14 Frank「下面要加中文翻译」「这个也默认带翻译」:页眉下出公司别名(中 / 韩),AI 简介对照随界面语默认开。
+ * 2026-09-14 Frank「下面要加中文翻译」「这个也默认带翻译」「参考一下职位描述的弹框 css」:别名经 onAlias 回传给
+ * 页眉副题位(与职位弹框标题下的 NOC 译名同一形;库里没别名的开框懒翻一次落库,同日「公司名也做一个懒加载翻译」),AI 简介对照随界面语默认开;「加载中…」灰字换职位板同款转圈行
+ * (Frank「统一改成那个动态的」)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
+import { useEffect } from 'react'
 import { cssOf } from '@/components/css'
+import { Loading } from '@/components/loading'
 import { SponsorLeadCard } from '@/components/pnp'
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
 import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
 import { aliasOf, makeResolveJob } from './functions'
-import { useCompanyPanel } from './hooks'
+import { useCompanyAlias, useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 import css from './companies.module.css'
 
@@ -35,16 +39,22 @@ import css from './companies.module.css'
  * @param props 当前职位、已载入职位、语言、付费态与点职位回调(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
-  let zhName = TEXT_NONE
+  let cachedAlias = TEXT_NONE
+  let companyName = TEXT_NONE
   if (p.data != null) {
-    zhName = aliasOf({ lang, aliasZh: p.data.company.aliasZh, aliasKo: p.data.company.aliasKo })
+    cachedAlias = aliasOf({ lang, aliasZh: p.data.company.aliasZh, aliasKo: p.data.company.aliasKo })
+    companyName = p.data.company.name
   }
-  let body = <p className={css.note}>{t('act.loadingText')}</p>
+  const zhName = useCompanyAlias({ name: companyName, lang, cached: cachedAlias }).alias
+  useEffect(function liftAlias() {
+    onAlias(zhName)
+  }, [zhName, onAlias])
+  let body: React.ReactNode = <Loading text={t('act.loadingText')} />
   if (p.loading === false && p.data == null) {
-    body = <p className={css.note}>{t('advisor.unavail')}</p>
+    body = null
   }
   if (p.data != null) {
     body = (
@@ -61,7 +71,6 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelI
   }
   return (
     <>
-      {zhName !== TEXT_NONE && <div className={cssOf(css.zhName)}>{zhName}</div>}
       {p.aiOn && (
         <div className={CARD_MD_CLS + CLS_SEP + cssOf(css.aiCard)}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field={AI_FIELD_CO_READ} />

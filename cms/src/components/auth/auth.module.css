@@ -118,54 +118,46 @@
  */
 .brand {
   /*
-   * 居中。
+   * 一行居中:枫叶 + 站名并排(2026-09-14 Frank「改成一行和 header 的保持一致」;原是上下两行居中)。
    */
-  text-align: center;
+  display: flex;
 
   /*
-   * 与下文留 14px。
+   * 竖向对齐。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+
+  /*
+   * 枫叶与站名间距(header .brand 是 8,这里两件更小取 6)。
+   */
+  gap: 6px;
+
+  /*
+   * 与下方标题的距离。
    */
   margin-bottom: 14px;
 }
 
 /*
- * 品牌头的枫叶。
+ * 枫叶:比站名略大一号,行高 1 免得撑高一行。
  */
 .brandLeaf {
-  /*
-   * 枫叶字号。
-   */
-  font-size: 26px;
-
-  /*
-   * 行高压到 1,和站名贴紧。
-   */
+  font-size: 20px;
   line-height: 1;
 }
 
 /*
- * 品牌头的站名。
+ * 站名:照 header .logo(17 / 700 / #111827)。
  */
 .brandName {
-  /*
-   * 站名字号。
-   */
-  font-size: 14px;
-
-  /*
-   * 加粗。
-   */
+  font-size: 17px;
   font-weight: 700;
-
-  /*
-   * 深字。
-   */
   color: #111827;
-
-  /*
-   * 与枫叶留 4px。
-   */
-  margin-top: 4px;
 }
 
 /*

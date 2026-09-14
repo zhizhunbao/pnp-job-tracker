@@ -1826,6 +1826,11 @@ export type AdvisorGroupBodyIn = {
    * 取数包。
    */
   f: AdvisorFacts
+
+  /**
+   * 公司弹框把别名回传给页眉的口(2026-09-14)。
+   */
+  onCompanyAlias: (alias: string) => void
 }
 
 /**
@@ -1896,6 +1901,16 @@ export type AdvisorModalPanel = {
    * 同公司在榜岗。
    */
   companyJobs: AdvisorJob[]
+
+  /**
+   * 公司弹框页眉副题 = 公司中 / 韩别名(CompanyPanel 取到档案后回传;'' = 没有,2026-09-14)。
+   */
+  companyAlias: string
+
+  /**
+   * CompanyPanel 回传别名的口。
+   */
+  onCompanyAlias: (alias: string) => void
 }
 
 /**
@@ -3317,7 +3332,7 @@ export type PlanClbIn = {
  */
 export type HeadSubIn = {
   /**
-   * 铺的是哪一组(公司组不挂译名 —— 公司名没有译名)。
+   * 铺的是哪一组(公司组的副题是别名,其余组是 NOC 译名;2026-09-14 前公司组不挂副题)。
    */
   group: string
 
@@ -3335,6 +3350,11 @@ export type HeadSubIn = {
    * 界面语言。
    */
   lang: AdvisorLang
+
+  /**
+   * 公司别名(只 GROUP_COMPANY 用,2026-09-14 Frank「参考一下职位描述的弹框 css」:别名放页眉副题位)。
+   */
+  companyAlias: string
 }
 
 /**

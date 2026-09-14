@@ -1644,6 +1644,11 @@ export type EmployersCache = {
    * 简介译文：name:lang → 全文（全量翻齐才进）。
    */
   briefTransBy: Map<string, string>
+
+  /**
+   * 公司别名缓存:lower(name)|lang → 译名。
+   */
+  aliasBy: Map<string, string>
 }
 
 /**
@@ -2507,3 +2512,93 @@ export type SaveBriefZhIn = {
  * 只写不回值的异步出参(写回译文这类)。
  */
 export type DoneOut = Promise<void>
+
+/**
+ * 懒翻公司名接口的请求体(线格式:缺键 = 没传)。
+ */
+export type EmployersAliasBody = {
+  /**
+   * 公司名。
+   */
+  name?: string | null
+
+  /**
+   * 目标语种(zh / ko)。
+   */
+  lang?: string | null
+}
+
+/**
+ * companies 别名两格(pg 原始行)。
+ */
+export type AliasDbRow = {
+  /**
+   * 中文别名;NULL = 没有。
+   */
+  alias_zh: string | null
+
+  /**
+   * 韩文别名;NULL = 没有。
+   */
+  alias_ko: string | null
+}
+
+/**
+ * companies 别名两格(洗净)。
+ */
+export type AliasFact = {
+  /**
+   * 中文别名;'' = 没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文别名;'' = 没有。
+   */
+  aliasKo: string
+}
+
+/**
+ * `loadCompanyAlias` 的出参:两格,公司不在库给 null。
+ */
+export type AliasOut = Promise<AliasFact | null>
+
+/**
+ * `saveCompanyAlias` 的入参。
+ */
+export type SaveAliasIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+
+  /**
+   * 译名。
+   */
+  alias: string
+}
+
+/**
+ * `aliasCellOf` 的入参。
+ */
+export type AliasCellIn = {
+  /**
+   * 两格。
+   */
+  fact: AliasFact
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+}

@@ -785,3 +785,28 @@ export const LANG_UNSET = ''
 
 
 
+
+/**
+ * 懒翻公司名:译名最长(2026-09-14 Frank「公司名也做一个懒加载翻译」);超过 = 模型在解释不是在译,丢弃不落库。
+ */
+export const ALIAS_MAX_LEN = 40
+
+/**
+ * 懒翻公司名的每 IP 日限(与简介翻译同一桶)。
+ */
+export const ALIAS_LIMIT_PREFIX = 'coal:'
+
+/**
+ * 别名缓存键分隔。
+ */
+export const ALIAS_KEY_SEP = '|'
+
+/**
+ * 懒翻公司名给模型的一句话(公司名当纯文本行翻,翻译器不知道它是名字;拼在名字前让它照名字译)。
+ */
+export const ALIAS_PREFIX = ''
+
+/**
+ * 换行(译名只取第一行)。
+ */
+export const NEWLINE = '\n'

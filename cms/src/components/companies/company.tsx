@@ -13,6 +13,10 @@
  * `loggedIn` 随顶栏一起退出本件的契约。
  * 2026-09-03 Frank「所有的详情页面的返回按钮都在右上,样式和位置应该是固定统一的」:
  * 头卡右上角那颗自绘返回钮撤,改递 Shell 的 back 槽(button 桶 BackButton,落点仍是 URL_BACK)。
+ * 2026-09-14 Frank「返回按钮放到卡片右上角」「完整页面也加上加载中」「所有懒加载翻译完了,再显示页面」
+ * 「这个公司名要加中文翻译」:返回钮进标题卡右上角(照职位详情页);别名从名后小字改成名下一行,库里没有的
+ * 懒翻一次;懒翻没收尾前整页只出转圈行。同日「这个 nav 对么」:面包屑改「雇主 › 公司」(公司详情归雇主板);
+ * 「这个地方的中文翻译呢」:中 / 韩界面简介默认带对照。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
@@ -21,12 +25,14 @@ import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
 import { CompanyBody } from './companybody'
+import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import {
-  ALIAS_GAP, CRUMB_SEP, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_HOME,
+  CRUMB_SEP, LANG_EN, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_EMPLOYERS,
 } from './constants'
-import { aliasOf, provFullOf, provHrefOf } from './functions'
+import { aliasOf } from './functions'
+import { useCompanyAlias } from './hooks'
 import type { CompanyIn } from './types'
 import css from './companies.module.css'
 
@@ -38,29 +44,34 @@ import css from './companies.module.css'
  */
 export function Company({ company, similar = [], updatedAt }: CompanyIn) {
   const [lang, , t] = useLang()
-  const alias = aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo })
-  const provFull = provFullOf({ t, code: company.province })
+  const aliasPanel = useCompanyAlias({
+    name: company.name, lang, cached: aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo }),
+  })
+  const alias = aliasPanel.alias
+  if (aliasPanel.settled === false) {
+    return (
+      <Shell top={SHELL_TOP}>
+        <div className={css.track}><Loading text={t('act.loadingText')} /></div>
+      </Shell>
+    )
+  }
   return (
-    <Shell top={SHELL_TOP} back={<BackButton fallback={URL_BACK} label={t('detail.back')} />}>
+    <Shell top={SHELL_TOP}>
       <div className={css.track}>
         <div className={css.crumb}>
-          <LinkButton href={URL_HOME} className={cssOf(css.crumbLink)}>{t('detail.crumbHome')}</LinkButton>
-          {provFull !== TEXT_NONE && <>
-            {CRUMB_SEP}
-            <LinkButton href={provHrefOf({ code: company.province })} className={cssOf(css.crumbLink)}>
-              {provFull}
-            </LinkButton>
-          </>}
+          <LinkButton href={URL_EMPLOYERS} className={cssOf(css.crumbLink)}>{t('nav.employers')}</LinkButton>
           {CRUMB_SEP}
           <span className={css.crumbNow}>{t('co.crumb')}</span>
         </div>
         <div className={css.headCard}>
-          <h1 className={css.h1}>
-            {company.name}
-            {alias !== TEXT_NONE && <span className={css.alias}>{ALIAS_GAP}{alias}</span>}
-          </h1>
+          <div className={cssOf(css.cardBack)}>
+            <BackButton fallback={URL_BACK} label={t('detail.back')} />
+          </div>
+          <h1 className={css.h1}>{company.name}</h1>
+          {alias !== TEXT_NONE && <div className={css.h1Sub}>{alias}</div>}
         </div>
-        <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt} />
+        <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt}
+          showTrans={lang !== LANG_EN} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
     </Shell>

@@ -7,7 +7,10 @@
  * 红线:分类/职位弹框不碰(Frank「这两个现在做的我很满意」)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位:各段成件(基本信息/担保/在招/相似/信号),
  * 这一件只剩顺序与那一条懒翻 effect(迁 hooks 的 useCompanyTrans)。
- * 2026-09-14 Frank「删掉」:「雇主信号」四维卡撤;「相似雇主要加翻译」:相似卡收界面语,名下出别名。
+ * 2026-09-14 Frank「删掉」×2:「雇主信号」四维卡撤,「担保记录」卡撤(弹框与公司页都不出,同日再拍「这个删掉」);「相似雇主要加翻译」:相似卡收界面语,名下出别名。
+ * 2026-09-14 Frank「公司这个弹框,等这个都加载完了之后,才全部显示,不然和 job 描述一样只显示加载中」:
+ * 中 / 韩界面简介对照没回来前整个正文只出转圈行;懒抓简介那一档(aiBrief 空)由 CompanyAiSection 经 onBusy 回报在途,
+ * 正文用 hidden 藏着(不能卸载,卸了懒抓就停),转圈行顶上。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -15,9 +18,11 @@
 import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
-import { CompanySponsorCard } from './companysponsorcard'
 import { CompanyTopInfo } from './companytopinfo'
-import { hasDescOf, showSponsorOf } from './functions'
+import { useState } from 'react'
+import { Loading } from '@/components/loading'
+import { LANG_EN, TEXT_NONE } from './constants'
+import { hasDescOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -47,18 +52,23 @@ export function CompanyBody({
     showTrans,
     lang,
   })
-  const showSponsor = showSponsorOf({ company })
   const newTab = onOpenJob != null
+  const [aiBusy, setAiBusy] = useState(false)
+  const transBusy = showTrans && lang !== LANG_EN && hasDescOf({ company }) === false
+    && company.aiBrief !== TEXT_NONE && trans === null
+  const busy = transBusy || aiBusy
   return (
-    <div className={css.body}>
+    <>
+      {busy && <Loading text={t('act.loadingText')} />}
+      <div className={css.body} hidden={busy}>
       {hideTopInfo === false && <CompanyTopInfo company={company} t={t} />}
       <CompanyBasicCard company={company}
         t={t}
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        hideTopInfo={hideTopInfo} />
-      {showSponsor && <CompanySponsorCard company={company} t={t} lang={lang} />}
+        hideTopInfo={hideTopInfo}
+        onBusy={setAiBusy} />
       {afterSponsor}
       <CompanyJobsCard company={company}
         t={t}
@@ -68,6 +78,7 @@ export function CompanyBody({
         resolveJob={resolveJob}
         newTab={newTab} />
       <CompanySimilarCard similar={similar} t={t} lang={lang} newTab={newTab} />
-    </div>
+      </div>
+    </>
   )
 }

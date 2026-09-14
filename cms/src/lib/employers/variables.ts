@@ -52,4 +52,9 @@ export const CACHE: EmployersCache = {
    * 简介译文缓存。
    */
   briefTransBy: new Map(),
+
+  /**
+   * 公司别名缓存:lower(name)|lang → 译名(2026-09-14 懒翻公司名)。
+   */
+  aliasBy: new Map(),
 }

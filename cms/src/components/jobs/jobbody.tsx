@@ -11,12 +11,15 @@
  * 2026-08-28 换装批自 Jd.tsx 重写落位。
  * 2026-09-14 Frank「这个也去掉」:底部「来源: 域名」行撤(JdSource 件随撤);「打开完整页」钮同日撤。
  * 2026-09-14 Frank「删掉。默认就自带中文对照」:钮行整个退役,换成 JdAutoTrans(中 / 韩界面自动加载对照)。
+ * 2026-09-14 Frank「职位描述里也应该显示工作地点吧」「这个工作地址不应该放在这里吧」:地点进「工时地点」节首行(JdContent 递),不在顶上另出。
+ * 2026-09-14 Frank「没加载完不要显示前往投递」:投递栏只在正文取到且整理 / 翻译都不在途时出。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
-import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, STATUS_CLOSED, UNDER_TITLE } from './constants'
+import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
+import { jdBusyOf } from './functions'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
 import { JdAutoTrans } from './jdautotrans'
@@ -43,7 +46,7 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
         </div>
       )}
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} />
-      {d.fmt !== undefined && (
+      {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus }) === false && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
           onPage={inModal === false} />
       )}

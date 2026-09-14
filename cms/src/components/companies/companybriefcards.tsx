@@ -6,14 +6,14 @@
  * bare(#197 Frank「合并」):只出内容体(不带标题/AI 声明/外壳/官网),供合并进
  * 「公司」块 —— 声明由调用方在顶部渲。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
+ * 2026-09-14 Frank「这个删掉」:「✨ AI 检索整理(非官方自述)+ 日期」注撤(弹框与公司页同撤)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
-import { CompanyAiNote } from './companyainote'
 import { CompanyBriefBody } from './companybriefbody'
 import { CompanySite } from './companysite'
-import { AI_NOTE_BRIEF, TEXT_NONE } from './constants'
+import { TEXT_NONE } from './constants'
 import { briefHeadClsOf, briefWrapClsOf } from './functions'
 import type { CompanyBriefCardsIn } from './types'
 
@@ -26,25 +26,27 @@ import type { CompanyBriefCardsIn } from './types'
 export function CompanyBriefCards({
   brief,
   website,
-  fetched,
   t,
   trans,
-  sources,
   flat = false,
   bare = false,
   skipBase = false,
+  baseOverride = TEXT_NONE,
+  baseOverrideZh = TEXT_NONE,
 }: CompanyBriefCardsIn) {
   if (brief === TEXT_NONE) {
     return null
   }
-  const body = <CompanyBriefBody brief={brief} trans={trans} t={t} flat={flat} skipBase={skipBase} />
+  const body = (
+    <CompanyBriefBody brief={brief} trans={trans} t={t} flat={flat} skipBase={skipBase} baseOverride={baseOverride}
+      baseOverrideZh={baseOverrideZh} />
+  )
   if (bare) {
     return body
   }
   return (
     <div className={briefWrapClsOf({ flat })}>
       <div className={briefHeadClsOf({ flat })}>{t('fact.coIntro')}</div>
-      <CompanyAiNote t={t} fetched={fetched} sources={sources} kind={AI_NOTE_BRIEF} />
       {body}
       <CompanySite website={website} t={t} flat={flat} />
     </div>

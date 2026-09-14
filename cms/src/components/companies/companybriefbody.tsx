@@ -3,6 +3,8 @@
  * K 调查简介的内容体:存量散文(整段没有节标记)整段渲一块,五节格式逐节渲 ——
  * 缺项不占卡(宁可留空,不拿空标题充数)。#199:DB 有精确地址时「所在地」节让位。
  * 2026-08-28 拆域批自 jobs/Company.tsx 的 bodyNode 闭包重写成件。
+ * 2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」:「所在地」节可被 baseOverride 换成官方招聘地点
+ * (AI 总部与招聘省不一致时),节还在,只是内容换成有依据的那句。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -21,7 +23,9 @@ import { cssOf } from '@/components/css'
  * @param props 正文、译文、取词函数、扁平态与让位开关(逐格注释见 CompanyBriefBodyIn)。
  * @returns 内容体(散文一块,或逐节)。
  */
-export function CompanyBriefBody({ brief, trans, t, flat, skipBase }: CompanyBriefBodyIn) {
+export function CompanyBriefBody({
+  brief, trans, t, flat, skipBase, baseOverride, baseOverrideZh,
+}: CompanyBriefBodyIn) {
   if (CO_SEC_HAS_RE.test(brief) === false) {
     let zh = TEXT_NONE
     if (trans != null && trans.trim() !== brief.trim()) {
@@ -41,14 +45,19 @@ export function CompanyBriefBody({ brief, trans, t, flat, skipBase }: CompanyBri
   }
   const rows = []
   for (const mark of CO_SEC_MARKS) {
-    const text = secTextOf({ secs, mark })
+    let text = secTextOf({ secs, mark })
+    let zh = secZhOf({ tSecs, mark, en: text })
+    if (mark === CO_SEC_BASE && baseOverride !== TEXT_NONE) {
+      text = baseOverride
+      zh = baseOverrideZh
+    }
     const skipped = skipBase && mark === CO_SEC_BASE
     if (hasSecOf({ secs, mark }) && skipped === false) {
       rows.push(
         <CompanyBriefSec key={mark}
           labelKey={secKeyOf({ mark })}
           text={text}
-          zh={secZhOf({ tSecs, mark, en: text })}
+          zh={zh}
           t={t}
           flat={flat} />,
       )

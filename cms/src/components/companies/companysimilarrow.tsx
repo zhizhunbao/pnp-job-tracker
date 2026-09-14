@@ -5,7 +5,8 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 的 similar.map 体重写成件。
  *
  * style 白名单:担保档色是数据算出来的运行时值,不是静态样式。
- * 2026-09-14 Frank「相似雇主要加翻译」:名下第二行出中 / 韩别名(companies.alias_zh / alias_ko,没有就不出)。
+ * 2026-09-14 Frank「相似雇主要加翻译」「这些相似雇主的中文名都加上懒加载翻译」:名下第二行出中 / 韩别名,
+ * 库里没有的开框懒翻一次落库(useCompanyAlias)。
  * 2026-09-14 Frank「这些都删了」:行右的「近期办过 LMIA / 办过 LMIA」担保档字撤,只留在招数(档位仍是排序键)。
  *
  * @author Frank
@@ -15,6 +16,7 @@ import { cssOf } from '@/components/css'
 import { CompanyLink } from './companylink'
 import { CLS_SEP, LINK_CLS, TEXT_NONE, URL_COMPANY_HEAD } from './constants'
 import { aliasOf } from './functions'
+import { useCompanyAlias } from './hooks'
 import type { CompanySimilarRowIn } from './types'
 import css from './companies.module.css'
 
@@ -25,7 +27,9 @@ import css from './companies.module.css'
  * @returns 一行。
  */
 export function CompanySimilarRow({ employer, t, lang, newTab }: CompanySimilarRowIn) {
-  const alias = aliasOf({ lang, aliasZh: employer.aliasZh, aliasKo: employer.aliasKo })
+  const alias = useCompanyAlias({
+    name: employer.name, lang, cached: aliasOf({ lang, aliasZh: employer.aliasZh, aliasKo: employer.aliasKo }),
+  }).alias
   return (
     <div className={css.simRow}>
       <CompanyLink href={URL_COMPANY_HEAD + employer.slug}

@@ -8,6 +8,8 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(展开态就近落在这一件里)。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来;弹框没有,空串自己不渲)。
+ * 2026-09-14 Frank「这个去掉」「在招职位那部分加一个收起的功能就行」:「在职位板查看其余 N 个」链撤;
+ * 展开钮改成展开 / 收起来回切。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -16,13 +18,11 @@ import { useState } from 'react'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { CompanyLink } from './companylink'
 import { JobMiniRow } from './jobminirow'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LINK_CLS, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
-  URL_BOARD_QUERY_HEAD,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
-import { jobSubOf, jobsShownOf, makeOpenJob, makeShowAll } from './functions'
+import { jobSubOf, jobsShownOf, jobsToggleLabelOf, makeOpenJob, makeToggle } from './functions'
 import type { CompanyJobsCardIn, GoBackFn } from './types'
 import css from './companies.module.css'
 
@@ -59,7 +59,6 @@ export function CompanyJobsCard({
         newTab={newTab} />,
     )
   }
-  const restN = company.openCount - company.jobs.length
   return (
     <div className={CARD_MD_CLS}>
       <div className={CARD_HEAD_CLS + CLS_SEP + cssOf(css.jobsHead)}>
@@ -68,19 +67,11 @@ export function CompanyJobsCard({
       </div>
       <div>
         {rows}
-        {allJobs === false && company.jobs.length > JOBS_FIRST_N && (
-          <Button kind={PLAIN_BTN_KIND} onClick={makeShowAll({ set: setAllJobs })} className={cssOf(css.showAll)}>
-            {t('act.showAll', { n: company.jobs.length - JOBS_FIRST_N })}
+        {company.jobs.length > JOBS_FIRST_N && (
+          <Button kind={PLAIN_BTN_KIND} onClick={makeToggle({ on: allJobs, set: setAllJobs })}
+            className={cssOf(css.showAll)}>
+            {jobsToggleLabelOf({ t, all: allJobs, hidden: company.jobs.length - JOBS_FIRST_N })}
           </Button>
-        )}
-        {allJobs && restN > 0 && (
-          <div className={css.showAllBoard}>
-            <CompanyLink href={URL_BOARD_QUERY_HEAD + encodeURIComponent(company.name)}
-              newTab={newTab}
-              className={cssOf(css.link12) + CLS_SEP + LINK_CLS}>
-              {t('act.showAllBoard', { n: restN })}
-            </CompanyLink>
-          </div>
         )}
       </div>
     </div>

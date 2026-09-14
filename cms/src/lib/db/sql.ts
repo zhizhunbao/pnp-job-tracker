@@ -213,9 +213,24 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  */
 export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, count(j.id)::int open_count
      FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
+     WHERE c.region = $1 AND j.mid = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
+     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko
+     ORDER BY count(j.id) DESC, c.sponsor_grade DESC NULLS LAST LIMIT 6`
+
+/**
+ * 相似雇主(公司页版):同省同行业桶;页上没有单一岗位,仍按 companies.industry 找。
+ */
+export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, count(j.id)::int open_count
+     FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
      GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
+
+/**
+ * 相似雇主的锚:这一岗的中类(2026-09-14 Frank「这个相似雇主也不是同行业的啊」:companies.industry 是公司
+ * 主营大类桶,电信架线工和运输 / 农场同落「技工」;改按岗位中类找同省同类岗在招的雇主)。
+ */
+export const JOB_MID_BY_ID = `SELECT mid FROM jobs WHERE id = $1 LIMIT 1`
 
 // =========================================================================
 // 5. 职业(NOC)
@@ -1564,6 +1579,21 @@ export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE
  * 懒翻译翻完落库(同名多行一起写;下次直接读,不再过模型)。$1=译文,$2=公司名。
  */
 export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies SET ai_brief_zh = $1 WHERE lower(name) = lower($2)`
+
+/**
+ * 公司别名两格(懒翻公司名前先查库,2026-09-14 Frank「这些相似雇主的中文名都加上懒加载翻译」)。
+ */
+export const COMPANY_ALIAS_BY_NAME = `SELECT alias_zh, alias_ko FROM companies WHERE lower(name) = lower($1) LIMIT 1`
+
+/**
+ * 懒翻出来的中文别名落库(只填空格,不覆盖已有)。
+ */
+export const COMPANY_SET_ALIAS_ZH = `UPDATE companies SET alias_zh = $1 WHERE lower(name) = lower($2) AND coalesce(alias_zh, '') = ''`
+
+/**
+ * 懒翻出来的韩文别名落库(只填空格,不覆盖已有)。
+ */
+export const COMPANY_SET_ALIAS_KO = `UPDATE companies SET alias_ko = $1 WHERE lower(name) = lower($2) AND coalesce(alias_ko, '') = ''`
 
 /**
  * 职位的投递链接一列。$1=职位 id。

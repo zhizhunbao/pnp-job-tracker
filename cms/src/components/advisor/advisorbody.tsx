@@ -23,7 +23,7 @@ import type { AdvisorGroupBodyIn } from './types'
  * @param props 分组、入口格、分层态、在榜岗、点岗回调与取数包。
  * @returns 这一组的正文。
  */
-export function AdvisorBody({ group, field, plan, companyJobs, onOpenJob, f }: AdvisorGroupBodyIn) {
+export function AdvisorBody({ group, field, plan, companyJobs, onOpenJob, onCompanyAlias, f }: AdvisorGroupBodyIn) {
   if (group === GROUP_CATEGORY) {
     return <CategoryPanel job={f.job} lang={f.lang} plan={plan} nocDesc={f.nocDesc} srcField={field} />
   }
@@ -34,7 +34,10 @@ export function AdvisorBody({ group, field, plan, companyJobs, onOpenJob, f }: A
     )
   }
   if (group === GROUP_COMPANY) {
-    return <CompanyPanel job={f.job} jobs={companyJobs} lang={f.lang} plan={plan} onOpenJob={onOpenJob} />
+    return (
+      <CompanyPanel job={f.job} jobs={companyJobs} lang={f.lang} plan={plan} onOpenJob={onOpenJob}
+        onAlias={onCompanyAlias} />
+    )
   }
   return <GroupFacts group={group} f={f} />
 }

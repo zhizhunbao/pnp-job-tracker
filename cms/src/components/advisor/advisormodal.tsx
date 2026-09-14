@@ -69,7 +69,7 @@ export function AdvisorModal({
   const head = (
     <AdvisorHead t={t} group={group}
       title={modalTitleOf({ group, job, title })}
-      sub={headSubOf({ group, nocDesc, job, lang })}
+      sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft} />
   )
   return (
@@ -80,6 +80,7 @@ export function AdvisorModal({
       <AdvisorBody group={group} field={field} plan={plan}
         companyJobs={m.companyJobs}
         onOpenJob={onOpenJob}
+        onCompanyAlias={m.onCompanyAlias}
         f={f} />
       {m.aiOn && (
         <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />

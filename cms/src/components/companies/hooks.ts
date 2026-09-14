@@ -11,11 +11,12 @@
  * @time 2026-08-28 16:26:43
  */
 import { useEffect, useState } from 'react'
-import { LANG_EN } from './constants'
-import { makeAiToggle, makeLoadBrief, makeLoadPanel, makeLoadTrans, makeTransToggle } from './functions'
+import { LANG_EN, TEXT_NONE,
+} from './constants'
+import { makeAiToggle, makeLoadAlias, makeLoadBrief, makeLoadPanel, makeLoadTrans, makeTransToggle } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyBriefFact, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
-  CompanyTransHookIn, DeadFlag,
+  CompanyTransHookIn, DeadFlag, CompanyAliasHookIn, CompanyAliasPanel,
 } from './types'
 
 /**
@@ -120,4 +121,40 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
     aiOn,
     onToggleAi: makeAiToggle({ on: aiOn, set: setAiOn }),
   }
+}
+
+/**
+ * 公司别名(2026-09-14 懒翻公司名):库里有就用库里的;没有且界面非英文,开一次就打一次接口,回来落格。
+ *
+ * @param x 公司名、界面语言与库里已有的别名。
+ * @returns 别名;'' = 还没有。
+ */
+export function useCompanyAlias(x: CompanyAliasHookIn): CompanyAliasPanel {
+  const [alias, setAlias] = useState<string | null>(x.cached)
+  const [settled, setSettled] = useState(x.cached !== TEXT_NONE)
+  const [prevCached, setPrevCached] = useState(x.cached)
+  if (prevCached !== x.cached) {
+    setPrevCached(x.cached)
+    setAlias(x.cached)
+    setSettled(x.cached !== TEXT_NONE)
+  }
+  const name = x.name
+  const lang = x.lang
+  const want = (alias == null || alias === TEXT_NONE) && name !== TEXT_NONE && lang !== LANG_EN
+
+  useEffect(function loadAlias() {
+    const flag: DeadFlag = { dead: false }
+    if (want) {
+      makeLoadAlias({ name, lang, setAlias, onSettled: setSettled })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [want, name, lang])
+
+  let text = TEXT_NONE
+  if (alias != null) {
+    text = alias
+  }
+  return { alias: text, settled: settled || lang === LANG_EN || name === TEXT_NONE }
 }

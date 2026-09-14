@@ -58,8 +58,9 @@ import {
   TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_K_YEAR,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER, VAL_MATCH,
-  VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
-  ZEBRA_MOD,
+  UNIT_HR_RE, UNIT_YR_RE, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
+  YEAR_MONTH_LEN,
+  ZEBRA_MOD, JD_SEC_LOC, JD_LOC_PROV_KEY,
 } from './constants'
 import type {
   BoardMeta, BoardTitleIn, SliceTextIn,
@@ -76,15 +77,15 @@ import type {
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobsBoardPanel, JobsQueryIn, JobTextOut, KMoneyIn, MailBodyIn,
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NextSortIn, NocCategoryDoc, NocCatRow, NocDescDoc, NocDescFact,
-  NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, PageSigIn, PayFallbackForIn,
+  NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn,
   LmiaTextIn, NamedTextIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn,
   RankOfIn,
   ResizeBindIn,
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
-  JdBusyIn, JdBusyTextIn, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState,
+  JdBusyIn, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState,
   StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
-  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
+  UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn, JdLocationSectionIn, JdLocationZhIn, PayPairsZhIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3338,7 +3339,10 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
   const tSecs = jdTransSecsOf(x.trans)
   const out: JdSectionView[] = []
   for (const [m, key] of JD_SECS) {
-    const pairs = jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) })
+    let pairs = jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) })
+    if (m === JD_SEC_PAY) {
+      pairs = payPairsZhOf({ t: x.t, pairs })
+    }
     out.push({
       m,
       head: jdSecHeadOf({ m, key, t: x.t, underTitle: x.underTitle }),
@@ -3352,11 +3356,51 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
       pairs,
       bullets: jdHasBullets(pairs),
       payFallback: jdPayFallbackOf({ pairs, fallbackPay: payFallbackFor({ m, fallbackPay: x.fallbackPay }) }),
+      payFallbackZh: payFallbackZhOf({
+        t: x.t, text: jdPayFallbackOf({ pairs, fallbackPay: payFallbackFor({ m, fallbackPay: x.fallbackPay }) }),
+      }),
       applyUrl: x.applyUrl,
       applyEmail: x.applyEmail,
       noneText: x.t('act.f.none'),
       officialText: x.t('act.seeOfficial'),
     })
+  }
+  return out
+}
+
+/**
+ * 薪资节里模型没给对照的行(纯数字行「$18–$25/hr」翻译器常原样返回或跳过,Frank 2026-09-14「这种为什么每次都漏翻译」):
+ * 本地按单位补一行对照(/hr → /小时,/yr → /年);已有对照的行不动。
+ *
+ * @param x 取词函数与这一节的行。
+ * @returns 补过对照的行。
+ */
+export function payPairsZhOf(x: PayPairsZhIn): JdPair[] {
+  const out: JdPair[] = []
+  for (const p of x.pairs) {
+    if (p.zh !== TEXT_NONE) {
+      out.push(p)
+      continue
+    }
+    out.push({ en: p.en, zh: payFallbackZhOf({ t: x.t, text: p.en }) })
+  }
+  return out
+}
+
+/**
+ * 帖面薪资兜底行的界面语版(2026-09-14 Frank「薪资福利这个也需要加翻译」):只换单位(/hr → /小时,/yr → /年),
+ * 数字不动;换完和原文一样(英文界面)就给空串,不重复出。
+ *
+ * @param x 取词函数与兜底薪资原文。
+ * @returns 界面语版;无需另出给空串。
+ */
+export function payFallbackZhOf(x: PayFallbackZhIn): string {
+  if (x.text === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const out = x.text.replace(UNIT_HR_RE, x.t('unit.perHr')).replace(UNIT_YR_RE, x.t('unit.perYr'))
+  if (out === x.text) {
+    return TEXT_NONE
   }
   return out
 }
@@ -3490,6 +3534,74 @@ export function aiNoteTextOf(x: AiNoteTextIn): string {
 }
 
 /**
+ * 工作地点的界面语版(2026-09-14):市名照英文,省用 i18n 省译名;英文界面或译名缺给空串。
+ *
+ * @param x 取词函数与本岗。
+ * @returns 界面语版;'' = 不出对照行。
+ */
+export function jdLocationZhOf(x: JdLocationZhIn): string {
+  if (x.job.province === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const key = JD_LOC_PROV_KEY + x.job.province.toUpperCase()
+  const provZh = x.t(key)
+  const provEn = PROV_NAMES[x.job.province.toUpperCase()]
+  if (provZh === TEXT_NONE || provZh === key || provZh === provEn) {
+    return TEXT_NONE
+  }
+  if (x.job.city === TEXT_NONE) {
+    return provZh
+  }
+  return x.job.city + LOC_SEP + provZh
+}
+
+/**
+ * 「工作地点」节(2026-09-14 Frank「应该单独一个分类吧」):不是原帖分出来的,由岗位地点字段合成一节,排在最前。
+ *
+ * @param x 取词函数、地点两版与节形状要的两格。
+ * @returns 一节;没有地点给 null。
+ */
+export function jdLocationSectionOf(x: JdLocationSectionIn): JdSectionView | null {
+  if (x.location === TEXT_NONE) {
+    return null
+  }
+  return {
+    m: JD_SEC_LOC,
+    head: x.t('act.f.loc'),
+    mode: SEC_MODE.lines,
+    pairs: [{ en: x.location, zh: x.locationZh }],
+    bullets: false,
+    payFallback: TEXT_NONE,
+    payFallbackZh: TEXT_NONE,
+    applyUrl: x.applyUrl,
+    applyEmail: x.applyEmail,
+    noneText: x.t('act.f.none'),
+    officialText: x.t('act.seeOfficial'),
+  }
+}
+
+/**
+ * 职位描述顶上的工作地点一句(2026-09-14 Frank「职位描述里也应该显示工作地点吧」):有街址出街址(它已含市省邮编),
+ * 否则「市, 省全名」;都没有给空串。
+ *
+ * @param job 本岗。
+ * @returns 一句地点;'' = 不出。
+ */
+export function jdLocationOf(job: JobFact): string {
+  if (job.address !== TEXT_NONE) {
+    return job.address
+  }
+  const prov = PROV_NAMES[job.province.toUpperCase()]
+  if (prov == null) {
+    return job.city
+  }
+  if (job.city === TEXT_NONE) {
+    return prov
+  }
+  return job.city + LOC_SEP + prov
+}
+
+/**
  * 「怎么投」与薪资节的帖面薪资兜底(#123c):清洗产物优先,没有才退原文 ——
  * 这一处**保留**了旧实现的「退原文」,与手机卡薪资那一格的口径不同:卡上那格是**给结论**
  * (标绿 = 我们背书这条薪资可信),整理版这一处只是把帖面写着的话搬过来当兜底,不做背书。
@@ -3528,19 +3640,6 @@ export function jdBusyOf(x: JdBusyIn): boolean {
     return true
   }
   return x.transStatus === TRANS_LOADING
-}
-
-/**
- * 转圈行的文案:整理在途说整理,否则就是在译。
- *
- * @param x 取词函数与整理版。
- * @returns 一句状态文案。
- */
-export function jdBusyTextOf(x: JdBusyTextIn): string {
-  if (x.fmt === undefined) {
-    return x.t('act.aiWorking')
-  }
-  return x.t('cat.translating')
 }
 
 /**

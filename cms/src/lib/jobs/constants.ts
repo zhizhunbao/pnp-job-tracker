@@ -1274,8 +1274,10 @@ export const DIR_ASC = 'ASC'
  * 但实测会漂成 `(none stated)` / `(not specified)` / `(not mentioned)`……
  * 严格只认一种,变体就会被当正文渲成「(none stated) ↗」。括号可有可无,
  * not/none/n\/a + stated/specified/mentioned/provided/available/applicable/listed 一律算缺节。
+ * 2026-09-14 追加「Information not available in search results.」一族(AI 简介的规模 / 成立时间常这么写,
+ * Frank「没有为什么显示出来」):整句当「没有」,节不出。
  */
-export const JD_NONE_RE = /^\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?$/i
+export const JD_NONE_RE = /^(\(?\s*(not|none|n\/a)(\s+(stated|specified|mentioned|provided|available|applicable|listed))?\s*\)?|information (is )?not available[^.]*\.?)$/i
 
 /**
  * #198(Frank「这句话删掉」指 "Not stated in the results."):模型偶尔写整句而非短语 ——

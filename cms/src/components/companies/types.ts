@@ -698,6 +698,11 @@ export type CompanyBasicCardIn = {
    * 章行藏在身体外(弹框):此时政府章/知名章挂到卡标题旁。
    */
   hideTopInfo: boolean
+
+  /**
+   * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   */
+  onBusy?: (busy: boolean) => void
 }
 
 /**
@@ -773,6 +778,16 @@ export type CompanyBriefCardsIn = {
    * 跳过「所在地」节(#199:DB 有精确地址时不重复);可省 = 不跳过。
    */
   skipBase?: boolean
+
+  /**
+   * 「所在地」节改显这句(AI 查到的总部与招聘省不一致时换成官方招聘地点,2026-09-14);可省 = 照 AI 的。
+   */
+  baseOverride?: string
+
+  /**
+   * 改显那句的界面语版(市 + 省译名);可省 = 不出对照行。
+   */
+  baseOverrideZh?: string
 }
 
 /**
@@ -803,6 +818,16 @@ export type CompanyBriefBodyIn = {
    * 跳过「所在地」节。
    */
   skipBase: boolean
+
+  /**
+   * 「所在地」节改显这句;'' = 照 AI 的。
+   */
+  baseOverride: string
+
+  /**
+   * 改显那句的界面语版;'' = 不出对照行。
+   */
+  baseOverrideZh: string
 }
 
 /**
@@ -908,6 +933,21 @@ export type CompanyAiSectionIn = {
    * 跳过「所在地」节;可省 = 不跳过。
    */
   skipBase?: boolean
+
+  /**
+   * 「所在地」节改显这句;可省 = 照 AI 的。
+   */
+  baseOverride?: string
+
+  /**
+   * 改显那句的界面语版;可省 = 不出对照行。
+   */
+  baseOverrideZh?: string
+
+  /**
+   * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   */
+  onBusy?: (busy: boolean) => void
 }
 
 /**
@@ -1179,6 +1219,11 @@ export type CompanyPanelIn = {
    * 点在招职位的去处;可省 = 纯链接。
    */
   onOpenJob?: OpenJobFn
+
+  /**
+   * 档案到手后把中 / 韩别名交给页眉副题(2026-09-14 Frank「参考一下职位描述的弹框 css」)。
+   */
+  onAlias: (alias: string) => void
 }
 
 /**
@@ -1397,6 +1442,26 @@ export type SetLoadingFn = (v: boolean) => void
 export type SetPanelDataFn = (v: CompanyPanelData | null) => void
 
 /**
+ * jobsToggleLabelOf 的入参。
+ */
+export type JobsToggleLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 现在是展开态没。
+   */
+  all: boolean
+
+  /**
+   * 折着没露的岗数。
+   */
+  hidden: number
+}
+
+/**
  * makeToggle 的入参:现值与落格。
  */
 export type ToggleIn = {
@@ -1407,16 +1472,6 @@ export type ToggleIn = {
 
   /**
    * 落格。
-   */
-  set: SetBoolFn
-}
-
-/**
- * makeShowAll 的入参:展开落格。
- */
-export type ShowAllIn = {
-  /**
-   * 展开态落格。
    */
   set: SetBoolFn
 }
@@ -1659,6 +1714,21 @@ export type CompanyIntroIn = {
    * 跳过「所在地」节(DB 有精确地址时)。
    */
   skipBase: boolean
+
+  /**
+   * 「所在地」节改显这句;'' = 照 AI 的。
+   */
+  baseOverride: string
+
+  /**
+   * 改显那句的界面语版;'' = 不出对照行。
+   */
+  baseOverrideZh: string
+
+  /**
+   * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   */
+  onBusy?: (busy: boolean) => void
 }
 
 /**
@@ -1971,4 +2041,94 @@ export type CompanyPanelState = {
    * 切 AI 速读(第一次打开埋点)。
    */
   onToggleAi: GoBackFn
+}
+
+/**
+ * makeLoadAlias 的入参。
+ */
+export type LoadAliasIn = {
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 译名落格。
+   */
+  setAlias: SetTextFn
+
+  /**
+   * 请求收尾(成败都算)时报 true —— 页面靠它决定「全翻完了」再显示(2026-09-14)。
+   */
+  onSettled: (done: boolean) => void
+}
+
+/**
+ * useCompanyAlias 的出参。
+ */
+export type CompanyAliasPanel = {
+  /**
+   * 别名;'' = 没有。
+   */
+  alias: string
+
+  /**
+   * 懒翻已收尾(库里有 / 翻完 / 翻不出 / 英文界面不翻)。
+   */
+  settled: boolean
+}
+
+/**
+ * 懒翻公司名接口的响应(线格式)。
+ */
+export type AliasJson = {
+  /**
+   * 翻成功了没有。
+   */
+  ok?: boolean
+
+  /**
+   * 译名。
+   */
+  alias?: string | null
+} | null
+
+/**
+ * useCompanyAlias 的入参。
+ */
+export type CompanyAliasHookIn = {
+  /**
+   * 公司名;'' = 还没拿到,不翻。
+   */
+  name: string
+
+  /**
+   * 界面语言(英文不翻)。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 库里已有的别名;'' = 没有,才懒翻。
+   */
+  cached: string
+}
+
+/**
+ * baseOverrideOf 的入参。
+ */
+export type BaseOverrideIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 公司档案。
+   */
+  company: CompanyDetail
 }

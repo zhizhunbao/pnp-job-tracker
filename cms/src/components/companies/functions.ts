@@ -34,7 +34,7 @@ import {
   STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, KEY_STREAM_AGRI, KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW,
   KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
   URL_CO_TRANSLATE,
-  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD,
+  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, URL_CO_ALIAS, PROV_PAREN_RE, LOC_JOIN, PROV_PAREN_INNER_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -44,8 +44,8 @@ import type {
   FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn, JobNocNameIn, JobsShownIn,
   LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenJobIn,
   PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
-  SecKeyIn, SecTextIn, SecZhIn, ShowAllIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
-  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn,
+  JobsToggleLabelIn, SecKeyIn, SecTextIn, SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
+  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn, AliasJson, LoadAliasIn, BaseOverrideIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -76,7 +76,7 @@ export function provFullOf(x: ProvFullOfIn): string {
   if (x.code === TEXT_NONE) {
     return TEXT_NONE
   }
-  return provName({ t: x.t, code: x.code, localeOnly: PROV_LOCALE_ONLY })
+  return provName({ t: x.t, code: x.code, localeOnly: PROV_LOCALE_ONLY }).replace(PROV_PAREN_RE, TEXT_NONE)
 }
 
 /**
@@ -211,6 +211,75 @@ export function showSponsorOf(x: CompanyOnlyIn): boolean {
  */
 export function hasBaseSecOf(x: BriefSecsIn): boolean {
   return hasSecOf({ secs: briefSecsOf({ text: x.text }), mark: CO_SEC_BASE })
+}
+
+/**
+ * 公司所在市(2026-09-14 Frank「加上省市」):companies 表没有市列,取该司在招岗里第一座城;没岗给空串。
+ *
+ * @param x 公司档案。
+ * @returns 城市名或空串。
+ */
+export function cityOf(x: CompanyOnlyIn): string {
+  for (const j of x.company.jobs) {
+    if (j.city !== TEXT_NONE) {
+      return j.city
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「所在地」节要不要换成官方招聘地点(2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」):
+ * AI 查到的总部若与招聘省(companies.region,官方)对不上,视为查错,该节改显「市, 省」这句官方地点;
+ * 对得上或没有招聘省就照 AI 的。
+ *
+ * @param x 取词函数与公司档案。
+ * @returns 改显的句子;'' = 不改。
+ */
+export function baseOverrideOf(x: BaseOverrideIn): string {
+  if (x.company.province === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const base = baseTextOf({ text: x.company.aiBrief })
+  if (base === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const prov = provFullOf({ t: x.t, code: x.company.province })
+  if (prov === TEXT_NONE || base.includes(prov) || base.includes(x.company.province)) {
+    return TEXT_NONE
+  }
+  const city = cityOf({ company: x.company })
+  if (city === TEXT_NONE) {
+    return prov
+  }
+  return city + LOC_JOIN + prov
+}
+
+/**
+ * 官方招聘地点那句的界面语版(2026-09-14 Frank「这个也加上翻译」):市名照英文,省用省译名(省全名括号里那截);
+ * 英文界面或省译名缺给空串。
+ *
+ * @param x 取词函数与公司档案。
+ * @returns 界面语版;'' = 不出。
+ */
+export function baseOverrideZhOf(x: BaseOverrideIn): string {
+  if (baseOverrideOf(x) === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const full = provName({ t: x.t, code: x.company.province, localeOnly: PROV_LOCALE_ONLY })
+  const m = PROV_PAREN_INNER_RE.exec(full)
+  if (m == null || m.groups == null) {
+    return TEXT_NONE
+  }
+  const zh = m.groups.zh
+  if (zh == null) {
+    return TEXT_NONE
+  }
+  const city = cityOf({ company: x.company })
+  if (city === TEXT_NONE) {
+    return zh
+  }
+  return city + LOC_JOIN + zh
 }
 
 /**
@@ -743,6 +812,19 @@ export function zhLineClsOf(x: ZhLineClsIn): string {
 }
 
 /**
+ * 在招职位卡展开 / 收起钮的钮面(2026-09-14 Frank「加一个收起的功能」)。
+ *
+ * @param x 取词函数、当前展开没、折着的岗数。
+ * @returns 钮面文案。
+ */
+export function jobsToggleLabelOf(x: JobsToggleLabelIn): string {
+  if (x.all) {
+    return x.t('act.collapse')
+  }
+  return x.t('act.showAll', { n: x.hidden })
+}
+
+/**
  * 折叠钮的点击手柄(「看来源」这类开合)。
  *
  * @param x 现值与落格。
@@ -751,18 +833,6 @@ export function zhLineClsOf(x: ZhLineClsIn): string {
 export function makeToggle(x: ToggleIn): GoBackFn {
   return function toggle(): void {
     x.set(x.on === false)
-  }
-}
-
-/**
- * 「展开其余」的点击手柄(#198:原地展开已载入职位,不跳转)。
- *
- * @param x 展开态落格。
- * @returns 点击手柄。
- */
-export function makeShowAll(x: ShowAllIn): GoBackFn {
-  return function showAll(): void {
-    x.set(true)
   }
 }
 
@@ -892,6 +962,44 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
 }
 
 /**
+ * 懒翻公司名(2026-09-14 Frank「公司名也做一个懒加载翻译」):打 /api/employers/alias,回来落格;失败静默(英文名照旧)。
+ *
+ * @param x 公司名、界面语言与落格。
+ * @returns 取数函数(带死旗)。
+ */
+export function makeLoadAlias(x: LoadAliasIn): LoadFn {
+  return function loadAlias(flag: DeadFlag): void {
+    function read(r: Response): Promise<AliasJson> {
+      return r.json().catch(none)
+    }
+    function none(): null {
+      return null
+    }
+    function land(j: AliasJson): void {
+      if (flag.dead) {
+        return
+      }
+      x.onSettled(true)
+      if (j == null || j.ok !== true || j.alias == null || j.alias === TEXT_NONE) {
+        return
+      }
+      x.setAlias(j.alias)
+    }
+    function fall(): void {
+      if (flag.dead) {
+        return
+      }
+      x.onSettled(true)
+    }
+    fetch(URL_CO_ALIAS, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ name: x.name, lang: x.lang }),
+    }).then(read).then(land).catch(fall)
+  }
+}
+
+/**
  * 公司简介的懒翻(#185 中文对照:点了才翻,拿到存一份切换零延迟)。
  * 翻不出来就不落格 —— 原文照旧显示,不拿半截译文顶上去。
  *
@@ -975,7 +1083,7 @@ export function makeLoadPanel(x: LoadPanelIn): LoadFn {
  * @param g 档位;null/undefined = 缺档。
  * @returns 十六进制色(值与名字都在 constants,这里只做阈值判定)。
  */
-// eslint-disable-next-line local/no-undefined-type -- 旧 API 存量调用方直传可选字段,收窄另批(迁入原样带牌)
+
 export function gradeColorOf(g: number | null | undefined): string {
   if (g == null) {
     return GRADE_C_NONE

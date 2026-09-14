@@ -148,7 +148,8 @@ export const PATH_SEP = '/'
 /**
  * 路径头→高亮键映射(2026-08-29 Frank「你直接在这加合适么」拍板:高亮由 Header
  * 按 pathname 自判,active prop 退役 —— 每页手填就是 occupations 亮错「雇主」的病根)。
- * 顺序即匹配序:前缀命中第一条生效;不在表里的路径不亮灯(companies 详情沿旧行为)。
+ * 顺序即匹配序:前缀命中第一条生效;不在表里的路径不亮灯(companies 详情 2026-09-14 起亮「雇主」,
+ * Frank「导航显示的不对,雇主的 title 要高亮吧」)。
  * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
  */
 export const PATH_ACTIVE = [
@@ -157,6 +158,7 @@ export const PATH_ACTIVE = [
   ['/rankings', 'rank'],
   ['/plan', 'pathways'],
   ['/employers', 'employers'],
+  ['/companies', 'employers'],
   ['/coop', 'coop'],
   ['/occupations', 'library'],
   ['/resources', 'library'],

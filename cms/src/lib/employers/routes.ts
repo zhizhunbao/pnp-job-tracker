@@ -17,21 +17,25 @@ import { textResponseOf,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
-  TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translateReady, translateSectioned,
+  TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned,
 } from '../llm'
 import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
-  CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE, CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
+  CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE,
+  CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
-  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH,
+  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
+  ALIAS_PREFIX, NEWLINE,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
+  aliasCellOf, loadCompanyAlias, saveCompanyAlias,
 } from './functions'
 import { CACHE } from './variables'
-import type { EmployersTransBody, InfoBody, SponsorFilters } from './types'
+import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody,
+} from './types'
 
 /**
  * GET /api/employers:雇主板懒取(2026-08-16 立;2026-09-13 雇主板批二改读雇主池)。
@@ -120,7 +124,8 @@ export async function employersExportRoute(req: Request): Promise<Response> {
     f: f, prov: prov, city: paramOf(sp, PARAM.city).slice(0, CITY_LEN_MAX),
     noc: noc, q: paramOf(sp, PARAM.q).slice(0, EXPORT_Q_LEN_MAX), sort: sort,
   }
-  const rows = applySponsorFilters({ rows: await loadSponsorEmployers({ db: await getDb(), judge: employerVerdict }), filters: filters })
+  const rows = applySponsorFilters({ rows: await loadSponsorEmployers({ db: await getDb(), judge: employerVerdict }),
+    filters: filters })
   return new Response(sponsorCsvOf(rows), {
     headers: {
       [HDR_CONTENT_TYPE]: CSV_CONTENT_TYPE,
@@ -261,3 +266,69 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   }
 }
 
+
+/**
+ * 懒翻公司名(2026-09-14 Frank「公司名也做一个懒加载翻译」「这些相似雇主的中文名都加上懒加载翻译」):
+ * 库里有别名直接给;没有就让翻译器把名字当一行译,译名落回 companies.alias_zh / alias_ko(只填空格),
+ * 下次谁开都不再烧。译名超长(模型在解释)不落库、不返回。
+ *
+ * @param req 请求体 { name, lang }。
+ * @returns { ok, alias, cached }。
+ */
+export async function employersAliasRoute(req: Request): Promise<Response> {
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  let name = NAME_UNSET
+  let lang = LANG_UNSET
+  try {
+    const b = await req.json() as EmployersAliasBody
+    if (typeof b.name === 'string') {
+      name = b.name.trim()
+    }
+    if (typeof b.lang === 'string') {
+      lang = b.lang
+    }
+  } catch {
+    name = NAME_UNSET
+  }
+  if (name === '' || TRANS_LANGS.includes(lang) === false) {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  const ck = name.toLowerCase() + ALIAS_KEY_SEP + lang
+  const hit = CACHE.aliasBy.get(ck)
+  if (hit != null) {
+    return Response.json({ ok: true, alias: hit, cached: true })
+  }
+  const db = await getDb()
+  const stored = await loadCompanyAlias({ db: db, name: name })
+  if (stored == null) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  const have = aliasCellOf({ fact: stored, lang: lang })
+  if (have !== '') {
+    CACHE.aliasBy.set(ck, have)
+    return Response.json({ ok: true, alias: have, cached: true })
+  }
+  if (checkLimit([[ALIAS_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
+    return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
+  }
+  try {
+    const r = await translatePlainLines({ text: ALIAS_PREFIX + name, lang: lang,
+      signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
+    const alias = r.text.split(NEWLINE)[0]
+    if (alias == null || alias.trim() === '' || alias.trim().length > ALIAS_MAX_LEN) {
+      return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+    }
+    const clean = alias.trim()
+    CACHE.aliasBy.set(ck, clean)
+    await saveCompanyAlias({ db: db, name: name, lang: lang, alias: clean })
+    return Response.json({ ok: true, alias: clean, cached: false })
+  } catch (e) {
+    let msg = String(e)
+    if (e instanceof Error) {
+      msg = e.message
+    }
+    return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
+  }
+}

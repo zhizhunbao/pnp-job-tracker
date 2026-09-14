@@ -8,6 +8,8 @@
  * 2026-08-28 换装批自 Jd.tsx 重写落位。
  * 2026-09-14 Frank「简历对照按钮去掉,之后创建一个单独的简历模块」:钮撤,对照弹层与 hooks 里的
  * 流程先留着不动(简历模块立域时整体搬走)。
+ * 2026-09-14 Frank「点击前往投递应该先跳出来登录框啊,而不是注册框」「这个文字删了」:匿名点投递弹登录框(框内可切注册),
+ * 「注册后帮你预填投递邮件,记录投递进度」那句 hero 不再传。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -19,7 +21,7 @@ import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_INTENT, AUTH_REGISTER, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED,
+  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED,
   TARGET_BLANK, TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyLabelOf, barClsOf } from './functions'
@@ -63,7 +65,7 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
         </Modal>
       )}
       {a.stage === APPLY_AUTH && (
-        <AuthModal t={t} mode={AUTH_REGISTER} z={MODAL_Z_STACKED} hero={t('apply.authHero')}
+        <AuthModal t={t} mode={AUTH_LOGIN} z={MODAL_Z_STACKED}
           returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
       )}
       {a.stage === APPLY_INTENT && (

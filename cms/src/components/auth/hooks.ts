@@ -1,13 +1,16 @@
 'use client'
 /**
  * auth 域的状态机器:首帧会话上下文、OAuth 回跳失败提示、点外面关菜单。
+ * 2026-09-14 Frank「这个我点的直接注册并登录,怎么还让我注册」:注册撞上已注册邮箱不再报错让人换框,
+ * 拿同一份邮箱密码直接试登录;密码不对才报「邮箱或密码不正确」。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
 import { createContext, useContext, useEffect, useState } from 'react'
 import {
-  ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, HISTORY_TITLE_UNUSED, MODE_BACK_TO, OAUTH_FAIL,
+  ERR_NONE, EV_MOUSEDOWN, FIELD_EMPTY, FLOW_ERR, FLOW_SENT, HISTORY_TITLE_UNUSED, KEY_ERR_CRED, KEY_ERR_EXISTS,
+  MODE_BACK_TO, MODE_LOGIN, MODE_REGISTER, OAUTH_FAIL,
   OAUTH_PARAM, QS_NONE, QS_PREFIX,
 } from './constants'
 import { finishAuth, googleHrefOf, localeOf, runAuthFlow } from './functions'
@@ -119,6 +122,16 @@ export function useAuthForm(x: AuthFormHookIn): AuthFormHookOut {
       const out = await runAuthFlow({ mode, email, pw, resetToken: x.resetToken, locale: localeOf() })
       if (out.kind === FLOW_SENT) {
         setSent(true)
+        return
+      }
+      if (out.kind === FLOW_ERR && out.errKey === KEY_ERR_EXISTS && mode === MODE_REGISTER) {
+        const login = await runAuthFlow({ mode: MODE_LOGIN, email, pw, resetToken: x.resetToken, locale: localeOf() })
+        if (login.kind === FLOW_ERR) {
+          setErr(x.t(KEY_ERR_CRED))
+          return
+        }
+        setPw(FIELD_EMPTY)
+        await finishAuth({ mode: MODE_LOGIN, returnTo: x.returnTo, onDone: x.onDone })
         return
       }
       if (out.kind === FLOW_ERR) {
