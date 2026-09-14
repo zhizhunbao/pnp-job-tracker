@@ -28,15 +28,15 @@ import {
   HOURS_FULL, HOURS_PART, HOW_APPLY_RE, HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
   JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
   JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DASH_PREFIX_RE, JD_DIGITS_RE,
-  JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS, JD_HEAD_JUNK_RE, JD_HEAD_MAX_LINES,
-  JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MARK_INLINE_RE, JD_MARK_LINE_REPL,
-  JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE, JD_NONE_TEXT,
-  JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE, JD_SECTION_MARKS,
-  JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA, JOB_PATH,
-  JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY, LD_CURRENCY,
-  LD_FULL_TIME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY, LD_ORGANIZATION,
-  LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK, LINE_SPACES_RE,
-  LMIA_SOURCE, LV, MAIL_AT, MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD,
+  JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS, JD_GEN_TRIES, JD_HEAD_JUNK_RE,
+  JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MARK_INLINE_RE,
+  JD_MARK_LINE_REPL, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE,
+  JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
+  JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA,
+  JOB_PATH, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
+  LD_CURRENCY, LD_FULL_TIME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
+  LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
+  LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD,
   MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL, MED_SELECT, META_AT, META_BAR, META_DOT, META_IN, META_NOT_FOUND,
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
   NOC_SEARCH_MIN, NOC_SUBMAJOR_LEN, NORM_DASH, NORM_DASH_RE, NORM_WS_RE, NO_LIST_PROVINCES, OCC_TITLE_NONE,
@@ -52,35 +52,32 @@ import {
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
 } from './constants'
-import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
+import {
+  JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN,
+} from './prompts'
 import { CACHE } from './variables'
 import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
   CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
-  CountMap,
-  CountOfIn, CoverageIn, DesigDim, DistrictCard, DistrictDim, DistrictEmployerRow, DliTop, DrawStreamNoteIn,
-  DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
-  JdByIdIn, JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
-  JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
-  JobsPageOut,
-  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, DesignatedIn, DesignatedOut, LmiaNocsOut,
-  MatchDims, MatchDimsOut,
-  MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel,
-  MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn,
-  NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn,
-  OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, PgFailure,
-  PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts,
-  ProvinceCardIn, ProvinceCardOut, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount,
-  QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, ReqStreamDisplayIn, ResolveQIn,
-  JobMidIn, MidOut, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList,
-  SimilarOut,
-  SortValIn,
-  SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
-  UrlHandle, WhereParam,
-  JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow, TranslateTitlesIn, TitlesOut, TitleList, TitleTexts,
-  JdTransIn, JdTransOut, JdTransFact, JdTransCellIn, SaveJdTransIn, TitleTransIn, SaveTitleTransIn, DoneOut,
-  ResetJdTransIn,
+  CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
+  DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
+  EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
+  JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
+  JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobMidIn, JobOgDbRow,
+  JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
+  JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
+  MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult,
+  MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, MidOut, NameOption,
+  NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn,
+  NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
+  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell,
+  ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut,
+  QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
+  RelatedOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
+  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut,
+  StrCell, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleList, TitleTexts, TitleTransIn, TitlesOut,
+  ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut, TranslateTitlesIn, UrlHandle, WhereParam,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -2821,45 +2818,71 @@ export async function loadJdState(input: JdFormattedIn): JdStateOut {
  * @returns 整理版；生成/校验失败是 null。
  */
 export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
-  const src = input.description
-  const budget = FRIEND_INPUT_MAX - JD_FORMAT_PROMPT_HEAD.length - JD_BUDGET_MARGIN
-  const r = await friendChat({ prompt: JD_FORMAT_PROMPT_HEAD + src.slice(0, budget), timeoutMs: JD_GEN_TIMEOUT_MS })
-  if (r == null) {
+  const draft = await draftJdFormatted({ src: input.description, id: input.state.id })
+  if (draft == null) {
     return null
   }
-  let out = r.answer
-  let term = JD_FIELD_NONE
-  const termM = JD_TERM_RE.exec(out)
-  if (termM != null) {
-    const termG = termM.groups
-    if (termG != null && termG.term != null) {
-      term = termG.term.toLowerCase()
-    }
-  }
-  let hrs = JD_FIELD_NONE
-  const hrsM = JD_HRS_RE.exec(out)
-  if (hrsM != null) {
-    const hrsG = hrsM.groups
-    if (hrsG != null && hrsG.hrs != null) {
-      hrs = hrsG.hrs.toLowerCase()
-    }
-  }
-  out = out.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim()
-  const ok = validateJdFormatted(out, src)
-  log({ tag: JOBS_LOG.tag,
-    text: JOBS_LOG.jdformatLine + input.state.id + JOBS_LOG.jdformatSrc + src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached + JOBS_LOG.jdformatValid + ok })
-  if (ok === false) {
-    return null
-  }
-  out = jdMarkLinesOf(scrubPii(out))
+  const out = jdMarkLinesOf(scrubPii(draft.out))
   await input.db.query(SQL.JD_SET_FORMATTED, [out, input.state.id])
-  if (term !== '' && JD_TERM_VALUES.includes(term) && input.state.term == null) {
-    await input.db.query(SQL.JD_SET_EMP_TERM, [term, input.state.id])
+  if (draft.term !== '' && JD_TERM_VALUES.includes(draft.term) && input.state.term == null) {
+    await input.db.query(SQL.JD_SET_EMP_TERM, [draft.term, input.state.id])
   }
-  if (hrs !== '' && JD_HOURS_VALUES.includes(hrs) && input.state.hours == null) {
-    await input.db.query(SQL.JD_SET_EMP_HOURS, [hrs, input.state.id])
+  if (draft.hrs !== '' && JD_HOURS_VALUES.includes(draft.hrs) && input.state.hours == null) {
+    await input.db.query(SQL.JD_SET_EMP_HOURS, [draft.hrs, input.state.id])
   }
   return out
+}
+
+/**
+ * 打模型出整理版草稿并校验,最多 JD_GEN_TRIES 次(2026-09-14 Frank「加」):模型答得不稳、校验是硬的,
+ * 第一次没过(多半是数字被改写)再打一次,第二次提示尾加一句照抄数字;每次都记一行日志带次数。
+ *
+ * @param x 原文与岗 id。
+ * @returns 过了校验的草稿;都没过 null。
+ */
+async function draftJdFormatted(x: DraftJdIn): DraftJdOut {
+  const budget = FRIEND_INPUT_MAX - JD_FORMAT_PROMPT_HEAD.length - JD_BUDGET_MARGIN - JD_FORMAT_RETRY_TAIL.length
+  const body = x.src.slice(0, budget)
+  for (let attempt = 1; attempt <= JD_GEN_TRIES; attempt = attempt + 1) {
+    let prompt = JD_FORMAT_PROMPT_HEAD + body
+    if (attempt > 1) {
+      prompt = prompt + JD_FORMAT_RETRY_TAIL
+    }
+    const r = await friendChat({ prompt: prompt, timeoutMs: JD_GEN_TIMEOUT_MS })
+    if (r == null) {
+      log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdformatLine + x.id + JOBS_LOG.jdformatTry + attempt + JOBS_LOG.jdformatValid + false })
+      continue
+    }
+    const draft = jdDraftOf(r.answer)
+    const ok = validateJdFormatted(draft.out, x.src)
+    log({ tag: JOBS_LOG.tag,
+      text: JOBS_LOG.jdformatLine + x.id + JOBS_LOG.jdformatSrc + x.src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached
+        + JOBS_LOG.jdformatTry + attempt + JOBS_LOG.jdformatValid + ok })
+    if (ok) {
+      return draft
+    }
+  }
+  return null
+}
+
+/**
+ * 模型答案 → 草稿:抽尾部 [TERM]= / [HRS]= 两字段,再把这两行剥掉。
+ *
+ * @param answer 模型原答。
+ * @returns 草稿(未校验)。
+ */
+function jdDraftOf(answer: string): JdDraft {
+  let term = JD_FIELD_NONE
+  const termM = JD_TERM_RE.exec(answer)
+  if (termM != null && termM.groups != null && termM.groups.term != null) {
+    term = termM.groups.term.toLowerCase()
+  }
+  let hrs = JD_FIELD_NONE
+  const hrsM = JD_HRS_RE.exec(answer)
+  if (hrsM != null && hrsM.groups != null && hrsM.groups.hrs != null) {
+    hrs = hrsM.groups.hrs.toLowerCase()
+  }
+  return { out: answer.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim(), term: term, hrs: hrs }
 }
 
 /**

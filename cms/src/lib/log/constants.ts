@@ -647,6 +647,11 @@ export const JOBS_LOG = {
   jdformatValid: ' valid=',
 
   /**
+   * jdformat 行:第几次打模型(从 1 起;2026-09-14 起没过校验会再打一次)。
+   */
+  jdformatTry: ' try=',
+
+  /**
    * 这个域每一行日志的来源标签。
    */
   tag: 'jobs',

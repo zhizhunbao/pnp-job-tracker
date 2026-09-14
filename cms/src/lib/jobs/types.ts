@@ -4519,6 +4519,46 @@ export type GenerateJdIn = {
 export type GenerateJdOut = Promise<MaybeStr>
 
 /**
+ * `draftJdFormatted` 的入参。
+ */
+export type DraftJdIn = {
+  /**
+   * 岗位原文。
+   */
+  src: string
+
+  /**
+   * 岗 id(只进日志)。
+   */
+  id: number
+}
+
+/**
+ * 一份过了校验的整理版草稿:正文与顺带抽出的两个字段。
+ */
+export type JdDraft = {
+  /**
+   * 整理版正文(已剥尾部字段行)。
+   */
+  out: string
+
+  /**
+   * [TERM]= 抽出的任期;'' = 没抽到。
+   */
+  term: string
+
+  /**
+   * [HRS]= 抽出的工时;'' = 没抽到。
+   */
+  hrs: string
+}
+
+/**
+ * `draftJdFormatted` 的返回:两次都没过是 null。
+ */
+export type DraftJdOut = Promise<JdDraft | null>
+
+/**
  * POST /api/jobs/jdformat 的请求体形状（跨边界断言目标，逐格判后才用）。
  */
 export type JdUrlBody = {

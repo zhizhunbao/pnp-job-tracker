@@ -2637,6 +2637,12 @@ export const JD_DIGITS_RE = /\d{2,}/g
 export const JD_BUDGET_MARGIN = 20
 
 /**
+ * jdformat 最多打几次模型(2026-09-14 Frank「之前为什么有时候会 AI 整理不成功」→「加」):模型每次答得不一样、校验是硬的
+ * (多位数字必须来自原文,「28-Sep-26」被写成「2026」整篇拒收),第一次没过再打一次,第二次的提示尾多一句照抄数字。
+ */
+export const JD_GEN_TRIES = 2
+
+/**
  * jdformat 生成的单次超时（ms）。
  */
 export const JD_GEN_TIMEOUT_MS = 90000

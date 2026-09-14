@@ -198,3 +198,9 @@ export const JD_FORMAT_PROMPT_HEAD = `You are reorganizing a job posting into fi
 - Finally, on two extra lines output: [TERM]=permanent|term|casual|seasonal|unknown and [HRS]=full|part|unknown (from the posting).
 Posting follows:
 `
+
+/**
+ * jdformat 第二次(重试)时接在正文后面的一句:第一次多半是数字被改写没过校验,点名照抄。
+ */
+export const JD_FORMAT_RETRY_TAIL = `
+(Reminder: copy every number, date and amount exactly as written in the posting, character for character.)`
