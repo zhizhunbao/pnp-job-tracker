@@ -2131,7 +2131,7 @@ export type ApplyBarIn = {
 /**
  * 投递流程的三段:闲置 → 注册闸 → 求职意向。
  */
-export type ApplyStage = 'idle' | 'auth' | 'intent'
+export type ApplyStage = 'idle' | 'auth' | 'intent' | 'email'
 
 /**
  * ApplyBar 状态机交回的面板。
@@ -2191,6 +2191,21 @@ export type ApplyBarPanel = {
    * 关/完成意向表单:都继续投递(投递必须丝滑)。
    */
   onIntentDone: ClickFn
+
+  /**
+   * 关邮件投递框(2026-09-14)。
+   */
+  onEmailClose: ClickFn
+
+  /**
+   * 邮件投递框里「复制邮箱」按过没(按过钮面换「已复制」)。
+   */
+  copied: boolean
+
+  /**
+   * 复制邮箱到剪贴板。
+   */
+  onCopyEmail: ClickFn
 }
 
 /**
@@ -6215,3 +6230,52 @@ export type JdLocationSectionIn = {
   applyEmail: string
 }
 
+/**
+ * ApplyEmail(邮件投递框)的 props。
+ */
+export type ApplyEmailIn = {
+  /**
+   * 收件邮箱。
+   */
+  email: string
+
+  /**
+   * 本岗(拼邮件主题与正文)。
+   */
+  job: JobFact
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 按过「复制邮箱」没。
+   */
+  copied: boolean
+
+  /**
+   * 复制邮箱。
+   */
+  onCopy: ClickFn
+
+  /**
+   * 关框。
+   */
+  onClose: ClickFn
+}
+
+/**
+ * copyLabelOf 的入参。
+ */
+export type CopyLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 按过「复制邮箱」没。
+   */
+  copied: boolean
+}

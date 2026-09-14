@@ -486,7 +486,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'ee.agriculture': '농식품', 'ee.cec': 'CEC 경험이민', 'ee.french': '프랑스어', 'ee.pnpLinked': '주정부 지명', 'ee.general': '전체 대상', 'ee.fsw': '연방 기술이민', 'ee.fst': '연방 기능이민',
   'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
-  'apply.email': '이메일로 지원', 'apply.web': '공식 사이트에서 지원', 'apply.plain': '지원', 'apply.copy': '요점 복사', 'apply.copied': '복사됨',
+  'apply.email': '이메일로 지원', 'apply.mailTo': '받는 사람', 'apply.openMail': '메일 앱 열기', 'apply.copyMail': '주소 복사', 'apply.web': '공식 사이트에서 지원', 'apply.plain': '지원', 'apply.copy': '요점 복사', 'apply.copied': '복사됨',
   'apply.authHero': '가입하면 지원 이메일을 미리 채우고 지원 현황을 기록합니다',
   'ob.valueApply': '몇 번만 선택하면 비슷한 공고가 이메일로 도착합니다', 'ob.finishApply': '저장하고 지원 계속',
   // E8-07 채용 상세 페이지

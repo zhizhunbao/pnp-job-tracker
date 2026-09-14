@@ -3014,6 +3014,12 @@ export const APPLY_AUTH = 'auth'
 export const APPLY_INTENT = 'intent'
 
 /**
+ * 投递流程:邮件投递框(2026-09-14 Frank「这个需要弹个页面出来吧」:原先直接跳 mailto,没装邮件客户端的机器点了没反应;
+ * 改弹一框给邮箱,可打开邮件也可复制)。
+ */
+export const APPLY_EMAIL = 'email'
+
+/**
  * 整理版一节的渲染档:「怎么投」整节缺又有邮箱 / 整节缺只出官方短链 / 有内容且逐行链官方 /
  * 薪资整节缺但帖面有薪资 / 整节缺 / 有内容。
  */

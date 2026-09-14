@@ -489,7 +489,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'ee.agriculture': 'Agri-food', 'ee.cec': 'CEC', 'ee.french': 'French', 'ee.pnpLinked': 'PNP', 'ee.general': 'General', 'ee.fsw': 'FSW', 'ee.fst': 'FST',
   'act.seeOfficial': 'View official posting',
-  'apply.email': 'Apply by email', 'apply.web': 'Apply on official site', 'apply.plain': 'Apply', 'apply.copy': 'Copy summary', 'apply.copied': 'Copied',
+  'apply.email': 'Apply by email', 'apply.mailTo': 'Send to', 'apply.openMail': 'Open mail app', 'apply.copyMail': 'Copy address', 'apply.web': 'Apply on official site', 'apply.plain': 'Apply', 'apply.copy': 'Copy summary', 'apply.copied': 'Copied',
   'apply.authHero': 'Sign up to prefill the application email and track your applications',
   'ob.valueApply': 'A few taps now — similar jobs will land in your inbox', 'ob.finishApply': 'Save and continue applying',
   // E8-07 job detail page

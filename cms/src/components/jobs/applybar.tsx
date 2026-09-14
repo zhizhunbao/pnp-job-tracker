@@ -21,10 +21,11 @@ import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED, TARGET_BLANK, TEXT_NONE,
-  URL_JOB,
+  APPLY_AUTH, APPLY_EMAIL, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED,
+  TARGET_BLANK, TEXT_NONE, URL_JOB,
 } from './constants'
 import { applyLabelOf, barClsOf } from './functions'
+import { ApplyEmail } from './applyemail'
 import { useApplyBar } from './hooks'
 import type { ApplyBarIn } from './types'
 import css from './jobs.module.css'
@@ -67,6 +68,9 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
       {a.stage === APPLY_AUTH && (
         <AuthModal t={t} mode={AUTH_LOGIN} z={MODAL_Z_STACKED}
           returnTo={URL_JOB + String(job.id)} onClose={a.onAuthClose} onDone={a.onAuthDone} />
+      )}
+      {a.stage === APPLY_EMAIL && (
+        <ApplyEmail email={email} job={job} t={t} copied={a.copied} onCopy={a.onCopyEmail} onClose={a.onEmailClose} />
       )}
       {a.stage === APPLY_INTENT && (
         <OnboardingWizard t={t} initial={a.intentProfile} z={MODAL_Z_STACKED}

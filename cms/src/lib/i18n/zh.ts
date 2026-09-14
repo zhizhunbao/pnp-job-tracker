@@ -528,7 +528,7 @@ export const jobsZh = {
   'ee.agriculture': '农业食品', 'ee.cec': 'CEC 经验类', 'ee.french': '法语', 'ee.pnpLinked': '省提名', 'ee.general': '不限类别', 'ee.fsw': '联邦技术', 'ee.fst': '联邦技工',
   'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
   // E9-04 投递栏(+dd24-#109 语境文案)
-  'apply.email': '邮件投递', 'apply.web': '前往投递', 'apply.plain': '投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
+  'apply.email': '邮件投递', 'apply.mailTo': '收件邮箱', 'apply.openMail': '打开邮件', 'apply.copyMail': '复制邮箱', 'apply.web': '前往投递', 'apply.plain': '投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递',
   // E8-07 职位详情页

@@ -66,21 +66,21 @@ import type {
   BoardTitleIn, BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
-  ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn,
-  DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn, FilterCountIn,
-  FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn, FrozenStyleIn, GapIn,
-  HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, JdBusyIn, JdCityLocalIn, JdLineView, JdLinesIn,
-  JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
-  JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters,
-  JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn, MailBodyIn, MailtoIn, MapHrefIn,
-  MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn, MeasureWordIn, MidOptsIn, MoreLabelIn,
-  MvBarTextIn, NamedTextIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn,
-  NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn,
-  PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn,
-  RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
-  ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SliceTextIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
-  SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus, UpsellKind,
-  UpsellReasonIn, WantsIn, WidthsKeyIn,
+  ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
+  DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn,
+  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
+  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, JdBusyIn, JdCityLocalIn, JdLineView,
+  JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn,
+  JdSectionMode, JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact,
+  JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn, MailBodyIn,
+  MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn, MeasureWordIn,
+  MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc, NocDescDoc,
+  NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn,
+  PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn,
+  ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn,
+  SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SliceTextIn, SlotIn, SortMarkIn, SortState,
+  StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn, ThWidthIn, TransLabelIn, TransShownIn,
+  TransStatus, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3742,6 +3742,19 @@ export function applyLabelOf(x: ApplyLabelIn): string {
     return x.t('apply.web')
   }
   return x.t('apply.plain')
+}
+
+/**
+ * 邮件投递框「复制邮箱」的钮面:按过换「已复制」(点击要有反馈,2026-09-14)。
+ *
+ * @param x 取词函数与按过没。
+ * @returns 钮面文案。
+ */
+export function copyLabelOf(x: CopyLabelIn): string {
+  if (x.copied) {
+    return x.t('apply.copied')
+  }
+  return x.t('apply.copyMail')
 }
 
 /**

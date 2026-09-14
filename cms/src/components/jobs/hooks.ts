@@ -19,7 +19,8 @@ import { registerCatLabels } from '@/lib/noc'
 import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  APPLY_AUTH, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS, AUTH_LOGIN,
+  APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
+  AUTH_LOGIN,
   AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIR_DESC, DIRECT_URL_KEY,
   DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK, FK_DIRECT,
   FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
@@ -38,7 +39,7 @@ import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, authFromUrl, blockedKeysOf, clearFiltersIn,
   colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
   filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf, jobDetailViewOf,
-  jobsQueryOf, keysOf, lastOf, mailtoOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
+  jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf,
   seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
@@ -1981,6 +1982,7 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [matchJd, setMatchJd] = useState<string | null>(null)
   const [authed, setAuthed] = useState(false)
   const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
+  const [copied, setCopied] = useState(false)
   const narrow = useIsNarrow()
   const job = x.job
   const email = x.email
@@ -1989,6 +1991,11 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     clearApplyIntent()
     trackApply(email)
     await recordApplied(job)
+    if (email !== TEXT_NONE) {
+      setCopied(false)
+      setStage(APPLY_EMAIL)
+      return
+    }
     openApply({ job, email })
   }
   function onApply(): void {
@@ -2022,6 +2029,17 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     onIntentDone: function finishIntent(): void {
       setStage(APPLY_IDLE)
       launch()
+    },
+    onEmailClose: function closeEmail(): void {
+      setStage(APPLY_IDLE)
+    },
+    copied,
+    onCopyEmail: function copyEmail(): void {
+      navigator.clipboard.writeText(email).then(function markCopied(): void {
+        setCopied(true)
+      }).catch(function copyFailed(): void {
+        setCopied(false)
+      })
     },
   }
 }
@@ -2293,7 +2311,6 @@ async function findSavedRow(job: JobFact): Promise<string | number | null> {
  */
 function openApply(x: OpenApplyIn): void {
   if (x.email !== TEXT_NONE) {
-    window.location.href = mailtoOf({ email: x.email, job: x.job })
     return
   }
   if (x.job.applyUrl !== TEXT_NONE) {
