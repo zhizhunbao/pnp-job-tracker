@@ -229,8 +229,16 @@ SECTION_ENDS = ["id=\"ourCommitment\"", "id=\"howToApply\"", "id=\"hiringOrgCont
 EXTERNAL_LINK_RE = re.compile(r"href=\"(https?://[^\"]+)\"")
 """站外跳转帖的外链(页上第一条 http 链)。"""
 
-LOC_RE = re.compile(r"^(.*?)\s*\((.*?)\)\s*$")
-"""「City (Province)」拆城与省名。"""
+LOC_NOTE_MARK = "⚠"
+"""地点格尾随的提醒自此截断(「Regina (Saskatchewan) ⚠️Applicants are encouraged to apply ONLY if…」
+整句当城市名进了城市下拉,Frank 2026-09-14 实拍)。"""
+
+LOC_RE = re.compile(r"\(([^()]*)\)")
+"""地点里的每个括号段;第一个括号内是认得的省名的那段即「City (Province)」,城 = 其前文
+(2026-09-14 改:原 `^(.*?)\\s*\\((.*?)\\)\\s*$` 要求括号收尾,尾随提醒或多地点一来整句就成了城市名)。"""
+
+OTHER_LOC_MARK = "Other locations"
+"""「National Capital Region - Other locations (Ontario)」这类不是城市,城留空(2026-09-14)。"""
 
 LOC_SEP = ","
 """多地点的分隔(取第一处)。"""

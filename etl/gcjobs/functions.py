@@ -36,7 +36,8 @@ from gcjobs.constants import (
     K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_INDUSTRY, K_LANG, K_LAST_SEEN, K_NOC, K_POSTING_ID, K_PROVINCE,
     K_SALARY, K_SOURCE, K_TITLE, K_TITLE_ORIG, K_URL, K_VALID_THROUGH, K_WHO_CAN_APPLY, LANG_EN, LINES_PER_CELL,
     LIST_SLEEP_S,
-    LOC_RE, LOC_SEP, NEWLINE, NL_RE, ORG_RE, ORG_SEP, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGE_ONE, PAGE_QS_TPL,
+    LOC_NOTE_MARK, LOC_RE, LOC_SEP, NEWLINE, NL_RE, ORG_RE, ORG_SEP, OTHER_LOC_MARK, OUT_JOBS, OUT_POSTINGS,
+    OUT_ROWS, PAGE_ONE, PAGE_QS_TPL,
     PAGES_RE, PERCENT, POSTER_PART_QS_TPL, POSTER_PATH, POSTER_SHELL_QS_TPL, POSTER_URL_TPL, PRINT_DETAIL_BAD_TPL,
     PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL,
     PRINT_ROWS_DONE_TPL, PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, RATE_FLOOR_S, ROW_CELL_RE, ROW_LINK_RE, ROW_RE,
@@ -363,14 +364,21 @@ def fields_of(html: str) -> dict:
 
 
 def location_of(text: str) -> Location:
-    """地点原文 → (城, 省):取第一处「City (Province)」;「Various …」或认不出的省名留空。"""
-    first = text.split(LOC_SEP, 1)[0].strip()
-    if VARIOUS_MARK in first.lower():
+    """地点原文 → (城, 省):截掉尾随提醒后取第一个括号内是认得的省名的「City (Province)」,城 = 其前文
+    的最后一段(多地点逗号隔);「Various …」、「… Other locations」或没有认得的省名 → 城省都留空
+    (原文仍在 address 格;宁可留空不瞎猜 —— 2026-09-14 前认不出时整句当城市,脏了城市下拉)。"""
+    head = text.split(LOC_NOTE_MARK, 1)[0]
+    if VARIOUS_MARK in head.lower():
         return Location(city="", province="")
-    m = LOC_RE.match(first)
-    if m is None:
-        return Location(city=first, province="")
-    return Location(city=m.group(1).strip(), province=PROV_CODE_OF_NAME.get(m.group(2).strip(), ""))
+    for m in LOC_RE.finditer(head):
+        province = PROV_CODE_OF_NAME.get(m.group(1).strip(), "")
+        if province == "":
+            continue
+        city = head[:m.start()].split(LOC_SEP)[-1].strip()
+        if OTHER_LOC_MARK in city:
+            city = ""
+        return Location(city=city, province=province)
+    return Location(city="", province="")
 
 
 def closing_iso_of(text: str) -> str:

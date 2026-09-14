@@ -28,6 +28,13 @@ PLACE_RE = re.compile(r"^(.*?)\s*\((.*?)\)\s*$")
 """place_name = "主名 (社区1 / 社区2 …)" 的拆分:main = 括号前(郊区社区名,如
 Kanata/Gloucester;大城市则=城市名),hood = 括号内第一个(更细的社区,如 Bridgeland)。"""
 
+GOV_SUFFIX_RE = re.compile(
+    r"\s*(?:British Columbia|Manitoba|New Brunswick|Newfoundland & Labrador|Nova Scotia|Ontario"
+    r"|Prince Edward Island|Quebec|Saskatchewan) Provincial Government$")
+"""GeoNames 把同 FSA 的省政府机构名拼在地名尾(R3C「Winnipeg (Broadway / …) Manitoba Provincial
+Government」、V8W「Victoria Central British Columbia Provincial Government」等 10 行),建表先截掉
+—— 不截则整句成了区名进区下拉(Frank 2026-09-14 实拍);G1A 只剩机构名,截后 main 空。"""
+
 HOOD_SEP_RE = re.compile(r"\s*/\s*")
 """括号内多社区的分隔。"""
 

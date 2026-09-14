@@ -71,7 +71,7 @@
  },
  "A1B": {
   "hood": "",
-  "main": "St. John's Northwest Newfoundland & Labrador Provincial Government",
+  "main": "St. John's Northwest",
   "prov": "NL"
  },
  "A1C": {
@@ -441,7 +441,7 @@
  },
  "B3J": {
   "hood": "",
-  "main": "Halifax Mid-Harbour Nova Scotia Provincial Government",
+  "main": "Halifax Mid-Harbour",
   "prov": "NS"
  },
  "B3K": {
@@ -571,7 +571,7 @@
  },
  "C1A": {
   "hood": "",
-  "main": "Charlottetown Southeast Prince Edward Island Provincial Government",
+  "main": "Charlottetown Southeast",
   "prov": "PE"
  },
  "C1B": {
@@ -721,7 +721,7 @@
  },
  "E3B": {
   "hood": "",
-  "main": "Fredericton South New Brunswick Provincial Government",
+  "main": "Fredericton South",
   "prov": "NB"
  },
  "E3C": {
@@ -1251,7 +1251,7 @@
  },
  "G1A": {
   "hood": "",
-  "main": "Quebec Provincial Government",
+  "main": "",
   "prov": "QC"
  },
  "G1B": {
@@ -4926,7 +4926,7 @@
  },
  "M7A": {
   "hood": "",
-  "main": "Queen's Park Ontario Provincial Government",
+  "main": "Queen's Park",
   "prov": "ON"
  },
  "M7Y": {
@@ -6050,8 +6050,8 @@
   "prov": "MB"
  },
  "R3C": {
-  "hood": "",
-  "main": "Winnipeg (Broadway / The Forks / Portage and Main) Manitoba Provincial Government",
+  "hood": "Broadway",
+  "main": "Winnipeg",
   "prov": "MB"
  },
  "R3E": {
@@ -6336,7 +6336,7 @@
  },
  "S4S": {
   "hood": "",
-  "main": "Regina South Saskatchewan Provincial Government",
+  "main": "Regina South",
   "prov": "SK"
  },
  "S4T": {
@@ -8091,7 +8091,7 @@
  },
  "V8W": {
   "hood": "",
-  "main": "Victoria Central British Columbia Provincial Government",
+  "main": "Victoria Central",
   "prov": "BC"
  },
  "V8X": {

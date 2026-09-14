@@ -5,7 +5,7 @@ fsa 域函数(2026-08-31 批C 全溶,原 build_geonames_fsa_districts.py 整件�
 import json
 
 from fsa.constants import (
-    CA_PREFIX, DONE_TPL, ENC_UTF8, FSA_LEN, HOOD_SEP_RE, IN_GEONAMES, IN_LINE_TPL, MIN_FIELDS,
+    CA_PREFIX, DONE_TPL, ENC_UTF8, FSA_LEN, GOV_SUFFIX_RE, HOOD_SEP_RE, IN_GEONAMES, IN_LINE_TPL, MIN_FIELDS,
     OUT_LINE_TPL, OUT_TABLE, PLACE_RE, TAB,
 )
 from fsa.scheme import PlaceIn
@@ -33,12 +33,14 @@ def build_districts() -> None:
 
 
 def to_district_row(x: PlaceIn) -> dict:
-    """一行地名 → 维度行:main = 括号前主名,hood = 括号内第一个社区(无括号则 hood 空)。"""
-    m = PLACE_RE.match(x.place)
+    """一行地名 → 维度行:先截尾随的省政府机构名(2026-09-14),main = 括号前主名,
+    hood = 括号内第一个社区(无括号则 hood 空)。"""
+    place = GOV_SUFFIX_RE.sub("", x.place)
+    m = PLACE_RE.match(place)
     if m:
         main = m.group(1).strip()
         hood = HOOD_SEP_RE.split(m.group(2))[0].strip()
     else:
-        main = x.place
+        main = place
         hood = ""
     return {"main": main, "hood": hood, "prov": x.prov}
