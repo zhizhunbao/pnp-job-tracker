@@ -3,15 +3,15 @@
  * 分类弹框顶部的两钮条:中文对照(职责/要求实时翻,英文界面不出)+ AI 速读
  * (点了才生成,复用顾问免费额度 —— 不点不烧,#176 零成本默认不破)。
  * 2026-08-28 换装批自 Advisor.tsx 的 CategoryPanel 钮条提出成件(开态由类给,不再内联)。
+ * 2026-09-14 Frank「公司的和其他弹框的按钮还有图标啊」:钮去图标 / 折叠角标,与职位弹框同形。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconCompass } from '@/components/icons'
-import { BTN_GHOST, LANG_EN, SPACE, TRANS_LOADING } from './constants'
-import { caretOf, pillClsOf, transLabelOf, transPillClsOf } from './functions'
+import { BTN_GHOST, LANG_EN, TRANS_LOADING } from './constants'
+import { pillClsOf, transLabelOf, transPillClsOf } from './functions'
 import type { CategoryActsIn } from './types'
 import css from './advisor.module.css'
 
@@ -31,7 +31,7 @@ export function CategoryActs({ t, lang, trans, ai }: CategoryActsIn) {
         </Button>
       )}
       <Button kind={BTN_GHOST} onClick={ai.onToggle} className={pillClsOf({ on: ai.on })}>
-        <IconCompass />{SPACE}{t('cat.aiRead')}{SPACE}{caretOf({ on: ai.on })}
+        {t('cat.aiRead')}
       </Button>
     </div>
   )

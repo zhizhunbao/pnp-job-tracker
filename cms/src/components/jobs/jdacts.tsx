@@ -8,11 +8,13 @@
  * 2026-08-29 Frank 落锤三颗的分工:「打开完整页」是**胶囊**(几何照 verdict 的 `.tvPill`,
  * 见 `.pillLink`),前两颗定死是**纯文链形**(蓝、无边、无底)—— 它们走 button 族 ghost 型,
  * ghost 的活儿正是把钮清成一截可点文字,所以不给它们挂任何胶囊几何。
+ * 2026-09-14 Frank「打开完整页按钮和前面的保持一致,背景用白色的」:第三颗改走前两颗同一形
+ * (ghost + PILL_CLS,href 交 Button 转 LinkButton),蓝底 `.pillLink` 退役。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { Button, LinkButton } from '@/components/button'
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import {
   BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, TARGET_BLANK, TEXT_NONE, TRANS_LOADING,
@@ -43,9 +45,9 @@ export function JdActs({ d, lang, fullHref }: JdActsIn) {
         </Button>
       )}
       {fullHref !== TEXT_NONE && (
-        <LinkButton href={fullHref} target={TARGET_BLANK} className={`${PILL_CLS} ${cssOf(css.pillLink)}`}>
+        <Button kind={BTN_GHOST} href={fullHref} target={TARGET_BLANK} className={PILL_CLS}>
           {d.t('detail.openFull')}
-        </LinkButton>
+        </Button>
       )}
     </div>
   )

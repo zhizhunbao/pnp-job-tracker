@@ -485,7 +485,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'ee.agriculture': '농식품', 'ee.cec': 'CEC 경험이민', 'ee.french': '프랑스어', 'ee.pnpLinked': '주정부 지명', 'ee.general': '전체 대상', 'ee.fsw': '연방 기술이민', 'ee.fst': '연방 기능이민',
-  'act.seeOfficial': '공식 공고 보기',
+  'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
   'apply.email': '이메일로 지원', 'apply.web': '공식 사이트에서 지원', 'apply.plain': '지원', 'apply.copy': '요점 복사', 'apply.copied': '복사됨',
   'apply.authHero': '가입하면 지원 이메일을 미리 채우고 지원 현황을 기록합니다',
   'ob.valueApply': '몇 번만 선택하면 비슷한 공고가 이메일로 도착합니다', 'ob.finishApply': '저장하고 지원 계속',
@@ -517,7 +517,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'co.spSource': '출처: ESDC 긍정 LMIA 고용주 목록, IRCC',
   'co.similar': '유사 고용주', 'co.similarSub': '같은 주·업종',
   'gr.dim.coSponsor': '스폰서 기록', 'gr.dim.coActive': '채용 활발도', 'gr.dim.coSalary': '급여 수준', 'gr.dim.coFame': '규모·인지도',
-  'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음(기록 없음 ≠ 스폰서 불가)',
+  'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음',
   'gr.co.act.d': '채용 중 {open}건, 최근 30일 신규 {n}건', 'gr.co.act.d1': '채용 중 1건, 최근 30일 신규 {n}건', 'gr.co.sal.d': '채용 공고 급여가 지역 중위값 대비 평균 {pct}%',
   'gr.co.fm.wiki': '위키 등재', 'gr.co.fm.provs': '{n}개 주에서 채용', 'gr.co.fm.open': '채용 중 {n}건', 'gr.co.fm.open1': '채용 중 1건',
   // #123c: 정리본 PAY 급여 필드 대체 주석

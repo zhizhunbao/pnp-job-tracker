@@ -526,7 +526,7 @@ export const jobsZh = {
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   // E6-10:联邦轮次里非「按职业类别」的那几种(CEC/法语/省提名/通用/FSW/FST),只在抽选近况里作类型名出现
   'ee.agriculture': '农业食品', 'ee.cec': 'CEC 经验类', 'ee.french': '法语', 'ee.pnpLinked': '省提名', 'ee.general': '不限类别', 'ee.fsw': '联邦技术', 'ee.fst': '联邦技工',
-  'act.seeOfficial': '查看官方原帖',
+  'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
   // E9-04 投递栏(+dd24-#109 语境文案)
   'apply.email': '邮件投递', 'apply.web': '前往投递', 'apply.plain': '投递', 'apply.copy': '复制要点', 'apply.copied': '已复制',
   'apply.authHero': '注册后帮你预填投递邮件,记录投递进度',
@@ -565,7 +565,7 @@ export const jobsZh = {
   'co.spSource': '来源:ESDC 正面 LMIA 雇主名录、IRCC',
   'co.similar': '相似雇主', 'co.similarSub': '同省同行业',
   'gr.dim.coSponsor': '担保记录', 'gr.dim.coActive': '在库活跃', 'gr.dim.coSalary': '薪资水平', 'gr.dim.coFame': '规模知名',
-  'gr.co.sp.d': '近两年获批 {total} 岗(技能岗 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录(无记录≠不担保)',
+  'gr.co.sp.d': '近两年获批 {total} 岗(技能岗 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录',
   'gr.co.act.d': '在招 {open} 岗,近 30 天新发 {n}', 'gr.co.act.d1': '在招 1 岗,近 30 天新发 {n}', 'gr.co.sal.d': '在招岗帖面薪资平均较当地中位 {pct}%',
   'gr.co.fm.wiki': '维基收录', 'gr.co.fm.provs': '跨 {n} 省招聘', 'gr.co.fm.open': '在招 {n} 岗', 'gr.co.fm.open1': '在招 1 岗',
   // E12-08 尾巴(#126):公司四维行(拆解弹框参照区)

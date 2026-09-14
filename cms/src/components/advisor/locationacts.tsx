@@ -5,17 +5,17 @@
  * 待英文正文接入即生效)/ AI 速读 / 打开完整页(= 该省地区统计页,地点弹框有专属 SEO 页)。
  * 事实块没回来时不给点 AI —— 它解读的就是这些数。
  * 2026-08-28 换装批自 Advisor.tsx 的 LocationPanel 钮条提出成件(开态由类给,不再内联)。
+ * 2026-09-14 Frank「公司的和其他弹框的按钮还有图标啊」:三钮去图标 / 折叠角标 / ↗,与职位弹框同形。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconCompass } from '@/components/icons'
 import {
-  ARROW_EXTERNAL, BTN_GHOST, CLS_SEP, LANG_EN, SPACE, TARGET_BLANK, TEXT_NONE, URL_STATS_HEAD,
+  BTN_GHOST, CLS_SEP, LANG_EN, TARGET_BLANK, TEXT_NONE, URL_STATS_HEAD,
 } from './constants'
-import { caretOf, pillClsOf, zhLabelOf } from './functions'
+import { pillClsOf, zhLabelOf } from './functions'
 import type { LocationActsIn } from './types'
 import css from './advisor.module.css'
 
@@ -38,12 +38,12 @@ export function LocationActs({ t, lang, province, showZh, onToggleZh, ai, factsR
       )}
       {factsReady && (
         <Button kind={BTN_GHOST} onClick={ai.onToggle} className={pillClsOf({ on: ai.on })}>
-          <IconCompass />{SPACE}{t('cat.aiRead')}{SPACE}{caretOf({ on: ai.on })}
+          {t('cat.aiRead')}
         </Button>
       )}
       <LinkButton href={URL_STATS_HEAD + province.toLowerCase()} target={TARGET_BLANK}
         className={cssOf(css.pillLink) + CLS_SEP + pillClsOf({ on: false })}>
-        {t('detail.openFull')}{SPACE}{ARROW_EXTERNAL}
+        {t('detail.openFull')}
       </LinkButton>
     </div>
   )

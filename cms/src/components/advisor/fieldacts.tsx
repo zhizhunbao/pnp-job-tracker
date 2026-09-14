@@ -5,14 +5,14 @@
  * 中文对照即时可用(pnp/ee 有译文;余为「以后加英文」占位);
  * AI 速读 / 打开完整页 = 前置占位(灰显 disabled,待该弹框接入 AI/专属页后点亮)。
  * 2026-08-28 换装批自 Advisor.tsx 的 AdvisorModal 钮栏提出成件(开态由类给,不再内联)。
+ * 2026-09-14 Frank「公司的和其他弹框的按钮还有图标啊」:三钮去图标 / 折叠角标 / ↗,与职位弹框同形。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconCompass } from '@/components/icons'
-import { BTN_GHOST, CLS_SEP, LANG_EN, SPACE } from './constants'
+import { BTN_GHOST, CLS_SEP, LANG_EN } from './constants'
 import { pillClsOf, zhLabelOf } from './functions'
 import type { FieldActsIn } from './types'
 import css from './advisor.module.css'
@@ -33,7 +33,7 @@ export function FieldActs({ t, lang, showZh, onToggleZh }: FieldActsIn) {
         </Button>
       )}
       <Button kind={BTN_GHOST} disabled title={t('cat.aiRead')} className={off}>
-        <IconCompass />{SPACE}{t('cat.aiRead')}
+        {t('cat.aiRead')}
       </Button>
       <Button kind={BTN_GHOST} disabled title={t('detail.openFull')} className={off}>
         {t('detail.openFull')}

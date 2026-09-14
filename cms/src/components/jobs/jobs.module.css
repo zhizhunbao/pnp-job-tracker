@@ -1523,19 +1523,16 @@
  * 写成**加倍类**(0,2,0):这颗同时挂着全局 `.pill`(0,1,0,白底 12.5/5px 13px),
  * 靠文件先后取胜太脆,加倍类让本条无论表怎么合并都压得住。
  * 同排「显示中文对照 / AI 速读」不挂本类 —— 它俩定死是纯文链形(蓝、无边、无底)。
+ * 2026-09-14 Frank「打开完整页按钮和前面的保持一致,背景用白色的。字体排成一行」:本类退役,
+ * 三颗同走 ghost + 全局 `.pill`;钮文不折行归下面 `.acts button`。
  */
-.pillLink.pillLink {
-  text-decoration: none;
-  display: inline-block;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  padding: 2px 12px;
-  font-size: 12px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 600;
+
+/*
+ * 钮行三颗的文字都不折行(2026-09-14「字体排成一行」)。
+ */
+.acts button,
+.acts a {
   white-space: nowrap;
-  cursor: pointer;
 }
 
 /*

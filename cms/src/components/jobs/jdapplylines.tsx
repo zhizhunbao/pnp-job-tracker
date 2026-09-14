@@ -4,13 +4,14 @@
  * 一处内容一处链接,不再额外附按钮行(与底部合规来源行重复);「Click Here」类废句
  * 自身变成可点出口。dd24-#110:抽到投递邮箱的先出一行人话邮箱。
  * 2026-08-28 换装批自 Jd.tsx 的 JdFormattedView 体内提出成文件。
+ * 2026-09-14 Frank「这种最后的符号都去掉」:行尾的 ↗ 撤,整行本身就是链接。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { ARROW_LINK, TARGET_BLANK, TEXT_NONE } from './constants'
+import { TARGET_BLANK, TEXT_NONE } from './constants'
 import { jdStripDash } from './functions'
 import type { JdApplyLinesIn } from './types'
 import css from './jobs.module.css'
@@ -28,7 +29,7 @@ export function JdApplyLines({ pairs, applyUrl, applyEmail }: JdApplyLinesIn) {
     items.push(
       <div key={i} className={cssOf(css.indent)}>
         <LinkButton href={applyUrl} target={TARGET_BLANK} className={cssOf(css.jdLink)}>
-          {jdStripDash(p.en)}{ARROW_LINK}
+          {jdStripDash(p.en)}
         </LinkButton>
       </div>,
     )

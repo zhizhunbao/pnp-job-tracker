@@ -6,6 +6,8 @@
  * 由占位补回文档流高度,免得来源行被压住。
  * 流程与三个闸的口径都在 hooks 的 useApplyBar。
  * 2026-08-28 换装批自 Jd.tsx 重写落位。
+ * 2026-09-14 Frank「简历对照按钮去掉,之后创建一个单独的简历模块」:钮撤,对照弹层与 hooks 里的
+ * 流程先留着不动(简历模块立域时整体搬走)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -40,7 +42,6 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
     <>
       {a.fixedBar && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(a.fixedBar)}>
-        <Button kind={BTN_GHOST} onClick={a.onMatch} className={cssOf(css.btnMatch)}>{t('rm.btn')}</Button>
         {job.status === STATUS_CLOSED && (
           <LinkButton href={job.applyUrl} target={TARGET_BLANK} className={cssOf(css.btnClosed)}>
             {t('act.seeOfficial')}
