@@ -3147,6 +3147,31 @@ export const UPSELL_MATCH = 'match'
 export const BANNER_MODULE = 'jobs'
 
 /**
+ * 校内板切面的状态值(jobs.status 第三态:不上职位板、不进统计,只在 /coop 切面读;DDL docs/sql/jobs-status-campus.sql)。
+ */
+export const STATUS_CAMPUS = 'campus'
+
+/**
+ * 校内板切面的 URL 状态键(URL_TO_FILTER 的 st;/coop 经 middleware 改写成 ?st=campus&org=hireac 进本板)。
+ */
+export const URL_ST = 'st'
+
+/**
+ * 校内板切面的 SEO 头(2026-09-13 Frank「直接复用职位板整套」:/coop 落地时替 BOARD_META,其余同一块板)。
+ */
+export const CAMPUS_META = {
+  /**
+   * 浏览器标签与搜索结果标题。
+   */
+  title: '校内板 Campus board | Offer2PR',
+
+  /**
+   * 搜索结果摘要。
+   */
+  description: 'Algonquin College HireAC 校内岗位板在招帖:雇主、城市、薪资、移民信号,每日更新。',
+}
+
+/**
  * 职位板的 SEO 头(静态定稿;门里只 `export const metadata = BOARD_META` 一行转发 ——
  * 2026-08-29 Frank 定形:静态 B 形/动态 A 形,`= jobsMetaOf` 的 C 形随之退役)。
  * 标题:88% 流量来自 Google,把三样差异化信号写全;描述英文主打、中文一句压后。

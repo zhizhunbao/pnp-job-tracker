@@ -29,6 +29,7 @@ import { catName, colorOf, nocLocalTitle } from '@/lib/noc'
 import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
+  BOARD_META, CAMPUS_META, STATUS_CAMPUS, URL_ST,
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_DOWN, CARET_OPEN, CARET_RIGHT, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COL_FLOOR, COLS_COOKIE,
@@ -61,6 +62,7 @@ import {
   ZEBRA_MOD,
 } from './constants'
 import type {
+  BoardMeta, BoardTitleIn, SliceTextIn,
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
   AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoolFn,
   CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView, CellWidthsIn, ChipClickIn,
@@ -4888,4 +4890,59 @@ export function toCatLabelList(docs: NocCategoryDoc[]): CatLabel[] {
     })
   }
   return out
+}
+
+/**
+ * 图版标题按切面:状态筛选是 campus(/coop 校内板切面)出「校内板」,否则「职位」
+ * (2026-09-13 Frank「直接复用职位板整套」:校内板不是另一张表,是本板钉了 st=campus&org=hireac 的切面)。
+ *
+ * @param x 取词函数与当前状态筛选值。
+ * @returns 标题。
+ */
+export function boardTitleOf(x: BoardTitleIn): string {
+  if (x.status === STATUS_CAMPUS) {
+    return x.t('coop.title')
+  }
+  return x.t('nav.jobs')
+}
+
+/**
+ * 筛选态里的状态格值(没这一格给空串)。
+ *
+ * @param fState 全部筛选格。
+ * @returns 状态值。
+ */
+export function statusValueOf(fState: FilterState): string {
+  const slot = fState[FK.status]
+  if (slot == null) {
+    return TEXT_NONE
+  }
+  return slot.v
+}
+
+/**
+ * 页面 SEO 头按切面:地址带 st=campus(/coop 改写)给校内板头,否则职位板头。
+ *
+ * @param sp 查询参数。
+ * @returns 标题与描述。
+ */
+export function boardMetaOf(sp: URLSearchParams): BoardMeta {
+  if (sp.get(URL_ST) === STATUS_CAMPUS) {
+    return CAMPUS_META
+  }
+  return BOARD_META
+}
+
+/**
+ * 全站证言句在切面上收声:校内板切面(status=campus)不出「N 岗命中省提名清单 / N 家雇主有外劳记录」——
+ * 那两条是全站数,挂在 376 帖的板头上会被读成校内板的数;职位板照旧。
+ *
+ * @param x 当前状态筛选值与原句。
+ * @returns 原句;校内板切面给空串(BannerFacts 空串不渲)。
+ */
+export function sliceTextOf(x: SliceTextIn): string {
+  if (x.status === STATUS_CAMPUS) {
+    return TEXT_NONE
+  }
+  return x.text
 }

@@ -24,6 +24,16 @@ export function middleware(req: NextRequest) {
   }
   // 根域直出(2026-07-17 用户拍板「不需要 /jobs 后缀」):职位板搬到 /,旧 /jobs 301 回根(查询串保留:
   // ?view=match、?reset=<token>、榜单/统计回流 ?prov= 等都不能丢);旧域请求上面已 301 到新域,不叠跳
+  // 校内板(2026-09-13 Frank「直接复用职位板整套」):/coop 是职位板的一个切面 —— 内部改写到根路径并钉上
+  // st=campus & org=hireac(status 第三态 + HireAC 渠道),地址栏仍是 /coop;导航高亮按 /coop 判(header PATH_ACTIVE)。
+  if (req.nextUrl.pathname === '/coop') {
+    const url = new URL('/' + req.nextUrl.search, req.nextUrl.origin)
+    url.searchParams.set('st', 'campus')
+    url.searchParams.set('org', 'hireac')
+    const coop = NextResponse.rewrite(url)
+    coop.headers.set('Cache-Control', 'private, no-cache, must-revalidate')
+    return coop
+  }
   if (req.nextUrl.pathname === '/jobs') {
     return NextResponse.redirect(new URL('/' + req.nextUrl.search, req.nextUrl.origin), 301)
   }

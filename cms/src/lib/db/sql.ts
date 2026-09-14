@@ -2074,17 +2074,3 @@ export const GUIDE_LMIA_EMPLOYERS = `SELECT c.name, c.lmia_positions, c.lmia_pos
      GROUP BY c.id, c.name, c.lmia_positions, c.lmia_positions_skilled, c.lmia_last_quarter
      ORDER BY COALESCE(c.lmia_positions_skilled, 0) DESC, open_jobs DESC, c.name ASC
      LIMIT $3`
-
-// =========================================================================
-// 30. 校内板(/coop;2026-09-13 hireac 域,设计稿 docs/design/coop域-20260913.md 第五轮)
-// =========================================================================
-
-/**
- * 校内板在招帖。status=campus 是 jobs 的第三态(只这一页读;职位板 / 统计一切 status='open' 的查询天然不看它)。
- * $1=渠道(origin,如 hireac),$2=行数上限。发布日新→旧、同日 id 倒序(与职位板同序);发布日 to_char 出 YYYY-MM-DD 串。
- */
-export const COOP_JOBS = `SELECT j.id, j.title, c.name AS company_name, j.city, j.province, j.employment_hours,
-            j.employment_term, to_char(j.date_posted, 'YYYY-MM-DD') AS date_posted
-     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-     WHERE j.status = 'campus' AND j.origin = $1
-     ORDER BY j.date_posted DESC NULLS LAST, j.id DESC LIMIT $2`
