@@ -211,10 +211,10 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
 /**
  * 同区同行业、按担保档与在招量排的相似雇主
  */
-export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, count(j.id)::int open_count
+export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, count(j.id)::int open_count
      FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade
+     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
 
 // =========================================================================

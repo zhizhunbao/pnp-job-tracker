@@ -5,6 +5,9 @@
  * 无正文不出失败行(空态自己解释)。Frank 走查#20:额度用完时,匿名用户补一句登录提额说明
  * (登录态额度更高;登录入口在页头)。
  * 2026-08-28 换装批自 Jd.tsx 提出成文件。
+ * 2026-09-14 Frank「这个删掉」:「看原文 ▾」切换钮撤(整理版即正文,原文不再给切)。
+ * 2026-09-14 Frank「这个不要显示」「加一个 loading」:整理版就绪后的「✨ AI 整理」一行不出,在途态改由 JdContent 的转圈行出,
+ * 本行只剩失败 / 额度两态。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -12,7 +15,7 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { BTN_GHOST, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, SPARKLE } from './constants'
-import { aiNoteTextOf, origLabelOf } from './functions'
+import { aiNoteTextOf } from './functions'
 import type { JdAiNoteIn } from './types'
 import css from './jobs.module.css'
 
@@ -26,14 +29,12 @@ export function JdAiNote({ d, anon }: JdAiNoteIn) {
   if (d.fmt === null && d.fmtWhy === FMT_NOTEXT) {
     return null
   }
+  if (d.fmt !== null) {
+    return null
+  }
   return (
     <div className={cssOf(css.aiNote)} title={d.t('act.aiNote')}>
       {SPARKLE}{aiNoteTextOf({ t: d.t, fmt: d.fmt, why: d.fmtWhy })}
-      {d.fmt != null && (
-        <Button kind={BTN_GHOST} onClick={d.onToggleOrig} className={cssOf(css.aiBtn)}>
-          {origLabelOf({ t: d.t, showOrig: d.showOrig })}
-        </Button>
-      )}
       {d.fmt === null && d.fmtWhy === FMT_FAIL && (
         <Button kind={BTN_GHOST} onClick={d.onRetryFmt} className={cssOf(css.aiBtn)}>{d.t('ai.retry')}</Button>
       )}

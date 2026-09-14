@@ -600,7 +600,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fact.coLmiaNote': 'Sponsorship history is an ESDC record of the past, not a commitment',
   // J·K·M batch (2026-07-19)
   'col.empHours': 'Hours', 'col.whoCanApply': 'Who can apply', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
-  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed',
+  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.seeOrig': 'View original ▾', 'act.seeFmt': 'View organized ▴', 'act.aiWorking': 'AI organizing…', 'act.aiFail': 'AI organizing failed',
   'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Schedule & location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',

@@ -6,6 +6,7 @@
  * bare(#197):懒查命中在合并后的「公司」块内出 —— 顶部无缓存无法预挂声明,
  * 所以在这里紧贴内容渲一行 AI 声明(仍守披露红线)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(两条 effect 迁 hooks 的 useCompanyAi)。
+ * 2026-09-14 Frank「也不需要显示」:「✨ AI 调查中…」在途行撤,简介到了直接出(基本信息卡本身已在,不会白屏)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -38,7 +39,7 @@ export function CompanyAiSection({
   }
   const p = useCompanyAi({ company, showTrans, lang: hookLang })
   if (p.loading) {
-    return <div className={css.aiWorking}>{SPARKLE} {t('fact.aiWorking')}</div>
+    return null
   }
   if (p.fact == null) {
     return null

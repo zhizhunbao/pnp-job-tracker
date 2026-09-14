@@ -76,12 +76,13 @@ import type {
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobsBoardPanel, JobsQueryIn, JobTextOut, KMoneyIn, MailBodyIn,
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NextSortIn, NocCategoryDoc, NocCatRow, NocDescDoc, NocDescFact,
-  NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, OrigLabelIn, PageSigIn, PayFallbackForIn,
+  NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NoTextIn, NumOrIn, PageSigIn, PayFallbackForIn,
   LmiaTextIn, NamedTextIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn,
   RankOfIn,
   ResizeBindIn,
   RoundIn, SavedEntry, SavedListJson, SaveLabelIn, SaveToggleIn, SeedFilterIn, SeedJson, SeedValueIn, SessionUser,
-  ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn,
+  JdBusyIn, JdBusyTextIn, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SlotIn, SortMarkIn, SortState,
+  StickyOffsetsIn,
   SubOfIn, SubTextIn, SugOut, TakerIn, TextFn, TFn, ThWidthIn, TransLabelIn, TransShownIn, TransStatus,
   UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
@@ -3489,19 +3490,6 @@ export function aiNoteTextOf(x: AiNoteTextIn): string {
 }
 
 /**
- * 「看原文 / 看整理版」那颗钮的钮面文案。
- *
- * @param x 取词函数与在看原文没。
- * @returns 钮面文案。
- */
-export function origLabelOf(x: OrigLabelIn): string {
-  if (x.showOrig) {
-    return x.t('act.seeFmt')
-  }
-  return x.t('act.seeOrig')
-}
-
-/**
  * 「怎么投」与薪资节的帖面薪资兜底(#123c):清洗产物优先,没有才退原文 ——
  * 这一处**保留**了旧实现的「退原文」,与手机卡薪资那一格的口径不同:卡上那格是**给结论**
  * (标绿 = 我们背书这条薪资可信),整理版这一处只是把帖面写着的话搬过来当兜底,不做背书。
@@ -3527,6 +3515,32 @@ export function noTextOf(x: NoTextIn): string {
     return x.t('act.noText')
   }
   return x.t('act.noTextBlocked', { src: x.src })
+}
+
+/**
+ * 正文区要不要出转圈行:整理还没回(fmt 还是 undefined)或对照在译(2026-09-14 Frank「加一个 loading 如果没有翻译完」)。
+ *
+ * @param x 整理版与翻译态。
+ * @returns 在途 = true。
+ */
+export function jdBusyOf(x: JdBusyIn): boolean {
+  if (x.fmt === undefined) {
+    return true
+  }
+  return x.transStatus === TRANS_LOADING
+}
+
+/**
+ * 转圈行的文案:整理在途说整理,否则就是在译。
+ *
+ * @param x 取词函数与整理版。
+ * @returns 一句状态文案。
+ */
+export function jdBusyTextOf(x: JdBusyTextIn): string {
+  if (x.fmt === undefined) {
+    return x.t('act.aiWorking')
+  }
+  return x.t('cat.translating')
 }
 
 /**

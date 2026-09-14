@@ -10,6 +10,7 @@
  * 有结果(整理版 / 失败 / 空态)才出,fmt 各路径都会落定,不会永久不显。
  * 2026-08-28 换装批自 Jd.tsx 重写落位。
  * 2026-09-14 Frank「这个也去掉」:底部「来源: 域名」行撤(JdSource 件随撤);「打开完整页」钮同日撤。
+ * 2026-09-14 Frank「删掉。默认就自带中文对照」:钮行整个退役,换成 JdAutoTrans(中 / 韩界面自动加载对照)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -18,7 +19,7 @@ import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, STATUS_CLOSED, UNDER_TITLE } from './constants'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
-import { JdActs } from './jdacts'
+import { JdAutoTrans } from './jdautotrans'
 import { JdClosed } from './jdclosed'
 import { JdContent } from './jdcontent'
 import type { JobBodyIn } from './types'
@@ -34,7 +35,7 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
   return (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
-      <JdActs d={d} lang={lang} />
+      <JdAutoTrans d={d} lang={lang} />
       {d.aiOn && (
         <div className={CARD_MD_CLS}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={d.t('cat.aiRead')}

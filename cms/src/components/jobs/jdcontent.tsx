@@ -5,14 +5,17 @@
  * 拿到了那一档:整理版状态行 + 正文轨 —— J3 整理版默认在上、原文一键切换;
  * 生成中或没有整理版就照旧渲原文。
  * 2026-08-28 换装批自 Jd.tsx 提出成文件。
+ * 2026-09-14 Frank「不要显示原文,直接显示整理之后的」「这种不行」「加一个 loading 如果没有翻译完」:整理在途(fmt 还没回)
+ * 与对照在途(中 / 韩界面翻译中)都出转圈行,不铺原文也不先铺英文整理版;整理失败 / 额度用完(fmt = null)仍退原文,
+ * 不能让人看不到正文。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, JD_MAX_LEN } from './constants'
-import { fallbackPayOf, noTextOf, showFormattedOf, transShownOf } from './functions'
+import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, JD_MAX_LEN, TRANS_LOADING } from './constants'
+import { fallbackPayOf, jdBusyOf, jdBusyTextOf, noTextOf, showFormattedOf, transShownOf } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
 import { JdFormattedView } from './jdformattedview'
@@ -40,7 +43,13 @@ export function JdContent({ d, job, underTitle, loggedIn }: JdContentIn) {
       {d.status === JD_DONE && (
         <>
           <JdAiNote d={d} anon={loggedIn === false} />
-          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && (
+          {jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus }) && (
+            <div className={cssOf(css.loading)}>
+              <span className={cssOf(css.spin)} />
+              {jdBusyTextOf({ t: d.t, fmt: d.fmt })}
+            </div>
+          )}
+          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && d.transStatus !== TRANS_LOADING && (
             <JdFormattedView text={String(d.fmt)}
               t={d.t}
               fallbackPay={fallbackPayOf(job)}
@@ -49,7 +58,7 @@ export function JdContent({ d, job, underTitle, loggedIn }: JdContentIn) {
               underTitle={underTitle}
               trans={transShownOf({ shown: d.showTrans, trans: d.trans })} />
           )}
-          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && (
+          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && d.fmt !== undefined && (
             <JdTextView text={d.text} max={JD_MAX_LEN} />
           )}
         </>

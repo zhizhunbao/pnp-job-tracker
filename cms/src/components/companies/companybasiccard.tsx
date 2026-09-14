@@ -9,6 +9,9 @@
  * #200:AI 检索声明从卡片上方的浮注挪进卡内、接在简介内容前(卡片化后浮注显孤)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
  * 2026-09-14 Frank「也去掉」:卡题旁的「知名企业 ↗」章撤。
+ * 2026-09-14 Frank「基本信息部分默认要带地址」:地址行不再因 AI 简介里有「所在地」段而省略,一律出(无街址时退省名)。
+ * 2026-09-14 Frank「这个也不需要显示」「这种地址有冲突的怎么解决」:「✨ AI 检索整理(非官方自述)+ 日期」一行撤;
+ * 地址行三级取值 = 公司街址 → AI 简介「所在地」→ 岗位所在省,取了简介的就不再在简介里重复出「所在地」段。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -17,13 +20,12 @@ import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
-import { CompanyAiNote } from './companyainote'
 import { CompanyIntro } from './companyintro'
 import {
-  AI_NOTE_PANEL, ARROW_EXTERNAL, CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, SITE_SRC_SEARCHED, TARGET_BLANK,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, SITE_SRC_SEARCHED, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
-import { displayNameOf, hasBaseSecOf, hasDescOf, hasIdOf, isGovCompany, provFullOf } from './functions'
+import { baseTextOf, displayNameOf, hasDescOf, hasIdOf, isGovCompany, provFullOf } from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
 import css from './companies.module.css'
@@ -38,12 +40,15 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   let addr = company.address
+  let addrFromBrief = false
+  if (addr === TEXT_NONE && briefCached) {
+    addr = baseTextOf({ text: company.aiBrief })
+    addrFromBrief = addr !== TEXT_NONE
+  }
   if (addr === TEXT_NONE) {
     addr = provFullOf({ t, code: company.province })
   }
   const hasRealAddr = company.address !== TEXT_NONE
-  const hasBase = briefCached && hasBaseSecOf({ text: company.aiBrief })
-  const showAddrRow = hasRealAddr || hasBase === false
   const hasId = hasIdOf({ company, addr })
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
@@ -70,7 +75,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
             </LinkButton>
           </Row>
         )}
-        {showAddrRow && addr !== TEXT_NONE && (
+        {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}
               target={TARGET_BLANK}
@@ -84,15 +89,12 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
         )}
       </div>
       {hasId && hasBody && <div className={css.hr} />}
-      {briefCached && (
-        <CompanyAiNote t={t} fetched={company.aiFetched} sources={company.aiSources} kind={AI_NOTE_PANEL} />
-      )}
       <CompanyIntro company={company}
         t={t}
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        skipBase={hasRealAddr} />
+        skipBase={hasRealAddr || addrFromBrief} />
     </div>
   )
 }

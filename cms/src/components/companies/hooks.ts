@@ -94,7 +94,7 @@ export function useCompanyTrans(x: CompanyTransHookIn): string | null {
 export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CompanyPanelData | null>(null)
-  const [showTrans, setShowTrans] = useState(false)
+  const [showTrans, setShowTrans] = useState(x.lang !== LANG_EN)
   const [aiOn, setAiOn] = useState(false)
   const [prevJob, setPrevJob] = useState(x.job)
 

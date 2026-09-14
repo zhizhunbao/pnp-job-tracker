@@ -2507,6 +2507,16 @@ export type SimilarEmployer = {
    * 在招数。
    */
   openCount: number
+
+  /**
+   * 中文别名;'' = 没有(2026-09-14 相似雇主带翻译)。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文别名;'' = 没有。
+   */
+  aliasKo: string
 }
 
 /**

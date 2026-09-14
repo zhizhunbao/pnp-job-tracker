@@ -214,6 +214,21 @@ export function hasBaseSecOf(x: BriefSecsIn): boolean {
 }
 
 /**
+ * AI 简介里的「所在地」正文(2026-09-14 Frank「这种地址有冲突的怎么解决」:公司没留街址时,
+ * 地址行先取它,再退岗位所在省;取了就不再在简介里重复出那一段)。
+ *
+ * @param x 简介原文。
+ * @returns 所在地文本;没有或写着「无」给空串。
+ */
+export function baseTextOf(x: BriefSecsIn): string {
+  const text = secTextOf({ secs: briefSecsOf({ text: x.text }), mark: CO_SEC_BASE })
+  if (isJdNone(text)) {
+    return TEXT_NONE
+  }
+  return text
+}
+
+/**
  * 身份区(官网/地址/行业/行业段/维基)有没有东西可显 —— 一格都没有时那条分隔线不出。
  *
  * @param x 公司档案与算好的地址。

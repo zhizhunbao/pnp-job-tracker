@@ -294,6 +294,16 @@ export type SimilarEmployer = {
    * 在招数。
    */
   openCount: number
+
+  /**
+   * 中文别名;'' = 没有(2026-09-14 Frank「相似雇主要加翻译」)。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文别名;'' = 没有。
+   */
+  aliasKo: string
 }
 
 /**
@@ -1096,6 +1106,11 @@ export type JobMiniRowIn = {
  */
 export type CompanySimilarCardIn = {
   /**
+   * 界面语言(别名按它取,2026-09-14)。
+   */
+  lang: CompaniesLang
+
+  /**
    * 相似雇主。
    */
   similar: SimilarEmployer[]
@@ -1115,6 +1130,11 @@ export type CompanySimilarCardIn = {
  * CompanySimilarRow(相似雇主一行)的 props。
  */
 export type CompanySimilarRowIn = {
+  /**
+   * 界面语言(别名按它取,2026-09-14)。
+   */
+  lang: CompaniesLang
+
   /**
    * 这一家。
    */
@@ -1907,6 +1927,11 @@ export type PanelJson = {
  * useCompanyPanel 的入参。
  */
 export type CompanyPanelHookIn = {
+  /**
+   * 界面语言(中 / 韩默认开对照,2026-09-14)。
+   */
+  lang: CompaniesLang
+
   /**
    * 当前这一行职位(换了职位要重取)。
    */

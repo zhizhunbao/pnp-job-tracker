@@ -1596,3 +1596,22 @@
    */
   color: #374151;
 }
+
+/*
+ * 公司弹框页眉下的别名行(2026-09-14 Frank「下面要加中文翻译」):灰小字,与职位弹框副题同规格。
+ */
+.zhName {
+  margin: -6px 0 10px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/*
+ * 相似雇主名下的别名(2026-09-14 Frank「相似雇主要加翻译」):独占一行、灰小字、不加粗。
+ */
+.simAlias {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+}

@@ -3113,6 +3113,7 @@ export function toSimilar(r: Row): SimilarEmployer {
   return {
     slug: text(r.slug), name: text(r.name), industry: text(r.industry),
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
+    aliasZh: text(r.alias_zh), aliasKo: text(r.alias_ko),
   }
 }
 

@@ -7,17 +7,16 @@
  * 红线:分类/职位弹框不碰(Frank「这两个现在做的我很满意」)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位:各段成件(基本信息/担保/在招/相似/信号),
  * 这一件只剩顺序与那一条懒翻 effect(迁 hooks 的 useCompanyTrans)。
+ * 2026-09-14 Frank「删掉」:「雇主信号」四维卡撤;「相似雇主要加翻译」:相似卡收界面语,名下出别名。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanyBasicCard } from './companybasiccard'
-import { CompanyGradesView } from './companygradesview'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { CompanySponsorCard } from './companysponsorcard'
 import { CompanyTopInfo } from './companytopinfo'
-import { CARD_HEAD_CLS, CARD_MD_CLS } from './constants'
 import { hasDescOf, showSponsorOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
@@ -68,15 +67,7 @@ export function CompanyBody({
         onOpenJob={onOpenJob}
         resolveJob={resolveJob}
         newTab={newTab} />
-      <CompanySimilarCard similar={similar} t={t} newTab={newTab} />
-      {company.scoreDetail != null && (
-        <div className={CARD_MD_CLS}>
-          <div className={CARD_HEAD_CLS}>{t('co.grades')}</div>
-          <div>
-            <CompanyGradesView detail={company.scoreDetail} t={t} hideSponsor={showSponsor} />
-          </div>
-        </div>
-      )}
+      <CompanySimilarCard similar={similar} t={t} lang={lang} newTab={newTab} />
     </div>
   )
 }

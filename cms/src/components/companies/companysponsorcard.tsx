@@ -8,6 +8,7 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(三列改本域自己的事实网格,见 .facts)。
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板:卡首补「指定雇主」一行(项目清单主值、归属省灰注;雇主池按 slug)——
  * 雇主板卖的那个证据在落点页得能看见。
+ * 2026-09-14 Frank 实拍只剩标题的空卡「删掉」:四段都空就整卡不渲(showSponsorOf 按 LMIA 岗数放行,流 / 季度 / NOC 可能全缺)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -29,6 +30,11 @@ export function CompanySponsorCard({ company, t, lang }: CompanySponsorCardIn) {
   const rows = []
   for (const stream of streamsOf({ streams: company.lmiaStreams, t })) {
     rows.push(<CompanyStreamRow key={stream.label + stream.count} stream={stream} t={t} />)
+  }
+  const empty = rows.length === 0 && company.designatedPrograms.length === 0
+    && company.lmiaLastQuarter === TEXT_NONE && company.lmiaNocs.length === 0
+  if (empty) {
+    return null
   }
   let batches: string | number = DASH_EM
   if (company.lmiaLmias != null) {

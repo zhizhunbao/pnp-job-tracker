@@ -1949,9 +1949,9 @@ export type JobBodyPanel = {
 }
 
 /**
- * JdActs(顶部钮行)的 props。
+ * JdAutoTrans(中 / 韩界面自动对照)的 props(2026-09-14 前是 JdActs 顶部钮行的)。
  */
-export type JdActsIn = {
+export type JdAutoTransIn = {
   /**
    * JobBody 状态机。
    */
@@ -5042,21 +5042,6 @@ export type AiNoteTextIn = {
 }
 
 /**
- * origLabelOf 的入参。
- */
-export type OrigLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 在看原文没。
-   */
-  showOrig: boolean
-}
-
-/**
  * JdContent 的 props。
  */
 export type JdContentIn = {
@@ -5094,6 +5079,36 @@ export type NoTextIn = {
    * 拦抓取的来源;'' = 不是被拦的。
    */
   src: string
+}
+
+/**
+ * jdBusyOf 的入参。
+ */
+export type JdBusyIn = {
+  /**
+   * 整理版:undefined = 还没回,null = 没有 / 失败,串 = 就绪。
+   */
+  fmt: string | null | undefined
+
+  /**
+   * 对照翻译态。
+   */
+  transStatus: TransStatus
+}
+
+/**
+ * jdBusyTextOf 的入参。
+ */
+export type JdBusyTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 整理版(同 JdBusyIn.fmt)。
+   */
+  fmt: string | null | undefined
 }
 
 /**
