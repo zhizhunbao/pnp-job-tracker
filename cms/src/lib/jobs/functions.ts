@@ -8,7 +8,7 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS,
+import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translationOk,
 } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
 import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull } from '../db'
@@ -4105,7 +4105,7 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
     signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
   for (const [i, t] of miss.entries()) {
     const g = got[i]
-    if (g == null || g.trim() === PARAM_NONE || g.trim().length > TITLE_MAX_LEN) {
+    if (g == null || g.trim().length > TITLE_MAX_LEN || translationOk({ src: t, out: g, lang: x.lang }) === false) {
       continue
     }
     CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, g.trim())

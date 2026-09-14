@@ -15,10 +15,32 @@ import {
 } from '@/lib/error'
 import { LLM_FN, LLM_LOG, LOG_MSG_MAX, log } from '@/lib/log'
 import {
-  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE, BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME, FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP, GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD, MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_PAIR_STEP, NUMBERED_SPLIT, NUMBER_HEAD, NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE, PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD, REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE, SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START, TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES, UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE,
+  ALPHA_BASE, ALPHA_LEN, ALPHA_ZERO, ANSWER_NONE, ANTHROPIC_MODEL, BACKEND, BLOCK_TEXT, BULLET_PREFIX, BULLET_RE,
+  BYTE_MASK, BYTE_SHIFT, CACHE_HIT, CONTENT_TYPE_NONE, DELTA_NONE, DETAIL_NONE, E_TRANSLATE_UNAVAILABLE, FNV_PRIME,
+  FNV_SEED_A, FNV_SEED_B, FRIEND_CALL_TIMEOUT_MS, FRIEND_INPUT_MAX, FRIEND_MAX_TOKENS, FRIEND_STREAM_TEMP,
+  GATEWAY_BASE, GATEWAY_KEY, GATEWAY_MODEL, GATEWAY_TIMEOUT_MS, HEADER, KEEP_GROUP1, LEGACY_SOURCE_MAX, MD_BOLD,
+  MD_DROP, MD_HEADING, MD_STARS, NEWS_BODY_CAP, NOT_STATED_RE, NUMBERED_PAIR_STEP, NUMBERED_SPLIT, NUMBER_HEAD,
+  NUMBER_TAIL, OLLAMA_COMPLETE_TEMP, OLLAMA_MODEL, OLLAMA_STREAM_TEMP, OLLAMA_URL, PARA, PARA_JOIN, PARA_SPLIT_RE,
+  PART_NONE, PATH_LEGACY, PATH_OLLAMA, PATH_TRANSLATE, PATH_V1, POST, PREFIX_NONE, PROTOCOL, PROVIDER, REF_HEAD,
+  REF_SALT_SEP, REF_TAIL, ROLE, SALT_NONE, SOURCE_URL_NONE, SSE_BLOCK_SEP, SSE_DATA, SSE_DATA_LEN, SSE_DONE,
+  SSE_LINE_SEP, STALL, STOP_REFUSAL, STREAM_EVENT, SUMMARY_BODY_CAP, SUMMARY_MIN_LEN, TAIL_NONE, TEXT_START,
+  TRANSLATED_EMPTY, TRANSLATE_CHUNK, TRANSLATE_ROUTE_TIMEOUT_MS, TRANSLATE_SOURCE, TRANSLATE_TRIES,
+  UPSTREAM_TEXT_NONE, VIA, WEB_FETCH, WHY_NONE, CJK_RE, HANGUL_RE, TRANS_LANG_KO, TRANS_LEN_RATIO_MAX, TRANS_LEN_SLACK,
 } from './constants'
 import type {
-  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut, BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut, CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut, FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage, GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut, MaybeV1Choice, MaybeV1Response, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse, OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut, ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn, RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut, SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn, SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut, TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn, V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut,
+  Alpha7In, Alpha7Out, AnthropicMessage, AnthropicParams, AnthropicStreamIn, AnthropicStreamParams, ArmOut,
+  BackendStreamIn, BackendStreamOut, CharCountIn, CharCountOut, CompleteBackendIn, CompleteBackendOut,
+  CompleteFriendIn, CompleteTextIn, CompleteTextOut, ContentTagIn, ContentTagOut, EmptyTextOut, Fnv1aIn, Fnv1aOut,
+  FriendChatIn, FriendChatMaybeOut, FriendChatOut, FriendLlmReadyOut, FriendResult, GatewayMessage,
+  GatewayMessagesIn, GatewayMessagesOut, IgnoreOut, LegacyRequest, LegacyResponse, MakeWatchIn, MakeWatchOut,
+  MaybeV1Choice, MaybeV1Response, NullJsonOut, NumberLinesIn, NumberLinesOut, OllamaRequest, OllamaResponse,
+  OnEndOut, OnErrorIn, OnErrorOut, OnTextIn, OnTextOut, OrTextIn, OrTextOut, ParasStrictIn, ParasStrictOut,
+  ParseNumberedIn, ParseNumberedOut, PlainLinesIn, PostJsonIn, PostJsonOut, ReadV1SseIn, ReadV1SseOut, RefPromptIn,
+  RefPromptOut, SectionJob, SectionedIn, SectionedPOut, SendV1In, SendV1Out, SourceUrlIn, SourceUrlOut,
+  SplitMessagesIn, SplitMessagesOut, StreamChatIn, StreamChatOut, StripMdIn, StripMdOut, SummarizeNewsIn,
+  SummarizeNewsOut, SystemOfIn, SystemOfOut, TextOfIn, TextOfOut, TranslateChunkIn, TranslateChunkOut,
+  TranslateLinesIn, TranslateLinesOut, TranslateReadyOut, TranslateResponse, TurnsOfIn, TurnsOfOut, V1AnswerOfIn,
+  V1AnswerOfOut, V1LogMeta, V1Request, V1Response, WatchWhy, WebFetchToolIn, WebFetchToolOut, TranslationOkIn,
 } from './types'
 
 // =========================================================================
@@ -351,7 +373,8 @@ export async function friendChatOrThrow(input: FriendChatIn): FriendChatOut {
     if (e instanceof Error) {
       why = e.message.slice(0, LOG_MSG_MAX)
     }
-    log({ tag: LLM_LOG.tag, text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
+    log({ tag: LLM_LOG.tag,
+      text: `${LLM_LOG.v1FailHead}${code}${LLM_LOG.paren}${why}${LLM_LOG.parenEnd}${LLM_LOG.v1FailTail}` })
     try {
       return await chatLegacy(input)
     } catch (e2) {
@@ -383,7 +406,8 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
   const messages = gatewayMessages({ prompt: input.prompt, system: input.system })
   const chars = charCount({ messages })
   if (chars > FRIEND_INPUT_MAX) {
-    throw gatewayError({ msg: `${GATEWAY_MSG.input}${chars}${GATEWAY_MSG.overMax}${FRIEND_INPUT_MAX}`, code: FRIEND_CODE.tooLong })
+    throw gatewayError({ msg: `${GATEWAY_MSG.input}${chars}${GATEWAY_MSG.overMax}${FRIEND_INPUT_MAX}`,
+      code: FRIEND_CODE.tooLong })
   }
   let timeoutMs: number = GATEWAY_TIMEOUT_MS
   if (input.timeoutMs != null) {
@@ -406,7 +430,8 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
     if (streamed && res.body) {
       answer = (await readV1Sse({ body: res.body, watch, onDelta: input.onDelta })).trim()
       if (answer === '') {
-        log({ tag: LLM_LOG.tag, text: `${LLM_LOG.streamEmptyHead}${orText({ v: xCache, fallback: LLM_LOG.none })}${LLM_LOG.streamEmptyTail}` })
+        log({ tag: LLM_LOG.tag, text: `${LLM_LOG.streamEmptyHead}${orText({ v: xCache,
+          fallback: LLM_LOG.none })}${LLM_LOG.streamEmptyTail}` })
         watch.stop()
         watch = makeWatch({ timeoutMs: timeoutMs, stallMs: input.stallMs })
         res = await sendV1({ call: input, messages, stream: false, watch })
@@ -428,12 +453,14 @@ async function chatV1(input: FriendChatIn): FriendChatOut {
     watch.stop()
   }
   if (answer === '') {
-    throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${orText({ v: xCache, fallback: LLM_LOG.none })}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
+    throw gatewayError({ msg: `${GATEWAY_MSG.emptyChoices}${orText({ v: xCache,
+      fallback: LLM_LOG.none })}${GATEWAY_MSG.parenEnd}`, code: FRIEND_CODE.empty })
   }
   const meta = v1LogMetaOf(body)
   log({
     tag: LLM_LOG.tag,
-    text: `${LLM_LOG.v1Ok}${streamed}${LLM_LOG.xCache}${orText({ v: xCache, fallback: LLM_LOG.none })}${LLM_LOG.in}${chars}${LLM_LOG.ch}`
+    text: `${LLM_LOG.v1Ok}${streamed}${LLM_LOG.xCache}${orText({ v: xCache,
+      fallback: LLM_LOG.none })}${LLM_LOG.in}${chars}${LLM_LOG.ch}`
       + `${LLM_LOG.out}${answer.length}${LLM_LOG.ch}${LLM_LOG.tok}${meta.promptTok}`
       + `${LLM_LOG.slash}${meta.complTok}`
       + `${LLM_LOG.finish}${meta.finish}`,
@@ -1326,4 +1353,26 @@ export async function summarizeNews(input: SummarizeNewsIn): SummarizeNewsOut {
     return null
   }
   return summary
+}
+
+/**
+ * 译文写入闸(2026-09-14 Frank「可以」):不空、不等于原文、目标语种真有那种文字、长度不超原文两倍加余量;
+ * 过不了的不进缓存不落库,下次重翻。
+ *
+ * @param x 原文、译文与语种。
+ * @returns 能存 = true。
+ */
+export function translationOk(x: TranslationOkIn): boolean {
+  const out = x.out.trim()
+  const src = x.src.trim()
+  if (out === '' || out === src) {
+    return false
+  }
+  if (out.length > src.length * TRANS_LEN_RATIO_MAX + TRANS_LEN_SLACK) {
+    return false
+  }
+  if (x.lang === TRANS_LANG_KO) {
+    return HANGUL_RE.test(out)
+  }
+  return CJK_RE.test(out)
 }

@@ -18,6 +18,7 @@ import { textResponseOf,
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
   TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned,
+  translationOk,
 } from '../llm'
 import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
 import {
@@ -317,7 +318,8 @@ export async function employersAliasRoute(req: Request): Promise<Response> {
     const r = await translatePlainLines({ text: ALIAS_PREFIX + name, lang: lang,
       signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
     const alias = r.text.split(NEWLINE)[0]
-    if (alias == null || alias.trim() === '' || alias.trim().length > ALIAS_MAX_LEN) {
+    if (alias == null || alias.trim().length > ALIAS_MAX_LEN || translationOk({ src: name, out: alias,
+      lang: lang }) === false) {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     const clean = alias.trim()
@@ -375,9 +377,10 @@ export async function employersDescRoute(req: Request): Promise<Response> {
   try {
     const r = await translatePlainLines({ text: text, lang: lang,
       signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
-    if (r.full) {
-      CACHE.briefTransBy.set(ck, r.text)
+    if (r.full === false || translationOk({ src: text, out: r.text, lang: lang }) === false) {
+      return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
+    CACHE.briefTransBy.set(ck, r.text)
     return Response.json({ ok: true, text: r.text, cached: false })
   } catch (e) {
     let msg = String(e)

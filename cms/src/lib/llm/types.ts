@@ -1315,3 +1315,23 @@ export type SectionJob = {
  * 分节/逐行翻译函数的返回。
  */
 export type SectionedPOut = Promise<SectionedOut>
+
+/**
+ * translationOk 的入参。
+ */
+export type TranslationOkIn = {
+  /**
+   * 原文。
+   */
+  src: string
+
+  /**
+   * 译文。
+   */
+  out: string
+
+  /**
+   * 目标语种(zh / ko)。
+   */
+  lang: string
+}

@@ -18,7 +18,7 @@ import {
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
-  TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned,
+  TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned, translationOk,
 } from '../llm'
 import { checkLimit, getUser, ipOf, isPro } from '../quota/server'
 import {
@@ -509,7 +509,8 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     const r = await translatePlainLines({ text: title, lang: lang,
       signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
     const first = r.text.split(NL)[0]
-    if (first == null || first.trim() === PARAM_NONE || first.trim().length > TITLE_MAX_LEN) {
+    if (first == null || first.trim().length > TITLE_MAX_LEN
+      || translationOk({ src: title, out: first, lang: lang }) === false) {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     CACHE.titleTransBy.set(ck, first.trim())

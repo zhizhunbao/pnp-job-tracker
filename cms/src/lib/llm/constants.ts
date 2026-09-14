@@ -678,3 +678,34 @@ export const UPSTREAM_TEXT_NONE = ''
  * 没有东西要翻不是翻译失败,调用方照常缓存 —— 否则每次打开都要再问上游一遍。
  */
 export const TRANSLATED_EMPTY = ''
+
+/**
+ * 译文版本号(2026-09-14 Frank「如果存进去的是翻译不全或者之前翻译错误呢」→「可以」):存库的译文带这个号,
+ * 读时对不上就当没有、重翻覆盖;换模型 / 改提示词把它加一,存量自动作废。老批次机翻别名没版本 = 0,同样过期。
+ */
+export const TRANS_V = 1
+
+/**
+ * 中文译文至少要有一个汉字(写入闸)。
+ */
+export const CJK_RE = /[一-鿿]/
+
+/**
+ * 韩文译文至少要有一个谚文(写入闸)。
+ */
+export const HANGUL_RE = /[가-힯]/
+
+/**
+ * 译文长度上限 = 原文长度 × 这个倍数 + 余量(超了 = 模型在解释不是在译)。
+ */
+export const TRANS_LEN_RATIO_MAX = 2
+
+/**
+ * 译文长度余量(短原文译成中文可能反而变长几字)。
+ */
+export const TRANS_LEN_SLACK = 20
+
+/**
+ * 韩文语种码(写入闸按它选谚文检查)。
+ */
+export const TRANS_LANG_KO = 'ko'
