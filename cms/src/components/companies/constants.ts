@@ -668,3 +668,18 @@ export const URL_EMPLOYERS_PROV = '/employers?prov='
  * 行业桶显示名的 i18n 键头(companies.industry 存的是职位板大类键,显示名走 broad.*)。
  */
 export const BROAD_KEY_HEAD = 'broad.'
+
+/**
+ * 职位名批量懒翻接口(在招清单没 NOC 译名的行,一次发齐;2026-09-14)。
+ */
+export const URL_CO_TITLES = '/api/jobs/title'
+
+/**
+ * 批量键的分隔(一组职位名拼成一个串当 effect 依赖)。
+ */
+export const TITLES_KEY_SEP = '\u0001'
+
+/**
+ * 官网简介懒翻接口(2026-09-14)。
+ */
+export const URL_CO_DESC = '/api/employers/desc'

@@ -8,7 +8,8 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { FRIEND_INPUT_MAX, friendChat } from '../llm'
+import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS,
+} from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
 import { queryRows, queryRowsOrEmpty, SQL, count, firstOf, firstOr, jsonOrNull, numOrNull, text, textOrNull } from '../db'
 import type {
@@ -42,11 +43,13 @@ import {
   PII_MASK, PREV_LINE_NONE, PRO_SORTS, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
   PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N, RK, RULE,
   SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEO_DASH, SEO_LOC_SEP, SEO_PAREN_L,
-  SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_TAIL_RE, SITE_NAME, SORT_COLUMNS, SORT_MATCH_KEY, SORT_NONE, SPACE, SPACES_RE,
+  SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_TAIL_RE, SITE_NAME, SORT_COLUMNS, SORT_MATCH_KEY, SORT_NONE,
+  SPACE, SPACES_RE,
   SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD, STREAM_L10N,
   STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
   TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE,
   TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS, TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
+  TITLE_BATCH_MAX, TITLE_MAX_LEN,
 } from './constants'
 import { JD_FORMAT_PROMPT_HEAD, REASON_EN, STATUS_EN } from './prompts'
 import { CACHE } from './variables'
@@ -58,8 +61,10 @@ import type {
   CountOfIn, CoverageIn, DesigDim, DistrictCard, DistrictDim, DistrictEmployerRow, DliTop, DrawStreamNoteIn,
   DropProvPrefixIn, EeCatDim, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut,
   JdByIdIn, JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact,
-  JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn, JobsPageOut,
-  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, DesignatedIn, DesignatedOut, LmiaNocsOut, MatchDims, MatchDimsOut,
+  JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
+  JobsPageOut,
+  JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, DesignatedIn, DesignatedOut, LmiaNocsOut,
+  MatchDims, MatchDimsOut,
   MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult, MaybeLevel,
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn,
   NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, NocSearchOut, NumCell, OccCompetitionIn,
@@ -67,11 +72,12 @@ import type {
   PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell, ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts,
   ProvinceCardIn, ProvinceCardOut, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount,
   QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, ReqStreamDisplayIn, ResolveQIn,
-  JobMidIn, MidOut, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList, SimilarOut,
+  JobMidIn, MidOut, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut, SimilarEmployer, SimilarIn, SimilarList,
+  SimilarOut,
   SortValIn,
   SsrDimsOut, StrCell, StreamDisplayIn, StripTitleIn, StrList, TimeLike, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
   UrlHandle, WhereParam,
-  JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow,
+  JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow, TranslateTitlesIn, TitlesOut, TitleList, TitleTexts,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -248,7 +254,8 @@ export function matchRank(l: MaybeLevel): number {
  */
 export function match(input: MatchIn): MatchResult {
   if (input.job.noc === '') {
-    return { level: LV.na, score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocJobUncat, params: {}, source: null }] }
+    return { level: LV.na, score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocJobUncat, params: {},
+      source: null }] }
   }
   const noc = nocRule(input)
   const prov = provRule(input)
@@ -290,18 +297,21 @@ function lmiaRule(input: RuleIn): RuleScoreOut {
   if (skilled == null) {
     return {
       score: PTS.lmiaHas,
-      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaHas, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
+      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaHas, params: { n: job.lmiaPositions,
+        q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
     }
   }
   if (skilled > 0) {
     return {
       score: PTS.lmiaSkilled,
-      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaSkilled, params: { n: skilled, total: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
+      reasons: [{ rule: RULE.lmia, verdict: VD.pass, key: RK.lmiaSkilled, params: { n: skilled,
+        total: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
     }
   }
   return {
     score: 0,
-    reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaLowOnly, params: { n: job.lmiaPositions, q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
+    reasons: [{ rule: RULE.lmia, verdict: VD.na, key: RK.lmiaLowOnly, params: { n: job.lmiaPositions,
+      q: job.lmiaLastQuarter }, source: LMIA_SOURCE }],
   }
 }
 
@@ -318,12 +328,15 @@ function wageRule(input: RuleIn): RuleScoreOut {
   }
   const pct = Math.round((job.salaryAnnual / job.wageMedAnnual - 1) * PCT_SCALE)
   if (pct >= 0) {
-    return { score: PTS.wageAbove, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove, params: { pct: pct }, source: null }] }
+    return { score: PTS.wageAbove, reasons: [{ rule: RULE.wage, verdict: VD.pass, key: RK.wageAbove,
+      params: { pct: pct }, source: null }] }
   }
   if (pct >= WAGE_NEAR_PCT_MIN) {
-    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageNear, params: { pct: -pct }, source: null }] }
+    return { score: 0, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageNear, params: { pct: -pct },
+      source: null }] }
   }
-  return { score: PTS.wageBelow, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow, params: { pct: -pct }, source: null }] }
+  return { score: PTS.wageBelow, reasons: [{ rule: RULE.wage, verdict: VD.warn, key: RK.wageBelow,
+    params: { pct: -pct }, source: null }] }
 }
 
 /**
@@ -338,12 +351,15 @@ function teerRule(input: RuleIn): RuleScoreOut {
     return { score: 0, reasons: [] }
   }
   if (job.teer <= TEER_GENERAL_MAX) {
-    return { score: PTS.teerOk, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk, params: { teer: job.teer }, source: null }] }
+    return { score: PTS.teerOk, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerOk,
+      params: { teer: job.teer }, source: null }] }
   }
   if (job.pnpStream !== '') {
-    return { score: PTS.teerChannel, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel, params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
+    return { score: PTS.teerChannel, reasons: [{ rule: RULE.teer, verdict: VD.pass, key: RK.teerChannel,
+      params: { teer: job.teer, stream: job.pnpStream }, source: null }] }
   }
-  return { score: PTS.teerLow, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow, params: { teer: job.teer }, source: null }] }
+  return { score: PTS.teerLow, reasons: [{ rule: RULE.teer, verdict: VD.fail, key: RK.teerLow,
+    params: { teer: job.teer }, source: null }] }
 }
 
 /**
@@ -374,26 +390,30 @@ function eeRule(input: RuleIn): RuleScoreOut {
     }
   }
   if (row == null || row.drawCrs == null) {
-    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNoDraw, params: { cat: job.eeCategory }, source: null }] }
+    return { score: 0, reasons: [{ rule: RULE.ee, verdict: VD.na, key: RK.eeNoDraw, params: { cat: job.eeCategory },
+      source: null }] }
   }
   const src = { label: row.label, url: row.url, fetched: row.fetched }
   const drawDay = ymd(row.drawDate)
   if (p.crs == null) {
     return {
       score: 0,
-      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs, date: drawDay }, source: src }],
+      reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeNoCrs, params: { cat: row.label, draw: row.drawCrs,
+        date: drawDay }, source: src }],
     }
   }
   const diff = p.crs - row.drawCrs
   if (diff >= 0) {
     return {
       score: PTS.eeAbove,
-      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: drawDay, diff: diff }, source: src }],
+      reasons: [{ rule: RULE.ee, verdict: VD.pass, key: RK.eeAbove, params: { cat: row.label, crs: p.crs,
+        draw: row.drawCrs, date: drawDay, diff: diff }, source: src }],
     }
   }
   return {
     score: 0,
-    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs, draw: row.drawCrs, date: drawDay, gap: -diff }, source: src }],
+    reasons: [{ rule: RULE.ee, verdict: VD.warn, key: RK.eeBelow, params: { cat: row.label, crs: p.crs,
+      draw: row.drawCrs, date: drawDay, gap: -diff }, source: src }],
   }
 }
 
@@ -419,7 +439,8 @@ function provRule(input: RuleIn): RuleScoreOut {
     return { score: 0, reasons: [] }
   }
   if (p.targetProvinces.length > 0 && p.targetProvinces.includes(prov) === false) {
-    reasons.push({ rule: RULE.prov, verdict: VD.warn, key: RK.provNotTarget, params: { prov: prov, targets: p.targetProvinces.join(NOC_JOIN_SLASH) }, source: null })
+    reasons.push({ rule: RULE.prov, verdict: VD.warn, key: RK.provNotTarget, params: { prov: prov,
+      targets: p.targetProvinces.join(NOC_JOIN_SLASH) }, source: null })
   }
   let named: RuleIn['dims']['pnpOccupations'][number] | null = null
   let excluded: RuleIn['dims']['pnpOccupations'][number] | null = null
@@ -443,7 +464,8 @@ function provRule(input: RuleIn): RuleScoreOut {
   } else if (excluded != null) {
     score += PTS.provExcluded
     reasons.push({
-      rule: RULE.prov, verdict: VD.fail, key: RK.provExcluded, params: { prov: prov, label: excluded.label, noc: job.noc },
+      rule: RULE.prov, verdict: VD.fail, key: RK.provExcluded, params: { prov: prov, label: excluded.label,
+        noc: job.noc },
       source: { label: excluded.label, url: excluded.url, fetched: excluded.fetched },
     })
   } else if (provListCoverage({ prov: prov, dims: input.dims }) === COV.uncovered) {
@@ -525,10 +547,12 @@ function nocRule(input: RuleIn): NocRuleOut {
   const p = input.profile
   const job = input.job
   if (p.nocCodes.length === 0) {
-    return { score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocNoProfile, params: {}, source: null }], nocMiss: false }
+    return { score: 0, reasons: [{ rule: RULE.noc, verdict: VD.na, key: RK.nocNoProfile, params: {}, source: null }],
+      nocMiss: false }
   }
   if (p.nocCodes.includes(job.noc)) {
-    return { score: PTS.nocExact, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact, params: { noc: job.noc }, source: null }], nocMiss: false }
+    return { score: PTS.nocExact, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocExact,
+      params: { noc: job.noc }, source: null }], nocMiss: false }
   }
   let minor = NOC_NONE
   let submajor = NOC_NONE
@@ -536,19 +560,23 @@ function nocRule(input: RuleIn): NocRuleOut {
     if (c.length === NOC_LEN && c.slice(0, NOC_MINOR_LEN) === job.noc.slice(0, NOC_MINOR_LEN) && minor === '') {
       minor = c
     }
-    if (c.length === NOC_LEN && c.slice(0, NOC_SUBMAJOR_LEN) === job.noc.slice(0, NOC_SUBMAJOR_LEN) && submajor === '') {
+    if (c.length === NOC_LEN && c.slice(0, NOC_SUBMAJOR_LEN) === job.noc.slice(0,
+      NOC_SUBMAJOR_LEN) && submajor === '') {
       submajor = c
     }
   }
   if (minor !== '') {
-    return { score: PTS.nocMinor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor, params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
+    return { score: PTS.nocMinor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocMinor,
+      params: { noc: job.noc, yours: minor }, source: null }], nocMiss: false }
   }
   if (submajor !== '') {
-    return { score: PTS.nocSubmajor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor, params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
+    return { score: PTS.nocSubmajor, reasons: [{ rule: RULE.noc, verdict: VD.pass, key: RK.nocSubmajor,
+      params: { noc: job.noc, yours: submajor }, source: null }], nocMiss: false }
   }
   return {
     score: 0, nocMiss: true,
-    reasons: [{ rule: RULE.noc, verdict: VD.fail, key: RK.nocNone, params: { noc: job.noc, yours: p.nocCodes.join(SPACE + NOC_JOIN_SLASH + SPACE) }, source: null }],
+    reasons: [{ rule: RULE.noc, verdict: VD.fail, key: RK.nocNone, params: { noc: job.noc,
+      yours: p.nocCodes.join(SPACE + NOC_JOIN_SLASH + SPACE) }, source: null }],
   }
 }
 
@@ -1096,7 +1124,8 @@ function rowMatchLevel(input: RowMatchIn): MaybeLevel {
  * @returns 当前页行、同 WHERE 总数与最近核对时刻。
  */
 export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
-  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: 1 })
+  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }),
+    startIndex: 1 })
   const order = orderByClause({ sort: input.sort, pro: input.pro })
   const limIdx = w.params.length + 1
   const limPh = DOLLAR + String(limIdx)
@@ -1115,7 +1144,8 @@ export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
   listParams.push(input.pageSize)
   listParams.push(input.page * input.pageSize)
   const run = async function run(cond: string): Promise<[JobDbRow[], Row[] | null, string]> {
-    const list = queryRows({ db: input.db, sql: SQL.jobsPage(w.sql, cond, order, limPh, offPh), params: listParams, map: passJobRow })
+    const list = queryRows({ db: input.db, sql: SQL.jobsPage(w.sql, cond, order, limPh, offPh), params: listParams,
+      map: passJobRow })
     let cnt: Promise<Row[] | null> = Promise.resolve(null)
     if (cachedN == null) {
       cnt = queryRows({ db: input.db, sql: SQL.jobsPageCount(w.sql, cond), params: w.params, map: passRow })
@@ -1174,7 +1204,8 @@ export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
     }
   }
   const [cand, updRows] = await Promise.all([
-    queryRows({ db: input.db, sql: SQL.MATCH_PAGE, params: [nocs, Array.from(noc4), Array.from(noc3), CAND_CAP], map: passJobRow }),
+    queryRows({ db: input.db, sql: SQL.MATCH_PAGE, params: [nocs, Array.from(noc4), Array.from(noc3), CAND_CAP],
+      map: passJobRow }),
     queryRows({ db: input.db, sql: SQL.JOBS_MAX_LAST_SEEN, params: [], map: passRow }),
   ])
   let matchHigh = 0
@@ -1344,11 +1375,13 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   const job = input.job
   let coRows: Row[] = []
   if (job.company !== '') {
-    coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id], map: passRow })
+    coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id],
+      map: passRow })
   }
   let occRows: Row[] = []
   if (job.noc !== '' && job.province !== '') {
-    occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id, job.company], map: passRow })
+    occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
+      job.company], map: passRow })
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)
@@ -1405,7 +1438,8 @@ export async function loadTotalAndProof(db: Db): ProofOut {
   }
   let rows: Row[]
   try {
-    rows = await queryRows({ db: db, sql: SQL.totalAndProof(SQL.DEDUPE_COND + W.and + OPEN_COND), params: [], map: passRow })
+    rows = await queryRows({ db: db, sql: SQL.totalAndProof(SQL.DEDUPE_COND + W.and + OPEN_COND), params: [],
+      map: passRow })
   } catch (e) {
     if (e instanceof Error && pgCodeOf(e) === PG_UNDEFINED_COLUMN) {
       rows = await queryRows({ db: db, sql: SQL.totalAndProof(OPEN_COND), params: [], map: passRow })
@@ -1474,7 +1508,8 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
  * @returns 公司详情;查无 null。
  */
 async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.companyDetail(input.where), params: [input.param], map: passJsonRow })
+  const rows = await queryRows({ db: input.db, sql: SQL.companyDetail(input.where), params: [input.param],
+    map: passJsonRow })
   const c = rows[0]
   if (c == null) {
     return null
@@ -1526,7 +1561,8 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   }
   return {
     name: strCell(c.name), slug: strCell(c.slug), website: website, websiteSource: strCell(c.website_source),
-    industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh), aliasKo: strCell(c.alias_ko),
+    industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh),
+    aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),
     scoreDetail: scoreDetail, aiBrief: strCell(c.ai_brief), aiWebsite: strCell(c.ai_website),
     aiSources: sources, aiFetched: ymd(iso(strCell(c.ai_fetched))),
@@ -1549,7 +1585,8 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
  */
 async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
   try {
-    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [input.companyId], map: passJsonRow })
+    const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_LMIA_NOCS, params: [input.companyId],
+      map: passJsonRow })
     const firstRow = rows[0]
     if (firstRow == null) {
       return []
@@ -1579,7 +1616,8 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
     for (const [noc] of entries) {
       codes.push(noc)
     }
-    const nameRows = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_BY_CODES, params: [codes], map: passRow })
+    const nameRows = await queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_TITLES_BY_CODES, params: [codes],
+      map: passRow })
     const names = new Map<string, Row>()
     for (const r of nameRows) {
       names.set(String(r.noc), r)
@@ -1618,7 +1656,8 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
  */
 async function designatedOf(input: DesignatedIn): DesignatedOut {
   try {
-    const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_POOL_BY_SLUG, params: [input.slug], map: passJsonRow })
+    const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_POOL_BY_SLUG, params: [input.slug],
+      map: passJsonRow })
     const first = rows[0]
     if (first == null || first.designated !== true) {
       return { programs: [], provinces: [] }
@@ -1645,13 +1684,15 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
     return []
   }
   if (input.mid != null && input.mid !== PARAM_NONE) {
-    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, input.mid, input.excludeSlug], map: toSimilar })
+    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, input.mid,
+      input.excludeSlug], map: toSimilar })
   }
   if (input.industry === PARAM_NONE) {
     return []
   }
   return queryRows({
-    db: input.db, sql: SQL.SIMILAR_EMPLOYERS_BY_INDUSTRY, params: [input.province, input.industry, input.excludeSlug], map: toSimilar,
+    db: input.db, sql: SQL.SIMILAR_EMPLOYERS_BY_INDUSTRY, params: [input.province, input.industry,
+      input.excludeSlug], map: toSimilar,
   })
 }
 
@@ -1687,7 +1728,8 @@ function toMidCell(r: Row): string {
  * @returns 命中行与被跳过的筛选键。
  */
 export async function loadAlertHits(input: AlertHitsIn): AlertHitsOut {
-  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }), startIndex: ALERT_WHERE_START })
+  const w = buildJobsWhere({ filters: await resolveQCompanyIds({ db: input.db, filters: input.filters }),
+    startIndex: ALERT_WHERE_START })
   const params: WhereParam[] = [input.since]
   for (const p of w.params) {
     params.push(p)
@@ -1715,7 +1757,8 @@ export async function loadQuizFacts(input: QuizFactsIn): QuizFactsOut {
     queryRows({ db: input.db, sql: SQL.QUIZ_FACTS_BY_PROV, params: [input.noc], map: passRow }),
     queryRows({ db: input.db, sql: SQL.QUIZ_FACTS_STREAMS, params: [input.noc], map: passRow }),
     queryRows({ db: input.db, sql: SQL.NOC_TITLE_ONE, params: [input.noc], map: passRow }),
-    queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_EMPLOYER_COUNT, params: [input.noc, Array.from(NO_LIST_PROVINCES)], map: passRow }),
+    queryRowsOrEmpty({ db: input.db, sql: SQL.NOC_EMPLOYER_COUNT, params: [input.noc, Array.from(NO_LIST_PROVINCES)],
+      map: passRow }),
   ])
   const t = tot[0]
   if (t == null || t.open == null || Number(t.open) === 0) {
@@ -2543,7 +2586,8 @@ export async function loadProvinceCard(input: ProvinceCardIn): ProvinceCardOut {
   if (infoFirst == null) {
     return null
   }
-  const diffRows = await queryRows({ db: input.db, sql: SQL.PROV_DIFFICULTY_ONE, params: [input.code], map: toDiffCell })
+  const diffRows = await queryRows({ db: input.db, sql: SQL.PROV_DIFFICULTY_ONE, params: [input.code],
+    map: toDiffCell })
   const difficulty: JsonCell = firstOr(diffRows, null)
   return { info: infoFirst, difficulty: difficulty }
 }
@@ -2559,7 +2603,8 @@ export async function loadProvinceCard(input: ProvinceCardIn): ProvinceCardOut {
 export async function loadCityCard(input: CityCardIn): CityCardOut {
   const [aggRows, broads, dliTop, aipRows, dliCountRows] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.cityTotals(SQL.OPEN_COND), params: [input.city, input.prov], map: toCityAgg }),
-    queryRows({ db: input.db, sql: SQL.cityByBroad(SQL.OPEN_COND), params: [input.city, input.prov], map: toBroadCount }),
+    queryRows({ db: input.db, sql: SQL.cityByBroad(SQL.OPEN_COND), params: [input.city, input.prov],
+      map: toBroadCount }),
     queryRows({ db: input.db, sql: SQL.CITY_DLI, params: [input.city, input.prov], map: toDliTop }),
     queryRows({ db: input.db, sql: SQL.CITY_DESIGNATED_COUNT, params: [input.city, input.prov], map: toCountN }),
     queryRows({ db: input.db, sql: SQL.CITY_DLI_COUNT, params: [input.city, input.prov], map: toCountN }),
@@ -2570,9 +2615,12 @@ export async function loadCityCard(input: CityCardIn): CityCardOut {
   let district: DistrictCard | null = null
   if (input.district !== '') {
     const [dAggRows, dBroads, dEmps] = await Promise.all([
-      queryRows({ db: input.db, sql: SQL.districtTotals(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toCityAgg }),
-      queryRows({ db: input.db, sql: SQL.districtByBroad(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toBroadCount }),
-      queryRows({ db: input.db, sql: SQL.districtEmployers(SQL.OPEN_COND), params: [input.city, input.prov, input.district], map: toDistrictEmployer }),
+      queryRows({ db: input.db, sql: SQL.districtTotals(SQL.OPEN_COND), params: [input.city, input.prov,
+        input.district], map: toCityAgg }),
+      queryRows({ db: input.db, sql: SQL.districtByBroad(SQL.OPEN_COND), params: [input.city, input.prov,
+        input.district], map: toBroadCount }),
+      queryRows({ db: input.db, sql: SQL.districtEmployers(SQL.OPEN_COND), params: [input.city, input.prov,
+        input.district], map: toDistrictEmployer }),
     ])
     const dAggFirst = dAggRows[0]
     if (dAggFirst != null) {
@@ -2603,7 +2651,8 @@ export async function loadBigDims(input: BigDimsIn): BigDimsOut {
     queryRows({ db: input.db, sql: SQL.DIMS_DESIGNATED, params: [], map: toDesigDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_NOC_DESCRIPTIONS, params: [], map: toNocDescDim }),
   ])
-  return { cities: cities, districts: districts, designatedEmployers: designatedEmployers, nocDescriptions: nocDescriptions }
+  return { cities: cities, districts: districts, designatedEmployers: designatedEmployers,
+    nocDescriptions: nocDescriptions }
 }
 
 /**
@@ -2742,7 +2791,8 @@ export function emptyMid(_e: Error): string {
  * @returns 整理版全文；没生过/查无这岗是 null。
  */
 export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_URL, params: [input.url], map: toJdFormattedCell })
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_URL, params: [input.url],
+    map: toJdFormattedCell })
   return firstOf(rows)
 }
 
@@ -2793,7 +2843,8 @@ export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
   }
   out = out.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim()
   const ok = validateJdFormatted(out, src)
-  log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdformatLine + input.state.id + JOBS_LOG.jdformatSrc + src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached + JOBS_LOG.jdformatValid + ok })
+  log({ tag: JOBS_LOG.tag,
+    text: JOBS_LOG.jdformatLine + input.state.id + JOBS_LOG.jdformatSrc + src.length + JOBS_LOG.jdformatCh + JOBS_LOG.jdformatCached + r.cached + JOBS_LOG.jdformatValid + ok })
   if (ok === false) {
     return null
   }
@@ -2853,7 +2904,8 @@ function validateJdFormatted(out: string, src: string): boolean {
  * @returns 投递链接；查无这岗/没链接是 null。
  */
 export async function loadApplyUrlById(input: ApplyUrlIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JOB_APPLY_URL_BY_ID, params: [input.jobId], map: toApplyUrlCell })
+  const rows = await queryRows({ db: input.db, sql: SQL.JOB_APPLY_URL_BY_ID, params: [input.jobId],
+    map: toApplyUrlCell })
   return firstOf(rows)
 }
 
@@ -3868,7 +3920,8 @@ export function jobMetaOut(input: JobMetaOutIn): JobMeta {
     description: metaDescriptionOf(input.row),
     alternates: { canonical: canonical },
     openGraph: {
-      images: [{ url: OG_JOB_PATH_HEAD + input.id + OG_JOB_PATH_TAIL, width: OG_IMG_W, height: OG_IMG_H, alt: OG_IMG_ALT }],
+      images: [{ url: OG_JOB_PATH_HEAD + input.id + OG_JOB_PATH_TAIL, width: OG_IMG_W, height: OG_IMG_H,
+        alt: OG_IMG_ALT }],
     },
   }
   if (input.row.status === STATUS_CLOSED_WORD) {
@@ -4001,4 +4054,72 @@ function companyAddressLdOf(co: CompanyDetail): JsonObj {
   }
   addr.addressCountry = LD_COUNTRY
   return addr
+}
+
+/**
+ * 一组职位名 → 去空去重、封顶(线格式里可能混非串,逐项验)。
+ *
+ * @param raw 请求体里的数组。
+ * @returns 干净的一组。
+ */
+export function titleListOf(raw: TitleList): TitleList {
+  const out: TitleList = []
+  for (const t of raw) {
+    if (typeof t !== 'string') {
+      continue
+    }
+    const c = t.trim()
+    if (c === PARAM_NONE || out.includes(c)) {
+      continue
+    }
+    out.push(c)
+    if (out.length >= TITLE_BATCH_MAX) {
+      break
+    }
+  }
+  return out
+}
+
+/**
+ * 批量懒翻职位名(2026-09-14 Frank「这个翻译老是翻译不全啊」):缓存命中的直接拿,没中的一趟对齐翻译,
+ * 译不出的那行不进结果;调用方限流打满(allowLlm = false)就只回缓存里有的。
+ *
+ * @param x 干净的一组职位名、语种与准不准烧模型。
+ * @returns 职位名 → 译名。
+ */
+export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
+  const texts: TitleTexts = {}
+  const miss: TitleList = []
+  for (const t of x.titles) {
+    const hit = CACHE.titleTransBy.get(t.toLowerCase() + TRANS_KEY_SEP + x.lang)
+    if (hit != null) {
+      texts[t] = hit
+    } else {
+      miss.push(t)
+    }
+  }
+  if (miss.length === 0 || x.allowLlm === false) {
+    return texts
+  }
+  const got = await translateLinesAligned({ lines: miss, lang: x.lang,
+    signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS) })
+  for (const [i, t] of miss.entries()) {
+    const g = got[i]
+    if (g == null || g.trim() === PARAM_NONE || g.trim().length > TITLE_MAX_LEN) {
+      continue
+    }
+    CACHE.titleTransBy.set(t.toLowerCase() + TRANS_KEY_SEP + x.lang, g.trim())
+    texts[t] = g.trim()
+  }
+  return texts
+}
+
+/**
+ * 批量懒翻挂了的空表兜底(catch 传具名函数;清单照常给,只是没译名)。
+ *
+ * @param _e 捕到的错。
+ * @returns 空表。
+ */
+export function emptyTexts(_e: Error): TitleTexts {
+  return {}
 }

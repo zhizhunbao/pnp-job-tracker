@@ -10,6 +10,7 @@
  * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来;弹框没有,空串自己不渲)。
  * 2026-09-14 Frank「这个去掉」「在招职位那部分加一个收起的功能就行」:「在职位板查看其余 N 个」链撤;
  * 展开钮改成展开 / 收起来回切。
+ * 2026-09-14 Frank「这个翻译老是翻译不全啊」:没 NOC 译名的行一次批量懒翻标题当副题(useTitleMap)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -22,7 +23,10 @@ import { JobMiniRow } from './jobminirow'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
-import { jobSubOf, jobsShownOf, jobsToggleLabelOf, makeOpenJob, makeToggle } from './functions'
+import {
+  jobSubOf, jobsShownOf, jobsToggleLabelOf, makeOpenJob, makeToggle, subOrTitleOf, untitledOf,
+} from './functions'
+import { useTitleMap } from './hooks'
 import type { CompanyJobsCardIn, GoBackFn } from './types'
 import css from './companies.module.css'
 
@@ -36,6 +40,7 @@ export function CompanyJobsCard({
   company, t, lang, updatedAt, onOpenJob, resolveJob, newTab,
 }: CompanyJobsCardIn) {
   const [allJobs, setAllJobs] = useState(false)
+  const titleMap = useTitleMap({ titles: untitledOf({ jobs: company.jobs, lang }), lang })
   if (company.jobs.length === 0) {
     return null
   }
@@ -52,7 +57,7 @@ export function CompanyJobsCard({
       <JobMiniRow key={job.id}
         id={job.id}
         title={job.title}
-        sub={jobSubOf({ job, lang })}
+        sub={subOrTitleOf({ sub: jobSubOf({ job, lang }), title: job.title, map: titleMap })}
         salaryText={job.salaryText}
         city={job.city}
         onOpen={onOpen}

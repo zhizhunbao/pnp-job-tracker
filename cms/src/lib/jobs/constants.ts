@@ -3076,3 +3076,8 @@ export const TITLE_LIMIT_PREFIX = 'jt:'
  * 职位名译名最长;超过 = 模型在解释不是在译,丢弃。
  */
 export const TITLE_MAX_LEN = 60
+
+/**
+ * 一次批量懒翻的职位名上限(公司弹框在招清单最多五十条,2026-09-14 Frank「这个翻译老是翻译不全啊」)。
+ */
+export const TITLE_BATCH_MAX = 60

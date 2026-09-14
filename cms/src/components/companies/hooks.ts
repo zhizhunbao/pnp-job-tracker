@@ -11,12 +11,15 @@
  * @time 2026-08-28 16:26:43
  */
 import { useEffect, useState } from 'react'
-import { LANG_EN, TEXT_NONE,
+import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
-import { makeAiToggle, makeLoadAlias, makeLoadBrief, makeLoadPanel, makeLoadTrans, makeTransToggle } from './functions'
+import {
+  makeAiToggle, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
+  makeTransToggle,
+} from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyBriefFact, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
-  CompanyTransHookIn, DeadFlag, CompanyAliasHookIn, CompanyAliasPanel,
+  CompanyTransHookIn, DeadFlag, CompanyAliasHookIn, CompanyAliasPanel, TitleMapHookIn, DescTransHookIn,
 } from './types'
 
 /**
@@ -157,4 +160,57 @@ export function useCompanyAlias(x: CompanyAliasHookIn): CompanyAliasPanel {
     text = alias
   }
   return { alias: text, settled: settled || lang === LANG_EN || name === TEXT_NONE }
+}
+
+/**
+ * 一组职位名的译名表(2026-09-14):组合变了就再打一次接口;英文界面或空组不打。
+ *
+ * @param x 要翻的一组与界面语言。
+ * @returns 职位名 → 译名(还没回来是空表)。
+ */
+export function useTitleMap(x: TitleMapHookIn): Record<string, string> {
+  const [map, setMap] = useState<Record<string, string>>({})
+  const key = x.titles.join(TITLES_KEY_SEP)
+  const lang = x.lang
+  const want = key !== TEXT_NONE && lang !== LANG_EN
+
+  useEffect(function loadTitles() {
+    const flag: DeadFlag = { dead: false }
+    if (want) {
+      makeLoadTitles({ titles: key.split(TITLES_KEY_SEP), lang, setMap })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [want, key, lang])
+
+  return map
+}
+
+/**
+ * 官网简介的对照(2026-09-14):中 / 韩界面且有官网简介才打一次接口。
+ *
+ * @param x 公司名、界面语言与有没有官网简介。
+ * @returns 译文;'' = 还没有。
+ */
+export function useCompanyDescTrans(x: DescTransHookIn): string {
+  const [trans, setTrans] = useState<string | null>(null)
+  const name = x.name
+  const lang = x.lang
+  const want = x.has && name !== TEXT_NONE && lang !== LANG_EN && trans === null
+
+  useEffect(function loadDesc() {
+    const flag: DeadFlag = { dead: false }
+    if (want) {
+      makeLoadDescTrans({ name, lang, setTrans })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [want, name, lang])
+
+  if (trans == null) {
+    return TEXT_NONE
+  }
+  return trans
 }

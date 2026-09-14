@@ -7,3 +7,7 @@ ALTER TABLE jobs
   ADD COLUMN IF NOT EXISTS jd_trans_ko text,
   ADD COLUMN IF NOT EXISTS title_zh text,
   ADD COLUMN IF NOT EXISTS title_ko text;
+
+-- 同日追加:公司官网简介的中文译文也落库(公司弹框 / 公司页「简介抓取自官网」段的对照),与 ai_brief_zh 同形。
+ALTER TABLE companies
+  ADD COLUMN IF NOT EXISTS description_zh text;

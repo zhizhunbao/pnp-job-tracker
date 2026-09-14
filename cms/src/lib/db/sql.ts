@@ -1571,7 +1571,12 @@ export const JD_FORMATTED_BY_URL = `SELECT jd_formatted FROM jobs WHERE apply_ur
 export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1`
 
 /**
- * 公司 AI 简介的中文译文(2026-09-05 落库:docs/sql/company-brief-zh.sql);没翻过给空行。$1=公司名。
+ * 公司官网简介原文(懒翻用,2026-09-14 Frank「这个也没加翻译」)。
+ */
+export const COMPANY_DESC_BY_NAME = `SELECT description FROM companies WHERE lower(name) = lower($1) AND description IS NOT NULL LIMIT 1`
+
+/**
+ * AI 简介中文版(已落库的)。
  */
 export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE lower(name) = lower($1) AND ai_brief_zh IS NOT NULL LIMIT 1`
 

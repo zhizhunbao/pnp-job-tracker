@@ -2602,3 +2602,13 @@ export type AliasCellIn = {
    */
   lang: string
 }
+
+/**
+ * companies 官网简介单格(pg 原始行)。
+ */
+export type CompanyDescDbRow = {
+  /**
+   * 官网简介;NULL = 没有。
+   */
+  description: string | null
+}

@@ -33,11 +33,13 @@ import {
   emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
+  translateTitles, emptyTexts,
 } from './functions'
 import { CACHE } from './variables'
 import type {
-  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson, JdTitleBody,
+  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
+  JdTitleBody,
 } from './types'
 
 /**
@@ -469,6 +471,7 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   }
   let title = PARAM_NONE
   let lang = PARAM_NONE
+  let titles: string[] = []
   try {
     const b = await req.json() as JdTitleBody
     if (typeof b.title === 'string') {
@@ -477,10 +480,21 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     if (typeof b.lang === 'string') {
       lang = b.lang
     }
+    if (Array.isArray(b.titles)) {
+      titles = titleListOf(b.titles)
+    }
   } catch {
     title = PARAM_NONE
   }
-  if (title === PARAM_NONE || TRANS_LANGS.includes(lang) === false) {
+  if (TRANS_LANGS.includes(lang) === false) {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  if (titles.length > 0) {
+    const allow = checkLimit([[TITLE_LIMIT_PREFIX + ipOf(req), TITLE_IP_DAILY]])
+    const batch = await translateTitles({ titles: titles, lang: lang, allowLlm: allow }).catch(emptyTexts)
+    return Response.json({ ok: true, texts: batch })
+  }
+  if (title === PARAM_NONE) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
   const ck = title.toLowerCase() + TRANS_KEY_SEP + lang

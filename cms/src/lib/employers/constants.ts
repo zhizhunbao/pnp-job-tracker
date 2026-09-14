@@ -810,3 +810,8 @@ export const ALIAS_PREFIX = ''
  * 换行(译名只取第一行)。
  */
 export const NEWLINE = '\n'
+
+/**
+ * 官网简介翻译缓存键的尾巴。
+ */
+export const DESC_KEY_TAIL = '|desc'

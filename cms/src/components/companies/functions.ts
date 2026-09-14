@@ -35,7 +35,7 @@ import {
   KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
   URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, URL_CO_ALIAS, PROV_PAREN_RE, LOC_JOIN, PROV_PAREN_INNER_RE,
-  YEAR_ONLY_RE,
+  YEAR_ONLY_RE, URL_CO_TITLES, URL_CO_DESC,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -46,7 +46,8 @@ import type {
   LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadBriefIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenJobIn,
   PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
   JobsToggleLabelIn, SecKeyIn, SecTextIn, SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
-  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn, AliasJson, LoadAliasIn, BaseOverrideIn,
+  TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn, AliasJson, LoadAliasIn, BaseOverrideIn, LoadTitlesIn, TitlesJson,
+  SubOrTitleIn, UntitledIn, LoadDescTransIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -963,6 +964,71 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
 }
 
 /**
+ * 批量懒翻职位名(2026-09-14 Frank「这个翻译老是翻译不全啊」:在招清单里没 NOC 译名的行一次发齐);失败静默。
+ *
+ * @param x 一组职位名、界面语言与落格。
+ * @returns 取数函数(带死旗)。
+ */
+export function makeLoadTitles(x: LoadTitlesIn): LoadFn {
+  return function loadTitles(flag: DeadFlag): void {
+    function read(r: Response): Promise<TitlesJson> {
+      return r.json().catch(none)
+    }
+    function none(): null {
+      return null
+    }
+    function land(j: TitlesJson): void {
+      if (flag.dead || j == null || j.ok !== true || j.texts == null) {
+        return
+      }
+      x.setMap(j.texts)
+    }
+    function fall(): void {
+      return
+    }
+    fetch(URL_CO_TITLES, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ titles: x.titles, lang: x.lang }),
+    }).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 在招清单里没 NOC 译名的职位名(去重),交给批量懒翻。
+ *
+ * @param x 在招岗与界面语言。
+ * @returns 要翻的一组职位名。
+ */
+export function untitledOf(x: UntitledIn): string[] {
+  const out: string[] = []
+  for (const job of x.jobs) {
+    if (jobSubOf({ job, lang: x.lang }) !== TEXT_NONE || out.includes(job.title)) {
+      continue
+    }
+    out.push(job.title)
+  }
+  return out
+}
+
+/**
+ * 在招清单一行的副题:有 NOC 译名用它,没有就用懒翻出来的标题译名,都没有给空串。
+ *
+ * @param x NOC 译名、职位名与译名表。
+ * @returns 副题。
+ */
+export function subOrTitleOf(x: SubOrTitleIn): string {
+  if (x.sub !== TEXT_NONE) {
+    return x.sub
+  }
+  const got = x.map[x.title]
+  if (got == null) {
+    return TEXT_NONE
+  }
+  return got
+}
+
+/**
  * 懒翻公司名(2026-09-14 Frank「公司名也做一个懒加载翻译」):打 /api/employers/alias,回来落格;失败静默(英文名照旧)。
  *
  * @param x 公司名、界面语言与落格。
@@ -993,6 +1059,37 @@ export function makeLoadAlias(x: LoadAliasIn): LoadFn {
       x.onSettled(true)
     }
     fetch(URL_CO_ALIAS, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ name: x.name, lang: x.lang }),
+    }).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 官网简介懒翻(2026-09-14 Frank「这个也没加翻译」):打 /api/employers/desc;失败静默(只显英文)。
+ *
+ * @param x 公司名、界面语言与落格。
+ * @returns 取数函数(带死旗)。
+ */
+export function makeLoadDescTrans(x: LoadDescTransIn): LoadFn {
+  return function loadDescTrans(flag: DeadFlag): void {
+    function read(r: Response): Promise<TransJson> {
+      return r.json().catch(none)
+    }
+    function none(): null {
+      return null
+    }
+    function land(j: TransJson): void {
+      if (flag.dead || j == null || j.ok !== true || j.text == null || j.text === TEXT_NONE) {
+        return
+      }
+      x.setTrans(j.text)
+    }
+    function fall(): void {
+      return
+    }
+    fetch(URL_CO_DESC, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
       body: JSON.stringify({ name: x.name, lang: x.lang }),

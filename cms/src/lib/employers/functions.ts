@@ -29,7 +29,7 @@ import {
   SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
-  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE
+  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -46,6 +46,7 @@ import type {
   IdCell, MaybeStr, OccDbRow, OccRow, ReqDbRow, ReqRow,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
+  CompanyDescDbRow,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1240,6 +1241,27 @@ function blankIfNull(v: MaybeNum): string {
  *
  * @param input 连接与公司名（大小写不敏感）。
  * @returns 简介全文；没查过/查无这家是 null。
+ */
+export async function loadCompanyDesc(input: CompanyBriefIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_DESC_BY_NAME, params: [input.name], map: toDescCell })
+  return firstOf(rows)
+}
+
+/**
+ * 官网简介单格行 → 串。
+ *
+ * @param r 原始行。
+ * @returns 简介;NULL 给 null。
+ */
+function toDescCell(r: CompanyDescDbRow): MaybeStr {
+  return textOrNull(r.description)
+}
+
+/**
+ * 公司 AI 简介原文(按名)。
+ *
+ * @param input 连接与公司名。
+ * @returns 简介;没有给 null。
  */
 export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_BY_NAME, params: [input.name], map: toBriefCell })

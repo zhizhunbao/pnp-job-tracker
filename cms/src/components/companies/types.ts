@@ -2132,3 +2132,128 @@ export type BaseOverrideIn = {
    */
   company: CompanyDetail
 }
+
+/**
+ * makeLoadTitles 的入参。
+ */
+export type LoadTitlesIn = {
+  /**
+   * 要翻的一组职位名。
+   */
+  titles: string[]
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 译名表落格(职位名 → 译名)。
+   */
+  setMap: (m: Record<string, string>) => void
+}
+
+/**
+ * 批量懒翻接口的响应(线格式)。
+ */
+export type TitlesJson = {
+  /**
+   * 翻成功了没有。
+   */
+  ok?: boolean
+
+  /**
+   * 职位名 → 译名。
+   */
+  texts?: Record<string, string> | null
+} | null
+
+/**
+ * useTitleMap 的入参。
+ */
+export type TitleMapHookIn = {
+  /**
+   * 要翻的一组职位名(已有 NOC 译名的不要放进来)。
+   */
+  titles: string[]
+
+  /**
+   * 界面语言(英文不翻)。
+   */
+  lang: CompaniesLang
+}
+
+/**
+ * subOrTitleOf 的入参。
+ */
+export type SubOrTitleIn = {
+  /**
+   * NOC 译名;'' = 没有。
+   */
+  sub: string
+
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 懒翻出来的译名表。
+   */
+  map: Record<string, string>
+}
+
+/**
+ * untitledOf 的入参。
+ */
+export type UntitledIn = {
+  /**
+   * 在招岗。
+   */
+  jobs: CompanyJobRow[]
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+}
+
+/**
+ * makeLoadDescTrans 的入参。
+ */
+export type LoadDescTransIn = {
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 译文落格。
+   */
+  setTrans: SetTextFn
+}
+
+/**
+ * useCompanyDescTrans 的入参。
+ */
+export type DescTransHookIn = {
+  /**
+   * 公司名;'' = 不翻。
+   */
+  name: string
+
+  /**
+   * 界面语言(英文不翻)。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 有官网简介没;没有不翻。
+   */
+  has: boolean
+}

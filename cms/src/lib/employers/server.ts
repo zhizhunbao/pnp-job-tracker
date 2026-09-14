@@ -15,5 +15,5 @@ export {
   loadCompanyBrief, normalizePoolFilters, resetEmployersCache,
 } from './functions'
 export {
-  employersAliasRoute, employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute, employersTranslateRoute,
+  employersAliasRoute, employersDescRoute, employersExportRoute, employersInfoRoute, employersRoute, employersSponsorsRoute, employersTranslateRoute,
 } from './routes'

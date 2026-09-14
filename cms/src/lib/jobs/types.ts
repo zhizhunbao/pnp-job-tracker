@@ -4849,4 +4849,44 @@ export type JdTitleBody = {
    * 目标语种。
    */
   lang?: string | null
+
+  /**
+   * 批量:一组职位名(与 title 二选一;公司弹框在招清单一次发齐)。
+   */
+  titles?: string[] | null
 }
+
+/**
+ * translateTitles 的入参。
+ */
+export type TranslateTitlesIn = {
+  /**
+   * 准不准烧模型(路由按 IP 限流后传进来;false = 只回缓存里有的)。
+   */
+  allowLlm: boolean
+
+  /**
+   * 干净的一组职位名。
+   */
+  titles: string[]
+
+  /**
+   * 语种。
+   */
+  lang: string
+}
+
+/**
+ * 一组职位名(批量懒翻的入参与去重后的出参)。
+ */
+export type TitleList = string[]
+
+/**
+ * 职位名 → 译名。
+ */
+export type TitleTexts = Record<string, string>
+
+/**
+ * translateTitles 的出参。
+ */
+export type TitlesOut = Promise<TitleTexts>
