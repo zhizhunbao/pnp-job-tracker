@@ -3656,6 +3656,11 @@ export type Plan = {
    * Pro 到期时刻;空串=非 Pro。
    */
   proUntil: string
+
+  /**
+   * 管理员(2026-09-14:「重译」钮只对管理员出)。
+   */
+  isAdmin: boolean
 }
 
 /**
@@ -5015,3 +5020,38 @@ export type SaveTitleTransIn = {
  * 只落库不回值的出参。
  */
 export type DoneOut = Promise<void>
+
+/**
+ * 「重译」接口的请求体(线格式)。
+ */
+export type JdRetransBody = {
+  /**
+   * 原帖链接。
+   */
+  url?: string | null
+
+  /**
+   * 职位名(同名岗的标题译名一并清)。
+   */
+  title?: string | null
+}
+
+/**
+ * `resetJdTrans` 的入参。
+ */
+export type ResetJdTransIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 原帖链接。
+   */
+  url: string
+
+  /**
+   * 职位名。
+   */
+  title: string
+}

@@ -14,7 +14,8 @@ import type { Db } from '../db'
 import { ERR_NAME, fail } from '../error'
 import { hasProfile, match } from '../jobs'
 import type { MatchJob } from '../jobs'
-import { friendChat } from '../llm'
+import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
+} from '../llm'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
@@ -29,7 +30,7 @@ import {
   SPACE_GLOBAL_RE,
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
-  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE,
+  WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -1778,4 +1779,20 @@ export function bySkilledDesc(a: SponsorEmployerRow, b: SponsorEmployerRow): num
 // eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
 export function byNumAsc(a: number, b: number): number {
   return a - b
+}
+
+/**
+ * 管理员「重译」(2026-09-14):清这家公司的别名 / AI 简介 / 官网简介译文与版本,并清进程内缓存。
+ *
+ * @param input 连接与公司名。
+ * @returns 无。
+ */
+export async function resetCompanyTrans(input: CompanyBriefIn): DoneOut {
+  await input.db.query(SQL.COMPANY_TRANS_RESET, [input.name])
+  const key = input.name.toLowerCase()
+  for (const lang of TRANS_LANGS) {
+    CACHE.aliasBy.delete(key + ALIAS_KEY_SEP + lang)
+    CACHE.briefTransBy.delete(key + TRANS_KEY_SEP + lang)
+    CACHE.briefTransBy.delete(key + TRANS_KEY_SEP + lang + DESC_KEY_TAIL)
+  }
 }

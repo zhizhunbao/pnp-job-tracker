@@ -683,3 +683,8 @@ export const TITLES_KEY_SEP = '\u0001'
  * 官网简介懒翻接口(2026-09-14)。
  */
 export const URL_CO_DESC = '/api/employers/desc'
+
+/**
+ * 公司「重译」接口(2026-09-14,管理员)。
+ */
+export const URL_CO_RETRANSLATE = '/api/employers/retranslate'

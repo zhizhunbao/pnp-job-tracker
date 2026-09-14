@@ -2257,3 +2257,13 @@ export type DescTransHookIn = {
    */
   has: boolean
 }
+
+/**
+ * makeRetranslateCompany 的入参。
+ */
+export type RetranslateCompanyIn = {
+  /**
+   * 公司名。
+   */
+  name: string
+}

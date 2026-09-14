@@ -2821,6 +2821,11 @@ export const FREE_PLAN = {
    * 没有 Pro 到期日。
    */
   proUntil: '',
+
+  /**
+   * 不是管理员(2026-09-14)。
+   */
+  isAdmin: false,
 }
 
 /**
@@ -3045,12 +3050,12 @@ export const SEC_MODE = {
 /**
  * 帖面薪资里的时薪单位(2026-09-14 Frank「薪资福利这个也需要加翻译」:换成界面语单位另出一行)。
  */
-export const UNIT_HR_RE = /\/hr/g
+export const UNIT_HR_RE = /\/hr\b/g
 
 /**
  * 帖面薪资里的年薪单位。
  */
-export const UNIT_YR_RE = /\/yr/g
+export const UNIT_YR_RE = /\/yr\b/g
 
 /**
  * 「打开完整页」的箭头。
@@ -3281,3 +3286,13 @@ export const LD_MIME = 'application/ld+json'
  */
 export const FIRST_SCREEN_ROWS = 50
 
+
+/**
+ * 管理员「重译」接口(2026-09-14)。
+ */
+export const URL_API_JOBS_RETRANSLATE = '/api/jobs/retranslate'
+
+/**
+ * 管理员角色值(与 Users 集合 role 字段同值)。
+ */
+export const ROLE_ADMIN = 'admin'

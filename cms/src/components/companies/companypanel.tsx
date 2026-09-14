@@ -16,19 +16,22 @@
  * 2026-09-14 Frank「下面要加中文翻译」「这个也默认带翻译」「参考一下职位描述的弹框 css」:别名经 onAlias 回传给
  * 页眉副题位(与职位弹框标题下的 NOC 译名同一形;库里没别名的开框懒翻一次落库,同日「公司名也做一个懒加载翻译」),AI 简介对照随界面语默认开;「加载中…」灰字换职位板同款转圈行
  * (Frank「统一改成那个动态的」)。
+ * 2026-09-14 Frank「加」:管理员在弹框顶部有一颗「重译」胶囊 —— 清这家公司的译文版本后整页刷新。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { useEffect } from 'react'
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Loading } from '@/components/loading'
 import { SponsorLeadCard } from '@/components/pnp'
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
-import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
-import { aliasOf, makeResolveJob } from './functions'
+import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE, PLAIN_BTN_KIND,
+} from './constants'
+import { aliasOf, makeResolveJob, makeRetranslateCompany, pillClsOf } from './functions'
 import { useCompanyAlias, useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 import css from './companies.module.css'
@@ -71,6 +74,14 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: Comp
   }
   return (
     <>
+      {plan.isAdmin && companyName !== TEXT_NONE && (
+        <div className={cssOf(css.acts)}>
+          <Button kind={PLAIN_BTN_KIND} onClick={makeRetranslateCompany({ name: companyName })}
+            className={pillClsOf({ on: false })}>
+            {t('act.retrans')}
+          </Button>
+        </div>
+      )}
       {p.aiOn && (
         <div className={CARD_MD_CLS + CLS_SEP + cssOf(css.aiCard)}>
           <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field={AI_FIELD_CO_READ} />

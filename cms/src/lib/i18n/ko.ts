@@ -561,7 +561,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'eelist.hist': '지난 {n}회 보기', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '초청장 {n}개',
   'eelist.allCats': '전체 {n}개 카테고리 보기',
   'eelist.occTitle': '포함 직업',
-  'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.collapse': '접기 ▴', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
+  'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.collapse': '접기 ▴', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'act.noTextBlocked': '이 공고의 본문은 원본 사이트({src})에 있으며, 해당 사이트는 본 사이트의 자동 읽기를 차단합니다. 아래 링크로 원문을 확인하세요.',
   'sj.title': '내 지원 현황', 'sj.note': '공고를 저장하고 지원 진행 상황을 추적하세요. 데이터는 계정에만 저장됩니다.', 'sj.empty': '저장한 공고가 없습니다 — 공고 목록에서 「☆ 저장」을 누르세요.',
   'sj.st.wish': '지원 예정', 'sj.st.applied': '지원함', 'sj.st.interview': '면접 중', 'sj.st.offer': '오퍼 받음',

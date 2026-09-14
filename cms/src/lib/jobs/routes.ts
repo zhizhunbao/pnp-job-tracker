@@ -14,13 +14,14 @@ import { headers } from 'next/headers'
 import { getDb } from '../db/server'
 import {
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, MIME_TEXT, NO_CONTENT, NOT_FOUND, TOO_MANY,
-  UNAVAILABLE,
+  UNAVAILABLE, FORBIDDEN,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
   TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned, translationOk,
 } from '../llm'
-import { checkLimit, getUser, ipOf, isPro } from '../quota/server'
+import { checkLimit, getUser, ipOf, isPro, isAdmin,
+} from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
@@ -35,12 +36,12 @@ import {
   loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
   translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, saveJdTrans, loadTitleTrans,
-  saveTitleTrans,
+  saveTitleTrans, resetJdTrans,
 } from './functions'
 import { CACHE } from './variables'
 import type {
   CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
-  JdTitleBody,
+  JdTitleBody, JdRetransBody,
 } from './types'
 
 /**
@@ -547,4 +548,35 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     }
     return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
   }
+}
+
+/**
+ * 管理员「重译」(2026-09-14 Frank「加」):非管理员 403;清这一岗的译文与版本,前端随后整页刷新,开框即重翻。
+ *
+ * @param req 请求体 { url, title }。
+ * @returns { ok }。
+ */
+export async function jobsRetranslateRoute(req: Request): Promise<Response> {
+  const user = await getUser(req.headers)
+  if (isAdmin(user) === false) {
+    return new Response(null, { status: FORBIDDEN })
+  }
+  let url = PARAM_NONE
+  let title = PARAM_NONE
+  try {
+    const b = await req.json() as JdRetransBody
+    if (typeof b.url === 'string') {
+      url = b.url.trim()
+    }
+    if (typeof b.title === 'string') {
+      title = b.title.trim()
+    }
+  } catch {
+    url = PARAM_NONE
+  }
+  if (url === PARAM_NONE) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  await resetJdTrans({ db: await getDb(), url: url, title: title })
+  return Response.json({ ok: true })
 }

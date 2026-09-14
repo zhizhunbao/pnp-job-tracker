@@ -21,10 +21,10 @@ import { Modal } from '@/components/modal'
 import { OnboardingWizard } from '@/components/profile'
 import { ResumeMatchModal } from '@/components/resume'
 import {
-  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, STATUS_CLOSED,
-  TARGET_BLANK, TEXT_NONE, URL_JOB,
+  APPLY_AUTH, APPLY_INTENT, AUTH_LOGIN, BTN_GHOST, MODAL_SM, MODAL_Z_STACKED, PILL_CLS, STATUS_CLOSED, TARGET_BLANK,
+  TEXT_NONE, URL_JOB,
 } from './constants'
-import { applyLabelOf, barClsOf } from './functions'
+import { applyLabelOf, barClsOf, makeRetranslate } from './functions'
 import { useApplyBar } from './hooks'
 import type { ApplyBarIn } from './types'
 import css from './jobs.module.css'
@@ -44,6 +44,12 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
     <>
       {a.fixedBar && <div className={cssOf(css.barPad)} />}
       <div className={barClsOf(a.fixedBar)}>
+        {plan.isAdmin && (
+          <Button kind={BTN_GHOST} onClick={makeRetranslate({ url: job.applyUrl, title: job.title })}
+            className={PILL_CLS}>
+            {t('act.retrans')}
+          </Button>
+        )}
         {job.status === STATUS_CLOSED && (
           <LinkButton href={job.applyUrl} target={TARGET_BLANK} className={cssOf(css.btnClosed)}>
             {t('act.seeOfficial')}

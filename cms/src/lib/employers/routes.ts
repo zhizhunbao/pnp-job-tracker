@@ -13,14 +13,15 @@ import { getDb } from '../db/server'
 import { employerVerdict } from '../ruling/server'
 import { textResponseOf,
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT,
-  NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE,
+  NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE, FORBIDDEN,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
   TRANS_KEY_SEP, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned,
   translationOk,
 } from '../llm'
-import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro } from '../quota/server'
+import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro, isAdmin,
+} from '../quota/server'
 import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE,
   CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
@@ -33,9 +34,10 @@ import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
   aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
+  resetCompanyTrans,
 } from './functions'
 import { CACHE } from './variables'
-import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody,
+import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody, EmployersRetransBody,
 } from './types'
 
 /**
@@ -398,4 +400,31 @@ export async function employersDescRoute(req: Request): Promise<Response> {
     }
     return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
   }
+}
+
+/**
+ * 管理员「重译」(2026-09-14 Frank「加」):非管理员 403;清这家公司的译文与版本,前端整页刷新后开框即重翻。
+ *
+ * @param req 请求体 { name }。
+ * @returns { ok }。
+ */
+export async function employersRetranslateRoute(req: Request): Promise<Response> {
+  const user = await getUser(req.headers)
+  if (isAdmin(user) === false) {
+    return new Response(null, { status: FORBIDDEN })
+  }
+  let name = NAME_UNSET
+  try {
+    const b = await req.json() as EmployersRetransBody
+    if (typeof b.name === 'string') {
+      name = b.name.trim()
+    }
+  } catch {
+    name = NAME_UNSET
+  }
+  if (name === '') {
+    return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
+  }
+  await resetCompanyTrans({ db: await getDb(), name: name })
+  return Response.json({ ok: true })
 }

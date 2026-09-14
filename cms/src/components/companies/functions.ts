@@ -35,7 +35,7 @@ import {
   KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
   URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, URL_CO_ALIAS, PROV_PAREN_RE, LOC_JOIN, PROV_PAREN_INNER_RE,
-  YEAR_ONLY_RE, URL_CO_TITLES, URL_CO_DESC,
+  YEAR_ONLY_RE, URL_CO_TITLES, URL_CO_DESC, URL_CO_RETRANSLATE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -47,7 +47,7 @@ import type {
   PanelJson, PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn,
   JobsToggleLabelIn, SecKeyIn, SecTextIn, SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn,
   TransToggleIn, TransJson, TvOpenIn, ZhLineClsIn, AliasJson, LoadAliasIn, BaseOverrideIn, LoadTitlesIn, TitlesJson,
-  SubOrTitleIn, UntitledIn, LoadDescTransIn,
+  SubOrTitleIn, UntitledIn, LoadDescTransIn, RetranslateCompanyIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1199,4 +1199,29 @@ export function gradeColorOf(g: number | null | undefined): string {
     return GRADE_C_2
   }
   return GRADE_C_NONE
+}
+
+/**
+ * 管理员「重译」钮的点击(2026-09-14 Frank「加」):清这家公司的译文,然后整页刷新。
+ *
+ * @param x 公司名。
+ * @returns 点击处理。
+ */
+export function makeRetranslateCompany(x: RetranslateCompanyIn): GoBackFn {
+  return function retranslate(): void {
+    fetch(URL_CO_RETRANSLATE, {
+      method: METHOD_POST,
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      body: JSON.stringify({ name: x.name }),
+    }).then(reloadPage).catch(reloadPage)
+  }
+}
+
+/**
+ * 整页刷新(重译后让弹框重新取数)。
+ *
+ * @returns 无。
+ */
+function reloadPage(): void {
+  window.location.reload()
 }

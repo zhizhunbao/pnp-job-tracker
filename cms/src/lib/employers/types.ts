@@ -2662,3 +2662,13 @@ export type CompanyDescZhDbRow = {
    */
   description_zh: string | null
 }
+
+/**
+ * 公司「重译」接口的请求体(线格式)。
+ */
+export type EmployersRetransBody = {
+  /**
+   * 公司名。
+   */
+  name?: string | null
+}

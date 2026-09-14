@@ -128,3 +128,8 @@ export const TEXT_UPGRADE = 'upgrade required'
  * 429 拦截响应的正文。
  */
 export const TEXT_RATE_LIMITED = 'rate limited'
+
+/**
+ * 管理员角色值(Users 集合的 role 字段;后台与「重译」这类站主工具按它放行,2026-09-14)。
+ */
+export const ROLE_ADMIN = 'admin'

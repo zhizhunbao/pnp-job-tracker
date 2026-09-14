@@ -16,7 +16,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { DENY_IP, DENY_USER,
   ANON_DAILY_TRIES, COMMA, DATE10_LEN, FREE_DAILY_TRIES, HDR_FREE_LEFT, HDR_FWD, IP_LOCAL, KEY_FREE_IP, KEY_FREE_USER,
-  TEXT_RATE_LIMITED, TEXT_UPGRADE,
+  TEXT_RATE_LIMITED, TEXT_UPGRADE, ROLE_ADMIN,
 } from './constants'
 import { CACHE } from './variables'
 import type { MaybeDenyBody, FreeGated, FreeGateIn, MaybeRawUser, MaybeStr, MaybeUser, QuotaPairs, ReqHeaders, ReqLike, UserOut } from './types'
@@ -89,10 +89,23 @@ export function freeGate(input: FreeGateIn): FreeGated {
 }
 
 /**
- * 时长包语义:到期日在未来 = Pro。没有订阅状态机。
+ * 是不是管理员(2026-09-14:「重译」这类站主工具的闸)。
  *
- * @param user 会话用户(未登录 null)。
- * @returns 是否 Pro 期内。
+ * @param user 会话用户;null = 匿名。
+ * @returns 是管理员。
+ */
+export function isAdmin(user: MaybeUser): boolean {
+  if (user == null || user.role == null) {
+    return false
+  }
+  return user.role === ROLE_ADMIN
+}
+
+/**
+ * Pro 没过期就是 Pro。
+ *
+ * @param user 会话用户;null = 匿名。
+ * @returns 是 Pro。
  */
 export function isPro(user: MaybeUser): boolean {
   if (user == null || user.proUntil == null) {

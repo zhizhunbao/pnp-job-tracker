@@ -8,7 +8,7 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translationOk,
+import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translationOk, TRANS_LANGS,
 } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
 import {
@@ -81,6 +81,7 @@ import type {
   UrlHandle, WhereParam,
   JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, MaybeJobOgRow, TranslateTitlesIn, TitlesOut, TitleList, TitleTexts,
   JdTransIn, JdTransOut, JdTransFact, JdTransCellIn, SaveJdTransIn, TitleTransIn, SaveTitleTransIn, DoneOut,
+  ResetJdTransIn,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -4248,4 +4249,19 @@ export async function saveTitleTrans(input: SaveTitleTransIn): DoneOut {
     sql = SQL.TITLE_TRANS_SAVE_KO
   }
   await input.db.query(sql, [input.text, input.title, TRANS_V])
+}
+
+/**
+ * 管理员「重译」(2026-09-14):清这一岗四格译文与版本、同名岗的标题译名,并清进程内缓存;下次开框重翻。
+ *
+ * @param input 连接、原帖链接与职位名。
+ * @returns 无。
+ */
+export async function resetJdTrans(input: ResetJdTransIn): DoneOut {
+  await input.db.query(SQL.JD_TRANS_RESET, [input.url])
+  await input.db.query(SQL.TITLE_TRANS_RESET, [input.title])
+  for (const lang of TRANS_LANGS) {
+    CACHE.jdTransBy.delete(input.url + TRANS_KEY_SEP + lang)
+    CACHE.titleTransBy.delete(input.title.toLowerCase() + TRANS_KEY_SEP + lang)
+  }
 }

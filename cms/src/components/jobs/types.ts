@@ -5966,6 +5966,11 @@ export type SessionUser = {
    * Pro 到期日(ISO 串);免费号没有。
    */
   proUntil?: string | null
+
+  /**
+   * 角色;'admin' = 管理员(2026-09-14「重译」钮按它出)。
+   */
+  role?: string | null
 }
 
 /**
@@ -6188,4 +6193,19 @@ export type JdLocationSectionIn = {
    * 投递邮箱(节形状要求的格,本节不用)。
    */
   applyEmail: string
+}
+
+/**
+ * makeRetranslate 的入参。
+ */
+export type RetranslateIn = {
+  /**
+   * 原帖链接。
+   */
+  url: string
+
+  /**
+   * 职位名。
+   */
+  title: string
 }

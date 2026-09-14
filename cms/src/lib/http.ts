@@ -29,6 +29,11 @@ export const BAD_REQUEST = 400
 export const UNAUTHORIZED = 401
 
 /**
+ * 403:登录了但不是这活的人(管理员工具,2026-09-14)。
+ */
+export const FORBIDDEN = 403
+
+/**
  * 402:免费池用尽(前端升级卡)。
  */
 export const PAYMENT_REQUIRED = 402

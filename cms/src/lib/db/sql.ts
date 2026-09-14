@@ -1259,6 +1259,24 @@ export const JD_TRANS_SAVE_KO = `UPDATE jobs
      WHERE apply_url = $2`
 
 /**
+ * 管理员「重译」:清掉这一岗的四格译文与版本,下次开框重翻(2026-09-14)。
+ */
+export const JD_TRANS_RESET = `UPDATE jobs SET jd_trans_zh = NULL, jd_trans_ko = NULL, title_zh = NULL, title_ko = NULL, trans_v = NULL
+     WHERE apply_url = $1`
+
+/**
+ * 管理员「重译」:同名岗的标题译名一并清(标题译名是按名共享的)。
+ */
+export const TITLE_TRANS_RESET = `UPDATE jobs SET title_zh = NULL, title_ko = NULL WHERE lower(title) = lower($1)`
+
+/**
+ * 管理员「重译」:清掉这家公司的别名 / AI 简介 / 官网简介译文与版本。
+ */
+export const COMPANY_TRANS_RESET = `UPDATE companies
+     SET alias_zh = NULL, alias_ko = NULL, ai_brief_zh = NULL, description_zh = NULL, trans_v = NULL
+     WHERE lower(name) = lower($1)`
+
+/**
  * 职位名译名(按标题找任一同名岗上现版本的译名)。
  */
 export const TITLE_TRANS_BY_TITLE = `SELECT title_zh, title_ko FROM jobs
