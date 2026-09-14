@@ -15,6 +15,7 @@
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
+export { CityNameCell } from './citynamecell'
 export { Pulse } from './pulse'
 export {
   cachedHomeOf, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,

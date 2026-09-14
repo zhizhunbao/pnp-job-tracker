@@ -119,7 +119,17 @@ export type PoolRow = {
   city: string
 
   /**
-   * 多地点(「市, 省码」,主场第一,最多三处;板上地点胶囊)。
+   * 主市的人工核定中文译名(cities.name_zh;2026-09-13 地点列接 CityNameCell 双行形);空串 = 译名表外。
+   */
+  cityZh: string
+
+  /**
+   * 主市的人工核定韩文译名(cities.name_ko);空串 = 译名表外。
+   */
+  cityKo: string
+
+  /**
+   * 多地点(「市, 省码」,主场第一,最多三处;板上只显主场,其余收「另 N 地」)。
    */
   locations: string[]
 
@@ -1399,6 +1409,16 @@ export type PoolDbRow = {
    * 主市。
    */
   city: string | null
+
+  /**
+   * 主市中文译名(LEFT JOIN cities;译名表外 = null)。
+   */
+  city_zh: string | null
+
+  /**
+   * 主市韩文译名。
+   */
+  city_ko: string | null
 
   /**
    * 多地点(jsonb 数组)。

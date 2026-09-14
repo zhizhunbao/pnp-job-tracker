@@ -934,7 +934,7 @@ export const siteZh = {
   'de.colName': '雇主', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   'de.lmia': '有 LMIA 记录', 'de.entryN': '入门 {n}%', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '选择行业', 'de.entry': '无经验可投', 'de.sep': '、',
-  'de.emptyFiltered': '当前筛选查无匹配',
+  'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
   'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法',
   'de.note': '星级为机会参考,不等于资格认定;被指定不等于在招,在招数为本站职位库口径',
   'pro.unlock': '解锁 Pro',

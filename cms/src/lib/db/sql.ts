@@ -519,6 +519,8 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
 
 /**
  * 雇主池一页(桶行 × 池行 × companies 的中韩别名;雇主板批二主查询,索引 employer_pool_buckets_ind_group_star_idx 承接)。
+ * 2026-09-13 晚 /fe 雇主页:主场城市 LEFT JOIN cities 带回人工核定译名 city_zh / city_ko(地点列接 09-11 城市显示拍板,
+ * CityNameCell 双行形;(name, province) 在 cities 唯一,实测无重复不会炸行)。
  * $1=行业组键,$2=省码或 ''(不筛),$3=只看无经验可投,$4=制度或 ''(直达参数 program=,指定项目清单含它),
  * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
  * total 用窗口函数随行带回,一次往返。
@@ -529,12 +531,13 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
 export const employerPoolPage = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
       b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
       count(*) OVER()::int AS total
     FROM employer_pool_buckets b JOIN employer_pool p ON p.key = b.employer_key
     LEFT JOIN companies c ON c.slug = p.slug
+    LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE b.ind_group = $1
       AND ($2 = '' OR p.province = $2)
       AND ($3 = false OR b.entry_jobs > 0)
@@ -586,7 +589,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
 export const employerPoolAll = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
       NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
       b.star, NULL::numeric AS wage_med_annual, NULL::numeric AS wage_index_pct,
@@ -595,6 +598,7 @@ export const employerPoolAll = (order: string) => `
     JOIN (SELECT DISTINCT ON (employer_key) * FROM employer_pool_buckets
            ORDER BY employer_key, star DESC, open_jobs DESC) b ON b.employer_key = p.key
     LEFT JOIN companies c ON c.slug = p.slug
+    LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%')
       AND ($2 = '' OR p.province = $2)
       AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))

@@ -844,7 +844,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'de.colName': '고용주', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
   'de.lmia': 'LMIA 기록 있음', 'de.entryN': '입문 {n}%', 'de.designated': '지정 고용주',
   'de.qPh': '고용주 검색', 'de.allGroup': '업종 선택', 'de.entry': '무경력 지원 가능', 'de.sep': ', ',
-  'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다',
+  'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다', 'de.moreLocN': '외 {n}곳',
   'de.notFound': '공식 지정 고용주 명단에 없는 고용주입니다. 스폰서를 약속하는 말은 경계하세요',
   'de.note': '등급은 참고용이며 자격 판정이 아닙니다. 지정은 채용을 뜻하지 않으며 채용 수는 본 사이트 공고 기준입니다',
   'pro.unlock': 'Pro 잠금해제',

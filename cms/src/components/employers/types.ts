@@ -128,7 +128,17 @@ export type PoolRow = {
   city: string
 
   /**
-   * 多地点(「市, 省码」,主场第一,最多三处)。
+   * 主市的人工核定中文译名;空串 = 译名表外(主文案直接英文)。
+   */
+  cityZh: string
+
+  /**
+   * 主市的人工核定韩文译名;空串 = 译名表外。
+   */
+  cityKo: string
+
+  /**
+   * 多地点(「市, 省码」,主场第一,最多三处;板上只显主场,枚数只用来算「另 N 地」)。
    */
   locations: string[]
 
@@ -473,9 +483,20 @@ export type EmployerCellRow = {
   where: string
 
   /**
-   * 地点胶囊(「市, 省码」,主场第一,最多三枚);空数组 = 池里没记(渲横杠)。
+   * 地点格主文案:界面语言城市名(译名表外直接英文;没市有省 = 省全名);空串 = 池里没记(渲横杠)。
+   * 2026-09-13 晚 /fe 雇主页接 09-11 城市显示拍板(CityNameCell 双行形),三枚胶囊退役。
    */
-  locations: string[]
+  whereName: string
+
+  /**
+   * 地点格灰注:「英文名 省码」;主文案本就是英文时只剩省码;省全名当主文案时空串。
+   */
+  whereNote: string
+
+  /**
+   * 地点格第三行「另 N 地」;空串 = 只有主场一处。
+   */
+  whereMore: string
 
   /**
    * 在招岗数文本(0 也照显示 —— 桶里真的一个都没有,不是缺数)。
@@ -1149,6 +1170,46 @@ export type VerdictToneIn = {
    * 色档。
    */
   tone: VerdictTone
+}
+
+/**
+ * whereCellOf / cityNameOf 的入参。
+ */
+export type WhereCellIn = {
+  /**
+   * 这一行事实。
+   */
+  r: PoolRow
+
+  /**
+   * 取词函数(省全名回落与「另 N 地」)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(译名按它取)。
+   */
+  lang: Lang
+}
+
+/**
+ * 地点格的三样(whereCellOf 的返回)。
+ */
+export type WhereCellParts = {
+  /**
+   * 主文案;空串 = 池里没记。
+   */
+  name: string
+
+  /**
+   * 灰注;空串 = 不出。
+   */
+  note: string
+
+  /**
+   * 「另 N 地」;空串 = 不出。
+   */
+  more: string
 }
 
 /**

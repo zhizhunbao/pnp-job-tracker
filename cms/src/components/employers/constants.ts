@@ -535,7 +535,7 @@ export const COL_ACT_KEY = 'act'
 export const W_POOL_NAME = '26%'
 
 /**
- * 雇主板地点列的宽(最多三枚「市, 省码」胶囊)。
+ * 雇主板地点列的宽(2026-09-13 晚起是 CityNameCell 双行形 + 「另 N 地」,三枚胶囊退役)。
  */
 export const W_POOL_WHERE = '26%'
 
@@ -650,9 +650,9 @@ export const DIR_ASC = 'asc'
 export const DIR_DESC = 'desc'
 
 /**
- * 地点胶囊的通用 tag 变体(中性灰 —— 地点是事实标签,不是资格;把脉页 .chipGray 同档)。
+ * 地点格灰注里英文城市名与省码之间的空格(「Kelowna BC」;形照把脉页城市段 cityNoteOf)。
  */
-export const TAG_LOC = 'gray'
+export const NOTE_SEP = ' '
 
 /**
  * 手机卡「指定雇主」胶囊的通用 tag 变体(通过绿:资格类信号)。

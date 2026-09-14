@@ -42,7 +42,7 @@ import {
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR,
-  META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
+  META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND, NOTE_SEP,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
   P_PROV, P_Q, P_SORT, QS_HEAD, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
@@ -71,7 +71,7 @@ import type {
   NocNameFn, NoteTextIn, PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn, VerdictToneIn,
-  WhereTextIn, WithIn,
+  WhereCellIn, WhereCellParts, WhereTextIn, WithIn,
   WordsIn,
 } from './types'
 import { VerdictCell } from './verdictcell'
@@ -186,6 +186,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     industry = r.industry
   }
   const kind = kindOf({ f: x.f })
+  const where = whereCellOf({ r, t: x.t, lang: x.lang })
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -193,7 +194,9 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     hrefTitle: x.t('pulse.act.company'),
     industry,
     where: empWhereTextOf({ t: x.t, r }),
-    locations: r.locations,
+    whereName: where.name,
+    whereNote: where.note,
+    whereMore: where.more,
     openText: String(r.openJobs),
     entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
@@ -242,6 +245,49 @@ function empWhereTextOf(x: RowWordsIn): string {
     return provNameOf({ t: x.t, code: x.r.province })
   }
   return TEXT_NONE
+}
+
+/**
+ * 地点格的三样(2026-09-13 晚 /fe 雇主页 Frank 拍板接 09-11 城市显示拍板:界面语言城市名主文案 +
+ * 「英文名 省码」灰注双行形,CityNameCell 唯一出口;只显主场一处,其余收成「另 N 地」——
+ * 池里 97.2% 的雇主本就 ≤1 处地点,三枚胶囊是为 2.8% 设计的且挤爆列宽压进邻列)。
+ * 没市有省 → 省全名当主文案不带灰注(站规:省份主文案用界面语言全名);都没有 → 三样全空(渲横杠)。
+ *
+ * @param x 这一行、取词函数与界面语言。
+ * @returns 主文案、灰注与「另 N 地」。
+ */
+function whereCellOf(x: WhereCellIn): WhereCellParts {
+  let more = TEXT_NONE
+  if (x.r.locations.length > 1) {
+    more = x.t('de.moreLocN', { n: x.r.locations.length - 1 })
+  }
+  if (x.r.city === TEXT_NONE) {
+    if (x.r.province === TEXT_NONE) {
+      return { name: TEXT_NONE, note: TEXT_NONE, more: TEXT_NONE }
+    }
+    return { name: provNameOf({ t: x.t, code: x.r.province }), note: TEXT_NONE, more }
+  }
+  const name = cityNameOf(x)
+  if (name === x.r.city) {
+    return { name, note: x.r.province, more }
+  }
+  return { name, note: x.r.city + NOTE_SEP + x.r.province, more }
+}
+
+/**
+ * 城市主文案:界面语言有人工核定译名用译名(cities.name_zh / name_ko,09-11「城市译名人工核定表禁模型」),否则英文原名。
+ *
+ * @param x 这一行与界面语言。
+ * @returns 城市名。
+ */
+function cityNameOf(x: WhereCellIn): string {
+  if (x.lang === LANG_ZH && x.r.cityZh !== TEXT_NONE) {
+    return x.r.cityZh
+  }
+  if (x.lang === LANG_KO && x.r.cityKo !== TEXT_NONE) {
+    return x.r.cityKo
+  }
+  return x.r.city
 }
 
 /**
