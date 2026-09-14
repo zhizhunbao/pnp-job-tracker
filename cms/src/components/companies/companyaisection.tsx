@@ -32,8 +32,6 @@ export function CompanyAiSection({
   flat = false,
   bare = false,
   skipBase = false,
-  baseOverride = TEXT_NONE,
-  baseOverrideZh = TEXT_NONE,
   baseZh = TEXT_NONE,
   onBusy,
 }: CompanyAiSectionIn) {
@@ -71,8 +69,6 @@ export function CompanyAiSection({
           sources={p.fact.sources}
           bare
           skipBase={skipBase}
-          baseOverride={baseOverride}
-          baseOverrideZh={baseOverrideZh}
           baseZh={baseZh} />
       </>
     )

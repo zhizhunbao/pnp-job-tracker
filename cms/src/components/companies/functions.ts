@@ -30,14 +30,14 @@ import {
   KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE, KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE,
   KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI, KEY_STREAM_GTS, KEY_STREAM_HIGH,
   KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST, MIME_JSON, NOCS_TOP_N,
-  PROV_LOCALE_ONLY, PROV_PAREN_INNER_RE, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
-  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE,
-  TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
-  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, YEAR_ONLY_RE,
+  PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE, STREAM_GTS_RE, STREAM_HIGH_RE,
+  STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY,
+  URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE, URL_JOBS_COMPANY, URL_PLAN_PR_HEAD,
+  URL_PROV_HEAD, YEAR_ONLY_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
-  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasJson, AliasOfIn, BaseOverrideIn, BaseZhIn, BriefJson, BriefSecsIn,
+  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasJson, AliasOfIn, BaseConflictIn, BaseZhIn, BriefJson, BriefSecsIn,
   CanTransIn, ChColorIn, CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow,
   CompanyOnlyIn, CompanyStream, DeadFlag, DisplayNameIn, FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn,
   IsGovIn, JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
@@ -291,58 +291,27 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
 }
 
 /**
- * 「所在地」节要不要换成官方招聘地点(2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」):
- * AI 查到的总部若与招聘省(companies.region,官方)对不上,视为查错,该节改显「市, 省」这句官方地点;
- * 对得上或没有招聘省就照 AI 的。
+ * AI 查到的「所在地」与官方招聘省对不对得上(2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」
+ * 当天先改成换显官方地点;同日晚 Frank「是 AI 查到的地址,如果和上面的不一致,可以不显示吗」定为:对不上就不出这一节,
+ * 基本信息卡的省 / 市两行已经是官方地点,不再另拼一句):AI 那句里既没有省全名也没有省码就算对不上。
  *
  * @param x 取词函数与公司档案。
- * @returns 改显的句子;'' = 不改。
+ * @returns 对不上 = true(隐藏这一节);没招聘省或 AI 没写所在地 = false。
  */
-export function baseOverrideOf(x: BaseOverrideIn): string {
+export function baseConflictOf(x: BaseConflictIn): boolean {
   const code = homeProvinceOf({ company: x.company })
   if (code === TEXT_NONE) {
-    return TEXT_NONE
+    return false
   }
   const base = baseTextOf({ text: x.company.aiBrief })
   if (base === TEXT_NONE) {
-    return TEXT_NONE
+    return false
   }
   const prov = provFullOf({ t: x.t, code })
-  if (prov === TEXT_NONE || base.includes(prov) || base.includes(code)) {
-    return TEXT_NONE
+  if (prov === TEXT_NONE) {
+    return false
   }
-  const city = cityOf({ company: x.company })
-  if (city === TEXT_NONE) {
-    return prov
-  }
-  return city + LOC_JOIN + prov
-}
-
-/**
- * 官方招聘地点那句的界面语版(2026-09-14 Frank「这个也加上翻译」):市名照英文,省用省译名(省全名括号里那截);
- * 英文界面或省译名缺给空串。
- *
- * @param x 取词函数与公司档案。
- * @returns 界面语版;'' = 不出。
- */
-export function baseOverrideZhOf(x: BaseOverrideIn): string {
-  if (baseOverrideOf(x) === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  const full = provName({ t: x.t, code: homeProvinceOf({ company: x.company }), localeOnly: PROV_LOCALE_ONLY })
-  const m = PROV_PAREN_INNER_RE.exec(full)
-  if (m == null || m.groups == null) {
-    return TEXT_NONE
-  }
-  const zh = m.groups.zh
-  if (zh == null) {
-    return TEXT_NONE
-  }
-  const city = cityOf({ company: x.company })
-  if (city === TEXT_NONE) {
-    return zh
-  }
-  return city + LOC_JOIN + zh
+  return base.includes(prov) === false && base.includes(code) === false
 }
 
 /**

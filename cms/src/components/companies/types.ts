@@ -795,16 +795,6 @@ export type CompanyBriefCardsIn = {
   skipBase?: boolean
 
   /**
-   * 「所在地」节改显这句(AI 查到的总部与招聘省不一致时换成官方招聘地点,2026-09-14);可省 = 照 AI 的。
-   */
-  baseOverride?: string
-
-  /**
-   * 改显那句的界面语版(市 + 省译名);可省 = 不出对照行。
-   */
-  baseOverrideZh?: string
-
-  /**
    * 「所在地」节的本地对照行;可省 = 照模型译文。
    */
   baseZh?: string
@@ -838,16 +828,6 @@ export type CompanyBriefBodyIn = {
    * 跳过「所在地」节。
    */
   skipBase: boolean
-
-  /**
-   * 「所在地」节改显这句;'' = 照 AI 的。
-   */
-  baseOverride: string
-
-  /**
-   * 改显那句的界面语版;'' = 不出对照行。
-   */
-  baseOverrideZh: string
 
   /**
    * 「所在地」节没被改显时的对照行(2026-09-14 Frank「这个需要加逗号吧」:AI 那句是「市, 省」形就本地拼
@@ -959,16 +939,6 @@ export type CompanyAiSectionIn = {
    * 跳过「所在地」节;可省 = 不跳过。
    */
   skipBase?: boolean
-
-  /**
-   * 「所在地」节改显这句;可省 = 照 AI 的。
-   */
-  baseOverride?: string
-
-  /**
-   * 改显那句的界面语版;可省 = 不出对照行。
-   */
-  baseOverrideZh?: string
 
   /**
    * 「所在地」节的本地对照行;可省 = 照模型译文。
@@ -1747,16 +1717,6 @@ export type CompanyIntroIn = {
   skipBase: boolean
 
   /**
-   * 「所在地」节改显这句;'' = 照 AI 的。
-   */
-  baseOverride: string
-
-  /**
-   * 改显那句的界面语版;'' = 不出对照行。
-   */
-  baseOverrideZh: string
-
-  /**
    * 「所在地」节没被改显时的本地对照行;'' = 照模型译文(2026-09-14)。
    */
   baseZh: string
@@ -2190,9 +2150,9 @@ export type BaseZhIn = {
 }
 
 /**
- * baseOverrideOf 的入参。
+ * baseConflictOf 的入参。
  */
-export type BaseOverrideIn = {
+export type BaseConflictIn = {
   /**
    * 取词函数。
    */

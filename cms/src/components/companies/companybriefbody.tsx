@@ -5,6 +5,7 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 的 bodyNode 闭包重写成件。
  * 2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」:「所在地」节可被 baseOverride 换成官方招聘地点
  * (AI 总部与招聘省不一致时),节还在,只是内容换成有依据的那句。
+ * 同日晚 Frank「如果和上面的不一致,可以不显示吗」:改成对不上就整节不出(skipBase),基本信息卡的省 / 市已是官方地点。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -24,7 +25,7 @@ import { cssOf } from '@/components/css'
  * @returns 内容体(散文一块,或逐节)。
  */
 export function CompanyBriefBody({
-  brief, trans, t, flat, skipBase, baseOverride, baseOverrideZh, baseZh,
+  brief, trans, t, flat, skipBase, baseZh,
 }: CompanyBriefBodyIn) {
   if (CO_SEC_HAS_RE.test(brief) === false) {
     let zh = TEXT_NONE
@@ -45,13 +46,9 @@ export function CompanyBriefBody({
   }
   const rows = []
   for (const mark of CO_SEC_MARKS) {
-    let text = secTextOf({ secs, mark })
+    const text = secTextOf({ secs, mark })
     let zh = secZhOf({ tSecs, mark, en: text })
-    if (mark === CO_SEC_BASE && baseOverride !== TEXT_NONE) {
-      text = baseOverride
-      zh = baseOverrideZh
-    }
-    if (mark === CO_SEC_BASE && baseOverride === TEXT_NONE && baseZh !== TEXT_NONE) {
+    if (mark === CO_SEC_BASE && baseZh !== TEXT_NONE) {
       zh = baseZh
     }
     const skipped = skipBase && mark === CO_SEC_BASE
