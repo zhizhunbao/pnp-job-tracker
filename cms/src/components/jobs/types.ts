@@ -5089,6 +5089,11 @@ export type JdContentIn = {
    * 登录态(额度用完时给匿名用户补一句登录提额说明)。
    */
   loggedIn: boolean
+
+  /**
+   * 界面语言(在途判定要看它)。
+   */
+  lang: Lang
 }
 
 /**
@@ -5124,6 +5129,16 @@ export type JdWaitingIn = {
    * 对照翻译态。
    */
   transStatus: TransStatus
+
+  /**
+   * 界面语言(中 / 韩界面整理版到了还没开始译也算在途,2026-09-14 Frank「完成整理的时候页面会闪一下」)。
+   */
+  lang: Lang
+
+  /**
+   * 对照译文;null = 还没有。
+   */
+  trans: string | null
 }
 
 /**
@@ -5139,6 +5154,16 @@ export type JdBusyIn = {
    * 对照翻译态。
    */
   transStatus: TransStatus
+
+  /**
+   * 界面语言(中 / 韩界面整理版到了还没开始译也算在途,2026-09-14 Frank「完成整理的时候页面会闪一下」)。
+   */
+  lang: Lang
+
+  /**
+   * 对照译文;null = 还没有。
+   */
+  trans: string | null
 }
 
 /**

@@ -15,9 +15,9 @@
  */
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN, TRANS_LOADING } from './constants'
+import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, showFormattedOf, transShownOf,
+  fallbackPayOf, jdBusyOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
@@ -32,10 +32,10 @@ import css from './jobs.module.css'
  * @param props JD 身体状态机、本岗、是不是紧跟大标题与登录态。
  * @returns 按取数态渲的正文区。
  */
-export function JdContent({ d, job, underTitle, loggedIn }: JdContentIn) {
+export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
   return (
     <>
-      {jdWaitingOf({ status: d.status, fmt: d.fmt, transStatus: d.transStatus }) && (
+      {jdWaitingOf({ status: d.status, fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) && (
         <div className={cssOf(css.loading)}>
           <span className={cssOf(css.spin)} />
           {d.t('act.loadingText')}
@@ -51,7 +51,8 @@ export function JdContent({ d, job, underTitle, loggedIn }: JdContentIn) {
       {d.status === JD_DONE && (
         <>
           <JdAiNote d={d} anon={loggedIn === false} />
-          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && d.transStatus !== TRANS_LOADING && (
+          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig })
+            && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
             <JdFormattedView text={String(d.fmt)}
               t={d.t}
               fallbackPay={fallbackPayOf(job)}

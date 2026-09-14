@@ -60,7 +60,7 @@ import {
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER, VAL_MATCH,
   UNIT_HR_RE, UNIT_YR_RE, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN,
-  ZEBRA_MOD, JD_SEC_LOC, JD_LOC_PROV_KEY, JD_LOADING, JD_DONE,
+  ZEBRA_MOD, JD_SEC_LOC, JD_LOC_PROV_KEY, JD_LOADING, JD_DONE, LANG_EN, TRANS_IDLE,
 } from './constants'
 import type {
   BoardMeta, BoardTitleIn, SliceTextIn,
@@ -3671,11 +3671,12 @@ export function jdWaitingOf(x: JdWaitingIn): boolean {
   if (x.status !== JD_DONE) {
     return false
   }
-  return jdBusyOf({ fmt: x.fmt, transStatus: x.transStatus })
+  return jdBusyOf({ fmt: x.fmt, transStatus: x.transStatus, lang: x.lang, trans: x.trans })
 }
 
 /**
- * 正文区要不要出转圈行:整理还没回(fmt 还是 undefined)或对照在译(2026-09-14 Frank「加一个 loading 如果没有翻译完」)。
+ * 正文区要不要出转圈行:整理还没回(fmt 还是 undefined)、对照在译、或中 / 韩界面整理版刚到对照还没开始译
+ * (那一帧原本会先铺英文整理版再被转圈顶掉 —— Frank「完成整理的时候页面会闪一下」);译失败(TRANS_ERROR)不算在途,退英文。
  *
  * @param x 整理版与翻译态。
  * @returns 在途 = true。
@@ -3684,7 +3685,10 @@ export function jdBusyOf(x: JdBusyIn): boolean {
   if (x.fmt === undefined) {
     return true
   }
-  return x.transStatus === TRANS_LOADING
+  if (x.transStatus === TRANS_LOADING) {
+    return true
+  }
+  return x.lang !== LANG_EN && x.fmt !== null && x.trans === null && x.transStatus === TRANS_IDLE
 }
 
 /**

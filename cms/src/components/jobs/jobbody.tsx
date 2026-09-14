@@ -45,8 +45,8 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
             field={ADVISOR_FIELD_JD_READ} />
         </div>
       )}
-      <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} />
-      {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus }) === false && (
+      <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
+      {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
           onPage={inModal === false} />
       )}
