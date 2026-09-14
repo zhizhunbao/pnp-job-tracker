@@ -11,14 +11,14 @@
  * 「清除筛选」2026-08-29 Frank 实拍搬回筛选行(见 filterrow.tsx 头注):没选职业时这一行原本
  * 只剩它一颗孤钮。它一走,本行就可能一件都不剩(匿名 + 非职业筛选)—— 空 div 照样吃 .filters
  * 那 8px 的 gap,所以渲不渲改由 `filters.showPicked` 说了算,不再只看 anyFilter。
+ * 2026-09-14 Frank「去掉保存此筛选的功能」:「保存此筛选」钮撤(保存筛选的弹层与接口留在 hooks / api,入口先撤)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST, CROSS, SPACE, TEXT_NONE } from './constants'
-import { IconSave } from '@/components/icons'
+import { BTN_GHOST, CROSS, TEXT_NONE } from './constants'
 import type { BoardPanelIn } from './types'
 import css from './jobs.module.css'
 
@@ -41,14 +41,6 @@ export function PickedRow({ b }: BoardPanelIn) {
           </Button>
         </span>
       )}
-      <span className={cssOf(css.pickedAct)}>
-        {b.plan.loggedIn && (
-          <Button kind={BTN_GHOST} onClick={f.onSaveSearch}
-            className={`${cssOf(css.picked)} ${cssOf(css.pickedSave)}`}>
-            <IconSave />{SPACE}{b.t('ss.save')}
-          </Button>
-        )}
-      </span>
     </div>
   )
 }

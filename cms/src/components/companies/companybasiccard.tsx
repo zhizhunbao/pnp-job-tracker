@@ -12,7 +12,7 @@
  * 2026-09-14 Frank「基本信息部分默认要带地址」:地址行不再因 AI 简介里有「所在地」段而省略,一律出(无街址时退省名)。
  * 2026-09-14 Frank「这个也不需要显示」「这种地址有冲突的怎么解决」:「✨ AI 检索整理(非官方自述)+ 日期」一行撤;
  * 同日「这个地方用英文名」:公司名称行只出英文名(别名在页眉副题);「加上省市」「这个地点不一致这种怎么处理」:「省」「市」两行 = 招聘地点(companies.region 全名 / 该司在招岗的第一座城);
- * 「地址」只在库里有街址时出(省 / 市行也算身份行,与简介之间的分割线照旧);AI 简介的「所在地」是模型查到的总部,留在简介段里不冒充地址(两种地点各归各,不再互相顶替)。
+ * 「地址」只在库里有街址时出(与简介之间的分割线只看有没有简介,身份行至少有公司名,Frank「横线又没了????」);AI 简介的「所在地」是模型查到的总部,留在简介段里不冒充地址(两种地点各归各,不再互相顶替)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -85,7 +85,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
           <div className={css.siteSearched}>{t('fact.siteSearched')}</div>
         )}
       </div>
-      {hasId && hasBody && <div className={css.hr} />}
+      {hasBody && <div className={css.hr} />}
       <CompanyIntro company={company}
         t={t}
         lang={lang}

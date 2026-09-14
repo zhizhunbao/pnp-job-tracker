@@ -35,6 +35,7 @@ import {
   KEY_STREAM_PR, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE, TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_INFO,
   URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, URL_CO_ALIAS, PROV_PAREN_RE, LOC_JOIN, PROV_PAREN_INNER_RE,
+  YEAR_ONLY_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -161,7 +162,7 @@ export function hasSecOf(x: SecTextIn): boolean {
  */
 export function secZhOf(x: SecZhIn): string {
   const zh = secTextOf({ secs: x.tSecs, mark: x.mark })
-  if (zh === TEXT_NONE || isJdNone(zh) || zh === x.en) {
+  if (zh === TEXT_NONE || isJdNone(zh) || zh === x.en || YEAR_ONLY_RE.test(x.en.trim())) {
     return TEXT_NONE
   }
   return zh

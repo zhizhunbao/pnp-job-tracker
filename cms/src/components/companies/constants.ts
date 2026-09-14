@@ -653,3 +653,8 @@ export const URL_EMPLOYERS = '/employers'
  * 省全名括号里的译名(baseOverrideZhOf 取对照行用)。
  */
 export const PROV_PAREN_INNER_RE = /[(（](?<zh>[^()（）]+)[)）]\s*$/
+
+/**
+ * 纯年份(2026-09-14 Frank「年份不要翻译」:成立时间「1987」不出「1987年」对照行)。
+ */
+export const YEAR_ONLY_RE = /^\d{4}$/
