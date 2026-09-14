@@ -38,13 +38,17 @@ export function JdSection({ sec }: JdSectionIn) {
       {sec.mode === SEC_MODE.applyLines && (
         <JdApplyLines pairs={sec.pairs} applyUrl={sec.applyUrl} applyEmail={sec.applyEmail} />
       )}
-      {sec.mode === SEC_MODE.payFallback && <div className={cssOf(css.indent)}>{sec.payFallback}</div>}
+      {sec.mode === SEC_MODE.payFallback && (
+        <ul className={cssOf(css.bullets)}><li>{sec.payFallback}</li></ul>
+      )}
       {sec.mode === SEC_MODE.none && (
         <div className={`${cssOf(css.indent)} ${cssOf(css.indentNone)}`}>{sec.noneText}</div>
       )}
       {sec.mode === SEC_MODE.lines && (
         <>
-          {sec.payFallback !== TEXT_NONE && <div className={cssOf(css.indent)}>{sec.payFallback}</div>}
+          {sec.payFallback !== TEXT_NONE && (
+            <ul className={cssOf(css.bullets)}><li>{sec.payFallback}</li></ul>
+          )}
           <JdSecLines pairs={sec.pairs} bullets={sec.bullets} />
         </>
       )}

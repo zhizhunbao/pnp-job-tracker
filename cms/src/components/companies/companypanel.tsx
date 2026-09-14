@@ -18,13 +18,12 @@
  */
 import { cssOf } from '@/components/css'
 import { SponsorLeadCard } from '@/components/pnp'
-import { TvEntryCard } from '@/components/verdict'
 import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
 import { CompanyPanelActs } from './companypanelacts'
 import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
-import { canTransOf, makeResolveJob, makeTvOpen, panelSlugOf } from './functions'
+import { canTransOf, makeResolveJob, panelSlugOf } from './functions'
 import { useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
 import css from './companies.module.css'
@@ -60,8 +59,7 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob }: CompanyPanelI
         showTrans={p.showTrans}
         hideTopInfo
         onOpenJob={onOpenJob}
-        resolveJob={makeResolveJob({ jobs })}
-        afterSponsor={<TvEntryCard t={t} onOpen={makeTvOpen({ jobId: job.id })} />} />
+        resolveJob={makeResolveJob({ jobs })} />
     )
   }
   return (

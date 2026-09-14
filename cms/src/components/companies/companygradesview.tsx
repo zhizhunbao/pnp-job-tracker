@@ -84,8 +84,6 @@ export function CompanyGradesView({ detail, t, hideSponsor = false }: CompanyGra
     )
   }
   return (
-    <div className={css.grades}>
-      <div className={css.facts}>{rows}</div>
-    </div>
+    <div className={css.grades}>{rows}</div>
   )
 }

@@ -14,11 +14,10 @@
  */
 import { Button, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconCompass } from '@/components/icons'
 import {
-  ARROW_LINK, BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, SPACE, TARGET_BLANK, TEXT_NONE, TRANS_LOADING,
+  BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, TARGET_BLANK, TEXT_NONE, TRANS_LOADING,
 } from './constants'
-import { aiOnClsOf, caretOf, transBusyClsOf, transLabelOf } from './functions'
+import { aiOnClsOf, transBusyClsOf, transLabelOf } from './functions'
 import type { JdActsIn } from './types'
 import css from './jobs.module.css'
 
@@ -40,12 +39,12 @@ export function JdActs({ d, lang, fullHref }: JdActsIn) {
       )}
       {ready && (
         <Button kind={BTN_GHOST} onClick={d.onToggleAi} className={`${PILL_CLS} ${aiOnClsOf(d.aiOn)}`}>
-          <IconCompass />{SPACE}{d.t('cat.aiRead')}{SPACE}{caretOf(d.aiOn)}
+          {d.t('cat.aiRead')}
         </Button>
       )}
       {fullHref !== TEXT_NONE && (
         <LinkButton href={fullHref} target={TARGET_BLANK} className={`${PILL_CLS} ${cssOf(css.pillLink)}`}>
-          {d.t('detail.openFull')}{ARROW_LINK}
+          {d.t('detail.openFull')}
         </LinkButton>
       )}
     </div>
