@@ -574,7 +574,7 @@ export const jobsZh = {
   'search.placeholder': '搜索职位、公司、地点、NOC',
   'filter.geo': '地理', 'filter.cat': '职业分类', 'filter.src': '来源', 'filter.elig': '移民资格', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
   // 职位类型(E6-06)+ 入职要求(E6-07A)
-  'filter.emp': '职位类型', 'all.emp': '全部类型', 'emp.full': '全职', 'emp.part': '兼职', 'emp.gig': '零工·临时',
+  'filter.emp': '职位类型', 'all.emp': '全部类型', 'emp.full': '全职', 'emp.part': '兼职', 'emp.gig': '临时',
   'term.permanent': '长期', 'term.term': '合同', 'term.casual': '临时', 'term.seasonal': '季节',
   'who.citizens_pr': '只招公民和永久居民', 'who.temporary_ok': '接受工签', 'who.anyone': '接受境外申请',
   'fact.edu': '学历要求', 'fact.cert': '证书/执照',
@@ -606,7 +606,7 @@ export const jobsZh = {
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
-  'eligOnly': '排除不担保/须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
+  'eligOnly': '须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
   'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未匹配到任何 EE 类别', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选 {date}:CRS {crs},发出 {size} 份邀请', 'eelist.count': '{n} 个职业',
   // #135 历次抽选时间线(展开)
