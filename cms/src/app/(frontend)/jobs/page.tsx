@@ -25,7 +25,7 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
   COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
-  boardMetaOf, colsFromCookie, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  boardMetaOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -94,7 +94,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   return (
     <Frame>
       <JobsHeader plan={plan} matchView={initialMatchView} />
-      <Jobs jobs={jobs}
+      <Jobs key={filterSig(filters)}
+        jobs={jobs}
         updatedAt={updatedAt}
         dims={dims}
         initialCols={colsFromCookie(jar.get(COLS_COOKIE)?.value)}
