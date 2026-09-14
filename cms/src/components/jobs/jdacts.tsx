@@ -10,6 +10,8 @@
  * ghost 的活儿正是把钮清成一截可点文字,所以不给它们挂任何胶囊几何。
  * 2026-09-14 Frank「打开完整页按钮和前面的保持一致,背景用白色的」:第三颗改走前两颗同一形
  * (ghost + PILL_CLS,href 交 Button 转 LinkButton),蓝底 `.pillLink` 退役。
+ * 2026-09-14 Frank「有 AI 整理就不需要 AI 速读了吧,重复的功能」:职位弹框的「AI 速读」钮撤(整理版已是 AI 产物);
+ * 公司 / 地点 / 分类弹框没有整理版,它们的速读钮照旧。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -19,7 +21,7 @@ import { cssOf } from '@/components/css'
 import {
   BTN_GHOST, JD_LOADING, LANG_EN, PILL_CLS, TARGET_BLANK, TEXT_NONE, TRANS_LOADING,
 } from './constants'
-import { aiOnClsOf, transBusyClsOf, transLabelOf } from './functions'
+import { transBusyClsOf, transLabelOf } from './functions'
 import type { JdActsIn } from './types'
 import css from './jobs.module.css'
 
@@ -37,11 +39,6 @@ export function JdActs({ d, lang, fullHref }: JdActsIn) {
         <Button kind={BTN_GHOST} disabled={d.transStatus === TRANS_LOADING} onClick={d.onToggleTrans}
           className={`${PILL_CLS} ${transBusyClsOf(d.transStatus)}`}>
           {transLabelOf({ t: d.t, status: d.transStatus, shown: d.showTrans })}
-        </Button>
-      )}
-      {ready && (
-        <Button kind={BTN_GHOST} onClick={d.onToggleAi} className={`${PILL_CLS} ${aiOnClsOf(d.aiOn)}`}>
-          {d.t('cat.aiRead')}
         </Button>
       )}
       {fullHref !== TEXT_NONE && (

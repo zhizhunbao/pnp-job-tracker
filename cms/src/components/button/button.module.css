@@ -20,6 +20,13 @@
   font-weight: 600;
 
   /*
+   * 继承页面字体(2026-09-14 Frank 实拍职位弹框「打开完整页」比「AI 速读」粗):同排一颗是 a 一颗是
+   * button,a 继承正文 system-ui,button 走 UA 默认 Arial,同字号同字重却一粗一细。button 族全站
+   * 从此与正文同字体(输入件 `:where(.ctl)` 早已如此)。
+   */
+  font-family: inherit;
+
+  /*
    * 钮文字不折行。
    */
   white-space: nowrap;
