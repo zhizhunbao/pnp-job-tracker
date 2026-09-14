@@ -3370,7 +3370,8 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
 
 /**
  * 薪资节里模型没给对照的行(纯数字行「$18–$25/hr」翻译器常原样返回或跳过,Frank 2026-09-14「这种为什么每次都漏翻译」):
- * 本地按单位补一行对照(/hr → /小时,/yr → /年);已有对照的行不动。
+ * 本地按单位补一行对照(/hr → /小时,/yr → /年);模型把「$22/hr」原样当译文交回来的也算没译(Frank「为什么有时候翻译有时候不翻译」:
+ * 有时它跳过、有时原样回,原样回那档以前被当成已译);真译过的行不动。
  *
  * @param x 取词函数与这一节的行。
  * @returns 补过对照的行。
@@ -3378,7 +3379,7 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
 export function payPairsZhOf(x: PayPairsZhIn): JdPair[] {
   const out: JdPair[] = []
   for (const p of x.pairs) {
-    if (p.zh !== TEXT_NONE) {
+    if (p.zh !== TEXT_NONE && p.zh !== p.en) {
       out.push(p)
       continue
     }

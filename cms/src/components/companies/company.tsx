@@ -15,7 +15,7 @@
  * 头卡右上角那颗自绘返回钮撤,改递 Shell 的 back 槽(button 桶 BackButton,落点仍是 URL_BACK)。
  * 2026-09-14 Frank「返回按钮放到卡片右上角」「完整页面也加上加载中」「所有懒加载翻译完了,再显示页面」
  * 「这个公司名要加中文翻译」:返回钮进标题卡右上角(照职位详情页);别名从名后小字改成名下一行,库里没有的
- * 懒翻一次;懒翻没收尾前整页只出转圈行。同日「这个 nav 对么」:面包屑改「雇主 › 公司」(公司详情归雇主板);
+ * 懒翻一次;懒翻没收尾前整页只出转圈行。同日「这个 nav 对么」「雇主 nav 加省市和公司行业」:面包屑「雇主 › 省(链雇主板按省)› 市 › 行业 › 公司」;
  * 「这个地方的中文翻译呢」:中 / 韩界面简介默认带对照。
  *
  * @author Frank
@@ -29,9 +29,10 @@ import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import {
-  CRUMB_SEP, LANG_EN, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_EMPLOYERS,
+  BROAD_KEY_HEAD, CRUMB_SEP, LANG_EN, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_EMPLOYERS,
+  URL_EMPLOYERS_PROV,
 } from './constants'
-import { aliasOf } from './functions'
+import { aliasOf, cityOf, provFullOf } from './functions'
 import { useCompanyAlias } from './hooks'
 import type { CompanyIn } from './types'
 import css from './companies.module.css'
@@ -60,6 +61,20 @@ export function Company({ company, similar = [], updatedAt }: CompanyIn) {
       <div className={css.track}>
         <div className={css.crumb}>
           <LinkButton href={URL_EMPLOYERS} className={cssOf(css.crumbLink)}>{t('nav.employers')}</LinkButton>
+          {company.province !== TEXT_NONE && <>
+            {CRUMB_SEP}
+            <LinkButton href={URL_EMPLOYERS_PROV + company.province} className={cssOf(css.crumbLink)}>
+              {provFullOf({ t, code: company.province })}
+            </LinkButton>
+          </>}
+          {cityOf({ company }) !== TEXT_NONE && <>
+            {CRUMB_SEP}
+            <span className={css.crumbNow}>{cityOf({ company })}</span>
+          </>}
+          {company.industry !== TEXT_NONE && <>
+            {CRUMB_SEP}
+            <span className={css.crumbNow}>{t(BROAD_KEY_HEAD + company.industry)}</span>
+          </>}
           {CRUMB_SEP}
           <span className={css.crumbNow}>{t('co.crumb')}</span>
         </div>

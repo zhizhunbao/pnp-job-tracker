@@ -658,3 +658,13 @@ export const PROV_PAREN_INNER_RE = /[(（](?<zh>[^()（）]+)[)）]\s*$/
  * 纯年份(2026-09-14 Frank「年份不要翻译」:成立时间「1987」不出「1987年」对照行)。
  */
 export const YEAR_ONLY_RE = /^\d{4}$/
+
+/**
+ * 雇主板按省筛的地址头(公司详情面包屑的省一级,2026-09-14 Frank「雇主 nav 加省市和公司行业」)。
+ */
+export const URL_EMPLOYERS_PROV = '/employers?prov='
+
+/**
+ * 行业桶显示名的 i18n 键头(companies.industry 存的是职位板大类键,显示名走 broad.*)。
+ */
+export const BROAD_KEY_HEAD = 'broad.'
