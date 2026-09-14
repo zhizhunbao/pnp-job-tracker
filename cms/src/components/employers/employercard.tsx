@@ -4,6 +4,7 @@
  * 手机触控靶:卡内标题链只有 23px 高 —— 整张卡都可点(卡本身 ≥70px),点在标题上时
  * 交给 `<a>` 自己走,不重复导航。
  * 2026-09-13 雇主板批二:卡上四样 —— 名(落公司页)、注(界面语言别名,没有退行业)、所在地、在招话术;
+ * 同日晚 /fe 雇主页砍中文别名(机翻硬错,见 namecell.tsx 头注):注只剩行业。
  * 胶囊两枚:星级与「指定雇主」(非指定不出)。
  * 2026-08-27 换装批自 Employers.tsx 的 JobCard 装配段提出成文件。
  *
@@ -30,11 +31,7 @@ export function EmployerCard({ r }: EmployerCardIn) {
       {r.designatedChip !== TEXT_NONE && <Tag variant={TAG_DESIGNATED}>{r.designatedChip}</Tag>}
     </>
   )
-  let note = r.alias
-  if (note === TEXT_NONE) {
-    note = r.industry
-  }
-  if (note === TEXT_NONE) {
+  if (r.industry === TEXT_NONE) {
     return (
       <JobCard href={r.href}
         onCardClick={r.onCard}
@@ -48,7 +45,7 @@ export function EmployerCard({ r }: EmployerCardIn) {
     <JobCard href={r.href}
       onCardClick={r.onCard}
       title={title}
-      note={note}
+      note={r.industry}
       location={r.where}
       salary={r.cardSalary}
       chips={chips} />

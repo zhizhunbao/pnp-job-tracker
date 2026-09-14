@@ -190,7 +190,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
-    alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     href,
     hrefTitle: x.t('pulse.act.company'),
     industry,

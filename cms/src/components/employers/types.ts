@@ -143,16 +143,6 @@ export type PoolRow = {
   programs: string[]
 
   /**
-   * 公司官方中文名;空串 = 没有。
-   */
-  aliasZh: string
-
-  /**
-   * 公司官方韩文名;空串 = 没有。
-   */
-  aliasKo: string
-
-  /**
    * 这一行所在的行业组键(行身份的另一半)。
    */
   group: string
@@ -466,11 +456,6 @@ export type EmployerCellRow = {
    * 雇主名(表里不成链 —— 落点在操作列;2026-09-13 Frank「后面已经有操作列,没必要加 link」)。
    */
   name: string
-
-  /**
-   * 界面语言的别名灰注(中文界面出官方中文名、韩文界面出韩文名、英文界面不出);空串 = 没有。
-   */
-  alias: string
 
   /**
    * 手机卡标题链的落点:有公司页进公司页,没有就落职位板按名搜(表里雇主名不用它)。
