@@ -20,9 +20,10 @@ from jdformat.constants import (
     BODY_MAX_LEN, DIGITS_RE, ENV_LLM_BASE, ENV_LLM_MODEL, FIELD_NONE, FLUSH_N, GEN_TOKENS, GEN_TRIES, HOURS_VALUES,
     HRS_RE, IN_MART_JOBS, JSON_INDENT, K_DATE_POSTED, K_DESCRIPTION, K_EXTERNAL_ID, K_STATUS, LLM_MODEL_DEFAULT,
     LLM_TEMPERATURE, LLM_TIMEOUT_S, MARK_HEAD, MARK_INLINE_RE, MARK_LINE_REPL, MARK_TAIL, NOTE_DIGITS, NOTE_EMPTY,
-    NOTE_HTTP_TPL, NOTE_LEN, NOTE_MARKS, NOTE_NO_LLM, NOTE_NO_MART, OPEN_STATUSES, OUT_FORMATTED,
+    NET_ERRORS, NOTE_HTTP_TPL, NOTE_LEN, NOTE_MARKS, NOTE_NO_LLM, NOTE_NO_MART, OPEN_STATUSES, OUT_FORMATTED,
     OUT_MAX_BASE, OUT_MAX_RATIO, OUT_MIN_LEN, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
-    P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_TARGETS_TPL,
+    P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL,
+    PRINT_TARGETS_TPL,
     PROMPT_HEAD, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
     TERM_VALUES, TEXT_ENCODING, THINK_RE, URL_TAIL_SLASH,
 )
@@ -39,6 +40,7 @@ def build_formatted() -> None:
     """format 步入口:mart 里在招有正文、还没整理版的岗按发布时间新→旧过局域网 qwen,落 OUT_FORMATTED。
 
     没盒子地址直接退;mart 还没产出直接退;单条失败只记 status 不炸整轮;每 FLUSH_N 条落一次盘(中途被杀不丢)。
+    盒子连不上 / 超时(NET_ERRORS)不是这条帖的错:不记失败、整轮中止(2026-09-15 盒子掉线实撞)。
     """
     cfg = llm_config()
     if cfg.base == "":
@@ -59,6 +61,9 @@ def build_formatted() -> None:
         for ext in todo:
             src = str(jobs[ext].get(K_DESCRIPTION, FIELD_NONE))
             rec = format_one(FormatOneIn(client=cast(HttpClientLike, client), cfg=cfg, src=src))
+            if rec.note in NET_ERRORS:
+                say(PRINT_ABORT_TPL.format(note=rec.note))
+                break
             cache[ext] = rec
             if rec.status == ST_OK:
                 ok += 1

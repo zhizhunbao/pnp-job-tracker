@@ -220,6 +220,13 @@ NOTE_EMPTY = "empty"
 NOTE_HTTP_TPL = "http {status}"
 """失败由头:盒子非 2xx。"""
 
+NET_ERRORS = ("ConnectError", "ConnectTimeout", "ReadTimeout", "WriteTimeout", "PoolTimeout", "RemoteProtocolError")
+"""盒子连不上 / 超时这几类异常名:不是这条帖的问题,不记失败、不进 RETRY_FAILED_DAYS 冷却,整轮中止等下一轮。
+2026-09-15 17:05 实撞:盒子掉线(ping 全丢)后每条秒挂 ConnectError,照旧记 fail 会把整轮 400 条锁一周。"""
+
+PRINT_ABORT_TPL = "✗ format: 盒子连不上({note}),本轮中止;已做成的照常落盘,没做的不记失败,下一轮重试"
+"""盒子掉线时的中止报数。"""
+
 PRINT_TARGETS_TPL = "format: 在招有正文 {jobs} 条,已有整理版 {done} 条,剪掉不在列 {pruned} 条,本轮 {todo} 条(上限 {limit},模型 {model})"
 """开工报数。"""
 
