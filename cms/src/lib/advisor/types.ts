@@ -9,7 +9,7 @@
  */
 import type { AgentMessage, AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core'
 import type { Model, TSchema } from '@earendil-works/pi-ai'
-import type { CityCard, JobRow, JsonCell, JsonObj, MatchJob, ProvCard } from '@/lib/jobs'
+import type { JobRow, JsonCell, MatchJob } from '@/lib/jobs'
 import type { WEB_FETCH_PARAMS } from './schemas'
 
 /**
@@ -40,26 +40,6 @@ export type HeadingPair = {
    * 职位初判三段。
    */
   title: string
-}
-
-/**
- * clipLinesOf 的入参(occRead 官方文本的截断口径)。
- */
-export type ClipLinesIn = {
-  /**
-   * 原文(多行)。
-   */
-  text: string
-
-  /**
-   * 保留行数上限。
-   */
-  maxLines: number
-
-  /**
-   * 保留字符上限(行截完再截总长)。
-   */
-  maxLen: number
 }
 
 /**
@@ -323,81 +303,6 @@ export type CompanyPromptIn = {
 }
 
 /**
- * 职业速读拼装的入参。
- */
-export type OccReadPromptIn = {
-  /**
-   * 岗位事实(读 noc/broad/duties/requirements)。
-   */
-  job: AdvisorJob
-
-  /**
-   * 输出语言。
-   */
-  lang: Lang
-}
-
-/**
- * 地点速读的两个场景名。
- */
-export type LocReadField = 'provRead' | 'cityRead'
-
-/**
- * 地点速读拼装的入参。
- */
-export type LocReadPromptIn = {
-  /**
-   * provRead(省)还是 cityRead(市/区)。
-   */
-  field: LocReadField
-
-  /**
-   * 岗位事实(读 locationFacts)。
-   */
-  job: AdvisorJob
-
-  /**
-   * 输出语言。
-   */
-  lang: Lang
-}
-
-/**
- * 职位帖速读拼装的入参。
- */
-export type JdReadPromptIn = {
-  /**
-   * 岗位事实(读帖面基本盘)。
-   */
-  job: AdvisorJob
-
-  /**
-   * JD 原文(截断后);没抓到为空串。
-   */
-  jd: string
-
-  /**
-   * 输出语言。
-   */
-  lang: Lang
-}
-
-/**
- * 公司速读拼装的入参。
- */
-export type CoReadPromptIn = {
-  /**
-   * 岗位事实(读公司格 + LMIA 担保格)。
-   */
-  job: AdvisorJob
-
-  /**
-   * 输出语言。
-   */
-  lang: Lang
-}
-
-/**
  * 字段解释拼装的入参(ASK 表驱动的其它字段)。
  */
 export type FieldPromptIn = {
@@ -604,36 +509,6 @@ export type EventIn = {
 }
 
 /**
- * 大类计数行里我们读的两格(jobs 域 BroadCount 的形状,本域自声明)。
- */
-export type BroadCountCell = {
-  /**
-   * 大类名。
-   */
-  broad: string
-
-  /**
-   * 计数。
-   */
-  n: number
-}
-
-/**
- * 雇主计数行里我们读的两格。
- */
-export type EmployerCountCell = {
-  /**
-   * 雇主名。
-   */
-  name: string
-
-  /**
-   * 在招数。
-   */
-  n: number
-}
-
-/**
  * 只读名字的一行(院校表)。
  */
 export type NamedCell = {
@@ -641,26 +516,6 @@ export type NamedCell = {
    * 名字。
    */
   name: string
-}
-
-/**
- * `pushVolLine` 的入参(体量行:对象格在才出行)。
- */
-export type VolLineIn = {
-  /**
-   * 输出行数组(原地追加)。
-   */
-  out: string[]
-
-  /**
-   * 对象格;null = 整行不出。
-   */
-  obj: MaybeObj
-
-  /**
-   * 行模板({n}/{year} 两槽)。
-   */
-  tpl: string
 }
 
 /**
@@ -756,79 +611,14 @@ export type WireMsg = {
 }
 
 /**
- * 服务端按场景查好的一包事实(routes 组装,进拼装函数)。
- */
-export type FactsPack = {
-  /**
-   * 岗位事实(occ/loc 速读场景是空壳 + 对应格)。
-   */
-  job: AdvisorJob
-
-  /**
-   * 缓存键标识(company = 小写公司名;其余 = body.id)。
-   */
-  keyId: string
-}
-
-/**
- * `provFactsOf` 的入参。
- */
-export type ProvFactsIn = {
-  /**
-   * 省码(已验形大写)。
-   */
-  code: string
-
-  /**
-   * 省情报卡(jobs 域 loadProvinceCard 的透传两格)。
-   */
-  card: ProvCardCell
-}
-
-/**
- * 省情报卡形状(jobs 域的名字起本地别名)。
- */
-export type ProvCardCell = ProvCard
-
-/**
- * 市情报卡形状(同上)。
- */
-export type CityCardCell = CityCard
-
-/**
  * 库 jsonb 透传格(值级收窄在本域 to* 段做)。
  */
 export type Cell = JsonCell
 
 /**
- * jsonb 对象格(jobs 域的名字起本地别名)。
- */
-export type CellObj = JsonObj
-
-/**
- * 可空对象格。
- */
-export type MaybeObj = CellObj | null
-
-/**
  * jsonb 数组格。
  */
 export type CellList = Cell[]
-
-/**
- * 按键取格的入参。
- */
-export type CellAtIn = {
-  /**
-   * 对象格。
-   */
-  obj: CellObj
-
-  /**
-   * 键名。
-   */
-  key: string
-}
 
 /**
  * 按 key 字段找因子的入参(difficulty.factors 形状)。
@@ -866,41 +656,6 @@ export type LastTextIn = {
 }
 
 /**
- * `makeOccJob` 的入参(occRead 场景的最小事实包)。
- */
-export type OccJobIn = {
-  /**
-   * 五位职业码。
-   */
-  noc: string
-
-  /**
-   * 官方职责原文。
-   */
-  duties: string
-
-  /**
-   * 官方任职要求原文。
-   */
-  requirements: string
-}
-
-/**
- * `makeLocJob` 的入参(provRead/cityRead 场景的最小事实包)。
- */
-export type LocJobIn = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 服务端重建的地点事实块。
-   */
-  facts: string
-}
-
-/**
  * `chatPromptOf` 的入参(多轮折转写)。
  */
 export type ChatPromptIn = {
@@ -908,31 +663,6 @@ export type ChatPromptIn = {
    * 追问轮(已过滤合法角色)。
    */
   messages: ChatMsgList
-}
-
-/**
- * `cityFactsOf` 的入参。
- */
-export type CityFactsIn = {
-  /**
-   * 市名。
-   */
-  city: string
-
-  /**
-   * 省码(已验形大写)。
-   */
-  prov: string
-
-  /**
-   * 区名;空串 = 市级。
-   */
-  district: string
-
-  /**
-   * 市情报卡。
-   */
-  card: CityCardCell
 }
 
 /**

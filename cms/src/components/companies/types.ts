@@ -1212,11 +1212,6 @@ export type CompanyPanelIn = {
   lang: CompaniesLang
 
   /**
-   * 付费态(AI 速读的额度闸)。
-   */
-  plan: CompanyPlan
-
-  /**
    * 点在招职位的去处;可省 = 纯链接。
    */
   onOpenJob?: OpenJobFn

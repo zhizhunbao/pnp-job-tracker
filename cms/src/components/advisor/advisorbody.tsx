@@ -20,24 +20,24 @@ import type { AdvisorGroupBodyIn } from './types'
 /**
  * 渲染弹框正文。
  *
- * @param props 分组、入口格、分层态、在榜岗、点岗回调与取数包。
+ * @param props 分组、入口格、在榜岗、点岗回调与取数包(2026-09-14 AI 速读退役,分层态不再下传)。
  * @returns 这一组的正文。
  */
 export function AdvisorBody({
-  group, field, plan, companyJobs, onOpenJob, onCompanyAlias, gen, f,
+  group, field, companyJobs, onOpenJob, onCompanyAlias, gen, f,
 }: AdvisorGroupBodyIn) {
   if (group === GROUP_CATEGORY) {
-    return <CategoryPanel job={f.job} lang={f.lang} plan={plan} nocDesc={f.nocDesc} srcField={field} />
+    return <CategoryPanel job={f.job} lang={f.lang} nocDesc={f.nocDesc} srcField={field} />
   }
   if (group === GROUP_LOCATION) {
     return (
-      <LocationPanel job={f.job} lang={f.lang} plan={plan} srcField={field}
+      <LocationPanel job={f.job} lang={f.lang} srcField={field}
         pnpDraws={f.pnpDraws} news={f.news} desigEmp={f.desigEmp} />
     )
   }
   if (group === GROUP_COMPANY) {
     return (
-      <CompanyPanel key={gen} job={f.job} jobs={companyJobs} lang={f.lang} plan={plan} onOpenJob={onOpenJob}
+      <CompanyPanel key={gen} job={f.job} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
         onAlias={onCompanyAlias} />
     )
   }

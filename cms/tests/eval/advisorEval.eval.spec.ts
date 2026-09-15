@@ -20,10 +20,14 @@ import { afterAll, describe, expect, it } from 'vitest'
 
 import { getDb } from '@/lib/db/server'
 import { advisorRoute } from '@/lib/advisor/server'
-import { toAdvisorJob, provFactsOf, cityFactsOf, promptOf, type AdvisorJob } from '@/lib/advisor'
+import {
+  toAdvisorJob, promptOf, type AdvisorJob,
+} from '@/lib/advisor'
 import { normalizeProfile } from '@/lib/jobs'
 import type { JobRow } from '@/lib/jobs'
-import { loadJobById, jobDescription, loadCityCard, loadProvinceCard } from '@/lib/jobs/server'
+import {
+  loadJobById, jobDescription,
+} from '@/lib/jobs/server'
 
 const LIVE = Boolean(process.env.DATABASE_URI) && Boolean(process.env.CHAT_LLM_BASE || process.env.TRANSLATE_API_BASE)
 const suite = LIVE ? describe : describe.skip
@@ -31,7 +35,7 @@ const suite = LIVE ? describe : describe.skip
 type Lang = 'zh' | 'en' | 'ko'
 const LANGS: Lang[] = ['zh', 'en', 'ko']
 // 全网格的场景(chat 休眠场景另用一条冒烟)
-const FIELDS = ['title', 'score', 'salary', 'occRead', 'provRead', 'cityRead', 'jdRead', 'coRead', 'company']
+const FIELDS = ['title', 'score', 'salary', 'company']
 
 type Probe = { kind: string; detail: string }
 type GenResult = {
@@ -140,11 +144,8 @@ async function pickJobs(): Promise<Picked[]> {
   return out
 }
 
-/** 场景 → 请求体(新链 id 制;provRead/cityRead 的 id 用老前端同款拼法)。 */
+/** 场景 → 请求体(新链 id 制;2026-09-14 AI 速读五场景退役,只剩岗位 id 一种拼法)。 */
 function bodyOf(field: string, p: Picked, lang: Lang): Record<string, unknown> {
-  if (field === 'occRead') return { field, id: p.job.noc ?? '', lang }
-  if (field === 'provRead') return { field, id: p.job.province ?? '', lang }
-  if (field === 'cityRead') return { field, id: [p.job.city ?? '', p.job.province ?? '', ''].join('|'), lang }
   return { field, id: p.id, lang }
 }
 
@@ -152,19 +153,8 @@ function bodyOf(field: string, p: Picked, lang: Lang): Record<string, unknown> {
  * 首轮误报教训:签约奖金 $750/里程 $0.45 都写在 JD 里,底料不带 JD 全成「无出处」)。 */
 async function factsOf(field: string, p: Picked, lang: Lang): Promise<string> {
   const db = await getDb()
-  if (field === 'provRead') {
-    const code = (p.job.province ?? '').toUpperCase()
-    const card = await loadProvinceCard({ db, code })
-    return card ? provFactsOf({ code, card }) : ''
-  }
-  if (field === 'cityRead') {
-    const city = p.job.city ?? ''
-    const prov = (p.job.province ?? '').toUpperCase()
-    const card = await loadCityCard({ db, city, prov, district: '' })
-    return cityFactsOf({ city, prov, district: '', card })
-  }
   let jd = ''
-  if (field === 'title' || field === 'jdRead') {
+  if (field === 'title') {
     jd = (await jobDescription({ db, applyUrl: (p.job.applyUrl ?? '').trim() })).slice(0, 2200)
   }
   // 岗位场景:直接用新链的提示词整文当底料(含 jobFacts 的全部数字)

@@ -25,24 +25,23 @@ import { textResponseOf, BAD_REQUEST, NOT_FOUND, TOO_MANY } from '../http'
 import { hasProfile, match, normalizeProfile, reasonEn, statusEn } from '../jobs'
 import type { MatchDims, ProfileJson } from '../jobs'
 import {
-  loadJobById, jobDescription, loadCityCard, loadMatchDims, loadProvinceCard,
+  loadJobById, jobDescription, loadMatchDims,
 } from '../jobs/server'
 import { companyRow, investigateCompany } from '../employers/server'
 import type { CompanyResearch } from '../employers/server'
-import { loadNocDuties } from '../noc/server'
 import { PRO_ADVISOR_DAILY } from '../quota'
 import { denyBodyOf, checkLimit, freeGate, getUser, isPro } from '../quota/server'
 import { friendLlmReady } from '../llm'
 import {
   CACHE_HIT, CACHE_MISS, CO_NAME_LEN_MAX, E_BAD_JSON, E_NOT_FOUND,
-  E_RATE_LIMITED, ENV_DAILY_CAP, F_CITY_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
-  F_PROV_READ, F_TITLE, GATE_BUF_MAX, GATE_MARK, GLOBAL_DAILY_CAP_DEFAULT, HTTP_RE, ID_SEP,
+  E_RATE_LIMITED, ENV_DAILY_CAP, F_COMPANY, F_IMMIGRATION,
+  F_TITLE, GATE_BUF_MAX, GATE_MARK, GLOBAL_DAILY_CAP_DEFAULT, HTTP_RE,
   JD_LEN_MAX, JD_NO, JD_YES, PREDICT_CHAT, PREDICT_COMPANY, PREDICT_DEFAULT, PREDICT_SIMPLE,
-  PROV_CODE_RE, QUOTA_KEY_GLOBAL, QUOTA_KEY_PRO_PREFIX, SIMPLE_FIELDS, TEXT_NONE, TEXT_START,
+  QUOTA_KEY_GLOBAL, QUOTA_KEY_PRO_PREFIX, SIMPLE_FIELDS, TEXT_NONE, TEXT_START,
 } from './constants'
 import {
-  blankOf, cacheKeyOf, chatPromptOf, chatSystemOf, cityFactsOf, cleanMessages, headersOf, langOf,
-  makeLocJob, makeOccJob, matchJobOf, profileFactsOf, promptOf, provFactsOf, readerCtxOf,
+  blankOf, cacheKeyOf, chatPromptOf, chatSystemOf, cleanMessages, headersOf, langOf,
+  matchJobOf, profileFactsOf, promptOf, readerCtxOf,
   runAdvisor, systemOf, toAdvisorJob, webFetchToolOf,
 } from './functions'
 import type { AdvisorJob, AdvisorWire, DeltaFn, ToolList, WebResearch } from './types'
@@ -97,43 +96,13 @@ export async function advisorRoute(req: Request): Promise<Response> {
 
   let job: AdvisorJob | null = null
   let keyId = bodyId
-  if (field === F_OCC_READ) {
-    const duties = await loadNocDuties({ db, noc: bodyId })
-    let d = TEXT_NONE
-    let r = TEXT_NONE
-    if (duties != null) {
-      d = duties.duties
-      r = duties.requirements
-    }
-    job = makeOccJob({ noc: bodyId, duties: d, requirements: r })
-  } else if (field === F_PROV_READ) {
-    const code = bodyId.toUpperCase()
-    if (PROV_CODE_RE.test(code)) {
-      const card = await loadProvinceCard({ db, code })
-      let facts = TEXT_NONE
-      if (card != null) {
-        facts = provFactsOf({ code, card })
-      }
-      job = makeLocJob({ province: code, facts })
-    }
-  } else if (field === F_CITY_READ) {
-    const [cityPart, provPart, districtPart] = bodyId.split(ID_SEP)
-    const city = blankOf(cityPart)
-    const prov = blankOf(provPart).toUpperCase()
-    const district = blankOf(districtPart)
-    if (city !== '' && PROV_CODE_RE.test(prov)) {
-      const card = await loadCityCard({ db, city, prov, district })
-      job = makeLocJob({ province: prov, facts: cityFactsOf({ city, prov, district, card }) })
-    }
-  } else {
-    const id = Number(bodyId)
-    if (Number.isFinite(id)) {
-      const row = await loadJobById({ db, id, pro, profile: p, profileOk, matchDims: dims })
-      if (row != null) {
-        job = toAdvisorJob(row)
-        if (field === F_COMPANY) {
-          keyId = blankOf(job.company).toLowerCase()
-        }
+  const id = Number(bodyId)
+  if (Number.isFinite(id)) {
+    const row = await loadJobById({ db, id, pro, profile: p, profileOk, matchDims: dims })
+    if (row != null) {
+      job = toAdvisorJob(row)
+      if (field === F_COMPANY) {
+        keyId = blankOf(job.company).toLowerCase()
       }
     }
   }
@@ -174,7 +143,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
   }
 
   let jd = TEXT_NONE
-  if (field === F_TITLE || field === F_IMMIGRATION || field === F_JD_READ || isChat) {
+  if (field === F_TITLE || field === F_IMMIGRATION || isChat) {
     jd = (await jobDescription({ db, applyUrl: blankOf(job.applyUrl).trim() })).slice(0, JD_LEN_MAX)
   }
 

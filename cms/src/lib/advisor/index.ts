@@ -5,7 +5,7 @@
  * @time 2026-08-23 21:30:00
  */
 export {
-  cacheKeyOf, chatPromptOf, chatSystemOf, cityFactsOf, makeEmptyJob, makeLocJob, makeOccJob,
-  profileFactsOf, promptOf, provFactsOf, readerCtxOf, systemOf, teerOf, toAdvisorJob,
+  cacheKeyOf, chatPromptOf, chatSystemOf, makeEmptyJob,
+  profileFactsOf, promptOf, readerCtxOf, systemOf, teerOf, toAdvisorJob,
 } from './functions'
 export type { AdvisorJob, ChatMsg, ChatMsgList, Lang, PromptIn, WebResearch } from './types'

@@ -16,37 +16,29 @@ import { fill } from '../template'
 import { PROV_NAMES } from '../location'
 import {
   API, ATLANTIC_PROVS, AUTH_HEADER, BASE, BEARER, BLANK_SEP, BLOCK_TEXT, CACHE_VER, CO_ABOUT_LEN_MAX,
-  CO_DESC_LEN_MAX, CO_SECTORS_LEN_MAX, CO_SOURCES_MAX, CO_WEB_LEN_MAX, COMMA_SEP, CONTEXT_WINDOW,
-  CT_TEXT, ERR_MSG_NONE, F_CITY_READ, F_CO_READ, F_COMPANY, F_IMMIGRATION, F_JD_READ, F_OCC_READ,
-  F_PROV_READ, F_SCORE, F_TITLE, HDR_CONTENT_TYPE, HDR_X_CACHE, HDR_X_JD, HTML_SCRIPT_RE,
-  HTML_STYLE_RE, HTML_TAG_RE, HTTP_RE, INDEMAND_NOC2,
-  ISO_DATE_LEN, K_DIV, KEY, KEY_PRO_PREFIX, KEY_SEP, LANG_EN, LANG_KO, LANG_NAMES, LANG_ZH, LOC_FACTS_LEN_MAX, LOC_KEY,
-  LOOP_TIMEOUT_MS, MESSAGE_UPDATE, MODEL_ID, NL, NL2, NO_KEY_PLACEHOLDER, NOC_GROUP_LEN, NOC_TEER_RE,
-  OCC_DUTY_LEN_MAX, OCC_DUTY_LINES_MAX, OCC_REQ_LEN_MAX, OCC_REQ_LINES_MAX, PCT_100, PROV_NONE, PROVIDER, QC_CODE, QUOTE,
-  REASON_PREFIX, ROLE_ASSISTANT, ROLE_USER, SAMPLING, SEG_NONE, SEMI_SEP, SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP,
-  TEXT_NONE, TEXT_START, TOOL_WEB_FETCH, V1, WAGE_FIELDS, WEBFETCH_TEXT_MAX, WEBFETCH_TIMEOUT_MS, WS_RE,
+  CO_DESC_LEN_MAX, CO_SECTORS_LEN_MAX, CO_SOURCES_MAX, CO_WEB_LEN_MAX, COMMA_SEP, CONTEXT_WINDOW, CT_TEXT,
+  ERR_MSG_NONE, F_COMPANY, F_IMMIGRATION, F_SCORE, F_TITLE, HDR_CONTENT_TYPE, HDR_X_CACHE, HDR_X_JD, HTML_SCRIPT_RE,
+  HTML_STYLE_RE, HTML_TAG_RE, HTTP_RE, INDEMAND_NOC2, ISO_DATE_LEN, K_DIV, KEY, KEY_PRO_PREFIX, KEY_SEP, LANG_EN,
+  LANG_KO, LANG_NAMES, LANG_ZH, LOOP_TIMEOUT_MS, MESSAGE_UPDATE, MODEL_ID, NL, NL2, NO_KEY_PLACEHOLDER,
+  NOC_GROUP_LEN, NOC_TEER_RE, PROV_NONE, PROVIDER, QUOTE, REASON_PREFIX, ROLE_ASSISTANT, ROLE_USER, SAMPLING,
+  SEG_NONE, SEMI_SEP, SIMPLE_FIELDS, SLASH_SEP, SPACE_SEP, TEXT_NONE, TEXT_START, TOOL_WEB_FETCH, V1, WAGE_FIELDS,
+  WEBFETCH_TEXT_MAX, WEBFETCH_TIMEOUT_MS, WS_RE,
 } from './constants'
 import { WEB_FETCH_PARAMS } from './schemas'
 import {
-  ASK, ASK_FALLBACK_TPL, ATLANTIC_RULE, CH_NAME, CHAT_FACTS_HEAD, CHAT_JD_HEAD, CHAT_JD_TAIL,
-  CHAT_TAIL, CITY_READ_ASK, CO_ANTI_FAB, CO_FACT, CO_GROUND_BOTH, CO_GROUND_FETCH, CO_GROUND_NONE,
-  CO_GROUND_STORED, CO_HEAD_TPL, CO_KNOWN, CO_KNOWN_HEAD, CO_OUTPUT_RULES, CO_READ_ASK, CO_READ_RULES,
-  CO_SPONSOR, CO_WEB_HEAD, DRIVER, GROUNDING_RULES, HEADINGS, HEADINGS_INSTR, IMM_HEAD_TPL,
-  JD_BLOCK_HEAD, JD_BLOCK_TAIL, JD_FACTS_TPL, JD_READ_ASK, JD_READ_MISSING, JD_READ_SRC_HEAD,
-  JD_READ_TAIL, JOB_FACT, JOB_FACTS_HEAD, LANG_PURITY, LOC_FACT, LOC_FACTS_HEAD, LOC_READ_TAIL, NO_JD_LINE,
-  NO_MEDIAN_RULE, NOC_NONE_LINE, OCC_FACT, OCC_READ_TAIL, PATH_FACTS_HEAD, PATH_FACTS_TPL, PLAN_RULES, PREP_EXTRA,
-  PROFILE_MATCH_TPL, PROFILE_TAIL, PROFILE_TPL, PROV_READ_ASK, READER_CTX_TPL, READER_LINE,
-  READS_OUTPUT, SCORE_FACTS_TPL, SECTIONS_OUTPUT, SIMPLE_OUTPUT, STREAM_SEG, SYSTEM_TPL, TURN_ADVISOR,
-  TURN_HEAD, TURN_USER, VAL, WEB_FETCH_DESC, WEB_FETCH_FAIL, YR_SEG, ZH_ONLY,
+  ASK, ASK_FALLBACK_TPL, ATLANTIC_RULE, CH_NAME, CHAT_FACTS_HEAD, CHAT_JD_HEAD, CHAT_JD_TAIL, CHAT_TAIL, CO_ANTI_FAB,
+  CO_GROUND_BOTH, CO_GROUND_FETCH, CO_GROUND_NONE, CO_GROUND_STORED, CO_HEAD_TPL, CO_KNOWN, CO_KNOWN_HEAD,
+  CO_OUTPUT_RULES, CO_WEB_HEAD, DRIVER, GROUNDING_RULES, HEADINGS, HEADINGS_INSTR, IMM_HEAD_TPL, JD_BLOCK_HEAD,
+  JD_BLOCK_TAIL, JOB_FACT, JOB_FACTS_HEAD, NO_JD_LINE, NO_MEDIAN_RULE, NOC_NONE_LINE, OCC_FACT, PATH_FACTS_HEAD,
+  PATH_FACTS_TPL, PLAN_RULES, PREP_EXTRA, PROFILE_MATCH_TPL, PROFILE_TAIL, PROFILE_TPL, READER_CTX_TPL, READER_LINE,
+  SCORE_FACTS_TPL, SECTIONS_OUTPUT, SIMPLE_OUTPUT, STREAM_SEG, SYSTEM_TPL, TURN_ADVISOR, TURN_HEAD, TURN_USER, VAL,
+  WEB_FETCH_DESC, WEB_FETCH_FAIL, YR_SEG, ZH_ONLY,
 } from './prompts'
 import type {
-  AdvisorJob, AdvisorWire, BroadCountCell, CacheKeyIn, Cell, CellAtIn, CellList, ChatMsg, ChatMsgList,
-  ChatPromptIn, CityFactsIn, ClipLinesIn,
-  CompanyPromptIn, CoReadPromptIn, ChatSystemIn, EmployerCountCell, EventIn, FactorIn, FieldPromptIn,
-  HeaderMap, HeadersOfIn, HeadingPair, ImmigrationPromptIn, JdReadPromptIn, JobRowCell, Lang, LastTextIn,
-  LocJobIn, LocReadPromptIn, MatchJobCell, MaybeNum, MaybeObj, MaybeStr, ModelOut, NamedCell, OccJobIn,
-  OccReadPromptIn, ProfileFactsIn,
-  PromptIn, ProvFactsIn, Reply, ReplyOut, RunIn, RunOut, ToolList, TranscriptMsg, VolLineIn, WebFetchToolIn,
+  AdvisorJob, AdvisorWire, CacheKeyIn, ChatMsg, ChatMsgList, ChatPromptIn, CompanyPromptIn, ChatSystemIn, EventIn,
+  FieldPromptIn, HeaderMap, HeadersOfIn, HeadingPair, ImmigrationPromptIn, JobRowCell, Lang, LastTextIn,
+  MatchJobCell, MaybeNum, MaybeStr, ModelOut, ProfileFactsIn, PromptIn, Reply, ReplyOut, RunIn, RunOut, ToolList,
+  TranscriptMsg, WebFetchToolIn,
 } from './types'
 
 // =========================================================================
@@ -55,6 +47,8 @@ import type {
 
 /**
  * 初判/字段解释的提示词总分发(老链 buildPrompt 六参收一参;分支顺序逐字保形)。
+ * 2026-09-14 AI 速读整套退役(Frank「清掉吧 AI 速读」「ai速读 先去掉」):occRead / provRead / cityRead / jdRead / coRead
+ * 五个场景的分支与提示词构建函数删,只剩公司 / 字段解释 / 初判三路。
  *
  * @param input 场景、事实与语言。
  * @returns 该场景的完整用户提示词。
@@ -62,18 +56,6 @@ import type {
 export function promptOf(input: PromptIn): string {
   if (input.field === F_COMPANY) {
     return companyPromptOf({ job: input.job, web: input.web, lang: input.lang })
-  }
-  if (input.field === F_OCC_READ) {
-    return occReadPromptOf({ job: input.job, lang: input.lang })
-  }
-  if (input.field === F_PROV_READ || input.field === F_CITY_READ) {
-    return locReadPromptOf({ field: input.field, job: input.job, lang: input.lang })
-  }
-  if (input.field === F_JD_READ) {
-    return jdReadPromptOf({ job: input.job, jd: input.jd, lang: input.lang })
-  }
-  if (input.field === F_CO_READ) {
-    return coReadPromptOf({ job: input.job, lang: input.lang })
   }
   if (input.field !== F_TITLE && input.field !== F_IMMIGRATION) {
     return fieldPromptOf({ field: input.field, job: input.job, pf: input.pf, lang: input.lang })
@@ -247,110 +229,6 @@ function companyPromptOf(input: CompanyPromptIn): string {
     + known + ground + NL2 + CO_ANTI_FAB + NL2
     + fill({ tpl: HEADINGS_INSTR, params: { heads: headingsOf(input.lang).company, lang: langName } }) + NL
     + fill({ tpl: CO_OUTPUT_RULES, params: { lang: langName } })
-}
-
-/**
- * 职业速读:只喂职业级事实(NOC/TEER/大类 + 官方职责/要求原文),不带本岗
- * 标题/公司/薪资 —— 按 NOC 缓存干净,措辞不跑偏到移民建议。
- *
- * @param input 岗位事实(职业格)与语言。
- * @returns 职业速读的用户提示词。
- */
-function occReadPromptOf(input: OccReadPromptIn): string {
-  const j = input.job
-  const duties = clipLinesOf({ text: emptyOf(j.duties), maxLines: OCC_DUTY_LINES_MAX, maxLen: OCC_DUTY_LEN_MAX })
-  const reqs = clipLinesOf({ text: emptyOf(j.requirements), maxLines: OCC_REQ_LINES_MAX, maxLen: OCC_REQ_LEN_MAX })
-  const pieces: string[] = [
-    fill({ tpl: OCC_FACT.head, params: { noc: orDashOf(j.noc), teer: numOrDashOf(teerOf(j.noc)), cat: catOf(j) } }),
-  ]
-  if (duties !== '') {
-    pieces.push(fill({ tpl: OCC_FACT.duties, params: { v: duties } }))
-  }
-  if (reqs !== '') {
-    pieces.push(fill({ tpl: OCC_FACT.requirements, params: { v: reqs } }))
-  }
-  return ASK.occRead + NL2 + fill({ tpl: OCC_FACT.factsHead, params: { v: pieces.join(NL2) } }) + NL2
-    + fill({ tpl: READS_OUTPUT, params: { lang: langNameOf(input.lang) } }) + SPACE_SEP + OCC_READ_TAIL
-}
-
-/**
- * 地点速读(省/市区):只喂面板同源的数字块;红线同 GROUNDING_RULES ——
- * 粗口径聚合禁化成概率/资格;整句目标语言(语言纯度令)。
- *
- * @param input 场景名、岗位事实(locationFacts 格)与语言。
- * @returns 地点速读的用户提示词。
- */
-function locReadPromptOf(input: LocReadPromptIn): string {
-  const facts = emptyOf(input.job.locationFacts).slice(0, LOC_FACTS_LEN_MAX)
-  let ask = CITY_READ_ASK
-  if (input.field === F_PROV_READ) {
-    ask = PROV_READ_ASK
-  }
-  const langName = langNameOf(input.lang)
-  return ask + NL2 + LOC_FACTS_HEAD + facts + NL2 + GROUNDING_RULES + NL2
-    + fill({ tpl: READS_OUTPUT, params: { lang: langName } }) + SPACE_SEP
-    + fill({ tpl: LANG_PURITY, params: { lang: langName } }) + SPACE_SEP + LOC_READ_TAIL
-}
-
-/**
- * 职位帖速读:只喂 JD 原文 + 帖面基本盘,总结职位本身;移民路径解读归初判。
- *
- * @param input 岗位事实、JD 原文与语言。
- * @returns 职位帖速读的用户提示词。
- */
-function jdReadPromptOf(input: JdReadPromptIn): string {
-  const j = input.job
-  const langName = langNameOf(input.lang)
-  let pay = emptyOf(j.salary)
-  if (pay === '') {
-    pay = VAL.notStated
-  }
-  const facts = fill({ tpl: JD_FACTS_TPL, params: { title: orDashOf(j.title), company: orDashOf(j.company), loc: locOf(j), pay } })
-  let src = JD_READ_MISSING
-  if (input.jd !== '') {
-    src = fill({ tpl: JD_READ_SRC_HEAD, params: { lang: langName } }) + input.jd + CHAT_JD_TAIL
-  }
-  return JD_READ_ASK + NL2 + facts + NL2 + src + NL2
-    + fill({ tpl: READS_OUTPUT, params: { lang: langName } }) + SPACE_SEP + JD_READ_TAIL
-}
-
-/**
- * 公司速读:只喂已抓的公司事实(行业/简介/担保股别),#167⑨ 严禁联网/凭名字编。
- *
- * @param input 岗位事实(公司格 + LMIA 格)与语言。
- * @returns 公司速读的用户提示词。
- */
-function coReadPromptOf(input: CoReadPromptIn): string {
-  const j = input.job
-  let spLine = CO_SPONSOR.none
-  if (j.lmiaPositions != null && j.lmiaPositions > 0) {
-    let skilled = SEG_NONE
-    if (j.lmiaPositionsSkilled != null) {
-      skilled = fill({ tpl: CO_SPONSOR.skilledSeg, params: { v: j.lmiaPositionsSkilled } })
-    }
-    let quarter = SEG_NONE
-    if (j.lmiaLastQuarter != null && j.lmiaLastQuarter !== '') {
-      quarter = fill({ tpl: CO_SPONSOR.quarterSeg, params: { v: j.lmiaLastQuarter } })
-    }
-    spLine = fill({ tpl: CO_SPONSOR.lmia, params: { tot: j.lmiaPositions, skilled, quarter } })
-  } else if (j.aip) {
-    spLine = CO_SPONSOR.aip
-  }
-  const rows: string[] = [
-    fill({ tpl: CO_FACT.company, params: { v: orDashOf(j.company) } }),
-    fill({ tpl: CO_FACT.location, params: { v: locOf(j) } }),
-  ]
-  const sectors = trimOf(j.companySectors)
-  if (sectors !== '') {
-    rows.push(fill({ tpl: CO_FACT.sector, params: { v: sectors } }))
-  }
-  const about = trimOf(j.companyDescription).slice(0, CO_ABOUT_LEN_MAX)
-  if (about !== '') {
-    rows.push(fill({ tpl: CO_FACT.about, params: { v: about } }))
-  }
-  rows.push(spLine)
-  return CO_READ_ASK + NL2 + fill({ tpl: CO_FACT.factsHead, params: { v: rows.join(NL) } }) + NL2
-    + fill({ tpl: READS_OUTPUT, params: { lang: langNameOf(input.lang) } }) + SPACE_SEP + CO_READ_RULES
 }
 
 /**
@@ -542,27 +420,6 @@ function pathFactsOf(j: AdvisorJob): string {
 // =========================================================================
 // 4. 取值词汇与小件(空值口径、截断、省全名、语言名)
 // =========================================================================
-
-/**
- * 多行原文的截断:逐行 trim 去空行,先截行数再截总长(occRead 口径)。
- *
- * @param input 原文与两个上限。
- * @returns 截断后的多行文本。
- */
-function clipLinesOf(input: ClipLinesIn): string {
-  return input.text.split(NL).map(trimStrOf).filter(isNonempty).slice(0, input.maxLines)
-    .join(NL).slice(0, input.maxLen)
-}
-
-/**
- * trim 一个非空断言过的串(named callback,给 map 用)。
- *
- * @param s 原串。
- * @returns 去首尾空白的串。
- */
-function trimStrOf(s: string): string {
-  return s.trim()
-}
 
 /**
  * 非空判(named callback,给 filter 用)。
@@ -995,284 +852,6 @@ export function chatPromptOf(input: ChatPromptIn): string {
 // 6. 地点事实块(自 Advisor.tsx aiFacts() 逐字搬入,服务端与面板同源重建)
 // =========================================================================
 
-/**
- * 省级地点事实块(provRead):难度档 + 体量数,与 /stats 面板同一份 jsonb。
- *
- * @param input 省码与省情报卡。
- * @returns 多行事实块。
- */
-export function provFactsOf(input: ProvFactsIn): string {
-  const out: string[] = [fill({ tpl: LOC_FACT.provHead, params: { name: provFullOf(input.code), code: input.code } })]
-  const isQc = input.code === QC_CODE
-  if (isQc) {
-    out.push(LOC_FACT.qc)
-  }
-  const diff = cellObjOf(input.card.difficulty)
-  let factors: CellList = []
-  if (diff != null) {
-    factors = cellListOf(atOf({ obj: diff, key: LOC_KEY.factors }))
-  }
-  let tier = TEXT_NONE
-  if (diff != null) {
-    tier = slotCellOf(atOf({ obj: diff, key: LOC_KEY.tier }))
-  }
-  if (tier !== '') {
-    out.push(fill({ tpl: LOC_FACT.tier, params: {
-      tier, comp: compSegOf(factorOf({ list: factors, key: LOC_KEY.comp })),
-      trend: trendSegOf(factorOf({ list: factors, key: LOC_KEY.quotaTrend })),
-      act: actSegOf(factorOf({ list: factors, key: LOC_KEY.activity })),
-    } }))
-  }
-  const info = cellObjOf(input.card.info)
-  if (info != null) {
-    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.study })), tpl: LOC_FACT.study })
-    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.tfwp })), tpl: LOC_FACT.tfwp })
-    pushVolLine({ out, obj: cellObjOf(atOf({ obj: info, key: LOC_KEY.imp })), tpl: LOC_FACT.imp })
-    const alloc = cellObjOf(atOf({ obj: info, key: LOC_KEY.alloc }))
-    if (isQc === false && alloc != null && cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2026 })) != null) {
-      let prev = SEG_NONE
-      if (cellNumOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) != null) {
-        prev = fill({ tpl: LOC_FACT.allocPrevSeg, params: { v: slotCellOf(atOf({ obj: alloc, key: LOC_KEY.y2025 })) } })
-      }
-      out.push(fill({ tpl: LOC_FACT.alloc, params: { v: slotCellOf(atOf({ obj: alloc, key: LOC_KEY.y2026 })), prev } }))
-    }
-    const pnpPr = cellObjOf(atOf({ obj: info, key: LOC_KEY.pnpPr }))
-    if (isQc === false && pnpPr != null) {
-      pushVolLine({ out, obj: pnpPr, tpl: LOC_FACT.pnpPr })
-    }
-  }
-  return out.join(NL)
-}
-
-/**
- * 竞争比子句(因子缺 = 空串)。
- *
- * @param f 竞争比因子。
- * @returns 子句或空串。
- */
-function compSegOf(f: MaybeObj): string {
-  if (f == null) {
-    return SEG_NONE
-  }
-  let asOf = slotCellOf(atOf({ obj: f, key: LOC_KEY.asOf }))
-  if (asOf === '') {
-    asOf = VAL.qmark
-  }
-  return fill({ tpl: LOC_FACT.compSeg, params: {
-    v: slotCellOf(atOf({ obj: f, key: LOC_KEY.value })), pool: slotCellOf(atOf({ obj: f, key: LOC_KEY.pool })),
-    asOf, quota: slotCellOf(atOf({ obj: f, key: LOC_KEY.quota })), quotaYear: slotCellOf(atOf({ obj: f, key: LOC_KEY.quotaYear })),
-  } })
-}
-
-/**
- * 配额同比子句(因子缺 = 空串;值乘 100 取整)。
- *
- * @param f 同比因子。
- * @returns 子句或空串。
- */
-function trendSegOf(f: MaybeObj): string {
-  if (f == null) {
-    return SEG_NONE
-  }
-  let v = cellNumOf(atOf({ obj: f, key: LOC_KEY.value }))
-  if (v == null) {
-    v = 0
-  }
-  return fill({ tpl: LOC_FACT.trendSeg, params: { v: Math.round(v * PCT_100) } })
-}
-
-/**
- * 抽选活跃子句(因子缺 = 空串;邀请数缺按 0,老链口径)。
- *
- * @param f 活跃因子。
- * @returns 子句或空串。
- */
-function actSegOf(f: MaybeObj): string {
-  if (f == null) {
-    return SEG_NONE
-  }
-  let inv = cellNumOf(atOf({ obj: f, key: LOC_KEY.invitations }))
-  if (inv == null) {
-    inv = 0
-  }
-  return fill({ tpl: LOC_FACT.actSeg, params: { v: slotCellOf(atOf({ obj: f, key: LOC_KEY.value })), inv } })
-}
-
-/**
- * 体量行:{n}/{year} 两槽的对象格,格在才出行。
- *
- * @param input 输出数组、对象格与行模板。
- * @returns 无(行推进 input.out)。
- */
-function pushVolLine(input: VolLineIn): void {
-  if (input.obj == null) {
-    return
-  }
-  input.out.push(fill({ tpl: input.tpl, params: {
-    n: slotCellOf(atOf({ obj: input.obj, key: LOC_KEY.n })), year: slotCellOf(atOf({ obj: input.obj, key: LOC_KEY.year })),
-  } }))
-}
-
-/**
- * 市/区级地点事实块(cityRead):本站在招聚合,与市卡面板同一取数。
- *
- * @param input 市、省、区与市情报卡。
- * @returns 多行事实块。
- */
-export function cityFactsOf(input: CityFactsIn): string {
-  const card = input.card
-  const provName = provFullOf(input.prov)
-  if (input.district !== '' && card.district != null) {
-    const dd = card.district
-    const lines: string[] = [
-      fill({ tpl: LOC_FACT.districtHead, params: { district: input.district, city: input.city, prov: provName } }),
-      fill({ tpl: LOC_FACT.districtJobs, params: { open: dd.openJobs, new7d: dd.new7d } }),
-    ]
-    if (dd.medSalary != null) {
-      lines.push(fill({ tpl: LOC_FACT.medSalary, params: { v: dd.medSalary } }))
-    }
-    if (dd.topBroads.length > 0) {
-      lines.push(fill({ tpl: LOC_FACT.topBroads, params: { v: dd.topBroads.map(broadItemOf).join(COMMA_SEP) } }))
-    }
-    if (dd.topEmployers.length > 0) {
-      lines.push(fill({ tpl: LOC_FACT.topEmployers, params: { v: dd.topEmployers.map(employerItemOf).join(COMMA_SEP) } }))
-    }
-    return lines.join(NL)
-  }
-  const lines: string[] = [
-    fill({ tpl: LOC_FACT.cityHead, params: { city: input.city, prov: provName } }),
-    fill({ tpl: LOC_FACT.cityJobs, params: { open: card.openJobs, new7d: card.new7d } }),
-  ]
-  if (card.medSalary != null) {
-    lines.push(fill({ tpl: LOC_FACT.medSalary, params: { v: card.medSalary } }))
-  }
-  if (card.topBroads.length > 0) {
-    lines.push(fill({ tpl: LOC_FACT.topBroads, params: { v: card.topBroads.map(broadItemOf).join(COMMA_SEP) } }))
-  }
-  if (card.dli.count > 0) {
-    lines.push(fill({ tpl: LOC_FACT.dli, params: { n: card.dli.count, names: card.dli.top.map(dliNameOf).join(COMMA_SEP) } }))
-  }
-  if (card.aipEmployers > 0) {
-    lines.push(fill({ tpl: LOC_FACT.aipEmployers, params: { n: card.aipEmployers } }))
-  }
-  return lines.join(NL)
-}
-
-/**
- * 大类单项(named callback,给 map 用)。
- *
- * @param b 大类计数行。
- * @returns 「大类 数」。
- */
-function broadItemOf(b: BroadCountCell): string {
-  return fill({ tpl: LOC_FACT.broadItem, params: { broad: b.broad, n: b.n } })
-}
-
-/**
- * 热门雇主单项(named callback,给 map 用)。
- *
- * @param e 雇主计数行。
- * @returns 「名 (n open)」。
- */
-function employerItemOf(e: EmployerCountCell): string {
-  return fill({ tpl: LOC_FACT.employerItem, params: { name: e.name, n: e.n } })
-}
-
-/**
- * 院校名(named callback,给 map 用)。
- *
- * @param s 院校行。
- * @returns 名字。
- */
-function dliNameOf(s: NamedCell): string {
-  return s.name
-}
-
-/**
- * 对象格按键取值(缺键当 null,语言接缝在这一行收掉)。
- *
- * @param input 对象与键。
- * @returns 格值;缺为 null。
- */
-function atOf(input: CellAtIn): Cell {
-  const v = input.obj[input.key]
-  if (v == null) {
-    return null
-  }
-  return v
-}
-
-/**
- * 格 → 对象(数组与标量都不算)。
- *
- * @param v 格值。
- * @returns 对象或 null。
- */
-function cellObjOf(v: Cell): MaybeObj {
-  if (typeof v === 'object' && v !== null && Array.isArray(v) === false) {
-    return v
-  }
-  return null
-}
-
-/**
- * 格 → 数组(不是数组给空表)。
- *
- * @param v 格值。
- * @returns 数组。
- */
-function cellListOf(v: Cell): CellList {
-  if (Array.isArray(v)) {
-    return v
-  }
-  return []
-}
-
-/**
- * 格 → 数字(不是数字给 null;官方可空,禁折 0)。
- *
- * @param v 格值。
- * @returns 数字或 null。
- */
-function cellNumOf(v: Cell): MaybeNum {
-  if (typeof v === 'number') {
-    return v
-  }
-  return null
-}
-
-/**
- * 格 → 显示槽(数字原样、串原样、其余空串)。
- *
- * @param v 格值。
- * @returns 槽值串。
- */
-function slotCellOf(v: Cell): string {
-  if (typeof v === 'number') {
-    return String(v)
-  }
-  if (typeof v === 'string') {
-    return v
-  }
-  return TEXT_NONE
-}
-
-/**
- * 因子数组里按 key 找一个(difficulty.factors 的形状)。
- *
- * @param input 数组与目标 key。
- * @returns 因子对象;找不到 null。
- */
-function factorOf(input: FactorIn): MaybeObj {
-  for (const item of input.list) {
-    const obj = cellObjOf(item)
-    if (obj != null && slotCellOf(atOf({ obj, key: LOC_KEY.key })) === input.key) {
-      return obj
-    }
-  }
-  return null
-}
-
 // =========================================================================
 // 7. 行构造器(rows 抽屉 2026-08-23 撤编后的固定尾段)
 // =========================================================================
@@ -1299,33 +878,6 @@ export function toAdvisorJob(row: JobRowCell): AdvisorJob {
     source: row.source, sourceLabel: row.sourceLabel, origin: row.origin, datePosted: row.datePosted,
     lastSeen: row.lastSeen, status: row.status, duties: null, requirements: null, locationFacts: null,
   }
-}
-
-/**
- * occRead 场景的最小事实包(按 NOC 缓存干净,不带本岗字段 —— 老链同口径)。
- *
- * @param input NOC 与官方职责/要求原文。
- * @returns 岗位事实。
- */
-export function makeOccJob(input: OccJobIn): AdvisorJob {
-  const j = makeEmptyJob()
-  j.noc = input.noc
-  j.duties = input.duties
-  j.requirements = input.requirements
-  return j
-}
-
-/**
- * provRead/cityRead 场景的最小事实包(地点事实块服务端已重建)。
- *
- * @param input 省码与事实块。
- * @returns 岗位事实。
- */
-export function makeLocJob(input: LocJobIn): AdvisorJob {
-  const j = makeEmptyJob()
-  j.province = input.province
-  j.locationFacts = input.facts
-  return j
 }
 
 /**

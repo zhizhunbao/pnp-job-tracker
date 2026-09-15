@@ -78,7 +78,7 @@ export function AdvisorModal({
       {group === GROUP_IMMIGRATION && (
         <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
       )}
-      <AdvisorBody group={group} field={field} plan={plan}
+      <AdvisorBody group={group} field={field}
         companyJobs={m.companyJobs}
         onOpenJob={onOpenJob}
         onCompanyAlias={m.onCompanyAlias}

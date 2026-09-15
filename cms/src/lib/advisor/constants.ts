@@ -82,31 +82,6 @@ export const CO_SOURCES_MAX = 4
 export const CO_NAME_LEN_MAX = 200
 
 /**
- * occRead 官方职责:行数上限。
- */
-export const OCC_DUTY_LINES_MAX = 30
-
-/**
- * occRead 官方职责:字符上限。
- */
-export const OCC_DUTY_LEN_MAX = 2000
-
-/**
- * occRead 任职要求:行数上限。
- */
-export const OCC_REQ_LINES_MAX = 20
-
-/**
- * occRead 任职要求:字符上限。
- */
-export const OCC_REQ_LEN_MAX = 1400
-
-/**
- * provRead/cityRead 地点事实块截断。
- */
-export const LOC_FACTS_LEN_MAX = 2400
-
-/**
  * 生成长度档:多轮追问(第 15 轮 #36 各档 +40 容纳结尾 ❓ 建议行)。
  */
 export const PREDICT_CHAT = 540
@@ -160,31 +135,6 @@ export const ENV_DAILY_CAP = 'ADVISOR_DAILY_CAP'
  * 场景名:公司初判。
  */
 export const F_COMPANY = 'company'
-
-/**
- * 场景名:职业速读。
- */
-export const F_OCC_READ = 'occRead'
-
-/**
- * 场景名:省速读。
- */
-export const F_PROV_READ = 'provRead'
-
-/**
- * 场景名:市/区速读。
- */
-export const F_CITY_READ = 'cityRead'
-
-/**
- * 场景名:职位帖速读。
- */
-export const F_JD_READ = 'jdRead'
-
-/**
- * 场景名:公司速读。
- */
-export const F_CO_READ = 'coRead'
 
 /**
  * 场景名:初判(旧调用方的名字,兼容保留)。
@@ -497,121 +447,6 @@ export const E_NOT_FOUND = 'not found'
 export const E_RATE_LIMITED = 'rate limited'
 
 /**
- * 魁北克省码(独立体系判据)。
- */
-export const QC_CODE = 'QC'
-
-/**
- * 省情报卡 jsonb 里我们读的键名(与 /stats 面板消费端同一形状)。
- */
-export const LOC_KEY = {
-  /**
-   * 难度因子数组。
-   */
-  factors: 'factors',
-
-  /**
-   * 难度档名。
-   */
-  tier: 'tier',
-
-  /**
-   * 因子的判别键。
-   */
-  key: 'key',
-
-  /**
-   * 竞争比因子。
-   */
-  comp: 'comp',
-
-  /**
-   * 配额同比因子。
-   */
-  quotaTrend: 'quotaTrend',
-
-  /**
-   * 抽选活跃因子。
-   */
-  activity: 'activity',
-
-  /**
-   * 因子主值。
-   */
-  value: 'value',
-
-  /**
-   * 竞争基数(学签+工签持有人)。
-   */
-  pool: 'pool',
-
-  /**
-   * 基数口径年。
-   */
-  asOf: 'asOf',
-
-  /**
-   * 提名配额。
-   */
-  quota: 'quota',
-
-  /**
-   * 配额口径年。
-   */
-  quotaYear: 'quotaYear',
-
-  /**
-   * 邀请数。
-   */
-  invitations: 'invitations',
-
-  /**
-   * 学签体量格。
-   */
-  study: 'study',
-
-  /**
-   * TFWP 体量格。
-   */
-  tfwp: 'tfwp',
-
-  /**
-   * IMP 体量格。
-   */
-  imp: 'imp',
-
-  /**
-   * 提名配额格。
-   */
-  alloc: 'alloc',
-
-  /**
-   * PNP 登陆格。
-   */
-  pnpPr: 'pnpPr',
-
-  /**
-   * 数值。
-   */
-  n: 'n',
-
-  /**
-   * 年份。
-   */
-  year: 'year',
-
-  /**
-   * 2026 配额。
-   */
-  y2026: 'y2026',
-
-  /**
-   * 2025 配额。
-   */
-  y2025: 'y2025',
-}
-
-/**
  * 抓回网页去 script 块。
  */
 export const HTML_SCRIPT_RE = /<script[\s\S]*?<\/script>/gi
@@ -630,8 +465,3 @@ export const HTML_TAG_RE = /<[^>]+>/g
  * 连续空白折一个空格。
  */
 export const WS_RE = /\s+/g
-
-/**
- * 百分比换算乘数(配额同比 value 是小数,喂模型前乘 100 取整)。
- */
-export const PCT_100 = 100

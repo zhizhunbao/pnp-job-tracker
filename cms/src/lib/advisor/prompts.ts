@@ -78,11 +78,6 @@ export const ASK: Record<string, string> = {
   noc: 'Explain the NOC code and its TEER level, and how NOC is used by PNP / Express Entry.',
 
   /**
-   * 职业速读(分类弹框):严格基于官方职责/要求,不发挥。
-   */
-  occRead: 'Give a quick, plain-language read of THIS occupation for someone skimming a long official duties/requirements list: (1) what people in this job actually do day-to-day, (2) the key qualifications/education/credentials to get in, (3) any licensing note if the requirements mention one. Base it STRICTLY on the official duties and requirements in the facts below — do not invent specifics, wages, or immigration advice.',
-
-  /**
    * TEER 档解读。
    */
   teer: 'Explain the TEER level and what it means for skilled-worker immigration.',
@@ -270,41 +265,6 @@ export const CO_WEB_HEAD = 'Web research about this company (live web search by 
 export const CO_OUTPUT_RULES = 'Output rules: your reply must start with 【 as the very first character — zero preamble, zero meta-commentary (never "I\'ll fetch…", "Let me…"), no English filler; every sentence in {lang}.'
 
 /**
- * 地点速读 · 省(2026-07-23 Frank「AI 解读呢」):数字是粗口径聚合,禁化成概率/资格。
- */
-export const PROV_READ_ASK = 'Give a quick plain-language read of this PROVINCE for a job-seeker weighing where to work in Canada: (1) how crowded the provincial-nominee route looks (competition ratio, allocation trend, draw activity), (2) what the study/work-permit and PR volumes say about the local newcomer scene, (3) one practical takeaway. The numbers are rough official aggregates — never turn them into odds, timelines, or eligibility.'
-
-/**
- * 地点速读 · 市/区。
- */
-export const CITY_READ_ASK = 'Give a quick plain-language read of this CITY or DISTRICT job market for a job-seeker: (1) how active hiring looks (open jobs, last-7-days), (2) what the top fields and median posted salary suggest about who is hiring, (3) mention the schools / AIP employers only if the facts list them, (4) one practical takeaway. The data is this site\'s live job index, not official statistics — never present it as odds or eligibility.'
-
-/**
- * 语言纯度令(2026-07-23 实拍「中位 posted 薪资」中英夹杂;`{lang}` 槽)。
- */
-export const LANG_PURITY = 'LANGUAGE PURITY: every sentence must be written entirely in {lang} — the facts above are in English, but never copy English words like "posted", "open jobs" or "year-end" into your text; translate them. Only proper names (schools, employers, places) and site-wide abbreviations (PNP, EE, AIP, NOC, TEER, PGWP, CLB, IRCC, TFWP, IMP) may stay in Latin script.'
-
-/**
- * jd 速读(2026-07-21 Frank「只速读这个 job 的内容即可」):只总结职位本身,禁移民解读。
- */
-export const JD_READ_ASK = 'Give a quick, plain-language read of THIS job posting for someone deciding whether to apply: (1) what the day-to-day work actually is, (2) the hard requirements that decide whether you qualify, (3) pay / schedule / benefits or other notable points the posting itself mentions.'
-
-/**
- * jd 速读无原文时的兜底指令(`{lang}` 无关;不编职责)。
- */
-export const JD_READ_MISSING = '(No posting text was scraped for this job — say plainly that the posting text is unavailable and keep to the basic facts above; do NOT invent duties or requirements.)'
-
-/**
- * 公司速读(2026-07-22 Frank「公司弹框这三个功能也加上」):只喂已抓事实;#167⑨ 严禁联网/凭名编。
- */
-export const CO_READ_ASK = 'Give a quick, plain-language read of THIS employer for someone weighing a job here (job-seeking + immigration angle). Cover only what the facts support: (1) what the company does, (2) its foreign-worker sponsorship signal and what it means for an employer-offer→PNP path (a historical fact, never a promise), (3) how actively it hires if shown.'
-
-/**
- * 公司速读的尾部铁律。
- */
-export const CO_READ_RULES = 'Base everything STRICTLY on the facts above. NEVER invent the industry, products, size, or ethnicity from the name; if a fact is missing say public info is insufficient (公开资料不足). No web guessing.'
-
-/**
  * 海洋四省判定规则(#161「人家都海洋四省了,还考虑 EE 吗」;`{prov}` = 省全名):
  * AIP 是雇主驱动通道,拿 EE 竞争力当标尺是答非所问。
  */
@@ -329,11 +289,6 @@ export const SIMPLE_OUTPUT = 'Answer in ONE concise sentence in {lang}. No headi
  * 分段输出令(2–3 段【标题】;`{lang}` 槽)。
  */
 export const SECTIONS_OUTPUT = 'Write 2–3 short sections, each starting with a 【heading】, content in {lang}. Use the exact numbers above; do not invent data.'
-
-/**
- * 速读类的分段输出令(occ/prov/city/jd/co 共用前半;`{lang}` 槽)。
- */
-export const READS_OUTPUT = 'Write 2–3 short sections, each starting with a 【heading】, content in {lang}.'
 
 /**
  * 多轮追问的 system 尾部(事实是唯一真相源;`{lang}` 槽)。
@@ -582,79 +537,9 @@ export const OCC_FACT = {
 }
 
 /**
- * jd 速读的基本盘四行(四槽)。
- */
-export const JD_FACTS_TPL = 'Role: {title}\nCompany: {company}\nLocation: {loc}\nPay (posted): {pay}'
-
-/**
- * jd 速读带原文时的引导(`{lang}` 槽)。
- */
-export const JD_READ_SRC_HEAD = 'Real job posting (it may be in English; answer in {lang}):\n"""\n'
-
-/**
  * 多轮追问里 JD 摘录的块头。
  */
 export const CHAT_JD_HEAD = '\n\nReal job posting excerpt:\n"""\n'
-
-/**
- * 公司速读的担保信号三态(coRead)。
- */
-export const CO_SPONSOR = {
-  /**
-   * 有 LMIA 记录(`{tot}`/`{skilled}`/`{quarter}` 三槽,后两槽可空串)。
-   */
-  lmia: 'LMIA sponsorship (past 2 years, ESDC): {tot} positions{skilled}{quarter}',
-
-  /**
-   * skilled 子句(`{v}` 槽)。
-   */
-  skilledSeg: ', {v} in skilled streams (High Wage/Global Talent)',
-
-  /**
-   * 季度子句(`{v}` 槽)。
-   */
-  quarterSeg: ', latest {v}',
-
-  /**
-   * AIP 指定。
-   */
-  aip: 'AIP designated employer (Atlantic employer-driven route)',
-
-  /**
-   * 无记录(非负面证据)。
-   */
-  none: 'No positive-LMIA record in the past two years (not negative evidence — many never needed one)',
-}
-
-/**
- * 公司速读事实行标签。
- */
-export const CO_FACT = {
-  /**
-   * 公司行。
-   */
-  company: 'Company: {v}',
-
-  /**
-   * 地点行。
-   */
-  location: 'Location: {v}',
-
-  /**
-   * 行业行。
-   */
-  sector: 'Industry/sector: {v}',
-
-  /**
-   * 简介行(注明来源)。
-   */
-  about: 'About (from company website / AI research): {v}',
-
-  /**
-   * 雇主事实块总头。
-   */
-  factsHead: 'Employer facts:\n{v}',
-}
 
 /**
  * 公司初判头三行(三槽)。
@@ -695,128 +580,6 @@ export const NOC_NONE_LINE = 'NOC not identified'
  * 分段标题指令头(`{heads}`/`{lang}` 槽;括号保留令)。
  */
 export const HEADINGS_INSTR = 'Explain under these headings (keep the 【】 brackets, write the content in {lang}):\n{heads}\n'
-
-/**
- * 地点事实块的行模板 —— 2026-08-23 自 Advisor.tsx LocationPanel 的 aiFacts() **逐字搬入**:
- * 契约换 id 制后这块由服务端用同一取数函数(loadProvinceCard/loadCityCard)重建,
- * 保证与面板同数;措辞一字不改(eval 对拍的前提)。
- */
-export const LOC_FACT = {
-  /**
-   * 省头行(`{name}` 全名、`{code}` 省码)。
-   */
-  provHead: 'Province: {name} ({code})',
-
-  /**
-   * QC 独立体系行。
-   */
-  qc: 'Quebec runs its own selection system (not part of PNP); allocation and draws do not apply.',
-
-  /**
-   * 难度档行主体(`{tier}` 槽;三个可选子句拼进 `{comp}`/`{trend}`/`{act}`)。
-   */
-  tier: 'PNP difficulty tier: {tier}{comp}{trend}{act}',
-
-  /**
-   * 竞争比子句(五槽;asOf 缺时老链打 `?`)。
-   */
-  compSeg: '; competition ratio {v}:1 (study+work permit holders {pool} as of year-end {asOf} ÷ nomination allocation {quota} for {quotaYear})',
-
-  /**
-   * 配额同比子句(`{v}` = 已乘 100 取整)。
-   */
-  trendSeg: '; allocation YoY {v}%',
-
-  /**
-   * 抽选活跃子句(两槽;邀请数缺时老链打 0)。
-   */
-  actSeg: '; {v} draws in last 180 days ({inv} invitations)',
-
-  /**
-   * 学签体量行。
-   */
-  study: 'Study permit holders: {n} ({year} year-end)',
-
-  /**
-   * 雇主绑定工签行。
-   */
-  tfwp: 'Employer-specific work permits (TFWP): {n} ({year} year-end)',
-
-  /**
-   * 开放/豁免工签行。
-   */
-  imp: 'Open/exempt work permits (IMP, incl. PGWP): {n} ({year} year-end)',
-
-  /**
-   * 提名配额行(`{v}` 主值、`{prev}` 可选的 2025 括注)。
-   */
-  alloc: 'PNP nomination allocation 2026: {v}{prev}',
-
-  /**
-   * 配额 2025 括注子句。
-   */
-  allocPrevSeg: ' (2025: {v})',
-
-  /**
-   * PNP 登陆行。
-   */
-  pnpPr: 'PR landings via PNP: {n} ({year}, incl. family)',
-
-  /**
-   * 区头行(三槽)。
-   */
-  districtHead: 'District: {district}, {city}, {prov}',
-
-  /**
-   * 区在招行(两槽)。
-   */
-  districtJobs: 'Open jobs in district: {open}; posted in last 7 days: {new7d}',
-
-  /**
-   * 市头行(两槽)。
-   */
-  cityHead: 'City: {city}, {prov}',
-
-  /**
-   * 市在招行(两槽)。
-   */
-  cityJobs: 'Open jobs: {open}; posted in last 7 days: {new7d}',
-
-  /**
-   * 中位帖面薪资行。
-   */
-  medSalary: 'Median posted salary: ${v}/yr',
-
-  /**
-   * 热门方向行(`{v}` = 「大类 数」逗号串)。
-   */
-  topBroads: 'Top fields: {v}',
-
-  /**
-   * 区热门雇主行(`{v}` = 「名 (n open)」逗号串)。
-   */
-  topEmployers: 'Top employers: {v}',
-
-  /**
-   * 热门雇主单项(两槽)。
-   */
-  employerItem: '{name} ({n} open)',
-
-  /**
-   * 大类单项(两槽)。
-   */
-  broadItem: '{broad} {n}',
-
-  /**
-   * PGWP 可申院校行(两槽;`{names}` = 名字逗号串)。
-   */
-  dli: 'PGWP-eligible schools: {n} ({names})',
-
-  /**
-   * AIP 指定雇主数行。
-   */
-  aipEmployers: 'AIP designated employers: {n}',
-}
 
 /**
  * web_fetch 工具给模型看的描述(pi 工具循环承接老链 anthropic 后端的同名内置;
@@ -862,29 +625,9 @@ export const CHAT_JD_TAIL = '\n"""'
 export const JOB_FACTS_HEAD = 'Job facts:\n'
 
 /**
- * 地点速读的事实块头。
- */
-export const LOC_FACTS_HEAD = 'Location facts:\n'
-
-/**
  * ASK 表没收录的字段的兜底指令(`{v}` = field 名)。
  */
 export const ASK_FALLBACK_TPL = 'Explain the "{v}" field for this job.'
-
-/**
- * 职业速读的尾律(不编数字/执照/移民建议)。
- */
-export const OCC_READ_TAIL = 'Base everything strictly on the facts above; do not invent numbers, licensing rules, or immigration advice.'
-
-/**
- * 地点速读的尾律(不编数字/项目/移民建议)。
- */
-export const LOC_READ_TAIL = 'Base everything strictly on the facts above; do not invent numbers, programs, or immigration advice.'
-
-/**
- * jd 速读的尾律(只依帖面;禁移民路径解读)。
- */
-export const JD_READ_TAIL = 'Base everything STRICTLY on the posting; do not invent details; NO immigration pathway analysis or advice.'
 
 /**
  * 喂进事实行的取值词汇(这些词模型会读到,归 prompts 不归 constants)。

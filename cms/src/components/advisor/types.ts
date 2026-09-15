@@ -650,11 +650,6 @@ export type CategoryPanelIn = {
   lang: AdvisorLang
 
   /**
-   * 分层态。
-   */
-  plan: AdvisorPlan
-
-  /**
    * NOC 官方职业描述。
    */
   nocDesc: AdvisorNocDescs
@@ -1005,11 +1000,6 @@ export type LocationPanelIn = {
    * 界面语言。
    */
   lang: AdvisorLang
-
-  /**
-   * 分层态。
-   */
-  plan: AdvisorPlan
 
   /**
    * 点进来的那一格。
@@ -1672,11 +1662,6 @@ export type AdvisorGroupBodyIn = {
    * 点进来的那一格。
    */
   field: string
-
-  /**
-   * 分层态。
-   */
-  plan: AdvisorPlan
 
   /**
    * 同公司在榜岗(公司组用;E10-01 P3 现拉,不再靠父级全量列表)。
