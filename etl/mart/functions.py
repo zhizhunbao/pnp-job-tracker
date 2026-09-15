@@ -117,6 +117,9 @@ from mart.constants import (
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     FORMAT_OK, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT, K_JD_FORMATTED, K_JD_FORMATTED_AT,
+    SAL_TXT_BACK, SAL_TXT_HR_MAX, SAL_TXT_HR_MIN, SAL_TXT_HR_RE, SAL_TXT_HR_TAIL, SAL_TXT_K_MULT, SAL_TXT_K_SUFFIX,
+    SAL_TXT_K_TPL, SAL_TXT_NEAR_RE, SAL_TXT_NUM_RE, SAL_TXT_TRIM, SAL_TXT_UNIT_RE, SAL_TXT_UPTO_RE, SAL_TXT_YR_MIN,
+    SAL_TXT_YR_TAIL, PRINT_SAL_MINED_TPL,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
     K_WIKI, K_YEAR, K_CL_ITEMS, K_CL_URL, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
@@ -174,7 +177,7 @@ from mart.constants import (
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
-from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
+from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -4619,7 +4622,7 @@ def clean_job_salary() -> None:
     """
     say(PRINT_INOUT_COMPANIES_TPL.format(dir=IN_ATS_COMPANIES))
     say(PRINT_INOUT_JOBBANK_TPL.format(out=OUT_JOBBANK))
-    tally = SalaryTally(total=0, priced=0, updated=0)
+    tally = SalaryTally(total=0, priced=0, updated=0, mined=0)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     for jobs_json in IN_ATS_COMPANIES.rglob(JOBS_FILE):
         data = read_table(jobs_json)
@@ -4645,6 +4648,8 @@ def clean_job_salary() -> None:
                                    ratio_max=SAL_RATIO_MAX, ratio=guards.ratio,
                                    cap_max=SAL_ANNUAL_MAX, cap=guards.cap, gig=guards.gig,
                                    fold_max=SAL_HOURLY_FOLD_MAX, hifold=guards.hifold))
+    say(PRINT_SAL_MINED_TPL.format(mined=tally.mined, hr_min=SAL_TXT_HR_MIN, hr_max=SAL_TXT_HR_MAX,
+                                   yr_min=SAL_TXT_YR_MIN))
 
 
 def clean_board_salary(x: BoardSalaryIn) -> None:
@@ -4663,14 +4668,104 @@ def clean_board_salary(x: BoardSalaryIn) -> None:
 
 
 def salary_tick(x: SalaryTickIn) -> bool:
-    """一个岗过一遍:累加报数,返回「这一行被改写了没有」。"""
+    """一个岗过一遍:薪资格是空的先去正文里挖一次,再走原来那把尺子;累加报数,返回「这一行被改写了没有」。"""
     x.tally.total += 1
+    if not x.job.get(K_SALARY):
+        mined = salary_from_text(x.job.get(K_DESCRIPTION) or "")
+        if mined != "":
+            x.job[K_SALARY] = mined
+            x.tally.mined += 1
     if x.job.get(K_SALARY):
         x.tally.priced += 1
     if not apply_salary_to(ApplySalaryIn(job=x.job, guards=x.guards)):
         return False
     x.tally.updated += 1
     return True
+
+
+def salary_from_text(desc: str) -> str:
+    """薪资写在正文里、板自己的薪资格却是空的 → 挖出一条薪资串交给下游那把尺子(2026-09-15 立)。
+
+    起因:Frank「有薪资但是没洗出来」。实测 BDO 那条 jobillico 帖,页面薪资栏写「To be discussed」、
+    ld+json 没有 baseSalary,正文里却写着「expected range of compensation ... $53,000-$78,000」;
+    四个板共 8,003 条这样的帖(jobillico 7,744 / jobboom 189 / hireac 64 / careerbeacon 6)。
+    **只在薪资格为空时挖**,挖到写回 salary 格,年化与规范文本仍由 parse_salary 那把尺子算 ——
+    行为不复制,这里只负责「把正文里的薪资话找出来」。
+    两档:① 金额 + 紧跟周期词(单位是雇主写的);② 线索词 + 100 字内的金额(单位靠量级闸判)。
+    两档都过可信度闸(salary_text_ok),过不了整条不认 —— **判不了就不说**,别替雇主编数。
+
+    @param desc 岗位正文。
+    @returns 薪资串(形同板自己给的那格);挖不出或不可信给空串。
+    """
+    hit = salary_unit_hit_of(desc)
+    if hit != "":
+        return hit
+    return salary_cue_hit_of(desc)
+
+
+def salary_unit_hit_of(desc: str) -> str:
+    """第一档:金额后面紧跟周期词。单位是雇主自己写的,只判金额可信不可信。"""
+    for m in SAL_TXT_UNIT_RE.finditer(desc):
+        if SAL_TXT_UPTO_RE.search(desc[max(0, m.start() - SAL_TXT_BACK):m.start()]) is not None:
+            continue
+        unit = SAL_UNIT_YR
+        if SAL_TXT_HR_RE.search(m.group(2)) is not None:
+            unit = SAL_UNIT_HR
+        body = tidy_salary_text(m.group(1))
+        if salary_text_ok(SalaryTextIn(body=body, unit=unit)):
+            return tidy_salary_text(m.group(1) + m.group(2))
+    return ""
+
+
+def salary_cue_hit_of(desc: str) -> str:
+    """第二档:线索词后 100 字内的金额,没有周期词 —— 量级说了算:
+    下限 ≥ 年薪线当年薪、整段落在时薪区间当时薪;两头都不像(150~20,000 那段,多半是日 / 周 / 双周薪)整条不认。"""
+    m = SAL_TXT_NEAR_RE.search(desc)
+    if m is None:
+        return ""
+    if SAL_TXT_UPTO_RE.search(desc[max(0, m.start(1) - SAL_TXT_BACK):m.start(1)]) is not None:
+        return ""
+    body = tidy_salary_text(m.group(1))
+    if salary_text_ok(SalaryTextIn(body=body, unit=SAL_UNIT_YR)):
+        return body + SAL_TXT_YR_TAIL
+    if salary_text_ok(SalaryTextIn(body=body, unit=SAL_UNIT_HR)):
+        return body + SAL_TXT_HR_TAIL
+    return ""
+
+
+def salary_text_ok(x: SalaryTextIn) -> bool:
+    """挖出来的金额按这个单位讲得通吗(时薪看上限落在区间内、年薪看下限够不够高)。"""
+    vals = salary_text_vals(x.body)
+    if len(vals) == 0:
+        return False
+    if x.unit == SAL_UNIT_HR:
+        return SAL_TXT_HR_MIN <= max(vals) <= SAL_TXT_HR_MAX
+    return min(vals) >= SAL_TXT_YR_MIN
+
+
+def salary_text_vals(body: str) -> list:
+    """挖出的串 → 数值表(K 后缀还原成千)。"""
+    out: list = []
+    for tok in SAL_TXT_NUM_RE.findall(body):
+        if tok[-1] in SAL_TXT_K_SUFFIX:
+            out.append(float(tok[:-1].replace(COMMA, "")) * SAL_TXT_K_MULT)
+        else:
+            out.append(float(tok.replace(COMMA, "")))
+    return out
+
+
+def tidy_salary_text(raw: str) -> str:
+    """挖出的串归一:空白压成单空格、K 还原成千、两头标点削掉。"""
+    return expand_k_amounts(SPACE.join(raw.split())).strip(SAL_TXT_TRIM)
+
+
+def expand_k_amounts(raw: str) -> str:
+    """把「$55K」写成「$55,000」(下游尺子只认数字,K 会被当成 55)。"""
+    out = raw
+    for tok in SAL_TXT_NUM_RE.findall(raw):
+        if tok[-1] in SAL_TXT_K_SUFFIX:
+            out = out.replace(tok, SAL_TXT_K_TPL.format(n=int(float(tok[:-1].replace(COMMA, "")) * SAL_TXT_K_MULT)))
+    return out
 
 
 def apply_salary_to(x: ApplySalaryIn) -> bool:

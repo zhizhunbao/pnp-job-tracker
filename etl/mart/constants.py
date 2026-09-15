@@ -2707,8 +2707,75 @@ SAL_ONE_TPL = "{money}{sub}"
 SAL_RANGE_TPL = "{lo}–{hi}{sub}"
 """区间薪资的规范文本(如 "$96K–$135K/yr";连接号是 EN dash,逐字沿用)。"""
 
+SAL_TXT_AMT = r"\$\s?\d[\d,]*(?:\.\d+)?[Kk]?"
+"""正文里一个金额的写法($ 锚定,允许千分位 / 任意小数位 / K 后缀)。只作拼装用,不单独 compile。"""
+
+SAL_TXT_RANGE = r"(?:\s*(?:-|–|—|to|and|à|et)\s*" + SAL_TXT_AMT + r")?"
+"""紧跟着的区间上限(可无)。中英文连接词都认:2026-09-15 实测 jobboom 法文帖用「à/et」。"""
+
+SAL_TXT_PERIOD = (r"(?:\s*(?:per\s+hour|an\s+hour|/\s?hour|/\s?hr\b|hourly|per\s+year|/\s?year"
+                  r"|annually|per\s+annum|yearly|par\s+heure|/\s?heure))")
+"""金额后面紧跟的周期词。有它 = 单位是雇主自己写的,不用猜。
+⚠ 2026-09-15 实撞:docstring 写在小括号**里面**会被 Python 当成隐式字符串拼接接进正则,第一档整档失效
+(单元校验里「$22.40 - $25.40 per hour」挖不出来才发现)—— 括号先收口,docstring 另起一行。"""
+
+SAL_TXT_UNIT_RE = re.compile("(" + SAL_TXT_AMT + SAL_TXT_RANGE + ")(" + SAL_TXT_PERIOD + ")", re.I)
+"""正文挖薪资第一档(强):金额 + 紧跟的周期词。捕获组 1 = 金额(串),捕获组 2 = 周期词。"""
+
+SAL_TXT_CUE = (r"(?:salary|salaries|compensation|wage|wages|pay range|pay rate|pay grade|rate of pay"
+               r"|hourly rate|remuneration|rémunération|salaire|taux horaire)")
+"""薪资线索词:金额前 SAL_TXT_NEAR_MAX 字内出现它,这个金额才算在说薪资。
+没有线索词的裸金额一律不认 —— 正文里的 $ 多半是奖金 / 营业额 / 折扣。"""
+
+SAL_TXT_NEAR_RE = re.compile(SAL_TXT_CUE + r"[^.\n]{0,100}?(" + SAL_TXT_AMT + SAL_TXT_RANGE + ")", re.I)
+"""正文挖薪资第二档(弱):线索词 + 100 字内的金额,没有周期词 —— 单位靠 SAL_TXT_* 量级闸判。"""
+
+SAL_TXT_UPTO_RE = re.compile(r"(?:up\s+to|as\s+much\s+as|jusqu.{0,2}à|maximum\s+of)\s*$", re.I)
+"""金额前面是「最多」这类封顶话术就整条不认(2026-09-15 实撞「Up to $140,000」):
+那是上限不是这个岗给的钱,当薪资显示等于替雇主把天花板说成底薪。"""
+
+SAL_TXT_BACK = 16
+"""往金额前面回看多少字找封顶话术。"""
+
+SAL_TXT_NUM_RE = re.compile(r"\d[\d,]*(?:\.\d+)?[Kk]?")
+"""从挖出的串里取数(带 K 后缀一起取,由 salary_text_vals 还原)。"""
+
+SAL_TXT_K_SUFFIX = "Kk"
+"""千位后缀:「$55K」= 55,000(2026-09-15 实撞:不认它会把 $55K 年薪读成 $55 时薪)。"""
+
+SAL_TXT_K_MULT = 1000
+"""K 的倍数。"""
+
+SAL_TXT_K_TPL = "{n:,}"
+"""K 还原后写回串里的写法(带千分位,跟正文里其它金额同形)。"""
+
+SAL_TXT_YR_MIN = 20_000
+"""可信年薪下限:低于它的「年薪」不是这个岗的工资(2026-09-15 实撞 365 条:「$4,000 per year」
+是津贴、「$5.95/hour」是夜班补贴)。**判不了就不说** —— 宁可这一格留空,不替雇主编数。"""
+
+SAL_TXT_HR_MIN = 14
+"""可信时薪下限(全国最低工资之下的数不是工资)。"""
+
+SAL_TXT_HR_MAX = 150
+"""可信时薪上限(与 SAL_HOURLY_FOLD_MAX 同值:高于它多半是把年薪填进了时薪格)。"""
+
+SAL_TXT_HR_RE = re.compile(r"hour|/\s?hr\b|hourly|heure", re.I)
+"""周期词是不是「小时」(英法两种写法)。"""
+
+SAL_TXT_YR_TAIL = " per year"
+"""第二档判成年薪时补给下游尺子的周期词(parse_salary 按它定单位)。"""
+
+SAL_TXT_HR_TAIL = " per hour"
+"""第二档判成时薪时补的周期词。"""
+
+SAL_TXT_TRIM = " ,;."
+"""挖出的串两头要削掉的标点(实撞「$43,000, per year」)。"""
+
 PRINT_SAL_DONE_TPL = "Salary cleaned: {updated} jobs updated · {priced}/{total} have a salary"
 """薪资清洗收尾第一行。"""
+
+PRINT_SAL_MINED_TPL = "  正文挖出薪资 {mined} 条(板自己的薪资格是空的;时薪 {hr_min}-{hr_max} / 年薪 ≥ {yr_min:,} 才认)"
+"""薪资清洗收尾第三行:从正文挖出来的条数。"""
 
 PRINT_SAL_GUARD_TPL = ("  护栏拦截 {guarded} 条置 NULL:离谱金额 {absurd} · 区间比>{ratio_max} "
                        "{ratio} · 年化>{cap_max:,} {cap} · 计次价 {gig} · 时薪>{fold_max} {hifold}")

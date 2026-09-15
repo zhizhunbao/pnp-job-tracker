@@ -2260,6 +2260,20 @@ class SalaryTally:
     updated: int
     """真被改写了的岗数(幂等:值没变的不算)。"""
 
+    mined: int
+    """薪资格本来是空的、从正文里挖出来的岗数(2026-09-15)。"""
+
+
+@dataclass
+class SalaryTextIn:
+    """salary_text_ok() 入参:挖出的金额串 + 按哪种单位去判它可信不可信。"""
+
+    body: str
+    """挖出的金额串(已归一空白、已还原 K)。"""
+
+    unit: str
+    """按哪种单位判(SAL_UNIT_HR / SAL_UNIT_YR)。"""
+
 
 @dataclass
 class BoardSalaryIn:
