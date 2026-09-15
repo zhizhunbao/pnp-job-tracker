@@ -998,6 +998,33 @@ PRINT_INOUT_BOARD_TPL = "IN/OUT board     : {out}"
 # 8. mart:岗位装配(ATS/JB 两源 → jobs 行;JD 正文下沉 + 身份预筛)
 # =========================================================================
 
+IN_JDFORMAT = paths.PROCESSED_JDFORMAT / "formatted.json"
+"""岗位正文 → qwen 五节整理版(jdformat 域 format 步产,2026-09-15):进 jobs 行的 jdFormatted / jdFormattedAt
+两列,就业性质 / 工时两格只填空(官方标注优先,同 cms 懒生成路)。mart 有就覆盖库里懒生成版(同一套提示词
+与校验,盒子版更新);mart 没有的岗不落键,seed 侧 COALESCE 保留线上版 —— 判据同 IN_BRIEF。
+起因:正文区 2026-09-14 起只出整理版,没被点开过的岗对 Googlebot 是一页转圈(Search Console 塌方病因之二)。"""
+
+FORMAT_OK = "ok"
+"""整理记录状态:做成(只取 ok 行)。"""
+
+K_FORMAT_TEXT = "formatted"
+"""整理记录里的五节整理版键。"""
+
+K_FORMAT_TERM = "term"
+"""整理记录里模型抽出的就业性质键(已过合法值闸;空串 = 没抽到)。"""
+
+K_FORMAT_HRS = "hrs"
+"""整理记录里模型抽出的工时类型键(同上)。"""
+
+K_FORMAT_AT = "at"
+"""整理记录里的生成时刻键(ISO)。"""
+
+K_JD_FORMATTED = "jdFormatted"
+"""jobs 行:五节整理版列(DB jobs.jd_formatted)。"""
+
+K_JD_FORMATTED_AT = "jdFormattedAt"
+"""jobs 行:整理时刻列(DB jobs.jd_formatted_at)。"""
+
 JOBBANK_HOST = "jobbank.gc.ca"
 """Job Bank 域名(来源标签归一 + 第一方直发判定共用)。"""
 

@@ -210,6 +210,16 @@ services:
       SOURCE: minwage
       TZ: EST5EDT
 
+  jdformat:                        # 岗位正文 → 五节整理版预生成(2026-09-15 立域;局域网 qwen,只刷 processed/jdformat/,build 角色汇装灌库)
+    <<: *etl
+    environment:
+      SOURCE: jdformat
+      HEALTHCHECK_PING_JDFORMAT: ${HEALTHCHECK_PING_JDFORMAT:-}
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news / company 同一台盒子同一个变量);空=format 步跳过
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      JDFORMAT_LIMIT: ${JDFORMAT_LIMIT:-400}      # 每轮上限(盒子约 11 秒一条,400 ≈ 一个 interval)
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:

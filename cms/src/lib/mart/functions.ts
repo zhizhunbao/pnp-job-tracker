@@ -878,7 +878,8 @@ export function toJob(x: ToJobIn): MartRow {
     employment_hours: cellOf(x.r.employmentHours),
     who_can_apply: cellOf(x.r.whoCanApply), certificates: jsonTextOf(x.r.certificates),
     education: cellOf(x.r.education), eligibility_flag: cellOf(x.r.eligibilityFlag),
-    eligibility_quote: cellOf(x.r.eligibilityQuote), status: jobStatusOf(x.r.status), closed_at: null, first_seen: x.now,
+    eligibility_quote: cellOf(x.r.eligibilityQuote), jd_formatted: cellOf(x.r.jdFormatted),
+    jd_formatted_at: cellOf(x.r.jdFormattedAt), status: jobStatusOf(x.r.status), closed_at: null, first_seen: x.now,
     last_seen: cellOf(x.r.lastSeen), created_at: x.now, updated_at: x.now,
   }
 }

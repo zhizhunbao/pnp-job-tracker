@@ -528,6 +528,9 @@ class MartCtx:
     briefs: dict
     """slug → qwen 五节简介行(英/中/出处;2026-09-05)。"""
 
+    formatted: dict
+    """externalId → qwen 五节整理版记录(jdformat 域预生成;2026-09-15)。"""
+
     pilot_occ_sets: dict
     """社区名 → 在收 NOC 集合(RCIP/FCIP 并集)。"""
 
@@ -690,6 +693,17 @@ class AddJobIn:
 
     fields: dict
     """来源侧字段(键序即落盘列序;pilotOcc/datePosted 由 add_job 就地覆写)。"""
+
+
+@dataclass
+class FillFormattedIn:
+    """fill_formatted() 入参。"""
+
+    fields: dict
+    """来源侧字段(原地补 jdFormatted / jdFormattedAt,就业性质 / 工时只填空)。"""
+
+    rec: dict | None
+    """该岗的整理记录;None = 还没整理。"""
 
 
 @dataclass

@@ -116,6 +116,7 @@ from mart.constants import (
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
+    FORMAT_OK, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT, K_JD_FORMATTED, K_JD_FORMATTED_AT,
     K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
     SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
     K_WIKI, K_YEAR, K_CL_ITEMS, K_CL_URL, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
@@ -173,7 +174,7 @@ from mart.constants import (
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
-from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn
+from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -1018,6 +1019,17 @@ def load_briefs() -> dict:
     return out
 
 
+def load_formatted() -> dict:
+    """qwen 五节整理版(jdformat 域预生成):externalId → 记录(只取 ok;缺文件 = 空表)。"""
+    out: dict = {}
+    if not IN_JDFORMAT.exists():
+        return out
+    for ext, c in read_table(IN_JDFORMAT).items():
+        if c.get(K_STATUS) == FORMAT_OK:
+            out[ext] = c
+    return out
+
+
 def strip_wp_tail(s: str) -> str:
     """剥 WordPress 摘要尾巴「[…]/[...]」(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)。"""
     return WP_TAIL_RE.sub("", s)
@@ -1353,6 +1365,7 @@ def add_job(x: AddJobIn) -> None:
     x.fields[K_PILOT_OCC] = pilot_occ_of(PilotOccIn(
         community=community, occ_set=x.ctx.pilot_occ_sets.get(community),
         noc=sc.get(K_NOC) or ""))
+    fill_formatted(FillFormattedIn(fields=x.fields, rec=x.ctx.formatted.get(x.external_id)))
     w = wage_of(WageOfIn(wages=x.ctx.wages, noc=sc.get(K_NOC) or "",
                          province=x.fields.get(K_PROVINCE, "")))
     grades = job_grades(JobGradesIn(
@@ -1368,6 +1381,19 @@ def add_job(x: AddJobIn) -> None:
         score=mv_score_of(MvScoreIn(base=sc.get(K_SCORE),
                                     salary_annual=x.fields.get(K_SALARY_ANNUAL),
                                     wage_med_annual=w.get(K_ANNUAL))))))
+
+
+def fill_formatted(x: FillFormattedIn) -> None:
+    """整理版并进岗位行(2026-09-15):jdFormatted / jdFormattedAt 两格直落;就业性质 / 工时只填空
+    (官方标注优先,同 cms 懒生成路 —— 三维档随后按补齐的两格算)。没整理记录一格不动。"""
+    if x.rec is None:
+        return
+    x.fields[K_JD_FORMATTED] = x.rec[K_FORMAT_TEXT]
+    x.fields[K_JD_FORMATTED_AT] = x.rec[K_FORMAT_AT]
+    if not x.fields.get(K_EMPLOYMENT_TERM) and x.rec.get(K_FORMAT_TERM):
+        x.fields[K_EMPLOYMENT_TERM] = x.rec[K_FORMAT_TERM]
+    if not x.fields.get(K_EMPLOYMENT_HOURS) and x.rec.get(K_FORMAT_HRS):
+        x.fields[K_EMPLOYMENT_HOURS] = x.rec[K_FORMAT_HRS]
 
 
 def collect_ats_rows(ctx: MartCtx) -> None:
@@ -3348,6 +3374,7 @@ def new_mart_ctx() -> MartCtx:
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), briefs=load_briefs(),
+                   formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
                    seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)

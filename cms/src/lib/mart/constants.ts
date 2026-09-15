@@ -706,7 +706,7 @@ export const COLS_COMPANIES_COALESCE = ['sponsor_grade', 'score_detail', 'ai_bri
 /**
  * jobs 列(含状态与时间戳;按 external_id upsert)。
  */
-export const COLS_JOBS = ['external_id', 'company_id', 'title', 'noc', 'category', 'teer', 'broad', 'mid', 'fine', 'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url', 'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly', 'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source', 'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'pilot', 'pilot_community', 'pilot_employer', 'pilot_occ', 'apprentice_friendly', 'employment_term', 'employment_hours', 'who_can_apply', 'certificates', 'education', 'eligibility_flag', 'eligibility_quote', 'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
+export const COLS_JOBS = ['external_id', 'company_id', 'title', 'noc', 'category', 'teer', 'broad', 'mid', 'fine', 'description', 'country', 'province', 'city', 'district', 'address', 'apply_url', 'official_url', 'salary', 'salary_annual', 'salary_text', 'wage_med_hourly', 'wage_med_annual', 'wage_low_hourly', 'wage_low_annual', 'wage_high_hourly', 'wage_high_annual', 'wage_year', 'date_posted', 'source', 'source_label', 'origin', 'accessibility', 'score', 'grade_channel', 'score_detail', 'pnp_eligible', 'pnp_stream', 'ee_category', 'aip', 'pilot', 'pilot_community', 'pilot_employer', 'pilot_occ', 'apprentice_friendly', 'employment_term', 'employment_hours', 'who_can_apply', 'certificates', 'education', 'eligibility_flag', 'eligibility_quote', 'jd_formatted', 'jd_formatted_at', 'status', 'closed_at', 'first_seen', 'last_seen', 'created_at', 'updated_at']
 
 /**
  * jobs 更新分支不碰的列:身份键与「首见/末见/建档」时刻
@@ -718,8 +718,10 @@ export const COLS_JOBS_FIXED = ['external_id', 'first_seen', 'last_seen', 'creat
  * jobs 走 COALESCE 保旧值的列(GAP1③:预筛两列缺值的过渡期保留旧值;
  * #123:description 也 COALESCE —— mart 为空(05b 没抓到=聚合帖)时保留懒抓写回的正文,
  * 不冲缓存;E12-08 两档列同款)。
+ * 2026-09-15 加 jd_formatted / jd_formatted_at:五节整理版此前只由线上懒生成写库,现在 ETL jdformat 域也
+ * 预生成进 mart —— mart 有就覆盖(同一套提示词与校验),mart 没有(还没轮到 / 没过校验)保留线上版。
  */
-export const COLS_JOBS_COALESCE = ['description', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail']
+export const COLS_JOBS_COALESCE = ['description', 'eligibility_flag', 'eligibility_quote', 'grade_channel', 'score_detail', 'jd_formatted', 'jd_formatted_at']
 
 /**
  * dead_ext 临时表列(实测判死名单)。
