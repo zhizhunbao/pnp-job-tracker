@@ -54,7 +54,7 @@ import type {
   LocRowFact, LocationLevel, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn,
   OriginTextIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
   ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunAiReadIn, RunLongIn, SavePrefIn,
-  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransNoteIn, TransPillIn,
+  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn,
   TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import { CACHE } from './variables'
@@ -1952,23 +1952,6 @@ export function headSubOf(x: HeadSubIn): string {
     return x.companyAlias
   }
   return nocZhOf({ nocDesc: x.nocDesc, noc: x.job.noc, lang: x.lang, title: x.job.title })
-}
-
-/**
- * 对照的状态灰注(在翻时说在翻、翻砸了说砸了 —— 不静默停在原文)。
- * 2026-09-14 自 transLabelOf 改:钮撤后对照自动加载,冷调用近 30 秒,没这行看着像没翻(Frank「分类弹框也要自动翻译」)。
- *
- * @param x 取词函数与状态档。
- * @returns 灰注(空串 = 不渲)。
- */
-export function transNoteOf(x: TransNoteIn): string {
-  if (x.status === TRANS_LOADING) {
-    return x.t('cat.translating')
-  }
-  if (x.status === TRANS_ERROR) {
-    return x.t('cat.transErr')
-  }
-  return TEXT_NONE
 }
 
 /**

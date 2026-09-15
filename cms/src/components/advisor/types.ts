@@ -877,11 +877,6 @@ export type NocListIn = {
    * 译文逐条(与原文按行号对位);空数组 = 不出对照。
    */
   zhItems: string[]
-
-  /**
-   * 对照在途 / 失败的一行灰注(空串不渲;2026-09-14 钮撤后自动加载,冷调用近 30 秒,没这行像没翻)。
-   */
-  note: string
 }
 
 /**
@@ -3171,21 +3166,6 @@ export type PilotPillIn = {
    * 在不在试点社区。
    */
   on: boolean
-}
-
-/**
- * transNoteOf 的入参(2026-09-14 自 TransLabelIn 改:钮撤了,开合那格随撤)。
- */
-export type TransNoteIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 翻译状态档。
-   */
-  status: TransStatus
 }
 
 /**

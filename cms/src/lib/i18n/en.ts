@@ -534,7 +534,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'all.prov': 'All provinces', 'all.city': 'All cities', 'all.district': 'All districts',
   'all.broad': 'All major groups', 'all.mid': 'All sub-groups', 'all.fine': 'All occupations',
   'all.source': 'All sources', 'all.exp': 'All levels',
-  'all.pnp': 'All PNP', 'all.aip': 'All AIP', 'all.pilot': 'Pilot community', 'all.ee': 'All EE categories', 'all.status': 'All status', 'all.origin': 'All channels', 'opt.yes': 'Yes', 'opt.no': 'No',
+  'all.pnp': 'All PNP', 'all.aip': 'All AIP', 'all.pilot': 'Pilot community', 'all.ee': 'All categories', 'all.status': 'All status', 'all.origin': 'All channels', 'opt.yes': 'Yes', 'opt.no': 'No',
   'filter.num': 'Pay & score', 'filter.salary': 'Pay', 'filter.score': 'Score', 'filter.more': 'More filters', 'filter.other': 'Other',
   'filter.picked': 'Picked',
   'all.score': 'All scores', 'sc.high': 'High (≥75)', 'sc.mid': 'Mid (50–74)', 'sc.low': 'Low (<50)',

@@ -7,7 +7,7 @@
  * field=occRead,按 NOC 缓存 —— 不点不烧,#176 零成本默认不破)。
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(两台机器迁 hooks 的 useNocTrans / useAiRead)。
  * 2026-09-14 Frank「按钮都去掉」「中文或者韩文默认就显示对照」:钮条撤,对照由 useNocTrans 按界面语自动加载。
- * 同日「分类弹框也要自动翻译」:冷调用近 30 秒没占位看着像没翻,两张卡头下出一行在途 / 失败灰注(transNoteOf)。
+ * 同日「分类弹框也要自动翻译」→「别加这个翻译中啊」:冷调用近 30 秒不出占位,译好即显,中间不出字。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -16,7 +16,7 @@ import { makeT } from '@/lib/i18n'
 import { ADV_IDLE, FIELD_OCC_READ, TEXT_NONE } from './constants'
 import { AiReadCard } from './aireadcard'
 import { CategoryIdCard } from './categoryidcard'
-import { idRowsOf, listItemsOf, nocOf, transNoteOf, zhItemsOf } from './functions'
+import { idRowsOf, listItemsOf, nocOf, zhItemsOf } from './functions'
 import { useAiRead, useNocTrans } from './hooks'
 import { NocList } from './noclist'
 import type { CategoryPanelIn } from './types'
@@ -40,7 +40,6 @@ export function CategoryPanel({ job, lang, plan, nocDesc, srcField }: CategoryPa
     reqs = noc.requirements
     fetched = noc.fetched
   }
-  const note = transNoteOf({ t, status: trans.status })
   let transDuties = TEXT_NONE
   let transReqs = TEXT_NONE
   if (trans.trans != null) {
@@ -51,10 +50,10 @@ export function CategoryPanel({ job, lang, plan, nocDesc, srcField }: CategoryPa
     <>
       {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}
       <CategoryIdCard t={t} rows={idRowsOf({ t, job, noc })} srcField={srcField} />
-      <NocList head={t('fact.nocDuties')} fetched={fetched} note={note}
+      <NocList head={t('fact.nocDuties')} fetched={fetched}
         items={listItemsOf(duties)}
         zhItems={zhItemsOf({ show: trans.showTrans, text: transDuties })} />
-      <NocList head={t('fact.nocReqs')} fetched={fetched} note={note}
+      <NocList head={t('fact.nocReqs')} fetched={fetched}
         items={listItemsOf(reqs)}
         zhItems={zhItemsOf({ show: trans.showTrans, text: transReqs })} />
     </>
