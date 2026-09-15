@@ -17,6 +17,9 @@
  * 2026-09-14 Frank「加个筛选放在大类前面」:EE 类别下拉进本行,紧挨大类之前(不联动,值 = 数据层 label,
  * 显示名过 eeDisplay 换界面语言;选项来自 ee_categories 维表)。同日「这个应该需要联动吧」:选了类别,
  * 大类下拉只剩该类别在招岗落到的大类(维度包里的 EE→大类桥),换类别清大/中/小类。
+ * 2026-09-15 Frank「可以放下来吧,如果选择市 用户可以在 input 里面输入 更方便一些。现在市太多了」:
+ * 市下拉退回折叠区地理行(撤回 09-14「全部市提到全部省后面吧」)—— 全国 2,681 个市、安大略一省 632 个,
+ * 下拉里翻不动;搜索框本就匹配城市字段(SEARCH_COLS 含 j.city),打字更快。本行只剩 搜索 / 省 / EE 类别 / 大类。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -28,8 +31,8 @@ import { Select } from '@/components/select'
 import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
-  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeCityChange, makeEeChange, makeEeLabel, makeProvChange,
-  makeProvLabel, matchBtnClsOf, matchLabelOf, slotOf,
+  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeEeChange, makeEeLabel, makeProvChange, makeProvLabel,
+  matchBtnClsOf, matchLabelOf, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -53,10 +56,6 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         opts={f.opts.prov}
         all={b.t('all.prov')}
         labelOf={makeProvLabel(b.t)} />
-      <Select value={slotOf({ fState: f.fState, k: FK.city })}
-        onChange={makeCityChange(f.fState)}
-        opts={f.opts.city}
-        all={b.t('all.city')} />
       <Select value={slotOf({ fState: f.fState, k: FK.ee })}
         onChange={makeEeChange(f.fState)}
         opts={f.opts.ee}

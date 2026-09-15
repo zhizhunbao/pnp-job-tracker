@@ -11,6 +11,8 @@
  * 2026-08-29 Frank 实拍:「仅雇主直发」「排除不担保/须 PR」两颗复选框的 title 悬浮提示撤掉 ——
  * 2026-08-06 拍板「消费页 tooltips 全撤,靠列名自解释」的两条漏网。只撤属性,label 文案照旧。
  * 2026-09-14 Frank「全部市提到全部省后面吧」:市下拉升到常用一行紧挨省,地区行只剩区。
+ * 2026-09-15 Frank「可以放下来吧,如果选择市 用户可以在 input 里面输入 更方便一些。现在市太多了」:
+ * 市下拉退回本区地理行,紧挨区之前(区是市的联动下级);常用一行靠搜索框打字找城市。
  * 2026-09-15 Frank「筛选也分两个吧」「一个是渠道 一个是来源」「同时把其他这个也拆一下分类吧」:「其他」一行拆成四行 ——
  * 移民资格(PNP、AIP、试点社区、须 PR)、职位类型、薪资(年薪、对比中位)、发布(渠道、来源、仅雇主直发);
  * 渠道与来源两个下拉是新加的(参数 org / src 早就有,只是板上没控件)。行名全用现成词条;「发布」行借表格
@@ -26,7 +28,7 @@ import {
   OPTS_YES_NO,
 } from './constants'
 import {
-  checkClsOf, makeCatLabel, makeCheckChange, makeEligChange, makeMidChange, makeOptLabel,
+  checkClsOf, makeCatLabel, makeCheckChange, makeCityChange, makeEligChange, makeMidChange, makeOptLabel,
   makePilotLabel, makePrefixLabel, makeSlotChange, slotOf,
 } from './functions'
 import type { BoardPanelIn } from './types'
@@ -44,6 +46,9 @@ export function FoldFilters({ b }: BoardPanelIn) {
     <div className={cssOf(css.fold)}>
       <div className={cssOf(css.ctl)}>
         <span className={cssOf(css.filtLabel)}>{b.t('filter.geo')}</span>
+        <Select value={slotOf({ fState: f.fState, k: FK.city })}
+          onChange={makeCityChange(f.fState)}
+          opts={f.opts.city} all={b.t('all.city')} />
         <Select value={slotOf({ fState: f.fState, k: FK.district })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.district })}
           opts={f.opts.district} all={b.t('all.district')} />
