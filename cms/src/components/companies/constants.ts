@@ -657,6 +657,21 @@ export const PROV_PAREN_RE = /\s*[(（][^()（）]*[)）]\s*$/
 export const BASE_CITY_PROV_RE = /^(?<city>[^,]+),\s*[^,]+$/
 
 /**
+ * 维基链接路径里的分段符(取最后一段当词条名,2026-09-14 Frank「如果有 wikidata 的公司,是不是需要加一个链接」)。
+ */
+export const WIKI_PATH_SEP = '/'
+
+/**
+ * 维基词条名里的下划线(显示时换回空格)。
+ */
+export const WIKI_WORD_SEP = '_'
+
+/**
+ * 词条名里下划线换成的空格。
+ */
+export const WIKI_WORD_JOIN = ' '
+
+/**
  * 官方招聘地点「市, 省」的连接符(2026-09-14 baseOverrideOf)。
  */
 export const LOC_JOIN = ', '

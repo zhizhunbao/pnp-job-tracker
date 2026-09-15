@@ -33,7 +33,7 @@ import {
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TRACK_AI_READ, TRACK_CO_TRANSLATE,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
-  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, YEAR_ONLY_RE,
+  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN, WIKI_WORD_SEP, YEAR_ONLY_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -300,6 +300,24 @@ function cityLocalOf(x: CityLocalIn): string {
     return x.j.cityKo
   }
   return x.j.city
+}
+
+/**
+ * 维基链接的词条名(路径最后一段解码、下划线换空格):基本信息卡「维基百科」行的钮面,整条 URL 太长一行放不下。
+ *
+ * @param url 维基链接。
+ * @returns 词条名;解不出照最后一段。
+ */
+export function wikiTitleOf(url: string): string {
+  const last = url.split(WIKI_PATH_SEP).pop()
+  if (last == null || last === TEXT_NONE) {
+    return url
+  }
+  try {
+    return decodeURIComponent(last).split(WIKI_WORD_SEP).join(WIKI_WORD_JOIN)
+  } catch {
+    return last
+  }
 }
 
 /**

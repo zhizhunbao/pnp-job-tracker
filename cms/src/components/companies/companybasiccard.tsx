@@ -28,7 +28,7 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  baseConflictOf, baseZhOf, cityOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, provFullOf,
+  baseConflictOf, baseZhOf, cityOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, provFullOf, wikiTitleOf,
 } from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
@@ -69,6 +69,15 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
               target={TARGET_BLANK}
               className={cssOf(css.siteLink) + CLS_SEP + LINK_CLS}>
               {company.website}
+            </LinkButton>
+          </Row>
+        )}
+        {company.wikiUrl !== TEXT_NONE && (
+          <Row k={t('co.wiki')}>
+            <LinkButton href={company.wikiUrl}
+              target={TARGET_BLANK}
+              className={cssOf(css.siteLink) + CLS_SEP + LINK_CLS}>
+              {wikiTitleOf(company.wikiUrl)}
             </LinkButton>
           </Row>
         )}
