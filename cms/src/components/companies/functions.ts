@@ -37,7 +37,7 @@ import {
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
-  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasJson, AliasOfIn, BaseConflictIn, BaseZhIn, BriefJson, BriefSecsIn,
+  ActiveTextIn, AiNoteClsIn, AiToggleIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn,
   CanTransIn, ChColorIn, CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow,
   CompanyOnlyIn, CompanyStream, DeadFlag, DisplayNameIn, FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn,
   IsGovIn, JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
@@ -337,27 +337,28 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
 }
 
 /**
- * AI 查到的「所在地」与官方招聘省对不对得上(2026-09-14 Frank「AI 探索的所在地不对啊」「不能不一致就直接给删了」
- * 当天先改成换显官方地点;同日晚 Frank「是 AI 查到的地址,如果和上面的不一致,可以不显示吗」定为:对不上就不出这一节,
- * 基本信息卡的省 / 市两行已经是官方地点,不再另拼一句):AI 那句里既没有省全名也没有省码就算对不上。
+ * 基本信息卡有没有官方地点(招聘省或市任一)—— 有就不出 AI 简介的「所在地」节。
+ * 沿革:2026-09-14 Frank「AI 探索的所在地不对啊」先改成换显官方地点;同日晚「是 AI 查到的地址,如果和上面的不一致,
+ * 可以不显示吗」改成省对不上才藏(baseConflictOf);再晚「这个老不稳定 地址」(Micromatter:官方 Surrey、AI 说 Burnaby,
+ * 省对上市对不上照样出)定为:官方地点在,这一节就不出 —— 省 / 市两行已是官方地点,AI 那句只会添乱。
  *
- * @param x 取词函数与公司档案。
- * @returns 对不上 = true(隐藏这一节);没招聘省或 AI 没写所在地 = false。
+ * @param x 公司档案。
+ * @returns 有官方地点 = true(隐藏「所在地」节)。
  */
-export function baseConflictOf(x: BaseConflictIn): boolean {
-  const code = homeProvinceOf({ company: x.company })
-  if (code === TEXT_NONE) {
-    return false
-  }
-  const base = baseTextOf({ text: x.company.aiBrief })
-  if (base === TEXT_NONE) {
-    return false
-  }
-  const prov = provFullOf({ t: x.t, code })
-  if (prov === TEXT_NONE) {
-    return false
-  }
-  return base.includes(prov) === false && base.includes(code) === false
+export function hasOfficialPlaceOf(x: CompanyOnlyIn): boolean {
+  return homeProvinceOf(x) !== TEXT_NONE || cityOf(x) !== TEXT_NONE
+}
+
+/**
+ * 公司弹框正文首帧要不要先藏(2026-09-14 Frank「所以肯定是渲染了好几次」:aiBusy 初值 false、由 CompanyAiSection 的
+ * effect 事后回报,首帧正文先露一下再被藏 —— 那一闪就是它)。要懒抓 AI 简介的那一档(没厚简介、没缓存简介、有名字,
+ * 与 CompanyIntro 的分支同序)首帧就按在途算。
+ *
+ * @param x 公司档案。
+ * @returns 要懒抓 = true。
+ */
+export function needsAiFetchOf(x: CompanyOnlyIn): boolean {
+  return hasDescOf(x) === false && x.company.aiBrief === TEXT_NONE && x.company.name !== TEXT_NONE
 }
 
 /**

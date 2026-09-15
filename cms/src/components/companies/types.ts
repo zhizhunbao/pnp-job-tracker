@@ -2150,21 +2150,6 @@ export type BaseZhIn = {
 }
 
 /**
- * baseConflictOf 的入参。
- */
-export type BaseConflictIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 公司档案。
-   */
-  company: CompanyDetail
-}
-
-/**
  * makeLoadTitles 的入参。
  */
 export type LoadTitlesIn = {

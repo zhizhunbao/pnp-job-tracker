@@ -11,6 +11,7 @@
  * 2026-09-14 Frank「公司这个弹框,等这个都加载完了之后,才全部显示,不然和 job 描述一样只显示加载中」:
  * 中 / 韩界面简介对照没回来前整个正文只出转圈行;懒抓简介那一档(aiBrief 空)由 CompanyAiSection 经 onBusy 回报在途,
  * 正文用 hidden 藏着(不能卸载,卸了懒抓就停),转圈行顶上。
+ * 同日 Frank「所以肯定是渲染了好几次」:aiBusy 初值改按 needsAiFetchOf 算,要懒抓的首帧就藏,不再先露后藏。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -22,7 +23,7 @@ import { CompanyTopInfo } from './companytopinfo'
 import { useState } from 'react'
 import { Loading } from '@/components/loading'
 import { LANG_EN, TEXT_NONE } from './constants'
-import { hasDescOf } from './functions'
+import { hasDescOf, needsAiFetchOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -53,7 +54,7 @@ export function CompanyBody({
     lang,
   })
   const newTab = onOpenJob != null
-  const [aiBusy, setAiBusy] = useState(false)
+  const [aiBusy, setAiBusy] = useState(needsAiFetchOf({ company }))
   const transBusy = showTrans && lang !== LANG_EN && hasDescOf({ company }) === false
     && company.aiBrief !== TEXT_NONE && trans === null
   const busy = transBusy || aiBusy

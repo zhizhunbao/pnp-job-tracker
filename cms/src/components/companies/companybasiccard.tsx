@@ -28,7 +28,7 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  baseConflictOf, baseZhOf, cityOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, provFullOf, wikiTitleOf,
+  baseZhOf, cityOf, hasDescOf, hasIdOf, hasOfficialPlaceOf, homeProvinceOf, isGovCompany, provFullOf, wikiTitleOf,
 } from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
@@ -99,7 +99,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        skipBase={hasRealAddr || baseConflictOf({ t, company })}
+        skipBase={hasRealAddr || hasOfficialPlaceOf({ company })}
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy} />
     </div>
