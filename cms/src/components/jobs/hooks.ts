@@ -36,7 +36,8 @@ import {
   VAL_ON, WIDTH_FULL, WINDOW_FEATURES,
 } from './constants'
 import {
-  allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, authFromUrl, blockedKeysOf, clearFiltersIn,
+  allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
+  clearFiltersIn,
   colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
   filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf, jobDetailViewOf,
   jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
@@ -1407,6 +1408,7 @@ function useBoardHydrate(x: HydrateIn): void {
       replaceQuery(sp)
     }
     applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters), setDirect })
+    applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })
     if (sp.get(P_VIEW) === VAL_MATCH && plan.loggedIn && plan.profileOk) {
       setMatchView(true)
       setSort({ key: SORT_MATCH, dir: DIR_DESC })

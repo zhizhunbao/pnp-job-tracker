@@ -13,6 +13,7 @@
  *   (先例:header/accountlite.tsx)。待 JD 身体自己成域(或职位板改懒加载本桶)后换桶。
  * · 本域点 **components/companies 的桶**(CompanyPanel)—— 那一域反过来只点本桶的
  *   `jdadvisorsection` 一个文件,不成环,所以这条边不必点文件。
+ * 2026-09-14 AI 速读整套退役(Frank「有探索和翻译就够了」):JdAdvisorSection / AiReadCard 两件删,下面那段是历史。
  * 2026-08-28 换装批收入 JdAdvisorSection(Frank 拍板):内嵌初判段本来寄居在
  * components/jobs/Jd.tsx,可它答的是顾问的问题(这一岗/这家公司对我意味着什么),
  * 不是 JD 排版的问题 —— 三个消费点(职位详情的 AI 速读卡、公司弹框、本域完整弹框)
@@ -24,5 +25,3 @@
  */
 export { ActModal } from './actmodal'
 export { AdvisorModal } from './advisormodal'
-export { JdAdvisorSection } from './jdadvisorsection'
-export type { JdAdvisorSectionIn } from './types'

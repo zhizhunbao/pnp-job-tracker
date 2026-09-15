@@ -17,12 +17,11 @@
  */
 import { makeT } from '@/lib/i18n'
 import { parseLoc } from '@/lib/location'
-import { ADV_IDLE, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, TRACK_AI_READ } from './constants'
-import { AiReadCard } from './aireadcard'
+import { LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE } from './constants'
 import { CityCards } from './citycards'
 import { DistrictCards } from './districtcards'
-import { aiFieldOf, aiIdOf, levelOf } from './functions'
-import { useAiRead, useLocationData } from './hooks'
+import { levelOf } from './functions'
+import { useLocationData } from './hooks'
 import { LocationCard } from './locationcard'
 import { ProvinceCards } from './provincecards'
 import type { LocationPanelIn } from './types'
@@ -31,22 +30,15 @@ import type { LocationPanelIn } from './types'
  * 渲染地点弹框主体。
  *
  * @param props 这一岗、界面语言、分层态、点进来的那一格与三张表。
- * @returns 钮条 + AI 解读卡 + 地点身份卡 + 该层级的卡组。
+ * @returns 地点身份卡 + 该层级的卡组(2026-09-14 AI 速读退役,AI 解读卡随撤)。
  */
-export function LocationPanel({ job, lang, plan, srcField, pnpDraws, news, desigEmp }: LocationPanelIn) {
+export function LocationPanel({ job, lang, srcField, pnpDraws, news, desigEmp }: LocationPanelIn) {
   const t = makeT(lang)
   const loc = parseLoc(job)
   const level = levelOf({ srcField, district: loc.district })
   const data = useLocationData({ job, city: loc.city, district: loc.district, level })
-  const ai = useAiRead({
-    field: aiFieldOf(level),
-    id: aiIdOf({ level, job, city: loc.city, district: loc.district }),
-    lang,
-    trackName: TRACK_AI_READ,
-  })
   return (
     <>
-      {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}
       <LocationCard t={t} job={job} srcField={srcField} />
       {level === LEVEL_PROVINCE && (
         <ProvinceCards t={t} lang={lang} job={job} prov={data.prov} pnpDraws={pnpDraws} news={news} />

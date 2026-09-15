@@ -758,7 +758,6 @@ export const jobsZh = {
   'loc.aip': 'AIP 指定雇主', 'loc.aipN': '{n} 家', 'loc.dirLink': '雇主名录',
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
   'cat.showZh': '显示中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
-  'cat.aiRead': 'AI 速读', 'cat.aiLoading': '正在速读…', 'cat.aiErr': 'AI 速读暂不可用',
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',

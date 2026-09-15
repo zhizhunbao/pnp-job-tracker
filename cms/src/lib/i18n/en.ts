@@ -694,7 +694,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'loc.dli': 'PGWP-eligible schools', 'loc.dliN': '{n} schools', 'loc.dliPublic': 'Public',
   'loc.aip': 'AIP designated employers', 'loc.aipN': '{n}', 'loc.dirLink': 'Employer directory',
   'cat.showZh': 'Show translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
-  'cat.aiRead': 'AI quick-read', 'cat.aiLoading': 'Reading…', 'cat.aiErr': 'AI quick-read unavailable',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",

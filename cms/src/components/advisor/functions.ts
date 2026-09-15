@@ -23,15 +23,15 @@ import { catName, nocLocalTitle } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS,
+  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS,
   AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT,
   CAT_NONE, CENTER_DIV, CK_SEP, CLS_DEPTH_BROAD, CLS_DEPTH_FINE, CLS_DEPTH_MID, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP,
   COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT,
   DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE, EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY,
   FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
-  FIELD_CITY_READ, FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_FINE, FIELD_MID, FIELD_NOC, FIELD_PROVINCE,
-  FIELD_PROV_READ, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
-  GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, ID_SEP, JOB_TEXT_LIMITED,
+  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_FINE, FIELD_MID, FIELD_NOC, FIELD_PROVINCE,
+  FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
+  GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
   K_TEER_HEAD, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD,
   NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL,
@@ -45,7 +45,7 @@ import {
 } from './constants'
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
-  AdvisorPillFact, AdvisorReadField, AiIdIn, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn,
+  AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn,
   AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn,
   DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact,
   FactsReadyIn, FieldFactsIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn,
@@ -53,7 +53,7 @@ import type {
   LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocNoteIn,
   LocRowFact, LocationLevel, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn,
   OriginTextIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
-  ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunAiReadIn, RunLongIn, SavePrefIn,
+  ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
   StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn,
   TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
@@ -894,37 +894,6 @@ export function levelOf(x: LevelIn): LocationLevel {
 }
 
 /**
- * 地点 AI 解读生成哪一种。
- *
- * @param level 看的是哪一级(市与区共用市级那一档)。
- * @returns 档名。
- */
-export function aiFieldOf(level: LocationLevel): AdvisorReadField {
-  if (level === LEVEL_PROVINCE) {
-    return FIELD_PROV_READ
-  }
-  return FIELD_CITY_READ
-}
-
-/**
- * 地点 AI 解读拿什么当主体:省级给省码,市/区级给「市|省|区」拼串
- * (2026-08-23 契约换 id 制:事实块由服务端用面板同一取数函数重建 provFactsOf/cityFactsOf)。
- *
- * @param x 层级、这一岗与市区名。
- * @returns 主体标识。
- */
-export function aiIdOf(x: AiIdIn): string {
-  if (x.level === LEVEL_PROVINCE) {
-    return x.job.province
-  }
-  let district = TEXT_NONE
-  if (x.level === LEVEL_DISTRICT) {
-    district = x.district
-  }
-  return [x.city, x.job.province, district].join(ID_SEP)
-}
-
-/**
  * 摘掉尾行建议问题之后的正文(建议问题不在这类速读区展示,追问在完整弹框里)。
  *
  * @param text 模型吐出来的全文。
@@ -1281,57 +1250,6 @@ export function makeResizeStart(x: ResizeStartIn): PointerHandlerFn {
     }
     window.addEventListener(EV_POINTER_MOVE, move)
     window.addEventListener(EV_POINTER_UP, up)
-  }
-}
-
-/**
- * 点了才生成的那类 AI 段的取数(分类速读 / 地点解读同一台机器)。复用顾问免费额度池,
- * 服务端按 id 现查事实块并禁模型越出(advisor 路由的 GROUNDING_RULES)。
- * 额度闸照走:402 → 升级卡,429 → 打码 + 锁行,其它非 2xx 或读流出错 → 说人话的失败态。
- *
- * @param x 档、主体标识、界面语言与两个落格。
- * @returns 点一下就跑的取数函数。
- */
-export function makeRunAiRead(x: RunAiReadIn): () => void {
-  async function pump(): Promise<void> {
-    const res = await fetch(URL_API_ADVISOR, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ field: x.field, id: x.id, lang: x.lang }),
-    })
-    if (res.status === HTTP_PAYMENT) {
-      x.setStatus(ADV_UPGRADE)
-      return
-    }
-    if (res.status === HTTP_TOO_MANY) {
-      x.setStatus(ADV_LIMITED)
-      return
-    }
-    if (res.ok === false || res.body == null) {
-      x.setStatus(ADV_ERROR)
-      return
-    }
-    x.setStatus(ADV_STREAMING)
-    const reader = res.body.getReader()
-    const dec = new TextDecoder()
-    let acc = TEXT_NONE
-    for (;;) {
-      const got = await reader.read()
-      if (got.done) {
-        x.setStatus(ADV_DONE)
-        return
-      }
-      acc = acc + dec.decode(got.value, { stream: true })
-      x.setText(acc)
-    }
-  }
-  function fail(): void {
-    x.setStatus(ADV_ERROR)
-  }
-  return function runAiRead(): void {
-    x.setStatus(ADV_LOADING)
-    x.setText(TEXT_NONE)
-    pump().catch(fail)
   }
 }
 

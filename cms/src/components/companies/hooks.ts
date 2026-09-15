@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react'
 import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
-  makeAiToggle, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
+  makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
   makeTransToggle,
 } from './functions'
 import type {
@@ -99,7 +99,6 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CompanyPanelData | null>(null)
   const [showTrans, setShowTrans] = useState(x.lang !== LANG_EN)
-  const [aiOn, setAiOn] = useState(false)
   const [prevJob, setPrevJob] = useState(x.job)
 
   if (prevJob !== x.job) {
@@ -121,8 +120,6 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
     data,
     showTrans,
     onToggleTrans: makeTransToggle({ on: showTrans, set: setShowTrans }),
-    aiOn,
-    onToggleAi: makeAiToggle({ on: aiOn, set: setAiOn }),
   }
 }
 

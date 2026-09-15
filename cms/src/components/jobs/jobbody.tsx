@@ -18,8 +18,7 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
-import { ADVISOR_FIELD_JD_READ, CARD_MD_CLS, JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
+import { JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
 import { jdBusyOf } from './functions'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
@@ -40,12 +39,6 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
       <JdAutoTrans d={d} lang={lang} />
-      {d.aiOn && (
-        <div className={CARD_MD_CLS}>
-          <JdAdvisorSection job={job} lang={lang} plan={plan} title={d.t('cat.aiRead')}
-            field={ADVISOR_FIELD_JD_READ} />
-        </div>
-      )}
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
       {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}

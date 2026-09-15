@@ -22,17 +22,14 @@
  * @time 2026-08-28 18:13:09
  */
 import { useEffect } from 'react'
-import { cssOf } from '@/components/css'
 import { Loading } from '@/components/loading'
 import { SponsorLeadCard } from '@/components/pnp'
-import { JdAdvisorSection } from '@/components/advisor/jdadvisorsection'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
-import { AI_FIELD_CO_READ, CARD_MD_CLS, CLS_SEP, LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
+import { LEAD_SRC_COMPANY, TEXT_NONE } from './constants'
 import { aliasOf, makeResolveJob } from './functions'
 import { useCompanyAlias, useCompanyPanel } from './hooks'
 import type { CompanyPanelIn } from './types'
-import css from './companies.module.css'
 
 /**
  * 公司弹框。
@@ -40,7 +37,7 @@ import css from './companies.module.css'
  * @param props 当前职位、已载入职位、语言、付费态与点职位回调(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
   let cachedAlias = TEXT_NONE
@@ -72,11 +69,6 @@ export function CompanyPanel({ job, jobs, lang, plan, onOpenJob, onAlias }: Comp
   }
   return (
     <>
-      {p.aiOn && (
-        <div className={CARD_MD_CLS + CLS_SEP + cssOf(css.aiCard)}>
-          <JdAdvisorSection job={job} lang={lang} plan={plan} title={t('cat.aiRead')} field={AI_FIELD_CO_READ} />
-        </div>
-      )}
       {body}
       <SponsorLeadCard job={job} t={t} src={LEAD_SRC_COMPANY} />
     </>

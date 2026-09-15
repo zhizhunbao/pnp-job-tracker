@@ -43,11 +43,6 @@ export const HTTP_PAYMENT = 402
 export const HTTP_TOO_MANY = 429
 
 /**
- * 顾问初判(详情页,含移民路径)。
- */
-export const FIELD_TITLE = 'title'
-
-/**
  * 纯 JD 速读(职位弹框,2026-07-21 Frank「只速读这个 job 的内容即可,
  * 不需要过度解读移民信号」)。
  */
@@ -292,26 +287,6 @@ export const CREDENTIALS_INCLUDE = 'include'
 export const TARGET_BLANK = '_blank'
 
 /**
- * 分类弹框的 AI 速读档:按 NOC 现查职责/要求(2026-08-23 契约换 id 制,不再整包上传)。
- */
-export const FIELD_OCC_READ = 'occRead'
-
-/**
- * 省级面板的 AI 解读档:事实块由服务端用面板同一取数函数重建(provFactsOf)。
- */
-export const FIELD_PROV_READ = 'provRead'
-
-/**
- * 市/区级面板的 AI 解读档(cityFactsOf)。
- */
-export const FIELD_CITY_READ = 'cityRead'
-
-/**
- * 点了才生成的那类 AI 段的起手态:还没点过,一个字都没烧。
- */
-export const ADV_IDLE = 'idle'
-
-/**
  * 翻译在途。
  */
 export const TRANS_LOADING = 'loading'
@@ -554,11 +529,6 @@ export const LEVEL_CITY = 'city'
  * 地点面板的区级档。
  */
 export const LEVEL_DISTRICT = 'district'
-
-/**
- * 市/区 AI 解读主体标识的分段记号(「市|省|区」拼串,服务端按同一形状拆)。
- */
-export const ID_SEP = '|'
 
 /**
  * ESDC 工资表低档那一行的列表键。
@@ -1093,13 +1063,6 @@ export const TRACK_CAT_TRANSLATE = 'cat-translate'
  * 埋点:移民弹框点了中文对照。
  */
 export const TRACK_IMM_TRANSLATE = 'imm-translate'
-
-/**
- * 埋点:地点弹框点开了 AI 解读。
- * 2026-09-04 /fe 公司弹框:原值 `ai-read-co` 与公司弹框对调(公司那边发的是 cat),
- * 改成地点自己的 loc,公司改回 co。
- */
-export const TRACK_AI_READ = 'ai-read-loc'
 
 /**
  * 埋点参数名:入口格是哪一列。

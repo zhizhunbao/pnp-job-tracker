@@ -8,16 +8,16 @@
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(两台机器迁 hooks 的 useNocTrans / useAiRead)。
  * 2026-09-14 Frank「按钮都去掉」「中文或者韩文默认就显示对照」:钮条撤,对照由 useNocTrans 按界面语自动加载。
  * 同日「分类弹框也要自动翻译」→「别加这个翻译中啊」:冷调用近 30 秒不出占位,译好即显,中间不出字。
+ * 同日「清掉吧 AI 速读」「有探索和翻译就够了」:AI 速读整套退役(useAiRead / AiReadCard 删),上面写它的那几句是历史。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { makeT } from '@/lib/i18n'
-import { ADV_IDLE, FIELD_OCC_READ, TEXT_NONE } from './constants'
-import { AiReadCard } from './aireadcard'
+import { TEXT_NONE } from './constants'
 import { CategoryIdCard } from './categoryidcard'
 import { idRowsOf, listItemsOf, nocOf, zhItemsOf } from './functions'
-import { useAiRead, useNocTrans } from './hooks'
+import { useNocTrans } from './hooks'
 import { NocList } from './noclist'
 import type { CategoryPanelIn } from './types'
 
@@ -25,13 +25,12 @@ import type { CategoryPanelIn } from './types'
  * 渲染分类弹框主体。
  *
  * @param props 这一岗、界面语言、分层态、描述表与点进来的那一格。
- * @returns 钮条 + AI 速读卡 + 三张卡。
+ * @returns 三张卡。
  */
-export function CategoryPanel({ job, lang, plan, nocDesc, srcField }: CategoryPanelIn) {
+export function CategoryPanel({ job, lang, nocDesc, srcField }: CategoryPanelIn) {
   const t = makeT(lang)
   const noc = nocOf({ nocDesc, noc: job.noc })
   const trans = useNocTrans({ noc: job.noc, lang })
-  const ai = useAiRead({ field: FIELD_OCC_READ, id: job.noc, lang, trackName: TEXT_NONE })
   let duties = TEXT_NONE
   let reqs = TEXT_NONE
   let fetched = TEXT_NONE
@@ -48,7 +47,6 @@ export function CategoryPanel({ job, lang, plan, nocDesc, srcField }: CategoryPa
   }
   return (
     <>
-      {ai.on && ai.status !== ADV_IDLE && <AiReadCard t={t} loggedIn={plan.loggedIn} ai={ai} />}
       <CategoryIdCard t={t} rows={idRowsOf({ t, job, noc })} srcField={srcField} />
       <NocList head={t('fact.nocDuties')} fetched={fetched}
         items={listItemsOf(duties)}

@@ -616,6 +616,77 @@ export const COLW_MAX_AGE_S = 2592000
 export const COOKIE_EQ = '='
 
 /**
+ * document.cookie 里各条之间的分隔(读「省选过没」用)。
+ */
+export const COOKIE_SEP = '; '
+
+/**
+ * 「省筛选用户亲手动过」的 cookie 名(2026-09-14 Frank「基于用户所在区域优先显示」→「可以」):动过就不再按时区预选。
+ */
+export const PROV_PICK_COOKIE = 'jobsProvPick1'
+
+/**
+ * 那枚 cookie 的值(只要在就算)。
+ */
+export const PROV_PICK_VALUE = '1'
+
+/**
+ * 那枚 cookie 的时效(一年,与列集 cookie 同)。
+ */
+export const PROV_PICK_MAX_AGE_S = 31536000
+
+/**
+ * 浏览器时区 → 省码(加拿大各省时区一一对应的那几个;America/Toronto 同时是安省与魁省,靠浏览器语言再分;
+ * America/Halifax 分不出 NS / NB / PE,不预选)。
+ */
+export const TZ_PROVINCE: Record<string, string> = {
+  /**
+   * 卑诗。
+   */
+  'America/Vancouver': 'BC',
+
+  /**
+   * 阿省。
+   */
+  'America/Edmonton': 'AB',
+
+  /**
+   * 萨省(不用夏令时,自成一区)。
+   */
+  'America/Regina': 'SK',
+
+  /**
+   * 曼省。
+   */
+  'America/Winnipeg': 'MB',
+
+  /**
+   * 安省(魁省设备现在也报这个名,见 TZ_EASTERN)。
+   */
+  'America/Toronto': 'ON',
+
+  /**
+   * 老浏览器给魁省的名(已废,留着兜底)。
+   */
+  'America/Montreal': 'QC',
+
+  /**
+   * 纽芬兰(自成半小时区)。
+   */
+  'America/St_Johns': 'NL',
+}
+
+/**
+ * 东部时区名:命中它时再看浏览器语言,法语当魁省。
+ */
+export const TZ_EASTERN = 'America/Toronto'
+
+/**
+ * 法语浏览器语言的前缀(fr / fr-CA)。
+ */
+export const LANG_FR_HEAD = 'fr'
+
+/**
  * cookie 串的路径与时效段(拼在值之后)。
  */
 export const COOKIE_PATH_AGE = '; path=/; max-age='
@@ -2109,11 +2180,6 @@ export const TRACK_FROM_CLOSED_NONE = 'closed-none'
 export const TRACK_JD_TRANSLATE = 'jd-translate'
 
 /**
- * JD 速读展开。
- */
-export const TRACK_AI_READ_JD = 'ai-read-jd'
-
-/**
  * 简历对照 JD 弹框开启(G3)。
  */
 export const TRACK_JD_MATCH_OPEN = 'jd-match-open'
@@ -2763,12 +2829,6 @@ export const K_SUG_GENERIC = 'jd.sugGeneric'
  * 顾问初判(详情页,含移民路径)。
  */
 export const ADVISOR_FIELD_TITLE = 'title'
-
-/**
- * 纯 JD 速读(职位弹框,2026-07-21 Frank「只速读这个 job 的内容即可,
- * 不需要过度解读移民信号」)。
- */
-export const ADVISOR_FIELD_JD_READ = 'jdRead'
 
 /**
  * 行业顺序清单里没有的大类(「未分类」)排到最后。

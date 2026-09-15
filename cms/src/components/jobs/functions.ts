@@ -33,32 +33,34 @@ import {
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BOARD_META, BROAD_ORDER_LAST, CAMPUS_META, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
-  COOKIE_SAMESITE, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN, DEFAULT_COLS,
-  DIRECT_URL_KEY, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP, FIELD_GROUP,
-  FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW, FROZEN_LINE_SHADOW,
-  FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP,
-  JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE, JD_DONE, JD_DUP_MAX_LEN,
-  JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL,
-  JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOADING, JD_LOC_PROV_KEY,
-  JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP,
-  JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC,
-  K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC,
-  K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO, LANG_ZH, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID,
-  LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT,
-  MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT,
-  MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS, MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R,
-  PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY, PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP,
-  PREF_KEY, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, P_VIEW, QS_HEAD,
-  RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
-  SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
-  SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CAMPUS, STATUS_CLOSED, SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL,
-  SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN, SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL,
-  TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL,
-  TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR,
-  UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD,
-  URL_BOARD_BROAD, URL_BOARD_FINE, URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
-  URL_LEVEL_AMP, URL_ST, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK,
-  WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN, ZEBRA_MOD,
+  COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
+  DEFAULT_COLS, DIRECT_URL_KEY, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP,
+  FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
+  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
+  JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE,
+  JD_DONE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
+  JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
+  JD_LOADING, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
+  JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
+  JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
+  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_FR_HEAD, LANG_KO, LANG_ZH,
+  LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
+  MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
+  MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
+  MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY,
+  PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
+  PROV_PICK_MAX_AGE_S, PROV_PICK_VALUE, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
+  P_SORT, P_VIEW, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
+  SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
+  SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CAMPUS, STATUS_CLOSED,
+  SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
+  SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
+  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
+  TRANS_IDLE, TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
+  UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
+  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_ST, URL_TO_FILTER,
+  VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
+  ZEBRA_MOD,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
@@ -69,19 +71,18 @@ import type {
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
   DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn,
   FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
-  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, JdBusyIn, JdCityLocalIn, JdLineView,
-  JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn,
-  JdSectionMode, JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact,
-  JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn, MailBodyIn,
-  MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn, MeasureWordIn,
-  MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc,
-  NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn,
-  PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn,
-  ProvFullIn, ProvWordIn, RankOfIn,
-  ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn,
-  SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SliceTextIn, SlotIn, SortMarkIn, SortState,
-  StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn, ThWidthIn, TransLabelIn, TransShownIn,
-  TransStatus, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
+  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdBusyIn, JdCityLocalIn,
+  JdLineView, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn,
+  JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView,
+  JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn,
+  MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
+  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
+  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn,
+  PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
+  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
+  SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
+  SliceTextIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
+  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3545,19 +3546,6 @@ export function transBusyClsOf(status: TransStatus): string {
 }
 
 /**
- * AI 速读展开时的高亮类。
- *
- * @param aiOn 展开着没。
- * @returns 类名;没展开给空串。
- */
-export function aiOnClsOf(aiOn: boolean): string {
-  if (aiOn) {
-    return cssOf(css.pillOn)
-  }
-  return TEXT_NONE
-}
-
-/**
  * 整理版状态行的正文:整理好了 / 整理中 / 额度用完 / 生成失败。
  *
  * @param x 取词函数、整理版与失败由头。
@@ -4511,6 +4499,84 @@ export function makeSlotChange(x: SlotIn): TextFn {
 }
 
 /**
+ * 首屏按设备时区预选本省(2026-09-14 Frank「需不需要基于用户的 IP 优先显示用户所在区域」→ 不用 IP,用时区 →「可以」):
+ * 只在 URL 没带省、用户也没亲手动过省(cookie)时做;时区对不上加拿大(国内用户)就维持全国;
+ * 东部时区看浏览器语言,法语当魁省其余当安省;海洋三省分不出不预选。列表照发布时间排,只是预选一格。
+ *
+ * @param x 筛选各格与首屏筛选。
+ * @returns 无。
+ */
+export function applyHomeProvince(x: HomeProvinceIn): void {
+  const given = x.initial[FK.prov]
+  if (typeof given === 'string' && given !== TEXT_NONE) {
+    return
+  }
+  if (provPicked()) {
+    return
+  }
+  const prov = homeProvinceOf()
+  if (prov === TEXT_NONE) {
+    return
+  }
+  setterOf({ fState: x.fState, k: FK.prov })(prov)
+}
+
+/**
+ * 设备时区(加上东部时区的语言判)→ 省码;对不上给空串。浏览器 API 读不到(老环境)也给空串。
+ *
+ * @returns 省码;'' = 不预选。
+ */
+export function homeProvinceOf(): string {
+  let tz = TEXT_NONE
+  let lang = TEXT_NONE
+  try {
+    tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    lang = navigator.language.toLowerCase()
+  } catch {
+    return TEXT_NONE
+  }
+  const prov = TZ_PROVINCE[tz]
+  if (prov == null) {
+    return TEXT_NONE
+  }
+  if (tz === TZ_EASTERN && lang.startsWith(LANG_FR_HEAD)) {
+    return PROV_QC
+  }
+  return prov
+}
+
+/**
+ * 用户亲手动过省筛选没(cookie 在就算,包括改回「全部省」)。
+ *
+ * @returns 动过 = true。
+ */
+function provPicked(): boolean {
+  try {
+    for (const part of document.cookie.split(COOKIE_SEP)) {
+      if (part.startsWith(PROV_PICK_COOKIE + COOKIE_EQ)) {
+        return true
+      }
+    }
+  } catch {
+    return false
+  }
+  return false
+}
+
+/**
+ * 记下「省筛选用户亲手动过」(一年),之后不再按时区预选。
+ *
+ * @returns 无。
+ */
+function markProvPicked(): void {
+  try {
+    document.cookie = cookieStringOf({ name: PROV_PICK_COOKIE, value: PROV_PICK_VALUE, maxAge: PROV_PICK_MAX_AGE_S })
+  } catch {
+    return
+  }
+}
+
+/**
  * 造省下拉的换值手柄:换省要把市与区一起清掉(它们是省的联动下级,留着就成了对不上的条件)。
  *
  * @param fState 筛选各格。
@@ -4518,6 +4584,7 @@ export function makeSlotChange(x: SlotIn): TextFn {
  */
 export function makeProvChange(fState: FilterState): TextFn {
   return function onProv(v: string): void {
+    markProvPicked()
     setterOf({ fState, k: FK.prov })(v)
     setterOf({ fState, k: FK.city })(TEXT_NONE)
     setterOf({ fState, k: FK.district })(TEXT_NONE)

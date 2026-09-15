@@ -44,36 +44,6 @@ export type AdvisorStatus = 'loading' | 'streaming' | 'done' | 'error' | 'upgrad
 export type AdvisorField = 'title' | 'jdRead' | 'coRead'
 
 /**
- * JdAdvisorSection 的 props。
- */
-export type JdAdvisorSectionIn = {
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 分层态。
-   */
-  plan: AdvisorPlan
-
-  /**
-   * 段标题(可省 = 「AI 顾问」)。
-   */
-  title?: string
-
-  /**
-   * 生成哪一种(可省 = 顾问初判)。
-   */
-  field?: AdvisorField
-}
-
-/**
  * streamAdvisor 的入参。
  */
 export type StreamAdvisorIn = {
@@ -583,120 +553,6 @@ export type HlRowIn = {
    * 值(地点卡的值是地图链接,所以收 JSX 不收字符串)。
    */
   children: React.ReactNode
-}
-
-/**
- * 点了才生成的那类 AI 段的档:分类速读 / 省级解读 / 市区解读。
- * 与 AdvisorField(自动生成的那三档)分开:这三档**不点不烧**,#176 零成本默认不破。
- */
-export type AdvisorReadField = 'occRead' | 'provRead' | 'cityRead'
-
-/**
- * useAiRead 的入参。
- */
-export type AiReadIn = {
-  /**
-   * 生成哪一种。
-   */
-  field: AdvisorReadField
-
-  /**
-   * 拿什么当主体:分类速读给 NOC 码,省级给省码,市区给「市|省|区」拼串
-   * (2026-08-23 契约换 id 制:事实块由服务端用面板同一取数函数重建)。
-   */
-  id: string
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 点开时记的埋点名;空串 = 这一处不埋点。
-   */
-  trackName: string
-}
-
-/**
- * 点了才生成的那类 AI 段的状态档:比自动生成的那三档多一个「还没点过」
- * —— 不点不烧,#176 零成本默认不破。
- */
-export type AdvisorReadStatus = 'idle' | 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'
-
-/**
- * useAiRead 交回的面板。
- */
-export type AiReadPanel = {
-  /**
-   * 折叠开关(#183 Frank「点完按钮怎么没了」:常驻开关,点开点收都是它,
-   * 内容留在 state,收起再开不重烧)。
-   */
-  on: boolean
-
-  /**
-   * 状态档。
-   */
-  status: AdvisorReadStatus
-
-  /**
-   * 正文(已摘掉尾行建议问题)。
-   */
-  text: string
-
-  /**
-   * 开合。
-   */
-  onToggle: () => void
-}
-
-/**
- * makeRunAiRead 的入参。
- */
-export type RunAiReadIn = {
-  /**
-   * 生成哪一种。
-   */
-  field: AdvisorReadField
-
-  /**
-   * 主体标识。
-   */
-  id: string
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 状态落格。
-   */
-  setStatus: (s: AdvisorStatus) => void
-
-  /**
-   * 正文落格。
-   */
-  setText: (s: string) => void
-}
-
-/**
- * AiReadCard 的 props。
- */
-export type AiReadCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 登录态(锁行的引导按它分层)。
-   */
-  loggedIn: boolean
-
-  /**
-   * AI 段面板。
-   */
-  ai: AiReadPanel
 }
 
 /**
@@ -2532,31 +2388,6 @@ export type LevelIn = {
 
   /**
    * 这一岗的区名;空串 = 区列点开但该岗无区值 → 退回市级,不出空面板。
-   */
-  district: string
-}
-
-/**
- * aiIdOf 的入参。
- */
-export type AiIdIn = {
-  /**
-   * 看的是哪一级。
-   */
-  level: LocationLevel
-
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 市名。
-   */
-  city: string
-
-  /**
-   * 区名。
    */
   district: string
 }

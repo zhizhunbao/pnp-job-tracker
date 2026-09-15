@@ -691,7 +691,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'loc.dli': '졸업 후 취업비자(PGWP) 가능 학교', 'loc.dliN': '총 {n}곳', 'loc.dliPublic': '공립',
   'loc.aip': 'AIP 지정 고용주', 'loc.aipN': '{n}곳', 'loc.dirLink': '고용주 디렉토리',
   'cat.showZh': '한국어 대조 보기', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
-  'cat.aiRead': 'AI 빠른 읽기', 'cat.aiLoading': '읽는 중…', 'cat.aiErr': 'AI 빠른 읽기 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',

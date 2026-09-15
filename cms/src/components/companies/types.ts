@@ -1513,21 +1513,6 @@ export type TvOpenIn = {
 }
 
 /**
- * makeAiToggle 的入参:AI 速读的现值与落格(第一次打开要埋点)。
- */
-export type AiToggleIn = {
-  /**
-   * 当前开合。
-   */
-  on: boolean
-
-  /**
-   * 落格。
-   */
-  set: SetBoolFn
-}
-
-/**
  * makeTransToggle 的入参:现值与落格。
  */
 export type TransToggleIn = {
@@ -2028,15 +2013,6 @@ export type CompanyPanelState = {
    */
   onToggleTrans: GoBackFn
 
-  /**
-   * AI 速读开着。
-   */
-  aiOn: boolean
-
-  /**
-   * 切 AI 速读(第一次打开埋点)。
-   */
-  onToggleAi: GoBackFn
 }
 
 /**

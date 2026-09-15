@@ -14,20 +14,19 @@ import { useIsNarrow } from '@/components/modal'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
-  ADV_DONE, ADV_ERROR, ADV_IDLE, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
+  ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
   GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE, TRACK_IMM_TRANSLATE,
   TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
 } from './constants'
 import {
   advisorKeyOf, centerPosOf, makeDragStart, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
-  makeLoadProv, makeResizeStart, makeRunAiRead, makeRunLongAdvisor, panelStyleOf, readPrefOf, savePrefOf,
+  makeLoadProv, makeResizeStart, makeRunLongAdvisor, panelStyleOf, readPrefOf, savePrefOf,
   streamAdvisor, tickTypewriter, makeLoadTitleTrans,
 } from './functions'
 import type {
   ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
-  AdvisorModalHookIn,
-  AdvisorModalPanel, AdvisorPanel, AdvisorReadStatus, AdvisorSectionIn, AdvisorStatus, AiReadIn, AiReadPanel,
-  CityFact, DeadFlag, FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
+  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, DeadFlag,
+  FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
   NocTrans, NocTransIn, NocTransPanel, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus, TitleTransHookIn,
 } from './types'
 import { CACHE } from './variables'
@@ -235,32 +234,6 @@ export function useJobText(x: JobTextIn): JobTextPanel {
   }, [job])
 
   return { text, limited }
-}
-
-/**
- * 点了才生成的那类 AI 段的机器(分类速读 / 地点解读共用)。
- * #183 同款(Frank「点完按钮怎么没了」):折叠开关常驻,点开点收都是它;
- * 内容留在 state,收起再开不重烧 —— 也就是说一次会话里每个主体最多烧一次额度。
- *
- * @param x 档、主体标识、界面语言与埋点名。
- * @returns AI 段面板。
- */
-export function useAiRead(x: AiReadIn): AiReadPanel {
-  const [on, setOn] = useState(false)
-  const [status, setStatus] = useState<AdvisorReadStatus>(ADV_IDLE)
-  const [text, setText] = useState(TEXT_NONE)
-
-  function onToggle(): void {
-    if (status === ADV_IDLE) {
-      makeRunAiRead({ field: x.field, id: x.id, lang: x.lang, setStatus, setText })()
-    }
-    if (on === false && x.trackName !== TEXT_NONE) {
-      track(x.trackName)
-    }
-    setOn(on === false)
-  }
-
-  return { on, status, text, onToggle }
 }
 
 /**

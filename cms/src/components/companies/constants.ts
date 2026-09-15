@@ -383,13 +383,6 @@ export const MIME_JSON = 'application/json'
 export const HTTP_OK = 200
 
 /**
- * AI 速读的埋点事件名(#129 功能级 umami 埋点)。
- * 2026-09-04 /fe 公司弹框:原值 `ai-read-cat` 是分类域的名,地点弹框却发着 `ai-read-co`,
- * 两边对调,面板上按名聚合就串;改回公司自己的 co(地点那份同日改 loc)。
- */
-export const TRACK_AI_READ = 'ai-read-co'
-
-/**
  * 公司弹框「显示中文对照」首次打开的埋点事件名(2026-09-04 /fe 补:此前这个开关不埋点,
  * 与 jd-translate / cat-translate / imm-translate 同族)。
  */
@@ -404,11 +397,6 @@ export const TRACK_TV_ENTRY = 'tv-entry'
  * 判定卡入口埋点的来路值(公司弹框)。
  */
 export const TRACK_KIND_COMPANY = 'company'
-
-/**
- * AI 速读取的字段(coRead = 公司级接地速读:只吃库里的公司事实,不联网、不凭名字编)。
- */
-export const AI_FIELD_CO_READ = 'coRead'
 
 /**
  * 公司弹框里 B1 雇主线卡的来路标记(SponsorLeadCard 按它决定渲哪一半)。

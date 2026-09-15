@@ -1913,16 +1913,6 @@ export type JobBodyPanel = {
   onRetryFmt: ClickFn
 
   /**
-   * AI 速读展开着没。
-   */
-  aiOn: boolean
-
-  /**
-   * 开合 AI 速读。
-   */
-  onToggleAi: ClickFn
-
-  /**
    * 中文对照在屏没。
    */
   showTrans: boolean
@@ -6303,4 +6293,19 @@ export type CopyLabelIn = {
    * 按过「复制邮箱」没。
    */
   copied: boolean
+}
+
+/**
+ * applyHomeProvince 的入参。
+ */
+export type HomeProvinceIn = {
+  /**
+   * 筛选各格。
+   */
+  fState: FilterState
+
+  /**
+   * 首屏筛选(URL 带来的);已经带省就不预选。
+   */
+  initial: JobFilters
 }
