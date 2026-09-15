@@ -244,7 +244,40 @@ class ParseTally:
 
 
 # =========================================================================
-# 5. postings 仓
+# 5. 站外正文
+# =========================================================================
+
+
+@dataclass
+class ExternalFetchIn:
+    """fetch_external() 入参(一张外站页)。"""
+
+    client: HttpClientLike
+    """礼貌档客户端(外站证书五花八门,verify 关)。"""
+
+    url: str
+    """外站地址(已修坏前缀、已解实体)。"""
+
+
+@dataclass
+class ExternalTally:
+    """scrape_gcjobs_external() 的计数器。"""
+
+    fetched: int
+    """本轮取回(含缓存命中)的页数。"""
+
+    extracted: int
+    """抽到正文(≥ EXTERNAL_MIN_LEN)的页数。"""
+
+    thin: int
+    """取回了但抽不出正文的页数(JS 壳 / 机器人验证页)。"""
+
+    failed: int
+    """网络失败的页数(不记账,下轮再拉)。"""
+
+
+# =========================================================================
+# 6. postings 仓
 # =========================================================================
 
 
@@ -257,6 +290,9 @@ class PostingRowIn:
 
     seen_at: str
     """本轮建仓时刻(ISO Z)。"""
+
+    external_text: str
+    """站外正文(external.json 里这一帖抽到的);空串 = 没有,照 GC Jobs 页的描述。"""
 
 
 @dataclass

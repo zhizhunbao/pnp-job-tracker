@@ -22,32 +22,38 @@ from typing import cast
 
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
-from fetch.functions import make_client
+from bs4 import BeautifulSoup, Tag
+
+from fetch.constants import PARSER_HTML
+from fetch.functions import make_client, make_polite_client
 from log.functions import err, say
-from crawl.functions import load_cache_index, put_cached_pages
-from crawl.scheme import CachePage, CachePutManyIn
+from crawl.functions import get_cached_page, load_cache_index, put_cached_page, put_cached_pages
+from crawl.scheme import CachePage, CachePutIn, CachePutManyIn
 from gcjobs import DETAILS_PER_RUN
 from gcjobs.constants import (
-    ACCEPT_LANGUAGE, BLOCK_END_RE, BR_RE, CLIENT_TIMEOUT_S, CLOSING_CUT, CLOSING_FMTS, CLOSING_PREFIX, CLOSING_RE,
-    DESC_LANG_TPL, DESC_LEVEL_TPL, DESC_WHO_TPL, DETAIL_MARK_EXTERNAL, DETAIL_MARK_INTERNAL, DETAIL_SLEEP_S,
-    DETAIL_TICK, ENC_UTF8, ERR_NO_SESSION, ERRORS_REPLACE, EXTERNAL_LINK_RE, F_LEVEL, F_LOCATION, F_SALARY,
-    F_TENURE, F_WHO, FIELD_RE, FIRST_PAGE_QS, FLUSH_EVERY, HDR_ACCEPT_LANGUAGE, HDR_REQUESTED_WITH, HOURLY_MARK,
-    IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT, K_EMPLOYER, K_EMPLOYER_URL,
-    K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_INDUSTRY, K_LANG, K_LAST_SEEN, K_NOC, K_POSTING_ID, K_PROVINCE,
-    K_SALARY, K_SOURCE, K_TITLE, K_TITLE_ORIG, K_URL, K_VALID_THROUGH, K_WHO_CAN_APPLY, LANG_EN, LINES_PER_CELL,
-    LIST_SLEEP_S,
-    LOC_NOTE_MARK, LOC_RE, LOC_SEP, NEWLINE, NL_RE, ORG_RE, ORG_SEP, OTHER_LOC_MARK, OUT_JOBS, OUT_POSTINGS,
-    OUT_ROWS, PAGE_ONE, PAGE_QS_TPL,
-    PAGES_RE, PERCENT, POSTER_PART_QS_TPL, POSTER_PATH, POSTER_SHELL_QS_TPL, POSTER_URL_TPL, PRINT_DETAIL_BAD_TPL,
-    PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL,
-    PRINT_ROWS_DONE_TPL, PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, RATE_FLOOR_S, ROW_CELL_RE, ROW_LINK_RE, ROW_RE,
-    SALARY_RANGE_TPL, SALARY_RE, SALARY_TPL, SCRIPT_RE, SEARCH_PATH, SECONDS_FMT, SECTION_ENDS, SECTION_START,
-    SESSION_PATH_TPL, SHELL_QS, SID_RE, SITE_BASE, SLUG_CRAWL, SOURCE_LABEL, SPACE, STUDENT_MARK, TAG_RE, TERM_WORD,
-    TAG_CLOSE, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
+    ACCEPT_LANGUAGE, ATTR_TYPE, BLOCK_END_RE, BR_RE, CLIENT_TIMEOUT_S, CLOSING_CUT, CLOSING_FMTS, CLOSING_PREFIX,
+    CLOSING_RE, DESC_LANG_TPL, DESC_LEVEL_TPL, DESC_WHO_TPL, DETAIL_MARK_EXTERNAL, DETAIL_MARK_INTERNAL,
+    DETAIL_SLEEP_S, DETAIL_TICK, ENC_UTF8, ERRORS_REPLACE, ERR_NO_SESSION, EXTERNAL_BAD_PREFIX, EXTERNAL_HTTPS,
+    EXTERNAL_LINK_RE, EXTERNAL_MIN_LEN, EXTERNAL_PER_RUN, EXTERNAL_SHARE, EXTERNAL_SLEEP_S, EXTERNAL_TIMEOUT_S,
+    EXT_BLOCK_TAGS, EXT_BULLET, EXT_CHALLENGE_MARKS, EXT_CONTAINER_TAGS, EXT_JUNK_TAGS, EXT_LINE_SEP, EXT_WS_RE, FIELD_RE, FIRST_PAGE_QS,
+    FLUSH_EVERY, F_LEVEL, F_LOCATION, F_SALARY, F_TENURE, F_WHO, HDR_ACCEPT_LANGUAGE, HDR_REQUESTED_WITH,
+    HOURLY_MARK, IN_EXTERNAL, IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT,
+    K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_EXTERNAL_URL, K_EXT_FETCHED, K_EXT_TEXT,
+    K_EXT_URL, K_INDUSTRY, K_LANG, K_LAST_SEEN, K_NOC, K_POSTING_ID, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE,
+    K_TITLE_ORIG, K_URL, K_VALID_THROUGH, K_WHO_CAN_APPLY, LANG_EN, LD_JOB_POSTING, LD_JSON_TYPE, LD_KEY_DESCRIPTION,
+    LD_KEY_GRAPH, LD_KEY_TYPE, LINES_PER_CELL, LIST_SLEEP_S, LOC_NOTE_MARK, LOC_RE, LOC_SEP, NEWLINE, NL_RE, ORG_RE,
+    ORG_SEP, OTHER_LOC_MARK, OUT_EXTERNAL, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGES_RE, PAGE_ONE, PAGE_QS_TPL,
+    PERCENT, POSTER_PART_QS_TPL, POSTER_PATH, POSTER_SHELL_QS_TPL, POSTER_URL_TPL, PRINT_DETAIL_BAD_TPL,
+    PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_EXT_DONE_TPL, PRINT_EXT_HEAD_TPL,
+    PRINT_EXT_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL, PRINT_ROWS_DONE_TPL, PRINT_STORE_DONE_TPL,
+    PROV_CODE_OF_NAME, RATE_FLOOR_S, ROW_CELL_RE, ROW_LINK_RE, ROW_RE, SALARY_RANGE_TPL, SALARY_RE, SALARY_TPL,
+    SCRIPT_RE, SEARCH_PATH, SECONDS_FMT, SECTION_ENDS, SECTION_START, SESSION_PATH_TPL, SHELL_QS, SID_RE, SITE_BASE,
+    SLUG_CRAWL, SLUG_CRAWL_EXTERNAL, SOURCE_LABEL, SPACE, STUDENT_MARK, TAG_CLOSE, TAG_LI_EXT, TAG_RE, TAG_SCRIPT,
+    TERM_WORD, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
 )
 from gcjobs.scheme import (
-    DetailBatchIn, DetailBatchOut, DetailIn, HttpClientLike, JobFact, ListRow, Location, MatchIn, PageIn, PagesOut,
-    ParseTally, PostingRowIn, Session, StoreTally,
+    DetailBatchIn, DetailBatchOut, DetailIn, ExternalFetchIn, ExternalTally, HttpClientLike, JobFact, ListRow,
+    Location, MatchIn, PageIn, PagesOut, ParseTally, PostingRowIn, Session, StoreTally,
 )
 
 
@@ -417,7 +423,198 @@ def description_of(html: str) -> str:
 
 
 # =========================================================================
-# 5. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
+# 5. 站外正文(external_url 的帖 → 外站页面进 crawl 层 → 抽正文 → raw external.json)
+# =========================================================================
+
+
+def scrape_gcjobs_external() -> None:
+    """本域步骤入口(2026-09-14 Frank「gc jobs 抓的这个数据没有 job 描述是么」→「开吧」):带外链的帖,GC Jobs 页上只有
+    一句「You will leave」壳文,正文在外站;这里逐帖把外站页面落 crawl 层再抽正文,写 raw external.json(增量,
+    已抽过的帖不重拉;网络失败的不记账,下轮再来)。"""
+    facts = load_json_dict(IN_JOBS)
+    done = load_json_dict(IN_EXTERNAL)
+    have = load_cache_index(SLUG_CRAWL_EXTERNAL)
+    ext_total = 0
+    today = date.today().isoformat()
+    todo: list = []
+    for pid, raw in facts.items():
+        url = external_url_of(raw)
+        if url == "":
+            continue
+        ext_total += 1
+        if wants_external(done.get(pid), today) and len(todo) < EXTERNAL_PER_RUN:
+            todo.append((pid, url))
+    say(PRINT_EXT_HEAD_TPL.format(todo=len(todo), ext=ext_total, have=len(done), cap=EXTERNAL_PER_RUN))
+    if len(todo) == 0:
+        return
+    tally = ExternalTally(fetched=0, extracted=0, thin=0, failed=0)
+    with make_polite_client(EXTERNAL_TIMEOUT_S) as raw_client:
+        client = cast(HttpClientLike, raw_client)
+        for i, (pid, url) in enumerate(todo):
+            html = ""
+            if url in have and wants_refetch(done.get(pid)) is False:
+                html = cached_html_of(url)
+            if html == "":
+                html = fetch_external(ExternalFetchIn(client=client, url=url))
+                time.sleep(EXTERNAL_SLEEP_S)
+            if html == "":
+                tally.failed += 1
+                continue
+            tally.fetched += 1
+            text = external_text_of(html)
+            if text == "":
+                tally.thin += 1
+            else:
+                tally.extracted += 1
+            done[pid] = {K_EXT_URL: url, K_EXT_TEXT: text, K_EXT_FETCHED: today}
+            say(PRINT_EXT_TICK_TPL.format(done=i + 1, todo=len(todo), url=url))
+    OUT_EXTERNAL.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_EXTERNAL, payload=done, indent=JSON_INDENT))
+    say(PRINT_EXT_DONE_TPL.format(fetched=tally.fetched, extracted=tally.extracted, thin=tally.thin,
+                                  failed=tally.failed, out=OUT_EXTERNAL))
+
+
+def wants_external(row: object, today: str) -> bool:  # noqa: PLR0913 — 行与今天两格同型同命,包成 In 反而易传反
+    """这一帖要不要拉:没拉过要;拉过但抽不出且不是今天拉的,再试一次(壳页偶发)。"""
+    if not isinstance(row, dict):
+        return True
+    return str(row.get(K_EXT_TEXT) or "") == "" and str(row.get(K_EXT_FETCHED) or "") != today
+
+
+def wants_refetch(row: object) -> bool:
+    """重试的帖(拉过但抽不出)不读缓存里那张壳页,真去外站再拉一次。"""
+    return isinstance(row, dict)
+
+
+def external_url_of(raw: dict) -> str:
+    """事实行里的外链 → 能直接请求的地址:解 HTML 实体(href 里的 &#38;)、剥写坏的「http://https://」前缀;没有外链给空串。"""
+    url = unescape(str(raw.get(K_EXTERNAL_URL) or "")).strip()
+    if url.startswith(EXTERNAL_BAD_PREFIX):
+        url = EXTERNAL_HTTPS + url[len(EXTERNAL_BAD_PREFIX):]
+    return url
+
+
+def cached_html_of(url: str) -> str:
+    """crawl 层里这张外站页的原文(调用方已按索引确认抓过);读不到给空串。"""
+    hit = get_cached_page(url)
+    if hit.html is None:
+        return ""
+    return hit.html
+
+
+def fetch_external(x: ExternalFetchIn) -> str:
+    """拉一张外站页并落 crawl 层;网络错留痕给空串(不记账,下轮再拉)。"""
+    try:
+        resp = x.client.get(x.url, headers=headers_of())
+        resp.raise_for_status()
+    except Exception as e:  # noqa: BLE001 — 单帖取不到就留痕跳过
+        err(x.url, e)
+        return ""
+    put_cached_page(CachePutIn(slug=SLUG_CRAWL_EXTERNAL, url=x.url, html=resp.text, title=""))
+    return resp.text
+
+
+def external_text_of(html: str) -> str:
+    """外站页原文 → 正文纯文本(一段一行,列表项带「- 」):先找 schema.org JobPosting 的 description(Workday 等给整篇),
+    没有就圈全页文本占半壁的最小容器逐段收;不足 EXTERNAL_MIN_LEN 视作抽不出(JS 壳),机器人验证页按判词直接判抽不出,给空串。"""
+    for mark in EXT_CHALLENGE_MARKS:
+        if mark in html:
+            return ""
+    soup = BeautifulSoup(html, PARSER_HTML)
+    ld = ld_description_of(soup)
+    if len(ld) >= EXTERNAL_MIN_LEN:
+        return ld
+    for junk in soup.find_all(EXT_JUNK_TAGS):
+        junk.decompose()
+    scope = main_container_of(soup)
+    if scope is None:
+        return ""
+    text = paragraphs_of(scope)
+    if len(text) < EXTERNAL_MIN_LEN:
+        return ""
+    return text
+
+
+def ld_description_of(soup: BeautifulSoup) -> str:
+    """页里 ld+json 脚本中第一条 JobPosting 的 description(HTML 片段)→ 段落文本;没有给空串。"""
+    for tag in soup.find_all(TAG_SCRIPT, attrs={ATTR_TYPE: LD_JSON_TYPE}):
+        try:
+            data = json.loads(tag.get_text())
+        except ValueError:
+            continue
+        for node in ld_nodes_of(data):
+            if node.get(LD_KEY_TYPE) == LD_JOB_POSTING:
+                frag = BeautifulSoup(str(node.get(LD_KEY_DESCRIPTION) or ""), PARSER_HTML)
+                return paragraphs_of(frag)
+    return ""
+
+
+def ld_nodes_of(data: object) -> list:
+    """ld+json 的顶层可能是单条、数组或 @graph 打包;摊成字典清单。"""
+    if isinstance(data, list):
+        return [d for d in data if isinstance(d, dict)]
+    if isinstance(data, dict):
+        graph = data.get(LD_KEY_GRAPH)
+        if isinstance(graph, list):
+            return [d for d in graph if isinstance(d, dict)]
+        return [data]
+    return []
+
+
+def main_container_of(soup: BeautifulSoup) -> Tag | None:
+    """正文容器:全页文本里占比 ≥ EXTERNAL_SHARE 的最小元素(导航 / 页脚已剪);连 body 都没有给 None。"""
+    body = soup.body
+    if not isinstance(body, Tag):
+        return None
+    total = len(EXT_WS_RE.sub(SPACE, body.get_text()))
+    if total == 0:
+        return None
+    best: Tag | None = body
+    best_len = total
+    for el in body.find_all(EXT_CONTAINER_TAGS):
+        if not isinstance(el, Tag):
+            continue
+        n = len(EXT_WS_RE.sub(SPACE, el.get_text()))
+        if n >= total * EXTERNAL_SHARE and n < best_len:
+            best = el
+            best_len = n
+    return best
+
+
+def paragraphs_of(scope: Tag | BeautifulSoup) -> str:
+    """容器 → 一段一行的纯文本:块级标签逐个收,嵌套列表只在最外层收一次,连续重复行只留一条;一个块级标签都没有的按换行切。"""
+    lines: list = []
+    for el in scope.find_all(EXT_BLOCK_TAGS):
+        if not isinstance(el, Tag):
+            continue
+        li = el.find_parent(TAG_LI_EXT)
+        if li is not None and li is not el:
+            continue
+        txt = EXT_WS_RE.sub(SPACE, el.get_text(SPACE)).strip()
+        if txt == "":
+            continue
+        if el.name == TAG_LI_EXT:
+            txt = EXT_BULLET + txt
+        if len(lines) > 0 and lines[-1] == txt:
+            continue
+        lines.append(txt)
+    if len(lines) == 0:
+        return plain_lines_of(scope)
+    return EXT_LINE_SEP.join(lines)
+
+
+def plain_lines_of(scope: Tag | BeautifulSoup) -> str:
+    """没有块级标签的容器(Workday 的 JobPosting.description 是 br 与 span 堆的)→ 按换行切、去空行。"""
+    lines: list = []
+    for raw in scope.get_text(EXT_LINE_SEP).split(EXT_LINE_SEP):
+        txt = EXT_WS_RE.sub(SPACE, raw).strip()
+        if txt != "":
+            lines.append(txt)
+    return EXT_LINE_SEP.join(lines)
+
+
+# =========================================================================
+# 6. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
 
@@ -428,6 +625,7 @@ def build_gcjobs_postings() -> None:
     load 域 build 链整链持锁 —— 不持锁的整文件重写会落在「清洗完 → 汇装」之间(2026-08-05 薪资实撞同款病)。"""
     rows = load_json_dict(IN_ROWS)
     facts = load_json_dict(IN_JOBS)
+    external = load_json_dict(IN_EXTERNAL)
     seen_at = datetime.now(timezone.utc).strftime(SECONDS_FMT) + UTC_Z
     today = date.today().isoformat()
     tally = StoreTally(rows=0, gone=0, expired=0, blank=0)
@@ -443,7 +641,8 @@ def build_gcjobs_postings() -> None:
         if fact.closing != "" and fact.closing < today:
             tally.expired += 1
             continue
-        out.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at)))
+        out.append(to_posting_row(PostingRowIn(fact=fact, seen_at=seen_at,
+                                               external_text=external_text_of_row(external.get(pid)))))
     out.sort(key=date_key_of, reverse=True)
     tally.rows = len(out)
     OUT_POSTINGS.parent.mkdir(parents=True, exist_ok=True)
@@ -456,6 +655,13 @@ def build_gcjobs_postings() -> None:
 def to_fact_of_row(row: dict) -> JobFact:
     """raw jobs.json 的一行 → JobFact(asdict 的逆;键即字段名,dataclass 自校缺格)。"""
     return JobFact(**row)
+
+
+def external_text_of_row(row: object) -> str:
+    """external.json 里这一帖的行 → 抽到的站外正文;没有这一帖 / 抽不出给空串。"""
+    if not isinstance(row, dict):
+        return ""
+    return str(row.get(K_EXT_TEXT) or "")
 
 
 def date_key_of(row: dict) -> str:
@@ -476,7 +682,7 @@ def to_posting_row(x: PostingRowIn) -> dict:
         K_DATE: f.first_seen, K_SOURCE: SOURCE_LABEL, K_DIRECT: True, K_URL: url,
         K_ADDRESS: f.location, K_NOC: "", K_LAST_SEEN: x.seen_at,
         K_EMPLOYMENT_TERM: term_of(f.tenure), K_EMPLOYMENT_HOURS: "",
-        K_DESCRIPTION: full_description_of(f), K_VALID_THROUGH: f.closing, K_LANG: LANG_EN,
+        K_DESCRIPTION: full_description_of(x), K_VALID_THROUGH: f.closing, K_LANG: LANG_EN,
         K_INDUSTRY: "", K_EMPLOYER_URL: "", K_WHO_CAN_APPLY: f.who,
     }
 
@@ -501,8 +707,10 @@ def term_of(tenure: str) -> str:
     return ""
 
 
-def full_description_of(f: JobFact) -> str:
-    """描述 = 语言要求 / 职级 / 谁能投三行(有则出)+ 正文各节。"""
+def full_description_of(x: PostingRowIn) -> str:
+    """描述 = 语言要求 / 职级 / 谁能投三行(有则出)+ 正文各节;外链帖有站外正文就用它替 GC Jobs 页那句壳文
+    (2026-09-14)。"""
+    f = x.fact
     head: list = []
     if f.language != "":
         head.append(DESC_LANG_TPL.format(lang=f.language))
@@ -510,6 +718,9 @@ def full_description_of(f: JobFact) -> str:
         head.append(DESC_LEVEL_TPL.format(level=f.level))
     if f.who != "":
         head.append(DESC_WHO_TPL.format(who=f.who))
-    if f.description != "":
-        head.append(f.description)
+    body = f.description
+    if x.external_text != "":
+        body = x.external_text
+    if body != "":
+        head.append(body)
     return NEWLINE.join(head)

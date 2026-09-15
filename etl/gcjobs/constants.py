@@ -1,5 +1,5 @@
 """
-gcjobs 域常量 —— 域词汇表(会话式搜索分页枚举 → 岗位页抓取 → 字段解析 → postings 仓;
+gcjobs 域常量 —— 域词汇表(会话式搜索分页枚举 → 岗位页抓取 → 字段解析 → 站外正文 → postings 仓;
 照 careerbeacon 三件套样张,段横幅三行框 + N. 编号,与 functions.py / scheme.py 同名同序镜像)。
 
 判据(照 cms 宪法同款):常量只装 JSON 装得下的(标量/字符串表/正则)+ IN/OUT 路径。
@@ -295,7 +295,111 @@ PRINT_PARSE_DONE_TPL = "[OK] 解析 {parsed} 张(跳过已解析 {skipped},无�
 """解析收尾。"""
 
 # =========================================================================
-# 5. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
+# 5. 站外正文(external_url 的帖 → 外站页面进 crawl 层 → 抽正文 → raw external.json)
+# =========================================================================
+
+SLUG_CRAWL_EXTERNAL = "board-gcjobs-external"
+"""外站页面的 crawl 层目录(data/crawl/board-gcjobs-external/):181 张外链帖散在 30 来个站(SuccessFactors / hiringplatform /
+各部门自建页 / Taleo / SmartRecruiters / Workday…),原文一律先落这里再抽(2026-09-14 Frank「开吧」)。"""
+
+OUT_EXTERNAL = paths.RAW_GCJOBS / "external.json"
+"""站外正文产物:帖号 → { url, text, fetched }(增量累积;text 空串 = 页面取到了但抽不出正文,留空不猜;
+抽不出的隔天再试一次 —— SuccessFactors 偶发回壳页,Workday / Dayforce 等 JS 壳则每天白试一次,代价一请求)。"""
+
+IN_EXTERNAL = OUT_EXTERNAL
+"""建仓段读它:有站外正文的帖,描述用它替换 GC Jobs 页上那一两句壳文。"""
+
+EXTERNAL_PER_RUN = 200
+"""每轮最多拉多少张外站页(全部外链帖不到 200,首轮一次拉完;之后只拉新帖)。"""
+
+EXTERNAL_TIMEOUT_S = 30.0
+"""外站单请求超时(canada.ca 在本机 httpx 会挂,容器里正常;30 秒够慢站首屏)。"""
+
+EXTERNAL_SLEEP_S = 1.0
+"""外站逐帖间隔(30 来个站各自几张,礼貌即可)。"""
+
+EXTERNAL_MIN_LEN = 300
+"""抽出的正文至少这么长才算抽到:JS 渲染的 ATS(Taleo / SmartRecruiters / Dayforce / ADP)壳页只剩百来字,
+机器人验证页(njoyn 跳 perfdrive)几百字 —— 都判抽不出,留空等下批按 ATS 接口补。"""
+
+EXTERNAL_SHARE = 0.5
+"""正文容器判据:全页文本里占比 ≥ 一半的最小元素(SuccessFactors 把正文切成几十个并列 div,
+只看单块最长会拿到导航;先圈住占半壁的最小容器再逐段收)。"""
+
+EXT_CHALLENGE_MARKS = ["perfdrive"]
+"""机器人验证页的判词(njoyn 跳 validate.perfdrive.com,页面几百字能过长度线):命中即判抽不出,留空等浏览器批。"""
+
+EXTERNAL_BAD_PREFIX = "http://https://"
+"""GC Jobs 页上一条外链写坏了(「http://https://smrtr.io/…」),剥掉前一截。"""
+
+EXTERNAL_HTTPS = "https://"
+"""剥坏前缀后补回的协议头。"""
+
+LD_JSON_TYPE = "application/ld+json"
+"""结构化数据脚本的 type 值(Workday 等把整篇 JobPosting 放这里,比读 DOM 稳)。"""
+
+ATTR_TYPE = "type"
+"""script 标签的 type 属性名。"""
+
+TAG_SCRIPT = "script"
+"""script 标签名。"""
+
+LD_KEY_TYPE = "@type"
+"""schema.org 的类型键。"""
+
+LD_KEY_GRAPH = "@graph"
+"""schema.org 打包多条时的容器键。"""
+
+LD_JOB_POSTING = "JobPosting"
+"""要找的类型值。"""
+
+LD_KEY_DESCRIPTION = "description"
+"""JobPosting 的正文键(值是 HTML 片段)。"""
+
+EXT_JUNK_TAGS = ["script", "style", "noscript", "nav", "header", "footer", "svg", "form", "iframe", "button"]
+"""抽正文前整棵剪掉的标签(导航 / 页脚 / 表单 / 脚本)。"""
+
+EXT_CONTAINER_TAGS = ["main", "article", "section", "div", "td"]
+"""正文容器候选标签。"""
+
+EXT_BLOCK_TAGS = ["p", "li", "h1", "h2", "h3", "h4", "h5", "dt", "dd", "tr"]
+"""收成一行一段的块级标签。"""
+
+TAG_LI_EXT = "li"
+"""列表项标签名(嵌套列表只在最外层收一次)。"""
+
+EXT_BULLET = "- "
+"""列表项行的前缀(与 Job Bank 仓正文同款,mart / jdformat 认这个记号)。"""
+
+EXT_LINE_SEP = "\n"
+"""段与段之间的分隔。"""
+
+EXT_WS_RE = re.compile(r"\s+")
+"""段内空白折成单空格。"""
+
+K_EXT_URL = "url"
+"""external.json 行键:实际取回的外站地址(已修坏前缀、已解实体)。"""
+
+K_EXT_TEXT = "text"
+"""external.json 行键:抽出的正文;空串 = 抽不出。"""
+
+K_EXT_FETCHED = "fetched"
+"""external.json 行键:取回日期(ISO)。"""
+
+K_EXTERNAL_URL = "external_url"
+"""raw jobs.json 事实里的外链键(JobFact.external_url 的落盘名)。"""
+
+PRINT_EXT_HEAD_TPL = "站外正文:待拉 {todo} 张(外链帖 {ext} / 已有 {have},每轮封顶 {cap})"
+"""站外段开头一行。"""
+
+PRINT_EXT_DONE_TPL = "站外正文完成:取回 {fetched} / 抽到正文 {extracted} / 抽不出 {thin} / 网络失败 {failed} → {out}"
+"""站外段结尾一行。"""
+
+PRINT_EXT_TICK_TPL = "  站外 {done}/{todo} {url}"
+"""站外段逐帖进度行。"""
+
+# =========================================================================
+# 6. postings 仓(raw 事实 → Job Bank 仓同形的行;当前态)
 # =========================================================================
 
 K_POSTING_ID = "posting_id"
