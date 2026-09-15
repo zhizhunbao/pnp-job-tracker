@@ -3038,7 +3038,7 @@ export type JdIn = {
 }
 
 /**
- * `loadJdTextById` 的入参(2026-09-14 职位正文直出批:详情页 SSR 按岗位号取库里的正文)。
+ * `loadJdSsrById` 的入参(2026-09-14 职位正文直出批:详情页 SSR 按岗位号取库里的正文)。
  */
 export type JdByIdIn = {
   /**
@@ -3051,6 +3051,26 @@ export type JdByIdIn = {
    */
   id: number
 }
+
+/**
+ * 详情页 SSR 直出的 JD 两样(2026-09-15:整理版也服务端直出 —— 正文区只出整理版,爬虫要的是它)。
+ */
+export type JdSsr = {
+  /**
+   * 脱敏后的原文;库里没有给空串(前端照旧懒取)。
+   */
+  text: string
+
+  /**
+   * 五节整理版(节标记已顶到行首);没生过是 null(前端照旧懒生成)。
+   */
+  formatted: MaybeStr
+}
+
+/**
+ * `loadJdSsrById` 的返回。
+ */
+export type JdSsrOut = Promise<JdSsr>
 
 /**
  * JD 正文的返回;抓不到空串(前端空态引导官方原帖)。

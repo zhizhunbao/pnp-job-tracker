@@ -33,7 +33,7 @@ import { Frame } from '@/components/shell'
 import { JsonLd } from '@/components/jsonld'
 import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
-import { checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadJdTextById, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
+import { checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadJdSsrById, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/components/jobs'
 
@@ -115,16 +115,16 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     user: user as SessionUser | null, pro, profile: userProfile, profileOk: hasProfile(userProfile),
   })
 
-  const jdText = await loadJdTextById({ db, id })
+  const jd = await loadJdSsrById({ db, id })
 
   return (
     <>
-      <JsonLd json={jobPostingJsonOf({ job, jdText })} />
+      <JsonLd json={jobPostingJsonOf({ job, jdText: jd.text })} />
       <Frame>
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
-          related={related} updatedAt={updatedAt} jdText={jdText} />
+          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} />
         <Footer />
       </Frame>
     </>

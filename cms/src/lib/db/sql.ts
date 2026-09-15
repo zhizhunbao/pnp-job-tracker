@@ -1535,9 +1535,10 @@ export const FUNNEL_USERS = `SELECT count(pro_until)::int pro,
 // =========================================================================
 
 /**
- * 详情页 SSR 的 JD 正文。$1=职位 id。
+ * 详情页 SSR 的 JD 正文与整理版。$1=职位 id。2026-09-15 加 jd_formatted:正文区只出整理版(Frank 2026-09-14
+ * 「不要显示原文,直接显示整理之后的」),库里有整理版就服务端直出,爬虫抓到的 HTML 才有正文。
  */
-export const JD_BY_JOB_ID = `SELECT description FROM jobs WHERE id = $1 LIMIT 1`
+export const JD_BY_JOB_ID = `SELECT description, jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
  * 详情页 metadata 用的瘦行。$1=职位 id。

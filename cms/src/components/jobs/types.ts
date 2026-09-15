@@ -1684,6 +1684,12 @@ export type JobIn = {
    * '' = 库里没有,正文区照旧客户端懒取。
    */
   jdText: string
+
+  /**
+   * 库里的五节整理版,页面门 SSR 取(2026-09-15:正文区只出整理版,有它爬虫才看得到正文);
+   * null = 没生过,照旧客户端懒生成。
+   */
+  jdFormatted: string | null
 }
 
 /**
@@ -1824,6 +1830,11 @@ export type JobBodyIn = {
    * SSR 已拿到的 JD 正文(整页版由页面门传;弹框传 '' 走懒取)。
    */
   jdText: string
+
+  /**
+   * SSR 已拿到的整理版(整页版由页面门传;弹框传 null 走懒生成)。
+   */
+  jdFormatted: string | null
 }
 
 /**
@@ -4553,6 +4564,21 @@ export type JdTextPanel = {
    * 取数态。
    */
   status: JdStatus
+}
+
+/**
+ * `useJdFormat` 的入参。
+ */
+export type JdFormatHookIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * SSR 已拿到的整理版;非空 = 初态就是「整理好了」,不发请求(点重试仍重生成);null = 懒生成。
+   */
+  jdFormatted: string | null
 }
 
 /**

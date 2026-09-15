@@ -39,7 +39,8 @@ export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag
       onRefresh={jobRefreshOf({ plan, job, onDone: a.onRetranslated })}>
-      <JobBody key={a.gen} job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE} />
+      <JobBody key={a.gen} job={job} lang={lang} plan={plan} inModal onFreeLeft={a.onFreeLeft} jdText={TEXT_NONE}
+        jdFormatted={null} />
     </FloatPanel>
   )
 }

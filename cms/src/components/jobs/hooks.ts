@@ -50,8 +50,9 @@ import type {
   BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
   ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn, IntentProfileIn,
-  JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyIn, JobBodyPanel, JobColKey,
-  JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel, JobsIn, JobsPageJson,
+  JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyIn,
+  JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
+  JobsIn, JobsPageJson,
   MatchGateHookIn, MatchGatePanel, MatchProfileFact, MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
   OpenApplyIn, OpenMatchIn, OutsideCloseIn, PopupState, ProfileJsonFact, ProofCount, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
@@ -1663,7 +1664,7 @@ async function saveQuizAnswers(): Promise<void> {
 export function useJobBody(x: JobBodyIn): JobBodyPanel {
   const t = makeT(x.lang)
   const jd = useJdText({ job: x.job, onFreeLeft: x.onFreeLeft, jdText: x.jdText })
-  const fmt = useJdFormat(x.job)
+  const fmt = useJdFormat({ job: x.job, jdFormatted: x.jdFormatted })
   const trans = useJdTrans({ job: x.job, lang: x.lang, resetKey: fmt.resetKey })
   const apply = useApplyHow(x.job)
   const [showOrig, setShowOrig] = useState(false)
@@ -1781,16 +1782,22 @@ function jdStatusOf(text: string): JdStatus {
 /**
  * AI 五节整理版(J3)。2026-07-25 用户「有时候 AI 解析会失败,需要有重试按钮」:
  * 拉取抽成一次性动作,失败态(fmt = null)挂重试钮。
+ * 2026-09-15:页面门 SSR 传了整理版就当初态,首次不发请求(服务端 HTML 里直接有整理版,爬虫看得到);
+ * 点重试(tick 变)照旧重生成。
  *
- * @param job 本岗。
+ * @param x 本岗与 SSR 整理版。
  * @returns 整理版、失败由头与重试。
  */
-function useJdFormat(job: JobFact): JdFormatPanel {
-  const [fmt, setFmt] = useState<string | null | undefined>(undefined)
+function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
+  const [fmt, setFmt] = useState<string | null | undefined>(fmtInitOf(x.jdFormatted))
   const [fmtWhy, setFmtWhy] = useState<FmtWhy>(FMT_FAIL)
   const [tick, setTick] = useState(0)
-  const url = strOf(job.applyUrl)
+  const url = strOf(x.job.applyUrl)
+  const ssrFmt = x.jdFormatted
   useEffect(function loadFmt() {
+    if (ssrFmt != null && tick === 0) {
+      return
+    }
     const ctrl = new AbortController()
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉整理版前的起手式:undefined = 整理中,换岗或点重试先回这一态
     setFmt(undefined)
@@ -1819,7 +1826,7 @@ function useJdFormat(job: JobFact): JdFormatPanel {
     return function stopFmt() {
       ctrl.abort()
     }
-  }, [url, tick])
+  }, [url, tick, ssrFmt])
   return {
     fmt,
     fmtWhy,
@@ -1828,6 +1835,19 @@ function useJdFormat(job: JobFact): JdFormatPanel {
       setTick(tick + 1)
     },
   }
+}
+
+/**
+ * SSR 整理版决定的初态:传了就是「整理好了」,没传就是 undefined(整理中,等 effect 去懒生成)。
+ *
+ * @param ssrFmt 页面门传下来的整理版。
+ * @returns 整理版初态。
+ */
+function fmtInitOf(ssrFmt: string | null): string | undefined {
+  if (ssrFmt == null) {
+    return undefined
+  }
+  return ssrFmt
 }
 
 /**

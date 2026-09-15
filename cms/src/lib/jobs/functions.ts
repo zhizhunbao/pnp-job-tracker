@@ -65,7 +65,7 @@ import type {
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
   EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
-  JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
+  JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
   JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobMidIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
   JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
@@ -1929,21 +1929,23 @@ export async function searchNocByTitle(input: NocSearchIn): NocSearchOut {
 // =========================================================================
 
 /**
- * 按职位号取库里的 JD 正文,给详情页 SSR 直出用(2026-09-14 职位正文直出批:Google 抓到的
+ * 按职位号取库里的 JD 正文与整理版,给详情页 SSR 直出用(2026-09-14 职位正文直出批:Google 抓到的
  * HTML 正文位置原是「加载中…」,Soft 404 1,211 + 已抓取未收录 2,865 全是 open 岗)。
- * 与 JSON-LD 同一份串,出口同 `jobDescription` 一样脱敏。**不懒抓** —— 懒抓是用户点开才做的事,
- * 塞进每次页面渲染 TTFB 不可控(lazy-first 铁律);库里没有给空串,前端照旧走懒取路径。
+ * 正文与 JSON-LD 同一份串,出口同 `jobDescription` 一样脱敏。**不懒抓、不懒生成** —— 那是用户点开才做的事,
+ * 塞进每次页面渲染 TTFB 不可控(lazy-first 铁律);库里没有的格给空串 / null,前端照旧走懒取路径。
+ * 2026-09-15 加整理版:当天下午走查批把正文区改成只出整理版(整理版没回来只出转圈),原文直出被压住,
+ * Googlebot 抓到的仍是转圈 —— 整理版落在 jobs.jd_formatted,库里有就一并直出。
  *
  * @param input 连接与职位号。
- * @returns 脱敏后的正文;库里没有给空串。
+ * @returns 脱敏原文与整理版;库里没有的格给空串 / null。
  */
-export async function loadJdTextById(input: JdByIdIn): JdOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_JOB_ID, params: [input.id], map: passRow })
+export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_JOB_ID, params: [input.id], map: toJdSsrRow })
   const first = rows[0]
-  if (first != null && first.description != null && first.description !== '') {
-    return scrubPii(String(first.description).trim())
+  if (first == null) {
+    return { text: JD_NONE, formatted: null }
   }
-  return JD_NONE
+  return { text: scrubPii(first.text), formatted: first.formatted }
 }
 
 /**
@@ -3549,6 +3551,16 @@ export function toJdFormattedCell(r: Row): MaybeStr {
     return null
   }
   return jdMarkLinesOf(cell)
+}
+
+/**
+ * 一行详情页 SSR 的正文与整理版(SQL.JD_BY_JOB_ID)。原文只做值级清洗(去首尾空白、空当无),脱敏在出口做。
+ *
+ * @param r 库里的一行。
+ * @returns 原文(没有空串)与整理版(没生过 null)。
+ */
+export function toJdSsrRow(r: Row): JdSsr {
+  return { text: text(r.description).trim(), formatted: jdMarkLinesOrNull(textOrNull(r.jd_formatted)) }
 }
 
 /**

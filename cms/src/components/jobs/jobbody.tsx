@@ -33,8 +33,8 @@ import type { JobBodyIn } from './types'
  * @param props 本岗、界面语言、分层态、在不在弹框里与额度回传。
  * @returns 整副身体。
  */
-export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText }: JobBodyIn) {
-  const d = useJobBody({ job, lang, plan, inModal, onFreeLeft, jdText })
+export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText, jdFormatted }: JobBodyIn) {
+  const d = useJobBody({ job, lang, plan, inModal, onFreeLeft, jdText, jdFormatted })
   return (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
