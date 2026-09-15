@@ -35,7 +35,8 @@ export function parseLang(raw: RawLangPref): MaybeLang {
 /**
  * 首访没偏好时按浏览器语言判(navigator.language 或 Accept-Language 头,同一套判据)。
  * 红线:不许按 IP 判 —— 加拿大华人 IP=加拿大,会被错切英文,浏览器语言才是本人信号。
- * 头都没有(爬虫/直连)→ 站点默认中文,与改造前 useState('zh') 一致。
+ * 头都没有(爬虫/直连)→ 英文(2026-09-15 Frank「google 爬的是英文吧」改判,原判「回站点默认中文」
+ * 见 ACCEPT_NONE 的决策记录)。真人浏览器一律带这个头,该中文的照旧中文,变的只有不带头的访问。
  *
  * @param raw Accept-Language 头或 navigator.language。
  * @returns 首帧语言。
@@ -48,10 +49,7 @@ export function langFromAccept(raw: RawAccept): Lang {
   if (n.startsWith(LANG_KO)) {
     return LANG_KO
   }
-  if (n !== '') {
-    return LANG_EN
-  }
-  return LANG_ZH
+  return LANG_EN
 }
 
 /**
