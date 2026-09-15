@@ -15,7 +15,8 @@
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 右端那句更新时间改用 time 桶的 Updated(全站唯一一件,空串自己不渲),本域不再自绘。
  * 2026-09-14 Frank「加个筛选放在大类前面」:EE 类别下拉进本行,紧挨大类之前(不联动,值 = 数据层 label,
- * 显示名过 eeDisplay 换界面语言;选项来自 ee_categories 维表)。
+ * 显示名过 eeDisplay 换界面语言;选项来自 ee_categories 维表)。同日「这个应该需要联动吧」:选了类别,
+ * 大类下拉只剩该类别在招岗落到的大类(维度包里的 EE→大类桥),换类别清大/中/小类。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -27,8 +28,8 @@ import { Select } from '@/components/select'
 import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
-  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeCityChange, makeEeLabel, makeProvChange, makeProvLabel,
-  makeSlotChange, matchBtnClsOf, matchLabelOf, slotOf,
+  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeCityChange, makeEeChange, makeEeLabel, makeProvChange,
+  makeProvLabel, matchBtnClsOf, matchLabelOf, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -57,7 +58,7 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         opts={f.opts.city}
         all={b.t('all.city')} />
       <Select value={slotOf({ fState: f.fState, k: FK.ee })}
-        onChange={makeSlotChange({ fState: f.fState, k: FK.ee })}
+        onChange={makeEeChange(f.fState)}
         opts={f.opts.ee}
         all={b.t('all.ee')}
         labelOf={makeEeLabel(b.t)} />

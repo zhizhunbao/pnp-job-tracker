@@ -1422,6 +1422,16 @@ export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url
      FROM ee_categories ORDER BY id LIMIT 2000`
 
 /**
+ * 首屏维度表·EE 类别 → 本站大类桥(2026-09-14 Frank「这个应该需要联动吧」:选了 EE 类别,大类下拉只剩
+ * 该类别在招岗落到的大类)。分类维表一行=一个小类没有 NOC 码,桥只能从在招岗现取;多类别岗 ee_category
+ * 用「/」拼接,拆段后逐段成对。维度包 1 小时 TTL 缓存,不是每请求现算。
+ */
+export const DIMS_EE_BROADS = `SELECT DISTINCT seg AS label, j.broad
+     FROM jobs j, unnest(string_to_array(j.ee_category, '/')) AS seg
+     WHERE COALESCE(j.ee_category,'') <> '' AND COALESCE(j.broad,'') <> '' AND COALESCE(j.status,'open') <> 'closed'
+     LIMIT 500`
+
+/**
  * 首屏维度表·字段出处。
  */
 export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, description, status, fetched, note

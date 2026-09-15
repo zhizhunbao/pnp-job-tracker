@@ -633,10 +633,11 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   const city = slotOf({ fState, k: FK.city })
   const broad = slotOf({ fState, k: FK.broad })
   const mid = slotOf({ fState, k: FK.mid })
+  const ee = slotOf({ fState, k: FK.ee })
   const dims = x.dims
   const opts = useMemo(function buildOpts() {
-    return filterOptsOf({ dims, prov, city, broad, mid })
-  }, [dims, prov, city, broad, mid])
+    return filterOptsOf({ dims, prov, city, broad, mid, ee })
+  }, [dims, prov, city, broad, mid, ee])
   const nameOf = makeNocName({ dims, lang: x.lang })
   const anyFilter = anyFilterOf({ fState, directOnly })
   const nocLabel = nocLabelOf({ fNoc: slotOf({ fState, k: FK.noc }), nameOf, lang: x.lang })

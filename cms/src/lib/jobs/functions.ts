@@ -62,7 +62,7 @@ import type {
   CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
-  EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
+  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
   JdFormattedIn, JdIn, JdOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
   JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobMidIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
@@ -947,7 +947,7 @@ export async function getSsrDims(db: Db): SsrDimsOut {
  * @returns 首屏维度包。
  */
 export async function loadSsrDims(db: Db): SsrDimsOut {
-  const [prov, noc, src, exp, pnp, draws, ee, fieldSrc, news] = await Promise.all([
+  const [prov, noc, src, exp, pnp, draws, ee, eeBroads, fieldSrc, news] = await Promise.all([
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PROVINCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_NOC_CATEGORIES, params: [], map: toNocCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_SOURCES, params: [], map: passRow }),
@@ -955,6 +955,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: toPnpOcc }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toPnpDraw }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: toEeCat }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_BROADS, params: [], map: toEeBroad }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_FIELD_SOURCES, params: [], map: toFieldSource }),
     queryRowsOrEmpty({ db: db, sql: SQL.NEWS_SLIM_60, params: [], map: toNewsSlim }),
   ])
@@ -980,6 +981,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     pnpOccupations: pnp,
     pnpDraws: draws,
     eeCategories: ee,
+    eeBroads: eeBroads,
     designatedEmployers: [],
     nocDescriptions: [],
     fieldSources: fieldSrc,
@@ -3111,6 +3113,16 @@ export function toEeCat(r: Row): EeOcc {
     title: text(r.title), url: text(r.url), fetched: text(r.fetched),
     drawCrs: numOrNull(r.drawCrs), drawDate: text(r.drawDate), drawSize: numOrNull(r.drawSize),
   }
+}
+
+/**
+ * DIMS_EE_BROADS 一行 → EE 类别到大类桥行。
+ *
+ * @param r 原始行。
+ * @returns 桥行。
+ */
+export function toEeBroad(r: Row): EeBroad {
+  return { label: text(r.label), broad: text(r.broad) }
 }
 
 /**

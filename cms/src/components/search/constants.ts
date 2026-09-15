@@ -30,6 +30,12 @@ export const QUERY_NONE = ''
 export const ENTER_HINT_SEARCH = 'search'
 
 /**
+ * 关掉 Chrome 的地址建议(2026-09-14 Frank「这个点的时候不要显示 address 框」):placeholder 里的「地点」
+ * 被 Chrome 认成地址格,它对地址格无视 `off`;但对不认识的 token 会压掉地址建议 —— 给一个它不认识的值。
+ */
+export const AUTOCOMPLETE_NONE = 'nope'
+
+/**
  * 清除钮的 type。
  * HTML 里 <button> 不写 type 默认就是 submit —— 搜索框一旦被放进 <form>,
  * 点清除会连带提交整张表单(页面刷新、刚输入的条件全丢)。

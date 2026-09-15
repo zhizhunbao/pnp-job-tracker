@@ -74,9 +74,10 @@ import type {
   JdSectionMode, JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact,
   JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn, MailBodyIn,
   MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn, MeasureWordIn,
-  MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc, NocDescDoc,
-  NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn,
-  PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn,
+  MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, NocCategoryDoc,
+  NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn, PayFallbackForIn,
+  PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn, ProMatchIn,
+  ProvFullIn, ProvWordIn, RankOfIn,
   ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn,
   SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn, SliceTextIn, SlotIn, SortMarkIn, SortState,
   StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn, ThWidthIn, TransLabelIn, TransShownIn,
@@ -2670,12 +2671,12 @@ function uniq(xs: string[]): string[] {
  * 大类按行业顺序(BROAD_SLUGS = etl/noc_buckets.BROADS 的镜像),不用 uniq 的字母序 ——
  * 对中文那是按码位排的,等于乱序;清单外的值(未分类)垫底。
  *
- * @param x 维度表与当前的省/市/大类/中类。
+ * @param x 维度表与当前的省/市/大类/中类/EE 类别。
  * @returns 七组选项。
  */
 export function filterOptsOf(x: FilterOptsIn): FilterOpts {
   const code = provCodeOf(x.prov)
-  const nc = x.dims.nocCategories
+  const nc = ncByEeOf({ dims: x.dims, ee: x.ee })
   return {
     prov: provOptsOf(x.dims),
     city: cityOptsOf({ dims: x.dims, code }),
@@ -2685,6 +2686,32 @@ export function filterOptsOf(x: FilterOptsIn): FilterOpts {
     fine: fineOptsOf({ nc, broad: x.broad, mid: x.mid }),
     ee: eeOptsOf(x.dims),
   }
+}
+
+/**
+ * 分类树按 EE 类别收窄(2026-09-14 Frank「这个应该需要联动吧」):选了类别只留该类别在招岗落到的大类,
+ * 中/小类随大类一起收窄;'' = 全部不动。
+ *
+ * @param x 维度表与当前 EE 类别。
+ * @returns 收窄后的分类树行。
+ */
+function ncByEeOf(x: NcByEeIn): NocCatRow[] {
+  if (x.ee === TEXT_NONE) {
+    return x.dims.nocCategories
+  }
+  const broads = new Set<string>()
+  for (const b of x.dims.eeBroads) {
+    if (b.label === x.ee) {
+      broads.add(b.broad)
+    }
+  }
+  const out: NocCatRow[] = []
+  for (const c of x.dims.nocCategories) {
+    if (broads.has(c.broad)) {
+      out.push(c)
+    }
+  }
+  return out
 }
 
 /**
@@ -4519,6 +4546,21 @@ export function makeCityChange(fState: FilterState): TextFn {
 export function makeBroadChange(fState: FilterState): TextFn {
   return function onBroad(v: string): void {
     setterOf({ fState, k: FK.broad })(v)
+    setterOf({ fState, k: FK.mid })(TEXT_NONE)
+    setterOf({ fState, k: FK.fine })(TEXT_NONE)
+  }
+}
+
+/**
+ * 造 EE 类别下拉的换值手柄:换类别要把大/中/小类一起清掉(大类随类别联动,留着就成了对不上的条件)。
+ *
+ * @param fState 筛选各格。
+ * @returns 换值手柄。
+ */
+export function makeEeChange(fState: FilterState): TextFn {
+  return function onEe(v: string): void {
+    setterOf({ fState, k: FK.ee })(v)
+    setterOf({ fState, k: FK.broad })(TEXT_NONE)
     setterOf({ fState, k: FK.mid })(TEXT_NONE)
     setterOf({ fState, k: FK.fine })(TEXT_NONE)
   }

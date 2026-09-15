@@ -2893,6 +2893,11 @@ export const EMPTY_DIMS = {
   eeCategories: [],
 
   /**
+   * EE 类别 → 本站大类桥(大类下拉随 EE 类别联动)。
+   */
+  eeBroads: [],
+
+  /**
    * 大西洋试点指定雇主。
    */
   designatedEmployers: [],

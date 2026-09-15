@@ -873,6 +873,21 @@ export type EeOcc = {
 }
 
 /**
+ * EE 类别 → 本站大类桥的一行(DIMS_EE_BROADS;一类别多行,2026-09-14 大类下拉随 EE 类别联动)。
+ */
+export type EeBroad = {
+  /**
+   * 类别人话名(与 EeOcc.label 同源、与 jobs.ee_category 拆段后同值)。
+   */
+  label: string
+
+  /**
+   * 本站大类(jobs.broad)。
+   */
+  broad: string
+}
+
+/**
  * AIP 指定雇主瘦行(维度表)。
  */
 export type DesigEmp = {
@@ -1060,6 +1075,11 @@ export type Dims = {
    * 联邦 EE 类别行。
    */
   eeCategories: EeOcc[]
+
+  /**
+   * EE 类别 → 本站大类桥(大类下拉随 EE 类别联动)。
+   */
+  eeBroads: EeBroad[]
 
   /**
    * AIP 指定雇主(SSR 瘦身:首屏空)。

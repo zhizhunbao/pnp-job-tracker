@@ -111,7 +111,7 @@ export type FilterOpts = {
   district: string[]
 
   /**
-   * 大分类清单(按行业顺序,不用字母序)。
+   * 大分类清单(按行业顺序,不用字母序;2026-09-14 随 EE 类别联动,中/小类跟着收窄)。
    */
   broad: string[]
 
@@ -3676,6 +3676,26 @@ export type FilterOptsIn = {
    * 当前中分类;'' = 全部。
    */
   mid: string
+
+  /**
+   * 当前 EE 类别;'' = 全部(分类树按它收窄)。
+   */
+  ee: string
+}
+
+/**
+ * ncByEeOf 的入参。
+ */
+export type NcByEeIn = {
+  /**
+   * 维度表(取分类树与 EE→大类桥)。
+   */
+  dims: JobDims
+
+  /**
+   * 当前 EE 类别;'' = 全部。
+   */
+  ee: string
 }
 
 /**
