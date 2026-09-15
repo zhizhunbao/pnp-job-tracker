@@ -75,7 +75,7 @@ from company.constants import (
     PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
     PLACES_URL, PRINT_PLACES_DONE_TPL, PRINT_PLACES_IN_TPL, PRINT_PLACES_ROW_TPL,
     PRINT_PLACES_TARGETS_TPL, P_LANGUAGE_CODE, P_PAGE_SIZE_PLACES, P_REGION_CODE, P_TEXT_QUERY,
-    PRINT_SITES_DONE_TPL, PRINT_SITES_TARGETS_TPL, SITES_LIMIT, ST_HIT, ST_MISS,
+    JD_LIMIT, PRINT_SITES_DONE_TPL, PRINT_SITES_TARGETS_TPL, SITES_LIMIT, ST_HIT, ST_MISS,
     ABOUT_LIMIT, ABOUT_RE, ABOUT_REFRESH_DAYS, ABOUT_SLEEP_S, ABOUT_TEXT_MAX, ABOUT_TEXT_MIN,
     ABOUT_TIMEOUT_S, BRIEF_LIMIT, BRIEF_MARKS, BRIEF_PROMPT_TPL, BRIEF_TOKENS, BRIEF_ZH_PROMPT_TPL,
     BRIEF_ZH_TOKENS, CRAWL_SLUG_COMPANIES, ENV_LLM_BASE, ENV_LLM_MODEL, HOME_TEXT_MAX, IN_ABOUT_ENRICH,
@@ -663,10 +663,14 @@ def find_websites(x: FindWebsitesIn) -> FindOut:
     """
     found_jd = 0
     hints = jd_domain_hints()
+    jd_budget = JD_LIMIT
     with make_polite_client(timeout=FIND_CLIENT_TIMEOUT_S) as client:
-        for sl, v in x.nosite.items():
+        for sl, v in sorted(x.nosite.items(), key=nosite_priority_of):
+            if jd_budget <= 0:
+                break
             if sl in x.targets or should_skip_find(SkipFindIn(cache=x.cache, slug=sl)) or sl not in hints:
                 continue
+            jd_budget -= 1
             for dom in sorted(hints[sl]):
                 if guard_match(GuardMatchIn(client=cast(HttpClientLike, client), name=v.name, dom=dom)):
                     site = HTTPS_PREFIX + dom
@@ -1131,7 +1135,8 @@ def to_industry_cell(value: str) -> dict:
 
 
 def lookup_company_places() -> None:
-    """Places 步入口:在招担保雇主按在招数排队,限量查 Google Places,增量落 OUT_PLACES。
+    """Places 步入口:在招雇主按在招数排队(担保的在前),限量查 Google Places,增量落 OUT_PLACES。
+    (原句「在招担保雇主按在招数排队」;2026-09-15 扩母集到全部在招雇主,预算仍由免费额度封顶。)
 
     没密钥直接退(手动件缺配置不是代码病);单家失败只记 status 不炸整轮。
     """
@@ -1205,11 +1210,13 @@ def tier_of(t: PlaceTarget) -> str:
 
 
 def lookup_sponsor_websites() -> None:
-    """sites 步入口:在招担保雇主里缺官网的,走第 5 段 D2 阶梯(JD 线索 → DDG)找官网,
+    """sites 步入口:在招雇主里缺官网的,走第 5 段 D2 阶梯(JD 线索 → DDG)找官网,
     命中记 found 进 OUT_ENRICH_CACHE,下一轮 build 合并进 companies.website。
 
     2026-09-04 Frank「走 DuckDuckGo 跑起来」:免费替代 Places Enterprise 档;母集限把脉页
     雇主表那批,不是全量预抓。
+    2026-09-15 Frank「1 推荐」改判:母集扩到全部在招雇主(上一句「母集限把脉页雇主表那批」就此作废,
+    原文保留);每轮预算不变(搜索 SITES_LIMIT、Wikidata WIKI_LIMIT),只是队伍变长、按名次先头部后尾段。
     """
     cache: dict[str, EnrichRecord] = {}
     if OUT_ENRICH_CACHE.exists():
@@ -1224,7 +1231,7 @@ def lookup_sponsor_websites() -> None:
     if cse is None:
         say(NOTE_NO_CSE)
     limit = sites_limit_of(cse)
-    say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), rank=PULSE_RANK_MAX, nosite=len(nosite), cache=len(cache),
+    say(PRINT_SITES_TARGETS_TPL.format(cands=len(cands), nosite=len(nosite), cache=len(cache),
                                        backend=sites_backend_of(cse), limit=limit))
     targets: dict[str, SiteLead] = {}
     got = find_websites(FindWebsitesIn(cse=cse, cache=cache, targets=targets, nosite=nosite, find_limit=limit))
@@ -1234,10 +1241,15 @@ def lookup_sponsor_websites() -> None:
 
 
 def sponsor_nosite_of(cands: list[PlaceTarget]) -> dict[str, NositeLead]:
-    """候选里缺官网且在本大类前 PULSE_RANK_MAX 名的 → find_websites 要的 nosite 表(名次、在招数 = 搜索优先级)。"""
+    """候选里缺官网的 → find_websites 要的 nosite 表(名次、在招数 = 搜索优先级)。
+
+    原口径(原文保留):候选里缺官网**且在本大类前 PULSE_RANK_MAX 名**的。
+    2026-09-15 Frank「1 推荐」扩母集后去掉名次闸:尾段雇主排不进搜索就永远没官网,后面的正文、简介、
+    行业分类全断在这一步。名次仍进 NositeLead —— 搜索按 nosite_priority_of 先头部后尾段,每轮预算不变。
+    """
     nosite: dict[str, NositeLead] = {}
     for t in cands:
-        if t.website == "" and t.rank < PULSE_RANK_MAX:
+        if t.website == "":
             nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs, rank=t.rank)
     return nosite
 
@@ -1285,19 +1297,31 @@ def job_counts_by_slug() -> JobCounts:
 
 
 def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
-    """把脉页雇主段两栏的母集:在招且(近四季有 LMIA 或 在招 TEER 0-3 岗);按在招数、LMIA 数降序。"""
+    """公司信息抓取的母集:全部在招雇主 —— 担保雇主(近四季有 LMIA 或 在招 TEER 0-3 岗)按大类名次在前,
+    其余在招雇主按在招岗数降序接在后面。
+
+    原口径(2026-09-04 起,原文保留):把脉页雇主段两栏的母集 = 在招且(近四季有 LMIA 或 在招
+    TEER 0-3 岗);按在招数、LMIA 数降序。
+    2026-09-15 Frank「1 推荐」扩到全部在招雇主:分类清洗要拿公司简介判行业,实测 35,254 家在招雇主
+    只有 28% 有官网、19% 有简介,只跑担保雇主那批永远补不到尾巴。尾段名次从 PULSE_RANK_MAX 起排
+    (rank_tail):搜官网按序轮得到,about 步的浏览器兜底仍只认前 PULSE_RANK_MAX 名,不放量烧浏览器。
+    """
     out: list[PlaceTarget] = []
+    tail: list[PlaceTarget] = []
     for c in x.companies:
         open_n = x.counts.open.get(c.slug, 0)
         if open_n <= 0:
             continue
+        target = PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
+                             open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug)))
         if c.lmia_4q <= 0 and x.counts.skilled.get(c.slug, 0) <= 0:
+            tail.append(target)
             continue
-        out.append(PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
-                               open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug))))
+        out.append(target)
     rank_within_broad(out)
     out.sort(key=places_priority_of)
-    return out
+    rank_tail(tail)
+    return out + tail
 
 
 def broad_of(votes: Counter | None) -> str:
@@ -1325,6 +1349,15 @@ def rank_within_broad(targets: list[PlaceTarget]) -> None:
 def open_then_lmia_of(t: PlaceTarget) -> tuple:
     """组内排序键:在招多的先,再看 LMIA 量,最后 slug 稳序。"""
     return (-t.open_jobs, -t.lmia_4q, t.slug)
+
+
+def rank_tail(targets: list[PlaceTarget]) -> None:
+    """尾段(非担保的在招雇主)原地排序并给名次:在招多的先,名次从 PULSE_RANK_MAX 起接着担保段往下排
+    (2026-09-15 扩母集)。名次只作排队序,尾段拿不到前 PULSE_RANK_MAX 名那两项特权
+    (about 步浏览器兜底、fetch_about 的 JS 壳重渲)。"""
+    targets.sort(key=open_then_lmia_of)
+    for i, t in enumerate(targets):
+        t.rank = PULSE_RANK_MAX + i
 
 
 def places_priority_of(t: PlaceTarget) -> tuple:
@@ -1451,7 +1484,8 @@ def to_place_record(x: ToPlaceIn) -> PlaceRecord:
 
 
 def crawl_company_about() -> None:
-    """about 步入口:有官网的在招担保雇主,抓首页找 About 页,两页正文合成一份落 OUT_ABOUT。
+    """about 步入口:有官网的在招雇主,抓首页找 About 页,两页正文合成一份落 OUT_ABOUT。
+    (原句「有官网的在招担保雇主」;2026-09-15 扩母集到全部在招雇主。)
 
     原文一律经 crawl 层读写门(有缓存不重抓);单家失败只记 status 不炸整轮。
     2026-09-08 起前 PULSE_RANK_MAX 名 403 / 验证壳 / JS 壳走 crawl 域有头浏览器兜底(async 单例),
@@ -1510,7 +1544,8 @@ def read_about_cache() -> dict[str, AboutRecord]:
 
 
 def about_targets() -> list[AboutTarget]:
-    """在招担保雇主里有官网的(库里的,或 sites 步刚找到还没合并的),保持候选序。"""
+    """在招雇主里有官网的(库里的,或 sites 步刚找到还没合并的),保持候选序。
+    (原句「在招担保雇主里有官网的」;2026-09-15 扩母集到全部在招雇主。)"""
     enrich: dict[str, EnrichRecord] = {}
     if IN_ABOUT_ENRICH.exists():
         for sl, d in json.loads(IN_ABOUT_ENRICH.read_text(encoding=TEXT_ENCODING)).items():

@@ -536,7 +536,8 @@ IN_PLACES_COMPANIES = paths.MART / "companies.json"
 """places 步读:公司表(担保信号 lmiaPositions4q 与省码 region)。"""
 
 IN_PLACES_JOBS = paths.MART / "jobs.json"
-"""places 步读:岗位表(在招数 = 查询优先级;只查在招的担保雇主)。"""
+"""places 步读:岗位表(在招数 = 查询优先级;查全部在招雇主,担保的排在前)。
+2026-09-15 扩母集前原句:只查在招的担保雇主。"""
 
 OUT_PLACES = paths.RAW_COMPANIES / "company_places.json"
 """places 步写:slug → PlaceRecord(官网/地址/业务类型;09 汇装的候选输入)。原响应不在这:
@@ -889,8 +890,9 @@ NOTE_NO_KEY = "GOOGLE_PLACES_KEY 未设,places 步跳过"
 PRINT_PLACES_IN_TPL = "IN companies : {companies}\nIN jobs      : {jobs}"
 """places 步开工报路径。"""
 
-PRINT_PLACES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 已查 {cached} · 本轮查 {todo}(limit {limit})"
-"""places 步报候选与本轮量。"""
+PRINT_PLACES_TARGETS_TPL = "在招雇主 {cands} 家 · 已查 {cached} · 本轮查 {todo}(limit {limit})"
+"""places 步报候选与本轮量。
+2026-09-15 母集扩到全部在招雇主(Frank「1 推荐」),原句「在招担保雇主 {cands} 家 · 已查 …」。"""
 
 PRINT_PLACES_ROW_TPL = "  {status:4} {tier:10} {name} → {site} | {address} | {ptype}"
 """每查一家报一行(试跑期人眼复核用)。"""
@@ -902,8 +904,16 @@ SITES_LIMIT = 60
 """sites 步一轮的 DDG 预算。2026-09-04 首跑排 2,600 家一口气清 → 中途被 DDG 按 IP 封;
 09-05 进定时链后改成细水长流:每轮 60 家(与老 enrich 步的 FIND_LIMIT 同量,从没触发过封禁)。"""
 
-PRINT_SITES_TARGETS_TPL = "在招担保雇主 {cands} 家 · 前 {rank} 名缺官网 {nosite} · 缓存 {cache} · 搜索走 {backend}(limit {limit})"
-"""sites 步报候选、缺官网数与本轮搜索后端。"""
+JD_LIMIT = 300
+"""sites 步阶梯①(JD 线索验域名)一轮的预算。2026-09-15 母集扩到全部在招雇主后补:
+这一档原来没闸 —— 队伍只有各大类前 100 名(2,638 家)时无所谓,扩母集后缺官网的有 25,107 家,
+一轮可能对外发几千个验证请求。按名次先头部后尾段,每轮 300 家(比搜索档宽:验域名是直接打
+目标站、不打搜索引擎,封禁风险低,但也不该无限)。"""
+
+PRINT_SITES_TARGETS_TPL = "在招雇主 {cands} 家 · 缺官网 {nosite} · 缓存 {cache} · 搜索走 {backend}(limit {limit})"
+"""sites 步报候选、缺官网数与本轮搜索后端。
+2026-09-15 母集扩到全部在招雇主(Frank「1 推荐」),原句「在招担保雇主 {cands} 家 · 前 {rank} 名缺官网
+{nosite}」里的名次格随之退役 —— 缺官网的全进 nosite,名次只决定搜索先后。"""
 
 PRINT_SITES_DONE_TPL = "本轮 JD 线索 +{jd} · Wikidata +{wiki} · 搜索 +{search} · 累计成功 {total}/{n} 家 → {out}"
 """sites 步收尾报数(found 记录由下一轮 build 合并官网进 companies)。"""
@@ -1002,8 +1012,9 @@ NOTE_CHALLENGE = "challenge page"
 NOTE_NO_TEXT = "no text"
 """两页都没有可用正文。"""
 
-PRINT_ABOUT_TARGETS_TPL = "有官网的在招担保雇主 {targets} 家 · 缓存 {cache} · 本轮抓 {todo}(limit {limit})"
-"""about 步报候选与本轮量。"""
+PRINT_ABOUT_TARGETS_TPL = "有官网的在招雇主 {targets} 家 · 缓存 {cache} · 本轮抓 {todo}(limit {limit})"
+"""about 步报候选与本轮量。
+2026-09-15 母集扩到全部在招雇主,原句「有官网的在招担保雇主 {targets} 家 · 缓存 …」。"""
 
 HTTP_FORBIDDEN = 403
 """WAF 拒 httpx 的状态码:前 PULSE_RANK_MAX 名转浏览器兜底(2026-09-08 Frank /fe 拍板;母集里 403 704 家、
