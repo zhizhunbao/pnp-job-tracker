@@ -4505,6 +4505,8 @@ export function makeSlotChange(x: SlotIn): TextFn {
  *
  * @param x 筛选各格与首屏筛选。
  * @returns 无。
+ * 2026-09-14 晚 Frank「全部市 好像和省没联动上」:省槽存的是全名(市联动靠 provCodeOf 全名→码),
+ * 这里先前直接写了两位码,壳上显示对、市却退成全国 —— 改成经 PROV_NAMES 换全名再落格。
  */
 export function applyHomeProvince(x: HomeProvinceIn): void {
   const given = x.initial[FK.prov]
@@ -4518,7 +4520,11 @@ export function applyHomeProvince(x: HomeProvinceIn): void {
   if (prov === TEXT_NONE) {
     return
   }
-  setterOf({ fState: x.fState, k: FK.prov })(prov)
+  const full = PROV_NAMES[prov]
+  if (full == null) {
+    return
+  }
+  setterOf({ fState: x.fState, k: FK.prov })(full)
 }
 
 /**
