@@ -124,6 +124,11 @@ export type FilterOpts = {
    * 小分类清单(跟着大/中类联动)。
    */
   fine: string[]
+
+  /**
+   * EE 类别清单(维度表顺序,不联动;值 = 数据层中文 label。2026-09-14 常用一行大类之前)。
+   */
+  ee: string[]
 }
 
 /**

@@ -20,7 +20,7 @@ import css from './advisor.module.css'
  * @param props 卡标题、抓取日期、原文逐条与译文逐条。
  * @returns 卡;一条都没有时整卡不渲(绝不留孤儿小标题)。
  */
-export function NocList({ head, fetched, items, zhItems }: NocListIn) {
+export function NocList({ head, fetched, items, zhItems, note }: NocListIn) {
   if (items.length === 0) {
     return null
   }
@@ -40,6 +40,7 @@ export function NocList({ head, fetched, items, zhItems }: NocListIn) {
         {head}
         {fetched !== TEXT_NONE && <span className={cssOf(css.fetched)}>{fetched}</span>}
       </div>
+      {note !== TEXT_NONE && <p className={cssOf(css.note)}>{note}</p>}
       <ul className={cssOf(css.duties)}>{lis}</ul>
     </div>
   )

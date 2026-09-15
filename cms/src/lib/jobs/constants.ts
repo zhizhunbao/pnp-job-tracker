@@ -868,6 +868,11 @@ export const W = {
   pilotLike: "COALESCE(j.pilot,'') LIKE ",
 
   /**
+   * EE 类别按段命中(参数在前的后缀:数据层多类别用「/」拼接,选「医生」也命中「医疗社服/医生」)。
+   */
+  eeSeg: " = ANY(string_to_array(COALESCE(j.ee_category,''), '/'))",
+
+  /**
    * 状态等值前缀(#136 显式选「已下架」仍可看)。
    */
   statusEq: "COALESCE(j.status,'open') = ",
@@ -1171,6 +1176,11 @@ export const FK = {
    * 试点。
    */
   pilot: 'fPilot',
+
+  /**
+   * EE 类别(2026-09-14 Frank「加个筛选放在大类前面」;值 = 数据层中文 label)。
+   */
+  ee: 'fEe',
 
   /**
    * 状态。
@@ -2269,7 +2279,7 @@ export const nocLabels: Record<Lang, Dict> = {
  * (#73 排序白名单同款教训,fElig 漏过一回)。
  */
 export const JOBS_FILTER_KEYS: string[] = ['q', 'fNoc', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
-  'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig']
+  'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fEe', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig']
 
 /**
  * /api/jobs 的每页行数。

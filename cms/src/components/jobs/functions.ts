@@ -2666,12 +2666,12 @@ function uniq(xs: string[]): string[] {
 
 /**
  * 联动下拉的选项:省/市/区来自维度表(E10-01 P3:维度独立加载后不再从 job 行现推),
- * 大/中/小类来自 noc_categories。
+ * 大/中/小类来自 noc_categories;EE 类别来自 ee_categories(2026-09-14 Frank「加个筛选放在大类前面」,不联动)。
  * 大类按行业顺序(BROAD_SLUGS = etl/noc_buckets.BROADS 的镜像),不用 uniq 的字母序 ——
  * 对中文那是按码位排的,等于乱序;清单外的值(未分类)垫底。
  *
  * @param x 维度表与当前的省/市/大类/中类。
- * @returns 六组选项。
+ * @returns 七组选项。
  */
 export function filterOptsOf(x: FilterOptsIn): FilterOpts {
   const code = provCodeOf(x.prov)
@@ -2683,6 +2683,7 @@ export function filterOptsOf(x: FilterOptsIn): FilterOpts {
     broad: broadOptsOf(nc),
     mid: midOptsOf({ nc, broad: x.broad }),
     fine: fineOptsOf({ nc, broad: x.broad, mid: x.mid }),
+    ee: eeOptsOf(x.dims),
   }
 }
 
@@ -2816,6 +2817,25 @@ function fineOptsOf(x: FineOptsIn): string[] {
     }
   }
   return uniq(out)
+}
+
+/**
+ * EE 类别清单(维度表一类多行,按首现去重保官方顺序 —— 不走 uniq 的字母序,对中文那是码位乱序;
+ * 值 = 数据层 label)。
+ *
+ * @param dims 维度表。
+ * @returns EE 类别。
+ */
+function eeOptsOf(dims: JobDims): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const c of dims.eeCategories) {
+    if (seen.has(c.label) === false) {
+      seen.add(c.label)
+      out.push(c.label)
+    }
+  }
+  return out
 }
 
 /**
@@ -4578,6 +4598,18 @@ export function makePilotLabel(t: TFn): (v: string) => string {
       return t(K_OPT + v)
     }
     return v
+  }
+}
+
+/**
+ * 造 EE 类别下拉的显示名函数:值是数据层中文 label,过 eeDisplay 换成界面语言。
+ *
+ * @param t 取词函数。
+ * @returns 显示名函数。
+ */
+export function makeEeLabel(t: TFn): (v: string) => string {
+  return function eeLabel(v: string): string {
+    return eeDisplay({ t, label: v })
   }
 }
 

@@ -577,6 +577,7 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
   const [fPnp, setFPnp] = useState(seedFilter({ f: initialFilters, k: FK.pnp }))
   const [fAip, setFAip] = useState(seedFilter({ f: initialFilters, k: FK.aip }))
   const [fPilot, setFPilot] = useState(seedFilter({ f: initialFilters, k: FK.pilot }))
+  const [fEe, setFEe] = useState(seedFilter({ f: initialFilters, k: FK.ee }))
   const [fStatus, setFStatus] = useState(seedFilter({ f: initialFilters, k: FK.status }))
   const [fOrigin, setFOrigin] = useState(seedFilter({ f: initialFilters, k: FK.origin }))
   const [fScore, setFScore] = useState(seedFilter({ f: initialFilters, k: FK.score }))
@@ -600,6 +601,7 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
     [FK.pnp]: { v: fPnp, set: setFPnp },
     [FK.aip]: { v: fAip, set: setFAip },
     [FK.pilot]: { v: fPilot, set: setFPilot },
+    [FK.ee]: { v: fEe, set: setFEe },
     [FK.status]: { v: fStatus, set: setFStatus },
     [FK.origin]: { v: fOrigin, set: setFOrigin },
     [FK.score]: { v: fScore, set: setFScore },

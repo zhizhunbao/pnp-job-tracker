@@ -824,6 +824,9 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
   } else if (s(FK.pilot) === FV.rcip || s(FK.pilot) === FV.fcip) {
     conds.push(W.pilotLike + param(PCT + s(FK.pilot) + PCT))
   }
+  if (s(FK.ee) !== '') {
+    conds.push(param(s(FK.ee)) + W.eeSeg)
+  }
   if (s(FK.status) !== '') {
     conds.push(W.statusEq + param(s(FK.status)))
   } else {

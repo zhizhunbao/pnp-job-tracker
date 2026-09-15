@@ -891,6 +891,11 @@ export const URL_TO_FILTER: Record<string, string> = {
   pilot: 'fPilot',
 
   /**
+   * EE 类别(2026-09-14 Frank「加个筛选放在大类前面」)。
+   */
+  ee: 'fEe',
+
+  /**
    * 在招/已下架。
    */
   st: 'fStatus',
@@ -1010,6 +1015,11 @@ export const FK = {
    * 试点社区。
    */
   pilot: 'fPilot',
+
+  /**
+   * EE 类别。
+   */
+  ee: 'fEe',
 
   /**
    * 在招/已下架。
