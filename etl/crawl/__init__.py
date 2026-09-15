@@ -19,6 +19,13 @@ BROWSER_CHANNEL = os.environ.get("BROWSER_CHANNEL", "")
 自带 chromium(1234 版)再开报 profile 降级 exit 33 —— 本机跑登录源(hireac)必须 BROWSER_CHANNEL=chrome;
 容器里 Linux 无 Chrome 仍走自带 chromium。真解法(升 playwright 或本机也改系统 Chrome)待 Frank 拍。"""
 
+BROWSER_COOKIES = os.environ.get("BROWSER_COOKIES", "")
+"""get_browser_page 的 cookie 模式开关:空串 = 照旧开持久 profile;非空 = PROFILE_DIR 下的 cookie 文件名 ——
+不开持久 profile,起一个干净浏览器,把文件里的明文 cookie 加载进去。
+2026-09-15 hireac 进容器(Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):共享 profile 里的
+cookie 是 Windows Chrome 用本机账户密钥加密的,容器里 Linux chromium 读得到文件解不开;改由 Windows 端登录后
+导出明文 cookie(hireac --only export),容器加载。实测容器加载后 3.2 秒进到 HireAC 岗位列表页。"""
+
 META = {
     "role": "crawl",
     "method": "httpx",

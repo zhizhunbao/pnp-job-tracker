@@ -7,9 +7,10 @@
 import asyncio
 from types import SimpleNamespace
 
-CACHE = SimpleNamespace(pw=None, context=None, page=None, unavailable=False,
+CACHE = SimpleNamespace(pw=None, browser=None, context=None, page=None, unavailable=False,
                         lock=asyncio.Lock(), sem=asyncio.Semaphore(1), patches=())
-"""浏览器单例状态:pw = playwright 驱动;context = 持久上下文(cf_clearance 随 profile
+"""浏览器单例状态:browser = cookie 模式(BROWSER_COOKIES 非空)起的非持久浏览器,持久 profile 模式恒 None(2026-09-15);
+pw = playwright 驱动;context = 持久上下文(cf_clearance 随 profile
 落盘,验证过一次后续免检);page = 唯一复用标签;unavailable = playwright 缺席/启动失败
 (警告一次,后续 403 页直接跳过);lock = 启动互斥;sem = 单标签串行闸(上限 1);
 patches = 已装配的站点脚本补丁表(route 回调只收一参,补丁表从这格取 —— 2026-09-03 由

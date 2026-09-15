@@ -12,6 +12,10 @@ Cloudflare 403,2026-09-13 实撞);列表靠页内 loadPostingTable() 翻页。�
 🔴 只在 Frank 本机手动跑(登录态是 Windows Chrome 加密 cookie,容器拿不到):不进 docker-compose,
 无角色容器;起法 `BROWSER_CHANNEL=chrome python etl/hireac/main.py`(共享 profile 已被 Chrome 15x
 打开过,自带 chromium 开不了,见 crawl/__init__ BROWSER_CHANNEL)。
+2026-09-15 进容器(Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):上面「不进 docker-compose」作废 ——
+本机 `BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export` 把学院与微软登录的 cookie 导成明文文件
+(etl/crawl/.browser-profile/hireac-cookies.json,gitignore),docker-compose hireac 役以 crawl 重镜像 + BROWSER_COOKIES
+加载它有头抓(实测 3.2 秒进岗位列表页),每轮登录成功后写回续期;登录过期停轮不发心跳 → healthchecks 邮件提醒 Frank。
 
 META = 域即役的调度声明(形制字段;本域不挂容器,interval 只是声明)。
 
@@ -25,8 +29,8 @@ DETAILS_PER_RUN = os.environ.get("DETAILS_PER_RUN", "1000")
 
 META = {
     "role": "hireac",
-    "method": "browser",     # 登录态浏览器(共享 profile);不对应任何 Dockerfile,本机手动跑
+    "method": "browser",     # 登录态浏览器(共享 profile);不对应任何 Dockerfile,本机手动跑 —— 2026-09-15 起容器 hireac 役用 crawl 重镜像 + cookie 文件
     "interval": 86400,       # 声明值:板日更,手动一天一跑够用
     "seed": False,           # 抓取源只刷 raw/processed,不灌库(灌库归 load 域 build 链)
-    "ping": False,           # 无容器无心跳
+    "ping": True,            # 2026-09-15 进容器:本角色唯一单元,登录过期停轮不发心跳 → healthchecks 邮件提醒(原:无容器无心跳)
 }

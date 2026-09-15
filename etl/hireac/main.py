@@ -6,10 +6,13 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 「一步失败中止本轮」由段函数抛出的异常兑现(main 的 except 捕获后 return 1);
 登录态过期是最常见的失败:抛错停轮,Frank 在共享 profile 里重登后再跑。
 🔴 本域只在 Frank 本机手动跑(登录态是 Windows Chrome 加密 cookie,容器拿不到),不进 docker-compose。
+2026-09-15 进容器(Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):上一行作废 ——
+本机 --only export 把登录 cookie 导成文件,docker-compose hireac 役加载它按 META 节奏自动跑;本机手动跑仍可用。
 一律从仓库根执行:
     BROWSER_CHANNEL=chrome python etl/hireac/main.py            # 默认链(3 步)
     python etl/hireac/main.py --only parse                        # 单步调试(见 TOOLS;parse/store 只读缓存,不起浏览器)
     DETAILS_PER_RUN=200 BROWSER_CHANNEL=chrome python etl/hireac/main.py   # 压小每轮回放量
+    BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export  # 本机 Chrome 登录后把 cookie 导给容器
 
 @author Frank
 @time 2026-09-13
@@ -19,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from hireac.functions import build_hireac_postings, parse_hireac_details, scrape_hireac
+from hireac.functions import build_hireac_postings, export_hireac_cookies, parse_hireac_details, scrape_hireac
 
 SCHEDULED = [
     ("scrape", scrape_hireac),
@@ -38,8 +41,10 @@ TOOLS = {
     "scrape": scrape_hireac,
     "parse": parse_hireac_details,
     "store": build_hireac_postings,
+    "export": export_hireac_cookies,
 }
-"""全部可 --only 点名的步(与默认链同一份三步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步(与默认链同一份三步,本域没有不进链的手动件)。
+2026-09-15 多一个不进链的手动件 export:本机 Chrome 登录后把 cookie 导给容器(BROWSER_CHANNEL=chrome 下跑)。"""
 
 
 def main() -> int:

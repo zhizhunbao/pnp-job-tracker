@@ -178,6 +178,21 @@ services:
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
 
+  # Algonquin HireAC 校内岗位板(2026-09-15 进容器,Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):
+  # 登录墙是学院微软单点登录;共享 profile 里的 cookie 是 Windows Chrome 加密的,容器解不开 —— Frank 本机 Chrome 登录后
+  # 跑 `BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export` 导出明文 cookie 到 etl/crawl/.browser-profile/(gitignore),
+  # 本容器加载它起有头 chromium 抓;每轮登录成功后写回续期。登录过期 = 停轮不发心跳 → healthchecks 邮件提醒 Frank 重登重导。
+  hireac:                          # 校内岗位板抓取(列表翻页 + 详情回放 → raw / processed;build 角色汇装灌库)
+    <<: *etl
+    build:
+      context: .
+      dockerfile: etl/crawl/Dockerfile
+    environment:
+      SOURCE: hireac
+      BROWSER_COOKIES: hireac-cookies.json            # = hireac 域 COOKIES_FILE;空串会退回持久 profile(容器里解不开,别留空)
+      HEALTHCHECK_PING_HIREAC: ${HEALTHCHECK_PING_HIREAC:-}   # 根 .env;空 = 不发心跳(登录过期就没有邮件提醒)
+      TZ: EST5EDT
+
   pte:                             # ynwac 机经研究:抓公开 bundle → 解析 → diff 新题雷达(周更;只产 data/pte/,不灌库)
     <<: *etl
     environment:

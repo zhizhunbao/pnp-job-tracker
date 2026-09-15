@@ -24,11 +24,12 @@ from typing import cast
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
 from log.functions import say
-from crawl.functions import close_browser, get_browser_page, load_cache_index, put_cached_pages
-from crawl.scheme import CachePage, CachePutManyIn
+from crawl.constants import PROFILE_DIR
+from crawl.functions import close_browser, get_browser_page, load_cache_index, put_cached_pages, save_browser_cookies
+from crawl.scheme import CachePage, CachePutManyIn, SaveCookiesIn
 from hireac import DETAILS_PER_RUN
 from hireac.constants import (
-    ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
+    ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, COOKIE_DOMAINS, COOKIES_FILE, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
     DETAIL_MARK, DETAIL_SLEEP_MS, DETAIL_TICK, ENC_UTF8, ERR_BROWSER_DOWN, ERR_LOGIN_TPL, ERR_NO_VIEW_ALL,
     ERR_PAGE_STALE_TPL, ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
     F_APPLY_WEB, F_CATEGORY, F_CITY, F_COUNTRY, F_DEADLINE, F_DESCRIPTION, F_DESCRIPTION_CC, F_DIVISION, F_HOURS,
@@ -40,7 +41,7 @@ from hireac.constants import (
     K_NOC, K_POSTING_ID, K_POSTING_ID_FORM, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE, K_TITLE_ORIG, K_URL,
     K_VALID_THROUGH, KIND_HOURLY_KEY, KIND_SALARY_KEY, KIND_UNIT_WORD, LANG_EN, LIST_KEY_TPL, LIST_SETTLE_MS, LOAD_PAGE_JS_TPL, LOGIN_HOST, NAV_TIMEOUT_MS,
     NOT_LOGGED_PATH, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGE_NUM_RE, PAGE_ONE, PAGE_WAIT_STEP_MS,
-    PAGE_WAIT_TRIES, PERCENT, POSTINGS_URL, PRINT_DETAIL_BAD_TPL, PRINT_DETAIL_DONE_TPL,
+    PAGE_WAIT_TRIES, PERCENT, POSTINGS_URL, PRINT_COOKIES_TPL, PRINT_DETAIL_BAD_TPL, PRINT_DETAIL_DONE_TPL,
     PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL, PRINT_ROWS_DONE_TPL,
     PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, PROV_CODES, PROV_OF_CITY, QUOTE_DOUBLE, QUOTE_SINGLE,
     RATE_FLOOR_S, ROW_RE, SALARY_RANGE_TPL, SALARY_SNIPPET_RE, SALARY_TPL, SALARY_UNIT_WORD, SCRIPT_RE, SECONDS_FMT,
@@ -86,12 +87,34 @@ async def scrape_in_browser() -> None:
     page = cast(BrowserPageLike, raw_page)
     try:
         await open_board(page)
+        kept = await save_browser_cookies(SaveCookiesIn(file=PROFILE_DIR / COOKIES_FILE, domains=COOKIE_DOMAINS))
+        say(PRINT_COOKIES_TPL.format(n=kept, path=PROFILE_DIR / COOKIES_FILE))
         rows = await collect_rows(page)
         OUT_ROWS.parent.mkdir(parents=True, exist_ok=True)
         paths.write_json(paths.WriteJsonIn(path=OUT_ROWS, payload=rows, indent=JSON_INDENT))
         say(PRINT_ROWS_DONE_TPL.format(ids=len(rows), out=OUT_ROWS))
         out = await fetch_details(DetailBatchIn(page=page, rows=rows))
         say(PRINT_DETAIL_DONE_TPL.format(done=out.done, slug=SLUG_CRAWL, failed=out.failed, skipped=out.skipped))
+    finally:
+        await close_browser()
+
+
+def export_hireac_cookies() -> None:
+    """--only export 入口(Frank 本机手动;2026-09-15 进容器):本机 Chrome 共享 profile 里登录好 HireAC 后,把学院与微软登录的
+    cookie 导成 PROFILE_DIR/COOKIES_FILE 给容器 hireac 役加载。登录过期时先在本机 Chrome 重登,再跑这一步。"""
+    asyncio.run(export_in_browser())
+
+
+async def export_in_browser() -> None:
+    """进板确认已登录(open_board 落到登录页即抛,不导坏 cookie)→ cookie 按域名筛后落盘;会话结束关浏览器。"""
+    raw_page = await get_browser_page()
+    if raw_page is None:
+        raise RuntimeError(ERR_BROWSER_DOWN)
+    page = cast(BrowserPageLike, raw_page)
+    try:
+        await open_board(page)
+        kept = await save_browser_cookies(SaveCookiesIn(file=PROFILE_DIR / COOKIES_FILE, domains=COOKIE_DOMAINS))
+        say(PRINT_COOKIES_TPL.format(n=kept, path=PROFILE_DIR / COOKIES_FILE))
     finally:
         await close_browser()
 

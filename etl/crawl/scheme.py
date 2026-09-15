@@ -281,6 +281,28 @@ class CachePutManyIn:
 
 
 @dataclass
+class SaveCookiesIn:
+    """save_browser_cookies() 入参(2026-09-15 cookie 模式:当前浏览器上下文的 cookie 按域名筛后落盘)。"""
+
+    file: Path
+    """落盘路径(PROFILE_DIR 下,随 .browser-profile/ 被 gitignore)。"""
+
+    domains: tuple
+    """要留的域名(子域算在内);空 = 全留。"""
+
+
+@dataclass
+class CookieKeepIn:
+    """cookie_domain_kept() 入参。"""
+
+    domain: str
+    """cookie 的域名(已削前导点)。"""
+
+    domains: tuple
+    """要留的域名清单;空 = 全留。"""
+
+
+@dataclass
 class ScopeIn:
     """is_in_scope() 入参。"""
 

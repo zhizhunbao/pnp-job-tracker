@@ -337,6 +337,15 @@ DIFF_SHOW_MAX = 20
 PROFILE_DIR = Path(__file__).resolve().parent / ".browser-profile"
 """持久浏览器 profile(cf_clearance 落盘,验证过一次后续免检)。"""
 
+K_COOKIE_DOMAIN = "domain"
+"""playwright cookie 字典的域名键(save_browser_cookies 按它筛;2026-09-15 cookie 模式)。"""
+
+COOKIE_DOMAIN_DOT = "."
+"""cookie 域名的前导点(「.login.microsoftonline.com」与「login.microsoftonline.com」同属一域,比较前削掉)。"""
+
+COOKIES_INDENT = 1
+"""cookie 文件落盘缩进(文件在 PROFILE_DIR 下,随 .browser-profile/ 被 gitignore,不进仓库)。"""
+
 NAV_TIMEOUT_MS = 45000
 """浏览器导航超时。"""
 

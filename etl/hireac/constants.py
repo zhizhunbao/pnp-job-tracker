@@ -172,8 +172,21 @@ PERCENT = 100
 ERR_BROWSER_DOWN = "浏览器起不来(本机需 BROWSER_CHANNEL=chrome + uv sync --extra browser)"
 """get_browser_page 给 None 时抛出的话。"""
 
-ERR_LOGIN_TPL = "登录态过期,停在 {url};请 Frank 在共享 profile 里重登 HireAC 后再跑"
-"""进板落到登录页 / 未登录页时抛出的话(不静默降级)。"""
+ERR_LOGIN_TPL = ("登录态过期,停在 {url};请 Frank 在本机 Chrome 里重登 HireAC,"
+                 "再跑 BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export 把新登录导给容器")
+"""进板落到登录页 / 未登录页时抛出的话(不静默降级)。
+原句「请 Frank 在共享 profile 里重登 HireAC 后再跑」;2026-09-15 进容器后补上重导 cookie 这一步。"""
+
+COOKIES_FILE = "hireac-cookies.json"
+"""登录 cookie 文件名(crawl PROFILE_DIR 下,随 .browser-profile/ 被 gitignore;= docker-compose hireac 役的 BROWSER_COOKIES)。
+2026-09-15 进容器:Windows 端 --only export 导出,容器每轮登录成功后写回续期。"""
+
+COOKIE_DOMAINS = ("algonquincollege.com", "microsoftonline.com", "login.live.com")
+"""要导出的 cookie 域名(学院单点登录 + HireAC 会话 + 微软登录;子域算在内)。只导这几家,不带 Frank 别的网站。
+2026-09-15 实测导出 28 条:sts / hireac / .algonquincollege.com 10 条、login.microsoftonline.com 16 条、login.live.com 2 条。"""
+
+PRINT_COOKIES_TPL = "[OK] 登录 cookie {n} 条 → {path}"
+"""cookie 落盘报数(导出与每轮写回共用)。"""
 
 ERR_NO_VIEW_ALL = "概览页没找到「View all available postings」钮(页面改版?)"
 """点不到入口钮时抛出的话。"""

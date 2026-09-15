@@ -12,4 +12,6 @@ FROM python:3.12-slim
 RUN pip install --no-cache-dir playwright "httpx>=0.27" "beautifulsoup4>=4.12" "lxml>=5.0" "loguru>=0.7" "pydantic>=2.7" \
  && playwright install --with-deps chromium \
  && apt-get update && apt-get install -y --no-install-recommends xvfb && rm -rf /var/lib/apt/lists/*
-CMD ["sh", "-c", "Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp >/dev/null 2>&1 & export DISPLAY=:99; sleep 1; exec python etl/sched/main.py"]
+# 2026-09-15 起 Xvfb 前先删 /tmp 残留显示锁:容器随电脑休眠唤醒重启时文件系统不清空,/tmp/.X99-lock 留在原地,
+# 新的 Xvfb 见锁即退,DISPLAY 指向一个没人听的 :99 —— company / crawl 两容器实测锁文件停在 09-08 / 09-09,有头浏览器兜底一直是坏的。
+CMD ["sh", "-c", "rm -f /tmp/.X99-lock /tmp/.X11-unix/X99; Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp >/dev/null 2>&1 & export DISPLAY=:99; sleep 1; exec python etl/sched/main.py"]

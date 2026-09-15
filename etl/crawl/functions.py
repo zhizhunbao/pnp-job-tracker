@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
-from crawl import BROWSER_CHANNEL
+from crawl import BROWSER_CHANNEL, BROWSER_COOKIES
 from crawl.constants import (
     ACCEPT_HTML,
     ACCEPT_LANGUAGE,
@@ -51,6 +51,8 @@ from crawl.constants import (
     CHANGES_FILE,
     COND_AND,
     CONSTANTS_GLOB,
+    COOKIE_DOMAIN_DOT,
+    COOKIES_INDENT,
     CT_HTML,
     DEFAULT_CONTENT_SELECTORS,
     DEFAULT_REMOVE_SELECTORS,
@@ -84,6 +86,7 @@ from crawl.constants import (
     HTTP_FORBIDDEN,
     HTTP_TIMEOUT_S,
     IFRAME_TITLE_FALLBACK,
+    K_COOKIE_DOMAIN,
     K_ADDED,
     K_CAT,
     K_CATEGORIES,
@@ -244,6 +247,8 @@ from crawl.scheme import (
     UrlRow,
     UrlVerdict,
     WalkIn,
+    CookieKeepIn,
+    SaveCookiesIn,
 )
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
@@ -462,16 +467,19 @@ async def get_browser_page() -> PageLike | None:
             from playwright.async_api import async_playwright
 
             CACHE.pw = await async_playwright().start()
-            CACHE.context = await CACHE.pw.chromium.launch_persistent_context(
-                str(PROFILE_DIR),
-                headless=False,  # 2026-09-01 Frank:全有头(无头基本被封),BROWSER_HEADLESS 开关废除;docker 靠 Xvfb 起显示
-                channel=channel_of(),  # 2026-09-13:本机 BROWSER_CHANNEL=chrome 绕 profile 降级(见 crawl/__init__)
-                args=list(BROWSER_ARGS),
-                user_agent=BROWSER_UA,
-                viewport={K_WIDTH: VIEWPORT_W, K_HEIGHT: VIEWPORT_H},
-                locale=LOCALE,
-                extra_http_headers={HDR_ACCEPT_LANGUAGE: ACCEPT_LANGUAGE},
-            )
+            if BROWSER_COOKIES != "":
+                await open_cookie_context(PROFILE_DIR / BROWSER_COOKIES)
+            else:
+                CACHE.context = await CACHE.pw.chromium.launch_persistent_context(
+                    str(PROFILE_DIR),
+                    headless=False,  # 2026-09-01 Frank:全有头(无头基本被封),BROWSER_HEADLESS 开关废除;docker 靠 Xvfb 起显示
+                    channel=channel_of(),  # 2026-09-13:本机 BROWSER_CHANNEL=chrome 绕 profile 降级(见 crawl/__init__)
+                    args=list(BROWSER_ARGS),
+                    user_agent=BROWSER_UA,
+                    viewport={K_WIDTH: VIEWPORT_W, K_HEIGHT: VIEWPORT_H},
+                    locale=LOCALE,
+                    extra_http_headers={HDR_ACCEPT_LANGUAGE: ACCEPT_LANGUAGE},
+                )
             await CACHE.context.add_init_script(STEALTH_JS)
             patches = []
             marks = []
@@ -491,6 +499,21 @@ async def get_browser_page() -> PageLike | None:
             CACHE.unavailable = True
             err(PRINT_BROWSER_DOWN, e)
             return None
+
+
+async def open_cookie_context(cookies_file: Path) -> None:
+    """cookie 模式起浏览器(BROWSER_COOKIES 非空;2026-09-15 hireac 进容器):不开持久 profile —— 那份 profile 的 cookie 是
+    Windows Chrome 用本机账户密钥加密的,容器里 Linux chromium 解不开 —— 改起一个干净的有头浏览器,把 Windows 端导出的
+    明文 cookie 加载进去。文件不在 / 读不出就抛,由 get_browser_page 的 except 留痕降级(不静默)。"""
+    cookies = json.loads(cookies_file.read_text(encoding=ENC_UTF8))
+    CACHE.browser = await CACHE.pw.chromium.launch(headless=False, args=list(BROWSER_ARGS))
+    CACHE.context = await CACHE.browser.new_context(
+        user_agent=BROWSER_UA,
+        viewport={K_WIDTH: VIEWPORT_W, K_HEIGHT: VIEWPORT_H},
+        locale=LOCALE,
+        extra_http_headers={HDR_ACCEPT_LANGUAGE: ACCEPT_LANGUAGE},
+    )
+    await CACHE.context.add_cookies(cookies)
 
 
 def channel_of() -> str | None:
@@ -550,17 +573,46 @@ async def fetch_browser_html(url: str) -> str | None:
 
 
 async def close_browser() -> None:
-    """收摊(cookie 已随 profile 落盘);lock/sem 原语保留复用。"""
+    """收摊(cookie 已随 profile 落盘);lock/sem 原语保留复用。
+    2026-09-15 cookie 模式多一个非持久浏览器要关;cookie 写回不在这里做 —— 收摊时会话可能已落到登录页,
+    写回会把好 cookie 冲掉,由调用方在确认登录成功后显式 save_browser_cookies。"""
     try:
         if CACHE.context is not None:
             await CACHE.context.close()
+        if CACHE.browser is not None:
+            await CACHE.browser.close()
         if CACHE.pw is not None:
             await CACHE.pw.stop()
     finally:
         CACHE.pw = None
+        CACHE.browser = None
         CACHE.context = None
         CACHE.page = None
         CACHE.unavailable = False
+
+
+async def save_browser_cookies(x: SaveCookiesIn) -> int:
+    """当前浏览器上下文的 cookie 按域名筛后落盘,返回写入条数;没有上下文写 0 条不落盘(2026-09-15 cookie 模式):
+    Windows 端登录后导出给容器加载;容器每轮确认登录成功后写回,会话随抓取续期。"""
+    if CACHE.context is None:
+        return 0
+    kept: list = []
+    for c in await CACHE.context.cookies():
+        domain = str(c.get(K_COOKIE_DOMAIN, "")).lstrip(COOKIE_DOMAIN_DOT)
+        if cookie_domain_kept(CookieKeepIn(domain=domain, domains=x.domains)):
+            kept.append(c)
+    paths.write_json(paths.WriteJsonIn(path=x.file, payload=kept, indent=COOKIES_INDENT))
+    return len(kept)
+
+
+def cookie_domain_kept(x: CookieKeepIn) -> bool:
+    """这个域名在不在要留的清单里(清单空 = 全留;子域算在内)。"""
+    if len(x.domains) == 0:
+        return True
+    for d in x.domains:
+        if x.domain == d or x.domain.endswith(COOKIE_DOMAIN_DOT + d):
+            return True
+    return False
 
 
 # =========================================================================
