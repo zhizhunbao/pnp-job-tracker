@@ -88,6 +88,7 @@ export interface Config {
     'pilot-communities': PilotCommunity;
     'pilot-occupations': PilotOccupation;
     'pilot-quota': PilotQuota;
+    'macro-series': MacroSery;
     'pte-types': PteType;
     'pte-questions': PteQuestion;
     provinces: Province;
@@ -136,6 +137,7 @@ export interface Config {
     'pilot-communities': PilotCommunitiesSelect<false> | PilotCommunitiesSelect<true>;
     'pilot-occupations': PilotOccupationsSelect<false> | PilotOccupationsSelect<true>;
     'pilot-quota': PilotQuotaSelect<false> | PilotQuotaSelect<true>;
+    'macro-series': MacroSeriesSelect<false> | MacroSeriesSelect<true>;
     'pte-types': PteTypesSelect<false> | PteTypesSelect<true>;
     'pte-questions': PteQuestionsSelect<false> | PteQuestionsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
@@ -586,13 +588,13 @@ export interface Job {
    */
   source?: string | null;
   /**
-   * 显示来源标签(mart 洗:JB→Job Bank、ATS板美化)
+   * 显示来源标签(mart 洗:原始板原样显示、ATS板美化;2026-09-15 前是 JB→Job Bank 统一显示,已改判)
    */
   sourceLabel?: string | null;
   /**
-   * 数据渠道:raw 下哪个来源
+   * 数据渠道:raw 下哪个来源(jobillico / jobboom 2026-09-06 随两域立域加,枚举 DDL 见 docs/sql/jobs-origin-jobillico-jobboom.sql;careerbeacon / hireac / gcjobs 2026-09-15 补进选项,库里枚举早已有)
    */
-  origin?: ('jobbank' | 'ats' | 'directory') | null;
+  origin?: ('jobbank' | 'ats' | 'directory' | 'jobillico' | 'jobboom' | 'careerbeacon' | 'hireac' | 'gcjobs') | null;
   isAgency?: boolean | null;
   policyRefs?: (number | PolicyDoc)[] | null;
   accessibility?: ('co-op' | 'junior' | 'intermediate' | 'senior' | 'unknown') | null;
@@ -661,6 +663,10 @@ export interface Job {
    */
   employmentTerm?: string | null;
   /**
+   * 谁能投 citizens_pr/temporary_ok/anyone;空=帖里没这块(外站聚合帖;docs/sql/jobs-who-can-apply.sql)
+   */
+  whoCanApply?: string | null;
+  /**
    * 工时 full/part;空=未标注
    */
   employmentHours?: string | null;
@@ -690,7 +696,10 @@ export interface Job {
   education?: string | null;
   firstSeen?: string | null;
   lastSeen?: string | null;
-  status?: ('open' | 'closed') | null;
+  /**
+   * open 在招 / closed 下架 / campus 校内板帖(2026-09-13:只进 /coop 页,不上职位板与统计;枚举 DDL docs/sql/jobs-status-campus.sql)
+   */
+  status?: ('open' | 'closed' | 'campus') | null;
   /**
    * 下架时间(某次抓取不再出现)
    */
@@ -783,6 +792,10 @@ export interface PnpDraw {
    * 流名中文灰注(zh 界面用,en/ko 不读)
    */
   streamZh?: string | null;
+  /**
+   * 门槛清单 JSON 串 {url, items:[{zh,en,ko}]}(把脉页门槛弹框 1 2 3;NULL=未收录)
+   */
+  checklist?: string | null;
   /**
    * 最低邀请分 — 省自评分制,非 CRS!展示必须带 scale
    */
@@ -1029,15 +1042,19 @@ export interface Dli {
    */
   name?: string | null;
   /**
+   * 通行中文译名(etl/dli 人工核定表;表外空串,前端回退英文)
+   */
+  nameZh?: string | null;
+  /**
    * DLI 编号(O 开头,IRCC 官方)
    */
   dliNumber?: string | null;
   /**
-   * 主校区城市(首行)
+   * 校区城(一城一行)
    */
   city?: string | null;
   /**
-   * 名单内校区行数
+   * 该校名单内源行总数(全校同值)
    */
   campuses?: number | null;
   /**
@@ -1526,6 +1543,48 @@ export interface PilotQuota {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "macro-series".
+ */
+export interface MacroSery {
+  id: number;
+  /**
+   * CA | 十省两位码(领地不收)
+   */
+  geo: string;
+  /**
+   * 指标键(契约 §3 键表)
+   */
+  key: string;
+  /**
+   * 季/月度=refPer YYYY-MM-DD;年度=YYYY
+   */
+  period: string;
+  /**
+   * Q | M | A
+   */
+  freq?: string | null;
+  /**
+   * 值;官方缺位的点不出行,不折 0
+   */
+  value?: number | null;
+  /**
+   * 完整年=YYYY;进行年 YTD=YYYY-MM;季/月=period 本身
+   */
+  asOf?: string | null;
+  /**
+   * people | dollars_millions | percent | nominations
+   */
+  unit?: string | null;
+  /**
+   * 官方页 URL(alloc 逐年各归各的出处页)
+   */
+  source?: string | null;
+  fetched?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pte-types".
  */
 export interface PteType {
@@ -1884,6 +1943,18 @@ export interface Stat {
    * 中位年薪(ESDC 口径:桶内各岗 NOC×省中位的中位数)
    */
   medianWageAnnual?: number | null;
+  /**
+   * ESDC 低位时薪(官方工资带下端,同口径桶内中位;2026-09-11 把脉页时薪三件)
+   */
+  wageLowHourly?: number | null;
+  /**
+   * ESDC 中位时薪(同上)
+   */
+  wageMedHourly?: number | null;
+  /**
+   * ESDC 高位时薪(同上)
+   */
+  wageHighHourly?: number | null;
   /**
    * 帖面中位年薪(本站折算口径,对照)
    */
@@ -2497,6 +2568,10 @@ export interface PayloadLockedDocument {
         value: number | PilotQuota;
       } | null)
     | ({
+        relationTo: 'macro-series';
+        value: number | MacroSery;
+      } | null)
+    | ({
         relationTo: 'pte-types';
         value: number | PteType;
       } | null)
@@ -2781,6 +2856,7 @@ export interface JobsSelect<T extends boolean = true> {
   apprenticeFriendly?: T;
   isDup?: T;
   employmentTerm?: T;
+  whoCanApply?: T;
   employmentHours?: T;
   jdFormatted?: T;
   jdFormattedAt?: T;
@@ -2823,6 +2899,7 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   drawDate?: T;
   stream?: T;
   streamZh?: T;
+  checklist?: T;
   score?: T;
   scale?: T;
   invitations?: T;
@@ -3141,6 +3218,23 @@ export interface PilotQuotaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "macro-series_select".
+ */
+export interface MacroSeriesSelect<T extends boolean = true> {
+  geo?: T;
+  key?: T;
+  period?: T;
+  freq?: T;
+  value?: T;
+  asOf?: T;
+  unit?: T;
+  source?: T;
+  fetched?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pte-types_select".
  */
 export interface PteTypesSelect<T extends boolean = true> {
@@ -3315,6 +3409,9 @@ export interface StatsSelect<T extends boolean = true> {
   openJobs?: T;
   new7d?: T;
   medianWageAnnual?: T;
+  wageLowHourly?: T;
+  wageMedHourly?: T;
+  wageHighHourly?: T;
   medianSalaryAnnual?: T;
   namedJobs?: T;
   streamLabels?: T;

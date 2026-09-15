@@ -38,8 +38,8 @@ export const Jobs: CollectionConfig = {
     { name: 'wageYear', type: 'text', admin: { description: 'ESDC 工资数据参考年份(如 2023-2024)' } },
     { name: 'datePosted', type: 'date' },
     { name: 'source', type: 'text', admin: { description: '原始来源板:indeed.com/Talent.com/lever/bamboohr…' } },
-    { name: 'sourceLabel', type: 'text', index: true, admin: { description: '显示来源标签(mart 洗:JB→Job Bank、ATS板美化)' } },
-    { name: 'origin', type: 'select', index: true, options: ['jobbank', 'ats', 'directory', 'jobillico', 'jobboom'], admin: { description: '数据渠道:raw 下哪个来源(jobillico / jobboom 2026-09-06 随两域立域加,枚举 DDL 见 docs/sql/jobs-origin-jobillico-jobboom.sql)' } },
+    { name: 'sourceLabel', type: 'text', index: true, admin: { description: '显示来源标签(mart 洗:原始板原样显示、ATS板美化;2026-09-15 前是 JB→Job Bank 统一显示,已改判)' } },
+    { name: 'origin', type: 'select', index: true, options: ['jobbank', 'ats', 'directory', 'jobillico', 'jobboom', 'careerbeacon', 'hireac', 'gcjobs'], admin: { description: '数据渠道:raw 下哪个来源(jobillico / jobboom 2026-09-06 随两域立域加,枚举 DDL 见 docs/sql/jobs-origin-jobillico-jobboom.sql;careerbeacon / hireac / gcjobs 2026-09-15 补进选项,库里枚举早已有)' } },
     { name: 'isAgency', type: 'checkbox', defaultValue: false },
     { name: 'policyRefs', type: 'relationship', relationTo: 'policy-docs', hasMany: true },
     {
