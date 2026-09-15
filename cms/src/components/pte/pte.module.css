@@ -418,12 +418,14 @@
 }
 
 /*
- * 目录树的题号(灰字定宽)。
+ * 目录树的题号(灰字定宽;禁选 —— 题号 span 与题面 span 之间没空白,双击题面会把「#2」一起选进去,
+ * Frank 2026-09-04「选中这个单词,怎么把前面的 2 也选中了」)。
  */
 .navNum {
   color: #9ca3af;
   flex: 0 0 3.2em;
   font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
 /*
@@ -624,10 +626,10 @@
  * 居中的麦克风 + 说明字。
  */
 .recCenter {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
 }
 
 /*
@@ -663,12 +665,17 @@
 }
 
 /*
- * 麦克风钮下的字(「录音」/ 秒数)。
+ * 麦克风钮下的秒数(只在录时出;绝对定位不占高,开录条高不变 —— 2026-09-04「用户感觉页面在跳」;
+ * 「录音」两字同日撤:「都知道是录音」)。
  */
 .recUnder {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
   font-size: 12.5px;
   color: #6b7280;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /*
@@ -726,12 +733,13 @@
 }
 
 /*
- * 我的录音回放:通栏,与示范朗读件同宽(Frank 2026-09-04「长度要保持一样吧」)。
+ * 我的录音回放:提交后住录音条中间、顶替麦克风(2026-09-04「上面的 section 只显示固定的」);
+ * 原生 audio 控件定宽,条两侧 spacer 各占一份把它居中。
  */
 .recAudio {
   display: block;
-  width: 100%;
-  margin-top: 10px;
+  width: 320px;
+  max-width: 100%;
 }
 
 /*
@@ -814,6 +822,14 @@
 }
 
 /*
+ * 打字框只读态(WFD 未播完 / 已提交):去主色边,看着不像还能改;框本身留着,上卡不塌。
+ */
+.typed:read-only {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+/*
  * 打字框下的一行(词数 | 计时)。
  */
 .typedFoot {
@@ -874,13 +890,6 @@
 }
 
 /*
- * 一排钮(主钮一颗 + 次钮同形)。
- */
-.revealRow {
-  margin-top: 10px;
-}
-
-/*
  * 批五阅读题:空位下拉、对错色、段落排序行、单选行。
  */
 .blankWrap {
@@ -925,7 +934,7 @@
 
 .orderRow {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 28px 1fr 36px;
   gap: 10px;
   align-items: start;
   padding: 10px 12px;
@@ -950,10 +959,38 @@
   line-height: 1.6;
 }
 
-.orderBtns {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/*
+ * 在拖的段:主色描边 + 浮起(Frank 2026-09-04「这个改成拖动不行吗」)。
+ */
+.orderDragging {
+  border-color: var(--primary);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+/*
+ * 抓手:36px 触控区;touch-action none 让触屏拖动不被页面滚动截走;禁选字免得鼠标拖成划词。
+ */
+.orderGrip {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: #9ca3af;
+  border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.orderGrip:hover {
+  background: var(--hover-bg);
+  color: #374151;
+}
+
+.orderDragging .orderGrip {
+  cursor: grabbing;
 }
 
 .choice {
@@ -978,6 +1015,9 @@
   line-height: 1.5;
 }
 
+/*
+ * 一排钮(主钮一颗 + 次钮同形)。
+ */
 .btns {
   display: flex;
   flex-wrap: wrap;
@@ -1223,6 +1263,17 @@
     padding: 12px;
   }
 
+  /* 播放条:375px 放不下条头 + 进度 + 时间 + 倍速 + 圆钮,圆钮被裁(2026-09-04 实撞);条头撤,圆钮就是标识 */
+  .playLabel {
+    display: none;
+  }
+
+  /* 钮排:手机上作答段最多五颗钮要折两行,预留两行高,段位切换排高不变(2026-09-04「用户感觉页面在跳」) */
+  .btns {
+    min-height: 90px;
+    align-content: flex-start;
+  }
+
   .desk {
     display: none;
   }
@@ -1296,19 +1347,6 @@
 }
 
 /*
- * 「中文」「词形」段标签(主色字浅蓝底)。
- */
-.dictTag {
-  display: inline-block;
-  background: #eef2ff;
-  color: var(--primary);
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-/*
  * 弹层里的一段(释义 / 词形)。
  */
 .dictSec {
@@ -1340,20 +1378,6 @@
   color: #111827;
   line-height: 1.6;
   margin-top: 4px;
-}
-
-.dictForm {
-  display: grid;
-  grid-template-columns: 4.5em 1fr;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 4px;
-  line-height: 1.5;
-}
-
-.dictFormTag {
-  color: #9ca3af;
-  font-size: 12px;
 }
 
 /*
@@ -1432,6 +1456,14 @@
   margin-top: 6px;
   font-size: 13px;
   white-space: nowrap;
+}
+
+/*
+ * 音标行里的喇叭往左收(Frank 2026-09-04「这个小喇叭在往左移动一点吧」):钮 36px 里图标居中,
+ * 空白 10px + 行距 6px = 离右括号 16px 太远;负外边距抵掉钮内空白,触控区不缩。
+ */
+.dictPhons .spkBtn {
+  margin-left: -10px;
 }
 
 /*

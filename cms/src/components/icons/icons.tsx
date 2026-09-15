@@ -11,9 +11,9 @@
  */
 import {
   ArrowUp, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
-  Compass, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize, Minus, Newspaper,
-  Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star, Table, Target, ThumbsDown,
-  ThumbsUp, TriangleAlert, User, Users, Volume2, X,
+  Compass, GripVertical, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize,
+  Minus, Newspaper, Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
+  Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
 } from 'lucide-react'
 
 import { makeIcon } from './functions'
@@ -37,6 +37,11 @@ export const IconChat = makeIcon(MessageCircle)
  * 喇叭(字典弹层读音钮 —— Frank 2026-09-04「人家的播放按钮也是蓝方块吗」)。
  */
 export const IconVolume = makeIcon(Volume2)
+
+/**
+ * 竖向抓手(pte 段落排序的拖动把手 —— Frank 2026-09-04「这个改成拖动不行吗」)。
+ */
+export const IconGrip = makeIcon(GripVertical)
 
 /**
  * 播放(pte 播放条圆钮)。

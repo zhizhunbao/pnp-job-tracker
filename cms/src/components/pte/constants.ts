@@ -266,36 +266,6 @@ export const FORM_THIRD = '3'
 export const FORM_LABEL_SEP = ' / '
 
 /**
- * 派生词族桶 → 标签 i18n 键(名词 / 动词 / 形容词;Frank 2026-09-04「只列名词动词形容词的形式」)。
- */
-export const FAMILY_KEY: Record<string, string> = {
-  /**
-   * 名词。
-   */
-  n: 'pte.fam.n',
-
-  /**
-   * 动词。
-   */
-  v: 'pte.fam.v',
-
-  /**
-   * 形容词。
-   */
-  a: 'pte.fam.a',
-}
-
-/**
- * 词族桶显示顺序。
- */
-export const FAMILY_ORDER = ['n', 'v', 'a']
-
-/**
- * 同桶多个词的连接符。
- */
-export const FAMILY_WORD_SEP = ', '
-
-/**
  * 字典弹框尺寸档(modal 桶的 sm)。
  */
 export const DICT_MODAL_SIZE = 'fit'
@@ -773,6 +743,63 @@ export const MOVE_DOWN = 1
  * 段落序号显示(1 起)。
  */
 export const ORDER_BASE = 1
+
+/**
+ * 没在拖的段(拖动态空值;段 id 从 1 起,-1 不撞)。
+ */
+export const DRAG_NONE = -1
+
+/**
+ * 段落行上标段 id 的 data 属性名(拖动时按指针位置数落点用;JSX 里写字面 data-oid)。
+ */
+export const DATA_OID = 'data-oid'
+
+/**
+ * 段落行选择器(DATA_OID 加方括号)。
+ */
+export const SEL_OID = '[data-oid]'
+
+/**
+ * 段落行中线:高度除以 2(拖动时数指针落在第几段用)。
+ */
+export const ROW_CENTER_DIV = 2
+
+/**
+ * 抓手的 ARIA 角色(span 当钮:要接四只指针手柄,button 桶不收)。
+ */
+export const ROLE_BUTTON = 'button'
+
+/**
+ * 拖动中的指针事件(挂 document:React 重排段落会把 DOM 节点搬家,浏览器随之释放 pointer capture,
+ * 挂把手上的移动 / 松手就丢 —— 2026-09-04 playwright 实撞:拖到底放手仍是在拖态)。
+ */
+export const EV_POINTERMOVE = 'pointermove'
+
+/**
+ * 拖动松手。
+ */
+export const EV_POINTERUP = 'pointerup'
+
+/**
+ * 拖动被系统打断(来电 / 手势),当松手。
+ */
+export const EV_POINTERCANCEL = 'pointercancel'
+
+/**
+ * 键盘排序:上箭头(把手聚焦时挪上一位)。
+ */
+export const KEY_UP = 'ArrowUp'
+
+/**
+ * 键盘排序:下箭头。
+ */
+export const KEY_DOWN = 'ArrowDown'
+
+/**
+ * 提交前每段的身份字母(跟段走,拖动不变;Frank 2026-09-04「默认怎么是排序号了」:
+ * 位次数字看着像已排好,提交后才给正确位次)。
+ */
+export const PARA_LABELS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 /**
  * 单选项的 input type。

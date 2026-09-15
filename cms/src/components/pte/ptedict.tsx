@@ -15,7 +15,7 @@ import { IconVolume } from '@/components/icons'
 import {
   DICT_BUSY, DICT_ID, DICT_IDLE, DICT_MODAL_SIZE, DICT_NONE, KIND_LINK, SPK_UK, SPK_US, TEXT_NONE,
 } from './constants'
-import { bracketOf, dictFamilyOf, dictLinesOf, phonOf, spkClsOf } from './functions'
+import { bracketOf, dictLinesOf, phonOf, spkClsOf } from './functions'
 import type { PteDictIn } from './types'
 import css from './pte.module.css'
 
@@ -34,19 +34,6 @@ export function PteDict({ t, d, lang }: PteDictIn) {
     let i = 0
     for (const line of dictLinesOf({ entry: d.entry, lang })) {
       lines.push(<div key={i} className={css.dictLine}>{line}</div>)
-      i = i + 1
-    }
-  }
-  const forms = []
-  if (d.entry != null) {
-    let i = 0
-    for (const fm of dictFamilyOf({ family: d.entry.family })) {
-      forms.push(
-        <div key={i} className={css.dictForm}>
-          <span className={css.dictFormTag}>{t(fm.key)}</span>
-          <span>{fm.words}</span>
-        </div>,
-      )
       i = i + 1
     }
   }
@@ -89,12 +76,6 @@ export function PteDict({ t, d, lang }: PteDictIn) {
           {d.sentence.zh !== TEXT_NONE && <div className={css.dictSentZh}>{d.sentence.zh}</div>}
         </div>
       )}
-      {forms.length > 0 && (
-          <div className={css.dictSec}>
-            <span className={css.dictTag}>{t('pte.dict.forms')}</span>
-            {forms}
-          </div>
-        )}
       </div>
     </Modal>
   )

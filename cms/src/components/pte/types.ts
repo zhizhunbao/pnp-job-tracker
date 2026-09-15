@@ -1995,6 +1995,16 @@ export type AudioEndedIn = {
   setPlaying: (on: boolean) => void
 
   /**
+   * 总时长(播完把进度落到这里)。
+   */
+  dur: number
+
+  /**
+   * 落进度。
+   */
+  setCur: (n: number) => void
+
+  /**
    * 播完回调。
    */
   onEnd: () => void
@@ -2103,6 +2113,11 @@ export type PteRecBarIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 我的录音回放地址(blob);null = 还没录 / 没录到。提交后有它就替掉麦克风。
+   */
+  recUrl: string | null
 
   /**
    * 录音中。
@@ -2368,31 +2383,6 @@ export type SentIndexIn = {
    * 词的起始偏移。
    */
   from: number
-}
-
-/**
- * 弹框词族一行(标签键 + 该词性的词)。
- */
-export type DictFamilyRow = {
-  /**
-   * 标签的 i18n 键。
-   */
-  key: string
-
-  /**
-   * 这一词性的派生词(逗号连好)。
-   */
-  words: string
-}
-
-/**
- * 词族拆行(`dictFamilyOf`)的入参。
- */
-export type DictFamilyIn = {
-  /**
-   * 派生词族。
-   */
-  family: Record<string, string[]>
 }
 
 /**
@@ -2664,6 +2654,21 @@ export type DeadFlag = {
  * 无参无返回的手柄。
  */
 export type ClickFn = () => void
+
+/**
+ * React 指针事件手柄(React 定的签名)。
+ */
+export type PointerFn = (e: React.PointerEvent<HTMLElement>) => void
+
+/**
+ * React 键盘事件手柄(React 定的签名)。
+ */
+export type KeyFn = (e: React.KeyboardEvent<HTMLElement>) => void
+
+/**
+ * 原生指针事件监听(addEventListener 定的签名)。
+ */
+export type PointerDomFn = (e: PointerEvent) => void
 
 /**
  * 题型名取值(`typeNameOf`)的入参。
@@ -3901,29 +3906,24 @@ export type PteReadingPanel = {
   fillOf: (id: number) => (e: React.ChangeEvent<HTMLSelectElement>) => void
 
   /**
-   * 某段上移 / 下移的手柄工厂。
+   * 正在拖的段 id;DRAG_NONE = 没在拖。
    */
-  moveOf: (m: PteMoveIn) => () => void
+  dragId: number
+
+  /**
+   * 某段拖动把手的按下手柄工厂(移动与松手由 document 上的 effect 接,见 makeDragWatch)。
+   */
+  dragOf: (id: number) => PointerFn
+
+  /**
+   * 某段把手的键盘手柄工厂(上下箭头挪一位)。
+   */
+  keyOf: (id: number) => KeyFn
 
   /**
    * 单选的手柄工厂。
    */
   chooseOf: (option: string) => () => void
-}
-
-/**
- * 段落排序移动一步的入参。
- */
-export type PteMoveIn = {
-  /**
-   * 段落号。
-   */
-  id: number
-
-  /**
-   * 方向(-1 上移,+1 下移)。
-   */
-  dir: number
 }
 
 /**
@@ -4072,9 +4072,109 @@ export type MovedOrderIn = {
 }
 
 /**
- * 段落挪位手柄(`makeMove`)的入参。
+ * 抓段手柄(`makeDragStart`)的入参。
  */
-export type MoveIn = {
+export type DragStartIn = {
+  /**
+   * 段 id。
+   */
+  id: number
+
+  /**
+   * 落「在拖的段」。
+   */
+  set: (id: number) => void
+}
+
+/**
+ * 拖动监听 effect 工厂(`makeDragWatch`)的入参。
+ */
+export type DragWatchIn = {
+  /**
+   * 正在拖的段 id;DRAG_NONE = 没在拖(effect 空转)。
+   */
+  dragId: number
+
+  /**
+   * 现序。
+   */
+  order: number[]
+
+  /**
+   * 落序。
+   */
+  setOrder: (o: number[]) => void
+
+  /**
+   * 落「在拖的段」(松手写 DRAG_NONE)。
+   */
+  setDrag: (id: number) => void
+}
+
+/**
+ * 页上其他段中线(`rowCentersOf`)的入参。
+ */
+export type RowCentersIn = {
+  /**
+   * 在拖的段 id(不数它)。
+   */
+  dragId: number
+}
+
+/**
+ * 指针落点位次(`dropIndexOf`)的入参。
+ */
+export type DropIndexIn = {
+  /**
+   * 其他段(不含在拖的)按现序的中线 Y。
+   */
+  centers: number[]
+
+  /**
+   * 指针 Y。
+   */
+  y: number
+}
+
+/**
+ * 段落挪到指定位(`orderMovedTo`)的入参。
+ */
+export type OrderMovedToIn = {
+  /**
+   * 现序。
+   */
+  order: number[]
+
+  /**
+   * 段 id。
+   */
+  id: number
+
+  /**
+   * 落点位(0 起,按抽掉该段后的序数)。
+   */
+  to: number
+}
+
+/**
+ * 两序是否相同(`isSameOrder`)的入参。
+ */
+export type SameOrderIn = {
+  /**
+   * 一序。
+   */
+  a: number[]
+
+  /**
+   * 另一序。
+   */
+  b: number[]
+}
+
+/**
+ * 把手键盘手柄(`makeKeyMove`)的入参。
+ */
+export type KeyMoveIn = {
   /**
    * 现序。
    */
@@ -4089,11 +4189,21 @@ export type MoveIn = {
    * 段 id。
    */
   id: number
+}
+
+/**
+ * 段身份字母(`paraLabelOf`)的入参。
+ */
+export type ParaLabelIn = {
+  /**
+   * 载荷给的段清单(字母按此序)。
+   */
+  paragraphs: PteParagraph[]
 
   /**
-   * 方向。
+   * 段 id。
    */
-  dir: number
+  id: number
 }
 
 /**

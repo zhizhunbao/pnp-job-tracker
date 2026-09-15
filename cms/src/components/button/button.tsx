@@ -29,6 +29,7 @@ export function Button({
   disabled = false,
   onClick,
   href,
+  replace = false,
   target,
   title,
   style,
@@ -55,7 +56,9 @@ export function Button({
   const cls = btnClsOf({ kind, sm, lg, active, className: extraCls })
   if (href != null && href !== '' && disabled === false) {
     return (
-      <LinkButton href={href} target={target} title={title} className={cls} style={style}>{children}</LinkButton>
+      <LinkButton href={href} replace={replace} target={target} title={title} className={cls} style={style}>
+        {children}
+      </LinkButton>
     )
   }
   return (

@@ -48,7 +48,7 @@ export function PteNav({ types, type, rowsByType, qid, lang }: PteNavIn) {
       cls = cls + CLS_SEP + cssOf(css.navOn)
     }
     items.push(
-      <LinkButton key={r.qid} href={r.href} className={cls}>
+      <LinkButton key={r.qid} href={r.href} className={cls} replace>
         <span id={NAV_ID_PREFIX + r.qid} className={css.navNum}>{NUM_HEAD}{r.num}</span>
         <span className={css.navText}>{navTextOf({ text: r.text, title: r.title })}</span>
       </LinkButton>,

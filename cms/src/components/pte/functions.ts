@@ -12,21 +12,22 @@ import { cssOf } from '@/components/css'
 import { SQL, count, numOrNull, queryRowsOrEmpty, text, textOrNull } from '@/lib/db'
 import {
   ALIGN_LEFT, API_COMMENTS, API_PTE_DONE, API_PTE_ZH, BLANK_RE, BRACKET_L, BRACKET_R, CLOCK_PAD, CLOCK_SEP, CLS_SEP,
-  COL_ACT, COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATA_QID, DATA_SENT, DATE_LEN, DAY_MS,
-  DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP, DICT_MIN_LEN,
-  DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP, EV_TOUCHEND, FAMILY_KEY,
-  FAMILY_ORDER, FAMILY_WORD_SEP, FORM_KEY, FORM_KV, FORM_LABEL_SEP, FORM_ORDER, FORM_PLURAL, FORM_SEP, FORM_THIRD,
-  GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY, ITEM_DESC_TPL, ITEM_TITLE_TPL,
-  KIND_EXAM, KIND_NOTE, KIND_RFIB, KIND_RMCS, KIND_ROP, KIND_RWFIB, LANG_EN, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL,
-  LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX,
-  NAV_TEXT_LEN, NOTE_HINT_KEY, NOT_FOUND_TITLE, NUM_HEAD, NUM_RE, ORDER_BASE, PAD_CHAR, PAGE_STEP, PAREN_L, PAREN_R,
-  PHASE_ANSWERING, PHASE_CHECKED, PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS,
-  RATE_HEAD, RATE_STEPS, REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, SECTION_KEY, SECTION_ORDER, SEC_PER_MIN, SENT_GAP_RE,
-  SENT_NONE, SENT_SPLIT_RE, SERVER_TTL_MS, SPK_GUARD_MS, SPK_NONE, SPLIT_CAP_MOD, STATE_BUSY, STATE_ERR, STATE_IDLE,
-  STATE_SENT, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS, TIER_FRQ_MIN, TIER_NONE,
-  TIER_ORDER, TIER_TAGS, TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD, TTS_MS_PER_WORD,
-  TTS_RATE, T_RA, UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, WORD_RE, WORD_SPLIT_RE,
-  WORD_TRIM, W_ACT, W_NUM, W_SEEN, W_TEXT, W_TIMES,
+  COL_ACT, COL_NUM, COL_SEEN, COL_TEXT, COL_TIMES, CRED_INCLUDE, DASH, DATA_OID, DATA_QID, DATA_SENT, DATE_LEN,
+  DAY_MS, DESC_LEN_MAX, DICT_API, DICT_BUSY, DICT_EDGE_PX, DICT_GAP_PX, DICT_ID, DICT_IDLE, DICT_LINE_SEP,
+  DICT_MIN_LEN, DICT_NONE, DICT_OK, DICT_TAG_KEY, DICT_W_PX, DONE_KEY, DRAG_NONE, ELLIPSIS, EMPTY_DONE, EV_MOUSEUP,
+  EV_POINTERCANCEL, EV_POINTERMOVE, EV_POINTERUP, EV_TOUCHEND, FORM_KEY, FORM_KV, FORM_LABEL_SEP, FORM_ORDER,
+  FORM_PLURAL, FORM_SEP, FORM_THIRD, GATE_LOGIN, GATE_NONE, GATE_UPGRADE, HASH, HDR_CONTENT_TYPE, ID_SEP, INST_KEY,
+  ITEM_DESC_TPL, ITEM_TITLE_TPL, KEY_DOWN, KEY_UP, KIND_EXAM, KIND_NOTE, KIND_RFIB, KIND_RMCS, KIND_ROP, KIND_RWFIB,
+  LANG_EN, LANG_KO, LANG_ZH, LIKE_ANY, LIST_DESC_TPL, LIST_TITLE_TPL, MARK_TAG, METHOD_POST, METHOD_PUT, MIME_JSON,
+  MOVE_DOWN, MOVE_UP, MS_PER_MIN, NAV_CENTER_DIV, NAV_ID_PREFIX, NAV_TEXT_LEN, NOT_FOUND_TITLE, NOTE_HINT_KEY,
+  NUM_HEAD, NUM_RE, ORDER_BASE, PAD_CHAR, PAGE_STEP, PARA_LABELS, PAREN_L, PAREN_R, PHASE_ANSWERING, PHASE_CHECKED,
+  PHASE_READY, PREP_S, PTE_META, PUNCT_RE, QID_SEP, QUOTA_KEY, QUOTA_MAX, RATE_DIGITS, RATE_HEAD, RATE_STEPS,
+  REC_CAP_S, REC_MIME, REC_STATE_INACTIVE, ROW_CENTER_DIV, SEC_PER_MIN, SECTION_KEY, SECTION_ORDER, SEL_OID,
+  SENT_GAP_RE, SENT_NONE, SENT_SPLIT_RE, SERVER_TTL_MS, SPK_GUARD_MS, SPK_NONE, SPLIT_CAP_MOD, STATE_BUSY, STATE_ERR,
+  STATE_IDLE, STATE_SENT, T_RA, TAG_SEP, TEXT_NONE, TEXT_TOKEN_RE, TICK_MS, TIER_CLS_HEAD, TIER_EASY_TAGS,
+  TIER_FRQ_MIN, TIER_NONE, TIER_ORDER, TIER_TAGS, TIME_SEP, TITLE_LEN_MAX, TTS_GUARD_BASE_MS, TTS_LANG, TTS_LANG_HEAD,
+  TTS_MS_PER_WORD, TTS_RATE, UNDERSCORE, URL_PTE, URL_SEP, VAR_N, VAR_NUM, VAR_TEXT, VAR_TITLE, VAR_TYPE, W_ACT,
+  W_NUM, W_SEEN, W_TEXT, W_TIMES, WORD_RE, WORD_SPLIT_RE, WORD_TRIM,
 } from './constants'
 import { CACHE } from './variables'
 import css from './pte.module.css'
@@ -37,18 +38,19 @@ import { TextCell } from './textcell'
 import { TimesCell } from './timescell'
 import type {
   AgoTextIn, AudioEndedIn, BlankPart, BlankPartsIn, BlankStateIn, BracketIn, CanPlayIn, CellRowsIn, ChunkSinkFn,
-  ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictFamilyIn,
-  DictFamilyRow, DictForm, DictFormsIn, DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictSentence, DictTagKeyIn,
-  DiffIn, DiffOut, DiffToken, DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, DurationIn, EffectFn, ExamCountsIn,
-  ExamOpenIn, ExamSubmitIn, ExtraOfIn, FamilyOfIn, FillIn, FormLabelIn, GateCloseIn, GatedPlayIn, GatedStartIn,
-  GatedSubmitIn, GatesIn, GatesOut, HintIn, HoverWordIn, InitialPhaseIn, InputChangeIn, IsDoneIn, ItemHrefIn,
-  ItemMetaIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn, MaybeHref, MicIn, MoreIn, MoveIn,
-  MovedOrderIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut, NoteSubmitIn, OrderIndexIn,
-  PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PostCommentIn, PteBlank, PteBlanksExtra, PteCellRow, PteChoiceExtra, PteCol,
-  PteComment, PteCommentDbRow, PteCommentsIn, PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteExtra, PteItem,
-  PteItemLoadIn, PteListDbRow, PteListIn, PteMeta, PteOneDbRow, PteOrderExtra, PteParagraph, PtePhase, PteQuestion,
-  PteQuestionIn, PteRow, PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc,
-  RateAudioIn, RateTextIn, RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, SaveDoneIn,
+  ClickFn, ClockIn, ColsOfIn, CommentsOfKindIn, DaysAgoIn, DeadFlag, DictApiBody, DictCloseIn, DictEntry, DictForm,
+  DictFormsIn, DictLinesIn, DictLookupIn, DictPos, DictPosIn, DictSentence, DictTagKeyIn, DiffIn, DiffOut, DiffToken,
+  DomEventFn, DoneClsIn, DoneResBody, DoneSyncIn, DragStartIn, DragWatchIn, DropIndexIn, DurationIn, EffectFn,
+  ExamCountsIn, ExamOpenIn, ExamSubmitIn, ExtraOfIn, FamilyOfIn, FillIn, FormLabelIn, GateCloseIn, GatedPlayIn,
+  GatedStartIn, GatedSubmitIn, GatesIn, GatesOut, HintIn, HoverWordIn, InitialPhaseIn, InputChangeIn, IsDoneIn,
+  ItemHrefIn, ItemMetaIn, KeyFn, KeyMoveIn, LcsAtIn, ListMetaIn, ListOfIn, ListTiersIn, LookupNowIn, MarkDoneIn,
+  MaybeHref, MicIn, MoreIn, MovedOrderIn, NavPickIn, NavRowsIn, NavScrollIn, NavTextIn, NeighborsIn, NeighborsOut,
+  NoteSubmitIn, OrderIndexIn, OrderMovedToIn, ParaLabelIn, PhaseSetIn, PhonIn, PlayIn, PlayUrlIn, PointerDomFn,
+  PointerFn, PostCommentIn, PteBlank, PteBlanksExtra, PteCellRow, PteChoiceExtra, PteCol, PteComment, PteCommentDbRow,
+  PteCommentsIn, PteDictTagDbRow, PteExamCount, PteExamCountDbRow, PteExtra, PteItem, PteItemLoadIn, PteListDbRow,
+  PteListIn, PteMeta, PteOneDbRow, PteOrderExtra, PteParagraph, PtePhase, PteQuestion, PteQuestionIn, PteRow,
+  PteRowIn, PteSection, PteTiersIn, PteType, PteTypeDbRow, PteTypesIn, QidOfIn, QuotaDoc, RateAudioIn, RateTextIn,
+  RecallsIn, RecorderHandle, RecorderStopFn, RecorderStopIn, RedoIn, RowCentersIn, SameOrderIn, SaveDoneIn,
   SectionLabelIn, SectionsIn, SeekAudioIn, SeenCountIn, SeenTextIn, SelectedWord, SelectionWatchIn, SentIndexIn,
   SentRef, SentStartsIn, SetBoolIn, SetBoolValIn, SettleDictIn, SpeakIn, SpeakWordIn, SpkClsIn, StartRecIn,
   StartRecorderIn, SubmitIn, SubmitOfIn, TextChangeFn, TextChangeIn, TextPart, TextPartsIn, TextShownIn, TickerIn,
@@ -465,15 +467,187 @@ export function movedOrderOf(x: MovedOrderIn): number[] {
 }
 
 /**
- * 造段落挪位手柄。
+ * 造抓段手柄:记下在拖的段;拦掉默认行为免得鼠标拖成选字(选字会触发查词弹层)。
+ * 不做 pointer capture:段落重排会搬 DOM 节点,浏览器随之释放 capture,移动与松手改挂 document(makeDragWatch)。
  *
- * @param x 现序、落序、段 id 与方向。
+ * @param x 段 id 与落格。
  * @returns 手柄。
  */
-export function makeMove(x: MoveIn): ClickFn {
-  return function move(): void {
-    x.set(movedOrderOf({ order: x.order, id: x.id, dir: x.dir }))
+export function makeDragStart(x: DragStartIn): PointerFn {
+  return function dragStart(e: React.PointerEvent<HTMLElement>): void {
+    e.preventDefault()
+    x.set(x.id)
   }
+}
+
+/**
+ * 拖动监听 effect:在拖时 document 上接指针移动(按指针 Y 数落点位,序变了才落)与松手 / 打断(清拖态);
+ * 没在拖空转。
+ *
+ * @param x 在拖的段、现序与两只落格。
+ * @returns effect 体。
+ */
+export function makeDragWatch(x: DragWatchIn): EffectFn {
+  return function watch(): () => void {
+    if (x.dragId === DRAG_NONE) {
+      return noop
+    }
+    const onMove = makeDragMove(x)
+    const onEnd = makeDragEnd(x)
+    document.addEventListener(EV_POINTERMOVE, onMove)
+    document.addEventListener(EV_POINTERUP, onEnd)
+    document.addEventListener(EV_POINTERCANCEL, onEnd)
+    return function stop(): void {
+      document.removeEventListener(EV_POINTERMOVE, onMove)
+      document.removeEventListener(EV_POINTERUP, onEnd)
+      document.removeEventListener(EV_POINTERCANCEL, onEnd)
+    }
+  }
+}
+
+/**
+ * 造拖动中监听:按指针 Y 数落点位,序变了才落(指针在同一格里晃不重渲)。
+ *
+ * @param x 在拖的段、现序与落格。
+ * @returns 监听。
+ */
+function makeDragMove(x: DragWatchIn): PointerDomFn {
+  return function dragMove(e: PointerEvent): void {
+    const to = dropIndexOf({ centers: rowCentersOf({ dragId: x.dragId }), y: e.clientY })
+    const next = orderMovedTo({ order: x.order, id: x.dragId, to })
+    if (isSameOrder({ a: next, b: x.order }) === false) {
+      x.setOrder(next)
+    }
+  }
+}
+
+/**
+ * 造松手监听。
+ *
+ * @param x 落格。
+ * @returns 监听。
+ */
+function makeDragEnd(x: DragWatchIn): PointerDomFn {
+  return function dragEnd(): void {
+    x.setDrag(DRAG_NONE)
+  }
+}
+
+/**
+ * 页上其他段落行的中线 Y(按现序;不含在拖的段)。
+ *
+ * @param x 在拖的段。
+ * @returns 中线清单。
+ */
+function rowCentersOf(x: RowCentersIn): number[] {
+  const out: number[] = []
+  const rows = document.querySelectorAll(SEL_OID)
+  for (let i = 0; i < rows.length; i = i + 1) {
+    const el = rows.item(i)
+    if (el == null || Number(el.getAttribute(DATA_OID)) === x.dragId) {
+      continue
+    }
+    const r = el.getBoundingClientRect()
+    out.push(r.top + r.height / ROW_CENTER_DIV)
+  }
+  return out
+}
+
+/**
+ * 指针落点位:其他段里中线在指针上方的有几段,就落在它们后面。
+ *
+ * @param x 中线清单与指针 Y。
+ * @returns 落点位(0 起)。
+ */
+export function dropIndexOf(x: DropIndexIn): number {
+  let n = 0
+  for (const c of x.centers) {
+    if (c < x.y) {
+      n = n + 1
+    }
+  }
+  return n
+}
+
+/**
+ * 段落挪到指定位的序:先抽出这段再插到落点(不在序里原样返回)。
+ *
+ * @param x 现序、段 id 与落点位。
+ * @returns 新序。
+ */
+export function orderMovedTo(x: OrderMovedToIn): number[] {
+  if (x.order.indexOf(x.id) < 0) {
+    return x.order
+  }
+  const rest: number[] = []
+  for (const id of x.order) {
+    if (id !== x.id) {
+      rest.push(id)
+    }
+  }
+  const out = rest.slice(0, x.to)
+  out.push(x.id)
+  return out.concat(rest.slice(x.to))
+}
+
+/**
+ * 两序逐位相同。
+ *
+ * @param x 两序。
+ * @returns 相同。
+ */
+export function isSameOrder(x: SameOrderIn): boolean {
+  if (x.a.length !== x.b.length) {
+    return false
+  }
+  for (let i = 0; i < x.a.length; i = i + 1) {
+    if (x.a[i] !== x.b[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 造把手键盘手柄:上下箭头挪一位(键盘用户的拖动替身),拦掉默认滚页;别的键不管。
+ *
+ * @param x 现序、落格与段 id。
+ * @returns 手柄。
+ */
+export function makeKeyMove(x: KeyMoveIn): KeyFn {
+  return function keyMove(e: React.KeyboardEvent<HTMLElement>): void {
+    let dir = 0
+    if (e.key === KEY_UP) {
+      dir = MOVE_UP
+    } else if (e.key === KEY_DOWN) {
+      dir = MOVE_DOWN
+    } else {
+      return
+    }
+    e.preventDefault()
+    x.set(movedOrderOf({ order: x.order, id: x.id, dir }))
+  }
+}
+
+/**
+ * 段身份字母:按载荷段清单的序号取 A、B、C…(超 26 段退回序号;不在清单给空串)。
+ *
+ * @param x 段清单与段 id。
+ * @returns 字母。
+ */
+export function paraLabelOf(x: ParaLabelIn): string {
+  let i = 0
+  for (const p of x.paragraphs) {
+    if (p.id === x.id) {
+      const ch = PARA_LABELS.charAt(i)
+      if (ch !== '') {
+        return ch
+      }
+      return String(i + ORDER_BASE)
+    }
+    i = i + 1
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -1561,13 +1735,15 @@ export function makePlay(x: PlayIn): ClickFn {
 
 
 /**
- * 播放条:播完 —— 落「不在播」再叫外部回调。
+ * 播放条:播完 —— 进度落成时长(最后一次 timeupdate 比 ended 早零点几秒,滑块停在离尾一截 ——
+ * Frank 2026-09-04「这个没顶格的问题没解决啊」),落「不在播」,再叫外部回调。
  *
  * @param x 落格与回调。
  * @returns 手柄。
  */
 export function makeAudioEnded(x: AudioEndedIn): ClickFn {
   return function ended(): void {
+    x.setCur(x.dur)
     x.setPlaying(false)
     x.onEnd()
   }
@@ -3033,25 +3209,6 @@ export function familyOf(x: FamilyOfIn): Record<string, string[]> {
  */
 function isString(v: string): v is string {
   return typeof v === 'string'
-}
-
-/**
- * 词族 → 逐行(名词 / 动词 / 形容词 固定顺序,空桶不出)。
- *
- * @param x 词族。
- * @returns 行。
- */
-export function dictFamilyOf(x: DictFamilyIn): DictFamilyRow[] {
-  const out: DictFamilyRow[] = []
-  for (const code of FAMILY_ORDER) {
-    const words = x.family[code]
-    const key = FAMILY_KEY[code]
-    if (words == null || words.length === 0 || key == null) {
-      continue
-    }
-    out.push({ key, words: words.join(FAMILY_WORD_SEP) })
-  }
-  return out
 }
 
 /**

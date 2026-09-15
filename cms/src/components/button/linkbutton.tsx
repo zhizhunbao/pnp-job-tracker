@@ -23,7 +23,9 @@ import type { LinkButtonIn } from './types'
  * @param props 去处与外观(见 LinkIn 逐格注释)。
  * @returns 链接。
  */
-export function LinkButton({ href, onClick, target, title, className, ariaLabel, style, children }: LinkButtonIn) {
+export function LinkButton({
+  href, onClick, target, title, className, ariaLabel, style, replace = false, children,
+}: LinkButtonIn) {
   if (target != null || href == null) {
     return (
       <a href={href}
@@ -38,7 +40,8 @@ export function LinkButton({ href, onClick, target, title, className, ariaLabel,
     )
   }
   return (
-    <Link href={href} onClick={onClick} title={title} className={className} aria-label={ariaLabel} style={style}>
+    <Link href={href} onClick={onClick} title={title} className={className} aria-label={ariaLabel} style={style}
+      replace={replace}>
       {children}
     </Link>
   )

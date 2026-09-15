@@ -1,15 +1,17 @@
 'use client'
 /**
- * 域内小件:段落排序 —— 按现序列出段落,每段带上移 / 下移钮;提交后每段前给它在正确序里的位置
- * (与现位一致标绿,不一致标红)。批五 2026-09-04。
+ * 域内小件:段落排序 —— 按现序列出段落,每段右侧一只抓手,拖着换位(指针事件,鼠标触屏同一套;
+ * 把手只接按下,移动与松手由 hooks 的 effect 挂在 document 上;把手聚焦后上下箭头也能挪);提交前每段标身份字母(跟段走),提交后每段前给它在正确序里的位置
+ * (与现位一致标绿,不一致标红)。批五 2026-09-04;同日 Frank「这个改成拖动不行吗」上移 / 下移钮退役,
+ * 「默认怎么是排序号了」位次数字改字母。
  *
  * @author Frank
  * @time 2026-09-04 12:00:00
  */
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { CLS_SEP, KIND_ICON, MOVE_DOWN, MOVE_UP, ORDER_BASE } from './constants'
-import { orderIndexOf } from './functions'
+import { IconGrip } from '@/components/icons'
+import { CLS_SEP, ROLE_BUTTON } from './constants'
+import { orderIndexOf, paraLabelOf } from './functions'
 import type { PteOrderIn, PteParagraph } from './types'
 import css from './pte.module.css'
 
@@ -39,24 +41,22 @@ export function PteOrder({ t, extra, r, checked }: PteOrderIn) {
     } else if (checked) {
       tagCls = tagCls + CLS_SEP + cssOf(css.blankBad)
     }
-    let tag = String(pos)
+    let tag = paraLabelOf({ paragraphs: extra.paragraphs, id })
     if (checked) {
       tag = String(want)
     }
+    let rowCls = cssOf(css.orderRow)
+    if (r.dragId === id) {
+      rowCls = rowCls + CLS_SEP + cssOf(css.orderDragging)
+    }
     rows.push(
-      <div key={id} className={css.orderRow}>
+      <div key={id} className={rowCls} data-oid={id}>
         <span className={tagCls}>{tag}</span>
         <span className={css.orderText}>{p.text}</span>
         {checked === false && (
-          <span className={css.orderBtns}>
-            <Button kind={KIND_ICON} sm onClick={r.moveOf({ id, dir: MOVE_UP })} disabled={pos === ORDER_BASE}
-              ariaLabel={t('pte.up')}>
-              {t('pte.up')}
-            </Button>
-            <Button kind={KIND_ICON} sm onClick={r.moveOf({ id, dir: MOVE_DOWN })} disabled={pos === r.order.length}
-              ariaLabel={t('pte.down')}>
-              {t('pte.down')}
-            </Button>
+          <span className={css.orderGrip} role={ROLE_BUTTON} tabIndex={0} aria-label={t('pte.drag')}
+            onPointerDown={r.dragOf(id)} onKeyDown={r.keyOf(id)}>
+            <IconGrip />
           </span>
         )}
       </div>,

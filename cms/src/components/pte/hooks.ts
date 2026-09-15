@@ -11,23 +11,24 @@
  */
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
-  DICT_IDLE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY, PICK_NONE,
-  RATE_STEPS, SENT_NONE, SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, TEXT_NONE, T_WFD,
+  DICT_IDLE, DRAG_NONE, GATE_NONE, KIND_EXAM, KIND_NOTE, LANG_UK, LANG_US, PAGE_STEP, PHASE_ANSWERING, PHASE_READY,
+  PICK_NONE, RATE_STEPS, SENT_NONE, SPK_NONE, SPK_UK, SPK_US, STATE_IDLE, T_WFD, TEXT_NONE,
 } from './constants'
 import {
   commentsOfKind, doneServerSnapshotOf, doneSnapshotOf, durationOf, initialOrderOf, initialPhaseOf, makeAudioEnded,
   makeCanPlaySnapshot, makeClose, makeCountdown, makeDictClose, makeDictLookup, makeDictOpenFlag, makeDictSink,
-  makeDoneSync, makeExamOpen, makeExamSubmit, makeFill, makeGateClose, makeGatedPlay, makeGates, makeInputChange,
-  makeMic, makeMore, makeMove, makeNavPick, makeNavScroll, makeNoteSubmit, makeOpen, makePlayEnd,
-  makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord, makeStartRec, makeSubmit, makeTextChange, makeTicker,
-  makeToggle, makeZhLookup, nextRateOf, noop, openDictWord, prepSecOf, quotaServerSnapshotOf, quotaSnapshotOf,
-  rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf, stopSpeak, submitOf, subscribeDone,
-  subscribeNone,
+  makeDoneSync, makeDragStart, makeDragWatch, makeExamOpen, makeExamSubmit, makeFill, makeGateClose, makeGatedPlay,
+  makeGates, makeInputChange, makeKeyMove, makeMic, makeMore, makeNavPick, makeNavScroll, makeNoteSubmit, makeOpen,
+  makePlayEnd, makeRedo, makeSelectionWatch, makeSetBool, makeSpeakWord, makeStartRec, makeSubmit, makeTextChange,
+  makeTicker, makeToggle, makeZhLookup, nextRateOf, noop, openDictWord, prepSecOf, quotaServerSnapshotOf,
+  quotaSnapshotOf, rateAudio, recCapOf, reloadPage, seekAudio, seenCountOf, serverFalseOf, stopSpeak, submitOf,
+  subscribeDone, subscribeNone,
 } from './functions'
 import type {
-  DictEntry, DictPos, DictSentence, DictState, PlayerHookIn, PlayerPanel, PostState, PteAnswerHookIn, PteAnswerPanel,
-  PteBoardHookIn, PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel, PteDictPanel, PteGate, PteNavHookIn,
-  PteMoveIn, PteNavPanel, PtePhase, PteReadingHookIn, PteReadingPanel, RecorderHandle, SentRef,
+  DictEntry, DictPos, DictSentence, DictState, KeyFn, PlayerHookIn, PlayerPanel, PointerFn, PostState,
+  PteAnswerHookIn, PteAnswerPanel, PteBoardHookIn, PteBoardPanel, PteComment, PteCommentsHookIn, PteCommentsPanel,
+  PteDictPanel, PteGate, PteNavHookIn, PteNavPanel, PtePhase, PteReadingHookIn, PteReadingPanel, RecorderHandle,
+  SentRef,
 } from './types'
 
 /**
@@ -117,7 +118,7 @@ export function usePlayer(x: PlayerHookIn): PlayerPanel {
     onRate: cycleRate,
     onTime: time,
     onMeta: time,
-    onEnded: makeAudioEnded({ setPlaying, onEnd: x.onEnd }),
+    onEnded: makeAudioEnded({ setPlaying, dur, setCur, onEnd: x.onEnd }),
     onPlayEv: makeSetBool({ set: setPlaying, value: true }),
     onPauseEv: makeSetBool({ set: setPlaying, value: false }),
   }
@@ -133,20 +134,29 @@ export function usePteReading(x: PteReadingHookIn): PteReadingPanel {
   const [fills, setFills] = useState<Record<number, string>>({})
   const [order, setOrder] = useState<number[]>(initialOrderOf(x.extra))
   const [choice, setChoice] = useState(PICK_NONE)
+  const [dragId, setDragId] = useState(DRAG_NONE)
 
   function fillOf(id: number): (e: React.ChangeEvent<HTMLSelectElement>) => void {
     return makeFill({ fills, set: setFills, id })
   }
 
-  function moveOf(m: PteMoveIn): () => void {
-    return makeMove({ order, set: setOrder, id: m.id, dir: m.dir })
+  useEffect(function dragWatch() {
+    return makeDragWatch({ dragId, order, setOrder, setDrag: setDragId })()
+  }, [dragId, order])
+
+  function dragOf(id: number): PointerFn {
+    return makeDragStart({ id, set: setDragId })
+  }
+
+  function keyOf(id: number): KeyFn {
+    return makeKeyMove({ order, set: setOrder, id })
   }
 
   function chooseOf(option: string): () => void {
     return makeNavPick({ code: option, set: setChoice })
   }
 
-  return { fills, order, choice, fillOf, moveOf, chooseOf }
+  return { fills, order, choice, dragId, fillOf, dragOf, keyOf, chooseOf }
 }
 
 /**

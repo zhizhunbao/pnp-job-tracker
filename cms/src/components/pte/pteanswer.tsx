@@ -1,6 +1,7 @@
 'use client'
 /**
- * 域内小件:答题卡(头 / 体 / 钮三件拼装;三段动线的样子全在三件里)。
+ * 域内小件:答题卡(头 / 体 / 钮三件拼装;三段动线的样子全在三件里)+ 其下的结果卡
+ * (2026-09-04 Frank「上面的 section 只显示固定的」:固定卡整条动线不变形,冒出来的内容另起一卡)。
  *
  * @author Frank
  * @time 2026-09-03 12:00:00
@@ -8,6 +9,7 @@
 import { PteAnswerBody } from './pteanswerbody'
 import { PteAnswerBtns } from './pteanswerbtns'
 import { PteAnswerHead } from './pteanswerhead'
+import { PteResult } from './pteresult'
 import type { PteAnswerIn } from './types'
 import css from './pte.module.css'
 
@@ -19,13 +21,17 @@ import css from './pte.module.css'
  */
 export function PteAnswer({ t, q, type, pos, a, r, seen, pro, prevHref, nextHref, tiers, onHoverWord }: PteAnswerIn) {
   return (
-    <div className={css.card}>
-      <PteAnswerHead t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
+    <>
+      <div className={css.card}>
+        <PteAnswerHead t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
+          prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
+        <PteAnswerBody t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
+          prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
+        <PteAnswerBtns t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
+          prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
+      </div>
+      <PteResult t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
         prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
-      <PteAnswerBody t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
-        prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
-      <PteAnswerBtns t={t} q={q} type={type} pos={pos} a={a} r={r} seen={seen} pro={pro}
-        prevHref={prevHref} nextHref={nextHref} tiers={tiers} onHoverWord={onHoverWord} />
-    </div>
+    </>
   )
 }
