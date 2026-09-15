@@ -170,6 +170,19 @@ export const CO_SEC_HAS_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/
 export const CO_SEC_BASE = 'BASE'
 
 /**
+ * 模型答「查不到」的那族句子(2026-09-14 Frank「没查到的不要显示说 没查到」「啥也没查到吗」):
+ * 「not provided / stated / mentioned / available in the (available) search results」「no information / details」
+ * 「do not contain information」「unknown / unavailable / N/A」—— 命中的节整节不出;整篇都是这族 = 简介卡不出。
+ */
+// eslint-disable-next-line @stylistic/max-len -- 一条正则就是一个值:词表断行会变成两个不同的正则
+export const CO_NOT_FOUND_RE = /\b(?:not\s+(?:provided|stated|mentioned|specified|available|disclosed|listed|given|indicated|known|found|included)|no\s+(?:information|details?|data|business\s+details)|(?:do|does)\s+not\s+(?:contain|include|provide|mention|state|specify)|unknown|unavailable|n\/a)\b/i
+
+/**
+ * 「所在地」只写了国家(2026-09-14 Frank「所在地如果只是 加拿大 就没必要显示了」):职位板在加拿大,这行等于没说。
+ */
+export const CO_COUNTRY_ONLY_RE = /^canada\.?$/i
+
+/**
  * 可点的来源网址(#191 看来源折叠只列真的 http(s) 链接 —— 存量里混过非链接的字串)。
  */
 export const HTTP_URL_RE = /^https?:\/\//i

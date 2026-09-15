@@ -14,7 +14,7 @@
 import { CompanyBriefBody } from './companybriefbody'
 import { CompanySite } from './companysite'
 import { TEXT_NONE } from './constants'
-import { briefHeadClsOf, briefWrapClsOf } from './functions'
+import { briefHeadClsOf, briefWrapClsOf, hasAnyBriefSecOf } from './functions'
 import type { CompanyBriefCardsIn } from './types'
 
 /**
@@ -33,7 +33,7 @@ export function CompanyBriefCards({
   skipBase = false,
   baseZh = TEXT_NONE,
 }: CompanyBriefCardsIn) {
-  if (brief === TEXT_NONE) {
+  if (brief === TEXT_NONE || hasAnyBriefSecOf(brief) === false) {
     return null
   }
   const body = (
