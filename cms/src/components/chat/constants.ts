@@ -212,6 +212,32 @@ export const POPOVER_OPEN_SEL = ':popover-open'
 export const POPOVER_MANUAL = 'manual'
 
 /**
+ * Frank 的 WhatsApp 号(加拿大,国际格式不带加号;2026-09-14 Frank「改成打开新的页面直连我的 whatsapp」
+ * 「7538818089 这个是我加拿大号码」)。
+ */
+export const WA_PHONE = '17538818089'
+
+/**
+ * 点圆球预填给 Frank 的第一句(英文,88% 流量是英文用户)。
+ */
+export const WA_TEXT = 'Hi, I found you on offer2pr.com'
+
+/**
+ * WhatsApp 直连地址(wa.me 官方短链,带预填)。
+ */
+export const WA_URL = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(WA_TEXT)}`
+
+/**
+ * 新标签页。
+ */
+export const TARGET_BLANK = '_blank'
+
+/**
+ * 新开窗口不带 opener。
+ */
+export const WINDOW_FEATURES = 'noopener'
+
+/**
  * 面板的 ARIA 角色。
  */
 export const ROLE_DIALOG = 'dialog'

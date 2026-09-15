@@ -631,7 +631,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': '내 프로필에 저장, 다음에 바로 사용', 'rm.arch.used': '{d}에 저장한 이력서 사용 중', 'rm.arch.done': '프로필에 저장됨',
   'rm.arch.title': '저장된 이력서', 'rm.arch.meta': '{d} 저장, {n}자', 'rm.arch.empty': '공고 대조할 때 저장하면 다음에 바로 사용',
   'rm.arch.view': '보기', 'rm.arch.hide': '접기', 'rm.arch.clear': '삭제', 'rm.arch.sure': '삭제 확인', 'rm.arch.cancel': '취소',
-  'cw.open': '찾기', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '무엇을 찾으세요? 물어보세요',
+  'cw.open': 'WhatsApp', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '무엇을 찾으세요? 물어보세요',
   'cw.max': '전체 화면', 'cw.restore': '전체 화면 종료',
   'cw.reset': '초기화', 'cw.resetOk': '지우기 확인',
   // 档案匹配(E5-00)

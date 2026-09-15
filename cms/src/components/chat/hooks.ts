@@ -27,7 +27,7 @@ import {
   clampBoxOf, clampDockOf, dockStyleOf, grabbedBoxOf, hasBottomBarOf, ignoreNetErr, makeAskResetTimer,
   makeBoxResizeEffect, makeDockResizeEffect, makeDodgeEffect, makeDoReset, makeEscEffect, makeHide, makeHintEffect,
   makeMinimize, makeMountPrefsEffect, makeOpenEvtEffect, makePopoverEffect, makeResetStep, makeShow, makeToggleMax,
-  makeWatchdogEffect, panelStyleOf,
+  makeWatchdogEffect, openWhatsApp, panelStyleOf,
 } from './functions'
 import type { Box, DockPos, GrabDir, LauncherOut, MutBool, MutBox } from './types'
 
@@ -169,7 +169,7 @@ export function useChatLauncher(): LauncherOut {
       toggleMax: makeToggleMax({ setMax }),
       onResetClick: makeResetStep({ askReset, doReset: makeDoReset({ setResetN, setAskReset }), setAskReset }),
       onDockDown: useDockDown({ dockEl, dragged, setDockPos }),
-      onDockClick: useDockClick({ dragged, show }),
+      onDockClick: useDockClick({ dragged, show: openWhatsApp }),
       onHeadDown: useHeadDown({ wide, max, gripDownOf }),
       gripDownOf,
     },
@@ -181,8 +181,9 @@ export function useChatLauncher(): LauncherOut {
 /**
  * 造启动器的点击手柄:拖完松手的那一下 click 要压掉,不然拖完必弹面板。
  * 2026-08-29 自 functions 的 makeDockClick 改名迁入(收 dragged 一枚 ref)。
+ * 2026-09-14 去处改直连 WhatsApp(openWhatsApp),面板不再由圆球打开。
  *
- * @param x 拖动判定引用与打开手柄。
+ * @param x 拖动判定引用与点击去处。
  * @returns 点击手柄。
  */
 export function useDockClick(x: {
@@ -192,7 +193,7 @@ export function useDockClick(x: {
   dragged: MutBool
 
   /**
-   * 打开面板。
+   * 点击去处(2026-09-14 起是 openWhatsApp)。
    */
   show: () => void
 }): () => void {

@@ -634,7 +634,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'rm.arch.save': 'Save to my profile for next time', 'rm.arch.used': 'Using the resume you saved on {d}', 'rm.arch.done': 'Saved to your profile',
   'rm.arch.title': 'Saved resume', 'rm.arch.meta': 'Saved {d}, {n} chars', 'rm.arch.empty': 'Save your resume in a job match to reuse it',
   'rm.arch.view': 'View', 'rm.arch.hide': 'Hide', 'rm.arch.clear': 'Clear', 'rm.arch.sure': 'Confirm clear', 'rm.arch.cancel': 'Cancel',
-  'cw.open': 'Find something', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Looking for something? Ask',
+  'cw.open': 'WhatsApp', 'cw.minimize': 'Minimize', 'cw.close': 'Close', 'cw.hint': 'Looking for something? Ask',
   'cw.max': 'Fullscreen', 'cw.restore': 'Exit fullscreen',
   'cw.reset': 'Reset', 'cw.resetOk': 'Confirm',
   // 档案匹配(E5-00)

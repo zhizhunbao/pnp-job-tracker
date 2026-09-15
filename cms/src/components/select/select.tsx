@@ -10,6 +10,9 @@
  * 铺满其上 —— 选短值不留空白,选长值自动变宽仍封顶(下拉展开始终显示全文);
  * 代价 = 切换选中值时同行控件轻微挪位(拍板已认)。
  * 把脉那份的箭头留白还是旧 30px,收拢时统一到 08-16 拍板的 38(末字不再被压)。
+ * 2026-09-14 Frank「这个看着不一样宽」(职位板 EE 类别选 STEM、大类选 销售,两壳一宽一窄):镜像改量
+ * **占位与当前值两行取宽者** —— 壳永不比自己的「全部 X」占位窄,初始等宽的两颗选了短值仍等宽;选长值
+ * 照旧变宽。07-17「不要有空白」针对的是封顶 150 时短值剩的大段空白,占位宽度内的那一两字余量不算。
  *
  * @author Frank
  * @time 2026-08-24 10:00:00
@@ -52,7 +55,10 @@ export function Select({ value, onChange, opts, all, labelOf, size = BOX_SIZE_DE
   }
   return (
     <span className={boxCls}>
-      <span aria-hidden className={`${base} ${css.measure}`}>{shown}</span>
+      <span aria-hidden className={`${base} ${css.measure}`}>
+        <span className={css.measureLine}>{all}</span>
+        <span className={css.measureLine}>{shown}</span>
+      </span>
       <select value={value} onChange={makeSelectChange(onChange)} className={selCls}>
         <option value="">{all}</option>
         {opels}

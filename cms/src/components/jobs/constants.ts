@@ -1248,11 +1248,12 @@ export const K_PROV = 'prov.'
 export const K_UNCAT = 'cell.uncat'
 
 /**
- * 默认显示 10 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
+ * 默认显示 11 列(发布时间·EE 类别·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
  * 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)。
+ * 2026-09-14 Frank「在大类前面也需要加一个 EE 的类别吧」:EE 类别列进默认集,排大分类之前(字段面板同序)。
  */
 export const DEFAULT_COLS: JobColKey[] = [
-  'datePosted', 'broad', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'actions',
+  'datePosted', 'ee', 'broad', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'actions',
 ]
 
 /**
@@ -1264,6 +1265,7 @@ export const DEFAULT_COLS: JobColKey[] = [
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布时间' },
+  { key: 'ee', label: 'EE 类别' },
   { key: 'broad', label: '大分类' },
   { key: 'mid', label: '中分类' },
   { key: 'fine', label: '小分类' },
@@ -1290,7 +1292,6 @@ export const COLUMNS: ColSpec[] = [
   { key: 'origin', label: '渠道' },
   { key: 'direct', label: '发布' },
   { key: 'pnp', label: 'PNP' },
-  { key: 'ee', label: 'EE 类别' },
   { key: 'aip', label: 'AIP' },
   { key: 'pilot', label: 'RCIP/FCIP' },
   { key: 'lmia', label: '外劳记录' },
@@ -1866,17 +1867,18 @@ export const PILOT_NONE = 'no'
  * 那样整表抻一下(实测 CLS 0.087 → 0.008)。
  * 数值 = 2026-08-03 默认列集在 1440 视口实测比例;**keys 必须与 DEFAULT_COLS 一致**,
  * 对不上会被列宽机器直接忽略(退回今天的行为),所以改列集这里忘了改也不会出错。
+ * 2026-09-14 EE 类别列插进默认集:比例手分(EE 7,公司 / 职位 / 操作让出),非实测。
  */
 export const DEFAULT_COLW_SEED = {
   /**
    * 这份比例对应的列集(逗号分隔,顺序即列序)。
    */
-  keys: 'datePosted,broad,company,title,province,city,salary,salaryYr,vsMedian,actions',
+  keys: 'datePosted,ee,broad,company,title,province,city,salary,salaryYr,vsMedian,actions',
 
   /**
    * 各列占容器宽的百分比(和 = 100)。
    */
-  pct: [6.69, 9.83, 20.77, 14.79, 9.6, 9.36, 8.26, 5.82, 7.32, 7.55],
+  pct: [6.69, 7, 9, 18.6, 13.9, 9, 9, 8, 5.8, 6.6, 6.4],
 }
 
 /**

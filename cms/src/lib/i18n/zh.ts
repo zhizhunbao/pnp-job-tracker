@@ -694,7 +694,7 @@ export const jobsZh = {
   'rm.arch.title': '简历存档', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
   'rm.arch.view': '查看', 'rm.arch.hide': '收起', 'rm.arch.clear': '清除', 'rm.arch.sure': '确认清除', 'rm.arch.cancel': '取消',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
-  'cw.open': '找东西', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',
+  'cw.open': 'WhatsApp', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',
   'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
   'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
   // 档案匹配(E5-00)+ 我的匹配视图(E5-05)

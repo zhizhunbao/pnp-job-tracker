@@ -20,7 +20,8 @@ import {
   EV_W_RESTORE, EV_W_STUCK, EVT_KEYDOWN, EVT_MQ_CHANGE, EVT_RESIZE, EVT_SCROLL, GRAB_MOVE, HINT_DELAY_MS,
   HINT_HIDE_MS, HINT_KEY, HINT_MAX, JOBS_DETAIL_RE, KEY_ESC, LS_OFF, LS_ON, MAIN_SEL, MAX_LS_KEY, NARROW_OFF_RE,
   OPEN_EVT, PANEL_H_MIN, PANEL_W_MIN, PLAN_HEAD, POPOVER_OPEN_SEL, POS_AUTO, POS_FIXED, POS_STICKY, PREFILL_MAX, PX,
-  RESET_ASK_MS, WARN_POPOVER, WARN_STUCK, WARN_WATCHDOG, WATCHDOG2_MS, WATCHDOG_MS, WIDE_MQ,
+  RESET_ASK_MS, TARGET_BLANK, WARN_POPOVER, WARN_STUCK, WARN_WATCHDOG, WATCHDOG2_MS, WATCHDOG_MS, WA_URL, WIDE_MQ,
+  WINDOW_FEATURES,
 } from './constants'
 import type {
   Box, ClampDockIn, DockPos, GrabDir, GrabStart, LazyBoxModule, MutBool, MutBox, PrefillDetail,
@@ -894,6 +895,17 @@ export function loadChatBox() {
  */
 function pickGuideBox(m: LazyBoxModule) {
   return m.GuideBox
+}
+
+/**
+ * 圆球的去处:新标签页直连 Frank 的 WhatsApp(2026-09-14 Frank「改成打开新的页面直连我的 whatsapp 好一些」:
+ * 站内向导是模型答的,真人对话离「有人真的掏钱」更近)。面板不再由圆球打开;verdict 页的 o2p:chat-open
+ * 事件照旧能唤出面板。
+ *
+ * @returns 无。
+ */
+export function openWhatsApp(): void {
+  window.open(WA_URL, TARGET_BLANK, WINDOW_FEATURES)
 }
 
 /**

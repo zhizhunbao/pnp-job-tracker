@@ -6,6 +6,8 @@
  * dock 向左撑宽,钳制口径就不再是那颗 56px 的钮)。
  * 走查 #298:提示胶囊在手机上是 210×56 的一块,钉在视口底部永远盖住正文最后一行 ——
  * 窄屏只留圆球不出这条;评估/处境两条动线的手机端连圆球也不出(clNarrowOff)。
+ * 2026-09-14 Frank「改成打开新的页面直连我的 whatsapp」:圆球与轻提示都走 onDockClick(去处 openWhatsApp,
+ * 新标签页 wa.me),不再打开面板。
  *
  * @author Frank
  * @time 2026-08-27 02:30:00
@@ -35,7 +37,7 @@ export function ChatDock({ p, dockEl, narrowOff }: ChatDockIn) {
       style={p.dockStyle}
       onPointerDown={p.onDockDown}>
       {p.hint && p.dockPos == null && p.wide && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.clHint)} onClick={p.show}>{p.t('cw.hint')}</Button>
+        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.clHint)} onClick={p.onDockClick}>{p.t('cw.hint')}</Button>
       )}
       <Button kind={PLAIN_BTN_KIND}
         className={cssOf(css.clBtn)}
