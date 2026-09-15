@@ -1679,7 +1679,7 @@ def to_job_row(x: JobRowIn) -> dict:
 def status_of_origin(origin: str) -> str:
     """一行的初始状态按渠道定(2026-09-13 Frank「不应该放到职位里面吧」):校内板 hireac 记 campus,
     其余 open。campus 行照样入库(详情页免造),但本域三处只认 open 的聚合(榜单 / 统计 / 雇主池)与
-    cms 侧一切 status='open' 的查询都不看它;只有 /coop 页读 campus。"""
+    cms 侧一切 status='open' 的查询都不看它;只有 /coop 页读 campus(2026-09-15 /coop 撤销,改由主板渠道筛选看到)。"""
     if origin == ORIGIN_HIREAC:
         return STATUS_CAMPUS
     return STATUS_OPEN

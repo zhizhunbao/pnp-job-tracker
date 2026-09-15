@@ -24,8 +24,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
-  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
-  boardMetaOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
+  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -37,15 +37,11 @@ import type { JobFact, SessionUser } from '@/components/jobs'
 export const dynamic = 'force-dynamic'
 
 /**
- * 本页的 SEO 头:A 形 —— 门里拆参,一行 return 桶函数 boardMetaOf(2026-09-13 校内板切面:/coop 经 middleware
- * 改写成 ?st=campus 进本板,SEO 头按切面换;此前静态 B 形 BOARD_META,2026-08-29 Frank 定形的两形之一)。
- *
- * @param x Next 递来的查询参数。
- * @returns 标题与描述。
+ * 本页的 SEO 头:静态 B 形 BOARD_META(2026-08-29 Frank 定形的两形之一)。
+ * 2026-09-13 为校内板切面(/coop 改写成 ?st=campus 进本板)改过 A 形 generateMetadata 按切面换头;
+ * 2026-09-15 切面撤销(Frank「撤吧 校内版 只是一个渠道而已」),没有按参数换头的理由,回静态形。
  */
-export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return boardMetaOf(toSearchParams(await searchParams))
-}
+export const metadata = BOARD_META
 
 /**
  * 职位板的门。

@@ -30,7 +30,7 @@ import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
-  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BOARD_META, BROAD_ORDER_LAST, CAMPUS_META, CANADA_MAIL_SUFFIX,
+  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
   COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
@@ -52,20 +52,20 @@ import {
   PROV_PICK_MAX_AGE_S, PROV_PICK_VALUE, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
   P_SORT, P_VIEW, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
   SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
-  SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CAMPUS, STATUS_CLOSED,
+  SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
-  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_ST, URL_TO_FILTER,
+  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER,
   VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
   ZEBRA_MOD,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardMeta,
-  BoardTitleIn, BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView,
+  BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
@@ -81,7 +81,7 @@ import type {
   PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
-  SliceTextIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
+  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
   ThWidthIn, TransLabelIn, TransShownIn, TransStatus, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
@@ -5187,61 +5187,6 @@ export function toCatLabelList(docs: NocCategoryDoc[]): CatLabel[] {
     })
   }
   return out
-}
-
-/**
- * 图版标题按切面:状态筛选是 campus(/coop 校内板切面)出「校内板」,否则「职位」
- * (2026-09-13 Frank「直接复用职位板整套」:校内板不是另一张表,是本板钉了 st=campus&org=hireac 的切面)。
- *
- * @param x 取词函数与当前状态筛选值。
- * @returns 标题。
- */
-export function boardTitleOf(x: BoardTitleIn): string {
-  if (x.status === STATUS_CAMPUS) {
-    return x.t('coop.title')
-  }
-  return x.t('nav.jobs')
-}
-
-/**
- * 筛选态里的状态格值(没这一格给空串)。
- *
- * @param fState 全部筛选格。
- * @returns 状态值。
- */
-export function statusValueOf(fState: FilterState): string {
-  const slot = fState[FK.status]
-  if (slot == null) {
-    return TEXT_NONE
-  }
-  return slot.v
-}
-
-/**
- * 页面 SEO 头按切面:地址带 st=campus(/coop 改写)给校内板头,否则职位板头。
- *
- * @param sp 查询参数。
- * @returns 标题与描述。
- */
-export function boardMetaOf(sp: URLSearchParams): BoardMeta {
-  if (sp.get(URL_ST) === STATUS_CAMPUS) {
-    return CAMPUS_META
-  }
-  return BOARD_META
-}
-
-/**
- * 全站证言句在切面上收声:校内板切面(status=campus)不出「N 岗命中省提名清单 / N 家雇主有外劳记录」——
- * 那两条是全站数,挂在 376 帖的板头上会被读成校内板的数;职位板照旧。
- *
- * @param x 当前状态筛选值与原句。
- * @returns 原句;校内板切面给空串(BannerFacts 空串不渲)。
- */
-export function sliceTextOf(x: SliceTextIn): string {
-  if (x.status === STATUS_CAMPUS) {
-    return TEXT_NONE
-  }
-  return x.text
 }
 
 /**

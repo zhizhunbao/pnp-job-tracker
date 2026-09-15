@@ -697,7 +697,7 @@ export interface Job {
   firstSeen?: string | null;
   lastSeen?: string | null;
   /**
-   * open 在招 / closed 下架 / campus 校内板帖(2026-09-13:只进 /coop 页,不上职位板与统计;枚举 DDL docs/sql/jobs-status-campus.sql)
+   * open 在招 / closed 下架 / campus 校内板帖(2026-09-13:只进 /coop 页,不上职位板与统计 —— 09-15 /coop 撤销,改由主板渠道 HireAC 筛,仍不进统计与榜单;枚举 DDL docs/sql/jobs-status-campus.sql)
    */
   status?: ('open' | 'closed' | 'campus') | null;
   /**

@@ -966,7 +966,8 @@ ORIGIN_JOBBANK = "jobbank"
 
 ORIGIN_HIREAC = "hireac"
 """校内板渠道(2026-09-13 hireac 域;这一渠道的帖 status 记 campus 不记 open —— 只进 /coop 页,
-职位板 / 统计 / 榜单 / 雇主池按 status=open 取数时自然剔掉,Frank「不应该放到职位里面吧」)。"""
+职位板 / 统计 / 榜单 / 雇主池按 status=open 取数时自然剔掉,Frank「不应该放到职位里面吧」)。
+2026-09-15 /coop 页撤销(Frank「撤吧 校内版 只是一个渠道而已」):campus 帖改由主板渠道下拉选 HireAC 看到,「只进 /coop 页」一句作废;不进统计 / 榜单 / 雇主池照旧。"""
 
 IN_BOARD_STORES = ((paths.PROCESSED_JOBILLICO / "postings.json", "jobillico"),
                    (paths.PROCESSED_JOBBOOM / "postings.json", "jobboom"),
@@ -982,6 +983,7 @@ Jobboom 剔 Job Bank 转载」)。仓与 Job Bank 仓同键(各板域自己归�
 Frank「不应该放到职位里面吧」→ 同日改成**按渠道给 status**(to_job_row:hireac → campus,其余 open):行照样进 jobs 表
 (详情页免造),但职位板 / 统计 / 榜单 / 雇主池全按 status=open 取数,campus 只进一级导航「校内板」页 /coop
 (枚举 DDL:docs/sql/jobs-origin-hireac.sql + jobs-status-campus.sql)。
+2026-09-15 一级导航「校内板」与 /coop 页撤销(Frank「校内版只是一个渠道而已」),campus 帖改由主板渠道筛选看到。
 2026-09-13 gcjobs 照此加行(联邦公务员招聘站公开搜索 ≈ 400 帖,Frank「那 GC Jobs 接一下吧」;枚举 DDL jobs-origin-gcjobs.sql)。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
@@ -1116,7 +1118,8 @@ STATUS_OPEN = "open"
 
 STATUS_CAMPUS = "campus"
 """校内板帖的状态值(2026-09-13):在 jobs 表里与 open 并列的第三态 —— 不是 open(不上职位板、不进统计),
-也不是 closed(详情页照常可看、seed 对账照常收关)。只有 ORIGIN_HIREAC 的帖用它。"""
+也不是 closed(详情页照常可看、seed 对账照常收关)。只有 ORIGIN_HIREAC 的帖用它。
+2026-09-15 /coop 页撤销后,campus 帖在主板按渠道 HireAC 可见(主板取数本就是非 closed)。"""
 
 UTC_OFFSET = "+00:00"
 """isoformat 的 UTC 偏移写法。"""

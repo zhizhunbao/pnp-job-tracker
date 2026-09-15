@@ -26,13 +26,13 @@ export function middleware(req: NextRequest) {
   // ?view=match、?reset=<token>、榜单/统计回流 ?prov= 等都不能丢);旧域请求上面已 301 到新域,不叠跳
   // 校内板(2026-09-13 Frank「直接复用职位板整套」):/coop 是职位板的一个切面 —— 内部改写到根路径并钉上
   // st=campus & org=hireac(status 第三态 + HireAC 渠道),地址栏仍是 /coop;导航高亮按 /coop 判(header PATH_ACTIVE)。
+  // 2026-09-15 切面撤销(Frank「撤吧 校内版 只是一个渠道而已」):更多筛选有了渠道下拉,主板选 HireAC 即出全部校内岗
+  // (实测 377 条 = 切面全量),/coop 30 天 2 次浏览全是本人;导航入口、板头标题、证言收声、SEO 换头随之删。
+  // 旧链接 301 到 /?org=hireac(查询串保留;st 不再钉 —— 主板取数本就是非 closed,campus 帖在内)。
   if (req.nextUrl.pathname === '/coop') {
     const url = new URL('/' + req.nextUrl.search, req.nextUrl.origin)
-    url.searchParams.set('st', 'campus')
     url.searchParams.set('org', 'hireac')
-    const coop = NextResponse.rewrite(url)
-    coop.headers.set('Cache-Control', 'private, no-cache, must-revalidate')
-    return coop
+    return NextResponse.redirect(url, 301)
   }
   if (req.nextUrl.pathname === '/jobs') {
     return NextResponse.redirect(new URL('/' + req.nextUrl.search, req.nextUrl.origin), 301)

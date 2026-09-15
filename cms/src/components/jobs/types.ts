@@ -6167,51 +6167,6 @@ export type NocCategoryDoc = {
 }
 
 /**
- * boardTitleOf() 入参(图版标题按切面:校内板 / 职位板)。
- */
-export type BoardTitleIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 当前状态筛选值(fState 的 fStatus 格;'' = 未选)。
-   */
-  status: string
-}
-
-/**
- * 页面 SEO 头(BOARD_META / CAMPUS_META 的形)。
- */
-export type BoardMeta = {
-  /**
-   * 浏览器标签与搜索结果标题。
-   */
-  title: string
-
-  /**
-   * 搜索结果摘要。
-   */
-  description: string
-}
-
-/**
- * sliceTextOf() 入参(全站证言句按切面收声)。
- */
-export type SliceTextIn = {
-  /**
-   * 当前状态筛选值('' = 未选)。
-   */
-  status: string
-
-  /**
-   * 原句(全站数拼好的)。
-   */
-  text: string
-}
-
-/**
  * jdLocationZhOf 的入参。
  */
 export type JdLocationZhIn = {

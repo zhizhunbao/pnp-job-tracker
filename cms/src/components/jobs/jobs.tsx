@@ -20,6 +20,9 @@
  * 而「我的匹配」是拿用户自己给的答案算的 —— 同屏两套推荐,猜的那套只会稀释真的那套。
  *
  * 2026-08-28 换装批整体重写:状态全进 hooks、口径全进 functions、排版拆成域内小件。
+ * 2026-09-15 校内板切面撤销(Frank「撤吧 校内版 只是一个渠道而已」):09-13 起按状态筛选 = campus 换的
+ * 板头标题「校内板」、全站证言两句收声、SEO 换头(boardTitleOf / sliceTextOf / boardMetaOf / statusValueOf)一并删 ——
+ * 更多筛选有了渠道下拉,主板选 HireAC 即出全部校内岗(实测 377 条 = 切面全量),/coop 30 天 2 次浏览全是本人。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -29,7 +32,7 @@ import { cssOf } from '@/components/css'
 import { IconClipboard } from '@/components/icons'
 import { BANNER_MODULE } from './constants'
 import {
-  boardTitleOf, lmiaTextOf, mvBarTextOf, namedTextOf, sliceTextOf, statusValueOf, subTextOf,
+  lmiaTextOf, mvBarTextOf, namedTextOf, subTextOf,
 } from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
@@ -58,15 +61,11 @@ export function Jobs(props: JobsIn) {
       <div className={cssOf(css.main)}>
         <Banner module={BANNER_MODULE}
           icon={<IconClipboard />}
-          title={boardTitleOf({ t: b.t, status: statusValueOf(b.filters.fState) })}
+          title={b.t('nav.jobs')}
           sub={(
             <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })}
-              named={sliceTextOf({
-                status: statusValueOf(b.filters.fState), text: namedTextOf({ t: b.t, named: b.proof.named }),
-              })}
-              lmia={sliceTextOf({
-                status: statusValueOf(b.filters.fState), text: lmiaTextOf({ t: b.t, lmia: b.proof.lmia }),
-              })} />
+              named={namedTextOf({ t: b.t, named: b.proof.named })}
+              lmia={lmiaTextOf({ t: b.t, lmia: b.proof.lmia })} />
           )}
           images={BANNER_IMGS.jobs} />
         <BoardFilters b={b} boxRef={boxRef} />

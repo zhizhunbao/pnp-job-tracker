@@ -49,11 +49,6 @@ export const PATH_PLAN_PR = '/plan/pr'
 export const PATH_EMPLOYERS = '/employers'
 
 /**
- * 校内板(2026-09-13:Algonquin College HireAC 校内岗位板,一级导航;Frank「在一级 title 上加呢」)。
- */
-export const PATH_COOP = '/coop'
-
-/**
  * 职业库。
  */
 export const PATH_OCC = '/occupations'
@@ -114,11 +109,6 @@ export const A_PATHWAYS = 'pathways'
 export const A_EMPLOYERS = 'employers'
 
 /**
- * 高亮键:校内板(2026-09-13)。
- */
-export const A_COOP = 'coop'
-
-/**
  * 高亮键:移民新闻。
  */
 export const A_NEWS = 'news'
@@ -151,6 +141,8 @@ export const PATH_SEP = '/'
  * 顺序即匹配序:前缀命中第一条生效;不在表里的路径不亮灯(companies 详情 2026-09-14 起亮「雇主」,
  * Frank「导航显示的不对,雇主的 title 要高亮吧」)。
  * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
+ * 2026-09-15 校内板 /coop 撤(Frank「撤吧 校内版 只是一个渠道而已」):09-13 加的一级导航项与高亮键 coop 删,
+ * 旧链接由 middleware 301 到 /?org=hireac。
  */
 export const PATH_ACTIVE = [
   ['/pte', 'pte'],
@@ -159,7 +151,6 @@ export const PATH_ACTIVE = [
   ['/plan', 'pathways'],
   ['/employers', 'employers'],
   ['/companies', 'employers'],
-  ['/coop', 'coop'],
   ['/occupations', 'library'],
   ['/resources', 'library'],
   ['/cases', 'library'],
