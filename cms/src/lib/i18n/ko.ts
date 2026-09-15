@@ -871,6 +871,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'tl.entry': '추첨·정책 타임라인', 'tl.empty': '일치하는 이벤트 없음', 'tl.hist': '추첨 이력',
   'loading': '업데이트 중…',
   'nav.coop': '교내 채용', 'coop.title': '교내 채용', 'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
+  'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
   'nav.library': '자료실', 'nav.employers': '고용주', 'nav.jobs': '채용공고', 'nav.pte': 'PTE 문제풀이', 'tl.tabNews': '최신 공지',
   'rank.bnSub': '이민 가치 점수순', 'rank.bnRows': '이 랭킹 공고 {n}건',
   'acct.hero.login': '다시 오신 것을 환영합니다', 'acct.hero.reg': '무료 가입 — 모든 공고의 매칭도를 확인하세요',
