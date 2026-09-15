@@ -18,14 +18,14 @@ import {
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady, TRANS_KEY_SEP, TRANS_LANGS,
-  TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translateSectioned, translationOk,
+  TRANSLATE_ROUTE_TIMEOUT_MS, translatePlainLines, translateReady, translationOk,
 } from '../llm'
 import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
-  JD_LIMIT_PREFIX, JD_TRANS_MARKS_RE, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
+  JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
   PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
   SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
   TITLE_MAX_LEN,
@@ -35,8 +35,8 @@ import {
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
-  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, saveJdTrans, loadTitleTrans,
-  saveTitleTrans, resetJdTrans,
+  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
+  saveTitleTrans, resetJdTrans, translateJdFormatted,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -405,6 +405,7 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
  * POST /api/jobs/jd-translate {url, lang}:JD 五节整理版懒翻译(职位弹框「显示中文对照」)。
  * 只翻库内 jobs.jd_formatted(整理版就绪才可翻);标记可与正文同行(#180 教训),
  * 「- 」子弹前缀剥下保管只翻正文。进程缓存 url+lang(全量翻齐才进;部分翻齐下次点重试补齐)。
+ * 2026-09-14 Frank「加进行中表」:同岗同语种在途翻译单飞(CACHE.jdTransInflight),后到者等同一个 Promise。
  *
  * @param req 请求(body 是 { url, lang })。
  * @returns { ok, text, cached };状态码同 co-translate。
@@ -450,22 +451,26 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (checkLimit([[JDTR_LIMIT_PREFIX + ipOf(req), JDTR_IP_DAILY]]) === false) {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
   }
+  let task = CACHE.jdTransInflight.get(ck)
+  let mine = false
+  if (task == null) {
+    mine = true
+    task = translateJdFormatted({ db: db, url: url, lang: lang, formatted: fmt, key: ck })
+    CACHE.jdTransInflight.set(ck, task)
+  }
   try {
-    const r = await translateSectioned({
-      text: fmt, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
-      marks: JD_TRANS_MARKS_RE, bullets: true,
-    })
-    if (r.full) {
-      CACHE.jdTransBy.set(ck, r.text)
-      await saveJdTrans({ db: db, url: url, lang: lang, text: r.text })
-    }
-    return Response.json({ ok: true, text: r.text, cached: false })
+    const text = await task
+    return Response.json({ ok: true, text: text, cached: false })
   } catch (e) {
     let msg = String(e)
     if (e instanceof Error) {
       msg = e.message
     }
     return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
+  } finally {
+    if (mine) {
+      CACHE.jdTransInflight.delete(ck)
+    }
   }
 }
 

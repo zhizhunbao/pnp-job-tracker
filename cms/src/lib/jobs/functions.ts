@@ -8,7 +8,8 @@
  * @time 2026-08-22 00:05:00
  */
 
-import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translationOk, TRANS_LANGS,
+import { FRIEND_INPUT_MAX, friendChat, translateLinesAligned, TRANS_KEY_SEP, TRANSLATE_ROUTE_TIMEOUT_MS, translateSectioned,
+  translationOk, TRANS_LANGS,
 } from '../llm'
 import { HDR_ACCEPT, HDR_CONTENT_TYPE, HDR_COOKIE, HDR_REFERER, HDR_USER_AGENT, METHOD_POST } from '../http'
 import {
@@ -51,6 +52,7 @@ import {
   TITLE_BATCH_MAX, TITLE_CTX_PREFIX, TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
+  JD_TRANS_MARKS_RE,
 } from './constants'
 import {
   JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN,
@@ -76,6 +78,7 @@ import type {
   QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
   RelatedOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
   SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut,
+  TranslateJdIn, TransJdOut,
   StrCell, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleList, TitleTexts, TitleTransIn, TitlesOut,
   ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut, TranslateTitlesIn, UrlHandle, WhereParam,
 } from './types'
@@ -4267,6 +4270,26 @@ export function jdTransCellOf(x: JdTransCellIn): string {
     return x.fact.ko
   }
   return x.fact.zh
+}
+
+/**
+ * 翻整理版并落库(2026-09-14 Frank「加进行中表」):路由把这个 Promise 挂进 CACHE.jdTransInflight,
+ * 同岗同语种只发一次模型请求,后到者等同一个;全量翻齐才进程缓存 + 落库,部分翻齐只回给这一批人
+ * (下次点重试补齐,口径同先前路由内联那段)。
+ *
+ * @param input 连接、原帖链接、语种、整理版与缓存键。
+ * @returns 译文(可能部分)。
+ */
+export async function translateJdFormatted(input: TranslateJdIn): TransJdOut {
+  const r = await translateSectioned({
+    text: input.formatted, lang: input.lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
+    marks: JD_TRANS_MARKS_RE, bullets: true,
+  })
+  if (r.full) {
+    CACHE.jdTransBy.set(input.key, r.text)
+    await saveJdTrans({ db: input.db, url: input.url, lang: input.lang, text: r.text })
+  }
+  return r.text
 }
 
 /**

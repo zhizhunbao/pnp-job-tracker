@@ -3649,6 +3649,12 @@ export type JobsCache = {
   jdTransBy: Map<string, string>
 
   /**
+   * JD 对照同岗同语种并发去重:url:lang → 在途翻译(后到者等同一个 Promise;2026-09-14 Frank「很多人点一个岗位
+   * 翻译的时候会不会冲突」→「加进行中表」。先前没有这格:第一个人的译文没回来,第二个人再打一次模型)。
+   */
+  jdTransInflight: Map<string, Promise<string>>
+
+  /**
    * 职位名译名缓存:标题|语种 → 译名(2026-09-14 懒翻职位名;进程内,换版即空)。
    */
   titleTransBy: Map<string, string>
@@ -5065,6 +5071,41 @@ export type SaveJdTransIn = {
    */
   text: string
 }
+
+/**
+ * translateJdFormatted 的入参。
+ */
+export type TranslateJdIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 原帖链接。
+   */
+  url: string
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+
+  /**
+   * 库里的五节整理版(翻译源文)。
+   */
+  formatted: string
+
+  /**
+   * 进程缓存键(url:lang)。
+   */
+  key: string
+}
+
+/**
+ * translateJdFormatted 的出参:译文(可能部分)。
+ */
+export type TransJdOut = Promise<string>
 
 /**
  * `loadTitleTrans` 的入参。

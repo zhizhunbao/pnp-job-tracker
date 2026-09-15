@@ -79,6 +79,11 @@ export const CACHE: JobsCache = {
   jdTransBy: new Map(),
 
   /**
+   * JD 对照同岗同语种在途翻译(单飞)。
+   */
+  jdTransInflight: new Map(),
+
+  /**
    * 职位名译名缓存(2026-09-14)。
    */
   titleTransBy: new Map(),
