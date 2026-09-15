@@ -29,11 +29,8 @@ export function middleware(req: NextRequest) {
   // 2026-09-15 切面撤销(Frank「撤吧 校内版 只是一个渠道而已」):更多筛选有了渠道下拉,主板选 HireAC 即出全部校内岗
   // (实测 377 条 = 切面全量),/coop 30 天 2 次浏览全是本人;导航入口、板头标题、证言收声、SEO 换头随之删。
   // 旧链接 301 到 /?org=hireac(查询串保留;st 不再钉 —— 主板取数本就是非 closed,campus 帖在内)。
-  if (req.nextUrl.pathname === '/coop') {
-    const url = new URL('/' + req.nextUrl.search, req.nextUrl.origin)
-    url.searchParams.set('org', 'hireac')
-    return NextResponse.redirect(url, 301)
-  }
+  // 同日 301 也撤(Frank「coop 这个链接没必要存在了吧」):/coop 只活了两天,30 天 2 次浏览全是本人、不在站点地图,
+  // 没有外部旧链接要接,/coop 直接走 404。
   if (req.nextUrl.pathname === '/jobs') {
     return NextResponse.redirect(new URL('/' + req.nextUrl.search, req.nextUrl.origin), 301)
   }

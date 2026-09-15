@@ -142,7 +142,7 @@ export const PATH_SEP = '/'
  * Frank「导航显示的不对,雇主的 title 要高亮吧」)。
  * 根路径 '/' 就是职位板(offer2pr.com 不带 /jobs 后缀的拍板)。
  * 2026-09-15 校内板 /coop 撤(Frank「撤吧 校内版 只是一个渠道而已」):09-13 加的一级导航项与高亮键 coop 删,
- * 旧链接由 middleware 301 到 /?org=hireac。
+ * 旧链接由 middleware 301 到 /?org=hireac;同日 301 也撤(Frank「coop 这个链接没必要存在了吧」),/coop 直接 404。
  */
 export const PATH_ACTIVE = [
   ['/pte', 'pte'],
