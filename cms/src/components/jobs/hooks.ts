@@ -20,31 +20,29 @@ import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
-  AUTH_LOGIN,
-  AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIR_DESC, DIRECT_URL_KEY,
-  DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK, FK_DIRECT,
-  FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
-  HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LIMIT_RE,
-  METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVE_ERR, SAVE_LIMIT, SAVE_OK,
-  SAVED_STATUS_APPLIED, SAVED_STATUS_WISH, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
+  AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIRECT_URL_KEY,
+  DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
+  FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
+  HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LIMIT_RE, METHOD_DELETE,
+  METHOD_PATCH, METHOD_POST, MIME_JSON, PATH_COOP, P_BACK, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
-  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS,
-  URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_JOBS, URL_API_SAVED_JOBS_LIST,
-  URL_API_SAVED_SEARCHES, URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH,
-  VAL_ON, WIDTH_FULL, WINDOW_FEATURES,
+  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS, URL_API_SAVED_JOBS,
+  URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
+  URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_ORG, URL_ST, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_FULL,
+  WINDOW_FEATURES,
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
   clearFiltersIn,
-  colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
+  colWidthSeedValue, colsKeyOf, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
   filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf, jobDetailViewOf,
-  jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
-  measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
-  saveFiltersOf,
-  seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
+  jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf, measureColWidths,
+  nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, saveFiltersOf, savedMapOf,
+  seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf, widthsKeyOf,
+  writeColWidthCookie, writeColsCookie, writeColsPref,
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
@@ -1493,6 +1491,10 @@ function writeFiltersToUrl(snap: JobFilters): void {
       u.searchParams.set(DIRECT_URL_KEY, VAL_ON)
     } else {
       u.searchParams.delete(DIRECT_URL_KEY)
+    }
+    if (u.pathname === PATH_COOP) {
+      u.searchParams.delete(URL_ST)
+      u.searchParams.delete(URL_ORG)
     }
     replaceIfChanged(u)
   } catch {
