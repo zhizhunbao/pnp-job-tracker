@@ -1026,10 +1026,12 @@ K_JD_FORMATTED_AT = "jdFormattedAt"
 """jobs 行:整理时刻列(DB jobs.jd_formatted_at)。"""
 
 JOBBANK_HOST = "jobbank.gc.ca"
-"""Job Bank 域名(来源标签归一 + 第一方直发判定共用)。"""
+"""Job Bank 域名(第一方直发判定用;2026-09-15 前也管来源标签归一,随改判撤出,见 source_label)。"""
 
 SOURCE_JOB_BANK = "Job Bank"
-"""来源真相:Job Bank 聚合 indeed/Talent 等 → 统一显示「Job Bank」,`source` 保留原始板。"""
+"""Job Bank 的板名:第一方直发判定(source 等于它 = 雇主在 Job Bank 直发)与缺省 source 共用。
+原判(2026-09-15 前,原文保留):「来源真相:Job Bank 聚合 indeed/Talent 等 → 统一显示「Job Bank」,`source` 保留原始板。」
+2026-09-15 Frank 改判:来源列显示原始板,不再统一成 Job Bank(见 source_label)。"""
 
 SOURCE_PRETTY = {"lever": "Lever", "bamboohr": "BambooHR", "greenhouse": "Greenhouse",
                  "smartrecruiters": "SmartRecruiters", "workable": "Workable",

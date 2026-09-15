@@ -750,10 +750,7 @@ class JdFlagIn:
 
 @dataclass
 class SourceLabelIn:
-    """source_label() 入参。"""
-
-    apply_url: str
-    """投递地址。"""
+    """source_label() 入参。(2026-09-15 来源改显示原始板后,投递地址那格用不上撤掉。)"""
 
     source: str
     """原始来源板。"""

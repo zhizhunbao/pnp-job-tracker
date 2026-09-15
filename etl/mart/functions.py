@@ -1292,9 +1292,16 @@ def to_company_grade_columns(x: CompanyGradesOut) -> dict:
 
 
 def source_label(x: SourceLabelIn) -> str:
-    """来源显示标签:JB 聚合的各原始板统一显示「Job Bank」;ATS 板美化。原始 source 仍保留。"""
-    if x.apply_url and JOBBANK_HOST in x.apply_url.lower():
-        return SOURCE_JOB_BANK
+    """来源显示标签:原始来源板原样显示(ATS 板名美化),Job Bank 转贴的显示它转自哪个板。原始 source 仍保留。
+
+    原判(2026-09-15 前,原文保留):「来源显示标签:JB 聚合的各原始板统一显示「Job Bank」;ATS 板美化。」
+    —— 投递链接指向 jobbank.gc.ca 就一律显示 Job Bank。
+    2026-09-15 Frank 改判(「合成一列 / 两列分工」里选两列分工):**渠道**列(origin)管「被我们哪个爬虫抓进来」,
+    **来源**列管「这个岗原本发在哪个板」。原判下两列几乎全重复(实测在招 78,770 条只有 ATS 382 条两列不同),
+    而 Job Bank 渠道 54,163 条里 21,860 条转贴的真实原始板(indeed.com 8,012 / Jobillico 3,811 /
+    Québec emploi 3,700 / CareerBeacon 2,728 …)全被盖掉。板名照 Job Bank 页面上写的原样用
+    (indeed.com 就是 indeed.com),不另起美化表。「发布」列判雇主直发看的是原始 source,不受本改判影响。
+    """
     fallback = x.source
     if not fallback:
         fallback = EM_DASH
@@ -1652,8 +1659,7 @@ def to_job_row(x: JobRowIn) -> dict:
     row: dict = {"externalId": x.external_id, "companySlug": x.company_slug}
     row.update(present_of(x.fields))
     row.update({
-        "sourceLabel": source_label(SourceLabelIn(apply_url=x.fields.get("applyUrl", ""),
-                                                  source=x.fields.get("source", ""))),
+        "sourceLabel": source_label(SourceLabelIn(source=x.fields.get("source", ""))),
         "wageMedHourly": x.wage.get("hourly"), "wageMedAnnual": x.wage.get("annual"),
         "wageLowHourly": x.wage.get("lowHourly"), "wageLowAnnual": x.wage.get("lowAnnual"),
         "wageHighHourly": x.wage.get("highHourly"), "wageHighAnnual": x.wage.get("highAnnual"),
