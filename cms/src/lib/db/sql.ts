@@ -194,19 +194,21 @@ export const COMPANY_BY_JOB_ID_COND = `c.id = (SELECT company_id FROM jobs WHERE
  * 2026-09-13 晚 /fe 雇主页:在招口径统一成职位板那一份 WHERE(status = open 且非 is_dup;原 <> closed 把校内帖与
  * 展示去重吞掉的旧行也算进去,VON Canada 页头 209 vs 板上 129 实撞)—— 公司页清单 / 计数、相似雇主、雇主池
  * 在招总量(REFRESH_EMPLOYER_POOL_OPEN)四处同一句。
+ * 2026-09-14 晚 Frank「关键是能搜到啊」「也算进来吧」(AECOM 唯一一条岗是校内板 campus 态,公司弹框在招为空、市也没了):
+ * 职位板列表的 OPEN_COND 本就是「非 closed」(campus 岗板上搜得到),这一句改成同一条;上面「status = open」那段是历史。
  */
 export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
             nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko,
             ci.name_zh AS city_zh, ci.name_ko AS city_ko
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
-     WHERE j.company_id = $1 AND j.status = 'open' AND coalesce(j.is_dup, false) = false
+     WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
      ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`
 
 /**
  * 公司在招岗总数。$1=公司 id。
  */
-export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.company_id = $1 AND j.status = 'open' AND coalesce(j.is_dup, false) = false`
+export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false`
 
 /**
  * 公司的 LMIA 职业码 json 列(text 取出,消费端自己 parse)。$1=公司 id。
@@ -217,7 +219,7 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 同区同行业、按担保档与在招量排的相似雇主
  */
 export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
+     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND j.mid = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
      GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
      ORDER BY count(j.id) DESC, c.sponsor_grade DESC NULLS LAST LIMIT 6`
@@ -226,7 +228,7 @@ export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_g
  * 相似雇主(公司页版):同省同行业桶;页上没有单一岗位,仍按 companies.industry 找。
  */
 export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND j.status = 'open' AND coalesce(j.is_dup, false) = false
+     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
      WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
      GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
@@ -922,7 +924,7 @@ export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
  */
 export const REFRESH_EMPLOYER_POOL_OPEN = `UPDATE employer_pool p SET open_jobs_total = COALESCE(q.n, 0)
        FROM companies c LEFT JOIN (
-         SELECT j.company_id, count(*)::int AS n FROM jobs j WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false GROUP BY j.company_id
+         SELECT j.company_id, count(*)::int AS n FROM jobs j WHERE COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false GROUP BY j.company_id
        ) q ON q.company_id = c.id
        WHERE c.slug = p.slug AND p.open_jobs_total <> COALESCE(q.n, 0)`
 
@@ -954,7 +956,7 @@ export const REFRESH_CITY_STATS = `INSERT INTO stats_city (city, province, open_
                 ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_low_hourly) FILTER (WHERE j.aip = true))::numeric, 2)::float8 AS aip_wage_low_hourly,
                 ROUND((percentile_cont(0.5) WITHIN GROUP (ORDER BY j.wage_med_hourly) FILTER (WHERE j.aip = true))::numeric, 2)::float8 AS aip_wage_med_hourly
          FROM jobs j
-         WHERE j.status = 'open' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
+         WHERE COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false AND COALESCE(j.city, '') <> ''
          GROUP BY j.city, j.province) g
        LEFT JOIN (
          SELECT city, province, jsonb_object_agg(grp, jsonb_build_object('n', n, 'wage', wage, 'hourly', hourly, 'low', low)) AS by_broad FROM (
