@@ -1403,10 +1403,12 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
  * (职位/公司/地点等)允许多行,以便表格压进容器宽度不横向滚动。表头一律不换行。
  * salary 不在此列:薪资原文可为长文本(如 "40% commission per sale"),要像文本列一样换行;
  * 年薪/中位数等计算列恒短值。
+ * 2026-09-14 Frank「这个太长了怎么处理」(North York 被按词折成两行):市加入不折行 —— 地名是名字,名字不截不折;
+ * 列宽机器给不折行列的最短宽按整格量,长地名(Saint-Jean-sur-Richelieu 一类)会多吃一点宽,由 P90 / MAX 两轮回填消化。
  */
 export const NOWRAP_COLS = new Set<JobColKey>([
   'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
-  'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match',
+  'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match', 'city',
 ])
 
 /**
