@@ -37,7 +37,7 @@ from load.functions import trigger_alerts, trigger_seed
 from sched.constants import (
     ALERTS_FAIL_TPL, ALERTS_OK_TPL, ARG_ONLY, ATTR_META, ATTR_METAS, CMD_SEP, CMS_DIR,
     DEFAULT_INTERVAL_S, DEFAULT_ROLES, DEFAULT_SEED_URL, DEFAULT_SOURCE, DOM_MAIN_TPL,
-    DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_PING_TPL,
+    DOM_MOD_TPL, DONE_NAME_TPL, ENC_UTF8, ENV_FILE, ENV_IOENCODING, ENV_PING_FRESH, ENV_PING_TPL,
     ENV_SEED_TOKEN, ENV_SEED_URL, ENV_SOURCE, ENV_UNBUFFERED, ERRORS_REPLACE, ERR_PREFIXES,
     ETL_DIR, FAIL_RETRY_S, FRESH_DATE_FMT, FRESH_K_CADENCE, FRESH_K_FILE, FRESH_K_GLOB,
     FRESH_K_KEY, FRESH_K_NOTE, FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_P_ALL_OK_TPL,
@@ -46,13 +46,13 @@ from sched.constants import (
     INIT_GLOB, K_AFTER, K_FRESH, K_INTERVAL, K_NAME, K_ONLY, K_PING, K_ROLE,
     K_SEED, KV_SEP, LVL_ERROR, LVL_INFO, MANUAL_SEED_URL, META_FAIL_TPL, NAME_JOIN, NEWLINE,
     NOT_DOMAIN, NOW_END_TPL, NOW_FAIL_TPL, NOW_HEAD_TPL, NOW_OK_TPL, NO_UNIT_TPL,
-    PING_FAIL_TPL, PING_OK_MSG, PING_TIMEOUT_S, POLL_S, ROUNDS_DIR, ROUND_DONE_TPL,
+    PING_FAIL_TPL, PING_FRESH_OK_MSG, PING_OK_MSG, PING_TIMEOUT_S, POLL_S, ROUNDS_DIR, ROUND_DONE_TPL,
     ROUND_RETRY_TPL, ROUND_STAMP_TPL, ROUND_START_TPL, SEED_FAIL_TPL, SEED_OK_TPL,
     SOURCE_UNIT_TPL, STEP_FAIL_MSG, STEP_PY, STEP_RUN_TPL, TOKEN_LINE_PREFIX, UNDERSCORE,
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
 )
-from sched.scheme import FreshStampIn, LogLike, MetaHit, RunStepIn, ToUnitIn, Unit
+from sched.scheme import FreshStampIn, LogLike, MetaHit, PingIn, RunStepIn, ToUnitIn, Unit
 
 
 # =========================================================================
@@ -303,20 +303,31 @@ def ping_health(x: Unit) -> None:
 
     2026-08-31 批O:发 ping 前先过 freshness_ok() 全域保鲜闸(原 pnp 链尾哨兵搬进本门口,
     source_manifest 中央花名册随之退役)—— 有陈数据就扣 ping 转红,语义与 B3-1 原样。
+    2026-09-15 方案 3(Frank「3,那 10 个源也查一下」):拆成两件 —— 角色心跳只凭本轮成败直接发;保鲜闸只在配了
+    ENV_PING_FRESH 的单元跑,通过才 ping 保鲜检查项。原因:闸挡在每个角色前面时,10 个源超期让四个检查项一起红了两周,
+    新接的 hireac 成功也发不出心跳,报警分不清是哪个角色的事。
     """
     if x.ping is False:
         return
     url = os.environ.get(ENV_PING_TPL.format(role=current_role().upper()), "")
-    if url == "":
+    if url != "":
+        send_ping(PingIn(url=url, ok_msg=PING_OK_MSG))
+    fresh_url = os.environ.get(ENV_PING_FRESH, "")
+    if fresh_url == "":
         return
     if freshness_ok() is False:
         return
+    send_ping(PingIn(url=fresh_url, ok_msg=PING_FRESH_OK_MSG))
+
+
+def send_ping(x: PingIn) -> None:
+    """发一次心跳;打不通只留痕,不影响本轮成败。"""
     try:
-        httpx.get(url, timeout=PING_TIMEOUT_S)
+        httpx.get(x.url, timeout=PING_TIMEOUT_S)
     except Exception as e:  # noqa: BLE001 — 心跳打不通不影响本轮成败,留痕即可
         logger.error(PING_FAIL_TPL.format(name=type(e).__name__))
         return
-    logger.info(PING_OK_MSG)
+    logger.info(x.ok_msg)
 
 
 def freshness_ok() -> bool:
@@ -327,6 +338,7 @@ def freshness_ok() -> bool:
     住 ping 门口而不是某域链尾:**任一持 ping 的单元都替全舰队盯保鲜** —— 覆盖没配
     healthchecks URL 的役(批N 拆容器后 dli/aip 等无 ping env,报警面 = 现有检查数);
     待各役配齐自己的 URL 后可改回按域分摊。判定逻辑与原 pnp 段37 逐字同源。
+    2026-09-15 方案 3:不再挡角色心跳,只在配了 ENV_PING_FRESH 的单元(build)跑,通过才 ping 保鲜检查项。
     """
     rows = fresh_rows()
     today = datetime.now(timezone.utc).date()

@@ -249,6 +249,7 @@ services:
     environment:
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
+      HEALTHCHECK_PING_FRESHNESS: ${HEALTHCHECK_PING_FRESHNESS:-}   # 2026-09-15 方案 3:全舰队保鲜闸通过才 ping 这个检查项;只配给 build(每小时一轮)
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=load 域 METAS build 役(3600 兜底 + after=jobbank;#128 文字随迁)
       SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}  # 灌库端点由根 .env 提供(现值即生产);2026-08-31 本地 cms 容器删除后 :3001 默认档随之退役
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(根 .env 注入);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)

@@ -205,7 +205,8 @@ ENV_PING_TPL = "HEALTHCHECK_PING_{role}"
 """监控心跳环境键(E7-01):本轮全部成功且本单元持 ping 权 → ping healthchecks.io
 (env 缺省不 ping)。批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),
 防「兄弟单元的 ping 遮住本单元失败」—— pnp 角色授给 pnp 域(链尾 freshness 绿 =
-数据真新鲜,B3-1 语义保真;2026-08-31 批D ops 拆散后 ping 权随 freshness 迁 pnp)。"""
+数据真新鲜,B3-1 语义保真;2026-08-31 批D ops 拆散后 ping 权随 freshness 迁 pnp)。
+2026-09-15 方案 3(Frank「3,那 10 个源也查一下」):角色心跳只凭本轮成败,不再过保鲜闸;保鲜另走 ENV_PING_FRESH。"""
 
 PING_TIMEOUT_S = 10
 """心跳请求放弃线。"""
@@ -215,6 +216,15 @@ PING_OK_MSG = "✓ healthcheck ping"
 
 PING_FAIL_TPL = "✗ healthcheck ping 失败({name})"
 """心跳失败行(只留痕,不影响本轮成败)。"""
+
+ENV_PING_FRESH = "HEALTHCHECK_PING_FRESHNESS"
+"""保鲜心跳环境键(2026-09-15 方案 3,Frank「3,那 10 个源也查一下」):全舰队保鲜闸通过才 ping 这个地址。
+原来保鲜闸挡在每个角色的心跳前面,任一源超期所有角色一起转红 —— 分不清是哪个角色挂了还是哪份数据旧了
+(10 个源超期让 backup / jobbank / pnp / build 四个检查项红了两周,新接的 hireac 成功也发不出心跳)。
+现拆开:角色心跳只看本轮成败;保鲜单立一个检查项。只配给 build 服务(每小时一轮),其余角色 env 缺省不跑保鲜闸。"""
+
+PING_FRESH_OK_MSG = "✓ healthcheck ping(保鲜)"
+"""保鲜心跳成功行。"""
 
 K_FRESH = "fresh"
 """META 键:保鲜契约(2026-08-31 批O,Frank「source_manifest 也不需要」:中央花名册退役,
@@ -267,8 +277,9 @@ FRESH_P_STALE_TPL = "✗ 保鲜 {rel}: {stamp}({age} 天前,限 {cad} 天)"
 FRESH_P_STALE_NOTE_TPL = "✗ 保鲜 {rel}: {stamp}({age} 天前,限 {cad} 天) —— {note}"
 """超期行(带契约备注)。"""
 
-FRESH_P_SUMMARY_TPL = "✗ {n}/{total} 个源超期或无戳,本轮扣 ping 转红"
-"""保鲜闸收口行(先逐行打超期,再打本行;ping 被扣下 → healthchecks 转红报警)。"""
+FRESH_P_SUMMARY_TPL = "✗ {n}/{total} 个源超期或无戳,保鲜心跳不发(保鲜检查项转红)"
+"""保鲜闸收口行(先逐行打超期,再打本行;ping 被扣下 → healthchecks 转红报警)。
+原句「本轮扣 ping 转红」;2026-09-15 方案 3 起扣的只是保鲜检查项的心跳,角色心跳照发。"""
 
 FRESH_P_ALL_OK_TPL = "✓ 保鲜 {n} 个源全部在期"
 """保鲜闸通过行(ping 前打一行,证明「数据是新的」有据)。"""

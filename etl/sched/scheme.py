@@ -115,3 +115,14 @@ class FreshStampIn:
 
     key: str
     """取戳键(fetched/checkedAt,或 mtime 兜底)。"""
+
+
+@dataclass
+class PingIn:
+    """send_ping() 入参(2026-09-15 方案 3:角色心跳与保鲜心跳共用一个发送件)。"""
+
+    url: str
+    """心跳地址(hc-ping.com/…)。"""
+
+    ok_msg: str
+    """成功时打的日志行。"""
