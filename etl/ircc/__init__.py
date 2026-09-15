@@ -20,5 +20,7 @@ META = {
         {"glob": "raw/ircc/*.json", "cadence_days": 4},
         {"file": "raw/ircc/pnp_allocations.json", "cadence_days": 60, "key": "checkedAt",
          "note": "人工核对表(配额)"},
+        {"file": "raw/ircc/levels_plan.json", "cadence_days": 60, "key": "checkedAt",
+         "note": "人工核对表(移民水平计划;2026-09-15 补:原被上面通配规则按 fetched 判无戳,拖红心跳)"},
     ],
 }

@@ -56,10 +56,15 @@ SCHEDULED = [
     ("ns_stats", scrape_ns_stats),
     ("bc_nominations", scrape_bc_nominations),
     ("pe_iidi", scrape_pe_iidi),
+    ("mb_stats", build_mb_stats),
+    ("nl_employers", build_nl_employers),
     ("watch_allocations", watch_prov_allocations),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
 2026-08-30 批B 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
+2026-09-15 mb_stats / nl_employers 从手动件挂进链(watch 哨兵之前;Frank「3,那 10 个源也查一下」):两步纯读 crawl 缓存
+不发请求,缓存每小时在刷;不进链时两份产物停在 08-30,被 raw/pnp/*.json 两天保鲜规则判超期、拖红心跳。当日手动各跑一次均通过。
+另外四个手动件 on_stats / mb_points / nl_points / sk_joboffer 会打官网,进不进链待 Frank 拍。
 
   build_ab               AB AAIP(实时,exclusion 排除式)
   build_bc               BC 2026 新政 Care/Build 清单(实时,2026-07-25 接入;旧 tech 定向 2024-12 关)

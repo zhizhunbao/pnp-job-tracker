@@ -22,8 +22,14 @@ from ee.functions import build_ircc_ee_categories, build_ircc_ee_category_rules,
 SCHEDULED = [
     ("categories", build_ircc_ee_categories),
     ("draws", build_ircc_ee_draws),
+    ("rules", build_ircc_ee_rules),
+    ("category_rules", build_ircc_ee_category_rules),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步说明:
+2026-09-15 rules / category_rules 挂到链尾(Frank「3,那 10 个源也查一下」):两步纯读 crawl 缓存,缓存每小时在刷;
+不进链时 crs-grid / fed-eligibility / language-grid 停在 09-06,被 raw/ee/*.json 两天保鲜规则判超期、拖红心跳。
+放链尾:自校失败 exit 1 时前两步已落盘,只是本轮记失败、ee 心跳不发(这正是该报的);当日手动各跑一次均通过。
+下面 TOOLS 说明里「不进默认链」的理由就此作废,原文保留。
 
   build_ircc_ee_categories  类别抽选职业清单(httpx 直取,解析为空则保留旧表打 ⚠)
   build_ircc_ee_draws       抽选轮次(IRCC 开放 JSON;byCategory / history / recent 三块)
