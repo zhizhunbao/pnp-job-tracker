@@ -27,7 +27,7 @@ import {
   HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LIMIT_RE,
   METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVE_ERR, SAVE_LIMIT, SAVE_OK,
   SAVED_STATUS_APPLIED, SAVED_STATUS_WISH, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
-  TEXT_STATUS, TRACK_AI_READ_JD, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
+  TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
   URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS,
@@ -1665,12 +1665,10 @@ export function useJobBody(x: JobBodyIn): JobBodyPanel {
   const trans = useJdTrans({ job: x.job, lang: x.lang, resetKey: fmt.resetKey })
   const apply = useApplyHow(x.job)
   const [showOrig, setShowOrig] = useState(false)
-  const [aiOn, setAiOn] = useState(false)
   const [prevResetKey, setPrevResetKey] = useState(fmt.resetKey)
   if (prevResetKey !== fmt.resetKey) {
     setPrevResetKey(fmt.resetKey)
     setShowOrig(false)
-    setAiOn(false)
   }
   return {
     t,
@@ -1683,13 +1681,6 @@ export function useJobBody(x: JobBodyIn): JobBodyPanel {
       setShowOrig(showOrig === false)
     },
     onRetryFmt: fmt.onRetry,
-    aiOn,
-    onToggleAi: function toggleAi(): void {
-      if (aiOn === false) {
-        track(TRACK_AI_READ_JD)
-      }
-      setAiOn(aiOn === false)
-    },
     showTrans: trans.showTrans,
     trans: trans.trans,
     transStatus: trans.transStatus,
