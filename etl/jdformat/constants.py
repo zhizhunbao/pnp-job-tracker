@@ -96,9 +96,6 @@ P_OPTIONS = "options"
 P_NUM_PREDICT = "num_predict"
 """请求体:生成上限。"""
 
-P_NUM_CTX = "num_ctx"
-"""请求体:上下文窗口(Ollama 缺省 4096 token 装不下长帖,显式给)。"""
-
 P_TEMPERATURE = "temperature"
 """请求体:温度。"""
 
@@ -117,11 +114,10 @@ LLM_TEMPERATURE = 0.1
 GEN_TOKENS = 2000
 """生成上限 token:五节整理版实测 300~500 token,给足余量。"""
 
-NUM_CTX = 8192
-"""上下文窗口 token:BODY_MAX_LEN 字原文约 4k token + 提示词 + 输出。"""
-
 BODY_MAX_LEN = 16000
-"""喂给模型的原文最长字符数(cms 走朋友网关是 20000 减提示词;本地窗口 8192 token 按 4 字/token 留余量)。"""
+"""喂给模型的原文最长字符数(cms 走朋友网关是 20000 减提示词;盒子 Ollama 服务端默认窗口 16384 token,
+4 字/token 留足余量)。⚠ 不在请求里带 num_ctx(2026-09-15 首轮实撞:显式 8192 与 company brief 的默认
+16384 交替,Ollama 每次换窗口都重载模型,一条从 11 秒拖到 50~85 秒)。"""
 
 GEN_TRIES = 2
 """最多打几次:第一次没过(多半是数字被改写)再打一次,第二次提示尾加一句照抄数字(镜像 cms JD_GEN_TRIES)。"""
