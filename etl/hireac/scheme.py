@@ -61,6 +61,20 @@ class WaitPageIn:
 
 
 @dataclass
+class FreshHtmlIn:
+    """fresh_html() 入参(翻页后等表格真的换成新一页的行)。"""
+
+    page: BrowserPageLike
+    """板所在标签。"""
+
+    n: int
+    """目标页号(只用于报错)。"""
+
+    prev: set
+    """上一页的行号集合;新页行号与它零交集才算翻到。"""
+
+
+@dataclass
 class DetailBatchIn:
     """fetch_details() 入参(本轮在列的全部行;函数内剔已缓存并按上限截断)。"""
 

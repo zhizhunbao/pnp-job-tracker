@@ -30,7 +30,7 @@ from hireac import DETAILS_PER_RUN
 from hireac.constants import (
     ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
     DETAIL_MARK, DETAIL_SLEEP_MS, DETAIL_TICK, ENC_UTF8, ERR_BROWSER_DOWN, ERR_LOGIN_TPL, ERR_NO_VIEW_ALL,
-    ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
+    ERR_PAGE_STALE_TPL, ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
     F_APPLY_WEB, F_CATEGORY, F_CITY, F_COUNTRY, F_DEADLINE, F_DESCRIPTION, F_DESCRIPTION_CC, F_DIVISION, F_HOURS,
     F_JOB_TYPE, F_LANGUAGE, F_LOCATION, F_LOCATION_CC, F_ORG, F_POSITION_TYPE, F_POSTAL, F_PREFERRED,
     F_PROCEDURE, F_PROVINCE, F_QUALIFICATIONS, F_REQUIREMENTS, F_SALARY, F_TERM, F_TITLE, F_WEBSITE,
@@ -48,7 +48,7 @@ from hireac.constants import (
     TERM_OF_KIND, UTC_Z, VIEW_ALL_SETTLE_MS, WAIT_DOM, WS_RE,
 )
 from hireac.scheme import (
-    BrowserPageLike, DetailBatchIn, DetailBatchOut, DetailFieldsIn, DetailKeyIn, JobFact, Location,
+    BrowserPageLike, DetailBatchIn, DetailBatchOut, DetailFieldsIn, DetailKeyIn, FreshHtmlIn, JobFact, Location,
     ParseTally, PickIn, PostingRowIn, StoreTally, UnitByKindIn, WaitPageIn,
 )
 
@@ -110,15 +110,26 @@ async def open_board(page: BrowserPageLike) -> None:
 
 async def collect_rows(page: BrowserPageLike) -> dict:
     """列表页逐页翻(页内 JS 翻页,轮询当前页号到位)→ 原文进 crawl 层 → 行号 → 详情表单参数;
-    中途异常也把攒下的列表页先落盘。"""
+    中途异常也把攒下的列表页先落盘。
+    起点必须是第 1 页:板在会话里记着上次看到哪页,点开「全部在招」直接停在那页(2026-09-15 实撞:上一轮停在第 7 页,
+    下一轮首读只有 8 行、真正的第 1 页 100 行一行没收)。分页器页号不是 1 就先翻回第 1 页,等表格换成新行再读。"""
     html = await page.content()
+    current = await page.evaluate(CURRENT_PAGE_JS)
+    if str(current) != str(PAGE_ONE):
+        stale = set(rows_of_page(html))
+        await page.evaluate(LOAD_PAGE_JS_TPL.format(n=PAGE_ONE))
+        arrived = await wait_page(WaitPageIn(page=page, n=PAGE_ONE))
+        if not arrived:
+            raise RuntimeError(ERR_PAGE_WAIT_TPL.format(n=PAGE_ONE))
+        html = await fresh_html(FreshHtmlIn(page=page, n=PAGE_ONE, prev=stale))
     last = last_page_of(html)
     rows: dict = {}
     pages: list = []
     n = PAGE_ONE
     try:
         while True:
-            rows.update(rows_of_page(html))
+            page_rows = rows_of_page(html)
+            rows.update(page_rows)
             pages.append(CachePage(url=LIST_KEY_TPL.format(base=POSTINGS_URL, n=n), html=html, title=""))
             say(PRINT_PAGE_TPL.format(n=n, last=last, rows=len(rows)))
             if n >= last:
@@ -128,7 +139,7 @@ async def collect_rows(page: BrowserPageLike) -> dict:
             arrived = await wait_page(WaitPageIn(page=page, n=n))
             if not arrived:
                 raise RuntimeError(ERR_PAGE_WAIT_TPL.format(n=n))
-            html = await page.content()
+            html = await fresh_html(FreshHtmlIn(page=page, n=n, prev=set(page_rows)))
     finally:
         put_cached_pages(CachePutManyIn(slug=SLUG_CRAWL, pages=pages))
     return rows
@@ -145,6 +156,21 @@ async def wait_page(x: WaitPageIn) -> bool:
             return True
         tick += 1
     return False
+
+
+async def fresh_html(x: FreshHtmlIn) -> str:
+    """翻页后等表格真的换成新一页再读:页号先到、表格后重绘,只看页号会读进上一页的旧行
+    (2026-09-15 实撞:第 2、3 页各读进约 50 行旧页,列表 608 只收 508)。新页行号与上一页零交集才算到位;
+    超过轮询上限抛错停轮 —— 宁可这轮不跑,也不带着漏读的列表去剔在招岗。"""
+    tick = 0
+    while tick < PAGE_WAIT_TRIES:
+        html = await x.page.content()
+        ids = rows_of_page(html)
+        if len(ids) > 0 and x.prev.isdisjoint(ids):
+            return html
+        await x.page.wait_for_timeout(PAGE_WAIT_STEP_MS)
+        tick += 1
+    raise RuntimeError(ERR_PAGE_STALE_TPL.format(n=x.n))
 
 
 def last_page_of(html: str) -> int:
