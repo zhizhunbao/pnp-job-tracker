@@ -532,7 +532,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'all.broad': '전체 대분류', 'all.mid': '중분류 전체', 'all.fine': '직무 전체',
   'all.source': '출처 전체', 'all.exp': '경력 무관',
   'all.pnp': 'PNP 전체', 'all.aip': 'AIP 전체', 'all.pilot': '시범 커뮤니티', 'all.ee': '카테고리 전체', 'all.status': '상태 전체', 'all.origin': '채널 전체', 'opt.yes': '예', 'opt.no': '아니오',
-  'filter.num': '급여·점수', 'filter.salary': '급여', 'filter.score': '점수', 'filter.more': '필터 더보기', 'filter.other': '기타',
+  'filter.num': '급여·점수', 'filter.salary': '급여', 'filter.score': '점수', 'filter.more': '필터 더보기',
   'filter.picked': '선택됨',
   'all.score': '전체 점수', 'sc.high': '높음(≥75)', 'sc.mid': '중간(50–74)', 'sc.low': '낮음(<50)',
   'all.sal': '전체 연봉', 'sal.ge100': '≥$100K', 'sal.80': '$80–100K', 'sal.60': '$60–80K', 'sal.u60': '<$60K',

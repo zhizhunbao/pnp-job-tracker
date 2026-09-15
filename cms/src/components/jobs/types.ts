@@ -129,6 +129,11 @@ export type FilterOpts = {
    * EE 类别清单(维度表顺序,不联动;值 = 数据层中文 label。2026-09-14 常用一行大类之前)。
    */
   ee: string[]
+
+  /**
+   * 来源清单(sources 维度表顺序,不联动;2026-09-15 起是原始板,Job Bank 转贴的 indeed.com 等也在内)。
+   */
+  source: string[]
 }
 
 /**

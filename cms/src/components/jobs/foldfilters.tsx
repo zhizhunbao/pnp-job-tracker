@@ -11,6 +11,10 @@
  * 2026-08-29 Frank 实拍:「仅雇主直发」「排除不担保/须 PR」两颗复选框的 title 悬浮提示撤掉 ——
  * 2026-08-06 拍板「消费页 tooltips 全撤,靠列名自解释」的两条漏网。只撤属性,label 文案照旧。
  * 2026-09-14 Frank「全部市提到全部省后面吧」:市下拉升到常用一行紧挨省,地区行只剩区。
+ * 2026-09-15 Frank「筛选也分两个吧」「一个是渠道 一个是来源」「同时把其他这个也拆一下分类吧」:「其他」一行拆成四行 ——
+ * 移民资格(PNP、AIP、试点社区、须 PR)、职位类型、薪资(年薪、对比中位)、发布(渠道、来源、仅雇主直发);
+ * 渠道与来源两个下拉是新加的(参数 org / src 早就有,只是板上没控件)。行名全用现成词条;「发布」行借表格
+ * 「发布」列同一个词条 col.direct,术语一致,也免得「来源」行里再放「全部来源」重字。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -18,7 +22,8 @@
 import { cssOf } from '@/components/css'
 import { Select } from '@/components/select'
 import {
-  ELIG_OK, FK, INPUT_CHECKBOX, K_EMP, K_SAL, K_VS, OPTS_EMP, OPTS_PILOT, OPTS_SAL, OPTS_VS, OPTS_YES_NO,
+  ELIG_OK, FK, INPUT_CHECKBOX, K_EMP, K_ORIGIN, K_SAL, K_VS, OPTS_EMP, OPTS_ORIGIN, OPTS_PILOT, OPTS_SAL, OPTS_VS,
+  OPTS_YES_NO,
 } from './constants'
 import {
   checkClsOf, makeCatLabel, makeCheckChange, makeEligChange, makeMidChange, makeOptLabel,
@@ -31,7 +36,7 @@ import css from './jobs.module.css'
  * 渲染折叠区。
  *
  * @param props 职位板整台状态机。
- * @returns 三行低频筛选。
+ * @returns 六行低频筛选。
  */
 export function FoldFilters({ b }: BoardPanelIn) {
   const f = b.filters
@@ -52,7 +57,7 @@ export function FoldFilters({ b }: BoardPanelIn) {
           opts={f.opts.fine} all={b.t('all.fine')} labelOf={makeCatLabel(b.t)} />
       </div>
       <div className={cssOf(css.ctl)}>
-        <span className={cssOf(css.filtLabel)}>{b.t('filter.other')}</span>
+        <span className={cssOf(css.filtLabel)}>{b.t('filter.elig')}</span>
         <Select value={slotOf({ fState: f.fState, k: FK.pnp })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.pnp })}
           opts={OPTS_YES_NO} all={b.t('all.pnp')} labelOf={makeOptLabel(b.t)} />
@@ -62,23 +67,38 @@ export function FoldFilters({ b }: BoardPanelIn) {
         <Select value={slotOf({ fState: f.fState, k: FK.pilot })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.pilot })}
           opts={OPTS_PILOT} all={b.t('all.pilot')} labelOf={makePilotLabel(b.t)} />
+        <label className={checkClsOf(slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK)}>
+          <input type={INPUT_CHECKBOX} checked={slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK}
+            onChange={makeEligChange(f.fState)} />
+          {b.t('eligOnly')}
+        </label>
+      </div>
+      <div className={cssOf(css.ctl)}>
+        <span className={cssOf(css.filtLabel)}>{b.t('filter.emp')}</span>
         <Select value={slotOf({ fState: f.fState, k: FK.emp })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.emp })}
           opts={OPTS_EMP} all={b.t('all.emp')} labelOf={makePrefixLabel({ t: b.t, prefix: K_EMP })} />
+      </div>
+      <div className={cssOf(css.ctl)}>
+        <span className={cssOf(css.filtLabel)}>{b.t('filter.salary')}</span>
         <Select value={slotOf({ fState: f.fState, k: FK.sal })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.sal })}
           opts={OPTS_SAL} all={b.t('all.sal')} labelOf={makePrefixLabel({ t: b.t, prefix: K_SAL })} />
         <Select value={slotOf({ fState: f.fState, k: FK.vs })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.vs })}
           opts={OPTS_VS} all={b.t('all.vs')} labelOf={makePrefixLabel({ t: b.t, prefix: K_VS })} />
+      </div>
+      <div className={cssOf(css.ctl)}>
+        <span className={cssOf(css.filtLabel)}>{b.t('col.direct')}</span>
+        <Select value={slotOf({ fState: f.fState, k: FK.origin })}
+          onChange={makeSlotChange({ fState: f.fState, k: FK.origin })}
+          opts={OPTS_ORIGIN} all={b.t('all.origin')} labelOf={makePrefixLabel({ t: b.t, prefix: K_ORIGIN })} />
+        <Select value={slotOf({ fState: f.fState, k: FK.source })}
+          onChange={makeSlotChange({ fState: f.fState, k: FK.source })}
+          opts={f.opts.source} all={b.t('all.source')} />
         <label className={checkClsOf(f.directOnly)}>
           <input type={INPUT_CHECKBOX} checked={f.directOnly} onChange={makeCheckChange(f.onDirect)} />
           {b.t('directOnly')}
-        </label>
-        <label className={checkClsOf(slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK)}>
-          <input type={INPUT_CHECKBOX} checked={slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK}
-            onChange={makeEligChange(f.fState)} />
-          {b.t('eligOnly')}
         </label>
       </div>
     </div>

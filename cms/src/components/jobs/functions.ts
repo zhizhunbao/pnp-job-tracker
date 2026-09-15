@@ -2668,12 +2668,13 @@ function uniq(xs: string[]): string[] {
 
 /**
  * 联动下拉的选项:省/市/区来自维度表(E10-01 P3:维度独立加载后不再从 job 行现推),
- * 大/中/小类来自 noc_categories;EE 类别来自 ee_categories(2026-09-14 Frank「加个筛选放在大类前面」,不联动)。
+ * 大/中/小类来自 noc_categories;EE 类别来自 ee_categories(2026-09-14 Frank「加个筛选放在大类前面」,不联动);
+ * 来源来自 sources(2026-09-15 Frank「一个是渠道 一个是来源」,不联动;渠道是枚举,选项在 OPTS_ORIGIN)。
  * 大类按行业顺序(BROAD_SLUGS = etl/noc_buckets.BROADS 的镜像),不用 uniq 的字母序 ——
  * 对中文那是按码位排的,等于乱序;清单外的值(未分类)垫底。
  *
  * @param x 维度表与当前的省/市/大类/中类/EE 类别。
- * @returns 七组选项。
+ * @returns 八组选项。
  */
 export function filterOptsOf(x: FilterOptsIn): FilterOpts {
   const code = provCodeOf(x.prov)
@@ -2686,6 +2687,7 @@ export function filterOptsOf(x: FilterOptsIn): FilterOpts {
     mid: midOptsOf({ nc, broad: x.broad }),
     fine: fineOptsOf({ nc, broad: x.broad, mid: x.mid }),
     ee: eeOptsOf(x.dims),
+    source: sourceOptsOf(x.dims),
   }
 }
 
@@ -2862,6 +2864,20 @@ function eeOptsOf(dims: JobDims): string[] {
       seen.add(c.label)
       out.push(c.label)
     }
+  }
+  return out
+}
+
+/**
+ * 来源清单(sources 维度表按名排好的顺序;值 = 数据层来源标签,板名本身不译)。
+ *
+ * @param dims 维度表。
+ * @returns 来源名。
+ */
+function sourceOptsOf(dims: JobDims): string[] {
+  const out: string[] = []
+  for (const s of dims.sources) {
+    out.push(s.name)
   }
   return out
 }

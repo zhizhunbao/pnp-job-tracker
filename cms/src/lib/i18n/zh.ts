@@ -582,7 +582,7 @@ export const jobsZh = {
   'all.broad': '全部大类', 'all.mid': '全部中类', 'all.fine': '全部小类',
   'all.source': '全部来源', 'all.exp': '全部经验',
   'all.pnp': '全部 PNP', 'all.aip': '全部 AIP', 'all.pilot': '试点社区', 'all.ee': '全部类别', 'all.status': '全部状态', 'all.origin': '全部渠道', 'opt.yes': '是', 'opt.no': '否',
-  'filter.num': '薪资/评分', 'filter.salary': '薪资', 'filter.score': '评分', 'filter.more': '更多筛选', 'filter.other': '其他',
+  'filter.num': '薪资/评分', 'filter.salary': '薪资', 'filter.score': '评分', 'filter.more': '更多筛选',
   'filter.picked': '已选',
   'all.score': '全部评分', 'sc.high': '高(≥75)', 'sc.mid': '中(50–74)', 'sc.low': '低(<50)',
   'all.sal': '全部年薪', 'sal.ge100': '≥$100K', 'sal.80': '$80–100K', 'sal.60': '$60–80K', 'sal.u60': '<$60K',

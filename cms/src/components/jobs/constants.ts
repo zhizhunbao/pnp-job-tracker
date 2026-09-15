@@ -1143,13 +1143,21 @@ export const ELIG_OK = 'ok'
  * 一并进徽标计数,否则选了却看不出来)。
  */
 export const FOLD_KEYS: string[] = [
-  FK.city, FK.district, FK.mid, FK.fine, FK.pnp, FK.sal, FK.aip, FK.pilot, FK.emp, FK.vs, FK.elig,
+  FK.city, FK.district, FK.mid, FK.fine, FK.pnp, FK.sal, FK.aip, FK.pilot, FK.emp, FK.vs, FK.elig, FK.origin, FK.source,
 ]
 
 /**
  * 是/否两档的下拉选项(PNP / AIP 共用)。
  */
 export const OPTS_YES_NO: string[] = ['yes', 'no']
+
+/**
+ * 发布渠道下拉选项(2026-09-15 Frank「筛选也分两个吧」「一个是渠道 一个是来源」):值 = jobs.origin 枚举,
+ * 显示名走 `origin.*` 词条(K_ORIGIN)。与 etl mart 的 IN_BOARD_STORES 是同一份渠道清单 —— 加板要在这里加一个值、
+ * 三语补一个 `origin.<板>` 词条(2026-09-15 实撞:三个板接入时漏补词条,渠道列显示成了键名)。
+ * 不列 directory:枚举里有、在招岗里没有,空选项不出。
+ */
+export const OPTS_ORIGIN: string[] = ['jobbank', 'jobillico', 'jobboom', 'careerbeacon', 'gcjobs', 'hireac', 'ats']
 
 /**
  * 试点社区下拉选项(E6-11:yes = 任一命中,RCIP/FCIP = 指定类型)。
