@@ -77,8 +77,8 @@ import type {
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn,
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
-  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, PageSigIn,
-  PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
+  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OrigToggleLabelIn,
+  PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
@@ -3807,6 +3807,34 @@ export function copyLabelOf(x: CopyLabelIn): string {
     return x.t('apply.copied')
   }
   return x.t('apply.copyMail')
+}
+
+/**
+ * 正文区右上角切换钮的钮面:在看原帖给「看整理版」,在看整理版给「看原文」
+ * (2026-09-16 Frank「放正文右上角,去掉箭头」)。
+ *
+ * @param x 取词函数与在不在看原帖。
+ * @returns 钮面文案。
+ */
+export function origToggleLabelOf(x: OrigToggleLabelIn): string {
+  if (x.showOrig) {
+    return x.t('act.seeFmt')
+  }
+  return x.t('act.seeOrig')
+}
+
+/**
+ * 原帖正文轨外框的类:右上角出了切换钮就让出钮高(原帖首行是长正文会被钮压住);
+ * 没出钮(整理版还没回 / 失败)不让。
+ *
+ * @param hasToggle 出没出切换钮。
+ * @returns 类名。
+ */
+export function rawWrapClsOf(hasToggle: boolean): string {
+  if (hasToggle) {
+    return cssOf(css.rawUnderToggle)
+  }
+  return TEXT_NONE
 }
 
 /**

@@ -6282,6 +6282,21 @@ export type CopyLabelIn = {
 }
 
 /**
+ * `origToggleLabelOf` 的入参。
+ */
+export type OrigToggleLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 正在看原帖没。
+   */
+  showOrig: boolean
+}
+
+/**
  * applyHomeProvince 的入参。
  */
 export type HomeProvinceIn = {

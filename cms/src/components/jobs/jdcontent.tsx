@@ -12,15 +12,20 @@
  * 2026-09-16 改判(Frank「可以先显示原帖正文」):**整理在途时铺原帖正文,不再转圈**,整理版回来自动替换 ——
  * 上一条「整理在途不铺原文」作废(原文保留)。起因:服务端渲染与爬虫抓到的恰是整理在途这一档,
  * 整页只剩「加载中」,Search Console 判软 404 1,211 页、重复页 273 页。对照在译的转圈不变。
+ * 2026-09-16 Frank「右上角加一个切换的按钮」「放正文右上角,去掉箭头」:有整理版时正文区右上角出幽灵钮
+ * 「看原文 / 看整理版」(复用 act.seeOrig / act.seeFmt,箭头已去),切的是既有的 showOrig 开关;
+ * 整理版还没回(fmt = undefined)或失败(null)时正文本来就是原帖,不出钮。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
+import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
+import { BTN_GHOST, JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdBusyOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, showFormattedOf, transShownOf,
+  fallbackPayOf, jdBusyOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, origToggleLabelOf, rawWrapClsOf,
+  showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
@@ -52,7 +57,12 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
           label={d.t('act.seeOfficial')} />
       )}
       {d.status === JD_DONE && (
-        <>
+        <div className={cssOf(css.bodyWrap)}>
+          {d.fmt != null && (
+            <Button kind={BTN_GHOST} sm onClick={d.onToggleOrig} className={cssOf(css.bodyToggle)}>
+              {origToggleLabelOf({ t: d.t, showOrig: d.showOrig })}
+            </Button>
+          )}
           <JdAiNote d={d} anon={loggedIn === false} />
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig })
             && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
@@ -67,9 +77,11 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
               trans={transShownOf({ shown: d.showTrans, trans: d.trans })} />
           )}
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && (
-            <JdTextView text={d.text} max={JD_MAX_LEN} />
+            <div className={rawWrapClsOf(d.fmt != null)}>
+              <JdTextView text={d.text} max={JD_MAX_LEN} />
+            </div>
           )}
-        </>
+        </div>
       )}
     </>
   )

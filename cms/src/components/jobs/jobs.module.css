@@ -1330,6 +1330,29 @@
 }
 
 /*
+ * 正文区外框:右上角「看原文 / 看整理版」切换钮的定位参照(2026-09-16 Frank「放正文右上角,去掉箭头」)。
+ */
+.bodyWrap {
+  position: relative;
+}
+
+/*
+ * 切换钮:与正文首行同一行靠右,绝对定位不占行(整理版首节头「Job description」很短,不会被压住)。
+ */
+.bodyToggle {
+  position: absolute;
+  top: -4px;
+  right: 0;
+}
+
+/*
+ * 切到原帖时正文顶上让出切换钮的高度(原帖首行就是长正文,不让出会被钮压住)。
+ */
+.rawUnderToggle {
+  padding-top: 32px;
+}
+
+/*
  * 空行 = 段距。
  */
 .gap {
