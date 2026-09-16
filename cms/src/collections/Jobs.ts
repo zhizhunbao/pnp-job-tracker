@@ -82,6 +82,7 @@ export const Jobs: CollectionConfig = {
       admin: { description: 'open 在招 / closed 下架 / campus 校内板帖(2026-09-13:只进 /coop 页,不上职位板与统计 —— 09-15 /coop 撤销,改由主板渠道 HireAC 筛,仍不进统计与榜单;枚举 DDL docs/sql/jobs-status-campus.sql)' },
     },
     { name: 'closedAt', type: 'date', admin: { description: '下架时间(某次抓取不再出现)' } },
+    { name: 'validThrough', type: 'date', admin: { description: '发帖方写的截止日(第三方板帖才有,Job Bank 帖为空;docs/sql/job-valid-through.sql)' } },
     { name: 'externalId', type: 'text', unique: true, index: true, admin: { description: 'posting_id,用于增量去重' } },
   ],
 }

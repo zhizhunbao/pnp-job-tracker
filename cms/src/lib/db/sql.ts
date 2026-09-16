@@ -37,7 +37,7 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
   ci.name_zh AS city_zh, ci.name_ko AS city_ko,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
   j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
-  j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at`
+  j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at, j.valid_through`
 
 /**
  * 职位板的 FROM/JOIN 骨架:jobs 左连 companies;2026-09-14 再左连 cities 带回人工核定的市译名 city_zh / city_ko

@@ -784,6 +784,13 @@ K_WEBSITE_SOURCE = "websiteSource"
 K_DESCRIPTION = "description"
 """公司简介 / 岗位正文,两处同名不同表。"""
 
+K_SRC_VALID_THROUGH = "valid_through"
+"""板仓帖子行:发帖方自己写的截止日(Jobillico / Jobboom / CareerBeacon / GC Jobs / HireAC 的 ld+json 带,100% 有;
+Job Bank 仓没有这一格)。"""
+
+K_VALID_THROUGH = "validThrough"
+"""jobs 行:截止日(2026-09-16 Frank「有就写,没有就不写」:板帖照搬发帖方的截止日,Job Bank 帖没有就不落键)。"""
+
 ENRICH_KEYS = ("description", "sectors", "website")
 """富化只填这三格,且**只填空**:ATS 已自带 profile 的 description/sectors 优先,
 Job Bank 公司无 profile 全靠它。"""

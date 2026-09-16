@@ -366,6 +366,11 @@ export type JobDbRow = {
    * 下架时刻。
    */
   closed_at: TimeCell
+
+  /**
+   * 发帖方写的截止日(板帖才有;Job Bank 帖为空)。
+   */
+  valid_through: TimeCell
 }
 
 // =========================================================================
@@ -695,6 +700,11 @@ export type JobRow = {
    * 下架时刻(ISO;未下架空串)。
    */
   closedAt: string
+
+  /**
+   * 发帖方写的截止日(ISO;来源没给空串)。
+   */
+  validThrough: string
 }
 
 /**

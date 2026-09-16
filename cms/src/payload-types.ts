@@ -705,6 +705,10 @@ export interface Job {
    */
   closedAt?: string | null;
   /**
+   * 发帖方写的截止日(第三方板帖才有,Job Bank 帖为空;docs/sql/job-valid-through.sql)
+   */
+  validThrough?: string | null;
+  /**
    * posting_id,用于增量去重
    */
   externalId?: string | null;
@@ -2866,6 +2870,7 @@ export interface JobsSelect<T extends boolean = true> {
   lastSeen?: T;
   status?: T;
   closedAt?: T;
+  validThrough?: T;
   externalId?: T;
   updatedAt?: T;
   createdAt?: T;

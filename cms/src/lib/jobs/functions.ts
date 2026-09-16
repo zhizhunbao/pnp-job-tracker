@@ -3068,6 +3068,7 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     lastSeen: iso(j.last_seen),
     status: status,
     closedAt: iso(j.closed_at),
+    validThrough: iso(j.valid_through),
   }
 }
 
@@ -3782,6 +3783,8 @@ function putPosted(x: LdPutIn): void {
 
 /**
  * 有效期:只有 closed 岗给真实下架时间(在招岗给一个日期等于替官方编截止日)。
+ * 2026-09-16 补在招岗(Frank「有就写,没有就不写」):发帖方自己写了截止日的(第三方板帖)照搬 —— 那是来源事实,
+ * 不是替官方编;Job Bank 帖来源没给,照旧不写。上面那句「在招岗不给」的原则就此收窄为「没有来源的不给」。
  *
  * @param x 正在拼的对象与本岗。
  * @returns 无。
@@ -3789,6 +3792,10 @@ function putPosted(x: LdPutIn): void {
 function putValidThrough(x: LdPutIn): void {
   if (x.job.status === STATUS_CLOSED_WORD && x.job.closedAt !== ISO_NONE) {
     x.ld.validThrough = x.job.closedAt.slice(0, DATE_LEN)
+    return
+  }
+  if (x.job.validThrough !== ISO_NONE) {
+    x.ld.validThrough = x.job.validThrough.slice(0, DATE_LEN)
   }
 }
 
