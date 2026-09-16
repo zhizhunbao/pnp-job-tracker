@@ -235,6 +235,19 @@ services:
       JDFORMAT_LIMIT: ${JDFORMAT_LIMIT:-400}      # 每轮上限(盒子约 11 秒一条,400 ≈ 一个 interval)
       TZ: EST5EDT
 
+  classify:                        # 未分类岗 → bge-m3 候选检索 + qwen 选码(2026-09-15 立域;只刷 processed/classify/,build 角色汇装灌库)
+    <<: *etl
+    environment:
+      SOURCE: classify
+      HEALTHCHECK_PING_CLASSIFY: ${HEALTHCHECK_PING_CLASSIFY:-}   # 未配 = ping_health 自然跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / company 同一台盒子同一个变量);空=本域跳过
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      CLASSIFY_EMBED_MODEL: ${CLASSIFY_EMBED_MODEL:-bge-m3:latest}
+      CLASSIFY_LIMIT: ${CLASSIFY_LIMIT:-100}      # 小配额(2026-09-16 Frank「分类也跑起来吧,小配额」):
+                                                  # 与 jdformat 共用一台盒子,100 条约占一轮的一成,
+                                                  # 7,500 条存量三天左右铺完,之后每天新帖一轮就能消化
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:

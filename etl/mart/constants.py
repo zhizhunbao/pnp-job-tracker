@@ -1009,6 +1009,13 @@ IN_JDFORMAT = paths.PROCESSED_JDFORMAT / "formatted.json"
 FORMAT_OK = "ok"
 """整理记录状态:做成(只取 ok 行)。"""
 
+IN_CLASSIFY = paths.PROCESSED_CLASSIFY / "jobs.json"
+"""classify 域判出的职业码(2026-09-16 接线):externalId → 分类记录。评分段只在**源带码与标题规则都落空**时
+拿它填 noc —— 层序 源带码 → 规则 → 模型 → 留空,已判出的一律不覆盖。域没跑过 = 缺文件 = 空表,照常汇装。"""
+
+CLASSIFY_OK = "ok"
+"""分类记录状态:判出了码(弃权与失败都是 fail,不进表)。"""
+
 K_FORMAT_TEXT = "formatted"
 """整理记录里的五节整理版键。"""
 

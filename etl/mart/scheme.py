@@ -493,6 +493,10 @@ class ScoredRowIn:
     job: CollectedJob
     """一条待评分的岗。"""
 
+    labels: dict
+    """classify 域判出的职业码(externalId → 五位码;只有 ok 的进表)。
+    只在源带码与标题规则都落空时用它填空 —— 层序是 源带码 → 规则 → 模型 → 留空。"""
+
 @dataclass
 class AtsExtIn:
     """ats_ext_of() 入参:一条 ATS 岗 + 它所在的公司目录名。"""

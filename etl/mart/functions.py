@@ -116,7 +116,8 @@ from mart.constants import (
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
-    FORMAT_OK, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT, K_JD_FORMATTED, K_JD_FORMATTED_AT,
+    CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
+    K_JD_FORMATTED, K_JD_FORMATTED_AT,
     SAL_TXT_BACK, SAL_TXT_HR_MAX, SAL_TXT_HR_MIN, SAL_TXT_HR_RE, SAL_TXT_HR_TAIL, SAL_TXT_K_MULT, SAL_TXT_K_SUFFIX,
     SAL_TXT_K_TPL, SAL_TXT_NEAR_RE, SAL_TXT_NUM_RE, SAL_TXT_TRIM, SAL_TXT_UNIT_RE, SAL_TXT_UPTO_RE, SAL_TXT_YR_MIN,
     SAL_TXT_YR_TAIL, PRINT_SAL_MINED_TPL,
@@ -949,6 +950,8 @@ def to_scored_row(x: ScoredRowIn) -> dict:
     noc = x.job.hint
     if not noc:
         noc = classify_title(x.job.title)
+    if not noc:
+        noc = x.labels.get(x.job.ext, "")
     teer = teer_of_noc(noc)
     acc = accessibility(x.job.title)
     judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov)
@@ -968,9 +971,10 @@ def to_scored_row(x: ScoredRowIn) -> dict:
 def score_mart_jobs() -> None:
     """步骤①:NOC → TEER → 每 TEER 自己的评分表 + pnpEligible/pnpStream(processed/all-scored.json)。"""
     tables = load_pnp_tables()
+    labels = load_classify()
     out = []
     for job in collect_ats_jobs() + collect_jobbank_jobs() + collect_board_jobs():
-        out.append(to_scored_row(ScoredRowIn(tables=tables, job=job)))
+        out.append(to_scored_row(ScoredRowIn(tables=tables, job=job, labels=labels)))
     OUT_SCORED.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_SCORED, payload=out, indent=INDENT_2))
     say(SCORE_DONE_TPL.format(n=len(out)))
@@ -1019,6 +1023,17 @@ def load_briefs() -> dict:
     for slug, c in read_table(IN_BRIEF).items():
         if c.get(K_STATUS) == BRIEF_OK:
             out[slug] = c
+    return out
+
+
+def load_classify() -> dict:
+    """classify 域判出的职业码:externalId → 五位码(只取 ok 行;缺文件 = 空表,域没跑过也照常汇装)。"""
+    out: dict = {}
+    if not IN_CLASSIFY.exists():
+        return out
+    for ext, c in read_table(IN_CLASSIFY).items():
+        if c.get(K_STATUS) == CLASSIFY_OK and c.get(K_NOC):
+            out[ext] = c[K_NOC]
     return out
 
 
