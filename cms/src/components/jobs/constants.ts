@@ -3294,6 +3294,13 @@ export const BOARD_META = {
   description: 'Daily-updated job board across all 10 provinces: PNP named streams, '
     + 'EE categories, wages vs ESDC median, profile matching. '
     + '全加拿大日更职位板:省提名通道/EE 类别/工资对比/档案匹配。',
+
+  /**
+   * 规范网址:一律指站点根 `/`(站点地图 core 登记的就是它;相对地址由 layout 的 metadataBase 补全成正式域)。
+   * 2026-09-16 Search Console 来信「Duplicate without user-selected canonical」:样例几乎全是 `/?q=…` 搜索网址 ——
+   * `/`、`/jobs` 与所有带搜索 / 筛选参数的版本共用这一份头,此前一个 canonical 都没有,每个搜索词都被当成独立的重复页。
+   */
+  alternates: { canonical: '/' },
 }
 
 /**
