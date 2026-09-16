@@ -14,6 +14,8 @@
  * 整页只剩「加载中」,Search Console 判软 404 1,211 页、重复页 273 页。对照在译的转圈不变。
  * 2026-09-16 Frank「可以,先显示英文整理版」「不要显示这个,因为现在已经直接显示了原版,所以不用在显示加载中」:
  * 中 / 韩界面对照在译也不再转圈,先铺英文整理版,译文回来补对照行;转圈只剩「正文还在取」一种。上面 09-14「对照在途出转圈」作废。
+ * 2026-09-16 同日三改位置(Frank「看原文这个按钮的位置不对」「还是像之前一样,加一个 AI 整理中,先看原文这种」「可以,就这样做」):
+ * 切换钮挪进 JdAiNote 状态行右端,本件不再挂钮;为「正文区右上角绝对定位」加的外框 / 定位 / 原帖让位三个类随之撤。下面两条是撤前的记录。
  * 2026-09-16 同日改钮型:幽灵钮(ghost)在 button 桶里是纯文字,线上渲成蓝字链接,不像效果图里带描边的钮 ——
  * 「Back」的描边靠的是它专属的 backButton 类,不是 ghost 本身;改用通用次级行动钮 secondary(白底灰描边蓝字)。
  * 2026-09-16 Frank「右上角加一个切换的按钮」「放正文右上角,去掉箭头」:有整理版时正文区右上角出幽灵钮
@@ -23,13 +25,11 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { BTN_SECONDARY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
+import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, origToggleLabelOf, rawWrapClsOf,
-  showFormattedOf, transShownOf,
+  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
@@ -61,12 +61,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
           label={d.t('act.seeOfficial')} />
       )}
       {d.status === JD_DONE && (
-        <div className={cssOf(css.bodyWrap)}>
-          {d.fmt != null && (
-            <Button kind={BTN_SECONDARY} sm onClick={d.onToggleOrig} className={cssOf(css.bodyToggle)}>
-              {origToggleLabelOf({ t: d.t, showOrig: d.showOrig })}
-            </Button>
-          )}
+        <>
           <JdAiNote d={d} anon={loggedIn === false} />
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && (
             <JdFormattedView text={String(d.fmt)}
@@ -80,11 +75,9 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
               trans={transShownOf({ shown: d.showTrans, trans: d.trans })} />
           )}
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && (
-            <div className={rawWrapClsOf(d.fmt != null)}>
-              <JdTextView text={d.text} max={JD_MAX_LEN} />
-            </div>
+            <JdTextView text={d.text} max={JD_MAX_LEN} />
           )}
-        </div>
+        </>
       )}
     </>
   )

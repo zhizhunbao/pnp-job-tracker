@@ -3810,20 +3810,6 @@ export function origToggleLabelOf(x: OrigToggleLabelIn): string {
 }
 
 /**
- * 原帖正文轨外框的类:右上角出了切换钮就让出钮高(原帖首行是长正文会被钮压住);
- * 没出钮(整理版还没回 / 失败)不让。
- *
- * @param hasToggle 出没出切换钮。
- * @returns 类名。
- */
-export function rawWrapClsOf(hasToggle: boolean): string {
-  if (hasToggle) {
-    return cssOf(css.rawUnderToggle)
-  }
-  return TEXT_NONE
-}
-
-/**
  * 投递栏的类:整页窄屏那一档改 fixed 贴屏底。
  *
  * @param fixedBar 是不是 fixed 那一档。
