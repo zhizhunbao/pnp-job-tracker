@@ -9,6 +9,9 @@
  * 与对照在途(中 / 韩界面翻译中)都出转圈行,不铺原文也不先铺英文整理版;整理失败 / 额度用完(fmt = null)仍退原文,
  * 不能让人看不到正文。取数 / 整理 / 翻译三段在途共用**同一个**转圈元素(jdWaitingOf 一次判完;Frank「加载途中为什么会闪一下」:
  * 原是两处各渲一条,取数变整理那一瞬卸一条挂一条就闪)。
+ * 2026-09-16 改判(Frank「可以先显示原帖正文」):**整理在途时铺原帖正文,不再转圈**,整理版回来自动替换 ——
+ * 上一条「整理在途不铺原文」作废(原文保留)。起因:服务端渲染与爬虫抓到的恰是整理在途这一档,
+ * 整页只剩「加载中」,Search Console 判软 404 1,211 页、重复页 273 页。对照在译的转圈不变。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -63,7 +66,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
               underTitle={underTitle}
               trans={transShownOf({ shown: d.showTrans, trans: d.trans })} />
           )}
-          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && d.fmt !== undefined && (
+          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) === false && (
             <JdTextView text={d.text} max={JD_MAX_LEN} />
           )}
         </>

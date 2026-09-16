@@ -3741,18 +3741,19 @@ export function jdWaitingOf(x: JdWaitingIn): boolean {
 /**
  * 正文区要不要出转圈行:整理还没回(fmt 还是 undefined)、对照在译、或中 / 韩界面整理版刚到对照还没开始译
  * (那一帧原本会先铺英文整理版再被转圈顶掉 —— Frank「完成整理的时候页面会闪一下」);译失败(TRANS_ERROR)不算在途,退英文。
+ * 2026-09-16 改判(Frank「可以先显示原帖正文」):**整理还没回不再算在途** —— 这一档原先出转圈,
+ * 服务端渲染与 Googlebot 抓到的正是这一档,整页只剩「加载中」,Search Console 判成软 404(1,211 页)与重复页(273 页)。
+ * 现在整理在途时照常铺原帖正文,整理版回来自动替换;对照在译那两条不变。上面第一句「整理还没回」的在途口径就此作废,原文保留。
+ * 顺带把末条的 `fmt !== null` 收成 `fmt != null`:fmt 为 undefined 时那一条原本也会判在途(undefined !== null),会让中 / 韩界面整理中照转圈。
  *
  * @param x 整理版与翻译态。
  * @returns 在途 = true。
  */
 export function jdBusyOf(x: JdBusyIn): boolean {
-  if (x.fmt === undefined) {
-    return true
-  }
   if (x.transStatus === TRANS_LOADING) {
     return true
   }
-  return x.lang !== LANG_EN && x.fmt !== null && x.trans === null && x.transStatus === TRANS_IDLE
+  return x.lang !== LANG_EN && x.fmt != null && x.trans === null && x.transStatus === TRANS_IDLE
 }
 
 /**
