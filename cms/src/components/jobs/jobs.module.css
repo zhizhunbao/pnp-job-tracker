@@ -1589,14 +1589,11 @@
 }
 
 /*
- * 状态行排成两端:左边状态字,右边「看原文 / 看整理版」切换钮(2026-09-16 Frank「可以,就这样做」;
- * 同日先放过正文区右上角绝对定位,撤)。
+ * 状态行里的中文对照胶囊:与前面的文链隔开一点(2026-09-16 自撤掉的钮行挪进状态行放到一起;
+ * 同日先试过行尾两端排版 aiNoteRow,撤)。
  */
-.aiNoteRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.aiPill {
+  margin-left: 10px;
 }
 
 /*

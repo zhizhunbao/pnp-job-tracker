@@ -62,7 +62,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
       )}
       {d.status === JD_DONE && (
         <>
-          <JdAiNote d={d} anon={loggedIn === false} />
+          <JdAiNote d={d} anon={loggedIn === false} lang={lang} />
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && (
             <JdFormattedView text={String(d.fmt)}
               t={d.t}
