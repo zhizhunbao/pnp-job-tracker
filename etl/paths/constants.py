@@ -163,6 +163,10 @@ PROCESSED_JDFORMAT = PROCESSED / "jdformat"
 """jdformat 域产物(2026-09-15 立域):formatted.json = externalId → 五节整理版记录(局域网 qwen 预生成,
 只留当前 mart 在招岗);mart 汇装并进 jobs 行的 jdFormatted / jdFormattedAt。"""
 
+PROCESSED_CLASSIFY = PROCESSED / "classify"
+"""classify 域产物(2026-09-15 立域):jobs.json = externalId → 分类记录(职业码 + 判法 + 候选 + 版本),
+companies.json = slug → 行业记录;mart 汇装照此填岗位 noc 与公司行业,自己不再猜。"""
+
 PROCESSED_GCJOBS = PROCESSED / "gcjobs"
 """gcjobs 域归一后的 postings.json(同 PROCESSED_JOBILLICO 的形与口径;当前态 = 本轮搜索在列且未过截止日的帖;
 薪资按公务员薪资表年薪写法,站外跳转帖 url 给雇主外链)。"""
