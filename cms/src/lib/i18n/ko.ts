@@ -597,7 +597,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'fact.coLmiaNote': '스폰서 이력은 ESDC의 과거 기록이며, 스폰서 보장을 의미하지 않음',
   // J·K·M batch (2026-07-19)
   'col.empHours': '근무 형태', 'col.whoCanApply': '지원 자격', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
-  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.seeOrig': '원문 보기', 'act.seeFmt': '정리본 보기',   // 2026-09-16 去箭头:正文区右上角切换钮 'act.aiWorking': 'AI 정리 중…', 'act.aiFail': 'AI 정리 실패',
+  // 2026-09-16 去箭头:看原文 / 看整理版是状态行里的切换文链。⚠ 这条注释曾写在行尾,把 act.aiWorking / act.aiFail 注释掉过;注释只许独占一行。
+  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.seeOrig': '원문 보기', 'act.seeFmt': '정리본 보기', 'act.aiWorking': 'AI 정리 중…', 'act.aiFail': 'AI 정리 실패',
   'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
