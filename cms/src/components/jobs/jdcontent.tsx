@@ -21,6 +21,16 @@
  * 2026-09-16 Frank「右上角加一个切换的按钮」「放正文右上角,去掉箭头」:有整理版时正文区右上角出幽灵钮
  * 「看原文 / 看整理版」(复用 act.seeOrig / act.seeFmt,箭头已去),切的是既有的 showOrig 开关;
  * 整理版还没回(fmt = undefined)或失败(null)时正文本来就是原帖,不出钮。
+ * 2026-09-16 Frank「loading 去掉吧」:**正文区的转圈行整个撤**(最后剩的「正文还在取」那一档也不出,取到前这一块留白),
+ * 判它的 jdWaitingOf 随之撤。⚠ 与「加载区必占位」旧规矩相左,Frank 本人拍板撤;转圈样式 loading / spin 职位板加载件还在用,不删。
+ * jdWaitingOf 的注释原文照录,留「当初为什么」:
+ *   「正文区从头到尾要不要出转圈行:取数在途、整理在途、翻译在途三段合一(2026-09-14 Frank「加载途中为什么会闪一下」:
+ *   三段各渲一条转圈,段切换那一瞬旧条卸新条挂就闪;合成一个判定一个元素就不闪)。
+ *   2026-09-16 再改判(Frank「可以,先显示英文整理版」):只剩取数在途这一段转圈 —— 整理在途铺原帖正文,
+ *   中 / 韩界面对照在译先铺英文整理版,译文回来再补上对照行。原先判「整理 / 对照在途」的 jdBusyOf 随之撤(投递栏与整理版也不再等它)。
+ *   代价(Frank 知情拍板):中 / 韩界面对照回来那一下正文会多出对照行,即 09-14 所说的「闪一下」。」
+ *   (jdBusyOf 自己的注释原文:「整理还没回、对照在译、或中 / 韩界面整理版刚到对照还没开始译都算在途;
+ *   09-16 整理还没回不再算在途 —— SSR 与 Googlebot 抓到的正是这一档,Search Console 判软 404 1,211 页与重复页 273 页。」)
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -29,7 +39,7 @@ import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
 import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, showFormattedOf, transShownOf,
+  fallbackPayOf, jdLocationOf, jdLocationZhOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
 import { JdEmpty } from './jdempty'
@@ -47,12 +57,6 @@ import css from './jobs.module.css'
 export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
   return (
     <>
-      {jdWaitingOf({ status: d.status }) && (
-        <div className={cssOf(css.loading)}>
-          <span className={cssOf(css.spin)} />
-          {d.t('act.loadingText')}
-        </div>
-      )}
       {d.status === JD_LIMITED && (
         <p className={`${cssOf(css.mutedNote)} ${cssOf(css.mutedM4)}`}>{d.t('jd.busy')}</p>
       )}

@@ -5177,15 +5177,6 @@ export type NoTextIn = {
   src: string
 }
 
-/**
- * jdWaitingOf 的入参。
- */
-export type JdWaitingIn = {
-  /**
-   * 取数态(2026-09-16 起只看它:整理版、对照态、界面语言、译文四格随 jdBusyOf 撤出本入参,缘由见 jdWaitingOf)。
-   */
-  status: JdStatus
-}
 
 /**
  * showFormattedOf 的入参。
