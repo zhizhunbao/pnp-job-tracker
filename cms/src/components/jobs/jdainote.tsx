@@ -16,6 +16,10 @@
  * 上一条「行尾切换钮」作废 —— 按 81f05213 之前的原件照抄:「看原文 / 看整理版」回到紧挨状态字的纯文链(ghost + aiBtn);
  * 中 / 韩界面看整理版时同行再出中文对照钮,形照撤掉的 jdacts.tsx 原件(ghost + 全站白底胶囊 PILL_CLS,在译禁用加 pillBusy,
  * 钮面走 transLabelOf:显示 / 隐藏对照 / 翻译中 / 失败),只是从独立钮行挪进本行放到一起。行尾两端排版的 aiNoteRow 类撤。
+ * 2026-09-16 同日三改(Frank「这两个格式改成一样的」):「看原文 / 看整理版」由纯文链改走对照钮同一形(ghost + 白底胶囊 PILL_CLS),
+ * 两颗并排同形;上一条「回到纯文链」作废。重试钮仍是文链(失败态单独一颗,不与胶囊并排)。
+ * 2026-09-16 同日四改(Frank「要蓝字的那个版本的」):上一条作废,方向反过来 —— 两颗都走**蓝字文链**(ghost + aiBtn,同重试钮),
+ * 中文对照钮也不再用白底胶囊;同形仍成立,只是统一到文链。aiPill 类随之撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -23,7 +27,7 @@
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import {
-  BTN_GHOST, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, LANG_EN, PILL_CLS, SPARKLE, TRANS_LOADING,
+  BTN_GHOST, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, LANG_EN, SPARKLE, TRANS_LOADING,
 } from './constants'
 import { aiNoteTextOf, origToggleLabelOf, transBusyClsOf, transLabelOf } from './functions'
 import type { JdAiNoteIn } from './types'
@@ -49,7 +53,7 @@ export function JdAiNote({ d, anon, lang }: JdAiNoteIn) {
       )}
       {lang !== LANG_EN && d.fmt != null && d.showOrig === false && (
         <Button kind={BTN_GHOST} disabled={d.transStatus === TRANS_LOADING} onClick={d.onToggleTrans}
-          className={`${PILL_CLS} ${cssOf(css.aiPill)} ${transBusyClsOf(d.transStatus)}`}>
+          className={`${cssOf(css.aiBtn)} ${transBusyClsOf(d.transStatus)}`}>
           {transLabelOf({ t: d.t, status: d.transStatus, shown: d.showTrans })}
         </Button>
       )}
