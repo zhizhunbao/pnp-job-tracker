@@ -24,6 +24,11 @@ OUT_JOBS = paths.PROCESSED_CLASSIFY / "jobs.json"
 """本域产物:externalId → LabelRecord(判出的职业码、判法、候选、版本、时刻)。
 只留当前 mart 在招且未分类的岗(不在列的每轮剪掉:已判的码随上一轮汇装进了库)。"""
 
+OUT_PILOT_SAMPLE = paths.PROCESSED_CLASSIFY / "pilot_sample.json"
+"""试点抽到的岗位清单(externalId 数组):抽过一次就钉死,以后重出核对表只认这份。
+2026-09-15 实撞:种子定死也不够 —— build 每小时重算 mart,池子一变,同一个种子抽出来的是另一批
+(重出表时凭空多判了 166 条)。要重新抽样就删掉这个文件。"""
+
 OUT_PILOT = paths.PROCESSED_CLASSIFY / "pilot_jobs.tsv"
 """试点核对表(人工复核用,Excel 直开):一行一岗,带标题、判出的码、官方类名、候选与相似度。
 不是数据链产物,mart 不读它。"""
@@ -319,8 +324,16 @@ PILOT_SEED = 20260915
 PILOT_MIN_PER_ORIGIN = 5
 """每个渠道至少抽几条(小渠道 HireAC / CareerBeacon 也要有样本,否则按比例会被抽空)。"""
 
-PILOT_HEADERS = ("externalId", "origin", "city", "title", "noc", "nocTitle", "status", "note", "candidates")
-"""核对表的列(第一行表头)。"""
+PILOT_HEADERS = ("externalId", "origin", "city", "title", "noc", "nocTitle", "status", "note", "body",
+                 "candidates")
+"""核对表的列(第一行表头)。2026-09-15 Frank「加上 job describe 呢」补 body 列:
+只有标题时「Coordinator」这类根本没法人工判对错 —— 复核要看模型看到的同一份料。"""
+
+PILOT_BODY_MAX = 500
+"""核对表里正文摘要的长度:开头一般就是职责,够人工判「这活是什么」;整段进表会把表撑得没法看。"""
+
+WS_RE = re.compile(r"\s+")
+"""连续空白归一成一个空格(正文里的换行与制表符进 TSV 会串行串列)。"""
 
 TSV_SEP = "\t"
 """核对表列分隔(TSV:Excel 直开,标题里的逗号不会串列)。"""

@@ -25,15 +25,16 @@ from classify.constants import (
     LLM_TEMPERATURE, METHOD_MODEL, NET_ERRORS, NOTE_ABSTAIN, NOTE_EMPTY, NOTE_HTTP_TPL,
     NOTE_NO_LLM, NOTE_OFF_LIST, OPEN_STATUSES, OUT_JOBS, OUT_PILOT, P_EMBEDDINGS, P_INPUT, P_MODEL,
     P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK,
-    PATH_OLLAMA_EMBED, PATH_OLLAMA_GENERATE, PILOT_HEADERS, PILOT_MIN_PER_ORIGIN, PILOT_N,
+    OUT_PILOT_SAMPLE, PATH_OLLAMA_EMBED, PATH_OLLAMA_GENERATE, PILOT_BODY_MAX, PILOT_HEADERS,
+    PILOT_MIN_PER_ORIGIN, PILOT_N,
     PILOT_SEED, PRINT_ABORT_TPL, PRINT_CORPUS_TPL, PRINT_DONE_TPL, PRINT_IN_TPL,
     PRINT_JOBS_EMBED_TPL, PRINT_PILOT_ORIGIN_TPL, PRINT_PILOT_TPL, PRINT_TARGETS_TPL,
     PROMPT_BODY_MAX, PROMPT_TPL, QUERIES_PER_JOB, RETRY_FAILED_DAYS, ST_FAIL, ST_OK, STRIP_REPL,
-    TAB_REPL, TEXT_ENCODING, THINK_RE, TITLE_QUERY_TPL, TSV_SEP, URL_TAIL_SLASH,
+    TAB_REPL, TEXT_ENCODING, THINK_RE, TITLE_QUERY_TPL, TSV_SEP, URL_TAIL_SLASH, WS_RE,
 )
 from classify.scheme import (
     CandScore, CandsAllIn, CandsAllOut, CandsIn, CandsOut, ClassifyOneIn, DotIn, EmbedIn, FixWeakIn,
-    HttpClientLike, JobDoc, LabelRecord, LlmCallIn, LlmCfg, NocDoc, PickTodoIn, PilotRowIn, RoundIn,
+    HttpClientLike, JobDoc, LabelRecord, LlmCallIn, LlmCfg, NocDoc, PickByExtsIn, PickTodoIn, PilotRowIn, RoundIn,
     RoundOut, SampleIn, SaveIn, TallyIn, TitleEnIn, WritePilotIn,
 )
 from log.functions import say
@@ -77,10 +78,11 @@ def pilot_jobs() -> None:
     jobs = read_mart_jobs()
     pool = open_unclassified(jobs)
     cache = pruned_labels(jobs)
-    picked = sample_jobs(SampleIn(jobs=pool, n=PILOT_N, seed=PILOT_SEED))
-    say(PRINT_TARGETS_TPL.format(todo=len(pool), cache=len(cache), n=len(picked), limit=PILOT_N,
+    picked = pilot_picks(pool)
+    todo = pick_todo(PickTodoIn(jobs=picked, cache=cache, limit=len(picked)))
+    say(PRINT_TARGETS_TPL.format(todo=len(pool), cache=len(cache), n=len(todo), limit=PILOT_N,
                                  model=cfg.model))
-    run_and_save(SaveIn(cfg=cfg, todo=picked, cache=cache))
+    run_and_save(SaveIn(cfg=cfg, todo=todo, cache=cache))
     doc_of = doc_index_of(noc_docs())
     write_pilot(WritePilotIn(jobs=picked, cache=cache, doc_of=doc_of))
     say_pilot(WritePilotIn(jobs=picked, cache=cache, doc_of=doc_of))
@@ -554,6 +556,55 @@ def job_texts_of(jobs: list[JobDoc]) -> list[str]:
 # =========================================================================
 
 
+def pilot_picks(pool: list[JobDoc]) -> list[JobDoc]:
+    """试点这一批岗:钉过就照清单取,没钉过就抽一次并钉死。
+
+    只有种子定死不够 —— build 每小时重算 mart,池子一变,同一个种子抽出来就是另一批(实撞:重出核对表
+    时凭空多判了 166 条)。人工核对是按批次来的,批次必须稳。要重新抽样就删掉 OUT_PILOT_SAMPLE。
+    """
+    exts = pinned_exts()
+    if len(exts) > 0:
+        return picked_by_exts(PickByExtsIn(jobs=pool, exts=exts))
+    picked = sample_jobs(SampleIn(jobs=pool, n=PILOT_N, seed=PILOT_SEED))
+    write_sample(picked)
+    return picked
+
+
+def pinned_exts() -> list[str]:
+    """读钉死的抽样清单(缺文件 = 没钉过)。"""
+    if not OUT_PILOT_SAMPLE.exists():
+        return []
+    got = json.loads(OUT_PILOT_SAMPLE.read_text(encoding=TEXT_ENCODING))
+    if not isinstance(got, list):
+        return []
+    out: list[str] = []
+    for ext in got:
+        out.append(str(ext))
+    return out
+
+
+def write_sample(picked: list[JobDoc]) -> None:
+    """把这批岗的 externalId 钉进文件。"""
+    OUT_PILOT_SAMPLE.parent.mkdir(parents=True, exist_ok=True)
+    exts: list[str] = []
+    for job in picked:
+        exts.append(job.ext)
+    OUT_PILOT_SAMPLE.write_text(json.dumps(exts, ensure_ascii=False, indent=JSON_INDENT), encoding=TEXT_ENCODING)
+
+
+def picked_by_exts(x: PickByExtsIn) -> list[JobDoc]:
+    """按钉死的清单取岗(清单里已经不在未分类池子的岗自然落选 —— 它可能已被判出或已下架)。"""
+    by_ext: dict[str, JobDoc] = {}
+    for job in x.jobs:
+        by_ext[job.ext] = job
+    out: list[JobDoc] = []
+    for ext in x.exts:
+        job = by_ext.get(ext)
+        if job is not None:
+            out.append(job)
+    return out
+
+
 def sample_jobs(x: SampleIn) -> list[JobDoc]:
     """按渠道分层抽样:各渠道按未分类量按比例分配,每个渠道至少 PILOT_MIN_PER_ORIGIN 条。
 
@@ -583,7 +634,10 @@ def write_pilot(x: WritePilotIn) -> None:
 
 
 def pilot_row_of(x: PilotRowIn) -> list[str]:
-    """核对表一行:岗位上下文 + 判出的码 + 官方类名 + 状态 + 由头 + 候选码。"""
+    """核对表一行:岗位上下文 + 判出的码 + 官方类名 + 状态 + 由头 + 正文摘要 + 候选码。
+
+    正文摘要是人工复核的必需品:光看标题判不出「Coordinator」这类岗该归哪,复核要看模型看到的同一份料。
+    """
     rec = x.cache.get(x.job.ext)
     if rec is None:
         rec = LabelRecord()
@@ -591,8 +645,13 @@ def pilot_row_of(x: PilotRowIn) -> list[str]:
     title = FIELD_NONE
     if doc is not None:
         title = doc.title
-    return [x.job.ext, x.job.origin, x.job.city, x.job.title.replace(TSV_SEP, TAB_REPL), rec.noc, title,
-            rec.status, rec.note, CAND_SCORE_SEP.join(rec.cands)]
+    return [x.job.ext, x.job.origin, x.job.city, flat_text_of(x.job.title), rec.noc, title,
+            rec.status, rec.note, flat_text_of(x.job.body)[:PILOT_BODY_MAX], CAND_SCORE_SEP.join(rec.cands)]
+
+
+def flat_text_of(text: str) -> str:
+    """一段文本压成单行(连续空白归一成空格):TSV 里换行与制表符会串行串列。"""
+    return WS_RE.sub(TAB_REPL, text).strip()
 
 
 def say_pilot(x: WritePilotIn) -> None:

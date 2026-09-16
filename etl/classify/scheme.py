@@ -423,6 +423,17 @@ class SampleIn:
 
 
 @dataclass
+class PickByExtsIn:
+    """picked_by_exts 的入参:按钉死的清单从池子里取岗。"""
+
+    jobs: list[JobDoc]
+    """当前的未分类在招岗。"""
+
+    exts: list[str]
+    """钉死的 externalId 清单(上次抽样的结果)。"""
+
+
+@dataclass
 class WritePilotIn:
     """write_pilot 的入参。"""
 
