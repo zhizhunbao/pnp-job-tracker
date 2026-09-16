@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from classify.functions import classify_jobs, pilot_jobs
+from classify.functions import classify_jobs, pilot_jobs, score_jobs
 from log.functions import err, say
 
 SCHEDULED = [
@@ -25,10 +25,13 @@ SCHEDULED = [
 TOOLS = {
     "jobs": classify_jobs,
     "pilot": pilot_jobs,
+    "score": score_jobs,
 }
 """全部可 --only 点名的步。
   pilot  试点件(不进默认链):按渠道分层抽 PILOT_N 条判一遍,产 pilot_jobs.tsv 给人工核对准确率。
-         判定链与 jobs 步逐字同一条 —— 验的就是要上线的那套。"""
+         判定链与 jobs 步逐字同一条 —— 验的就是要上线的那套。批次钉在 pilot_sample.json,要重抽就删它。
+  score  对金标算分(不进默认链):拿 raw/classify/gold_jobs.json 里人工核对过的结论跟当前结果比,
+         报准确率并列出判错的行。改提示词 / 换模型后跑它,不用再人工重看一遍。"""
 
 
 def main() -> int:

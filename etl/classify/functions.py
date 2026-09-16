@@ -19,8 +19,10 @@ from classify.constants import (
     CLASSIFY_LIMIT, CLASSIFY_V, CLIENT_TIMEOUT_S, CODE_RE, CORPUS_TPL, DEFAULT_LIMIT, DUTIES_MAX,
     DUTY_SEP, EMBED_BATCH, EMBED_MODEL_DEFAULT, ENV_EMBED_MODEL, ENV_LLM_BASE, ENV_LLM_MODEL,
     EXAMPLE_SEP, EXAMPLES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, IN_MART_JOBS, IN_NOC_DESC,
-    JOB_TEXT_TPL, JSON_INDENT, K_BY_NOC, K_CITY, K_DATE_POSTED, K_DESCRIPTION, K_DUTIES,
-    K_EXTERNAL_ID, K_NOC, K_NOC_TITLE, K_ORIGIN, K_STATUS, K_TITLE, LINE_SEP, LLM_MODEL_DEFAULT,
+    IN_GOLD, JOB_TEXT_TPL, JSON_INDENT, K_ACCEPT, K_BY_NOC, K_CITY, K_DATE_POSTED, K_DESCRIPTION,
+    K_DUTIES, K_EXTERNAL_ID, K_GOLD_TITLE, K_NOC, K_NOC_TITLE, K_ORIGIN, K_STATUS, K_TITLE,
+    K_VERDICT, LINE_SEP, LLM_MODEL_DEFAULT, PRINT_NO_GOLD_TPL, PRINT_SCORE_ROW_TPL, PRINT_SCORE_TPL,
+    VERDICT_UNSURE,
     LOW_SCORE, PRINT_WEAK_TPL, TITLE_EN_MAX, TRANSLATE_PROMPT_TPL, TRANSLATE_TOKENS,
     LLM_TEMPERATURE, METHOD_MODEL, NET_ERRORS, NOTE_ABSTAIN, NOTE_EMPTY, NOTE_HTTP_TPL,
     NOTE_NO_LLM, NOTE_OFF_LIST, OPEN_STATUSES, OUT_JOBS, OUT_PILOT, P_EMBEDDINGS, P_INPUT, P_MODEL,
@@ -86,6 +88,36 @@ def pilot_jobs() -> None:
     doc_of = doc_index_of(noc_docs())
     write_pilot(WritePilotIn(jobs=picked, cache=cache, doc_of=doc_of))
     say_pilot(WritePilotIn(jobs=picked, cache=cache, doc_of=doc_of))
+
+
+def score_jobs() -> None:
+    """对金标算分(手动件):读人工核对的标准答案,跟当前判定结果比,报准确率并逐条打印判错的。
+
+    存疑的行跳过(既不算对也不算错);金标里这轮没判到的行单独记一档(换了版本号还没重跑的情形)。
+    机器不自评对错 —— 对错的定义全在金标文件里,那是人看过的。
+    """
+    if not IN_GOLD.exists():
+        say(PRINT_NO_GOLD_TPL.format(path=IN_GOLD))
+        return
+    gold = json.loads(IN_GOLD.read_text(encoding=TEXT_ENCODING))
+    cache = read_labels()
+    hit = miss = none = skip = 0
+    for ext, row in gold.items():
+        if row.get(K_VERDICT) == VERDICT_UNSURE:
+            skip += 1
+            continue
+        rec = cache.get(ext)
+        if rec is None or rec.status != ST_OK:
+            none += 1
+            continue
+        if rec.noc in row.get(K_ACCEPT, []):
+            hit += 1
+            continue
+        miss += 1
+        say(PRINT_SCORE_ROW_TPL.format(title=row.get(K_GOLD_TITLE, FIELD_NONE), got=rec.noc,
+                                       accept=CAND_SCORE_SEP.join(row.get(K_ACCEPT, []))))
+    say(PRINT_SCORE_TPL.format(n=hit + miss, skip=skip, hit=hit, miss=miss, none=none,
+                               pct=hit * 100 // max(hit + miss, 1)))
 
 
 def run_and_save(x: SaveIn) -> None:
