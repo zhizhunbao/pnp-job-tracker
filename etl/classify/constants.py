@@ -424,3 +424,143 @@ PRINT_SCORE_ROW_TPL = "  ✗ {title} | 判成 {got} · 可接受 {accept}"
 
 PRINT_NO_GOLD_TPL = "✗ 没有金标文件({path}),先人工核对一轮再算分"
 """缺金标时的提示。"""
+
+# =========================================================================
+# 9. 公司段:Jobillico 行业标签 → NAICS(人工核定表,不用模型)
+# =========================================================================
+
+JOBILLICO_NAICS = {
+    # —— 能定到 3 位子部门 ——
+    "Recrutement/ Agence de placement et services-conseils RH": "561",
+    "Recruitment / Staffing / Employment Agencies and HR Consulting": "561",
+    "Veterinary / Animal Sciences": "541",           # 兽医服务 54194 在 541 下
+    "Vétérinaire / Sciences animales": "541",
+    "Accounting / Auditing Services": "541",         # 会计 5412
+    "Comptabilité / Services d'audit interne": "541",
+    "Transformation des aliments et production alimentaire": "311",
+    "Food Processing and Production": "311",
+    "Véhicules automobiles - Vente et services": "441",
+    "Automotive - Sales and Services": "441",
+    "Véhicules récréatifs - Vente et services": "441",   # 房车 / 休闲车经销 44121 在 441 下
+    "Education / Academic": "611",
+    "Éducation / Académique": "611",
+    "Ingénierie": "541",                             # 工程服务 5413
+    "Engineering": "541",
+    "Insurance": "524",
+    "Assurances": "524",
+    "IT Consulting": "541",                          # 计算机系统设计 5415
+    "Immobilier / Gestion immobilière": "531",
+    "Real Estate / Property Management": "531",
+    "Automotive - Parts manufacturing": "336",       # 汽车零件 3363
+    "Véhicules automobiles - Fabrication de pièces": "336",
+    "Rental Services": "532",
+    "Services de location": "532",
+    "Restauration": "722",
+    "Food Services": "722",
+    "Hôtel et hébergement": "721",
+    "Hotel and Lodging": "721",
+    "Sports / Physical Recreation / Fitness": "713",  # 健身中心 71394
+    "Sports / Loisirs / Forme physique": "713",
+    "Research and Development": "541",               # 科研 5417
+    "Recherche et développement": "541",
+    "Organismes à but non lucratif - Organismes de bienfaisance": "813",
+    "Non-Profit Organization Management": "813",
+    "Computer Hardware": "334",
+    "Télécommunications": "517",
+    "Telecommunications": "517",
+    "Services sociaux": "624",
+    "Social Services": "624",
+    "Advertising / Marketing": "541",                # 广告 5418
+    "Publicité / Marketing": "541",
+    "Services de sécurité et de surveillance": "561",  # 保安 5616
+    "Security and Surveillance": "561",
+    "Airlines": "481",
+    "Compagnies aériennes": "481",
+    "Asset management": "523",
+    "Investissements": "523",
+    "Voyages et tourisme": "561",                    # 旅行社 5615
+    "Travel and Tourism": "561",
+    "Pharmaceutical": "325",                         # 制药 3254(药房归零售 456,有自己的标签)
+    "Pharmaceutique": "325",
+    "Services juridiques": "541",
+    "Legal Services": "541",
+    "Services personnels et domestiques": "812",
+    "Aéronautique": "336",                           # 航空航天制造 3364
+    "Aerospace": "336",
+    "Gestion des déchets": "562",
+    "Divertissement / Arts de la scène / Beaux-arts": "711",
+    "Management Consulting": "541",
+    "Gestion conseil": "541",
+    "Services funéraires": "812",
+    "Funeral Services": "812",
+    "Chimie / Pétrochimie": "325",
+    "Chemicals / Petrochemicals": "325",
+    "Medical Devices": "339",                        # 医疗器械 3391
+    "Brasseries / Distilleries / Vineries": "312",
+    "Productions médiatiques": "512",
+    "Musées et galeries d'art": "712",
+    "Architecture - Service de planification et de conception": "541",
+    # —— 只能定到 2 位部门 ——
+    "Healthcare and Medical Services": "62",         # 医院 / 门诊 / 养老院分不出
+    "Services de soins de santé et services médicaux": "62",
+    "Retail": "44-45",
+    "Commerce de détail": "44-45",
+    "Industries manufacturières": "31-33",
+    "Manufacturing": "31-33",
+    "Financial Services": "52",
+    "Services financiers": "52",
+    "Construction - Industriel et infrastructures": "23",   # 工业厂房 236 与基础设施 237 混在一起
+    "Construction - Industrial and Infrastructure": "23",
+    "Construction - Résidentiel et commercial": "23",       # 房建 236 与专业承包 238 分不出
+    "Construction - Residential and Commercial": "23",
+    "Transport et entreposage": "48-49",
+    "Transport and Storage": "48-49",
+    "Logistics and Supply Chain": "48-49",
+    "Logistique et chaîne d'approvisionnement": "48-49",
+    "Produits industriels / Machines / Automatisation": "31-33",
+    "Industrial Products / Machinery / Automation": "31-33",
+    "Textile / Clothing": "31-33",                   # 服装零售走「Commerce de détail」,这里按制造
+    "Textile / Habillement": "31-33",
+    "Électronique": "31-33",                         # 电子产品 334 与电气设备 335 分不出
+    "Electronics": "31-33",
+    "Agriculture / Pêcherie / Sylviculture / Horticulture": "11",
+    "Agriculture / Fisheries / Forestry / Horticulture": "11",
+    "Commerce de gros / Import et export": "41",
+    "Wholesale Trade / Import and Export": "41",
+    # —— 横跨几个部门,留空(宁可留空不瞎猜)——
+    "Services aux entreprises et services professionnels": "",   # 54 专业服务 / 56 行政支持
+    "Business and Professionnal services": "",
+    "Équipements et machineries lourdes": "",        # 制造 333 / 批发 417
+    "Heavy duty vehicles": "",                       # 制造 336 / 经销 441 / 维修 811
+    "Énergie / Pétrole / Gaz et services publics": "",   # 采掘 21 / 公用事业 22
+    "Energy / Oil / Gas and Utilities": "",
+    "Gouvernement et secteur parapublic": "",        # 魁省「准公共」含卫生教育系统:91 / 61 / 62
+    "Government and Parapublic Sector": "",
+    "Services environnementaux": "",                 # 废物处理 562 / 环境咨询 541
+    "Environmental Services": "",
+    "Computer Software": "",                         # 软件出版 513 / 定制开发 541
+    "Logiciels informatiques": "",
+    "Extractions minières et métaux": "",            # 采矿 21 / 冶炼 331
+    "Metals and Mining": "",
+    "Services technologiques": "",                   # 541 / 518
+    "Military / Defense": "",                        # 联邦政府 911 / 军工 336
+    "Naval and Maritime Industy": "",                # 造船 336 / 水运 483
+    "Industries navales et maritimes": "",
+    "Édition / Impression / journaux": "",           # 出版 513 / 印刷 323
+    "Fournitures et équipements médicaux": "",       # 制造 339 / 批发 417
+    "Réseaux informatiques / Services Internet": "",  # 电信 517 / 托管 518
+    "Géologie": "",                                  # 勘测 541 / 采矿服务 213
+    "Industrie des produits de luxe": "",
+    "Ventes": "",                                    # 是职能不是行业
+    "Sales": "",
+    "Autres / Non répertorié": "",
+    "Others / Not Classified": "",
+}
+"""Jobillico 帖子自带的行业标签 → NAICS Canada 2022 v1.0 代码(2026-09-16 Frank「你来填」,Claude 填、Frank 抽查;
+同城市译名表的人工核定做法,不用模型)。122 个标签全覆盖,英法同义标签映射到同一个码。
+口径(设计稿 docs/design/分类清洗-20260915.md 09-16 拍板「存 3 位、显示 2 位」):
+  · 能确定子部门的填 **3 位**;
+  · 只能确定部门的填 **2 位**,区间型部门照官方写法(制造 `31-33`、零售 `44-45`、运输仓储 `48-49`);
+  · 标签横跨两个以上部门的**留空**,行尾注释写清它跨哪几个 —— 宁可留空不瞎猜。
+每个非空码都对过官方结构表(statcan.gc.ca 的 naics-scian-2022-structure-v1-eng.csv,20 部门 / 99 子部门)。
+一家公司帖子带多个标签时,按帖数取多数(设计稿公司段第 1 层)。消费方在公司段批 4 才接,现阶段只是表。"""
