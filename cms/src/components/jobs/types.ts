@@ -5177,54 +5177,9 @@ export type NoTextIn = {
  */
 export type JdWaitingIn = {
   /**
-   * 取数态。
+   * 取数态(2026-09-16 起只看它:整理版、对照态、界面语言、译文四格随 jdBusyOf 撤出本入参,缘由见 jdWaitingOf)。
    */
   status: JdStatus
-
-  /**
-   * 整理版:undefined = 还没回,null = 没有 / 失败,串 = 就绪。
-   */
-  fmt: string | null | undefined
-
-  /**
-   * 对照翻译态。
-   */
-  transStatus: TransStatus
-
-  /**
-   * 界面语言(中 / 韩界面整理版到了还没开始译也算在途,2026-09-14 Frank「完成整理的时候页面会闪一下」)。
-   */
-  lang: Lang
-
-  /**
-   * 对照译文;null = 还没有。
-   */
-  trans: string | null
-}
-
-/**
- * jdBusyOf 的入参。
- */
-export type JdBusyIn = {
-  /**
-   * 整理版:undefined = 还没回,null = 没有 / 失败,串 = 就绪。
-   */
-  fmt: string | null | undefined
-
-  /**
-   * 对照翻译态。
-   */
-  transStatus: TransStatus
-
-  /**
-   * 界面语言(中 / 韩界面整理版到了还没开始译也算在途,2026-09-14 Frank「完成整理的时候页面会闪一下」)。
-   */
-  lang: Lang
-
-  /**
-   * 对照译文;null = 还没有。
-   */
-  trans: string | null
 }
 
 /**

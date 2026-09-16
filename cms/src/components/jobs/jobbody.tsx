@@ -13,13 +13,14 @@
  * 2026-09-14 Frank「删掉。默认就自带中文对照」:钮行整个退役,换成 JdAutoTrans(中 / 韩界面自动加载对照)。
  * 2026-09-14 Frank「职位描述里也应该显示工作地点吧」「这个工作地址不应该放在这里吧」:地点进「工时地点」节首行(JdContent 递),不在顶上另出。
  * 2026-09-14 Frank「没加载完不要显示前往投递」:投递栏只在正文取到且整理 / 翻译都不在途时出。
+ * 2026-09-16 改判(Frank「可以先显示原帖正文」「可以,先显示英文整理版」):整理 / 翻译在途不再出转圈,正文取到就铺内容,
+ * 投递栏随之只等「正文取到」—— 上一条「整理 / 翻译都不在途」的条件作废(jdBusyOf 撤),原文保留。
  * 2026-09-14 Frank「加」:管理员在标题下有一颗「重译」胶囊 —— 清掉这一岗的译文版本后整页刷新,开框重翻。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
-import { jdBusyOf } from './functions'
 import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
 import { JdAutoTrans } from './jdautotrans'
@@ -40,7 +41,7 @@ export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText, 
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
       <JdAutoTrans d={d} lang={lang} />
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
-      {d.status === JD_DONE && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
+      {d.status === JD_DONE && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
           onPage={inModal === false} />
       )}

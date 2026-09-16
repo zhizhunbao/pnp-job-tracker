@@ -38,12 +38,12 @@ import {
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE,
-  JD_DONE, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
+  JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
   JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
   JD_LOADING, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
   JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_FR_HEAD, LANG_KO, LANG_ZH,
+  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_FR_HEAD, LANG_KO, LANG_ZH,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
@@ -56,7 +56,7 @@ import {
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
-  TRANS_IDLE, TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
+  TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER,
   VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
@@ -71,7 +71,7 @@ import type {
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
   DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn,
   FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
-  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdBusyIn, JdCityLocalIn,
+  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn,
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JdWaitingIn, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn,
@@ -3724,36 +3724,22 @@ export function noTextOf(x: NoTextIn): string {
 /**
  * 正文区从头到尾要不要出转圈行:取数在途、整理在途、翻译在途三段合一(2026-09-14 Frank「加载途中为什么会闪一下」:
  * 三段各渲一条转圈,段切换那一瞬旧条卸新条挂就闪;合成一个判定一个元素就不闪)。
+ * 2026-09-16 再改判(Frank「可以,先显示英文整理版」):**只剩取数在途这一段转圈** —— 整理在途铺原帖正文(同日先一步改判),
+ * 中 / 韩界面对照在译先铺英文整理版,译文回来再补上对照行。原先判「整理 / 对照在途」的 jdBusyOf 随之撤(投递栏与整理版也不再等它),
+ * 它的注释原文照录如下,留「当初为什么」:
+ *   「正文区要不要出转圈行:整理还没回(fmt 还是 undefined)、对照在译、或中 / 韩界面整理版刚到对照还没开始译
+ *   (那一帧原本会先铺英文整理版再被转圈顶掉 —— Frank「完成整理的时候页面会闪一下」);译失败(TRANS_ERROR)不算在途,退英文。
+ *   2026-09-16 改判(Frank「可以先显示原帖正文」):**整理还没回不再算在途** —— 这一档原先出转圈,
+ *   服务端渲染与 Googlebot 抓到的正是这一档,整页只剩「加载中」,Search Console 判成软 404(1,211 页)与重复页(273 页)。
+ *   现在整理在途时照常铺原帖正文,整理版回来自动替换;对照在译那两条不变。上面第一句「整理还没回」的在途口径就此作废,原文保留。
+ *   顺带把末条的 `fmt !== null` 收成 `fmt != null`:fmt 为 undefined 时那一条原本也会判在途(undefined !== null),会让中 / 韩界面整理中照转圈。」
+ * 代价(Frank 知情拍板):中 / 韩界面对照回来那一下正文会多出对照行,即 09-14 所说的「闪一下」。
  *
- * @param x 取数态、整理版与翻译态。
+ * @param x 取数态。
  * @returns 在途 = true。
  */
 export function jdWaitingOf(x: JdWaitingIn): boolean {
-  if (x.status === JD_LOADING) {
-    return true
-  }
-  if (x.status !== JD_DONE) {
-    return false
-  }
-  return jdBusyOf({ fmt: x.fmt, transStatus: x.transStatus, lang: x.lang, trans: x.trans })
-}
-
-/**
- * 正文区要不要出转圈行:整理还没回(fmt 还是 undefined)、对照在译、或中 / 韩界面整理版刚到对照还没开始译
- * (那一帧原本会先铺英文整理版再被转圈顶掉 —— Frank「完成整理的时候页面会闪一下」);译失败(TRANS_ERROR)不算在途,退英文。
- * 2026-09-16 改判(Frank「可以先显示原帖正文」):**整理还没回不再算在途** —— 这一档原先出转圈,
- * 服务端渲染与 Googlebot 抓到的正是这一档,整页只剩「加载中」,Search Console 判成软 404(1,211 页)与重复页(273 页)。
- * 现在整理在途时照常铺原帖正文,整理版回来自动替换;对照在译那两条不变。上面第一句「整理还没回」的在途口径就此作废,原文保留。
- * 顺带把末条的 `fmt !== null` 收成 `fmt != null`:fmt 为 undefined 时那一条原本也会判在途(undefined !== null),会让中 / 韩界面整理中照转圈。
- *
- * @param x 整理版与翻译态。
- * @returns 在途 = true。
- */
-export function jdBusyOf(x: JdBusyIn): boolean {
-  if (x.transStatus === TRANS_LOADING) {
-    return true
-  }
-  return x.lang !== LANG_EN && x.fmt != null && x.trans === null && x.transStatus === TRANS_IDLE
+  return x.status === JD_LOADING
 }
 
 /**

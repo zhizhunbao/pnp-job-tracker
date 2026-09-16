@@ -12,6 +12,8 @@
  * 2026-09-16 改判(Frank「可以先显示原帖正文」):**整理在途时铺原帖正文,不再转圈**,整理版回来自动替换 ——
  * 上一条「整理在途不铺原文」作废(原文保留)。起因:服务端渲染与爬虫抓到的恰是整理在途这一档,
  * 整页只剩「加载中」,Search Console 判软 404 1,211 页、重复页 273 页。对照在译的转圈不变。
+ * 2026-09-16 Frank「可以,先显示英文整理版」「不要显示这个,因为现在已经直接显示了原版,所以不用在显示加载中」:
+ * 中 / 韩界面对照在译也不再转圈,先铺英文整理版,译文回来补对照行;转圈只剩「正文还在取」一种。上面 09-14「对照在途出转圈」作废。
  * 2026-09-16 同日改钮型:幽灵钮(ghost)在 button 桶里是纯文字,线上渲成蓝字链接,不像效果图里带描边的钮 ——
  * 「Back」的描边靠的是它专属的 backButton 类,不是 ghost 本身;改用通用次级行动钮 secondary(白底灰描边蓝字)。
  * 2026-09-16 Frank「右上角加一个切换的按钮」「放正文右上角,去掉箭头」:有整理版时正文区右上角出幽灵钮
@@ -26,7 +28,7 @@ import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
 import { BTN_SECONDARY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
 import {
-  fallbackPayOf, jdBusyOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, origToggleLabelOf, rawWrapClsOf,
+  fallbackPayOf, jdLocationOf, jdLocationZhOf, jdWaitingOf, noTextOf, origToggleLabelOf, rawWrapClsOf,
   showFormattedOf, transShownOf,
 } from './functions'
 import { JdAiNote } from './jdainote'
@@ -45,7 +47,7 @@ import css from './jobs.module.css'
 export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
   return (
     <>
-      {jdWaitingOf({ status: d.status, fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) && (
+      {jdWaitingOf({ status: d.status }) && (
         <div className={cssOf(css.loading)}>
           <span className={cssOf(css.spin)} />
           {d.t('act.loadingText')}
@@ -66,8 +68,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
             </Button>
           )}
           <JdAiNote d={d} anon={loggedIn === false} />
-          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig })
-            && jdBusyOf({ fmt: d.fmt, transStatus: d.transStatus, lang, trans: d.trans }) === false && (
+          {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && (
             <JdFormattedView text={String(d.fmt)}
               t={d.t}
               fallbackPay={fallbackPayOf(job)}
