@@ -15,7 +15,6 @@ import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
   makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
-  makeTransToggle,
 } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyBriefFact, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
@@ -91,14 +90,15 @@ export function useCompanyTrans(x: CompanyTransHookIn): string | null {
 /**
  * 公司弹框整机(E8-11 B1):按岗位号取公司(与 /companies/[slug] 页面同一份数据,
  * 免额度)+ 中文对照与 AI 速读两个开关。换了职位当场清空重取。
+ * 2026-09-16 Frank「公司的也对照改一下」:中文对照开关挪进弹框页眉译名行,开合归 advisor 的 useAdvisorModal(showZh),
+ * 本机不再自持 showTrans,经 CompanyPanel 的 props 递进来。
  *
  * @param x 当前这一行职位。
- * @returns 加载态、取到的数据与两个开关。
+ * @returns 加载态与取到的数据。
  */
 export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CompanyPanelData | null>(null)
-  const [showTrans, setShowTrans] = useState(x.lang !== LANG_EN)
   const [prevJob, setPrevJob] = useState(x.job)
 
   if (prevJob !== x.job) {
@@ -115,12 +115,7 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
     }
   }, [x.job])
 
-  return {
-    loading,
-    data,
-    showTrans,
-    onToggleTrans: makeTransToggle({ on: showTrans, set: setShowTrans }),
-  }
+  return { loading, data }
 }
 
 /**

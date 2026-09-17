@@ -34,10 +34,12 @@ import type { CompanyPanelIn } from './types'
 /**
  * 公司弹框。
  *
- * @param props 当前职位、已载入职位、语言、付费态与点职位回调(逐格注释见 CompanyPanelIn)。
+ * 2026-09-16 Frank「公司的也对照改一下」:中文对照开关上提到弹框页眉译名行,开合状态改由弹框递进来(showTrans)。
+ *
+ * @param props 当前职位、已载入职位、语言、点职位回调、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
   let cachedAlias = TEXT_NONE
@@ -61,7 +63,7 @@ export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias }: CompanyPan
         t={t}
         lang={lang}
         updatedAt={TEXT_NONE}
-        showTrans={p.showTrans}
+        showTrans={showTrans}
         hideTopInfo
         onOpenJob={onOpenJob}
         resolveJob={makeResolveJob({ jobs })} />

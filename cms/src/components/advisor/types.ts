@@ -1592,6 +1592,11 @@ export type AdvisorHeadBlockIn = {
    * 剩余免费次数;null = 还没拿到(拿到才出灰注)。
    */
   freeLeft: number | null
+
+  /**
+   * 译名行右端的切换控件(公司组的中文对照开关;2026-09-16 Frank「公司的也对照改一下」);别的组不挂。
+   */
+  ctl: React.ReactNode
 }
 
 /**

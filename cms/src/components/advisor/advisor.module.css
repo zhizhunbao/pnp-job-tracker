@@ -540,28 +540,28 @@
 
 /*
  * 浮层标题栏 = 拖动手柄(所以给移动光标,并禁掉选字 —— 拖的时候不该把标题选中)。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「工作内容和上面的整体就没有分割了」「公司的也对照改一下」:
+ * 译名行(.subRow)折到标题与窗口钮下方占满整宽,切换控件右端与正文右缘对齐;标题栏底下一条分隔线再进正文。
+ * 先只给职位描述弹框的紧凑档,同日公司弹框跟进后归基座,所有浮层同一副样子。
  */
 .panelHead {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 2px 12px;
   padding: 16px 20px 10px;
+  border-bottom: 1px solid #e5e7eb;
   cursor: move;
   user-select: none;
   flex-shrink: 0;
 }
 
 /*
- * 标题栏紧凑档(职位描述弹框)。
- * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「工作内容和上面的整体就没有分割了」「可以」:
- * 译名行(.subRow)折到标题与窗口钮下方占满整宽,切换控件右端与正文右缘对齐;标题栏底下一条分隔线再进正文。
+ * 标题栏紧凑档(职位描述弹框):2026-09-16 分隔线与折行归基座后与基座同值,留档位不留差异。
  */
 .panelHeadTight {
   padding: 16px 20px 10px;
-  flex-wrap: wrap;
-  row-gap: 2px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 /*
@@ -579,14 +579,14 @@
 }
 
 /*
- * 职位描述弹框的左块:标题栏会折行,基准宽归零,免得长标题把窗口钮挤到下一行。
+ * 标题栏左块的主体(小标 + 大标题):标题栏会折行,基准宽归零,免得长标题把窗口钮挤到下一行。
  */
-.headJd {
+.headMain {
   flex: 1 1 0;
 }
 
 /*
- * 职位描述弹框的译名行:左译名、右切换控件(jobs 桶 JdSwitches);排在窗口钮之后、独占一整行。
+ * 译名行:左译名、右切换控件(职位描述弹框是 jobs 桶 JdSwitches,公司弹框是中文对照开关);排在窗口钮之后、独占一整行。
  */
 .subRow {
   order: 1;
@@ -598,6 +598,15 @@
   flex-wrap: wrap;
   gap: 6px 12px;
   cursor: default;
+}
+
+/*
+ * 译名行右端的控件槽:没有译名时也贴右(margin-left auto),与正文右缘对齐。
+ */
+.subCtl {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 /*
@@ -679,7 +688,7 @@
 .panelBody {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 20px 20px;
+  padding: 14px 20px 20px;
 
   /*
    * 竖向滚动条不画(2026-09-14 Frank「这个竖条也去掉」):照滚,只是不占宽不露轨。

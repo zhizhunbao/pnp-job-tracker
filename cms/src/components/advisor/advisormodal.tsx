@@ -12,14 +12,17 @@
  * 2026-08-28 换装批自 Advisor.tsx 重写落位(浮层机器与三台状态机迁 hooks,
  * 页眉/钮栏/正文/AI 卡各成一件)。
  * 2026-09-14 Frank「按钮都去掉」:字段弹框的钮条撤(FieldActs 件随撤);中 / 韩界面对照默认开(hooks)。
+ * 2026-09-16 Frank「公司的也对照改一下」:公司组页眉译名行右端挂中文对照开关(通用件 Switch,状态 = 既有的 showZh),
+ * 公司弹框正文的对照行随它开合;与职位描述弹框同一副样子。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
+import { Switch } from '@/components/button'
 import { MeansForMe } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import {
-  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION,
+  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN,
 } from './constants'
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
@@ -70,7 +73,10 @@ export function AdvisorModal({
     <AdvisorHead t={t} group={group}
       title={modalTitleOf({ group, job, title })}
       sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
-      freeLeft={m.freeLeft} />
+      freeLeft={m.freeLeft}
+      ctl={group === GROUP_COMPANY && lang !== LANG_EN && (
+        <Switch on={m.showZh} label={t('cat.pair')} disabled={false} onClick={m.onToggleZh} />
+      )} />
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}

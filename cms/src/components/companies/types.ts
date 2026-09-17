@@ -1220,6 +1220,11 @@ export type CompanyPanelIn = {
    * 档案到手后把中 / 韩别名交给页眉副题(2026-09-14 Frank「参考一下职位描述的弹框 css」)。
    */
   onAlias: (alias: string) => void
+
+  /**
+   * 中文对照开着(2026-09-16 开关挪进弹框页眉,状态由弹框递进来)。
+   */
+  showTrans: boolean
 }
 
 /**
@@ -1505,21 +1510,6 @@ export type TvOpenIn = {
    * 岗位号(职位板的主键两种形态都出现过,拼地址前统一转文本)。
    */
   jobId: string | number
-}
-
-/**
- * makeTransToggle 的入参:现值与落格。
- */
-export type TransToggleIn = {
-  /**
-   * 当前开合。
-   */
-  on: boolean
-
-  /**
-   * 落格。
-   */
-  set: SetBoolFn
 }
 
 /**
@@ -1997,17 +1987,6 @@ export type CompanyPanelState = {
    * 取到的公司与相似雇主;null = 取不到(渲「暂不可用」)。
    */
   data: CompanyPanelData | null
-
-  /**
-   * 中文对照开着。
-   */
-  showTrans: boolean
-
-  /**
-   * 切中文对照。
-   */
-  onToggleTrans: GoBackFn
-
 }
 
 /**

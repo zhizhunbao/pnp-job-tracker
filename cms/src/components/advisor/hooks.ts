@@ -392,6 +392,8 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  * field = 入口格)+ 同公司在榜岗 + 清单译名开关(2026-07-25 Frank「和上面的中文翻译
  * 按钮联动」;Frank 走查:中文对照默认关,点了才显/才翻 —— 原先中文界面一打开就是
  * 对照态,当天推翻)。
+ * 2026-09-16 Frank「公司的也对照改一下」「默认自动翻译」:showZh 中 / 韩界面默认开,同时也管公司弹框正文的对照行;
+ * 开关本体在页眉译名行(AdvisorModal 递给 AdvisorHead 的 ctl 槽)。
  *
  * @param x 分组、入口格、这一岗与界面语言。
  * @returns 弹框整台面板。

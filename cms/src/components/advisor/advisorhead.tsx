@@ -18,30 +18,39 @@
 import { cssOf } from '@/components/css'
 import { IconCompass } from '@/components/icons'
 import { AI_ADVISOR_ON, GROUP_IMMIGRATION, K_GROUP_HEAD, TEXT_NONE } from './constants'
+import { makeActsDown } from './functions'
 import type { AdvisorHeadBlockIn } from './types'
 import css from './advisor.module.css'
 
 /**
  * 渲染顾问弹框的页眉左块。
  *
- * @param props 取词函数、分组、标题、副标与剩余次数。
- * @returns 页眉左块。
+ * 2026-09-16 Frank「公司的也对照改一下」:照 ActHead 同形 —— 译名拆成独占一整行的译名行,右端挂切换控件(ctl 槽,
+ * 公司组是中文对照开关),按下不起拖动。
+ *
+ * @param props 取词函数、分组、标题、副标、剩余次数与切换控件。
+ * @returns 页眉左块 + 译名行。
  */
-export function AdvisorHead({ t, group, title, sub, freeLeft }: AdvisorHeadBlockIn) {
+export function AdvisorHead({ t, group, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
   const withAi = group === GROUP_IMMIGRATION && AI_ADVISOR_ON
   return (
-    <div className={cssOf(css.headL)}>
-      <div className={cssOf(css.kicker)}>
-        {withAi === false && t(K_GROUP_HEAD + group)}
-        {withAi && <IconCompass />}
-        {withAi && t('advisor.tag')}
-        {withAi && <span className={cssOf(css.kickerSub)}>{t(K_GROUP_HEAD + group)}</span>}
-        {withAi && freeLeft != null && (
-          <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>
-        )}
+    <>
+      <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
+        <div className={cssOf(css.kicker)}>
+          {withAi === false && t(K_GROUP_HEAD + group)}
+          {withAi && <IconCompass />}
+          {withAi && t('advisor.tag')}
+          {withAi && <span className={cssOf(css.kickerSub)}>{t(K_GROUP_HEAD + group)}</span>}
+          {withAi && freeLeft != null && (
+            <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>
+          )}
+        </div>
+        <h3 className={cssOf(css.title)}>{title}</h3>
       </div>
-      <h3 className={cssOf(css.title)}>{title}</h3>
-      {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
-    </div>
+      <div className={cssOf(css.subRow)} onPointerDown={makeActsDown({ stop: true })}>
+        {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
+        <span className={cssOf(css.subCtl)}>{ctl}</span>
+      </div>
+    </>
   )
 }

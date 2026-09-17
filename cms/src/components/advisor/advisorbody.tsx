@@ -38,7 +38,7 @@ export function AdvisorBody({
   if (group === GROUP_COMPANY) {
     return (
       <CompanyPanel key={gen} job={f.job} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
-        onAlias={onCompanyAlias} />
+        onAlias={onCompanyAlias} showTrans={f.showZh} />
     )
   }
   return <GroupFacts group={group} f={f} />

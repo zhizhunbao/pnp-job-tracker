@@ -31,7 +31,7 @@ import {
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
-  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TRACK_CO_TRANSLATE,
+  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
   URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN, WIKI_WORD_SEP, YEAR_ONLY_RE,
 } from './constants'
@@ -44,7 +44,7 @@ import type {
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelJson,
   PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn,
   SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson,
-  TransToggleIn, TvOpenIn, UntitledIn, ZhLineClsIn,
+  TvOpenIn, UntitledIn, ZhLineClsIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -911,21 +911,6 @@ export function jobsToggleLabelOf(x: JobsToggleLabelIn): string {
  */
 export function makeToggle(x: ToggleIn): GoBackFn {
   return function toggle(): void {
-    x.set(x.on === false)
-  }
-}
-
-/**
- * 「显示中文对照」钮的点击手柄:第一次打开埋点(2026-09-04 /fe 补),再开合不重复记。
- *
- * @param x 现值与落格。
- * @returns 点击手柄。
- */
-export function makeTransToggle(x: TransToggleIn): GoBackFn {
-  return function toggleTrans(): void {
-    if (x.on === false) {
-      track(TRACK_CO_TRANSLATE)
-    }
     x.set(x.on === false)
   }
 }

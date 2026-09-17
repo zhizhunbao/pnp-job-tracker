@@ -26,7 +26,7 @@ import css from './advisor.module.css'
 export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
   return (
     <>
-      <div className={`${cssOf(css.headL)} ${cssOf(css.headJd)}`}>
+      <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
         <div className={cssOf(css.kicker)}>
           {t('act.descTitle')}
           {freeLeft != null && <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>}
@@ -35,7 +35,7 @@ export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
       </div>
       <div className={cssOf(css.subRow)} onPointerDown={makeActsDown({ stop: true })}>
         {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
-        {ctl}
+        <span className={cssOf(css.subCtl)}>{ctl}</span>
       </div>
     </>
   )
