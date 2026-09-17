@@ -347,6 +347,11 @@ export type CompanyDetail = {
   websiteSource: string
 
   /**
+   * 公司官方招聘页;'' = 没有,「招聘页」一行不出(2026-09-16 Frank「公司的 ATS 链接要不要列出来」)。
+   */
+  careersUrl: string
+
+  /**
    * 行业。
    */
   industry: string

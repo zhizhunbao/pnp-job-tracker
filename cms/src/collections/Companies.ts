@@ -13,6 +13,7 @@ export const Companies: CollectionConfig = {
     { name: 'slug', type: 'text', unique: true, index: true },
     { name: 'website', type: 'text' },
     { name: 'websiteSource', type: 'text', admin: { description: '官网来路:空=雇主自报/名录;jd=帖内线索;searched=自动检索(前端加小字,E8-04 D2)' } },
+    { name: 'careersUrl', type: 'text', admin: { description: '公司官方招聘页(ats 域招聘页发现清单,只收探测回 200 的;2026-09-16)' } },
     { name: 'email', type: 'email' },
     { name: 'phone', type: 'text' },
     { name: 'region', type: 'text', index: true },

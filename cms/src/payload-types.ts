@@ -390,6 +390,10 @@ export interface Company {
    * 官网来路:空=雇主自报/名录;jd=帖内线索;searched=自动检索(前端加小字,E8-04 D2)
    */
   websiteSource?: string | null;
+  /**
+   * 公司官方招聘页(ats 域招聘页发现清单,只收探测回 200 的;2026-09-16)
+   */
+  careersUrl?: string | null;
   email?: string | null;
   phone?: string | null;
   region?: string | null;
@@ -2778,6 +2782,7 @@ export interface CompaniesSelect<T extends boolean = true> {
   slug?: T;
   website?: T;
   websiteSource?: T;
+  careersUrl?: T;
   email?: T;
   phone?: T;
   region?: T;

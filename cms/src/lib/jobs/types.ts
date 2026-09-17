@@ -2383,6 +2383,11 @@ export type CompanyDetail = {
   websiteSource: string
 
   /**
+   * 公司官方招聘页;'' = 没有(2026-09-16)。
+   */
+  careersUrl: string
+
+  /**
    * 行业。
    */
   industry: string

@@ -795,6 +795,19 @@ ENRICH_KEYS = ("description", "sectors", "website")
 """富化只填这三格,且**只填空**:ATS 已自带 profile 的 description/sectors 优先,
 Job Bank 公司无 profile 全靠它。"""
 
+IN_CAREERS = paths.RAW_ATS / "national-careers.json"
+"""全国公司招聘页发现清单(ats 域产,一行一家:slug / website / careers_url / status;2026-09-16 Frank「公司的 ATS 链接要不要列出来」
+→ 效果图点头「可以,就这样做」:companies 多一列 careersUrl,公司页「基本信息」官网下出「招聘页」一行)。缺文件 = 空表。"""
+
+K_SRC_CAREERS_URL = "careers_url"
+"""招聘页发现清单行:招聘页链接。"""
+
+K_CAREERS_URL = "careersUrl"
+"""companies 列:公司官方招聘页。只收探测回 200 的;与官网同址的不落(页面上两行重复)。"""
+
+CAREERS_STATUS_OK = "200"
+"""招聘页探测通过的状态码(清单里全国件存成字符串、Kanata 件存成数字,比较前一律转串)。"""
+
 IN_PLACES = paths.RAW_COMPANIES / "company_places.json"
 """Google Places 查得的官网/地址(company 域 places 步产,2026-09-05):只填空,来源侧已有的不覆盖;
 官网由此来的 websiteSource 记 places。"""

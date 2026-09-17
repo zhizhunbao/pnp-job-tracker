@@ -116,6 +116,7 @@ from mart.constants import (
     K_WAGE_HIGH_ANNUAL, K_WAGE_HIGH_HOURLY, K_WAGE_LOW_ANNUAL, K_WAGE_LOW_HOURLY,
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
+    CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
     K_JD_FORMATTED, K_JD_FORMATTED_AT,
@@ -1016,6 +1017,21 @@ def load_places() -> dict:
     return out
 
 
+def load_careers() -> dict:
+    """公司官方招聘页:slug → 链接(只取探测回 200、且不与官网同址的;缺文件 = 空表)。"""
+    out: dict = {}
+    if not IN_CAREERS.exists():
+        return out
+    for c in read_rows(IN_CAREERS):
+        url = (c.get(K_SRC_CAREERS_URL) or "").strip()
+        if not url or str(c.get(K_STATUS)) != CAREERS_STATUS_OK:
+            continue
+        if url.rstrip(SLASH) == (c.get(K_WEBSITE) or "").rstrip(SLASH):
+            continue
+        out[c[K_SLUG]] = url
+    return out
+
+
 def load_briefs() -> dict:
     """qwen 五节简介:slug → 记录(只取 ok;缺文件 = 空表)。"""
     out: dict = {}
@@ -1078,6 +1094,7 @@ def add_company(x: CompanyExtraIn) -> None:
                 x.extra[K_WEBSITE_SOURCE] = en[K_FOUND]
         x.extra[k] = value
     fill_places(x)
+    fill_careers(x)
     fill_brief(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
@@ -1106,6 +1123,13 @@ def fill_places(x: CompanyExtraIn) -> None:
         x.extra[K_WEBSITE_SOURCE] = FOUND_PLACES
     if not x.extra.get(K_ADDRESS) and pl.get(K_ADDRESS):
         x.extra[K_ADDRESS] = pl[K_ADDRESS]
+
+
+def fill_careers(x: CompanyExtraIn) -> None:
+    """公司官方招聘页进 careersUrl 列(清单里有才落,没有不落键)。"""
+    url = x.ctx.careers.get(x.slug)
+    if url:
+        x.extra[K_CAREERS_URL] = url
 
 
 def fill_brief(x: CompanyExtraIn) -> None:
@@ -3399,7 +3423,8 @@ def new_mart_ctx() -> MartCtx:
     if IN_WAGES.exists():
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
-    return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), briefs=load_briefs(),
+    return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), careers=load_careers(),
+                   briefs=load_briefs(),
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),

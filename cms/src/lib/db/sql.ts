@@ -179,7 +179,7 @@ export const levelHasJobs = (levels: readonly string[]) =>
  * @returns 公司详情 SELECT 语句。
  */
 export const companyDetail = (cond: string) =>
-  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.trans_v, c.wiki_url,
+  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.careers_url, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.trans_v, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
             c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
      FROM companies c WHERE ${cond} LIMIT 1`

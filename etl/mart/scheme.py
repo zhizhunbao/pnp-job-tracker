@@ -529,6 +529,9 @@ class MartCtx:
     places: dict
     """slug → Google Places 命中行(官网/地址;2026-09-05)。"""
 
+    careers: dict
+    """slug → 公司官方招聘页链接(只含探测回 200 且不与官网同址的;2026-09-16)。"""
+
     briefs: dict
     """slug → qwen 五节简介行(英/中/出处;2026-09-05)。"""
 

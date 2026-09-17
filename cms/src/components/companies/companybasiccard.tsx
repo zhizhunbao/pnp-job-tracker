@@ -72,6 +72,15 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
             </LinkButton>
           </Row>
         )}
+        {company.careersUrl !== TEXT_NONE && (
+          <Row k={t('co.careers')}>
+            <LinkButton href={company.careersUrl}
+              target={TARGET_BLANK}
+              className={cssOf(css.siteLink) + CLS_SEP + LINK_CLS}>
+              {company.careersUrl}
+            </LinkButton>
+          </Row>
+        )}
         {company.wikiUrl !== TEXT_NONE && (
           <Row k={t('co.wiki')}>
             <LinkButton href={company.wikiUrl}

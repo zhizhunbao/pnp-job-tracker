@@ -795,6 +795,7 @@ export function toCompany(x: ToCompanyIn): MartRow {
   }
   return {
     slug: cellOf(x.r.slug), name: name, website: cellOf(x.r.website), website_source: cellOf(x.r.websiteSource),
+    careers_url: cellOf(x.r.careersUrl),
     email: cellOf(x.r.email), region: cellOf(x.r.region), sectors: cellOf(x.r.sectors), address: cellOf(x.r.address),
     description: cellOf(x.r.description), source: cellOf(x.r.source), sector: cellOf(x.r.sector),
     lmia_positions: cellOf(x.r.lmiaPositions),

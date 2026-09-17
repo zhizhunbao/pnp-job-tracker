@@ -1569,6 +1569,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   }
   return {
     name: strCell(c.name), slug: strCell(c.slug), website: website, websiteSource: strCell(c.website_source),
+    careersUrl: strCell(c.careers_url),
     industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh),
     aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),
