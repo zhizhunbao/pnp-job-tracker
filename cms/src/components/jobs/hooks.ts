@@ -23,8 +23,8 @@ import {
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIRECT_URL_KEY,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
-  HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LANG_EN,
-  LIMIT_RE, METHOD_DELETE,
+  HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE,
+  LANG_EN, LIMIT_RE, METHOD_DELETE,
   METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
@@ -1810,6 +1810,9 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉整理版前的起手式:undefined = 整理中,换岗或点重试先回这一态
     setFmt(undefined)
     setPending(storedOnly)
+    const cap = window.setTimeout(function capFmtHold() {
+      setPending(false)
+    }, HOLD_MAX_MS)
     fmtLoadOf({ url, storedOnly, signal: ctrl.signal })
       .then(function onStored(r: FmtLoad): Promise<FmtLoad | null> {
         setPending(false)
@@ -1835,6 +1838,7 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
         }
       })
     return function stopFmt() {
+      window.clearTimeout(cap)
       ctrl.abort()
     }
   }, [url, tick, ssrFmt])
@@ -1949,6 +1953,9 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     const ctrl = new AbortController()
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 自动拉对照的起手式:hold 档先让正文区等「只查库」这一拍
     setPending(hold)
+    const cap = window.setTimeout(function capTransHold() {
+      setPending(false)
+    }, HOLD_MAX_MS)
     track(TRACK_JD_TRANSLATE)
     postTranslate({ url, lang, storedOnly: hold, signal: ctrl.signal })
       .then(function onStored(got: string): Promise<string> {
@@ -1972,6 +1979,7 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
         setTransStatus(TRANS_IDLE)
       })
     return function stopTrans() {
+      window.clearTimeout(cap)
       ctrl.abort()
     }
   }, [auto, hold, url, lang, resetKey])

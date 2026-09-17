@@ -26,7 +26,7 @@ import {
   CO_NOT_FOUND_RE, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_KEYS, CO_SEC_MARKS, CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE,
   CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN, GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN,
   GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
-  HDR_CONTENT_TYPE, HTTP_OK, HTTP_URL_RE, JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
+  HOLD_MAX_MS, HDR_CONTENT_TYPE, HTTP_OK, HTTP_URL_RE, JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
@@ -1149,6 +1149,7 @@ export function makeLoadDescTrans(x: LoadDescTransIn): LoadFn {
  * 翻不出来就不落格 —— 原文照旧显示,不拿半截译文顶上去。
  * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):hold 档两段式 —— 首拍只查库(在途 setPending,正文留白半秒内回),
  * 存好的译文与正文一起铺;没存再现场翻(setBusy,正文已铺,译文后到)。非 hold 档(详情页)直接翻。
+ * 2026-09-17 留白封顶 HOLD_MAX_MS:到点先铺正文(Frank 实拍整框空白),查库结果回来照常补。
  *
  * @param x 公司名、语言、要不要先只查库与三个落格。
  * @returns effect 里调用的取数函数(带取消标记)。
@@ -1168,6 +1169,9 @@ export function makeLoadTrans(x: LoadTransIn): LoadFn {
       x.setBusy(true)
       return fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: false }).then(land)
     }
+    function giveUp(): void {
+      x.setPending(false)
+    }
     function afterStored(text: string): Promise<void> {
       x.setPending(false)
       if (flag.dead) {
@@ -1181,6 +1185,7 @@ export function makeLoadTrans(x: LoadTransIn): LoadFn {
     }
     if (x.hold) {
       x.setPending(true)
+      setTimeout(giveUp, HOLD_MAX_MS)
       fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: true }).then(afterStored)
       return
     }
