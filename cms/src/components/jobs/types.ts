@@ -2006,21 +2006,6 @@ export type JobBodyPanel = {
 }
 
 /**
- * JdAutoTrans(中 / 韩界面自动对照)的 props(2026-09-14 前是 JdActs 顶部钮行的)。
- */
-export type JdAutoTransIn = {
-  /**
-   * JobBody 状态机。
-   */
-  d: JobBodyPanel
-
-  /**
-   * 界面语言(英文界面不出中文对照)。
-   */
-  lang: Lang
-}
-
-/**
  * JdAiNote(整理版状态行)的 props。
  */
 export type JdAiNoteIn = {
@@ -6171,6 +6156,11 @@ export type JdLocationZhIn = {
    * 界面语言:市名按它取核定译名(2026-09-14)。
    */
   lang: Lang
+
+  /**
+   * 正文对照在不在屏(开关关着或译文没回就不出,2026-09-16)。
+   */
+  shown: boolean
 }
 
 /**

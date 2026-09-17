@@ -37,7 +37,7 @@
  */
 import { cssOf } from '@/components/css'
 import { blockedSrc } from '@/lib/jobs'
-import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN } from './constants'
+import { JD_DONE, JD_EMPTY, JD_LIMITED, JD_MAX_LEN, TEXT_NONE } from './constants'
 import {
   fallbackPayOf, jdLocationOf, jdLocationZhOf, noTextOf, showFormattedOf, transShownOf,
 } from './functions'
@@ -72,7 +72,9 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
               t={d.t}
               fallbackPay={fallbackPayOf(job)}
               location={jdLocationOf(job)}
-              locationZh={jdLocationZhOf({ t: d.t, job, lang })}
+              locationZh={jdLocationZhOf({
+                t: d.t, job, lang, shown: transShownOf({ shown: d.showTrans, trans: d.trans }) !== TEXT_NONE,
+              })}
               applyUrl={job.applyUrl}
               applyEmail={d.applyEmail}
               underTitle={underTitle}

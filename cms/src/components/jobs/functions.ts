@@ -3389,6 +3389,8 @@ export function aiHeadClsOf(i: number): string {
  * #161(Frank「这个地方缺 title 吧」):#155 的作用域开大了 —— JD 弹框那个容器上方只有
  * 「✨ AI 整理…」一行灰注、**没有大标题**,砍掉首节小标题后正文就裸奔了。改成按容器决定:
  * underTitle = 紧跟大标题(详情页)才省略,默认照常出小标题。
+ * 2026-09-16 Frank「这个有 bug」(对照开关关着,薪资与地点仍挂中文行):本地补的薪资对照(单位换算)只在译文在屏时出,
+ * 跟开关走,不再无条件补。
  *
  * @param x 整理版文本、取词函数、译文与三样兜底。
  * @returns 五节的展示行。
@@ -3396,11 +3398,17 @@ export function aiHeadClsOf(i: number): string {
 export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
   const secs = jdParseSecs(x.text)
   const tSecs = jdTransSecsOf(x.trans)
+  const paired = x.trans !== TEXT_NONE
   const out: JdSectionView[] = []
   for (const [m, key] of JD_SECS) {
     let pairs = jdPairsOf({ body: strOf(secs[m]), trans: strOf(tSecs[m]) })
-    if (m === JD_SEC_PAY) {
+    if (m === JD_SEC_PAY && paired) {
       pairs = payPairsZhOf({ t: x.t, pairs })
+    }
+    const payFallback = jdPayFallbackOf({ pairs, fallbackPay: payFallbackFor({ m, fallbackPay: x.fallbackPay }) })
+    let payFallbackZh = TEXT_NONE
+    if (paired) {
+      payFallbackZh = payFallbackZhOf({ t: x.t, text: payFallback })
     }
     out.push({
       m,
@@ -3414,10 +3422,8 @@ export function jdSectionViewsOf(x: JdSectionsIn): JdSectionView[] {
       }),
       pairs,
       bullets: jdHasBullets(pairs),
-      payFallback: jdPayFallbackOf({ pairs, fallbackPay: payFallbackFor({ m, fallbackPay: x.fallbackPay }) }),
-      payFallbackZh: payFallbackZhOf({
-        t: x.t, text: jdPayFallbackOf({ pairs, fallbackPay: payFallbackFor({ m, fallbackPay: x.fallbackPay }) }),
-      }),
+      payFallback,
+      payFallbackZh,
       applyUrl: x.applyUrl,
       applyEmail: x.applyEmail,
       noneText: x.t('act.f.none'),
@@ -3569,12 +3575,13 @@ export function aiNoteTextOf(x: AiNoteTextIn): string {
 /**
  * 工作地点的界面语版(2026-09-14):市名用 cities 表人工核定译名(没核定照英文,Frank「可以」),省用 i18n 省译名;
  * 英文界面或省译名缺给空串。
+ * 2026-09-16 Frank「这个有 bug」:对照开关关着(或译文还没回)时不出,跟正文对照行同进同退。
  *
- * @param x 取词函数与本岗。
+ * @param x 取词函数、本岗、界面语言与对照在不在屏。
  * @returns 界面语版;'' = 不出对照行。
  */
 export function jdLocationZhOf(x: JdLocationZhIn): string {
-  if (x.job.province === TEXT_NONE) {
+  if (x.shown === false || x.job.province === TEXT_NONE) {
     return TEXT_NONE
   }
   const key = JD_LOC_PROV_KEY + x.job.province.toUpperCase()

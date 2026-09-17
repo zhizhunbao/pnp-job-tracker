@@ -17,6 +17,8 @@
  * 投递栏随之只等「正文取到」—— 上一条「整理 / 翻译都不在途」的条件作废(jdBusyOf 撤),原文保留。
  * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:中文对照开关与整理版 / 原文分段钮上提到标题区(JdSwitches),
  * 状态机 useJobBody 改由外面(详情页 Job / 弹框 ActJd)起、经 d 递进来,两处读同一份。
+ * 2026-09-16 Frank「默认中文对照都关闭吧」(看到先铺英文再补中文行会跳):上面 09-14「默认就自带中文对照」作废 ——
+ * JdAutoTrans 自动加载件撤,对照只在用户拨开标题区的开关时才拉、才出;开框不再有对照行后到的跳动。
  * 2026-09-14 Frank「加」:管理员在标题下有一颗「重译」胶囊 —— 清掉这一岗的译文版本后整页刷新,开框重翻。
  *
  * @author Frank
@@ -24,7 +26,6 @@
  */
 import { JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
 import { ApplyBar } from './applybar'
-import { JdAutoTrans } from './jdautotrans'
 import { JdClosed } from './jdclosed'
 import { JdContent } from './jdcontent'
 import type { JobBodyIn } from './types'
@@ -39,7 +40,6 @@ export function JobBody({ job, lang, plan, inModal = false, d }: JobBodyIn) {
   return (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
-      <JdAutoTrans d={d} lang={lang} />
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
       {d.status === JD_DONE && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
