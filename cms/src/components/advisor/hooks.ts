@@ -403,6 +403,7 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const [showZh, setShowZh] = useState(x.lang !== LANG_EN)
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
+  const [transBusy, setTransBusy] = useState(false)
   const [gen, setGen] = useState(0)
   const isCompanyGroup = x.group === GROUP_COMPANY
   const group = x.group
@@ -450,6 +451,8 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     companyJobs,
     companyAlias,
     onCompanyAlias: setCompanyAlias,
+    transBusy,
+    onTransBusy: setTransBusy,
     gen,
     onRetranslated,
   }

@@ -17,6 +17,7 @@ import { TEXT_NONE, LANG_EN } from './constants'
 import { useEffect } from 'react'
 import { useCompanyAi } from './hooks'
 import type { CompaniesLang, CompanyAiSectionIn } from './types'
+import css from './companies.module.css'
 
 /**
  * 懒查回来的公司简介。
@@ -41,12 +42,14 @@ export function CompanyAiSection({
   }
   const p = useCompanyAi({ company, showTrans, lang: hookLang })
   const transWait = showTrans && hookLang !== null && hookLang !== LANG_EN && p.fact != null && p.trans === null
-  const busy = p.loading || transWait
   useEffect(function reportBusy() {
     if (onBusy != null) {
-      onBusy(busy)
+      onBusy(transWait)
     }
-  }, [busy, onBusy])
+  }, [transWait, onBusy])
+  if (p.loading && bare) {
+    return <div className={css.descSrc}>{t('fact.aiWorking')}</div>
+  }
   if (p.loading) {
     return null
   }

@@ -26,7 +26,7 @@ import css from './companies.module.css'
  * @param props 这一家、取词函数与新开页(逐格注释见 CompanySimilarRowIn)。
  * @returns 一行。
  */
-export function CompanySimilarRow({ employer, t, lang, newTab }: CompanySimilarRowIn) {
+export function CompanySimilarRow({ employer, t, lang, newTab, showTrans }: CompanySimilarRowIn) {
   const alias = useCompanyAlias({
     name: employer.name, lang, cached: aliasOf({ lang, aliasZh: employer.aliasZh, aliasKo: employer.aliasKo }),
   }).alias
@@ -36,7 +36,7 @@ export function CompanySimilarRow({ employer, t, lang, newTab }: CompanySimilarR
         newTab={newTab}
         className={cssOf(css.simName) + CLS_SEP + LINK_CLS}>
         {employer.name}
-        {alias !== TEXT_NONE && <span className={css.simAlias}>{alias}</span>}
+        {showTrans && alias !== TEXT_NONE && <span className={css.simAlias}>{alias}</span>}
       </CompanyLink>
       <span className={css.simMeta}>
         {employer.openCount > 0 && (

@@ -663,6 +663,16 @@ export type CompanyBodyIn = {
    * 担保卡后面的插槽(#287 批D:公司弹框挂判定卡入口;页面无 job 语境不传)。
    */
   afterSponsor?: React.ReactNode
+
+  /**
+   * 首拍先只查库里存好的译文并让正文等它(弹框给 true;详情页 SSR 正文不藏,可省 = 不等)。
+   */
+  hold?: boolean
+
+  /**
+   * 现场翻译在途的回报(弹框页眉开关显「翻译中…」);可省 = 不回报。
+   */
+  onTransBusy?: (busy: boolean) => void
 }
 
 /**
@@ -716,6 +726,7 @@ export type CompanyBasicCardIn = {
 
   /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
 }
@@ -947,6 +958,7 @@ export type CompanyAiSectionIn = {
 
   /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
 }
@@ -1099,6 +1111,11 @@ export type CompanyJobsCardIn = {
    * 链接新开页(弹框里点出去别把弹框关掉)。
    */
   newTab: boolean
+
+  /**
+   * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
+   */
+  showTrans: boolean
 }
 
 /**
@@ -1165,6 +1182,11 @@ export type CompanySimilarCardIn = {
    * 链接新开页。
    */
   newTab: boolean
+
+  /**
+   * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
+   */
+  showTrans: boolean
 }
 
 /**
@@ -1190,6 +1212,11 @@ export type CompanySimilarRowIn = {
    * 链接新开页。
    */
   newTab: boolean
+
+  /**
+   * 中文对照开着(2026-09-16 Frank「在招职位 和 相似雇主 下面的也算中文翻译」:名下的对照行跟开关走)。
+   */
+  showTrans: boolean
 }
 
 /**
@@ -1225,6 +1252,11 @@ export type CompanyPanelIn = {
    * 中文对照开着(2026-09-16 开关挪进弹框页眉,状态由弹框递进来)。
    */
   showTrans: boolean
+
+  /**
+   * 现场翻译在途的回报(页眉开关显「翻译中…」)。
+   */
+  onTransBusy: (busy: boolean) => void
 }
 
 /**
@@ -1550,6 +1582,21 @@ export type LoadTransIn = {
    * 译文落格。
    */
   setTrans: SetTextFn
+
+  /**
+   * 首拍先只查库并让正文等它(弹框);false = 直接翻(详情页 SSR 正文不藏)。
+   */
+  hold: boolean
+
+  /**
+   * 「只查库」在途落格(hold 档才会置 true)。
+   */
+  setPending: (on: boolean) => void
+
+  /**
+   * 现场翻译在途落格(页眉开关靠它显「翻译中…」)。
+   */
+  setBusy: (on: boolean) => void
 }
 
 /**
@@ -1623,6 +1670,61 @@ export type CompanyAiPanel = {
 }
 
 /**
+ * useCompanyTrans 交回的三样(2026-09-16 公司弹框不再等翻译)。
+ */
+export type CompanyTransPanel = {
+  /**
+   * 译文;null = 还没翻 / 不用翻 / 没翻成。
+   */
+  trans: string | null
+
+  /**
+   * 首拍「只查库」在途:正文留白等它(存好的译文与正文一起铺)。
+   */
+  pending: boolean
+
+  /**
+   * 现场翻译在途(正文已铺,译文后到)。
+   */
+  busy: boolean
+}
+
+/**
+ * fetchCoTrans(拉一次简介译文)的入参。
+ */
+export type FetchCoTransIn = {
+  /**
+   * 公司名。
+   */
+  company: string
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 只查缓存与库不翻。
+   */
+  storedOnly: boolean
+}
+
+/**
+ * zhShownOf(对照行跟开关走)的入参。
+ */
+export type ZhShownIn = {
+  /**
+   * 出不出。
+   */
+  show: boolean
+
+  /**
+   * 对照行文本。
+   */
+  text: string
+}
+
+/**
  * useCompanyTrans 的入参(缓存简介那条路径的懒翻)。
  */
 export type CompanyTransHookIn = {
@@ -1650,6 +1752,11 @@ export type CompanyTransHookIn = {
    * 界面语言。
    */
   lang: CompaniesLang
+
+  /**
+   * 首拍先只查库并让正文等它(弹框);详情页不等。
+   */
+  hold: boolean
 }
 
 /**
@@ -1693,6 +1800,7 @@ export type CompanyIntroIn = {
 
   /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。
+   * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
 }

@@ -45,17 +45,17 @@ import {
 } from './constants'
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
-  AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn,
-  AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn,
-  DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact,
-  FactsReadyIn, FieldFactsIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn,
-  HeadSubIn, IdRowFact, IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
-  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocNoteIn,
-  LocRowFact, LocationLevel, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn,
-  OriginTextIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
+  AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
+  CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact,
+  DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
+  FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn, IdRowFact,
+  IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
+  LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocationLevel, LocNoteIn,
+  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OriginTextIn,
+  PairLabelIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
   ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
-  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn,
-  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
+  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn, TypewriterIn,
+  VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -1883,6 +1883,19 @@ export function transPillClsOf(x: TransPillIn): string {
     return pillClsOf({ on: false }) + CLS_SEP + cssOf(css.pillBusy)
   }
   return pillClsOf({ on: x.show })
+}
+
+/**
+ * 页眉中文对照开关的字:现场翻译在途给「翻译中…」,平时「中文对照」(2026-09-16)。
+ *
+ * @param x 取词函数与在途没。
+ * @returns 开关的字。
+ */
+export function pairLabelOf(x: PairLabelIn): string {
+  if (x.busy) {
+    return x.t('cat.translating')
+  }
+  return x.t('cat.pair')
 }
 
 /**

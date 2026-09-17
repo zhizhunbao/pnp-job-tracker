@@ -16,13 +16,14 @@
  * 2026-09-14 Frank「下面要加中文翻译」「这个也默认带翻译」「参考一下职位描述的弹框 css」:别名经 onAlias 回传给
  * 页眉副题位(与职位弹框标题下的 NOC 译名同一形;库里没别名的开框懒翻一次落库,同日「公司名也做一个懒加载翻译」),AI 简介对照随界面语默认开;「加载中…」灰字换职位板同款转圈行
  * (Frank「统一改成那个动态的」)。
+ * 2026-09-16 Frank「公司 加载中这部分是不是也应该删掉」「可以,就这样做」:开框转圈行撤(公司数据线上 0.15~0.6s 就到,留白即可),
+ * 正文不再等翻译(见 CompanyBody);现场翻译在途经 onTransBusy 回报给页眉开关。上面 09-14「换职位板同款转圈行」作废。
  * 2026-09-14 Frank「加」:管理员在弹框顶部有一颗「重译」胶囊 —— 清这家公司的译文版本后整页刷新。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { useEffect } from 'react'
-import { Loading } from '@/components/loading'
 import { SponsorLeadCard } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import { CompanyBody } from './companybody'
@@ -39,7 +40,7 @@ import type { CompanyPanelIn } from './types'
  * @param props 当前职位、已载入职位、语言、点职位回调、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans }: CompanyPanelIn) {
+export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans, onTransBusy }: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, lang })
   let cachedAlias = TEXT_NONE
@@ -52,10 +53,7 @@ export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans }:
   useEffect(function liftAlias() {
     onAlias(zhName)
   }, [zhName, onAlias])
-  let body: React.ReactNode = <Loading text={t('act.loadingText')} />
-  if (p.loading === false && p.data == null) {
-    body = null
-  }
+  let body: React.ReactNode = null
   if (p.data != null) {
     body = (
       <CompanyBody company={p.data.company}
@@ -64,6 +62,8 @@ export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans }:
         lang={lang}
         updatedAt={TEXT_NONE}
         showTrans={showTrans}
+        hold
+        onTransBusy={onTransBusy}
         hideTopInfo
         onOpenJob={onOpenJob}
         resolveJob={makeResolveJob({ jobs })} />

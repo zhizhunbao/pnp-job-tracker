@@ -12,6 +12,10 @@
  * 中 / 韩界面简介对照没回来前整个正文只出转圈行;懒抓简介那一档(aiBrief 空)由 CompanyAiSection 经 onBusy 回报在途,
  * 正文用 hidden 藏着(不能卸载,卸了懒抓就停),转圈行顶上。
  * 同日 Frank「所以肯定是渲染了好几次」:aiBusy 初值改按 needsAiFetchOf 算,要懒抓的首帧就藏,不再先露后藏。
+ * 2026-09-16 改判(Frank「公司 加载中这部分是不是也应该删掉」→ 方案「先铺库里有的,翻译后到」→「可以,就这样做」):上两条作废 ——
+ * 线上实测公司数据 0.15~0.6s 就到,转圈 2.7~10s 全是在等现场翻译。正文不再整框等:弹框(hold)首拍只查库里存好的译文,
+ * 在途正文留白(半秒内),有就与正文一起铺;没存的先铺英文、译文后到,在途经 onTransBusy 回报给页眉开关显「翻译中…」。
+ * 懒抓简介那一档只在简介位出一行「AI 调查中…」。同日「在招职位 和 相似雇主 下面的也算中文翻译」:那两卡名下的对照行跟开关走。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -20,10 +24,8 @@ import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { CompanyTopInfo } from './companytopinfo'
-import { useState } from 'react'
-import { Loading } from '@/components/loading'
-import { LANG_EN, TEXT_NONE } from './constants'
-import { hasDescOf, needsAiFetchOf } from './functions'
+import { useEffect, useState } from 'react'
+import { hasDescOf } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -45,31 +47,35 @@ export function CompanyBody({
   onOpenJob,
   resolveJob,
   afterSponsor = null,
+  hold = false,
+  onTransBusy,
 }: CompanyBodyIn) {
-  const trans = useCompanyTrans({
+  const tr = useCompanyTrans({
     name: company.name,
     aiBrief: company.aiBrief,
     hasDesc: hasDescOf({ company }),
     showTrans,
     lang,
+    hold,
   })
   const newTab = onOpenJob != null
-  const [aiBusy, setAiBusy] = useState(needsAiFetchOf({ company }))
-  const transBusy = showTrans && lang !== LANG_EN && hasDescOf({ company }) === false
-    && company.aiBrief !== TEXT_NONE && trans === null
-  const busy = transBusy || aiBusy
+  const [aiTransBusy, setAiTransBusy] = useState(false)
+  const busy = tr.busy || aiTransBusy
+  useEffect(function reportTransBusy() {
+    if (onTransBusy != null) {
+      onTransBusy(busy)
+    }
+  }, [busy, onTransBusy])
   return (
-    <>
-      {busy && <Loading text={t('act.loadingText')} />}
-      <div className={css.body} hidden={busy}>
+    <div className={css.body} hidden={tr.pending}>
       {hideTopInfo === false && <CompanyTopInfo company={company} t={t} />}
       <CompanyBasicCard company={company}
         t={t}
         lang={lang}
         showTrans={showTrans}
-        trans={trans}
+        trans={tr.trans}
         hideTopInfo={hideTopInfo}
-        onBusy={setAiBusy} />
+        onBusy={setAiTransBusy} />
       {afterSponsor}
       <CompanyJobsCard company={company}
         t={t}
@@ -77,9 +83,9 @@ export function CompanyBody({
         updatedAt={updatedAt}
         onOpenJob={onOpenJob}
         resolveJob={resolveJob}
-        newTab={newTab} />
-      <CompanySimilarCard similar={similar} t={t} lang={lang} newTab={newTab} />
-      </div>
-    </>
+        newTab={newTab}
+        showTrans={showTrans} />
+      <CompanySimilarCard similar={similar} t={t} lang={lang} newTab={newTab} showTrans={showTrans} />
+    </div>
   )
 }

@@ -21,10 +21,10 @@ import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
 import { JobMiniRow } from './jobminirow'
 import {
-  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
+  CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LANG_EN, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
 import {
-  jobSubOf, jobsShownOf, jobsToggleLabelOf, makeOpenJob, makeToggle, subOrTitleOf, untitledOf,
+  jobsShownOf, jobsToggleLabelOf, jobSubOf, makeOpenJob, makeToggle, subOrTitleOf, untitledOf, zhShownOf,
 } from './functions'
 import { useTitleMap } from './hooks'
 import type { CompanyJobsCardIn, GoBackFn } from './types'
@@ -37,7 +37,7 @@ import css from './companies.module.css'
  * @returns 一张卡;一个在招岗都没有时整卡不渲。
  */
 export function CompanyJobsCard({
-  company, t, lang, updatedAt, onOpenJob, resolveJob, newTab,
+  company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
 }: CompanyJobsCardIn) {
   const [allJobs, setAllJobs] = useState(false)
   const titleMap = useTitleMap({ titles: untitledOf({ jobs: company.jobs, lang }), lang })
@@ -53,11 +53,12 @@ export function CompanyJobsCard({
         onOpen = makeOpenJob({ job: hit, onOpenJob })
       }
     }
+    const sub = subOrTitleOf({ sub: jobSubOf({ job, lang }), title: job.title, map: titleMap })
     rows.push(
       <JobMiniRow key={job.id}
         id={job.id}
         title={job.title}
-        sub={subOrTitleOf({ sub: jobSubOf({ job, lang }), title: job.title, map: titleMap })}
+        sub={zhShownOf({ show: showTrans || lang === LANG_EN, text: sub })}
         salaryText={job.salaryText}
         city={job.city}
         onOpen={onOpen}

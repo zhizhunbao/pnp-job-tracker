@@ -28,7 +28,7 @@ import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { FloatPanel } from './floatpanel'
-import { companyRefreshOf, headSubOf, modalTitleOf, planClbOf } from './functions'
+import { companyRefreshOf, headSubOf, modalTitleOf, pairLabelOf, planClbOf } from './functions'
 import { useAdvisorModal, useFloatPanel } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 
@@ -75,7 +75,8 @@ export function AdvisorModal({
       sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft}
       ctl={group === GROUP_COMPANY && lang !== LANG_EN && (
-        <Switch on={m.showZh} label={t('cat.pair')} disabled={false} onClick={m.onToggleZh} />
+        <Switch on={m.showZh} label={pairLabelOf({ t, busy: m.transBusy })} disabled={m.transBusy}
+          onClick={m.onToggleZh} />
       )} />
   )
   return (
@@ -88,6 +89,7 @@ export function AdvisorModal({
         companyJobs={m.companyJobs}
         onOpenJob={onOpenJob}
         onCompanyAlias={m.onCompanyAlias}
+        onCompanyTransBusy={m.onTransBusy}
         gen={m.gen}
         f={f} />
       {m.aiOn && (

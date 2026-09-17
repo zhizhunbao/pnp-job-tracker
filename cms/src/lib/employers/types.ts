@@ -2486,6 +2486,11 @@ export type EmployersTransBody = {
    * 目标语种；不在白名单 400。
    */
   lang: string | null
+
+  /**
+   * 只查缓存与库不翻(2026-09-16 公司弹框开框首拍:存好的译文与正文一起铺,没存回 404 再另起翻译);不带当 false。
+   */
+  storedOnly: boolean | null
 }
 
 /**

@@ -14,11 +14,12 @@ import { useEffect, useState } from 'react'
 import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
-  makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
+  ignoreFlag, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
 } from './functions'
 import type {
-  CompanyAiHookIn, CompanyAiPanel, CompanyBriefFact, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState,
-  CompanyTransHookIn, DeadFlag, CompanyAliasHookIn, CompanyAliasPanel, TitleMapHookIn, DescTransHookIn,
+  CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact, CompanyPanelData,
+  CompanyPanelHookIn, CompanyPanelState, CompanyTransHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn,
+  TitleMapHookIn,
 } from './types'
 
 /**
@@ -53,7 +54,9 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
     if (x.showTrans && trans == null && fact != null && x.lang != null && x.lang !== LANG_EN) {
-      makeLoadTrans({ company: x.company, lang: x.lang, setTrans })(flag)
+      makeLoadTrans({
+        company: x.company, lang: x.lang, setTrans, hold: false, setPending: ignoreFlag, setBusy: ignoreFlag,
+      })(flag)
     }
     return function stop(): void {
       flag.dead = true
@@ -68,23 +71,28 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
  * 懒翻同款,拿到存一份切换零延迟。名录厚简介那条路径不翻(它是官网原文,#185
  * 对照针对的是 K 调查五节)。
  *
- * @param x 公司名、缓存简介、厚简介标记、对照开关与界面语言。
- * @returns 译文;null = 还没翻/不用翻。
+ * 2026-09-16 Frank「可以,就这样做」:交回三样 —— 译文、首拍只查库在途(正文等它)、现场翻译在途(页眉开关显「翻译中…」)。
+ *
+ * @param x 公司名、缓存简介、厚简介标记、对照开关、界面语言与要不要先只查库。
+ * @returns 译文与两个在途态。
  */
-export function useCompanyTrans(x: CompanyTransHookIn): string | null {
+export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
   const [trans, setTrans] = useState<string | null>(null)
+  const want = x.showTrans && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN
+  const [pending, setPending] = useState(x.hold && want)
+  const [busy, setBusy] = useState(false)
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
     if (x.showTrans && trans == null && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN) {
-      makeLoadTrans({ company: x.name, lang: x.lang, setTrans })(flag)
+      makeLoadTrans({ company: x.name, lang: x.lang, setTrans, hold: x.hold, setPending, setBusy })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.showTrans, x.hasDesc, x.aiBrief, x.name, x.lang, trans])
+  }, [x.showTrans, x.hasDesc, x.aiBrief, x.name, x.lang, x.hold, trans])
 
-  return trans
+  return { trans, pending, busy }
 }
 
 /**

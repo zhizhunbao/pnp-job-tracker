@@ -205,7 +205,9 @@ function paramOf(sp: URLSearchParams, key: string): string {
  * 只翻库内 companies.ai_brief(五节标记);节标记与 (not stated) 原样保留,输出与原文
  * 行结构完全一致 —— 前端按节配对,英文下显中文(#185)。进程缓存 name+lang(全量翻齐才进)。
  *
- * @param req 请求(body 是 { name, lang })。
+ * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):body 带 storedOnly 只查缓存与库,没存回 404 不翻。
+ *
+ * @param req 请求(body 是 { name, lang, storedOnly? })。
  * @returns { ok, text, cached };未配置 503、参数非法 400、查无 404、超限 429、翻挂 502。
  */
 export async function employersTranslateRoute(req: Request): Promise<Response> {
@@ -214,6 +216,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   }
   let name = NAME_UNSET
   let lang = LANG_UNSET
+  let storedOnly = false
   try {
     const b = await req.json() as EmployersTransBody
     if (typeof b.name === 'string') {
@@ -222,6 +225,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
     if (typeof b.lang === 'string') {
       lang = b.lang
     }
+    storedOnly = b.storedOnly === true
   } catch {
     name = NAME_UNSET
   }
@@ -240,6 +244,9 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
       CACHE.briefTransBy.set(ck, stored)
       return Response.json({ ok: true, text: stored, cached: true })
     }
+  }
+  if (storedOnly) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   const brief = await loadCompanyBrief({ db: db, name: name })
   if (brief == null) {

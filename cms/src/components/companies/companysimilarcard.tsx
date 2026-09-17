@@ -17,13 +17,16 @@ import css from './companies.module.css'
  * @param props 相似雇主、取词函数与新开页(逐格注释见 CompanySimilarCardIn)。
  * @returns 一张卡;一家都没有时整卡不渲。
  */
-export function CompanySimilarCard({ similar, t, lang, newTab }: CompanySimilarCardIn) {
+export function CompanySimilarCard({ similar, t, lang, newTab, showTrans }: CompanySimilarCardIn) {
   if (similar.length === 0) {
     return null
   }
   const rows = []
   for (const employer of similar) {
-    rows.push(<CompanySimilarRow key={employer.slug} employer={employer} t={t} lang={lang} newTab={newTab} />)
+    rows.push(
+      <CompanySimilarRow key={employer.slug} employer={employer} t={t} lang={lang} newTab={newTab}
+        showTrans={showTrans} />,
+    )
   }
   return (
     <div className={CARD_MD_CLS}>

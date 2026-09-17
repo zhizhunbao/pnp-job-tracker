@@ -24,7 +24,7 @@ import type { AdvisorGroupBodyIn } from './types'
  * @returns 这一组的正文。
  */
 export function AdvisorBody({
-  group, field, companyJobs, onOpenJob, onCompanyAlias, gen, f,
+  group, field, companyJobs, onOpenJob, onCompanyAlias, onCompanyTransBusy, gen, f,
 }: AdvisorGroupBodyIn) {
   if (group === GROUP_CATEGORY) {
     return <CategoryPanel job={f.job} lang={f.lang} nocDesc={f.nocDesc} srcField={field} />
@@ -38,7 +38,7 @@ export function AdvisorBody({
   if (group === GROUP_COMPANY) {
     return (
       <CompanyPanel key={gen} job={f.job} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
-        onAlias={onCompanyAlias} showTrans={f.showZh} />
+        onAlias={onCompanyAlias} showTrans={f.showZh} onTransBusy={onCompanyTransBusy} />
     )
   }
   return <GroupFacts group={group} f={f} />

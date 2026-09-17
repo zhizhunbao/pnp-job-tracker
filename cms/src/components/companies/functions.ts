@@ -37,14 +37,14 @@ import {
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
-  ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn,
-  CanTransIn, ChColorIn, CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow,
-  CompanyOnlyIn, CompanyStream, DeadFlag, DisplayNameIn, FameTextIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn,
-  IsGovIn, JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
-  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelJson,
-  PanelSlugIn, PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn,
-  SecZhIn, SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson,
-  TvOpenIn, UntitledIn, ZhLineClsIn,
+  ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
+  CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
+  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
+  JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn, LoadBriefIn,
+  LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelJson, PanelSlugIn,
+  PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
+  SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
+  UntitledIn, ZhLineClsIn, ZhShownIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1145,38 +1145,99 @@ export function makeLoadDescTrans(x: LoadDescTransIn): LoadFn {
 }
 
 /**
- * 公司简介的懒翻(#185 中文对照:点了才翻,拿到存一份切换零延迟)。
+ * 公司简介的懒翻(#185 中文对照:拿到存一份切换零延迟)。
  * 翻不出来就不落格 —— 原文照旧显示,不拿半截译文顶上去。
+ * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):hold 档两段式 —— 首拍只查库(在途 setPending,正文留白半秒内回),
+ * 存好的译文与正文一起铺;没存再现场翻(setBusy,正文已铺,译文后到)。非 hold 档(详情页)直接翻。
  *
- * @param x 公司名、语言与译文落格。
+ * @param x 公司名、语言、要不要先只查库与三个落格。
  * @returns effect 里调用的取数函数(带取消标记)。
  */
 export function makeLoadTrans(x: LoadTransIn): LoadFn {
   return function loadTrans(flag: DeadFlag): void {
-    function read(r: Response): Promise<TransJson> {
-      return r.json().catch(none)
-    }
-    function none(): null {
-      return null
-    }
-    function land(j: TransJson): void {
-      if (flag.dead || j == null) {
+    function land(text: string): void {
+      if (flag.dead) {
         return
       }
-      if (j.ok !== true || j.text == null || j.text === TEXT_NONE) {
-        return
+      x.setBusy(false)
+      if (text !== TEXT_NONE) {
+        x.setTrans(text)
       }
-      x.setTrans(j.text)
     }
-    function fall(): void {
+    function full(): Promise<void> {
+      x.setBusy(true)
+      return fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: false }).then(land)
+    }
+    function afterStored(text: string): Promise<void> {
+      x.setPending(false)
+      if (flag.dead) {
+        return Promise.resolve()
+      }
+      if (text !== TEXT_NONE) {
+        x.setTrans(text)
+        return Promise.resolve()
+      }
+      return full()
+    }
+    if (x.hold) {
+      x.setPending(true)
+      fetchCoTrans({ company: x.company, lang: x.lang, storedOnly: true }).then(afterStored)
       return
     }
-    fetch(URL_CO_TRANSLATE, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ name: x.company, lang: x.lang }),
-    }).then(read).then(land).catch(fall)
+    full()
   }
+}
+
+/**
+ * 拉一次简介译文;没存(storedOnly 那一拍 404)、翻挂、掉线都给空串。
+ *
+ * @param x 公司名、语言与只不只查库。
+ * @returns 译文;没有给空串。
+ */
+function fetchCoTrans(x: FetchCoTransIn): Promise<string> {
+  function none(): null {
+    return null
+  }
+  function read(r: Response): Promise<TransJson> {
+    return r.json().catch(none)
+  }
+  function textOf(j: TransJson): string {
+    if (j == null || j.ok !== true || j.text == null) {
+      return TEXT_NONE
+    }
+    return j.text
+  }
+  function fall(): string {
+    return TEXT_NONE
+  }
+  return fetch(URL_CO_TRANSLATE, {
+    method: METHOD_POST,
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+    body: JSON.stringify({ name: x.company, lang: x.lang, storedOnly: x.storedOnly }),
+  }).then(read).then(textOf).catch(fall)
+}
+
+/**
+ * 不关心在途态的落格(useCompanyAi 那条懒抓路径自己算在途,不要这两格)。
+ *
+ * @param _on 在途没。
+ * @returns 无。
+ */
+export function ignoreFlag(_on: boolean): void {
+  return
+}
+
+/**
+ * 对照行跟开关走:关着给空串(行不出)。
+ *
+ * @param x 出不出与对照行文本。
+ * @returns 文本或空串。
+ */
+export function zhShownOf(x: ZhShownIn): string {
+  if (x.show) {
+    return x.text
+  }
+  return TEXT_NONE
 }
 
 /**

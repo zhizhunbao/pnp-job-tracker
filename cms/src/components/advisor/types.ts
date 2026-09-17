@@ -1734,6 +1734,11 @@ export type AdvisorGroupBodyIn = {
   onCompanyAlias: (alias: string) => void
 
   /**
+   * 公司弹框把「现场翻译在途」回传给页眉开关的口(2026-09-16)。
+   */
+  onCompanyTransBusy: (busy: boolean) => void
+
+  /**
    * 重译代数(CompanyPanel 的 key,变了重挂重取)。
    */
   gen: number
@@ -1818,6 +1823,16 @@ export type AdvisorModalPanel = {
    * CompanyPanel 回传别名的口。
    */
   onCompanyAlias: (alias: string) => void
+
+  /**
+   * 公司简介现场翻译在途(页眉开关显「翻译中…」并禁用)。
+   */
+  transBusy: boolean
+
+  /**
+   * CompanyPanel 回传翻译在途的口。
+   */
+  onTransBusy: (busy: boolean) => void
 
   /**
    * 重译代数(2026-09-14 Frank「怎么把弹框给我关了」:点「重译」不再整页刷新,代数加一让弹框正文与页眉副题重挂重取)。
@@ -3442,4 +3457,19 @@ export type CompanyRefreshIn = {
    * 接口打完后的回调(弹框代数加一)。
    */
   onDone: RefreshFn
+}
+
+/**
+ * pairLabelOf(页眉中文对照开关的字)的入参。
+ */
+export type PairLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: AdvisorTFn
+
+  /**
+   * 现场翻译在途。
+   */
+  busy: boolean
 }
