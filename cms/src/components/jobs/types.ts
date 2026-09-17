@@ -1990,9 +1990,14 @@ export type JobBodyPanel = {
   transStatus: TransStatus
 
   /**
-   * 开合中文对照(首次点会去拉)。
+   * 开合中文对照(自动拉失败后点它重试)。
    */
   onToggleTrans: ClickFn
+
+  /**
+   * 开框首拍在查库里有没有整理版 / 存好的对照(2026-09-16 Frank「不要有跳跃」):在途正文区留白,回了一起铺。
+   */
+  pending: boolean
 
   /**
    * 投递邮箱('' = 外跳原帖)。
@@ -4640,6 +4645,16 @@ export type JdFormatPanel = {
    * 重试生成。
    */
   onRetry: ClickFn
+
+  /**
+   * 开框首拍「只查库」还没回(2026-09-16 Frank「不要有跳跃」):在途正文区留白,回了库里有就直接铺整理版,没有再铺原帖另起生成。
+   */
+  pending: boolean
+
+  /**
+   * 整理版是首拍从库里直接拿到的(对照才可能也存好了,值得再等一拍);刚生成的没存过对照,不等。
+   */
+  stored: boolean
 }
 
 /**
@@ -4660,10 +4675,21 @@ export type JdTransHookIn = {
    * 换岗/重试的信号。
    */
   resetKey: string
+
+  /**
+   * 整理版就绪且在看整理版(2026-09-16 Frank「点开之后,默认自动翻译」:中 / 韩界面一就绪就自动拉对照)。
+   */
+  fmtReady: boolean
+
+  /**
+   * 首拍先「只查库」并让正文区等它(弹框:整理版也是懒拉的,存好的译文与整理版一起铺);
+   * 详情页整理版是 SSR 直出的,不等 —— 等就是先铺再藏再铺,比补一行对照更跳。
+   */
+  hold: boolean
 }
 
 /**
- * 中文对照交回的四样。
+ * 中文对照交回的五样。
  */
 export type JdTransPanel = {
   /**
@@ -4682,9 +4708,14 @@ export type JdTransPanel = {
   transStatus: TransStatus
 
   /**
-   * 开合(首次点会去拉)。
+   * 开合(自动拉失败后点它重试)。
    */
   onToggle: () => Promise<void>
+
+  /**
+   * 首拍「只查库」还没回(hold 档才会 true):正文区留白等它。
+   */
+  pending: boolean
 }
 
 /**
@@ -4730,6 +4761,56 @@ export type TranslateIn = {
    * 界面语言。
    */
   lang: Lang
+
+  /**
+   * 只查缓存与库不翻(开框首拍);没存给空串。
+   */
+  storedOnly: boolean
+
+  /**
+   * 换岗 / 关框时中止。
+   */
+  signal: AbortSignal
+}
+
+/**
+ * fmtLoadOf(拉整理版一次)的入参。
+ */
+export type FmtLoadIn = {
+  /**
+   * 原帖链接。
+   */
+  url: string
+
+  /**
+   * 只查库不生成(开框首拍);没存 found = false。
+   */
+  storedOnly: boolean
+
+  /**
+   * 换岗 / 关框时中止。
+   */
+  signal: AbortSignal
+}
+
+/**
+ * fmtLoadOf 的结果。
+ */
+export type FmtLoad = {
+  /**
+   * 库里有答案(只查库那一拍 404 = 没存,要另起生成)。
+   */
+  found: boolean
+
+  /**
+   * 整理版;null = 没有(降级原帖)。
+   */
+  fmt: string | null
+
+  /**
+   * 没有时的由头。
+   */
+  why: FmtWhy
 }
 
 /**

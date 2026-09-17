@@ -23,7 +23,8 @@ import {
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIRECT_URL_KEY,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
-  HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LIMIT_RE, METHOD_DELETE,
+  HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE, LANG_EN,
+  LIMIT_RE, METHOD_DELETE,
   METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
@@ -49,7 +50,8 @@ import type {
   ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
   ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
-  FieldRouterIn, FilterState, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn, IntentProfileIn,
+  FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
+  IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
@@ -1661,9 +1663,15 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
   const t = makeT(x.lang)
   const jd = useJdText({ job: x.job, onFreeLeft: x.onFreeLeft, jdText: x.jdText })
   const fmt = useJdFormat({ job: x.job, jdFormatted: x.jdFormatted })
-  const trans = useJdTrans({ job: x.job, lang: x.lang, resetKey: fmt.resetKey })
-  const apply = useApplyHow(x.job)
   const [showOrig, setShowOrig] = useState(false)
+  const trans = useJdTrans({
+    job: x.job,
+    lang: x.lang,
+    resetKey: fmt.resetKey,
+    fmtReady: fmt.fmt != null && showOrig === false,
+    hold: x.jdFormatted == null && fmt.stored,
+  })
+  const apply = useApplyHow(x.job)
   const [prevResetKey, setPrevResetKey] = useState(fmt.resetKey)
   if (prevResetKey !== fmt.resetKey) {
     setPrevResetKey(fmt.resetKey)
@@ -1684,6 +1692,7 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     trans: trans.trans,
     transStatus: trans.transStatus,
     onToggleTrans: trans.onToggle,
+    pending: fmt.pending || trans.pending,
     applyEmail: applyEmailPick({ jb: apply.email, text: jd.text }),
     applyDone: apply.done,
   }
@@ -1787,6 +1796,8 @@ function jdStatusOf(text: string): JdStatus {
 function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
   const [fmt, setFmt] = useState<string | null | undefined>(fmtInitOf(x.jdFormatted))
   const [fmtWhy, setFmtWhy] = useState<FmtWhy>(FMT_FAIL)
+  const [pending, setPending] = useState(false)
+  const [stored, setStored] = useState(false)
   const [tick, setTick] = useState(0)
   const url = strOf(x.job.applyUrl)
   const ssrFmt = x.jdFormatted
@@ -1795,26 +1806,30 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
       return
     }
     const ctrl = new AbortController()
+    const storedOnly = tick === 0
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉整理版前的起手式:undefined = 整理中,换岗或点重试先回这一态
     setFmt(undefined)
-    fetch(URL_API_JD_FORMAT, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ url }),
-      signal: ctrl.signal,
-    })
-      .then(function onFmtRes(r: Response) {
-        setFmtWhy(fmtWhyOf(r.status))
-        if (r.status === HTTP_OK) {
-          return r.text()
+    setPending(storedOnly)
+    fmtLoadOf({ url, storedOnly, signal: ctrl.signal })
+      .then(function onStored(r: FmtLoad): Promise<FmtLoad | null> {
+        setPending(false)
+        setStored(storedOnly && r.fmt != null)
+        if (r.found) {
+          setFmtWhy(r.why)
+          setFmt(r.fmt)
+          return Promise.resolve(null)
         }
-        return TEXT_NONE
+        return fmtLoadOf({ url, storedOnly: false, signal: ctrl.signal })
       })
-      .then(function onFmtText(tx: string) {
-        setFmt(fmtOrNull(tx))
+      .then(function onGenerated(r: FmtLoad | null) {
+        if (r != null) {
+          setFmtWhy(r.why)
+          setFmt(r.fmt)
+        }
       })
       .catch(function onFmtFail() {
         if (ctrl.signal.aborted === false) {
+          setPending(false)
           setFmtWhy(FMT_FAIL)
           setFmt(null)
         }
@@ -1830,7 +1845,33 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
     onRetry: function retryFmt(): void {
       setTick(tick + 1)
     },
+    pending,
+    stored,
   }
+}
+
+/**
+ * 拉一次整理版。2026-09-16 Frank「点开的时候,如果有整理版,直接显示整理版,不要有跳跃」:开框首拍只查库(storedOnly),
+ * 404 = 没存(found = false,调用方先铺原帖再另起一次生成);其余状态都是定论(200 整理版 / 204 无正文 / 402 429 额度 / 503 失败)。
+ *
+ * @param x 原帖链接、只不只查库与中止信号。
+ * @returns 有没有答案、整理版与由头。
+ */
+async function fmtLoadOf(x: FmtLoadIn): Promise<FmtLoad> {
+  const r = await fetch(URL_API_JD_FORMAT, {
+    method: METHOD_POST,
+    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+    body: JSON.stringify({ url: x.url, storedOnly: x.storedOnly }),
+    signal: x.signal,
+  })
+  if (x.storedOnly && r.status === HTTP_NOT_FOUND) {
+    return { found: false, fmt: null, why: FMT_FAIL }
+  }
+  let tx = TEXT_NONE
+  if (r.status === HTTP_OK) {
+    tx = await r.text()
+  }
+  return { found: true, fmt: fmtOrNull(tx), why: fmtWhyOf(r.status) }
 }
 
 /**
@@ -1888,8 +1929,12 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const [showTrans, setShowTrans] = useState(false)
   const [trans, setTrans] = useState<string | null>(null)
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
+  const [pending, setPending] = useState(false)
   const url = strOf(x.job.applyUrl)
   const lang = x.lang
+  const auto = x.fmtReady && lang !== LANG_EN
+  const hold = x.hold
+  const resetKey = x.resetKey
   const [prevResetKey, setPrevResetKey] = useState(x.resetKey)
   if (prevResetKey !== x.resetKey) {
     setPrevResetKey(x.resetKey)
@@ -1897,14 +1942,46 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     setTrans(null)
     setTransStatus(TRANS_IDLE)
   }
+  useEffect(function autoTrans() {
+    if (auto === false) {
+      return
+    }
+    const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 自动拉对照的起手式:hold 档先让正文区等「只查库」这一拍
+    setPending(hold)
+    track(TRACK_JD_TRANSLATE)
+    postTranslate({ url, lang, storedOnly: hold, signal: ctrl.signal })
+      .then(function onStored(got: string): Promise<string> {
+        setPending(false)
+        if (got !== TEXT_NONE || hold === false) {
+          return Promise.resolve(got)
+        }
+        setTransStatus(TRANS_LOADING)
+        return postTranslate({ url, lang, storedOnly: false, signal: ctrl.signal })
+      })
+      .then(function onGot(got: string) {
+        if (ctrl.signal.aborted) {
+          return
+        }
+        if (got === TEXT_NONE) {
+          setTransStatus(TRANS_ERROR)
+          return
+        }
+        setTrans(got)
+        setShowTrans(true)
+        setTransStatus(TRANS_IDLE)
+      })
+    return function stopTrans() {
+      ctrl.abort()
+    }
+  }, [auto, hold, url, lang, resetKey])
   async function onToggle(): Promise<void> {
     if (trans != null) {
       setShowTrans(showTrans === false)
       return
     }
-    track(TRACK_JD_TRANSLATE)
     setTransStatus(TRANS_LOADING)
-    const got = await postTranslate({ url, lang })
+    const got = await postTranslate({ url, lang, storedOnly: false, signal: new AbortController().signal })
     if (got === TEXT_NONE) {
       setTransStatus(TRANS_ERROR)
       return
@@ -1913,20 +1990,21 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     setShowTrans(true)
     setTransStatus(TRANS_IDLE)
   }
-  return { showTrans, trans, transStatus, onToggle }
+  return { showTrans, trans, transStatus, onToggle, pending }
 }
 
 /**
- * 拉一份同结构译文。
+ * 拉一份同结构译文。2026-09-16 storedOnly = 只查缓存与库(开框首拍),没存与失败都给空串。
  *
- * @param x 原帖链接与界面语言。
+ * @param x 原帖链接、界面语言、只不只查库与中止信号。
  * @returns 译文;失败给空串。
  */
 async function postTranslate(x: TranslateIn): Promise<string> {
   const res = await fetch(URL_API_JD_TRANSLATE, {
     method: METHOD_POST,
     headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    body: JSON.stringify({ url: x.url, lang: x.lang }),
+    body: JSON.stringify({ url: x.url, lang: x.lang, storedOnly: x.storedOnly }),
+    signal: x.signal,
   }).catch(nullOf)
   if (res == null) {
     return TEXT_NONE

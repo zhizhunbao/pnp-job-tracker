@@ -21,6 +21,8 @@
  * 2026-09-16 Frank「右上角加一个切换的按钮」「放正文右上角,去掉箭头」:有整理版时正文区右上角出幽灵钮
  * 「看原文 / 看整理版」(复用 act.seeOrig / act.seeFmt,箭头已去),切的是既有的 showOrig 开关;
  * 整理版还没回(fmt = undefined)或失败(null)时正文本来就是原帖,不出钮。
+ * 2026-09-16 Frank「点开的时候,如果有整理版,直接显示整理版,不要有跳跃」「点开之后,默认自动翻译」:开框首拍先只查库
+ * (整理版 + 存好的对照),在途 d.pending 正文区留白,回了一起铺;库里没有的才走「先铺原帖 / 先铺英文」那两档。
  * 2026-09-16 Frank「loading 去掉吧」:**正文区的转圈行整个撤**(最后剩的「正文还在取」那一档也不出,取到前这一块留白),
  * 判它的 jdWaitingOf 随之撤。⚠ 与「加载区必占位」旧规矩相左,Frank 本人拍板撤;转圈样式 loading / spin 职位板加载件还在用,不删。
  * jdWaitingOf 的注释原文照录,留「当初为什么」:
@@ -64,7 +66,7 @@ export function JdContent({ d, job, underTitle, loggedIn, lang }: JdContentIn) {
         <JdEmpty note={noTextOf({ t: d.t, src: blockedSrc(job) })} url={job.applyUrl}
           label={d.t('act.seeOfficial')} />
       )}
-      {d.status === JD_DONE && (
+      {d.status === JD_DONE && d.pending === false && (
         <>
           <JdAiNote d={d} anon={loggedIn === false} />
           {showFormattedOf({ fmt: d.fmt, showOrig: d.showOrig }) && (

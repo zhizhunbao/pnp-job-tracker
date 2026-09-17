@@ -867,6 +867,11 @@ export const HTTP_OK = 200
 export const HTTP_NO_CONTENT = 204
 
 /**
+ * 只查库那一拍没存(jdformat / jd-translate 带 storedOnly 时的答复,2026-09-16)。
+ */
+export const HTTP_NOT_FOUND = 404
+
+/**
  * 新标签页打开(外链一律)。
  */
 export const TARGET_BLANK = '_blank'

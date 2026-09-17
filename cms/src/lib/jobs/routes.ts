@@ -349,19 +349,24 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
  * （缓存命中不计费）；失败态拆三种（402/429=额度、503=生成失败可重试、
  * 204=无正文），不再五因一果（#114）。
  *
- * @param req 请求（body 是 { url }）。
- * @returns 整理版纯文本；掉线 204、缺参 400。
+ * 2026-09-16 Frank「点开的时候，如果有整理版，直接显示整理版，不要有跳跃」：body 带 storedOnly 只查库，
+ * 没存回 404 不生成（前端先铺原帖再另起一次不带 storedOnly 的生成）。
+ *
+ * @param req 请求（body 是 { url, storedOnly? }）。
+ * @returns 整理版纯文本；掉线 204、缺参 400、只查库没存 404。
  */
 export async function jobsJdformatRoute(req: Request): Promise<Response> {
   if (friendLlmReady() === false) {
     return new Response(null, { status: NO_CONTENT })
   }
   let url = PARAM_NONE
+  let storedOnly = false
   try {
     const b = await req.json() as JdUrlBody
     if (typeof b.url === 'string') {
       url = b.url.trim()
     }
+    storedOnly = b.storedOnly === true
   } catch {
     url = PARAM_NONE
   }
@@ -375,6 +380,9 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
   }
   if (state.formatted != null) {
     return new Response(state.formatted, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
+  }
+  if (storedOnly) {
+    return new Response(null, { status: NOT_FOUND })
   }
   const description = await jobDescription({ db: db, applyUrl: url })
   if (description === '') {
@@ -407,8 +415,11 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
  * 「- 」子弹前缀剥下保管只翻正文。进程缓存 url+lang(全量翻齐才进;部分翻齐下次点重试补齐)。
  * 2026-09-14 Frank「加进行中表」:同岗同语种在途翻译单飞(CACHE.jdTransInflight),后到者等同一个 Promise。
  *
- * @param req 请求(body 是 { url, lang })。
- * @returns { ok, text, cached };状态码同 co-translate。
+ * 2026-09-16 Frank「点开之后，默认自动翻译」「先显示英文再加中文会跳」:body 带 storedOnly 只查缓存与库,没存回 404 不翻
+ * (前端把存好的译文与整理版一起铺;没存的先铺英文再另起一次不带 storedOnly 的翻译)。
+ *
+ * @param req 请求(body 是 { url, lang, storedOnly? })。
+ * @returns { ok, text, cached };状态码同 co-translate,只查库没存 404。
  */
 export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
@@ -416,6 +427,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   }
   let url = PARAM_NONE
   let lang = PARAM_NONE
+  let storedOnly = false
   try {
     const b = await req.json() as JdTransBody
     if (typeof b.url === 'string') {
@@ -424,6 +436,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
     if (typeof b.lang === 'string') {
       lang = b.lang
     }
+    storedOnly = b.storedOnly === true
   } catch {
     url = PARAM_NONE
   }
@@ -443,6 +456,9 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
       CACHE.jdTransBy.set(ck, cell)
       return Response.json({ ok: true, text: cell, cached: true })
     }
+  }
+  if (storedOnly) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   const fmt = await loadJdFormatted({ db: db, url: url })
   if (fmt == null) {

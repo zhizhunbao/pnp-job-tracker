@@ -4622,6 +4622,11 @@ export type JdUrlBody = {
    * 职位链接；不是字符串当没带。
    */
   url: string | null
+
+  /**
+   * 只查库不生成（2026-09-16 弹框开框首拍：库里有整理版就直接铺，没有回 404 让前端先铺原帖再另起生成）；不带当 false。
+   */
+  storedOnly: boolean | null
 }
 
 /**
@@ -4657,6 +4662,11 @@ export type JdTransBody = {
    * 目标语种；不在白名单 400。
    */
   lang: string | null
+
+  /**
+   * 只查缓存与库不翻（2026-09-16 弹框开框首拍：有存好的译文就与整理版一起铺，没有回 404 再另起翻译）；不带当 false。
+   */
+  storedOnly: boolean | null
 }
 
 /**
