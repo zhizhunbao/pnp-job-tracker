@@ -3748,12 +3748,18 @@ export function byEntryCountDesc(a: [string, number], b: [string, number]): numb
  * 曝光自 7-24 峰值 7,861 连跌三周到 1,102(−86%)。**空壳描述是目前最强的解释,也是最便宜的修法。**
  * 库里没有正文就退回原来那串拼装 —— 空着不行,缺了整条 JobPosting 作废。
  * 2026-08-28 换装批自 app/(frontend)/jobs/[id]/page.tsx 迁入(页面门里不许有函数体)。
+ * 2026-09-17 Frank「下架肯定要去掉啊」:**过期岗不出 JobPosting** —— Google 招聘标记政策原文「We don't allow expired job postings」,
+ * 违者可人工处罚并移除招聘信息;此前下架页(1.4 万,带 noindex)仍照出标记、validThrough 写着过去的日子,Search Console
+ * 招聘富结果有效 0。两种算过期:已下架(status = closed);在招但发帖方写的截止日已过(09-17 库里 740 条)。给空串,JsonLd 壳见空不渲。
  *
  * @param input 本岗与库里存着的正文。
- * @returns 可直接塞进 script 标签的 JSON 串(`<` 已转义,见下)。
+ * @returns 可直接塞进 script 标签的 JSON 串(`<` 已转义,见下);过期岗给空串。
  */
 export function jobPostingJsonOf(input: JobPostingIn): string {
   const job = input.job
+  if (isExpiredJob(job)) {
+    return ISO_NONE
+  }
   const ld: JsonObj = {}
   ld[LD_KEY_CONTEXT] = LD_CONTEXT
   ld[LD_KEY_TYPE] = LD_JOB_POSTING
@@ -3783,18 +3789,31 @@ function putPosted(x: LdPutIn): void {
 }
 
 /**
+ * 这一岗在 Google 眼里算不算过期:已下架,或发帖方写的截止日已经过了(按 UTC 日期比,截止日当天还算在期)。
+ *
+ * @param job 本岗。
+ * @returns 过期 = true。
+ */
+function isExpiredJob(job: JobRow): boolean {
+  if (job.status === STATUS_CLOSED_WORD) {
+    return true
+  }
+  if (job.validThrough === ISO_NONE) {
+    return false
+  }
+  return job.validThrough.slice(0, DATE_LEN) < new Date().toISOString().slice(0, DATE_LEN)
+}
+
+/**
  * 有效期:只有 closed 岗给真实下架时间(在招岗给一个日期等于替官方编截止日)。
  * 2026-09-16 补在招岗(Frank「有就写,没有就不写」):发帖方自己写了截止日的(第三方板帖)照搬 —— 那是来源事实,
  * 不是替官方编;Job Bank 帖来源没给,照旧不写。上面那句「在招岗不给」的原则就此收窄为「没有来源的不给」。
+ * 2026-09-17 过期岗整条 JobPosting 不出(见 jobPostingJsonOf),「closed 岗给下架时间」那一支随之撤。
  *
  * @param x 正在拼的对象与本岗。
  * @returns 无。
  */
 function putValidThrough(x: LdPutIn): void {
-  if (x.job.status === STATUS_CLOSED_WORD && x.job.closedAt !== ISO_NONE) {
-    x.ld.validThrough = x.job.closedAt.slice(0, DATE_LEN)
-    return
-  }
   if (x.job.validThrough !== ISO_NONE) {
     x.ld.validThrough = x.job.validThrough.slice(0, DATE_LEN)
   }

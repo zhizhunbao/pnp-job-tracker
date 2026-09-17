@@ -9,7 +9,7 @@
  * @author Frank
  * @time 2026-08-29 07:30:00
  */
-import { MIME_LD_JSON } from './constants'
+import { JSON_NONE, MIME_LD_JSON } from './constants'
 import type { JsonLdIn } from './types'
 
 /**
@@ -19,6 +19,9 @@ import type { JsonLdIn } from './types'
  * @returns 结构化数据脚本标签。
  */
 export function JsonLd({ json }: JsonLdIn) {
+  if (json === JSON_NONE) {
+    return null
+  }
   return (
     <script type={MIME_LD_JSON} dangerouslySetInnerHTML={{ __html: json }} />
   )
