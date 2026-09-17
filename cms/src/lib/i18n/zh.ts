@@ -656,8 +656,8 @@ export const jobsZh = {
   // 2026-09-14 Frank「改成 今日 AI 次数已用完, 请登录」:aiQuota 去「明天重置」,aiQuotaLogin 改「请登录」(只对匿名出)
   // 2026-09-16 Frank「去掉箭头」:看原文 / 看整理版是状态行里的切换文链,不再是下拉展开。
   // ⚠ 同日事故:这条注释曾写在本行行尾,把后面 act.aiWorking / act.aiFail 两个词条一起注释掉,页面直出键名;注释只许独占一行。
-  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.seeOrig': '看原文', 'act.seeFmt': '看整理版', 'act.aiWorking': 'AI 整理中…', 'act.aiFail': 'AI 整理没成功',
-  'act.f.role': '职位描述', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
+  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.aiWorking': 'AI 整理中…', 'act.aiFail': 'AI 整理没成功',
+  'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',
   'fact.aiSrc': '看来源 ▾', 'fact.aiSrcHide': '收起来源 ▴',   // #191 懒查来源可验证(对齐 JD「看原文」)
@@ -759,7 +759,7 @@ export const jobsZh = {
   'loc.dli': '可申毕业工签的院校', 'loc.dliN': '共 {n} 所', 'loc.dliPublic': '公立',
   'loc.aip': 'AIP 指定雇主', 'loc.aipN': '{n} 家', 'loc.dirLink': '雇主名录',
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
-  'cat.showZh': '显示中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
+  'cat.showZh': '显示中文对照', 'cat.pair': '中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
   'up.title': '升级 Pro 解锁',
   'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',

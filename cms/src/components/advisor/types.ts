@@ -1617,6 +1617,51 @@ export type ActHeadIn = {
    * 剩余免费次数;null = 还没拿到(第 5 轮 #16 额度可见化,JobBody 回传)。
    */
   freeLeft: number | null
+
+  /**
+   * 译名行右端的切换控件(jobs 桶 JdSwitches;2026-09-16 Frank「放到一行」)。
+   */
+  ctl: React.ReactNode
+}
+
+/**
+ * ActJd(职位描述弹框的内层:JD 身体状态机 + 浮层)的 props。
+ */
+export type ActJdIn = {
+  /**
+   * 这一岗。
+   */
+  job: AdvisorJob
+
+  /**
+   * 界面语言。
+   */
+  lang: AdvisorLang
+
+  /**
+   * 分层态。
+   */
+  plan: AdvisorPlan
+
+  /**
+   * 关闭回调。
+   */
+  onClose: () => void
+
+  /**
+   * 浮层机器(外层起,重译重挂时位置尺寸不丢)。
+   */
+  panel: FloatPanelOut
+
+  /**
+   * 标题译名;'' = 还没有。
+   */
+  sub: string
+
+  /**
+   * 外层弹框面板(剩余次数、重译代数与回调)。
+   */
+  a: ActModalPanel
 }
 
 /**

@@ -1804,8 +1804,54 @@ export type RelatedGroupIn = {
 
 /**
  * JobBody(JD 正文身体:详情页与弹框同一棵树)的 props。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」:切换控件上提到标题区,状态机由外面(详情页 / 弹框)起,递进来。
  */
 export type JobBodyIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 分层态。
+   */
+  plan: JobPlan
+
+  /**
+   * 在弹框里(投递栏不贴屏底)。
+   */
+  inModal?: boolean
+
+  /**
+   * JD 身体状态机(useJobBody 的产出;标题区的切换控件读同一份)。
+   */
+  d: JobBodyPanel
+}
+
+/**
+ * JdSwitches(标题区右端的中文对照开关与整理版 / 原文分段钮)的 props。
+ */
+export type JdSwitchesIn = {
+  /**
+   * JD 身体状态机。
+   */
+  d: JobBodyPanel
+
+  /**
+   * 界面语言(英文界面不出对照开关)。
+   */
+  lang: Lang
+}
+
+/**
+ * useJobBody(JD 身体状态机)的入参。
+ */
+export type JobBodyHookIn = {
   /**
    * 本岗。
    */
@@ -1987,11 +2033,6 @@ export type JdAiNoteIn = {
    * 未登录(额度用完时补一句登录提额说明)。
    */
   anon: boolean
-
-  /**
-   * 界面语言(非英文界面才出中文对照胶囊,2026-09-16)。
-   */
-  lang: Lang
 }
 
 /**
@@ -5105,11 +5146,6 @@ export type TransLabelIn = {
    * 对照的取数态。
    */
   status: TransStatus
-
-  /**
-   * 在屏没。
-   */
-  shown: boolean
 }
 
 /**
@@ -6230,21 +6266,6 @@ export type CopyLabelIn = {
    * 按过「复制邮箱」没。
    */
   copied: boolean
-}
-
-/**
- * `origToggleLabelOf` 的入参。
- */
-export type OrigToggleLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 正在看原帖没。
-   */
-  showOrig: boolean
 }
 
 /**

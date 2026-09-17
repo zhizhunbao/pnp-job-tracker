@@ -601,8 +601,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // J·K·M batch (2026-07-19)
   'col.empHours': 'Hours', 'col.whoCanApply': 'Who can apply', 'col.empTerm': 'Term', 'fact.unstated': 'Not stated in posting',
   // 2026-09-16 去箭头:看原文 / 看整理版是状态行里的切换文链。⚠ 这条注释曾写在行尾,把 act.aiWorking / act.aiFail 注释掉过;注释只许独占一行。
-  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.seeOrig': 'View original', 'act.seeFmt': 'View organized', 'act.aiWorking': 'AI organizing…', 'act.aiFail': 'AI organizing failed',
-  'act.f.role': 'Job description', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.loc': 'Work location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
+  'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.fmtTab': 'Organized', 'act.origTab': 'Original', 'act.aiWorking': 'AI organizing…', 'act.aiFail': 'AI organizing failed',
+  'act.f.role': 'Duties', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.loc': 'Work location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
   'fact.aiSrc': 'Sources ▾', 'fact.aiSrcHide': 'Hide sources ▴',
@@ -694,7 +694,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'loc.distJobs': 'District job market', 'loc.distEmployers': 'Top employers in this district', 'loc.nJobs': '{n} open',
   'loc.dli': 'PGWP-eligible schools', 'loc.dliN': '{n} schools', 'loc.dliPublic': 'Public',
   'loc.aip': 'AIP designated employers', 'loc.aipN': '{n}', 'loc.dirLink': 'Employer directory',
-  'cat.showZh': 'Show translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
+  'cat.showZh': 'Show translation', 'cat.pair': 'Translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",

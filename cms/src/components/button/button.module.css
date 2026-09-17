@@ -429,3 +429,235 @@ a.btn.secondary {
    */
   cursor: pointer;
 }
+
+/*
+ * seg 档:分段钮(挤成一组、当前那一段蓝底,2026-09-16 Frank 拍板职位正文「整理版 | 原文」切换时立档)。
+ * 值照页头语言切换 .langBtn 抄,字号内衬缩一档贴状态行;组外框见 .segGroup。
+ */
+.seg {
+  /*
+   * 无描边(组统一描)。
+   */
+  border: none;
+
+  /*
+   * 紧凑内衬。
+   */
+  padding: 2px 10px;
+
+  /*
+   * 字号贴状态行。
+   */
+  font-size: 12px;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+
+  /*
+   * 行高固定,组高不随字体浮动。
+   */
+  line-height: 18px;
+
+  /*
+   * 白底。
+   */
+  background: #ffffff;
+
+  /*
+   * 非当前灰。
+   */
+  color: #6b7280;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 当前那一段(Button 的 active 挂 .on)。
+ */
+.seg.on {
+  /*
+   * 当前蓝底。
+   */
+  background: #2563eb;
+
+  /*
+   * 白字。
+   */
+  color: #ffffff;
+}
+
+/*
+ * 分段钮组外框(SegGroup)。
+ */
+.segGroup {
+  /*
+   * 钮并排。
+   */
+  display: inline-flex;
+
+  /*
+   * 组描边。
+   */
+  border: 1px solid #e5e7eb;
+
+  /*
+   * 组圆角。
+   */
+  border-radius: 6px;
+
+  /*
+   * 钮方角被组圆角裁齐。
+   */
+  overflow: hidden;
+
+  /*
+   * 组不被挤窄。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 开关(Switch):字在左、轨道在右的二态钮(2026-09-16 Frank 拍板职位正文「中文对照」开关时立件)。
+ */
+.switch {
+  /*
+   * 字与轨道并排居中。
+   */
+  display: inline-flex;
+  align-items: center;
+
+  /*
+   * 字与轨道间距。
+   */
+  gap: 6px;
+
+  /*
+   * 无底无边。
+   */
+  border: none;
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 字号贴状态行。
+   */
+  font-size: 12px;
+
+  /*
+   * 正文灰。
+   */
+  color: #374151;
+
+  /*
+   * 钮文字不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 开关禁用(在途):降透明。
+ */
+.switch:disabled {
+  /*
+   * 降透明。
+   */
+  opacity: 0.6;
+}
+
+/*
+ * 开关轨道(关:灰)。
+ */
+.track {
+  /*
+   * 为圆钮定位。
+   */
+  position: relative;
+
+  /*
+   * 块级才有宽高。
+   */
+  display: inline-block;
+
+  /*
+   * 轨道尺寸。
+   */
+  width: 28px;
+  height: 16px;
+
+  /*
+   * 胶囊圆角。
+   */
+  border-radius: 8px;
+
+  /*
+   * 关态灰。
+   */
+  background: #d1d5db;
+
+  /*
+   * 开关切换过渡。
+   */
+  transition: background 0.15s;
+}
+
+/*
+ * 开关轨道开态:品牌蓝。
+ */
+.track.trackOn {
+  /*
+   * 开态蓝。
+   */
+  background: #2563eb;
+}
+
+/*
+ * 开关圆钮(关:靠左)。
+ */
+.knob {
+  /*
+   * 贴轨道内定位。
+   */
+  position: absolute;
+  top: 2px;
+  left: 2px;
+
+  /*
+   * 圆钮尺寸。
+   */
+  width: 12px;
+  height: 12px;
+
+  /*
+   * 正圆。
+   */
+  border-radius: 6px;
+
+  /*
+   * 白钮。
+   */
+  background: #ffffff;
+
+  /*
+   * 左右滑动过渡。
+   */
+  transition: left 0.15s;
+}
+
+/*
+ * 开态圆钮靠右。
+ */
+.trackOn .knob {
+  /*
+   * 右位(28 - 12 - 2)。
+   */
+  left: 14px;
+}

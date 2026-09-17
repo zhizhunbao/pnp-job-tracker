@@ -1509,13 +1509,6 @@
 }
 
 /*
- * 翻译在途。
- */
-.pillBusy {
-  opacity: 0.6;
-}
-
-/*
  * 「打开完整页」那颗(它是链接不是钮)。
  * 2026-08-29 Frank 落锤:几何照**钦定真值** `verdict.module.css` 的 `.tvPill`
  * (职位板胶囊统一规格,08-10「所有胶囊的风格可以改成一样的吗」就是照它对齐的)——
@@ -1588,9 +1581,19 @@
   margin-bottom: 6px;
 }
 
+/*
+ * 标题区右端的切换控件组(JdSwitches:对照开关在左、分段钮在右;margin-left auto 让它独自在行时也贴右)。
+ */
+.aiCtl {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 
 /*
- * 状态行里的文字钮(看原文 / 重试)。
+ * 状态行里的文字钮(重试)。
  */
 .aiBtn {
   border: none;
@@ -1831,7 +1834,22 @@
 .titleAlias {
   font-size: 13px;
   color: #9ca3af;
-  margin-bottom: 8px;
+}
+
+/*
+ * 详情页标题译名行:左译名、右切换控件(JdSwitches),下接分隔线再进正文
+ * (2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「工作内容和上面的整体就没有分割了」「可以」;与弹框页眉同形)。
+ * 译名原自带的 margin-bottom 8px 挪到本行。
+ */
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 /*

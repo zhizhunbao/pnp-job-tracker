@@ -554,9 +554,14 @@
 
 /*
  * 标题栏紧凑档(职位描述弹框)。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「工作内容和上面的整体就没有分割了」「可以」:
+ * 译名行(.subRow)折到标题与窗口钮下方占满整宽,切换控件右端与正文右缘对齐;标题栏底下一条分隔线再进正文。
  */
 .panelHeadTight {
-  padding: 16px 20px 8px;
+  padding: 16px 20px 10px;
+  flex-wrap: wrap;
+  row-gap: 2px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 /*
@@ -571,6 +576,28 @@
  */
 .headL {
   min-width: 0;
+}
+
+/*
+ * 职位描述弹框的左块:标题栏会折行,基准宽归零,免得长标题把窗口钮挤到下一行。
+ */
+.headJd {
+  flex: 1 1 0;
+}
+
+/*
+ * 职位描述弹框的译名行:左译名、右切换控件(jobs 桶 JdSwitches);排在窗口钮之后、独占一整行。
+ */
+.subRow {
+  order: 1;
+  flex-basis: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  cursor: default;
 }
 
 /*
@@ -673,7 +700,7 @@
  * 投递栏自带。Frank 走查#22:滚动容器改纵向弹性列,让投递栏在内容短时也贴底。
  */
 .panelBodyJd {
-  padding: 4px 20px 0;
+  padding: 14px 20px 0;
   font-size: 14px;
   line-height: 1.7;
   color: #374151;

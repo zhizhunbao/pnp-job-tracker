@@ -17,6 +17,8 @@
  * 由页面门取 checkedAt 递进来。
  * 2026-09-14 Frank「返回按钮放到框的右上角」:钮从 Shell back 槽(轨右上角)收回白卡右上角
  * (同一颗 BackButton,只换落点;`.cardBack` 绝对定位,H1 右侧重新留位)。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:JD 身体状态机在本件起(useJobBody),
+ * 译名与切换控件(JdSwitches)同一行,下接分隔线;JobBody 读同一份 d。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -26,7 +28,8 @@ import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
 import { showRelatedOf } from './functions'
-import { useJobDetail } from './hooks'
+import { useJobBody, useJobDetail } from './hooks'
+import { JdSwitches } from './jdswitches'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
 import { JobRelated } from './jobrelated'
@@ -41,6 +44,7 @@ import css from './jobs.module.css'
  */
 export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }: JobIn) {
   const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted })
+  const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted })
   return (
     <Shell top={DETAIL_SHELL_TOP}>
       <div className={cssOf(css.detail)}>
@@ -51,8 +55,11 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             <BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />
           </div>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
-          {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
-          <JobBody job={job} lang={d.lang} plan={plan} jdText={jdText} jdFormatted={jdFormatted} />
+          <div className={cssOf(css.titleRow)}>
+            {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
+            <JdSwitches d={body} lang={d.lang} />
+          </div>
+          <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
         {showRelatedOf({ status: job.status, related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}

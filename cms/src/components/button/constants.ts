@@ -6,7 +6,7 @@
  */
 
 /**
- * 六个**行动钮**变体(有颜色语义、吃基座与三档尺寸)。其余十二个是控件钮 ——
+ * 六个**行动钮**变体(有颜色语义、吃基座与三档尺寸)。其余十三个是控件钮 ——
  * 形状由所在控件定,不吃基座(判据见 types 的 ButtonKind 注释)。
  */
 export const ACTION_KINDS = ['primary', 'pro', 'secondary', 'ai', 'ghost', 'danger', 'mini']
@@ -36,3 +36,18 @@ export const KIND_BACK = 'ghost'
  * 也拿不到 Referer 头(不把用户在本站看的是哪一页泄给外站)。
  */
 export const REL_NOREFERRER = 'noreferrer'
+
+/**
+ * 开关件走的变体:switch 控件档(字 + 轨道,形由 .switch 定)。
+ */
+export const KIND_SWITCH = 'switch'
+
+/**
+ * 分段钮组外框的 ARIA 角色(读屏把组内几颗钮当一组念)。
+ */
+export const GROUP_ROLE = 'group'
+
+/**
+ * 不在表单里提交的钮型(开关件放进表单也不许误提交)。
+ */
+export const BTN_TYPE = 'button'

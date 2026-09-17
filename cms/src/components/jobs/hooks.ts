@@ -50,7 +50,7 @@ import type {
   BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
   ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn, IntentProfileIn,
-  JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyIn,
+  JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
   MatchGateHookIn, MatchGatePanel, MatchProfileFact, MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
@@ -1657,7 +1657,7 @@ async function saveQuizAnswers(): Promise<void> {
  * @param x 本岗、界面语言、分层态与额度回传。
  * @returns JD 身体面板。
  */
-export function useJobBody(x: JobBodyIn): JobBodyPanel {
+export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
   const t = makeT(x.lang)
   const jd = useJdText({ job: x.job, onFreeLeft: x.onFreeLeft, jdText: x.jdText })
   const fmt = useJdFormat({ job: x.job, jdFormatted: x.jdFormatted })

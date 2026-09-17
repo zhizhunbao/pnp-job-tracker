@@ -77,12 +77,12 @@ import type {
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn,
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
-  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OrigToggleLabelIn,
+  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
-  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
+  ThWidthIn, TransLabelIn, TransShownIn, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3530,10 +3530,12 @@ function payFallbackFor(x: PayFallbackForIn): string {
 }
 
 /**
- * 中文对照钮的钮面文案:在途 / 失败 / 收起 / 展开。
+ * 中文对照开关的字:在途 / 失败 / 平时「中文对照」。
+ * 2026-09-16 Frank 效果图点头「可以,就这样做」:钮改开关,开 / 关由轨道表达,字不再随开关说「显示 / 收起」;
+ * 原「收起 / 展开」两支(cat.hideZh / cat.showZh)撤。在途加倍类 transBusyClsOf 随之撤(开关件禁用自带降透明)。
  *
- * @param x 取词函数、取数态与在屏没。
- * @returns 钮面文案。
+ * @param x 取词函数与取数态。
+ * @returns 开关的字。
  */
 export function transLabelOf(x: TransLabelIn): string {
   if (x.status === TRANS_LOADING) {
@@ -3542,23 +3544,7 @@ export function transLabelOf(x: TransLabelIn): string {
   if (x.status === TRANS_ERROR) {
     return x.t('cat.transErr')
   }
-  if (x.shown) {
-    return x.t('cat.hideZh')
-  }
-  return x.t('cat.showZh')
-}
-
-/**
- * 中文对照钮在途时的加倍类。
- *
- * @param status 取数态。
- * @returns 类名;不在途给空串。
- */
-export function transBusyClsOf(status: TransStatus): string {
-  if (status === TRANS_LOADING) {
-    return cssOf(css.pillBusy)
-  }
-  return TEXT_NONE
+  return x.t('cat.pair')
 }
 
 /**
@@ -3775,19 +3761,6 @@ export function copyLabelOf(x: CopyLabelIn): string {
   return x.t('apply.copyMail')
 }
 
-/**
- * 正文区右上角切换钮的钮面:在看原帖给「看整理版」,在看整理版给「看原文」
- * (2026-09-16 Frank「放正文右上角,去掉箭头」)。
- *
- * @param x 取词函数与在不在看原帖。
- * @returns 钮面文案。
- */
-export function origToggleLabelOf(x: OrigToggleLabelIn): string {
-  if (x.showOrig) {
-    return x.t('act.seeFmt')
-  }
-  return x.t('act.seeOrig')
-}
 
 /**
  * 投递栏的类:整页窄屏那一档改 fixed 贴屏底。

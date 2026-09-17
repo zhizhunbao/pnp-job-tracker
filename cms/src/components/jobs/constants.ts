@@ -3359,3 +3359,8 @@ export const FIRST_SCREEN_ROWS = 50
  * 管理员角色值(与 Users 集合 role 字段同值)。
  */
 export const ROLE_ADMIN = 'admin'
+
+/**
+ * 分段钮变体(整理版 | 原文 切换;2026-09-16 Frank 效果图点头立用)。
+ */
+export const BTN_SEG = 'seg'

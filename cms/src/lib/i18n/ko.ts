@@ -598,8 +598,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // J·K·M batch (2026-07-19)
   'col.empHours': '근무 형태', 'col.whoCanApply': '지원 자격', 'col.empTerm': '고용 기간', 'fact.unstated': '원문에 명시 없음',
   // 2026-09-16 去箭头:看原文 / 看整理版是状态行里的切换文链。⚠ 这条注释曾写在行尾,把 act.aiWorking / act.aiFail 注释掉过;注释只许独占一行。
-  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.seeOrig': '원문 보기', 'act.seeFmt': '정리본 보기', 'act.aiWorking': 'AI 정리 중…', 'act.aiFail': 'AI 정리 실패',
-  'act.f.role': '직무 설명', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
+  'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.fmtTab': '정리본', 'act.origTab': '원문', 'act.aiWorking': 'AI 정리 중…', 'act.aiFail': 'AI 정리 실패',
+  'act.f.role': '담당 업무', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
   'fact.aiSrc': '출처 보기 ▾', 'fact.aiSrcHide': '출처 접기 ▴',
@@ -691,7 +691,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'loc.distJobs': '해당 지역 채용 시장', 'loc.distEmployers': '지역 주요 고용주', 'loc.nJobs': '{n}건 채용 중',
   'loc.dli': '졸업 후 취업비자(PGWP) 가능 학교', 'loc.dliN': '총 {n}곳', 'loc.dliPublic': '공립',
   'loc.aip': 'AIP 지정 고용주', 'loc.aipN': '{n}곳', 'loc.dirLink': '고용주 디렉토리',
-  'cat.showZh': '한국어 대조 보기', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
+  'cat.showZh': '한국어 대조 보기', 'cat.pair': '한국어 대조', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',
   'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',

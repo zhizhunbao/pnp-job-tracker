@@ -15,13 +15,14 @@
  * 2026-09-14 Frank「没加载完不要显示前往投递」:投递栏只在正文取到且整理 / 翻译都不在途时出。
  * 2026-09-16 改判(Frank「可以先显示原帖正文」「可以,先显示英文整理版」):整理 / 翻译在途不再出转圈,正文取到就铺内容,
  * 投递栏随之只等「正文取到」—— 上一条「整理 / 翻译都不在途」的条件作废(jdBusyOf 撤),原文保留。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:中文对照开关与整理版 / 原文分段钮上提到标题区(JdSwitches),
+ * 状态机 useJobBody 改由外面(详情页 Job / 弹框 ActJd)起、经 d 递进来,两处读同一份。
  * 2026-09-14 Frank「加」:管理员在标题下有一颗「重译」胶囊 —— 清掉这一岗的译文版本后整页刷新,开框重翻。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
-import { useJobBody } from './hooks'
 import { ApplyBar } from './applybar'
 import { JdAutoTrans } from './jdautotrans'
 import { JdClosed } from './jdclosed'
@@ -31,11 +32,10 @@ import type { JobBodyIn } from './types'
 /**
  * 渲染 JD 身体。
  *
- * @param props 本岗、界面语言、分层态、在不在弹框里与额度回传。
+ * @param props 本岗、界面语言、分层态、在不在弹框里与 JD 身体状态机。
  * @returns 整副身体。
  */
-export function JobBody({ job, lang, plan, inModal = false, onFreeLeft, jdText, jdFormatted }: JobBodyIn) {
-  const d = useJobBody({ job, lang, plan, inModal, onFreeLeft, jdText, jdFormatted })
+export function JobBody({ job, lang, plan, inModal = false, d }: JobBodyIn) {
   return (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}

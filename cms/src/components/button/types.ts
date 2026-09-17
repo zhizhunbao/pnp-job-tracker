@@ -15,18 +15,18 @@
  * primary 普通行动蓝 / pro 付费琥珀 / secondary 白底描边 / ai AI 功能靛蓝 /
  * ghost 弱操作幽灵 / danger 危险红。
  *
- * ── 十二个**控件钮**(形状由所在控件定,颜色语义不适用)──
+ * ── 十三个**控件钮**(形状由所在控件定,颜色语义不适用)──
  * icon 弹框窗口钮(灰底方角 30) / iconGhost 悬浮清除钮(透明底 hover 才显) /
  * box 描边方钮(汉堡/抽屉关闭,44 触控靶) / step 翻页箭头(描边小方) /
  * tab 选项卡页签(下划线态) / drop 下拉触发器(纯文字带 caret) /
- * seg 分段钮(语言切换那种挤成一组的) / menu 菜单条目(通栏左对齐) /
+ * seg 分段钮(语言切换那种挤成一组的) / switch 开关(字 + 轨道二态,2026-09-16 立) / menu 菜单条目(通栏左对齐) /
  * groupRow 抽屉分组行(通栏两端排开 44 高) / dot 轮播圆点(6px 透明热区) /
  * linkText 文字钮(蓝字无底,如「返回登录」) / linkDim 弱文字钮(灰字,如「忘记密码」)。
  */
 export type ButtonKind =
   | 'primary' | 'pro' | 'secondary' | 'ai' | 'ghost' | 'danger'
   | 'icon' | 'iconGhost' | 'box' | 'step' | 'tab' | 'drop'
-  | 'seg' | 'menu' | 'groupRow' | 'dot' | 'linkText' | 'linkDim'
+  | 'seg' | 'switch' | 'menu' | 'groupRow' | 'dot' | 'linkText' | 'linkDim'
   | 'mini'
 
 /**
@@ -273,6 +273,41 @@ export type LinkButtonIn = {
 
   /**
    * 链接内容。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * Switch(开关件)的 props。
+ */
+export type SwitchIn = {
+  /**
+   * 开没开。
+   */
+  on: boolean
+
+  /**
+   * 轨道左边的字(过 i18n 的词)。
+   */
+  label: string
+
+  /**
+   * 禁用(在途时不许再点)。
+   */
+  disabled: boolean
+
+  /**
+   * 点击回调(翻转由调用方做)。
+   */
+  onClick: () => void
+}
+
+/**
+ * SegGroup(分段钮组外框)的 props。
+ */
+export type SegGroupIn = {
+  /**
+   * 组内几颗 kind="seg" 的 Button。
    */
   children: React.ReactNode
 }

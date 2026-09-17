@@ -43,6 +43,19 @@ export function btnClsOf(x: BtnClsIn): string {
 }
 
 /**
+ * 开关轨道的类:开态加 trackOn(轨道变蓝、圆钮右移)。
+ *
+ * @param on 开没开。
+ * @returns 拼好的 className。
+ */
+export function trackClsOf(on: boolean): string {
+  if (on) {
+    return cssOf(css.track) + CLS_SEP + cssOf(css.trackOn)
+  }
+  return cssOf(css.track)
+}
+
+/**
  * 是不是行动钮(六个带颜色语义的);其余是控件钮,形状由自己那一档定。
  *
  * @param kind 变体。
