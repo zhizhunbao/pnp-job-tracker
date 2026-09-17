@@ -1842,6 +1842,10 @@
  * 译名原自带的 margin-bottom 8px 挪到本行。
  */
 .titleRow {
+  /*
+   * 与上方标题 / 右上角返回钮拉开(2026-09-17 Frank「上下按钮间距 太密了」:没有译名时控件行紧贴返回钮)。
+   */
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
