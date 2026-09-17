@@ -85,6 +85,7 @@ from company.constants import (
     PRINT_BRIEF_DONE_TPL, PRINT_BRIEF_ROW_TPL, PRINT_BRIEF_TARGETS_TPL, P_MODEL, P_NUM_PREDICT, P_OPTIONS,
     NEWLINE, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, STRIP_TAGS, THINK_RE, URL_TAIL_SLASH,
     BRIEF_KO_PROMPT_TPL, BRIEF_KO_TOKENS, NOTE_KO_MARKERS, PRINT_BRIEF_KO_TPL,
+    KO_SCRIPT_RE, NOTE_KO_SCRIPT, NOTE_ZH_SCRIPT, PRINT_BRIEF_ZH_TPL, ZH_SCRIPT_RE,
     DDG_BACKOFF_S, DDG_FAIL_STOP, DDG_NO_RESULTS_MARK, FIND_FLUSH_N, MARK_COLON_RE, MARK_SPACE, PATH_SEP, PRINT_SEARCH_STOP_TPL,
     PRINT_FIND_ROW_TPL, K_LOCALITY, K_PROVINCE, MONTH_LEN, PLACES_MASK_ENT, PLACES_MASK_PRO,
     PLACES_MONTH_FREE_ENT, PLACES_MONTH_FREE_PRO, PLACES_MONTH_RESERVE, PRINT_PLACES_BUDGET_TPL, TIER_ENT, TIER_PRO,
@@ -103,7 +104,7 @@ from company.scheme import (
     TagLike, ToPlaceIn, WikiProbe, WpEnvelope,
     AboutFetchIn, AboutLinkIn, AboutRecord, AboutTarget, BriefOneIn, BriefRecord, SearchLoopIn, SearchOut,
     JobCounts, LlmCallIn, LlmCfg, MonthUsage, PageIn, PageOut, PageTextIn, PickAboutIn, PickBriefIn,
-    BriefKoIn, PickKoIn,
+    BriefKoIn, BriefZhIn, PickKoIn,
     AboutTextIn, AboutTextOut, CseCfg, CseEnvelope, CseFindIn, FindSiteIn, SiteOfLinksIn,
     EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
 )
@@ -1725,6 +1726,12 @@ def build_company_briefs() -> None:
             say(PRINT_BRIEF_ROW_TPL.format(status=rec.status, name=a.name, what=what_line_of(rec)))
             if (ok + fail) % FIND_FLUSH_N == 0:
                 write_brief_cache(cache)
+        zh_todo = pick_zh_todo(PickKoIn(cache=cache, limit=BRIEF_LIMIT))
+        say(PRINT_BRIEF_ZH_TPL.format(n=len(zh_todo)))
+        for i, rec in enumerate(zh_todo):
+            fill_brief_zh(BriefZhIn(client=cast(HttpClientLike, client), cfg=cfg, rec=rec))
+            if (i + 1) % FIND_FLUSH_N == 0:
+                write_brief_cache(cache)
         ko_todo = pick_ko_todo(PickKoIn(cache=cache, limit=BRIEF_LIMIT))
         say(PRINT_BRIEF_KO_TPL.format(n=len(ko_todo)))
         for i, rec in enumerate(ko_todo):
@@ -1801,17 +1808,38 @@ def brief_one(x: BriefOneIn) -> BriefRecord:
         rec.note = type(e).__name__
         return rec
     zh = MARK_COLON_RE.sub(MARK_SPACE, zh)
-    if has_brief_marks(zh):
-        rec.brief_zh = zh
-    else:
+    if not has_brief_marks(zh):
         rec.note = NOTE_ZH_MARKERS
+    elif not ZH_SCRIPT_RE.search(zh):
+        rec.note = NOTE_ZH_SCRIPT
+    else:
+        rec.brief_zh = zh
     rec.status = ST_OK
     fill_brief_ko(BriefKoIn(client=x.client, cfg=x.cfg, rec=rec))
     return rec
 
 
+def fill_brief_zh(x: BriefZhIn) -> None:
+    """给已有英文五节的记录补中文(原地写 brief_zh;先清掉旧值 —— 旧值可能是没汉字的坏译文;失败只记 note,等下轮再补)。"""
+    x.rec.brief_zh = ""
+    try:
+        zh = call_company_llm(LlmCallIn(client=x.client, cfg=x.cfg, tokens=BRIEF_ZH_TOKENS,
+                                        prompt=BRIEF_ZH_PROMPT_TPL.format(text=x.rec.brief)))
+    except Exception as e:  # noqa: BLE001
+        x.rec.note = type(e).__name__
+        return
+    zh = MARK_COLON_RE.sub(MARK_SPACE, zh)
+    if not has_brief_marks(zh):
+        x.rec.note = NOTE_ZH_MARKERS
+    elif not ZH_SCRIPT_RE.search(zh):
+        x.rec.note = NOTE_ZH_SCRIPT
+    else:
+        x.rec.brief_zh = zh
+
+
 def fill_brief_ko(x: BriefKoIn) -> None:
-    """给已有英文五节的记录补韩文(原地写 brief_ko;失败只记 note 不抛,等下轮再补)。"""
+    """给已有英文五节的记录补韩文(原地写 brief_ko;先清掉旧值 —— 旧值可能是没韩文字的坏译文;失败只记 note 不抛,等下轮再补)。"""
+    x.rec.brief_ko = ""
     try:
         ko = call_company_llm(LlmCallIn(client=x.client, cfg=x.cfg, tokens=BRIEF_KO_TOKENS,
                                         prompt=BRIEF_KO_PROMPT_TPL.format(text=x.rec.brief)))
@@ -1819,19 +1847,32 @@ def fill_brief_ko(x: BriefKoIn) -> None:
         x.rec.note = type(e).__name__
         return
     ko = MARK_COLON_RE.sub(MARK_SPACE, ko)
-    if has_brief_marks(ko):
-        x.rec.brief_ko = ko
-    else:
+    if not has_brief_marks(ko):
         x.rec.note = NOTE_KO_MARKERS
+    elif not KO_SCRIPT_RE.search(ko):
+        x.rec.note = NOTE_KO_SCRIPT
+    else:
+        x.rec.brief_ko = ko
 
 
 def pick_ko_todo(x: PickKoIn) -> list[BriefRecord]:
-    """已做成英文但缺韩文的记录(韩文 2026-09-05 才加,存量要补),凑够 limit 即止。"""
+    """已做成英文但缺韩文的记录(韩文 2026-09-05 才加,存量要补;2026-09-17 韩文里没有韩文字的也算缺),凑够 limit 即止。"""
     todo: list[BriefRecord] = []
     for rec in x.cache.values():
         if len(todo) >= x.limit:
             break
-        if rec.status == ST_OK and rec.brief != "" and rec.brief_ko == "":
+        if rec.status == ST_OK and rec.brief != "" and not KO_SCRIPT_RE.search(rec.brief_ko):
+            todo.append(rec)
+    return todo
+
+
+def pick_zh_todo(x: PickKoIn) -> list[BriefRecord]:
+    """已做成英文但缺中文、或中文里一个汉字都没有的记录(2026-09-17 坏译文补翻;入参与 pick_ko_todo 同形),凑够 limit 即止。"""
+    todo: list[BriefRecord] = []
+    for rec in x.cache.values():
+        if len(todo) >= x.limit:
+            break
+        if rec.status == ST_OK and rec.brief != "" and not ZH_SCRIPT_RE.search(rec.brief_zh):
             todo.append(rec)
     return todo
 

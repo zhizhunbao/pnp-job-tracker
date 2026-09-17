@@ -622,13 +622,10 @@ export const COOKIE_SEP = '; '
 
 /**
  * 「省筛选用户亲手动过」的 cookie 名(2026-09-14 Frank「基于用户所在区域优先显示」→「可以」):动过就不再按时区预选。
+ * 2026-09-17 改判(Frank「改:选了具体省才记住」):值从固定标记 '1' 改成**用户选的省全名**(URL 编码),下次直接用它;
+ * 改回「全部省」即删这一格。读到旧值 '1' 当没选,回到按时区预选(PROV_PICK_VALUE 常量随之撤)。
  */
 export const PROV_PICK_COOKIE = 'jobsProvPick1'
-
-/**
- * 那枚 cookie 的值(只要在就算)。
- */
-export const PROV_PICK_VALUE = '1'
 
 /**
  * 那枚 cookie 的时效(一年,与列集 cookie 同)。

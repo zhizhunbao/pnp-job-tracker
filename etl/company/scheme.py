@@ -1369,6 +1369,20 @@ class BriefOneIn:
 
 
 @dataclass
+class BriefZhIn:
+    """fill_brief_zh 的入参(记录原地写;2026-09-17 中文补翻)。"""
+
+    client: HttpClientLike
+    """复用的 httpx 客户端。"""
+
+    cfg: LlmCfg
+    """模型接线。"""
+
+    rec: BriefRecord
+    """已有英文五节的记录。"""
+
+
+@dataclass
 class BriefKoIn:
     """fill_brief_ko 的入参(记录原地写)。"""
 

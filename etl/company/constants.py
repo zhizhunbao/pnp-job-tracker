@@ -1164,6 +1164,22 @@ NOTE_KO_MARKERS = "ko markers missing"
 PRINT_BRIEF_KO_TPL = "补韩文 {n} 家(已有英文、缺韩文)"
 """brief 步韩文补翻报数。"""
 
+PRINT_BRIEF_ZH_TPL = "补中文 {n} 家(已有英文、缺中文或中文里没有汉字)"
+"""brief 步中文补翻报数(2026-09-17 加)。"""
+
+ZH_SCRIPT_RE = re.compile(r"[\u4e00-\u9fff]")
+"""译文里真有汉字(2026-09-17 Frank「清库 + 加检查」:模型时而把英文 / 法文原文原样交回,节标记齐全就被当成中文译文收了 ——
+生产库 55 家 ai_brief_zh 一个汉字都没有,Cargill 实撞)。"""
+
+KO_SCRIPT_RE = re.compile(r"[\uac00-\ud7a3]")
+"""译文里真有韩文字(同上,生产库 80 家 ai_brief_ko 没有韩文字)。"""
+
+NOTE_ZH_SCRIPT = "zh has no cjk"
+"""中文译文没有汉字(模型原样交回原文):中文留空等补翻。"""
+
+NOTE_KO_SCRIPT = "ko has no hangul"
+"""韩文译文没有韩文字:韩文留空等补翻。"""
+
 PRINT_BRIEF_TARGETS_TPL = "有正文 {about} 家 · 已做 {cache} · 本轮做 {todo}(limit {limit},model {model})"
 """brief 步报候选与本轮量。"""
 

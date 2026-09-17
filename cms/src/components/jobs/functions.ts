@@ -49,7 +49,7 @@ import {
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
   MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY,
   PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
-  PROV_PICK_MAX_AGE_S, PROV_PICK_VALUE, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
+  PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
   P_SORT, P_VIEW, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
   SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
@@ -4484,13 +4484,18 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * @returns 无。
  * 2026-09-14 晚 Frank「全部市 好像和省没联动上」:省槽存的是全名(市联动靠 provCodeOf 全名→码),
  * 这里先前直接写了两位码,壳上显示对、市却退成全国 —— 改成经 PROV_NAMES 换全名再落格。
+ * 2026-09-17 改判(Frank 实撞「现在默认不是根据用户的时区 选省份了」→「改:选了具体省才记住」):原规矩「亲手动过一次
+ * (含改回全部省)一年内不再预选」作废 —— 选了具体省就记住那个省、下次直接用它(比按时区猜准);改回「全部省」不记,
+ * 下次照常按时区预选。
  */
 export function applyHomeProvince(x: HomeProvinceIn): void {
   const given = x.initial[FK.prov]
   if (typeof given === 'string' && given !== TEXT_NONE) {
     return
   }
-  if (provPicked()) {
+  const picked = pickedProvOf()
+  if (picked !== TEXT_NONE) {
+    setterOf({ fState: x.fState, k: FK.prov })(picked)
     return
   }
   const prov = homeProvinceOf()
@@ -4529,31 +4534,41 @@ export function homeProvinceOf(): string {
 }
 
 /**
- * 用户亲手动过省筛选没(cookie 在就算,包括改回「全部省」)。
+ * 用户上次亲手选的具体省(cookie 里记的省全名)。2026-09-17 改判前的旧值(只记「动过」的标记)与不认识的值一律当没选,
+ * 回到按时区预选。
  *
- * @returns 动过 = true。
+ * @returns 省全名;'' = 没记。
  */
-function provPicked(): boolean {
+function pickedProvOf(): string {
   try {
     for (const part of document.cookie.split(COOKIE_SEP)) {
       if (part.startsWith(PROV_PICK_COOKIE + COOKIE_EQ)) {
-        return true
+        const v = decodeURIComponent(part.slice(PROV_PICK_COOKIE.length + COOKIE_EQ.length))
+        if (Object.values(PROV_NAMES).includes(v)) {
+          return v
+        }
+        return TEXT_NONE
       }
     }
   } catch {
-    return false
+    return TEXT_NONE
   }
-  return false
+  return TEXT_NONE
 }
 
 /**
- * 记下「省筛选用户亲手动过」(一年),之后不再按时区预选。
+ * 记下用户亲手选的省(一年);改回「全部省」= 把这一格删掉(时效给 0),下次照常按时区预选。
  *
+ * @param v 省全名;'' = 全部省。
  * @returns 无。
  */
-function markProvPicked(): void {
+function markProvPicked(v: string): void {
+  let maxAge = PROV_PICK_MAX_AGE_S
+  if (v === TEXT_NONE) {
+    maxAge = 0
+  }
   try {
-    document.cookie = cookieStringOf({ name: PROV_PICK_COOKIE, value: PROV_PICK_VALUE, maxAge: PROV_PICK_MAX_AGE_S })
+    document.cookie = cookieStringOf({ name: PROV_PICK_COOKIE, value: encodeURIComponent(v), maxAge })
   } catch {
     return
   }
@@ -4567,7 +4582,7 @@ function markProvPicked(): void {
  */
 export function makeProvChange(fState: FilterState): TextFn {
   return function onProv(v: string): void {
-    markProvPicked()
+    markProvPicked(v)
     setterOf({ fState, k: FK.prov })(v)
     setterOf({ fState, k: FK.city })(TEXT_NONE)
     setterOf({ fState, k: FK.district })(TEXT_NONE)

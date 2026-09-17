@@ -834,6 +834,13 @@ K_BRIEF_ZH = "brief_zh"
 K_BRIEF_KO = "brief_ko"
 """简介记录里的韩文五节键(2026-09-05 加)。"""
 
+BRIEF_ZH_SCRIPT_RE = re.compile(r"[\u4e00-\u9fff]")
+"""中文简介里真有汉字才进 aiBriefZh 列(2026-09-17:company 域存量里有模型原样交回英文 / 法文的坏译文,
+补翻完之前别再灌进库;company 域自己的同款尺子在它的 constants,域间不互取常量)。"""
+
+BRIEF_KO_SCRIPT_RE = re.compile(r"[\uac00-\ud7a3]")
+"""韩文简介里真有韩文字才进 aiBriefKo 列(同上)。"""
+
 K_AI_BRIEF_KO = "aiBriefKo"
 """companies 列:简介韩文。"""
 
