@@ -6,6 +6,8 @@
  * 的 bare 形态。
  * 2026-08-28 拆域批自 jobs/Company.tsx 的三岔渲染重写成件。
  * 2026-09-14 Frank「这个也没加翻译」:官网抓来的简介也出中 / 韩对照(懒翻,useCompanyDescTrans)。
+ * 2026-09-17 Frank「这个 公司的 弹框 也 默认关闭」:官网简介的对照行也跟页眉开关走 —— 开关关着不翻不出
+ *(原先它不看开关、中 / 韩界面一开框就翻就出,开关默认关后成了唯一漏网的中文行)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -28,7 +30,7 @@ import css from './companies.module.css'
 export function CompanyIntro({
   company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy,
 }: CompanyIntroIn) {
-  const descZh = useCompanyDescTrans({ name: company.name, lang, has: hasDescOf({ company }) })
+  const descZh = useCompanyDescTrans({ name: company.name, lang, has: showTrans === true && hasDescOf({ company }) })
   if (hasDescOf({ company })) {
     return (
       <div className={css.descWrap}>

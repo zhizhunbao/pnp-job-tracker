@@ -189,6 +189,7 @@ export function useTitleMap(x: TitleMapHookIn): Record<string, string> {
 
 /**
  * 官网简介的对照(2026-09-14):中 / 韩界面且有官网简介才打一次接口。
+ * 2026-09-17:has 由调用方并入页眉对照开关 —— 开关关着不打接口(Frank「这个 公司的 弹框 也 默认关闭」)。
  *
  * @param x 公司名、界面语言与有没有官网简介。
  * @returns 译文;'' = 还没有。

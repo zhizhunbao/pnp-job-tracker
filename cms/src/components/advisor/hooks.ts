@@ -394,13 +394,15 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  * 对照态,当天推翻)。
  * 2026-09-16 Frank「公司的也对照改一下」「默认自动翻译」:showZh 中 / 韩界面默认开,同时也管公司弹框正文的对照行;
  * 开关本体在页眉译名行(AdvisorModal 递给 AdvisorHead 的 ctl 槽)。
+ * 2026-09-17 Frank「这个 公司的 弹框 也 默认关闭」:showZh 一律默认关(与职位弹框 09-16 晚「默认中文对照都关闭吧」同口径,
+ * 先铺英文再补中文行会跳);中 / 韩界面默认开的那句作废,拨开开关才懒翻。
  *
  * @param x 分组、入口格、这一岗与界面语言。
  * @returns 弹框整台面板。
  */
 export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const long = useAdvisorLong({ group: x.group, job: x.job, lang: x.lang })
-  const [showZh, setShowZh] = useState(x.lang !== LANG_EN)
+  const [showZh, setShowZh] = useState(false)
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
   const [transBusy, setTransBusy] = useState(false)

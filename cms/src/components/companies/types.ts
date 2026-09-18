@@ -2332,7 +2332,7 @@ export type DescTransHookIn = {
   lang: CompaniesLang
 
   /**
-   * 有官网简介没;没有不翻。
+   * 有官网简介没;没有不翻。2026-09-17 起调用方把页眉对照开关也并进来:开关关着一样不翻。
    */
   has: boolean
 }
