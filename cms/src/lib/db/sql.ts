@@ -1894,10 +1894,13 @@ export const CLOSE_STALE = `UPDATE jobs SET status='closed', closed_at=$1, updat
 
 /**
  * 同公司同标题同城的重复岗打 is_dup(保最新一条)。
+ * 2026-09-18:同组里有雇主直抓(origin = 'ats')的先留它,再比日期 —— 招聘板转发的那份可能只有一段套话
+ * (Sienna 推给 Jobillico 的正文只有 335 字企业文化,完整正文只在它自己的招聘站上;同日把 Sienna 接进 ATS 直抓后,
+ * 若按日期留,空壳那份日期稍新就会把完整的那份标成重复)。
  */
 export const MARK_DUPS = `UPDATE jobs SET is_dup = x.dup FROM (
       SELECT id, (row_number() OVER (PARTITION BY company_id, lower(title), coalesce(city, '')
-        ORDER BY date_posted DESC NULLS LAST, id DESC) > 1) AS dup
+        ORDER BY (origin = 'ats') DESC NULLS LAST, date_posted DESC NULLS LAST, id DESC) > 1) AS dup
       FROM jobs WHERE status = 'open') x
       WHERE jobs.id = x.id AND jobs.is_dup IS DISTINCT FROM x.dup`
 
