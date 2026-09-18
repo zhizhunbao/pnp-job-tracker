@@ -33,7 +33,7 @@ import {
 import {
   emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage,
   loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, hasProfile, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
+  loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
   translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted,
@@ -349,6 +349,9 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
  * （缓存命中不计费）；失败态拆三种（402/429=额度、503=生成失败可重试、
  * 204=无正文），不再五因一果（#114）。
  *
+ * 2026-09-18 Frank 实拍「这个整理完变成这样了」：库里存的、或刚生成的整理版五节全空（原文只有公司套话，模型全答
+ * (not stated)）→ 回 204 当「无正文」，页面照旧铺原帖正文；库里那份照存，不反复重调模型。
+ *
  * 2026-09-16 Frank「点开的时候，如果有整理版，直接显示整理版，不要有跳跃」：body 带 storedOnly 只查库，
  * 没存回 404 不生成（前端先铺原帖再另起一次不带 storedOnly 的生成）。
  *
@@ -378,6 +381,9 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
   if (state == null) {
     return new Response(null, { status: NO_CONTENT })
   }
+  if (state.formatted != null && jdAllEmptyOf(state.formatted)) {
+    return new Response(null, { status: NO_CONTENT })
+  }
   if (state.formatted != null) {
     return new Response(state.formatted, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
   }
@@ -405,6 +411,9 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
   }
   if (out == null) {
     return new Response(null, { status: UNAVAILABLE })
+  }
+  if (jdAllEmptyOf(out)) {
+    return new Response(null, { status: NO_CONTENT })
   }
   return new Response(out, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
 }

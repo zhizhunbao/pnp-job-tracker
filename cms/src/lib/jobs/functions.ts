@@ -30,7 +30,7 @@ import {
   JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
   JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DASH_PREFIX_RE, JD_DIGITS_RE,
   JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS, JD_GEN_TRIES, JD_HEAD_JUNK_RE,
-  JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_MARK_INLINE_RE,
+  JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_EMPTY_STRIP_RE, JD_MARK_INLINE_RE,
   JD_MARK_LINE_REPL, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE,
   JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
   JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA,
@@ -3559,10 +3559,10 @@ export function toJdFormattedCell(r: Row): MaybeStr {
  * 一行详情页 SSR 的正文与整理版(SQL.JD_BY_JOB_ID)。原文只做值级清洗(去首尾空白、空当无),脱敏在出口做。
  *
  * @param r 库里的一行。
- * @returns 原文(没有空串)与整理版(没生过 null)。
+ * @returns 原文(没有空串)与整理版(没生过、或五节全空 = null)。
  */
 export function toJdSsrRow(r: Row): JdSsr {
-  return { text: text(r.description).trim(), formatted: jdMarkLinesOrNull(textOrNull(r.jd_formatted)) }
+  return { text: text(r.description).trim(), formatted: jdShownOrNull(textOrNull(r.jd_formatted)) }
 }
 
 /**
@@ -3587,6 +3587,32 @@ export function toJdStateRow(r: Row): JdStateRow {
  */
 export function jdMarkLinesOf(text: string): string {
   return text.replace(JD_MARK_INLINE_RE, JD_MARK_LINE_REPL).trim()
+}
+
+/**
+ * 详情页 SSR 用的整理版:没整理过、或整理出来五节全空,都当「没有」(页面铺原帖正文)。
+ *
+ * @param cell 整理版;null = 还没整理。
+ * @returns 有内容的整理版;否则 null。
+ */
+function jdShownOrNull(cell: MaybeStr): MaybeStr {
+  const lines = jdMarkLinesOrNull(cell)
+  if (lines == null || jdAllEmptyOf(lines)) {
+    return null
+  }
+  return lines
+}
+
+/**
+ * 这份整理版是不是五节全空(每一节都是「(not stated)」,抹掉标记与缺节短语后一个字不剩)。
+ * 全空的整理版不许上屏:它比原文信息还少,页面该退回原帖正文(2026-09-18 Frank 实拍)。
+ * 库里照存不删 —— 它是「这条岗整理不出东西」的缓存,删了每次打开都要重调一次模型。
+ *
+ * @param text 整理版正文。
+ * @returns 是否全空。
+ */
+export function jdAllEmptyOf(text: string): boolean {
+  return text.replace(JD_EMPTY_STRIP_RE, JD_NONE_TEXT) === JD_NONE_TEXT
 }
 
 /**

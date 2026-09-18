@@ -2680,6 +2680,14 @@ export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*
 export const JD_MARK_INLINE_RE = /\s*(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\])/g
 
 /**
+ * 判「五节全空」时先抹掉的东西:节标记、模型写的缺节短语「(not stated)」、空白与子弹符。抹完什么都不剩 = 这份整理版
+ * 一个字的内容都没有(2026-09-18 Frank 实拍「这个整理完变成这样了」:Jobillico 一条岗原文只抓到 335 字公司文化套话,
+ * 模型老实地五节全答 (not stated),页面却把这份空整理版当成有效结果渲出来,盖掉了原文,只剩兜底的「工作地点」;
+ * 在招岗里这样的整理版 106 条)。
+ */
+export const JD_EMPTY_STRIP_RE = /\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]|\(\s*not stated\s*\)|[\s\-•*]/gi
+
+/**
  * 顶到行首的节标记:换行 + 标记本身。
  */
 export const JD_MARK_LINE_REPL = '\n$1'
