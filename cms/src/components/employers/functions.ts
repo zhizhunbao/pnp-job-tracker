@@ -214,7 +214,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     provText,
     cityText,
     openText: String(r.openJobs),
-    entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
     designatedChip: designatedChipOf({ t: x.t, r }),
     jobsHref,
@@ -293,19 +292,6 @@ function sectorKeyOf(sector: string): string {
     return SECTOR_PRIVATE
   }
   return sector
-}
-
-/**
- * 入门占比灰注:有在招且占比 > 0 才出(「入门 40%」)。
- *
- * @param x 取词函数与这一行。
- * @returns 灰注或空串。
- */
-function entryNoteOf(x: RowWordsIn): string {
-  if (x.r.entryShare == null || x.r.entryShare <= 0) {
-    return TEXT_NONE
-  }
-  return x.t('de.entryN', { n: x.r.entryShare })
 }
 
 /**
