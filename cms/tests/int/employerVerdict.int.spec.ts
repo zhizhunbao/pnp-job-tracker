@@ -71,6 +71,13 @@ describe('employerVerdict', () => {
     expect(staff.evidence).toBe('missing')
   })
 
+  it('公共部门五档(2026-09-18 数据层拆出 municipal / indigenous):逐档整体旁路', () => {
+    for (const sector of ['public', 'government', 'federal', 'municipal', 'indigenous']) {
+      const v = employerVerdict(F({ foundedYear: NOW - 1, staffEst: 1, sector }), 'AB', AB_REQS, NOW)
+      expect(v.state).toBe('public')
+    }
+  })
+
   it('公共部门:sector=public 整体旁路,不管其余事实有没有都不硬判', () => {
     const v = employerVerdict(F({ foundedYear: NOW - 20, staffEst: 500, sector: 'public' }), 'AB', AB_REQS, NOW)
     expect(v.state).toBe('public')

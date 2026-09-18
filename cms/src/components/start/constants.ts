@@ -1002,14 +1002,25 @@ export const VERDICT_PUBLIC = 'public'
 export const COL_SECTOR = 'sector'
 
 /**
- * 雇主类别的文案键前缀(后接 private / public / government)。
+ * 雇主类别的文案键前缀(后接 private / public / government / federal / municipal / indigenous)。
  */
 export const KEY_SECTOR_HEAD = 'pulse.sector.'
 
 /**
  * 雇主类别的标注值(数据层 companies.sector;空 = 私营企业):省市政府。
+ * 2026-09-18 数据层拆档(Frank「省市区分开比较好吧」):本值收窄为省级政府与部厅,市镇与原住民政府各立一档(见下)。
  */
 export const SECTOR_GOVERNMENT = 'government'
+
+/**
+ * 同上:市镇政府(2026-09-18 自省市政府拆出)。
+ */
+export const SECTOR_MUNICIPAL = 'municipal'
+
+/**
+ * 同上:原住民政府(2026-09-18 同批拆出)。
+ */
+export const SECTOR_INDIGENOUS = 'indigenous'
 
 /**
  * 同上:联邦机关(2026-09-05 Frank「雇主类别细到四档」)。

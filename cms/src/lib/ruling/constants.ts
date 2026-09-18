@@ -103,6 +103,16 @@ export const SECTOR_GOVERNMENT = 'government'
 export const SECTOR_FEDERAL = 'federal'
 
 /**
+ * 市镇政府(2026-09-18 数据层把「省市政府」拆成省级 government 与市镇 municipal;门槛同样旁路)。
+ */
+export const SECTOR_MUNICIPAL = 'municipal'
+
+/**
+ * 原住民政府(2026-09-18 同批自政府档拆出:First Nation / 部落议会 / 梅蒂斯民族;门槛同样旁路)。
+ */
+export const SECTOR_INDIGENOUS = 'indigenous'
+
+/**
  * 一年几个月。官方原文单位不统一(SK 用月、其余用年),换算成年再比。
  */
 export const MONTHS_PER_YEAR = 12
