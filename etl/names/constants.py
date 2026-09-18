@@ -109,12 +109,22 @@ SECTOR_PUBLIC_RE = re.compile(
     r"|regional health|public health|cancer agency|children'?s aid|school district|school division|school board"
     r"|centre de services scolaire|commission scolaire|regional centre for education|conseil scolaire"
     r"|public library|community college|c[eé]gep|university|universit[eé]|polytechnic|national research council"
-    r"|bank of canada|canada post|via rail|bc hydro|hydro-qu[eé]bec|hydro qu[eé]bec|saskpower|sasktel"
+    r"|canada post|via rail|bc hydro|hydro-qu[eé]bec|hydro qu[eé]bec|saskpower|sasktel"
     r"|manitoba hydro|bc transit|translink|toronto transit|soci[eé]t[eé] de transport|radio-canada"
-    r"|crown corporation|ciusss|cisss|hospital)\b",
+    r"|crown corporation|ciusss|cisss|hospital)\b"
+    r"|^bank of canada\b",
     re.I,
 )
-"""公立机构的名字特征(2026-09-05 原型命中 260 家)。"""
+"""公立机构的名字特征(2026-09-05 原型命中 260 家)。
+2026-09-18 拆档批:「bank of canada」自子串组里摘出、改成只认名字开头 —— 子串命中把「Royal Bank of Canada」
+「National Bank of Canada」「General Bank of Canada」「Wealth One Bank of Canada」四家商业银行判成了公立机构
+(类别要上雇主板当筛选项,这种错用户一眼看得到)。"""
+
+SECTOR_CORP_RE = re.compile(r"\b(inc|ltd|lt[eé]e|limited|llc|private)\b", re.I)
+"""公立特征的反例:名字里带公司后缀或「Private」的是私企(2026-09-18:公立档 437 家里 11 家带这类词,10 家是私企 ——
+University Plumbing & Heating Ltd.、Braddan / Lakeshore / Point Grey Private Hospital、Legacy Translink Ltd、
+University City Clinic Inc.、LMIA 表里「某餐馆 Ltd. + 学区名」的串行名等)。代价 1 家:CHEO 研究所(…Research Institute Inc.)
+落回私营,名字上分不出,留账。「corp / corporation」不收:公营公司的全名就带 Corporation。"""
 
 SECTOR_VET_RE = re.compile(r"\b(animal|veterinary|pet|vet)\b", re.I)
 """「hospital」的反例:动物医院是私企(库里旧手工值把它们标成公共部门,正是这一撞)。"""

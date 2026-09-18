@@ -13,9 +13,9 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import (
-    ALIAS_SPLIT_RE, APOSTROPHE_RE, KEEP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT, SECTOR_GOV_RE,
-    SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE,
-    SECTOR_VET_RE, SUFFIX_RE,
+    ALIAS_SPLIT_RE, APOSTROPHE_RE, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
+    SECTOR_GOV_RE, SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC,
+    SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE,
 )
 
 
@@ -39,6 +39,7 @@ def sector_of(name: str) -> str:
     (2026-09-18 自 mart 域 functions 逐字迁入:雇主池也要用同一把尺子,判定只能住基建叶。)
     2026-09-18 拆档批:government 收窄成省级,前面插两档 —— 市镇 → municipal、原住民政府 → indigenous
     (判序:联邦 → 市镇 → 原住民 → 省级 → 公立;「Sunchild First Nation School」这种带 School 的归原住民政府)。
+    公立一档多一道反例闸:名字带公司后缀 / Private 的不算(SECTOR_CORP_RE)。
     """
     if SECTOR_FEDERAL_RE.search(name):
         return SECTOR_FEDERAL
@@ -48,6 +49,6 @@ def sector_of(name: str) -> str:
         return SECTOR_INDIGENOUS
     if SECTOR_GOV_RE.search(name):
         return SECTOR_GOVERNMENT
-    if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name):
+    if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name) and not SECTOR_CORP_RE.search(name):
         return SECTOR_PUBLIC
     return ""
