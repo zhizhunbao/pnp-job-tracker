@@ -118,6 +118,16 @@ export type PoolRow = {
   name: string
 
   /**
+   * 中文译名(companies.alias_zh,版本对得上才有);空串 = 库里还没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文译名;空串 = 库里还没有。
+   */
+  aliasKo: string
+
+  /**
    * 行业;null = 无源(灰注不出)。
    */
   industry: string | null
@@ -518,6 +528,22 @@ export type EmployerCellRow = {
    * 类别格:界面语言的类别名(私营也照写,不渲横杠 —— 私营是事实不是缺数)。
    */
   sectorText: string
+
+  /**
+   * 雇主名下的别名灰注:按界面语言取库里存的中文 / 韩文译名(2026-09-18 Frank「这个下面加灰字 中文翻译」);
+   * 英文界面、或库里还没有译名 = 空串(不占行)。
+   */
+  alias: string
+
+  /**
+   * 省格的 Google 地图链接(2026-09-18 Frank「省 市 文字上加 google link」,与职位板省 / 市列同形);空串 = 没有省(渲横杠)。
+   */
+  provHref: string
+
+  /**
+   * 市格的 Google 地图链接;空串 = 没有市(渲横杠)。
+   */
+  cityHref: string
 
   /**
    * 省格:英文省全名(2026-09-18 Frank「省市都改成英文名」,与职位板省列同形);空串 = 池里没记(渲横杠)。
@@ -2439,4 +2465,19 @@ export type CloseModalIn = {
    * 弹框态落格。
    */
   setModal: (m: EmpModal | null) => void
+}
+
+/**
+ * mapHrefOf 的入参。
+ */
+export type MapHrefIn = {
+  /**
+   * 英文市名;空串 = 只查省。
+   */
+  city: string
+
+  /**
+   * 英文省全名;空串 = 没有省。
+   */
+  prov: string
 }

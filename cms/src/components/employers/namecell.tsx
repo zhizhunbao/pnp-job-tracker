@@ -7,6 +7,8 @@
  * 2026-09-18 Frank「雇主弹框也加上,类似于 job 页面」「可以和 job 的公司弹框保持一致吗」**改判** 09-13 那条:
  * 那条管的是「名字成链跳走」,这次是「名字开框不离开板」,职位板的公司格就是这个行为。有公司页的名字可点 ——
  * 普通点击开公司弹框(与职位板同一个),按着 Ctrl / ⌘ 或中键照链接去公司页;没有公司页的照旧纯文字。
+ * 2026-09-18 Frank「这个下面加灰字 中文翻译」**改判** 09-13 晚砍别名那条:名下按界面语言出库里存的译名灰注
+ * (英文界面不出;库里还没有译名的不占行)。译名仍是机翻(与公司弹框页眉那一格同源)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -30,6 +32,7 @@ export function NameCell(r: EmployerCellRow) {
       {r.companyHref !== TEXT_NONE && (
         <LinkButton href={r.companyHref} onClick={r.onName} className={cssOf(css.nameLink)}>{r.name}</LinkButton>
       )}
+      {r.alias !== TEXT_NONE && <div className={css.alias}>{r.alias}</div>}
       {r.industry !== TEXT_NONE && <span className={css.sub}>{r.industry}</span>}
     </div>
   )

@@ -555,7 +555,7 @@ export const jobsZh = {
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '雇主信号',   // #192 Frank「改个名更合适」:四维是粗筛信号不是打分,与「移民信号/相似雇主」词汇一致
   // E8-09 B 公司详情页 /companies/[slug]
-  'co.crumb': '公司', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
+  'co.crumb': '公司', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '类别', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   // 担保记录深化 + 相似雇主(E8-09 加深)
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   // 股别名去黑话(Frank 08-09「高薪股是什么意思?用户一看就能明白」):「股」=stream 硬译,清出台面
@@ -647,7 +647,7 @@ export const jobsZh = {
   'lmia.high': '高薪类:不受 2024 低薪冻结影响,LMIA 路径完整', 'lmia.exempt': '低薪但属豁免行业(农业/建筑/食品/医疗/看护):仍可受理',
   'lmia.lowFrozen': '低薪类:若岗位所在为高失业大都市区(每季更新),新 LMIA 可能暂停受理',
   'fact.jdExcerpt': '职位描述摘录',
-  'fact.coSectors': '行业', 'fact.coIntro': '公司简介(抓取自官网)', 'fact.coIntroSrc': '简介抓取自官网',
+  'fact.coSectors': '行业', 'fact.coIntro': '公司简介(抓取自官网)',
   'fact.siteSearched': '官网为自动检索匹配(已过域名↔公司名校验),如有出入以官方为准',
   'fact.coSponsor': '担保史', 'fact.coLmia': '近两年 {n} 个 LMIA 获批职位 · {q}', 'fact.coAip': '大西洋 AIP 指定雇主',
   'fact.coLmiaNote': '担保史为 ESDC 历史记录,非担保承诺',

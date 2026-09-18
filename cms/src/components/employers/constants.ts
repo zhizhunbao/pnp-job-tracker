@@ -961,3 +961,7 @@ export const META_PROV_RE = /^[A-Z]{2}$/
  */
 export const META_SCOPE_SEP = ' '
 
+/**
+ * 省 / 市格 Google 地图查询串的国别尾巴(「Kelowna, British Columbia, Canada」:不带国别,同名地会落到美国)。
+ */
+export const MAP_COUNTRY = 'Canada'

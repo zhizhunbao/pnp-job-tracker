@@ -65,7 +65,6 @@ export function CompanyPanel({ job, slug, jobs, lang, onOpenJob, onAlias, showTr
         updatedAt={TEXT_NONE}
         showTrans={showTrans}
         onTransBusy={onTransBusy}
-        hideTopInfo
         onOpenJob={onOpenJob}
         resolveJob={makeResolveJob({ jobs })} />
     )

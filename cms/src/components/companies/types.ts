@@ -650,11 +650,6 @@ export type CompanyBodyIn = {
   showTrans?: boolean
 
   /**
-   * 藏起「了解公司」章行;可省 = 出。弹框把它挂到按钮上面,所以身体里那份要藏。
-   */
-  hideTopInfo?: boolean
-
-  /**
    * 点在招职位的去处;可省 = 纯链接跳详情页。
    */
   onOpenJob?: OpenJobFn
@@ -673,21 +668,6 @@ export type CompanyBodyIn = {
    * 现场翻译在途的回报(弹框页眉开关显「翻译中…」);可省 = 不回报。
    */
   onTransBusy?: (busy: boolean) => void
-}
-
-/**
- * CompanyTopInfo(了解公司章行)的 props。
- */
-export type CompanyTopInfoIn = {
-  /**
-   * 公司档案(只读名字与维基条目两格)。
-   */
-  company: CompanyDetail
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
 }
 
 /**
@@ -718,11 +698,6 @@ export type CompanyBasicCardIn = {
    * 懒翻回来的译文;null = 还没翻/不用翻。
    */
   trans: string | null
-
-  /**
-   * 章行藏在身体外(弹框):此时政府章/知名章挂到卡标题旁。
-   */
-  hideTopInfo: boolean
 
   /**
    * 懒抓简介 / 对照在途时回报 true(公司弹框靠它「都翻译完了才全部显示」,2026-09-14);可省 = 不回报。

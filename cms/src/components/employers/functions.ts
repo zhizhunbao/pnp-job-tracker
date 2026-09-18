@@ -13,7 +13,7 @@
  * @time 2026-08-27 23:30:00
  */
 import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
-import { PROV_NAMES } from '@/lib/location'
+import { PROV_NAMES, mapsUrl } from '@/lib/location'
 import { track } from '@/lib/track'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
@@ -47,7 +47,7 @@ import {
   EV_PROP_SECTOR, EV_PROP_SORT,
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
-  KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR,
+  KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
@@ -73,7 +73,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  CloseModalIn, ColKeysIn, EmpPickWords, KeepShownIn, NameClickIn, PickWordsIn, PoolWidthIn,
+  CloseModalIn, ColKeysIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn, PoolWidthIn,
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -211,6 +211,9 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     where: empWhereTextOf({ t: x.t, r }),
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
+    alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
+    provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
+    cityHref: mapHrefOf({ city: cityText, prov: provText }),
     provText,
     cityText,
     openText: String(r.openJobs),
@@ -279,6 +282,25 @@ function provEnOf(code: string): string {
     return code
   }
   return name
+}
+
+/**
+ * 省 / 市格的 Google 地图链接:「市, 省, Canada」;只查省时不带市;要查的那一级是空的 = 空串(格子渲横杠,不成链)。
+ *
+ * @param x 英文市名与省名。
+ * @returns 地图 URL 或空串。
+ */
+function mapHrefOf(x: MapHrefIn): string {
+  if (x.prov === TEXT_NONE) {
+    if (x.city === TEXT_NONE) {
+      return TEXT_NONE
+    }
+    return mapsUrl(x.city + WHERE_SEP + MAP_COUNTRY)
+  }
+  if (x.city === TEXT_NONE) {
+    return mapsUrl(x.prov + WHERE_SEP + MAP_COUNTRY)
+  }
+  return mapsUrl(x.city + WHERE_SEP + x.prov + WHERE_SEP + MAP_COUNTRY)
 }
 
 /**
@@ -1667,12 +1689,17 @@ export function makeSort(x: SortPickIn): HeadSortFn {
     if (isSortKeyOf(key) === false) {
       return
     }
+    let sort = key
     let dir = defaultDirOf(key)
     if (key === x.f.sort) {
       dir = flippedOf(x.f.dir)
+      if (x.f.dir !== defaultDirOf(key)) {
+        sort = POOL_SORT_DEFAULT
+        dir = defaultDirOf(POOL_SORT_DEFAULT)
+      }
     }
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_SORT })
-    x.setF(withOf({ f: x.f, sort: key, dir, page: 0 }))
+    x.setF(withOf({ f: x.f, sort, dir, page: 0 }))
   }
   return onSort
 }

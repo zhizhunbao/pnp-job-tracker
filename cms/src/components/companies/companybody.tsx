@@ -25,7 +25,6 @@
 import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
-import { CompanyTopInfo } from './companytopinfo'
 import { useEffect, useState } from 'react'
 import { hasDescOf } from './functions'
 import { useCompanyTrans } from './hooks'
@@ -45,7 +44,6 @@ export function CompanyBody({
   lang,
   updatedAt,
   showTrans = false,
-  hideTopInfo = false,
   onOpenJob,
   resolveJob,
   afterSponsor = null,
@@ -67,13 +65,11 @@ export function CompanyBody({
   }, [busy, onTransBusy])
   return (
     <div className={css.body}>
-      {hideTopInfo === false && <CompanyTopInfo company={company} t={t} />}
       <CompanyBasicCard company={company}
         t={t}
         lang={lang}
         showTrans={showTrans}
         trans={tr.trans}
-        hideTopInfo={hideTopInfo}
         onBusy={setAiTransBusy} />
       {afterSponsor}
       <CompanyJobsCard company={company}

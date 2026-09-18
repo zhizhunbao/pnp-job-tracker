@@ -14,6 +14,8 @@
  * 同日「删掉」:「官网为自动检索匹配…」那句注撤。「这个地方用英文名」:公司名称行只出英文名(别名在页眉副题);「加上省市」「这个地点不一致这种怎么处理」:「省」「市」两行 =
  * 招聘地点(companies.region 全名 / 该司在招岗的第一座城);
  * 「地址」只在库里有街址时出(与简介之间的分割线只看有没有简介,身份行至少有公司名,Frank「横线又没了????」);AI 简介的「所在地」是模型查到的总部,留在简介段里不冒充地址(两种地点各归各,不再互相顶替)。
+ * 2026-09-18 Frank「类别应该放到基本信息吧」:「政府机构」绿章撤(详情页正文顶那一行、弹框卡题旁那一枚都撤,
+ * companytopinfo.tsx 随之退役),改成身份行里的「类别」一行,紧跟公司名称;不是政府机构的不出这一行。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -40,7 +42,7 @@ import css from './companies.module.css'
  * @param props 公司档案、取词函数、界面语言与对照三格(逐格注释见 CompanyBasicCardIn)。
  * @returns 一张卡;身份与简介都没有时整卡不渲。
  */
-export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopInfo, onBusy }: CompanyBasicCardIn) {
+export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
@@ -53,16 +55,10 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, hideTopIn
   }
   return (
     <div className={CARD_MD_CLS}>
-      <div className={CARD_HEAD_CLS}>
-        {t('co.basic')}
-        {hideTopInfo && isGovCompany({ name: company.name }) && (
-          <span className={cssOf(css.badge) + CLS_SEP + cssOf(css.badgeGov) + CLS_SEP + cssOf(css.badgeInHead)}>
-            {t('co.gov')}
-          </span>
-        )}
-      </div>
+      <div className={CARD_HEAD_CLS}>{t('co.basic')}</div>
       <div>
         <Row k={t('co.name')}>{company.name}</Row>
+        {isGovCompany({ name: company.name }) && <Row k={t('co.sector')}>{t('co.gov')}</Row>}
         {company.website !== TEXT_NONE && (
           <Row k={t('act.site')}>
             <LinkButton href={company.website}
