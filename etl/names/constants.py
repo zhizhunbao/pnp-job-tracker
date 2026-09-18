@@ -29,9 +29,11 @@ KEEP_RE = re.compile(r"[^a-z0-9& ]")
 # 域间不许互借函数,判定只能住基建叶(「这个名字是什么类别的雇主」与「这两个名字是不是同一家」同属名字判定)。
 
 SECTOR_GOVERNMENT = "government"
-"""雇主类别(companies.sector 列,键名 K_SECTOR 在第 14 段):省市政府(省政府与部厅、市镇政府、原住民政府;
+"""雇主类别(companies.sector 列,键名 K_SECTOR 在 mart 域第 14 段):省市政府(省政府与部厅、市镇政府、原住民政府;
 联邦的另归 SECTOR_FEDERAL)。2026-09-05 Frank「公共部门 政府部门 私营企业这些应该是雇主类别吧」—— 与雇主门槛判定拆成两个字段,
-按名字规则在这算,库里原 123 行手工值一并覆盖(那批一半是动物医院与民间社团,规则本身错)。空 = 私营企业。"""
+按名字规则在这算,库里原 123 行手工值一并覆盖(那批一半是动物医院与民间社团,规则本身错)。空 = 私营企业。
+2026-09-18 拆档批:本值收窄为**省级政府与部厅**(值 "government" 不改名 —— 库里与 cms 判定都认这个字面量);
+市镇政府 → SECTOR_MUNICIPAL,原住民政府 → SECTOR_INDIGENOUS。"""
 
 SECTOR_FEDERAL = "federal"
 """雇主类别:联邦机关(联邦各部、CRA/CBSA、军警、联邦机构;2026-09-05 Frank「雇主类别细到四档」从政府档拆出:
@@ -48,27 +50,59 @@ SECTOR_FEDERAL_RE = re.compile(
     r"|global affairs canada|canadian coast guard|treasury board of canada|shared services canada"
     r"|library and archives canada|elections canada|veterans affairs canada|indigenous services canada"
     r"|crown-indigenous relations|canadian food inspection agency|canadian security intelligence service"
-    r"|national research council)\b",
+    r"|national research council|correctional service of canada|department of [a-z ,&'-]*canada"
+    r"|(?:bc )?royal canadian mounted police)\b",
     re.I,
 )
 """联邦机关的名字特征:只认**名字开头**(「Corporate Health Canada」「ALSTOM Transport Canada」这类私企
-名字里夹着部门名,不能按子串命中;2026-09-05 原型 97 家,收紧到开头后误伤清零)。"""
+名字里夹着部门名,不能按子串命中;2026-09-05 原型 97 家,收紧到开头后误伤清零)。
+2026-09-18 拆档批补三种写法(原先漏进政府档,拆出「省政府」后就成了错档):「Correctional Service **of** Canada」、
+「Department of Finance / Justice Canada …」(Department of … Canada 形)、「BC Royal Canadian Mounted Police」。"""
 
 SECTOR_PUBLIC = "public"
 """雇主类别:公立机构(卫生局/医院、学区/学校委员会、大学/学院、公营公司/交通)。省提名的雇主门槛不适用。"""
 
 SECTOR_GOV_RE = re.compile(
     r"^(the )?government of\b"
-    r"|^(city|town|village|district|township|municipality|county|regional municipality|regional district"
-    r"|municipalit[eé]|ville|corporation of the (city|town|township|county|district)) (of|de|du|d')\b"
-    r"|^(ministry|minist[eè]re|department|d[eé]partement) (of|de|du|des)\b"
-    r"|\b(canada revenue agency|canada border services|royal canadian mounted police|canadian armed forces"
-    r"|forces arm[eé]es|correctional service|service canada|statistics canada|legislative assembly"
-    r"|public service commission|water security agency)\b"
-    r"|\b(first nation|tribal council|m[eé]tis nation|band council)\b",
+    r"|^(ministry|department) of\b"
+    r"|^(minist[eè]re|d[eé]partement) (de|du|des)\b"
+    r"|\b(legislative assembly|public service commission|water security agency)\b",
     re.I,
 )
-"""政府机关的名字特征(英法两套;2026-09-05 原型跑 mart 52k 家命中 421 家,人眼抽查无误伤)。"""
+"""政府机关的名字特征(英法两套;2026-09-05 原型跑 mart 52k 家命中 421 家,人眼抽查无误伤)。
+2026-09-18 拆档批(Frank「省市区分开比较好吧」):本条只剩**省级政府与部厅**。原来的四支里 ——
+市镇一支拆去 SECTOR_MUNI_RE、原住民一支拆去 SECTOR_INDIGENOUS_RE;联邦机关名按子串命中的那一支撤
+(联邦的归 SECTOR_FEDERAL_RE 按名字开头判;子串命中把「Nippon Trends Food **Service Canada**, Inc.」判成了政府);
+部厅一支改成按语言配对(Ministry / Department **of**、Ministère / Département **de / du / des**),
+「Ministère of seafood」这种英法混搭的餐馆名不再命中。"""
+
+SECTOR_MUNICIPAL = "municipal"
+"""雇主类别:市镇政府(市、镇、村、乡、县、区域市、魁省 MRC / canton / paroisse、草原省 RM)。2026-09-18 自「省市政府」拆出
+(Frank「省市区分开比较好吧」;拆前 441 家政府里 370 家是这一形)。"""
+
+SECTOR_MUNI_RE = re.compile(
+    r"^(the )?(city|town|village|district|township|municipality|county|regional municipality|regional district"
+    r"|municipalit[eé]|ville|corporation of the (city|town|township|county|district)) (of|de|du|d')\b"
+    r"|^(the )?(rural municipality|resort municipality|northern village|local government district) of\b"
+    r"|^r\.?m\.? of\b"
+    r"|^(mrc|canton|paroisse)\b",
+    re.I,
+)
+"""市镇政府的名字特征:第一支自 SECTOR_GOV_RE 逐字拆来(只加了可选的「The 」,「The Corporation of the County of Dufferin」原先漏判);
+后三支 2026-09-18 补:草原省 RM / Rural Municipality、Resort Municipality(惠斯勒)、Northern Village、
+Local Government District,魁省 MRC / Canton / Paroisse —— 全是 mart 里原先落在私营的真市镇(实测 30 家)。
+「Cité」不收:库里命中的是「Cité Construction」这类私企。"""
+
+SECTOR_INDIGENOUS = "indigenous"
+"""雇主类别:原住民政府(First Nation / 部落议会 / 梅蒂斯民族 / Band)。2026-09-18 拆档批自「省市政府」拆出:
+拆前非市镇的 70 家里 34 家是这一形,既不是省政府也不是市镇政府,硬塞任一档都是错档。"""
+
+SECTOR_INDIGENOUS_RE = re.compile(
+    r"\b(first nation|tribal council|m[eé]tis nation|band council|indian band|cree nation)\b",
+    re.I,
+)
+"""原住民政府的名字特征:前四词自 SECTOR_GOV_RE 逐字拆来;「Indian Band」「Cree Nation」2026-09-18 补
+(Okanagan Indian Band、Peter Ballantyne Cree Nation 等 7 家原先落在私营)。"""
 
 SECTOR_PUBLIC_RE = re.compile(
     r"\b(health authority|health network|health region|health services authority|r[eé]gie r[eé]gionale"
