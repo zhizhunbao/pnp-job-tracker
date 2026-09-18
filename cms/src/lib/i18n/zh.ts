@@ -624,7 +624,7 @@ export const jobsZh = {
   'fav.title': '我的收藏', 'fav.note': '收藏过的职位都在这里;要跟踪投递进度去「我的求职」。',
   // 大分类(数据值→显示)。单一来源 = etl/noc_buckets.py 的 BROADS + I18N,改那边要同步这里。 2026-09-14 Frank「管理层改成管理,生活服务改成生活,社会服务改成社会」:只改中文显示名,键与 en/ko 不动。
   'broad.管理层': '管理', 'broad.商务': '商务', 'broad.行政': '行政', 'broad.文员': '文员', 'broad.金融': '金融',
-  'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': 'IT', 'broad.工程': '工程', 'broad.科学': '科学',
+  'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': '科技', 'broad.工程': '工程', 'broad.科学': '科学',
   'broad.医疗': '医疗', 'broad.教育': '教育', 'broad.社会服务': '社会', 'broad.艺术': '艺术', 'broad.体育': '体育',
   'broad.销售': '销售', 'broad.零售': '零售', 'broad.餐饮': '餐饮', 'broad.住宿': '住宿', 'broad.生活服务': '生活',
   'broad.技工': '技工', 'broad.建筑': '建筑', 'broad.运输': '运输', 'broad.物流': '物流', 'broad.农业': '农业',

@@ -330,7 +330,7 @@ I18N: dict[str, tuple[str, str]] = {
     "管理层": ("Management", "관리직"), "商务": ("Business", "비즈니스"),
     "行政": ("Administration", "행정"), "文员": ("Office clerks", "사무직"),
     "金融": ("Finance", "금융"), "会计": ("Accounting", "회계"),
-    "法律": ("Legal", "법률"), "IT": ("IT", "IT"), "工程": ("Engineering", "엔지니어링"),
+    "法律": ("Legal", "법률"), "IT": ("Tech", "테크"), "工程": ("Engineering", "엔지니어링"),
     "科学": ("Science", "과학"), "医疗": ("Healthcare", "의료"),
     "教育": ("Education", "교육"), "社会服务": ("Social services", "사회서비스"),
     "艺术": ("Arts", "예술"), "体育": ("Sport", "스포츠"),

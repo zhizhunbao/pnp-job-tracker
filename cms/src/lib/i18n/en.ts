@@ -571,7 +571,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'sj.save': '☆ Save', 'sj.saved': '★ Saved', 'sj.view': 'View on board', 'sj.del': 'Remove', 'sj.weekly': 'Weekly email digest (saved jobs; unsubscribe anytime)',
   'fav.title': 'My saved jobs', 'fav.note': 'Every job you starred lives here; track applications under “My applications”.',
   'broad.管理层': 'Management', 'broad.商务': 'Business', 'broad.行政': 'Administration', 'broad.文员': 'Office clerks', 'broad.金融': 'Finance',
-  'broad.会计': 'Accounting', 'broad.法律': 'Legal', 'broad.IT': 'IT', 'broad.工程': 'Engineering', 'broad.科学': 'Science',
+  'broad.会计': 'Accounting', 'broad.法律': 'Legal', 'broad.IT': 'Tech', 'broad.工程': 'Engineering', 'broad.科学': 'Science',
   'broad.医疗': 'Healthcare', 'broad.教育': 'Education', 'broad.社会服务': 'Social services', 'broad.艺术': 'Arts', 'broad.体育': 'Sport',
   'broad.销售': 'Sales', 'broad.零售': 'Retail', 'broad.餐饮': 'Food service', 'broad.住宿': 'Hospitality', 'broad.生活服务': 'Personal services',
   'broad.技工': 'Trades', 'broad.建筑': 'Construction', 'broad.运输': 'Transport', 'broad.物流': 'Logistics', 'broad.农业': 'Agriculture',

@@ -568,7 +568,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'sj.save': '☆ 저장', 'sj.saved': '★ 저장됨', 'sj.view': '공고 목록에서 보기', 'sj.del': '삭제', 'sj.weekly': '주간 이메일 요약(저장 공고, 언제든 구독 취소)',
   'fav.title': '내 저장 공고', 'fav.note': '저장한 공고가 모두 여기에 있습니다. 지원 진행은 「내 지원 현황」에서 확인하세요.',
   'broad.管理层': '관리직', 'broad.商务': '비즈니스', 'broad.行政': '행정', 'broad.文员': '사무직', 'broad.金融': '금융',
-  'broad.会计': '회계', 'broad.法律': '법률', 'broad.IT': 'IT', 'broad.工程': '엔지니어링', 'broad.科学': '과학',
+  'broad.会计': '회계', 'broad.法律': '법률', 'broad.IT': '테크', 'broad.工程': '엔지니어링', 'broad.科学': '과학',
   'broad.医疗': '의료', 'broad.教育': '교육', 'broad.社会服务': '사회 서비스', 'broad.艺术': '예술', 'broad.体育': '스포츠',
   'broad.销售': '영업', 'broad.零售': '리테일', 'broad.餐饮': '요식업', 'broad.住宿': '숙박', 'broad.生活服务': '생활 서비스',
   'broad.技工': '기능직', 'broad.建筑': '건설', 'broad.运输': '운송', 'broad.物流': '물류', 'broad.农业': '농업',
