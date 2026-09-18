@@ -186,3 +186,44 @@
     padding: 2px 14px;
   }
 }
+
+/*
+ * 「显示更多」那一行(值照抄职位板 jobs.module.css 的 .more:点击分页,不随滚动自动加载)。
+ */
+.more {
+  /*
+   * 钮与那一句都居中。
+   */
+  text-align: center;
+
+  /*
+   * 四周留白。
+   */
+  padding: 12px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 灰(「已全部显示」那一句的色)。
+   */
+  color: #9ca3af;
+}
+
+/*
+ * 在途的「显示更多」:压淡。
+ */
+.moreBusy {
+  opacity: 0.6;
+}
+
+@media (width <= 640px) {
+  /*
+   * 手机上钮撑到 40 高(职位板 #217 触控靶同值)。
+   */
+  .more button {
+    min-height: 40px;
+  }
+}

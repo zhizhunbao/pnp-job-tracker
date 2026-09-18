@@ -289,12 +289,6 @@ export const SEARCH_SIZE = 'sm'
 export const Q_DEBOUNCE_MS = 300
 
 /**
- * 每页行数的兜底。服务端交回的 pageSize 为 0(或没这一格)时用它算总页数 ——
- * 除以 0 会算出 Infinity 页,翻页器当场废掉。
- */
-export const PAGE_SIZE_FALLBACK = 50
-
-/**
  * 所在地列最多平铺几个省码。1-3 省列两字码,≥4 省收「N 省」——
  * Frank 2026-08-08「怎么有的显示省有的显示市」:单省带市名造成两种粒度混排,
  * 统一到省维度,市级细节归公司弹框。

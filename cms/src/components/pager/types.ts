@@ -70,3 +70,53 @@ export type PagerHandlesOut = {
    */
   next: ClickFn
 }
+
+/**
+ * MoreLine(「显示更多」那一行)的 props。本域不携词,两句文案由调用方取好词传进来。
+ */
+export type MoreLineIn = {
+  /**
+   * 已经显示出来的行数(0 = 空表,整行不出字)。
+   */
+  shown: number
+
+  /**
+   * 筛选后的总行数。
+   */
+  total: number
+
+  /**
+   * 下一批在途没(在途时钮禁用、钮面换占位)。
+   */
+  loading: boolean
+
+  /**
+   * 钮面文案(如「显示更多(还有 N 条)」)。
+   */
+  moreText: string
+
+  /**
+   * 全部显示完时的那句(如「已全部显示 N 个」)。
+   */
+  allText: string
+
+  /**
+   * 点「显示更多」。
+   */
+  onMore: ClickFn
+}
+
+/**
+ * moreLabelOf 的入参。
+ */
+export type MoreLabelIn = {
+  /**
+   * 在途没。
+   */
+  loading: boolean
+
+  /**
+   * 平时的钮面文案。
+   */
+  label: string
+}

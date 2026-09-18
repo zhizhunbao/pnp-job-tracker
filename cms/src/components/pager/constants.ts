@@ -33,3 +33,18 @@ export const PAGE_SEP = ' / '
  * Button 只出统一的语义与可达性(disabled/aria)。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 「显示更多」钮的底:白底描边(与职位板那一行同款)。
+ */
+export const MORE_BTN_KIND = 'secondary'
+
+/**
+ * 「显示更多」在途时的钮面占位。
+ */
+export const MORE_BUSY = '…'
+
+/**
+ * 不加类(「显示更多」钮平时不带附加类)。
+ */
+export const CLS_NONE = ''

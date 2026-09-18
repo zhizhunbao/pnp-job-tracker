@@ -52,7 +52,7 @@ import {
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
-  MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
+  MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
   P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
@@ -76,9 +76,9 @@ import type {
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   CloseModalIn, ColKeysIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn, PoolWidthIn,
-  ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
+  ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
-  PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
+  PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
@@ -1480,6 +1480,17 @@ export function listClsOf(x: ListClsIn): string {
 }
 
 /**
+ * 地址栏用的 query:同 qsOf,但不带页码(2026-09-18 翻页器换成「显示更多」后,页码只是「接到第几批」,
+ * 写进地址栏的话刷新只会拿到中间那一批;取数照旧带页码走 qsOf)。
+ *
+ * @param x 当前筛选。
+ * @returns 已编码的 query;什么都没筛时空串。
+ */
+export function addrQsOf(x: FiltersIn): string {
+  return qsOf({ f: withOf({ f: x.f, page: 0 }) })
+}
+
+/**
  * 筛选态 → query 串(全部筛选走 query,深链可分享;缺省值不写:排序星级、页码 0、开关关都不进串)。
  * @param x 当前筛选。
  * @returns 已编码的 query;什么都没筛时空串。
@@ -1559,12 +1570,32 @@ export async function loadBoard(x: LoadBoardIn): Promise<void> {
   try {
     const res = await fetch(apiUrlOf({ qs: x.qs }), { signal: x.signal })
     if (res.ok) {
-      x.setData(await res.json())
+      x.setData(morePageOf({ prev: x.prev, next: await res.json() }))
     }
   } catch {
     return
   } finally {
     x.setLoading(false)
+  }
+}
+
+/**
+ * 「显示更多」的接页:取回来的正好是手上这份的下一页,就把新行接在后面(其余格用新的);
+ * 不是下一页(换了筛选 / 排序回到第 0 页)或不接,原样给新的。
+ *
+ * @param x 手上这一份与刚取回来的这一页。
+ * @returns 要落地的那一份。
+ */
+function morePageOf(x: MorePageIn): PoolPage {
+  if (x.prev == null || x.next.page !== x.prev.page + 1) {
+    return x.next
+  }
+  return {
+    rows: x.prev.rows.concat(x.next.rows),
+    total: x.next.total,
+    page: x.next.page,
+    pageSize: x.next.pageSize,
+    provs: x.next.provs,
   }
 }
 
@@ -1889,17 +1920,18 @@ export function makeClear(x: ClearIn): ClickFn {
 }
 
 /**
- * 造翻页手柄(只动页码那一格)。
+ * 造「显示更多」的手柄:页码加一(2026-09-18 Frank「分页改成和 job table 一样的」:‹ 1 / 240 › 翻页器撤,
+ * 换成职位板那种点一下往下接一批;新一批由 loadBoard 接在手上的行后面)。
  *
  * @param x 当前筛选与落格。
- * @returns 翻页器的 onPage。
+ * @returns 「显示更多」钮的 onClick。
  */
-export function makePage(x: FilterPickIn): PageFn {
-  function onPage(p: number): void {
+export function makeMore(x: MoreIn): ClickFn {
+  function onMore(): void {
     track(EV_PAGE, { [EV_PROP_KEY]: kindOf({ f: x.f }) })
-    x.setF(withOf({ f: x.f, page: p }))
+    x.setF(withOf({ f: x.f, page: x.f.page + 1 }))
   }
-  return onPage
+  return onMore
 }
 
 /**
@@ -2067,20 +2099,6 @@ export function makeSectorLabel(x: WordsIn): NocNameFn {
     return x.t(KEY_SECTOR_HEAD + key)
   }
   return sectorLabel
-}
-
-/**
- * 总页数(≥1)。pageSize 为 0 时按兜底档算 —— 除以 0 会算出 Infinity 页,翻页器当场废掉。
- *
- * @param x 总行数与每页行数。
- * @returns 总页数。
- */
-export function maxPageOf(x: MaxPageIn): number {
-  let size = PAGE_SIZE_FALLBACK
-  if (x.pageSize > 0) {
-    size = x.pageSize
-  }
-  return Math.max(1, Math.ceil(x.total / size))
 }
 
 /**

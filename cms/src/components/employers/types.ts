@@ -224,7 +224,7 @@ export type PoolPage = {
   page: number
 
   /**
-   * 每页行数(0 时按 PAGE_SIZE_FALLBACK 算总页数)。
+   * 每页行数。
    */
   pageSize: number
 
@@ -1622,6 +1622,11 @@ export type LoadBoardIn = {
   setData: (p: PoolPage) => void
 
   /**
+   * 手上这一份(「显示更多」时新一批接在它后面);null = 不接,整份换掉。
+   */
+  prev: PoolPage | null
+
+  /**
    * 加载态落格。
    */
   setLoading: (v: boolean) => void
@@ -1636,11 +1641,6 @@ export type SetFilters = (f: PoolFilters) => void
  * 换一格筛选的手柄形状(下拉的 onChange)。
  */
 export type PickFn = (v: string) => void
-
-/**
- * 翻页手柄的形状。
- */
-export type PageFn = (p: number) => void
 
 /**
  * 换筛选一族工厂的入参。
@@ -1770,21 +1770,6 @@ export type TextByFiltersIn = {
    * 当前筛选。
    */
   f: PoolFilters
-}
-
-/**
- * maxPageOf 的入参。
- */
-export type MaxPageIn = {
-  /**
-   * 总行数。
-   */
-  total: number
-
-  /**
-   * 每页行数(0 时按兜底档算)。
-   */
-  pageSize: number
 }
 
 /**
@@ -1934,7 +1919,7 @@ export type EmployersPanel = {
   /**
    * 翻页。
    */
-  onPage: PageFn
+  onMore: ClickFn
 }
 
 /**
@@ -2490,4 +2475,34 @@ export type MapHrefIn = {
    * 英文省全名;空串 = 没有省。
    */
   prov: string
+}
+
+/**
+ * morePageOf 的入参。
+ */
+export type MorePageIn = {
+  /**
+   * 手上这一份;null = 不接。
+   */
+  prev: PoolPage | null
+
+  /**
+   * 刚取回来的这一页。
+   */
+  next: PoolPage
+}
+
+/**
+ * makeMore 的入参。
+ */
+export type MoreIn = {
+  /**
+   * 当前筛选。
+   */
+  f: PoolFilters
+
+  /**
+   * 筛选态落格。
+   */
+  setF: SetFilters
 }

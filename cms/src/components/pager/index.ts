@@ -5,5 +5,6 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+export { MoreLine } from './moreline'
 export { Pager } from './pager'
-export type { PagerIn } from './types'
+export type { MoreLineIn, PagerIn } from './types'

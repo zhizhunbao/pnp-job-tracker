@@ -17,7 +17,7 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
-  makeCloseModal, makeLmiaPick, makePage, makeProv,
+  addrQsOf, makeCloseModal, makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
@@ -40,7 +40,9 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [modal, setModal] = useState<EmpModal | null>(null)
   const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
   const first = useRef(true)
+  const held = useRef<PoolPage | null>(null)
   const qs = qsOf({ f })
+  const addr = addrQsOf({ f })
   const pick = useColPick({
     cols: employerColsOf({ t, shown: [] }), storeKey: COLS_STORE_KEY, force: forceKeysOf({ f }),
   })
@@ -55,19 +57,23 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     }
   }, [qDraft, f])
 
+  useEffect(function holdData() {
+    held.current = data
+  }, [data])
+
   useEffect(function syncBoard() {
     if (first.current === true) {
       first.current = false
       return
     }
-    window.history.replaceState(null, TEXT_NONE, boardUrlOf({ qs }))
+    window.history.replaceState(null, TEXT_NONE, boardUrlOf({ qs: addr }))
     const ctl = new AbortController()
     setLoading(true)
-    void loadBoard({ qs, signal: ctl.signal, setData, setLoading })
+    void loadBoard({ qs, signal: ctl.signal, setData, setLoading, prev: held.current })
     return function abortLoad() {
       ctl.abort()
     }
-  }, [qs])
+  }, [qs, addr])
 
   return {
     lang,
@@ -94,6 +100,6 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onFold: makeFoldToggle({ fold, setFold }),
     onSort: makeSort({ f, setF }),
     onClear: makeClear({ f, setF, setQDraft }),
-    onPage: makePage({ f, setF }),
+    onMore: makeMore({ f, setF }),
   }
 }

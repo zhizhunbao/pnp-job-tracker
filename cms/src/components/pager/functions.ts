@@ -5,7 +5,10 @@
  * @author Frank
  * @time 2026-08-26 16:00:00
  */
-import type { PagerHandlesIn, PagerHandlesOut } from './types'
+import { cssOf } from '@/components/css'
+import { CLS_NONE, MORE_BUSY } from './constants'
+import type { MoreLabelIn, PagerHandlesIn, PagerHandlesOut } from './types'
+import css from './pager.module.css'
 
 /**
  * 造翻页行的前后两枚手柄(自 Pager 体内迁出)。两枚都在写同一格页码,
@@ -24,4 +27,30 @@ export function makePagerHandles(x: PagerHandlesIn): PagerHandlesOut {
   }
 
   return { prev, next }
+}
+
+/**
+ * 「显示更多」钮的类:在途时压淡。
+ *
+ * @param loading 在途没。
+ * @returns 类名或空串。
+ */
+export function moreBtnClsOf(loading: boolean): string {
+  if (loading) {
+    return cssOf(css.moreBusy)
+  }
+  return CLS_NONE
+}
+
+/**
+ * 「显示更多」的钮面文案:在途时只出占位。
+ *
+ * @param x 在途没与平时的钮面文案。
+ * @returns 钮面文案。
+ */
+export function moreLabelOf(x: MoreLabelIn): string {
+  if (x.loading) {
+    return MORE_BUSY
+  }
+  return x.label
 }
