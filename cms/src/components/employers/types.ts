@@ -520,12 +520,12 @@ export type EmployerCellRow = {
   sectorText: string
 
   /**
-   * 省格:界面语言省全名;空串 = 池里没记(渲横杠)。2026-09-18 Frank「省 市 是不是分两个字段」。
+   * 省格:英文省全名(2026-09-18 Frank「省市都改成英文名」,与职位板省列同形);空串 = 池里没记(渲横杠)。
    */
   provText: string
 
   /**
-   * 市格:界面语言城市名(译名表外直接英文),一行,不带英文灰注(Frank「英文 城市 也去掉」);空串 = 池里没记(渲横杠)。
+   * 市格:英文城市名,一行(2026-09-18 Frank「省市都改成英文名」:先前用界面语言译名,译名表只覆盖大城市,一列里中英混排);空串 = 池里没记(渲横杠)。
    * 沿革:2026-09-13 晚这里是 whereName / whereNote / whereMore 三格(CityNameCell 双行形 +「另 N 地」),
    * 09-18「招聘地点去掉吧」后三格退役。
    */
@@ -1429,26 +1429,6 @@ export type VerdictToneIn = {
    * 色档。
    */
   tone: VerdictTone
-}
-
-/**
- * whereCellOf / cityNameOf 的入参。
- */
-export type WhereCellIn = {
-  /**
-   * 这一行事实。
-   */
-  r: PoolRow
-
-  /**
-   * 取词函数(省全名回落与「另 N 地」)。
-   */
-  t: TFn
-
-  /**
-   * 界面语言(译名按它取)。
-   */
-  lang: Lang
 }
 
 /**

@@ -13,6 +13,7 @@
  * @time 2026-08-27 23:30:00
  */
 import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
+import { PROV_NAMES } from '@/lib/location'
 import { track } from '@/lib/track'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
@@ -79,7 +80,7 @@ import type {
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
-  WhereCellIn, WhereTextIn, WithIn,
+  WhereTextIn, WithIn,
   WordsIn,
 } from './types'
 import { VerdictCell } from './verdictcell'
@@ -199,14 +200,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     industry = r.industry
   }
   const kind = kindOf({ f: x.f })
-  let provText = TEXT_NONE
-  if (r.province !== TEXT_NONE) {
-    provText = provNameOf({ t: x.t, code: r.province })
-  }
-  let cityText = TEXT_NONE
-  if (r.city !== TEXT_NONE) {
-    cityText = cityNameOf({ r, t: x.t, lang: x.lang })
-  }
+  const provText = provEnOf(r.province)
+  const cityText = r.city
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -270,6 +265,24 @@ function empWhereTextOf(x: RowWordsIn): string {
 }
 
 /**
+ * 省格的字:英文全名(2026-09-18 Frank「省市都改成英文名」:省、市两列一律英文,与职位板的省 / 市列同形 ——
+ * 城市译名表只覆盖大城市,一列里「卡尔加里 / Leduc / Hinton」中英混排比全英文更乱);码表里没有的原样给码,空串照旧空串。
+ *
+ * @param code 两位省码。
+ * @returns 英文省名。
+ */
+function provEnOf(code: string): string {
+  if (code === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const name = PROV_NAMES[code]
+  if (name == null) {
+    return code
+  }
+  return name
+}
+
+/**
  * 类别 → 文案键尾:库里五档原样,空串 = 私营。
  *
  * @param sector 这一行的类别。
@@ -280,24 +293,6 @@ function sectorKeyOf(sector: string): string {
     return SECTOR_PRIVATE
   }
   return sector
-}
-
-/**
- * 城市主文案:界面语言有人工核定译名用译名(cities.name_zh / name_ko,09-11「城市译名人工核定表禁模型」),否则英文原名。
- * 2026-09-18 起它就是市格的全部:原 whereCellOf(主文案 +「英文名 省码」灰注 +「另 N 地」三样,09-13 晚接 CityNameCell 双行形;
- * 池里 97.2% 的雇主 ≤1 处地点)随 Frank「招聘地点去掉吧」「英文 城市 也去掉」「省 市 是不是分两个字段」退役。
- *
- * @param x 这一行与界面语言。
- * @returns 城市名。
- */
-function cityNameOf(x: WhereCellIn): string {
-  if (x.lang === LANG_ZH && x.r.cityZh !== TEXT_NONE) {
-    return x.r.cityZh
-  }
-  if (x.lang === LANG_KO && x.r.cityKo !== TEXT_NONE) {
-    return x.r.cityKo
-  }
-  return x.r.city
 }
 
 /**
@@ -2011,14 +2006,14 @@ export function makeGroupLabel(x: WordsIn): NocNameFn {
 }
 
 /**
- * 造一枚省下拉的选项显示名取值器。
+ * 造一枚省下拉的选项显示名取值器(2026-09-18 Frank「这个都改成英文全称」:下拉与省列同形,一律英文全名;
+ * 原先按界面语言取名,NT / YT 没有译名就裸露成代码)。
  *
- * @param x 取词函数。
- * @returns 省码 → 省名。
+ * @returns 省码 → 英文省名。
  */
-export function makeProvLabel(x: WordsIn): NocNameFn {
+export function makeProvLabel(): NocNameFn {
   function provLabel(code: string): string {
-    return provNameOf({ t: x.t, code })
+    return provEnOf(code)
   }
   return provLabel
 }

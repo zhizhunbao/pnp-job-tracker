@@ -46,7 +46,7 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           onChange={p.onProv}
           opts={p.data.provs}
           all={p.t('all.prov')}
-          labelOf={makeProvLabel({ t: p.t })} />
+          labelOf={makeProvLabel()} />
         <Select value={p.f.group}
           onChange={p.onGroup}
           opts={POOL_GROUPS}
