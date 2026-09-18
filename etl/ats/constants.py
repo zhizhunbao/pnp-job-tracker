@@ -149,6 +149,56 @@ applytojob)记进跳过计数,留人工跟进。"""
 WORKDAY = {"workday", "myworkdayjobs"}
 """企业级 ATS:cxs JSON 端点,需单独发现 host/site(与上面六家不同路)。"""
 
+PHENOM = {"phenom"}
+"""Phenom People 招聘站(2026-09-18 立;首家 Sienna Senior Living)。没有公开 JSON 清单,走的是
+「站点地图列职位页 → 每个职位页自带 schema.org JobPosting 结构化数据」这条路。
+起因:Sienna 在招 338 岗是雇主板在招数第一名,但它推给 Jobillico 的正文只有 335 字企业文化套话
+(Jobillico 在招岗里正文不足 500 字的 808 条,它一家 380 条),整理版五节全空;完整正文(含时薪、职责、要求,
+实测一条 4,702 字)只在它自己的招聘站上。Frank 09-18「两个后续都做」。"""
+
+PH_SITEMAP_PATH = "/sitemap.xml"
+"""Phenom 站点地图的路径(接在招聘站 origin 后面;Sienna 实测 508 条 url 里 482 条是职位页)。"""
+
+PH_JOB_LOC_RE = re.compile(r"<loc>\s*([^<\s]+/job/[^<\s]+)\s*</loc>", re.I)
+"""站点地图里的职位页地址(路径含 /job/;其余是分类页与静态页)。"""
+
+PH_LD_RE = re.compile(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', re.S | re.I)
+"""职位页里的 JSON-LD 脚本块。"""
+
+PH_MAX_JOBS = 1500
+"""一家公司一轮最多收的职位页数(防站点地图异常膨胀;Sienna 482)。"""
+
+PH_DELAY_S = 0.3
+"""逐页取职位页的间隔秒(礼貌;只对没缓存过的新页生效 —— 首轮约 480 页 3~4 分钟,之后每轮只取新增)。"""
+
+PH_CRAWL_SLUG_TPL = "ats-{company}"
+"""crawl 层的站点 slug(一家公司一份 manifest):职位页原文先落 crawl 层再抽字段(2026-09-02 数据链铁律),
+同时它就是增量的依据 —— 缓存里有的页不再请求。职位下架靠站点地图:地图里没有了,这一轮就不收。"""
+
+PH_TYPE_JOB = "JobPosting"
+"""JSON-LD 的 @type:职位。"""
+
+URL_SCHEME_SEP = "://"
+"""拼 origin 用:scheme 与 host 之间。"""
+
+K_LD_TYPE = "@type"
+"""JSON-LD 键:类型。"""
+
+K_LD_DATE_POSTED = "datePosted"
+"""JSON-LD 键:发布日。"""
+
+K_LD_JOB_LOCATION = "jobLocation"
+"""JSON-LD 键:工作地点(对象或对象数组)。"""
+
+K_LD_ADDRESS = "address"
+"""JSON-LD 键:地点里的地址对象。"""
+
+K_LD_LOCALITY = "addressLocality"
+"""JSON-LD 键:市。"""
+
+K_LD_REGION = "addressRegion"
+"""JSON-LD 键:省码。"""
+
 TOKEN_RE = {
     ATS_GREENHOUSE: re.compile(
         r"for=([a-z0-9]+)|boards\.greenhouse\.io/(?:embed/job_board\?for=)?([a-z0-9]+)", re.I),
@@ -419,6 +469,12 @@ BLANK_LINES_RE = re.compile(r"\n{3,}")
 
 JOB_ID_RE = re.compile(r"/([A-Za-z0-9_\-]{4,})/?(?:[?#]|$)")
 """从帖子 URL 末段取稳定 id(.md 文件名用)。"""
+
+PH_JOB_ID_RE = re.compile(r"/job/([A-Z0-9]{12,})/")
+"""Phenom 职位页地址里的稳定 id(`/job/<ID>/<标题折字>`,id 是一串 12 位以上的大写字母数字,如
+SILICACOOKT078826EXTERNALENCA)。它的末段是标题折字不是 id —— 同名岗在多个院区各发一条(Registered-Nurse-Casual),
+按末段取名 482 个岗只落出 283 个 .md(2026-09-18 首跑实撞,199 个被同名覆盖)。形状卡得严(全大写 + 12 位起),
+Workday 地址里的 `/job/<地点>/<标题>` 撞不上。"""
 
 NONALNUM_RE = re.compile(r"[^a-z0-9]+")
 """URL 取不到 id 时,标题折连字符当文件名。"""

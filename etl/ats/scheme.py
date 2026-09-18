@@ -380,3 +380,28 @@ class SalaryTally:
 
     updated: int
     """补上薪资的职位数。"""
+
+
+@dataclass
+class PhenomFetchIn:
+    """fetch_phenom() 入参:一家 Phenom 招聘站。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    careers_url: str
+    """招聘站地址(只用它的 origin 去拼站点地图)。"""
+
+    company: str
+    """公司文件夹名(crawl 层 slug 用)。"""
+
+
+@dataclass
+class PhenomJobIn:
+    """to_phenom_job() 入参:一个职位页。"""
+
+    url: str
+    """职位页地址。"""
+
+    html: str
+    """职位页原文。"""

@@ -19,13 +19,17 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import json
+import time
 from pathlib import Path
+from urllib.parse import urlsplit
 from datetime import datetime, timezone
 from typing import cast
 
 from fetch.constants import WS_RE
 from paths import WriteJsonIn, WriteTextIn, write_json, write_text
 from fetch.functions import make_client
+from crawl.functions import load_cache_index, put_cached_pages
+from crawl.scheme import CachePage, CachePutManyIn
 from log.functions import err, say
 from ats.constants import (
     ERRORS_REPLACE, FRONTMATTER_RE, FRONT_URL_RE, JD_INDEX_INDENT, JD_MD_GLOB, K_JD_BODY, K_JD_FILE, K_JD_MTIME,
@@ -54,13 +58,16 @@ from ats.constants import (
     TAG_RE, TECH_JOB_RE, TOKEN_RE, URL_LINE_RE, WD_BASE_URL_TPL, WD_DETAIL_URL_TPL, WD_HOST_RE,
     WD_JOBS_URL_TPL, WD_MAX_SITES, WD_OFFSET_START, WD_PAGE_SIZE, WD_SKIP_SITES, WITH_UNIT_RE,
     WORKABLE_ACCOUNT_URL_TPL, WORKDAY, ISO_DATE_LEN,
+    K_LD_ADDRESS, K_LD_DATE_POSTED, K_LD_JOB_LOCATION, K_LD_LOCALITY, K_LD_REGION, K_LD_TYPE, PHENOM,
+    PH_CRAWL_SLUG_TPL, PH_DELAY_S, PH_JOB_ID_RE, PH_JOB_LOC_RE, PH_LD_RE, PH_MAX_JOBS, PH_SITEMAP_PATH, PH_TYPE_JOB,
+    URL_SCHEME_SEP,
 )
 from ats.scheme import (
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
     WorkdayDetailIn, WorkdayFetchIn, WorkdayFindIn, WorkdayJobIn, WorkdayPageIn, WorkdaySiteIn,
-    WorkdayTarget, WriteJobsIn,
+    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn,
 )
 
 
@@ -163,6 +170,10 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
     if ats in WORKDAY:
         targets = workday_targets(WorkdayFindIn(client=x.client, careers_url=careers_url))
         jobs = fetch_workday(WorkdayFetchIn(client=x.client, targets=targets))
+        if len(jobs) == 0:
+            return CompanyOut(scraped=False, skipped=True, tech=0)
+    elif ats in PHENOM:
+        jobs = fetch_phenom(PhenomFetchIn(client=x.client, careers_url=careers_url, company=x.folder.name))
         if len(jobs) == 0:
             return CompanyOut(scraped=False, skipped=True, tech=0)
     elif ats not in SUPPORTED:
@@ -509,6 +520,65 @@ def to_workday_job(x: WorkdayJobIn) -> AtsJob:
                   salary="", description=description)
 
 
+def fetch_phenom(x: PhenomFetchIn) -> list:
+    """Phenom 招聘站:站点地图列职位页 → 逐页读 JSON-LD。页面原文先进 crawl 层,缓存里有的不再请求(增量);
+    站点地图取不到 = 这家本轮没岗(空表,调用方按跳过处理,不拿空表盖旧数据)。"""
+    parts = urlsplit(x.careers_url)
+    origin = parts.scheme + URL_SCHEME_SEP + parts.netloc
+    try:
+        sitemap = x.client.get(origin + PH_SITEMAP_PATH).text
+    except Exception as e:  # noqa: BLE001 — 站点地图取不到 = 这家本轮抓不了,留痕后跳过
+        err(origin + PH_SITEMAP_PATH, e)
+        return []
+    urls: list = []
+    for u in PH_JOB_LOC_RE.findall(sitemap):
+        if u not in urls:
+            urls.append(u)
+    urls = urls[:PH_MAX_JOBS]
+    slug = PH_CRAWL_SLUG_TPL.format(company=x.company)
+    cached = load_cache_index(slug)
+    fresh: list = []
+    out = []
+    for url in urls:
+        hit = cached.get(url)
+        if hit is not None:
+            html = Path(hit).read_text(encoding=ENC_UTF8)
+        else:
+            try:
+                html = x.client.get(url).text
+            except Exception as e:  # noqa: BLE001 — 一页取不到不拖累别的页
+                err(url, e)
+                continue
+            fresh.append(CachePage(url=url, html=html, title=""))
+            time.sleep(PH_DELAY_S)
+        job = to_phenom_job(PhenomJobIn(url=url, html=html))
+        if job is not None:
+            out.append(job)
+    put_cached_pages(CachePutManyIn(slug=slug, pages=fresh))
+    return out
+
+
+def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
+    """职位页 → AtsJob:读页面里 schema.org JobPosting 那一块 JSON-LD;没有(页面已下架成空壳)= None。"""
+    for block in PH_LD_RE.findall(x.html):
+        try:
+            data = json.loads(block)
+        except ValueError:
+            continue
+        if not isinstance(data, dict) or data.get(K_LD_TYPE) != PH_TYPE_JOB:
+            continue
+        place = data.get(K_LD_JOB_LOCATION) or {}
+        if isinstance(place, list):
+            place = (place or [{}])[0]
+        address = place.get(K_LD_ADDRESS) or {}
+        location = join_parts([address.get(K_LD_LOCALITY, ""), address.get(K_LD_REGION, "")])
+        description = data.get(K_DESCRIPTION, "") or ""
+        return AtsJob(title=data.get(K_TITLE, ""), location=location, url=x.url, department="",
+                      posted=iso_of(data.get(K_LD_DATE_POSTED, "")), address=address_of(description),
+                      salary="", description=description)
+    return None
+
+
 def write_company_jobs(x: WriteJobsIn) -> None:
     """一家公司落盘:每岗一份 jobs/<id>.md(frontmatter + 完整描述)+ 一份精简 jobs.json。"""
     md_dir = x.folder / DIR_JOBS
@@ -574,11 +644,14 @@ def scan_jd_md(p: Path) -> JdMdScan | None:
 
 
 def job_id_of(job: AtsJob) -> str:
-    """.md 文件名:优先取 URL 末段的稳定 id,取不到用标题折连字符,都空兜 job。"""
+    """.md 文件名:优先取 URL 末段的稳定 id,取不到用标题折连字符,都空兜 job;Phenom 地址的 id 在中段,单独认。"""
     m = JOB_ID_RE.search(job.url)
     base = NONALNUM_RE.sub(DASH, job.title.lower())
     if m is not None:
         base = m.group(1)
+    ph = PH_JOB_ID_RE.search(job.url)
+    if ph is not None:
+        base = ph.group(1)
     if base == "":
         base = JOB_ID_FALLBACK
     return base[:JOB_ID_MAX_LEN].strip(DASH)
