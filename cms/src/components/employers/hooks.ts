@@ -15,8 +15,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
-  boardUrlOf, loadBoard, makeClear, makeEntryToggle, makeGroup, makeLmiaToggle, makePage, makeProv, makeQCommit,
-  makeSector, makeSort,
+  boardUrlOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup, makeLmiaPick, makePage, makeProv,
+  makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type { EmployersIn, EmployersPanel, PoolFilters, PoolPage } from './types'
@@ -35,6 +35,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [data, setData] = useState<PoolPage>(x.initial)
   const [loading, setLoading] = useState(false)
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
+  const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
   const first = useRef(true)
   const qs = qsOf({ f })
 
@@ -75,8 +76,10 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onGroup: makeGroup({ f, setF }),
     onProv: makeProv({ f, setF }),
     onSector: makeSector({ f, setF }),
-    onEntry: makeEntryToggle({ f, setF }),
-    onLmia: makeLmiaToggle({ f, setF }),
+    onEntry: makeEntryPick({ f, setF }),
+    onLmia: makeLmiaPick({ f, setF }),
+    fold,
+    onFold: makeFoldToggle({ fold, setFold }),
     onSort: makeSort({ f, setF }),
     onClear: makeClear({ f, setF, setQDraft }),
     onPage: makePage({ f, setF }),

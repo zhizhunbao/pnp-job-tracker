@@ -1646,14 +1646,24 @@ export type EmployersPanel = {
   onSector: PickFn
 
   /**
-   * 拨「无经验可投」开关。
+   * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
    */
-  onEntry: ClickFn
+  onEntry: PickFn
 
   /**
-   * 拨「有 LMIA 记录」开关。
+   * 换「LMIA」下拉(选中 = 只看办过 LMIA 的)。
    */
-  onLmia: ClickFn
+  onLmia: PickFn
+
+  /**
+   * 「更多筛选」抽屉开着没。
+   */
+  fold: boolean
+
+  /**
+   * 开合「更多筛选」抽屉。
+   */
+  onFold: ClickFn
 
   /**
    * 表头点列换排序主键(再点当前列回默认星级)。
@@ -1975,6 +1985,51 @@ export type EntryToggleIn = {
    * 筛选落格。
    */
   setF: SetFilters
+}
+
+/**
+ * makeFoldToggle 的入参。
+ */
+export type FoldToggleIn = {
+  /**
+   * 抽屉现在开着没。
+   */
+  fold: boolean
+
+  /**
+   * 抽屉开合的落格。
+   */
+  setFold: (v: boolean) => void
+}
+
+/**
+ * moreBtnClsOf 的入参。
+ */
+export type MoreBtnClsIn = {
+  /**
+   * 抽屉开着没。
+   */
+  fold: boolean
+
+  /**
+   * 抽屉里生效的筛选数。
+   */
+  n: number
+}
+
+/**
+ * makeOnLabel 的入参。
+ */
+export type OnLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 「开」那一项的文案键。
+   */
+  k: string
 }
 
 /**

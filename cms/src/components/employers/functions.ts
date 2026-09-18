@@ -39,6 +39,7 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
+  CARET_DOWN, CARET_UP,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_SECTOR, EV_PROP_SORT,
@@ -69,9 +70,10 @@ import type {
   CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
-  EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, HeadSortFn,
-  ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn,
-  NocNameFn, NoteTextIn, PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
+  EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
+  ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
+  NocNameFn, NoteTextIn, OnLabelIn,
+  PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
@@ -1486,15 +1488,16 @@ export function makeSector(x: FilterPickIn): PickFn {
 }
 
 /**
- * 造「无经验可投」开关的手柄(拨一下取反,回第一页)。
+ * 造「经验」下拉的手柄(选中 = 只看无经验可投,回第一页)。
+ * 沿革:2026-09-13 是胶囊开关(makeEntryToggle,拨一下取反);2026-09-18 Frank「这种也设计成下拉框?」改下拉,收进「更多筛选」。
  *
  * @param x 当前筛选与落格。
- * @returns 胶囊的 onClick。
+ * @returns 下拉的 onChange。
  */
-export function makeEntryToggle(x: EntryToggleIn): ClickFn {
-  function onEntry(): void {
+export function makeEntryPick(x: EntryToggleIn): PickFn {
+  function onEntry(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_ENTRY })
-    x.setF(withOf({ f: x.f, entry: x.f.entry === false, page: 0 }))
+    x.setF(withOf({ f: x.f, entry: v === ENTRY_ON, page: 0 }))
   }
   return onEntry
 }
@@ -1558,17 +1561,101 @@ function isSortKeyOf(v: string): v is PoolSort {
 }
 
 /**
- * 造「有 LMIA 记录」开关的手柄(拨一下取反,回第一页)。
+ * 造「LMIA」下拉的手柄(选中 = 只看办过 LMIA 的,回第一页)。
+ * 沿革同 makeEntryPick:09-13 胶囊开关(makeLmiaToggle)→ 09-18 下拉。
  *
  * @param x 当前筛选与落格。
- * @returns 胶囊的 onClick。
+ * @returns 下拉的 onChange。
  */
-export function makeLmiaToggle(x: EntryToggleIn): ClickFn {
-  function onLmia(): void {
+export function makeLmiaPick(x: EntryToggleIn): PickFn {
+  function onLmia(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_LMIA })
-    x.setF(withOf({ f: x.f, lmia: x.f.lmia === false, page: 0 }))
+    x.setF(withOf({ f: x.f, lmia: v === ENTRY_ON, page: 0 }))
   }
   return onLmia
+}
+
+/**
+ * 造开合「更多筛选」抽屉的手柄。
+ *
+ * @param x 抽屉现态与落格。
+ * @returns 钮的 onClick。
+ */
+export function makeFoldToggle(x: FoldToggleIn): ClickFn {
+  function onFold(): void {
+    x.setFold(x.fold === false)
+  }
+  return onFold
+}
+
+/**
+ * 抽屉里生效的筛选数(经验 / LMIA 两格;职位板「更多筛选」钮上的计数同义)。
+ *
+ * @param x 当前筛选。
+ * @returns 生效数。
+ */
+export function foldCountOf(x: FiltersIn): number {
+  let n = 0
+  if (x.f.entry) {
+    n += 1
+  }
+  if (x.f.lmia) {
+    n += 1
+  }
+  return n
+}
+
+/**
+ * 「更多筛选」钮的类名预算:全局控件高度 + 基座 + 激活修饰(抽屉开着、或里面有生效筛选)。
+ *
+ * @param x 抽屉开合与生效数。
+ * @returns 拼好的 className。
+ */
+export function moreBtnClsOf(x: MoreBtnClsIn): string {
+  const cls = [CTL_CLS, cssOf(css.moreBtn)]
+  if (x.fold || x.n > 0) {
+    cls.push(cssOf(css.moreBtnActive))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 「更多筛选」钮尾巴的箭头。
+ *
+ * @param fold 抽屉开着没。
+ * @returns 箭头字符。
+ */
+export function caretOf(fold: boolean): string {
+  if (fold) {
+    return CARET_UP
+  }
+  return CARET_DOWN
+}
+
+/**
+ * 开关型下拉的当前值:开 = ENTRY_ON,关 = 空串(不限)。
+ *
+ * @param on 这一格开着没。
+ * @returns 下拉的 value。
+ */
+export function onValueOf(on: boolean): string {
+  if (on) {
+    return ENTRY_ON
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 造一枚开关型下拉的选项显示名取值器(只有「开」一项,文案键由调用方给)。
+ *
+ * @param x 取词函数与文案键。
+ * @returns 选项值 → 显示名。
+ */
+export function makeOnLabel(x: OnLabelIn): NocNameFn {
+  function onLabel(): string {
+    return x.t(x.k)
+  }
+  return onLabel
 }
 
 /**

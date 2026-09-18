@@ -8,18 +8,24 @@
  * 指定改成带排序的列(Frank 09-12 拍板合表 + 排序列);开关两枚:「无经验可投」(身份预置用:应届 / 无加国经验
  * 的画像默认开)与「有 LMIA 记录」(09-13「这一列删掉,筛选加一个 LMIA 的筛选」:旅转工画像用)。
  * 2026-08-27 换装批自 Employers.tsx 的筛选段提出成文件。
+ * 2026-09-18 雇主板换版(Frank「可以参考下 job 页面的布局吗」「省份筛选加了吗」「这种也设计成下拉框?」):
+ * 筛选行逐位照职位板 —— 搜索 / 省 / 行业 / 类别 / 更多筛选 / 清除 / 行尾更新时间;两枚胶囊开关(无经验可投、有 LMIA 记录)
+ * 改成下拉收进「更多筛选」抽屉,整行不再有胶囊。抽屉样式用的是本域 09-13 退役时留下的 .drawer / .moreBtn 一族。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { POOL_GROUPS, POOL_SECTORS } from '@/lib/employers'
 import { Button } from '@/components/button'
-import { Chip } from '@/components/chip'
+import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
 import { Updated } from '@/components/time'
-import { BTN_SECONDARY, SEARCH_SIZE } from './constants'
-import { anyFilterOf, clearBtnClsOf, makeGroupLabel, makeProvLabel, makeSectorLabel } from './functions'
+import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE } from './constants'
+import {
+  anyFilterOf, caretOf, clearBtnClsOf, foldCountOf, makeGroupLabel, makeOnLabel, makeProvLabel, makeSectorLabel,
+  moreBtnClsOf, onValueOf,
+} from './functions'
 import type { EmployerPanelIn } from './types'
 import css from './employers.module.css'
 
@@ -27,30 +33,34 @@ import css from './employers.module.css'
  * 雇主板筛选区。
  *
  * @param props 整机面板(它只读不写)。
- * @returns 常用一行。
+ * @returns 常用一行 + 「更多筛选」抽屉。
  */
 export function EmployerFilterBar({ p }: EmployerPanelIn) {
+  const n = foldCountOf({ f: p.f })
   return (
     <div className={css.filtCol}>
       <div className={css.filtRow}>
         <Search value={p.qDraft} onChange={p.onQDraft} placeholder={p.t('de.qPh')} size={SEARCH_SIZE} />
-        <Select value={p.f.group}
-          onChange={p.onGroup}
-          opts={POOL_GROUPS}
-          all={p.t('de.allGroup')}
-          labelOf={makeGroupLabel({ t: p.t })} />
         <Select value={p.f.prov}
           onChange={p.onProv}
           opts={p.data.provs}
           all={p.t('all.prov')}
           labelOf={makeProvLabel({ t: p.t })} />
+        <Select value={p.f.group}
+          onChange={p.onGroup}
+          opts={POOL_GROUPS}
+          all={p.t('de.allGroup')}
+          labelOf={makeGroupLabel({ t: p.t })} />
         <Select value={p.f.sector}
           onChange={p.onSector}
           opts={POOL_SECTORS}
           all={p.t('de.allSector')}
           labelOf={makeSectorLabel({ t: p.t })} />
-        <Chip active={p.f.entry} onClick={p.onEntry}>{p.t('de.entry')}</Chip>
-        <Chip active={p.f.lmia} onClick={p.onLmia}>{p.t('de.lmia')}</Chip>
+        <Button kind={BTN_SECONDARY} className={moreBtnClsOf({ fold: p.fold, n })} onClick={p.onFold}>
+          {p.t('filter.more')}
+          {n > 0 && <span className={cssOf(css.moreBadge)}>{n}</span>}
+          <span className={cssOf(css.caret)}>{caretOf(p.fold)}</span>
+        </Button>
         {anyFilterOf({ f: p.f }) && (
           <Button kind={BTN_SECONDARY} className={clearBtnClsOf()} onClick={p.onClear}>
             {p.t('clear')}
@@ -58,6 +68,22 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
         )}
         <Updated iso={p.updatedAt} t={p.t} />
       </div>
+      {p.fold && (
+        <div className={css.drawer}>
+          <div className={css.filtRow}>
+            <Select value={onValueOf(p.f.entry)}
+              onChange={p.onEntry}
+              opts={OPTS_ON}
+              all={p.t('de.entryAll')}
+              labelOf={makeOnLabel({ t: p.t, k: KEY_ENTRY_ON })} />
+            <Select value={onValueOf(p.f.lmia)}
+              onChange={p.onLmia}
+              opts={OPTS_ON}
+              all={p.t('de.lmiaAll')}
+              labelOf={makeOnLabel({ t: p.t, k: KEY_LMIA_ON })} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -668,6 +668,32 @@ export const P_LMIA = 'lmia'
 export const ENTRY_ON = '1'
 
 /**
+ * 「更多筛选」里两个下拉(经验 / LMIA)的唯一选项值:选中 = 开(2026-09-18 Frank「这种也设计成下拉框?」:
+ * 两枚胶囊开关改下拉,值沿用 URL 里的开值,空串 = 不限)。
+ */
+export const OPTS_ON = ['1']
+
+/**
+ * 「经验」下拉里「开」那一项的文案键(无经验可投)。
+ */
+export const KEY_ENTRY_ON = 'de.entry'
+
+/**
+ * 「LMIA」下拉里「开」那一项的文案键(办过 LMIA)。
+ */
+export const KEY_LMIA_ON = 'de.lmia'
+
+/**
+ * 「更多筛选」钮尾巴的箭头:抽屉合着。
+ */
+export const CARET_DOWN = '▼'
+
+/**
+ * 「更多筛选」钮尾巴的箭头:抽屉开着。
+ */
+export const CARET_UP = '▲'
+
+/**
  * 行业组名的键前缀(`pulse.ind.stem`,与把脉页同一套词条)。
  */
 export const GROUP_KEY_HEAD = 'pulse.ind.'
