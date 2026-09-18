@@ -68,6 +68,10 @@ class PoolRow(BaseModel):
     lmiaLastQuarter: str | None
     """最近 LMIA 获批季(无记录 = None)。"""
 
+    sector: str | None = None
+    """雇主类别(federal / government / municipal / indigenous / public;None = 私营)。2026-09-18 雇主分类批一:
+    按名字判,尺子 = names 域 sector_of(与 companies.sector 同一把;池里没有公司页的雇主也有类别)。"""
+
     fetched: str
     """构建日(ISO)。"""
 

@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from noc.functions import broad_of, group_of, teer_of
+from names.functions import sector_of
 from log.functions import say
 from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
@@ -328,6 +329,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         websiteKnown=bool(comp.get(K_WEBSITE)),
         lmiaSkilledTotal=skilled_total,
         lmiaLastQuarter=lmia_row.get(K_LAST_QUARTER) or None,
+        sector=sector_of(ctx.names.get(x.key) or x.key) or None,
         fetched=date.today().isoformat())
 
 
