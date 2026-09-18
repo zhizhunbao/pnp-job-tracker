@@ -17,14 +17,14 @@ from fetch.functions import make_client
 from log.functions import say
 from jdformat import FORMAT_LIMIT
 from jdformat.constants import (
-    BODY_MAX_LEN, DIGITS_RE, ENV_LLM_BASE, ENV_LLM_MODEL, FIELD_NONE, FLUSH_N, GEN_TOKENS, GEN_TRIES, HOURS_VALUES,
+    BLANK_STRIP_RE, BODY_MAX_LEN, DIGITS_RE, ENV_LLM_BASE, ENV_LLM_MODEL, FIELD_NONE, FLUSH_N, GEN_TOKENS, GEN_TRIES, HOURS_VALUES,
     HRS_RE, IN_MART_JOBS, JSON_INDENT, K_DATE_POSTED, K_DESCRIPTION, K_EXTERNAL_ID, K_STATUS, LLM_MODEL_DEFAULT,
     LLM_TEMPERATURE, LLM_TIMEOUT_S, MARK_HEAD, MARK_INLINE_RE, MARK_LINE_REPL, MARK_TAIL, NOTE_DIGITS, NOTE_EMPTY,
-    NET_ERRORS, NOTE_HTTP_TPL, NOTE_LEN, NOTE_MARKS, NOTE_NO_LLM, NOTE_NO_MART, OPEN_STATUSES, OUT_FORMATTED,
+    NET_ERRORS, NOTE_BLANK, NOTE_HTTP_TPL, NOTE_LEN, NOTE_MARKS, NOTE_NO_LLM, NOTE_NO_MART, OPEN_STATUSES, OUT_FORMATTED,
     OUT_MAX_BASE, OUT_MAX_RATIO, OUT_MIN_LEN, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE,
     P_STREAM, P_TEMPERATURE, P_THINK, PATH_OLLAMA_GENERATE, PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL,
     PRINT_TARGETS_TPL,
-    PROMPT_HEAD, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
+    PROMPT_HEAD, RETRY_FAILED_DAYS, RETRY_TAIL, SECTION_MARKS, ST_FAIL, ST_OK, STRIP_REPL, TAIL_STRIP_RE, TERM_RE,
     TERM_VALUES, TEXT_ENCODING, THINK_RE, URL_TAIL_SLASH,
 )
 from jdformat.scheme import (
@@ -51,6 +51,7 @@ def build_formatted() -> None:
         say(NOTE_NO_MART)
         return
     cache = read_cache()
+    demote_blank(cache)
     pruned = prune_cache(PruneIn(cache=cache, jobs=jobs))
     todo = pick_todo(PickIn(jobs=jobs, cache=cache, limit=int(FORMAT_LIMIT)))
     say(PRINT_TARGETS_TPL.format(jobs=len(jobs), done=count_ok(cache), pruned=pruned, todo=len(todo),
@@ -140,6 +141,19 @@ def prune_cache(x: PruneIn) -> int:
     for ext in gone:
         del x.cache[ext]
     return len(gone)
+
+
+def demote_blank(cache: dict[str, FormatRecord]) -> int:
+    """存量里「ok 但五节全空」的记录降成失败(2026-09-18 立 NOTE_BLANK 校验之前放进来的 48 条):
+    不再当整理版往下游送;冷却期后照常重试(原帖正文补全了就能整理出来)。返回降级条数。"""
+    n = 0
+    for rec in cache.values():
+        if rec.status == ST_OK and BLANK_STRIP_RE.sub(STRIP_REPL, rec.formatted) == FIELD_NONE:
+            rec.status = ST_FAIL
+            rec.note = NOTE_BLANK
+            rec.formatted = FIELD_NONE
+            n += 1
+    return n
 
 
 def pick_todo(x: PickIn) -> list[str]:
@@ -235,12 +249,14 @@ def draft_of(answer: str) -> Draft:
 
 
 def validate_note_of(x: ValidateIn) -> str:
-    """整理版校验:五节标记齐 + 长度合理 + 输出多位数字必须来自原文(防幻觉)。过了给空串,没过给由头。"""
+    """整理版校验:五节标记齐 + 长度合理 + 不是五节全空 + 输出多位数字必须来自原文(防幻觉)。过了给空串,没过给由头。"""
     for mark in SECTION_MARKS:
         if (MARK_HEAD + mark + MARK_TAIL) not in x.out:
             return NOTE_MARKS
     if len(x.out) < OUT_MIN_LEN or len(x.out) > max(OUT_MAX_BASE, len(x.src) * OUT_MAX_RATIO):
         return NOTE_LEN
+    if BLANK_STRIP_RE.sub(STRIP_REPL, x.out) == FIELD_NONE:
+        return NOTE_BLANK
     src_digits: set[str] = set()
     for d in DIGITS_RE.findall(x.src):
         src_digits.add(d)
