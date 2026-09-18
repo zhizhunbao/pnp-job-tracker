@@ -16,7 +16,7 @@ import { useLang } from '@/components/i18n'
 import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, loadBoard, makeClear, makeEntryToggle, makeGroup, makeLmiaToggle, makePage, makeProv, makeQCommit,
-  makeSort,
+  makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type { EmployersIn, EmployersPanel, PoolFilters, PoolPage } from './types'
@@ -74,6 +74,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onQDraft: setQDraft,
     onGroup: makeGroup({ f, setF }),
     onProv: makeProv({ f, setF }),
+    onSector: makeSector({ f, setF }),
     onEntry: makeEntryToggle({ f, setF }),
     onLmia: makeLmiaToggle({ f, setF }),
     onSort: makeSort({ f, setF }),

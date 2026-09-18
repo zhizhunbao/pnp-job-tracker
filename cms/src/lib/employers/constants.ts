@@ -121,6 +121,11 @@ export const PARAM = {
   prov: 'prov',
 
   /**
+   * 雇主类别(POOL_SECTORS 之一;2026-09-18 雇主分类批一入库,雇主板类别下拉用)。
+   */
+  sector: 'sector',
+
+  /**
    * 职业码。
    */
   noc: 'noc',
@@ -166,7 +171,7 @@ export const POOL_GROUPS = ['health', 'stem', 'trades', 'food', 'transport', 'ma
 /**
  * 雇主板可点的排序主键白名单(与 `PoolSort` 联合逐字对齐;SQL 片段在 lib/db/sql.ts EMPLOYER_POOL_ORDER 按键取)。
  */
-export const POOL_SORTS = ['star', 'open', 'designated', 'name'] as const
+export const POOL_SORTS = ['star', 'open', 'designated', 'name', 'sector', 'province', 'city'] as const
 
 /**
  * 排序方向白名单(与 `PoolDir` 联合逐字对齐)。
@@ -196,6 +201,21 @@ export const POOL_SORT_DIR: Record<string, string> = {
    * 名字 A→Z。
    */
   name: 'asc',
+
+  /**
+   * 类别按键升序(2026-09-18 雇主板类别 / 省 / 市三列可点排序)。
+   */
+  sector: 'asc',
+
+  /**
+   * 省码 A→Z。
+   */
+  province: 'asc',
+
+  /**
+   * 城市名 A→Z。
+   */
+  city: 'asc',
 }
 
 /**
@@ -454,6 +474,23 @@ export const CAP_PROGRAM = 8
  * URL 参数的保留长度:省码。
  */
 export const CAP_PROV = 4
+
+/**
+ * URL 参数的保留长度:雇主类别键(最长 indigenous 10 字)。
+ */
+export const CAP_SECTOR = 12
+
+/**
+ * 雇主类别的筛选值白名单(下拉选项序 = 这个序)。前五个是库里 employer_pool.sector 的字面量
+ * (数据层 etl/names sector_of,2026-09-18 雇主分类批一);`private` 是筛选专用词 —— 库里私营 = NULL,
+ * 不存这个字面量,SQL 里按 `sector IS NULL` 判。
+ */
+export const POOL_SECTORS = ['federal', 'government', 'municipal', 'indigenous', 'public', 'private'] as const
+
+/**
+ * 私营的筛选值(库里是 NULL,见 POOL_SECTORS)。
+ */
+export const SECTOR_PRIVATE = 'private'
 
 /**
  * URL 参数的保留长度:职业码。

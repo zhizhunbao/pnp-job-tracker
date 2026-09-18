@@ -19,6 +19,7 @@ import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
+  CAP_SECTOR, POOL_SECTORS,
   CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
   CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
@@ -57,7 +58,7 @@ import { HDR_USER_AGENT } from '../http'
 /**
  * URL/query 参数 → 规范化筛选(SSR 与 /api/employers 共用一份,避免两端口径漂移;
  * 2026-09-13 雇主板批二:designated/hiring 双口径退役,板读雇主池)。
- * 收窄:行业组、排序键、方向只认白名单(方向不合法退该键默认方向);省两位大写;制度三个之内;职业 5 位(只用于 SSR
+ * 收窄:行业组、类别、排序键、方向只认白名单(方向不合法退该键默认方向);省两位大写;制度三个之内;职业 5 位(只用于 SSR
  * 一次性换算成组);entry / lmia 只认 ENTRY_ON;页码非负整数封顶;搜索词去掉 SQL 通配符。不合法一律落 FILTER_UNSET(这一格不筛)。
  *
  * @param input 参数取值器。
@@ -67,6 +68,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const group = clip({ value: input.get(PARAM.group), max: CAP_GROUP }).toLowerCase()
   const prov = clip({ value: input.get(PARAM.prov), max: CAP_PROV }).toUpperCase()
   const program = clip({ value: input.get(PARAM.program), max: CAP_PROGRAM }).toUpperCase()
+  const sector = clip({ value: input.get(PARAM.sector), max: CAP_SECTOR }).toLowerCase()
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
@@ -82,6 +84,10 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   let cleanProgram = FILTER_UNSET
   if ((EMP_PROGRAMS as readonly string[]).includes(program)) {
     cleanProgram = program
+  }
+  let cleanSector = FILTER_UNSET
+  if ((POOL_SECTORS as readonly string[]).includes(sector)) {
+    cleanSector = sector
   }
   let cleanNoc = FILTER_UNSET
   if (NOC_RE.test(noc)) {
@@ -100,7 +106,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
   }
   return {
-    group: cleanGroup, prov: cleanProv, program: cleanProgram, noc: cleanNoc,
+    group: cleanGroup, prov: cleanProv, sector: cleanSector, program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
     lmia: input.get(PARAM.lmia) === ENTRY_ON,
     q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }).replace(Q_WILD_RE, FILTER_UNSET),
@@ -217,7 +223,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
       const raw = await queryRows({
         db: db, sql: SQL.employerPoolPage(orderOf({ cols: SQL.EMPLOYER_POOL_ORDER, tie: SQL.EMPLOYER_POOL_TIE,
           sort: f.sort, dir: f.dir })),
-        params: [f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize],
+        params: [f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector],
         map: passPoolDbRow,
       })
       return pageOf({ raw, filters: f, pageSize: input.pageSize, provs })
@@ -257,7 +263,8 @@ function pageOf(input: PageOfIn): PoolPage {
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
   const key = [
-    f.q, f.prov, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page), String(input.pageSize),
+    f.q, f.prov, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
+    String(input.pageSize),
   ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
@@ -267,7 +274,8 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
     db: input.db,
     sql: SQL.employerPoolAll(orderOf({ cols: SQL.EMPLOYER_POOL_ALL_ORDER, tie: SQL.EMPLOYER_POOL_ALL_TIE,
       sort: f.sort, dir: f.dir })),
-    params: [f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize], map: passPoolDbRow,
+    params: [f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector],
+    map: passPoolDbRow,
   })
   const page = pageOf({ raw, filters: f, pageSize: input.pageSize, provs: input.provs })
   if (CACHE.poolPages.size >= POOL_PAGES_MAX) {
@@ -1388,7 +1396,8 @@ export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
 export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
     key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), industry: textOrNull(r.industry),
-    province: text(r.province), city: text(r.city), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
+    sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
+    cityKo: text(r.city_ko),
     locations: toStrList(r.locations), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),

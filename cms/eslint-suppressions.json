@@ -1927,9 +1927,6 @@
   "src/lib/employers/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 2
-    },
-    "local/no-bare-strings": {
-      "count": 2
     }
   },
   "src/lib/i18n/server.ts": {

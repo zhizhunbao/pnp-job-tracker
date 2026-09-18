@@ -21,7 +21,7 @@ import type { Db } from '../db'
 /**
  * 雇主板排序主键(与 constants.POOL_SORTS 逐字对齐;SQL 片段按键取)。
  */
-export type PoolSort = 'star' | 'open' | 'designated' | 'name'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city'
 
 /**
  * 排序方向(与 constants.POOL_DIRS 逐字对齐)。
@@ -42,6 +42,11 @@ export type PoolFilters = {
    * 省码;空串 = 全国。
    */
   prov: string
+
+  /**
+   * 雇主类别(POOL_SECTORS 之一,`private` = 库里 NULL 的那批);空串 = 不筛。
+   */
+  sector: string
 
   /**
    * 制度(AIP | RCIP | FCIP,直达参数);空串 = 不筛。
@@ -107,6 +112,11 @@ export type PoolRow = {
    * 行业(companies.sectors);null = 无源。
    */
   industry: string | null
+
+  /**
+   * 雇主类别(federal / government / municipal / indigenous / public);空串 = 私营(库里 NULL)。
+   */
+  sector: string
 
   /**
    * 主省码;空串 = 池里没记。
@@ -1399,6 +1409,11 @@ export type PoolDbRow = {
    * 行业。
    */
   industry: string | null
+
+  /**
+   * 雇主类别;NULL = 私营。
+   */
+  sector: string | null
 
   /**
    * 主省码。

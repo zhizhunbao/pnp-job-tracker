@@ -123,6 +123,22 @@ export const EV_PAGE = 'emp-page'
 export const EV_PROP_PROV = 'prov'
 
 /**
+ * 埋点分组值:换的是雇主类别那一格(2026-09-18)。
+ */
+export const EV_PROP_SECTOR = 'sector'
+
+/**
+ * 雇主类别的文案键前缀(后接 federal / government / municipal / indigenous / public / private;
+ * 词条与把脉页雇主类别列同一套 `pulse.sector.*`,一处翻译两处用)。
+ */
+export const KEY_SECTOR_HEAD = 'pulse.sector.'
+
+/**
+ * 私营的文案键尾与筛选值(库里 sector 为空 = 私营)。
+ */
+export const SECTOR_PRIVATE = 'private'
+
+/**
  * 埋点附加值里承载低基数分组的那个键。lib/track 的 pickProp 只认 plan / kind / card 三个键,
  * 换个键名不会报错,只会让分组值静默丢掉(事件照记,prop 永远是空)。
  */
@@ -517,6 +533,22 @@ export const COL_WHERE_KEY = 'where'
 export const COL_OPEN_KEY = 'open'
 
 /**
+ * 雇主板列 key:雇主类别(排序键 sector;2026-09-18 雇主板换版:联邦 / 省 / 市镇 / 原住民政府 / 公立 / 私营)。
+ */
+export const COL_SECTOR_KEY = 'sector'
+
+/**
+ * 雇主板列 key:省(排序键 province;2026-09-18 Frank「省 市 是不是分两个字段」:照职位板分两列,
+ * 09-13「把省市合并成一个地址列」那条改判)。
+ */
+export const COL_PROV_KEY = 'province'
+
+/**
+ * 雇主板列 key:市(排序键 city)。
+ */
+export const COL_CITY_KEY = 'city'
+
+/**
  * 雇主板列 key:指定雇主(排序键 designated;旧 /employers/designated 路由 301 落到这一键)。
  */
 export const COL_DESIGNATED_KEY = 'designated'
@@ -532,27 +564,38 @@ export const COL_ACT_KEY = 'act'
  * 「这一列删掉,筛选加一个 LMIA 的筛选」;地点一列放三枚胶囊)。
  * 2026-09-13 晚 /fe 雇主页星级列撤(退成纯排序键),11% 分给五列:名字 / 地点各 +2、在招 / 指定各 +2、操作 +3。
  */
-export const W_POOL_NAME = '26%'
+export const W_POOL_NAME = '27%'
 
 /**
- * 雇主板地点列的宽(2026-09-13 晚起是 CityNameCell 双行形 + 「另 N 地」,三枚胶囊退役)。
+ * 雇主板类别列的宽(2026-09-18 雇主板换版:地点一列撤,换成 类别 / 省 / 市 三列;原 W_POOL_WHERE 26% 随之退役 ——
+ * 它是 09-13 晚 CityNameCell 双行形 +「另 N 地」的宽,Frank 09-18「招聘地点去掉吧」「英文 城市 也去掉」)。
  */
-export const W_POOL_WHERE = '26%'
+export const W_POOL_SECTOR = '12%'
+
+/**
+ * 雇主板省列的宽(界面语言省全名)。
+ */
+export const W_POOL_PROV = '13%'
+
+/**
+ * 雇主板市列的宽(界面语言城市名,一行)。
+ */
+export const W_POOL_CITY = '13%'
 
 /**
  * 雇主板在招列的宽(数字 + 入门占比灰注)。
  */
-export const W_POOL_OPEN = '12%'
+export const W_POOL_OPEN = '9%'
 
 /**
  * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
  */
-export const W_POOL_DESIGNATED = '16%'
+export const W_POOL_DESIGNATED = '12%'
 
 /**
  * 雇主板操作列的宽(两只 mini 钮并排)。
  */
-export const W_POOL_ACT = '20%'
+export const W_POOL_ACT = '14%'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。
@@ -650,11 +693,6 @@ export const DIR_ASC = 'asc'
 export const DIR_DESC = 'desc'
 
 /**
- * 地点格灰注里英文城市名与省码之间的空格(「Kelowna BC」;形照把脉页城市段 cityNoteOf)。
- */
-export const NOTE_SEP = ' '
-
-/**
  * 手机卡「指定雇主」胶囊的通用 tag 变体(通过绿:资格类信号)。
  */
 export const TAG_DESIGNATED = 'ok'
@@ -703,6 +741,11 @@ export const EV_KIND_NONE = 'none'
  * 查询参数名:省码。
  */
 export const P_PROV = 'prov'
+
+/**
+ * query 参数名:雇主类别。
+ */
+export const P_SECTOR = 'sector'
 
 /**
  * 查询参数名:雇主名关键词。

@@ -12,14 +12,14 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { POOL_GROUPS } from '@/lib/employers'
+import { POOL_GROUPS, POOL_SECTORS } from '@/lib/employers'
 import { Button } from '@/components/button'
 import { Chip } from '@/components/chip'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
 import { Updated } from '@/components/time'
 import { BTN_SECONDARY, SEARCH_SIZE } from './constants'
-import { anyFilterOf, clearBtnClsOf, makeGroupLabel, makeProvLabel } from './functions'
+import { anyFilterOf, clearBtnClsOf, makeGroupLabel, makeProvLabel, makeSectorLabel } from './functions'
 import type { EmployerPanelIn } from './types'
 import css from './employers.module.css'
 
@@ -44,6 +44,11 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           opts={p.data.provs}
           all={p.t('all.prov')}
           labelOf={makeProvLabel({ t: p.t })} />
+        <Select value={p.f.sector}
+          onChange={p.onSector}
+          opts={POOL_SECTORS}
+          all={p.t('de.allSector')}
+          labelOf={makeSectorLabel({ t: p.t })} />
         <Chip active={p.f.entry} onClick={p.onEntry}>{p.t('de.entry')}</Chip>
         <Chip active={p.f.lmia} onClick={p.onLmia}>{p.t('de.lmia')}</Chip>
         {anyFilterOf({ f: p.f }) && (

@@ -25,31 +25,34 @@ import { CompareSkilledCell } from './compareskilledcell'
 import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
-import { WhereCell } from './wherecell'
+import { PoolCityCell } from './poolcitycell'
+import { PoolProvCell } from './poolprovcell'
+import { SectorCell } from './sectorcell'
 import {
   AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_ACT_KEY,
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY, DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
+  COL_CITY_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY,
+  DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_SORT,
+  EV_PROP_SECTOR, EV_PROP_SORT,
   EV_ROW, EV_SEARCH,
-  EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SEP, KIND_AIP,
+  EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR,
-  META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND, NOTE_SEP,
+  META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PAGE_SIZE_FALLBACK, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_PROV, P_Q, P_SORT, QS_HEAD, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
+  P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_NAME, W_POOL_OPEN, W_POOL_WHERE,
+  W_POOL_CITY, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -72,7 +75,7 @@ import type {
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
   PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
-  WhereCellIn, WhereCellParts, WhereTextIn, WithIn,
+  WhereCellIn, WhereTextIn, WithIn,
   WordsIn,
 } from './types'
 import { VerdictCell } from './verdictcell'
@@ -190,7 +193,14 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     industry = r.industry
   }
   const kind = kindOf({ f: x.f })
-  const where = whereCellOf({ r, t: x.t, lang: x.lang })
+  let provText = TEXT_NONE
+  if (r.province !== TEXT_NONE) {
+    provText = provNameOf({ t: x.t, code: r.province })
+  }
+  let cityText = TEXT_NONE
+  if (r.city !== TEXT_NONE) {
+    cityText = cityNameOf({ r, t: x.t, lang: x.lang })
+  }
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -198,9 +208,9 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     hrefTitle: x.t('pulse.act.company'),
     industry,
     where: empWhereTextOf({ t: x.t, r }),
-    whereName: where.name,
-    whereNote: where.note,
-    whereMore: where.more,
+    sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
+    provText,
+    cityText,
     openText: String(r.openJobs),
     entryNote: entryNoteOf({ t: x.t, r }),
     designatedText: designatedTextOf({ t: x.t, r }),
@@ -252,34 +262,22 @@ function empWhereTextOf(x: RowWordsIn): string {
 }
 
 /**
- * 地点格的三样(2026-09-13 晚 /fe 雇主页 Frank 拍板接 09-11 城市显示拍板:界面语言城市名主文案 +
- * 「英文名 省码」灰注双行形,CityNameCell 唯一出口;只显主场一处,其余收成「另 N 地」——
- * 池里 97.2% 的雇主本就 ≤1 处地点,三枚胶囊是为 2.8% 设计的且挤爆列宽压进邻列)。
- * 没市有省 → 省全名当主文案不带灰注(站规:省份主文案用界面语言全名);都没有 → 三样全空(渲横杠)。
+ * 类别 → 文案键尾:库里五档原样,空串 = 私营。
  *
- * @param x 这一行、取词函数与界面语言。
- * @returns 主文案、灰注与「另 N 地」。
+ * @param sector 这一行的类别。
+ * @returns 文案键尾。
  */
-function whereCellOf(x: WhereCellIn): WhereCellParts {
-  let more = TEXT_NONE
-  if (x.r.locations.length > 1) {
-    more = x.t('de.moreLocN', { n: x.r.locations.length - 1 })
+function sectorKeyOf(sector: string): string {
+  if (sector === TEXT_NONE) {
+    return SECTOR_PRIVATE
   }
-  if (x.r.city === TEXT_NONE) {
-    if (x.r.province === TEXT_NONE) {
-      return { name: TEXT_NONE, note: TEXT_NONE, more: TEXT_NONE }
-    }
-    return { name: provNameOf({ t: x.t, code: x.r.province }), note: TEXT_NONE, more }
-  }
-  const name = cityNameOf(x)
-  if (name === x.r.city) {
-    return { name, note: x.r.province, more }
-  }
-  return { name, note: x.r.city + NOTE_SEP + x.r.province, more }
+  return sector
 }
 
 /**
  * 城市主文案:界面语言有人工核定译名用译名(cities.name_zh / name_ko,09-11「城市译名人工核定表禁模型」),否则英文原名。
+ * 2026-09-18 起它就是市格的全部:原 whereCellOf(主文案 +「英文名 省码」灰注 +「另 N 地」三样,09-13 晚接 CityNameCell 双行形;
+ * 池里 97.2% 的雇主 ≤1 处地点)随 Frank「招聘地点去掉吧」「英文 城市 也去掉」「省 市 是不是分两个字段」退役。
  *
  * @param x 这一行与界面语言。
  * @returns 城市名。
@@ -350,6 +348,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * 雇主板的列组(设计稿七格 + 09-12 拍板把证据拆成「指定雇主」「技能类 LMIA」两枚带排序的列,
  * 09-13 Frank「把省市合并成一个地址列」「多个地址用胶囊」「工资水位 有必要吗」「这一列删掉,筛选加一个 LMIA 的筛选」):
  * 雇主 / 地点 / 星级 / 在招 / 指定雇主 / 操作。
+ * 2026-09-18 雇主板换版(设计稿 docs/design/雇主分类与搜索-20260918.md):地点一列换成 类别 / 省 / 市 三列(都可点排序),
+ * 现为 雇主 / 类别 / 省 / 市 / 在招 / 指定雇主 / 操作;指定雇主等字段面板落地后改默认不勾。
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板星级退成纯排序键不占列:5★ 只 423 家、2★ 占 75.8%,默认降序首屏 14 页清一色
  * 五星,作列零信息量;默认排序仍是 star desc(lib/employers POOL_SORT_DEFAULT),表头无对应列就不出排序标记。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
@@ -360,7 +360,9 @@ export function empRowKeyOf(r: EmployerCellRow): string {
 export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
   return [
     { key: COL_NAME_KEY, label: x.t('de.colName'), width: W_POOL_NAME, sortable: true, render: NameCell },
-    { key: COL_WHERE_KEY, label: x.t('de.colWhere'), width: W_POOL_WHERE, render: WhereCell },
+    { key: COL_SECTOR_KEY, label: x.t('de.colSector'), width: W_POOL_SECTOR, sortable: true, render: SectorCell },
+    { key: COL_PROV_KEY, label: x.t('de.colProv'), width: W_POOL_PROV, sortable: true, render: PoolProvCell },
+    { key: COL_CITY_KEY, label: x.t('de.colCity'), width: W_POOL_CITY, sortable: true, render: PoolCityCell },
     {
       key: COL_OPEN_KEY,
       label: x.t('de.colOpen'),
@@ -1288,6 +1290,9 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.prov !== TEXT_NONE) {
     p.set(P_PROV, x.f.prov)
   }
+  if (x.f.sector !== TEXT_NONE) {
+    p.set(P_SECTOR, x.f.sector)
+  }
   if (x.f.entry) {
     p.set(P_ENTRY, ENTRY_ON)
   }
@@ -1391,6 +1396,10 @@ function withOf(x: WithIn): PoolFilters {
   if (x.prov != null) {
     prov = x.prov
   }
+  let sector = x.f.sector
+  if (x.sector != null) {
+    sector = x.sector
+  }
   let program = x.f.program
   if (x.program != null) {
     program = x.program
@@ -1422,6 +1431,7 @@ function withOf(x: WithIn): PoolFilters {
   return {
     group,
     prov,
+    sector,
     program,
     noc: x.f.noc,
     entry,
@@ -1459,6 +1469,20 @@ export function makeProv(x: FilterPickIn): PickFn {
     x.setF(withOf({ f: x.f, prov: v, page: 0 }))
   }
   return onProv
+}
+
+/**
+ * 造换雇主类别的手柄(顺带回第一页)。
+ *
+ * @param x 当前筛选与落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeSector(x: FilterPickIn): PickFn {
+  function onSector(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_SECTOR })
+    x.setF(withOf({ f: x.f, sector: v, page: 0 }))
+  }
+  return onSector
 }
 
 /**
@@ -1548,7 +1572,7 @@ export function makeLmiaToggle(x: EntryToggleIn): ClickFn {
 }
 
 /**
- * 造清空筛选的手柄:省 / 两个开关 / 制度 / 搜索词 / 排序全清,行业组保留(它是板的第一维,不是筛选项)。
+ * 造清空筛选的手柄:省 / 类别 / 两个开关 / 制度 / 搜索词 / 排序全清,行业组保留(它是板的第一维,不是筛选项)。
  *
  * @param x 当前筛选、落格与搜索草稿落格。
  * @returns 钮的 onClick。
@@ -1559,6 +1583,7 @@ export function makeClear(x: ClearIn): ClickFn {
     x.setF(withOf({
       f: x.f,
       prov: TEXT_NONE,
+      sector: TEXT_NONE,
       program: TEXT_NONE,
       entry: false,
       lmia: false,
@@ -1628,7 +1653,8 @@ export function makeRowView(x: RowViewIn): ClickFn {
  * @returns 有没有。
  */
 export function anyFilterOf(x: FiltersIn): boolean {
-  return x.f.prov !== TEXT_NONE || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE || x.f.q !== TEXT_NONE
+  return x.f.prov !== TEXT_NONE || x.f.sector !== TEXT_NONE || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE
+    || x.f.q !== TEXT_NONE
 }
 
 /**
@@ -1703,6 +1729,19 @@ export function makeProvLabel(x: WordsIn): NocNameFn {
     return provNameOf({ t: x.t, code })
   }
   return provLabel
+}
+
+/**
+ * 造一枚类别下拉的选项显示名取值器。
+ *
+ * @param x 取词函数。
+ * @returns 类别键 → 类别名。
+ */
+export function makeSectorLabel(x: WordsIn): NocNameFn {
+  function sectorLabel(key: string): string {
+    return x.t(KEY_SECTOR_HEAD + key)
+  }
+  return sectorLabel
 }
 
 /**

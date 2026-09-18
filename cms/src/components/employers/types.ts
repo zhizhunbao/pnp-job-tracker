@@ -30,7 +30,7 @@ export type TFn = (key: string, vars?: TVars) => string
 /**
  * 雇主板排序主键(与 lib/employers 的 POOL_SORTS 逐字对齐;本域自抄)。
  */
-export type PoolSort = 'star' | 'open' | 'designated' | 'name'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city'
 
 /**
  * 排序方向(与 lib/employers 的 POOL_DIRS 逐字对齐;本域自抄)。
@@ -51,6 +51,11 @@ export type PoolFilters = {
    * 省码;空串 = 全国。
    */
   prov: string
+
+  /**
+   * 雇主类别(federal / government / municipal / indigenous / public / private);空串 = 不筛。
+   */
+  sector: string
 
   /**
    * 制度(直达参数);空串 = 不筛。板上没有它的选择器,只随 URL 进出。
@@ -116,6 +121,11 @@ export type PoolRow = {
    * 行业;null = 无源(灰注不出)。
    */
   industry: string | null
+
+  /**
+   * 雇主类别;空串 = 私营。
+   */
+  sector: string
 
   /**
    * 主省码;空串 = 池里没记。
@@ -490,20 +500,21 @@ export type EmployerCellRow = {
   where: string
 
   /**
-   * 地点格主文案:界面语言城市名(译名表外直接英文;没市有省 = 省全名);空串 = 池里没记(渲横杠)。
-   * 2026-09-13 晚 /fe 雇主页接 09-11 城市显示拍板(CityNameCell 双行形),三枚胶囊退役。
+   * 类别格:界面语言的类别名(私营也照写,不渲横杠 —— 私营是事实不是缺数)。
    */
-  whereName: string
+  sectorText: string
 
   /**
-   * 地点格灰注:「英文名 省码」;主文案本就是英文时只剩省码;省全名当主文案时空串。
+   * 省格:界面语言省全名;空串 = 池里没记(渲横杠)。2026-09-18 Frank「省 市 是不是分两个字段」。
    */
-  whereNote: string
+  provText: string
 
   /**
-   * 地点格第三行「另 N 地」;空串 = 只有主场一处。
+   * 市格:界面语言城市名(译名表外直接英文),一行,不带英文灰注(Frank「英文 城市 也去掉」);空串 = 池里没记(渲横杠)。
+   * 沿革:2026-09-13 晚这里是 whereName / whereNote / whereMore 三格(CityNameCell 双行形 +「另 N 地」),
+   * 09-18「招聘地点去掉吧」后三格退役。
    */
-  whereMore: string
+  cityText: string
 
   /**
    * 在招岗数文本(0 也照显示 —— 桶里真的一个都没有,不是缺数)。
@@ -1226,26 +1237,6 @@ export type WhereCellIn = {
 }
 
 /**
- * 地点格的三样(whereCellOf 的返回)。
- */
-export type WhereCellParts = {
-  /**
-   * 主文案;空串 = 池里没记。
-   */
-  name: string
-
-  /**
-   * 灰注;空串 = 不出。
-   */
-  note: string
-
-  /**
-   * 「另 N 地」;空串 = 不出。
-   */
-  more: string
-}
-
-/**
  * whereTextOf 的入参。
  */
 export type WhereTextIn = {
@@ -1650,6 +1641,11 @@ export type EmployersPanel = {
   onProv: PickFn
 
   /**
+   * 换雇主类别(顺带回第一页)。
+   */
+  onSector: PickFn
+
+  /**
    * 拨「无经验可投」开关。
    */
   onEntry: ClickFn
@@ -1909,6 +1905,11 @@ export type WithIn = {
    * 换省。
    */
   prov?: string
+
+  /**
+   * 换雇主类别。
+   */
+  sector?: string
 
   /**
    * 换制度。

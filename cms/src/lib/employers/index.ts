@@ -9,7 +9,7 @@
  * @time 2026-08-21 23:20:43
  */
 
-export { CMP_KEY, CMP_MAX, EMP_PROGRAMS, POOL_DIRS, POOL_GROUPS, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from './constants'
+export { CMP_KEY, CMP_MAX, EMP_PROGRAMS, POOL_DIRS, POOL_GROUPS, POOL_SECTORS, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from './constants'
 export type {
   CompareRow, CompanyResearch, OccRow, PoolDir, PoolFilters, PoolPage, PoolRow, PoolSort,
   SponsorBoards, SponsorEmployerRow,

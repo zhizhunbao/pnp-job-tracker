@@ -541,6 +541,21 @@ export const EMPLOYER_POOL_ORDER: Record<string, string> = {
    * 雇主名。
    */
   name: 'p.name',
+
+  /**
+   * 雇主类别(2026-09-18;NULL = 私营,NULLS LAST 排在最后)。
+   */
+  sector: 'p.sector',
+
+  /**
+   * 主省码。
+   */
+  province: 'p.province',
+
+  /**
+   * 主市。
+   */
+  city: 'p.city',
 }
 
 /**
@@ -554,13 +569,15 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * CityNameCell 双行形;(name, province) 在 cities 唯一,实测无重复不会炸行)。
  * $1=行业组键,$2=省码或 ''(不筛),$3=只看无经验可投,$4=制度或 ''(直达参数 program=,指定项目清单含它),
  * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
+ * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * total 用窗口函数随行带回,一次往返。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolPage = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.locations, p.designated,
+      p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
@@ -574,6 +591,7 @@ export const employerPoolPage = (order: string) => `
       AND ($3 = false OR b.entry_jobs > 0)
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR b.lmia_skilled > 0)
+      AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -601,6 +619,21 @@ export const EMPLOYER_POOL_ALL_ORDER: Record<string, string> = {
    * 雇主名。
    */
   name: 'p.name',
+
+  /**
+   * 雇主类别(2026-09-18;NULL = 私营,NULLS LAST 排在最后)。
+   */
+  sector: 'p.sector',
+
+  /**
+   * 主省码。
+   */
+  province: 'p.province',
+
+  /**
+   * 主市。
+   */
+  city: 'p.city',
 }
 
 /**
@@ -613,12 +646,14 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * (DISTINCT ON 扫桶表一遍,生产实测 ~290ms,lib/employers 进程内 TTL 缓存整页);在招 / LMIA 出池行总量,
  * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
  * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
+ * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolAll = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.province, p.city, p.locations, p.designated, p.designated_programs,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.locations, p.designated,
+      p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
@@ -635,6 +670,7 @@ export const employerPoolAll = (order: string) => `
       AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR p.lmia_skilled_total > 0)
+      AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
