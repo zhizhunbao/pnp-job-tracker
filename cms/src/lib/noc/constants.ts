@@ -53,6 +53,8 @@ export const KEY_CAT = 'cat.'
 
 /**
  * 分类词条的 i18n 键前缀(老值仍在库里,回退用)。
+ * 2026-09-18 Frank「都叫科技」:大类 `IT` 的显示名改成「科技 / Tech / 테크」(公司行业那一类同名),
+ * 改的只是 `broad.IT` 这条文案与维度表的英韩名;键仍是 `IT`,库值、`?broad=IT` 与统计页的 `it` 路径都不动。
  */
 export const KEY_BROAD = 'broad.'
 
