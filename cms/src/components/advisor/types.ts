@@ -3473,3 +3473,68 @@ export type PairLabelIn = {
    */
   busy: boolean
 }
+
+/**
+ * CompanyModal(不带职位的公司弹框)的 props。
+ */
+export type CompanyModalIn = {
+  /**
+   * 公司页 slug(按它取数)。
+   */
+  slug: string
+
+  /**
+   * 公司名(页眉标题;数据到手前就能显示)。
+   */
+  name: string
+
+  /**
+   * 界面语言。
+   */
+  lang: AdvisorLang
+
+  /**
+   * 关弹框。
+   */
+  onClose: () => void
+}
+
+/**
+ * useCompanyModal 交回的面板。
+ */
+export type CompanyModalPanel = {
+  /**
+   * 中文对照开着没(默认关,2026-09-17 拍板)。
+   */
+  showZh: boolean
+
+  /**
+   * 中 / 韩别名(CompanyPanel 拿到档案后回传;页眉译名行显示)。
+   */
+  alias: string
+
+  /**
+   * 现场翻译在途(开关显「翻译中…」)。
+   */
+  transBusy: boolean
+
+  /**
+   * 已载入的职位行(雇主板上没有,恒空;CompanyPanel 的 jobs 要一个稳定引用)。
+   */
+  jobs: AdvisorJob[]
+
+  /**
+   * 拨中文对照开关。
+   */
+  onToggleZh: () => void
+
+  /**
+   * 别名回传落格。
+   */
+  onAlias: (alias: string) => void
+
+  /**
+   * 翻译在途回传落格。
+   */
+  onTransBusy: (busy: boolean) => void
+}

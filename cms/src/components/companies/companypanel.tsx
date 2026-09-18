@@ -36,13 +36,15 @@ import type { CompanyPanelIn } from './types'
  * 公司弹框。
  *
  * 2026-09-16 Frank「公司的也对照改一下」:中文对照开关上提到弹框页眉译名行,开合状态改由弹框递进来(showTrans)。
+ * 2026-09-18 Frank「雇主弹框…可以和 job 的公司弹框保持一致吗」:雇主板点雇主名开的也是这一件 —— 那里没有职位,
+ * job 给 null、按 slug 取,底部的雇主线索卡(要一条职位)不出,其余一字不差。
  *
  * @param props 当前职位、已载入职位、语言、点职位回调、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans, onTransBusy }: CompanyPanelIn) {
+export function CompanyPanel({ job, slug, jobs, lang, onOpenJob, onAlias, showTrans, onTransBusy }: CompanyPanelIn) {
   const t = makeT(lang)
-  const p = useCompanyPanel({ job, lang })
+  const p = useCompanyPanel({ job, slug, lang })
   let cachedAlias = TEXT_NONE
   let companyName = TEXT_NONE
   if (p.data != null) {
@@ -71,7 +73,7 @@ export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans, o
   return (
     <>
       {body}
-      <SponsorLeadCard job={job} t={t} src={LEAD_SRC_COMPANY} />
+      {job != null && <SponsorLeadCard job={job} t={t} src={LEAD_SRC_COMPANY} />}
     </>
   )
 }

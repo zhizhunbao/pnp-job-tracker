@@ -1225,8 +1225,14 @@ export type CompanySimilarRowIn = {
 export type CompanyPanelIn = {
   /**
    * 当前这一行职位(弹框从它出发:按 jobId 取公司、AI 速读吃它、判定入口带它)。
+   * null = 不是从职位进来的(2026-09-18 雇主板点雇主名),此时按 slug 取,底部的雇主线索卡不出(它要一条职位)。
    */
-  job: CompanyJobFact
+  job: CompanyJobFact | null
+
+  /**
+   * 公司页 slug;空串 = 按 job 的岗位号取。
+   */
+  slug: string
 
   /**
    * 已载入的职位行(点在招职位时按岗位号回查整行)。
@@ -1594,9 +1600,14 @@ export type LoadTransIn = {
  */
 export type LoadPanelIn = {
   /**
-   * 岗位号(职位板的主键两种形态都出现过,原样进请求体 —— 接口按它查)。
+   * 岗位号(职位板的主键两种形态都出现过,原样进请求体 —— 接口按它查);null = 按 slug 取。
    */
-  jobId: string | number
+  jobId: string | number | null
+
+  /**
+   * 公司页 slug;空串 = 按岗位号取。
+   */
+  slug: string
 
   /**
    * 取数结果落格。
@@ -2047,9 +2058,14 @@ export type CompanyPanelHookIn = {
   lang: CompaniesLang
 
   /**
-   * 当前这一行职位(换了职位要重取)。
+   * 当前这一行职位(换了职位要重取);null = 按 slug 取。
    */
-  job: CompanyJobFact
+  job: CompanyJobFact | null
+
+  /**
+   * 公司页 slug;空串 = 按 job 取。
+   */
+  slug: string
 }
 
 /**
@@ -2302,3 +2318,32 @@ export type DescTransHookIn = {
   has: boolean
 }
 
+/**
+ * panelBodyOf 的入参。
+ */
+export type PanelBodyIn = {
+  /**
+   * 岗位号;null = 没有职位。
+   */
+  jobId: string | number | null
+
+  /**
+   * 公司页 slug;空串 = 按岗位号取。
+   */
+  slug: string
+}
+
+/**
+ * `/api/jobs/company` 的请求体(两格恰有一格非空)。
+ */
+export type PanelBody = {
+  /**
+   * 岗位号。
+   */
+  jobId: string | number | null
+
+  /**
+   * 公司页 slug。
+   */
+  slug: string | null
+}

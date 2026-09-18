@@ -505,6 +505,11 @@ export type EmployerCellRow = {
   where: string
 
   /**
+   * 点雇主名(有公司页的才可点):普通点击开公司弹框并拦住跳转;按着 Ctrl / ⌘ / Shift 或非左键 = 放行,照链接去公司页。
+   */
+  onName: CardClickFn
+
+  /**
    * LMIA 格:技能类 LMIA 份数(选了行业组 = 桶内份数,否则 = 这家总量);0 = 空串(渲横杠)。
    */
   lmiaText: string
@@ -1003,6 +1008,11 @@ export type EmployerCellRowIn = {
   r: PoolRow
 
   /**
+   * 点雇主名开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
+
+  /**
    * 取词函数。
    */
   t: TFn
@@ -1026,6 +1036,11 @@ export type EmployerCellRowsIn = {
    * 本页的行。
    */
   rows: PoolRow[]
+
+  /**
+   * 点雇主名开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
 
   /**
    * 取词函数。
@@ -1856,6 +1871,21 @@ export type EmployersPanel = {
   onLmia: PickFn
 
   /**
+   * 开着的公司弹框(点了哪家);null = 没开。
+   */
+  modal: EmpModal | null
+
+  /**
+   * 点雇主名开公司弹框。
+   */
+  onOpenCompany: OpenCompanyFn
+
+  /**
+   * 关公司弹框。
+   */
+  onCloseModal: ClickFn
+
+  /**
    * 现在该显示的列(字段面板勾选 + 固定列 + 被筛选带出来的列;宽度已按显示的列归一)。
    */
   cols: EmpCol<EmployerCellRow>[]
@@ -2379,4 +2409,59 @@ export type PageMeta = {
    * 搜索结果里那段摘要,各入口一句定稿、不随参数变。
    */
   description: string
+}
+
+/**
+ * 开着的公司弹框是哪一家。
+ */
+export type EmpModal = {
+  /**
+   * 公司页 slug(弹框按它取数)。
+   */
+  slug: string
+
+  /**
+   * 雇主名(弹框页眉标题)。
+   */
+  name: string
+}
+
+/**
+ * 开公司弹框的落格。
+ */
+export type OpenCompanyFn = (x: EmpModal) => void
+
+/**
+ * makeNameClick 的入参。
+ */
+export type NameClickIn = {
+  /**
+   * 公司页 slug;空串 = 没有公司页(点了不开框)。
+   */
+  slug: string
+
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 埋点分组值。
+   */
+  kind: string
+
+  /**
+   * 开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
+}
+
+/**
+ * makeCloseModal 的入参。
+ */
+export type CloseModalIn = {
+  /**
+   * 弹框态落格。
+   */
+  setModal: (m: EmpModal | null) => void
 }

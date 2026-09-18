@@ -25,3 +25,4 @@
  */
 export { ActModal } from './actmodal'
 export { AdvisorModal } from './advisormodal'
+export { CompanyModal } from './companymodal'

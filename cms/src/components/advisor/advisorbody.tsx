@@ -11,7 +11,7 @@
  * @time 2026-08-28 22:40:00
  */
 import { CompanyPanel } from '@/components/companies'
-import { GROUP_CATEGORY, GROUP_COMPANY, GROUP_LOCATION } from './constants'
+import { GROUP_CATEGORY, GROUP_COMPANY, GROUP_LOCATION, TEXT_NONE } from './constants'
 import { CategoryPanel } from './categorypanel'
 import { GroupFacts } from './groupfacts'
 import { LocationPanel } from './locationpanel'
@@ -37,7 +37,7 @@ export function AdvisorBody({
   }
   if (group === GROUP_COMPANY) {
     return (
-      <CompanyPanel key={gen} job={f.job} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
+      <CompanyPanel key={gen} job={f.job} slug={TEXT_NONE} jobs={companyJobs} lang={f.lang} onOpenJob={onOpenJob}
         onAlias={onCompanyAlias} showTrans={f.showZh} onTransBusy={onCompanyTransBusy} />
     )
   }

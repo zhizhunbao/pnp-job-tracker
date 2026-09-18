@@ -26,7 +26,7 @@ import css from './employers.module.css'
  * @returns 加载条、表格、卡片流与翻页。
  */
 export function EmployerBoard({ p }: EmployerPanelIn) {
-  const rows = toEmployerCellRows({ rows: p.data.rows, t: p.t, lang: p.lang, f: p.f })
+  const rows = toEmployerCellRows({ rows: p.data.rows, t: p.t, lang: p.lang, f: p.f, onOpen: p.onOpenCompany })
   const empty = emptyTextOf({ t: p.t, f: p.f })
   const maxPage = maxPageOf({ total: p.data.total, pageSize: p.data.pageSize })
   return (

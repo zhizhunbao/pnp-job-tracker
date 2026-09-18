@@ -2674,6 +2674,11 @@ export const MARK_TAIL = ']'
 export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*)$/
 
 /**
+ * 公司页 slug 的形(小写字母数字与连字符,1~160 位;`/api/jobs/company` 的 { slug } 先过它再进库)。
+ */
+export const COMPANY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,159}$/
+
+/**
  * 整理版里贴在上一节正文尾巴上的节标记(2026-09-14 Frank「跑偏了」实撞:模型把五节挤在一行,翻译按行对位就把整篇
  * 连标记一起塞进首节一行,标记还被译成「[要求]」;库里 310 条整理版没有换行)。读侧与写侧都按它把标记顶到行首。
  */

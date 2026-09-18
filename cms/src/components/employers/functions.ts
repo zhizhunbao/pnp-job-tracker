@@ -72,7 +72,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  ColKeysIn, EmpPickWords, KeepShownIn, PickWordsIn, PoolWidthIn,
+  CloseModalIn, ColKeysIn, EmpPickWords, KeepShownIn, NameClickIn, PickWordsIn, PoolWidthIn,
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -166,7 +166,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, onOpen: x.onOpen }))
   }
   return out
 }
@@ -185,8 +185,10 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
   }
   let companyHref = TEXT_NONE
+  let slug = TEXT_NONE
   if (r.slug != null) {
     companyHref = URL_COMPANY_HEAD + r.slug
+    slug = r.slug
   }
   let href = companyHref
   if (href === TEXT_NONE) {
@@ -227,6 +229,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     actBtnCls: actBtnClsOf(),
     cardSalary: x.t('dp.planJobsN', { n: r.openJobs }),
     onView: makeRowView({ kind }),
+    onName: makeNameClick({ slug, name: r.name, kind, onOpen: x.onOpen }),
     onCard: makeCardClick({ href, kind }),
   }
 }
@@ -1886,6 +1889,39 @@ export function makeCardClick(x: CardClickIn): CardClickFn {
     window.location.href = x.href
   }
   return onCardClick
+}
+
+/**
+ * 造「点雇主名」的手柄(2026-09-18 Frank「接着做点雇主名开弹框,可以和 job 的公司弹框保持一致吗」):
+ * 普通左键 = 拦住跳转、记一笔 emp-row、开公司弹框(与职位板点公司格开的是同一个);按着 Ctrl / ⌘ / Shift、或非左键 = 放行,
+ * 链接照常去公司页(新标签开页的习惯不破)。没有公司页的雇主名不成链,到不了这里。
+ *
+ * @param x 公司页 slug、雇主名、埋点分组值与开框落格。
+ * @returns 链接的 onClick。
+ */
+export function makeNameClick(x: NameClickIn): CardClickFn {
+  function onName(e: React.MouseEvent): void {
+    if (x.slug === TEXT_NONE || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) {
+      return
+    }
+    e.preventDefault()
+    track(EV_ROW, { [EV_PROP_KEY]: x.kind })
+    x.onOpen({ slug: x.slug, name: x.name })
+  }
+  return onName
+}
+
+/**
+ * 造关公司弹框的手柄。
+ *
+ * @param x 弹框态落格。
+ * @returns 弹框的 onClose。
+ */
+export function makeCloseModal(x: CloseModalIn): ClickFn {
+  function onCloseModal(): void {
+    x.setModal(null)
+  }
+  return onCloseModal
 }
 
 /**

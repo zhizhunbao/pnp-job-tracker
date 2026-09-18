@@ -99,6 +99,7 @@ export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
  * 免额度)+ 中文对照与 AI 速读两个开关。换了职位当场清空重取。
  * 2026-09-16 Frank「公司的也对照改一下」:中文对照开关挪进弹框页眉译名行,开合归 advisor 的 useAdvisorModal(showZh),
  * 本机不再自持 showTrans,经 CompanyPanel 的 props 递进来。
+ * 2026-09-18 雇主板点雇主名开同一个弹框:那里没有职位,job 可为 null、改按 slug 取。
  *
  * @param x 当前这一行职位。
  * @returns 加载态与取到的数据。
@@ -107,20 +108,27 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CompanyPanelData | null>(null)
   const [prevJob, setPrevJob] = useState(x.job)
+  const [prevSlug, setPrevSlug] = useState(x.slug)
 
-  if (prevJob !== x.job) {
+  if (prevJob !== x.job || prevSlug !== x.slug) {
     setPrevJob(x.job)
+    setPrevSlug(x.slug)
     setLoading(true)
     setData(null)
   }
+  let jobId: string | number | null = null
+  if (x.job != null) {
+    jobId = x.job.id
+  }
+  const slug = x.slug
 
   useEffect(function loadPanel() {
     const flag: DeadFlag = { dead: false }
-    makeLoadPanel({ jobId: x.job.id, setData, setLoading })(flag)
+    makeLoadPanel({ jobId, slug, setData, setLoading })(flag)
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.job])
+  }, [jobId, slug])
 
   return { loading, data }
 }

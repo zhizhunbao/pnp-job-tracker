@@ -24,6 +24,7 @@ import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
+  COMPANY_SLUG_RE,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
   PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
@@ -31,7 +32,7 @@ import {
   TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadJobMid, loadJobsPage, loadMatchPage,
+  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyBySlug, loadJobMid, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
@@ -164,7 +165,10 @@ export async function jobsTextRoute(req: Request): Promise<Response> {
  * 页面同一份 CompanyDetail(+相似雇主)。全事实层免费不走额度闸(Frank 拍板「一个来源」)。
  * 按 jobs.company_id 解析,不走公司名匹配(同名公司不串)。相似雇主查挂回空表不 500。
  *
- * @param req 请求(body 是 { jobId })。
+ * 2026-09-18:body 也认 { slug }(雇主板点雇主名开同一个公司弹框,板上没有岗位号):与 `/companies/[slug]` 页面同一个
+ * 取数函数;没有岗位就没有「中分类」这条相似线索,相似雇主只按省与行业找。
+ *
+ * @param req 请求(body 是 { jobId } 或 { slug })。
  * @returns { company, similar };id 非数 400、查无 404。
  */
 export async function jobsCompanyRoute(req: Request): Promise<Response> {
@@ -173,6 +177,17 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
     body = await req.json() as CompanyBody
   } catch {
     body = null
+  }
+  if (body != null && typeof body.slug === 'string' && COMPANY_SLUG_RE.test(body.slug)) {
+    const bySlug = await loadCompanyBySlug({ db: await getDb(), slug: body.slug })
+    if (bySlug == null) {
+      return new Response(null, { status: NOT_FOUND })
+    }
+    const alike = await loadSimilarEmployers({
+      db: await getDb(), province: bySlug.province, industry: bySlug.industry, mid: PARAM_NONE,
+      excludeSlug: bySlug.slug,
+    }).catch(emptySimilar)
+    return Response.json({ company: bySlug, similar: alike })
   }
   let jobId = Number.NaN
   if (body != null) {

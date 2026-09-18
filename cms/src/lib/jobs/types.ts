@@ -4494,9 +4494,14 @@ export type ApplyMailOut = Promise<string | null>
  */
 export type CompanyBody = {
   /**
-   * 岗位 id;不是数就 400。
+   * 岗位 id;不是数就 400(带了 slug 时不看它)。
    */
   jobId: number | string | null
+
+  /**
+   * 公司页 slug(2026-09-18 雇主板点雇主名开同一个公司弹框:板上没有岗位号,只有公司页地址);可省 = 按岗位号取。
+   */
+  slug?: string | null
 }
 
 /**

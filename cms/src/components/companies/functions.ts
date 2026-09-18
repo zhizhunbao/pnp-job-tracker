@@ -41,7 +41,8 @@ import type {
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn, LoadBriefIn,
-  LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelJson, PanelSlugIn,
+  LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelBody, PanelBodyIn,
+  PanelJson, PanelSlugIn,
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
   UntitledIn, ZhLineClsIn, ZhShownIn,
@@ -1244,6 +1245,13 @@ export function zhShownOf(x: ZhShownIn): string {
  * @param x 岗位号与两个落格。
  * @returns effect 里调用的取数函数(带取消标记)。
  */
+function panelBodyOf(x: PanelBodyIn): PanelBody {
+  if (x.slug !== TEXT_NONE) {
+    return { jobId: null, slug: x.slug }
+  }
+  return { jobId: x.jobId, slug: null }
+}
+
 export function makeLoadPanel(x: LoadPanelIn): LoadFn {
   return function loadPanel(flag: DeadFlag): void {
     function read(r: Response): Promise<PanelJson> {
@@ -1273,7 +1281,7 @@ export function makeLoadPanel(x: LoadPanelIn): LoadFn {
     fetch(URL_JOBS_COMPANY, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ jobId: x.jobId }),
+      body: JSON.stringify(panelBodyOf({ jobId: x.jobId, slug: x.slug })),
     }).then(read).then(land).catch(fall)
   }
 }

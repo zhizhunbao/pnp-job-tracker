@@ -25,7 +25,8 @@ import {
 } from './functions'
 import type {
   ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
-  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, DeadFlag,
+  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, CompanyModalPanel,
+  DeadFlag,
   FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
   NocTrans, NocTransIn, NocTransPanel, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus, TitleTransHookIn,
 } from './types'
@@ -513,4 +514,21 @@ export function useTitleTrans(x: TitleTransHookIn): string {
   }, [want, title, lang])
 
   return text
+}
+
+/**
+ * 不带职位的公司弹框的状态:中文对照开关(默认关)、别名、翻译在途三格
+ * (2026-09-18;AdvisorModal 那台 useAdvisorModal 从一条职位出发,长文机器与同公司在榜岗这里都用不上)。
+ *
+ * @returns 三格状态与三个落格。
+ */
+export function useCompanyModal(): CompanyModalPanel {
+  const [showZh, setShowZh] = useState(false)
+  const [alias, setAlias] = useState(TEXT_NONE)
+  const [transBusy, setTransBusy] = useState(false)
+  const [jobs] = useState<AdvisorJob[]>([])
+  function onToggleZh(): void {
+    setShowZh(showZh === false)
+  }
+  return { showZh, alias, transBusy, jobs, onToggleZh, onAlias: setAlias, onTransBusy: setTransBusy }
 }
