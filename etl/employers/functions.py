@@ -21,7 +21,7 @@ from names.functions import sector_of
 from log.functions import say
 from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
-                                 K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG,
+                                 K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
                                  K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
@@ -29,7 +29,7 @@ from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER
                                  PRINT_POOL_DONE_TPL, PRINT_SOURCES_TPL, SKILLED_TEER_MAX,
                                  STAR_ENTRY, STAR_LOW, STAR_MID, STAR_TOP, STAR_TRACE,
                                  STATUS_OPEN, TOP_TITLES_N, WAGE_INDEX_BASE, OUT_BUCKETS, OUT_POOL)
-from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeCityIn, HomeOut,
+from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeCityIn, HomeDistrictIn, HomeOut,
                               KeyIn, PoolCtx, PoolRow, ScanOut, StarIn)
 
 
@@ -212,7 +212,8 @@ def home_of(x: KeyIn) -> HomeOut:
     "Montréal, ON":省市分开数会把 A 省的市配给 B 省);无岗雇主按指定行、companies 维表兜底。"""
     province = home_province_of(x)
     city = home_city_of(HomeCityIn(ctx=x.ctx, key=x.key, province=province))
-    return HomeOut(province=province or None, city=city or None)
+    district = home_district_of(HomeDistrictIn(ctx=x.ctx, key=x.key, province=province, city=city))
+    return HomeOut(province=province or None, city=city or None, district=district)
 
 
 def locations_of(x: KeyIn) -> list:
@@ -321,7 +322,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
     return PoolRow(
         key=x.key, slug=slug, name=ctx.names.get(x.key) or x.key,
         industry=comp.get(K_SECTORS) or None,
-        province=home.province, city=home.city, locations=locations,
+        province=home.province, city=home.city, district=home.district, locations=locations,
         designated=len(des_rows) > 0, designatedPrograms=des.programs,
         designatedProvinces=des.provinces,
         openJobsTotal=open_total, histJobs=hist.jobs,
@@ -331,6 +332,20 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         lmiaLastQuarter=lmia_row.get(K_LAST_QUARTER) or None,
         sector=sector_of(ctx.names.get(x.key) or x.key) or None,
         fetched=date.today().isoformat())
+
+
+def home_district_of(x: HomeDistrictIn) -> str | None:
+    """主区:只在主省主市的在招岗里数最多的区;岗都没带区 = None(不兜底 —— 指定名单与公司维表都不记区)。"""
+    if not x.city:
+        return None
+    count: Counter = Counter()
+    for rows in (x.ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            if row.get(K_DISTRICT) and row.get(K_CITY) == x.city and row.get(K_PROVINCE) == x.province:
+                count[row[K_DISTRICT]] += 1
+    if count:
+        return count.most_common(1)[0][0]
+    return None
 
 
 def bucket_scan_of(rows: list) -> ScanOut:

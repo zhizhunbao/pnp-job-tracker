@@ -27,6 +27,7 @@ import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
 import { PoolCityCell } from './poolcitycell'
+import { PoolDistrictCell } from './pooldistrictcell'
 import { PoolLmiaCell } from './poollmiacell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
@@ -35,7 +36,8 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_CITY_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK, DEMO_A_KEY, DEMO_B_KEY,
+  COL_CITY_KEY, COL_DISTRICT_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK,
+  DEMO_A_KEY, DEMO_B_KEY,
   DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
@@ -55,7 +57,7 @@ import {
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -214,6 +216,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
+    districtText: r.district,
     provText,
     cityText,
     openText: String(r.openJobs),
@@ -403,6 +406,26 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: PoolCityCell,
     },
     {
+      key: COL_DISTRICT_KEY,
+      label: x.t('de.colDistrict'),
+      width: poolWidthOf({ key: COL_DISTRICT_KEY, shown: x.shown }),
+      optional: true,
+      render: PoolDistrictCell,
+    },
+  ]
+  return keepShownOf({ cols: all.concat(poolTailColsOf(x)), shown: x.shown })
+}
+
+/**
+ * 雇主板列组的后半截:在招 / 指定雇主 / LMIA / 操作(2026-09-18 加「区」列后 employerColsOf 过了 75 行,后半截拆到这里;
+ * 列的来历见 employerColsOf 的注释)。
+ *
+ * @param x 取词函数与现在显示着的列。
+ * @returns 后四列。
+ */
+function poolTailColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
+  return [
+    {
       key: COL_OPEN_KEY,
       label: x.t('de.colOpen'),
       width: poolWidthOf({ key: COL_OPEN_KEY, shown: x.shown }),
@@ -438,7 +461,6 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: ActCell,
     },
   ]
-  return keepShownOf({ cols: all, shown: x.shown })
 }
 
 /**
@@ -478,6 +500,9 @@ function poolShareOf(key: string): number {
   }
   if (key === COL_CITY_KEY) {
     return W_POOL_CITY
+  }
+  if (key === COL_DISTRICT_KEY) {
+    return W_POOL_DISTRICT
   }
   if (key === COL_OPEN_KEY) {
     return W_POOL_OPEN

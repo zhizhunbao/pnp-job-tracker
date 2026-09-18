@@ -129,6 +129,11 @@ export type PoolRow = {
   city: string
 
   /**
+   * 主区(主市的在招岗里出现最多的区);空串 = 岗都没带区。
+   */
+  district: string
+
+  /**
    * 主市的人工核定中文译名(cities.name_zh;2026-09-13 地点列接 CityNameCell 双行形);空串 = 译名表外。
    */
   cityZh: string
@@ -1424,6 +1429,11 @@ export type PoolDbRow = {
    * 主市。
    */
   city: string | null
+
+  /**
+   * 主区;NULL = 岗都没带区。
+   */
+  district: string | null
 
   /**
    * 主市中文译名(LEFT JOIN cities;译名表外 = null)。

@@ -1397,7 +1397,7 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
     key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), industry: textOrNull(r.industry),
     sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
-    cityKo: text(r.city_ko),
+    cityKo: text(r.city_ko), district: text(r.district),
     locations: toStrList(r.locations), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),

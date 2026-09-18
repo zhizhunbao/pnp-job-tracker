@@ -67,6 +67,9 @@ K_PROVINCE = "province"
 K_CITY = "city"
 """市。"""
 
+K_DISTRICT = "district"
+"""区(mart 地点段给的市内分区;近半数在招岗有)。"""
+
 K_STATUS = "status"
 """岗状态(池只数 open)。"""
 

@@ -351,7 +351,8 @@ function toEmployerPool(r: MartRow): MartRow {
     open_jobs_total: cellOf(r.openJobsTotal), hist_jobs: cellOf(r.histJobs),
     provinces_active: cellOf(r.provincesActive), cities_active: cellOf(r.citiesActive),
     website_known: truthyOf(r.websiteKnown), lmia_skilled_total: cellOf(r.lmiaSkilledTotal),
-    lmia_last_quarter: cellOf(r.lmiaLastQuarter), sector: cellOf(r.sector), fetched: textOf(r.fetched),
+    lmia_last_quarter: cellOf(r.lmiaLastQuarter), sector: cellOf(r.sector), district: cellOf(r.district),
+    fetched: textOf(r.fetched),
   }
 }
 

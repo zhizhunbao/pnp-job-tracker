@@ -581,7 +581,7 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * @returns SELECT 语句。
  */
 export const employerPoolPage = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
@@ -662,7 +662,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * @returns SELECT 语句。
  */
 export const employerPoolAll = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,

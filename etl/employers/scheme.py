@@ -72,6 +72,10 @@ class PoolRow(BaseModel):
     """雇主类别(federal / government / municipal / indigenous / public;None = 私营)。2026-09-18 雇主分类批一:
     按名字判,尺子 = names 域 sector_of(与 companies.sector 同一把;池里没有公司页的雇主也有类别)。"""
 
+    district: str | None = None
+    """主区(2026-09-18 Frank「区的字段没有啊」「授权,加区字段」):主省主市的在招岗里出现最多的区;
+    岗都没带区、或一处在招都没有 = None(不猜:指定名单与公司维表都不记区)。雇主板「区」可选列读它。"""
+
     fetched: str
     """构建日(ISO)。"""
 
@@ -179,6 +183,23 @@ class KeyIn:
 
 
 @dataclass
+class HomeDistrictIn:
+    """home_district_of() 入参:主省主市已定,再在该市的岗里数区。"""
+
+    ctx: PoolCtx
+    """聚合上下文。"""
+
+    key: str
+    """池主键。"""
+
+    province: str | None
+    """主省。"""
+
+    city: str | None
+    """主市(None = 没有市,区也就不数)。"""
+
+
+@dataclass
 class HomeCityIn:
     """home_city_of() 入参:主省已定,再在该省的岗里数市。"""
 
@@ -201,6 +222,9 @@ class HomeOut:
 
     city: str | None
     """主市。"""
+
+    district: str | None = None
+    """主区(主市的在招岗里出现最多的区;岗都没带区 = None)。"""
 
 
 @dataclass

@@ -148,6 +148,11 @@ export type PoolRow = {
   city: string
 
   /**
+   * 主区;空串 = 岗都没带区。
+   */
+  district: string
+
+  /**
    * 主市的人工核定中文译名;空串 = 译名表外(主文案直接英文)。
    */
   cityZh: string
@@ -544,6 +549,11 @@ export type EmployerCellRow = {
    * 市格的 Google 地图链接;空串 = 没有市(渲横杠)。
    */
   cityHref: string
+
+  /**
+   * 区格:区名原样,一行(2026-09-18 Frank「区的字段没有啊」;默认不显,字段面板里勾);空串 = 岗都没带区(渲横杠)。
+   */
+  districtText: string
 
   /**
    * 省格:英文省全名(2026-09-18 Frank「省市都改成英文名」,与职位板省列同形);空串 = 池里没记(渲横杠)。
