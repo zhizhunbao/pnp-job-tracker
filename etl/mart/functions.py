@@ -40,7 +40,7 @@ from urllib.parse import urlparse
 
 import paths
 from log.functions import err, say
-from names.functions import norm_name
+from names.functions import norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
@@ -123,8 +123,7 @@ from mart.constants import (
     SAL_TXT_BACK, SAL_TXT_HR_MAX, SAL_TXT_HR_MIN, SAL_TXT_HR_RE, SAL_TXT_HR_TAIL, SAL_TXT_K_MULT, SAL_TXT_K_SUFFIX,
     SAL_TXT_K_TPL, SAL_TXT_NEAR_RE, SAL_TXT_NUM_RE, SAL_TXT_TRIM, SAL_TXT_UNIT_RE, SAL_TXT_UPTO_RE, SAL_TXT_YR_MIN,
     SAL_TXT_YR_TAIL, PRINT_SAL_MINED_TPL,
-    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT, SECTOR_FEDERAL, SECTOR_FEDERAL_RE,
-    SECTOR_GOVERNMENT, SECTOR_GOV_RE, SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE,
+    K_AI_SOURCES, K_BRIEF, K_BRIEF_KO, K_BRIEF_ZH, K_SOURCES, PLACES_HIT,
     K_WIKI, K_YEAR, K_CL_ITEMS, K_CL_URL, K_ZH, LANG_ABILITIES, LANG_PER_ABILITY, LANG_POINTS_PER_ABILITY,
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
@@ -1098,18 +1097,6 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_brief(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
-
-
-def sector_of(name: str) -> str:
-    """雇主类别:名字开头是联邦机关 → federal;命中政府特征 → government(省市);命中公立特征且不是动物医院 →
-    public;其余空串(私营,不落列)。"""
-    if SECTOR_FEDERAL_RE.search(name):
-        return SECTOR_FEDERAL
-    if SECTOR_GOV_RE.search(name):
-        return SECTOR_GOVERNMENT
-    if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name):
-        return SECTOR_PUBLIC
-    return ""
 
 
 def fill_places(x: CompanyExtraIn) -> None:

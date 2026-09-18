@@ -12,7 +12,10 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 @time 2026-08-31 20:52:27
 """
 from fetch.constants import SPACE_SEP, WS_RE
-from names.constants import ALIAS_SPLIT_RE, APOSTROPHE_RE, KEEP_RE, SUFFIX_RE
+from names.constants import (
+    ALIAS_SPLIT_RE, APOSTROPHE_RE, KEEP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT, SECTOR_GOV_RE,
+    SECTOR_PUBLIC, SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE,
+)
 
 
 def norm_name(name: str) -> str:
@@ -26,3 +29,18 @@ def norm_name(name: str) -> str:
     n = SUFFIX_RE.sub(SPACE_SEP, n)
     n = KEEP_RE.sub(SPACE_SEP, n)
     return WS_RE.sub(SPACE_SEP, n).strip()
+
+
+def sector_of(name: str) -> str:
+    """雇主类别:名字开头是联邦机关 → federal;命中政府特征 → government(省市);命中公立特征且不是动物医院 →
+    public;其余空串(私营,不落列)。
+
+    (2026-09-18 自 mart 域 functions 逐字迁入:雇主池也要用同一把尺子,判定只能住基建叶。)
+    """
+    if SECTOR_FEDERAL_RE.search(name):
+        return SECTOR_FEDERAL
+    if SECTOR_GOV_RE.search(name):
+        return SECTOR_GOVERNMENT
+    if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name):
+        return SECTOR_PUBLIC
+    return ""
