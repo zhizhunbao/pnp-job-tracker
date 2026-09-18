@@ -21,10 +21,10 @@ export function EmployerLoading({ loading, t }: EmployerLoadingIn) {
   return (
     <div className={css.loadBar}>
       {loading && (
-        <>
+        <span className={css.loadTip}>
           <span className={css.spin} />
           {t('loading')}
-        </>
+        </span>
       )}
     </div>
   )

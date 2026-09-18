@@ -40,8 +40,7 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
             rowKey={empRowKeyOf}
             empty={empty}
             sort={p.sort}
-            onSort={p.onSort}
-            bare />
+            onSort={p.onSort} />
         </div>
         <div className={css.cards}>
           <EmployerCards rows={rows} empty={empty} />
