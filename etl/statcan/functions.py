@@ -17,6 +17,8 @@ docs/design/把脉页省份段-契约-20260906.md §1:四张宏观表 → raw/st
 段3/段4 沿用搬来前的口径(抓取失败即 return,保留旧表)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
 """
+import csv
+import io
 import re
 import sys
 from datetime import date, datetime, timezone
@@ -56,12 +58,18 @@ from statcan.constants import (
     CITY_UNEMP_PID, CITY_UNEMP_PROBE_CMA, CITY_UNEMP_PROBE_MAX, CITY_UNEMP_PROBE_MIN,
     CSD_BILINGUAL_SEP, CSD_NAME_RE, CSD_TYPE_PREF, K_CITY, K_CITY_ROWS, K_CMA, K_PIDS,
     K_POP_PERIOD, K_POP_VAL, K_PROVINCE, K_UNEMP_PERIOD, K_UNEMP_RATE, OUT_CITY_MACRO,
+    K_NAICS_CODE, K_NAICS_LEVEL, K_NAICS_PARENT, K_NAICS_ROWS, K_NAICS_VERSION, K_NAME_EN, K_NAME_KO,
+    K_NAME_ZH, NAICS_COL_CODE, NAICS_COL_LEVEL, NAICS_COL_PARENT, NAICS_COL_TITLE,
+    NAICS_COUNT_FAIL_TPL, NAICS_CSV_URL, NAICS_DONE_TPL, NAICS_ENC, NAICS_KO, NAICS_LEVEL_SECTOR,
+    NAICS_LEVEL_SUBSECTOR, NAICS_NAME_FAIL_TPL, NAICS_NAMES, NAICS_PRINT_OUT_TPL, NAICS_SECTORS_N,
+    NAICS_SUBSECTORS_N, NAICS_TIMEOUT_S, NAICS_TITLE, NAICS_VERSION, NAICS_ZH, OUT_NAICS,
 )
 from statcan.scheme import (
     ByProvIn, CoordIn, CubeCheckIn, CubeDocIn, CubeMeta, CubePlanIn, CubePlanOut, CubePointsIn,
     DimMembers, DimOfIn, GeoIdsIn, LabelsIn, MemberIdIn, MemberIds, NprRowsIn, QuartersIn, SigIn,
     WdsDataIn, WdsDataOut,
     CityPointsIn, CityProbeIn, CityRowIn, CsdPickIn,
+    NaicsCheckIn, NaicsRowIn,
 )
 
 # =========================================================================
@@ -742,3 +750,77 @@ def check_city_probe(x: CityProbeIn) -> None:
             rate = got[0]
     if rate is None or rate < CITY_UNEMP_PROBE_MIN or rate > CITY_UNEMP_PROBE_MAX:
         raise RuntimeError(CITY_PROBE_FAIL_TPL.format(what=CITY_UNEMP_PROBE_CMA, value=rate))
+
+
+# =========================================================================
+# 7. NAICS 类目表(公司行业分类的「有哪些类」)
+# =========================================================================
+
+def scrape_statcan_naics() -> None:
+    """官方 NAICS 结构表 → raw/statcan/naics.json(20 部门 + 99 子部门,带人工核定的中 / 韩名)。
+
+    IN : statcan.gc.ca 的 naics-scian-2022-structure-v1-eng.csv(原文进 crawl 层)
+    OUT: raw/statcan/naics.json(一类一行)
+    条数或译名表对不上即抛,整表不更新(保留旧文件)。
+    """
+    say(NAICS_PRINT_OUT_TPL.format(path=OUT_NAICS))
+    r = httpx.get(NAICS_CSV_URL, headers={HDR_UA: WDS_UA}, timeout=NAICS_TIMEOUT_S, follow_redirects=True)
+    r.raise_for_status()
+    text = r.content.decode(NAICS_ENC)
+    put_cached_page(CachePutIn(slug=CRAWL_SLUG, url=NAICS_CSV_URL, html=text, title=NAICS_TITLE))
+    rows: list = []
+    codes: set = set()
+    for raw in csv.DictReader(io.StringIO(text)):
+        level = raw[NAICS_COL_LEVEL]
+        if level != NAICS_LEVEL_SECTOR and level != NAICS_LEVEL_SUBSECTOR:
+            continue
+        codes.add(raw[NAICS_COL_CODE])
+        rows.append(to_naics_row(NaicsRowIn(row=raw)))
+    check_naics(NaicsCheckIn(rows=rows, codes=codes))
+    paths.STATCAN.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_NAICS, payload={
+        K_SOURCE: [NAICS_CSV_URL],
+        K_NAICS_VERSION: NAICS_VERSION,
+        K_FETCHED: today_iso(),
+        K_NAICS_ROWS: rows,
+    }, indent=INDENT_1))
+    sectors = 0
+    for row in rows:
+        if row[K_NAICS_LEVEL] == int(NAICS_LEVEL_SECTOR):
+            sectors += 1
+    say(NAICS_DONE_TPL.format(sectors=sectors, subsectors=len(rows) - sectors, out=OUT_NAICS.name))
+
+
+def to_naics_row(x: NaicsRowIn) -> dict:
+    """官方一行 → 落盘行(译名查人工表;表里没有的留 None,由自校拦下)。"""
+    code = x.row[NAICS_COL_CODE]
+    names = NAICS_NAMES.get(code)
+    zh = None
+    ko = None
+    if names is not None:
+        zh = names[NAICS_ZH]
+        ko = names[NAICS_KO]
+    return {
+        K_NAICS_CODE: code,
+        K_NAICS_LEVEL: int(x.row[NAICS_COL_LEVEL]),
+        K_NAICS_PARENT: x.row[NAICS_COL_PARENT] or None,
+        K_NAME_EN: x.row[NAICS_COL_TITLE],
+        K_NAME_ZH: zh,
+        K_NAME_KO: ko,
+    }
+
+
+def check_naics(x: NaicsCheckIn) -> None:
+    """自校:部门 20 / 子部门 99,且人工译名表与官方代码一一对应(未过即抛保留旧表)。"""
+    sectors = 0
+    for row in x.rows:
+        if row[K_NAICS_LEVEL] == int(NAICS_LEVEL_SECTOR):
+            sectors += 1
+    subsectors = len(x.rows) - sectors
+    if sectors != NAICS_SECTORS_N or subsectors != NAICS_SUBSECTORS_N:
+        raise RuntimeError(NAICS_COUNT_FAIL_TPL.format(sectors=sectors, want_s=NAICS_SECTORS_N,
+                                                        subsectors=subsectors, want_b=NAICS_SUBSECTORS_N))
+    missing = sorted(x.codes - set(NAICS_NAMES))
+    extra = sorted(set(NAICS_NAMES) - x.codes)
+    if len(missing) > 0 or len(extra) > 0:
+        raise RuntimeError(NAICS_NAME_FAIL_TPL.format(missing=missing, extra=extra))

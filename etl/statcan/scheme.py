@@ -328,3 +328,22 @@ class CityProbeIn:
 
     un_points: dict
     """CMA memberId → (失业率, 期标)。"""
+
+
+@dataclass
+class NaicsRowIn:
+    """to_naics_row() 入参:官方结构表的一行(已按列名读成 dict)。"""
+
+    row: dict
+    """csv.DictReader 的一行(键 = 官方列名)。"""
+
+
+@dataclass
+class NaicsCheckIn:
+    """check_naics() 入参:段7 自校要的两样。"""
+
+    rows: list
+    """产出行(部门 + 子部门)。"""
+
+    codes: set
+    """官方结构表里这两层的全部代码。"""

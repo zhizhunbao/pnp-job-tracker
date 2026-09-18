@@ -1,0 +1,961 @@
+{
+ "source": [
+  "https://www.statcan.gc.ca/en/statistical-programs/document/naics-scian-2022-structure-v1-eng.csv"
+ ],
+ "version": "NAICS Canada 2022 v1.0",
+ "fetched": "2026-09-18",
+ "rows": [
+  {
+   "code": "11",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Agriculture, forestry, fishing and hunting",
+   "nameZh": "农林渔猎",
+   "nameKo": "농림어업·수렵업"
+  },
+  {
+   "code": "111",
+   "level": 2,
+   "parent": "11",
+   "nameEn": "Crop production",
+   "nameZh": "种植业",
+   "nameKo": "작물 재배업"
+  },
+  {
+   "code": "112",
+   "level": 2,
+   "parent": "11",
+   "nameEn": "Animal production and aquaculture",
+   "nameZh": "畜牧与水产养殖",
+   "nameKo": "축산·양식업"
+  },
+  {
+   "code": "113",
+   "level": 2,
+   "parent": "11",
+   "nameEn": "Forestry and logging",
+   "nameZh": "林业与伐木",
+   "nameKo": "임업·벌목업"
+  },
+  {
+   "code": "114",
+   "level": 2,
+   "parent": "11",
+   "nameEn": "Fishing, hunting and trapping",
+   "nameZh": "渔业与狩猎",
+   "nameKo": "어업·수렵업"
+  },
+  {
+   "code": "115",
+   "level": 2,
+   "parent": "11",
+   "nameEn": "Support activities for agriculture and forestry",
+   "nameZh": "农林业支持活动",
+   "nameKo": "농림업 지원 서비스업"
+  },
+  {
+   "code": "21",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Mining, quarrying, and oil and gas extraction",
+   "nameZh": "采矿与油气开采",
+   "nameKo": "광업·석유가스 채굴업"
+  },
+  {
+   "code": "211",
+   "level": 2,
+   "parent": "21",
+   "nameEn": "Oil and gas extraction",
+   "nameZh": "油气开采",
+   "nameKo": "석유·가스 채굴업"
+  },
+  {
+   "code": "212",
+   "level": 2,
+   "parent": "21",
+   "nameEn": "Mining and quarrying (except oil and gas)",
+   "nameZh": "采矿与采石",
+   "nameKo": "광업·채석업"
+  },
+  {
+   "code": "213",
+   "level": 2,
+   "parent": "21",
+   "nameEn": "Support activities for mining, and oil and gas extraction",
+   "nameZh": "采矿与油气开采支持活动",
+   "nameKo": "광업·석유가스 채굴 지원 서비스업"
+  },
+  {
+   "code": "22",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Utilities",
+   "nameZh": "公用事业",
+   "nameKo": "전기·가스·수도업"
+  },
+  {
+   "code": "221",
+   "level": 2,
+   "parent": "22",
+   "nameEn": "Utilities",
+   "nameZh": "公用事业",
+   "nameKo": "전기·가스·수도업"
+  },
+  {
+   "code": "23",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Construction",
+   "nameZh": "建筑业",
+   "nameKo": "건설업"
+  },
+  {
+   "code": "236",
+   "level": 2,
+   "parent": "23",
+   "nameEn": "Construction of buildings",
+   "nameZh": "房屋建筑",
+   "nameKo": "건물 건설업"
+  },
+  {
+   "code": "237",
+   "level": 2,
+   "parent": "23",
+   "nameEn": "Heavy and civil engineering construction",
+   "nameZh": "重型与土木工程建筑",
+   "nameKo": "토목 건설업"
+  },
+  {
+   "code": "238",
+   "level": 2,
+   "parent": "23",
+   "nameEn": "Specialty trade contractors",
+   "nameZh": "专业工种承包",
+   "nameKo": "전문 직종 공사업"
+  },
+  {
+   "code": "31-33",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Manufacturing",
+   "nameZh": "制造业",
+   "nameKo": "제조업"
+  },
+  {
+   "code": "311",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Food manufacturing",
+   "nameZh": "食品制造",
+   "nameKo": "식품 제조업"
+  },
+  {
+   "code": "312",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Beverage and tobacco product manufacturing",
+   "nameZh": "饮料与烟草制品制造",
+   "nameKo": "음료·담배 제조업"
+  },
+  {
+   "code": "313",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Textile mills",
+   "nameZh": "纺织",
+   "nameKo": "방적·직물업"
+  },
+  {
+   "code": "314",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Textile product mills",
+   "nameZh": "纺织制品",
+   "nameKo": "섬유 제품 제조업"
+  },
+  {
+   "code": "315",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Apparel manufacturing",
+   "nameZh": "服装制造",
+   "nameKo": "의류 제조업"
+  },
+  {
+   "code": "316",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Leather and allied product manufacturing",
+   "nameZh": "皮革及相关制品制造",
+   "nameKo": "가죽·관련 제품 제조업"
+  },
+  {
+   "code": "321",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Wood product manufacturing",
+   "nameZh": "木制品制造",
+   "nameKo": "목재 제품 제조업"
+  },
+  {
+   "code": "322",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Paper manufacturing",
+   "nameZh": "造纸",
+   "nameKo": "제지업"
+  },
+  {
+   "code": "323",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Printing and related support activities",
+   "nameZh": "印刷及相关支持活动",
+   "nameKo": "인쇄·관련 지원업"
+  },
+  {
+   "code": "324",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Petroleum and coal product manufacturing",
+   "nameZh": "石油与煤制品制造",
+   "nameKo": "석유·석탄 제품 제조업"
+  },
+  {
+   "code": "325",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Chemical manufacturing",
+   "nameZh": "化学制品制造",
+   "nameKo": "화학 제품 제조업"
+  },
+  {
+   "code": "326",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Plastics and rubber products manufacturing",
+   "nameZh": "塑料与橡胶制品制造",
+   "nameKo": "플라스틱·고무 제품 제조업"
+  },
+  {
+   "code": "327",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Non-metallic mineral product manufacturing",
+   "nameZh": "非金属矿物制品制造",
+   "nameKo": "비금속 광물 제품 제조업"
+  },
+  {
+   "code": "331",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Primary metal manufacturing",
+   "nameZh": "初级金属制造",
+   "nameKo": "1차 금속 제조업"
+  },
+  {
+   "code": "332",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Fabricated metal product manufacturing",
+   "nameZh": "金属制品制造",
+   "nameKo": "금속 가공 제품 제조업"
+  },
+  {
+   "code": "333",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Machinery manufacturing",
+   "nameZh": "机械制造",
+   "nameKo": "기계 제조업"
+  },
+  {
+   "code": "334",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Computer and electronic product manufacturing",
+   "nameZh": "计算机与电子产品制造",
+   "nameKo": "컴퓨터·전자 제품 제조업"
+  },
+  {
+   "code": "335",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Electrical equipment, appliance and component manufacturing",
+   "nameZh": "电气设备、电器与元件制造",
+   "nameKo": "전기 장비·가전·부품 제조업"
+  },
+  {
+   "code": "336",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Transportation equipment manufacturing",
+   "nameZh": "运输设备制造",
+   "nameKo": "운송 장비 제조업"
+  },
+  {
+   "code": "337",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Furniture and related product manufacturing",
+   "nameZh": "家具及相关制品制造",
+   "nameKo": "가구·관련 제품 제조업"
+  },
+  {
+   "code": "339",
+   "level": 2,
+   "parent": "31-33",
+   "nameEn": "Miscellaneous manufacturing",
+   "nameZh": "其他制造",
+   "nameKo": "기타 제조업"
+  },
+  {
+   "code": "41",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Wholesale trade",
+   "nameZh": "批发贸易",
+   "nameKo": "도매업"
+  },
+  {
+   "code": "411",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Farm product merchant wholesalers",
+   "nameZh": "农产品批发",
+   "nameKo": "농산물 도매업"
+  },
+  {
+   "code": "412",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Petroleum, petroleum products, and other hydrocarbons merchant wholesalers",
+   "nameZh": "石油及石油制品批发",
+   "nameKo": "석유·석유 제품 도매업"
+  },
+  {
+   "code": "413",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Food, beverage and tobacco merchant wholesalers",
+   "nameZh": "食品、饮料与烟草批发",
+   "nameKo": "식품·음료·담배 도매업"
+  },
+  {
+   "code": "414",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Personal and household goods merchant wholesalers",
+   "nameZh": "个人与家庭用品批发",
+   "nameKo": "개인·가정용품 도매업"
+  },
+  {
+   "code": "415",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Motor vehicle and motor vehicle parts and accessories merchant wholesalers",
+   "nameZh": "机动车及零配件批发",
+   "nameKo": "자동차·부품 도매업"
+  },
+  {
+   "code": "416",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Building material and supplies merchant wholesalers",
+   "nameZh": "建材与建筑用品批发",
+   "nameKo": "건축 자재·용품 도매업"
+  },
+  {
+   "code": "417",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Machinery, equipment and supplies merchant wholesalers",
+   "nameZh": "机械、设备与用品批发",
+   "nameKo": "기계·장비·용품 도매업"
+  },
+  {
+   "code": "418",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Miscellaneous merchant wholesalers",
+   "nameZh": "其他商品批发",
+   "nameKo": "기타 상품 도매업"
+  },
+  {
+   "code": "419",
+   "level": 2,
+   "parent": "41",
+   "nameEn": "Business-to-business electronic markets, and agents and brokers",
+   "nameZh": "企业间电子市场与代理经纪",
+   "nameKo": "기업 간 전자 시장·중개업"
+  },
+  {
+   "code": "44-45",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Retail trade",
+   "nameZh": "零售贸易",
+   "nameKo": "소매업"
+  },
+  {
+   "code": "441",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Motor vehicle and parts dealers",
+   "nameZh": "机动车及零配件经销",
+   "nameKo": "자동차·부품 판매업"
+  },
+  {
+   "code": "444",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Building material and garden equipment and supplies dealers",
+   "nameZh": "建材与园艺设备用品零售",
+   "nameKo": "건축 자재·원예 용품 소매업"
+  },
+  {
+   "code": "445",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Food and beverage retailers",
+   "nameZh": "食品与饮料零售",
+   "nameKo": "식품·음료 소매업"
+  },
+  {
+   "code": "449",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Furniture, home furnishings, electronics and appliances retailers",
+   "nameZh": "家具、家居、电子与电器零售",
+   "nameKo": "가구·가정용품·전자·가전 소매업"
+  },
+  {
+   "code": "455",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "General merchandise retailers",
+   "nameZh": "综合商品零售",
+   "nameKo": "종합 상품 소매업"
+  },
+  {
+   "code": "456",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Health and personal care retailers",
+   "nameZh": "健康与个人护理用品零售",
+   "nameKo": "건강·개인 위생용품 소매업"
+  },
+  {
+   "code": "457",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Gasoline stations and fuel vendors",
+   "nameZh": "加油站与燃料销售",
+   "nameKo": "주유소·연료 판매업"
+  },
+  {
+   "code": "458",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Clothing, clothing accessories, shoes, jewelry, luggage and leather goods retailers",
+   "nameZh": "服装、鞋履、珠宝与箱包零售",
+   "nameKo": "의류·신발·보석·가방 소매업"
+  },
+  {
+   "code": "459",
+   "level": 2,
+   "parent": "44-45",
+   "nameEn": "Sporting goods, hobby, musical instrument, book, and miscellaneous retailers",
+   "nameZh": "体育、爱好、乐器、图书及其他零售",
+   "nameKo": "스포츠·취미·악기·도서·기타 소매업"
+  },
+  {
+   "code": "48-49",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Transportation and warehousing",
+   "nameZh": "运输与仓储",
+   "nameKo": "운수·창고업"
+  },
+  {
+   "code": "481",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Air transportation",
+   "nameZh": "航空运输",
+   "nameKo": "항공 운송업"
+  },
+  {
+   "code": "482",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Rail transportation",
+   "nameZh": "铁路运输",
+   "nameKo": "철도 운송업"
+  },
+  {
+   "code": "483",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Water transportation",
+   "nameZh": "水路运输",
+   "nameKo": "수상 운송업"
+  },
+  {
+   "code": "484",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Truck transportation",
+   "nameZh": "卡车运输",
+   "nameKo": "화물 자동차 운송업"
+  },
+  {
+   "code": "485",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Transit and ground passenger transportation",
+   "nameZh": "公交与地面客运",
+   "nameKo": "대중교통·육상 여객 운송업"
+  },
+  {
+   "code": "486",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Pipeline transportation",
+   "nameZh": "管道运输",
+   "nameKo": "파이프라인 운송업"
+  },
+  {
+   "code": "487",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Scenic and sightseeing transportation",
+   "nameZh": "观光游览运输",
+   "nameKo": "관광 운송업"
+  },
+  {
+   "code": "488",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Support activities for transportation",
+   "nameZh": "运输支持活动",
+   "nameKo": "운송 지원 서비스업"
+  },
+  {
+   "code": "491",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Postal service",
+   "nameZh": "邮政",
+   "nameKo": "우편업"
+  },
+  {
+   "code": "492",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Couriers and messengers",
+   "nameZh": "快递与信使",
+   "nameKo": "택배·배달업"
+  },
+  {
+   "code": "493",
+   "level": 2,
+   "parent": "48-49",
+   "nameEn": "Warehousing and storage",
+   "nameZh": "仓储",
+   "nameKo": "창고·보관업"
+  },
+  {
+   "code": "51",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Information and cultural industries",
+   "nameZh": "信息与文化产业",
+   "nameKo": "정보·문화 산업"
+  },
+  {
+   "code": "512",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Motion picture and sound recording industries",
+   "nameZh": "电影与录音",
+   "nameKo": "영화·음반 산업"
+  },
+  {
+   "code": "513",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Publishing industries",
+   "nameZh": "出版(含软件出版)",
+   "nameKo": "출판업(소프트웨어 출판 포함)"
+  },
+  {
+   "code": "516",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Broadcasting and content providers",
+   "nameZh": "广播与内容提供",
+   "nameKo": "방송·콘텐츠 제공업"
+  },
+  {
+   "code": "517",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Telecommunications",
+   "nameZh": "电信",
+   "nameKo": "통신업"
+  },
+  {
+   "code": "518",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Computing infrastructure providers, data processing, web hosting, and related services",
+   "nameZh": "计算基础设施、数据处理与网站托管",
+   "nameKo": "컴퓨팅 인프라·데이터 처리·웹 호스팅업"
+  },
+  {
+   "code": "519",
+   "level": 2,
+   "parent": "51",
+   "nameEn": "Web search portals, libraries, archives, and all other information services",
+   "nameZh": "网络搜索门户、图书馆、档案馆及其他信息服务",
+   "nameKo": "웹 검색 포털·도서관·기록관·기타 정보 서비스업"
+  },
+  {
+   "code": "52",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Finance and insurance",
+   "nameZh": "金融与保险",
+   "nameKo": "금융·보험업"
+  },
+  {
+   "code": "521",
+   "level": 2,
+   "parent": "52",
+   "nameEn": "Monetary authorities - central bank",
+   "nameZh": "货币当局(中央银行)",
+   "nameKo": "통화 당국(중앙은행)"
+  },
+  {
+   "code": "522",
+   "level": 2,
+   "parent": "52",
+   "nameEn": "Credit intermediation and related activities",
+   "nameZh": "信贷中介及相关活动",
+   "nameKo": "신용 중개·관련 서비스업"
+  },
+  {
+   "code": "523",
+   "level": 2,
+   "parent": "52",
+   "nameEn": "Securities, commodity contracts, and other financial investment and related activities",
+   "nameZh": "证券、商品合约及其他金融投资",
+   "nameKo": "증권·상품 계약·기타 금융 투자업"
+  },
+  {
+   "code": "524",
+   "level": 2,
+   "parent": "52",
+   "nameEn": "Insurance carriers and related activities",
+   "nameZh": "保险及相关活动",
+   "nameKo": "보험·관련 서비스업"
+  },
+  {
+   "code": "526",
+   "level": 2,
+   "parent": "52",
+   "nameEn": "Funds and other financial vehicles",
+   "nameZh": "基金及其他金融工具",
+   "nameKo": "펀드·기타 금융 기구"
+  },
+  {
+   "code": "53",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Real estate and rental and leasing",
+   "nameZh": "房地产与租赁",
+   "nameKo": "부동산·임대업"
+  },
+  {
+   "code": "531",
+   "level": 2,
+   "parent": "53",
+   "nameEn": "Real estate",
+   "nameZh": "房地产",
+   "nameKo": "부동산업"
+  },
+  {
+   "code": "532",
+   "level": 2,
+   "parent": "53",
+   "nameEn": "Rental and leasing services",
+   "nameZh": "租赁服务",
+   "nameKo": "임대 서비스업"
+  },
+  {
+   "code": "533",
+   "level": 2,
+   "parent": "53",
+   "nameEn": "Lessors of non-financial intangible assets (except copyrighted works)",
+   "nameZh": "非金融无形资产出租",
+   "nameKo": "비금융 무형 자산 임대업"
+  },
+  {
+   "code": "54",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Professional, scientific and technical services",
+   "nameZh": "专业、科学与技术服务",
+   "nameKo": "전문·과학·기술 서비스업"
+  },
+  {
+   "code": "541",
+   "level": 2,
+   "parent": "54",
+   "nameEn": "Professional, scientific and technical services",
+   "nameZh": "专业、科学与技术服务",
+   "nameKo": "전문·과학·기술 서비스업"
+  },
+  {
+   "code": "55",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Management of companies and enterprises",
+   "nameZh": "公司与企业管理",
+   "nameKo": "회사·기업 관리업"
+  },
+  {
+   "code": "551",
+   "level": 2,
+   "parent": "55",
+   "nameEn": "Management of companies and enterprises",
+   "nameZh": "公司与企业管理",
+   "nameKo": "회사·기업 관리업"
+  },
+  {
+   "code": "56",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Administrative and support, waste management and remediation services",
+   "nameZh": "行政支持、废物管理与整治服务",
+   "nameKo": "사업 지원·폐기물 관리·복원 서비스업"
+  },
+  {
+   "code": "561",
+   "level": 2,
+   "parent": "56",
+   "nameEn": "Administrative and support services",
+   "nameZh": "行政与支持服务",
+   "nameKo": "사업 지원 서비스업"
+  },
+  {
+   "code": "562",
+   "level": 2,
+   "parent": "56",
+   "nameEn": "Waste management and remediation services",
+   "nameZh": "废物管理与整治服务",
+   "nameKo": "폐기물 관리·복원 서비스업"
+  },
+  {
+   "code": "61",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Educational services",
+   "nameZh": "教育服务",
+   "nameKo": "교육 서비스업"
+  },
+  {
+   "code": "611",
+   "level": 2,
+   "parent": "61",
+   "nameEn": "Educational services",
+   "nameZh": "教育服务",
+   "nameKo": "교육 서비스업"
+  },
+  {
+   "code": "62",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Health care and social assistance",
+   "nameZh": "医疗与社会援助",
+   "nameKo": "보건·사회복지업"
+  },
+  {
+   "code": "621",
+   "level": 2,
+   "parent": "62",
+   "nameEn": "Ambulatory health care services",
+   "nameZh": "门诊医疗服务",
+   "nameKo": "외래 보건 서비스업"
+  },
+  {
+   "code": "622",
+   "level": 2,
+   "parent": "62",
+   "nameEn": "Hospitals",
+   "nameZh": "医院",
+   "nameKo": "병원"
+  },
+  {
+   "code": "623",
+   "level": 2,
+   "parent": "62",
+   "nameEn": "Nursing and residential care facilities",
+   "nameZh": "护理与居住照护机构",
+   "nameKo": "요양·거주 돌봄 시설"
+  },
+  {
+   "code": "624",
+   "level": 2,
+   "parent": "62",
+   "nameEn": "Social assistance",
+   "nameZh": "社会援助",
+   "nameKo": "사회복지 서비스업"
+  },
+  {
+   "code": "71",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Arts, entertainment and recreation",
+   "nameZh": "艺术、娱乐与休闲",
+   "nameKo": "예술·오락·여가업"
+  },
+  {
+   "code": "711",
+   "level": 2,
+   "parent": "71",
+   "nameEn": "Performing arts, spectator sports and related industries",
+   "nameZh": "表演艺术、观赏性体育及相关",
+   "nameKo": "공연 예술·관람 스포츠·관련 산업"
+  },
+  {
+   "code": "712",
+   "level": 2,
+   "parent": "71",
+   "nameEn": "Heritage institutions",
+   "nameZh": "文化遗产机构",
+   "nameKo": "문화유산 기관"
+  },
+  {
+   "code": "713",
+   "level": 2,
+   "parent": "71",
+   "nameEn": "Amusement, gambling and recreation industries",
+   "nameZh": "游乐、博彩与休闲",
+   "nameKo": "오락·도박·레크리에이션업"
+  },
+  {
+   "code": "72",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Accommodation and food services",
+   "nameZh": "住宿与餐饮",
+   "nameKo": "숙박·음식점업"
+  },
+  {
+   "code": "721",
+   "level": 2,
+   "parent": "72",
+   "nameEn": "Accommodation services",
+   "nameZh": "住宿服务",
+   "nameKo": "숙박업"
+  },
+  {
+   "code": "722",
+   "level": 2,
+   "parent": "72",
+   "nameEn": "Food services and drinking places",
+   "nameZh": "餐饮服务与酒吧",
+   "nameKo": "음식점·주점업"
+  },
+  {
+   "code": "81",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Other services (except public administration)",
+   "nameZh": "其他服务(公共管理除外)",
+   "nameKo": "기타 서비스업(공공 행정 제외)"
+  },
+  {
+   "code": "811",
+   "level": 2,
+   "parent": "81",
+   "nameEn": "Repair and maintenance",
+   "nameZh": "维修与保养",
+   "nameKo": "수리·정비업"
+  },
+  {
+   "code": "812",
+   "level": 2,
+   "parent": "81",
+   "nameEn": "Personal and laundry services",
+   "nameZh": "个人服务与洗衣",
+   "nameKo": "개인 서비스·세탁업"
+  },
+  {
+   "code": "813",
+   "level": 2,
+   "parent": "81",
+   "nameEn": "Religious, grant-making, civic, and professional and similar organizations",
+   "nameZh": "宗教、资助、公民与专业团体",
+   "nameKo": "종교·기금·시민·전문 단체"
+  },
+  {
+   "code": "814",
+   "level": 2,
+   "parent": "81",
+   "nameEn": "Private households",
+   "nameZh": "私人家庭雇佣",
+   "nameKo": "가사 고용"
+  },
+  {
+   "code": "91",
+   "level": 1,
+   "parent": null,
+   "nameEn": "Public administration",
+   "nameZh": "公共管理",
+   "nameKo": "공공 행정"
+  },
+  {
+   "code": "911",
+   "level": 2,
+   "parent": "91",
+   "nameEn": "Federal government public administration",
+   "nameZh": "联邦政府公共管理",
+   "nameKo": "연방 정부 공공 행정"
+  },
+  {
+   "code": "912",
+   "level": 2,
+   "parent": "91",
+   "nameEn": "Provincial and territorial public administration",
+   "nameZh": "省与地区公共管理",
+   "nameKo": "주·준주 공공 행정"
+  },
+  {
+   "code": "913",
+   "level": 2,
+   "parent": "91",
+   "nameEn": "Local, municipal and regional public administration",
+   "nameZh": "地方、市镇与区域公共管理",
+   "nameKo": "지방·시·광역 공공 행정"
+  },
+  {
+   "code": "914",
+   "level": 2,
+   "parent": "91",
+   "nameEn": "Indigenous public administration",
+   "nameZh": "原住民公共管理",
+   "nameKo": "원주민 공공 행정"
+  },
+  {
+   "code": "919",
+   "level": 2,
+   "parent": "91",
+   "nameEn": "International and other extra-territorial public administration",
+   "nameZh": "国际及其他域外公共管理",
+   "nameKo": "국제·기타 역외 공공 행정"
+  }
+ ]
+}

@@ -12,13 +12,15 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 一律从仓库根执行:
     python etl/statcan/main.py                # 默认链(3 步)
     python etl/statcan/main.py --only cubes   # 单步调试(见 TOOLS)
+    python etl/statcan/main.py --only naics   # NAICS 类目表(手动件,不进定时链)
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from statcan.functions import scrape_statcan_city, scrape_statcan_cubes, scrape_statcan_npr, scrape_statcan_tr_prov
+from statcan.functions import (scrape_statcan_city, scrape_statcan_cubes, scrape_statcan_naics, scrape_statcan_npr,
+                               scrape_statcan_tr_prov)
 
 SCHEDULED = [
     ("npr_share", scrape_statcan_npr),
@@ -42,8 +44,10 @@ TOOLS = {
     "tr_prov": scrape_statcan_tr_prov,
     "cubes": scrape_statcan_cubes,
     "city": scrape_statcan_city,
+    "naics": scrape_statcan_naics,
 }
-"""全部可 --only 点名的步(与默认链同一份四步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步。前四步与默认链同一份;naics(2026-09-18 雇主分类批二:NAICS 类目表 → raw/statcan/naics.json)
+只在这里 —— 分类标准五年一修(2022 v1.0,下一版 2027),不值得每轮重抓,换版时手动点名。"""
 
 
 def main() -> int:
