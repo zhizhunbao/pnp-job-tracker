@@ -8,6 +8,7 @@
  * @time 2026-08-24 02:30:00
  */
 import {
+  PICK_STORE_HEAD, PICK_STORE_SEP,
   CLS_SEP, EMPTY_MARK, SERIES_BOX_SEP, SERIES_CHART_H, SERIES_CHART_W, SERIES_COLOR_FALLBACK, SERIES_COLORS,
   SERIES_GRID_MAX_LINES, SERIES_GRID_STEP, SERIES_GRID_STEPS, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS,
   SERIES_ANCHOR_LAST, SERIES_ANCHOR_MID, SERIES_BAR_FILL, SERIES_BAR_GAP, SERIES_CHAR_W, SERIES_HALF, SERIES_PAD_B,
@@ -21,6 +22,7 @@ import type {
   IndexOfIn, LeftPadIn, PlotLineIn, PointLabelsIn, RawPointsIn,
   SeriesBar, SeriesBounds, SeriesDot, SeriesGrid, SeriesLine, SeriesLinesIn, SeriesPathIn, SeriesPlot, SeriesPlotIn,
   SeriesRawLine, SeriesRawPoint, SeriesTick, ShownColsIn, SortRowsIn, TickAnchor, TicksIn, WidthStyleIn, XAtIn, YAtIn,
+  InvertKeysIn, OpenToggleIn, PickColsIn, PickSaveIn, PickSetIn, PickToggleIn, ReadPickedIn, SetPickedFn, ShownByPickIn,
 } from './types'
 
 /**
@@ -589,4 +591,165 @@ export function numTextOf(n: number): string {
  */
 export function roundOf(v: number): number {
   return Math.round(v * SERIES_ROUND) / SERIES_ROUND
+}
+
+/**
+ * 默认显示的列 key:没标 optional 的全部(固定列自然在内)。「主要」钮回到的就是这一份。
+ *
+ * @param x 全部列声明。
+ * @returns 列 key 清单。
+ */
+export function defaultKeysOf<T>(x: PickColsIn<T>): string[] {
+  const out: string[] = []
+  for (const c of x.cols) {
+    if (c.optional !== true) {
+      out.push(c.key)
+    }
+  }
+  return out
+}
+
+/**
+ * 全部列 key(「全选」)。
+ *
+ * @param x 全部列声明。
+ * @returns 列 key 清单。
+ */
+export function allKeysOf<T>(x: PickColsIn<T>): string[] {
+  const out: string[] = []
+  for (const c of x.cols) {
+    out.push(c.key)
+  }
+  return out
+}
+
+/**
+ * 反选:没勾的勾上、勾着的取消;固定列不动(恒勾着)。
+ *
+ * @param x 全部列声明与当前勾选。
+ * @returns 反过来的列 key 清单。
+ */
+export function invertKeysOf<T>(x: InvertKeysIn<T>): string[] {
+  const out: string[] = []
+  for (const c of x.cols) {
+    if (c.fixed === true || x.picked.includes(c.key) === false) {
+      out.push(c.key)
+    }
+  }
+  return out
+}
+
+/**
+ * 现在该显示的列:固定列 + 用户勾着的 + 此刻被筛选带出来的,顺序照列声明(不照勾选先后)。
+ *
+ * @param x 列声明、勾选与强制显示的列。
+ * @returns 该显示的列。
+ */
+export function shownColsByPick<T>(x: ShownByPickIn<T>): Col<T>[] {
+  const out: Col<T>[] = []
+  for (const c of x.cols) {
+    if (c.fixed === true || x.picked.includes(c.key) || x.force.includes(c.key)) {
+      out.push(c)
+    }
+  }
+  return out
+}
+
+/**
+ * 读存盘的勾选(localStorage;读不到、读挂了、或存的列一个都不认识了 → null,调用方用默认列)。
+ * 隐私窗口 / 禁用站点数据时 localStorage 会抛,这是真 I/O,所以套 try。
+ *
+ * @param x 表名与全部列声明。
+ * @returns 勾选清单;没有就是 null。
+ */
+export function readPicked<T>(x: ReadPickedIn<T>): string[] | null {
+  let raw: string | null = null
+  try {
+    raw = window.localStorage.getItem(PICK_STORE_HEAD + x.storeKey)
+  } catch {
+    return null
+  }
+  if (raw == null || raw === '') {
+    return null
+  }
+  const known = allKeysOf({ cols: x.cols })
+  const out: string[] = []
+  for (const k of raw.split(PICK_STORE_SEP)) {
+    if (known.includes(k)) {
+      out.push(k)
+    }
+  }
+  if (out.length === 0) {
+    return null
+  }
+  return out
+}
+
+/**
+ * 造「落格并存盘」的函数:勾选一变就写 localStorage(写挂了不影响这一次的显示,只是下次打开回默认)。
+ *
+ * @param x 表名与 React 的落格。
+ * @returns 落勾选清单的函数。
+ */
+export function makePickSave(x: PickSaveIn): SetPickedFn {
+  function savePicked(keys: string[]): void {
+    x.set(keys)
+    try {
+      window.localStorage.setItem(PICK_STORE_HEAD + x.storeKey, keys.join(PICK_STORE_SEP))
+    } catch {
+      return
+    }
+  }
+  return savePicked
+}
+
+/**
+ * 造面板里一行勾选框的手柄:勾着就取消,没勾就勾上。
+ *
+ * @param x 列 key、当前勾选与落格。
+ * @returns 勾选框的 onChange。
+ */
+export function makePickToggle(x: PickToggleIn): ClickFn {
+  function onToggle(): void {
+    const out: string[] = []
+    let had = false
+    for (const k of x.picked) {
+      if (k === x.key) {
+        had = true
+      } else {
+        out.push(k)
+      }
+    }
+    if (had === false) {
+      out.push(x.key)
+    }
+    x.setPicked(out)
+  }
+  return onToggle
+}
+
+/**
+ * 造「把勾选整份换掉」的手柄(主要 / 全选 / 反选三颗快捷钮共用)。
+ *
+ * @param x 要换成的清单与落格。
+ * @returns 钮的 onClick。
+ */
+export function makePickSet(x: PickSetIn): ClickFn {
+  function onSet(): void {
+    x.setPicked(x.keys)
+  }
+  return onSet
+}
+
+/**
+ * 造开合字段面板的手柄。
+ *
+ * @param x 面板现态与落格。
+ * @returns 钮的 onClick。
+ */
+export function makeOpenToggle(x: OpenToggleIn): ClickFn {
+  function onOpen(): void {
+    x.setOpen(x.open === false)
+  }
+  return onOpen
 }

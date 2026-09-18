@@ -564,38 +564,70 @@ export const COL_ACT_KEY = 'act'
  * 「这一列删掉,筛选加一个 LMIA 的筛选」;地点一列放三枚胶囊)。
  * 2026-09-13 晚 /fe 雇主页星级列撤(退成纯排序键),11% 分给五列:名字 / 地点各 +2、在招 / 指定各 +2、操作 +3。
  */
-export const W_POOL_NAME = '27%'
+export const W_POOL_NAME = 27
 
 /**
  * 雇主板类别列的宽(2026-09-18 雇主板换版:地点一列撤,换成 类别 / 省 / 市 三列;原 W_POOL_WHERE 26% 随之退役 ——
  * 它是 09-13 晚 CityNameCell 双行形 +「另 N 地」的宽,Frank 09-18「招聘地点去掉吧」「英文 城市 也去掉」)。
  */
-export const W_POOL_SECTOR = '12%'
+export const W_POOL_SECTOR = 12
 
 /**
  * 雇主板省列的宽(界面语言省全名)。
  */
-export const W_POOL_PROV = '13%'
+export const W_POOL_PROV = 13
 
 /**
  * 雇主板市列的宽(界面语言城市名,一行)。
  */
-export const W_POOL_CITY = '13%'
+export const W_POOL_CITY = 13
 
 /**
  * 雇主板在招列的宽(数字 + 入门占比灰注)。
  */
-export const W_POOL_OPEN = '9%'
+export const W_POOL_OPEN = 9
 
 /**
  * 雇主板指定雇主列的宽(胶囊 + 项目灰注)。
  */
-export const W_POOL_DESIGNATED = '12%'
+export const W_POOL_DESIGNATED = 12
 
 /**
  * 雇主板操作列的宽(两只 mini 钮并排)。
  */
-export const W_POOL_ACT = '14%'
+export const W_POOL_ACT = 14
+
+/**
+ * 雇主板 LMIA 列的宽份(字段面板里的可选列)。
+ * 🔵 2026-09-18 起这一族 W_POOL_* 是**宽份**不是百分比:字段面板让列可增减,百分比写死就凑不成 100;
+ * 显示哪几列就按那几列的宽份和归一成百分比(functions 的 poolWidthOf)。
+ */
+export const W_POOL_LMIA = 10
+
+/**
+ * 百分之百(宽份归一成百分比用)。
+ */
+export const PCT_FULL = 100
+
+/**
+ * 宽度百分比的小数位。
+ */
+export const W_PCT_DECIMALS = 2
+
+/**
+ * 百分号。
+ */
+export const W_PCT_UNIT = '%'
+
+/**
+ * 字段面板存盘用的表名(通用 table 桶的 useColPick 拿它拼 localStorage 键)。
+ */
+export const COLS_STORE_KEY = 'employers'
+
+/**
+ * 字段钮上的字的文案键(带计数,与职位板同一条词)。
+ */
+export const KEY_FIELDS = 'fields'
 
 /**
  * 担保雇主表列 key:近 1 季 LMIA 获批数。

@@ -342,3 +342,49 @@ export const SERIES_BASELINE_MID = 'middle'
  * 折线的每个点在 DOM 里都是空节点,不声明角色时读屏会把它们一个个念成空白。
  */
 export const SERIES_SVG_ROLE = 'img'
+
+/**
+ * 字段面板(2026-09-18 Frank「应该加一个字段按钮,可以自定义字段,类似于 job 页面」「做成公用件」):
+ * 勾选结果存 localStorage 的键前缀,后接调用方给的表名(一张表一份)。
+ */
+export const PICK_STORE_HEAD = 'o2p.cols.'
+
+/**
+ * 字段面板存盘里列 key 之间的分隔符(列 key 是代码里的标识符,不含逗号)。
+ */
+export const PICK_STORE_SEP = ','
+
+/**
+ * 字段钮的 button 桶档:次级钮(白底灰描边,与筛选行其它钮同形)。
+ */
+export const PICK_BTN_KIND = 'secondary'
+
+/**
+ * 面板顶上三颗快捷钮的 button 桶档:幽灵钮(样式由本域 .pickQuick 定)。
+ */
+export const PICK_QUICK_KIND = 'ghost'
+
+/**
+ * 勾选框的 input type。
+ */
+export const INPUT_CHECKBOX = 'checkbox'
+
+/**
+ * 点外面关面板用的 DOM 事件名。
+ */
+export const EV_MOUSE_DOWN = 'mousedown'
+
+/**
+ * 按 Esc 关面板用的 DOM 事件名。
+ */
+export const EV_KEY_DOWN = 'keydown'
+
+/**
+ * Esc 键的 key 值。
+ */
+export const KEY_ESCAPE = 'Escape'
+
+/**
+ * 钮上图标与字之间的空格。
+ */
+export const PICK_GAP = ' '

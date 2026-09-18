@@ -13,7 +13,7 @@
  */
 import { Pager } from '@/components/pager'
 import { Table } from '@/components/table'
-import { emptyTextOf, empRowKeyOf, employerColsOf, listClsOf, maxPageOf, toEmployerCellRows } from './functions'
+import { emptyTextOf, empRowKeyOf, listClsOf, maxPageOf, toEmployerCellRows } from './functions'
 import { EmployerCards } from './employercards'
 import { EmployerLoading } from './employerloading'
 import type { EmployerCellRow, EmployerPanelIn } from './types'
@@ -27,7 +27,6 @@ import css from './employers.module.css'
  */
 export function EmployerBoard({ p }: EmployerPanelIn) {
   const rows = toEmployerCellRows({ rows: p.data.rows, t: p.t, lang: p.lang, f: p.f })
-  const cols = employerColsOf({ t: p.t })
   const empty = emptyTextOf({ t: p.t, f: p.f })
   const maxPage = maxPageOf({ total: p.data.total, pageSize: p.data.pageSize })
   return (
@@ -36,7 +35,7 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
       <div className={listClsOf({ busy: p.loading })}>
         <div className={css.table}>
           <Table<EmployerCellRow> rows={rows}
-            cols={cols}
+            cols={p.cols}
             rowKey={empRowKeyOf}
             empty={empty}
             sort={p.sort}

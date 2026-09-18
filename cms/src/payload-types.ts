@@ -1377,6 +1377,10 @@ export interface EmployerPool {
    */
   lmiaLastQuarter?: string | null;
   /**
+   * 雇主类别:federal / government(省级)/ municipal / indigenous / public;空 = 私营。按名字判(etl/names sector_of);DDL docs/sql/employer-pool-sector-20260918.sql
+   */
+  sector?: string | null;
+  /**
    * 本站构建日(evidence 随行)
    */
   fetched?: string | null;
@@ -3146,6 +3150,7 @@ export interface EmployerPoolSelect<T extends boolean = true> {
   websiteKnown?: T;
   lmiaSkilledTotal?: T;
   lmiaLastQuarter?: T;
+  sector?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;

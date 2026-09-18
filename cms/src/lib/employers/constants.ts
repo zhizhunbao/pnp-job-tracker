@@ -171,7 +171,7 @@ export const POOL_GROUPS = ['health', 'stem', 'trades', 'food', 'transport', 'ma
 /**
  * 雇主板可点的排序主键白名单(与 `PoolSort` 联合逐字对齐;SQL 片段在 lib/db/sql.ts EMPLOYER_POOL_ORDER 按键取)。
  */
-export const POOL_SORTS = ['star', 'open', 'designated', 'name', 'sector', 'province', 'city'] as const
+export const POOL_SORTS = ['star', 'open', 'designated', 'name', 'sector', 'province', 'city', 'lmia'] as const
 
 /**
  * 排序方向白名单(与 `PoolDir` 联合逐字对齐)。
@@ -216,6 +216,11 @@ export const POOL_SORT_DIR: Record<string, string> = {
    * 城市名 A→Z。
    */
   city: 'asc',
+
+  /**
+   * LMIA 份数多在前(2026-09-18 字段面板里的可选列;它只当一列的排序键,榜的默认排序永不是它 —— 08-29「裸 LMIA 总量永不入排序」)。
+   */
+  lmia: 'desc',
 }
 
 /**

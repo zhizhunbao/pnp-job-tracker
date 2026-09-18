@@ -61,6 +61,17 @@ export type Col<T> = {
    * 数字列右对齐(漏斗/抽选表);缺省左。
    */
   align?: 'left' | 'right'
+
+  /**
+   * 可选列:默认不显示,用户在字段面板里勾上才出(2026-09-18 字段面板;雇主板的指定雇主 / LMIA 这类
+   * 只有百分之几的行有值的列)。缺席 = 默认显示。只有表接了 useColPick 才有意义。
+   */
+  optional?: boolean
+
+  /**
+   * 固定列:恒显示,字段面板里灰着不可取消(名字列、操作列)。缺席 = 可取消。
+   */
+  fixed?: boolean
 }
 
 /**
@@ -1450,4 +1461,334 @@ export type PointLabelsIn<T> = {
    * 时间点列的 key,升序。
    */
   pointKeys: string[]
+}
+
+/**
+ * 字段面板外框的 ref(点外面关面板要量它;单独一格收 —— react-hooks/refs 闸不许 ref 裹进 XxxIn)。
+ */
+export type PickBoxRef = React.RefObject<HTMLDivElement | null>
+
+/**
+ * useColPick 的入参。
+ */
+export type ColPickIn<T> = {
+  /**
+   * 这张表的全部列声明(含 optional / fixed 标记)。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 存盘用的表名(localStorage 键 = PICK_STORE_HEAD + 它;一张表一份)。
+   */
+  storeKey: string
+
+  /**
+   * 此刻必须显示的列 key(筛了某一维就把那一列带出来;用户的勾选不被改写,筛选撤了就回到他自己的选择)。
+   */
+  force: string[]
+}
+
+/**
+ * 字段面板里的一行。
+ */
+export type ColPickRow = {
+  /**
+   * 列 key。
+   */
+  key: string
+
+  /**
+   * 列名(表头文案)。
+   */
+  label: React.ReactNode
+
+  /**
+   * 勾着没(固定列与被筛选带出来的列恒勾着)。
+   */
+  checked: boolean
+
+  /**
+   * 灰着不可取消(固定列,或此刻被筛选带出来的列)。
+   */
+  locked: boolean
+
+  /**
+   * 是不是固定列(列名后面挂「(固定)」)。
+   */
+  fixed: boolean
+
+  /**
+   * 点这一行的勾选框。
+   */
+  onToggle: ClickFn
+}
+
+/**
+ * 字段面板的视图态(不带行类型 T,ColPicker 组件只认这一份)。
+ */
+export type ColPickView = {
+  /**
+   * 面板里的全部行。
+   */
+  rows: ColPickRow[]
+
+  /**
+   * 现在显示着几列(钮上的计数)。
+   */
+  n: number
+
+  /**
+   * 面板开着没。
+   */
+  open: boolean
+
+  /**
+   * 开合面板。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 回到默认列。
+   */
+  onMain: ClickFn
+
+  /**
+   * 全选。
+   */
+  onAll: ClickFn
+
+  /**
+   * 反选(固定列不动)。
+   */
+  onInvert: ClickFn
+}
+
+/**
+ * useColPick 交回的两样。
+ */
+export type ColPickOut<T> = {
+  /**
+   * 现在该显示的列(喂给 Table 的 cols)。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 字段钮与面板要的视图态(喂给 ColPicker)。
+   */
+  view: ColPickView
+
+  /**
+   * 面板外框的 ref(喂给 ColPicker;单独一格,不裹进 view —— react-hooks/refs 把「渲染期读含 ref 的对象」一律算读 ref)。
+   */
+  boxRef: PickBoxRef
+}
+
+/**
+ * ColPicker 钮与面板上的字(调用方从自己的 i18n 取好递进来,本域不碰文案)。
+ */
+export type ColPickWords = {
+  /**
+   * 钮上的字(已带计数,如「字段 (6)」)。
+   */
+  fields: string
+
+  /**
+   * 「主要」。
+   */
+  main: string
+
+  /**
+   * 「全选」。
+   */
+  all: string
+
+  /**
+   * 「反选」。
+   */
+  invert: string
+
+  /**
+   * 固定列名后面挂的字(如「 (固定)」)。
+   */
+  fixed: string
+}
+
+/**
+ * ColPicker(字段钮 + 面板)的 props。
+ */
+export type ColPickerIn = {
+  /**
+   * 视图态。
+   */
+  pick: ColPickView
+
+  /**
+   * 面板外框的 ref(点外面关面板要量它)。
+   */
+  boxRef: PickBoxRef
+
+  /**
+   * 钮与面板上的字。
+   */
+  words: ColPickWords
+}
+
+/**
+ * ColPickOption(面板里的一行)的 props。
+ */
+export type ColPickOptionIn = {
+  /**
+   * 这一行。
+   */
+  row: ColPickRow
+
+  /**
+   * 固定列名后面挂的字。
+   */
+  fixedNote: string
+}
+
+/**
+ * 落勾选清单的函数。
+ */
+export type SetPickedFn = (keys: string[]) => void
+
+/**
+ * defaultKeysOf / allKeysOf 的入参。
+ */
+export type PickColsIn<T> = {
+  /**
+   * 全部列声明。
+   */
+  cols: Col<T>[]
+}
+
+/**
+ * shownColsByPick 的入参。
+ */
+export type ShownByPickIn<T> = {
+  /**
+   * 全部列声明。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 用户勾着的列 key。
+   */
+  picked: string[]
+
+  /**
+   * 此刻必须显示的列 key。
+   */
+  force: string[]
+}
+
+/**
+ * makePickToggle 的入参。
+ */
+export type PickToggleIn = {
+  /**
+   * 点的是哪一列。
+   */
+  key: string
+
+  /**
+   * 当前勾着的列 key。
+   */
+  picked: string[]
+
+  /**
+   * 落格(顺带存盘)。
+   */
+  setPicked: SetPickedFn
+}
+
+/**
+ * makePickSet 的入参。
+ */
+export type PickSetIn = {
+  /**
+   * 要换成的勾选清单。
+   */
+  keys: string[]
+
+  /**
+   * 落格(顺带存盘)。
+   */
+  setPicked: SetPickedFn
+}
+
+/**
+ * makePickSave 的入参。
+ */
+export type PickSaveIn = {
+  /**
+   * 存盘用的表名。
+   */
+  storeKey: string
+
+  /**
+   * React 的落格。
+   */
+  set: SetPickedFn
+}
+
+/**
+ * makeOpenToggle 的入参。
+ */
+export type OpenToggleIn = {
+  /**
+   * 面板现在开着没。
+   */
+  open: boolean
+
+  /**
+   * 开合落格。
+   */
+  setOpen: (v: boolean) => void
+}
+
+/**
+ * useOutsideClose 的第二个入参。
+ */
+export type OutsideCloseIn = {
+  /**
+   * 面板开着没(关着不挂监听)。
+   */
+  open: boolean
+
+  /**
+   * 关面板。
+   */
+  onClose: ClickFn
+}
+
+/**
+ * invertKeysOf 的入参。
+ */
+export type InvertKeysIn<T> = {
+  /**
+   * 全部列声明。
+   */
+  cols: Col<T>[]
+
+  /**
+   * 当前勾着的列 key。
+   */
+  picked: string[]
+}
+
+/**
+ * readPicked 的入参。
+ */
+export type ReadPickedIn<T> = {
+  /**
+   * 存盘用的表名。
+   */
+  storeKey: string
+
+  /**
+   * 全部列声明(存盘里已经不存在的列 key 要滤掉)。
+   */
+  cols: Col<T>[]
 }

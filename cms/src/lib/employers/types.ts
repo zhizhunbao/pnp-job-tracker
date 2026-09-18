@@ -21,7 +21,7 @@ import type { Db } from '../db'
 /**
  * 雇主板排序主键(与 constants.POOL_SORTS 逐字对齐;SQL 片段按键取)。
  */
-export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city' | 'lmia'
 
 /**
  * 排序方向(与 constants.POOL_DIRS 逐字对齐)。

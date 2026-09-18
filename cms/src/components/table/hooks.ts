@@ -7,15 +7,20 @@
  * @author Frank
  * @time 2026-08-24 11:00:00
  */
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import {
-  COL_W_FALLBACK, COL_W_MIN, EV_POINTERMOVE, EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT,
+  COL_W_FALLBACK, COL_W_MIN, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_POINTERMOVE, KEY_ESCAPE,
+  EV_POINTERUP, LAYOUT_LOCKED, PCT_DECIMALS, PCT_UNIT,
   SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, SIG_SEP, SIG_TAIL,
 } from './constants'
-import { sortRows } from './functions'
+import {
+  allKeysOf, defaultKeysOf, invertKeysOf, makeOpenToggle, makePickSave, makePickSet, makePickToggle, readPicked,
+  shownColsByPick, sortRows,
+} from './functions'
 import type {
-  AllExplicitIn, Col, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn, PxAtIn, ResizeIn, RowsIn, RowsOut,
+  AllExplicitIn, Col, ColPickIn, ColPickOut, ColPickRow, ColWidthsIn, ColWidthsOut, DragWidthsIn, MeasureIn,
+  OutsideCloseIn, PickBoxRef, PxAtIn, ResizeIn, RowsIn, RowsOut,
   RunResizeIn, SeriesRange, SeriesView, SnapIn, SortState, UseSeriesViewOut,
 } from './types'
 
@@ -346,4 +351,112 @@ export function useSeriesView(): UseSeriesViewOut {
   }
 
   return { view, range, onTable, onChart, onRecent, onMore, onAll }
+}
+
+/**
+ * 字段面板的状态机(2026-09-18 Frank「应该加一个字段按钮,可以自定义字段,类似于 job 页面」「做成公用件」):
+ * 哪些列勾着、面板开没开、点外面 / 按 Esc 关面板、勾选存 localStorage。
+ * 形与职位板字段面板一致(主要 / 全选 / 反选、固定列灰着);职位板那份与它的冻结列、列宽 cookie 长在一起,
+ * 暂不并过来,以后单独搬家。
+ * 存盘在「活过来」之后才读:服务端首帧读不到 localStorage,先按默认列画(没自定义过的用户零变化;自定义过的会在
+ * 首帧之后换成他的列)。
+ *
+ * @param x 全部列声明、存盘表名与此刻必须显示的列。
+ * @returns 该显示的列 + 字段钮与面板的视图态。
+ */
+export function useColPick<T>(x: ColPickIn<T>): ColPickOut<T> {
+  const [picked, setPicked] = useState<string[]>(defaultKeysOf({ cols: x.cols }))
+  const [open, setOpen] = useState(false)
+  const boxRef = useRef<HTMLDivElement | null>(null)
+  const storeKey = x.storeKey
+  const cols = x.cols
+
+  useEffect(function loadStored() {
+    const got = readPicked({ storeKey, cols })
+    if (got != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到 localStorage,活过来再换成用户存的列
+      setPicked(got)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cols 每渲一次都是新数组,存盘只在挂载与换表时读
+  }, [storeKey])
+
+  const save = makePickSave({ storeKey, set: setPicked })
+  useOutsideClose(boxRef, { open, onClose: makePickClose(setOpen) })
+
+  const shown = shownColsByPick({ cols, picked, force: x.force })
+  const rows: ColPickRow[] = []
+  for (const c of cols) {
+    const fixed = c.fixed === true
+    const forced = x.force.includes(c.key)
+    rows.push({
+      key: c.key,
+      label: c.label,
+      checked: fixed || forced || picked.includes(c.key),
+      locked: fixed || forced,
+      fixed,
+      onToggle: makePickToggle({ key: c.key, picked, setPicked: save }),
+    })
+  }
+  return {
+    cols: shown,
+    view: {
+      rows,
+      n: shown.length,
+      open,
+      onOpen: makeOpenToggle({ open, setOpen }),
+      onMain: makePickSet({ keys: defaultKeysOf({ cols }), setPicked: save }),
+      onAll: makePickSet({ keys: allKeysOf({ cols }), setPicked: save }),
+      onInvert: makePickSet({ keys: invertKeysOf({ cols, picked }), setPicked: save }),
+    },
+    boxRef,
+  }
+}
+
+/**
+ * 造关面板的函数(点外面 / 按 Esc 共用)。
+ *
+ * @param setOpen 开合落格。
+ * @returns 关面板。
+ */
+function makePickClose(setOpen: (v: boolean) => void): () => void {
+  function closePick(): void {
+    setOpen(false)
+  }
+  return closePick
+}
+
+/**
+ * 点面板外面、或按 Esc,关掉字段面板(面板关着不挂监听)。
+ *
+ * @param boxRef 面板外框(单独一格收,理由见 types.ts 的 `PickBoxRef`)。
+ * @param x 开着没与关的动作。
+ * @returns 无。
+ */
+// eslint-disable-next-line local/one-parameter -- 第一个参数是 ref:react-hooks/refs 闸不许 ref 裹进 XxxIn
+function useOutsideClose(boxRef: PickBoxRef, x: OutsideCloseIn): void {
+  const onClose = x.onClose
+  const open = x.open
+  useEffect(function watchOutside() {
+    if (open === false) {
+      return
+    }
+    function onDown(e: MouseEvent): void {
+      const box = boxRef.current
+      if (box != null && e.target instanceof Node && box.contains(e.target) === false) {
+        onClose()
+      }
+    }
+    function onKey(e: KeyboardEvent): void {
+      if (e.key === KEY_ESCAPE) {
+        onClose()
+      }
+    }
+    document.addEventListener(EV_MOUSE_DOWN, onDown)
+    document.addEventListener(EV_KEY_DOWN, onKey)
+    return function stopOutsideWatch() {
+      document.removeEventListener(EV_MOUSE_DOWN, onDown)
+      document.removeEventListener(EV_KEY_DOWN, onKey)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onClose 每渲一次都是新函数,只跟开合走
+  }, [open, boxRef])
 }

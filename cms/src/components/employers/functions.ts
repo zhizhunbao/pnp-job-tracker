@@ -26,6 +26,7 @@ import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
 import { PoolCityCell } from './poolcitycell'
+import { PoolLmiaCell } from './poollmiacell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
 import {
@@ -39,7 +40,7 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CARET_DOWN, CARET_UP,
+  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_SECTOR, EV_PROP_SORT,
@@ -71,6 +72,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
+  ColKeysIn, EmpPickWords, KeepShownIn, PickWordsIn, PoolWidthIn,
   ListClsIn, LoadBoardIn, MaxPageIn, MoneyIn, MoreBtnClsIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PageFn, PickFn, PoolDir, PoolFilters, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -210,6 +212,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     hrefTitle: x.t('pulse.act.company'),
     industry,
     where: empWhereTextOf({ t: x.t, r }),
+    lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     provText,
     cityText,
@@ -352,6 +355,9 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * 雇主 / 地点 / 星级 / 在招 / 指定雇主 / 操作。
  * 2026-09-18 雇主板换版(设计稿 docs/design/雇主分类与搜索-20260918.md):地点一列换成 类别 / 省 / 市 三列(都可点排序),
  * 现为 雇主 / 类别 / 省 / 市 / 在招 / 指定雇主 / 操作;指定雇主等字段面板落地后改默认不勾。
+ * 2026-09-18 字段面板落地(通用 table 桶 useColPick / ColPicker;Frank「应该加一个字段按钮」「做成公用件」):
+ * 雇主、操作两列固定;指定雇主、LMIA 两列可选默认不勾(在招雇主里有值的只占 1.3% / 2.8%,默认摆着是两整列横杠);
+ * 列宽按现在显示着的列的宽份和归一。
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板星级退成纯排序键不占列:5★ 只 423 家、2★ 占 75.8%,默认降序首屏 14 页清一色
  * 五星,作列零信息量;默认排序仍是 star desc(lib/employers POOL_SORT_DEFAULT),表头无对应列就不出排序标记。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
@@ -360,15 +366,40 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * @returns 列组。
  */
 export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
-  return [
-    { key: COL_NAME_KEY, label: x.t('de.colName'), width: W_POOL_NAME, sortable: true, render: NameCell },
-    { key: COL_SECTOR_KEY, label: x.t('de.colSector'), width: W_POOL_SECTOR, sortable: true, render: SectorCell },
-    { key: COL_PROV_KEY, label: x.t('de.colProv'), width: W_POOL_PROV, sortable: true, render: PoolProvCell },
-    { key: COL_CITY_KEY, label: x.t('de.colCity'), width: W_POOL_CITY, sortable: true, render: PoolCityCell },
+  const all: EmpCol<EmployerCellRow>[] = [
+    {
+      key: COL_NAME_KEY,
+      label: x.t('de.colName'),
+      width: poolWidthOf({ key: COL_NAME_KEY, shown: x.shown }),
+      sortable: true,
+      fixed: true,
+      render: NameCell,
+    },
+    {
+      key: COL_SECTOR_KEY,
+      label: x.t('de.colSector'),
+      width: poolWidthOf({ key: COL_SECTOR_KEY, shown: x.shown }),
+      sortable: true,
+      render: SectorCell,
+    },
+    {
+      key: COL_PROV_KEY,
+      label: x.t('de.colProv'),
+      width: poolWidthOf({ key: COL_PROV_KEY, shown: x.shown }),
+      sortable: true,
+      render: PoolProvCell,
+    },
+    {
+      key: COL_CITY_KEY,
+      label: x.t('de.colCity'),
+      width: poolWidthOf({ key: COL_CITY_KEY, shown: x.shown }),
+      sortable: true,
+      render: PoolCityCell,
+    },
     {
       key: COL_OPEN_KEY,
       label: x.t('de.colOpen'),
-      width: W_POOL_OPEN,
+      width: poolWidthOf({ key: COL_OPEN_KEY, shown: x.shown }),
       nowrap: true,
       align: ALIGN_RIGHT,
       sortable: true,
@@ -377,12 +408,150 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
     {
       key: COL_DESIGNATED_KEY,
       label: x.t('de.colDesignated'),
-      width: W_POOL_DESIGNATED,
+      width: poolWidthOf({ key: COL_DESIGNATED_KEY, shown: x.shown }),
       sortable: true,
+      optional: true,
       render: DesignatedCell,
     },
-    { key: COL_ACT_KEY, label: x.t('col.actions'), width: W_POOL_ACT, nowrap: true, render: ActCell },
+    {
+      key: COL_LMIA_KEY,
+      label: x.t('de.colLmia'),
+      width: poolWidthOf({ key: COL_LMIA_KEY, shown: x.shown }),
+      nowrap: true,
+      align: ALIGN_RIGHT,
+      sortable: true,
+      optional: true,
+      render: PoolLmiaCell,
+    },
+    {
+      key: COL_ACT_KEY,
+      label: x.t('col.actions'),
+      width: poolWidthOf({ key: COL_ACT_KEY, shown: x.shown }),
+      nowrap: true,
+      fixed: true,
+      render: ActCell,
+    },
   ]
+  return keepShownOf({ cols: all, shown: x.shown })
+}
+
+/**
+ * 只留现在显示着的列(shown 空 = 还没选,全给 —— 那一份只拿去给字段面板列名)。
+ *
+ * @param x 全部列与现在显示着的列 key。
+ * @returns 该上屏的列。
+ */
+function keepShownOf(x: KeepShownIn): EmpCol<EmployerCellRow>[] {
+  if (x.shown.length === 0) {
+    return x.cols
+  }
+  const out: EmpCol<EmployerCellRow>[] = []
+  for (const c of x.cols) {
+    if (x.shown.includes(c.key)) {
+      out.push(c)
+    }
+  }
+  return out
+}
+
+/**
+ * 各列的宽份(W_POOL_* 一族;不在表里的 key 回 0)。
+ *
+ * @param key 列 key。
+ * @returns 宽份。
+ */
+function poolShareOf(key: string): number {
+  if (key === COL_NAME_KEY) {
+    return W_POOL_NAME
+  }
+  if (key === COL_SECTOR_KEY) {
+    return W_POOL_SECTOR
+  }
+  if (key === COL_PROV_KEY) {
+    return W_POOL_PROV
+  }
+  if (key === COL_CITY_KEY) {
+    return W_POOL_CITY
+  }
+  if (key === COL_OPEN_KEY) {
+    return W_POOL_OPEN
+  }
+  if (key === COL_DESIGNATED_KEY) {
+    return W_POOL_DESIGNATED
+  }
+  if (key === COL_LMIA_KEY) {
+    return W_POOL_LMIA
+  }
+  if (key === COL_ACT_KEY) {
+    return W_POOL_ACT
+  }
+  return 0
+}
+
+/**
+ * 一列的宽度百分比:它的宽份 ÷ 现在显示着的各列宽份之和(字段面板让列可增减,写死百分比凑不成 100)。
+ * 还没选列(shown 空)时给空串 —— 那一份列声明只拿去给字段面板列名,不上屏。
+ *
+ * @param x 这一列的 key 与现在显示着的列 key。
+ * @returns 百分比字符串,或空串。
+ */
+function poolWidthOf(x: PoolWidthIn): string {
+  let sum = 0
+  for (const k of x.shown) {
+    sum += poolShareOf(k)
+  }
+  if (sum === 0) {
+    return TEXT_NONE
+  }
+  return (poolShareOf(x.key) / sum * PCT_FULL).toFixed(W_PCT_DECIMALS) + W_PCT_UNIT
+}
+
+/**
+ * 列组 → 列 key 清单。
+ *
+ * @param x 列组。
+ * @returns 列 key。
+ */
+export function colKeysOf(x: ColKeysIn): string[] {
+  const out: string[] = []
+  for (const c of x.cols) {
+    out.push(c.key)
+  }
+  return out
+}
+
+/**
+ * 此刻必须显示的可选列:筛了 LMIA → LMIA 列;带制度参数或按指定排序进来 → 指定雇主列
+ * (直达链接 `?sort=designated&program=AIP` 的契约不断:进来就看得到那一列)。用户自己的勾选不被改写。
+ *
+ * @param x 当前筛选。
+ * @returns 列 key 清单。
+ */
+export function forceKeysOf(x: FiltersIn): string[] {
+  const out: string[] = []
+  if (x.f.lmia || x.f.sort === COL_LMIA_KEY) {
+    out.push(COL_LMIA_KEY)
+  }
+  if (x.f.program !== TEXT_NONE || x.f.sort === COL_DESIGNATED_KEY) {
+    out.push(COL_DESIGNATED_KEY)
+  }
+  return out
+}
+
+/**
+ * 字段钮与面板上的字(与职位板同一套词条)。
+ *
+ * @param x 取词函数与现在显示着几列。
+ * @returns 五样字。
+ */
+export function pickWordsOf(x: PickWordsIn): EmpPickWords {
+  return {
+    fields: x.t(KEY_FIELDS, { n: x.n }),
+    main: x.t('fields.main'),
+    all: x.t('fields.all'),
+    invert: x.t('fields.invert'),
+    fixed: x.t('fields.fixed'),
+  }
 }
 
 /**

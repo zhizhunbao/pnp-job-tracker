@@ -11,9 +11,11 @@
  * @time 2026-08-24 02:30:00
  */
 export type {
-  Col, SeriesChartIn, SeriesRange, SeriesToolbarIn, SeriesView, SeriesWords, TableIn, TableSeriesIn, UseSeriesViewOut,
+  Col, ColPickOut, ColPickView, ColPickWords, PickBoxRef, SeriesChartIn, SeriesRange, SeriesToolbarIn, SeriesView,
+  SeriesWords, TableIn, TableSeriesIn, UseSeriesViewOut,
 } from './types'
 export { Table } from './table'
 export { SeriesChart } from './serieschart'
 export { SeriesToolbar } from './seriestoolbar'
-export { useSeriesView } from './hooks'
+export { ColPicker } from './colpicker'
+export { useColPick, useSeriesView } from './hooks'

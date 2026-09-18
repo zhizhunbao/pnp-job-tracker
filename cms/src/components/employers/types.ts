@@ -30,7 +30,7 @@ export type TFn = (key: string, vars?: TVars) => string
 /**
  * 雇主板排序主键(与 lib/employers 的 POOL_SORTS 逐字对齐;本域自抄)。
  */
-export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city'
+export type PoolSort = 'star' | 'open' | 'designated' | 'name' | 'sector' | 'province' | 'city' | 'lmia'
 
 /**
  * 排序方向(与 lib/employers 的 POOL_DIRS 逐字对齐;本域自抄)。
@@ -182,6 +182,11 @@ export type PoolRow = {
    * 入门占比(百分比整数);null = 无在招不表态。
    */
   entryShare: number | null
+
+  /**
+   * 技能类 LMIA 份数(选了行业组 = 桶内份数,否则 = 这家总量);0 = 没有记录。
+   */
+  lmiaSkilled: number
 }
 
 /**
@@ -498,6 +503,11 @@ export type EmployerCellRow = {
    * 手机卡的地点行(市 + 省码紧凑格;没市回落省名;都没有空串)。
    */
   where: string
+
+  /**
+   * LMIA 格:技能类 LMIA 份数(选了行业组 = 桶内份数,否则 = 这家总量);0 = 空串(渲横杠)。
+   */
+  lmiaText: string
 
   /**
    * 类别格:界面语言的类别名(私营也照写,不渲横杠 —— 私营是事实不是缺数)。
@@ -926,6 +936,16 @@ export type EmpCol<T> = {
    * 列级类(整列同一个视觉形态时用它,省掉一枚只为套色的单元格组件)。
    */
   className?: string
+
+  /**
+   * 可选列:默认不显示,字段面板里勾上才出(通用 table 桶 Col.optional,2026-09-18)。
+   */
+  optional?: boolean
+
+  /**
+   * 固定列:恒显示,字段面板里灰着不可取消(通用 table 桶 Col.fixed)。
+   */
+  fixed?: boolean
 }
 
 /**
@@ -1121,6 +1141,186 @@ export type EmployerColsIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 现在显示着的列 key(宽度按它们的宽份和归一);空数组 = 还没选,按全部列算(只给字段面板列名用,宽度不上屏)。
+   */
+  shown: string[]
+}
+
+/**
+ * 字段面板里的一行(通用 table 桶 ColPickRow 的全格照抄 —— types 不 import,亲手递给外域件的形状逐格抄)。
+ */
+export type EmpPickRow = {
+  /**
+   * 列 key。
+   */
+  key: string
+
+  /**
+   * 列名。
+   */
+  label: React.ReactNode
+
+  /**
+   * 勾着没。
+   */
+  checked: boolean
+
+  /**
+   * 灰着不可取消。
+   */
+  locked: boolean
+
+  /**
+   * 是不是固定列。
+   */
+  fixed: boolean
+
+  /**
+   * 点这一行的勾选框。
+   */
+  onToggle: ClickFn
+}
+
+/**
+ * 字段面板的视图态(通用 table 桶 ColPickView 的全格照抄)。
+ */
+export type EmpPickView = {
+  /**
+   * 面板里的全部行。
+   */
+  rows: EmpPickRow[]
+
+  /**
+   * 现在显示着几列。
+   */
+  n: number
+
+  /**
+   * 面板开着没。
+   */
+  open: boolean
+
+  /**
+   * 开合面板。
+   */
+  onOpen: ClickFn
+
+  /**
+   * 回到默认列。
+   */
+  onMain: ClickFn
+
+  /**
+   * 全选。
+   */
+  onAll: ClickFn
+
+  /**
+   * 反选。
+   */
+  onInvert: ClickFn
+}
+
+/**
+ * 字段面板外框的 ref(通用 table 桶 PickBoxRef 同形)。
+ */
+export type EmpPickRef = React.RefObject<HTMLDivElement | null>
+
+/**
+ * 字段钮与面板上的字(通用 table 桶 ColPickWords 的全格照抄)。
+ */
+export type EmpPickWords = {
+  /**
+   * 钮上的字(已带计数)。
+   */
+  fields: string
+
+  /**
+   * 「主要」。
+   */
+  main: string
+
+  /**
+   * 「全选」。
+   */
+  all: string
+
+  /**
+   * 「反选」。
+   */
+  invert: string
+
+  /**
+   * 固定列名后面挂的字。
+   */
+  fixed: string
+}
+
+/**
+ * pickWordsOf 的入参。
+ */
+export type PickWordsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 现在显示着几列。
+   */
+  n: number
+}
+
+/**
+ * poolWidthOf 的入参。
+ */
+export type PoolWidthIn = {
+  /**
+   * 这一列的 key。
+   */
+  key: string
+
+  /**
+   * 现在显示着的列 key。
+   */
+  shown: string[]
+}
+
+/**
+ * colKeysOf 的入参。
+ */
+export type ColKeysIn = {
+  /**
+   * 列组(只读 key 一格 —— 通用 table 桶交回的是它自己的 Col 形,这里只认真用的那一格)。
+   */
+  cols: KeyedCol[]
+}
+
+/**
+ * keepShownOf 的入参。
+ */
+export type KeepShownIn = {
+  /**
+   * 全部列。
+   */
+  cols: EmpCol<EmployerCellRow>[]
+
+  /**
+   * 现在显示着的列 key;空 = 还没选。
+   */
+  shown: string[]
+}
+
+/**
+ * 只带 key 的列(colKeysOf 只读这一格)。
+ */
+export type KeyedCol = {
+  /**
+   * 列 key。
+   */
+  key: string
 }
 
 /**
@@ -1654,6 +1854,21 @@ export type EmployersPanel = {
    * 换「LMIA」下拉(选中 = 只看办过 LMIA 的)。
    */
   onLmia: PickFn
+
+  /**
+   * 现在该显示的列(字段面板勾选 + 固定列 + 被筛选带出来的列;宽度已按显示的列归一)。
+   */
+  cols: EmpCol<EmployerCellRow>[]
+
+  /**
+   * 字段钮与面板的视图态(通用 table 桶的 ColPicker 吃它)。
+   */
+  pick: EmpPickView
+
+  /**
+   * 字段面板外框的 ref(点外面关面板要量它;单独一格,不裹进 pick)。
+   */
+  pickRef: EmpPickRef
 
   /**
    * 「更多筛选」抽屉开着没。

@@ -13,9 +13,11 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
+import { useColPick } from '@/components/table'
+import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
-  boardUrlOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup, makeLmiaPick, makePage, makeProv,
+  boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
+  makeLmiaPick, makePage, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
@@ -38,6 +40,9 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
   const first = useRef(true)
   const qs = qsOf({ f })
+  const pick = useColPick({
+    cols: employerColsOf({ t, shown: [] }), storeKey: COLS_STORE_KEY, force: forceKeysOf({ f }),
+  })
 
   useEffect(function debounceQuery() {
     if (qDraft === f.q) {
@@ -78,6 +83,9 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onSector: makeSector({ f, setF }),
     onEntry: makeEntryPick({ f, setF }),
     onLmia: makeLmiaPick({ f, setF }),
+    cols: employerColsOf({ t, shown: colKeysOf({ cols: pick.cols }) }),
+    pick: pick.view,
+    pickRef: pick.boxRef,
     fold,
     onFold: makeFoldToggle({ fold, setFold }),
     onSort: makeSort({ f, setF }),

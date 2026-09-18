@@ -556,6 +556,11 @@ export const EMPLOYER_POOL_ORDER: Record<string, string> = {
    * 主市。
    */
   city: 'p.city',
+
+  /**
+   * 桶内技能类 LMIA 份数(字段面板可选列的排序键)。
+   */
+  lmia: 'b.lmia_skilled',
 }
 
 /**
@@ -634,6 +639,11 @@ export const EMPLOYER_POOL_ALL_ORDER: Record<string, string> = {
    * 主市。
    */
   city: 'p.city',
+
+  /**
+   * 技能类 LMIA 总量(字段面板可选列的排序键)。
+   */
+  lmia: 'p.lmia_skilled_total',
 }
 
 /**

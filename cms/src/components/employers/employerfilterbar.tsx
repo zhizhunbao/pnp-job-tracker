@@ -20,11 +20,12 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
+import { ColPicker } from '@/components/table'
 import { Updated } from '@/components/time'
 import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE } from './constants'
 import {
   anyFilterOf, caretOf, clearBtnClsOf, foldCountOf, makeGroupLabel, makeOnLabel, makeProvLabel, makeSectorLabel,
-  moreBtnClsOf, onValueOf,
+  moreBtnClsOf, onValueOf, pickWordsOf,
 } from './functions'
 import type { EmployerPanelIn } from './types'
 import css from './employers.module.css'
@@ -66,7 +67,10 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
             {p.t('clear')}
           </Button>
         )}
-        <Updated iso={p.updatedAt} t={p.t} />
+        <div className={css.filtTail}>
+          <Updated iso={p.updatedAt} t={p.t} />
+          <ColPicker pick={p.pick} boxRef={p.pickRef} words={pickWordsOf({ t: p.t, n: p.pick.n })} />
+        </div>
       </div>
       {p.fold && (
         <div className={css.drawer}>

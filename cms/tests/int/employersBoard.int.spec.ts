@@ -36,7 +36,9 @@ describe('参数规范化', () => {
     expect(of({ sort: 'name', dir: 'desc' }).dir).toBe('desc')
     expect(of({ sort: 'open', dir: 'sideways' }).dir).toBe('desc')
     expect(isPoolSort('designated')).toBe(true)
-    expect(isPoolSort('lmia')).toBe(false)
+    // 2026-09-18 字段面板:LMIA 成了可选列,列头可点排序(技能类份数,不是 08-29 禁的「裸 LMIA 总量」;默认榜仍是星级)
+    expect(isPoolSort('lmia')).toBe(true)
+    expect(isPoolSort('sector')).toBe(true)
     expect(isPoolSort('skilled')).toBe(false)
   })
 
