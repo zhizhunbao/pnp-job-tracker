@@ -16,6 +16,8 @@
  * 线上实测公司数据 0.15~0.6s 就到,转圈 2.7~10s 全是在等现场翻译。正文不再整框等:弹框(hold)首拍只查库里存好的译文,
  * 在途正文留白(半秒内),有就与正文一起铺;没存的先铺英文、译文后到,在途经 onTransBusy 回报给页眉开关显「翻译中…」。
  * 懒抓简介那一档只在简介位出一行「AI 调查中…」。同日「在招职位 和 相似雇主 下面的也算中文翻译」:那两卡名下的对照行跟开关走。
+ * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:译文一开框就在后台拉好存着(不看开关),开关默认关、只管显不显;
+ * hold 留白与 hidden 随之撤,「翻译中…」只在开关拨开而译文未到时回报(后台在译不打扰关着的开关)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -47,27 +49,24 @@ export function CompanyBody({
   onOpenJob,
   resolveJob,
   afterSponsor = null,
-  hold = false,
   onTransBusy,
 }: CompanyBodyIn) {
   const tr = useCompanyTrans({
     name: company.name,
     aiBrief: company.aiBrief,
     hasDesc: hasDescOf({ company }),
-    showTrans,
     lang,
-    hold,
   })
   const newTab = onOpenJob != null
   const [aiTransBusy, setAiTransBusy] = useState(false)
-  const busy = tr.busy || aiTransBusy
+  const busy = showTrans && (tr.busy || aiTransBusy)
   useEffect(function reportTransBusy() {
     if (onTransBusy != null) {
       onTransBusy(busy)
     }
   }, [busy, onTransBusy])
   return (
-    <div className={css.body} hidden={tr.pending}>
+    <div className={css.body}>
       {hideTopInfo === false && <CompanyTopInfo company={company} t={t} />}
       <CompanyBasicCard company={company}
         t={t}

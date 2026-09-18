@@ -26,8 +26,9 @@ import type {
  * K 调查简介的懒查(#158 Frank 2026-07-19 批:首开自动调查,命中缓存秒回;
  * 查不到/掉线整块消失不留孤儿)。换了公司当场清空重查 —— 别拿上一家的简介占位。
  * 中文对照(#185)打开且这一门语言不是英文时再懒翻一份存着,切换零延迟。
+ * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关 —— 中 / 韩界面简介一到就在后台翻好存着,开关只管显不显。
  *
- * @param x 公司名、对照开关与界面语言。
+ * @param x 公司名与界面语言。
  * @returns 加载态、查到的简介与译文。
  */
 export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
@@ -53,15 +54,13 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
-    if (x.showTrans && trans == null && fact != null && x.lang != null && x.lang !== LANG_EN) {
-      makeLoadTrans({
-        company: x.company, lang: x.lang, setTrans, hold: false, setPending: ignoreFlag, setBusy: ignoreFlag,
-      })(flag)
+    if (trans == null && fact != null && x.lang != null && x.lang !== LANG_EN) {
+      makeLoadTrans({ company: x.company, lang: x.lang, setTrans, setBusy: ignoreFlag })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.showTrans, x.lang, x.company, trans, fact])
+  }, [x.lang, x.company, trans, fact])
 
   return { loading, fact, trans }
 }
@@ -72,27 +71,27 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
  * 对照针对的是 K 调查五节)。
  *
  * 2026-09-16 Frank「可以,就这样做」:交回三样 —— 译文、首拍只查库在途(正文等它)、现场翻译在途(页眉开关显「翻译中…」)。
+ * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关,中 / 韩界面一开框就在后台翻好存着;
+ * 「只查库在途」(pending / hold)撤 —— 开关默认关,正文没必要为它留白。交回两样。
  *
- * @param x 公司名、缓存简介、厚简介标记、对照开关、界面语言与要不要先只查库。
- * @returns 译文与两个在途态。
+ * @param x 公司名、缓存简介、厚简介标记与界面语言。
+ * @returns 译文与现场翻译在途态。
  */
 export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
   const [trans, setTrans] = useState<string | null>(null)
-  const want = x.showTrans && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN
-  const [pending, setPending] = useState(x.hold && want)
   const [busy, setBusy] = useState(false)
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
-    if (x.showTrans && trans == null && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN) {
-      makeLoadTrans({ company: x.name, lang: x.lang, setTrans, hold: x.hold, setPending, setBusy })(flag)
+    if (trans == null && x.hasDesc === false && x.aiBrief !== '' && x.lang !== LANG_EN) {
+      makeLoadTrans({ company: x.name, lang: x.lang, setTrans, setBusy })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.showTrans, x.hasDesc, x.aiBrief, x.name, x.lang, x.hold, trans])
+  }, [x.hasDesc, x.aiBrief, x.name, x.lang, trans])
 
-  return { trans, pending, busy }
+  return { trans, busy }
 }
 
 /**
@@ -190,6 +189,7 @@ export function useTitleMap(x: TitleMapHookIn): Record<string, string> {
 /**
  * 官网简介的对照(2026-09-14):中 / 韩界面且有官网简介才打一次接口。
  * 2026-09-17:has 由调用方并入页眉对照开关 —— 开关关着不打接口(Frank「这个 公司的 弹框 也 默认关闭」)。
+ * 2026-09-17 同日 Frank「后台要自动翻译」改回:不看开关,有官网简介就翻好存着,开关只管出不出那一行。
  *
  * @param x 公司名、界面语言与有没有官网简介。
  * @returns 译文;'' = 还没有。

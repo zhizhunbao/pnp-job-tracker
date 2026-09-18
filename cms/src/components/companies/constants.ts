@@ -698,9 +698,3 @@ export const TITLES_KEY_SEP = '\u0001'
  * 官网简介懒翻接口(2026-09-14)。
  */
 export const URL_CO_DESC = '/api/employers/desc'
-
-/**
- * 「只查库」那一拍正文最多留白多久(毫秒)。2026-09-17 Frank 实拍公司弹框整框空白「怎么变成空白的了」:
- * 留白等的是一次网络请求,慢了 / 挂了就是一块白板。到点不管回没回都先把正文铺出来,查库的结果回来照常补上(代价 = 那一次会跳一下)。
- */
-export const HOLD_MAX_MS = 800

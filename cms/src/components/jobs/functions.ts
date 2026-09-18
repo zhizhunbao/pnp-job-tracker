@@ -56,7 +56,7 @@ import {
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
-  TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
+  TRANS_IDLE, TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER,
   VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
@@ -82,7 +82,8 @@ import type {
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
-  ThWidthIn, TransLabelIn, TransShownIn, UpsellKind, UpsellReasonIn, WantsIn, WidthsKeyIn,
+  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellKind, UpsellReasonIn, WantsIn,
+  WidthsKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3551,6 +3552,20 @@ export function transLabelOf(x: TransLabelIn): string {
     return x.t('cat.transErr')
   }
   return x.t('cat.pair')
+}
+
+/**
+ * 开关上该显的取数态:开关关着一律当 idle(2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:
+ * 后台在译 / 译挂了都不打扰关着的开关 —— 不显「翻译中…」也不禁用;拨开了才把真实在途 / 失败态摆出来)。
+ *
+ * @param x 开关开合与真实取数态。
+ * @returns 开关上该显的取数态。
+ */
+export function transStatusShownOf(x: TransStatusShownIn): TransStatus {
+  if (x.showTrans === false) {
+    return TRANS_IDLE
+  }
+  return x.status
 }
 
 /**

@@ -40,7 +40,7 @@ export function CompanyAiSection({
   if (lang != null) {
     hookLang = lang
   }
-  const p = useCompanyAi({ company, showTrans, lang: hookLang })
+  const p = useCompanyAi({ company, lang: hookLang })
   const transWait = showTrans && hookLang !== null && hookLang !== LANG_EN && p.fact != null && p.trans === null
   useEffect(function reportBusy() {
     if (onBusy != null) {

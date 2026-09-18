@@ -1996,6 +1996,7 @@ export type JobBodyPanel = {
 
   /**
    * 开框首拍在查库里有没有整理版 / 存好的对照(2026-09-16 Frank「不要有跳跃」):在途正文区留白,回了一起铺。
+   * 2026-09-17 起只等整理版那一拍(对照默认不出,不等)。
    */
   pending: boolean
 
@@ -4650,15 +4651,11 @@ export type JdFormatPanel = {
    * 开框首拍「只查库」还没回(2026-09-16 Frank「不要有跳跃」):在途正文区留白,回了库里有就直接铺整理版,没有再铺原帖另起生成。
    */
   pending: boolean
-
-  /**
-   * 整理版是首拍从库里直接拿到的(对照才可能也存好了,值得再等一拍);刚生成的没存过对照,不等。
-   */
-  stored: boolean
 }
 
 /**
  * useJdTrans 的入参。
+ * 2026-09-17 hold 格撤(Frank「自动拨开去掉,但是后台要自动翻译」):开关默认关且不自动拨开,正文区不再为「只查库」那一拍留白。
  */
 export type JdTransHookIn = {
   /**
@@ -4677,19 +4674,14 @@ export type JdTransHookIn = {
   resetKey: string
 
   /**
-   * 整理版就绪且在看整理版(2026-09-16 Frank「点开之后,默认自动翻译」:中 / 韩界面一就绪就自动拉对照)。
+   * 整理版就绪且在看整理版(2026-09-16 Frank「点开之后,默认自动翻译」:中 / 韩界面一就绪就自动拉对照;
+   * 2026-09-17 改成只在后台拉、不自动拨开)。
    */
   fmtReady: boolean
-
-  /**
-   * 首拍先「只查库」并让正文区等它(弹框:整理版也是懒拉的,存好的译文与整理版一起铺);
-   * 详情页整理版是 SSR 直出的,不等 —— 等就是先铺再藏再铺,比补一行对照更跳。
-   */
-  hold: boolean
 }
 
 /**
- * 中文对照交回的五样。
+ * 中文对照交回的四样(2026-09-17 pending 撤:正文区不再等对照那一拍)。
  */
 export type JdTransPanel = {
   /**
@@ -4711,11 +4703,6 @@ export type JdTransPanel = {
    * 开合(自动拉失败后点它重试)。
    */
   onToggle: () => Promise<void>
-
-  /**
-   * 首拍「只查库」还没回(hold 档才会 true):正文区留白等它。
-   */
-  pending: boolean
 }
 
 /**
@@ -5215,6 +5202,21 @@ export type TransLabelIn = {
 }
 
 /**
+ * transStatusShownOf(开关上该显的取数态)的入参。
+ */
+export type TransStatusShownIn = {
+  /**
+   * 开关开着没。
+   */
+  showTrans: boolean
+
+  /**
+   * 真实取数态(后台在译也算 loading)。
+   */
+  status: TransStatus
+}
+
+/**
  * aiNoteTextOf 的入参。
  */
 export type AiNoteTextIn = {
@@ -5278,7 +5280,6 @@ export type NoTextIn = {
    */
   src: string
 }
-
 
 /**
  * showFormattedOf 的入参。

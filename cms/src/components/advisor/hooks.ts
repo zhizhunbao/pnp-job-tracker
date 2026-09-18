@@ -396,6 +396,8 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  * 开关本体在页眉译名行(AdvisorModal 递给 AdvisorHead 的 ctl 槽)。
  * 2026-09-17 Frank「这个 公司的 弹框 也 默认关闭」:showZh 一律默认关(与职位弹框 09-16 晚「默认中文对照都关闭吧」同口径,
  * 先铺英文再补中文行会跳);中 / 韩界面默认开的那句作废,拨开开关才懒翻。
+ * 2026-09-17 同日 Frank「自动拨开去掉,但是后台要自动翻译」:译文改由公司域在后台预翻(不看这个开关),开关只管显不显;
+ * transBusy 也只在开关拨开而译文未到时才回报(companybody 遮罩)。
  *
  * @param x 分组、入口格、这一岗与界面语言。
  * @returns 弹框整台面板。

@@ -62,7 +62,6 @@ export function CompanyPanel({ job, jobs, lang, onOpenJob, onAlias, showTrans, o
         lang={lang}
         updatedAt={TEXT_NONE}
         showTrans={showTrans}
-        hold
         onTransBusy={onTransBusy}
         hideTopInfo
         onOpenJob={onOpenJob}

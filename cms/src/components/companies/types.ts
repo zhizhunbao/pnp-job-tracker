@@ -670,11 +670,6 @@ export type CompanyBodyIn = {
   afterSponsor?: React.ReactNode
 
   /**
-   * 首拍先只查库里存好的译文并让正文等它(弹框给 true;详情页 SSR 正文不藏,可省 = 不等)。
-   */
-  hold?: boolean
-
-  /**
    * 现场翻译在途的回报(弹框页眉开关显「翻译中…」);可省 = 不回报。
    */
   onTransBusy?: (busy: boolean) => void
@@ -1589,16 +1584,6 @@ export type LoadTransIn = {
   setTrans: SetTextFn
 
   /**
-   * 首拍先只查库并让正文等它(弹框);false = 直接翻(详情页 SSR 正文不藏)。
-   */
-  hold: boolean
-
-  /**
-   * 「只查库」在途落格(hold 档才会置 true)。
-   */
-  setPending: (on: boolean) => void
-
-  /**
    * 现场翻译在途落格(页眉开关靠它显「翻译中…」)。
    */
   setBusy: (on: boolean) => void
@@ -1644,11 +1629,6 @@ export type CompanyAiHookIn = {
   company: string
 
   /**
-   * 显示中文对照(打开才懒翻)。
-   */
-  showTrans: boolean
-
-  /**
    * 界面语言;null = 不懒翻。
    */
   lang: CompaniesLang | null
@@ -1675,18 +1655,13 @@ export type CompanyAiPanel = {
 }
 
 /**
- * useCompanyTrans 交回的三样(2026-09-16 公司弹框不再等翻译)。
+ * useCompanyTrans 交回的两样(2026-09-16 公司弹框不再等翻译;2026-09-17 pending 撤 —— 开关默认关,正文不再为「只查库」留白)。
  */
 export type CompanyTransPanel = {
   /**
    * 译文;null = 还没翻 / 不用翻 / 没翻成。
    */
   trans: string | null
-
-  /**
-   * 首拍「只查库」在途:正文留白等它(存好的译文与正文一起铺)。
-   */
-  pending: boolean
 
   /**
    * 现场翻译在途(正文已铺,译文后到)。
@@ -1749,19 +1724,9 @@ export type CompanyTransHookIn = {
   hasDesc: boolean
 
   /**
-   * 显示中文对照。
-   */
-  showTrans: boolean
-
-  /**
    * 界面语言。
    */
   lang: CompaniesLang
-
-  /**
-   * 首拍先只查库并让正文等它(弹框);详情页不等。
-   */
-  hold: boolean
 }
 
 /**
@@ -2332,7 +2297,7 @@ export type DescTransHookIn = {
   lang: CompaniesLang
 
   /**
-   * 有官网简介没;没有不翻。2026-09-17 起调用方把页眉对照开关也并进来:开关关着一样不翻。
+   * 有官网简介没;没有不翻。2026-09-17 早先一版曾把页眉开关并进来(关着不翻),同日 Frank「后台要自动翻译」改回:开关只管显不显。
    */
   has: boolean
 }

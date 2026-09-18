@@ -37,13 +37,12 @@ import {
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
-  clearFiltersIn,
-  colWidthSeedValue, colsKeyOf, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf, fetchJobText,
-  filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf, jobDetailViewOf,
-  jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf, measureColWidths,
-  nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, saveFiltersOf, savedMapOf,
-  seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf, widthsKeyOf,
-  writeColWidthCookie, writeColsCookie, writeColsPref,
+  clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf,
+  fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf,
+  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
+  measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
+  saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
+  transStatusShownOf, widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
@@ -1669,7 +1668,6 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     lang: x.lang,
     resetKey: fmt.resetKey,
     fmtReady: fmt.fmt != null && showOrig === false,
-    hold: x.jdFormatted == null && fmt.stored,
   })
   const apply = useApplyHow(x.job)
   const [prevResetKey, setPrevResetKey] = useState(fmt.resetKey)
@@ -1692,7 +1690,7 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     trans: trans.trans,
     transStatus: trans.transStatus,
     onToggleTrans: trans.onToggle,
-    pending: fmt.pending || trans.pending,
+    pending: fmt.pending,
     applyEmail: applyEmailPick({ jb: apply.email, text: jd.text }),
     applyDone: apply.done,
   }
@@ -1797,7 +1795,6 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
   const [fmt, setFmt] = useState<string | null | undefined>(fmtInitOf(x.jdFormatted))
   const [fmtWhy, setFmtWhy] = useState<FmtWhy>(FMT_FAIL)
   const [pending, setPending] = useState(false)
-  const [stored, setStored] = useState(false)
   const [tick, setTick] = useState(0)
   const url = strOf(x.job.applyUrl)
   const ssrFmt = x.jdFormatted
@@ -1816,7 +1813,6 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
     fmtLoadOf({ url, storedOnly, signal: ctrl.signal })
       .then(function onStored(r: FmtLoad): Promise<FmtLoad | null> {
         setPending(false)
-        setStored(storedOnly && r.fmt != null)
         if (r.found) {
           setFmtWhy(r.why)
           setFmt(r.fmt)
@@ -1850,7 +1846,6 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
       setTick(tick + 1)
     },
     pending,
-    stored,
   }
 }
 
@@ -1925,6 +1920,10 @@ function fmtOrNull(tx: string): string | null {
  * #129:首次拉取才计埋点(纯开合不计)。
  * 换岗信号变了就把对照三格归零:同 useJobBody,**渲染期就地比对**不挂 effect,
  * 免得上一岗的译文在新岗上多显示一帧。
+ * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:中 / 韩界面整理版一就绪照旧在后台拉对照(先只查库,没存再现翻),
+ * 但**到了不再自动拨开开关**(09-16「默认自动翻译」那次的 setShowTrans(true) 撤),用户拨开即显。
+ * 随之 hold / pending 撤:开关默认关,正文区没必要再为「只查库」那一拍留白。后台在译时开关本体不显「翻译中…」
+ * (transStatus 交回前按开关遮罩,见 transStatusShownOf);拨开时后台那一次还没回就接着等它,不再另起一次。
  *
  * @param x 本岗、界面语言与换岗信号。
  * @returns 对照态与开关。
@@ -1933,11 +1932,9 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const [showTrans, setShowTrans] = useState(false)
   const [trans, setTrans] = useState<string | null>(null)
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
-  const [pending, setPending] = useState(false)
   const url = strOf(x.job.applyUrl)
   const lang = x.lang
   const auto = x.fmtReady && lang !== LANG_EN
-  const hold = x.hold
   const resetKey = x.resetKey
   const [prevResetKey, setPrevResetKey] = useState(x.resetKey)
   if (prevResetKey !== x.resetKey) {
@@ -1951,19 +1948,14 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
       return
     }
     const ctrl = new AbortController()
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 自动拉对照的起手式:hold 档先让正文区等「只查库」这一拍
-    setPending(hold)
-    const cap = window.setTimeout(function capTransHold() {
-      setPending(false)
-    }, HOLD_MAX_MS)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 后台拉对照的起手式:整段在途都算 loading,拨开开关时不另起一次
+    setTransStatus(TRANS_LOADING)
     track(TRACK_JD_TRANSLATE)
-    postTranslate({ url, lang, storedOnly: hold, signal: ctrl.signal })
+    postTranslate({ url, lang, storedOnly: true, signal: ctrl.signal })
       .then(function onStored(got: string): Promise<string> {
-        setPending(false)
-        if (got !== TEXT_NONE || hold === false) {
+        if (got !== TEXT_NONE) {
           return Promise.resolve(got)
         }
-        setTransStatus(TRANS_LOADING)
         return postTranslate({ url, lang, storedOnly: false, signal: ctrl.signal })
       })
       .then(function onGot(got: string) {
@@ -1975,19 +1967,22 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
           return
         }
         setTrans(got)
-        setShowTrans(true)
         setTransStatus(TRANS_IDLE)
       })
     return function stopTrans() {
-      window.clearTimeout(cap)
       ctrl.abort()
     }
-  }, [auto, hold, url, lang, resetKey])
+  }, [auto, url, lang, resetKey])
   async function onToggle(): Promise<void> {
     if (trans != null) {
       setShowTrans(showTrans === false)
       return
     }
+    if (transStatus === TRANS_LOADING) {
+      setShowTrans(true)
+      return
+    }
+    setShowTrans(true)
     setTransStatus(TRANS_LOADING)
     const got = await postTranslate({ url, lang, storedOnly: false, signal: new AbortController().signal })
     if (got === TEXT_NONE) {
@@ -1995,10 +1990,9 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
       return
     }
     setTrans(got)
-    setShowTrans(true)
     setTransStatus(TRANS_IDLE)
   }
-  return { showTrans, trans, transStatus, onToggle, pending }
+  return { showTrans, trans, transStatus: transStatusShownOf({ showTrans, status: transStatus }), onToggle }
 }
 
 /**
