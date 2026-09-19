@@ -23,7 +23,7 @@ import { readQuiz } from '@/components/quiz'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { makeT } from '@/lib/i18n'
 import { eeDisplay, isDirect, isJdNone, sourceLabel, streamDisplay } from '@/lib/jobs'
-import { PROV_NAMES, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
+import { PROV_NAMES, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { catName, colorOf, nocLocalTitle } from '@/lib/noc'
 import { fmtLocalSec, ymd } from '@/lib/time'
@@ -43,7 +43,7 @@ import {
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
   JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_FR_HEAD, LANG_KO, LANG_ZH,
+  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
@@ -56,7 +56,7 @@ import {
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
-  TRANS_IDLE, TRANS_LOADING, TZ_EASTERN, TZ_PROVINCE, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
+  TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER,
   VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
@@ -4522,30 +4522,6 @@ export function applyHomeProvince(x: HomeProvinceIn): void {
     return
   }
   setterOf({ fState: x.fState, k: FK.prov })(full)
-}
-
-/**
- * 设备时区(加上东部时区的语言判)→ 省码;对不上给空串。浏览器 API 读不到(老环境)也给空串。
- *
- * @returns 省码;'' = 不预选。
- */
-export function homeProvinceOf(): string {
-  let tz = TEXT_NONE
-  let lang = TEXT_NONE
-  try {
-    tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    lang = navigator.language.toLowerCase()
-  } catch {
-    return TEXT_NONE
-  }
-  const prov = TZ_PROVINCE[tz]
-  if (prov == null) {
-    return TEXT_NONE
-  }
-  if (tz === TZ_EASTERN && lang.startsWith(LANG_FR_HEAD)) {
-    return PROV_QC
-  }
-  return prov
 }
 
 /**

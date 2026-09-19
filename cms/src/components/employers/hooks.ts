@@ -17,11 +17,11 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
-  addrQsOf, makeCloseModal, makeLmiaPick, makeMore, makeProv,
+  addrQsOf, applyHomeProv, makeCloseModal, makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
-import type { EmpModal, EmployersIn, EmployersPanel, PoolFilters, PoolPage } from './types'
+import type { EmpModal, EmployersIn, EmployersPanel, MoreIn, PoolFilters, PoolPage } from './types'
 
 /**
  * 雇主板整机:筛选态、搜索框防抖、筛选进 URL(replaceState —— 换筛选不该在历史里
@@ -56,6 +56,8 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
       clearTimeout(id)
     }
   }, [qDraft, f])
+
+  useHomeProv({ f: x.initialFilters, setF })
 
   useEffect(function holdData() {
     held.current = data
@@ -102,4 +104,17 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onClear: makeClear({ f, setF, setQDraft }),
     onMore: makeMore({ f, setF }),
   }
+}
+
+/**
+ * 首屏预选本省:只在挂载时按进来那一刻的筛选判一次(判据见 applyHomeProv)。
+ *
+ * @param x 进来时的筛选与落格。
+ * @returns 无。
+ */
+function useHomeProv(x: MoreIn): void {
+  useEffect(function presetHomeProv() {
+    applyHomeProv(x)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载时按进来那一刻的筛选判一次
+  }, [])
 }

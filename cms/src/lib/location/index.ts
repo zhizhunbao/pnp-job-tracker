@@ -6,4 +6,4 @@
  */
 
 export { ALL_PROVS, PNP_PROVINCES, PROV_NAMES } from './constants'
-export { cleanProvs, mapQuery, mapsUrl, parseLoc, provName } from './functions'
+export { cleanProvs, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from './functions'

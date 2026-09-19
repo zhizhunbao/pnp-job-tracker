@@ -543,6 +543,11 @@ export const COL_PROV_KEY = 'province'
 export const COL_CITY_KEY = 'city'
 
 /**
+ * 雇主板列 key:行业(行业组名;不排序 —— 服务端排序白名单里没有这一键)。
+ */
+export const COL_GROUP_KEY = 'group'
+
+/**
  * 雇主板列 key:区(可选列,默认不显;不排序 —— 近半雇主没有区,排出来大半是空)。
  */
 export const COL_DISTRICT_KEY = 'district'
@@ -580,6 +585,11 @@ export const W_POOL_PROV = 13
  * 雇主板市列的宽(界面语言城市名,一行)。
  */
 export const W_POOL_CITY = 13
+
+/**
+ * 雇主板行业列的宽(行业组名最长四个字 / 英文一个短词组)。
+ */
+export const W_POOL_GROUP = 11
 
 /**
  * 雇主板区列的宽(可选列;区名一行,与市同宽)。

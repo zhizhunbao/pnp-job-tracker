@@ -8,7 +8,7 @@
 
 import {
   ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
-  PROV_KEY, PROV_NAMES, SEP_COMMA,
+  LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
 import type { CleanProvsIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
 
@@ -115,4 +115,30 @@ export function cleanProvs(input: CleanProvsIn): ProvList {
     }
   }
   return kept
+}
+
+/**
+ * 设备时区(加上东部时区的语言判)→ 省码;对不上给空串。浏览器 API 读不到(老环境)也给空串。
+ *
+ * 2026-09-18 自 components/jobs 原样迁入(雇主板也按它预选本省;Frank「默认是当前省份」):行为一份,两块板同口径。
+ *
+ * @returns 省码;'' = 不预选。
+ */
+export function homeProvinceOf(): string {
+  let tz = LOC_NONE
+  let lang = LOC_NONE
+  try {
+    tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    lang = navigator.language.toLowerCase()
+  } catch {
+    return LOC_NONE
+  }
+  const prov = TZ_PROVINCE[tz]
+  if (prov == null) {
+    return LOC_NONE
+  }
+  if (tz === TZ_EASTERN && lang.startsWith(LANG_FR_HEAD)) {
+    return PROV_QC
+  }
+  return prov
 }

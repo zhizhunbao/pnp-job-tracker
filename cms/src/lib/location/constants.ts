@@ -89,3 +89,59 @@ export const NOTE_R = ')'
  * (库里的「没有」是 NULL,到了这一层统一翻成空串,翻译点只此一处。)
  */
 export const LOC_NONE = ''
+
+/**
+ * 浏览器时区 → 省码(加拿大各省时区一一对应的那几个;America/Toronto 同时是安省与魁省,靠浏览器语言再分;
+ * America/Halifax 分不出 NS / NB / PE,不预选)。
+ */
+export const TZ_PROVINCE: Record<string, string> = {
+  /**
+   * 卑诗。
+   */
+  'America/Vancouver': 'BC',
+
+  /**
+   * 阿省。
+   */
+  'America/Edmonton': 'AB',
+
+  /**
+   * 萨省(不用夏令时,自成一区)。
+   */
+  'America/Regina': 'SK',
+
+  /**
+   * 曼省。
+   */
+  'America/Winnipeg': 'MB',
+
+  /**
+   * 安省(魁省设备现在也报这个名,见 TZ_EASTERN)。
+   */
+  'America/Toronto': 'ON',
+
+  /**
+   * 老浏览器给魁省的名(已废,留着兜底)。
+   */
+  'America/Montreal': 'QC',
+
+  /**
+   * 纽芬兰(自成半小时区)。
+   */
+  'America/St_Johns': 'NL',
+}
+
+/**
+ * 东部时区名:命中它时再看浏览器语言,法语当魁省。
+ */
+export const TZ_EASTERN = 'America/Toronto'
+
+/**
+ * 法语浏览器语言的前缀(fr / fr-CA)。
+ */
+export const LANG_FR_HEAD = 'fr'
+
+/**
+ * 魁省省码(东部时区 + 法语浏览器 = 魁省)。
+ */
+export const PROV_QC = 'QC'

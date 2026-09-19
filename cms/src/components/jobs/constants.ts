@@ -633,57 +633,6 @@ export const PROV_PICK_COOKIE = 'jobsProvPick1'
 export const PROV_PICK_MAX_AGE_S = 31536000
 
 /**
- * 浏览器时区 → 省码(加拿大各省时区一一对应的那几个;America/Toronto 同时是安省与魁省,靠浏览器语言再分;
- * America/Halifax 分不出 NS / NB / PE,不预选)。
- */
-export const TZ_PROVINCE: Record<string, string> = {
-  /**
-   * 卑诗。
-   */
-  'America/Vancouver': 'BC',
-
-  /**
-   * 阿省。
-   */
-  'America/Edmonton': 'AB',
-
-  /**
-   * 萨省(不用夏令时,自成一区)。
-   */
-  'America/Regina': 'SK',
-
-  /**
-   * 曼省。
-   */
-  'America/Winnipeg': 'MB',
-
-  /**
-   * 安省(魁省设备现在也报这个名,见 TZ_EASTERN)。
-   */
-  'America/Toronto': 'ON',
-
-  /**
-   * 老浏览器给魁省的名(已废,留着兜底)。
-   */
-  'America/Montreal': 'QC',
-
-  /**
-   * 纽芬兰(自成半小时区)。
-   */
-  'America/St_Johns': 'NL',
-}
-
-/**
- * 东部时区名:命中它时再看浏览器语言,法语当魁省。
- */
-export const TZ_EASTERN = 'America/Toronto'
-
-/**
- * 法语浏览器语言的前缀(fr / fr-CA)。
- */
-export const LANG_FR_HEAD = 'fr'
-
-/**
  * cookie 串的路径与时效段(拼在值之后)。
  */
 export const COOKIE_PATH_AGE = '; path=/; max-age='

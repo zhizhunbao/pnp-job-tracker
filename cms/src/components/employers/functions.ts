@@ -12,8 +12,8 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
-import { PROV_NAMES, mapsUrl } from '@/lib/location'
+import { CMP_KEY, POOL_GROUPS, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
+import { PROV_NAMES, homeProvinceOf, mapsUrl } from '@/lib/location'
 import { track } from '@/lib/track'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
@@ -28,6 +28,7 @@ import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
 import { PoolCityCell } from './poolcitycell'
 import { PoolDistrictCell } from './pooldistrictcell'
+import { PoolGroupCell } from './poolgroupcell'
 import { PoolLmiaCell } from './poollmiacell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
@@ -36,7 +37,8 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_CITY_KEY, COL_DISTRICT_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP, DASH_MARK,
+  COL_CITY_KEY, COL_DISTRICT_KEY, COL_GROUP_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP,
+  DASH_MARK,
   DEMO_A_KEY, DEMO_B_KEY,
   DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
   DEMO_CO_C, DEMO_METRIC_KEY, DEMO_NAMED_A, DEMO_NAMED_B, DEMO_NAMED_C, DEMO_OPEN_A, DEMO_OPEN_B, DEMO_OPEN_C,
@@ -57,7 +59,7 @@ import {
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_GROUP, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -213,6 +215,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     where: empWhereTextOf({ t: x.t, r }),
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
+    groupText: groupTextOf({ t: x.t, r }),
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
@@ -285,6 +288,19 @@ function provEnOf(code: string): string {
     return code
   }
   return name
+}
+
+/**
+ * 行业格的字:这一行的行业组名(八组之内才有名字;无线索桶与「其他」给空串,格子渲横杠)。
+ *
+ * @param x 取词函数与这一行。
+ * @returns 行业组名或空串。
+ */
+function groupTextOf(x: RowWordsIn): string {
+  if ((POOL_GROUPS as readonly string[]).includes(x.r.group) === false) {
+    return TEXT_NONE
+  }
+  return x.t(GROUP_KEY_HEAD + x.r.group)
 }
 
 /**
@@ -383,6 +399,12 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       sortable: true,
       fixed: true,
       render: NameCell,
+    },
+    {
+      key: COL_GROUP_KEY,
+      label: x.t('de.colGroup'),
+      width: poolWidthOf({ key: COL_GROUP_KEY, shown: x.shown }),
+      render: PoolGroupCell,
     },
     {
       key: COL_SECTOR_KEY,
@@ -491,6 +513,9 @@ function keepShownOf(x: KeepShownIn): EmpCol<EmployerCellRow>[] {
 function poolShareOf(key: string): number {
   if (key === COL_NAME_KEY) {
     return W_POOL_NAME
+  }
+  if (key === COL_GROUP_KEY) {
+    return W_POOL_GROUP
   }
   if (key === COL_SECTOR_KEY) {
     return W_POOL_SECTOR
@@ -1917,6 +1942,25 @@ export function makeClear(x: ClearIn): ClickFn {
     }))
   }
   return onClear
+}
+
+/**
+ * 首屏预选本省(2026-09-18 Frank「默认是当前省份,当前城市吧」):与职位板同一把尺子 —— 设备时区(东部时区看浏览器语言),
+ * 不用 IP;对不上加拿大就维持全国。只在进来时一格筛选都没带(地址栏干净)才做:带着搜索词 / 行业 / 制度进来的是
+ * 从别处点过来查一件具体的事,再套一个省会把要找的那家筛掉。市不预选 —— 时区分不出市,板上也还没有市筛选。
+ *
+ * @param x 进来时的筛选与落格。
+ * @returns 无。
+ */
+export function applyHomeProv(x: MoreIn): void {
+  if (anyFilterOf({ f: x.f }) || x.f.group !== TEXT_NONE || x.f.page > 0) {
+    return
+  }
+  const prov = homeProvinceOf()
+  if (prov === TEXT_NONE) {
+    return
+  }
+  x.setF(withOf({ f: x.f, prov, page: 0 }))
 }
 
 /**
