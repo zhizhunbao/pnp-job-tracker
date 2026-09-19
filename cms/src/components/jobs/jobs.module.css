@@ -1608,6 +1608,20 @@
 
 
 /*
+ * 标题区右端的「查看原帖 / 返回整理版」小字(2026-09-19;灰小字文链,不抢标题,悬停不加下划线)。
+ */
+.origLink {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/*
  * 状态行里的文字钮(重试)。
  */
 .aiBtn {

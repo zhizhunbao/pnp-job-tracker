@@ -9,13 +9,11 @@
  * @author Frank
  * @time 2026-09-18 20:00:00
  */
-import { Switch } from '@/components/button'
 import { CompanyPanel } from '@/components/companies'
 import { makeT } from '@/lib/i18n'
 import { AdvisorHead } from './advisorhead'
 import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN } from './constants'
 import { FloatPanel } from './floatpanel'
-import { pairLabelOf } from './functions'
 import { useCompanyModal, useFloatPanel } from './hooks'
 import type { CompanyModalIn } from './types'
 
@@ -34,16 +32,13 @@ export function CompanyModal({ slug, name, lang, onClose }: CompanyModalIn) {
       title={name}
       sub={m.alias}
       freeLeft={null}
-      ctl={lang !== LANG_EN && (
-        <Switch on={m.showZh} label={pairLabelOf({ t, busy: m.transBusy })} disabled={m.transBusy}
-          onClick={m.onToggleZh} />
-      )} />
+      ctl={null} />
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
       onRefresh={null}>
       <CompanyPanel job={null} slug={slug} jobs={m.jobs} lang={lang}
-        onAlias={m.onAlias} showTrans={m.showZh} onTransBusy={m.onTransBusy} />
+        onAlias={m.onAlias} showTrans={lang !== LANG_EN} onTransBusy={m.onTransBusy} />
     </FloatPanel>
   )
 }

@@ -76,7 +76,7 @@ import type {
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn,
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
-  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
+  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
@@ -3534,6 +3534,19 @@ function payFallbackFor(x: PayFallbackForIn): string {
     return x.fallbackPay
   }
   return TEXT_NONE
+}
+
+/**
+ * 标题区那行小字的字:在看整理版 =「查看原帖」,在看原帖 =「返回整理版」。
+ *
+ * @param x 取词函数与现在看的是不是原帖。
+ * @returns 小字文案。
+ */
+export function origLinkLabelOf(x: OrigLinkLabelIn): string {
+  if (x.showOrig) {
+    return x.t('act.backFmt')
+  }
+  return x.t('act.viewOrig')
 }
 
 /**

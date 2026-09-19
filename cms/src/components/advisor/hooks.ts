@@ -15,7 +15,7 @@ import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
   ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
-  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE, TRACK_IMM_TRANSLATE,
+  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE,
   TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
 } from './constants'
 import {
@@ -399,13 +399,14 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  * 先铺英文再补中文行会跳);中 / 韩界面默认开的那句作废,拨开开关才懒翻。
  * 2026-09-17 同日 Frank「自动拨开去掉,但是后台要自动翻译」:译文改由公司域在后台预翻(不看这个开关),开关只管显不显;
  * transBusy 也只在开关拨开而译文未到时才回报(companybody 遮罩)。
+ * 2026-09-19 Frank「开关都撤了,就自动翻译」:「中文对照」开关撤,中 / 韩界面对照恒显、英文界面恒不显(showZh 由界面语言直接定)。
  *
  * @param x 分组、入口格、这一岗与界面语言。
  * @returns 弹框整台面板。
  */
 export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
   const long = useAdvisorLong({ group: x.group, job: x.job, lang: x.lang })
-  const [showZh, setShowZh] = useState(false)
+  const showZh = x.lang !== LANG_EN
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
   const [transBusy, setTransBusy] = useState(false)
@@ -429,13 +430,6 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     }
   }, [isCompanyGroup, company])
 
-  function onToggleZh(): void {
-    if (showZh === false) {
-      track(TRACK_IMM_TRANSLATE)
-    }
-    setShowZh(showZh === false)
-  }
-
   function onRetranslated(): void {
     setCompanyAlias(TEXT_NONE)
     setGen(gen + 1)
@@ -451,7 +445,6 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     freeLeft: long.freeLeft,
     aiOn: long.aiOn,
     showZh,
-    onToggleZh,
     onRetry: long.onRetry,
     companyJobs,
     companyAlias,
@@ -517,18 +510,14 @@ export function useTitleTrans(x: TitleTransHookIn): string {
 }
 
 /**
- * 不带职位的公司弹框的状态:中文对照开关(默认关)、别名、翻译在途三格
+ * 不带职位的公司弹框的状态:别名、翻译在途两格(中文对照开关 2026-09-19 撤,对照由界面语言直接定)
  * (2026-09-18;AdvisorModal 那台 useAdvisorModal 从一条职位出发,长文机器与同公司在榜岗这里都用不上)。
  *
  * @returns 三格状态与三个落格。
  */
 export function useCompanyModal(): CompanyModalPanel {
-  const [showZh, setShowZh] = useState(false)
   const [alias, setAlias] = useState(TEXT_NONE)
   const [transBusy, setTransBusy] = useState(false)
   const [jobs] = useState<AdvisorJob[]>([])
-  function onToggleZh(): void {
-    setShowZh(showZh === false)
-  }
-  return { showZh, alias, transBusy, jobs, onToggleZh, onAlias: setAlias, onTransBusy: setTransBusy }
+  return { alias, transBusy, jobs, onAlias: setAlias, onTransBusy: setTransBusy }
 }

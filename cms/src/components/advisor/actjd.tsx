@@ -8,7 +8,7 @@
  * @time 2026-09-16 21:30:00
  */
 import { useJobBody } from '@/components/jobs/hooks'
-import { JdSwitches } from '@/components/jobs/jdswitches'
+import { JdOrigLink } from '@/components/jobs/jdoriglink'
 import { JobBody } from '@/components/jobs/jobbody'
 import { makeT } from '@/lib/i18n'
 import { TEXT_NONE } from './constants'
@@ -32,7 +32,7 @@ export function ActJd({ job, lang, plan, onClose, panel, sub, a }: ActJdIn) {
     <ActHead t={t} title={firstTextOf({ list: [job.title] })}
       sub={sub}
       freeLeft={a.freeLeft}
-      ctl={<JdSwitches d={d} lang={lang} />} />
+      ctl={<JdOrigLink d={d} />} />
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag

@@ -29,7 +29,7 @@ import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
 import { showRelatedOf } from './functions'
 import { useJobBody, useJobDetail } from './hooks'
-import { JdSwitches } from './jdswitches'
+import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
 import { JobRelated } from './jobrelated'
@@ -57,7 +57,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
           <h1 className={cssOf(css.title)}>{job.title}</h1>
           <div className={cssOf(css.titleRow)}>
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
-            <JdSwitches d={body} lang={d.lang} />
+            <JdOrigLink d={body} />
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>

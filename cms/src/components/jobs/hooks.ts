@@ -42,7 +42,7 @@ import {
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  transStatusShownOf, widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
+  widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
@@ -1689,7 +1689,6 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
     showTrans: trans.showTrans,
     trans: trans.trans,
     transStatus: trans.transStatus,
-    onToggleTrans: trans.onToggle,
     pending: fmt.pending,
     applyEmail: applyEmailPick({ jb: apply.email, text: jd.text }),
     applyDone: apply.done,
@@ -1924,12 +1923,14 @@ function fmtOrNull(tx: string): string | null {
  * 但**到了不再自动拨开开关**(09-16「默认自动翻译」那次的 setShowTrans(true) 撤),用户拨开即显。
  * 随之 hold / pending 撤:开关默认关,正文区没必要再为「只查库」那一拍留白。后台在译时开关本体不显「翻译中…」
  * (transStatus 交回前按开关遮罩,见 transStatusShownOf);拨开时后台那一次还没回就接着等它,不再另起一次。
+ * 2026-09-19 Frank「中文和韩语场景都自动整理自动翻译吧,这两个都删掉吧」「开关都撤了,就自动翻译」**改判** 09-16 / 09-17 两版:
+ * 「中文对照」开关撤 —— 中 / 韩界面对照恒显(译文到了就铺在整理版下面),英文界面恒不显;showTrans 不再是状态,onToggle 与开关遮罩随之撤。
  *
  * @param x 本岗、界面语言与换岗信号。
  * @returns 对照态与开关。
  */
 function useJdTrans(x: JdTransHookIn): JdTransPanel {
-  const [showTrans, setShowTrans] = useState(false)
+  const showTrans = x.lang !== LANG_EN
   const [trans, setTrans] = useState<string | null>(null)
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
   const url = strOf(x.job.applyUrl)
@@ -1939,7 +1940,6 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const [prevResetKey, setPrevResetKey] = useState(x.resetKey)
   if (prevResetKey !== x.resetKey) {
     setPrevResetKey(x.resetKey)
-    setShowTrans(false)
     setTrans(null)
     setTransStatus(TRANS_IDLE)
   }
@@ -1973,26 +1973,7 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
       ctrl.abort()
     }
   }, [auto, url, lang, resetKey])
-  async function onToggle(): Promise<void> {
-    if (trans != null) {
-      setShowTrans(showTrans === false)
-      return
-    }
-    if (transStatus === TRANS_LOADING) {
-      setShowTrans(true)
-      return
-    }
-    setShowTrans(true)
-    setTransStatus(TRANS_LOADING)
-    const got = await postTranslate({ url, lang, storedOnly: false, signal: new AbortController().signal })
-    if (got === TEXT_NONE) {
-      setTransStatus(TRANS_ERROR)
-      return
-    }
-    setTrans(got)
-    setTransStatus(TRANS_IDLE)
-  }
-  return { showTrans, trans, transStatus: transStatusShownOf({ showTrans, status: transStatus }), onToggle }
+  return { showTrans, trans, transStatus }
 }
 
 /**

@@ -18,17 +18,16 @@
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { Switch } from '@/components/button'
 import { MeansForMe } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import {
-  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN,
+  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION,
 } from './constants'
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { FloatPanel } from './floatpanel'
-import { companyRefreshOf, headSubOf, modalTitleOf, pairLabelOf, planClbOf } from './functions'
+import { companyRefreshOf, headSubOf, modalTitleOf, planClbOf } from './functions'
 import { useAdvisorModal, useFloatPanel } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 
@@ -74,10 +73,7 @@ export function AdvisorModal({
       title={modalTitleOf({ group, job, title })}
       sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft}
-      ctl={group === GROUP_COMPANY && lang !== LANG_EN && (
-        <Switch on={m.showZh} label={pairLabelOf({ t, busy: m.transBusy })} disabled={m.transBusy}
-          onClick={m.onToggleZh} />
-      )} />
+      ctl={null} />
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}

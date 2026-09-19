@@ -656,7 +656,7 @@ export const jobsZh = {
   // 2026-09-14 Frank「改成 今日 AI 次数已用完, 请登录」:aiQuota 去「明天重置」,aiQuotaLogin 改「请登录」(只对匿名出)
   // 2026-09-16 Frank「去掉箭头」:看原文 / 看整理版是状态行里的切换文链,不再是下拉展开。
   // ⚠ 同日事故:这条注释曾写在本行行尾,把后面 act.aiWorking / act.aiFail 两个词条一起注释掉,页面直出键名;注释只许独占一行。
-  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.aiWorking': 'AI 整理中，先看原文…', 'act.aiFail': 'AI 整理没成功',
+  'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.viewOrig': '查看原帖', 'act.backFmt': '返回整理版', 'act.aiWorking': 'AI 整理中，先看原文…', 'act.aiFail': 'AI 整理没成功',
   'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   'fact.aiIntro': 'AI 检索整理(非官方自述)', 'fact.aiWorking': 'AI 调查中…', 'fact.aiSite': 'AI 检索到,非库内原有',

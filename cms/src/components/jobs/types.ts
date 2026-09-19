@@ -1839,18 +1839,28 @@ export type JobBodyIn = {
 }
 
 /**
- * JdSwitches(标题区右端的中文对照开关与整理版 / 原文分段钮)的 props。
+ * origLinkLabelOf 的入参。
  */
-export type JdSwitchesIn = {
+export type OrigLinkLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 现在看的是不是原帖。
+   */
+  showOrig: boolean
+}
+
+/**
+ * JdOrigLink(标题区右端的「查看原帖 / 返回整理版」小字)的 props。
+ */
+export type JdOrigLinkIn = {
   /**
    * JD 身体状态机。
    */
   d: JobBodyPanel
-
-  /**
-   * 界面语言(英文界面不出对照开关)。
-   */
-  lang: Lang
 }
 
 /**
@@ -1993,11 +2003,6 @@ export type JobBodyPanel = {
    * 对照的取数态。
    */
   transStatus: TransStatus
-
-  /**
-   * 开合中文对照(自动拉失败后点它重试)。
-   */
-  onToggleTrans: ClickFn
 
   /**
    * 开框首拍在查库里有没有整理版 / 存好的对照(2026-09-16 Frank「不要有跳跃」):在途正文区留白,回了一起铺。
@@ -4709,11 +4714,6 @@ export type JdTransPanel = {
    * 取数态。
    */
   transStatus: TransStatus
-
-  /**
-   * 开合(自动拉失败后点它重试)。
-   */
-  onToggle: () => Promise<void>
 }
 
 /**

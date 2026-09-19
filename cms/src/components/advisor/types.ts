@@ -1800,11 +1800,6 @@ export type AdvisorModalPanel = {
   showZh: boolean
 
   /**
-   * 清单译名开合(顺带记一次埋点)。
-   */
-  onToggleZh: () => void
-
-  /**
    * 重试生成。
    */
   onRetry: () => void
@@ -3504,11 +3499,6 @@ export type CompanyModalIn = {
  */
 export type CompanyModalPanel = {
   /**
-   * 中文对照开着没(默认关,2026-09-17 拍板)。
-   */
-  showZh: boolean
-
-  /**
    * 中 / 韩别名(CompanyPanel 拿到档案后回传;页眉译名行显示)。
    */
   alias: string
@@ -3522,11 +3512,6 @@ export type CompanyModalPanel = {
    * 已载入的职位行(雇主板上没有,恒空;CompanyPanel 的 jobs 要一个稳定引用)。
    */
   jobs: AdvisorJob[]
-
-  /**
-   * 拨中文对照开关。
-   */
-  onToggleZh: () => void
 
   /**
    * 别名回传落格。
