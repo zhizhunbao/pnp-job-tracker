@@ -53,7 +53,7 @@ from jobbank.constants import (
     DETAIL_HTML_TPL, DETAIL_MD_TPL, DETAIL_SLEEP_S, DETAIL_SLUG_MAX, DETAIL_TICK, DETAIL_TIMEOUT_S,
     DIR_COMPANIES, DIR_DETAILS, DIR_JOBS, DIRECT_MARK, EDUCATION_JOIN_SEP,
     EMAIL_DOMAIN_RE, EMAIL_SKIP_DOMAINS, EMPLOYER_CLIP, EMPLOYER_FALLBACK, ENC_UTF8, ENV_ON,
-    ENV_REPARSE, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
+    ENV_REPARSE, ENV_REPARSE_IDS, ENV_VERIFY_MAX, ENV_VERIFY_SLEEP, ERR_PAGE_TPL, ESCAPED_HTML_RE, FILE_JOBS,
     FILE_PROFILE, FRONTMATTER_RE, FRONTMATTER_SEP, GENERIC_EMAIL, GENERIC_TITLES, GLOB_HTML, GLOB_MD,
     ERRORS_REPLACE, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, K_JD_EXPERIENCE,
     K_JD_FILE, K_JD_MTIME, K_JD_PID, OUT_JD_BODIES, OUT_JD_INDEX, PRINT_DETAILS_INDEX_TPL,
@@ -582,13 +582,15 @@ def parse_jobbank_details() -> None:
         seen: set = set()
         index = JdIndexUpdates(entries={}, bodies={})
         reparse = os.environ.get(ENV_REPARSE) == ENV_ON
+        forced_ids = reparse_ids()
         parsed = 0
         backfilled = 0
         for job in jobs:
             raw_file = have.get(pid_of(job))
-            if not should_parse(ShouldParseIn(job=job, raw_file=raw_file, reparse=reparse)):
+            forced = reparse or pid_of(job) in forced_ids
+            if not should_parse(ShouldParseIn(job=job, raw_file=raw_file, reparse=forced)):
                 continue
-            if is_backfill_only(job) and not reparse:
+            if is_backfill_only(job) and not forced:
                 if backfilled >= DETAIL_BACKFILL_MAX:
                     continue
                 backfilled += 1
@@ -600,6 +602,18 @@ def parse_jobbank_details() -> None:
         tally = store_tally(jobs)
     say(PRINT_DETAILS_DONE_TPL.format(parsed=parsed, addrs=tally.addrs, webs=tally.webs,
                                       emp=tally.emp, certs=tally.certs, out=OUT_DETAILS))
+
+
+def reparse_ids() -> set:
+    """REPARSE_IDS 指的名单文件里的帖号(一行一个);没设 / 文件不在 = 空集。来由见 ENV_REPARSE_IDS。"""
+    raw = os.environ.get(ENV_REPARSE_IDS)
+    if not raw or not Path(raw).exists():
+        return set()
+    out = set()
+    for line in Path(raw).read_text(encoding=ENC_UTF8).splitlines():
+        if line.strip():
+            out.add(line.strip())
+    return out
 
 
 def is_backfill_only(job: dict) -> bool:
