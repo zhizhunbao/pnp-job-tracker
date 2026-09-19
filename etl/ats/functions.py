@@ -66,13 +66,16 @@ from ats.constants import (
     URL_SCHEME_SEP,
     SF_DELAY_S, SF_DESC_RE, SF_JOB_HREF_RE, SF_LOCALITY_RE, SF_MAX_PAGES, SF_PAGE_SIZE, SF_PAGE_TITLE_RE, SF_POSTED_FMT, SF_POSTED_RE,
     SF_REGION_RE, SF_SEARCH_PATH_TPL, SF_TITLE_RE, SF_WHERE, SITE_ATS,
+    K_ITEMS, K_ORC_COUNTRY, K_ORC_ID, K_ORC_JOB_FUNCTION, K_ORC_POSTAL, K_ORC_POSTED, K_ORC_PRIMARY, K_ORC_REGION, K_ORC_STREET,
+    K_ORC_TITLE, K_ORC_TOWN, K_ORC_WORK, K_REQ_LIST, ORACLE, ORC_BODY_KEYS, ORC_COUNTRY, ORC_DELAY_S, ORC_DETAIL_URL_TPL,
+    ORC_JOB_URL_TPL, ORC_LIMIT, ORC_LIST_URL_TPL, ORC_SITE_RE, ORC_WHERE,
 )
 from ats.scheme import (
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
     WorkdayDetailIn, WorkdayFetchIn, WorkdayFindIn, WorkdayJobIn, WorkdayPageIn, WorkdaySiteIn,
-    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn, SfFetchIn, SfJobIn, SiteFetchIn,
+    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn, SfFetchIn, SfJobIn, SiteFetchIn, OrcFetchIn, OrcJobIn,
 )
 
 
@@ -201,9 +204,11 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
 
 
 def fetch_site_jobs(x: SiteFetchIn) -> list:
-    """没有公开 JSON、要逐页读职位页的两家(Phenom / SuccessFactors)按 ATS 名分派。"""
+    """不走六家公开 JSON 的三家(Phenom / Oracle 招聘云 / SuccessFactors)按 ATS 名分派。"""
     if x.ats in PHENOM:
         return fetch_phenom(PhenomFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
+    if x.ats in ORACLE:
+        return fetch_oracle(OrcFetchIn(client=x.client, careers_url=x.careers_url))
     return fetch_successfactors(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
 
 
@@ -600,6 +605,56 @@ def fetch_phenom(x: PhenomFetchIn) -> list:
             out.append(job)
     put_cached_pages(CachePutManyIn(slug=slug, pages=fresh))
     return out
+
+
+def fetch_oracle(x: OrcFetchIn) -> list:
+    """Oracle 招聘云:清单按关键词筛 → 只留主地点在加拿大的 → 逐岗取详情(正文 + 办公地点)。
+    入口地址认不出主机 / 站点号、或清单取不到 = 空表(调用方按跳过处理,不拿空表盖旧数据)。"""
+    m = ORC_SITE_RE.search(x.careers_url)
+    if m is None:
+        return []
+    host, site = m.group(1), m.group(2)
+    try:
+        payload = json_obj(x.client.get(ORC_LIST_URL_TPL.format(host=host, site=site, limit=ORC_LIMIT, where=ORC_WHERE)))
+    except Exception as e:  # noqa: BLE001 — 清单取不到 = 这家本轮抓不了,留痕后跳过
+        err(x.careers_url, e)
+        return []
+    out = []
+    for shell in payload.get(K_ITEMS, []):
+        for row in shell.get(K_REQ_LIST, []):
+            if row.get(K_ORC_COUNTRY) != ORC_COUNTRY:
+                continue
+            detail: dict = {}
+            try:
+                items = json_obj(x.client.get(ORC_DETAIL_URL_TPL.format(host=host, site=site, jid=row.get(K_ORC_ID)))).get(K_ITEMS, [])
+                if items:
+                    detail = items[0]
+            except Exception as e:  # noqa: BLE001 — 一岗详情取不到不拖累别的岗(这一岗只剩清单里的几格)
+                err(row.get(K_ORC_ID), e)
+            out.append(to_orc_job(OrcJobIn(row=row, detail=detail, host=host, site=site)))
+            time.sleep(ORC_DELAY_S)
+    return out
+
+
+def to_orc_job(x: OrcJobIn) -> AtsJob:
+    """Oracle 清单行 + 详情 → AtsJob:地点取详情里第一处办公地点的「市, 省」,没有才退回清单的主地点文本。"""
+    place: dict = {}
+    works = x.detail.get(K_ORC_WORK) or []
+    if works:
+        place = works[0]
+    location = join_parts([place.get(K_ORC_TOWN, ""), place.get(K_ORC_REGION, "")])
+    if location == "":
+        location = x.row.get(K_ORC_PRIMARY, "") or ""
+    parts: list = []
+    for key in ORC_BODY_KEYS:
+        part = x.detail.get(key) or ""
+        if part and part not in parts:
+            parts.append(part)
+    return AtsJob(title=x.row.get(K_ORC_TITLE, ""), location=location,
+                  url=ORC_JOB_URL_TPL.format(host=x.host, site=x.site, jid=x.row.get(K_ORC_ID)),
+                  department=x.detail.get(K_ORC_JOB_FUNCTION, "") or "", posted=iso_of(x.row.get(K_ORC_POSTED, "")),
+                  address=join_parts([place.get(K_ORC_STREET, ""), place.get(K_ORC_TOWN, ""), place.get(K_ORC_POSTAL, "")]),
+                  salary="", description=PARA_SEP.join(parts))
 
 
 def fetch_successfactors(x: SfFetchIn) -> list:

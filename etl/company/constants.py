@@ -203,7 +203,7 @@ ENTRY_TIMEOUT_S = 150
 """一家公司招聘站探索的总时限秒(超时 = 这家本轮跳过,留痕)。"""
 
 ENTRY_MERGE_ATS = {"myworkdayjobs", "greenhouse", "lever", "bamboohr", "ashbyhq", "workable", "smartrecruiters",
-                   "recruitee", "successfactors"}
+                   "recruitee", "successfactors", "oraclecloud"}
 """入口定位步认出的行里,哪些 ATS 的才并进一司一档:ats 域会抓、且抓的时候带地点口径的这几家。
 Phenom 不在内 —— 它只能把全站职位页抓回来再筛(Honeywell / Cisco 这种全球站一轮上千页),等有带地点的取法再放开;
 其余(adp / ultipro / icims / jobvite …)ats 域还不会抓,只记不并。"""

@@ -164,8 +164,80 @@ SUCCESSFACTORS = {"successfactors"}
 「搜索页翻页列职位页 → 每个职位页自带 schema.org JobPosting 微数据(itemprop)」这条路,普通请求就取得到。
 起因:渥太华头部公司逐家点过一遍,大公司多数不挂我们已会抓的六家,SuccessFactors 是其中全国用得最多的一家。"""
 
-SITE_ATS = PHENOM | SUCCESSFACTORS
-"""没有公开 JSON、要逐页读职位页的那一类(scrape_company 按这一组分派到 fetch_site_jobs)。"""
+ORACLE = {"oraclecloud"}
+"""Oracle 招聘云(Recruiting Cloud;2026-09-19 立,首家 Nokia;Texas Instruments、KX Systems 同家)。有公开 REST:
+清单端点按关键词筛,详情端点逐岗取正文与办公地点。清单里的地点只到国家(Nokia 全写 Canada),真正的市在详情的 workLocation 里。"""
+
+SITE_ATS = PHENOM | SUCCESSFACTORS | ORACLE
+"""不走六家公开 JSON 那条路、各有各取法的那一类(scrape_company 按这一组分派到 fetch_site_jobs)。"""
+
+ORC_SITE_RE = re.compile(r"https?://([a-z0-9.-]+\.oraclecloud\.com)/hcmUI/CandidateExperience/[A-Za-z_]+/sites/([A-Za-z0-9_]+)")
+"""Oracle 招聘云入口地址 → (主机, 站点号):`https://<主机>/hcmUI/CandidateExperience/en/sites/<站点号>`。"""
+
+ORC_LIST_URL_TPL = ("https://{host}/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&expand=requisitionList.secondaryLocations"
+                    "&finder=findReqs;siteNumber={site},limit={limit},keyword={where}")
+"""Oracle 招聘云职位清单(按关键词筛;不带 expand 这一段,回来的外壳里就没有 requisitionList)。"""
+
+ORC_DETAIL_URL_TPL = ("https://{host}/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails?expand=all&onlyData=true"
+                      "&finder=ById;Id=%22{jid}%22,siteNumber={site}")
+"""Oracle 招聘云单岗详情(正文三段 + workLocation 办公地点)。"""
+
+ORC_JOB_URL_TPL = "https://{host}/hcmUI/CandidateExperience/en/sites/{site}/job/{jid}"
+"""Oracle 招聘云单岗公开页(写进 jobs.json 的 url)。"""
+
+ORC_WHERE = "Ottawa"
+"""清单的关键词:本域只收渥太华都会区的岗(汇装那头同一口径)。"""
+
+ORC_LIMIT = 100
+"""清单一次取的条数上限。"""
+
+ORC_COUNTRY = "CA"
+"""只收主地点国家是加拿大的岗(关键词是全文匹配,正文里提一句 Ottawa 的外国岗也会命中)。"""
+
+ORC_DELAY_S = 0.2
+"""逐岗取详情的间隔秒(礼貌)。"""
+
+K_ITEMS = "items"
+"""Oracle 载荷键:结果外壳。"""
+
+K_REQ_LIST = "requisitionList"
+"""Oracle 清单键:职位行。"""
+
+K_ORC_ID = "Id"
+"""Oracle 职位键:职位号。"""
+
+K_ORC_TITLE = "Title"
+"""Oracle 职位键:标题。"""
+
+K_ORC_POSTED = "PostedDate"
+"""Oracle 职位键:发布日。"""
+
+K_ORC_COUNTRY = "PrimaryLocationCountry"
+"""Oracle 职位键:主地点国家码。"""
+
+K_ORC_PRIMARY = "PrimaryLocation"
+"""Oracle 职位键:主地点文本(常只到国家)。"""
+
+K_ORC_WORK = "workLocation"
+"""Oracle 详情键:办公地点清单。"""
+
+K_ORC_TOWN = "TownOrCity"
+"""Oracle 办公地点子键:市。"""
+
+K_ORC_REGION = "Region2"
+"""Oracle 办公地点子键:省(全名)。"""
+
+K_ORC_STREET = "AddressLine1"
+"""Oracle 办公地点子键:街道。"""
+
+K_ORC_POSTAL = "PostalCode"
+"""Oracle 办公地点子键:邮编。"""
+
+K_ORC_JOB_FUNCTION = "JobFunction"
+"""Oracle 详情键:职能(当部门用)。"""
+
+ORC_BODY_KEYS = ("ShortDescriptionStr", "ExternalDescriptionStr", "ExternalResponsibilitiesStr", "ExternalQualificationsStr")
+"""Oracle 详情里拼成正文的四段(按序;有的公司把职责既放描述又放职责,重复段只收一次)。"""
 
 SF_SEARCH_PATH_TPL = "/search/?q=&locationsearch={where}&startrow={row}"
 """SuccessFactors 搜索页路径(接在招聘站 origin 后面;locationsearch 按地点词筛,startrow 翻页)。"""

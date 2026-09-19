@@ -414,6 +414,34 @@ class SiteFetchIn:
 
 
 @dataclass
+class OrcFetchIn:
+    """fetch_oracle() 入参:一家 Oracle 招聘云站点。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    careers_url: str
+    """入口地址(从里面认主机与站点号)。"""
+
+
+@dataclass
+class OrcJobIn:
+    """to_orc_job() 入参:清单行 + 详情 + 站点坐标。"""
+
+    row: dict
+    """清单里的这一行。"""
+
+    detail: dict
+    """这一岗的详情载荷;取不到为空 dict。"""
+
+    host: str
+    """主机。"""
+
+    site: str
+    """站点号。"""
+
+
+@dataclass
 class SfFetchIn:
     """fetch_successfactors() 入参:一家 SuccessFactors 招聘站。"""
 
