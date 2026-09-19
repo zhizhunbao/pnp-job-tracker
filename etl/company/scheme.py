@@ -177,6 +177,39 @@ class CareerScanRow(BaseModel):
     """探测备注。"""
 
 
+class CareerEntryRow(BaseModel):
+    """入口定位步输出一行(career-entries.json 的元素)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str = ""
+    """公司名。"""
+
+    careers_url: str = ""
+    """招聘落地页(careers 步找到的;本步的种子)。"""
+
+    entry_url: str = ""
+    """真正的职位列表入口;没认出为空串。"""
+
+    ats: str = ""
+    """招聘系统名;没认出为空串。"""
+
+    pages: int = 0
+    """这家招聘站本轮看过几页。"""
+
+
+@dataclass
+class EntryPageIn:
+    """entry_in_page() 入参:招聘站缓存里的一页。"""
+
+    url: str
+    """这一页的地址。"""
+
+    html: str
+    """这一页的原文。"""
+
+
 class ProfileRow(BaseModel):
     """一司一档的 profile.json(身份档)。"""
 

@@ -1050,7 +1050,7 @@ SOURCE_JOB_BANK = "Job Bank"
 
 SOURCE_PRETTY = {"lever": "Lever", "bamboohr": "BambooHR", "greenhouse": "Greenhouse",
                  "smartrecruiters": "SmartRecruiters", "workable": "Workable",
-                 "recruitee": "Recruitee", "myworkdayjobs": "Workday", "workday": "Workday", "ashby": "Ashby",
+                 "recruitee": "Recruitee", "myworkdayjobs": "Workday", "workday": "Workday", "ashbyhq": "Ashby",
                  "successfactors": "SuccessFactors", "phenom": "Phenom"}
 """ATS 板名美化表(查不到就用原始 source,再没有落 EM_DASH)。"""
 

@@ -178,6 +178,84 @@ CAREERS_PATH_RE = re.compile(r"career|jobs?", re.I)
 """href 里的强信号(比链接文案匹配优先:career/jobs 路径直接定)。"""
 
 CAREERS_TIMEOUT_S = 12
+
+IN_ENTRIES_CAREERS = paths.RAW_KANATA / "kanata-north-careers.json"
+"""入口定位步输入:careers 步的产物(有招聘页却没认出 ATS 的行才是本步的活)。"""
+
+OUT_ENTRIES = paths.RAW_KANATA / "career-entries.json"
+"""入口定位步输出:一行 = 公司名 + 招聘页 + 真正的职位列表入口 + ATS 名 + 看过几页。folders 步并进一司一档,
+优先级:人工核定表 > 本表 > careers 步的自动探测。"""
+
+ENTRY_SLUG_TPL = "careers-{slug}"
+"""crawl 层的站点 slug(一家公司的招聘站一份 manifest + html_cache;与 ats 域职位页的 `ats-<公司>` 分开放)。"""
+
+ENTRY_DEPTH = 2
+"""从招聘落地页往里爬的层数(2026-09-19 Frank「我不是有 crawl 吗」:大公司的职位列表入口藏在落地页往里第二、三层,
+careers 步只看落地页源码所以认不出;探未知 URL 本来就是 crawl 域的活,本步只管喂种子、读缓存)。"""
+
+ENTRY_MAX_PAGES = 12
+"""一家公司招聘站最多收的页数(找入口用不着全站)。"""
+
+ENTRY_KEYWORDS = "career,job,join,opening,position,opportunit,emploi,carri"
+"""限域关键词:同站里路径带这些词的页也收(招聘落地页常在 /company/careers,职位列表却在 /jobs)。"""
+
+ENTRY_TIMEOUT_S = 150
+"""一家公司招聘站探索的总时限秒(超时 = 这家本轮跳过,留痕)。"""
+
+ENTRY_MERGE_ATS = {"myworkdayjobs", "greenhouse", "lever", "bamboohr", "ashbyhq", "workable", "smartrecruiters",
+                   "recruitee", "successfactors"}
+"""入口定位步认出的行里,哪些 ATS 的才并进一司一档:ats 域会抓、且抓的时候带地点口径的这几家。
+Phenom 不在内 —— 它只能把全站职位页抓回来再筛(Honeywell / Cisco 这种全球站一轮上千页),等有带地点的取法再放开;
+其余(adp / ultipro / icims / jobvite …)ats 域还不会抓,只记不并。"""
+
+ENTRY_HOP_SLUG_TPL = "careers-{slug}-hop"
+"""第二跳的 crawl 站点 slug。2026-09-19 首轮实测:89 家只认出 7 家,没认出的 82 家里 50 家只爬到 1 页 ——
+职位列表挂在**另一个子域**(jobs.nokia.com / careers.synopsys.com / careerhub.qlik.com …),crawl 的限域是同主机,跨不过去。
+所以没认出的再跳一次:从已缓存的页里挑一条指向「招聘味子域」的外链当新种子,浅爬一层再认。"""
+
+ENTRY_HOP_LINK_RE = re.compile(
+    r"https?://(?:[a-z0-9-]+\.)*(?:jobs?|careers?|careerhub|recruiting|talent|emplois?)\.[a-z0-9.-]+[^\s\"'<>\\]*", re.I)
+"""指向「招聘味子域」的链接(主机名里有一节就是 jobs / careers / careerhub / recruiting / talent / emplois)。"""
+
+ENTRY_HOP_DEPTH = 1
+"""第二跳往里爬的层数。"""
+
+ENTRY_HOP_MAX_PAGES = 6
+"""第二跳最多收的页数。"""
+
+ENTRY_LINK_RES = {
+    "myworkdayjobs": re.compile(r"https?://[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com/[^\s\"'<>\\]+", re.I),
+    "greenhouse": re.compile(r"https?://(?:job-)?boards\.greenhouse\.io/[^\s\"'<>\\]+", re.I),
+    "lever": re.compile(r"https?://jobs\.lever\.co/[^\s\"'<>\\]+", re.I),
+    "bamboohr": re.compile(r"https?://[a-z0-9-]+\.bamboohr\.com[^\s\"'<>\\]*", re.I),
+    "ashbyhq": re.compile(r"https?://jobs\.ashbyhq\.com/[^\s\"'<>\\]+", re.I),
+    "workable": re.compile(r"https?://apply\.workable\.com/[^\s\"'<>\\]+", re.I),
+    "smartrecruiters": re.compile(r"https?://(?:jobs|careers)\.smartrecruiters\.com/[^\s\"'<>\\]+", re.I),
+    "recruitee": re.compile(r"https?://[a-z0-9-]+\.recruitee\.com[^\s\"'<>\\]*", re.I),
+    "icims": re.compile(r"https?://[a-z0-9-]+\.icims\.com[^\s\"'<>\\]*", re.I),
+    "jobvite": re.compile(r"https?://jobs\.jobvite\.com/[^\s\"'<>\\]+", re.I),
+    "dayforcehcm": re.compile(r"https?://[a-z0-9-]+\.dayforcehcm\.com/[^\s\"'<>\\]+", re.I),
+    "ultipro": re.compile(r"https?://recruiting\d*\.ultipro\.c(?:a|om)/[^\s\"'<>\\]+", re.I),
+    "njoyn": re.compile(r"https?://[a-z0-9-]+\.njoyn\.com/[^\s\"'<>\\]+", re.I),
+    "taleo": re.compile(r"https?://[a-z0-9-]+\.taleo\.net/[^\s\"'<>\\]+", re.I),
+    "adp": re.compile(r"https?://(?:workforcenow|recruiting)\.adp\.com/[^\s\"'<>\\]+", re.I),
+    "teamtailor": re.compile(r"https?://[a-z0-9-]+\.teamtailor\.com[^\s\"'<>\\]*", re.I),
+    "applytojob": re.compile(r"https?://[a-z0-9-]+\.applytojob\.com[^\s\"'<>\\]*", re.I),
+    "rippling": re.compile(r"https?://ats\.rippling\.com/[^\s\"'<>\\]+", re.I),
+}
+"""页面里直接露出职位列表地址的招聘系统:命中的那条地址就是入口(ats 域从地址里认 token / 站点)。
+键 = ATS 名,与 ats 域的名字一致;ats 域还不会抓的(icims / jobvite / dayforcehcm / ultipro / njoyn …)也照认照记 ——
+哪家招聘系统用的公司多,就是下一个该写的取岗器。表序即优先级(一页里露出几家时取先命中的)。"""
+
+ENTRY_SITE_RES = {
+    "successfactors": re.compile(r"successfactors\.(?:com|eu)|rmkcdn\.", re.I),
+    "phenom": re.compile(r"phenompeople\.com", re.I),
+    "radancy": re.compile(r"talentbrew\.com|radancy\.net", re.I),
+    "eightfold": re.compile(r"eightfold\.ai", re.I),
+    "avature": re.compile(r"avature\.net", re.I),
+    "paylocity": re.compile(r"recruiting\.paylocity\.com", re.I),
+}
+"""招聘站本身就架在招聘系统上、页面里只露资源指纹的两家:入口 = 命中那一页所在站的根(jobs.rogers.com 这种自有域名)。"""
 """探单个官网的超时。"""
 
 CAREERS_WORKERS = 10
@@ -196,6 +274,18 @@ STATUS_ERR_TPL = "ERR {name}"
 
 URL_ROOT_TPL = "{scheme}://{netloc}"
 """从最终响应 URL 还原站根(跟随重定向后再探常见路径)。"""
+
+PRINT_ENTRY_ROW_TPL = "  {name}: {ats} ({pages} pages) {url}"
+"""入口定位步逐家一行:公司名、认出的 ATS(没认出是横杠)、看过几页、入口地址。"""
+
+PRINT_ENTRY_DONE_TPL = "Entries: {n} companies crawled, {found} entries found.\n  {path}"
+"""入口定位步收尾行。"""
+
+DASH_NONE = "-"
+"""没认出时打印用的横杠。"""
+
+STATUS_OK = "200"
+"""入口定位步并进一司一档时写的状态(入口是从 200 的缓存页里认出来的)。"""
 
 PRINT_CAREERS_RESOLVING_TPL = "Resolving careers pages for {n} companies ({workers} workers)..."
 """careers 步开工报数。"""

@@ -34,11 +34,15 @@ import paths
 from log.functions import err, say
 from crawl.functions import (browser_live, browser_ok, close_browser, fetch_browser_html, get_cached_page,
                              is_challenge_html, put_cached_page)
-from crawl.scheme import CachePutIn
+from crawl.constants import HTML_CACHE_DIR, K_HTML, K_PAGES, K_URL, MANIFEST_FILE
+from crawl.functions import discover_urls
+from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
     ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
     CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE, CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S,
+    DASH_NONE, ENTRY_DEPTH, ENTRY_MERGE_ATS, ENTRY_HOP_DEPTH, ENTRY_HOP_LINK_RE, ENTRY_HOP_MAX_PAGES, ENTRY_HOP_SLUG_TPL, ENTRY_KEYWORDS, ENTRY_LINK_RES, ENTRY_MAX_PAGES, ENTRY_SITE_RES, ENTRY_SLUG_TPL, ENTRY_TIMEOUT_S,
+    IN_ENTRIES_CAREERS, OUT_ENTRIES, PRINT_ENTRY_DONE_TPL, PRINT_ENTRY_ROW_TPL, STATUS_OK,
     CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, SEARCH_QUERY_TPL,
     DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
     DOT_SEP, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS,
@@ -96,7 +100,7 @@ from company.constants import (
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
-    CandsIn, CardColIn, CareerScanRow, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
+    CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
     MartJob, PickPlacesIn, PlaceCompany, PlaceRecord, PlacesCandsIn, PlacesEnvelope, PlacesSearchIn,
@@ -222,27 +226,50 @@ def curated_rows() -> list:
     return json.loads(IN_FOLDERS_CURATED.read_text(encoding=TEXT_ENCODING))
 
 
+def entry_rows() -> list[CareerEntryRow]:
+    """入口定位步的产物(OUT_ENTRIES);文件不在 = 空表。"""
+    if not OUT_ENTRIES.exists():
+        return []
+    out: list[CareerEntryRow] = []
+    for d in json.loads(OUT_ENTRIES.read_text(encoding=TEXT_ENCODING)):
+        out.append(CareerEntryRow.model_validate(d))
+    return out
+
+
+def careers_index() -> dict[str, CareerScanRow]:
+    """公司名(小写)→ 招聘入口,三个来源后盖前:careers 步的自动探测 < 入口定位步(crawl 缓存里认的)< 人工核定表。
+    人工表里只填了 hq 没填入口的行不盖(只核本部,入口照用前两档的)。"""
+    out: dict[str, CareerScanRow] = {}
+    if IN_FOLDERS_CAREERS.exists():
+        for d in json.loads(IN_FOLDERS_CAREERS.read_text(encoding=TEXT_ENCODING)):
+            scan = CareerScanRow.model_validate(d)
+            out[scan.name.lower()] = scan
+    for entry in entry_rows():
+        if entry.ats in ENTRY_MERGE_ATS:
+            out[entry.name.lower()] = CareerScanRow(name=entry.name, careers_url=entry.entry_url,
+                                                    ats=entry.ats, status=STATUS_OK)
+    for d in curated_rows():
+        scan = CareerScanRow.model_validate(d)
+        if scan.careers_url or scan.ats:
+            out[scan.name.lower()] = scan
+    return out
+
+
 def build_company_folders() -> None:
     """一司一档入口:profile.json(+careers.json)+ _index.json。
 
     每家公司一个文件夹,后续阶段往同一夹里累积;slug 撞名挂序号消歧。
     """
     companies = json.loads(IN_FOLDERS_DIRECTORY.read_text(encoding=TEXT_ENCODING))
-    careers_by_name: dict[str, CareerScanRow] = {}
-    if IN_FOLDERS_CAREERS.exists():
-        for d in json.loads(IN_FOLDERS_CAREERS.read_text(encoding=TEXT_ENCODING)):
-            scan = CareerScanRow.model_validate(d)
-            careers_by_name[scan.name.lower()] = scan
+    careers_by_name = careers_index()
     listed = set()
     for d in companies:
         listed.add(CompanyRow.model_validate(d).name.lower())
     hq_by_name: dict[str, str] = {}
     for d in curated_rows():
-        scan = CareerScanRow.model_validate(d)
-        hq_by_name[scan.name.lower()] = CompanyRow.model_validate(d).hq
-        if scan.careers_url or scan.ats:
-            careers_by_name[scan.name.lower()] = scan
-        if scan.name.lower() not in listed:
+        name = CompanyRow.model_validate(d).name.lower()
+        hq_by_name[name] = CompanyRow.model_validate(d).hq
+        if name not in listed:
             companies.append(d)
     OUT_FOLDERS_ROOT.mkdir(parents=True, exist_ok=True)
     seen: dict[str, int] = {}
@@ -349,6 +376,124 @@ def find_careers(website: str) -> CareersProbe:
         out.status = STATUS_ERR_TPL.format(name=type(e).__name__)
         err(website, e)
     return out
+
+
+def locate_career_entries() -> None:
+    """入口定位步:有招聘页却没认出 ATS 的公司,招聘站交给 crawl 域往里爬两层(原文进 crawl 缓存),再从缓存里认入口。
+    一家失败 / 超时不拖别家;结果整表落 OUT_ENTRIES(下次 folders 步并进一司一档)。"""
+    out = []
+    found = 0
+    for scan in entry_targets():
+        slug = ENTRY_SLUG_TPL.format(slug=slugify(scan.name))
+        spec = SeedSpec(slug=slug, seed=scan.careers_url, depth=ENTRY_DEPTH, max_pages=ENTRY_MAX_PAGES,
+                        keywords=ENTRY_KEYWORDS)
+        try:
+            asyncio.run(asyncio.wait_for(discover_urls(DiscoverIn(spec=spec)), timeout=ENTRY_TIMEOUT_S))
+        except Exception as e:  # noqa: BLE001 — 一家招聘站探不动不该断整轮,留痕后照常读已落的缓存
+            err(scan.careers_url, e)
+        row = entry_of_cache(CareerEntryRow(name=scan.name, careers_url=scan.careers_url))
+        if not row.ats:
+            row = entry_of_hop(row)
+        if row.ats:
+            found += 1
+        out.append(row.model_dump())
+        say(PRINT_ENTRY_ROW_TPL.format(name=scan.name, ats=row.ats or DASH_NONE, pages=row.pages, url=row.entry_url))
+    paths.write_json(paths.WriteJsonIn(path=OUT_ENTRIES, payload=out, indent=2))
+    say(PRINT_ENTRY_DONE_TPL.format(n=len(out), found=found, path=OUT_ENTRIES))
+
+
+def entry_targets() -> list[CareerScanRow]:
+    """本步的活:careers 步产物里有招聘页、没认出 ATS、人工核定表也没管的行。"""
+    curated = set()
+    for d in curated_rows():
+        curated.add(CareerScanRow.model_validate(d).name.lower())
+    out: list[CareerScanRow] = []
+    for d in json.loads(IN_ENTRIES_CAREERS.read_text(encoding=TEXT_ENCODING)):
+        scan = CareerScanRow.model_validate(d)
+        if scan.careers_url and not scan.ats and scan.name.lower() not in curated:
+            out.append(scan)
+    return out
+
+
+def entry_of_cache(row: CareerEntryRow) -> CareerEntryRow:
+    """读这家招聘站在 crawl 层的缓存认入口(第一跳)。"""
+    hit = scan_cache(EntryPageIn(url=ENTRY_SLUG_TPL.format(slug=slugify(row.name)), html=""))
+    row.pages = hit.pages
+    row.ats = hit.ats
+    row.entry_url = hit.entry_url
+    return row
+
+
+def scan_cache(x: EntryPageIn) -> CareerEntryRow:
+    """一份 crawl 缓存(x.url 这格传站点 slug)逐页认入口;第一处命中即定(manifest 按 BFS 序,浅层优先)。"""
+    slug_dir = paths.CRAWL / x.url
+    manifest = slug_dir / MANIFEST_FILE
+    out = CareerEntryRow()
+    if not manifest.exists():
+        return out
+    pages = json.loads(manifest.read_text(encoding=TEXT_ENCODING)).get(K_PAGES, [])
+    out.pages = len(pages)
+    for page in pages:
+        cached = slug_dir / HTML_CACHE_DIR / (page.get(K_HTML) or "")
+        if not cached.is_file():
+            continue
+        hit = entry_in_page(EntryPageIn(url=page.get(K_URL, ""), html=cached.read_text(encoding=TEXT_ENCODING)))
+        if hit.ats:
+            out.ats = hit.ats
+            out.entry_url = hit.entry_url
+            return out
+    return out
+
+
+def entry_of_hop(row: CareerEntryRow) -> CareerEntryRow:
+    """第二跳:已缓存的页里挑第一条指向「招聘味子域」的外链,交给 crawl 浅爬一层,再从那份缓存里认入口。
+    没有这样的外链 = 原样返回。"""
+    hop_url = hop_url_of(row)
+    if hop_url == "":
+        return row
+    slug = ENTRY_HOP_SLUG_TPL.format(slug=slugify(row.name))
+    spec = SeedSpec(slug=slug, seed=hop_url, depth=ENTRY_HOP_DEPTH, max_pages=ENTRY_HOP_MAX_PAGES,
+                    keywords=ENTRY_KEYWORDS)
+    try:
+        asyncio.run(asyncio.wait_for(discover_urls(DiscoverIn(spec=spec)), timeout=ENTRY_TIMEOUT_S))
+    except Exception as e:  # noqa: BLE001 — 第二跳探不动不该断整轮,留痕后照常读已落的缓存
+        err(hop_url, e)
+    hit = scan_cache(EntryPageIn(url=slug, html=""))
+    row.pages += hit.pages
+    row.ats = hit.ats
+    row.entry_url = hit.entry_url
+    return row
+
+
+def hop_url_of(row: CareerEntryRow) -> str:
+    """这家招聘站已缓存的页里,第一条指向别的主机上「招聘味子域」的链接;没有给空串。"""
+    slug_dir = paths.CRAWL / ENTRY_SLUG_TPL.format(slug=slugify(row.name))
+    manifest = slug_dir / MANIFEST_FILE
+    if not manifest.exists():
+        return ""
+    home = urlparse(row.careers_url).netloc
+    for page in json.loads(manifest.read_text(encoding=TEXT_ENCODING)).get(K_PAGES, []):
+        cached = slug_dir / HTML_CACHE_DIR / (page.get(K_HTML) or "")
+        if not cached.is_file():
+            continue
+        for link in ENTRY_HOP_LINK_RE.findall(html_lib.unescape(cached.read_text(encoding=TEXT_ENCODING))):
+            if urlparse(link).netloc != home:
+                return link
+    return ""
+
+
+def entry_in_page(x: EntryPageIn) -> CareerEntryRow:
+    """一页原文里认入口:先找直接露出的职位列表地址,再找架在招聘系统上的站点指纹;都没有 = 空行。"""
+    text = html_lib.unescape(x.html)
+    for ats, link_re in ENTRY_LINK_RES.items():
+        m = link_re.search(text)
+        if m is not None:
+            return CareerEntryRow(ats=ats, entry_url=m.group(0))
+    for ats, site_re in ENTRY_SITE_RES.items():
+        if site_re.search(text) is not None:
+            parsed = urlparse(x.url)
+            return CareerEntryRow(ats=ats, entry_url=URL_ROOT_TPL.format(scheme=parsed.scheme, netloc=parsed.netloc))
+    return CareerEntryRow()
 
 
 def careers_order_of(r: CareerScanRow) -> tuple:

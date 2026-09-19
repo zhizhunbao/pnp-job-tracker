@@ -141,7 +141,7 @@ ATS_SMARTRECRUITERS = "smartrecruiters"
 ATS_WORKABLE = "workable"
 """ATS 名:Workable。"""
 
-ATS_ASHBY = "ashby"
+ATS_ASHBY = "ashbyhq"
 """ATS 名:Ashby(2026-09-19 立;首家 Solink —— 档案里记的还是 BambooHR,实测已搬到 Ashby,所以一直 0 岗;Rewind 同家)。"""
 
 SUPPORTED = {ATS_GREENHOUSE, ATS_LEVER, ATS_BAMBOOHR, ATS_RECRUITEE,

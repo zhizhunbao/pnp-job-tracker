@@ -17,6 +17,7 @@ from log.functions import err, say
 from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
+    locate_career_entries,
     scrape_kanata_directory,
 )
 
@@ -35,6 +36,7 @@ TOOLS = {
     "kanata": scrape_kanata_directory,
     "folders": build_company_folders,
     "careers": scrape_company_careers,
+    "entries": locate_career_entries,
     "enrich": enrich_company_websites,
     "facts": enrich_company_facts,
     "places": lookup_company_places,
