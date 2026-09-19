@@ -80,6 +80,11 @@ export type PoolFilters = {
   sector: string
 
   /**
+   * 公司分类键(2026-09-19 晚:与雇主类别两级联动的第二级,选项跟着雇主类别变);空串 = 不筛。
+   */
+  category: string
+
+  /**
    * 制度(直达参数);空串 = 不筛。板上没有它的选择器,只随 URL 进出。
    */
   program: string
@@ -168,6 +173,11 @@ export type PoolRow = {
    * 雇主类别;空串 = 私营。
    */
   sector: string
+
+  /**
+   * 公司分类键(医院 / 大学 / 科技 / 综合行政 …,数据层判好的一格);空串 = 判不出。
+   */
+  category: string
 
   /**
    * 主省码;空串 = 池里没记。
@@ -622,6 +632,11 @@ export type EmployerCellRow = {
    * 类别格:界面语言的类别名(私营也照写,不渲横杠 —— 私营是事实不是缺数)。
    */
   sectorText: string
+
+  /**
+   * 公司分类格:分类名(界面语言);空串 = 判不出(渲横杠)。
+   */
+  categoryText: string
 
   /**
    * 类别格:在招岗最多的两个本站大类名,顿号连(2026-09-18 晚 Frank「公司类别要显示」;词与「全部类别」下拉同一套);
@@ -1764,6 +1779,31 @@ export type FilterPickIn = {
 }
 
 /**
+ * pickedOf 的入参:一格筛选的新值与现值。
+ */
+export type PickedIn = {
+  /**
+   * 新值;缺席 = 这一格不换。
+   */
+  next?: string
+
+  /**
+   * 现值。
+   */
+  cur: string
+}
+
+/**
+ * categoryOptsOf 的入参。
+ */
+export type CategoryOptsIn = {
+  /**
+   * 当前选中的雇主类别;空串 = 没选(选项给全集)。
+   */
+  sector: string
+}
+
+/**
  * makeClear 的入参。
  */
 export type ClearIn = {
@@ -1991,6 +2031,11 @@ export type EmployersPanel = {
    * 换在招 EE 类别(顺带回第一页)。
    */
   onEe: PickFn
+
+  /**
+   * 换公司分类(顺带回第一页)。
+   */
+  onCategory: PickFn
 
   /**
    * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
@@ -2347,6 +2392,11 @@ export type WithIn = {
    * 换雇主类别。
    */
   sector?: string
+
+  /**
+   * 换公司分类。
+   */
+  category?: string
 
   /**
    * 换制度。

@@ -686,6 +686,27 @@
 }
 
 /*
+ * 在招地点格里的一枚胶囊:不许比格子宽(2026-09-19 Parks Canada 实撞 ——「Fortress of Louisbourg National Historic Site, NS」
+ * 一枚就比列宽,tag 基座的 nowrap 让它整枚溢出去压住了「在招」列的数字)。超宽的那一枚在胶囊里折行,名字不截断。
+ */
+.locs > span {
+  /*
+   * 封顶到格宽。
+   */
+  max-width: 100%;
+
+  /*
+   * 放不下就在胶囊里折行(压过 tag 基座的 nowrap)。
+   */
+  white-space: normal;
+
+  /*
+   * 折成两行时药丸形的大圆角会切字,收成小圆角。
+   */
+  border-radius: 10px;
+}
+
+/*
  * 搜索框的外壳(值照抄职位板 jobs.module.css 的 .search:两块板的搜索框同宽;2026-09-19 Frank「雇主的搜索和职位的搜索保持一致」)。
  */
 .search {

@@ -17,7 +17,8 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
-  addrQsOf, applyHomeProv, makeBroad, reportSeen, makeCity, makeCloseJob, makeCloseModal, makeDistrict,
+  addrQsOf, applyHomeProv, foldCountOf, makeBroad, makeCategory, reportSeen,
+  makeCity, makeCloseJob, makeCloseModal, makeDistrict,
   makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
@@ -40,7 +41,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [data, setData] = useState<PoolPage>(x.initial)
   const [loading, setLoading] = useState(false)
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
-  const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
+  const [fold, setFold] = useState(foldCountOf({ f: x.initialFilters }) > 0)
   const peek = useEmpPeek(x)
   const first = useRef(true)
   const held = useRef<PoolPage | null>(null)
@@ -91,6 +92,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onDistrict: makeDistrict({ f, setF }),
     onBroad: makeBroad({ f, setF }),
     onEe: makeEe({ f, setF }),
+    onCategory: makeCategory({ f, setF }),
     onEntry: makeEntryPick({ f, setF }),
     onLmia: makeLmiaPick({ f, setF }),
     cols: employerColsOf({ t, shown: colKeysOf({ cols: pick.cols }) }),

@@ -69,6 +69,11 @@ export type PoolFilters = {
   sector: string
 
   /**
+   * 公司分类(POOL_CATEGORIES 之一);空串 = 不筛。
+   */
+  category: string
+
+  /**
    * 制度(AIP | RCIP | FCIP,直达参数);空串 = 不筛。
    */
   program: string
@@ -147,6 +152,11 @@ export type PoolRow = {
    * 雇主类别(federal / government / municipal / indigenous / public);空串 = 私营(库里 NULL)。
    */
   sector: string
+
+  /**
+   * 公司分类键(POOL_CATEGORIES 之一;私营 = 模型判的优先、没有才是按在招岗反推的);空串 = 判不出。
+   */
+  category: string
 
   /**
    * 主省码;空串 = 池里没记。
@@ -1975,6 +1985,11 @@ export type PoolDbRow = {
    * 探索队列里模型判的公司大类(本站大类键);没判过 / 判不出 = null。
    */
   x_industry: string | null
+
+  /**
+   * 公司分类(SQL 里已按「私营用模型判的优先」合好的一格);NULL = 判不出。
+   */
+  category: string | null
 
   /**
    * 指定资格所在地(jsonb 数组,「项目|地点」);NULL = 非指定 / 还没灌过这一列。

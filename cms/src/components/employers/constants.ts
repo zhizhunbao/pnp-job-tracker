@@ -143,9 +143,77 @@ export const EV_PROP_BROAD = 'broad'
 export const EV_PROP_DISTRICT = 'district'
 
 /**
+ * 埋点分组值:换的是公司分类那一格(2026-09-19)。
+ */
+export const EV_PROP_CATEGORY = 'category'
+
+/**
  * 埋点分组值:换的是雇主类别那一格(2026-09-18)。
  */
 export const EV_PROP_SECTOR = 'sector'
+
+/**
+ * 公司分类的文案键前缀(后接数据层的分类键:tech / hospital / gov-admin …;词条在 lib/i18n 的 `cocat.*`)。
+ */
+export const KEY_CATEGORY_HEAD = 'cocat.'
+
+/**
+ * 私营企业的公司分类 = 本站公司行业 15 类(下拉选项序 = 这个序;键与数据层 etl/explore 的 INDUSTRIES 同一套)。
+ */
+export const CATEGORIES_PRIVATE = [
+  'tech', 'health', 'education', 'finance', 'professional', 'construction', 'manufacturing', 'retail', 'hospitality',
+  'transport', 'energy', 'agriculture', 'realestate', 'media', 'services',
+]
+
+/**
+ * 公立机构的公司分类(按机构种类;键是数据层 etl/names category_of 的值域;医院与卫生局分两类 ——
+ * 2026-09-19 Frank「医院和卫生局不是两个类别吗」)。
+ */
+export const CATEGORIES_PUBLIC = [
+  'hospital', 'healthauth', 'university', 'college', 'schoolboard', 'transit', 'utility', 'crown', 'public-other',
+]
+
+/**
+ * 政府四档(联邦 / 省 / 市镇 / 原住民政府)的公司分类(按职能;2026-09-19 Frank「如果是政府部门 应该也是有一些分类的」)。
+ */
+export const CATEGORIES_GOV = [
+  'gov-admin', 'gov-police', 'gov-defence', 'gov-tax', 'gov-justice', 'gov-parks', 'gov-infra', 'gov-health', 'gov-edu',
+]
+
+/**
+ * 雇主类别 → 它的公司分类选项(两级联动表:选了雇主类别,公司分类下拉只出这一段;没选 = 三段全出)。
+ */
+export const SECTOR_CATEGORIES: Record<string, string[]> = {
+  /**
+   * 私营企业 → 公司行业 15 类。
+   */
+  private: CATEGORIES_PRIVATE,
+
+  /**
+   * 公立机构 → 按机构种类。
+   */
+  public: CATEGORIES_PUBLIC,
+
+  /**
+   * 联邦机关 → 按职能。
+   */
+  federal: CATEGORIES_GOV,
+
+  /**
+   * 省政府 → 按职能。
+   */
+  government: CATEGORIES_GOV,
+
+  /**
+   * 市镇政府 → 按职能。
+   */
+  municipal: CATEGORIES_GOV,
+
+  /**
+   * 原住民政府 → 按职能。
+   */
+  indigenous: CATEGORIES_GOV,
+}
 
 /**
  * 雇主类别的文案键前缀(后接 federal / government / municipal / indigenous / public / private;
@@ -563,7 +631,14 @@ export const COL_PROV_KEY = 'province'
 export const COL_CITY_KEY = 'city'
 
 /**
+ * 雇主板列 key:公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」;顶掉「大分类」列的位置 ——
+ * 那一列是职位的分类。不排序)。
+ */
+export const COL_CATEGORY_KEY = 'cat'
+
+/**
  * 雇主板列 key:类别(在招岗的本站大类;不排序 —— 一家多类,没有单一的序)。
+ * 2026-09-19 晚:这一列从板上撤了(Frank「这两个分类应该是属于职位的分类」),键留着给字段 cookie 里的旧值对号。
  */
 export const COL_BROAD_KEY = 'broad'
 
@@ -600,6 +675,8 @@ export const COL_DISTRICT_KEY = 'district'
 /**
  * 雇主板列 key:总部(2026-09-19 Frank「需要加一个总部列,包含省市区,可以点击跳转到 google map」「不用合并,就是多加一列」;
  * 省 / 市 / 区三列照留。不排序 —— 省、市两列已能排)。
+ * 2026-09-19 晚:这一列不再 nowrap —— Parks Canada 的总部写成「Cape Breton Highlands National Park of Canada, NS」,
+ * 一行比列宽 144px、压进邻列;放不下就折行。
  */
 export const COL_HQ_KEY = 'hq'
 
@@ -636,6 +713,11 @@ export const W_POOL_PROV = 13
  * 雇主板市列的宽(界面语言城市名,一行)。
  */
 export const W_POOL_CITY = 13
+
+/**
+ * 雇主板公司分类列的宽(一个分类名,最长「公园与自然资源」七个字)。
+ */
+export const W_POOL_CATEGORY = 12
 
 /**
  * 雇主板类别列的宽(两个大类名顿号连,最长「生活服务、社会服务」九个字)。
@@ -924,6 +1006,11 @@ export const P_BROAD = 'broad'
  * query 参数名:主区(跟着市走)。
  */
 export const P_DISTRICT = 'district'
+
+/**
+ * query 参数名:公司分类(与 lib/employers 的 PARAM.category 同值)。
+ */
+export const P_CATEGORY = 'cat'
 
 /**
  * query 参数名:雇主类别。

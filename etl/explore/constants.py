@@ -157,22 +157,33 @@ PROMPT_HEAD = (
     "- If the brand has no established translation, keep the brand word in its original Latin letters and translate only "
     "the generic words (Englobe Corp. = Englobe 公司; Town of Hinton = Hinton 镇).\n"
     "- If nothing in the name can be translated, leave ZH and KO empty.\n"
-    "- INDUSTRY is what kind of business the employer itself is (a bank is 金融 even when it mostly posts IT or manager "
-    "jobs; an accounting firm is 会计; a hospital is 医疗; a construction company is 建筑). Pick exactly one label from this "
-    "list, written exactly as shown, or leave it empty when you cannot tell: "
-    "餐饮 (restaurants, food service), 医疗 (hospitals, clinics, care homes), 技工 (trade contractors: plumbing, electrical, "
-    "auto repair), 建筑 (construction), 生活服务 (personal services: salons, cleaning, childcare), 零售 (retail stores), "
-    "运输 (trucking, transit, airlines), 农业 (farms, fishing), 制造 (manufacturing, food processing), 物流 (warehousing, "
-    "couriers), 工程 (engineering firms), 商务 (consulting, staffing, business services), 教育 (schools, universities), "
-    "金融 (banks, insurance, investment), 住宿 (hotels), IT (software, IT services, telecom), 社会服务 (non-profits, "
-    "community services, government programs), 会计 (accounting, audit, tax), 销售 (wholesale, dealerships), "
-    "艺术 (media, design, entertainment), 体育 (sports, fitness, recreation), 科学 (research, labs), 法律 (law firms), "
-    "矿业 (mining, oil and gas).\n"
+    "- INDUSTRY is what kind of business the employer itself is, not what jobs it posts (a bank is finance even when it "
+    "mostly posts IT or manager jobs; a hospital is health even when it hires cooks; a building-supply store is retail; "
+    "a staffing agency is professional). Pick exactly one key from this list, written exactly as shown, or leave it "
+    "empty when you cannot tell: "
+    "tech (software, internet, IT services, telecom, chips and electronics), "
+    "health (hospitals, clinics, dental, care homes, pharmacies), "
+    "education (schools, universities, training, childcare), "
+    "finance (banks, insurance, investment, lending), "
+    "professional (law, accounting, consulting, design, engineering firms, staffing agencies), "
+    "construction (building, civil works, trade contractors: plumbing, electrical, roofing), "
+    "manufacturing (factories: food processing, metal, machinery, chemicals), "
+    "retail (stores, supermarkets, building supplies, car dealerships, wholesale), "
+    "hospitality (restaurants, fast food, cafes, hotels), "
+    "transport (trucking, couriers, warehousing, transit, airlines), "
+    "energy (oil and gas, mining, power and water utilities), "
+    "agriculture (farms, greenhouses, fishing, forestry), "
+    "realestate (brokerages, property management, rentals), "
+    "media (film, publishing, sports, gaming, tourist attractions), "
+    "services (cleaning, security, auto repair, salons, religious and community organisations).\n"
 )
 """提示词(给模型看的,英文;雇主名与在招大类旁证由 PROMPT_TAIL_TPL 接在末尾)。四行定式答案,便于逐行解析;
 INDUSTRY 一行 2026-09-19 加(Frank「授权加列」):按「在招岗最多的大类」推公司大类对大公司常不准(BMO 落管理层、
 Manulife 落 IT),改由模型直接判「这是一家什么公司」;名单是本站大类去掉三个不是行业的(管理层 / 行政 / 文员)。「品牌名不许按字面意思直译」是
-2026-09-18 板上实拍「Subway → 地铁」的教训。"""
+2026-09-18 板上实拍「Subway → 地铁」的教训。
+2026-09-19 晚 Frank「这两个分类应该是属于职位的分类。应该单独弄一个公司的分类」**改判**:INDUSTRY 的名单由「本站职位大类去掉三个」
+换成**本站公司行业 15 类**(英文键,设计稿 docs/design/雇主分类与搜索-20260918.md「本站公司行业」段;建材不单列 —— 卖建材的归 retail、
+造建材的归 manufacturing)。上面那句「名单是本站大类去掉三个」作废。公立 / 政府的公司分类不靠模型,由 names 域按名字判。"""
 
 # =========================================================================
 # 4. 回答解析与校验
@@ -191,10 +202,11 @@ INDUSTRY_RE = re.compile(r"^\s*INDUSTRY\s*=(.*)$", re.I | re.M)
 """回答里的公司大类行。"""
 
 INDUSTRIES = frozenset((
-    "餐饮", "医疗", "技工", "建筑", "生活服务", "零售", "运输", "农业", "制造", "物流", "工程", "商务", "教育", "金融", "住宿",
-    "IT", "社会服务", "会计", "销售", "艺术", "体育", "科学", "法律", "矿业",
+    "tech", "health", "education", "finance", "professional", "construction", "manufacturing", "retail", "hospitality",
+    "transport", "energy", "agriculture", "realestate", "media", "services",
 ))
-"""认得的公司大类键(本站大类去掉管理层 / 行政 / 文员;模型答了名单外的词当没答)。"""
+"""认得的公司行业键(本站公司行业 15 类;模型答了名单外的词当没答)。2026-09-19 晚由职位大类那 24 个中文标签换来,
+与 cms 侧 lib/employers 的 POOL_CATEGORIES 私营段、etl employers 域的 BROAD_CATEGORY 值域同一套。"""
 
 PERSON_RE = re.compile(r"^\s*PERSON\s*=\s*(yes|no)\s*$", re.I | re.M)
 """回答里的人名判定行。"""

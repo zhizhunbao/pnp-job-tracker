@@ -13,7 +13,8 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import (
-    ALIAS_SPLIT_RE, APOSTROPHE_RE, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
+    ALIAS_SPLIT_RE, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
+    CATEGORY_PUBLIC_OTHER, CATEGORY_PUBLIC_RULES, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
     SECTOR_GOV_RE, SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC,
     SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE,
 )
@@ -52,3 +53,23 @@ def sector_of(name: str) -> str:
     if SECTOR_PUBLIC_RE.search(name) and not SECTOR_VET_RE.search(name) and not SECTOR_CORP_RE.search(name):
         return SECTOR_PUBLIC
     return ""
+
+
+def category_of(name: str) -> str:
+    """公司分类(只管非私营):先按 sector_of 定雇主类别,公立机构走机构种类规则(都不命中 = 其他公立),
+    政府四档走职能规则(都不命中 = 综合行政);私营空串 —— 私营那 15 类名字上看不出,不归本叶判。
+
+    2026-09-19 立(Frank「应该单独弄一个公司的分类。和雇主类型联动」);规则与判序见 CATEGORY_PUBLIC_RULES / CATEGORY_GOV_RULES。
+    """
+    sector = sector_of(name)
+    if sector == SECTOR_PUBLIC:
+        for key, pattern in CATEGORY_PUBLIC_RULES:
+            if pattern.search(name):
+                return key
+        return CATEGORY_PUBLIC_OTHER
+    if sector in CATEGORY_GOV_SECTORS:
+        for key, pattern in CATEGORY_GOV_RULES:
+            if pattern.search(name):
+                return key
+        return CATEGORY_GOV_ADMIN
+    return CATEGORY_NONE

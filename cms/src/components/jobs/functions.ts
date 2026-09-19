@@ -4566,10 +4566,16 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 2026-09-17 改判(Frank 实撞「现在默认不是根据用户的时区 选省份了」→「改:选了具体省才记住」):原规矩「亲手动过一次
  * (含改回全部省)一年内不再预选」作废 —— 选了具体省就记住那个省、下次直接用它(比按时区猜准);改回「全部省」不记,
  * 下次照常按时区预选。
+ * 2026-09-19 Frank「我点击看岗位的时候,跳转之后就不要限制省份了吧」:URL 带着搜索词进来(雇主板「看岗位」= `?q=雇主名`)
+ * 就不预选省 —— 人是来找这家的岗的,Parks Canada 的岗在 NS / MB,预选安省 = 0 个职位。
  */
 export function applyHomeProvince(x: HomeProvinceIn): void {
   const given = x.initial[FK.prov]
   if (typeof given === 'string' && given !== TEXT_NONE) {
+    return
+  }
+  const asked = x.initial[FK.q]
+  if (typeof asked === 'string' && asked !== TEXT_NONE) {
     return
   }
   const picked = pickedProvOf()

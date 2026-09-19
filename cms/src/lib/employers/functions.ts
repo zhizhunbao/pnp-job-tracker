@@ -19,7 +19,8 @@ import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_BROAD, CAP_CITY, CAP_SECTOR, EXPLORE_SKIP, EXPLORE_STATUSES, EXPLORE_TEXT_MAX, POOL_SECTORS,
+  CAP_BROAD, CAP_CITY, CAP_SECTOR, EXPLORE_INDUSTRIES, EXPLORE_SKIP, EXPLORE_STATUSES, EXPLORE_TEXT_MAX,
+  POOL_CATEGORIES, POOL_SECTORS,
   CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
   CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
@@ -75,6 +76,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const district = clip({ value: input.get(PARAM.district), max: CAP_CITY })
   const broad = clip({ value: input.get(PARAM.broad), max: CAP_BROAD })
   const ee = clip({ value: input.get(PARAM.ee), max: CAP_BROAD })
+  const category = categoryOf(clip({ value: input.get(PARAM.category), max: CAP_BROAD }).toLowerCase())
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
@@ -121,12 +123,39 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   }
   return {
     group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, broad, ee, sector: cleanSector,
+    category,
     program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
     lmia: input.get(PARAM.lmia) === ENTRY_ON,
     q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }).replace(Q_WILD_RE, FILTER_UNSET),
     sort: cleanSort, dir: cleanDir, page: cleanPage,
   }
+}
+
+/**
+ * 公司分类筛选值过白名单(不认得的字面量当没筛)。
+ *
+ * @param v 已截断、转小写的参数值。
+ * @returns 认得的分类键;否则空串。
+ */
+function categoryOf(v: string): string {
+  if ((POOL_CATEGORIES as readonly string[]).includes(v)) {
+    return v
+  }
+  return FILTER_UNSET
+}
+
+/**
+ * 探索队列交回的公司行业过白名单(只收本站公司行业 15 类的键;旧工人交回的职位大类标签当没答)。
+ *
+ * @param v 洗过空的线格式值。
+ * @returns 认得的行业键;否则空串。
+ */
+function exploreIndustryOf(v: string): string {
+  if ((EXPLORE_INDUSTRIES as readonly string[]).includes(v)) {
+    return v
+  }
+  return FILTER_UNSET
 }
 
 /**
@@ -244,7 +273,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
           sort: f.sort, dir: f.dir })),
         params: [
           f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city,
-          f.district, f.broad, f.ee,
+          f.district, f.broad, f.ee, f.category,
         ],
         map: passPoolDbRow,
       })
@@ -300,7 +329,7 @@ function pageOf(input: PageOfIn): PoolPage {
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
   const key = [
-    f.q, f.prov, f.city, f.district, f.broad, f.ee, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
+    f.q, f.prov, f.city, f.district, f.broad, f.ee, f.sector, f.category, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
     String(input.pageSize),
   ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
@@ -313,7 +342,7 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
       sort: f.sort, dir: f.dir })),
     params: [
       f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city, f.district,
-      f.broad, f.ee,
+      f.broad, f.ee, f.category,
     ],
     map: passPoolDbRow,
   })
@@ -1532,7 +1561,7 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
     key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), website: httpUrlOf(text(r.website)),
     industry: textOrNull(r.industry),
-    sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
+    sector: text(r.sector), category: text(r.category), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), district: text(r.district), address: text(r.address),
     locations: toStrList(r.locations), broadKeys: toBroadKeys(r), eeKeys: toStrList(r.ees),
     designatedPlaces: toStrList(r.designated_places), designated: r.designated === true,
@@ -1673,7 +1702,7 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
   return {
     key: text(r.key), status: text(r.status), aliasZh: text(r.aliasZh).slice(0, EXPLORE_TEXT_MAX),
     aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
-    industry: text(r.industry).slice(0, EXPLORE_TEXT_MAX),
+    industry: exploreIndustryOf(text(r.industry)),
   }
 }
 

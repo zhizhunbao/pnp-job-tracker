@@ -28,7 +28,7 @@ import { CompareSkilledCell } from './compareskilledcell'
 import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
-import { PoolBroadCell } from './poolbroadcell'
+import { PoolCategoryCell } from './poolcategorycell'
 import { PoolCityCell } from './poolcitycell'
 import { PoolDistrictCell } from './pooldistrictcell'
 import { PoolHqCell } from './poolhqcell'
@@ -42,6 +42,8 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
+  CATEGORIES_GOV, CATEGORIES_PRIVATE, CATEGORIES_PUBLIC, COL_CATEGORY_KEY, EV_PROP_CATEGORY, KEY_CATEGORY_HEAD,
+  P_CATEGORY, SECTOR_CATEGORIES, W_POOL_CATEGORY,
   COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_HQ_KEY, COL_LOCS_KEY, COL_PROV_KEY, COL_SECTOR_KEY,
   COL_WHERE_KEY,
   COMPARE_NAME_SEP,
@@ -89,6 +91,7 @@ import type {
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, EeTextIn,
+  CategoryOptsIn, PickedIn,
   ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
@@ -229,6 +232,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     where: empWhereTextOf({ t: x.t, r }),
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
+    categoryText: categoryTextOf({ t: x.t, r }),
     broadText: broadTextOf(x),
     eeText: eeTextOf({ t: x.t, r, first: x.f.ee }),
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
@@ -323,6 +327,19 @@ function broadTextOf(x: EmployerCellRowIn): string {
     return TEXT_NONE
   }
   return makeBroadLabel({ t: x.t, lang: x.lang, opts: x.broads })(main)
+}
+
+/**
+ * 公司分类格的字:数据层判好的分类键 → 界面语言的分类名;判不出 = 空串(格子渲横杠)。
+ *
+ * @param x 取词函数与这一行。
+ * @returns 分类名或空串。
+ */
+function categoryTextOf(x: RowWordsIn): string {
+  if (x.r.category === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return x.t(KEY_CATEGORY_HEAD + x.r.category)
 }
 
 /**
@@ -498,17 +515,17 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: PoolEeCell,
     },
     {
-      key: COL_BROAD_KEY,
-      label: x.t('de.colBroad'),
-      width: poolWidthOf({ key: COL_BROAD_KEY, shown: x.shown }),
-      render: PoolBroadCell,
-    },
-    {
       key: COL_SECTOR_KEY,
       label: x.t('de.colSector'),
       width: poolWidthOf({ key: COL_SECTOR_KEY, shown: x.shown }),
       sortable: true,
       render: SectorCell,
+    },
+    {
+      key: COL_CATEGORY_KEY,
+      label: x.t('de.colCategory'),
+      width: poolWidthOf({ key: COL_CATEGORY_KEY, shown: x.shown }),
+      render: PoolCategoryCell,
     },
     {
       key: COL_PROV_KEY,
@@ -528,7 +545,6 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       key: COL_HQ_KEY,
       label: x.t('de.colHq'),
       width: poolWidthOf({ key: COL_HQ_KEY, shown: x.shown }),
-      nowrap: true,
       render: PoolHqCell,
     },
     {
@@ -638,6 +654,9 @@ function poolShareOf(key: string): number {
   }
   if (key === COL_CITY_KEY) {
     return W_POOL_CITY
+  }
+  if (key === COL_CATEGORY_KEY) {
+    return W_POOL_CATEGORY
   }
   if (key === COL_HQ_KEY) {
     return W_POOL_HQ
@@ -1664,6 +1683,9 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.sector !== TEXT_NONE) {
     p.set(P_SECTOR, x.f.sector)
   }
+  if (x.f.category !== TEXT_NONE) {
+    p.set(P_CATEGORY, x.f.category)
+  }
   if (x.f.entry) {
     p.set(P_ENTRY, ENTRY_ON)
   }
@@ -1807,6 +1829,19 @@ export function makeQCommit(x: QCommitIn): ClickFn {
 }
 
 /**
+ * 一格筛选取新值还是现值:给了新值用新值,没给用现值(2026-09-19 withOf 加公司分类一格后超了行数上限,三格的 if 块收成它)。
+ *
+ * @param x 新值与现值。
+ * @returns 这一格落成的值。
+ */
+function pickedOf(x: PickedIn): string {
+  if (x.next != null) {
+    return x.next
+  }
+  return x.cur
+}
+
+/**
  * 整份筛选逐格抄一遍,只换给了的几格(禁对象展开 —— 字段写全;所有手柄共用这一枚,免得八格各抄一遍)。
  *
  * @param x 当前筛选与要换的格(缺席 = 不换)。
@@ -1830,14 +1865,9 @@ function withOf(x: WithIn): PoolFilters {
   if (x.broad != null) {
     broad = x.broad
   }
-  let ee = x.f.ee
-  if (x.ee != null) {
-    ee = x.ee
-  }
-  let sector = x.f.sector
-  if (x.sector != null) {
-    sector = x.sector
-  }
+  const ee = pickedOf({ next: x.ee, cur: x.f.ee })
+  const sector = pickedOf({ next: x.sector, cur: x.f.sector })
+  const category = pickedOf({ next: x.category, cur: x.f.category })
   let program = x.f.program
   if (x.program != null) {
     program = x.program
@@ -1874,6 +1904,7 @@ function withOf(x: WithIn): PoolFilters {
     broad,
     ee,
     sector,
+    category,
     program,
     noc: x.f.noc,
     entry,
@@ -2032,6 +2063,7 @@ export function makeBroadLabel(x: BroadLabelIn): NocNameFn {
 
 /**
  * 造换雇主类别的手柄(顺带回第一页)。
+ * 2026-09-19 晚:公司分类跟着雇主类别走(两级联动)—— 换了雇主类别,公司分类清掉(原来选的那一类多半不在新的选项里)。
  *
  * @param x 当前筛选与落格。
  * @returns 下拉的 onChange。
@@ -2039,9 +2071,47 @@ export function makeBroadLabel(x: BroadLabelIn): NocNameFn {
 export function makeSector(x: FilterPickIn): PickFn {
   function onSector(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_SECTOR })
-    x.setF(withOf({ f: x.f, sector: v, page: 0 }))
+    x.setF(withOf({ f: x.f, sector: v, category: TEXT_NONE, page: 0 }))
   }
   return onSector
+}
+
+/**
+ * 造换公司分类的手柄(顺带回第一页)。
+ *
+ * @param x 当前筛选与落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeCategory(x: FilterPickIn): PickFn {
+  function onCategory(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_CATEGORY })
+    x.setF(withOf({ f: x.f, category: v, page: 0 }))
+  }
+  return onCategory
+}
+
+/**
+ * 公司分类下拉的选项:选了雇主类别 = 只出它那一段(两级联动);没选 = 私营、公立、政府三段全出。
+ *
+ * @param x 当前选中的雇主类别。
+ * @returns 分类键,下拉选项序。
+ */
+export function categoryOptsOf(x: CategoryOptsIn): string[] {
+  const own = SECTOR_CATEGORIES[x.sector]
+  if (own != null) {
+    return own
+  }
+  const out: string[] = []
+  for (const k of CATEGORIES_PRIVATE) {
+    out.push(k)
+  }
+  for (const k of CATEGORIES_PUBLIC) {
+    out.push(k)
+  }
+  for (const k of CATEGORIES_GOV) {
+    out.push(k)
+  }
+  return out
 }
 
 /**
@@ -2158,6 +2228,9 @@ export function makeFoldToggle(x: FoldToggleIn): ClickFn {
  */
 export function foldCountOf(x: FiltersIn): number {
   let n = 0
+  if (x.f.ee !== TEXT_NONE) {
+    n += 1
+  }
   if (x.f.entry) {
     n += 1
   }
@@ -2238,6 +2311,7 @@ export function makeClear(x: ClearIn): ClickFn {
       broad: TEXT_NONE,
       ee: TEXT_NONE,
       sector: TEXT_NONE,
+      category: TEXT_NONE,
       program: TEXT_NONE,
       entry: false,
       lmia: false,
@@ -2404,6 +2478,7 @@ export function makeCloseJob(x: CloseJobIn): ClickFn {
  */
 export function anyFilterOf(x: FiltersIn): boolean {
   return x.f.prov !== TEXT_NONE || x.f.broad !== TEXT_NONE || x.f.ee !== TEXT_NONE || x.f.sector !== TEXT_NONE
+    || x.f.category !== TEXT_NONE
     || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE || x.f.group !== TEXT_NONE
     || x.f.q !== TEXT_NONE
 }
@@ -2448,6 +2523,19 @@ export function makeProvLabel(): NocNameFn {
     return provEnOf(code)
   }
   return provLabel
+}
+
+/**
+ * 造一枚公司分类下拉的选项显示名取值器。
+ *
+ * @param x 取词函数。
+ * @returns 分类键 → 分类名。
+ */
+export function makeCategoryLabel(x: WordsIn): NocNameFn {
+  function categoryLabel(key: string): string {
+    return x.t(KEY_CATEGORY_HEAD + key)
+  }
+  return categoryLabel
 }
 
 /**

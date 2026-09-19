@@ -17,9 +17,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from noc.functions import broad_of, group_of, teer_of
-from names.functions import sector_of
+from names.functions import category_of, sector_of
 from log.functions import say
-from employers.constants import (BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, PLACE_SEP, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
+from employers.constants import (BROAD_CATEGORY, BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, PLACE_SEP, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT, K_EE_CATEGORY,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
@@ -337,6 +337,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         sector=sector_of(ctx.names.get(x.key) or x.key) or None,
         broads=broads_of(x),
         ees=ees_of(x),
+        category=category_of(ctx.names.get(x.key) or x.key) or private_category_of(x),
         fetched=date.today().isoformat())
 
 
@@ -366,6 +367,15 @@ def broads_of(x: KeyIn) -> list:
     for broad, _n in count.most_common():
         out.append(broad)
     return out
+
+
+def private_category_of(x: KeyIn) -> str | None:
+    """私营雇主的公司分类兜底:在招大类从多到少逐个查 BROAD_CATEGORY,第一个查得到的算数;都查不到 / 没有在招 = None。
+    (公立 / 政府的由 names 域 category_of 按名字判,先于本函数;本函数只在它给空串时才被用到。)"""
+    for broad in broads_of(x):
+        if broad in BROAD_CATEGORY:
+            return BROAD_CATEGORY[broad]
+    return None
 
 
 def home_district_of(x: HomeDistrictIn) -> str | None:

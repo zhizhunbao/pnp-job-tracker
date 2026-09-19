@@ -156,6 +156,11 @@ export const PARAM = {
   ee: 'ee',
 
   /**
+   * 公司分类键(POOL_CATEGORIES 之一;2026-09-19 晚,与雇主类型两级联动的第二级)。
+   */
+  category: 'cat',
+
+  /**
    * 雇主名关键词。
    */
   q: 'q',
@@ -559,6 +564,27 @@ export const CAP_SECTOR = 12
  * 不存这个字面量,SQL 里按 `sector IS NULL` 判。
  */
 export const POOL_SECTORS = ['federal', 'government', 'municipal', 'indigenous', 'public', 'private'] as const
+
+/**
+ * 探索队列交回的公司行业白名单 = 本站公司行业 15 类(私营雇主的公司分类;数据层 etl/explore 的 INDUSTRIES 同一套键)。
+ * 交活接口只收这 15 个键 —— 2026-09-19 晚之前那一格不设白名单,旧工人交回的职位大类中文标签(金融 / IT …)从此当没答。
+ */
+export const EXPLORE_INDUSTRIES = [
+  'tech', 'health', 'education', 'finance', 'professional', 'construction', 'manufacturing', 'retail', 'hospitality',
+  'transport', 'energy', 'agriculture', 'realestate', 'media', 'services',
+] as const
+
+/**
+ * 公司分类的筛选值白名单(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):私营 15 类(同 EXPLORE_INDUSTRIES)+
+ * 公立机构 9 类 + 政府按职能 9 类(后两段是数据层 etl/names category_of 的值域)。哪一段配哪个雇主类型是展示层的事
+ * (components/employers 的联动表),这里只管「这个字面量是不是一个认得的分类」。
+ */
+export const POOL_CATEGORIES = [
+  'tech', 'health', 'education', 'finance', 'professional', 'construction', 'manufacturing', 'retail', 'hospitality',
+  'transport', 'energy', 'agriculture', 'realestate', 'media', 'services',
+  'hospital', 'healthauth', 'university', 'college', 'schoolboard', 'transit', 'utility', 'crown', 'public-other',
+  'gov-admin', 'gov-police', 'gov-defence', 'gov-tax', 'gov-justice', 'gov-parks', 'gov-infra', 'gov-health', 'gov-edu',
+] as const
 
 /**
  * 私营的筛选值(库里是 NULL,见 POOL_SECTORS)。

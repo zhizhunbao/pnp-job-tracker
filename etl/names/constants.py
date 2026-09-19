@@ -129,3 +129,62 @@ University City Clinic Inc.、LMIA 表里「某餐馆 Ltd. + 学区名」的串�
 
 SECTOR_VET_RE = re.compile(r"\b(animal|veterinary|pet|vet)\b", re.I)
 """「hospital」的反例:动物医院是私企(库里旧手工值把它们标成公共部门,正是这一撞)。"""
+
+# 公司分类(按名字判,只管非私营):2026-09-19 Frank「这两个分类应该是属于职位的分类。应该单独弄一个公司的分类。和雇主类型联动。
+# 比如 医院 大学 建筑 学院 科技」「如果是政府部门 应该也是有一些分类的」「医院和卫生局不是两个类别吗」。
+# 两级联动:第一级 = 上面的雇主类别;第二级跟着第一级走 —— 公立机构按机构种类分,政府四档(联邦 / 省 / 市镇 / 原住民)按职能分,
+# 都是名字上看得出来的,住这里;私营那 15 类名字上看不出,由 explore 域的本地模型判、employers 域按在招岗反推兜底,不在本叶。
+
+CATEGORY_NONE = ""
+"""公司分类:判不出 / 不归本叶判(私营)。"""
+
+CATEGORY_PUBLIC_OTHER = "public-other"
+"""公司分类·公立机构兜底:其他公立(图书馆、儿童保护会这类,名字命中公立特征但不属下面任何一种)。"""
+
+CATEGORY_GOV_ADMIN = "gov-admin"
+"""公司分类·政府兜底:综合行政(「City of X」「Government of Y」这类整个政府,名字上不分部门)。"""
+
+CATEGORY_PUBLIC_RULES = (
+    ("hospital", re.compile(r"\buniversity health network\b", re.I)),
+    ("healthauth", re.compile(
+        r"\b(health authority|health network|health region|health services authority|r[eé]gie r[eé]gionale"
+        r"|regional health|public health|cancer agency|ciusss|cisss)\b", re.I)),
+    ("hospital", re.compile(r"\b(hospital|health sciences centre|health sciences center|h[oô]pital)\b", re.I)),
+    ("schoolboard", re.compile(
+        r"\b(school district|school division|school board|centre de services scolaire|commission scolaire"
+        r"|regional centre for education|conseil scolaire)\b", re.I)),
+    ("college", re.compile(r"\b(community college|c[eé]gep|polytechnic)\b", re.I)),
+    ("university", re.compile(r"\b(university|universit[eé])\b", re.I)),
+    ("transit", re.compile(r"\b(bc transit|translink|toronto transit|soci[eé]t[eé] de transport|via rail)\b", re.I)),
+    ("utility", re.compile(r"\b(bc hydro|hydro-qu[eé]bec|hydro qu[eé]bec|saskpower|manitoba hydro)\b", re.I)),
+    ("crown", re.compile(r"^bank of canada\b|\b(canada post|sasktel|radio-canada|crown corporation)\b", re.I)),
+)
+"""公立机构的分类规则,**有序**,先命中先得(键, 名字特征):
+- 「University Health Network」是多伦多的医院集团,抢在「health network = 卫生局」之前;
+- 卫生局在医院之前(「CIUSSS … Hôpital …」是卫生局在招人);医院在大学之前(「University of Alberta Hospital」是医院);
+- 学区在学院 / 大学之前(「Conseil scolaire …」)。
+医院与卫生局分两类(Frank「医院和卫生局不是两个类别吗」):按雇主主体分 —— BC / AB / SK / MB 的医院由卫生局统一招人,
+那边的医院岗落在卫生局名下,是事实不是错分。特征词全部取自 SECTOR_PUBLIC_RE(只有被它判成公立的名字才会走到这里)。"""
+
+CATEGORY_GOV_RULES = (
+    ("gov-defence", re.compile(
+        r"\b(armed forces|canadian forces|forces arm[eé]es|forces canadiennes|national defence|d[eé]fense nationale)\b",
+        re.I)),
+    ("gov-police", re.compile(
+        r"\b(police|rcmp|border services|coast guard|security intelligence|fire department|fire rescue"
+        r"|emergency services)\b", re.I)),
+    ("gov-justice", re.compile(r"\b(justice|correctional|attorney general|solicitor general|courts?)\b", re.I)),
+    ("gov-tax", re.compile(r"\b(revenue agency|revenu|finance|finances|treasury board)\b", re.I)),
+    ("gov-parks", re.compile(
+        r"\b(parks canada|parcs canada|fisheries and oceans|environment|environnement|natural resources"
+        r"|ressources naturelles|agriculture|forests?|for[eê]ts|water security agency)\b", re.I)),
+    ("gov-infra", re.compile(r"\b(transport canada|transportation|transports|infrastructure|highways)\b", re.I)),
+    ("gov-health", re.compile(r"\b(health canada|health|sant[eé]|food inspection)\b", re.I)),
+    ("gov-edu", re.compile(r"\b(education|[eé]ducation|advanced education|enseignement)\b", re.I)),
+)
+"""政府四档(联邦 / 省 / 市镇 / 原住民政府)按职能分的规则,有序,先命中先得(Frank「如果是政府部门 应该也是有一些分类的」):
+国防、警务与应急、司法、财税、公园与自然资源、交通与基建、卫生、教育;都不命中 = 综合行政(CATEGORY_GOV_ADMIN)。
+国防在警务之前(「Canadian Forces Military Police」归国防)。"""
+
+CATEGORY_GOV_SECTORS = frozenset((SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_MUNICIPAL, SECTOR_INDIGENOUS))
+"""走「按职能分」那套规则的雇主类别(公立机构走机构种类那套;私营不归本叶)。"""

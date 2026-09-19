@@ -11,6 +11,9 @@
  * 2026-09-18 雇主板换版(Frank「可以参考下 job 页面的布局吗」「省份筛选加了吗」「这种也设计成下拉框?」):
  * 筛选行逐位照职位板 —— 搜索 / 省 / 行业 / 类别 / 更多筛选 / 清除 / 行尾更新时间;两枚胶囊开关(无经验可投、有 LMIA 记录)
  * 改成下拉收进「更多筛选」抽屉,整行不再有胶囊。抽屉样式用的是本域 09-13 退役时留下的 .drawer / .moreBtn 一族。
+ * 2026-09-19 晚 Frank「这两个分类应该是属于职位的分类。应该单独弄一个公司的分类。和雇主类型联动」「EE 类别收进更多筛选」:
+ * 「全部大类」(在招岗的职位大类)下拉撤;「全部类别」(EE 类别)挪进抽屉;行上改成 雇主类型 → 公司分类 两级联动
+ * (公司分类的选项跟着雇主类型变,换了雇主类型公司分类自动清掉)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -23,7 +26,7 @@ import { Select } from '@/components/select'
 import { ColPicker } from '@/components/table'
 import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE, TEXT_NONE } from './constants'
 import {
-  anyFilterOf, broadKeysOf, caretOf, clearBtnClsOf, foldCountOf, makeBroadLabel, makeEeLabel,
+  anyFilterOf, caretOf, categoryOptsOf, clearBtnClsOf, foldCountOf, makeCategoryLabel, makeEeLabel,
   makeOnLabel,
   makeProvLabel, makeSectorLabel,
   moreBtnClsOf, onValueOf, pickWordsOf,
@@ -56,21 +59,16 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
         {p.f.city !== TEXT_NONE && p.data.districts.length > 0 && (
           <Select value={p.f.district} onChange={p.onDistrict} opts={p.data.districts} all={p.t('all.district')} />
         )}
-        <Select value={p.f.ee}
-          onChange={p.onEe}
-          opts={p.data.ees}
-          all={p.t('all.ee')}
-          labelOf={makeEeLabel({ t: p.t })} />
-        <Select value={p.f.broad}
-          onChange={p.onBroad}
-          opts={broadKeysOf(p.data.broads)}
-          all={p.t('all.broad')}
-          labelOf={makeBroadLabel({ t: p.t, lang: p.lang, opts: p.data.broads })} />
         <Select value={p.f.sector}
           onChange={p.onSector}
           opts={POOL_SECTORS}
           all={p.t('de.allSector')}
           labelOf={makeSectorLabel({ t: p.t })} />
+        <Select value={p.f.category}
+          onChange={p.onCategory}
+          opts={categoryOptsOf({ sector: p.f.sector })}
+          all={p.t('de.allCategory')}
+          labelOf={makeCategoryLabel({ t: p.t })} />
         <Button kind={BTN_SECONDARY} className={moreBtnClsOf({ fold: p.fold, n })} onClick={p.onFold}>
           {p.t('filter.more')}
           {n > 0 && <span className={cssOf(css.moreBadge)}>{n}</span>}
@@ -88,6 +86,11 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
       {p.fold && (
         <div className={css.drawer}>
           <div className={css.filtRow}>
+            <Select value={p.f.ee}
+              onChange={p.onEe}
+              opts={p.data.ees}
+              all={p.t('all.ee')}
+              labelOf={makeEeLabel({ t: p.t })} />
             <Select value={onValueOf(p.f.entry)}
               onChange={p.onEntry}
               opts={OPTS_ON}

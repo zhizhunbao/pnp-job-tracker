@@ -82,6 +82,17 @@ EE_SPLIT = "/"
 BROAD_UNCAT = "未分类"
 """在招岗的大类占位:职业没归进本站大类(不进雇主的在招大类清单 —— 「未分类」不是一个能筛的类)。"""
 
+BROAD_CATEGORY = {
+    "IT": "tech", "医疗": "health", "教育": "education", "金融": "finance", "会计": "professional", "法律": "professional",
+    "建筑": "construction", "制造": "manufacturing", "零售": "retail", "餐饮": "hospitality", "住宿": "hospitality",
+    "运输": "transport", "物流": "transport", "矿业": "energy", "农业": "agriculture", "艺术": "media", "体育": "media",
+    "生活服务": "services",
+}
+"""在招岗大类 → 本站公司行业(私营雇主的公司分类兜底反推;2026-09-19,对照表出自设计稿
+docs/design/雇主分类与搜索-20260918.md「本站公司行业」段)。**故意不全**:技工 / 工程 / 科学是工种,管理层 / 商务 / 行政 /
+文员 / 销售是职能,社会服务多是非营利 —— 都说明不了「这家公司做什么生意」,不进表;一家雇主的在招大类从多到少逐个查,
+第一个查得到的算数,一个都查不到 = 留空(宁可留空不瞎猜)。公司行业里的地产物业没有对应的职位大类,反推不出,只能等模型判。"""
+
 K_STATUS = "status"
 """岗状态(池只数 open)。"""
 
