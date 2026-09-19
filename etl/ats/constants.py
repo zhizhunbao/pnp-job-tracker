@@ -173,7 +173,12 @@ WPCAREERS = {"wpcareers"}
 文章类型,WordPress 自带的 REST 就能整表取:入口地址记的就是那个集合端点(`…/wp-json/wp/v2/<类型>`),翻页到空为止。
 REST 只用来列职位页地址;标题、地点、发布日、正文都读职位页里的 JobPosting 结构化数据(REST 的正文里多数不写地点)。"""
 
-SITE_ATS = PHENOM | SUCCESSFACTORS | ORACLE | WPCAREERS
+EIGHTFOLD = {"eightfold"}
+"""Eightfold 招聘站(2026-09-19 立;首家 Ericsson,Qlik、Amdocs 同家)。公开接口是 `/api/pcsx/search`(带地点词、每页 10 条)
+与 `/api/pcsx/position_details`(逐岗正文);老的 `/api/apply/v2/jobs` 现在一律回 403「Not authorized for PCSX」。
+入口地址记成 `https://<主机>/careers?domain=<公司域名>` —— domain 是接口必带的参数,从页面上认不出来,只能记。"""
+
+SITE_ATS = PHENOM | SUCCESSFACTORS | ORACLE | WPCAREERS | EIGHTFOLD
 """不走六家公开 JSON 那条路、各有各取法的那一类(scrape_company 按这一组分派到 fetch_site_jobs)。"""
 
 ORC_SITE_RE = re.compile(r"https?://([a-z0-9.-]+\.oraclecloud\.com)/hcmUI/CandidateExperience/[A-Za-z_]+/sites/([A-Za-z0-9_]+)")
@@ -222,6 +227,51 @@ K_LD_GRAPH = "@graph"
 
 K_WP_LINK = "link"
 """WordPress 文章键:公开页地址。"""
+
+EF_SITE_RE = re.compile(r"https?://([^/\s]+)/careers\?domain=([a-z0-9.-]+)", re.I)
+"""Eightfold 入口地址 → (主机, 公司域名)。"""
+
+EF_SEARCH_URL_TPL = "https://{host}/api/pcsx/search?domain={domain}&query=&location={where}&start={start}"
+"""Eightfold 职位清单(按地点词筛,一页 10 条,start 翻页)。"""
+
+EF_DETAIL_URL_TPL = "https://{host}/api/pcsx/position_details?position_id={pid}&domain={domain}&hl=en"
+"""Eightfold 单岗详情(jobDescription 是正文 HTML)。"""
+
+EF_JOB_URL_TPL = "https://{host}/careers/job/{pid}"
+"""Eightfold 单岗公开页(详情里没给 publicUrl 时拿它兜)。"""
+
+EF_WHERE = "Ottawa"
+"""清单的地点词:本域只收渥太华都会区的岗。"""
+
+EF_PAGE_SIZE = 10
+"""清单一页的条数(翻页步长)。"""
+
+EF_MAX_PAGES = 20
+"""最多翻的页数(200 岗封顶)。"""
+
+EF_DELAY_S = 0.2
+"""逐岗取详情的间隔秒(礼貌)。"""
+
+K_DATA = "data"
+"""Eightfold 载荷键:结果外壳。"""
+
+K_POSITIONS = "positions"
+"""Eightfold 清单键:职位行。"""
+
+K_EF_NAME = "name"
+"""Eightfold 职位键:标题。"""
+
+K_EF_LOCATIONS = "locations"
+"""Eightfold 职位键:地点清单(`Ottawa,Ontario,Canada` 这种写法)。"""
+
+K_EF_POSTED_TS = "postedTs"
+"""Eightfold 职位键:发布时刻(秒级 epoch)。"""
+
+K_EF_PUBLIC_URL = "publicUrl"
+"""Eightfold 详情键:公开页地址。"""
+
+K_EF_BODY = "jobDescription"
+"""Eightfold 详情键:正文 HTML。"""
 
 K_ITEMS = "items"
 """Oracle 载荷键:结果外壳。"""

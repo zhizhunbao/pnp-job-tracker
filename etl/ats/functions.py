@@ -69,6 +69,8 @@ from ats.constants import (
     K_ITEMS, K_ORC_COUNTRY, K_ORC_ID, K_ORC_JOB_FUNCTION, K_ORC_POSTAL, K_ORC_POSTED, K_ORC_PRIMARY, K_ORC_REGION, K_ORC_STREET,
     K_ORC_TITLE, K_ORC_TOWN, K_ORC_WORK, K_REQ_LIST, ORACLE, ORC_BODY_KEYS, ORC_COUNTRY, ORC_DELAY_S, ORC_DETAIL_URL_TPL,
     ORC_JOB_URL_TPL, ORC_LIMIT, ORC_LIST_URL_TPL, ORC_SITE_RE, ORC_WHERE,
+    EF_DELAY_S, EF_DETAIL_URL_TPL, EF_JOB_URL_TPL, EF_MAX_PAGES, EF_PAGE_SIZE, EF_SEARCH_URL_TPL, EF_SITE_RE, EF_WHERE,
+    EIGHTFOLD, K_DATA, K_EF_BODY, K_EF_LOCATIONS, K_EF_NAME, K_EF_POSTED_TS, K_EF_PUBLIC_URL, K_POSITIONS,
     K_LD_GRAPH, K_WP_LINK, WPCAREERS, WP_DELAY_S, WP_MAX_PAGES, WP_PAGE_SIZE, WP_PAGE_TPL, WP_SPOT_SEP,
 )
 from ats.scheme import (
@@ -76,7 +78,7 @@ from ats.scheme import (
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
     WorkdayDetailIn, WorkdayFetchIn, WorkdayFindIn, WorkdayJobIn, WorkdayPageIn, WorkdaySiteIn,
-    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn, SfFetchIn, SfJobIn, SiteFetchIn, OrcFetchIn, OrcJobIn,
+    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn, SfFetchIn, SfJobIn, SiteFetchIn, OrcFetchIn, OrcJobIn, EfJobIn,
 )
 
 
@@ -205,11 +207,13 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
 
 
 def fetch_site_jobs(x: SiteFetchIn) -> list:
-    """不走六家公开 JSON 的四家(Phenom / Oracle 招聘云 / 自建 WordPress 站 / SuccessFactors)按 ATS 名分派。"""
+    """不走六家公开 JSON 的五家(Phenom / Oracle 招聘云 / Eightfold / 自建 WordPress 站 / SuccessFactors)按 ATS 名分派。"""
     if x.ats in PHENOM:
         return fetch_phenom(PhenomFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
     if x.ats in ORACLE:
         return fetch_oracle(OrcFetchIn(client=x.client, careers_url=x.careers_url))
+    if x.ats in EIGHTFOLD:
+        return fetch_eightfold(OrcFetchIn(client=x.client, careers_url=x.careers_url))
     if x.ats in WPCAREERS:
         return fetch_wpcareers(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
     return fetch_successfactors(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
@@ -658,6 +662,52 @@ def to_orc_job(x: OrcJobIn) -> AtsJob:
                   department=x.detail.get(K_ORC_JOB_FUNCTION, "") or "", posted=iso_of(x.row.get(K_ORC_POSTED, "")),
                   address=join_parts([place.get(K_ORC_STREET, ""), place.get(K_ORC_TOWN, ""), place.get(K_ORC_POSTAL, "")]),
                   salary="", description=PARA_SEP.join(parts))
+
+
+def fetch_eightfold(x: OrcFetchIn) -> list:
+    """Eightfold:清单按地点词筛、翻页到没有新岗 → 逐岗取详情(正文)。入口地址认不出主机 / 域名 = 空表。"""
+    m = EF_SITE_RE.search(x.careers_url)
+    if m is None:
+        return []
+    host, domain = m.group(1), m.group(2)
+    out = []
+    seen: set = set()
+    for page_no in range(EF_MAX_PAGES):
+        search = EF_SEARCH_URL_TPL.format(host=host, domain=domain, where=EF_WHERE, start=page_no * EF_PAGE_SIZE)
+        try:
+            rows = (json_obj(x.client.get(search)).get(K_DATA) or {}).get(K_POSITIONS) or []
+        except Exception as e:  # noqa: BLE001 — 清单取不到 = 翻页到此为止,留痕
+            err(search, e)
+            break
+        added = 0
+        for row in rows:
+            pid = row.get(K_ID)
+            if pid in seen:
+                continue
+            seen.add(pid)
+            added += 1
+            detail: dict = {}
+            try:
+                detail = json_obj(x.client.get(EF_DETAIL_URL_TPL.format(host=host, pid=pid, domain=domain))).get(K_DATA) or {}
+            except Exception as e:  # noqa: BLE001 — 一岗详情取不到不拖累别的岗
+                err(pid, e)
+            out.append(to_ef_job(EfJobIn(row=row, detail=detail, host=host)))
+            time.sleep(EF_DELAY_S)
+        if added == 0:
+            break
+    return out
+
+
+def to_ef_job(x: EfJobIn) -> AtsJob:
+    """Eightfold 清单行 + 详情 → AtsJob:一岗多地的各地用分号串起来;发布时刻是秒级 epoch,换成毫秒交给 iso_of。"""
+    posted = x.row.get(K_EF_POSTED_TS)
+    if isinstance(posted, (int, float)):
+        posted = posted * MS_PER_S
+    body = x.detail.get(K_EF_BODY, "") or ""
+    url = x.detail.get(K_EF_PUBLIC_URL) or EF_JOB_URL_TPL.format(host=x.host, pid=x.row.get(K_ID))
+    return AtsJob(title=x.row.get(K_EF_NAME, ""), location=WP_SPOT_SEP.join(x.row.get(K_EF_LOCATIONS) or []), url=url,
+                  department=x.row.get(K_DEPARTMENT, "") or "", posted=iso_of(posted), address=address_of(body),
+                  salary="", description=body)
 
 
 def fetch_wpcareers(x: SfFetchIn) -> list:

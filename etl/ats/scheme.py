@@ -425,6 +425,20 @@ class OrcFetchIn:
 
 
 @dataclass
+class EfJobIn:
+    """to_ef_job() 入参:清单行 + 详情 + 主机。"""
+
+    row: dict
+    """清单里的这一行。"""
+
+    detail: dict
+    """这一岗的详情载荷;取不到为空 dict。"""
+
+    host: str
+    """主机(拼公开页地址用)。"""
+
+
+@dataclass
 class OrcJobIn:
     """to_orc_job() 入参:清单行 + 详情 + 站点坐标。"""
 
