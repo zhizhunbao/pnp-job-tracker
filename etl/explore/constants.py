@@ -79,7 +79,8 @@ K_INDUSTRY = "industry"
 """结果:公司大类键。"""
 
 ST_DONE = "done"
-"""结果状态:翻好了(译名可能为空 —— 品牌名本来就只有拉丁字母写法,空着比硬翻好)。"""
+"""结果状态:翻好了(译名可能为空 —— 品牌名本来就只有拉丁字母写法,空着比硬翻好)。
+2026-09-19 夜改判:不许空着(见 PROMPT_HEAD 的注);中文名空的重问到 ZH_TRIES 回,试满还空才照交。"""
 
 ST_SKIP = "skip"
 """结果状态:跳过(人名雇主;板上连已有的音译也不显示)。"""
@@ -133,8 +134,12 @@ STRIP_REPL = ""
 LLM_TEMPERATURE = 0.1
 """温度:译名要稳,不要每次换一个说法。"""
 
-GEN_TOKENS = 160
-"""生成上限 token:三行短答,给足余量。⚠ 不带 num_ctx(jdformat 实撞:换窗口会让 Ollama 重载模型)。"""
+GEN_TOKENS = 240
+"""生成上限 token:四行短答,给足余量(2026-09-19 由 160 放宽:长名字实撞只回到「KO=」就断,大类那一行丢了)。
+⚠ 不带 num_ctx(jdformat 实撞:换窗口会让 Ollama 重载模型)。"""
+
+ZH_TRIES = 3
+"""一个雇主名中文名是空的最多问几回(translate_filled;本地模型同名几回答得不一样)。"""
 
 NAME_MAX_LEN = 160
 """喂给模型的雇主名最长字符数。"""
@@ -154,9 +159,11 @@ PROMPT_HEAD = (
     "- Use the established Chinese / Korean brand name when one exists (Subway = 赛百味, not 地铁; "
     "Tim Hortons = 蒂姆霍顿; Scotiabank = 丰业银行).\n"
     "- Never translate a brand word literally by its dictionary meaning.\n"
-    "- If the brand has no established translation, keep the brand word in its original Latin letters and translate only "
-    "the generic words (Englobe Corp. = Englobe 公司; Town of Hinton = Hinton 镇).\n"
-    "- If nothing in the name can be translated, leave ZH and KO empty.\n"
+    "- If the brand has no established translation, transliterate the brand word by sound into Chinese characters / "
+    "Hangul and translate the generic words by meaning (Englobe Corp. = 恩格罗布公司; March Networks = 马奇网络; "
+    "Cerio = 塞里奥; Town of Hinton = 欣顿镇).\n"
+    "- When PERSON=no, ZH and KO must never be empty and must never repeat the name in Latin letters: write ZH in "
+    "Chinese characters and KO in Hangul.\n"
     "- INDUSTRY is what kind of business the employer itself is, not what jobs it posts (a bank is finance even when it "
     "mostly posts IT or manager jobs; a hospital is health even when it hires cooks; a building-supply store is retail; "
     "a staffing agency is professional). Pick exactly one key from this list, written exactly as shown, or leave it "
@@ -183,7 +190,10 @@ Manulife 落 IT),改由模型直接判「这是一家什么公司」;名单是�
 2026-09-18 板上实拍「Subway → 地铁」的教训。
 2026-09-19 晚 Frank「这两个分类应该是属于职位的分类。应该单独弄一个公司的分类」**改判**:INDUSTRY 的名单由「本站职位大类去掉三个」
 换成**本站公司行业 15 类**(英文键,设计稿 docs/design/雇主分类与搜索-20260918.md「本站公司行业」段;建材不单列 —— 卖建材的归 retail、
-造建材的归 manufacturing)。上面那句「名单是本站大类去掉三个」作废。公立 / 政府的公司分类不靠模型,由 names 域按名字判。"""
+造建材的归 manufacturing)。上面那句「名单是本站大类去掉三个」作废。公立 / 政府的公司分类不靠模型,由 names 域按名字判。
+2026-09-19 夜 Frank「别空着啊。空着不知道什么意思。翻译最起码能知道是什么方向」「subway 赛百味 大家都知道,这不也是音译吗」**改判**:
+原规则「没有通行译名的品牌词保留拉丁字母、什么都译不了就留空」作废 —— 品牌词按读音音译、通用词按意思译,
+公司雇主的 ZH / KO 一律不许空、不许原样抄拉丁字母(板上灰字是给人看方向的,空着等于没说)。"""
 
 # =========================================================================
 # 4. 回答解析与校验

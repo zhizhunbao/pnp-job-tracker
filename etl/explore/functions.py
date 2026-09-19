@@ -20,7 +20,7 @@ from explore.constants import (
     NOTE_NO_LLM, NOTE_NO_SITE, NOTE_PERSON, NOTE_SHAPE, P_LIMIT, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT,
     P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, PATH_DONE, PATH_OLLAMA_GENERATE, PATH_TODO, PERSON_RE, PERSON_YES,
     PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_TAKE_TPL, PROMPT_HEAD, PROMPT_TAIL_TPL, SCHEME_SEP, ST_DONE, ST_SKIP,
-    STRIP_REPL, THINK_RE, URL_TAIL_SLASH, ZH_RE,
+    STRIP_REPL, THINK_RE, URL_TAIL_SLASH, ZH_RE, ZH_TRIES,
 )
 from explore.scheme import AliasIn, HandIn, HttpClientLike, LlmCallIn, LlmCfg, Result, SiteCfg, TakeIn, Todo, TranslateIn
 
@@ -53,7 +53,7 @@ def consume_queue() -> None:
         todos = take_todos(TakeIn(client=client, site=site, limit=int(TAKE_LIMIT)))
         say(PRINT_TAKE_TPL.format(n=len(todos), limit=TAKE_LIMIT, model=cfg.model, base=site.base))
         for todo in todos:
-            res = translate_one(TranslateIn(client=client, cfg=cfg, todo=todo))
+            res = translate_filled(TranslateIn(client=client, cfg=cfg, todo=todo))
             if res.note in NET_ERRORS:
                 say(PRINT_ABORT_TPL.format(note=res.note))
                 break
@@ -138,6 +138,21 @@ def hand_in(x: HandIn) -> int:
 # =========================================================================
 # 3. 单条:打模型 → 解析 → 校验
 # =========================================================================
+
+
+def translate_filled(x: TranslateIn) -> Result:
+    """一个雇主名翻到「中文名不空」为止,最多 ZH_TRIES 回;人名(skip)、答不成形、盒子掉线的不重问。
+
+    2026-09-19 Frank「别空着啊。空着不知道什么意思。翻译最起码能知道是什么方向」:原先中文名是空的也照交「办完」、
+    永不重试(`done Giatec Scientific Inc. → zh「」 ko「」`,81 条);本地模型同一个名字几回答得不一样,多问一回多半就有了。
+    试满还是空的照交(办完但没译名),不卡队列。
+    """
+    res = translate_one(x)
+    tries = 1
+    while res.status == ST_DONE and res.alias_zh == FIELD_NONE and tries < ZH_TRIES:
+        res = translate_one(x)
+        tries += 1
+    return res
 
 
 def translate_one(x: TranslateIn) -> Result:
