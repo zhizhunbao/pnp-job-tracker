@@ -348,6 +348,26 @@ export const URL_JOBS_COMPANY = '/api/jobs/company'
 export const URL_JOB_HEAD = '/jobs/'
 
 /**
+ * 键盘事件名(页上弹框 Esc 关)。
+ */
+export const EV_KEY_DOWN = 'keydown'
+
+/**
+ * Esc 键名。
+ */
+export const KEY_ESCAPE = 'Escape'
+
+/**
+ * 职位描述弹框的 NOC 描述表占位(弹框契约上的透传格,公司页没有这张表;弹框自己不读它)。
+ */
+export const NOC_DESC_NONE = []
+
+/**
+ * 按岗位号取板上一行的接口前缀(后面直接接岗位号;2026-09-19 点迷你职位行现取整行)。
+ */
+export const URL_JOBS_ROW_HEAD = '/api/jobs/row?id='
+
+/**
  * 公司详情页地址头(拼 slug)。
  */
 export const URL_COMPANY_HEAD = '/companies/'

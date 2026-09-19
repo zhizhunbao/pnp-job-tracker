@@ -10,15 +10,16 @@
  * @author Frank
  * @time 2026-08-28 16:26:43
  */
-import { useEffect, useState } from 'react'
-import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
+import { useCallback, useEffect, useState } from 'react'
+import { EV_KEY_DOWN, KEY_ESCAPE, LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
   ignoreFlag, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
 } from './functions'
 import type {
-  CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact, CompanyPanelData,
-  CompanyPanelHookIn, CompanyPanelState, CompanyTransHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn,
+  CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact, CompanyJobFact,
+  CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeek, CompanyPeekPanel, CompanyTransHookIn,
+  CompanyTransPanel, DeadFlag, DescTransHookIn,
   TitleMapHookIn,
 } from './types'
 
@@ -222,4 +223,38 @@ export function useCompanyDescTrans(x: DescTransHookIn): string {
     return TEXT_NONE
   }
   return trans
+}
+
+/**
+ * 公司页上叠开的两个弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」):
+ * 点在招职位 = 职位描述弹框;点相似雇主 = 公司弹框,框里再点相似雇主就同框换一家(不往上叠、不记历史)。Esc 全关(同职位板)。
+ *
+ * @returns 两格状态与四个手柄。
+ */
+export function useCompanyPeek(): CompanyPeekPanel {
+  const [job, setJob] = useState<CompanyJobFact | null>(null)
+  const [co, setCo] = useState<CompanyPeek | null>(null)
+  const onCloseJob = useCallback(function closeJob(): void {
+    setJob(null)
+  }, [])
+  const onCloseCo = useCallback(function closeCo(): void {
+    setCo(null)
+  }, [])
+  const open = job != null || co != null
+  useEffect(function watchEsc() {
+    if (open === false) {
+      return
+    }
+    function onKey(e: KeyboardEvent): void {
+      if (e.key === KEY_ESCAPE) {
+        setJob(null)
+        setCo(null)
+      }
+    }
+    window.addEventListener(EV_KEY_DOWN, onKey)
+    return function stopEscWatch(): void {
+      window.removeEventListener(EV_KEY_DOWN, onKey)
+    }
+  }, [open])
+  return { job, co, onOpenJob: setJob, onOpenCompany: setCo, onCloseJob, onCloseCo }
 }

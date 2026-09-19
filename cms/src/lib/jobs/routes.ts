@@ -27,15 +27,16 @@ import {
   COMPANY_SLUG_RE,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
-  PROV2_RE, P_CITY, P_CODE, P_DIR, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
+  POOL_KEY_RE,
+  PROV2_RE, P_CITY, P_CODE, P_DIR, P_ID, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
   SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
   TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyBySlug, loadJobMid, loadJobsPage, loadMatchPage,
+  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobMid, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
   translateTitles, emptyTexts, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle,
 } from './functions'
@@ -167,6 +168,8 @@ export async function jobsTextRoute(req: Request): Promise<Response> {
  *
  * 2026-09-18:body 也认 { slug }(雇主板点雇主名开同一个公司弹框,板上没有岗位号):与 `/companies/[slug]` 页面同一个
  * 取数函数;没有岗位就没有「中分类」这条相似线索,相似雇主只按省与行业找。
+ * 2026-09-19 Frank「招聘是 0 的公司也可以点击」:{ slug } 这一格也认雇主池键(`n:` 开头 = 这家没有公司页),
+ * 档案由池里那一行拼(loadCompanyByPoolKey)。
  *
  * @param req 请求(body 是 { jobId } 或 { slug })。
  * @returns { company, similar };id 非数 400、查无 404。
@@ -188,6 +191,17 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
       excludeSlug: bySlug.slug,
     }).catch(emptySimilar)
     return Response.json({ company: bySlug, similar: alike })
+  }
+  if (body != null && typeof body.slug === 'string' && POOL_KEY_RE.test(body.slug)) {
+    const byKey = await loadCompanyByPoolKey({ db: await getDb(), key: body.slug })
+    if (byKey == null) {
+      return new Response(null, { status: NOT_FOUND })
+    }
+    const near = await loadSimilarEmployers({
+      db: await getDb(), province: byKey.province, industry: byKey.industry, mid: PARAM_NONE,
+      excludeSlug: PARAM_NONE,
+    }).catch(emptySimilar)
+    return Response.json({ company: byKey, similar: near })
   }
   let jobId = Number.NaN
   if (body != null) {
@@ -618,4 +632,28 @@ export async function jobsRetranslateRoute(req: Request): Promise<Response> {
   }
   await resetJdTrans({ db: await getDb(), url: url, title: title })
   return Response.json({ ok: true })
+}
+
+/**
+ * GET /api/jobs/row?id=:按岗位号取板上一行(2026-09-19 Frank「这种里面的链接都改成弹框显示」):
+ * 公司页 / 公司弹框 / 下架岗相似职位里点职位要叠开职位描述弹框,弹框要整行;这些地方手里只有迷你行,点了才来取。
+ * 与 `/jobs/[id]` 页面同一个取数函数、同一道分层(Pro 列剥离在 SELECT 映射层);不带档案(弹框只看 JD,不算匹配)。
+ *
+ * @param req 请求(?id=岗位号)。
+ * @returns 一行;id 非数 400、查无 404。
+ */
+export async function jobsRowRoute(req: Request): Promise<Response> {
+  const id = Number(new URL(req.url).searchParams.get(P_ID))
+  if (Number.isInteger(id) === false || id <= 0) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const user = await getUser(req.headers)
+  const row = await loadJobById({
+    db: await getDb(), id: id, pro: isPro(user), profile: normalizeProfile(null), profileOk: false,
+    matchDims: { pnpOccupations: [], eeCategories: [] },
+  })
+  if (row == null) {
+    return new Response(null, { status: NOT_FOUND })
+  }
+  return Response.json(row)
 }

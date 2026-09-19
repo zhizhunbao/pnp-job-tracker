@@ -2515,6 +2515,21 @@ export type CompanyDetail = {
 export type CompanyOut = Promise<CompanyDetail | null>
 
 /**
+ * `loadCompanyByPoolKey` 的入参。
+ */
+export type CompanyByPoolKeyIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 雇主池键(`n:` 开头)。
+   */
+  key: string
+}
+
+/**
  * `loadCompanyBySlug` 的入参。
  */
 export type CompanyBySlugIn = {

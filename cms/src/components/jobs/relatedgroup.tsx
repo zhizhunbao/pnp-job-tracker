@@ -20,7 +20,7 @@ import css from './jobs.module.css'
  * @param props 组小标题、这一组的行与要不要写公司名小注。
  * @returns 小标题 + 若干行。
  */
-export function RelatedGroup({ label, rows, withCompany }: RelatedGroupIn) {
+export function RelatedGroup({ label, rows, withCompany, onOpenJob }: RelatedGroupIn) {
   const items = []
   for (const r of rows) {
     items.push(
@@ -28,7 +28,8 @@ export function RelatedGroup({ label, rows, withCompany }: RelatedGroupIn) {
         title={r.title}
         sub={subOf({ withCompany, company: r.company })}
         salaryText={r.salaryText}
-        city={r.city} />,
+        city={r.city}
+        onOpenJob={onOpenJob} />,
     )
   }
   return (

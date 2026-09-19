@@ -7,6 +7,8 @@
  * 包装退役 —— 它的体与 getDb 逐字同义)、相似雇主的失败兜底由 `.catch` 箭头改 try/catch、
  * JSON-LD 拼装下沉进 lib/jobs 的 companyJsonOf、脚本壳走通用件 JsonLd(08-29 收拢)
  * (门里不许有函数体、不许有裸标签)。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:页上点在招职位叠开职位描述弹框,弹框要分层态 ——
+ * 照职位详情页的门同法现算一份(user 本来就在手上,零额外查询)递给正文。
  *
  * @author Frank
  * @time 2026-08-29 09:10:00
@@ -16,12 +18,14 @@ import { headers } from 'next/headers'
 import { Company } from '@/components/companies'
 import { JsonLd } from '@/components/jsonld'
 import { Footer } from '@/components/footer'
+import { toJobPlan } from '@/components/jobs'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import { getDb } from '@/lib/db/server'
-import { SITE_FALLBACK } from '@/lib/jobs'
+import { hasProfile, normalizeProfile, SITE_FALLBACK, type ProfileJson } from '@/lib/jobs'
 import { checkedAt, companyJsonOf, loadCompanyBySlug, loadSimilarEmployers } from '@/lib/jobs/server'
-import { getUser } from '@/lib/quota/server'
+import { getUser, isPro } from '@/lib/quota/server'
+import type { SessionUser } from '@/components/jobs'
 import type { SimilarEmployer } from '@/lib/jobs/server'
 
 export const dynamic = 'force-dynamic'
@@ -63,6 +67,10 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   const company = await loadCompanyBySlug({ db: await getDb(), slug })
   const user = await getUser(await headers())
   const updatedAt = await checkedAt(await getDb())
+  const profile = normalizeProfile(user?.profile as ProfileJson | null)
+  const plan = toJobPlan({
+    user: user as SessionUser | null, pro: isPro(user), profile, profileOk: hasProfile(profile),
+  })
 
   if (!company) {
     return <Frame>
@@ -73,7 +81,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
         description: '', address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,
         lmiaNocs: [], designatedPrograms: [], designatedProvinces: [], openCount: 0, jobs: [],
-      }} updatedAt={updatedAt} />
+      }} updatedAt={updatedAt} plan={plan} />
       <Footer />
     </Frame>
   }
@@ -91,7 +99,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     <JsonLd json={companyJsonOf({ company })} />
     <Frame>
       <Header loggedIn={!!user} />
-      <Company company={company} similar={similar} updatedAt={updatedAt} />
+      <Company company={company} similar={similar} updatedAt={updatedAt} plan={plan} />
       <Footer />
     </Frame>
   </>

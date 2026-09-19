@@ -19,10 +19,15 @@
  * 「这个地方的中文翻译呢」:中 / 韩界面简介默认带对照。
  * 2026-09-19 Frank「这个跳转一个干巴巴的加载中太难看了吧」:等译名的这一会儿不再是空页左上角一行字 —— 先出标题卡
  * (公司名 + 返回),下面一张白卡占位、转圈居中;「所有懒加载翻译完了再显示正文」那条不变。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:在招职位 / 相似雇主
+ * 点了不再跳走 —— 页上叠开职位描述弹框 / 公司弹框(与职位板同两件);链接本身还在(爬虫、Ctrl 点新标签照旧)。
+ * 两个弹框点 advisor 的**文件**不走桶:那只桶的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
+import { ActModal } from '@/components/advisor/actmodal'
+import { CompanyModal } from '@/components/advisor/companymodal'
 import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
@@ -31,22 +36,23 @@ import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import { Shell } from '@/components/shell'
 import {
-  BROAD_KEY_HEAD, CRUMB_SEP, LANG_EN, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_EMPLOYERS,
+  BROAD_KEY_HEAD, CRUMB_SEP, LANG_EN, NOC_DESC_NONE, NOTICE_KIND_INFO, SHELL_TOP, TEXT_NONE, URL_BACK, URL_EMPLOYERS,
   URL_EMPLOYERS_PROV,
 } from './constants'
 import { aliasOf, cityOf, provFullOf } from './functions'
-import { useCompanyAlias } from './hooks'
+import { useCompanyAlias, useCompanyPeek } from './hooks'
 import type { CompanyIn } from './types'
 import css from './companies.module.css'
 
 /**
  * 公司详情页正文。
  *
- * @param props 公司档案、相似雇主与数据更新时刻(逐格注释见 CompanyIn)。
+ * @param props 公司档案、相似雇主、数据更新时刻与分层态(逐格注释见 CompanyIn)。
  * @returns 正文(Shell 轨 + 面包屑 + 头卡 + CompanyBody 卡组)。
  */
-export function Company({ company, similar = [], updatedAt }: CompanyIn) {
+export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
   const [lang, , t] = useLang()
+  const peek = useCompanyPeek()
   const aliasPanel = useCompanyAlias({
     name: company.name, lang, cached: aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo }),
   })
@@ -96,9 +102,21 @@ export function Company({ company, similar = [], updatedAt }: CompanyIn) {
           {alias !== TEXT_NONE && <div className={css.h1Sub}>{alias}</div>}
         </div>
         <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt}
-          showTrans={lang !== LANG_EN} />
+          showTrans={lang !== LANG_EN}
+          onOpenJob={peek.onOpenJob}
+          onOpenCompany={peek.onOpenCompany} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
+      {peek.co != null && (
+        <CompanyModal slug={peek.co.slug} name={peek.co.name} lang={lang}
+          onOpenJob={peek.onOpenJob}
+          onOpenCompany={peek.onOpenCompany}
+          onClose={peek.onCloseCo} />
+      )}
+      {peek.job != null && (
+        <ActModal key={peek.job.id} job={peek.job} lang={lang} plan={plan} nocDesc={NOC_DESC_NONE}
+          onClose={peek.onCloseJob} />
+      )}
     </Shell>
   )
 }

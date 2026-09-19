@@ -13,13 +13,16 @@
  * (它只覆盖在招雇主的 1%,内容多是官网关键词,如「Pizza, BP, Delivery」)。
  * 2026-09-18 晚 Frank「这个雇主点击应该是跳到对应的网站吧。有官网的亮,没官网的不要亮」**再改判**:名字的落点 = 官网
  * (新标签),有官网才是蓝链,没有的纯文字;上午那版「点名字开公司弹框」撤(看公司走操作列的「看公司」钮)。
+ * 2026-09-19 Frank「我觉得这个链接还是改成弹框公司吧。然后在操作列加一个按钮官网,如果有的话」**三改判**:回到上午那版 ——
+ * 有公司页的名字是蓝链,普通左键开公司弹框(Ctrl / 中键照常去公司页);官网挪进操作列(见 actcell)。
+ * 同日「招聘是 0 的公司也可以点击」:没有公司页的名字是同色的钮,点了同样开框(弹框按雇主池键取数)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { LinkButton } from '@/components/button'
+import { Button, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { TARGET_BLANK, TEXT_NONE } from './constants'
+import { BTN_GHOST, TEXT_NONE } from './constants'
 import type { EmployerCellRow } from './types'
 import css from './employers.module.css'
 
@@ -27,16 +30,16 @@ import css from './employers.module.css'
  * 渲染雇主板「雇主」列的一个单元格。
  *
  * @param r 这一行的展示行。
- * @returns 名(有官网 = 蓝链开官网)+ 译名灰注(没有的不占行)。
+ * @returns 名(蓝链或同色钮,点开公司弹框)+ 译名灰注(没有的不占行)。
  */
 export function NameCell(r: EmployerCellRow) {
   return (
     <div>
-      {r.siteHref === TEXT_NONE && <span className={css.name}>{r.name}</span>}
-      {r.siteHref !== TEXT_NONE && (
-        <LinkButton href={r.siteHref} target={TARGET_BLANK} onClick={r.onView} className={cssOf(css.nameLink)}>
-          {r.name}
-        </LinkButton>
+      {r.companyHref === TEXT_NONE && (
+        <Button kind={BTN_GHOST} onClick={r.onPeek} className={cssOf(css.nameBtn)}>{r.name}</Button>
+      )}
+      {r.companyHref !== TEXT_NONE && (
+        <LinkButton href={r.companyHref} onClick={r.onName} className={cssOf(css.nameLink)}>{r.name}</LinkButton>
       )}
       {r.alias !== TEXT_NONE && <div className={css.alias}>{r.alias}</div>}
     </div>

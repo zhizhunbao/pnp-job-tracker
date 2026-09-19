@@ -611,10 +611,58 @@
 }
 
 /*
- * 雇主名(表格里的主文案:半粗,不成链 —— 落点在操作列;2026-09-13 起不再是蓝链)。
+ * 没有公司页的雇主名:钮,长相与 .nameLink 一致(点了同样开公司弹框)。类名写两遍抬权重,压过 button 基座。
  */
-.name {
+.nameBtn.nameBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬(与链接同起点)。
+   */
+  padding: 0;
+
+  /*
+   * 字随单元格(钮不自带字号)。
+   */
+  font: inherit;
+
+  /*
+   * 半粗:它是这一行的主语。
+   */
   font-weight: 600;
+
+  /*
+   * 品牌蓝 —— 蓝色已说明可点。
+   */
+  color: var(--primary);
+
+  /*
+   * 左对齐(折行的第二行也贴左)。
+   */
+  text-align: left;
+
+  /*
+   * 长名折行(button 基座的 nowrap 会把列撑破)。
+   */
+  white-space: normal;
+
+  /*
+   * 高度随内容(基座的定高会把两行名字裁掉)。
+   */
+  height: auto;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
 }
 
 /*

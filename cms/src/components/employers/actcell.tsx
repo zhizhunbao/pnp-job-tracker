@@ -6,6 +6,8 @@
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板:无在招不渲「看岗位」(池里 50.8% 雇主无在招,点进去是「0 个职位」空表)——
  * 两只钮各看各的落点,都没有就是空格。
  * 2026-09-18 Frank「这个弹一个新窗口出来吧」:两只钮都开新标签 —— 板上筛到一半、「显示更多」接出来的行不因为点出去而丢。
+ * 2026-09-19 Frank「在操作列加一个按钮官网,如果有的话」:加「官网」钮(新标签;没有官网不出),雇主名不再去官网;
+ * 同日「这时候看公司就可以去掉了吧」:「看公司」钮撤 —— 点雇主名就开公司弹框,两个入口重复。现在是 看岗位 / 官网 两只。
  *
  * @author Frank
  * @time 2026-09-13 18:00:00
@@ -29,9 +31,9 @@ export function ActCell(r: EmployerCellRow) {
           {r.actJobsText}
         </LinkButton>
       )}
-      {r.companyHref !== TEXT_NONE && (
-        <LinkButton href={r.companyHref} target={TARGET_BLANK} onClick={r.onView} className={r.actBtnCls}>
-          {r.actCompanyText}
+      {r.siteHref !== TEXT_NONE && (
+        <LinkButton href={r.siteHref} target={TARGET_BLANK} onClick={r.onView} className={r.actBtnCls}>
+          {r.actSiteText}
         </LinkButton>
       )}
     </span>

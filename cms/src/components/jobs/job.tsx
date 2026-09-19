@@ -19,16 +19,19 @@
  * (同一颗 BackButton,只换落点;`.cardBack` 绝对定位,H1 右侧重新留位)。
  * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:JD 身体状态机在本件起(useJobBody),
  * 译名与切换控件(JdSwitches)同一行,下接分隔线;JobBody 读同一份 d。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」:下架岗的相似职位点了不跳走,
+ * 页上叠开职位描述弹框(与职位板同一件);行本身还是真链接。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
+import { ActModal } from '@/components/advisor'
 import { BackButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
 import { showRelatedOf } from './functions'
-import { useJobBody, useJobDetail } from './hooks'
+import { useJobBody, useJobDetail, useJobPeek } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
@@ -45,6 +48,7 @@ import css from './jobs.module.css'
 export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }: JobIn) {
   const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted })
   const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted })
+  const peek = useJobPeek()
   return (
     <Shell top={DETAIL_SHELL_TOP}>
       <div className={cssOf(css.detail)}>
@@ -69,9 +73,14 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             sameOccLabel={d.t('detail.sameOcc')}
             related={related}
             fallbackHref={d.view.fallbackHref}
-            fallbackText={d.view.fallbackText} />
+            fallbackText={d.view.fallbackText}
+            onOpenJob={peek.onOpen} />
         )}
       </div>
+      {peek.job != null && (
+        <ActModal key={peek.job.id} job={peek.job} lang={d.lang} plan={plan} nocDesc={dims.nocDesc}
+          onClose={peek.onClose} />
+      )}
     </Shell>
   )
 }

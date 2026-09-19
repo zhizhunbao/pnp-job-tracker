@@ -6,11 +6,12 @@
  * 匹配全放开(Frank 2026-07-21):匹配不再限额 → 底部「升级看全量」升级卡退役;
  * 升级动力改由表内 Pro 数据列打码承担。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主 → 公司弹框(不带职位)接手,不再新开页。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { ActModal, AdvisorModal } from '@/components/advisor'
+import { ActModal, AdvisorModal, CompanyModal } from '@/components/advisor'
 import { AuthModal } from '@/components/auth'
 import { UpgradeModal } from '@/components/pricing'
 import { OnboardingWizard } from '@/components/profile'
@@ -41,7 +42,14 @@ export function BoardModals({ b }: BoardPanelIn) {
           nocDesc={b.data.dims.nocDescriptions}
           fieldSources={b.data.dims.fieldSources}
           onClose={m.onPopupClose}
-          onOpenJob={b.onDesc} />
+          onOpenJob={b.onDesc}
+          onOpenCompany={m.onPeekCo} />
+      )}
+      {m.peekCo != null && (
+        <CompanyModal slug={m.peekCo.slug} name={m.peekCo.name} lang={b.lang}
+          onOpenJob={b.onDesc}
+          onOpenCompany={m.onPeekCo}
+          onClose={m.onPeekCoClose} />
       )}
       {m.descJob != null && (
         <ActModal job={m.descJob} lang={b.lang} plan={b.plan} nocDesc={b.data.dims.nocDescriptions}

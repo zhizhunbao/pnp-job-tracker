@@ -19,15 +19,18 @@
  * 未命中改说「本站未收录」,不再把本站没收说成官方没有。
  * 2026-09-18 Frank「被指定不等于在招,在招数为本站职位库口径 这种废话删掉」:表格底下那行脚注撤(星级那半句同日先撤)。
  * 2026-09-18 晚 Frank「不在官方指定雇主清单内,警惕任何承诺担保的说法 这个怎么还没删掉」:查证态那句防坑注也撤(searchNoteOf 退役)。
+ * 2026-09-19 Frank「这个链接还是改成弹框公司吧」:点雇主名开公司弹框(09-18 上午版恢复);框里点在招职位叠开职位描述弹框、
+ * 点相似雇主同框换一家(同日「这种里面的链接都改成弹框显示」)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+import { ActModal, CompanyModal } from '@/components/advisor'
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { Updated } from '@/components/time'
-import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
+import { BANNER_MODULE, NOC_DESC_NONE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
 import { noteTextOf } from './functions'
@@ -41,8 +44,8 @@ import css from './employers.module.css'
  * @param props SSR 首帧的第一页与初始筛选(见 EmployersIn 逐格注释)。
  * @returns 雇主板正文。
  */
-export function Employers({ initial, initialFilters, updatedAt, initialCols }: EmployersIn) {
-  const p = useEmployersPage({ initial, initialFilters, updatedAt, initialCols })
+export function Employers({ initial, initialFilters, updatedAt, initialCols, plan }: EmployersIn) {
+  const p = useEmployersPage({ initial, initialFilters, updatedAt, initialCols, plan })
   return (
     <div className={css.body}>
       <Shell top={SHELL_TOP_PX} bottom={SHELL_BOTTOM_PX}>
@@ -57,6 +60,17 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols }: E
           <EmployerBoard p={p} />
         </div>
       </Shell>
+      {p.peek.modal != null && (
+        <CompanyModal slug={p.peek.modal.slug} name={p.peek.modal.name} lang={p.lang}
+          onOpenJob={p.peek.onOpenJob}
+          onOpenCompany={p.peek.onOpenCompany}
+          onClose={p.peek.onCloseModal} />
+      )}
+      {p.peek.peekJob != null && (
+        <ActModal key={p.peek.peekJob.id} job={p.peek.peekJob} lang={p.lang} plan={p.peek.plan}
+          nocDesc={NOC_DESC_NONE}
+          onClose={p.peek.onCloseJob} />
+      )}
     </div>
   )
 }

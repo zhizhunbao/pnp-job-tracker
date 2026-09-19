@@ -860,51 +860,6 @@
 }
 
 /*
- * 岗名钮(弹框内点它叠开 JD 弹框)。类名写两遍抬权重(理由同 .srcBtn)。
- */
-.jobBtn.jobBtn {
-  /*
-   * 无描边。
-   */
-  border: none;
-
-  /*
-   * 无底。
-   */
-  background: none;
-
-  /*
-   * 零内衬。
-   */
-  padding: 0;
-
-  /*
-   * 字随正文(钮不自带字号字重)。
-   */
-  font: inherit;
-
-  /*
-   * 可点手型。
-   */
-  cursor: pointer;
-
-  /*
-   * 左对齐(折行的第二行也要贴左)。
-   */
-  text-align: left;
-
-  /*
-   * 品牌蓝(它是链接语义)。
-   */
-  color: #2563eb;
-
-  /*
-   * 长岗名折行(button 基座的 nowrap 在这里会把行顶出屏幕)。
-   */
-  white-space: normal;
-}
-
-/*
  * 岗名链接(页面形态)。
  */
 .jobLink {

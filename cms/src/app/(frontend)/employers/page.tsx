@@ -9,9 +9,13 @@
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { checkedAt } from '@/lib/jobs/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { Employers, employersColsCookieOf, employersMetaOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
+import { toJobPlan } from '@/components/jobs'
+import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
+import { getUser, isPro } from '@/lib/quota/server'
+import type { SessionUser } from '@/components/jobs'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 
@@ -40,13 +44,19 @@ export default async function EmployersPage({ searchParams }: { searchParams: Pr
   const db = await getDb()
   const props = await employersBoardProps({ sp: await searchParams, db })
   const updatedAt = await checkedAt(db)
+  const user = await getUser(await headers())
+  const profile = normalizeProfile(user?.profile as ProfileJson | null)
+  const plan = toJobPlan({
+    user: user as SessionUser | null, pro: isPro(user), profile, profileOk: hasProfile(profile),
+  })
   return (
     <Frame>
       <Header />
       <Employers initial={props.initial}
         initialFilters={props.initialFilters}
         updatedAt={updatedAt}
-        initialCols={employersColsCookieOf(await cookies())} />
+        initialCols={employersColsCookieOf(await cookies())}
+        plan={plan} />
       <Footer />
     </Frame>
   )

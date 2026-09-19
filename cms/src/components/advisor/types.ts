@@ -344,6 +344,26 @@ export type AdvisorProvInfo = ProvInfo
 export type OpenJobFn = (j: AdvisorJob) => void
 
 /**
+ * 「把这一家公司打开」要带的两格(2026-09-19;与 companies 域的 CompanyPeek 同形,本域自抄)。
+ */
+export type CompanyPeek = {
+  /**
+   * 公司页 slug。
+   */
+  slug: string
+
+  /**
+   * 公司名。
+   */
+  name: string
+}
+
+/**
+ * 点相似雇主的回调(2026-09-19 Frank「这种里面的链接都改成弹框显示」:宿主把「开 / 换公司弹框」注进来)。
+ */
+export type OpenCompanyFn = (peek: CompanyPeek) => void
+
+/**
  * 顾问事实的取数包:铺一组事实要用到的那一岗与随之交过来的维度表。
  * 收成一个包是因为**每一件事实件都要同一份** —— 摊成十个 props 就是每层
  * 逐字抄一遍,加一张维度表要改十个文件。
@@ -1724,6 +1744,11 @@ export type AdvisorGroupBodyIn = {
   onOpenJob?: OpenJobFn
 
   /**
+   * 点公司组里的相似雇主(2026-09-19);可省 = 纯链接。
+   */
+  onOpenCompany?: OpenCompanyFn
+
+  /**
    * 取数包。
    */
   f: AdvisorFacts
@@ -1918,6 +1943,11 @@ export type AdvisorModalIn = {
    * 点一行在榜岗(公司组的在招职位列表要它);可省。
    */
   onOpenJob?: OpenJobFn
+
+  /**
+   * 点公司组里的相似雇主(2026-09-19);可省 = 纯链接。
+   */
+  onOpenCompany?: OpenCompanyFn
 }
 
 /**
@@ -3497,6 +3527,16 @@ export type CompanyModalIn = {
    * 界面语言。
    */
   lang: AdvisorLang
+
+  /**
+   * 点在招职位:宿主叠开职位描述弹框(2026-09-19)。
+   */
+  onOpenJob: OpenJobFn
+
+  /**
+   * 点相似雇主:宿主把本框换成那一家(同框换内容,不往上叠)。
+   */
+  onOpenCompany: OpenCompanyFn
 
   /**
    * 关弹框。

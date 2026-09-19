@@ -11,6 +11,8 @@
  * 2026-09-14 Frank「这个去掉」「在招职位那部分加一个收起的功能就行」:「在职位板查看其余 N 个」链撤;
  * 展开钮改成展开 / 收起来回切。
  * 2026-09-14 Frank「这个翻译老是翻译不全啊」:没 NOC 译名的行一次批量懒翻标题当副题(useTitleMap)。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:给了 onOpenJob 的每一行都开弹框 —— 已载入的整行直接交,
+ * 没载入的由行自己现取(原先只有已载入的能开,其余跳页)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -24,10 +26,10 @@ import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LANG_EN, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
 import {
-  jobsShownOf, jobsToggleLabelOf, jobSubOf, makeOpenJob, makeToggle, subOrTitleOf, untitledOf, zhShownOf,
+  jobsShownOf, jobsToggleLabelOf, jobSubOf, makeToggle, subOrTitleOf, untitledOf, zhShownOf,
 } from './functions'
 import { useTitleMap } from './hooks'
-import type { CompanyJobsCardIn, GoBackFn } from './types'
+import type { CompanyJobFact, CompanyJobsCardIn } from './types'
 import css from './companies.module.css'
 
 /**
@@ -46,12 +48,9 @@ export function CompanyJobsCard({
   }
   const rows = []
   for (const job of jobsShownOf({ jobs: company.jobs, all: allJobs })) {
-    let onOpen: GoBackFn | null = null
-    if (resolveJob != null && onOpenJob != null) {
-      const hit = resolveJob(job.id)
-      if (hit != null) {
-        onOpen = makeOpenJob({ job: hit, onOpenJob })
-      }
+    let row: CompanyJobFact | null = null
+    if (resolveJob != null) {
+      row = resolveJob(job.id)
     }
     const sub = subOrTitleOf({ sub: jobSubOf({ job, lang }), title: job.title, map: titleMap })
     rows.push(
@@ -61,7 +60,8 @@ export function CompanyJobsCard({
         sub={zhShownOf({ show: showTrans || lang === LANG_EN, text: sub })}
         salaryText={job.salaryText}
         city={job.city}
-        onOpen={onOpen}
+        onOpenJob={onOpenJob}
+        row={row}
         newTab={newTab} />,
     )
   }

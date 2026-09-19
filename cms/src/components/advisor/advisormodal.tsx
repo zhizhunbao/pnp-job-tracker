@@ -52,6 +52,7 @@ export function AdvisorModal({
   nocDesc,
   onClose,
   onOpenJob,
+  onOpenCompany,
 }: AdvisorModalIn) {
   const t = makeT(lang)
   const m = useAdvisorModal({ group, field, job, lang })
@@ -84,6 +85,7 @@ export function AdvisorModal({
       <AdvisorBody group={group} field={field}
         companyJobs={m.companyJobs}
         onOpenJob={onOpenJob}
+        onOpenCompany={onOpenCompany}
         onCompanyAlias={m.onCompanyAlias}
         onCompanyTransBusy={m.onTransBusy}
         gen={m.gen}

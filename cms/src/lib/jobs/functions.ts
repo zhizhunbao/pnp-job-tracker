@@ -62,7 +62,7 @@ import { CACHE } from './variables'
 import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
-  CityDim, CompanyByJobIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
+  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
   EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
@@ -1482,6 +1482,51 @@ export async function loadCompanyBySlug(input: CompanyBySlugIn): CompanyOut {
     return null
   }
   return fetchCompanyWhere({ db: input.db, where: COMPANY_SLUG_COND, param: input.slug })
+}
+
+/**
+ * 雇主池键 → 公司详情(2026-09-19 Frank「招聘是 0 的公司也可以点击」):这一家在 companies 表里没有行
+ * (只在指定名单 / LMIA 里出现过),档案只填池里记了的那几格 —— 名、行业、省、指定项目与 LMIA 最近季度;其余照实留空,
+ * 弹框里对应的卡自己不出。slug 给空串(它没有公司页)。
+ *
+ * @param input 连接与池键。
+ * @returns 公司详情;查无 null。
+ */
+export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_POOL_BY_KEY, params: [input.key], map: passJsonRow })
+  const r = rows[0]
+  if (r == null) {
+    return null
+  }
+  let programs: string[] = []
+  let provinces: string[] = []
+  if (r.designated === true) {
+    programs = strListOf(r.designated_programs)
+    provinces = strListOf(r.designated_provinces)
+  }
+  return {
+    name: poolCellOf(r.name), slug: CELL_NONE, website: CELL_NONE, websiteSource: CELL_NONE, careersUrl: CELL_NONE,
+    industry: poolCellOf(r.industry), sectors: CELL_NONE, aliasZh: CELL_NONE, aliasKo: CELL_NONE, wikiUrl: CELL_NONE,
+    sponsorGrade: null, scoreDetail: null, aiBrief: CELL_NONE, aiWebsite: CELL_NONE, aiSources: [],
+    aiFetched: CELL_NONE, description: CELL_NONE, address: CELL_NONE, province: poolCellOf(r.province),
+    lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: poolCellOf(r.lmia_last_quarter), lmiaStreams: CELL_NONE,
+    lmiaSkilled: null, lmiaNocs: [], designatedPrograms: programs, designatedProvinces: provinces,
+    openCount: 0, jobs: [],
+  }
+}
+
+/**
+ * 池行的一格 → 字符串(json 行索引缺席 / NULL 记空串;消化点,理由同 fetchCompanyWhere 里的 strCell)。
+ *
+ * @param v 这一格。
+ * @returns 字符串;没有 = ''。
+ */
+// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:json 行索引缺席就是 undefined,照实收(同 strListOf)
+function poolCellOf(v: JsonCell | undefined): string {
+  if (v == null) {
+    return CELL_NONE
+  }
+  return String(v)
 }
 
 /**

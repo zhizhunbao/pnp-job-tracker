@@ -33,16 +33,18 @@ import {
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
-  URL_JOBS_COMPANY, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN, WIKI_WORD_SEP, YEAR_ONLY_RE,
+  URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
+  WIKI_WORD_SEP, YEAR_ONLY_RE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
-  JobNocNameIn, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn, LoadBriefIn,
-  LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenJobIn, PanelBody, PanelBodyIn,
-  PanelJson, PanelSlugIn,
+  JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
+  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
+  PanelBody, PanelBodyIn,
+  PanelJson, PanelSlugIn, PeekClickFn,
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
   UntitledIn, ZhLineClsIn, ZhShownIn,
@@ -917,15 +919,67 @@ export function makeToggle(x: ToggleIn): GoBackFn {
 }
 
 /**
- * 弹框内点在招职位的手柄:叠开 JD 弹框(把已载入的整行交回上层)。
+ * 点迷你职位行的手柄:叠开 JD 弹框(把整行交回上层)。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:行仍是真链接
+ * (爬虫与新标签开页照旧),普通左键拦下开弹框;整行没载入的现取一次,取不到就照链接去详情页。
  *
- * @param x 这一行与上层回调。
- * @returns 点击手柄。
+ * @param x 岗位号、已载入的整行与上层回调。
+ * @returns 链接的 onClick。
  */
-export function makeOpenJob(x: OpenJobIn): GoBackFn {
-  return function openJob(): void {
-    x.onOpenJob(x.job)
+export function makeOpenJob(x: OpenJobIn): PeekClickFn {
+  return function openJob(e: React.MouseEvent): void {
+    if (isPlainClick(e) === false) {
+      return
+    }
+    e.preventDefault()
+    if (x.row != null) {
+      x.onOpenJob(x.row)
+      return
+    }
+    function read(r: Response): Promise<JobRowJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function fall(): void {
+      window.location.assign(URL_JOB_HEAD + String(x.id))
+    }
+    function land(row: JobRowJson): void {
+      if (row == null) {
+        fall()
+        return
+      }
+      x.onOpenJob(row)
+    }
+    fetch(URL_JOBS_ROW_HEAD + String(x.id)).then(read).then(land).catch(fall)
   }
+}
+
+/**
+ * 点相似雇主的手柄:开公司弹框(已在公司弹框里 = 同框换一家);拦法同 makeOpenJob。
+ *
+ * @param x 这一家与上层回调。
+ * @returns 链接的 onClick。
+ */
+export function makeOpenCompany(x: OpenCompanyIn): PeekClickFn {
+  return function openCompany(e: React.MouseEvent): void {
+    if (isPlainClick(e) === false) {
+      return
+    }
+    e.preventDefault()
+    x.onOpenCompany(x.peek)
+  }
+}
+
+/**
+ * 是不是「普通左键」:按着 Ctrl / ⌘ / Shift / Alt、或非左键的一律放行给链接(新标签开页的习惯不破)。
+ *
+ * @param e 点击事件。
+ * @returns 是普通左键。
+ */
+function isPlainClick(e: React.MouseEvent): boolean {
+  return e.button === 0 && e.metaKey === false && e.ctrlKey === false && e.shiftKey === false && e.altKey === false
 }
 
 /**

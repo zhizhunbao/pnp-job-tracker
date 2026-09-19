@@ -933,6 +933,21 @@ export type BoardColsPanel = {
 export type BoardColsOut = [BoardColsPanel, BoxRef, HeadRowRef]
 
 /**
+ * 公司弹框(不带职位)要的两格(2026-09-19:公司组里点相似雇主;与 advisor 域的 CompanyPeek 同形,本域自抄)。
+ */
+export type CompanyPeek = {
+  /**
+   * 公司页 slug。
+   */
+  slug: string
+
+  /**
+   * 公司名。
+   */
+  name: string
+}
+
+/**
  * 弹框层面板:这一屏上开着哪些浮层。
  */
 export type BoardModalsPanel = {
@@ -955,6 +970,23 @@ export type BoardModalsPanel = {
    * 关职位描述弹框。
    */
   onDescClose: ClickFn
+
+  /**
+   * 公司弹框(不带职位)的那一家;null = 没开。
+   * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主不再新开页 —— 字段弹框让位给这一个
+   * (同一个外框、同一份位置与大小,看起来就是同框换了一家);框里再点相似雇主接着换。
+   */
+  peekCo: CompanyPeek | null
+
+  /**
+   * 点相似雇主:关字段弹框、开 / 换公司弹框。
+   */
+  onPeekCo: (peek: CompanyPeek) => void
+
+  /**
+   * 关公司弹框。
+   */
+  onPeekCoClose: ClickFn
 
   /**
    * 首访引导开着没。
@@ -1785,6 +1817,31 @@ export type JobRelatedIn = {
    * 兜底链文案。
    */
   fallbackText: string
+
+  /**
+   * 点一行:页上叠开职位描述弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示」)。
+   */
+  onOpenJob: (j: JobFact) => void
+}
+
+/**
+ * useJobPeek 的出参:详情页上叠开的职位描述弹框(2026-09-19)。
+ */
+export type JobPeekPanel = {
+  /**
+   * 正开着的那一岗;null = 没开。
+   */
+  job: JobFact | null
+
+  /**
+   * 点相似职位的一行:开弹框。
+   */
+  onOpen: (j: JobFact) => void
+
+  /**
+   * 关弹框。
+   */
+  onClose: ClickFn
 }
 
 /**
@@ -1805,6 +1862,11 @@ export type RelatedGroupIn = {
    * 行内灰字小注要不要写公司名(同公司组不写 —— 组标题已经说了)。
    */
   withCompany: boolean
+
+  /**
+   * 点一行:页上叠开职位描述弹框(整行由行自己现取)。
+   */
+  onOpenJob: (j: JobFact) => void
 }
 
 /**

@@ -673,7 +673,12 @@ export const W_POOL_OPEN = 9
 export const W_POOL_DESIGNATED = 12
 
 /**
- * 雇主板操作列的宽(两只 mini 钮并排)。
+ * 职位描述弹框的 NOC 描述表占位(弹框契约上的透传格,雇主板没有这张表;弹框自己不读它)。
+ */
+export const NOC_DESC_NONE = []
+
+/**
+ * 雇主板操作列的宽(两只 mini 钮并排;2026-09-19「看公司」换成「官网」,仍是两只,宽不动)。
  */
 export const W_POOL_ACT = 14
 

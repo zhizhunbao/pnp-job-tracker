@@ -19,6 +19,8 @@
  * 2026-09-16 Frank「公司 加载中这部分是不是也应该删掉」「可以,就这样做」:开框转圈行撤(公司数据线上 0.15~0.6s 就到,留白即可),
  * 正文不再等翻译(见 CompanyBody);现场翻译在途经 onTransBusy 回报给页眉开关。上面 09-14「换职位板同款转圈行」作废。
  * 2026-09-14 Frank「加」:管理员在弹框顶部有一颗「重译」胶囊 —— 清这家公司的译文版本后整页刷新。
+ * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:点相似雇主经 onOpenCompany 交回上层(同框换一家);
+ * 「新开页」不再由有没有 onOpenJob 推出来,弹框里恒新开(按着 Ctrl 点出去别把弹框关掉)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -42,7 +44,9 @@ import type { CompanyPanelIn } from './types'
  * @param props 当前职位、已载入职位、语言、点职位回调、别名回传与中文对照开合(逐格注释见 CompanyPanelIn)。
  * @returns 钮条 + AI 速读 + 公司身体 + 雇主线卡。
  */
-export function CompanyPanel({ job, slug, jobs, lang, onOpenJob, onAlias, showTrans, onTransBusy }: CompanyPanelIn) {
+export function CompanyPanel({
+  job, slug, jobs, lang, onOpenJob, onOpenCompany, onAlias, showTrans, onTransBusy,
+}: CompanyPanelIn) {
   const t = makeT(lang)
   const p = useCompanyPanel({ job, slug, lang })
   let cachedAlias = TEXT_NONE
@@ -66,6 +70,8 @@ export function CompanyPanel({ job, slug, jobs, lang, onOpenJob, onAlias, showTr
         showTrans={showTrans}
         onTransBusy={onTransBusy}
         onOpenJob={onOpenJob}
+        onOpenCompany={onOpenCompany}
+        newTab
         resolveJob={makeResolveJob({ jobs })} />
     )
   }

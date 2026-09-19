@@ -52,7 +52,7 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, PLACE_GAP, PLACE_SEP, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
+  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
@@ -89,7 +89,7 @@ import type {
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, EeTextIn,
-  ReportSeenIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, PickWordsIn,
+  ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -184,7 +184,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, broads: x.broads }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, broads: x.broads, onOpen: x.onOpen }))
   }
   return out
 }
@@ -203,8 +203,10 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
   }
   let companyHref = TEXT_NONE
+  let slug = TEXT_NONE
   if (r.slug != null) {
     companyHref = URL_COMPANY_HEAD + r.slug
+    slug = r.slug
   }
   let href = companyHref
   if (href === TEXT_NONE) {
@@ -244,11 +246,13 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     jobsHref,
     companyHref,
     actJobsText: x.t('pulse.act.jobs'),
-    actCompanyText: x.t('pulse.act.company'),
+    actSiteText: x.t('act.site'),
     actBtnCls: actBtnClsOf(),
     cardSalary: x.t('dp.planJobsN', { n: r.openJobs }),
     onView: makeRowView({ kind }),
     siteHref: r.website,
+    onName: makeNameClick({ slug, poolKey: r.key, name: r.name, kind, onOpen: x.onOpen }),
+    onPeek: makeNamePeek({ slug, poolKey: r.key, name: r.name, kind, onOpen: x.onOpen }),
     onCard: makeCardClick({ href, kind }),
   }
 }
@@ -417,6 +421,8 @@ function sectorKeyOf(sector: string): string {
 /**
  * 指定列的字,一行一个项目:项目名 + 它的资格所在地顿号连(「AIP NB、NS」「RCIP Sudbury, ON」);名单没给地点的只写项目名;
  * 指定但名单没写项目退回一行「指定雇主」;非指定空表(渲横杠)。
+ * 2026-09-19 晚 Frank「这个只显示 RCIP 和 FCIP 即可」**再改判**:只写项目名,资格所在地不跟(窄格里折成四行;
+ * 地点在「在招地点 / 总部」列与公司弹框里看)。上面那句「项目名 + 资格所在地」作废。
  *
  * @param x 取词函数与这一行。
  * @returns 各行文案。
@@ -430,17 +436,7 @@ function designatedLinesOf(x: RowWordsIn): string[] {
   }
   const out: string[] = []
   for (const program of x.r.programs) {
-    const places: string[] = []
-    for (const p of x.r.designatedPlaces) {
-      if (p.startsWith(program + PLACE_SEP)) {
-        places.push(p.slice(program.length + PLACE_SEP.length))
-      }
-    }
-    if (places.length === 0) {
-      out.push(program)
-    } else {
-      out.push(program + PLACE_GAP + places.join(x.t('de.sep')))
-    }
+    out.push(program)
   }
   return out
 }
@@ -2336,6 +2332,68 @@ export function makeRowView(x: RowViewIn): ClickFn {
     track(EV_ROW, { [EV_PROP_KEY]: x.kind })
   }
   return onView
+}
+
+/**
+ * 造「点雇主名」的手柄(2026-09-18 上午版,同日晚撤,2026-09-19 Frank「这个链接还是改成弹框公司吧」恢复):
+ * 普通左键 = 拦住跳转、记一笔 emp-row、开公司弹框(与职位板点公司格开的是同一个);按着 Ctrl / ⌘ / Shift / Alt、或非左键 = 放行,
+ * 链接照常去公司页(新标签开页的习惯不破)。
+ * 同日 Frank「招聘是 0 的公司也可以点击」:没有公司页的雇主(池里约一半,从没在本站有过岗)名字是钮,点了同样开框,
+ * 弹框按雇主池键取那一行事实 —— 那只钮的手柄是 makeNamePeek,本件仍只管链接。
+ *
+ * @param x 公司页 slug、雇主名、埋点分组值与开框落格。
+ * @returns 链接的 onClick。
+ */
+export function makeNameClick(x: NameClickIn): CardClickFn {
+  function onName(e: React.MouseEvent): void {
+    if (x.slug === TEXT_NONE || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return
+    }
+    e.preventDefault()
+    track(EV_ROW, { [EV_PROP_KEY]: x.kind })
+    x.onOpen({ slug: x.slug, name: x.name })
+  }
+  return onName
+}
+
+/**
+ * 造「点没有公司页的雇主名」的手柄(那一格是钮):记一笔 emp-row、开公司弹框,弹框按雇主池键取数。
+ *
+ * @param x 雇主池键、雇主名、埋点分组值与开框落格。
+ * @returns 钮的 onClick。
+ */
+export function makeNamePeek(x: NameClickIn): ClickFn {
+  function onPeek(): void {
+    track(EV_ROW, { [EV_PROP_KEY]: x.kind })
+    x.onOpen({ slug: x.poolKey, name: x.name })
+  }
+  return onPeek
+}
+
+/**
+ * 造关公司弹框的手柄。
+ *
+ * @param x 弹框态落格。
+ * @returns 弹框的 onClose。
+ */
+export function makeCloseModal(x: CloseModalIn): ClickFn {
+  function onCloseModal(): void {
+    x.setModal(null)
+  }
+  return onCloseModal
+}
+
+/**
+ * 造关职位描述弹框的手柄(公司弹框里点在招职位叠开的那一个)。
+ *
+ * @param x 弹框态落格。
+ * @returns 弹框的 onClose。
+ */
+export function makeCloseJob(x: CloseJobIn): ClickFn {
+  function onCloseJob(): void {
+    x.setPeekJob(null)
+  }
+  return onCloseJob
 }
 
 /**

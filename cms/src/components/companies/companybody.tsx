@@ -46,6 +46,8 @@ export function CompanyBody({
   showTrans = false,
   onOpenJob,
   resolveJob,
+  onOpenCompany,
+  newTab = false,
   afterSponsor = null,
   onTransBusy,
 }: CompanyBodyIn) {
@@ -55,7 +57,6 @@ export function CompanyBody({
     hasDesc: hasDescOf({ company }),
     lang,
   })
-  const newTab = onOpenJob != null
   const [aiTransBusy, setAiTransBusy] = useState(false)
   const busy = showTrans && (tr.busy || aiTransBusy)
   useEffect(function reportTransBusy() {
@@ -80,7 +81,8 @@ export function CompanyBody({
         resolveJob={resolveJob}
         newTab={newTab}
         showTrans={showTrans} />
-      <CompanySimilarCard similar={similar} t={t} lang={lang} newTab={newTab} showTrans={showTrans} />
+      <CompanySimilarCard similar={similar} t={t} lang={lang} onOpenCompany={onOpenCompany} newTab={newTab}
+        showTrans={showTrans} />
     </div>
   )
 }

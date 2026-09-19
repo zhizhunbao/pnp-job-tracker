@@ -2344,6 +2344,11 @@ export const P_DIR = 'dir'
 export const P_URL = 'url'
 
 /**
+ * 岗位号参数名(/api/jobs/row)。
+ */
+export const P_ID = 'id'
+
+/**
  * 省码参数名(/api/jobs/province)。
  */
 export const P_CODE = 'code'
@@ -2677,6 +2682,11 @@ export const JD_TRANS_MARKS_RE = /^(\[(?:ROLE|REQS|PAY|WORKHOURS|APPLY)\]\s*)(.*
  * 公司页 slug 的形(小写字母数字与连字符,1~160 位;`/api/jobs/company` 的 { slug } 先过它再进库)。
  */
 export const COMPANY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,159}$/
+
+/**
+ * 雇主池键的形(没有公司页的雇主:`n:` + 归一名,2~200 位;`/api/jobs/company` 的 { slug } 不像 slug 时再过它)。
+ */
+export const POOL_KEY_RE = /^n:.{1,198}$/
 
 /**
  * 整理版里贴在上一节正文尾巴上的节标记(2026-09-14 Frank「跑偏了」实撞:模型把五节挤在一行,翻译按行对位就把整篇

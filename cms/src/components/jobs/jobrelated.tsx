@@ -27,7 +27,7 @@ import css from './jobs.module.css'
  * @returns 一张白卡。
  */
 export function JobRelated({
-  head, t, updatedAt, sameCoLabel, sameOccLabel, related, fallbackHref, fallbackText,
+  head, t, updatedAt, sameCoLabel, sameOccLabel, related, fallbackHref, fallbackText, onOpenJob,
 }: JobRelatedIn) {
   return (
     <div className={CARD_MD_CLS}>
@@ -37,12 +37,12 @@ export function JobRelated({
       </div>
       {related.sameCompany.length > 0 && (
         <div onClick={trackRelated(TRACK_FROM_CLOSED)}>
-          <RelatedGroup label={sameCoLabel} rows={related.sameCompany} withCompany={false} />
+          <RelatedGroup label={sameCoLabel} rows={related.sameCompany} withCompany={false} onOpenJob={onOpenJob} />
         </div>
       )}
       {related.sameOcc.length > 0 && (
         <div onClick={trackRelated(TRACK_FROM_CLOSED)}>
-          <RelatedGroup label={sameOccLabel} rows={related.sameOcc} withCompany />
+          <RelatedGroup label={sameOccLabel} rows={related.sameOcc} withCompany onOpenJob={onOpenJob} />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (

@@ -50,6 +50,7 @@ import type {
   BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
   ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
+  CompanyPeek, JobPeekPanel,
   IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
@@ -1079,6 +1080,7 @@ function dimsOf(props: JobsIn): JobDims {
 function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   const [popup, setPopup] = useState<PopupState | null>(null)
   const [descJob, setDescJob] = useState<JobFact | null>(null)
+  const [peekCo, setPeekCo] = useState<CompanyPeek | null>(null)
   const [wizard, setWizard] = useState(false)
   const [upsell, setUpsell] = useState<UpsellKind>(false)
   const loggedIn = x.plan.loggedIn
@@ -1093,8 +1095,9 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   function closeBoth(): void {
     setPopup(null)
     setDescJob(null)
+    setPeekCo(null)
   }
-  useEscClose({ open: popup != null || descJob != null, onClose: closeBoth })
+  useEscClose({ open: popup != null || descJob != null || peekCo != null, onClose: closeBoth })
   return {
     panel: {
       popup,
@@ -1106,6 +1109,14 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
       },
       onDescClose: function closeDesc(): void {
         setDescJob(null)
+      },
+      peekCo,
+      onPeekCo: function openPeekCo(peek: CompanyPeek): void {
+        setPopup(null)
+        setPeekCo(peek)
+      },
+      onPeekCoClose: function closePeekCo(): void {
+        setPeekCo(null)
       },
       onWizardClose: function closeWizard(): void {
         markObSeen()
@@ -2420,6 +2431,20 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
     lang,
     view: jobDetailViewOf({ job: x.job, dims: x.dims, lang, t, related: x.related }),
   }
+}
+
+/**
+ * 详情页上叠开的职位描述弹框(2026-09-19:下架岗的相似职位点了不跳走)。Esc 关。
+ *
+ * @returns 开着的那一岗与开 / 关两个手柄。
+ */
+export function useJobPeek(): JobPeekPanel {
+  const [job, setJob] = useState<JobFact | null>(null)
+  const onClose = useCallback(function closePeek(): void {
+    setJob(null)
+  }, [])
+  useEscClose({ open: job != null, onClose })
+  return { job, onOpen: setJob, onClose }
 }
 
 /**

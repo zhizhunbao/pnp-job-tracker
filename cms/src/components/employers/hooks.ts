@@ -17,11 +17,14 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
-  addrQsOf, applyHomeProv, makeBroad, reportSeen, makeCity, makeDistrict, makeLmiaPick, makeMore, makeProv,
+  addrQsOf, applyHomeProv, makeBroad, reportSeen, makeCity, makeCloseJob, makeCloseModal, makeDistrict,
+  makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
-import type { EmployersIn, EmployersPanel, MoreIn, PoolFilters, PoolPage } from './types'
+import type {
+  EmpJob, EmpModal, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PoolFilters, PoolPage, QCommitIn,
+} from './types'
 
 /**
  * 雇主板整机:筛选态、搜索框防抖、筛选进 URL(replaceState —— 换筛选不该在历史里
@@ -38,6 +41,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [loading, setLoading] = useState(false)
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
   const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
+  const peek = useEmpPeek(x)
   const first = useRef(true)
   const held = useRef<PoolPage | null>(null)
   const sent = useRef(new Set<string>())
@@ -47,15 +51,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     cols: employerColsOf({ t, shown: [] }), storeKey: COLS_STORE_KEY, force: forceKeysOf({ f }), initial: x.initialCols,
   })
 
-  useEffect(function debounceQuery() {
-    if (qDraft === f.q) {
-      return
-    }
-    const id = setTimeout(makeQCommit({ f, q: qDraft, setF }), Q_DEBOUNCE_MS)
-    return function cancelCommit() {
-      clearTimeout(id)
-    }
-  }, [qDraft, f])
+  useQDebounce({ f, q: qDraft, setF })
 
   useHomeProv({ f: x.initialFilters, setF })
 
@@ -86,6 +82,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     loading,
     qDraft,
     updatedAt: x.updatedAt,
+    peek,
     sort: sortStateOf({ f }),
     onQDraft: setQDraft,
     onProv: makeProv({ f, setF }),
@@ -104,6 +101,48 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onSort: makeSort({ f, setF }),
     onClear: makeClear({ f, setF, setQDraft }),
     onMore: makeMore({ f, setF }),
+  }
+}
+
+/**
+ * 搜索框防抖:草稿停手一会儿才落进筛选(2026-09-19 自 useEmployersPage 原样提出 —— 那台机器超了行数上限,体一字未动)。
+ *
+ * @param x 当前筛选、搜索草稿与落格。
+ * @returns 无。
+ */
+function useQDebounce(x: QCommitIn): void {
+  const f = x.f
+  const qDraft = x.q
+  const setF = x.setF
+  useEffect(function debounceQuery() {
+    if (qDraft === f.q) {
+      return
+    }
+    const id = setTimeout(makeQCommit({ f, q: qDraft, setF }), Q_DEBOUNCE_MS)
+    return function cancelCommit() {
+      clearTimeout(id)
+    }
+  }, [qDraft, f, setF])
+}
+
+/**
+ * 弹框层(2026-09-19 Frank「这个链接还是改成弹框公司吧」):点雇主名开公司弹框,框里点在招职位叠开职位描述弹框、
+ * 点相似雇主同框换一家。自成一台小机器 —— 它与筛选 / 懒取那一摊状态互不咬合。
+ *
+ * @param x 页面 props(只读分层态)。
+ * @returns 弹框层面板。
+ */
+function useEmpPeek(x: EmployersIn): EmpPeekPanel {
+  const [modal, setModal] = useState<EmpModal | null>(null)
+  const [peekJob, setPeekJob] = useState<EmpJob | null>(null)
+  return {
+    plan: x.plan,
+    modal,
+    onOpenCompany: setModal,
+    onCloseModal: makeCloseModal({ setModal }),
+    peekJob,
+    onOpenJob: setPeekJob,
+    onCloseJob: makeCloseJob({ setPeekJob }),
   }
 }
 

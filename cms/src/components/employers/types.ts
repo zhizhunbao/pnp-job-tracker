@@ -10,6 +10,8 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
+// eslint-disable-next-line local/no-import-in-leaf -- 原样透传给职位描述弹框的整份行与分层态,本域一格不读(先例 companies/types.ts)
+import type { JobRow, Plan } from '@/lib/jobs'
 
 /**
  * 界面语言码 —— 本域自抄(全站三门语言,结构相同即兼容)。
@@ -590,10 +592,26 @@ export type EmployerCellRow = {
   where: string
 
   /**
-   * 雇主名的落点 = 官网(2026-09-18 Frank「这个雇主点击应该是跳到对应的网站吧。有官网的亮,没官网的不要亮」);
-   * 空串 = 没有官网(名字纯文字)。
+   * 官网;空串 = 没有。
+   * 2026-09-18 晚它是雇主名的落点;2026-09-19 Frank「这个链接还是改成弹框公司吧。然后在操作列加一个按钮官网,如果有的话」
+   * **再改判**:名字回到点了开公司弹框,官网挪进操作列成第三只钮(有官网才出)。
    */
   siteHref: string
+
+  /**
+   * 「官网」钮面。
+   */
+  actSiteText: string
+
+  /**
+   * 点雇主名:普通左键拦下开公司弹框;带修饰键 / 非左键放行,链接照常去公司页。
+   */
+  onName: CardClickFn
+
+  /**
+   * 点没有公司页的雇主名(那一格是钮):开公司弹框,按雇主池键取数。
+   */
+  onPeek: ClickFn
 
   /**
    * LMIA 格:技能类 LMIA 份数(选了行业组 = 桶内份数,否则 = 这家总量);0 = 空串(渲横杠)。
@@ -700,11 +718,6 @@ export type EmployerCellRow = {
    * 「看岗位」钮面。
    */
   actJobsText: string
-
-  /**
-   * 「看公司」钮面。
-   */
-  actCompanyText: string
 
   /**
    * 操作钮的类(button 桶 mini 档;哑单元格不 import functions,类随行带来)。
@@ -1160,6 +1173,11 @@ export type EmployerCellRowIn = {
    * 当前筛选(埋点分组值取行业组 / 查证态)。
    */
   f: PoolFilters
+
+  /**
+   * 点雇主名开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
 }
 
 /**
@@ -1190,6 +1208,11 @@ export type EmployerCellRowsIn = {
    * 当前筛选。
    */
   f: PoolFilters
+
+  /**
+   * 点雇主名开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
 }
 
 /**
@@ -1878,12 +1901,22 @@ export type EmployersIn = {
    * 字段勾选 cookie 的原值(页面门在服务端读;'' = 没有 cookie,按默认列)。
    */
   initialCols: string
+
+  /**
+   * 分层态(2026-09-19:公司弹框里点在招职位叠开职位描述弹框,那一件的额度闸与投递栏按它走)。
+   */
+  plan: EmpPlan
 }
 
 /**
  * useEmployersPage 交回的整机面板:一台机器管筛选态、深链回写与懒取。
  */
 export type EmployersPanel = {
+  /**
+   * 弹框层(公司弹框 + 它里面叠开的职位描述弹框)。
+   */
+  peek: EmpPeekPanel
+
   /**
    * 界面语言。
    */
@@ -2008,6 +2041,46 @@ export type EmployersPanel = {
    * 翻页。
    */
   onMore: ClickFn
+}
+
+/**
+ * useEmpPeek 交回的弹框层(2026-09-19):点雇主名开公司弹框,框里点在招职位再叠开职位描述弹框。
+ */
+export type EmpPeekPanel = {
+  /**
+   * 分层态(原样递给职位描述弹框)。
+   */
+  plan: EmpPlan
+
+  /**
+   * 开着的公司弹框(点了哪家;框里点相似雇主 = 同框换一家);null = 没开。
+   */
+  modal: EmpModal | null
+
+  /**
+   * 点雇主名 / 框里点相似雇主:开 / 换公司弹框。
+   */
+  onOpenCompany: OpenCompanyFn
+
+  /**
+   * 关公司弹框。
+   */
+  onCloseModal: ClickFn
+
+  /**
+   * 公司弹框里点的那一岗(叠开职位描述弹框);null = 没开。
+   */
+  peekJob: EmpJob | null
+
+  /**
+   * 公司弹框里点在招职位。
+   */
+  onOpenJob: (j: EmpJob) => void
+
+  /**
+   * 关职位描述弹框。
+   */
+  onCloseJob: ClickFn
 }
 
 /**
@@ -2501,6 +2574,86 @@ export type SponsorKv = {
    * 值。
    */
   v: React.ReactNode
+}
+
+/**
+ * 开着的公司弹框是哪一家。
+ */
+export type EmpModal = {
+  /**
+   * 公司页 slug(弹框按它取数);没有公司页的雇主这一格是雇主池键(`n:` 开头,接口两种都认)。
+   */
+  slug: string
+
+  /**
+   * 雇主名(弹框页眉标题)。
+   */
+  name: string
+}
+
+/**
+ * 开公司弹框的落格。
+ */
+export type OpenCompanyFn = (x: EmpModal) => void
+
+/**
+ * 职位板整行(外域形状,逐行特批):公司弹框现取回来、原样喂给职位描述弹框,本域一格不读。
+ */
+export type EmpJob = JobRow
+
+/**
+ * 分层态(外域形状,逐行特批):页面门算好、原样喂给职位描述弹框,本域一格不读。
+ */
+export type EmpPlan = Plan
+
+/**
+ * makeNameClick 的入参。
+ */
+export type NameClickIn = {
+  /**
+   * 公司页 slug;空串 = 没有公司页(名字是钮不是链,弹框按池键取 —— 2026-09-19 Frank「招聘是 0 的公司也可以点击」)。
+   */
+  slug: string
+
+  /**
+   * 雇主池键(没有公司页时弹框按它取数)。
+   */
+  poolKey: string
+
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 埋点分组值。
+   */
+  kind: string
+
+  /**
+   * 开公司弹框的落格。
+   */
+  onOpen: OpenCompanyFn
+}
+
+/**
+ * makeCloseModal 的入参。
+ */
+export type CloseModalIn = {
+  /**
+   * 弹框态落格。
+   */
+  setModal: (m: EmpModal | null) => void
+}
+
+/**
+ * makeCloseJob 的入参。
+ */
+export type CloseJobIn = {
+  /**
+   * 职位描述弹框态落格。
+   */
+  setPeekJob: (j: EmpJob | null) => void
 }
 
 /**
