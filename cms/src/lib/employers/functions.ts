@@ -1018,9 +1018,7 @@ export async function companyRow(input: CompanyRowIn): CompanyRowOut {
     if (row.ai_fetched != null) {
       fetched = String(row.ai_fetched).slice(0, DATE_LEN)
     }
-    if (sources.length > 0) {
-      cached = { brief: row.ai_brief, website: website, sources: sources, fetched: fetched }
-    }
+    cached = { brief: row.ai_brief, website: website, sources: sources, fetched: fetched }
   }
   return { id: toCompanyId(row), cached: cached }
 }
@@ -1050,8 +1048,11 @@ export function investigateCompany(input: InvestigateIn): InvestigateOut {
  *
  * 2026-09-19 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa、成立年 1986,真身 Mississauga / 1995):那一条 ai_sources 是空的 ——
  * 网关的联网搜索没搜到东西时模型照样裸答,这里原先只验长度不验出处,裸答被永久存库(库里 20,198 条简介有 7,814 条零出处,
- * 09-11 起的新查询九成以上如此)。红线补齐:一条出处都没有 = 查不到,不存不回;库里存量的零出处简介读的时候当没有
- * (companyRow 与 lib/jobs 的公司档案出口同口径),下次点开重查,查到有出处的才盖上去。
+ * 09-11 起的新查询九成以上如此;同日直测网关:发 web_search 回 web_search_used=false、sources=[],网关没在搜)。
+ * 同日先试过两道闸(零出处不落库 / 存量读的时候当没有):联网搜索坏着补不回来,页面上 AI 探索段整片消失
+ * (Frank「你先把 AI 探索哪部分给我弄回来」),两道都撤回 —— 零出处照旧落库照旧显示,只留一行痕(EMP_LOG.noSources);
+ * 零出处的简介只在「总部」行上不算数(components/companies 的 hqOf 只认有出处的简介,「所在地」节也不在简介里出)。
+ * 根上的修法在网关那头(联网搜索恢复)与数据层(官网正文版简介,出处齐全),不在这里。
  *
  * @param input 连接、主键与公司名。
  * @returns 调查结果;校验不过如实回 null。
@@ -1091,7 +1092,6 @@ async function investigate(input: InvestigateIn): InvestigateOut {
   }
   if (r.sources.length === 0) {
     log({ tag: EMP_LOG.tag, text: `${EMP_LOG.noSources}${input.name}` })
-    return null
   }
   const brief = r.answer.replace(SITE_LINE_RE, SITE_LINE_DROP).trim()
   let website = WEBSITE_NONE
@@ -1495,6 +1495,8 @@ export function aliasCellOf(x: AliasCellIn): string {
 
 /**
  * 懒翻出来的别名落库(只填空格)。
+ * 2026-09-19 Frank「这个我已经探索,完了为什么 table 下面不显示灰色的中文翻译」(Cerio 实拍):弹框里现翻的译名存了库,
+ * 雇主板却还在发页缓存里的旧页 —— 存完顺手清板的页缓存(与探索队列交活 saveExploreResults 同一个动作)。
  *
  * @param input 连接、公司名、语种与译名。
  * @returns 无。
@@ -1505,6 +1507,7 @@ export async function saveCompanyAlias(input: SaveAliasIn): DoneOut {
     sql = SQL.COMPANY_SET_ALIAS_KO
   }
   await input.db.query(sql, [input.alias, input.name, TRANS_V])
+  CACHE.poolPages.clear()
 }
 
 /**

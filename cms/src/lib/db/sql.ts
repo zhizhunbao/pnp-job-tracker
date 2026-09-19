@@ -213,18 +213,6 @@ export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.gr
 export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false`
 
 /**
- * 公司在招岗的全部城市(不设上限,岗多的在前)。$1=公司 id。
- * 2026-09-19 Frank「别最多给 50 条啊」:基本信息卡「在招地」行读它 —— 不从 COMPANY_OPEN_JOBS 那 50 条里数,
- * 连锁公司会数少。在招口径与 COMPANY_OPEN_JOBS 同一条 WHERE;没写市的岗不算。
- * 同日 Frank「城市都用 英文名」:不带 cities 表的译名(中英混排一行,译名表外的小地方只能出英文)。
- */
-export const COMPANY_HIRING_PLACES = `SELECT j.city, j.province, count(*)::int AS n
-     FROM jobs j
-     WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
-       AND j.city IS NOT NULL AND j.city <> ''
-     GROUP BY j.city, j.province ORDER BY n DESC, j.city`
-
-/**
  * 公司的 LMIA 职业码 json 列(text 取出,消费端自己 parse)。$1=公司 id。
  */
 export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id = $1`

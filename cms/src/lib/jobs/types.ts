@@ -2254,26 +2254,6 @@ export type ProofOut = Promise<{
 }>
 
 /**
- * 公司在招的一座城(基本信息卡「在招地」行,2026-09-19;全量不设上限,岗多的在前)。
- */
-export type CompanyPlaceRow = {
-  /**
-   * 城市。
-   */
-  city: string
-
-  /**
-   * 省码;'' = 岗上没写省。
-   */
-  province: string
-
-  /**
-   * 这座城的在招岗数。
-   */
-  n: number
-}
-
-/**
  * 公司详情页在招岗一行。
  */
 export type CompanyJobRow = {
@@ -2527,11 +2507,6 @@ export type CompanyDetail = {
    * 在招岗(全量,新的在前;2026-09-19 起不设上限)。
    */
   jobs: CompanyJobRow[]
-
-  /**
-   * 在招岗的全部城市(不设上限,岗多的在前)。
-   */
-  places: CompanyPlaceRow[]
 }
 
 /**

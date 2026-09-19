@@ -63,7 +63,7 @@ import { CACHE } from './variables'
 import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
-  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyPlaceRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
+  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
   EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
@@ -1512,7 +1512,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
     aiFetched: CELL_NONE, description: CELL_NONE, address: CELL_NONE, province: poolCellOf(r.province),
     lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: poolCellOf(r.lmia_last_quarter), lmiaStreams: CELL_NONE,
     lmiaSkilled: null, lmiaNocs: [], designatedPrograms: programs, designatedProvinces: provinces,
-    openCount: 0, jobs: [], places: [],
+    openCount: 0, jobs: [],
   }
 }
 
@@ -1560,7 +1560,6 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
 /**
  * 公司详情主体(slug 与 jobId 两个入口共用)。score_detail 那一步 `as` 是跨边界单断言:
  * json 列的四维明细由数据层写入方保证形状,TS 只看得到 JsonObj。
- * 2026-09-19:没有出处的 AI 简介当没有(模型裸答,Frank「这不是胡说吗」;来由见 lib/employers 的 investigate)。
  *
  * @param input 连接、WHERE 与绑定值。
  * @returns 公司详情;查无 null。
@@ -1573,9 +1572,8 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     return null
   }
   const companyId = Number(c.id)
-  const [jr, places, cntRows, lmiaNocs, designated] = await Promise.all([
+  const [jr, cntRows, lmiaNocs, designated] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_JOBS, params: [companyId], map: toCompanyJob }),
-    queryRows({ db: input.db, sql: SQL.COMPANY_HIRING_PLACES, params: [companyId], map: toCompanyPlace }),
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_COUNT, params: [companyId], map: passRow }),
     lmiaNocsOf({ db: input.db, companyId: companyId }),
     designatedOf({ db: input.db, slug: String(c.slug) }),
@@ -1618,17 +1616,13 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   if (website === '') {
     website = strCell(c.ai_website)
   }
-  let aiBrief = strCell(c.ai_brief)
-  if (sources.length === 0) {
-    aiBrief = CELL_NONE
-  }
   return {
     name: strCell(c.name), slug: strCell(c.slug), website: website, websiteSource: strCell(c.website_source),
     careersUrl: strCell(c.careers_url),
     industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh),
     aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),
-    scoreDetail: scoreDetail, aiBrief: aiBrief, aiWebsite: strCell(c.ai_website),
+    scoreDetail: scoreDetail, aiBrief: strCell(c.ai_brief), aiWebsite: strCell(c.ai_website),
     aiSources: sources, aiFetched: ymd(iso(strCell(c.ai_fetched))),
     description: strCell(c.description), address: strCell(c.address), province: strCell(c.region),
     lmiaPositions: numCell(c.lmia_positions), lmiaLmias: numCell(c.lmia_lmias),
@@ -1637,7 +1631,6 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     designatedPrograms: designated.programs, designatedProvinces: designated.provinces,
     openCount: openCount,
     jobs: jr,
-    places: places,
   }
 }
 
@@ -3330,16 +3323,6 @@ export function toCompanyJob(j: Row): CompanyJobRow {
     nocTitleZh: text(j.noc_title_zh), nocTitleKo: text(j.noc_title_ko),
     teer: numOrNull(j.teer), salaryText: salaryText, datePosted: datePosted,
   }
-}
-
-/**
- * COMPANY_HIRING_PLACES 一行 → 公司在招的一座城。
- *
- * @param r 原始行。
- * @returns 在招城市行。
- */
-function toCompanyPlace(r: Row): CompanyPlaceRow {
-  return { city: text(r.city), province: text(r.province), n: count(r.n) }
 }
 
 /**

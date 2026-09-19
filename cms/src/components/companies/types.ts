@@ -257,41 +257,6 @@ export type LmiaNocRow = {
 }
 
 /**
- * 公司在招的一座城(基本信息卡「在招地」行;全量不设上限,岗多的在前)。
- */
-export type CompanyPlaceRow = {
-  /**
-   * 城市英文名。
-   */
-  city: string
-
-  /**
-   * 省码;'' = 岗上没写省。
-   */
-  province: string
-
-  /**
-   * 这座城的在招岗数。
-   */
-  n: number
-}
-
-/**
- * 「在招地」行里同一个省的一组城(2026-09-19 Frank「都在 安省没必要每个都列一个 ON」:省名一组只出一次)。
- */
-export type HiringGroup = {
-  /**
-   * 省的显示名;'' = 岗上没写省(这一组不出省名)。
-   */
-  prov: string
-
-  /**
-   * 这个省里在招的城(英文名,岗多的在前)。
-   */
-  names: string[]
-}
-
-/**
  * 公司名下在招的一行(本域只读这几格;下游多几格不必跟着改)。
  */
 export type CompanyJobRow = {
@@ -532,11 +497,6 @@ export type CompanyDetail = {
    * 在招岗(全量,新的在前)。
    */
   jobs: CompanyJobRow[]
-
-  /**
-   * 在招岗的全部城市(不设上限,岗多的在前)。
-   */
-  places: CompanyPlaceRow[]
 }
 
 /**
@@ -784,21 +744,6 @@ export type CompanyBasicCardIn = {
    * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
-}
-
-/**
- * CompanyHiringRow(基本信息卡「在招地」行)的 props。
- */
-export type CompanyHiringRowIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 在招岗的全部城市。
-   */
-  places: CompanyPlaceRow[]
 }
 
 /**
@@ -2327,26 +2272,6 @@ export type CityLocalIn = {
    * 界面语言。
    */
   lang: CompaniesLang
-}
-
-/**
- * hiringGroupsOf 的入参。
- */
-export type HiringGroupsIn = {
-  /**
-   * 取词函数(省的显示名跟它走)。
-   */
-  t: TFn
-
-  /**
-   * 在招岗的全部城市。
-   */
-  places: CompanyPlaceRow[]
-
-  /**
-   * 已展开(false = 只列前 HIRING_TOP_N 座)。
-   */
-  all: boolean
 }
 
 /**

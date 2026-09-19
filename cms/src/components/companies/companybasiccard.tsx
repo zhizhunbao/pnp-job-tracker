@@ -17,8 +17,11 @@
  * 2026-09-18 Frank「类别应该放到基本信息吧」:「政府机构」绿章撤(详情页正文顶那一行、弹框卡题旁那一枚都撤,
  * companytopinfo.tsx 随之退役),改成身份行里的「类别」一行,紧跟公司名称;不是政府机构的不出这一行。
  * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取到某一条岗的 Windsor NS,
- * 看着像总部):「省」「市」两行撤,换「总部」(AI 简介的「所在地」提上来,没缓存不出)与「在招地」(在招岗的全部城市,
- * 收着列三座、可展开,companyhiringrow.tsx)两行;09-14 那条「AI 所在地留在简介段里」随之作废 —— 提成「总部」行后简介里不再重复出那一节。
+ * 看着像总部):「省」「市」两行撤,换「总部」(AI 简介的「所在地」提上来,没缓存不出)与「在招地」两行;
+ * 09-14 那条「AI 所在地留在简介段里」随之作废 —— 提成「总部」行后简介里不再重复出那一节。
+ * 同日 Frank「拿不到总部的就先 -」:总部行一律出,拿不到出「—」(值包一层 span:Row 通用件见「—」整行不出,这一行特意要出);缓存着的简介里「所在地」节一律不再出
+ * (有出处的已提成总部行,没出处的是模型裸答不算数,「这不是胡说吗」)。
+ * 同日晚 Frank「公司详情的在招地 去掉吧,没有意义」:「在招地」行撤(连同它的取数链),岗位在哪看下面的在招职位卡。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -27,7 +30,6 @@ import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
-import { CompanyHiringRow } from './companyhiringrow'
 import { CompanyIntro } from './companyintro'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
@@ -90,8 +92,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
             </LinkButton>
           </Row>
         )}
-        {hq !== TEXT_NONE && <Row k={t('co.hq')}>{hq}</Row>}
-        <CompanyHiringRow t={t} places={company.places} />
+        <Row k={t('co.hq')}><span>{hq}</span></Row>
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}
@@ -108,7 +109,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        skipBase={hq !== TEXT_NONE}
+        skipBase={company.aiBrief !== TEXT_NONE}
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy} />
     </div>

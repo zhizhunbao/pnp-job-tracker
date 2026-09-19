@@ -30,7 +30,6 @@ import {
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
-  HIRING_TOP_N,
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TITLES_CHUNK,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
@@ -41,8 +40,7 @@ import { cssOf } from '@/components/css'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
-  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HiringGroup, HiringGroupsIn,
-  HttpSourcesIn, IsGovIn,
+  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
   PanelBody, PanelBodyIn,
@@ -348,54 +346,27 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
  * 省对上市对不上照样出)定为:官方地点在,这一节就不出 —— 省 / 市两行已是官方地点,AI 那句只会添乱。
  * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取的是某一条岗的
  * Windsor NS,看着像总部):两种地点各挂各的名字就不打架了 —— AI 查到的「所在地」提上来当「总部」行(本函数,
- * 原 hasOfficialPlaceOf 退役),岗位地点归「在招地」行(hiringGroupsOf);提上来了简介里就不再重复出那一节。
+ * 原 hasOfficialPlaceOf 退役);提上来了简介里就不再重复出那一节(岗位地点那一行「在招地」同日晚撤)。
  * 中 / 韩界面能拼出核定译名的用译名(baseZhOf),拼不出照 AI 原句。
+ * 同日 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa,真身 Mississauga —— 那条简介没有出处,是模型裸答)、
+ * 「拿不到总部的就先 -」:只认有出处的简介;没有出处 / 没缓存 / 没这一节一律给「—」(那一行照出)。
  *
  * @param x 取词函数、界面语言与公司档案。
- * @returns 总部一行的文案;'' = AI 简介没缓存或没有这一节(这一行不出)。
+ * @returns 总部一行的文案;拿不到给「—」。
  */
 export function hqOf(x: BaseZhIn): string {
+  if (x.company.aiSources.length === 0) {
+    return DASH_EM
+  }
   const base = baseTextOf({ text: x.company.aiBrief })
   if (base === TEXT_NONE) {
-    return TEXT_NONE
+    return DASH_EM
   }
   const local = baseZhOf(x)
   if (local !== TEXT_NONE) {
     return local
   }
   return base
-}
-
-/**
- * 基本信息卡「在招地」行:这家公司在招岗的城市,岗多的在前,按省成组。
- * 2026-09-19 Frank「别最多给 50 条啊」「你可以加一个 展开和收起的功能不就完事了」:城市是单独查的全量
- * (COMPANY_HIRING_PLACES,不从在招岗清单里数),收着列前 HIRING_TOP_N 座,展开列全部。
- * 同日「城市都用 英文名」(译名表外的小地方只能出英文,一行里中英混排)、「都在 安省没必要每个都列一个 ON」:
- * 市名一律英文;同一个省的城归一组,省名一组只出一次;组的先后 = 组里头一座城的先后(岗多的省在前)。
- *
- * @param x 取词函数、全部在招城市与展开态。
- * @returns 逐省的一组组城。
- */
-export function hiringGroupsOf(x: HiringGroupsIn): HiringGroup[] {
-  let shown = x.places
-  if (x.all === false) {
-    shown = x.places.slice(0, HIRING_TOP_N)
-  }
-  const codes: string[] = []
-  const groups: HiringGroup[] = []
-  for (const p of shown) {
-    let at = codes.indexOf(p.province)
-    if (at < 0) {
-      codes.push(p.province)
-      groups.push({ prov: provFullOf({ t: x.t, code: p.province }), names: [] })
-      at = groups.length - 1
-    }
-    const g = groups[at]
-    if (g != null) {
-      g.names.push(p.city)
-    }
-  }
-  return groups
 }
 
 /**

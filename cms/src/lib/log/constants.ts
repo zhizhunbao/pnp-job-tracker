@@ -606,9 +606,9 @@ export const EMP_LOG = {
   sourcesParseFailed: 'cached research sources parse failed, treating as none: ',
 
   /**
-   * 调查回来一条出处都没有(联网搜索没搜到 / 没在工作,答案是模型裸答)—— 不存不显示。
+   * 调查回来一条出处都没有(联网搜索没搜到 / 没在工作,答案是模型裸答)—— 只留痕,照旧落库。
    */
-  noSources: 'company research came back with no sources, dropped: ',
+  noSources: 'company research came back with no sources: ',
 
   /**
    * Wikidata 回填写库失败(别名丢这一次,调查主体不受影响)。
