@@ -181,6 +181,7 @@ from mart.constants import (
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
 from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
 from mart.constants import SAL_DAY_MIN
+from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
@@ -363,6 +364,20 @@ def website_of(raw: object) -> str | None:
 def is_known_tld(tld: str) -> bool:
     """末段放行判据:两字母国家域,或真顶级域表里有。"""
     return len(tld) == TLD_CC_LEN or tld in WEBSITE_TLDS
+
+
+def site_root_of(raw: object) -> str | None:
+    """帖子里的「雇主官网」→ 站点根(协议 + 主机,路径与查询串全砍)或 None。
+
+    2026-09-19 Frank 实拍 Compass Group Canada 官网显示成一条带 Charlottetown 经纬度的职位搜索链接:
+    Job Bank / 板帖的 website 是雇主自己填的,常填成招聘页、搜索页、分店页(6 万家里带路径 925、带查询串 115);
+    公司行的官网只要站点根。原串不挪去 careersUrl —— 招聘页的主人是招聘页发现清单(fill_careers),这里不猜。
+    """
+    url = website_of(raw)
+    if url is None:
+        return None
+    parsed = urlparse(url)
+    return parsed.scheme + URL_SCHEME_SEP + parsed.netloc
 
 
 # =========================================================================
@@ -1304,8 +1319,31 @@ def to_ats_company_extra(prof: dict) -> dict:
 
 def to_jb_company_extra(j: dict) -> dict:
     """Job Bank 帖 → companies 行的补充列(JB 无 profile,只有这四格)。"""
-    return {"website": website_of(j.get("website")), "address": j.get("address"),
+    return {"website": site_root_of(j.get("website")), "address": j.get("address"),
             "region": j.get("province"), "source": ORIGIN_JOBBANK}
+
+
+def drop_branch_addresses(ctx: MartCtx) -> None:
+    """在招岗跨多城的 Job Bank / 板帖公司,抄自帖子的地址留空(判据与来由见 BRANCH_CITY_MIN)。
+
+    只动 address:region 留着(相似雇主按它找同省、雇主池主省拿它兜底);ATS 公司的地址来自公司档不动;
+    帖子没给地址、由 Places 填上的也不动(不是抄自帖子)。
+    """
+    cities: dict = {}
+    for j in ctx.jobs:
+        if j.get(K_CITY):
+            cities.setdefault(j[K_COMPANY_SLUG], set()).add((j.get(K_PROVINCE), j[K_CITY]))
+    dropped = 0
+    for slug, c in ctx.companies.items():
+        if c.get(K_SOURCE) != ORIGIN_JOBBANK or not c.get(K_ADDRESS):
+            continue
+        if len(cities.get(slug, ())) < BRANCH_CITY_MIN:
+            continue
+        if (ctx.places.get(slug) or {}).get(K_ADDRESS) == c[K_ADDRESS]:
+            continue
+        del c[K_ADDRESS]
+        dropped += 1
+    say(BRANCH_DROP_TPL.format(n=dropped, min=BRANCH_CITY_MIN))
 
 
 def to_lmia_columns(x: LmiaFillIn) -> dict:
@@ -3486,6 +3524,7 @@ def to_mart_tables() -> dict:
     collect_ats_rows(ctx)
     collect_jobbank_rows(ctx)
     collect_board_rows(ctx)
+    drop_branch_addresses(ctx)
     fill_companies_lmia(ctx)
     fill_company_grades(ctx)
     fill_jd_bodies(ctx)

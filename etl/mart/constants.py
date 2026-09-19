@@ -910,6 +910,14 @@ LMIA_STREAM_TPL = "{stream} {n}"
 LMIA_STREAM_SEP = " · "
 """股别之间的分隔(本列是**单一信息的分级**不是多信息杂糅,故仍用点号)。"""
 
+BRANCH_CITY_MIN = 2
+"""在招岗跨这么多座城(省 + 市算一座)起,公司行抄自帖子的地址判为分店地址、留空
+(2026-09-19 Frank 实拍 Compass Group Canada 总部显示成 Windsor, NS:Job Bank / 板帖没有公司档,
+address 抄的是某一条帖子的上班地点,单店雇主碰巧对、全国连锁全错;留空不猜,真总部 Job Bank 给不了)。"""
+
+BRANCH_DROP_TPL = "  分店地址留空: {n} 家(在招岗跨 ≥{min} 城,地址抄自帖子)"
+"""分店地址留空留痕。"""
+
 LMIA_HIT_TPL = "  LMIA 雇佣记录匹配: {hit}/{total} 公司(窗口 {window})"
 """LMIA 匹配留痕(3.2 统计:公司命中 18.2%,抽检零误报)。"""
 
