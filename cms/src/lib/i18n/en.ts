@@ -480,7 +480,7 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
 export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
-  'subtitle.named': '{named} on provincial PNP lists', 'subtitle.lmia': '{lmia} employers with LMIA records',
+ 
   'mv.today': 'High matches for you: {h}', 'up.matchN': 'You have {h} high-match jobs — free plan shows only the first {n}',
   'stream.abTech': 'AB Tech', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
   'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
@@ -848,11 +848,11 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.s5': 'Recent draws',
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
   'de.title': 'Employers', 'de.count': '{n} employers', 'de.hits': '{n} matched',
-  'de.colName': 'Employer', 'de.colGroup': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colDistrict': 'District', 'de.allBroad': 'All categories', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
+  'de.colName': 'Employer', 'de.colBroad': 'Category', 'de.colEe': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
   'de.lmia': 'Has LMIA record', 'de.lmiaAll': 'All LMIA', 'de.entryAll': 'All experience', 'de.designated': 'Designated',
-  'de.qPh': 'Search employer', 'de.allGroup': 'All EE categories', 'de.entry': 'No experience needed', 'de.sep': ', ',
+  'de.qPh': 'Search employers, places', 'de.entry': 'No experience needed', 'de.sep': ', ',
   'de.emptyFiltered': 'No employer matches these filters', 'de.moreLocN': '{n} more',
-  'de.notFound': 'Not on any official designated employer list. Be wary of anyone promising sponsorship.', 'de.notCollected': 'Employer not in our records',
+  'de.notCollected': 'Employer not in our records',
  
   'pro.unlock': 'Unlock Pro',
   'home.cta2.t': 'Canada-wide jobs, updated daily', 'home.cta2.s': 'Filter by province, occupation and PNP signals — free',

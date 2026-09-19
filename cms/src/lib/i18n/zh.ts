@@ -517,7 +517,7 @@ export const jobsZh = {
   'subtitle.count': '{n} 个职位',
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
-  'subtitle.named': '{named} 岗命中省提名清单', 'subtitle.lmia': '{lmia} 家雇主有外劳雇佣记录',
+ 
   'mv.today': '与你高匹配的岗位:{h} 个', 'up.matchN': '你共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
@@ -933,11 +933,11 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colGroup': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colDistrict': '区', 'de.allBroad': '全部类别', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colBroad': '大类', 'de.colEe': '类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colDistrict': '区', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   'de.lmia': '办过 LMIA', 'de.lmiaAll': '全部 LMIA', 'de.entryAll': '全部经验', 'de.designated': '指定雇主',
-  'de.qPh': '搜雇主名', 'de.allGroup': '全部 EE 类别', 'de.entry': '无经验可投', 'de.sep': '、',
+  'de.qPh': '搜索雇主、地点', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
-  'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法', 'de.notCollected': '本站未收录该雇主',
+  'de.notCollected': '本站未收录该雇主',
  
   'pro.unlock': '解锁 Pro',
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',

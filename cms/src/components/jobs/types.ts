@@ -1268,16 +1268,6 @@ export type BannerFactsIn = {
    * 第一条:库内总数 / 筛选命中数。
    */
   count: string
-
-  /**
-   * 第二条:命中省提名清单岗数;'' = 不渲(为 0)。
-   */
-  named: string
-
-  /**
-   * 第三条:有外劳记录雇主数;'' = 不渲(为 0)。
-   */
-  lmia: string
 }
 
 /**
@@ -5980,36 +5970,6 @@ export type SubTextIn = {
    * 总数。
    */
   total: number
-}
-
-/**
- * namedTextOf 的入参。
- */
-export type NamedTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 命中省提名具名清单的岗位数。
-   */
-  named: number
-}
-
-/**
- * lmiaTextOf 的入参。
- */
-export type LmiaTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 有外劳记录的雇主数。
-   */
-  lmia: number
 }
 
 /**

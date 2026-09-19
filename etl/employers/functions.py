@@ -19,9 +19,9 @@ import paths
 from noc.functions import broad_of, group_of, teer_of
 from names.functions import sector_of
 from log.functions import say
-from employers.constants import (BROAD_UNCAT, ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
+from employers.constants import (BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
-                                 K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT,
+                                 K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT, K_EE_CATEGORY,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
                                  K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
@@ -332,7 +332,22 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         lmiaLastQuarter=lmia_row.get(K_LAST_QUARTER) or None,
         sector=sector_of(ctx.names.get(x.key) or x.key) or None,
         broads=broads_of(x),
+        ees=ees_of(x),
         fetched=date.today().isoformat())
+
+
+def ees_of(x: KeyIn) -> list:
+    """在招 EE 类别:该雇主在招岗的联邦 EE 类别(「A/B」多段拆开),岗多的在前;空值不计。"""
+    count: Counter = Counter()
+    for rows in (x.ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            for seg in str(row.get(K_EE_CATEGORY) or "").split(EE_SPLIT):
+                if seg.strip():
+                    count[seg.strip()] += 1
+    out = []
+    for ee, _n in count.most_common():
+        out.append(ee)
+    return out
 
 
 def broads_of(x: KeyIn) -> list:

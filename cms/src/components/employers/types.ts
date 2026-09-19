@@ -68,6 +68,11 @@ export type PoolFilters = {
   broad: string
 
   /**
+   * 在招 EE 类别(联邦 EE 类别标签,职位板「全部类别」同一套);空串 = 不筛。
+   */
+  ee: string
+
+  /**
    * 雇主类别(federal / government / municipal / indigenous / public / private);空串 = 不筛。
    */
   sector: string
@@ -193,6 +198,16 @@ export type PoolRow = {
   locations: string[]
 
   /**
+   * 在招大类(本站大类键,岗多的在前);空表 = 没有在招 / 都未分类。
+   */
+  broadKeys: string[]
+
+  /**
+   * 在招 EE 类别(联邦 EE 类别标签,岗多的在前);空表 = 没有在招 / 都不属 EE 类别。
+   */
+  eeKeys: string[]
+
+  /**
    * 指定雇主命中。
    */
   designated: boolean
@@ -269,9 +284,14 @@ export type PoolPage = {
   districts: string[]
 
   /**
-   * 「全部类别」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
+   * 「全部大类」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
    */
   broads: BroadOpt[]
+
+  /**
+   * 「全部类别」下拉的选项(联邦 EE 类别标签,覆盖雇主多的在前)。
+   */
+  ees: string[]
 }
 
 /**
@@ -576,11 +596,16 @@ export type EmployerCellRow = {
   sectorText: string
 
   /**
-   * 行业格:这一行所在行业组的名字(与「选择行业」下拉同一套八组词条;2026-09-18 Frank「雇主后面加一个行业列吧」)。
-   * 行业组是数据层按该雇主在招岗的职业大类归的;不选行业时一家一行,取它星级最高的那一桶。
-   * 空串 = 归不进八组(渲横杠)。
+   * 类别格:在招岗最多的两个本站大类名,顿号连(2026-09-18 晚 Frank「公司类别要显示」;词与「全部类别」下拉同一套);
+   * 空串 = 没有在招 / 都未分类(渲横杠)。
    */
-  groupText: string
+  broadText: string
+
+  /**
+   * 类别格(可选列):在招岗最多的两个联邦 EE 类别名,顿号连(2026-09-19 与职位板同名同义;此前这一格是把脉页那八个
+   * 行业组,Frank「这个应该是 EE 类别,不是人们正常用的大类别吧」后退役);空串 = 岗都不属 EE 类别(渲横杠)。
+   */
+  eeText: string
 
   /**
    * 雇主名下的别名灰注:按界面语言取库里存的中文 / 韩文译名(2026-09-18 Frank「这个下面加灰字 中文翻译」);
@@ -1087,6 +1112,11 @@ export type EmployerCellRowIn = {
   r: PoolRow
 
   /**
+   * 「全部类别」下拉的选项(类别格按它取英 / 韩文名)。
+   */
+  broads: BroadOpt[]
+
+  /**
    * 取词函数。
    */
   t: TFn
@@ -1110,6 +1140,11 @@ export type EmployerCellRowsIn = {
    * 本页的行。
    */
   rows: PoolRow[]
+
+  /**
+   * 「全部类别」下拉的选项(类别格按它取英 / 韩文名)。
+   */
+  broads: BroadOpt[]
 
   /**
    * 取词函数。
@@ -1601,26 +1636,6 @@ export type CellTextIn = {
 }
 
 /**
- * searchNoteOf 的入参。
- */
-export type SearchNoteIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 当前筛选(只看 q 是否非空)。
-   */
-  f: PoolFilters
-
-  /**
-   * 本页的行(只看有没有指定雇主)。
-   */
-  rows: PoolRow[]
-}
-
-/**
  * qsOf / foldActiveOf / anyFilterOf / needScopeOf 的入参。
  */
 export type FiltersIn = {
@@ -1880,11 +1895,6 @@ export type EmployersPanel = {
   onQDraft: (v: string) => void
 
   /**
-   * 换行业组(顺带回第一页)。
-   */
-  onGroup: PickFn
-
-  /**
    * 换省(顺带回第一页)。
    */
   onProv: PickFn
@@ -1908,6 +1918,11 @@ export type EmployersPanel = {
    * 换在招大类(顺带回第一页)。
    */
   onBroad: PickFn
+
+  /**
+   * 换在招 EE 类别(顺带回第一页)。
+   */
+  onEe: PickFn
 
   /**
    * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
@@ -2209,6 +2224,16 @@ export type WithIn = {
    * 换在招大类。
    */
   broad?: string
+
+  /**
+   * 换在招 EE 类别。
+   */
+  ee?: string
+
+  /**
+   * 换行业组(只有「清除筛选」会用:把直达链接带进来的组清掉)。
+   */
+  groupReset?: boolean
 
   /**
    * 换雇主类别。

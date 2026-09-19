@@ -528,12 +528,20 @@ export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
     WHERE e.key = u.key`
 
 /**
- * 雇主板「全部类别」下拉的选项:池里雇主在招的本站大类(职位板那一套),覆盖雇主多的在前,带英 / 韩名
+ * 雇主板「全部类别」下拉的选项:池里雇主在招岗覆盖的联邦 EE 类别(职位板同名下拉的那一套标签),覆盖雇主多的在前
+ * (2026-09-19;扫一遍池表,lib/employers 进程内 TTL 缓存)。
+ */
+export const EMPLOYER_POOL_EES = `SELECT e AS ee FROM employer_pool p, jsonb_array_elements_text(p.ees) e
+    WHERE jsonb_typeof(p.ees) = 'array' GROUP BY e ORDER BY count(*) DESC, e`
+
+/**
+ * 雇主板「全部大类」下拉的选项:池里雇主的主类(职位板那一套本站大类;主类 = 在招岗最多的那一个),雇主多的在前,带英 / 韩名。
+ * 2026-09-19 Frank「这个应该是这个公司的类别吧」「一个公司可能各种职位都招」:一家只算一个主类,不再按「招过哪些类」摊开
  * (2026-09-18;扫一遍池表,lib/employers 进程内 TTL 缓存)。
  */
 export const EMPLOYER_POOL_BROADS = `SELECT x.broad, l.broad_en, l.broad_ko
-     FROM (SELECT b AS broad, count(*) AS n FROM employer_pool p, jsonb_array_elements_text(p.broads) b
-            WHERE jsonb_typeof(p.broads) = 'array' GROUP BY b) x
+     FROM (SELECT p.broads->>0 AS broad, count(*) AS n FROM employer_pool p
+            WHERE jsonb_typeof(p.broads) = 'array' AND jsonb_array_length(p.broads) > 0 GROUP BY 1) x
      LEFT JOIN (SELECT DISTINCT ON (broad) broad, broad_en, broad_ko FROM noc_categories ORDER BY broad) l ON l.broad = x.broad
     ORDER BY x.n DESC, x.broad`
 
@@ -626,14 +634,15 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=在招大类或 ''(同日「全部类别」筛选;GIN 索引 employer_pool_broads_idx)。
+ * $11=公司主类或 ''(「全部大类」筛选;主类 = broads 第一格 = 在招岗最多的那个大类;`?` 走 GIN 索引收窄,`->>0` 复核)。
+ * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
  * total 用窗口函数随行带回,一次往返。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolPage = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.broads, p.ees, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
@@ -654,7 +663,8 @@ export const employerPoolPage = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR p.broads ? $11)
+      AND ($11 = '' OR (p.broads ? $11 AND p.broads->>0 = $11))
+      AND ($12 = '' OR p.ees ? $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -711,19 +721,21 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
 
 /**
  * 雇主池全组一页(不选行业的默认榜,也是查证态的底:$1 有词就按名全库搜)。一家一行 × 它星级最高的桶
+ * 2026-09-19 Frank「雇主的搜索和职位的搜索保持一致」:$1 不只搜名字,也搜主市、主区与中文译名(「搜索雇主、地点」)。
  * (DISTINCT ON 扫桶表一遍,生产实测 ~290ms,lib/employers 进程内 TTL 缓存整页);在招 / LMIA 出池行总量,
  * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
  * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=在招大类或 ''(同日「全部类别」筛选;GIN 索引 employer_pool_broads_idx)。
+ * $11=公司主类或 ''(「全部大类」筛选;主类 = broads 第一格 = 在招岗最多的那个大类;`?` 走 GIN 索引收窄,`->>0` 复核)。
+ * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
  */
 export const employerPoolAll = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.broads, p.ees, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
@@ -739,7 +751,8 @@ export const employerPoolAll = (order: string) => `
     LEFT JOIN companies c ON c.slug = p.slug
     LEFT JOIN employer_explore x ON x.key = p.key
     LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
-    WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%')
+    WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%' OR p.city ILIKE '%' || $1 || '%' OR p.district ILIKE '%' || $1 || '%'
+           OR c.alias_zh ILIKE '%' || $1 || '%' OR x.alias_zh ILIKE '%' || $1 || '%')
       AND ($2 = '' OR p.province = $2)
       AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))
       AND ($4 = '' OR p.designated_programs ? $4)
@@ -747,7 +760,8 @@ export const employerPoolAll = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR p.broads ? $11)
+      AND ($11 = '' OR (p.broads ? $11 AND p.broads->>0 = $11))
+      AND ($12 = '' OR p.ees ? $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 

@@ -477,7 +477,7 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
 export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
-  'subtitle.named': 'PNP 목록 {named}건', 'subtitle.lmia': 'LMIA 기록 고용주 {lmia}곳',
+ 
   'mv.today': '높은 매칭: {h}건', 'up.matchN': '높은 매칭 {h}건 — 무료 버전은 상위 {n}건만 표시',
   'stream.abTech': 'AB 테크', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
@@ -841,11 +841,11 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.s5': '최근 추첨',
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',
   'de.title': '고용주', 'de.count': '고용주 {n}개사', 'de.hits': '{n}개사 일치',
-  'de.colName': '고용주', 'de.colGroup': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colDistrict': '구역', 'de.allBroad': '전체 분류', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
+  'de.colName': '고용주', 'de.colBroad': '분류', 'de.colEe': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colDistrict': '구역', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
   'de.lmia': 'LMIA 기록 있음', 'de.lmiaAll': '전체 LMIA', 'de.entryAll': '전체 경력', 'de.designated': '지정 고용주',
-  'de.qPh': '고용주 검색', 'de.allGroup': '전체 EE 카테고리', 'de.entry': '무경력 지원 가능', 'de.sep': ', ',
+  'de.qPh': '고용주, 지역 검색', 'de.entry': '무경력 지원 가능', 'de.sep': ', ',
   'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다', 'de.moreLocN': '외 {n}곳',
-  'de.notFound': '공식 지정 고용주 명단에 없는 고용주입니다. 스폰서를 약속하는 말은 경계하세요', 'de.notCollected': '본 사이트에 수록되지 않은 고용주입니다',
+  'de.notCollected': '본 사이트에 수록되지 않은 고용주입니다',
  
   'pro.unlock': 'Pro 잠금해제',
   'home.cta2.t': '매일 갱신되는 캐나다 전역 채용 공고', 'home.cta2.s': '주, 직업, PNP 신호로 필터링, 무료',

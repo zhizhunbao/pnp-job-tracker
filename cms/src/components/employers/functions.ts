@@ -12,7 +12,8 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { CMP_KEY, POOL_GROUPS, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
+import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/employers'
+import { eeDisplay } from '@/lib/jobs'
 import { PROV_NAMES, homeProvinceOf, mapsUrl } from '@/lib/location'
 import { track } from '@/lib/track'
 import { btnClsOf } from '@/components/button'
@@ -26,18 +27,19 @@ import { CompareSkilledCell } from './compareskilledcell'
 import { ActCell } from './actcell'
 import { DesignatedCell } from './designatedcell'
 import { OpenCell } from './opencell'
+import { PoolBroadCell } from './poolbroadcell'
 import { PoolCityCell } from './poolcitycell'
 import { PoolDistrictCell } from './pooldistrictcell'
-import { PoolGroupCell } from './poolgroupcell'
+import { PoolEeCell } from './pooleecell'
 import { PoolLmiaCell } from './poollmiacell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
 import {
-  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, CLS_SEP, COL_ACT_KEY,
+  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, BROAD_SHOW_MAX, CLS_SEP, COL_ACT_KEY, COL_BROAD_KEY,
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_CITY_KEY, COL_DISTRICT_KEY, COL_GROUP_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP,
+  COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP,
   DASH_MARK,
   DEMO_A_KEY, DEMO_B_KEY,
   DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
@@ -47,22 +49,23 @@ import {
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
   CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
-  EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL, HDR_CONTENT_TYPE,
+  EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
+  EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
+  HDR_CONTENT_TYPE,
   METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
-  EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
+  EV_VIEW_JOBS, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_BROAD, P_CITY, P_DISTRICT, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP,
+  P_BROAD, P_CITY, P_DISTRICT, P_EE, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP,
   TAG_OK,
   TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
-  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_GROUP, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_BROAD, W_POOL_DESIGNATED,
+  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -85,7 +88,7 @@ import type {
   NocNameFn, NoteTextIn, OnLabelIn,
   PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
-  PricingSetIn, QCommitIn, RowViewIn, SearchNoteIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
+  PricingSetIn, QCommitIn, RowViewIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
   WhereTextIn, WithIn,
   WordsIn,
@@ -174,7 +177,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, broads: x.broads }))
   }
   return out
 }
@@ -216,7 +219,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     where: empWhereTextOf({ t: x.t, r }),
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
-    groupText: groupTextOf({ t: x.t, r }),
+    broadText: broadTextOf(x),
+    eeText: eeTextOf({ t: x.t, r }),
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
@@ -292,16 +296,36 @@ function provEnOf(code: string): string {
 }
 
 /**
- * 行业格的字:这一行的行业组名(八组之内才有名字;无线索桶与「其他」给空串,格子渲横杠)。
+ * 大类格的字:公司的主类 = 在招岗最多的那一个本站大类(2026-09-19 Frank「这个应该是这个公司的类别吧」:一家只显一个,
+ * 不把它招的各种岗都摊出来 —— Sienna 是医疗,不是「医疗、餐饮」);没有就空串(格子渲横杠)。
  *
- * @param x 取词函数与这一行。
- * @returns 行业组名或空串。
+ * @param x 这一行、取词函数、界面语言与大类选项。
+ * @returns 类别文案或空串。
  */
-function groupTextOf(x: RowWordsIn): string {
-  if ((POOL_GROUPS as readonly string[]).includes(x.r.group) === false) {
+function broadTextOf(x: EmployerCellRowIn): string {
+  const main = x.r.broadKeys[0]
+  if (main == null) {
     return TEXT_NONE
   }
-  return x.t(GROUP_KEY_HEAD + x.r.group)
+  return makeBroadLabel({ t: x.t, lang: x.lang, opts: x.broads })(main)
+}
+
+/**
+ * 类别格的字:在招岗最多的 BROAD_SHOW_MAX 个联邦 EE 类别名(词归 lib/jobs 的 eeDisplay,与职位板同一份),顿号连;
+ * 没有就空串(格子渲横杠)。
+ *
+ * @param x 取词函数与这一行。
+ * @returns 类别文案或空串。
+ */
+function eeTextOf(x: RowWordsIn): string {
+  const out: string[] = []
+  for (const k of x.r.eeKeys) {
+    if (out.length >= BROAD_SHOW_MAX) {
+      break
+    }
+    out.push(eeDisplay({ t: x.t, label: k }))
+  }
+  return out.join(x.t('de.sep'))
 }
 
 /**
@@ -402,11 +426,17 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: NameCell,
     },
     {
-      key: COL_GROUP_KEY,
-      label: x.t('de.colGroup'),
-      width: poolWidthOf({ key: COL_GROUP_KEY, shown: x.shown }),
+      key: COL_BROAD_KEY,
+      label: x.t('de.colBroad'),
+      width: poolWidthOf({ key: COL_BROAD_KEY, shown: x.shown }),
+      render: PoolBroadCell,
+    },
+    {
+      key: COL_EE_KEY,
+      label: x.t('de.colEe'),
+      width: poolWidthOf({ key: COL_EE_KEY, shown: x.shown }),
       optional: true,
-      render: PoolGroupCell,
+      render: PoolEeCell,
     },
     {
       key: COL_SECTOR_KEY,
@@ -516,8 +546,11 @@ function poolShareOf(key: string): number {
   if (key === COL_NAME_KEY) {
     return W_POOL_NAME
   }
-  if (key === COL_GROUP_KEY) {
-    return W_POOL_GROUP
+  if (key === COL_BROAD_KEY) {
+    return W_POOL_BROAD
+  }
+  if (key === COL_EE_KEY) {
+    return W_POOL_EE
   }
   if (key === COL_SECTOR_KEY) {
     return W_POOL_SECTOR
@@ -581,6 +614,8 @@ export function colKeysOf(x: ColKeysIn): string[] {
 /**
  * 此刻必须显示的可选列:筛了 LMIA → LMIA 列;带制度参数或按指定排序进来 → 指定雇主列
  * (直达链接 `?sort=designated&program=AIP` 的契约不断:进来就看得到那一列)。用户自己的勾选不被改写。
+ * 2026-09-19:行业组(把脉页那八组)的下拉与列退役 —— 雇主板「全部类别」改用职位板同名同义的联邦 EE 类别;
+ * 决策页 `?noc=` 换算成组的直达照旧生效,要清掉走「清除筛选」。
  *
  * @param x 当前筛选。
  * @returns 列 key 清单。
@@ -1539,6 +1574,9 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.broad !== TEXT_NONE) {
     p.set(P_BROAD, x.f.broad)
   }
+  if (x.f.ee !== TEXT_NONE) {
+    p.set(P_EE, x.f.ee)
+  }
   if (x.f.sector !== TEXT_NONE) {
     p.set(P_SECTOR, x.f.sector)
   }
@@ -1665,6 +1703,7 @@ function morePageOf(x: MorePageIn): PoolPage {
     cities: x.next.cities,
     districts: x.next.districts,
     broads: x.next.broads,
+    ees: x.next.ees,
   }
 }
 
@@ -1690,10 +1729,7 @@ export function makeQCommit(x: QCommitIn): ClickFn {
  * @returns 新的整份筛选。
  */
 function withOf(x: WithIn): PoolFilters {
-  let group = x.f.group
-  if (x.group != null) {
-    group = x.group
-  }
+  const group = groupOf(x)
   let prov = x.f.prov
   if (x.prov != null) {
     prov = x.prov
@@ -1709,6 +1745,10 @@ function withOf(x: WithIn): PoolFilters {
   let broad = x.f.broad
   if (x.broad != null) {
     broad = x.broad
+  }
+  let ee = x.f.ee
+  if (x.ee != null) {
+    ee = x.ee
   }
   let sector = x.f.sector
   if (x.sector != null) {
@@ -1748,6 +1788,7 @@ function withOf(x: WithIn): PoolFilters {
     city,
     district,
     broad,
+    ee,
     sector,
     program,
     noc: x.f.noc,
@@ -1761,17 +1802,47 @@ function withOf(x: WithIn): PoolFilters {
 }
 
 /**
- * 造换行业组的手柄(顺带回第一页)。
+ * withOf 的行业组那一格:「清除筛选」要求清组的给空串;给了新组的用新组;否则留着手上的
+ * (行业组的下拉 2026-09-19 退役,组只会从决策页 `?noc=` 的直达链接进来,清掉靠「清除筛选」)。
+ *
+ * @param x 当前筛选与要换的格。
+ * @returns 行业组键。
+ */
+function groupOf(x: WithIn): string {
+  if (x.groupReset === true) {
+    return TEXT_NONE
+  }
+  if (x.group != null) {
+    return x.group
+  }
+  return x.f.group
+}
+
+/**
+ * 造换在招 EE 类别的手柄(顺带回第一页;2026-09-19 Frank「类别 和 全部大类 雇主也是需要的吧」:与职位板「全部类别」同名同义)。
  *
  * @param x 当前筛选与落格。
  * @returns 下拉的 onChange。
  */
-export function makeGroup(x: FilterPickIn): PickFn {
-  function onGroup(v: string): void {
-    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_GROUP })
-    x.setF(withOf({ f: x.f, group: v, page: 0 }))
+export function makeEe(x: FilterPickIn): PickFn {
+  function onEe(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_EE })
+    x.setF(withOf({ f: x.f, ee: v, page: 0 }))
   }
-  return onGroup
+  return onEe
+}
+
+/**
+ * 造「全部类别」下拉的选项显示名取值器(词归 lib/jobs 的 eeDisplay,与职位板同一份)。
+ *
+ * @param x 取词函数。
+ * @returns EE 类别标签 → 界面词。
+ */
+export function makeEeLabel(x: WordsIn): NocNameFn {
+  function eeLabel(v: string): string {
+    return eeDisplay({ t: x.t, label: v })
+  }
+  return eeLabel
 }
 
 /**
@@ -2077,8 +2148,10 @@ export function makeClear(x: ClearIn): ClickFn {
       f: x.f,
       prov: TEXT_NONE,
       city: TEXT_NONE,
+      groupReset: true,
       district: TEXT_NONE,
       broad: TEXT_NONE,
+      ee: TEXT_NONE,
       sector: TEXT_NONE,
       program: TEXT_NONE,
       entry: false,
@@ -2169,8 +2242,8 @@ export function makeRowView(x: RowViewIn): ClickFn {
  * @returns 有没有。
  */
 export function anyFilterOf(x: FiltersIn): boolean {
-  return x.f.prov !== TEXT_NONE || x.f.broad !== TEXT_NONE || x.f.sector !== TEXT_NONE || x.f.entry || x.f.lmia
-    || x.f.program !== TEXT_NONE
+  return x.f.prov !== TEXT_NONE || x.f.broad !== TEXT_NONE || x.f.ee !== TEXT_NONE || x.f.sector !== TEXT_NONE
+    || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE || x.f.group !== TEXT_NONE
     || x.f.q !== TEXT_NONE
 }
 
@@ -2201,38 +2274,6 @@ export function emptyTextOf(x: TextByFiltersIn): string {
     return x.t('de.notCollected')
   }
   return x.t('de.emptyFiltered')
-}
-
-/**
- * 查证态的防坑句:搜到了雇主、但命中的没有一家是指定雇主 → 「不在官方指定雇主清单内,警惕担保说法」
- * (站规「≠资格认定」保留族;命中里有指定的、或压根没搜、或没命中,都不出 —— 没命中归 emptyTextOf)。
- *
- * @param x 取词函数、当前筛选与本页的行。
- * @returns 防坑句或空串。
- */
-export function searchNoteOf(x: SearchNoteIn): string {
-  if (x.f.q === TEXT_NONE || x.rows.length === 0) {
-    return TEXT_NONE
-  }
-  for (const r of x.rows) {
-    if (r.designated) {
-      return TEXT_NONE
-    }
-  }
-  return x.t('de.notFound')
-}
-
-/**
- * 造一枚行业组下拉的选项显示名取值器(与把脉页同一套 pulse.ind.* 词条)。
- *
- * @param x 取词函数。
- * @returns 组键 → 组名。
- */
-export function makeGroupLabel(x: WordsIn): NocNameFn {
-  function groupLabel(v: string): string {
-    return x.t(GROUP_KEY_HEAD + v)
-  }
-  return groupLabel
 }
 
 /**

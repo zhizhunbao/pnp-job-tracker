@@ -74,9 +74,9 @@ import type {
   FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn,
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
-  JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, LmiaTextIn,
+  JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn,
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
-  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NamedTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
+  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
   ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
@@ -4927,33 +4927,6 @@ export function subTextOf(x: SubTextIn): string {
     return x.t('subtitle.hits', { n: x.total })
   }
   return x.t('subtitle.count', { n: x.total })
-}
-
-/**
- * 计数行第二条:省提名清单命中岗数(第 5 轮 #14 的证言句拆成两条,2026-09-05 Frank 拍板
- * banner 文字统一后出横幅进筛选行,一行一条)。为 0 不出。
- *
- * @param x 取词函数与命中数。
- * @returns 一条计数;为 0 给空串。
- */
-export function namedTextOf(x: NamedTextIn): string {
-  if (x.named === 0) {
-    return TEXT_NONE
-  }
-  return x.t('subtitle.named', { named: x.named })
-}
-
-/**
- * 计数行第三条:有外劳雇佣记录的雇主数(同上拆出)。为 0 不出。
- *
- * @param x 取词函数与雇主数。
- * @returns 一条计数;为 0 给空串。
- */
-export function lmiaTextOf(x: LmiaTextIn): string {
-  if (x.lmia === 0) {
-    return TEXT_NONE
-  }
-  return x.t('subtitle.lmia', { lmia: x.lmia })
 }
 
 /**

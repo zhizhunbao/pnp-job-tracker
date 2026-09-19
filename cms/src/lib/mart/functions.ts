@@ -352,6 +352,7 @@ function toEmployerPool(r: MartRow): MartRow {
     provinces_active: cellOf(r.provincesActive), cities_active: cellOf(r.citiesActive),
     website_known: truthyOf(r.websiteKnown), lmia_skilled_total: cellOf(r.lmiaSkilledTotal),
     lmia_last_quarter: cellOf(r.lmiaLastQuarter), sector: cellOf(r.sector), district: cellOf(r.district), broads: jsonTextOf(r.broads),
+    ees: jsonTextOf(r.ees),
     fetched: textOf(r.fetched),
   }
 }

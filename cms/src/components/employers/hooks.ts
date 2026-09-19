@@ -16,7 +16,7 @@ import { useLang } from '@/components/i18n'
 import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
-  boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
+  boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
   addrQsOf, applyHomeProv, makeBroad, reportSeen, makeCity, makeDistrict, makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
@@ -88,12 +88,12 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     updatedAt: x.updatedAt,
     sort: sortStateOf({ f }),
     onQDraft: setQDraft,
-    onGroup: makeGroup({ f, setF }),
     onProv: makeProv({ f, setF }),
     onSector: makeSector({ f, setF }),
     onCity: makeCity({ f, setF }),
     onDistrict: makeDistrict({ f, setF }),
     onBroad: makeBroad({ f, setF }),
+    onEe: makeEe({ f, setF }),
     onEntry: makeEntryPick({ f, setF }),
     onLmia: makeLmiaPick({ f, setF }),
     cols: employerColsOf({ t, shown: colKeysOf({ cols: pick.cols }) }),

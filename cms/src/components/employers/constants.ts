@@ -128,6 +128,11 @@ export const EV_PROP_PROV = 'prov'
 export const EV_PROP_CITY = 'city'
 
 /**
+ * 埋点分组值:换的是在招 EE 类别那一格(2026-09-19)。
+ */
+export const EV_PROP_EE = 'ee'
+
+/**
  * 埋点分组值:换的是在招大类那一格(2026-09-18)。
  */
 export const EV_PROP_BROAD = 'broad'
@@ -558,9 +563,19 @@ export const COL_PROV_KEY = 'province'
 export const COL_CITY_KEY = 'city'
 
 /**
- * 雇主板列 key:行业(行业组名;不排序 —— 服务端排序白名单里没有这一键)。
+ * 雇主板列 key:类别(在招岗的本站大类;不排序 —— 一家多类,没有单一的序)。
  */
-export const COL_GROUP_KEY = 'group'
+export const COL_BROAD_KEY = 'broad'
+
+/**
+ * 类别(EE)格最多列几个(岗多的在前;多了一行放不下)。
+ */
+export const BROAD_SHOW_MAX = 2
+
+/**
+ * 雇主板列 key:类别(在招岗的联邦 EE 类别,可选列;不排序 —— 一家多类,没有单一的序)。
+ */
+export const COL_EE_KEY = 'ee'
 
 /**
  * 雇主板列 key:区(可选列,默认不显;不排序 —— 近半雇主没有区,排出来大半是空)。
@@ -602,9 +617,14 @@ export const W_POOL_PROV = 13
 export const W_POOL_CITY = 13
 
 /**
- * 雇主板行业列的宽(行业组名最长四个字 / 英文一个短词组)。
+ * 雇主板类别列的宽(两个大类名顿号连,最长「生活服务、社会服务」九个字)。
  */
-export const W_POOL_GROUP = 11
+export const W_POOL_BROAD = 14
+
+/**
+ * 雇主板类别(EE)列的宽(两个 EE 类别名顿号连)。
+ */
+export const W_POOL_EE = 12
 
 /**
  * 雇主板区列的宽(可选列;区名一行,与市同宽)。
@@ -853,6 +873,11 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
  * 入队请求体的内容类型。
  */
 export const MIME_JSON = 'application/json'
+
+/**
+ * query 参数名:在招 EE 类别。
+ */
+export const P_EE = 'ee'
 
 /**
  * query 参数名:在招大类(本站大类键)。

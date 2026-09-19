@@ -32,7 +32,7 @@ import { cssOf } from '@/components/css'
 import { IconClipboard } from '@/components/icons'
 import { BANNER_MODULE } from './constants'
 import {
-  lmiaTextOf, mvBarTextOf, namedTextOf, subTextOf,
+  mvBarTextOf, subTextOf,
 } from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
@@ -63,9 +63,7 @@ export function Jobs(props: JobsIn) {
           icon={<IconClipboard />}
           title={b.t('nav.jobs')}
           sub={(
-            <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })}
-              named={namedTextOf({ t: b.t, named: b.proof.named })}
-              lmia={lmiaTextOf({ t: b.t, lmia: b.proof.lmia })} />
+            <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })} />
           )}
           images={BANNER_IMGS.jobs} />
         <BoardFilters b={b} boxRef={boxRef} />

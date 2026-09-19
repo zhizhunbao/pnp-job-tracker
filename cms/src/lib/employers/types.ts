@@ -59,6 +59,11 @@ export type PoolFilters = {
   broad: string
 
   /**
+   * 在招 EE 类别(联邦 EE 类别标签);空串 = 不筛。
+   */
+  ee: string
+
+  /**
    * 雇主类别(POOL_SECTORS 之一,`private` = 库里 NULL 的那批);空串 = 不筛。
    */
   sector: string
@@ -172,6 +177,16 @@ export type PoolRow = {
    * 多地点(「市, 省码」,主场第一,最多三处;板上只显主场,其余收「另 N 地」)。
    */
   locations: string[]
+
+  /**
+   * 在招大类(本站大类键,岗多的在前);空表 = 没有在招 / 都未分类。板上「大类」列读它。
+   */
+  broadKeys: string[]
+
+  /**
+   * 在招 EE 类别(联邦 EE 类别标签,岗多的在前);空表 = 没有在招 / 都不属 EE 类别。板上「类别」列读它。
+   */
+  eeKeys: string[]
 
   /**
    * 指定雇主命中(AIP/RCIP/FCIP 任一)。
@@ -314,9 +329,14 @@ export type PoolPage = {
   districts: string[]
 
   /**
-   * 「全部类别」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
+   * 「全部大类」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
    */
   broads: BroadOpt[]
+
+  /**
+   * 「全部类别」下拉的选项(联邦 EE 类别标签,覆盖雇主多的在前)。
+   */
+  ees: string[]
 
   /**
    * 池构建日(本页最新一行的;'' = 本页无行)。
@@ -1587,6 +1607,16 @@ export type PoolAliasIn = {
 }
 
 /**
+ * `EMPLOYER_POOL_EES` 的原始行。
+ */
+export type EeDbRow = {
+  /**
+   * EE 类别标签。
+   */
+  ee: string | null
+}
+
+/**
  * `EMPLOYER_POOL_BROADS` 的原始行。
  */
 export type BroadDbRow = {
@@ -1726,9 +1756,14 @@ export type WithCitiesIn = {
   districts: string[]
 
   /**
-   * 「全部类别」下拉的选项。
+   * 「全部大类」下拉的选项。
    */
   broads: BroadOpt[]
+
+  /**
+   * 「全部类别」下拉的选项。
+   */
+  ees: string[]
 }
 
 /**
@@ -1824,6 +1859,16 @@ export type PoolDbRow = {
    * 多地点(jsonb 数组)。
    */
   locations: string[] | null
+
+  /**
+   * 在招大类(jsonb 数组,岗多的在前);NULL = 没有在招 / 还没灌过这一列。
+   */
+  broads: string[] | null
+
+  /**
+   * 在招 EE 类别(jsonb 数组,岗多的在前);NULL = 同上。
+   */
+  ees: string[] | null
 
   /**
    * 指定命中。
@@ -2056,9 +2101,14 @@ export type EmployersCache = {
   poolDistricts: Map<string, CitiesSlot>
 
   /**
-   * 「全部类别」下拉的选项;null = 冷。
+   * 「全部大类」下拉的选项;null = 冷。
    */
   poolBroads: BroadsSlot | null
+
+  /**
+   * 「全部类别」(EE)下拉的选项(形同市那一格,清单放在 cities 格里);null = 冷。
+   */
+  poolEes: CitiesSlot | null
 
   /**
    * 全组页缓存:参数键 → 整页(DISTINCT ON 扫桶表一遍 ~290ms,站级聚合禁每请求现算)。

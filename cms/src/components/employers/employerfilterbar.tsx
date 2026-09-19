@@ -15,7 +15,7 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { POOL_GROUPS, POOL_SECTORS } from '@/lib/employers'
+import { POOL_SECTORS } from '@/lib/employers'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
@@ -24,7 +24,8 @@ import { ColPicker } from '@/components/table'
 import { Updated } from '@/components/time'
 import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE, TEXT_NONE } from './constants'
 import {
-  anyFilterOf, broadKeysOf, caretOf, clearBtnClsOf, foldCountOf, makeBroadLabel, makeGroupLabel, makeOnLabel,
+  anyFilterOf, broadKeysOf, caretOf, clearBtnClsOf, foldCountOf, makeBroadLabel, makeEeLabel,
+  makeOnLabel,
   makeProvLabel, makeSectorLabel,
   moreBtnClsOf, onValueOf, pickWordsOf,
 } from './functions'
@@ -42,7 +43,9 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
   return (
     <div className={css.filtCol}>
       <div className={css.filtRow}>
-        <Search value={p.qDraft} onChange={p.onQDraft} placeholder={p.t('de.qPh')} size={SEARCH_SIZE} />
+        <span className={css.search}>
+          <Search value={p.qDraft} onChange={p.onQDraft} placeholder={p.t('de.qPh')} size={SEARCH_SIZE} />
+        </span>
         <Select value={p.f.prov}
           onChange={p.onProv}
           opts={p.data.provs}
@@ -54,15 +57,15 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
         {p.f.city !== TEXT_NONE && p.data.districts.length > 0 && (
           <Select value={p.f.district} onChange={p.onDistrict} opts={p.data.districts} all={p.t('all.district')} />
         )}
-        <Select value={p.f.group}
-          onChange={p.onGroup}
-          opts={POOL_GROUPS}
-          all={p.t('de.allGroup')}
-          labelOf={makeGroupLabel({ t: p.t })} />
+        <Select value={p.f.ee}
+          onChange={p.onEe}
+          opts={p.data.ees}
+          all={p.t('all.ee')}
+          labelOf={makeEeLabel({ t: p.t })} />
         <Select value={p.f.broad}
           onChange={p.onBroad}
           opts={broadKeysOf(p.data.broads)}
-          all={p.t('de.allBroad')}
+          all={p.t('all.broad')}
           labelOf={makeBroadLabel({ t: p.t, lang: p.lang, opts: p.data.broads })} />
         <Select value={p.f.sector}
           onChange={p.onSector}

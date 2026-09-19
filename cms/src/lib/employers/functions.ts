@@ -45,7 +45,7 @@ import type {
   SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
-  BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, EnqueueExploreIn, ExploreDbRow, ExplorePendingIn, ExploreSavedOut,
+  BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, EeDbRow, EnqueueExploreIn, ExploreDbRow, ExplorePendingIn, ExploreSavedOut,
   ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, PoolAliasIn, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
@@ -74,6 +74,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const city = clip({ value: input.get(PARAM.city), max: CAP_CITY })
   const district = clip({ value: input.get(PARAM.district), max: CAP_CITY })
   const broad = clip({ value: input.get(PARAM.broad), max: CAP_BROAD })
+  const ee = clip({ value: input.get(PARAM.ee), max: CAP_BROAD })
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
@@ -119,7 +120,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
   }
   return {
-    group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, broad, sector: cleanSector,
+    group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, broad, ee, sector: cleanSector,
     program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
     lmia: input.get(PARAM.lmia) === ENTRY_ON,
@@ -235,6 +236,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   const cities = await fetchPoolCities({ db, prov: f.prov })
   const districts = await fetchPoolDistricts({ db, prov: f.prov, city: f.city })
   const broads = await fetchPoolBroads(db)
+  const ees = await fetchPoolEes(db)
   try {
     if (isScopedOf(f)) {
       const raw = await queryRows({
@@ -242,14 +244,14 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
           sort: f.sort, dir: f.dir })),
         params: [
           f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city,
-          f.district, f.broad,
+          f.district, f.broad, f.ee,
         ],
         map: passPoolDbRow,
       })
-      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities, districts, broads })
+      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities, districts, broads, ees })
     }
     const page = await fetchPoolAllPage({ db, filters: f, pageSize: input.pageSize, provs })
-    return withCitiesOf({ page, cities, districts, broads })
+    return withCitiesOf({ page, cities, districts, broads, ees })
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
@@ -270,7 +272,7 @@ function withCitiesOf(input: WithCitiesIn): PoolPage {
   return {
     rows: input.page.rows, total: input.page.total, page: input.page.page, pageSize: input.page.pageSize,
     provs: input.page.provs, cities: input.cities, districts: input.districts, broads: input.broads,
-    fetched: input.page.fetched,
+    ees: input.ees, fetched: input.page.fetched,
   }
 }
 
@@ -284,7 +286,7 @@ function pageOf(input: PageOfIn): PoolPage {
   const rows = input.raw.map(toPoolRow)
   return {
     rows: rows, total: poolTotalOf(input.raw), page: input.filters.page, pageSize: input.pageSize, provs: input.provs,
-    cities: [], districts: [], broads: [], fetched: latestFetchedOf(rows),
+    cities: [], districts: [], broads: [], ees: [], fetched: latestFetchedOf(rows),
   }
 }
 
@@ -298,7 +300,7 @@ function pageOf(input: PageOfIn): PoolPage {
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
   const key = [
-    f.q, f.prov, f.city, f.district, f.broad, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
+    f.q, f.prov, f.city, f.district, f.broad, f.ee, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
     String(input.pageSize),
   ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
@@ -311,7 +313,7 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
       sort: f.sort, dir: f.dir })),
     params: [
       f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city, f.district,
-      f.broad,
+      f.broad, f.ee,
     ],
     map: passPoolDbRow,
   })
@@ -430,6 +432,24 @@ async function fetchPoolBroads(db: Db): PoolBroadsOut {
 }
 
 /**
+ * 「全部类别」(EE)下拉的选项带 TTL 缓存(同 fetchPoolBroads:扫一遍池表的聚合;查挂了 / 零行不进缓存;改 `CACHE.poolEes`)。
+ *
+ * @param db 数据库连接。
+ * @returns EE 类别标签清单(覆盖雇主多的在前)。
+ */
+async function fetchPoolEes(db: Db): PoolProvsOut {
+  const hot = CACHE.poolEes
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return hot.cities
+  }
+  const ees = await queryRowsOrEmpty({ db, sql: SQL.EMPLOYER_POOL_EES, params: [], map: toEeName })
+  if (ees.length > 0) {
+    CACHE.poolEes = { at: Date.now(), cities: ees }
+  }
+  return ees
+}
+
+/**
  * 一个市的区下拉选项,按「省|市」带 TTL 缓存(没选市不查;零行也进缓存 —— 多数市本来就没有区,别每次都去问库;
  * 市名来自用户参数、键数不封顶,满 POOL_PAGES_MAX 清空重来;改 `CACHE.poolDistricts`)。
  *
@@ -498,7 +518,7 @@ function latestFetchedOf(rows: PoolRows): string {
 function emptyPoolPage(input: EmptyPoolPageIn): PoolPage {
   return {
     rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize, provs: input.provs, cities: [],
-    districts: [], broads: [], fetched: FETCHED_NONE,
+    districts: [], broads: [], ees: [], fetched: FETCHED_NONE,
   }
 }
 
@@ -1251,6 +1271,7 @@ export function resetEmployersCache(): void {
   CACHE.poolCities.clear()
   CACHE.poolDistricts.clear()
   CACHE.poolBroads = null
+  CACHE.poolEes = null
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()
@@ -1506,7 +1527,7 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     industry: textOrNull(r.industry),
     sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), district: text(r.district),
-    locations: toStrList(r.locations), designated: r.designated === true,
+    locations: toStrList(r.locations), broadKeys: toStrList(r.broads), eeKeys: toStrList(r.ees), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
     aliasZh: poolAliasOf({ r, ko: false }), aliasKo: poolAliasOf({ r, ko: true }), explored: r.x_status != null,
@@ -1654,6 +1675,16 @@ export function passPoolDbRow(r: PoolDbRow): PoolDbRow {
  */
 export function toCityName(r: CityDbRow): string {
   return text(r.city)
+}
+
+/**
+ * `EMPLOYER_POOL_EES` 一行 → EE 类别标签。
+ *
+ * @param r 原始行。
+ * @returns 标签。
+ */
+export function toEeName(r: EeDbRow): string {
+  return text(r.ee)
 }
 
 /**
