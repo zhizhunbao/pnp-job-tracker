@@ -146,6 +146,11 @@ export const PARAM = {
   district: 'district',
 
   /**
+   * 在招大类(职位板那套本站大类的键,数据层中文原值;2026-09-18「全部类别」筛选)。
+   */
+  broad: 'broad',
+
+  /**
    * 雇主名关键词。
    */
   q: 'q',
@@ -484,6 +489,11 @@ export const CAP_PROGRAM = 8
  * URL 参数的保留长度:省码。
  */
 export const CAP_PROV = 4
+
+/**
+ * URL 参数的保留长度:本站大类键(最长「社会服务」「生活服务」四字,留余量)。
+ */
+export const CAP_BROAD = 12
 
 /**
  * URL 参数的保留长度:市名(库里最长的市名 40 字上下)。

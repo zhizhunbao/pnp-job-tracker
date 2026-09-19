@@ -19,7 +19,7 @@ import paths
 from noc.functions import broad_of, group_of, teer_of
 from names.functions import sector_of
 from log.functions import say
-from employers.constants import (ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
+from employers.constants import (BROAD_UNCAT, ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
@@ -331,7 +331,22 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         lmiaSkilledTotal=skilled_total,
         lmiaLastQuarter=lmia_row.get(K_LAST_QUARTER) or None,
         sector=sector_of(ctx.names.get(x.key) or x.key) or None,
+        broads=broads_of(x),
         fetched=date.today().isoformat())
+
+
+def broads_of(x: KeyIn) -> list:
+    """在招大类:该雇主在招岗的本站大类,岗多的在前;未分类与空值不计。"""
+    count: Counter = Counter()
+    for rows in (x.ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            broad = row.get(K_BROAD)
+            if broad and broad != BROAD_UNCAT:
+                count[broad] += 1
+    out = []
+    for broad, _n in count.most_common():
+        out.append(broad)
+    return out
 
 
 def home_district_of(x: HomeDistrictIn) -> str | None:

@@ -128,6 +128,11 @@ export const EV_PROP_PROV = 'prov'
 export const EV_PROP_CITY = 'city'
 
 /**
+ * 埋点分组值:换的是在招大类那一格(2026-09-18)。
+ */
+export const EV_PROP_BROAD = 'broad'
+
+/**
  * 埋点分组值:换的是区那一格(2026-09-18)。
  */
 export const EV_PROP_DISTRICT = 'district'
@@ -828,6 +833,11 @@ export const P_PROV = 'prov'
  * query 参数名:主市(跟着省走)。
  */
 export const P_CITY = 'city'
+
+/**
+ * query 参数名:在招大类(本站大类键)。
+ */
+export const P_BROAD = 'broad'
 
 /**
  * query 参数名:主区(跟着市走)。

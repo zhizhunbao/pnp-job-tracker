@@ -63,6 +63,11 @@ export type PoolFilters = {
   district: string
 
   /**
+   * 在招大类(职位板那套本站大类的键);空串 = 不筛。
+   */
+  broad: string
+
+  /**
    * 雇主类别(federal / government / municipal / indigenous / public / private);空串 = 不筛。
    */
   sector: string
@@ -257,6 +262,11 @@ export type PoolPage = {
    * 区下拉的选项;没选市、或这个市的雇主都没有区 = 空数组(区下拉不出)。
    */
   districts: string[]
+
+  /**
+   * 「全部类别」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
+   */
+  broads: BroadOpt[]
 }
 
 /**
@@ -1890,6 +1900,11 @@ export type EmployersPanel = {
   onDistrict: PickFn
 
   /**
+   * 换在招大类(顺带回第一页)。
+   */
+  onBroad: PickFn
+
+  /**
    * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
    */
   onEntry: PickFn
@@ -2186,6 +2201,11 @@ export type WithIn = {
   district?: string
 
   /**
+   * 换在招大类。
+   */
+  broad?: string
+
+  /**
    * 换雇主类别。
    */
   sector?: string
@@ -2448,6 +2468,46 @@ export type MapHrefIn = {
    * 英文省全名;空串 = 没有省。
    */
   prov: string
+}
+
+/**
+ * 「全部类别」下拉的一个选项(本域自声明;线上来自 /api/employers 的 broads 格)。
+ */
+export type BroadOpt = {
+  /**
+   * 本站大类键(也是中文名;筛选值)。
+   */
+  key: string
+
+  /**
+   * 英文名;空串 = 没有。
+   */
+  en: string
+
+  /**
+   * 韩文名;空串 = 没有。
+   */
+  ko: string
+}
+
+/**
+ * makeBroadLabel 的入参。
+ */
+export type BroadLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: string
+
+  /**
+   * 选项清单。
+   */
+  opts: BroadOpt[]
 }
 
 /**

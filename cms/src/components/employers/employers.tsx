@@ -17,6 +17,7 @@
  * 更新时间挂筛选行尾(职位板同位),表上方计数行与「抓取」日撤。
  * 2026-09-13 晚 /fe 雇主页:查证态命中但全非指定时,口径注下再挂一行「不在官方指定雇主清单内」(searchNoteOf);
  * 未命中改说「本站未收录」,不再把本站没收说成官方没有。
+ * 2026-09-18 Frank「被指定不等于在招,在招数为本站职位库口径 这种废话删掉」:表格底下那行脚注撤(星级那半句同日先撤)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -52,7 +53,6 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
         <div className={css.card}>
           <EmployerFilterBar p={p} />
           <EmployerBoard p={p} />
-          <div className={css.foot}>{p.t('de.note')}</div>
           {hit !== TEXT_NONE && <div className={css.foot}>{hit}</div>}
         </div>
       </Shell>

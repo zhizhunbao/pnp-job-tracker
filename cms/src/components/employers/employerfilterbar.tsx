@@ -24,7 +24,8 @@ import { ColPicker } from '@/components/table'
 import { Updated } from '@/components/time'
 import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE, TEXT_NONE } from './constants'
 import {
-  anyFilterOf, caretOf, clearBtnClsOf, foldCountOf, makeGroupLabel, makeOnLabel, makeProvLabel, makeSectorLabel,
+  anyFilterOf, broadKeysOf, caretOf, clearBtnClsOf, foldCountOf, makeBroadLabel, makeGroupLabel, makeOnLabel,
+  makeProvLabel, makeSectorLabel,
   moreBtnClsOf, onValueOf, pickWordsOf,
 } from './functions'
 import type { EmployerPanelIn } from './types'
@@ -58,6 +59,11 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           opts={POOL_GROUPS}
           all={p.t('de.allGroup')}
           labelOf={makeGroupLabel({ t: p.t })} />
+        <Select value={p.f.broad}
+          onChange={p.onBroad}
+          opts={broadKeysOf(p.data.broads)}
+          all={p.t('de.allBroad')}
+          labelOf={makeBroadLabel({ t: p.t, lang: p.lang, opts: p.data.broads })} />
         <Select value={p.f.sector}
           onChange={p.onSector}
           opts={POOL_SECTORS}

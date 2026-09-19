@@ -13,7 +13,7 @@ import { isPoolSort, isScopedOf, isSearchOf, toPoolRow } from '@/lib/employers/f
 import type { PoolFilters } from '@/lib/employers'
 
 const F = (p: Partial<PoolFilters> = {}): PoolFilters =>
-  ({ group: '', prov: '', city: '', district: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
+  ({ group: '', prov: '', city: '', district: '', broad: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
 
 describe('参数规范化', () => {
   const of = (o: Record<string, string>) =>
@@ -150,14 +150,18 @@ describe('loadEmployerPage', () => {
       if (sql.includes('DISTINCT ON (employer_key)')) {
         return { rows: [bucketRow(1, 6932)] }
       }
+      if (sql.includes('jsonb_array_elements_text')) {
+        return { rows: [{ broad: 'IT', broad_en: 'Tech', broad_ko: null }] }
+      }
       return { rows: [] }
     })
     const p = await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })
+    expect(p.broads).toEqual([{ key: 'IT', en: 'Tech', ko: '' }])
     expect(p.total).toBe(6932)
     expect(p.rows).toHaveLength(1)
     expect(p.provs).toEqual(['NS', 'ON'])
     const q = seen.find((s) => s.sql.includes('DISTINCT ON (employer_key)'))
-    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', '', ''])
+    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', '', '', ''])
     expect(q?.sql).toContain('ORDER BY b.star DESC NULLS LAST, b.star DESC, p.open_jobs_total DESC')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
     const before = seen.length
@@ -179,12 +183,12 @@ describe('loadEmployerPage', () => {
     expect(p.total).toBe(137)
     expect(p.pageSize).toBe(50)
     const q = seen.find((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))
-    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, '', '', ''])
+    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, '', '', '', ''])
     expect(q?.sql).toContain('ORDER BY b.open_jobs ASC NULLS LAST, b.star DESC')
     expect(q?.sql).not.toContain('DROP')
     const last = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', page: 2 }), pageSize: 50 })
     const q2 = seen.filter((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p')).at(-1)
-    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, '', '', ''])
+    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, '', '', '', ''])
     expect(last.page).toBe(2)
   })
 
@@ -195,7 +199,7 @@ describe('loadEmployerPage', () => {
     expect(p.rows).toHaveLength(1)
     expect(p.total).toBe(1)
     const q = seen.find((s) => s.sql.includes('ILIKE'))
-    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, '', '', ''])
+    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, '', '', '', ''])
     expect(q?.sql).not.toContain('tim hortons')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
   })

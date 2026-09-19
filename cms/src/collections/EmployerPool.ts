@@ -31,6 +31,7 @@ export const EmployerPool: CollectionConfig = {
     { name: 'websiteKnown', type: 'checkbox', defaultValue: false, admin: { description: '本站是否已知官网' } },
     { name: 'lmiaSkilledTotal', type: 'number', admin: { description: '技能类 LMIA 获批数(旁证,不单独入星)' } },
     { name: 'lmiaLastQuarter', type: 'text', admin: { description: '最近一期 LMIA 季度标(如 2025Q2);空 = 无记录' } },
+    { name: 'broads', type: 'json', admin: { description: '在招大类 string[](职位板那套本站大类,岗多的在前;空 = 没有在招 / 都未分类);雇主板「全部类别」下拉按它筛;DDL docs/sql/employer-pool-broads-20260918.sql(GIN 索引)' } },
     { name: 'district', type: 'text', admin: { description: '主区:主省主市的在招岗里出现最多的区;空 = 岗都没带区(etl/employers home_district_of);DDL docs/sql/employer-pool-district-20260918.sql' } },
     { name: 'sector', type: 'text', index: true, admin: { description: '雇主类别:federal / government(省级)/ municipal / indigenous / public;空 = 私营。按名字判(etl/names sector_of);DDL docs/sql/employer-pool-sector-20260918.sql' } },
     { name: 'fetched', type: 'text', admin: { description: '本站构建日(evidence 随行)' } },

@@ -34,6 +34,11 @@ export const CACHE: EmployersCache = {
   poolDistricts: new Map(),
 
   /**
+   * 「全部类别」下拉的选项(2026-09-18)。开机是空的。
+   */
+  poolBroads: null,
+
+  /**
    * 全组页缓存(2026-09-13 默认全量出榜)。开机是空的。
    */
   poolPages: new Map(),

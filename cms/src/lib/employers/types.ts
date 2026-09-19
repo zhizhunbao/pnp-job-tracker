@@ -54,6 +54,11 @@ export type PoolFilters = {
   district: string
 
   /**
+   * 在招大类(本站大类键);空串 = 不筛。
+   */
+  broad: string
+
+  /**
    * 雇主类别(POOL_SECTORS 之一,`private` = 库里 NULL 的那批);空串 = 不筛。
    */
   sector: string
@@ -302,6 +307,11 @@ export type PoolPage = {
    * 区下拉的选项(当前市里雇主的主区,雇主多的在前);没选市、或这个市的雇主都没有区 = 空数组。
    */
   districts: string[]
+
+  /**
+   * 「全部类别」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
+   */
+  broads: BroadOpt[]
 
   /**
    * 池构建日(本页最新一行的;'' = 本页无行)。
@@ -1392,6 +1402,66 @@ export type CityDbRow = {
 }
 
 /**
+ * `EMPLOYER_POOL_BROADS` 的原始行。
+ */
+export type BroadDbRow = {
+  /**
+   * 本站大类键(数据层中文原值)。
+   */
+  broad: string | null
+
+  /**
+   * 英文名;维度表里没有这一类 = null。
+   */
+  broad_en: string | null
+
+  /**
+   * 韩文名。
+   */
+  broad_ko: string | null
+}
+
+/**
+ * 「全部类别」下拉的一个选项。
+ */
+export type BroadOpt = {
+  /**
+   * 本站大类键(也是中文名;筛选值)。
+   */
+  key: string
+
+  /**
+   * 英文名;空串 = 没有(显示退回键)。
+   */
+  en: string
+
+  /**
+   * 韩文名;空串 = 没有。
+   */
+  ko: string
+}
+
+/**
+ * 大类选项缓存的一份。
+ */
+export type BroadsSlot = {
+  /**
+   * 灌入时刻(Date.now())。
+   */
+  at: number
+
+  /**
+   * 选项清单。
+   */
+  broads: BroadOpt[]
+}
+
+/**
+ * `fetchPoolBroads` 的返回。
+ */
+export type PoolBroadsOut = Promise<BroadOpt[]>
+
+/**
  * `EMPLOYER_POOL_DISTRICTS` 的原始行。
  */
 export type DistrictDbRow = {
@@ -1469,6 +1539,11 @@ export type WithCitiesIn = {
    * 当前市的区选项。
    */
   districts: string[]
+
+  /**
+   * 「全部类别」下拉的选项。
+   */
+  broads: BroadOpt[]
 }
 
 /**
@@ -1774,6 +1849,11 @@ export type EmployersCache = {
    * 区下拉选项:「省码|市名」→ 那个市的区清单(形同市那一格,清单放在 cities 格里;满 POOL_PAGES_MAX 清空重来)。
    */
   poolDistricts: Map<string, CitiesSlot>
+
+  /**
+   * 「全部类别」下拉的选项;null = 冷。
+   */
+  poolBroads: BroadsSlot | null
 
   /**
    * 全组页缓存:参数键 → 整页(DISTINCT ON 扫桶表一遍 ~290ms,站级聚合禁每请求现算)。

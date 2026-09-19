@@ -19,7 +19,7 @@ import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_CITY, CAP_SECTOR, POOL_SECTORS,
+  CAP_BROAD, CAP_CITY, CAP_SECTOR, POOL_SECTORS,
   CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
   CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
@@ -45,7 +45,7 @@ import type {
   SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
-  CityDbRow, DistrictDbRow, IdCell, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
+  BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, IdCell, MaybeStr, OccDbRow, OccRow, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
@@ -72,6 +72,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const sector = clip({ value: input.get(PARAM.sector), max: CAP_SECTOR }).toLowerCase()
   const city = clip({ value: input.get(PARAM.city), max: CAP_CITY })
   const district = clip({ value: input.get(PARAM.district), max: CAP_CITY })
+  const broad = clip({ value: input.get(PARAM.broad), max: CAP_BROAD })
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
@@ -117,7 +118,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
   }
   return {
-    group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, sector: cleanSector,
+    group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, broad, sector: cleanSector,
     program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
     lmia: input.get(PARAM.lmia) === ENTRY_ON,
@@ -232,6 +233,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   const provs = await fetchPoolProvs(db)
   const cities = await fetchPoolCities({ db, prov: f.prov })
   const districts = await fetchPoolDistricts({ db, prov: f.prov, city: f.city })
+  const broads = await fetchPoolBroads(db)
   try {
     if (isScopedOf(f)) {
       const raw = await queryRows({
@@ -239,14 +241,14 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
           sort: f.sort, dir: f.dir })),
         params: [
           f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city,
-          f.district,
+          f.district, f.broad,
         ],
         map: passPoolDbRow,
       })
-      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities, districts })
+      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities, districts, broads })
     }
     const page = await fetchPoolAllPage({ db, filters: f, pageSize: input.pageSize, provs })
-    return withCitiesOf({ page, cities, districts })
+    return withCitiesOf({ page, cities, districts, broads })
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
@@ -266,7 +268,8 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
 function withCitiesOf(input: WithCitiesIn): PoolPage {
   return {
     rows: input.page.rows, total: input.page.total, page: input.page.page, pageSize: input.page.pageSize,
-    provs: input.page.provs, cities: input.cities, districts: input.districts, fetched: input.page.fetched,
+    provs: input.page.provs, cities: input.cities, districts: input.districts, broads: input.broads,
+    fetched: input.page.fetched,
   }
 }
 
@@ -280,7 +283,7 @@ function pageOf(input: PageOfIn): PoolPage {
   const rows = input.raw.map(toPoolRow)
   return {
     rows: rows, total: poolTotalOf(input.raw), page: input.filters.page, pageSize: input.pageSize, provs: input.provs,
-    cities: [], districts: [], fetched: latestFetchedOf(rows),
+    cities: [], districts: [], broads: [], fetched: latestFetchedOf(rows),
   }
 }
 
@@ -294,7 +297,7 @@ function pageOf(input: PageOfIn): PoolPage {
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
   const key = [
-    f.q, f.prov, f.city, f.district, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
+    f.q, f.prov, f.city, f.district, f.broad, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
     String(input.pageSize),
   ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
@@ -307,6 +310,7 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
       sort: f.sort, dir: f.dir })),
     params: [
       f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city, f.district,
+      f.broad,
     ],
     map: passPoolDbRow,
   })
@@ -407,6 +411,24 @@ async function fetchPoolCities(input: PoolCitiesIn): PoolProvsOut {
 }
 
 /**
+ * 「全部类别」下拉的选项带 TTL 缓存(扫一遍池表的聚合,站级聚合禁每请求现算;查挂了 / 零行不进缓存;改 `CACHE.poolBroads`)。
+ *
+ * @param db 数据库连接。
+ * @returns 选项清单(覆盖雇主多的在前)。
+ */
+async function fetchPoolBroads(db: Db): PoolBroadsOut {
+  const hot = CACHE.poolBroads
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return hot.broads
+  }
+  const broads = await queryRowsOrEmpty({ db, sql: SQL.EMPLOYER_POOL_BROADS, params: [], map: toBroadOpt })
+  if (broads.length > 0) {
+    CACHE.poolBroads = { at: Date.now(), broads }
+  }
+  return broads
+}
+
+/**
  * 一个市的区下拉选项,按「省|市」带 TTL 缓存(没选市不查;零行也进缓存 —— 多数市本来就没有区,别每次都去问库;
  * 市名来自用户参数、键数不封顶,满 POOL_PAGES_MAX 清空重来;改 `CACHE.poolDistricts`)。
  *
@@ -475,7 +497,7 @@ function latestFetchedOf(rows: PoolRows): string {
 function emptyPoolPage(input: EmptyPoolPageIn): PoolPage {
   return {
     rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize, provs: input.provs, cities: [],
-    districts: [], fetched: FETCHED_NONE,
+    districts: [], broads: [], fetched: FETCHED_NONE,
   }
 }
 
@@ -1227,6 +1249,7 @@ export function resetEmployersCache(): void {
   CACHE.poolPages.clear()
   CACHE.poolCities.clear()
   CACHE.poolDistricts.clear()
+  CACHE.poolBroads = null
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()
@@ -1526,6 +1549,16 @@ export function passPoolDbRow(r: PoolDbRow): PoolDbRow {
  */
 export function toCityName(r: CityDbRow): string {
   return text(r.city)
+}
+
+/**
+ * `EMPLOYER_POOL_BROADS` 一行 → 下拉选项。
+ *
+ * @param r 原始行。
+ * @returns 选项。
+ */
+export function toBroadOpt(r: BroadDbRow): BroadOpt {
+  return { key: text(r.broad), en: text(r.broad_en), ko: text(r.broad_ko) }
 }
 
 /**

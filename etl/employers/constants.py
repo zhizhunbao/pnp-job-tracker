@@ -70,6 +70,9 @@ K_CITY = "city"
 K_DISTRICT = "district"
 """区(mart 地点段给的市内分区;近半数在招岗有)。"""
 
+BROAD_UNCAT = "未分类"
+"""在招岗的大类占位:职业没归进本站大类(不进雇主的在招大类清单 —— 「未分类」不是一个能筛的类)。"""
+
 K_STATUS = "status"
 """岗状态(池只数 open)。"""
 

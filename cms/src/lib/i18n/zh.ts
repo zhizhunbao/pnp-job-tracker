@@ -555,7 +555,7 @@ export const jobsZh = {
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '雇主信号',   // #192 Frank「改个名更合适」:四维是粗筛信号不是打分,与「移民信号/相似雇主」词汇一致
   // E8-09 B 公司详情页 /companies/[slug]
-  'co.crumb': '公司', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '性质', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
+  'co.crumb': '公司', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '雇主类型', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   // 担保记录深化 + 相似雇主(E8-09 加深)
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   // 股别名去黑话(Frank 08-09「高薪股是什么意思?用户一看就能明白」):「股」=stream 硬译,清出台面
@@ -933,12 +933,12 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colGroup': 'EE 类别', 'de.colSector': '性质', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colDistrict': '区', 'de.allSector': '全部性质', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colGroup': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colDistrict': '区', 'de.allBroad': '全部类别', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   'de.lmia': '办过 LMIA', 'de.lmiaAll': '全部 LMIA', 'de.entryAll': '全部经验', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '全部 EE 类别', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
   'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法', 'de.notCollected': '本站未收录该雇主',
-  'de.note': '被指定不等于在招,在招数为本站职位库口径',
+ 
   'pro.unlock': '解锁 Pro',
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',
   // Hero 胶囊(2026-08-04 合并:原「今日日更」节撤,三个数并进胶囊)——讲的都是「日更职位板」这一件事;

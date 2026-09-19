@@ -502,6 +502,16 @@ export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, n
 export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
 
 /**
+ * 雇主板「全部类别」下拉的选项:池里雇主在招的本站大类(职位板那一套),覆盖雇主多的在前,带英 / 韩名
+ * (2026-09-18;扫一遍池表,lib/employers 进程内 TTL 缓存)。
+ */
+export const EMPLOYER_POOL_BROADS = `SELECT x.broad, l.broad_en, l.broad_ko
+     FROM (SELECT b AS broad, count(*) AS n FROM employer_pool p, jsonb_array_elements_text(p.broads) b
+            WHERE jsonb_typeof(p.broads) = 'array' GROUP BY b) x
+     LEFT JOIN (SELECT DISTINCT ON (broad) broad, broad_en, broad_ko FROM noc_categories ORDER BY broad) l ON l.broad = x.broad
+    ORDER BY x.n DESC, x.broad`
+
+/**
  * 雇主池市下拉的选项:一个省里雇主的主市,雇主多的在前(2026-09-18 Frank「城市筛选也加上吧」;安省有 600 个主市,
  * 长尾多是一家雇主的小地方,只给前 200;lib/employers 进程内按省 TTL 缓存)。$1=省码。
  * 同日 Frank「这个需要排序吧」:先按雇主数取前 200,交出去按字母排(下拉里找得到);区下拉同。
@@ -590,6 +600,7 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
+ * $11=在招大类或 ''(同日「全部类别」筛选;GIN 索引 employer_pool_broads_idx)。
  * total 用窗口函数随行带回,一次往返。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
@@ -615,6 +626,7 @@ export const employerPoolPage = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
+      AND ($11 = '' OR p.broads ? $11)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -677,6 +689,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
+ * $11=在招大类或 ''(同日「全部类别」筛选;GIN 索引 employer_pool_broads_idx)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
@@ -704,6 +717,7 @@ export const employerPoolAll = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
+      AND ($11 = '' OR p.broads ? $11)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
