@@ -934,7 +934,7 @@ export const siteZh = {
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
   'de.colName': '雇主', 'de.colGroup': 'EE 类别', 'de.colSector': '性质', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colDistrict': '区', 'de.allSector': '全部性质', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
-  'de.lmia': '办过 LMIA', 'de.lmiaAll': 'LMIA 不限', 'de.entryAll': '经验不限', 'de.designated': '指定雇主',
+  'de.lmia': '办过 LMIA', 'de.lmiaAll': '全部 LMIA', 'de.entryAll': '全部经验', 'de.designated': '指定雇主',
   'de.qPh': '搜雇主名', 'de.allGroup': '全部 EE 类别', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
   'de.notFound': '不在官方指定雇主清单内,警惕任何承诺担保的说法', 'de.notCollected': '本站未收录该雇主',
