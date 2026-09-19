@@ -405,6 +405,7 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       key: COL_GROUP_KEY,
       label: x.t('de.colGroup'),
       width: poolWidthOf({ key: COL_GROUP_KEY, shown: x.shown }),
+      optional: true,
       render: PoolGroupCell,
     },
     {
