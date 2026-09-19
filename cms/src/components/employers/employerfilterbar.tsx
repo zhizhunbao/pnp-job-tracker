@@ -50,6 +50,9 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
         {p.f.prov !== TEXT_NONE && (
           <Select value={p.f.city} onChange={p.onCity} opts={p.data.cities} all={p.t('all.city')} />
         )}
+        {p.f.city !== TEXT_NONE && p.data.districts.length > 0 && (
+          <Select value={p.f.district} onChange={p.onDistrict} opts={p.data.districts} all={p.t('all.district')} />
+        )}
         <Select value={p.f.group}
           onChange={p.onGroup}
           opts={POOL_GROUPS}

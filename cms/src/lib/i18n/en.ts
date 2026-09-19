@@ -850,7 +850,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'de.title': 'Employers', 'de.count': '{n} employers', 'de.hits': '{n} matched',
   'de.colName': 'Employer', 'de.colGroup': 'Industry', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
   'de.lmia': 'Has LMIA record', 'de.lmiaAll': 'Any LMIA', 'de.entryAll': 'Any experience', 'de.designated': 'Designated',
-  'de.qPh': 'Search employer', 'de.allGroup': 'Pick an industry', 'de.entry': 'No experience needed', 'de.sep': ', ',
+  'de.qPh': 'Search employer', 'de.allGroup': 'All industries', 'de.entry': 'No experience needed', 'de.sep': ', ',
   'de.emptyFiltered': 'No employer matches these filters', 'de.moreLocN': '{n} more',
   'de.notFound': 'Not on any official designated employer list. Be wary of anyone promising sponsorship.', 'de.notCollected': 'Employer not in our records',
   'de.note': 'Designated is not hiring; open counts come from our job database',

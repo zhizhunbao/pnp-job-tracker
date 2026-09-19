@@ -504,8 +504,15 @@ export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COA
 /**
  * 雇主池市下拉的选项:一个省里雇主的主市,雇主多的在前(2026-09-18 Frank「城市筛选也加上吧」;安省有 600 个主市,
  * 长尾多是一家雇主的小地方,只给前 200;lib/employers 进程内按省 TTL 缓存)。$1=省码。
+ * 同日 Frank「这个需要排序吧」:先按雇主数取前 200,交出去按字母排(下拉里找得到);区下拉同。
  */
-export const EMPLOYER_POOL_CITIES = `SELECT city FROM employer_pool WHERE province = $1 AND COALESCE(city, '') <> '' GROUP BY city ORDER BY count(*) DESC, city LIMIT 200`
+export const EMPLOYER_POOL_CITIES = `SELECT city FROM (SELECT city, count(*) AS n FROM employer_pool WHERE province = $1 AND COALESCE(city, '') <> '' GROUP BY city ORDER BY n DESC, city LIMIT 200) t ORDER BY city`
+
+/**
+ * 雇主池区下拉的选项:一个市里雇主的主区,雇主多的在前(2026-09-18 Frank「这个筛选也要到区吧」;池里约三成雇主有区,
+ * 没有区的市回零行 = 区下拉不出)。$1=省码,$2=市名。
+ */
+export const EMPLOYER_POOL_DISTRICTS = `SELECT district FROM (SELECT district, count(*) AS n FROM employer_pool WHERE province = $1 AND city = $2 AND COALESCE(district, '') <> '' GROUP BY district ORDER BY n DESC, district LIMIT 200) t ORDER BY district`
 
 /**
  * 一家公司在雇主池里的指定雇主事实(公司详情页「担保记录」卡补「指定雇主」行;2026-09-13 晚 /fe 雇主页:
@@ -582,6 +589,7 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
+ * $10=主区或 ''(同日区筛选;跟着市走)。
  * total 用窗口函数随行带回,一次往返。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
@@ -591,7 +599,8 @@ export const employerPoolPage = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
+      ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
       b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
       count(*) OVER()::int AS total
@@ -605,6 +614,7 @@ export const employerPoolPage = (order: string) => `
       AND ($5 = false OR b.lmia_skilled > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
+      AND ($10 = '' OR p.district = $10)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -666,6 +676,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
+ * $10=主区或 ''(同日区筛选;跟着市走)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
@@ -674,7 +685,8 @@ export const employerPoolAll = (order: string) => `
     SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
-      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, ci.name_zh AS city_zh, ci.name_ko AS city_ko,
+      p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
+      ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
       NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
       b.star, NULL::numeric AS wage_med_annual, NULL::numeric AS wage_index_pct,
@@ -691,6 +703,7 @@ export const employerPoolAll = (order: string) => `
       AND ($5 = false OR p.lmia_skilled_total > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
+      AND ($10 = '' OR p.district = $10)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 

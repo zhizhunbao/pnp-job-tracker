@@ -25,7 +25,6 @@ import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
 import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX, TEXT_NONE } from './constants'
-import { CompanyModal } from '@/components/advisor'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
 import { noteTextOf, searchNoteOf } from './functions'
@@ -57,9 +56,6 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
           {hit !== TEXT_NONE && <div className={css.foot}>{hit}</div>}
         </div>
       </Shell>
-      {p.modal != null && (
-        <CompanyModal slug={p.modal.slug} name={p.modal.name} lang={p.lang} onClose={p.onCloseModal} />
-      )}
     </div>
   )
 }

@@ -45,7 +45,7 @@ import type {
   SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
-  CityDbRow, IdCell, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, ReqDbRow, ReqRow, WithCitiesIn,
+  CityDbRow, DistrictDbRow, IdCell, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
@@ -71,6 +71,7 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   const program = clip({ value: input.get(PARAM.program), max: CAP_PROGRAM }).toUpperCase()
   const sector = clip({ value: input.get(PARAM.sector), max: CAP_SECTOR }).toLowerCase()
   const city = clip({ value: input.get(PARAM.city), max: CAP_CITY })
+  const district = clip({ value: input.get(PARAM.district), max: CAP_CITY })
   const noc = clip({ value: input.get(PARAM.noc), max: CAP_NOC })
   const sort = clip({ value: input.get(PARAM.sort), max: CAP_SORT }).toLowerCase()
   const dir = clip({ value: input.get(PARAM.dir), max: CAP_DIR }).toLowerCase()
@@ -86,6 +87,10 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
   let cleanCity = FILTER_UNSET
   if (cleanProv !== FILTER_UNSET) {
     cleanCity = city
+  }
+  let cleanDistrict = FILTER_UNSET
+  if (cleanCity !== FILTER_UNSET) {
+    cleanDistrict = district
   }
   let cleanProgram = FILTER_UNSET
   if ((EMP_PROGRAMS as readonly string[]).includes(program)) {
@@ -112,7 +117,8 @@ export function normalizePoolFilters(input: NormalizeFiltersIn): PoolFilters {
     cleanPage = Math.min(Math.floor(page), PAGE_MAX)
   }
   return {
-    group: cleanGroup, prov: cleanProv, city: cleanCity, sector: cleanSector, program: cleanProgram, noc: cleanNoc,
+    group: cleanGroup, prov: cleanProv, city: cleanCity, district: cleanDistrict, sector: cleanSector,
+    program: cleanProgram, noc: cleanNoc,
     entry: input.get(PARAM.entry) === ENTRY_ON,
     lmia: input.get(PARAM.lmia) === ENTRY_ON,
     q: clip({ value: input.get(PARAM.q), max: CAP_TEXT }).replace(Q_WILD_RE, FILTER_UNSET),
@@ -225,6 +231,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   const db = input.db
   const provs = await fetchPoolProvs(db)
   const cities = await fetchPoolCities({ db, prov: f.prov })
+  const districts = await fetchPoolDistricts({ db, prov: f.prov, city: f.city })
   try {
     if (isScopedOf(f)) {
       const raw = await queryRows({
@@ -232,12 +239,14 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
           sort: f.sort, dir: f.dir })),
         params: [
           f.group, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city,
+          f.district,
         ],
         map: passPoolDbRow,
       })
-      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities })
+      return withCitiesOf({ page: pageOf({ raw, filters: f, pageSize: input.pageSize, provs }), cities, districts })
     }
-    return withCitiesOf({ page: await fetchPoolAllPage({ db, filters: f, pageSize: input.pageSize, provs }), cities })
+    const page = await fetchPoolAllPage({ db, filters: f, pageSize: input.pageSize, provs })
+    return withCitiesOf({ page, cities, districts })
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
@@ -249,7 +258,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
 }
 
 /**
- * 给取好的一页挂上当前省的市选项(页缓存里不存市选项 —— 它按省另存一份;字段逐格写全,不展开)。
+ * 给取好的一页挂上当前省的市选项与当前市的区选项(页缓存里不存市选项 —— 它按省另存一份;字段逐格写全,不展开)。
  *
  * @param input 一页与市选项。
  * @returns 带市选项的一页。
@@ -257,7 +266,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
 function withCitiesOf(input: WithCitiesIn): PoolPage {
   return {
     rows: input.page.rows, total: input.page.total, page: input.page.page, pageSize: input.page.pageSize,
-    provs: input.page.provs, cities: input.cities, fetched: input.page.fetched,
+    provs: input.page.provs, cities: input.cities, districts: input.districts, fetched: input.page.fetched,
   }
 }
 
@@ -271,7 +280,7 @@ function pageOf(input: PageOfIn): PoolPage {
   const rows = input.raw.map(toPoolRow)
   return {
     rows: rows, total: poolTotalOf(input.raw), page: input.filters.page, pageSize: input.pageSize, provs: input.provs,
-    cities: [], fetched: latestFetchedOf(rows),
+    cities: [], districts: [], fetched: latestFetchedOf(rows),
   }
 }
 
@@ -285,7 +294,7 @@ function pageOf(input: PageOfIn): PoolPage {
 async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
   const f = input.filters
   const key = [
-    f.q, f.prov, f.city, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
+    f.q, f.prov, f.city, f.district, f.sector, String(f.entry), String(f.lmia), f.program, f.sort, f.dir, String(f.page),
     String(input.pageSize),
   ].join(POOL_KEY_SEP)
   const hot = CACHE.poolPages.get(key)
@@ -296,7 +305,9 @@ async function fetchPoolAllPage(input: PoolAllIn): LoadEmployerPageOut {
     db: input.db,
     sql: SQL.employerPoolAll(orderOf({ cols: SQL.EMPLOYER_POOL_ALL_ORDER, tie: SQL.EMPLOYER_POOL_ALL_TIE,
       sort: f.sort, dir: f.dir })),
-    params: [f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city],
+    params: [
+      f.q, f.prov, f.entry, f.program, f.lmia, input.pageSize, f.page * input.pageSize, f.sector, f.city, f.district,
+    ],
     map: passPoolDbRow,
   })
   const page = pageOf({ raw, filters: f, pageSize: input.pageSize, provs: input.provs })
@@ -396,6 +407,32 @@ async function fetchPoolCities(input: PoolCitiesIn): PoolProvsOut {
 }
 
 /**
+ * 一个市的区下拉选项,按「省|市」带 TTL 缓存(没选市不查;零行也进缓存 —— 多数市本来就没有区,别每次都去问库;
+ * 市名来自用户参数、键数不封顶,满 POOL_PAGES_MAX 清空重来;改 `CACHE.poolDistricts`)。
+ *
+ * @param input 连接、省码与市名。
+ * @returns 区名清单(雇主多的在前)。
+ */
+async function fetchPoolDistricts(input: PoolDistrictsIn): PoolProvsOut {
+  if (input.city === FILTER_UNSET) {
+    return []
+  }
+  const key = input.prov + POOL_KEY_SEP + input.city
+  const hot = CACHE.poolDistricts.get(key)
+  if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
+    return hot.cities
+  }
+  const districts = await queryRowsOrEmpty({
+    db: input.db, sql: SQL.EMPLOYER_POOL_DISTRICTS, params: [input.prov, input.city], map: toDistrictName,
+  })
+  if (CACHE.poolDistricts.size >= POOL_PAGES_MAX) {
+    CACHE.poolDistricts.clear()
+  }
+  CACHE.poolDistricts.set(key, { at: Date.now(), cities: districts })
+  return districts
+}
+
+/**
  * 直达参数 noc= → 行业组键(数据层单一分组:jobs.broad → noc_categories.ind_group)。
  * 库里换算不出(职业没在招岗 / 未分类)回 FILTER_UNSET —— 板退回首屏让用户自己选,不硬猜。
  *
@@ -438,7 +475,7 @@ function latestFetchedOf(rows: PoolRows): string {
 function emptyPoolPage(input: EmptyPoolPageIn): PoolPage {
   return {
     rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize, provs: input.provs, cities: [],
-    fetched: FETCHED_NONE,
+    districts: [], fetched: FETCHED_NONE,
   }
 }
 
@@ -1189,6 +1226,7 @@ export function resetEmployersCache(): void {
   CACHE.poolProvsInflight = null
   CACHE.poolPages.clear()
   CACHE.poolCities.clear()
+  CACHE.poolDistricts.clear()
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null
   CACHE.research.clear()
@@ -1440,7 +1478,8 @@ export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
  */
 export function toPoolRow(r: PoolDbRow): PoolRow {
   return {
-    key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), industry: textOrNull(r.industry),
+    key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), website: httpUrlOf(text(r.website)),
+    industry: textOrNull(r.industry),
     sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), district: text(r.district),
     locations: toStrList(r.locations), designated: r.designated === true,
@@ -1454,6 +1493,19 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),
     wageIndexPct: numOrNull(r.wage_index_pct),
   }
+}
+
+/**
+ * 只留真的 http(s) 链接(companies.website 里混过裸域名与杂串;不成链的当没有)。
+ *
+ * @param v 洗过空的官网格。
+ * @returns 链接或空串。
+ */
+function httpUrlOf(v: string): string {
+  if (HTTP_URL_RE.test(v)) {
+    return v
+  }
+  return WEBSITE_NONE
 }
 
 /**
@@ -1474,6 +1526,16 @@ export function passPoolDbRow(r: PoolDbRow): PoolDbRow {
  */
 export function toCityName(r: CityDbRow): string {
   return text(r.city)
+}
+
+/**
+ * `EMPLOYER_POOL_DISTRICTS` 一行 → 区名。
+ *
+ * @param r 原始行。
+ * @returns 区名。
+ */
+export function toDistrictName(r: DistrictDbRow): string {
+  return text(r.district)
 }
 
 /**

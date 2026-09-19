@@ -13,7 +13,7 @@ import { isPoolSort, isScopedOf, isSearchOf, toPoolRow } from '@/lib/employers/f
 import type { PoolFilters } from '@/lib/employers'
 
 const F = (p: Partial<PoolFilters> = {}): PoolFilters =>
-  ({ group: '', prov: '', city: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
+  ({ group: '', prov: '', city: '', district: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
 
 describe('参数规范化', () => {
   const of = (o: Record<string, string>) =>
@@ -83,7 +83,7 @@ describe('三个态', () => {
 describe('行构造器', () => {
   it('numeric 列的字符串收成数,可空数值保 null,jsonb 清单成数组', () => {
     const r = toPoolRow({
-      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', sector: null, province: 'ON', city: 'Ottawa', district: 'Kanata', city_zh: '渥太华', city_ko: null, trans_v: 1,
+      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', sector: null, province: 'ON', city: 'Ottawa', district: 'Kanata', website: 'https://www.shopify.com', city_zh: '渥太华', city_ko: null, trans_v: 1,
       locations: ['Ottawa, ON', 'Toronto, ON'],
       designated: false, designated_programs: [], designated_provinces: [], open_jobs_total: '40', fetched: '2026-09-13', alias_zh: 'Shopify 公司', alias_ko: null,
       ind_group: 'stem', open_jobs: '35', latest_posted: '2026-09-12', top_titles: ['developer'], entry_jobs: '7',
@@ -95,6 +95,7 @@ describe('行构造器', () => {
     expect(r.star).toBe(4)
     expect(r.wageMedAnnual).toBeNull()
     expect(r.topTitles).toEqual(['developer'])
+    expect(r.website).toBe('https://www.shopify.com')
     expect(r.designated).toBe(false)
     expect(r.slug).toBe('shopify')
     expect(r.locations).toEqual(['Ottawa, ON', 'Toronto, ON'])
@@ -106,7 +107,7 @@ describe('行构造器', () => {
 
   it('三源独有雇主:slug / 行业 / 季度 为 null 不折空串以外的东西', () => {
     const r = toPoolRow({
-      key: 'n:acme', slug: null, name: 'Acme', industry: null, sector: 'municipal', province: 'NB', city: '', district: null, city_zh: null, city_ko: null, trans_v: null, locations: null, designated: true,
+      key: 'n:acme', slug: null, name: 'Acme', industry: null, sector: 'municipal', province: 'NB', city: '', district: null, website: 'shopify.com', city_zh: null, city_ko: null, trans_v: null, locations: null, designated: true,
       designated_programs: ['AIP', 'RCIP'], designated_provinces: ['NS', 'NB'], open_jobs_total: 0, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: '', open_jobs: 0,
       latest_posted: null, top_titles: null, entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
       lmia_last_quarter: null, star: 3, wage_med_annual: null, wage_index_pct: null, total: 1,
@@ -114,6 +115,7 @@ describe('行构造器', () => {
     expect(r.slug).toBeNull()
     expect(r.industry).toBeNull()
     expect(r.programs).toEqual(['AIP', 'RCIP'])
+    expect(r.website).toBe('')
     expect(r.designatedProvinces).toEqual(['NS', 'NB'])
     expect(r.designated).toBe(true)
     expect(r.entryShare).toBeNull()
@@ -133,7 +135,7 @@ function fakePool(handler: (sql: string, params?: unknown[]) => QRows) {
 
 const bucketRow = (i: number, total: number) => ({
   key: `e${i}`, slug: null, name: `Employer ${String(i).padStart(3, '0')}`, industry: null, province: i % 2 ? 'NS' : 'NB',
-  city: '', locations: [], designated: i % 3 === 0, designated_programs: [], designated_provinces: [], open_jobs_total: i, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: 'stem',
+  city: '', locations: [], designated: i % 3 === 0, designated_programs: [], designated_provinces: [], open_jobs_total: i, fetched: '2026-09-13', alias_zh: null, alias_ko: null, website: null, ind_group: 'stem',
   open_jobs: i, latest_posted: null, top_titles: [], entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
   lmia_last_quarter: null, star: 2, wage_med_annual: null, wage_index_pct: null, total,
 })
@@ -155,7 +157,7 @@ describe('loadEmployerPage', () => {
     expect(p.rows).toHaveLength(1)
     expect(p.provs).toEqual(['NS', 'ON'])
     const q = seen.find((s) => s.sql.includes('DISTINCT ON (employer_key)'))
-    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', ''])
+    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', '', ''])
     expect(q?.sql).toContain('ORDER BY b.star DESC NULLS LAST, b.star DESC, p.open_jobs_total DESC')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
     const before = seen.length
@@ -177,12 +179,12 @@ describe('loadEmployerPage', () => {
     expect(p.total).toBe(137)
     expect(p.pageSize).toBe(50)
     const q = seen.find((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))
-    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, '', ''])
+    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, '', '', ''])
     expect(q?.sql).toContain('ORDER BY b.open_jobs ASC NULLS LAST, b.star DESC')
     expect(q?.sql).not.toContain('DROP')
     const last = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', page: 2 }), pageSize: 50 })
     const q2 = seen.filter((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p')).at(-1)
-    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, '', ''])
+    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, '', '', ''])
     expect(last.page).toBe(2)
   })
 
@@ -193,7 +195,7 @@ describe('loadEmployerPage', () => {
     expect(p.rows).toHaveLength(1)
     expect(p.total).toBe(1)
     const q = seen.find((s) => s.sql.includes('ILIKE'))
-    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, '', ''])
+    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, '', '', ''])
     expect(q?.sql).not.toContain('tim hortons')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
   })

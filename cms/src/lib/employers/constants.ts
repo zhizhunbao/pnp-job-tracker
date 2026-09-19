@@ -141,6 +141,11 @@ export const PARAM = {
   city: 'city',
 
   /**
+   * 区(区名原样;只在选了市时生效,2026-09-18 区筛选)。
+   */
+  district: 'district',
+
+  /**
    * 雇主名关键词。
    */
   q: 'q',

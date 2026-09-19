@@ -58,6 +58,11 @@ export type PoolFilters = {
   city: string
 
   /**
+   * 主区;空串 = 不筛。只在选了市时才有值(换省 / 换市即清)。
+   */
+  district: string
+
+  /**
    * 雇主类别(federal / government / municipal / indigenous / public / private);空串 = 不筛。
    */
   sector: string
@@ -121,6 +126,11 @@ export type PoolRow = {
    * 雇主名。
    */
   name: string
+
+  /**
+   * 官网(http / https 链接);空串 = 没有。
+   */
+  website: string
 
   /**
    * 中文译名(companies.alias_zh,版本对得上才有);空串 = 库里还没有。
@@ -242,6 +252,11 @@ export type PoolPage = {
    * 市下拉的选项(当前省里雇主的主市,雇主多的在前);没选省 = 空数组。
    */
   cities: string[]
+
+  /**
+   * 区下拉的选项;没选市、或这个市的雇主都没有区 = 空数组(区下拉不出)。
+   */
+  districts: string[]
 }
 
 /**
@@ -530,9 +545,10 @@ export type EmployerCellRow = {
   where: string
 
   /**
-   * 点雇主名(有公司页的才可点):普通点击开公司弹框并拦住跳转;按着 Ctrl / ⌘ / Shift 或非左键 = 放行,照链接去公司页。
+   * 雇主名的落点 = 官网(2026-09-18 Frank「这个雇主点击应该是跳到对应的网站吧。有官网的亮,没官网的不要亮」);
+   * 空串 = 没有官网(名字纯文字)。
    */
-  onName: CardClickFn
+  siteHref: string
 
   /**
    * LMIA 格:技能类 LMIA 份数(选了行业组 = 桶内份数,否则 = 这家总量);0 = 空串(渲横杠)。
@@ -1056,11 +1072,6 @@ export type EmployerCellRowIn = {
   r: PoolRow
 
   /**
-   * 点雇主名开公司弹框的落格。
-   */
-  onOpen: OpenCompanyFn
-
-  /**
    * 取词函数。
    */
   t: TFn
@@ -1084,11 +1095,6 @@ export type EmployerCellRowsIn = {
    * 本页的行。
    */
   rows: PoolRow[]
-
-  /**
-   * 点雇主名开公司弹框的落格。
-   */
-  onOpen: OpenCompanyFn
 
   /**
    * 取词函数。
@@ -1879,6 +1885,11 @@ export type EmployersPanel = {
   onCity: PickFn
 
   /**
+   * 换主区(顺带回第一页)。
+   */
+  onDistrict: PickFn
+
+  /**
    * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
    */
   onEntry: PickFn
@@ -1887,21 +1898,6 @@ export type EmployersPanel = {
    * 换「LMIA」下拉(选中 = 只看办过 LMIA 的)。
    */
   onLmia: PickFn
-
-  /**
-   * 开着的公司弹框(点了哪家);null = 没开。
-   */
-  modal: EmpModal | null
-
-  /**
-   * 点雇主名开公司弹框。
-   */
-  onOpenCompany: OpenCompanyFn
-
-  /**
-   * 关公司弹框。
-   */
-  onCloseModal: ClickFn
 
   /**
    * 现在该显示的列(字段面板勾选 + 固定列 + 被筛选带出来的列;宽度已按显示的列归一)。
@@ -2185,6 +2181,11 @@ export type WithIn = {
   city?: string
 
   /**
+   * 换主区。
+   */
+  district?: string
+
+  /**
    * 换雇主类别。
    */
   sector?: string
@@ -2432,61 +2433,6 @@ export type PageMeta = {
    * 搜索结果里那段摘要,各入口一句定稿、不随参数变。
    */
   description: string
-}
-
-/**
- * 开着的公司弹框是哪一家。
- */
-export type EmpModal = {
-  /**
-   * 公司页 slug(弹框按它取数)。
-   */
-  slug: string
-
-  /**
-   * 雇主名(弹框页眉标题)。
-   */
-  name: string
-}
-
-/**
- * 开公司弹框的落格。
- */
-export type OpenCompanyFn = (x: EmpModal) => void
-
-/**
- * makeNameClick 的入参。
- */
-export type NameClickIn = {
-  /**
-   * 公司页 slug;空串 = 没有公司页(点了不开框)。
-   */
-  slug: string
-
-  /**
-   * 雇主名。
-   */
-  name: string
-
-  /**
-   * 埋点分组值。
-   */
-  kind: string
-
-  /**
-   * 开公司弹框的落格。
-   */
-  onOpen: OpenCompanyFn
-}
-
-/**
- * makeCloseModal 的入参。
- */
-export type CloseModalIn = {
-  /**
-   * 弹框态落格。
-   */
-  setModal: (m: EmpModal | null) => void
 }
 
 /**

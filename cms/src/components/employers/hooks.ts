@@ -17,11 +17,11 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
-  addrQsOf, applyHomeProv, makeCity, makeCloseModal, makeLmiaPick, makeMore, makeProv,
+  addrQsOf, applyHomeProv, makeCity, makeDistrict, makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
-import type { EmpModal, EmployersIn, EmployersPanel, MoreIn, PoolFilters, PoolPage } from './types'
+import type { EmployersIn, EmployersPanel, MoreIn, PoolFilters, PoolPage } from './types'
 
 /**
  * 雇主板整机:筛选态、搜索框防抖、筛选进 URL(replaceState —— 换筛选不该在历史里
@@ -37,7 +37,6 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [data, setData] = useState<PoolPage>(x.initial)
   const [loading, setLoading] = useState(false)
   const [qDraft, setQDraft] = useState(x.initialFilters.q)
-  const [modal, setModal] = useState<EmpModal | null>(null)
   const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
   const first = useRef(true)
   const held = useRef<PoolPage | null>(null)
@@ -91,11 +90,9 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onProv: makeProv({ f, setF }),
     onSector: makeSector({ f, setF }),
     onCity: makeCity({ f, setF }),
+    onDistrict: makeDistrict({ f, setF }),
     onEntry: makeEntryPick({ f, setF }),
     onLmia: makeLmiaPick({ f, setF }),
-    modal,
-    onOpenCompany: setModal,
-    onCloseModal: makeCloseModal({ setModal }),
     cols: employerColsOf({ t, shown: colKeysOf({ cols: pick.cols }) }),
     pick: pick.view,
     pickRef: pick.boxRef,

@@ -29,6 +29,11 @@ export const CACHE: EmployersCache = {
   poolCities: new Map(),
 
   /**
+   * 区下拉选项(2026-09-18 区筛选;按「省|市」一格)。开机是空的。
+   */
+  poolDistricts: new Map(),
+
+  /**
    * 全组页缓存(2026-09-13 默认全量出榜)。开机是空的。
    */
   poolPages: new Map(),

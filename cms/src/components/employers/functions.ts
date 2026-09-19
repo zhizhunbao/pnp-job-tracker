@@ -48,14 +48,15 @@ import {
   CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_CITY, EV_PROP_SECTOR, EV_PROP_SORT,
+  EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_SECTOR, EV_PROP_SORT,
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_CITY, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
+  P_CITY, P_DISTRICT, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK,
+  TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
@@ -77,7 +78,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  CloseModalIn, ColKeysIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn, PoolWidthIn,
+  ColKeysIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn, PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -171,7 +172,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, onOpen: x.onOpen }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f }))
   }
   return out
 }
@@ -190,10 +191,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     jobsHref = JOBS_SEARCH_HEAD + encodeURIComponent(r.name)
   }
   let companyHref = TEXT_NONE
-  let slug = TEXT_NONE
   if (r.slug != null) {
     companyHref = URL_COMPANY_HEAD + r.slug
-    slug = r.slug
   }
   let href = companyHref
   if (href === TEXT_NONE) {
@@ -232,7 +231,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     actBtnCls: actBtnClsOf(),
     cardSalary: x.t('dp.planJobsN', { n: r.openJobs }),
     onView: makeRowView({ kind }),
-    onName: makeNameClick({ slug, name: r.name, kind, onOpen: x.onOpen }),
+    siteHref: r.website,
     onCard: makeCardClick({ href, kind }),
   }
 }
@@ -1531,6 +1530,9 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.city !== TEXT_NONE) {
     p.set(P_CITY, x.f.city)
   }
+  if (x.f.district !== TEXT_NONE) {
+    p.set(P_DISTRICT, x.f.district)
+  }
   if (x.f.sector !== TEXT_NONE) {
     p.set(P_SECTOR, x.f.sector)
   }
@@ -1625,6 +1627,7 @@ function morePageOf(x: MorePageIn): PoolPage {
     pageSize: x.next.pageSize,
     provs: x.next.provs,
     cities: x.next.cities,
+    districts: x.next.districts,
   }
 }
 
@@ -1662,6 +1665,10 @@ function withOf(x: WithIn): PoolFilters {
   if (x.city != null) {
     city = x.city
   }
+  let district = x.f.district
+  if (x.district != null) {
+    district = x.district
+  }
   let sector = x.f.sector
   if (x.sector != null) {
     sector = x.sector
@@ -1698,6 +1705,7 @@ function withOf(x: WithIn): PoolFilters {
     group,
     prov,
     city,
+    district,
     sector,
     program,
     noc: x.f.noc,
@@ -1733,7 +1741,7 @@ export function makeGroup(x: FilterPickIn): PickFn {
 export function makeProv(x: FilterPickIn): PickFn {
   function onProv(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_PROV })
-    x.setF(withOf({ f: x.f, prov: v, city: TEXT_NONE, page: 0 }))
+    x.setF(withOf({ f: x.f, prov: v, city: TEXT_NONE, district: TEXT_NONE, page: 0 }))
   }
   return onProv
 }
@@ -1747,9 +1755,23 @@ export function makeProv(x: FilterPickIn): PickFn {
 export function makeCity(x: FilterPickIn): PickFn {
   function onCity(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_CITY })
-    x.setF(withOf({ f: x.f, city: v, page: 0 }))
+    x.setF(withOf({ f: x.f, city: v, district: TEXT_NONE, page: 0 }))
   }
   return onCity
+}
+
+/**
+ * 造换区的手柄(顺带回第一页;2026-09-18 Frank「这个筛选也要到区吧」:区跟着市走,换省 / 换市即清)。
+ *
+ * @param x 当前筛选与落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeDistrict(x: FilterPickIn): PickFn {
+  function onDistrict(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_DISTRICT })
+    x.setF(withOf({ f: x.f, district: v, page: 0 }))
+  }
+  return onDistrict
 }
 
 /**
@@ -1955,6 +1977,7 @@ export function makeClear(x: ClearIn): ClickFn {
       f: x.f,
       prov: TEXT_NONE,
       city: TEXT_NONE,
+      district: TEXT_NONE,
       sector: TEXT_NONE,
       program: TEXT_NONE,
       entry: false,
@@ -1984,7 +2007,7 @@ export function applyHomeProv(x: MoreIn): void {
   if (prov === TEXT_NONE) {
     return
   }
-  x.setF(withOf({ f: x.f, prov, city: TEXT_NONE, page: 0 }))
+  x.setF(withOf({ f: x.f, prov, city: TEXT_NONE, district: TEXT_NONE, page: 0 }))
 }
 
 /**
@@ -2022,39 +2045,6 @@ export function makeCardClick(x: CardClickIn): CardClickFn {
     window.location.href = x.href
   }
   return onCardClick
-}
-
-/**
- * 造「点雇主名」的手柄(2026-09-18 Frank「接着做点雇主名开弹框,可以和 job 的公司弹框保持一致吗」):
- * 普通左键 = 拦住跳转、记一笔 emp-row、开公司弹框(与职位板点公司格开的是同一个);按着 Ctrl / ⌘ / Shift、或非左键 = 放行,
- * 链接照常去公司页(新标签开页的习惯不破)。没有公司页的雇主名不成链,到不了这里。
- *
- * @param x 公司页 slug、雇主名、埋点分组值与开框落格。
- * @returns 链接的 onClick。
- */
-export function makeNameClick(x: NameClickIn): CardClickFn {
-  function onName(e: React.MouseEvent): void {
-    if (x.slug === TEXT_NONE || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) {
-      return
-    }
-    e.preventDefault()
-    track(EV_ROW, { [EV_PROP_KEY]: x.kind })
-    x.onOpen({ slug: x.slug, name: x.name })
-  }
-  return onName
-}
-
-/**
- * 造关公司弹框的手柄。
- *
- * @param x 弹框态落格。
- * @returns 弹框的 onClose。
- */
-export function makeCloseModal(x: CloseModalIn): ClickFn {
-  function onCloseModal(): void {
-    x.setModal(null)
-  }
-  return onCloseModal
 }
 
 /**
