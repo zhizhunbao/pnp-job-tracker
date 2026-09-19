@@ -234,6 +234,14 @@ export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry,
      ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
 
 /**
+ * 相似雇主的锚(公司页兜底):这家公司在招岗里最多的那个中类(2026-09-19 Frank「这个怎么没有相似雇主」:
+ * companies.industry 只有少数公司有,没有的整卡不出 —— North Bay Computer Services 实拍;退到它自己的岗去找同类)。$1=公司 slug。
+ */
+export const COMPANY_TOP_MID = `SELECT j.mid FROM jobs j JOIN companies c ON c.id = j.company_id
+     WHERE c.slug = $1 AND COALESCE(j.mid, '') <> '' AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
+     GROUP BY j.mid ORDER BY count(*) DESC, j.mid LIMIT 1`
+
+/**
  * 相似雇主的锚:这一岗的中类(2026-09-14 Frank「这个相似雇主也不是同行业的啊」:companies.industry 是公司
  * 主营大类桶,电信架线工和运输 / 农场同落「技工」;改按岗位中类找同省同类岗在招的雇主)。
  */

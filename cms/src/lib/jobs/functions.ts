@@ -1684,6 +1684,7 @@ async function designatedOf(input: DesignatedIn): DesignatedOut {
 
 /**
  * 相似雇主(E8-09:同省同行业、有在招岗,按担保档降序 ≤6;SEO 内链 + 横向比较)。
+ * 2026-09-19:没有岗位锚、公司也没有行业桶时,退到这家公司在招岗里最多的中类去找(COMPANY_TOP_MID),不再整卡不出。
  *
  * @param input 连接、省、行业与排除 slug。
  * @returns 相似雇主行。
@@ -1697,7 +1698,13 @@ export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
       input.excludeSlug], map: toSimilar })
   }
   if (input.industry === PARAM_NONE) {
-    return []
+    const mids = await queryRows({ db: input.db, sql: SQL.COMPANY_TOP_MID, params: [input.excludeSlug], map: toMidCell })
+    const top = firstOf(mids)
+    if (top == null || top === PARAM_NONE) {
+      return []
+    }
+    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, top, input.excludeSlug],
+      map: toSimilar })
   }
   return queryRows({
     db: input.db, sql: SQL.SIMILAR_EMPLOYERS_BY_INDUSTRY, params: [input.province, input.industry,

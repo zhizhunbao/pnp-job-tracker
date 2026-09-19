@@ -1629,3 +1629,33 @@
   font-size: 14px;
   color: #6b7280;
 }
+
+/*
+ * 等译名时的占位卡(2026-09-19):接在标题卡下面,留出正文大致的高度,转圈居中 —— 加载区必占位,不让页面从一行字跳成整页。
+ */
+.waitCard {
+  /*
+   * 与标题卡留缝。
+   */
+  margin-top: 14px;
+
+  /*
+   * 占住正文第一屏的大致高度。
+   */
+  min-height: 260px;
+
+  /*
+   * 转圈居中。
+   */
+  display: flex;
+
+  /*
+   * 竖直居中。
+   */
+  align-items: center;
+
+  /*
+   * 水平居中。
+   */
+  justify-content: center;
+}

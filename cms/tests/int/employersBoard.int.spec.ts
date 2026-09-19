@@ -13,7 +13,7 @@ import { isPoolSort, isScopedOf, isSearchOf, toPoolRow } from '@/lib/employers/f
 import type { PoolFilters } from '@/lib/employers'
 
 const F = (p: Partial<PoolFilters> = {}): PoolFilters =>
-  ({ group: '', prov: '', city: '', district: '', broad: '', ee: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
+  ({ group: '', prov: '', city: '', district: '', broad: '', ee: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'open', dir: 'desc', page: 0, ...p })
 
 describe('参数规范化', () => {
   const of = (o: Record<string, string>) =>
@@ -33,11 +33,11 @@ describe('参数规范化', () => {
   })
 
   it('排序键只认白名单,缺省星级;方向只认 asc/desc,缺省按键(数字降、名字升)', () => {
-    expect(of({}).sort).toBe('star')
+    expect(of({}).sort).toBe('open')
     expect(of({}).dir).toBe('desc')
     expect(of({ sort: 'open' }).sort).toBe('open')
     expect(of({ sort: 'designated' }).sort).toBe('designated')
-    expect(of({ sort: 'DROP TABLE' }).sort).toBe('star')
+    expect(of({ sort: 'DROP TABLE' }).sort).toBe('open')
     expect(of({ sort: 'name' }).dir).toBe('asc')
     expect(of({ sort: 'name', dir: 'desc' }).dir).toBe('desc')
     expect(of({ sort: 'open', dir: 'sideways' }).dir).toBe('desc')
@@ -169,7 +169,7 @@ describe('loadEmployerPage', () => {
     expect(p.provs).toEqual(['NS', 'ON'])
     const q = seen.find((s) => s.sql.includes('DISTINCT ON (employer_key)'))
     expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', '', '', '', ''])
-    expect(q?.sql).toContain('ORDER BY b.star DESC NULLS LAST, b.star DESC, p.open_jobs_total DESC')
+    expect(q?.sql).toContain('ORDER BY p.open_jobs_total DESC NULLS LAST, b.star DESC, p.open_jobs_total DESC')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
     const before = seen.length
     await loadEmployerPage({ db: pool, filters: F(), pageSize: 50 })

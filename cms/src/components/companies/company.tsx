@@ -17,6 +17,8 @@
  * 「这个公司名要加中文翻译」:返回钮进标题卡右上角(照职位详情页);别名从名后小字改成名下一行,库里没有的
  * 懒翻一次;懒翻没收尾前整页只出转圈行。同日「这个 nav 对么」「雇主 nav 加省市和公司行业」:面包屑「雇主 › 省(链雇主板按省)› 市 › 行业 › 公司」;
  * 「这个地方的中文翻译呢」:中 / 韩界面简介默认带对照。
+ * 2026-09-19 Frank「这个跳转一个干巴巴的加载中太难看了吧」:等译名的这一会儿不再是空页左上角一行字 —— 先出标题卡
+ * (公司名 + 返回),下面一张白卡占位、转圈居中;「所有懒加载翻译完了再显示正文」那条不变。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
@@ -52,7 +54,15 @@ export function Company({ company, similar = [], updatedAt }: CompanyIn) {
   if (aliasPanel.settled === false) {
     return (
       <Shell top={SHELL_TOP}>
-        <div className={css.track}><Loading text={t('act.loadingText')} /></div>
+        <div className={css.track}>
+          <div className={css.headCard}>
+            <div className={cssOf(css.cardBack)}>
+              <BackButton fallback={URL_BACK} label={t('detail.back')} />
+            </div>
+            <h1 className={css.h1}>{company.name}</h1>
+          </div>
+          <div className={`${css.headCard} ${css.waitCard}`}><Loading text={t('act.loadingText')} /></div>
+        </div>
       </Shell>
     )
   }

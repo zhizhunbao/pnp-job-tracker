@@ -270,8 +270,11 @@ export const ORDER_SP = ' '
 
 /**
  * 雇主板默认排序:切面星级(设计稿:默认按星级排、点列头切主键)。
+ * 2026-09-19 Frank「这个排序是按什么排的」→「改成按在招数排」**改判**:默认 = 在招数降序。星级列 09-13 已撤,
+ * 默认却还按它排,用户看到只招 1 个岗的排在招 187 个的前面、又看不到原因;星级仍是合法排序键(`?sort=star`),
+ * 同分收尾里也还在。
  */
-export const POOL_SORT_DEFAULT = 'star'
+export const POOL_SORT_DEFAULT = 'open'
 
 /**
  * 开关参数(entry / lmia)的开值(只认它;其余一律当没开)。
