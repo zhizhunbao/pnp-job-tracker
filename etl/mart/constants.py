@@ -2573,6 +2573,15 @@ DIGIT_RE = re.compile(r"\d")
 TRIM_SPACE_COMMA = " ,"
 """地址首尾要剥掉的空格与逗号。"""
 
+ATS_REMOTE_RE = re.compile(
+    r"\W*(?:(?:remote|hybrid|anywhere|work from home|wfh|canada|ontario|on|ca|in|within|across|based)\W*)+", re.I)
+"""ATS 岗的「远程 / 全国 / 全省」地点写法(整格只由这些词组成才算:Canada、Ontario、Remote - Canada、Remote in Ontario …)。
+2026-09-19 Frank「远程岗按总部算渥太华」:公司本部在渥太华的,这类岗算渥太华(区留空)。起因:Solink 19 岗里 14 个、
+Rewind 3 个全是这种写法,原规则按「判不出是渥太华」整批丢。带别的地名的(Montreal, QC / Italy / United States)不在此列,照旧丢。"""
+
+K_HQ = "hq"
+"""公司档(profile.json)的键:本部所在市(人工核定;空串 = 没核过)。"""
+
 ATS_LOC_TPL = "{city} {addr}"
 """ATS 岗判地点时把「地点字段 + 地址字段」拼一处再查社区/邮编。"""
 

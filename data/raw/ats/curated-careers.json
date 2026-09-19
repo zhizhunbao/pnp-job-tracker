@@ -3,25 +3,29 @@
     "name": "Ciena Corporation Canada",
     "careers_url": "https://ciena.wd5.myworkdayjobs.com/Careers",
     "ats": "myworkdayjobs",
-    "status": "200"
+    "status": "200",
+    "hq": "Hanover, MD"
   },
   {
     "name": "Mitel",
     "careers_url": "https://mitel.wd3.myworkdayjobs.com/mitelcareers",
     "ats": "myworkdayjobs",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
   },
   {
     "name": "Solink Corporation",
     "careers_url": "https://jobs.ashbyhq.com/solink",
     "ats": "ashby",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
   },
   {
     "name": "March Networks",
     "careers_url": "https://apply.workable.com/march-networks/",
     "ats": "workable",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
   },
   {
     "name": "Lumentum",
@@ -31,7 +35,8 @@
     "address": "",
     "careers_url": "https://lumentum.wd5.myworkdayjobs.com/LITE",
     "ats": "myworkdayjobs",
-    "status": "200"
+    "status": "200",
+    "hq": "San Jose, CA"
   },
   {
     "name": "Giatec Scientific Inc.",
@@ -41,7 +46,8 @@
     "address": "",
     "careers_url": "https://giatecscientific.bamboohr.com/careers",
     "ats": "bamboohr",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
   },
   {
     "name": "Rewind",
@@ -51,13 +57,15 @@
     "address": "",
     "careers_url": "https://jobs.ashbyhq.com/rewind",
     "ats": "ashby",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
   },
   {
     "name": "Rogers",
     "careers_url": "https://jobs.rogers.com/",
     "ats": "successfactors",
-    "status": "200"
+    "status": "200",
+    "hq": "Toronto"
   },
   {
     "name": "Bank of Canada",
@@ -67,6 +75,39 @@
     "address": "234 Wellington St, Ottawa, ON K1A 0G9",
     "careers_url": "https://careers.bankofcanada.ca/",
     "ats": "successfactors",
-    "status": "200"
+    "status": "200",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Fullscript",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Solace Systems",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Ranovus",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Martello Technologies Corporation",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Pleora Technologies Inc.",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Teldio Corporation",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Intouch Insight",
+    "hq": "Ottawa"
+  },
+  {
+    "name": "Cerio",
+    "hq": "Ottawa"
   }
 ]

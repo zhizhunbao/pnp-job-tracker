@@ -236,9 +236,12 @@ def build_company_folders() -> None:
     listed = set()
     for d in companies:
         listed.add(CompanyRow.model_validate(d).name.lower())
+    hq_by_name: dict[str, str] = {}
     for d in curated_rows():
         scan = CareerScanRow.model_validate(d)
-        careers_by_name[scan.name.lower()] = scan
+        hq_by_name[scan.name.lower()] = CompanyRow.model_validate(d).hq
+        if scan.careers_url or scan.ats:
+            careers_by_name[scan.name.lower()] = scan
         if scan.name.lower() not in listed:
             companies.append(d)
     OUT_FOLDERS_ROOT.mkdir(parents=True, exist_ok=True)
@@ -260,7 +263,7 @@ def build_company_folders() -> None:
         profile = ProfileRow(name=row.name, slug=slug, region=row.region,
                              website=row.website, email=row.email, phone=row.phone,
                              sectors=row.sectors, address=row.address,
-                             description=row.description)
+                             description=row.description, hq=hq_by_name.get(row.name.lower(), ""))
         paths.write_json(paths.WriteJsonIn(path=folder / PROFILE_FILE, payload=profile.model_dump(), indent=2))
         made += 1
         scan = careers_by_name.get(row.name.lower())

@@ -2231,6 +2231,9 @@ class OttawaLocIn:
     raw_addr: str
     """地址字段(可能带邮编)。"""
 
+    home: bool
+    """这家公司本部在不在渥太华(公司档的地域 / 地址里写着);在 = 远程写法的岗算渥太华。"""
+
 
 @dataclass
 class ApplyLocIn:

@@ -125,6 +125,9 @@ class CompanyRow(BaseModel):
     region: str = KANATA_REGION_LABEL
     """地域标识(数据分层「区」级;缺格兜 Kanata 标签 —— 引导数据同源)。"""
 
+    hq: str = ""
+    """公司本部所在市(只有人工核定表里才填;目录站不给这一格)。空串 = 没核过。"""
+
 
 class CareersProbe(BaseModel):
     """careers 探测一次的结果(全空 = 没找到;默认值=探测前的初态,形状语义)。"""
@@ -203,6 +206,10 @@ class ProfileRow(BaseModel):
 
     description: str
     """简介。"""
+
+    hq: str
+    """公司本部所在市(人工核定;空串 = 没核过)。汇装拿它判「远程岗算不算本地」—— 名录里有渥太华办公室不等于本部在渥太华
+    (Magnet Forensics 本部在 Waterloo,2026-09-19 实撞)。"""
 
 
 class CareersFileRow(BaseModel):

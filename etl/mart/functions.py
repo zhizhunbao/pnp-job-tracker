@@ -46,7 +46,7 @@ from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
     ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
     EE_INV_CAT_KEY, K_INV_BY_YEAR,
@@ -4558,12 +4558,13 @@ def clean_ats_file(jobs_json: Path) -> LocKeptOut:
     """一份 ATS jobs.json:焦点区外的岗整行丢弃,留下的洗五格并回写 count。"""
     data = read_table(jobs_json)
     jobs = data.get(K_JOBS, [])
+    home = ats_home_is_ottawa(jobs_json.parent)
     clean_jobs: list = []
     kept = 0
     dropped = 0
     for job in jobs:
         loc = normalize_ottawa(OttawaLocIn(raw_city=job.get(K_LOCATION, ""),
-                                           raw_addr=job.get(K_ADDRESS, "")))
+                                           raw_addr=job.get(K_ADDRESS, ""), home=home))
         if loc is None:
             dropped += 1
             continue
@@ -4577,14 +4578,26 @@ def clean_ats_file(jobs_json: Path) -> LocKeptOut:
     return LocKeptOut(kept=kept, dropped=dropped)
 
 
+def ats_home_is_ottawa(folder: Path) -> bool:
+    """这家 ATS 公司的本部在不在渥太华:只认公司档(profile.json)里人工核定的 hq 格;没核过 / 没有公司档 = 不在。
+    不拿地域或地址猜 —— 名录里有渥太华办公室不等于本部在渥太华(Magnet Forensics 本部在 Waterloo,实撞)。"""
+    profile = folder / PROFILE_FILE
+    if not profile.exists():
+        return False
+    hq = read_table(profile).get(K_HQ, "") or ""
+    return hq.lower() == OTTAWA_CITY_LOWER
+
+
 def normalize_ottawa(x: OttawaLocIn) -> dict | None:
-    """ATS 岗 → 五格;判不出是渥太华就返回 None(调用方丢弃这一行)。"""
+    """ATS 岗 → 五格;判不出是渥太华就返回 None(调用方丢弃这一行)。
+    例外(2026-09-19 Frank「远程岗按总部算渥太华」):本部在渥太华的公司,地点只写远程 / 全国 / 全省的岗算渥太华,区留空。"""
     raw = ATS_LOC_TPL.format(city=x.raw_city or "", addr=x.raw_addr or "")
     text = raw.lower()
     district = ottawa_district_of(text)
     if district == "":
         district = FSA_DISTRICT.get(fsa_of(raw), "")
-    if district == "" and OTTAWA_CITY_LOWER not in text:
+    remote_home = x.home and ATS_REMOTE_RE.fullmatch(x.raw_city or "") is not None
+    if district == "" and OTTAWA_CITY_LOWER not in text and not remote_home:
         return None
     return {K_COUNTRY: COUNTRY_CANADA, K_PROVINCE: PROV_ON, K_CITY: OTTAWA_CITY,
             K_DISTRICT: district, K_ADDRESS: clean_address(x.raw_addr)}
