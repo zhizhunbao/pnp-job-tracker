@@ -497,14 +497,15 @@ export function useTitleTrans(x: TitleTransHookIn): string {
     setText(TEXT_NONE)
   }
   const title = x.title
+  const url = x.url
   const lang = x.lang
   const want = text === TEXT_NONE && title !== TEXT_NONE && lang !== LANG_EN
 
   useEffect(function loadTitle() {
     if (want) {
-      makeLoadTitleTrans({ title, lang, setText })()
+      makeLoadTitleTrans({ title, url, lang, setText })()
     }
-  }, [want, title, lang])
+  }, [want, title, url, lang])
 
   return text
 }

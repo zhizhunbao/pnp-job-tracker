@@ -3128,6 +3128,35 @@ export const TITLE_BATCH_MAX = 60
 export const TITLE_CTX_PREFIX = 'Job title: '
 
 /**
+ * 歧义标题(小写):只写了一个泛称、不看这一岗做什么就翻不准的(architect 可以是建筑师也可以是 IT 架构师,
+ * engineer / analyst / consultant / technician / operator … 同理)。这类按岗翻、按岗存;
+ * 其余标题(含 cook / cashier / welder 这类一个词就说清的,和 software architect 这类多词的)照旧按标题共享 ——
+ * 库里单词标题有八十多个、一万多条岗,全按岗翻是白烧翻译额度。发现新的歧义词往这里加。
+ */
+export const TITLE_AMBIGUOUS = [
+  'architect', 'engineer', 'analyst', 'consultant', 'developer', 'designer', 'technician', 'technologist', 'operator',
+  'associate', 'agent', 'officer', 'coordinator', 'specialist', 'supervisor', 'manager', 'director', 'inspector',
+  'assistant', 'advisor', 'adviser', 'administrator', 'planner', 'representative', 'programmer', 'foreman', 'helper',
+  'attendant', 'clerk', 'controller', 'superintendent', 'estimator', 'scheduler', 'installer', 'mechanic', 'worker',
+  'labourer', 'laborer', 'lead', 'intern', 'trainee', 'apprentice', 'instructor', 'researcher', 'scientist',
+]
+
+/**
+ * 语境摘句的最长字符数(够说清这岗是干什么的,又不至于把翻译器带去翻正文)。
+ */
+export const TITLE_CTX_MAX_LEN = 220
+
+/**
+ * 整理版里「工作内容」一节:节标记之后、下一个节标记之前。
+ */
+export const JD_ROLE_SECTION_RE = /\[ROLE\]\s*(?<role>[\s\S]*?)(?=\n\s*\[[A-Z]+\]|$)/
+
+/**
+ * 语境摘句里要抹成空格的字符:冒号(半角 / 全角)、方括号与换行。
+ */
+export const TITLE_CTX_CLEAN_RE = /[:：[\]\n\r]+/g
+
+/**
  * 译回来后剥掉语境头:第一个冒号(半角或全角)及其前面的字。
  */
 export const TITLE_CTX_STRIP_RE = /^[^:：]*[:：]\s*/

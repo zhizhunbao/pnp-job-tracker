@@ -49,13 +49,14 @@ import {
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS, SORT_MATCH_KEY,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
   STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
-  TITLE_BATCH_MAX, TITLE_CTX_PREFIX, TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
+  JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
+  TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
   JD_TRANS_MARKS_RE,
 } from './constants'
 import {
-  JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN,
+  JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
 } from './prompts'
 import { CACHE } from './variables'
 import type {
@@ -79,7 +80,9 @@ import type {
   RelatedOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
   SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut,
   TranslateJdIn, TransJdOut,
-  StrCell, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleList, TitleTexts, TitleTransIn, TitlesOut,
+  StrCell, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
+  TitleReq, JdTitleBody,
+  TitleTexts, TitleTransIn, TitlesOut,
   ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut, TranslateTitlesIn, UrlHandle, WhereParam,
 } from './types'
 // =========================================================================
@@ -4204,6 +4207,33 @@ function companyAddressLdOf(co: CompanyDetail): JsonObj {
 }
 
 /**
+ * 标题翻译请求体(线格式)→ 洗净的四格:缺的 / 不是串的一律空串,批量那一组去空去重封顶
+ * (2026-09-19 自 jobsTitleRoute 体内迁出:路由过了行数上限;值级清洗本来也该在 to* 里)。
+ *
+ * @param b 线格式请求体。
+ * @returns 洗净的请求。
+ */
+export function toTitleReq(b: JdTitleBody): TitleReq {
+  let title = PARAM_NONE
+  if (typeof b.title === 'string') {
+    title = b.title.trim()
+  }
+  let lang = PARAM_NONE
+  if (typeof b.lang === 'string') {
+    lang = b.lang
+  }
+  let url = PARAM_NONE
+  if (typeof b.url === 'string') {
+    url = b.url.trim()
+  }
+  let titles: TitleList = []
+  if (Array.isArray(b.titles)) {
+    titles = titleListOf(b.titles)
+  }
+  return { title, lang, url, titles }
+}
+
+/**
  * 一组职位名 → 去空去重、封顶(线格式里可能混非串,逐项验)。
  *
  * @param raw 请求体里的数组。
@@ -4281,6 +4311,75 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
 }
 
 /**
+ * 歧义标题(TITLE_AMBIGUOUS:architect / engineer / analyst …)按这一岗的工作内容翻(2026-09-19 Frank「翻译标题的时候,需要把正文内容也加进去」):
+ * 这一岗库里已有现版本译名就用它;没有就拿整理版「工作内容」一节的开头当旁证,用专门的提示词问模型要一个译名
+ * (TITLE_IN_CTX_PROMPT),译名只写回这一岗。
+ * 不在歧义名单里的标题、没给链接、库里没这一岗、这岗没有正文、译不出 / 没过译文闸 → 空串(调用方退回按标题翻的老路)。
+ *
+ * @param x 连接、职位名、语种与这一岗的原帖链接。
+ * @returns 译名或空串。
+ */
+export async function translateTitleInContext(x: TitleInCtxIn): TitleInCtxOut {
+  if (x.url === PARAM_NONE || TITLE_AMBIGUOUS.includes(x.title.toLowerCase()) === false) {
+    return PARAM_NONE
+  }
+  const rows = await queryRows({ db: x.db, sql: SQL.TITLE_TRANS_BY_URL, params: [x.url, TRANS_V], map: toTitleCtxFact })
+  const fact = firstOf(rows)
+  if (fact == null) {
+    return PARAM_NONE
+  }
+  const stored = jdTransCellOf({ fact: { zh: fact.zh, ko: fact.ko }, lang: x.lang })
+  if (stored !== PARAM_NONE) {
+    return stored
+  }
+  if (fact.ctx === PARAM_NONE) {
+    return PARAM_NONE
+  }
+  let langName = TITLE_LANG_ZH
+  if (x.lang === LANG_KO_CODE) {
+    langName = TITLE_LANG_KO
+  }
+  const r = await friendChat({
+    prompt: fill({ tpl: TITLE_IN_CTX_PROMPT, params: { lang: langName, title: x.title, ctx: fact.ctx } }),
+    timeoutMs: TRANSLATE_ROUTE_TIMEOUT_MS,
+  })
+  if (r == null) {
+    return PARAM_NONE
+  }
+  const first = r.answer.trim().split(NL)[0]
+  if (first == null) {
+    return PARAM_NONE
+  }
+  const clean = first.trim()
+  if (clean.length > TITLE_MAX_LEN || translationOk({ src: x.title, out: clean, lang: x.lang }) === false) {
+    return PARAM_NONE
+  }
+  let sql = SQL.TITLE_TRANS_SAVE_ZH_BY_URL
+  if (x.lang === LANG_KO_CODE) {
+    sql = SQL.TITLE_TRANS_SAVE_KO_BY_URL
+  }
+  await x.db.query(sql, [clean, x.url, TRANS_V])
+  return clean
+}
+
+/**
+ * `TITLE_TRANS_BY_URL` 一行 → 这一岗的译名两格 + 语境摘句(整理版「工作内容」一节优先,没有退正文开头;
+ * 冒号、方括号、换行抹成空格 —— 语境头靠「第一个冒号」剥,摘句里不能有冒号)。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+export function toTitleCtxFact(r: Row): TitleCtxFact {
+  let src = text(r.description)
+  const m = JD_ROLE_SECTION_RE.exec(text(r.jd_formatted))
+  if (m != null && m.groups != null && m.groups.role != null && m.groups.role.trim() !== PARAM_NONE) {
+    src = m.groups.role
+  }
+  const ctx = src.replace(TITLE_CTX_CLEAN_RE, SPACE).replace(LINE_SPACES_RE, SPACE).trim().slice(0, TITLE_CTX_MAX_LEN)
+  return { zh: text(r.title_zh), ko: text(r.title_ko), ctx }
+}
+
+/**
  * 批量懒翻挂了的空表兜底(catch 传具名函数;清单照常给,只是没译名)。
  *
  * @param _e 捕到的错。
@@ -4288,6 +4387,16 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
  */
 export function emptyTexts(_e: Error): TitleTexts {
   return {}
+}
+
+/**
+ * 按岗翻标题挂了的兜底(catch 传具名函数):给空串,路由退回按标题翻的老路。
+ *
+ * @param _e 捕到的错。
+ * @returns 空串。
+ */
+export function emptyTitle(_e: Error): string {
+  return PARAM_NONE
 }
 
 /**

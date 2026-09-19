@@ -1489,7 +1489,7 @@ export function makeLoadTitleTrans(x: LoadTitleTransIn): () => void {
     const res = await fetch(URL_API_JOBS_TITLE, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ title: x.title, lang: x.lang }),
+      body: JSON.stringify({ title: x.title, lang: x.lang, url: x.url }),
     })
     const d: TitleTransJson = await res.json()
     if (d == null || d.ok !== true || d.text == null || d.text === TEXT_NONE) {

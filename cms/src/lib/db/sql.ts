@@ -1436,6 +1436,33 @@ export const TITLE_TRANS_BY_TITLE = `SELECT title_zh, title_ko FROM jobs
      WHERE lower(title) = lower($1) AND trans_v = $2 AND (coalesce(title_zh, '') <> '' OR coalesce(title_ko, '') <> '') LIMIT 1`
 
 /**
+ * 单个词的歧义标题(architect / engineer / analyst …)按岗取数:这一岗自己的译名与整理版(译名版本对不上的当没有;
+ * 整理版拿来给翻译器当语境)。2026-09-19 Frank「通用的,就是翻译标题的时候,需要把正文内容也加进去」:
+ * 同是「architect」,一个是建筑师、一个是 IT 解决方案架构师,按标题共享译名必有一个错。$1=原帖链接,$2=现版本号。
+ */
+export const TITLE_TRANS_BY_URL = `SELECT CASE WHEN trans_v = $2 THEN title_zh END AS title_zh,
+            CASE WHEN trans_v = $2 THEN title_ko END AS title_ko, jd_formatted, description
+       FROM jobs WHERE apply_url = $1 LIMIT 1`
+
+/**
+ * 歧义标题的中文译名落库:只写这一岗(不像多词标题那样同名岗全写)。$1=译名,$2=原帖链接,$3=版本号。
+ */
+export const TITLE_TRANS_SAVE_ZH_BY_URL = `UPDATE jobs
+     SET title_zh = $1, trans_v = $3,
+         title_ko = CASE WHEN trans_v = $3 THEN title_ko END,
+         jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
+     WHERE apply_url = $2`
+
+/**
+ * 歧义标题的韩文译名落库:只写这一岗。
+ */
+export const TITLE_TRANS_SAVE_KO_BY_URL = `UPDATE jobs
+     SET title_ko = $1, trans_v = $3,
+         title_zh = CASE WHEN trans_v = $3 THEN title_zh END,
+         jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
+     WHERE apply_url = $2`
+
+/**
  * 职位名中文译名落库(同名岗全写;同行旧版本对照一并清空)。
  */
 export const TITLE_TRANS_SAVE_ZH = `UPDATE jobs

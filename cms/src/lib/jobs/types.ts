@@ -5005,7 +5005,87 @@ export type JdTitleBody = {
    * 批量:一组职位名(与 title 二选一;公司弹框在招清单一次发齐)。
    */
   titles?: string[] | null
+
+  /**
+   * 这一岗的原帖链接(可省;单个词的歧义标题靠它取这一岗的工作内容当语境,译名也只记在这一岗上)。
+   */
+  url?: string | null
 }
+
+/**
+ * 洗净的标题翻译请求。
+ */
+export type TitleReq = {
+  /**
+   * 单个职位名;空串 = 没给(走批量)。
+   */
+  title: string
+
+  /**
+   * 目标语种;空串 = 没给。
+   */
+  lang: string
+
+  /**
+   * 这一岗的原帖链接;空串 = 没给。
+   */
+  url: string
+
+  /**
+   * 批量的一组职位名(已去空去重封顶);空表 = 不是批量。
+   */
+  titles: string[]
+}
+
+/**
+ * `TITLE_TRANS_BY_URL` 洗净的一行:这一岗自己的译名两格 + 给翻译器当语境的摘句。
+ */
+export type TitleCtxFact = {
+  /**
+   * 这一岗的中文译名;空串 = 没有 / 版本过期。
+   */
+  zh: string
+
+  /**
+   * 这一岗的韩文译名。
+   */
+  ko: string
+
+  /**
+   * 语境摘句(整理版「工作内容」一节的开头,没有整理版就取正文开头;已去冒号、限长);空串 = 这岗没有正文。
+   */
+  ctx: string
+}
+
+/**
+ * `translateTitleInContext` 的入参。
+ */
+export type TitleInCtxIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 职位名(单个词)。
+   */
+  title: string
+
+  /**
+   * 目标语种。
+   */
+  lang: string
+
+  /**
+   * 这一岗的原帖链接。
+   */
+  url: string
+}
+
+/**
+ * `translateTitleInContext` 的出参:译名;空串 = 这条路走不通(库里没这一岗 / 没正文 / 译不出),调用方退回按标题翻。
+ */
+export type TitleInCtxOut = Promise<string>
 
 /**
  * translateTitles 的入参。

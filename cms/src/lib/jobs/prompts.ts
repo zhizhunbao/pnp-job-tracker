@@ -204,3 +204,25 @@ Posting follows:
  */
 export const JD_FORMAT_RETRY_TAIL = `
 (Reminder: copy every number, date and amount exactly as written in the posting, character for character.)`
+
+/**
+ * 歧义标题按岗翻的提示词(2026-09-19 Frank「翻译标题的时候,需要把正文内容也加进去」):给模型职位名 + 这一岗的工作内容摘句,
+ * 只要它回一个译名。先试过把摘句塞进逐行翻译器的语境头,它会把摘句一起翻出来(「渥太华房地产项目建筑师,负责…」),
+ * 所以单开这条提示词。`{lang}` = 目标语言的英文名,`{title}` = 职位名,`{ctx}` = 工作内容摘句。
+ */
+export const TITLE_IN_CTX_PROMPT = `Translate the job title below into {lang}.
+Use the role summary only to pick the right sense of the word: "architect" in a software or cloud role is an IT architect, in a building-design role it is a building architect; "engineer", "analyst", "technician", "operator" and similar words work the same way.
+Output only the translated job title on one line: no explanation, no quotes, no extra words, at most 12 characters.
+Job title: {title}
+Role summary: {ctx}`
+
+/**
+ * 目标语言的英文名(提示词里用):中文。
+ */
+export const TITLE_LANG_ZH = 'Simplified Chinese'
+
+/**
+ * 目标语言的英文名:韩文。
+ */
+export const TITLE_LANG_KO = 'Korean'
+

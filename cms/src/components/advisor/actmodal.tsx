@@ -27,6 +27,6 @@ import type { ActModalIn } from './types'
 export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
   const a = useActModal()
   const panel = useFloatPanel({ prefKey: JD_PREF, defW: JD_PANEL_W, defH: JD_PANEL_H })
-  const sub = useTitleTrans({ title: job.title, lang, cached: TEXT_NONE, gen: a.gen })
+  const sub = useTitleTrans({ title: job.title, url: job.applyUrl, lang, cached: TEXT_NONE, gen: a.gen })
   return <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} panel={panel} sub={sub} a={a} />
 }

@@ -3359,6 +3359,11 @@ export type LoadTitleTransIn = {
   title: string
 
   /**
+   * 这一岗的原帖链接(单个词的歧义标题靠它按岗翻;空串 = 没有)。
+   */
+  url: string
+
+  /**
    * 界面语言。
    */
   lang: AdvisorLang
@@ -3392,6 +3397,11 @@ export type TitleTransHookIn = {
    * 职位名。
    */
   title: string
+
+  /**
+   * 这一岗的原帖链接(单个词的歧义标题靠它按岗翻;空串 = 没有)。
+   */
+  url: string
 
   /**
    * 界面语言(英文不翻)。

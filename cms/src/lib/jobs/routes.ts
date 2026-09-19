@@ -35,9 +35,9 @@ import {
   emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyBySlug, loadJobMid, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile, titleListOf,
-  translateTitles, emptyTexts, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
-  saveTitleTrans, resetJdTrans, translateJdFormatted,
+  loadJdFormatted, loadJdState, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  translateTitles, emptyTexts, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
+  saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -526,23 +526,13 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let title = PARAM_NONE
-  let lang = PARAM_NONE
-  let titles: string[] = []
+  let body: JdTitleBody = {}
   try {
-    const b = await req.json() as JdTitleBody
-    if (typeof b.title === 'string') {
-      title = b.title.trim()
-    }
-    if (typeof b.lang === 'string') {
-      lang = b.lang
-    }
-    if (Array.isArray(b.titles)) {
-      titles = titleListOf(b.titles)
-    }
+    body = await req.json() as JdTitleBody
   } catch {
-    title = PARAM_NONE
+    body = {}
   }
+  const { title, lang, url, titles } = toTitleReq(body)
   if (TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
@@ -555,12 +545,16 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   if (title === PARAM_NONE) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
+  const db = await getDb()
+  const inCtx = await translateTitleInContext({ db, title, lang, url }).catch(emptyTitle)
+  if (inCtx !== PARAM_NONE) {
+    return Response.json({ ok: true, text: inCtx, cached: false })
+  }
   const ck = title.toLowerCase() + TRANS_KEY_SEP + lang
   const hit = CACHE.titleTransBy.get(ck)
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
   }
-  const db = await getDb()
   const stored = await loadTitleTrans({ db: db, title: title })
   if (stored != null) {
     const cell = jdTransCellOf({ fact: stored, lang: lang })
