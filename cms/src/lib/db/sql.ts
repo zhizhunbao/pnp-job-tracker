@@ -174,15 +174,19 @@ export const levelHasJobs = (levels: readonly string[]) =>
 
 /**
  * cond 二选一:按 slug,或按「这条岗属于哪家公司」的子查询(见 COMPANY_BY_JOB_ID_COND)
+ * 2026-09-19 Frank「这个怎么没翻译出来名字」(Ardene Holdings inc.):公司表没有译名时用探索队列翻好的那一份
+ * (弹框点开时现翻走网关,品牌词常被原样返回、过不了「译文不能等于原文」的闸;队列那头按读音音译,见 etl explore 域)。
  *
  * @param cond WHERE 条件片段(两种口径二选一)。
  * @returns 公司详情 SELECT 语句。
  */
 export const companyDetail = (cond: string) =>
-  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.careers_url, c.industry, c.sectors, c.alias_zh, c.alias_ko, c.trans_v, c.wiki_url,
+  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.careers_url, c.industry, c.sectors,
+            COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) AS alias_zh, COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) AS alias_ko,
+            c.trans_v, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
             c.lmia_positions, c.lmia_lmias, c.lmia_last_quarter, c.lmia_streams, c.lmia_positions_skilled
-     FROM companies c WHERE ${cond} LIMIT 1`
+     FROM companies c LEFT JOIN employer_explore x ON x.key = c.slug AND x.status = 'done' WHERE ${cond} LIMIT 1`
 
 /**
  * companyDetail 的条件片段:由职位 id 反查所属公司。$1=职位 id。
@@ -531,10 +535,13 @@ export const EMPLOYER_EXPLORE_PENDING = `SELECT e.key, e.name, p.broads FROM emp
  * 探索队列交活:逐条写回状态与译名(done = 翻好了 / skip = 人名等不翻 / fail = 这条没翻成,下轮不再取)。
  * $1=键数组,$2=状态数组,$3=中文译名数组,$4=韩文译名数组,$5=备注数组,$6=公司大类数组(六个数组等长,按位对应;
  * 公司大类 2026-09-19 加),$7=译文版本号。
+ * 2026-09-19 Frank「怎么能用空值覆盖?」:原先译名 / 大类一律写这次交来的值,空串记 NULL —— 公司分类批把办完的雇主放回待办重跑,
+ * 模型这回没给出中文名的,上回翻好的译名就被抹成空(Kognitive / Spark Lifecare 实撞,81 条)。改成这次交来是空的就留着原来的。
  */
 export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
-      SET status = u.status, alias_zh = NULLIF(u.alias_zh, ''), alias_ko = NULLIF(u.alias_ko, ''),
-          note = NULLIF(u.note, ''), industry = NULLIF(u.industry, ''), trans_v = $7, done_at = now()
+      SET status = u.status, alias_zh = COALESCE(NULLIF(u.alias_zh, ''), e.alias_zh),
+          alias_ko = COALESCE(NULLIF(u.alias_ko, ''), e.alias_ko),
+          note = NULLIF(u.note, ''), industry = COALESCE(NULLIF(u.industry, ''), e.industry), trans_v = $7, done_at = now()
      FROM unnest($1::varchar[], $2::varchar[], $3::varchar[], $4::varchar[], $5::varchar[], $6::varchar[])
           AS u(key, status, alias_zh, alias_ko, note, industry)
     WHERE e.key = u.key`
