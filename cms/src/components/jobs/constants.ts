@@ -2293,6 +2293,19 @@ export const JD_STAR_ITEM_RE = /\s+\*\s+/g
 export const JD_BULLET_RE = /\s*[•▪◦‣]\s+/g
 
 /**
+ * 行内短横列表项拆行(2026-09-19 Frank「原文要不也给他自动换行」「或者按 - 根据不同的原文情况」):
+ * 「…dining experience - Supervise and train staff - Ensure compliance…」—— 源头把「- 项」列表压成了一行。
+ * 短横两边必须各有空白、后面跟大写开头才算列表项,防误伤「full-time」「$18.00-$25.00」「9 am - 5 pm」。
+ */
+export const JD_DASH_ITEM_RE = /\s+[-–]\s+(?=[A-Z])/g
+
+/**
+ * 原帖里「一行太长」的门槛(字符数):带真实换行的正文里,单独某一行超过它 = 这一段在源头被压平了,
+ * 对这一行单独走猜测式断行(列表项拆行、一句一行);其余行照原样,不动原帖的分段。
+ */
+export const JD_LONG_LINE_LEN = 320
+
+/**
  * 一句一行(07-06 用户拍板):句末标点(前一字符是小写/数字/右括号,防 $20.00、U.S. 误拆)
  * + 可选空格 + 大写开头 → 断行;兼容 Job Bank 抓取的无空格粘连("asset.Core")。
  */

@@ -37,7 +37,8 @@ import {
   DEFAULT_COLS, DIRECT_URL_KEY, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP,
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
-  JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_PREFIX_RE,
+  JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
+  JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN,
   JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
   JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
@@ -1602,7 +1603,7 @@ export function jdLinesOf(x: JdLinesIn): string[] {
   const clipped = x.text.slice(0, x.max)
   let lines: string[] = []
   if (clipped.includes(NEWLINE)) {
-    lines = trimAll(clipped.replace(JD_EMPHASIS_RE, SPACE).split(NEWLINE))
+    lines = jdSplitLongLines(trimAll(clipped.replace(JD_EMPHASIS_RE, SPACE).split(NEWLINE)))
   } else {
     lines = jdGuessLines(clipped)
   }
@@ -1615,7 +1616,29 @@ export function jdLinesOf(x: JdLinesIn): string[] {
 }
 
 /**
- * 压平老坨帖的猜测式断行:无空格粘边 → 已知标签 → HR 破折号变体 → 「* 项」→ 行内圆点 →
+ * 带真实换行的正文里,把「单独太长的那几行」再断开(2026-09-19 Frank 实拍 restaurant supervisor 帖:整帖有换行,
+ * 但职责与要求两节被源头压成了一行六百多字的一坨,行内全是「 - 项」):只对超过 JD_LONG_LINE_LEN 的行走猜测式断行,
+ * 其余行原样 —— 原帖自己的分段不动。
+ *
+ * @param lines 按原换行切好的行。
+ * @returns 长行已断开的行序列。
+ */
+function jdSplitLongLines(lines: string[]): string[] {
+  const out: string[] = []
+  for (const l of lines) {
+    if (l.length <= JD_LONG_LINE_LEN) {
+      out.push(l)
+      continue
+    }
+    for (const part of jdGuessLines(l)) {
+      out.push(part)
+    }
+  }
+  return out
+}
+
+/**
+ * 压平老坨帖的猜测式断行:无空格粘边 → 已知标签 → HR 破折号变体 → 「* 项」→ 行内圆点 → 行内短横项(2026-09-19)→
  * markdown 残渣 → 一句一行。⚠️ 顺序不能换:剥星号必须排在「* 项」拆行之后,
  * 否则会抢掉列表拆行的星号。
  *
@@ -1629,6 +1652,7 @@ function jdGuessLines(clipped: string): string[] {
     .replace(jdRe({ tpl: JD_HR_DASH_TPL, flags: RE_FLAG_G }), NEWLINE)
     .replace(JD_STAR_ITEM_RE, NEWLINE)
     .replace(JD_BULLET_RE, NEWLINE)
+    .replace(JD_DASH_ITEM_RE, NEWLINE)
     .replace(JD_EMPHASIS_RE, SPACE)
     .replace(JD_STAR_RE, SPACE)
     .split(NEWLINE)
