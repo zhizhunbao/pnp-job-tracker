@@ -3138,6 +3138,16 @@ export const TITLE_BATCH_MAX = 60
 export const TITLE_CTX_PREFIX = 'Job title: '
 
 /**
+ * 雇主池「指定资格所在地」一格里项目与地点之间的分隔(`RCIP|North Bay and Area`;数据层 etl/employers 的 PLACE_SEP 同字)。
+ */
+export const DESIGNATED_PLACE_SEP = '|'
+
+/**
+ * 公司页灰注里项目与地点之间的空格(`RCIP North Bay and Area`)。
+ */
+export const DESIGNATED_PLACE_GAP = ' '
+
+/**
  * 歧义标题(小写):只写了一个泛称、不看这一岗做什么就翻不准的(architect 可以是建筑师也可以是 IT 架构师,
  * engineer / analyst / consultant / technician / operator … 同理)。这类按岗翻、按岗存;
  * 其余标题(含 cook / cashier / welder 这类一个词就说清的,和 software architect 这类多词的)照旧按标题共享 ——

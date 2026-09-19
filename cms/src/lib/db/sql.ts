@@ -572,13 +572,13 @@ export const EMPLOYER_POOL_DISTRICTS = `SELECT district FROM (SELECT district, c
  * 一家公司在雇主池里的指定雇主事实(公司详情页「担保记录」卡补「指定雇主」行;2026-09-13 晚 /fe 雇主页:
  * 板上说指定、落点页整页没这四个字)。$1=公司 slug;池里没这家就是零行。
  */
-export const EMPLOYER_POOL_BY_SLUG = `SELECT designated, designated_programs, designated_provinces FROM employer_pool WHERE slug = $1 LIMIT 1`
+export const EMPLOYER_POOL_BY_SLUG = `SELECT designated, designated_programs, designated_provinces, designated_places FROM employer_pool WHERE slug = $1 LIMIT 1`
 
 /**
  * 雇主池里没有公司页的一家(2026-09-19 Frank「招聘是 0 的公司也可以点击」:池里约一半雇主来自指定名单 / LMIA,
  * 从没在本站有过岗,companies 表里没有它):公司弹框按池键取这一行,拼一份只有池里事实的档案。$1=池键(`n:` 开头)。
  */
-export const EMPLOYER_POOL_BY_KEY = `SELECT name, industry, province, designated, designated_programs, designated_provinces, lmia_last_quarter FROM employer_pool WHERE key = $1 AND slug IS NULL LIMIT 1`
+export const EMPLOYER_POOL_BY_KEY = `SELECT name, industry, province, designated, designated_programs, designated_provinces, designated_places, lmia_last_quarter FROM employer_pool WHERE key = $1 AND slug IS NULL LIMIT 1`
 
 /**
  * 直达参数 noc= 换算成行业组:职业 → 在招岗上的本站大类 → noc_categories 的组键(分组只有数据层一份,

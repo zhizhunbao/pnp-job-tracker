@@ -21,6 +21,7 @@ import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import { ymd } from '../time'
 import {
+  DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
   ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC,
   BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
   COMPANY_SLUG_COND, COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
@@ -1502,7 +1503,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
   let provinces: string[] = []
   if (r.designated === true) {
     programs = strListOf(r.designated_programs)
-    provinces = strListOf(r.designated_provinces)
+    provinces = designatedWhereOf(r)
   }
   return {
     name: poolCellOf(r.name), slug: CELL_NONE, website: CELL_NONE, websiteSource: CELL_NONE, careersUrl: CELL_NONE,
@@ -1706,6 +1707,25 @@ async function lmiaNocsOf(input: LmiaNocsIn): LmiaNocsOut {
 }
 
 /**
+ * 公司页「指定雇主」那一行的灰注:池里记了资格所在地就逐条写「项目 地点」(`RCIP North Bay and Area`、`AIP NB`),没记才退回省码清单
+ * (2026-09-19 Frank「在公司详情里面说明一下 RCIP 所在地不就行了,没必要在列表里加」—— 全国连锁的指定资格只属于某一处,
+ * RONA 的在 BC 省 West Kootenay、岗却全在魁省;写明所在地,用户自己判断)。
+ *
+ * @param r 雇主池的一行。
+ * @returns 灰注清单。
+ */
+function designatedWhereOf(r: JsonRow): StrList {
+  const out: StrList = []
+  for (const p of strListOf(r.designated_places)) {
+    out.push(p.split(DESIGNATED_PLACE_SEP).join(DESIGNATED_PLACE_GAP))
+  }
+  if (out.length === 0) {
+    return strListOf(r.designated_provinces)
+  }
+  return out
+}
+
+/**
  * 公司的指定雇主事实(AIP / RCIP / FCIP 项目与归属省;2026-09-13 晚 /fe 雇主页 Frank 拍板补:板上说「指定雇主」
  * 而落点页整页没有这四个字)。读雇主池按 slug 一行;池里没这家或非指定 = 两清单皆空(那一行不渲)。
  * 容缺同 lmiaNocsOf:employer_pool 没建 / 没灌时公司页照常出,不并主 SELECT。
@@ -1721,7 +1741,7 @@ async function designatedOf(input: DesignatedIn): DesignatedOut {
     if (first == null || first.designated !== true) {
       return { programs: [], provinces: [] }
     }
-    return { programs: strListOf(first.designated_programs), provinces: strListOf(first.designated_provinces) }
+    return { programs: strListOf(first.designated_programs), provinces: designatedWhereOf(first) }
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
