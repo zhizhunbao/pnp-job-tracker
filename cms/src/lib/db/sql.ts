@@ -557,6 +557,22 @@ export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
     WHERE e.key = u.key`
 
 /**
+ * 探索队列交活的译名同时写进公司表(2026-09-19 Frank「数据存的不在一个地方吗」:译名原先公司表一份、队列表一份,
+ * 每个读的地方都得记得两头看 —— 雇主板记得、公司弹框没记得,Ardene 在弹框里是空的)。有公司页的雇主以公司表为家:
+ * 公司表那格版本号对、已有值的不动(只填空),版本号不对(老批次过期)的拿这次的盖;写完盖版本号。
+ * 队列表那份照留 —— 没有公司页的雇主只有它。$1=池主键数组,$2=中文译名数组,$3=韩文译名数组(三个等长),$4=译文版本号。
+ */
+export const EMPLOYER_EXPLORE_TO_COMPANIES = `UPDATE companies c
+      SET alias_zh = CASE WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_zh, ''), NULLIF(u.alias_zh, ''))
+                          ELSE COALESCE(NULLIF(u.alias_zh, ''), c.alias_zh) END,
+          alias_ko = CASE WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_ko, ''), NULLIF(u.alias_ko, ''))
+                          ELSE COALESCE(NULLIF(u.alias_ko, ''), c.alias_ko) END,
+          trans_v = $4
+     FROM unnest($1::varchar[], $2::varchar[], $3::varchar[]) AS u(key, alias_zh, alias_ko)
+     JOIN employer_pool p ON p.key = u.key
+    WHERE c.slug = p.slug AND (u.alias_zh <> '' OR u.alias_ko <> '')`
+
+/**
  * 雇主板「全部类别」下拉的选项:池里雇主在招岗覆盖的联邦 EE 类别(职位板同名下拉的那一套标签),覆盖雇主多的在前
  * (2026-09-19;扫一遍池表,lib/employers 进程内 TTL 缓存)。
  */

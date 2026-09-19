@@ -1681,6 +1681,15 @@ export async function saveExploreResults(input: SaveExploreIn): ExploreSavedOut 
     return 0
   }
   await input.db.query(SQL.EMPLOYER_EXPLORE_RESOLVE, [keys, statuses, zh, ko, notes, industries, TRANS_V])
+  try {
+    await input.db.query(SQL.EMPLOYER_EXPLORE_TO_COMPANIES, [keys, zh, ko, TRANS_V])
+  } catch (e) {
+    let why = String(e)
+    if (e instanceof Error) {
+      why = e.message
+    }
+    log({ tag: EMP_LOG.tag, text: `${EMP_LOG.aliasWriteFailed}${why}` })
+  }
   CACHE.poolPages.clear()
   return keys.length
 }
