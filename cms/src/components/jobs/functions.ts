@@ -4096,6 +4096,7 @@ export function boardCellViewOf(x: BoardCellIn): BoardCellView {
       line: ROW_LINE,
     }),
     onClick: cellClickOf({ b: x.b, job: x.job, k: x.k, view, active }),
+    bgClick: view.kind === KIND.text && view.href !== TEXT_NONE,
   }
 }
 
@@ -4191,7 +4192,7 @@ export function cellClsOf(c: BoardCellView): string {
   if (c.isCell) {
     cls = cls + SPACE + cssOf(css.cell)
   }
-  if (c.active) {
+  if (c.active && c.bgClick) {
     cls = cls + SPACE + cssOf(css.cellAct)
   }
   cls = cls + SPACE + toneClsOf(c.view.tone)
@@ -4316,6 +4317,32 @@ export function styleOrNone(s: React.CSSProperties | null): React.CSSProperties 
     return undefined
   }
   return s
+}
+
+/**
+ * 整格的点击:只有整格可点的格子(bgClick,字是外链的省 / 市 / 地址)才把手柄挂在格子上。
+ *
+ * @param c 这一格的展示行。
+ * @returns 点击手柄;不给 = null。
+ */
+export function tdClickOf(c: BoardCellView): ClickFn | null {
+  if (c.bgClick) {
+    return c.onClick
+  }
+  return null
+}
+
+/**
+ * 字上的点击:整格不可点(bgClick 假)时,点击落在字上;整格可点的格子字是外链,不给。
+ *
+ * @param c 这一格的展示行。
+ * @returns 点击手柄;不给 = null。
+ */
+export function hitClickOf(c: BoardCellView): ClickFn | null {
+  if (c.bgClick) {
+    return null
+  }
+  return c.onClick
 }
 
 /**

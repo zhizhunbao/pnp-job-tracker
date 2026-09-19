@@ -1271,6 +1271,21 @@ export type BannerFactsIn = {
 }
 
 /**
+ * BoardCellBody(一格里的内容)的 props。
+ */
+export type BoardCellBodyIn = {
+  /**
+   * 职位板整台状态机(锁格的升级弹框要它)。
+   */
+  b: JobsBoardPanel
+
+  /**
+   * 这一格的展示行。
+   */
+  c: BoardCellView
+}
+
+/**
  * MatchEntry(窄屏「我的匹配」入口条)的 props。
  */
 export type MatchEntryIn = {
@@ -3264,6 +3279,12 @@ export type BoardCellView = {
    * 点这一格开什么(不可点时给 null)。
    */
   onClick: ClickFn | null
+
+  /**
+   * 整格(含空白处)可点:只有字已经是外链的格子(省 / 市 / 地址的字去 Google 地图)才是 —— 它们的说明弹框只能靠点空白开。
+   * 其余可点格只有字本身能点(2026-09-19 Frank「那把点背景给去掉呢」→「按建议做,省市保留空白」)。
+   */
+  bgClick: boolean
 }
 
 /**

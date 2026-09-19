@@ -668,6 +668,18 @@
 }
 
 /*
+ * 只有字能点的格子:点击落在这层字上(2026-09-19 Frank「那把点背景给去掉呢」:格子空白处不再响应,
+ * 蓝 = 能点只认字;省 / 市 / 地址的字是地图外链,仍走整格 .cellAct)。
+ */
+.hit {
+  cursor: pointer;
+}
+
+.hit:hover {
+  text-decoration: underline;
+}
+
+/*
  * 数据行。
  */
 .row {
