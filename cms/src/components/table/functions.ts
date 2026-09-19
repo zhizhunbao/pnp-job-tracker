@@ -8,7 +8,7 @@
  * @time 2026-08-24 02:30:00
  */
 import {
-  PICK_STORE_HEAD, PICK_STORE_SEP,
+  PICK_COOKIE_EQ, PICK_COOKIE_TAIL, PICK_STORE_HEAD, PICK_STORE_SEP,
   CLS_SEP, EMPTY_MARK, SERIES_BOX_SEP, SERIES_CHART_H, SERIES_CHART_W, SERIES_COLOR_FALLBACK, SERIES_COLORS,
   SERIES_GRID_MAX_LINES, SERIES_GRID_STEP, SERIES_GRID_STEPS, SERIES_INDEX_BASE, SERIES_LOCALE, SERIES_MIN_POINTS,
   SERIES_ANCHOR_LAST, SERIES_ANCHOR_MID, SERIES_BAR_FILL, SERIES_BAR_GAP, SERIES_CHAR_W, SERIES_HALF, SERIES_PAD_B,
@@ -22,7 +22,8 @@ import type {
   IndexOfIn, LeftPadIn, PlotLineIn, PointLabelsIn, RawPointsIn,
   SeriesBar, SeriesBounds, SeriesDot, SeriesGrid, SeriesLine, SeriesLinesIn, SeriesPathIn, SeriesPlot, SeriesPlotIn,
   SeriesRawLine, SeriesRawPoint, SeriesTick, ShownColsIn, SortRowsIn, TickAnchor, TicksIn, WidthStyleIn, XAtIn, YAtIn,
-  InvertKeysIn, OpenToggleIn, PickColsIn, PickSaveIn, PickSetIn, PickToggleIn, ReadPickedIn, SetPickedFn, ShownByPickIn,
+  InvertKeysIn, OpenToggleIn, PickColsIn, PickSaveIn, PickSetIn, PickToggleIn, PickedOfRawIn, ReadPickedIn, SetPickedFn,
+  ShownByPickIn,
 } from './types'
 
 /**
@@ -672,6 +673,26 @@ export function readPicked<T>(x: ReadPickedIn<T>): string[] | null {
   if (raw == null || raw === '') {
     return null
   }
+  return pickedOfRaw({ raw, cols: x.cols })
+}
+
+/**
+ * 存盘原值 → 勾选清单(cookie 与 localStorage 共用:值可能经过 URL 编码;存盘里已经不存在的列 key 滤掉;
+ * 一个都不认识 → null,调用方用默认列)。
+ *
+ * @param x 原值与全部列声明。
+ * @returns 勾选清单;没有就是 null。
+ */
+export function pickedOfRaw<T>(x: PickedOfRawIn<T>): string[] | null {
+  if (x.raw === '') {
+    return null
+  }
+  let raw = x.raw
+  try {
+    raw = decodeURIComponent(x.raw)
+  } catch {
+    raw = x.raw
+  }
   const known = allKeysOf({ cols: x.cols })
   const out: string[] = []
   for (const k of raw.split(PICK_STORE_SEP)) {
@@ -686,6 +707,30 @@ export function readPicked<T>(x: ReadPickedIn<T>): string[] | null {
 }
 
 /**
+ * 首帧的勾选:服务端读到的 cookie 原值认得出就用它,否则默认列。
+ *
+ * @param x cookie 原值与全部列声明。
+ * @returns 勾选清单。
+ */
+export function initialPickedOf<T>(x: PickedOfRawIn<T>): string[] {
+  const got = pickedOfRaw(x)
+  if (got == null) {
+    return defaultKeysOf({ cols: x.cols })
+  }
+  return got
+}
+
+/**
+ * 勾选 cookie 的名字(页面门在服务端按它读;一张表一份)。
+ *
+ * @param storeKey 存盘用的表名。
+ * @returns cookie 名。
+ */
+export function pickCookieNameOf(storeKey: string): string {
+  return PICK_STORE_HEAD + storeKey
+}
+
+/**
  * 造「落格并存盘」的函数:勾选一变就写 localStorage(写挂了不影响这一次的显示,只是下次打开回默认)。
  *
  * @param x 表名与 React 的落格。
@@ -695,7 +740,8 @@ export function makePickSave(x: PickSaveIn): SetPickedFn {
   function savePicked(keys: string[]): void {
     x.set(keys)
     try {
-      window.localStorage.setItem(PICK_STORE_HEAD + x.storeKey, keys.join(PICK_STORE_SEP))
+      document.cookie = pickCookieNameOf(x.storeKey) + PICK_COOKIE_EQ + encodeURIComponent(keys.join(PICK_STORE_SEP))
+        + PICK_COOKIE_TAIL
     } catch {
       return
     }

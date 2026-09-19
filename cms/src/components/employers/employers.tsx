@@ -41,8 +41,8 @@ import css from './employers.module.css'
  * @param props SSR 首帧的第一页与初始筛选(见 EmployersIn 逐格注释)。
  * @returns 雇主板正文。
  */
-export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
-  const p = useEmployersPage({ initial, initialFilters, updatedAt })
+export function Employers({ initial, initialFilters, updatedAt, initialCols }: EmployersIn) {
+  const p = useEmployersPage({ initial, initialFilters, updatedAt, initialCols })
   return (
     <div className={css.body}>
       <Shell top={SHELL_TOP_PX} bottom={SHELL_BOTTOM_PX}>

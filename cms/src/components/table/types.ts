@@ -1486,6 +1486,11 @@ export type ColPickIn<T> = {
    * 此刻必须显示的列 key(筛了某一维就把那一列带出来;用户的勾选不被改写,筛选撤了就回到他自己的选择)。
    */
   force: string[]
+
+  /**
+   * 服务端从勾选 cookie 里读到的原值(页面门递进来,首帧就按它画,刷新不闪);空串 = 没有 cookie。
+   */
+  initial: string
 }
 
 /**
@@ -1776,6 +1781,21 @@ export type InvertKeysIn<T> = {
    * 当前勾着的列 key。
    */
   picked: string[]
+}
+
+/**
+ * readPicked 的入参。
+ */
+export type PickedOfRawIn<T> = {
+  /**
+   * 存盘原值(列 key 用 PICK_STORE_SEP 连;可能经过 URL 编码)。
+   */
+  raw: string
+
+  /**
+   * 全部列声明(存盘里已经不存在的列 key 要滤掉)。
+   */
+  cols: Col<T>[]
 }
 
 /**

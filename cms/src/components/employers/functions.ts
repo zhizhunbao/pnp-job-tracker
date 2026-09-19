@@ -16,6 +16,7 @@ import { CMP_KEY, POOL_SORT_DEFAULT, POOL_SORT_DIR, POOL_SORTS } from '@/lib/emp
 import { eeDisplay } from '@/lib/jobs'
 import { PROV_NAMES, homeProvinceOf, mapsUrl } from '@/lib/location'
 import { track } from '@/lib/track'
+import { pickCookieNameOf } from '@/components/table'
 import { btnClsOf } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { AipCell } from './aipcell'
@@ -39,7 +40,8 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY, COMPARE_NAME_SEP,
+  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY,
+  COMPARE_NAME_SEP,
   DASH_MARK,
   DEMO_A_KEY, DEMO_B_KEY,
   DEMO_C_KEY, DEMO_CO_A, DEMO_CO_B,
@@ -83,7 +85,8 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  BroadLabelIn, BroadOpt, ColKeysIn, ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn, PoolWidthIn,
+  BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn,
+  PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -426,17 +429,17 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: NameCell,
     },
     {
-      key: COL_BROAD_KEY,
-      label: x.t('de.colBroad'),
-      width: poolWidthOf({ key: COL_BROAD_KEY, shown: x.shown }),
-      render: PoolBroadCell,
-    },
-    {
       key: COL_EE_KEY,
       label: x.t('de.colEe'),
       width: poolWidthOf({ key: COL_EE_KEY, shown: x.shown }),
       optional: true,
       render: PoolEeCell,
+    },
+    {
+      key: COL_BROAD_KEY,
+      label: x.t('de.colBroad'),
+      width: poolWidthOf({ key: COL_BROAD_KEY, shown: x.shown }),
+      render: PoolBroadCell,
     },
     {
       key: COL_SECTOR_KEY,
@@ -2164,6 +2167,20 @@ export function makeClear(x: ClearIn): ClickFn {
     }))
   }
   return onClear
+}
+
+/**
+ * 从请求的 cookie 罐里取字段勾选的原值(页面门在服务端调;没有这枚 cookie 给空串,板按默认列画)。
+ *
+ * @param jar Next 的 cookie 罐(只用它的 get)。
+ * @returns cookie 原值或空串。
+ */
+export function employersColsCookieOf(jar: CookieJarLike): string {
+  const c = jar.get(pickCookieNameOf(COLS_STORE_KEY))
+  if (c == null) {
+    return TEXT_NONE
+  }
+  return c.value
 }
 
 /**

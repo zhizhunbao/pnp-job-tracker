@@ -18,7 +18,7 @@ export { Compare } from './compare'
 export { COMPARE_META, COMPARE_MIN_ROWS } from './constants'
 export { Employers } from './employers'
 export {
-  compareNamesOf, employersMetaOf, hasVerdictSignal, noDimsOf, sponsorEmployerColsOf,
+  compareNamesOf, employersColsCookieOf, employersMetaOf, hasVerdictSignal, noDimsOf, sponsorEmployerColsOf,
   toSponsorCellRows,
 } from './functions'
 export { SponsorCard } from './sponsorcard'

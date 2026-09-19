@@ -15,7 +15,8 @@ import {
   SERIES_RANGE_ALL, SERIES_RANGE_MORE, SERIES_RANGE_RECENT, SERIES_VIEW_CHART, SERIES_VIEW_TABLE, SIG_SEP, SIG_TAIL,
 } from './constants'
 import {
-  allKeysOf, defaultKeysOf, invertKeysOf, makeOpenToggle, makePickSave, makePickSet, makePickToggle, readPicked,
+  allKeysOf, defaultKeysOf, initialPickedOf, invertKeysOf, makeOpenToggle, makePickSave, makePickSet, makePickToggle,
+  readPicked,
   shownColsByPick, sortRows,
 } from './functions'
 import type {
@@ -358,29 +359,33 @@ export function useSeriesView(): UseSeriesViewOut {
  * 哪些列勾着、面板开没开、点外面 / 按 Esc 关面板、勾选存 localStorage。
  * 形与职位板字段面板一致(主要 / 全选 / 反选、固定列灰着);职位板那份与它的冻结列、列宽 cookie 长在一起,
  * 暂不并过来,以后单独搬家。
- * 存盘在「活过来」之后才读:服务端首帧读不到 localStorage,先按默认列画(没自定义过的用户零变化;自定义过的会在
- * 首帧之后换成他的列)。
+ * 2026-09-19:勾选改存 cookie,页面门在服务端读出来经 `initial` 递进来,首帧就按用户的列画(刷新不再闪一下);
+ * localStorage 的旧值只在没有 cookie 时读一次、迁进 cookie。
  *
  * @param x 全部列声明、存盘表名与此刻必须显示的列。
  * @returns 该显示的列 + 字段钮与面板的视图态。
  */
 export function useColPick<T>(x: ColPickIn<T>): ColPickOut<T> {
-  const [picked, setPicked] = useState<string[]>(defaultKeysOf({ cols: x.cols }))
+  const [picked, setPicked] = useState<string[]>(initialPickedOf({ raw: x.initial, cols: x.cols }))
   const [open, setOpen] = useState(false)
   const boxRef = useRef<HTMLDivElement | null>(null)
   const storeKey = x.storeKey
   const cols = x.cols
 
-  useEffect(function loadStored() {
+  const save = makePickSave({ storeKey, set: setPicked })
+  const initial = x.initial
+
+  useEffect(function migrateStored() {
+    if (initial !== '') {
+      return
+    }
     const got = readPicked({ storeKey, cols })
     if (got != null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到 localStorage,活过来再换成用户存的列
-      setPicked(got)
+      save(got)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cols 每渲一次都是新数组,存盘只在挂载与换表时读
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在挂载与换表时做一次:没有 cookie 才去读 localStorage 的旧值并迁进 cookie
   }, [storeKey])
 
-  const save = makePickSave({ storeKey, set: setPicked })
   useOutsideClose(boxRef, { open, onClose: makePickClose(setOpen) })
 
   const shown = shownColsByPick({ cols, picked, force: x.force })

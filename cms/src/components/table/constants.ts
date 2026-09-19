@@ -346,8 +346,21 @@ export const SERIES_SVG_ROLE = 'img'
 /**
  * 字段面板(2026-09-18 Frank「应该加一个字段按钮,可以自定义字段,类似于 job 页面」「做成公用件」):
  * 勾选结果存 localStorage 的键前缀,后接调用方给的表名(一张表一份)。
+ * 2026-09-19 起它也是 **cookie 名**的前缀:勾选改存 cookie,页面门在服务端读得到,首帧就按用户的列画
+ * (Frank「右键刷新的时候怎么 table 会闪一下,多加了一个字段」:localStorage 只有活过来才读得到,首帧先按默认列画、
+ * 再换成用户的列,就是那一闪)。localStorage 里的旧值只在没有 cookie 时读一次,顺手迁进 cookie。
  */
 export const PICK_STORE_HEAD = 'o2p.cols.'
+
+/**
+ * 勾选 cookie 的尾巴:全站路径、一年、Lax(与职位板列集 cookie 同寿)。
+ */
+export const PICK_COOKIE_TAIL = '; path=/; max-age=31536000; SameSite=Lax'
+
+/**
+ * cookie 名与值之间的等号。
+ */
+export const PICK_COOKIE_EQ = '='
 
 /**
  * 字段面板存盘里列 key 之间的分隔符(列 key 是代码里的标识符,不含逗号)。

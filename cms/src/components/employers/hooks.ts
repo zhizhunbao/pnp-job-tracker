@@ -44,7 +44,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const qs = qsOf({ f })
   const addr = addrQsOf({ f })
   const pick = useColPick({
-    cols: employerColsOf({ t, shown: [] }), storeKey: COLS_STORE_KEY, force: forceKeysOf({ f }),
+    cols: employerColsOf({ t, shown: [] }), storeKey: COLS_STORE_KEY, force: forceKeysOf({ f }), initial: x.initialCols,
   })
 
   useEffect(function debounceQuery() {

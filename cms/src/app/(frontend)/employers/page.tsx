@@ -9,7 +9,8 @@
 import { employersBoardProps } from '@/lib/employers/server'
 import { getDb } from '@/lib/db/server'
 import { checkedAt } from '@/lib/jobs/server'
-import { Employers, employersMetaOf } from '@/components/employers'
+import { cookies } from 'next/headers'
+import { Employers, employersColsCookieOf, employersMetaOf } from '@/components/employers'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
@@ -42,7 +43,10 @@ export default async function EmployersPage({ searchParams }: { searchParams: Pr
   return (
     <Frame>
       <Header />
-      <Employers initial={props.initial} initialFilters={props.initialFilters} updatedAt={updatedAt} />
+      <Employers initial={props.initial}
+        initialFilters={props.initialFilters}
+        updatedAt={updatedAt}
+        initialCols={employersColsCookieOf(await cookies())} />
       <Footer />
     </Frame>
   )

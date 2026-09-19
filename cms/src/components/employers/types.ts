@@ -1843,6 +1843,11 @@ export type EmployersIn = {
    * 数据更新时刻(ETL 心跳 checkedAt 的 ISO;'' = 还没拿到,不渲)。
    */
   updatedAt: string
+
+  /**
+   * 字段勾选 cookie 的原值(页面门在服务端读;'' = 没有 cookie,按默认列)。
+   */
+  initialCols: string
 }
 
 /**
@@ -2588,4 +2593,19 @@ export type ReportSeenIn = {
    * 本次会话已经报过的键(同一批行「显示更多」后会再来一遍,报过的不重报)。
    */
   sent: Set<string>
+}
+
+/**
+ * Next 的 cookie 罐里本域真用的格:按名取一枚(取不到是 undefined,库定的形状;用 Map 的 get 签名表达,不显式写 undefined)。
+ */
+export type CookieJarLike = Pick<Map<string, CookieCell>, 'get'>
+
+/**
+ * 一枚 cookie 里本域真读的格。
+ */
+export type CookieCell = {
+  /**
+   * cookie 的值。
+   */
+  value: string
 }
