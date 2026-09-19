@@ -1116,9 +1116,12 @@ def fill_places(x: CompanyExtraIn) -> None:
 
 
 def fill_careers(x: CompanyExtraIn) -> None:
-    """公司官方招聘页进 careersUrl 列(清单里有才落,没有不落键)。"""
-    url = x.ctx.careers.get(x.slug)
-    if url:
+    """公司官方招聘页进 careersUrl 列(清单里有才落,没有不落键)。
+    2026-09-19 Frank 实拍「这个招聘页面有问题」(Deloitte 的招聘页是 `/ca/en/alliances/workday.html?icid=top_workday`):
+    招聘页发现清单里混着相对路径、`mailto:`、`javascript:`(5,819 条里 29 条),过同一把官网闸 website_of ——
+    不是完整 http(s) 网址的不落(相对路径不去拼官网:拼出来的多半也不是招聘页,Deloitte 那条是 Workday 合作介绍页)。"""
+    url = website_of(x.ctx.careers.get(x.slug))
+    if url is not None:
         x.extra[K_CAREERS_URL] = url
 
 
