@@ -30,9 +30,9 @@ import {
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
-  HIRING_CODE_JOIN, HIRING_TOP_N,
+  HIRING_TOP_N,
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
-  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
+  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TITLES_CHUNK,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
   URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
@@ -41,7 +41,7 @@ import { cssOf } from '@/components/css'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
-  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HiringNamesIn, HiringPlaceIn,
+  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HiringGroup, HiringGroupsIn,
   HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
@@ -348,7 +348,7 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
  * 省对上市对不上照样出)定为:官方地点在,这一节就不出 —— 省 / 市两行已是官方地点,AI 那句只会添乱。
  * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取的是某一条岗的
  * Windsor NS,看着像总部):两种地点各挂各的名字就不打架了 —— AI 查到的「所在地」提上来当「总部」行(本函数,
- * 原 hasOfficialPlaceOf 退役),岗位地点归「在招地」行(hiringNamesOf);提上来了简介里就不再重复出那一节。
+ * 原 hasOfficialPlaceOf 退役),岗位地点归「在招地」行(hiringGroupsOf);提上来了简介里就不再重复出那一节。
  * 中 / 韩界面能拼出核定译名的用译名(baseZhOf),拼不出照 AI 原句。
  *
  * @param x 取词函数、界面语言与公司档案。
@@ -367,41 +367,35 @@ export function hqOf(x: BaseZhIn): string {
 }
 
 /**
- * 基本信息卡「在招地」行的文案:这家公司在招岗的城市,岗多的在前,市名跟界面语言、后缀省码。
+ * 基本信息卡「在招地」行:这家公司在招岗的城市,岗多的在前,按省成组。
  * 2026-09-19 Frank「别最多给 50 条啊」「你可以加一个 展开和收起的功能不就完事了」:城市是单独查的全量
- * (COMPANY_HIRING_PLACES,不从那 50 条在招岗里数),收着列前 HIRING_TOP_N 座,展开列全部。
+ * (COMPANY_HIRING_PLACES,不从在招岗清单里数),收着列前 HIRING_TOP_N 座,展开列全部。
+ * 同日「城市都用 英文名」(译名表外的小地方只能出英文,一行里中英混排)、「都在 安省没必要每个都列一个 ON」:
+ * 市名一律英文;同一个省的城归一组,省名一组只出一次;组的先后 = 组里头一座城的先后(岗多的省在前)。
  *
- * 一座城一段,页面一段一个不折行的小块、分隔记号夹在小块之间 —— 窄屏只许在城与城之间换行,
- * 不许把市名从中间折断(375px 实拍「汉 / 密尔顿 ON」);分隔记号不能包进小块(英文逗号后的空格是唯一的
- * 换行位置,包进去整行顶出屏幕,同日实拍)。
- *
- * @param x 界面语言、全部在招城市与展开态。
- * @returns 逐座城的文案。
+ * @param x 取词函数、全部在招城市与展开态。
+ * @returns 逐省的一组组城。
  */
-export function hiringNamesOf(x: HiringNamesIn): string[] {
+export function hiringGroupsOf(x: HiringGroupsIn): HiringGroup[] {
   let shown = x.places
   if (x.all === false) {
     shown = x.places.slice(0, HIRING_TOP_N)
   }
-  const names: string[] = []
+  const codes: string[] = []
+  const groups: HiringGroup[] = []
   for (const p of shown) {
-    names.push(hiringPlaceOf({ p, lang: x.lang }))
+    let at = codes.indexOf(p.province)
+    if (at < 0) {
+      codes.push(p.province)
+      groups.push({ prov: provFullOf({ t: x.t, code: p.province }), names: [] })
+      at = groups.length - 1
+    }
+    const g = groups[at]
+    if (g != null) {
+      g.names.push(p.city)
+    }
   }
-  return names
-}
-
-/**
- * 「在招地」里的一座城:界面语言市名 + 省码(「Windsor NS」);岗上没写省就只出市名。
- *
- * @param x 在招的一座城与界面语言。
- * @returns 一座城的文案。
- */
-function hiringPlaceOf(x: HiringPlaceIn): string {
-  const name = cityLocalOf({ j: x.p, lang: x.lang })
-  if (x.p.province === TEXT_NONE) {
-    return name
-  }
-  return name + HIRING_CODE_JOIN + x.p.province
+  return groups
 }
 
 /**
@@ -1119,6 +1113,7 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
 
 /**
  * 批量懒翻职位名(2026-09-14 Frank「这个翻译老是翻译不全啊」:在招清单里没 NOC 译名的行一次发齐);失败静默。
+ * 2026-09-19 在招岗放开 50 条上限:接口一次只收 TITLES_CHUNK 条,超了按它分批发,回来的译名并进同一张表。
  *
  * @param x 一组职位名、界面语言与落格。
  * @returns 取数函数(带死旗)。
@@ -1131,20 +1126,31 @@ export function makeLoadTitles(x: LoadTitlesIn): LoadFn {
     function none(): null {
       return null
     }
+    const got: Record<string, string> = {}
     function land(j: TitlesJson): void {
       if (flag.dead || j == null || j.ok !== true || j.texts == null) {
         return
       }
-      x.setMap(j.texts)
+      const merged: Record<string, string> = {}
+      for (const k of Object.keys(got)) {
+        merged[k] = String(got[k])
+      }
+      for (const k of Object.keys(j.texts)) {
+        got[k] = String(j.texts[k])
+        merged[k] = String(j.texts[k])
+      }
+      x.setMap(merged)
     }
     function fall(): void {
       return
     }
-    fetch(URL_CO_TITLES, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ titles: x.titles, lang: x.lang }),
-    }).then(read).then(land).catch(fall)
+    for (let i = 0; i < x.titles.length; i += TITLES_CHUNK) {
+      fetch(URL_CO_TITLES, {
+        method: METHOD_POST,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+        body: JSON.stringify({ titles: x.titles.slice(i, i + TITLES_CHUNK), lang: x.lang }),
+      }).then(read).then(land).catch(fall)
+    }
   }
 }
 

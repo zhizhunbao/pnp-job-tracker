@@ -91,7 +91,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
           </Row>
         )}
         {hq !== TEXT_NONE && <Row k={t('co.hq')}>{hq}</Row>}
-        <CompanyHiringRow t={t} lang={lang} places={company.places} />
+        <CompanyHiringRow t={t} places={company.places} />
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}

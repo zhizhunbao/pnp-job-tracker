@@ -257,26 +257,6 @@ export type LmiaNocRow = {
 }
 
 /**
- * 带核定译名的一座城(市名跟界面语言走时只读这三格;在招岗行与在招城市行都装得进来)。
- */
-export type CityNames = {
-  /**
-   * 城市英文名。
-   */
-  city: string
-
-  /**
-   * 城市中文译名;'' = 没核定。
-   */
-  cityZh: string
-
-  /**
-   * 城市韩文译名;'' = 没核定。
-   */
-  cityKo: string
-}
-
-/**
  * 公司在招的一座城(基本信息卡「在招地」行;全量不设上限,岗多的在前)。
  */
 export type CompanyPlaceRow = {
@@ -291,19 +271,24 @@ export type CompanyPlaceRow = {
   province: string
 
   /**
-   * 城市中文译名;'' = 没核定。
-   */
-  cityZh: string
-
-  /**
-   * 城市韩文译名;'' = 没核定。
-   */
-  cityKo: string
-
-  /**
    * 这座城的在招岗数。
    */
   n: number
+}
+
+/**
+ * 「在招地」行里同一个省的一组城(2026-09-19 Frank「都在 安省没必要每个都列一个 ON」:省名一组只出一次)。
+ */
+export type HiringGroup = {
+  /**
+   * 省的显示名;'' = 岗上没写省(这一组不出省名)。
+   */
+  prov: string
+
+  /**
+   * 这个省里在招的城(英文名,岗多的在前)。
+   */
+  names: string[]
 }
 
 /**
@@ -544,7 +529,7 @@ export type CompanyDetail = {
   openCount: number
 
   /**
-   * 在招岗(载入上限 50)。
+   * 在招岗(全量,新的在前)。
    */
   jobs: CompanyJobRow[]
 
@@ -809,11 +794,6 @@ export type CompanyHiringRowIn = {
    * 取词函数。
    */
   t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
 
   /**
    * 在招岗的全部城市。
@@ -1556,7 +1536,7 @@ export type DisplayNameIn = {
  */
 export type JobsShownIn = {
   /**
-   * 在招行(载入上限 50)。
+   * 在招行(全量,新的在前)。
    */
   jobs: CompanyJobRow[]
 
@@ -2339,9 +2319,9 @@ export type CompanyAliasHookIn = {
  */
 export type CityLocalIn = {
   /**
-   * 一座城(在招岗行或在招城市行)。
+   * 在招岗一行。
    */
-  j: CityNames
+  j: CompanyJobRow
 
   /**
    * 界面语言。
@@ -2350,28 +2330,13 @@ export type CityLocalIn = {
 }
 
 /**
- * hiringPlaceOf 的入参。
+ * hiringGroupsOf 的入参。
  */
-export type HiringPlaceIn = {
+export type HiringGroupsIn = {
   /**
-   * 在招的一座城。
+   * 取词函数(省的显示名跟它走)。
    */
-  p: CompanyPlaceRow
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
-}
-
-/**
- * hiringNamesOf 的入参。
- */
-export type HiringNamesIn = {
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
+  t: TFn
 
   /**
    * 在招岗的全部城市。

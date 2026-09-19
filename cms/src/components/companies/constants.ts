@@ -268,6 +268,12 @@ export const DESC_MIN_LEN = 120
 export const JOBS_FIRST_N = 8
 
 /**
+ * 批量懒翻职位名一次发的条数(与接口那头的 TITLE_BATCH_MAX 同值:超了的接口不收,所以这头按它分批发;
+ * 2026-09-19 在招岗放开 50 条上限后,大公司展开会超)。
+ */
+export const TITLES_CHUNK = 60
+
+/**
  * 获批职业逐行列出的条数(#286:Top 6 逐行,余量并成一行)。
  */
 export const NOCS_TOP_N = 6
@@ -689,11 +695,6 @@ export const LOC_JOIN = ', '
  * 其余的收在「展开其余 N 个」钮后面,城市是全量不设上限)。
  */
 export const HIRING_TOP_N = 3
-
-/**
- * 「在招地」里市名与省码之间的空格(「Windsor NS」,与城市格灰注「英文名 省码」同形)。
- */
-export const HIRING_CODE_JOIN = ' '
 
 /**
  * 雇主板(公司详情面包屑的上一级,2026-09-14)。

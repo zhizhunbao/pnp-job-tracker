@@ -190,7 +190,9 @@ export const companyDetail = (cond: string) =>
 export const COMPANY_BY_JOB_ID_COND = `c.id = (SELECT company_id FROM jobs WHERE id = $1 LIMIT 1)`
 
 /**
- * 公司详情页的在招岗清单(带 NOC 三语名),最多 50 条。$1=公司 id。
+ * 公司详情页的在招岗清单(带 NOC 三语名),全量不设上限。$1=公司 id。
+ * 2026-09-19 Frank「别最多给 50 条啊」「50 条上限放开」:原 LIMIT 50 撤 —— 卡头写在招 189、展开却到 50 为止(VON Canada 实拍);
+ * 卡片首显 8 条、其余原地展开,量大也只是多几行(在招最多的 Sienna Senior Living 669 条)。
  * 2026-09-13 晚 /fe 雇主页:在招口径统一成职位板那一份 WHERE(status = open 且非 is_dup;原 <> closed 把校内帖与
  * 展示去重吞掉的旧行也算进去,VON Canada 页头 209 vs 板上 129 实撞)—— 公司页清单 / 计数、相似雇主、雇主池
  * 在招总量(REFRESH_EMPLOYER_POOL_OPEN)四处同一句。
@@ -203,7 +205,7 @@ export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.gr
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc
        LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
      WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
-     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 50`
+     ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC`
 
 /**
  * 公司在招岗总数。$1=公司 id。
@@ -211,15 +213,16 @@ export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.gr
 export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false`
 
 /**
- * 公司在招岗的全部城市(不设上限,岗多的在前;带 cities 表的核定译名)。$1=公司 id。
+ * 公司在招岗的全部城市(不设上限,岗多的在前)。$1=公司 id。
  * 2026-09-19 Frank「别最多给 50 条啊」:基本信息卡「在招地」行读它 —— 不从 COMPANY_OPEN_JOBS 那 50 条里数,
  * 连锁公司会数少。在招口径与 COMPANY_OPEN_JOBS 同一条 WHERE;没写市的岗不算。
+ * 同日 Frank「城市都用 英文名」:不带 cities 表的译名(中英混排一行,译名表外的小地方只能出英文)。
  */
-export const COMPANY_HIRING_PLACES = `SELECT j.city, j.province, ci.name_zh AS city_zh, ci.name_ko AS city_ko, count(*)::int AS n
-     FROM jobs j LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+export const COMPANY_HIRING_PLACES = `SELECT j.city, j.province, count(*)::int AS n
+     FROM jobs j
      WHERE j.company_id = $1 AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
        AND j.city IS NOT NULL AND j.city <> ''
-     GROUP BY j.city, j.province, ci.name_zh, ci.name_ko ORDER BY n DESC, j.city`
+     GROUP BY j.city, j.province ORDER BY n DESC, j.city`
 
 /**
  * 公司的 LMIA 职业码 json 列(text 取出,消费端自己 parse)。$1=公司 id。

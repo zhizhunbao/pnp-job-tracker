@@ -2268,16 +2268,6 @@ export type CompanyPlaceRow = {
   province: string
 
   /**
-   * 城市中文译名(cities 表人工核定);'' = 没核定。
-   */
-  cityZh: string
-
-  /**
-   * 城市韩文译名;'' = 没核定。
-   */
-  cityKo: string
-
-  /**
    * 这座城的在招岗数。
    */
   n: number
@@ -2534,7 +2524,7 @@ export type CompanyDetail = {
   openCount: number
 
   /**
-   * 在招岗 ≤50。
+   * 在招岗(全量,新的在前;2026-09-19 起不设上限)。
    */
   jobs: CompanyJobRow[]
 

@@ -1018,7 +1018,9 @@ export async function companyRow(input: CompanyRowIn): CompanyRowOut {
     if (row.ai_fetched != null) {
       fetched = String(row.ai_fetched).slice(0, DATE_LEN)
     }
-    cached = { brief: row.ai_brief, website: website, sources: sources, fetched: fetched }
+    if (sources.length > 0) {
+      cached = { brief: row.ai_brief, website: website, sources: sources, fetched: fetched }
+    }
   }
   return { id: toCompanyId(row), cached: cached }
 }
@@ -1045,6 +1047,11 @@ export function investigateCompany(input: InvestigateIn): InvestigateOut {
  * 真正的调查:联网检索(五节白名单制)+ Wikidata 懒查回填并行。
  * Wikidata 命中回填别名/知名列(COALESCE 不覆盖已有值);没命中/失败不重试 ——
  * 一家公司一生一次,宁缺勿滥(2026-07-20 Frank 拍板批量退役「公司详情全懒」)。
+ *
+ * 2026-09-19 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa、成立年 1986,真身 Mississauga / 1995):那一条 ai_sources 是空的 ——
+ * 网关的联网搜索没搜到东西时模型照样裸答,这里原先只验长度不验出处,裸答被永久存库(库里 20,198 条简介有 7,814 条零出处,
+ * 09-11 起的新查询九成以上如此)。红线补齐:一条出处都没有 = 查不到,不存不回;库里存量的零出处简介读的时候当没有
+ * (companyRow 与 lib/jobs 的公司档案出口同口径),下次点开重查,查到有出处的才盖上去。
  *
  * @param input 连接、主键与公司名。
  * @returns 调查结果;校验不过如实回 null。
@@ -1080,6 +1087,10 @@ async function investigate(input: InvestigateIn): InvestigateOut {
     }
   }
   if (r == null) {
+    return null
+  }
+  if (r.sources.length === 0) {
+    log({ tag: EMP_LOG.tag, text: `${EMP_LOG.noSources}${input.name}` })
     return null
   }
   const brief = r.answer.replace(SITE_LINE_RE, SITE_LINE_DROP).trim()

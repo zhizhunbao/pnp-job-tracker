@@ -42,12 +42,13 @@ export function CompanyJobsCard({
   company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
 }: CompanyJobsCardIn) {
   const [allJobs, setAllJobs] = useState(false)
-  const titleMap = useTitleMap({ titles: untitledOf({ jobs: company.jobs, lang }), lang })
+  const shown = jobsShownOf({ jobs: company.jobs, all: allJobs })
+  const titleMap = useTitleMap({ titles: untitledOf({ jobs: shown, lang }), lang })
   if (company.jobs.length === 0) {
     return null
   }
   const rows = []
-  for (const job of jobsShownOf({ jobs: company.jobs, all: allJobs })) {
+  for (const job of shown) {
     let row: CompanyJobFact | null = null
     if (resolveJob != null) {
       row = resolveJob(job.id)

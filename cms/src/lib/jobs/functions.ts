@@ -1560,6 +1560,7 @@ export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
 /**
  * 公司详情主体(slug 与 jobId 两个入口共用)。score_detail 那一步 `as` 是跨边界单断言:
  * json 列的四维明细由数据层写入方保证形状,TS 只看得到 JsonObj。
+ * 2026-09-19:没有出处的 AI 简介当没有(模型裸答,Frank「这不是胡说吗」;来由见 lib/employers 的 investigate)。
  *
  * @param input 连接、WHERE 与绑定值。
  * @returns 公司详情;查无 null。
@@ -1617,13 +1618,17 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   if (website === '') {
     website = strCell(c.ai_website)
   }
+  let aiBrief = strCell(c.ai_brief)
+  if (sources.length === 0) {
+    aiBrief = CELL_NONE
+  }
   return {
     name: strCell(c.name), slug: strCell(c.slug), website: website, websiteSource: strCell(c.website_source),
     careersUrl: strCell(c.careers_url),
     industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh),
     aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),
-    scoreDetail: scoreDetail, aiBrief: strCell(c.ai_brief), aiWebsite: strCell(c.ai_website),
+    scoreDetail: scoreDetail, aiBrief: aiBrief, aiWebsite: strCell(c.ai_website),
     aiSources: sources, aiFetched: ymd(iso(strCell(c.ai_fetched))),
     description: strCell(c.description), address: strCell(c.address), province: strCell(c.region),
     lmiaPositions: numCell(c.lmia_positions), lmiaLmias: numCell(c.lmia_lmias),
@@ -3334,10 +3339,7 @@ export function toCompanyJob(j: Row): CompanyJobRow {
  * @returns 在招城市行。
  */
 function toCompanyPlace(r: Row): CompanyPlaceRow {
-  return {
-    city: text(r.city), province: text(r.province), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
-    n: count(r.n),
-  }
+  return { city: text(r.city), province: text(r.province), n: count(r.n) }
 }
 
 /**
