@@ -225,6 +225,18 @@ services:
       SOURCE: minwage
       TZ: EST5EDT
 
+  explore:                         # 雇主探索队列的后台工人(2026-09-18 立域;取活 → 局域网 qwen 翻雇主名 → 交活,不产 data/ 文件)
+    <<: *etl
+    environment:
+      SOURCE: explore
+      HEALTHCHECK_PING_EXPLORE: ${HEALTHCHECK_PING_EXPLORE:-}   # 未配 = ping_health 自然跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / classify / company 同一台盒子);空=本域跳过
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根(取活 / 交活的接口在同一个站)
+      SEED_TOKEN: ${SEED_TOKEN:-}                 # 取活 / 交活的钥匙(与上传 mart 同一把);空=本域跳过
+      EXPLORE_LIMIT: ${EXPLORE_LIMIT:-100}        # 每轮上限(一个名字 2~3 秒,100 条约 5 分钟)
+      TZ: EST5EDT
+
   jdformat:                        # 岗位正文 → 五节整理版预生成(2026-09-15 立域;局域网 qwen,只刷 processed/jdformat/,build 角色汇装灌库)
     <<: *etl
     environment:

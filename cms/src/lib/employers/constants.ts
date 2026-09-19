@@ -491,6 +491,46 @@ export const CAP_PROGRAM = 8
 export const CAP_PROV = 4
 
 /**
+ * 探索队列:一次入队最多收多少个键(板上一批 50 行,留余量;多的截掉)。
+ */
+export const EXPLORE_KEYS_MAX = 60
+
+/**
+ * 探索队列:池主键的最长字符数(超长的键当脏数据丢掉)。
+ */
+export const EXPLORE_KEY_LEN_MAX = 200
+
+/**
+ * 探索队列:工人一次最多取多少条待办。
+ */
+export const EXPLORE_TAKE_MAX = 300
+
+/**
+ * 探索队列:工人没说取多少条时的默认条数。
+ */
+export const EXPLORE_TAKE_DEFAULT = 100
+
+/**
+ * 探索队列:工人取活时的条数参数名。
+ */
+export const P_EXPLORE_LIMIT = 'limit'
+
+/**
+ * 探索队列:工人交活时认的状态(done = 翻好了 / skip = 人名等不翻 / fail = 没翻成)。
+ */
+export const EXPLORE_STATUSES = ['done', 'skip', 'fail'] as const
+
+/**
+ * 探索队列状态:跳过(人名雇主等;板上连公司表里已有的音译也不显示)。
+ */
+export const EXPLORE_SKIP = 'skip'
+
+/**
+ * 探索队列:译名与备注的最长字符数(超长截断)。
+ */
+export const EXPLORE_TEXT_MAX = 120
+
+/**
  * URL 参数的保留长度:本站大类键(最长「社会服务」「生活服务」四字,留余量)。
  */
 export const CAP_BROAD = 12

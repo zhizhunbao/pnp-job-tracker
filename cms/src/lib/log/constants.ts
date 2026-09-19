@@ -591,6 +591,11 @@ export const EMP_LOG = {
   pageQueryFailed: 'employer page query failed, falling back to empty: ',
 
   /**
+   * 探索队列入队写挂了(板照常用,只是这一批没记上;2026-09-18)。
+   */
+  exploreEnqueueFailed: 'explore enqueue failed (ignored): ',
+
+  /**
    * 懒建公司最小行失败(背调没有落脚点,这次不查)。
    */
   lazyInsertFailed: 'lazy company insert failed, skipping research: ',

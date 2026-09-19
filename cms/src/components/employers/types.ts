@@ -138,6 +138,11 @@ export type PoolRow = {
   website: string
 
   /**
+   * 进过探索队列没(没进过的,板在中 / 韩文界面下替它报一笔「被列出过」,后台随后给它翻译名)。
+   */
+  explored: boolean
+
+  /**
    * 中文译名(companies.alias_zh,版本对得上才有);空串 = 库里还没有。
    */
   aliasZh: string
@@ -2538,4 +2543,24 @@ export type MoreIn = {
    * 筛选态落格。
    */
   setF: SetFilters
+}
+
+/**
+ * reportSeen 的入参。
+ */
+export type ReportSeenIn = {
+  /**
+   * 界面语言(只有中 / 韩文界面才上报 —— 英文用户用不上译名)。
+   */
+  lang: string
+
+  /**
+   * 现在板上列着的行。
+   */
+  rows: PoolRow[]
+
+  /**
+   * 本次会话已经报过的键(同一批行「显示更多」后会再来一遍,报过的不重报)。
+   */
+  sent: Set<string>
 }

@@ -17,7 +17,7 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEntryPick, makeFoldToggle, makeGroup,
-  addrQsOf, applyHomeProv, makeBroad, makeCity, makeDistrict, makeLmiaPick, makeMore, makeProv,
+  addrQsOf, applyHomeProv, makeBroad, reportSeen, makeCity, makeDistrict, makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
@@ -40,6 +40,7 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
   const [fold, setFold] = useState(x.initialFilters.entry || x.initialFilters.lmia)
   const first = useRef(true)
   const held = useRef<PoolPage | null>(null)
+  const sent = useRef(new Set<string>())
   const qs = qsOf({ f })
   const addr = addrQsOf({ f })
   const pick = useColPick({
@@ -60,7 +61,8 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
 
   useEffect(function holdData() {
     held.current = data
-  }, [data])
+    void reportSeen({ lang, rows: data.rows, sent: sent.current })
+  }, [data, lang])
 
   useEffect(function syncBoard() {
     if (first.current === true) {

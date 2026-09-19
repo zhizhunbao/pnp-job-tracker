@@ -129,6 +129,11 @@ export type PoolRow = {
   website: string
 
   /**
+   * 进过探索队列没(板上据此决定要不要替这一行报「被列出过」)。
+   */
+  explored: boolean
+
+  /**
    * 行业(companies.sectors);null = 无源。
    */
   industry: string | null
@@ -1402,6 +1407,186 @@ export type CityDbRow = {
 }
 
 /**
+ * `EMPLOYER_EXPLORE_PENDING` 的原始行。
+ */
+export type ExploreDbRow = {
+  /**
+   * 池主键。
+   */
+  key: string | null
+
+  /**
+   * 雇主名。
+   */
+  name: string | null
+}
+
+/**
+ * 探索队列的一条待办(给后台工人)。
+ */
+export type ExploreTodo = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 雇主名(要翻的就是它)。
+   */
+  name: string
+}
+
+/**
+ * 工人交回来的一条结果(线格式;归一前形状,格子可能缺)。
+ */
+export type ExploreResultJson = {
+  /**
+   * 池主键。
+   */
+  key?: string | null
+
+  /**
+   * 状态(done / skip / fail)。
+   */
+  status?: string | null
+
+  /**
+   * 中文译名。
+   */
+  aliasZh?: string | null
+
+  /**
+   * 韩文译名。
+   */
+  aliasKo?: string | null
+
+  /**
+   * 备注(跳过 / 失败的由头)。
+   */
+  note?: string | null
+}
+
+/**
+ * 洗净后的一条工人结果。
+ */
+export type ExploreResult = {
+  /**
+   * 池主键;空串 = 线上没给(丢掉)。
+   */
+  key: string
+
+  /**
+   * 状态;不在白名单的丢掉。
+   */
+  status: string
+
+  /**
+   * 中文译名;空串 = 没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文译名;空串 = 没有。
+   */
+  aliasKo: string
+
+  /**
+   * 备注;空串 = 没有。
+   */
+  note: string
+}
+
+/**
+ * 入队请求体(线格式)。
+ */
+export type ExploreSeenBody = {
+  /**
+   * 板上列出过的池主键。
+   */
+  keys?: string[] | null
+}
+
+/**
+ * 交活请求体(线格式)。
+ */
+export type ExploreDoneBody = {
+  /**
+   * 一批结果。
+   */
+  results?: ExploreResultJson[] | null
+}
+
+/**
+ * `enqueueExplore` 的入参。
+ */
+export type EnqueueExploreIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 已洗净的池主键(去重、限长、限数)。
+   */
+  keys: string[]
+}
+
+/**
+ * `loadExplorePending` 的入参。
+ */
+export type ExplorePendingIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 取多少条。
+   */
+  limit: number
+}
+
+/**
+ * `saveExploreResults` 的入参。
+ */
+export type SaveExploreIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 工人交回来的结果(线格式,未洗)。
+   */
+  results: ExploreResultJson[]
+}
+
+/**
+ * `loadExplorePending` 的返回。
+ */
+export type ExploreTodosOut = Promise<ExploreTodo[]>
+
+/**
+ * `saveExploreResults` 的返回:写回了几条。
+ */
+export type ExploreSavedOut = Promise<number>
+
+/**
+ * `poolAliasOf` 的入参。
+ */
+export type PoolAliasIn = {
+  /**
+   * 原始池行。
+   */
+  r: PoolDbRow
+
+  /**
+   * 要哪一门:true = 韩文,false = 中文。
+   */
+  ko: boolean
+}
+
+/**
  * `EMPLOYER_POOL_BROADS` 的原始行。
  */
 export type BroadDbRow = {
@@ -1669,6 +1854,26 @@ export type PoolDbRow = {
    * 公司官网(LEFT JOIN companies;无公司页 / 没记官网 = null)。
    */
   website: string | null
+
+  /**
+   * 探索队列里的状态(LEFT JOIN employer_explore;没进过队 = null)。
+   */
+  x_status: string | null
+
+  /**
+   * 探索队列里的中文译名。
+   */
+  x_alias_zh: string | null
+
+  /**
+   * 探索队列里的韩文译名。
+   */
+  x_alias_ko: string | null
+
+  /**
+   * 探索队列译名的版本号。
+   */
+  x_trans_v: number | string | null
 
   /**
    * 公司中文别名(LEFT JOIN companies;无公司页 = null)。

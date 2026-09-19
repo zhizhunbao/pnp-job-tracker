@@ -48,7 +48,8 @@ import {
   CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_SECTOR, EV_PROP_SORT,
+  EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL, HDR_CONTENT_TYPE,
+  METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
@@ -79,7 +80,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  BroadLabelIn, BroadOpt, ColKeysIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn, PoolWidthIn,
+  BroadLabelIn, BroadOpt, ColKeysIn, ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn, PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
   PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
@@ -1610,6 +1611,36 @@ export async function loadBoard(x: LoadBoardIn): Promise<void> {
     return
   } finally {
     x.setLoading(false)
+  }
+}
+
+/**
+ * 把「板上列出过、还没进过探索队列的雇主」报给服务端(2026-09-18 Frank「用户列出过哪些雇主,就自动从那个表里翻译,
+ * 类似于处理消息」):只在中 / 韩文界面报;同一会话里报过的键不重报;发出去就不管了 —— 成不成都不影响板。
+ *
+ * @param x 界面语言、板上的行与本会话已报过的键。
+ * @returns 无。
+ */
+export async function reportSeen(x: ReportSeenIn): Promise<void> {
+  if (x.lang !== LANG_ZH && x.lang !== LANG_KO) {
+    return
+  }
+  const keys: string[] = []
+  for (const r of x.rows) {
+    if (r.explored === false && x.sent.has(r.key) === false) {
+      keys.push(r.key)
+      x.sent.add(r.key)
+    }
+  }
+  if (keys.length === 0) {
+    return
+  }
+  try {
+    await fetch(EXPLORE_API_URL, {
+      method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: MIME_JSON }, body: JSON.stringify({ keys }), keepalive: true,
+    })
+  } catch {
+    return
   }
 }
 

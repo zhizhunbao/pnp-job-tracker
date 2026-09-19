@@ -835,6 +835,26 @@ export const P_PROV = 'prov'
 export const P_CITY = 'city'
 
 /**
+ * 探索队列入队端点(板上列出过、还没进过队的雇主报一笔;后台工人随后给它们翻译名)。
+ */
+export const EXPLORE_API_URL = '/api/employers/explore'
+
+/**
+ * 入队请求的方法。
+ */
+export const METHOD_POST = 'POST'
+
+/**
+ * 入队请求体的内容类型头名。
+ */
+export const HDR_CONTENT_TYPE = 'Content-Type'
+
+/**
+ * 入队请求体的内容类型。
+ */
+export const MIME_JSON = 'application/json'
+
+/**
  * query 参数名:在招大类(本站大类键)。
  */
 export const P_BROAD = 'broad'

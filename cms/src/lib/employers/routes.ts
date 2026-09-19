@@ -13,7 +13,7 @@ import { getDb } from '../db/server'
 import { employerVerdict } from '../ruling/server'
 import { textResponseOf,
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT,
-  NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE, FORBIDDEN,
+  NOT_FOUND, PAYMENT_REQUIRED, TOO_MANY, UNAVAILABLE, FORBIDDEN, HDR_SEED_TOKEN, TEXT_UNAUTHORIZED, UNAUTHORIZED,
 } from '../http'
 import {
   E_BAD_REQUEST, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, friendLlmReady,
@@ -29,15 +29,17 @@ import {
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
   FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
   ALIAS_PREFIX, NEWLINE, DESC_KEY_TAIL,
+  EXPLORE_KEY_LEN_MAX, EXPLORE_KEYS_MAX, EXPLORE_TAKE_DEFAULT, EXPLORE_TAKE_MAX, P_EXPLORE_LIMIT,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
   aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
-  resetCompanyTrans,
+  resetCompanyTrans, enqueueExplore, loadExplorePending, saveExploreResults,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody, EmployersRetransBody,
+  ExploreDoneBody, ExploreResultJson, ExploreSeenBody,
 } from './types'
 
 /**
@@ -66,6 +68,79 @@ export async function employersRoute(req: Request): Promise<Response> {
   } catch {
     return Response.json({ rows: [], total: 0, page: f.page, pageSize: pageSize, provs: [], fetched: FETCHED_NONE })
   }
+}
+
+/**
+ * POST /api/employers/explore:探索队列入队(2026-09-18 Frank「用户列出过哪些雇主,就自动从那个表里翻译,类似于处理消息」)。
+ * 雇主板在中文 / 韩文界面下把「这一批列出来、还没进过队的雇主」的池主键报上来。公开端点:键只认池里真有的、
+ * 一次最多 EXPLORE_KEYS_MAX 个,最坏情形是整池进队 —— 翻译走家里的本地模型,不花钱。写挂了不报错(enqueueExplore 自己留痕)。
+ *
+ * @param req 请求体 `{ keys: string[] }`。
+ * @returns `{ ok, n }`。
+ */
+export async function employersExploreRoute(req: Request): Promise<Response> {
+  let body: ExploreSeenBody = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false, n: 0 }, { status: BAD_REQUEST })
+  }
+  const keys: string[] = []
+  if (Array.isArray(body.keys)) {
+    for (const k of body.keys) {
+      if (typeof k === 'string' && k !== FILTER_UNSET && k.length <= EXPLORE_KEY_LEN_MAX && keys.includes(k) === false) {
+        keys.push(k)
+      }
+      if (keys.length >= EXPLORE_KEYS_MAX) {
+        break
+      }
+    }
+  }
+  await enqueueExplore({ db: await getDb(), keys })
+  return Response.json({ ok: true, n: keys.length })
+}
+
+/**
+ * GET /api/employers/explore/todo:后台工人取活(待办清单;带 x-seed-token 才给,与上传 / 灌库同一把钥匙)。
+ *
+ * @param req 请求(limit=条数)。
+ * @returns `{ todos: [{ key, name }] }`。
+ */
+export async function employersExploreTodoRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  let limit = EXPLORE_TAKE_DEFAULT
+  const raw = Number(new URL(req.url).searchParams.get(P_EXPLORE_LIMIT))
+  if (Number.isFinite(raw) && raw > 0) {
+    limit = Math.min(Math.floor(raw), EXPLORE_TAKE_MAX)
+  }
+  const todos = await loadExplorePending({ db: await getDb(), limit })
+  return Response.json({ todos })
+}
+
+/**
+ * POST /api/employers/explore/done:后台工人交活(带 x-seed-token;结果逐条写回队列表,板上的页缓存随之清掉)。
+ *
+ * @param req 请求体 `{ results: [{ key, status, aliasZh, aliasKo, note }] }`。
+ * @returns `{ ok, n }`。
+ */
+export async function employersExploreDoneRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  let body: ExploreDoneBody = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false, n: 0 }, { status: BAD_REQUEST })
+  }
+  let results: ExploreResultJson[] = []
+  if (Array.isArray(body.results)) {
+    results = body.results
+  }
+  const n = await saveExploreResults({ db: await getDb(), results })
+  return Response.json({ ok: true, n })
 }
 
 /**

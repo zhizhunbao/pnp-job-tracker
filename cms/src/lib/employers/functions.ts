@@ -19,7 +19,7 @@ import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
-  CAP_BROAD, CAP_CITY, CAP_SECTOR, POOL_SECTORS,
+  CAP_BROAD, CAP_CITY, CAP_SECTOR, EXPLORE_SKIP, EXPLORE_STATUSES, EXPLORE_TEXT_MAX, POOL_SECTORS,
   CAP_DIR, CAP_SORT, CAP_TEXT, CHAIN_PROVS_MIN, CMP_MAX, CMP_MIN, COL_PREFIX, CSV_BOM, CSV_EMPTY, CSV_HEAD, CSV_NL,
   CSV_QUOTE,
   CSV_QUOTE_ESC, CSV_QUOTE_G_RE, CSV_QUOTE_RE, CSV_SEP, CSV_YES, DATE_LEN, EMP_PROGRAMS,
@@ -45,7 +45,8 @@ import type {
   SearchParams, SponsorBoardData, SponsorBoards, SponsorEmployerRow,
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
-  BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, IdCell, MaybeStr, OccDbRow, OccRow, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
+  BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, EnqueueExploreIn, ExploreDbRow, ExplorePendingIn, ExploreSavedOut,
+  ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, PoolAliasIn, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
@@ -1508,13 +1509,117 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     locations: toStrList(r.locations), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
-    aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
+    aliasZh: poolAliasOf({ r, ko: false }), aliasKo: poolAliasOf({ r, ko: true }), explored: r.x_status != null,
     group: text(r.ind_group), openJobs: count(r.open_jobs),
     latestPosted: textOrNull(r.latest_posted),
     topTitles: toStrList(r.top_titles), entryJobs: count(r.entry_jobs), entryShare: numOrNull(r.entry_share),
     minExperience: textOrNull(r.min_experience), lmiaSkilled: count(r.lmia_skilled),
     lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),
     wageIndexPct: numOrNull(r.wage_index_pct),
+  }
+}
+
+/**
+ * 池行的译名:探索队列判了「跳过」(人名雇主)的一律不出,连公司表里已有的音译也不出;其余先用公司表的,
+ * 没有再用探索队列翻好的(没有公司页的雇主只有这一路)。版本号对不上的当没有(vtext)。
+ *
+ * @param x 原始池行与要哪一门。
+ * @returns 译名或空串。
+ */
+function poolAliasOf(x: PoolAliasIn): string {
+  if (x.r.x_status === EXPLORE_SKIP) {
+    return WEBSITE_NONE
+  }
+  let own = vtext({ v: x.r.trans_v, cell: x.r.alias_zh })
+  let queued = vtext({ v: x.r.x_trans_v, cell: x.r.x_alias_zh })
+  if (x.ko) {
+    own = vtext({ v: x.r.trans_v, cell: x.r.alias_ko })
+    queued = vtext({ v: x.r.x_trans_v, cell: x.r.x_alias_ko })
+  }
+  if (own !== WEBSITE_NONE) {
+    return own
+  }
+  return queued
+}
+
+/**
+ * 探索队列入队:板上给用户列出过的雇主记一笔(新的进队,已在的加次数)。写挂了只留痕不抛 —— 板不该因此受影响。
+ *
+ * @param input 连接与洗净的池主键。
+ * @returns 无。
+ */
+export async function enqueueExplore(input: EnqueueExploreIn): DoneOut {
+  if (input.keys.length === 0) {
+    return
+  }
+  try {
+    await input.db.query(SQL.EMPLOYER_EXPLORE_ENQUEUE, [input.keys])
+  } catch (e) {
+    log({ tag: EMP_LOG.tag, text: `${EMP_LOG.exploreEnqueueFailed}${String(e)}` })
+  }
+}
+
+/**
+ * 探索队列取待办(后台工人来取活)。
+ *
+ * @param input 连接与条数。
+ * @returns 待办清单。
+ */
+export function loadExplorePending(input: ExplorePendingIn): ExploreTodosOut {
+  return queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_PENDING, params: [input.limit], map: toExploreTodo })
+}
+
+/**
+ * `EMPLOYER_EXPLORE_PENDING` 一行 → 待办。
+ *
+ * @param r 原始行。
+ * @returns 待办。
+ */
+export function toExploreTodo(r: ExploreDbRow): ExploreTodo {
+  return { key: text(r.key), name: text(r.name) }
+}
+
+/**
+ * 探索队列交活:洗一遍工人交回来的结果(键非空、状态在白名单、文字限长),五个等长数组一条语句写回。
+ *
+ * @param input 连接与线格式结果。
+ * @returns 写回了几条。
+ */
+export async function saveExploreResults(input: SaveExploreIn): ExploreSavedOut {
+  const keys: string[] = []
+  const statuses: string[] = []
+  const zh: string[] = []
+  const ko: string[] = []
+  const notes: string[] = []
+  for (const raw of input.results) {
+    const r = toExploreResult(raw)
+    if (r.key === WEBSITE_NONE || (EXPLORE_STATUSES as readonly string[]).includes(r.status) === false) {
+      continue
+    }
+    keys.push(r.key)
+    statuses.push(r.status)
+    zh.push(r.aliasZh)
+    ko.push(r.aliasKo)
+    notes.push(r.note)
+  }
+  if (keys.length === 0) {
+    return 0
+  }
+  await input.db.query(SQL.EMPLOYER_EXPLORE_RESOLVE, [keys, statuses, zh, ko, notes, TRANS_V])
+  CACHE.poolPages.clear()
+  return keys.length
+}
+
+/**
+ * 工人交回来的一条线格式结果 → 洗净(缺格成空串,文字限长)。
+ *
+ * @param r 线格式结果。
+ * @returns 洗净的结果。
+ */
+export function toExploreResult(r: ExploreResultJson): ExploreResult {
+  return {
+    key: text(r.key), status: text(r.status), aliasZh: text(r.aliasZh).slice(0, EXPLORE_TEXT_MAX),
+    aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
   }
 }
 

@@ -502,6 +502,32 @@ export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, n
 export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
 
 /**
+ * 探索队列入队(2026-09-18 Frank「用户列出过哪些雇主,就自动从那个表里翻译,类似于处理消息」):板上给用户列出过的雇主
+ * 记一笔 —— 新的进队(待办),已在队里的只加「被列出次数」与最后列出时刻。键只认池里真有的(名字取池里的,不信客户端);
+ * 建表语句 docs/sql/employer-explore-20260918.sql。$1=池主键数组。
+ */
+export const EMPLOYER_EXPLORE_ENQUEUE = `INSERT INTO employer_explore (key, name)
+     SELECT p.key, p.name FROM employer_pool p WHERE p.key = ANY($1::varchar[])
+     ON CONFLICT (key) DO UPDATE SET seen_count = employer_explore.seen_count + 1, last_seen = now()`
+
+/**
+ * 探索队列取待办(后台工人来取活):被列出次数多的、最近被列出的在前。$1=条数。
+ */
+export const EMPLOYER_EXPLORE_PENDING = `SELECT key, name FROM employer_explore WHERE status = 'pending'
+     ORDER BY seen_count DESC, last_seen DESC LIMIT $1`
+
+/**
+ * 探索队列交活:逐条写回状态与译名(done = 翻好了 / skip = 人名等不翻 / fail = 这条没翻成,下轮不再取)。
+ * $1=键数组,$2=状态数组,$3=中文译名数组,$4=韩文译名数组,$5=备注数组(五个数组等长,按位对应),$6=译文版本号。
+ */
+export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
+      SET status = u.status, alias_zh = NULLIF(u.alias_zh, ''), alias_ko = NULLIF(u.alias_ko, ''),
+          note = NULLIF(u.note, ''), trans_v = $6, done_at = now()
+     FROM unnest($1::varchar[], $2::varchar[], $3::varchar[], $4::varchar[], $5::varchar[])
+          AS u(key, status, alias_zh, alias_ko, note)
+    WHERE e.key = u.key`
+
+/**
  * 雇主板「全部类别」下拉的选项:池里雇主在招的本站大类(职位板那一套),覆盖雇主多的在前,带英 / 韩名
  * (2026-09-18;扫一遍池表,lib/employers 进程内 TTL 缓存)。
  */
@@ -611,12 +637,14 @@ export const employerPoolPage = (order: string) => `
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
+      x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
       b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
       count(*) OVER()::int AS total
     FROM employer_pool_buckets b JOIN employer_pool p ON p.key = b.employer_key
     LEFT JOIN companies c ON c.slug = p.slug
+    LEFT JOIN employer_explore x ON x.key = p.key
     LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE b.ind_group = $1
       AND ($2 = '' OR p.province = $2)
@@ -699,6 +727,7 @@ export const employerPoolAll = (order: string) => `
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
+      x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
       NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
@@ -708,6 +737,7 @@ export const employerPoolAll = (order: string) => `
     JOIN (SELECT DISTINCT ON (employer_key) * FROM employer_pool_buckets
            ORDER BY employer_key, star DESC, open_jobs DESC) b ON b.employer_key = p.key
     LEFT JOIN companies c ON c.slug = p.slug
+    LEFT JOIN employer_explore x ON x.key = p.key
     LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%')
       AND ($2 = '' OR p.province = $2)

@@ -22,10 +22,11 @@ REPO_ROOT = paths.ROOT
 ETL_DIR = REPO_ROOT / "etl"
 """被扫的根(域目录都在它下面)。"""
 
-DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "fcip",
+DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "explore", "fcip",
            "fetch", "fsa", "gate", "hwcr", "ircc", "jdformat", "jobbank", "lmia", "load", "log", "mart", "news",
            "noc", "paths", "pnp", "rcip", "eligibility", "sched", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+explore 2026-09-18 立域(Frank「雇主有个探索列表,用户列出过哪些雇主,就自动翻译,类似于处理消息」:探索队列的后台工人)
 jdformat 2026-09-15 立域(Frank「抓工作的之后同时跑整理版」「也算 etl 的一部分」:岗位正文 → 五节整理版预生成)
 hwcr 2026-09-04 立域(Frank「创建一个单独的 etl 域」:海外超人渥太华站房屋帖,私用租房清单)
 gate/sched 2026-08-31 批K 立域(Frank「我觉得也需要设计成域」:根上五件管理层脚本
