@@ -159,6 +159,53 @@ PHENOM = {"phenom"}
 (Jobillico 在招岗里正文不足 500 字的 808 条,它一家 380 条),整理版五节全空;完整正文(含时薪、职责、要求,
 实测一条 4,702 字)只在它自己的招聘站上。Frank 09-18「两个后续都做」。"""
 
+SUCCESSFACTORS = {"successfactors"}
+"""SAP SuccessFactors 招聘站(2026-09-19 立;首批 Rogers、Bank of Canada)。没有公开 JSON,走的是
+「搜索页翻页列职位页 → 每个职位页自带 schema.org JobPosting 微数据(itemprop)」这条路,普通请求就取得到。
+起因:渥太华头部公司逐家点过一遍,大公司多数不挂我们已会抓的六家,SuccessFactors 是其中全国用得最多的一家。"""
+
+SITE_ATS = PHENOM | SUCCESSFACTORS
+"""没有公开 JSON、要逐页读职位页的那一类(scrape_company 按这一组分派到 fetch_site_jobs)。"""
+
+SF_SEARCH_PATH_TPL = "/search/?q=&locationsearch={where}&startrow={row}"
+"""SuccessFactors 搜索页路径(接在招聘站 origin 后面;locationsearch 按地点词筛,startrow 翻页)。"""
+
+SF_WHERE = "Ottawa"
+"""搜索页的地点词:本域只收渥太华都会区的岗(汇装那头同一口径,别处的岗抓回来也会被丢)。"""
+
+SF_PAGE_SIZE = 25
+"""搜索页一页的行数(翻页步长)。"""
+
+SF_MAX_PAGES = 12
+"""一家公司一轮最多翻的搜索页数(防翻页参数失效时死循环;300 岗封顶)。"""
+
+SF_JOB_HREF_RE = re.compile(r'href="(/job/[^"]+/\d+/)"')
+"""搜索页里的职位页相对地址(`/job/<标题折字>/<数字 id>/`)。"""
+
+SF_TITLE_RE = re.compile(r'itemprop="title"[^>]*>\s*([^<]+?)\s*<', re.S)
+"""职位页微数据:标题。"""
+
+SF_PAGE_TITLE_RE = re.compile(r"<title>\s*(.*?)\s+Job Details\s*\|", re.S)
+"""职位页 <title> 里的标题(`<标题> Job Details | <公司>`);有的站模板不给标题微数据(Bank of Canada 实测),拿它兜。"""
+
+SF_POSTED_RE = re.compile(r'itemprop="datePosted"\s+content="([^"]+)"')
+"""职位页微数据:发布时刻(形如 `Wed Aug 26 07:00:00 UTC 2026`)。"""
+
+SF_POSTED_FMT = "%a %b %d %H:%M:%S UTC %Y"
+"""发布时刻的格式。"""
+
+SF_LOCALITY_RE = re.compile(r'itemprop="addressLocality"\s+content="([^"]*)"')
+"""职位页微数据:市。"""
+
+SF_REGION_RE = re.compile(r'itemprop="addressRegion"\s+content="([^"]*)"')
+"""职位页微数据:省码。"""
+
+SF_DESC_RE = re.compile(r'itemprop="description"[^>]*>(.*?)</span>\s*</div>\s*</div>', re.S)
+"""职位页微数据:正文那一块 HTML(到外层两层 div 收口为止)。"""
+
+SF_DELAY_S = 0.3
+"""逐页取职位页的间隔秒(礼貌;只对没缓存过的新页生效)。"""
+
 PH_SITEMAP_PATH = "/sitemap.xml"
 """Phenom 站点地图的路径(接在招聘站 origin 后面;Sienna 实测 508 条 url 里 482 条是职位页)。"""
 

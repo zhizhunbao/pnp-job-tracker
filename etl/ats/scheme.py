@@ -397,6 +397,48 @@ class PhenomFetchIn:
 
 
 @dataclass
+class SiteFetchIn:
+    """fetch_site_jobs() 入参:一家逐页读职位页的招聘站。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    careers_url: str
+    """招聘站地址。"""
+
+    company: str
+    """公司文件夹名(crawl 层 slug 用)。"""
+
+    ats: str
+    """ATS 名(分派依据)。"""
+
+
+@dataclass
+class SfFetchIn:
+    """fetch_successfactors() 入参:一家 SuccessFactors 招聘站。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    careers_url: str
+    """招聘站地址(只用它的 origin 去拼搜索页)。"""
+
+    company: str
+    """公司文件夹名(crawl 层 slug 用)。"""
+
+
+@dataclass
+class SfJobIn:
+    """to_sf_job() 入参:一个职位页。"""
+
+    url: str
+    """职位页地址。"""
+
+    html: str
+    """职位页原文。"""
+
+
+@dataclass
 class PhenomJobIn:
     """to_phenom_job() 入参:一个职位页。"""
 

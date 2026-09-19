@@ -52,5 +52,21 @@
     "careers_url": "https://jobs.ashbyhq.com/rewind",
     "ats": "ashby",
     "status": "200"
+  },
+  {
+    "name": "Rogers",
+    "careers_url": "https://jobs.rogers.com/",
+    "ats": "successfactors",
+    "status": "200"
+  },
+  {
+    "name": "Bank of Canada",
+    "website": "https://www.bankofcanada.ca/",
+    "region": "Ottawa (ON)",
+    "sectors": "Central bank",
+    "address": "234 Wellington St, Ottawa, ON K1A 0G9",
+    "careers_url": "https://careers.bankofcanada.ca/",
+    "ats": "successfactors",
+    "status": "200"
   }
 ]

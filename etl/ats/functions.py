@@ -20,6 +20,7 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
 """
 import html
 import json
+import re
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -63,13 +64,15 @@ from ats.constants import (
     K_LD_ADDRESS, K_LD_DATE_POSTED, K_LD_JOB_LOCATION, K_LD_LOCALITY, K_LD_REGION, K_LD_TYPE, PHENOM,
     PH_CRAWL_SLUG_TPL, PH_DELAY_S, PH_JOB_ID_RE, PH_JOB_LOC_RE, PH_LD_RE, PH_MAX_JOBS, PH_SITEMAP_PATH, PH_TYPE_JOB,
     URL_SCHEME_SEP,
+    SF_DELAY_S, SF_DESC_RE, SF_JOB_HREF_RE, SF_LOCALITY_RE, SF_MAX_PAGES, SF_PAGE_SIZE, SF_PAGE_TITLE_RE, SF_POSTED_FMT, SF_POSTED_RE,
+    SF_REGION_RE, SF_SEARCH_PATH_TPL, SF_TITLE_RE, SF_WHERE, SITE_ATS,
 )
 from ats.scheme import (
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
     WorkdayDetailIn, WorkdayFetchIn, WorkdayFindIn, WorkdayJobIn, WorkdayPageIn, WorkdaySiteIn,
-    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn,
+    WorkdayTarget, WriteJobsIn, PhenomFetchIn, PhenomJobIn, SfFetchIn, SfJobIn, SiteFetchIn,
 )
 
 
@@ -174,8 +177,8 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
         jobs = fetch_workday(WorkdayFetchIn(client=x.client, targets=targets))
         if len(jobs) == 0:
             return CompanyOut(scraped=False, skipped=True, tech=0)
-    elif ats in PHENOM:
-        jobs = fetch_phenom(PhenomFetchIn(client=x.client, careers_url=careers_url, company=x.folder.name))
+    elif ats in SITE_ATS:
+        jobs = fetch_site_jobs(SiteFetchIn(client=x.client, careers_url=careers_url, company=x.folder.name, ats=ats))
         if len(jobs) == 0:
             return CompanyOut(scraped=False, skipped=True, tech=0)
     elif ats not in SUPPORTED:
@@ -195,6 +198,13 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
             tech += 1
     write_company_jobs(WriteJobsIn(folder=x.folder, ats=ats, token=token, jobs=jobs))
     return CompanyOut(scraped=True, skipped=False, tech=tech)
+
+
+def fetch_site_jobs(x: SiteFetchIn) -> list:
+    """没有公开 JSON、要逐页读职位页的两家(Phenom / SuccessFactors)按 ATS 名分派。"""
+    if x.ats in PHENOM:
+        return fetch_phenom(PhenomFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
+    return fetch_successfactors(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
 
 
 def ats_token(x: TokenIn) -> str:
@@ -590,6 +600,89 @@ def fetch_phenom(x: PhenomFetchIn) -> list:
             out.append(job)
     put_cached_pages(CachePutManyIn(slug=slug, pages=fresh))
     return out
+
+
+def fetch_successfactors(x: SfFetchIn) -> list:
+    """SuccessFactors 招聘站:搜索页(按地点词筛)翻页列职位页 → 逐页读微数据。页面原文先进 crawl 层,缓存里有的不再请求;
+    搜索页取不到 = 这家本轮没岗(空表,调用方按跳过处理,不拿空表盖旧数据)。"""
+    parts = urlsplit(x.careers_url)
+    origin = parts.scheme + URL_SCHEME_SEP + parts.netloc
+    urls = sf_job_urls(SfFetchIn(client=x.client, careers_url=origin, company=x.company))
+    slug = PH_CRAWL_SLUG_TPL.format(company=x.company)
+    cached = load_cache_index(slug)
+    fresh: list = []
+    out = []
+    for url in urls:
+        hit = cached.get(url)
+        if hit is not None:
+            page = Path(hit).read_text(encoding=ENC_UTF8)
+        else:
+            try:
+                page = x.client.get(url).text
+            except Exception as e:  # noqa: BLE001 — 一页取不到不拖累别的页
+                err(url, e)
+                continue
+            fresh.append(CachePage(url=url, html=page, title=""))
+            time.sleep(SF_DELAY_S)
+        job = to_sf_job(SfJobIn(url=url, html=page))
+        if job is not None:
+            out.append(job)
+    put_cached_pages(CachePutManyIn(slug=slug, pages=fresh))
+    return out
+
+
+def sf_job_urls(x: SfFetchIn) -> list:
+    """搜索页翻到没有新职位为止 → 职位页绝对地址(去重保序);careers_url 这格传的是 origin。"""
+    urls: list = []
+    for page_no in range(SF_MAX_PAGES):
+        search = x.careers_url + SF_SEARCH_PATH_TPL.format(where=SF_WHERE, row=page_no * SF_PAGE_SIZE)
+        try:
+            listing = x.client.get(search).text
+        except Exception as e:  # noqa: BLE001 — 搜索页取不到 = 翻页到此为止,留痕
+            err(search, e)
+            break
+        added = 0
+        for href in SF_JOB_HREF_RE.findall(listing):
+            if x.careers_url + href not in urls:
+                urls.append(x.careers_url + href)
+                added += 1
+        if added == 0:
+            break
+    return urls
+
+
+def to_sf_job(x: SfJobIn) -> AtsJob | None:
+    """职位页 → AtsJob:读页面里的 JobPosting 微数据;没有标题(页面已下架成空壳)= None。"""
+    title = SF_TITLE_RE.search(x.html)
+    if title is None:
+        title = SF_PAGE_TITLE_RE.search(x.html)
+    if title is None:
+        return None
+    locality = SF_LOCALITY_RE.search(x.html)
+    region = SF_REGION_RE.search(x.html)
+    desc = SF_DESC_RE.search(x.html)
+    posted = SF_POSTED_RE.search(x.html)
+    description = ""
+    if desc is not None:
+        description = desc.group(1)
+    return AtsJob(title=html.unescape(title.group(1)), location=join_parts([group_of(locality), group_of(region)]),
+                  url=x.url, department="", posted=sf_date_of(group_of(posted)),
+                  address=address_of(description), salary="", description=description)
+
+
+def group_of(m: re.Match | None) -> str:
+    """正则命中的第一组;没命中给空串。"""
+    if m is None:
+        return ""
+    return m.group(1)
+
+
+def sf_date_of(text: str) -> str:
+    """SuccessFactors 的发布时刻(`Wed Aug 26 07:00:00 UTC 2026`)→ YYYY-MM-DD;格式不对给空串。"""
+    try:
+        return datetime.strptime(text, SF_POSTED_FMT).date().isoformat()
+    except ValueError:
+        return ""
 
 
 def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
