@@ -168,7 +168,12 @@ ORACLE = {"oraclecloud"}
 """Oracle 招聘云(Recruiting Cloud;2026-09-19 立,首家 Nokia;Texas Instruments、KX Systems 同家)。有公开 REST:
 清单端点按关键词筛,详情端点逐岗取正文与办公地点。清单里的地点只到国家(Nokia 全写 Canada),真正的市在详情的 workLocation 里。"""
 
-SITE_ATS = PHENOM | SUCCESSFACTORS | ORACLE
+WPCAREERS = {"wpcareers"}
+"""自建 WordPress 招聘站(2026-09-19 立;首家 Calian —— 本部渥太华,238 岗,没挂任何第三方招聘系统)。职位是站上的一种自定义
+文章类型,WordPress 自带的 REST 就能整表取:入口地址记的就是那个集合端点(`…/wp-json/wp/v2/<类型>`),翻页到空为止。
+REST 只用来列职位页地址;标题、地点、发布日、正文都读职位页里的 JobPosting 结构化数据(REST 的正文里多数不写地点)。"""
+
+SITE_ATS = PHENOM | SUCCESSFACTORS | ORACLE | WPCAREERS
 """不走六家公开 JSON 那条路、各有各取法的那一类(scrape_company 按这一组分派到 fetch_site_jobs)。"""
 
 ORC_SITE_RE = re.compile(r"https?://([a-z0-9.-]+\.oraclecloud\.com)/hcmUI/CandidateExperience/[A-Za-z_]+/sites/([A-Za-z0-9_]+)")
@@ -196,6 +201,27 @@ ORC_COUNTRY = "CA"
 
 ORC_DELAY_S = 0.2
 """逐岗取详情的间隔秒(礼貌)。"""
+
+WP_PAGE_TPL = "{base}?per_page={size}&page={page}"
+"""WordPress REST 集合端点的翻页地址。"""
+
+WP_PAGE_SIZE = 100
+"""一页条数(WordPress REST 的上限)。"""
+
+WP_MAX_PAGES = 10
+"""最多翻的页数(1000 岗封顶;翻过头 WordPress 回 400,也当翻完)。"""
+
+WP_DELAY_S = 0.3
+"""逐页取职位页的间隔秒(礼貌;只对没缓存过的新页生效)。"""
+
+WP_SPOT_SEP = "; "
+"""一岗多地时各地之间的分隔。"""
+
+K_LD_GRAPH = "@graph"
+"""JSON-LD 键:节点清单(Yoast 把 JobPosting 和网页 / 面包屑节点一起包在里面)。"""
+
+K_WP_LINK = "link"
+"""WordPress 文章键:公开页地址。"""
 
 K_ITEMS = "items"
 """Oracle 载荷键:结果外壳。"""

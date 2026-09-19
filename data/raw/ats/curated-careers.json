@@ -169,5 +169,12 @@
     "ats": "eightfold",
     "status": "200",
     "hq": "Stockholm"
+  },
+  {
+    "name": "Calian",
+    "careers_url": "https://careers.calian.com/wp-json/wp/v2/career",
+    "ats": "wpcareers",
+    "status": "200",
+    "hq": "Ottawa"
   }
 ]

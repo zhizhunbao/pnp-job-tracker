@@ -69,6 +69,7 @@ from ats.constants import (
     K_ITEMS, K_ORC_COUNTRY, K_ORC_ID, K_ORC_JOB_FUNCTION, K_ORC_POSTAL, K_ORC_POSTED, K_ORC_PRIMARY, K_ORC_REGION, K_ORC_STREET,
     K_ORC_TITLE, K_ORC_TOWN, K_ORC_WORK, K_REQ_LIST, ORACLE, ORC_BODY_KEYS, ORC_COUNTRY, ORC_DELAY_S, ORC_DETAIL_URL_TPL,
     ORC_JOB_URL_TPL, ORC_LIMIT, ORC_LIST_URL_TPL, ORC_SITE_RE, ORC_WHERE,
+    K_LD_GRAPH, K_WP_LINK, WPCAREERS, WP_DELAY_S, WP_MAX_PAGES, WP_PAGE_SIZE, WP_PAGE_TPL, WP_SPOT_SEP,
 )
 from ats.scheme import (
     JdMdScan,
@@ -204,11 +205,13 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
 
 
 def fetch_site_jobs(x: SiteFetchIn) -> list:
-    """不走六家公开 JSON 的三家(Phenom / Oracle 招聘云 / SuccessFactors)按 ATS 名分派。"""
+    """不走六家公开 JSON 的四家(Phenom / Oracle 招聘云 / 自建 WordPress 站 / SuccessFactors)按 ATS 名分派。"""
     if x.ats in PHENOM:
         return fetch_phenom(PhenomFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
     if x.ats in ORACLE:
         return fetch_oracle(OrcFetchIn(client=x.client, careers_url=x.careers_url))
+    if x.ats in WPCAREERS:
+        return fetch_wpcareers(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
     return fetch_successfactors(SfFetchIn(client=x.client, careers_url=x.careers_url, company=x.company))
 
 
@@ -655,6 +658,81 @@ def to_orc_job(x: OrcJobIn) -> AtsJob:
                   department=x.detail.get(K_ORC_JOB_FUNCTION, "") or "", posted=iso_of(x.row.get(K_ORC_POSTED, "")),
                   address=join_parts([place.get(K_ORC_STREET, ""), place.get(K_ORC_TOWN, ""), place.get(K_ORC_POSTAL, "")]),
                   salary="", description=PARA_SEP.join(parts))
+
+
+def fetch_wpcareers(x: SfFetchIn) -> list:
+    """自建 WordPress 招聘站:REST 集合端点(careers_url 记的就是它)翻页列出职位页地址 → 逐页读页面里的 JobPosting 结构化数据。
+    REST 回来的正文里没有地点(Calian 实测 238 岗里 222 岗正文不写地点),地点只在职位页的 JSON-LD 里。
+    页面原文先进 crawl 层,缓存里有的不再请求。"""
+    slug = PH_CRAWL_SLUG_TPL.format(company=x.company)
+    cached = load_cache_index(slug)
+    fresh: list = []
+    out = []
+    for url in wp_job_urls(x):
+        hit = cached.get(url)
+        if hit is not None:
+            page = Path(hit).read_text(encoding=ENC_UTF8)
+        else:
+            try:
+                page = x.client.get(url).text
+            except Exception as e:  # noqa: BLE001 — 一页取不到不拖累别的页
+                err(url, e)
+                continue
+            fresh.append(CachePage(url=url, html=page, title=""))
+            time.sleep(WP_DELAY_S)
+        job = to_wp_job(PhenomJobIn(url=url, html=page))
+        if job is not None:
+            out.append(job)
+    put_cached_pages(CachePutManyIn(slug=slug, pages=fresh))
+    return out
+
+
+def wp_job_urls(x: SfFetchIn) -> list:
+    """REST 集合端点翻页到空为止 → 职位页地址;翻过头 WordPress 回的是一个错误对象(不是职位数组),也当翻完。"""
+    urls: list = []
+    for page_no in range(1, WP_MAX_PAGES + 1):
+        try:
+            rows = json_rows(x.client.get(WP_PAGE_TPL.format(base=x.careers_url, size=WP_PAGE_SIZE, page=page_no)))
+        except Exception as e:  # noqa: BLE001 — 取不到 / 不是 JSON = 翻完;首页就炸 = 这家本轮没岗,留痕
+            if page_no == 1:
+                err(x.careers_url, e)
+            break
+        if not isinstance(rows, list) or len(rows) == 0:
+            break
+        for row in rows:
+            if row.get(K_WP_LINK):
+                urls.append(row[K_WP_LINK])
+    return urls
+
+
+def to_wp_job(x: PhenomJobIn) -> AtsJob | None:
+    """职位页 → AtsJob:读页面里 JobPosting 那一块 JSON-LD(常包在 @graph 里);一岗多地的把各地「市, 省」用分号串起来
+    (汇装按文本里有没有渥太华判地点,只取第一处会把「Laval + Ottawa」这种岗丢掉)。没有 JobPosting = None。"""
+    for block in PH_LD_RE.findall(x.html):
+        try:
+            data = json.loads(block)
+        except ValueError:
+            continue
+        nodes = [data]
+        if isinstance(data, dict) and isinstance(data.get(K_LD_GRAPH), list):
+            nodes = data[K_LD_GRAPH]
+        for node in nodes:
+            if not isinstance(node, dict) or node.get(K_LD_TYPE) != PH_TYPE_JOB:
+                continue
+            places = node.get(K_LD_JOB_LOCATION) or []
+            if isinstance(places, dict):
+                places = [places]
+            spots: list = []
+            for place in places:
+                address = (place or {}).get(K_LD_ADDRESS) or {}
+                spot = join_parts([address.get(K_LD_LOCALITY, ""), address.get(K_LD_REGION, "")])
+                if spot and spot not in spots:
+                    spots.append(spot)
+            description = html.unescape(node.get(K_DESCRIPTION, "") or "")
+            return AtsJob(title=html.unescape(node.get(K_TITLE, "") or ""), location=WP_SPOT_SEP.join(spots), url=x.url,
+                          department="", posted=iso_of(node.get(K_LD_DATE_POSTED, "")), address=address_of(description),
+                          salary="", description=description)
+    return None
 
 
 def fetch_successfactors(x: SfFetchIn) -> list:

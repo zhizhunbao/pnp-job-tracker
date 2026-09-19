@@ -1059,7 +1059,7 @@ SOURCE_JOB_BANK = "Job Bank"
 SOURCE_PRETTY = {"lever": "Lever", "bamboohr": "BambooHR", "greenhouse": "Greenhouse",
                  "smartrecruiters": "SmartRecruiters", "workable": "Workable",
                  "recruitee": "Recruitee", "myworkdayjobs": "Workday", "workday": "Workday", "ashbyhq": "Ashby",
-                 "successfactors": "SuccessFactors", "oraclecloud": "Oracle", "phenom": "Phenom"}
+                 "successfactors": "SuccessFactors", "oraclecloud": "Oracle", "wpcareers": "Company site", "phenom": "Phenom"}
 """ATS 板名美化表(查不到就用原始 source,再没有落 EM_DASH)。"""
 
 MART_AGENCY_RE = re.compile(r"recruit|staffing|talent|personnel|placement|outsourc|mercor|"
