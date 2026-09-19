@@ -31,6 +31,7 @@ import { OpenCell } from './opencell'
 import { PoolBroadCell } from './poolbroadcell'
 import { PoolCityCell } from './poolcitycell'
 import { PoolDistrictCell } from './pooldistrictcell'
+import { PoolHqCell } from './poolhqcell'
 import { PoolEeCell } from './pooleecell'
 import { PoolLmiaCell } from './poollmiacell'
 import { PoolLocsCell } from './poollocscell'
@@ -41,7 +42,8 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_LOCS_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY,
+  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_HQ_KEY, COL_LOCS_KEY, COL_PROV_KEY, COL_SECTOR_KEY,
+  COL_WHERE_KEY,
   COMPARE_NAME_SEP,
   DASH_MARK,
   DEMO_A_KEY, DEMO_B_KEY,
@@ -68,7 +70,7 @@ import {
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_BROAD, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_LOCS, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_HQ, W_POOL_LOCS, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -87,7 +89,7 @@ import type {
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, EeTextIn,
-  ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn,
+  ReportSeenIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -215,6 +217,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   const kind = kindOf({ f: x.f })
   const provText = provEnOf(r.province)
   const cityText = r.city
+  const hqText = hqTextOf(x)
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -230,6 +233,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
     districtText: r.district,
+    hqText,
+    hqHref: hqHrefOf({ address: r.address, text: hqText }),
     locs: r.locations,
     provText,
     cityText,
@@ -338,6 +343,43 @@ function eeTextOf(x: EeTextIn): string {
     }
   }
   return out.join(x.t('de.sep'))
+}
+
+/**
+ * 总部格那行字:「区, 市, 省码」,缺哪级省哪级(2026-09-19 Frank「总部列,包含省市区」)。
+ *
+ * @param x 这一行(只读省市区三格)。
+ * @returns 一行字;省市区都没记 = 空串。
+ */
+function hqTextOf(x: EmployerCellRowIn): string {
+  const r = x.r
+  const out: string[] = []
+  if (r.district !== TEXT_NONE) {
+    out.push(r.district)
+  }
+  if (r.city !== TEXT_NONE) {
+    out.push(r.city)
+  }
+  if (r.province !== TEXT_NONE) {
+    out.push(r.province)
+  }
+  return out.join(WHERE_SEP)
+}
+
+/**
+ * 总部格的 Google 地图链接:有公司地址就定位到地址,没有就查总部格那行字。
+ *
+ * @param x 公司地址与总部格那行字。
+ * @returns 地图 URL;两样都空 = 空串。
+ */
+function hqHrefOf(x: HqHrefIn): string {
+  if (x.address !== TEXT_NONE) {
+    return mapsUrl(x.address)
+  }
+  if (x.text === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return mapsUrl(x.text + WHERE_SEP + MAP_COUNTRY)
 }
 
 /**
@@ -487,6 +529,13 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: PoolCityCell,
     },
     {
+      key: COL_HQ_KEY,
+      label: x.t('de.colHq'),
+      width: poolWidthOf({ key: COL_HQ_KEY, shown: x.shown }),
+      nowrap: true,
+      render: PoolHqCell,
+    },
+    {
       key: COL_LOCS_KEY,
       label: x.t('de.colLocs'),
       width: poolWidthOf({ key: COL_LOCS_KEY, shown: x.shown }),
@@ -593,6 +642,9 @@ function poolShareOf(key: string): number {
   }
   if (key === COL_CITY_KEY) {
     return W_POOL_CITY
+  }
+  if (key === COL_HQ_KEY) {
+    return W_POOL_HQ
   }
   if (key === COL_LOCS_KEY) {
     return W_POOL_LOCS

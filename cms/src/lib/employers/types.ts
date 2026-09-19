@@ -164,6 +164,11 @@ export type PoolRow = {
   district: string
 
   /**
+   * 公司地址(总部列的地图链接直接定位到它);空串 = 没记(地图退回查「区, 市, 省」)。
+   */
+  address: string
+
+  /**
    * 主市的人工核定中文译名(cities.name_zh;2026-09-13 地点列接 CityNameCell 双行形);空串 = 译名表外。
    */
   cityZh: string
@@ -1940,6 +1945,11 @@ export type PoolDbRow = {
    * 公司官网(LEFT JOIN companies;无公司页 / 没记官网 = null)。
    */
   website: string | null
+
+  /**
+   * 公司地址(LEFT JOIN companies;Job Bank 帖子上的雇主地址或 ATS 名单里人工记的;没记 = null)。
+   */
+  address: string | null
 
   /**
    * 探索队列里的状态(LEFT JOIN employer_explore;没进过队 = null)。

@@ -1533,7 +1533,7 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     key: text(r.key), slug: textOrNull(r.slug), name: text(r.name), website: httpUrlOf(text(r.website)),
     industry: textOrNull(r.industry),
     sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
-    cityKo: text(r.city_ko), district: text(r.district),
+    cityKo: text(r.city_ko), district: text(r.district), address: text(r.address),
     locations: toStrList(r.locations), broadKeys: toBroadKeys(r), eeKeys: toStrList(r.ees),
     designatedPlaces: toStrList(r.designated_places), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),

@@ -183,6 +183,11 @@ export type PoolRow = {
   district: string
 
   /**
+   * 公司地址;空串 = 没记。
+   */
+  address: string
+
+  /**
    * 主市的人工核定中文译名;空串 = 译名表外(主文案直接英文)。
    */
   cityZh: string
@@ -640,6 +645,16 @@ export type EmployerCellRow = {
    * 区格:区名原样,一行(2026-09-18 Frank「区的字段没有啊」;默认不显,字段面板里勾);空串 = 岗都没带区(渲横杠)。
    */
   districtText: string
+
+  /**
+   * 总部格:「区, 市, 省码」一行(缺哪级省哪级);空串 = 省市区都没记(渲横杠)。
+   */
+  hqText: string
+
+  /**
+   * 总部格的 Google 地图链接:有公司地址就定位到地址,没有就查总部格那行字;空串 = 不成链。
+   */
+  hqHref: string
 
   /**
    * 省格:英文省全名(2026-09-18 Frank「省市都改成英文名」,与职位板省列同形);空串 = 池里没记(渲横杠)。
@@ -2503,6 +2518,21 @@ export type PageMeta = {
    * 搜索结果里那段摘要,各入口一句定稿、不随参数变。
    */
   description: string
+}
+
+/**
+ * hqHrefOf 的入参。
+ */
+export type HqHrefIn = {
+  /**
+   * 公司地址;空串 = 没记。
+   */
+  address: string
+
+  /**
+   * 总部格那行字;空串 = 省市区都没记。
+   */
+  text: string
 }
 
 /**

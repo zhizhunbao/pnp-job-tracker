@@ -598,6 +598,12 @@ export const COL_LOCS_KEY = 'locs'
 export const COL_DISTRICT_KEY = 'district'
 
 /**
+ * 雇主板列 key:总部(2026-09-19 Frank「需要加一个总部列,包含省市区,可以点击跳转到 google map」「不用合并,就是多加一列」;
+ * 省 / 市 / 区三列照留。不排序 —— 省、市两列已能排)。
+ */
+export const COL_HQ_KEY = 'hq'
+
+/**
  * 雇主板列 key:指定雇主(排序键 designated;旧 /employers/designated 路由 301 落到这一键)。
  */
 export const COL_DESIGNATED_KEY = 'designated'
@@ -650,6 +656,11 @@ export const W_POOL_LOCS = 17
  * 雇主板区列的宽(可选列;区名一行,与市同宽)。
  */
 export const W_POOL_DISTRICT = 13
+
+/**
+ * 雇主板总部列的宽(「区, 市, 省码」一行,比市列宽一档)。
+ */
+export const W_POOL_HQ = 21
 
 /**
  * 雇主板在招列的宽(数字 + 入门占比灰注)。
