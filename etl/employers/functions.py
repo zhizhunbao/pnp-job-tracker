@@ -19,7 +19,7 @@ import paths
 from noc.functions import broad_of, group_of, teer_of
 from names.functions import sector_of
 from log.functions import say
-from employers.constants import (BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
+from employers.constants import (BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, PLACE_SEP, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT, K_EE_CATEGORY,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
@@ -275,9 +275,10 @@ def home_city_of(x: HomeCityIn) -> str | None:
 
 
 def designated_summary_of(des_rows: list) -> DesignatedOut:
-    """指定行清单 → 项目/省两份去重有序清单。"""
+    """指定行清单 → 项目 / 省 / 资格所在地三份去重有序清单。"""
     programs = []
     provinces = []
+    places = []
     for row in des_rows:
         src = row.get(K_SOURCE) or ""
         if src and src not in programs:
@@ -285,7 +286,10 @@ def designated_summary_of(des_rows: list) -> DesignatedOut:
         prov = row.get(K_PROVINCE) or ""
         if prov and prov not in provinces:
             provinces.append(prov)
-    return DesignatedOut(programs=sorted(programs), provinces=sorted(provinces))
+        place = row.get(K_LOCATION) or prov
+        if src and place and src + PLACE_SEP + place not in places:
+            places.append(src + PLACE_SEP + place)
+    return DesignatedOut(programs=sorted(programs), provinces=sorted(provinces), places=sorted(places))
 
 
 def hist_stats_of(hist: list) -> HistOut:
@@ -324,7 +328,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         industry=comp.get(K_SECTORS) or None,
         province=home.province, city=home.city, district=home.district, locations=locations,
         designated=len(des_rows) > 0, designatedPrograms=des.programs,
-        designatedProvinces=des.provinces,
+        designatedProvinces=des.provinces, designatedPlaces=des.places,
         openJobsTotal=open_total, histJobs=hist.jobs,
         provincesActive=hist.provinces, citiesActive=hist.cities,
         websiteKnown=bool(comp.get(K_WEBSITE)),

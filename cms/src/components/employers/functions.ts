@@ -50,7 +50,7 @@ import {
   DEMO_PROV_A, DEMO_PROV_B, DEMO_PROV_C, DEMO_SKILLED_A, DEMO_SKILLED_B, DEMO_SKILLED_C, DIFF_KEY_HEAD,
   DIFF_TAG, DIFF_VARIANT_NONE, DIM_AIP_KEY, DIM_AVG_KEY, DIM_BRIEF_KEY, DIM_INDUSTRY_KEY, DIM_LMIA_KEY,
   DIM_MATCH_KEY, DIM_NAMED_KEY, DIM_OPEN_KEY, DIM_PROV_KEY, DIM_QUARTER_KEY, DIM_SAL_KEY, DIM_SKILLED_KEY,
-  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
+  CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, PLACE_GAP, PLACE_SEP, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
@@ -234,7 +234,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     provText,
     cityText,
     openText: String(r.openJobs),
-    designatedText: designatedTextOf({ t: x.t, r }),
+    designatedLines: designatedLinesOf({ t: x.t, r }),
     designatedChip: designatedChipOf({ t: x.t, r }),
     jobsHref,
     companyHref,
@@ -373,19 +373,34 @@ function sectorKeyOf(sector: string): string {
 }
 
 /**
- * 指定列主文案:项目清单顿号连(AIP、RCIP);指定但名单没写项目退回「指定雇主」;非指定空串(渲横杠)。
+ * 指定列的字,一行一个项目:项目名 + 它的资格所在地顿号连(「AIP NB、NS」「RCIP Sudbury, ON」);名单没给地点的只写项目名;
+ * 指定但名单没写项目退回一行「指定雇主」;非指定空表(渲横杠)。
  *
  * @param x 取词函数与这一行。
- * @returns 文案或空串。
+ * @returns 各行文案。
  */
-function designatedTextOf(x: RowWordsIn): string {
+function designatedLinesOf(x: RowWordsIn): string[] {
   if (x.r.designated === false) {
-    return TEXT_NONE
+    return []
   }
   if (x.r.programs.length === 0) {
-    return x.t('de.designated')
+    return [x.t('de.designated')]
   }
-  return x.r.programs.join(x.t('de.sep'))
+  const out: string[] = []
+  for (const program of x.r.programs) {
+    const places: string[] = []
+    for (const p of x.r.designatedPlaces) {
+      if (p.startsWith(program + PLACE_SEP)) {
+        places.push(p.slice(program.length + PLACE_SEP.length))
+      }
+    }
+    if (places.length === 0) {
+      out.push(program)
+    } else {
+      out.push(program + PLACE_GAP + places.join(x.t('de.sep')))
+    }
+  }
+  return out
 }
 
 /**

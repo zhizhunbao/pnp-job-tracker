@@ -76,6 +76,11 @@ class PoolRow(BaseModel):
     """主区(2026-09-18 Frank「区的字段没有啊」「授权,加区字段」):主省主市的在招岗里出现最多的区;
     岗都没带区、或一处在招都没有 = None(不猜:指定名单与公司维表都不记区)。雇主板「区」可选列读它。"""
 
+    designatedPlaces: list = field(default_factory=list)
+    """指定资格所在地(2026-09-19 Frank「指定雇主格写明所在地」):「项目|地点」清单 —— AIP 按省给资格(AIP|NB),
+    RCIP / FCIP 按社区给(RCIP|Sudbury, ON)。板上只写「AIP、RCIP」、旁边又是在招最多的 Toronto,
+    会让人以为多伦多的岗也能走(Englobe 实拍)。非指定 = 空表。"""
+
     ees: list = field(default_factory=list)
     """在招 EE 类别(2026-09-19 Frank「类别 和 全部大类 雇主也是需要的吧」):该雇主在招岗覆盖的联邦 EE 类别
     (职位板「全部类别」那一套:医疗社服 / STEM / 技工 / 教育 / 运输 …;岗上「A/B」多段的拆开算),岗多的在前;
@@ -245,6 +250,9 @@ class DesignatedOut:
 
     provinces: list
     """归属省清单(去重有序)。"""
+
+    places: list
+    """资格所在地清单(「项目|地点」;地点 = 名单上的社区,没有社区的用省码;去重,按项目与地点排序)。"""
 
 
 @dataclass

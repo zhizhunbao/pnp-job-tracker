@@ -578,6 +578,16 @@ export const BROAD_SHOW_MAX = 2
 export const COL_EE_KEY = 'ee'
 
 /**
+ * 指定资格所在地一条里「项目」与「地点」的分隔(数据层 etl/employers PLACE_SEP 同值:AIP|NB)。
+ */
+export const PLACE_SEP = '|'
+
+/**
+ * 指定格里项目名与所在地之间的空格(「AIP NB、NS」)。
+ */
+export const PLACE_GAP = ' '
+
+/**
  * 雇主板列 key:在招地点(胶囊;不排序)。
  */
 export const COL_LOCS_KEY = 'locs'

@@ -521,18 +521,20 @@ export const EMPLOYER_EXPLORE_ENQUEUE = `INSERT INTO employer_explore (key, name
 /**
  * 探索队列取待办(后台工人来取活):被列出次数多的、最近被列出的在前。$1=条数。
  */
-export const EMPLOYER_EXPLORE_PENDING = `SELECT key, name FROM employer_explore WHERE status = 'pending'
-     ORDER BY seen_count DESC, last_seen DESC LIMIT $1`
+export const EMPLOYER_EXPLORE_PENDING = `SELECT e.key, e.name, p.broads FROM employer_explore e
+     LEFT JOIN employer_pool p ON p.key = e.key WHERE e.status = 'pending'
+     ORDER BY e.seen_count DESC, e.last_seen DESC LIMIT $1`
 
 /**
  * 探索队列交活:逐条写回状态与译名(done = 翻好了 / skip = 人名等不翻 / fail = 这条没翻成,下轮不再取)。
- * $1=键数组,$2=状态数组,$3=中文译名数组,$4=韩文译名数组,$5=备注数组(五个数组等长,按位对应),$6=译文版本号。
+ * $1=键数组,$2=状态数组,$3=中文译名数组,$4=韩文译名数组,$5=备注数组,$6=公司大类数组(六个数组等长,按位对应;
+ * 公司大类 2026-09-19 加),$7=译文版本号。
  */
 export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
       SET status = u.status, alias_zh = NULLIF(u.alias_zh, ''), alias_ko = NULLIF(u.alias_ko, ''),
-          note = NULLIF(u.note, ''), trans_v = $6, done_at = now()
-     FROM unnest($1::varchar[], $2::varchar[], $3::varchar[], $4::varchar[], $5::varchar[])
-          AS u(key, status, alias_zh, alias_ko, note)
+          note = NULLIF(u.note, ''), industry = NULLIF(u.industry, ''), trans_v = $7, done_at = now()
+     FROM unnest($1::varchar[], $2::varchar[], $3::varchar[], $4::varchar[], $5::varchar[], $6::varchar[])
+          AS u(key, status, alias_zh, alias_ko, note, industry)
     WHERE e.key = u.key`
 
 /**
@@ -647,7 +649,8 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=公司主类或 ''(「全部大类」筛选;主类 = broads 第一格 = 在招岗最多的那个大类;`?` 走 GIN 索引收窄,`->>0` 复核)。
+ * $11=公司主类或 ''(「全部大类」筛选;主类 = 探索队列里模型判的公司大类,没有才退回 broads 第一格 = 在招岗最多的那个大类;
+ *   2026-09-19 起不再走 GIN:判过的大类不在 broads 里也得筛得到,池表 7 万行顺扫毫秒级)。
  * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
  * total 用窗口函数随行带回,一次往返。
  *
@@ -660,6 +663,7 @@ export const employerPoolPage = (order: string) => `
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
+      x.industry AS x_industry, p.designated_places,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
       b.lmia_skilled, b.lmia_last_quarter, b.star, b.wage_med_annual, b.wage_index_pct,
@@ -676,7 +680,7 @@ export const employerPoolPage = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR (p.broads ? $11 AND p.broads->>0 = $11))
+      AND ($11 = '' OR COALESCE(NULLIF(x.industry, ''), p.broads->>0) = $11)
       AND ($12 = '' OR p.ees ? $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
@@ -741,7 +745,8 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=公司主类或 ''(「全部大类」筛选;主类 = broads 第一格 = 在招岗最多的那个大类;`?` 走 GIN 索引收窄,`->>0` 复核)。
+ * $11=公司主类或 ''(「全部大类」筛选;主类 = 探索队列里模型判的公司大类,没有才退回 broads 第一格 = 在招岗最多的那个大类;
+ *   2026-09-19 起不再走 GIN:判过的大类不在 broads 里也得筛得到,池表 7 万行顺扫毫秒级)。
  * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
@@ -753,6 +758,7 @@ export const employerPoolAll = (order: string) => `
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
+      x.industry AS x_industry, p.designated_places,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
       NULL::numeric AS entry_share, b.min_experience, p.lmia_skilled_total AS lmia_skilled, p.lmia_last_quarter,
@@ -773,7 +779,7 @@ export const employerPoolAll = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR (p.broads ? $11 AND p.broads->>0 = $11))
+      AND ($11 = '' OR COALESCE(NULLIF(x.industry, ''), p.broads->>0) = $11)
       AND ($12 = '' OR p.ees ? $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`

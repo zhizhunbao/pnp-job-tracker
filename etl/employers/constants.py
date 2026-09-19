@@ -70,6 +70,9 @@ K_CITY = "city"
 K_DISTRICT = "district"
 """区(mart 地点段给的市内分区;近半数在招岗有)。"""
 
+PLACE_SEP = "|"
+"""指定资格所在地一条的分隔:「项目|地点」(AIP|NB、RCIP|Sudbury, ON)。"""
+
 K_EE_CATEGORY = "eeCategory"
 """在招岗的联邦 EE 类别(mart 评分段给的中文标签;一岗属多类时「A/B」斜杠连;不属任何类 = 空)。"""
 

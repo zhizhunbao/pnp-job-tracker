@@ -18,6 +18,7 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
    收成 ScrapeTally 三个计数,收尾那行输出逐字不变。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
+import html
 import json
 import time
 from pathlib import Path
@@ -559,7 +560,9 @@ def fetch_phenom(x: PhenomFetchIn) -> list:
 
 
 def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
-    """职位页 → AtsJob:读页面里 schema.org JobPosting 那一块 JSON-LD;没有(页面已下架成空壳)= None。"""
+    """职位页 → AtsJob:读页面里 schema.org JobPosting 那一块 JSON-LD;没有(页面已下架成空壳)= None。
+    JSON-LD 里的 description 是**实体转义过的 HTML**(`&lt;p&gt;&lt;strong&gt;…`),先还原一层成正常 HTML 再往下走 ——
+    2026-09-19 Frank 实拍「ATS 抓的这个工作怎么这么乱」:Sienna 482 岗的正文满屏 `&lt;br /&gt;`。"""
     for block in PH_LD_RE.findall(x.html):
         try:
             data = json.loads(block)
@@ -572,7 +575,7 @@ def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
             place = (place or [{}])[0]
         address = place.get(K_LD_ADDRESS) or {}
         location = join_parts([address.get(K_LD_LOCALITY, ""), address.get(K_LD_REGION, "")])
-        description = data.get(K_DESCRIPTION, "") or ""
+        description = html.unescape(data.get(K_DESCRIPTION, "") or "")
         return AtsJob(title=data.get(K_TITLE, ""), location=location, url=x.url, department="",
                       posted=iso_of(data.get(K_LD_DATE_POSTED, "")), address=address_of(description),
                       salary="", description=description)

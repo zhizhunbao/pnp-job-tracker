@@ -14,12 +14,12 @@ from fetch.functions import make_client
 from log.functions import say
 from explore import TAKE_LIMIT
 from explore.constants import (
-    ALIAS_MAX_LEN, CJK_RE, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_SEED_TOKEN, ENV_SEED_URL, FIELD_NONE, FLUSH_N, GEN_TOKENS,
-    HANGUL_RE, HDR_SEED_TOKEN, HTTP_TIMEOUT_S, K_ALIAS_KO, K_ALIAS_ZH, K_KEY, K_NAME, K_NOTE, K_RESULTS, K_STATUS,
+    ALIAS_MAX_LEN, BROADS_HINT_MAX, BROADS_SEP, CJK_RE, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_SEED_TOKEN, ENV_SEED_URL, FIELD_NONE, FLUSH_N, GEN_TOKENS,
+    HANGUL_RE, HDR_SEED_TOKEN, HTTP_TIMEOUT_S, INDUSTRIES, INDUSTRY_RE, K_ALIAS_KO, K_ALIAS_ZH, K_BROADS, K_INDUSTRY, K_KEY, K_NAME, K_NOTE, K_RESULTS, K_STATUS,
     K_TODOS, KO_RE, LLM_MODEL_DEFAULT, LLM_TEMPERATURE, NAME_MAX_LEN, NET_ERRORS, NOTE_EMPTY, NOTE_HTTP_TPL,
     NOTE_NO_LLM, NOTE_NO_SITE, NOTE_PERSON, NOTE_SHAPE, P_LIMIT, P_MODEL, P_NUM_PREDICT, P_OPTIONS, P_PROMPT,
     P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, PATH_DONE, PATH_OLLAMA_GENERATE, PATH_TODO, PERSON_RE, PERSON_YES,
-    PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_TAKE_TPL, PROMPT_HEAD, SCHEME_SEP, ST_DONE, ST_SKIP,
+    PRINT_ABORT_TPL, PRINT_DONE_TPL, PRINT_ROW_TPL, PRINT_TAKE_TPL, PROMPT_HEAD, PROMPT_TAIL_TPL, SCHEME_SEP, ST_DONE, ST_SKIP,
     STRIP_REPL, THINK_RE, URL_TAIL_SLASH, ZH_RE,
 )
 from explore.scheme import AliasIn, HandIn, HttpClientLike, LlmCallIn, LlmCfg, Result, SiteCfg, TakeIn, Todo, TranslateIn
@@ -63,7 +63,8 @@ def consume_queue() -> None:
                 skip += 1
             else:
                 fail += 1
-            say(PRINT_ROW_TPL.format(status=res.status, name=todo.name, zh=res.alias_zh, ko=res.alias_ko, note=res.note))
+            say(PRINT_ROW_TPL.format(status=res.status, name=todo.name, zh=res.alias_zh, ko=res.alias_ko,
+                                     industry=res.industry, note=res.note))
             batch.append(res)
             if len(batch) >= FLUSH_N:
                 saved += hand_in(HandIn(client=client, site=site, results=batch))
@@ -113,7 +114,12 @@ def take_todos(x: TakeIn) -> list:
         name = str(row.get(K_NAME) or FIELD_NONE).strip()
         if key == FIELD_NONE or name == FIELD_NONE:
             continue
-        out.append(Todo(key=key, name=name))
+        broads: list = []
+        raw = row.get(K_BROADS)
+        if isinstance(raw, list):
+            for b in raw[:BROADS_HINT_MAX]:
+                broads.append(str(b))
+        out.append(Todo(key=key, name=name, broads=broads))
     return out
 
 
@@ -122,7 +128,7 @@ def hand_in(x: HandIn) -> int:
     rows: list = []
     for res in x.results:
         rows.append({K_KEY: res.key, K_STATUS: res.status, K_ALIAS_ZH: res.alias_zh, K_ALIAS_KO: res.alias_ko,
-                     K_NOTE: res.note})
+                     K_INDUSTRY: res.industry, K_NOTE: res.note})
     r = x.client.post(x.site.base + PATH_DONE, json={K_RESULTS: rows}, headers=x.site.headers)
     if not r.is_success:
         raise RuntimeError(NOTE_HTTP_TPL.format(status=r.status_code))
@@ -139,7 +145,8 @@ def translate_one(x: TranslateIn) -> Result:
     (品牌名只有拉丁字母写法时,空着比硬翻好);盒子掉线 / 超时转数据记异常类名,由入口判整轮中止。"""
     res = Result(key=x.todo.key)
     try:
-        answer = call_llm(LlmCallIn(client=x.client, cfg=x.cfg, prompt=PROMPT_HEAD + x.todo.name[:NAME_MAX_LEN]))
+        tail = PROMPT_TAIL_TPL.format(name=x.todo.name[:NAME_MAX_LEN], broads=BROADS_SEP.join(x.todo.broads))
+        answer = call_llm(LlmCallIn(client=x.client, cfg=x.cfg, prompt=PROMPT_HEAD + tail))
     except Exception as e:  # noqa: BLE001 — 盒子掉线/超时转数据,由头进 note
         res.note = type(e).__name__
         return res
@@ -161,6 +168,9 @@ def translate_one(x: TranslateIn) -> Result:
     ko = KO_RE.search(answer)
     if ko is not None:
         res.alias_ko = alias_ok_of(AliasIn(text=ko.group(1), name=x.todo.name, ko=True))
+    industry = INDUSTRY_RE.search(answer)
+    if industry is not None and industry.group(1).strip() in INDUSTRIES:
+        res.industry = industry.group(1).strip()
     return res
 
 

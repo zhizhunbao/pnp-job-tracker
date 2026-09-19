@@ -1534,7 +1534,8 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     industry: textOrNull(r.industry),
     sector: text(r.sector), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), district: text(r.district),
-    locations: toStrList(r.locations), broadKeys: toStrList(r.broads), eeKeys: toStrList(r.ees), designated: r.designated === true,
+    locations: toStrList(r.locations), broadKeys: toBroadKeys(r), eeKeys: toStrList(r.ees),
+    designatedPlaces: toStrList(r.designated_places), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),
     openJobsTotal: count(r.open_jobs_total), fetched: text(r.fetched),
     aliasZh: poolAliasOf({ r, ko: false }), aliasKo: poolAliasOf({ r, ko: true }), explored: r.x_status != null,
@@ -1545,6 +1546,28 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     lmiaLastQuarter: textOrNull(r.lmia_last_quarter), star: count(r.star), wageMedAnnual: numOrNull(r.wage_med_annual),
     wageIndexPct: numOrNull(r.wage_index_pct),
   }
+}
+
+/**
+ * 池行 → 公司主类在前的大类清单(行构造器的一格):探索队列里模型判过公司大类的,把它放第一格(在招大类里有它就挪到最前,没有就插进去);
+ * 没判过的原样给在招大类(第一格 = 在招岗最多的那一类)。
+ *
+ * @param r 原始池行。
+ * @returns 大类键清单(第一格是公司主类)。
+ */
+export function toBroadKeys(r: PoolDbRow): StrList {
+  const hiring = toStrList(r.broads)
+  const judged = text(r.x_industry)
+  if (judged === WEBSITE_NONE) {
+    return hiring
+  }
+  const out: string[] = [judged]
+  for (const b of hiring) {
+    if (b !== judged) {
+      out.push(b)
+    }
+  }
+  return out
 }
 
 /**
@@ -1604,7 +1627,7 @@ export function loadExplorePending(input: ExplorePendingIn): ExploreTodosOut {
  * @returns 待办。
  */
 export function toExploreTodo(r: ExploreDbRow): ExploreTodo {
-  return { key: text(r.key), name: text(r.name) }
+  return { key: text(r.key), name: text(r.name), broads: toStrList(r.broads) }
 }
 
 /**
@@ -1619,6 +1642,7 @@ export async function saveExploreResults(input: SaveExploreIn): ExploreSavedOut 
   const zh: string[] = []
   const ko: string[] = []
   const notes: string[] = []
+  const industries: string[] = []
   for (const raw of input.results) {
     const r = toExploreResult(raw)
     if (r.key === WEBSITE_NONE || (EXPLORE_STATUSES as readonly string[]).includes(r.status) === false) {
@@ -1629,11 +1653,12 @@ export async function saveExploreResults(input: SaveExploreIn): ExploreSavedOut 
     zh.push(r.aliasZh)
     ko.push(r.aliasKo)
     notes.push(r.note)
+    industries.push(r.industry)
   }
   if (keys.length === 0) {
     return 0
   }
-  await input.db.query(SQL.EMPLOYER_EXPLORE_RESOLVE, [keys, statuses, zh, ko, notes, TRANS_V])
+  await input.db.query(SQL.EMPLOYER_EXPLORE_RESOLVE, [keys, statuses, zh, ko, notes, industries, TRANS_V])
   CACHE.poolPages.clear()
   return keys.length
 }
@@ -1648,6 +1673,7 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
   return {
     key: text(r.key), status: text(r.status), aliasZh: text(r.aliasZh).slice(0, EXPLORE_TEXT_MAX),
     aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
+    industry: text(r.industry).slice(0, EXPLORE_TEXT_MAX),
   }
 }
 

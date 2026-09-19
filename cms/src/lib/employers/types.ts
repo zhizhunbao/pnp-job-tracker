@@ -179,9 +179,15 @@ export type PoolRow = {
   locations: string[]
 
   /**
-   * 在招大类(本站大类键,岗多的在前);空表 = 没有在招 / 都未分类。板上「大类」列读它。
+   * 公司大类在前的大类清单:第一格 = 公司主类(探索队列里模型判的优先,没有才是在招岗最多的那一类),
+   * 其余 = 在招岗的大类(岗多的在前);空表 = 没有在招也没判过。板上「大分类」列读第一格。
    */
   broadKeys: string[]
+
+  /**
+   * 指定资格所在地(「项目|地点」:AIP|NB、RCIP|Sudbury, ON);空表 = 非指定 / 名单没给地点。
+   */
+  designatedPlaces: string[]
 
   /**
    * 在招 EE 类别(联邦 EE 类别标签,岗多的在前);空表 = 没有在招 / 都不属 EE 类别。板上「类别」列读它。
@@ -1439,6 +1445,11 @@ export type ExploreDbRow = {
    * 雇主名。
    */
   name: string | null
+
+  /**
+   * 该雇主在招岗的大类(LEFT JOIN employer_pool;池里没有这家 / 没有在招 = null)。
+   */
+  broads: string[] | null
 }
 
 /**
@@ -1454,6 +1465,11 @@ export type ExploreTodo = {
    * 雇主名(要翻的就是它)。
    */
   name: string
+
+  /**
+   * 在招岗的大类(岗多的在前;给模型判公司大类当旁证)。
+   */
+  broads: string[]
 }
 
 /**
@@ -1484,6 +1500,11 @@ export type ExploreResultJson = {
    * 备注(跳过 / 失败的由头)。
    */
   note?: string | null
+
+  /**
+   * 公司大类键(模型判的;判不出不给)。
+   */
+  industry?: string | null
 }
 
 /**
@@ -1514,6 +1535,11 @@ export type ExploreResult = {
    * 备注;空串 = 没有。
    */
   note: string
+
+  /**
+   * 公司大类键;空串 = 没有。
+   */
+  industry: string
 }
 
 /**
@@ -1934,6 +1960,16 @@ export type PoolDbRow = {
    * 探索队列译名的版本号。
    */
   x_trans_v: number | string | null
+
+  /**
+   * 探索队列里模型判的公司大类(本站大类键);没判过 / 判不出 = null。
+   */
+  x_industry: string | null
+
+  /**
+   * 指定资格所在地(jsonb 数组,「项目|地点」);NULL = 非指定 / 还没灌过这一列。
+   */
+  designated_places: string[] | null
 
   /**
    * 公司中文别名(LEFT JOIN companies;无公司页 = null)。

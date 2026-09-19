@@ -67,6 +67,9 @@ class Todo:
     name: str
     """雇主名。"""
 
+    broads: list
+    """在招岗的大类(岗多的在前;旁证,可能为空)。"""
+
 
 @dataclass
 class Result:
@@ -83,6 +86,9 @@ class Result:
 
     alias_ko: str = FIELD_NONE
     """韩文译名。"""
+
+    industry: str = FIELD_NONE
+    """公司大类键(本站大类之一;模型判不出 / 答了名单外的词 = 空)。"""
 
     note: str = FIELD_NONE
     """备注(跳过 / 失败的由头;盒子掉线时是异常类名)。"""
