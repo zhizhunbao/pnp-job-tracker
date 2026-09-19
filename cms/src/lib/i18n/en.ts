@@ -848,7 +848,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.s5': 'Recent draws',
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
   'de.title': 'Employers', 'de.count': '{n} employers', 'de.hits': '{n} matched',
-  'de.colName': 'Employer', 'de.colBroad': 'Category', 'de.colEe': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
+  'de.colName': 'Employer', 'de.colBroad': 'Category', 'de.colEe': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colLocs': 'Hiring in', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
   'de.lmia': 'Has LMIA record', 'de.lmiaAll': 'All LMIA', 'de.entryAll': 'All experience', 'de.designated': 'Designated',
   'de.qPh': 'Search employers, places', 'de.entry': 'No experience needed', 'de.sep': ', ',
   'de.emptyFiltered': 'No employer matches these filters', 'de.moreLocN': '{n} more',

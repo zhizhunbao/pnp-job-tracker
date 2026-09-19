@@ -624,6 +624,14 @@ export type EmployerCellRow = {
   cityHref: string
 
   /**
+   * 在招地点格:该雇主在招岗所在的「市, 省码」,岗多的在前,至多三处(数据层 locations),各出一枚胶囊
+   * (2026-09-19 Frank「是不是需要加一列,在招岗位所在地」「用胶囊框一下」:省 / 市两列只是岗最多的那一处,
+   * Englobe 显示 Toronto、指定却在新不伦瑞克 / 新斯科舍 / Sudbury,不把在招地点摆出来会把人带错)。
+   * 09-13 撤过一版三枚胶囊(挤爆列宽压进邻列),这一版格内折行、不出列。空表 = 没有在招(渲横杠)。
+   */
+  locs: string[]
+
+  /**
    * 区格:区名原样,一行(2026-09-18 Frank「区的字段没有啊」;默认不显,字段面板里勾);空串 = 岗都没带区(渲横杠)。
    */
   districtText: string
@@ -2543,6 +2551,26 @@ export type BroadLabelIn = {
    * 选项清单。
    */
   opts: BroadOpt[]
+}
+
+/**
+ * eeTextOf 的入参。
+ */
+export type EeTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一行事实。
+   */
+  r: PoolRow
+
+  /**
+   * 当前筛的 EE 类别(排第一);空串 = 没筛。
+   */
+  first: string
 }
 
 /**

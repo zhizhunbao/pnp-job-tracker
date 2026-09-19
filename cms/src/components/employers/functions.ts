@@ -33,6 +33,7 @@ import { PoolCityCell } from './poolcitycell'
 import { PoolDistrictCell } from './pooldistrictcell'
 import { PoolEeCell } from './pooleecell'
 import { PoolLmiaCell } from './poollmiacell'
+import { PoolLocsCell } from './poollocscell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
 import {
@@ -40,7 +41,7 @@ import {
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
-  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY,
+  COLS_STORE_KEY, COL_CITY_KEY, COL_DISTRICT_KEY, COL_EE_KEY, COL_LOCS_KEY, COL_PROV_KEY, COL_SECTOR_KEY, COL_WHERE_KEY,
   COMPARE_NAME_SEP,
   DASH_MARK,
   DEMO_A_KEY, DEMO_B_KEY,
@@ -67,7 +68,7 @@ import {
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_BROAD, W_POOL_DESIGNATED,
-  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
+  W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_LOCS, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
 import { LmiaCell } from './lmiacell'
@@ -85,7 +86,8 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn,
+  BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, EeTextIn,
+  ReportSeenIn, EmpPickWords, KeepShownIn, MapHrefIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -223,11 +225,12 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     broadText: broadTextOf(x),
-    eeText: eeTextOf({ t: x.t, r }),
+    eeText: eeTextOf({ t: x.t, r, first: x.f.ee }),
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
     districtText: r.district,
+    locs: r.locations,
     provText,
     cityText,
     openText: String(r.openJobs),
@@ -315,18 +318,24 @@ function broadTextOf(x: EmployerCellRowIn): string {
 
 /**
  * 类别格的字:在招岗最多的 BROAD_SHOW_MAX 个联邦 EE 类别名(词归 lib/jobs 的 eeDisplay,与职位板同一份),顿号连;
- * 没有就空串(格子渲横杠)。
+ * 没有就空串(格子渲横杠)。2026-09-19:按某个 EE 类别筛的时候,筛中的那一类排第一 —— 否则一家招十来类岗的大雇主,
+ * 格里只显岗最多的两类,筛 STEM 筛出来的行却写着「教育、高管」,看着像筛错了(CFMWS 实拍)。
  *
- * @param x 取词函数与这一行。
+ * @param x 取词函数、这一行与当前筛的 EE 类别。
  * @returns 类别文案或空串。
  */
-function eeTextOf(x: RowWordsIn): string {
+function eeTextOf(x: EeTextIn): string {
   const out: string[] = []
+  if (x.first !== TEXT_NONE && x.r.eeKeys.includes(x.first)) {
+    out.push(eeDisplay({ t: x.t, label: x.first }))
+  }
   for (const k of x.r.eeKeys) {
     if (out.length >= BROAD_SHOW_MAX) {
       break
     }
-    out.push(eeDisplay({ t: x.t, label: k }))
+    if (k !== x.first) {
+      out.push(eeDisplay({ t: x.t, label: k }))
+    }
   }
   return out.join(x.t('de.sep'))
 }
@@ -463,6 +472,12 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       render: PoolCityCell,
     },
     {
+      key: COL_LOCS_KEY,
+      label: x.t('de.colLocs'),
+      width: poolWidthOf({ key: COL_LOCS_KEY, shown: x.shown }),
+      render: PoolLocsCell,
+    },
+    {
       key: COL_DISTRICT_KEY,
       label: x.t('de.colDistrict'),
       width: poolWidthOf({ key: COL_DISTRICT_KEY, shown: x.shown }),
@@ -563,6 +578,9 @@ function poolShareOf(key: string): number {
   }
   if (key === COL_CITY_KEY) {
     return W_POOL_CITY
+  }
+  if (key === COL_LOCS_KEY) {
+    return W_POOL_LOCS
   }
   if (key === COL_DISTRICT_KEY) {
     return W_POOL_DISTRICT

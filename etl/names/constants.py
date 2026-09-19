@@ -41,7 +41,8 @@ SECTOR_FEDERAL = "federal"
 
 SECTOR_FEDERAL_RE = re.compile(
     r"^(?:the )?(?:government of canada|gouvernement du canada|canada revenue agency|canada border services"
-    r"|royal canadian mounted police|rcmp|canadian armed forces|forces arm[eé]es canadiennes|national defence"
+    r"|royal canadian mounted police|rcmp|canadian armed forces|canadian forces|forces arm[eé]es canadiennes"
+    r"|forces canadiennes|services de bien-[eê]tre et moral des forces|national defence"
     r"|department of national defence|correctional service canada|service canada|statistics canada"
     r"|public service commission of canada|employment and social development canada"
     r"|immigration, refugees and citizenship canada|public services and procurement canada|parks canada"
@@ -111,7 +112,7 @@ SECTOR_PUBLIC_RE = re.compile(
     r"|public library|community college|c[eé]gep|university|universit[eé]|polytechnic|national research council"
     r"|canada post|via rail|bc hydro|hydro-qu[eé]bec|hydro qu[eé]bec|saskpower|sasktel"
     r"|manitoba hydro|bc transit|translink|toronto transit|soci[eé]t[eé] de transport|radio-canada"
-    r"|crown corporation|ciusss|cisss|hospital)\b"
+    r"|crown corporation|ciusss|cisss|hospital|health sciences centre|health sciences center|h[oô]pital)\b"
     r"|^bank of canada\b",
     re.I,
 )

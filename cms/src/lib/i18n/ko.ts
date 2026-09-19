@@ -841,7 +841,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.s5': '최근 추첨',
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',
   'de.title': '고용주', 'de.count': '고용주 {n}개사', 'de.hits': '{n}개사 일치',
-  'de.colName': '고용주', 'de.colBroad': '분류', 'de.colEe': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colDistrict': '구역', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
+  'de.colName': '고용주', 'de.colBroad': '분류', 'de.colEe': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colLocs': '채용 지역', 'de.colDistrict': '구역', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
   'de.lmia': 'LMIA 기록 있음', 'de.lmiaAll': '전체 LMIA', 'de.entryAll': '전체 경력', 'de.designated': '지정 고용주',
   'de.qPh': '고용주, 지역 검색', 'de.entry': '무경력 지원 가능', 'de.sep': ', ',
   'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다', 'de.moreLocN': '외 {n}곳',

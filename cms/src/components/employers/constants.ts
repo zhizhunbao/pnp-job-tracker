@@ -578,6 +578,11 @@ export const BROAD_SHOW_MAX = 2
 export const COL_EE_KEY = 'ee'
 
 /**
+ * 雇主板列 key:在招地点(胶囊;不排序)。
+ */
+export const COL_LOCS_KEY = 'locs'
+
+/**
  * 雇主板列 key:区(可选列,默认不显;不排序 —— 近半雇主没有区,排出来大半是空)。
  */
 export const COL_DISTRICT_KEY = 'district'
@@ -625,6 +630,11 @@ export const W_POOL_BROAD = 14
  * 雇主板类别(EE)列的宽(两个 EE 类别名顿号连)。
  */
 export const W_POOL_EE = 12
+
+/**
+ * 雇主板在招地点列的宽(至多三枚「市, 省码」胶囊,格内折行)。
+ */
+export const W_POOL_LOCS = 17
 
 /**
  * 雇主板区列的宽(可选列;区名一行,与市同宽)。
