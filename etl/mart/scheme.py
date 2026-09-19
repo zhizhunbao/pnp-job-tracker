@@ -51,6 +51,9 @@ class SalaryGuards:
     hifold: int
     """高时薪只展示不折年薪。"""
 
+    lowday: int = 0
+    """日薪低得不可能(< SAL_DAY_MIN),整条置空(2026-09-19;给默认值 —— 构造处不用逐个补)。"""
+
 
 @dataclass
 class TableWriteIn:

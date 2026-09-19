@@ -179,7 +179,8 @@ from mart.constants import (
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
-from mart.constants import HOST_WWW_PREFIX, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
+from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
+from mart.constants import SAL_DAY_MIN
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
@@ -1587,7 +1588,12 @@ def clean_jd(text: str) -> str:
                 continue
             seen.add(s)
         out.append(line)
-    return BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip()
+    return strip_jd_label(BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip())
+
+
+def strip_jd_label(text: str) -> str:
+    """剥正文开头的纯标签(「Job Description」这类来源平台的版式套话,见 JD_LABEL_HEAD_RE);其余原样。"""
+    return JD_LABEL_HEAD_RE.sub("", text, count=1)
 
 
 def load_jd_sources() -> JdSources:
@@ -1703,7 +1709,7 @@ def to_board_job_fields(x: BoardJobIn) -> dict:
     (渠道筛选分得开),正文随行下沉(板帖没有 .md,fill_jd_bodies 按 applyUrl 找不到就不覆盖)。"""
     fields = to_jb_job_fields(x.job)
     fields[K_ORIGIN] = x.origin
-    fields[K_DESCRIPTION] = x.job.get(K_DESCRIPTION) or None
+    fields[K_DESCRIPTION] = strip_jd_label(x.job.get(K_DESCRIPTION) or "") or None
     fields[K_VALID_THROUGH] = x.job.get(K_SRC_VALID_THROUGH) or None
     return fields
 
@@ -4703,12 +4709,13 @@ def clean_job_salary() -> None:
             paths.write_json(paths.WriteJsonIn(path=OUT_JOBBANK, payload=postings,
                                                indent=INDENT_2))
     clean_board_salary(BoardSalaryIn(tally=tally, guards=guards))
-    guarded = guards.absurd + guards.ratio + guards.cap + guards.gig + guards.hifold
+    guarded = guards.absurd + guards.ratio + guards.cap + guards.gig + guards.hifold + guards.lowday
     say(PRINT_SAL_DONE_TPL.format(updated=tally.updated, priced=tally.priced, total=tally.total))
     say(PRINT_SAL_GUARD_TPL.format(guarded=guarded, absurd=guards.absurd,
                                    ratio_max=SAL_RATIO_MAX, ratio=guards.ratio,
                                    cap_max=SAL_ANNUAL_MAX, cap=guards.cap, gig=guards.gig,
-                                   fold_max=SAL_HOURLY_FOLD_MAX, hifold=guards.hifold))
+                                   fold_max=SAL_HOURLY_FOLD_MAX, hifold=guards.hifold,
+                                   day_min=SAL_DAY_MIN, lowday=guards.lowday))
     say(PRINT_SAL_MINED_TPL.format(mined=tally.mined, hr_min=SAL_TXT_HR_MIN, hr_max=SAL_TXT_HR_MAX,
                                    yr_min=SAL_TXT_YR_MIN))
 
@@ -4880,6 +4887,9 @@ def parse_salary(x: SalaryParseIn) -> SalaryOut:
         x.guards.cap += 1
         return SalaryOut(annual=None, text=None)
     text = money_text(MoneyTextIn(lo=lo, hi=hi, unit=unit, sub=SAL_SUB[unit]))
+    if unit == SAL_UNIT_DAY and hi < SAL_DAY_MIN:
+        x.guards.lowday += 1
+        return SalaryOut(annual=None, text=None)
     if unit == SAL_UNIT_HR and (lo + hi) / 2 > SAL_HOURLY_FOLD_MAX:
         x.guards.hifold += 1
         return SalaryOut(annual=None, text=text)

@@ -888,6 +888,13 @@ K_AI_SOURCES = "aiSources"
 K_AI_FETCHED = "aiFetched"
 """companies 列:简介产出时刻。"""
 
+JD_LABEL_HEAD_RE = re.compile(
+    r"^\s*(?:(?:job description|description du poste|description de l'emploi)\b\s*[:\-–]?\s*"
+    r"|description\s*(?:[:\-–]\s*|\n\s*))(?=\S)", re.I)
+"""正文开头的纯标签(「Job Description」「Description du poste」…):来源平台的版式套话,不是岗位内容。
+2026-09-19 Frank「原版这个 Job Description 不需要显示吧」;在招岗里约 1,900 条以它开头(Jobillico 1,367、ZipRecruiter 295、
+Talent.com 56、indeed 53 …)。只剥开头这一处;「Job Summary」「About the job」后面跟的是内容小节,不剥。"""
+
 WP_TAIL_RE = re.compile(r"\s*\[(?:\.\.\.|…)\]\s*$")
 """WordPress 摘要尾巴「[…]/[...]」(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)。"""
 
@@ -2693,6 +2700,13 @@ SAL_HOURLY_FOLD_MAX = 150
 年薪置空不折算(ESDC 对医生类 NOC 的中位时薪本身就 $200+/hr 计费价口径 —— 高时薪
 不是异常值,×2080 才是)。"""
 
+SAL_DAY_MIN = 104
+"""日薪下限:一天 8 小时 × $13(比全国任何一档最低工资都低,含魁省小费岗)。低于它的「日薪」不可能是真日薪 ——
+2026-09-19 Frank 实拍 Maarut 六个岗(software developer / solution architect / data scientist)全标「$101.00 daily」,
+年化 $26,260、「vs 中位 −74%」:那是外包公司经 Talent.com 推给 Job Bank 的占位数(多半是时薪填进了日薪格)。
+同 08-05 拍板「判不了就不说」:年薪与薪资文本都置空,不替源头的错背书。只拦 daily 一档 —— 周 / 月 / 年薪偏低的
+可能是兼职,分不出,不动。"""
+
 SAL_GIG_HI_MAX = 2000
 """计次价那条只在「将被兜底猜成时薪」的路径上拦(上限 <2000);也是「时薪还是年薪」
 兜底判定的分界。"""
@@ -2789,8 +2803,8 @@ PRINT_SAL_MINED_TPL = "  正文挖出薪资 {mined} 条(板自己的薪资格是
 """薪资清洗收尾第三行:从正文挖出来的条数。"""
 
 PRINT_SAL_GUARD_TPL = ("  护栏拦截 {guarded} 条置 NULL:离谱金额 {absurd} · 区间比>{ratio_max} "
-                       "{ratio} · 年化>{cap_max:,} {cap} · 计次价 {gig} · 时薪>{fold_max} {hifold}")
-"""薪资清洗收尾第二行(五道护栏各自的拦截数)。"""
+                       "{ratio} · 年化>{cap_max:,} {cap} · 计次价 {gig} · 时薪>{fold_max} {hifold} · 日薪<{day_min} {lowday}")
+"""薪资清洗收尾第二行(六道护栏各自的拦截数;第六道「日薪低得不可能」2026-09-19 加)。"""
 
 
 # =========================================================================
