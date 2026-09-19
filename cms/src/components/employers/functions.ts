@@ -38,7 +38,7 @@ import { PoolLocsCell } from './poollocscell'
 import { PoolProvCell } from './poolprovcell'
 import { SectorCell } from './sectorcell'
 import {
-  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, BROAD_SHOW_MAX, CLS_SEP, COL_ACT_KEY, COL_BROAD_KEY,
+  AIP_MARK, ALIGN_RIGHT, BRIEF_LEN_MAX, BRIEF_TAIL, BROAD_KEY_HEAD, BROAD_SHOW_MAX, CLS_SEP, COL_ACT_KEY,
   COL_DESIGNATED_KEY,
   COL_LMIA_KEY, COL_NAME_KEY, COL_OPEN_KEY, COL_SKILLED_KEY, COL_VERDICT_KEY, COL_W1_KEY, COL_W2_KEY,
   COL_W4_KEY,
@@ -57,7 +57,7 @@ import {
   CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_BROAD, EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
+  EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
   HDR_CONTENT_TYPE,
   METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
@@ -66,12 +66,12 @@ import {
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_BROAD, P_CITY, P_DISTRICT, P_EE, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP,
+  P_CITY, P_DISTRICT, P_EE, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP,
   TAG_OK,
   TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
-  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_BROAD, W_POOL_DESIGNATED,
+  VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
   W_POOL_CITY, W_POOL_DISTRICT, W_POOL_EE, W_POOL_HQ, W_POOL_LOCS, W_POOL_NAME, W_POOL_OPEN, W_POOL_PROV, W_POOL_SECTOR,
 } from './constants'
 import { IndustryCell } from './industrycell'
@@ -90,7 +90,7 @@ import type {
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
   EmpCol, EmployerCellRow, EmployerCellRowIn, EmployerCellRowsIn, EmployerColsIn, EmployersMetaIn, EmployersMetaOut,
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
-  BroadLabelIn, BroadOpt, ColKeysIn, CookieJarLike, EeTextIn,
+  ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
   ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
   PoolWidthIn,
@@ -187,7 +187,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, broads: x.broads, onOpen: x.onOpen }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, onOpen: x.onOpen }))
   }
   return out
 }
@@ -233,7 +233,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     lmiaText: positiveTextOf(r.lmiaSkilled),
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     categoryText: categoryTextOf({ t: x.t, r }),
-    broadText: broadTextOf(x),
     eeText: eeTextOf({ t: x.t, r, first: x.f.ee }),
     alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
@@ -312,21 +311,6 @@ function provEnOf(code: string): string {
     return code
   }
   return name
-}
-
-/**
- * 大类格的字:公司的主类 = 在招岗最多的那一个本站大类(2026-09-19 Frank「这个应该是这个公司的类别吧」:一家只显一个,
- * 不把它招的各种岗都摊出来 —— Sienna 是医疗,不是「医疗、餐饮」);没有就空串(格子渲横杠)。
- *
- * @param x 这一行、取词函数、界面语言与大类选项。
- * @returns 类别文案或空串。
- */
-function broadTextOf(x: EmployerCellRowIn): string {
-  const main = x.r.broadKeys[0]
-  if (main == null) {
-    return TEXT_NONE
-  }
-  return makeBroadLabel({ t: x.t, lang: x.lang, opts: x.broads })(main)
 }
 
 /**
@@ -639,9 +623,6 @@ function keepShownOf(x: KeepShownIn): EmpCol<EmployerCellRow>[] {
 function poolShareOf(key: string): number {
   if (key === COL_NAME_KEY) {
     return W_POOL_NAME
-  }
-  if (key === COL_BROAD_KEY) {
-    return W_POOL_BROAD
   }
   if (key === COL_EE_KEY) {
     return W_POOL_EE
@@ -1674,9 +1655,6 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.district !== TEXT_NONE) {
     p.set(P_DISTRICT, x.f.district)
   }
-  if (x.f.broad !== TEXT_NONE) {
-    p.set(P_BROAD, x.f.broad)
-  }
   if (x.f.ee !== TEXT_NONE) {
     p.set(P_EE, x.f.ee)
   }
@@ -1808,7 +1786,6 @@ function morePageOf(x: MorePageIn): PoolPage {
     provs: x.next.provs,
     cities: x.next.cities,
     districts: x.next.districts,
-    broads: x.next.broads,
     ees: x.next.ees,
   }
 }
@@ -1861,10 +1838,6 @@ function withOf(x: WithIn): PoolFilters {
   if (x.district != null) {
     district = x.district
   }
-  let broad = x.f.broad
-  if (x.broad != null) {
-    broad = x.broad
-  }
   const ee = pickedOf({ next: x.ee, cur: x.f.ee })
   const sector = pickedOf({ next: x.sector, cur: x.f.sector })
   const category = pickedOf({ next: x.category, cur: x.f.category })
@@ -1901,7 +1874,6 @@ function withOf(x: WithIn): PoolFilters {
     prov,
     city,
     district,
-    broad,
     ee,
     sector,
     category,
@@ -1943,7 +1915,7 @@ function groupOf(x: WithIn): string {
 export function makeEe(x: FilterPickIn): PickFn {
   function onEe(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_EE })
-    x.setF(withOf({ f: x.f, ee: v, broad: TEXT_NONE, page: 0 }))
+    x.setF(withOf({ f: x.f, ee: v, page: 0 }))
   }
   return onEe
 }
@@ -2001,64 +1973,6 @@ export function makeDistrict(x: FilterPickIn): PickFn {
     x.setF(withOf({ f: x.f, district: v, page: 0 }))
   }
   return onDistrict
-}
-
-/**
- * 造换在招大类的手柄(顺带回第一页;2026-09-18 Frank「全部 EE 类别后面再加一个全部类别,是我们正常用的类别」)。
- *
- * @param x 当前筛选与落格。
- * @returns 下拉的 onChange。
- */
-export function makeBroad(x: FilterPickIn): PickFn {
-  function onBroad(v: string): void {
-    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_BROAD })
-    x.setF(withOf({ f: x.f, broad: v, page: 0 }))
-  }
-  return onBroad
-}
-
-/**
- * 「全部类别」下拉的选项键(下拉只认字符串清单,名字由 makeBroadLabel 按界面语言取)。
- *
- * @param opts 选项清单。
- * @returns 键清单。
- */
-export function broadKeysOf(opts: BroadOpt[]): string[] {
-  const out: string[] = []
-  for (const o of opts) {
-    out.push(o.key)
-  }
-  return out
-}
-
-/**
- * 造「全部类别」下拉的选项显示名取值器:韩文界面用韩文名、英文界面用英文名,没有就退回键;
- * 中文界面走 broad.* 词条(只有 `IT` → 科技 这一条改过名),没有词条的键本身就是中文名。
- *
- * @param x 取词函数、界面语言与选项清单。
- * @returns 键 → 显示名。
- */
-export function makeBroadLabel(x: BroadLabelIn): NocNameFn {
-  function broadLabel(key: string): string {
-    for (const o of x.opts) {
-      if (o.key !== key) {
-        continue
-      }
-      if (x.lang === LANG_KO && o.ko !== TEXT_NONE) {
-        return o.ko
-      }
-      if (x.lang !== LANG_ZH && x.lang !== LANG_KO && o.en !== TEXT_NONE) {
-        return o.en
-      }
-    }
-    const k = BROAD_KEY_HEAD + key
-    const s = x.t(k)
-    if (s === k) {
-      return key
-    }
-    return s
-  }
-  return broadLabel
 }
 
 /**
@@ -2308,7 +2222,6 @@ export function makeClear(x: ClearIn): ClickFn {
       city: TEXT_NONE,
       groupReset: true,
       district: TEXT_NONE,
-      broad: TEXT_NONE,
       ee: TEXT_NONE,
       sector: TEXT_NONE,
       category: TEXT_NONE,
@@ -2477,7 +2390,7 @@ export function makeCloseJob(x: CloseJobIn): ClickFn {
  * @returns 有没有。
  */
 export function anyFilterOf(x: FiltersIn): boolean {
-  return x.f.prov !== TEXT_NONE || x.f.broad !== TEXT_NONE || x.f.ee !== TEXT_NONE || x.f.sector !== TEXT_NONE
+  return x.f.prov !== TEXT_NONE || x.f.ee !== TEXT_NONE || x.f.sector !== TEXT_NONE
     || x.f.category !== TEXT_NONE
     || x.f.entry || x.f.lmia || x.f.program !== TEXT_NONE || x.f.group !== TEXT_NONE
     || x.f.q !== TEXT_NONE

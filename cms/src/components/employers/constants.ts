@@ -133,11 +133,6 @@ export const EV_PROP_CITY = 'city'
 export const EV_PROP_EE = 'ee'
 
 /**
- * 埋点分组值:换的是在招大类那一格(2026-09-18)。
- */
-export const EV_PROP_BROAD = 'broad'
-
-/**
  * 埋点分组值:换的是区那一格(2026-09-18)。
  */
 export const EV_PROP_DISTRICT = 'district'
@@ -637,12 +632,6 @@ export const COL_CITY_KEY = 'city'
 export const COL_CATEGORY_KEY = 'cat'
 
 /**
- * 雇主板列 key:类别(在招岗的本站大类;不排序 —— 一家多类,没有单一的序)。
- * 2026-09-19 晚:这一列从板上撤了(Frank「这两个分类应该是属于职位的分类」),键留着给字段 cookie 里的旧值对号。
- */
-export const COL_BROAD_KEY = 'broad'
-
-/**
  * 类别(EE)格最多列几个(岗多的在前;多了一行放不下)。
  */
 export const BROAD_SHOW_MAX = 2
@@ -718,11 +707,6 @@ export const W_POOL_CITY = 13
  * 雇主板公司分类列的宽(一个分类名,最长「公园与自然资源」七个字)。
  */
 export const W_POOL_CATEGORY = 12
-
-/**
- * 雇主板类别列的宽(两个大类名顿号连,最长「生活服务、社会服务」九个字)。
- */
-export const W_POOL_BROAD = 14
 
 /**
  * 雇主板类别(EE)列的宽(两个 EE 类别名顿号连)。
@@ -996,11 +980,6 @@ export const MIME_JSON = 'application/json'
  * query 参数名:在招 EE 类别。
  */
 export const P_EE = 'ee'
-
-/**
- * query 参数名:在招大类(本站大类键)。
- */
-export const P_BROAD = 'broad'
 
 /**
  * query 参数名:主区(跟着市走)。

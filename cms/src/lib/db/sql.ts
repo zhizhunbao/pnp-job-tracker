@@ -556,22 +556,6 @@ export const EMPLOYER_POOL_EES = `SELECT e AS ee FROM employer_pool p, jsonb_arr
     WHERE jsonb_typeof(p.ees) = 'array' GROUP BY e ORDER BY count(*) DESC, e`
 
 /**
- * 雇主板「全部大类」下拉的选项:池里雇主的主类(职位板那一套本站大类;主类 = 在招岗最多的那一个),雇主多的在前,带英 / 韩名。
- * 2026-09-19 Frank「这两个要能联动」「这个联动加上」:$1=当前选的 EE 类别或 ''—— 选了类别,大类选项只剩**该类别的在招岗落到的大类**
- * (与职位板 DIMS_EE_BROADS 同一把尺子:STEM → 工程 / 科技 / 科学 …;先前按「有该类别岗的雇主的主类」收,STEM 下还剩餐饮零售,等于没联动)。
- * 2026-09-19 Frank「这个应该是这个公司的类别吧」「一个公司可能各种职位都招」:一家只算一个主类,不再按「招过哪些类」摊开
- * (2026-09-18;扫一遍池表,lib/employers 进程内 TTL 缓存)。
- */
-export const EMPLOYER_POOL_BROADS = `SELECT x.broad, l.broad_en, l.broad_ko
-     FROM (SELECT p.broads->>0 AS broad, count(*) AS n FROM employer_pool p
-            WHERE jsonb_typeof(p.broads) = 'array' AND jsonb_array_length(p.broads) > 0 GROUP BY 1) x
-     LEFT JOIN (SELECT DISTINCT ON (broad) broad, broad_en, broad_ko FROM noc_categories ORDER BY broad) l ON l.broad = x.broad
-    WHERE ($1 = '' OR x.broad IN (
-            SELECT DISTINCT j.broad FROM jobs j, unnest(string_to_array(j.ee_category, '/')) AS seg
-             WHERE btrim(seg) = $1 AND COALESCE(j.broad, '') <> '' AND COALESCE(j.status, 'open') <> 'closed'))
-    ORDER BY x.n DESC, x.broad`
-
-/**
  * 雇主池市下拉的选项:一个省里雇主的主市,雇主多的在前(2026-09-18 Frank「城市筛选也加上吧」;安省有 600 个主市,
  * 长尾多是一家雇主的小地方,只给前 200;lib/employers 进程内按省 TTL 缓存)。$1=省码。
  * 同日 Frank「这个需要排序吧」:先按雇主数取前 200,交出去按字母排(下拉里找得到);区下拉同。
@@ -666,10 +650,10 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=公司主类或 ''(「全部大类」筛选;主类 = 探索队列里模型判的公司大类,没有才退回 broads 第一格 = 在招岗最多的那个大类;
- *   2026-09-19 起不再走 GIN:判过的大类不在 broads 里也得筛得到,池表 7 万行顺扫毫秒级)。
- * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
- * $13=公司分类键或 ''(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」:私营 = 模型判的
+ * (原 $11 =「全部大类」筛选,按在招岗的职位大类筛雇主;2026-09-19 晚随界面一起撤 —— Frank「这两个分类应该是属于职位的分类」
+ *   「清了」,后两个参数各往前挪一位。)
+ * $11=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
+ * $12=公司分类键或 ''(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」:私营 = 模型判的
  * employer_explore.industry 优先、没有才用池里按在招岗反推的 category;公立 / 政府只认池里按名字判的 category ——
  * 模型那一格对它们不作数;DDL docs/sql/employer-pool-category-20260919.sql)。
  * total 用窗口函数随行带回,一次往返。
@@ -678,12 +662,12 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * @returns SELECT 语句。
  */
 export const employerPoolPage = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.broads, p.ees, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.ees, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website, c.address,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
-      x.industry AS x_industry, p.designated_places,
+      p.designated_places,
       CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, b.open_jobs, b.latest_posted, b.top_titles, b.entry_jobs, b.entry_share, b.min_experience,
@@ -701,9 +685,8 @@ export const employerPoolPage = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR COALESCE(NULLIF(x.industry, ''), p.broads->>0) = $11)
-      AND ($12 = '' OR p.ees ? $12)
-      AND ($13 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $13)
+      AND ($11 = '' OR p.ees ? $11)
+      AND ($12 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -767,10 +750,10 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
  * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
- * $11=公司主类或 ''(「全部大类」筛选;主类 = 探索队列里模型判的公司大类,没有才退回 broads 第一格 = 在招岗最多的那个大类;
- *   2026-09-19 起不再走 GIN:判过的大类不在 broads 里也得筛得到,池表 7 万行顺扫毫秒级)。
- * $12=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
- * $13=公司分类键或 ''(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」:私营 = 模型判的
+ * (原 $11 =「全部大类」筛选,按在招岗的职位大类筛雇主;2026-09-19 晚随界面一起撤 —— Frank「这两个分类应该是属于职位的分类」
+ *   「清了」,后两个参数各往前挪一位。)
+ * $11=在招 EE 类别或 ''(2026-09-19「全部类别」筛选;GIN 索引 employer_pool_ees_idx)。
+ * $12=公司分类键或 ''(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」:私营 = 模型判的
  * employer_explore.industry 优先、没有才用池里按在招岗反推的 category;公立 / 政府只认池里按名字判的 category ——
  * 模型那一格对它们不作数;DDL docs/sql/employer-pool-category-20260919.sql)。
  *
@@ -778,12 +761,12 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * @returns SELECT 语句。
  */
 export const employerPoolAll = (order: string) => `
-    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.broads, p.ees, p.locations, p.designated,
+    SELECT p.key, p.slug, p.name, p.industry, p.sector, p.province, p.city, p.district, p.ees, p.locations, p.designated,
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website, c.address,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
-      x.industry AS x_industry, p.designated_places,
+      p.designated_places,
       CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category,
       ci.name_zh AS city_zh, ci.name_ko AS city_ko,
       b.ind_group, p.open_jobs_total AS open_jobs, b.latest_posted, b.top_titles, b.entry_jobs,
@@ -805,9 +788,8 @@ export const employerPoolAll = (order: string) => `
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
       AND ($9 = '' OR p.city = $9)
       AND ($10 = '' OR p.district = $10)
-      AND ($11 = '' OR COALESCE(NULLIF(x.industry, ''), p.broads->>0) = $11)
-      AND ($12 = '' OR p.ees ? $12)
-      AND ($13 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $13)
+      AND ($11 = '' OR p.ees ? $11)
+      AND ($12 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $12)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 

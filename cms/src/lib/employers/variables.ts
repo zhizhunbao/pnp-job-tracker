@@ -34,11 +34,6 @@ export const CACHE: EmployersCache = {
   poolDistricts: new Map(),
 
   /**
-   * 「全部类别」下拉的选项(2026-09-18)。开机是空的。
-   */
-  poolBroads: new Map(),
-
-  /**
    * 「全部类别」(EE)下拉的选项(2026-09-19)。开机是空的。
    */
   poolEes: null,

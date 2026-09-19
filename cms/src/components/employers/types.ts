@@ -65,11 +65,6 @@ export type PoolFilters = {
   district: string
 
   /**
-   * 在招大类(职位板那套本站大类的键);空串 = 不筛。
-   */
-  broad: string
-
-  /**
    * 在招 EE 类别(联邦 EE 类别标签,职位板「全部类别」同一套);空串 = 不筛。
    */
   ee: string
@@ -215,11 +210,6 @@ export type PoolRow = {
   locations: string[]
 
   /**
-   * 大类清单:第一格 = 公司主类(模型判的优先,没有才是在招岗最多的那一类),其余 = 在招岗的大类;空表 = 都没有。
-   */
-  broadKeys: string[]
-
-  /**
    * 指定资格所在地(「项目|地点」:AIP|NB、RCIP|Sudbury, ON);空表 = 非指定 / 名单没给地点。
    */
   designatedPlaces: string[]
@@ -304,11 +294,6 @@ export type PoolPage = {
    * 区下拉的选项;没选市、或这个市的雇主都没有区 = 空数组(区下拉不出)。
    */
   districts: string[]
-
-  /**
-   * 「全部大类」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
-   */
-  broads: BroadOpt[]
 
   /**
    * 「全部类别」下拉的选项(联邦 EE 类别标签,覆盖雇主多的在前)。
@@ -637,12 +622,6 @@ export type EmployerCellRow = {
    * 公司分类格:分类名(界面语言);空串 = 判不出(渲横杠)。
    */
   categoryText: string
-
-  /**
-   * 类别格:在招岗最多的两个本站大类名,顿号连(2026-09-18 晚 Frank「公司类别要显示」;词与「全部类别」下拉同一套);
-   * 空串 = 没有在招 / 都未分类(渲横杠)。
-   */
-  broadText: string
 
   /**
    * 类别格(可选列):在招岗最多的两个联邦 EE 类别名,顿号连(2026-09-19 与职位板同名同义;此前这一格是把脉页那八个
@@ -1170,11 +1149,6 @@ export type EmployerCellRowIn = {
   r: PoolRow
 
   /**
-   * 「全部类别」下拉的选项(类别格按它取英 / 韩文名)。
-   */
-  broads: BroadOpt[]
-
-  /**
    * 取词函数。
    */
   t: TFn
@@ -1203,11 +1177,6 @@ export type EmployerCellRowsIn = {
    * 本页的行。
    */
   rows: PoolRow[]
-
-  /**
-   * 「全部类别」下拉的选项(类别格按它取英 / 韩文名)。
-   */
-  broads: BroadOpt[]
 
   /**
    * 取词函数。
@@ -2023,11 +1992,6 @@ export type EmployersPanel = {
   onDistrict: PickFn
 
   /**
-   * 换在招大类(顺带回第一页)。
-   */
-  onBroad: PickFn
-
-  /**
    * 换在招 EE 类别(顺带回第一页)。
    */
   onEe: PickFn
@@ -2372,11 +2336,6 @@ export type WithIn = {
    * 换主区。
    */
   district?: string
-
-  /**
-   * 换在招大类。
-   */
-  broad?: string
 
   /**
    * 换在招 EE 类别。
@@ -2751,46 +2710,6 @@ export type MapHrefIn = {
    * 英文省全名;空串 = 没有省。
    */
   prov: string
-}
-
-/**
- * 「全部类别」下拉的一个选项(本域自声明;线上来自 /api/employers 的 broads 格)。
- */
-export type BroadOpt = {
-  /**
-   * 本站大类键(也是中文名;筛选值)。
-   */
-  key: string
-
-  /**
-   * 英文名;空串 = 没有。
-   */
-  en: string
-
-  /**
-   * 韩文名;空串 = 没有。
-   */
-  ko: string
-}
-
-/**
- * makeBroadLabel 的入参。
- */
-export type BroadLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: string
-
-  /**
-   * 选项清单。
-   */
-  opts: BroadOpt[]
 }
 
 /**

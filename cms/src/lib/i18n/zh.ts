@@ -934,7 +934,7 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colBroad': '大分类', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colLocs': '在招地点', 'de.colHq': '总部', 'de.colDistrict': '区', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colLocs': '在招地点', 'de.colHq': '总部', 'de.colDistrict': '区', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   // 公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):列名、下拉首项与 33 个分类名 —— 私营 15 类 / 公立机构 9 类 / 政府按职能 9 类;键 = cocat. + 数据层的分类键。
   'de.colCategory': '公司分类', 'de.allCategory': '全部公司分类', 'cocat.tech': '科技',
   'cocat.health': '医疗健康', 'cocat.education': '教育', 'cocat.finance': '金融保险',

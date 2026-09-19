@@ -54,11 +54,6 @@ export type PoolFilters = {
   district: string
 
   /**
-   * 在招大类(本站大类键);空串 = 不筛。
-   */
-  broad: string
-
-  /**
    * 在招 EE 类别(联邦 EE 类别标签);空串 = 不筛。
    */
   ee: string
@@ -192,12 +187,6 @@ export type PoolRow = {
    * 多地点(「市, 省码」,主场第一,最多三处;板上只显主场,其余收「另 N 地」)。
    */
   locations: string[]
-
-  /**
-   * 公司大类在前的大类清单:第一格 = 公司主类(探索队列里模型判的优先,没有才是在招岗最多的那一类),
-   * 其余 = 在招岗的大类(岗多的在前);空表 = 没有在招也没判过。板上「大分类」列读第一格。
-   */
-  broadKeys: string[]
 
   /**
    * 指定资格所在地(「项目|地点」:AIP|NB、RCIP|Sudbury, ON);空表 = 非指定 / 名单没给地点。
@@ -348,11 +337,6 @@ export type PoolPage = {
    * 区下拉的选项(当前市里雇主的主区,雇主多的在前);没选市、或这个市的雇主都没有区 = 空数组。
    */
   districts: string[]
-
-  /**
-   * 「全部大类」下拉的选项(本站大类,覆盖雇主多的在前,带英 / 韩名)。
-   */
-  broads: BroadOpt[]
 
   /**
    * 「全部类别」下拉的选项(联邦 EE 类别标签,覆盖雇主多的在前)。
@@ -1658,81 +1642,6 @@ export type EeDbRow = {
 }
 
 /**
- * `EMPLOYER_POOL_BROADS` 的原始行。
- */
-export type BroadDbRow = {
-  /**
-   * 本站大类键(数据层中文原值)。
-   */
-  broad: string | null
-
-  /**
-   * 英文名;维度表里没有这一类 = null。
-   */
-  broad_en: string | null
-
-  /**
-   * 韩文名。
-   */
-  broad_ko: string | null
-}
-
-/**
- * 「全部类别」下拉的一个选项。
- */
-export type BroadOpt = {
-  /**
-   * 本站大类键(也是中文名;筛选值)。
-   */
-  key: string
-
-  /**
-   * 英文名;空串 = 没有(显示退回键)。
-   */
-  en: string
-
-  /**
-   * 韩文名;空串 = 没有。
-   */
-  ko: string
-}
-
-/**
- * 大类选项缓存的一份。
- */
-export type BroadsSlot = {
-  /**
-   * 灌入时刻(Date.now())。
-   */
-  at: number
-
-  /**
-   * 选项清单。
-   */
-  broads: BroadOpt[]
-}
-
-/**
- * `fetchPoolBroads` 的入参。
- */
-export type PoolBroadsIn = {
-  /**
-   * 数据库连接。
-   */
-  db: Db
-
-  /**
-   * 当前选的 EE 类别;空串 = 没选(给全部大类)。
-   */
-  ee: string
-}
-
-/**
- * `fetchPoolBroads` 的返回。
- */
-export type PoolBroadsOut = Promise<BroadOpt[]>
-
-/**
  * `EMPLOYER_POOL_DISTRICTS` 的原始行。
  */
 export type DistrictDbRow = {
@@ -1810,11 +1719,6 @@ export type WithCitiesIn = {
    * 当前市的区选项。
    */
   districts: string[]
-
-  /**
-   * 「全部大类」下拉的选项。
-   */
-  broads: BroadOpt[]
 
   /**
    * 「全部类别」下拉的选项。
@@ -1917,11 +1821,6 @@ export type PoolDbRow = {
   locations: string[] | null
 
   /**
-   * 在招大类(jsonb 数组,岗多的在前);NULL = 没有在招 / 还没灌过这一列。
-   */
-  broads: string[] | null
-
-  /**
    * 在招 EE 类别(jsonb 数组,岗多的在前);NULL = 同上。
    */
   ees: string[] | null
@@ -1980,11 +1879,6 @@ export type PoolDbRow = {
    * 探索队列译名的版本号。
    */
   x_trans_v: number | string | null
-
-  /**
-   * 探索队列里模型判的公司大类(本站大类键);没判过 / 判不出 = null。
-   */
-  x_industry: string | null
 
   /**
    * 公司分类(SQL 里已按「私营用模型判的优先」合好的一格);NULL = 判不出。
@@ -2175,11 +2069,6 @@ export type EmployersCache = {
    * 区下拉选项:「省码|市名」→ 那个市的区清单(形同市那一格,清单放在 cities 格里;满 POOL_PAGES_MAX 清空重来)。
    */
   poolDistricts: Map<string, CitiesSlot>
-
-  /**
-   * 「全部大类」下拉的选项:当前 EE 类别('' = 没选)→ 那一档的选项(类别是大类的上级,选项随它收窄;至多十来个键)。
-   */
-  poolBroads: Map<string, BroadsSlot>
 
   /**
    * 「全部类别」(EE)下拉的选项(形同市那一格,清单放在 cities 格里);null = 冷。

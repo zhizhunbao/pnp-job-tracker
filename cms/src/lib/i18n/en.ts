@@ -849,7 +849,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.s5': 'Recent draws',
   'pulse.s6.t': 'Canada-wide job board', 'pulse.s6.s': 'All occupations, updated daily',
   'de.title': 'Employers', 'de.count': '{n} employers', 'de.hits': '{n} matched',
-  'de.colName': 'Employer', 'de.colBroad': 'Category', 'de.colEe': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colLocs': 'Hiring in', 'de.colHq': 'Head office', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
+  'de.colName': 'Employer', 'de.colEe': 'EE category', 'de.colSector': 'Type', 'de.colLmia': 'LMIA', 'de.colProv': 'Province', 'de.colCity': 'City', 'de.colLocs': 'Hiring in', 'de.colHq': 'Head office', 'de.colDistrict': 'District', 'de.allSector': 'All types', 'de.colWhere': 'Location', 'de.colOpen': 'Open', 'de.colDesignated': 'Designated',
   // 公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):列名、下拉首项与 33 个分类名 —— 私营 15 类 / 公立机构 9 类 / 政府按职能 9 类;键 = cocat. + 数据层的分类键。
   'de.colCategory': 'Category', 'de.allCategory': 'All categories', 'cocat.tech': 'Tech',
   'cocat.health': 'Health care', 'cocat.education': 'Education', 'cocat.finance': 'Finance & insurance',

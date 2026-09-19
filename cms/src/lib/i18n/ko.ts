@@ -842,7 +842,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'pulse.s5': '최근 추첨',
   'pulse.s6.t': '캐나다 전역 잡보드', 'pulse.s6.s': '전 직업 수록, 매일 갱신',
   'de.title': '고용주', 'de.count': '고용주 {n}개사', 'de.hits': '{n}개사 일치',
-  'de.colName': '고용주', 'de.colBroad': '분류', 'de.colEe': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colLocs': '채용 지역', 'de.colHq': '본사', 'de.colDistrict': '구역', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
+  'de.colName': '고용주', 'de.colEe': 'EE 카테고리', 'de.colSector': '유형', 'de.colLmia': 'LMIA', 'de.colProv': '주', 'de.colCity': '도시', 'de.colLocs': '채용 지역', 'de.colHq': '본사', 'de.colDistrict': '구역', 'de.allSector': '전체 유형', 'de.colWhere': '지역', 'de.colOpen': '채용 중', 'de.colDesignated': '지정 고용주',
   // 公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):列名、下拉首项与 33 个分类名 —— 私营 15 类 / 公立机构 9 类 / 政府按职能 9 类;键 = cocat. + 数据层的分类键。
   'de.colCategory': '회사 분류', 'de.allCategory': '전체 회사 분류', 'cocat.tech': '테크',
   'cocat.health': '의료·헬스케어', 'cocat.education': '교육', 'cocat.finance': '금융·보험',

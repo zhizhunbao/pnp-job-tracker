@@ -17,7 +17,7 @@ import { useColPick } from '@/components/table'
 import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
-  addrQsOf, applyHomeProv, foldCountOf, makeBroad, makeCategory, reportSeen,
+  addrQsOf, applyHomeProv, foldCountOf, makeCategory, reportSeen,
   makeCity, makeCloseJob, makeCloseModal, makeDistrict,
   makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
@@ -90,7 +90,6 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onSector: makeSector({ f, setF }),
     onCity: makeCity({ f, setF }),
     onDistrict: makeDistrict({ f, setF }),
-    onBroad: makeBroad({ f, setF }),
     onEe: makeEe({ f, setF }),
     onCategory: makeCategory({ f, setF }),
     onEntry: makeEntryPick({ f, setF }),
