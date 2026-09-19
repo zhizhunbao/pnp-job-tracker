@@ -30,6 +30,7 @@ clean/05f 试点打标(flag_job_pilot)。判据:它们对 ATS 与 JB 两源过�
 副作用一处:第 8 段的薪资兜底原来「按路径拉 clean/04d 取 apply_to」,现在直调本域第 18 段的
 apply_salary_to,`MartCtx.apply_salary` 随之换成 `salary_guards`(SalaryModuleLike 退役)。
 """
+import html
 import json
 import re
 import statistics
@@ -46,7 +47,7 @@ from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, ENTITY_BREAK_TAG_RE, ENTITY_RE, ENTITY_TAG_RE, K_COMPANIES, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
     ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
     EE_INV_CAT_KEY, K_INV_BY_YEAR,
@@ -180,7 +181,7 @@ from mart.constants import (
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
 from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
-from mart.constants import SAL_DAY_MIN
+from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
@@ -1629,7 +1630,25 @@ def clean_jd(text: str) -> str:
                 continue
             seen.add(s)
         out.append(line)
-    return strip_jd_label(BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip())
+    return strip_jd_label(plain_of_entities(BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip()))
+
+
+def plain_of_entities(text: str) -> str:
+    """还原文本里的 HTML 实体转义符;还原出标签的(`&lt;br&gt;`)换行类换成换行、其余拿掉。没有转义符的原样返回。"""
+    if ENTITY_RE.search(text) is None:
+        return text
+    plain = html.unescape(text)
+    return ENTITY_TAG_RE.sub("", ENTITY_BREAK_TAG_RE.sub(NL, plain))
+
+
+def unescape_mart_names(mart: dict) -> None:
+    """落盘前把职位标题与公司名里的转义符还原(就地改;只动这两格,别的格不碰)。"""
+    for job in mart.get(K_JOBS, []):
+        if job.get(K_TITLE):
+            job[K_TITLE] = plain_of_entities(job[K_TITLE])
+    for company in mart.get(K_COMPANIES, []):
+        if company.get(K_NAME):
+            company[K_NAME] = plain_of_entities(company[K_NAME])
 
 
 def strip_jd_label(text: str) -> str:
@@ -1750,7 +1769,7 @@ def to_board_job_fields(x: BoardJobIn) -> dict:
     (渠道筛选分得开),正文随行下沉(板帖没有 .md,fill_jd_bodies 按 applyUrl 找不到就不覆盖)。"""
     fields = to_jb_job_fields(x.job)
     fields[K_ORIGIN] = x.origin
-    fields[K_DESCRIPTION] = strip_jd_label(x.job.get(K_DESCRIPTION) or "") or None
+    fields[K_DESCRIPTION] = strip_jd_label(plain_of_entities(x.job.get(K_DESCRIPTION) or "")) or None
     fields[K_VALID_THROUGH] = x.job.get(K_SRC_VALID_THROUGH) or None
     return fields
 
@@ -3593,6 +3612,7 @@ def build_mart() -> None:
     """步骤②:跨源汇装 data/mart/(一文件 = 一张 DB 表;中介过滤/去重/评分关联全在这层落定)。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
     mart = to_mart_tables()
+    unescape_mart_names(mart)
     write_open_ids(mart[K_SEEN_IDS])
     write_mart_table(TableWriteIn(tables=mart, out_dir=OUT_MART))
     say(MART_DONE_TPL.format(dir=OUT_MART))
@@ -4943,7 +4963,7 @@ def parse_salary(x: SalaryParseIn) -> SalaryOut:
         x.guards.cap += 1
         return SalaryOut(annual=None, text=None)
     text = money_text(MoneyTextIn(lo=lo, hi=hi, unit=unit, sub=SAL_SUB[unit]))
-    if unit == SAL_UNIT_DAY and hi < SAL_DAY_MIN:
+    if hi < SAL_UNIT_MIN[unit]:
         x.guards.lowday += 1
         return SalaryOut(annual=None, text=None)
     if unit == SAL_UNIT_HR and (lo + hi) / 2 > SAL_HOURLY_FOLD_MAX:
