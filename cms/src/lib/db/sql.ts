@@ -536,15 +536,18 @@ export const EMPLOYER_POOL_EES = `SELECT e AS ee FROM employer_pool p, jsonb_arr
 
 /**
  * 雇主板「全部大类」下拉的选项:池里雇主的主类(职位板那一套本站大类;主类 = 在招岗最多的那一个),雇主多的在前,带英 / 韩名。
- * 2026-09-19 Frank「这两个要能联动」:$1=当前选的 EE 类别或 ''—— 选了类别,大类选项只剩该类别下有雇主的那些(照职位板:类别是大类的上级)。
+ * 2026-09-19 Frank「这两个要能联动」「这个联动加上」:$1=当前选的 EE 类别或 ''—— 选了类别,大类选项只剩**该类别的在招岗落到的大类**
+ * (与职位板 DIMS_EE_BROADS 同一把尺子:STEM → 工程 / 科技 / 科学 …;先前按「有该类别岗的雇主的主类」收,STEM 下还剩餐饮零售,等于没联动)。
  * 2026-09-19 Frank「这个应该是这个公司的类别吧」「一个公司可能各种职位都招」:一家只算一个主类,不再按「招过哪些类」摊开
  * (2026-09-18;扫一遍池表,lib/employers 进程内 TTL 缓存)。
  */
 export const EMPLOYER_POOL_BROADS = `SELECT x.broad, l.broad_en, l.broad_ko
      FROM (SELECT p.broads->>0 AS broad, count(*) AS n FROM employer_pool p
-            WHERE jsonb_typeof(p.broads) = 'array' AND jsonb_array_length(p.broads) > 0
-              AND ($1 = '' OR p.ees ? $1) GROUP BY 1) x
+            WHERE jsonb_typeof(p.broads) = 'array' AND jsonb_array_length(p.broads) > 0 GROUP BY 1) x
      LEFT JOIN (SELECT DISTINCT ON (broad) broad, broad_en, broad_ko FROM noc_categories ORDER BY broad) l ON l.broad = x.broad
+    WHERE ($1 = '' OR x.broad IN (
+            SELECT DISTINCT j.broad FROM jobs j, unnest(string_to_array(j.ee_category, '/')) AS seg
+             WHERE btrim(seg) = $1 AND COALESCE(j.broad, '') <> '' AND COALESCE(j.status, 'open') <> 'closed'))
     ORDER BY x.n DESC, x.broad`
 
 /**

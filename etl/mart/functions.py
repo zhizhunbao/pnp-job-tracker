@@ -179,6 +179,7 @@ from mart.constants import (
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
+from mart.constants import HOST_WWW_PREFIX, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
@@ -200,7 +201,7 @@ from mart.scheme import (
     PilotVerdictOut, PnpJudgeIn, PnpMergeIn, PnpOccIn, PnpStreamBucketIn, PnpStreamIn, PnpTables,
     ProvFillIn, ProvListIn, ProvinceRowIn, QuarterSumIn, QuotaRowIn, RankJobRowIn, RankNamesIn,
     ReqRowIn, SalaryGuards, SalaryOut, SalaryParseIn, SalaryTally, SalaryTickIn, SalaryUnitIn,
-    SayCountsIn, ScoreFactorIn, ScoreIn, ScoreRuleIn, ScoredRowIn, SourceLabelIn, SponsorAgg,
+    SayCountsIn, SiteCheckIn, ScoreFactorIn, ScoreIn, ScoreRuleIn, ScoredRowIn, SourceLabelIn, SponsorAgg,
     SponsorAggIn, SponsorBuildIn, SponsorBumpIn, SponsorCellIn, SponsorOfIn, SponsorRowIn,
     SponsorSourcesOut, SponsorValueIn, StatValIn, StatValOut, StatsAggIn, StatsBuildIn,
     StatsCountsIn, StatsRowIn, StockCellIn, StudyFlowIn, SubBaseIn, TableWriteIn, TrRefIn,
@@ -1094,6 +1095,7 @@ def add_company(x: CompanyExtraIn) -> None:
         x.extra[k] = value
     fill_places(x)
     fill_careers(x)
+    drop_unofficial_sites(x)
     fill_brief(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
@@ -1117,6 +1119,30 @@ def fill_careers(x: CompanyExtraIn) -> None:
     url = x.ctx.careers.get(x.slug)
     if url:
         x.extra[K_CAREERS_URL] = url
+
+
+def drop_unofficial_sites(x: CompanyExtraIn) -> None:
+    """官网 / 招聘页落在「不算官网的主机」上的留空(社交主页 / 运营商邮箱域名 / 建站平台 / 代招门户,见 NOT_OFFICIAL_HOSTS);
+    雇主名里带那台主机自己名字的不动(它就是主人)。官网被摘掉时来路标记一起摘。"""
+    if is_unofficial_site(SiteCheckIn(url=x.extra.get(K_WEBSITE), name=x.name)):
+        x.extra.pop(K_WEBSITE, None)
+        x.extra.pop(K_WEBSITE_SOURCE, None)
+    if is_unofficial_site(SiteCheckIn(url=x.extra.get(K_CAREERS_URL), name=x.name)):
+        x.extra.pop(K_CAREERS_URL, None)
+
+
+def is_unofficial_site(x: SiteCheckIn) -> bool:
+    """这个网址的主机在不算官网的清单里(本身或它的子域),且雇主名压平后不含那台主机自己的名字。"""
+    if not isinstance(x.url, str) or x.url == "":
+        return False
+    host = urlparse(x.url).netloc.lower()
+    if host.startswith(HOST_WWW_PREFIX):
+        host = host[len(HOST_WWW_PREFIX):]
+    flat = NAME_FLAT_RE.sub(NAME_FLAT_REPL, x.name.lower())
+    for bad, owner in NOT_OFFICIAL_HOSTS.items():
+        if host == bad or host.endswith(HOST_TAIL_DOT + bad):
+            return owner not in flat
+    return False
 
 
 def fill_brief(x: CompanyExtraIn) -> None:

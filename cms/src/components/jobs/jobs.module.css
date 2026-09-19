@@ -253,6 +253,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
+  /*
+   * 钉在筛选行最右(2026-09-19 Frank「这个字段固定在最右侧」:原先靠它左边的「更新时间」顶到右边,
+   * 更新时间挪进 banner 后这只钮贴着「清除筛选」往左缩了)。
+   */
+  margin-left: auto;
 }
 
 /*

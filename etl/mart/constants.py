@@ -805,6 +805,35 @@ K_SRC_CAREERS_URL = "careers_url"
 K_CAREERS_URL = "careersUrl"
 """companies 列:公司官方招聘页。只收探测回 200 的;与官网同址的不落(页面上两行重复)。"""
 
+NOT_OFFICIAL_HOSTS = {
+    "facebook.com": "facebook", "instagram.com": "instagram", "linkedin.com": "linkedin", "x.com": "twitter",
+    "twitter.com": "twitter", "tiktok.com": "tiktok", "youtube.com": "youtube", "linktr.ee": "linktree",
+    "sites.google.com": "google", "google.com": "google", "wixsite.com": "wix", "wix.com": "wix",
+    "monsitew.com": "monsitew", "gw.micro-acces.com": "microacces", "mail.com": "mailcom",
+    "gmail.com": "gmail", "hotmail.com": "hotmail", "outlook.com": "outlook", "yahoo.com": "yahoo", "yahoo.ca": "yahoo",
+    "sasktel.net": "sasktel", "telus.net": "telus", "shaw.ca": "shaw", "rogers.com": "rogers", "bell.net": "bell",
+    "sympatico.ca": "sympatico", "videotron.ca": "videotron", "eastlink.ca": "eastlink", "mts.net": "mts",
+    "indeed.com": "indeed", "jobbank.gc.ca": "jobbank", "healthassociation.ns.ca": "healthassociation",
+}
+"""不算官网的主机(值 = 这台主机自己的名字,压平小写):社交主页、运营商邮箱域名(雇主把邮箱域名填成了网址)、
+建站平台的公共域、招聘平台与**点名的代招门户**。公司行的官网 / 招聘页落在这些主机上的一律留空 —— 除非雇主名里
+带这台主机自己的名字(Rogers Communications 的 rogers.com、Health Association Nova Scotia 的 healthassociation.ns.ca 是真官网)。
+2026-09-19 Frank「做规则,代招门户不当官网」:起因 VON Canada 的官网被记成 healthassociation.ns.ca
+(新斯科舍卫生行业协会替成员代发招聘的门户;VON 自己是 von.ca),雇主板点雇主名直接去官网后,这类错很显眼。
+🔴 试过「多家雇主共用一个域名 = 门户」的自动判据,实测不成立:共用域名的 62 组里绝大多数是正当的总部 / 运营方 / 加盟品牌站
+(wyndhamhotels.com、ihg.com、macleodcares.com、legroupemaurice.com、timhortons.com),按它删会误杀几百家;
+真该剔的只有上面这一小类,所以用点名清单。发现新的代招门户往这里加一行。"""
+
+NAME_FLAT_RE = re.compile(r"[^a-z0-9]+")
+"""压平雇主名用:只留小写字母数字(与 NOT_OFFICIAL_HOSTS 的值比对)。"""
+
+HOST_WWW_PREFIX = "www."
+"""主机名前的 www. 前缀(比对前削掉)。"""
+
+NAME_FLAT_REPL = ""
+"""压平时的替身。"""
+
+
 CAREERS_STATUS_OK = "200"
 """招聘页探测通过的状态码(清单里全国件存成字符串、Kanata 件存成数字,比较前一律转串)。"""
 

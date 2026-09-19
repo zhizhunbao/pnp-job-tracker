@@ -574,6 +574,17 @@ class MartCtx:
 
 
 @dataclass
+class SiteCheckIn:
+    """is_unofficial_site() 入参。"""
+
+    url: object
+    """公司行里的官网 / 招聘页(可能缺、可能不是串)。"""
+
+    name: str
+    """雇主名(名里带主机自己名字的算主人,不摘)。"""
+
+
+@dataclass
 class CompanyExtraIn:
     """to_ats_company_extra() / to_jb_company_extra() 的共同出参形不另立 —— 两者直接返回
     dict(键序即 companies 行的列序契约)。本形是 add_company() 的入参。
