@@ -659,12 +659,15 @@ export type EmployerCellRow = {
   districtText: string
 
   /**
-   * 总部格:「区, 市, 省码」一行(缺哪级省哪级);空串 = 省市区都没记(渲横杠)。
+   * 总部格那行字;空串 = 拿不到(渲横杠)。
+   * 沿革:2026-09-19 Frank「总部列,包含省市区」先拼成「区, 市, 省码」—— 那三格是池里的主省 / 主市(在招岗最多的省里岗最多的城),
+   * 不是真总部(Magna 写 Guelph,真总部 Aurora;Frank「这个怎么有总部」);同日晚「雇主板总部也先显示 —」:
+   * 真总部数据(官网正文抽的总部地址,数据层 company 域在建)接上之前一律空串,原 hqTextOf / hqHrefOf 两件随之撤。
    */
   hqText: string
 
   /**
-   * 总部格的 Google 地图链接:有公司地址就定位到地址,没有就查总部格那行字;空串 = 不成链。
+   * 总部格的 Google 地图链接;空串 = 不成链(真总部数据接上之前一律空串,来由同 hqText)。
    */
   hqHref: string
 
@@ -2680,21 +2683,6 @@ export type PageMeta = {
    * 搜索结果里那段摘要,各入口一句定稿、不随参数变。
    */
   description: string
-}
-
-/**
- * hqHrefOf 的入参。
- */
-export type HqHrefIn = {
-  /**
-   * 公司地址;空串 = 没记。
-   */
-  address: string
-
-  /**
-   * 总部格那行字;空串 = 省市区都没记。
-   */
-  text: string
 }
 
 /**

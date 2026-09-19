@@ -92,7 +92,7 @@ import type {
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
-  ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, HqHrefIn, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
+  ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -222,7 +222,6 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
   const kind = kindOf({ f: x.f })
   const provText = provEnOf(r.province)
   const cityText = r.city
-  const hqText = hqTextOf(x)
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -238,8 +237,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
     districtText: r.district,
-    hqText,
-    hqHref: hqHrefOf({ address: r.address, text: hqText }),
+    hqText: TEXT_NONE,
+    hqHref: TEXT_NONE,
     locs: r.locations,
     provText,
     cityText,
@@ -348,43 +347,6 @@ function eeTextOf(x: EeTextIn): string {
     }
   }
   return out.join(x.t('de.sep'))
-}
-
-/**
- * 总部格那行字:「区, 市, 省码」,缺哪级省哪级(2026-09-19 Frank「总部列,包含省市区」)。
- *
- * @param x 这一行(只读省市区三格)。
- * @returns 一行字;省市区都没记 = 空串。
- */
-function hqTextOf(x: EmployerCellRowIn): string {
-  const r = x.r
-  const out: string[] = []
-  if (r.district !== TEXT_NONE) {
-    out.push(r.district)
-  }
-  if (r.city !== TEXT_NONE) {
-    out.push(r.city)
-  }
-  if (r.province !== TEXT_NONE) {
-    out.push(r.province)
-  }
-  return out.join(WHERE_SEP)
-}
-
-/**
- * 总部格的 Google 地图链接:有公司地址就定位到地址,没有就查总部格那行字。
- *
- * @param x 公司地址与总部格那行字。
- * @returns 地图 URL;两样都空 = 空串。
- */
-function hqHrefOf(x: HqHrefIn): string {
-  if (x.address !== TEXT_NONE) {
-    return mapsUrl(x.address)
-  }
-  if (x.text === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return mapsUrl(x.text + WHERE_SEP + MAP_COUNTRY)
 }
 
 /**

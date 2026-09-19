@@ -347,7 +347,7 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
  * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取的是某一条岗的
  * Windsor NS,看着像总部):两种地点各挂各的名字就不打架了 —— AI 查到的「所在地」提上来当「总部」行(本函数,
  * 原 hasOfficialPlaceOf 退役);提上来了简介里就不再重复出那一节(岗位地点那一行「在招地」同日晚撤)。
- * 中 / 韩界面能拼出核定译名的用译名(baseZhOf),拼不出照 AI 原句。
+ * 一律照 AI 原句的英文(同日 Frank「不要用 中文」:原先中 / 韩界面拼核定译名,出来是「渥太华, Ontario」半中半英)。
  * 同日 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa,真身 Mississauga —— 那条简介没有出处,是模型裸答)、
  * 「拿不到总部的就先 -」:只认有出处的简介;没有出处 / 没缓存 / 没这一节一律给「—」(那一行照出)。
  *
@@ -361,10 +361,6 @@ export function hqOf(x: BaseZhIn): string {
   const base = baseTextOf({ text: x.company.aiBrief })
   if (base === TEXT_NONE) {
     return DASH_EM
-  }
-  const local = baseZhOf(x)
-  if (local !== TEXT_NONE) {
-    return local
   }
   return base
 }
