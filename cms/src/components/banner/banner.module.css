@@ -400,6 +400,82 @@
 }
 
 /*
+ * 右下角槽位(2026-09-19 两块板的「更新时间」):小号白字压影,不折行、不被压窄;
+ * 槽里的件自带灰色的(time 桶的 Updated),在图上一律改随这里的白。
+ */
+.bodyRight {
+  /*
+   * 不被压窄(左块副题可以省略号,时间不能断)。
+   */
+  flex: none;
+
+  /*
+   * 与副题同号。
+   */
+  font-size: 12px;
+
+  /*
+   * 与副题同一档微打淡(2026-09-19 Frank「时间的颜色和前面的 命中保持一致」)。
+   */
+  opacity: 0.92;
+
+  /*
+   * 黑色柔影(压图保读)。
+   */
+  text-shadow: 0 1px 4px rgb(0 0 0 / 50%);
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+/*
+ * 槽里的件(含它的子孙)一律随槽的白字(类名写两遍抬权重:time 桶的 .updated 自带灰,同权重时谁后加载谁赢,不能赌顺序)。
+ */
+.bodyRight.bodyRight *,
+.bandRight.bandRight * {
+  color: inherit;
+}
+
+/*
+ * 渐变带形态的右槽:顶到最右,字号与副题同。
+ */
+.bandRight {
+  /*
+   * 顶到行尾。
+   */
+  margin-left: auto;
+
+  /*
+   * 与副题同号。
+   */
+  font-size: 12px;
+
+  /*
+   * 打淡。
+   */
+  opacity: 0.75;
+
+  /*
+   * 不折行。
+   */
+  white-space: nowrap;
+}
+
+@media (width <= 640px) {
+  /*
+   * 窄屏:左右两块改成上下叠(副题一行、右槽一行),都贴左下 —— 英文副题长,并排会撞(375px 实测)。
+   */
+  .body {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 2px;
+  }
+}
+
+/*
  * 图上标题的字影(压图保读)。
  */
 .hShadow {

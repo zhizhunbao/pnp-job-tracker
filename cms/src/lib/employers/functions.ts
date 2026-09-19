@@ -46,7 +46,7 @@ import type {
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   BroadDbRow, BroadOpt, CityDbRow, DistrictDbRow, EeDbRow, EnqueueExploreIn, ExploreDbRow, ExplorePendingIn, ExploreSavedOut,
-  ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, PoolAliasIn, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
+  ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, PoolAliasIn, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolBroadsIn, PoolBroadsOut, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
@@ -235,7 +235,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
   const provs = await fetchPoolProvs(db)
   const cities = await fetchPoolCities({ db, prov: f.prov })
   const districts = await fetchPoolDistricts({ db, prov: f.prov, city: f.city })
-  const broads = await fetchPoolBroads(db)
+  const broads = await fetchPoolBroads({ db, ee: f.ee })
   const ees = await fetchPoolEes(db)
   try {
     if (isScopedOf(f)) {
@@ -416,17 +416,24 @@ async function fetchPoolCities(input: PoolCitiesIn): PoolProvsOut {
 /**
  * 「全部类别」下拉的选项带 TTL 缓存(扫一遍池表的聚合,站级聚合禁每请求现算;查挂了 / 零行不进缓存;改 `CACHE.poolBroads`)。
  *
- * @param db 数据库连接。
- * @returns 选项清单(覆盖雇主多的在前)。
+ * 2026-09-19 联动:按当前 EE 类别分档缓存(类别值来自用户参数,键数封顶 POOL_PAGES_MAX)。
+ *
+ * @param input 连接与当前 EE 类别。
+ * @returns 选项清单(雇主多的在前)。
  */
-async function fetchPoolBroads(db: Db): PoolBroadsOut {
-  const hot = CACHE.poolBroads
+async function fetchPoolBroads(input: PoolBroadsIn): PoolBroadsOut {
+  const hot = CACHE.poolBroads.get(input.ee)
   if (hot != null && Date.now() - hot.at < CACHE_TTL_MS) {
     return hot.broads
   }
-  const broads = await queryRowsOrEmpty({ db, sql: SQL.EMPLOYER_POOL_BROADS, params: [], map: toBroadOpt })
+  const broads = await queryRowsOrEmpty({
+    db: input.db, sql: SQL.EMPLOYER_POOL_BROADS, params: [input.ee], map: toBroadOpt,
+  })
   if (broads.length > 0) {
-    CACHE.poolBroads = { at: Date.now(), broads }
+    if (CACHE.poolBroads.size >= POOL_PAGES_MAX) {
+      CACHE.poolBroads.clear()
+    }
+    CACHE.poolBroads.set(input.ee, { at: Date.now(), broads })
   }
   return broads
 }
@@ -1270,7 +1277,7 @@ export function resetEmployersCache(): void {
   CACHE.poolPages.clear()
   CACHE.poolCities.clear()
   CACHE.poolDistricts.clear()
-  CACHE.poolBroads = null
+  CACHE.poolBroads.clear()
   CACHE.poolEes = null
   CACHE.sponsors = null
   CACHE.sponsorsInflight = null

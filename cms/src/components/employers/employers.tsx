@@ -26,6 +26,7 @@
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
+import { Updated } from '@/components/time'
 import { BANNER_MODULE, SHELL_BOTTOM_PX, SHELL_TOP_PX } from './constants'
 import { EmployerBoard } from './employerboard'
 import { EmployerFilterBar } from './employerfilterbar'
@@ -49,7 +50,8 @@ export function Employers({ initial, initialFilters, updatedAt }: EmployersIn) {
           icon={<IconUsers />}
           title={p.t('de.title')}
           sub={noteTextOf({ t: p.t, f: p.f, total: p.data.total })}
-          images={BANNER_IMGS.employers} />
+          images={BANNER_IMGS.employers}
+          right={<Updated iso={p.updatedAt} t={p.t} />} />
         <div className={css.card}>
           <EmployerFilterBar p={p} />
           <EmployerBoard p={p} />

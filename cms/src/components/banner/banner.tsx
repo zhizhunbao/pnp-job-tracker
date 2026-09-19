@@ -27,6 +27,7 @@ export function Banner({
   title,
   sub,
   images,
+  right = null,
 }: BannerIn) {
   let imagesIn: readonly string[] | null = null
   if (images != null) {
@@ -34,13 +35,14 @@ export function Banner({
   }
   const c = useCarousel(imagesIn)
   if (c.imgs == null) {
-    return <GradientBanner module={module} icon={icon} title={title} sub={sub} />
+    return <GradientBanner module={module} icon={icon} title={title} sub={sub} right={right} />
   }
   return (
     <ImageBanner module={module}
       icon={icon}
       title={title}
       sub={sub}
+      right={right}
       imgs={c.imgs}
       idx={c.idx}
       reach={c.reach}

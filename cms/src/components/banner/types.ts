@@ -40,6 +40,11 @@ export type BannerIn = {
    */
   images?: readonly string[]
 
+  /**
+   * 右下角槽位(可省;2026-09-19 Frank「更新时间挪到 banner 右下角,可以做」:两块板的「更新时间」放这里,
+   * 筛选行少一件不能点的东西)。槽里的字由本件定成小号白字压影,窄屏放不下时掉到副题下面一行。
+   */
+  right?: React.ReactNode
 }
 
 /**
@@ -66,6 +71,10 @@ export type GradientBannerIn = {
    */
   sub: React.ReactNode
 
+  /**
+   * 右槽(顶到行尾);null = 不出。
+   */
+  right: React.ReactNode
 }
 
 /**
@@ -91,6 +100,11 @@ export type ImageBannerIn = {
    * 副题(可省 = null)。
    */
   sub: React.ReactNode
+
+  /**
+   * 右下角槽位;null = 不出。
+   */
+  right: React.ReactNode
 
   /**
    * 轮播图组(非空,Banner 选形时已判)。

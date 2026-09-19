@@ -1819,6 +1819,7 @@ function groupOf(x: WithIn): string {
 }
 
 /**
+ * 同日「这两个要能联动」:类别是大类的上级(照职位板)—— 换类别把大类清掉,大类的选项由服务端按类别收窄。
  * 造换在招 EE 类别的手柄(顺带回第一页;2026-09-19 Frank「类别 和 全部大类 雇主也是需要的吧」:与职位板「全部类别」同名同义)。
  *
  * @param x 当前筛选与落格。
@@ -1827,7 +1828,7 @@ function groupOf(x: WithIn): string {
 export function makeEe(x: FilterPickIn): PickFn {
   function onEe(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_EE })
-    x.setF(withOf({ f: x.f, ee: v, page: 0 }))
+    x.setF(withOf({ f: x.f, ee: v, broad: TEXT_NONE, page: 0 }))
   }
   return onEe
 }

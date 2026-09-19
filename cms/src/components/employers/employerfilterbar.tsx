@@ -21,7 +21,6 @@ import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
 import { ColPicker } from '@/components/table'
-import { Updated } from '@/components/time'
 import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE, TEXT_NONE } from './constants'
 import {
   anyFilterOf, broadKeysOf, caretOf, clearBtnClsOf, foldCountOf, makeBroadLabel, makeEeLabel,
@@ -83,7 +82,6 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           </Button>
         )}
         <div className={css.filtTail}>
-          <Updated iso={p.updatedAt} t={p.t} />
           <ColPicker pick={p.pick} boxRef={p.pickRef} words={pickWordsOf({ t: p.t, n: p.pick.n })} />
         </div>
       </div>

@@ -1672,6 +1672,21 @@ export type BroadsSlot = {
 }
 
 /**
+ * `fetchPoolBroads` 的入参。
+ */
+export type PoolBroadsIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 当前选的 EE 类别;空串 = 没选(给全部大类)。
+   */
+  ee: string
+}
+
+/**
  * `fetchPoolBroads` 的返回。
  */
 export type PoolBroadsOut = Promise<BroadOpt[]>
@@ -2101,9 +2116,9 @@ export type EmployersCache = {
   poolDistricts: Map<string, CitiesSlot>
 
   /**
-   * 「全部大类」下拉的选项;null = 冷。
+   * 「全部大类」下拉的选项:当前 EE 类别('' = 没选)→ 那一档的选项(类别是大类的上级,选项随它收窄;至多十来个键)。
    */
-  poolBroads: BroadsSlot | null
+  poolBroads: Map<string, BroadsSlot>
 
   /**
    * 「全部类别」(EE)下拉的选项(形同市那一格,清单放在 cities 格里);null = 冷。

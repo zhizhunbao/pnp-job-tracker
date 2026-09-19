@@ -28,7 +28,6 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
-import { Updated } from '@/components/time'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
 import {
   foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeEeChange, makeEeLabel, makeProvChange, makeProvLabel,
@@ -80,7 +79,6 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
           {b.t('clear')}
         </Button>
       )}
-      <Updated iso={b.data.updatedAt} t={b.t} />
       <ColFields b={b} boxRef={boxRef} />
     </div>
   )

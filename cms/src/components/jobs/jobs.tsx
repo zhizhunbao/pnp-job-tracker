@@ -30,6 +30,7 @@
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { cssOf } from '@/components/css'
 import { IconClipboard } from '@/components/icons'
+import { Updated } from '@/components/time'
 import { BANNER_MODULE } from './constants'
 import {
   mvBarTextOf, subTextOf,
@@ -65,7 +66,8 @@ export function Jobs(props: JobsIn) {
           sub={(
             <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })} />
           )}
-          images={BANNER_IMGS.jobs} />
+          images={BANNER_IMGS.jobs}
+          right={<Updated iso={b.data.updatedAt} t={b.t} />} />
         <BoardFilters b={b} boxRef={boxRef} />
         {b.matchView === false && <MatchEntry label={b.t('mv.entry')} onClick={b.gate.onToggle} />}
         {b.matchView && (

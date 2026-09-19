@@ -28,6 +28,7 @@ export function ImageBanner({
   icon,
   title,
   sub,
+  right,
   imgs,
   idx,
   reach,
@@ -60,6 +61,7 @@ export function ImageBanner({
           <h1 className={`${css.h1} ${css.hShadow}`}>{icon}{title}</h1>
           {sub != null && <div className={css.imgSub}>{sub}</div>}
         </div>
+        {right != null && <div className={css.bodyRight}>{right}</div>}
       </div>
       <BannerDots imgs={imgs} cur={cur} pick={pick} />
     </div>
