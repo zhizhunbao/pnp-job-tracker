@@ -295,8 +295,10 @@ BAMBOO_JOB_URL_TPL = "https://{token}.bamboohr.com/careers/{jid}"
 RECRUITEE_OFFERS_URL_TPL = "https://{token}.recruitee.com/api/offers/"
 """Recruitee 职位清单。"""
 
-SMART_LIST_URL_TPL = "https://api.smartrecruiters.com/v1/companies/{token}/postings?limit=100"
-"""SmartRecruiters 职位清单(单页 100 条)。"""
+SMART_LIST_URL_TPL = "https://api.smartrecruiters.com/v1/companies/{token}/postings?limit=100&country=ca"
+"""SmartRecruiters 职位清单(单页 100 条)。
+2026-09-19 加 country=ca:清单一页封顶 100 条,全球公司(Check Point 409 岗、Renesas 934 岗)的加拿大岗排不进前 100,
+抓回来的全是外国岗再被汇装丢掉;按国家筛后 Check Point 回 6 条加拿大岗。"""
 
 SMART_DETAIL_URL_TPL = "https://api.smartrecruiters.com/v1/companies/{token}/postings/{pid}"
 """SmartRecruiters 单岗详情(jobAd 分段)。"""

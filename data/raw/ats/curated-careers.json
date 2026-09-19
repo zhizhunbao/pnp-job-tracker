@@ -123,5 +123,51 @@
     "ats": "bamboohr",
     "status": "200",
     "hq": ""
+  },
+  {
+    "name": "Telesat",
+    "careers_url": "https://jobs.lever.co/telesat",
+    "ats": "lever",
+    "status": "200",
+    "hq": "Ottawa",
+    "website": "https://www.telesat.com/",
+    "region": "Ottawa (ON)",
+    "sectors": "Telecommunications, Wireless & Photonics",
+    "address": ""
+  },
+  {
+    "name": "Entrust",
+    "careers_url": "https://entrust.wd1.myworkdayjobs.com/EntrustCareers",
+    "ats": "myworkdayjobs",
+    "status": "200",
+    "hq": "Minneapolis, MN"
+  },
+  {
+    "name": "Mavenir",
+    "careers_url": "https://mavenir.wd1.myworkdayjobs.com/Mavenir_Careers",
+    "ats": "myworkdayjobs",
+    "status": "200",
+    "hq": "Richardson, TX"
+  },
+  {
+    "name": "Renesas Electronics Canada",
+    "careers_url": "https://jobs.smartrecruiters.com/RenesasElectronics",
+    "ats": "smartrecruiters",
+    "status": "200",
+    "hq": "Tokyo"
+  },
+  {
+    "name": "Nokia",
+    "careers_url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/",
+    "ats": "oraclecloud",
+    "status": "200",
+    "hq": "Espoo"
+  },
+  {
+    "name": "Ericsson Canada Inc.",
+    "careers_url": "https://jobs.ericsson.com/careers",
+    "ats": "eightfold",
+    "status": "200",
+    "hq": "Stockholm"
   }
 ]
