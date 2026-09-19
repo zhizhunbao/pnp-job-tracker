@@ -14,17 +14,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useColPick } from '@/components/table'
-import { COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE } from './constants'
+import {
+  ALIAS_KEYS_SEP, ALIAS_POLL_MS, ALIAS_POLL_ROUNDS_MAX, COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE,
+} from './constants'
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
-  addrQsOf, applyHomeProv, foldCountOf, makeCategory, reportSeen,
+  addrQsOf, aliasPollKeysOf, applyHomeProv, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
   makeCity, makeCloseJob, makeCloseModal, makeDistrict,
   makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type {
-  EmpJob, EmpModal, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PoolFilters, PoolPage, QCommitIn,
+  AliasPatch, AliasPollIn, EmpJob, EmpModal, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PoolFilters, PoolPage,
+  QCommitIn,
 } from './types'
 
 /**
@@ -75,11 +78,14 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     }
   }, [qs, addr])
 
+  const aliases = useAliasPoll({ lang, rows: data.rows })
+
   return {
     lang,
     t,
     f,
     data,
+    aliases,
     loading,
     qDraft,
     updatedAt: x.updatedAt,
@@ -103,6 +109,41 @@ export function useEmployersPage(x: EmployersIn): EmployersPanel {
     onClear: makeClear({ f, setF, setQDraft }),
     onMore: makeMore({ f, setF }),
   }
+}
+
+/**
+ * 灰字译名自动补(2026-09-19 Frank「我不想在刷新一下页面,才显示 中文灰字。我需要他自动显示」):板上有还没灰字的行时,
+ * 每隔 ALIAS_POLL_MS 拿这些行的键去问一次,问到的进补丁表,行构造那头只补灰字那一格 —— 不重取整页
+ * (「显示更多」是一页页接起来的,重取会把接好的列表打回一页)。接力方式:补丁表每轮换一份新的 → 本 effect 重跑 → 排下一轮;
+ * 要问的键变了(有进展 / 换了筛选)轮数清零,原地踏步满 ALIAS_POLL_ROUNDS_MAX 轮就停。
+ *
+ * @param x 界面语言与板上的行。
+ * @returns 补丁表。
+ */
+function useAliasPoll(x: AliasPollIn): AliasPatch {
+  const [patch, setPatch] = useState<AliasPatch>({})
+  const rounds = useRef(0)
+  const lastSig = useRef(TEXT_NONE)
+  const sig = aliasPollKeysOf({ lang: x.lang, rows: x.rows, patch }).join(ALIAS_KEYS_SEP)
+
+  useEffect(function pollAliases() {
+    if (sig !== lastSig.current) {
+      lastSig.current = sig
+      rounds.current = 0
+    }
+    if (sig === TEXT_NONE || rounds.current >= ALIAS_POLL_ROUNDS_MAX) {
+      return
+    }
+    const id = setTimeout(function askAliases() {
+      rounds.current += 1
+      void loadAliasPatch({ keys: sig.split(ALIAS_KEYS_SEP), patch, setPatch })
+    }, ALIAS_POLL_MS)
+    return function cancelAsk() {
+      clearTimeout(id)
+    }
+  }, [sig, patch])
+
+  return patch
 }
 
 /**

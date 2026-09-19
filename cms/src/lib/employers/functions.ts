@@ -47,7 +47,7 @@ import type {
   SponsorRows, SponsorRowsOut, StrList, WdEntity, WdGetIn, WdGetOut, WikidataHitOrNull, WikidataOut, ColumnDbRow,
   CompareJob, CompareJobDbRow, DifficultyDbRow, DifficultyObj, DifficultyPair, EmployerFacts,
   CityDbRow, DistrictDbRow, EeDbRow, EnqueueExploreIn, ExploreDbRow, ExplorePendingIn, ExploreSavedOut,
-  ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, PoolAliasIn, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
+  ExploreResult, ExploreResultJson, ExploreTodo, ExploreTodosOut, IdCell, LoadPoolAliasesIn, PoolAliasDbRow, PoolAliasIn, PoolAliasRow, PoolAliasesOut, SaveExploreIn, MaybeStr, OccDbRow, OccRow, PoolCitiesIn, PoolDistrictsIn, ReqDbRow, ReqRow, WithCitiesIn,
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
@@ -1584,6 +1584,35 @@ function poolAliasOf(x: PoolAliasIn): string {
     return own
   }
   return queued
+}
+
+/**
+ * 一批雇主现在的译名(板上已经开着的那一页隔一会儿来问;现查不缓存 —— 问的就是「刚翻好没有」)。查挂了回空数组。
+ *
+ * @param input 连接与洗净的池主键。
+ * @returns 逐家的译名与「队列办过没有」。
+ */
+export async function loadPoolAliases(input: LoadPoolAliasesIn): PoolAliasesOut {
+  if (input.keys.length === 0) {
+    return []
+  }
+  return queryRowsOrEmpty({ db: input.db, sql: SQL.EMPLOYER_POOL_ALIASES, params: [input.keys], map: toPoolAlias })
+}
+
+/**
+ * EMPLOYER_POOL_ALIASES 一行 → 一家雇主现在的译名(洗法与整页池行同一只 poolAliasOf)。
+ *
+ * @param r 原始行。
+ * @returns 译名行。
+ */
+function toPoolAlias(r: PoolAliasDbRow): PoolAliasRow {
+  let settled = false
+  if (r.x_status != null) {
+    settled = (EXPLORE_STATUSES as readonly string[]).includes(r.x_status)
+  }
+  return {
+    key: text(r.key), aliasZh: poolAliasOf({ r, ko: false }), aliasKo: poolAliasOf({ r, ko: true }), settled: settled,
+  }
 }
 
 /**

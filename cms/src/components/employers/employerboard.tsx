@@ -28,7 +28,7 @@ import css from './employers.module.css'
  */
 export function EmployerBoard({ p }: EmployerPanelIn) {
   const rows = toEmployerCellRows({
-    rows: p.data.rows, t: p.t, lang: p.lang, f: p.f, onOpen: p.peek.onOpenCompany,
+    rows: p.data.rows, t: p.t, lang: p.lang, f: p.f, onOpen: p.peek.onOpenCompany, aliases: p.aliases,
   })
   const empty = emptyTextOf({ t: p.t, f: p.f })
   return (

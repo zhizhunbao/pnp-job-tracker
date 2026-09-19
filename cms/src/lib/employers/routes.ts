@@ -35,11 +35,11 @@ import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
   aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
-  resetCompanyTrans, enqueueExplore, loadExplorePending, saveExploreResults,
+  resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody, EmployersRetransBody,
-  ExploreDoneBody, ExploreResultJson, ExploreSeenBody,
+  ExploreDoneBody, ExploreResultJson, ExploreSeenBody, PoolAliasesBody,
 } from './types'
 
 /**
@@ -98,6 +98,36 @@ export async function employersExploreRoute(req: Request): Promise<Response> {
   }
   await enqueueExplore({ db: await getDb(), keys })
   return Response.json({ ok: true, n: keys.length })
+}
+
+/**
+ * POST /api/employers/aliases:一批雇主现在的译名(2026-09-19 Frank「我不想在刷新一下页面,才显示 中文灰字。我需要他自动显示」)。
+ * 雇主板已经开着的那一页隔一会儿拿「还没灰字的那几行」的池主键来问,回来只补那一格。公开端点:键的洗法与入队同一套
+ * (限长、去重、一次最多 EXPLORE_KEYS_MAX 个);只读一条带主键数组的查询,不缓存。
+ *
+ * @param req 请求体 `{ keys: string[] }`。
+ * @returns `{ ok, rows }`。
+ */
+export async function employersAliasesRoute(req: Request): Promise<Response> {
+  let body: PoolAliasesBody = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false, rows: [] }, { status: BAD_REQUEST })
+  }
+  const keys: string[] = []
+  if (Array.isArray(body.keys)) {
+    for (const k of body.keys) {
+      if (typeof k === 'string' && k !== FILTER_UNSET && k.length <= EXPLORE_KEY_LEN_MAX && keys.includes(k) === false) {
+        keys.push(k)
+      }
+      if (keys.length >= EXPLORE_KEYS_MAX) {
+        break
+      }
+    }
+  }
+  const rows = await loadPoolAliases({ db: await getDb(), keys })
+  return Response.json({ ok: true, rows })
 }
 
 /**

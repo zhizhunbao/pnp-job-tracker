@@ -1170,6 +1170,11 @@ export type EmployerCellRowIn = {
    * 点雇主名开公司弹框的落格。
    */
   onOpen: OpenCompanyFn
+
+  /**
+   * 译名补丁(页面开着时后补回来的灰字;没有就是空表)。
+   */
+  aliases: AliasPatch
 }
 
 /**
@@ -1200,6 +1205,11 @@ export type EmployerCellRowsIn = {
    * 点雇主名开公司弹框的落格。
    */
   onOpen: OpenCompanyFn
+
+  /**
+   * 译名补丁(页面开着时后补回来的灰字;没有就是空表)。
+   */
+  aliases: AliasPatch
 }
 
 /**
@@ -1928,6 +1938,11 @@ export type EmployersPanel = {
    * 弹框层(公司弹框 + 它里面叠开的职位描述弹框)。
    */
   peek: EmpPeekPanel
+
+  /**
+   * 译名补丁(页面开着时后补回来的灰字)。
+   */
+  aliases: AliasPatch
 
   /**
    * 界面语言。
@@ -2748,6 +2763,131 @@ export type MoreIn = {
    * 筛选态落格。
    */
   setF: SetFilters
+}
+
+/**
+ * 一家雇主补回来的译名(按键问译名接口的一行;板上开着的那一页拿它补灰字)。
+ */
+export type AliasPatchRow = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 中文译名;'' = 还没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文译名;'' = 还没有。
+   */
+  aliasKo: string
+
+  /**
+   * 队列已经办过这一家:再问也不会变,不用再问它。
+   */
+  settled: boolean
+}
+
+/**
+ * 补丁表:池主键 → 补回来的译名(只装问到过的)。
+ */
+export type AliasPatch = Record<string, AliasPatchRow>
+
+/**
+ * 按键问译名接口的响应(线格式)。
+ */
+export type AliasesJson = {
+  /**
+   * 成没成。
+   */
+  ok?: boolean
+
+  /**
+   * 逐家的译名。
+   */
+  rows?: AliasPatchRow[] | null
+} | null
+
+/**
+ * aliasPollKeysOf 的入参。
+ */
+export type AliasPollKeysIn = {
+  /**
+   * 界面语言(英文界面不出灰字,不问)。
+   */
+  lang: Lang
+
+  /**
+   * 现在板上列着的行。
+   */
+  rows: PoolRow[]
+
+  /**
+   * 已经问到的补丁(办过的、补上了的不再问)。
+   */
+  patch: AliasPatch
+}
+
+/**
+ * loadAliasPatch 的入参。
+ */
+export type LoadAliasPatchIn = {
+  /**
+   * 这一轮要问的池主键。
+   */
+  keys: string[]
+
+  /**
+   * 手上的补丁(新问到的并进去)。
+   */
+  patch: AliasPatch
+
+  /**
+   * 补丁落格。
+   */
+  setPatch: AliasPatchSetFn
+}
+
+/**
+ * 补丁落格的形状(React 的 setState;外部库规定的签名,这里只用「给新值」那一支)。
+ */
+export type AliasPatchSetFn = (next: AliasPatch) => void
+
+/**
+ * useAliasPoll 的入参。
+ */
+export type AliasPollIn = {
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 现在板上列着的行。
+   */
+  rows: PoolRow[]
+}
+
+/**
+ * patchedAliasOf 的入参。
+ */
+export type PatchedAliasIn = {
+  /**
+   * 这一行事实。
+   */
+  r: PoolRow
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 补丁表。
+   */
+  patch: AliasPatch
 }
 
 /**

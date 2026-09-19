@@ -1617,13 +1617,113 @@ export type ExploreTodosOut = Promise<ExploreTodo[]>
 export type ExploreSavedOut = Promise<number>
 
 /**
+ * 译名那几格的原始行(公司表的 + 探索队列的 + 队列状态):整页池行 PoolDbRow 带着它们,按键问译名的 EMPLOYER_POOL_ALIASES 只有它们。
+ */
+export type PoolAliasDbRow = {
+  /**
+   * 池主键。
+   */
+  key: string | null
+
+  /**
+   * 公司中文别名(LEFT JOIN companies;无公司页 = null)。
+   */
+  alias_zh: string | null
+
+  /**
+   * 公司韩文别名。
+   */
+  alias_ko: string | null
+
+  /**
+   * 公司表译文版本;NULL = 老批次(别名过期)。
+   */
+  trans_v: number | string | null
+
+  /**
+   * 探索队列状态;null = 没进过队。
+   */
+  x_status: string | null
+
+  /**
+   * 探索队列翻好的中文名。
+   */
+  x_alias_zh: string | null
+
+  /**
+   * 探索队列翻好的韩文名。
+   */
+  x_alias_ko: string | null
+
+  /**
+   * 探索队列译文版本。
+   */
+  x_trans_v: number | string | null
+}
+
+/**
+ * 一家雇主现在的译名(按键问译名接口的一行)。
+ */
+export type PoolAliasRow = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 中文译名;'' = 还没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文译名;'' = 还没有。
+   */
+  aliasKo: string
+
+  /**
+   * 队列已经办过这一家(办完 / 跳过 / 没翻成):再问也不会变,板上不用再问它。
+   */
+  settled: boolean
+}
+
+/**
+ * 按键问译名的请求体(线格式)。
+ */
+export type PoolAliasesBody = {
+  /**
+   * 板上还没灰字的那几行的池主键。
+   */
+  keys?: string[] | null
+}
+
+/**
+ * loadPoolAliases 的入参。
+ */
+export type LoadPoolAliasesIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 已洗净的池主键(去重、限长、限数)。
+   */
+  keys: string[]
+}
+
+/**
+ * loadPoolAliases 的出参。
+ */
+export type PoolAliasesOut = Promise<PoolAliasRow[]>
+
+/**
  * `poolAliasOf` 的入参。
  */
 export type PoolAliasIn = {
   /**
-   * 原始池行。
+   * 原始池行(只读译名那几格)。
    */
-  r: PoolDbRow
+  r: PoolAliasDbRow
 
   /**
    * 要哪一门:true = 韩文,false = 中文。

@@ -962,6 +962,32 @@ export const P_CITY = 'city'
 export const EXPLORE_API_URL = '/api/employers/explore'
 
 /**
+ * 按键问译名的端点(2026-09-19 Frank「我不想在刷新一下页面,才显示 中文灰字。我需要他自动显示」:
+ * 板上还没灰字的行隔一会儿来问一次,回来只补那一格)。
+ */
+export const ALIASES_API_URL = '/api/employers/aliases'
+
+/**
+ * 问译名的间隔(毫秒;后台工人一分钟一轮,十几秒问一次够勤,也不至于把接口打成热点)。
+ */
+export const ALIAS_POLL_MS = 15000
+
+/**
+ * 同一页最多问几轮(15 秒一轮,60 轮 = 一刻钟;页面挂着不动也不会问到天荒地老)。
+ */
+export const ALIAS_POLL_ROUNDS_MAX = 60
+
+/**
+ * 一次最多带几个键去问(与接口那头 EXPLORE_KEYS_MAX 对齐,超了的接口不收)。
+ */
+export const ALIAS_POLL_KEYS_MAX = 200
+
+/**
+ * 要问的键拼成一串时的分隔(池主键是 slug,不含逗号;拼成串是为了当 effect 的依赖 —— 数组每帧都是新的)。
+ */
+export const ALIAS_KEYS_SEP = ','
+
+/**
  * 入队请求的方法。
  */
 export const METHOD_POST = 'POST'

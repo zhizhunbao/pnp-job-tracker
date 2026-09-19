@@ -58,6 +58,7 @@ import {
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
   EV_PROP_CITY, EV_PROP_DISTRICT, EV_PROP_EE, EV_PROP_SECTOR, EV_PROP_SORT, EXPLORE_API_URL,
+  ALIAS_POLL_KEYS_MAX, ALIASES_API_URL,
   HDR_CONTENT_TYPE,
   METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
@@ -92,6 +93,7 @@ import type {
   EmpSortState, EntryToggleIn, FilterPickIn, FiltersIn, FoldToggleIn, HeadSortFn,
   ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
+  AliasesJson, AliasPatch, AliasPollKeysIn, LoadAliasPatchIn, PatchedAliasIn,
   ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
@@ -187,7 +189,7 @@ function maybePositiveTextOf(n: number | null): string {
 export function toEmployerCellRows(x: EmployerCellRowsIn): EmployerCellRow[] {
   const out = []
   for (const r of x.rows) {
-    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, onOpen: x.onOpen }))
+    out.push(toEmployerCellRow({ r, t: x.t, lang: x.lang, f: x.f, onOpen: x.onOpen, aliases: x.aliases }))
   }
   return out
 }
@@ -233,7 +235,7 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     sectorText: x.t(KEY_SECTOR_HEAD + sectorKeyOf(r.sector)),
     categoryText: categoryTextOf({ t: x.t, r }),
     eeText: eeTextOf({ t: x.t, r, first: x.f.ee }),
-    alias: aliasOf({ lang: x.lang, aliasZh: r.aliasZh, aliasKo: r.aliasKo }),
+    alias: patchedAliasOf({ r, lang: x.lang, patch: x.aliases }),
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
     districtText: r.district,
@@ -1727,6 +1729,83 @@ export async function reportSeen(x: ReportSeenIn): Promise<void> {
   } catch {
     return
   }
+}
+
+/**
+ * 这一行该出的灰字译名:行里自带的优先;没有就看页面开着时后补回来的(2026-09-19 Frank「我不想在刷新一下页面,
+ * 才显示 中文灰字。我需要他自动显示」)。
+ *
+ * @param x 这一行、界面语言与补丁表。
+ * @returns 译名;'' = 还没有。
+ */
+export function patchedAliasOf(x: PatchedAliasIn): string {
+  const own = aliasOf({ lang: x.lang, aliasZh: x.r.aliasZh, aliasKo: x.r.aliasKo })
+  if (own !== TEXT_NONE) {
+    return own
+  }
+  const got = x.patch[x.r.key]
+  if (got == null) {
+    return TEXT_NONE
+  }
+  return aliasOf({ lang: x.lang, aliasZh: got.aliasZh, aliasKo: got.aliasKo })
+}
+
+/**
+ * 这一轮要去问译名的池主键:中 / 韩文界面下,板上还没灰字、队列也还没办过的行(办过还是空的再问也不会变);
+ * 一次最多 ALIAS_POLL_KEYS_MAX 个。
+ *
+ * @param x 界面语言、板上的行与手上的补丁。
+ * @returns 要问的键;[] = 不用问。
+ */
+export function aliasPollKeysOf(x: AliasPollKeysIn): string[] {
+  const keys: string[] = []
+  if (x.lang !== LANG_ZH && x.lang !== LANG_KO) {
+    return keys
+  }
+  for (const r of x.rows) {
+    const got = x.patch[r.key]
+    const settled = got != null && got.settled
+    const blank = patchedAliasOf({ r, lang: x.lang, patch: x.patch }) === TEXT_NONE
+    if (settled === false && blank && keys.includes(r.key) === false) {
+      keys.push(r.key)
+    }
+    if (keys.length >= ALIAS_POLL_KEYS_MAX) {
+      break
+    }
+  }
+  return keys
+}
+
+/**
+ * 去问一轮译名,问到的并进补丁表。问挂了也落一份原样的新表 —— 轮询靠「补丁表换了新的」接力下一轮,
+ * 不落就断了(断网一会儿再连上也能接着问;总轮数由 useAliasPoll 封顶)。
+ *
+ * @param x 要问的键、手上的补丁与落格。
+ * @returns 无。
+ */
+export async function loadAliasPatch(x: LoadAliasPatchIn): Promise<void> {
+  const next: AliasPatch = {}
+  for (const k of Object.keys(x.patch)) {
+    const old = x.patch[k]
+    if (old != null) {
+      next[k] = old
+    }
+  }
+  try {
+    const res = await fetch(ALIASES_API_URL, {
+      method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: MIME_JSON }, body: JSON.stringify({ keys: x.keys }),
+    })
+    const j: AliasesJson = await res.json()
+    if (j != null && j.rows != null) {
+      for (const row of j.rows) {
+        next[row.key] = row
+      }
+    }
+  } catch {
+    x.setPatch(next)
+    return
+  }
+  x.setPatch(next)
 }
 
 /**

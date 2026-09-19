@@ -525,6 +525,16 @@ export const EMPLOYER_EXPLORE_ENQUEUE = `INSERT INTO employer_explore (key, name
      ON CONFLICT (key) DO UPDATE SET seen_count = employer_explore.seen_count + 1, last_seen = now()`
 
 /**
+ * 一批雇主现在的译名(2026-09-19 Frank「我不想在刷新一下页面,才显示 中文灰字。我需要他自动显示」):雇主板已经开着的那一页
+ * 隔一会儿拿还没灰字的那几行的池主键来问一次,回来只补那一格 —— 不重取整页(「显示更多」是一页页接起来的)。
+ * 取的格与 employerPoolPage 的译名那几格同名同源(公司表的 + 探索队列的 + 队列状态),洗法同一只 poolAliasOf。$1=池主键数组。
+ */
+export const EMPLOYER_POOL_ALIASES = `SELECT p.key, c.alias_zh, c.alias_ko, c.trans_v,
+      x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v
+     FROM employer_pool p LEFT JOIN companies c ON c.slug = p.slug LEFT JOIN employer_explore x ON x.key = p.key
+    WHERE p.key = ANY($1::varchar[])`
+
+/**
  * 探索队列取待办(后台工人来取活):被列出次数多的、最近被列出的在前。$1=条数。
  */
 export const EMPLOYER_EXPLORE_PENDING = `SELECT e.key, e.name, p.broads FROM employer_explore e
