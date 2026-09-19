@@ -53,6 +53,11 @@ export type PoolFilters = {
   prov: string
 
   /**
+   * 主市(英文市名);空串 = 不筛。只在选了省时才有值(换省即清)。
+   */
+  city: string
+
+  /**
    * 雇主类别(federal / government / municipal / indigenous / public / private);空串 = 不筛。
    */
   sector: string
@@ -232,6 +237,11 @@ export type PoolPage = {
    * 省下拉的选项。
    */
   provs: string[]
+
+  /**
+   * 市下拉的选项(当前省里雇主的主市,雇主多的在前);没选省 = 空数组。
+   */
+  cities: string[]
 }
 
 /**
@@ -1864,6 +1874,11 @@ export type EmployersPanel = {
   onSector: PickFn
 
   /**
+   * 换主市(顺带回第一页)。
+   */
+  onCity: PickFn
+
+  /**
    * 换「经验」下拉(选中 = 只看无经验可投;2026-09-18 由胶囊开关改下拉)。
    */
   onEntry: PickFn
@@ -2163,6 +2178,11 @@ export type WithIn = {
    * 换省。
    */
   prov?: string
+
+  /**
+   * 换主市。
+   */
+  city?: string
 
   /**
    * 换雇主类别。

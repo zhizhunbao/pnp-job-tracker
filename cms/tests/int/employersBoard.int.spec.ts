@@ -13,11 +13,17 @@ import { isPoolSort, isScopedOf, isSearchOf, toPoolRow } from '@/lib/employers/f
 import type { PoolFilters } from '@/lib/employers'
 
 const F = (p: Partial<PoolFilters> = {}): PoolFilters =>
-  ({ group: '', prov: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
+  ({ group: '', prov: '', city: '', sector: '', program: '', noc: '', entry: false, lmia: false, q: '', sort: 'star', dir: 'desc', page: 0, ...p })
 
 describe('参数规范化', () => {
   const of = (o: Record<string, string>) =>
     normalizePoolFilters({ get: (k) => (o[k] == null ? null : o[k]) })
+
+  it('市跟着省走:省合法才留市,没省的市丢掉(2026-09-18 市筛选)', () => {
+    expect(of({ prov: 'on', city: 'Ottawa' }).city).toBe('Ottawa')
+    expect(of({ city: 'Ottawa' }).city).toBe('')
+    expect(of({ prov: 'zzz', city: 'Ottawa' }).city).toBe('')
+  })
 
   it('行业组只认八个键,大小写归一', () => {
     expect(of({ group: 'stem' }).group).toBe('stem')
@@ -149,7 +155,7 @@ describe('loadEmployerPage', () => {
     expect(p.rows).toHaveLength(1)
     expect(p.provs).toEqual(['NS', 'ON'])
     const q = seen.find((s) => s.sql.includes('DISTINCT ON (employer_key)'))
-    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, ''])
+    expect(q?.params).toEqual(['', '', false, '', false, 50, 0, '', ''])
     expect(q?.sql).toContain('ORDER BY b.star DESC NULLS LAST, b.star DESC, p.open_jobs_total DESC')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
     const before = seen.length
@@ -171,12 +177,12 @@ describe('loadEmployerPage', () => {
     expect(p.total).toBe(137)
     expect(p.pageSize).toBe(50)
     const q = seen.find((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))
-    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, ''])
+    expect(q?.params).toEqual(['stem', 'NS', true, '', true, 50, 0, '', ''])
     expect(q?.sql).toContain('ORDER BY b.open_jobs ASC NULLS LAST, b.star DESC')
     expect(q?.sql).not.toContain('DROP')
     const last = await loadEmployerPage({ db: pool, filters: F({ group: 'stem', page: 2 }), pageSize: 50 })
     const q2 = seen.filter((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p')).at(-1)
-    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, ''])
+    expect(q2?.params).toEqual(['stem', '', false, '', false, 50, 100, '', ''])
     expect(last.page).toBe(2)
   })
 
@@ -187,7 +193,7 @@ describe('loadEmployerPage', () => {
     expect(p.rows).toHaveLength(1)
     expect(p.total).toBe(1)
     const q = seen.find((s) => s.sql.includes('ILIKE'))
-    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, ''])
+    expect(q?.params).toEqual(['tim hortons', 'NS', false, '', false, 50, 0, '', ''])
     expect(q?.sql).not.toContain('tim hortons')
     expect(seen.some((s) => s.sql.includes('employer_pool_buckets b JOIN employer_pool p'))).toBe(false)
   })

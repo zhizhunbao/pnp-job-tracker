@@ -24,6 +24,11 @@ export const CACHE: EmployersCache = {
   poolProvsInflight: null,
 
   /**
+   * 市下拉选项(2026-09-18 市筛选;按省一格)。开机是空的。
+   */
+  poolCities: new Map(),
+
+  /**
    * 全组页缓存(2026-09-13 默认全量出榜)。开机是空的。
    */
   poolPages: new Map(),

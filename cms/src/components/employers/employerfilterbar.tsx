@@ -22,7 +22,7 @@ import { Search } from '@/components/search'
 import { Select } from '@/components/select'
 import { ColPicker } from '@/components/table'
 import { Updated } from '@/components/time'
-import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE } from './constants'
+import { BTN_SECONDARY, KEY_ENTRY_ON, KEY_LMIA_ON, OPTS_ON, SEARCH_SIZE, TEXT_NONE } from './constants'
 import {
   anyFilterOf, caretOf, clearBtnClsOf, foldCountOf, makeGroupLabel, makeOnLabel, makeProvLabel, makeSectorLabel,
   moreBtnClsOf, onValueOf, pickWordsOf,
@@ -47,6 +47,9 @@ export function EmployerFilterBar({ p }: EmployerPanelIn) {
           opts={p.data.provs}
           all={p.t('all.prov')}
           labelOf={makeProvLabel()} />
+        {p.f.prov !== TEXT_NONE && (
+          <Select value={p.f.city} onChange={p.onCity} opts={p.data.cities} all={p.t('all.city')} />
+        )}
         <Select value={p.f.group}
           onChange={p.onGroup}
           opts={POOL_GROUPS}

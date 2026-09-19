@@ -502,6 +502,12 @@ export const PNP_OCCUPATIONS_ALL = `SELECT province, stream, label, type, noc, n
 export const EMPLOYER_POOL_PROVS = `SELECT province FROM employer_pool WHERE COALESCE(province, '') <> '' GROUP BY province ORDER BY province`
 
 /**
+ * 雇主池市下拉的选项:一个省里雇主的主市,雇主多的在前(2026-09-18 Frank「城市筛选也加上吧」;安省有 600 个主市,
+ * 长尾多是一家雇主的小地方,只给前 200;lib/employers 进程内按省 TTL 缓存)。$1=省码。
+ */
+export const EMPLOYER_POOL_CITIES = `SELECT city FROM employer_pool WHERE province = $1 AND COALESCE(city, '') <> '' GROUP BY city ORDER BY count(*) DESC, city LIMIT 200`
+
+/**
  * 一家公司在雇主池里的指定雇主事实(公司详情页「担保记录」卡补「指定雇主」行;2026-09-13 晚 /fe 雇主页:
  * 板上说指定、落点页整页没这四个字)。$1=公司 slug;池里没这家就是零行。
  */
@@ -575,6 +581,7 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $1=行业组键,$2=省码或 ''(不筛),$3=只看无经验可投,$4=制度或 ''(直达参数 program=,指定项目清单含它),
  * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
+ * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
  * total 用窗口函数随行带回,一次往返。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
@@ -597,6 +604,7 @@ export const employerPoolPage = (order: string) => `
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR b.lmia_skilled > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
+      AND ($9 = '' OR p.city = $9)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 
@@ -657,6 +665,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
  * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
+ * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
  *
  * @param order 已拼好的 ORDER BY 片段(lib/employers 按白名单键与方向拼)。
  * @returns SELECT 语句。
@@ -681,6 +690,7 @@ export const employerPoolAll = (order: string) => `
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR p.lmia_skilled_total > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
+      AND ($9 = '' OR p.city = $9)
     ORDER BY ${order}
     LIMIT $6 OFFSET $7`
 

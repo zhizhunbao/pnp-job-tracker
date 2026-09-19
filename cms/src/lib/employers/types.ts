@@ -44,6 +44,11 @@ export type PoolFilters = {
   prov: string
 
   /**
+   * 主市(英文市名);空串 = 不筛。只在选了省时才有值。
+   */
+  city: string
+
+  /**
    * 雇主类别(POOL_SECTORS 之一,`private` = 库里 NULL 的那批);空串 = 不筛。
    */
   sector: string
@@ -277,6 +282,11 @@ export type PoolPage = {
    * 省下拉的选项(池里雇主的主省分布;进程内 TTL 缓存)。
    */
   provs: string[]
+
+  /**
+   * 市下拉的选项(当前省里雇主的主市,雇主多的在前);没选省 = 空数组。
+   */
+  cities: string[]
 
   /**
    * 池构建日(本页最新一行的;'' = 本页无行)。
@@ -1357,6 +1367,61 @@ export type PoolAllIn = {
 }
 
 /**
+ * `EMPLOYER_POOL_CITIES` 的原始行。
+ */
+export type CityDbRow = {
+  /**
+   * 市名。
+   */
+  city: string | null
+}
+
+/**
+ * 市下拉选项缓存的一份(一个省一份)。
+ */
+export type CitiesSlot = {
+  /**
+   * 灌入时刻(Date.now())。
+   */
+  at: number
+
+  /**
+   * 市名清单(雇主多的在前)。
+   */
+  cities: string[]
+}
+
+/**
+ * `fetchPoolCities` 的入参。
+ */
+export type PoolCitiesIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 省码;空串 = 没选省(不查,回空)。
+   */
+  prov: string
+}
+
+/**
+ * `withCitiesOf` 的入参。
+ */
+export type WithCitiesIn = {
+  /**
+   * 取好的一页。
+   */
+  page: PoolPage
+
+  /**
+   * 当前省的市选项。
+   */
+  cities: string[]
+}
+
+/**
  * `EMPLOYER_POOL_PROVS` 的原始行。
  */
 export type ProvDbRow = {
@@ -1644,6 +1709,11 @@ export type EmployersCache = {
    * 省选项刷新的单飞 promise;null = 没有在飞的。
    */
   poolProvsInflight: Promise<string[]> | null
+
+  /**
+   * 市下拉选项:省码 → 那个省的市清单(至多十三个键)。
+   */
+  poolCities: Map<string, CitiesSlot>
 
   /**
    * 全组页缓存:参数键 → 整页(DISTINCT ON 扫桶表一遍 ~290ms,站级聚合禁每请求现算)。

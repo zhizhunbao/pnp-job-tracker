@@ -48,14 +48,14 @@ import {
   CARET_DOWN, CARET_UP, KEY_FIELDS, PCT_FULL, W_PCT_DECIMALS, W_PCT_UNIT, W_POOL_LMIA,
   CTL_CLS, DIR_ASC, DIR_DESC, EMP_API_URL, EMP_URL, EMPLOYERS_DESC, EMPLOYERS_TITLE_TAIL, ENTRY_ON, EV_FILTER,
   EV_KIND_NONE, EV_KIND_SEARCH, EV_PAGE, EV_PROP_ENTRY, EV_PROP_GROUP, EV_PROP_KEY, EV_PROP_LMIA, EV_PROP_PROV,
-  EV_PROP_SECTOR, EV_PROP_SORT,
+  EV_PROP_CITY, EV_PROP_SECTOR, EV_PROP_SORT,
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, GROUP_KEY_HEAD, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
-  P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
+  P_CITY, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP, TAG_OK, TAG_REGION,
   TEXT_NONE, TONE_DIM, TONE_NG, TONE_OK,
   URL_COMPANY_HEAD, VERDICT_FACTOR_KEY, VERDICT_MET, VERDICT_NG_HEAD, VERDICT_OK_HEAD, VERDICT_PUBLIC, VERDICT_RANK,
   VERDICT_SHORT, VERDICT_UNKNOWN, WHERE_PROV_MAX, WHERE_SEP, W_POOL_ACT, W_POOL_DESIGNATED,
@@ -1528,6 +1528,9 @@ export function qsOf(x: FiltersIn): string {
   if (x.f.prov !== TEXT_NONE) {
     p.set(P_PROV, x.f.prov)
   }
+  if (x.f.city !== TEXT_NONE) {
+    p.set(P_CITY, x.f.city)
+  }
   if (x.f.sector !== TEXT_NONE) {
     p.set(P_SECTOR, x.f.sector)
   }
@@ -1621,6 +1624,7 @@ function morePageOf(x: MorePageIn): PoolPage {
     page: x.next.page,
     pageSize: x.next.pageSize,
     provs: x.next.provs,
+    cities: x.next.cities,
   }
 }
 
@@ -1653,6 +1657,10 @@ function withOf(x: WithIn): PoolFilters {
   let prov = x.f.prov
   if (x.prov != null) {
     prov = x.prov
+  }
+  let city = x.f.city
+  if (x.city != null) {
+    city = x.city
   }
   let sector = x.f.sector
   if (x.sector != null) {
@@ -1689,6 +1697,7 @@ function withOf(x: WithIn): PoolFilters {
   return {
     group,
     prov,
+    city,
     sector,
     program,
     noc: x.f.noc,
@@ -1724,9 +1733,23 @@ export function makeGroup(x: FilterPickIn): PickFn {
 export function makeProv(x: FilterPickIn): PickFn {
   function onProv(v: string): void {
     track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_PROV })
-    x.setF(withOf({ f: x.f, prov: v, page: 0 }))
+    x.setF(withOf({ f: x.f, prov: v, city: TEXT_NONE, page: 0 }))
   }
   return onProv
+}
+
+/**
+ * 造换市的手柄(顺带回第一页;2026-09-18 Frank「城市筛选也加上吧」:市跟着省走,换省即清)。
+ *
+ * @param x 当前筛选与落格。
+ * @returns 下拉的 onChange。
+ */
+export function makeCity(x: FilterPickIn): PickFn {
+  function onCity(v: string): void {
+    track(EV_FILTER, { [EV_PROP_KEY]: EV_PROP_CITY })
+    x.setF(withOf({ f: x.f, city: v, page: 0 }))
+  }
+  return onCity
 }
 
 /**
@@ -1931,6 +1954,7 @@ export function makeClear(x: ClearIn): ClickFn {
     x.setF(withOf({
       f: x.f,
       prov: TEXT_NONE,
+      city: TEXT_NONE,
       sector: TEXT_NONE,
       program: TEXT_NONE,
       entry: false,
@@ -1960,7 +1984,7 @@ export function applyHomeProv(x: MoreIn): void {
   if (prov === TEXT_NONE) {
     return
   }
-  x.setF(withOf({ f: x.f, prov, page: 0 }))
+  x.setF(withOf({ f: x.f, prov, city: TEXT_NONE, page: 0 }))
 }
 
 /**

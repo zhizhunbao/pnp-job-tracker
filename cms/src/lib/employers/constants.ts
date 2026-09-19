@@ -136,7 +136,7 @@ export const PARAM = {
   page: 'page',
 
   /**
-   * 社区/城市。
+   * 社区/城市(2026-09-18 起雇主板市筛选用它:英文市名原样,只在选了省时生效)。
    */
   city: 'city',
 
@@ -479,6 +479,11 @@ export const CAP_PROGRAM = 8
  * URL 参数的保留长度:省码。
  */
 export const CAP_PROV = 4
+
+/**
+ * URL 参数的保留长度:市名(库里最长的市名 40 字上下)。
+ */
+export const CAP_CITY = 60
 
 /**
  * URL 参数的保留长度:雇主类别键(最长 indigenous 10 字)。

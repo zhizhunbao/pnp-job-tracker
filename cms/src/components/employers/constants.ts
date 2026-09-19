@@ -123,6 +123,11 @@ export const EV_PAGE = 'emp-page'
 export const EV_PROP_PROV = 'prov'
 
 /**
+ * 埋点分组值:换的是市那一格(2026-09-18)。
+ */
+export const EV_PROP_CITY = 'city'
+
+/**
  * 埋点分组值:换的是雇主类别那一格(2026-09-18)。
  */
 export const EV_PROP_SECTOR = 'sector'
@@ -813,6 +818,11 @@ export const EV_KIND_NONE = 'none'
  * 查询参数名:省码。
  */
 export const P_PROV = 'prov'
+
+/**
+ * query 参数名:主市(跟着省走)。
+ */
+export const P_CITY = 'city'
 
 /**
  * query 参数名:雇主类别。
