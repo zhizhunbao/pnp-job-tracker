@@ -685,6 +685,17 @@ export const WIKI_WORD_JOIN = ' '
 export const LOC_JOIN = ', '
 
 /**
+ * 「在招地」一行收着时列出的城数(2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」;
+ * 其余的收在「展开其余 N 个」钮后面,城市是全量不设上限)。
+ */
+export const HIRING_TOP_N = 3
+
+/**
+ * 「在招地」里市名与省码之间的空格(「Windsor NS」,与城市格灰注「英文名 省码」同形)。
+ */
+export const HIRING_CODE_JOIN = ' '
+
+/**
  * 雇主板(公司详情面包屑的上一级,2026-09-14)。
  */
 export const URL_EMPLOYERS = '/employers'

@@ -62,7 +62,7 @@ import { CACHE } from './variables'
 import type {
   AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
-  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
+  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyPlaceRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
   EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
@@ -1511,7 +1511,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
     aiFetched: CELL_NONE, description: CELL_NONE, address: CELL_NONE, province: poolCellOf(r.province),
     lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: poolCellOf(r.lmia_last_quarter), lmiaStreams: CELL_NONE,
     lmiaSkilled: null, lmiaNocs: [], designatedPrograms: programs, designatedProvinces: provinces,
-    openCount: 0, jobs: [],
+    openCount: 0, jobs: [], places: [],
   }
 }
 
@@ -1571,8 +1571,9 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     return null
   }
   const companyId = Number(c.id)
-  const [jr, cntRows, lmiaNocs, designated] = await Promise.all([
+  const [jr, places, cntRows, lmiaNocs, designated] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_JOBS, params: [companyId], map: toCompanyJob }),
+    queryRows({ db: input.db, sql: SQL.COMPANY_HIRING_PLACES, params: [companyId], map: toCompanyPlace }),
     queryRows({ db: input.db, sql: SQL.COMPANY_OPEN_COUNT, params: [companyId], map: passRow }),
     lmiaNocsOf({ db: input.db, companyId: companyId }),
     designatedOf({ db: input.db, slug: String(c.slug) }),
@@ -1630,6 +1631,7 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
     designatedPrograms: designated.programs, designatedProvinces: designated.provinces,
     openCount: openCount,
     jobs: jr,
+    places: places,
   }
 }
 
@@ -3302,6 +3304,19 @@ export function toCompanyJob(j: Row): CompanyJobRow {
     gradeChannel: numOrNull(j.grade_channel), noc: text(j.noc), nocTitle: text(j.noc_title),
     nocTitleZh: text(j.noc_title_zh), nocTitleKo: text(j.noc_title_ko),
     teer: numOrNull(j.teer), salaryText: salaryText, datePosted: datePosted,
+  }
+}
+
+/**
+ * COMPANY_HIRING_PLACES 一行 → 公司在招的一座城。
+ *
+ * @param r 原始行。
+ * @returns 在招城市行。
+ */
+function toCompanyPlace(r: Row): CompanyPlaceRow {
+  return {
+    city: text(r.city), province: text(r.province), cityZh: text(r.city_zh), cityKo: text(r.city_ko),
+    n: count(r.n),
   }
 }
 

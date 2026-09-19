@@ -16,6 +16,9 @@
  * 「地址」只在库里有街址时出(与简介之间的分割线只看有没有简介,身份行至少有公司名,Frank「横线又没了????」);AI 简介的「所在地」是模型查到的总部,留在简介段里不冒充地址(两种地点各归各,不再互相顶替)。
  * 2026-09-18 Frank「类别应该放到基本信息吧」:「政府机构」绿章撤(详情页正文顶那一行、弹框卡题旁那一枚都撤,
  * companytopinfo.tsx 随之退役),改成身份行里的「类别」一行,紧跟公司名称;不是政府机构的不出这一行。
+ * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取到某一条岗的 Windsor NS,
+ * 看着像总部):「省」「市」两行撤,换「总部」(AI 简介的「所在地」提上来,没缓存不出)与「在招地」(在招岗的全部城市,
+ * 收着列三座、可展开,companyhiringrow.tsx)两行;09-14 那条「AI 所在地留在简介段里」随之作废 —— 提成「总部」行后简介里不再重复出那一节。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -24,13 +27,14 @@ import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
+import { CompanyHiringRow } from './companyhiringrow'
 import { CompanyIntro } from './companyintro'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, cityOf, hasDescOf, hasIdOf, hasOfficialPlaceOf, homeProvinceOf, isGovCompany, provFullOf, wikiTitleOf,
+  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, hqOf, isGovCompany, wikiTitleOf,
 } from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
@@ -46,8 +50,8 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
-  const hasRealAddr = company.address !== TEXT_NONE
   const prov = homeProvinceOf({ company })
+  const hq = hqOf({ t, lang, company })
   const hasId = hasIdOf({ company, addr }) || prov !== TEXT_NONE
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
@@ -86,8 +90,8 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
             </LinkButton>
           </Row>
         )}
-        {prov !== TEXT_NONE && <Row k={t('col.province')}>{provFullOf({ t, code: prov })}</Row>}
-        {cityOf({ company }) !== TEXT_NONE && <Row k={t('col.city')}>{cityOf({ company })}</Row>}
+        {hq !== TEXT_NONE && <Row k={t('co.hq')}>{hq}</Row>}
+        <CompanyHiringRow t={t} lang={lang} places={company.places} />
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}
@@ -104,7 +108,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        skipBase={hasRealAddr || hasOfficialPlaceOf({ company })}
+        skipBase={hq !== TEXT_NONE}
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy} />
     </div>

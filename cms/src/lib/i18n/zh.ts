@@ -555,7 +555,7 @@ export const jobsZh = {
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '雇主信号',   // #192 Frank「改个名更合适」:四维是粗筛信号不是打分,与「移民信号/相似雇主」词汇一致
   // E8-09 B 公司详情页 /companies/[slug]
-  'co.crumb': '公司', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '雇主类型', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
+  'co.crumb': '雇主', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '雇主类型', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   // 担保记录深化 + 相似雇主(E8-09 加深)
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   // 股别名去黑话(Frank 08-09「高薪股是什么意思?用户一看就能明白」):「股」=stream 硬译,清出台面
@@ -614,6 +614,7 @@ export const jobsZh = {
   'eelist.allCats': '看全部 {n} 个类别',   // #155 未命中时全景默认收起
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
+  'co.hq': '总部', 'co.hiring': '在招地',
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',

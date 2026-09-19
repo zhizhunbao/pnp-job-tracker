@@ -30,6 +30,7 @@ import {
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
+  HIRING_CODE_JOIN, HIRING_TOP_N,
   MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
@@ -40,7 +41,8 @@ import { cssOf } from '@/components/css'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
-  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
+  DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HiringNamesIn, HiringPlaceIn,
+  HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
   PanelBody, PanelBodyIn,
@@ -340,16 +342,66 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
 }
 
 /**
- * 基本信息卡有没有官方地点(招聘省或市任一)—— 有就不出 AI 简介的「所在地」节。
- * 沿革:2026-09-14 Frank「AI 探索的所在地不对啊」先改成换显官方地点;同日晚「是 AI 查到的地址,如果和上面的不一致,
+ * 基本信息卡「总部」行:AI 简介「所在地」一节的正文。
+ * 沿革(原 hasOfficialPlaceOf:有官方地点就不出 AI 简介的「所在地」节):2026-09-14 Frank「AI 探索的所在地不对啊」先改成换显官方地点;同日晚「是 AI 查到的地址,如果和上面的不一致,
  * 可以不显示吗」改成省对不上才藏(baseConflictOf);再晚「这个老不稳定 地址」(Micromatter:官方 Surrey、AI 说 Burnaby,
  * 省对上市对不上照样出)定为:官方地点在,这一节就不出 —— 省 / 市两行已是官方地点,AI 那句只会添乱。
+ * 2026-09-19 Frank「省 市 去掉,改成 总部 和 在招地 两个」(Compass Group Canada 实拍:省 / 市取的是某一条岗的
+ * Windsor NS,看着像总部):两种地点各挂各的名字就不打架了 —— AI 查到的「所在地」提上来当「总部」行(本函数,
+ * 原 hasOfficialPlaceOf 退役),岗位地点归「在招地」行(hiringNamesOf);提上来了简介里就不再重复出那一节。
+ * 中 / 韩界面能拼出核定译名的用译名(baseZhOf),拼不出照 AI 原句。
  *
- * @param x 公司档案。
- * @returns 有官方地点 = true(隐藏「所在地」节)。
+ * @param x 取词函数、界面语言与公司档案。
+ * @returns 总部一行的文案;'' = AI 简介没缓存或没有这一节(这一行不出)。
  */
-export function hasOfficialPlaceOf(x: CompanyOnlyIn): boolean {
-  return homeProvinceOf(x) !== TEXT_NONE || cityOf(x) !== TEXT_NONE
+export function hqOf(x: BaseZhIn): string {
+  const base = baseTextOf({ text: x.company.aiBrief })
+  if (base === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const local = baseZhOf(x)
+  if (local !== TEXT_NONE) {
+    return local
+  }
+  return base
+}
+
+/**
+ * 基本信息卡「在招地」行的文案:这家公司在招岗的城市,岗多的在前,市名跟界面语言、后缀省码。
+ * 2026-09-19 Frank「别最多给 50 条啊」「你可以加一个 展开和收起的功能不就完事了」:城市是单独查的全量
+ * (COMPANY_HIRING_PLACES,不从那 50 条在招岗里数),收着列前 HIRING_TOP_N 座,展开列全部。
+ *
+ * 一座城一段,页面一段一个不折行的小块、分隔记号夹在小块之间 —— 窄屏只许在城与城之间换行,
+ * 不许把市名从中间折断(375px 实拍「汉 / 密尔顿 ON」);分隔记号不能包进小块(英文逗号后的空格是唯一的
+ * 换行位置,包进去整行顶出屏幕,同日实拍)。
+ *
+ * @param x 界面语言、全部在招城市与展开态。
+ * @returns 逐座城的文案。
+ */
+export function hiringNamesOf(x: HiringNamesIn): string[] {
+  let shown = x.places
+  if (x.all === false) {
+    shown = x.places.slice(0, HIRING_TOP_N)
+  }
+  const names: string[] = []
+  for (const p of shown) {
+    names.push(hiringPlaceOf({ p, lang: x.lang }))
+  }
+  return names
+}
+
+/**
+ * 「在招地」里的一座城:界面语言市名 + 省码(「Windsor NS」);岗上没写省就只出市名。
+ *
+ * @param x 在招的一座城与界面语言。
+ * @returns 一座城的文案。
+ */
+function hiringPlaceOf(x: HiringPlaceIn): string {
+  const name = cityLocalOf({ j: x.p, lang: x.lang })
+  if (x.p.province === TEXT_NONE) {
+    return name
+  }
+  return name + HIRING_CODE_JOIN + x.p.province
 }
 
 /**
