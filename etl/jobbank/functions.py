@@ -588,7 +588,7 @@ def parse_jobbank_details() -> None:
             raw_file = have.get(pid_of(job))
             if not should_parse(ShouldParseIn(job=job, raw_file=raw_file, reparse=reparse)):
                 continue
-            if is_backfill_only(job):
+            if is_backfill_only(job) and not reparse:
                 if backfilled >= DETAIL_BACKFILL_MAX:
                     continue
                 backfilled += 1
