@@ -45,7 +45,8 @@ from fetch.functions import make_client, make_tls_context
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
     ABS_FLOOR, ADDRESS_CLIP, ALL_PROVINCES, APPRENTICE_TITLE_RE, APPRENTICE_URL_RE, ATLANTIC,
-    BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, BULLET_TRIM_CHARS, CAT_AIP_OUT, CAT_CITY_IS_PROV,
+    BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, STAR_ITEM_RE, STAR_ITEM_TO, STAR_RE,
+    BULLET_TRIM_CHARS, CAT_AIP_OUT, CAT_CITY_IS_PROV,
     CAT_DISTRICT_OUT, CAT_OTTAWA_FALSE, CAT_POSTAL_MISMATCH, CAT_PROV_MISSING, CAT_SALARY_HIGH,
     CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S, CHAIN_MAX_PAGES, CITY_PROV_RE,
     CLASS_ATTRIBUTE_VALUE, COMPANY_SLUG_MAX, DATE_DIR_RE, DATE_FMTS, DATE_POSTED_PREFIX,
@@ -666,10 +667,26 @@ def description_of(soup: SoupNodeLike) -> str:
     rich = rich_text(soup.select_one(SEL_REQUIREMENTS))
     if len(rich) >= RICH_MIN_LEN:
         return rich
-    raw = spaced_text(soup.select_one(SEL_DESCRIPTION))
+    raw = lined_text(soup.select_one(SEL_DESCRIPTION))
     if ESCAPED_HTML_RE.search(raw) is not None:
         return rich_text(BeautifulSoup(raw, PARSER_HTML))
     return raw
+
+
+def lined_text(node: object) -> str:
+    """节点文本保留换行(行内压空白、连续空行并成一个段落空行)—— [property=description] 的取法;节点为空给空串。
+
+    2026-09-19 Frank 实拍「这种格式是连的」「格式是乱的」(jb:50323214 art instructor,转自 indeed.com):
+    官方页这一格的纯文本自带换行(小标题、空行、列表项各占一行),原先走 spaced_text 把换行也压成空格,
+    7,435 条聚合帖(indeed.com 5,378 / CareerBeacon 980 / SaskJobs 580 …)落成一整行,页面只能靠星号猜着切行。
+    """
+    if node is None:
+        return ""
+    lines = []
+    for line in cast(SoupNodeLike, node).get_text().split(LINE_BREAK):
+        marked = STAR_ITEM_RE.sub(STAR_ITEM_TO, line.strip())
+        lines.append(WS_RE.sub(SPACE_SEP, STAR_RE.sub("", marked)).strip())
+    return BLANK_LINES_RE.sub(PARA_BREAK, LINE_BREAK.join(lines)).strip()
 
 
 def rich_text(node: object) -> str:

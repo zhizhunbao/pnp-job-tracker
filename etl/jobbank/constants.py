@@ -428,6 +428,15 @@ PARA_BREAK = "\n\n"
 BLANK_LINES_RE = re.compile(r"\n{3,}")
 """三个以上换行折成两个。"""
 
+STAR_ITEM_RE = re.compile(r"^\*\s+")
+"""行首「* 」= 聚合帖(indeed.com 等)纯文本里的列表项记号,lined_text 换成「• 」(页面保真轨约定圆点由数据层给)。"""
+
+STAR_ITEM_TO = "• "
+"""行首列表项记号的替身(行内用,不带 BULLET_PREFIX 的前导换行)。"""
+
+STAR_RE = re.compile(r"\*+")
+"""其余星号 = 强调记号(*小标题*)的残渣,整个剥掉(真实 JD 不用星号行文,页面猜测轨同口径)。"""
+
 SEL_REQUIREMENTS = ".job-posting-detail-requirements"
 """详情页里的可见结构区(带 h4/列表),描述首选它。"""
 
