@@ -22,7 +22,9 @@ cms 侧封顶 EXPLORE_TAKE_MAX = 300)。本地验收可压小(EXPLORE_LIMIT=3)�
 META = {
     "role": "explore",
     "method": "httpx",       # 对应 etl/sched/Dockerfile 通用轻镜像(只打 cms 接口与局域网 Ollama,无浏览器)
-    "interval": 600,         # 10 分钟一轮:用户列出过的雇主,下一次有人再看时译名大概率已经在了
+    "interval": 60,          # 1 分钟一轮(2026-09-19 由 600 改:Frank「我不想在刷新一下页面,才显示 中文灰字。我需要他自动显示」——
+                             # 板上开着的那一页每 15 秒来问一次译名,工人一分钟一轮,列出来一两分钟内灰字自己补上;
+                             # 没活的那一轮只是一次取活请求,不打模型)
     "seed": False,           # 不产 mart,不灌库(结果经接口直接落队列表)
     "ping": True,            # 本角色唯一单元
 }
