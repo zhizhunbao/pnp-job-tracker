@@ -2579,6 +2579,10 @@ ATS_REMOTE_RE = re.compile(
 2026-09-19 Frank「远程岗按总部算渥太华」:公司本部在渥太华的,这类岗算渥太华(区留空)。起因:Solink 19 岗里 14 个、
 Rewind 3 个全是这种写法,原规则按「判不出是渥太华」整批丢。带别的地名的(Montreal, QC / Italy / United States)不在此列,照旧丢。"""
 
+OTTAWA_LOOKALIKE_RE = re.compile(r"new orleans|nouvelle[- ]orl[eé]ans", re.I)
+"""长得像渥太华社区名的外地地名:判社区前先从文本里拿掉(2026-09-19 实撞:Check Point 的「Legal Counsel — New Orleans, LA」
+整词命中 orleans → 判成渥太华 Orléans 区进了板)。发现新的撞名往这里加。"""
+
 K_HQ = "hq"
 """公司档(profile.json)的键:本部所在市(人工核定;空串 = 没核过)。"""
 

@@ -46,7 +46,7 @@ from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
-    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
+    AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
     CITIES_DONE_TPL, CITIES_OUT_TPL,
     ALLOC_INCL_PREFIX, ALLOC_YEAR_PREFIX, IN_IRCC_PR_YEARS, MACRO_KEY_ALLOC_INCL, IN_STATCAN_DIR, K_BY_GEO, K_BY_YEAR, K_INVITATIONS,
     EE_INV_CAT_KEY, K_INV_BY_YEAR,
@@ -4604,7 +4604,8 @@ def normalize_ottawa(x: OttawaLocIn) -> dict | None:
 
 
 def ottawa_district_of(text: str) -> str:
-    """文本里整词命中的社区规范名(长名先试);没命中给空串。"""
+    """文本里整词命中的社区规范名(长名先试);没命中给空串。撞名的外地地名(New Orleans)先拿掉再判。"""
+    text = OTTAWA_LOOKALIKE_RE.sub("", text)
     for key in OTTAWA_DISTRICT_KEYS:
         if re.search(WORD_BOUND_TPL.format(key=re.escape(key)), text):
             return OTTAWA_DISTRICTS[key]

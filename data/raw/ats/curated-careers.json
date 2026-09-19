@@ -109,5 +109,19 @@
   {
     "name": "Cerio",
     "hq": "Ottawa"
+  },
+  {
+    "name": "Checkpoint Software Technologies",
+    "careers_url": "https://jobs.smartrecruiters.com/CheckPointSoftwareTechnologies2",
+    "ats": "smartrecruiters",
+    "status": "200",
+    "hq": "Tel Aviv"
+  },
+  {
+    "name": "GEMTEC Consulting Engineers and Scientists Limited",
+    "careers_url": "https://gemtec.bamboohr.com/careers",
+    "ats": "bamboohr",
+    "status": "200",
+    "hq": ""
   }
 ]
