@@ -166,8 +166,9 @@ class CareerScanRow(BaseModel):
     ats: str = ""
     """ATS 平台名。"""
 
-    status: str = ""
-    """探测状态码/错误。"""
+    status: str = Field(default="", coerce_numbers_to_str=True)
+    """探测状态码/错误(存量 -careers.json 里记的是数字 200,进域转成字符串 —— 2026-09-19 实撞:
+    这格按 str 校验后 folders 步对着存量数据直接 ValidationError,一司一档从此建不出来)。"""
 
     note: str = ""
     """探测备注。"""

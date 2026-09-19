@@ -46,7 +46,7 @@ from company.constants import (
     FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FORMAT_JSON, FOUND_JD, FOUND_SEARCHED,
     GENERIC_MAIL, GOV_DOMAIN_SUFFIX, GUARD_TIMEOUT_S, HDR_REFERER, HDR_USER_AGENT, HREF_ATTR,
     HTML_PARSER, HTTPS_PREFIX, ID_SEP, IN_CAREERS_DIRECTORY, IN_ENRICH_ATS, IN_ENRICH_JD_DETAILS,
-    IN_ENRICH_POSTINGS, IN_FACTS_COMPANIES, IN_FACTS_JOBS, IN_FOLDERS_CAREERS,
+    IN_ENRICH_POSTINGS, IN_FACTS_COMPANIES, IN_FACTS_JOBS, IN_FOLDERS_CAREERS, IN_FOLDERS_CURATED,
     IN_FOLDERS_DIRECTORY, INDEX_FILE, ISO_UTC_OFFSET, ISO_Z, JD_HEAD_LEN, JD_URL_LINE_RE,
     KANATA_ADDR_SEL, KANATA_AJAX_ACTION, KANATA_AJAX_URL, KANATA_CARD_SEL, KANATA_COL_SEL,
     KANATA_DESC_SEL, KANATA_LBL_EMAIL, KANATA_LBL_LOCATION, KANATA_LBL_PHONE, KANATA_LBL_WEBSITE,
@@ -215,6 +215,13 @@ def scrape_kanata_directory() -> None:
 # =========================================================================
 
 
+def curated_rows() -> list:
+    """人工核定的招聘入口表(IN_FOLDERS_CURATED);文件不在 = 空表。"""
+    if not IN_FOLDERS_CURATED.exists():
+        return []
+    return json.loads(IN_FOLDERS_CURATED.read_text(encoding=TEXT_ENCODING))
+
+
 def build_company_folders() -> None:
     """一司一档入口:profile.json(+careers.json)+ _index.json。
 
@@ -226,6 +233,14 @@ def build_company_folders() -> None:
         for d in json.loads(IN_FOLDERS_CAREERS.read_text(encoding=TEXT_ENCODING)):
             scan = CareerScanRow.model_validate(d)
             careers_by_name[scan.name.lower()] = scan
+    listed = set()
+    for d in companies:
+        listed.add(CompanyRow.model_validate(d).name.lower())
+    for d in curated_rows():
+        scan = CareerScanRow.model_validate(d)
+        careers_by_name[scan.name.lower()] = scan
+        if scan.name.lower() not in listed:
+            companies.append(d)
     OUT_FOLDERS_ROOT.mkdir(parents=True, exist_ok=True)
     seen: dict[str, int] = {}
     made = careers_written = 0

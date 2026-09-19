@@ -488,6 +488,12 @@ IN_FOLDERS_DIRECTORY = paths.RAW_KANATA / "kanata-north.json"
 IN_FOLDERS_CAREERS = paths.RAW_KANATA / "kanata-north-careers.json"
 """段3 输入:careers 定位结果(段4 的产物;可缺,缺则只写 profile)。"""
 
+IN_FOLDERS_CURATED = paths.RAW_KANATA / "curated-careers.json"
+"""段3 输入:人工核定的招聘入口表(2026-09-19 Frank「可以,做第 1 批」;可缺)。一行 = 目录行身份格 + careers_url + ats。
+起因:自动探测只认招聘落地页上的 ATS 指纹,大公司的职位列表藏在第二、三层(Ciena / Mitel 的 Workday 站点落地页上没有),
+渥太华 137 家里真抓到岗的只有 19 家。这张表里的行**盖过**自动探测结果(同名以这里为准),目录里没有的公司直接补进目录
+(Lumentum / Giatec 不在 Kanata North 名录里)。地址是用浏览器逐家点到职位列表页记下来的,不是猜的。"""
+
 OUT_FOLDERS_ROOT = paths.COMPANIES
 """段3 输出:一司一档的根(processed/ats;paths.COMPANIES 已含地域语义)。"""
 PROFILE_FILE = "profile.json"

@@ -37,6 +37,7 @@ from ats.constants import (
     OUT_JD_INDEX, PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JOBS_INDEX_TPL,
     ACCEPT_JSON, ADDR_RE, ADDR_STRIP_CHARS, ANCHORED_RE, ATS_BAMBOOHR, ATS_GREENHOUSE, ATS_LEVER,
     ATS_RECRUITEE, ATS_SMARTRECRUITERS, ATS_WORKABLE, BAD_AMOUNTS, BAMBOO_DETAIL_URL_TPL,
+    ASHBY_JOBS_URL_TPL, ATS_ASHBY, K_COUNTRY, K_COMP_SUMMARY, K_IS_LISTED, K_JOB_URL, K_PUBLISHED_AT_CAMEL,
     BAMBOO_JOB_URL_TPL, BAMBOO_LIST_URL_TPL, BLANK_LINES_RE, CLIENT_TIMEOUT_S, DASH, DIR_JOBS,
     DOT_SEP, ENC_UTF8, ERR_ATS_TPL, ERR_WORKDAY_TPL, FILE_CAREERS_JSON, FILE_JOBS_JSON,
     GREENHOUSE_JOBS_URL_TPL, HDR_ACCEPT, IN_COMPANIES, JOB_ID_FALLBACK, JOB_ID_MAX_LEN, JOB_ID_RE,
@@ -197,7 +198,13 @@ def scrape_company(x: CompanyIn) -> CompanyOut:
 
 
 def ats_token(x: TokenIn) -> str:
-    """从 careers 页 HTML 里认这家的 board token;页取不到或认不出给空串。"""
+    """从 careers 页 HTML 里认这家的 board token;页取不到或认不出给空串。
+    地址本身就是 ATS 地址(人工核定表里记的)时直接从地址认,不用再取页。"""
+    direct = TOKEN_RE[x.ats].search(x.careers_url)
+    if direct is not None:
+        for group in direct.groups():
+            if group:
+                return group
     html = ""
     try:
         html = x.client.get(x.careers_url).text
@@ -227,6 +234,8 @@ def fetch_ats_jobs(x: AtsFetchIn) -> AtsFetchOut:
             return AtsFetchOut(jobs=smartrecruiters_jobs(x), failed=False)
         if x.ats == ATS_WORKABLE:
             return AtsFetchOut(jobs=workable_jobs(x), failed=False)
+        if x.ats == ATS_ASHBY:
+            return AtsFetchOut(jobs=ashby_jobs(x), failed=False)
     except Exception as e:  # noqa: BLE001 — 一家 ATS 抓炸不该断整轮(原脚本同款,改成留痕)
         err(ERR_ATS_TPL.format(ats=x.ats, token=x.token), e)
         return AtsFetchOut(jobs=[], failed=True)
@@ -418,17 +427,41 @@ def workable_jobs(x: AtsFetchIn) -> list:
 
 
 def to_workable_job(row: dict) -> AtsJob:
-    """Workable 载荷 → AtsJob(地点可能是 {location_str} 也可能是裸串)。"""
+    """Workable 载荷 → AtsJob(地点可能是 {location_str} 也可能是裸串;两样都没有就拿顶层的 city / state / country 拼 ——
+    2026-09-19 March Networks 实撞:账号清单里地点只给顶层三格,地点落空串,汇装按「判不出是渥太华」整批丢掉,一直 0 岗)。"""
     raw_location = row.get(K_LOCATION)
     location = row.get(K_LOCATION, "")
     if isinstance(raw_location, dict):
         location = raw_location.get(K_LOCATION_STR, "")
+    if not location:
+        location = join_parts([row.get(K_CITY, ""), row.get(K_STATE, ""), row.get(K_COUNTRY, "")])
     description = row.get(K_DESCRIPTION, "") or ""
     return AtsJob(title=row.get(K_TITLE, ""), location=location,
                   url=row.get(K_URL) or row.get(K_APPLICATION_URL, ""),
                   department=row.get(K_DEPARTMENT, ""),
                   posted=iso_of(row.get(K_PUBLISHED_ON, "")), address=address_of(description),
                   description=description)
+
+
+def ashby_jobs(x: AtsFetchIn) -> list:
+    """Ashby 公开清单(只收公开挂出的岗)。"""
+    payload = json_obj(x.client.get(ASHBY_JOBS_URL_TPL.format(token=x.token)))
+    out = []
+    for row in payload.get(K_JOBS, []):
+        if row.get(K_IS_LISTED) is False:
+            continue
+        out.append(to_ashby_job(row))
+    return out
+
+
+def to_ashby_job(row: dict) -> AtsJob:
+    """Ashby 载荷 → AtsJob(薪资只在公司公开时才有一行摘要)。"""
+    body = row.get(K_DESCRIPTION_PLAIN, "") or ""
+    compensation = row.get(K_COMPENSATION) or {}
+    return AtsJob(title=row.get(K_TITLE, ""), location=row.get(K_LOCATION, "") or "",
+                  url=row.get(K_JOB_URL, ""), department=row.get(K_DEPARTMENT, "") or "",
+                  posted=iso_of(row.get(K_PUBLISHED_AT_CAMEL)), address=address_of(body),
+                  salary=compensation.get(K_COMP_SUMMARY, "") or "", description=body)
 
 
 def workday_targets(x: WorkdayFindIn) -> list:
@@ -440,7 +473,7 @@ def workday_targets(x: WorkdayFindIn) -> list:
         return []
     seen = set()
     out = []
-    for host, site in WD_HOST_RE.findall(html):
+    for host, site in WD_HOST_RE.findall(x.careers_url) + WD_HOST_RE.findall(html):
         if site.lower() in WD_SKIP_SITES:
             continue
         if (host, site) in seen:

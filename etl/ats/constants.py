@@ -141,8 +141,11 @@ ATS_SMARTRECRUITERS = "smartrecruiters"
 ATS_WORKABLE = "workable"
 """ATS 名:Workable。"""
 
+ATS_ASHBY = "ashby"
+"""ATS 名:Ashby(2026-09-19 立;首家 Solink —— 档案里记的还是 BambooHR,实测已搬到 Ashby,所以一直 0 岗;Rewind 同家)。"""
+
 SUPPORTED = {ATS_GREENHOUSE, ATS_LEVER, ATS_BAMBOOHR, ATS_RECRUITEE,
-             ATS_SMARTRECRUITERS, ATS_WORKABLE}
+             ATS_SMARTRECRUITERS, ATS_WORKABLE, ATS_ASHBY}
 """有干净公开 JSON 的六家 —— 只抓这些;其余(icims/teamtailor/dayforce/bullhorn/
 applytojob)记进跳过计数,留人工跟进。"""
 
@@ -207,6 +210,7 @@ TOKEN_RE = {
     ATS_RECRUITEE: re.compile(r"([a-z0-9\-]+)\.recruitee\.com", re.I),
     ATS_SMARTRECRUITERS: re.compile(r"smartrecruiters\.com/(?:companies/)?([A-Za-z0-9]+)", re.I),
     ATS_WORKABLE: re.compile(r"apply\.workable\.com/([a-z0-9\-]+)|([a-z0-9\-]+)\.workable\.com", re.I),
+    ATS_ASHBY: re.compile(r"jobs\.ashbyhq\.com/([A-Za-z0-9_.\-]+)", re.I),
 }
 """从 careers 页 HTML 里认 board token 的六条正则(原 _token() 体内的 pats 表,
 re.I 由原 re.search 的旗子转成编译期旗子,行为同)。"""
@@ -216,6 +220,21 @@ GREENHOUSE_JOBS_URL_TPL = "https://boards-api.greenhouse.io/v1/boards/{token}/jo
 
 LEVER_JOBS_URL_TPL = "https://api.lever.co/v0/postings/{token}?mode=json"
 """Lever 职位清单(公开 postings API)。"""
+
+ASHBY_JOBS_URL_TPL = "https://api.ashbyhq.com/posting-api/job-board/{token}?includeCompensation=true"
+"""Ashby 职位清单(公开 posting API,连描述与薪资一起给)。"""
+
+K_IS_LISTED = "isListed"
+"""Ashby 职位键:是否公开挂出(False = 内部岗,不收)。"""
+
+K_JOB_URL = "jobUrl"
+"""Ashby 职位键:帖子公开页地址。"""
+
+K_PUBLISHED_AT_CAMEL = "publishedAt"
+"""Ashby 职位键:发布时刻(ISO)。"""
+
+K_COMP_SUMMARY = "compensationTierSummary"
+"""Ashby 薪资键:一行薪资摘要(compensation 对象里;公司没公开就没有)。"""
 
 BAMBOO_LIST_URL_TPL = "https://{token}.bamboohr.com/careers/list"
 """BambooHR 职位清单(只有标题/地点,描述要逐岗取详情)。"""
@@ -401,6 +420,9 @@ K_CITY = "city"
 
 K_STATE = "state"
 """BambooHR 地点子键:省/州。"""
+
+K_COUNTRY = "country"
+"""Workable 职位顶层键:国家(与 city / state 一起兜地点)。"""
 
 K_COMPENSATION = "compensation"
 """BambooHR 详情键:结构化薪资文本。"""

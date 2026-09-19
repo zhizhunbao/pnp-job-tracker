@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Ciena Corporation Canada",
+    "careers_url": "https://ciena.wd5.myworkdayjobs.com/Careers",
+    "ats": "myworkdayjobs",
+    "status": "200"
+  },
+  {
+    "name": "Mitel",
+    "careers_url": "https://mitel.wd3.myworkdayjobs.com/mitelcareers",
+    "ats": "myworkdayjobs",
+    "status": "200"
+  },
+  {
+    "name": "Solink Corporation",
+    "careers_url": "https://jobs.ashbyhq.com/solink",
+    "ats": "ashby",
+    "status": "200"
+  },
+  {
+    "name": "March Networks",
+    "careers_url": "https://apply.workable.com/march-networks/",
+    "ats": "workable",
+    "status": "200"
+  },
+  {
+    "name": "Lumentum",
+    "website": "https://www.lumentum.com/",
+    "region": "Ottawa (ON)",
+    "sectors": "Telecommunications, Wireless & Photonics",
+    "address": "",
+    "careers_url": "https://lumentum.wd5.myworkdayjobs.com/LITE",
+    "ats": "myworkdayjobs",
+    "status": "200"
+  },
+  {
+    "name": "Giatec Scientific Inc.",
+    "website": "https://www.giatecscientific.com/",
+    "region": "Ottawa (ON)",
+    "sectors": "Software",
+    "address": "",
+    "careers_url": "https://giatecscientific.bamboohr.com/careers",
+    "ats": "bamboohr",
+    "status": "200"
+  },
+  {
+    "name": "Rewind",
+    "website": "https://rewind.com/",
+    "region": "Ottawa (ON)",
+    "sectors": "Software",
+    "address": "",
+    "careers_url": "https://jobs.ashbyhq.com/rewind",
+    "ats": "ashby",
+    "status": "200"
+  }
+]
