@@ -174,6 +174,11 @@ export type PoolRow = {
   address: string
 
   /**
+   * 真总部一行字(街址、市、省码,英文原样;公司表 hq_address / hq_city / hq_province 三格拼好,2026-09-20);空串 = 库里没有。
+   */
+  hq: string
+
+  /**
    * 主市的人工核定中文译名(cities.name_zh;2026-09-13 地点列接 CityNameCell 双行形);空串 = 译名表外。
    */
   cityZh: string
@@ -1959,6 +1964,21 @@ export type PoolDbRow = {
    * 公司地址(LEFT JOIN companies;Job Bank 帖子上的雇主地址或 ATS 名单里人工记的;没记 = null)。
    */
   address: string | null
+
+  /**
+   * 真总部街址(LEFT JOIN companies;官网页面原句核对过的,2026-09-20;没有 = null)。
+   */
+  hq_address: string | null
+
+  /**
+   * 真总部所在市(官网没标的由 Wikidata 兜底;没有 = null)。
+   */
+  hq_city: string | null
+
+  /**
+   * 真总部所在省(加拿大两位省码;外国总部原样;没有 = null)。
+   */
+  hq_province: string | null
 
   /**
    * 探索队列里的状态(LEFT JOIN employer_explore;没进过队 = null)。

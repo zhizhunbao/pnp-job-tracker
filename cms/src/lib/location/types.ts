@@ -102,6 +102,26 @@ export type MapQueryIn = {
 }
 
 /**
+ * `hqLineOf` 的入参:公司真总部三格(companies 的 hq_address / hq_city / hq_province;'' = 这一格没有)。
+ */
+export type HqLineIn = {
+  /**
+   * 总部街址(只到街)。
+   */
+  address: string
+
+  /**
+   * 总部所在市。
+   */
+  city: string
+
+  /**
+   * 总部所在省(加拿大两位省码;外国总部原样)。
+   */
+  province: string
+}
+
+/**
  * `cleanProvs` 的入参。
  */
 export type CleanProvsIn = {

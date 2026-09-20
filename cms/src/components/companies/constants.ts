@@ -120,8 +120,10 @@ export const TARGET_BLANK = '_blank'
 /**
  * K 调查简介五节的标记,数组顺序 = 渲染顺序(#158:先说做什么,再说在哪、多大、
  * 何时成立,最后补注)。正则也按这张表拼,加一节要三处一起改(marks / 题键表 / 正则)。
+ * 2026-09-20 加后三节 OFFICES / NEWCOMERS / BENEFITS(官网整理记录里过了页面原句核对的三节,数据层 mart 接在官网版简介后面;
+ * 设计稿 docs/design/公司官网定期抓取-20260919.md 第三节,节标记与 etl/mart 的 SITE_BRIEF_SECS 同名同序)。
  */
-export const CO_SEC_MARKS = ['WHAT', 'BASE', 'SIZE', 'FOUNDED', 'NOTE']
+export const CO_SEC_MARKS = ['WHAT', 'BASE', 'SIZE', 'FOUNDED', 'NOTE', 'OFFICES', 'NEWCOMERS', 'BENEFITS']
 
 /**
  * 五节标记 → 小标题的文案键(#158 公司简介三节起家,后补 FOUNDED / NOTE 两节)。
@@ -151,18 +153,33 @@ export const CO_SEC_KEYS: Record<string, string> = {
    * 补注(前四节装不下的一句)。
    */
   NOTE: 'co.f.note',
+
+  /**
+   * 其他办公地点(除了总部还在哪;官网写了才有)。
+   */
+  OFFICES: 'co.f.offices',
+
+  /**
+   * 官网对新移民 / 外籍员工怎么说(只认官网原句,没提就没有这一节)。
+   */
+  NEWCOMERS: 'co.f.newcomers',
+
+  /**
+   * 福利与怎么投(官网 Careers 页写的)。
+   */
+  BENEFITS: 'co.f.benefits',
 }
 
 /**
  * 按五节标记切分简介原文的正则(带捕获组 —— `split` 会把标记本身也留在结果里,
  * 于是「标记, 正文, 标记, 正文…」交替成对取)。
  */
-export const CO_SEC_SPLIT_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/
+export const CO_SEC_SPLIT_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE|OFFICES|NEWCOMERS|BENEFITS)\]/
 
 /**
  * 判简介是不是存量散文(整段没有任何五节标记 = 老格式,整段渲一块不切节)。
  */
-export const CO_SEC_HAS_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE)\]/
+export const CO_SEC_HAS_RE = /\[(WHAT|BASE|SIZE|FOUNDED|NOTE|OFFICES|NEWCOMERS|BENEFITS)\]/
 
 /**
  * 「所在地」那一节的标记(#199:DB 有精确地址时这一节让位,不重复说同一件事)。

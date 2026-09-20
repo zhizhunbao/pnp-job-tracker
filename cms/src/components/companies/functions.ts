@@ -351,11 +351,15 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
  * 一律照 AI 原句的英文(同日 Frank「不要用 中文」:原先中 / 韩界面拼核定译名,出来是「渥太华, Ontario」半中半英)。
  * 同日 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa,真身 Mississauga —— 那条简介没有出处,是模型裸答)、
  * 「拿不到总部的就先 -」:只认有出处的简介;没有出处 / 没缓存 / 没这一节一律给「—」(那一行照出)。
+ * 2026-09-20 真总部进库(官网页面原句核对过的街址 / 市 / 省,官网没标的退 Wikidata):库里有就先用它,没有才走上面那条 AI 简介的老路。
  *
  * @param x 取词函数、界面语言与公司档案。
  * @returns 总部一行的文案;拿不到给「—」。
  */
 export function hqOf(x: BaseZhIn): string {
+  if (x.company.hq !== TEXT_NONE) {
+    return x.company.hq
+  }
   if (x.company.aiSources.length === 0) {
     return DASH_EM
   }
@@ -364,6 +368,19 @@ export function hqOf(x: BaseZhIn): string {
     return DASH_EM
   }
   return base
+}
+
+/**
+ * 「总部」行点开的出处:库里的真总部才有(官网那一页 / Wikidata 条目);退回 AI 简介的那一档不成链(它的出处在简介的「看来源」里)。
+ *
+ * @param x 公司档案。
+ * @returns 出处网址;'' = 不成链。
+ */
+export function hqHrefOf(x: CompanyOnlyIn): string {
+  if (x.company.hq === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return x.company.hqSource
 }
 
 /**

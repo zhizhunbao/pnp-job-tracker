@@ -605,6 +605,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.fmtTab': 'Organized', 'act.origTab': 'Original', 'act.viewOrig': 'View original', 'act.backFmt': 'Back to summary', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed',
   'act.f.role': 'Duties', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.loc': 'Work location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
+  'co.f.offices': 'Other offices', 'co.f.newcomers': 'Newcomers and foreign workers', 'co.f.benefits': 'Benefits and hiring',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
   'fact.aiSrc': 'Sources ▾', 'fact.aiSrcHide': 'Hide sources ▴',
   'mm.col.job': 'This job', 'mm.col.you': 'You',

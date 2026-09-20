@@ -76,7 +76,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     return <Frame>
       <Header loggedIn={!!user} />
       <Company company={{
-        name: slug, slug, website: '', websiteSource: '', careersUrl: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
+        name: slug, slug, website: '', websiteSource: '', careersUrl: '', hq: '', hqSource: '', industry: '', sectors: '', aliasZh: '', aliasKo: '',
         wikiUrl: '', sponsorGrade: null, scoreDetail: null, aiBrief: '', aiWebsite: '', aiSources: [], aiFetched: '',
         description: '', address: '', province: '',
         lmiaPositions: null, lmiaLmias: null, lmiaLastQuarter: '', lmiaStreams: '', lmiaSkilled: null,

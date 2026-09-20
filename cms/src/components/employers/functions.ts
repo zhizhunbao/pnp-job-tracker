@@ -239,8 +239,8 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     provHref: mapHrefOf({ city: TEXT_NONE, prov: provText }),
     cityHref: mapHrefOf({ city: cityText, prov: provText }),
     districtText: r.district,
-    hqText: TEXT_NONE,
-    hqHref: TEXT_NONE,
+    hqText: r.hq,
+    hqHref: hqHrefOf(r.hq),
     locs: r.locations,
     provText,
     cityText,
@@ -368,6 +368,19 @@ function mapHrefOf(x: MapHrefIn): string {
     return mapsUrl(x.prov + WHERE_SEP + MAP_COUNTRY)
   }
   return mapsUrl(x.city + WHERE_SEP + x.prov + WHERE_SEP + MAP_COUNTRY)
+}
+
+/**
+ * 总部格的 Google 地图链接:查的就是总部那一行字(街址、市、省码);没有真总部不成链。
+ *
+ * @param hq 总部一行字。
+ * @returns 地图链接;'' = 不成链。
+ */
+function hqHrefOf(hq: string): string {
+  if (hq === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return mapsUrl(hq)
 }
 
 /**

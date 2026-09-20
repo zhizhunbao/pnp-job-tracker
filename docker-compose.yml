@@ -239,12 +239,16 @@ services:
 
   sites:                           # 公司官网定期抓取(2026-09-19 立域;有官网且在招的公司每家抓首页 + Contact + About 进 crawl 层,局域网 qwen 只凭页面文字整理七节、每节附页面原句核对;只刷 crawl/ 与 processed/sites/)
     <<: *etl
+    build:                         # 2026-09-20 起抓页一律走 crawl 域有头浏览器(Frank「crawl 不是用有头的吗」「httpx curl 都删了」):用带 Playwright + Xvfb 的重镜像
+      context: .
+      dockerfile: etl/crawl/Dockerfile
     environment:
       SOURCE: sites
+      BROWSER_COOKIES: sites-cookies.json         # cookie 模式 = 干净的有头浏览器、不开持久 profile(那份 profile 同一时刻只许一个进程开,company / crawl 在用;公司官网不要登录态);文件不在 fetch 步自己建一只空罐
       HEALTHCHECK_PING_SITES: ${HEALTHCHECK_PING_SITES:-}       # 未配 = ping_health 自然跳过
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / explore / classify / company 同一台盒子);空=facts 步跳过
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
-      SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页、同站间隔 1 秒)
+      SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页走有头浏览器,实测约 40 秒一家:200 家 ≈ 两小时多,一轮接一轮连着跑)
       SITES_FACTS_LIMIT: ${SITES_FACTS_LIMIT:-200}  # 每轮整理多少家(盒子一家 4~11 秒)
       TZ: EST5EDT
 

@@ -2388,6 +2388,16 @@ export type CompanyDetail = {
   careersUrl: string
 
   /**
+   * 真总部一行字(街址、市、省码,英文原样;companies 的 hq_address / hq_city / hq_province 三格拼好);'' = 库里没有(2026-09-20)。
+   */
+  hq: string
+
+  /**
+   * 真总部的出处网址(官网那一页 / Wikidata 条目);'' = 没有。
+   */
+  hqSource: string
+
+  /**
    * 行业。
    */
   industry: string

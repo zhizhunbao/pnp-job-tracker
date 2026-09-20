@@ -1197,8 +1197,9 @@ export const BRIEF_TAG_WHAT = '[WHAT]'
 
 /**
  * AI 简介里任一段标记(切出 [WHAT] 段的右界)。
+ * 2026-09-20 加 OFFICES / NEWCOMERS / BENEFITS 三节(官网整理记录并进简介的后三节;不加的话只有 [WHAT] 一节的简介会把它们连进来)。
  */
-export const BRIEF_TAG_RE = /\[(BASE|SIZE|FOUNDED|NOTE|WHAT)\]/
+export const BRIEF_TAG_RE = /\[(BASE|SIZE|FOUNDED|NOTE|WHAT|OFFICES|NEWCOMERS|BENEFITS)\]/
 
 /**
  * 省份段「招聘对比」横表的锚点(二级导航子项;宏观按年表的锚点 = ID_PROV_GEO_HEAD + 地区码小写)。

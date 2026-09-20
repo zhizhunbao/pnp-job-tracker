@@ -602,6 +602,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.fmtTab': '정리본', 'act.origTab': '원문', 'act.viewOrig': '원문 보기', 'act.backFmt': '정리본으로', 'act.aiWorking': 'AI 정리 중, 원문 먼저 보기…', 'act.aiFail': 'AI 정리 실패',
   'act.f.role': '담당 업무', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
+  'co.f.offices': '기타 사무소', 'co.f.newcomers': '신규 이민자 및 외국인 직원', 'co.f.benefits': '복지 및 채용',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
   'fact.aiSrc': '출처 보기 ▾', 'fact.aiSrcHide': '출처 접기 ▴',
   'mm.col.job': '이 공고', 'mm.col.you': '나',

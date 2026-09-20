@@ -837,6 +837,79 @@ NAME_FLAT_REPL = ""
 CAREERS_STATUS_OK = "200"
 """招聘页探测通过的状态码(清单里全国件存成字符串、Kanata 件存成数字,比较前一律转串)。"""
 
+IN_SITE_FACTS = paths.PROCESSED_SITES / "facts.json"
+"""公司官网整理记录(sites 域 facts 步产,slug → 七节的值 + 每节过了核对的页面原句 + 出处网址;2026-09-20 进库批:
+Frank 定的判据「凡是给用户看的公司事实,必须能指回一句官网原文」,设计稿 docs/design/公司官网定期抓取-20260919.md)。缺文件 = 空表。"""
+
+IN_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
+"""维基总部兜底(company 域 wikihq 步产,slug → Wikidata「总部所在地」属性查到的市 / 省 + 条目链接):
+官网没标总部的公司才用它(来路排序 Frank 定:官网 → 维基 → 联网搜索)。缺文件 = 空表。"""
+
+SITE_FACTS_OK = "ok"
+"""官网整理记录 / 维基总部记录的状态:做成(只取 ok 行)。"""
+
+K_SITE_QUOTES = "quotes"
+"""官网整理记录:节标记 → 过了核对的页面原句(没过核对的节不在里面,它的值不算数)。"""
+
+SITE_SEC_HQ = "HQ"
+"""官网整理记录里总部那一节的标记(quotes 里有它,总部三格才带进库)。"""
+
+K_SITE_AT = "at"
+"""官网整理记录 / 维基总部记录:做成时刻(ISO)。"""
+
+K_SRC_HQ_ADDRESS = "hq_address"
+"""官网整理记录:总部街址(模型照页面抄的,常连着市 / 省 / 邮编一起抄,见 hq_street_of)。"""
+
+K_SRC_HQ_CITY = "hq_city"
+"""官网整理记录 / 维基总部记录:总部所在市。"""
+
+K_SRC_HQ_PROVINCE = "hq_province"
+"""官网整理记录 / 维基总部记录:总部所在省(加拿大的是两位省码;外国总部是州码 / 国名,原样留着)。"""
+
+K_SRC_HQ_SOURCE = "hq_source"
+"""官网整理记录:总部原句出自哪一页;维基总部记录:Wikidata 条目链接。"""
+
+K_HQ_ADDRESS = "hqAddress"
+"""companies 列:总部街址(只到街,市 / 省各有一列;官网没写到街就空着)。"""
+
+K_HQ_CITY = "hqCity"
+"""companies 列:总部所在市。"""
+
+K_HQ_PROVINCE = "hqProvince"
+"""companies 列:总部所在省(加拿大两位省码一律大写;外国总部原样)。"""
+
+K_HQ_QUOTE = "hqQuote"
+"""companies 列:总部那一节的官网页面原句(出处凭据;维基来的没有原句,缺键)。"""
+
+K_HQ_SOURCE = "hqSource"
+"""companies 列:总部的出处网址(官网那一页 / Wikidata 条目)。"""
+
+K_SITE_CHECKED_AT = "siteCheckedAt"
+"""companies 列:官网最近一次整理成的时刻(有官网整理记录就带,不管有没有抽出总部)。"""
+
+HQ_CA_PROVS = frozenset({"ON", "QC", "BC", "AB", "SK", "MB", "NB", "NS", "NL", "PE", "YT", "NT", "NU"})
+"""加拿大十省三地区的两位码:总部省是其中之一才拿去盖公司行的 region(2026-09-19 Frank「省改成总部的省」;
+外国总部 / 没总部的 region 维持来源侧的值 —— 相似雇主按它找同省、雇主池主省拿它兜底)。"""
+
+PROV_CODE_LEN = 2
+"""省码的长度(两位的才转大写当省码比;「Ontario」「England」这类原样留)。"""
+
+HQ_TRIM_CHARS = " ,"
+"""街址截掉市名以后,尾巴上要抹掉的空格与逗号。"""
+
+SITE_BRIEF_SECS = (("OFFICES", "offices"), ("NEWCOMERS", "newcomers"), ("BENEFITS", "benefits"))
+"""官网整理记录里并进简介文本的三节(节标记, 记录里的值键;设计稿第四节「第 5~7 节进现有的简介文本,多三个节标记,不加列」):
+其他办公地点 / 对新移民与外籍员工的态度 / 福利与招聘。顺序即简介里的节序;cms 那头的节标记表同名同序。"""
+
+SITE_SEC_LINE_TPL = "[{mark}] {text}"
+"""简介文本里一节的行形(与 company 域五节简介同形:方括号标记 + 空格 + 正文,一节一行)。"""
+
+BRIEF_LINE_SEP = "\n"
+"""简介文本的节间分隔(一节一行)。"""
+
+EMPTY_JSON_LIST = "[]"
+"""空 JSON 数组串(aiSources 还没值时的起点)。"""
+
 IN_PLACES = paths.RAW_COMPANIES / "company_places.json"
 """Google Places 查得的官网/地址(company 域 places 步产,2026-09-05):只填空,来源侧已有的不覆盖;
 官网由此来的 websiteSource 记 places。"""

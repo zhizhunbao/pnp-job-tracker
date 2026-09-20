@@ -538,6 +538,12 @@ class MartCtx:
     briefs: dict
     """slug → qwen 五节简介行(英/中/出处;2026-09-05)。"""
 
+    site_facts: dict
+    """slug → 公司官网整理记录(只含 ok 行;总部三格 + 原句 + 出处、并进简介的三节;2026-09-20)。"""
+
+    wiki_hq: dict
+    """slug → 维基总部兜底记录(只含 ok 行;官网没标总部的公司才用;2026-09-20)。"""
+
     formatted: dict
     """externalId → qwen 五节整理版记录(jdformat 域预生成;2026-09-15)。"""
 
@@ -585,6 +591,17 @@ class SiteCheckIn:
 
     name: str
     """雇主名(名里带主机自己名字的算主人,不摘)。"""
+
+
+@dataclass
+class HqStreetIn:
+    """hq_street_of() 入参。"""
+
+    address: str
+    """官网整理记录里的总部街址格(可能连着市 / 省 / 邮编)。"""
+
+    city: str
+    """总部所在市(截断的锚点;'' = 不截)。"""
 
 
 @dataclass

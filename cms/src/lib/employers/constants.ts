@@ -857,8 +857,9 @@ export const CSV_DISPOSITION = 'attachment; filename="sponsor-employers.csv"'
 
 /**
  * 公司简介五节标记行（ai_brief 生成侧的口径主人在本域；翻译时剖出标记只翻正文）。
+ * 2026-09-20 加 OFFICES / NEWCOMERS / BENEFITS 三节(数据层 mart 把官网整理记录的后三节接在官网版简介后面,翻译时同样只翻正文)。
  */
-export const CO_MARKS_RE = /^(\[(?:WHAT|BASE|SIZE|FOUNDED|NOTE)\]\s*)(.*)$/
+export const CO_MARKS_RE = /^(\[(?:WHAT|BASE|SIZE|FOUNDED|NOTE|OFFICES|NEWCOMERS|BENEFITS)\]\s*)(.*)$/
 
 /**
  * 简介翻译的 IP 日限。

@@ -1284,3 +1284,69 @@ PRINT_BRIEF_ROW_TPL = "  {status:4} {name} | {what}"
 
 PRINT_BRIEF_DONE_TPL = "本轮 ✓ {ok} · ✗ {fail} · 累计 {total}/{n} 家 → {out}"
 """brief 步收尾报数。"""
+
+
+# =========================================================================
+# 10. 维基总部兜底(2026-09-20:官网没标总部的公司查 Wikidata「总部所在地」属性;手动件 main --only wikihq,也进默认链)
+# =========================================================================
+
+IN_WIKIHQ_FACTS = paths.PROCESSED_SITES / "facts.json"
+"""公司官网整理记录(sites 域产):本步只读它来圈候选 —— 整理成了(ok)、总部一节却没过原句核对的公司
+(官网没标总部:Robert Half / Deloitte / Rona 这类全球站,或 Magna 这类首页是 JS 壳的)。缺文件 = 本轮直接退。"""
+
+OUT_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
+"""维基总部兜底记录(slug → WikiHqRecord;mart 汇装在官网没给总部时读它)。来路排序 Frank 2026-09-19 定:官网 → 维基 → 联网搜索。"""
+
+K_FACTS_QUOTES = "quotes"
+"""官网整理记录:节标记 → 过了核对的页面原句。"""
+
+FACTS_SEC_HQ = "HQ"
+"""官网整理记录里总部那一节的标记(quotes 里没有它 = 官网没标总部 = 本步的候选)。"""
+
+PROP_HQ = "P159"
+"""Wikidata 属性:总部所在地(值是一个地点条目的编号)。"""
+
+PROP_LOCATED_IN = "P131"
+"""Wikidata 属性:所在行政区(从总部那个地点一级级往上爬,爬到加拿大的省 / 地区为止)。"""
+
+K_RANK = "rank"
+"""一条声明的等级键(preferred / normal / deprecated)。"""
+
+RANK_PREFERRED = "preferred"
+"""声明等级:首选(同一属性挂多条时 Wikidata 编辑标出来的现行值)。"""
+
+RANK_DEPRECATED = "deprecated"
+"""声明等级:已废弃(不取)。"""
+
+WD_HQ_PLACE_PROPS = "labels|claims"
+"""查地点条目那一发 wbgetentities 要的属性(标签给市名,声明里取所在行政区)。"""
+
+WD_PROV_CODES = {
+    "Q1904": "ON", "Q176": "QC", "Q1974": "BC", "Q1951": "AB", "Q1989": "SK", "Q1948": "MB", "Q1965": "NB",
+    "Q1952": "NS", "Q2003": "NL", "Q1978": "PE", "Q2009": "YT", "Q2007": "NT", "Q2023": "NU",
+}
+"""加拿大十省三地区的 Wikidata 条目编号 → 两位省码(2026-09-20 对 Wikidata 实查过十三条的英文标签)。"""
+
+HQ_CLIMB_MAX = 4
+"""从总部地点往上爬行政区最多几级(市 → 区域市 → 省 通常两三级;爬不到省 = 外国总部或层级太深,省留空)。"""
+
+WIKIHQ_LIMIT = 200
+"""一轮最多查多少家(每家 2 发 + 爬行政区 1~4 发,家间歇 WIKI_SLEEP_S:200 家 ≈ 半小时)。"""
+
+WIKIHQ_REFRESH_DAYS = 90
+"""查过的(命中与确认没有都算)多少天内不再查(总部搬家是年级别的事)。"""
+
+WD_ENTITY_URL_TPL = "https://www.wikidata.org/wiki/{qid}"
+"""Wikidata 条目链接(总部的出处:「总部所在地」这条声明就挂在公司条目页上,点开能核对)。"""
+
+NOTE_NO_SITE_FACTS = "processed/sites/facts.json 或 mart/companies.json 还没产出,wikihq 本轮跳过"
+"""缺输入的留痕。"""
+
+PRINT_WIKIHQ_TARGETS_TPL = "官网没标总部 {cands} 家 · 已查 {cache} · 本轮查 {todo}(limit {limit})"
+"""wikihq 步报候选与本轮量。"""
+
+PRINT_WIKIHQ_ROW_TPL = "  {status:4} {name} | {city} {province} {source}"
+"""每查一家报一行(人眼复核)。"""
+
+PRINT_WIKIHQ_DONE_TPL = "本轮 ✓ {ok} · 查无 {miss} · 累计命中 {total}/{n} 家 → {out}"
+"""wikihq 步收尾报数。"""

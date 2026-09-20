@@ -6,7 +6,8 @@ sites 域:有官网的在招公司,定期把官网原文缓存到本地,再由�
 回答的问题:「这家公司的官网自己怎么说 —— 做什么、总部在哪、多大、哪年成立 / 谁家的、还在哪有办公点、
 对新移民 / 外籍员工什么态度、福利与怎么投」。设计稿 docs/design/公司官网定期抓取-20260919.md(七节 Frank 09-19 拍)。
 
-两步:fetch(每家抓首页 + Contact + About 三页,原文进 crawl 层 data/crawl/site-<slug>/,写门 crawl.put_cached_page)
+两步:fetch(每家抓首页 + Contact + About 三页,**一律走 crawl 域有头浏览器**(2026-09-20 Frank「crawl 不是用有头的吗」「httpx curl 都删了」:
+首版 httpx 抓页被不少官网的防火墙按指纹 / 标识拦成 403,Kognitive 实撞),渲染态原文进 crawl 层 data/crawl/site-<slug>/,写门 crawl.put_cached_page)
 → facts(读缓存原文 → 局域网 qwen 只凭页面文字整理七节,**每一节必须附页面原句,程序回页面核对原句真的在,核不上这一节作废**)
 → 落 processed/sites/facts.json。模型只搬运不探索:网关的联网搜索自 09-11 起被搜索引擎拦成 0 结果,
 靠联网现查的简介 39% 零出处(SOTI 总部被写成 Ottawa,真身 Mississauga);这条线不依赖联网搜索。
@@ -20,7 +21,7 @@ META = 域即役的调度声明:role=挂哪个角色容器(SOURCE 环境变量),
 import os
 
 FETCH_LIMIT = os.environ.get("SITES_FETCH_LIMIT", "200")
-"""每轮最多抓多少家官网(一家 3 页、同主机间隔 1 秒,约 6~10 秒一家:200 家 ≈ 半小时)。
+"""每轮最多抓多少家官网(一家 3 页走有头浏览器、同主机间隔 1 秒,实测约 40 秒一家:200 家 ≈ 两小时多,超过 interval,等于一轮接一轮连着跑)。
 本地验收可压小(SITES_FETCH_LIMIT=5)。"""
 
 FACTS_LIMIT = os.environ.get("SITES_FACTS_LIMIT", "200")
@@ -29,8 +30,8 @@ FACTS_LIMIT = os.environ.get("SITES_FACTS_LIMIT", "200")
 
 META = {
     "role": "sites",
-    "method": "httpx",       # 对应 etl/sched/Dockerfile 通用轻镜像(抓公司官网 + 打局域网 Ollama,无浏览器)
-    "interval": 3600,        # 1h 一轮,每轮抓 200 家 + 整理 200 家:首轮 1.5 万家约三四天追平,之后按 30 天刷新期滚动
+    "method": "browser",     # 抓页走 crawl 域有头浏览器:容器用 etl/crawl/Dockerfile 重镜像(Playwright + Xvfb);打局域网 Ollama 那一发仍是 httpx
+    "interval": 3600,        # 1h 一轮,每轮抓 200 家 + 整理 200 家;有头浏览器一轮要两小时多,首轮 1 万家约一周追平,之后按 30 天刷新期滚动
     "seed": False,           # 只刷 crawl/ 与 processed/sites/,灌库归 load 域 build 链
     "ping": True,            # 本角色唯一单元
 }

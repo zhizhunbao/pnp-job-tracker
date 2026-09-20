@@ -16,6 +16,7 @@ import { hasProfile, match } from '../jobs'
 import type { MatchJob } from '../jobs'
 import { friendChat, TRANS_LANGS, TRANS_KEY_SEP,
 } from '../llm'
+import { hqLineOf } from '../location'
 import { EMP_LOG, log } from '../log'
 import {
   ALIAS_NONE, BRIEF_MAX, BRIEF_MIN, BRIEF_V2_MARK, CACHE_TTL_MS, CAP_GROUP, CAP_NOC, CAP_PAGE, CAP_PROGRAM, CAP_PROV,
@@ -1549,6 +1550,7 @@ export function toPoolRow(r: PoolDbRow): PoolRow {
     industry: textOrNull(r.industry),
     sector: text(r.sector), category: text(r.category), province: text(r.province), city: text(r.city), cityZh: text(r.city_zh),
     cityKo: text(r.city_ko), district: text(r.district), address: text(r.address),
+    hq: hqLineOf({ address: text(r.hq_address), city: text(r.hq_city), province: text(r.hq_province) }),
     locations: toStrList(r.locations), eeKeys: toStrList(r.ees),
     designatedPlaces: toStrList(r.designated_places), designated: r.designated === true,
     programs: toStrList(r.designated_programs), designatedProvinces: toStrList(r.designated_provinces),

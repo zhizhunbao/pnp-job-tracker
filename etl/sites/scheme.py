@@ -34,12 +34,8 @@ class HttpResponseLike(Protocol):
 
 
 class HttpClientLike(Protocol):
-    """httpx 客户端里本域真用的格:get(抓页)与 post(打盒子)。Pyrefly 对 Protocol 实参判定保守,
+    """httpx 客户端里本域真用的格:post(打盒子;抓页 2026-09-20 起一律走 crawl 域有头浏览器,get 一格随之撤)。Pyrefly 对 Protocol 实参判定保守,
     装配点用 typing.cast 喂真客户端(断言只住装配点)。"""
-
-    def get(self, url: str) -> HttpResponseLike:
-        """GET 一页。"""
-        ...
 
     def post(self, url: str, *, json: object) -> HttpResponseLike:
         """POST JSON 体(关键字参是库形状特批)。"""
@@ -106,6 +102,9 @@ class FactsRecord(BaseModel):
 
     sources: list[str] = []
     """喂给模型的页面地址(出处网址)。"""
+
+    hq_source: str = ""
+    """总部原句出自哪一页(2026-09-20:公司卡「总部」点开的出处;原句在几页里都找不到 —— 首页被裁过中段 —— 记首页;没有总部给空串)。"""
 
     pages_at: str = ""
     """整理所依据的那一轮抓取时刻(官网重抓后它变了 = 该重新整理)。"""
@@ -180,22 +179,8 @@ class PickFactsIn:
 
 
 @dataclass
-class FetchSiteIn:
-    """fetch_site() 入参。"""
-
-    client: HttpClientLike
-    """HTTP 客户端。"""
-
-    target: Target
-    """要抓的公司。"""
-
-
-@dataclass
 class FetchPageIn:
     """fetch_page() 入参。"""
-
-    client: HttpClientLike
-    """HTTP 客户端。"""
 
     slug: str
     """crawl 层站点目录名。"""
@@ -227,17 +212,6 @@ class LinksIn:
 
     base: str
     """首页的最终地址(相对链接按它拼、同站按它判)。"""
-
-
-@dataclass
-class RobotsIn:
-    """robots_of() 入参。"""
-
-    client: HttpClientLike
-    """HTTP 客户端。"""
-
-    base: str
-    """官网地址(取它的协议 + 主机拼 robots.txt)。"""
 
 
 @dataclass
@@ -291,6 +265,20 @@ class VerifyIn:
 
     blob: str
     """喂给模型的页面文字全文(已压空白、小写)。"""
+
+
+@dataclass
+class HqSourceIn:
+    """hq_source_of() 入参。"""
+
+    slug: str
+    """公司 slug(定位 crawl 层的站点目录)。"""
+
+    quote: str
+    """总部那一节过了核对的页面原句。"""
+
+    urls: list[str]
+    """喂给模型的页面地址(按抓取序,首页在前)。"""
 
 
 @dataclass

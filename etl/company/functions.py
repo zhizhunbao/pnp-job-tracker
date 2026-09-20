@@ -39,6 +39,9 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
+    FACTS_SEC_HQ, HQ_CLIMB_MAX, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
+    PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
+    WD_PROV_CODES, WIKIHQ_LIMIT, WIKIHQ_REFRESH_DAYS,
     ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
     CAREERS_FILE, CAREERS_PATH_RE, CAREERS_RE, CAREERS_STEM_SUFFIX, CAREERS_TIMEOUT_S,
     DASH_NONE, ENTRY_DEPTH, ENTRY_MERGE_ATS, ENTRY_HOP_DEPTH, ENTRY_HOP_LINK_RE, ENTRY_HOP_MAX_PAGES, ENTRY_HOP_SLUG_TPL, ENTRY_KEYWORDS, ENTRY_LINK_RES, ENTRY_MAX_PAGES, ENTRY_SITE_RES, ENTRY_SLUG_TPL, ENTRY_TIMEOUT_S,
@@ -100,6 +103,7 @@ from company.constants import (
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
+    ClaimIn, HqPlace, PickWikiHqIn, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
@@ -2069,3 +2073,176 @@ def what_line_of(rec: BriefRecord) -> str:
         if line.startswith(BRIEF_MARKS[0]):
             return line
     return ""
+
+
+# =========================================================================
+# 10. 维基总部兜底(2026-09-20:官网没标总部的公司 → Wikidata「总部所在地」;手动件 main --only wikihq,也进默认链)
+# =========================================================================
+
+
+def lookup_wiki_hq() -> None:
+    """wikihq 步入口:官网整理成了、总部一节却没有的公司,按名查 Wikidata 的「总部所在地」属性,记录落 OUT_WIKI_HQ。
+
+    来路排序(Frank 2026-09-19):官网 → 维基 → 联网搜索;本步只补官网没给的,mart 汇装时官网的总部优先。
+    名字匹配走 entity_name_matches 同一道严格闸(宁缺勿错);请求失败不记、歇 WIKI_BACKOFF_S,连续 WIKI_FAIL_STOP 次熔断。
+    与「别再批量跑 Wikidata」(#109/#111 别名 / 知名全量预抓)的关系:候选只有 sites 域范围内、官网没标总部的那一小撮,
+    Frank 2026-09-20 点名「官网没标总部的公司用 Wikidata P159」。
+    """
+    targets = wikihq_targets()
+    if len(targets) == 0:
+        say(NOTE_NO_SITE_FACTS)
+        return
+    cache = read_wiki_hq()
+    todo = pick_wikihq_todo(PickWikiHqIn(targets=targets, cache=cache, limit=WIKIHQ_LIMIT))
+    say(PRINT_WIKIHQ_TARGETS_TPL.format(cands=len(targets), cache=len(cache), todo=len(todo), limit=WIKIHQ_LIMIT))
+    ok = miss = fails = 0
+    for t in todo:
+        got = wikihq_find(t.name)
+        if got.failed:
+            fails += 1
+            if fails >= WIKI_FAIL_STOP:
+                say(PRINT_WIKI_STOP_TPL.format(n=fails, done=ok + miss))
+                break
+            time.sleep(WIKI_BACKOFF_S)
+            continue
+        fails = 0
+        cache[t.slug] = got.rec
+        if got.rec.status == ST_OK:
+            ok += 1
+        else:
+            miss += 1
+        say(PRINT_WIKIHQ_ROW_TPL.format(status=got.rec.status, name=t.name, city=got.rec.hq_city,
+                                        province=got.rec.hq_province, source=got.rec.hq_source))
+        if (ok + miss) % FIND_FLUSH_N == 0:
+            write_wiki_hq(cache)
+        time.sleep(WIKI_SLEEP_S)
+    total = write_wiki_hq(cache)
+    say(PRINT_WIKIHQ_DONE_TPL.format(ok=ok, miss=miss, total=total, n=len(cache), out=OUT_WIKI_HQ.name))
+
+
+def wikihq_targets() -> list:
+    """候选:官网整理记录 ok、quotes 里没有总部一节的公司(名字取 mart 公司表;按 slug 排,顺序稳定);缺输入 = 空表。"""
+    out: list = []
+    if not IN_WIKIHQ_FACTS.exists() or not IN_FACTS_COMPANIES.exists():
+        return out
+    name_of: dict = {}
+    for c in json.loads(IN_FACTS_COMPANIES.read_text(encoding=TEXT_ENCODING)):
+        if c.get(K_SLUG):
+            name_of[c[K_SLUG]] = c.get(K_NAME, "")
+    facts = json.loads(IN_WIKIHQ_FACTS.read_text(encoding=TEXT_ENCODING))
+    for slug in sorted(facts):
+        rec = facts[slug]
+        if rec.get(K_STATUS) != ST_OK or FACTS_SEC_HQ in rec.get(K_FACTS_QUOTES, {}):
+            continue
+        if name_of.get(slug):
+            out.append(WikiHqTarget(slug=slug, name=name_of[slug]))
+    return out
+
+
+def pick_wikihq_todo(x: PickWikiHqIn) -> list:
+    """还没查过的、查过但过了刷新期的,按候选序凑够 limit 即止。"""
+    todo: list = []
+    for t in x.targets:
+        if len(todo) >= x.limit:
+            break
+        rec = x.cache.get(t.slug)
+        if rec is not None and days_since(rec.at) <= WIKIHQ_REFRESH_DAYS:
+            continue
+        todo.append(t)
+    return todo
+
+
+def read_wiki_hq() -> dict[str, WikiHqRecord]:
+    """读上轮记录(缺文件 = 空表)。"""
+    cache: dict[str, WikiHqRecord] = {}
+    if OUT_WIKI_HQ.exists():
+        for slug, d in json.loads(OUT_WIKI_HQ.read_text(encoding=TEXT_ENCODING)).items():
+            cache[slug] = WikiHqRecord.model_validate(d)
+    return cache
+
+
+def write_wiki_hq(cache: dict[str, WikiHqRecord]) -> int:
+    """记录落盘 OUT_WIKI_HQ,返回累计命中家数。"""
+    OUT_WIKI_HQ.parent.mkdir(parents=True, exist_ok=True)
+    out: dict[str, dict] = {}
+    total_ok = 0
+    for slug, rec in cache.items():
+        out[slug] = rec.model_dump()
+        if rec.status == ST_OK:
+            total_ok += 1
+    paths.write_json(paths.WriteJsonIn(path=OUT_WIKI_HQ, payload=out, indent=JSON_INDENT))
+    return total_ok
+
+
+def wikihq_find(name: str) -> WikiHqOut:
+    """一家公司:按名搜前 WD_SEARCH_LIMIT 个条目,名字严格对得上的那一个读「总部所在地」→ 解析市 / 省。
+
+    查无(没有对得上的条目 / 条目没填总部)记 miss;请求失败 failed=True(不记,下轮重试)。
+    """
+    rec = WikiHqRecord(name=name, status=ST_MISS, at=now_iso())
+    try:
+        hits = wd_get(search_params(name)).get(K_SEARCH, [])
+        ids: list = []
+        for h in hits:
+            ids.append(h[K_ID])
+        if len(ids) == 0:
+            return WikiHqOut(rec=rec, failed=False)
+        ents = wd_get(site_entity_params(ids)).get(K_ENTITIES, {})
+        target = norm_company_name(name)
+        for eid in ids:
+            entity = ents.get(eid) or {}
+            if not entity_name_matches(EntityIn(entity=entity, target=target)):
+                continue
+            place_id = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_HQ))
+            if place_id == "":
+                continue
+            place = hq_place_of(place_id)
+            if place.city == "":
+                continue
+            rec.status = ST_OK
+            rec.qid = eid
+            rec.hq_city = place.city
+            rec.hq_province = place.province
+            rec.hq_source = WD_ENTITY_URL_TPL.format(qid=eid)
+            return WikiHqOut(rec=rec, failed=False)
+        return WikiHqOut(rec=rec, failed=False)
+    except Exception as e:  # noqa: BLE001 — 网络/限速什么错都可能,一律当失败保留活口
+        err(name, e)
+        return WikiHqOut(rec=rec, failed=True)
+
+
+def claim_entity_id_of(x: ClaimIn) -> str:
+    """实体某个属性指向的条目编号(值是条目的那类属性:总部所在地 / 所在行政区):标了「首选」的那条声明优先,
+    没有首选的取第一条没被废弃的(Deloitte 的总部挂着纽约与伦敦两条,首选是伦敦,2026-09-20 冒烟实撞);没有给空串。"""
+    first = ""
+    for claim in x.entity.get(K_CLAIMS, {}).get(x.prop, []):
+        value = claim.get(K_MAINSNAK, {}).get(K_DATAVALUE, {}).get(K_VALUE, {})
+        if not isinstance(value, dict) or not isinstance(value.get(K_ID), str) or value[K_ID] == "":
+            continue
+        if claim.get(K_RANK) == RANK_PREFERRED:
+            return value[K_ID]
+        if first == "" and claim.get(K_RANK) != RANK_DEPRECATED:
+            first = value[K_ID]
+    return first
+
+
+def hq_place_of(place_id: str) -> HqPlace:
+    """总部地点条目 → 市名(它的英文标签)+ 省码:地点自己就是省,或沿「所在行政区」往上爬,爬到加拿大的省 / 地区为止;
+    爬满 HQ_CLIMB_MAX 级还没到(外国总部 / 层级太深)省留空。请求失败往上抛,由 wikihq_find 记 failed。"""
+    city = ""
+    current = place_id
+    for _ in range(HQ_CLIMB_MAX + 1):
+        if current in WD_PROV_CODES:
+            return HqPlace(city=city, province=WD_PROV_CODES[current])
+        entity = wd_get(place_entity_params(current)).get(K_ENTITIES, {}).get(current) or {}
+        if city == "":
+            city = entity.get(K_LABELS, {}).get(LANG_EN, {}).get(K_VALUE, "")
+        current = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_LOCATED_IN))
+        if current == "":
+            break
+    return HqPlace(city=city, province="")
+
+
+def place_entity_params(place_id: str) -> dict:
+    """查地点条目那一发 wbgetentities 的查询参数(标签 + 声明,只要英文)。"""
+    return {P_ACTION: ACT_GET_ENTITIES, P_IDS: place_id, P_PROPS: WD_HQ_PLACE_PROPS, P_LANGUAGES: LANG_EN}

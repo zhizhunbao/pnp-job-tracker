@@ -1463,3 +1463,94 @@ class LlmCallIn:
 
     tokens: int
     """生成上限。"""
+
+
+# =========================================================================
+# 10. 维基总部兜底(2026-09-20)
+# =========================================================================
+
+
+class WikiHqRecord(BaseModel):
+    """维基总部兜底缓存一行(company_wiki_hq.json 的值;对外文件契约,mart 汇装直读)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str = ""
+    """公司名。"""
+
+    status: str = ""
+    """ok = 查到总部所在地;miss = 名字严格对得上的条目没有,或条目没填总部。"""
+
+    qid: str = ""
+    """公司的 Wikidata 条目编号;查无为空串。"""
+
+    hq_city: str = ""
+    """总部所在地的英文标签(通常是市名)。"""
+
+    hq_province: str = ""
+    """总部所在省的两位码(往上爬行政区爬到加拿大的省 / 地区才有;外国总部为空串)。"""
+
+    hq_source: str = ""
+    """出处:公司的 Wikidata 条目链接。"""
+
+    at: str = ""
+    """查的时刻(ISO,UTC)。"""
+
+
+@dataclass
+class WikiHqTarget:
+    """wikihq 步的一家候选。"""
+
+    slug: str
+    """公司 slug。"""
+
+    name: str
+    """公司名(按它搜 Wikidata)。"""
+
+
+@dataclass
+class PickWikiHqIn:
+    """pick_wikihq_todo() 入参。"""
+
+    targets: list
+    """全部候选。"""
+
+    cache: dict
+    """上轮缓存(slug → WikiHqRecord)。"""
+
+    limit: int
+    """本轮上限。"""
+
+
+@dataclass
+class WikiHqOut:
+    """wikihq_find() 出参。"""
+
+    rec: WikiHqRecord
+    """查到的记录(failed 时不算数)。"""
+
+    failed: bool
+    """请求本身失败(断连 / 超时 / 限速):不记缓存,下轮重试。"""
+
+
+@dataclass
+class HqPlace:
+    """hq_place_of() 出参:总部所在地解析出来的市与省。"""
+
+    city: str
+    """地点条目的英文标签。"""
+
+    province: str
+    """两位省码;爬不到加拿大的省给空串。"""
+
+
+@dataclass
+class ClaimIn:
+    """claim_entity_id_of() 入参。"""
+
+    entity: dict
+    """wbgetentities 返回的一个实体。"""
+
+    prop: str
+    """要读的属性编号(值是条目的那类属性)。"""

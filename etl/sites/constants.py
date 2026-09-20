@@ -96,9 +96,6 @@ RETRY_FAILED_DAYS = 14
 CRAWL_SLUG_TPL = "site-{slug}"
 """crawl 层的站点目录名(data/crawl/site-<slug>/;与 careers-<slug> 的招聘站缓存分开)。"""
 
-FETCH_TIMEOUT_S = 25.0
-"""单页请求超时。"""
-
 POLITE_S = 1.0
 """同一家官网两次请求之间的间隔秒(礼貌)。"""
 
@@ -151,7 +148,29 @@ NOTE_ROBOTS = "robots"
 """抓失败由头:robots 不许抓首页。"""
 
 NOTE_HTTP_TPL = "http {status}"
-"""抓失败由头:首页非 2xx。"""
+"""失败由头:盒子那一发非 2xx(2026-09-20 起抓页走有头浏览器,没有状态码;本模板只剩 facts 步在用)。"""
+
+NOTE_BROWSER = "browser"
+"""抓失败由头:有头浏览器没拿回这一页(导航超时 / 验证框没人点)。"""
+
+NOTE_BLOCKED = "blocked page"
+"""抓失败由头:拿回来的是拦截页 / 报错页(按页标题判,见 BLOCK_TITLE_RE)。"""
+
+BLOCK_TITLE_RE = re.compile(r"^\s*(?:40[34]\b|access denied|forbidden|page not found|not found|error\b|just a moment)", re.I)
+"""拦截页 / 报错页的页标题(浏览器里拿不到状态码,只能认标题:「403 - Forbidden」「Access Denied」「Page not found」「Just a moment...」);
+这种页不进 crawl 层 —— 进了就会被当成官网原文喂给模型。"""
+
+NOTE_NO_BROWSER = "本镜像没装 playwright,sites 的 fetch 步跳过(抓页一律走 crawl 域有头浏览器,容器要用 etl/crawl/Dockerfile 重镜像)"
+"""缺浏览器的留痕。"""
+
+PRINT_BROWSER_ABORT = "  ✗ 有头浏览器没起来(见上一条报错),本轮抓取中止,不记这家失败"
+"""浏览器起不来(profile 被占 / 没显示)不是这家公司的错:不记失败、整轮中止(与 facts 步盒子掉线同一条教训)。"""
+
+COOKIE_JAR_EMPTY = "[]"
+"""空 cookie 罐的文件内容(见 ensure_cookie_jar)。"""
+
+JS_LOCATION = "[location.href]"
+"""取当前标签最终地址的页内表达式(crawl 的 PageLike.evaluate 定死回列表,所以包一层数组)。"""
 
 NET_ERRORS = ("ConnectError", "ConnectTimeout", "ReadTimeout", "RemoteProtocolError", "PoolTimeout")
 """盒子连不上 / 超时的异常类名(facts 步遇到 = 不是这家公司的错:不记失败、整轮中止,下轮再来)。"""

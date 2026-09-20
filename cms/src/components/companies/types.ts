@@ -377,6 +377,16 @@ export type CompanyDetail = {
   careersUrl: string
 
   /**
+   * 真总部一行字(街址、市、省码,英文原样);'' = 库里没有,「总部」行退回有出处的 AI 简介(2026-09-20)。
+   */
+  hq: string
+
+  /**
+   * 真总部的出处网址(官网那一页 / Wikidata 条目);'' = 没有,「总部」行不成链。
+   */
+  hqSource: string
+
+  /**
    * 行业。
    */
   industry: string
@@ -905,6 +915,21 @@ export type CompanyZhLineIn = {
    * 散文态(整段译文保留原文换行);可省 = 节内短句。
    */
   prose?: boolean
+}
+
+/**
+ * CompanyHq(基本信息卡「总部」行的值)的 props。
+ */
+export type CompanyHqIn = {
+  /**
+   * 总部一行字;拿不到是「—」。
+   */
+  text: string
+
+  /**
+   * 出处网址;'' = 不成链。
+   */
+  href: string
 }
 
 /**

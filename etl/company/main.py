@@ -6,7 +6,7 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 批J 自 clean/_enrich_company_facts.py 归户)是休眠引导/手动工具,不进默认链 ——
 语义与旧役册完全一致。
 一律从仓库根执行:
-    python etl/company/main.py                 # 默认链(places → sites → about → brief)
+    python etl/company/main.py                 # 默认链(places → sites → wikihq → about → brief)
     python etl/company/main.py --only kanata   # 手动件:kanata / folders / careers / facts
 """
 import sys
@@ -17,20 +17,23 @@ from log.functions import err, say
 from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
-    locate_career_entries,
+    locate_career_entries, lookup_wiki_hq,
     scrape_kanata_directory,
 )
 
 SCHEDULED = [
     ("places", lookup_company_places),
     ("sites", lookup_sponsor_websites),
+    ("wikihq", lookup_wiki_hq),
     ("about", crawl_company_about),
     ("brief", build_company_briefs),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮(_steps 同款语义)。
 2026-09-05 Frank「不花钱就跑呗」「最好能定时跑」:把脉页雇主数据链四步进链(Places 两档只吃当月免费额、
 搜索每轮 Google 25 家 / DDG 60 家、正文 400 家、qwen 简介 400 家),enrich 容器亮回;老 enrich 步(首页 meta 简介)退出默认链
-留作手动件 —— about 步抓的正文盖过它,且两步都打 DDG 会双倍撞限流。"""
+留作手动件 —— about 步抓的正文盖过它,且两步都打 DDG 会双倍撞限流。
+2026-09-20 wikihq 进链(紧跟 sites,两步都打 Wikidata、错开不叠):官网没标总部的公司查「总部所在地」,一轮 ≤200 家约半小时;
+挂本役不另开域的由头 = 它用的就是本域那套 Wikidata 查询与严格名字闸(行为不许复制到别的域)。"""
 
 TOOLS = {
     "kanata": scrape_kanata_directory,
@@ -43,6 +46,7 @@ TOOLS = {
     "sites": lookup_sponsor_websites,
     "about": crawl_company_about,
     "brief": build_company_briefs,
+    "wikihq": lookup_wiki_hq,
 }
 """全部可 --only 点名的步(含休眠引导工具)。
 
@@ -66,6 +70,9 @@ TOOLS = {
          JS 壳走 crawl 域有头浏览器兜底(company 容器改用 crawl 重镜像)。
   brief  五节简介:about 正文 → 本地 qwen 五节英文 + 中文(NEWS_LLM_BASE 盒子);
          预算 constants.BRIEF_LIMIT。手动件;产出由 build 汇装进 companies.ai_brief。
+
+  wikihq 维基总部兜底(2026-09-20 Frank「官网没标总部的公司用 Wikidata P159」):sites 域官网整理成了、总部一节却没有的公司,
+         按名查 Wikidata「总部所在地」→ 市 / 省 + 条目链接,落 company_wiki_hq.json 等 build 汇装(官网的总部优先)。
 
 ⚠ --only 是子串匹配:facts/places/sites/about/brief 与既有键互不误命中(逐对核过)。
 """

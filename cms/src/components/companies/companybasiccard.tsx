@@ -22,6 +22,8 @@
  * 同日 Frank「拿不到总部的就先 -」:总部行一律出,拿不到出「—」(值包一层 span:Row 通用件见「—」整行不出,这一行特意要出);缓存着的简介里「所在地」节一律不再出
  * (有出处的已提成总部行,没出处的是模型裸答不算数,「这不是胡说吗」)。
  * 同日晚 Frank「公司详情的在招地 去掉吧,没有意义」:「在招地」行撤(连同它的取数链),岗位在哪看下面的在招职位卡。
+ * 2026-09-20 真总部进库:「总部」行先用库里的真总部(官网页面原句核对过的,官网没标的退 Wikidata),值点开就是出处那一页;
+ * 库里没有的照旧走有出处的 AI 简介,不成链。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -30,13 +32,14 @@ import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
+import { CompanyHq } from './companyhq'
 import { CompanyIntro } from './companyintro'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, hqOf, isGovCompany, wikiTitleOf,
+  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, hqHrefOf, hqOf, isGovCompany, wikiTitleOf,
 } from './functions'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
@@ -92,7 +95,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
             </LinkButton>
           </Row>
         )}
-        <Row k={t('co.hq')}><span>{hq}</span></Row>
+        <Row k={t('co.hq')}><CompanyHq text={hq} href={hqHrefOf({ company })} /></Row>
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}

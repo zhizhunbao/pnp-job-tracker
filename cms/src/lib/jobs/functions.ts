@@ -17,6 +17,7 @@ import {
 } from '../db'
 import type {
   Db } from '../db'
+import { hqLineOf } from '../location'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
 import { ymd } from '../time'
@@ -1507,6 +1508,7 @@ export async function loadCompanyByPoolKey(input: CompanyByPoolKeyIn): CompanyOu
   }
   return {
     name: poolCellOf(r.name), slug: CELL_NONE, website: CELL_NONE, websiteSource: CELL_NONE, careersUrl: CELL_NONE,
+    hq: CELL_NONE, hqSource: CELL_NONE,
     industry: poolCellOf(r.industry), sectors: CELL_NONE, aliasZh: CELL_NONE, aliasKo: CELL_NONE, wikiUrl: CELL_NONE,
     sponsorGrade: null, scoreDetail: null, aiBrief: CELL_NONE, aiWebsite: CELL_NONE, aiSources: [],
     aiFetched: CELL_NONE, description: CELL_NONE, address: CELL_NONE, province: poolCellOf(r.province),
@@ -1619,6 +1621,8 @@ async function fetchCompanyWhere(input: CompanyWhereIn): CompanyOut {
   return {
     name: strCell(c.name), slug: strCell(c.slug), website: website, websiteSource: strCell(c.website_source),
     careersUrl: strCell(c.careers_url),
+    hq: hqLineOf({ address: strCell(c.hq_address), city: strCell(c.hq_city), province: strCell(c.hq_province) }),
+    hqSource: strCell(c.hq_source),
     industry: strCell(c.industry), sectors: strCell(c.sectors), aliasZh: strCell(c.alias_zh),
     aliasKo: strCell(c.alias_ko),
     wikiUrl: strCell(c.wiki_url), sponsorGrade: numCell(c.sponsor_grade),

@@ -4,11 +4,12 @@ sites 域函数 —— 全部行为住这(照 jdformat 样张,方言律全集见
 一步一入口(零参):fetch_site_pages / build_site_facts。**零字符串令**(字面量全住 constants)/ **显式循环令**
 (禁推导 / genexp / lambda)/ **内嵌禁令** / **一参令**(多入参收 scheme 的 XxxIn dataclass)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
+抓页一律走 crawl 叶的有头浏览器(2026-09-20);fetch 叶的 httpx 客户端只剩 facts 步打局域网盒子那一发在用。
 """
+import asyncio
 import json
 import os
 import re
-import time
 from datetime import datetime, timezone
 from typing import cast
 from urllib.parse import urljoin, urlparse
@@ -17,14 +18,19 @@ from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 
 import paths
-from crawl.functions import load_cache_index, put_cached_page
+from crawl import BROWSER_COOKIES
+from crawl.constants import PROFILE_DIR
+from crawl.functions import (
+    browser_live, browser_ok, close_browser, fetch_browser_html, get_browser_page, load_cache_index, put_cached_page,
+)
 from crawl.scheme import CachePutIn
 from fetch.functions import make_client
 from log.functions import say
 from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
-    ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, CONTACT_LINK_RE, CRAWL_SLUG_TPL, ENV_LLM_BASE, ENV_LLM_MODEL, ERRORS_REPLACE,
-    EXTRA_PAGES_MAX, FETCH_TIMEOUT_S, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX,
+    ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, COOKIE_JAR_EMPTY, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
+    NOTE_NO_BROWSER, PRINT_BROWSER_ABORT, CONTACT_LINK_RE, CRAWL_SLUG_TPL, ENV_LLM_BASE, ENV_LLM_MODEL, ERRORS_REPLACE,
+    EXTRA_PAGES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX,
     HQ_SHOW_TPL, HREF_ATTR, HTML_MIN_LEN, IN_MART_COMPANIES, IN_MART_JOBS, JSON_INDENT, K_COMPANY_SLUG, K_HQ_ADDRESS,
     K_HQ_CITY, K_HQ_PROVINCE, K_NAME, K_SLUG, K_STATUS, K_WEBSITE, LINE_BREAK, LINE_RE_FLAGS, LINE_RE_TPL,
     LLM_MODEL_DEFAULT, LLM_TEMPERATURE, LLM_TIMEOUT_S, NET_ERRORS, NONE_MARK, NOTE_BLOB, NOTE_EMPTY, NOTE_HTTP_TPL,
@@ -33,12 +39,12 @@ from sites.constants import (
     PARSER_HTML, PATH_OLLAMA_GENERATE, POLITE_S, PRINT_ABORT_TPL, PRINT_FACTS_DONE_TPL, PRINT_FACTS_ROW_TPL,
     PRINT_FACTS_TARGETS_TPL, PRINT_FETCH_DONE_TPL, PRINT_FETCH_ROW_TPL, PRINT_FETCH_TARGETS_TPL, PROMPT_TPL,
     QUOTE_CHECK_LEN, QUOTE_MIN_LEN, QUOTE_SUFFIX, REFRESH_DAYS, RETRY_FAILED_DAYS, ROBOTS_PATH, ROBOTS_UA, SECONDS_PER_DAY,
-    SECTION_HQ, SECTIONS, SKIP_LINK_RE, SKIP_TAGS, SPACE_SEP, ST_FAIL, ST_OK, STRIP_REPL, TAG_A, TAG_TITLE, TEXT_ENCODING, THINK_RE,
-    URL_FRAGMENT_SEP, URL_SCHEME_SEP, URL_TAIL_SLASH, VALUE_MAX_LEN, WS_RE,
+    SECTION_HQ, SECTIONS, SKIP_LINK_RE, SKIP_TAGS, SPACE_SEP, ST_FAIL, ST_OK, STRIP_REPL, TAG_A, TAG_TITLE,
+    TEXT_ENCODING, THINK_RE, URL_FRAGMENT_SEP, URL_SCHEME_SEP, URL_TAIL_SLASH, VALUE_MAX_LEN, WS_RE,
 )
 from sites.scheme import (
-    AnswerIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, FetchSiteIn, HttpClientLike, LinksIn, LlmCallIn,
-    LlmCfg, PagesRecord, PickFactsIn, PickFetchIn, RobotsIn, SectionIn, Target, VerifyIn,
+    AnswerIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, HqSourceIn, HttpClientLike, LinksIn, LlmCallIn,
+    LlmCfg, PagesRecord, PickFactsIn, PickFetchIn, SectionIn, Target, VerifyIn,
 )
 
 # =========================================================================
@@ -47,23 +53,37 @@ from sites.scheme import (
 
 
 def fetch_site_pages() -> None:
-    """fetch 步入口:范围内还没抓 / 到刷新期的公司,每家抓首页 + Contact + About,原文进 crawl 层,记录落 OUT_PAGES。
+    """fetch 步入口:asyncio 壳(抓页 2026-09-20 起一律走 crawl 域有头浏览器 —— Frank「crawl 不是用有头的吗」「httpx curl 都删了」;
+    浏览器门是 async 单例,company 域 about 步同形)。"""
+    asyncio.run(fetch_round())
 
-    mart 还没产出直接退;单家失败只记 status 不炸整轮;每 FLUSH_N 家落一次盘(中途被杀不丢)。
+
+async def fetch_round() -> None:
+    """fetch 步主体:范围内还没抓 / 到刷新期的公司,每家抓首页 + Contact + About,原文进 crawl 层,记录落 OUT_PAGES。
+
+    mart 还没产出 / 镜像没装浏览器直接退;单家失败只记 status 不炸整轮;浏览器没起来整轮中止不记失败;
+    每 FLUSH_N 家落一次盘(中途被杀不丢);浏览器收摊在 finally。
     """
     targets = site_targets()
     if len(targets) == 0:
         say(NOTE_NO_MART)
         return
+    if not browser_ok():
+        say(NOTE_NO_BROWSER)
+        return
+    ensure_cookie_jar()
     cache = read_pages()
     todo = pick_fetch_todo(PickFetchIn(targets=targets, cache=cache, limit=int(FETCH_LIMIT)))
     say(PRINT_FETCH_TARGETS_TPL.format(total=len(targets), done=count_pages_ok(cache), todo=len(todo),
                                        limit=FETCH_LIMIT))
     ok = 0
     fail = 0
-    with make_client(timeout=FETCH_TIMEOUT_S) as client:
+    try:
         for t in todo:
-            rec = fetch_site(FetchSiteIn(client=cast(HttpClientLike, client), target=t))
+            rec = await fetch_site(t)
+            if not browser_live():
+                say(PRINT_BROWSER_ABORT)
+                break
             cache[t.slug] = rec
             if rec.status == ST_OK:
                 ok += 1
@@ -72,6 +92,8 @@ def fetch_site_pages() -> None:
             say(PRINT_FETCH_ROW_TPL.format(status=rec.status, name=t.name, pages=len(rec.urls), note=rec.note))
             if (ok + fail) % FLUSH_N == 0:
                 write_pages(cache)
+    finally:
+        await close_browser()
     total = write_pages(cache)
     say(PRINT_FETCH_DONE_TPL.format(ok=ok, fail=fail, total=total, out=OUT_PAGES.name))
 
@@ -92,6 +114,7 @@ def build_site_facts() -> None:
         return
     pages = read_pages()
     cache = read_facts()
+    backfill_hq_sources(cache)
     todo = pick_facts_todo(PickFactsIn(targets=targets, pages=pages, cache=cache, limit=int(FACTS_LIMIT)))
     say(PRINT_FACTS_TARGETS_TPL.format(pages=count_pages_ok(pages), done=count_facts_ok(cache), todo=len(todo),
                                        limit=FACTS_LIMIT, model=cfg.model))
@@ -265,19 +288,19 @@ def now_iso() -> str:
 # =========================================================================
 
 
-def fetch_site(x: FetchSiteIn) -> PagesRecord:
+async def fetch_site(target: Target) -> PagesRecord:
     """一家官网:先读 robots,再抓首页,从首页链接里认 Contact / About 各一页;抓到的原文逐页进 crawl 层。
 
-    首页抓不到 = 这家记 fail(由头进 note);附加页抓不到不算失败。网络异常转数据记异常类名。
+    首页抓不到 = 这家记 fail(由头进 note);附加页抓不到不算失败。异常转数据记异常类名。
     """
     rec = PagesRecord(status=ST_FAIL, at=now_iso())
-    slug = CRAWL_SLUG_TPL.format(slug=x.target.slug)
+    slug = CRAWL_SLUG_TPL.format(slug=target.slug)
     try:
-        robots = robots_of(RobotsIn(client=x.client, base=x.target.website))
-        if not robots.can_fetch(ROBOTS_UA, x.target.website):
+        robots = await robots_of(target.website)
+        if not robots.can_fetch(ROBOTS_UA, target.website):
             rec.note = NOTE_ROBOTS
             return rec
-        home = fetch_page(FetchPageIn(client=x.client, slug=slug, url=x.target.website))
+        home = await fetch_page(FetchPageIn(slug=slug, url=target.website))
         if home.html == FIELD_NONE:
             rec.note = home.note
             return rec
@@ -285,11 +308,11 @@ def fetch_site(x: FetchSiteIn) -> PagesRecord:
         for link in extra_links_of(LinksIn(html=home.html, base=home.url)):
             if not robots.can_fetch(ROBOTS_UA, link):
                 continue
-            time.sleep(POLITE_S)
-            page = fetch_page(FetchPageIn(client=x.client, slug=slug, url=link))
+            await asyncio.sleep(POLITE_S)
+            page = await fetch_page(FetchPageIn(slug=slug, url=link))
             if page.html != FIELD_NONE and page.url not in rec.urls:
                 rec.urls.append(page.url)
-    except Exception as e:  # noqa: BLE001 — 一家站的网络 / 解析异常转数据,不炸整轮
+    except Exception as e:  # noqa: BLE001 — 一家站的浏览器 / 解析异常转数据,不炸整轮
         rec.note = type(e).__name__
         if len(rec.urls) == 0:
             return rec
@@ -297,32 +320,54 @@ def fetch_site(x: FetchSiteIn) -> PagesRecord:
     return rec
 
 
-def robots_of(x: RobotsIn) -> RobotFileParser:
-    """读这家官网的 robots.txt → 解析器;读不到 / 非 2xx = 空规则(全放行)。"""
+async def robots_of(base: str) -> RobotFileParser:
+    """读这家官网的 robots.txt → 解析器;读不到 = 空规则(全放行)。浏览器把纯文本包成一页,取它的文字按行喂。"""
     parser = RobotFileParser()
-    parsed = urlparse(x.base)
+    parsed = urlparse(base)
     lines: list = []
-    try:
-        r = x.client.get(parsed.scheme + URL_SCHEME_SEP + parsed.netloc + ROBOTS_PATH)
-        if r.is_success:
-            lines = r.text.split(LINE_BREAK)
-    except Exception:  # noqa: BLE001, S110 — robots 读不到按全放行,不拖垮这家
-        lines = []
+    html = await fetch_browser_html(parsed.scheme + URL_SCHEME_SEP + parsed.netloc + ROBOTS_PATH)
+    if html is not None:
+        lines = BeautifulSoup(html, PARSER_HTML).get_text().split(LINE_BREAK)
     parser.parse(lines)
     return parser
 
 
-def fetch_page(x: FetchPageIn) -> FetchedPage:
-    """抓一页;2xx 且够长就进 crawl 层(键 = 跟完跳转后的最终地址),返回最终地址与原文;否则带由头回空。"""
-    r = x.client.get(x.url)
-    if not r.is_success:
-        return FetchedPage(url=FIELD_NONE, html=FIELD_NONE, note=NOTE_HTTP_TPL.format(status=r.status_code))
-    html = r.text
+async def fetch_page(x: FetchPageIn) -> FetchedPage:
+    """有头浏览器抓一页(渲染态 HTML);够长、不是拦截页就进 crawl 层(键 = 跟完跳转后的最终地址),返回最终地址与原文;否则带由头回空。"""
+    html = await fetch_browser_html(x.url)
+    if html is None:
+        return FetchedPage(url=FIELD_NONE, html=FIELD_NONE, note=NOTE_BROWSER)
     if len(html) < HTML_MIN_LEN:
         return FetchedPage(url=FIELD_NONE, html=FIELD_NONE, note=NOTE_NO_TEXT)
-    final = str(r.url)
-    put_cached_page(CachePutIn(slug=x.slug, url=final, html=html, title=title_of(html)))
+    title = title_of(html)
+    if BLOCK_TITLE_RE.search(title) is not None:
+        return FetchedPage(url=FIELD_NONE, html=FIELD_NONE, note=NOTE_BLOCKED)
+    final = await final_url_of(x.url)
+    put_cached_page(CachePutIn(slug=x.slug, url=final, html=html, title=title))
     return FetchedPage(url=final, html=html, note=FIELD_NONE)
+
+
+async def final_url_of(url: str) -> str:
+    """当前标签跟完跳转后的最终地址(页内取 location.href);取不到照请求地址。"""
+    page = await get_browser_page()
+    if page is None:
+        return url
+    got = await page.evaluate(JS_LOCATION)
+    if len(got) == 0 or str(got[0]) == FIELD_NONE:
+        return url
+    return str(got[0])
+
+
+def ensure_cookie_jar() -> None:
+    """容器里给 crawl 的 cookie 模式备一只空 cookie 罐(BROWSER_COOKIES 点名的文件不在才建):
+    cookie 模式起的是干净的有头浏览器、不开持久 profile —— 那份 profile 同一时刻只许一个进程开,
+    company / crawl 两个容器在用;公司官网不需要登录态,本域一轮要开一两个小时,不去占它。本机(变量为空)照走持久 profile。"""
+    if BROWSER_COOKIES == FIELD_NONE:
+        return
+    jar = PROFILE_DIR / BROWSER_COOKIES
+    if not jar.exists():
+        jar.parent.mkdir(parents=True, exist_ok=True)
+        jar.write_text(COOKIE_JAR_EMPTY, encoding=TEXT_ENCODING)
 
 
 def title_of(html: str) -> str:
@@ -394,8 +439,33 @@ def facts_one(x: FactsOneIn) -> FactsRecord:
     if len(rec.quotes) == 0:
         rec.note = NOTE_NOTHING
         return rec
+    rec.hq_source = hq_source_of(HqSourceIn(slug=x.target.slug, quote=rec.quotes.get(SECTION_HQ, FIELD_NONE), urls=rec.sources))
     rec.status = ST_OK
     return rec
+
+
+def backfill_hq_sources(cache: dict[str, FactsRecord]) -> None:
+    """存量回填:有总部原句、还没记出处页的记录,读缓存原文补上 hq_source(不过模型;2026-09-20 加这一格之前整理的那批)。"""
+    for slug, rec in cache.items():
+        quote = rec.quotes.get(SECTION_HQ, FIELD_NONE)
+        if quote != FIELD_NONE and rec.hq_source == FIELD_NONE:
+            rec.hq_source = hq_source_of(HqSourceIn(slug=slug, quote=quote, urls=rec.sources))
+
+
+def hq_source_of(x: HqSourceIn) -> str:
+    """总部原句出自哪一页:逐页读缓存原文的整页文字,原句开头在哪一页就是哪一页;都找不到记首页;没有总部原句给空串。"""
+    if x.quote == FIELD_NONE or len(x.urls) == 0:
+        return FIELD_NONE
+    head = WS_RE.sub(SPACE_SEP, x.quote).strip().lower()[:QUOTE_CHECK_LEN]
+    index = load_cache_index(CRAWL_SLUG_TPL.format(slug=x.slug))
+    for url in x.urls:
+        path = index.get(url)
+        if path is None:
+            continue
+        text = page_text_of(path.read_text(encoding=TEXT_ENCODING, errors=ERRORS_REPLACE))
+        if head in WS_RE.sub(SPACE_SEP, text).lower():
+            return url
+    return x.urls[0]
 
 
 def blob_of(x: FactsOneIn) -> str:

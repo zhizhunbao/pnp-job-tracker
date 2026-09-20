@@ -26,6 +26,7 @@ cms/dev.log
 /data/processed/company_enrich.json
 /data/processed/company_facts.json
 /data/processed/company_brief.json
+/data/processed/company_wiki_hq.json
 /data/raw/companies/
 # 人读导出视图(csv)
 /data/**/*.csv

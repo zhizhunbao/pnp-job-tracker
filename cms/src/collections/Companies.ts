@@ -19,6 +19,13 @@ export const Companies: CollectionConfig = {
     { name: 'region', type: 'text', index: true },
     { name: 'sectors', type: 'text' },
     { name: 'address', type: 'text' },
+    // 真总部六列(2026-09-20;sites 域官网整理记录,总部一节过了页面原句核对的才带;官网没标的退 Wikidata「总部所在地」;docs/sql/company-hq-20260920.sql 先行)
+    { name: 'hqAddress', type: 'text', admin: { description: '总部街址(只到街;官网没写到街就空)' } },
+    { name: 'hqCity', type: 'text', admin: { description: '总部所在市' } },
+    { name: 'hqProvince', type: 'text', admin: { description: '总部所在省(加拿大两位省码;外国总部原样)。是加拿大省码时 region 取它' } },
+    { name: 'hqQuote', type: 'textarea', admin: { description: '总部那一节的官网页面原句(出处凭据;维基来的没有)' } },
+    { name: 'hqSource', type: 'text', admin: { description: '总部出处网址(官网那一页 / Wikidata 条目)' } },
+    { name: 'siteCheckedAt', type: 'date', admin: { description: '官网最近一次整理成的时刻(sites 域)' } },
     { name: 'description', type: 'textarea' },
     { name: 'isDesignatedEmployer', type: 'checkbox', defaultValue: false },
     { name: 'isAgency', type: 'checkbox', defaultValue: false, admin: { description: '中介/派遣 — 不会担保' } },

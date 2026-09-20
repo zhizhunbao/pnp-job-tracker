@@ -90,7 +90,7 @@ describe('三个态', () => {
 describe('行构造器', () => {
   it('numeric 列的字符串收成数,可空数值保 null,jsonb 清单成数组', () => {
     const r = toPoolRow({
-      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', sector: null, province: 'ON', city: 'Ottawa', district: 'Kanata', ees: ['STEM'], website: 'https://www.shopify.com', address: '234 Laurier Ave W, Ottawa, ON', x_status: null, x_alias_zh: null, x_alias_ko: null, x_trans_v: null, category: 'tech', designated_places: null, city_zh: '渥太华', city_ko: null, trans_v: 1,
+      key: 'shopify', slug: 'shopify', name: 'Shopify', industry: 'IT', sector: null, province: 'ON', city: 'Ottawa', district: 'Kanata', ees: ['STEM'], website: 'https://www.shopify.com', address: '234 Laurier Ave W, Ottawa, ON', hq_address: '150 Elgin St', hq_city: 'Ottawa', hq_province: 'ON', x_status: null, x_alias_zh: null, x_alias_ko: null, x_trans_v: null, category: 'tech', designated_places: null, city_zh: '渥太华', city_ko: null, trans_v: 1,
       locations: ['Ottawa, ON', 'Toronto, ON'],
       designated: false, designated_programs: [], designated_provinces: [], open_jobs_total: '40', fetched: '2026-09-13', alias_zh: 'Shopify 公司', alias_ko: null,
       ind_group: 'stem', open_jobs: '35', latest_posted: '2026-09-12', top_titles: ['developer'], entry_jobs: '7',
@@ -107,6 +107,7 @@ describe('行构造器', () => {
     expect(r.designated).toBe(false)
     expect(r.slug).toBe('shopify')
     expect(r.locations).toEqual(['Ottawa, ON', 'Toronto, ON'])
+    expect(r.hq).toBe('150 Elgin St, Ottawa, ON')
     expect(r.cityZh).toBe('渥太华')
     expect(r.cityKo).toBe('')
     expect(r.aliasZh).toBe('Shopify 公司')
@@ -115,12 +116,13 @@ describe('行构造器', () => {
 
   it('三源独有雇主:slug / 行业 / 季度 为 null 不折空串以外的东西', () => {
     const r = toPoolRow({
-      key: 'n:acme', slug: null, name: 'Acme', industry: null, sector: 'municipal', province: 'NB', city: '', district: null, ees: null, website: 'shopify.com', address: null, x_status: 'done', x_alias_zh: '艾克米', x_alias_ko: null, x_trans_v: 1, category: null, designated_places: ['AIP|NB'], city_zh: null, city_ko: null, trans_v: null, locations: null, designated: true,
+      key: 'n:acme', slug: null, name: 'Acme', industry: null, sector: 'municipal', province: 'NB', city: '', district: null, ees: null, website: 'shopify.com', address: null, hq_address: null, hq_city: null, hq_province: null, x_status: 'done', x_alias_zh: '艾克米', x_alias_ko: null, x_trans_v: 1, category: null, designated_places: ['AIP|NB'], city_zh: null, city_ko: null, trans_v: null, locations: null, designated: true,
       designated_programs: ['AIP', 'RCIP'], designated_provinces: ['NS', 'NB'], open_jobs_total: 0, fetched: '2026-09-13', alias_zh: null, alias_ko: null, ind_group: '', open_jobs: 0,
       latest_posted: null, top_titles: null, entry_jobs: 0, entry_share: null, min_experience: null, lmia_skilled: 0,
       lmia_last_quarter: null, star: 3, wage_med_annual: null, wage_index_pct: null, total: 1,
     })
     expect(r.slug).toBeNull()
+    expect(r.hq).toBe('')
     expect(r.industry).toBeNull()
     expect(r.programs).toEqual(['AIP', 'RCIP'])
     expect(r.website).toBe('')

@@ -181,7 +181,7 @@ export const levelHasJobs = (levels: readonly string[]) =>
  * @returns 公司详情 SELECT 语句。
  */
 export const companyDetail = (cond: string) =>
-  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.careers_url, c.industry, c.sectors,
+  `SELECT c.id, c.name, c.slug, c.website, c.website_source, c.careers_url, c.hq_address, c.hq_city, c.hq_province, c.hq_source, c.industry, c.sectors,
             COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) AS alias_zh, COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) AS alias_ko,
             c.trans_v, c.wiki_url,
             c.sponsor_grade, c.score_detail, c.ai_brief, c.ai_website, c.ai_sources, c.ai_fetched, c.description, c.address, c.region,
@@ -690,6 +690,7 @@ export const employerPoolPage = (order: string) => `
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website, c.address,
+      c.hq_address, c.hq_city, c.hq_province,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
       p.designated_places,
       CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category,
@@ -789,6 +790,7 @@ export const employerPoolAll = (order: string) => `
       p.designated_programs,
       p.designated_provinces,
       p.open_jobs_total, p.fetched, c.alias_zh, c.alias_ko, c.trans_v, c.website, c.address,
+      c.hq_address, c.hq_city, c.hq_province,
       x.status AS x_status, x.alias_zh AS x_alias_zh, x.alias_ko AS x_alias_ko, x.trans_v AS x_trans_v,
       p.designated_places,
       CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category,

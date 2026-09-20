@@ -118,6 +118,9 @@ from mart.constants import (
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
+    BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
+    K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
+    K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
     K_JD_FORMATTED, K_JD_FORMATTED_AT,
@@ -187,7 +190,7 @@ from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
-    CollectedJob, ColumnIn, CompanyAgg, CompanyDetailIn, CompanyExtraIn, CompanyGradesIn,
+    CollectedJob, ColumnIn, CompanyAgg, CompanyDetailIn, CompanyExtraIn, CompanyGradesIn, HqStreetIn,
     CompanyGradesOut, CompanyRowIn, CutsIn, DailyRowIn, DifficultyIn, DirectOfIn, DistrictRowIn,
     DliRowIn, DrawBaseIn, DrawRowIn, DrawsBuildIn, EeCategoryIn, EeDrawIn, EeDrawsOut, EePointsIn,
     EePointsRowIn, ExpandAppliesIn, FactorBaseIn, FieldValuesIn, FillSalaryIn, FlowAddIn,
@@ -1049,6 +1052,28 @@ def load_careers() -> dict:
     return out
 
 
+def load_site_facts() -> dict:
+    """公司官网整理记录:slug → 记录(只取 ok;缺文件 = 空表,sites 域没跑过也照常汇装)。"""
+    out: dict = {}
+    if not IN_SITE_FACTS.exists():
+        return out
+    for slug, c in read_table(IN_SITE_FACTS).items():
+        if c.get(K_STATUS) == SITE_FACTS_OK:
+            out[slug] = c
+    return out
+
+
+def load_wiki_hq() -> dict:
+    """维基总部兜底记录:slug → 记录(只取 ok;缺文件 = 空表)。"""
+    out: dict = {}
+    if not IN_WIKI_HQ.exists():
+        return out
+    for slug, c in read_table(IN_WIKI_HQ).items():
+        if c.get(K_STATUS) == SITE_FACTS_OK:
+            out[slug] = c
+    return out
+
+
 def load_briefs() -> dict:
     """qwen 五节简介:slug → 记录(只取 ok;缺文件 = 空表)。"""
     out: dict = {}
@@ -1114,6 +1139,8 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_careers(x)
     drop_unofficial_sites(x)
     fill_brief(x)
+    fill_site_secs(x)
+    fill_hq(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
 
@@ -1177,6 +1204,81 @@ def fill_brief(x: CompanyExtraIn) -> None:
         x.extra[K_AI_BRIEF_KO] = br[K_BRIEF_KO]
     x.extra[K_AI_SOURCES] = json.dumps(br.get(K_SOURCES, []), ensure_ascii=False)
     x.extra[K_AI_FETCHED] = br.get(K_FETCHED)
+
+
+def fill_site_secs(x: CompanyExtraIn) -> None:
+    """官网整理记录里过了核对的三节(其他办公地点 / 新移民态度 / 福利与招聘)接在官网版简介后面,出处并进 aiSources。
+
+    只接在本轮由 fill_brief 给出的官网版简介后面:没有官网版简介的公司不单拿这三节顶掉库里的懒检索版
+    (COALESCE 保旧值的列,mart 一给就盖;藏内容前先有替代)。中 / 韩译文不含这三节,页面上这三节只出英文。
+    """
+    rec = x.ctx.site_facts.get(x.slug)
+    if rec is None or not x.extra.get(K_AI_BRIEF):
+        return
+    lines: list = []
+    for mark, key in SITE_BRIEF_SECS:
+        if mark in rec.get(K_SITE_QUOTES, {}) and rec.get(key):
+            lines.append(SITE_SEC_LINE_TPL.format(mark=mark, text=rec[key]))
+    if len(lines) == 0:
+        return
+    x.extra[K_AI_BRIEF] = x.extra[K_AI_BRIEF] + BRIEF_LINE_SEP + BRIEF_LINE_SEP.join(lines)
+    sources = json.loads(x.extra.get(K_AI_SOURCES) or EMPTY_JSON_LIST)
+    for url in rec.get(K_SOURCES, []):
+        if url not in sources:
+            sources.append(url)
+    x.extra[K_AI_SOURCES] = json.dumps(sources, ensure_ascii=False)
+
+
+def fill_hq(x: CompanyExtraIn) -> None:
+    """总部六列:官网整理记录里总部一节过了原句核对的带街址 / 市 / 省 / 原句 / 出处页;官网没标总部的退维基兜底
+    (只有市 / 省 + Wikidata 条目链接,没有原句);两路都没有不落键。总部省是加拿大省码的拿去盖 region,其余 region 维持现状。"""
+    rec = x.ctx.site_facts.get(x.slug)
+    hq = None
+    if rec is not None:
+        x.extra[K_SITE_CHECKED_AT] = rec.get(K_SITE_AT)
+        if SITE_SEC_HQ in rec.get(K_SITE_QUOTES, {}):
+            hq = rec
+            x.extra[K_HQ_QUOTE] = rec[K_SITE_QUOTES][SITE_SEC_HQ]
+    if hq is None:
+        hq = x.ctx.wiki_hq.get(x.slug)
+    if hq is None:
+        return
+    city = (hq.get(K_SRC_HQ_CITY) or "").strip()
+    province = hq_province_of(hq.get(K_SRC_HQ_PROVINCE) or "")
+    x.extra[K_HQ_ADDRESS] = hq_street_of(HqStreetIn(address=hq.get(K_SRC_HQ_ADDRESS) or "", city=city))
+    x.extra[K_HQ_CITY] = city
+    x.extra[K_HQ_PROVINCE] = province
+    x.extra[K_HQ_SOURCE] = hq.get(K_SRC_HQ_SOURCE) or first_of(hq.get(K_SOURCES, []))
+    if province in HQ_CA_PROVS:
+        x.extra[K_REGION] = province
+
+
+def hq_province_of(raw: str) -> str:
+    """总部省:两位的一律大写当省码(模型偶尔抄成 bc);其余(Ontario / England / USA)原样留。"""
+    value = raw.strip()
+    if len(value) == PROV_CODE_LEN:
+        return value.upper()
+    return value
+
+
+def hq_street_of(x: HqStreetIn) -> str:
+    """总部街址只留到街:模型常把整行地址连市 / 省 / 邮编一起抄进街址格(「2075 Bayview Ave, Toronto, ON M4N 3M5」),
+    市 / 省各有一列,页面上三格拼一行就会重复 —— 从街址里最后一次出现市名的地方截断(街名与市同名的「100 Toronto St, Toronto」
+    截的是后一个)。街址里找不到市名的原样留;没有市名不截。"""
+    address = x.address.strip()
+    if x.city == "":
+        return address
+    at = address.lower().rfind(x.city.lower())
+    if at < 0:
+        return address
+    return address[:at].rstrip(HQ_TRIM_CHARS)
+
+
+def first_of(items: list) -> str:
+    """列表第一项;空表给空串。"""
+    if len(items) == 0:
+        return ""
+    return items[0]
 
 
 def nonempty_of(d: dict) -> dict:
@@ -3503,7 +3605,7 @@ def new_mart_ctx() -> MartCtx:
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), careers=load_careers(),
-                   briefs=load_briefs(),
+                   briefs=load_briefs(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),

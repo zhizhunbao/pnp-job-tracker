@@ -10,7 +10,7 @@ import {
   ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
   LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
-import type { CleanProvsIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
+import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
 
 /**
  * #146 显示用省名(Frank「中韩用户只看英文难理解」,拍板英文在前):中韩界面出
@@ -42,6 +42,24 @@ export function provName(input: ProvNameIn): string {
  */
 export function mapsUrl(q: string): string {
   return MAPS_URL + encodeURIComponent(q)
+}
+
+/**
+ * 公司真总部的一行字:街址、市、省码三格里有值的,用逗号接成一行(「320 Matheson Blvd W., Unit #212, Mississauga, ON」)。
+ * 英文原样不译(2026-09-19 Frank「不要用 中文」);三格的清洗(街址只留到街、省码大写)在数据层 mart 做完,这里只拼。
+ * 2026-09-20 立:公司卡「总部」行与雇主板「总部」列共用这一份拼法(行为一份,两处同口径)。
+ *
+ * @param input 总部三格。
+ * @returns 一行字;三格都空给空串。
+ */
+export function hqLineOf(input: HqLineIn): string {
+  const parts: string[] = []
+  for (const part of [input.address, input.city, input.province]) {
+    if (part !== LOC_NONE) {
+      parts.push(part)
+    }
+  }
+  return parts.join(SEP_COMMA)
 }
 
 /**

@@ -399,6 +399,30 @@ export interface Company {
   region?: string | null;
   sectors?: string | null;
   address?: string | null;
+  /**
+   * 总部街址(只到街;官网没写到街就空)
+   */
+  hqAddress?: string | null;
+  /**
+   * 总部所在市
+   */
+  hqCity?: string | null;
+  /**
+   * 总部所在省(加拿大两位省码;外国总部原样)。是加拿大省码时 region 取它
+   */
+  hqProvince?: string | null;
+  /**
+   * 总部那一节的官网页面原句(出处凭据;维基来的没有)
+   */
+  hqQuote?: string | null;
+  /**
+   * 总部出处网址(官网那一页 / Wikidata 条目)
+   */
+  hqSource?: string | null;
+  /**
+   * 官网最近一次整理成的时刻(sites 域)
+   */
+  siteCheckedAt?: string | null;
   description?: string | null;
   isDesignatedEmployer?: boolean | null;
   /**
@@ -2796,6 +2820,12 @@ export interface CompaniesSelect<T extends boolean = true> {
   region?: T;
   sectors?: T;
   address?: T;
+  hqAddress?: T;
+  hqCity?: T;
+  hqProvince?: T;
+  hqQuote?: T;
+  hqSource?: T;
+  siteCheckedAt?: T;
   description?: T;
   isDesignatedEmployer?: T;
   isAgency?: T;
