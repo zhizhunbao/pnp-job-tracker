@@ -1048,6 +1048,17 @@ export const JD_BY_APPLY_URL = `SELECT description FROM jobs WHERE apply_url = $
  */
 export const JD_UPDATE_BY_APPLY_URL = `UPDATE jobs SET description = $1 WHERE apply_url = $2 AND description IS NULL`
 
+/**
+ * 按职位 id 取 JD 正文。$1=职位 id。2026-09-20:职位板 / 详情页这条链手里有岗位号的一律走它(多条岗共用一个投递链接时
+ * 按链接会取到别人的正文,见 JD_TRANS_BY_ID);按链接那一对只留给手里只有链接的调用方(顾问、简历)。
+ */
+export const JD_DESC_BY_ID = `SELECT description FROM jobs WHERE id = $1 AND description IS NOT NULL LIMIT 1`
+
+/**
+ * 懒抓到的正文按职位 id 回写:只填空。$1=正文,$2=职位 id。
+ */
+export const JD_UPDATE_BY_ID = `UPDATE jobs SET description = $1 WHERE id = $2 AND description IS NULL`
+
 // =========================================================================
 // 14. 统计页(/stats)
 // =========================================================================
@@ -1113,17 +1124,6 @@ export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.op
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
 /**
-/**
- * 按职位 id 取 JD 正文。$1=职位 id。2026-09-20:职位板 / 详情页这条链手里有岗位号的一律走它(多条岗共用一个投递链接时
- * 按链接会取到别人的正文,见 JD_TRANS_BY_ID);按链接那一对只留给手里只有链接的调用方(顾问、简历)。
- */
-export const JD_DESC_BY_ID = `SELECT description FROM jobs WHERE id = $1 AND description IS NOT NULL LIMIT 1`
-
-/**
- * 懒抓到的正文按职位 id 回写:只填空。$1=正文,$2=职位 id。
- */
-export const JD_UPDATE_BY_ID = `UPDATE jobs SET description = $1 WHERE id = $2 AND description IS NULL`
-
  * 清空城市快照(REFRESH_CITY_STATS 的前半;seed 事务内两句连发,失败整体回滚不留空表)。
  */
 export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
