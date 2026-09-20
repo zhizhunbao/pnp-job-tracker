@@ -10,7 +10,6 @@ import asyncio
 import json
 import os
 import re
-import socket
 import unicodedata
 from datetime import datetime, timezone
 from typing import cast
@@ -24,7 +23,7 @@ from crawl.functions import (
     browser_live, browser_ok, close_browser, ensure_cookie_jar, fetch_browser_html, get_browser_page, load_cache_index, put_cached_page,
 )
 from crawl.scheme import CachePutIn
-from fetch.functions import cms_config, make_client
+from fetch.functions import cms_config, host_resolves, make_client
 from log.functions import say
 from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
@@ -33,7 +32,7 @@ from sites.constants import (
     BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_TRIM_CHARS, IN_SEEN,
     K_DONE_BRIEF, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_QUOTE, K_DONE_HQ_SOURCE, K_DONE_SOURCES,
     K_HOST, K_KEY, K_NOTE, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
-    P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PORT_SEP, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
+    P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
     RETRY_TRANSIENT_DAYS, SECONDS_PER_HOUR, ST_DEAD, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, TRANSIENT_NOTES,
     VISIT_TAKE,
     ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
@@ -572,24 +571,6 @@ async def fetch_site(target: Target) -> PagesRecord:
             return rec
     rec.status = ST_OK
     return rec
-
-
-def host_resolves(netloc: str) -> bool:
-    """这个主机名(含带 www. 的那个)域名解析得了吗(标准库 getaddrinfo;浏览器没取回页面后复核用 ——
-    解析不了 = 死站候选,2026-09-20 自动纠错:nouveau.cotech.ca / cuisinesbernier.ca 这类)。空主机名按解析不了算。"""
-    host = netloc.split(PORT_SEP)[0].lower()
-    if host == FIELD_NONE:
-        return False
-    names = [host]
-    if not host.startswith(HOST_WWW_PREFIX):
-        names.append(HOST_WWW_PREFIX + host)
-    for name in names:
-        try:
-            socket.getaddrinfo(name, None)
-        except OSError:
-            continue
-        return True
-    return False
 
 
 def www_url_of(url: str) -> str:

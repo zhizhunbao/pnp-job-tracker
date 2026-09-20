@@ -40,7 +40,7 @@ from crawl.functions import (browser_live, browser_ok, close_browser, ensure_coo
 from crawl.constants import HTML_CACHE_DIR, K_HTML, K_PAGES, K_URL, MANIFEST_FILE
 from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, PageLike, SeedSpec
-from fetch.functions import cms_config, make_client, make_polite_client
+from fetch.functions import cms_config, host_resolves, make_client, make_polite_client
 from company.constants import (
     B64_BLOCK, B64_PAD, BEAT_FRESH_S, BING_REDIRECT_PARAM, BING_REDIRECT_PATH, BING_REDIRECT_PREFIX, BING_SEARCH_URL, DDG_BROWSER_URL,
     ENV_FINDSITE_GOOGLE, IN_SEEN, K_SEEN_LAST, K_SEEN_OPENED, FINDSITE_GOOGLE_ON, FINDSITE_HTTP_TIMEOUT_S, FINDSITE_TAKE, FOUND_BING, FOUND_DDG, FOUND_GOOGLE, GOOGLE_POLL_MS,
@@ -115,7 +115,7 @@ from company.constants import (
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
-    CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn,
+    CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn, TitleHitsIn,
     ClaimIn, HqPlace, PickWikiHqIn, WikiHqQuery, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
@@ -608,18 +608,27 @@ def guard_match(x: GuardMatchIn) -> bool:
         return True
     try:
         r = x.client.get(HTTPS_PREFIX + x.dom, timeout=GUARD_TIMEOUT_S)
-        head = r.text[:TITLE_SNIFF_LEN].lower()
-        m = TITLE_RE.search(head)
-        site = SITE_NAME_RE.search(head)
-        text = (m.group(1) if m else "") + TEXT_JOIN_SEP + (site.group(1) if site else "")
-        text_hits = 0
-        for t in toks:
-            if t in text:
-                text_hits += 1
-        return text_hits >= max(1, (len(toks) + 1) // 2)
+        return title_hits_ok(TitleHitsIn(name=x.name, html=r.text))
     except Exception as e:  # noqa: BLE001
         err(x.dom, e)
         return False
+
+
+def title_hits_ok(x: TitleHitsIn) -> bool:
+    """首页标题复核:页头里的 title / og:site_name 含公司名的词够半数(至少一个)才算对得上。
+    guard_match(httpx 取的首页)与 hot_site_of_links(有头浏览器取的首页)共用(行为只许一份)。"""
+    toks = name_tokens(x.name)
+    if not toks:
+        return False
+    head = x.html[:TITLE_SNIFF_LEN].lower()
+    m = TITLE_RE.search(head)
+    site = SITE_NAME_RE.search(head)
+    text = (m.group(1) if m else "") + TEXT_JOIN_SEP + (site.group(1) if site else "")
+    text_hits = 0
+    for t in toks:
+        if t in text:
+            text_hits += 1
+    return text_hits >= max(1, (len(toks) + 1) // 2)
 
 
 def jd_domain_hints() -> dict[str, set[str]]:
@@ -734,13 +743,31 @@ def ddg_find(x: DdgFindIn) -> SearchOut:
 def site_of_links(x: SiteOfLinksIn) -> str:
     """搜索结果 → 官网:前 DDG_SCAN_N 条里挑非聚合域(去重),前 DDG_GUARD_N 个逐个过护栏(含首页标题复核);
     都不过回空串(= 查无)。DDG / CSE 两后端共用这一道(行为只许一份)。"""
+    for dom in candidate_domains(x.links):
+        if guard_match(GuardMatchIn(client=x.client, name=x.name, dom=dom)):
+            return HTTPS_PREFIX + dom
+    return ""
+
+
+def candidate_domains(links: list) -> list[str]:
+    """搜索结果 → 要过护栏的候选域名:前 DDG_SCAN_N 条里挑非聚合域(去重、保序),取前 DDG_GUARD_N 个。"""
     seen: list[str] = []
-    for target in x.links[:DDG_SCAN_N]:
+    for target in links[:DDG_SCAN_N]:
         dom = domain_of(target)
         if dom and dom not in seen and not is_blocked_domain(dom):
             seen.append(dom)
-    for dom in seen[:DDG_GUARD_N]:
+    return seen[:DDG_GUARD_N]
+
+
+async def hot_site_of_links(x: SiteOfLinksIn) -> str:
+    """点开路径的「搜索结果 → 官网」:候选与护栏同 site_of_links,多一档 —— 护栏没过的再用有头浏览器开它的首页读标题复核
+    (2026-09-20 生产实撞:City of Coquitlam 的真官网 coquitlam.ca 排第一,但它拦 httpx,护栏取不到标题就跳过,
+    排第三的 visitcoquitlam.ca 标题里有公司名反而中了)。按搜索名次逐个判,先中先得。"""
+    for dom in candidate_domains(x.links):
         if guard_match(GuardMatchIn(client=x.client, name=x.name, dom=dom)):
+            return HTTPS_PREFIX + dom
+        html = await fetch_browser_html(HTTPS_PREFIX + dom)
+        if html is not None and title_hits_ok(TitleHitsIn(name=x.name, html=html)):
             return HTTPS_PREFIX + dom
     return ""
 
@@ -2510,7 +2537,7 @@ def hand_find_stage(x: CmsCallIn) -> None:
 
 async def findsite_one(x: FindOneIn) -> None:
     """一家:报「查找官网」→ 今天找过的直接用上次结果 → 走阶梯(避开现在那个死的 / 对不上的官网)+ 问 Wikidata 要总部
-    → 记缓存(找到的记 found 给 about 步接着抓;顶掉旧官网的记 replaces 给 mart)→ 交活(找到 = 转给 visit 步,找不到 = 查无)。"""
+    → 记缓存(找到的记 found 给 about 步接着抓;顶掉旧官网的记 replaces 给 mart —— 只记头一回的:那才是来源侧带的旧官网,mart 比的是它)→ 交活(找到 = 转给 visit 步,找不到 = 查无)。"""
     hand_find_stage(CmsCallIn(client=x.client, base=x.base, headers=x.headers,
                               payload={K_TODO_KEY: x.todo.key, K_DONE_STAGE: STAGE_FIND}))
     old = domain_of(x.todo.website)
@@ -2522,6 +2549,7 @@ async def findsite_one(x: FindOneIn) -> None:
     note = NOTE_CHECKED_TODAY
     if rec.hot_checked == "" or days_since(rec.hot_checked) > HOT_RETRY_DAYS:
         note = ""
+        x.avoid = {old, rec.replaces} - {""}
         got = await hot_site_of(x)
         rec.hot_checked = now_iso()
         if got.site != "":
@@ -2529,7 +2557,8 @@ async def findsite_one(x: FindOneIn) -> None:
             rec.found = got.found
             rec.status = ST_FOUND
             rec.fetched = rec.hot_checked
-            rec.replaces = old
+            if rec.replaces == "":
+                rec.replaces = old
         cache[x.todo.slug] = rec
         write_enrich_cache(cache)
     elif rec.website != "" and domain_of(rec.website) != old:
@@ -2567,13 +2596,12 @@ def hot_wiki_hq_of(todo: FindTodo) -> WikiHqRecord | None:
 
 async def hot_site_of(x: FindOneIn) -> HotSiteOut:
     """查找官网阶梯(终版,Frank 2026-09-20):帖内线索 → Wikidata 官网属性 → Google(只在本机,弹验证等 Frank 亲手点)→ Bing → DDG。
-    候选一律避开现在那个官网的主机名、过 site_of_links / guard_match 同一道护栏(域名对得上公司名,剔社交 / 黄页 / 招聘平台)。"""
-    old = domain_of(x.todo.website)
+    候选一律避开 x.avoid(现在那个官网 + 这家以前被顶掉过的官网)、域名要解析得了(Wikidata 登记的官网就是死域名的,city.coquitlam.bc.ca 实撞)、过 site_of_links / guard_match 同一道护栏(域名对得上公司名,剔社交 / 黄页 / 招聘平台)。"""
     for dom in sorted(hot_jd_hints(x.todo.slug)):
-        if dom != old and guard_match(GuardMatchIn(client=x.client, name=x.todo.name, dom=dom)):
+        if dom not in x.avoid and host_resolves(dom) and guard_match(GuardMatchIn(client=x.client, name=x.todo.name, dom=dom)):
             return HotSiteOut(site=HTTPS_PREFIX + dom, found=FOUND_JD)
     wiki = wiki_find(WikiFindIn(client=x.client, name=x.todo.name))
-    if wiki.site != "" and domain_of(wiki.site) != old:
+    if wiki.site != "" and domain_of(wiki.site) not in x.avoid and host_resolves(domain_of(wiki.site)):
         return HotSiteOut(site=wiki.site, found=FOUND_WIKI)
     engines = [FOUND_BING, FOUND_DDG]
     if x.google:
@@ -2581,17 +2609,18 @@ async def hot_site_of(x: FindOneIn) -> HotSiteOut:
     query = SEARCH_QUERY_TPL.format(name=x.todo.name, province=x.todo.province)
     for engine in engines:
         links = await engine_links(EngineIn(engine=engine, query=query))
-        site = site_of_links(SiteOfLinksIn(client=x.client, name=x.todo.name, links=other_links_of(OtherLinksIn(links=links, old=old))))
+        site = await hot_site_of_links(SiteOfLinksIn(client=x.client, name=x.todo.name,
+                                                     links=other_links_of(OtherLinksIn(links=links, avoid=x.avoid))))
         if site != "":
             return HotSiteOut(site=site, found=engine)
     return HotSiteOut(site="", found="")
 
 
 def other_links_of(x: OtherLinksIn) -> list:
-    """候选链接里去掉现在那个官网主机名的(死站 / 名字对不上的那个不许再选回来)。"""
+    """候选链接里去掉要避开的主机名(现在那个死的 / 对不上的官网、这家以前被顶掉过的官网,都不许再选回来)。"""
     out: list = []
     for link in x.links:
-        if x.old == "" or domain_of(link) != x.old:
+        if domain_of(link) not in x.avoid:
             out.append(link)
     return out
 

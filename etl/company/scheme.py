@@ -16,7 +16,7 @@ company 域行形状(三件套形制**全站样张**,2026-08-30)。
 import 两个洞:typing/标准库/pydantic + **本域 constants**(2026-08-30 开:兜底值与
 清洗词表进形状配置,单向边无环 —— 叶子律的域内松绑,跨域仍零)。
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
@@ -1639,6 +1639,9 @@ class FindOneIn:
     google: bool
     """走不走 Google 那一档(只在本机)。"""
 
+    avoid: set = field(default_factory=set)
+    """阶梯要避开的主机名集(现在那个官网 + 以前被顶掉过的;findsite_one 查了缓存才知道,进阶梯前填)。"""
+
 
 @dataclass
 class HotSiteOut:
@@ -1669,6 +1672,17 @@ class OtherLinksIn:
     links: list
     """候选链接。"""
 
-    old: str
-    """要避开的旧官网主机名;没有 = 空串。"""
+    avoid: set
+    """要避开的主机名集。"""
+
+
+@dataclass
+class TitleHitsIn:
+    """title_hits_ok() 入参。"""
+
+    name: str
+    """公司名。"""
+
+    html: str
+    """首页原文(只看页头那一段)。"""
 

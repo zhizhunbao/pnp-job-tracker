@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import email.utils
 import os
+import socket
 import ssl
 import time
 from datetime import datetime
@@ -25,9 +26,9 @@ from fetch.constants import (ATTR_CONTENT, ATTR_HREF, BODY_TAGS, BROWSER_UA, BUL
                              DATE_LONG_TPL, DATE_RE, ENV_SEED_TOKEN, ENV_SEED_URL, FEED_DATE_TAGS, FEED_ENTRY_TAGS, HDR_UA,
                              HDR_SEED_TOKEN, ISO_DATE_RE, JUNK_TAGS, K_DATE, K_TITLE, K_URL, LINE_SEP,
                              OG_META_PATTERNS, OG_PROP, PARA_SEP, PARSER_HTML, PARSER_XML,
-                             POLITE_UA, RETRIES, SCHEME_SEP, SECTION_TAKE_TAGS, SLUG_DASH, SLUG_MAXLEN,
+                             POLITE_UA, PORT_SEP, RETRIES, SCHEME_SEP, SECTION_TAKE_TAGS, SLUG_DASH, SLUG_MAXLEN,
                              SLUG_RE, SPACE_SEP, TAG_ARTICLE, TAG_BR, TAG_LI, TAG_LINK, TAG_MAIN,
-                             TAG_META, TAG_TITLE, TAIL_NOISE, TRAIL_COLON, WS_RE)
+                             TAG_META, TAG_TITLE, TAIL_NOISE, TRAIL_COLON, WS_RE, WWW_PREFIX)
 
 
 # =========================================================================
@@ -67,6 +68,25 @@ def cms_config() -> CmsCfg:
         return CmsCfg(base=CMS_NONE, headers={})
     parts = httpx.URL(seed_url)
     return CmsCfg(base=parts.scheme + SCHEME_SEP + parts.netloc.decode(), headers={HDR_SEED_TOKEN: token})
+
+
+def host_resolves(netloc: str) -> bool:
+    """这个主机名(含带 www. 的那个)域名解析得了吗(标准库 getaddrinfo)。空主机名按解析不了算。
+    2026-09-20 自动纠错:sites 域在浏览器没取回页面后拿它复核(解析不了 = 死站候选,nouveau.cotech.ca / cuisinesbernier.ca 这类),
+    company 域找官网阶梯拿它筛候选(Wikidata 登记的官网就是死域名的,city.coquitlam.bc.ca 实撞)。"""
+    host = netloc.split(PORT_SEP)[0].lower()
+    if host == CMS_NONE:
+        return False
+    names = [host]
+    if not host.startswith(WWW_PREFIX):
+        names.append(WWW_PREFIX + host)
+    for name in names:
+        try:
+            socket.getaddrinfo(name, None)
+        except OSError:
+            continue
+        return True
+    return False
 
 
 def fetch(x: FetchIn) -> str:

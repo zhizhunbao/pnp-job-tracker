@@ -155,3 +155,9 @@ SCHEME_SEP = "://"
 
 CMS_NONE = ""
 """cms 接线没配的站点根(空串)。"""
+
+PORT_SEP = ":"
+"""主机名与端口的分隔(host_resolves 取主机名用)。"""
+
+WWW_PREFIX = "www."
+"""host_resolves 裸域名解析不了时再试的前缀。"""

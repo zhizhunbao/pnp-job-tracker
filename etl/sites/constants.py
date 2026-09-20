@@ -514,9 +514,6 @@ BRIEF_LINE_TPL = "[{mark}] {text}"
 BRIEF_LINE_SEP = "\n"
 """简介文本的节间分隔。"""
 
-PORT_SEP = ":"
-"""主机名与端口的分隔(取主机名用)。"""
-
 HQ_JOIN = ", "
 """总部一行字的拼接分隔。"""
 

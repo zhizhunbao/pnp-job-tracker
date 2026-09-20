@@ -342,8 +342,10 @@ URL_DOMAIN_RE = re.compile(r"https?://([\w-]+\.[\w.-]+)")
 JD_HEAD_LEN = 600
 """JD .md 只读头部这么多字符找 url: 行(frontmatter 在头部,省 IO)。"""
 
-TITLE_SNIFF_LEN = 4000
-"""护栏复核只嗅首页前这么多字符(title/og:site_name 都在 head 里)。"""
+TITLE_SNIFF_LEN = 20000
+"""护栏复核只嗅首页前这么多字符(title/og:site_name 都在 head 里)。
+2026-09-20 由 4000 放到 20000:coquitlam.ca 的 <title> 在第 6172 个字符(前面是一串统计脚本),嗅不到标题,
+排第一的真官网过不了护栏,排第三的 visitcoquitlam.ca 反而中了(点开优先生产验收实撞)。"""
 
 TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S)
 """首页 <title>(护栏第二关的比对文本之一)。"""
