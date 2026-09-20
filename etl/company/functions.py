@@ -39,7 +39,7 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
-    IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, WIKIHQ_MIN_OPEN,
+    IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, NAME_COUNTRY_RE, NAME_LEAD_THE_RE, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
     PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
     WD_PROV_CODES, WIKIHQ_LIMIT, WIKIHQ_REFRESH_DAYS,
@@ -104,7 +104,7 @@ from company.constants import (
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
-    ClaimIn, HqPlace, PickWikiHqIn, WikiHqOut, WikiHqRecord, WikiHqTarget,
+    ClaimIn, HqPlace, PickWikiHqIn, WikiHqQuery, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
@@ -2200,20 +2200,42 @@ def write_wiki_hq(cache: dict[str, WikiHqRecord]) -> int:
 
 
 def wikihq_find(name: str) -> WikiHqOut:
-    """一家公司:按名搜前 WD_SEARCH_LIMIT 个条目,名字严格对得上的那一个读「总部所在地」→ 解析市 / 省。
+    """一家公司:按原名查;查无再按去掉国名字样的名字查(KPMG Canada → KPMG),再查无按去掉打头 The 的查。
+    每次都过同一道严格名字闸(宁缺勿错);任何一次请求失败 = failed(不记,下轮重试)。"""
+    out = WikiHqOut(rec=WikiHqRecord(name=name, status=ST_MISS, at=now_iso()), failed=False)
+    for query in wikihq_names_of(name):
+        out = wikihq_find_one(WikiHqQuery(name=name, query=query))
+        if out.failed or out.rec.status == ST_OK:
+            return out
+    return out
 
-    查无(没有对得上的条目 / 条目没填总部)记 miss;请求失败 failed=True(不记,下轮重试)。
+
+def wikihq_names_of(name: str) -> list:
+    """要试的名字:原名 → 去掉国名字样的 → 再去掉打头 The 的(与前面重复 / 去成空串的不试)。"""
+    out = [name]
+    local = WS_FOLD_RE.sub(TEXT_JOIN_SEP, NAME_COUNTRY_RE.sub(TEXT_JOIN_SEP, name)).strip()
+    bare = NAME_LEAD_THE_RE.sub("", local).strip()
+    for cand in (local, bare):
+        if cand != "" and cand not in out:
+            out.append(cand)
+    return out
+
+
+def wikihq_find_one(x: WikiHqQuery) -> WikiHqOut:
+    """按一个名字查一次:搜前 WD_SEARCH_LIMIT 个条目,名字严格对得上的那一个读「总部所在地」→ 解析市 / 省。
+
+    查无(没有对得上的条目 / 条目没填总部)记 miss;请求失败 failed=True(不记,下轮重试)。记录里的 name 一律是公司原名。
     """
-    rec = WikiHqRecord(name=name, status=ST_MISS, at=now_iso())
+    rec = WikiHqRecord(name=x.name, status=ST_MISS, at=now_iso())
     try:
-        hits = wd_get(search_params(name)).get(K_SEARCH, [])
+        hits = wd_get(search_params(x.query)).get(K_SEARCH, [])
         ids: list = []
         for h in hits:
             ids.append(h[K_ID])
         if len(ids) == 0:
             return WikiHqOut(rec=rec, failed=False)
         ents = wd_get(site_entity_params(ids)).get(K_ENTITIES, {})
-        target = norm_company_name(name)
+        target = norm_company_name(x.query)
         for eid in ids:
             entity = ents.get(eid) or {}
             if not entity_name_matches(EntityIn(entity=entity, target=target)):
@@ -2232,7 +2254,7 @@ def wikihq_find(name: str) -> WikiHqOut:
             return WikiHqOut(rec=rec, failed=False)
         return WikiHqOut(rec=rec, failed=False)
     except Exception as e:  # noqa: BLE001 — 网络/限速什么错都可能,一律当失败保留活口
-        err(name, e)
+        err(x.name, e)
         return WikiHqOut(rec=rec, failed=True)
 
 

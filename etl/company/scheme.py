@@ -1527,6 +1527,17 @@ class PickWikiHqIn:
 
 
 @dataclass
+class WikiHqQuery:
+    """wikihq_find_one() 入参。"""
+
+    name: str
+    """公司原名(记录里记它)。"""
+
+    query: str
+    """这一次拿去搜、去比的名字(原名,或去掉国名字样 / 打头 The 的)。"""
+
+
+@dataclass
 class WikiHqOut:
     """wikihq_find() 出参。"""
 

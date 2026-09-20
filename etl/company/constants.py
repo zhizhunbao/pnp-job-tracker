@@ -1365,6 +1365,13 @@ WIKIHQ_LIMIT = 200
 WIKIHQ_REFRESH_DAYS = 90
 """查过的(命中与确认没有都算)多少天内不再查(总部搬家是年级别的事)。"""
 
+NAME_COUNTRY_RE = re.compile(r"\b(?:of canada|du canada|canada|canadian|canadien(?:ne)?)\b", re.I)
+"""公司名里的国名字样(KPMG Canada / The Home Depot Canada / BDO Canada / Compagnie WestRock du Canada):
+Wikidata 的条目是母公司本名,带着国名按严格名字闸永远对不上 —— wikihq 第二次尝试时去掉它再比(2026-09-20 首轮放宽后命中 47 / 342 实撞)。"""
+
+NAME_LEAD_THE_RE = re.compile(r"^the\s+", re.I)
+"""公司名打头的 The(第三次尝试时去掉:条目名有的带 The 有的不带)。"""
+
 WD_ENTITY_URL_TPL = "https://www.wikidata.org/wiki/{qid}"
 """Wikidata 条目链接(总部的出处:「总部所在地」这条声明就挂在公司条目页上,点开能核对)。"""
 
