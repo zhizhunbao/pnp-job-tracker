@@ -45,7 +45,8 @@ export function mapsUrl(q: string): string {
 }
 
 /**
- * 公司真总部的一行字:街址、市、省码三格里有值的,用逗号接成一行(「320 Matheson Blvd W., Unit #212, Mississauga, ON」)。
+ * 公司真总部的一行字:街址、市、省码三格里有值的,用逗号接成一行,一律带国家(「320 Matheson Blvd W., Unit #212, Mississauga, ON, Canada」)。
+ * 2026-09-20 Frank「都带上国家」:省格是加拿大省码的补 Canada;外国总部的省格数据层已是「州, 国」(Menlo Park, California, United States)。
  * 英文原样不译(2026-09-19 Frank「不要用 中文」);三格的清洗(街址只留到街、省码大写)在数据层 mart 做完,这里只拼。
  * 2026-09-20 立:公司卡「总部」行与雇主板「总部」列共用这一份拼法(行为一份,两处同口径)。
  *
@@ -58,6 +59,9 @@ export function hqLineOf(input: HqLineIn): string {
     if (part !== LOC_NONE) {
       parts.push(part)
     }
+  }
+  if (PROV_NAMES[input.province] != null) {
+    parts.push(COUNTRY_CANADA)
   }
   return parts.join(SEP_COMMA)
 }

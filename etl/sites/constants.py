@@ -265,6 +265,8 @@ STRICT RULES:
   If you cannot quote it, the answer is NONE.
 - HQ: the head office / headquarters / corporate office. If several offices are listed and none is marked as head office,
   headquarters or corporate office, answer NONE. A single address in the page footer of a company site counts as the head office.
+  If the page gives both a Canadian head office and a head office outside Canada, answer the Canadian one; give the one
+  outside Canada only when no Canadian head office is shown.
 - Output exactly these lines and nothing else:
 WHAT=<1-2 sentences: what the company sells or does, and for whom>
 WHAT_QUOTE=<exact page sentence>
@@ -286,6 +288,7 @@ Company: {name}
 Pages:
 {blob}"""
 """整理提示词(给模型看的,英文;name / blob 两槽)。要点:只许用页面文字、每节必须附页面原句、多个办公点没标总部就答 NONE。
+2026-09-20 Frank「外国总部可以,如果找不到本地总部」:页面同时给了加拿大总部与外国总部的答加拿大那个,没有加拿大总部才给外国的。
 NEWCOMERS 一节是本站用户最想知道的,只认官网原句,没提就空着 —— 不许从别的话里推断。"""
 
 LINE_RE_TPL = r"^\s*{key}\s*=(.*)$"

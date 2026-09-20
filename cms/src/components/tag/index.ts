@@ -6,5 +6,6 @@
  * @time 2026-08-24 04:30:00
  */
 export { Tag } from './tag'
+export { TagFold } from './tagfold'
 export { tagClsOf } from './functions'
-export type { TagIn, TagVariant } from './types'
+export type { TagFoldIn, TagIn, TagVariant } from './types'

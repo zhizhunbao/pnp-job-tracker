@@ -173,3 +173,43 @@
    */
   border: 1px solid #e5e7eb;
 }
+
+/*
+ * 可折叠标签排的开合钮(「展开其余 N 个」/「收起」):蓝字小号、无框无底,贴在标签后面;类名写两遍压过 button 基座。
+ */
+.foldBtn.foldBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 上下 2、左右 0。
+   */
+  padding: 2px 0;
+
+  /*
+   * 小号字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝 —— 蓝色已说明可点。
+   */
+  color: #2563eb;
+
+  /*
+   * 手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}

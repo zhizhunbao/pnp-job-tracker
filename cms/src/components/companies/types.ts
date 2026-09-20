@@ -1511,9 +1511,9 @@ export type JobsShownIn = {
   jobs: CompanyJobRow[]
 
   /**
-   * 已展开(#198:首显 8,展开其余)。
+   * 现在露几条(#198 首显 8;2026-09-20 起一批一批往上加,不再一次全铺)。
    */
-  all: boolean
+  n: number
 }
 
 /**
@@ -1551,14 +1551,39 @@ export type JobsToggleLabelIn = {
   t: TFn
 
   /**
-   * 现在是展开态没。
-   */
-  all: boolean
-
-  /**
    * 折着没露的岗数。
    */
   hidden: number
+}
+
+/**
+ * 数值态的落格(useState 的 setter,签名由 React 定死)。
+ */
+export type SetNumFn = (v: number) => void
+
+/**
+ * makeJobsMore 的入参:现在露几条与落格。
+ */
+export type JobsMoreIn = {
+  /**
+   * 现在露几条。
+   */
+  n: number
+
+  /**
+   * 落格。
+   */
+  set: SetNumFn
+}
+
+/**
+ * makeJobsReset 的入参:落格。
+ */
+export type JobsResetIn = {
+  /**
+   * 落格。
+   */
+  set: SetNumFn
 }
 
 /**

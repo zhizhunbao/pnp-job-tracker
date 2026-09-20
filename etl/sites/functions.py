@@ -301,6 +301,8 @@ async def fetch_site(target: Target) -> PagesRecord:
             rec.note = NOTE_ROBOTS
             return rec
         home = await fetch_page(FetchPageIn(slug=slug, url=target.website))
+        if home.html == FIELD_NONE and home.note == NOTE_BROWSER and www_url_of(target.website) != FIELD_NONE:
+            home = await fetch_page(FetchPageIn(slug=slug, url=www_url_of(target.website)))
         if home.html == FIELD_NONE:
             rec.note = home.note
             return rec
@@ -318,6 +320,16 @@ async def fetch_site(target: Target) -> PagesRecord:
             return rec
     rec.status = ST_OK
     return rec
+
+
+def www_url_of(url: str) -> str:
+    """裸域名的官网补上 www. 的那个地址;本来就带 www. 的给空串(不用再试)。
+    2026-09-20 有头浏览器首轮实撞:公司表里记的是裸域名,证书 / 服务只挂在 www 上 ——
+    johnsoncontrols.ca 报证书名不符、petsmart.com 直接拒连,带 www. 都能开。"""
+    parsed = urlparse(url)
+    if parsed.netloc == FIELD_NONE or parsed.netloc.lower().startswith(HOST_WWW_PREFIX):
+        return FIELD_NONE
+    return parsed.scheme + URL_SCHEME_SEP + HOST_WWW_PREFIX + parsed.netloc + parsed.path
 
 
 async def robots_of(base: str) -> RobotFileParser:

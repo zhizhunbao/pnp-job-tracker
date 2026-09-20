@@ -1367,9 +1367,21 @@ export interface EmployerPool {
     | boolean
     | null;
   /**
-   * 多地点 string[](市, 省码;主场第一)
+   * 多地点 string[](市, 省码;主场第一;2026-09-20 起存全部在招地点,市筛选按它匹配)
    */
   locations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 在招省码 string[](岗多的在前;无在招取主省);雇主板省筛选按它匹配;DDL docs/sql/employer-pool-locs-20260920.sql(GIN 索引)
+   */
+  locProvs?:
     | {
         [k: string]: unknown;
       }
@@ -3177,6 +3189,7 @@ export interface EmployerPoolSelect<T extends boolean = true> {
   designatedPrograms?: T;
   designatedProvinces?: T;
   locations?: T;
+  locProvs?: T;
   openJobsTotal?: T;
   histJobs?: T;
   provincesActive?: T;

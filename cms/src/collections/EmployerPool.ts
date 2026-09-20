@@ -23,7 +23,8 @@ export const EmployerPool: CollectionConfig = {
     { name: 'designatedPrograms', type: 'json', admin: { description: '命中的项目清单 string[](["AIP","RCIP",…])' } },
     { name: 'designatedProvinces', type: 'json', admin: { description: '命中的省清单 string[]' } },
     // 2026-09-13 Frank「多个地址用胶囊」:在招岗最多的前三处「市, 省码」;DDL docs/sql/employer-pool-groups-20260913.sql。
-    { name: 'locations', type: 'json', admin: { description: '多地点 string[](市, 省码;主场第一)' } },
+    { name: 'locations', type: 'json', admin: { description: '多地点 string[](市, 省码;主场第一;2026-09-20 起存全部在招地点,市筛选按它匹配)' } },
+    { name: 'locProvs', type: 'json', admin: { description: '在招省码 string[](岗多的在前;无在招取主省);雇主板省筛选按它匹配;DDL docs/sql/employer-pool-locs-20260920.sql(GIN 索引)' } },
     { name: 'openJobsTotal', type: 'number', admin: { description: '在招总量(全大类合计);裸 LMIA 总量永不入排序,这个才入' } },
     { name: 'histJobs', type: 'number', admin: { description: '历史累计岗位数(含已下架)' } },
     { name: 'provincesActive', type: 'number' },

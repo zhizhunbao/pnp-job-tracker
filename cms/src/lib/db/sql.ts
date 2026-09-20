@@ -583,8 +583,10 @@ export const EMPLOYER_POOL_EES = `SELECT e AS ee FROM employer_pool p, jsonb_arr
  * 雇主池市下拉的选项:一个省里雇主的主市,雇主多的在前(2026-09-18 Frank「城市筛选也加上吧」;安省有 600 个主市,
  * 长尾多是一家雇主的小地方,只给前 200;lib/employers 进程内按省 TTL 缓存)。$1=省码。
  * 同日 Frank「这个需要排序吧」:先按雇主数取前 200,交出去按字母排(下拉里找得到);区下拉同。
+ * 2026-09-20 选项改从全部在招地点里出(市筛选已按在招地点匹配,只列主市的话,只当副场的市在下拉里选不到):
+ * 行先被在招省码的 GIN 索引收窄,再摊开 locations 取尾巴是「, 省码」的那些,剥掉尾巴 4 个字符就是市名。
  */
-export const EMPLOYER_POOL_CITIES = `SELECT city FROM (SELECT city, count(*) AS n FROM employer_pool WHERE province = $1 AND COALESCE(city, '') <> '' GROUP BY city ORDER BY n DESC, city LIMIT 200) t ORDER BY city`
+export const EMPLOYER_POOL_CITIES = `SELECT city FROM (SELECT left(l, length(l) - 4) AS city, count(*) AS n FROM employer_pool p, jsonb_array_elements_text(p.locations) l WHERE (p.province = $1 OR p.loc_provs ? $1) AND right(l, 4) = ', ' || $1 GROUP BY 1 ORDER BY n DESC, city LIMIT 200) t WHERE city <> '' ORDER BY city`
 
 /**
  * 雇主池区下拉的选项:一个市里雇主的主区,雇主多的在前(2026-09-18 Frank「这个筛选也要到区吧」;池里约三成雇主有区,
@@ -673,6 +675,9 @@ export const EMPLOYER_POOL_TIE = 'b.star DESC, b.open_jobs DESC, p.name ASC'
  * $5=只看有技能类 LMIA 记录(2026-09-13 Frank「这一列删掉,筛选加一个 LMIA 的筛选」),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营;索引 employer_pool_sector_idx)。
  * $9=主市或 ''(2026-09-18 市筛选;只在选了省之后才有值,行先被省索引收窄,市不另建索引)。
+ * 2026-09-20 省 / 市筛选改成「主省 / 主市相等,或在招地点里有」(Frank「如果用户按城市搜索,你不就收不到了吗」:原先只比主场,
+ * Sienna 筛 Ottawa、Home Depot 筛 Alberta 都搜不到):省走 p.loc_provs ? $2,市走 p.locations ? ('市, 省码');
+ * GIN 索引 employer_pool_loc_provs_idx / employer_pool_locations_idx(DDL docs/sql/employer-pool-locs-20260920.sql)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
  * (原 $11 =「全部大类」筛选,按在招岗的职位大类筛雇主;2026-09-19 晚随界面一起撤 —— Frank「这两个分类应该是属于职位的分类」
  *   「清了」,后两个参数各往前挪一位。)
@@ -703,12 +708,12 @@ export const employerPoolPage = (order: string) => `
     LEFT JOIN employer_explore x ON x.key = p.key
     LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE b.ind_group = $1
-      AND ($2 = '' OR p.province = $2)
+      AND ($2 = '' OR p.province = $2 OR p.loc_provs ? $2)
       AND ($3 = false OR b.entry_jobs > 0)
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR b.lmia_skilled > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
-      AND ($9 = '' OR p.city = $9)
+      AND ($9 = '' OR p.city = $9 OR p.locations ? ($9 || ', ' || $2))
       AND ($10 = '' OR p.district = $10)
       AND ($11 = '' OR p.ees ? $11)
       AND ($12 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $12)
@@ -773,7 +778,7 @@ export const EMPLOYER_POOL_ALL_TIE = 'b.star DESC, p.open_jobs_total DESC, p.nam
  * 入门占比与水位是组内口径、全组不表态(NULL)。$1=关键词或 '',$2=省码或 '',$3=只看无经验可投(任一桶有入门岗),
  * $4=制度或 '',$5=只看有技能类 LMIA 记录(池行总量 > 0),$6=每页行数,$7=偏移。
  * $8=雇主类别或 ''(2026-09-18;`private` = 库里 NULL 的私营)。
- * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。
+ * $9=主市或 ''(2026-09-18 市筛选;跟着省走)。省 / 市两格 2026-09-20 起同样按在招地点匹配(口径与来由见 employerPoolPage)。
  * $10=主区或 ''(同日区筛选;跟着市走)。
  * (原 $11 =「全部大类」筛选,按在招岗的职位大类筛雇主;2026-09-19 晚随界面一起撤 —— Frank「这两个分类应该是属于职位的分类」
  *   「清了」,后两个参数各往前挪一位。)
@@ -807,12 +812,12 @@ export const employerPoolAll = (order: string) => `
     LEFT JOIN cities ci ON ci.name = p.city AND ci.province = p.province
     WHERE ($1 = '' OR p.name ILIKE '%' || $1 || '%' OR p.city ILIKE '%' || $1 || '%' OR p.district ILIKE '%' || $1 || '%'
            OR c.alias_zh ILIKE '%' || $1 || '%' OR x.alias_zh ILIKE '%' || $1 || '%')
-      AND ($2 = '' OR p.province = $2)
+      AND ($2 = '' OR p.province = $2 OR p.loc_provs ? $2)
       AND ($3 = false OR EXISTS (SELECT 1 FROM employer_pool_buckets e WHERE e.employer_key = p.key AND e.entry_jobs > 0))
       AND ($4 = '' OR p.designated_programs ? $4)
       AND ($5 = false OR p.lmia_skilled_total > 0)
       AND ($8 = '' OR ($8 = 'private' AND p.sector IS NULL) OR p.sector = $8)
-      AND ($9 = '' OR p.city = $9)
+      AND ($9 = '' OR p.city = $9 OR p.locations ? ($9 || ', ' || $2))
       AND ($10 = '' OR p.district = $10)
       AND ($11 = '' OR p.ees ? $11)
       AND ($12 = '' OR CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = $12)

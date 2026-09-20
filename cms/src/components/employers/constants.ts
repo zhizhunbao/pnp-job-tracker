@@ -361,6 +361,12 @@ export const BTN_PRO = 'pro'
 export const BTN_GHOST = 'ghost'
 
 /**
+ * 在招地点格默认露几枚胶囊(2026-09-13 定的三枚:板上一行放得下;2026-09-20 起数据层给全部在招地点,
+ * 截断归这里,其余点「展开其余 N 个」列全)。
+ */
+export const LOCS_FIRST_N = 3
+
+/**
  * 雇主板搜索框的尺寸档(sm,与职位板 filterrow 的搜索框同档;2026-09-13 Frank「宽度和 jobs 那个保持一致」)。
  */
 export const SEARCH_SIZE = 'sm'

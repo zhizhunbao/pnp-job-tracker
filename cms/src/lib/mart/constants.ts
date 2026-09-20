@@ -505,10 +505,11 @@ export const COLS_DESIGNATED_EMPLOYERS = ['name', 'province', 'location', 'is_te
  * 2026-09-19 加 designated_places(指定资格所在地 jsonb;DDL docs/sql/employer-explore-industry-20260919.sql 已在生产跑过)。
  * 2026-09-19 晚加 category(公司分类;Frank「可以」;DDL docs/sql/employer-pool-category-20260919.sql)。
  * 2026-09-19 加 ees(在招 EE 类别 jsonb;DDL docs/sql/employer-pool-ees-20260919.sql 已在生产跑过)。
+ * 2026-09-20 加 loc_provs(在招省码 jsonb;省筛选按它匹配;DDL docs/sql/employer-pool-locs-20260920.sql,先跑 DDL 再换版)。
  * 2026-09-18 同日加 broads(在招大类 jsonb;Frank「授权,加列」;DDL docs/sql/employer-pool-broads-20260918.sql 已在生产跑过)。
  * 2026-09-18 同日加 district(主区;Frank「授权,加区字段」;DDL docs/sql/employer-pool-district-20260918.sql 已在生产跑过)。
  */
-export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'locations', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'sector', 'district', 'broads', 'ees', 'designated_places', 'category', 'fetched']
+export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'locations', 'loc_provs', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'sector', 'district', 'broads', 'ees', 'designated_places', 'category', 'fetched']
 
 /**
  * employer_pool_buckets 列。⚠️ 同上,建表走 docs/sql/employer-pool.sql。

@@ -26,7 +26,7 @@ import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LANG_EN, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
 import {
-  jobsShownOf, jobsToggleLabelOf, jobSubOf, makeToggle, subOrTitleOf, untitledOf, zhShownOf,
+  jobsMoreLabelOf, jobsShownOf, jobSubOf, makeJobsMore, makeJobsReset, subOrTitleOf, untitledOf, zhShownOf,
 } from './functions'
 import { useTitleMap } from './hooks'
 import type { CompanyJobFact, CompanyJobsCardIn } from './types'
@@ -41,8 +41,9 @@ import css from './companies.module.css'
 export function CompanyJobsCard({
   company, t, lang, updatedAt, onOpenJob, resolveJob, newTab, showTrans,
 }: CompanyJobsCardIn) {
-  const [allJobs, setAllJobs] = useState(false)
-  const shown = jobsShownOf({ jobs: company.jobs, all: allJobs })
+  const [shownN, setShownN] = useState(JOBS_FIRST_N)
+  const shown = jobsShownOf({ jobs: company.jobs, n: shownN })
+  const hidden = company.jobs.length - shown.length
   const titleMap = useTitleMap({ titles: untitledOf({ jobs: shown, lang }), lang })
   if (company.jobs.length === 0) {
     return null
@@ -74,10 +75,16 @@ export function CompanyJobsCard({
       </div>
       <div>
         {rows}
-        {company.jobs.length > JOBS_FIRST_N && (
-          <Button kind={PLAIN_BTN_KIND} onClick={makeToggle({ on: allJobs, set: setAllJobs })}
+        {hidden > 0 && (
+          <Button kind={PLAIN_BTN_KIND} onClick={makeJobsMore({ n: shownN, set: setShownN })}
             className={cssOf(css.showAll)}>
-            {jobsToggleLabelOf({ t, all: allJobs, hidden: company.jobs.length - JOBS_FIRST_N })}
+            {jobsMoreLabelOf({ t, hidden })}
+          </Button>
+        )}
+        {shownN > JOBS_FIRST_N && (
+          <Button kind={PLAIN_BTN_KIND} onClick={makeJobsReset({ set: setShownN })}
+            className={cssOf(css.showAll)}>
+            {t('act.collapse')}
           </Button>
         )}
       </div>

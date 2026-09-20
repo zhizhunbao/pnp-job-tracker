@@ -25,7 +25,7 @@ from employers.constants import (BROAD_CATEGORY, BROAD_UNCAT, EE_SPLIT, ENTRY_LE
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
                                  K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
-                                 LEGAL_SUFFIX_RE, LOC_PROV_SEP, LOCATIONS_N, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
+                                 LEGAL_SUFFIX_RE, LOC_PROV_SEP, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
                                  PRINT_POOL_DONE_TPL, PRINT_SOURCES_TPL, SKILLED_TEER_MAX,
                                  STAR_ENTRY, STAR_LOW, STAR_MID, STAR_TOP, STAR_TRACE,
                                  STATUS_OPEN, TOP_TITLES_N, WAGE_INDEX_BASE, OUT_BUCKETS, OUT_POOL)
@@ -217,8 +217,8 @@ def home_of(x: KeyIn) -> HomeOut:
 
 
 def locations_of(x: KeyIn) -> list:
-    """多地点:在招岗按「市, 省码」计数取前 LOCATIONS_N(缺市的岗不计);一处在招都没有的雇主退指定名单地点
-    (剥尾巴省码后再拼省码,与有岗雇主同形)。"""
+    """多地点:在招岗按「市, 省码」计数,全部地点岗多的在前(缺市的岗不计;2026-09-20 起不再截前三,截断归展示层);
+    一处在招都没有的雇主退指定名单地点(剥尾巴省码后再拼省码,与有岗雇主同形)。"""
     ctx = x.ctx
     count: Counter = Counter()
     for rows in (ctx.open_by_key.get(x.key) or {}).values():
@@ -227,7 +227,7 @@ def locations_of(x: KeyIn) -> list:
                 count[row[K_CITY] + LOC_PROV_SEP + row[K_PROVINCE]] += 1
     if count:
         out = []
-        for loc, _n in count.most_common(LOCATIONS_N):
+        for loc, _n in count.most_common():
             out.append(loc)
         return out
     province = home_province_of(x)
@@ -235,6 +235,23 @@ def locations_of(x: KeyIn) -> list:
     if city and province:
         return [city + LOC_PROV_SEP + province]
     return []
+
+
+def loc_provs_of(x: KeyIn) -> list:
+    """在招省码:在招岗按省计数,岗多的在前;一处在招都没有的雇主退主省(与 locations 的退路同口径);都没有 = 空表。"""
+    count: Counter = Counter()
+    for rows in (x.ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            if row.get(K_PROVINCE):
+                count[row[K_PROVINCE]] += 1
+    out = []
+    for prov, _n in count.most_common():
+        out.append(prov)
+    if len(out) == 0:
+        province = home_province_of(x)
+        if province:
+            out.append(province)
+    return out
 
 
 def home_province_of(x: KeyIn) -> str | None:
@@ -327,6 +344,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         key=x.key, slug=slug, name=ctx.names.get(x.key) or x.key,
         industry=comp.get(K_SECTORS) or None,
         province=home.province, city=home.city, district=home.district, locations=locations,
+        locProvs=loc_provs_of(x),
         designated=len(des_rows) > 0, designatedPrograms=des.programs,
         designatedProvinces=des.provinces, designatedPlaces=des.places,
         openJobsTotal=open_total, histJobs=hist.jobs,

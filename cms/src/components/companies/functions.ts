@@ -27,7 +27,7 @@ import {
   CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN, GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN,
   GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
   HDR_CONTENT_TYPE, HDR_HUMAN, HTTP_OK, HTTP_URL_RE, HUMAN_EVENTS, HUMAN_NO, HUMAN_YES,
-  JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
+  JD_ZH_CLS, JOBS_FIRST_N, JOBS_STEP_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
@@ -42,6 +42,7 @@ import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
+  JobsMoreIn, JobsResetIn,
   JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
   PanelBody, PanelBodyIn,
@@ -785,16 +786,13 @@ export function displayNameOf(x: DisplayNameIn): string {
 }
 
 /**
- * 在招职位这一屏渲哪几行(#198:首显 8,展开其余 —— 原地展开不跳转)。
+ * 在招职位这一屏渲哪几行(#198:首显 8,原地展开不跳转;2026-09-20 起一批一批露,不再一次全铺)。
  *
- * @param x 在招行与展开态。
+ * @param x 在招行与现在露几条。
  * @returns 这一屏要渲的行。
  */
 export function jobsShownOf(x: JobsShownIn): CompanyJobRow[] {
-  if (x.all) {
-    return x.jobs
-  }
-  return x.jobs.slice(0, JOBS_FIRST_N)
+  return x.jobs.slice(0, x.n)
 }
 
 /**
@@ -925,16 +923,42 @@ export function zhLineClsOf(x: ZhLineClsIn): string {
 }
 
 /**
- * 在招职位卡展开 / 收起钮的钮面(2026-09-14 Frank「加一个收起的功能」)。
+ * 在招职位卡「再展开」钮的钮面:这一下会多露几条(不够一批就是剩下的条数)。
+ * 沿革:2026-09-14 Frank「加一个收起的功能」时是一枚展开 / 收起两用钮(原 jobsToggleLabelOf);
+ * 2026-09-20「这种最好不要一次性展开 449 个」拆成「再展开」与「收起」两枚。
  *
- * @param x 取词函数、当前展开没、折着的岗数。
+ * @param x 取词函数与折着的岗数。
  * @returns 钮面文案。
  */
-export function jobsToggleLabelOf(x: JobsToggleLabelIn): string {
-  if (x.all) {
-    return x.t('act.collapse')
+export function jobsMoreLabelOf(x: JobsToggleLabelIn): string {
+  if (x.hidden < JOBS_STEP_N) {
+    return x.t('act.showMore', { n: x.hidden })
   }
-  return x.t('act.showAll', { n: x.hidden })
+  return x.t('act.showMore', { n: JOBS_STEP_N })
+}
+
+/**
+ * 「再展开」钮的点击手柄:多露一批。
+ *
+ * @param x 现在露几条与落格。
+ * @returns 点击手柄。
+ */
+export function makeJobsMore(x: JobsMoreIn): GoBackFn {
+  return function more(): void {
+    x.set(x.n + JOBS_STEP_N)
+  }
+}
+
+/**
+ * 「收起」钮的点击手柄:回到首屏那几条。
+ *
+ * @param x 落格。
+ * @returns 点击手柄。
+ */
+export function makeJobsReset(x: JobsResetIn): GoBackFn {
+  return function reset(): void {
+    x.set(JOBS_FIRST_N)
+  }
 }
 
 /**

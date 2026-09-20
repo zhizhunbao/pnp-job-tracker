@@ -107,7 +107,7 @@ describe('行构造器', () => {
     expect(r.designated).toBe(false)
     expect(r.slug).toBe('shopify')
     expect(r.locations).toEqual(['Ottawa, ON', 'Toronto, ON'])
-    expect(r.hq).toBe('150 Elgin St, Ottawa, ON')
+    expect(r.hq).toBe('150 Elgin St, Ottawa, ON, Canada')
     expect(r.cityZh).toBe('渥太华')
     expect(r.cityKo).toBe('')
     expect(r.aliasZh).toBe('Shopify 公司')
