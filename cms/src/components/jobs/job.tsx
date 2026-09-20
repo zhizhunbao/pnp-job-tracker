@@ -55,7 +55,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
     <Shell top={DETAIL_SHELL_TOP}>
       <div className={cssOf(css.detail)}>
         <JobCrumbs home={d.t('detail.crumbHome')} prov={d.view.provFull} provHref={d.view.provHref}
-          segs={d.view.segs} />
+          city={d.view.cityText} cityHref={d.view.cityHref} segs={d.view.segs} />
         <div className={`${CARD_MD_CLS} ${cssOf(css.card)}`}>
           <div className={cssOf(css.cardBack)}>
             <BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />

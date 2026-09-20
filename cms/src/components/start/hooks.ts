@@ -18,13 +18,15 @@ import { useMarketStats } from '@/components/stats'
 import { makeT } from '@/lib/i18n'
 import { DLI_KIND_ALL, LANG_EN, NAV_IDS, SUB_IDS_SEP, TEXT_NONE } from './constants'
 import {
-  cityAipTableOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf, makeCityLoad,
+  cityAipTableOf, cityHeadDataOf, cityIndTablesOf, empSecsOf, foldFlippedOf, indicatorGeosOf, macroPointsOf,
+  makeCityLoad,
   makeMacroLoad,
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
   makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
 } from './functions'
+import type { CityRow } from '@/lib/stats'
 import type {
   MaybeDrawCellRow, RulesPanel,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
@@ -75,10 +77,13 @@ export function useMacroStats(): MacroData | null {
  * 城市段五份的挂载后拉取(2026-09-11 重设计批,照 useMacroStats 的形;
  * null = 还在路上,段渲占位)。
  *
+ * 2026-09-20:服务端给了首屏那几行就拿它起步(表 1 第一页先出,城市名链接爬虫看得见),全量回来整份替换。
+ *
+ * @param head 服务端直出的首屏行;空清单 = 没有。
  * @returns 五份数据;null = 加载中。
  */
-export function useCityStats(): CityData | null {
-  const [cityData, setCityData] = useState<CityData | null>(null)
+export function useCityStats(head: CityRow[]): CityData | null {
+  const [cityData, setCityData] = useState<CityData | null>(cityHeadDataOf(head))
 
   useEffect(function loadCity() {
     return makeCityLoad({ setCityData })()
@@ -94,7 +99,7 @@ export function useCityStats(): CityData | null {
  * @returns 城市段面板。
  */
 export function useCityPanel(x: CityPanelIn): CityPanel {
-  const data = useCityStats()
+  const data = useCityStats(x.head)
 
   const mainRows = useMemo(function pickCityMain() {
     if (data == null) {

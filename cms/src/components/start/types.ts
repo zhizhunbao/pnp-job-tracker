@@ -1340,6 +1340,11 @@ export type PulseIn = {
    * 页面门取好的那份 SSR 数据。
    */
   stats: HomeStats
+
+  /**
+   * 城市段首屏那几行(服务端直出;空清单 = 没取到,城市段照旧等挂载后的全量。2026-09-20)。
+   */
+  cityHead: CityRow[]
 }
 
 /**
@@ -2621,6 +2626,11 @@ export type CityPanelIn = {
    * 界面语言。
    */
   lang: StartLang
+
+  /**
+   * 服务端直出的首屏那几行(空清单 = 没有,先渲占位)。
+   */
+  head: CityRow[]
 }
 
 /**
@@ -2838,6 +2848,11 @@ export type CitySectionIn = {
    * 界面语言。
    */
   lang: StartLang
+
+  /**
+   * 服务端直出的首屏那几行(空清单 = 没有)。
+   */
+  head: CityRow[]
 
   /**
    * 数据更新时刻(ISO;'' 不渲)。

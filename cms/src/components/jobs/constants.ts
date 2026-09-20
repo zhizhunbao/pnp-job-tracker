@@ -770,6 +770,17 @@ export const URL_JOBS_QUERY = '/jobs?q='
 export const URL_COMPANY_HEAD = '/companies/'
 
 /**
+ * 城市详情页前缀(后接 省码/城名,两段各自 URL 编码;2026-09-20 站内链接批三补:职位详情页面包屑加城市一级 ——
+ * 城市页此前只有站点地图一个入口,没有任何页面链向它)。
+ */
+export const URL_CITY_HEAD = '/city/'
+
+/**
+ * 路径段之间的斜杠。
+ */
+export const URL_PATH_SEP = '/'
+
+/**
  * POST。
  */
 export const METHOD_POST = 'POST'

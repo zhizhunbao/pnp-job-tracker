@@ -1794,6 +1794,16 @@ export type JobCrumbsIn = {
   provHref: string
 
   /**
+   * 城市段显示名(英文本名);'' = 本岗没城市或没省,不渲这一段。
+   */
+  city: string
+
+  /**
+   * 城市段去处(城市详情页)。
+   */
+  cityHref: string
+
+  /**
    * 职业分类路径段(同名相邻已跳过)。
    */
   segs: CrumbSeg[]
@@ -5522,6 +5532,16 @@ export type JobDetailView = {
    * 省段的去处。
    */
   provHref: string
+
+  /**
+   * 面包屑城市段的显示名;'' = 不渲(2026-09-20)。
+   */
+  cityText: string
+
+  /**
+   * 城市段的去处(城市详情页);'' = 不渲。
+   */
+  cityHref: string
 
   /**
    * 职业分类路径段。

@@ -62,7 +62,8 @@ import {
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD, URL_BOARD_BROAD,
   URL_BOARD_FINE,
-  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_COMPANY_HEAD, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
+  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_CITY_HEAD, URL_COMPANY_HEAD, URL_JOB, URL_JOBS_QUERY,
+  URL_LEVEL_AMP, URL_PATH_SEP,
   URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD,
 } from './constants'
@@ -3854,6 +3855,32 @@ export function subOf(x: SubOfIn): string {
 }
 
 /**
+ * 面包屑城市段的显示名:有城有省才出(城市页的地址要省码)。
+ *
+ * @param job 本岗。
+ * @returns 城名;不出给空串。
+ */
+function crumbCityOf(job: JobFact): string {
+  if (job.city === TEXT_NONE || job.province === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return job.city
+}
+
+/**
+ * 本岗所在城市的详情页地址(2026-09-20:城市页此前没有任何入站链接)。
+ *
+ * @param job 本岗。
+ * @returns 站内路径;没城或没省给空串。
+ */
+function cityPageHrefOf(job: JobFact): string {
+  if (crumbCityOf(job) === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return URL_CITY_HEAD + encodeURIComponent(job.province) + URL_PATH_SEP + encodeURIComponent(job.city)
+}
+
+/**
  * 职位详情页要现算的那几样:面包屑的省段与分类路径、职位名译名、相似职位的兜底链。
  * 职位名译名(Frank「job 名称也需要翻译」):雇主原始岗名多是英文且不规范,挂 NOC 官方职业名的
  * 界面语言译名作对照(#151 口径,与公司页在招职位同款);英文界面 / 无译名 = 空,不渲。
@@ -3871,6 +3898,8 @@ export function jobDetailViewOf(x: JobDetailIn): JobDetailView {
   return {
     provFull,
     provHref: URL_BOARD_PROV + encodeURIComponent(x.job.province),
+    cityText: crumbCityOf(x.job),
+    cityHref: cityPageHrefOf(x.job),
     segs: catSegsOf({ t: x.t, broad: x.job.broad, mid: x.job.mid, fine: x.job.fine }),
     alias: aliasOf({ row: nocRowOf({ dims: x.dims, noc: x.job.noc }), lang: x.lang, title: x.job.title }),
     fallbackHref: fallbackHrefOf({ province: x.job.province, level, value }),

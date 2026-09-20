@@ -19,7 +19,7 @@ import css from './jobs.module.css'
  * @param props 首段文案、省段与职业分类路径段。
  * @returns 一行面包屑。
  */
-export function JobCrumbs({ home, prov, provHref, segs }: JobCrumbsIn) {
+export function JobCrumbs({ home, prov, provHref, city, cityHref, segs }: JobCrumbsIn) {
   const cats = []
   for (const s of segs) {
     cats.push(
@@ -36,6 +36,12 @@ export function JobCrumbs({ home, prov, provHref, segs }: JobCrumbsIn) {
         <span>
           {CRUMB_SEP}
           <LinkButton href={provHref} className={cssOf(css.crumbLink)}>{prov}</LinkButton>
+        </span>
+      )}
+      {city !== TEXT_NONE && (
+        <span>
+          {CRUMB_SEP}
+          <LinkButton href={cityHref} className={cssOf(css.crumbLink)}>{city}</LinkButton>
         </span>
       )}
       {cats}
