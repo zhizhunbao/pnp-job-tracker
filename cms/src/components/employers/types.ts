@@ -2551,6 +2551,11 @@ export type EmployersMetaIn = {
    * 省码原文。
    */
   prov?: string
+
+  /**
+   * 页号原文(0 起;2026-09-20 站内链接批三)。
+   */
+  page?: string
 }
 
 /**
@@ -2566,6 +2571,16 @@ export type EmployersMetaOut = {
    * 描述。
    */
   description: string
+
+  /**
+   * 规范网址;null = 不给(带省的版本,见 employersMetaOf)。
+   */
+  alternates: {
+    /**
+     * 规范网址(相对地址,layout 的 metadataBase 补全成正式域)。
+     */
+    canonical: string
+  } | null
 }
 
 /**

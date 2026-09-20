@@ -227,3 +227,60 @@
     min-height: 40px;
   }
 }
+
+/*
+ * 页码链接行(2026-09-20 站内链接批三):居中、小灰字,手机上放不下就折行;链接格点按区 ≥ 32px。
+ */
+.links {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 2px 4px;
+
+  padding: 0 12px 14px;
+
+  font-size: 12.5px;
+
+  font-variant-numeric: tabular-nums;
+
+  color: #9ca3af;
+}
+
+.link,
+.linkCur,
+.linkGap {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 32px;
+
+  min-height: 32px;
+
+  padding: 0 6px;
+
+  border-radius: 6px;
+}
+
+.link {
+  color: var(--primary);
+
+  text-decoration: none;
+}
+
+.link:hover {
+  background: #f3f4f6;
+}
+
+.linkCur {
+  color: #111827;
+
+  font-weight: 600;
+}

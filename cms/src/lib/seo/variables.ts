@@ -23,6 +23,16 @@ export const CACHE: SeoCache = {
   companies: null,
 
   /**
+   * 城市页清单(有在招岗的城市,一小时 TTL;2026-09-20 站内链接批三)。
+   */
+  cities: null,
+
+  /**
+   * 城市页清单后台刷新中。
+   */
+  citiesBusy: false,
+
+  /**
    * 职位清单后台刷新中。
    */
   jobsBusy: false,

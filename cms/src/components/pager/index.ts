@@ -6,5 +6,6 @@
  * @time 2026-08-24 04:30:00
  */
 export { MoreLine } from './moreline'
+export { PageLinks } from './pagelinks'
 export { Pager } from './pager'
-export type { MoreLineIn, PagerIn } from './types'
+export type { MoreLineIn, PageLinksIn, PagerIn } from './types'

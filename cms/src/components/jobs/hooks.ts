@@ -22,10 +22,11 @@ import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIRECT_URL_KEY,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
-  FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
+  FIRST_SCREEN_ROWS, FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK,
+  HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE,
   LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_PAGE, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
@@ -42,7 +43,7 @@ import {
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
+  urlQueryOf, widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
@@ -877,6 +878,9 @@ function splitKeys(key: string): string[] {
  * 首屏 page0 非匹配、且筛选与 SSR 那次完全一致 = 服务端已经给过这批行 → 跳过首次重复拉取(不闪);
  * 无筛选时两边都是空签名,与改造前的「没筛选就不拉」等价。
  * 大维度独立加载(cities/districts/designatedEmployers/nocDescriptions),不再随职位 blob。
+ * 2026-09-20 站内链接批三:服务端按 ?page= 渲第 N 页(爬虫顺着板底页码链接走得到后面的行)—— 起步页 base 不再恒为 0:
+ * 首屏就是第 base 页的行,「显示更多」从 base + 1 往下接;换筛选 / 排序 / 视图时 base 与页号一起回 0。
+ * 「第 0 页」的判据(整表换血、换血遮罩、首帧跳过重复拉取)一律换成「起步页」。
  *
  * @param x props、当前筛选、排序与匹配视图。
  * @returns 数据面板。
@@ -885,7 +889,8 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
   const [rows, setRows] = useState<JobFact[]>(x.props.jobs)
   const [total, setTotal] = useState(totalOf(x.props))
   const [updatedAt, setUpdatedAt] = useState(strOf(x.props.updatedAt))
-  const [page, setPage] = useState(0)
+  const [base, setBase] = useState(initialPageOf(x.props))
+  const [page, setPage] = useState(initialPageOf(x.props))
   const [loading, setLoading] = useState(false)
   const [matchTotals, setMatchTotals] = useState<MatchTotals | null>(null)
   const reqSeq = useRef(0)
@@ -895,9 +900,10 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
   const [prevPageSig, setPrevPageSig] = useState(pageSig)
   if (prevPageSig !== pageSig) {
     setPrevPageSig(pageSig)
+    setBase(0)
     setPage(0)
   }
-  const fresh = page === 0
+  const fresh = page === base
   const query = jobsQueryOf({ cur: x.cur, sort: x.sort, matchView: x.matchView, page })
   const curSig = filterSig(x.cur)
   const freshList = fresh && x.matchView === false
@@ -938,6 +944,8 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
     dims: x.dims,
     loading,
     matchTotals,
+    page,
+    offset: base * FIRST_SCREEN_ROWS,
     swapping: loading && fresh,
     onMore: function loadMore(): void {
       setPage(page + 1)
@@ -1038,6 +1046,19 @@ function mergedDims(got: Partial<JobDims>): (prev: JobDims) => JobDims {
   return function merge(prev: JobDims): JobDims {
     return Object.assign({}, prev, got)
   }
+}
+
+/**
+ * 起步页(0 起):服务端按 ?page= 渲的那一页;没给 = 第 0 页(2026-09-20 站内链接批三)。
+ *
+ * @param props 组件收到的 props。
+ * @returns 页号。
+ */
+function initialPageOf(props: JobsIn): number {
+  if (props.initialPage == null) {
+    return 0
+  }
+  return props.initialPage
 }
 
 /**
@@ -1284,7 +1305,9 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     emptyText: emptyTextOf({ t, matchView }),
     emptyLink: emptyLinkOf({ t, matchView }),
     allShownText: t('allShown', { total: data.total }),
-    moreText: t('loadMore', { n: data.total - data.rows.length }),
+    moreText: t('loadMore', { n: data.total - data.offset - data.rows.length }),
+    pageQuery: urlQueryOf(filters.snap),
+    pageMax: Math.ceil(data.total / FIRST_SCREEN_ROWS),
     proof: proofOf(props),
   }
   return [panel, headRowRef, boxRef]
@@ -1419,7 +1442,7 @@ function useBoardHydrate(x: HydrateIn): void {
       replaceQuery(sp)
     }
     applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters), setDirect })
-    applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })
+    applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters), page: initialPageOf(props) })
     if (sp.get(P_VIEW) === VAL_MATCH && plan.loggedIn && plan.profileOk) {
       setMatchView(true)
       setSort({ key: SORT_MATCH, dir: DIR_DESC })
@@ -1485,6 +1508,8 @@ function useBoardUrlSync(snap: JobFilters): void {
 
 /**
  * 把当前筛选写回地址栏(只动自己管的那几个 key)。
+ * 2026-09-20:换了筛选页号回 0,地址栏里的 `page`(从板底页码链接落地带来的)一并摘掉,
+ * 否则刷新会落到「新筛选的第 N 页」。
  *
  * @param snap 当前非默认筛选。
  * @returns 无。
@@ -1500,6 +1525,7 @@ function writeFiltersToUrl(snap: JobFilters): void {
         u.searchParams.delete(urlKey)
       }
     }
+    u.searchParams.delete(P_PAGE)
     if (snap[FK_DIRECT] === true) {
       u.searchParams.set(DIRECT_URL_KEY, VAL_ON)
     } else {

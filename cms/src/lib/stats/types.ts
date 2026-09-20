@@ -1132,6 +1132,61 @@ export type CitySchoolRow = {
 }
 
 /**
+ * 城市详情页·最新在招岗一行(2026-09-20 站内链接批三)。
+ */
+export type CityJobRow = {
+  /**
+   * 岗位号。
+   */
+  id: number
+
+  /**
+   * 职位名。
+   */
+  title: string
+
+  /**
+   * 公司名;没有是空串。
+   */
+  company: string
+
+  /**
+   * 薪资展示文本;没有是空串。
+   */
+  salaryText: string
+}
+
+/**
+ * `loadCityLatestJobs` 的返回。
+ */
+export type CityJobsOut = Promise<CityJobRow[]>
+
+/**
+ * 城市详情页·在招最多的雇主一行。
+ */
+export type CityEmployerRow = {
+  /**
+   * 公司页 slug。
+   */
+  slug: string
+
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 该城在招岗数。
+   */
+  openCount: number
+}
+
+/**
+ * `loadCityTopEmployers` 的返回。
+ */
+export type CityEmployersOut = Promise<CityEmployerRow[]>
+
+/**
  * `loadCityDliList` 的返回。
  */
 export type CitySchoolsOut = Promise<CitySchoolRow[]>

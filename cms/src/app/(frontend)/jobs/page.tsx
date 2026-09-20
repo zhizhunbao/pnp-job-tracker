@@ -24,8 +24,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
-  BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
-  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
+  boardMetaOf, boardPageOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -40,8 +40,16 @@ export const dynamic = 'force-dynamic'
  * 本页的 SEO 头:静态 B 形 BOARD_META(2026-08-29 Frank 定形的两形之一)。
  * 2026-09-13 为校内板切面(/coop 改写成 ?st=campus 进本板)改过 A 形 generateMetadata 按切面换头;
  * 2026-09-15 切面撤销(Frank「撤吧 校内版 只是一个渠道而已」),没有按参数换头的理由,回静态形。
+ * 2026-09-20 站内链接批三(Frank「按你推荐来」「都改完」):又有了按参数换头的理由 —— 服务端按 ?page= 渲第 N 页,
+ * 第 N 页的规范网址要自指、标题要带页次(此前各页全指回 `/`);回 A 形,芯在桶里的 boardMetaOf。
+ * 设计稿 docs/design/站内链接与收录-20260920.md。
+ *
+ * @param x Next 递来的查询参数。
+ * @returns 标题、描述与规范网址。
  */
-export const metadata = BOARD_META
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return boardMetaOf(toSearchParams(await searchParams))
+}
 
 /**
  * 职位板的门。
@@ -53,6 +61,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const sp = toSearchParams(await searchParams)
   const filters = parseJobFilters(sp)
   const filtered = Object.keys(filters).length > 0
+  const pageIdx = boardPageOf(sp)
   const initialMatchView = sp.get(P_VIEW) === VAL_MATCH
 
   const payload = await getPayload({ config: await config })
@@ -69,9 +78,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   let jobs: JobFact[] = []
   let updatedAt = ''
   let total: number | null = null
-  if (filtered) {
+  if (filtered || pageIdx > 0) {
     const page = await loadJobsPage({
-      db, pro, profile, profileOk, matchDims, filters, sort: null, page: 0, pageSize: FIRST_SCREEN_ROWS,
+      db, pro, profile, profileOk, matchDims, filters, sort: null, page: pageIdx, pageSize: FIRST_SCREEN_ROWS,
     })
     jobs = page.jobs
     updatedAt = page.updatedAt
@@ -100,7 +109,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
         totalCount={total ?? (tp.total || jobs.length)}
         proof={{ named: tp.named, lmia: tp.lmia }}
         initialFilters={filters}
-        initialMatchView={initialMatchView} />
+        initialMatchView={initialMatchView}
+        initialPage={pageIdx} />
       <Footer />
     </Frame>
   )

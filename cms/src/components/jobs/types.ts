@@ -786,6 +786,16 @@ export type BoardDataPanel = {
   matchTotals: MatchTotals | null
 
   /**
+   * 接到的那一页(0 起;板底页码链接行的当前页,2026-09-20 站内链接批三)。
+   */
+  page: number
+
+  /**
+   * 首屏那一页前面还有多少行(起步页 × 每页行数;「已显示到第几行」= 它 + 手里的行数)。
+   */
+  offset: number
+
+  /**
    * 再翻一页。
    */
   onMore: ClickFn
@@ -1024,6 +1034,16 @@ export type JobsBoardPanel = {
   t: TFn
 
   /**
+   * 当前筛选的地址栏查询串(不带 `?`、不带页号;板底页码链接带着它,2026-09-20 站内链接批三)。
+   */
+  pageQuery: string
+
+  /**
+   * 总页数(板底页码链接行用)。
+   */
+  pageMax: number
+
+  /**
    * 界面语言。
    */
   lang: Lang
@@ -1203,6 +1223,11 @@ export type JobsIn = {
    * 直链进「我的匹配」视图(?view=match)。
    */
   initialMatchView?: boolean
+
+  /**
+   * 起步页(0 起;服务端按 ?page= 渲的那一页,2026-09-20 站内链接批三)。
+   */
+  initialPage?: number
 }
 
 /**
@@ -6421,4 +6446,34 @@ export type HomeProvinceIn = {
    * 首屏筛选(URL 带来的);已经带省就不预选。
    */
   initial: JobFilters
+
+  /**
+   * 起步页(0 起;带页号落地的不预选省,见 applyHomeProvince)。
+   */
+  page: number
+}
+
+/**
+ * boardMetaOf 的返回(Next Metadata 的三格)。
+ */
+export type BoardMeta = {
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 描述。
+   */
+  description: string
+
+  /**
+   * 规范网址。
+   */
+  alternates: {
+    /**
+     * 规范网址(相对地址,layout 的 metadataBase 补全成正式域)。
+     */
+    canonical: string
+  }
 }

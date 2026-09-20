@@ -1328,6 +1328,25 @@ export const CITY_DETAIL = `SELECT c.name AS city, c.province, c.name_zh, c.name
        WHERE c.name = $1 AND c.province = $2`
 
 /**
+ * 城市详情页·该城最新在招岗 8 条(2026-09-20 站内链接批三:城市页此前零出站链接,进来的人与爬虫都没有下一步)。
+ * 走 idx_jobs_city,多伦多(7 千多岗)实测 1.4ms。$1=城名,$2=省码。
+ */
+export const CITY_LATEST_JOBS = `SELECT j.id, j.title, c.name AS company_name, j.salary_text
+       FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+       WHERE j.city = $1 AND j.province = $2 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
+       ORDER BY j.date_posted DESC NULLS LAST, j.id DESC LIMIT 8`
+
+/**
+ * 城市详情页·该城在招最多的雇主 8 家(只出有公司页的)。多伦多实测 ~130ms(全站最重的一城,其余个位数毫秒)。
+ * $1=城名,$2=省码。
+ */
+export const CITY_TOP_EMPLOYERS = `SELECT c.slug, c.name, count(j.id)::int AS open_count
+       FROM jobs j JOIN companies c ON c.id = j.company_id
+       WHERE j.city = $1 AND j.province = $2 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
+         AND c.slug IS NOT NULL AND c.slug <> ''
+       GROUP BY c.id, c.slug, c.name ORDER BY count(j.id) DESC, c.name LIMIT 8`
+
+/**
  * 城市详情页·该城 DLI 名单(公立在前再按名序;表 4 只有计数,名单在详情页给;
  * name_zh 2026-09-12 随人工核定译名列挂上)。
  */
@@ -1784,6 +1803,14 @@ export const jobsSitemapCount = (a1: string) => `SELECT count(*)::int AS n FROM 
  */
 export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1}
        ORDER BY id ASC LIMIT $1 OFFSET $2`
+
+/**
+ * 站点地图·城市详情页清单:在招岗够数的城市,在招多的在前。读 stats_city 快照,不现算。$1=在招岗下限。
+ * 2026-09-20 站内链接批三:城市页此前不在任何站点地图里。有在招岗的城市 2,924 个,一大半只有一两个岗(页面太薄,
+ * 报上去只会再稀释抓取配额);下限 20 = 477 城,覆盖 87% 的在招岗。零在招岗的城市页本来就 noindex。
+ */
+export const CITY_SITEMAP = `SELECT s.city, s.province FROM stats_city s JOIN cities c ON c.name = s.city AND c.province = s.province
+       WHERE COALESCE(s.open_jobs, 0) >= $1 ORDER BY s.open_jobs DESC, s.city`
 
 /**
  * 公司站点地图的 FROM/WHERE 骨架(有 slug 且有在架岗)。

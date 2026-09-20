@@ -5,9 +5,10 @@
  * 2026-08-28 换装批曾改成 generateMetadata 转发;2026-08-29 定形批那边回归静态 B 形
  * (export const metadata = BOARD_META),这里跟着转发 metadata;2026-09-13 校内板切面改 A 形 generateMetadata,这里跟着转发它。
  * 2026-09-15 校内板切面撤销(Frank「撤吧 校内版 只是一个渠道而已」),那边回静态 B 形,这里跟着改回转发 metadata。
+ * 2026-09-20 站内链接批三:那边为第 N 页的规范网址与标题回 A 形,这里跟着转发 generateMetadata。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-export { default, metadata } from './jobs/page'
+export { default, generateMetadata } from './jobs/page'
 export const dynamic = 'force-dynamic'

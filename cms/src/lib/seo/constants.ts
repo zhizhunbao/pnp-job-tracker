@@ -190,6 +190,21 @@ export const JOB_PAGE_PREFIX = '/jobs/'
 export const CO_PAGE_PREFIX = '/companies/'
 
 /**
+ * 城市详情页路径头(后接 省码/城名,两段各自 URL 编码;与城市页自己的 canonical 同形)。
+ */
+export const CITY_PAGE_PREFIX = '/city/'
+
+/**
+ * 城市页在站点地图里的权重(与公司页同档)。
+ */
+export const CITY_PRIORITY = 0.5
+
+/**
+ * 城市页进站点地图的在招岗下限(来由见 SQL.CITY_SITEMAP)。
+ */
+export const CITY_MIN_JOBS = 20
+
+/**
  * sitemapindex XML 头(sitemaps.org 0.9 标准,主流爬虫都认)。
  */
 export const INDEX_XML_HEAD = `<?xml version="1.0" encoding="UTF-8"?>

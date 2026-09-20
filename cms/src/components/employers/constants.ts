@@ -1185,6 +1185,21 @@ export const META_PROV_RE = /^[A-Z]{2}$/
 export const META_SCOPE_SEP = ' '
 
 /**
+ * 第 N 页标题的页次尾巴(后接从 1 数的页码;2026-09-20 站内链接批三:各页标题不再一字不差)。
+ */
+export const META_PAGE_HEAD = ' — Page '
+
+/**
+ * 页号原文只认 1~4 位数字(0 起;随手编的参数不进标题与规范网址)。
+ */
+export const META_PAGE_RE = /^\d{1,4}$/
+
+/**
+ * 查询参数的键与值之间。
+ */
+export const META_EQ = '='
+
+/**
  * 省 / 市格 Google 地图查询串的国别尾巴(「Kelowna, British Columbia, Canada」:不带国别,同名地会落到美国)。
  */
 export const MAP_COUNTRY = 'Canada'

@@ -21,7 +21,8 @@ import {
 } from './constants'
 import type {
   BroadLabelRow, BroadLabelsOut, CaughtError, ChannelNocs, ChannelNocsOut, ChannelNocsQueryIn, CityBroadDbRow,
-  CityDetail, CityDetailIn, CityDetailOut, CityKeyIn, CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
+  CityDetail, CityDetailIn, CityDetailOut, CityEmployerRow, CityEmployersOut, CityJobRow, CityJobsOut, CityKeyIn,
+  CityPilotTypesOut, CitySchoolRow, CitySchoolsOut,
   CityIndustryOut,
   CityIndustryRow, CityIndustryRows, CityRowsOut, CityStatsIn, DliCitiesOut, MaybeProvMinWage, MaybeProvMinWageJson, ProvMinWageNext, ProvVolJson, DliSchoolRow,
   EmptyList,
@@ -586,6 +587,68 @@ function toCitySchoolRow(r: Row): CitySchoolRow {
     gradProgram: r.grad_program === true,
     url: text(r.url),
   }
+}
+
+/**
+ * 城市详情页·该城最新在招岗(2026-09-20 站内链接批三)。缺表容错同 loadCityStats。
+ *
+ * @param x 连接池与城市定位。
+ * @returns 最新岗若干行。
+ */
+export async function loadCityLatestJobs(x: CityKeyIn): CityJobsOut {
+  try {
+    return await queryRows({ db: x.db, sql: SQL.CITY_LATEST_JOBS, params: [x.city, x.province], map: toCityJobRow })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 最新岗一行 → `CityJobRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+function toCityJobRow(r: Row): CityJobRow {
+  return { id: count(r.id), title: text(r.title), company: text(r.company_name), salaryText: text(r.salary_text) }
+}
+
+/**
+ * 城市详情页·该城在招最多的雇主(2026-09-20 站内链接批三)。缺表容错同 loadCityStats。
+ *
+ * @param x 连接池与城市定位。
+ * @returns 雇主若干行。
+ */
+export async function loadCityTopEmployers(x: CityKeyIn): CityEmployersOut {
+  try {
+    return await queryRows({
+      db: x.db, sql: SQL.CITY_TOP_EMPLOYERS, params: [x.city, x.province], map: toCityEmployerRow,
+    })
+  } catch (e) {
+    if (e instanceof Error) {
+      const code = pgCodeOf(e)
+      if (code === PG_UNDEFINED_TABLE || code === PG_UNDEFINED_COLUMN) {
+        return []
+      }
+    }
+    throw e
+  }
+}
+
+/**
+ * 雇主一行 → `CityEmployerRow`。
+ *
+ * @param r 库里的一行。
+ * @returns 洗净的一行。
+ */
+function toCityEmployerRow(r: Row): CityEmployerRow {
+  return { slug: text(r.slug), name: text(r.name), openCount: count(r.open_count) }
 }
 
 /**

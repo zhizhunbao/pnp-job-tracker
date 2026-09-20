@@ -30,7 +30,8 @@ import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
-  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
+  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BOARD_META, BOARD_PAGE_EQ, BOARD_PAGE_RE, BOARD_PAGE_TITLE,
+  BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
   COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
@@ -67,7 +68,7 @@ import {
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardMeta,
   BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
@@ -4612,8 +4613,13 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 下次照常按时区预选。
  * 2026-09-19 Frank「我点击看岗位的时候,跳转之后就不要限制省份了吧」:URL 带着搜索词进来(雇主板「看岗位」= `?q=雇主名`)
  * 就不预选省 —— 人是来找这家的岗的,Parks Canada 的岗在 NS / MB,预选安省 = 0 个职位。
+ * 2026-09-20 站内链接批三:URL 带着页号进来(板底页码链接 = `?page=N`)也不预选 —— 人点的是「全国第 N 页」,
+ * 预选一落格筛选就变了、页号回 0,等于把他弹回本省第 1 页(本地实撞)。
  */
 export function applyHomeProvince(x: HomeProvinceIn): void {
+  if (x.page > 0) {
+    return
+  }
   const given = x.initial[FK.prov]
   if (typeof given === 'string' && given !== TEXT_NONE) {
     return
@@ -5256,3 +5262,58 @@ export function adminOf(u: SessionUser | null): boolean {
   return u.role === ROLE_ADMIN
 }
 
+
+/**
+ * 当前筛选 → 地址栏查询串(与 writeFiltersToUrl 同一套键:URL_TO_FILTER + 雇主直发;不带页号)。
+ * 板底页码链接带着它走(2026-09-20 站内链接批三)。
+ *
+ * @param snap 当前非默认筛选。
+ * @returns 查询串(不带 `?`);没有筛选给空串。
+ */
+export function urlQueryOf(snap: JobFilters): string {
+  const sp = new URLSearchParams()
+  for (const [urlKey, fKey] of Object.entries(URL_TO_FILTER)) {
+    const v = snap[fKey]
+    if (typeof v === 'string' && v !== TEXT_NONE) {
+      sp.set(urlKey, v)
+    }
+  }
+  if (snap[FK_DIRECT] === true) {
+    sp.set(DIRECT_URL_KEY, VAL_ON)
+  }
+  return sp.toString()
+}
+
+/**
+ * 地址栏里的页号(0 起):不是 1~4 位数字的一律当第 0 页(2026-09-20 站内链接批三:服务端按它渲那一页)。
+ *
+ * @param sp 地址栏查询参数。
+ * @returns 页号。
+ */
+export function boardPageOf(sp: URLSearchParams): number {
+  const raw = sp.get(P_PAGE)
+  if (raw == null || BOARD_PAGE_RE.test(raw) === false) {
+    return 0
+  }
+  return Number(raw)
+}
+
+/**
+ * 职位板的 SEO 头(2026-09-20 站内链接批三:由静态 BOARD_META 改成按地址栏算 —— 此前第 N 页与第 0 页同一个标题、
+ * 规范网址全指回 `/`,等于告诉搜索引擎后面的页不用看)。没有筛选的第 N 页:规范网址自指 `/?page=N`、标题加页次;
+ * 带任何筛选 / 搜索的版本照旧指回 `/`(09-16 的拍板不动:每个搜索词都当独立页 = 重复页爆炸)。
+ *
+ * @param sp 地址栏查询参数。
+ * @returns 标题、描述与规范网址。
+ */
+export function boardMetaOf(sp: URLSearchParams): BoardMeta {
+  const n = boardPageOf(sp)
+  if (n === 0 || Object.keys(parseJobFilters(sp)).length > 0) {
+    return { title: BOARD_META.title, description: BOARD_META.description, alternates: BOARD_META.alternates }
+  }
+  return {
+    title: BOARD_META.title + BOARD_PAGE_TITLE + String(n + 1),
+    description: BOARD_META.description,
+    alternates: { canonical: URL_BOARD + QS_HEAD + P_PAGE + BOARD_PAGE_EQ + String(n) },
+  }
+}

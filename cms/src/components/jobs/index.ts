@@ -20,15 +20,15 @@
  * @time 2026-08-28 19:15:06
  */
 export {
-  BANNER_COOKIE, BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, EMPTY_MATCH_DIMS, EMPTY_RELATED,
-  FIRST_SCREEN_ROWS, P_VIEW, STATUS_CLOSED, VAL_MATCH,
+  BANNER_COOKIE, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, EMPTY_MATCH_DIMS,
+  FIRST_SCREEN_ROWS, P_VIEW, VAL_MATCH,
 } from './constants'
 export { Job } from './job'
 export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
 export {
-  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, resizeColWidths, toCatLabelList,
-  toJobPlan, toNocDescList, toSearchParams,
+  boardMetaOf, boardPageOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, resizeColWidths,
+  toCatLabelList, toJobPlan, toNocDescList, toSearchParams,
 } from './functions'
 export type {
   ColWidthSeed, JobFact, JobFilters, JobPageDims, JobsIn, NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser,

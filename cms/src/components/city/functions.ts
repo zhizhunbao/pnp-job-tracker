@@ -8,16 +8,19 @@
  */
 import {
   CHANNEL_AIP, CHANNEL_SEP, CHECK_MARK, CITY_PAGE_UTM_TAIL, COL_GRAD, COL_IND, COL_NAME, COL_OPEN, COL_TYPE,
-  COL_WAGE, COL_WAGE_H,
+  COL_PAY, COL_WAGE, COL_WAGE_H,
   CURRENCY_MARK, DASH_MARK, FACT_CHANNEL, FACT_NEW7, FACT_OPEN, FACT_POP, FACT_UNEMP, FACT_WAGE, HOURLY_DIGITS,
   KEY_IND_HEAD, LANG_KO, LANG_ZH, NUM_LOCALE,
   PCT_MARK, SPACE_SEP,
   TEXT_NONE, URL_HOME_CITY_HEAD,
 } from './constants'
+import { EmpLinkCell } from './emplinkcell'
+import { JobLinkCell } from './joblinkcell'
 import { SchoolNameCell } from './schoolnamecell'
 import type {
-  CityTitleIn, CityTitleOut, FactRow, FactRowsIn, GroupColsIn, GroupRow, GroupRowsIn, LocalNameIn, SchoolColsIn,
-  SchoolRow, SchoolRowsIn,
+  CityEmployerIn, CityJobIn, CityTitleIn, CityTitleOut, FactRow, FactRowsIn, GroupColsIn, GroupRow, GroupRowsIn,
+  LocalNameIn, SchoolColsIn,
+  LinkColsIn, SchoolRow, SchoolRowsIn,
 } from './types'
 import type { Col } from '@/components/table'
 
@@ -345,3 +348,72 @@ function pctOrDashOf(n: number | null): string {
   return n.toFixed(1) + PCT_MARK
 }
 
+
+/**
+ * 最新职位表的列:职位(链接 + 公司名灰注)、薪资。
+ *
+ * @param x 取词函数。
+ * @returns 列定义。
+ */
+export function jobLinkColsOf(x: LinkColsIn): Col<CityJobIn>[] {
+  return [
+    { key: COL_NAME, label: x.t('col.title'), render: JobLinkCell },
+    { key: COL_PAY, label: x.t('col.salary'), nowrap: true, render: jobPayTextOf },
+  ]
+}
+
+/**
+ * 最新职位行的薪资文案。
+ *
+ * @param r 一行。
+ * @returns 薪资;没有给横线。
+ */
+function jobPayTextOf(r: CityJobIn): string {
+  if (r.salaryText === TEXT_NONE) {
+    return DASH_MARK
+  }
+  return r.salaryText
+}
+
+/**
+ * 最新职位行身份。
+ *
+ * @param r 一行。
+ * @returns 行键。
+ */
+export function jobLinkRowKeyOf(r: CityJobIn): string {
+  return String(r.id)
+}
+
+/**
+ * 主要雇主表的列:雇主(链接)、在招。
+ *
+ * @param x 取词函数。
+ * @returns 列定义。
+ */
+export function empLinkColsOf(x: LinkColsIn): Col<CityEmployerIn>[] {
+  return [
+    { key: COL_NAME, label: x.t('col.company'), render: EmpLinkCell },
+    { key: COL_OPEN, label: x.t('pulse.city.open'), nowrap: true, render: empOpenTextOf },
+  ]
+}
+
+/**
+ * 主要雇主行的在招数文案。
+ *
+ * @param r 一行。
+ * @returns 在招数。
+ */
+function empOpenTextOf(r: CityEmployerIn): string {
+  return String(r.openCount)
+}
+
+/**
+ * 主要雇主行身份。
+ *
+ * @param r 一行。
+ * @returns 行键。
+ */
+export function empLinkRowKeyOf(r: CityEmployerIn): string {
+  return r.slug
+}

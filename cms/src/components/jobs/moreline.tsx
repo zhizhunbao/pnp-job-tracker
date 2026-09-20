@@ -23,8 +23,8 @@ import css from './jobs.module.css'
 export function MoreLine({ b }: BoardPanelIn) {
   return (
     <div className={cssOf(css.more)}>
-      {b.data.rows.length > 0 && b.data.rows.length >= b.data.total && b.allShownText}
-      {b.data.rows.length > 0 && b.data.rows.length < b.data.total && (
+      {b.data.rows.length > 0 && b.data.offset + b.data.rows.length >= b.data.total && b.allShownText}
+      {b.data.rows.length > 0 && b.data.offset + b.data.rows.length < b.data.total && (
         <Button kind={BTN_SECONDARY} sm disabled={b.data.loading} onClick={b.data.onMore}
           className={moreBtnClsOf(b.data.loading)}>
           {moreLabelOf({ loading: b.data.loading, label: b.moreText, busy: ELLIPSIS })}

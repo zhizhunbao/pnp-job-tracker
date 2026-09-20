@@ -3305,27 +3305,6 @@ export const EMPTY_MATCH_DIMS = {
 }
 
 /**
- * 在招岗不查相似职位(服务端就不查,related 恒空)—— 在招岗照旧守「一条信息一个家」。
- * 2026-09-20 改判:在招岗也查(来由见职位详情页门的文件头),页面门不再用它;留着待下个清理批连桶导出一起撤。
- */
-export const EMPTY_RELATED = {
-  /**
-   * 同公司在招。
-   */
-  sameCompany: [],
-
-  /**
-   * 同省同职业在招。
-   */
-  sameOcc: [],
-
-  /**
-   * 兜底链按哪一级筛。
-   */
-  fallbackLevel: null,
-}
-
-/**
  * 日期截到「年-月-日」的长度。
  */
 export const DATE_LEN = 10
@@ -3357,3 +3336,18 @@ export const BTN_SEG = 'seg'
  * 留白等的是一次网络请求,慢了 / 挂了就是一块白板。到点不管回没回都先把正文铺出来,查库的结果回来照常补上(代价 = 那一次会跳一下)。
  */
 export const HOLD_MAX_MS = 800
+
+/**
+ * 地址栏页号只认 1~4 位数字(0 起;2026-09-20 站内链接批三)。
+ */
+export const BOARD_PAGE_RE = /^\d{1,4}$/
+
+/**
+ * 第 N 页标题的页次尾巴(后接从 1 数的页码)。
+ */
+export const BOARD_PAGE_TITLE = ' — Page '
+
+/**
+ * 查询参数的键与值之间。
+ */
+export const BOARD_PAGE_EQ = '='
