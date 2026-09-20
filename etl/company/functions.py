@@ -39,6 +39,7 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
+    PROP_INSTANCE_OF, WD_BUILDING_TYPES, WD_ORG_TYPES,
     IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, NAME_COUNTRY_RE, NAME_LEAD_THE_RE, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
     PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
@@ -2238,7 +2239,8 @@ def wikihq_find_one(x: WikiHqQuery) -> WikiHqOut:
         target = norm_company_name(x.query)
         for eid in ids:
             entity = ents.get(eid) or {}
-            if not entity_name_matches(EntityIn(entity=entity, target=target)):
+            if not entity_name_matches(EntityIn(entity=entity, target=target)) and not org_alias_matches(
+                    EntityIn(entity=entity, target=target)):
                 continue
             place_id = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_HQ))
             if place_id == "":
@@ -2248,6 +2250,7 @@ def wikihq_find_one(x: WikiHqQuery) -> WikiHqOut:
                 continue
             rec.status = ST_OK
             rec.qid = eid
+            rec.hq_address = place.address
             rec.hq_city = place.city
             rec.hq_province = place.province
             rec.hq_source = WD_ENTITY_URL_TPL.format(qid=eid)
@@ -2256,6 +2259,22 @@ def wikihq_find_one(x: WikiHqQuery) -> WikiHqOut:
     except Exception as e:  # noqa: BLE001 — 网络/限速什么错都可能,一律当失败保留活口
         err(x.name, e)
         return WikiHqOut(rec=rec, failed=True)
+
+
+def org_alias_matches(x: EntityIn) -> bool:
+    """靠别名对上的公司类词条:某条英文别名归一后严格等于目标名,且词条类型是公司类(WD_ORG_TYPES)。
+    只给 wikihq 用 —— 找官网 / 别名那两段共用的 entity_name_matches 不放宽(那边别名对上还要求标签的词都在目标名里)。"""
+    hit = False
+    for alias in x.entity.get(K_ALIASES, {}).get(LANG_EN, []):
+        if norm_company_name(alias.get(K_VALUE, "")) == x.target:
+            hit = True
+    if not hit:
+        return False
+    for claim in x.entity.get(K_CLAIMS, {}).get(PROP_INSTANCE_OF, []):
+        value = claim.get(K_MAINSNAK, {}).get(K_DATAVALUE, {}).get(K_VALUE, {})
+        if isinstance(value, dict) and value.get(K_ID) in WD_ORG_TYPES:
+            return True
+    return False
 
 
 def claim_entity_id_of(x: ClaimIn) -> str:
@@ -2274,32 +2293,47 @@ def claim_entity_id_of(x: ClaimIn) -> str:
 
 
 def hq_place_of(place_id: str) -> HqPlace:
-    """总部地点条目 → 市名(它的英文标签)+ 省格。加拿大:地点自己就是省,或沿「所在行政区」往上爬到省 / 地区 → 两位省码。
-    外国:爬到「上一级就是所属国家」的那一级(州)→「州, 国」;爬满 HQ_CLIMB_MAX 级还没到的只给国名(光一个市名放在加拿大
-    职位板上像是错的)。总部填的就是一个国家本身(Mallette 填的是 Canada)或查不到所属国家的 = 没有可用的总部(市给空串,记 miss)。
+    """总部地点条目 → 楼名 / 市名 / 省格。地点是一栋楼的(WD_BUILDING_TYPES),楼名进街址、从它的上一级起算市。
+    加拿大:沿「所在行政区」往上爬到省 / 地区 → 两位省码。外国:爬到「上一级就是所属国家」的那一级(州)→「州, 国」;
+    爬满 HQ_CLIMB_MAX 级还没到的只给国名(光一个市名放在加拿大职位板上像是错的)。
+    总部填的就是一个国家本身(Mallette 填的是 Canada)或查不到所属国家的 = 没有可用的总部(市给空串,记 miss)。
     请求失败往上抛,由 wikihq_find 记 failed。"""
+    address = ""
     city = ""
     country_id = ""
     current = place_id
     for _ in range(HQ_CLIMB_MAX + 1):
         if current in WD_PROV_CODES:
-            return HqPlace(city=city, province=WD_PROV_CODES[current])
+            return HqPlace(address=address, city=city, province=WD_PROV_CODES[current])
         entity = wd_get(place_entity_params(current)).get(K_ENTITIES, {}).get(current) or {}
         label = entity.get(K_LABELS, {}).get(LANG_EN, {}).get(K_VALUE, "")
-        if city == "":
-            city = label
+        parent = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_LOCATED_IN))
+        if country_id == "":
             country_id = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_COUNTRY))
             if country_id == "" or country_id == place_id:
-                return HqPlace(city="", province="")
-        parent = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_LOCATED_IN))
-        if parent != "" and parent == country_id and current != place_id:
+                return HqPlace(address="", city="", province="")
+        if city == "" and address == "" and is_building(entity):
+            address = label
+        elif city == "":
+            city = label
+        elif parent != "" and parent == country_id:
             if label in WD_PROV_NAMES:
-                return HqPlace(city=city, province=WD_PROV_NAMES[label])
-            return HqPlace(city=city, province=HQ_FOREIGN_TPL.format(region=label, country=place_label_of(country_id)))
+                return HqPlace(address=address, city=city, province=WD_PROV_NAMES[label])
+            return HqPlace(address=address, city=city,
+                           province=HQ_FOREIGN_TPL.format(region=label, country=place_label_of(country_id)))
         current = parent
         if current == "" or current == country_id:
             break
-    return HqPlace(city=city, province=place_label_of(country_id))
+    return HqPlace(address=address, city=city, province=place_label_of(country_id))
+
+
+def is_building(entity: dict) -> bool:
+    """这个地点条目是不是一栋楼(类型在 WD_BUILDING_TYPES 里)。"""
+    for claim in entity.get(K_CLAIMS, {}).get(PROP_INSTANCE_OF, []):
+        value = claim.get(K_MAINSNAK, {}).get(K_DATAVALUE, {}).get(K_VALUE, {})
+        if isinstance(value, dict) and value.get(K_ID) in WD_BUILDING_TYPES:
+            return True
+    return False
 
 
 def place_label_of(place_id: str) -> str:

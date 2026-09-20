@@ -1372,6 +1372,18 @@ Wikidata 的条目是母公司本名,带着国名按严格名字闸永远对不�
 NAME_LEAD_THE_RE = re.compile(r"^the\s+", re.I)
 """公司名打头的 The(第三次尝试时去掉:条目名有的带 The 有的不带)。"""
 
+PROP_INSTANCE_OF = "P31"
+"""Wikidata 属性:是什么(词条的类型)。"""
+
+WD_ORG_TYPES = frozenset({"Q4830453", "Q783794", "Q891723", "Q22687", "Q6881511", "Q43229"})
+"""公司类的词条类型:business / company / public company / bank / enterprise / organization。
+wikihq 靠别名对上的词条必须是这几类之一(2026-09-20:BMO Financial Group 的词条名是 Bank of Montreal,只有别名对得上;
+同一个别名还挂在「BMO Financial Group Canadian Women's Open」这种赛事词条上,不卡类型会对到球赛上去)。"""
+
+WD_BUILDING_TYPES = frozenset({"Q11303", "Q41176", "Q1021645", "Q18761864", "Q12518"})
+"""建筑物类的词条类型:skyscraper / building / office building / bank building / tower。
+总部所在地填的是一栋楼时(BMO → First Canadian Place),楼名进街址、它所在的那一级进市,不拿楼名当市名。"""
+
 WD_ENTITY_URL_TPL = "https://www.wikidata.org/wiki/{qid}"
 """Wikidata 条目链接(总部的出处:「总部所在地」这条声明就挂在公司条目页上,点开能核对)。"""
 

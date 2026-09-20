@@ -1485,8 +1485,11 @@ class WikiHqRecord(BaseModel):
     qid: str = ""
     """公司的 Wikidata 条目编号;查无为空串。"""
 
+    hq_address: str = ""
+    """总部所在地填的是一栋楼时的楼名(First Canadian Place);填的是市就为空串。"""
+
     hq_city: str = ""
-    """总部所在地的英文标签(通常是市名)。"""
+    """总部所在市的英文标签(总部填的是楼的,取楼所在的那一级)。"""
 
     hq_province: str = ""
     """总部所在省的两位码(往上爬行政区爬到加拿大的省 / 地区才有;外国总部为空串)。"""
@@ -1552,8 +1555,11 @@ class WikiHqOut:
 class HqPlace:
     """hq_place_of() 出参:总部所在地解析出来的市与省。"""
 
+    address: str
+    """总部填的是一栋楼时的楼名;否则空串。"""
+
     city: str
-    """地点条目的英文标签。"""
+    """市名:地点条目的英文标签(总部填的是楼的,取楼所在那一级的标签)。"""
 
     province: str
     """两位省码;爬不到加拿大的省给空串。"""
