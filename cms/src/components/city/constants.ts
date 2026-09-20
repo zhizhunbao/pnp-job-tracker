@@ -162,18 +162,3 @@ export const COL_TYPE = 'type'
  * DLI 表列键:毕业可申工签。
  */
 export const COL_GRAD = 'grad'
-
-/**
- * 职位详情页路径头(最新职位表的职位名链接;2026-09-20 站内链接批三)。
- */
-export const URL_JOB_HEAD = '/jobs/'
-
-/**
- * 公司详情页路径头(主要雇主表的雇主名链接)。
- */
-export const URL_COMPANY_HEAD = '/companies/'
-
-/**
- * 薪资列。
- */
-export const COL_PAY = 'pay'

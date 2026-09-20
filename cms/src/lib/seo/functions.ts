@@ -11,8 +11,7 @@ import { queryRows, SQL } from '../db'
 import { fill } from '../template'
 import { log, SEO_LOG } from '../log'
 import {
-  CACHE_1H, CITY_MIN_JOBS, CITY_PAGE_PREFIX, CITY_PRIORITY, CO_PAGE_PREFIX, CO_PRIORITY, CO_SHARD_PATH, CORE_PAGES, CT_XML,
-  FREQ_WEEKLY,
+  CACHE_1H, CO_PAGE_PREFIX, CO_PRIORITY, CO_SHARD_PATH, CORE_PAGES, CT_XML, FREQ_WEEKLY,
   HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, INDEX_ITEM_TPL, INDEX_XML_HEAD, INDEX_XML_TAIL,
   JOB_PAGE_PREFIX, JOB_PRIORITY, JOB_SHARD_PATH, NL, ROBOTS_ALLOW, ROBOTS_DISALLOW, ROBOTS_UA,
   URLSET_ITEM_TPL, URLSET_XML_HEAD, URLSET_XML_TAIL,
@@ -20,7 +19,7 @@ import {
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  CityPageDbRow, CityPageRowsOut, CitySitemapOut, CoShardDbRow, CoShardRowsOut, Freq, IndexXmlIn, JobShardDbRow, JobShardRowsOut, RefreshOut, Robots,
+  CoShardDbRow, CoShardRowsOut, Freq, IndexXmlIn, JobShardDbRow, JobShardRowsOut, RefreshOut, Robots,
   ShardCountIn, ShardCountOut, MaybeShardNo, ShardNoIn, ShardPageIn, ShardPageOut, Sitemap, SitemapEntry,
 } from './types'
 
@@ -325,77 +324,6 @@ export function indexHeadersOf(): Record<string, string> {
  */
 function toJobShardRow(r: JobShardDbRow): JobShardDbRow {
   return { id: r.id, last_seen: r.last_seen }
-}
-
-/**
- * 城市详情页的站点地图条目(2026-09-20 站内链接批三:并进 core.xml —— Google 不展开索引文件,
- * 新开一个分片还得去 Search Console 手动提交;core.xml 已提交、照常在读)。清单走进程缓存 + 过期后台刷新(同公司侧一套律)。
- * 库不可达回空表不抛 —— 核心页那几行照出。
- *
- * @param input 连接。
- * @returns 城市页条目;没拉到给空表。
- */
-export async function loadCitySitemap(input: ShardCountIn): CitySitemapOut {
-  const rows = await loadCityPageRows(input)
-  const now = new Date()
-  const out: SitemapEntry[] = []
-  for (const r of rows) {
-    out.push({
-      url: SITE + CITY_PAGE_PREFIX + encodeURIComponent(r.province) + PATH_SEP + encodeURIComponent(r.city),
-      lastModified: now, changeFrequency: freqOf(FREQ_WEEKLY), priority: CITY_PRIORITY,
-    })
-  }
-  return out
-}
-
-/**
- * 城市页清单全量(缓存槽在就给槽里的,过期了后台刷一次;没拉过现查)。
- *
- * @param input 连接。
- * @returns 有在招岗的城市全量。
- */
-async function loadCityPageRows(input: ShardCountIn): CityPageRowsOut {
-  const slot = CACHE.cities
-  if (slot != null) {
-    if (Date.now() - slot.ts >= SEO_TTL_MS && CACHE.citiesBusy === false) {
-      void refreshCityPageRows(input)
-    }
-    return slot.rows
-  }
-  await refreshCityPageRows(input)
-  const fresh = CACHE.cities
-  if (fresh == null) {
-    return []
-  }
-  return fresh.rows
-}
-
-/**
- * 城市页清单现查一次落槽。
- *
- * @param input 连接。
- * @returns 无。
- */
-async function refreshCityPageRows(input: ShardCountIn): RefreshOut {
-  CACHE.citiesBusy = true
-  try {
-    const rows = await queryRows({ db: input.db, sql: SQL.CITY_SITEMAP, params: [CITY_MIN_JOBS], map: toCityPageRow })
-    CACHE.cities = { rows, ts: Date.now() }
-  } catch (e) {
-    log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-  } finally {
-    CACHE.citiesBusy = false
-  }
-}
-
-/**
- * 城市页清单原始行 → 本域形状。
- *
- * @param r 原始行。
- * @returns 城名 + 省码。
- */
-function toCityPageRow(r: CityPageDbRow): CityPageDbRow {
-  return { city: r.city, province: r.province }
 }
 
 /**

@@ -12,10 +12,9 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { MoreLine, PageLinks } from '@/components/pager'
+import { MoreLine } from '@/components/pager'
 import { Table } from '@/components/table'
-import { EMP_URL } from './constants'
-import { addrQsOf, emptyTextOf, empRowKeyOf, listClsOf, pageMaxOf, shownEndOf, toEmployerCellRows } from './functions'
+import { emptyTextOf, empRowKeyOf, listClsOf, toEmployerCellRows } from './functions'
 import { EmployerCards } from './employercards'
 import { EmployerLoading } from './employerloading'
 import type { EmployerCellRow, EmployerPanelIn } from './types'
@@ -47,13 +46,12 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
         <div className={css.cards}>
           <EmployerCards rows={rows} empty={empty} />
         </div>
-        <MoreLine shown={shownEndOf(p.data)}
+        <MoreLine shown={p.data.rows.length}
           total={p.data.total}
           loading={p.loading}
-          moreText={p.t('loadMore', { n: p.data.total - shownEndOf(p.data) })}
+          moreText={p.t('loadMore', { n: p.data.total - p.data.rows.length })}
           allText={p.t('allShown', { total: p.data.total })}
           onMore={p.onMore} />
-        <PageLinks page={p.data.page} max={pageMaxOf(p.data)} path={EMP_URL} query={addrQsOf({ f: p.f })} />
       </div>
     </>
   )

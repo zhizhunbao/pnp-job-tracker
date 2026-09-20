@@ -4,8 +4,6 @@
  * 查无城走 View 内 Notice 不 404(已收录 URL 保留可访问);无在招岗 = 薄页不进新收录。
  * 门形照 companies/[slug] 样张:取参 + 取数 + 拼壳,门里没有函数体。
  *
- * 2026-09-20 站内链接批三:页上补「最新职位」「主要雇主」两张表(行是真链接)—— 此前城市页零出站链接,也不在站点地图里。
- *
  * @author Frank
  * @time 2026-09-12 02:50:00
  */
@@ -19,9 +17,7 @@ import { getDb } from '@/lib/db/server'
 import { SITE_FALLBACK } from '@/lib/jobs'
 import { checkedAt } from '@/lib/jobs/server'
 import { getUser } from '@/lib/quota/server'
-import {
-  loadCityDetail, loadCityDliList, loadCityLatestJobs, loadCityPilotTypes, loadCityTopEmployers,
-} from '@/lib/stats/server'
+import { loadCityDetail, loadCityDliList, loadCityPilotTypes } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,20 +67,17 @@ export default async function CityDetailPage({ params }: { params: Promise<{ pro
         city: name, cityZh: '', cityKo: '', province: code,
         population: null, unempRate: null,
         openJobs: null, new7d: null, medianWageAnnual: null, aipJobs: null, groups: [],
-      }} schools={[]} pilotTypes={[]} jobs={[]} employers={[]} missing updatedAt={updatedAt} />
+      }} schools={[]} pilotTypes={[]} missing updatedAt={updatedAt} />
       <Footer />
     </Frame>
   }
 
   const schools = await loadCityDliList({ db: await getDb(), city: name, province: code })
   const pilotTypes = await loadCityPilotTypes({ db: await getDb(), city: name, province: code })
-  const jobs = await loadCityLatestJobs({ db: await getDb(), city: name, province: code })
-  const employers = await loadCityTopEmployers({ db: await getDb(), city: name, province: code })
 
   return <Frame>
     <Header loggedIn={!!user} />
-    <City city={detail} schools={schools} pilotTypes={pilotTypes} jobs={jobs} employers={employers}
-      missing={false} updatedAt={updatedAt} />
+    <City city={detail} schools={schools} pilotTypes={pilotTypes} missing={false} updatedAt={updatedAt} />
     <Footer />
   </Frame>
 }

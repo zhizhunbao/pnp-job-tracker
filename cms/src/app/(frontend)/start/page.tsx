@@ -12,9 +12,6 @@
  * (方案 A:连接池与 payload 在这里取好注进去,那个桶一个 `/server` 门都不 import);
  * 壳件(整页外框 Frame / 顶栏 / 页脚)拼装收回本门(Frank「组装只许在 (frontend) 页面门里」,样张 companies)。
  *
- * 2026-09-20 站内链接批三补:城市段首屏那几行(表 1 第一页)服务端直出 —— 城市段全量是挂载后才拉的,
- * 爬虫在本页一条城市详情页链接都看不见;全量照旧挂载后替换。
- *
  * @author Frank
  * @time 2026-08-28 14:20:00
  */
@@ -25,7 +22,7 @@ import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { Frame } from '@/components/shell'
 import {
-  CITY_HEAD_ROWS, DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyCityHead, emptyOccRows, emptyProvExtra,
+  DRAWS_LIMIT, Pulse, START_META, cachedHomeOf, emptyOccRows, emptyProvExtra,
   emptyQueryResult,
   emptySponsorRows, emptyText, homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from '@/components/start'
@@ -34,7 +31,7 @@ import { dbOf } from '@/lib/db/server'
 import { buildSponsorBoards, loadSponsorEmployers } from '@/lib/employers/server'
 import { checkedAt, loadTotalAndProof } from '@/lib/jobs/server'
 import { employerVerdict } from '@/lib/ruling/server'
-import { loadCityStats, loadOccStats, loadProvExtra } from '@/lib/stats/server'
+import { loadOccStats, loadProvExtra } from '@/lib/stats/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,11 +74,10 @@ export default async function PulsePage() {
     }))
   }
   const upd = await checkedAt(db).catch(emptyText)
-  const cityHead = await loadCityStats({ db, limit: CITY_HEAD_ROWS }).catch(emptyCityHead)
   return (
     <Frame>
       <Header />
-      <Pulse stats={homeStatsOf({ core, checkedAt: upd })} cityHead={cityHead} />
+      <Pulse stats={homeStatsOf({ core, checkedAt: upd })} />
       <Footer />
     </Frame>
   )

@@ -147,16 +147,6 @@ export type CityIn = {
   pilotTypes: string[]
 
   /**
-   * 该城最新在招岗;没有是空清单(块不出;2026-09-20 站内链接批三)。
-   */
-  jobs: CityJobIn[]
-
-  /**
-   * 该城在招最多的雇主;没有是空清单(块不出)。
-   */
-  employers: CityEmployerIn[]
-
-  /**
    * 查无城(slug 拼错 / 城不在维度表)时 true,正文换 Notice。
    */
   missing: boolean
@@ -380,84 +370,4 @@ export type SchoolRowsIn = {
    * 界面语言(译名取舍)。
    */
   lang: CityLang
-}
-
-/**
- * 最新在招岗一行(页面门从 lib/stats 取来原样递进;本域自声明只读的格)。
- */
-export type CityJobIn = {
-  /**
-   * 岗位号。
-   */
-  id: number
-
-  /**
-   * 职位名。
-   */
-  title: string
-
-  /**
-   * 公司名;没有是空串。
-   */
-  company: string
-
-  /**
-   * 薪资展示文本;没有是空串。
-   */
-  salaryText: string
-}
-
-/**
- * 在招最多的雇主一行。
- */
-export type CityEmployerIn = {
-  /**
-   * 公司页 slug。
-   */
-  slug: string
-
-  /**
-   * 公司名。
-   */
-  name: string
-
-  /**
-   * 该城在招岗数。
-   */
-  openCount: number
-}
-
-/**
- * 只要取词函数的入参(两张链接表的列定义)。
- */
-export type LinkColsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * CityLinks 的 props(两张链接表:最新职位、主要雇主)。
- */
-export type CityLinksIn = {
-  /**
-   * 该城最新在招岗;空清单这张表不出。
-   */
-  jobs: CityJobIn[]
-
-  /**
-   * 该城在招最多的雇主;空清单这张表不出。
-   */
-  employers: CityEmployerIn[]
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 数据更新时刻(ISO;'' 不渲)。
-   */
-  updatedAt: string
 }

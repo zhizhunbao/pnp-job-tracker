@@ -30,8 +30,7 @@ import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
-  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BOARD_META, BOARD_PAGE_EQ, BOARD_PAGE_RE, BOARD_PAGE_TITLE,
-  BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
+  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
   COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
@@ -57,19 +56,17 @@ import {
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
-  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
-  TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
+  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD, URL_BOARD_BROAD,
   URL_BOARD_FINE,
-  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_CITY_HEAD, URL_COMPANY_HEAD, URL_JOB, URL_JOBS_QUERY,
-  URL_LEVEL_AMP, URL_PATH_SEP,
+  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
   URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardMeta,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView,
   BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
@@ -3855,32 +3852,6 @@ export function subOf(x: SubOfIn): string {
 }
 
 /**
- * 面包屑城市段的显示名:有城有省才出(城市页的地址要省码)。
- *
- * @param job 本岗。
- * @returns 城名;不出给空串。
- */
-function crumbCityOf(job: JobFact): string {
-  if (job.city === TEXT_NONE || job.province === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return job.city
-}
-
-/**
- * 本岗所在城市的详情页地址(2026-09-20:城市页此前没有任何入站链接)。
- *
- * @param job 本岗。
- * @returns 站内路径;没城或没省给空串。
- */
-function cityPageHrefOf(job: JobFact): string {
-  if (crumbCityOf(job) === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return URL_CITY_HEAD + encodeURIComponent(job.province) + URL_PATH_SEP + encodeURIComponent(job.city)
-}
-
-/**
  * 职位详情页要现算的那几样:面包屑的省段与分类路径、职位名译名、相似职位的兜底链。
  * 职位名译名(Frank「job 名称也需要翻译」):雇主原始岗名多是英文且不规范,挂 NOC 官方职业名的
  * 界面语言译名作对照(#151 口径,与公司页在招职位同款);英文界面 / 无译名 = 空,不渲。
@@ -3898,8 +3869,6 @@ export function jobDetailViewOf(x: JobDetailIn): JobDetailView {
   return {
     provFull,
     provHref: URL_BOARD_PROV + encodeURIComponent(x.job.province),
-    cityText: crumbCityOf(x.job),
-    cityHref: cityPageHrefOf(x.job),
     segs: catSegsOf({ t: x.t, broad: x.job.broad, mid: x.job.mid, fine: x.job.fine }),
     alias: aliasOf({ row: nocRowOf({ dims: x.dims, noc: x.job.noc }), lang: x.lang, title: x.job.title }),
     fallbackHref: fallbackHrefOf({ province: x.job.province, level, value }),
@@ -3976,40 +3945,15 @@ function aliasOf(x: AliasOfIn): string {
  * 相似职位卡出不出:只在 closed 岗渲染(在招岗服务端就不查,related 恒空)——
  * 下架页原本是死路,横幅说完「已下架」就没有下一步(2026-08-11 Frank
  * 「下架了应该下面列出其他相似职位,用户不至于一看下架就走」)。
- * 2026-09-20 改判:在招岗也出(Frank「职位页 也 改成像 公司页那种吗」「做」;来由见职位详情页门的文件头)——
- * 有行或有兜底链就出,不再看状态。
  *
- * @param x 相似职位与兜底链。
+ * @param x 本岗状态、相似职位与兜底链。
  * @returns 出 = true。
  */
 export function showRelatedOf(x: ShowRelatedIn): boolean {
+  if (x.status !== STATUS_CLOSED) {
+    return false
+  }
   return x.related.sameCompany.length > 0 || x.related.sameOcc.length > 0 || x.fallbackHref !== TEXT_NONE
-}
-
-/**
- * 相似职位两组的埋点来源格:下架页与在招页分开记(两种页的点击意图不同,混记看不出哪张卡在干活)。
- *
- * @param status 本岗状态。
- * @returns 来源格。
- */
-export function relatedFromOf(status: string): string {
-  if (status === STATUS_CLOSED) {
-    return TRACK_FROM_CLOSED
-  }
-  return TRACK_FROM_OPEN
-}
-
-/**
- * 兜底链的埋点来源格。
- *
- * @param status 本岗状态。
- * @returns 来源格。
- */
-export function relatedNoneFromOf(status: string): string {
-  if (status === STATUS_CLOSED) {
-    return TRACK_FROM_CLOSED_NONE
-  }
-  return TRACK_FROM_OPEN_NONE
 }
 
 /**
@@ -4466,20 +4410,6 @@ export function isAltRow(i: number): boolean {
 }
 
 /**
- * 公司名的真 href:有公司页的给公司页,没有 slug 的退到按公司名搜的职位板(#315 原链)。
- * 2026-09-20 站内链接批(来由见 URL_COMPANY_HEAD)。
- *
- * @param job 这一行。
- * @returns 站内路径。
- */
-export function companyHrefOf(job: JobFact): string {
-  if (job.companySlug !== '') {
-    return URL_COMPANY_HEAD + job.companySlug
-  }
-  return URL_JOBS_QUERY + encodeURIComponent(job.company)
-}
-
-/**
  * 手机卡一张的展示行:链接、译名灰注、地点两段与胶囊排一次算好。
  * #129(Frank「卡片本身点不进去」):整卡可点 = 进详情页;卡内既有交互(弹框/收藏/胶囊)
  * 各自 stopPropagation 保持原行为。
@@ -4505,7 +4435,7 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
       lang: x.b.lang,
       title: x.job.title,
     }),
-    companyHref: companyHrefOf(x.job),
+    companyHref: URL_JOBS_QUERY + encodeURIComponent(x.job.company),
     salary: x.job.salaryText,
     city: L.city,
     prov: x.job.province,
@@ -4642,13 +4572,8 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 下次照常按时区预选。
  * 2026-09-19 Frank「我点击看岗位的时候,跳转之后就不要限制省份了吧」:URL 带着搜索词进来(雇主板「看岗位」= `?q=雇主名`)
  * 就不预选省 —— 人是来找这家的岗的,Parks Canada 的岗在 NS / MB,预选安省 = 0 个职位。
- * 2026-09-20 站内链接批三:URL 带着页号进来(板底页码链接 = `?page=N`)也不预选 —— 人点的是「全国第 N 页」,
- * 预选一落格筛选就变了、页号回 0,等于把他弹回本省第 1 页(本地实撞)。
  */
 export function applyHomeProvince(x: HomeProvinceIn): void {
-  if (x.page > 0) {
-    return
-  }
   const given = x.initial[FK.prov]
   if (typeof given === 'string' && given !== TEXT_NONE) {
     return
@@ -5292,57 +5217,3 @@ export function adminOf(u: SessionUser | null): boolean {
 }
 
 
-/**
- * 当前筛选 → 地址栏查询串(与 writeFiltersToUrl 同一套键:URL_TO_FILTER + 雇主直发;不带页号)。
- * 板底页码链接带着它走(2026-09-20 站内链接批三)。
- *
- * @param snap 当前非默认筛选。
- * @returns 查询串(不带 `?`);没有筛选给空串。
- */
-export function urlQueryOf(snap: JobFilters): string {
-  const sp = new URLSearchParams()
-  for (const [urlKey, fKey] of Object.entries(URL_TO_FILTER)) {
-    const v = snap[fKey]
-    if (typeof v === 'string' && v !== TEXT_NONE) {
-      sp.set(urlKey, v)
-    }
-  }
-  if (snap[FK_DIRECT] === true) {
-    sp.set(DIRECT_URL_KEY, VAL_ON)
-  }
-  return sp.toString()
-}
-
-/**
- * 地址栏里的页号(0 起):不是 1~4 位数字的一律当第 0 页(2026-09-20 站内链接批三:服务端按它渲那一页)。
- *
- * @param sp 地址栏查询参数。
- * @returns 页号。
- */
-export function boardPageOf(sp: URLSearchParams): number {
-  const raw = sp.get(P_PAGE)
-  if (raw == null || BOARD_PAGE_RE.test(raw) === false) {
-    return 0
-  }
-  return Number(raw)
-}
-
-/**
- * 职位板的 SEO 头(2026-09-20 站内链接批三:由静态 BOARD_META 改成按地址栏算 —— 此前第 N 页与第 0 页同一个标题、
- * 规范网址全指回 `/`,等于告诉搜索引擎后面的页不用看)。没有筛选的第 N 页:规范网址自指 `/?page=N`、标题加页次;
- * 带任何筛选 / 搜索的版本照旧指回 `/`(09-16 的拍板不动:每个搜索词都当独立页 = 重复页爆炸)。
- *
- * @param sp 地址栏查询参数。
- * @returns 标题、描述与规范网址。
- */
-export function boardMetaOf(sp: URLSearchParams): BoardMeta {
-  const n = boardPageOf(sp)
-  if (n === 0 || Object.keys(parseJobFilters(sp)).length > 0) {
-    return { title: BOARD_META.title, description: BOARD_META.description, alternates: BOARD_META.alternates }
-  }
-  return {
-    title: BOARD_META.title + BOARD_PAGE_TITLE + String(n + 1),
-    description: BOARD_META.description,
-    alternates: { canonical: URL_BOARD + QS_HEAD + P_PAGE + BOARD_PAGE_EQ + String(n) },
-  }
-}

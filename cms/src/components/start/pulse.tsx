@@ -41,8 +41,8 @@ import css from './start.module.css'
  * @param props 页面门取好的那份 SSR 数据(逐格注释见 HomeStats)。
  * @returns 二级导航条 + 八个分区。
  */
-export function Pulse({ stats, cityHead }: PulseIn) {
-  const v = usePulse({ stats, cityHead })
+export function Pulse({ stats }: PulseIn) {
+  const v = usePulse({ stats })
   return (
     <>
       <PulseNav t={v.t} navSec={v.navSec} />
@@ -59,7 +59,7 @@ export function Pulse({ stats, cityHead }: PulseIn) {
           indLoading={v.macroLoading}
           jobsLoading={v.market == null}
           jobsRows={v.jobsRows} />
-        <CitySection t={v.t} lang={v.lang} head={cityHead} updatedAt={stats.checkedAt} />
+        <CitySection t={v.t} lang={v.lang} updatedAt={stats.checkedAt} />
         <PrSection t={v.t} updatedAt={stats.checkedAt} prGeos={v.prGeos} loading={v.macroLoading} />
         <DrawsSection t={v.t}
           tEn={v.tEn}

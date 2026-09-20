@@ -163,46 +163,6 @@ export type CoShardSlot = {
 }
 
 /**
- * 城市页清单的一行(pg 原始行:城名 + 省码)。
- */
-export type CityPageDbRow = {
-  /**
-   * 城名(英文本名,城市页路径的末段)。
-   */
-  city: string
-
-  /**
-   * 省码。
-   */
-  province: string
-}
-
-/**
- * 城市页清单的缓存槽。
- */
-export type CityPageSlot = {
-  /**
-   * 有在招岗的城市全量(在招多的在前)。
-   */
-  rows: CityPageDbRow[]
-
-  /**
-   * 落槽时刻(毫秒)。
-   */
-  ts: number
-}
-
-/**
- * 城市页清单全量的返回。
- */
-export type CityPageRowsOut = Promise<CityPageDbRow[]>
-
-/**
- * 城市页站点地图条目的返回。
- */
-export type CitySitemapOut = Promise<Sitemap>
-
-/**
  * 职位分片清单全量的返回(缓存槽里的行,或空表)。
  */
 export type JobShardRowsOut = Promise<JobShardDbRow[]>
@@ -230,16 +190,6 @@ export type SeoCache = {
    * 公司分片清单;没拉过 null。
    */
   companies: CoShardSlot | null
-
-  /**
-   * 城市页清单;没拉过 null(2026-09-20 站内链接批三)。
-   */
-  cities: CityPageSlot | null
-
-  /**
-   * 城市页清单正在后台刷新。
-   */
-  citiesBusy: boolean
 
   /**
    * 职位清单正在后台刷新(防过期瞬间多请求同时打库)。

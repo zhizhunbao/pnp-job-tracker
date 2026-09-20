@@ -44,8 +44,8 @@ import css from './start.module.css'
  * @param props 取词函数、语言与更新时刻。
  * @returns 一条色带;数据到了而四张表全空则 null。
  */
-export function CitySection({ t, lang, head, updatedAt }: CitySectionIn) {
-  const v = useCityPanel({ t, lang, head })
+export function CitySection({ t, lang, updatedAt }: CitySectionIn) {
+  const v = useCityPanel({ t, lang })
   if (v.data != null && v.mainRows.length === 0 && v.pilotTables.length === 0 && v.dliRows.length === 0) {
     return null
   }

@@ -17,7 +17,7 @@ import { NOT_FOUND } from '../http'
 import { getDb } from '../db/server'
 import { log, SEO_LOG } from '../log'
 import {
-  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadCitySitemap, loadCompanyShardCount, loadCompanyShardPage,
+  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadCompanyShardCount, loadCompanyShardPage,
   loadJobShardCount, loadJobShardPage, shardNoOf, urlsetXmlOf,
 } from './functions'
 import { SM_CO_FILE_RE, SM_FILE_CORE, SM_FILE_INDEX, SM_JOBS_FILE_RE } from './constants'
@@ -26,7 +26,7 @@ import type { Sitemap } from './types'
 /**
  * GET /sitemaps/[file]:按件名分发 —— index.xml 现查两侧片数吐 sitemapindex
  * (#156 GSC 只认手填的那一个 URL,这里是全站唯一的分片清单来源,robots 只指它);
- * core.xml 吐核心页平铺册 + 城市详情页(2026-09-20 起带城市页,查库失败只出核心页);jobs-N.xml / companies-N.xml 吐对应分册
+ * core.xml 吐核心页平铺册(零库依赖);jobs-N.xml / companies-N.xml 吐对应分册
  * (loadXxxShardPage 体内自带库抖兜底,这里只兜 getDb 那一口)。
  * 件名不合形 404;片号越界给空册(无害,索引不会列出越界号)。
  *
@@ -49,13 +49,7 @@ export async function sitemapFileRoute(req: Request): Promise<Response> {
     return new Response(indexXmlOf({ jobs, companies, now: new Date().toISOString() }), { headers: indexHeadersOf() })
   }
   if (file === SM_FILE_CORE) {
-    let cities: Sitemap = []
-    try {
-      cities = await loadCitySitemap({ db: await getDb() })
-    } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-    }
-    return new Response(urlsetXmlOf(coreSitemapOf().concat(cities)), { headers: indexHeadersOf() })
+    return new Response(urlsetXmlOf(coreSitemapOf()), { headers: indexHeadersOf() })
   }
   const jobNo = shardNoOf({ re: SM_JOBS_FILE_RE, file: file })
   if (jobNo != null) {

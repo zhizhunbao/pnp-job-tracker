@@ -786,16 +786,6 @@ export type BoardDataPanel = {
   matchTotals: MatchTotals | null
 
   /**
-   * 接到的那一页(0 起;板底页码链接行的当前页,2026-09-20 站内链接批三)。
-   */
-  page: number
-
-  /**
-   * 首屏那一页前面还有多少行(起步页 × 每页行数;「已显示到第几行」= 它 + 手里的行数)。
-   */
-  offset: number
-
-  /**
    * 再翻一页。
    */
   onMore: ClickFn
@@ -1034,16 +1024,6 @@ export type JobsBoardPanel = {
   t: TFn
 
   /**
-   * 当前筛选的地址栏查询串(不带 `?`、不带页号;板底页码链接带着它,2026-09-20 站内链接批三)。
-   */
-  pageQuery: string
-
-  /**
-   * 总页数(板底页码链接行用)。
-   */
-  pageMax: number
-
-  /**
    * 界面语言。
    */
   lang: Lang
@@ -1224,10 +1204,6 @@ export type JobsIn = {
    */
   initialMatchView?: boolean
 
-  /**
-   * 起步页(0 起;服务端按 ?page= 渲的那一页,2026-09-20 站内链接批三)。
-   */
-  initialPage?: number
 }
 
 /**
@@ -1794,16 +1770,6 @@ export type JobCrumbsIn = {
   provHref: string
 
   /**
-   * 城市段显示名(英文本名);'' = 本岗没城市或没省,不渲这一段。
-   */
-  city: string
-
-  /**
-   * 城市段去处(城市详情页)。
-   */
-  cityHref: string
-
-  /**
    * 职业分类路径段(同名相邻已跳过)。
    */
   segs: CrumbSeg[]
@@ -1852,11 +1818,6 @@ export type JobRelatedIn = {
    * 兜底链文案。
    */
   fallbackText: string
-
-  /**
-   * 本岗状态(埋点来源格分下架页 / 在招页)。
-   */
-  status: string
 
   /**
    * 点一行:页上叠开职位描述弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示」)。
@@ -5534,16 +5495,6 @@ export type JobDetailView = {
   provHref: string
 
   /**
-   * 面包屑城市段的显示名;'' = 不渲(2026-09-20)。
-   */
-  cityText: string
-
-  /**
-   * 城市段的去处(城市详情页);'' = 不渲。
-   */
-  cityHref: string
-
-  /**
    * 职业分类路径段。
    */
   segs: CrumbSeg[]
@@ -5638,6 +5589,11 @@ export type AliasOfIn = {
  * showRelatedOf 的入参。
  */
 export type ShowRelatedIn = {
+  /**
+   * 本岗状态。
+   */
+  status: string
+
   /**
    * 相似职位。
    */
@@ -6466,34 +6422,5 @@ export type HomeProvinceIn = {
    * 首屏筛选(URL 带来的);已经带省就不预选。
    */
   initial: JobFilters
-
-  /**
-   * 起步页(0 起;带页号落地的不预选省,见 applyHomeProvince)。
-   */
-  page: number
 }
 
-/**
- * boardMetaOf 的返回(Next Metadata 的三格)。
- */
-export type BoardMeta = {
-  /**
-   * 标题。
-   */
-  title: string
-
-  /**
-   * 描述。
-   */
-  description: string
-
-  /**
-   * 规范网址。
-   */
-  alternates: {
-    /**
-     * 规范网址(相对地址,layout 的 metadataBase 补全成正式域)。
-     */
-    canonical: string
-  }
-}

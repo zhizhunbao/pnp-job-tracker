@@ -30,9 +30,8 @@
 import { BANNER_IMGS, Banner } from '@/components/banner'
 import { cssOf } from '@/components/css'
 import { IconClipboard } from '@/components/icons'
-import { PageLinks } from '@/components/pager'
 import { Updated } from '@/components/time'
-import { BANNER_MODULE, URL_BOARD } from './constants'
+import { BANNER_MODULE } from './constants'
 import {
   mvBarTextOf, subTextOf,
 } from './functions'
@@ -80,9 +79,6 @@ export function Jobs(props: JobsIn) {
         <BoardTable b={b} headRowRef={headRowRef} />
         <BoardCards b={b} />
         <MoreLine b={b} />
-        {b.matchView === false && (
-          <PageLinks page={b.data.page} max={b.pageMax} path={URL_BOARD} query={b.pageQuery} />
-        )}
       </div>
       <BoardModals b={b} />
       <MatchGate g={b.gate} />

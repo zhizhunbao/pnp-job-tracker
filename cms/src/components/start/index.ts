@@ -18,9 +18,9 @@
 export { CityNameCell } from './citynamecell'
 export { Pulse } from './pulse'
 export {
-  cachedHomeOf, emptyCityHead, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
+  cachedHomeOf, emptyOccRows, emptyProvExtra, emptyQueryResult, emptySponsorRows,
   emptyText,
   homeCoreOf, homeStatsOf, nullProof, putHomeCache,
 } from './functions'
-export { CITY_HEAD_ROWS, DRAWS_LIMIT, START_META } from './constants'
+export { DRAWS_LIMIT, START_META } from './constants'
 export type { HomeStats } from './types'

@@ -113,11 +113,3 @@
     grid-template-columns: 1fr 1fr;
   }
 }
-
-/*
- * 两张链接表(最新职位 / 主要雇主)的行内链接(2026-09-20 站内链接批三)。
- */
-.rowLink {
-  color: var(--primary);
-  text-decoration: none;
-}

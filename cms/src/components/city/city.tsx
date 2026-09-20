@@ -19,7 +19,6 @@ import {
   cityJobsHrefOf, cityTitleOf, factRowsOf, groupColsOf, groupRowKeyOf, groupRowsOf, schoolColsOf, schoolRowKeyOf,
   schoolRowsOf,
 } from './functions'
-import { CityLinks } from './citylinks'
 import type { CityIn, GroupRow, SchoolRow } from './types'
 import css from './city.module.css'
 
@@ -29,7 +28,7 @@ import css from './city.module.css'
  * @param props 城市基面、DLI 名单、试点通道、查无城标记与更新时刻。
  * @returns 整页正文。
  */
-export function City({ city, schools, pilotTypes, jobs, employers, missing, updatedAt }: CityIn) {
+export function City({ city, schools, pilotTypes, missing, updatedAt }: CityIn) {
   const [lang, , t] = useLang()
   const title = cityTitleOf({ city, lang })
   if (missing) {
@@ -68,7 +67,6 @@ export function City({ city, schools, pilotTypes, jobs, employers, missing, upda
         </div>
         <div className={css.facts}>{factItems}</div>
       </div>
-      <CityLinks jobs={jobs} employers={employers} t={t} updatedAt={updatedAt} />
       {groups.length > 0 && (
         <div className={css.card}>
           <div className={css.secHead}>

@@ -65,7 +65,7 @@ import {
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
   KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
-  META_EQ, META_PAGE_HEAD, META_PAGE_RE, META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
+  META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
   P_CITY, P_DISTRICT, P_EE, P_PROV, P_Q, P_SECTOR, P_SORT, QS_HEAD, SECTOR_PRIVATE, SORT_DIR_DOWN, SORT_DIR_UP,
@@ -2576,67 +2576,14 @@ export function makePricingSet(x: PricingSetIn): ClickFn {
  * 拼 `/employers` 的 SEO 头:标题按省码加范围前缀,直达链接进来时标题就说清看的是哪一省。
  * 省码不认(没带或不是两位大写字母)时前缀为空,标题退回固定尾巴 —— 随手编的参数不会被渲进 `<title>`。
  * 2026-09-13 雇主板批二自 designatedMetaOf / hiringMetaOf 合一(两路由 301 合到一块板)。
- * 2026-09-20 站内链接批三:服务端本来就按 ?page= 渲那一页,但各页没有规范网址、标题也一字不差;
- * 不带省的给规范网址(第 0 页 = `/employers`,第 N 页自指 `/employers?page=N`,别的筛选参数一律不进规范网址),
- * 第 N 页标题加页次。带省的维持原样不给规范网址(省版标题各不相同,此前就是各自独立的页)。
  *
  * @param x Next 递来的查询参数(await 之后的原样格)。
- * @returns 标题、描述与规范网址。
+ * @returns 标题与描述。
  */
 export function employersMetaOf(x: EmployersMetaIn): EmployersMetaOut {
-  const n = metaPageOf(x)
-  let tail = TEXT_NONE
-  if (n > 0) {
-    tail = META_PAGE_HEAD + String(n + 1)
-  }
+  let head = TEXT_NONE
   if (x.prov != null && META_PROV_RE.test(x.prov)) {
-    const title = x.prov + META_SCOPE_SEP + EMPLOYERS_TITLE_TAIL + tail
-    return { title, description: EMPLOYERS_DESC, alternates: null }
+    head = x.prov + META_SCOPE_SEP
   }
-  let canonical = EMP_URL
-  if (n > 0) {
-    canonical = EMP_URL + QS_HEAD + P_PAGE + META_EQ + String(n)
-  }
-  return { title: EMPLOYERS_TITLE_TAIL + tail, description: EMPLOYERS_DESC, alternates: { canonical } }
-}
-
-/**
- * 查询参数里的页号(0 起):不是正整数的一律当第 0 页(随手编的参数不进标题与规范网址)。
- *
- * @param x Next 递来的查询参数。
- * @returns 页号。
- */
-function metaPageOf(x: EmployersMetaIn): number {
-  if (x.page == null || META_PAGE_RE.test(x.page) === false) {
-    return 0
-  }
-  return Number(x.page)
-}
-
-/**
- * 板上已经显示到第几行(从头数):「显示更多」一批批往下接,行数 =(接到的那一页 + 1)× 每页行数,封顶到总数。
- * 2026-09-20 站内链接批三:服务端按 ?page= 渲第 N 页后,板上只有那一页的行,再拿「手里的行数」跟总数比,
- * 最后一页也会出「显示更多」;改按页号算。
- *
- * @param d 当前这一页(页号、每页行数与总数)。
- * @returns 已显示到的行数。
- */
-export function shownEndOf(d: PoolPage): number {
-  if (d.rows.length === 0) {
-    return 0
-  }
-  return Math.min(d.total, (d.page + 1) * d.pageSize)
-}
-
-/**
- * 总页数(页码链接行用)。
- *
- * @param d 当前这一页。
- * @returns 总页数;每页行数不是正数给 0。
- */
-export function pageMaxOf(d: PoolPage): number {
-  if (d.pageSize <= 0) {
-    return 0
-  }
-  return Math.ceil(d.total / d.pageSize)
+  return { title: head + EMPLOYERS_TITLE_TAIL, description: EMPLOYERS_DESC }
 }

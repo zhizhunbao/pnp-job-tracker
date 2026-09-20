@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic'
  * @param x Next 递来的路由参数。
  * @returns 标题与描述。
  */
-export async function generateMetadata({ searchParams }: { searchParams: Promise<{ prov?: string, page?: string }> }) {
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ prov?: string }> }) {
   const sp = await searchParams
   return employersMetaOf(sp)
 }

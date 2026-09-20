@@ -8,8 +8,7 @@
  */
 
 export {
-  loadChannelNocs, loadCityDetail, loadCityDliList, loadCityLatestJobs, loadCityPilotTypes, loadCityStats,
-  loadCityTopEmployers,
+  loadChannelNocs, loadCityDetail, loadCityDliList, loadCityPilotTypes, loadCityStats,
   loadFineCounts, loadOccStats, loadProvExtra, loadStats,
   loadStatSources,
 } from './functions'

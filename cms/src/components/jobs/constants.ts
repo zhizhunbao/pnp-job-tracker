@@ -759,26 +759,8 @@ export const URL_JOB = '/jobs/'
 
 /**
  * 按公司名搜的职位板(手机卡公司名的真 href,#315:左键仍开弹框,中键/爬虫拿到真链接)。
- * 2026-09-20 降为兜底:有公司页的链公司页(URL_COMPANY_HEAD),没有 slug 的才走它。
  */
 export const URL_JOBS_QUERY = '/jobs?q='
-
-/**
- * 公司详情页前缀(2026-09-20 站内链接批:职位板手机卡与职位详情页的公司名链到公司页 ——
- * GSC 实查公司页 1.5 万零收录,`/jobs?q=` 是 301 到搜索页、不给公司页传链接;设计稿 docs/design/站内链接与收录-20260920.md)。
- */
-export const URL_COMPANY_HEAD = '/companies/'
-
-/**
- * 城市详情页前缀(后接 省码/城名,两段各自 URL 编码;2026-09-20 站内链接批三补:职位详情页面包屑加城市一级 ——
- * 城市页此前只有站点地图一个入口,没有任何页面链向它)。
- */
-export const URL_CITY_HEAD = '/city/'
-
-/**
- * 路径段之间的斜杠。
- */
-export const URL_PATH_SEP = '/'
 
 /**
  * POST。
@@ -2159,16 +2141,6 @@ export const TRACK_FROM_CLOSED = 'closed'
 export const TRACK_FROM_CLOSED_NONE = 'closed-none'
 
 /**
- * 相似职位来自在招页(2026-09-20 在招岗也出这张卡)。
- */
-export const TRACK_FROM_OPEN = 'open'
-
-/**
- * 在招页上的兜底链。
- */
-export const TRACK_FROM_OPEN_NONE = 'open-none'
-
-/**
  * 中文对照(首次拉取才计,纯开合不计)。
  */
 export const TRACK_JD_TRANSLATE = 'jd-translate'
@@ -3316,6 +3288,26 @@ export const EMPTY_MATCH_DIMS = {
 }
 
 /**
+ * 在招岗不查相似职位(服务端就不查,related 恒空)—— 在招岗照旧守「一条信息一个家」。
+ */
+export const EMPTY_RELATED = {
+  /**
+   * 同公司在招。
+   */
+  sameCompany: [],
+
+  /**
+   * 同省同职业在招。
+   */
+  sameOcc: [],
+
+  /**
+   * 兜底链按哪一级筛。
+   */
+  fallbackLevel: null,
+}
+
+/**
  * 日期截到「年-月-日」的长度。
  */
 export const DATE_LEN = 10
@@ -3347,18 +3339,3 @@ export const BTN_SEG = 'seg'
  * 留白等的是一次网络请求,慢了 / 挂了就是一块白板。到点不管回没回都先把正文铺出来,查库的结果回来照常补上(代价 = 那一次会跳一下)。
  */
 export const HOLD_MAX_MS = 800
-
-/**
- * 地址栏页号只认 1~4 位数字(0 起;2026-09-20 站内链接批三)。
- */
-export const BOARD_PAGE_RE = /^\d{1,4}$/
-
-/**
- * 第 N 页标题的页次尾巴(后接从 1 数的页码)。
- */
-export const BOARD_PAGE_TITLE = ' — Page '
-
-/**
- * 查询参数的键与值之间。
- */
-export const BOARD_PAGE_EQ = '='

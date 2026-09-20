@@ -209,15 +209,6 @@ export function emptySponsorRows(): SponsorRowList {
 }
 
 /**
- * 城市段首屏行查询挂了的空清单(挂了城市段照旧等挂载后的全量,页面照常)。
- *
- * @returns 空清单。
- */
-export function emptyCityHead(): CityRow[] {
-  return []
-}
-
-/**
  * 职业统计行查询挂了的空清单(挂了只丢中间两卡与分类联动,页面照常)。
  *
  * @returns 空清单。
@@ -6109,18 +6100,4 @@ export function macroSeriesOf(x: MacroSeriesIn): MacroSeriesSpec {
     indexed: x.geo.indexed,
     words: seriesWordsOf(x.t),
   }
-}
-
-/**
- * 服务端直出的首屏行 → 城市段起步用的那份数据:只有城市榜那几行,其余三份先空着(各表空就不渲,全量回来整份替换);
- * 一行都没有 = null(照旧先渲占位)。
- *
- * @param head 服务端直出的首屏行。
- * @returns 起步数据;没有给 null。
- */
-export function cityHeadDataOf(head: CityRow[]): CityData | null {
-  if (head.length === 0) {
-    return null
-  }
-  return { cities: head, industry: [], pilots: [], dli: [] }
 }
