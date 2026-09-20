@@ -1318,6 +1318,21 @@ RANK_PREFERRED = "preferred"
 RANK_DEPRECATED = "deprecated"
 """声明等级:已废弃(不取)。"""
 
+PROP_COUNTRY = "P17"
+"""Wikidata 属性:所属国家(外国总部用:沿所在行政区往上爬,爬到「上一级就是国家」的那一级 = 州 / 省)。"""
+
+WD_PROV_NAMES = {
+    "Ontario": "ON", "Quebec": "QC", "British Columbia": "BC", "Alberta": "AB", "Saskatchewan": "SK", "Manitoba": "MB",
+    "New Brunswick": "NB", "Nova Scotia": "NS", "Newfoundland and Labrador": "NL", "Prince Edward Island": "PE",
+    "Yukon": "YT", "Northwest Territories": "NT", "Nunavut": "NU",
+}
+"""加拿大省 / 地区的英文标签 → 两位省码(编号表的兜底:Boston Pizza / Money Mart 的总部所在地爬上去,标签是 British Columbia、
+上一级是 Canada,编号却没对上 WD_PROV_CODES —— 2026-09-20 重查实撞,出成了「British Columbia, Canada」)。"""
+
+HQ_FOREIGN_TPL = "{region}, {country}"
+"""外国总部的省格:「州, 国」(2026-09-20 Frank「这个地址也不对啊」:Robert Half 只出了一个 Menlo Park,没带州和国家,
+放在加拿大职位板上像是错的 → Menlo Park, California, United States)。"""
+
 WD_HQ_PLACE_PROPS = "labels|claims"
 """查地点条目那一发 wbgetentities 要的属性(标签给市名,声明里取所在行政区)。"""
 
@@ -1328,7 +1343,8 @@ WD_PROV_CODES = {
 """加拿大十省三地区的 Wikidata 条目编号 → 两位省码(2026-09-20 对 Wikidata 实查过十三条的英文标签)。"""
 
 HQ_CLIMB_MAX = 4
-"""从总部地点往上爬行政区最多几级(市 → 区域市 → 省 通常两三级;爬不到省 = 外国总部或层级太深,省留空)。"""
+"""从总部地点往上爬行政区最多几级(市 → 区域市 → 省 通常两三级;加拿大的爬到省码为止,外国的爬到「上一级就是国家」的州为止;
+爬满还没到的,外国总部只给国名)。"""
 
 WIKIHQ_LIMIT = 200
 """一轮最多查多少家(每家 2 发 + 爬行政区 1~4 发,家间歇 WIKI_SLEEP_S:200 家 ≈ 半小时)。"""

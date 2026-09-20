@@ -39,7 +39,7 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
-    FACTS_SEC_HQ, HQ_CLIMB_MAX, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
+    FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
     PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
     WD_PROV_CODES, WIKIHQ_LIMIT, WIKIHQ_REFRESH_DAYS,
     ACT_GET_ENTITIES, ACT_SEARCH, ALIAS_SPLIT_RE, ATS_HOSTS, CAND_MIN_JOBS, CAND_MIN_LMIA_SKILLED,
@@ -2227,20 +2227,38 @@ def claim_entity_id_of(x: ClaimIn) -> str:
 
 
 def hq_place_of(place_id: str) -> HqPlace:
-    """总部地点条目 → 市名(它的英文标签)+ 省码:地点自己就是省,或沿「所在行政区」往上爬,爬到加拿大的省 / 地区为止;
-    爬满 HQ_CLIMB_MAX 级还没到(外国总部 / 层级太深)省留空。请求失败往上抛,由 wikihq_find 记 failed。"""
+    """总部地点条目 → 市名(它的英文标签)+ 省格。加拿大:地点自己就是省,或沿「所在行政区」往上爬到省 / 地区 → 两位省码。
+    外国:爬到「上一级就是所属国家」的那一级(州)→「州, 国」;爬满 HQ_CLIMB_MAX 级还没到的只给国名(光一个市名放在加拿大
+    职位板上像是错的)。总部填的就是一个国家本身(Mallette 填的是 Canada)或查不到所属国家的 = 没有可用的总部(市给空串,记 miss)。
+    请求失败往上抛,由 wikihq_find 记 failed。"""
     city = ""
+    country_id = ""
     current = place_id
     for _ in range(HQ_CLIMB_MAX + 1):
         if current in WD_PROV_CODES:
             return HqPlace(city=city, province=WD_PROV_CODES[current])
         entity = wd_get(place_entity_params(current)).get(K_ENTITIES, {}).get(current) or {}
+        label = entity.get(K_LABELS, {}).get(LANG_EN, {}).get(K_VALUE, "")
         if city == "":
-            city = entity.get(K_LABELS, {}).get(LANG_EN, {}).get(K_VALUE, "")
-        current = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_LOCATED_IN))
-        if current == "":
+            city = label
+            country_id = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_COUNTRY))
+            if country_id == "" or country_id == place_id:
+                return HqPlace(city="", province="")
+        parent = claim_entity_id_of(ClaimIn(entity=entity, prop=PROP_LOCATED_IN))
+        if parent != "" and parent == country_id and current != place_id:
+            if label in WD_PROV_NAMES:
+                return HqPlace(city=city, province=WD_PROV_NAMES[label])
+            return HqPlace(city=city, province=HQ_FOREIGN_TPL.format(region=label, country=place_label_of(country_id)))
+        current = parent
+        if current == "" or current == country_id:
             break
-    return HqPlace(city=city, province="")
+    return HqPlace(city=city, province=place_label_of(country_id))
+
+
+def place_label_of(place_id: str) -> str:
+    """一个地点条目的英文标签;没有给空串。"""
+    entity = wd_get(place_entity_params(place_id)).get(K_ENTITIES, {}).get(place_id) or {}
+    return entity.get(K_LABELS, {}).get(LANG_EN, {}).get(K_VALUE, "")
 
 
 def place_entity_params(place_id: str) -> dict:
