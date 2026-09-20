@@ -47,6 +47,8 @@ cms/dev.log
 # processed 累积 store(从快照重建)+ mart 集市层(09 衍生)
 /data/processed/jobbank/
 /data/processed/jobillico/
+# sites 域产物(官网抓取记录 + 七节整理记录,上万家、随月更滚动;原文在 crawl 层,容器间走绑定卷不靠 git;2026-09-19)
+/data/processed/sites/
 /data/mart/
 # paths 域写权探针残留(不该入库)
 .write_probe

@@ -163,6 +163,10 @@ PROCESSED_JDFORMAT = PROCESSED / "jdformat"
 """jdformat 域产物(2026-09-15 立域):formatted.json = externalId → 五节整理版记录(局域网 qwen 预生成,
 只留当前 mart 在招岗);mart 汇装并进 jobs 行的 jdFormatted / jdFormattedAt。"""
 
+PROCESSED_SITES = PROCESSED / "sites"
+"""sites 域产物(2026-09-19 立域):pages.json = slug → 官网三页的抓取记录(原文在 crawl 层 site-<slug>/),
+facts.json = slug → 官网七节整理记录(每节带页面原句与出处网址);mart 汇装读 facts。"""
+
 PROCESSED_CLASSIFY = PROCESSED / "classify"
 """classify 域产物(2026-09-15 立域):jobs.json = externalId → 分类记录(职业码 + 判法 + 候选 + 版本),
 companies.json = slug → 行业记录;mart 汇装照此填岗位 noc 与公司行业,自己不再猜。"""

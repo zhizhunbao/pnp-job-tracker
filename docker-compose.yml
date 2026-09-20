@@ -237,6 +237,17 @@ services:
       EXPLORE_LIMIT: ${EXPLORE_LIMIT:-100}        # 每轮上限(一个名字 2~3 秒,100 条约 5 分钟)
       TZ: EST5EDT
 
+  sites:                           # 公司官网定期抓取(2026-09-19 立域;有官网且在招的公司每家抓首页 + Contact + About 进 crawl 层,局域网 qwen 只凭页面文字整理七节、每节附页面原句核对;只刷 crawl/ 与 processed/sites/)
+    <<: *etl
+    environment:
+      SOURCE: sites
+      HEALTHCHECK_PING_SITES: ${HEALTHCHECK_PING_SITES:-}       # 未配 = ping_health 自然跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / explore / classify / company 同一台盒子);空=facts 步跳过
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页、同站间隔 1 秒)
+      SITES_FACTS_LIMIT: ${SITES_FACTS_LIMIT:-200}  # 每轮整理多少家(盒子一家 4~11 秒)
+      TZ: EST5EDT
+
   jdformat:                        # 岗位正文 → 五节整理版预生成(2026-09-15 立域;局域网 qwen,只刷 processed/jdformat/,build 角色汇装灌库)
     <<: *etl
     environment:
