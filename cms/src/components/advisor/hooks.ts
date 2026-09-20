@@ -228,7 +228,7 @@ export function useJobText(x: JobTextIn): JobTextPanel {
 
   useEffect(function loadText() {
     const ctrl = new AbortController()
-    makeLoadJobText({ applyUrl: job.applyUrl, signal: ctrl.signal, setText, setLimited })()
+    makeLoadJobText({ applyUrl: job.applyUrl, id: job.id, signal: ctrl.signal, setText, setLimited })()
     return function stop(): void {
       ctrl.abort()
     }
@@ -497,15 +497,15 @@ export function useTitleTrans(x: TitleTransHookIn): string {
     setText(TEXT_NONE)
   }
   const title = x.title
-  const url = x.url
+  const id = x.id
   const lang = x.lang
   const want = text === TEXT_NONE && title !== TEXT_NONE && lang !== LANG_EN
 
   useEffect(function loadTitle() {
     if (want) {
-      makeLoadTitleTrans({ title, url, lang, setText })()
+      makeLoadTitleTrans({ title, id, lang, setText })()
     }
-  }, [want, title, url, lang])
+  }, [want, title, id, lang])
 
   return text
 }

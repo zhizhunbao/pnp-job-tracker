@@ -1113,6 +1113,17 @@ export const CITY_STATS = `SELECT s.city, s.province, c.name_zh, c.name_ko, s.op
        ORDER BY s.open_jobs DESC NULLS LAST LIMIT $1`
 
 /**
+/**
+ * 按职位 id 取 JD 正文。$1=职位 id。2026-09-20:职位板 / 详情页这条链手里有岗位号的一律走它(多条岗共用一个投递链接时
+ * 按链接会取到别人的正文,见 JD_TRANS_BY_ID);按链接那一对只留给手里只有链接的调用方(顾问、简历)。
+ */
+export const JD_DESC_BY_ID = `SELECT description FROM jobs WHERE id = $1 AND description IS NOT NULL LIMIT 1`
+
+/**
+ * 懒抓到的正文按职位 id 回写:只填空。$1=正文,$2=职位 id。
+ */
+export const JD_UPDATE_BY_ID = `UPDATE jobs SET description = $1 WHERE id = $2 AND description IS NULL`
+
  * 清空城市快照(REFRESH_CITY_STATS 的前半;seed 事务内两句连发,失败整体回滚不留空表)。
  */
 export const CLEAR_CITY_STATS = `DELETE FROM stats_city`
@@ -1444,18 +1455,20 @@ export const JD_SET_EMP_TERM = `UPDATE jobs SET employment_term = $1 WHERE id = 
 export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id = $2 AND (employment_hours IS NULL OR employment_hours = '')`
 
 /**
- * 职位对照两格 + 版本(2026-09-14 落库:换版不再清零)。
+ * 职位对照两格 + 版本(2026-09-14 落库:换版不再清零)。$1=职位 id。
+ * 2026-09-20 改键:原按投递链接(apply_url)找行 —— HireAC 91 条岗共用同一个登录门户网址(另有同雇主官网、GC Jobs 重复帖 7 组),
+ * 读是 LIMIT 1 随便一条、写是 91 条一起盖(生产实撞:园艺工岗挂着疼痛诊所的译文)。JD 这条链一律改按职位 id。
  */
-export const JD_TRANS_BY_URL = `SELECT jd_trans_zh, jd_trans_ko, trans_v FROM jobs WHERE apply_url = $1 LIMIT 1`
+export const JD_TRANS_BY_ID = `SELECT jd_trans_zh, jd_trans_ko, trans_v FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
- * 职位对照中文版落库(同行其余译文若是旧版本一并清空,一行的译文永远同一个版本)。
+ * 职位对照中文版落库(同行其余译文若是旧版本一并清空,一行的译文永远同一个版本)。$2=职位 id(2026-09-20 改键,见 JD_TRANS_BY_ID)。
  */
 export const JD_TRANS_SAVE_ZH = `UPDATE jobs
      SET jd_trans_zh = $1, trans_v = $3,
          jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END,
          title_zh = CASE WHEN trans_v = $3 THEN title_zh END, title_ko = CASE WHEN trans_v = $3 THEN title_ko END
-     WHERE apply_url = $2`
+     WHERE id = $2`
 
 /**
  * 职位对照韩文版落库。
@@ -1464,13 +1477,13 @@ export const JD_TRANS_SAVE_KO = `UPDATE jobs
      SET jd_trans_ko = $1, trans_v = $3,
          jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END,
          title_zh = CASE WHEN trans_v = $3 THEN title_zh END, title_ko = CASE WHEN trans_v = $3 THEN title_ko END
-     WHERE apply_url = $2`
+     WHERE id = $2`
 
 /**
- * 管理员「重译」:清掉这一岗的四格译文与版本,下次开框重翻(2026-09-14)。
+ * 管理员「重译」:清掉这一岗的四格译文与版本,下次开框重翻(2026-09-14)。$1=职位 id(2026-09-20 改键,见 JD_TRANS_BY_ID)。
  */
 export const JD_TRANS_RESET = `UPDATE jobs SET jd_trans_zh = NULL, jd_trans_ko = NULL, title_zh = NULL, title_ko = NULL, trans_v = NULL
-     WHERE apply_url = $1`
+     WHERE id = $1`
 
 /**
  * 管理员「重译」:同名岗的标题译名一并清(标题译名是按名共享的)。
@@ -1493,29 +1506,29 @@ export const TITLE_TRANS_BY_TITLE = `SELECT title_zh, title_ko FROM jobs
 /**
  * 单个词的歧义标题(architect / engineer / analyst …)按岗取数:这一岗自己的译名与整理版(译名版本对不上的当没有;
  * 整理版拿来给翻译器当语境)。2026-09-19 Frank「通用的,就是翻译标题的时候,需要把正文内容也加进去」:
- * 同是「architect」,一个是建筑师、一个是 IT 解决方案架构师,按标题共享译名必有一个错。$1=原帖链接,$2=现版本号。
+ * 同是「architect」,一个是建筑师、一个是 IT 解决方案架构师,按标题共享译名必有一个错。$1=职位 id(2026-09-20 改键,见 JD_TRANS_BY_ID),$2=现版本号。
  */
-export const TITLE_TRANS_BY_URL = `SELECT CASE WHEN trans_v = $2 THEN title_zh END AS title_zh,
+export const TITLE_TRANS_BY_ID = `SELECT CASE WHEN trans_v = $2 THEN title_zh END AS title_zh,
             CASE WHEN trans_v = $2 THEN title_ko END AS title_ko, jd_formatted, description
-       FROM jobs WHERE apply_url = $1 LIMIT 1`
+       FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
- * 歧义标题的中文译名落库:只写这一岗(不像多词标题那样同名岗全写)。$1=译名,$2=原帖链接,$3=版本号。
+ * 歧义标题的中文译名落库:只写这一岗(不像多词标题那样同名岗全写)。$1=译名,$2=职位 id,$3=版本号。
  */
-export const TITLE_TRANS_SAVE_ZH_BY_URL = `UPDATE jobs
+export const TITLE_TRANS_SAVE_ZH_BY_ID = `UPDATE jobs
      SET title_zh = $1, trans_v = $3,
          title_ko = CASE WHEN trans_v = $3 THEN title_ko END,
          jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
-     WHERE apply_url = $2`
+     WHERE id = $2`
 
 /**
  * 歧义标题的韩文译名落库:只写这一岗。
  */
-export const TITLE_TRANS_SAVE_KO_BY_URL = `UPDATE jobs
+export const TITLE_TRANS_SAVE_KO_BY_ID = `UPDATE jobs
      SET title_ko = $1, trans_v = $3,
          title_zh = CASE WHEN trans_v = $3 THEN title_zh END,
          jd_trans_zh = CASE WHEN trans_v = $3 THEN jd_trans_zh END, jd_trans_ko = CASE WHEN trans_v = $3 THEN jd_trans_ko END
-     WHERE apply_url = $2`
+     WHERE id = $2`
 
 /**
  * 职位名中文译名落库(同名岗全写;同行旧版本对照一并清空)。
@@ -1536,9 +1549,9 @@ export const TITLE_TRANS_SAVE_KO = `UPDATE jobs
      WHERE lower(title) = lower($2)`
 
 /**
- * JD 状态行:整理版 + 雇佣期 / 工时(懒整理的落格)。
+ * JD 状态行:整理版 + 雇佣期 / 工时(懒整理的落格)。$1=职位 id(2026-09-20 改键,见 JD_TRANS_BY_ID)。
  */
-export const JD_STATE_BY_URL = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
+export const JD_STATE_BY_ID = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
 
 // =========================================================================
 // 19. 新闻与评论
@@ -1872,9 +1885,9 @@ export const PROV_DIFFICULTY_ONE = `SELECT difficulty FROM stats WHERE province 
 export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descriptions WHERE noc = $1 LIMIT 1`
 
 /**
- * 按投递链接取 JD 整理稿缓存。$1=apply_url。
+ * 按职位 id 取 JD 整理稿缓存。$1=职位 id(2026-09-20 改键,原按 apply_url,见 JD_TRANS_BY_ID)。
  */
-export const JD_FORMATTED_BY_URL = `SELECT jd_formatted FROM jobs WHERE apply_url = $1 LIMIT 1`
+export const JD_FORMATTED_BY_ID = `SELECT jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
  * 按公司名取 AI 简报(有才回)。$1=公司名。

@@ -144,7 +144,7 @@ export async function advisorRoute(req: Request): Promise<Response> {
 
   let jd = TEXT_NONE
   if (field === F_TITLE || field === F_IMMIGRATION || isChat) {
-    jd = (await jobDescription({ db, applyUrl: blankOf(job.applyUrl).trim() })).slice(0, JD_LEN_MAX)
+    jd = (await jobDescription({ db, applyUrl: blankOf(job.applyUrl).trim(), id: null })).slice(0, JD_LEN_MAX)
   }
 
   let web: WebResearch | null = null

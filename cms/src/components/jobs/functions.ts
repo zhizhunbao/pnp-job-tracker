@@ -59,7 +59,8 @@ import {
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
   TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
-  UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
+  UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD, URL_BOARD_BROAD,
+  URL_BOARD_FINE,
   URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_COMPANY_HEAD, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
   URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD,
@@ -71,7 +72,8 @@ import type {
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
-  DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FieldOpenIn, FillIn,
+  DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
+  FieldOpenIn, FillIn,
   FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
   FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn,
@@ -1868,21 +1870,23 @@ export function jdPayFallbackOf(x: JdPayIn): string {
  * 用户以为站没数据)。三态分明:402 = 免费额度用完 · 429 = 匿名 IP 池用完 ·
  * 其它非 2xx = 取数失败(不是「没有」)。
  *
- * @param applyUrl 原帖链接。
- * @param signal 中断信号(组件卸载时掐掉在途请求)。
+ * 2026-09-20 改键:会话缓存与服务端找行都按岗位号(原按原帖链接 —— HireAC 91 条岗共用一个登录门户网址,
+ * 开过一条,其余 90 条弹框里全是它的正文;生产实撞)。入参顺势收成一参形,调用点(本域两处 + advisor 一处)同批改。
+ *
+ * @param x 原帖链接、岗位号与中断信号(组件卸载时掐掉在途请求)。
  * @returns 三态分明的取数结果。
  */
-// eslint-disable-next-line local/one-parameter -- 签名由 advisor 的调用点定死(本批只许动它的 import 行)
-export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Promise<JobTextOut> {
-  const hit = CACHE.jobText.get(applyUrl)
+export async function fetchJobText(x: FetchJobTextIn): Promise<JobTextOut> {
+  const key = String(x.id)
+  const hit = CACHE.jobText.get(key)
   if (hit != null) {
     return { status: TEXT_STATUS.ok, text: hit, freeLeft: null }
   }
   const init: RequestInit = {}
-  if (signal != null) {
-    init.signal = signal
+  if (x.signal != null) {
+    init.signal = x.signal
   }
-  const res = await fetch(URL_API_JOB_TEXT + encodeURIComponent(applyUrl), init)
+  const res = await fetch(URL_API_JOB_TEXT + encodeURIComponent(x.applyUrl) + URL_API_JOB_TEXT_ID + key, init)
   const freeLeft = freeLeftOf(res)
   if (res.status === HTTP_PAYMENT) {
     return { status: TEXT_STATUS.gated, text: TEXT_NONE, freeLeft }
@@ -1895,7 +1899,7 @@ export async function fetchJobText(applyUrl: string, signal?: AbortSignal): Prom
   }
   const text = (await res.text()).trim()
   if (text !== TEXT_NONE) {
-    CACHE.jobText.set(applyUrl, text)
+    CACHE.jobText.set(key, text)
     return { status: TEXT_STATUS.ok, text, freeLeft }
   }
   return { status: TEXT_STATUS.empty, text, freeLeft }

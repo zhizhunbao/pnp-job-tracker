@@ -3077,10 +3077,25 @@ export type JdIn = {
   db: Db
 
   /**
-   * 投递 URL(JD 缓存的键)。
+   * 投递 URL(去原站懒抓用;2026-09-20 起不再当找行的键,除非没给岗位号)。
    */
   applyUrl: string
+
+  /**
+   * 岗位号:找行与回写的键;null = 调用方手里只有链接(顾问、简历),退回按链接。
+   */
+  id: MaybeJobId
 }
+
+/**
+ * 线格式里的岗位号原值(数或数字串;null / 别的都当没带;缺席在拿到的那一行先收成 null)。
+ */
+export type JobIdWire = number | string | null
+
+/**
+ * 洗净的岗位号;null = 没带或不合法。
+ */
+export type MaybeJobId = number | null
 
 /**
  * `loadJdSsrById` 的入参(2026-09-14 职位正文直出批:详情页 SSR 按岗位号取库里的正文)。
@@ -4579,9 +4594,9 @@ export type JdFormattedIn = {
   db: Db
 
   /**
-   * 职位链接（apply_url）。
+   * 岗位号（2026-09-20 改键，原按 apply_url）。
    */
-  url: string
+  id: number
 }
 
 /**
@@ -4659,9 +4674,14 @@ export type DraftJdOut = Promise<JdDraft | null>
  */
 export type JdUrlBody = {
   /**
-   * 职位链接；不是字符串当没带。
+   * 职位链接；不是字符串当没带（2026-09-20 起只用来去原站懒抓正文，不再当找行的键）。
    */
   url: string | null
+
+  /**
+   * 岗位号（找行的键）；缺的、不合法的 400。
+   */
+  id: number | string | null
 
   /**
    * 只查库不生成（2026-09-16 弹框开框首拍：库里有整理版就直接铺，没有回 404 让前端先铺原帖再另起生成）；不带当 false。
@@ -4694,9 +4714,14 @@ export type ApplyUrlIn = {
  */
 export type JdTransBody = {
   /**
-   * 职位链接；不是字符串当没带。
+   * 职位链接；不是字符串当没带（2026-09-20 起只用来去原站懒抓正文，不再当找行的键）。
    */
   url: string | null
+
+  /**
+   * 岗位号（找行的键）；缺的、不合法的 400。
+   */
+  id: number | string | null
 
   /**
    * 目标语种；不在白名单 400。
@@ -5037,9 +5062,9 @@ export type JdTitleBody = {
   titles?: string[] | null
 
   /**
-   * 这一岗的原帖链接(可省;单个词的歧义标题靠它取这一岗的工作内容当语境,译名也只记在这一岗上)。
+   * 这一岗的岗位号(可省;单个词的歧义标题靠它取这一岗的工作内容当语境,译名也只记在这一岗上)。
    */
-  url?: string | null
+  id?: number | string | null
 }
 
 /**
@@ -5057,9 +5082,9 @@ export type TitleReq = {
   lang: string
 
   /**
-   * 这一岗的原帖链接;空串 = 没给。
+   * 这一岗的岗位号;null = 没给。
    */
-  url: string
+  id: MaybeJobId
 
   /**
    * 批量的一组职位名(已去空去重封顶);空表 = 不是批量。
@@ -5107,9 +5132,9 @@ export type TitleInCtxIn = {
   lang: string
 
   /**
-   * 这一岗的原帖链接。
+   * 这一岗的岗位号;null = 没给(退回按标题翻的老路)。
    */
-  url: string
+  id: MaybeJobId
 }
 
 /**
@@ -5167,9 +5192,9 @@ export type JdTransIn = {
   db: Db
 
   /**
-   * 原帖链接(jobs 的键)。
+   * 岗位号(jobs 的键;2026-09-20 改键,原按原帖链接)。
    */
-  url: string
+  id: number
 }
 
 /**
@@ -5217,9 +5242,9 @@ export type SaveJdTransIn = {
   db: Db
 
   /**
-   * 原帖链接。
+   * 岗位号(2026-09-20 改键,原按原帖链接)。
    */
-  url: string
+  id: number
 
   /**
    * 语种(zh / ko)。
@@ -5242,9 +5267,9 @@ export type TranslateJdIn = {
   db: Db
 
   /**
-   * 原帖链接。
+   * 岗位号(2026-09-20 改键,原按原帖链接)。
    */
-  url: string
+  id: number
 
   /**
    * 语种(zh / ko)。
@@ -5257,7 +5282,7 @@ export type TranslateJdIn = {
   formatted: string
 
   /**
-   * 进程缓存键(url:lang)。
+   * 进程缓存键(岗位号:lang)。
    */
   key: string
 }
@@ -5317,9 +5342,9 @@ export type DoneOut = Promise<void>
  */
 export type JdRetransBody = {
   /**
-   * 原帖链接。
+   * 岗位号(2026-09-20 改键,原按原帖链接)。
    */
-  url?: string | null
+  id?: number | string | null
 
   /**
    * 职位名(同名岗的标题译名一并清)。
@@ -5337,9 +5362,9 @@ export type ResetJdTransIn = {
   db: Db
 
   /**
-   * 原帖链接。
+   * 岗位号(2026-09-20 改键,原按原帖链接)。
    */
-  url: string
+  id: number
 
   /**
    * 职位名。

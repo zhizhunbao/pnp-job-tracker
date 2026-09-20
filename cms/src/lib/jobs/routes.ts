@@ -37,12 +37,12 @@ import {
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
-  translateTitles, emptyTexts, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
+  translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle,
 } from './functions'
 import { CACHE } from './variables'
 import type {
-  CompanyBody, JdTransBody, JdUrlBody, JobMeta, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
+  CompanyBody, JdTransBody, JdUrlBody, JobMeta, MaybeJobId, JobMetaIn, JobsFilters, MatchDims, MaybeStr, ProfileJson,
   JdTitleBody, JdRetransBody,
 } from './types'
 
@@ -137,7 +137,7 @@ export async function jobsRoute(req: Request): Promise<Response> {
  * #201(#96 整改):JD 摘录 = 通用商品,退出统一付费额度池;只留一道宽松的按 IP 日限
  * (懒抓 miss 会触发外站请求,属信任边界),超了素 429 不做升级引流。
  *
- * @param req 请求(?url=投递链接)。
+ * @param req 请求(?url=投递链接&id=岗位号;2026-09-20 起带岗位号的按岗位号找行,链接只用来去原站懒抓)。
  * @returns 纯文本 JD;缺参 400、超限 429。
  */
 export async function jobsTextRoute(req: Request): Promise<Response> {
@@ -157,7 +157,8 @@ export async function jobsTextRoute(req: Request): Promise<Response> {
   if (url === '') {
     return new Response(null, { status: BAD_REQUEST })
   }
-  const body = await jobDescription({ db: await getDb(), applyUrl: url })
+  const id = toJobId(new URL(req.url).searchParams.get(P_ID))
+  const body = await jobDescription({ db: await getDb(), applyUrl: url, id: id })
   return new Response(body, { headers: { [HDR_CONTENT_TYPE]: MIME_TEXT } })
 }
 
@@ -384,7 +385,7 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
  * 2026-09-16 Frank「点开的时候，如果有整理版，直接显示整理版，不要有跳跃」：body 带 storedOnly 只查库，
  * 没存回 404 不生成（前端先铺原帖再另起一次不带 storedOnly 的生成）。
  *
- * @param req 请求（body 是 { url, storedOnly? }）。
+ * @param req 请求（body 是 { url, id, storedOnly? }；2026-09-20 起按岗位号找行，见 SQL.JD_TRANS_BY_ID）。
  * @returns 整理版纯文本；掉线 204、缺参 400、只查库没存 404。
  */
 export async function jobsJdformatRoute(req: Request): Promise<Response> {
@@ -392,21 +393,23 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
     return new Response(null, { status: NO_CONTENT })
   }
   let url = PARAM_NONE
+  let id: MaybeJobId = null
   let storedOnly = false
   try {
     const b = await req.json() as JdUrlBody
     if (typeof b.url === 'string') {
       url = b.url.trim()
     }
+    id = toJobId(b.id)
     storedOnly = b.storedOnly === true
   } catch {
     url = PARAM_NONE
   }
-  if (url === '') {
+  if (url === '' || id == null) {
     return new Response(null, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  const state = await loadJdState({ db: db, url: url })
+  const state = await loadJdState({ db: db, id: id })
   if (state == null) {
     return new Response(null, { status: NO_CONTENT })
   }
@@ -419,23 +422,24 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
   if (storedOnly) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const description = await jobDescription({ db: db, applyUrl: url })
+  const description = await jobDescription({ db: db, applyUrl: url, id: id })
   if (description === '') {
     return new Response(null, { status: NO_CONTENT })
   }
-  let task = CACHE.jdFormatInflight.get(url)
+  const fk = String(id)
+  let task = CACHE.jdFormatInflight.get(fk)
   let mine = false
   if (task == null) {
     mine = true
     task = generateJdFormatted({ db: db, state: state, description: description })
-    CACHE.jdFormatInflight.set(url, task)
+    CACHE.jdFormatInflight.set(fk, task)
   }
   let out: MaybeStr = null
   try {
     out = await task
   } finally {
     if (mine) {
-      CACHE.jdFormatInflight.delete(url)
+      CACHE.jdFormatInflight.delete(fk)
     }
   }
   if (out == null) {
@@ -456,38 +460,36 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
  * 2026-09-16 Frank「点开之后，默认自动翻译」「先显示英文再加中文会跳」:body 带 storedOnly 只查缓存与库,没存回 404 不翻
  * (前端把存好的译文与整理版一起铺;没存的先铺英文再另起一次不带 storedOnly 的翻译)。
  *
- * @param req 请求(body 是 { url, lang, storedOnly? })。
+ * @param req 请求(body 是 { id, lang, storedOnly? };2026-09-20 起按岗位号找行,见 SQL.JD_TRANS_BY_ID)。
  * @returns { ok, text, cached };状态码同 co-translate,只查库没存 404。
  */
 export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (translateReady() === false) {
     return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
-  let url = PARAM_NONE
+  let id: MaybeJobId = null
   let lang = PARAM_NONE
   let storedOnly = false
   try {
     const b = await req.json() as JdTransBody
-    if (typeof b.url === 'string') {
-      url = b.url.trim()
-    }
+    id = toJobId(b.id)
     if (typeof b.lang === 'string') {
       lang = b.lang
     }
     storedOnly = b.storedOnly === true
   } catch {
-    url = PARAM_NONE
+    id = null
   }
-  if (url === '' || TRANS_LANGS.includes(lang) === false) {
+  if (id == null || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
-  const ck = url + TRANS_KEY_SEP + lang
+  const ck = String(id) + TRANS_KEY_SEP + lang
   const hit = CACHE.jdTransBy.get(ck)
   if (hit != null) {
     return Response.json({ ok: true, text: hit, cached: true })
   }
   const db = await getDb()
-  const stored = await loadJdTrans({ db: db, url: url })
+  const stored = await loadJdTrans({ db: db, id: id })
   if (stored != null) {
     const cell = jdTransCellOf({ fact: stored, lang: lang })
     if (cell !== PARAM_NONE) {
@@ -498,7 +500,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   if (storedOnly) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
-  const fmt = await loadJdFormatted({ db: db, url: url })
+  const fmt = await loadJdFormatted({ db: db, id: id })
   if (fmt == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
@@ -509,7 +511,7 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   let mine = false
   if (task == null) {
     mine = true
-    task = translateJdFormatted({ db: db, url: url, lang: lang, formatted: fmt, key: ck })
+    task = translateJdFormatted({ db: db, id: id, lang: lang, formatted: fmt, key: ck })
     CACHE.jdTransInflight.set(ck, task)
   }
   try {
@@ -546,7 +548,7 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   } catch {
     body = {}
   }
-  const { title, lang, url, titles } = toTitleReq(body)
+  const { title, lang, id, titles } = toTitleReq(body)
   if (TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
@@ -560,7 +562,7 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  const inCtx = await translateTitleInContext({ db, title, lang, url }).catch(emptyTitle)
+  const inCtx = await translateTitleInContext({ db, title, lang, id }).catch(emptyTitle)
   if (inCtx !== PARAM_NONE) {
     return Response.json({ ok: true, text: inCtx, cached: false })
   }
@@ -606,7 +608,7 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
 /**
  * 管理员「重译」(2026-09-14 Frank「加」):非管理员 403;清这一岗的译文与版本,前端随后整页刷新,开框即重翻。
  *
- * @param req 请求体 { url, title }。
+ * @param req 请求体 { id, title }(2026-09-20 起按岗位号)。
  * @returns { ok }。
  */
 export async function jobsRetranslateRoute(req: Request): Promise<Response> {
@@ -614,23 +616,23 @@ export async function jobsRetranslateRoute(req: Request): Promise<Response> {
   if (isAdmin(user) === false) {
     return new Response(null, { status: FORBIDDEN })
   }
-  let url = PARAM_NONE
+  let id: MaybeJobId = null
   let title = PARAM_NONE
   try {
     const b = await req.json() as JdRetransBody
-    if (typeof b.url === 'string') {
-      url = b.url.trim()
+    if (b.id != null) {
+      id = toJobId(b.id)
     }
     if (typeof b.title === 'string') {
       title = b.title.trim()
     }
   } catch {
-    url = PARAM_NONE
+    id = null
   }
-  if (url === PARAM_NONE) {
+  if (id == null) {
     return new Response(null, { status: BAD_REQUEST })
   }
-  await resetJdTrans({ db: await getDb(), url: url, title: title })
+  await resetJdTrans({ db: await getDb(), id: id, title: title })
   return Response.json({ ok: true })
 }
 

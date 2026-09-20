@@ -221,7 +221,7 @@ export async function resumeMatchRoute(req: Request): Promise<Response> {
       const db = await getDb()
       const applyUrl = await loadApplyUrlById({ db: db, jobId: Number(body.jobId) })
       if (applyUrl != null) {
-        jdFromDb = (await jobDescription({ db: db, applyUrl: applyUrl })).trim()
+        jdFromDb = (await jobDescription({ db: db, applyUrl: applyUrl, id: Number(body.jobId) })).trim()
       }
     } catch {
       jdFromDb = JD_DB_NONE

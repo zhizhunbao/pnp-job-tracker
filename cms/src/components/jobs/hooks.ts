@@ -1732,6 +1732,7 @@ function useJdText(x: JdTextHookIn): JdTextPanel {
   const [text, setText] = useState(x.jdText)
   const [status, setStatus] = useState<JdStatus>(jdInitStatusOf(x.jdText))
   const url = strOf(x.job.applyUrl)
+  const jobId = x.job.id
   const onFreeLeft = x.onFreeLeft
   const ssrText = x.jdText
   useEffect(function loadJdText() {
@@ -1742,7 +1743,7 @@ function useJdText(x: JdTextHookIn): JdTextPanel {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 拉正文前的起手式:换岗先清上一岗的文,清和拉必须同一拍
     setStatus(JD_LOADING)
     setText(TEXT_NONE)
-    fetchJobText(url, ctrl.signal)
+    fetchJobText({ applyUrl: url, id: jobId, signal: ctrl.signal })
       .then(function onText(r) {
         if (r.freeLeft != null && onFreeLeft != null) {
           onFreeLeft(r.freeLeft)
@@ -1762,7 +1763,7 @@ function useJdText(x: JdTextHookIn): JdTextPanel {
     return function stopJdText() {
       ctrl.abort()
     }
-  }, [url, onFreeLeft, ssrText])
+  }, [url, jobId, onFreeLeft, ssrText])
   return { text, status }
 }
 
@@ -1807,6 +1808,7 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
   const [pending, setPending] = useState(false)
   const [tick, setTick] = useState(0)
   const url = strOf(x.job.applyUrl)
+  const jobId = x.job.id
   const ssrFmt = x.jdFormatted
   useEffect(function loadFmt() {
     if (ssrFmt != null && tick === 0) {
@@ -1820,7 +1822,7 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
     const cap = window.setTimeout(function capFmtHold() {
       setPending(false)
     }, HOLD_MAX_MS)
-    fmtLoadOf({ url, storedOnly, signal: ctrl.signal })
+    fmtLoadOf({ url, id: jobId, storedOnly, signal: ctrl.signal })
       .then(function onStored(r: FmtLoad): Promise<FmtLoad | null> {
         setPending(false)
         if (r.found) {
@@ -1828,7 +1830,7 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
           setFmt(r.fmt)
           return Promise.resolve(null)
         }
-        return fmtLoadOf({ url, storedOnly: false, signal: ctrl.signal })
+        return fmtLoadOf({ url, id: jobId, storedOnly: false, signal: ctrl.signal })
       })
       .then(function onGenerated(r: FmtLoad | null) {
         if (r != null) {
@@ -1847,7 +1849,7 @@ function useJdFormat(x: JdFormatHookIn): JdFormatPanel {
       window.clearTimeout(cap)
       ctrl.abort()
     }
-  }, [url, tick, ssrFmt])
+  }, [url, jobId, tick, ssrFmt])
   return {
     fmt,
     fmtWhy,
@@ -1870,7 +1872,7 @@ async function fmtLoadOf(x: FmtLoadIn): Promise<FmtLoad> {
   const r = await fetch(URL_API_JD_FORMAT, {
     method: METHOD_POST,
     headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    body: JSON.stringify({ url: x.url, storedOnly: x.storedOnly }),
+    body: JSON.stringify({ url: x.url, id: x.id, storedOnly: x.storedOnly }),
     signal: x.signal,
   })
   if (x.storedOnly && r.status === HTTP_NOT_FOUND) {
@@ -1944,7 +1946,7 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
   const showTrans = x.lang !== LANG_EN
   const [trans, setTrans] = useState<string | null>(null)
   const [transStatus, setTransStatus] = useState<TransStatus>(TRANS_IDLE)
-  const url = strOf(x.job.applyUrl)
+  const jobId = x.job.id
   const lang = x.lang
   const auto = x.fmtReady && lang !== LANG_EN
   const resetKey = x.resetKey
@@ -1962,12 +1964,12 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 后台拉对照的起手式:整段在途都算 loading,拨开开关时不另起一次
     setTransStatus(TRANS_LOADING)
     track(TRACK_JD_TRANSLATE)
-    postTranslate({ url, lang, storedOnly: true, signal: ctrl.signal })
+    postTranslate({ id: jobId, lang, storedOnly: true, signal: ctrl.signal })
       .then(function onStored(got: string): Promise<string> {
         if (got !== TEXT_NONE) {
           return Promise.resolve(got)
         }
-        return postTranslate({ url, lang, storedOnly: false, signal: ctrl.signal })
+        return postTranslate({ id: jobId, lang, storedOnly: false, signal: ctrl.signal })
       })
       .then(function onGot(got: string) {
         if (ctrl.signal.aborted) {
@@ -1983,7 +1985,7 @@ function useJdTrans(x: JdTransHookIn): JdTransPanel {
     return function stopTrans() {
       ctrl.abort()
     }
-  }, [auto, url, lang, resetKey])
+  }, [auto, jobId, lang, resetKey])
   return { showTrans, trans, transStatus }
 }
 
@@ -1997,7 +1999,7 @@ async function postTranslate(x: TranslateIn): Promise<string> {
   const res = await fetch(URL_API_JD_TRANSLATE, {
     method: METHOD_POST,
     headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    body: JSON.stringify({ url: x.url, lang: x.lang, storedOnly: x.storedOnly }),
+    body: JSON.stringify({ id: x.id, lang: x.lang, storedOnly: x.storedOnly }),
     signal: x.signal,
   }).catch(nullOf)
   if (res == null) {
@@ -2153,7 +2155,7 @@ function needIntent(x: NeedIntentIn): boolean {
 function makeOpenMatch(x: OpenMatchIn): () => Promise<void> {
   return async function openMatch(): Promise<void> {
     track(TRACK_JD_MATCH_OPEN)
-    const r = await fetchJobText(strOf(x.job.applyUrl)).catch(nullOf)
+    const r = await fetchJobText({ applyUrl: strOf(x.job.applyUrl), id: x.job.id, signal: null }).catch(nullOf)
     if (r == null) {
       x.setMatchJd(TEXT_NONE)
       return

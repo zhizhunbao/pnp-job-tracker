@@ -2647,6 +2647,11 @@ export type LoadJobTextIn = {
   applyUrl: string
 
   /**
+   * 岗位号(正文取数的键;2026-09-20 改键)。
+   */
+  id: string | number
+
+  /**
    * 中断信号。
    */
   signal: AbortSignal
@@ -3389,9 +3394,9 @@ export type LoadTitleTransIn = {
   title: string
 
   /**
-   * 这一岗的原帖链接(单个词的歧义标题靠它按岗翻;空串 = 没有)。
+   * 这一岗的岗位号(单个词的歧义标题靠它按岗翻;2026-09-20 改键,原传原帖链接 —— 多条岗共用一个链接会串岗)。
    */
-  url: string
+  id: string | number
 
   /**
    * 界面语言。
@@ -3429,9 +3434,9 @@ export type TitleTransHookIn = {
   title: string
 
   /**
-   * 这一岗的原帖链接(单个词的歧义标题靠它按岗翻;空串 = 没有)。
+   * 这一岗的岗位号(单个词的歧义标题靠它按岗翻;2026-09-20 改键,原传原帖链接 —— 多条岗共用一个链接会串岗)。
    */
-  url: string
+  id: string | number
 
   /**
    * 界面语言(英文不翻)。

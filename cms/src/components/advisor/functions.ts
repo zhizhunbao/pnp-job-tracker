@@ -1459,7 +1459,7 @@ export function makeLoadCompanyJobs(x: LoadCompanyJobsIn): LoadFn {
  */
 export function makeLoadJobText(x: LoadJobTextIn): () => void {
   async function pump(): Promise<void> {
-    const got = await fetchJobText(x.applyUrl, x.signal)
+    const got = await fetchJobText({ applyUrl: x.applyUrl, id: x.id, signal: x.signal })
     if (got.status === JOB_TEXT_LIMITED) {
       x.setLimited(true)
       x.setText(TEXT_NONE)
@@ -1489,7 +1489,7 @@ export function makeLoadTitleTrans(x: LoadTitleTransIn): () => void {
     const res = await fetch(URL_API_JOBS_TITLE, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ title: x.title, lang: x.lang, url: x.url }),
+      body: JSON.stringify({ title: x.title, lang: x.lang, id: x.id }),
     })
     const d: TitleTransJson = await res.json()
     if (d == null || d.ok !== true || d.text == null || d.text === TEXT_NONE) {
@@ -2004,7 +2004,7 @@ export function jobRefreshOf(x: JobRefreshIn): RefreshFn | null {
     fetch(URL_API_JOBS_RETRANSLATE, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      body: JSON.stringify({ url: x.job.applyUrl, title: x.job.title }),
+      body: JSON.stringify({ id: x.job.id, title: x.job.title }),
     }).then(x.onDone).catch(x.onDone)
   }
 }

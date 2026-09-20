@@ -155,7 +155,7 @@ async function factsOf(field: string, p: Picked, lang: Lang): Promise<string> {
   const db = await getDb()
   let jd = ''
   if (field === 'title') {
-    jd = (await jobDescription({ db, applyUrl: (p.job.applyUrl ?? '').trim() })).slice(0, 2200)
+    jd = (await jobDescription({ db, applyUrl: (p.job.applyUrl ?? '').trim(), id: null })).slice(0, 2200)
   }
   // 岗位场景:直接用新链的提示词整文当底料(含 jobFacts 的全部数字)
   return promptOf({ field, job: p.job, jd, lang, pf: '', web: null })

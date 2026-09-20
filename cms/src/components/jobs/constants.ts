@@ -688,6 +688,11 @@ export const URL_API_USERS_ME = '/api/users/me'
 export const URL_API_JOB_TEXT = '/api/jobs/text?url='
 
 /**
+ * 正文接口的岗位号参数(接在链接后;2026-09-20 服务端按岗位号找行,链接只用来去原站懒抓)。
+ */
+export const URL_API_JOB_TEXT_ID = '&id='
+
+/**
  * Job Bank 岗的投递方式懒查(dd24-#110:邮箱藏在「Show how to apply」的 JSF 后面)。
  */
 export const URL_API_APPLY_HOW = '/api/jobs/applyhow?url='

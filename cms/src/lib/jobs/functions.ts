@@ -67,7 +67,7 @@ import type {
   CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
-  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft,
+  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire, MaybeJobId,
   JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
   JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobMidIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
@@ -2032,6 +2032,8 @@ export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
 /**
  * 按 applyUrl 取 JD 正文(DB jobs.description,mart 灌入;空则懒抓)。出口统一脱敏 ——
  * jobtext/advisor 都干净。
+ * 2026-09-20:给了岗位号的按岗位号找行与回写(多条岗共用一个投递链接时按链接会串岗,见 SQL.JD_TRANS_BY_ID);
+ * 链接只用来去原站懒抓。单飞 / 负缓存的键跟着换成 jdKeyOf。
  *
  * @param input 连接与投递 URL。
  * @returns 脱敏正文;没有空串。
@@ -2040,7 +2042,12 @@ export async function jobDescription(input: JdIn): JdOut {
   if (input.applyUrl === '') {
     return JD_NONE
   }
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
+  let rows: Row[] = []
+  if (input.id == null) {
+    rows = await queryRows({ db: input.db, sql: SQL.JD_BY_APPLY_URL, params: [input.applyUrl], map: passRow })
+  } else {
+    rows = await queryRows({ db: input.db, sql: SQL.JD_DESC_BY_ID, params: [input.id], map: passRow })
+  }
   const first = rows[0]
   if (first != null && first.description != null && first.description !== '') {
     return scrubPii(String(first.description))
@@ -2056,19 +2063,33 @@ export async function jobDescription(input: JdIn): JdOut {
  * @returns 正文;抓不到空串(前端空态照旧引导官方原帖)。
  */
 function lazyFetchJd(input: JdIn): JdOut {
-  const neg = CACHE.jdFailed.get(input.applyUrl)
+  const key = jdKeyOf(input)
+  const neg = CACHE.jdFailed.get(key)
   if (neg != null && Date.now() - neg < JD_NEG_TTL_MS) {
     return Promise.resolve(JD_NONE)
   }
-  const flying = CACHE.jdInflight.get(input.applyUrl)
+  const flying = CACHE.jdInflight.get(key)
   if (flying != null) {
     return flying
   }
   const p = fetchAndStore(input).finally(function clearInflight() {
-    CACHE.jdInflight.delete(input.applyUrl)
+    CACHE.jdInflight.delete(key)
   })
-  CACHE.jdInflight.set(input.applyUrl, p)
+  CACHE.jdInflight.set(key, p)
   return p
+}
+
+/**
+ * 懒抓单飞 / 负缓存的键:有岗位号用岗位号,没有才用链接(同链接不同岗各抓各的、各记各的)。
+ *
+ * @param input 连接、投递 URL 与岗位号。
+ * @returns 缓存键。
+ */
+function jdKeyOf(input: JdIn): string {
+  if (input.id == null) {
+    return input.applyUrl
+  }
+  return String(input.id)
 }
 
 /**
@@ -2081,7 +2102,11 @@ async function fetchAndStore(input: JdIn): JdOut {
   const text = await doFetch(input.applyUrl)
   if (text !== '') {
     try {
-      await input.db.query(SQL.JD_UPDATE_BY_APPLY_URL, [text, input.applyUrl])
+      if (input.id == null) {
+        await input.db.query(SQL.JD_UPDATE_BY_APPLY_URL, [text, input.applyUrl])
+      } else {
+        await input.db.query(SQL.JD_UPDATE_BY_ID, [text, input.id])
+      }
     } catch (e) {
       let why = String(e)
       if (e instanceof Error) {
@@ -2090,7 +2115,7 @@ async function fetchAndStore(input: JdIn): JdOut {
       log({ tag: JOBS_LOG.tag, text: JOBS_LOG.jdWriteFailed + why })
     }
   } else {
-    CACHE.jdFailed.set(input.applyUrl, Date.now())
+    CACHE.jdFailed.set(jdKeyOf(input), Date.now())
     if (CACHE.jdFailed.size > JD_FAILED_MAX) {
       CACHE.jdFailed.clear()
     }
@@ -2882,7 +2907,7 @@ export function emptyMid(_e: Error): string {
  * @returns 整理版全文；没生过/查无这岗是 null。
  */
 export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_URL, params: [input.url],
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_FORMATTED_BY_ID, params: [input.id],
     map: toJdFormattedCell })
   return firstOf(rows)
 }
@@ -2894,7 +2919,7 @@ export async function loadJdFormatted(input: JdFormattedIn): MaybeStrOut {
  * @returns 岗态行；查无这岗是 null。
  */
 export async function loadJdState(input: JdFormattedIn): JdStateOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_STATE_BY_URL, params: [input.url], map: toJdStateRow })
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_STATE_BY_ID, params: [input.id], map: toJdStateRow })
   return firstOf(rows)
 }
 
@@ -3622,7 +3647,7 @@ export function toNocDescDim(r: Row): NocDescDim {
 }
 
 /**
- * 单列整理版（SQL.JD_FORMATTED_BY_URL）→ 文本；没生过是 null。
+ * 单列整理版（SQL.JD_FORMATTED_BY_ID）→ 文本；没生过是 null。
  *
  * @param r 库里的一行。
  * @returns 整理版全文；没有是 null。
@@ -3646,7 +3671,7 @@ export function toJdSsrRow(r: Row): JdSsr {
 }
 
 /**
- * 一行 jdformat 岗态（SQL.JD_STATE_BY_URL）。
+ * 一行 jdformat 岗态（SQL.JD_STATE_BY_ID）。
  *
  * @param r 库里的一行。
  * @returns 岗 id、两个只补空字段与已有整理版。
@@ -4292,15 +4317,33 @@ export function toTitleReq(b: JdTitleBody): TitleReq {
   if (typeof b.lang === 'string') {
     lang = b.lang
   }
-  let url = PARAM_NONE
-  if (typeof b.url === 'string') {
-    url = b.url.trim()
-  }
   let titles: TitleList = []
   if (Array.isArray(b.titles)) {
     titles = titleListOf(b.titles)
   }
-  return { title, lang, url, titles }
+  let id: MaybeJobId = null
+  if (b.id != null) {
+    id = toJobId(b.id)
+  }
+  return { title, lang, id, titles }
+}
+
+/**
+ * 线格式里的岗位号 → 正整数;缺的、不是数的、不是正整数的一律 null
+ * (2026-09-20 JD 这条链改按岗位号找行,见 SQL.JD_TRANS_BY_ID;五个接口同一道洗法)。
+ *
+ * @param v 线格式原值(数或数字串;别的当没带)。
+ * @returns 岗位号或 null。
+ */
+export function toJobId(v: JobIdWire): MaybeJobId {
+  if (typeof v !== 'number' && typeof v !== 'string') {
+    return null
+  }
+  const n = Number(v)
+  if (Number.isInteger(n) === false || n <= 0) {
+    return null
+  }
+  return n
 }
 
 /**
@@ -4390,10 +4433,10 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
  * @returns 译名或空串。
  */
 export async function translateTitleInContext(x: TitleInCtxIn): TitleInCtxOut {
-  if (x.url === PARAM_NONE || TITLE_AMBIGUOUS.includes(x.title.toLowerCase()) === false) {
+  if (x.id == null || TITLE_AMBIGUOUS.includes(x.title.toLowerCase()) === false) {
     return PARAM_NONE
   }
-  const rows = await queryRows({ db: x.db, sql: SQL.TITLE_TRANS_BY_URL, params: [x.url, TRANS_V], map: toTitleCtxFact })
+  const rows = await queryRows({ db: x.db, sql: SQL.TITLE_TRANS_BY_ID, params: [x.id, TRANS_V], map: toTitleCtxFact })
   const fact = firstOf(rows)
   if (fact == null) {
     return PARAM_NONE
@@ -4424,16 +4467,16 @@ export async function translateTitleInContext(x: TitleInCtxIn): TitleInCtxOut {
   if (clean.length > TITLE_MAX_LEN || translationOk({ src: x.title, out: clean, lang: x.lang }) === false) {
     return PARAM_NONE
   }
-  let sql = SQL.TITLE_TRANS_SAVE_ZH_BY_URL
+  let sql = SQL.TITLE_TRANS_SAVE_ZH_BY_ID
   if (x.lang === LANG_KO_CODE) {
-    sql = SQL.TITLE_TRANS_SAVE_KO_BY_URL
+    sql = SQL.TITLE_TRANS_SAVE_KO_BY_ID
   }
-  await x.db.query(sql, [clean, x.url, TRANS_V])
+  await x.db.query(sql, [clean, x.id, TRANS_V])
   return clean
 }
 
 /**
- * `TITLE_TRANS_BY_URL` 一行 → 这一岗的译名两格 + 语境摘句(整理版「工作内容」一节优先,没有退正文开头;
+ * `TITLE_TRANS_BY_ID` 一行 → 这一岗的译名两格 + 语境摘句(整理版「工作内容」一节优先,没有退正文开头;
  * 冒号、方括号、换行抹成空格 —— 语境头靠「第一个冒号」剥,摘句里不能有冒号)。
  *
  * @param r 原始行。
@@ -4496,7 +4539,7 @@ export function stripTitleCtx(line: string): string {
  * @returns 两格;行不在给 null。
  */
 export async function loadJdTrans(input: JdTransIn): JdTransOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JD_TRANS_BY_URL, params: [input.url], map: toJdTransFact })
+  const rows = await queryRows({ db: input.db, sql: SQL.JD_TRANS_BY_ID, params: [input.id], map: toJdTransFact })
   return firstOf(rows)
 }
 
@@ -4538,7 +4581,7 @@ export async function translateJdFormatted(input: TranslateJdIn): TransJdOut {
   })
   if (r.full) {
     CACHE.jdTransBy.set(input.key, r.text)
-    await saveJdTrans({ db: input.db, url: input.url, lang: input.lang, text: r.text })
+    await saveJdTrans({ db: input.db, id: input.id, lang: input.lang, text: r.text })
   }
   return r.text
 }
@@ -4554,7 +4597,7 @@ export async function saveJdTrans(input: SaveJdTransIn): DoneOut {
   if (input.lang === LANG_KO_CODE) {
     sql = SQL.JD_TRANS_SAVE_KO
   }
-  await input.db.query(sql, [input.text, input.url, TRANS_V])
+  await input.db.query(sql, [input.text, input.id, TRANS_V])
 }
 
 /**
@@ -4600,10 +4643,10 @@ export async function saveTitleTrans(input: SaveTitleTransIn): DoneOut {
  * @returns 无。
  */
 export async function resetJdTrans(input: ResetJdTransIn): DoneOut {
-  await input.db.query(SQL.JD_TRANS_RESET, [input.url])
+  await input.db.query(SQL.JD_TRANS_RESET, [input.id])
   await input.db.query(SQL.TITLE_TRANS_RESET, [input.title])
   for (const lang of TRANS_LANGS) {
-    CACHE.jdTransBy.delete(input.url + TRANS_KEY_SEP + lang)
+    CACHE.jdTransBy.delete(String(input.id) + TRANS_KEY_SEP + lang)
     CACHE.titleTransBy.delete(input.title.toLowerCase() + TRANS_KEY_SEP + lang)
   }
 }

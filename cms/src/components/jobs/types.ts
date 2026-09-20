@@ -1995,6 +1995,26 @@ export type JobTextStatus = 'ok' | 'gated' | 'limited' | 'error' | 'empty'
 /**
  * JD 正文取数的结果。
  */
+/**
+ * fetchJobText 的入参(2026-09-20 收成一参形)。
+ */
+export type FetchJobTextIn = {
+  /**
+   * 原帖链接(服务端去原站懒抓正文用)。
+   */
+  applyUrl: string
+
+  /**
+   * 岗位号(会话缓存与服务端找行的键)。
+   */
+  id: string | number
+
+  /**
+   * 中断信号(组件卸载时掐掉在途请求);null = 不中断。
+   */
+  signal: AbortSignal | null
+}
+
 export type JobTextOut = {
   /**
    * 结果档。
@@ -4818,9 +4838,9 @@ export type ApplyEmailPickIn = {
  */
 export type TranslateIn = {
   /**
-   * 原帖链接。
+   * 岗位号(服务端找行的键;2026-09-20 改键,原传原帖链接)。
    */
-  url: string
+  id: string | number
 
   /**
    * 界面语言。
@@ -4843,9 +4863,14 @@ export type TranslateIn = {
  */
 export type FmtLoadIn = {
   /**
-   * 原帖链接。
+   * 原帖链接(服务端去原站懒抓正文用)。
    */
   url: string
+
+  /**
+   * 岗位号(服务端找行的键;2026-09-20 改键)。
+   */
+  id: string | number
 
   /**
    * 只查库不生成(开框首拍);没存 found = false。
