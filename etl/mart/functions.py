@@ -87,7 +87,7 @@ from mart.constants import (
     IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
     JB_EXT_TPL, JB_LOC_TPL, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_MATCH_TPL, JD_NOISE,
-    JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, DOMAIN_ATS, DOMAIN_JOBBANK,
+    JD_HEAD_MARK_RE, JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, DOMAIN_ATS, DOMAIN_JOBBANK,
     JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
     K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_AS_ON,
     K_ATS, K_BLOCKED,
@@ -596,10 +596,14 @@ def to_fame_value(x: GradeFameIn) -> dict:
 
 
 def visa_quote(x: VisaQuoteIn) -> str:
-    """命中处所在句(粗切),两端各扩 ~80 字,压平空白,≤180 字。"""
+    """命中处所在句(粗切),两端各扩 ~80 字,压平空白,≤180 字。
+
+    2026-09-20:切片里可能横着一条节头标记(「## Who you are」紧跟着「You must be legally eligible…」
+    是 ATS 帖的常见相邻),压平空白前先摘掉 —— 这句是给用户看的可核验原句,不能带我们自己加的记号。
+    """
     a = max(0, x.start - QUOTE_PAD)
     b = min(len(x.text), x.end + QUOTE_PAD)
-    return WS_RE.sub(SPACE, x.text[a:b]).strip()[:QUOTE_MAX]
+    return WS_RE.sub(SPACE, JD_HEAD_MARK_RE.sub("", x.text[a:b])).strip()[:QUOTE_MAX]
 
 
 def visa_escaped(x: VisaEscapeIn) -> bool:
@@ -1773,7 +1777,7 @@ def clean_jd(text: str) -> str:
     seen: set = set()
     out: list = []
     for line in text.split(NL):
-        s = line.strip()
+        s = JD_HEAD_MARK_RE.sub("", line.strip())
         if s and is_jd_noise(s):
             continue
         if len(s) > JD_DEDUP_MIN:

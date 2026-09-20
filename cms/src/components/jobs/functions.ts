@@ -38,7 +38,7 @@ import {
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
-  JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN,
+  JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN,
   JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
   JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
@@ -1723,12 +1723,16 @@ export function jdLineViewOf(l: string): JdLineView {
   if (l.startsWith(JD_BULLET_MARK)) {
     return { kind: JD_KIND.bullet, text: l, label: TEXT_NONE }
   }
-  const low = l.toLowerCase()
+  const head = jdBareHeadOf(l)
+  const low = head.toLowerCase()
   if (JD_TOP_HEADS.has(low)) {
-    return { kind: JD_KIND.h1, text: l, label: TEXT_NONE }
+    return { kind: JD_KIND.h1, text: head, label: TEXT_NONE }
   }
   if (JD_SUB_HEADS.has(low)) {
-    return { kind: JD_KIND.h2, text: l, label: TEXT_NONE }
+    return { kind: JD_KIND.h2, text: head, label: TEXT_NONE }
+  }
+  if (l.startsWith(JD_HEAD_MARK)) {
+    return { kind: JD_KIND.h2, text: head, label: TEXT_NONE }
   }
   const bare = l.match(JD_BARE_LABEL_RE)
   if (bare != null) {
@@ -1741,6 +1745,22 @@ export function jdLineViewOf(l: string): JdLineView {
     return { kind: JD_KIND.label, text: String(body), label: String(label) }
   }
   return { kind: JD_KIND.text, text: l, label: TEXT_NONE }
+}
+
+/**
+ * 剥掉行首的节头记号;没有记号的行原样返回。
+ *
+ * 剥完再过白名单,是为了让 Job Bank 那套固定小节维持原来的档位(大节头仍是大节头);
+ * 白名单不认、但数据层标了记号的,走子节头档。
+ *
+ * @param l 一行。
+ * @returns 不带记号的那一行。
+ */
+function jdBareHeadOf(l: string): string {
+  if (l.startsWith(JD_HEAD_MARK)) {
+    return l.slice(JD_HEAD_MARK.length)
+  }
+  return l
 }
 
 /**

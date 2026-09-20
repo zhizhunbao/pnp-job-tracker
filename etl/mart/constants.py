@@ -979,11 +979,13 @@ K_AI_FETCHED = "aiFetched"
 """companies 列:简介产出时刻。"""
 
 JD_LABEL_HEAD_RE = re.compile(
-    r"^\s*(?:(?:job description|description du poste|description de l'emploi)\b\s*[:\-–]?\s*"
+    r"^\s*(?:##\s+)?(?:(?:job description|description du poste|description de l'emploi)\b\s*[:\-–]?\s*"
     r"|description\s*(?:[:\-–]\s*|\n\s*))(?=\S)", re.I)
 """正文开头的纯标签(「Job Description」「Description du poste」…):来源平台的版式套话,不是岗位内容。
 2026-09-19 Frank「原版这个 Job Description 不需要显示吧」;在招岗里约 1,900 条以它开头(Jobillico 1,367、ZipRecruiter 295、
-Talent.com 56、indeed 53 …)。只剥开头这一处;「Job Summary」「About the job」后面跟的是内容小节,不剥。"""
+Talent.com 56、indeed 53 …)。只剥开头这一处;「Job Summary」「About the job」后面跟的是内容小节,不剥。
+2026-09-20 容一个可选的节头标记「## 」:这条套话在源头本来就是加粗的一行,块级序列化后带上标记,
+不放进正则的话整条规则失效、1,900 条又会冒出来(设计稿 docs/design/职位正文结构下沉-20260920.md)。"""
 
 WP_TAIL_RE = re.compile(r"\s*\[(?:\.\.\.|…)\]\s*$")
 """WordPress 摘要尾巴「[…]/[...]」(源站自动截断标记,66/3492 家;Frank 2026-07-19 报障)。"""
@@ -1294,6 +1296,12 @@ JD_NOISE = (
 
 JD_DEDUP_MIN = 40
 """只对长行去重(短行如 Yes/标签合法重复)。"""
+
+JD_HEAD_MARK_RE = re.compile(r"(?m)^##\s+")
+"""行首节头标记(richtext 叶落的「## 」)。本域的清洗一律**先把它摘掉再比对**:
+去噪与「Job Description」套话剥除都是锚在行首的正则,标记横在前面会让它们整体失效
+(2026-09-20 立,设计稿 docs/design/职位正文结构下沉-20260920.md「mart 放行」一节)。
+⚠ 只在比对时摘,落盘的行仍带标记 —— 标记是给原文轨用的,消费端各自剥。"""
 
 BLANK_RUN_RE = re.compile(r"\n{3,}")
 """三个以上换行折成一个空行。"""

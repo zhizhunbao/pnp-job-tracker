@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from careerbeacon.functions import (
-    build_careerbeacon_postings, parse_careerbeacon_details, scrape_careerbeacon_details,
+    build_careerbeacon_postings, parse_careerbeacon_details, reparse_careerbeacon_details, scrape_careerbeacon_details,
     scrape_careerbeacon_pages,
 )
 
@@ -41,6 +41,7 @@ TOOLS = {
     "pages": scrape_careerbeacon_pages,
     "details": scrape_careerbeacon_details,
     "parse": parse_careerbeacon_details,
+    "reparse": reparse_careerbeacon_details,
     "store": build_careerbeacon_postings,
 }
 """全部可 --only 点名的步(与默认链同一份四步,本域没有不进链的手动件)。"""

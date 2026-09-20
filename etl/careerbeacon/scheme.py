@@ -173,6 +173,14 @@ class LdPostingIn:
 
 
 @dataclass
+class ParseIn:
+    """parse_details() 入参(2026-09-20 立:解析步分「例行增量」与「换解析器后全量重来」两档)。"""
+
+    force: bool
+    """True = 事实表里已有的帖也重解析并覆盖(手动件 `--only reparse`);False = 例行增量,见了帖号就跳过。"""
+
+
+@dataclass
 class ParseTally:
     """parse_careerbeacon_details() 的计数器。"""
 

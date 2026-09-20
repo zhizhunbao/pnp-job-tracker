@@ -24,6 +24,7 @@ from typing import cast
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
 from log.functions import say
+from richtext.functions import rich_text_of
 from crawl.constants import PROFILE_DIR
 from crawl.functions import close_browser, get_browser_page, load_cache_index, put_cached_pages, save_browser_cookies
 from crawl.scheme import CachePage, CachePutManyIn, SaveCookiesIn
@@ -34,7 +35,7 @@ from hireac.constants import (
     ERR_PAGE_STALE_TPL, ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
     F_APPLY_WEB, F_CATEGORY, F_CITY, F_COUNTRY, F_DEADLINE, F_DESCRIPTION, F_DESCRIPTION_CC, F_DIVISION, F_HOURS,
     F_JOB_TYPE, F_LANGUAGE, F_LOCATION, F_LOCATION_CC, F_ORG, F_POSITION_TYPE, F_POSTAL, F_PREFERRED,
-    F_PROCEDURE, F_PROVINCE, F_QUALIFICATIONS, F_REQUIREMENTS, F_SALARY, F_TERM, F_TITLE, F_WEBSITE,
+    F_PROCEDURE, F_PROVINCE, F_QUALIFICATIONS, F_REQUIREMENTS, RICH_FIELDS, F_SALARY, F_TERM, F_TITLE, F_WEBSITE,
     FAIL_MAX, FETCH_JS, FIELD_RE, FLUSH_EVERY, FORM_RE, GROUP_KEY, GROUP_VALUE, HOURS_OF_KIND, HTTP_OK,
     HOURLY_MAX, HOURLY_MIN, HTTP_PREFIX, IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT,
     K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_INDUSTRY, K_LANG, K_LAST_SEEN,
@@ -303,13 +304,20 @@ def parse_hireac_details() -> None:
 
 
 def fields_of(html: str) -> dict:
-    """详情页三块表格的「标签: 值」→ 标签 → 纯文本值(同名标签只认第一次;标签尾的冒号剥掉)。"""
+    """详情页三块表格的「标签: 值」→ 标签 → 值(同名标签只认第一次;标签尾的冒号剥掉)。
+
+    正文四格(RICH_FIELDS)走块级序列化保住段落/列表/节头,其余格压成单行纯文本
+    (2026-09-20:本域 plain_text_of 原先两种用途共用,正文那一半迁去 richtext 叶)。
+    """
     out: dict = {}
     for m in FIELD_RE.finditer(html):
         k = plain_text_of(m.group(GROUP_KEY)).rstrip(COLON)
         if k == "" or k in out:
             continue
-        out[k] = plain_text_of(m.group(GROUP_VALUE))
+        if k in RICH_FIELDS:
+            out[k] = rich_text_of(m.group(GROUP_VALUE))
+        else:
+            out[k] = plain_text_of(m.group(GROUP_VALUE))
     return out
 
 

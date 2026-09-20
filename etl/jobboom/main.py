@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from jobboom.functions import (
-    build_jobboom_postings, parse_jobboom_details, scrape_jobboom_details, scrape_jobboom_sitemap,
+    build_jobboom_postings, parse_jobboom_details, reparse_jobboom_details, scrape_jobboom_details, scrape_jobboom_sitemap,
     translate_jobboom_titles,
 )
 
@@ -40,6 +40,7 @@ TOOLS = {
     "sitemap": scrape_jobboom_sitemap,
     "details": scrape_jobboom_details,
     "parse": parse_jobboom_details,
+    "reparse": reparse_jobboom_details,
     "titles": translate_jobboom_titles,
     "store": build_jobboom_postings,
 }

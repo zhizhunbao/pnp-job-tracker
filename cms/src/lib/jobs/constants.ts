@@ -3172,6 +3172,15 @@ export const TITLE_CTX_MAX_LEN = 220
 export const JD_ROLE_SECTION_RE = /\[ROLE\]\s*(?<role>[\s\S]*?)(?=\n\s*\[[A-Z]+\]|$)/
 
 /**
+ * 正文里的节头标记(数据层 richtext 叶落的行首「## 」)。
+ *
+ * 只有职位详情页的原文轨消费它,其余出口一律先剥 —— 尤其招聘富结果的 JSON-LD 正文
+ * (最大入口,记号会原样出现在 Google 结果里)。2026-09-20 立,设计稿
+ * `docs/design/职位正文结构下沉-20260920.md`。
+ */
+export const JD_HEAD_MARK_RE = /^##[ \t]+/gm
+
+/**
  * 语境摘句里要抹成空格的字符:冒号(半角 / 全角)、方括号与换行。
  */
 export const TITLE_CTX_CLEAN_RE = /[:：[\]\n\r]+/g

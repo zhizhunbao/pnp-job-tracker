@@ -51,7 +51,7 @@ import {
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS, SORT_MATCH_KEY,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
   STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
-  JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
+  JD_HEAD_MARK_RE, JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
@@ -2050,9 +2050,20 @@ export async function jobDescription(input: JdIn): JdOut {
   }
   const first = rows[0]
   if (first != null && first.description != null && first.description !== '') {
-    return scrubPii(String(first.description))
+    return scrubPii(jdPlainOf(String(first.description)))
   }
-  return scrubPii(await lazyFetchJd(input))
+  return scrubPii(jdPlainOf(await lazyFetchJd(input)))
+}
+
+/**
+ * 正文剥节头标记:数据层给的行首「## 」只有原文轨消费,别的出口都要干净的字
+ * (JSON-LD 正文、顾问 / 简历喂模型的 JD、语境摘句)。
+ *
+ * @param s 带标记的正文。
+ * @returns 不带标记的正文;没有标记时原样。
+ */
+export function jdPlainOf(s: string): string {
+  return s.replace(JD_HEAD_MARK_RE, PARAM_NONE)
 }
 
 /**
@@ -4051,7 +4062,7 @@ function putApplyUrl(x: LdPutIn): void {
  * @returns 描述。
  */
 function seoDescriptionOf(input: JobPostingIn): string {
-  const real = input.jdText.slice(0, JD_SEO_MAX)
+  const real = jdPlainOf(input.jdText).slice(0, JD_SEO_MAX)
   if (real !== ISO_NONE) {
     return real
   }
@@ -4483,7 +4494,7 @@ export async function translateTitleInContext(x: TitleInCtxIn): TitleInCtxOut {
  * @returns 洗净的一行。
  */
 export function toTitleCtxFact(r: Row): TitleCtxFact {
-  let src = text(r.description)
+  let src = jdPlainOf(text(r.description))
   const m = JD_ROLE_SECTION_RE.exec(text(r.jd_formatted))
   if (m != null && m.groups != null && m.groups.role != null && m.groups.role.trim() !== PARAM_NONE) {
     src = m.groups.role

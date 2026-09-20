@@ -16,13 +16,13 @@ import time
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from pathlib import Path
-from html import unescape
 from typing import cast
 
 import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
 from fetch.functions import make_client
 from log.functions import err, say
+from richtext.functions import rich_text_of
 from crawl.functions import load_cache_index, put_cached_pages
 from crawl.scheme import CachePage, CachePutManyIn
 from careerbeacon import DETAILS_PER_RUN
@@ -39,10 +39,10 @@ from careerbeacon.constants import (
     PRINT_DETAIL_DONE_TPL, PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PARSE_DONE_TPL,
     PRINT_PROV_TPL, PRINT_STORE_DONE_TPL, PRINT_URLS_DONE_TPL, PROV_OF_SLUG, RATE_FLOOR_S,
     SALARY_RANGE_TPL, SALARY_TPL, SALARY_UNIT_WORD, SECONDS_FMT, SITE_BASE, SLUG_CRAWL, SOURCE_LABEL,
-    SPACE, TAG_RE, TERM_OF_TYPE, UTC_Z, WS_RE,
+    SPACE, TERM_OF_TYPE, UTC_Z, WS_RE,
 )
 from careerbeacon.scheme import (
-    DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
+    ParseIn, DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     ProvinceIn, ProvinceOut, SalaryTextIn, StoreTally,
 )
 
@@ -189,12 +189,27 @@ def fetch_details(x: DetailBatchIn) -> DetailBatchOut:
 
 def parse_careerbeacon_details() -> None:
     """本域步骤入口:缓存里有原文、事实表里还没有的帖 → 抽 JobPosting → 增量写 raw jobs.json。"""
+    parse_details(ParseIn(force=False))
+
+
+def reparse_careerbeacon_details() -> None:
+    """本域手动件 `--only reparse`:缓存里的帖**全量**重解析,覆盖既有事实。
+
+    2026-09-20 立(设计稿 docs/design/职位正文结构下沉-20260920.md):正文改走 richtext 叶的块级序列化后,
+    存量不会自愈 —— 例行 parse 见了帖号就跳过,库里那批永远还是压平的一坨。换解析器时跑这一件。
+    幂等、零网络(只读 crawl 缓存)、无损(每一格都从缓存的 ld+json 重新派生;译名另住 titles_en.json,不碰)。
+    """
+    parse_details(ParseIn(force=True))
+
+
+def parse_details(x: ParseIn) -> None:
+    """缓存原文 → JobPosting → 事实表(force=False 只补没有的,force=True 全量覆盖)。"""
     urls = load_json_dict(IN_URLS)
     have = load_cache_index(SLUG_CRAWL)
     facts = load_json_dict(IN_JOBS)
     tally = ParseTally(parsed=0, skipped=0, missing=0)
     for pid, url in urls.items():
-        if pid in facts:
+        if pid in facts and x.force is False:
             tally.skipped += 1
             continue
         path = have.get(url)
@@ -243,7 +258,7 @@ def to_job_fact(x: LdPostingIn) -> JobFact:
         salary_unit=text_of(val.get(LD_UNIT)),
         employment_types=types_of(x.data.get(LD_EMPLOYMENT_TYPE)),
         industry=text_of(x.data.get(LD_INDUSTRY)),
-        description=plain_text_of(text_of(x.data.get(LD_DESCRIPTION))),
+        description=rich_text_of(text_of(x.data.get(LD_DESCRIPTION))),
     )
 
 
@@ -283,11 +298,6 @@ def types_of(value: object) -> list:
             if isinstance(item, str):
                 out.append(item)
     return out
-
-
-def plain_text_of(html: str) -> str:
-    """描述 HTML 串 → 纯文本(剥标签、解实体、折空白)。"""
-    return WS_RE.sub(SPACE, unescape(TAG_RE.sub(SPACE, html))).strip()
 
 
 # =========================================================================

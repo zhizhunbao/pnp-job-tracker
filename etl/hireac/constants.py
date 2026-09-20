@@ -296,6 +296,12 @@ F_DESCRIPTION_CC = "Description"
 F_REQUIREMENTS = "Job Requirements"
 """要求(本地帖)。"""
 
+RICH_FIELDS = {"Job Description", "Description", "Job Requirements", "Qualifications"}
+"""走块级序列化(richtext)的格:正文类的四格 —— 段落、列表、节头要保真。
+其余格(标题/城市/薪资/截止日…)仍走 plain_text_of 压成单行:那是字段值,多一个换行下游就得再洗一遍。
+2026-09-20 立(设计稿 docs/design/职位正文结构下沉-20260920.md):本域 plain_text_of 原先被正文与单元格
+两种用途共用,正文那一半迁走、单元格那一半留下 —— 值与四个 F_* 常量同串(constants 不许 import)。"""
+
 F_QUALIFICATIONS = "Qualifications"
 """要求(联播帖)。"""
 

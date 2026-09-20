@@ -33,13 +33,14 @@ from fetch.functions import make_client
 from crawl.functions import load_cache_index, put_cached_pages
 from crawl.scheme import CachePage, CachePutManyIn
 from log.functions import err, say
+from richtext.functions import rich_text_of
 from ats.constants import (
     ERRORS_REPLACE, FRONTMATTER_RE, FRONT_URL_RE, JD_INDEX_INDENT, JD_MD_GLOB, K_JD_BODY, K_JD_FILE, K_JD_MTIME,
     OUT_JD_INDEX, PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JOBS_INDEX_TPL,
     ACCEPT_JSON, ADDR_RE, ADDR_STRIP_CHARS, ANCHORED_RE, ATS_BAMBOOHR, ATS_GREENHOUSE, ATS_LEVER,
     ATS_RECRUITEE, ATS_SMARTRECRUITERS, ATS_WORKABLE, BAD_AMOUNTS, BAMBOO_DETAIL_URL_TPL,
     ASHBY_JOBS_URL_TPL, ATS_ASHBY, K_COUNTRY, K_COMP_SUMMARY, K_IS_LISTED, K_JOB_URL, K_PUBLISHED_AT_CAMEL,
-    BAMBOO_JOB_URL_TPL, BAMBOO_LIST_URL_TPL, BLANK_LINES_RE, CLIENT_TIMEOUT_S, DASH, DIR_JOBS,
+    BAMBOO_JOB_URL_TPL, BAMBOO_LIST_URL_TPL, CLIENT_TIMEOUT_S, DASH, DIR_JOBS,
     DOT_SEP, ENC_UTF8, ERR_ATS_TPL, ERR_WORKDAY_TPL, FILE_CAREERS_JSON, FILE_JOBS_JSON,
     GREENHOUSE_JOBS_URL_TPL, HDR_ACCEPT, IN_COMPANIES, JOB_ID_FALLBACK, JOB_ID_MAX_LEN, JOB_ID_RE,
     JSON_INDENT, K_ABSOLUTE_URL, K_ADDITIONAL_PLAIN, K_ADDRESS, K_APPLICATION_URL,
@@ -106,11 +107,6 @@ def address_of(text: str) -> str:
     if m is None:
         return ""
     return m.group(0).strip(ADDR_STRIP_CHARS)
-
-
-def plain_text_of(html: str) -> str:
-    """描述 HTML → 纯文本(剥标签、三连换行折两个);.md 正文用。"""
-    return BLANK_LINES_RE.sub(PARA_SEP, TAG_RE.sub(SPACE_SEP, html)).strip()
 
 
 def join_parts(parts: list) -> str:
@@ -898,7 +894,7 @@ def write_company_jobs(x: WriteJobsIn) -> None:
     rows = []
     entries: dict = {}
     for job in x.jobs:
-        desc = plain_text_of(job.description)
+        desc = rich_text_of(job.description)
         body = MD_TPL.format(title=job.title, company=x.folder.name, location=job.location,
                              posted=job.posted, ats=x.ats, url=job.url, desc=desc)
         name = job_id_of(job) + SUFFIX_MD

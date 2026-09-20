@@ -393,20 +393,6 @@ GENERIC_EMAIL = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "live.c
                  "icloud.com", "hotmail.ca", "yahoo.ca", "gmail.ca", "aol.com"}
 """公共邮箱域名 —— 从申请邮箱推官网时必须排除。"""
 
-BLOCK_TAGS = {"p", "div", "section", "article", "ul", "ol", "dl", "dt", "dd", "table", "thead",
-              "tbody", "tr", "blockquote", "figure", "figcaption", "header", "footer", "main",
-              "aside"}
-"""块级标签:序列化时边界落换行 + 段后空行。"""
-
-HEAD_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
-"""标题标签:序列化时前后留空行。"""
-
-SKIP_TAGS = {"script", "style", "noscript", "template"}
-"""序列化时整段跳过的标签。"""
-
-TAG_BR = "br"
-"""<br> 即换行。"""
-
 TAG_LI = "li"
 """列表项:前缀「• 」。"""
 
@@ -415,9 +401,6 @@ TAG_UL = "ul"
 
 TAG_H4 = "h4"
 """requirements 区的小标题。"""
-
-BULLET_PREFIX = "\n• "
-"""列表项前缀(原帖的列表结构原样落进纯文本)。"""
 
 LINE_BREAK = "\n"
 """单换行。"""
@@ -432,7 +415,7 @@ STAR_ITEM_RE = re.compile(r"^\*\s+")
 """行首「* 」= 聚合帖(indeed.com 等)纯文本里的列表项记号,lined_text 换成「• 」(页面保真轨约定圆点由数据层给)。"""
 
 STAR_ITEM_TO = "• "
-"""行首列表项记号的替身(行内用,不带 BULLET_PREFIX 的前导换行)。"""
+"""行首列表项记号的替身(行内用,不带 richtext 域 BULLET_PREFIX 的前导换行)。"""
 
 STAR_RE = re.compile(r"\*+")
 """其余星号 = 强调记号(*小标题*)的残渣,整个剥掉(真实 JD 不用星号行文,页面猜测轨同口径)。"""
@@ -979,8 +962,9 @@ HEADING_EXPERIENCE = "Experience"
 """JD 正文里独立成行的节名 —— 整行精确相等才算(「Experience and specialization」不算)。"""
 
 BULLET_TRIM_CHARS = "• "
-"""节内首行要剥掉的项目符号与空格(lstrip 的字符集;与本域 BULLET_PREFIX 的
-「换行 + 圆点 + 空格」不是一回事,后者是详情 md 的写出前缀)。"""
+"""节内首行要剥掉的项目符号与空格(lstrip 的字符集;与 richtext 域 BULLET_PREFIX 的
+「换行 + 圆点 + 空格」不是一回事,后者是详情 md 的写出前缀。
+2026-09-20 搬家步:块级序列化的五个常量随 rich_text/serialize_node 迁往 etl/richtext/,本域只剩指路)。"""
 
 K_EXPERIENCE_REQ = "experience_req"
 """帖子行键:官方 Experience 短语原文 —— flag 的出处,一个关注点两个字段同源同段。"""

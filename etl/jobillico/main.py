@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from jobillico.functions import (
-    build_jobillico_postings, parse_jobillico_details, scrape_jobillico_details, scrape_jobillico_sitemap,
+    build_jobillico_postings, parse_jobillico_details, reparse_jobillico_details, scrape_jobillico_details, scrape_jobillico_sitemap,
     translate_jobillico_titles,
 )
 
@@ -40,6 +40,7 @@ TOOLS = {
     "sitemap": scrape_jobillico_sitemap,
     "details": scrape_jobillico_details,
     "parse": parse_jobillico_details,
+    "reparse": reparse_jobillico_details,
     "titles": translate_jobillico_titles,
     "store": build_jobillico_postings,
 }

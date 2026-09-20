@@ -2342,6 +2342,15 @@ export const NEWLINE = '\n'
 export const JD_BULLET_MARK = '• '
 
 /**
+ * 数据层(richtext 叶)给的节头记号:行首「## 」—— 与列表符「• 」同规格。
+ *
+ * 2026-09-20 起原文轨不再靠「白名单 + 碰巧带尾冒号」猜节头:源头 HTML 里整段都在
+ * strong/b 或本来就是 h1-h6 的那一行,抓取时就标好了。设计稿
+ * `docs/design/职位正文结构下沉-20260920.md`。
+ */
+export const JD_HEAD_MARK = '## '
+
+/**
  * 裸标签行(如 "Benefits:")→ 小节头。
  */
 export const JD_BARE_LABEL_RE = /^([A-Z][A-Za-z ()/#&'-]{1,40}):$/

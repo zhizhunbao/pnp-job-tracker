@@ -24,8 +24,11 @@ ETL_DIR = REPO_ROOT / "etl"
 
 DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "explore", "fcip",
            "fetch", "fsa", "gate", "hwcr", "ircc", "jdformat", "jobbank", "lmia", "load", "log", "mart", "news",
-           "noc", "paths", "pnp", "rcip", "eligibility", "sched", "wages"]
+           "noc", "paths", "pnp", "rcip", "richtext", "eligibility", "sched", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+richtext 2026-09-20 立叶(Frank「richtext 五个源全换」:HTML → 带结构的纯文本,块级序列化唯一一份;
+同 fetch/crawl/noc 双重身份 = 既被扫也可被依赖。域名不取 html —— etl/ 走 sys.path.insert,
+`etl/html/` 会遮蔽标准库 html,而十个域 import 它、其中五个正是本叶的消费者)
 explore 2026-09-18 立域(Frank「雇主有个探索列表,用户列出过哪些雇主,就自动翻译,类似于处理消息」:探索队列的后台工人)
 jdformat 2026-09-15 立域(Frank「抓工作的之后同时跑整理版」「也算 etl 的一部分」:岗位正文 → 五节整理版预生成)
 hwcr 2026-09-04 立域(Frank「创建一个单独的 etl 域」:海外超人渥太华站房屋帖,私用租房清单)
@@ -42,8 +45,12 @@ fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;
 crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)"""
 
-INFRA = {"paths", "fetch", "log", "noc", "crawl", "names"}
+INFRA = {"paths", "fetch", "log", "noc", "crawl", "names", "richtext"}
 """基础设施叶:域可引(判据「换掉它业务一个字不用改」)。
+richtext 2026-09-20 入册(设计稿 docs/design/职位正文结构下沉-20260920.md):「这段 HTML 原本长什么样」
+唯一一把尺子 —— 立叶前同一个行为在 ats/jobillico/jobboom/careerbeacon/hireac 复制了五份、后四份逐字相同、
+五份都把换行连同标签一起碾成空格(在招 22,099 条 Jobillico 岗正文落成一整行);jobbank 的 serialize_node
+是唯一做对块级的一份,抬成全站唯一一份。正文在页面哪个节点仍归各源域,本叶不碰字段、不判业务。
 names 2026-08-31 收拢批入册:公司名归一唯一尺子(aip 打标 / lmia 聚合键 / mart join 判
 「同一家雇主」必须同一把,原先四份复制 → 探针取证后收一),与 noc 同款判定叶。
 grades 2026-08-31 批H 摘出:随 mart 立域收编为域内私件(唯一消费者 build_mart),

@@ -37,15 +37,16 @@ from pathlib import Path
 from typing import cast
 
 import httpx
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup
 
 from paths import JOBBANK_STORE_LOCK, WriteJsonIn, WriteTextIn, jobbank_store_lock, write_json, write_text
 from log.functions import err, say
 from fetch.functions import make_client, make_tls_context
+from richtext.functions import rich_text
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
     ABS_FLOOR, ADDRESS_CLIP, ALL_PROVINCES, APPRENTICE_TITLE_RE, APPRENTICE_URL_RE, ATLANTIC,
-    BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, STAR_ITEM_RE, STAR_ITEM_TO, STAR_RE,
+    BLANK_LINES_RE, STAR_ITEM_RE, STAR_ITEM_TO, STAR_RE,
     BULLET_TRIM_CHARS, CAT_AIP_OUT, CAT_CITY_IS_PROV,
     CAT_DISTRICT_OUT, CAT_OTTAWA_FALSE, CAT_POSTAL_MISMATCH, CAT_PROV_MISSING, CAT_SALARY_HIGH,
     CAT_SALARY_LOW, CAT_URL_DUP, CHAIN_DELAY_S, CHAIN_MAX_PAGES, CITY_PROV_RE,
@@ -58,7 +59,7 @@ from jobbank.constants import (
     ERRORS_REPLACE, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, K_JD_EXPERIENCE,
     K_JD_FILE, K_JD_MTIME, K_JD_PID, OUT_JD_BODIES, OUT_JD_INDEX, PRINT_DETAILS_INDEX_TPL,
     PRINT_JD_INDEX_DONE_TPL, PRINT_JD_INDEX_IN_TPL, PRINT_JD_INDEX_MISSING_TPL,
-    HEADING_EXPERIENCE, HEAD_TAGS, HEADING_CERTIFICATES, HEADING_EDUCATION, HDR_UA, HOURS_FULL,
+    HEADING_EXPERIENCE, HEADING_CERTIFICATES, HEADING_EDUCATION, HDR_UA, HOURS_FULL,
     HOURS_FULL_MARK, HOURS_PART, HOURS_PART_MARK, HREF_ATTR, HTTP_PREFIX, HTTP_SCHEME,
     IN_ATS_COMPANIES, IN_DETAILS, IN_MART_OPEN_IDS, IN_POSTINGS, IN_SCORED, IN_SNAP_ROOT, IN_WAGES,
     ISO_DATE_FMT, JOB_MD_TPL, JOB_STEM_FALLBACK, JOBBANK_ORIGIN, JSON_INDENT, K_ADDRESS, K_AIP,
@@ -91,9 +92,9 @@ from jobbank.constants import (
     SANITY_WAGE_NATIONAL, SCRAPED_KEYS, SEL_ADDRESS, SEL_ARTICLE, SEL_BUSINESS, SEL_DATE,
     SEL_DATE_POSTED, SEL_DESCRIPTION, SEL_EMPLOYMENT_TYPE, SEL_H3_TITLE, SEL_HIRING_ORG,
     SEL_JOB_SOURCE, SEL_LOCATION, SEL_NOC_NO, SEL_NOC_NO_CLASS, SEL_NOC_TITLE, SEL_ORG_LINK,
-    SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SKIP_TAGS, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
+    SEL_REQUIREMENTS, SEL_SALARY, SINCE_DAYS_FLAG, SLUG_DASH, SLUG_FALLBACK, SLUG_RE,
     SNAP_PAGE_TPL, SOURCE_JOBBANK, SPACE_SEP, STEM_DUP_TPL, STEM_FALLBACK, STEM_FILE_TPL,
-    STEM_JOIN, TAG_A, TAG_BR, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
+    STEM_JOIN, TAG_A, TAG_H4, TAG_LI, TAG_SPAN, TAG_UL,
     TEER_PRO_DIGITS, TERM_MAP, TIMESPEC_SECONDS, TITLE_TRIM_CHARS, UNCLASSIFIED, UNKNOWN_PROV,
     URL_LINE_RE, URL_PARAM_SEP, UTC_OFFSET, UTC_Z, VERIFY_DATE_FMTS, VERIFY_DEAD_CODES,
     VERIFY_FRESH_DAYS, VERIFY_HEAD_BYTES, VERIFY_HOST, VERIFY_MARKER, VERIFY_MAX_DEFAULT,
@@ -701,45 +702,6 @@ def lined_text(node: object) -> str:
         marked = STAR_ITEM_RE.sub(STAR_ITEM_TO, line.strip())
         lines.append(WS_RE.sub(SPACE_SEP, STAR_RE.sub("", marked)).strip())
     return BLANK_LINES_RE.sub(PARA_BREAK, LINE_BREAK.join(lines)).strip()
-
-
-def rich_text(node: object) -> str:
-    """块感知提取:HTML 结构(p/div/br/h*/li…)→ 带换行的纯文本,段落间空行、li 加「• 」。"""
-    if node is None:
-        return ""
-    lines = []
-    for line in serialize_node(node).split(LINE_BREAK):
-        lines.append(WS_RE.sub(SPACE_SEP, line).strip())
-    return BLANK_LINES_RE.sub(PARA_BREAK, LINE_BREAK.join(lines)).strip()
-
-
-def serialize_node(node: object) -> str:
-    """递归块级序列化:块边界落换行、<br> 即换行、标题前后空行、li 加「• 」。
-
-    2026-07-16 用户报告:原帖有格式,老提取只认 h2-h5/p/li,Indeed 转义帖的 <br> 换行与
-    <b>标题行</b> 全被压平成一坨 —— 这只函数就是为把原帖的分段/列表/标题结构原样落进
-    纯文本而写的。
-    """
-    if isinstance(node, NavigableString):
-        return WS_RE.sub(SPACE_SEP, str(node))
-    if not isinstance(node, Tag) or node.name in SKIP_TAGS:
-        return ""
-    if node.name == TAG_BR:
-        return LINE_BREAK
-    parts = []
-    for child in node.children:
-        parts.append(serialize_node(child))
-    inner = "".join(parts)
-    if node.name == TAG_LI:
-        return BULLET_PREFIX + inner.strip() + LINE_BREAK
-    if node.name in HEAD_TAGS:
-        return PARA_BREAK + inner.strip() + LINE_BREAK
-    if node.name in BLOCK_TAGS:
-        body = inner.strip()
-        if body == "":
-            return ""
-        return LINE_BREAK + body + PARA_BREAK
-    return inner
 
 
 def who_can_apply_of(soup: SoupNodeLike) -> str:
