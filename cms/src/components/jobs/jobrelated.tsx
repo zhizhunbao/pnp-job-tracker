@@ -5,6 +5,7 @@
  * 分组小标题代替逐行标注;同公司与同职业都零在招时出一条筛好的职位板兜底链(2026-08-11 追加),
  * 让他至少还有下一步可点。
  * 2026-08-28 换装批自 Job.tsx 提出成文件。
+ * 2026-09-20 改判:在招岗也渲染(来由见职位详情页门的文件头);埋点来源格按本岗状态分两档。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来)。
  *
@@ -14,8 +15,8 @@
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { CARD_MD_CLS, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE } from './constants'
-import { showFallbackOf, trackRelated } from './functions'
+import { CARD_MD_CLS } from './constants'
+import { relatedFromOf, relatedNoneFromOf, showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
 import type { JobRelatedIn } from './types'
 import css from './jobs.module.css'
@@ -27,7 +28,7 @@ import css from './jobs.module.css'
  * @returns 一张白卡。
  */
 export function JobRelated({
-  head, t, updatedAt, sameCoLabel, sameOccLabel, related, fallbackHref, fallbackText, onOpenJob,
+  head, t, updatedAt, sameCoLabel, sameOccLabel, related, fallbackHref, fallbackText, status, onOpenJob,
 }: JobRelatedIn) {
   return (
     <div className={CARD_MD_CLS}>
@@ -36,17 +37,17 @@ export function JobRelated({
         <Updated iso={updatedAt} t={t} />
       </div>
       {related.sameCompany.length > 0 && (
-        <div onClick={trackRelated(TRACK_FROM_CLOSED)}>
+        <div onClick={trackRelated(relatedFromOf(status))}>
           <RelatedGroup label={sameCoLabel} rows={related.sameCompany} withCompany={false} onOpenJob={onOpenJob} />
         </div>
       )}
       {related.sameOcc.length > 0 && (
-        <div onClick={trackRelated(TRACK_FROM_CLOSED)}>
+        <div onClick={trackRelated(relatedFromOf(status))}>
           <RelatedGroup label={sameOccLabel} rows={related.sameOcc} withCompany onOpenJob={onOpenJob} />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (
-        <LinkButton href={fallbackHref} onClick={trackRelated(TRACK_FROM_CLOSED_NONE)}
+        <LinkButton href={fallbackHref} onClick={trackRelated(relatedNoneFromOf(status))}
           className={cssOf(css.relFallback)}>
           {fallbackText}
         </LinkButton>

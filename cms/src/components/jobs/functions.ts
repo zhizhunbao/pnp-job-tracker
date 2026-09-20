@@ -56,12 +56,13 @@ import {
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
-  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
+  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
+  TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_BOARD, URL_BOARD_BROAD, URL_BOARD_FINE,
-  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP, URL_TO_FILTER,
-  VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS, YEAR_MONTH_LEN,
-  ZEBRA_MOD,
+  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_COMPANY_HEAD, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
+  URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
+  YEAR_MONTH_LEN, ZEBRA_MOD,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
@@ -3941,15 +3942,40 @@ function aliasOf(x: AliasOfIn): string {
  * 相似职位卡出不出:只在 closed 岗渲染(在招岗服务端就不查,related 恒空)——
  * 下架页原本是死路,横幅说完「已下架」就没有下一步(2026-08-11 Frank
  * 「下架了应该下面列出其他相似职位,用户不至于一看下架就走」)。
+ * 2026-09-20 改判:在招岗也出(Frank「职位页 也 改成像 公司页那种吗」「做」;来由见职位详情页门的文件头)——
+ * 有行或有兜底链就出,不再看状态。
  *
- * @param x 本岗状态、相似职位与兜底链。
+ * @param x 相似职位与兜底链。
  * @returns 出 = true。
  */
 export function showRelatedOf(x: ShowRelatedIn): boolean {
-  if (x.status !== STATUS_CLOSED) {
-    return false
-  }
   return x.related.sameCompany.length > 0 || x.related.sameOcc.length > 0 || x.fallbackHref !== TEXT_NONE
+}
+
+/**
+ * 相似职位两组的埋点来源格:下架页与在招页分开记(两种页的点击意图不同,混记看不出哪张卡在干活)。
+ *
+ * @param status 本岗状态。
+ * @returns 来源格。
+ */
+export function relatedFromOf(status: string): string {
+  if (status === STATUS_CLOSED) {
+    return TRACK_FROM_CLOSED
+  }
+  return TRACK_FROM_OPEN
+}
+
+/**
+ * 兜底链的埋点来源格。
+ *
+ * @param status 本岗状态。
+ * @returns 来源格。
+ */
+export function relatedNoneFromOf(status: string): string {
+  if (status === STATUS_CLOSED) {
+    return TRACK_FROM_CLOSED_NONE
+  }
+  return TRACK_FROM_OPEN_NONE
 }
 
 /**
@@ -4406,6 +4432,20 @@ export function isAltRow(i: number): boolean {
 }
 
 /**
+ * 公司名的真 href:有公司页的给公司页,没有 slug 的退到按公司名搜的职位板(#315 原链)。
+ * 2026-09-20 站内链接批(来由见 URL_COMPANY_HEAD)。
+ *
+ * @param job 这一行。
+ * @returns 站内路径。
+ */
+export function companyHrefOf(job: JobFact): string {
+  if (job.companySlug !== '') {
+    return URL_COMPANY_HEAD + job.companySlug
+  }
+  return URL_JOBS_QUERY + encodeURIComponent(job.company)
+}
+
+/**
  * 手机卡一张的展示行:链接、译名灰注、地点两段与胶囊排一次算好。
  * #129(Frank「卡片本身点不进去」):整卡可点 = 进详情页;卡内既有交互(弹框/收藏/胶囊)
  * 各自 stopPropagation 保持原行为。
@@ -4431,7 +4471,7 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
       lang: x.b.lang,
       title: x.job.title,
     }),
-    companyHref: URL_JOBS_QUERY + encodeURIComponent(x.job.company),
+    companyHref: companyHrefOf(x.job),
     salary: x.job.salaryText,
     city: L.city,
     prov: x.job.province,

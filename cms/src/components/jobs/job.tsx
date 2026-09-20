@@ -21,16 +21,18 @@
  * 译名与切换控件(JdSwitches)同一行,下接分隔线;JobBody 读同一份 d。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」:下架岗的相似职位点了不跳走,
  * 页上叠开职位描述弹框(与职位板同一件);行本身还是真链接。
+ * 2026-09-20 站内链接批(Frank「按你推荐来」):在招岗也出相关职位卡;标题下补一行公司名真链接到公司页
+ * (B2 瘦身后正文里没有公司名,公司页 1.5 万零收录;设计稿 docs/design/站内链接与收录-20260920.md)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { ActModal } from '@/components/advisor'
-import { BackButton } from '@/components/button'
+import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
-import { showRelatedOf } from './functions'
+import { companyHrefOf, showRelatedOf } from './functions'
 import { useJobBody, useJobDetail, useJobPeek } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
@@ -59,13 +61,16 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             <BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />
           </div>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
+          {job.company !== TEXT_NONE && (
+            <LinkButton href={companyHrefOf(job)} className={cssOf(css.titleCo)}>{job.company}</LinkButton>
+          )}
           <div className={cssOf(css.titleRow)}>
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
             <JdOrigLink d={body} />
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
-        {showRelatedOf({ status: job.status, related, fallbackHref: d.view.fallbackHref }) && (
+        {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
             t={d.t}
             updatedAt={updatedAt}
@@ -74,6 +79,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             related={related}
             fallbackHref={d.view.fallbackHref}
             fallbackText={d.view.fallbackText}
+            status={job.status}
             onOpenJob={peek.onOpen} />
         )}
       </div>

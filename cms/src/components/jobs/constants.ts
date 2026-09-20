@@ -754,8 +754,15 @@ export const URL_JOB = '/jobs/'
 
 /**
  * 按公司名搜的职位板(手机卡公司名的真 href,#315:左键仍开弹框,中键/爬虫拿到真链接)。
+ * 2026-09-20 降为兜底:有公司页的链公司页(URL_COMPANY_HEAD),没有 slug 的才走它。
  */
 export const URL_JOBS_QUERY = '/jobs?q='
+
+/**
+ * 公司详情页前缀(2026-09-20 站内链接批:职位板手机卡与职位详情页的公司名链到公司页 ——
+ * GSC 实查公司页 1.5 万零收录,`/jobs?q=` 是 301 到搜索页、不给公司页传链接;设计稿 docs/design/站内链接与收录-20260920.md)。
+ */
+export const URL_COMPANY_HEAD = '/companies/'
 
 /**
  * POST。
@@ -2136,6 +2143,16 @@ export const TRACK_FROM_CLOSED = 'closed'
 export const TRACK_FROM_CLOSED_NONE = 'closed-none'
 
 /**
+ * 相似职位来自在招页(2026-09-20 在招岗也出这张卡)。
+ */
+export const TRACK_FROM_OPEN = 'open'
+
+/**
+ * 在招页上的兜底链。
+ */
+export const TRACK_FROM_OPEN_NONE = 'open-none'
+
+/**
  * 中文对照(首次拉取才计,纯开合不计)。
  */
 export const TRACK_JD_TRANSLATE = 'jd-translate'
@@ -3284,6 +3301,7 @@ export const EMPTY_MATCH_DIMS = {
 
 /**
  * 在招岗不查相似职位(服务端就不查,related 恒空)—— 在招岗照旧守「一条信息一个家」。
+ * 2026-09-20 改判:在招岗也查(来由见职位详情页门的文件头),页面门不再用它;留着待下个清理批连桶导出一起撤。
  */
 export const EMPTY_RELATED = {
   /**

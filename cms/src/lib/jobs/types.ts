@@ -2192,6 +2192,11 @@ export type RelatedIn = {
     province: string
 
     /**
+     * 城市(同职业组同城优先;没有给空串)。
+     */
+    city: string
+
+    /**
      * 职业码。
      */
     noc: string
@@ -2223,7 +2228,7 @@ export type RelatedOut = Promise<{
   sameCompany: RelatedJob[]
 
   /**
-   * 同省同 NOC 小类在招 ≤3。
+   * 同省同 NOC 小类在招 ≤6。
    */
   sameOcc: RelatedJob[]
 

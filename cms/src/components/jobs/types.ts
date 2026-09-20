@@ -1819,6 +1819,11 @@ export type JobRelatedIn = {
   fallbackText: string
 
   /**
+   * 本岗状态(埋点来源格分下架页 / 在招页)。
+   */
+  status: string
+
+  /**
    * 点一行:页上叠开职位描述弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示」)。
    */
   onOpenJob: (j: JobFact) => void
@@ -5563,11 +5568,6 @@ export type AliasOfIn = {
  * showRelatedOf 的入参。
  */
 export type ShowRelatedIn = {
-  /**
-   * 本岗状态。
-   */
-  status: string
-
   /**
    * 相似职位。
    */

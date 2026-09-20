@@ -1377,7 +1377,8 @@ export async function loadJobById(input: JobByIdIn): JobByIdOut {
 }
 
 /**
- * E8-07「相关职位」:同公司 ≤3 + 同省同 NOC 小类 ≤3(都排除本岗)。
+ * E8-07「相关职位」:同公司 ≤3 + 同省同 NOC 小类 ≤6(都排除本岗)。
+ * 2026-09-20:在招岗也取(原只给下架岗);同职业组改四档排序(口径见 RELATED_SAME_OCC)。
  * 2026-08-11:两组都空时兜底探测三级分类「本省该级有没有在招岗」(EXISTS 命中即停),
  * 返回能筛出东西的最细一级 —— 下架页不能是死路。
  *
@@ -1394,7 +1395,7 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   let occRows: Row[] = []
   if (job.noc !== '' && job.province !== '') {
     occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-      job.company], map: passRow })
+      job.company, job.city], map: passRow })
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)

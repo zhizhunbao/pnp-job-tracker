@@ -1858,6 +1858,17 @@
 }
 
 /*
+ * 标题下的公司名(2026-09-20 站内链接批:详情页 B2 瘦身后正文里连公司名都没有,
+ * 补一行真链接到公司页;设计稿 docs/design/站内链接与收录-20260920.md)。
+ */
+.titleCo {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/*
  * 职位名译名对照(#151 口径,与公司页在招职位同款)。
  */
 .titleAlias {

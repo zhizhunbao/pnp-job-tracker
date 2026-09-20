@@ -150,12 +150,27 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS} ${JOB_FROM}
        ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`
 
 /**
- * 相关职位·同省同 4 位职业前缀 3 条(排除同公司)。$1=省,$2=NOC,$3=当前岗 id,$4=排除公司名。
+ * 相关职位·同省同 4 位职业前缀 6 条(排除同公司)。$1=省,$2=NOC,$3=当前岗 id,$4=排除公司名,$5=本岗城市。
+ *
+ * 2026-09-20 Frank「那要把 相似岗位 和 相似雇主 做准确了」改口径(在招岗也出这张卡,8 万页都跑):
+ * 分四档 —— 1 职业码全等且同城 / 2 职业码全等同省 / 3 同 4 位前缀且同城 / 4 同 4 位前缀同省,
+ * 档内最新在前,一家雇主只出一条(连锁一口气发的同名岗会占满整卡),取 6 条;$5=本岗城市。
+ * 生产随机 300 条实测:推荐里职业码全等 58% → 97%、同城 8% → 50%
+ * (旧口径实撞:兽医推心脏科医生,QC 小城的岗推全省随机)。
+ * 前缀匹配写成「前缀 ~ 前缀 + 9」的范围:LEFT(noc,4) 用不上 idx_jobs_noc,每次扫全省
+ * (ON 5 万行 ~200ms → 范围写法 ~7ms);上界别用冒号 —— 库的排序规则下冒号排在数字前,范围是空的(实撞)。
  */
-export const RELATED_SAME_OCC = `SELECT ${REL_COLS} ${JOB_FROM}
-       WHERE j.province = $1 AND LEFT(j.noc, 4) = LEFT($2, 4) AND j.id <> $3
-         AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed'
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`
+export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text FROM (
+         SELECT ${REL_COLS}, j.date_posted, j.first_seen,
+           CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.noc = $2 THEN 2 WHEN j.city = $5 THEN 3 ELSE 4 END AS tier,
+           row_number() OVER (PARTITION BY COALESCE(j.company_id::text, 'j' || j.id::text) ORDER BY
+             CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.noc = $2 THEN 2 WHEN j.city = $5 THEN 3 ELSE 4 END,
+             j.date_posted DESC NULLS LAST, j.id DESC) AS rn
+         ${JOB_FROM}
+         WHERE j.province = $1 AND j.noc >= LEFT($2, 4) AND j.noc <= LEFT($2, 4) || '9' AND j.id <> $3
+           AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
+       ) r WHERE rn = 1
+       ORDER BY tier, date_posted DESC NULLS LAST, first_seen DESC NULLS LAST, id DESC LIMIT 6`
 
 /**
  * 相关职位都落空时的兜底探测:一次问清「本省在 fine/mid/broad 各级还有没有在招岗」,
