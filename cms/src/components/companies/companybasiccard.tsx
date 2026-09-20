@@ -39,8 +39,9 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, hqHrefOf, hqOf, isGovCompany, wikiTitleOf,
+  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, siteHqHrefOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
+import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
 import { mapsUrl } from '@/lib/location'
 import css from './companies.module.css'
@@ -56,7 +57,9 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
   const prov = homeProvinceOf({ company })
-  const hq = hqOf({ t, lang, company })
+  const site = useCompanySite({ name: company.name, wait: hasDesc === false && briefCached === false })
+  const hq = siteHqOf({ company, site, t, lang })
+  const website = siteWebsiteOf({ company, site, t, lang })
   const hasId = hasIdOf({ company, addr }) || prov !== TEXT_NONE
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
@@ -68,12 +71,12 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
       <div>
         <Row k={t('co.name')}>{company.name}</Row>
         {isGovCompany({ name: company.name }) && <Row k={t('co.sector')}>{t('co.gov')}</Row>}
-        {company.website !== TEXT_NONE && (
+        {website !== TEXT_NONE && (
           <Row k={t('act.site')}>
-            <LinkButton href={company.website}
+            <LinkButton href={website}
               target={TARGET_BLANK}
               className={cssOf(css.siteLink) + CLS_SEP + LINK_CLS}>
-              {company.website}
+              {website}
             </LinkButton>
           </Row>
         )}
@@ -95,7 +98,7 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
             </LinkButton>
           </Row>
         )}
-        <Row k={t('co.hq')}><CompanyHq text={hq} href={hqHrefOf({ company })} /></Row>
+        <Row k={t('co.hq')}><CompanyHq text={hq} href={siteHqHrefOf({ company, site, t, lang })} /></Row>
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}
@@ -114,7 +117,8 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
         trans={trans}
         skipBase={company.aiBrief !== TEXT_NONE}
         baseZh={baseZhOf({ t, lang, company })}
-        onBusy={onBusy} />
+        onBusy={onBusy}
+        stage={site.stage} />
     </div>
   )
 }

@@ -37,9 +37,23 @@ class HttpClientLike(Protocol):
     """httpx 客户端里本域真用的格:post(打盒子;抓页 2026-09-20 起一律走 crawl 域有头浏览器,get 一格随之撤)。Pyrefly 对 Protocol 实参判定保守,
     装配点用 typing.cast 喂真客户端(断言只住装配点)。"""
 
-    def post(self, url: str, *, json: object) -> HttpResponseLike:
-        """POST JSON 体(关键字参是库形状特批)。"""
+    def post(self, url: str, *, json: object, headers: dict | None = None) -> HttpResponseLike:
+        """POST JSON 体(关键字参是库形状特批;headers 2026-09-20 加:visit 步打 cms 接口要带钥匙)。"""
         ...
+
+    def get(self, url: str, *, params: dict, headers: dict) -> HttpResponseLike:
+        """GET(2026-09-20 加回:visit 步向 cms 取活;抓页仍一律走有头浏览器)。"""
+        ...
+
+
+class CmsLike(Protocol):
+    """cms 接线里本域真用的格(fetch 叶 cms_config() 的出参;本文件不 import 别的域,形状自己声明)。"""
+
+    base: str
+    """站点根;没配 = 空串。"""
+
+    headers: dict
+    """带钥匙的请求头。"""
 
 
 class PagesRecord(BaseModel):
@@ -59,6 +73,15 @@ class PagesRecord(BaseModel):
 
     note: str = ""
     """失败由头(no text / robots / http N / 异常类名);ok 为空串。"""
+
+    host: str = ""
+    """官网主机名(去 www.;同主机名 24 小时只抓一次的尺子。2026-09-20 加,存量记录为空串)。"""
+
+    fails: int = 0
+    """连续几轮「域名不解析」(到 DEAD_FAILS 记死站;抓成 / 别的失败归零)。"""
+
+    cache_slug: str = ""
+    """原文住在哪家的 crawl 目录(同主机名复用别家刚抓的缓存时 = 那一家的 slug;空串 = 自己的)。"""
 
 
 class FactsRecord(BaseModel):
@@ -150,6 +173,9 @@ class Target:
 
     open_jobs: int
     """当前在招岗数(排队用:多的在前)。"""
+
+    seen: float = 0.0
+    """最近一次被用户看过的时刻(epoch 秒;点开优先于列出;0 = 没人看过。例行轮排队:看过的在前、最近的在前)。"""
 
 
 @dataclass
@@ -337,3 +363,113 @@ class SectionIn:
 
     mark: str
     """节标记。"""
+
+
+@dataclass
+class VisitTodo:
+    """点开优先的一条待办(cms 取活接口给的)。"""
+
+    key: str
+    """池主键(交活用)。"""
+
+    slug: str
+    """公司 slug(各份缓存的键)。"""
+
+    name: str
+    """公司名。"""
+
+    website: str
+    """官网。"""
+
+
+@dataclass
+class CmsIn:
+    """打 cms 接口的入参。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    cms: CmsLike
+    """cms 接线。"""
+
+    payload: dict
+    """取活 = 查询参数;交活 = 请求体。"""
+
+
+@dataclass
+class VisitOneIn:
+    """visit_one() 入参。"""
+
+    client: HttpClientLike
+    """HTTP 客户端(打 cms 与盒子)。"""
+
+    cms: CmsLike
+    """cms 接线。"""
+
+    cfg: LlmCfg
+    """盒子地址与模型名。"""
+
+    todo: VisitTodo
+    """这一家。"""
+
+
+@dataclass
+class HostPickIn:
+    """host_cached_of() 入参。"""
+
+    pages: dict
+    """全部抓取记录。"""
+
+    host: str
+    """这一家的官网主机名。"""
+
+    slug: str
+    """这一家的 slug(自己的记录另判)。"""
+
+
+@dataclass
+class SeenIn:
+    """seen_of() 入参。"""
+
+    seen: dict
+    """seen.json 整表。"""
+
+    slug: str
+    """公司 slug。"""
+
+
+@dataclass
+class HqStreetIn:
+    """hq_street_of() 入参。"""
+
+    address: str
+    """模型抄下来的街址(常连市 / 省 / 邮编一起)。"""
+
+    city: str
+    """总部所在市。"""
+
+
+@dataclass
+class CarryIn:
+    """carry_fails() 入参。"""
+
+    rec: PagesRecord
+    """这一轮的抓取记录。"""
+
+    prev: PagesRecord | None
+    """上一轮的记录;没有 = None。"""
+
+
+@dataclass
+class VisitDoneIn:
+    """done_payload_of() 入参。"""
+
+    key: str
+    """池主键。"""
+
+    facts: FactsRecord
+    """这一家的整理记录。"""
+
+    host: str
+    """这一轮抓的官网主机名(cms 拿它判原简介是不是出自这个官网)。"""
+

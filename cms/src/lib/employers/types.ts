@@ -1627,6 +1627,441 @@ export type ExploreTodosOut = Promise<ExploreTodo[]>
 export type ExploreSavedOut = Promise<number>
 
 /**
+ * `EMPLOYER_EXPLORE_STAGE` 的原始行(官网那条工种的进度 + 公司表现在的官网与总部几格)。
+ */
+export type SiteStageDbRow = {
+  /**
+   * 办到哪一步(从没被点开过 = null)。
+   */
+  stage: string | null
+
+  /**
+   * 公司表里的官网。
+   */
+  website: string | null
+
+  /**
+   * 总部街址。
+   */
+  hq_address: string | null
+
+  /**
+   * 总部所在市。
+   */
+  hq_city: string | null
+
+  /**
+   * 总部所在省 / 州。
+   */
+  hq_province: string | null
+
+  /**
+   * 总部出处页。
+   */
+  hq_source: string | null
+}
+
+/**
+ * 公司卡问到的进度(对外;办完那一拍卡上拿这几格直接补官网与总部)。
+ */
+export type SiteStageRow = {
+  /**
+   * 办到哪一步;不在这条工种里 = 空串。
+   */
+  stage: string
+
+  /**
+   * 官网;没有 = 空串。
+   */
+  website: string
+
+  /**
+   * 真总部一行字(拼法同公司卡,lib/location 的 hqLineOf);没有 = 空串。
+   */
+  hq: string
+
+  /**
+   * 总部出处页;没有 = 空串。
+   */
+  hqSource: string
+}
+
+/**
+ * 查无这家 / 不在这条工种里时的进度。
+ */
+export type MaybeSiteStageRow = SiteStageRow | null
+
+/**
+ * `EMPLOYER_EXPLORE_OPEN` 的返回行。
+ */
+export type SiteOpenDbRow = {
+  /**
+   * 入队后的 stage。
+   */
+  stage: string | null
+}
+
+/**
+ * `EMPLOYER_EXPLORE_SITE_TODO_*` 的原始行。
+ */
+export type SiteTodoDbRow = {
+  /**
+   * 池主键。
+   */
+  key: string | null
+
+  /**
+   * 公司页 slug(数据层各份缓存的键)。
+   */
+  slug: string | null
+
+  /**
+   * 雇主名。
+   */
+  name: string | null
+
+  /**
+   * 公司表里现在的官网。
+   */
+  website: string | null
+
+  /**
+   * 主省(找官网的搜索词带它)。
+   */
+  province: string | null
+
+  /**
+   * 办到哪一步。
+   */
+  stage: string | null
+}
+
+/**
+ * 官网那条工种的一条待办(给家里的工人)。
+ */
+export type SiteTodo = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 公司页 slug。
+   */
+  slug: string
+
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 现在的官网;没有 = 空串。
+   */
+  website: string
+
+  /**
+   * 主省;没有 = 空串。
+   */
+  province: string
+
+  /**
+   * 办到哪一步。
+   */
+  stage: string
+}
+
+/**
+ * 工人交回来的一步(线格式:除键与 stage 外缺席 = 这一步没带这格)。
+ */
+export type SiteDoneJson = {
+  /**
+   * 池主键。
+   */
+  key?: string | null
+
+  /**
+   * 走到哪一步。
+   */
+  stage?: string | null
+
+  /**
+   * 由头。
+   */
+  note?: string | null
+
+  /**
+   * 这一轮抓的官网主机名。
+   */
+  host?: string | null
+
+  /**
+   * 找到 / 纠对的官网。
+   */
+  website?: string | null
+
+  /**
+   * 官网是不是这回被换过(旧的是死站 / 别家的站)。
+   */
+  replaced?: boolean | null
+
+  /**
+   * 总部街址。
+   */
+  hqAddress?: string | null
+
+  /**
+   * 总部所在市。
+   */
+  hqCity?: string | null
+
+  /**
+   * 总部所在省 / 州。
+   */
+  hqProvince?: string | null
+
+  /**
+   * 总部那句页面原句。
+   */
+  hqQuote?: string | null
+
+  /**
+   * 总部出处页。
+   */
+  hqSource?: string | null
+
+  /**
+   * 官网整理出来的简介(节标记行)。
+   */
+  brief?: string | null
+
+  /**
+   * 简介的出处页。
+   */
+  sources?: string[] | null
+}
+
+/**
+ * 工人交回来的一步(洗净:缺格成空串,文字限长)。
+ */
+export type SiteDone = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 走到哪一步。
+   */
+  stage: string
+
+  /**
+   * 由头。
+   */
+  note: string
+
+  /**
+   * 这一轮抓的官网主机名。
+   */
+  host: string
+
+  /**
+   * 找到 / 纠对的官网。
+   */
+  website: string
+
+  /**
+   * 官网是不是这回被换过。
+   */
+  replaced: boolean
+
+  /**
+   * 总部街址。
+   */
+  hqAddress: string
+
+  /**
+   * 总部所在市。
+   */
+  hqCity: string
+
+  /**
+   * 总部所在省 / 州。
+   */
+  hqProvince: string
+
+  /**
+   * 总部那句页面原句。
+   */
+  hqQuote: string
+
+  /**
+   * 总部出处页。
+   */
+  hqSource: string
+
+  /**
+   * 官网整理出来的简介。
+   */
+  brief: string
+
+  /**
+   * 简介的出处页。
+   */
+  sources: string[]
+}
+
+/**
+ * POST /api/employers/explore/open 与 …/explore/stage 的请求体。
+ */
+export type SiteOpenBody = {
+  /**
+   * 公司名。
+   */
+  name?: string | null
+}
+
+/**
+ * `openExploreSite` / `loadSiteStage` 的入参。
+ */
+export type SiteByNameIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 公司名。
+   */
+  name: string
+}
+
+/**
+ * `loadSiteTodos` 的入参。
+ */
+export type SiteTodosIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 取哪个工种的活:true = 找官网,false = 抓官网。
+   */
+  find: boolean
+
+  /**
+   * 取多少条。
+   */
+  limit: number
+}
+
+/**
+ * `saveSiteDone` 的入参。
+ */
+export type SaveSiteDoneIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 线格式的一步。
+   */
+  done: SiteDoneJson
+}
+
+/**
+ * `openExploreSite` 的返回:入队后的 stage(池里没有这家 = 空串)。
+ */
+export type SiteOpenOut = Promise<string>
+
+/**
+ * `loadSiteStage` 的返回。
+ */
+export type SiteStageOut = Promise<MaybeSiteStageRow>
+
+/**
+ * `loadSiteTodos` 的返回。
+ */
+export type SiteTodosOut = Promise<SiteTodo[]>
+
+/**
+ * `saveSiteDone` 的返回:写成了没有。
+ */
+export type SiteSavedOut = Promise<boolean>
+
+/**
+ * `EMPLOYER_EXPLORE_SEEN` 的原始行。
+ */
+export type SeenDbRow = {
+  /**
+   * 公司页 slug。
+   */
+  slug: string | null
+
+  /**
+   * 被雇主板列出过几次。
+   */
+  seen_count: number | null
+
+  /**
+   * 最近一次被列出(pg 给 Date)。
+   */
+  last_seen: Date | null
+
+  /**
+   * 最近一次真人点开;没点开过 = null。
+   */
+  opened_at: Date | null
+}
+
+/**
+ * 被用户看过的一家公司(给数据层排队)。
+ */
+export type SeenRow = {
+  /**
+   * 公司页 slug。
+   */
+  slug: string
+
+  /**
+   * 被雇主板列出过几次。
+   */
+  seenCount: number
+
+  /**
+   * 最近一次被列出(ISO);没有 = 空串。
+   */
+  lastSeen: string
+
+  /**
+   * 最近一次真人点开(ISO);没点开过 = 空串。
+   */
+  openedAt: string
+}
+
+/**
+ * `loadExploreSeen` 的入参。
+ */
+export type ExploreSeenIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 取多少条。
+   */
+  limit: number
+}
+
+/**
+ * `loadExploreSeen` 的返回。
+ */
+export type ExploreSeenOut = Promise<SeenRow[]>
+
+/**
  * 译名那几格的原始行(公司表的 + 探索队列的 + 队列状态):整页池行 PoolDbRow 带着它们,按键问译名的 EMPLOYER_POOL_ALIASES 只有它们。
  */
 export type PoolAliasDbRow = {
@@ -3026,6 +3461,11 @@ export type InfoBody = {
    * 公司名;不是字符串就当没带。
    */
   name: string | null
+
+  /**
+   * 只给库里已有的,不联网现查(2026-09-20:官网那条工种在跑的时候,公司卡先只查库,办完 / 查无再放开现查兜底)。
+   */
+  storedOnly?: boolean | null
 }
 
 /**

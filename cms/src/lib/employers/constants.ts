@@ -539,6 +539,51 @@ export const EXPLORE_SKIP = 'skip'
 export const EXPLORE_TEXT_MAX = 120
 
 /**
+ * 官网那条工种(点开过的公司优先抓官网 / 找官网,2026-09-20)工人可写回的 stage 白名单;排队中由入队写,不在此列。
+ */
+export const SITE_STAGES = ['find', 'fetch', 'facts', 'done', 'none'] as const
+
+/**
+ * 官网那条工种:取活的工种参数名(find = 找官网,其余 = 抓官网)。
+ */
+export const P_SITE_KIND = 'kind'
+
+/**
+ * 官网那条工种:找官网工种的参数值。
+ */
+export const SITE_KIND_FIND = 'find'
+
+/**
+ * 官网那条工种:一次取活的默认条数(一家要一两分钟,一轮一分钟,取多了也做不完)。
+ */
+export const SITE_TAKE_DEFAULT = 5
+
+/**
+ * 官网那条工种:一次取活的条数上限。
+ */
+export const SITE_TAKE_MAX = 20
+
+/**
+ * 官网那条工种:官网 / 出处 / 总部各格的最长字符数。
+ */
+export const SITE_TEXT_MAX = 300
+
+/**
+ * 官网那条工种:简介的最长字符数。
+ */
+export const SITE_BRIEF_MAX = 4000
+
+/**
+ * 官网那条工种:简介出处页的最多条数。
+ */
+export const SITE_SOURCES_MAX = 6
+
+/**
+ * 被用户看过的公司清单一次最多给多少条(数据层排队用;近 30 天的量远小于它)。
+ */
+export const SEEN_TAKE_MAX = 5000
+
+/**
  * URL 参数的保留长度:本站大类键(最长「社会服务」「生活服务」四字,留余量)。
  */
 export const CAP_BROAD = 12

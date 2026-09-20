@@ -167,6 +167,10 @@ PROCESSED_SITES = PROCESSED / "sites"
 """sites 域产物(2026-09-19 立域):pages.json = slug → 官网三页的抓取记录(原文在 crawl 层 site-<slug>/),
 facts.json = slug → 官网七节整理记录(每节带页面原句与出处网址);mart 汇装读 facts。"""
 
+PROCESSED_EXPLORE = PROCESSED / "explore"
+"""explore 域产物(2026-09-20):seen.json = slug → 被用户看过的公司(列出次数 / 最近列出 / 最近点开),
+sites 与 company 两域的例行轮拿它排队(被看过的在前);队列本身在生产库 employer_explore 表。"""
+
 PROCESSED_CLASSIFY = PROCESSED / "classify"
 """classify 域产物(2026-09-15 立域):jobs.json = externalId → 分类记录(职业码 + 判法 + 候选 + 版本),
 companies.json = slug → 行业记录;mart 汇装照此填岗位 noc 与公司行业,自己不再猜。"""

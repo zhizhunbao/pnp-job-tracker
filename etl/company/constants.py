@@ -1398,3 +1398,194 @@ PRINT_WIKIHQ_ROW_TPL = "  {status:4} {name} | {city} {province} {source}"
 
 PRINT_WIKIHQ_DONE_TPL = "本轮 ✓ {ok} · 查无 {miss} · 累计命中 {total}/{n} 家 → {out}"
 """wikihq 步收尾报数。"""
+
+# =========================================================================
+# 11. 点开优先的查找官网(findsite 步,2026-09-20;设计稿 docs/design/点开优先抓取与纠错-20260920.md)
+# =========================================================================
+
+IN_SITE_PAGES = paths.PROCESSED_SITES / "pages.json"
+"""[in] sites 域的官网抓取记录:status = dead 的是死站(域名连续不解析)—— 缓存里的官网等于它的,找官网阶梯当成没官网重找。"""
+
+OUT_FINDSITE_BEAT = paths.PROCESSED / "company_findsite_host.json"
+"""[out] 本机那一步的心跳(FINDSITE_GOOGLE=1 时每轮写):容器里的同一步见心跳还新就让出找官网的活 ——
+Google 那一档只能在本机跑(统一 profile + 有人点验证),Frank 在电脑前开着本机那步时活归它。"""
+
+ENV_FINDSITE_GOOGLE = "FINDSITE_GOOGLE"
+"""本机开关:= 1 才走 Google 那一档(容器里没人点验证、也存不住放行,一律不走)。"""
+
+FINDSITE_GOOGLE_ON = "1"
+"""开关的开值。"""
+
+BEAT_FRESH_S = 120
+"""本机心跳多少秒内算还在(本机一分钟一轮)。"""
+
+K_BEAT_AT = "at"
+"""心跳文件键:时刻(epoch 秒)。"""
+
+PATH_SITE_TODO = "/api/employers/explore/site-todo"
+"""cms 取活接口(带钥匙)。"""
+
+PATH_SITE_DONE = "/api/employers/explore/site-done"
+"""cms 交活接口(带钥匙)。"""
+
+P_KIND = "kind"
+"""取活接口的工种参数名。"""
+
+KIND_FIND = "find"
+"""工种:找官网。"""
+
+P_TAKE_LIMIT = "limit"
+"""取活接口的条数参数名。"""
+
+FINDSITE_TAKE = 5
+"""findsite 步每轮最多取几家。"""
+
+FINDSITE_HTTP_TIMEOUT_S = 30
+"""打 cms 接口 / 护栏取首页的超时秒数。"""
+
+HOT_RETRY_DAYS = 1
+"""点开触发的查找官网,一家几天内最多一次(Frank 2026-09-20:查找官网与 Wikidata 一家一天一次)。"""
+
+K_TODOS = "todos"
+"""取活响应里的清单键。"""
+
+K_TODO_KEY = "key"
+"""线格式键:池主键。"""
+
+K_TODO_SLUG = "slug"
+"""线格式键:公司 slug。"""
+
+K_TODO_NAME = "name"
+"""线格式键:公司名。"""
+
+K_TODO_WEBSITE = "website"
+"""线格式键:现在的官网(死站 / 名字对不上的那个;没官网 = 空)。"""
+
+K_TODO_PROVINCE = "province"
+"""线格式键:主省。"""
+
+K_DONE_STAGE = "stage"
+"""线格式键:走到哪一步。"""
+
+K_DONE_NOTE = "note"
+"""线格式键:由头。"""
+
+K_DONE_REPLACED = "replaced"
+"""线格式键:官网是不是这回被换过。"""
+
+K_DONE_HQ_CITY = "hqCity"
+"""线格式键:总部所在市。"""
+
+K_DONE_HQ_ADDRESS = "hqAddress"
+"""线格式键:总部街址。"""
+
+K_DONE_HQ_PROVINCE = "hqProvince"
+"""线格式键:总部所在省 / 州。"""
+
+K_DONE_HQ_SOURCE = "hqSource"
+"""线格式键:总部出处(Wikidata 条目)。"""
+
+STAGE_FIND = "find"
+"""进度:查找官网。"""
+
+STAGE_FETCH = "fetch"
+"""进度:找到了,交给 sites 域的 visit 步抓。"""
+
+STAGE_NONE = "none"
+"""进度:找不到官网(页面简介走现查兜底)。"""
+
+FOUND_GOOGLE = "google"
+"""官网来路:Google(本机有头浏览器)。"""
+
+FOUND_BING = "bing"
+"""官网来路:Bing(有头浏览器)。"""
+
+FOUND_DDG = "ddg"
+"""官网来路:DuckDuckGo(有头浏览器)。"""
+
+GOOGLE_SEARCH_URL = "https://www.google.com/search?hl=en&gl=ca&q="
+"""Google 搜索地址(本机、统一 profile;弹「异常流量」验证等 Frank 亲手点,助手不替过)。"""
+
+BING_SEARCH_URL = "https://www.bing.com/search?setmkt=en-CA&q="
+"""Bing 搜索地址(2026-09-20 六家实测:有头浏览器不弹验证,结果与 DDG 几乎一样且更干净)。"""
+
+DDG_BROWSER_URL = "https://duckduckgo.com/html/?q="
+"""DuckDuckGo 搜索地址(有头浏览器;Bing 出问题时的替补。原先被封的是 httpx 直打接口那条路)。"""
+
+JS_GOOGLE_LINKS = "() => [...document.querySelectorAll('a:has(h3)')].map(a => a.href)"
+"""页内取 Google 结果链接。"""
+
+JS_BING_LINKS = "() => [...document.querySelectorAll('li.b_algo h2 a')].map(a => a.href)"
+"""页内取 Bing 结果链接(href 是 bing.com/ck/a 跳转,真地址要解)。"""
+
+JS_DDG_LINKS = "() => [...document.querySelectorAll('a.result__a')].map(a => a.href)"
+"""页内取 DDG 结果链接(真地址在 uddg 参数里)。"""
+
+JS_PAGE_URL = "() => [location.href]"
+"""页内取当前地址(判 Google 是不是停在验证页)。"""
+
+GOOGLE_SORRY_MARK = "/sorry/"
+"""Google「异常流量」验证页的地址特征。"""
+
+GOOGLE_WAIT_S = 120
+"""Google 验证页最多等 Frank 点多少秒;到点没人点 = 这一档放弃,退 Bing。"""
+
+GOOGLE_POLL_MS = 2000
+"""等验证时多久看一次地址。"""
+
+BING_REDIRECT_PARAM = "u"
+"""Bing 跳转链接里装真地址的参数名。"""
+
+BING_REDIRECT_PREFIX = "a1"
+"""Bing 跳转参数值的前缀(后面是 base64url 的真地址)。"""
+
+BING_REDIRECT_PATH = "/ck/a"
+"""Bing 跳转链接的路径特征。"""
+
+B64_PAD = "="
+"""base64 补位字符。"""
+
+B64_BLOCK = 4
+"""base64 一组的长度(补位到它的整数倍)。"""
+
+SEARCH_CRAWL_SLUG_TPL = "search-{engine}"
+"""搜索结果页原文进 crawl 层的 slug(抓取先落原文,解析离线可重算)。"""
+
+NOTE_NO_CMS = "SEED_URL / SEED_TOKEN 未设,findsite 步跳过"
+"""缺 cms 接线的提示。"""
+
+NOTE_HOST_BEATING = "本机那一步开着(心跳还新),找官网的活让给它"
+"""容器让活的提示。"""
+
+NOTE_CHECKED_TODAY = "checked today"
+"""由头:今天找过了。"""
+
+NOTE_CMS_HTTP_TPL = "cms http {status}"
+"""打 cms 接口非 2xx 的错文。"""
+
+PRINT_FINDSITE_TAKE_TPL = "  取活 {n} 家(点开过、没官网 / 官网已死 / 官网名字对不上的;上限 {limit};Google 档 {google})"
+"""findsite 步取活报数。"""
+
+PRINT_FINDSITE_ROW_TPL = "  {stage:<5} {name}  {site}  {note}"
+"""findsite 步单家日志行。"""
+
+K_HOST = "host"
+"""sites 域抓取记录键:官网主机名。"""
+
+ST_DEAD = "dead"
+"""sites 域抓取记录的死站状态(域名连续不解析)。"""
+
+MS_PER_S = 1000
+"""一秒的毫秒数。"""
+
+IN_SEEN = paths.PROCESSED_EXPLORE / "seen.json"
+"""[in] 被用户看过的公司清单(explore 域每轮落盘);找官网 / 维基总部的例行轮拿它排队,缺文件 = 没人看过。"""
+
+K_SEEN_OPENED = "opened_at"
+"""seen.json 记录键:最近一次真人点开(ISO;没点开过 = 空串)。"""
+
+K_SEEN_LAST = "last_seen"
+"""seen.json 记录键:最近一次被雇主板列出(ISO)。"""
+
+HOT_JD_GLOB_TPL = "{slug}_*.md"
+"""一家公司的 JD 文件名样式(「雇主 slug_岗位 slug.md」;hot_jd_hints 按名直取)。"""

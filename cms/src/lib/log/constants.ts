@@ -596,6 +596,11 @@ export const EMP_LOG = {
   exploreEnqueueFailed: 'explore enqueue failed (ignored): ',
 
   /**
+   * 官网那条工种入队写挂了(公司卡照常用,只是这次点开没记上;2026-09-20)。
+   */
+  siteOpenFailed: 'explore site open failed (ignored): ',
+
+  /**
    * 懒建公司最小行失败(背调没有落脚点,这次不查)。
    */
   lazyInsertFailed: 'lazy company insert failed, skipping research: ',

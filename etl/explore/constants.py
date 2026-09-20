@@ -4,6 +4,8 @@ explore 域常量 —— 全部字面量住这(零字符串令:functions 体内�
 """
 import re
 
+import paths
+
 # =========================================================================
 # 1. 入口与接线(站点根 / 钥匙 / 盒子,全走环境变量)
 # =========================================================================
@@ -275,3 +277,44 @@ PRINT_ABORT_TPL = "✗ 盒子连不上 / 超时({note}),本轮中止,剩下的�
 
 PRINT_DONE_TPL = "✓ 本轮:翻好 {done} · 人名跳过 {skip} · 没翻成 {fail} · 已交回 {saved}"
 """收尾一行。"""
+
+# =========================================================================
+# 6. 被看过的公司清单(seen 步:落盘给 sites / company 两域的例行轮排队,2026-09-20)
+# =========================================================================
+
+OUT_SEEN = paths.PROCESSED_EXPLORE / "seen.json"
+"""[out] 被用户看过的公司清单:slug → {seen_count, last_seen, opened_at}(队列在生产库,数据层不直连库,每轮经 cms 接口取一次落盘;
+sites 抓官网、company 找官网 / 维基总部的例行轮读它,被看过的排前面。设计稿 docs/design/点开优先抓取与纠错-20260920.md)。"""
+
+PATH_SEEN = "/api/employers/explore/seen"
+"""cms 清单接口(带钥匙)。"""
+
+K_SEEN = "seen"
+"""清单响应里的清单键。"""
+
+K_SLUG = "slug"
+"""清单行键:公司页 slug。"""
+
+K_SEEN_COUNT_IN = "seenCount"
+"""清单行键(线上):被列出过几次。"""
+
+K_LAST_SEEN_IN = "lastSeen"
+"""清单行键(线上):最近一次被列出。"""
+
+K_OPENED_AT_IN = "openedAt"
+"""清单行键(线上):最近一次真人点开。"""
+
+K_SEEN_COUNT = "seen_count"
+"""落盘记录键:被列出过几次。"""
+
+K_LAST_SEEN = "last_seen"
+"""落盘记录键:最近一次被列出(ISO)。"""
+
+K_OPENED_AT = "opened_at"
+"""落盘记录键:最近一次真人点开(ISO;没点开过 = 空串)。"""
+
+JSON_INDENT = 1
+"""落盘缩进。"""
+
+PRINT_SEEN_TPL = "✓ 被看过的公司 {n} 家(其中点开过 {opened})→ {out}"
+"""seen 步收尾报数。"""

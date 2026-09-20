@@ -17,7 +17,7 @@ from log.functions import err, say
 from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
-    locate_career_entries, lookup_wiki_hq,
+    find_opened_sites, locate_career_entries, lookup_wiki_hq,
     scrape_kanata_directory,
 )
 
@@ -47,6 +47,7 @@ TOOLS = {
     "about": crawl_company_about,
     "brief": build_company_briefs,
     "wikihq": lookup_wiki_hq,
+    "findsite": find_opened_sites,
 }
 """全部可 --only 点名的步(含休眠引导工具)。
 

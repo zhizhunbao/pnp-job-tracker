@@ -10,10 +10,13 @@ from typing import cast
 
 import httpx
 
+import paths
 from fetch.functions import make_client
 from log.functions import say
 from explore import TAKE_LIMIT
 from explore.constants import (
+    JSON_INDENT, K_LAST_SEEN, K_LAST_SEEN_IN, K_OPENED_AT, K_OPENED_AT_IN, K_SEEN, K_SEEN_COUNT, K_SEEN_COUNT_IN, K_SLUG, OUT_SEEN, PATH_SEEN,
+    PRINT_SEEN_TPL,
     ALIAS_MAX_LEN, BROADS_HINT_MAX, BROADS_SEP, CJK_RE, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_SEED_TOKEN, ENV_SEED_URL, FIELD_NONE, FLUSH_N, GEN_TOKENS,
     HANGUL_RE, HDR_SEED_TOKEN, HTTP_TIMEOUT_S, INDUSTRIES, INDUSTRY_RE, K_ALIAS_KO, K_ALIAS_ZH, K_BROADS, K_INDUSTRY, K_KEY, K_NAME, K_NOTE, K_RESULTS, K_STATUS,
     K_TODOS, KO_RE, LLM_MODEL_DEFAULT, LLM_TEMPERATURE, NAME_MAX_LEN, NET_ERRORS, NOTE_EMPTY, NOTE_HTTP_TPL,
@@ -215,3 +218,43 @@ def alias_ok_of(x: AliasIn) -> str:
     if CJK_RE.search(text) is None:
         return FIELD_NONE
     return text
+
+
+# =========================================================================
+# 4. 被看过的公司清单(seen 步)
+# =========================================================================
+
+
+def dump_seen() -> None:
+    """seen 步入口:向 cms 取「近 30 天被列出 / 点开过的公司」→ 落盘 OUT_SEEN(整表覆盖;sites / company 两域的例行轮读它排队)。
+
+    没配站点根或钥匙直接退;非 2xx 抛(由门的 err 接,盘上旧清单原样留着)。
+    """
+    site = site_config()
+    if site.base == FIELD_NONE or len(site.headers) == 0:
+        say(NOTE_NO_SITE)
+        return
+    with make_client(timeout=HTTP_TIMEOUT_S) as raw:
+        client = cast(HttpClientLike, raw)
+        r = client.get(site.base + PATH_SEEN, params={}, headers=site.headers)
+    if not r.is_success:
+        raise RuntimeError(NOTE_HTTP_TPL.format(status=r.status_code))
+    body = r.json()
+    out: dict = {}
+    opened = 0
+    rows: object = []
+    if isinstance(body, dict):
+        rows = body.get(K_SEEN)
+    if isinstance(rows, list):
+        for row in rows:
+            if not isinstance(row, dict) or not row.get(K_SLUG):
+                continue
+            rec = {K_SEEN_COUNT: row.get(K_SEEN_COUNT_IN) or 0, K_LAST_SEEN: str(row.get(K_LAST_SEEN_IN) or FIELD_NONE),
+                   K_OPENED_AT: str(row.get(K_OPENED_AT_IN) or FIELD_NONE)}
+            if rec[K_OPENED_AT] != FIELD_NONE:
+                opened += 1
+            out[str(row[K_SLUG])] = rec
+    OUT_SEEN.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_SEEN, payload=out, indent=JSON_INDENT))
+    say(PRINT_SEEN_TPL.format(n=len(out), opened=opened, out=OUT_SEEN.name))
+

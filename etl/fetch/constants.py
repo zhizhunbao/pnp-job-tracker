@@ -139,3 +139,19 @@ TRAIL_COLON = ":"
 TAIL_NOISE = {"page details", "report a problem on this page", "share this page",
               "date modified", "about this site"}
 """页尾样板段标题(canada.ca 等):详情页正文遇到这些标题就截断,不进正文。"""
+
+ENV_SEED_URL = "SEED_URL"
+"""灌库端点的环境变量(cms 接线只用它反推站点根;2026-09-20 第三个消费者到了才收进本叶:explore 译名工人之后,
+sites / company 两域的「点开优先」工人也要带钥匙打 cms 接口)。"""
+
+ENV_SEED_TOKEN = "SEED_TOKEN"
+"""cms 钥匙的环境变量(与上传 mart / 灌库同一把)。"""
+
+HDR_SEED_TOKEN = "x-seed-token"
+"""cms 钥匙的请求头名。"""
+
+SCHEME_SEP = "://"
+"""URL 协议分隔(从 SEED_URL 反推站点根)。"""
+
+CMS_NONE = ""
+"""cms 接线没配的站点根(空串)。"""

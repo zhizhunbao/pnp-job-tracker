@@ -15,8 +15,8 @@ sites 域:有官网的在招公司,定期把官网原文缓存到本地,再由�
 范围(Frank 09-19 批):有官网 且 当前有在招岗的公司(约 1.5 万家),每月一轮;在招岗多的在前。
 与「公司级数据一律懒查询,禁批量预抓」的关系:Frank 同日对**有官网的公司**改判为定期抓,没官网的仍走懒查询。
 
-META = 域即役的调度声明:role=挂哪个角色容器(SOURCE 环境变量),interval=本域一轮的间隔秒;
-入口固定 etl/sites/main.py,步骤清单在 main.py 里。
+METAS = 域即役的调度声明(2026-09-20 起一域两役:sites 例行轮 + visit 点开优先):role=挂哪个角色容器(SOURCE 环境变量),
+interval=一轮的间隔秒,only=入口同门不同 --only;入口固定 etl/sites/main.py,步骤清单在 main.py 里。
 """
 import os
 
@@ -28,10 +28,24 @@ FACTS_LIMIT = os.environ.get("SITES_FACTS_LIMIT", "200")
 """每轮最多整理多少家(盒子实测一家 4~11 秒:200 家 ≈ 半小时;盒子还要给整理版 / 译名 / 分类用)。
 本地验收可压小(SITES_FACTS_LIMIT=5)。"""
 
-META = {
-    "role": "sites",
-    "method": "browser",     # 抓页走 crawl 域有头浏览器:容器用 etl/crawl/Dockerfile 重镜像(Playwright + Xvfb);打局域网 Ollama 那一发仍是 httpx
-    "interval": 3600,        # 1h 一轮,每轮抓 200 家 + 整理 200 家;有头浏览器一轮要两小时多,首轮 1 万家约一周追平,之后按 30 天刷新期滚动
-    "seed": False,           # 只刷 crawl/ 与 processed/sites/,灌库归 load 域 build 链
-    "ping": True,            # 本角色唯一单元
-}
+METAS = [
+    {
+        "name": "sites",
+        "role": "sites",
+        "method": "browser",     # 抓页走 crawl 域有头浏览器:容器用 etl/crawl/Dockerfile 重镜像(Playwright + Xvfb);打局域网 Ollama 那一发仍是 httpx
+        "interval": 3600,        # 1h 一轮,每轮抓 200 家 + 整理 200 家;有头浏览器一轮要两小时多,首轮 1 万家约一周追平,之后按 30 天刷新期滚动
+        "seed": False,           # 只刷 crawl/ 与 processed/sites/,灌库归 load 域 build 链
+        "ping": True,            # 本角色唯一单元
+        "only": "",
+    },
+    {
+        "name": "visit",
+        "role": "visit",         # 点开优先(2026-09-20):被真人点开过的公司插队抓 / 整理,每步把进度写回队列表;自己一个容器、自己一个浏览器,
+                                 # 不和两小时一轮的例行轮抢同一个标签页(一域多役,load 先例)
+        "method": "browser",
+        "interval": 60,          # 1 分钟一轮(公司卡 15 秒来问一次进度;没活的那一轮只是一次取活请求,不起浏览器)
+        "seed": False,
+        "ping": True,
+        "only": "visit",
+    },
+]

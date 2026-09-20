@@ -55,6 +55,9 @@ ST_OK = "ok"
 ST_FAIL = "fail"
 """记录状态:没成(带由头与时刻,冷却期后重试)。"""
 
+ST_DEAD = "dead"
+"""死站:官网域名连续 DEAD_FAILS 轮不解析;不再重试这个地址(2026-09-20 自动纠错)。"""
+
 SECONDS_PER_DAY = 86400
 """一天的秒数(算「距上次过了几天」)。"""
 
@@ -88,6 +91,20 @@ REFRESH_DAYS = 30
 
 RETRY_FAILED_DAYS = 14
 """抓失败 / 整理失败的冷却天数(站挂了、被拦了,别每轮都去敲)。"""
+
+RETRY_TRANSIENT_DAYS = 1
+"""瞬时失败的冷却天数(2026-09-20 Frank 批的分档:浏览器没取回页面 —— 连不上 / 超时 / 掐断 —— 多半明天就好,
+原先一律 14 天,Sienna 那种瞬时连不上的要等两周;真被拦的(拦截页 / robots / 没正文)仍 RETRY_FAILED_DAYS)。"""
+
+HOT_HOST_HOURS = 24
+"""点开触发的抓取,同一个官网主机名多少小时内最多一次(成败都算;A&W / IGA 加盟店共用 aw.ca / iga.net,
+第一家抓、其余复用 crawl 层缓存原文只各自整理)。"""
+
+SECONDS_PER_HOUR = 3600
+"""一小时的秒数(主机名 24 小时尺子换算用)。"""
+
+DEAD_FAILS = 2
+"""官网连续几轮「域名不解析」就记死站(ST_DEAD;mart 见了清官网格,company 域找官网阶梯重找)。"""
 
 # =========================================================================
 # 3. 抓页(原文进 crawl 层)
@@ -156,6 +173,12 @@ NOTE_BROWSER = "browser"
 NOTE_BLOCKED = "blocked page"
 """抓失败由头:拿回来的是拦截页 / 报错页(按页标题判,见 BLOCK_TITLE_RE)。"""
 
+NOTE_DNS = "dns"
+"""失败由头:官网域名不解析(浏览器没取回页面后用标准库 getaddrinfo 复核出来的;连续 DEAD_FAILS 轮 = 死站)。"""
+
+TRANSIENT_NOTES = ("browser",)
+"""算瞬时失败的由头(冷却 RETRY_TRANSIENT_DAYS):浏览器没取回页面且域名解析得了。"""
+
 BLOCK_TITLE_RE = re.compile(r"^\s*(?:40[34]\b|access denied|forbidden|page not found|not found|error\b|just a moment)", re.I)
 """拦截页 / 报错页的页标题(浏览器里拿不到状态码,只能认标题:「403 - Forbidden」「Access Denied」「Page not found」「Just a moment...」);
 这种页不进 crawl 层 —— 进了就会被当成官网原文喂给模型。"""
@@ -165,9 +188,6 @@ NOTE_NO_BROWSER = "本镜像没装 playwright,sites 的 fetch 步跳过(抓页�
 
 PRINT_BROWSER_ABORT = "  ✗ 有头浏览器没起来(见上一条报错),本轮抓取中止,不记这家失败"
 """浏览器起不来(profile 被占 / 没显示)不是这家公司的错:不记失败、整轮中止(与 facts 步盒子掉线同一条教训)。"""
-
-COOKIE_JAR_EMPTY = "[]"
-"""空 cookie 罐的文件内容(见 ensure_cookie_jar)。"""
 
 JS_LOCATION = "[location.href]"
 """取当前标签最终地址的页内表达式(crawl 的 PageLike.evaluate 定死回列表,所以包一层数组)。"""
@@ -394,3 +414,123 @@ PRINT_FACTS_DONE_TPL = "✓ 本轮整理:成 {ok} · 失败 {fail} · 累计 {to
 
 HQ_SHOW_TPL = "{address} {city} {province}"
 """打印用的总部一行(三格拼起来;空格由调用方压)。"""
+
+# =========================================================================
+# 9. 点开优先(visit 步:被用户点开过的公司插队,2026-09-20;设计稿 docs/design/点开优先抓取与纠错-20260920.md)
+# =========================================================================
+
+IN_SEEN = paths.PROCESSED_EXPLORE / "seen.json"
+"""[in] 被用户看过的公司清单(explore 域每轮落盘:slug → 最近列出 / 最近点开时刻);例行轮拿它排队,缺文件 = 没人看过。"""
+
+K_SEEN_OPENED = "opened_at"
+"""seen.json 记录键:最近一次真人点开(ISO;没点开过 = 空串)。"""
+
+K_SEEN_LAST = "last_seen"
+"""seen.json 记录键:最近一次被雇主板列出(ISO)。"""
+
+PATH_SITE_TODO = "/api/employers/explore/site-todo"
+"""cms 取活接口(带钥匙;不带 kind=find = 取抓官网的活)。"""
+
+PATH_SITE_DONE = "/api/employers/explore/site-done"
+"""cms 交活接口(带钥匙;每走一步写回进度,办完带总部 / 简介)。"""
+
+P_LIMIT = "limit"
+"""取活接口的条数参数名。"""
+
+VISIT_TAKE = 5
+"""visit 步每轮最多取几家(一家约一两分钟,一轮一分钟,取多了用户也等不到)。"""
+
+K_TODOS = "todos"
+"""取活响应里的清单键。"""
+
+K_KEY = "key"
+"""线格式键:池主键。"""
+
+K_STAGE = "stage"
+"""线格式键:走到哪一步。"""
+
+K_NOTE = "note"
+"""线格式键:由头。"""
+
+K_HOST = "host"
+"""线格式键:这一轮抓的官网主机名。"""
+
+K_DONE_HQ_ADDRESS = "hqAddress"
+"""线格式键:总部街址。"""
+
+K_DONE_HQ_CITY = "hqCity"
+"""线格式键:总部所在市。"""
+
+K_DONE_HQ_PROVINCE = "hqProvince"
+"""线格式键:总部所在省 / 州。"""
+
+K_DONE_HQ_QUOTE = "hqQuote"
+"""线格式键:总部那句页面原句。"""
+
+K_DONE_HQ_SOURCE = "hqSource"
+"""线格式键:总部出处页。"""
+
+K_DONE_BRIEF = "brief"
+"""线格式键:简介(节标记行)。"""
+
+K_DONE_SOURCES = "sources"
+"""线格式键:简介出处页。"""
+
+STAGE_FIND = "find"
+"""进度:转去查找官网(这边判了域名不解析,company 域的 findsite 步接手)。"""
+
+STAGE_FETCH = "fetch"
+"""进度:抓取官网。"""
+
+STAGE_FACTS = "facts"
+"""进度:整理内容。"""
+
+STAGE_DONE = "done"
+"""进度:办完(成败都算;没带内容的由页面走现查兜底)。"""
+
+NOTE_DEAD_SITE = "dead site"
+"""转去查找官网的由头:官网域名不解析。"""
+
+NOTE_NAME_MISMATCH = "name mismatch"
+"""转去查找官网的由头:官网归属闸没过(官网和公司名对不上,多半是母公司 / 别家的站)—— 找得到名字对得上的新站才换,找不到原官网不动。"""
+
+BRIEF_SECS = (("WHAT", "what"), ("SIZE", "size"), ("FOUNDED", "founded"), ("OFFICES", "offices"),
+              ("NEWCOMERS", "newcomers"), ("BENEFITS", "benefits"))
+"""官网整理记录 → 简介文本的节(标记, 记录格):与 company 域五节简介、mart 的 SITE_BRIEF_SECS 同一套方括号标记;
+总部一节不走这张表(要拼街址 / 市 / 省,标记 BASE)。只收过了原句核对的节。"""
+
+BRIEF_CORE_MARKS = ("WHAT", "SIZE", "FOUNDED")
+"""简介里一律出行的节(加上「所在地」共四节):页面与 cms 靠这几个标记齐全认五节简介,没内容也出行、写 BRIEF_NOT_STATED。"""
+
+BRIEF_NOT_STATED = "(not stated)"
+"""简介里「官网没写」的写法(与 company 域五节简介同字,页面见了这一节不出)。"""
+
+BRIEF_BASE_MARK = "BASE"
+"""简介里「所在地」一节的标记(值 = 总部街址、市、省拼一行)。"""
+
+BRIEF_LINE_TPL = "[{mark}] {text}"
+"""简介文本里一节的行形(方括号标记 + 空格 + 正文,一节一行;与 mart 的 SITE_SEC_LINE_TPL 同形)。"""
+
+BRIEF_LINE_SEP = "\n"
+"""简介文本的节间分隔。"""
+
+PORT_SEP = ":"
+"""主机名与端口的分隔(取主机名用)。"""
+
+HQ_JOIN = ", "
+"""总部一行字的拼接分隔。"""
+
+HQ_TRIM_CHARS = " ,"
+"""街址截掉市名以后,尾巴上要抹掉的空格与逗号。"""
+
+PROV_CODE_LEN = 2
+"""两位省码的长度(两位的一律大写)。"""
+
+NOTE_NO_CMS = "SEED_URL / SEED_TOKEN 未设,visit 步跳过"
+"""缺 cms 接线的提示。"""
+
+PRINT_VISIT_TAKE_TPL = "  取活 {n} 家(点开过、有官网的;上限 {limit})"
+"""visit 步取活报数。"""
+
+PRINT_VISIT_ROW_TPL = "  {stage:<5} {name}  {note}"
+"""visit 步单家一步的日志行。"""

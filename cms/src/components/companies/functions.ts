@@ -36,6 +36,9 @@ import {
   TRACK_KIND_COMPANY, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES, URL_CO_TRANSLATE,
   URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
+  SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
+  STAGE_OFF, STAGE_ORDER,
+  STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -50,6 +53,7 @@ import type {
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
   UntitledIn, ZhLineClsIn, ZhShownIn,
+  OpenSiteIn, ShownStageIn, SitePanel, SitePanelIn, SiteShownIn, SiteStageJson, SiteStep, SiteStepsIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1090,7 +1094,7 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       const fact = briefFactOf(j)
       x.setFact(fact)
       x.setLoading(false)
-      if (fact == null && human === false) {
+      if (fact == null && human === false && x.storedOnly === false) {
         for (const ev of HUMAN_EVENTS) {
           window.addEventListener(ev, askAgain, { once: true, passive: true })
         }
@@ -1129,9 +1133,220 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
     fetch(URL_CO_INFO, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: humanMarkOf(human) },
-      body: JSON.stringify({ name: x.company }),
+      body: JSON.stringify({ name: x.company, storedOnly: x.storedOnly }),
     }).then(read).then(land).catch(fall)
   }
+}
+
+/**
+ * 官网那条工种:公司卡被真人点开报一声,简介区是空的就接着隔一会儿问一次进度(2026-09-20 Frank「就是 AI 探索的时候,显示 抓取官网,
+ * 然后才是生成内容 和 翻译」;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。这一页还没有过真人动作的先等第一个动作再报
+ * (无头爬虫永远不报,队列不被灌);池里没有这家 / 接口挂了 / 一直排队中(工人不在线)/ 问满次数 → 记成「不再等」,简介走现查兜底。
+ *
+ * @param x 公司名、要不要等结果与面板落格。
+ * @returns effect 里调用的函数(带取消标记)。
+ */
+export function makeOpenSite(x: OpenSiteIn): LoadFn {
+  return function openSite(flag: DeadFlag): void {
+    let polls = 0
+    function read(r: Response): Promise<SiteStageJson | null> {
+      if (r.ok && r.status === HTTP_OK) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function fall(): void {
+      if (flag.dead === false) {
+        x.setSite(sitePanelOf({ json: null, off: true }))
+      }
+    }
+    function ask(): void {
+      if (flag.dead) {
+        return
+      }
+      polls += 1
+      fetch(URL_CO_STAGE, {
+        method: METHOD_POST, headers: { [HDR_CONTENT_TYPE]: MIME_JSON }, body: JSON.stringify({ name: x.name }),
+      }).then(read).then(land).catch(fall)
+    }
+    function land(j: SiteStageJson | null): void {
+      if (flag.dead) {
+        return
+      }
+      const site = sitePanelOf({ json: j, off: false })
+      const stuck = site.stage === STAGE_QUEUED && polls >= SITE_QUEUED_POLLS_MAX
+      if (isSiteActive(site.stage) && (stuck || polls >= SITE_POLLS_MAX)) {
+        x.setSite(sitePanelOf({ json: j, off: true }))
+        return
+      }
+      x.setSite(site)
+      if (x.wait && isSiteActive(site.stage)) {
+        window.setTimeout(ask, SITE_POLL_MS)
+      }
+    }
+    function send(): void {
+      for (const ev of HUMAN_EVENTS) {
+        window.removeEventListener(ev, send)
+      }
+      if (flag.dead) {
+        return
+      }
+      fetch(URL_CO_OPEN, {
+        method: METHOD_POST,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: HUMAN_YES },
+        body: JSON.stringify({ name: x.name }),
+      }).then(read).then(land).catch(fall)
+    }
+    if (humanActiveOf()) {
+      send()
+      return
+    }
+    for (const ev of HUMAN_EVENTS) {
+      window.addEventListener(ev, send, { once: true, passive: true })
+    }
+  }
+}
+
+/**
+ * 进度接口的响应 → 面板;没回来 / stage 是空的(池里没有这家)/ 强制不再等 → stage 记 off,其余格照回来的。
+ *
+ * @param x 原始形状与强制标记。
+ * @returns 面板。
+ */
+export function sitePanelOf(x: SitePanelIn): SitePanel {
+  const out: SitePanel = { stage: STAGE_OFF, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE }
+  if (x.json == null) {
+    return out
+  }
+  if (typeof x.json.website === 'string') {
+    out.website = x.json.website
+  }
+  if (typeof x.json.hq === 'string') {
+    out.hq = x.json.hq
+  }
+  if (typeof x.json.hqSource === 'string') {
+    out.hqSource = x.json.hqSource
+  }
+  if (x.off === false && typeof x.json.stage === 'string' && x.json.stage !== TEXT_NONE) {
+    out.stage = x.json.stage
+  }
+  return out
+}
+
+/**
+ * 这一步是不是还在办(卡上出进度行、钩子继续问)。
+ *
+ * @param stage 办到哪一步。
+ * @returns 还在办 = true。
+ */
+export function isSiteActive(stage: string): boolean {
+  return STAGES_ACTIVE.includes(stage)
+}
+
+/**
+ * 卡上显示的那一步:队列里还在办的照队列;简介到了、中 / 韩译文还在途 = 翻译;其余 = 没有进度行('')。
+ *
+ * @param x 队列里的步、简介到了没、译文在途没。
+ * @returns 显示的步;'' = 不出进度行。
+ */
+export function shownStageOf(x: ShownStageIn): string {
+  if (x.hasFact === false) {
+    if (isSiteActive(x.stage)) {
+      return x.stage
+    }
+    return TEXT_NONE
+  }
+  if (x.transWait && x.stage === STAGE_DONE) {
+    return STAGE_TRANS
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 进度行的步骤:排队中只出一步;其余按序(本来没官网的多「查找官网」,中 / 韩界面多「翻译」),当前步之前的算做完。
+ *
+ * @param x 显示的步、有没有官网与界面语言。
+ * @returns 步骤清单。
+ */
+export function siteStepsOf(x: SiteStepsIn): SiteStep[] {
+  if (x.stage === STAGE_QUEUED) {
+    return [{ key: STAGE_QUEUED, label: STAGE_LABEL.queued, state: STEP_NOW }]
+  }
+  const out: SiteStep[] = []
+  let state = STEP_DONE
+  for (const key of STAGE_ORDER) {
+    if (key === STAGE_FIND && x.hasSite && x.stage !== STAGE_FIND) {
+      continue
+    }
+    if (key === STAGE_TRANS && (x.lang == null || x.lang === LANG_EN)) {
+      continue
+    }
+    if (key === x.stage) {
+      out.push({ key, label: stageLabelOf(key), state: STEP_NOW })
+      state = STEP_WAIT
+      continue
+    }
+    out.push({ key, label: stageLabelOf(key), state })
+  }
+  return out
+}
+
+/**
+ * 步骤键 → 词条键。
+ *
+ * @param key 步骤键。
+ * @returns 词条键。
+ */
+function stageLabelOf(key: string): string {
+  if (key === STAGE_FIND) {
+    return STAGE_LABEL.find
+  }
+  if (key === STAGE_FETCH) {
+    return STAGE_LABEL.fetch
+  }
+  if (key === STAGE_FACTS) {
+    return STAGE_LABEL.facts
+  }
+  return STAGE_LABEL.trans
+}
+
+/**
+ * 卡上「官网」行的值:工人这回找到 / 纠对的优先,没有用公司档案里的。
+ *
+ * @param x 公司档案与面板。
+ * @returns 官网;'' = 没有。
+ */
+export function siteWebsiteOf(x: SiteShownIn): string {
+  if (x.site.website !== TEXT_NONE) {
+    return x.site.website
+  }
+  return x.company.website
+}
+
+/**
+ * 卡上「总部」行的字:工人这回整理出来的真总部优先,没有照旧(hqOf)。
+ *
+ * @param x 公司档案、面板、取词函数与界面语言。
+ * @returns 总部一行字。
+ */
+export function siteHqOf(x: SiteShownIn): string {
+  if (x.site.hq !== TEXT_NONE) {
+    return x.site.hq
+  }
+  return hqOf({ t: x.t, lang: x.lang, company: x.company })
+}
+
+/**
+ * 卡上「总部」行点开的出处:工人这回整理出来的真总部带它自己的出处,没有照旧(hqHrefOf)。
+ *
+ * @param x 公司档案与面板。
+ * @returns 出处网址;'' = 不成链。
+ */
+export function siteHqHrefOf(x: SiteShownIn): string {
+  if (x.site.hq !== TEXT_NONE) {
+    return x.site.hqSource
+  }
+  return hqHrefOf({ company: x.company })
 }
 
 /**

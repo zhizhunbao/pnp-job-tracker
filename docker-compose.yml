@@ -178,6 +178,19 @@ services:
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
 
+  findsite:                        # 点开优先的查找官网(2026-09-20;company 域第二役):被真人点开过、没官网 / 官网已死 / 官网名字对不上的公司,帖内线索 → Wikidata → Bing → DDG(有头浏览器);Google 那一档只在本机跑(python etl/company/main.py --only findsite,FINDSITE_GOOGLE=1),本机开着时本容器让活
+    <<: *etl
+    build:
+      context: .
+      dockerfile: etl/crawl/Dockerfile
+    environment:
+      SOURCE: findsite
+      BROWSER_COOKIES: findsite-cookies.json      # 自己一只空 cookie 罐 = 自己一个干净的有头浏览器(持久 profile 同一时刻只许一个进程开)
+      HEALTHCHECK_PING_FINDSITE: ${HEALTHCHECK_PING_FINDSITE:-}   # 未配 = ping_health 自然跳过
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根(取活 / 交活的接口在同一个站)
+      SEED_TOKEN: ${SEED_TOKEN:-}                 # 取活 / 交活的钥匙(与上传 mart 同一把);空=本役跳过
+      TZ: EST5EDT
+
   # Algonquin HireAC 校内岗位板(2026-09-15 进容器,Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):
   # 登录墙是学院微软单点登录;共享 profile 里的 cookie 是 Windows Chrome 加密的,容器解不开 —— Frank 本机 Chrome 登录后
   # 跑 `BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export` 导出明文 cookie 到 etl/crawl/.browser-profile/(gitignore),
@@ -250,6 +263,21 @@ services:
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       SITES_FETCH_LIMIT: ${SITES_FETCH_LIMIT:-200}  # 每轮抓多少家官网(一家 3 页走有头浏览器,实测约 40 秒一家:200 家 ≈ 两小时多,一轮接一轮连着跑)
       SITES_FACTS_LIMIT: ${SITES_FACTS_LIMIT:-200}  # 每轮整理多少家(盒子一家 4~11 秒)
+      TZ: EST5EDT
+
+  visit:                           # 点开优先(2026-09-20;sites 域第二役):被真人点开过的公司插队抓官网 → 整理总部 / 简介 → 交活直接上页面,每步把进度写回队列表(公司卡 15 秒来问一次);设计稿 docs/design/点开优先抓取与纠错-20260920.md
+    <<: *etl
+    build:
+      context: .
+      dockerfile: etl/crawl/Dockerfile
+    environment:
+      SOURCE: visit
+      BROWSER_COOKIES: visit-cookies.json         # 自己一只空 cookie 罐 = 自己一个干净的有头浏览器,不和 sites 例行轮抢同一个标签页
+      HEALTHCHECK_PING_VISIT: ${HEALTHCHECK_PING_VISIT:-}   # 未配 = ping_health 自然跳过
+      NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama;空=只抓不整理(进度停在「整理内容」)
+      NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根(取活 / 交活的接口在同一个站)
+      SEED_TOKEN: ${SEED_TOKEN:-}                 # 取活 / 交活的钥匙(与上传 mart 同一把);空=本役跳过
       TZ: EST5EDT
 
   jdformat:                        # 岗位正文 → 五节整理版预生成(2026-09-15 立域;局域网 qwen,只刷 processed/jdformat/,build 角色汇装灌库)

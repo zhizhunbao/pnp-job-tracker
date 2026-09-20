@@ -770,3 +770,123 @@ export const TITLES_KEY_SEP = '\u0001'
  * 官网简介懒翻接口(2026-09-14)。
  */
 export const URL_CO_DESC = '/api/employers/desc'
+
+/**
+ * 官网那条工种入队接口:公司卡被真人点开报一声(2026-09-20;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
+ */
+export const URL_CO_OPEN = '/api/employers/explore/open'
+
+/**
+ * 官网那条工种进度接口:公司卡隔一会儿来问一次办到哪一步。
+ */
+export const URL_CO_STAGE = '/api/employers/explore/stage'
+
+/**
+ * 进度:排队中(家里的工人还没取到这一家)。
+ */
+export const STAGE_QUEUED = 'queued'
+
+/**
+ * 进度:查找官网。
+ */
+export const STAGE_FIND = 'find'
+
+/**
+ * 进度:抓取官网。
+ */
+export const STAGE_FETCH = 'fetch'
+
+/**
+ * 进度:整理内容。
+ */
+export const STAGE_FACTS = 'facts'
+
+/**
+ * 进度:翻译(不是队列表里的值 —— 简介到了、中 / 韩译文还在途时卡上自己算出来的一步)。
+ */
+export const STAGE_TRANS = 'trans'
+
+/**
+ * 进度:办完。
+ */
+export const STAGE_DONE = 'done'
+
+/**
+ * 进度:不再等(池里没有这家 / 工人不在线 / 问了太久);简介走现查兜底。
+ */
+export const STAGE_OFF = 'off'
+
+/**
+ * 还在办的那几步(卡上出进度行、钩子继续问)。
+ */
+export const STAGES_ACTIVE = [STAGE_QUEUED, STAGE_FIND, STAGE_FETCH, STAGE_FACTS]
+
+/**
+ * 进度行的步骤序(查找官网只在本来没官网的公司出;翻译只在中 / 韩界面出)。
+ */
+export const STAGE_ORDER = [STAGE_FIND, STAGE_FETCH, STAGE_FACTS, STAGE_TRANS]
+
+/**
+ * 步骤 → 词条键。
+ */
+export const STAGE_LABEL = {
+  /**
+   * 排队中。
+   */
+  queued: 'co.stage.queued',
+
+  /**
+   * 查找官网。
+   */
+  find: 'co.stage.find',
+
+  /**
+   * 抓取官网。
+   */
+  fetch: 'co.stage.fetch',
+
+  /**
+   * 整理内容。
+   */
+  facts: 'co.stage.facts',
+
+  /**
+   * 翻译。
+   */
+  trans: 'co.stage.trans',
+} as const
+
+/**
+ * 步骤态:做完。
+ */
+export const STEP_DONE = 'done'
+
+/**
+ * 步骤态:正在做。
+ */
+export const STEP_NOW = 'now'
+
+/**
+ * 步骤态:还没到。
+ */
+export const STEP_WAIT = 'wait'
+
+/**
+ * 做完的步骤前的记号。
+ */
+export const STEP_CHECK = '✓'
+
+/**
+ * 进度多久问一次(工人一分钟一轮,一步十几秒到一分钟)。
+ */
+export const SITE_POLL_MS = 15000
+
+/**
+ * 进度最多问几次(15 秒一次 = 5 分钟;到了还没办完就不等了,简介走现查兜底)。
+ */
+export const SITE_POLLS_MAX = 20
+
+/**
+ * 一直停在排队中最多问几次(= 2 分钟;工人不在线 —— Frank 合盖出门 —— 不干等)。
+ */
+export const SITE_QUEUED_POLLS_MAX = 8

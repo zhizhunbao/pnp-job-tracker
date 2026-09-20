@@ -53,9 +53,9 @@ class HttpClientLike(Protocol):
     装配点用 typing.cast 喂真客户端(断言只住装配点,cms 同律)。
     """
 
-    def get(self, url: str, *, params: dict | None = None,
+    def get(self, url: str, *, params: dict | None = None, headers: dict | None = None,
             timeout: float | None = None) -> HttpResponseLike:
-        """GET 一个 URL;params/timeout 按需传。"""
+        """GET 一个 URL;params/headers/timeout 按需传(headers 2026-09-20 加:findsite 步向 cms 取活要带钥匙)。"""
         ...
 
     def post(self, url: str, *, json: dict | None = None,
@@ -369,6 +369,13 @@ class EnrichRecord(BaseModel):
 
     fetched: str = ""
     """本记录产出时刻(ISO,UTC)。"""
+
+    hot_checked: str = ""
+    """点开触发的查找官网上次跑的时刻(ISO;2026-09-20);空=没跑过;HOT_RETRY_DAYS 内不再找。"""
+
+    replaces: str = ""
+    """这条官网顶掉的旧官网主机名(旧的是死站 / 名字对不上的别家站;2026-09-20 自动纠错)。
+    mart 汇装见来源侧官网的主机名等于它,就拿本记录的官网盖(平时富化只填空、来源侧已有的不覆盖)。"""
 
     description: str = ""
     """官网简介。"""
@@ -1574,3 +1581,94 @@ class ClaimIn:
 
     prop: str
     """要读的属性编号(值是条目的那类属性)。"""
+
+
+@dataclass
+class FindTodo:
+    """点开优先的一条找官网待办(cms 取活接口给的)。"""
+
+    key: str
+    """池主键(交活用)。"""
+
+    slug: str
+    """公司 slug。"""
+
+    name: str
+    """公司名。"""
+
+    website: str
+    """现在的官网(死站 / 名字对不上的那个);没官网 = 空串。"""
+
+    province: str
+    """主省(搜索词带它)。"""
+
+
+@dataclass
+class CmsCallIn:
+    """打 cms 接口的入参。"""
+
+    client: HttpClientLike
+    """HTTP 客户端。"""
+
+    base: str
+    """cms 站点根。"""
+
+    headers: dict
+    """带钥匙的请求头。"""
+
+    payload: dict
+    """取活 = 查询参数;交活 = 请求体。"""
+
+
+@dataclass
+class FindOneIn:
+    """findsite_one() 入参。"""
+
+    client: HttpClientLike
+    """HTTP 客户端(打 cms / Wikidata / 护栏取首页)。"""
+
+    base: str
+    """cms 站点根。"""
+
+    headers: dict
+    """带钥匙的请求头。"""
+
+    todo: FindTodo
+    """这一家。"""
+
+    google: bool
+    """走不走 Google 那一档(只在本机)。"""
+
+
+@dataclass
+class HotSiteOut:
+    """hot_site_of() 出参。"""
+
+    site: str
+    """找到的官网;没找到 = 空串。"""
+
+    found: str
+    """来路(jd / wikidata / google / bing / ddg);没找到 = 空串。"""
+
+
+@dataclass
+class EngineIn:
+    """engine_links() 入参。"""
+
+    engine: str
+    """搜索引擎(FOUND_GOOGLE / FOUND_BING / FOUND_DDG)。"""
+
+    query: str
+    """搜索词。"""
+
+
+@dataclass
+class OtherLinksIn:
+    """other_links_of() 入参。"""
+
+    links: list
+    """候选链接。"""
+
+    old: str
+    """要避开的旧官网主机名;没有 = 空串。"""
+

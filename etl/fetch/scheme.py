@@ -80,3 +80,14 @@ class SectionIn:
 
     stop_names: tuple[str, ...]
     """遇到即停的同级标题标签名。"""
+
+
+@dataclass
+class CmsCfg:
+    """cms 接线(cms_config() 出参):数据层不直连生产库,取活 / 交活走带钥匙的 cms 接口。"""
+
+    base: str
+    """站点根(scheme://host);没配 = 空串。"""
+
+    headers: dict
+    """带钥匙的请求头;没配 = 空表。"""

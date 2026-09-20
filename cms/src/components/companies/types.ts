@@ -1001,6 +1001,16 @@ export type CompanyAiSectionIn = {
    * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
+
+  /**
+   * 官网那条工种办到哪一步(2026-09-20;还在办时简介位出进度行、不联网现查);可省 = 不在这条工种里。
+   */
+  stage?: string
+
+  /**
+   * 公司档案里本来就有官网(进度行少一步「查找官网」);可省 = 没有。
+   */
+  hasSite?: boolean
 }
 
 /**
@@ -1679,6 +1689,11 @@ export type LoadBriefIn = {
    * 加载态落格。
    */
   setLoading: SetLoadingFn
+
+  /**
+   * 只查库不现查(官网那条工种还在办 / 还没报上去);false = 照旧(真人动作才现查)。
+   */
+  storedOnly: boolean
 }
 
 /**
@@ -1754,6 +1769,11 @@ export type CompanyAiHookIn = {
    * 界面语言;null = 不懒翻。
    */
   lang: CompaniesLang | null
+
+  /**
+   * 官网那条工种办到哪一步;'' = 还没报上去。
+   */
+  stage: string
 }
 
 /**
@@ -1895,6 +1915,11 @@ export type CompanyIntroIn = {
    * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
+
+  /**
+   * 官网那条工种办到哪一步(2026-09-20);可省 = 不在这条工种里。
+   */
+  stage?: string
 }
 
 /**
@@ -2497,4 +2522,219 @@ export type PanelBody = {
    * 公司页 slug。
    */
   slug: string | null
+}
+
+/**
+ * 官网那条工种在公司卡上的面板:办到哪一步 + 办完那一拍补上来的官网与总部(2026-09-20)。
+ */
+export type SitePanel = {
+  /**
+   * 办到哪一步;'' = 还没报上去 / 没有真人动作。
+   */
+  stage: string
+
+  /**
+   * 工人找到 / 纠对的官网;'' = 没有,用公司档案里的。
+   */
+  website: string
+
+  /**
+   * 工人整理出来的真总部一行字;'' = 没有,用公司档案里的。
+   */
+  hq: string
+
+  /**
+   * 真总部的出处网址;'' = 没有。
+   */
+  hqSource: string
+}
+
+/**
+ * 进度接口回来的原始形状(归一前:线上可能少键)。
+ */
+export type SiteStageJson = {
+  /**
+   * 办到哪一步。
+   */
+  stage: string | null
+
+  /**
+   * 官网。
+   */
+  website: string | null
+
+  /**
+   * 真总部一行字。
+   */
+  hq: string | null
+
+  /**
+   * 真总部的出处网址。
+   */
+  hqSource: string | null
+}
+
+/**
+ * 面板的落格。
+ */
+export type SetSiteFn = (v: SitePanel) => void
+
+/**
+ * makeOpenSite 的入参。
+ */
+export type OpenSiteIn = {
+  /**
+   * 公司名。
+   */
+  name: string
+
+  /**
+   * 卡上简介区是空的(要等结果)= true:入队后接着问进度;false = 只报一声点开,后台照样插队刷新。
+   */
+  wait: boolean
+
+  /**
+   * 面板落格。
+   */
+  setSite: SetSiteFn
+}
+
+/**
+ * useCompanySite 的入参。
+ */
+export type CompanySiteHookIn = {
+  /**
+   * 公司名(换了公司要重报)。
+   */
+  name: string
+
+  /**
+   * 卡上简介区是空的(要等结果)。
+   */
+  wait: boolean
+}
+
+/**
+ * sitePanelOf 的入参。
+ */
+export type SitePanelIn = {
+  /**
+   * 进度接口回来的原始形状;null = 没回来。
+   */
+  json: SiteStageJson | null
+
+  /**
+   * 强制记成「不再等」。
+   */
+  off: boolean
+}
+
+/**
+ * 进度行的一步。
+ */
+export type SiteStep = {
+  /**
+   * 步骤键。
+   */
+  key: string
+
+  /**
+   * 词条键。
+   */
+  label: string
+
+  /**
+   * 步骤态:done / now / wait。
+   */
+  state: string
+}
+
+/**
+ * siteStepsOf 的入参。
+ */
+export type SiteStepsIn = {
+  /**
+   * 办到哪一步(含卡上自己算的 trans)。
+   */
+  stage: string
+
+  /**
+   * 公司档案里本来就有官网(没有的多一步「查找官网」)。
+   */
+  hasSite: boolean
+
+  /**
+   * 界面语言(英文界面没有「翻译」一步)。
+   */
+  lang: CompaniesLang | null
+}
+
+/**
+ * shownStageOf 的入参。
+ */
+export type ShownStageIn = {
+  /**
+   * 队列里办到哪一步。
+   */
+  stage: string
+
+  /**
+   * 简介到了没。
+   */
+  hasFact: boolean
+
+  /**
+   * 中 / 韩译文还在途。
+   */
+  transWait: boolean
+}
+
+/**
+ * CompanySteps(进度行)的 props。
+ */
+export type CompanyStepsIn = {
+  /**
+   * 办到哪一步。
+   */
+  stage: string
+
+  /**
+   * 公司档案里本来就有官网。
+   */
+  hasSite: boolean
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang | null
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * siteWebsiteOf / siteHqOf / siteHqHrefOf 的入参。
+ */
+export type SiteShownIn = {
+  /**
+   * 公司档案。
+   */
+  company: CompanyDetail
+
+  /**
+   * 官网那条工种的面板。
+   */
+  site: SitePanel
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
 }

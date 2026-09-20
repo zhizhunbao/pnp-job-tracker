@@ -183,6 +183,7 @@ from mart.constants import (
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
 from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
+from mart.constants import IN_SITE_PAGES, K_REPLACES, K_SITE_HOST, SITE_PAGES_DEAD
 from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
 from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
@@ -1052,6 +1053,17 @@ def load_careers() -> dict:
     return out
 
 
+def load_dead_sites() -> dict:
+    """死站表:slug → 官网主机名(sites 域抓取记录里 status = dead 的;缺文件 = 空表)。"""
+    out: dict = {}
+    if not IN_SITE_PAGES.exists():
+        return out
+    for slug, c in read_table(IN_SITE_PAGES).items():
+        if c.get(K_STATUS) == SITE_PAGES_DEAD and c.get(K_SITE_HOST):
+            out[slug] = c[K_SITE_HOST]
+    return out
+
+
 def load_site_facts() -> dict:
     """公司官网整理记录:slug → 记录(只取 ok 且过了官网归属闸的;缺文件 = 空表,sites 域没跑过也照常汇装)。"""
     out: dict = {}
@@ -1122,6 +1134,7 @@ def add_company(x: CompanyExtraIn) -> None:
     if x.slug in x.ctx.companies:
         return
     en = x.ctx.enrich.get(x.slug, {})
+    fix_site(x)
     for k in ENRICH_KEYS:
         if x.extra.get(k) or not en.get(k):
             continue
@@ -1143,6 +1156,29 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_hq(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
+
+
+def fix_site(x: CompanyExtraIn) -> None:
+    """官网自动纠错(2026-09-20;富化平时只填空、来源侧已有的不覆盖,这两条是例外):
+    ① 来源侧官网的主机名 = 富化缓存记的「被顶掉的旧官网」(死站 / 名字对不上的别家站,company 域 findsite 步找到了新的)→ 摘掉,让下面的富化填新的;
+    ② 来源侧官网的主机名 = sites 域记的死站 → 摘掉(新的还没找到就空着,阶梯会重找)。归属闸没过但没找到替代的官网不动。"""
+    host = site_host_of(x.extra.get(K_WEBSITE))
+    if host == "":
+        return
+    en = x.ctx.enrich.get(x.slug, {})
+    if host == en.get(K_REPLACES) or host == x.ctx.dead_sites.get(x.slug):
+        x.extra.pop(K_WEBSITE, None)
+        x.extra.pop(K_WEBSITE_SOURCE, None)
+
+
+def site_host_of(url: object) -> str:
+    """网址 → 主机名(小写、去 www.);不是字符串 / 空的给空串。"""
+    if not isinstance(url, str) or url == "":
+        return ""
+    host = urlparse(url).netloc.lower()
+    if host.startswith(HOST_WWW_PREFIX):
+        host = host[len(HOST_WWW_PREFIX):]
+    return host
 
 
 def fill_places(x: CompanyExtraIn) -> None:
@@ -3605,7 +3641,7 @@ def new_mart_ctx() -> MartCtx:
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), careers=load_careers(),
-                   briefs=load_briefs(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
+                   briefs=load_briefs(), dead_sites=load_dead_sites(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),

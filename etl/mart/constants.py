@@ -837,6 +837,19 @@ NAME_FLAT_REPL = ""
 CAREERS_STATUS_OK = "200"
 """招聘页探测通过的状态码(清单里全国件存成字符串、Kanata 件存成数字,比较前一律转串)。"""
 
+IN_SITE_PAGES = paths.PROCESSED_SITES / "pages.json"
+"""公司官网抓取记录(sites 域 fetch / visit 步产,slug → 抓取状态 + 官网主机名;2026-09-20 自动纠错:status = dead 的是死站 ——
+域名连续两轮不解析,公司行的官网格清空,company 域找官网阶梯重找。设计稿 docs/design/点开优先抓取与纠错-20260920.md)。缺文件 = 空表。"""
+
+SITE_PAGES_DEAD = "dead"
+"""sites 域抓取记录的死站状态。"""
+
+K_SITE_HOST = "host"
+"""sites 域抓取记录键:官网主机名(去 www.)。"""
+
+K_REPLACES = "replaces"
+"""官网富化缓存键:这条官网顶掉的旧官网主机名(company 域 findsite 步记;旧的是死站 / 名字对不上的别家站)。"""
+
 IN_SITE_FACTS = paths.PROCESSED_SITES / "facts.json"
 """公司官网整理记录(sites 域 facts 步产,slug → 七节的值 + 每节过了核对的页面原句 + 出处网址;2026-09-20 进库批:
 Frank 定的判据「凡是给用户看的公司事实,必须能指回一句官网原文」,设计稿 docs/design/公司官网定期抓取-20260919.md)。缺文件 = 空表。"""

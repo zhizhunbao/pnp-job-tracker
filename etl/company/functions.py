@@ -15,6 +15,8 @@ wire 词(头名/查询参数/属性名)用 constants 的 HDR_/P_ 词族;文案�
 依赖单边:本文件 → constants/scheme + 基础设施叶子(paths)。
 """
 import asyncio
+import base64
+import functools
 import html as html_lib
 import json
 import os
@@ -26,19 +28,27 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import cast
-from urllib.parse import parse_qs, unquote, urljoin, urlparse
+from urllib.parse import parse_qs, quote_plus, unquote, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from crawl.functions import (browser_live, browser_ok, close_browser, fetch_browser_html, get_cached_page,
+from crawl.functions import (browser_live, browser_ok, close_browser, ensure_cookie_jar, fetch_browser_html, get_browser_page,
+                             get_cached_page,
                              is_challenge_html, put_cached_page)
 from crawl.constants import HTML_CACHE_DIR, K_HTML, K_PAGES, K_URL, MANIFEST_FILE
 from crawl.functions import discover_urls
-from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
-from fetch.functions import make_client, make_polite_client
+from crawl.scheme import CachePutIn, DiscoverIn, PageLike, SeedSpec
+from fetch.functions import cms_config, make_client, make_polite_client
 from company.constants import (
+    B64_BLOCK, B64_PAD, BEAT_FRESH_S, BING_REDIRECT_PARAM, BING_REDIRECT_PATH, BING_REDIRECT_PREFIX, BING_SEARCH_URL, DDG_BROWSER_URL,
+    ENV_FINDSITE_GOOGLE, IN_SEEN, K_SEEN_LAST, K_SEEN_OPENED, FINDSITE_GOOGLE_ON, FINDSITE_HTTP_TIMEOUT_S, FINDSITE_TAKE, FOUND_BING, FOUND_DDG, FOUND_GOOGLE, GOOGLE_POLL_MS,
+    GOOGLE_SEARCH_URL, GOOGLE_SORRY_MARK, GOOGLE_WAIT_S, HOT_RETRY_DAYS, IN_SITE_PAGES, JS_BING_LINKS, JS_DDG_LINKS, JS_GOOGLE_LINKS,
+    JS_PAGE_URL, K_BEAT_AT, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_SOURCE, K_DONE_NOTE, K_DONE_REPLACED,
+    K_DONE_STAGE, K_HOST, K_TODO_KEY, K_TODO_NAME, K_TODO_PROVINCE, K_TODO_SLUG, K_TODO_WEBSITE, K_TODOS, KIND_FIND, MS_PER_S,
+    NOTE_CHECKED_TODAY, NOTE_CMS_HTTP_TPL, NOTE_HOST_BEATING, NOTE_NO_CMS, OUT_FINDSITE_BEAT, P_KIND, P_TAKE_LIMIT, PATH_SITE_DONE,
+    HOT_JD_GLOB_TPL, PATH_SITE_TODO, PRINT_FINDSITE_ROW_TPL, PRINT_FINDSITE_TAKE_TPL, SEARCH_CRAWL_SLUG_TPL, ST_DEAD, STAGE_FETCH, STAGE_FIND, STAGE_NONE,
     PROP_INSTANCE_OF, WD_BUILDING_TYPES, WD_ORG_TYPES,
     IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, NAME_COUNTRY_RE, NAME_LEAD_THE_RE, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
@@ -105,6 +115,7 @@ from company.constants import (
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
 )
 from company.scheme import (
+    CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn,
     ClaimIn, HqPlace, PickWikiHqIn, WikiHqQuery, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
     EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
@@ -637,14 +648,34 @@ def jd_domain_hints() -> dict[str, set[str]]:
         except Exception as e:  # noqa: BLE001, S112
             err(p, e)
             continue
-        doms: set[str] = set()
-        for d in EMAIL_DOMAIN_RE.findall(body) + URL_DOMAIN_RE.findall(body):
-            dom = domain_of(d)
-            if dom and not is_blocked_domain(dom):
-                doms.add(dom)
+        doms = jd_body_domains(body)
         if doms:
             hints.setdefault(slugify(lead.employer), set()).update(doms)
     return hints
+
+
+def jd_body_domains(body: str) -> set[str]:
+    """一篇 JD 正文里的邮箱 / 链接域名(归一、剔聚合站与通用邮箱域)。jd_domain_hints 与 hot_jd_hints 共用(行为只许一份)。"""
+    doms: set[str] = set()
+    for d in EMAIL_DOMAIN_RE.findall(body) + URL_DOMAIN_RE.findall(body):
+        dom = domain_of(d)
+        if dom and not is_blocked_domain(dom):
+            doms.add(dom)
+    return doms
+
+
+def hot_jd_hints(slug: str) -> set[str]:
+    """一家公司的帖内线索(点开优先用;2026-09-20):JD 文件名 = 「雇主 slug_岗位 slug.md」,按名直取这家的几篇,
+    不走 jd_domain_hints 那条全量路(16 万篇逐篇读头,要几分钟,用户在卡上等着)。"""
+    doms: set[str] = set()
+    if not IN_ENRICH_JD_DETAILS.exists():
+        return doms
+    for p in IN_ENRICH_JD_DETAILS.glob(HOT_JD_GLOB_TPL.format(slug=slug)):
+        try:
+            doms.update(jd_body_domains(p.read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)))
+        except OSError as e:
+            err(p, e)
+    return doms
 
 
 def find_site(x: FindSiteIn) -> SearchOut:
@@ -815,13 +846,43 @@ def should_skip_find(x: SkipFindIn) -> bool:
     c = x.cache.get(x.slug)
     if c is None:
         return False
+    if c.website and domain_of(c.website) in dead_site_hosts():
+        return False
     return bool(c.website or days_since(c.fetched) <= RETRY_NOSITE_DAYS)
+
+
+@functools.cache
+def seen_stamps() -> dict:
+    """explore 域落的「被用户看过的公司」清单 → slug → 最近被看过的时刻(epoch 秒;点开优先于列出)。
+    一个进程读一次;缺文件 / 时刻不成形的不进表(= 没人看过,照旧排)。"""
+    out: dict = {}
+    for slug, rec in read_json_or_empty(IN_SEEN).items():
+        if not isinstance(rec, dict):
+            continue
+        iso = str(rec.get(K_SEEN_OPENED) or rec.get(K_SEEN_LAST) or "")
+        try:
+            out[slug] = datetime.fromisoformat(iso).timestamp()
+        except ValueError:
+            continue
+    return out
+
+
+@functools.cache
+def dead_site_hosts() -> frozenset:
+    """sites 域记了死站(域名连续不解析)的官网主机名集(2026-09-20 自动纠错:缓存里的官网等于它的,阶梯当成没官网重找 ——
+    原先见 website 非空就跳过,nouveau.cotech.ca 这类永远换不掉)。一个进程读一次;缺文件 = 空集。"""
+    hosts: set = set()
+    if IN_SITE_PAGES.exists():
+        for rec in json.loads(IN_SITE_PAGES.read_text(encoding=TEXT_ENCODING)).values():
+            if isinstance(rec, dict) and rec.get(K_STATUS) == ST_DEAD and rec.get(K_HOST):
+                hosts.add(domain_of(str(rec[K_HOST])))
+    return frozenset(hosts)
 
 
 def nosite_priority_of(kv: tuple) -> tuple:
     """无官网公司的搜索优先级键:先本大类名次(把脉页各行业表头部先填;老 enrich 步恒 0 退化为只看岗数),
-    再岗多的先搜=价值密度高(lambda 退役)。"""
-    return (kv[1].rank, -kv[1].jobs)
+    再岗多的先搜=价值密度高(lambda 退役)。2026-09-20:被用户看过的排最前(最近看过的更前)。"""
+    return (-seen_stamps().get(kv[0], 0.0), kv[1].rank, -kv[1].jobs)
 
 
 def find_websites(x: FindWebsitesIn) -> FindOut:
@@ -902,7 +963,7 @@ def wiki_skip(rec: EnrichRecord | None) -> bool:
     **不看搜索记的 nosite**(2026-09-09 首轮实撞:Fraser Health 等大户 7 月被 DDG 记了 nosite,Wikidata 明明有却没问)。"""
     if rec is None:
         return False
-    if rec.website != "":
+    if rec.website != "" and domain_of(rec.website) not in dead_site_hosts():
         return True
     return rec.wiki_checked != "" and days_since(rec.wiki_checked) <= RETRY_NOSITE_DAYS
 
@@ -1064,10 +1125,26 @@ def enrich_company_websites() -> None:
                                      out=OUT_ENRICH_CACHE.name))
 
 
+def read_enrich_cache() -> dict[str, EnrichRecord]:
+    """读官网富化缓存(缺文件 = 空表;2026-09-20 findsite 步与落盘前重读并入用)。"""
+    cache: dict[str, EnrichRecord] = {}
+    if OUT_ENRICH_CACHE.exists():
+        for sl, d in json.loads(OUT_ENRICH_CACHE.read_text(encoding=TEXT_ENCODING)).items():
+            cache[sl] = EnrichRecord.model_validate(d)
+    return cache
+
+
 def write_enrich_cache(cache: dict[str, EnrichRecord]) -> int:
     """缓存落盘 OUT_ENRICH_CACHE,返回累计 ok 家数(enrich 与 sites 两步共用的尾巴,
-    2026-09-04 随 sites 步抽出 —— 行为复制不许)。"""
+    2026-09-04 随 sites 步抽出 —— 行为复制不许)。
+
+    2026-09-20 落盘前重读并入:例行链一跑几小时、整本缓存拿在手里,同时 findsite 步(另一个进程)也在写这份文件 ——
+    逐家取时刻更新的那一条(盘上的更新就收进手里的这本),谁也不盖谁。"""
     OUT_ENRICH_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    for sl, disk in read_enrich_cache().items():
+        mine = cache.get(sl)
+        if mine is None or max(disk.fetched, disk.hot_checked) > max(mine.fetched, mine.hot_checked):
+            cache[sl] = disk
     out: dict[str, dict] = {}
     total_ok = 0
     for sl, rec in cache.items():
@@ -2154,8 +2231,8 @@ def wikihq_targets() -> list:
 
 
 def wikihq_order_of(t: WikiHqTarget) -> tuple:
-    """排队键:在招岗多的在前,同数按 slug。"""
-    return (-t.open_jobs, t.slug)
+    """排队键:被用户看过的在前(最近看过的更前;2026-09-20 Frank「按用户点开过的公司优先抓取和纠错」),其后在招岗多的在前,同数按 slug。"""
+    return (-seen_stamps().get(t.slug, 0.0), -t.open_jobs, t.slug)
 
 
 def read_json_or_empty(path: Path) -> dict:
@@ -2190,6 +2267,10 @@ def read_wiki_hq() -> dict[str, WikiHqRecord]:
 def write_wiki_hq(cache: dict[str, WikiHqRecord]) -> int:
     """记录落盘 OUT_WIKI_HQ,返回累计命中家数。"""
     OUT_WIKI_HQ.parent.mkdir(parents=True, exist_ok=True)
+    for slug, disk in read_wiki_hq().items():
+        mine = cache.get(slug)
+        if mine is None or disk.at > mine.at:
+            cache[slug] = disk
     out: dict[str, dict] = {}
     total_ok = 0
     for slug, rec in cache.items():
@@ -2345,3 +2426,228 @@ def place_label_of(place_id: str) -> str:
 def place_entity_params(place_id: str) -> dict:
     """查地点条目那一发 wbgetentities 的查询参数(标签 + 声明,只要英文)。"""
     return {P_ACTION: ACT_GET_ENTITIES, P_IDS: place_id, P_PROPS: WD_HQ_PLACE_PROPS, P_LANGUAGES: LANG_EN}
+
+
+# =========================================================================
+# 11. 点开优先的查找官网(2026-09-20:被真人点开过、没官网 / 官网已死 / 官网名字对不上的公司;手动件 main --only findsite,也是 findsite 役)
+# =========================================================================
+
+
+def find_opened_sites() -> None:
+    """findsite 步入口:asyncio 壳(搜索走 crawl 域有头浏览器)。"""
+    asyncio.run(findsite_round())
+
+
+async def findsite_round() -> None:
+    """findsite 步主体(设计稿 docs/design/点开优先抓取与纠错-20260920.md):向 cms 取找官网的活(最近点开的在前),逐家走阶梯
+    帖内线索 → Wikidata → Google(只在本机)→ Bing → DDG,同时问 Wikidata 要总部;找到 → 进度交给 visit 步抓,找不到 → 办完(查无)。
+
+    本机(FINDSITE_GOOGLE=1)每轮打心跳;容器见心跳还新就整轮让活。没活不起浏览器;收摊在 finally。
+    """
+    cms = cms_config()
+    if cms.base == "":
+        say(NOTE_NO_CMS)
+        return
+    google = os.environ.get(ENV_FINDSITE_GOOGLE, "") == FINDSITE_GOOGLE_ON
+    if google:
+        paths.write_json(paths.WriteJsonIn(path=OUT_FINDSITE_BEAT, payload={K_BEAT_AT: time.time()}, indent=JSON_INDENT))
+    elif host_beating():
+        say(NOTE_HOST_BEATING)
+        return
+    with make_polite_client(timeout=FINDSITE_HTTP_TIMEOUT_S) as raw:
+        client = cast(HttpClientLike, raw)
+        todos = take_find_todos(CmsCallIn(client=client, base=cms.base, headers=cms.headers,
+                                          payload={P_KIND: KIND_FIND, P_TAKE_LIMIT: FINDSITE_TAKE}))
+        say(PRINT_FINDSITE_TAKE_TPL.format(n=len(todos), limit=FINDSITE_TAKE, google=google))
+        if len(todos) == 0:
+            return
+        ensure_cookie_jar()
+        try:
+            for todo in todos:
+                await findsite_one(FindOneIn(client=client, base=cms.base, headers=cms.headers, todo=todo, google=google))
+        finally:
+            await close_browser()
+
+
+def host_beating() -> bool:
+    """本机那一步的心跳还新吗(BEAT_FRESH_S 秒内);没有心跳文件 / 读不成 = 不在。"""
+    if not OUT_FINDSITE_BEAT.exists():
+        return False
+    try:
+        at = float(json.loads(OUT_FINDSITE_BEAT.read_text(encoding=TEXT_ENCODING)).get(K_BEAT_AT, 0))
+    except (ValueError, TypeError) as e:
+        err(OUT_FINDSITE_BEAT, e)
+        return False
+    return time.time() - at <= BEAT_FRESH_S
+
+
+def take_find_todos(x: CmsCallIn) -> list:
+    """取活:GET 待办清单;非 2xx 抛(整轮中止并留痕,由门的 err 接)。键 / slug / 名字缺的行丢掉。"""
+    r = x.client.get(x.base + PATH_SITE_TODO, params=x.payload, headers=x.headers)
+    if not r.is_success:
+        raise RuntimeError(NOTE_CMS_HTTP_TPL.format(status=r.status_code))
+    body = r.json()
+    out: list = []
+    if not isinstance(body, dict) or not isinstance(body.get(K_TODOS), list):
+        return out
+    for row in body[K_TODOS]:
+        if not isinstance(row, dict):
+            continue
+        todo = FindTodo(key=str(row.get(K_TODO_KEY) or ""), slug=str(row.get(K_TODO_SLUG) or ""),
+                        name=str(row.get(K_TODO_NAME) or ""), website=str(row.get(K_TODO_WEBSITE) or ""),
+                        province=str(row.get(K_TODO_PROVINCE) or ""))
+        if todo.key != "" and todo.slug != "" and todo.name != "":
+            out.append(todo)
+    return out
+
+
+def hand_find_stage(x: CmsCallIn) -> None:
+    """交活 / 写回进度:POST 一步;非 2xx 抛。"""
+    r = x.client.post(x.base + PATH_SITE_DONE, json=x.payload, headers=x.headers)
+    if not r.is_success:
+        raise RuntimeError(NOTE_CMS_HTTP_TPL.format(status=r.status_code))
+
+
+async def findsite_one(x: FindOneIn) -> None:
+    """一家:报「查找官网」→ 今天找过的直接用上次结果 → 走阶梯(避开现在那个死的 / 对不上的官网)+ 问 Wikidata 要总部
+    → 记缓存(找到的记 found 给 about 步接着抓;顶掉旧官网的记 replaces 给 mart)→ 交活(找到 = 转给 visit 步,找不到 = 查无)。"""
+    hand_find_stage(CmsCallIn(client=x.client, base=x.base, headers=x.headers,
+                              payload={K_TODO_KEY: x.todo.key, K_DONE_STAGE: STAGE_FIND}))
+    old = domain_of(x.todo.website)
+    cache = read_enrich_cache()
+    rec = cache.get(x.todo.slug)
+    if rec is None:
+        rec = EnrichRecord(name=x.todo.name)
+    got = HotSiteOut(site="", found="")
+    note = NOTE_CHECKED_TODAY
+    if rec.hot_checked == "" or days_since(rec.hot_checked) > HOT_RETRY_DAYS:
+        note = ""
+        got = await hot_site_of(x)
+        rec.hot_checked = now_iso()
+        if got.site != "":
+            rec.website = got.site
+            rec.found = got.found
+            rec.status = ST_FOUND
+            rec.fetched = rec.hot_checked
+            rec.replaces = old
+        cache[x.todo.slug] = rec
+        write_enrich_cache(cache)
+    elif rec.website != "" and domain_of(rec.website) != old:
+        got = HotSiteOut(site=rec.website, found=rec.found)
+    payload: dict = {K_TODO_KEY: x.todo.key, K_DONE_STAGE: STAGE_NONE, K_DONE_NOTE: note}
+    if got.site != "":
+        payload = {K_TODO_KEY: x.todo.key, K_DONE_STAGE: STAGE_FETCH, K_DONE_NOTE: got.found, K_TODO_WEBSITE: got.site,
+                   K_DONE_REPLACED: old != ""}
+    hq = hot_wiki_hq_of(x.todo)
+    if hq is not None:
+        payload[K_DONE_HQ_ADDRESS] = hq.hq_address
+        payload[K_DONE_HQ_CITY] = hq.hq_city
+        payload[K_DONE_HQ_PROVINCE] = hq.hq_province
+        payload[K_DONE_HQ_SOURCE] = hq.hq_source
+    say(PRINT_FINDSITE_ROW_TPL.format(stage=payload[K_DONE_STAGE], name=x.todo.name, site=got.site, note=note or got.found))
+    hand_find_stage(CmsCallIn(client=x.client, base=x.base, headers=x.headers, payload=payload))
+
+
+def hot_wiki_hq_of(todo: FindTodo) -> WikiHqRecord | None:
+    """问 Wikidata 要总部(一家一天一次:今天问过的用上次记录;请求失败不记);命中才给记录,没命中 / 失败 = None。
+    总部是官网那一路的兜底:官网整理出总部后 visit 步会盖上来。"""
+    cache = read_wiki_hq()
+    rec = cache.get(todo.slug)
+    if rec is None or days_since(rec.at) > HOT_RETRY_DAYS:
+        out = wikihq_find(todo.name)
+        if out.failed:
+            return None
+        rec = out.rec
+        cache[todo.slug] = rec
+        write_wiki_hq(cache)
+    if rec.status != ST_OK or rec.hq_city == "":
+        return None
+    return rec
+
+
+async def hot_site_of(x: FindOneIn) -> HotSiteOut:
+    """查找官网阶梯(终版,Frank 2026-09-20):帖内线索 → Wikidata 官网属性 → Google(只在本机,弹验证等 Frank 亲手点)→ Bing → DDG。
+    候选一律避开现在那个官网的主机名、过 site_of_links / guard_match 同一道护栏(域名对得上公司名,剔社交 / 黄页 / 招聘平台)。"""
+    old = domain_of(x.todo.website)
+    for dom in sorted(hot_jd_hints(x.todo.slug)):
+        if dom != old and guard_match(GuardMatchIn(client=x.client, name=x.todo.name, dom=dom)):
+            return HotSiteOut(site=HTTPS_PREFIX + dom, found=FOUND_JD)
+    wiki = wiki_find(WikiFindIn(client=x.client, name=x.todo.name))
+    if wiki.site != "" and domain_of(wiki.site) != old:
+        return HotSiteOut(site=wiki.site, found=FOUND_WIKI)
+    engines = [FOUND_BING, FOUND_DDG]
+    if x.google:
+        engines = [FOUND_GOOGLE, FOUND_BING, FOUND_DDG]
+    query = SEARCH_QUERY_TPL.format(name=x.todo.name, province=x.todo.province)
+    for engine in engines:
+        links = await engine_links(EngineIn(engine=engine, query=query))
+        site = site_of_links(SiteOfLinksIn(client=x.client, name=x.todo.name, links=other_links_of(OtherLinksIn(links=links, old=old))))
+        if site != "":
+            return HotSiteOut(site=site, found=engine)
+    return HotSiteOut(site="", found="")
+
+
+def other_links_of(x: OtherLinksIn) -> list:
+    """候选链接里去掉现在那个官网主机名的(死站 / 名字对不上的那个不许再选回来)。"""
+    out: list = []
+    for link in x.links:
+        if x.old == "" or domain_of(link) != x.old:
+            out.append(link)
+    return out
+
+
+async def engine_links(x: EngineIn) -> list:
+    """有头浏览器开一个搜索引擎的结果页 → 结果链接(解掉各家的跳转);原文进 crawl 层。页面没取回 / Google 验证没人点 = 空表。"""
+    url = BING_SEARCH_URL
+    js = JS_BING_LINKS
+    if x.engine == FOUND_GOOGLE:
+        url = GOOGLE_SEARCH_URL
+        js = JS_GOOGLE_LINKS
+    if x.engine == FOUND_DDG:
+        url = DDG_BROWSER_URL
+        js = JS_DDG_LINKS
+    url = url + quote_plus(x.query)
+    html = await fetch_browser_html(url)
+    page = await get_browser_page()
+    if html is None or page is None:
+        return []
+    if x.engine == FOUND_GOOGLE and not await google_cleared(page):
+        return []
+    put_cached_page(CachePutIn(slug=SEARCH_CRAWL_SLUG_TPL.format(engine=x.engine), url=url, html=await page.content(), title=x.query))
+    links: list = []
+    for href in await page.evaluate(js):
+        links.append(real_link_of(str(href)))
+    return links
+
+
+async def google_cleared(page: PageLike) -> bool:
+    """Google 停在「异常流量」验证页时等 Frank 亲手点(最多 GOOGLE_WAIT_S 秒,隔 GOOGLE_POLL_MS 看一次地址);助手不替过验证。
+    没停在验证页 / 等到放行 = True;到点没人点 = False(这一档放弃,退 Bing)。"""
+    waited_ms = 0
+    while waited_ms <= GOOGLE_WAIT_S * MS_PER_S:
+        got = await page.evaluate(JS_PAGE_URL)
+        if len(got) == 0 or GOOGLE_SORRY_MARK not in str(got[0]):
+            return True
+        await page.wait_for_timeout(GOOGLE_POLL_MS)
+        waited_ms += GOOGLE_POLL_MS
+    return False
+
+
+def real_link_of(href: str) -> str:
+    """搜索结果链接 → 真地址:Bing 的 bing.com/ck/a 跳转(u 参数 = a1 + base64url)与 DDG 的 uddg 参数解开;解不开 / 不是跳转的原样给。"""
+    parsed = urlparse(href)
+    params = parse_qs(parsed.query)
+    if DDG_REDIRECT_PARAM in params:
+        return unquote(params[DDG_REDIRECT_PARAM][0])
+    if BING_REDIRECT_PATH in parsed.path and BING_REDIRECT_PARAM in params:
+        value = params[BING_REDIRECT_PARAM][0]
+        if value.startswith(BING_REDIRECT_PREFIX):
+            body = value[len(BING_REDIRECT_PREFIX):]
+            body = body + B64_PAD * (-len(body) % B64_BLOCK)
+            try:
+                return base64.urlsafe_b64decode(body).decode(TEXT_ENCODING)
+            except (ValueError, UnicodeDecodeError) as e:
+                err(href, e)
+                return href
+    return href
+

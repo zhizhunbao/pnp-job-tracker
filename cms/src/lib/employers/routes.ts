@@ -31,16 +31,18 @@ import {
   FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
   ALIAS_PREFIX, NEWLINE, DESC_KEY_TAIL,
   EXPLORE_KEY_LEN_MAX, EXPLORE_KEYS_MAX, EXPLORE_TAKE_DEFAULT, EXPLORE_TAKE_MAX, P_EXPLORE_LIMIT,
+  P_SITE_KIND, SEEN_TAKE_MAX, SITE_KIND_FIND, SITE_TAKE_DEFAULT, SITE_TAKE_MAX,
 } from './constants'
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
   aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
+  loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody, EmployersRetransBody,
-  ExploreDoneBody, ExploreResultJson, ExploreSeenBody, PoolAliasesBody,
+  ExploreDoneBody, ExploreResultJson, ExploreSeenBody, PoolAliasesBody, SiteDoneJson, SiteOpenBody,
 } from './types'
 
 /**
@@ -175,6 +177,117 @@ export async function employersExploreDoneRoute(req: Request): Promise<Response>
 }
 
 /**
+ * POST /api/employers/explore/open:公司页 / 公司弹框被真人点开 → 官网那条工种入队(2026-09-20 Frank「下一个 session 做
+ *『按用户点开过的公司优先抓取和纠错』的队列」;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。公开端点,**只认带真人标记的**
+ * (HDR_HUMAN;无头爬虫顺站点地图进来的不入队,来由见 HDR_HUMAN 的注);键只认池里真有的。
+ *
+ * @param req 请求体 `{ name }`。
+ * @returns `{ ok, stage }`;没带真人标记 / 池里没有这家 = stage 空串。
+ */
+export async function employersExploreOpenRoute(req: Request): Promise<Response> {
+  let body: SiteOpenBody = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false, stage: NAME_UNSET }, { status: BAD_REQUEST })
+  }
+  let name = NAME_UNSET
+  if (typeof body.name === 'string') {
+    name = body.name.trim()
+  }
+  if (name === NAME_UNSET || name.length > NAME_LEN_MAX) {
+    return Response.json({ ok: false, stage: NAME_UNSET }, { status: BAD_REQUEST })
+  }
+  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES) {
+    return Response.json({ ok: true, stage: NAME_UNSET })
+  }
+  const stage = await openExploreSite({ db: await getDb(), name })
+  return Response.json({ ok: true, stage })
+}
+
+/**
+ * GET /api/employers/explore/seen:被用户看过的公司清单(带 x-seed-token;数据层 explore 域每轮取一次落盘,sites / company 两域的例行轮拿它排队)。
+ *
+ * @param req 请求。
+ * @returns `{ seen: [{ slug, seenCount, lastSeen, openedAt }] }`。
+ */
+export async function employersExploreSeenRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  const seen = await loadExploreSeen({ db: await getDb(), limit: SEEN_TAKE_MAX })
+  return Response.json({ seen })
+}
+
+/**
+ * POST /api/employers/explore/site-done:家里的工人每走一步写回进度,带了官网 / 总部 / 简介的同时写公司表(带 x-seed-token)。
+ *
+ * @param req 请求体 = 线格式的一步(SiteDoneJson)。
+ * @returns `{ ok }`。
+ */
+export async function employersExploreSiteDoneRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  let body: SiteDoneJson = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false }, { status: BAD_REQUEST })
+  }
+  const ok = await saveSiteDone({ db: await getDb(), done: body })
+  return Response.json({ ok })
+}
+
+/**
+ * GET /api/employers/explore/site-todo:家里的工人取活(带 x-seed-token;kind=find 取找官网的活,其余取抓官网的活)。
+ *
+ * @param req 请求(kind=工种,limit=条数)。
+ * @returns `{ todos: [{ key, slug, name, website, province, stage }] }`。
+ */
+export async function employersExploreSiteTodoRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  const sp = new URL(req.url).searchParams
+  let limit = SITE_TAKE_DEFAULT
+  const raw = Number(sp.get(P_EXPLORE_LIMIT))
+  if (Number.isFinite(raw) && raw > 0) {
+    limit = Math.min(Math.floor(raw), SITE_TAKE_MAX)
+  }
+  const todos = await loadSiteTodos({ db: await getDb(), find: sp.get(P_SITE_KIND) === SITE_KIND_FIND, limit })
+  return Response.json({ todos })
+}
+
+/**
+ * POST /api/employers/explore/stage:公司卡问进度(公开只读;办到哪一步 + 公司表现在的官网与总部,办完那一拍卡上直接补)。
+ * 公司名走请求体不走地址栏(雇保姆 / 护工的私人雇主,名字就是人名)。
+ *
+ * @param req 请求体 `{ name }`。
+ * @returns `{ stage, website, hq, hqSource }`;查无 = 四格全空串。
+ */
+export async function employersExploreStageRoute(req: Request): Promise<Response> {
+  let body: SiteOpenBody = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ ok: false }, { status: BAD_REQUEST })
+  }
+  let name = NAME_UNSET
+  if (typeof body.name === 'string') {
+    name = body.name.trim()
+  }
+  if (name === NAME_UNSET || name.length > NAME_LEN_MAX) {
+    return Response.json({ ok: false }, { status: BAD_REQUEST })
+  }
+  const row = await loadSiteStage({ db: await getDb(), name })
+  if (row == null) {
+    return Response.json({ stage: NAME_UNSET, website: NAME_UNSET, hq: NAME_UNSET, hqSource: NAME_UNSET })
+  }
+  return Response.json(row)
+}
+
+/**
  * GET /api/employers/sponsors:把脉页(/start)橱窗四分表(lmia/named/aip/pilot,pilot 2026-09-06 加)全量。
  * #313(LCP 7.15s 真因):三表 16,430 行全量序列化进 /start 的 RSC payload,SSR 文档
  * 6.92MB —— 拆法照 /api/stats/market:SSR 只带每表前 SE_SSR_ROWS 行 + total,
@@ -260,11 +373,13 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
     return new Response(null, { status: NO_CONTENT })
   }
   let name = NAME_UNSET
+  let storedOnly = false
   try {
     const body = await req.json() as InfoBody
     if (typeof body.name === 'string') {
       name = body.name.trim()
     }
+    storedOnly = body.storedOnly === true
   } catch {
     name = NAME_UNSET
   }
@@ -279,7 +394,7 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
   if (row.cached != null) {
     return Response.json(row.cached)
   }
-  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES) {
+  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES || storedOnly) {
     return new Response(null, { status: NO_CONTENT })
   }
   let ua = req.headers.get(HDR_UA)

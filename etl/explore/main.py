@@ -16,13 +16,14 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from log.functions import err, say
-from explore.functions import consume_queue
+from explore.functions import consume_queue, dump_seen
 
-SCHEDULED = [("consume", consume_queue)]
-"""默认链(调度真相):一步,抛错即中止本轮。"""
+SCHEDULED = [("seen", dump_seen), ("consume", consume_queue)]
+"""默认链(调度真相):先落「被看过的公司」清单(2026-09-20;一次请求,给 sites / company 排队用),再消费译名队列;抛错即中止本轮。"""
 
 TOOLS = {
     "consume": consume_queue,
+    "seen": dump_seen,
 }
 """全部可 --only 点名的步。"""
 

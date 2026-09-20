@@ -14,12 +14,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { EV_KEY_DOWN, KEY_ESCAPE, LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
-  ignoreFlag, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles, makeLoadTrans,
+  ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles,
+  makeLoadTrans, makeOpenSite,
 } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact, CompanyJobFact,
   CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeek, CompanyPeekPanel, CompanyTransHookIn,
-  CompanyTransPanel, DeadFlag, DescTransHookIn,
+  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, SitePanel,
   TitleMapHookIn,
 } from './types'
 
@@ -29,7 +30,9 @@ import type {
  * 中文对照(#185)打开且这一门语言不是英文时再懒翻一份存着,切换零延迟。
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关 —— 中 / 韩界面简介一到就在后台翻好存着,开关只管显不显。
  *
- * @param x 公司名与界面语言。
+ * 2026-09-20:官网那条工种还没报上去 / 还在办的时候只查库不现查;办完 / 查无 / 不再等的那一拍再查一遍,这时才放开联网现查兜底。
+ *
+ * @param x 公司名、界面语言与官网那条工种办到哪一步。
  * @returns 加载态、查到的简介与译文。
  */
 export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
@@ -45,13 +48,15 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
     setTrans(null)
   }
 
+  const storedOnly = x.stage === TEXT_NONE || isSiteActive(x.stage)
+
   useEffect(function loadBrief() {
     const flag: DeadFlag = { dead: false }
-    makeLoadBrief({ company: x.company, setFact, setLoading })(flag)
+    makeLoadBrief({ company: x.company, setFact, setLoading, storedOnly })(flag)
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.company])
+  }, [x.company, storedOnly])
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
@@ -64,6 +69,37 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
   }, [x.lang, x.company, trans, fact])
 
   return { loading, fact, trans }
+}
+
+/**
+ * 官网那条工种在公司卡上的面板(2026-09-20):卡一开就报一声点开(等到有真人动作才报),简介区是空的就接着问进度;
+ * 换了公司当场清空重报。
+ *
+ * @param x 公司名与要不要等结果。
+ * @returns 办到哪一步 + 办完补上来的官网与总部。
+ */
+export function useCompanySite(x: CompanySiteHookIn): SitePanel {
+  const [site, setSite] = useState<SitePanel>({
+    stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE,
+  })
+  const [prevName, setPrevName] = useState(x.name)
+
+  if (prevName !== x.name) {
+    setPrevName(x.name)
+    setSite({ stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE })
+  }
+
+  useEffect(function openSite() {
+    const flag: DeadFlag = { dead: false }
+    if (x.name !== TEXT_NONE) {
+      makeOpenSite({ name: x.name, wait: x.wait, setSite })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [x.name, x.wait])
+
+  return site
 }
 
 /**

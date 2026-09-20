@@ -538,6 +538,9 @@ class MartCtx:
     briefs: dict
     """slug → qwen 五节简介行(英/中/出处;2026-09-05)。"""
 
+    dead_sites: dict
+    """slug → 死站的官网主机名(sites 域记了 dead 的;公司行的官网等于它就清空;2026-09-20)。"""
+
     site_facts: dict
     """slug → 公司官网整理记录(只含 ok 行;总部三格 + 原句 + 出处、并进简介的三节;2026-09-20)。"""
 

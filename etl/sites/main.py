@@ -17,7 +17,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from log.functions import err, say
-from sites.functions import build_site_facts, fetch_site_pages
+from sites.functions import build_site_facts, fetch_site_pages, visit_queue
 
 SCHEDULED = [("fetch", fetch_site_pages), ("facts", build_site_facts)]
 """默认链(调度真相):先抓原文进 crawl 层,再读缓存整理;抛错即中止本轮。"""
@@ -25,6 +25,7 @@ SCHEDULED = [("fetch", fetch_site_pages), ("facts", build_site_facts)]
 TOOLS = {
     "fetch": fetch_site_pages,
     "facts": build_site_facts,
+    "visit": visit_queue,
 }
 """全部可 --only 点名的步(⚠ --only 是子串匹配:两个键互不包含)。"""
 

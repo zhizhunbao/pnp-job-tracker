@@ -566,6 +566,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'eelist.occTitle': 'Occupations included',
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showMore': 'Show {n} more', 'act.collapse': 'Collapse ▴', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'co.hq': 'Headquarters',
+  // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
+  'co.stage.queued': 'Queued', 'co.stage.find': 'Finding site', 'co.stage.fetch': 'Fetching', 'co.stage.facts': 'Organizing', 'co.stage.trans': 'Translating',
   'act.noTextBlocked': 'The full text of this posting is on {src}, which blocks automated reading by this site. The link below goes straight to the original.',
   'sj.title': 'My applications', 'sj.note': 'Save jobs and track your application progress; stored only in your account.', 'sj.empty': 'No saved jobs yet — hit “☆ Save” on the job board.',
   'sj.st.wish': 'To apply', 'sj.st.applied': 'Applied', 'sj.st.interview': 'Interviewing', 'sj.st.offer': 'Offer',

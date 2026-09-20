@@ -34,6 +34,7 @@ import {
   SQL_FRAG_NONE, SUFFIX_RE, UNDERSCORE, URL_QS, VERDICT_ORDER, VIEW, WD_ACTION_ENTITIES, WD_ACTION_SEARCH, WD_API,
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
   WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
+  SITE_BRIEF_MAX, SITE_SOURCES_MAX, SITE_STAGES, SITE_TEXT_MAX,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -52,6 +53,9 @@ import type {
   SponsorDbRow, StrListCell, ToCompareRowIn, ToSponsorRowIn, SponsorsIn,
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
+  ExploreSeenIn, ExploreSeenOut, SeenDbRow, SeenRow,
+  SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteSavedOut, SiteStageDbRow, SiteStageOut, SiteStageRow,
+  SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1708,6 +1712,158 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
     aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
     industry: exploreIndustryOf(text(r.industry)),
   }
+}
+
+/**
+ * 官网那条工种入队:公司卡被真人点开记一笔(24 小时内走过一轮的不重走)。写挂了只留痕不抛 —— 公司卡不该因此受影响。
+ *
+ * @param input 连接与公司名。
+ * @returns 入队后的 stage;池里没有这家 / 写挂了 = 空串。
+ */
+export async function openExploreSite(input: SiteByNameIn): SiteOpenOut {
+  try {
+    const row = firstOf(await queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_OPEN, params: [input.name], map: toSiteOpenStage }))
+    if (row == null) {
+      return WEBSITE_NONE
+    }
+    return row
+  } catch (e) {
+    log({ tag: EMP_LOG.tag, text: `${EMP_LOG.siteOpenFailed}${String(e)}` })
+    return WEBSITE_NONE
+  }
+}
+
+/**
+ * 公司卡问进度:官网那条工种办到哪一步 + 公司表现在的官网与总部几格。
+ *
+ * @param input 连接与公司名。
+ * @returns 进度;查无这家 / 从没入过队 = null。
+ */
+export async function loadSiteStage(input: SiteByNameIn): SiteStageOut {
+  return firstOf(await queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_STAGE, params: [input.name], map: toSiteStageRow }))
+}
+
+/**
+ * `EMPLOYER_EXPLORE_OPEN` 的返回行 → 入队后的 stage。
+ *
+ * @param r 原始行。
+ * @returns stage。
+ */
+export function toSiteOpenStage(r: SiteOpenDbRow): string {
+  return text(r.stage)
+}
+
+/**
+ * `EMPLOYER_EXPLORE_STAGE` 一行 → 进度。
+ *
+ * @param r 原始行。
+ * @returns 进度。
+ */
+export function toSiteStageRow(r: SiteStageDbRow): SiteStageRow {
+  return {
+    stage: text(r.stage), website: httpUrlOf(text(r.website)),
+    hq: hqLineOf({ address: text(r.hq_address), city: text(r.hq_city), province: text(r.hq_province) }), hqSource: text(r.hq_source),
+  }
+}
+
+/**
+ * 官网那条工种取待办(家里的工人来取活;找官网与抓官网各取各的)。
+ *
+ * @param input 连接、工种与条数。
+ * @returns 待办清单。
+ */
+export function loadSiteTodos(input: SiteTodosIn): SiteTodosOut {
+  let sql = SQL.EMPLOYER_EXPLORE_SITE_TODO_VISIT
+  if (input.find) {
+    sql = SQL.EMPLOYER_EXPLORE_SITE_TODO_FIND
+  }
+  return queryRows({ db: input.db, sql: sql, params: [input.limit], map: toSiteTodo })
+}
+
+/**
+ * `EMPLOYER_EXPLORE_SITE_TODO_*` 一行 → 待办。
+ *
+ * @param r 原始行。
+ * @returns 待办。
+ */
+export function toSiteTodo(r: SiteTodoDbRow): SiteTodo {
+  return {
+    key: text(r.key), slug: text(r.slug), name: text(r.name), website: text(r.website), province: text(r.province), stage: text(r.stage),
+  }
+}
+
+/**
+ * 官网那条工种交活:写回进度;带了官网 / 总部 / 简介的同时写公司表(几分钟内上页面),板上的页缓存随之清掉。
+ *
+ * @param input 连接与线格式的一步。
+ * @returns 写成了 = true;键空 / stage 不在白名单 = false。
+ */
+export async function saveSiteDone(input: SaveSiteDoneIn): SiteSavedOut {
+  const d = toSiteDone(input.done)
+  if (d.key === WEBSITE_NONE || (SITE_STAGES as readonly string[]).includes(d.stage) === false) {
+    return false
+  }
+  await input.db.query(SQL.EMPLOYER_EXPLORE_SITE_STAGE, [d.key, d.stage, d.note, d.host])
+  if (d.website !== WEBSITE_NONE || d.hqCity !== WEBSITE_NONE || d.hqAddress !== WEBSITE_NONE || d.brief !== WEBSITE_NONE) {
+    await input.db.query(SQL.EMPLOYER_EXPLORE_SITE_TO_COMPANIES, [
+      d.key, d.website, d.hqAddress, d.hqCity, d.hqProvince, d.hqQuote, d.hqSource, d.brief, JSON.stringify(d.sources), d.replaced,
+      d.host,
+    ])
+    CACHE.poolPages.clear()
+  }
+  return true
+}
+
+/**
+ * 工人交回来的线格式一步 → 洗净(缺格成空串,文字限长,官网与出处只留真链接)。
+ *
+ * @param r 线格式的一步。
+ * @returns 洗净的一步。
+ */
+export function toSiteDone(r: SiteDoneJson): SiteDone {
+  const sources: string[] = []
+  if (Array.isArray(r.sources)) {
+    for (const u of r.sources) {
+      if (typeof u === 'string' && HTTP_URL_RE.test(u) && sources.length < SITE_SOURCES_MAX) {
+        sources.push(u.slice(0, SITE_TEXT_MAX))
+      }
+    }
+  }
+  return {
+    key: text(r.key), stage: text(r.stage), note: text(r.note).slice(0, SITE_TEXT_MAX), host: text(r.host).slice(0, SITE_TEXT_MAX),
+    website: httpUrlOf(text(r.website).slice(0, SITE_TEXT_MAX)), replaced: r.replaced === true,
+    hqAddress: text(r.hqAddress).slice(0, SITE_TEXT_MAX), hqCity: text(r.hqCity).slice(0, SITE_TEXT_MAX),
+    hqProvince: text(r.hqProvince).slice(0, SITE_TEXT_MAX), hqQuote: text(r.hqQuote).slice(0, SITE_TEXT_MAX),
+    hqSource: httpUrlOf(text(r.hqSource).slice(0, SITE_TEXT_MAX)), brief: text(r.brief).slice(0, SITE_BRIEF_MAX), sources: sources,
+  }
+}
+
+/**
+ * 被用户看过的公司清单(数据层例行轮排队用)。
+ *
+ * @param input 连接与条数。
+ * @returns 清单,最近被看过的在前。
+ */
+export function loadExploreSeen(input: ExploreSeenIn): ExploreSeenOut {
+  return queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_SEEN, params: [input.limit], map: toSeenRow })
+}
+
+/**
+ * `EMPLOYER_EXPLORE_SEEN` 一行 → 清单行(时刻转 ISO 串,没有 = 空串)。
+ *
+ * @param r 原始行。
+ * @returns 清单行。
+ */
+export function toSeenRow(r: SeenDbRow): SeenRow {
+  let lastSeen = WEBSITE_NONE
+  if (r.last_seen != null) {
+    lastSeen = r.last_seen.toISOString()
+  }
+  let openedAt = WEBSITE_NONE
+  if (r.opened_at != null) {
+    openedAt = r.opened_at.toISOString()
+  }
+  return { slug: text(r.slug), seenCount: count(r.seen_count), lastSeen, openedAt }
 }
 
 /**

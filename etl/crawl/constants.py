@@ -918,3 +918,6 @@ URLS_P_SUMMARY_TPL = "✗ urls 哨兵:{n}/{total} 条官方 URL 硬红(见上;�
 
 URLS_P_OK_TPL = "✓ urls 哨兵:{total} 条官方 URL 无硬红(软留痕 {soft} 条)"
 """收口行:全过。"""
+
+COOKIE_JAR_EMPTY = "[]"
+"""空 cookie 罐的文件内容(见 functions.ensure_cookie_jar;2026-09-20 自 sites 域收进本叶 —— 第二个消费者 company 的 findsite 步到了)。"""

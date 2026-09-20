@@ -588,6 +588,82 @@ export const EMPLOYER_EXPLORE_TO_COMPANIES = `UPDATE companies c
     WHERE c.slug = p.slug AND (u.alias_zh <> '' OR u.alias_ko <> '')`
 
 /**
+ * 探索队列第二工种入队:公司页 / 公司弹框被真人点开(2026-09-20 Frank「下一个 session 做『按用户点开过的公司优先抓取和纠错』的队列」;
+ * 设计稿 docs/design/点开优先抓取与纠错-20260920.md,加列 docs/sql/employer-explore-stage-20260920.sql)。按公司名找到池主键
+ * (只认池里真有的);新的进队,已在队里的记点开时刻与次数 —— 24 小时内走过一轮的(成败都算)不重置 stage,直接用上次结果。$1=公司名。
+ */
+export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, opened_at, open_count, stage, stage_at)
+     SELECT p.key, p.name, now(), 1, 'queued', now() FROM companies c JOIN employer_pool p ON p.slug = c.slug
+      WHERE lower(c.name) = lower($1) LIMIT 1
+     ON CONFLICT (key) DO UPDATE SET opened_at = now(), open_count = employer_explore.open_count + 1,
+       stage = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+                    THEN 'queued' ELSE employer_explore.stage END,
+       stage_at = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+                       THEN now() ELSE employer_explore.stage_at END
+     RETURNING stage`
+
+/**
+ * 公司卡问进度:官网那条工种办到哪一步,连同公司表里现在的官网与总部几格(办完那一拍卡上直接补,不用刷新)。$1=公司名。
+ */
+export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, c.hq_city, c.hq_province, c.hq_source
+     FROM companies c JOIN employer_pool p ON p.slug = c.slug JOIN employer_explore x ON x.key = p.key
+    WHERE lower(c.name) = lower($1) LIMIT 1`
+
+/**
+ * 找官网工人取活:被点开过、没官网的(排队中),或抓页那头判了死站转过来的(find);最近点开的在前。$1=条数。
+ */
+export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
+     JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
+    WHERE x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = '')
+    ORDER BY x.opened_at DESC NULLS LAST LIMIT $1`
+
+/**
+ * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts);最近点开的在前。$1=条数。
+ */
+export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
+     JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
+    WHERE x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> '')
+    ORDER BY x.opened_at DESC NULLS LAST LIMIT $1`
+
+/**
+ * 工人每走一步写回进度。$1=池主键,$2=stage,$3=由头,$4=这一轮抓的官网主机名(空串不动原值)。
+ */
+export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = $2, stage_at = now(), stage_note = NULLIF($3, ''),
+      site_host = COALESCE(NULLIF($4, ''), site_host) WHERE key = $1`
+
+/**
+ * 工人交回来的官网 / 总部 / 简介直接写公司表(几分钟内上页面,不等下一轮汇装灌库;工人同时照常写 processed,下一轮 mart 出来的值与此一致)。
+ * 官网:交来非空才盖。总部五格 + 核对时刻:交来市或街址非空才整组盖。简介:交来非空,且(原简介为空 / 零出处 / 官网这回被纠错换过 /
+ * 原简介的出处里没有这个官网主机名 —— 来路排序官网优先,联网检索版与照着旧官网整理的让位;Supersonic 实撞:官网换对了,简介还是照别家站写的)才盖,
+ * 原简介不是五节新版(没有 [FOUNDED] 标记的存量,cms 本来就当它过期、当没缓存)也算空。盖的同时清掉旧译文(对的是旧简介)。$1=池主键,$2=官网,$3~$7=总部街址 / 市 / 省 / 原句 / 出处,$8=简介,$9=出处 JSON 数组串,$10=官网是否被换过,
+ * $11=这一轮抓的官网主机名(空串 = 不按主机名判)。
+ */
+export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
+      website = COALESCE(NULLIF($2, ''), c.website),
+      hq_address = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($3, '') ELSE c.hq_address END,
+      hq_city = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($4, '') ELSE c.hq_city END,
+      hq_province = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($5, '') ELSE c.hq_province END,
+      hq_quote = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($6, '') ELSE c.hq_quote END,
+      hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
+      site_checked_at = CASE WHEN $3 <> '' OR $4 <> '' THEN now() ELSE c.site_checked_at END,
+      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $8 ELSE c.ai_brief END,
+      ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $9 ELSE c.ai_sources END,
+      ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_website END,
+      ai_fetched = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN now() ELSE c.ai_fetched END,
+      ai_brief_zh = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_brief_zh END,
+      ai_brief_ko = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_brief_ko END
+     FROM employer_pool p WHERE p.key = $1 AND c.slug = p.slug`
+
+/**
+ * 被用户看过的公司清单(数据层例行轮拿它排队:sites 抓官网、company 找官网 / 维基总部,被看过的在前;2026-09-20)。
+ * 近 30 天被列出 / 点开过、有公司页的;最近的在前。$1=条数。
+ */
+export const EMPLOYER_EXPLORE_SEEN = `SELECT p.slug, x.seen_count, x.last_seen, x.opened_at FROM employer_explore x
+     JOIN employer_pool p ON p.key = x.key
+    WHERE COALESCE(p.slug, '') <> '' AND GREATEST(x.last_seen, COALESCE(x.opened_at, x.last_seen)) > now() - interval '30 days'
+    ORDER BY GREATEST(x.last_seen, COALESCE(x.opened_at, x.last_seen)) DESC LIMIT $1`
+
+/**
  * 雇主板「全部类别」下拉的选项:池里雇主在招岗覆盖的联邦 EE 类别(职位板同名下拉的那一套标签),覆盖雇主多的在前
  * (2026-09-19;扫一遍池表,lib/employers 进程内 TTL 缓存)。
  */

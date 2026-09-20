@@ -12,6 +12,7 @@ news 母框架(run/SOURCE 契约/增量合并/防线)同日迁回 etl/news/funct
 from __future__ import annotations
 
 import email.utils
+import os
 import ssl
 import time
 from datetime import datetime
@@ -19,12 +20,12 @@ from datetime import datetime
 import httpx
 from bs4 import BeautifulSoup, Tag
 
-from fetch.scheme import DetailIn, DetailOut, FetchIn, SectionIn
-from fetch.constants import (ATTR_CONTENT, ATTR_HREF, BODY_TAGS, BROWSER_UA, BULLET, DATE_LONG_FMT,
-                             DATE_LONG_TPL, DATE_RE, FEED_DATE_TAGS, FEED_ENTRY_TAGS, HDR_UA,
-                             ISO_DATE_RE, JUNK_TAGS, K_DATE, K_TITLE, K_URL, LINE_SEP,
+from fetch.scheme import CmsCfg, DetailIn, DetailOut, FetchIn, SectionIn
+from fetch.constants import (ATTR_CONTENT, ATTR_HREF, BODY_TAGS, BROWSER_UA, BULLET, CMS_NONE, DATE_LONG_FMT,
+                             DATE_LONG_TPL, DATE_RE, ENV_SEED_TOKEN, ENV_SEED_URL, FEED_DATE_TAGS, FEED_ENTRY_TAGS, HDR_UA,
+                             HDR_SEED_TOKEN, ISO_DATE_RE, JUNK_TAGS, K_DATE, K_TITLE, K_URL, LINE_SEP,
                              OG_META_PATTERNS, OG_PROP, PARA_SEP, PARSER_HTML, PARSER_XML,
-                             POLITE_UA, RETRIES, SECTION_TAKE_TAGS, SLUG_DASH, SLUG_MAXLEN,
+                             POLITE_UA, RETRIES, SCHEME_SEP, SECTION_TAKE_TAGS, SLUG_DASH, SLUG_MAXLEN,
                              SLUG_RE, SPACE_SEP, TAG_ARTICLE, TAG_BR, TAG_LI, TAG_LINK, TAG_MAIN,
                              TAG_META, TAG_TITLE, TAIL_NOISE, TRAIL_COLON, WS_RE)
 
@@ -56,6 +57,16 @@ def make_polite_client(timeout: float) -> httpx.Client:
     宁可读到内容也不为 TLS 洁癖丢简介)。"""
     return httpx.Client(headers={HDR_UA: POLITE_UA}, follow_redirects=True,
                         timeout=timeout, verify=False)
+
+
+def cms_config() -> CmsCfg:
+    """读环境定 cms 站点根(从 SEED_URL 反推 scheme://host)与带钥匙的请求头;缺一个就是没配(base 空串)。"""
+    seed_url = os.environ.get(ENV_SEED_URL, CMS_NONE)
+    token = os.environ.get(ENV_SEED_TOKEN, CMS_NONE)
+    if seed_url == CMS_NONE or token == CMS_NONE:
+        return CmsCfg(base=CMS_NONE, headers={})
+    parts = httpx.URL(seed_url)
+    return CmsCfg(base=parts.scheme + SCHEME_SEP + parts.netloc.decode(), headers={HDR_SEED_TOKEN: token})
 
 
 def fetch(x: FetchIn) -> str:

@@ -33,6 +33,7 @@ from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
 from crawl import BROWSER_CHANNEL, BROWSER_COOKIES
 from crawl.constants import (
+    COOKIE_JAR_EMPTY,
     ACCEPT_HTML,
     ACCEPT_LANGUAGE,
     ADMONITION_TITLE_CLASS,
@@ -499,6 +500,18 @@ async def get_browser_page() -> PageLike | None:
             CACHE.unavailable = True
             err(PRINT_BROWSER_DOWN, e)
             return None
+
+
+def ensure_cookie_jar() -> None:
+    """容器里给 cookie 模式备一只空 cookie 罐(BROWSER_COOKIES 点名的文件不在才建;2026-09-20 自 sites 域收进本叶):
+    cookie 模式起的是干净的有头浏览器、不开持久 profile —— 那份 profile 同一时刻只许一个进程开;
+    抓公司官网 / 开搜索引擎不需要登录态的役各配一只空罐,各起各的浏览器。本机(变量为空)照走持久 profile。"""
+    if BROWSER_COOKIES == "":
+        return
+    jar = PROFILE_DIR / BROWSER_COOKIES
+    if not jar.exists():
+        jar.parent.mkdir(parents=True, exist_ok=True)
+        jar.write_text(COOKIE_JAR_EMPTY, encoding=ENC_UTF8)
 
 
 async def open_cookie_context(cookies_file: Path) -> None:

@@ -10,6 +10,7 @@ import asyncio
 import json
 import os
 import re
+import socket
 import unicodedata
 from datetime import datetime, timezone
 from typing import cast
@@ -19,19 +20,23 @@ from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 
 import paths
-from crawl import BROWSER_COOKIES
-from crawl.constants import PROFILE_DIR
 from crawl.functions import (
-    browser_live, browser_ok, close_browser, fetch_browser_html, get_browser_page, load_cache_index, put_cached_page,
+    browser_live, browser_ok, close_browser, ensure_cookie_jar, fetch_browser_html, get_browser_page, load_cache_index, put_cached_page,
 )
 from crawl.scheme import CachePutIn
-from fetch.functions import make_client
+from fetch.functions import cms_config, make_client
 from log.functions import say
 from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
     ASCII_CODEC, ASCII_ERRORS, HOST_LABEL_SEP, NAME_PHRASE_WORDS, NAME_SHORT_LEN, NAME_STOP, NAME_TOKEN_HEAD_LEN,
     NAME_TOKEN_MIN_LEN, NAME_WORD_RE, NFKD_FORM,
-    ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, COOKIE_JAR_EMPTY, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
+    BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_TRIM_CHARS, IN_SEEN,
+    K_DONE_BRIEF, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_QUOTE, K_DONE_HQ_SOURCE, K_DONE_SOURCES,
+    K_HOST, K_KEY, K_NOTE, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
+    P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PORT_SEP, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
+    RETRY_TRANSIENT_DAYS, SECONDS_PER_HOUR, ST_DEAD, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, TRANSIENT_NOTES,
+    VISIT_TAKE,
+    ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
     NOTE_NO_BROWSER, PRINT_BROWSER_ABORT, CONTACT_LINK_RE, CRAWL_SLUG_TPL, ENV_LLM_BASE, ENV_LLM_MODEL, ERRORS_REPLACE,
     EXTRA_PAGES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX,
     HQ_SHOW_TPL, HREF_ATTR, HTML_MIN_LEN, IN_MART_COMPANIES, IN_MART_JOBS, JSON_INDENT, K_COMPANY_SLUG, K_HQ_ADDRESS,
@@ -46,6 +51,7 @@ from sites.constants import (
     TEXT_ENCODING, THINK_RE, URL_FRAGMENT_SEP, URL_SCHEME_SEP, URL_TAIL_SLASH, VALUE_MAX_LEN, WS_RE,
 )
 from sites.scheme import (
+    CarryIn, CmsIn, HostPickIn, HqStreetIn, SeenIn, VisitDoneIn, VisitOneIn, VisitTodo,
     AbbrevIn, AnswerIn, BackfillNameIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, HqSourceIn, HttpClientLike, LinksIn, LlmCallIn, NameOkIn,
     LlmCfg, PagesRecord, PickFactsIn, PickFetchIn, SectionIn, Target, VerifyIn,
 )
@@ -87,6 +93,7 @@ async def fetch_round() -> None:
             if not browser_live():
                 say(PRINT_BROWSER_ABORT)
                 break
+            carry_fails(CarryIn(rec=rec, prev=cache.get(t.slug)))
             cache[t.slug] = rec
             if rec.status == ST_OK:
                 ok += 1
@@ -159,8 +166,15 @@ def read_pages() -> dict[str, PagesRecord]:
 
 
 def write_pages(cache: dict[str, PagesRecord]) -> int:
-    """抓取记录落盘 OUT_PAGES(原子写;首轮先建目录),返回累计 ok 家数。"""
+    """抓取记录落盘 OUT_PAGES(原子写;首轮先建目录),返回累计 ok 家数。
+
+    2026-09-20 落盘前重读并入:例行轮一跑两小时、整本记录拿在手里,同时 visit 步(另一个容器)也在写这份文件 ——
+    逐家取抓取时刻更新的那一条(盘上的更新就收进手里的这本),谁也不盖谁。"""
     OUT_PAGES.parent.mkdir(parents=True, exist_ok=True)
+    for slug, disk in read_pages().items():
+        mine = cache.get(slug)
+        if mine is None or disk.at > mine.at:
+            cache[slug] = disk
     out: dict[str, dict] = {}
     for slug, rec in cache.items():
         out[slug] = rec.model_dump()
@@ -187,8 +201,12 @@ def read_facts() -> dict[str, FactsRecord]:
 
 
 def write_facts(cache: dict[str, FactsRecord]) -> int:
-    """整理记录落盘 OUT_FACTS(原子写;首轮先建目录),返回累计 ok 家数。"""
+    """整理记录落盘 OUT_FACTS(原子写;首轮先建目录),返回累计 ok 家数。落盘前重读并入(同 write_pages:逐家取整理时刻更新的那一条)。"""
     OUT_FACTS.parent.mkdir(parents=True, exist_ok=True)
+    for slug, disk in read_facts().items():
+        mine = cache.get(slug)
+        if mine is None or disk.at > mine.at:
+            cache[slug] = disk
     out: dict[str, dict] = {}
     for slug, rec in cache.items():
         out[slug] = rec.model_dump()
@@ -205,16 +223,198 @@ def count_facts_ok(cache: dict[str, FactsRecord]) -> int:
     return n
 
 
+# 1b. 入口:visit(点开优先 —— 被用户点开过的公司插队:抓 → 整理 → 交活,每步写回进度;2026-09-20)
+# =========================================================================
+
+
+def visit_queue() -> None:
+    """visit 步入口:asyncio 壳(抓页走 crawl 域有头浏览器,同 fetch 步)。"""
+    asyncio.run(visit_round())
+
+
+async def visit_round() -> None:
+    """visit 步主体(2026-09-20 Frank「按用户点开过的公司优先抓取和纠错」;设计稿 docs/design/点开优先抓取与纠错-20260920.md):
+    向 cms 取「被真人点开过、有官网」的活(最近点开的在前),逐家抓官网 → 整理 → 交活,每走一步把进度写回队列表(公司卡 15 秒来问一次)。
+
+    没配 cms 接线 / 镜像没装浏览器直接退;没活不起浏览器;浏览器中途没了整轮中止;收摊在 finally。
+    """
+    cms = cms_config()
+    if cms.base == FIELD_NONE:
+        say(NOTE_NO_CMS)
+        return
+    if not browser_ok():
+        say(NOTE_NO_BROWSER)
+        return
+    cfg = llm_config()
+    with make_client(timeout=LLM_TIMEOUT_S) as raw:
+        client = cast(HttpClientLike, raw)
+        todos = take_visit_todos(CmsIn(client=client, cms=cms, payload={P_LIMIT: VISIT_TAKE}))
+        say(PRINT_VISIT_TAKE_TPL.format(n=len(todos), limit=VISIT_TAKE))
+        if len(todos) == 0:
+            return
+        ensure_cookie_jar()
+        try:
+            for todo in todos:
+                await visit_one(VisitOneIn(client=client, cms=cms, cfg=cfg, todo=todo))
+                if not browser_live():
+                    say(PRINT_BROWSER_ABORT)
+                    break
+        finally:
+            await close_browser()
+
+
+def take_visit_todos(x: CmsIn) -> list:
+    """取活:GET 待办清单;非 2xx 抛(整轮中止并留痕,由门的 err 接)。键 / slug / 官网缺的行丢掉。"""
+    r = x.client.get(x.cms.base + PATH_SITE_TODO, params=x.payload, headers=x.cms.headers)
+    if not r.is_success:
+        raise RuntimeError(NOTE_HTTP_TPL.format(status=r.status_code))
+    body = r.json()
+    out: list = []
+    if not isinstance(body, dict):
+        return out
+    rows = body.get(K_TODOS)
+    if not isinstance(rows, list):
+        return out
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        todo = VisitTodo(key=str(row.get(K_KEY) or FIELD_NONE), slug=str(row.get(K_SLUG) or FIELD_NONE),
+                         name=str(row.get(K_NAME) or FIELD_NONE), website=str(row.get(K_WEBSITE) or FIELD_NONE))
+        if todo.key != FIELD_NONE and todo.slug != FIELD_NONE and todo.website != FIELD_NONE:
+            out.append(todo)
+    return out
+
+
+def hand_stage(x: CmsIn) -> None:
+    """交活 / 写回进度:POST 一步;非 2xx 抛。"""
+    r = x.client.post(x.cms.base + PATH_SITE_DONE, json=x.payload, headers=x.cms.headers)
+    if not r.is_success:
+        raise RuntimeError(NOTE_HTTP_TPL.format(status=r.status_code))
+
+
+async def visit_one(x: VisitOneIn) -> None:
+    """一家:报「抓取官网」→ 抓(同主机名 24 小时内抓过的复用缓存)→ 域名不解析的转给 company 域重新找官网,别的失败照实办完
+    → 报「整理内容」→ 整理(这批页面整理过的不重做)→ 官网归属闸没过的转给 company 域找名字对得上的站(找不到原官网不动),过了的带总部 / 简介交活。盒子掉线不交活,进度停在「整理内容」,下一轮接着办。"""
+    host = host_of(x.todo.website)
+    target = Target(slug=x.todo.slug, name=x.todo.name or x.todo.slug, website=x.todo.website, open_jobs=0)
+    hand_stage(CmsIn(client=x.client, cms=x.cms, payload={K_KEY: x.todo.key, K_STAGE: STAGE_FETCH, K_HOST: host}))
+    pages = read_pages()
+    rec = host_cached_of(HostPickIn(pages=pages, host=host, slug=x.todo.slug))
+    if rec is None:
+        rec = await fetch_site(target)
+        if not browser_live():
+            return
+        carry_fails(CarryIn(rec=rec, prev=pages.get(x.todo.slug)))
+    pages[x.todo.slug] = rec
+    write_pages(pages)
+    say(PRINT_VISIT_ROW_TPL.format(stage=STAGE_FETCH, name=x.todo.name, note=rec.note or rec.status))
+    if rec.status != ST_OK:
+        done = {K_KEY: x.todo.key, K_STAGE: STAGE_DONE, K_NOTE: rec.note}
+        if rec.note == NOTE_DNS:
+            done = {K_KEY: x.todo.key, K_STAGE: STAGE_FIND, K_NOTE: NOTE_DEAD_SITE}
+        hand_stage(CmsIn(client=x.client, cms=x.cms, payload=done))
+        return
+    hand_stage(CmsIn(client=x.client, cms=x.cms, payload={K_KEY: x.todo.key, K_STAGE: STAGE_FACTS}))
+    facts = read_facts()
+    frec = facts.get(x.todo.slug)
+    if frec is None or frec.status != ST_OK or frec.pages_at != rec.at:
+        if x.cfg.base == FIELD_NONE:
+            say(NOTE_NO_LLM)
+            return
+        frec = facts_one(FactsOneIn(client=x.client, cfg=x.cfg, target=target, pages=rec))
+        if frec.note in NET_ERRORS:
+            say(PRINT_ABORT_TPL.format(note=frec.note))
+            return
+        facts[x.todo.slug] = frec
+        write_facts(facts)
+    say(PRINT_VISIT_ROW_TPL.format(stage=STAGE_FACTS, name=x.todo.name, note=frec.note or hq_show_of(frec)))
+    if frec.status == ST_OK and not frec.name_ok:
+        hand_stage(CmsIn(client=x.client, cms=x.cms, payload={K_KEY: x.todo.key, K_STAGE: STAGE_FIND, K_NOTE: NOTE_NAME_MISMATCH}))
+        return
+    hand_stage(CmsIn(client=x.client, cms=x.cms, payload=done_payload_of(VisitDoneIn(key=x.todo.key, facts=frec, host=host))))
+
+
+def host_cached_of(x: HostPickIn) -> PagesRecord | None:
+    """同主机名 HOT_HOST_HOURS 小时内抓过的记录(成败都算):自己的原样用;别家的(加盟店共用总站)抄一条、原文指到那家的 crawl 目录。
+    没有 = None(真去抓)。"""
+    mine = x.pages.get(x.slug)
+    if mine is not None and mine.host == x.host and hours_since(mine.at) <= HOT_HOST_HOURS:
+        return mine
+    for slug, rec in x.pages.items():
+        if slug == x.slug or rec.host != x.host or rec.host == FIELD_NONE or hours_since(rec.at) > HOT_HOST_HOURS:
+            continue
+        owner = rec.cache_slug
+        if owner == FIELD_NONE:
+            owner = slug
+        note = rec.note
+        if rec.status == ST_OK:
+            note = FIELD_NONE
+        return PagesRecord(status=rec.status, urls=list(rec.urls), at=now_iso(), note=note, host=rec.host,
+                           fails=rec.fails, cache_slug=owner)
+    return None
+
+
+def hours_since(iso: str) -> float:
+    """距某 ISO 时刻过了几小时(时刻不成形按很久以前算,同 days_since)。"""
+    return days_since(iso) * SECONDS_PER_DAY / SECONDS_PER_HOUR
+
+
+def done_payload_of(x: VisitDoneIn) -> dict:
+    """办完的交活体:整理没成的只报办完 + 由头;官网归属闸没过的(name_ok=False:官网多半是母公司 / 别家的站)不带总部也不带简介;
+    过了的带总部五格(总部一节过了原句核对才有)与由核对过的节拼成的简介 + 出处页。"""
+    out: dict = {K_KEY: x.key, K_STAGE: STAGE_DONE, K_NOTE: x.facts.note, K_HOST: x.host}
+    if x.facts.status != ST_OK or not x.facts.name_ok:
+        return out
+    if SECTION_HQ in x.facts.quotes:
+        out[K_DONE_HQ_ADDRESS] = x.facts.hq_address
+        out[K_DONE_HQ_CITY] = x.facts.hq_city
+        out[K_DONE_HQ_PROVINCE] = x.facts.hq_province
+        out[K_DONE_HQ_QUOTE] = x.facts.quotes[SECTION_HQ]
+        out[K_DONE_HQ_SOURCE] = x.facts.hq_source
+    out[K_DONE_BRIEF] = brief_of(x.facts)
+    out[K_DONE_SOURCES] = list(x.facts.sources)
+    return out
+
+
+def brief_of(rec: FactsRecord) -> str:
+    """官网整理记录 → 简介文本(一节一行,方括号标记):前四节(主营 / 所在地 / 规模 / 成立)一律出行 —— 没过原句核对的写 BRIEF_NOT_STATED
+    (页面与 cms 认五节简介靠这几个标记齐全,缺了会被当成过期缓存重查;company 域五节简介同一写法);后三节过了核对才出。
+    「所在地」= 总部街址、市、省拼一行。"""
+    lines: list = []
+    for mark, key in BRIEF_SECS:
+        text = BRIEF_NOT_STATED
+        if mark in rec.quotes and getattr(rec, key) != FIELD_NONE:
+            text = getattr(rec, key)
+        if text != BRIEF_NOT_STATED or mark in BRIEF_CORE_MARKS:
+            lines.append(BRIEF_LINE_TPL.format(mark=mark, text=text))
+        if mark == SECTIONS[0]:
+            lines.append(BRIEF_LINE_TPL.format(mark=BRIEF_BASE_MARK, text=base_text_of(rec)))
+    return BRIEF_LINE_SEP.join(lines)
+
+
+def base_text_of(rec: FactsRecord) -> str:
+    """「所在地」一节的字:总部一节过了原句核对 = 街址、市、省拼一行;没过 = BRIEF_NOT_STATED。"""
+    if SECTION_HQ not in rec.quotes:
+        return BRIEF_NOT_STATED
+    parts: list = []
+    for part in (rec.hq_address, rec.hq_city, rec.hq_province):
+        if part != FIELD_NONE:
+            parts.append(part)
+    return HQ_JOIN.join(parts)
+
+
+# =========================================================================
 # =========================================================================
 # 2. 挑队列(范围:有官网 且 有在招岗;在招岗多的在前)
 # =========================================================================
 
 
 def site_targets() -> list:
-    """mart 的公司表 + 岗位表 → 范围内的公司,按在招岗数多→少排(同数按 slug,顺序稳定);缺文件 = 空表。"""
+    """mart 的公司表 + 岗位表 → 范围内的公司,被用户看过的在前、其后按在招岗数多→少排(同数按 slug,顺序稳定);缺文件 = 空表。"""
     out: list = []
     if not IN_MART_COMPANIES.exists() or not IN_MART_JOBS.exists():
         return out
+    seen = read_seen()
     open_jobs: dict[str, int] = {}
     for j in json.loads(IN_MART_JOBS.read_text(encoding=TEXT_ENCODING)):
         if j.get(K_STATUS) not in OPEN_STATUSES:
@@ -226,14 +426,39 @@ def site_targets() -> list:
         site = str(c.get(K_WEBSITE) or FIELD_NONE)
         if slug == FIELD_NONE or site == FIELD_NONE or open_jobs.get(slug, 0) == 0:
             continue
-        out.append(Target(slug=slug, name=str(c.get(K_NAME) or slug), website=site, open_jobs=open_jobs[slug]))
+        out.append(Target(slug=slug, name=str(c.get(K_NAME) or slug), website=site, open_jobs=open_jobs[slug],
+                          seen=seen_of(SeenIn(seen=seen, slug=slug))))
     out.sort(key=target_order_of)
     return out
 
 
 def target_order_of(t: Target) -> tuple:
-    """排队键:在招岗多的在前,同数按 slug。"""
-    return (-t.open_jobs, t.slug)
+    """排队键:被用户看过的在前(最近看过的更前;2026-09-20 Frank「按用户点开过的公司优先抓取和纠错」),其后在招岗多的在前,同数按 slug。"""
+    return (-t.seen, -t.open_jobs, t.slug)
+
+
+def read_seen() -> dict:
+    """读 explore 域落的「被用户看过的公司」清单(slug → 记录);缺文件 / 不成形 = 空表(没人看过,照旧按在招岗数排)。"""
+    if not IN_SEEN.exists():
+        return {}
+    data = json.loads(IN_SEEN.read_text(encoding=TEXT_ENCODING))
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def seen_of(x: SeenIn) -> float:
+    """一家公司最近被看过的时刻(epoch 秒):点开过的取点开时刻,只被列出过的取列出时刻;没被看过 / 时刻不成形 = 0。"""
+    rec = x.seen.get(x.slug)
+    if not isinstance(rec, dict):
+        return 0.0
+    iso = str(rec.get(K_SEEN_OPENED) or rec.get(K_SEEN_LAST) or FIELD_NONE)
+    if iso == FIELD_NONE:
+        return 0.0
+    try:
+        return datetime.fromisoformat(iso).timestamp()
+    except ValueError:
+        return 0.0
 
 
 def pick_fetch_todo(x: PickFetchIn) -> list:
@@ -243,13 +468,34 @@ def pick_fetch_todo(x: PickFetchIn) -> list:
         if len(todo) >= x.limit:
             break
         rec = x.cache.get(t.slug)
-        if rec is not None:
-            if rec.status == ST_OK and days_since(rec.at) <= REFRESH_DAYS:
-                continue
-            if rec.status != ST_OK and days_since(rec.at) <= RETRY_FAILED_DAYS:
-                continue
+        if rec is not None and (rec.host == FIELD_NONE or rec.host == host_of(t.website)) and not fetch_due(rec):
+            continue
         todo.append(t)
     return todo
+
+
+def fetch_due(rec: PagesRecord) -> bool:
+    """这条抓取记录到没到再抓的时候:抓成的看刷新期;死站不再抓这个地址(等 company 域重新找官网 —— 官网换了,
+    主机名对不上这条记录,pick_fetch_todo 自然重抓);瞬时失败(浏览器没取回页面 / 头一回域名不解析)冷却 RETRY_TRANSIENT_DAYS;
+    真被拦的(拦截页 / robots / 没正文)冷却 RETRY_FAILED_DAYS。"""
+    if rec.status == ST_OK:
+        return days_since(rec.at) > REFRESH_DAYS
+    if rec.status == ST_DEAD:
+        return False
+    if rec.note in TRANSIENT_NOTES or rec.note == NOTE_DNS:
+        return days_since(rec.at) > RETRY_TRANSIENT_DAYS
+    return days_since(rec.at) > RETRY_FAILED_DAYS
+
+
+def carry_fails(x: CarryIn) -> None:
+    """连续「域名不解析」的轮数接着上一轮往上记,到 DEAD_FAILS 记死站;这一轮不是域名不解析的不记(fetch_site 给的就是 0)。"""
+    if x.rec.note != NOTE_DNS:
+        return
+    x.rec.fails = 1
+    if x.prev is not None and x.prev.host == x.rec.host:
+        x.rec.fails = x.prev.fails + 1
+    if x.rec.fails >= DEAD_FAILS:
+        x.rec.status = ST_DEAD
 
 
 def pick_facts_todo(x: PickFactsIn) -> list:
@@ -297,7 +543,7 @@ async def fetch_site(target: Target) -> PagesRecord:
 
     首页抓不到 = 这家记 fail(由头进 note);附加页抓不到不算失败。异常转数据记异常类名。
     """
-    rec = PagesRecord(status=ST_FAIL, at=now_iso())
+    rec = PagesRecord(status=ST_FAIL, at=now_iso(), host=host_of(target.website))
     slug = CRAWL_SLUG_TPL.format(slug=target.slug)
     try:
         robots = await robots_of(target.website)
@@ -309,6 +555,8 @@ async def fetch_site(target: Target) -> PagesRecord:
             home = await fetch_page(FetchPageIn(slug=slug, url=www_url_of(target.website)))
         if home.html == FIELD_NONE:
             rec.note = home.note
+            if home.note == NOTE_BROWSER and not host_resolves(urlparse(target.website).netloc):
+                rec.note = NOTE_DNS
             return rec
         rec.urls.append(home.url)
         for link in extra_links_of(LinksIn(html=home.html, base=home.url)):
@@ -324,6 +572,24 @@ async def fetch_site(target: Target) -> PagesRecord:
             return rec
     rec.status = ST_OK
     return rec
+
+
+def host_resolves(netloc: str) -> bool:
+    """这个主机名(含带 www. 的那个)域名解析得了吗(标准库 getaddrinfo;浏览器没取回页面后复核用 ——
+    解析不了 = 死站候选,2026-09-20 自动纠错:nouveau.cotech.ca / cuisinesbernier.ca 这类)。空主机名按解析不了算。"""
+    host = netloc.split(PORT_SEP)[0].lower()
+    if host == FIELD_NONE:
+        return False
+    names = [host]
+    if not host.startswith(HOST_WWW_PREFIX):
+        names.append(HOST_WWW_PREFIX + host)
+    for name in names:
+        try:
+            socket.getaddrinfo(name, None)
+        except OSError:
+            continue
+        return True
+    return False
 
 
 def www_url_of(url: str) -> str:
@@ -372,18 +638,6 @@ async def final_url_of(url: str) -> str:
     if len(got) == 0 or str(got[0]) == FIELD_NONE:
         return url
     return str(got[0])
-
-
-def ensure_cookie_jar() -> None:
-    """容器里给 crawl 的 cookie 模式备一只空 cookie 罐(BROWSER_COOKIES 点名的文件不在才建):
-    cookie 模式起的是干净的有头浏览器、不开持久 profile —— 那份 profile 同一时刻只许一个进程开,
-    company / crawl 两个容器在用;公司官网不需要登录态,本域一轮要开一两个小时,不去占它。本机(变量为空)照走持久 profile。"""
-    if BROWSER_COOKIES == FIELD_NONE:
-        return
-    jar = PROFILE_DIR / BROWSER_COOKIES
-    if not jar.exists():
-        jar.parent.mkdir(parents=True, exist_ok=True)
-        jar.write_text(COOKIE_JAR_EMPTY, encoding=TEXT_ENCODING)
 
 
 def title_of(html: str) -> str:
@@ -455,10 +709,17 @@ def facts_one(x: FactsOneIn) -> FactsRecord:
     if len(rec.quotes) == 0:
         rec.note = NOTE_NOTHING
         return rec
-    rec.hq_source = hq_source_of(HqSourceIn(slug=x.target.slug, quote=rec.quotes.get(SECTION_HQ, FIELD_NONE), urls=rec.sources))
+    rec.hq_source = hq_source_of(HqSourceIn(slug=crawl_slug_of(x), quote=rec.quotes.get(SECTION_HQ, FIELD_NONE), urls=rec.sources))
     rec.name_ok = name_ok_of(NameOkIn(name=x.target.name, host=host_of(first_url_of(rec.sources)), blob=blob))
     rec.status = ST_OK
     return rec
+
+
+def crawl_slug_of(x: FactsOneIn) -> str:
+    """这家的原文住在哪家的 crawl 目录:同主机名复用别家刚抓的缓存时是那一家的 slug,否则自己的。"""
+    if x.pages.cache_slug != FIELD_NONE:
+        return x.pages.cache_slug
+    return x.target.slug
 
 
 def backfill_hq_sources(cache: dict[str, FactsRecord]) -> None:
@@ -577,7 +838,7 @@ def hq_source_of(x: HqSourceIn) -> str:
 
 def blob_of(x: FactsOneIn) -> str:
     """几页原文 → 喂给模型的页面文字:首页取开头(主营业务)+ 末尾(页脚里的总部地址),其余页取开头;每页带网址。"""
-    index = load_cache_index(CRAWL_SLUG_TPL.format(slug=x.target.slug))
+    index = load_cache_index(CRAWL_SLUG_TPL.format(slug=crawl_slug_of(x)))
     blocks: list = []
     for url in x.pages.urls:
         path = index.get(url)
@@ -625,9 +886,10 @@ def keep_section(x: SectionIn) -> None:
     if not quote_ok(VerifyIn(quote=quote, blob=x.blob)):
         return
     if x.mark == SECTION_HQ:
-        x.rec.hq_address = value_of(AnswerIn(answer=x.answer, key=K_HQ_ADDRESS))
         x.rec.hq_city = value_of(AnswerIn(answer=x.answer, key=K_HQ_CITY))
-        x.rec.hq_province = value_of(AnswerIn(answer=x.answer, key=K_HQ_PROVINCE))
+        x.rec.hq_address = hq_street_of(HqStreetIn(address=value_of(AnswerIn(answer=x.answer, key=K_HQ_ADDRESS)),
+                                                   city=x.rec.hq_city))
+        x.rec.hq_province = hq_province_of(value_of(AnswerIn(answer=x.answer, key=K_HQ_PROVINCE)))
         if x.rec.hq_address == FIELD_NONE and x.rec.hq_city == FIELD_NONE and x.rec.hq_province == FIELD_NONE:
             return
         x.rec.quotes[x.mark] = quote
@@ -637,6 +899,26 @@ def keep_section(x: SectionIn) -> None:
         return
     setattr(x.rec, x.mark.lower(), value)
     x.rec.quotes[x.mark] = quote
+
+
+def hq_street_of(x: HqStreetIn) -> str:
+    """总部街址只留到街(2026-09-20 清洗下沉到源头:visit 步交活直接上页面,等不到 mart 那一道;mart 的同名函数留着管存量记录,
+    对洗过的值是空转):模型常把整行地址连市 / 省 / 邮编抄进街址格,从街址里最后一次出现市名的地方截断;找不到市名 / 没有市名原样留。"""
+    address = x.address.strip()
+    if x.city == FIELD_NONE:
+        return address
+    at = address.lower().rfind(x.city.lower())
+    if at < 0:
+        return address
+    return address[:at].rstrip(HQ_TRIM_CHARS)
+
+
+def hq_province_of(raw: str) -> str:
+    """总部省:两位的一律大写当省码(模型偶尔抄成 bc);其余(Ontario / England / USA)原样留。"""
+    value = raw.strip()
+    if len(value) == PROV_CODE_LEN:
+        return value.upper()
+    return value
 
 
 def value_of(x: AnswerIn) -> str:
