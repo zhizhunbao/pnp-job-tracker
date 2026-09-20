@@ -30,7 +30,7 @@ export function EmployerBoard({ p }: EmployerPanelIn) {
   const rows = toEmployerCellRows({
     rows: p.data.rows, t: p.t, lang: p.lang, f: p.f, onOpen: p.peek.onOpenCompany, aliases: p.aliases,
   })
-  const empty = emptyTextOf({ t: p.t, f: p.f })
+  const empty = emptyTextOf({ t: p.t, f: p.f, failed: p.data.failed })
   return (
     <>
       <EmployerLoading loading={p.loading} t={p.t} />

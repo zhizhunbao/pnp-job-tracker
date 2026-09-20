@@ -352,6 +352,11 @@ export type PoolPage = {
    * 池构建日(本页最新一行的;'' = 本页无行)。
    */
   fetched: string
+
+  /**
+   * 这一页的查询挂了(2026-09-20:出错不许冒充「查无匹配」;正常取到的页一律 false)。
+   */
+  failed: boolean
 }
 
 /**
@@ -2144,6 +2149,11 @@ export type EmptyPoolPageIn = {
    * 省下拉选项(已取到的照给;池没拿到时空数组)。
    */
   provs: string[]
+
+  /**
+   * 这一页的查询挂了(2026-09-20:出错不许冒充「查无匹配」;正常取到的页一律 false)。
+   */
+  failed: boolean
 }
 
 /**

@@ -859,7 +859,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'cocat.gov-health': '보건', 'cocat.gov-edu': '교육',
   'de.lmia': 'LMIA 기록 있음', 'de.lmiaAll': '전체 LMIA', 'de.entryAll': '전체 경력', 'de.designated': '지정 고용주',
   'de.qPh': '고용주, 지역 검색', 'de.entry': '무경력 지원 가능', 'de.sep': ', ',
-  'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다', 'de.moreLocN': '외 {n}곳',
+  'de.emptyFiltered': '현재 조건에 맞는 고용주가 없습니다', 'de.loadFailed': '불러오지 못했습니다. 새로고침해 주세요.', 'de.moreLocN': '외 {n}곳',
   'de.notCollected': '본 사이트에 수록되지 않은 고용주입니다',
  
   'pro.unlock': 'Pro 잠금해제',

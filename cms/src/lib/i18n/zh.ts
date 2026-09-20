@@ -952,7 +952,7 @@ export const siteZh = {
   'cocat.gov-health': '卫生', 'cocat.gov-edu': '教育',
   'de.lmia': '办过 LMIA', 'de.lmiaAll': '全部 LMIA', 'de.entryAll': '全部经验', 'de.designated': '指定雇主',
   'de.qPh': '搜索雇主、地点', 'de.entry': '无经验可投', 'de.sep': '、',
-  'de.emptyFiltered': '当前筛选查无匹配', 'de.moreLocN': '另 {n} 地',
+  'de.emptyFiltered': '当前筛选查无匹配', 'de.loadFailed': '加载失败,请刷新重试', 'de.moreLocN': '另 {n} 地',
   'de.notCollected': '本站未收录该雇主',
  
   'pro.unlock': '解锁 Pro',

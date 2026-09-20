@@ -866,7 +866,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'cocat.gov-health': 'Health', 'cocat.gov-edu': 'Education',
   'de.lmia': 'Has LMIA record', 'de.lmiaAll': 'All LMIA', 'de.entryAll': 'All experience', 'de.designated': 'Designated',
   'de.qPh': 'Search employers, places', 'de.entry': 'No experience needed', 'de.sep': ', ',
-  'de.emptyFiltered': 'No employer matches these filters', 'de.moreLocN': '{n} more',
+  'de.emptyFiltered': 'No employer matches these filters', 'de.loadFailed': 'Failed to load. Please refresh.', 'de.moreLocN': '{n} more',
   'de.notCollected': 'Employer not in our records',
  
   'pro.unlock': 'Unlock Pro',

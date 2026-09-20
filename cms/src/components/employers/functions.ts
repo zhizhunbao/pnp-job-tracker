@@ -87,6 +87,7 @@ import { SalCell } from './salcell'
 import { SkilledCell } from './skilledcell'
 import { SponsorNameCell } from './sponsornamecell'
 import type {
+  EmptyTextIn, ShownPlace, ShownPlaceIn,
   AliasIn, BoardUrlIn, CardClickFn, CardClickIn, CellFn, ClearIn, ClickFn, CompareCellRow,
   CompareCellRowIn, CompareCellRowsIn, CompareDemoRow, CompareDim, CompareDimsIn, CompareMatchParts, CompareNamesIn,
   CompareProvParts, CompareRow, DiffVariant, DimValueIn,
@@ -101,7 +102,7 @@ import type {
   NocNameFn, NoteTextIn, OnLabelIn,
   PickFn, PoolDir, PoolFilters, PoolPage, PoolSort, ProvNameIn, RowWordsIn, SponsorCellRow,
   SponsorCellRowIn, SponsorCellRowsIn, SponsorColsIn, SponsorColsWordsIn, SponsorEmployerRow, SponsorKindIn,
-  PricingSetIn, QCommitIn, RowViewIn, SortPickIn, TextByFiltersIn, VerdictFact, VerdictFactIn,
+  PricingSetIn, QCommitIn, RowViewIn, SortPickIn, VerdictFact, VerdictFactIn,
   VerdictToneIn,
   WhereTextIn, WithIn,
   WordsIn,
@@ -223,8 +224,9 @@ export function toEmployerCellRow(x: EmployerCellRowIn): EmployerCellRow {
     industry = r.industry
   }
   const kind = kindOf({ f: x.f })
-  const provText = provEnOf(r.province)
-  const cityText = r.city
+  const place = shownPlaceOf({ r, f: x.f })
+  const provText = provEnOf(place.prov)
+  const cityText = place.city
   return {
     key: r.key + KEY_SEP + r.group,
     name: r.name,
@@ -352,6 +354,36 @@ function eeTextOf(x: EeTextIn): string {
     }
   }
   return out.join(x.t('de.sep'))
+}
+
+/**
+ * 这一行的省 / 市两格显示哪一处:没筛省、或筛的就是主场,显示主场(在招岗最多的那一处);筛的省 / 市不是主场的
+ * (2026-09-20 起省 / 市筛选按全部在招地点匹配:筛 Alberta 会出主场在 Ontario 的 Home Depot),显示用户筛的那一处 ——
+ * 省 = 所筛的省,市 = 所筛的市,没筛市就取该省里岗最多的在招地点;不然一排 Ontario 摆在 Alberta 的筛选结果里像是筛错了。
+ *
+ * @param x 池行与当前筛选。
+ * @returns 要显示的省码与市名;市可能是空串(该省的岗都没带市)。
+ */
+function shownPlaceOf(x: ShownPlaceIn): ShownPlace {
+  if (x.f.prov === TEXT_NONE) {
+    return { prov: x.r.province, city: x.r.city }
+  }
+  if (x.f.prov === x.r.province && (x.f.city === TEXT_NONE || x.f.city === x.r.city)) {
+    return { prov: x.r.province, city: x.r.city }
+  }
+  if (x.f.city !== TEXT_NONE) {
+    return { prov: x.f.prov, city: x.f.city }
+  }
+  const tail = WHERE_SEP + x.f.prov
+  for (const loc of x.r.locations) {
+    if (loc.endsWith(tail)) {
+      return { prov: x.f.prov, city: loc.slice(0, loc.length - tail.length) }
+    }
+  }
+  if (x.f.prov === x.r.province) {
+    return { prov: x.r.province, city: x.r.city }
+  }
+  return { prov: x.f.prov, city: TEXT_NONE }
 }
 
 /**
@@ -1844,6 +1876,7 @@ function morePageOf(x: MorePageIn): PoolPage {
     cities: x.next.cities,
     districts: x.next.districts,
     ees: x.next.ees,
+    failed: x.next.failed,
   }
 }
 
@@ -2471,11 +2504,16 @@ export function noteTextOf(x: NoteTextIn): string {
  * 都会落空,说成「不在官方清单」= 把本站的问题说成官方的问题,CLAUDE.md「两者在用户那里意思相反」;
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板改口);筛过了才空 = 查无匹配(改筛选再试)。
  * 「不在官方指定雇主清单内」那句只在**命中且全非指定**时出,见 searchNoteOf。
+ * 2026-09-20 加第三种:查询本身挂了 = 出错态(原先挂了也出「查无匹配」—— 当天 dev 上新查询引用了还没建的列,
+ * 整块板显示 0 家,Frank「数据怎么清没了」;出错不许冒充「没有数据」)。
  *
- * @param x 取词函数与当前筛选。
+ * @param x 取词函数、当前筛选与这一页是不是查挂了。
  * @returns 空态文案。
  */
-export function emptyTextOf(x: TextByFiltersIn): string {
+export function emptyTextOf(x: EmptyTextIn): string {
+  if (x.failed) {
+    return x.t('de.loadFailed')
+  }
   if (x.f.q !== TEXT_NONE) {
     return x.t('de.notCollected')
   }

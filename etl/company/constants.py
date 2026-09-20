@@ -1294,6 +1294,16 @@ IN_WIKIHQ_FACTS = paths.PROCESSED_SITES / "facts.json"
 """公司官网整理记录(sites 域产):本步只读它来圈候选 —— 整理成了(ok)、总部一节却没过原句核对的公司
 (官网没标总部:Robert Half / Deloitte / Rona 这类全球站,或 Magna 这类首页是 JS 壳的)。缺文件 = 本轮直接退。"""
 
+IN_WIKIHQ_PAGES = paths.PROCESSED_SITES / "pages.json"
+"""公司官网抓取记录(sites 域产):抓取失败的公司(官网死了 / 拦了 / 连不上)也进本步候选 —— 官网这条路走不通,只剩维基可问。"""
+
+K_CO_WEBSITE = "website"
+"""mart 公司行键:官网(空 = 公司表里没官网)。"""
+
+WIKIHQ_MIN_OPEN = 10
+"""没官网的公司,在招岗不少于这么多才进候选(2026-09-20:BMO Financial Group 457 个在招岗、公司表里没官网,
+雇主板最前面几行总部一格空着最扎眼;长尾小雇主 Wikidata 基本没有条目,不去白查)。"""
+
 OUT_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
 """维基总部兜底记录(slug → WikiHqRecord;mart 汇装在官网没给总部时读它)。来路排序 Frank 2026-09-19 定:官网 → 维基 → 联网搜索。"""
 
@@ -1355,10 +1365,10 @@ WIKIHQ_REFRESH_DAYS = 90
 WD_ENTITY_URL_TPL = "https://www.wikidata.org/wiki/{qid}"
 """Wikidata 条目链接(总部的出处:「总部所在地」这条声明就挂在公司条目页上,点开能核对)。"""
 
-NOTE_NO_SITE_FACTS = "processed/sites/facts.json 或 mart/companies.json 还没产出,wikihq 本轮跳过"
+NOTE_NO_SITE_FACTS = "mart 的 companies.json / jobs.json 还没产出,或没有候选,wikihq 本轮跳过"
 """缺输入的留痕。"""
 
-PRINT_WIKIHQ_TARGETS_TPL = "官网没标总部 {cands} 家 · 已查 {cache} · 本轮查 {todo}(limit {limit})"
+PRINT_WIKIHQ_TARGETS_TPL = "候选(官网没标总部 / 官网抓不到 / 没官网的大户){cands} 家 · 已查 {cache} · 本轮查 {todo}(limit {limit})"
 """wikihq 步报候选与本轮量。"""
 
 PRINT_WIKIHQ_ROW_TPL = "  {status:4} {name} | {city} {province} {source}"

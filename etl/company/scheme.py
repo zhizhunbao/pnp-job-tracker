@@ -1508,6 +1508,9 @@ class WikiHqTarget:
     name: str
     """公司名(按它搜 Wikidata)。"""
 
+    open_jobs: int
+    """在招岗数(排队用:多的先查)。"""
+
 
 @dataclass
 class PickWikiHqIn:

@@ -258,7 +258,7 @@ export async function employersBoardProps(input: BoardPropsIn): BoardPropsOut {
 export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerPageOut {
   const f = input.filters
   if (input.db == null) {
-    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: [] })
+    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: [], failed: true })
   }
   const db = input.db
   const provs = await fetchPoolProvs(db)
@@ -286,7 +286,7 @@ export async function loadEmployerPage(input: LoadEmployerPageIn): LoadEmployerP
       why = e.message
     }
     log({ tag: EMP_LOG.tag, text: `${EMP_LOG.pageQueryFailed}${why}` })
-    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: provs })
+    return emptyPoolPage({ filters: f, pageSize: input.pageSize, provs: provs, failed: true })
   }
 }
 
@@ -300,7 +300,7 @@ function withCitiesOf(input: WithCitiesIn): PoolPage {
   return {
     rows: input.page.rows, total: input.page.total, page: input.page.page, pageSize: input.page.pageSize,
     provs: input.page.provs, cities: input.cities, districts: input.districts,
-    ees: input.ees, fetched: input.page.fetched,
+    ees: input.ees, fetched: input.page.fetched, failed: input.page.failed,
   }
 }
 
@@ -314,7 +314,7 @@ function pageOf(input: PageOfIn): PoolPage {
   const rows = input.raw.map(toPoolRow)
   return {
     rows: rows, total: poolTotalOf(input.raw), page: input.filters.page, pageSize: input.pageSize, provs: input.provs,
-    cities: [], districts: [], ees: [], fetched: latestFetchedOf(rows),
+    cities: [], districts: [], ees: [], fetched: latestFetchedOf(rows), failed: false,
   }
 }
 
@@ -528,7 +528,7 @@ function latestFetchedOf(rows: PoolRows): string {
 function emptyPoolPage(input: EmptyPoolPageIn): PoolPage {
   return {
     rows: [], total: 0, page: input.filters.page, pageSize: input.pageSize, provs: input.provs, cities: [],
-    districts: [], ees: [], fetched: FETCHED_NONE,
+    districts: [], ees: [], fetched: FETCHED_NONE, failed: input.failed,
   }
 }
 

@@ -39,6 +39,7 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
+    IN_WIKIHQ_PAGES, K_CO_WEBSITE, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
     PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
     WD_PROV_CODES, WIKIHQ_LIMIT, WIKIHQ_REFRESH_DAYS,
@@ -2121,22 +2122,45 @@ def lookup_wiki_hq() -> None:
 
 
 def wikihq_targets() -> list:
-    """候选:官网整理记录 ok、quotes 里没有总部一节的公司(名字取 mart 公司表;按 slug 排,顺序稳定);缺输入 = 空表。"""
+    """候选三路(2026-09-20 放宽;原先只有第一路,BMO / Sienna / Home Depot 这些板上最前面的大户永远轮不到):
+    ① 官网整理成了、quotes 里却没有总部一节的;② 官网抓取失败的;③ 公司表里没官网、在招岗 ≥ WIKIHQ_MIN_OPEN 的。
+    按在招岗数多→少排(同数按 slug,顺序稳定);缺 mart = 空表。sites 两份记录缺了只是少一路,不拦。"""
     out: list = []
-    if not IN_WIKIHQ_FACTS.exists() or not IN_FACTS_COMPANIES.exists():
+    if not IN_FACTS_COMPANIES.exists() or not IN_FACTS_JOBS.exists():
         return out
-    name_of: dict = {}
-    for c in json.loads(IN_FACTS_COMPANIES.read_text(encoding=TEXT_ENCODING)):
-        if c.get(K_SLUG):
-            name_of[c[K_SLUG]] = c.get(K_NAME, "")
-    facts = json.loads(IN_WIKIHQ_FACTS.read_text(encoding=TEXT_ENCODING))
-    for slug in sorted(facts):
-        rec = facts[slug]
-        if rec.get(K_STATUS) != ST_OK or FACTS_SEC_HQ in rec.get(K_FACTS_QUOTES, {}):
+    open_jobs: dict = {}
+    for job in json.loads(IN_FACTS_JOBS.read_text(encoding=TEXT_ENCODING)):
+        if (job.get(K_STATUS) or STATUS_OPEN) == STATUS_CLOSED:
             continue
-        if name_of.get(slug):
-            out.append(WikiHqTarget(slug=slug, name=name_of[slug]))
+        slug = job.get(K_COMPANY_SLUG)
+        if slug:
+            open_jobs[slug] = open_jobs.get(slug, 0) + 1
+    facts = read_json_or_empty(IN_WIKIHQ_FACTS)
+    pages = read_json_or_empty(IN_WIKIHQ_PAGES)
+    for c in json.loads(IN_FACTS_COMPANIES.read_text(encoding=TEXT_ENCODING)):
+        slug = c.get(K_SLUG)
+        if not slug or not c.get(K_NAME):
+            continue
+        rec = facts.get(slug) or {}
+        no_hq = rec.get(K_STATUS) == ST_OK and FACTS_SEC_HQ not in rec.get(K_FACTS_QUOTES, {})
+        fetch_failed = slug in pages and pages[slug].get(K_STATUS) != ST_OK
+        big_nosite = not c.get(K_CO_WEBSITE) and open_jobs.get(slug, 0) >= WIKIHQ_MIN_OPEN
+        if no_hq or fetch_failed or big_nosite:
+            out.append(WikiHqTarget(slug=slug, name=c[K_NAME], open_jobs=open_jobs.get(slug, 0)))
+    out.sort(key=wikihq_order_of)
     return out
+
+
+def wikihq_order_of(t: WikiHqTarget) -> tuple:
+    """排队键:在招岗多的在前,同数按 slug。"""
+    return (-t.open_jobs, t.slug)
+
+
+def read_json_or_empty(path: Path) -> dict:
+    """读一份 JSON 表;文件不在给空表(别的域的产物,没跑过是预期形态)。"""
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding=TEXT_ENCODING))
 
 
 def pick_wikihq_todo(x: PickWikiHqIn) -> list:

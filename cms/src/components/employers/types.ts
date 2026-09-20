@@ -304,6 +304,11 @@ export type PoolPage = {
    * 「全部类别」下拉的选项(联邦 EE 类别标签,覆盖雇主多的在前)。
    */
   ees: string[]
+
+  /**
+   * 这一页的查询挂了(2026-09-20:出错不许冒充「查无匹配」;正常取到的页一律 false)。
+   */
+  failed: boolean
 }
 
 /**
@@ -1903,9 +1908,9 @@ export type NoteTextIn = {
 }
 
 /**
- * emptyTextOf / titleTextOf 的入参。
+ * emptyTextOf 的入参:取词函数、当前筛选与这一页是不是查挂了。
  */
-export type TextByFiltersIn = {
+export type EmptyTextIn = {
   /**
    * 取词函数。
    */
@@ -1915,6 +1920,41 @@ export type TextByFiltersIn = {
    * 当前筛选。
    */
   f: PoolFilters
+
+  /**
+   * 这一页的查询挂了(不是真的没有数据)。
+   */
+  failed: boolean
+}
+
+/**
+ * shownPlaceOf 的入参:池行与当前筛选。
+ */
+export type ShownPlaceIn = {
+  /**
+   * 池行。
+   */
+  r: PoolRow
+
+  /**
+   * 当前筛选。
+   */
+  f: PoolFilters
+}
+
+/**
+ * shownPlaceOf 的出参:这一行省 / 市两格要显示的那一处。
+ */
+export type ShownPlace = {
+  /**
+   * 省码。
+   */
+  prov: string
+
+  /**
+   * 英文市名;空串 = 没有。
+   */
+  city: string
 }
 
 /**
