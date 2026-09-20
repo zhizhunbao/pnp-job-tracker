@@ -1231,7 +1231,7 @@ def is_unofficial_site(x: SiteCheckIn) -> bool:
 def fill_brief(x: CompanyExtraIn) -> None:
     """qwen 五节简介进 aiBrief 四列(有就给,库里懒检索版让位;中文缺格不落列)。"""
     br = x.ctx.briefs.get(x.slug)
-    if br is None or not br.get(K_BRIEF):
+    if br is None or not br.get(K_BRIEF) or is_stale_brief(x):
         return
     x.extra[K_AI_BRIEF] = br[K_BRIEF]
     if br.get(K_BRIEF_ZH) and BRIEF_ZH_SCRIPT_RE.search(br[K_BRIEF_ZH]):
@@ -1240,6 +1240,19 @@ def fill_brief(x: CompanyExtraIn) -> None:
         x.extra[K_AI_BRIEF_KO] = br[K_BRIEF_KO]
     x.extra[K_AI_SOURCES] = json.dumps(br.get(K_SOURCES, []), ensure_ascii=False)
     x.extra[K_AI_FETCHED] = br.get(K_FETCHED)
+
+
+def is_stale_brief(x: CompanyExtraIn) -> bool:
+    """这份五节简介是不是照着已经被顶掉的旧官网写的(2026-09-20 自动纠错:Supersonic 的官网从 lindomestructures.com 换成真官网以后,
+    company 域 09-05 照旧站 About 页写的简介还在 briefs 里,每轮汇装都会把库里已经换对的简介盖回去)。
+    判据窄:富化缓存记了 replaces(被顶掉的旧官网主机名),且简介的出处里有那台主机 —— 才算;别的一律不算。"""
+    old = x.ctx.enrich.get(x.slug, {}).get(K_REPLACES)
+    if not old:
+        return False
+    for url in x.ctx.briefs[x.slug].get(K_SOURCES, []):
+        if site_host_of(url) == old:
+            return True
+    return False
 
 
 def fill_site_secs(x: CompanyExtraIn) -> None:

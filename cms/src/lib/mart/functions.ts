@@ -34,7 +34,7 @@ import { BROAD_TO_GROUP } from '@/lib/stats'
 import { DAY_MS } from '@/lib/time'
 import { SQL, type DbClient, type SqlParam } from '../db'
 import {
-  BATCH_ROWS, COLS_CITIES, COLS_COMPANIES, COLS_COMPANIES_COALESCE, COLS_COMPANIES_PLAIN, COLS_DEAD_EXT,
+  BATCH_ROWS, COLS_CITIES, COLS_COMPANIES, COLS_COMPANIES_COALESCE, COLS_COMPANIES_GUARDED, COLS_COMPANIES_PLAIN, COLS_DEAD_EXT,
   COLS_DESIGNATED_EMPLOYERS, COLS_DISTRICTS, COLS_DLI, COLS_EE_CATEGORIES, COLS_EE_POINTS_GRID,
   COLS_EMPLOYER_POOL, COLS_EMPLOYER_POOL_BUCKETS, COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
   COLS_MACRO_SERIES, COLS_NEWS_CACHE, COLS_NOC_CATEGORIES, COLS_NOC_DESCRIPTIONS, COLS_NOC_OPENINGS, COLS_PILOT_COMMUNITIES,
@@ -1186,7 +1186,9 @@ async function seedCompanies(x: SeedCompaniesIn): CompanyIdsOut {
   }
   await insertBatch({
     client: x.client, table: TBL_COMPANIES, cols: COLS_COMPANIES, rows: rows,
-    suffix: SQL.companiesUpsertSuffix({ plain: COLS_COMPANIES_PLAIN, coalesce: COLS_COMPANIES_COALESCE }),
+    suffix: SQL.companiesUpsertSuffix({
+      plain: COLS_COMPANIES_PLAIN, guarded: COLS_COMPANIES_GUARDED, coalesce: COLS_COMPANIES_COALESCE,
+    }),
   })
   const idBySlug: Record<string, number> = {}
   const res = await x.client.query(SQL.COMPANIES_IDS_BY_SLUGS, [Array.from(seenSlug)])

@@ -140,6 +140,11 @@ export type SqlCompaniesUpsertIn = {
   plain: readonly string[]
 
   /**
+   * 库里这一行刚被核对过就不盖的列(官网 / 总部几格,2026-09-20)。
+   */
+  guarded: readonly string[]
+
+  /**
    * 走 COALESCE 保旧值的列。
    */
   coalesce: readonly string[]

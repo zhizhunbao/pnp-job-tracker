@@ -18,8 +18,9 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 from log.functions import err, say
 from explore.functions import consume_queue, dump_seen
 
-SCHEDULED = [("seen", dump_seen), ("consume", consume_queue)]
-"""默认链(调度真相):先落「被看过的公司」清单(2026-09-20;一次请求,给 sites / company 排队用),再消费译名队列;抛错即中止本轮。"""
+SCHEDULED = [("consume", consume_queue), ("seen", dump_seen)]
+"""默认链(调度真相):先消费译名队列(本域的正业),再落「被看过的公司」清单(2026-09-20;一次请求,给 sites / company 排队用 ——
+放后面:清单接口出问题不该挡住译名,上线当口 cms 还没换版时实撞 404);抛错即中止本轮。"""
 
 TOOLS = {
     "consume": consume_queue,

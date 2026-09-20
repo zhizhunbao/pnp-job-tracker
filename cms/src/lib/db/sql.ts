@@ -633,7 +633,8 @@ export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = 
 
 /**
  * 工人交回来的官网 / 总部 / 简介直接写公司表(几分钟内上页面,不等下一轮汇装灌库;工人同时照常写 processed,下一轮 mart 出来的值与此一致)。
- * 官网:交来非空才盖。总部五格 + 核对时刻:交来市或街址非空才整组盖。简介:交来非空,且(原简介为空 / 零出处 / 官网这回被纠错换过 /
+ * 官网:交来非空才盖。总部五格:交来市或街址非空才整组盖。核对时刻 site_checked_at 每次都盖成现在 —— 灌库见它还新就不拿旧 mart 盖官网 / 总部
+ * (companiesUpsertSuffix 的 guarded 列)。简介:交来非空,且(原简介为空 / 零出处 / 官网这回被纠错换过 /
  * 原简介的出处里没有这个官网主机名 —— 来路排序官网优先,联网检索版与照着旧官网整理的让位;Supersonic 实撞:官网换对了,简介还是照别家站写的)才盖,
  * 原简介不是五节新版(没有 [FOUNDED] 标记的存量,cms 本来就当它过期、当没缓存)也算空。盖的同时清掉旧译文(对的是旧简介)。$1=池主键,$2=官网,$3~$7=总部街址 / 市 / 省 / 原句 / 出处,$8=简介,$9=出处 JSON 数组串,$10=官网是否被换过,
  * $11=这一轮抓的官网主机名(空串 = 不按主机名判)。
@@ -645,7 +646,7 @@ export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       hq_province = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($5, '') ELSE c.hq_province END,
       hq_quote = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($6, '') ELSE c.hq_quote END,
       hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
-      site_checked_at = CASE WHEN $3 <> '' OR $4 <> '' THEN now() ELSE c.site_checked_at END,
+      site_checked_at = now(),
       ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $8 ELSE c.ai_brief END,
       ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $9 ELSE c.ai_sources END,
       ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_website END,
@@ -2353,11 +2354,19 @@ export const newsUpsertSuffix = (x: SqlNewsUpsertIn) => {
 }
 
 /**
+ * 「这一行刚被家里的工人核对过」的判式(2026-09-20:点开优先的工人交活直接写公司表并盖 site_checked_at;
+ * 3 小时 = 一轮汇装一小时 + 跑的时间,留足余量 —— 过了这段 mart 早已汇装过同样的新值)。
+ */
+const COMPANIES_SITE_FRESH = `companies.site_checked_at > now() - interval '3 hours'`
+
+/**
  * companies 的 UPSERT 后缀(2026-07-25 跳过未变行):普通列按 EXCLUDED 直写并参与
  * IS DISTINCT FROM 比较;COALESCE 列保旧值并按 COALESCE 后的终值比较(与 SET 一一对应);
  * updated_at 直写但不参与比较 —— 数据没变就不该跳。
+ * 2026-09-20 加 guarded 列(官网 / 总部几格):库里这一行刚被核对过(COMPANIES_SITE_FRESH)的保库里的值、也不参与比较 ——
+ * 上线当天实撞:工人 14:04 写对了 Cotech 的官网 / 总部,14:06 灌库拿 13:58 汇装的 mart 又盖回死官网。
  *
- * @param x 普通列与 COALESCE 列清单。
+ * @param x 普通列、刚核对过就不盖的列与 COALESCE 列清单。
  * @returns ON CONFLICT 子句(含 WHERE「任一业务列真变了才写」)。
  */
 export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
@@ -2366,12 +2375,18 @@ export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
     sets.push(`${c}=EXCLUDED.${c}`)
   }
   sets.push(`updated_at=EXCLUDED.updated_at`)
+  for (const c of x.guarded) {
+    sets.push(`${c}=CASE WHEN ${COMPANIES_SITE_FRESH} THEN companies.${c} ELSE EXCLUDED.${c} END`)
+  }
   for (const c of x.coalesce) {
     sets.push(`${c}=COALESCE(EXCLUDED.${c}, companies.${c})`)
   }
   const changed: string[] = []
   for (const c of x.plain) {
     changed.push(`companies.${c} IS DISTINCT FROM EXCLUDED.${c}`)
+  }
+  for (const c of x.guarded) {
+    changed.push(`(NOT COALESCE(${COMPANIES_SITE_FRESH}, false) AND companies.${c} IS DISTINCT FROM EXCLUDED.${c})`)
   }
   for (const c of x.coalesce) {
     changed.push(`companies.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, companies.${c})`)
