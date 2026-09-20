@@ -103,6 +103,11 @@ class FactsRecord(BaseModel):
     sources: list[str] = []
     """喂给模型的页面地址(出处网址)。"""
 
+    name_ok: bool = False
+    """官网归属闸(2026-09-20 Frank「这个是错的啊」:Best Buy Express 的官网记成了 bell.ca,整理出来的是 Bell 的总部):
+    公司名对得上这个官网才算数 —— 名字里的词在主机名里 / 主机名是名字的缩写 / 页面文字里有这家公司的名字,三样占一样。
+    对不上的记录照留(原文与原句都在),但 mart 不拿它进库;存量由 facts 步开头回填。"""
+
     hq_source: str = ""
     """总部原句出自哪一页(2026-09-20:公司卡「总部」点开的出处;原句在几页里都找不到 —— 首页被裁过中段 —— 记首页;没有总部给空串)。"""
 
@@ -265,6 +270,42 @@ class VerifyIn:
 
     blob: str
     """喂给模型的页面文字全文(已压空白、小写)。"""
+
+
+@dataclass
+class AbbrevIn:
+    """is_abbrev_of() 入参。"""
+
+    label: str
+    """主机名的一段(已压成小写字母数字)。"""
+
+    initials: str
+    """公司名各词的首字母串。"""
+
+
+@dataclass
+class BackfillNameIn:
+    """backfill_name_ok() 入参。"""
+
+    cache: dict
+    """整理记录(slug → FactsRecord)。"""
+
+    targets: list
+    """范围内的公司(取名字用)。"""
+
+
+@dataclass
+class NameOkIn:
+    """name_ok_of() 入参。"""
+
+    name: str
+    """公司名。"""
+
+    host: str
+    """官网首页的主机名(跟完跳转后的)。"""
+
+    blob: str
+    """几页页面文字(原样;函数里自己压)。"""
 
 
 @dataclass

@@ -39,7 +39,7 @@ from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, SeedSpec
 from fetch.functions import make_client, make_polite_client
 from company.constants import (
-    IN_WIKIHQ_PAGES, K_CO_WEBSITE, WIKIHQ_MIN_OPEN,
+    IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
     PRINT_WIKIHQ_ROW_TPL, PRINT_WIKIHQ_TARGETS_TPL, PROP_HQ, PROP_LOCATED_IN, WD_ENTITY_URL_TPL, WD_HQ_PLACE_PROPS,
     WD_PROV_CODES, WIKIHQ_LIMIT, WIKIHQ_REFRESH_DAYS,
@@ -2123,7 +2123,7 @@ def lookup_wiki_hq() -> None:
 
 def wikihq_targets() -> list:
     """候选三路(2026-09-20 放宽;原先只有第一路,BMO / Sienna / Home Depot 这些板上最前面的大户永远轮不到):
-    ① 官网整理成了、quotes 里却没有总部一节的;② 官网抓取失败的;③ 公司表里没官网、在招岗 ≥ WIKIHQ_MIN_OPEN 的。
+    ① 官网整理成了、quotes 里却没有总部一节的,或官网归属闸没过的(官网不是这家的,它的总部不算数);② 官网抓取失败的;③ 公司表里没官网、在招岗 ≥ WIKIHQ_MIN_OPEN 的。
     按在招岗数多→少排(同数按 slug,顺序稳定);缺 mart = 空表。sites 两份记录缺了只是少一路,不拦。"""
     out: list = []
     if not IN_FACTS_COMPANIES.exists() or not IN_FACTS_JOBS.exists():
@@ -2142,7 +2142,8 @@ def wikihq_targets() -> list:
         if not slug or not c.get(K_NAME):
             continue
         rec = facts.get(slug) or {}
-        no_hq = rec.get(K_STATUS) == ST_OK and FACTS_SEC_HQ not in rec.get(K_FACTS_QUOTES, {})
+        no_hq = rec.get(K_STATUS) == ST_OK and (FACTS_SEC_HQ not in rec.get(K_FACTS_QUOTES, {})
+                                                or rec.get(K_FACTS_NAME_OK) is not True)
         fetch_failed = slug in pages and pages[slug].get(K_STATUS) != ST_OK
         big_nosite = not c.get(K_CO_WEBSITE) and open_jobs.get(slug, 0) >= WIKIHQ_MIN_OPEN
         if no_hq or fetch_failed or big_nosite:

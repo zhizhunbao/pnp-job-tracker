@@ -327,6 +327,40 @@ NOTE_EMPTY = "empty"
 NOTE_NOTHING = "nothing verified"
 """整理失败由头:七节没有一节过了原句核对。"""
 
+NAME_STOP = frozenset({
+    "the", "and", "of", "inc", "incorporated", "ltd", "ltee", "limited", "llp", "llc", "corp", "corporation", "company",
+    "co", "du", "de", "des", "la", "le", "les", "et", "l", "d", "group", "groupe", "services", "service", "enterprises",
+    "holdings", "international", "solutions",
+})
+"""官网归属闸:公司名里不算数的词(法律后缀 + 虚词 + 泛词),比对前剔掉;剔光了就用原词。"""
+
+NAME_WORD_RE = re.compile(r"[^a-z0-9]+")
+"""官网归属闸:压成小写 ASCII 以后按非字母数字切词 / 压平主机名用。"""
+
+ASCII_CODEC = "ascii"
+"""去重音用的编码名(NFKD 拆开后丢掉非 ASCII 的音标)。"""
+
+ASCII_ERRORS = "ignore"
+"""去重音时丢掉编不进 ASCII 的字符。"""
+
+NFKD_FORM = "NFKD"
+"""去重音用的 Unicode 规范化形式。"""
+
+NAME_TOKEN_MIN_LEN = 4
+"""公司名里的词至少这么长,才拿它的开头去主机名里找(Trimax → trimaxsteel.com、Russel → russelmetals.com)。"""
+
+NAME_TOKEN_HEAD_LEN = 5
+"""拿词的前几个字母去找(Trusses → a-1truss.ca、Nordiques → groupenordique.com:单复数 / 词尾不一致也认)。"""
+
+NAME_SHORT_LEN = 3
+"""三个字母的品牌词(XYZ / FLB / KFC / BMW)只认「主机名以它开头」;缩写域名也至少这么长才比。"""
+
+NAME_PHRASE_WORDS = 2
+"""页面文字里找公司名时,用名字里前几个算数的词连着找(Fraser Health Authority → fraser health)。"""
+
+HOST_LABEL_SEP = "."
+"""主机名的段分隔。"""
+
 # =========================================================================
 # 5. 打印模板
 # =========================================================================

@@ -119,7 +119,7 @@ from mart.constants import (
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
     BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
-    K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
+    K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
     K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
@@ -1053,12 +1053,12 @@ def load_careers() -> dict:
 
 
 def load_site_facts() -> dict:
-    """公司官网整理记录:slug → 记录(只取 ok;缺文件 = 空表,sites 域没跑过也照常汇装)。"""
+    """公司官网整理记录:slug → 记录(只取 ok 且过了官网归属闸的;缺文件 = 空表,sites 域没跑过也照常汇装)。"""
     out: dict = {}
     if not IN_SITE_FACTS.exists():
         return out
     for slug, c in read_table(IN_SITE_FACTS).items():
-        if c.get(K_STATUS) == SITE_FACTS_OK:
+        if c.get(K_STATUS) == SITE_FACTS_OK and c.get(K_SITE_NAME_OK) is True:
             out[slug] = c
     return out
 

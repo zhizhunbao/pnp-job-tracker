@@ -848,6 +848,10 @@ IN_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
 SITE_FACTS_OK = "ok"
 """官网整理记录 / 维基总部记录的状态:做成(只取 ok 行)。"""
 
+K_SITE_NAME_OK = "name_ok"
+"""官网整理记录:官网归属闸(sites 域判的:这个官网是不是这家公司的;2026-09-20 Frank「这个是错的啊」——
+Best Buy Express 的官网记成了 bell.ca,进库的是 Bell 的总部)。不是 True 的整条不进库。"""
+
 K_SITE_QUOTES = "quotes"
 """官网整理记录:节标记 → 过了核对的页面原句(没过核对的节不在里面,它的值不算数)。"""
 

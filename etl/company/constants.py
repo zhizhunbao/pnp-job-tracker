@@ -1310,6 +1310,9 @@ OUT_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
 K_FACTS_QUOTES = "quotes"
 """官网整理记录:节标记 → 过了核对的页面原句。"""
 
+K_FACTS_NAME_OK = "name_ok"
+"""官网整理记录:官网归属闸(不是 True = 这个官网不是这家公司的,它整理出来的总部不算数,改问维基)。"""
+
 FACTS_SEC_HQ = "HQ"
 """官网整理记录里总部那一节的标记(quotes 里没有它 = 官网没标总部 = 本步的候选)。"""
 

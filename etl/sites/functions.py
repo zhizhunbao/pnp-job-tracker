@@ -10,6 +10,7 @@ import asyncio
 import json
 import os
 import re
+import unicodedata
 from datetime import datetime, timezone
 from typing import cast
 from urllib.parse import urljoin, urlparse
@@ -28,6 +29,8 @@ from fetch.functions import make_client
 from log.functions import say
 from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
+    ASCII_CODEC, ASCII_ERRORS, HOST_LABEL_SEP, NAME_PHRASE_WORDS, NAME_SHORT_LEN, NAME_STOP, NAME_TOKEN_HEAD_LEN,
+    NAME_TOKEN_MIN_LEN, NAME_WORD_RE, NFKD_FORM,
     ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, COOKIE_JAR_EMPTY, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
     NOTE_NO_BROWSER, PRINT_BROWSER_ABORT, CONTACT_LINK_RE, CRAWL_SLUG_TPL, ENV_LLM_BASE, ENV_LLM_MODEL, ERRORS_REPLACE,
     EXTRA_PAGES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX,
@@ -43,7 +46,7 @@ from sites.constants import (
     TEXT_ENCODING, THINK_RE, URL_FRAGMENT_SEP, URL_SCHEME_SEP, URL_TAIL_SLASH, VALUE_MAX_LEN, WS_RE,
 )
 from sites.scheme import (
-    AnswerIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, HqSourceIn, HttpClientLike, LinksIn, LlmCallIn,
+    AbbrevIn, AnswerIn, BackfillNameIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, HqSourceIn, HttpClientLike, LinksIn, LlmCallIn, NameOkIn,
     LlmCfg, PagesRecord, PickFactsIn, PickFetchIn, SectionIn, Target, VerifyIn,
 )
 
@@ -115,6 +118,7 @@ def build_site_facts() -> None:
     pages = read_pages()
     cache = read_facts()
     backfill_hq_sources(cache)
+    backfill_name_ok(BackfillNameIn(cache=cache, targets=targets))
     todo = pick_facts_todo(PickFactsIn(targets=targets, pages=pages, cache=cache, limit=int(FACTS_LIMIT)))
     say(PRINT_FACTS_TARGETS_TPL.format(pages=count_pages_ok(pages), done=count_facts_ok(cache), todo=len(todo),
                                        limit=FACTS_LIMIT, model=cfg.model))
@@ -452,6 +456,7 @@ def facts_one(x: FactsOneIn) -> FactsRecord:
         rec.note = NOTE_NOTHING
         return rec
     rec.hq_source = hq_source_of(HqSourceIn(slug=x.target.slug, quote=rec.quotes.get(SECTION_HQ, FIELD_NONE), urls=rec.sources))
+    rec.name_ok = name_ok_of(NameOkIn(name=x.target.name, host=host_of(first_url_of(rec.sources)), blob=blob))
     rec.status = ST_OK
     return rec
 
@@ -462,6 +467,96 @@ def backfill_hq_sources(cache: dict[str, FactsRecord]) -> None:
         quote = rec.quotes.get(SECTION_HQ, FIELD_NONE)
         if quote != FIELD_NONE and rec.hq_source == FIELD_NONE:
             rec.hq_source = hq_source_of(HqSourceIn(slug=slug, quote=quote, urls=rec.sources))
+
+
+def backfill_name_ok(x: BackfillNameIn) -> None:
+    """存量回填官网归属闸:整理成了、还没判过(name_ok 为 False)的记录,读缓存原文重判一遍(不过模型)。
+    两段式:先只拿主机名判(不读盘,九成在这一步过),判不过的才读页面文字再判。
+    判过确实对不上的每轮会重判一次 —— 只有几十家、纯本地读盘,不值得为它多记一格「判过没」。"""
+    names: dict = {}
+    for t in x.targets:
+        names[t.slug] = t.name
+    for slug, rec in x.cache.items():
+        if rec.status != ST_OK or rec.name_ok or slug not in names:
+            continue
+        host = host_of(first_url_of(rec.sources))
+        rec.name_ok = name_ok_of(NameOkIn(name=names[slug], host=host, blob=FIELD_NONE))
+        if not rec.name_ok:
+            rec.name_ok = name_ok_of(NameOkIn(name=names[slug], host=host, blob=pages_text_of(
+                HqSourceIn(slug=slug, quote=FIELD_NONE, urls=rec.sources))))
+
+
+def first_url_of(urls: list) -> str:
+    """出处网址的第一条(首页);空表给空串。"""
+    if len(urls) == 0:
+        return FIELD_NONE
+    return urls[0]
+
+
+def pages_text_of(x: HqSourceIn) -> str:
+    """几页缓存原文的整页文字接在一起(回填用;quote 一格不读)。"""
+    index = load_cache_index(CRAWL_SLUG_TPL.format(slug=x.slug))
+    parts: list = []
+    for url in x.urls:
+        path = index.get(url)
+        if path is not None:
+            parts.append(page_text_of(path.read_text(encoding=TEXT_ENCODING, errors=ERRORS_REPLACE)))
+    return SPACE_SEP.join(parts)
+
+
+def name_ok_of(x: NameOkIn) -> bool:
+    """官网归属闸:这个官网是不是这家公司的。三样占一样就算:
+    ① 名字里的词在主机名里(够长的词取开头几个字母找;三个字母的品牌词只认主机名以它开头);
+    ② 主机名的某一段是名字各词首字母的缩写(按顺序挑得出来、首字母相同:cssdgs ← Centre de services scolaire des Grandes-Seigneuries);
+    ③ 页面文字里连着出现名字里前两个算数的词。
+    都不占 = 对不上(Best Buy Express ↔ bell.ca、Prevost ↔ volvo.com、Maxi ↔ loblaw.ca、加盟店 ↔ 总站):宁可空着,不拿别家的事实顶上。"""
+    words = name_words_of(x.name)
+    tokens: list = []
+    for w in words:
+        if w not in NAME_STOP and len(w) > 1:
+            tokens.append(w)
+    if len(tokens) == 0:
+        tokens = words
+    if len(tokens) == 0 or x.host == FIELD_NONE:
+        return False
+    flat = NAME_WORD_RE.sub(FIELD_NONE, x.host)
+    for t in tokens:
+        if len(t) >= NAME_TOKEN_MIN_LEN and t[:NAME_TOKEN_HEAD_LEN] in flat:
+            return True
+        if len(t) == NAME_SHORT_LEN and flat.startswith(t):
+            return True
+    initials = FIELD_NONE
+    for w in words:
+        initials += w[0]
+    for label in x.host.split(HOST_LABEL_SEP)[:-1]:
+        if is_abbrev_of(AbbrevIn(label=NAME_WORD_RE.sub(FIELD_NONE, label), initials=initials)):
+            return True
+    phrase = SPACE_SEP.join(tokens[:NAME_PHRASE_WORDS])
+    text = SPACE_SEP + SPACE_SEP.join(name_words_of(x.blob)) + SPACE_SEP
+    return SPACE_SEP + phrase + SPACE_SEP in text
+
+
+def name_words_of(text: str) -> list:
+    """一段文字 → 小写、去重音、按非字母数字切出来的词。"""
+    plain = unicodedata.normalize(NFKD_FORM, text).encode(ASCII_CODEC, ASCII_ERRORS).decode(ASCII_CODEC).lower()
+    out: list = []
+    for w in NAME_WORD_RE.split(plain):
+        if w != FIELD_NONE:
+            out.append(w)
+    return out
+
+
+def is_abbrev_of(x: AbbrevIn) -> bool:
+    """主机名的一段是不是名字首字母串的缩写:至少 NAME_SHORT_LEN 个字母、首字母相同、它的字母能按顺序从首字母串里挑出来。"""
+    if len(x.label) < NAME_SHORT_LEN or len(x.initials) < NAME_SHORT_LEN or x.label[0] != x.initials[0]:
+        return False
+    at = 0
+    for ch in x.label:
+        at = x.initials.find(ch, at)
+        if at < 0:
+            return False
+        at += 1
+    return True
 
 
 def hq_source_of(x: HqSourceIn) -> str:
