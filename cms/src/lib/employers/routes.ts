@@ -10,6 +10,7 @@
  */
 import { headers } from 'next/headers'
 import { getDb } from '../db/server'
+import { EMP_LOG, log } from '../log'
 import { employerVerdict } from '../ruling/server'
 import { textResponseOf,
   BAD_GATEWAY, BAD_REQUEST, HDR_CACHE_CONTROL, HDR_CONTENT_DISPOSITION, HDR_CONTENT_TYPE, NO_CONTENT,
@@ -25,7 +26,7 @@ import { denyBodyOf, checkLimit, freeGate, getUser, getUserOrNull, ipOf, isPro, 
 import {
   CACHE_TTL_MS, CITY_LEN_MAX, CO_IP_DAILY, CO_LIMIT_PREFIX, CO_MARKS_RE, CSV_CACHE_CONTROL, CSV_CONTENT_TYPE,
   CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
-  EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, NAME_LEN_MAX, NOC5_RE, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
+  EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, HDR_HUMAN, HDR_UA, HUMAN_YES, NAME_LEN_MAX, NOC5_RE, UA_LOG_MAX, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
   FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
   ALIAS_PREFIX, NEWLINE, DESC_KEY_TAIL,
@@ -249,6 +250,7 @@ export async function employersExportRoute(req: Request): Promise<Response> {
  * 存 ai_* 四列 = 永久缓存。一家公司全站只查一次(#107 与顾问公司初判共享)。
  * 红线:出处列表随答案返回;查不到如实回空;掉线静默 204。
  * 调查并入统一免费池(第25轮打码批;缓存命中不计费)。
+ * 2026-09-19:没带「这一页有过真人动作」标记(HDR_HUMAN)的只给库里已有的,不联网现查(来由见 HDR_HUMAN 的注);真现查留一行带浏览器标识的痕。
  *
  * @param req 请求(body 是 { name })。
  * @returns 公司信息 json;掉线/查无 204、名字非法 400、超额由 freeGate 裁决。
@@ -277,6 +279,14 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
   if (row.cached != null) {
     return Response.json(row.cached)
   }
+  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES) {
+    return new Response(null, { status: NO_CONTENT })
+  }
+  let ua = req.headers.get(HDR_UA)
+  if (ua == null) {
+    ua = NAME_UNSET
+  }
+  log({ tag: EMP_LOG.tag, text: `${EMP_LOG.researchBy}${name}${EMP_LOG.researchBySep}${ua.slice(0, UA_LOG_MAX)}` })
   const g = freeGate({ user: await getUser(req.headers), headers: req.headers })
   const deny = denyBodyOf(g)
   if (deny != null) {

@@ -606,6 +606,16 @@ export const EMP_LOG = {
   sourcesParseFailed: 'cached research sources parse failed, treating as none: ',
 
   /**
+   * 一次真的联网现查(带公司名与浏览器标识;成批出现 = 有东西在替我们烧搜索)。
+   */
+  researchBy: 'company research: ',
+
+  /**
+   * 现查留痕里公司名与浏览器标识之间的分隔。
+   */
+  researchBySep: ' | ',
+
+  /**
    * 调查回来一条出处都没有(联网搜索没搜到 / 没在工作,答案是模型裸答)—— 只留痕,照旧落库。
    */
   noSources: 'company research came back with no sources: ',

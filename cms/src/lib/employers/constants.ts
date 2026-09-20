@@ -757,6 +757,30 @@ export const EXPORT_Q_LEN_MAX = 80
 export const NAME_LEN_MAX = 200
 
 /**
+ * 公司现查请求上的「这一页有过真人动作」标记头(页面那头 components/companies 发;值是 HUMAN_YES 才联网现查)。
+ * 2026-09-19:09-11~09-17 每天上千次公司现查,被查的全是长尾小雇主(平均 1.6 个在招岗、一堆私人雇主)、24 小时匀速每 20~40 秒一次,
+ * 每 IP 每天 10 次的匿名限流拦不住(IP 分散在 150 个以上)—— 不守 robots 的无头浏览器顺着站点地图把公司页挨个渲染,每渲染一页
+ * 就替我们打一次联网搜索,把盒子的出口 IP 在 Brave / DuckDuckGo / Startpage 那头打成了黑名单(searxng 0 结果,AI 简介从此裸答)。
+ * 库里已有的简介照给(不花钱);没有的,没带标记就回 204,不进额度闸、不打网关。
+ */
+export const HDR_HUMAN = 'x-human'
+
+/**
+ * 标记值:这一页有过真人动作。
+ */
+export const HUMAN_YES = '1'
+
+/**
+ * 请求头名:浏览器标识(现查留痕用 —— 下回再有成批现查,日志里一眼看得出是谁)。
+ */
+export const HDR_UA = 'user-agent'
+
+/**
+ * 现查留痕里浏览器标识最多记多少字。
+ */
+export const UA_LOG_MAX = 120
+
+/**
  * 五位职业码的形状(导出筛选 noc 参数验形)。
  */
 export const NOC5_RE = /^\d{5}$/

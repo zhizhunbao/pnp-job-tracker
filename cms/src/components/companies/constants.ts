@@ -334,6 +334,29 @@ export const CH_C_NONE = '#9ca3af'
 export const URL_CO_INFO = '/api/employers/info'
 
 /**
+ * 公司现查请求上的「这一页有过真人动作」标记头(2026-09-19:09-11~09-17 每天上千次公司现查,全是长尾小雇主、24 小时匀速、
+ * 每 IP 每天 10 次的匿名限流拦不住(IP 分散在 150 个以上)—— 不守 robots 的无头浏览器顺着站点地图把公司页挨个渲染,
+ * 每渲染一页就替我们打一次联网搜索,把盒子的出口 IP 在 Brave / DuckDuckGo / Startpage 那头打成了黑名单(联网搜索 0 结果,
+ * AI 简介从此裸答)。现查照旧一加载就发、体验不变,只是带上这个标记;没带的服务端只给库里已有的,不联网现查。
+ */
+export const HDR_HUMAN = 'x-human'
+
+/**
+ * 标记值:这一页有过真人动作。
+ */
+export const HUMAN_YES = '1'
+
+/**
+ * 标记值:还没有过。
+ */
+export const HUMAN_NO = '0'
+
+/**
+ * 算「真人动作」的事件(没带标记落空后,等其中任何一个来了再补发一次现查)。
+ */
+export const HUMAN_EVENTS = ['pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel', 'scroll']
+
+/**
  * 公司简介翻译接口(#185 中文对照:懒翻,拿到存一份切换零延迟)。
  */
 export const URL_CO_TRANSLATE = '/api/employers/translate'

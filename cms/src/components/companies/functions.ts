@@ -26,7 +26,8 @@ import {
   CO_NOT_FOUND_RE, CO_SEC_BASE, CO_SEC_HAS_RE, CO_SEC_KEYS, CO_SEC_MARKS, CO_SEC_SPLIT_RE, CO_STREAM_COUNT_RE,
   CO_STREAM_SPLIT_RE, DASH_EM, DESC_MIN_LEN, FAME_PROVS_MIN, GOV_BODY_RE, GOV_ORG_RE, GOV_PLACE_RE, GRADE_AMBER_MIN,
   GRADE_C_2, GRADE_C_3, GRADE_C_4, GRADE_C_5, GRADE_C_NONE, GRADE_DEEP_GREEN_MIN, GRADE_GREEN_MIN, GRADE_NEUTRAL_MIN,
-  HDR_CONTENT_TYPE, HTTP_OK, HTTP_URL_RE, JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
+  HDR_CONTENT_TYPE, HDR_HUMAN, HTTP_OK, HTTP_URL_RE, HUMAN_EVENTS, HUMAN_NO, HUMAN_YES,
+  JD_ZH_CLS, JOBS_FIRST_N, KEY_ACT_EVIDENCE, KEY_ACT_EVIDENCE_ONE,
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
@@ -1034,6 +1035,7 @@ export function makeTvOpen(x: TvOpenIn): GoBackFn {
  */
 export function makeLoadBrief(x: LoadBriefIn): LoadFn {
   return function loadBrief(flag: DeadFlag): void {
+    const human = humanActiveOf()
     function read(r: Response): Promise<BriefJson> {
       if (r.ok && r.status === HTTP_OK) {
         return r.json()
@@ -1044,24 +1046,37 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       if (flag.dead) {
         return
       }
-      let fact: CompanyBriefFact | null = null
-      if (j != null && j.brief != null && j.brief !== TEXT_NONE) {
-        let website = TEXT_NONE
-        let fetched = TEXT_NONE
-        let sources: string[] = []
-        if (j.website != null) {
-          website = j.website
-        }
-        if (j.fetched != null) {
-          fetched = j.fetched
-        }
-        if (j.sources != null) {
-          sources = j.sources
-        }
-        fact = { brief: j.brief, website, sources, fetched }
-      }
+      const fact = briefFactOf(j)
       x.setFact(fact)
       x.setLoading(false)
+      if (fact == null && human === false) {
+        for (const ev of HUMAN_EVENTS) {
+          window.addEventListener(ev, askAgain, { once: true, passive: true })
+        }
+      }
+    }
+    function landAgain(j: BriefJson): void {
+      const fact = briefFactOf(j)
+      if (flag.dead || fact == null) {
+        return
+      }
+      x.setFact(fact)
+    }
+    function askAgain(): void {
+      for (const ev of HUMAN_EVENTS) {
+        window.removeEventListener(ev, askAgain)
+      }
+      if (flag.dead) {
+        return
+      }
+      fetch(URL_CO_INFO, {
+        method: METHOD_POST,
+        headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: HUMAN_YES },
+        body: JSON.stringify({ name: x.company }),
+      }).then(read).then(landAgain).catch(ignoreAgain)
+    }
+    function ignoreAgain(): void {
+      return
     }
     function fall(): void {
       if (flag.dead) {
@@ -1072,10 +1087,61 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
     }
     fetch(URL_CO_INFO, {
       method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
+      headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: humanMarkOf(human) },
       body: JSON.stringify({ name: x.company }),
     }).then(read).then(land).catch(fall)
   }
+}
+
+/**
+ * 这一页有没有过真人动作(浏览器自己记的:点过、按过键、触过屏才算;只渲染不操作的无头浏览器是 false)。
+ * 来由见 HDR_HUMAN。老浏览器没有这个接口的按「有过」算 —— 宁可多查一次,不挡真人。
+ *
+ * @returns 有过 = true。
+ */
+function humanActiveOf(): boolean {
+  if (navigator.userActivation == null) {
+    return true
+  }
+  return navigator.userActivation.hasBeenActive
+}
+
+/**
+ * 标记头的值。
+ *
+ * @param human 这一页有没有过真人动作。
+ * @returns 标记值。
+ */
+function humanMarkOf(human: boolean): string {
+  if (human) {
+    return HUMAN_YES
+  }
+  return HUMAN_NO
+}
+
+/**
+ * 现查接口的响应 → 查到的简介;没查到给 null(整块不出,不拿空壳假装查过)。
+ *
+ * @param j 接口响应。
+ * @returns 简介或 null。
+ */
+function briefFactOf(j: BriefJson): CompanyBriefFact | null {
+  if (j == null || j.brief == null || j.brief === TEXT_NONE) {
+    return null
+  }
+  let website = TEXT_NONE
+  let fetched = TEXT_NONE
+  let sources: string[] = []
+  if (j.website != null) {
+    website = j.website
+  }
+  if (j.fetched != null) {
+    fetched = j.fetched
+  }
+  if (j.sources != null) {
+    sources = j.sources
+  }
+  return { brief: j.brief, website, sources, fetched }
 }
 
 /**
