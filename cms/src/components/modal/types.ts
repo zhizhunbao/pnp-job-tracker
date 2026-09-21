@@ -426,3 +426,28 @@ export type ResizeHandlesIn = {
    */
   startOf: (edge: ResizeEdge) => (e: React.PointerEvent) => void
 }
+
+/**
+ * useLayerStack 的出参(2026-09-21 叠开的弹框栈):后开的在上面,各层从下到上排。
+ */
+export type LayerStackOut<L> = {
+  /**
+   * 从下到上的各层;空 = 一层都没开。
+   */
+  layers: L[]
+
+  /**
+   * 叠上一层。
+   */
+  push: (layer: L) => void
+
+  /**
+   * 换掉最上面一层(同框换内容:公司弹框里点相似雇主);一层都没有时等于叠上一层。
+   */
+  swapTop: (layer: L) => void
+
+  /**
+   * 关掉最上面一层(× 与 Esc 都走它)。
+   */
+  pop: () => void
+}

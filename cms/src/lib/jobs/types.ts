@@ -2161,6 +2161,16 @@ export type RelatedJob = {
    * 薪资展示文本。
    */
   salaryText: string
+
+  /**
+   * 职位名中文译名(版本号对得上才有);'' = 还没译。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名;'' = 还没译。
+   */
+  titleKo: string
 }
 
 /**

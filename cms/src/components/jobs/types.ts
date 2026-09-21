@@ -962,31 +962,17 @@ export type BoardModalsPanel = {
   onPopupClose: ClickFn
 
   /**
-   * 职位描述弹框的那一岗;null = 没开。
+   * 弹框栈(2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」):职位描述弹框与公司弹框一层层叠,
+   * 关哪层都只关最上面那层;原先的「职位描述弹框那一岗」「公司弹框那一家」两格并进这里。
    */
-  descJob: JobFact | null
+  stack: PeekStackRef
 
   /**
-   * 关职位描述弹框。
-   */
-  onDescClose: ClickFn
-
-  /**
-   * 公司弹框(不带职位)的那一家;null = 没开。
-   * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主不再新开页 —— 字段弹框让位给这一个
-   * (同一个外框、同一份位置与大小,看起来就是同框换了一家);框里再点相似雇主接着换。
-   */
-  peekCo: CompanyPeek | null
-
-  /**
-   * 点相似雇主:关字段弹框、开 / 换公司弹框。
+   * 字段弹框里点相似雇主:关字段弹框、公司弹框叠上。
+   * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主不再新开页 —— 字段弹框让位给公司弹框;
+   * 框里再点相似雇主同框换一家(2026-09-21 起这一步由弹框栈的渲染件接手)。
    */
   onPeekCo: (peek: CompanyPeek) => void
-
-  /**
-   * 关公司弹框。
-   */
-  onPeekCoClose: ClickFn
 
   /**
    * 首访引导开着没。
@@ -1820,29 +1806,44 @@ export type JobRelatedIn = {
   fallbackText: string
 
   /**
+   * 两组的埋点来源格(下架页 / 在招页 / 弹框分开记,2026-09-21)。
+   */
+  from: string
+
+  /**
+   * 界面语言(行下灰字 = 这门语言的职位名译名,2026-09-21)。
+   */
+  lang: Lang
+
+  /**
+   * 兜底链的埋点来源格。
+   */
+  fromNone: string
+
+  /**
    * 点一行:页上叠开职位描述弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示」)。
    */
   onOpenJob: (j: JobFact) => void
 }
 
 /**
- * useJobPeek 的出参:详情页上叠开的职位描述弹框(2026-09-19)。
+ * useJobPeek 的出参:详情页上叠开的弹框(2026-09-19 职位描述弹框;2026-09-21 改成弹框栈,公司信息卡点公司名也往上叠)。
  */
 export type JobPeekPanel = {
   /**
-   * 正开着的那一岗;null = 没开。
+   * 弹框栈。
    */
-  job: JobFact | null
+  stack: PeekStackRef
 
   /**
-   * 点相似职位的一行:开弹框。
+   * 点相关职位的一行:叠开职位描述弹框。
    */
-  onOpen: (j: JobFact) => void
+  onOpenJob: (j: JobFact) => void
 
   /**
-   * 关弹框。
+   * 点公司信息卡的公司名:叠开公司弹框。
    */
-  onClose: ClickFn
+  onOpenCompany: (peek: CompanyPeek) => void
 }
 
 /**
@@ -1860,9 +1861,9 @@ export type RelatedGroupIn = {
   rows: RelatedJob[]
 
   /**
-   * 行内灰字小注要不要写公司名(同公司组不写 —— 组标题已经说了)。
+   * 界面语言(行下灰字 = 这门语言的职位名译名,2026-09-21;英文界面不出)。
    */
-  withCompany: boolean
+  lang: Lang
 
   /**
    * 点一行:页上叠开职位描述弹框(整行由行自己现取)。
@@ -1899,6 +1900,11 @@ export type JobBodyIn = {
    * JD 身体状态机(useJobBody 的产出;标题区的切换控件读同一份)。
    */
   d: JobBodyPanel
+
+  /**
+   * 正文与投递栏之间接的东西(2026-09-21 弹框里的公司信息卡与相关职位卡);可省 = 不接(详情页的卡在白卡外面)。
+   */
+  tail?: React.ReactNode
 }
 
 /**
@@ -4230,9 +4236,9 @@ export type ModalsHookOut = {
   setPopup: (p: PopupState | null) => void
 
   /**
-   * 开职位描述弹框。
+   * 开职位描述弹框(往弹框栈上叠一层,2026-09-21)。
    */
-  setDescJob: (j: JobFact | null) => void
+  onOpenJob: (j: JobFact) => void
 
   /**
    * 开升级/登录弹框。
@@ -5431,21 +5437,6 @@ export type ApplyLabelIn = {
 }
 
 /**
- * subOf 的入参。
- */
-export type SubOfIn = {
-  /**
-   * 要不要写公司名。
-   */
-  withCompany: boolean
-
-  /**
-   * 公司名。
-   */
-  company: string
-}
-
-/**
  * NOC 维表行(外域形状,原样透传给译名函数)。
  */
 export type NocDescFact = NocDesc
@@ -5589,11 +5580,6 @@ export type AliasOfIn = {
  * showRelatedOf 的入参。
  */
 export type ShowRelatedIn = {
-  /**
-   * 本岗状态。
-   */
-  status: string
-
   /**
    * 相似职位。
    */
@@ -6424,3 +6410,177 @@ export type HomeProvinceIn = {
   initial: JobFilters
 }
 
+/**
+ * 弹框栈的职位层(2026-09-21;与 advisor 域的同名形状同形,本域自抄)。
+ */
+export type PeekJobLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'job'
+
+  /**
+   * 这一岗(整行)。
+   */
+  job: JobFact
+}
+
+/**
+ * 弹框栈的公司层。
+ */
+export type PeekCoLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'company'
+
+  /**
+   * 这一家。
+   */
+  co: CompanyPeek
+}
+
+/**
+ * 弹框栈的一层。
+ */
+export type PeekLayer = PeekJobLayer | PeekCoLayer
+
+/**
+ * 弹框栈(modal 域 useLayerStack 的出参;形状本域自抄):各层从下到上与三个手柄。
+ */
+export type PeekStackRef = {
+  /**
+   * 从下到上的各层。
+   */
+  layers: PeekLayer[]
+
+  /**
+   * 叠上一层。
+   */
+  push: (layer: PeekLayer) => void
+
+  /**
+   * 换掉最上面一层。
+   */
+  swapTop: (layer: PeekLayer) => void
+
+  /**
+   * 关掉最上面一层。
+   */
+  pop: () => void
+}
+
+/**
+ * 「字段弹框里点相似雇主」手柄工厂的入参。
+ */
+export type PopupToCoIn = {
+  /**
+   * 字段弹框的写口(先关它)。
+   */
+  setPopup: (p: PopupState | null) => void
+
+  /**
+   * 弹框栈。
+   */
+  stack: PeekStackRef
+}
+
+/**
+ * JobModalCards(职位描述弹框正文下面的两张卡,2026-09-21)的 props。
+ */
+export type JobModalCardsIn = {
+  /**
+   * 这一岗。
+   */
+  job: JobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 点相关职位的一行:往弹框栈上叠开那一岗。
+   */
+  onOpenJob: (j: JobFact) => void
+
+  /**
+   * 点公司信息卡的公司名:往弹框栈上叠开公司弹框。
+   */
+  onOpenCompany: (peek: CompanyPeek) => void
+}
+
+/**
+ * useRelatedOf 的入参。
+ */
+export type RelatedOfHookIn = {
+  /**
+   * 岗位号(换了岗位要重取)。
+   */
+  id: number
+}
+
+/**
+ * 相关职位的一行(外域瘦行原样透传,见文件头;toRelatedJob 的产出)。
+ */
+export type RelatedJobFact = RelatedJob
+
+/**
+ * /api/jobs/related 的响应体里的一行(线格式;格缺席 = 那一格没有)。
+ */
+export type RelatedJobJson = {
+  /**
+   * 岗位号。
+   */
+  id?: number
+
+  /**
+   * 岗名。
+   */
+  title?: string
+
+  /**
+   * 公司名。
+   */
+  company?: string
+
+  /**
+   * 城市。
+   */
+  city?: string
+
+  /**
+   * 省码。
+   */
+  province?: string
+
+  /**
+   * 薪资展示文本。
+   */
+  salaryText?: string
+
+  /**
+   * 职位名中文译名。
+   */
+  titleZh?: string
+
+  /**
+   * 职位名韩文译名。
+   */
+  titleKo?: string
+}
+
+/**
+ * /api/jobs/related 的响应体(线格式;非 200 记 null)。
+ */
+export type RelatedJson = {
+  /**
+   * 同公司的在招岗。
+   */
+  sameCompany?: RelatedJobJson[]
+
+  /**
+   * 同职业的在招岗。
+   */
+  sameOcc?: RelatedJobJson[]
+}

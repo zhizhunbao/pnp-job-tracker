@@ -9,6 +9,8 @@
  * 「Data Engineer → 数据科学家」是分类名,用户读成翻译就是错;分类名在「职业分类」弹框里另有位置。
  * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:页眉与正文要读同一份 JD 身体状态机,
  * 浮层与正文下沉到内层 ActJd(以重译代数作 key 重挂);本件只留弹框面板、浮层机器与标题译名。
+ * 2026-09-21 照公司弹框的形,正文下面接公司信息卡与相关职位卡(Frank「参考一下公司弹框」):
+ * 宿主(弹框栈 PeekStack)多注两个回调 —— 点公司名、点相关职位都往栈上叠一层。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -21,12 +23,16 @@ import type { ActModalIn } from './types'
 /**
  * 渲染职位描述弹框。
  *
- * @param props 这一岗、界面语言、分层态、描述表与关闭回调。
+ * @param props 这一岗、界面语言、分层态、描述表、关闭回调与点公司名 / 相关职位的两个回调。
  * @returns 浮层。
  */
-export function ActModal({ job, lang, plan, onClose }: ActModalIn) {
+export function ActModal({ job, lang, plan, onClose, onOpenJob, onOpenCompany }: ActModalIn) {
   const a = useActModal()
   const panel = useFloatPanel({ prefKey: JD_PREF, defW: JD_PANEL_W, defH: JD_PANEL_H })
   const sub = useTitleTrans({ title: job.title, id: job.id, lang, cached: TEXT_NONE, gen: a.gen })
-  return <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} panel={panel} sub={sub} a={a} />
+  return (
+    <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} panel={panel} sub={sub} a={a}
+      onOpenJob={onOpenJob}
+      onOpenCompany={onOpenCompany} />
+  )
 }

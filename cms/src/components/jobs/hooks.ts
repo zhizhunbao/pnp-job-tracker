@@ -10,7 +10,7 @@
  */
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { useIsNarrow } from '@/components/modal'
+import { useIsNarrow, useLayerStack } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
 import { makeT } from '@/lib/i18n'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
@@ -30,7 +30,8 @@ import {
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
-  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOBS, URL_API_JOBS_DIMS, URL_API_SAVED_JOBS,
+  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOB_RELATED, URL_API_JOBS, URL_API_JOBS_DIMS,
+  URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
   URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_FULL,
   WINDOW_FEATURES,
@@ -39,9 +40,11 @@ import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf,
   fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf,
-  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, markObSeen, matchHrefOf,
+  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, makePopupToCo,
+  makePushCoLayer, makePushJobLayer, markObSeen, matchHrefOf,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
+  toRelatedJobs,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
@@ -50,13 +53,14 @@ import type {
   BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
   ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
-  CompanyPeek, JobPeekPanel,
+  JobPeekPanel,
   IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
   MatchGateHookIn, MatchGatePanel, MatchProfileFact, MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
-  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PopupState, ProfileJsonFact, ProofCount, SavedAddIn, SavedEditIn,
+  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, RelatedJobs,
+  RelatedJson, RelatedOfHookIn, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UmamiWindow, UpsellKind, WrapWidthIn,
 } from './types'
@@ -1073,14 +1077,15 @@ function dimsOf(props: JobsIn): JobDims {
  * E11-05②:首访自动弹引导(登录且无档案且没弹过);关/完成置 OB_SEEN 不再自动弹。
  * 三问弹框已退役(2026-07-31 Frank「不需要弹框答题了,统一一下答题功能」):答题只剩 /plan/* 的
  * 答题器,职位板只读答案做回显与筛选;自动弹窗(#237 的排队逻辑)随之删掉。Esc 关弹框。
+ * 2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」:职位描述弹框与公司弹框并进弹框栈(modal 域 useLayerStack),
+ * 一层层叠、只关最上面一层,栈自己管 Esc;这里的 Esc 只剩「栈空了再关字段弹框」—— 原先 closeBoth 一按全关。
  *
  * @param x 分层态。
  * @returns 弹框层面板与三个开口。
  */
 function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   const [popup, setPopup] = useState<PopupState | null>(null)
-  const [descJob, setDescJob] = useState<JobFact | null>(null)
-  const [peekCo, setPeekCo] = useState<CompanyPeek | null>(null)
+  const stack = useLayerStack<PeekLayer>()
   const [wizard, setWizard] = useState(false)
   const [upsell, setUpsell] = useState<UpsellKind>(false)
   const loggedIn = x.plan.loggedIn
@@ -1092,32 +1097,18 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 服务端首帧读不到 localStorage,先按不开引导画;活过来再看弹过没
     setWizard(true)
   }, [loggedIn, profileOk])
-  function closeBoth(): void {
+  function closePopup(): void {
     setPopup(null)
-    setDescJob(null)
-    setPeekCo(null)
   }
-  useEscClose({ open: popup != null || descJob != null || peekCo != null, onClose: closeBoth })
+  useEscClose({ open: popup != null && stack.layers.length === 0, onClose: closePopup })
   return {
     panel: {
       popup,
-      descJob,
       wizard,
       upsell,
-      onPopupClose: function closePopup(): void {
-        setPopup(null)
-      },
-      onDescClose: function closeDesc(): void {
-        setDescJob(null)
-      },
-      peekCo,
-      onPeekCo: function openPeekCo(peek: CompanyPeek): void {
-        setPopup(null)
-        setPeekCo(peek)
-      },
-      onPeekCoClose: function closePeekCo(): void {
-        setPeekCo(null)
-      },
+      onPopupClose: closePopup,
+      stack,
+      onPeekCo: makePopupToCo({ setPopup, stack }),
       onWizardClose: function closeWizard(): void {
         markObSeen()
         setWizard(false)
@@ -1128,7 +1119,7 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
       onUpsellDone: makeUpsellDone(upsell),
     },
     setPopup,
-    setDescJob,
+    onOpenJob: makePushJobLayer(stack),
     setUpsell,
   }
 }
@@ -1275,7 +1266,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     saved: saved.saved,
     onSave: saved.onSave,
     onField: makeFieldRouter({ setPopup: modals.setPopup }),
-    onDesc: modals.setDescJob,
+    onDesc: modals.onOpenJob,
     onUpsellLock,
     blocked,
     cellCtx: { t, plan, blocked, eeCats: data.dims.eeCategories },
@@ -1588,6 +1579,19 @@ function readJobsPage(r: Response): Promise<JobsPageJson | null> {
  * @returns 维度;非 2xx 或失败给 null。
  */
 function readDims(r: Response): Promise<DimsJson | null> {
+  if (r.ok === false) {
+    return Promise.resolve(null)
+  }
+  return r.json().catch(nullOf)
+}
+
+/**
+ * 2xx 才解相关职位(2026-09-21)。
+ *
+ * @param r 响应。
+ * @returns 相关职位的线格式;非 2xx / 解不开给 null。
+ */
+function readRelated(r: Response): Promise<RelatedJson | null> {
   if (r.ok === false) {
     return Promise.resolve(null)
   }
@@ -2437,16 +2441,46 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
 
 /**
  * 详情页上叠开的职位描述弹框(2026-09-19:下架岗的相似职位点了不跳走)。Esc 关。
+ * 2026-09-21 改成弹框栈(Frank「点公司就弹公司的框?然后还能点回来」):相关职位卡点一行、公司信息卡点公司名都往上叠,
+ * 只关最上面一层;Esc 由栈自己管(也只关最上面一层)。
  *
- * @returns 开着的那一岗与开 / 关两个手柄。
+ * @returns 弹框栈与点相关职位 / 点公司名两个手柄。
  */
 export function useJobPeek(): JobPeekPanel {
-  const [job, setJob] = useState<JobFact | null>(null)
-  const onClose = useCallback(function closePeek(): void {
-    setJob(null)
-  }, [])
-  useEscClose({ open: job != null, onClose })
-  return { job, onOpen: setJob, onClose }
+  const stack = useLayerStack<PeekLayer>()
+  return { stack, onOpenJob: makePushJobLayer(stack), onOpenCompany: makePushCoLayer(stack) }
+}
+
+/**
+ * 职位描述弹框下面的相关职位(2026-09-21 Frank「参考一下公司弹框」):按岗位号现取(弹框走客户端,手里只有岗位号);
+ * 换了岗位当场清空重取。没取到就一直是 null(卡不出)。
+ *
+ * @param x 岗位号。
+ * @returns 相关职位;null = 还没到 / 没取到。
+ */
+export function useRelatedOf(x: RelatedOfHookIn): RelatedJobs | null {
+  const [related, setRelated] = useState<RelatedJobs | null>(null)
+  const [prevId, setPrevId] = useState(x.id)
+  if (prevId !== x.id) {
+    setPrevId(x.id)
+    setRelated(null)
+  }
+  const id = x.id
+  useEffect(function loadRelated() {
+    let dead = false
+    fetch(URL_API_JOB_RELATED + String(id))
+      .then(readRelated)
+      .then(function onRelated(j: RelatedJson | null) {
+        if (dead === false) {
+          setRelated(toRelatedJobs(j))
+        }
+      })
+      .catch(swallow)
+    return function stopRelated() {
+      dead = true
+    }
+  }, [id])
+  return related
 }
 
 /**

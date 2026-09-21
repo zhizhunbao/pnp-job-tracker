@@ -512,7 +512,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'gr.fm.5': 'Major well-known employer', 'gr.fm.4': 'Has a Wikipedia entry', 'gr.fm.3': 'Multi-province', 'gr.fm.2': 'Typical size', 'gr.fm.1': 'Very small',
   'gr.sponsorTip': 'This employer’s foreign-worker sponsorship record (from official LMIA approvals and recency); click the company name for details',
   'co.grades': 'Employer signals',
-  'co.crumb': 'Employer', 'co.basic': 'Basic info', 'co.name': 'Company name', 'co.sector': 'Type', 'co.gov': 'Government', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
+  'co.crumb': 'Employer', 'co.basic': 'Basic info', 'co.info': 'Company info', 'co.name': 'Company name', 'co.sector': 'Type', 'co.gov': 'Government', 'co.wellKnown': 'Well-known', 'co.notFound': 'This company was not found — it may have been removed from the active listings.', 'co.openJobs': 'Open positions',
   'co.spSub': 'Approved LMIAs in the past two years (a historical fact, not a sponsorship promise)',
   'co.spStream.high': 'High Wage', 'co.spStream.gts': 'Global Talent', 'co.spStream.pr': 'PR-support', 'co.spStream.low': 'Low Wage', 'co.spStream.agri': 'Agriculture',
   'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatchN': '{n} LMIAs', 'co.designated': 'Designated employer',

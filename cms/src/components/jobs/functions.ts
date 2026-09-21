@@ -44,7 +44,7 @@ import {
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
   JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH,
+  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH, LAYER_CO, LAYER_JOB,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
@@ -56,7 +56,8 @@ import {
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
-  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
+  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
+  TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD, URL_BOARD_BROAD,
   URL_BOARD_FINE,
@@ -69,7 +70,7 @@ import type {
   AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView,
   BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
-  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec,
+  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, CompanyPeek,
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
   DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
   FieldOpenIn, FillIn,
@@ -81,10 +82,12 @@ import type {
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
-  PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PickedShownIn, PlanProfileIn, PnpOccRow, PrefixLabelIn,
-  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, ResizeBindIn, RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
+  PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
+  PopupToCoIn, PrefixLabelIn,
+  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, RelatedJobFact, RelatedJobJson, RelatedJobs, RelatedJson, ResizeBindIn,
+  RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
-  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubOfIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
+  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
   ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellKind, UpsellReasonIn, WantsIn,
   WidthsKeyIn,
 } from './types'
@@ -3859,19 +3862,6 @@ export function barClsOf(fixedBar: boolean): string {
 }
 
 /**
- * 相似职位行的灰字小注:同公司组不写(组标题已经说了同公司,再贴一遍既重复又在 375 上被截断)。
- *
- * @param x 要不要写与公司名。
- * @returns 小注;不写给空串。
- */
-export function subOf(x: SubOfIn): string {
-  if (x.withCompany) {
-    return x.company
-  }
-  return TEXT_NONE
-}
-
-/**
  * 职位详情页要现算的那几样:面包屑的省段与分类路径、职位名译名、相似职位的兜底链。
  * 职位名译名(Frank「job 名称也需要翻译」):雇主原始岗名多是英文且不规范,挂 NOC 官方职业名的
  * 界面语言译名作对照(#151 口径,与公司页在招职位同款);英文界面 / 无译名 = 空,不渲。
@@ -3965,15 +3955,119 @@ function aliasOf(x: AliasOfIn): string {
  * 相似职位卡出不出:只在 closed 岗渲染(在招岗服务端就不查,related 恒空)——
  * 下架页原本是死路,横幅说完「已下架」就没有下一步(2026-08-11 Frank
  * 「下架了应该下面列出其他相似职位,用户不至于一看下架就走」)。
+ * 2026-09-21 改判:在招岗也出(Frank「之前不是,下面还要加一个相似职位吗」「参考一下公司弹框」;来由见职位详情页门的文件头)——
+ * 有行或有兜底链就出,不再看状态。
  *
- * @param x 本岗状态、相似职位与兜底链。
+ * @param x 相似职位与兜底链。
  * @returns 出 = true。
  */
 export function showRelatedOf(x: ShowRelatedIn): boolean {
-  if (x.status !== STATUS_CLOSED) {
-    return false
-  }
   return x.related.sameCompany.length > 0 || x.related.sameOcc.length > 0 || x.fallbackHref !== TEXT_NONE
+}
+
+/**
+ * 相似职位两组的埋点来源格:下架页与在招页分开记(两种页的点击意图不同,混记看不出哪张卡在干活)。
+ *
+ * @param status 本岗状态。
+ * @returns 来源格。
+ */
+export function relatedFromOf(status: string): string {
+  if (status === STATUS_CLOSED) {
+    return TRACK_FROM_CLOSED
+  }
+  return TRACK_FROM_OPEN
+}
+
+/**
+ * 兜底链的埋点来源格。
+ *
+ * @param status 本岗状态。
+ * @returns 来源格。
+ */
+export function relatedNoneFromOf(status: string): string {
+  if (status === STATUS_CLOSED) {
+    return TRACK_FROM_CLOSED_NONE
+  }
+  return TRACK_FROM_OPEN_NONE
+}
+
+/**
+ * 相关职位接口的响应 → 两组瘦行(2026-09-21 职位描述弹框走客户端取);没回来 / 少了哪组给 null(卡不出)。
+ * 弹框里不出兜底链,fallbackLevel 恒 null。
+ *
+ * @param j 接口响应。
+ * @returns 两组瘦行或 null。
+ */
+export function toRelatedJobs(j: RelatedJson | null): RelatedJobs | null {
+  if (j == null) {
+    return null
+  }
+  const co = j.sameCompany
+  const occ = j.sameOcc
+  if (co == null || occ == null) {
+    return null
+  }
+  return { sameCompany: co.map(toRelatedJob), sameOcc: occ.map(toRelatedJob), fallbackLevel: null }
+}
+
+/**
+ * 相关职位接口回来的一行 → 瘦行(线格式逐格收窄:缺的串给空串,岗位号不是数给 0)。
+ *
+ * @param r 线格式的一行。
+ * @returns 瘦行。
+ */
+export function toRelatedJob(r: RelatedJobJson): RelatedJobFact {
+  let id = 0
+  if (typeof r.id === 'number') {
+    id = r.id
+  }
+  return {
+    id,
+    title: strOf(r.title),
+    company: strOf(r.company),
+    city: strOf(r.city),
+    province: strOf(r.province),
+    salaryText: strOf(r.salaryText),
+    titleZh: strOf(r.titleZh),
+    titleKo: strOf(r.titleKo),
+  }
+}
+
+/**
+ * 弹框栈上「叠开一条职位」的手柄(2026-09-21:职位板点行、字段弹框里点职位、详情页点相关职位都往上叠)。
+ *
+ * @param stack 弹框栈。
+ * @returns 手柄。
+ */
+export function makePushJobLayer(stack: PeekStackRef): (j: JobFact) => void {
+  return function pushJobLayer(j: JobFact): void {
+    stack.push({ kind: LAYER_JOB, job: j })
+  }
+}
+
+/**
+ * 弹框栈上「叠开一家公司」的手柄(详情页公司信息卡点公司名)。
+ *
+ * @param stack 弹框栈。
+ * @returns 手柄。
+ */
+export function makePushCoLayer(stack: PeekStackRef): (peek: CompanyPeek) => void {
+  return function pushCoLayer(peek: CompanyPeek): void {
+    stack.push({ kind: LAYER_CO, co: peek })
+  }
+}
+
+/**
+ * 字段弹框里点相似雇主:字段弹框让位,公司弹框叠上(2026-09-19 口径;2026-09-21 起进弹框栈)。
+ *
+ * @param x 字段弹框的写口与弹框栈。
+ * @returns 手柄。
+ */
+export function makePopupToCo(x: PopupToCoIn): (peek: CompanyPeek) => void {
+  return function popupToCo(peek: CompanyPeek): void {
+    x.setPopup(null)
+    x.stack.push({ kind: LAYER_CO, co: peek })
+  }
 }
 
 /**

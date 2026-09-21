@@ -10,17 +10,19 @@
  * @author Frank
  * @time 2026-08-28 16:26:43
  */
-import { useCallback, useEffect, useState } from 'react'
-import { EV_KEY_DOWN, KEY_ESCAPE, LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
+import { useEffect, useState } from 'react'
+import { useLayerStack } from '@/components/modal'
+import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles,
-  makeLoadTrans, makeOpenSite,
+  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer,
 } from './functions'
 import type {
-  CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact, CompanyJobFact,
-  CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeek, CompanyPeekPanel, CompanyTransHookIn,
-  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, SitePanel,
+  CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact,
+  CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeekPanel,
+  CompanyTransHookIn,
+  CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, PeekLayer, SitePanel,
   TitleMapHookIn,
 } from './types'
 
@@ -31,8 +33,9 @@ import type {
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关 —— 中 / 韩界面简介一到就在后台翻好存着,开关只管显不显。
  *
  * 2026-09-20:官网那条工种还没报上去 / 还在办的时候只查库不现查;办完 / 查无 / 不再等的那一拍再查一遍,这时才放开联网现查兜底。
+ * 2026-09-21:调用方可以要求一律只查库(职位页 / 职位弹框里的公司卡:打开职位不触发现查,办完那一拍照样再查一遍库,补上队列刚存的简介)。
  *
- * @param x 公司名、界面语言与官网那条工种办到哪一步。
+ * @param x 公司名、界面语言、官网那条工种办到哪一步与要不要一律只查库。
  * @returns 加载态、查到的简介与译文。
  */
 export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
@@ -48,7 +51,8 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
     setTrans(null)
   }
 
-  const storedOnly = x.stage === TEXT_NONE || isSiteActive(x.stage)
+  const siteBusy = x.stage === TEXT_NONE || isSiteActive(x.stage)
+  const storedOnly = x.storedOnly || siteBusy
 
   useEffect(function loadBrief() {
     const flag: DeadFlag = { dead: false }
@@ -56,7 +60,7 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.company, storedOnly])
+  }, [x.company, storedOnly, siteBusy])
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
@@ -171,6 +175,36 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
 }
 
 /**
+ * 按岗位号取公司(2026-09-21 职位页 / 职位弹框里的公司信息卡:手里只有岗位号;与公司弹框同一个接口、同一份数据)。
+ * 换了岗位当场清空重取。
+ *
+ * @param x 岗位号。
+ * @returns 加载态与取到的数据。
+ */
+export function useCompanyOfJob(x: CompanyOfJobHookIn): CompanyPanelState {
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<CompanyPanelData | null>(null)
+  const [prevId, setPrevId] = useState(x.jobId)
+
+  if (prevId !== x.jobId) {
+    setPrevId(x.jobId)
+    setLoading(true)
+    setData(null)
+  }
+  const jobId = x.jobId
+
+  useEffect(function loadCompanyOfJob() {
+    const flag: DeadFlag = { dead: false }
+    makeLoadPanel({ jobId, slug: TEXT_NONE, setData, setLoading })(flag)
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [jobId])
+
+  return { loading, data }
+}
+
+/**
  * 公司别名(2026-09-14 懒翻公司名):库里有就用库里的;没有且界面非英文,开一次就打一次接口,回来落格。
  *
  * @param x 公司名、界面语言与库里已有的别名。
@@ -265,32 +299,12 @@ export function useCompanyDescTrans(x: DescTransHookIn): string {
  * 公司页上叠开的两个弹框(2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」):
  * 点在招职位 = 职位描述弹框;点相似雇主 = 公司弹框,框里再点相似雇主就同框换一家(不往上叠、不记历史)。Esc 全关(同职位板)。
  *
- * @returns 两格状态与四个手柄。
+ * 2026-09-21 改成弹框栈(Frank「点公司就弹公司的框?然后还能点回来」):点在招职位 / 相似雇主都往上叠,只关最上面一层;
+ * 上面「Esc 全关」随之作废 —— Esc 由栈自己管,也只关最上面一层。框里点相似雇主同框换一家的口径不变(渲染件 PeekStack 接手)。
+ *
+ * @returns 弹框栈与两个手柄。
  */
 export function useCompanyPeek(): CompanyPeekPanel {
-  const [job, setJob] = useState<CompanyJobFact | null>(null)
-  const [co, setCo] = useState<CompanyPeek | null>(null)
-  const onCloseJob = useCallback(function closeJob(): void {
-    setJob(null)
-  }, [])
-  const onCloseCo = useCallback(function closeCo(): void {
-    setCo(null)
-  }, [])
-  const open = job != null || co != null
-  useEffect(function watchEsc() {
-    if (open === false) {
-      return
-    }
-    function onKey(e: KeyboardEvent): void {
-      if (e.key === KEY_ESCAPE) {
-        setJob(null)
-        setCo(null)
-      }
-    }
-    window.addEventListener(EV_KEY_DOWN, onKey)
-    return function stopEscWatch(): void {
-      window.removeEventListener(EV_KEY_DOWN, onKey)
-    }
-  }, [open])
-  return { job, co, onOpenJob: setJob, onOpenCompany: setCo, onCloseJob, onCloseCo }
+  const stack = useLayerStack<PeekLayer>()
+  return { stack, onOpenJob: makePushJobLayer(stack), onOpenCompany: makePushCoLayer(stack) }
 }

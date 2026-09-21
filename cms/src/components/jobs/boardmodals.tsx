@@ -7,11 +7,13 @@
  * 升级动力改由表内 Pro 数据列打码承担。
  * 2026-08-28 换装批自 Jobs.tsx 提出成文件。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主 → 公司弹框(不带职位)接手,不再新开页。
+ * 2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」:职位描述弹框与公司弹框并进弹框栈(advisor 的 PeekStack 画),
+ * 一层层叠、只关最上面一层;字段弹框仍单独一格,垫在栈底下。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { ActModal, AdvisorModal, CompanyModal } from '@/components/advisor'
+import { AdvisorModal, PeekStack } from '@/components/advisor'
 import { AuthModal } from '@/components/auth'
 import { UpgradeModal } from '@/components/pricing'
 import { OnboardingWizard } from '@/components/profile'
@@ -45,16 +47,7 @@ export function BoardModals({ b }: BoardPanelIn) {
           onOpenJob={b.onDesc}
           onOpenCompany={m.onPeekCo} />
       )}
-      {m.peekCo != null && (
-        <CompanyModal slug={m.peekCo.slug} name={m.peekCo.name} lang={b.lang}
-          onOpenJob={b.onDesc}
-          onOpenCompany={m.onPeekCo}
-          onClose={m.onPeekCoClose} />
-      )}
-      {m.descJob != null && (
-        <ActModal job={m.descJob} lang={b.lang} plan={b.plan} nocDesc={b.data.dims.nocDescriptions}
-          onClose={m.onDescClose} />
-      )}
+      <PeekStack stack={m.stack} lang={b.lang} plan={b.plan} nocDesc={b.data.dims.nocDescriptions} />
       {m.wizard && <OnboardingWizard t={b.t} initial={b.plan.profile} onClose={m.onWizardClose} />}
       {m.upsell !== false && b.plan.loggedIn && (
         <UpgradeModal t={b.t} onClose={m.onUpsellClose}

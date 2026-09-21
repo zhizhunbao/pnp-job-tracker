@@ -69,6 +69,8 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols, pla
       {p.peek.peekJob != null && (
         <ActModal key={p.peek.peekJob.id} job={p.peek.peekJob} lang={p.lang} plan={p.peek.plan}
           nocDesc={NOC_DESC_NONE}
+          onOpenJob={p.peek.onOpenJob}
+          onOpenCompany={p.peek.onJobToCompany}
           onClose={p.peek.onCloseJob} />
       )}
     </div>

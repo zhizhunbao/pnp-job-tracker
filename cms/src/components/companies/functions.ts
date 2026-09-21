@@ -40,6 +40,7 @@ import {
   SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
   STAGE_OFF, STAGE_ORDER,
   STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
+  LAYER_CO, LAYER_JOB,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -55,6 +56,8 @@ import type {
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
   UntitledIn, ZhLineClsIn, ZhShownIn,
   OpenSiteIn, ShownStageIn, SitePanel, SitePanelIn, SiteShownIn, SiteStageJson, SiteStep, SiteStepsIn,
+  CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
+  CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1727,3 +1730,97 @@ export function gradeColorOf(g: number | null | undefined): string {
   return GRADE_C_NONE
 }
 
+/**
+ * 弹框栈上「叠开一条职位」的手柄(2026-09-21 公司页:在招职位点一行往上叠)。
+ *
+ * @param stack 弹框栈。
+ * @returns 手柄。
+ */
+export function makePushJobLayer(stack: PeekStackRef): OpenJobFn {
+  return function pushJobLayer(j: CompanyJobFact): void {
+    stack.push({ kind: LAYER_JOB, job: j })
+  }
+}
+
+/**
+ * 弹框栈上「叠开一家公司」的手柄(公司页:相似雇主点一家往上叠)。
+ *
+ * @param stack 弹框栈。
+ * @returns 手柄。
+ */
+export function makePushCoLayer(stack: PeekStackRef): OpenCompanyFn {
+  return function pushCoLayer(peek: CompanyPeek): void {
+    stack.push({ kind: LAYER_CO, co: peek })
+  }
+}
+
+/**
+ * 基本信息卡的标题:调用方递了就用它(职位页 / 职位弹框递「公司信息」,2026-09-21),没递用「基本信息」。
+ *
+ * @param x 取词函数与调用方递的标题。
+ * @returns 标题。
+ */
+export function cardTitleOf(x: CardTitleIn): string {
+  if (x.head === TEXT_NONE) {
+    return x.t('co.basic')
+  }
+  return x.head
+}
+
+/**
+ * 一组职位行底下那行灰字(2026-09-21 Frank「这个下面显示中文翻译,不要显示公司」):界面语言的职位名译名 ——
+ * 库里存好的优先,没有用懒翻回来的;英文界面、译名与岗名一样(忽略大小写)、都没有 → 不出。
+ * 口径与职位描述弹框标题下那行同源(2026-09-14「标题下那行一律是标题译名」,不放职业分类名)。
+ *
+ * @param x 这一行、界面语言与懒翻表。
+ * @returns 灰字;不出给空串。
+ */
+export function miniSubOf(x: MiniSubIn): string {
+  let got = storedTitleOf({ row: x.row, lang: x.lang })
+  if (got === TEXT_NONE && x.lang !== LANG_EN) {
+    const lazy = x.map[x.row.title]
+    if (lazy != null) {
+      got = lazy
+    }
+  }
+  if (got.toLowerCase() === x.row.title.toLowerCase()) {
+    return TEXT_NONE
+  }
+  return got
+}
+
+/**
+ * 一组职位行里库里还没有界面语言译名的岗名(去重;英文界面给空表 —— 不用翻)。
+ *
+ * @param x 这一组的行与界面语言。
+ * @returns 要懒翻的岗名。
+ */
+export function untranslatedOf(x: UntranslatedIn): string[] {
+  const out: string[] = []
+  if (x.lang === LANG_EN) {
+    return out
+  }
+  for (const row of x.rows) {
+    if (storedTitleOf({ row, lang: x.lang }) !== TEXT_NONE || out.includes(row.title)) {
+      continue
+    }
+    out.push(row.title)
+  }
+  return out
+}
+
+/**
+ * 一行库里存好的界面语言译名(中 / 韩;其余给空串)。
+ *
+ * @param x 这一行与界面语言。
+ * @returns 译名;没有给空串。
+ */
+function storedTitleOf(x: StoredTitleIn): string {
+  if (x.lang === LANG_ZH) {
+    return x.row.titleZh
+  }
+  if (x.lang === LANG_KO) {
+    return x.row.titleKo
+  }
+  return TEXT_NONE
+}

@@ -20,7 +20,7 @@ import {
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
   addrQsOf, aliasPollKeysOf, applyHomeProv, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
-  makeCity, makeCloseJob, makeCloseModal, makeDistrict,
+  makeCity, makeCloseJob, makeCloseModal, makeDistrict, makeJobToCompany,
   makeLmiaPick, makeMore, makeProv,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
@@ -170,6 +170,8 @@ function useQDebounce(x: QCommitIn): void {
 /**
  * 弹框层(2026-09-19 Frank「这个链接还是改成弹框公司吧」):点雇主名开公司弹框,框里点在招职位叠开职位描述弹框、
  * 点相似雇主同框换一家。自成一台小机器 —— 它与筛选 / 懒取那一摊状态互不咬合。
+ * 2026-09-21 职位描述弹框正文下面接了公司信息卡与相关职位卡,多两根线:点公司名 = 关职位框、公司框换成那一家;
+ * 点相关职位 = 职位框换那一岗。本板没并进弹框栈(职位板 / 详情页 / 公司页那三处并了)。
  *
  * @param x 页面 props(只读分层态)。
  * @returns 弹框层面板。
@@ -185,6 +187,7 @@ function useEmpPeek(x: EmployersIn): EmpPeekPanel {
     peekJob,
     onOpenJob: setPeekJob,
     onCloseJob: makeCloseJob({ setPeekJob }),
+    onJobToCompany: makeJobToCompany({ setPeekJob, setModal }),
   }
 }
 

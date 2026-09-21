@@ -2165,6 +2165,11 @@ export type EmpPeekPanel = {
    * 关职位描述弹框。
    */
   onCloseJob: ClickFn
+
+  /**
+   * 职位描述弹框里点公司信息卡的公司名(2026-09-21):关职位框、公司框换成那一家(本板没改成弹框栈,见 useEmpPeek)。
+   */
+  onJobToCompany: OpenCompanyFn
 }
 
 /**
@@ -2738,6 +2743,21 @@ export type CloseJobIn = {
    * 职位描述弹框态落格。
    */
   setPeekJob: (j: EmpJob | null) => void
+}
+
+/**
+ * makeJobToCompany 的入参。
+ */
+export type JobToCompanyIn = {
+  /**
+   * 职位描述弹框态落格(先关它)。
+   */
+  setPeekJob: (j: EmpJob | null) => void
+
+  /**
+   * 公司弹框态落格。
+   */
+  setModal: (m: EmpModal | null) => void
 }
 
 /**

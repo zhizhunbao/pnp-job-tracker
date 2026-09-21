@@ -24,6 +24,9 @@
  * 同日晚 Frank「公司详情的在招地 去掉吧,没有意义」:「在招地」行撤(连同它的取数链),岗位在哪看下面的在招职位卡。
  * 2026-09-20 真总部进库:「总部」行先用库里的真总部(官网页面原句核对过的,官网没标的退 Wikidata),值点开就是出处那一页;
  * 库里没有的照旧走有出处的 AI 简介,不成链。
+ * 2026-09-21 职位页 / 职位弹框也挂这张卡(Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」,经 CompanyInfoCard):
+ * 卡标题可换(「公司信息」)、公司名可成链接(点了开公司弹框)并在下面出库里存好的别名、简介可要求只查库不现查;
+ * 公司弹框与公司页不递这几格,一字不变。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -34,12 +37,14 @@ import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
 import { CompanyHq } from './companyhq'
 import { CompanyIntro } from './companyintro'
+import { CompanyNameCell } from './companynamecell'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, siteHqHrefOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
+  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, siteHqHrefOf, siteHqOf, siteWebsiteOf,
+  wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
@@ -49,10 +54,12 @@ import css from './companies.module.css'
 /**
  * 基本信息卡。
  *
- * @param props 公司档案、取词函数、界面语言与对照三格(逐格注释见 CompanyBasicCardIn)。
+ * @param props 公司档案、取词函数、界面语言、对照三格与职位页那几格(逐格注释见 CompanyBasicCardIn)。
  * @returns 一张卡;身份与简介都没有时整卡不渲。
  */
-export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }: CompanyBasicCardIn) {
+export function CompanyBasicCard({
+  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany, storedOnly = false,
+}: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
@@ -67,9 +74,11 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
   }
   return (
     <div className={CARD_MD_CLS}>
-      <div className={CARD_HEAD_CLS}>{t('co.basic')}</div>
+      <div className={CARD_HEAD_CLS}>{cardTitleOf({ t, head })}</div>
       <div>
-        <Row k={t('co.name')}>{company.name}</Row>
+        <Row k={t('co.name')}>
+          <CompanyNameCell company={company} alias={alias} onOpenCompany={onOpenCompany} />
+        </Row>
         {isGovCompany({ name: company.name }) && <Row k={t('co.sector')}>{t('co.gov')}</Row>}
         {website !== TEXT_NONE && (
           <Row k={t('act.site')}>
@@ -118,7 +127,8 @@ export function CompanyBasicCard({ company, t, lang, showTrans, trans, onBusy }:
         skipBase={company.aiBrief !== TEXT_NONE}
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy}
-        stage={site.stage} />
+        stage={site.stage}
+        storedOnly={storedOnly} />
     </div>
   )
 }

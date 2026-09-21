@@ -33,9 +33,11 @@ import {
   FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
   GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
-  K_TEER_HEAD, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD,
+  K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST,
+  MIME_JSON, MONEY_HEAD,
   NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL,
-  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV,
+  PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT,
+  P_PROV,
   ROW_KEY_BROAD,
   ROW_KEY_FINE, ROW_KEY_MID, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
   SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
@@ -48,14 +50,17 @@ import {
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
   AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
-  CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact,
+  CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
+  DiffCellFact,
   DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
   FieldPageIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
   IdRowFact,
   IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
   LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocationLevel, LocNoteIn,
-  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OriginTextIn,
-  PairLabelIn, PanelClsIn, PanelPos, PanelStyleIn, PilotPillIn, PlanClbIn, PointerHandlerFn, PrefFact, PrefJson,
+  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OpenCompanyFn,
+  OpenJobFn, OriginTextIn,
+  PairLabelIn, PanelClsIn, PanelPos, PanelStyleIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, PointerHandlerFn,
+  PrefFact, PrefJson,
   ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
   StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn, TypewriterIn,
   VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
@@ -2057,4 +2062,55 @@ export function companyRefreshOf(x: CompanyRefreshIn): RefreshFn | null {
       body: JSON.stringify({ name: x.job.company }),
     }).then(x.onDone).catch(x.onDone)
   }
+}
+
+/**
+ * 弹框栈上「叠开一条职位」的手柄(2026-09-21):职位描述弹框里点相关职位、公司弹框里点在招职位都往上叠。
+ *
+ * @param stack 宿主起的弹框栈。
+ * @returns 手柄。
+ */
+export function makePushJob(stack: PeekStackRef): OpenJobFn {
+  return function pushJob(j: AdvisorJob): void {
+    stack.push({ kind: LAYER_JOB, job: j })
+  }
+}
+
+/**
+ * 弹框栈上「叠开一家公司」的手柄:职位描述弹框里点公司信息卡的公司名,公司弹框叠在职位上面。
+ *
+ * @param stack 宿主起的弹框栈。
+ * @returns 手柄。
+ */
+export function makePushCo(stack: PeekStackRef): OpenCompanyFn {
+  return function pushCo(co: CompanyPeek): void {
+    stack.push({ kind: LAYER_CO, co })
+  }
+}
+
+/**
+ * 弹框栈上「同框换一家公司」的手柄:公司弹框里点相似雇主(2026-09-19 口径:不往上叠、不记历史)——
+ * 只有最上面那层点得到,换最上面一层就是换它自己。
+ *
+ * @param stack 宿主起的弹框栈。
+ * @returns 手柄。
+ */
+export function makeSwapCo(stack: PeekStackRef): OpenCompanyFn {
+  return function swapCo(co: CompanyPeek): void {
+    stack.swapTop({ kind: LAYER_CO, co })
+  }
+}
+
+/**
+ * 弹框栈一层的 key:位置 + 岗位号(同一位置换了一岗要重挂,弹框里的取数与译名状态才会清);
+ * 公司层只按位置(同框换一家要保住浮层的位置与大小)。
+ *
+ * @param x 这一层与它的位置。
+ * @returns key。
+ */
+export function peekKeyOf(x: PeekKeyIn): string {
+  if (x.layer.kind === LAYER_JOB) {
+    return String(x.at) + PEEK_KEY_SEP + String(x.layer.job.id)
+  }
+  return String(x.at) + PEEK_KEY_SEP + LAYER_CO
 }

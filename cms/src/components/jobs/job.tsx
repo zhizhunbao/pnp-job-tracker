@@ -21,16 +21,21 @@
  * 译名与切换控件(JdSwitches)同一行,下接分隔线;JobBody 读同一份 d。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示…要想看其他的还得点回来」:下架岗的相似职位点了不跳走,
  * 页上叠开职位描述弹框(与职位板同一件);行本身还是真链接。
+ * 2026-09-21 Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」「之前不是,下面还要加一个相似职位吗」:
+ * JD 白卡下面接公司信息卡(companies 的 CompanyInfoCard,点公司名开公司弹框)与相关职位卡(在招岗也出,来由见职位详情页门);
+ * 页上的弹框改成弹框栈(advisor 的 PeekStack):职位 → 公司 → 另一条职位一层层叠,只关最上面一层。标题下不另出公司名
+ * (Frank「有公司卡的话,上面的显示公司名就可以去掉了」)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { ActModal } from '@/components/advisor'
+import { PeekStack } from '@/components/advisor'
 import { BackButton } from '@/components/button'
+import { CompanyInfoCard } from '@/components/companies'
 import { cssOf } from '@/components/css'
 import { Shell } from '@/components/shell'
 import { CARD_MD_CLS, DETAIL_SHELL_TOP, TEXT_NONE, URL_BOARD_BACK } from './constants'
-import { showRelatedOf } from './functions'
+import { relatedFromOf, relatedNoneFromOf, showRelatedOf } from './functions'
 import { useJobBody, useJobDetail, useJobPeek } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
@@ -65,7 +70,8 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
-        {showRelatedOf({ status: job.status, related, fallbackHref: d.view.fallbackHref }) && (
+        <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany} />
+        {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
             t={d.t}
             updatedAt={updatedAt}
@@ -74,13 +80,13 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             related={related}
             fallbackHref={d.view.fallbackHref}
             fallbackText={d.view.fallbackText}
-            onOpenJob={peek.onOpen} />
+            from={relatedFromOf(job.status)}
+            fromNone={relatedNoneFromOf(job.status)}
+            lang={d.lang}
+            onOpenJob={peek.onOpenJob} />
         )}
       </div>
-      {peek.job != null && (
-        <ActModal key={peek.job.id} job={peek.job} lang={d.lang} plan={plan} nocDesc={dims.nocDesc}
-          onClose={peek.onClose} />
-      )}
+      <PeekStack stack={peek.stack} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
     </Shell>
   )
 }

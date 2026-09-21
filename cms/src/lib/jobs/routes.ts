@@ -36,7 +36,7 @@ import {
   emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
+  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedJobs, normalizeProfile,
   translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle,
 } from './functions'
@@ -596,6 +596,37 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
     }
     return Response.json({ ok: false, error: msg }, { status: BAD_GATEWAY })
   }
+}
+
+/**
+ * GET /api/jobs/related?id=:按岗位号取相关职位(2026-09-21 Frank「参考一下公司弹框」「下面还要加一个相似职位吗」):
+ * 职位板的职位描述弹框照公司弹框的形,正文下面接公司信息卡与相关职位卡;弹框走客户端取数,手里只有岗位号。
+ * 与 `/jobs/[id]` 页面同一个取数函数(loadRelatedJobs,四档口径与剔重复帖都在它里面);先按岗位号取本岗拿锚点格,不收客户端递的格。
+ *
+ * @param req 请求(?id=岗位号)。
+ * @returns 相关职位两组 + 兜底级别;id 非数 400、查无 404。
+ */
+export async function jobsRelatedRoute(req: Request): Promise<Response> {
+  const id = Number(new URL(req.url).searchParams.get(P_ID))
+  if (Number.isInteger(id) === false || id <= 0) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const row = await loadJobById({
+    db: db, id: id, pro: false, profile: normalizeProfile(null), profileOk: false,
+    matchDims: { pnpOccupations: [], eeCategories: [] },
+  })
+  if (row == null) {
+    return new Response(null, { status: NOT_FOUND })
+  }
+  const related = await loadRelatedJobs({
+    db: db,
+    job: {
+      id: id, company: row.company, province: row.province, city: row.city, noc: row.noc,
+      fine: row.fine, mid: row.mid, broad: row.broad,
+    },
+  })
+  return Response.json(related)
 }
 
 /**

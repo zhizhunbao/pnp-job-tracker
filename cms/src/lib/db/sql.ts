@@ -48,8 +48,11 @@ export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_i
 
 /**
  * 相似/相关职位用的瘦列清单
+ * 2026-09-21 多带职位名译名两格与这一行的译文版本号(Frank「这个下面显示中文翻译,不要显示公司」):
+ * 版本号起别名 job_trans_v —— JOB_FROM 连着公司表,那边也有 trans_v。
  */
-const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text`
+const REL_COLS = `j.id, j.title, c.name AS company_name, j.city, j.province, j.salary, j.salary_text,
+  j.title_zh, j.title_ko, j.trans_v AS job_trans_v`
 
 /**
  * 去重:同一岗多渠道重复发布时只留一条
@@ -144,9 +147,11 @@ export const JOB_ADDRESS_BY_ID = `SELECT address FROM jobs WHERE id = $1 LIMIT 1
 
 /**
  * 相关职位·同公司在招 3 条。$1=公司名,$2=排除的当前岗 id。
+ * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
+ * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
  */
 export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS} ${JOB_FROM}
-       WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed'
+       WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
        ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`
 
 /**
@@ -160,7 +165,8 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS} ${JOB_FROM}
  * 前缀匹配写成「前缀 ~ 前缀 + 9」的范围:LEFT(noc,4) 用不上 idx_jobs_noc,每次扫全省
  * (ON 5 万行 ~200ms → 范围写法 ~7ms);上界别用冒号 —— 库的排序规则下冒号排在数字前,范围是空的(实撞)。
  */
-export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text FROM (
+export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text, title_zh, title_ko,
+         job_trans_v FROM (
          SELECT ${REL_COLS}, j.date_posted, j.first_seen,
            CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.noc = $2 THEN 2 WHEN j.city = $5 THEN 3 ELSE 4 END AS tier,
            row_number() OVER (PARTITION BY COALESCE(j.company_id::text, 'j' || j.id::text) ORDER BY

@@ -22,12 +22,12 @@
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:在招职位 / 相似雇主
  * 点了不再跳走 —— 页上叠开职位描述弹框 / 公司弹框(与职位板同两件);链接本身还在(爬虫、Ctrl 点新标签照旧)。
  * 两个弹框点 advisor 的**文件**不走桶:那只桶的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
+ * 2026-09-21 两个弹框并进弹框栈(advisor 的 PeekStack,同样点文件):职位 → 公司 → 另一条职位一层层叠,只关最上面一层。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
-import { ActModal } from '@/components/advisor/actmodal'
-import { CompanyModal } from '@/components/advisor/companymodal'
+import { PeekStack } from '@/components/advisor/peekstack'
 import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { useLang } from '@/components/i18n'
@@ -107,16 +107,7 @@ export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
           onOpenCompany={peek.onOpenCompany} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
-      {peek.co != null && (
-        <CompanyModal slug={peek.co.slug} name={peek.co.name} lang={lang}
-          onOpenJob={peek.onOpenJob}
-          onOpenCompany={peek.onOpenCompany}
-          onClose={peek.onCloseCo} />
-      )}
-      {peek.job != null && (
-        <ActModal key={peek.job.id} job={peek.job} lang={lang} plan={plan} nocDesc={NOC_DESC_NONE}
-          onClose={peek.onCloseJob} />
-      )}
+      <PeekStack stack={peek.stack} lang={lang} plan={plan} nocDesc={NOC_DESC_NONE} />
     </Shell>
   )
 }

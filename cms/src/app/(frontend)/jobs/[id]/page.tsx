@@ -13,6 +13,9 @@
  * dd24-#107:B2 瘦身时把 profile 硬置 null,投递栏(E9-04)上线后成了坑 —— 详情页直入的
  * 已建档用户点投递被当无档案弹空白向导;user 本来就在手上,传真实档案零额外查询。
  *
+ * 2026-09-21 Frank「之前不是,下面还要加一个相似职位吗」「参考一下公司弹框」:在招岗也接回相关职位卡(与公司信息卡一起挂在
+ * JD 白卡下面;09-20 站内链接批做过一次、随那批一起撤了,这回按 Frank 看过的效果图重上),相关职位不再只查下架岗。
+ *
  * 2026-08-28 换装批收成标准形:SEO 头的芯在 lib/jobs 的 jobsIdMetaRoute(08-29 改 A 形一行转发),JSON-LD 拼装下沉
  * 进 lib/jobs 的 jobPostingJsonOf,脚本壳走通用件 JsonLd(08-29 收拢;门里不许有函数体、不许裸标签)。
  *
@@ -27,7 +30,7 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import {
-  EMPTY_MATCH_DIMS, EMPTY_RELATED, Job, STATUS_CLOSED, toCatLabelList, toJobPlan, toNocDescList,
+  EMPTY_MATCH_DIMS, Job, toCatLabelList, toJobPlan, toNocDescList,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { JsonLd } from '@/components/jsonld'
@@ -76,16 +79,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     notFound()
   }
 
-  let related: RelatedJobs = EMPTY_RELATED
-  if (job.status === STATUS_CLOSED) {
-    related = await loadRelatedJobs({
-      db,
-      job: {
-        id, company: job.company, province: job.province, city: job.city, noc: job.noc,
-        fine: job.fine, mid: job.mid, broad: job.broad,
-      },
-    })
-  }
+  const related: RelatedJobs = await loadRelatedJobs({
+    db,
+    job: {
+      id, company: job.company, province: job.province, city: job.city, noc: job.noc,
+      fine: job.fine, mid: job.mid, broad: job.broad,
+    },
+  })
 
   let nocDescDocs: NocDescDoc[] = []
   if (job.noc !== '') {

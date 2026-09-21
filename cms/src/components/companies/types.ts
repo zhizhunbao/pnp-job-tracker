@@ -754,6 +754,196 @@ export type CompanyBasicCardIn = {
    * 2026-09-16 改:只回报**对照**在途(懒抓简介在途由简介位自己出「AI 调查中…」),公司弹框不再整框等它。
    */
   onBusy?: (busy: boolean) => void
+
+  /**
+   * 卡标题;可省 = 「基本信息」(职位页 / 职位弹框里的公司卡递「公司信息」:放在职位下面叫「基本信息」会被读成职位的,2026-09-21)。
+   */
+  head?: string
+
+  /**
+   * 公司名那格下面的别名(中 / 韩界面,只读库里存好的);可省 = 不出(公司弹框的别名在页眉副题)。
+   */
+  alias?: string
+
+  /**
+   * 点公司名的去处:开公司弹框(名字成公司页真链接,普通左键拦下开框);可省 = 公司名是纯文字。
+   */
+  onOpenCompany?: OpenCompanyFn
+
+  /**
+   * 简介只查库、不联网现查(职位页 / 职位弹框:打开职位不触发现查,缺的资料靠点开优先队列补,2026-09-21);可省 = 照旧。
+   */
+  storedOnly?: boolean
+}
+
+/**
+ * CompanyNameCell(基本信息卡「公司名称」那一格,2026-09-21 自 CompanyBasicCard 提出)的 props。
+ */
+export type CompanyNameCellIn = {
+  /**
+   * 公司档案。
+   */
+  company: CompanyDetail
+
+  /**
+   * 名字下面的别名;可省 = 不出。
+   */
+  alias?: string
+
+  /**
+   * 点公司名的去处;可省 = 公司名是纯文字。
+   */
+  onOpenCompany?: OpenCompanyFn
+}
+
+/**
+ * cardTitleOf 的入参。
+ */
+export type CardTitleIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 调用方递的卡标题;'' = 用「基本信息」。
+   */
+  head: string
+}
+
+/**
+ * JobMiniList(一组职位行,2026-09-21 相关职位卡用)里的一行:行件要的几格 + 库里存好的职位名译名。
+ */
+export type MiniJobFact = {
+  /**
+   * 岗位号。
+   */
+  id: number
+
+  /**
+   * 岗名。
+   */
+  title: string
+
+  /**
+   * 薪资展示文本。
+   */
+  salaryText: string
+
+  /**
+   * 城市。
+   */
+  city: string
+
+  /**
+   * 职位名中文译名;'' = 库里还没有。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名;'' = 库里还没有。
+   */
+  titleKo: string
+}
+
+/**
+ * JobMiniList 的 props。
+ */
+export type JobMiniListIn = {
+  /**
+   * 这一组的行。
+   */
+  rows: MiniJobFact[]
+
+  /**
+   * 界面语言(英文界面不出灰字)。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 点一行:宿主叠开职位描述弹框(整行由行自己现取)。
+   */
+  onOpenJob: OpenJobFn
+}
+
+/**
+ * miniSubOf 的入参。
+ */
+export type MiniSubIn = {
+  /**
+   * 这一行。
+   */
+  row: MiniJobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 懒翻回来的职位名 → 译名。
+   */
+  map: Record<string, string>
+}
+
+/**
+ * storedTitleOf 的入参。
+ */
+export type StoredTitleIn = {
+  /**
+   * 这一行。
+   */
+  row: MiniJobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+}
+
+/**
+ * untranslatedOf 的入参。
+ */
+export type UntranslatedIn = {
+  /**
+   * 这一组的行。
+   */
+  rows: MiniJobFact[]
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+}
+
+/**
+ * CompanyInfoCard(职位页 / 职位弹框里的公司信息卡,2026-09-21)的 props。
+ */
+export type CompanyInfoCardIn = {
+  /**
+   * 这一岗的岗位号(按它取公司,与公司弹框同一个接口)。
+   */
+  jobId: number
+
+  /**
+   * 界面语言。
+   */
+  lang: CompaniesLang
+
+  /**
+   * 点公司名:开公司弹框。
+   */
+  onOpenCompany: OpenCompanyFn
+}
+
+/**
+ * useCompanyOfJob 的入参。
+ */
+export type CompanyOfJobHookIn = {
+  /**
+   * 这一岗的岗位号(换了岗位要重取)。
+   */
+  jobId: number
 }
 
 /**
@@ -1011,6 +1201,11 @@ export type CompanyAiSectionIn = {
    * 公司档案里本来就有官网(进度行少一步「查找官网」);可省 = 没有。
    */
   hasSite?: boolean
+
+  /**
+   * 简介只查库、不联网现查(见 CompanyBasicCardIn 同名格);可省 = 照旧。
+   */
+  storedOnly?: boolean
 }
 
 /**
@@ -1774,6 +1969,11 @@ export type CompanyAiHookIn = {
    * 官网那条工种办到哪一步;'' = 还没报上去。
    */
   stage: string
+
+  /**
+   * 调用方要求只查库、不联网现查(职位页 / 职位弹框里的公司卡,2026-09-21);false = 照官网那条工种的进度定。
+   */
+  storedOnly: boolean
 }
 
 /**
@@ -1920,6 +2120,11 @@ export type CompanyIntroIn = {
    * 官网那条工种办到哪一步(2026-09-20);可省 = 不在这条工种里。
    */
   stage?: string
+
+  /**
+   * 简介只查库、不联网现查(见 CompanyBasicCardIn 同名格);可省 = 照旧。
+   */
+  storedOnly?: boolean
 }
 
 /**
@@ -2254,34 +2459,79 @@ export type LoadAliasIn = {
  */
 export type CompanyPeekPanel = {
   /**
-   * 正开着职位描述弹框的那一岗;null = 没开。
+   * 弹框栈(2026-09-21:职位描述弹框与公司弹框一层层叠,只关最上面一层;原先的「那一岗」「那一家」两格并进这里)。
    */
-  job: CompanyJobFact | null
+  stack: PeekStackRef
 
   /**
-   * 正开着公司弹框的那一家;null = 没开。
-   */
-  co: CompanyPeek | null
-
-  /**
-   * 点在招职位:开职位描述弹框。
+   * 点在招职位:叠开职位描述弹框。
    */
   onOpenJob: OpenJobFn
 
   /**
-   * 点相似雇主:开公司弹框(已开着 = 同框换一家)。
+   * 点相似雇主:叠开公司弹框(框里再点相似雇主同框换一家,由弹框栈的渲染件接手)。
    */
   onOpenCompany: OpenCompanyFn
+}
+
+/**
+ * 弹框栈的职位层(2026-09-21;与 advisor 域的同名形状同形,本域自抄)。
+ */
+export type PeekJobLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'job'
 
   /**
-   * 关职位描述弹框。
+   * 这一岗(整行)。
    */
-  onCloseJob: GoBackFn
+  job: CompanyJobFact
+}
+
+/**
+ * 弹框栈的公司层。
+ */
+export type PeekCoLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'company'
 
   /**
-   * 关公司弹框。
+   * 这一家。
    */
-  onCloseCo: GoBackFn
+  co: CompanyPeek
+}
+
+/**
+ * 弹框栈的一层。
+ */
+export type PeekLayer = PeekJobLayer | PeekCoLayer
+
+/**
+ * 弹框栈(modal 域 useLayerStack 的出参;形状本域自抄):各层从下到上与三个手柄。
+ */
+export type PeekStackRef = {
+  /**
+   * 从下到上的各层。
+   */
+  layers: PeekLayer[]
+
+  /**
+   * 叠上一层。
+   */
+  push: (layer: PeekLayer) => void
+
+  /**
+   * 换掉最上面一层。
+   */
+  swapTop: (layer: PeekLayer) => void
+
+  /**
+   * 关掉最上面一层。
+   */
+  pop: () => void
 }
 
 /**

@@ -6,14 +6,15 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, EV_POINTERMOVE, EV_POINTERUP, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL,
   NARROW_BP,
 } from './constants'
 import { elOf, resizedOf } from './functions'
 import type {
-  CardIn, CardOut, DragPos, DragStart, EdgeResizeIn, EdgeResizeOut, OverlayHandlers, ResizeEdge, ResizeSize,
+  CardIn, CardOut, DragPos, DragStart, EdgeResizeIn, EdgeResizeOut, LayerStackOut, OverlayHandlers, ResizeEdge,
+  ResizeSize,
   ResizeStart,
 } from './types'
 
@@ -82,6 +83,49 @@ export function useEscClose(onClose: () => void) {
     }
     return off
   }, [onClose])
+}
+
+/**
+ * 叠开的弹框栈(2026-09-21 Frank「点公司就弹公司的框?然后还能点回来,还能看该公司其他的职位?」):
+ * 职位 → 公司 → 另一条职位……一层层往上叠,关掉最上面一层就回到下面那层。Esc 也只关最上面一层 ——
+ * 原先各宿主各挂一个 Esc、一按全关(职位板 closeBoth、公司页 useCompanyPeek),叠起来就回不去了。
+ * 各层是什么、点了往上叠还是同框换,由宿主与渲染件(advisor 的 PeekStack)定;这里只管次序。
+ *
+ * @returns 各层与三个手柄。
+ */
+export function useLayerStack<L>(): LayerStackOut<L> {
+  const [layers, setLayers] = useState<L[]>([])
+  const push = useCallback(function pushLayer(layer: L): void {
+    setLayers(function withTop(prev: L[]): L[] {
+      return prev.concat([layer])
+    })
+  }, [])
+  const swapTop = useCallback(function swapTopLayer(layer: L): void {
+    setLayers(function withNewTop(prev: L[]): L[] {
+      return prev.slice(0, -1).concat([layer])
+    })
+  }, [])
+  const pop = useCallback(function popLayer(): void {
+    setLayers(function withoutTop(prev: L[]): L[] {
+      return prev.slice(0, -1)
+    })
+  }, [])
+  const open = layers.length > 0
+  useEffect(function bindEsc() {
+    if (open === false) {
+      return
+    }
+    function onKey(e: KeyboardEvent): void {
+      if (e.key === KEY_ESC) {
+        pop()
+      }
+    }
+    window.addEventListener(EV_KEYDOWN, onKey)
+    return function off(): void {
+      window.removeEventListener(EV_KEYDOWN, onKey)
+    }
+  }, [open, pop])
+  return { layers, push, swapTop, pop }
 }
 
 /**

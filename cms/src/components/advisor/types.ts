@@ -1694,6 +1694,16 @@ export type ActJdIn = {
    * 外层弹框面板(剩余次数、重译代数与回调)。
    */
   a: ActModalPanel
+
+  /**
+   * 点正文下面相关职位卡里的一行:宿主往弹框栈上叠开那一岗(2026-09-21)。
+   */
+  onOpenJob: OpenJobFn
+
+  /**
+   * 点正文下面公司信息卡里的公司名:宿主往弹框栈上叠开公司弹框(2026-09-21)。
+   */
+  onOpenCompany: OpenCompanyFn
 }
 
 /**
@@ -1985,6 +1995,16 @@ export type ActModalIn = {
    * 关闭回调。
    */
   onClose: () => void
+
+  /**
+   * 点正文下面相关职位卡里的一行:宿主往弹框栈上叠开那一岗(2026-09-21)。
+   */
+  onOpenJob: OpenJobFn
+
+  /**
+   * 点正文下面公司信息卡里的公司名:宿主往弹框栈上叠开公司弹框(2026-09-21)。
+   */
+  onOpenCompany: OpenCompanyFn
 }
 
 /**
@@ -3599,4 +3619,104 @@ export type CompanyModalPanel = {
    * 翻译在途回传落格。
    */
   onTransBusy: (busy: boolean) => void
+}
+
+/**
+ * 弹框栈的职位层(2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」):职位描述弹框。
+ */
+export type PeekJobLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'job'
+
+  /**
+   * 这一岗(整行)。
+   */
+  job: AdvisorJob
+}
+
+/**
+ * 弹框栈的公司层:公司弹框。
+ */
+export type PeekCoLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'company'
+
+  /**
+   * 这一家。
+   */
+  co: CompanyPeek
+}
+
+/**
+ * 弹框栈的一层。
+ */
+export type PeekLayer = PeekJobLayer | PeekCoLayer
+
+/**
+ * 弹框栈(宿主起的 modal 域 useLayerStack;形状本域自抄):各层从下到上与三个手柄。
+ */
+export type PeekStackRef = {
+  /**
+   * 从下到上的各层。
+   */
+  layers: PeekLayer[]
+
+  /**
+   * 叠上一层。
+   */
+  push: (layer: PeekLayer) => void
+
+  /**
+   * 换掉最上面一层。
+   */
+  swapTop: (layer: PeekLayer) => void
+
+  /**
+   * 关掉最上面一层。
+   */
+  pop: () => void
+}
+
+/**
+ * PeekStack(弹框栈的渲染件)的 props。
+ */
+export type PeekStackIn = {
+  /**
+   * 宿主起的弹框栈。
+   */
+  stack: PeekStackRef
+
+  /**
+   * 界面语言。
+   */
+  lang: AdvisorLang
+
+  /**
+   * 分层态(职位描述弹框的额度闸按它走)。
+   */
+  plan: AdvisorPlan
+
+  /**
+   * NOC 官方职业描述(职位描述弹框标题下的译名要它);宿主没有就递空表。
+   */
+  nocDesc: AdvisorNocDescs
+}
+
+/**
+ * peekKeyOf 的入参。
+ */
+export type PeekKeyIn = {
+  /**
+   * 这一层。
+   */
+  layer: PeekLayer
+
+  /**
+   * 它在栈里的位置(从下往上数,0 起)。
+   */
+  at: number
 }

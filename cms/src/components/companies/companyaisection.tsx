@@ -41,12 +41,13 @@ export function CompanyAiSection({
   onBusy,
   stage = TEXT_NONE,
   hasSite = false,
+  storedOnly = false,
 }: CompanyAiSectionIn) {
   let hookLang: CompaniesLang | null = null
   if (lang != null) {
     hookLang = lang
   }
-  const p = useCompanyAi({ company, lang: hookLang, stage })
+  const p = useCompanyAi({ company, lang: hookLang, stage, storedOnly })
   const transWait = showTrans && hookLang !== null && hookLang !== LANG_EN && p.fact != null && p.trans === null
   useEffect(function reportBusy() {
     if (onBusy != null) {

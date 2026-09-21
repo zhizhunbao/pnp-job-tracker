@@ -8,12 +8,13 @@
  * 自带壳的重弹框(Advisor/Decision)改用 overlayCls() 拿同一份遮罩类
  * (同日 Frank 拍板:scrim 这个舞台术语改叫 overlay,与 useOverlayClose 同词);
  * CARD/iconBtnS 仍是过渡导出,随后续批次类化后退役。
+ * 2026-09-21 多一台弹框栈 useLayerStack(职位 / 公司弹框一层层叠,× 与 Esc 都只关最上面一层)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 export { CARD, iconBtnS, MODAL_RADIUS, MODAL_SHADOW } from './constants'
 export { overlayCls } from './functions'
-export { useEscClose, useIsNarrow, useOverlayClose } from './hooks'
+export { useEscClose, useIsNarrow, useLayerStack, useOverlayClose } from './hooks'
 export { Modal } from './modal'
-export type { ModalIn, OverlayHandlers } from './types'
+export type { LayerStackOut, ModalIn, OverlayHandlers } from './types'

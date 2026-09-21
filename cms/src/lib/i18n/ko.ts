@@ -509,7 +509,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'gr.fm.5': '유명 대형 고용주', 'gr.fm.4': '위키 문서 있음', 'gr.fm.3': '여러 주 운영', 'gr.fm.2': '일반 규모', 'gr.fm.1': '매우 소규모',
   'gr.sponsorTip': '이 고용주의 외국인 근로자 스폰서 기록(공식 LMIA 승인 이력·최신성 기준); 회사명을 클릭하면 상세',
   'co.grades': '고용주 신호',
-  'co.crumb': '고용주', 'co.basic': '기본 정보', 'co.name': '회사명', 'co.sector': '유형', 'co.gov': '정부 기관', 'co.wellKnown': '유명 기업', 'co.notFound': '이 회사를 찾을 수 없습니다 — 채용 목록에서 제거되었을 수 있습니다.', 'co.openJobs': '채용 중 공고',
+  'co.crumb': '고용주', 'co.basic': '기본 정보', 'co.info': '회사 정보', 'co.name': '회사명', 'co.sector': '유형', 'co.gov': '정부 기관', 'co.wellKnown': '유명 기업', 'co.notFound': '이 회사를 찾을 수 없습니다 — 채용 목록에서 제거되었을 수 있습니다.', 'co.openJobs': '채용 중 공고',
   'co.spSub': '최근 2년 공식 LMIA 승인(과거 사실이며 스폰서 보장 아님)',
   'co.spStream.high': '고임금', 'co.spStream.gts': 'Global Talent', 'co.spStream.pr': 'PR 신청 지원', 'co.spStream.low': '저임금', 'co.spStream.agri': '농업',
   'co.spSkilledTag': '기술직', 'co.spQuarter': '최근 승인', 'co.spBatchN': '{n}건 LMIA', 'co.designated': '지정 고용주',

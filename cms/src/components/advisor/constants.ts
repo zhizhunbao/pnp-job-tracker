@@ -1179,3 +1179,18 @@ export const LINK_CLS = 'link'
  * 居中位的除数:视口宽高减去浮层之后,左右(上下)各留一半。
  */
 export const CENTER_DIV = 2
+
+/**
+ * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量)。
+ */
+export const LAYER_JOB = 'job'
+
+/**
+ * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
+ */
+export const LAYER_CO = 'company'
+
+/**
+ * 弹框栈各层 key 的分隔(位置 + 种类 / 岗位号)。
+ */
+export const PEEK_KEY_SEP = ':'

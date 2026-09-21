@@ -96,7 +96,8 @@ import type {
   ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
   AliasesJson, AliasPatch, AliasPollKeysIn, LoadAliasPatchIn, PatchedAliasIn,
-  ReportSeenIn, CloseJobIn, CloseModalIn, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn, PickWordsIn,
+  ReportSeenIn, CloseJobIn, CloseModalIn, EmpModal, EmpPickWords, JobToCompanyIn, KeepShownIn, MapHrefIn, NameClickIn,
+  OpenCompanyFn, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -2471,6 +2472,21 @@ export function makeCloseJob(x: CloseJobIn): ClickFn {
     x.setPeekJob(null)
   }
   return onCloseJob
+}
+
+/**
+ * 造「职位描述弹框里点公司名」的手柄(2026-09-21 职位框正文下面接了公司信息卡):关职位框,公司框换成那一家 ——
+ * 本板的职位框都是从公司框里点出来的,点的多半就是底下那一家,效果等于点回公司框。
+ *
+ * @param x 两个弹框态落格。
+ * @returns 手柄。
+ */
+export function makeJobToCompany(x: JobToCompanyIn): OpenCompanyFn {
+  function onJobToCompany(peek: EmpModal): void {
+    x.setPeekJob(null)
+    x.setModal(peek)
+  }
+  return onJobToCompany
 }
 
 /**

@@ -20,27 +20,40 @@
  * 2026-09-16 Frank「默认中文对照都关闭吧」(看到先铺英文再补中文行会跳):上面 09-14「默认就自带中文对照」作废 ——
  * JdAutoTrans 自动加载件撤,对照只在用户拨开标题区的开关时才拉、才出;开框不再有对照行后到的跳动。
  * 2026-09-14 Frank「加」:管理员在标题下有一颗「重译」胶囊 —— 清掉这一岗的译文版本后整页刷新,开框重翻。
+ * 2026-09-21 Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」:弹框里照公司弹框的卡组形 ——
+ * 正文装进一张白卡,正文与投递栏之间接宿主递的尾巴(公司信息卡 + 相关职位卡);投递栏仍是最后一块,贴框底不被卡片夹住。
+ * 详情页不递尾巴、正文不另装卡(页上的正文本来就在白卡里,两张卡在白卡外面)。
+ * 同日 Frank「上来不要显示空的框」:正文还在取时装正文的卡里什么都没画,整卡藏着(.jdCard 的 :empty),正文到了才出。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
+import { cssOf } from '@/components/css'
+import { CARD_MD_CLS, JD_DONE, STATUS_CLOSED, UNDER_TITLE } from './constants'
 import { ApplyBar } from './applybar'
 import { JdClosed } from './jdclosed'
 import { JdContent } from './jdcontent'
 import type { JobBodyIn } from './types'
+import css from './jobs.module.css'
 
 /**
  * 渲染 JD 身体。
  *
- * @param props 本岗、界面语言、分层态、在不在弹框里与 JD 身体状态机。
+ * @param props 本岗、界面语言、分层态、在不在弹框里、JD 身体状态机与正文下面的尾巴。
  * @returns 整副身体。
  */
-export function JobBody({ job, lang, plan, inModal = false, d }: JobBodyIn) {
-  return (
+export function JobBody({ job, lang, plan, inModal = false, d, tail = null }: JobBodyIn) {
+  const content = (
     <>
       {job.status === STATUS_CLOSED && <JdClosed text={d.t('detail.closedNote')} />}
       <JdContent d={d} job={job} underTitle={UNDER_TITLE} loggedIn={plan.loggedIn} lang={lang} />
+    </>
+  )
+  return (
+    <>
+      {inModal === false && content}
+      {inModal && <div className={`${CARD_MD_CLS} ${cssOf(css.jdCard)}`}>{content}</div>}
+      {tail}
       {d.status === JD_DONE && (
         <ApplyBar job={job} email={d.applyEmail} emailDone={d.applyDone} t={d.t} plan={plan}
           onPage={inModal === false} />

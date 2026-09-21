@@ -14,11 +14,13 @@
  * 以重写姿势吸收进来:一件一文件全小写(粒度照 news),状态进 hooks.ts,
  * 原文件 git rm —— 公司这件事从此只有本桶一个家。
  * 对应 lib 域:lib/jobs(loadCompanyBySlug 一族;公司弹框走 /api/jobs/company)。
+ * 2026-09-21 多一件公司信息卡(CompanyInfoCard):职位详情页与职位描述弹框正文下面那张(公司弹框的基本信息卡换三处)。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
 export { Company } from './company'
 export { CompanyBody } from './companybody'
+export { CompanyInfoCard } from './companyinfocard'
 export { CompanyPanel } from './companypanel'
 export { JobMiniRow } from './jobminirow'

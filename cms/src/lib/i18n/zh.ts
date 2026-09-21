@@ -555,7 +555,7 @@ export const jobsZh = {
   // 公司评分卡(2026-07-22 Frank 拍板:四维归位公司弹框;档名键沿用 gr.sp/act/sal/fm)
   'co.grades': '雇主信号',   // #192 Frank「改个名更合适」:四维是粗筛信号不是打分,与「移民信号/相似雇主」词汇一致
   // E8-09 B 公司详情页 /companies/[slug]
-  'co.crumb': '雇主', 'co.basic': '基本信息', 'co.name': '公司名称', 'co.sector': '雇主类型', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
+  'co.crumb': '雇主', 'co.basic': '基本信息', 'co.info': '公司信息', 'co.name': '公司名称', 'co.sector': '雇主类型', 'co.gov': '政府机构', 'co.wellKnown': '知名企业', 'co.notFound': '未找到这家公司,可能已从在招列表移除。', 'co.openJobs': '在招职位',
   // 担保记录深化 + 相似雇主(E8-09 加深)
   'co.spSub': '近两年官方 LMIA 获批(历史事实,非能担保判定)',
   // 股别名去黑话(Frank 08-09「高薪股是什么意思?用户一看就能明白」):「股」=stream 硬译,清出台面

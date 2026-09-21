@@ -688,6 +688,11 @@ export const URL_API_USERS_ME = '/api/users/me'
 export const URL_API_JOB_TEXT = '/api/jobs/text?url='
 
 /**
+ * 按岗位号取相关职位(2026-09-21 职位描述弹框下面的相关职位卡;接岗位号)。
+ */
+export const URL_API_JOB_RELATED = '/api/jobs/related?id='
+
+/**
  * 正文接口的岗位号参数(接在链接后;2026-09-20 服务端按岗位号找行,链接只用来去原站懒抓)。
  */
 export const URL_API_JOB_TEXT_ID = '&id='
@@ -2141,6 +2146,21 @@ export const TRACK_FROM_CLOSED = 'closed'
 export const TRACK_FROM_CLOSED_NONE = 'closed-none'
 
 /**
+ * 相似职位来自在招页(2026-09-21 在招岗也出这张卡;下架页与在招页分开记,两种页的点击意图不同)。
+ */
+export const TRACK_FROM_OPEN = 'open'
+
+/**
+ * 在招页上的兜底链。
+ */
+export const TRACK_FROM_OPEN_NONE = 'open-none'
+
+/**
+ * 相似职位来自职位描述弹框(2026-09-21 弹框照公司弹框的形,正文下面也接这张卡;弹框里不出兜底链)。
+ */
+export const TRACK_FROM_MODAL = 'modal'
+
+/**
  * 中文对照(首次拉取才计,纯开合不计)。
  */
 export const TRACK_JD_TRANSLATE = 'jd-translate'
@@ -3297,26 +3317,6 @@ export const EMPTY_MATCH_DIMS = {
 }
 
 /**
- * 在招岗不查相似职位(服务端就不查,related 恒空)—— 在招岗照旧守「一条信息一个家」。
- */
-export const EMPTY_RELATED = {
-  /**
-   * 同公司在招。
-   */
-  sameCompany: [],
-
-  /**
-   * 同省同职业在招。
-   */
-  sameOcc: [],
-
-  /**
-   * 兜底链按哪一级筛。
-   */
-  fallbackLevel: null,
-}
-
-/**
  * 日期截到「年-月-日」的长度。
  */
 export const DATE_LEN = 10
@@ -3348,3 +3348,13 @@ export const BTN_SEG = 'seg'
  * 留白等的是一次网络请求,慢了 / 挂了就是一块白板。到点不管回没回都先把正文铺出来,查库的结果回来照常补上(代价 = 那一次会跳一下)。
  */
 export const HOLD_MAX_MS = 800
+
+/**
+ * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量,与 advisor 域同名同值,本域自抄)。
+ */
+export const LAYER_JOB = 'job'
+
+/**
+ * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
+ */
+export const LAYER_CO = 'company'

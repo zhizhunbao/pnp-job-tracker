@@ -3281,6 +3281,7 @@ export function toNewsSlim(r: Row): NewsSlim {
 
 /**
  * 相关职位一行 → 瘦行(salary_text 空时用 salary 兜底)。
+ * 2026-09-21 带上职位名译名两格(版本号对不上当没有):相关职位卡行下的灰字改出译名、不出公司名。
  *
  * @param r 原始行。
  * @returns 瘦行。
@@ -3293,6 +3294,7 @@ export function toRelated(r: Row): RelatedJob {
   return {
     id: count(r.id), title: text(r.title), company: text(r.company_name),
     city: text(r.city), province: text(r.province), salaryText: salaryText,
+    titleZh: vtext({ v: r.job_trans_v, cell: r.title_zh }), titleKo: vtext({ v: r.job_trans_v, cell: r.title_ko }),
   }
 }
 
