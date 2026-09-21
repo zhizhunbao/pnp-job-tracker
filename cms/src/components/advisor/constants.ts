@@ -272,12 +272,6 @@ export const URL_JOB_HEAD = '/jobs/'
 export const POOL_KEY_HEAD = 'n:'
 
 /**
- * 箭头钮的链接打开方式:本页整页跳。写明 `_self` 是为了让 LinkButton 走裸 a、不走 next/link ——
- * next/link 一进视口就预取,弹框每开一次就多渲一遍整张落地页、多打一轮库(同 e4001fb8 页码链接的先例)。
- */
-export const TARGET_SELF = '_self'
-
-/**
  * 市级取数的城市参数名。
  */
 export const P_CITY = 'city'

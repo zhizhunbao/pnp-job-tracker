@@ -9,15 +9,17 @@
  * 2026-09-14 Frank「右下角的这个半个背景的去掉」「改成这种干净的」:右下角斜纹抓手撤(八向边拉照旧,只是不再画角标)。
  * 2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」:有落地页的框(职位描述弹框 → 职位详情页、公司弹框 / 公司字段弹框
  * → 公司页)全屏钮换成箭头,本页整页跳;窄屏也出(全屏钮窄屏不出是因为窄屏本来就全屏,箭头不是那回事)。没落地页的照旧全屏钮。
+ * 同日 Frank「这个箭头长一点。并且打开新页面」:换长箭头 MoveUpRight;改新标签页打开(本域 TARGET_BLANK 口径:
+ * 弹框里点出去的一律新标签,别把弹框关掉)—— 上一行「本页整页跳」作废。target 给了值 LinkButton 就走裸 a,不走 next/link 预取。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconArrowUpRight, IconMaximize, IconMinimize, IconRefresh } from '@/components/icons'
+import { IconMaximize, IconMinimize, IconMoveUpRight, IconRefresh } from '@/components/icons'
 import { overlayCls, useOverlayClose } from '@/components/modal'
-import { BTN_GHOST, CLOSE_MARK, CLS_SEP, TARGET_SELF, TEXT_NONE } from './constants'
+import { BTN_GHOST, CLOSE_MARK, CLS_SEP, TARGET_BLANK, TEXT_NONE } from './constants'
 import { fullTitleOf, makeActsDown, panelBodyClsOf, panelClsOf, panelHeadClsOf, stopClick } from './functions'
 import { ResizeHandles } from './resizehandles'
 import type { FloatPanelIn } from './types'
@@ -48,10 +50,10 @@ export function FloatPanel({
               </Button>
             )}
             {pageHref !== TEXT_NONE && (
-              <Button kind={BTN_GHOST} href={pageHref} target={TARGET_SELF} title={t('detail.openFull')}
+              <Button kind={BTN_GHOST} href={pageHref} target={TARGET_BLANK} title={t('detail.openFull')}
                 ariaLabel={t('detail.openFull')}
                 className={cssOf(css.iconBtn)}>
-                <IconArrowUpRight />
+                <IconMoveUpRight />
               </Button>
             )}
             {pageHref === TEXT_NONE && panel.narrow === false && (
