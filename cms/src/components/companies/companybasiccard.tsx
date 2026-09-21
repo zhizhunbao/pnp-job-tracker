@@ -25,8 +25,9 @@
  * 2026-09-20 真总部进库:「总部」行先用库里的真总部(官网页面原句核对过的,官网没标的退 Wikidata),值点开就是出处那一页;
  * 库里没有的照旧走有出处的 AI 简介,不成链。
  * 2026-09-21 职位页 / 职位弹框也挂这张卡(Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」,经 CompanyInfoCard):
- * 卡标题可换(「公司信息」)、公司名可成链接(点了开公司弹框)并在下面出库里存好的别名、简介可要求只查库不现查;
- * 公司弹框与公司页不递这几格,一字不变。
+ * 卡标题可换(「公司信息」)、公司名可成链接(点了开公司弹框)并在下面出库里存好的别名;
+ * 公司弹框与公司页不递这几格,一字不变。简介与探索进度与公司弹框同一套(同日 Frank「怎么不探索了」)。
+ * 同日 Frank「这个点开应该是打开 google 地图吧」:「总部」行点开改成 Google 地图(与「地址」行同一个去处),上面 09-20「点开就是出处那一页」作废。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -43,7 +44,7 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, isGovCompany, siteHqHrefOf, siteHqOf, siteWebsiteOf,
+  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, isGovCompany, siteHqOf, siteWebsiteOf,
   wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
@@ -58,7 +59,7 @@ import css from './companies.module.css'
  * @returns 一张卡;身份与简介都没有时整卡不渲。
  */
 export function CompanyBasicCard({
-  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany, storedOnly = false,
+  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany,
 }: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
@@ -107,7 +108,7 @@ export function CompanyBasicCard({
             </LinkButton>
           </Row>
         )}
-        <Row k={t('co.hq')}><CompanyHq text={hq} href={siteHqHrefOf({ company, site, t, lang })} /></Row>
+        <Row k={t('co.hq')}><CompanyHq text={hq} href={hqMapOf(hq)} /></Row>
         {addr !== TEXT_NONE && (
           <Row k={t('act.addr')}>
             <LinkButton href={mapsUrl(addr)}
@@ -127,8 +128,7 @@ export function CompanyBasicCard({
         skipBase={company.aiBrief !== TEXT_NONE}
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy}
-        stage={site.stage}
-        storedOnly={storedOnly} />
+        stage={site.stage} />
     </div>
   )
 }

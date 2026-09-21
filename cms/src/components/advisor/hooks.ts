@@ -15,12 +15,12 @@ import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
   ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
-  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PANEL_POS_X0, PANEL_POS_Y0, TEXT_NONE,
+  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, TEXT_NONE,
   TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
 } from './constants'
 import {
-  advisorKeyOf, centerPosOf, makeDragStart, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
-  makeLoadProv, makeResizeStart, makeRunLongAdvisor, panelStyleOf, readPrefOf, savePrefOf,
+  advisorKeyOf, makeDragStart, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
+  makeLoadProv, makeResizeStart, makeRunLongAdvisor, panelInitOf, panelStyleOf, savePrefOf,
   streamAdvisor, tickTypewriter, makeLoadTitleTrans,
 } from './functions'
 import type {
@@ -28,7 +28,8 @@ import type {
   AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, CompanyModalPanel,
   DeadFlag,
   FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
-  NocTrans, NocTransIn, NocTransPanel, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus, TitleTransHookIn,
+  NocTrans, NocTransIn, NocTransPanel, PanelInit, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus,
+  TitleTransHookIn,
 } from './types'
 import { CACHE } from './variables'
 
@@ -165,35 +166,23 @@ function limitCtaOf(x: AdvisorCtaIn): string {
  * 浮层整机(标题栏拖动 / 八向拉伸 / 全屏 / 尺寸记忆)—— 顾问弹框与职位描述弹框共用。
  * 窄屏(E8-03)强制全屏,禁拖拽/拉伸/全屏切换钮。位置每次打开居中不记忆:
  * 记了位置,窗口一缩小上次那个坐标就在屏外,弹框打开即消失。
+ * 2026-09-21 Frank「会出现 先一个小框，然后在放大」:记忆原先在挂载后的 effect 里补(先按默认尺寸画一帧,再跳成记住的尺寸 / 全屏);
+ * 弹框都是用户点了才开、只在浏览器里画,首帧就按记忆算(panelInitOf,读不到本地存储照旧给默认),那一跳没了。
  *
  * @param x 记忆键与默认宽高。
  * @returns 浮层机器面板。
  */
 export function useFloatPanel(x: FloatPanelHookIn): FloatPanelOut {
   const narrow = useIsNarrow()
-  const [fullPref, setFullPref] = useState(false)
-  const [size, setSize] = useState<PanelSize>({ w: x.defW, h: x.defH })
-  const [pos, setPos] = useState<PanelPos>(function initPos(): PanelPos {
-    if (typeof window === 'undefined') {
-      return { x: PANEL_POS_X0, y: PANEL_POS_Y0 }
-    }
-    return centerPosOf({ w: x.defW, h: x.defH })
+  const [init] = useState<PanelInit>(function initPanel(): PanelInit {
+    return panelInitOf(x)
   })
+  const [fullPref, setFullPref] = useState(init.full)
+  const [size, setSize] = useState<PanelSize>(init.size)
+  const [pos, setPos] = useState<PanelPos>(init.pos)
   const sizeRef = useRef<PanelSize>(size)
   const full = fullPref || narrow
   const prefKey = x.prefKey
-
-  useEffect(function loadPref() {
-    const p = readPrefOf(prefKey)
-    if (p.full) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:localStorage 在用户浏览器里,服务端画首帧读不到,页面活过来后再补真实偏好
-      setFullPref(true)
-    }
-    if (p.w != null && p.h != null) {
-      setSize({ w: p.w, h: p.h })
-      setPos(centerPosOf({ w: p.w, h: p.h }))
-    }
-  }, [prefKey])
 
   function toggleFull(): void {
     const next = fullPref === false

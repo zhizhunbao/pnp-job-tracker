@@ -33,15 +33,16 @@ import type {
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关 —— 中 / 韩界面简介一到就在后台翻好存着,开关只管显不显。
  *
  * 2026-09-20:官网那条工种还没报上去 / 还在办的时候只查库不现查;办完 / 查无 / 不再等的那一拍再查一遍,这时才放开联网现查兜底。
- * 2026-09-21:调用方可以要求一律只查库(职位页 / 职位弹框里的公司卡:打开职位不触发现查,办完那一拍照样再查一遍库,补上队列刚存的简介)。
+ * 2026-09-21 交回多一格 live(联网现查在途):简介位只在现查时出「AI 调查中…」,开框那一拍只查库不出(原先一闪就没)。
  *
- * @param x 公司名、界面语言、官网那条工种办到哪一步与要不要一律只查库。
- * @returns 加载态、查到的简介与译文。
+ * @param x 公司名、界面语言与官网那条工种办到哪一步。
+ * @returns 加载态、查到的简介、译文与这一拍是不是现查。
  */
 export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
   const [loading, setLoading] = useState(true)
   const [fact, setFact] = useState<CompanyBriefFact | null>(null)
   const [trans, setTrans] = useState<string | null>(null)
+  const [live, setLive] = useState(false)
   const [prevCompany, setPrevCompany] = useState(x.company)
 
   if (prevCompany !== x.company) {
@@ -49,18 +50,18 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
     setLoading(true)
     setFact(null)
     setTrans(null)
+    setLive(false)
   }
 
-  const siteBusy = x.stage === TEXT_NONE || isSiteActive(x.stage)
-  const storedOnly = x.storedOnly || siteBusy
+  const storedOnly = x.stage === TEXT_NONE || isSiteActive(x.stage)
 
   useEffect(function loadBrief() {
     const flag: DeadFlag = { dead: false }
-    makeLoadBrief({ company: x.company, setFact, setLoading, storedOnly })(flag)
+    makeLoadBrief({ company: x.company, setFact, setLoading, setLive, storedOnly })(flag)
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.company, storedOnly, siteBusy])
+  }, [x.company, storedOnly])
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
@@ -72,7 +73,7 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
     }
   }, [x.lang, x.company, trans, fact])
 
-  return { loading, fact, trans }
+  return { loading, fact, trans, live }
 }
 
 /**

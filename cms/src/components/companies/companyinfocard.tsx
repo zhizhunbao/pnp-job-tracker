@@ -2,10 +2,12 @@
 /**
  * 公司信息卡(2026-09-21 Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」
  * 「有公司卡的话,上面的显示公司名就可以去掉了」):职位详情页与职位描述弹框在正文下面挂的那张公司卡。
- * 就是公司弹框的「基本信息」卡(同一件 CompanyBasicCard),只换三处:卡标题叫「公司信息」;公司名成公司页真链接
- * (普通左键开公司弹框,在招职位与相似雇主都在那里)并在下面出库里存好的别名;简介只查库、不联网现查。
+ * 就是公司弹框的「基本信息」卡(同一件 CompanyBasicCard),只换两处:卡标题叫「公司信息」;公司名成公司页真链接
+ * (普通左键开公司弹框,在招职位与相似雇主都在那里)并在下面出库里存好的别名。
  * 卡一开照旧经 useCompanySite 报一声点开(等到有真人动作才报):缺资料的公司排进点开优先队列,
  * 译名跟着排进翻译队列(Frank「按铁律:有人看就翻」—— 没人看过的不翻)。
+ * 同日 Frank「怎么不探索了」:原先这张卡「简介只查库、不联网现查」,库里没资料的公司只剩一个名字、看不到探索 ——
+ * 撤掉,简介与探索进度(排队 → 抓官网 → 整理 → 翻译,查不到再联网现查兜底)与公司弹框一字不差。
  * 按岗位号取数,与公司弹框同一个接口;没取到(没挂公司 / 接口挂了)整卡不出。
  *
  * @author Frank
@@ -51,8 +53,7 @@ export function CompanyInfoCard({ jobId, lang, onOpenCompany }: CompanyInfoCardI
         onBusy={ignoreFlag}
         head={t('co.info')}
         alias={aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo })}
-        onOpenCompany={onOpenCompany}
-        storedOnly />
+        onOpenCompany={onOpenCompany} />
     </div>
   )
 }

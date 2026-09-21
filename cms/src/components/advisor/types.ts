@@ -1483,6 +1483,26 @@ export type FloatPanelHookIn = {
 }
 
 /**
+ * 浮层首帧的三格(2026-09-21:首帧就按记忆算,不再先默认后跳)。
+ */
+export type PanelInit = {
+  /**
+   * 记住的全屏。
+   */
+  full: boolean
+
+  /**
+   * 首帧尺寸(记住的,没有用默认)。
+   */
+  size: PanelSize
+
+  /**
+   * 首帧位置(按首帧尺寸居中;服务端给固定初值)。
+   */
+  pos: PanelPos
+}
+
+/**
  * useFloatPanel 交回的浮层机器面板。
  */
 export type FloatPanelOut = {

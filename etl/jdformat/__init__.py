@@ -20,12 +20,16 @@ import os
 FORMAT_LIMIT = os.environ.get("JDFORMAT_LIMIT", "400")
 """每轮最多整理多少条(盒子实测 qwen3.6 一条 5.7k 字原文约 11 秒:400 条 ≈ 1 小时 = 一个 interval;
 存量在招岗约 6 万条一周追平,之后每天新帖 2~3 千条一轮内消化)。本地验收可压小(JDFORMAT_LIMIT=3);
-形同 jobboom 域的 DETAILS_PER_RUN。"""
+形同 jobboom 域的 DETAILS_PER_RUN。
+2026-09-21 实测:一条约 7 秒、一轮约 45 分钟;可调度器是一轮跑完才开始计 interval(sched watch:next_at = 完成时刻 + interval),
+实际节奏是「干 45 分钟 + 歇 1 小时」,一天约 5.5 千条,6 天累计 2.2 万、在招岗整理版覆盖约 32%,存量没追平。见下面 META.interval。"""
 
 META = {
     "role": "jdformat",
     "method": "httpx",       # 对应 etl/sched/Dockerfile 通用轻镜像(只打局域网 Ollama,无浏览器)
-    "interval": 3600,        # 1h(全站抓岗节奏;build 每小时汇装一次,本域产物下一轮汇装即入 mart)
+    "interval": 300,         # 2026-09-21 1h → 5 分钟(Frank「第5条先显示原帖,扩大预先整理覆盖」:弹框开框先铺原帖、整理版几秒后换上去是「闪」,
+                             # 预先整理过的岗开框就是整理版):一轮跑完只歇 5 分钟,一轮接一轮,一天约 1.1 万条,剩下约 4 万条存量 4 天左右追平;
+                             # 追平后每轮只剩新帖,大半时间在歇。原「1h = 全站抓岗节奏」:build 仍每小时汇装一次,本域产物下一轮汇装即入 mart
     "seed": False,           # 只刷 processed/,灌库归 load 域 build 链
     "ping": True,            # 本角色唯一单元
 }

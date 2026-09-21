@@ -896,3 +896,8 @@ export const LAYER_JOB = 'job'
  * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
  */
 export const LAYER_CO = 'company'
+
+/**
+ * 一组职位行灰字那一行的占位(2026-09-21):中 / 韩界面译名还没到 / 没有时出一个不换行空格,行高照留,懒翻到了只换字不跳。
+ */
+export const SUB_HOLD = '\u00a0'

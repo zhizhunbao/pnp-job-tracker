@@ -18,7 +18,7 @@
  * @time 2026-08-27 02:10:00
  */
 import { isJdNone } from '@/lib/jobs'
-import { provName } from '@/lib/location'
+import { mapsUrl, provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import {
   BASE_CITY_PROV_RE, CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
@@ -40,7 +40,7 @@ import {
   SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
   STAGE_OFF, STAGE_ORDER,
   STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
-  LAYER_CO, LAYER_JOB,
+  LAYER_CO, LAYER_JOB, SUB_HOLD,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -377,19 +377,6 @@ export function hqOf(x: BaseZhIn): string {
     return DASH_EM
   }
   return base
-}
-
-/**
- * 「总部」行点开的出处:库里的真总部才有(官网那一页 / Wikidata 条目);退回 AI 简介的那一档不成链(它的出处在简介的「看来源」里)。
- *
- * @param x 公司档案。
- * @returns 出处网址;'' = 不成链。
- */
-export function hqHrefOf(x: CompanyOnlyIn): string {
-  if (x.company.hq === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  return x.company.hqSource
 }
 
 /**
@@ -1088,8 +1075,11 @@ export function makeTvOpen(x: TvOpenIn): GoBackFn {
 /**
  * K 调查简介的懒查(#158 Frank 2026-07-19 批:首开自动调查,命中缓存秒回)。
  * 查不到/掉线一律落 null —— 整块消失不留孤儿,不拿空壳假装查过。
+ * 2026-09-21 分两步(Frank「怎么不探索了」):先一律只查库(零点几秒,卡上什么都不出);库里没有、又放开了现查,
+ * 这一页有过真人动作就当场联网现查(没有就等第一个真人动作),现查在途经 setLive 报给卡 ——「AI 调查中…」只在这一拍出。
+ * 原先一次请求两件事都办,卡分不清是在查库还是在调查:查库那一拍闪一下「AI 调查中…」,真调查的十几秒反倒什么都没有。
  *
- * @param x 公司名与两个落格。
+ * @param x 公司名、三个落格与放不放开现查。
  * @returns effect 里调用的取数函数(带取消标记)。
  */
 export function makeLoadBrief(x: LoadBriefIn): LoadFn {
@@ -1108,15 +1098,24 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       const fact = briefFactOf(j)
       x.setFact(fact)
       x.setLoading(false)
-      if (fact == null && human === false && x.storedOnly === false) {
+      x.setLive(false)
+      if (fact == null && x.storedOnly === false && humanActiveOf()) {
+        askAgain()
+        return
+      }
+      if (fact == null && x.storedOnly === false) {
         for (const ev of HUMAN_EVENTS) {
           window.addEventListener(ev, askAgain, { once: true, passive: true })
         }
       }
     }
     function landAgain(j: BriefJson): void {
+      if (flag.dead) {
+        return
+      }
+      x.setLive(false)
       const fact = briefFactOf(j)
-      if (flag.dead || fact == null) {
+      if (fact == null) {
         return
       }
       x.setFact(fact)
@@ -1128,6 +1127,7 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       if (flag.dead) {
         return
       }
+      x.setLive(true)
       fetch(URL_CO_INFO, {
         method: METHOD_POST,
         headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: HUMAN_YES },
@@ -1135,7 +1135,10 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       }).then(read).then(landAgain).catch(ignoreAgain)
     }
     function ignoreAgain(): void {
-      return
+      if (flag.dead) {
+        return
+      }
+      x.setLive(false)
     }
     function fall(): void {
       if (flag.dead) {
@@ -1143,11 +1146,12 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
       }
       x.setFact(null)
       x.setLoading(false)
+      x.setLive(false)
     }
     fetch(URL_CO_INFO, {
       method: METHOD_POST,
       headers: { [HDR_CONTENT_TYPE]: MIME_JSON, [HDR_HUMAN]: humanMarkOf(human) },
-      body: JSON.stringify({ name: x.company, storedOnly: x.storedOnly }),
+      body: JSON.stringify({ name: x.company, storedOnly: true }),
     }).then(read).then(land).catch(fall)
   }
 }
@@ -1351,16 +1355,17 @@ export function siteHqOf(x: SiteShownIn): string {
 }
 
 /**
- * 卡上「总部」行点开的出处:工人这回整理出来的真总部带它自己的出处,没有照旧(hqHrefOf)。
+ * 卡上「总部」行点开的去处 = Google 地图(2026-09-21 Frank「这个点开应该是打开 google 地图吧」,与「地址」行、雇主板总部列同一个去处;
+ * 原先点开是出处页 —— 官网上写着这个总部的那一页 / Wikidata 条目,09-20 起的口径,随之作废)。拿不到(「—」)不成链。
  *
- * @param x 公司档案与面板。
- * @returns 出处网址;'' = 不成链。
+ * @param text 总部一行字。
+ * @returns 地图网址;'' = 不成链。
  */
-export function siteHqHrefOf(x: SiteShownIn): string {
-  if (x.site.hq !== TEXT_NONE) {
-    return x.site.hqSource
+export function hqMapOf(text: string): string {
+  if (text === TEXT_NONE || text === DASH_EM) {
+    return TEXT_NONE
   }
-  return hqHrefOf({ company: x.company })
+  return mapsUrl(text)
 }
 
 /**
@@ -1771,20 +1776,25 @@ export function cardTitleOf(x: CardTitleIn): string {
  * 一组职位行底下那行灰字(2026-09-21 Frank「这个下面显示中文翻译,不要显示公司」):界面语言的职位名译名 ——
  * 库里存好的优先,没有用懒翻回来的;英文界面、译名与岗名一样(忽略大小写)、都没有 → 不出。
  * 口径与职位描述弹框标题下那行同源(2026-09-14「标题下那行一律是标题译名」,不放职业分类名)。
+ * 2026-09-21 中 / 韩界面这一行一律占着(Frank「然后页面在一部分一部分渲染出来」,闪的第 6 处):译名还没到 / 没有 /
+ * 与岗名一样时出一个不换行空格(SUB_HOLD),行高照留,懒翻到了只换字不把下面顶走。
  *
  * @param x 这一行、界面语言与懒翻表。
- * @returns 灰字;不出给空串。
+ * @returns 灰字;英文界面给空串(不出这一行),中 / 韩没有译名给占位空格。
  */
 export function miniSubOf(x: MiniSubIn): string {
+  if (x.lang === LANG_EN) {
+    return TEXT_NONE
+  }
   let got = storedTitleOf({ row: x.row, lang: x.lang })
-  if (got === TEXT_NONE && x.lang !== LANG_EN) {
+  if (got === TEXT_NONE) {
     const lazy = x.map[x.row.title]
     if (lazy != null) {
       got = lazy
     }
   }
-  if (got.toLowerCase() === x.row.title.toLowerCase()) {
-    return TEXT_NONE
+  if (got === TEXT_NONE || got.toLowerCase() === x.row.title.toLowerCase()) {
+    return SUB_HOLD
   }
   return got
 }

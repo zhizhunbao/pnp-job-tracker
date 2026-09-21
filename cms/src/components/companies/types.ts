@@ -769,11 +769,6 @@ export type CompanyBasicCardIn = {
    * 点公司名的去处:开公司弹框(名字成公司页真链接,普通左键拦下开框);可省 = 公司名是纯文字。
    */
   onOpenCompany?: OpenCompanyFn
-
-  /**
-   * 简介只查库、不联网现查(职位页 / 职位弹框:打开职位不触发现查,缺的资料靠点开优先队列补,2026-09-21);可省 = 照旧。
-   */
-  storedOnly?: boolean
 }
 
 /**
@@ -1117,7 +1112,7 @@ export type CompanyHqIn = {
   text: string
 
   /**
-   * 出处网址;'' = 不成链。
+   * 点开的去处:Google 地图网址(2026-09-21 起;原为出处页);'' = 不成链。
    */
   href: string
 }
@@ -1201,11 +1196,6 @@ export type CompanyAiSectionIn = {
    * 公司档案里本来就有官网(进度行少一步「查找官网」);可省 = 没有。
    */
   hasSite?: boolean
-
-  /**
-   * 简介只查库、不联网现查(见 CompanyBasicCardIn 同名格);可省 = 照旧。
-   */
-  storedOnly?: boolean
 }
 
 /**
@@ -1867,7 +1857,7 @@ export type TvOpenIn = {
 }
 
 /**
- * makeLoadBrief 的入参:公司名与两个落格。
+ * makeLoadBrief 的入参:公司名、三个落格与放不放开现查。
  */
 export type LoadBriefIn = {
   /**
@@ -1884,6 +1874,11 @@ export type LoadBriefIn = {
    * 加载态落格。
    */
   setLoading: SetLoadingFn
+
+  /**
+   * 联网现查在途落格(2026-09-21:卡上「AI 调查中…」只跟它走)。
+   */
+  setLive: SetLoadingFn
 
   /**
    * 只查库不现查(官网那条工种还在办 / 还没报上去);false = 照旧(真人动作才现查)。
@@ -1969,11 +1964,6 @@ export type CompanyAiHookIn = {
    * 官网那条工种办到哪一步;'' = 还没报上去。
    */
   stage: string
-
-  /**
-   * 调用方要求只查库、不联网现查(职位页 / 职位弹框里的公司卡,2026-09-21);false = 照官网那条工种的进度定。
-   */
-  storedOnly: boolean
 }
 
 /**
@@ -1994,6 +1984,11 @@ export type CompanyAiPanel = {
    * 懒翻回来的译文;null = 还没翻。
    */
   trans: string | null
+
+  /**
+   * 联网现查在途:「AI 调查中…」只在这时出(2026-09-21 开框那一拍只查库,原先也出这行,一闪就没;真调查的十几秒反倒什么都没有)。
+   */
+  live: boolean
 }
 
 /**
@@ -2120,11 +2115,6 @@ export type CompanyIntroIn = {
    * 官网那条工种办到哪一步(2026-09-20);可省 = 不在这条工种里。
    */
   stage?: string
-
-  /**
-   * 简介只查库、不联网现查(见 CompanyBasicCardIn 同名格);可省 = 照旧。
-   */
-  storedOnly?: boolean
 }
 
 /**

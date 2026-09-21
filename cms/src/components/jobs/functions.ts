@@ -43,7 +43,8 @@ import {
   JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
-  JD_TOP_HEADS, JD_TPL_SLOT, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
+  JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED,
+  KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
   K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH, LAYER_CO, LAYER_JOB,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
@@ -90,6 +91,7 @@ import type {
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
   ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellKind, UpsellReasonIn, WantsIn,
   WidthsKeyIn,
+  JobBodyPanel,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -3989,6 +3991,18 @@ export function relatedNoneFromOf(status: string): string {
     return TRACK_FROM_CLOSED_NONE
   }
   return TRACK_FROM_OPEN_NONE
+}
+
+/**
+ * 正文区画没画出东西(2026-09-21 Frank「先一个小框，然后在放大。然后页面在一部分一部分渲染出来」):与 JdContent 的三个分支同口径 ——
+ * 额度到头的一句 / 原站拦抓取的空态 / 取到正文且不在途。弹框里接在正文下面的两张卡等它为真才露出来(之前先挂着取数),
+ * 不再出现「相关职位卡先到、正文来了又被顶下去」。
+ *
+ * @param d JD 身体状态机。
+ * @returns 正文区有东西 = true。
+ */
+export function jdShownOf(d: JobBodyPanel): boolean {
+  return d.status === JD_LIMITED || d.status === JD_EMPTY || (d.status === JD_DONE && d.pending === false)
 }
 
 /**

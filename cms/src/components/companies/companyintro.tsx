@@ -30,7 +30,7 @@ import css from './companies.module.css'
  * @returns 简介;三条路都走不通(连公司名都没有)时不渲。
  */
 export function CompanyIntro({
-  company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy, stage = TEXT_NONE, storedOnly = false,
+  company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy, stage = TEXT_NONE,
 }: CompanyIntroIn) {
   const descZh = useCompanyDescTrans({ name: company.name, lang, has: hasDescOf({ company }) })
   if (hasDescOf({ company })) {
@@ -64,8 +64,7 @@ export function CompanyIntro({
     return (
       <div className={css.descWrap}>
         <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase}
-          baseZh={baseZh} onBusy={onBusy} stage={stage} hasSite={company.website !== TEXT_NONE}
-          storedOnly={storedOnly} />
+          baseZh={baseZh} onBusy={onBusy} stage={stage} hasSite={company.website !== TEXT_NONE} />
       </div>
     )
   }

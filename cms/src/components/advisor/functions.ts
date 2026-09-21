@@ -35,7 +35,8 @@ import {
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
   K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST,
   MIME_JSON, MONEY_HEAD,
-  NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL,
+  NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_POS_X0, PANEL_POS_Y0, PANEL_W_MIN, PAREN_CLOSE,
+  PAREN_OPEN, PCT_TAIL,
   PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT,
   P_PROV,
   ROW_KEY_BROAD,
@@ -64,6 +65,7 @@ import type {
   ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
   StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, TitleTransJson, ToggleIn, TransJobIn, TransPillIn, TypewriterIn,
   VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
+  FloatPanelHookIn, PanelInit, PanelSize,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -2113,4 +2115,23 @@ export function peekKeyOf(x: PeekKeyIn): string {
     return String(x.at) + PEEK_KEY_SEP + String(x.layer.job.id)
   }
   return String(x.at) + PEEK_KEY_SEP + LAYER_CO
+}
+
+/**
+ * 浮层首帧的全屏 / 尺寸 / 位置(2026-09-21 Frank「会出现 先一个小框，然后在放大」):直接按记忆算,
+ * 记忆读不到(服务端 / 本地存储被禁)照旧默认尺寸;位置按首帧尺寸居中,服务端给固定初值。
+ *
+ * @param x 记忆键与默认宽高。
+ * @returns 首帧三格。
+ */
+export function panelInitOf(x: FloatPanelHookIn): PanelInit {
+  const p = readPrefOf(x.prefKey)
+  let size: PanelSize = { w: x.defW, h: x.defH }
+  if (p.w != null && p.h != null) {
+    size = { w: p.w, h: p.h }
+  }
+  if (typeof window === 'undefined') {
+    return { full: p.full, size, pos: { x: PANEL_POS_X0, y: PANEL_POS_Y0 } }
+  }
+  return { full: p.full, size, pos: centerPosOf(size) }
 }
