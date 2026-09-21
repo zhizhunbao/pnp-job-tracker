@@ -10,9 +10,9 @@ plain_text_of 随后换用本门 —— 而不是再各抄一遍(CLAUDE.md:行�
 """
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-from richtext.constants import (BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, EMPH_TAGS, HEAD_MARK,
-                                HEAD_MAX_LEN, HEAD_TAGS, LINE_BREAK, PARA_BREAK, PARSER_HTML, SKIP_TAGS,
-                                SPACE_SEP, TAG_BR, TAG_LI, WS_RE)
+from richtext.constants import (BLANK_LINES_RE, BLOCK_TAGS, BULLET_PREFIX, EMPH_TAGS, HEAD_GROUP, HEAD_MARK,
+                                HEAD_MAX_LEN, HEAD_TAGS, LINE_BREAK, MD_HEAD_LINE_RE, PARA_BREAK, PARSER_HTML,
+                                SENTENCE_END_RE, SKIP_TAGS, SPACE_SEP, TAG_BR, TAG_LI, WS_RE)
 
 
 def rich_text_of(html: str) -> str:
@@ -25,6 +25,24 @@ def rich_text_of(html: str) -> str:
     if html == "":
         return ""
     return rich_text(BeautifulSoup(html, PARSER_HTML))
+
+
+def md_head_of(line: str) -> str:
+    """一行 markdown 文本 → 节头行(带「## 」记号)或空串(不是节头)。
+
+    2026-09-20 立:招聘板的正文框里雇主用星号标加粗,判据与 HTML 的 `<strong>` 同一条 ——
+    整行都在强调 = 节头,行内强调 = 正文。两道护栏:去掉记号后不超 HEAD_MAX_LEN、不以句末标点结尾
+    (整句被加粗的营销话术不是节头)。两个调用方:jobbank 解析步(剥星号之前)与 mart 的跨源清洗段。
+    """
+    m = MD_HEAD_LINE_RE.match(line)
+    if m is None:
+        return ""
+    head = m.group(HEAD_GROUP).strip()
+    if head == "" or len(head) > HEAD_MAX_LEN:
+        return ""
+    if SENTENCE_END_RE.search(head) is not None:
+        return ""
+    return HEAD_MARK + head
 
 
 def rich_text(node: object) -> str:

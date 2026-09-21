@@ -55,6 +55,21 @@ HEAD_MARK = "## "
 """节头行前缀(与列表项的「• 」同规格:纯文本里的轻标记,消费端一处收口剥掉)。
 放在 h1-h6 与「整段强调块」两种节头前,前端不再靠「白名单 + 碰巧带冒号」猜。"""
 
+MD_HEAD_LINE_RE = re.compile(r"^[ \t]*(?:\*{1,2}|_)(?P<head>[^*_\s][^\n]*?)(?:\*{1,2}|_)[ \t]*$")
+"""整行被 markdown 强调包住的行(`*Job Overview*`、`**Qualifications**`、`_Contract Details_`)。
+
+2026-09-20 Frank 三次实拍(line cook 的 Qualifications、office assistant 的 Job Overview):
+雇主在招聘板的正文框里用星号标加粗,**判据与 HTML 的 `<strong>` 一字不差** —— 整行都在强调 = 节头,
+行内强调 = 正文(`You have at least *6 months to 1 year* of experience`)。
+行首 `* ` 带空格的是列表项不是节头,所以捕获组第一个字符不许是空白。"""
+
+SENTENCE_END_RE = re.compile(r"[.!?。!?]$")
+"""句末标点。整行强调但以句号结尾的是被整句加粗的正文,不是节头
+(`_Join a purpose-driven … every day._`),连同长度上限一起当护栏。"""
+
+HEAD_GROUP = "head"
+"""MD_HEAD_LINE_RE 里节头正文的捕获组名。"""
+
 HEAD_MAX_LEN = 80
 """判节头的长度上限:整段强调但超过这个长度的当正文 —— 整段加粗的免责声明、
 被加粗的一整句话不是节头(宁可不标,不瞎标;真节头实测最长 40 余字符)。"""

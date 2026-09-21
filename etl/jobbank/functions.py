@@ -42,7 +42,7 @@ from bs4 import BeautifulSoup
 from paths import JOBBANK_STORE_LOCK, WriteJsonIn, WriteTextIn, jobbank_store_lock, write_json, write_text
 from log.functions import err, say
 from fetch.functions import make_client, make_tls_context
-from richtext.functions import rich_text
+from richtext.functions import md_head_of, rich_text
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
     ABS_FLOOR, ADDRESS_CLIP, ALL_PROVINCES, APPRENTICE_TITLE_RE, APPRENTICE_URL_RE, ATLANTIC,
@@ -699,7 +699,12 @@ def lined_text(node: object) -> str:
         return ""
     lines = []
     for line in cast(SoupNodeLike, node).get_text().split(LINE_BREAK):
-        marked = STAR_ITEM_RE.sub(STAR_ITEM_TO, line.strip())
+        bare = line.strip()
+        head = md_head_of(bare)
+        if head != "":
+            lines.append(head)
+            continue
+        marked = STAR_ITEM_RE.sub(STAR_ITEM_TO, bare)
         lines.append(WS_RE.sub(SPACE_SEP, STAR_RE.sub("", marked)).strip())
     return BLANK_LINES_RE.sub(PARA_BREAK, LINE_BREAK.join(lines)).strip()
 

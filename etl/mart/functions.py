@@ -41,6 +41,7 @@ from urllib.parse import urlparse
 
 import paths
 from log.functions import err, say
+from richtext.functions import md_head_of
 from names.functions import norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
@@ -87,7 +88,7 @@ from mart.constants import (
     IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
     JB_EXT_TPL, JB_LOC_TPL, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_MATCH_TPL, JD_NOISE,
-    JD_HEAD_MARK_RE, JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, DOMAIN_ATS, DOMAIN_JOBBANK,
+    JD_APOS_MARK, JD_DASH_MARK, JD_HEAD_MARK_RE, JD_KEEP_GROUP, JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, MD_UNDERSCORE_RE, QMARK_APOS_RE, QMARK_DASH_RE, DOMAIN_ATS, DOMAIN_JOBBANK,
     JOBS_FILE, JVWS_NATIONAL, JVWS_SOURCE_NOTE, K_ACCESSIBILITY, K_ADDRESS, K_AIP, K_ALLOC,
     K_ALLOCATION, K_ANNUAL, K_ANY_TRADE, K_APPLY_URL, K_ASSESSING_UP_TO, K_AS_OF, K_AS_ON,
     K_ATS, K_BLOCKED,
@@ -1785,7 +1786,31 @@ def clean_jd(text: str) -> str:
                 continue
             seen.add(s)
         out.append(line)
-    return strip_jd_label(plain_of_entities(BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip()))
+    return strip_jd_label(mend_jd_scars(plain_of_entities(BLANK_RUN_RE.sub(PARA_SEP, NL.join(out)).strip())))
+
+
+def mend_jd_scars(text: str) -> str:
+    """正文上的三道疤:markdown 下划线强调剥掉、被打成问号的撇号与区间破折号还原。
+
+    2026-09-20 Frank 实拍「前后有下划线 _ 缩写 怎么变成了 ?」。三道的来路不同:下划线是雇主在正文框里
+    写了 markdown、我们只剥了星号没剥它(我们的账);两种问号是源头页面的原始字节就已经是 0x3F
+    (取证见 QMARK_APOS_RE 的注释),不是编码问题,还原口径写在各自的正则上。
+    住 mart 是因为三道疤跨源都有,且本函数每轮汇装对全部正文重跑一遍 —— 改它不用重解析,下一轮就全库生效。
+    """
+    lines = []
+    for line in text.split(NL):
+        lines.append(mend_jd_line(line))
+    mended = QMARK_APOS_RE.sub(JD_APOS_MARK, NL.join(lines))
+    return QMARK_DASH_RE.sub(JD_DASH_MARK, mended)
+
+
+def mend_jd_line(line: str) -> str:
+    """一行:整行被 markdown 强调包住 = 节头(落记号,判据与 HTML 的 strong 同一条,住 richtext 叶);
+    否则只剥掉行内的下划线强调。"""
+    head = md_head_of(line)
+    if head != "":
+        return head
+    return MD_UNDERSCORE_RE.sub(JD_KEEP_GROUP, line)
 
 
 def plain_of_entities(text: str) -> str:
