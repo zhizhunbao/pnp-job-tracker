@@ -58,6 +58,7 @@ import type {
   OpenSiteIn, ShownStageIn, SitePanel, SitePanelIn, SiteShownIn, SiteStageJson, SiteStep, SiteStepsIn,
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
+  ReloadFn, SiteDoneIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1160,13 +1161,16 @@ export function makeLoadBrief(x: LoadBriefIn): LoadFn {
  * 官网那条工种:公司卡被真人点开报一声,简介区是空的就接着隔一会儿问一次进度(2026-09-20 Frank「就是 AI 探索的时候,显示 抓取官网,
  * 然后才是生成内容 和 翻译」;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。这一页还没有过真人动作的先等第一个动作再报
  * (无头爬虫永远不报,队列不被灌);池里没有这家 / 接口挂了 / 一直排队中(工人不在线)/ 问满次数 → 记成「不再等」,简介走现查兜底。
+ * 2026-09-21 Frank「都修」(Konverge:职位弹框里的卡开着时工人办完了,卡还停在旧简介、没官网没总部):原先只有简介区空着才接着问,
+ * 卡上铺着旧简介的只报一声就不问了 —— 撤,一律问到办完;从「在办」落到办完 / 查无那一拍调一次 onDone(卡叫宿主整卡重取)。
  *
- * @param x 公司名、要不要等结果与面板落格。
+ * @param x 公司名、面板落格与办完回调。
  * @returns effect 里调用的函数(带取消标记)。
  */
 export function makeOpenSite(x: OpenSiteIn): LoadFn {
   return function openSite(flag: DeadFlag): void {
     let polls = 0
+    let wasActive = false
     function read(r: Response): Promise<SiteStageJson | null> {
       if (r.ok && r.status === HTTP_OK) {
         return r.json()
@@ -1198,8 +1202,13 @@ export function makeOpenSite(x: OpenSiteIn): LoadFn {
         return
       }
       x.setSite(site)
-      if (x.wait && isSiteActive(site.stage)) {
+      if (isSiteActive(site.stage)) {
+        wasActive = true
         window.setTimeout(ask, SITE_POLL_MS)
+        return
+      }
+      if (wasActive && site.stage !== STAGE_OFF) {
+        x.onDone()
       }
     }
     function send(): void {
@@ -1339,6 +1348,40 @@ export function siteWebsiteOf(x: SiteShownIn): string {
     return x.site.website
   }
   return x.company.website
+}
+
+/**
+ * 官网那条活办完时卡叫不叫宿主整卡重取(2026-09-21 Frank「都修」,Konverge 实撞):卡上铺着简介的要叫 ——
+ * 工人可能拿官网版换掉了旧简介、补了官网 / 总部 / 中文名,不重取就一直停在旧的;简介区空着的不叫 ——
+ * 那一档 CompanyAiSection 自己查回新简介,官网与总部走进度面板,整卡重取反倒让简介位中途换件、英文先跳出来。
+ *
+ * @param x 宿主给的重取手柄与卡上铺没铺着简介。
+ * @returns 办完时要调的回调。
+ */
+export function siteDoneOf(x: SiteDoneIn): ReloadFn {
+  if (x.settled) {
+    return x.fn
+  }
+  return ignoreDone
+}
+
+/**
+ * 什么都不做的办完回调(宿主没给重取手柄 / 简介区空着时用;2026-09-21)。
+ *
+ * @returns 无。
+ */
+export function ignoreDone(): void {
+  return
+}
+
+/**
+ * 重取计数加一(计数进取数 effect 的依赖,变一下就重取一次;2026-09-21 整卡重取)。
+ *
+ * @param n 当前计数。
+ * @returns 加一。
+ */
+export function nextRevOf(n: number): number {
+  return n + 1
 }
 
 /**

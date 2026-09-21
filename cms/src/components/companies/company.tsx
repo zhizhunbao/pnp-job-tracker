@@ -22,11 +22,13 @@
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:在招职位 / 相似雇主
  * 点了不再跳走 —— 页上叠开职位描述弹框 / 公司弹框(与职位板同两件);链接本身还在(爬虫、Ctrl 点新标签照旧)。
  * 两个弹框点 advisor 的**文件**不走桶:那只桶的完整弹框反过来要本桶的 CompanyPanel,走桶就成环。
+ * 2026-09-21 Frank「都修」:官网那条活办完、卡叫整卡重取时,本页用 router.refresh —— 公司数据是服务端给的,重取 = 服务端重跑一遍。
  * 2026-09-21 两个弹框并进弹框栈(advisor 的 PeekStack,同样点文件):职位 → 公司 → 另一条职位一层层叠,只关最上面一层。
  *
  * @author Frank
  * @time 2026-08-27 02:10:00
  */
+import { useRouter } from 'next/navigation'
 import { PeekStack } from '@/components/advisor/peekstack'
 import { BackButton, LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
@@ -53,6 +55,7 @@ import css from './companies.module.css'
 export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
   const [lang, , t] = useLang()
   const peek = useCompanyPeek()
+  const router = useRouter()
   const aliasPanel = useCompanyAlias({
     name: company.name, lang, cached: aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo }),
   })
@@ -104,7 +107,8 @@ export function Company({ company, similar = [], updatedAt, plan }: CompanyIn) {
         <CompanyBody company={company} similar={similar} t={t} lang={lang} updatedAt={updatedAt}
           showTrans={lang !== LANG_EN}
           onOpenJob={peek.onOpenJob}
-          onOpenCompany={peek.onOpenCompany} />
+          onOpenCompany={peek.onOpenCompany}
+          onSiteDone={router.refresh} />
         {company.jobs.length === 0 && <Notice kind={NOTICE_KIND_INFO}>{t('co.notFound')}</Notice>}
       </div>
       <PeekStack stack={peek.stack} lang={lang} plan={plan} nocDesc={NOC_DESC_NONE} />

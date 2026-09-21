@@ -1119,8 +1119,10 @@ export const COMPANY_UPDATE_ALIASES = `UPDATE companies SET alias_zh = COALESCE(
 
 /**
  * 公司 AI 简报回写(覆盖式,fetched 顺带记 now)。$1..$3=brief/website/sources,$4=公司 id。
+ * 2026-09-21 Frank「都修」:旧简介的中 / 韩译文一并清掉(与官网版交活那条同口径),不然新简介底下挂着旧简介的中文。
  */
-export const COMPANY_UPDATE_AI_BRIEF = `UPDATE companies SET ai_brief = $1, ai_website = $2, ai_sources = $3, ai_fetched = now() WHERE id = $4`
+export const COMPANY_UPDATE_AI_BRIEF = `UPDATE companies SET ai_brief = $1, ai_website = $2, ai_sources = $3, ai_fetched = now(),
+     ai_brief_zh = NULL, ai_brief_ko = NULL WHERE id = $4`
 
 /**
  * 按投递链接取 JD 正文(懒抓前先查缓存)。$1=apply_url。

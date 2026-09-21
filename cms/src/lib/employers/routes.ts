@@ -434,6 +434,8 @@ function paramOf(sp: URLSearchParams, key: string): string {
  * POST /api/employers/translate {name, lang}:公司 AI 检索简介懒翻译(公司弹框「显示中文对照」)。
  * 只翻库内 companies.ai_brief(五节标记);节标记与 (not stated) 原样保留,输出与原文
  * 行结构完全一致 —— 前端按节配对,英文下显中文(#185)。进程缓存 name+lang(全量翻齐才进)。
+ * 2026-09-21 Frank「都修」(Konverge:官网版换掉了 AI 简介,中文对照还是旧简介的):缓存那一格连译自的原文一起存,
+ * 先取库里现在的简介再认缓存,原文对不上就当没缓存(取库里存的 / 重翻)。原先只认公司名,简介换了照样回旧译文,直到重启。
  *
  * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):body 带 storedOnly 只查缓存与库,没存回 404 不翻。
  * 2026-09-17 Frank「清库 + 加检查」:译文过 translationOk 写入闸(不等于原文、真有目标语种文字)才回给前端、才缓存落库;
@@ -465,23 +467,23 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
   const ck = name.toLowerCase() + TRANS_KEY_SEP + lang
-  const hit = CACHE.briefTransBy.get(ck)
-  if (hit != null) {
-    return Response.json({ ok: true, text: hit, cached: true })
-  }
   const db = await getDb()
+  const brief = await loadCompanyBrief({ db: db, name: name })
+  if (brief == null) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  const hit = CACHE.briefTransBy.get(ck)
+  if (hit != null && hit.src === brief) {
+    return Response.json({ ok: true, text: hit.text, cached: true })
+  }
   if (lang === WD_LANG_ZH) {
     const stored = await loadCompanyBriefZh({ db: db, name: name })
     if (stored != null) {
-      CACHE.briefTransBy.set(ck, stored)
+      CACHE.briefTransBy.set(ck, { src: brief, text: stored })
       return Response.json({ ok: true, text: stored, cached: true })
     }
   }
   if (storedOnly) {
-    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
-  }
-  const brief = await loadCompanyBrief({ db: db, name: name })
-  if (brief == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
@@ -496,7 +498,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     if (r.full) {
-      CACHE.briefTransBy.set(ck, r.text)
+      CACHE.briefTransBy.set(ck, { src: brief, text: r.text })
       if (lang === WD_LANG_ZH) {
         await saveCompanyBriefZh({ db: db, name: name, text: r.text })
       }
@@ -582,6 +584,7 @@ export async function employersAliasRoute(req: Request): Promise<Response> {
 /**
  * 官网简介懒翻(2026-09-14 Frank「这个也没加翻译」):companies.description 当纯文本译一遍,进程内缓存(键带 desc 尾巴,
  * 与同名 AI 简介分开)。
+ * 2026-09-21 同 AI 简介那条(Frank「都修」):缓存那一格连原文一起存,官网简介换了就当没缓存。
  *
  * @param req 请求体 { name, lang }。
  * @returns { ok, text, cached }。
@@ -607,19 +610,19 @@ export async function employersDescRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
   const ck = name.toLowerCase() + TRANS_KEY_SEP + lang + DESC_KEY_TAIL
-  const hit = CACHE.briefTransBy.get(ck)
-  if (hit != null) {
-    return Response.json({ ok: true, text: hit, cached: true })
-  }
   const db = await getDb()
-  const stored = await loadCompanyDescZh({ db: db, name: name })
-  if (stored != null && lang === WD_LANG_ZH) {
-    CACHE.briefTransBy.set(ck, stored)
-    return Response.json({ ok: true, text: stored, cached: true })
-  }
   const text = await loadCompanyDesc({ db: db, name: name })
   if (text == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  const hit = CACHE.briefTransBy.get(ck)
+  if (hit != null && hit.src === text) {
+    return Response.json({ ok: true, text: hit.text, cached: true })
+  }
+  const stored = await loadCompanyDescZh({ db: db, name: name })
+  if (stored != null && lang === WD_LANG_ZH) {
+    CACHE.briefTransBy.set(ck, { src: text, text: stored })
+    return Response.json({ ok: true, text: stored, cached: true })
   }
   if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
@@ -630,7 +633,7 @@ export async function employersDescRoute(req: Request): Promise<Response> {
     if (r.full === false || translationOk({ src: text, out: r.text, lang: lang }) === false) {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
-    CACHE.briefTransBy.set(ck, r.text)
+    CACHE.briefTransBy.set(ck, { src: text, text: r.text })
     if (lang === WD_LANG_ZH) {
       await saveCompanyDescZh({ db: db, name: name, text: r.text })
     }

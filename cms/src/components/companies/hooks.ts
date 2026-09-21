@@ -10,13 +10,13 @@
  * @author Frank
  * @time 2026-08-28 16:26:43
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLayerStack } from '@/components/modal'
 import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles,
-  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer,
+  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf,
 } from './functions'
 import type {
   CompanyAiHookIn, CompanyAiPanel, CompanyAliasHookIn, CompanyAliasPanel, CompanyBriefFact,
@@ -79,8 +79,10 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
 /**
  * 官网那条工种在公司卡上的面板(2026-09-20):卡一开就报一声点开(等到有真人动作才报),简介区是空的就接着问进度;
  * 换了公司当场清空重报。
+ * 2026-09-21 Frank「都修」:不再只在简介区空着时问 —— 一律问到办完,办完那一拍调 x.onDone(卡叫宿主整卡重取)。
+ * onDone 存进 ref 读最新的:它随卡上铺没铺简介换函数,放进依赖就会把「点开」重报一遍。
  *
- * @param x 公司名与要不要等结果。
+ * @param x 公司名与办完回调。
  * @returns 办到哪一步 + 办完补上来的官网与总部。
  */
 export function useCompanySite(x: CompanySiteHookIn): SitePanel {
@@ -88,21 +90,29 @@ export function useCompanySite(x: CompanySiteHookIn): SitePanel {
     stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE,
   })
   const [prevName, setPrevName] = useState(x.name)
+  const doneRef = useRef(x.onDone)
 
   if (prevName !== x.name) {
     setPrevName(x.name)
     setSite({ stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE })
   }
 
+  useEffect(function keepDone() {
+    doneRef.current = x.onDone
+  }, [x.onDone])
+
   useEffect(function openSite() {
     const flag: DeadFlag = { dead: false }
+    function done(): void {
+      doneRef.current()
+    }
     if (x.name !== TEXT_NONE) {
-      makeOpenSite({ name: x.name, wait: x.wait, setSite })(flag)
+      makeOpenSite({ name: x.name, setSite, onDone: done })(flag)
     }
     return function stop(): void {
       flag.dead = true
     }
-  }, [x.name, x.wait])
+  }, [x.name])
 
   return site
 }
@@ -115,6 +125,8 @@ export function useCompanySite(x: CompanySiteHookIn): SitePanel {
  * 2026-09-16 Frank「可以,就这样做」:交回三样 —— 译文、首拍只查库在途(正文等它)、现场翻译在途(页眉开关显「翻译中…」)。
  * 2026-09-17 Frank「自动拨开去掉,但是后台要自动翻译」:不再等开关,中 / 韩界面一开框就在后台翻好存着;
  * 「只查库在途」(pending / hold)撤 —— 开关默认关,正文没必要为它留白。交回两样。
+ * 2026-09-21 Frank「都修」:简介换了(官网那条活办完、整卡重取回来的是官网版)译文当场清掉重取 ——
+ * 原先手里有译文就不再取,新简介底下挂的还是旧简介的中文。
  *
  * @param x 公司名、缓存简介、厚简介标记与界面语言。
  * @returns 译文与现场翻译在途态。
@@ -122,6 +134,13 @@ export function useCompanySite(x: CompanySiteHookIn): SitePanel {
 export function useCompanyTrans(x: CompanyTransHookIn): CompanyTransPanel {
   const [trans, setTrans] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [prevBrief, setPrevBrief] = useState(x.aiBrief)
+
+  if (prevBrief !== x.aiBrief) {
+    setPrevBrief(x.aiBrief)
+    setTrans(null)
+    setBusy(false)
+  }
 
   useEffect(function loadTrans() {
     const flag: DeadFlag = { dead: false }
@@ -151,6 +170,7 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
   const [data, setData] = useState<CompanyPanelData | null>(null)
   const [prevJob, setPrevJob] = useState(x.job)
   const [prevSlug, setPrevSlug] = useState(x.slug)
+  const [rev, setRev] = useState(0)
 
   if (prevJob !== x.job || prevSlug !== x.slug) {
     setPrevJob(x.job)
@@ -170,9 +190,13 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
     return function stop(): void {
       flag.dead = true
     }
-  }, [jobId, slug])
+  }, [jobId, slug, rev])
 
-  return { loading, data }
+  function reload(): void {
+    setRev(nextRevOf)
+  }
+
+  return { loading, data, reload }
 }
 
 /**
@@ -186,6 +210,7 @@ export function useCompanyOfJob(x: CompanyOfJobHookIn): CompanyPanelState {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CompanyPanelData | null>(null)
   const [prevId, setPrevId] = useState(x.jobId)
+  const [rev, setRev] = useState(0)
 
   if (prevId !== x.jobId) {
     setPrevId(x.jobId)
@@ -200,9 +225,13 @@ export function useCompanyOfJob(x: CompanyOfJobHookIn): CompanyPanelState {
     return function stop(): void {
       flag.dead = true
     }
-  }, [jobId])
+  }, [jobId, rev])
 
-  return { loading, data }
+  function reload(): void {
+    setRev(nextRevOf)
+  }
+
+  return { loading, data, reload }
 }
 
 /**

@@ -69,6 +69,7 @@ export function CompanyPanel({
         updatedAt={TEXT_NONE}
         showTrans={showTrans}
         onTransBusy={onTransBusy}
+        onSiteDone={p.reload}
         onOpenJob={onOpenJob}
         onOpenCompany={onOpenCompany}
         newTab

@@ -26,7 +26,7 @@ import { CompanyBasicCard } from './companybasiccard'
 import { CompanyJobsCard } from './companyjobscard'
 import { CompanySimilarCard } from './companysimilarcard'
 import { useEffect, useState } from 'react'
-import { hasDescOf } from './functions'
+import { hasDescOf, ignoreDone } from './functions'
 import { useCompanyTrans } from './hooks'
 import type { CompanyBodyIn } from './types'
 import css from './companies.module.css'
@@ -50,6 +50,7 @@ export function CompanyBody({
   newTab = false,
   afterSponsor = null,
   onTransBusy,
+  onSiteDone = ignoreDone,
 }: CompanyBodyIn) {
   const tr = useCompanyTrans({
     name: company.name,
@@ -71,7 +72,8 @@ export function CompanyBody({
         lang={lang}
         showTrans={showTrans}
         trans={tr.trans}
-        onBusy={setAiTransBusy} />
+        onBusy={setAiTransBusy}
+        onSiteDone={onSiteDone} />
       {afterSponsor}
       <CompanyJobsCard company={company}
         t={t}

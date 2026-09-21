@@ -37,6 +37,11 @@ export type CompaniesLang = 'zh' | 'en' | 'ko'
 export type GoBackFn = () => void
 
 /**
+ * 整卡重取手柄(2026-09-21:官网那条活办完时,卡叫宿主把公司重取一次)。
+ */
+export type ReloadFn = () => void
+
+/**
  * 职位板整行(外域形状,见文件头特批):弹框把它喂给 JD 顾问段与雇主线卡。
  */
 export type CompanyJobFact = JobRow
@@ -718,6 +723,11 @@ export type CompanyBodyIn = {
    * 现场翻译在途的回报(弹框页眉开关显「翻译中…」);可省 = 不回报。
    */
   onTransBusy?: (busy: boolean) => void
+
+  /**
+   * 官网那条活办完时整卡重取(2026-09-21,递给基本信息卡);可省 = 不重取。
+   */
+  onSiteDone?: ReloadFn
 }
 
 /**
@@ -769,6 +779,12 @@ export type CompanyBasicCardIn = {
    * 点公司名的去处:开公司弹框(名字成公司页真链接,普通左键拦下开框);可省 = 公司名是纯文字。
    */
   onOpenCompany?: OpenCompanyFn
+
+  /**
+   * 官网那条活办完时叫宿主整卡重取(2026-09-21 Frank「都修」:工人拿官网版换掉旧简介、补上官网 / 总部 / 中文名,
+   * 卡不重取就一直停在旧的);可省 = 不重取。
+   */
+  onSiteDone?: ReloadFn
 }
 
 /**
@@ -2417,6 +2433,11 @@ export type CompanyPanelState = {
    * 取到的公司与相似雇主;null = 取不到(渲「暂不可用」)。
    */
   data: CompanyPanelData | null
+
+  /**
+   * 重取一次(不清空、不出加载态,取回来直接换;2026-09-21 官网那条活办完时卡叫它)。
+   */
+  reload: ReloadFn
 }
 
 /**
@@ -2829,14 +2850,14 @@ export type OpenSiteIn = {
   name: string
 
   /**
-   * 卡上简介区是空的(要等结果)= true:入队后接着问进度;false = 只报一声点开,后台照样插队刷新。
-   */
-  wait: boolean
-
-  /**
    * 面板落格。
    */
   setSite: SetSiteFn
+
+  /**
+   * 从「在办」落到办完 / 查无那一拍调一次(2026-09-21:卡叫宿主整卡重取;原「wait:简介区空着才接着问」撤,一律问到办完)。
+   */
+  onDone: ReloadFn
 }
 
 /**
@@ -2849,9 +2870,24 @@ export type CompanySiteHookIn = {
   name: string
 
   /**
-   * 卡上简介区是空的(要等结果)。
+   * 办完那一拍调一次(见 OpenSiteIn 同名格);换了函数不重报点开。
    */
-  wait: boolean
+  onDone: ReloadFn
+}
+
+/**
+ * siteDoneOf 的入参:宿主给的重取手柄与卡上铺没铺着简介。
+ */
+export type SiteDoneIn = {
+  /**
+   * 宿主给的重取手柄。
+   */
+  fn: ReloadFn
+
+  /**
+   * 卡上已铺着简介(官网简介或缓存的 AI 简介);false = 简介区空着,走 CompanyAiSection 那一档。
+   */
+  settled: boolean
 }
 
 /**

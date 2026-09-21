@@ -8,6 +8,7 @@
  * 译名跟着排进翻译队列(Frank「按铁律:有人看就翻」—— 没人看过的不翻)。
  * 同日 Frank「怎么不探索了」:原先这张卡「简介只查库、不联网现查」,库里没资料的公司只剩一个名字、看不到探索 ——
  * 撤掉,简介与探索进度(排队 → 抓官网 → 整理 → 翻译,查不到再联网现查兜底)与公司弹框一字不差。
+ * 同日 Frank「都修」(Konverge:卡开着时工人办完了,卡还停在旧简介):官网那条活办完卡叫这里重取(onSiteDone = p.reload)。
  * 按岗位号取数,与公司弹框同一个接口;没取到(没挂公司 / 接口挂了)整卡不出。
  *
  * @author Frank
@@ -53,7 +54,8 @@ export function CompanyInfoCard({ jobId, lang, onOpenCompany }: CompanyInfoCardI
         onBusy={ignoreFlag}
         head={t('co.info')}
         alias={aliasOf({ lang, aliasZh: company.aliasZh, aliasKo: company.aliasKo })}
-        onOpenCompany={onOpenCompany} />
+        onOpenCompany={onOpenCompany}
+        onSiteDone={p.reload} />
     </div>
   )
 }

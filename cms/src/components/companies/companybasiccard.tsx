@@ -28,6 +28,8 @@
  * 卡标题可换(「公司信息」)、公司名可成链接(点了开公司弹框)并在下面出库里存好的别名;
  * 公司弹框与公司页不递这几格,一字不变。简介与探索进度与公司弹框同一套(同日 Frank「怎么不探索了」)。
  * 同日 Frank「这个点开应该是打开 google 地图吧」:「总部」行点开改成 Google 地图(与「地址」行同一个去处),上面 09-20「点开就是出处那一页」作废。
+ * 同日 Frank「都修」(Konverge:职位弹框里的卡开着时工人办完了,卡还停在旧简介、没官网没总部):一律问进度到办完,
+ * 铺着简介的卡办完叫宿主整卡重取(onSiteDone,siteDoneOf 判);简介区空着的那一档照旧由 CompanyAiSection 自己补。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -44,8 +46,8 @@ import {
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, isGovCompany, siteHqOf, siteWebsiteOf,
-  wikiTitleOf,
+  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany, siteDoneOf,
+  siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
@@ -59,13 +61,14 @@ import css from './companies.module.css'
  * @returns 一张卡;身份与简介都没有时整卡不渲。
  */
 export function CompanyBasicCard({
-  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany,
+  company, t, lang, showTrans, trans, onBusy, head = TEXT_NONE, alias, onOpenCompany, onSiteDone = ignoreDone,
 }: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
   const addr = company.address
   const prov = homeProvinceOf({ company })
-  const site = useCompanySite({ name: company.name, wait: hasDesc === false && briefCached === false })
+  const onDone = siteDoneOf({ fn: onSiteDone, settled: hasDesc || briefCached })
+  const site = useCompanySite({ name: company.name, onDone })
   const hq = siteHqOf({ company, site, t, lang })
   const website = siteWebsiteOf({ company, site, t, lang })
   const hasId = hasIdOf({ company, addr }) || prov !== TEXT_NONE

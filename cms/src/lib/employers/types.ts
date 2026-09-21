@@ -2612,6 +2612,22 @@ export type SponsorSlot = {
 }
 
 /**
+ * 进程内简介译文的一格(2026-09-21 Frank「都修」):译文连同它译自的原文一起存 ——
+ * 官网版换掉 AI 简介后,原文对不上库里现在的简介,这一格就当没有。
+ */
+export type TransHit = {
+  /**
+   * 译自的原文(当时库里的 AI 简介 / 官网简介全文)。
+   */
+  src: string
+
+  /**
+   * 译文全文。
+   */
+  text: string
+}
+
+/**
  * 雇主域全部可变状态的形状(住 variables.ts 的 CACHE)。
  */
 export type EmployersCache = {
@@ -2667,8 +2683,9 @@ export type EmployersCache = {
 
   /**
    * 简介译文：name:lang → 全文（全量翻齐才进）。
+   * 2026-09-21 起连译自的原文一起存(TransHit),原文与库里现在的简介对不上就当没缓存。
    */
-  briefTransBy: Map<string, string>
+  briefTransBy: Map<string, TransHit>
 
   /**
    * 公司别名缓存:lower(name)|lang → 译名。
