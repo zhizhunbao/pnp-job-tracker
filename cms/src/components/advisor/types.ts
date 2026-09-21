@@ -1582,6 +1582,12 @@ export type FloatPanelIn = {
    * 页眉右上角刷新钮的点击(管理员「重译」,2026-09-14);null = 不出这颗钮。
    */
   onRefresh: RefreshFn | null
+
+  /**
+   * 这一框的落地页(职位详情页 / 公司页;2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」):
+   * 有就出箭头钮换掉全屏钮,点了本页整页跳过去;'' = 没有落地页(移民 / 分类 / 地点这些字段组、没有公司页的雇主),照旧出全屏钮。
+   */
+  pageHref: string
 }
 
 /**
@@ -3122,6 +3128,21 @@ export type FullTitleIn = {
    * 全屏态。
    */
   full: boolean
+}
+
+/**
+ * fieldPageOf 的入参。
+ */
+export type FieldPageIn = {
+  /**
+   * 铺的是哪一组。
+   */
+  group: AdvisorGroup
+
+  /**
+   * 这一岗的公司 slug(职位行的 companySlug;空 = 这家没有公司页)。
+   */
+  slug: string
 }
 
 /**

@@ -11,7 +11,7 @@ import { useJobBody } from '@/components/jobs/hooks'
 import { JdOrigLink } from '@/components/jobs/jdoriglink'
 import { JobBody } from '@/components/jobs/jobbody'
 import { makeT } from '@/lib/i18n'
-import { TEXT_NONE } from './constants'
+import { TEXT_NONE, URL_JOB_HEAD } from './constants'
 import { ActHead } from './acthead'
 import { FloatPanel } from './floatpanel'
 import { firstTextOf, jobRefreshOf } from './functions'
@@ -36,7 +36,8 @@ export function ActJd({ job, lang, plan, onClose, panel, sub, a }: ActJdIn) {
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight jdBody actsStopDrag
-      onRefresh={jobRefreshOf({ plan, job, onDone: a.onRetranslated })}>
+      onRefresh={jobRefreshOf({ plan, job, onDone: a.onRetranslated })}
+      pageHref={URL_JOB_HEAD + String(job.id)}>
       <JobBody job={job} lang={lang} plan={plan} inModal d={d} />
     </FloatPanel>
   )

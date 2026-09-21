@@ -11,6 +11,7 @@ export { MaxIcon } from './maxicon'
 export type { MaxIconIn } from './types'
 export {
   IconArrowUp,
+  IconArrowUpRight,
   IconChart,
   IconChat,
   IconVolume,

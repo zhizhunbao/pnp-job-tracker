@@ -262,6 +262,22 @@ export const URL_STATS_HEAD = '/stats/'
 export const URL_COMPANY_HEAD = '/companies/'
 
 /**
+ * 职位详情页的地址头(2026-09-21 职位描述弹框右上角的箭头钮去这里)。
+ */
+export const URL_JOB_HEAD = '/jobs/'
+
+/**
+ * 雇主池键的前缀:公司弹框的 slug 以它开头 = 这家没有公司页(只在指定名单 / LMIA 里出现过,雇主板上点得开),不出箭头钮。
+ */
+export const POOL_KEY_HEAD = 'n:'
+
+/**
+ * 箭头钮的链接打开方式:本页整页跳。写明 `_self` 是为了让 LinkButton 走裸 a、不走 next/link ——
+ * next/link 一进视口就预取,弹框每开一次就多渲一遍整张落地页、多打一轮库(同 e4001fb8 页码链接的先例)。
+ */
+export const TARGET_SELF = '_self'
+
+/**
  * 市级取数的城市参数名。
  */
 export const P_CITY = 'city'

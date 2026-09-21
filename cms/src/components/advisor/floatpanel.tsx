@@ -7,15 +7,17 @@
  * 2026-08-28 换装批自 Advisor.tsx 两个弹框逐字重复的浮层壳合成一件
  * (白卡与窗口钮的规范值从 modal 域的 CARD / iconBtn 逐格抄进 .panel / .iconBtn)。
  * 2026-09-14 Frank「右下角的这个半个背景的去掉」「改成这种干净的」:右下角斜纹抓手撤(八向边拉照旧,只是不再画角标)。
+ * 2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」:有落地页的框(职位描述弹框 → 职位详情页、公司弹框 / 公司字段弹框
+ * → 公司页)全屏钮换成箭头,本页整页跳;窄屏也出(全屏钮窄屏不出是因为窄屏本来就全屏,箭头不是那回事)。没落地页的照旧全屏钮。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconMaximize, IconMinimize, IconRefresh } from '@/components/icons'
+import { IconArrowUpRight, IconMaximize, IconMinimize, IconRefresh } from '@/components/icons'
 import { overlayCls, useOverlayClose } from '@/components/modal'
-import { BTN_GHOST, CLOSE_MARK, CLS_SEP } from './constants'
+import { BTN_GHOST, CLOSE_MARK, CLS_SEP, TARGET_SELF, TEXT_NONE } from './constants'
 import { fullTitleOf, makeActsDown, panelBodyClsOf, panelClsOf, panelHeadClsOf, stopClick } from './functions'
 import { ResizeHandles } from './resizehandles'
 import type { FloatPanelIn } from './types'
@@ -28,7 +30,7 @@ import css from './advisor.module.css'
  * @returns 遮罩 + 白卡。
  */
 export function FloatPanel({
-  panel, head, onClose, t, tight, jdBody, actsStopDrag, onRefresh, children,
+  panel, head, onClose, t, tight, jdBody, actsStopDrag, onRefresh, pageHref, children,
 }: FloatPanelIn) {
   const ov = useOverlayClose(onClose)
   const fullLabel = fullTitleOf({ t, full: panel.full })
@@ -45,7 +47,14 @@ export function FloatPanel({
                 <IconRefresh />
               </Button>
             )}
-            {panel.narrow === false && (
+            {pageHref !== TEXT_NONE && (
+              <Button kind={BTN_GHOST} href={pageHref} target={TARGET_SELF} title={t('detail.openFull')}
+                ariaLabel={t('detail.openFull')}
+                className={cssOf(css.iconBtn)}>
+                <IconArrowUpRight />
+              </Button>
+            )}
+            {pageHref === TEXT_NONE && panel.narrow === false && (
               <Button kind={BTN_GHOST} onClick={panel.toggleFull} title={fullLabel} ariaLabel={fullLabel}
                 className={cssOf(css.iconBtn)}>
                 {panel.full && <IconMinimize />}

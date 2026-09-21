@@ -471,6 +471,12 @@ export const TRACK_TV_ENTRY = 'tv-entry'
 export const TRACK_KIND_COMPANY = 'company'
 
 /**
+ * 点了相似雇主卡里的一家(2026-09-21 Frank「给相似雇主卡加个点击埋点」:这张卡有没有人用,拿点击数说话)。
+ * 不另带来路格 —— Umami 事件自带页面路径:职位板弹框是 `/`、雇主板弹框是 `/employers`、公司页是 `/companies/…`。
+ */
+export const TRACK_SIMILAR = 'similar-employer'
+
+/**
  * 公司弹框里 B1 雇主线卡的来路标记(SponsorLeadCard 按它决定渲哪一半)。
  */
 export const LEAD_SRC_COMPANY = 'company'

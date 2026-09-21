@@ -27,7 +27,7 @@ import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { FloatPanel } from './floatpanel'
-import { companyRefreshOf, headSubOf, modalTitleOf, planClbOf } from './functions'
+import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf } from './functions'
 import { useAdvisorModal, useFloatPanel } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 
@@ -78,7 +78,8 @@ export function AdvisorModal({
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
-      onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}>
+      onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}
+      pageHref={fieldPageOf({ group, slug: job.companySlug })}>
       {group === GROUP_IMMIGRATION && (
         <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
       )}

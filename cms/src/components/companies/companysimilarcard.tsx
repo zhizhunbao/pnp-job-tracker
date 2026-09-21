@@ -2,12 +2,15 @@
 /**
  * 相似雇主卡(同省同行业按担保档取;公司弹框里是白赚的一格 —— 同一次取数带回来的)。
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
+ * 2026-09-21 口径改成同省同公司分类(见 lib/db 的 SIMILAR_EMPLOYERS);同日 Frank「给相似雇主卡加个点击埋点」:
+ * 行区外层挂 trackSimilar,点任何一家都记一次。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanySimilarRow } from './companysimilarrow'
 import { CARD_HEAD_CLS, CARD_MD_CLS } from './constants'
+import { trackSimilar } from './functions'
 import type { CompanySimilarCardIn } from './types'
 import css from './companies.module.css'
 
@@ -35,7 +38,7 @@ export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, sh
         {t('co.similar')}
         <span className={css.simSub}>{t('co.similarSub')}</span>
       </div>
-      <div>{rows}</div>
+      <div onClick={trackSimilar}>{rows}</div>
     </div>
   )
 }

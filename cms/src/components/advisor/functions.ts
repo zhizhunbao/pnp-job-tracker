@@ -35,12 +35,14 @@ import {
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
   K_TEER_HEAD, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD,
   NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_W_MIN, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL,
-  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD,
+  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV,
+  ROW_KEY_BROAD,
   ROW_KEY_FINE, ROW_KEY_MID, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
   SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
   TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR,
   URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE, URL_API_JOBS_TITLE,
-  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR,
+  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP,
+  VOL_KEY_PNP_PR,
   VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
@@ -48,7 +50,8 @@ import type {
   AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
   CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact,
   DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
-  FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn, IdRowFact,
+  FieldPageIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
+  IdRowFact,
   IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
   LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LoadTitleTransIn, LocationLevel, LocNoteIn,
   LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OriginTextIn,
@@ -1935,6 +1938,34 @@ export function fullTitleOf(x: FullTitleIn): string {
     return x.t('advisor.exitFull')
   }
   return x.t('advisor.full')
+}
+
+/**
+ * 字段弹框箭头钮的去处(2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」):只有公司组有落地页
+ * (这一岗的公司页);其余组(移民、分类、地点 …)没有,照旧出全屏钮。
+ *
+ * @param x 铺的哪一组与这一岗的公司 slug。
+ * @returns 公司页地址;没有 = ''。
+ */
+export function fieldPageOf(x: FieldPageIn): string {
+  if (x.group !== GROUP_COMPANY) {
+    return TEXT_NONE
+  }
+  return companyPageOf(x.slug)
+}
+
+/**
+ * 公司弹框箭头钮的去处:公司页;slug 空、或是雇主池键(`n:` 开头,这家没有公司页)= 没有落地页,
+ * 不出箭头、照旧出全屏钮。
+ *
+ * @param slug 公司弹框的 slug。
+ * @returns 公司页地址;没有 = ''。
+ */
+export function companyPageOf(slug: string): string {
+  if (slug === TEXT_NONE || slug.startsWith(POOL_KEY_HEAD)) {
+    return TEXT_NONE
+  }
+  return URL_COMPANY_HEAD + slug
 }
 
 /**

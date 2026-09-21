@@ -10,7 +10,8 @@
  * @time 2026-08-24 04:30:00
  */
 import {
-  ArrowUp, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, ClipboardList,
+  ArrowUp, ArrowUpRight, ChartColumn, ChartLine, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck,
+  ClipboardList,
   Compass, GripVertical, Lock, Mail, Map as LMap, MapPin, Maximize, Medal, Menu, MessageCircle, Mic, Minimize,
   Minus, Newspaper, Paperclip, Pause, Play, Rocket, RotateCcw, Save, Scale, Search, Settings, Square, Star,
   Table, Target, ThumbsDown, ThumbsUp, TriangleAlert, User, Users, Volume2, X,
@@ -22,6 +23,12 @@ import { makeIcon } from './functions'
  * 对话发送(输入框右侧的上箭头钮)。
  */
 export const IconArrowUp = makeIcon(ArrowUp)
+
+/**
+ * 弹框窗口钮「去落地页」:职位描述弹框去职位详情页、公司弹框与公司字段弹框去公司页
+ * (2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」,换掉这几个弹框的全屏钮)。
+ */
+export const IconArrowUpRight = makeIcon(ArrowUpRight)
 
 /**
  * 就业把脉(顶栏入口);柱状图 = 数据视角。

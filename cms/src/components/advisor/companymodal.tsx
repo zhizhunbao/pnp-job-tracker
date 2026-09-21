@@ -17,6 +17,7 @@ import { makeT } from '@/lib/i18n'
 import { AdvisorHead } from './advisorhead'
 import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN } from './constants'
 import { FloatPanel } from './floatpanel'
+import { companyPageOf } from './functions'
 import { useCompanyModal, useFloatPanel } from './hooks'
 import type { CompanyModalIn } from './types'
 
@@ -39,7 +40,7 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
   )
   return (
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
-      onRefresh={null}>
+      onRefresh={null} pageHref={companyPageOf(slug)}>
       <CompanyPanel job={null} slug={slug} jobs={m.jobs} lang={lang} onOpenJob={onOpenJob}
         onOpenCompany={onOpenCompany}
         onAlias={m.onAlias} showTrans={lang !== LANG_EN} onTransBusy={m.onTransBusy} />
