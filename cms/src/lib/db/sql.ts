@@ -237,7 +237,8 @@ export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.co
 export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id = $1`
 
 /**
- * 相似雇主:与这一家雇主类型相同、公司分类相同(医院找医院、学区找学区、私营找同行业),且在同省有在招岗的雇主,在招多的在前,取 6。
+ * 相似雇主:与这一家雇主类型相同、公司分类相同(医院找医院、学区找学区、私营找同行业)、有在招岗的雇主;
+ * 在招省份与这一家有重叠的排前面,再按在招多的,取 6。
  * $1=这一家的雇主池主键(有公司页 = slug,没有 = `n:` 开头的池键):既是锚,也排除它自己。
  * 2026-09-21 Frank「这个相似雇主 现在算的不对吧。应该是比如这个雇主是医院 相似的应该是其他医院。学校 相似的就是其他学校」:
  * 锚由岗位的类别换成公司分类(雇主板两级联动那一套)。此前三版找的都是「同省招同类岗的雇主」,医院招清洁工就把养老院、物业、
@@ -250,9 +251,13 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 按在招岗反推的;公立 / 政府只认池里按名字判的。雇主类型也要相同(同是综合行政:市镇找市镇、联邦找联邦)。
  * 同省 = 主省相等或在招地点里有这个省(同雇主板省筛选,GIN 索引 employer_pool_loc_provs_idx);在招数取池行总量(同雇主板「在招」列)。
  * 锚不在池里、或还没有公司分类(反推不出、模型还没判)= 空表,卡不出 —— 不拿岗位类别凑。生产实测 9 ~ 67ms(最宽是安省私营医疗)。
+ * 同日 Frank「当时雇主 可以是多个省的吧,只是把同省的排在前面 如何」:省不再硬筛,改成排序第一键 —— 候选的在招省份
+ * (loc_provs)与这一家的在招省份有重叠就排前面,不够 6 家拿外省的补;上面「同省 = …」那句是历史。按主省分组估:硬筛下
+ * 公立 / 政府 494 家里 38 家整卡不出、148 家不满 6 家,私营 28,749 家里分别只有 10 / 63;跨 9 省的 Home Depot 几乎家家重叠,照旧按在招数排。
+ * 不筛省以后要扫整个同类,生产热缓存实测 36 ~ 118ms(最宽是私营医疗约 5 千家;冷启动一次 191ms)。
  */
 export const SIMILAR_EMPLOYERS = `WITH a AS (
-       SELECT p.key, p.sector, p.province,
+       SELECT p.key, p.sector, ARRAY(SELECT jsonb_array_elements_text(p.loc_provs)) AS provs,
               CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
        FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
      SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count
@@ -260,8 +265,9 @@ export const SIMILAR_EMPLOYERS = `WITH a AS (
        JOIN companies c ON c.slug = p.slug
        LEFT JOIN employer_explore x ON x.key = p.key
      WHERE CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = a.category
-       AND (p.province = a.province OR p.loc_provs ? a.province) AND p.open_jobs_total > 0 AND c.slug <> ''
-     ORDER BY p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name LIMIT 6`
+       AND p.open_jobs_total > 0 AND c.slug <> ''
+     ORDER BY (p.loc_provs ?| a.provs) DESC NULLS LAST, p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name
+     LIMIT 6`
 
 // =========================================================================
 // 5. 职业(NOC)

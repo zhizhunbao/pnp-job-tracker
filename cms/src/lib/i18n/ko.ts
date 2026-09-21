@@ -515,7 +515,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'co.spSkilledTag': '기술직', 'co.spQuarter': '최근 승인', 'co.spBatchN': '{n}건 LMIA', 'co.designated': '지정 고용주',
   'co.spNocs': '승인 직종(최근 2년)', 'co.spNocRest': '기타 {n}개 직종',
   'co.spSource': '출처: ESDC 긍정 LMIA 고용주 목록, IRCC',
-  'co.similar': '유사 고용주', 'co.similarSub': '같은 주, 같은 분류',
+  'co.similar': '유사 고용주', 'co.similarSub': '같은 분류',
   'gr.dim.coSponsor': '스폰서 기록', 'gr.dim.coActive': '채용 활발도', 'gr.dim.coSalary': '급여 수준', 'gr.dim.coFame': '규모·인지도',
   'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음',
   'gr.co.act.d': '채용 중 {open}건, 최근 30일 신규 {n}건', 'gr.co.act.d1': '채용 중 1건, 최근 30일 신규 {n}건', 'gr.co.sal.d': '채용 공고 급여가 지역 중위값 대비 평균 {pct}%',
