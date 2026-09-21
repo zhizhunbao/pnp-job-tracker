@@ -88,9 +88,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
 
   let similar: SimilarEmployer[] = []
   try {
-    similar = await loadSimilarEmployers({
-      db: await getDb(), province: company.province, industry: company.industry, excludeSlug: company.slug,
-    })
+    similar = await loadSimilarEmployers({ db: await getDb(), key: company.slug })
   } catch {
     similar = []
   }

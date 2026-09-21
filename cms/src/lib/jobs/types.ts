@@ -2624,44 +2624,11 @@ export type SimilarIn = {
   db: Db
 
   /**
-   * 省码。
+   * 这一家的雇主池主键(有公司页 = slug;没有 = `n:` 开头的池键;'' = 没有):既是找同类的锚,也排除它自己。
+   * 2026-09-21 改按公司分类找(Frank「应该是比如这个雇主是医院 相似的应该是其他医院」),原先的省码、行业桶、
+   * 岗位中类(2026-09-14 Frank「这个相似雇主也不是同行业的啊」)与排除 slug 四格随之撤 —— 省与分类都从池里这一行取。
    */
-  province: string
-
-  /**
-   * 行业桶(公司页用:页上没有单一岗位,退回同省同行业桶)。
-   */
-  industry: string
-
-  /**
-   * 这一岗的中类(弹框用,2026-09-14 Frank「这个相似雇主也不是同行业的啊」);不传 = 按行业桶。
-   */
-  mid?: string
-
-  /**
-   * 排除自身的 slug。
-   */
-  excludeSlug: string
-}
-
-/**
- * `loadJobMid` 的出参:中类键,查不到给空串。
- */
-export type MidOut = Promise<string>
-
-/**
- * `loadJobMid` 的入参。
- */
-export type JobMidIn = {
-  /**
-   * 数据库连接。
-   */
-  db: Db
-
-  /**
-   * 岗位号。
-   */
-  jobId: number
+  key: string
 }
 
 /**

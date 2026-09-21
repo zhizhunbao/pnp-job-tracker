@@ -237,36 +237,31 @@ export const COMPANY_OPEN_COUNT = `SELECT count(*)::int n FROM jobs j WHERE j.co
 export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id = $1`
 
 /**
- * 同区同行业、按担保档与在招量排的相似雇主
+ * 相似雇主:与这一家雇主类型相同、公司分类相同(医院找医院、学区找学区、私营找同行业),且在同省有在招岗的雇主,在招多的在前,取 6。
+ * $1=这一家的雇主池主键(有公司页 = slug,没有 = `n:` 开头的池键):既是锚,也排除它自己。
+ * 2026-09-21 Frank「这个相似雇主 现在算的不对吧。应该是比如这个雇主是医院 相似的应该是其他医院。学校 相似的就是其他学校」:
+ * 锚由岗位的类别换成公司分类(雇主板两级联动那一套)。此前三版找的都是「同省招同类岗的雇主」,医院招清洁工就把养老院、物业、
+ * 食品厂一并带进来(实拍:Sienna、Extendicare、Skyline Living、CFMWS、Pride Pak)——
+ * 09-14 按点进来那一岗的中类(Frank「这个相似雇主也不是同行业的啊」:companies.industry 是在招岗大类多数派,电信架线工和运输 /
+ * 农场同落「技工」);09-19 公司页退到这家在招最多的中类(Frank「这个怎么没有相似雇主」,North Bay Computer Services 实拍);
+ * 再不行按 companies.industry。三版用到的四个常量(旧 SIMILAR_EMPLOYERS / SIMILAR_EMPLOYERS_BY_INDUSTRY / COMPANY_TOP_MID /
+ * JOB_MID_BY_ID)一并撤。
+ * 公司分类的取法与雇主板同一句(employerPoolPage 的 category 列):私营 = 模型判的 employer_explore.industry 优先、没有才用池里
+ * 按在招岗反推的;公立 / 政府只认池里按名字判的。雇主类型也要相同(同是综合行政:市镇找市镇、联邦找联邦)。
+ * 同省 = 主省相等或在招地点里有这个省(同雇主板省筛选,GIN 索引 employer_pool_loc_provs_idx);在招数取池行总量(同雇主板「在招」列)。
+ * 锚不在池里、或还没有公司分类(反推不出、模型还没判)= 空表,卡不出 —— 不拿岗位类别凑。生产实测 9 ~ 67ms(最宽是安省私营医疗)。
  */
-export const SIMILAR_EMPLOYERS = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
-     WHERE c.region = $1 AND j.mid = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
-     ORDER BY count(j.id) DESC, c.sponsor_grade DESC NULLS LAST LIMIT 6`
-
-/**
- * 相似雇主(公司页版):同省同行业桶;页上没有单一岗位,仍按 companies.industry 找。
- */
-export const SIMILAR_EMPLOYERS_BY_INDUSTRY = `SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, count(j.id)::int open_count
-     FROM companies c JOIN jobs j ON j.company_id = c.id AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
-     WHERE c.region = $1 AND c.industry = $2 AND c.slug <> $3 AND c.slug IS NOT NULL AND c.slug <> ''
-     GROUP BY c.id, c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v
-     ORDER BY c.sponsor_grade DESC NULLS LAST, count(j.id) DESC LIMIT 6`
-
-/**
- * 相似雇主的锚(公司页兜底):这家公司在招岗里最多的那个中类(2026-09-19 Frank「这个怎么没有相似雇主」:
- * companies.industry 只有少数公司有,没有的整卡不出 —— North Bay Computer Services 实拍;退到它自己的岗去找同类)。$1=公司 slug。
- */
-export const COMPANY_TOP_MID = `SELECT j.mid FROM jobs j JOIN companies c ON c.id = j.company_id
-     WHERE c.slug = $1 AND COALESCE(j.mid, '') <> '' AND COALESCE(j.status,'open') <> 'closed' AND coalesce(j.is_dup, false) = false
-     GROUP BY j.mid ORDER BY count(*) DESC, j.mid LIMIT 1`
-
-/**
- * 相似雇主的锚:这一岗的中类(2026-09-14 Frank「这个相似雇主也不是同行业的啊」:companies.industry 是公司
- * 主营大类桶,电信架线工和运输 / 农场同落「技工」;改按岗位中类找同省同类岗在招的雇主)。
- */
-export const JOB_MID_BY_ID = `SELECT mid FROM jobs WHERE id = $1 LIMIT 1`
+export const SIMILAR_EMPLOYERS = `WITH a AS (
+       SELECT p.key, p.sector, p.province,
+              CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
+       FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
+     SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count
+     FROM a JOIN employer_pool p ON p.key <> a.key AND p.sector IS NOT DISTINCT FROM a.sector
+       JOIN companies c ON c.slug = p.slug
+       LEFT JOIN employer_explore x ON x.key = p.key
+     WHERE CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = a.category
+       AND (p.province = a.province OR p.loc_provs ? a.province) AND p.open_jobs_total > 0 AND c.slug <> ''
+     ORDER BY p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name LIMIT 6`
 
 // =========================================================================
 // 5. 职业(NOC)

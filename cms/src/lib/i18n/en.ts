@@ -518,7 +518,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatchN': '{n} LMIAs', 'co.designated': 'Designated employer',
   'co.spNocs': 'Approved occupations (2 yrs)', 'co.spNocRest': 'Other {n} occupations',
   'co.spSource': 'Source: ESDC positive-LMIA employer list, IRCC',
-  'co.similar': 'Similar employers', 'co.similarSub': 'same province, similar roles',
+  'co.similar': 'Similar employers', 'co.similarSub': 'same province, same category',
   'gr.dim.coSponsor': 'Sponsorship record', 'gr.dim.coActive': 'Hiring activity', 'gr.dim.coSalary': 'Pay level', 'gr.dim.coFame': 'Scale & profile',
   'gr.co.sp.d': '{total} approved LMIA positions in the past two years (skilled streams {n}; latest {q})', 'gr.co.sp.aip': 'AIP designated employer (can sponsor without LMIA)', 'gr.co.sp.na': 'No public approvals in the past two years',
   'gr.co.act.d': '{open} open jobs, {n} new in the past 30 days', 'gr.co.act.d1': '1 open job, {n} new in the past 30 days', 'gr.co.sal.d': 'posted pay averages {pct}% vs local medians',

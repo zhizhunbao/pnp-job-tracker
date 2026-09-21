@@ -69,11 +69,11 @@ import type {
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
   EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire, MaybeJobId,
   JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
-  JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobMidIn, JobOgDbRow,
+  JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
   JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
   MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult,
-  MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, MidOut, NameOption,
+  MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption,
   NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn,
   NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
   OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell,
@@ -1756,58 +1756,19 @@ async function designatedOf(input: DesignatedIn): DesignatedOut {
 }
 
 /**
- * 相似雇主(E8-09:同省同行业、有在招岗,按担保档降序 ≤6;SEO 内链 + 横向比较)。
+ * 相似雇主(E8-09:同省、有在招岗,≤6;SEO 内链 + 横向比较)。
  * 2026-09-19:没有岗位锚、公司也没有行业桶时,退到这家公司在招岗里最多的中类去找(COMPANY_TOP_MID),不再整卡不出。
+ * 2026-09-21 Frank「应该是比如这个雇主是医院 相似的应该是其他医院。学校 相似的就是其他学校」:改按公司分类找
+ * (同雇主类型、同公司分类),与点进来的是哪一岗、这家招什么岗无关 —— 上面那条按岗位中类的兜底随之撤,口径全在 SQL.SIMILAR_EMPLOYERS。
  *
- * @param input 连接、省、行业与排除 slug。
- * @returns 相似雇主行。
+ * @param input 连接与这一家的雇主池主键。
+ * @returns 相似雇主行;没有池键 = 空表。
  */
 export async function loadSimilarEmployers(input: SimilarIn): SimilarOut {
-  if (input.province === PARAM_NONE) {
+  if (input.key === PARAM_NONE) {
     return []
   }
-  if (input.mid != null && input.mid !== PARAM_NONE) {
-    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, input.mid,
-      input.excludeSlug], map: toSimilar })
-  }
-  if (input.industry === PARAM_NONE) {
-    const mids = await queryRows({ db: input.db, sql: SQL.COMPANY_TOP_MID, params: [input.excludeSlug], map: toMidCell })
-    const top = firstOf(mids)
-    if (top == null || top === PARAM_NONE) {
-      return []
-    }
-    return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.province, top, input.excludeSlug],
-      map: toSimilar })
-  }
-  return queryRows({
-    db: input.db, sql: SQL.SIMILAR_EMPLOYERS_BY_INDUSTRY, params: [input.province, input.industry,
-      input.excludeSlug], map: toSimilar,
-  })
-}
-
-/**
- * 这一岗的中类(相似雇主的锚,2026-09-14);查不到给空串。
- *
- * @param input 连接与岗位号。
- * @returns 中类键或空串。
- */
-export async function loadJobMid(input: JobMidIn): MidOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.JOB_MID_BY_ID, params: [input.jobId], map: toMidCell })
-  const first = rows[0]
-  if (first == null) {
-    return PARAM_NONE
-  }
-  return first
-}
-
-/**
- * 中类单格行 → 字符串。
- *
- * @param r 原始行。
- * @returns 中类键。
- */
-function toMidCell(r: Row): string {
-  return text(r.mid)
+  return queryRows({ db: input.db, sql: SQL.SIMILAR_EMPLOYERS, params: [input.key], map: toSimilar })
 }
 
 /**
@@ -2899,16 +2860,6 @@ function pickMail(s: string): string {
  */
 export function emptySimilar(_e: Error): SimilarList {
   return []
-}
-
-/**
- * 岗位中类查挂时的空串兜底(相似雇主随之为空,弹框主体照常给)。
- *
- * @param _e 捕到的错(查询层已留痕)。
- * @returns 空串。
- */
-export function emptyMid(_e: Error): string {
-  return PARAM_NONE
 }
 
 /**

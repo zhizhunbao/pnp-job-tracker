@@ -33,7 +33,7 @@ import {
   TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptyMid, emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobMid, loadJobsPage, loadMatchPage,
+  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, normalizeProfile,
@@ -171,6 +171,8 @@ export async function jobsTextRoute(req: Request): Promise<Response> {
  * 取数函数;没有岗位就没有「中分类」这条相似线索,相似雇主只按省与行业找。
  * 2026-09-19 Frank「招聘是 0 的公司也可以点击」:{ slug } 这一格也认雇主池键(`n:` 开头 = 这家没有公司页),
  * 档案由池里那一行拼(loadCompanyByPoolKey)。
+ * 2026-09-21 Frank「应该是比如这个雇主是医院 相似的应该是其他医院」:相似雇主改按公司分类找,三个入口一律拿这一家的池键当锚
+ * (有公司页 = slug),不再看点进来的是哪一岗 —— 上面「按中分类 / 按省与行业」那段是历史。
  *
  * @param req 请求(body 是 { jobId } 或 { slug })。
  * @returns { company, similar };id 非数 400、查无 404。
@@ -187,10 +189,7 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
     if (bySlug == null) {
       return new Response(null, { status: NOT_FOUND })
     }
-    const alike = await loadSimilarEmployers({
-      db: await getDb(), province: bySlug.province, industry: bySlug.industry, mid: PARAM_NONE,
-      excludeSlug: bySlug.slug,
-    }).catch(emptySimilar)
+    const alike = await loadSimilarEmployers({ db: await getDb(), key: bySlug.slug }).catch(emptySimilar)
     return Response.json({ company: bySlug, similar: alike })
   }
   if (body != null && typeof body.slug === 'string' && POOL_KEY_RE.test(body.slug)) {
@@ -198,10 +197,7 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
     if (byKey == null) {
       return new Response(null, { status: NOT_FOUND })
     }
-    const near = await loadSimilarEmployers({
-      db: await getDb(), province: byKey.province, industry: byKey.industry, mid: PARAM_NONE,
-      excludeSlug: PARAM_NONE,
-    }).catch(emptySimilar)
+    const near = await loadSimilarEmployers({ db: await getDb(), key: body.slug }).catch(emptySimilar)
     return Response.json({ company: byKey, similar: near })
   }
   let jobId = Number.NaN
@@ -216,10 +212,7 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
   if (company == null) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const mid = await loadJobMid({ db: db, jobId: jobId }).catch(emptyMid)
-  const similar = await loadSimilarEmployers({
-    db: db, province: company.province, industry: company.industry, mid: mid, excludeSlug: company.slug,
-  }).catch(emptySimilar)
+  const similar = await loadSimilarEmployers({ db: db, key: company.slug }).catch(emptySimilar)
   return Response.json({ company, similar })
 }
 
