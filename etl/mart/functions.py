@@ -64,7 +64,7 @@ from mart.constants import (
     MACRO_MONTH_NUM,
     MACRO_MONTH_TPL, MACRO_UNIT, MACRO_UNIT_TPL, MACRO_YEAR_LEN,
     BC_PROC_METRIC_TPL, BC_PROC_PLAIN_TPL, BC_PROC_SECTION, BENEFIT_RE, BENEFIT_WINDOW,
-    BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE,
+    BLANK_RUN_RE, BROAD_TRADES, CAREGIVER_NOCS, CATEGORY_UNCLASSIFIED, CELPIP_TAIL_RE, SRC_NOC_BLOCKLIST,
     CITY_I18N_KEY_TPL, CITY_ROWS_TPL, COLON, COMMA, COMMA_SPACE_RE, COUNTRY_CANADA, COUNT_WIDTH,
     IN_CITY_MACRO, K_CM_CMA, K_CM_POP, K_CM_POP_PERIOD, K_CM_UNEMP_PERIOD, K_CM_UNEMP_RATE,
     COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN, DAILY_N,
@@ -120,8 +120,8 @@ from mart.constants import (
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
     BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
-    K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
-    K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
+    K_HQ_PARENT, K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
+    K_SRC_HQ_PARENT, K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
     K_JD_FORMATTED, K_JD_FORMATTED_AT,
@@ -974,8 +974,12 @@ def board_ext_of(x: BoardJobIn) -> str:
 
 
 def to_scored_row(x: ScoredRowIn) -> dict:
-    """一条岗的评分行(externalId 为键,给 09 汇装 join)。"""
+    """一条岗的评分行(externalId 为键,给 09 汇装 join)。
+    2026-09-22:源码先过具名冲突黑名单(SRC_NOC_BLOCKLIST)—— JB 把 TAB 技师帖归 11201 那类官方错标,
+    命中不认源码,落回标题规则 → classify。"""
     noc = x.job.hint
+    if (x.job.title.strip().lower(), noc) in SRC_NOC_BLOCKLIST:
+        noc = ""
     if not noc:
         noc = classify_title(x.job.title)
     if not noc:
@@ -1285,7 +1289,8 @@ def fill_site_secs(x: CompanyExtraIn) -> None:
 
 def fill_hq(x: CompanyExtraIn) -> None:
     """总部六列:官网整理记录里总部一节过了原句核对的带街址 / 市 / 省 / 原句 / 出处页;官网没标总部的退维基兜底
-    (只有市 / 省 + Wikidata 条目链接,没有原句);两路都没有不落键。总部省是加拿大省码的拿去盖 region,其余 region 维持现状。"""
+    (只有市 / 省 + Wikidata 条目链接,没有原句);两路都没有不落键。总部省是加拿大省码的拿去盖 region,其余 region 维持现状。
+    2026-09-22 Frank「显,但注明是母公司」:维基记录带 hq_parent 的照落总部列并带 hqParent 标记(页面灰注母公司)。"""
     rec = x.ctx.site_facts.get(x.slug)
     hq = None
     if rec is not None:
@@ -1303,6 +1308,8 @@ def fill_hq(x: CompanyExtraIn) -> None:
     x.extra[K_HQ_CITY] = city
     x.extra[K_HQ_PROVINCE] = province
     x.extra[K_HQ_SOURCE] = hq.get(K_SRC_HQ_SOURCE) or first_of(hq.get(K_SOURCES, []))
+    if hq.get(K_SRC_HQ_PARENT) is True:
+        x.extra[K_HQ_PARENT] = True
     if province in HQ_CA_PROVS:
         x.extra[K_REGION] = province
 

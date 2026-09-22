@@ -5,15 +5,18 @@
  * 整个拦在门外(2026-07-16 用户实测)—— login 态给 0 等于不拦。
  * 2026-08-24 自 AuthForm 拆出(一个 tsx 一个组件)。
  *
+ * 2026-09-22 Frank「显示三个点是不对吧,是不是需要加上 loading」:提交中钮上的「…」(08-24 的忙碌记号)换成
+ * 通用 Loading 件(转圈 + 原钮字),SUBMIT_BUSY_LABEL 随之退役。
+ *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
 import { Button } from '@/components/button'
+import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import {
   AUTOCOMPLETE_CURRENT_PW, AUTOCOMPLETE_EMAIL, AUTOCOMPLETE_NEW_PW, EMAIL_PLACEHOLDER, INPUT_TYPE_EMAIL,
   INPUT_TYPE_PASSWORD, MODE_FORGOT, MODE_LOGIN, MODE_REGISTER, MODE_RESET, NOTICE_ERR, PW_MIN_LEN, PW_PLACEHOLDER,
-  SUBMIT_BUSY_LABEL,
 } from './constants'
 import { submitKeyOf } from './functions'
 import { PwMeter } from './pwmeter'
@@ -37,9 +40,9 @@ export function AuthFields({ t, mode, email, pw, busy, err, onEmail, onPw, onSub
   if (mode === MODE_LOGIN) {
     autoComplete = AUTOCOMPLETE_CURRENT_PW
   }
-  let submitLabel = t(submitKeyOf(mode))
+  let submitLabel: React.ReactNode = t(submitKeyOf(mode))
   if (busy) {
-    submitLabel = SUBMIT_BUSY_LABEL
+    submitLabel = <Loading text={t(submitKeyOf(mode))} />
   }
   return (
     <form onSubmit={onSubmit}>

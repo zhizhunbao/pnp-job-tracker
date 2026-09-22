@@ -257,7 +257,15 @@ HOME_HEAD_LEN = 1500
 """首页开头再取这么多字(主营业务多半在首屏)。"""
 
 PAGE_HEAD_LEN = 4000
-"""Contact / About 页取开头这么多字。"""
+"""Contact / About 页超长时取开头这么多字。"""
+
+PAGE_TAIL_LEN = 4500
+"""Contact / About 页超长时再取**末尾**这么多字(2026-09-22 Sienna 实撞:contact 页 11,620 字,总部地址在第 7,512 字 ——
+只取头 4,000 模型根本没见过那句;联系块 / 页脚地址常在页尾,与首页头尾规则同理)。"""
+
+PAGE_WHOLE_MAX = 12000
+"""一页整喂的上限(2026-09-22 Frank「全取不行吗」:不超这个长度整页直喂,超了才退回头 + 尾 ——
+95% 的页等于全取;三页封顶约 3.6 万字 ≈ 1 万 token,盒子 16384 ctx 放得下,不分段多轮打盒子)。"""
 
 PAGE_BLOCK_TPL = "### {url}\n{text}"
 """喂给模型的一页文字块(带网址,模型与核对都按页说话)。"""
@@ -285,6 +293,10 @@ STRICT RULES:
   If you cannot quote it, the answer is NONE.
 - HQ: the head office / headquarters / corporate office. If several offices are listed and none is marked as head office,
   headquarters or corporate office, answer NONE. A single address in the page footer of a company site counts as the head office.
+  The company's own contact address on a Contact page also counts (including one labelled support services office,
+  support office or corporate services office) — but addresses of individual stores, branches, communities or
+  locations in a location list never do.
+  A retail store, showroom, restaurant or other customer location is NEVER a head office, even if it is the only address shown.
   If the page gives both a Canadian head office and a head office outside Canada, answer the Canadian one; give the one
   outside Canada only when no Canadian head office is shown.
 - Output exactly these lines and nothing else:
@@ -298,7 +310,7 @@ SIZE=<employee count or number of locations, only if stated, or NONE>
 SIZE_QUOTE=<exact page sentence>
 FOUNDED=<founding year and/or parent company, only if stated, or NONE>
 FOUNDED_QUOTE=<exact page sentence>
-OFFICES=<other office / branch locations besides the head office, comma separated, or NONE>
+OFFICES=<other corporate office locations besides the head office, comma separated, or NONE; never list retail stores, showrooms, restaurants or other customer locations>
 OFFICES_QUOTE=<exact page line>
 NEWCOMERS=<what the site says about hiring newcomers, immigrants, foreign workers, work permits, visa or LMIA support, or NONE>
 NEWCOMERS_QUOTE=<exact page sentence>
@@ -309,7 +321,11 @@ Pages:
 {blob}"""
 """整理提示词(给模型看的,英文;name / blob 两槽)。要点:只许用页面文字、每节必须附页面原句、多个办公点没标总部就答 NONE。
 2026-09-20 Frank「外国总部可以,如果找不到本地总部」:页面同时给了加拿大总部与外国总部的答加拿大那个,没有加拿大总部才给外国的。
-NEWCOMERS 一节是本站用户最想知道的,只认官网原句,没提就空着 —— 不许从别的话里推断。"""
+NEWCOMERS 一节是本站用户最想知道的,只认官网原句,没提就空着 —— 不许从别的话里推断。
+2026-09-21 Frank「都修」(Home Depot 实撞:OFFICES 抽出「NEPEAN 1900 Baseline Road」门店、BASE 也是门店):
+门店 / 展厅 / 餐厅这类顾客场所永不算总部、也不进 OFFICES —— 零售连锁的地点清单是门店,不是办公点。
+2026-09-22(Sienna 实撞,Frank 连发三张 Google 截图):Contact 页上公司自己的联系地址算总部(support services office
+这类叫法也算),社区 / 门店定位清单里的地址不算 —— Sienna 官网管总部叫 Support Services Office,原规则按「没标 head office」放弃了。"""
 
 LINE_RE_TPL = r"^\s*{key}\s*=(.*)$"
 """回答里一行「KEY=值」的正则模板(逐键现拼,多行模式)。"""

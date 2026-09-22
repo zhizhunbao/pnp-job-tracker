@@ -8,6 +8,8 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位(消费方 jobs/Job.tsx 只改 import 行)。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:岗名一律是真链接(原先弹框内能开 JD 的行换成钮、丢了 href);
  * 给了 onOpenJob 就拦普通左键叠开职位描述弹框,整行没载入的点了现取。
+ * 2026-09-22 Frank「即使没显示出来薪资,也要占位吧。地点怎么跑上去了」:右侧薪资行一律渲(没薪资渲不折行空格占住行高),
+ * 城市恒在第二行,各行对齐。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -15,7 +17,7 @@
 import { cssOf } from '@/components/css'
 import { CompanyLink } from './companylink'
 import { CLS_SEP, LINK_CLS, TEXT_NONE, URL_JOB_HEAD } from './constants'
-import { makeOpenJob } from './functions'
+import { makeOpenJob, payShownOf } from './functions'
 import type { JobMiniRowIn } from './types'
 import css from './companies.module.css'
 
@@ -59,7 +61,7 @@ export function JobMiniRow({
         {sub !== TEXT_NONE && <div className={css.jobSub}>{sub}</div>}
       </span>
       <span className={css.jobR}>
-        {salaryText !== TEXT_NONE && <div className={css.jobPay}>{salaryText}</div>}
+        <div className={css.jobPay}>{payShownOf(salaryText)}</div>
         <div className={css.jobCity}>{city !== TEXT_NONE && <span>{city}</span>}</div>
       </span>
     </div>

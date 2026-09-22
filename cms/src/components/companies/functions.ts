@@ -31,7 +31,9 @@ import {
   KEY_ACT_TIER_HEAD, KEY_FM_OPEN, KEY_FM_OPEN_ONE, KEY_FM_PROVS, KEY_FM_TIER_HEAD, KEY_FM_WIKI, KEY_SAL_EVIDENCE,
   KEY_SAL_TIER_HEAD, KEY_SP_EVIDENCE, KEY_SP_EVIDENCE_AIP, KEY_SP_TIER_AIP, KEY_SP_TIER_HEAD, KEY_STREAM_AGRI,
   KEY_STREAM_GTS, KEY_STREAM_HIGH, KEY_STREAM_LOW, KEY_STREAM_PR, LANG_EN, LANG_KO, LANG_ZH, LOC_JOIN, METHOD_POST,
-  MIME_JSON, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS, STREAM_AGRI_RE,
+  CLOCK_PAD, CLOCK_PAD_LEN, CLOCK_SEP,
+  MIME_JSON, NBSP, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SECS_PER_MIN, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS,
+  SIM_FIRST_N, STREAM_AGRI_RE,
   STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TITLES_CHUNK,
   TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES,
   URL_CO_TRANSLATE,
@@ -56,7 +58,8 @@ import type {
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
   SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
   UntitledIn, ZhLineClsIn, ZhShownIn,
-  OpenSiteIn, ShownStageIn, SitePanel, SitePanelIn, SiteShownIn, SiteStageJson, SiteStep, SiteStepsIn,
+  OpenSiteIn, QueuedTextIn, ShownStageIn, SimShownIn, SimilarEmployer, SitePanel, SitePanelIn, SiteShownIn,
+  SiteStageJson, SiteStep, SiteStepsIn,
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
   ReloadFn, SiteDoneIn,
@@ -973,6 +976,51 @@ export function makeToggle(x: ToggleIn): GoBackFn {
 }
 
 /**
+ * 相似雇主卡该上屏的行(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」):收起时前 6 家,展开了全给
+ * (取数封顶 20,同日「如果大于 20 就展开 20」)。
+ *
+ * @param x 相似雇主与展开态。
+ * @returns 该上屏的行。
+ */
+export function simShownOf(x: SimShownIn): SimilarEmployer[] {
+  if (x.open) {
+    return x.similar
+  }
+  return x.similar.slice(0, SIM_FIRST_N)
+}
+
+/**
+ * 相似雇主行右侧的主市灰字(2026-09-22 Frank「公司所在城市,是不是也加一下灰字」):
+ * 紧凑格「市, 省码」;市没记就不出。
+ *
+ * @param e 这一家。
+ * @returns 「市, 省码」;'' = 不出。
+ */
+export function simCityOf(e: SimilarEmployer): string {
+  if (e.city === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  if (e.province === TEXT_NONE) {
+    return e.city
+  }
+  return e.city + LOC_JOIN + e.province
+}
+
+/**
+ * 迷你职位行右侧薪资格的字(2026-09-22 Frank「即使没显示出来薪资,也要占位吧。地点怎么跑上去了」):
+ * 没薪资给不折行空格占住行高,城市恒在第二行。
+ *
+ * @param salaryText 薪资文案;'' = 没有。
+ * @returns 薪资文案或占位空格。
+ */
+export function payShownOf(salaryText: string): string {
+  if (salaryText === TEXT_NONE) {
+    return NBSP
+  }
+  return salaryText
+}
+
+/**
  * 点迷你职位行的手柄:叠开 JD 弹框(把整行交回上层)。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示…现在点击是跳页面,要想看其他的还得点回来」:行仍是真链接
  * (爬虫与新标签开页照旧),普通左键拦下开弹框;整行没载入的现取一次,取不到就照链接去详情页。
@@ -1244,7 +1292,7 @@ export function makeOpenSite(x: OpenSiteIn): LoadFn {
  * @returns 面板。
  */
 export function sitePanelOf(x: SitePanelIn): SitePanel {
-  const out: SitePanel = { stage: STAGE_OFF, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE }
+  const out: SitePanel = { stage: STAGE_OFF, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE, ahead: 0 }
   if (x.json == null) {
     return out
   }
@@ -1257,10 +1305,35 @@ export function sitePanelOf(x: SitePanelIn): SitePanel {
   if (typeof x.json.hqSource === 'string') {
     out.hqSource = x.json.hqSource
   }
+  if (typeof x.json.ahead === 'number' && x.json.ahead >= 0) {
+    out.ahead = x.json.ahead
+  }
   if (x.off === false && typeof x.json.stage === 'string' && x.json.stage !== TEXT_NONE) {
     out.stage = x.json.stage
   }
   return out
+}
+
+/**
+ * 秒数 → 「分:秒」钟面(已等计时;2026-09-22 Frank「排队中是不是要加个计时器」)。
+ *
+ * @param sec 秒数。
+ * @returns 「m:ss」。
+ */
+export function clockOf(sec: number): string {
+  const m = Math.floor(sec / SECS_PER_MIN)
+  const s = sec % SECS_PER_MIN
+  return String(m) + CLOCK_SEP + String(s).padStart(CLOCK_PAD_LEN, CLOCK_PAD)
+}
+
+/**
+ * 「排队中」那一步的字:步名 + 第 N 位(N = 前面的家数 + 1;后点开的会插队,位次照实显)+ 已等钟面。
+ *
+ * @param x 取词函数、前面的家数与已等秒数。
+ * @returns 一步的字。
+ */
+export function queuedTextOf(x: QueuedTextIn): string {
+  return `${x.t(STAGE_LABEL.queued)} ${x.t('co.stage.pos', { n: x.ahead + 1 })} ${clockOf(x.sec)}`
 }
 
 /**
@@ -1275,6 +1348,8 @@ export function isSiteActive(stage: string): boolean {
 
 /**
  * 卡上显示的那一步:队列里还在办的照队列;简介到了、中 / 韩译文还在途 = 翻译;其余 = 没有进度行('')。
+ * 2026-09-21 Frank「公司的弹框也要显示,进度啊」(Sienna:旧简介铺着、后台在重探,卡上一点动静没有):
+ * 铺着旧简介时探索中的步照样出 —— 进度行与旧简介并存(渲染端加在简介上方),不再只在简介区空着时出。
  *
  * @param x 队列里的步、简介到了没、译文在途没。
  * @returns 显示的步;'' = 不出进度行。
@@ -1288,6 +1363,9 @@ export function shownStageOf(x: ShownStageIn): string {
   }
   if (x.transWait && x.stage === STAGE_DONE) {
     return STAGE_TRANS
+  }
+  if (isSiteActive(x.stage)) {
+    return x.stage
   }
   return TEXT_NONE
 }
@@ -1399,6 +1477,7 @@ export function siteHqOf(x: SiteShownIn): string {
   }
   return hqOf({ t: x.t, lang: x.lang, company: x.company })
 }
+
 
 /**
  * 卡上「总部」行点开的去处 = Google 地图(2026-09-21 Frank「这个点开应该是打开 google 地图吧」,与「地址」行、雇主板总部列同一个去处;

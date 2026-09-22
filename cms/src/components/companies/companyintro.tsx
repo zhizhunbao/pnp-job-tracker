@@ -10,15 +10,20 @@
  *(原先它不看开关、中 / 韩界面一开框就翻就出,开关默认关后成了唯一漏网的中文行)。
  * 2026-09-17 同日 Frank「自动拨开去掉,但是后台要自动翻译」:翻回后台预翻(不看开关),只有那一行的出不出跟开关走。
  * 2026-09-18 Frank「简介抓取自官网 这几个字删掉」:官网简介下那行来源小注撤。
+ * 2026-09-22 Frank「我是查的 localhost 也没显示排队中啊」(Ciena):进度行原先只活在懒查那一岔 ——
+ * 厚简介与缓存简介两岔直渲内容,重探时卡上没动静。探索进行中三岔都出进度行(CompanySteps)。
+ * 同日 Frank「排队中这个位置是不是不合适,如果下面之前有主营业务」:铺着内容的两岔进度行挪到内容**下方**当状态行,
+ * 不打断简介阅读;懒查岔照旧(简介位本来空着)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { CompanyAiSection } from './companyaisection'
+import { CompanySteps } from './companysteps'
 import { CompanyZhLine } from './companyzhline'
 import { CompanyBriefCards } from './companybriefcards'
 import { TEXT_NONE } from './constants'
-import { hasDescOf } from './functions'
+import { hasDescOf, isSiteActive } from './functions'
 import { useCompanyDescTrans } from './hooks'
 import type { CompanyIntroIn } from './types'
 import css from './companies.module.css'
@@ -30,14 +35,19 @@ import css from './companies.module.css'
  * @returns 简介;三条路都走不通(连公司名都没有)时不渲。
  */
 export function CompanyIntro({
-  company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy, stage = TEXT_NONE,
+  company, t, lang, showTrans, trans, skipBase, baseZh = TEXT_NONE, onBusy, stage = TEXT_NONE, ahead = 0,
 }: CompanyIntroIn) {
   const descZh = useCompanyDescTrans({ name: company.name, lang, has: hasDescOf({ company }) })
+  let steps = null
+  if (isSiteActive(stage)) {
+    steps = <CompanySteps stage={stage} ahead={ahead} hasSite={company.website !== TEXT_NONE} lang={lang} t={t} />
+  }
   if (hasDescOf({ company })) {
     return (
       <div className={css.descWrap}>
         <div className={css.desc}>{company.description}</div>
         {showTrans === true && descZh !== TEXT_NONE && <CompanyZhLine text={descZh} prose />}
+        {steps}
       </div>
     )
   }
@@ -57,6 +67,7 @@ export function CompanyIntro({
           bare
           skipBase={skipBase}
           baseZh={baseZh} />
+        {steps}
       </div>
     )
   }
@@ -64,7 +75,7 @@ export function CompanyIntro({
     return (
       <div className={css.descWrap}>
         <CompanyAiSection company={company.name} t={t} showTrans={showTrans} lang={lang} bare skipBase={skipBase}
-          baseZh={baseZh} onBusy={onBusy} stage={stage} hasSite={company.website !== TEXT_NONE} />
+          baseZh={baseZh} onBusy={onBusy} stage={stage} ahead={ahead} hasSite={company.website !== TEXT_NONE} />
       </div>
     )
   }

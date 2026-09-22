@@ -1929,6 +1929,21 @@
 }
 
 /*
+ * 相似职位组的「展开其余 N 个 ▾ / 收起 ▴」钮(2026-09-22 Frank「需要一个展开的按钮吧」):
+ * 形照公司弹框在招职位卡的 .showAll(文字钮、原地展开不跳转);类名写两遍抬权重压 Button 基座。
+ */
+.relMore.relMore {
+  border: none;
+  background: none;
+  padding: 2px 0;
+  font-size: 12.5px;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 400;
+  white-space: normal;
+}
+
+/*
  * 兜底链(2026-08-11 Frank 追加):同公司与同职业都零在招时,卡里原本什么都不剩 ——
  * 下架页又成死路。给一条筛好的职位板链接,让他至少还有下一步可点。
  */

@@ -1399,8 +1399,18 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)
+  let sameCompanyTotal = 0
+  const coFirst = coRows[0]
+  if (coFirst != null) {
+    sameCompanyTotal = toRelTotal(coFirst)
+  }
+  let sameOccTotal = 0
+  const occFirst = occRows[0]
+  if (occFirst != null) {
+    sameOccTotal = toRelTotal(occFirst)
+  }
   if (sameCompany.length > 0 || sameOcc.length > 0 || job.province === '') {
-    return { sameCompany: sameCompany, sameOcc: sameOcc, fallbackLevel: null }
+    return { sameCompany, sameCompanyTotal, sameOcc, sameOccTotal, fallbackLevel: null }
   }
   const levels: ['fine' | 'mid' | 'broad', string][] = []
   if (job.fine !== '' && job.fine !== UNCAT) {
@@ -1413,7 +1423,7 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
     levels.push([CAT_LEVEL.broad, job.broad])
   }
   if (levels.length === 0) {
-    return { sameCompany: sameCompany, sameOcc: sameOcc, fallbackLevel: null }
+    return { sameCompany, sameCompanyTotal, sameOcc, sameOccTotal, fallbackLevel: null }
   }
   const lvNames: string[] = []
   const lvValues: string[] = []
@@ -1435,7 +1445,17 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
       }
     }
   }
-  return { sameCompany: sameCompany, sameOcc: sameOcc, fallbackLevel: fallbackLevel }
+  return { sameCompany, sameCompanyTotal, sameOcc, sameOccTotal, fallbackLevel: fallbackLevel }
+}
+
+/**
+ * 相关职位一行 → 组总数(SQL 窗口列 total,LIMIT 前算好,每行同值取首行的;组里一行都没有由调用方给 0)。
+ *
+ * @param r 原始行。
+ * @returns 总数。
+ */
+function toRelTotal(r: Row): number {
+  return count(r.total)
 }
 
 /**
@@ -3330,6 +3350,7 @@ export function toSimilar(r: Row): SimilarEmployer {
     slug: text(r.slug), name: text(r.name), industry: text(r.industry),
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
     aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
+    city: text(r.city), province: text(r.province),
   }
 }
 

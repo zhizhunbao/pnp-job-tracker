@@ -419,6 +419,7 @@ function hqHrefOf(hq: string): string {
   return mapsUrl(hq)
 }
 
+
 /**
  * 类别 → 文案键尾:库里五档原样,空串 = 私营。
  *
@@ -487,6 +488,8 @@ export function empRowKeyOf(r: EmployerCellRow): string {
  * 2026-09-18 字段面板落地(通用 table 桶 useColPick / ColPicker;Frank「应该加一个字段按钮」「做成公用件」):
  * 雇主、操作两列固定;指定雇主、LMIA 两列可选默认不勾(在招雇主里有值的只占 1.3% / 2.8%,默认摆着是两整列横杠);
  * 列宽按现在显示着的列的宽份和归一。
+ * 2026-09-21 Frank「这个默认显示这些列」(截图定版):默认 = 雇主 / 雇主类型 / 公司分类 / 总部 / 在招地点 / 在招 / 操作;
+ * 省、市两列改可选默认不勾(在招地点胶囊已带省市信息,三列并存重复)。
  * 2026-09-13 晚 /fe 雇主页 Frank 拍板星级退成纯排序键不占列:5★ 只 423 家、2★ 占 75.8%,默认降序首屏 14 页清一色
  * 五星,作列零信息量;默认排序仍是 star desc(lib/employers POOL_SORT_DEFAULT),表头无对应列就不出排序标记。
  * 列 key = 排序主键(表头点列直接发给服务端);排序在服务端,列上不给取值器,只标 sortable。
@@ -529,6 +532,7 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       label: x.t('de.colProv'),
       width: poolWidthOf({ key: COL_PROV_KEY, shown: x.shown }),
       sortable: true,
+      optional: true,
       render: PoolProvCell,
     },
     {
@@ -536,6 +540,7 @@ export function employerColsOf(x: EmployerColsIn): EmpCol<EmployerCellRow>[] {
       label: x.t('de.colCity'),
       width: poolWidthOf({ key: COL_CITY_KEY, shown: x.shown }),
       sortable: true,
+      optional: true,
       render: PoolCityCell,
     },
     {

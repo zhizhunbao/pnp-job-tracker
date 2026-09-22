@@ -704,6 +704,14 @@ SCORE_MAX = 100
 CATEGORY_UNCLASSIFIED = "未分类"
 """TEER 判不出时的分类标签(评分行 category 列 / stats 的 broad·mid 桶名,同一个词)。"""
 
+SRC_NOC_BLOCKLIST = {
+    ("testing, adjusting and balancing (tab) technician for heating, ventilating and air conditioning (hvac)", "11201"),
+}
+"""源码-标题具名冲突黑名单(2026-09-22 Frank「怎么匹配的是 HVAC」实撞):(标题小写全等, 源给的 NOC)。
+Job Bank 把 98 条(54 家 HVAC 雇主)indeed 转贴的 TAB 技师帖全归到 11201(企业管理咨询)——
+官方 NOC 2021 职称索引(noc-elements.csv)里根本没有这个职称,是 JB 机器归类错;照抄就把暖通技师
+灌进管理咨询同职业推荐。命中的不认源码,落回标题规则 → classify,兜不住「未分类」—— 不替官方编码。"""
+
 K_CATEGORY = "category"
 """分类标签键(评分行 / SK 处理时长的类别列,同名不同表)。"""
 
@@ -886,6 +894,9 @@ K_SRC_HQ_PROVINCE = "hq_province"
 K_SRC_HQ_SOURCE = "hq_source"
 """官网整理记录:总部原句出自哪一页;维基总部记录:Wikidata 条目链接。"""
 
+K_SRC_HQ_PARENT = "hq_parent"
+"""维基总部记录:这是母公司的总部(2026-09-22 Frank「显,但注明是母公司」;官网整理记录没有这个键)。"""
+
 K_HQ_ADDRESS = "hqAddress"
 """companies 列:总部街址(只到街,市 / 省各有一列;官网没写到街就空着)。"""
 
@@ -900,6 +911,10 @@ K_HQ_QUOTE = "hqQuote"
 
 K_HQ_SOURCE = "hqSource"
 """companies 列:总部的出处网址(官网那一页 / Wikidata 条目)。"""
+
+K_HQ_PARENT = "hqParent"
+"""companies 列:总部是母公司的(2026-09-22 Frank「显,但注明是母公司」;只在维基兜底按备选名命中外国总部时为真,
+页面总部行灰注母公司)。"""
 
 K_SITE_CHECKED_AT = "siteCheckedAt"
 """companies 列:官网最近一次整理成的时刻(有官网整理记录就带,不管有没有抽出总部)。"""

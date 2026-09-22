@@ -397,12 +397,6 @@ export const EMAIL_PLACEHOLDER = 'you@example.com'
 export const PW_PLACEHOLDER = '••••••••'
 
 /**
- * 提交中钮上的字。省略号是不用翻译的忙碌记号:钮字本来按态取自 i18n,
- * 忙的那一下换成它,三语读者都读得懂。
- */
-export const SUBMIT_BUSY_LABEL = '…'
-
-/**
  * 非提交钮的 type。button 元素不写 type 时默认是 submit,页脚那几个切换钮一旦
  * (现在或以后)落进 form 里,点一下就是一次提交 —— 显式写死。
  */

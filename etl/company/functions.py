@@ -45,7 +45,7 @@ from company.constants import (
     B64_BLOCK, B64_PAD, BEAT_FRESH_S, BING_REDIRECT_PARAM, BING_REDIRECT_PATH, BING_REDIRECT_PREFIX, BING_SEARCH_URL, DDG_BROWSER_URL,
     ENV_FINDSITE_GOOGLE, IN_SEEN, K_SEEN_LAST, K_SEEN_OPENED, FINDSITE_GOOGLE_ON, FINDSITE_HTTP_TIMEOUT_S, FINDSITE_TAKE, FOUND_BING, FOUND_DDG, FOUND_GOOGLE, GOOGLE_POLL_MS,
     GOOGLE_SEARCH_URL, GOOGLE_SORRY_MARK, GOOGLE_WAIT_S, HOT_RETRY_DAYS, IN_SITE_PAGES, JS_BING_LINKS, JS_DDG_LINKS, JS_GOOGLE_LINKS,
-    JS_PAGE_URL, K_BEAT_AT, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_SOURCE, K_DONE_NOTE, K_DONE_REPLACED,
+    JS_PAGE_URL, K_BEAT_AT, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PARENT, K_DONE_HQ_PROVINCE, K_DONE_HQ_SOURCE, K_DONE_NOTE, K_DONE_REPLACED,
     K_DONE_STAGE, K_HOST, K_TODO_KEY, K_TODO_NAME, K_TODO_PROVINCE, K_TODO_SLUG, K_TODO_WEBSITE, K_TODOS, KIND_FIND, MS_PER_S,
     NOTE_CHECKED_TODAY, NOTE_CMS_HTTP_TPL, NOTE_HOST_BEATING, NOTE_NO_CMS, OUT_FINDSITE_BEAT, P_KIND, P_TAKE_LIMIT, PATH_SITE_DONE,
     HOT_JD_GLOB_TPL, PATH_SITE_TODO, PRINT_FINDSITE_ROW_TPL, PRINT_FINDSITE_TAKE_TPL, SEARCH_CRAWL_SLUG_TPL, ST_DEAD, STAGE_FETCH, STAGE_FIND, STAGE_NONE,
@@ -2310,7 +2310,12 @@ def write_wiki_hq(cache: dict[str, WikiHqRecord]) -> int:
 
 def wikihq_find(name: str) -> WikiHqOut:
     """一家公司:按原名查;查无再按去掉国名字样的名字查(KPMG Canada → KPMG),再查无按去掉打头 The 的查。
-    每次都过同一道严格名字闸(宁缺勿错);任何一次请求失败 = failed(不记,下轮重试)。"""
+    每次都过同一道严格名字闸(宁缺勿错);任何一次请求失败 = failed(不记,下轮重试)。
+    2026-09-21 Frank「都修」(Home Depot 实撞:The Home Depot Canada 去国名命中美国母公司 Q864407,总部带成
+    Cobb County, Georgia):备选名(去国名 / 去 The)命中的实体,总部必须解析到加拿大省码才认 ——
+    「X Canada」配上外国总部十有八九是母公司实体,不是这家加拿大雇主;原名全等命中的不受此限(外国总部是事实)。
+    2026-09-22 Frank「总部是美国不需要显示吗」→「显,但注明是母公司」改判:上一条的「不认」撤销,改成照收
+    但记 hq_parent=True(信息不丢,页面灰注母公司,不当这家自己的总部误导)。"""
     out = WikiHqOut(rec=WikiHqRecord(name=name, status=ST_MISS, at=now_iso()), failed=False)
     for query in wikihq_names_of(name):
         out = wikihq_find_one(WikiHqQuery(name=name, query=query))
@@ -2356,6 +2361,8 @@ def wikihq_find_one(x: WikiHqQuery) -> WikiHqOut:
             place = hq_place_of(place_id)
             if place.city == "":
                 continue
+            if x.query != x.name and place.province not in WD_PROV_CODES.values():
+                rec.hq_parent = True
             rec.status = ST_OK
             rec.qid = eid
             rec.hq_address = place.address
@@ -2573,6 +2580,7 @@ async def findsite_one(x: FindOneIn) -> None:
         payload[K_DONE_HQ_CITY] = hq.hq_city
         payload[K_DONE_HQ_PROVINCE] = hq.hq_province
         payload[K_DONE_HQ_SOURCE] = hq.hq_source
+        payload[K_DONE_HQ_PARENT] = hq.hq_parent
     say(PRINT_FINDSITE_ROW_TPL.format(stage=payload[K_DONE_STAGE], name=x.todo.name, site=got.site, note=note or got.found))
     hand_find_stage(CmsCallIn(client=x.client, base=x.base, headers=x.headers, payload=payload))
 

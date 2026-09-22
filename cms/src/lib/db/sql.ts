@@ -146,13 +146,15 @@ export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMI
 export const JOB_ADDRESS_BY_ID = `SELECT address FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
- * 相关职位·同公司在招 3 条。$1=公司名,$2=排除的当前岗 id。
+ * 相关职位·同公司在招 12 条。$1=公司名,$2=排除的当前岗 id。
  * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
+ * 2026-09-22 Frank「需要一个展开的按钮吧」「要显示职位数量吧」:取 3 → 12(卡上先出 3,展开看其余),
+ * total = 剔重后的总条数(组标题计数用,窗口函数在 LIMIT 前算)。
  */
-export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS} ${JOB_FROM}
+export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS}, count(*) OVER()::int AS total ${JOB_FROM}
        WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 3`
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 12`
 
 /**
  * 相关职位·同省同 4 位职业前缀 6 条(排除同公司)。$1=省,$2=NOC,$3=当前岗 id,$4=排除公司名,$5=本岗城市。
@@ -164,19 +166,23 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS} ${JOB_FROM}
  * (旧口径实撞:兽医推心脏科医生,QC 小城的岗推全省随机)。
  * 前缀匹配写成「前缀 ~ 前缀 + 9」的范围:LEFT(noc,4) 用不上 idx_jobs_noc,每次扫全省
  * (ON 5 万行 ~200ms → 范围写法 ~7ms);上界别用冒号 —— 库的排序规则下冒号排在数字前,范围是空的(实撞)。
+ * 2026-09-22 Frank「相同城市的应该排前面」:档序改判,同城压过职业码全等 ——
+ * 1 全等同城 / 2 前缀同城 / 3 全等同省 / 4 前缀同省(09-20 那版 2、3 对调);
+ * 同日「不应该只显示 6 个吧」「要显示职位数量吧」:取 6 → 24(卡上先出 6,展开看其余),
+ * total = 剔同雇主后的总家数(窗口函数在 LIMIT 前、rn=1 之后算)。
  */
 export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text, title_zh, title_ko,
-         job_trans_v FROM (
+         job_trans_v, count(*) OVER()::int AS total FROM (
          SELECT ${REL_COLS}, j.date_posted, j.first_seen,
-           CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.noc = $2 THEN 2 WHEN j.city = $5 THEN 3 ELSE 4 END AS tier,
+           CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.city = $5 THEN 2 WHEN j.noc = $2 THEN 3 ELSE 4 END AS tier,
            row_number() OVER (PARTITION BY COALESCE(j.company_id::text, 'j' || j.id::text) ORDER BY
-             CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.noc = $2 THEN 2 WHEN j.city = $5 THEN 3 ELSE 4 END,
+             CASE WHEN j.noc = $2 AND j.city = $5 THEN 1 WHEN j.city = $5 THEN 2 WHEN j.noc = $2 THEN 3 ELSE 4 END,
              j.date_posted DESC NULLS LAST, j.id DESC) AS rn
          ${JOB_FROM}
          WHERE j.province = $1 AND j.noc >= LEFT($2, 4) AND j.noc <= LEFT($2, 4) || '9' AND j.id <> $3
            AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
        ) r WHERE rn = 1
-       ORDER BY tier, date_posted DESC NULLS LAST, first_seen DESC NULLS LAST, id DESC LIMIT 6`
+       ORDER BY tier, date_posted DESC NULLS LAST, first_seen DESC NULLS LAST, id DESC LIMIT 24`
 
 /**
  * 相关职位都落空时的兜底探测:一次问清「本省在 fine/mid/broad 各级还有没有在招岗」,
@@ -261,19 +267,22 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * (loc_provs)与这一家的在招省份有重叠就排前面,不够 6 家拿外省的补;上面「同省 = …」那句是历史。按主省分组估:硬筛下
  * 公立 / 政府 494 家里 38 家整卡不出、148 家不满 6 家,私营 28,749 家里分别只有 10 / 63;跨 9 省的 Home Depot 几乎家家重叠,照旧按在招数排。
  * 不筛省以后要扫整个同类,生产热缓存实测 36 ~ 118ms(最宽是私营医疗约 5 千家;冷启动一次 191ms)。
+ * 2026-09-22 Frank「这个相似雇主也是默认显示 6 个」(随相关职位卡同规):卡上先出 6、展开看其余;
+ * 同日「如果大于 20 就展开 20」:取数封顶 20;「公司所在城市,是不是也加一下灰字」:带主市 / 主省两列。
  */
 export const SIMILAR_EMPLOYERS = `WITH a AS (
        SELECT p.key, p.sector, ARRAY(SELECT jsonb_array_elements_text(p.loc_provs)) AS provs,
               CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
        FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
-     SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count
+     SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count,
+       p.city, p.province
      FROM a JOIN employer_pool p ON p.key <> a.key AND p.sector IS NOT DISTINCT FROM a.sector
        JOIN companies c ON c.slug = p.slug
        LEFT JOIN employer_explore x ON x.key = p.key
      WHERE CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END = a.category
        AND p.open_jobs_total > 0 AND c.slug <> ''
      ORDER BY (p.loc_provs ?| a.provs) DESC NULLS LAST, p.open_jobs_total DESC, c.sponsor_grade DESC NULLS LAST, c.name
-     LIMIT 6`
+     LIMIT 20`
 
 // =========================================================================
 // 5. 职业(NOC)
@@ -611,26 +620,33 @@ export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, o
 
 /**
  * 公司卡问进度:官网那条工种办到哪一步,连同公司表里现在的官网与总部几格(办完那一拍卡上直接补,不用刷新)。$1=公司名。
+ * 2026-09-22 Frank「排队中是不是要加个计时器和排在第几位的倒数」:ahead = 队里排在这家前面的家数;
+ * 同日「为什么会插队」:取活改先到先得(FIFO),「前面」= 比它先点开、还没办完的,位次单调倒数。
  */
-export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, c.hq_city, c.hq_province, c.hq_source
+export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, c.hq_city, c.hq_province, c.hq_source,
+      (SELECT count(*)::int FROM employer_explore q
+        WHERE q.stage IN ('queued', 'find', 'fetch', 'facts') AND q.opened_at < x.opened_at) AS ahead
      FROM companies c JOIN employer_pool p ON p.slug = c.slug JOIN employer_explore x ON x.key = p.key
     WHERE lower(c.name) = lower($1) LIMIT 1`
 
 /**
- * 找官网工人取活:被点开过、没官网的(排队中),或抓页那头判了死站转过来的(find);最近点开的在前。$1=条数。
+ * 找官网工人取活:被点开过、没官网的(排队中),或抓页那头判了死站转过来的(find)。$1=条数。
+ * 2026-09-22 Frank「为什么会插队」:原「最近点开的在前」(LIFO)改成**先到先得**(FIFO)——
+ * 卡上显示位次倒数后,后点开插队会让数字不降反升,自相矛盾;先点先办,位次才是真倒数。
  */
 export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
     WHERE x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = '')
-    ORDER BY x.opened_at DESC NULLS LAST LIMIT $1`
+    ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
 
 /**
- * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts);最近点开的在前。$1=条数。
+ * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts)。$1=条数。
+ * 先到先得(2026-09-22,同 FIND;来由见那边)。
  */
 export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
     WHERE x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> '')
-    ORDER BY x.opened_at DESC NULLS LAST LIMIT $1`
+    ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
 
 /**
  * 工人每走一步写回进度。$1=池主键,$2=stage,$3=由头,$4=这一轮抓的官网主机名(空串不动原值)。
@@ -644,7 +660,8 @@ export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = 
  * (companiesUpsertSuffix 的 guarded 列)。简介:交来非空,且(原简介为空 / 零出处 / 官网这回被纠错换过 /
  * 原简介的出处里没有这个官网主机名 —— 来路排序官网优先,联网检索版与照着旧官网整理的让位;Supersonic 实撞:官网换对了,简介还是照别家站写的)才盖,
  * 原简介不是五节新版(没有 [FOUNDED] 标记的存量,cms 本来就当它过期、当没缓存)也算空。盖的同时清掉旧译文(对的是旧简介)。$1=池主键,$2=官网,$3~$7=总部街址 / 市 / 省 / 原句 / 出处,$8=简介,$9=出处 JSON 数组串,$10=官网是否被换过,
- * $11=这一轮抓的官网主机名(空串 = 不按主机名判)。
+ * $11=这一轮抓的官网主机名(空串 = 不按主机名判),$12=总部是母公司的(2026-09-22 Frank「显,但注明是母公司」;
+ * 只随总部组一起写 —— 官网总部盖上来时它是 false,恰好把维基母公司标记归位)。
  */
 export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       website = COALESCE(NULLIF($2, ''), c.website),
@@ -653,6 +670,7 @@ export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       hq_province = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($5, '') ELSE c.hq_province END,
       hq_quote = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($6, '') ELSE c.hq_quote END,
       hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
+      hq_parent = CASE WHEN $3 <> '' OR $4 <> '' THEN $12::boolean ELSE c.hq_parent END,
       site_checked_at = now(),
       ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $8 ELSE c.ai_brief END,
       ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $9 ELSE c.ai_sources END,

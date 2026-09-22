@@ -4,13 +4,18 @@
  * 2026-08-28 拆域批自 jobs/Company.tsx 重写落位。
  * 2026-09-21 口径改成同省同公司分类(见 lib/db 的 SIMILAR_EMPLOYERS);同日 Frank「给相似雇主卡加个点击埋点」:
  * 行区外层挂 trackSimilar,点任何一家都记一次。
+ * 2026-09-22 Frank「这个相似雇主也是默认显示 6 个」(随相关职位卡同规):取数放宽到 24,收起时先出 6 家,
+ * 「展开其余 N 个 ▾ / 收起 ▴」来回切(照在招职位卡的 .showAll 形)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
+import { useState } from 'react'
+import { Button } from '@/components/button'
+import { cssOf } from '@/components/css'
 import { CompanySimilarRow } from './companysimilarrow'
-import { CARD_HEAD_CLS, CARD_MD_CLS } from './constants'
-import { trackSimilar } from './functions'
+import { CARD_HEAD_CLS, CARD_MD_CLS, PLAIN_BTN_KIND, SIM_FIRST_N } from './constants'
+import { makeToggle, simShownOf, trackSimilar } from './functions'
 import type { CompanySimilarCardIn } from './types'
 import css from './companies.module.css'
 
@@ -21,11 +26,14 @@ import css from './companies.module.css'
  * @returns 一张卡;一家都没有时整卡不渲。
  */
 export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, showTrans }: CompanySimilarCardIn) {
+  const [open, setOpen] = useState(false)
   if (similar.length === 0) {
     return null
   }
+  const shown = simShownOf({ similar, open })
+  const hidden = similar.length - shown.length
   const rows = []
-  for (const employer of similar) {
+  for (const employer of shown) {
     rows.push(
       <CompanySimilarRow key={employer.slug} employer={employer} t={t} lang={lang} onOpenCompany={onOpenCompany}
         newTab={newTab}
@@ -39,6 +47,16 @@ export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, sh
         <span className={css.simSub}>{t('co.similarSub')}</span>
       </div>
       <div onClick={trackSimilar}>{rows}</div>
+      {hidden > 0 && (
+        <Button kind={PLAIN_BTN_KIND} onClick={makeToggle({ on: open, set: setOpen })} className={cssOf(css.showAll)}>
+          {t('act.showAll', { n: hidden })}
+        </Button>
+      )}
+      {open && similar.length > SIM_FIRST_N && (
+        <Button kind={PLAIN_BTN_KIND} onClick={makeToggle({ on: open, set: setOpen })} className={cssOf(css.showAll)}>
+          {t('act.collapse')}
+        </Button>
+      )}
     </div>
   )
 }

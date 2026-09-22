@@ -1288,12 +1288,13 @@ export const K_PROV = 'prov.'
 export const K_UNCAT = 'cell.uncat'
 
 /**
- * 默认显示 11 列(发布时间·EE 类别·大分类·公司·职位·省·市·薪资·年薪·vs中位·操作);其余用户自选。
+ * 默认显示 11 列(发布时间·大分类·公司·职位·省·市·薪资·年薪·vs中位·渠道·操作);其余用户自选。
  * 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)。
  * 2026-09-14 Frank「在大类前面也需要加一个 EE 的类别吧」:EE 类别列进默认集,排大分类之前(字段面板同序)。
+ * 2026-09-21 Frank「默认显示这些列」(截图定版):EE 类别列出默认集(字段面板仍可调回),渠道列进默认集。
  */
 export const DEFAULT_COLS: JobColKey[] = [
-  'datePosted', 'ee', 'broad', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'actions',
+  'datePosted', 'broad', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'origin', 'actions',
 ]
 
 /**
@@ -1910,17 +1911,18 @@ export const PILOT_NONE = 'no'
  * 数值 = 2026-08-03 默认列集在 1440 视口实测比例;**keys 必须与 DEFAULT_COLS 一致**,
  * 对不上会被列宽机器直接忽略(退回今天的行为),所以改列集这里忘了改也不会出错。
  * 2026-09-14 EE 类别列插进默认集:比例手分(EE 7,公司 / 职位 / 操作让出),非实测。
+ * 2026-09-21 EE 换渠道:EE 的 7 原额转给渠道列(GC Jobs / Job Bank 一类短词,够用),其余不动。
  */
 export const DEFAULT_COLW_SEED = {
   /**
    * 这份比例对应的列集(逗号分隔,顺序即列序)。
    */
-  keys: 'datePosted,ee,broad,company,title,province,city,salary,salaryYr,vsMedian,actions',
+  keys: 'datePosted,broad,company,title,province,city,salary,salaryYr,vsMedian,origin,actions',
 
   /**
    * 各列占容器宽的百分比(和 = 100)。
    */
-  pct: [6.69, 7, 9, 18.6, 13.9, 9, 9, 8, 5.8, 6.6, 6.4],
+  pct: [6.69, 9, 18.6, 13.9, 9, 9, 8, 5.8, 6.6, 7, 6.4],
 }
 
 /**
@@ -2192,17 +2194,37 @@ export const TRACK_MODE_WEB = 'web'
 
 /**
  * JD 正文渲染的截断长度(再长也没人读完,且会把弹框拖慢)。
+ * 2026-09-22 Frank「基本都有截断」(Jobillico Capgemini 帖 6~12K 字,库里是全的,4000 把原文轨切在半个词上):
+ * 4000 → 15000,与 lib/jobs 服务端正文封顶同值 —— 原文轨的定位是原帖原样,不该被「读不完」剪。
  */
-export const JD_MAX_LEN = 4000
+export const JD_MAX_LEN = 15000
+
+/**
+ * 相似职位·同公司组收起时先出几行(2026-09-22 Frank「需要一个展开的按钮吧」;与旧 LIMIT 3 的密度一致)。
+ */
+export const REL_CO_FIRST_N = 3
+
+/**
+ * 相似职位·同省同职业组收起时先出几行(与旧 LIMIT 6 的密度一致,展开看其余)。
+ */
+export const REL_OCC_FIRST_N = 6
 
 /**
  * 大节头白名单(Job Bank 固定小节)。白名单外一律当内容行 ——「English」这类单词值
  * 不会被误判成标题。
+ * 2026-09-22 Frank「之前修的原贴格式化也不完善」(jb:50336042 实拍:Responsibilities 认出来了,
+ * Qualifications / Job Description 素着):补雇主自写 JD 的常见大节头 —— 匹配口径是整行全等,
+ * 这些词孤零零一行时只可能是节头,不会误伤内容行。
  */
 export const JD_TOP_HEADS = new Set([
   'overview', 'responsibilities', 'requirements', 'experience and specialization',
   'additional information', 'benefits', 'employment groups',
   'who can apply for this job', 'who can apply to this job',
+  'qualifications', 'job description', 'duties', 'skills', 'summary', 'job summary', 'job overview',
+  'position summary', 'position overview', 'about us', 'about the role', 'about the company', 'about the position',
+  'what we offer', 'what you will do', "what you'll do", 'what you bring', 'key responsibilities',
+  'required qualifications', 'preferred qualifications', 'required skills', 'compensation', 'how to apply',
+  'education and experience', 'why join us',
 ])
 
 /**
@@ -2374,6 +2396,36 @@ export const JD_HEAD_MARK = '## '
  * 裸标签行(如 "Benefits:")→ 小节头。
  */
 export const JD_BARE_LABEL_RE = /^([A-Z][A-Za-z ()/#&'-]{1,40}):$/
+
+/**
+ * 猜节头:最短字符数(比它短的多半是值词)。
+ */
+export const JD_GUESS_MIN_LEN = 4
+
+/**
+ * 猜节头:最长字符数(比它长的是句子)。
+ */
+export const JD_GUESS_MAX_LEN = 60
+
+/**
+ * 猜节头:最少词数(单词行是「English」这类值,不猜)。
+ */
+export const JD_GUESS_MIN_WORDS = 2
+
+/**
+ * 猜节头:最多词数。
+ */
+export const JD_GUESS_MAX_WORDS = 8
+
+/**
+ * 猜节头的出局字符:数字(薪资 / 年限行)、句读(句子)、括号与货币号 —— 含一个就不是节头。
+ */
+export const JD_GUESS_BAD_RE = /[0-9.,:;?!()•$%]/
+
+/**
+ * 猜节头:下一行算「长段落」的最短字符数(节头后面必然跟内容;孤零零的短值行跟不出这么长的下一行)。
+ */
+export const JD_GUESS_NEXT_PARA_LEN = 80
 
 /**
  * 行内「Label: 值」。

@@ -25,6 +25,8 @@ export const Companies: CollectionConfig = {
     { name: 'hqProvince', type: 'text', admin: { description: '总部所在省(加拿大两位省码;外国总部原样)。是加拿大省码时 region 取它' } },
     { name: 'hqQuote', type: 'textarea', admin: { description: '总部那一节的官网页面原句(出处凭据;维基来的没有)' } },
     { name: 'hqSource', type: 'text', admin: { description: '总部出处网址(官网那一页 / Wikidata 条目)' } },
+    // 母公司总部标记(2026-09-22 Frank「显,但注明是母公司」;维基兜底备选名命中外国总部时为真;docs/sql/company-hq-parent-20260922.sql 先行)
+    { name: 'hqParent', type: 'checkbox', defaultValue: false, admin: { description: '总部是母公司的(页面灰注母公司)' } },
     { name: 'siteCheckedAt', type: 'date', admin: { description: '官网最近一次整理成的时刻(sites 域)' } },
     { name: 'description', type: 'textarea' },
     { name: 'isDesignatedEmployer', type: 'checkbox', defaultValue: false },

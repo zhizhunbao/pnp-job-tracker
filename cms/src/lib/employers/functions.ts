@@ -1763,6 +1763,7 @@ export function toSiteStageRow(r: SiteStageDbRow): SiteStageRow {
   return {
     stage: text(r.stage), website: httpUrlOf(text(r.website)),
     hq: hqLineOf({ address: text(r.hq_address), city: text(r.hq_city), province: text(r.hq_province) }), hqSource: text(r.hq_source),
+    ahead: count(r.ahead),
   }
 }
 
@@ -1807,7 +1808,7 @@ export async function saveSiteDone(input: SaveSiteDoneIn): SiteSavedOut {
   if (d.website !== WEBSITE_NONE || d.hqCity !== WEBSITE_NONE || d.hqAddress !== WEBSITE_NONE || d.brief !== WEBSITE_NONE) {
     await input.db.query(SQL.EMPLOYER_EXPLORE_SITE_TO_COMPANIES, [
       d.key, d.website, d.hqAddress, d.hqCity, d.hqProvince, d.hqQuote, d.hqSource, d.brief, JSON.stringify(d.sources), d.replaced,
-      d.host,
+      d.host, d.hqParent,
     ])
     CACHE.poolPages.clear()
   }
@@ -1834,7 +1835,8 @@ export function toSiteDone(r: SiteDoneJson): SiteDone {
     website: httpUrlOf(text(r.website).slice(0, SITE_TEXT_MAX)), replaced: r.replaced === true,
     hqAddress: text(r.hqAddress).slice(0, SITE_TEXT_MAX), hqCity: text(r.hqCity).slice(0, SITE_TEXT_MAX),
     hqProvince: text(r.hqProvince).slice(0, SITE_TEXT_MAX), hqQuote: text(r.hqQuote).slice(0, SITE_TEXT_MAX),
-    hqSource: httpUrlOf(text(r.hqSource).slice(0, SITE_TEXT_MAX)), brief: text(r.brief).slice(0, SITE_BRIEF_MAX), sources: sources,
+    hqSource: httpUrlOf(text(r.hqSource).slice(0, SITE_TEXT_MAX)), hqParent: r.hqParent === true,
+    brief: text(r.brief).slice(0, SITE_BRIEF_MAX), sources: sources,
   }
 }
 

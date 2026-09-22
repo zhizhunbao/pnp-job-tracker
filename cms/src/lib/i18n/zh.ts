@@ -604,7 +604,7 @@ export const jobsZh = {
   'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
-  'col.pnp': 'PNP', 'col.ee': 'EE', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
+  'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'eligOnly': '须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
@@ -616,7 +616,8 @@ export const jobsZh = {
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   'co.hq': '总部',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
-  'co.stage.queued': '排队中', 'co.stage.find': '查找官网', 'co.stage.fetch': '抓取官网', 'co.stage.facts': '整理内容', 'co.stage.trans': '翻译',
+  'co.stage.queued': '等待调查', 'co.stage.find': '查找官网', 'co.stage.fetch': '抓取官网', 'co.stage.facts': '整理内容', 'co.stage.trans': '翻译',
+  'co.stage.pos': '第 {n} 位',
   // #136/#137(Frank 追问「为什么不能转载」):#136 原文案「该站不允许第三方转载」是替对方做法律断言——
   // 我们实测到的只是 403 拒绝访问。只陈述自己观察到的事实:取不到 + 去哪看(职位描述版权多属雇主而非平台,别乱扣)
   'act.noTextBlocked': '这条帖子的正文在原站({src}),该站拒绝本站自动读取。下面的链接直达原帖。',
@@ -804,7 +805,7 @@ export const jobsZh = {
   'ch.pnp.whyDirect': '依据:NL 技术工人类别 TEER 0-5 拿 offer 即可申请。',
   'ch.pnp.whyCond': '依据:{prov}普通通道要求同雇主全职工作满 6 个月后入池。',
   'ch.pnp.qcWhy': '魁省不参加省提名(PNP),走自己的甄选体系(CSQ:Arrima 意向申报、PEQ 毕业生/工作经验通道),不适用本站的 PNP 判定与抽选历史。魁省动态见「资讯」页。',
-  'ee.lastDraw': ' {d}', 'ee.dormantTip': '该 EE 类别最近一次抽选是 {d},已超过 12 个月未抽 —— 历史归属仍算,但现阶段不是活跃通道。',
+  'ee.dormantTip': '该 EE 类别最近一次抽选是 {d},已超过 12 个月未抽 —— 历史归属仍算,但现阶段不是活跃通道。',
   // E6-10:原静态一句「现阶段以 CEC 与法语为主」改活数据 —— 口径注不该写死,轮次结构随政策变
   'eefed.title': '联邦抽选近况', 'eefed.mixHead': '近 {n} 轮:', 'eefed.cat': '职业类别', 'eefed.ita': '{n} 份',
   'eefed.french': '法语轮次按语言能力抽,与职业无关', 'eefed.more': '看更多 {n} 轮', 'eefed.less': '收起',
@@ -938,9 +939,9 @@ export const siteZh = {
   'pulse.s6.t': '全加拿大职位板', 'pulse.s6.s': '全职业收录,每日更新',
   // 雇主板(2026-08-16 照职位板重做;2026-09-13 批二读雇主池:行业组 × 省切面、星级、指定 / LMIA 排序列)
   'de.title': '雇主', 'de.count': '{n} 家雇主', 'de.hits': '命中 {n} 家',
-  'de.colName': '雇主', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colLocs': '在招地点', 'de.colHq': '总部', 'de.colDistrict': '区', 'de.allSector': '全部雇主类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
+  'de.colName': '雇主', 'de.colEe': 'EE 类别', 'de.colSector': '雇主类型', 'de.colLmia': 'LMIA', 'de.colProv': '省', 'de.colCity': '市', 'de.colLocs': '在招地点', 'de.colHq': '总部', 'de.colDistrict': '区', 'de.allSector': '全部类型', 'de.colWhere': '地点', 'de.colOpen': '在招', 'de.colDesignated': '指定雇主',
   // 公司分类(2026-09-19 晚 Frank「应该单独弄一个公司的分类。和雇主类型联动」):列名、下拉首项与 33 个分类名 —— 私营 15 类 / 公立机构 9 类 / 政府按职能 9 类;键 = cocat. + 数据层的分类键。
-  'de.colCategory': '公司分类', 'de.allCategory': '全部公司分类', 'cocat.tech': '科技',
+  'de.colCategory': '公司分类', 'de.allCategory': '全部分类', 'cocat.tech': '科技',
   'cocat.health': '医疗健康', 'cocat.education': '教育', 'cocat.finance': '金融保险',
   'cocat.professional': '专业服务', 'cocat.construction': '建筑工程', 'cocat.manufacturing': '制造',
   'cocat.retail': '零售批发', 'cocat.hospitality': '餐饮住宿', 'cocat.transport': '运输物流',

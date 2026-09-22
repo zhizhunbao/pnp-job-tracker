@@ -36,6 +36,8 @@
  * 「地址」行和总部重复时不出(同一个加拿大省、同一座市、又不比总部细,addrShownOf),美国总部、没写省的总部一律两行都出
  * (「有的公司 总部 和 地址不一样啊」「总部是美国,地址是加拿大也有可能啊」)。
  * 同日 Frank「这两个现在显示格式不一样」:「总部」「地址」两行共用 CompanyPlace(地图图标 + 同一字号),地址行按 09-20「都带上国家」补 Canada。
+ * 2026-09-22 Frank「总部是美国不需要显示吗」→「显,但注明是母公司」:维基兜底命中母公司实体的总部照显;
+ * 同日再拍「这个还是不要显示母公司了」—— 灰注当天撤,总部值照显(hq_parent 只留库里做来路记录)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -128,7 +130,8 @@ export function CompanyBasicCard({
         skipBase
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy}
-        stage={site.stage} />
+        stage={site.stage}
+        ahead={site.ahead} />
     </div>
   )
 }

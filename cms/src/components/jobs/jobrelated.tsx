@@ -9,6 +9,8 @@
  * 卡标题行右端挂 time 桶的 Updated(心跳由页面门 SSR 取好递进来)。
  * 2026-09-21 改判:在招岗也渲染,职位描述弹框里也接这张卡(Frank「之前不是,下面还要加一个相似职位吗」「参考一下公司弹框」);
  * 埋点来源格由宿主递(下架页 / 在招页 / 弹框分开记);两组之间加一条分隔线(Frank「同公司 和 同省同职业是不是中间要有一个横线」)。
+ * 2026-09-22 Frank「不应该只显示 6 个吧」「要显示职位数量吧」:两组各带总数与收起首屏条数(同公司 3、同省同职业 6),
+ * 展开态在 RelatedGroup 里。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -16,7 +18,7 @@
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { CARD_MD_CLS } from './constants'
+import { CARD_MD_CLS, REL_CO_FIRST_N, REL_OCC_FIRST_N } from './constants'
 import { showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
 import type { JobRelatedIn } from './types'
@@ -39,13 +41,15 @@ export function JobRelated({
       </div>
       {related.sameCompany.length > 0 && (
         <div onClick={trackRelated(from)}>
-          <RelatedGroup label={sameCoLabel} rows={related.sameCompany} lang={lang} onOpenJob={onOpenJob} />
+          <RelatedGroup label={sameCoLabel} total={related.sameCompanyTotal} rows={related.sameCompany}
+            firstN={REL_CO_FIRST_N} t={t} lang={lang} onOpenJob={onOpenJob} />
         </div>
       )}
       {related.sameCompany.length > 0 && related.sameOcc.length > 0 && <div className={cssOf(css.relSep)} />}
       {related.sameOcc.length > 0 && (
         <div onClick={trackRelated(from)}>
-          <RelatedGroup label={sameOccLabel} rows={related.sameOcc} lang={lang} onOpenJob={onOpenJob} />
+          <RelatedGroup label={sameOccLabel} total={related.sameOccTotal} rows={related.sameOcc}
+            firstN={REL_OCC_FIRST_N} t={t} lang={lang} onOpenJob={onOpenJob} />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (

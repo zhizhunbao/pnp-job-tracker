@@ -130,14 +130,16 @@ GEN_TRIES = 2
 PROMPT_HEAD = """You are reorganizing a job posting into fixed sections. STRICT RULES:
 - Only move and lightly condense sentences from the posting. NEVER invent facts, numbers, requirements or benefits not present in it.
 - Output plain text with EXACTLY these section markers, each on its own line: [ROLE] [REQS] [PAY] [WORKHOURS] [APPLY]
-- Under [ROLE]: 1-2 sentences, what the job does. Under [REQS]: bullet lines starting with "- ", hard requirements only.
-- Under [PAY]: bullet lines for pay and benefits. Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
+- Under [ROLE]: 1-2 sentences on what the job does, then up to 6 "- " bullet lines condensing the key responsibilities (skip the bullets if the posting lists none).
+- Under [REQS]: bullet lines starting with "- ", required qualifications first; if the posting lists preferred or nice-to-have items, end with a line exactly "- Preferred:" followed by those bullets.
+- Under [PAY]: bullet lines for pay figures and notable benefits (vacation, retirement plans, insurance). Under [WORKHOURS]: bullet lines for schedule, employment type, location type.
 - Under [APPLY]: 1 line how to apply. If the posting says nothing for a section, write exactly: (not stated)
 - Keep the posting's original language. No markdown besides "- " bullets. No section other than the five.
 - Finally, on two extra lines output: [TERM]=permanent|term|casual|seasonal|unknown and [HRS]=full|part|unknown (from the posting).
 Posting follows:
 """
-"""整理提示词头(正文接在后面)。"""
+"""整理提示词头(正文接在后面)。2026-09-22 Frank「不会漏掉重要信息吧」:ROLE 带 ≤6 条职责要点、
+REQS 尾接「- Preferred:」加分项、PAY 点名要福利要点(与 cms lib/jobs/prompts.ts 逐字镜像,改必同改)。"""
 
 RETRY_TAIL = """
 (Reminder: copy every number, date and amount exactly as written in the posting, character for character.)"""

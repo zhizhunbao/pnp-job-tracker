@@ -57,6 +57,41 @@ export const LANG_EN = 'en'
 export const TEXT_NONE = ''
 
 /**
+ * 不折行空格(职位行右侧薪资空着时占住行高,2026-09-22 Frank「即使没显示出来薪资,也要占位吧」)。
+ */
+export const NBSP = ' '
+
+/**
+ * 排队计时器走一格的间隔毫秒(2026-09-22 Frank「排队中是不是要加个计时器」)。
+ */
+export const TICK_MS = 1000
+
+/**
+ * 一秒的毫秒数(计时器把时间戳差换算成秒)。
+ */
+export const MS_PER_SEC = 1000
+
+/**
+ * 已等时长的秒数进位(m:ss 的一分钟)。
+ */
+export const SECS_PER_MIN = 60
+
+/**
+ * 钟面分秒之间的冒号。
+ */
+export const CLOCK_SEP = ':'
+
+/**
+ * 钟面秒位补齐到两位。
+ */
+export const CLOCK_PAD_LEN = 2
+
+/**
+ * 钟面秒位的补位字符(0:07 的 0)。
+ */
+export const CLOCK_PAD = '0'
+
+/**
  * 省名显示是否只出界面语(false = 出「Ontario(安大略省)」两段式 ——
  * 面包屑有横向空间,英文在前的全站口径在这里成立)。
  */
@@ -300,6 +335,11 @@ export const TITLES_CHUNK = 60
  * 获批职业逐行列出的条数(#286:Top 6 逐行,余量并成一行)。
  */
 export const NOCS_TOP_N = 6
+
+/**
+ * 相似雇主卡收起时先出几家(2026-09-22 Frank「这个相似雇主也是默认显示 6 个」;取数放宽到 24,展开看其余)。
+ */
+export const SIM_FIRST_N = 6
 
 /**
  * 「跨省在招」成立的省数门槛(知名度维的依据之一:覆盖 2 个省以上才算跨省)。

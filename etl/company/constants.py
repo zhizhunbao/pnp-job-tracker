@@ -1487,6 +1487,9 @@ K_DONE_HQ_PROVINCE = "hqProvince"
 K_DONE_HQ_SOURCE = "hqSource"
 """线格式键:总部出处(Wikidata 条目)。"""
 
+K_DONE_HQ_PARENT = "hqParent"
+"""线格式键:总部是母公司的(2026-09-22 Frank「显,但注明是母公司」;维基兜底备选名命中外国总部时为真)。"""
+
 STAGE_FIND = "find"
 """进度:查找官网。"""
 

@@ -37,7 +37,8 @@ from sites.constants import (
     VISIT_TAKE,
     ABOUT_LINK_RE, BLOB_MIN_LEN, BLOCK_SEP, BLOCK_TITLE_RE, JS_LOCATION, NOTE_BLOCKED, NOTE_BROWSER,
     NOTE_NO_BROWSER, PRINT_BROWSER_ABORT, CONTACT_LINK_RE, CRAWL_SLUG_TPL, ENV_LLM_BASE, ENV_LLM_MODEL, ERRORS_REPLACE,
-    EXTRA_PAGES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX,
+    EXTRA_PAGES_MAX, FIELD_NONE, FLUSH_N, GEN_TOKENS, HOME_HEAD_LEN, HOME_TAIL_LEN, HOST_WWW_PREFIX, PAGE_TAIL_LEN,
+    PAGE_WHOLE_MAX,
     HQ_SHOW_TPL, HREF_ATTR, HTML_MIN_LEN, IN_MART_COMPANIES, IN_MART_JOBS, JSON_INDENT, K_COMPANY_SLUG, K_HQ_ADDRESS,
     K_HQ_CITY, K_HQ_PROVINCE, K_NAME, K_SLUG, K_STATUS, K_WEBSITE, LINE_BREAK, LINE_RE_FLAGS, LINE_RE_TPL,
     LLM_MODEL_DEFAULT, LLM_TEMPERATURE, LLM_TIMEOUT_S, NET_ERRORS, NONE_MARK, NOTE_BLOB, NOTE_EMPTY, NOTE_HTTP_TPL,
@@ -826,11 +827,11 @@ def blob_of(x: FactsOneIn) -> str:
         if path is None:
             continue
         text = page_text_of(path.read_text(encoding=TEXT_ENCODING, errors=ERRORS_REPLACE))
-        if len(blocks) == 0:
-            if len(text) > HOME_HEAD_LEN + HOME_TAIL_LEN:
+        if len(text) > PAGE_WHOLE_MAX:
+            if len(blocks) == 0:
                 text = text[:HOME_HEAD_LEN] + SPACE_SEP + text[-HOME_TAIL_LEN:]
-        else:
-            text = text[:PAGE_HEAD_LEN]
+            else:
+                text = text[:PAGE_HEAD_LEN] + SPACE_SEP + text[-PAGE_TAIL_LEN:]
         if text != FIELD_NONE:
             blocks.append(PAGE_BLOCK_TPL.format(url=url, text=text))
     return BLOCK_SEP.join(blocks)

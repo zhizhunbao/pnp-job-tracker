@@ -2233,14 +2233,24 @@ export type RelatedIn = {
  */
 export type RelatedOut = Promise<{
   /**
-   * 同公司在招 ≤3。
+   * 同公司在招 ≤12(2026-09-22 起多取,卡上先出 3、展开看其余)。
    */
   sameCompany: RelatedJob[]
 
   /**
-   * 同省同 NOC 小类在招 ≤6。
+   * 同公司在招总条数(剔重后;组标题计数,2026-09-22 Frank「要显示职位数量吧」)。
+   */
+  sameCompanyTotal: number
+
+  /**
+   * 同省同 NOC 小类在招 ≤24(2026-09-22 起多取,卡上先出 6、展开看其余)。
    */
   sameOcc: RelatedJob[]
+
+  /**
+   * 同省同职业总家数(一家雇主只算一条;组标题计数)。
+   */
+  sameOccTotal: number
 
   /**
    * 能筛出东西的最细一级;三级都空 = null(调用方退到只按省)。
@@ -2622,6 +2632,16 @@ export type SimilarEmployer = {
    * 韩文别名;'' = 没有。
    */
   aliasKo: string
+
+  /**
+   * 主市(2026-09-22 Frank「公司所在城市,是不是也加一下灰字」);'' = 没记。
+   */
+  city: string
+
+  /**
+   * 主省码;'' = 没记。
+   */
+  province: string
 }
 
 /**

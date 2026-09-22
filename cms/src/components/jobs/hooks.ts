@@ -9,6 +9,7 @@
  * @time 2026-08-28 19:15:06
  */
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow, useLayerStack } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
@@ -2076,6 +2077,7 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
   const [copied, setCopied] = useState(false)
   const narrow = useIsNarrow()
+  const router = useRouter()
   const job = x.job
   const email = x.email
   const plan = x.plan
@@ -2116,7 +2118,7 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
     onAuthClose: function closeAuth(): void {
       setStage(APPLY_IDLE)
     },
-    onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, launch }),
+    onAuthDone: makeAuthDone({ setAuthed, setFreshProfile, setStage, launch, refresh: router.refresh }),
     intentProfile: intentProfileOf({ fresh: freshProfile, plan }),
     onIntentDone: function finishIntent(): void {
       setStage(APPLY_IDLE)
@@ -2171,12 +2173,15 @@ function makeOpenMatch(x: OpenMatchIn): () => Promise<void> {
 /**
  * 注册闸放行前拉一次真实档案:老用户流程内登录时 SSR 分层态还是匿名态,直接弹向导会以空
  * initial 覆盖已有档案(跳过 = 存空档)→ 有档案直接投,没档案才进向导;拉不到按无档案走,不卡投递。
+ * 2026-09-22 Frank「登录了没有刷新 header」:流程内登录不整页刷(会丢投递流程),改软刷(router.refresh)——
+ * 服务端组件重渲、layout 的会话种子更新,页顶 header 变成已登录,弹框等客户端状态原地保留。
  *
- * @param x 三个写口与投递动作。
+ * @param x 三个写口、投递动作与软刷。
  * @returns 注册成功回调。
  */
 function makeAuthDone(x: AuthDoneIn): () => Promise<void> {
   return async function onAuthDone(): Promise<void> {
+    x.refresh()
     x.setAuthed(true)
     const p = await loadFreshProfile()
     if (p != null && hasProfile(p)) {

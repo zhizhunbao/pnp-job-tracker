@@ -349,6 +349,16 @@ export type SimilarEmployer = {
    * 韩文别名;'' = 没有。
    */
   aliasKo: string
+
+  /**
+   * 主市(2026-09-22 Frank「公司所在城市,是不是也加一下灰字」;行右灰字第二行);'' = 没记。
+   */
+  city: string
+
+  /**
+   * 主省码;'' = 没记。
+   */
+  province: string
 }
 
 /**
@@ -1209,6 +1219,11 @@ export type CompanyAiSectionIn = {
   stage?: string
 
   /**
+   * 队里排在这家前面的家数(排队中那一步显示位次;可省 = 0)。
+   */
+  ahead?: number
+
+  /**
    * 公司档案里本来就有官网(进度行少一步「查找官网」);可省 = 没有。
    */
   hasSite?: boolean
@@ -1414,6 +1429,21 @@ export type JobMiniRowIn = {
    * 链接新开页;可省 = 同标签页。
    */
   newTab?: boolean
+}
+
+/**
+ * `simShownOf` 的入参。
+ */
+export type SimShownIn = {
+  /**
+   * 相似雇主。
+   */
+  similar: SimilarEmployer[]
+
+  /**
+   * 展开态。
+   */
+  open: boolean
 }
 
 /**
@@ -2131,6 +2161,11 @@ export type CompanyIntroIn = {
    * 官网那条工种办到哪一步(2026-09-20);可省 = 不在这条工种里。
    */
   stage?: string
+
+  /**
+   * 队里排在这家前面的家数(2026-09-22;可省 = 0)。
+   */
+  ahead?: number
 }
 
 /**
@@ -2808,6 +2843,11 @@ export type SitePanel = {
    * 真总部的出处网址;'' = 没有。
    */
   hqSource: string
+
+  /**
+   * 队里排在这家前面的家数(2026-09-22 Frank「排在第几位」;显示 第 ahead+1 位)。
+   */
+  ahead: number
 }
 
 /**
@@ -2833,6 +2873,11 @@ export type SiteStageJson = {
    * 真总部的出处网址。
    */
   hqSource: string | null
+
+  /**
+   * 队里排在这家前面的家数。
+   */
+  ahead?: number | null
 }
 
 /**
@@ -2988,6 +3033,31 @@ export type CompanyStepsIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 队里排在这家前面的家数(排队中那一步显示 第 ahead+1 位 + 已等计时,2026-09-22)。
+   */
+  ahead: number
+}
+
+/**
+ * `queuedTextOf` 的入参。
+ */
+export type QueuedTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 队里排在这家前面的家数。
+   */
+  ahead: number
+
+  /**
+   * 已等秒数。
+   */
+  sec: number
 }
 
 /**

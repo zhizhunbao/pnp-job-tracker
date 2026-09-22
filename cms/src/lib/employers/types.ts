@@ -1659,6 +1659,11 @@ export type SiteStageDbRow = {
    * 总部出处页。
    */
   hq_source: string | null
+
+  /**
+   * 队里排在这家前面的家数(2026-09-22;比它晚点开、还没办完的)。
+   */
+  ahead: number | null
 }
 
 /**
@@ -1684,6 +1689,11 @@ export type SiteStageRow = {
    * 总部出处页;没有 = 空串。
    */
   hqSource: string
+
+  /**
+   * 队里排在这家前面的家数(2026-09-22 Frank「排在第几位」;卡上显示 第 ahead+1 位)。
+   */
+  ahead: number
 }
 
 /**
@@ -1831,6 +1841,11 @@ export type SiteDoneJson = {
   hqSource?: string | null
 
   /**
+   * 总部是母公司的(维基兜底备选名命中外国总部;缺席 = false)。
+   */
+  hqParent?: boolean | null
+
+  /**
    * 官网整理出来的简介(节标记行)。
    */
   brief?: string | null
@@ -1899,6 +1914,11 @@ export type SiteDone = {
    * 总部出处页。
    */
   hqSource: string
+
+  /**
+   * 总部是母公司的(随总部组一起写库;官网总部到手时为 false,恰好归位)。
+   */
+  hqParent: boolean
 
   /**
    * 官网整理出来的简介。

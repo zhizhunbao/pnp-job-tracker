@@ -509,7 +509,7 @@ export const JD_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
 export const JD_MIN_LEN = 300
 
 /**
- * 正文封顶(前端 JdTextView max=4000,富余给顾问上下文)。
+ * 正文封顶(富余给顾问上下文;2026-09-22 起前端 JdTextView 同值 15000,原文轨不再另设更短的剪刀)。
  */
 export const JD_MAX_LEN = 15000
 

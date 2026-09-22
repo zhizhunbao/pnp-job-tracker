@@ -698,8 +698,9 @@ export const COLS_NEWS_CACHE = ['body_zh', 'body_ko', 'summary_zh', 'summary_ko'
  * 2026-09-16 加 careers_url(公司官方招聘页,mart 的 careersUrl;DDL 在 docs/sql/company-careers-url.sql,先跑 DDL 再换版)。
  * 2026-09-20 加真总部六列 hq_address / hq_city / hq_province / hq_quote / hq_source / site_checked_at(mart 的 hqAddress…siteCheckedAt;
  * DDL 在 docs/sql/company-hq-20260920.sql,先跑 DDL 再换版)。
+ * 2026-09-22 加 hq_parent(总部是母公司的,页面灰注;Frank「显,但注明是母公司」;DDL 在 docs/sql/company-hq-parent-20260922.sql)。
  */
-export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'careers_url', 'hq_address', 'hq_city', 'hq_province', 'hq_quote', 'hq_source', 'site_checked_at', 'email', 'region', 'sectors', 'address', 'description', 'source', 'sector', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
+export const COLS_COMPANIES = ['slug', 'name', 'website', 'website_source', 'careers_url', 'hq_address', 'hq_city', 'hq_province', 'hq_quote', 'hq_source', 'hq_parent', 'site_checked_at', 'email', 'region', 'sectors', 'address', 'description', 'source', 'sector', 'lmia_positions', 'lmia_lmias', 'lmia_last_quarter', 'lmia_streams', 'lmia_positions_skilled', 'lmia_positions_4q', 'lmia_positions_2q', 'lmia_positions_1q', 'lmia_nocs', 'sponsor_grade', 'score_detail', 'ai_brief', 'ai_brief_zh', 'ai_brief_ko', 'ai_sources', 'ai_fetched', 'created_at', 'updated_at']
 
 /**
  * companies 更新分支按 EXCLUDED 直写、且参与「真变了才写」比较的列
@@ -713,7 +714,7 @@ export const COLS_COMPANIES_PLAIN = ['name', 'careers_url', 'email', 'region', '
  * 14:06 灌库拿的是 13:58 汇装的 mart,又盖回了死官网和空总部,要等下一轮汇装才恢复 —— 用户眼里内容出现了又没了)。
  * 库里这一行的 site_checked_at 在 SITE_FRESH_GUARD 之内的,这几列保库里的值;过了这段时间 mart 早已汇装过新值,照常直写。
  */
-export const COLS_COMPANIES_GUARDED = ['website', 'website_source', 'hq_address', 'hq_city', 'hq_province', 'hq_quote', 'hq_source', 'site_checked_at']
+export const COLS_COMPANIES_GUARDED = ['website', 'website_source', 'hq_address', 'hq_city', 'hq_province', 'hq_quote', 'hq_source', 'hq_parent', 'site_checked_at']
 
 /**
  * companies 走 COALESCE 保旧值的列(E12-08 担保档 + 四维档明细:盒过渡期缺键

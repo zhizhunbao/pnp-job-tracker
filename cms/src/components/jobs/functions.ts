@@ -38,6 +38,8 @@ import {
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
+  JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
+  JD_GUESS_NEXT_PARA_LEN,
   JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN,
   JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
   JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
@@ -77,7 +79,8 @@ import type {
   FieldOpenIn, FillIn,
   FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
   FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
-  JdLineView, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn,
+  JdLineView, JdLineViewIn, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn,
+  JdSecHeadIn,
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn,
   MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
@@ -85,7 +88,8 @@ import type {
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
   PopupToCoIn, PrefixLabelIn,
-  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, RelatedJobFact, RelatedJobJson, RelatedJobs, RelatedJson, ResizeBindIn,
+  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, RelExpandIn, RelJsonTotalIn, RelShownIn, RelatedJobFact,
+  RelatedJobJson, RelatedJobs, RelatedJson, ResizeBindIn,
   RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
@@ -955,6 +959,8 @@ function pnpCellOf(x: CellIn): CellView {
 
 /**
  * 联邦 EE 类别抽选(全国单一源,数据层算):命中 → 蓝,未列入 → 长横,休眠类别 → 灰 + 上次抽选。
+ * 2026-09-21 Frank「EE 类别应该只有这些」(下拉九类截图定版):格子只出类别名,
+ * 上次抽选年月不再拼进正文(「STEM 2024-04」看着不像类别),收进悬停说明。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
@@ -969,7 +975,7 @@ function eeCellOf(x: CellIn): CellView {
   const text = eeDisplay({ t: x.cx.t, label })
   if (eeIsDormant(lastDraw)) {
     return blankView({
-      text: text + x.cx.t('ee.lastDraw', { d: month }),
+      text,
       tone: TONE.mutedSm,
       title: x.cx.t('ee.dormantTip', { d: month }),
       pop: TEXT_NONE,
@@ -1179,7 +1185,8 @@ function pushPnpChip(a: ChipPushBlockIn): void {
 }
 
 /**
- * EE 类别胶囊(休眠类别灰 + 上次抽选月)。
+ * EE 类别胶囊(休眠类别灰,上次抽选月在悬停说明)。
+ * 2026-09-21 Frank「EE 类别应该只有这些」:胶囊与表格格子同规 —— 正文只出类别名,年月收进悬停。
  *
  * @param a 收集器与入参。
  * @returns 无。
@@ -1194,7 +1201,7 @@ function pushEeChip(a: ChipPushIn): void {
   const name = EE_PREFIX + eeDisplay({ t: a.x.t, label })
   if (eeIsDormant(last)) {
     const tip = a.x.t('ee.dormantTip', { d: month })
-    a.out.push(chipOf({ tone: CHIP.gray, text: name + a.x.t('ee.lastDraw', { d: month }), k: COL.ee, tip }))
+    a.out.push(chipOf({ tone: CHIP.gray, text: name, k: COL.ee, tip }))
     return
   }
   a.out.push(chipOf({ tone: CHIP.blue, text: name, k: COL.ee, tip: TEXT_NONE }))
@@ -1717,11 +1724,14 @@ function jdDropDupLines(lines: string[]): string[] {
 /**
  * JD 正文一行 → 渲染档。节头用白名单识别(Job Bank 固定小节),白名单外一律当内容行 ——
  *「English」这类单词值不会被误判成标题。行首「• 」保留(数据层给的列表符,只在猜测轨剥)。
+ * 2026-09-22 Frank「该加粗的地方也没有加粗,不能智能判断吗」(RBC 帖的 What will you do / Must have / Nice to have
+ * 全素着):白名单之外加一道保守启发 —— 看着像节头的短行(jdGuessHeadOf,要看下一行)也给子节头档。
  *
- * @param l 一行。
+ * @param x 一行与它的下一行。
  * @returns 这一行的展示行。
  */
-export function jdLineViewOf(l: string): JdLineView {
+export function jdLineViewOf(x: JdLineViewIn): JdLineView {
+  const l = x.line
   if (l === TEXT_NONE) {
     return { kind: JD_KIND.gap, text: TEXT_NONE, label: TEXT_NONE }
   }
@@ -1749,7 +1759,35 @@ export function jdLineViewOf(l: string): JdLineView {
     const [, label, body] = m
     return { kind: JD_KIND.label, text: String(body), label: String(label) }
   }
+  if (jdGuessHeadOf(x)) {
+    return { kind: JD_KIND.h2, text: l, label: TEXT_NONE }
+  }
   return { kind: JD_KIND.text, text: l, label: TEXT_NONE }
+}
+
+/**
+ * 白名单外「看着像节头」的保守判定(2026-09-22):2~8 个词、4~60 字、不含数字与标点(数字行 / 地址行 / 句子出局),
+ * 且**下一行**是列表项或 ≥80 字的长段 —— 节头后面必然跟内容;「Full time」这类孤零零的值行跟不出内容,不会中。
+ *
+ * @param x 一行与它的下一行。
+ * @returns 像节头 = true。
+ */
+function jdGuessHeadOf(x: JdLineViewIn): boolean {
+  const l = x.line
+  if (l.length < JD_GUESS_MIN_LEN || l.length > JD_GUESS_MAX_LEN) {
+    return false
+  }
+  if (JD_GUESS_BAD_RE.test(l)) {
+    return false
+  }
+  const words = l.split(SPACE).length
+  if (words < JD_GUESS_MIN_WORDS || words > JD_GUESS_MAX_WORDS) {
+    return false
+  }
+  if (x.next.startsWith(JD_BULLET_MARK)) {
+    return true
+  }
+  return x.next.length >= JD_GUESS_NEXT_PARA_LEN
 }
 
 /**
@@ -4021,7 +4059,51 @@ export function toRelatedJobs(j: RelatedJson | null): RelatedJobs | null {
   if (co == null || occ == null) {
     return null
   }
-  return { sameCompany: co.map(toRelatedJob), sameOcc: occ.map(toRelatedJob), fallbackLevel: null }
+  return {
+    sameCompany: co.map(toRelatedJob),
+    sameCompanyTotal: relJsonTotalOf({ total: j.sameCompanyTotal, n: co.length }),
+    sameOcc: occ.map(toRelatedJob),
+    sameOccTotal: relJsonTotalOf({ total: j.sameOccTotal, n: occ.length }),
+    fallbackLevel: null,
+  }
+}
+
+/**
+ * 线格式里一组的总数:带了合法数字用它,缺键 / 不像样退这一组的行数(老响应兼容)。
+ *
+ * @param x 线格式总数与这一组的行数。
+ * @returns 总数。
+ */
+function relJsonTotalOf(x: RelJsonTotalIn): number {
+  if (typeof x.total === 'number' && Number.isFinite(x.total) && x.total >= 0) {
+    return x.total
+  }
+  return x.n
+}
+
+/**
+ * 相关职位一组该上屏的行:收起时前几行,展开了全给。
+ *
+ * @param x 这一组的行、收起首屏条数与展开态。
+ * @returns 该上屏的行。
+ */
+export function relShownOf(x: RelShownIn): RelatedJobFact[] {
+  if (x.open) {
+    return x.rows
+  }
+  return x.rows.slice(0, x.firstN)
+}
+
+/**
+ * 相关职位组「展开 / 收起」钮的点击手柄(2026-09-22 Frank「需要一个展开的按钮吧」)。
+ *
+ * @param x 展开态与落格。
+ * @returns 点击手柄。
+ */
+export function makeRelExpand(x: RelExpandIn): ClickFn {
+  return function relExpand(): void {
+    x.set(x.open === false)
+  }
 }
 
 /**

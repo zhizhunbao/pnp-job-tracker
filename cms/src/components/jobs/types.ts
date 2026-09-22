@@ -1669,9 +1669,19 @@ export type RelatedJobs = {
   sameCompany: RelatedJob[]
 
   /**
+   * 同公司在招总条数(组标题计数,2026-09-22)。
+   */
+  sameCompanyTotal: number
+
+  /**
    * 同省同职业的在招岗。
    */
   sameOcc: RelatedJob[]
+
+  /**
+   * 同省同职业总家数(一家雇主只算一条;组标题计数)。
+   */
+  sameOccTotal: number
 
   /**
    * 兜底链按哪一级筛(服务端探过本省该级确实还有在招岗);null = 只按省。
@@ -1847,6 +1857,56 @@ export type JobPeekPanel = {
 }
 
 /**
+ * `relJsonTotalOf` 的入参。
+ */
+export type RelJsonTotalIn = {
+  /**
+   * 线格式里的总数;缺席 = 老响应没带。
+   */
+  total?: number
+
+  /**
+   * 这一组的行数(兜底值)。
+   */
+  n: number
+}
+
+/**
+ * `relShownOf` 的入参。
+ */
+export type RelShownIn = {
+  /**
+   * 这一组的行。
+   */
+  rows: RelatedJob[]
+
+  /**
+   * 收起时先出几行。
+   */
+  firstN: number
+
+  /**
+   * 展开态。
+   */
+  open: boolean
+}
+
+/**
+ * `makeRelExpand` 的入参。
+ */
+export type RelExpandIn = {
+  /**
+   * 现在的展开态。
+   */
+  open: boolean
+
+  /**
+   * 落格。
+   */
+  set: (v: boolean) => void
+}
+
+/**
  * RelatedGroup(相似职位的一组)的 props。
  */
 export type RelatedGroupIn = {
@@ -1859,6 +1919,21 @@ export type RelatedGroupIn = {
    * 这一组的行。
    */
   rows: RelatedJob[]
+
+  /**
+   * 这一组的总数(组标题计数,2026-09-22 Frank「要显示职位数量吧」;0 = 不出计数)。
+   */
+  total: number
+
+  /**
+   * 收起时先出几行(2026-09-22「需要一个展开的按钮吧」;同公司 3、同省同职业 6)。
+   */
+  firstN: number
+
+  /**
+   * 取词函数(展开 / 收起钮文案)。
+   */
+  t: TFn
 
   /**
    * 界面语言(行下灰字 = 这门语言的职位名译名,2026-09-21;英文界面不出)。
@@ -2978,6 +3053,21 @@ export type JdLinesIn = {
    * 截断长度。
    */
   max: number
+}
+
+/**
+ * jdLineViewOf / jdGuessHeadOf 的入参(2026-09-22 猜节头要看下一行)。
+ */
+export type JdLineViewIn = {
+  /**
+   * 这一行。
+   */
+  line: string
+
+  /**
+   * 下一行;最后一行给 ''。
+   */
+  next: string
 }
 
 /**
@@ -4958,6 +5048,11 @@ export type AuthDoneIn = {
    * 投递动作。
    */
   launch: () => Promise<void>
+
+  /**
+   * 软刷(router.refresh):流程内登录后让 header 变已登录、又不丢投递流程(2026-09-22)。
+   */
+  refresh: () => void
 }
 
 /**
@@ -6580,7 +6675,17 @@ export type RelatedJson = {
   sameCompany?: RelatedJobJson[]
 
   /**
+   * 同公司在招总条数(2026-09-22;老响应缺键当行数)。
+   */
+  sameCompanyTotal?: number
+
+  /**
    * 同职业的在招岗。
    */
   sameOcc?: RelatedJobJson[]
+
+  /**
+   * 同省同职业总家数(缺键当行数)。
+   */
+  sameOccTotal?: number
 }

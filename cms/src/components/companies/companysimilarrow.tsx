@@ -9,6 +9,7 @@
  * 库里没有的开框懒翻一次落库(useCompanyAlias)。
  * 2026-09-14 Frank「这些都删了」:行右的「近期办过 LMIA / 办过 LMIA」担保档字撤,只留在招数(档位仍是排序键)。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:给了 onOpenCompany 就拦普通左键开公司弹框,链接本身不动。
+ * 2026-09-22 Frank「公司所在城市,是不是也加一下灰字」:行右在招数下面第二行出主市灰字(紧凑格「市, 省码」)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -16,7 +17,7 @@
 import { cssOf } from '@/components/css'
 import { CompanyLink } from './companylink'
 import { CLS_SEP, LINK_CLS, TEXT_NONE, URL_COMPANY_HEAD } from './constants'
-import { aliasOf, makeOpenCompany } from './functions'
+import { aliasOf, makeOpenCompany, simCityOf } from './functions'
 import { useCompanyAlias } from './hooks'
 import type { CompanySimilarRowIn } from './types'
 import css from './companies.module.css'
@@ -61,6 +62,7 @@ export function CompanySimilarRow({ employer, t, lang, onOpenCompany, newTab, sh
         {employer.openCount > 0 && (
           <span className={css.simOpen}>{t('co.openJobs')} {employer.openCount}</span>
         )}
+        {simCityOf(employer) !== TEXT_NONE && <span className={css.simCity}>{simCityOf(employer)}</span>}
       </span>
     </div>
   )

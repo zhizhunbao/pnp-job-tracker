@@ -12,6 +12,8 @@
  * 这期间只查库不联网现查;办完 / 查无 / 工人不在线再放开现查兜底(不空白)。
  * 2026-09-21 Frank「先一个小框，然后在放大。然后页面在一部分一部分渲染出来」:「AI 调查中…」只在联网现查那一拍出 ——
  * 开框那一拍只是查库(零点几秒),原先也出这一行,一闪就没;进度行照旧(同日 Frank「怎么不探索了」:职位页的公司卡也要看得见探索)。
+ * 2026-09-21 Frank「公司的弹框也要显示,进度啊」(Sienna):铺着旧简介时后台重探,进度行加在旧简介上方两者并存;
+ * 只有简介本来就空 / 译文在途整体等着时,进度行才独占简介位。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -31,6 +33,7 @@ import css from './companies.module.css'
  * @param props 公司名、取词函数与四个开关(逐格注释见 CompanyAiSectionIn)。
  * @returns 简介;还在查时是一行占位,查不到时整块不渲。
  */
+// eslint-disable-next-line local/function-length -- 三态分支(进度行 / 现查行 / 简介两形)共用 p、trans、steps 一把闭包,拆出去每支都要显式传一大串
 export function CompanyAiSection({
   company,
   t,
@@ -42,6 +45,7 @@ export function CompanyAiSection({
   baseZh = TEXT_NONE,
   onBusy,
   stage = TEXT_NONE,
+  ahead = 0,
   hasSite = false,
 }: CompanyAiSectionIn) {
   let hookLang: CompaniesLang | null = null
@@ -56,8 +60,12 @@ export function CompanyAiSection({
     }
   }, [transWait, onBusy])
   const shown = shownStageOf({ stage, hasFact: p.fact != null, transWait })
+  let steps = null
   if (shown !== TEXT_NONE) {
-    return <CompanySteps stage={shown} hasSite={hasSite} lang={hookLang} t={t} />
+    steps = <CompanySteps stage={shown} ahead={ahead} hasSite={hasSite} lang={hookLang} t={t} />
+  }
+  if (steps != null && (p.fact == null || transWait)) {
+    return steps
   }
   if (p.live && bare) {
     return <div className={css.descSrc}>{t('fact.aiWorking')}</div>
@@ -75,6 +83,7 @@ export function CompanyAiSection({
   if (bare) {
     return (
       <>
+        {steps}
         <CompanyBriefCards brief={p.fact.brief}
           website={p.fact.website}
           fetched={p.fact.fetched}
@@ -89,12 +98,15 @@ export function CompanyAiSection({
     )
   }
   return (
-    <CompanyBriefCards brief={p.fact.brief}
-      website={p.fact.website}
-      fetched={p.fact.fetched}
-      t={t}
-      trans={trans}
-      flat={flat}
-      sources={p.fact.sources} />
+    <>
+      {steps}
+      <CompanyBriefCards brief={p.fact.brief}
+        website={p.fact.website}
+        fetched={p.fact.fetched}
+        t={t}
+        trans={trans}
+        flat={flat}
+        sources={p.fact.sources} />
+    </>
   )
 }

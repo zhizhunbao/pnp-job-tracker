@@ -1504,6 +1504,10 @@ class WikiHqRecord(BaseModel):
     hq_source: str = ""
     """出处:公司的 Wikidata 条目链接。"""
 
+    hq_parent: bool = False
+    """这是母公司的总部(2026-09-22 Frank「显,但注明是母公司」):备选名(去国名 / 去 The)命中的实体
+    总部在加拿大以外时置真 —— The Home Depot Canada 命中的是美国母公司 Q864407,总部照显、页面上灰注母公司。"""
+
     at: str = ""
     """查的时刻(ISO,UTC)。"""
 

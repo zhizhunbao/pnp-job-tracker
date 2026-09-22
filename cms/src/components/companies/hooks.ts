@@ -12,7 +12,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLayerStack } from '@/components/modal'
-import { LANG_EN, TEXT_NONE, TITLES_KEY_SEP,
+import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS, TITLES_KEY_SEP,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles,
@@ -87,14 +87,14 @@ export function useCompanyAi(x: CompanyAiHookIn): CompanyAiPanel {
  */
 export function useCompanySite(x: CompanySiteHookIn): SitePanel {
   const [site, setSite] = useState<SitePanel>({
-    stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE,
+    stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE, ahead: 0,
   })
   const [prevName, setPrevName] = useState(x.name)
   const doneRef = useRef(x.onDone)
 
   if (prevName !== x.name) {
     setPrevName(x.name)
-    setSite({ stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE })
+    setSite({ stage: TEXT_NONE, website: TEXT_NONE, hq: TEXT_NONE, hqSource: TEXT_NONE, ahead: 0 })
   }
 
   useEffect(function keepDone() {
@@ -115,6 +115,44 @@ export function useCompanySite(x: CompanySiteHookIn): SitePanel {
   }, [x.name])
 
   return site
+}
+
+/**
+ * 排队计时器(2026-09-22 Frank「排队中是不是要加个计时器」):开着时每秒走一格,从卡上看到排队那一拍起算;
+ * 关上(不在排队中)归零停摆。起点在渲染中随开关落格(prevName 同款先例),effect 里只订秒针,不直接落格。
+ *
+ * @param on 计时开关(排队中 = true)。
+ * @returns 已等秒数。
+ */
+export function useTickSec(on: boolean): number {
+  const [startAt, setStartAt] = useState(0)
+  const [nowMs, setNowMs] = useState(0)
+  if (on && startAt === 0) {
+    // eslint-disable-next-line react-hooks/purity -- 计时起点就是「此刻」,只在开关翻开的那一拍取一次
+    const t = Date.now()
+    setStartAt(t)
+    setNowMs(t)
+  }
+  if (on === false && startAt !== 0) {
+    setStartAt(0)
+  }
+  useEffect(function tickSec() {
+    if (on === false) {
+      return function idle(): void {
+        return undefined
+      }
+    }
+    const id = window.setInterval(function tickOne() {
+      setNowMs(Date.now())
+    }, TICK_MS)
+    return function stop(): void {
+      window.clearInterval(id)
+    }
+  }, [on])
+  if (on === false || startAt === 0) {
+    return 0
+  }
+  return Math.floor((nowMs - startAt) / MS_PER_SEC)
 }
 
 /**
