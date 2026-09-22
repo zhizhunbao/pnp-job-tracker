@@ -728,9 +728,44 @@ export const WIKI_WORD_SEP = '_'
 export const WIKI_WORD_JOIN = ' '
 
 /**
- * 官方招聘地点「市, 省」的连接符(2026-09-14 baseOverrideOf)。
+ * 官方招聘地点「市, 省」的连接符(2026-09-14 baseOverrideOf)。2026-09-21 起「地址」行补国家也用它(addrLineOf)。
  */
 export const LOC_JOIN = ', '
+
+/**
+ * 总部一行字与地址里各段之间的分隔(2026-09-21 addrShownOf:总部按段拆开逐段当市名试,地址里找「市名,」)。
+ */
+export const PLACE_SEG_SEP = ','
+
+/**
+ * 比对地名前拆重音用的 Unicode 规范化形(NFD 把 é 拆成 e + 附加符号,DIACRITIC_RE 再去掉附加符号;Montréal ↔ Montreal)。
+ */
+export const NORM_NFD = 'NFD'
+
+/**
+ * NFD 拆出来的组合附加符号(重音、变音)。
+ */
+export const DIACRITIC_RE = /[̀-ͯ]/g
+
+/**
+ * 地址里市名后面的省码(「thunder bay, on p7b 5r1」;Job Bank 偶有两个逗号「montmagny,, qc」):比对形已是小写。
+ */
+export const ADDR_PROV_RE = /^,+\s*(?<prov>[a-z]{2})\b/
+
+/**
+ * 带数字的段是街址(门牌、单元号),不是市名;市名前粘着的词带数字 = Job Bank 不打逗号的街址「17802 66th Avenue Surrey, BC」。
+ */
+export const HAS_DIGIT_RE = /\d/
+
+/**
+ * 「地址」行补的国家(2026-09-21 Frank「这两个现在显示格式不一样」:总部行按 09-20「都带上国家」以 Canada 收尾,地址行跟着补)。
+ */
+export const ADDR_COUNTRY = 'Canada'
+
+/**
+ * 地址拆词找省码用的分隔(空白、逗号、括号:「Québec (QC)」「Montmagny,, QC」)。
+ */
+export const ADDR_TOKEN_SEP_RE = /[\s,()]+/
 
 /**
  * 雇主板(公司详情面包屑的上一级,2026-09-14)。

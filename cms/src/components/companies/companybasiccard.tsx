@@ -30,24 +30,29 @@
  * 同日 Frank「这个点开应该是打开 google 地图吧」:「总部」行点开改成 Google 地图(与「地址」行同一个去处),上面 09-20「点开就是出处那一页」作废。
  * 同日 Frank「都修」(Konverge:职位弹框里的卡开着时工人办完了,卡还停在旧简介、没官网没总部):一律问进度到办完,
  * 铺着简介的卡办完叫宿主整卡重取(onSiteDone,siteDoneOf 判);简介区空着的那一档照旧由 CompanyAiSection 自己补。
+ * 同日 Frank「这个地址有重复啊」(YES Employment Services 实拍:总部、地址、简介「所在地」同一处说了三遍)「AI 下面那个不用显示地址是吧」:
+ * 简介「所在地」节一律不出(原先只在简介缓存着时才藏,点开那一刻工人办完、懒查回来的简介漏了;总部行是「—」时剩下的「所在地」
+ * 只可能是没出处的模型答案,按 09-19 本就不算数)—— 所在地对照行(baseZh)的接线随之闲置,清理另立批次;
+ * 「地址」行和总部重复时不出(同一个加拿大省、同一座市、又不比总部细,addrShownOf),美国总部、没写省的总部一律两行都出
+ * (「有的公司 总部 和 地址不一样啊」「总部是美国,地址是加拿大也有可能啊」)。
+ * 同日 Frank「这两个现在显示格式不一样」:「总部」「地址」两行共用 CompanyPlace(地图图标 + 同一字号),地址行按 09-20「都带上国家」补 Canada。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconMap } from '@/components/icons'
 import { Row } from '@/components/row'
-import { CompanyHq } from './companyhq'
 import { CompanyIntro } from './companyintro'
 import { CompanyNameCell } from './companynamecell'
+import { CompanyPlace } from './companyplace'
 import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, LINK_CLS, TARGET_BLANK,
   TEXT_NONE,
 } from './constants'
 import {
-  baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany, siteDoneOf,
-  siteHqOf, siteWebsiteOf, wikiTitleOf,
+  addrShownOf, baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany,
+  siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
@@ -65,13 +70,13 @@ export function CompanyBasicCard({
 }: CompanyBasicCardIn) {
   const hasDesc = hasDescOf({ company })
   const briefCached = hasDesc === false && company.aiBrief !== TEXT_NONE
-  const addr = company.address
   const prov = homeProvinceOf({ company })
   const onDone = siteDoneOf({ fn: onSiteDone, settled: hasDesc || briefCached })
   const site = useCompanySite({ name: company.name, onDone })
   const hq = siteHqOf({ company, site, t, lang })
+  const addr = addrShownOf({ addr: company.address, hq })
   const website = siteWebsiteOf({ company, site, t, lang })
-  const hasId = hasIdOf({ company, addr }) || prov !== TEXT_NONE
+  const hasId = hasIdOf({ company, addr: company.address }) || prov !== TEXT_NONE
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
   if (hasId === false && hasBody === false) {
     return null
@@ -111,16 +116,8 @@ export function CompanyBasicCard({
             </LinkButton>
           </Row>
         )}
-        <Row k={t('co.hq')}><CompanyHq text={hq} href={hqMapOf(hq)} /></Row>
-        {addr !== TEXT_NONE && (
-          <Row k={t('act.addr')}>
-            <LinkButton href={mapsUrl(addr)}
-              target={TARGET_BLANK}
-              className={cssOf(css.link12) + CLS_SEP + LINK_CLS}>
-              <IconMap /> {addr}
-            </LinkButton>
-          </Row>
-        )}
+        <Row k={t('co.hq')}><CompanyPlace text={hq} href={hqMapOf(hq)} /></Row>
+        {addr !== TEXT_NONE && <Row k={t('act.addr')}><CompanyPlace text={addr} href={mapsUrl(addr)} /></Row>}
       </div>
       {hasBody && <div className={css.hr} />}
       <CompanyIntro company={company}
@@ -128,7 +125,7 @@ export function CompanyBasicCard({
         lang={lang}
         showTrans={showTrans}
         trans={trans}
-        skipBase={company.aiBrief !== TEXT_NONE}
+        skipBase
         baseZh={baseZhOf({ t, lang, company })}
         onBusy={onBusy}
         stage={site.stage} />

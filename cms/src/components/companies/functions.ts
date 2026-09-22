@@ -18,7 +18,7 @@
  * @time 2026-08-27 02:10:00
  */
 import { isJdNone } from '@/lib/jobs'
-import { mapsUrl, provName } from '@/lib/location'
+import { mapsUrl, PROV_NAMES, provName } from '@/lib/location'
 import { track } from '@/lib/track'
 import {
   BASE_CITY_PROV_RE, CARD_HEAD_CLS, CARD_MD_CLS, CH_C_AMBER, CH_C_DEEP, CH_C_GRAY, CH_C_GREEN, CH_C_NONE,
@@ -41,6 +41,7 @@ import {
   STAGE_OFF, STAGE_ORDER,
   STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
   LAYER_CO, LAYER_JOB, SUB_HOLD,
+  ADDR_COUNTRY, ADDR_PROV_RE, ADDR_TOKEN_SEP_RE, DIACRITIC_RE, HAS_DIGIT_RE, NORM_NFD, PLACE_SEG_SEP,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -59,6 +60,7 @@ import type {
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
   ReloadFn, SiteDoneIn,
+  AddrShownIn, AddrStreetIn, CityAtIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -362,6 +364,8 @@ export function homeProvinceOf(x: CompanyOnlyIn): string {
  * 同日 Frank「这不是胡说吗」(SOTI 总部写成 Ottawa,真身 Mississauga —— 那条简介没有出处,是模型裸答)、
  * 「拿不到总部的就先 -」:只认有出处的简介;没有出处 / 没缓存 / 没这一节一律给「—」(那一行照出)。
  * 2026-09-20 真总部进库(官网页面原句核对过的街址 / 市 / 省,官网没标的退 Wikidata):库里有就先用它,没有才走上面那条 AI 简介的老路。
+ * 2026-09-21 AI 简介那一节算不算「没有」改用简介那边同一个判断(hasBaseSecOf):原先只认「(not stated)」这一族,
+ * 「Information not provided in the search results.」「Canada (not stated)」「Canada」原样上了总部行(生产 25Hr Chevron 实拍)。
  *
  * @param x 取词函数、界面语言与公司档案。
  * @returns 总部一行的文案;拿不到给「—」。
@@ -373,11 +377,10 @@ export function hqOf(x: BaseZhIn): string {
   if (x.company.aiSources.length === 0) {
     return DASH_EM
   }
-  const base = baseTextOf({ text: x.company.aiBrief })
-  if (base === TEXT_NONE) {
+  if (hasBaseSecOf({ text: x.company.aiBrief }) === false) {
     return DASH_EM
   }
-  return base
+  return baseTextOf({ text: x.company.aiBrief })
 }
 
 /**
@@ -1409,6 +1412,163 @@ export function hqMapOf(text: string): string {
     return TEXT_NONE
   }
   return mapsUrl(text)
+}
+
+/**
+ * 「地址」行的字(2026-09-21 Frank「这个地址有重复啊」:总部「1116 Waterford Street, Thunder Bay, ON, Canada」、
+ * 地址「Thunder Bay, ON P7B 5R1」,同一处说两遍)。和总部重复(isAddrDup)时不出;其余照出,加拿大地址补上国家(addrLineOf)。
+ * 两行字都是库里 / 工人交回的原样,这里只比市名、补国家,不改别的字。
+ *
+ * @param x 地址与「总部」行的字。
+ * @returns 「地址」行的字;'' = 不出。
+ */
+export function addrShownOf(x: AddrShownIn): string {
+  if (x.addr === TEXT_NONE) {
+    return TEXT_NONE
+  }
+  if (x.hq !== DASH_EM && isAddrDup(x)) {
+    return TEXT_NONE
+  }
+  return addrLineOf(x.addr)
+}
+
+/**
+ * 地址是不是和总部说的同一处:同一个加拿大省、同一座市,且地址不比总部细(地址没有街址,或总部本来就带街址)。
+ * 总部只到市而地址带着街址时不算重复 —— 地址多出来的街址总部行给不了。
+ * 2026-09-21 Frank「有的公司 总部 和 地址不一样啊」「总部是美国,地址是加拿大也有可能啊」:两边都得明写同一个加拿大省才算 ——
+ * 美国总部(Cambridge, Massachusetts ↔ Cambridge, ON)、没写省的总部(AI 简介只写「Calgary」)一律不算,两行都出;宁可多一行,不藏错。
+ *
+ * @param x 地址与「总部」行的字。
+ * @returns 重复 = true。
+ */
+function isAddrDup(x: AddrShownIn): boolean {
+  const addr = placeKeyOf(x.addr)
+  const segs = x.hq.split(PLACE_SEG_SEP).map(placeKeyOf)
+  const prov = hqProvOf(segs)
+  if (prov === TEXT_NONE) {
+    return false
+  }
+  for (const [i, city] of segs.entries()) {
+    const at = cityAtOf({ addr, city, prov })
+    if (at >= 0) {
+      return i > 0 || addrStreetOf({ addr, at }) === false
+    }
+  }
+  return false
+}
+
+/**
+ * 比对用的地名形:去首尾空白、拆重音、小写(Montréal ↔ montreal)。
+ *
+ * @param s 一段地名或一整行地址。
+ * @returns 比对形。
+ */
+function placeKeyOf(s: string): string {
+  return s.trim().normalize(NORM_NFD).replace(DIACRITIC_RE, TEXT_NONE).toLowerCase()
+}
+
+/**
+ * 总部一行字里写的省(两位省码,或 AI 简介那种省全名「Sydney, Nova Scotia」)。
+ *
+ * @param segs 总部一行字按逗号拆开的比对形。
+ * @returns 小写省码;'' = 没写省。
+ */
+function hqProvOf(segs: string[]): string {
+  for (const seg of segs) {
+    const code = provCodeOf(seg)
+    if (code !== TEXT_NONE) {
+      return code
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 一段比对形是不是省(两位省码或省全名)。
+ *
+ * @param seg 一段比对形。
+ * @returns 小写省码;'' = 不是省。
+ */
+function provCodeOf(seg: string): string {
+  for (const [code, name] of Object.entries(PROV_NAMES)) {
+    if (seg === code.toLowerCase() || seg === placeKeyOf(name)) {
+      return code.toLowerCase()
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 总部的这一段当市名,在地址里落在哪。地址里要有「市名,」,且市名前没粘着别的词 —— 粘着的词不带数字就是市名的一部分
+ * (North Vancouver 不是 Vancouver,Squamish-Lillooet 不是 Lillooet),带数字的是 Job Bank 不打逗号的街址
+ * (「17802 66th Avenue Surrey, BC」);市名后面的省码得和总部写的一样(Windsor ON 不是 Windsor NS)。
+ *
+ * @param x 地址比对形、这一段与总部写的省码。
+ * @returns 市名在地址里的下标;-1 = 不是同一座市,或这一段不像市名(空、带数字、是省、是国家)。
+ */
+function cityAtOf(x: CityAtIn): number {
+  if (x.city === TEXT_NONE || HAS_DIGIT_RE.test(x.city) || provCodeOf(x.city) !== TEXT_NONE
+    || CO_COUNTRY_ONLY_RE.test(x.city)) {
+    return -1
+  }
+  const at = x.addr.indexOf(x.city + PLACE_SEG_SEP)
+  if (at < 0) {
+    return -1
+  }
+  const lead = x.addr.slice(0, at).split(PLACE_SEG_SEP).pop()
+  if (lead != null && lead.trim() !== TEXT_NONE && HAS_DIGIT_RE.test(lead) === false) {
+    return -1
+  }
+  const m = ADDR_PROV_RE.exec(x.addr.slice(at + x.city.length))
+  if (m == null || m.groups == null || m.groups.prov !== x.prov) {
+    return -1
+  }
+  return at
+}
+
+/**
+ * 地址在市名前面有没有街址(门牌、街名、单元号 —— 市名前除了逗号空白还有字就算)。
+ *
+ * @param x 地址比对形与市名下标。
+ * @returns 有 = true。
+ */
+function addrStreetOf(x: AddrStreetIn): boolean {
+  return x.addr.slice(0, x.at).split(PLACE_SEG_SEP).join(TEXT_NONE).trim() !== TEXT_NONE
+}
+
+/**
+ * 「地址」行的一行字:库里的地址原样,是加拿大地址(带省码)又没以国家收尾的补「, Canada」
+ * (2026-09-21 Frank「这两个现在显示格式不一样」:总部行按 09-20「都带上国家」以 Canada 收尾,地址行没有)。
+ * 不是加拿大地址的(外国、Remote、整段说明)原样出,不瞎补;「Trans-Canada Hwy」这种街名里的 Canada 不算写了国家。
+ *
+ * @param addr 库里的地址。
+ * @returns 地址行的字。
+ */
+function addrLineOf(addr: string): string {
+  const last = addr.split(PLACE_SEG_SEP).pop()
+  if (last != null && CO_COUNTRY_ONLY_RE.test(last.trim())) {
+    return addr
+  }
+  if (hasCaProvOf(addr) === false) {
+    return addr
+  }
+  return addr + LOC_JOIN + ADDR_COUNTRY
+}
+
+/**
+ * 地址里有没有加拿大省码(Job Bank 的地址都是「… City, ON P7B 5R1」;外国地址、Remote、整段说明没有)。
+ *
+ * @param addr 库里的地址。
+ * @returns 有 = true。
+ */
+function hasCaProvOf(addr: string): boolean {
+  const codes = Object.keys(PROV_NAMES)
+  for (const tok of addr.split(ADDR_TOKEN_SEP_RE)) {
+    if (codes.includes(tok)) {
+      return true
+    }
+  }
+  return false
 }
 
 /**

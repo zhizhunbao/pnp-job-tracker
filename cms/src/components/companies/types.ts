@@ -1119,11 +1119,11 @@ export type CompanyZhLineIn = {
 }
 
 /**
- * CompanyHq(基本信息卡「总部」行的值)的 props。
+ * CompanyPlace(基本信息卡「总部」「地址」行的值;2026-09-21 由 CompanyHq 改名,两行共用)的 props。
  */
-export type CompanyHqIn = {
+export type CompanyPlaceIn = {
   /**
-   * 总部一行字;拿不到是「—」。
+   * 一行地点字(总部拿不到是「—」)。
    */
   text: string
 
@@ -3013,4 +3013,54 @@ export type SiteShownIn = {
    * 界面语言。
    */
   lang: CompaniesLang
+}
+
+/**
+ * addrShownOf / isAddrDup 的入参:库里的地址与「总部」行的字。
+ */
+export type AddrShownIn = {
+  /**
+   * 库里的地址(公司表 address;职位页的卡在公司表没有时是这条岗的地址);'' = 没有。
+   */
+  addr: string
+
+  /**
+   * 「总部」行的字(siteHqOf 算好的);「—」= 拿不到。
+   */
+  hq: string
+}
+
+/**
+ * cityAtOf 的入参。
+ */
+export type CityAtIn = {
+  /**
+   * 地址的比对形。
+   */
+  addr: string
+
+  /**
+   * 总部一行字里的一段(比对形,当市名试)。
+   */
+  city: string
+
+  /**
+   * 总部写的省码(小写;没写省的总部 isAddrDup 直接判不重复,走不到这里)。
+   */
+  prov: string
+}
+
+/**
+ * addrStreetOf 的入参。
+ */
+export type AddrStreetIn = {
+  /**
+   * 地址的比对形。
+   */
+  addr: string
+
+  /**
+   * 市名在地址里的下标。
+   */
+  at: number
 }
