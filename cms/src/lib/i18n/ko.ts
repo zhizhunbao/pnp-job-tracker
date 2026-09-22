@@ -515,7 +515,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'co.spSkilledTag': '기술직', 'co.spQuarter': '최근 승인', 'co.spBatchN': '{n}건 LMIA', 'co.designated': '지정 고용주',
   'co.spNocs': '승인 직종(최근 2년)', 'co.spNocRest': '기타 {n}개 직종',
   'co.spSource': '출처: ESDC 긍정 LMIA 고용주 목록, IRCC',
-  'co.similar': '유사 고용주', 'co.similarSub': '같은 분류',
+  'co.similar': '유사 고용주',
   'gr.dim.coSponsor': '스폰서 기록', 'gr.dim.coActive': '채용 활발도', 'gr.dim.coSalary': '급여 수준', 'gr.dim.coFame': '규모·인지도',
   'gr.co.sp.d': '최근 2년 승인 {total}건(기술직 스트림 {n}건; 최근 {q})', 'gr.co.sp.aip': 'AIP 지정 고용주(LMIA 없이도 스폰서 가능)', 'gr.co.sp.na': '최근 2년 공개 승인 기록 없음',
   'gr.co.act.d': '채용 중 {open}건, 최근 30일 신규 {n}건', 'gr.co.act.d1': '채용 중 1건, 최근 30일 신규 {n}건', 'gr.co.sal.d': '채용 공고 급여가 지역 중위값 대비 평균 {pct}%',
@@ -563,6 +563,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'eelist.occTitle': '포함 직업',
   'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'co.wiki': '위키백과', 'co.careers': '채용 페이지', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showMore': '{n}개 더 보기', 'act.collapse': '접기 ▴', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'co.hq': '본사',
+  'co.noSite': '공식 웹사이트 없음',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': '조사 대기', 'co.stage.find': '사이트 찾기', 'co.stage.fetch': '사이트 수집', 'co.stage.facts': '내용 정리', 'co.stage.trans': '번역',
   'co.stage.pos': '{n}번째',

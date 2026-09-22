@@ -29,7 +29,10 @@ from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
     ASCII_CODEC, ASCII_ERRORS, HOST_LABEL_SEP, NAME_PHRASE_WORDS, NAME_SHORT_LEN, NAME_STOP, NAME_TOKEN_HEAD_LEN,
     NAME_TOKEN_MIN_LEN, NAME_WORD_RE, NFKD_FORM,
-    BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SEEN,
+    BLOCKED_NOTES, BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SEEN,
+    K_BLOCK_AT, K_BLOCK_NAME, K_BLOCK_NOTE, K_BLOCK_URL, OUT_BLOCKED, PRINT_BLOCKED_TPL,
+    JUDGE_OLD_MARK, JUDGE_PROMPT_TPL, JUDGE_REPLACE, K_DONE_BRIEF_JUDGED, K_TODO_BRIEF, PRINT_JUDGE_TPL,
+    VERDICT_KEEP, VERDICT_PLAIN, VERDICT_REPLACE,
     K_DONE_BRIEF, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_QUOTE, K_DONE_HQ_SOURCE, K_DONE_SOURCES,
     K_HOST, K_KEY, K_NOTE, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
     P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
@@ -46,12 +49,12 @@ from sites.constants import (
     P_NUM_PREDICT, P_OPTIONS, P_PROMPT, P_RESPONSE, P_STREAM, P_TEMPERATURE, P_THINK, PAGE_BLOCK_TPL, PAGE_HEAD_LEN,
     PARSER_HTML, PATH_OLLAMA_GENERATE, POLITE_S, PRINT_ABORT_TPL, PRINT_FACTS_DONE_TPL, PRINT_FACTS_ROW_TPL,
     PRINT_FACTS_TARGETS_TPL, PRINT_FETCH_DONE_TPL, PRINT_FETCH_ROW_TPL, PRINT_FETCH_TARGETS_TPL, PROMPT_TPL,
-    QUOTE_CHECK_LEN, QUOTE_MIN_LEN, QUOTE_SUFFIX, REFRESH_DAYS, RETRY_FAILED_DAYS, ROBOTS_PATH, ROBOTS_UA, SECONDS_PER_DAY,
+    COOKIE_TEXT_RE, QUOTE_CHECK_LEN, QUOTE_MIN_LEN, QUOTE_SUFFIX, REFRESH_DAYS, RETRY_FAILED_DAYS, ROBOTS_PATH, ROBOTS_UA, SECONDS_PER_DAY,
     SECTION_HQ, SECTIONS, SKIP_LINK_RE, SKIP_TAGS, SPACE_SEP, ST_FAIL, ST_OK, STRIP_REPL, TAG_A, TAG_TITLE,
     TEXT_ENCODING, THINK_RE, URL_FRAGMENT_SEP, URL_SCHEME_SEP, URL_TAIL_SLASH, VALUE_MAX_LEN, WS_RE,
 )
 from sites.scheme import (
-    CarryIn, CmsIn, HostPickIn, HqStreetIn, SeenIn, VisitDoneIn, VisitOneIn, VisitTodo,
+    BlockIn, CarryIn, CmsIn, HostPickIn, HqStreetIn, JudgeIn, SeenIn, VisitDoneIn, VisitOneIn, VisitTodo,
     AbbrevIn, AnswerIn, BackfillNameIn, FactsOneIn, FactsRecord, FetchedPage, FetchPageIn, HqSourceIn, HttpClientLike, LinksIn, LlmCallIn, NameOkIn,
     LlmCfg, PagesRecord, PickFactsIn, PickFetchIn, SectionIn, Target, VerifyIn,
 )
@@ -87,6 +90,7 @@ async def fetch_round() -> None:
                                        limit=FETCH_LIMIT))
     ok = 0
     fail = 0
+    blocked_new = 0
     try:
         for t in todo:
             rec = await fetch_site(t)
@@ -95,6 +99,7 @@ async def fetch_round() -> None:
                 break
             carry_fails(CarryIn(rec=rec, prev=cache.get(t.slug)))
             cache[t.slug] = rec
+            blocked_new += record_blocked(BlockIn(target=t, rec=rec))
             if rec.status == ST_OK:
                 ok += 1
             else:
@@ -106,6 +111,8 @@ async def fetch_round() -> None:
         await close_browser()
     total = write_pages(cache)
     say(PRINT_FETCH_DONE_TPL.format(ok=ok, fail=fail, total=total, out=OUT_PAGES.name))
+    if blocked_new > 0:
+        say(PRINT_BLOCKED_TPL.format(new=blocked_new, total=len(read_blocked()), out=OUT_BLOCKED.name))
 
 
 def build_site_facts() -> None:
@@ -189,6 +196,29 @@ def count_pages_ok(cache: dict[str, PagesRecord]) -> int:
         if rec.status == ST_OK:
             n += 1
     return n
+
+
+def read_blocked() -> dict:
+    """读被拦清单(缺文件 / 不成形 = 空表)。"""
+    if not OUT_BLOCKED.exists():
+        return {}
+    data = json.loads(OUT_BLOCKED.read_text(encoding=TEXT_ENCODING))
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def record_blocked(x: BlockIn) -> int:
+    """这一家这轮被拦(由头在 BLOCKED_NOTES)就记进被拦清单(同家只留最近一次;抓成了不动清单 ——
+    人工过墙后哪家还拦着一眼可数);2026-09-22 Frank「被拦截的记录下来。之后我再看怎么处理」。返回记了几家(0 / 1,报数用)。"""
+    if x.rec.note not in BLOCKED_NOTES:
+        return 0
+    cache = read_blocked()
+    cache[x.target.slug] = {K_BLOCK_NAME: x.target.name, K_BLOCK_URL: x.target.website,
+                            K_BLOCK_NOTE: x.rec.note, K_BLOCK_AT: x.rec.at}
+    OUT_BLOCKED.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_BLOCKED, payload=cache, indent=JSON_INDENT))
+    return 1
 
 
 def read_facts() -> dict[str, FactsRecord]:
@@ -279,7 +309,8 @@ def take_visit_todos(x: CmsIn) -> list:
         if not isinstance(row, dict):
             continue
         todo = VisitTodo(key=str(row.get(K_KEY) or FIELD_NONE), slug=str(row.get(K_SLUG) or FIELD_NONE),
-                         name=str(row.get(K_NAME) or FIELD_NONE), website=str(row.get(K_WEBSITE) or FIELD_NONE))
+                         name=str(row.get(K_NAME) or FIELD_NONE), website=str(row.get(K_WEBSITE) or FIELD_NONE),
+                         brief=str(row.get(K_TODO_BRIEF) or FIELD_NONE))
         if todo.key != FIELD_NONE and todo.slug != FIELD_NONE and todo.website != FIELD_NONE:
             out.append(todo)
     return out
@@ -307,6 +338,7 @@ async def visit_one(x: VisitOneIn) -> None:
         carry_fails(CarryIn(rec=rec, prev=pages.get(x.todo.slug)))
     pages[x.todo.slug] = rec
     write_pages(pages)
+    record_blocked(BlockIn(target=target, rec=rec))
     say(PRINT_VISIT_ROW_TPL.format(stage=STAGE_FETCH, name=x.todo.name, note=rec.note or rec.status))
     if rec.status != ST_OK:
         done = {K_KEY: x.todo.key, K_STAGE: STAGE_DONE, K_NOTE: rec.note}
@@ -331,7 +363,13 @@ async def visit_one(x: VisitOneIn) -> None:
     if frec.status == ST_OK and not frec.name_ok:
         hand_stage(CmsIn(client=x.client, cms=x.cms, payload={K_KEY: x.todo.key, K_STAGE: STAGE_FIND, K_NOTE: NOTE_NAME_MISMATCH}))
         return
-    hand_stage(CmsIn(client=x.client, cms=x.cms, payload=done_payload_of(VisitDoneIn(key=x.todo.key, facts=frec, host=host))))
+    verdict = VERDICT_PLAIN
+    if frec.status == ST_OK and frec.name_ok:
+        verdict = brief_verdict(JudgeIn(client=x.client, cfg=x.cfg, old=x.todo.brief, new=brief_of(frec)))
+        if verdict != VERDICT_PLAIN:
+            say(PRINT_JUDGE_TPL.format(name=x.todo.name, verdict=verdict))
+    hand_stage(CmsIn(client=x.client, cms=x.cms, payload=done_payload_of(VisitDoneIn(key=x.todo.key, facts=frec, host=host,
+                                                                                     verdict=verdict))))
 
 
 def host_cached_of(x: HostPickIn) -> PagesRecord | None:
@@ -361,7 +399,9 @@ def hours_since(iso: str) -> float:
 
 def done_payload_of(x: VisitDoneIn) -> dict:
     """办完的交活体:整理没成的只报办完 + 由头;官网归属闸没过的(name_ok=False:官网多半是母公司 / 别家的站)不带总部也不带简介;
-    过了的带总部五格(总部一节过了原句核对才有)与由核对过的节拼成的简介 + 出处页。"""
+    过了的带总部五格(总部一节过了原句核对才有)与由核对过的节拼成的简介 + 出处页。
+    2026-09-22 判优(Frank「由 AI 判断值不值得替换」):verdict = keep 不带简介(库里旧简介不动),
+    replace 带简介 + 判优旗(cms 写门放行整段替换),plain 照旧只带简介(让位规则自己定)。"""
     out: dict = {K_KEY: x.key, K_STAGE: STAGE_DONE, K_NOTE: x.facts.note, K_HOST: x.host}
     if x.facts.status != ST_OK or not x.facts.name_ok:
         return out
@@ -371,9 +411,29 @@ def done_payload_of(x: VisitDoneIn) -> dict:
         out[K_DONE_HQ_PROVINCE] = x.facts.hq_province
         out[K_DONE_HQ_QUOTE] = x.facts.quotes[SECTION_HQ]
         out[K_DONE_HQ_SOURCE] = x.facts.hq_source
-    out[K_DONE_BRIEF] = brief_of(x.facts)
+    if x.verdict != VERDICT_KEEP:
+        out[K_DONE_BRIEF] = brief_of(x.facts)
+        if x.verdict == VERDICT_REPLACE:
+            out[K_DONE_BRIEF_JUDGED] = True
     out[K_DONE_SOURCES] = list(x.facts.sources)
     return out
+
+
+def brief_verdict(x: JudgeIn) -> str:
+    """简介判优(2026-09-22 Frank「主营业务这部分,由 AI 判断值不值得替换,有没有更有价值的内容探索出来」):
+    旧简介空 / 旧版式(没有 [FOUNDED] 标记,cms 本来就当过期)/ 这轮没整理出简介 → plain,不用问;
+    旧新都是正经五节简介 → 问盒子哪份可核对的硬事实多,答 REPLACE 才换;盒子没配 / 出错 / 答不出 → keep,宁可不换。"""
+    if x.old == FIELD_NONE or JUDGE_OLD_MARK not in x.old or x.new == FIELD_NONE:
+        return VERDICT_PLAIN
+    if x.cfg.base == FIELD_NONE:
+        return VERDICT_KEEP
+    try:
+        answer = call_llm(LlmCallIn(client=x.client, cfg=x.cfg, prompt=JUDGE_PROMPT_TPL.format(old=x.old, new=x.new)))
+    except Exception:  # noqa: BLE001 — 判不了当 KEEP:宁可不换,不拿没把握的替换烧译文
+        return VERDICT_KEEP
+    if answer.strip().upper().startswith(JUDGE_REPLACE):
+        return VERDICT_REPLACE
+    return VERDICT_KEEP
 
 
 def brief_of(rec: FactsRecord) -> str:
@@ -863,9 +923,11 @@ def keep_section(x: SectionIn) -> None:
     """一节:取值与原句 → 原句过了核对才把值写进记录、把原句记进 quotes;没过就当官网没写。
 
     HQ 一节的值是三格(街址 / 市 / 省),共用一句原句;三格都空 = 这一节没有。
+    2026-09-22 cookie 闸:原句或值是 cookie 同意横幅的话术(COOKIE_TEXT_RE)也当官网没写 ——
+    横幅真在页面里,原句核对拦不住它(Argen Canada 实拍,来由见常量的 JSDoc)。
     """
     quote = value_of(AnswerIn(answer=x.answer, key=x.mark + QUOTE_SUFFIX))
-    if not quote_ok(VerifyIn(quote=quote, blob=x.blob)):
+    if not quote_ok(VerifyIn(quote=quote, blob=x.blob)) or COOKIE_TEXT_RE.search(quote) is not None:
         return
     if x.mark == SECTION_HQ:
         x.rec.hq_city = value_of(AnswerIn(answer=x.answer, key=K_HQ_CITY))
@@ -877,7 +939,7 @@ def keep_section(x: SectionIn) -> None:
         x.rec.quotes[x.mark] = quote
         return
     value = value_of(AnswerIn(answer=x.answer, key=x.mark))
-    if value == FIELD_NONE:
+    if value == FIELD_NONE or COOKIE_TEXT_RE.search(value) is not None:
         return
     setattr(x.rec, x.mark.lower(), value)
     x.rec.quotes[x.mark] = quote

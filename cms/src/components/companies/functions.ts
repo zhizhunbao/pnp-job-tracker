@@ -40,10 +40,10 @@ import {
   URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
   SITE_POLL_MS, SITE_POLLS_MAX, SITE_QUEUED_POLLS_MAX, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, STAGE_LABEL,
-  STAGE_OFF, STAGE_ORDER,
+  STAGE_NONE, STAGE_OFF, STAGE_ORDER,
   STAGE_QUEUED, STAGE_TRANS, STAGES_ACTIVE, STEP_DONE, STEP_NOW, STEP_WAIT, URL_CO_OPEN, URL_CO_STAGE,
   LAYER_CO, LAYER_JOB, SUB_HOLD,
-  ADDR_COUNTRY, ADDR_PROV_RE, ADDR_TOKEN_SEP_RE, DIACRITIC_RE, HAS_DIGIT_RE, NORM_NFD, PLACE_SEG_SEP,
+  ADDR_COUNTRY, ADDR_TOKEN_SEP_RE, PLACE_SEG_SEP,
 } from './constants'
 import { cssOf } from '@/components/css'
 import type {
@@ -63,7 +63,7 @@ import type {
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
   CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
   ReloadFn, SiteDoneIn,
-  AddrShownIn, AddrStreetIn, CityAtIn,
+  AddrShownIn, NoSiteIn,
 } from './types'
 import css from './companies.module.css'
 
@@ -1495,124 +1495,31 @@ export function hqMapOf(text: string): string {
 
 /**
  * 「地址」行的字(2026-09-21 Frank「这个地址有重复啊」:总部「1116 Waterford Street, Thunder Bay, ON, Canada」、
- * 地址「Thunder Bay, ON P7B 5R1」,同一处说两遍)。和总部重复(isAddrDup)时不出;其余照出,加拿大地址补上国家(addrLineOf)。
- * 两行字都是库里 / 工人交回的原样,这里只比市名、补国家,不改别的字。
+ * 地址「Thunder Bay, ON P7B 5R1」,同一处说两遍 —— 当天拍的是「和总部重复时不出」,判重链 isAddrDup 同省同市
+ * 且地址不比总部细才算,美国总部 / 没写省的总部一律不算)。
+ * 2026-09-22 Frank「相同 也 都显示」:去重那刀作废 —— 总部与地址同一处也两行都出,isAddrDup 那条比对链随之删除;
+ * 这里只剩加拿大地址补上国家(addrLineOf),两行字都是库里 / 工人交回的原样。
  *
- * @param x 地址与「总部」行的字。
- * @returns 「地址」行的字;'' = 不出。
+ * @param x 库里的地址。
+ * @returns 「地址」行的字;'' = 没有。
  */
 export function addrShownOf(x: AddrShownIn): string {
   if (x.addr === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  if (x.hq !== DASH_EM && isAddrDup(x)) {
     return TEXT_NONE
   }
   return addrLineOf(x.addr)
 }
 
 /**
- * 地址是不是和总部说的同一处:同一个加拿大省、同一座市,且地址不比总部细(地址没有街址,或总部本来就带街址)。
- * 总部只到市而地址带着街址时不算重复 —— 地址多出来的街址总部行给不了。
- * 2026-09-21 Frank「有的公司 总部 和 地址不一样啊」「总部是美国,地址是加拿大也有可能啊」:两边都得明写同一个加拿大省才算 ——
- * 美国总部(Cambridge, Massachusetts ↔ Cambridge, ON)、没写省的总部(AI 简介只写「Calgary」)一律不算,两行都出;宁可多一行,不藏错。
+ * 官网行要不要明说「没有官网」(2026-09-22 Frank「这个公司没有官网,要显示没有官网」):
+ * 官网空、且探索队列真找过没找到(stage = none)才明说 —— 还没找过 / 在队里的照旧不出行,
+ * 别把「我们还没查」谎报成「它没有」。
  *
- * @param x 地址与「总部」行的字。
- * @returns 重复 = true。
+ * @param x 官网行的字与探索进度。
+ * @returns 明说 = true。
  */
-function isAddrDup(x: AddrShownIn): boolean {
-  const addr = placeKeyOf(x.addr)
-  const segs = x.hq.split(PLACE_SEG_SEP).map(placeKeyOf)
-  const prov = hqProvOf(segs)
-  if (prov === TEXT_NONE) {
-    return false
-  }
-  for (const [i, city] of segs.entries()) {
-    const at = cityAtOf({ addr, city, prov })
-    if (at >= 0) {
-      return i > 0 || addrStreetOf({ addr, at }) === false
-    }
-  }
-  return false
-}
-
-/**
- * 比对用的地名形:去首尾空白、拆重音、小写(Montréal ↔ montreal)。
- *
- * @param s 一段地名或一整行地址。
- * @returns 比对形。
- */
-function placeKeyOf(s: string): string {
-  return s.trim().normalize(NORM_NFD).replace(DIACRITIC_RE, TEXT_NONE).toLowerCase()
-}
-
-/**
- * 总部一行字里写的省(两位省码,或 AI 简介那种省全名「Sydney, Nova Scotia」)。
- *
- * @param segs 总部一行字按逗号拆开的比对形。
- * @returns 小写省码;'' = 没写省。
- */
-function hqProvOf(segs: string[]): string {
-  for (const seg of segs) {
-    const code = provCodeOf(seg)
-    if (code !== TEXT_NONE) {
-      return code
-    }
-  }
-  return TEXT_NONE
-}
-
-/**
- * 一段比对形是不是省(两位省码或省全名)。
- *
- * @param seg 一段比对形。
- * @returns 小写省码;'' = 不是省。
- */
-function provCodeOf(seg: string): string {
-  for (const [code, name] of Object.entries(PROV_NAMES)) {
-    if (seg === code.toLowerCase() || seg === placeKeyOf(name)) {
-      return code.toLowerCase()
-    }
-  }
-  return TEXT_NONE
-}
-
-/**
- * 总部的这一段当市名,在地址里落在哪。地址里要有「市名,」,且市名前没粘着别的词 —— 粘着的词不带数字就是市名的一部分
- * (North Vancouver 不是 Vancouver,Squamish-Lillooet 不是 Lillooet),带数字的是 Job Bank 不打逗号的街址
- * (「17802 66th Avenue Surrey, BC」);市名后面的省码得和总部写的一样(Windsor ON 不是 Windsor NS)。
- *
- * @param x 地址比对形、这一段与总部写的省码。
- * @returns 市名在地址里的下标;-1 = 不是同一座市,或这一段不像市名(空、带数字、是省、是国家)。
- */
-function cityAtOf(x: CityAtIn): number {
-  if (x.city === TEXT_NONE || HAS_DIGIT_RE.test(x.city) || provCodeOf(x.city) !== TEXT_NONE
-    || CO_COUNTRY_ONLY_RE.test(x.city)) {
-    return -1
-  }
-  const at = x.addr.indexOf(x.city + PLACE_SEG_SEP)
-  if (at < 0) {
-    return -1
-  }
-  const lead = x.addr.slice(0, at).split(PLACE_SEG_SEP).pop()
-  if (lead != null && lead.trim() !== TEXT_NONE && HAS_DIGIT_RE.test(lead) === false) {
-    return -1
-  }
-  const m = ADDR_PROV_RE.exec(x.addr.slice(at + x.city.length))
-  if (m == null || m.groups == null || m.groups.prov !== x.prov) {
-    return -1
-  }
-  return at
-}
-
-/**
- * 地址在市名前面有没有街址(门牌、街名、单元号 —— 市名前除了逗号空白还有字就算)。
- *
- * @param x 地址比对形与市名下标。
- * @returns 有 = true。
- */
-function addrStreetOf(x: AddrStreetIn): boolean {
-  return x.addr.slice(0, x.at).split(PLACE_SEG_SEP).join(TEXT_NONE).trim() !== TEXT_NONE
+export function noSiteOf(x: NoSiteIn): boolean {
+  return x.website === TEXT_NONE && x.stage === STAGE_NONE
 }
 
 /**

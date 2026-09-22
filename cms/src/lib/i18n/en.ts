@@ -518,7 +518,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'co.spSkilledTag': 'skilled', 'co.spQuarter': 'Latest approval', 'co.spBatchN': '{n} LMIAs', 'co.designated': 'Designated employer',
   'co.spNocs': 'Approved occupations (2 yrs)', 'co.spNocRest': 'Other {n} occupations',
   'co.spSource': 'Source: ESDC positive-LMIA employer list, IRCC',
-  'co.similar': 'Similar employers', 'co.similarSub': 'same category',
+  'co.similar': 'Similar employers',
   'gr.dim.coSponsor': 'Sponsorship record', 'gr.dim.coActive': 'Hiring activity', 'gr.dim.coSalary': 'Pay level', 'gr.dim.coFame': 'Scale & profile',
   'gr.co.sp.d': '{total} approved LMIA positions in the past two years (skilled streams {n}; latest {q})', 'gr.co.sp.aip': 'AIP designated employer (can sponsor without LMIA)', 'gr.co.sp.na': 'No public approvals in the past two years',
   'gr.co.act.d': '{open} open jobs, {n} new in the past 30 days', 'gr.co.act.d1': '1 open job, {n} new in the past 30 days', 'gr.co.sal.d': 'posted pay averages {pct}% vs local medians',
@@ -566,6 +566,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'eelist.occTitle': 'Occupations included',
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showMore': 'Show {n} more', 'act.collapse': 'Collapse ▴', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'co.hq': 'Headquarters',
+  'co.noSite': 'No official website',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': 'Waiting', 'co.stage.find': 'Finding site', 'co.stage.fetch': 'Fetching', 'co.stage.facts': 'Organizing', 'co.stage.trans': 'Translating',
   'co.stage.pos': 'no. {n}',

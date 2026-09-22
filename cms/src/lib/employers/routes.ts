@@ -201,8 +201,8 @@ export async function employersExploreOpenRoute(req: Request): Promise<Response>
   if (req.headers.get(HDR_HUMAN) !== HUMAN_YES) {
     return Response.json({ ok: true, stage: NAME_UNSET })
   }
-  const stage = await openExploreSite({ db: await getDb(), name })
-  return Response.json({ ok: true, stage })
+  const got = await openExploreSite({ db: await getDb(), name })
+  return Response.json({ ok: true, stage: got.stage, ahead: got.ahead })
 }
 
 /**

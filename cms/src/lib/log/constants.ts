@@ -682,11 +682,6 @@ export const JOBS_LOG = {
   tag: 'jobs',
 
   /**
-   * 公司弹框的地址兜底探测挂了(地址留空,弹框照出)。
-   */
-  addressProbeFailed: 'job address probe failed, leaving blank: ',
-
-  /**
    * 公司 LMIA 获批职业拆分探测挂了(列未建=容缺,弹框整块不渲)。
    */
   lmiaNocsProbeFailed: 'company lmia nocs probe failed, block hidden: ',

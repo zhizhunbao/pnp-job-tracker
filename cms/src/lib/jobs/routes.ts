@@ -455,11 +455,10 @@ export async function jobsJdformatRoute(req: Request): Promise<Response> {
  *
  * @param req 请求(body 是 { id, lang, storedOnly? };2026-09-20 起按岗位号找行,见 SQL.JD_TRANS_BY_ID)。
  * @returns { ok, text, cached };状态码同 co-translate,只查库没存 404。
+ * 2026-09-22 Frank「不翻译」(dev 没配翻译网关,库里已有的译文也被 translateReady 挡成 503):
+ * 网关闸挪到读库之后 —— 存好的译文不需要网关,只有真要现翻才问网关在不在。
  */
 export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
-  if (translateReady() === false) {
-    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
-  }
   let id: MaybeJobId = null
   let lang = PARAM_NONE
   let storedOnly = false
@@ -492,6 +491,9 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
   }
   if (storedOnly) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
+  }
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
   }
   const fmt = await loadJdFormatted({ db: db, id: id })
   if (fmt == null) {

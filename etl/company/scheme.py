@@ -1512,9 +1512,41 @@ class WikiHqRecord(BaseModel):
     """查的时刻(ISO,UTC)。"""
 
 
+class SearchHqRecord(BaseModel):
+    """搜总部一行(company_search_hq.json 的值;对外文件契约,mart 汇装直读。2026-09-22 Frank
+    「用有头浏览器一搜不就搜到了吗」:官网与维基都空手的公司,Bing / DDG 搜落地页抽地址,原句核对过才算 ok)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str = ""
+    """公司名。"""
+
+    status: str = ""
+    """ok = 搜到并过了原句核对;miss = 候选页都抽不出可核对的地址。"""
+
+    hq_address: str = ""
+    """总部街址(照页面抄;mart 汇装再截市名)。"""
+
+    hq_city: str = ""
+    """总部所在市。"""
+
+    hq_province: str = ""
+    """总部所在省(加拿大两位码;外国原样)。"""
+
+    hq_quote: str = ""
+    """落地页原句(出处凭据)。"""
+
+    hq_source: str = ""
+    """出处:落地页网址(PitchBook 一类第三方库)。"""
+
+    at: str = ""
+    """搜的时刻(ISO,UTC)。"""
+
+
 @dataclass
 class WikiHqTarget:
-    """wikihq 步的一家候选。"""
+    """wikihq 步的一家候选(搜总部步复用同一份)。"""
 
     slug: str
     """公司 slug。"""
@@ -1524,6 +1556,9 @@ class WikiHqTarget:
 
     open_jobs: int
     """在招岗数(排队用:多的先查)。"""
+
+    website: str = ""
+    """公司官网(搜总部跳过本站落地页 —— 官网早抓过没地址,名额留给第三方页;2026-09-22)。"""
 
 
 @dataclass
@@ -1667,6 +1702,73 @@ class EngineIn:
 
     query: str
     """搜索词。"""
+
+
+@dataclass
+class SearchHqRoundIn:
+    """search_hq_round() 入参。"""
+
+    todo: list
+    """这一轮的候选(WikiHqTarget)。"""
+
+    google: bool
+    """本机档(Google 先试,验证有人点;容器 False 只走 Bing → DDG)。"""
+
+
+@dataclass
+class SearchHqOneIn:
+    """search_hq_one() 入参。"""
+
+    llm: HttpClientLike
+    """打盒子的 httpx 客户端。"""
+
+    cfg: LlmCfg
+    """模型接线。"""
+
+    target: WikiHqTarget
+    """这一家(复用 wikihq 候选形)。"""
+
+    google: bool
+    """本机档(引擎阶梯带不带 Google)。"""
+
+
+@dataclass
+class SearchHqPageIn:
+    """search_hq_page() 入参。"""
+
+    llm: HttpClientLike
+    """打盒子的 httpx 客户端。"""
+
+    cfg: LlmCfg
+    """模型接线。"""
+
+    name: str
+    """公司名(在页闸 + 提示词槽)。"""
+
+    url: str
+    """落地页网址(也是出处)。"""
+
+
+@dataclass
+class QuoteInTextIn:
+    """quote_in_text() 入参。"""
+
+    quote: str
+    """模型给的原句。"""
+
+    text: str
+    """页面文字。"""
+
+
+@dataclass
+class NameExtendIn:
+    """name_extended_of() 入参。"""
+
+    quote: str
+    """过了核对的原句。"""
+
+    name: str
+    """公司名。"""
 
 
 @dataclass

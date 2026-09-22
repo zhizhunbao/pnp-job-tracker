@@ -845,6 +845,34 @@ NAME_FLAT_REPL = ""
 CAREERS_STATUS_OK = "200"
 """招聘页探测通过的状态码(清单里全国件存成字符串、Kanata 件存成数字,比较前一律转串)。"""
 
+CAREERS_HOST_WWW = "www."
+"""比招聘页主机名时剥掉的前缀。"""
+
+CAREERS_ATS_HOSTS = ("greenhouse", "lever", "workable", "bamboohr", "smartrecruiters", "jazzhr", "breezy",
+                     "applytojob", "recruitee", "myworkdayjobs", "workday", "ashbyhq", "successfactors",
+                     "oraclecloud", "eightfold", "icims", "jobvite", "phenom", "taleo", "adp")
+"""招聘页允许的外域主机词(已知 ATS;与 MART_ATS_NAMES 的键同族,另加几家常见的)。
+2026-09-22 OPS 实撞:gojobs.gov.on.ca 的招聘页发现被 Radware 重定向到 validate.perfdrive.com,
+status 200 照单全收 —— 招聘页主机必须与官网同域 / 子域,或落在这份 ATS 名单里,其余一律丢。"""
+
+PORTAL_SUB_LABELS = frozenset({"jobs", "job", "careers", "career", "carriere", "carrieres", "gojobs",
+                               "recruit", "recruiting", "recruitment", "emploi", "emplois"})
+"""官网主机名的第一段是这些词 = 雇主自己的招聘子站(careers.mcdonalds.ca / gojobs.gov.on.ca / jobs.uhaul.com)。
+2026-09-22 Frank「有很多招聘网站啊」(OPS gojobs 实拍,生产扫出 61 家「官网」其实是招聘站):
+官网格不装招聘站 —— 挪去招聘页格,官网留空等阶梯重找。"""
+
+PORTAL_ATS_DOMAINS = ("greenhouse.io", "lever.co", "workable.com", "bamboohr.com", "smartrecruiters.com",
+                      "jazzhr.com", "breezy.hr", "applytojob.com", "applytojobs.ca", "recruitee.com",
+                      "myworkdayjobs.com", "ashbyhq.com", "successfactors.com", "oraclecloud.com",
+                      "eightfold.ai", "icims.com", "jobvite.com", "phenompeople.com", "taleo.net",
+                      "njoyn.com", "ultipro.com", "dayforcehcm.com")
+"""第三方 ATS 的整域名(主机等于它或以「.它」收尾才算 —— 检测闸要精确,别学 CAREERS_ATS_HOSTS 的宽词:
+greenhouse / workday 当子串会把蔬菜大棚公司的真官网(witzkesgreenhouses.ca)和 Workday 母公司自己误伤)。"""
+
+SCRIPT_JUNK_RE = re.compile(r"var __|__uzdbm|SSJSConnectorObj|<script|function\s*\(", re.I)
+"""富化 description 的脚本判据(2026-09-22 OPS 实撞:官网撞 Radware 墙,挑战页 JS 源码被当简介存了
+—— enrich 老记录带着这坨,消费端拒收)。"""
+
 IN_SITE_PAGES = paths.PROCESSED_SITES / "pages.json"
 """公司官网抓取记录(sites 域 fetch / visit 步产,slug → 抓取状态 + 官网主机名;2026-09-20 自动纠错:status = dead 的是死站 ——
 域名连续两轮不解析,公司行的官网格清空,company 域找官网阶梯重找。设计稿 docs/design/点开优先抓取与纠错-20260920.md)。缺文件 = 空表。"""
@@ -861,6 +889,10 @@ K_REPLACES = "replaces"
 IN_SITE_FACTS = paths.PROCESSED_SITES / "facts.json"
 """公司官网整理记录(sites 域 facts 步产,slug → 七节的值 + 每节过了核对的页面原句 + 出处网址;2026-09-20 进库批:
 Frank 定的判据「凡是给用户看的公司事实,必须能指回一句官网原文」,设计稿 docs/design/公司官网定期抓取-20260919.md)。缺文件 = 空表。"""
+
+IN_SEARCH_HQ = paths.PROCESSED / "company_search_hq.json"
+"""搜总部记录(company 域 findsite 役产出;2026-09-22 Frank「用有头浏览器一搜不就搜到了吗」——
+官网与维基都没给总部时的第三来路,带落地页原句与出处)。"""
 
 IN_WIKI_HQ = paths.PROCESSED / "company_wiki_hq.json"
 """维基总部兜底(company 域 wikihq 步产,slug → Wikidata「总部所在地」属性查到的市 / 省 + 条目链接):
@@ -896,6 +928,9 @@ K_SRC_HQ_SOURCE = "hq_source"
 
 K_SRC_HQ_PARENT = "hq_parent"
 """维基总部记录:这是母公司的总部(2026-09-22 Frank「显,但注明是母公司」;官网整理记录没有这个键)。"""
+
+K_SRC_HQ_QUOTE = "hq_quote"
+"""搜总部记录:落地页原句(出处凭据;维基记录没有这个键)。"""
 
 K_HQ_ADDRESS = "hqAddress"
 """companies 列:总部街址(只到街,市 / 省各有一列;官网没写到街就空着)。"""

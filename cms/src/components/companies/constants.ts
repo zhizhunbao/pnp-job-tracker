@@ -773,29 +773,10 @@ export const WIKI_WORD_JOIN = ' '
 export const LOC_JOIN = ', '
 
 /**
- * 总部一行字与地址里各段之间的分隔(2026-09-21 addrShownOf:总部按段拆开逐段当市名试,地址里找「市名,」)。
+ * 地址一行字里各段之间的分隔(2026-09-21 为总部 / 地址判重立;2026-09-22 Frank「相同 也 都显示」判重链撤,
+ * 只剩 addrLineOf 拆末段看要不要补国家。同批撤的还有比对用的 NORM_NFD / DIACRITIC_RE / ADDR_PROV_RE / HAS_DIGIT_RE 四常量)。
  */
 export const PLACE_SEG_SEP = ','
-
-/**
- * 比对地名前拆重音用的 Unicode 规范化形(NFD 把 é 拆成 e + 附加符号,DIACRITIC_RE 再去掉附加符号;Montréal ↔ Montreal)。
- */
-export const NORM_NFD = 'NFD'
-
-/**
- * NFD 拆出来的组合附加符号(重音、变音)。
- */
-export const DIACRITIC_RE = /[̀-ͯ]/g
-
-/**
- * 地址里市名后面的省码(「thunder bay, on p7b 5r1」;Job Bank 偶有两个逗号「montmagny,, qc」):比对形已是小写。
- */
-export const ADDR_PROV_RE = /^,+\s*(?<prov>[a-z]{2})\b/
-
-/**
- * 带数字的段是街址(门牌、单元号),不是市名;市名前粘着的词带数字 = Job Bank 不打逗号的街址「17802 66th Avenue Surrey, BC」。
- */
-export const HAS_DIGIT_RE = /\d/
 
 /**
  * 「地址」行补的国家(2026-09-21 Frank「这两个现在显示格式不一样」:总部行按 09-20「都带上国家」以 Canada 收尾,地址行跟着补)。
@@ -886,6 +867,12 @@ export const STAGE_DONE = 'done'
  * 进度:不再等(池里没有这家 / 工人不在线 / 问了太久);简介走现查兜底。
  */
 export const STAGE_OFF = 'off'
+
+/**
+ * 进度:找过官网、没找到(队列表里的真值;2026-09-22 Frank「这个公司没有官网,要显示没有官网」——
+ * 官网行拿它区分「查过了确实没有」与「还没查 / 在队里」,前者明说,后者不出行)。
+ */
+export const STAGE_NONE = 'none'
 
 /**
  * 还在办的那几步(卡上出进度行、钩子继续问)。

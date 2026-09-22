@@ -118,10 +118,13 @@ from mart.constants import (
     K_WAGE_HIGH_ANNUAL, K_WAGE_HIGH_HOURLY, K_WAGE_LOW_ANNUAL, K_WAGE_LOW_HOURLY,
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
-    BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
+    BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_ATS_HOSTS, CAREERS_HOST_WWW, CAREERS_STATUS_OK, IN_CAREERS,
+    PORTAL_ATS_DOMAINS, PORTAL_SUB_LABELS,
+    K_CAREERS_URL, K_SRC_CAREERS_URL, SCRIPT_JUNK_RE,
     BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
+    IN_SEARCH_HQ,
     K_HQ_PARENT, K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
-    K_SRC_HQ_PARENT, K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
+    K_SRC_HQ_PARENT, K_SRC_HQ_PROVINCE, K_SRC_HQ_QUOTE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
     K_JD_FORMATTED, K_JD_FORMATTED_AT,
@@ -190,7 +193,7 @@ from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.scheme import (
-    AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CatI18nIn,
+    AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
     CollectedJob, ColumnIn, CompanyAgg, CompanyDetailIn, CompanyExtraIn, CompanyGradesIn, HqStreetIn,
     CompanyGradesOut, CompanyRowIn, CutsIn, DailyRowIn, DifficultyIn, DirectOfIn, DistrictRowIn,
@@ -1048,7 +1051,9 @@ def load_places() -> dict:
 
 
 def load_careers() -> dict:
-    """公司官方招聘页:slug → 链接(只取探测回 200、且不与官网同址的;缺文件 = 空表)。"""
+    """公司官方招聘页:slug → 链接(只取探测回 200、且不与官网同址的;缺文件 = 空表)。
+    2026-09-22 OPS 实撞(Radware 重定向 validate.perfdrive.com 被当招聘页存了):加域名闸 ——
+    招聘页主机必须与官网同域 / 子域,或落在 CAREERS_ATS_HOSTS 名单里,其余一律丢。"""
     out: dict = {}
     if not IN_CAREERS.exists():
         return out
@@ -1057,6 +1062,8 @@ def load_careers() -> dict:
         if not url or str(c.get(K_STATUS)) != CAREERS_STATUS_OK:
             continue
         if url.rstrip(SLASH) == (c.get(K_WEBSITE) or "").rstrip(SLASH):
+            continue
+        if not careers_host_ok(CareersHostIn(careers=url, website=str(c.get(K_WEBSITE) or ""))):
             continue
         out[c[K_SLUG]] = url
     return out
@@ -1090,6 +1097,39 @@ def load_wiki_hq() -> dict:
     if not IN_WIKI_HQ.exists():
         return out
     for slug, c in read_table(IN_WIKI_HQ).items():
+        if c.get(K_STATUS) == SITE_FACTS_OK:
+            out[slug] = c
+    return out
+
+
+def careers_host_ok(x: CareersHostIn) -> bool:
+    """招聘页域名闸:与官网同主机 / 互为子域,或主机词落在已知 ATS 名单;都不占 = 假(Radware 跳转域一类)。"""
+    ch = host_of_url(x.careers)
+    wh = host_of_url(x.website)
+    if ch == "":
+        return False
+    if wh != "" and (ch == wh or ch.endswith(HOST_TAIL_DOT + wh) or wh.endswith(HOST_TAIL_DOT + ch)):
+        return True
+    for word in CAREERS_ATS_HOSTS:
+        if word in ch:
+            return True
+    return False
+
+
+def host_of_url(url: str) -> str:
+    """一条链接的主机名(小写、剥 www.;拆不出给空串)。"""
+    host = urlparse(url.strip()).netloc.lower().rstrip(HOST_TAIL_DOT)
+    if host.startswith(CAREERS_HOST_WWW):
+        host = host[len(CAREERS_HOST_WWW):]
+    return host
+
+
+def load_search_hq() -> dict:
+    """搜总部记录:slug → 记录(只取 ok;缺文件 = 空表;2026-09-22 第三来路)。"""
+    out: dict = {}
+    if not IN_SEARCH_HQ.exists():
+        return out
+    for slug, c in read_table(IN_SEARCH_HQ).items():
         if c.get(K_STATUS) == SITE_FACTS_OK:
             out[slug] = c
     return out
@@ -1149,6 +1189,8 @@ def add_company(x: CompanyExtraIn) -> None:
             continue
         value = en[k]
         if k == K_DESCRIPTION:
+            if SCRIPT_JUNK_RE.search(str(value)):
+                continue
             value = strip_wp_tail(value)
         if k == K_WEBSITE:
             value = website_of(value)
@@ -1159,6 +1201,7 @@ def add_company(x: CompanyExtraIn) -> None:
         x.extra[k] = value
     fill_places(x)
     fill_careers(x)
+    move_portal_site(x)
     drop_unofficial_sites(x)
     fill_brief(x)
     fill_site_secs(x)
@@ -1211,6 +1254,38 @@ def fill_careers(x: CompanyExtraIn) -> None:
     url = website_of(x.ctx.careers.get(x.slug))
     if url is not None:
         x.extra[K_CAREERS_URL] = url
+
+
+def move_portal_site(x: CompanyExtraIn) -> None:
+    """官网格里装的是招聘站(自己的招聘子站 careers.mcdonalds.ca / gojobs.gov.on.ca,或第三方 ATS 域名)→
+    挪去招聘页格(空时才填;Frank「之后可以用这些招聘网站补数据」—— 它们正是 ATS 抓岗入口候选)、官网留空等阶梯重找;
+    雇主名里带那个判词的不动(名字带 careers / 招聘板自己名字的,那站就是它的官网)。
+    2026-09-22 Frank「有很多招聘网站啊」(OPS gojobs 实拍,生产扫出 61 家「官网」是招聘站)。"""
+    url = x.extra.get(K_WEBSITE)
+    word = portal_word_of(url)
+    if word == "":
+        return
+    if word in NAME_FLAT_RE.sub(NAME_FLAT_REPL, x.name.lower()):
+        return
+    if not x.extra.get(K_CAREERS_URL) and isinstance(url, str):
+        x.extra[K_CAREERS_URL] = url
+    x.extra.pop(K_WEBSITE, None)
+    x.extra.pop(K_WEBSITE_SOURCE, None)
+
+
+def portal_word_of(url: object) -> str:
+    """网址是不是招聘站,是就给判词:主机第一段是招聘词(PORTAL_SUB_LABELS),或主机落在第三方 ATS 整域名上
+    (等于它或以「.它」收尾 —— 精确匹配,别学 CAREERS_ATS_HOSTS 的宽词,来由见 PORTAL_ATS_DOMAINS 的注)。不是给空串。"""
+    host = site_host_of(url)
+    if host == "":
+        return ""
+    label = host.split(HOST_TAIL_DOT)[0]
+    if label in PORTAL_SUB_LABELS:
+        return label
+    for domain in PORTAL_ATS_DOMAINS:
+        if host == domain or host.endswith(HOST_TAIL_DOT + domain):
+            return domain.split(HOST_TAIL_DOT)[0]
+    return ""
 
 
 def drop_unofficial_sites(x: CompanyExtraIn) -> None:
@@ -1289,8 +1364,10 @@ def fill_site_secs(x: CompanyExtraIn) -> None:
 
 def fill_hq(x: CompanyExtraIn) -> None:
     """总部六列:官网整理记录里总部一节过了原句核对的带街址 / 市 / 省 / 原句 / 出处页;官网没标总部的退维基兜底
-    (只有市 / 省 + Wikidata 条目链接,没有原句);两路都没有不落键。总部省是加拿大省码的拿去盖 region,其余 region 维持现状。
-    2026-09-22 Frank「显,但注明是母公司」:维基记录带 hq_parent 的照落总部列并带 hqParent 标记(页面灰注母公司)。"""
+    (只有市 / 省 + Wikidata 条目链接,没有原句);维基也没有的退搜总部记录(落地页原句 + 出处,2026-09-22
+    Frank「用有头浏览器一搜不就搜到了吗」);三路都没有不落键。总部省是加拿大省码的拿去盖 region,其余 region 维持现状。
+    2026-09-22 Frank「显,但注明是母公司」:维基记录带 hq_parent 的照落总部列并带 hqParent 标记(页面灰注;
+    同日灰注撤,标记只留库里做来路记录)。"""
     rec = x.ctx.site_facts.get(x.slug)
     hq = None
     if rec is not None:
@@ -1300,6 +1377,10 @@ def fill_hq(x: CompanyExtraIn) -> None:
             x.extra[K_HQ_QUOTE] = rec[K_SITE_QUOTES][SITE_SEC_HQ]
     if hq is None:
         hq = x.ctx.wiki_hq.get(x.slug)
+    if hq is None:
+        hq = x.ctx.search_hq.get(x.slug)
+        if hq is not None and hq.get(K_SRC_HQ_QUOTE):
+            x.extra[K_HQ_QUOTE] = hq[K_SRC_HQ_QUOTE]
     if hq is None:
         return
     city = (hq.get(K_SRC_HQ_CITY) or "").strip()
@@ -3696,6 +3777,7 @@ def new_mart_ctx() -> MartCtx:
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), careers=load_careers(),
                    briefs=load_briefs(), dead_sites=load_dead_sites(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
+                   search_hq=load_search_hq(),
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),

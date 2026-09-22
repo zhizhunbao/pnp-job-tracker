@@ -54,7 +54,8 @@ import type {
   CompanyBriefZhDbRow, SaveBriefZhIn, DoneOut, AliasCellIn, AliasDbRow, AliasFact, AliasOut, SaveAliasIn,
   CompanyDescDbRow, CompanyDescZhDbRow, SaveDescZhIn,
   ExploreSeenIn, ExploreSeenOut, SeenDbRow, SeenRow,
-  SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteSavedOut, SiteStageDbRow, SiteStageOut, SiteStageRow,
+  SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteOpenRow, SiteSavedOut,
+  SiteStageDbRow, SiteStageOut, SiteStageRow,
   SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
@@ -1722,14 +1723,14 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
  */
 export async function openExploreSite(input: SiteByNameIn): SiteOpenOut {
   try {
-    const row = firstOf(await queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_OPEN, params: [input.name], map: toSiteOpenStage }))
+    const row = firstOf(await queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_OPEN, params: [input.name], map: toSiteOpenRow }))
     if (row == null) {
-      return WEBSITE_NONE
+      return { stage: WEBSITE_NONE, ahead: 0 }
     }
     return row
   } catch (e) {
     log({ tag: EMP_LOG.tag, text: `${EMP_LOG.siteOpenFailed}${String(e)}` })
-    return WEBSITE_NONE
+    return { stage: WEBSITE_NONE, ahead: 0 }
   }
 }
 
@@ -1744,13 +1745,13 @@ export async function loadSiteStage(input: SiteByNameIn): SiteStageOut {
 }
 
 /**
- * `EMPLOYER_EXPLORE_OPEN` 的返回行 → 入队后的 stage。
+ * `EMPLOYER_EXPLORE_OPEN` 的返回行 → 入队后的 stage 与位次(2026-09-22:点开那一拍就带位次)。
  *
  * @param r 原始行。
- * @returns stage。
+ * @returns stage 与位次。
  */
-export function toSiteOpenStage(r: SiteOpenDbRow): string {
-  return text(r.stage)
+export function toSiteOpenRow(r: SiteOpenDbRow): SiteOpenRow {
+  return { stage: text(r.stage), ahead: count(r.ahead) }
 }
 
 /**
@@ -1790,6 +1791,7 @@ export function loadSiteTodos(input: SiteTodosIn): SiteTodosOut {
 export function toSiteTodo(r: SiteTodoDbRow): SiteTodo {
   return {
     key: text(r.key), slug: text(r.slug), name: text(r.name), website: text(r.website), province: text(r.province), stage: text(r.stage),
+    brief: text(r.ai_brief),
   }
 }
 
@@ -1808,7 +1810,7 @@ export async function saveSiteDone(input: SaveSiteDoneIn): SiteSavedOut {
   if (d.website !== WEBSITE_NONE || d.hqCity !== WEBSITE_NONE || d.hqAddress !== WEBSITE_NONE || d.brief !== WEBSITE_NONE) {
     await input.db.query(SQL.EMPLOYER_EXPLORE_SITE_TO_COMPANIES, [
       d.key, d.website, d.hqAddress, d.hqCity, d.hqProvince, d.hqQuote, d.hqSource, d.brief, JSON.stringify(d.sources), d.replaced,
-      d.host, d.hqParent,
+      d.host, d.hqParent, d.briefJudged,
     ])
     CACHE.poolPages.clear()
   }
@@ -1836,7 +1838,7 @@ export function toSiteDone(r: SiteDoneJson): SiteDone {
     hqAddress: text(r.hqAddress).slice(0, SITE_TEXT_MAX), hqCity: text(r.hqCity).slice(0, SITE_TEXT_MAX),
     hqProvince: text(r.hqProvince).slice(0, SITE_TEXT_MAX), hqQuote: text(r.hqQuote).slice(0, SITE_TEXT_MAX),
     hqSource: httpUrlOf(text(r.hqSource).slice(0, SITE_TEXT_MAX)), hqParent: r.hqParent === true,
-    brief: text(r.brief).slice(0, SITE_BRIEF_MAX), sources: sources,
+    brief: text(r.brief).slice(0, SITE_BRIEF_MAX), briefJudged: r.briefJudged === true, sources: sources,
   }
 }
 

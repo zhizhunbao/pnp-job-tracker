@@ -381,6 +381,9 @@ class VisitTodo:
     website: str
     """官网。"""
 
+    brief: str = ""
+    """库里现在的官网版简介(判优用;空 = 没有)。"""
+
 
 @dataclass
 class CmsIn:
@@ -461,6 +464,17 @@ class CarryIn:
 
 
 @dataclass
+class BlockIn:
+    """record_blocked() 入参。"""
+
+    target: Target
+    """这一家(slug / 名 / 官网)。"""
+
+    rec: PagesRecord
+    """这一轮的抓取记录(note 判被拦)。"""
+
+
+@dataclass
 class VisitDoneIn:
     """done_payload_of() 入参。"""
 
@@ -472,4 +486,24 @@ class VisitDoneIn:
 
     host: str
     """这一轮抓的官网主机名(cms 拿它判原简介是不是出自这个官网)。"""
+
+    verdict: str
+    """简介判优结论(VERDICT_*):plain 照旧带简介、replace 带简介 + 判优旗、keep 不带简介。"""
+
+
+@dataclass
+class JudgeIn:
+    """brief_verdict() 入参。"""
+
+    client: HttpClientLike
+    """打盒子的 http 客户端。"""
+
+    cfg: LlmCfg
+    """盒子地址与模型名。"""
+
+    old: str
+    """库里现在的官网版简介。"""
+
+    new: str
+    """这一轮整理出来的简介。"""
 

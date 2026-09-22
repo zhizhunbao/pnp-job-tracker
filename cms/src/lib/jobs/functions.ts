@@ -1555,29 +1555,15 @@ function poolCellOf(v: JsonCell | undefined): string {
 
 /**
  * job id → 同一份公司详情(E8-11 B1 公司弹框同源;按 jobs.company_id 解析,同名公司也不串)。
- * #199:公司表 address 常空 —— 从点进来的这条职位取精确地址兜底。
+ * #199 曾在公司表 address 空时从点进来的这条职位取精确地址兜底 —— 2026-09-22 Frank「撤了吧」
+ * (OPS 实拍:多市在招的雇主,公司卡「地址」行挂着 Thunder Bay 某条岗的招聘地,工作地点冒充公司地址;
+ * 岗位地点职位页正文本来就有):兜底撤销,公司信息卡的地点只剩总部(带出处)与公司表自己的地址。
  *
  * @param input 连接与岗位号。
  * @returns 公司详情;查无 null。
  */
-export async function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
-  const detail = await fetchCompanyWhere({ db: input.db, where: SQL.COMPANY_BY_JOB_ID_COND, param: input.jobId })
-  if (detail != null && detail.address === '') {
-    try {
-      const rows = await queryRows({ db: input.db, sql: SQL.JOB_ADDRESS_BY_ID, params: [input.jobId], map: passRow })
-      const first = rows[0]
-      if (first != null && first.address != null && first.address !== '') {
-        detail.address = String(first.address)
-      }
-    } catch (e) {
-      let why = String(e)
-      if (e instanceof Error) {
-        why = e.message
-      }
-      log({ tag: JOBS_LOG.tag, text: JOBS_LOG.addressProbeFailed + why })
-    }
-  }
-  return detail
+export function loadCompanyByJobId(input: CompanyByJobIn): CompanyOut {
+  return fetchCompanyWhere({ db: input.db, where: SQL.COMPANY_BY_JOB_ID_COND, param: input.jobId })
 }
 
 /**

@@ -1709,6 +1709,12 @@ export type SiteOpenDbRow = {
    * 入队后的 stage。
    */
   stage: string | null
+
+  /**
+   * 队里排在这家前面的家数(2026-09-22 Frank「为什么每个新打开的等待调查都是第 1」:
+   * 点开那一拍就带位次,不等 15 秒后的轮询)。
+   */
+  ahead: number | null
 }
 
 /**
@@ -1744,6 +1750,11 @@ export type SiteTodoDbRow = {
    * 办到哪一步。
    */
   stage: string | null
+
+  /**
+   * 公司表里现在的官网版简介(判优用,2026-09-22 Frank「由 AI 判断值不值得替换」)。
+   */
+  ai_brief: string | null
 }
 
 /**
@@ -1779,6 +1790,11 @@ export type SiteTodo = {
    * 办到哪一步。
    */
   stage: string
+
+  /**
+   * 库里现在的官网版简介;没有 = 空串(工人判优用:旧新都是正经简介才问盒子换不换)。
+   */
+  brief: string
 }
 
 /**
@@ -1849,6 +1865,11 @@ export type SiteDoneJson = {
    * 官网整理出来的简介(节标记行)。
    */
   brief?: string | null
+
+  /**
+   * 简介判优旗(2026-09-22 Frank「由 AI 判断值不值得替换」:工人问过盒子、新简介硬事实更多;缺席 = false)。
+   */
+  briefJudged?: boolean | null
 
   /**
    * 简介的出处页。
@@ -1926,6 +1947,11 @@ export type SiteDone = {
   brief: string
 
   /**
+   * 简介判优旗(true = 工人问过盒子、新简介硬事实更多,写门放行整段替换)。
+   */
+  briefJudged: boolean
+
+  /**
    * 简介的出处页。
    */
   sources: string[]
@@ -1992,9 +2018,24 @@ export type SaveSiteDoneIn = {
 }
 
 /**
- * `openExploreSite` 的返回:入队后的 stage(池里没有这家 = 空串)。
+ * `openExploreSite` 交回的一对:入队后的 stage 与位次。
  */
-export type SiteOpenOut = Promise<string>
+export type SiteOpenRow = {
+  /**
+   * 入队后的 stage;池里没有这家 = 空串。
+   */
+  stage: string
+
+  /**
+   * 队里排在这家前面的家数。
+   */
+  ahead: number
+}
+
+/**
+ * `openExploreSite` 的返回。
+ */
+export type SiteOpenOut = Promise<SiteOpenRow>
 
 /**
  * `loadSiteStage` 的返回。

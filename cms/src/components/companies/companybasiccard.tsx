@@ -38,6 +38,9 @@
  * 同日 Frank「这两个现在显示格式不一样」:「总部」「地址」两行共用 CompanyPlace(地图图标 + 同一字号),地址行按 09-20「都带上国家」补 Canada。
  * 2026-09-22 Frank「总部是美国不需要显示吗」→「显,但注明是母公司」:维基兜底命中母公司实体的总部照显;
  * 同日再拍「这个还是不要显示母公司了」—— 灰注当天撤,总部值照显(hq_parent 只留库里做来路记录)。
+ * 同日 Frank「相同 也 都显示」:上面「地址行和总部重复时不出」那刀作废 —— 总部与地址同一处也两行都出,判重链删除。
+ * 同日 Frank「这个公司没有官网,要显示没有官网」(JBLR 实拍):官网空且队列真找过没找到(stage = none)时官网行明说
+ * 「没有官网」(灰字);还没找过 / 在队里的照旧不出行。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -54,7 +57,7 @@ import {
 } from './constants'
 import {
   addrShownOf, baseZhOf, cardTitleOf, hasDescOf, hasIdOf, homeProvinceOf, hqMapOf, ignoreDone, isGovCompany,
-  siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
+  noSiteOf, siteDoneOf, siteHqOf, siteWebsiteOf, wikiTitleOf,
 } from './functions'
 import { useCompanySite } from './hooks'
 import type { CompanyBasicCardIn } from './types'
@@ -76,7 +79,7 @@ export function CompanyBasicCard({
   const onDone = siteDoneOf({ fn: onSiteDone, settled: hasDesc || briefCached })
   const site = useCompanySite({ name: company.name, onDone })
   const hq = siteHqOf({ company, site, t, lang })
-  const addr = addrShownOf({ addr: company.address, hq })
+  const addr = addrShownOf({ addr: company.address })
   const website = siteWebsiteOf({ company, site, t, lang })
   const hasId = hasIdOf({ company, addr: company.address }) || prov !== TEXT_NONE
   const hasBody = hasDesc || briefCached || company.name !== TEXT_NONE
@@ -99,6 +102,9 @@ export function CompanyBasicCard({
               {website}
             </LinkButton>
           </Row>
+        )}
+        {noSiteOf({ website, stage: site.stage }) && (
+          <Row k={t('act.site')}><span className={cssOf(css.noSite)}>{t('co.noSite')}</span></Row>
         )}
         {company.careersUrl !== TEXT_NONE && (
           <Row k={t('co.careers')}>

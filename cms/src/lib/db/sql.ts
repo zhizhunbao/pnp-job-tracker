@@ -141,11 +141,6 @@ export const COMPANY_IDS_BY_NAME = `SELECT id FROM companies WHERE name ILIKE $1
 export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`
 
 /**
- * 只取地址一列(地图小卡用,别拖全列)。$1=职位 id。
- */
-export const JOB_ADDRESS_BY_ID = `SELECT address FROM jobs WHERE id = $1 LIMIT 1`
-
-/**
  * 相关职位·同公司在招 12 条。$1=公司名,$2=排除的当前岗 id。
  * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
@@ -607,16 +602,28 @@ export const EMPLOYER_EXPLORE_TO_COMPANIES = `UPDATE companies c
  * 探索队列第二工种入队:公司页 / 公司弹框被真人点开(2026-09-20 Frank「下一个 session 做『按用户点开过的公司优先抓取和纠错』的队列」;
  * 设计稿 docs/design/点开优先抓取与纠错-20260920.md,加列 docs/sql/employer-explore-stage-20260920.sql)。按公司名找到池主键
  * (只认池里真有的);新的进队,已在队里的记点开时刻与次数 —— 24 小时内走过一轮的(成败都算)不重置 stage,直接用上次结果。$1=公司名。
+ * 2026-09-22 Frank「没有自动触发探索啊」(JBLR 实拍:找不到官网 stage=none,24 小时内再点开一动不动):
+ * 缺官网或缺总部的公司,点开重探的冷却降到 1 小时 —— 资料全了才守 24 小时;正在办的(queued/find/fetch/facts)照旧不动。
  */
 export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, opened_at, open_count, stage, stage_at)
      SELECT p.key, p.name, now(), 1, 'queued', now() FROM companies c JOIN employer_pool p ON p.slug = c.slug
       WHERE lower(c.name) = lower($1) LIMIT 1
      ON CONFLICT (key) DO UPDATE SET opened_at = now(), open_count = employer_explore.open_count + 1,
        stage = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+                    OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
+                        AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
+                                     WHERE p2.key = employer_explore.key
+                                       AND (COALESCE(c2.website, '') = '' OR COALESCE(c2.hq_city, '') = '')))
                     THEN 'queued' ELSE employer_explore.stage END,
        stage_at = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+                    OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
+                        AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
+                                     WHERE p2.key = employer_explore.key
+                                       AND (COALESCE(c2.website, '') = '' OR COALESCE(c2.hq_city, '') = '')))
                        THEN now() ELSE employer_explore.stage_at END
-     RETURNING stage`
+     RETURNING stage,
+       (SELECT count(*)::int FROM employer_explore q
+         WHERE q.stage IN ('queued', 'find', 'fetch', 'facts') AND q.opened_at < employer_explore.opened_at) AS ahead`
 
 /**
  * 公司卡问进度:官网那条工种办到哪一步,连同公司表里现在的官网与总部几格(办完那一拍卡上直接补,不用刷新)。$1=公司名。
@@ -634,7 +641,7 @@ export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, 
  * 2026-09-22 Frank「为什么会插队」:原「最近点开的在前」(LIFO)改成**先到先得**(FIFO)——
  * 卡上显示位次倒数后,后点开插队会让数字不降反升,自相矛盾;先点先办,位次才是真倒数。
  */
-export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
+export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
     WHERE x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = '')
     ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
@@ -643,7 +650,7 @@ export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.
  * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts)。$1=条数。
  * 先到先得(2026-09-22,同 FIND;来由见那边)。
  */
-export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage FROM employer_explore x
+export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
     WHERE x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> '')
     ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
@@ -661,7 +668,9 @@ export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = 
  * 原简介的出处里没有这个官网主机名 —— 来路排序官网优先,联网检索版与照着旧官网整理的让位;Supersonic 实撞:官网换对了,简介还是照别家站写的)才盖,
  * 原简介不是五节新版(没有 [FOUNDED] 标记的存量,cms 本来就当它过期、当没缓存)也算空。盖的同时清掉旧译文(对的是旧简介)。$1=池主键,$2=官网,$3~$7=总部街址 / 市 / 省 / 原句 / 出处,$8=简介,$9=出处 JSON 数组串,$10=官网是否被换过,
  * $11=这一轮抓的官网主机名(空串 = 不按主机名判),$12=总部是母公司的(2026-09-22 Frank「显,但注明是母公司」;
- * 只随总部组一起写 —— 官网总部盖上来时它是 false,恰好把维基母公司标记归位)。
+ * 只随总部组一起写 —— 官网总部盖上来时它是 false,恰好把维基母公司标记归位),
+ * $13=简介判优旗(2026-09-22 Frank「主营业务这部分,由 AI 判断值不值得替换」:旧新都是正经简介时工人问盒子,
+ * 新简介硬事实更多才带旗交活 —— 旗真 = 绕过上面那串让位条件整段替换;KEEP 的那次工人根本不带简介来)。
  */
 export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       website = COALESCE(NULLIF($2, ''), c.website),
@@ -672,12 +681,12 @@ export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
       hq_parent = CASE WHEN $3 <> '' OR $4 <> '' THEN $12::boolean ELSE c.hq_parent END,
       site_checked_at = now(),
-      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $8 ELSE c.ai_brief END,
-      ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN $9 ELSE c.ai_sources END,
-      ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_website END,
-      ai_fetched = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN now() ELSE c.ai_fetched END,
-      ai_brief_zh = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_brief_zh END,
-      ai_brief_ko = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0)) THEN NULL ELSE c.ai_brief_ko END
+      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN $8 ELSE c.ai_brief END,
+      ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN $9 ELSE c.ai_sources END,
+      ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_website END,
+      ai_fetched = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN now() ELSE c.ai_fetched END,
+      ai_brief_zh = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_brief_zh END,
+      ai_brief_ko = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_brief_ko END
      FROM employer_pool p WHERE p.key = $1 AND c.slug = p.slug`
 
 /**

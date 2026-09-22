@@ -431,10 +431,16 @@ HTML_CHALLENGE_MARKERS = (
     "/cdn-cgi/challenge-platform",
     "verifying your browser",
     "eudaenableagent",
+    "__uzdbm",
+    "ssjsconnectorobj",
+    "validate.perfdrive.com",
+    "press & hold to confirm",
 )
-"""HTTP 200 里的验证壳判词(challenge 页当正文存档 = 脏语料)。最后一枚 = Radware EUDA 的
+"""HTTP 200 里的验证壳判词(challenge 页当正文存档 = 脏语料)。倒数第五枚 = Radware EUDA 的
 JS 加载器壳(princeedwardisland.ca 实见,2026-08-03:200 + 125KB webpack JS,「Verifying
-your browser」文字在 12 万字开外,前 4000 字检测窗口里只有 EUDA 的常量名可认)。"""
+your browser」文字在 12 万字开外,前 4000 字检测窗口里只有 EUDA 的常量名可认)。
+末四枚 2026-09-22 实见:Radware 另一款壳(gojobs.gov.on.ca → validate.perfdrive.com,__uzdbm 常量 +
+SSJSConnectorObj)把 JS 源码当正文存进了 OPS 的简介;zoominfo 的「Press & Hold」人机页同批。"""
 
 CHALLENGE_SNIFF_LEN = 4000
 """验证壳判词的检测窗口(只看前 N 字)。"""

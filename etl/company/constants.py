@@ -414,6 +414,15 @@ META_KEYWORDS_PATTERNS = (re.compile("<meta[^>]+name=[\"']keywords[\"'][^>]+cont
 DESC_P_MIN_LEN = 80
 """meta 全空时兜底 <p> 的最短长度(短于这个多是导航碎句)。"""
 
+COOKIE_TEXT_RE = re.compile(
+    r"we use [^.]{0,40}cookies|site uses cookies|use of cookies|\bin cookies\b|cookies are necessary"
+    r"|accept (all .{0,20})?cookies|reject (all )?cookies|storing of cookies|cookies to (enhance|improve|ensure|offer)"
+    r"|cookie (policy|settings|preferences|consent|banner)"
+    r"|g[ée]rer vos cookies|consentement des cookies|accepter les cookies", re.IGNORECASE)
+"""cookie 同意横幅的话术(简介撞上 = 当没抽到)。2026-09-22 Frank「这是抓的什么」(Argen Canada 实拍):
+横幅常是页面第一段,<p> 兜底正好把它当简介收走 —— 生产扫出 11 家。英法双语;不裸匹配 cookies 一词
+(烘焙坊的主营写 cookies 是正当内容)。sites 域同名闸同一套话术,各域自抄。"""
+
 KEYWORDS_TOP_N = 4
 """keywords 只取前几个当行业词(后面的多是 SEO 灌水)。"""
 ST_FOUND = "found"
@@ -461,6 +470,95 @@ JD_URL_LINE_RE = re.compile(r"^url:\s*(.+)$", re.M)
 SEARCH_QUERY_TPL = '"{name}" {province} Canada'
 """搜索词:公司名精确短语 + 省 + 国名(DDG 与 Google Programmable Search 同一句;
 2026-09-08 自 DDG_QUERY_TPL 改名,两个后端共用)。"""
+
+OUT_SEARCH_HQ = paths.PROCESSED / "company_search_hq.json"
+"""搜总部记录(slug → SearchHqRecord;mart 汇装在官网与维基都没给总部时读它 ——
+来路排序 Frank 2026-09-19 原话:官网 → 维基 → 联网搜索;2026-09-22 Frank「用有头浏览器一搜不就搜到了吗」立此步)。"""
+
+SEARCH_HQ_QUERY_TPL = "{name} head office address"
+"""搜总部的搜索词(Fiscal.ai 实测:Google / Bing 搜「<名> address」都能出 PitchBook 一类第三方库的地址)。"""
+
+SEARCH_HQ_TAKE = 5
+"""搜总部每轮最多几家(浏览器 + 本地模型都慢,别占满 findsite 轮)。"""
+
+SEARCH_HQ_RETRY_DAYS = 7
+"""搜总部 miss 后的冷却天数(第三方库不常变,别天天搜)。"""
+
+SEARCH_HQ_LINKS_MAX = 3
+"""每家最多试前几个搜索结果落地页。"""
+
+SEARCH_HQ_TEXT_MAX = 8000
+"""落地页文字喂给模型的上限字符数(地址页短,8 千够;超长截头)。"""
+
+SEARCH_HQ_SKIP_RE = re.compile(
+    r"linkedin\.|facebook\.|instagram\.|twitter\.|x\.com|youtube\.|tiktok\.|reddit\.|"
+    r"indeed\.|glassdoor\.|ziprecruiter\.|jobbank\.|wikipedia\.|wikidata\.|yelp\.|google\.|bing\.|duckduckgo\.|"
+    r"crunchbase\.|zoominfo\.", re.I)
+"""搜总部跳过的落地页(社交 / 招聘板 / 百科 / 搜索引擎自身 —— 不是地址库;真防线是原句核对 + 公司名在页。
+crunchbase / zoominfo 2026-09-22 实撞:人机墙,白等 120 秒)。"""
+
+SEARCH_HQ_EXTEND_RE = re.compile(
+    r"(employees'?|workers'?|teachers'?|nurses'?)?\s*"
+    r"(union|syndicat|association|federation|f[ée]d[ée]ration|foundation|fondation|alliance|society|coalition)\b", re.I)
+"""名字延伸词:落地页原句里公司名后面紧跟这些词 = 说的是另一家机构(2026-09-22 OPS 实撞:
+「Ontario Public Service Employees Union」是工会 OPSEU 的地址,前缀撞名骗过「公司名在页上」闸)。"""
+
+SEARCH_HQ_PREFER_RE = re.compile(r"pitchbook\.|opencorporates\.|craft\.co|cbinsights\.|tracxn\.", re.I)
+"""搜总部优先试的落地页(正经公司数据库;Fiscal.ai 实撞:vcbacked 野站答 Mississauga、PitchBook 答对
+20 Dundas Street West Toronto —— 可信库先试,野站兜底)。"""
+
+SEARCH_HQ_PROMPT = """You are extracting the head office address of ONE company from a web page. STRICT RULES:
+- Company: {name}
+- Use ONLY the page text below. If the page does not clearly state this company's head office / corporate address, answer NONE.
+- QUOTE must be one exact line copied character for character from the page text. If you cannot quote it, answer NONE.
+- Output exactly these lines and nothing else:
+HQ_ADDRESS=<street address as written, or NONE>
+HQ_CITY=<city, or NONE>
+HQ_PROVINCE=<two-letter Canadian province code, or the country name if outside Canada, or NONE>
+QUOTE=<exact page line showing the address>
+Page text:
+{text}"""
+"""搜总部的抽取提示词(name / text 两槽):只许抄页面、必须附原句 —— 野站(filipinocontractors 一类)靠
+原句核对 + 公司名在页两道闸挡,抄不出原句就是 NONE。"""
+
+SEARCH_HQ_TOKENS = 200
+"""搜总部抽取的生成上限(四行短答)。"""
+
+SEARCH_HQ_FIELD_SEP = "="
+"""四行答案的键值分隔。"""
+
+SEARCH_HQ_NONE = "NONE"
+"""模型答「页面上没有」的记号(整格成空串,不编)。"""
+
+K_SRCHQ_ADDRESS = "HQ_ADDRESS"
+"""答案键:街址。"""
+
+K_SRCHQ_CITY = "HQ_CITY"
+"""答案键:市。"""
+
+K_SRCHQ_PROVINCE = "HQ_PROVINCE"
+"""答案键:省 / 国。"""
+
+K_SRCHQ_QUOTE = "QUOTE"
+"""答案键:页面原句。"""
+
+ST_SEARCH_OK = "ok"
+"""搜到并过了核对。"""
+
+ST_SEARCH_MISS = "miss"
+"""搜遍候选页没有能核对的地址。"""
+
+PRINT_HQSEARCH_TAKE_TPL = "搜总部:候选 {n} 家(上限 {limit})"
+"""搜总部开工报数。"""
+
+PRINT_HQSEARCH_ROW_TPL = "  {status} {name} | {city} {province} | {source}"
+"""搜总部逐家一行。"""
+
+PRINT_HQSEARCH_DONE_TPL = "✓ 搜总部 ok {ok} / miss {miss} → {out}"
+"""搜总部收尾报数。"""
+
+NOTE_HQSEARCH_NO_LLM = "搜总部:没配本地模型地址(NEWS_LLM_BASE),整步跳过"
+"""没盒子就不搜(抽取要模型)。"""
 
 DDG_REDIRECT_PARAM = "uddg"
 """DDG 跳转链里的真实目标参数名(/l/?uddg=<encoded>)。"""

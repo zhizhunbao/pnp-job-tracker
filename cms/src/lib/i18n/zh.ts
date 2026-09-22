@@ -563,7 +563,7 @@ export const jobsZh = {
   'co.spSkilledTag': '技术类', 'co.spQuarter': '最近获批', 'co.spBatchN': '{n} 份 LMIA', 'co.designated': '指定雇主',
   'co.spNocs': '获批职业(近两年)', 'co.spNocRest': '其余 {n} 个职业',
   'co.spSource': '来源:ESDC 正面 LMIA 雇主名录、IRCC',
-  'co.similar': '相似雇主', 'co.similarSub': '同类',
+  'co.similar': '相似雇主',
   'gr.dim.coSponsor': '担保记录', 'gr.dim.coActive': '在库活跃', 'gr.dim.coSalary': '薪资水平', 'gr.dim.coFame': '规模知名',
   'gr.co.sp.d': '近两年获批 {total} 岗(技能岗 {n};最近 {q})', 'gr.co.sp.aip': 'AIP 指定雇主(不走 LMIA 也具担保资格)', 'gr.co.sp.na': '近两年无公开获批记录',
   'gr.co.act.d': '在招 {open} 岗,近 30 天新发 {n}', 'gr.co.act.d1': '在招 1 岗,近 30 天新发 {n}', 'gr.co.sal.d': '在招岗帖面薪资平均较当地中位 {pct}%',
@@ -615,6 +615,7 @@ export const jobsZh = {
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   'co.hq': '总部',
+  'co.noSite': '没有官网',
   // 2026-09-20 公司卡进度行(官网那条工种;状态词只有这五个,设计稿 docs/design/点开优先抓取与纠错-20260920.md)。
   'co.stage.queued': '等待调查', 'co.stage.find': '查找官网', 'co.stage.fetch': '抓取官网', 'co.stage.facts': '整理内容', 'co.stage.trans': '翻译',
   'co.stage.pos': '第 {n} 位',

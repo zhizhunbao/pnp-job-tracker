@@ -547,6 +547,9 @@ class MartCtx:
     wiki_hq: dict
     """slug → 维基总部兜底记录(只含 ok 行;官网没标总部的公司才用;2026-09-20)。"""
 
+    search_hq: dict
+    """slug → 搜总部记录(只含 ok 行;官网与维基都没给总部才用,第三来路;2026-09-22)。"""
+
     formatted: dict
     """externalId → qwen 五节整理版记录(jdformat 域预生成;2026-09-15)。"""
 
@@ -605,6 +608,17 @@ class HqStreetIn:
 
     city: str
     """总部所在市(截断的锚点;'' = 不截)。"""
+
+
+@dataclass
+class CareersHostIn:
+    """careers_host_ok() 入参(2026-09-22 招聘页域名闸)。"""
+
+    careers: str
+    """招聘页链接。"""
+
+    website: str
+    """公司官网链接;'' = 没记。"""
 
 
 @dataclass

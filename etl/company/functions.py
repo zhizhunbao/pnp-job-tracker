@@ -23,6 +23,7 @@ import os
 import time
 import urllib.parse
 import urllib.request
+from operator import itemgetter
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -49,6 +50,12 @@ from company.constants import (
     K_DONE_STAGE, K_HOST, K_TODO_KEY, K_TODO_NAME, K_TODO_PROVINCE, K_TODO_SLUG, K_TODO_WEBSITE, K_TODOS, KIND_FIND, MS_PER_S,
     NOTE_CHECKED_TODAY, NOTE_CMS_HTTP_TPL, NOTE_HOST_BEATING, NOTE_NO_CMS, OUT_FINDSITE_BEAT, P_KIND, P_TAKE_LIMIT, PATH_SITE_DONE,
     HOT_JD_GLOB_TPL, PATH_SITE_TODO, PRINT_FINDSITE_ROW_TPL, PRINT_FINDSITE_TAKE_TPL, SEARCH_CRAWL_SLUG_TPL, ST_DEAD, STAGE_FETCH, STAGE_FIND, STAGE_NONE,
+    K_SRCHQ_ADDRESS, K_SRCHQ_CITY, K_SRCHQ_PROVINCE, K_SRCHQ_QUOTE, NOTE_HQSEARCH_NO_LLM, OUT_SEARCH_HQ,
+    PRINT_HQSEARCH_DONE_TPL, PRINT_HQSEARCH_ROW_TPL, PRINT_HQSEARCH_TAKE_TPL,
+    SEARCH_HQ_FIELD_SEP, SEARCH_HQ_LINKS_MAX, SEARCH_HQ_NONE, SEARCH_HQ_PREFER_RE, SEARCH_HQ_PROMPT,
+    SEARCH_HQ_QUERY_TPL,
+    SEARCH_HQ_EXTEND_RE, SEARCH_HQ_RETRY_DAYS, SEARCH_HQ_SKIP_RE, SEARCH_HQ_TAKE, SEARCH_HQ_TEXT_MAX, SEARCH_HQ_TOKENS,
+    ST_SEARCH_MISS, ST_SEARCH_OK,
     PROP_INSTANCE_OF, WD_BUILDING_TYPES, WD_ORG_TYPES,
     IN_WIKIHQ_PAGES, K_CO_WEBSITE, K_FACTS_NAME_OK, NAME_COUNTRY_RE, NAME_LEAD_THE_RE, WIKIHQ_MIN_OPEN,
     FACTS_SEC_HQ, HQ_CLIMB_MAX, HQ_FOREIGN_TPL, PROP_COUNTRY, WD_PROV_NAMES, IN_WIKIHQ_FACTS, K_FACTS_QUOTES, K_RANK, RANK_DEPRECATED, RANK_PREFERRED, NOTE_NO_SITE_FACTS, OUT_WIKI_HQ, PRINT_WIKIHQ_DONE_TPL,
@@ -59,7 +66,7 @@ from company.constants import (
     DASH_NONE, ENTRY_DEPTH, ENTRY_MERGE_ATS, ENTRY_HOP_DEPTH, ENTRY_HOP_LINK_RE, ENTRY_HOP_MAX_PAGES, ENTRY_HOP_SLUG_TPL, ENTRY_KEYWORDS, ENTRY_LINK_RES, ENTRY_MAX_PAGES, ENTRY_SITE_RES, ENTRY_SLUG_TPL, ENTRY_TIMEOUT_S,
     IN_ENTRIES_CAREERS, OUT_ENTRIES, PRINT_ENTRY_DONE_TPL, PRINT_ENTRY_ROW_TPL, STATUS_OK,
     CAREERS_WORKERS, COL_TRIM_CHARS, COMMON_CAREER_PATHS, DDG_GUARD_N, DDG_HTML_URL, SEARCH_QUERY_TPL,
-    DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
+    COOKIE_TEXT_RE, DDG_REDIRECT_PARAM, DDG_RESULT_RE, DDG_SCAN_N, DDG_TIMEOUT_S, DESC_LEN_MAX, DESC_P_MIN_LEN,
     DOT_SEP, EMAIL_DOMAIN_RE, ENRICH_LIMIT, ENRICH_MIN_INTERVAL_S, ENRICH_REFRESH_DAYS,
     FACTS_COMMA, FACTS_INDENT, FACTS_SUFFIX_RE, FACTS_TICK, FETCH_SLEEP_S, FETCH_TIMEOUT_S,
     FIND_CLIENT_TIMEOUT_S, FIND_LIMIT, FIND_SLEEP_S, FORMAT_JSON, FOUND_JD, FOUND_SEARCHED,
@@ -128,6 +135,7 @@ from company.scheme import (
     BriefKoIn, BriefZhIn, PickKoIn,
     AboutTextIn, AboutTextOut, CseCfg, CseEnvelope, CseFindIn, FindSiteIn, SiteOfLinksIn,
     EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
+    NameExtendIn, QuoteInTextIn, SearchHqOneIn, SearchHqPageIn, SearchHqRecord, SearchHqRoundIn,
 )
 
 # =========================================================================
@@ -822,12 +830,16 @@ def extract_meta(page: str) -> MetaOut:
 
     简介取 og:description / meta description,都没有兜首个 ≥DESC_P_MIN_LEN 字的 <p>;
     行业取 meta keywords 前 KEYWORDS_TOP_N 个。
+    2026-09-22 cookie 闸:抽到的是 cookie 同意横幅的话术(COOKIE_TEXT_RE)当没抽到 ——
+    横幅常是页面第一段,<p> 兜底正好收走它(Argen Canada 实拍,来由见常量的 JSDoc)。
     """
     desc = first_meta_match(MetaScanIn(page=page, patterns=META_DESC_PATTERNS))
+    if desc and COOKIE_TEXT_RE.search(desc) is not None:
+        desc = ""
     if not desc:
         for m in P_TAG_RE.finditer(page):
             txt = TAG_STRIP_RE.sub("", m.group(1)).strip()
-            if len(txt) >= DESC_P_MIN_LEN:
+            if len(txt) >= DESC_P_MIN_LEN and COOKIE_TEXT_RE.search(txt) is None:
                 desc = txt
                 break
     kw = first_meta_match(MetaScanIn(page=page, patterns=META_KEYWORDS_PATTERNS))
@@ -2252,7 +2264,8 @@ def wikihq_targets() -> list:
         fetch_failed = slug in pages and pages[slug].get(K_STATUS) != ST_OK
         big_nosite = not c.get(K_CO_WEBSITE) and open_jobs.get(slug, 0) >= WIKIHQ_MIN_OPEN
         if no_hq or fetch_failed or big_nosite:
-            out.append(WikiHqTarget(slug=slug, name=c[K_NAME], open_jobs=open_jobs.get(slug, 0)))
+            out.append(WikiHqTarget(slug=slug, name=c[K_NAME], open_jobs=open_jobs.get(slug, 0),
+                                    website=str(c.get(K_CO_WEBSITE) or "")))
     out.sort(key=wikihq_order_of)
     return out
 
@@ -2493,14 +2506,210 @@ async def findsite_round() -> None:
         todos = take_find_todos(CmsCallIn(client=client, base=cms.base, headers=cms.headers,
                                           payload={P_KIND: KIND_FIND, P_TAKE_LIMIT: FINDSITE_TAKE}))
         say(PRINT_FINDSITE_TAKE_TPL.format(n=len(todos), limit=FINDSITE_TAKE, google=google))
-        if len(todos) == 0:
+        hq_todo = pick_search_hq_todo()
+        if len(todos) == 0 and len(hq_todo) == 0:
             return
         ensure_cookie_jar()
         try:
             for todo in todos:
                 await findsite_one(FindOneIn(client=client, base=cms.base, headers=cms.headers, todo=todo, google=google))
+            await search_hq_round(SearchHqRoundIn(todo=hq_todo, google=google))
         finally:
             await close_browser()
+
+
+def pick_search_hq_todo() -> list:
+    """搜总部候选(2026-09-22 Frank「用有头浏览器一搜不就搜到了吗」,Fiscal.ai 实撞:官网无地址、维基查无,
+    Google / Bing 一搜第三方库就有):wikihq 候选(官网没给总部的那批)里,维基没答上(miss 或还没试过)、被用户看过的,
+    按最近被看排序;ok 的不重搜,miss 的冷却 SEARCH_HQ_RETRY_DAYS 天;没配本地模型整步跳过(抽取要模型)。
+    2026-09-22 同日放宽(Frank「这个总部还是没有自动修啊」,OPS 实撞:原判「维基已试过且 miss 才轮到」把三条腿
+    串成了排队 —— 维基腿没轮到这家,搜索腿就永远不上):维基还没试过的不再等它,点开过的公司直接搜;
+    值的优先级不受影响,mart 灌库仍按 官网 → 维基 → 搜索,维基后到照样盖住搜索。"""
+    if company_llm_config().base == "":
+        say(NOTE_HQSEARCH_NO_LLM)
+        return []
+    wiki = read_wiki_hq()
+    cache = read_search_hq()
+    seen = seen_stamps()
+    out: list = []
+    for t in wikihq_targets():
+        w = wiki.get(t.slug)
+        if w is not None and w.status == ST_OK:
+            continue
+        if t.slug not in seen:
+            continue
+        rec = cache.get(t.slug)
+        if rec is not None and (rec.status == ST_SEARCH_OK or days_since(rec.at) <= SEARCH_HQ_RETRY_DAYS):
+            continue
+        out.append((-float(seen.get(t.slug, 0)), t.slug, t))
+    out.sort(key=itemgetter(0, 1))
+    picked: list = []
+    for row in out[:SEARCH_HQ_TAKE]:
+        picked.append(row[2])
+    return picked
+
+
+async def search_hq_round(x: SearchHqRoundIn) -> None:
+    """搜总部一轮:逐家按引擎阶梯搜「<名> head office address」(2026-09-22 Frank「优先用 google 有头,其次是 bing 有头」——
+    本机 Google 先试,验证有人点;容器只走 Bing → DDG,与 findsite 终版阶梯同规),取前几个非黑名单落地页,
+    本地模型抽地址 + 原句核对(原句必须逐字在页上、公司名必须出现在页上 —— filipinocontractors 一类野站抄不出原句就是 NONE)。
+    产出落 OUT_SEARCH_HQ,mart 汇装当第三来路(官网 → 维基 → 搜索)。"""
+    if len(x.todo) == 0:
+        return
+    say(PRINT_HQSEARCH_TAKE_TPL.format(n=len(x.todo), limit=SEARCH_HQ_TAKE))
+    cache = read_search_hq()
+    cfg = company_llm_config()
+    ok = 0
+    miss = 0
+    with make_client(timeout=LLM_TIMEOUT_S) as raw:
+        llm = cast(HttpClientLike, raw)
+        for t in x.todo:
+            rec = await search_hq_one(SearchHqOneIn(llm=llm, cfg=cfg, target=t, google=x.google))
+            cache[t.slug] = rec
+            if rec.status == ST_SEARCH_OK:
+                ok += 1
+            else:
+                miss += 1
+            say(PRINT_HQSEARCH_ROW_TPL.format(status=rec.status, name=t.name, city=rec.hq_city,
+                                              province=rec.hq_province, source=rec.hq_source))
+    write_search_hq(cache)
+    say(PRINT_HQSEARCH_DONE_TPL.format(ok=ok, miss=miss, out=OUT_SEARCH_HQ.name))
+
+
+async def search_hq_one(x: SearchHqOneIn) -> SearchHqRecord:
+    """一家:两个引擎的前几个落地页依次试,抽到过核对的地址即停;全空 = miss。
+    本站落地页跳过(官网 sites 早抓过、没地址才轮到本步;Fiscal.ai 实撞:前几名全是官网自己的页,名额被占光)。"""
+    rec = SearchHqRecord(name=x.target.name, status=ST_SEARCH_MISS, at=now_iso())
+    query = SEARCH_HQ_QUERY_TPL.format(name=x.target.name)
+    own = domain_of(x.target.website)
+    engines = [FOUND_BING, FOUND_DDG]
+    if x.google:
+        engines = [FOUND_GOOGLE, FOUND_BING, FOUND_DDG]
+    for engine in engines:
+        links = search_hq_link_order(await engine_links(EngineIn(engine=engine, query=query)))
+        tried = 0
+        for link in links:
+            if tried >= SEARCH_HQ_LINKS_MAX:
+                break
+            if SEARCH_HQ_SKIP_RE.search(link):
+                continue
+            if own != "" and domain_of(link) == own:
+                continue
+            tried += 1
+            got = await search_hq_page(SearchHqPageIn(llm=x.llm, cfg=x.cfg, name=x.target.name, url=link))
+            if got is not None:
+                got.name = x.target.name
+                got.at = now_iso()
+                return got
+        if tried > 0:
+            break
+    return rec
+
+
+async def search_hq_page(x: SearchHqPageIn) -> SearchHqRecord | None:
+    """一个落地页:有头浏览器取回 → 纯文字 → 公司名在页才喂模型 → 四行答案过原句核对;不过给 None。"""
+    html = await fetch_browser_html(x.url)
+    if html is None:
+        return None
+    text = search_page_text_of(html)
+    if x.name.lower() not in text.lower():
+        return None
+    try:
+        answer = call_company_llm(LlmCallIn(client=x.llm, cfg=x.cfg,
+                                            prompt=SEARCH_HQ_PROMPT.format(name=x.name, text=text),
+                                            tokens=SEARCH_HQ_TOKENS))
+    except (RuntimeError, ValueError) as e:
+        err(x.url, e)
+        return None
+    fields = search_hq_fields_of(answer)
+    city = fields.get(K_SRCHQ_CITY, "")
+    quote = fields.get(K_SRCHQ_QUOTE, "")
+    if city == "" or quote == "" or not quote_in_text(QuoteInTextIn(quote=quote, text=text)):
+        return None
+    if name_extended_of(NameExtendIn(quote=quote, name=x.name)):
+        return None
+    return SearchHqRecord(status=ST_SEARCH_OK, hq_address=fields.get(K_SRCHQ_ADDRESS, ""), hq_city=city,
+                          hq_province=fields.get(K_SRCHQ_PROVINCE, ""), hq_quote=quote, hq_source=x.url)
+
+
+def name_extended_of(x: NameExtendIn) -> bool:
+    """原句里公司名后面是不是紧跟机构延伸词(是 = 原句说的是另一家:OPSEU 实撞,来由见 SEARCH_HQ_EXTEND_RE 的注)。
+    原句里根本没有公司名的不算延伸 —— 那一档由原句核对与名在页闸管。"""
+    low = x.quote.lower()
+    at = low.find(x.name.lower())
+    if at < 0:
+        return False
+    tail = low[at + len(x.name):].lstrip()
+    return SEARCH_HQ_EXTEND_RE.match(tail) is not None
+
+
+def search_hq_link_order(links: list) -> list:
+    """候选链接排序:可信公司数据库(SEARCH_HQ_PREFER_RE)先试,其余原序垫后 ——
+    Fiscal.ai 实撞:vcbacked 野站答 Mississauga、PitchBook 答对,谁先试到谁定结果。"""
+    head: list = []
+    tail: list = []
+    for link in links:
+        if SEARCH_HQ_PREFER_RE.search(link):
+            head.append(link)
+        else:
+            tail.append(link)
+    return head + tail
+
+
+def search_page_text_of(html: str) -> str:
+    """落地页原文 → 纯文字(摘噪音标签、压空白、截到上限)。"""
+    soup = BeautifulSoup(html, HTML_PARSER)
+    for tag in soup(STRIP_TAGS):
+        tag.decompose()
+    text = WS_FOLD_RE.sub(TEXT_JOIN_SEP, soup.get_text(TEXT_JOIN_SEP)).strip()
+    return text[:SEARCH_HQ_TEXT_MAX]
+
+
+def search_hq_fields_of(answer: str) -> dict:
+    """模型四行答案 → 键值表(NONE 一律成空串;认不出的行丢)。"""
+    out: dict = {}
+    for line in answer.splitlines():
+        if SEARCH_HQ_FIELD_SEP not in line:
+            continue
+        key, _, value = line.partition(SEARCH_HQ_FIELD_SEP)
+        v = value.strip()
+        if v.upper() == SEARCH_HQ_NONE:
+            v = ""
+        out[key.strip()] = v
+    return out
+
+
+def quote_in_text(x: QuoteInTextIn) -> bool:
+    """原句核对:空白折一后逐字在页面文字里(模型偶发换行 / 连空格,不算改写)。"""
+    q = WS_FOLD_RE.sub(TEXT_JOIN_SEP, x.quote).strip().lower()
+    t = WS_FOLD_RE.sub(TEXT_JOIN_SEP, x.text).strip().lower()
+    return q != "" and q in t
+
+
+def read_search_hq() -> dict[str, SearchHqRecord]:
+    """读上轮搜总部记录(缺文件 = 空表)。"""
+    cache: dict[str, SearchHqRecord] = {}
+    if OUT_SEARCH_HQ.exists():
+        for slug, d in json.loads(OUT_SEARCH_HQ.read_text(encoding=TEXT_ENCODING)).items():
+            cache[slug] = SearchHqRecord.model_validate(d)
+    return cache
+
+
+def write_search_hq(cache: dict[str, SearchHqRecord]) -> int:
+    """搜总部记录落盘 OUT_SEARCH_HQ(并入盘上更新的),返回累计 ok 家数。"""
+    OUT_SEARCH_HQ.parent.mkdir(parents=True, exist_ok=True)
+    for slug, disk in read_search_hq().items():
+        mine = cache.get(slug)
+        if mine is None or disk.at > mine.at:
+            cache[slug] = disk
+    out: dict[str, dict] = {}
+    total_ok = 0
+    for slug, rec in cache.items():
+        out[slug] = rec.model_dump()
+        if rec.status == ST_SEARCH_OK:
+            total_ok += 1
+    paths.write_json(paths.WriteJsonIn(path=OUT_SEARCH_HQ, payload=out, indent=JSON_INDENT))
+    return total_ok
 
 
 def host_beating() -> bool:

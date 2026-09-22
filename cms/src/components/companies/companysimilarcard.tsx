@@ -6,6 +6,7 @@
  * 行区外层挂 trackSimilar,点任何一家都记一次。
  * 2026-09-22 Frank「这个相似雇主也是默认显示 6 个」(随相关职位卡同规):取数放宽到 24,收起时先出 6 家,
  * 「展开其余 N 个 ▾ / 收起 ▴」来回切(照在招职位卡的 .showAll 形)。
+ * 同日 Frank「同类这个词删掉」:卡头「同类」灰注撤(词条 co.similarSub 三语与 .simSub 类一并删)。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -44,7 +45,6 @@ export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, sh
     <div className={CARD_MD_CLS}>
       <div className={CARD_HEAD_CLS}>
         {t('co.similar')}
-        <span className={css.simSub}>{t('co.similarSub')}</span>
       </div>
       <div onClick={trackSimilar}>{rows}</div>
       {hidden > 0 && (

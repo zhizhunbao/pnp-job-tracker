@@ -22,6 +22,10 @@ OUT_PAGES = paths.PROCESSED_SITES / "pages.json"
 OUT_FACTS = paths.PROCESSED_SITES / "facts.json"
 """facts 步产物:slug → FactsRecord(官网七节 + 每节的页面原句 + 出处网址);mart 汇装读它。"""
 
+OUT_BLOCKED = paths.PROCESSED_SITES / "blocked.json"
+"""被拦清单:slug → {name, url, note, at}(2026-09-22 Frank「被拦截的记录下来。之后我再看怎么处理」)。
+拦截页 / robots 不让抓的站逐家记最近一次;人工过墙(统一 profile 亲手开一遍)前先看这份。"""
+
 TEXT_ENCODING = "utf-8"
 """全部读写的统一编码。"""
 
@@ -173,6 +177,24 @@ NOTE_BROWSER = "browser"
 NOTE_BLOCKED = "blocked page"
 """抓失败由头:拿回来的是拦截页 / 报错页(按页标题判,见 BLOCK_TITLE_RE)。"""
 
+BLOCKED_NOTES = (NOTE_BLOCKED, NOTE_ROBOTS)
+"""哪些失败由头算「被拦」(进 OUT_BLOCKED):拦截页与 robots 不让抓;连不上 / 超时 / 空壳是瞬时失败,不算。"""
+
+K_BLOCK_NAME = "name"
+"""被拦清单键:公司名。"""
+
+K_BLOCK_URL = "url"
+"""被拦清单键:被拦的官网地址。"""
+
+K_BLOCK_NOTE = "note"
+"""被拦清单键:被拦由头(blocked page / robots)。"""
+
+K_BLOCK_AT = "at"
+"""被拦清单键:最近一次被拦的时刻(ISO)。"""
+
+PRINT_BLOCKED_TPL = "⛔ 本轮被拦 {new} 家 · 累计 {total} 家 → {out}"
+"""fetch 步收尾的被拦汇总一行(本轮一家都没被拦就不打)。"""
+
 NOTE_DNS = "dns"
 """失败由头:官网域名不解析(浏览器没取回页面后用标准库 getaddrinfo 复核出来的;连续 DEAD_FAILS 轮 = 死站)。"""
 
@@ -312,7 +334,7 @@ FOUNDED=<founding year and/or parent company, only if stated, or NONE>
 FOUNDED_QUOTE=<exact page sentence>
 OFFICES=<other corporate office locations besides the head office, comma separated, or NONE; never list retail stores, showrooms, restaurants or other customer locations>
 OFFICES_QUOTE=<exact page line>
-NEWCOMERS=<what the site says about hiring newcomers, immigrants, foreign workers, work permits, visa or LMIA support, or NONE>
+NEWCOMERS=<what the site says about THIS employer hiring newcomers, immigrants, foreign workers, work permits, visa or LMIA support, or NONE; general immigration or population statistics not about hiring at this employer = NONE>
 NEWCOMERS_QUOTE=<exact page sentence>
 BENEFITS=<employee benefits and how to apply, only if stated, or NONE>
 BENEFITS_QUOTE=<exact page sentence>
@@ -353,6 +375,15 @@ QUOTE_CHECK_LEN = 40
 
 VALUE_MAX_LEN = 600
 """一节的值最长这么多字(再长是模型在抄整页)。"""
+
+COOKIE_TEXT_RE = re.compile(
+    r"we use [^.]{0,40}cookies|site uses cookies|use of cookies|\bin cookies\b|cookies are necessary"
+    r"|accept (all .{0,20})?cookies|reject (all )?cookies|storing of cookies|cookies to (enhance|improve|ensure|offer)"
+    r"|cookie (policy|settings|preferences|consent|banner)"
+    r"|g[ée]rer vos cookies|consentement des cookies|accepter les cookies", re.IGNORECASE)
+"""cookie 同意横幅的话术(节值或原句撞上 = 这一节当官网没写)。2026-09-22 Frank「这是抓的什么」(Argen Canada 实拍:
+横幅是正经 DOM 文字,SKIP_TAGS 摘不掉、常在 body 最前占了首页开头额度,模型照抄、原句核对又真在页面里 —— 生产扫出 11 家,
+含 CookieYes 插件的内嵌 JSON 碎片)。英法双语;故意不裸匹配 cookies 一词 —— 烘焙坊的主营写 cookies 是正当内容。"""
 
 NOTE_BLOB = "no page text"
 """整理失败由头:几页加起来没文字(JS 渲染空壳)。"""
@@ -488,6 +519,44 @@ K_DONE_HQ_SOURCE = "hqSource"
 
 K_DONE_BRIEF = "brief"
 """线格式键:简介(节标记行)。"""
+
+K_TODO_BRIEF = "brief"
+"""取活行键:库里现在的官网版简介(判优用;空 = 没有)。"""
+
+K_DONE_BRIEF_JUDGED = "briefJudged"
+"""线格式键:简介判优旗(True = 问过盒子、新简介硬事实更多,cms 写门放行整段替换)。"""
+
+JUDGE_OLD_MARK = "[FOUNDED]"
+"""旧简介是不是五节新版的记号(cms 写门同一判据):没有它 = 旧版式,cms 本来就当过期,不用判优。"""
+
+JUDGE_REPLACE = "REPLACE"
+"""判优回答:换。"""
+
+VERDICT_PLAIN = "plain"
+"""判优结论:不用判(旧简介空 / 旧版式 / 这轮没整理出简介),照旧交活,cms 让位规则自己定。"""
+
+VERDICT_REPLACE = "replace"
+"""判优结论:换 —— 交活带新简介 + 判优旗。"""
+
+VERDICT_KEEP = "keep"
+"""判优结论:留 —— 交活不带简介,库里旧简介不动。"""
+
+JUDGE_PROMPT_TPL = """Two five-section profiles of the same company. Answer with exactly one word.
+REPLACE = NEW has more concrete, verifiable company facts (specific business lines, founding year, size, office locations) than OLD.
+KEEP = otherwise, including when NEW is vaguer or mostly "(not stated)".
+
+OLD:
+{old}
+
+NEW:
+{new}
+
+Answer:"""
+"""判优提示词(2026-09-22 Frank「主营业务这部分,由 AI 判断值不值得替换,有没有更有价值的内容探索出来」):
+只在旧新都是正经五节简介时问,一词定夺;答不出 / 盒子出错一律当 KEEP —— 宁可不换,措辞抖动不烧译文。"""
+
+PRINT_JUDGE_TPL = "  判优 {name}:{verdict}"
+"""判优一行(只在真问了盒子时打)。"""
 
 K_DONE_SOURCES = "sources"
 """线格式键:简介出处页。"""

@@ -3086,51 +3086,26 @@ export type SiteShownIn = {
 }
 
 /**
- * addrShownOf / isAddrDup 的入参:库里的地址与「总部」行的字。
+ * noSiteOf 的入参:官网行的字与探索进度。
+ */
+export type NoSiteIn = {
+  /**
+   * 官网行的字(siteWebsiteOf 算好的);'' = 没有。
+   */
+  website: string
+
+  /**
+   * 探索进度(队列表的 stage;'' = 还没问到)。
+   */
+  stage: string
+}
+
+/**
+ * addrShownOf 的入参:库里的地址(2026-09-22 Frank「相同 也 都显示」:「总部」行那格随判重链一起撤了)。
  */
 export type AddrShownIn = {
   /**
    * 库里的地址(公司表 address;职位页的卡在公司表没有时是这条岗的地址);'' = 没有。
    */
   addr: string
-
-  /**
-   * 「总部」行的字(siteHqOf 算好的);「—」= 拿不到。
-   */
-  hq: string
-}
-
-/**
- * cityAtOf 的入参。
- */
-export type CityAtIn = {
-  /**
-   * 地址的比对形。
-   */
-  addr: string
-
-  /**
-   * 总部一行字里的一段(比对形,当市名试)。
-   */
-  city: string
-
-  /**
-   * 总部写的省码(小写;没写省的总部 isAddrDup 直接判不重复,走不到这里)。
-   */
-  prov: string
-}
-
-/**
- * addrStreetOf 的入参。
- */
-export type AddrStreetIn = {
-  /**
-   * 地址的比对形。
-   */
-  addr: string
-
-  /**
-   * 市名在地址里的下标。
-   */
-  at: number
 }
