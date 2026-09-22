@@ -29,7 +29,7 @@ from sites import FACTS_LIMIT, FETCH_LIMIT
 from sites.constants import (
     ASCII_CODEC, ASCII_ERRORS, HOST_LABEL_SEP, NAME_PHRASE_WORDS, NAME_SHORT_LEN, NAME_STOP, NAME_TOKEN_HEAD_LEN,
     NAME_TOKEN_MIN_LEN, NAME_WORD_RE, NFKD_FORM,
-    BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_TRIM_CHARS, IN_SEEN,
+    BRIEF_BASE_MARK, BRIEF_CORE_MARKS, BRIEF_LINE_SEP, BRIEF_NOT_STATED, BRIEF_LINE_TPL, BRIEF_SECS, DEAD_FAILS, HOT_HOST_HOURS, HQ_JOIN, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SEEN,
     K_DONE_BRIEF, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_QUOTE, K_DONE_HQ_SOURCE, K_DONE_SOURCES,
     K_HOST, K_KEY, K_NOTE, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
     P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
@@ -884,14 +884,20 @@ def keep_section(x: SectionIn) -> None:
 
 def hq_street_of(x: HqStreetIn) -> str:
     """总部街址只留到街(2026-09-20 清洗下沉到源头:visit 步交活直接上页面,等不到 mart 那一道;mart 的同名函数留着管存量记录,
-    对洗过的值是空转):模型常把整行地址连市 / 省 / 邮编抄进街址格,从街址里最后一次出现市名的地方截断;找不到市名 / 没有市名原样留。"""
+    对洗过的值是空转):模型常把整行地址连市 / 省 / 邮编抄进街址格,从街址里最后一次出现市名的地方截断;找不到市名 / 没有市名原样留。
+    2026-09-21 Frank「都按你的建议改」(Coffrages Synergy 实拍总部「53 chemin」,原句「53 chemin Lavaltrie Lavaltrie, QC J5T 2H4」):
+    街名就是市名(chemin Lavaltrie 在 Lavaltrie、boul. Sainte-Sophie 在 Sainte-Sophie)时,最后那个市名是街名的尾巴 ——
+    它在街址最末、前面又没有逗号;这种不截(宁可街址里多一截市名,不把街名截掉)。"""
     address = x.address.strip()
     if x.city == FIELD_NONE:
         return address
     at = address.lower().rfind(x.city.lower())
     if at < 0:
         return address
-    return address[:at].rstrip(HQ_TRIM_CHARS)
+    head = address[:at].rstrip()
+    if address[at + len(x.city):].strip() == FIELD_NONE and not head.endswith(HQ_SEG_SEP):
+        return address
+    return head.rstrip(HQ_TRIM_CHARS)
 
 
 def hq_province_of(raw: str) -> str:

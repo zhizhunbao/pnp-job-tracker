@@ -119,7 +119,7 @@ from mart.constants import (
     K_WAGE_MED_ANNUAL, K_WAGE_MED_HOURLY, K_WEBSITE, K_WEBSITE_SOURCE, K_WEEKS, WEBSITE_HOST_RE,
     HOST_AT_MARK, HOST_PORT_SEP, HOST_TAIL_DOT, TLD_CC_LEN, URL_QUERY_SEP, URL_SCHEME_SEP, WEBSITE_SCHEMES, WEBSITE_TLDS,
     BRIEF_KO_SCRIPT_RE, BRIEF_ZH_SCRIPT_RE, CAREERS_STATUS_OK, IN_CAREERS, K_CAREERS_URL, K_SRC_CAREERS_URL,
-    BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
+    BRIEF_LINE_SEP, EMPTY_JSON_LIST, HQ_CA_PROVS, HQ_SEG_SEP, HQ_TRIM_CHARS, IN_SITE_FACTS, IN_WIKI_HQ, K_HQ_ADDRESS, K_HQ_CITY,
     K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
     K_SRC_HQ_PROVINCE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
     BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
@@ -1318,14 +1318,19 @@ def hq_province_of(raw: str) -> str:
 def hq_street_of(x: HqStreetIn) -> str:
     """总部街址只留到街:模型常把整行地址连市 / 省 / 邮编一起抄进街址格(「2075 Bayview Ave, Toronto, ON M4N 3M5」),
     市 / 省各有一列,页面上三格拼一行就会重复 —— 从街址里最后一次出现市名的地方截断(街名与市同名的「100 Toronto St, Toronto」
-    截的是后一个)。街址里找不到市名的原样留;没有市名不截。"""
+    截的是后一个)。街址里找不到市名的原样留;没有市名不截。
+    2026-09-21(与 sites 域同名函数同改,Coffrages Synergy 实拍「53 chemin」):街名就是市名(chemin Lavaltrie 在 Lavaltrie)时,
+    最后那个市名在街址最末、前面又没有逗号 —— 那是街名的尾巴,不截(宁可街址里多一截市名,不把街名截掉)。"""
     address = x.address.strip()
     if x.city == "":
         return address
     at = address.lower().rfind(x.city.lower())
     if at < 0:
         return address
-    return address[:at].rstrip(HQ_TRIM_CHARS)
+    head = address[:at].rstrip()
+    if address[at + len(x.city):].strip() == "" and not head.endswith(HQ_SEG_SEP):
+        return address
+    return head.rstrip(HQ_TRIM_CHARS)
 
 
 def first_of(items: list) -> str:

@@ -914,6 +914,10 @@ PROV_CODE_LEN = 2
 HQ_TRIM_CHARS = " ,"
 """街址截掉市名以后,尾巴上要抹掉的空格与逗号。"""
 
+HQ_SEG_SEP = ","
+"""街址里另起一段的逗号:街址末尾的市名前面有它 = 另起的一段市名(「100 Toronto St, Toronto」),该截;
+没有 = 街名本身(「53 chemin Lavaltrie」),不截(2026-09-21,与 sites 域同名常量同值)。"""
+
 SITE_BRIEF_SECS = (("OFFICES", "offices"), ("NEWCOMERS", "newcomers"), ("BENEFITS", "benefits"))
 """官网整理记录里并进简介文本的三节(节标记, 记录里的值键;设计稿第四节「第 5~7 节进现有的简介文本,多三个节标记,不加列」):
 其他办公地点 / 对新移民与外籍员工的态度 / 福利与招聘。顺序即简介里的节序;cms 那头的节标记表同名同序。"""
