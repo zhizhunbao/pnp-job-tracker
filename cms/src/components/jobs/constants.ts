@@ -712,10 +712,6 @@ export const URL_API_JD_TRANSLATE = '/api/jobs/jd-translate'
  */
 export const URL_API_JD_FORMAT = '/api/jobs/jdformat'
 
-/**
- * 账户页(未建档/未登录的落点)。
- */
-export const URL_ACCOUNT = '/account'
 
 /**
  * 职位板(2026-07-17 根域直出后,职位板 = 根路径)。
@@ -3220,6 +3216,11 @@ export const PILL_CLS = 'pill'
  * 全站白卡的全局类(main.css 的 `.cardMd`)。
  */
 export const CARD_MD_CLS = 'cardMd'
+
+/**
+ * 职位详情页标题译名的重译代数:详情页没有「重译」钮,恒为 0(职位弹框那台重译一次加一;2026-09-23)。
+ */
+export const TITLE_TRANS_GEN = 0
 
 /**
  * 定制样式钮统一走 ghost 变体 + 本域加倍类(样板 account 的 PLAIN_BTN_KIND)。

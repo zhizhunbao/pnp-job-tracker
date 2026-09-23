@@ -326,12 +326,6 @@ export const JOBS_FIRST_N = 8
 export const JOBS_STEP_N = 20
 
 /**
- * 批量懒翻职位名一次发的条数(与接口那头的 TITLE_BATCH_MAX 同值:超了的接口不收,所以这头按它分批发;
- * 2026-09-19 在招岗放开 50 条上限后,大公司展开会超)。
- */
-export const TITLES_CHUNK = 60
-
-/**
  * 获批职业逐行列出的条数(#286:Top 6 逐行,余量并成一行)。
  */
 export const NOCS_TOP_N = 6
@@ -807,16 +801,6 @@ export const URL_EMPLOYERS_PROV = '/employers?prov='
  * 行业桶显示名的 i18n 键头(companies.industry 存的是职位板大类键,显示名走 broad.*)。
  */
 export const BROAD_KEY_HEAD = 'broad.'
-
-/**
- * 职位名批量懒翻接口(在招清单没 NOC 译名的行,一次发齐;2026-09-14)。
- */
-export const URL_CO_TITLES = '/api/jobs/title'
-
-/**
- * 批量键的分隔(一组职位名拼成一个串当 effect 依赖)。
- */
-export const TITLES_KEY_SEP = '\u0001'
 
 /**
  * 官网简介懒翻接口(2026-09-14)。

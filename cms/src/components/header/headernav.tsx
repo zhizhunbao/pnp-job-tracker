@@ -5,17 +5,19 @@
  * 为「就业把脉」;「我的账户」独立项 2026-08-09 Frank 摘除(账户入口只留头像);
  * 「雇主」2026-08-16 挂回(有了真雇主板);「校内板」2026-09-13 挂上(Algonquin HireAC 登录源,Frank「在一级 title 上加呢」)。
  * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
+ * 2026-09-23 Frank「这几个模块先隐藏掉」:导航先不挂「拿 PR 评估」「PTE 刷题」「资料库」三项(路由照旧在,直链照旧能开);
+ * 挂回 = 这里与 mobiledrawer.tsx 各把那三颗 LinkButton 加回来(地址与高亮键仍在 constants)。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
  */
 import { cssOf } from '@/components/css'
-import { IconChart, IconClipboard, IconCompass, IconMedal, IconNews, IconUsers } from '@/components/icons'
+import { IconChart, IconClipboard, IconNews, IconUsers } from '@/components/icons'
 import { LinkButton } from '@/components/button'
 import {
-  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS,
+  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS,
   PATH_EMPLOYERS, PATH_HOME,
-  PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE, PATH_START,
+  PATH_NEWS, PATH_START,
 } from './constants'
 import { withOn } from './functions'
 import type { HeaderNavIn } from './types'
@@ -39,17 +41,8 @@ export function HeaderNav({ t, active }: HeaderNavIn) {
       <LinkButton href={PATH_HOME} className={withOn({ base: cssOf(css.navLink), on: onJobs })}>
         <IconClipboard /> {t('nav.jobs')}
       </LinkButton>
-      <LinkButton href={PATH_PLAN_PR} className={withOn({ base: cssOf(css.navLink), on: active === A_PATHWAYS })}>
-        <IconCompass /> {t('plan.pr.title')}
-      </LinkButton>
       <LinkButton href={PATH_EMPLOYERS} className={withOn({ base: cssOf(css.navLink), on: active === A_EMPLOYERS })}>
         <IconUsers /> {t('nav.employers')}
-      </LinkButton>
-      <LinkButton href={PATH_PTE} className={withOn({ base: cssOf(css.navLink), on: active === A_PTE })}>
-        <IconMedal /> {t('nav.pte')}
-      </LinkButton>
-      <LinkButton href={PATH_OCC} className={withOn({ base: cssOf(css.navLink), on: active === A_LIBRARY })}>
-        <IconUsers /> {t('nav.library')}
       </LinkButton>
       <LinkButton href={PATH_NEWS} className={withOn({ base: cssOf(css.navLink), on: onNews })}>
         <IconNews /> {t('nav.info')}

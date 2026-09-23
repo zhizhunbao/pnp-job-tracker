@@ -26,6 +26,9 @@ import type { SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUps
 
 /**
  * 职位板的全列清单(含公司 join 出来的列)。列表/详情/匹配共用,加列只改这一处。
+ * 2026-09-23 多带职位名译名两格与这一行的译文版本号(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:
+ * 板上卡片与详情页标题下的灰字改出这一岗自己存的译名 —— 详情页 / 弹框逐岗翻、歧义标题带正文翻的那一份);
+ * 版本号起别名 job_trans_v,同 REL_COLS(JOB_FROM 连着公司表,那边也有 trans_v)。
  */
 export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
@@ -37,7 +40,8 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
   ci.name_zh AS city_zh, ci.name_ko AS city_ko,
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
   j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
-  j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at, j.valid_through`
+  j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at, j.valid_through,
+  j.title_zh, j.title_ko, j.trans_v AS job_trans_v`
 
 /**
  * 职位板的 FROM/JOIN 骨架:jobs 左连 companies;2026-09-14 再左连 cities 带回人工核定的市译名 city_zh / city_ko
@@ -224,8 +228,11 @@ export const COMPANY_BY_JOB_ID_COND = `c.id = (SELECT company_id FROM jobs WHERE
  * 在招总量(REFRESH_EMPLOYER_POOL_OPEN)四处同一句。
  * 2026-09-14 晚 Frank「关键是能搜到啊」「也算进来吧」(AECOM 唯一一条岗是校内板 campus 态,公司弹框在招为空、市也没了):
  * 职位板列表的 OPEN_COND 本就是「非 closed」(campus 岗板上搜得到),这一句改成同一条;上面「status = open」那段是历史。
+ * 2026-09-23 带上这一岗存好的职位名译名(title_zh / title_ko + 版本号,别名 job_trans_v 同 REL_COLS):公司页在招清单的灰字
+ * 改成标题译名优先(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」)。
  */
 export const COMPANY_OPEN_JOBS = `SELECT j.id, j.title, j.city, j.province, j.grade_channel, j.noc, j.teer, j.date_posted, j.salary, j.salary_text,
+            j.title_zh, j.title_ko, j.trans_v AS job_trans_v,
             nd.title AS noc_title, nd.title_zh AS noc_title_zh, nd.title_ko AS noc_title_ko,
             ci.name_zh AS city_zh, ci.name_ko AS city_ko
      FROM jobs j LEFT JOIN noc_descriptions nd ON nd.noc = j.noc

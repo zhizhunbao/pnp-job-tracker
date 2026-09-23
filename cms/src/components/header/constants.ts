@@ -40,6 +40,7 @@ export const PATH_START = '/start'
 
 /**
  * 拿 PR 评估(判定合一批2:/pathways 301 并入决策页)。
+ * 2026-09-23 导航先不挂(Frank「这几个模块先隐藏掉」);常量留着,挂回时直接用。
  */
 export const PATH_PLAN_PR = '/plan/pr'
 
@@ -50,6 +51,7 @@ export const PATH_EMPLOYERS = '/employers'
 
 /**
  * 职业库。
+ * 2026-09-23 导航先不挂(Frank「这几个模块先隐藏掉」);常量留着,挂回时直接用。
  */
 export const PATH_OCC = '/occupations'
 
@@ -127,6 +129,7 @@ export const A_PTE = 'pte'
 /**
  * PTE 刷题题单页地址(默认型朗读;/pte 门厅 2026-09-04 撤 —— Frank「这个页面怎么还存在」,
  * 题型面板已在题单页上,/pte 在 next.config 301 到这里)。
+ * 2026-09-23 导航先不挂(Frank「这几个模块先隐藏掉」);常量留着,挂回时直接用。
  */
 export const PATH_PTE = '/pte/ra'
 

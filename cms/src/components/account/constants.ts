@@ -30,50 +30,6 @@ export const TEXT_NONE = ''
 export const CARD_CLS = 'card'
 
 /**
- * 昵称输入框外壳的全局类名(`main.css` 里 `.acctNickBox { display:inline-block;
- * width:160px }`)—— 它定死编辑态输入框的宽,不随内容伸缩。本页专属,留在全局层是
- * 历史位置,迁类时原样保留,别改名(改名要连 main.css 一起改)。
- */
-export const NICK_BOX_CLS = 'acctNickBox'
-
-/**
- * 改名铅笔钮的字符。图标是**内容**不是样式,归常量不进 css;这里用字符而不是
- * icons 域的 lucide 件,是因为原样式按 15px 字号排版(换成 svg 会改变基线)。
- */
-export const NICK_EDIT_MARK = '✎'
-
-/**
- * 保存类钮忙态的钮面文字(三点省略号;昵称保存与档案保存共用)。它不是文案是
- * **状态指示**,三语一样,所以不进 i18n —— 进了反而要为三门语言各写一遍同一个字符。
- * (2026-08-27 换装批自 NICK_BUSY_MARK 扩名:档案保存钮的忙态是同一枚记号。)
- */
-export const BUSY_MARK = '…'
-
-/**
- * 邮箱的域名分隔符。昵称为空时显示名回退成邮箱的 @ 前缀 —— 切错这个字符
- * 会把整个邮箱当成名字显示在身份行上,而那是**泄露**不是显示。
- */
-export const EMAIL_AT = '@'
-
-/**
- * 昵称最大字数。40 是「够写中英文全名 + 一点花样」又不至于把身份行撑破的档
- * (身份行的名字不许折行,见 account.module.css 的 .nickName)。
- */
-export const NICK_LEN_MAX = 40
-
-/**
- * 昵称输入框的尺寸档(input 域的 sm = 32px 高)。身份行是**行内**编辑,
- * 用最矮那档才不会把 52px 头像那一行顶高。
- */
-export const NICK_INPUT_SIZE = 'sm'
-
-/**
- * 身份行头像的直径像素。52 比全站默认 36 大一档 —— 账户页是「这是我」的确认页,
- * 头像在这里是主角;这个数同时撑着昵称那一行的行高(见 .nickEdit 的注释)。
- */
-export const AVATAR_SIZE_PX = 52
-
-/**
  * 正文轨(Shell)的上内衬档(px)。2026-08-28 骨架归一批:上下留白从 AccountColumns
  * 自带的 `margin: 2.5rem` 交给正文轨 —— 那是 45px(main.css 把 rem 基准冻结在 18px),
  * 而 Shell 的档位表里没有 45,取最近的 40 档,余下的 5px 留在 .columns 的 margin 上,
@@ -94,15 +50,11 @@ export const SHELL_BOTTOM = 40
 export const SEC_LABEL_CUT_RE = /[((]/
 
 /**
- * 概览节的节标识(同 URL 深链 `?sec=` 的取值)。它同时是**默认落点**,见下面的 SEC_DEFAULT ——
- * 那一格直接引它,不再抄第二遍字面量(同一个节两个名字,改一处漏一处就是死链)。
+ * 我的简历节的节标识(同 URL 深链 `?sec=` 的取值;简历存档件独占这一节)。它同时是**默认落点**,
+ * 见下面的 SEC_DEFAULT —— 那一格直接引它,不再抄第二遍字面量(同一个节两个名字,改一处漏一处
+ * 就是死链)。2026-09-23 概览节撤掉时立,默认落点的身份从概览节接过来。
  */
-export const SEC_OVERVIEW = 'overview'
-
-/**
- * 移民档案节的节标识(档案表单 + 简历存档同住这一节)。
- */
-export const SEC_PROFILE = 'profile'
+export const SEC_RESUME = 'resume'
 
 /**
  * 我的收藏节的节标识(#62A:同一份收藏数据的纯列表视图)。
@@ -117,16 +69,6 @@ export const SEC_FAVS = 'favs'
 export const SEC_SJOBS = 'sjobs'
 
 /**
- * 已保存筛选节的节标识(E5-03:邮件提醒管理)。
- */
-export const SEC_SAVED = 'saved'
-
-/**
- * 时长包购买节的节标识(E3-03:Pro 也可续买,到期日顺延)。
- */
-export const SEC_BUY = 'buy'
-
-/**
  * 简历存档件 React key 的键头(拼上用户号 = 这个人的那一份存档)。
  * 它与档案表单的 key 必须**不同**:两件并排住在档案节里,key 撞上会被 React 当成同一个位置,
  * 换号时留着上一个人的内部状态(存档是隐私内容,残留 = 串号)。
@@ -138,14 +80,16 @@ export const RA_KEY_HEAD = 'ra'
  * 侧栏标签**复用各节标题键**而不是另起一套侧栏文案 —— 两处叫法必须一致,
  * 分成两套键迟早对不上(裁括号说明的活交给 functions 的 navLabelOf)。
  * 顺序即侧栏从上到下的顺序。
+ * 2026-09-23 Frank:「只保留一个 我的简历 我的收藏 我的求职 其他的能删都删了」(起因:他截图说
+ * 移民档案节「基本上是完全没法用」)—— 撤概览 overview、移民档案 profile、已保存的筛选 saved、
+ * 升级 Pro buy 四节,只剩三节;我的简历 resume 是新节,顶在最上面并当默认落点。它照样复用标题键:
+ * rm.arch.title 只有简历存档件在用,三语值直接改成「我的简历」,不另起侧栏键。
+ * 旧深链 `?sec=` 带着撤掉的四个值进来,不在这张表里 → 落回默认节(见 functions 的 secLinkOf)。
  */
 export const SEC_TABS = [
-  { sec: 'overview', labelKey: 'acct.title' },
-  { sec: 'profile', labelKey: 'prof.title' },
+  { sec: 'resume', labelKey: 'rm.arch.title' },
   { sec: 'favs', labelKey: 'fav.title' },
   { sec: 'sjobs', labelKey: 'sj.title' },
-  { sec: 'saved', labelKey: 'ss.title' },
-  { sec: 'buy', labelKey: 'acct.buyTitle' },
 ] as const
 
 /**
@@ -178,8 +122,10 @@ export const LOGIN_URL = '/?login=1'
  * 默认落点节:进页先看概览(深链 `?sec=` 命中时由 effect 再改)。
  * 值直接引 SEC_OVERVIEW —— 「默认是哪一节」是这一格要说的事,「概览节叫什么」是那一格的事,
  * 两格同值但不是同一件事,所以留两个名字、只留一份字面量。
+ * 2026-09-23 概览节撤了(Frank「只保留一个 我的简历 我的收藏 我的求职」),默认落点改成
+ * 「我的简历」,值改引 SEC_RESUME —— 两个名字、一份字面量的理由照旧。
  */
-export const SEC_DEFAULT = SEC_OVERVIEW
+export const SEC_DEFAULT = SEC_RESUME
 
 /**
  * Stripe 回跳成功标记的查询参数名(`/account?ok=1`,由 checkout 的 success_url 带回)。
@@ -205,11 +151,6 @@ export const URL_ME = '/api/users/me'
  * 登出接口(POST;清的是服务端会话,本地答案内存另由 resetAnswersMemory 清)。
  */
 export const URL_LOGOUT = '/api/users/logout'
-
-/**
- * 发起时长包购买的接口(POST plan → 回 Checkout URL,E3-03)。
- */
-export const URL_CHECKOUT = '/api/stripe/checkout'
 
 /**
  * 改用户资料的接口前缀(PATCH `/api/users/:id`,本人可改;昵称保存走这里)。
@@ -242,21 +183,6 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const MIME_JSON = 'application/json'
 
 /**
- * Checkout 发起的统计事件名(E7-02;umami 由环境注入,没有就不发)。
- */
-export const EV_CHECKOUT = 'checkout'
-
-/**
- * 30 天时长包的档位标识(发给 /api/stripe/checkout 的 plan 值,也是 umami 事件的属性值)。
- */
-export const PLAN_30 = '30'
-
-/**
- * 90 天时长包的档位标识(同上;Pro 也可续买,到期日顺延)。
- */
-export const PLAN_90 = '90'
-
-/**
  * 收藏岗清单的拉取地址(E9-01;access 本人,按更新时间新前旧后)。
  */
 export const URL_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0&sort=-updatedAt'
@@ -265,16 +191,6 @@ export const URL_SAVED_JOBS_LIST = '/api/saved-jobs?limit=200&depth=0&sort=-upda
  * 单条收藏的接口前缀(PATCH 改看板状态 / DELETE 移除,拼上记录 id)。
  */
 export const URL_SAVED_JOB_HEAD = '/api/saved-jobs/'
-
-/**
- * 已存筛选清单的拉取地址(E5-03;access 本人)。
- */
-export const URL_SAVED_SEARCHES_LIST = '/api/saved-searches?limit=20&depth=0'
-
-/**
- * 单条已存筛选的接口前缀(DELETE,拼上记录 id)。
- */
-export const URL_SAVED_SEARCH_HEAD = '/api/saved-searches/'
 
 /**
  * DELETE 方法字(移除收藏 / 删已存筛选)。
@@ -348,13 +264,3 @@ export const EV_WEEKLY = 'weekly-optin'
  * 周报开关勾选框的 input 类型字(DOM 定值;平台串起名挂注释)。
  */
 export const CHECKBOX_TYPE = 'checkbox'
-
-/**
- * 键盘事件的回车键名(平台定值串,打错是静默失效 —— 昵称框「Enter 存」用)。
- */
-export const KEY_ENTER = 'Enter'
-
-/**
- * 键盘事件的退出键名(昵称框「Esc 取消」用)。
- */
-export const KEY_ESCAPE = 'Escape'

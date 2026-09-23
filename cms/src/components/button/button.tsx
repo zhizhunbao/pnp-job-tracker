@@ -8,6 +8,9 @@
  * style 白名单:styleOverride 是调用方的几何微调过渡口(几十处消费页在传宽度/边距),
  * 消费页形制化批逐个收进各页的类后撤。
  *
+ * 2026-09-23 在途态(busy)收进这里:登录钮提交中原先把 loading 桶的加载行塞进钮里(蓝小字压浅蓝底、挤在左边,
+ * Frank「这个登录按钮太难看了」),钮里转圈从此只有这一个出口。
+ *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
@@ -15,9 +18,10 @@ import { KIND_DEFAULT } from './constants'
 import { LinkButton } from './linkbutton'
 import { btnClsOf } from './functions'
 import type { ButtonIn } from './types'
+import css from './button.module.css'
 
 /**
- * 统一按钮;禁用时 href 形态退回 <button>(a 没有 :disabled)。
+ * 统一按钮;禁用时 href 形态退回 <button>(a 没有 :disabled)。在途 = 禁用 + 字前转圈。
  *
  * @param props 变体/尺寸/禁用/目标/微调/文字。
  * @returns 按钮或链接。
@@ -27,6 +31,7 @@ export function Button({
   sm = false,
   lg = false,
   disabled = false,
+  busy,
   onClick,
   href,
   replace = false,
@@ -53,8 +58,10 @@ export function Button({
   if (className != null) {
     extraCls = className
   }
-  const cls = btnClsOf({ kind, sm, lg, active, className: extraCls })
-  if (href != null && href !== '' && disabled === false) {
+  const inFlight = busy === true
+  const off = disabled || inFlight
+  const cls = btnClsOf({ kind, sm, lg, active, busy: inFlight, className: extraCls })
+  if (href != null && href !== '' && off === false) {
     return (
       <LinkButton href={href} replace={replace} target={target} title={title} className={cls} style={style}>
         {children}
@@ -62,7 +69,7 @@ export function Button({
     )
   }
   return (
-    <button disabled={disabled}
+    <button disabled={off}
       onClick={onClick}
       onKeyDown={onKeyDown}
       title={title}
@@ -72,6 +79,7 @@ export function Button({
       aria-controls={ariaControls}
       aria-selected={ariaSelected}
       aria-pressed={pressed}
+      aria-busy={busy}
       role={role}
       tabIndex={tabIndex}
       id={id}
@@ -79,6 +87,6 @@ export function Button({
       type={type}
       className={cls}
       // eslint-disable-next-line react/forbid-dom-props -- 调用方几何微调的过渡口(见文件头)
-      style={style}>{children}</button>
+      style={style}>{inFlight && <span className={css.busySpin} aria-hidden />}{children}</button>
   )
 }

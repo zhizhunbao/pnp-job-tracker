@@ -20,7 +20,9 @@ import css from './guide.module.css'
  * @returns 卡组。
  */
 export function GuideMap({ p }: GuideHelloIn) {
-  const cardCls = btnClsOf({ kind: PLAIN_BTN_KIND, sm: false, lg: false, active: false, className: cssOf(css.cbOpt) })
+  const cardCls = btnClsOf({
+    kind: PLAIN_BTN_KIND, sm: false, lg: false, active: false, busy: false, className: cssOf(css.cbOpt),
+  })
   const cards = []
   for (const dest of MAP_DESTS) {
     cards.push(

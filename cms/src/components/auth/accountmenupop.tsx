@@ -3,14 +3,20 @@
  * auth 域的账户下拉弹层(身份头 + 求职/管理两组条目 + 升级/登出)。
  * 2026-08-24 自 AccountMenu 拆出(function-length 闸 81 行超限,按闸拆;
  * 域内小件不出桶)。
+ * 2026-09-23 Frank 把账户页撤到三节(「只保留一个 我的简历 我的收藏 我的求职 其他的能删都删了」,
+ * 起因是他截图说移民档案节「基本上是完全没法用」;撤的是概览、移民档案、已保存的筛选、升级 Pro
+ * 四节):下拉同批删「移民档案」「已保存的筛选」「账户设置」三项;「求职」组补「我的简历」,
+ * 顺序改成 匹配、我的简历、我的收藏、我的求职。「管理」组只剩「升级」一项,组标题随之撤掉,
+ * 「升级」留在分隔线下 —— 那条分隔线跟着「升级」一起只在免费档出,Pro 档没有「升级」,
+ * 不然会和登出上面那条叠成两道线。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { IconClipboard, IconSave, IconSettings, IconStar, IconTarget, IconUser } from '@/components/icons'
+import { IconClipboard, IconPaperclip, IconStar, IconTarget } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 import {
-  ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_PROFILE, PATH_ACCOUNT_SAVED, PATH_ACCOUNT_SJOBS,
+  ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_RESUME, PATH_ACCOUNT_SJOBS,
   PATH_MATCH, PLAIN_BTN_KIND, PRO_LABEL,
 } from './constants'
 import { logout } from './functions'
@@ -41,17 +47,18 @@ export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade
       </LinkButton>
       <div className={css.menuSect}>{t('menu.sect.job')}</div>
       <LinkButton href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</LinkButton>
+      <LinkButton href={PATH_ACCOUNT_RESUME} className={css.menuItem}>
+        <IconPaperclip /> {t('rm.arch.title')}
+      </LinkButton>
       <LinkButton href={PATH_ACCOUNT_FAVS} className={css.menuItem}><IconStar /> {t('fav.title')}</LinkButton>
       <LinkButton href={PATH_ACCOUNT_SJOBS} className={css.menuItem}><IconClipboard /> {t('sj.title')}</LinkButton>
-      <div className={css.menuHr} />
-      <div className={css.menuSect}>{t('menu.sect.manage')}</div>
-      <LinkButton href={PATH_ACCOUNT_PROFILE} className={css.menuItem}><IconUser /> {t('prof.title')}</LinkButton>
-      <LinkButton href={PATH_ACCOUNT_SAVED} className={css.menuItem}><IconSave /> {t('ss.title')}</LinkButton>
-      <LinkButton href={PATH_ACCOUNT} className={css.menuItem}><IconSettings /> {t('nav.acctTab')}</LinkButton>
       {onUpgrade != null && (
-        <Button kind={PLAIN_BTN_KIND} onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
-          <IconStar /> {t('up.cta2')}
-        </Button>
+        <>
+          <div className={css.menuHr} />
+          <Button kind={PLAIN_BTN_KIND} onClick={onUpgrade} className={`${css.menuItem} ${css.menuItemPro}`}>
+            <IconStar /> {t('up.cta2')}
+          </Button>
+        </>
       )}
       <div className={`${css.menuHr} ${css.menuHrTight}`} />
       <Button kind={PLAIN_BTN_KIND}

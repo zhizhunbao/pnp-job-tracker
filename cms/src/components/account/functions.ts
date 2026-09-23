@@ -10,39 +10,22 @@
  */
 import { cssOf } from '@/components/css'
 import { resetAnswersMemory } from '@/lib/quiz'
-import { KEY_ENTER, KEY_ESCAPE,
-  BUSY_MARK, CARD_CLS, CLS_SEP, CRED_INCLUDE, EMAIL_AT, EV_CHECKOUT, EV_WEEKLY, FAV_NOTE_KEY, FAV_TITLE_KEY,
-  HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, PLAN_30, PLAN_90, Q_SEARCH_HEAD, QP_OK,
+import {
+  CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY, FAV_NOTE_KEY, FAV_TITLE_KEY,
+  HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, Q_SEARCH_HEAD, QP_OK,
   QP_OK_ON, QP_SEC, SEC_LABEL_CUT_RE, SEC_TABS, SJ_NOTE_KEY, SJ_STATUS_DEFAULT, SJ_STATUS_TABS, SJ_TITLE_KEY,
-  TEXT_NONE, URL_CHECKOUT, URL_LOGOUT, URL_ME, URL_SAVED_JOB_HEAD, URL_SAVED_JOBS_LIST, URL_SAVED_SEARCH_HEAD,
-  URL_SAVED_SEARCHES_LIST, URL_USER_HEAD,
+  TEXT_NONE, URL_LOGOUT, URL_ME, URL_SAVED_JOB_HEAD, URL_SAVED_JOBS_LIST,
+  URL_USER_HEAD,
 } from './constants'
 import type {
-  ArchViewLabelIn, BuyBtnClsIn, BuyFn, BuyIn, BuyPickFn, BuyPickIn, BuyPlan, CheckoutRespJson, FlagSetIn,
-  JobRemoveIn, JobStatusChangeFn, JobStatusChangeIn, LoadSavedJobsIn, LoadSearchesIn, LogoutIn, Me, MeRespJson,
-  NarrowClsIn, NavBtnClsIn, NavLabelIn, NickEditIn, NickKeyFn, NickKeyIn, NickSaveLabelIn, NickShownIn, ProOfIn,
-  RefreshFn, RefreshIn, ResumeClearIn, ResumeHookIn, SavedJobFact, SavedJobsRespJson, SavedSearchesRespJson,
-  SavedSearchFact, SaveNickIn, SearchDelIn, SearchHrefIn, Sec, SecPickFn, SecPickIn, SjStatus, SjTitleKeys,
+  ArchViewLabelIn, FlagSetIn,
+  JobRemoveIn, JobStatusChangeFn, JobStatusChangeIn, LoadSavedJobsIn, LogoutIn, Me, MeRespJson,
+  NarrowClsIn, NavBtnClsIn, NavLabelIn,
+  RefreshFn, RefreshIn, ResumeClearIn, ResumeHookIn, SavedJobFact, SavedJobsRespJson,
+  SearchHrefIn, Sec, SecPickFn, SecPickIn, SjStatus, SjTitleKeys,
   SjTitleKeysIn, UmamiWindow, WeeklyToggleFn, WeeklyToggleIn,
 } from './types'
 import css from './account.module.css'
-
-/**
- * 造一枚昵称框的键盘手柄:Enter 存、Esc 取消。
- *
- * @param x 存昵称与退出编辑两个动作。
- * @returns 挂到输入框 onKeyDown 上的手柄。
- */
-export function makeNickKey(x: NickKeyIn): NickKeyFn {
-  return function onNickKey(e): void {
-    if (e.key === KEY_ENTER) {
-      x.saveNick()
-    }
-    if (e.key === KEY_ESCAPE) {
-      x.setNick(null)
-    }
-  }
-}
 
 /**
  * 两列容器的类名预算:基座 + 窄屏修饰(窄屏两列改上下叠)。
@@ -128,70 +111,6 @@ export function makeSecPick(x: SecPickIn): SecPickFn {
 }
 
 /**
- * 身份行显示的名字:昵称优先,昵称空(没设过或只有空白)就回退成邮箱的 @ 前缀。
- *
- * @param x 昵称与邮箱。
- * @returns 显示名;邮箱里连 @ 都没有时给空串。
- */
-export function nickShownOf(x: NickShownIn): string {
-  if (x.displayName != null) {
-    const named = x.displayName.trim()
-    if (named !== '') {
-      return named
-    }
-  }
-  const head = x.email.split(EMAIL_AT)[0]
-  if (head == null) {
-    return TEXT_NONE
-  }
-  return head
-}
-
-/**
- * 昵称保存钮的钮面文字:存的过程中换成省略号(占位不跳动),否则是「保存」。
- *
- * @param x 忙态与取词函数。
- * @returns 钮面文字。
- */
-export function nickSaveLabelOf(x: NickSaveLabelIn): string {
-  if (x.busy) {
-    return BUSY_MARK
-  }
-  return x.t('acct.nickSave')
-}
-
-/**
- * 时长包购买钮的类名预算:基座 + 档位配色(查表,键完整性由 Record<BuyPlan, string>
- * 管着)+ 忙态压暗。
- *
- * @param x 档位与忙态。
- * @returns 拼好的 className。
- */
-export function buyBtnClsOf(x: BuyBtnClsIn): string {
-  const planCls: Record<BuyPlan, string> = {
-    [PLAN_30]: cssOf(css.buyBtn30),
-    [PLAN_90]: cssOf(css.buyBtn90),
-  }
-  const cls = [cssOf(css.buyBtn), planCls[x.plan]]
-  if (x.busy) {
-    cls.push(cssOf(css.buyBtnBusy))
-  }
-  return cls.join(CLS_SEP)
-}
-
-/**
- * 造一枚购买钮的点击手柄:点了就按它代表的档发起 Checkout。
- *
- * @param x 这一枚买哪一档、点了往哪报。
- * @returns 挂到钮上的 onClick 手柄。
- */
-export function makeBuyPick(x: BuyPickIn): BuyPickFn {
-  return function pickPlan(): void {
-    x.onBuy(x.plan)
-  }
-}
-
-/**
  * Stripe 回跳成功标记:地址栏带 `?ok=1` 才算付成(E3-03;别的值一律当没付,
  * 到期日由 webhook 拨,前端只出提示)。
  *
@@ -204,6 +123,8 @@ export function okFlagOf(): boolean {
 /**
  * 账户下拉深链(E11-02):`?sec=`(profile/favs/sjobs/saved/buy/overview)直落对应节。
  * 白名单就是 SEC_TABS 的键 —— 不在表里的值不认,返回 null 让页面留在默认节。
+ * 2026-09-23 SEC_TABS 撤到三节后白名单跟着收窄成 resume/favs/sjobs:旧链接带
+ * `?sec=overview|profile|saved|buy` 进来一律返回 null,页面停在默认节「我的简历」,不报错不白屏。
  *
  * @returns 深链点名的节;没带或不认识是 null。
  */
@@ -260,114 +181,6 @@ export function makeLogout(x: LogoutIn): () => Promise<void> {
     resetAnswersMemory()
     await x.refresh()
   }
-}
-
-/**
- * 造一枚进昵称编辑态的手柄(E11-01):编辑种子 = 现显示名,没有显示名从空串起编
- * (与改造前 `me.displayName || ''` 同口径)。
- *
- * @param x 当前登录人与编辑值的落格。
- * @returns 点铅笔的手柄。
- */
-export function makeNickEdit(x: NickEditIn): () => void {
-  return function onNickEdit(): void {
-    let seed = TEXT_NONE
-    if (x.me != null && x.me.displayName != null) {
-      seed = x.me.displayName
-    }
-    x.setNick(seed)
-  }
-}
-
-/**
- * 造一枚存昵称的手柄(E11-01):PATCH `/api/users/:id`(本人可改),成功后重查并
- * 退出编辑态;失败不动编辑值 —— 留在编辑态,可重试。
- *
- * @param x 编辑现值、登录人与三个落格。
- * @returns 保存手柄。
- */
-export function makeSaveNick(x: SaveNickIn): () => Promise<void> {
-  return async function saveNick(): Promise<void> {
-    if (x.nick == null || x.me == null) {
-      return
-    }
-    x.setNickBusy(true)
-    try {
-      await fetch(URL_USER_HEAD + x.me.id, {
-        method: METHOD_PATCH,
-        credentials: CRED_INCLUDE,
-        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ displayName: x.nick.trim() }),
-      })
-      await x.refresh()
-      x.setNick(null)
-    } catch {
-      x.setNickBusy(false)
-      return
-    }
-    x.setNickBusy(false)
-  }
-}
-
-/**
- * 造一枚发起购买的手柄(E3-03):前端只拿 Checkout URL 跳转,成功回跳 /account?ok=1。
- * 先发 umami 的 checkout 事件(E7-02;统计对象由环境注入,按 UmamiWindow 跨边界断言收形,
- * 没有就不发、发挂了不挡购买);响应体按 CheckoutRespJson 收形,`r.ok` 假或 url
- * 缺席/空串都算失败出话术(与改造前 `!d?.url` 同口径),不静默。
- *
- * @param x 取词函数与两格 state。
- * @returns 发起购买的手柄(收 30/90 档位)。
- */
-export function makeBuy(x: BuyIn): BuyFn {
-  return async function buy(plan: BuyPlan): Promise<void> {
-    x.setBuying(true)
-    x.setBuyErr(TEXT_NONE)
-    const w = window as UmamiWindow
-    try {
-      if (w.umami != null) {
-        w.umami.track(EV_CHECKOUT, { plan })
-      }
-    } catch {
-      x.setBuyErr(TEXT_NONE)
-    }
-    try {
-      const r = await fetch(URL_CHECKOUT, {
-        method: METHOD_POST,
-        credentials: CRED_INCLUDE,
-        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ plan }),
-      })
-      let d: CheckoutRespJson | null = null
-      try {
-        d = await r.json() as CheckoutRespJson
-      } catch {
-        d = null
-      }
-      if (r.ok === false || d == null || d.url == null || d.url === TEXT_NONE) {
-        x.setBuyErr(x.t('acct.payErr'))
-        return
-      }
-      window.location.href = d.url
-    } catch {
-      x.setBuyErr(x.t('acct.payErr'))
-    } finally {
-      x.setBuying(false)
-    }
-  }
-}
-
-/**
- * Pro 在期判定:proUntil 有值且晚于现在。空串与 null 都按免费读
- * (与改造前 `!!me?.proUntil && new Date(…) > new Date()` 同口径)。
- *
- * @param x 当前登录人。
- * @returns Pro 在期 = true。
- */
-export function proOf(x: ProOfIn): boolean {
-  if (x.me == null || x.me.proUntil == null || x.me.proUntil === TEXT_NONE) {
-    return false
-  }
-  return new Date(x.me.proUntil) > new Date()
 }
 
 /**
@@ -546,69 +359,6 @@ export function makeWeeklyToggle(x: WeeklyToggleIn): WeeklyToggleFn {
  */
 export function jobSearchHrefOf(x: SearchHrefIn): string {
   return Q_SEARCH_HEAD + encodeURIComponent(x.title)
-}
-
-/**
- * saved-searches 响应 → 订阅行清单(行构造器):id 洗成串、名字缺格归一成空串、
- * 没发过提醒 = null(格子在,记的就是「没有」)。
- *
- * @param d 接口响应体(归一前)。
- * @returns 洗净的订阅行。
- */
-export function toSavedSearches(d: SavedSearchesRespJson): SavedSearchFact[] {
-  const out: SavedSearchFact[] = []
-  if (d == null || d.docs == null) {
-    return out
-  }
-  for (const row of d.docs) {
-    let name = ''
-    if (row.name != null) {
-      name = row.name
-    }
-    let at: string | null = null
-    if (row.lastNotifiedAt != null && row.lastNotifiedAt !== '') {
-      at = row.lastNotifiedAt
-    }
-    out.push({ id: String(row.id), name, lastNotifiedAt: at })
-  }
-  return out
-}
-
-/**
- * 造一枚拉已存筛选清单的手柄(E5-03),挂载时与删除后各调一次。
- * 网络挂了落空清单(与旧口径一致)。
- *
- * @param x 清单落格。
- * @returns 拉取手柄。
- */
-export function makeLoadSearches(x: LoadSearchesIn): () => Promise<void> {
-  return async function loadSearches(): Promise<void> {
-    try {
-      const r = await fetch(URL_SAVED_SEARCHES_LIST, { credentials: CRED_INCLUDE })
-      const d = await r.json() as SavedSearchesRespJson
-      x.setItems(toSavedSearches(d))
-    } catch {
-      x.setItems([])
-    }
-  }
-}
-
-/**
- * 造一枚删已存筛选的手柄:DELETE(失败静默)后重拉一遍清单(与旧 `del → load`
- * 同口径 —— 删除以服务端为准,不做本地乐观移除)。
- *
- * @param x 这一行的 id 与重拉手柄。
- * @returns 点一下删除的手柄。
- */
-export function makeSearchDel(x: SearchDelIn): () => Promise<void> {
-  return async function delSearch(): Promise<void> {
-    try {
-      await fetch(URL_SAVED_SEARCH_HEAD + x.id, { method: METHOD_DELETE, credentials: CRED_INCLUDE })
-    } catch {
-      ignoreWriteErr()
-    }
-    x.refresh()
-  }
 }
 
 /**

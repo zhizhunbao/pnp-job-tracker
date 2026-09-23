@@ -755,7 +755,7 @@ export function pickWordsOf(x: PickWordsIn): EmpPickWords {
  * @returns 类名。
  */
 function actBtnClsOf(): string {
-  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, active: false, className: null })
+  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, active: false, busy: false, className: null })
 }
 
 /**

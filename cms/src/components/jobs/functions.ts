@@ -18,6 +18,7 @@
  */
 import { eeIsDormant, eeLastDraw } from '@/components/pnp'
 import { cssOf } from '@/components/css'
+import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
 import { readQuiz } from '@/components/quiz'
 import { BROAD_SLUGS } from '@/lib/stats'
@@ -70,7 +71,7 @@ import {
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView,
+  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, CardTitlesIn,
   BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, CompanyPeek,
@@ -3908,6 +3909,8 @@ export function barClsOf(fixedBar: boolean): string {
  * 兜底链的文案定长,不把职业名插进句子 —— NOC 官方职业名可以长到
  * 「Machine operators and related workers in pulp and paper production and wood processing…」,
  * 塞进句子手机上折三行;范围交给链接目标,措辞与分组小标题「同省同职业」同一套词。
+ * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:职位名译名改成标题译名 —— 这一岗库里存好的 →
+ * 按岗懒翻的(x.trans,与职位弹框同一台 useTitleTrans)→ 都没有才退回职业名(titleSubOf,与手机卡同一个)。
  *
  * @param x 本岗、页面维度、界面语言与取词函数。
  * @returns 详情页的展示行。
@@ -3920,7 +3923,12 @@ export function jobDetailViewOf(x: JobDetailIn): JobDetailView {
     provFull,
     provHref: URL_BOARD_PROV + encodeURIComponent(x.job.province),
     segs: catSegsOf({ t: x.t, broad: x.job.broad, mid: x.job.mid, fine: x.job.fine }),
-    alias: aliasOf({ row: nocRowOf({ dims: x.dims, noc: x.job.noc }), lang: x.lang, title: x.job.title }),
+    alias: titleSubOf({
+      row: x.job,
+      lang: x.lang,
+      lazy: x.trans,
+      noc: aliasOf({ row: nocRowOf({ dims: x.dims, noc: x.job.noc }), lang: x.lang, title: x.job.title }),
+    }),
     fallbackHref: fallbackHrefOf({ province: x.job.province, level, value }),
     fallbackText: fallbackTextOf({
       t: x.t,
@@ -3979,6 +3987,7 @@ function nocRowOf(x: NocRowIn): NocDescFact | null {
 
 /**
  * 职位名底下那条译名:与岗名一样(忽略大小写)就不出,免得同一句写两遍。
+ * 2026-09-23 起它只是灰字的最后一档(titleSubOf 的职业名兜底):这一岗还没有标题译名时才出职业名。
  *
  * @param x 维表行、界面语言与岗名。
  * @returns 译名;不出给空串。
@@ -4630,6 +4639,8 @@ export function isAltRow(i: number): boolean {
  * 薪资**只认清洗产物,不兜底回原文**:原来写「清洗产物 || 原文」,于是清洗为空时手机上会冒出
  * Job Bank 原话「$37.50 hourly」,而桌面是横线 —— 同一格两端两个样;护栏压制的行(源头填错栏)
  * 更不能靠这条兜底复活。2026-08-05 拍板。
+ * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:职位名下那条改成标题译名 ——
+ * 这一岗库里存好的(详情页 / 弹框按岗翻的,多词标题批量翻的)→ 这一页批量懒翻的(x.titleMap)→ 都没有才退回职业名(titleSubOf)。
  *
  * @param x 整台状态机与这一行。
  * @returns 一张卡的展示行。
@@ -4640,10 +4651,15 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
   const saved = x.b.saved[String(x.job.id)] != null
   return {
     href: URL_JOB + String(x.job.id),
-    note: aliasOf({
-      row: nocRowOf({ dims: { nocDesc: x.b.data.dims.nocDescriptions, nocCategories: [] }, noc: x.job.noc }),
+    note: titleSubOf({
+      row: x.job,
       lang: x.b.lang,
-      title: x.job.title,
+      lazy: lazyTitleOf({ map: x.titleMap, title: x.job.title }),
+      noc: aliasOf({
+        row: nocRowOf({ dims: { nocDesc: x.b.data.dims.nocDescriptions, nocCategories: [] }, noc: x.job.noc }),
+        lang: x.b.lang,
+        title: x.job.title,
+      }),
     }),
     companyHref: URL_JOBS_QUERY + encodeURIComponent(x.job.company),
     salary: x.job.salaryText,
@@ -4661,6 +4677,20 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
     ageText: makeAgeText({ t: x.b.t }),
     nameOf,
   }
+}
+
+/**
+ * 手机卡要批量懒翻的职位名(2026-09-23):只在窄屏要 —— 卡片只在 ≤640px 出(桌面 display:none,表格不出灰字),
+ * 桌面别白翻;库里已有界面语言译名的不要(untranslatedOf 挑)。
+ *
+ * @param x 这一页的行、界面语言与是不是窄屏。
+ * @returns 要翻的一组职位名。
+ */
+export function cardTitlesOf(x: CardTitlesIn): string[] {
+  if (x.narrow === false) {
+    return []
+  }
+  return untranslatedOf({ rows: x.rows, lang: x.lang })
 }
 
 /**

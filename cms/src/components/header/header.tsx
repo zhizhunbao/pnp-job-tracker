@@ -82,7 +82,7 @@ export function Header({ sticky = false, accountArea, loggedIn }: HeaderIn) {
           </div>
         </div>
       </div>
-      {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} />}
+      {drawer && <MobileDrawer t={t} active={activeIn} onClose={handles.closeDrawer} lang={lang} setLang={setLang} />}
     </header>
   )
 }

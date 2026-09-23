@@ -7,12 +7,13 @@
  *
  * 2026-09-22 Frank「显示三个点是不对吧,是不是需要加上 loading」:提交中钮上的「…」(08-24 的忙碌记号)换成
  * 通用 Loading 件(转圈 + 原钮字),SUBMIT_BUSY_LABEL 随之退役。
+ * 2026-09-23 Frank「这个登录按钮太难看了」:Loading 是加载行(蓝小字 + 浅圈、块级 flex 靠左),套进钮里蓝字压浅蓝底、
+ * 字挤左边;改走 Button 的在途态 busy(钮不变色不变高,居中的字前一个同色转圈)。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
 import { Button } from '@/components/button'
-import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
 import {
   AUTOCOMPLETE_CURRENT_PW, AUTOCOMPLETE_EMAIL, AUTOCOMPLETE_NEW_PW, EMAIL_PLACEHOLDER, INPUT_TYPE_EMAIL,
@@ -39,10 +40,6 @@ export function AuthFields({ t, mode, email, pw, busy, err, onEmail, onPw, onSub
   let autoComplete = AUTOCOMPLETE_NEW_PW
   if (mode === MODE_LOGIN) {
     autoComplete = AUTOCOMPLETE_CURRENT_PW
-  }
-  let submitLabel: React.ReactNode = t(submitKeyOf(mode))
-  if (busy) {
-    submitLabel = <Loading text={t(submitKeyOf(mode))} />
   }
   return (
     <form onSubmit={onSubmit}>
@@ -74,7 +71,7 @@ export function AuthFields({ t, mode, email, pw, busy, err, onEmail, onPw, onSub
       )}
       {(mode === MODE_REGISTER || mode === MODE_RESET) && pw !== '' && <PwMeter t={t} pw={pw} />}
       {err !== '' && <Notice kind={NOTICE_ERR} className={css.errGap}>{err}</Notice>}
-      <Button lg disabled={busy} className={css.submitBtn}>{submitLabel}</Button>
+      <Button lg busy={busy} className={css.submitBtn}>{t(submitKeyOf(mode))}</Button>
     </form>
   )
 }

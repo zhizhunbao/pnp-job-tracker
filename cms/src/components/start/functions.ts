@@ -4104,7 +4104,7 @@ function trackEmpClick(): void {
  * @returns 类名。
  */
 export function actBtnClsOf(): string {
-  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, active: false, className: null })
+  return btnClsOf({ kind: MINI_BTN_KIND, sm: false, lg: false, active: false, busy: false, className: null })
 }
 
 /**

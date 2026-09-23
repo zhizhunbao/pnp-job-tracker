@@ -19,19 +19,21 @@
  * 全站灰后同日删除,底色自此只有 Frame 的 var(--bg) 一处,
  * accountshell.tsx 与 types 的 AccountShellIn 同批删除。
  * 对应 lib 域:lib/profile。
+ * 2026-09-23 Frank「只保留一个 我的简历 我的收藏 我的求职 其他的能删都删了」:撤概览、移民档案、
+ * 已保存的筛选、升级 Pro 四节 —— AccountOverview(连同域内小件 AccountNickname / AccountPlanLine)、
+ * AccountBuyPanel、SavedSearchList 删文件,出桶名单去掉它们与四个撤掉的节标识;新出 SEC_RESUME
+ * (我的简历节)与 PayOkNotice(支付回跳提示,原住概览节顶上,抽出来挂右列最上面)。
  *
  * @author Claude
  * @time 2026-08-26 19:28:00
  */
-export { AccountBuyPanel } from './accountbuypanel'
 export { AccountColumns } from './accountcolumns'
 export { AccountNav } from './accountnav'
-export { AccountOverview } from './accountoverview'
 export { AccountRedirect } from './accountredirect'
 export {
-  RA_KEY_HEAD, SEC_BUY, SEC_FAVS, SEC_OVERVIEW, SEC_PROFILE, SEC_SAVED, SEC_SJOBS, SHELL_BOTTOM, SHELL_TOP,
+  RA_KEY_HEAD, SEC_FAVS, SEC_RESUME, SEC_SJOBS, SHELL_BOTTOM, SHELL_TOP,
 } from './constants'
 export { useAccountPage } from './hooks'
+export { PayOkNotice } from './payoknotice'
 export { ResumeArchive } from './resumearchive'
 export { SavedJobsList } from './savedjobslist'
-export { SavedSearchList } from './savedsearchlist'

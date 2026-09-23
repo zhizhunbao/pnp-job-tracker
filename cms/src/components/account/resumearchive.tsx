@@ -7,6 +7,8 @@
  * 不上弹框。形态照 SavedJobsList:标题 + 灰字小注 + 右侧文字钮组(经 Button,
  * ghost 底 + .raBtn 族加倍类)。状态机器住 hooks 的 useResumeArchive。
  * 2026-08-27 换装批自 ResumeArchive.tsx(PascalCase 迁移存量)整体重写。
+ * 2026-09-23 账户页只留三节(Frank「只保留一个 我的简历 我的收藏 我的求职」),本件独占「我的简历」一节:
+ * 顶上那道与档案表单隔开的发丝线与留白(.raWrap)随档案表单一起撤。
  *
  * @author Frank
  * @time 2026-08-27 22:00:00
@@ -79,7 +81,7 @@ export function ResumeArchive({ t, userId, text, savedAt }: ResumeArchiveIn) {
     )
   }
   return (
-    <div className={css.raWrap}>
+    <div>
       <div className={css.secTitle}>{t('rm.arch.title')}</div>
       {body}
     </div>

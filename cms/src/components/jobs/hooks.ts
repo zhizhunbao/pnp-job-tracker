@@ -10,6 +10,7 @@
  */
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow, useLayerStack } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
@@ -35,7 +36,7 @@ import {
   URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
   URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_FULL,
-  WINDOW_FEATURES,
+  TITLE_TRANS_GEN, WINDOW_FEATURES,
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
@@ -424,6 +425,8 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
  * 它把 2026-07-11「不要先跳转页面再弹窗」那条拍板在半边人身上又踩了一遍(/account 落地照样弹框,
  * 只是先白跳一次页)。埋点仍按有没有职业答案分两个 tag 记,好继续看这两拨人的转化差。
  * 登录成功后的去处不动(returnTo = 匹配视图)。
+ * 2026-09-23 账户页撤了移民档案节(Frank「只保留 我的简历 我的收藏 我的求职,其他的能删都删了」):板上「建档案」「去改档案」
+ * 两处原先链去 /account,改走 onProfile —— 没登录弹登录框,登录了就地开档案向导(带着现有档案,改也走它)。
  *
  * @param x 分层态、当前视图与取词函数。
  * @returns 三态闸面板。
@@ -451,11 +454,20 @@ export function useMatchGate(x: MatchGateHookIn): MatchGatePanel {
     }
     window.location.href = matchHrefOf(matchView)
   }, [loggedIn, profileOk, matchView])
+  const onProfile = useCallback(function openProfile(): void {
+    if (loggedIn === false) {
+      setLogin(true)
+      return
+    }
+    setWizard(true)
+  }, [loggedIn])
   const onClose = useCallback(function closeGate(): void {
     setWizard(false)
     setLogin(false)
   }, [])
-  return { onToggle, wizard, login, onClose, profile: x.plan.profile, t: x.t, onDone: makeUpsellDone(UPSELL_LOGIN) }
+  return {
+    onToggle, onProfile, wizard, login, onClose, profile: x.plan.profile, t: x.t, onDone: makeUpsellDone(UPSELL_LOGIN),
+  }
 }
 
 /**
@@ -2425,12 +2437,18 @@ function openApply(x: OpenApplyIn): void {
  * 按下即置忙态变灰降透明)与落点 2026-09-03 随「返回钮全站一件」一起搬进 button 桶的 BackButton,
  * 本台不再管返回。
  *
+ * 2026-09-23 标题下那条灰字改成标题译名(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」):这一岗库里存好的直接出,
+ * 没有就按岗懒翻一次(与职位弹框同一台 useTitleTrans;歧义标题带正文翻、只写回这一岗)。
+ *
  * @param x 本岗、分层态、页面维度与相似职位。
  * @returns 详情页面板。
  */
 export function useJobDetail(x: JobIn): JobDetailPanel {
   const [lang, , t] = useLang()
   const cats = x.dims.nocCategories
+  const trans = useTitleTrans({
+    title: x.job.title, id: x.job.id, lang, cached: storedTitleOf({ row: x.job, lang }), gen: TITLE_TRANS_GEN,
+  })
   useEffect(function trackOpen() {
     track(TRACK_JD_OPEN, { [TRACK_KEY_KIND]: TRACK_KIND_PAGE })
   }, [])
@@ -2440,7 +2458,7 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
   return {
     t,
     lang,
-    view: jobDetailViewOf({ job: x.job, dims: x.dims, lang, t, related: x.related }),
+    view: jobDetailViewOf({ job: x.job, dims: x.dims, lang, t, related: x.related, trans }),
   }
 }
 

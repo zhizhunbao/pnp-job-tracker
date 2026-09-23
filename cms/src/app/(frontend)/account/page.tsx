@@ -28,32 +28,34 @@
  * · buy 节:时长包购买(E3-03),Pro 也可续买,到期日顺延。
  * · 未登录:回首页弹登录框(不渲染独立登录页)。
  *
+ * 2026-09-23 Frank:「只保留一个 我的简历 我的收藏 我的求职 其他的能删都删了」(起因:他截图说
+ * 移民档案节「基本上是完全没法用」)。撤掉四节:概览 overview、移民档案 profile、
+ * 已保存的筛选 saved、升级 Pro buy —— 上面节槽注记里 profile 节与 buy 节两条、favs 条里的
+ * 已保存筛选半句,自此只是历史。侧栏只剩 我的简历 resume(默认落点)、我的收藏 favs、
+ * 我的求职 sjobs 三节;简历存档 ResumeArchive 原样挪进「我的简历」节;Stripe 回跳 `?ok=1`
+ * 的成功提示原住概览节顶上,抽成 PayOkNotice 挂在右列内容最上面(三节都出)。
+ * 旧深链 `?sec=overview|profile|saved|buy` 不在节表里,落回默认节。
+ *
  * @author Frank
  * @time 2026-07-02 00:00:00
  */
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import {
-  AccountBuyPanel,
   AccountColumns,
   AccountNav,
-  AccountOverview,
   AccountRedirect,
+  PayOkNotice,
   RA_KEY_HEAD,
   ResumeArchive,
   SavedJobsList,
-  SavedSearchList,
-  SEC_BUY,
   SEC_FAVS,
-  SEC_OVERVIEW,
-  SEC_PROFILE,
-  SEC_SAVED,
+  SEC_RESUME,
   SEC_SJOBS,
   SHELL_BOTTOM,
   SHELL_TOP,
   useAccountPage,
 } from '@/components/account'
-import { ProfileForm } from '@/components/profile'
 import { Frame, Shell } from '@/components/shell'
 
 /**
@@ -71,26 +73,12 @@ export default function AccountPage() {
         {a.checked && a.me != null && (
           <AccountColumns narrow={a.narrow}
             nav={<AccountNav sec={a.sec} narrow={a.narrow} t={a.t} onPick={a.onPick} onLogout={a.onLogout} />}>
-            {a.sec === SEC_OVERVIEW && (
-              <AccountOverview me={a.me}
-                pro={a.pro}
-                payOk={a.payOk}
-                nick={a.nick}
-                nickBusy={a.nickBusy}
-                t={a.t}
-                onNickEdit={a.onNickEdit}
-                onNickChange={a.onNickChange}
-                onNickSave={a.onNickSave}
-                onNickKey={a.onNickKey} />
-            )}
-            {a.sec === SEC_PROFILE && (<>
-              <ProfileForm key={String(a.me.id)} t={a.t} userId={a.me.id} initial={a.me.profile ?? null} />
+            {a.payOk && <PayOkNotice t={a.t} />}
+            {a.sec === SEC_RESUME && (
               <ResumeArchive key={RA_KEY_HEAD + String(a.me.id)} t={a.t} userId={a.me.id} text={a.me.profile?.resumeText} savedAt={a.me.profile?.resumeSavedAt} />
-            </>)}
+            )}
             {a.sec === SEC_FAVS && <SavedJobsList t={a.t} variant={SEC_FAVS} />}
             {a.sec === SEC_SJOBS && <SavedJobsList t={a.t} userId={a.me.id} weeklyOptOut={!!(a.me as { weeklyOptOut?: boolean }).weeklyOptOut} />}
-            {a.sec === SEC_SAVED && <SavedSearchList t={a.t} />}
-            {a.sec === SEC_BUY && <AccountBuyPanel t={a.t} buying={a.buying} buyErr={a.buyErr} onBuy={a.onBuy} />}
           </AccountColumns>
         )}
         {a.checked && a.me == null && <AccountRedirect />}

@@ -16,6 +16,7 @@ import css from './button.module.css'
  * 规划位的缺类;按需取则只校验真用到的那一格,用到缺类仍当场炸(cssOf 的口径)。
  * sm/lg 都传按 sm 算。
  * 基座只给**行动钮**:控件钮的形状由自己那一档定死,套上基座反而要一条条盖回去。
+ * 2026-09-23 加在途档:busy 叠在变体之后(primary 在途不退浅蓝,见 button.module.css)。
  *
  * @param x 变体与尺寸档。
  * @returns 拼好的 className。
@@ -35,6 +36,9 @@ export function btnClsOf(x: BtnClsIn): string {
   cls.push(cssOf(css[x.kind]))
   if (x.active) {
     cls.push(cssOf(css.on))
+  }
+  if (x.busy) {
+    cls.push(cssOf(css.busy))
   }
   if (x.className != null) {
     cls.push(x.className)

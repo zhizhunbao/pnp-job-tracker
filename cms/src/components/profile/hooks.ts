@@ -3,87 +3,22 @@
  * profile 域的状态机器:useProfileForm 一台管整份档案表单(七格表单值 + 职业搜索
  * 兜底 + 保存落地态)。2026-08-27 Frank 拍板自 account 域拆出(hooks 抽屉形制同
  * account 的 useAccountPage:体内只剩 useState、具名 effect 壳与工厂装配)。
+ * 2026-09-23 账户页撤移民档案节(Frank「只保留一个 我的简历 我的收藏 我的求职」),档案表单
+ * ProfileForm 删文件,它的整机 useProfileForm 随之删除;本抽屉只剩首访向导与简历预填两台。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { useEffect, useState } from 'react'
-import { RESUME_IDLE, TEXT_NONE } from './constants'
+import { RESUME_IDLE } from './constants'
 import {
-  makeAddTyped, makeFileOpen, makeLoadNocOpts, makeLoadUserId, makeNocAdder, makeOnboardingFinish, makeResumePick,
-  makeResumeUpload, makeSaveProfile, makeStepBack, makeStepNext, nocHitsOf, obCurrentStepOf, obStepsOf, profileSeedOf,
+  makeFileOpen, makeLoadUserId, makeOnboardingFinish, makeResumePick,
+  makeResumeUpload, makeStepBack, makeStepNext, obCurrentStepOf, obStepsOf, profileSeedOf,
 } from './functions'
 import type {
-  NocCandidate, NocOpt, OnboardingHookIn, OnboardingPanel, ProfileHookIn, ProfilePanel, ProfileSaveState,
+  NocCandidate, OnboardingHookIn, OnboardingPanel,
   ResumeHookIn, ResumePanel, ResumeState,
 } from './types'
-
-/**
- * 档案表单整机(E5-00 §3.2):七格表单值 + 职业搜索兜底 + 保存落地态。
- * 初值 = 返回用户已填的精确值(不点不覆盖);职业选项全集挂载时拉一次;
- * 命中清单是纯派生,每渲染现算(397 行线性扫,不值得上 memo)。
- *
- * @param x 登录人 id、档案初值与存成回调。
- * @returns 档案表单的整块面板:状态 + 手柄。
- */
-export function useProfileForm(x: ProfileHookIn): ProfilePanel {
-  const seed = profileSeedOf({ initial: x.initial })
-  const [status, setStatus] = useState<string>(seed.status)
-  const [nocs, setNocs] = useState<string[]>(seed.nocs)
-  const [clb, setClb] = useState<number | null>(seed.clb)
-  const [crs, setCrs] = useState<number | null>(seed.crs)
-  const [crsCalc, setCrsCalc] = useState<boolean>(seed.crsCalc)
-  const [provs, setProvs] = useState<string[]>(seed.provs)
-  const [pgwp, setPgwp] = useState<number | null>(seed.pgwp)
-  const [q, setQ] = useState<string>(TEXT_NONE)
-  const [opts, setOpts] = useState<NocOpt[]>([])
-  const [busy, setBusy] = useState(false)
-  const [saved, setSaved] = useState<ProfileSaveState>(TEXT_NONE)
-
-  useEffect(function loadNocs() {
-    makeLoadNocOpts({ setOpts })()
-  }, [])
-
-  const hits = nocHitsOf({ q, opts, nocs })
-  const addNoc = makeNocAdder({ nocs, setNocs, setQ })
-
-  return {
-    status,
-    setStatus,
-    nocs,
-    setNocs,
-    clb,
-    setClb,
-    crs,
-    setCrs,
-    crsCalc,
-    setCrsCalc,
-    provs,
-    setProvs,
-    pgwp,
-    setPgwp,
-    q,
-    setQ,
-    opts,
-    hits,
-    busy,
-    saved,
-    onAddTyped: makeAddTyped({ q, hits, addNoc }),
-    onSave: makeSaveProfile({
-      userId: x.userId,
-      status,
-      nocs,
-      clb,
-      crs,
-      crsCalc,
-      provs,
-      pgwp,
-      setBusy,
-      setSaved,
-      onSaved: x.onSaved,
-    }),
-  }
-}
 
 /**
  * 首访引导向导整机(E11-05 ②):六格档案值 + 走到第几步 + 简历预填 + 存档忙态。

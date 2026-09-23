@@ -963,6 +963,16 @@
 }
 
 /*
+ * 抽屉顶上的语言切换那一行(2026-09-23 方案 A:窄屏顶栏不放,挪到这里;左缘与抽屉头、导航项的框对齐)。
+ */
+.drawerLang {
+  /*
+   * 上 4、左右 2(同抽屉头)、下 12。
+   */
+  padding: 4px 2px 12px;
+}
+
+/*
  * 抽屉导航列。
  */
 .drawerNav {
@@ -1370,6 +1380,14 @@
      * 放出 ::after 热区(基类 overflow:hidden 会裁掉)。
      */
     overflow: visible !important;
+  }
+
+  .acct > .langWrap {
+    /*
+     * 顶栏上的语言切换藏起来,抽屉顶上那一份接管(2026-09-23 Frank「应该是一行」「按 A 做」:375px 英文顶栏差 72px 排不下一行,
+     * 这一组 96px 是大头;抽屉里的那份不在 .acct 下,不受这条影响)。
+     */
+    display: none !important;
   }
 
   .langBtn {

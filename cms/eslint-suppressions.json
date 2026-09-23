@@ -102,50 +102,6 @@
       "count": 2
     }
   },
-  "src/components/account/SavedSearchList.tsx": {
-    "@stylistic/brace-style": {
-      "count": 2
-    },
-    "@stylistic/max-len": {
-      "count": 2
-    },
-    "func-style": {
-      "count": 2
-    },
-    "local/component-file-names": {
-      "count": 1
-    },
-    "local/component-name-match": {
-      "count": 1
-    },
-    "local/doc-every-member": {
-      "count": 4
-    },
-    "local/file-header": {
-      "count": 1
-    },
-    "local/jsdoc-comments-only": {
-      "count": 1
-    },
-    "local/no-arrow-function": {
-      "count": 9
-    },
-    "local/no-bare-strings": {
-      "count": 18
-    },
-    "local/no-nullish": {
-      "count": 1
-    },
-    "no-ternary": {
-      "count": 3
-    },
-    "react/forbid-dom-props": {
-      "count": 7
-    },
-    "react/forbid-elements": {
-      "count": 1
-    }
-  },
   "src/components/cases/Case.tsx": {
     "@stylistic/brace-style": {
       "count": 2

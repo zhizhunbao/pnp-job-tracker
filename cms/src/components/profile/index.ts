@@ -12,6 +12,9 @@
  * 状态机器进 hooks、内联样式进 profile.module.css),记忆键落 constants 抽屉;
  * **对外露的两个名字 OnboardingWizard 与 OB_SEEN_KEY 冻结**(职位板、投递流、
  * 问卷三处消费者一个字没改),键的值同样不许动 —— 改了老用户会被重弹一次。
+ * 2026-09-23 Frank 撤账户页的移民档案节(截图说「基本上是完全没法用」,原话「只保留一个 我的简历
+ * 我的收藏 我的求职 其他的能删都删了」):档案表单 ProfileForm 及其子件 StatusRow / BucketRow /
+ * ProvRow / NocPicker / NocTags 删文件,出桶名单去掉 ProfileForm;首访向导不受影响。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
@@ -19,5 +22,4 @@
 export { CLB_OPTS, CRS_OPTS, OB_SEEN_KEY, PGWP_OPTS, POPULAR_NOCS } from './constants'
 export { clbActive, crsActive, pgwpActive } from './functions'
 export { OnboardingWizard } from './onboardingwizard'
-export { ProfileForm } from './profileform'
 export type { Opt, ProfileValue } from './types'

@@ -371,6 +371,21 @@ export type JobDbRow = {
    * 发帖方写的截止日(板帖才有;Job Bank 帖为空)。
    */
   valid_through: TimeCell
+
+  /**
+   * 职位名中文译名(2026-09-23 进列集;版本号对不上当没有,见 job_trans_v)。
+   */
+  title_zh: string | null
+
+  /**
+   * 职位名韩文译名。
+   */
+  title_ko: string | null
+
+  /**
+   * 这一行译文的版本号(别名 job_trans_v:JOB_FROM 连着公司表,那边也有 trans_v)。
+   */
+  job_trans_v: number | string | null
 }
 
 // =========================================================================
@@ -405,6 +420,16 @@ export type JobRow = {
    * 岗名。
    */
   title: string
+
+  /**
+   * 职位名中文译名(这一岗存的现版本;没有 = 空串。2026-09-23 板上卡片 / 详情页标题下灰字的第一顺位)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名(同上)。
+   */
+  titleKo: string
 
   /**
    * 公司名。
@@ -2291,6 +2316,16 @@ export type CompanyJobRow = {
    * 岗名。
    */
   title: string
+
+  /**
+   * 职位名中文译名(这一岗存的现版本;没有 = 空串。2026-09-23 公司页在招清单灰字的第一顺位)。
+   */
+  titleZh: string
+
+  /**
+   * 职位名韩文译名(同上)。
+   */
+  titleKo: string
 
   /**
    * 城市。

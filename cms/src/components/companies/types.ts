@@ -276,6 +276,16 @@ export type CompanyJobRow = {
   title: string
 
   /**
+   * 这一岗库里存好的中文译名(现版本;'' = 没有。2026-09-23 灰字统一成标题译名)。
+   */
+  titleZh: string
+
+  /**
+   * 这一岗库里存好的韩文译名(同上)。
+   */
+  titleKo: string
+
+  /**
    * 城市。
    */
   city: string
@@ -905,36 +915,6 @@ export type MiniSubIn = {
    * 懒翻回来的职位名 → 译名。
    */
   map: Record<string, string>
-}
-
-/**
- * storedTitleOf 的入参。
- */
-export type StoredTitleIn = {
-  /**
-   * 这一行。
-   */
-  row: MiniJobFact
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
-}
-
-/**
- * untranslatedOf 的入参。
- */
-export type UntranslatedIn = {
-  /**
-   * 这一组的行。
-   */
-  rows: MiniJobFact[]
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
 }
 
 /**
@@ -2663,91 +2643,6 @@ export type BaseZhIn = {
    * 公司档案(AI 简介与在招岗)。
    */
   company: CompanyDetail
-}
-
-/**
- * makeLoadTitles 的入参。
- */
-export type LoadTitlesIn = {
-  /**
-   * 要翻的一组职位名。
-   */
-  titles: string[]
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
-
-  /**
-   * 译名表落格(职位名 → 译名)。
-   */
-  setMap: (m: Record<string, string>) => void
-}
-
-/**
- * 批量懒翻接口的响应(线格式)。
- */
-export type TitlesJson = {
-  /**
-   * 翻成功了没有。
-   */
-  ok?: boolean
-
-  /**
-   * 职位名 → 译名。
-   */
-  texts?: Record<string, string> | null
-} | null
-
-/**
- * useTitleMap 的入参。
- */
-export type TitleMapHookIn = {
-  /**
-   * 要翻的一组职位名(已有 NOC 译名的不要放进来)。
-   */
-  titles: string[]
-
-  /**
-   * 界面语言(英文不翻)。
-   */
-  lang: CompaniesLang
-}
-
-/**
- * subOrTitleOf 的入参。
- */
-export type SubOrTitleIn = {
-  /**
-   * NOC 译名;'' = 没有。
-   */
-  sub: string
-
-  /**
-   * 职位名。
-   */
-  title: string
-
-  /**
-   * 懒翻出来的译名表。
-   */
-  map: Record<string, string>
-}
-
-/**
- * untitledOf 的入参。
- */
-export type UntitledIn = {
-  /**
-   * 在招岗。
-   */
-  jobs: CompanyJobRow[]
-
-  /**
-   * 界面语言。
-   */
-  lang: CompaniesLang
 }
 
 /**

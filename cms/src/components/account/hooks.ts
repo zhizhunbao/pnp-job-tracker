@@ -7,6 +7,8 @@
  * 同日续(Frank「hooks 有很多匿名函数需要抽到 functions 吧」):体内不留任何
  * 函数体与注释 —— 带口径的步骤全在 ./functions 的工厂里(注释即它们的 JSDoc),
  * 这里只剩 useState、具名 effect 壳与工厂装配。
+ * 2026-09-23 账户页撤到三节(Frank「只保留一个 我的简历 我的收藏 我的求职」):昵称编辑与购买
+ * 两组状态随概览、购买两节删除;已存筛选节撤掉,它的整机 useSavedSearches 一并删除。
  *
  * @author Frank
  * @time 2026-08-26 21:55:00
@@ -14,20 +16,22 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { useIsNarrow } from '@/components/modal'
-import { SEC_DEFAULT, TEXT_NONE } from './constants'
+import { SEC_DEFAULT } from './constants'
 import {
-  makeBuy, makeLoadSavedJobs, makeLoadSearches, makeLogout, makeNickEdit, makeNickKey, makeRefresh, makeResumeClear,
-  makeSaveNick, okFlagOf, proOf, resumeAtSeedOf, resumeCurSeedOf, secLinkOf,
+  makeLoadSavedJobs, makeLogout, makeRefresh, makeResumeClear,
+  okFlagOf, resumeAtSeedOf, resumeCurSeedOf, secLinkOf,
 } from './functions'
 import type {
-  AccountPanel, Me, ResumeHookIn, ResumePanel, SavedJobFact, SavedJobsHookIn, SavedJobsPanel, SavedSearchesPanel,
-  SavedSearchFact, Sec,
+  AccountPanel, Me, ResumeHookIn, ResumePanel, SavedJobFact, SavedJobsHookIn, SavedJobsPanel,
+  Sec,
 } from './types'
 
 /**
  * 账户页整机:登录态查询与刷新、`?ok=`/`?sec=` 深链、昵称就地编辑(E11-01)、
  * 时长包购买(E3-03)、登出。一台机器不拆 —— 这些状态互相咬合(登出要刷新、
  * 存昵称要刷新、购买读 t 出话术),拆开就得互相穿参数。
+ * 2026-09-23 概览、购买两节撤掉后,昵称编辑与购买在途两组状态随件删除;回跳标记 payOk 留着 ——
+ * 支付成功提示改由页面门在右列最上面挂 PayOkNotice(三节都出)。
  *
  * @returns 门(page.tsx)要的整块面板:状态 + 手柄。
  */
@@ -39,10 +43,6 @@ export function useAccountPage(): AccountPanel {
   const [me, setMe] = useState<Me>(null)
   const [checked, setChecked] = useState(false)
   const [payOk, setPayOk] = useState(false)
-  const [buying, setBuying] = useState(false)
-  const [buyErr, setBuyErr] = useState(TEXT_NONE)
-  const [nick, setNick] = useState<string | null>(null)
-  const [nickBusy, setNickBusy] = useState(false)
 
   useEffect(function readPayOk() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 故意分两步:地址栏参数只有浏览器里读得到,服务端画首帧时没有,活过来后再补
@@ -63,8 +63,6 @@ export function useAccountPage(): AccountPanel {
     makeRefresh({ setMe, setChecked })()
   }, [])
 
-  const saveNick = makeSaveNick({ nick, me, setNick, setNickBusy, refresh })
-
   return {
     lang,
     setLang: setLangSaved,
@@ -74,18 +72,8 @@ export function useAccountPage(): AccountPanel {
     me,
     checked,
     payOk,
-    buying,
-    buyErr,
-    nick,
-    nickBusy,
-    pro: proOf({ me }),
     onPick: setSec,
     onLogout: makeLogout({ refresh }),
-    onNickEdit: makeNickEdit({ me, setNick }),
-    onNickChange: setNick,
-    onNickSave: saveNick,
-    onNickKey: makeNickKey({ saveNick, setNick }),
-    onBuy: makeBuy({ t, setBuying, setBuyErr }),
   }
 }
 
@@ -105,22 +93,6 @@ export function useSavedJobs(x: SavedJobsHookIn): SavedJobsPanel {
   }, [])
 
   return { items, setItems, optOut, setOptOut }
-}
-
-/**
- * 已存筛选整机(E5-03):挂载拉一次清单;删除后由 refresh 重拉(删除以服务端为准,
- * 不做本地乐观移除)。
- *
- * @returns 已存筛选的面板。
- */
-export function useSavedSearches(): SavedSearchesPanel {
-  const [items, setItems] = useState<SavedSearchFact[] | null>(null)
-
-  useEffect(function firstLoad() {
-    makeLoadSearches({ setItems })()
-  }, [])
-
-  return { items, refresh: makeLoadSearches({ setItems }) }
 }
 
 /**

@@ -255,6 +255,16 @@ export type MobileDrawerIn = {
    * 关抽屉。
    */
   onClose: () => void
+
+  /**
+   * 当前语言(2026-09-23 Frank「按 A 做」:窄屏顶栏排不下一行,语言切换挪进抽屉顶上)。
+   */
+  lang: Lang
+
+  /**
+   * 换语言。
+   */
+  setLang: (l: Lang) => void
 }
 
 

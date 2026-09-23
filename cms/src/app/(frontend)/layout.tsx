@@ -1,5 +1,5 @@
 /**
- * 全站骨架:`<html>` / `<head>` / `<body>` 三层外框 + 三个 Provider + 右下角对话挂件。
+ * 全站骨架:`<html>` / `<head>` / `<body>` 三层外框 + 三个 Provider + 右下角对话挂件(2026-09-23 起先不挂,见 RootLayout 注)。
  * 2026-08-29 形制批:品牌词 JSON-LD 那份死值下沉 components/shell 的 SITE_JSON_LD,
  * 门里只剩拼装。
  *
@@ -10,7 +10,6 @@ import React from 'react'
 import './main.css'
 import { LangProvider } from '@/components/i18n'
 import { SessionProvider } from '@/components/auth'
-import { ChatLauncher } from '@/components/chat'
 import { JsonLd } from '@/components/jsonld'
 import { OG_H, OG_SITE_ALT, OG_W } from '@/components/og'
 import { SITE_JSON_LD } from '@/components/shell'
@@ -65,6 +64,8 @@ export const metadata = {
  * 入口=出口=职位详情页,把对话放到流量真正在的地方)。放在 `<main>` 外:它是浮层不是页面内容,
  * 读屏器按顺序读到最后;在 LangProvider 内:壳文案跟全站同一份语言状态。
  * /start 自己判断不显示(那页有内联 ChatBox)。
+ * 2026-09-23 Frank「那个点击跳 whatsapp 那个小球先隐藏吧」:先不挂(09-14 起圆球只剩直连 WhatsApp 一个去处,不挂不丢别的功能);
+ * components/chat 桶原样保留,要回来把 ChatLauncher 从 '@/components/chat' 引回来、挂回 `<main>` 之后即可。
  *
  * 下面两条是 2026-08-29 形制批从体内原样上提的记录(闸 local/no-comment-in-function:
  * 门里不留函数体注释),一句未删。
@@ -98,7 +99,6 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <LangProvider initial={lang}>
           <SessionProvider initial={session}>
             <main>{children}</main>
-            <ChatLauncher />
           </SessionProvider>
         </LangProvider>
       </body>

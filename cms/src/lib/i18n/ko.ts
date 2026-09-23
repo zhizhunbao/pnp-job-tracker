@@ -636,7 +636,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'rm.limit': '오늘 무료 횟수 소진', 'rm.err': '대조 실패, 잠시 후 다시 시도', 'rm.noJd': '이 공고의 상세 설명을 아직 가져오지 못함',
   'rm.tooLong': '내용이 너무 깁니다, 줄여서 다시 시도', 'rm.busy': '모델 서비스 혼잡, 잠시 후 재시도',
   'rm.arch.save': '내 프로필에 저장, 다음에 바로 사용', 'rm.arch.used': '{d}에 저장한 이력서 사용 중', 'rm.arch.done': '프로필에 저장됨',
-  'rm.arch.title': '저장된 이력서', 'rm.arch.meta': '{d} 저장, {n}자', 'rm.arch.empty': '공고 대조할 때 저장하면 다음에 바로 사용',
+  'rm.arch.title': '내 이력서', 'rm.arch.meta': '{d} 저장, {n}자', 'rm.arch.empty': '공고 대조할 때 저장하면 다음에 바로 사용',
   'rm.arch.view': '보기', 'rm.arch.hide': '접기', 'rm.arch.clear': '삭제', 'rm.arch.sure': '삭제 확인', 'rm.arch.cancel': '취소',
   'cw.open': 'WhatsApp', 'cw.minimize': '최소화', 'cw.close': '닫기', 'cw.hint': '무엇을 찾으세요? 물어보세요',
   'cw.max': '전체 화면', 'cw.restore': '전체 화면 종료',

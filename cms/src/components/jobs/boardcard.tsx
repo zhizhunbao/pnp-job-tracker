@@ -31,8 +31,8 @@ import type { BoardCardIn } from './types'
  * @param props 整台状态机与这一行。
  * @returns 一张卡。
  */
-export function BoardCard({ b, job }: BoardCardIn) {
-  const v = boardCardViewOf({ b, job })
+export function BoardCard({ b, job, titleMap }: BoardCardIn) {
+  const v = boardCardViewOf({ b, job, titleMap })
   const chips = []
   for (const spec of v.chips) {
     chips.push(<BoardChip key={spec.k} spec={spec} onOpen={makeChipClick({ onField: b.onField, job, spec })} />)

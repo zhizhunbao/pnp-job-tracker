@@ -8,8 +8,8 @@
  * @time 2026-09-21 18:30:00
  */
 import { JobMiniRow } from './jobminirow'
-import { miniSubOf, untranslatedOf } from './functions'
-import { useTitleMap } from './hooks'
+import { untranslatedOf, useTitleMap } from '@/components/jobtitle'
+import { miniSubOf } from './functions'
 import type { JobMiniListIn } from './types'
 
 /**

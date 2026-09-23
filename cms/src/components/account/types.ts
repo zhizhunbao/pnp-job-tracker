@@ -11,32 +11,6 @@
  */
 
 /**
- * makeNickKey 的入参(原 AccountPage 体内 onNickKey 闭包的两样东西)。
- */
-export type NickKeyIn = {
-  /**
-   * 存昵称(Enter 触发);判空与忙态归它自己。
-   */
-  saveNick: () => void
-
-  /**
-   * 昵称编辑态 setter;给 null = 退出编辑(Esc 触发)。
-   */
-  setNick: (v: string | null) => void
-}
-
-/**
- * 昵称框的键盘手柄。只读事件的 key 一格 —— 按本域自己声明形状的规矩,
- * 不去借 React 的事件类型(实参是 React.KeyboardEvent,结构上兜得住)。
- */
-export type NickKeyFn = (e: {
-  /**
-   * 按下的键名(只认 Enter 与 Escape)。
-   */
-  key: string
-}) => void
-
-/**
  * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值 —— 宪法 08-25「types 自声明」,
  * 形状本域自己声明,不从别的域取;真参数是 lib/i18n 那个带附加成员的交叉类型,
  * 结构上兜得住)。
@@ -46,8 +20,9 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 /**
  * 账户页的节标识。同 URL 深链 `?sec=` 的取值,也是侧栏节表 SEC_TABS 的键
  * (2026-08-26 自 page.tsx 迁入)。
+ * 2026-09-23 撤概览、移民档案、已保存的筛选、升级 Pro 四节后只剩三个值(新立的 resume = 我的简历)。
  */
-export type Sec = 'overview' | 'profile' | 'favs' | 'sjobs' | 'saved' | 'buy'
+export type Sec = 'resume' | 'favs' | 'sjobs'
 
 /**
  * 用户档案 + 简历存档两键。profile 上的简历存档两键(E11-08)只在本页读显示、
@@ -146,11 +121,6 @@ export type AccountUser = {
  * 会话探测的结果:拿到用户 = 对象,没登录 = null(2026-08-26 自 page.tsx 迁入)。
  */
 export type Me = AccountUser | null
-
-/**
- * 时长包档位(E3-03)。发给 /api/stripe/checkout 的 plan 值。
- */
-export type BuyPlan = '30' | '90'
 
 /**
  * 只随窄屏分叉的类名预算入参(两列容器 / 左卡 / 右卡三处共用同一个判据)。
@@ -253,213 +223,13 @@ export type SecPickIn = {
 export type SecPickFn = () => void
 
 /**
- * nickShownOf 的入参。
+ * PayOkNotice 的 props(Stripe 回跳 `?ok=1` 的成功提示;出不出由页面门按面板的 payOk 判)。
  */
-export type NickShownIn = {
+export type PayOkNoticeIn = {
   /**
-   * 昵称原值;没设过 = null。
-   */
-  displayName?: string | null
-
-  /**
-   * 邮箱(昵称空时取 @ 前缀兜底)。
-   */
-  email: string
-}
-
-/**
- * nickSaveLabelOf 的入参。
- */
-export type NickSaveLabelIn = {
-  /**
-   * 正在存 = true(钮面换成省略号)。
-   */
-  busy: boolean
-
-  /**
-   * 取词函数。
+   * 取词函数(提示文案 acct.payOk)。
    */
   t: TFn
-}
-
-/**
- * AccountNickname 的 props。
- */
-export type AccountNicknameIn = {
-  /**
-   * 看态显示的名字(昵称,空则已回退成邮箱前缀)。
-   */
-  shown: string
-
-  /**
-   * 编辑值;null = 不在编辑(看态)。
-   */
-  nick: string | null
-
-  /**
-   * 正在存 = true(保存钮禁用并换成省略号)。
-   */
-  nickBusy: boolean
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 点铅笔进编辑态。
-   */
-  onEdit: () => void
-
-  /**
-   * 编辑框改值。
-   */
-  onChange: (v: string) => void
-
-  /**
-   * 点保存。
-   */
-  onSave: () => void
-
-  /**
-   * 编辑框的键盘出口(Enter 存、Esc 取消)。
-   */
-  onKey: NickKeyFn
-}
-
-/**
- * AccountPlanLine 的 props。
- */
-export type AccountPlanLineIn = {
-  /**
-   * Pro 在期 = true。
-   */
-  pro: boolean
-
-  /**
-   * Pro 到期日(ISO,渲染时裁到 10 位);没买过可省 = null。
-   */
-  until?: string | null
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * AccountOverview 的 props。
- */
-export type AccountOverviewIn = {
-  /**
-   * 已登录用户(调用点已判过非 null)。
-   */
-  me: AccountUser
-
-  /**
-   * Pro 在期 = true。
-   */
-  pro: boolean
-
-  /**
-   * Stripe 回跳带了 ?ok=1 = true(顶上出一条成功提示)。
-   */
-  payOk: boolean
-
-  /**
-   * 昵称编辑值;null = 不在编辑。
-   */
-  nick: string | null
-
-  /**
-   * 昵称正在存 = true。
-   */
-  nickBusy: boolean
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 点铅笔进编辑态。
-   */
-  onNickEdit: () => void
-
-  /**
-   * 昵称编辑框改值。
-   */
-  onNickChange: (v: string) => void
-
-  /**
-   * 点保存昵称。
-   */
-  onNickSave: () => void
-
-  /**
-   * 昵称编辑框的键盘出口。
-   */
-  onNickKey: NickKeyFn
-}
-
-/**
- * buyBtnClsOf 的入参。
- */
-export type BuyBtnClsIn = {
-  /**
-   * 这一枚是哪一档(决定底色深浅)。
-   */
-  plan: BuyPlan
-
-  /**
-   * 正在等 Checkout URL = true(整钮压暗)。
-   */
-  busy: boolean
-}
-
-/**
- * makeBuyPick 的入参。
- */
-export type BuyPickIn = {
-  /**
-   * 这一枚钮买哪一档。
-   */
-  plan: BuyPlan
-
-  /**
-   * 点了往哪报。
-   */
-  onBuy: (plan: BuyPlan) => void
-}
-
-/**
- * 一枚购买钮的点击手柄:不带参数,点了就按它代表的档发起 Checkout。
- */
-export type BuyPickFn = () => void
-
-/**
- * AccountBuyPanel 的 props。
- */
-export type AccountBuyPanelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 正在等 Checkout URL = true(两钮禁用并压暗)。
-   */
-  buying: boolean
-
-  /**
-   * 拿不到 Checkout URL 时的错误话术;空串 = 没出错。
-   */
-  buyErr: string
-
-  /**
-   * 点某一档。
-   */
-  onBuy: (plan: BuyPlan) => void
 }
 
 /**
@@ -476,16 +246,6 @@ export type MeRespJson = {
    * 登录人;未登录时缺席或 null。
    */
   user?: AccountUser | null
-}
-
-/**
- * `/api/stripe/checkout` 的响应体(线格式:拿不到 url = 发起失败)。
- */
-export type CheckoutRespJson = {
-  /**
-   * Stripe Checkout 的跳转地址;发起失败时缺席或 null。
-   */
-  url?: string | null
 }
 
 /**
@@ -555,31 +315,6 @@ export type AccountPanel = {
   payOk: boolean
 
   /**
-   * 正在等 Checkout URL = true。
-   */
-  buying: boolean
-
-  /**
-   * 发起购买的错误话术;空串 = 没出错。
-   */
-  buyErr: string
-
-  /**
-   * 昵称编辑值;null = 不在编辑。
-   */
-  nick: string | null
-
-  /**
-   * 昵称正在存 = true。
-   */
-  nickBusy: boolean
-
-  /**
-   * Pro 在期 = true。
-   */
-  pro: boolean
-
-  /**
    * 切节。
    */
   onPick: (s: Sec) => void
@@ -588,31 +323,6 @@ export type AccountPanel = {
    * 退出登录(清服务端会话 + 本地答案内存)。
    */
   onLogout: () => void
-
-  /**
-   * 点铅笔进昵称编辑态(种子 = 现显示名)。
-   */
-  onNickEdit: () => void
-
-  /**
-   * 昵称编辑框改值。
-   */
-  onNickChange: (v: string) => void
-
-  /**
-   * 点保存昵称。
-   */
-  onNickSave: () => void
-
-  /**
-   * 昵称编辑框的键盘出口(Enter 存、Esc 取消)。
-   */
-  onNickKey: NickKeyFn
-
-  /**
-   * 点某一档发起购买。
-   */
-  onBuy: (plan: BuyPlan) => void
 }
 
 /**
@@ -643,86 +353,6 @@ export type LogoutIn = {
    * 登出后重查一次,落回未登录渲染。
    */
   refresh: RefreshFn
-}
-
-/**
- * makeNickEdit 的入参(进编辑态要读的现值与要拨的格)。
- */
-export type NickEditIn = {
-  /**
-   * 当前登录人(读显示名当编辑种子)。
-   */
-  me: Me
-
-  /**
-   * 落昵称编辑值(字符串 = 进入编辑态)。
-   */
-  setNick: (v: string | null) => void
-}
-
-/**
- * makeSaveNick 的入参(存昵称要读的现值与要拨的格)。
- */
-export type SaveNickIn = {
-  /**
-   * 当前编辑值;null = 不在编辑(直接返回)。
-   */
-  nick: string | null
-
-  /**
-   * 当前登录人(取 id 拼 PATCH 地址);null 直接返回。
-   */
-  me: Me
-
-  /**
-   * 成功后退出编辑态。
-   */
-  setNick: (v: string | null) => void
-
-  /**
-   * 拨忙态(存中禁保存钮)。
-   */
-  setNickBusy: (v: boolean) => void
-
-  /**
-   * 存完重查,显示名立刻换新。
-   */
-  refresh: RefreshFn
-}
-
-/**
- * makeBuy 的入参(发起购买要用的取词与两格 state)。
- */
-export type BuyIn = {
-  /**
-   * 取词函数(失败话术 acct.payErr)。
-   */
-  t: TFn
-
-  /**
-   * 拨下单忙态。
-   */
-  setBuying: (v: boolean) => void
-
-  /**
-   * 拨错误话术(空串 = 清掉)。
-   */
-  setBuyErr: (v: string) => void
-}
-
-/**
- * 发起购买的手柄(收档位)。
- */
-export type BuyFn = (plan: BuyPlan) => Promise<void>
-
-/**
- * proOf 的入参。
- */
-export type ProOfIn = {
-  /**
-   * 当前登录人;null 按免费读。
-   */
-  me: Me
 }
 
 /**
@@ -782,51 +412,6 @@ export type SavedJobsRespJson = {
      * 看板状态;可能缺或存了旧值。
      */
     status?: string | null
-  }[] | null
-} | null
-
-/**
- * 已存筛选一条(toSavedSearch 洗净后)。
- */
-export type SavedSearchFact = {
-  /**
-   * 记录 id(拼 DELETE 地址)。
-   */
-  id: string
-
-  /**
-   * 用户给这条订阅起的名字;没有 = 空串。
-   */
-  name: string
-
-  /**
-   * 最近一次发提醒的时刻(ISO);没发过 = null(渲染层不出时间件)。
-   */
-  lastNotifiedAt: string | null
-}
-
-/**
- * saved-searches 列表接口的响应体(归一前)。
- */
-export type SavedSearchesRespJson = {
-  /**
-   * 订阅行清单;缺席/空按零条读。
-   */
-  docs?: {
-    /**
-     * 记录 id。
-     */
-    id: number | string
-
-    /**
-     * 订阅名;可能缺。
-     */
-    name?: string | null
-
-    /**
-     * 最近提醒时刻;可能缺。
-     */
-    lastNotifiedAt?: string | null
   }[] | null
 } | null
 
@@ -1075,56 +660,6 @@ export type SjTitleKeys = {
    * 小注键。
    */
   note: string
-}
-
-/**
- * SavedSearchList 的 props(页面门在传)。
- */
-export type SavedSearchListIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
- * 已存筛选的面板(useSavedSearches 出)。
- */
-export type SavedSearchesPanel = {
-  /**
-   * 洗净的订阅行;null = 还在拉。
-   */
-  items: SavedSearchFact[] | null
-
-  /**
-   * 重拉一遍清单(删除后刷新用)。
-   */
-  refresh: () => void
-}
-
-/**
- * makeLoadSearches 的入参。
- */
-export type LoadSearchesIn = {
-  /**
-   * 订阅行落格(网络挂了落空清单)。
-   */
-  setItems: (v: SavedSearchFact[] | null) => void
-}
-
-/**
- * makeSearchDel 的入参(一行的删除钮)。
- */
-export type SearchDelIn = {
-  /**
-   * 这一行的记录 id。
-   */
-  id: string
-
-  /**
-   * 删完重拉清单。
-   */
-  refresh: () => void
 }
 
 /**

@@ -700,7 +700,7 @@ export const jobsZh = {
   'rm.tooLong': '内容太长,删掉一些再试', 'rm.busy': '模型服务忙,稍等几秒重试',
   // 简历存档(E11-08):弹框勾选 + 账户页档案节
   'rm.arch.save': '存进档案,下次直接用', 'rm.arch.used': '用的是你 {d} 存的简历', 'rm.arch.done': '已存进档案',
-  'rm.arch.title': '简历存档', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
+  'rm.arch.title': '我的简历', 'rm.arch.meta': '{d} 存入,{n} 字', 'rm.arch.empty': '对照职位时可以存下来,下次直接用',
   'rm.arch.view': '查看', 'rm.arch.hide': '收起', 'rm.arch.clear': '清除', 'rm.arch.sure': '确认清除', 'rm.arch.cancel': '取消',
   // cw.* = 全站右下角对话挂件的**壳**(ChatLauncher);面板标题复用 chat.title,不另开一份
   'cw.open': 'WhatsApp', 'cw.minimize': '最小化', 'cw.close': '关闭', 'cw.hint': '想看什么?问一句',

@@ -154,6 +154,100 @@ a.btn.secondary {
 }
 
 /*
+ * 在途态(2026-09-23 Frank「这个登录按钮太难看了」):钮照旧禁用,颜色与高度不动,字前多一个转圈。
+ * 原先提交中把 loading 桶那件加载行(蓝小字 + 浅圈、块级 flex 靠左)塞进钮里,浅蓝禁用底上蓝字、挤在左边。
+ * 零权重写在两格 :disabled 之后:同文件后写的赢,调用方单类照旧压得住。
+ */
+:where(.busy) {
+  /*
+   * 等回包的光标。
+   */
+  cursor: progress;
+}
+
+/*
+ * primary 在途不退浅蓝:还是品牌蓝实底,略降透明示意「点过了」。
+ */
+:where(.primary.busy) {
+  /*
+   * 品牌蓝实底(压回 .primary:disabled 的浅蓝)。
+   */
+  background: var(--primary);
+
+  /*
+   * 略降透明。
+   */
+  opacity: 0.85;
+}
+
+/*
+ * 在途转圈:一个字大的圆环,颜色跟字走(primary 上白、secondary 上蓝),缺口朝上转。
+ */
+.busySpin {
+  /*
+   * 行内块:和字排一行,跟着钮的 text-align 一起居中。
+   */
+  display: inline-block;
+
+  /*
+   * 描边算进尺寸:圆环一个字大,不撑高钮。
+   */
+  box-sizing: border-box;
+
+  /*
+   * 一个字宽。
+   */
+  width: 1em;
+
+  /*
+   * 一个字高。
+   */
+  height: 1em;
+
+  /*
+   * 与字隔 8px。
+   */
+  margin-right: 8px;
+
+  /*
+   * 圆心对齐字心。
+   */
+  vertical-align: -0.15em;
+
+  /*
+   * 圆环跟字同色。
+   */
+  border: 2px solid currentcolor;
+
+  /*
+   * 顶边留缺口,转起来才看得出在转。
+   */
+  border-top-color: transparent;
+
+  /*
+   * 圆。
+   */
+  border-radius: 50%;
+
+  /*
+   * 0.7 秒一圈匀速。
+   */
+  animation: busy-spin 0.7s linear infinite;
+}
+
+/*
+ * 转一圈。
+ */
+@keyframes busy-spin {
+  to {
+    /*
+     * 转满一圈。
+     */
+    transform: rotate(360deg);
+  }
+}
+
+/*
  * 付费入口(⭐):琥珀实底加粗。
  */
 :where(.pro) {

@@ -36,7 +36,7 @@ export function BoardCellBody({ b, c }: BoardCellBodyIn) {
       {c.view.kind === KIND.match && (
         <MatchCell text={c.view.text} level={c.view.level} title={c.view.title} />
       )}
-      {c.view.kind === KIND.needProfile && <NeedProfileCell text={c.view.text} />}
+      {c.view.kind === KIND.needProfile && <NeedProfileCell text={c.view.text} onOpen={b.gate.onProfile} />}
       {c.view.kind === KIND.stream && <StreamCell text={c.view.text} />}
       {c.view.kind === KIND.text && c.view.href === TEXT_NONE && c.view.text}
       {c.view.kind === KIND.text && c.view.href !== TEXT_NONE && (

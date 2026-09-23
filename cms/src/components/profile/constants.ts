@@ -42,12 +42,6 @@ export const MIME_JSON = 'application/json'
 export const URL_USER_HEAD = '/api/users/'
 
 /**
- * 保存钮忙态的钮面文字(三点省略号)。它不是文案是**状态指示**,三语一样,
- * 所以不进 i18n。与 account 域同名同义,各家一份。
- */
-export const BUSY_MARK = '…'
-
-/**
  * 定制样式钮的统一底座(2026-08-26 Frank「<button 这种不允许直接使用」):
  * ghost 底最素,视觉全由本域的加倍类定形。与 account 域同名同义,各家一份。
  */
@@ -209,43 +203,6 @@ export const SAVED_OK = 'saved'
  * 档案保存失败的落地态值(出 Notice 红条,不静默)。
  */
 export const SAVED_ERR = 'err'
-
-/**
- * NOC 五位码的形状(搜索框里敲的是码就按码直加,不是码才走命中兜底)。
- */
-export const NOC_CODE_RE = /^\d{5}$/
-
-/**
- * 搜索兜底一次最多显示几条命中(下拉框高 180px,8 条正好不用滚太深)。
- */
-export const HITS_MAX = 8
-
-/**
- * NOC 选项维度的拉取地址(noc-descriptions 397 行,一次全拉;登录用户过
- * Payload 默认 read 权限)。
- */
-export const URL_NOC_DESC = '/api/noc-descriptions?limit=1000&depth=0'
-
-/**
- * 职业搜索框外壳的全局类名(main.css 里 `.profNocSearch { margin-top: 8px }`)。
- * 本页专属,留在全局层是历史位置,同 NICK_BOX_CLS 的理由原样保留。
- */
-export const PROF_SEARCH_CLS = 'profNocSearch'
-
-/**
- * 职业搜索框的尺寸档(input 域的 md;表单内嵌搜索,比全站搜索矮一档)。
- */
-export const NOC_SEARCH_SIZE = 'md'
-
-/**
- * 档案存成提示条的色档(notice 四色里的绿:成功)。
- */
-export const SAVE_OK_KIND = 'ok'
-
-/**
- * 档案存挂提示条的色档(notice 四色里的红:失败要看得见,不静默)。
- */
-export const SAVE_ERR_KIND = 'err'
 
 /**
  * 首访引导向导「弹过一次」的记忆键(单一来源)。职位板首访自动弹、投递流判要不要

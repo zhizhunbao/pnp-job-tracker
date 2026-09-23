@@ -12,10 +12,10 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLayerStack } from '@/components/modal'
-import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS, TITLES_KEY_SEP,
+import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS,
 } from './constants'
 import {
-  ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel, makeLoadTitles,
+  ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel,
   makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf,
 } from './functions'
 import type {
@@ -23,7 +23,6 @@ import type {
   CompanyOfJobHookIn, CompanyPanelData, CompanyPanelHookIn, CompanyPanelState, CompanyPeekPanel,
   CompanyTransHookIn,
   CompanySiteHookIn, CompanyTransPanel, DeadFlag, DescTransHookIn, PeekLayer, SitePanel,
-  TitleMapHookIn,
 } from './types'
 
 /**
@@ -306,31 +305,6 @@ export function useCompanyAlias(x: CompanyAliasHookIn): CompanyAliasPanel {
     text = alias
   }
   return { alias: text, settled: settled || lang === LANG_EN || name === TEXT_NONE }
-}
-
-/**
- * 一组职位名的译名表(2026-09-14):组合变了就再打一次接口;英文界面或空组不打。
- *
- * @param x 要翻的一组与界面语言。
- * @returns 职位名 → 译名(还没回来是空表)。
- */
-export function useTitleMap(x: TitleMapHookIn): Record<string, string> {
-  const [map, setMap] = useState<Record<string, string>>({})
-  const key = x.titles.join(TITLES_KEY_SEP)
-  const lang = x.lang
-  const want = key !== TEXT_NONE && lang !== LANG_EN
-
-  useEffect(function loadTitles() {
-    const flag: DeadFlag = { dead: false }
-    if (want) {
-      makeLoadTitles({ titles: key.split(TITLES_KEY_SEP), lang, setMap })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [want, key, lang])
-
-  return map
 }
 
 /**

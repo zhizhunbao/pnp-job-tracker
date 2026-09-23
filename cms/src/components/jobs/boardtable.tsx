@@ -60,7 +60,7 @@ export function BoardTable({ b, headRowRef }: BoardTableIn) {
           {b.data.rows.length === 0 && (
             <tr>
               <td colSpan={b.cols.shown.length} className={cssOf(css.empty)}>
-                <EmptyNote text={b.emptyText} link={b.emptyLink} />
+                <EmptyNote text={b.emptyText} link={b.emptyLink} onOpen={b.gate.onProfile} />
               </td>
             </tr>
           )}

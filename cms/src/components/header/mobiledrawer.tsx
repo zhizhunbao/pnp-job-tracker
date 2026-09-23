@@ -6,6 +6,10 @@
  * 推主页面的机器在 hooks 的 useMainPush。
  * 2026-09-05 Frank「职位板和职位重复」:去掉首项「职位板」(与「职位」同指 /,且桌面导航本无此项)。
  * 2026-08-24 自 Header 拆出(一个 tsx 一个组件)。
+ * 2026-09-23 Frank「手机端 英文 header 换行」「应该是一行」「按 A 做」:≤640 顶栏不放语言切换(那一组 96px 是挤成两行的主因),
+ * 挪到抽屉顶上一行(品牌与关闭钮之下、导航之上),复用顶栏同一个 LangSwitch。
+ * 2026-09-23 Frank「这几个模块先隐藏掉」:导航先不挂「拿 PR 评估」「PTE 刷题」「资料库」三项(路由照旧在,直链照旧能开);
+ * 与桌面导航排同步(见 headernav.tsx 文件头)。
  *
  * @author Frank
  * @time 2026-08-24 08:00:00
@@ -17,12 +21,13 @@ import { IconX } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 
 import {
-  A_EMPLOYERS, A_JOBS, A_LIBRARY, A_MATCH, A_NEWS, A_PATHWAYS, A_PTE, A_RANK, A_START, A_STATS, BRAND_MARK,
-  PATH_EMPLOYERS, PATH_HOME, PATH_NEWS, PATH_OCC, PATH_PLAN_PR, PATH_PTE,
+  A_EMPLOYERS, A_JOBS, A_MATCH, A_NEWS, A_RANK, A_START, A_STATS, BRAND_MARK,
+  PATH_EMPLOYERS, PATH_HOME, PATH_NEWS,
   PATH_START, PLAIN_BTN_KIND,
 } from './constants'
 import { stopClick, withOn } from './functions'
 import { useMainPush } from './hooks'
+import { LangSwitch } from './langswitch'
 import type { MobileDrawerIn } from './types'
 import css from './header.module.css'
 
@@ -32,7 +37,7 @@ import css from './header.module.css'
  * @param props 翻译函数/高亮键/关闭回调。
  * @returns portal 到 body 的抽屉。
  */
-export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
+export function MobileDrawer({ t, active, onClose, lang, setLang }: MobileDrawerIn) {
   useMainPush()
 
   const onStart = active === A_START || active === A_STATS || active === A_RANK
@@ -48,6 +53,9 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
             onClick={onClose}
             ariaLabel={t('nav.menu')}><IconX /></Button>
         </div>
+        <div className={css.drawerLang}>
+          <LangSwitch lang={lang} setLang={setLang} />
+        </div>
         <nav className={css.drawerNav}>
           <LinkButton href={PATH_START} className={withOn({ base: cssOf(css.drawerItem), on: onStart })}>
             {t('pulse.entry')}
@@ -55,21 +63,9 @@ export function MobileDrawer({ t, active, onClose }: MobileDrawerIn) {
           <LinkButton href={PATH_HOME} className={withOn({ base: cssOf(css.drawerItem), on: onJobs })}>
             {t('nav.jobs')}
           </LinkButton>
-          <LinkButton href={PATH_PLAN_PR}
-            className={withOn({ base: cssOf(css.drawerItem), on: active === A_PATHWAYS })}>
-            {t('plan.pr.title')}
-          </LinkButton>
           <LinkButton href={PATH_EMPLOYERS}
             className={withOn({ base: cssOf(css.drawerItem), on: active === A_EMPLOYERS })}>
             {t('nav.employers')}
-          </LinkButton>
-          <LinkButton href={PATH_PTE}
-            className={withOn({ base: cssOf(css.drawerItem), on: active === A_PTE })}>
-            {t('nav.pte')}
-          </LinkButton>
-          <LinkButton href={PATH_OCC}
-            className={withOn({ base: cssOf(css.drawerItem), on: active === A_LIBRARY })}>
-            {t('nav.library')}
           </LinkButton>
           <LinkButton href={PATH_NEWS} className={withOn({ base: cssOf(css.drawerItem), on: onNews })}>
             {t('nav.info')}

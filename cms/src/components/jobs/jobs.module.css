@@ -733,10 +733,14 @@
 
 /*
  * 空态里的「去建档」链接。
+ * 2026-09-23 改成钮(就地开档案向导):字号、字重、行高跟着那句空态话走,不吃 button 基座的 13px / 600。
  */
 .emptyLink {
   color: #2563eb;
   text-decoration: none;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 /*
@@ -844,12 +848,15 @@
 
 /*
  * 未建档时的引导链。
+ * 2026-09-23 改成钮(就地开档案向导):字重、行高跟着表格走,不吃 button 基座的 600。
  */
 .needProfile {
   font-size: 12px;
   color: #2563eb;
   text-decoration: none;
   white-space: nowrap;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 /*

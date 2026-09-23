@@ -11,6 +11,8 @@
  * 2026-09-14 Frank「这个去掉」「在招职位那部分加一个收起的功能就行」:「在职位板查看其余 N 个」链撤;
  * 展开钮改成展开 / 收起来回切。
  * 2026-09-14 Frank「这个翻译老是翻译不全啊」:没 NOC 译名的行一次批量懒翻标题当副题(useTitleMap)。
+ * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:灰字改成标题译名优先 —— 这一岗库里存好的 →
+ * 批量懒翻的 → 职业名兜底(jobtitle 桶 titleSubOf,与职位板手机卡、职位详情页同一个);懒翻只翻库里还没译名的。
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:给了 onOpenJob 的每一行都开弹框 —— 已载入的整行直接交,
  * 没载入的由行自己现取(原先只有已载入的能开,其余跳页)。
  *
@@ -18,6 +20,7 @@
  * @time 2026-08-28 18:13:09
  */
 import { useState } from 'react'
+import { lazyTitleOf, titleSubOf, untranslatedOf, useTitleMap } from '@/components/jobtitle'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
@@ -26,9 +29,8 @@ import {
   CARD_HEAD_CLS, CARD_MD_CLS, CLS_SEP, JOBS_FIRST_N, LANG_EN, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND,
 } from './constants'
 import {
-  jobsMoreLabelOf, jobsShownOf, jobSubOf, makeJobsMore, makeJobsReset, subOrTitleOf, untitledOf, zhShownOf,
+  jobsMoreLabelOf, jobsShownOf, jobSubOf, makeJobsMore, makeJobsReset, zhShownOf,
 } from './functions'
-import { useTitleMap } from './hooks'
 import type { CompanyJobFact, CompanyJobsCardIn } from './types'
 import css from './companies.module.css'
 
@@ -44,7 +46,7 @@ export function CompanyJobsCard({
   const [shownN, setShownN] = useState(JOBS_FIRST_N)
   const shown = jobsShownOf({ jobs: company.jobs, n: shownN })
   const hidden = company.jobs.length - shown.length
-  const titleMap = useTitleMap({ titles: untitledOf({ jobs: shown, lang }), lang })
+  const titleMap = useTitleMap({ titles: untranslatedOf({ rows: shown, lang }), lang })
   if (company.jobs.length === 0) {
     return null
   }
@@ -54,7 +56,9 @@ export function CompanyJobsCard({
     if (resolveJob != null) {
       row = resolveJob(job.id)
     }
-    const sub = subOrTitleOf({ sub: jobSubOf({ job, lang }), title: job.title, map: titleMap })
+    const sub = titleSubOf({
+      row: job, lang, lazy: lazyTitleOf({ map: titleMap, title: job.title }), noc: jobSubOf({ job, lang }),
+    })
     rows.push(
       <JobMiniRow key={job.id}
         id={job.id}

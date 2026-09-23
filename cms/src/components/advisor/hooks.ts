@@ -21,7 +21,7 @@ import {
 import {
   advisorKeyOf, makeDragStart, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
   makeLoadProv, makeResizeStart, makeRunLongAdvisor, panelInitOf, panelStyleOf, savePrefOf,
-  streamAdvisor, tickTypewriter, makeLoadTitleTrans,
+  streamAdvisor, tickTypewriter,
 } from './functions'
 import type {
   ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
@@ -29,7 +29,6 @@ import type {
   DeadFlag,
   FloatPanelHookIn, FloatPanelOut, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel,
   NocTrans, NocTransIn, NocTransPanel, PanelInit, PanelPos, PanelSize, PointerHandlerFn, ProvFact, TransStatus,
-  TitleTransHookIn,
 } from './types'
 import { CACHE } from './variables'
 
@@ -465,38 +464,6 @@ export function useActModal(): ActModalPanel {
   }, [])
 
   return { freeLeft, onFreeLeft: setFreeLeft, gen, onRetranslated }
-}
-
-/**
- * 职位弹框标题下的副题:有 NOC 译名用它;没有且界面非英文,开框懒翻一次标题(2026-09-14 Frank「这个翻译呢」)。
- *
- * @param x 职位名、界面语言与现成副题。
- * @returns 副题;'' = 还没有。
- */
-export function useTitleTrans(x: TitleTransHookIn): string {
-  const [text, setText] = useState(x.cached)
-  const [prevCached, setPrevCached] = useState(x.cached)
-  if (prevCached !== x.cached) {
-    setPrevCached(x.cached)
-    setText(x.cached)
-  }
-  const [prevGen, setPrevGen] = useState(x.gen)
-  if (prevGen !== x.gen) {
-    setPrevGen(x.gen)
-    setText(TEXT_NONE)
-  }
-  const title = x.title
-  const id = x.id
-  const lang = x.lang
-  const want = text === TEXT_NONE && title !== TEXT_NONE && lang !== LANG_EN
-
-  useEffect(function loadTitle() {
-    if (want) {
-      makeLoadTitleTrans({ title, id, lang, setText })()
-    }
-  }, [want, title, id, lang])
-
-  return text
 }
 
 /**

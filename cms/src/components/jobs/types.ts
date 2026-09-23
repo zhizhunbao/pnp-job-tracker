@@ -566,6 +566,11 @@ export type MatchGatePanel = {
   onToggle: ClickFn
 
   /**
+   * 去建档 / 改档案:没登录先弹登录框,登录了开档案向导(2026-09-23 账户页撤档案节后,板上两处引导改走它)。
+   */
+  onProfile: ClickFn
+
+  /**
    * 要不要弹注册引导(已登录但没档案)。
    */
   wizard: boolean
@@ -1462,6 +1467,11 @@ export type NeedProfileCellIn = {
    * 引导文案。
    */
   text: string
+
+  /**
+   * 点它:没登录弹登录框,登录了开档案向导。
+   */
+  onOpen: ClickFn
 }
 
 /**
@@ -1527,6 +1537,11 @@ export type EmptyNoteIn = {
    * 去建档的链接文案;'' = 不出链接(普通视图的空态)。
    */
   link: string
+
+  /**
+   * 点「去改档案」:同 NeedProfileCell,就地开档案向导。
+   */
+  onOpen: ClickFn
 }
 
 /**
@@ -1542,6 +1557,11 @@ export type BoardCardIn = {
    * 这一张的库行。
    */
   job: JobFact
+
+  /**
+   * 这一页手机卡批量懒翻回来的职位名 → 译名(2026-09-23 灰字统一成标题译名;桌面恒空表)。
+   */
+  titleMap: Record<string, string>
 }
 
 /**
@@ -5564,6 +5584,31 @@ export type JobDetailIn = {
    * 相似职位(兜底链按它的 fallbackLevel 分级)。
    */
   related: RelatedJobs
+
+  /**
+   * 这一岗按岗懒翻回来的标题译名(库里已有就是它;'' = 还没有 / 没翻出来)。2026-09-23。
+   */
+  trans: string
+}
+
+/**
+ * cardTitlesOf 的入参。
+ */
+export type CardTitlesIn = {
+  /**
+   * 这一页的行。
+   */
+  rows: JobFact[]
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 是不是窄屏(手机卡真出来的那一档)。
+   */
+  narrow: boolean
 }
 
 /**

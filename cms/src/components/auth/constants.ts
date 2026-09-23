@@ -484,6 +484,11 @@ export const HASH_BASE = 31
 export const PATH_ACCOUNT = '/account'
 
 /**
+ * 账户页·简历节。
+ */
+export const PATH_ACCOUNT_RESUME = '/account?sec=resume'
+
+/**
  * 账户页·收藏节。
  */
 export const PATH_ACCOUNT_FAVS = '/account?sec=favs'
@@ -492,16 +497,6 @@ export const PATH_ACCOUNT_FAVS = '/account?sec=favs'
  * 账户页·存查节。
  */
 export const PATH_ACCOUNT_SJOBS = '/account?sec=sjobs'
-
-/**
- * 账户页·档案节。
- */
-export const PATH_ACCOUNT_PROFILE = '/account?sec=profile'
-
-/**
- * 账户页·订阅节。
- */
-export const PATH_ACCOUNT_SAVED = '/account?sec=saved'
 
 /**
  * 匹配视图入口。

@@ -34,8 +34,8 @@ import {
   CLOCK_PAD, CLOCK_PAD_LEN, CLOCK_SEP,
   MIME_JSON, NBSP, NOCS_TOP_N, PROV_LOCALE_ONLY, PROV_PAREN_RE, SECS_PER_MIN, SEC_PAIR_STEP, SEP_ENUM, SIGN_PLUS,
   SIM_FIRST_N, STREAM_AGRI_RE,
-  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE, TITLES_CHUNK,
-  TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO, URL_CO_TITLES,
+  STREAM_GTS_RE, STREAM_HIGH_RE, STREAM_LOW_RE, STREAM_PR_RE, TEXT_NONE,
+  TRACK_KIND_COMPANY, TRACK_SIMILAR, TRACK_TV_ENTRY, URL_CO_ALIAS, URL_CO_DESC, URL_CO_INFO,
   URL_CO_TRANSLATE,
   URL_JOB_HEAD, URL_JOBS_COMPANY, URL_JOBS_ROW_HEAD, URL_PLAN_PR_HEAD, URL_PROV_HEAD, WIKI_PATH_SEP, WIKI_WORD_JOIN,
   WIKI_WORD_SEP, YEAR_ONLY_RE,
@@ -46,22 +46,23 @@ import {
   ADDR_COUNTRY, ADDR_TOKEN_SEP_RE, PLACE_SEG_SEP,
 } from './constants'
 import { cssOf } from '@/components/css'
+import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
   CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
   JobsMoreIn, JobsResetIn,
   JobNocNameIn, JobRowJson, JobsShownIn, JobsToggleLabelIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
-  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTitlesIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
+  LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
   PanelBody, PanelBodyIn,
   PanelJson, PanelSlugIn, PeekClickFn,
   PillClsIn, ProvFullOfIn, ProvHrefOfIn, ResolveJobFn, ResolveJobIn, SalaryTextIn, SecKeyIn, SecTextIn, SecZhIn,
-  SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, SubOrTitleIn, TitlesJson, ToggleIn, TransJson, TvOpenIn,
-  UntitledIn, ZhLineClsIn, ZhShownIn,
+  SponsorTextIn, StreamLabel, StreamLabelIn, StreamsIn, ToggleIn, TransJson, TvOpenIn,
+  ZhLineClsIn, ZhShownIn,
   OpenSiteIn, QueuedTextIn, ShownStageIn, SimShownIn, SimilarEmployer, SitePanel, SitePanelIn, SiteShownIn,
   SiteStageJson, SiteStep, SiteStepsIn,
   CompanyPeek, OpenCompanyFn, OpenJobFn, PeekStackRef,
-  CardTitleIn, MiniSubIn, StoredTitleIn, UntranslatedIn,
+  CardTitleIn, MiniSubIn,
   ReloadFn, SiteDoneIn,
   AddrShownIn, NoSiteIn,
 } from './types'
@@ -1609,83 +1610,6 @@ function briefFactOf(j: BriefJson): CompanyBriefFact | null {
 }
 
 /**
- * 批量懒翻职位名(2026-09-14 Frank「这个翻译老是翻译不全啊」:在招清单里没 NOC 译名的行一次发齐);失败静默。
- * 2026-09-19 在招岗放开 50 条上限:接口一次只收 TITLES_CHUNK 条,超了按它分批发,回来的译名并进同一张表。
- *
- * @param x 一组职位名、界面语言与落格。
- * @returns 取数函数(带死旗)。
- */
-export function makeLoadTitles(x: LoadTitlesIn): LoadFn {
-  return function loadTitles(flag: DeadFlag): void {
-    function read(r: Response): Promise<TitlesJson> {
-      return r.json().catch(none)
-    }
-    function none(): null {
-      return null
-    }
-    const got: Record<string, string> = {}
-    function land(j: TitlesJson): void {
-      if (flag.dead || j == null || j.ok !== true || j.texts == null) {
-        return
-      }
-      const merged: Record<string, string> = {}
-      for (const k of Object.keys(got)) {
-        merged[k] = String(got[k])
-      }
-      for (const k of Object.keys(j.texts)) {
-        got[k] = String(j.texts[k])
-        merged[k] = String(j.texts[k])
-      }
-      x.setMap(merged)
-    }
-    function fall(): void {
-      return
-    }
-    for (let i = 0; i < x.titles.length; i += TITLES_CHUNK) {
-      fetch(URL_CO_TITLES, {
-        method: METHOD_POST,
-        headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-        body: JSON.stringify({ titles: x.titles.slice(i, i + TITLES_CHUNK), lang: x.lang }),
-      }).then(read).then(land).catch(fall)
-    }
-  }
-}
-
-/**
- * 在招清单里没 NOC 译名的职位名(去重),交给批量懒翻。
- *
- * @param x 在招岗与界面语言。
- * @returns 要翻的一组职位名。
- */
-export function untitledOf(x: UntitledIn): string[] {
-  const out: string[] = []
-  for (const job of x.jobs) {
-    if (jobSubOf({ job, lang: x.lang }) !== TEXT_NONE || out.includes(job.title)) {
-      continue
-    }
-    out.push(job.title)
-  }
-  return out
-}
-
-/**
- * 在招清单一行的副题:有 NOC 译名用它,没有就用懒翻出来的标题译名,都没有给空串。
- *
- * @param x NOC 译名、职位名与译名表。
- * @returns 副题。
- */
-export function subOrTitleOf(x: SubOrTitleIn): string {
-  if (x.sub !== TEXT_NONE) {
-    return x.sub
-  }
-  const got = x.map[x.title]
-  if (got == null) {
-    return TEXT_NONE
-  }
-  return got
-}
-
-/**
  * 懒翻公司名(2026-09-14 Frank「公司名也做一个懒加载翻译」):打 /api/employers/alias,回来落格;失败静默(英文名照旧)。
  *
  * @param x 公司名、界面语言与落格。
@@ -1965,6 +1889,7 @@ export function cardTitleOf(x: CardTitleIn): string {
  * 一组职位行底下那行灰字(2026-09-21 Frank「这个下面显示中文翻译,不要显示公司」):界面语言的职位名译名 ——
  * 库里存好的优先,没有用懒翻回来的;英文界面、译名与岗名一样(忽略大小写)、都没有 → 不出。
  * 口径与职位描述弹框标题下那行同源(2026-09-14「标题下那行一律是标题译名」,不放职业分类名)。
+ * 2026-09-23 挑字交给全站一个的 jobtitle 桶 titleSubOf(职业名那档传空:这一行照旧不放职业分类名)。
  * 2026-09-21 中 / 韩界面这一行一律占着(Frank「然后页面在一部分一部分渲染出来」,闪的第 6 处):译名还没到 / 没有 /
  * 与岗名一样时出一个不换行空格(SUB_HOLD),行高照留,懒翻到了只换字不把下面顶走。
  *
@@ -1975,51 +1900,12 @@ export function miniSubOf(x: MiniSubIn): string {
   if (x.lang === LANG_EN) {
     return TEXT_NONE
   }
-  let got = storedTitleOf({ row: x.row, lang: x.lang })
+  const got = titleSubOf({
+    row: x.row, lang: x.lang, lazy: lazyTitleOf({ map: x.map, title: x.row.title }), noc: TEXT_NONE,
+  })
   if (got === TEXT_NONE) {
-    const lazy = x.map[x.row.title]
-    if (lazy != null) {
-      got = lazy
-    }
-  }
-  if (got === TEXT_NONE || got.toLowerCase() === x.row.title.toLowerCase()) {
     return SUB_HOLD
   }
   return got
 }
 
-/**
- * 一组职位行里库里还没有界面语言译名的岗名(去重;英文界面给空表 —— 不用翻)。
- *
- * @param x 这一组的行与界面语言。
- * @returns 要懒翻的岗名。
- */
-export function untranslatedOf(x: UntranslatedIn): string[] {
-  const out: string[] = []
-  if (x.lang === LANG_EN) {
-    return out
-  }
-  for (const row of x.rows) {
-    if (storedTitleOf({ row, lang: x.lang }) !== TEXT_NONE || out.includes(row.title)) {
-      continue
-    }
-    out.push(row.title)
-  }
-  return out
-}
-
-/**
- * 一行库里存好的界面语言译名(中 / 韩;其余给空串)。
- *
- * @param x 这一行与界面语言。
- * @returns 译名;没有给空串。
- */
-function storedTitleOf(x: StoredTitleIn): string {
-  if (x.lang === LANG_ZH) {
-    return x.row.titleZh
-  }
-  if (x.lang === LANG_KO) {
-    return x.row.titleKo
-  }
-  return TEXT_NONE
-}

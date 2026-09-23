@@ -38,7 +38,7 @@ import {
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedJobs, normalizeProfile,
   translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
-  saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle,
+  saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle,
 } from './functions'
 import { CACHE } from './variables'
 import type {
@@ -529,6 +529,8 @@ export async function jobsJdTranslateRoute(req: Request): Promise<Response> {
 /**
  * 职位名懒翻(2026-09-14 Frank「这个翻译呢」:没 NOC 的帖(校内 / 联邦公务员)标题下没有职业译名,开框把标题当一行译;
  * 进程内缓存,译名超长(模型在解释)不返回)。
+ * 2026-09-23 带岗位号的歧义标题按岗没翻出来(没正文 / 模型没回)就回 404,不再退回按标题翻:那条路会把译名写进所有同名岗,
+ * 盖掉别的岗按正文翻好的那个(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」);页面上这一格退回职业名,下次打开再试。
  *
  * @param req 请求体 { title, lang }。
  * @returns { ok, text, cached }。
@@ -560,6 +562,9 @@ export async function jobsTitleRoute(req: Request): Promise<Response> {
   const inCtx = await translateTitleInContext({ db, title, lang, id }).catch(emptyTitle)
   if (inCtx !== PARAM_NONE) {
     return Response.json({ ok: true, text: inCtx, cached: false })
+  }
+  if (id != null && isAmbiguousTitle(title)) {
+    return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   const ck = title.toLowerCase() + TRANS_KEY_SEP + lang
   const hit = CACHE.titleTransBy.get(ck)

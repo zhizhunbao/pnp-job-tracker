@@ -3083,6 +3083,8 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     match: input.matchLevel,
     id: j.id,
     title: text(j.title),
+    titleZh: vtext({ v: j.job_trans_v, cell: j.title_zh }),
+    titleKo: vtext({ v: j.job_trans_v, cell: j.title_ko }),
     company: text(j.company_name),
     companySlug: text(j.company_slug),
     companyDescription: text(j.company_description),
@@ -3318,6 +3320,7 @@ export function toCompanyJob(j: Row): CompanyJobRow {
   const datePosted = iso(j.date_posted)
   return {
     id: count(j.id), title: text(j.title), city: text(j.city), province: text(j.province),
+    titleZh: vtext({ v: j.job_trans_v, cell: j.title_zh }), titleKo: vtext({ v: j.job_trans_v, cell: j.title_ko }),
     cityZh: text(j.city_zh), cityKo: text(j.city_ko),
     gradeChannel: numOrNull(j.grade_channel), noc: text(j.noc), nocTitle: text(j.noc_title),
     nocTitleZh: text(j.noc_title_zh), nocTitleKo: text(j.noc_title_ko),
@@ -4344,6 +4347,8 @@ export function titleListOf(raw: TitleList): TitleList {
 /**
  * 批量懒翻职位名(2026-09-14 Frank「这个翻译老是翻译不全啊」):缓存命中的直接拿,没中的一趟对齐翻译,
  * 译不出的那行不进结果;调用方限流打满(allowLlm = false)就只回缓存里有的。
+ * 2026-09-23 歧义标题(isAmbiguousTitle)整个跳过(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」):按标题翻的译名会写进所有同名岗,
+ * 把详情页 / 弹框按岗带正文翻的那一个盖掉;这类标题只认按岗翻的,板上还没有时退回职业名。
  *
  * @param x 干净的一组职位名、语种与准不准烧模型。
  * @returns 职位名 → 译名。
@@ -4352,6 +4357,9 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
   const texts: TitleTexts = {}
   const miss: TitleList = []
   for (const t of x.titles) {
+    if (isAmbiguousTitle(t)) {
+      continue
+    }
     const hit = CACHE.titleTransBy.get(t.toLowerCase() + TRANS_KEY_SEP + x.lang)
     if (hit != null) {
       texts[t] = hit
@@ -4395,6 +4403,17 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
 }
 
 /**
+ * 是不是歧义标题(TITLE_AMBIGUOUS:只写了一个泛称、不看这一岗做什么就翻不准的;2026-09-23 从按岗翻那里提出来,
+ * 批量懒翻与单条接口的兜底也要问它)。
+ *
+ * @param title 职位名。
+ * @returns 是 = true。
+ */
+export function isAmbiguousTitle(title: string): boolean {
+  return TITLE_AMBIGUOUS.includes(title.toLowerCase())
+}
+
+/**
  * 歧义标题(TITLE_AMBIGUOUS:architect / engineer / analyst …)按这一岗的工作内容翻(2026-09-19 Frank「翻译标题的时候,需要把正文内容也加进去」):
  * 这一岗库里已有现版本译名就用它;没有就拿整理版「工作内容」一节的开头当旁证,用专门的提示词问模型要一个译名
  * (TITLE_IN_CTX_PROMPT),译名只写回这一岗。
@@ -4404,7 +4423,7 @@ export async function translateTitles(x: TranslateTitlesIn): TitlesOut {
  * @returns 译名或空串。
  */
 export async function translateTitleInContext(x: TitleInCtxIn): TitleInCtxOut {
-  if (x.id == null || TITLE_AMBIGUOUS.includes(x.title.toLowerCase()) === false) {
+  if (x.id == null || isAmbiguousTitle(x.title) === false) {
     return PARAM_NONE
   }
   const rows = await queryRows({ db: x.db, sql: SQL.TITLE_TRANS_BY_ID, params: [x.id, TRANS_V], map: toTitleCtxFact })

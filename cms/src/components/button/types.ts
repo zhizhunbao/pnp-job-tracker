@@ -54,6 +54,11 @@ export type ButtonIn = {
   disabled?: boolean
 
   /**
+   * 在途(2026-09-23 立):照旧禁用,但颜色与高度不动,字前多一个跟字同色的转圈 —— 提交类钮等回包时用。
+   */
+  busy?: boolean
+
+  /**
    * 点击回调(可省 = 纯链接形态)。
    */
   onClick?: () => void
@@ -183,6 +188,11 @@ export type BtnClsIn = {
    * 当前态(页签/分段/下拉触发器亮起来那一档)。
    */
   active: boolean
+
+  /**
+   * 在途(叠 busy 类:primary 不退浅蓝、光标转圈)。
+   */
+  busy: boolean
 
   /**
    * 调用方追加类;null = 没有。

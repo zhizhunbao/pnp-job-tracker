@@ -2,173 +2,30 @@
  * profile 域(移民档案)的函数:点选项归属(区间机器 + 三张表的包装)、职业搜索
  * 兜底、逐枚 chip 的 make* 手柄工厂、档案 seed 与保存。2026-08-27 Frank 拍板自
  * account 域拆出;clbActive 族保持标量签名(jobs/OnboardingWizard 经桶在借)。
+ * 2026-09-23 账户页撤移民档案节、档案表单删文件:只有表单在用的职业搜索兜底
+ * (makeAddTyped / toNocOpts / makeLoadNocOpts / nocHitsOf / nocTitleOf / makeNocAdd / makeNocAdder)
+ * 与保存钮面 profileSaveLabelOf 随之删除;makeSaveProfile 与 profileSeedOf 首访向导还在用,留着。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
 import {
-  BUSY_MARK, CLB_BANDS, CLB_TOP, CRED_INCLUDE, CRS_BANDS, CRS_TOP, HDR_CONTENT_TYPE, HITS_MAX, HTTP_LIMIT,
-  HTTP_UNREADABLE, METHOD_PATCH, METHOD_POST, MIME_JSON, NOC_CODE_RE, OB_BRANCHES, OB_PERCENT_MAX, OB_PERCENT_SIGN,
+  CLB_BANDS, CLB_TOP, CRED_INCLUDE, CRS_BANDS, CRS_TOP, HDR_CONTENT_TYPE, HTTP_LIMIT,
+  HTTP_UNREADABLE, METHOD_PATCH, METHOD_POST, MIME_JSON, OB_BRANCHES, OB_PERCENT_MAX, OB_PERCENT_SIGN,
   OB_QUESTION_STATUS, OB_QUESTIONS, OB_SEEN_KEY, OB_SEEN_MARK, OB_STEP_STATUS, PGWP_BANDS, PGWP_TOP, POPULAR_NOCS,
   RESUME_BUSY, RESUME_DONE, RESUME_FAIL, RESUME_FIELD, RESUME_INPUT_RESET, RESUME_LIMIT, RESUME_PREFILL_MAX,
-  RESUME_SCAN, SAVED_ERR, SAVED_OK, TEXT_NONE, URL_HOME, URL_MATCH_VIEW, URL_ME, URL_NOC_DESC, URL_RESUME,
+  RESUME_SCAN, SAVED_ERR, SAVED_OK, TEXT_NONE, URL_HOME, URL_MATCH_VIEW, URL_ME, URL_RESUME,
   URL_USER_HEAD,
 } from './constants'
 import type {
-  AddTypedFn, AddTypedIn, BandValueIn, CrsModeIn, FileInputEvent, FileOpenIn, LoadNocOptsIn, LoadUserIdIn, MeRespJson,
-  NocAdderIn, NocAddFn, NocAddIn, NocDescRespJson, NocDropIn, NocHitsIn, NocLabelIn, NocOpt, NocPickIn, NocsMergeFn,
-  NocsMergeIn, NocTitleIn, ObApplyIn, ObBarIn, ObCurrentStepIn, ObDirtyIn, ObFinishFn, ObFinishIn, ObNextLabelIn,
+  BandValueIn, CrsModeIn, FileInputEvent, FileOpenIn, LoadUserIdIn, MeRespJson,
+  NocDropIn, NocLabelIn, NocPickIn, NocsMergeFn,
+  NocsMergeIn, ObApplyIn, ObBarIn, ObCurrentStepIn, ObDirtyIn, ObFinishFn, ObFinishIn, ObNextLabelIn,
   ObQuestionIn, ObResumeHintIn, ObStep, ObStepsIn, ObTargetIn, OptPickIn, ProfileSeed, ProfileSeedIn, ProvToggleIn,
   ResumeFailIn, ResumePickFn, ResumePickIn, ResumePrefill, ResumeRespJson, ResumeState, ResumeUploadFn,
-  ResumeUploadMakeIn, SaveLabelIn, SaveProfileIn, StatusPickIn, StepBackIn, StepNextIn,
+  ResumeUploadMakeIn, SaveProfileIn, StatusPickIn, StepBackIn, StepNextIn,
 } from './types'
-
-/**
- * 造一枚「加输入框里这一个」的按钮手柄:输入框里敲的东西直接加 ——
- * 5 位码按码加,否则加命中的第一条。
- * (原先埋在 input 的 onKeyDown 箭头里 —— 换 field 域的 Search 后,键盘出口归
- *  组件域统一定,这条页面专属行为提成具名函数并给一个显式的钮。)
- *
- * @param x 当前输入、命中清单与加码函数。
- * @returns 点一下加一个职业的手柄。
- */
-export function makeAddTyped(x: AddTypedIn): AddTypedFn {
-  return function addTyped(): void {
-    const v = x.q.trim()
-    if (NOC_CODE_RE.test(v)) {
-      x.addNoc(v)
-      return
-    }
-    if (x.hits[0] != null) {
-      x.addNoc(x.hits[0].noc)
-    }
-  }
-}
-
-/**
- * noc-descriptions 响应 → 职业选项清单(行构造器):缺码的行丢掉(没码没法选),
- * 缺名归一成空串。
- *
- * @param d 接口响应体(归一前)。
- * @returns 洗净的选项清单。
- */
-export function toNocOpts(d: NocDescRespJson): NocOpt[] {
-  const out: NocOpt[] = []
-  if (d == null || d.docs == null) {
-    return out
-  }
-  for (const row of d.docs) {
-    if (row.noc == null || row.noc === '') {
-      continue
-    }
-    let title = ''
-    if (row.title != null) {
-      title = row.title
-    }
-    out.push({ noc: row.noc, title })
-  }
-  return out
-}
-
-/**
- * 造一枚拉职业选项全集的手柄:noc-descriptions 维度一次拉取(397 行),
- * 挂载时调一次。网络挂了落空清单 —— 与拉取前的初值同形,搜索兜底只是没得可命中。
- *
- * @param x 选项落格。
- * @returns 拉取手柄。
- */
-export function makeLoadNocOpts(x: LoadNocOptsIn): () => Promise<void> {
-  return async function loadNocOpts(): Promise<void> {
-    try {
-      const r = await fetch(URL_NOC_DESC, { credentials: CRED_INCLUDE })
-      const d = await r.json() as NocDescRespJson
-      x.setOpts(toNocOpts(d))
-    } catch {
-      x.setOpts([])
-    }
-  }
-}
-
-/**
- * 搜索兜底的命中清单:码前缀或职业名包含都算命中,已选的不再出,最多 HITS_MAX 条。
- * 纯派生,每渲染现算(全集 397 行,一次线性扫,不值得上 memo)。
- *
- * @param x 输入、全集与已选清单。
- * @returns 命中清单;没敲字 = 空。
- */
-export function nocHitsOf(x: NocHitsIn): NocOpt[] {
-  const s = x.q.trim().toLowerCase()
-  const out: NocOpt[] = []
-  if (s === '') {
-    return out
-  }
-  for (const o of x.opts) {
-    if (out.length >= HITS_MAX) {
-      break
-    }
-    if (x.nocs.includes(o.noc)) {
-      continue
-    }
-    if (o.noc.startsWith(s) || o.title.toLowerCase().includes(s)) {
-      out.push(o)
-    }
-  }
-  return out
-}
-
-/**
- * 码 → 人话职业名(§3.4 藏码):noc-descriptions 官方名优先 → 热门表的大白话标签
- * → 兜底显示码本身。
- *
- * @param x 码、全集与取词函数。
- * @returns 显示名。
- */
-export function nocTitleOf(x: NocTitleIn): string {
-  for (const o of x.opts) {
-    if (o.noc === x.code && o.title !== '') {
-      return o.title
-    }
-  }
-  for (const p of POPULAR_NOCS) {
-    if (p.noc === x.code) {
-      return x.t(p.key)
-    }
-  }
-  return x.code
-}
-
-/**
- * 造一枚「加一个职业」的手柄(热门 chip 与命中行共用):空码与重复不加,
- * 加没加成都清搜索框(与旧 addNoc 同口径)。
- *
- * @param x 码、现清单与两个落格。
- * @returns 点一下加一个的手柄。
- */
-export function makeNocAdd(x: NocAddIn): () => void {
-  return function addNoc(): void {
-    if (x.code !== '' && x.nocs.includes(x.code) === false) {
-      x.setNocs(x.nocs.concat(x.code))
-    }
-    x.setQ(TEXT_NONE)
-  }
-}
-
-/**
- * 参数化的「加一个职业」(makeAddTyped 的加码口):空码与重复不加,
- * 加没加成都清搜索框 —— 与逐枚 chip 的 makeNocAdd 同一套口径。
- *
- * @param x 现清单与两个落格。
- * @returns 收码就加的手柄。
- */
-export function makeNocAdder(x: NocAdderIn): NocAddFn {
-  return function addNocByCode(code: string): void {
-    if (code !== '' && x.nocs.includes(code) === false) {
-      x.setNocs(x.nocs.concat(code))
-    }
-    x.setQ(TEXT_NONE)
-  }
-}
 
 /**
  * 造一枚「摘一个职业」的手柄(已选标签的 × 与热门 chip 再点取消共用)。
@@ -401,19 +258,6 @@ export function makeSaveProfile(x: SaveProfileIn): () => Promise<void> {
       x.setBusy(false)
     }
   }
-}
-
-/**
- * 档案保存钮的钮面文字:存的过程中换成省略号(占位不跳动),否则是「保存」。
- *
- * @param x 忙态与取词函数。
- * @returns 钮面文字。
- */
-export function profileSaveLabelOf(x: SaveLabelIn): string {
-  if (x.busy) {
-    return BUSY_MARK
-  }
-  return x.t('prof.save')
 }
 
 /**

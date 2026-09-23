@@ -11,13 +11,15 @@
  * 浮层与正文下沉到内层 ActJd(以重译代数作 key 重挂);本件只留弹框面板、浮层机器与标题译名。
  * 2026-09-21 照公司弹框的形,正文下面接公司信息卡与相关职位卡(Frank「参考一下公司弹框」):
  * 宿主(弹框栈 PeekStack)多注两个回调 —— 点公司名、点相关职位都往栈上叠一层。
+ * 2026-09-23 标题译名 hook 搬去 jobtitle 桶(职位详情页也要用);这一岗库里已存标题译名就直接出、不打接口(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { JD_PANEL_H, JD_PANEL_W, JD_PREF, TEXT_NONE } from './constants'
+import { JD_PANEL_H, JD_PANEL_W, JD_PREF } from './constants'
 import { ActJd } from './actjd'
-import { useActModal, useFloatPanel, useTitleTrans } from './hooks'
+import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
+import { useActModal, useFloatPanel } from './hooks'
 import type { ActModalIn } from './types'
 
 /**
@@ -29,7 +31,9 @@ import type { ActModalIn } from './types'
 export function ActModal({ job, lang, plan, onClose, onOpenJob, onOpenCompany }: ActModalIn) {
   const a = useActModal()
   const panel = useFloatPanel({ prefKey: JD_PREF, defW: JD_PANEL_W, defH: JD_PANEL_H })
-  const sub = useTitleTrans({ title: job.title, id: job.id, lang, cached: TEXT_NONE, gen: a.gen })
+  const sub = useTitleTrans({
+    title: job.title, id: job.id, lang, cached: storedTitleOf({ row: job, lang }), gen: a.gen,
+  })
   return (
     <ActJd key={a.gen} job={job} lang={lang} plan={plan} onClose={onClose} panel={panel} sub={sub} a={a}
       onOpenJob={onOpenJob}
