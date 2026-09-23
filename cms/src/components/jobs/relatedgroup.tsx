@@ -10,43 +10,42 @@
  * 上面「同公司组留空」一条随之作废;行交给 companies 的 JobMiniList(同样点文件),译名的存 / 懒翻都在那边。
  * 2026-09-22 Frank「需要一个展开的按钮吧,不应该只显示 6 个吧」「这个地方要显示职位数量吧」:
  * 组标题带总数(照在招职位卡的括号形),收起时先出 firstN 行,「展开其余 N 个 ▾ / 收起 ▴」来回切(原地展开,不跳转)。
+ * 2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」:同省同职业组露完首屏取到的行后
+ * 「再展开 N 个」按页向接口续取;展开 / 收起状态收进 useRelatedPages(同公司组照旧一次露完已取的行)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { useState } from 'react'
 import { Button } from '@/components/button'
 import { JobMiniList } from '@/components/companies/jobminilist'
 import { cssOf } from '@/components/css'
-import { BTN_GHOST, PAREN_L, PAREN_R } from './constants'
-import { makeRelExpand, relShownOf } from './functions'
+import { BTN_GHOST, PAREN_L, PAREN_R, TEXT_NONE } from './constants'
+import { useRelatedPages } from './hooks'
 import type { RelatedGroupIn } from './types'
 import css from './jobs.module.css'
 
 /**
  * 渲染相似职位的一组。
  *
- * @param props 组小标题、总数、这一组的行、收起首屏条数、取词函数、界面语言与点一行的去处。
+ * @param props 组小标题、总数、这一组的行、收起首屏条数、续取岗号、取词函数、界面语言与点一行的去处。
  * @returns 小标题 + 若干行 + 展开 / 收起钮。
  */
-export function RelatedGroup({ label, total, rows, firstN, t, lang, onOpenJob }: RelatedGroupIn) {
-  const [open, setOpen] = useState(false)
-  const shown = relShownOf({ rows, firstN, open })
-  const hidden = rows.length - shown.length
+export function RelatedGroup({ label, total, rows, firstN, pageJobId, t, lang, onOpenJob }: RelatedGroupIn) {
+  const pages = useRelatedPages({ jobId: pageJobId, rows, total, firstN, t })
   return (
     <div>
       <div className={cssOf(css.relGroup)}>
         {label}
         {total > 0 && <span> {PAREN_L}{total}{PAREN_R}</span>}
       </div>
-      <JobMiniList rows={shown} lang={lang} onOpenJob={onOpenJob} />
-      {hidden > 0 && (
-        <Button kind={BTN_GHOST} onClick={makeRelExpand({ open, set: setOpen })} className={cssOf(css.relMore)}>
-          {t('act.showAll', { n: hidden })}
+      <JobMiniList rows={pages.shown} lang={lang} onOpenJob={onOpenJob} />
+      {pages.moreText !== TEXT_NONE && (
+        <Button kind={BTN_GHOST} onClick={pages.onMore} disabled={pages.busy} className={cssOf(css.relMore)}>
+          {pages.moreText}
         </Button>
       )}
-      {open && rows.length > firstN && (
-        <Button kind={BTN_GHOST} onClick={makeRelExpand({ open, set: setOpen })} className={cssOf(css.relMore)}>
+      {pages.canCollapse && (
+        <Button kind={BTN_GHOST} onClick={pages.onCollapse} className={cssOf(css.relMore)}>
           {t('act.collapse')}
         </Button>
       )}

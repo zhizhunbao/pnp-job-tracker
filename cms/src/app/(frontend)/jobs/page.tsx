@@ -14,6 +14,8 @@
  * 2026-08-28 换装批收成标准形:整页外框 Frame + 顶栏 + 视图 + 页脚;顶栏那颗「我的匹配」
  * 带三态闸,所以它连闸一起是 JobsHeader 那一件。首屏维度的 10 分钟单件缓存随之下沉进
  * lib/jobs 的 getSsrDims(门里不许有函数体)。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
+ * 门不再读 view 参数,顶栏与板都不再收匹配视图初值。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -24,7 +26,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
-  BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader, P_VIEW, VAL_MATCH,
+  BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader,
   colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
@@ -53,7 +55,6 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const sp = toSearchParams(await searchParams)
   const filters = parseJobFilters(sp)
   const filtered = Object.keys(filters).length > 0
-  const initialMatchView = sp.get(P_VIEW) === VAL_MATCH
 
   const payload = await getPayload({ config: await config })
   const db = dbOf(payload)
@@ -89,7 +90,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
   return (
     <Frame>
-      <JobsHeader plan={plan} matchView={initialMatchView} />
+      <JobsHeader plan={plan} />
       <Jobs key={filterSig(filters)}
         jobs={jobs}
         updatedAt={updatedAt}
@@ -99,8 +100,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
         plan={plan}
         totalCount={total ?? (tp.total || jobs.length)}
         proof={{ named: tp.named, lmia: tp.lmia }}
-        initialFilters={filters}
-        initialMatchView={initialMatchView} />
+        initialFilters={filters} />
       <Footer />
     </Frame>
   )

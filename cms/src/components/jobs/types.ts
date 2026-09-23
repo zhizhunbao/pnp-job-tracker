@@ -60,11 +60,6 @@ export type ClickFn = () => void
 export type TextFn = (v: string) => void
 
 /**
- * 收一个布尔的手柄(勾选型筛选)。
- */
-export type BoolFn = (v: boolean) => void
-
-/**
  * 筛选对象:键 = 筛选键,值 = 非空字符串;directOnly 为 true 时才在。
  * 全默认 = 空对象(没参数就是干净板)。
  */
@@ -92,7 +87,7 @@ export type FilterSlot = {
 export type FilterState = Record<string, FilterSlot>
 
 /**
- * 联动下拉的选项集(省/市/区、大/中/小类)。
+ * 联动下拉的选项集(省/市/区、大类 / 职业)。
  */
 export type FilterOpts = {
   /**
@@ -116,14 +111,9 @@ export type FilterOpts = {
   broad: string[]
 
   /**
-   * 中分类清单(跟着大类联动)。
+   * 职业清单(2026-09-23 职业分类改两级,取代中 / 小分类两个下拉):值 = 职业码,跟着大类与 EE 类别联动,在招多的在前。
    */
-  mid: string[]
-
-  /**
-   * 小分类清单(跟着大/中类联动)。
-   */
-  fine: string[]
+  occ: string[]
 
   /**
    * EE 类别清单(维度表顺序,不联动;值 = 数据层中文 label。2026-09-14 常用一行大类之前)。
@@ -174,7 +164,7 @@ export type CellTone =
 /**
  * 这一格由哪个哑组件渲。
  */
-export type CellKind = 'text' | 'stream' | 'match' | 'needProfile' | 'lock' | 'actions'
+export type CellKind = 'text' | 'stream' | 'lock' | 'actions'
 
 /**
  * 单元格展示行:每一格都已经算成文本 + 色档 + 链接,单元格组件只读它,不再碰库行。
@@ -245,6 +235,16 @@ export type CellCtx = {
    * 维度表里的 EE 类别(算「休眠」要看最近抽选日)。
    */
   eeCats: JobDims['eeCategories']
+
+  /**
+   * 职业码 → 职业名(「职业」列显示人话短名,2026-09-23;行上随行的名字优先,这个兜底)。
+   */
+  occName: (code: string) => string
+
+  /**
+   * 界面语言(「职业」列按它取随行职业名的哪一格)。
+   */
+  lang: Lang
 }
 
 /**
@@ -557,51 +557,6 @@ export type ChipSpecsIn = {
 }
 
 /**
- * 「我的匹配」三态闸的面板:入口点一下要么进视图、要么先建档、要么先登录。
- */
-export type MatchGatePanel = {
-  /**
-   * 点入口(进出匹配视图 / 去建档 / 弹登录)。
-   */
-  onToggle: ClickFn
-
-  /**
-   * 去建档 / 改档案:没登录先弹登录框,登录了开档案向导(2026-09-23 账户页撤档案节后,板上两处引导改走它)。
-   */
-  onProfile: ClickFn
-
-  /**
-   * 要不要弹注册引导(已登录但没档案)。
-   */
-  wizard: boolean
-
-  /**
-   * 要不要弹登录框(未登录但手里有职业答案)。
-   */
-  login: boolean
-
-  /**
-   * 关掉引导/登录框。
-   */
-  onClose: ClickFn
-
-  /**
-   * 注册引导的初始档案(没有就给 null)。
-   */
-  profile: MatchProfile | null
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录成功:把本地答案落成档案,再直接落匹配视图(E9-04b)。
-   */
-  onDone: () => Promise<void>
-}
-
-/**
  * 顶栏账户区的面板(身份四件 + 弹框态)。
  */
 export type AccountAreaPanel = {
@@ -699,7 +654,7 @@ export type PopupState = {
 /**
  * 升级/登录弹框的由头。
  */
-export type UpsellKind = false | 'lock' | 'ss' | 'login' | 'match' | 'quiz'
+export type UpsellKind = false | 'lock' | 'ss' | 'quiz'
 
 /**
  * 排序方向。
@@ -737,21 +692,6 @@ export type SavedEntry = {
 }
 
 /**
- * 全量匹配计数(FOMO「你今日共 X 个高匹配」)。
- */
-export type MatchTotals = {
-  /**
-   * 高匹配数。
-   */
-  high: number
-
-  /**
-   * 中匹配数。
-   */
-  mid: number
-}
-
-/**
  * 数据面板:当前这批行与它们的取数态。
  */
 export type BoardDataPanel = {
@@ -784,11 +724,6 @@ export type BoardDataPanel = {
    * 第 0 页在拉 = 整表换血:表格/卡片半透明 + 顶部「更新中」条(#83)。
    */
   swapping: boolean
-
-  /**
-   * 全量匹配计数(FOMO「你今日共 X 个高匹配」);null = 不在匹配视图或还没拿到。
-   */
-  matchTotals: MatchTotals | null
 
   /**
    * 再翻一页。
@@ -836,19 +771,19 @@ export type BoardFiltersPanel = {
   onFold: ClickFn
 
   /**
-   * 只看直发岗。
-   */
-  directOnly: boolean
-
-  /**
-   * 换「只看直发」。
-   */
-  onDirect: BoolFn
-
-  /**
    * 职业(NOC)多值的显示名;'' = 没选职业。
    */
   nocLabel: string
+
+  /**
+   * 职业码 → 职业名(「职业」下拉的显示名,与职业胶囊同一个出口;2026-09-23)。
+   */
+  occName: (code: string) => string
+
+  /**
+   * 「职业」下拉的当前值(代表码;'' = 没选或多个职业,见 occSlotOf)。
+   */
+  occValue: string
 
   /**
    * 撤掉职业条件。
@@ -1055,16 +990,6 @@ export type JobsBoardPanel = {
   onSort: (k: JobColKey) => void
 
   /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
-
-  /**
-   * 匹配视图三态闸。
-   */
-  gate: MatchGatePanel
-
-  /**
    * 已收藏映射(岗位号 → 收藏行)。
    */
   saved: Record<string, SavedEntry>
@@ -1108,16 +1033,6 @@ export type JobsBoardPanel = {
    * 换关键词。
    */
   onQ: TextFn
-
-  /**
-   * 一行都没有时的正文(匹配视图与普通视图两句)。
-   */
-  emptyText: string
-
-  /**
-   * 空态里「去改档案」的链接文案;'' = 不出(普通视图)。
-   */
-  emptyLink: string
 
   /**
    * 「已全部显示」那句话。
@@ -1190,11 +1105,6 @@ export type JobsIn = {
    */
   initialFilters?: JobFilters
 
-  /**
-   * 直链进「我的匹配」视图(?view=match)。
-   */
-  initialMatchView?: boolean
-
 }
 
 /**
@@ -1262,11 +1172,6 @@ export type JobsHeaderIn = {
    * 分层态(顶栏账户区与匹配闸都要)。
    */
   plan: JobPlan
-
-  /**
-   * 是不是直链进的匹配视图(顶栏那颗钮的亮/灭)。
-   */
-  matchView: boolean
 }
 
 /**
@@ -1310,41 +1215,6 @@ export type BoardCellBodyIn = {
 }
 
 /**
- * MatchEntry(窄屏「我的匹配」入口条)的 props。
- */
-export type MatchEntryIn = {
-  /**
-   * 钮面文案。
-   */
-  label: string
-
-  /**
-   * 点它走匹配三态闸。
-   */
-  onClick: ClickFn
-}
-
-/**
- * MatchBar(匹配视图状态条)的 props。
- */
-export type MatchBarIn = {
-  /**
-   * 口径说明(带「今日 N 个高匹配」)。
-   */
-  text: string
-
-  /**
-   * 退出钮文案。
-   */
-  exit: string
-
-  /**
-   * 退出匹配视图。
-   */
-  onExit: ClickFn
-}
-
-/**
  * BoardLoading(整表换血条)的 props。
  */
 export type BoardLoadingIn = {
@@ -1352,16 +1222,11 @@ export type BoardLoadingIn = {
    * 「更新中」文案。
    */
   text: string
-}
 
-/**
- * MatchGate(匹配三态闸的弹框层)的 props。
- */
-export type MatchGateIn = {
   /**
-   * 三态闸面板。
+   * 换血中没(2026-09-23 起锚常驻,只有换血中才出提示)。
    */
-  g: MatchGatePanel
+  on: boolean
 }
 
 /**
@@ -1372,16 +1237,6 @@ export type HeadCellIn = {
    * 这一格的展示行。
    */
   h: HeadCellView
-}
-
-/**
- * SkeletonRow(换血中的骨架行)的 props。
- */
-export type SkeletonRowIn = {
-  /**
-   * 这一行要铺几格。
-   */
-  cols: ColSpec[]
 }
 
 /**
@@ -1440,41 +1295,6 @@ export type CellTextIn = {
 }
 
 /**
- * MatchCell(匹配档 chip)的 props。
- */
-export type MatchCellIn = {
-  /**
-   * 档名文案。
-   */
-  text: string
-
-  /**
-   * 档(high/mid/low/na —— 决定配色)。
-   */
-  level: string
-
-  /**
-   * 悬停说明(#207:裸字「高/中/低」无口径,挂 title 说清是什么的高低)。
-   */
-  title: string
-}
-
-/**
- * NeedProfileCell(未建档引导格)的 props。
- */
-export type NeedProfileCellIn = {
-  /**
-   * 引导文案。
-   */
-  text: string
-
-  /**
-   * 点它:没登录弹登录框,登录了开档案向导。
-   */
-  onOpen: ClickFn
-}
-
-/**
  * StreamCell(具名紧缺通道徽章)的 props。
  */
 export type StreamCellIn = {
@@ -1522,26 +1342,6 @@ export type ActionsCellIn = {
    * 收/取消收藏。
    */
   onToggle: ClickFn
-}
-
-/**
- * EmptyNote(一条都没有时的那句话)的 props。
- */
-export type EmptyNoteIn = {
-  /**
-   * 空态正文。
-   */
-  text: string
-
-  /**
-   * 去建档的链接文案;'' = 不出链接(普通视图的空态)。
-   */
-  link: string
-
-  /**
-   * 点「去改档案」:同 NeedProfileCell,就地开档案向导。
-   */
-  onOpen: ClickFn
 }
 
 /**
@@ -1826,6 +1626,11 @@ export type JobRelatedIn = {
   related: RelatedJobs
 
   /**
+   * 本岗号(同省同职业组按页续取用,2026-09-23)。
+   */
+  jobId: number
+
+  /**
    * 兜底链去处;'' = 不出兜底链。
    */
   fallbackHref: string
@@ -1892,13 +1697,23 @@ export type RelJsonTotalIn = {
 }
 
 /**
- * `relShownOf` 的入参。
+ * useRelatedPages 的入参。
  */
-export type RelShownIn = {
+export type RelatedPagesIn = {
   /**
-   * 这一组的行。
+   * 按页续取用的本岗号;REL_NO_PAGING = 不续取(同公司组)。
+   */
+  jobId: number
+
+  /**
+   * 首屏取到的行。
    */
   rows: RelatedJob[]
+
+  /**
+   * 这一组的总数(组标题计数)。
+   */
+  total: number
 
   /**
    * 收起时先出几行。
@@ -1906,24 +1721,109 @@ export type RelShownIn = {
   firstN: number
 
   /**
-   * 展开态。
+   * 取词函数(展开钮钮面)。
    */
-  open: boolean
+  t: TFn
 }
 
 /**
- * `makeRelExpand` 的入参。
+ * useRelatedPages 的出参。
  */
-export type RelExpandIn = {
+export type RelatedPagesPanel = {
   /**
-   * 现在的展开态。
+   * 露出来的行。
    */
-  open: boolean
+  shown: RelatedJob[]
 
   /**
-   * 落格。
+   * 展开钮钮面;'' = 没得展开,钮不出。
    */
-  set: (v: boolean) => void
+  moreText: string
+
+  /**
+   * 下一页在途(钮先压住,免得连点重复取)。
+   */
+  busy: boolean
+
+  /**
+   * 出不出「收起」钮。
+   */
+  canCollapse: boolean
+
+  /**
+   * 点展开钮。
+   */
+  onMore: ClickFn
+
+  /**
+   * 点收起钮。
+   */
+  onCollapse: ClickFn
+}
+
+/**
+ * `relMoreTextOf` 的入参。
+ */
+export type RelMoreTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 按页续取用的本岗号;REL_NO_PAGING = 不续取。
+   */
+  jobId: number
+
+  /**
+   * 露了几行。
+   */
+  n: number
+
+  /**
+   * 手里取到几行(首屏的 + 续取的)。
+   */
+  loaded: number
+
+  /**
+   * 这一组的总数。
+   */
+  total: number
+
+  /**
+   * 续取到底了(上一页取回 0 行)。
+   */
+  done: boolean
+}
+
+/**
+ * `relStepOf` 的入参。
+ */
+export type RelStepIn = {
+  /**
+   * 露了几行。
+   */
+  n: number
+
+  /**
+   * 手里取到几行。
+   */
+  loaded: number
+
+  /**
+   * 这一组的总数。
+   */
+  total: number
+}
+
+/**
+ * /api/jobs/related/occ 的响应体(线格式;2026-09-23 按页续取)。
+ */
+export type RelatedPageJson = {
+  /**
+   * 这一页的行;缺席 = 没取到。
+   */
+  sameOcc?: RelatedJobJson[]
 }
 
 /**
@@ -1949,6 +1849,12 @@ export type RelatedGroupIn = {
    * 收起时先出几行(2026-09-22「需要一个展开的按钮吧」;同公司 3、同省同职业 6)。
    */
   firstN: number
+
+  /**
+   * 按页续取用的本岗号(2026-09-23:同省同职业组给本岗号,露完已取的行后「再展开」向接口取下一页);
+   * REL_NO_PAGING = 不续取(同公司组,「展开其余 N 个」一次露完已取的行)。
+   */
+  pageJobId: number
 
   /**
    * 取词函数(展开 / 收起钮文案)。
@@ -2643,11 +2549,6 @@ export type CurFiltersIn = {
    * 关键词(可传防抖后的词)。
    */
   q: string
-
-  /**
-   * 只看直发岗。
-   */
-  directOnly: boolean
 }
 
 /**
@@ -3205,14 +3106,14 @@ export type CatSegsIn = {
   broad: string
 
   /**
-   * 中分类。
+   * 职业码(2026-09-23 两级分类:面包屑第三段 = 职业,取代中 / 小分类)。
    */
-  mid: string
+  noc: string
 
   /**
-   * 小分类。
+   * 职业码 → 职业名(makeOccName)。
    */
-  fine: string
+  occName: (code: string) => string
 }
 
 /**
@@ -3657,26 +3558,6 @@ export type StickyOffsetsIn = {
 }
 
 /**
- * useMatchGate 的入参。
- */
-export type MatchGateHookIn = {
-  /**
-   * 分层态(未登录 / 未建档 / 可进,三态分流)。
-   */
-  plan: JobPlan
-
-  /**
-   * 当前在不在匹配视图(决定这一下是进还是出)。
-   */
-  matchView: boolean
-
-  /**
-   * 取词函数。
-   */
-  t: TFn
-}
-
-/**
  * useBoardFilters 的入参。
  */
 export type BoardFiltersHookIn = {
@@ -3739,11 +3620,6 @@ export type BoardFiltersHookOut = {
    * 当前非默认筛选(关键词未防抖 —— URL 与快照按它走)。
    */
   snap: JobFilters
-
-  /**
-   * 只看直发的写口(快照回放要用)。
-   */
-  setDirect: BoolFn
 }
 
 /**
@@ -3794,11 +3670,6 @@ export type BoardDataHookIn = {
    * 排序态。
    */
   sort: SortState
-
-  /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
 }
 
 /**
@@ -3849,11 +3720,6 @@ export type ApplyFiltersIn = {
    * 要落地的筛选。
    */
   f: JobFilters
-
-  /**
-   * 只看直发的写口。
-   */
-  setDirect: BoolFn
 }
 
 /**
@@ -3864,11 +3730,6 @@ export type FilterCountIn = {
    * 筛选各格。
    */
   fState: FilterState
-
-  /**
-   * 只看直发岗。
-   */
-  directOnly: boolean
 }
 
 /**
@@ -3899,11 +3760,6 @@ export type ClearFiltersIn = {
    * 筛选各格。
    */
   fState: FilterState
-
-  /**
-   * 只看直发的写口。
-   */
-  setDirect: BoolFn
 }
 
 /**
@@ -3929,11 +3785,6 @@ export type FilterOptsIn = {
    * 当前大分类;'' = 全部。
    */
   broad: string
-
-  /**
-   * 当前中分类;'' = 全部。
-   */
-  mid: string
 
   /**
    * 当前 EE 类别;'' = 全部(分类树按它收窄)。
@@ -4007,28 +3858,13 @@ export type RankOfIn = {
 }
 
 /**
- * midOptsOf 的入参。
+ * occOptsOf 的入参。
  */
-export type MidOptsIn = {
+export type OccOptsIn = {
   /**
-   * 分类维度行。
+   * 维度表(取职业维度与 EE 名单)。
    */
-  nc: NocCatRow[]
-
-  /**
-   * 当前大分类;'' = 全部。
-   */
-  broad: string
-}
-
-/**
- * fineOptsOf 的入参。
- */
-export type FineOptsIn = {
-  /**
-   * 分类维度行。
-   */
-  nc: NocCatRow[]
+  dims: JobDims
 
   /**
    * 当前大分类;'' = 全部。
@@ -4036,9 +3872,9 @@ export type FineOptsIn = {
   broad: string
 
   /**
-   * 当前中分类;'' = 全部。
+   * 当前 EE 类别;'' = 全部。
    */
-  mid: string
+  ee: string
 }
 
 /**
@@ -4054,11 +3890,6 @@ export type PageSigIn = {
    * 排序态。
    */
   sort: SortState
-
-  /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
 }
 
 /**
@@ -4094,6 +3925,56 @@ export type NocNameIn = {
    * 界面语言。
    */
   lang: Lang
+}
+
+/**
+ * makeOccName 的入参(2026-09-23;详情页的维度不是整张 JobDims,所以直接收职业描述行)。
+ */
+export type OccNameIn = {
+  /**
+   * 职业描述行(职位板 = 大维度包的 nocDescriptions;详情页 = 本岗那一行)。
+   */
+  rows: NocDescFact[]
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+}
+
+/**
+ * occSlotOf / chipNocOf 的入参。
+ */
+export type OccSlotIn = {
+  /**
+   * 筛选各格。
+   */
+  fState: FilterState
+
+  /**
+   * 职业码 → 代表码(occGroupsOf)。
+   */
+  groups: Map<string, string>
+}
+
+/**
+ * occCellTextOf 的入参。
+ */
+export type OccCellIn = {
+  /**
+   * 这一行(取随行的职业名与职业码)。
+   */
+  job: JobFact
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 职业码 → 职业名。
+   */
+  occName: (code: string) => string
 }
 
 /**
@@ -4269,16 +4150,6 @@ export type JobsPageJson = {
    * 数据更新时间。
    */
   updatedAt?: string | null
-
-  /**
-   * 高匹配总数(匹配视图才有)。
-   */
-  matchHigh?: number | null
-
-  /**
-   * 中匹配总数。
-   */
-  matchMid?: number | null
 }
 
 /**
@@ -4532,11 +4403,6 @@ export type JobsQueryIn = {
   sort: SortState
 
   /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
-
-  /**
    * 已翻到第几页。
    */
   page: number
@@ -4763,29 +4629,9 @@ export type HydrateIn = {
   fState: FilterState
 
   /**
-   * 只看直发的写口。
-   */
-  setDirect: BoolFn
-
-  /**
    * 组件收到的 props。
    */
   props: JobsIn
-
-  /**
-   * 分层态。
-   */
-  plan: JobPlan
-
-  /**
-   * 匹配视图的写口。
-   */
-  setMatchView: (v: boolean) => void
-
-  /**
-   * 排序态的写口。
-   */
-  setSort: (s: SortState) => void
 }
 
 /**
@@ -5888,21 +5734,6 @@ export type CellClickIn = {
 }
 
 /**
- * proMatchOpenOf 的入参。
- */
-export type ProMatchIn = {
-  /**
-   * 列键。
-   */
-  k: JobColKey
-
-  /**
-   * 这一行。
-   */
-  j: JobFact
-}
-
-/**
  * moreLabelOf 的入参。
  */
 export type MoreLabelIn = {
@@ -6063,21 +5894,6 @@ export type FoldBtnClsIn = {
 }
 
 /**
- * matchLabelOf 的入参。
- */
-export type MatchLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
-}
-
-/**
  * 字段面板里一列的展示行。
  */
 export type ColOptionView = {
@@ -6197,29 +6013,9 @@ export type SubTextIn = {
   anyFilter: boolean
 
   /**
-   * 匹配视图开着没。
-   */
-  matchView: boolean
-
-  /**
    * 总数。
    */
   total: number
-}
-
-/**
- * mvBarTextOf 的入参。
- */
-export type MvBarTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 全量匹配计数;null = 还没拿到。
-   */
-  totals: MatchTotals | null
 }
 
 /**
@@ -6235,16 +6031,6 @@ export type UpsellReasonIn = {
    * 由头。
    */
   upsell: UpsellKind
-
-  /**
-   * 全量匹配计数;null = 还没拿到。
-   */
-  totals: MatchTotals | null
-
-  /**
-   * 免费匹配额度。
-   */
-  cap: number
 }
 
 /**
@@ -6347,6 +6133,21 @@ export type NocDescDoc = {
    * 韩文译名(本站译,非官方)。
    */
   titleKo: string | null
+
+  /**
+   * 中文短名(2026-09-23 两级分类面包屑用);缺席 = 集合没声明这格。
+   */
+  titleZhShort?: string | null
+
+  /**
+   * 韩文短名;缺席 = 集合没声明这格。
+   */
+  titleKoShort?: string | null
+
+  /**
+   * 英文短名;缺席 = 集合没声明这格。
+   */
+  titleEnShort?: string | null
 
   /**
    * 主要职责(换行分隔)。

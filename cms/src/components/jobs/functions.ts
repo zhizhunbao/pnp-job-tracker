@@ -20,13 +20,11 @@ import { eeIsDormant, eeLastDraw } from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
-import { readQuiz } from '@/components/quiz'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { makeT } from '@/lib/i18n'
 import { eeDisplay, isDirect, isJdNone, sourceLabel, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
-import { FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
-import { catName, colorOf, nocLocalTitle } from '@/lib/noc'
+import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
@@ -35,8 +33,8 @@ import {
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
   COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
-  DEFAULT_COLS, DIRECT_URL_KEY, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, ELIG_OK, EV_MOUSE_MOVE, EV_MOUSE_UP,
-  FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FK_DIRECT, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
+  DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, EV_MOUSE_MOVE, EV_MOUSE_UP,
+  FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
   JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
@@ -47,15 +45,15 @@ import {
   JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
   JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED,
-  KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_MATCH, K_OPT, K_ORIGIN,
+  KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_ORIGIN,
   K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH, LAYER_CO, LAYER_JOB,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
-  MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MATCH_TONE_CLS, MEASURE_CLS,
-  MEASURE_ROWS, MV_DOT, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PILOT_ANY,
-  PILOT_NONE, PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
+  MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
+  MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER,
+  PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
-  P_SORT, P_VIEW, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
+  P_SORT, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
   SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
@@ -63,38 +61,38 @@ import {
   TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
   TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
-  UPSELL_LOGIN, UPSELL_MATCH, UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD, URL_BOARD_BROAD,
-  URL_BOARD_FINE,
-  URL_BOARD_MATCH, URL_BOARD_MID, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
-  URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
-  YEAR_MONTH_LEN, ZEBRA_MOD,
+  UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD,
+  URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
+  URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
+  YEAR_MONTH_LEN, ZEBRA_MOD, REL_NO_PAGING, REL_OCC_STEP_N,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, AuthMode, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, CardTitlesIn,
-  BoolFn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
+  AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, CardTitlesIn,
+  CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, CompanyPeek,
   ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
   DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
   FieldOpenIn, FillIn,
-  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FineOptsIn, FixedNoteIn, FoldBtnClsIn,
+  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn,
   FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLineViewIn, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn,
   JdSecHeadIn,
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
   JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn,
-  MailBodyIn, MailtoIn, MapHrefIn, MatchLabelIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
-  MeasureWordIn, MidOptsIn, MoreLabelIn, MvBarTextIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
-  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn,
+  MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
+  MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
+  NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
+  OccOptsIn, OccSlotIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
   PopupToCoIn, PrefixLabelIn,
-  ProMatchIn, ProvFullIn, ProvWordIn, RankOfIn, RelExpandIn, RelJsonTotalIn, RelShownIn, RelatedJobFact,
+  ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn, RelatedJobFact, RelatedPageJson,
   RelatedJobJson, RelatedJobs, RelatedJson, ResizeBindIn,
   RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
-  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellKind, UpsellReasonIn, WantsIn,
+  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, WantsIn,
   WidthsKeyIn,
   JobBodyPanel,
 } from './types'
@@ -139,9 +137,6 @@ export function parseJobFilters(sp: URLSearchParams): JobFilters {
       continue
     }
     f[fKey] = filterValueOf({ fKey, raw })
-  }
-  if (sp.get(DIRECT_URL_KEY) === VAL_ON) {
-    f.directOnly = true
   }
   return f
 }
@@ -198,7 +193,7 @@ export function filterSig(f: JobFilters): string {
 /**
  * 当前非默认筛选:一张 fState 表喂五处 —— URL 写、URL 读(兜底)、快照写、快照回放、请求参数。
  *
- * @param x 筛选各格 + 关键词(可传防抖后的词)+ 只看直发。
+ * @param x 筛选各格 + 关键词(可传防抖后的词)。
  * @returns 非默认筛选;空对象 = 干净板。
  */
 export function curFiltersOf(x: CurFiltersIn): JobFilters {
@@ -211,9 +206,6 @@ export function curFiltersOf(x: CurFiltersIn): JobFilters {
     if (v !== TEXT_NONE) {
       f[k] = v
     }
-  }
-  if (x.directOnly) {
-    f.directOnly = true
   }
   return f
 }
@@ -321,13 +313,14 @@ export function defaultColsOf(): JobColKey[] {
 
 /**
  * 可勾选的列(固定列与 match 不进选择器 —— match 是「我的匹配」视图专属)。
+ * 2026-09-23 match 列随「我的匹配」整拆出了列表,只剩固定列不进选择器。
  *
  * @returns 可勾选列键。
  */
 export function togglableColsOf(): JobColKey[] {
   const keys: JobColKey[] = []
   for (const c of COLUMNS) {
-    if (c.always !== true && c.key !== COL.match) {
+    if (c.always !== true) {
       keys.push(c.key)
     }
   }
@@ -355,6 +348,7 @@ export function knownColsOf(keys: string[]): JobColKey[] {
  * (Frank 2026-07-27 看着匹配视图整列全是「高」:「这一列没有必要吧」—— 这个视图本身
  * 就是「你的匹配」,再来一列逐行复读一遍「高」是零信息量。匹配仍然是**筛选与排序**维度:
  * view=match 的 WHERE、fElig 筛选、sort=match,只是不占一列)。
+ * 2026-09-23「我的匹配」整拆,match 列与匹配视图一起撤,这里不再需要跳过它。
  *
  * @param visible 勾选的列键。
  * @returns 按列序排好的列。
@@ -362,9 +356,6 @@ export function knownColsOf(keys: string[]): JobColKey[] {
 export function shownColsOf(visible: JobColKey[]): ColSpec[] {
   const out: ColSpec[] = []
   for (const c of COLUMNS) {
-    if (c.key === COL.match) {
-      continue
-    }
     if (c.always === true || visible.includes(c.key)) {
       out.push(c)
     }
@@ -639,11 +630,8 @@ export function cellViewOf(x: CellIn): CellView {
   if (x.k === COL.actions) {
     return blankView({ kind: KIND.actions })
   }
-  if (PRO_COLS.has(x.k) && x.cx.plan.isPro === false && x.k !== COL.match) {
+  if (PRO_COLS.has(x.k) && x.cx.plan.isPro === false) {
     return blankView({ kind: KIND.lock, text: maskOf(x.k), title: x.cx.t(K_LOCK_TIP + x.k) })
-  }
-  if (x.k === COL.match) {
-    return matchViewOf(x)
   }
   const cat = catCellOf(x)
   if (cat != null) {
@@ -683,30 +671,8 @@ function maskOf(k: JobColKey): string {
 }
 
 /**
- * 与我的匹配(E5-00):高 = 绿 chip / 中 = 蓝 / 低 = 灰 / 不适用 = 浅;未建档 → 引导。
- * 匹配全放开(Frank 2026-07-21):所有岗都出真实档位,不再有「超额打码」档 ——
- * 收费只剩 Pro 数据列。
- *
- * @param x 列键、库行、上下文。
- * @returns 展示行。
- */
-function matchViewOf(x: CellIn): CellView {
-  if (x.j.match != null) {
-    return blankView({
-      kind: KIND.match,
-      text: x.cx.t(K_MATCH + x.j.match),
-      level: x.j.match,
-      title: x.cx.t('match.tip'),
-    })
-  }
-  if (x.cx.plan.loggedIn === false || x.cx.plan.profileOk === false) {
-    return blankView({ kind: KIND.needProfile, text: x.cx.t('match.needProfile') })
-  }
-  return blankView({ tone: TONE.muted })
-}
-
-/**
  * 分类族:大/中/小分类、TEER、NOC 码、经验级别。
+ * 2026-09-23 职业分类改两级:中 / 小分类两列撤;NOC 列改叫「职业」,显示人话短名(码在点开的类别弹框里)。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行;不是本族给 null。
@@ -716,15 +682,6 @@ function catCellOf(x: CellIn): CellView | null {
   if (x.k === COL.broad) {
     return blankView({ text: catTextOf({ t, v: x.j.broad }), tone: TONE.cat, color: colorOf(x.j.broad).fg })
   }
-  if (x.k === COL.mid) {
-    return blankView({ text: catTextOf({ t, v: x.j.mid }), tone: TONE.slate })
-  }
-  if (x.k === COL.fine) {
-    if (hasText(x.j.mid) === false || x.j.mid === UNCAT || x.j.fine === x.j.mid) {
-      return blankView({ tone: TONE.slate })
-    }
-    return blankView({ text: catTextOf({ t, v: x.j.fine }), tone: TONE.slate })
-  }
   if (x.k === COL.teer) {
     if (x.j.teer == null) {
       return blankView({ tone: TONE.slate })
@@ -733,7 +690,7 @@ function catCellOf(x: CellIn): CellView | null {
     return blankView({ text: TEER_PREFIX + String(x.j.teer), tone: TONE.slate, title: tip, pop: TEXT_NONE })
   }
   if (x.k === COL.noc) {
-    return blankView({ text: dashOf(x.j.noc) })
+    return blankView({ text: occCellTextOf({ job: x.j, lang: x.cx.lang, occName: x.cx.occName }) })
   }
   if (x.k === COL.accessibility) {
     let level = ACC_UNKNOWN
@@ -743,6 +700,26 @@ function catCellOf(x: CellIn): CellView | null {
     return blankView({ text: t(K_ACC + level) })
   }
   return null
+}
+
+/**
+ * 「职业」列一格的文字(2026-09-23 职业分类改两级):人话短名。先用这一行随行带的职业名(JOB_COLUMNS 左连
+ * noc_descriptions)—— Frank「刷新的时候为什么先显示号码」:原先只等懒取的大维度包,首屏先露职业码;
+ * 行上没有再查维度表;两边都没有(描述表压根没这一码)才退回码,没码显示长横。
+ *
+ * @param x 这一行、界面语言与职业名取值函数。
+ * @returns 格内文字。
+ */
+function occCellTextOf(x: OccCellIn): string {
+  const own = pickName({ row: x.job.occNames, lang: x.lang })
+  if (own !== TEXT_NONE) {
+    return own
+  }
+  const name = x.occName(x.job.noc)
+  if (name !== TEXT_NONE) {
+    return name
+  }
+  return dashOf(x.job.noc)
 }
 
 /**
@@ -1265,21 +1242,23 @@ function pushSponsorChip(a: ChipPushIn): void {
 /**
  * 职业(NOC)多值的显示名:走维度表里的译名(与卡片上那条灰注同一个出口),
  * 查不到就显码本身;代码不裸奔,值仍是精确的 NOC 码。
+ * 2026-09-23 同一个职业的几个码(「软件开发」三码)名字一样,只出一次。
  *
  * @param x NOC 多值、译名取值函数、界面语言。
  * @returns 顿号/逗号连接的人话名;没选职业时给空串。
  */
 export function nocLabelOf(x: NocLabelIn): string {
-  const names = []
+  const names: string[] = []
   for (const raw of x.fNoc.split(COMMA)) {
     const code = raw.trim()
     if (code === TEXT_NONE) {
       continue
     }
-    const name = x.nameOf(code)
+    let name = x.nameOf(code)
     if (name === TEXT_NONE) {
-      names.push(code)
-    } else {
+      name = code
+    }
+    if (names.includes(name) === false) {
       names.push(name)
     }
   }
@@ -2145,30 +2124,20 @@ function byLengthDesc(a: string, b: string): number {
 }
 
 /**
- * 面包屑的职业分类路径段(省 › 大 › 中 › 小):同名相邻跳过,不铺重复。
+ * 面包屑的职业分类路径段。沿革:原是「省 › 大 › 中 › 小」,同名相邻跳过、不铺重复;2026-09-23 职业分类改两级,
+ * 改成「省 › 大类 › 职业」—— 职业段显示人话短名,点了回板上按这个职业码筛(`?noc=`,与问卷 / 规划页深链同一个参数)。
  *
- * @param x 取词函数与本岗三级分类。
+ * @param x 取词函数、本岗大类、职业码与职业名取值函数。
  * @returns 路径段。
  */
 export function catSegsOf(x: CatSegsIn): CrumbSeg[] {
-  const all: CrumbSeg[] = []
-  if (x.broad !== TEXT_NONE && x.broad !== UNCAT) {
-    all.push({ txt: catTextOf({ t: x.t, v: x.broad }), href: URL_BOARD_BROAD + encodeURIComponent(x.broad) })
-  }
-  if (x.mid !== TEXT_NONE && x.mid !== UNCAT) {
-    const href = URL_BOARD_BROAD + encodeURIComponent(x.broad) + URL_BOARD_MID + encodeURIComponent(x.mid)
-    all.push({ txt: catTextOf({ t: x.t, v: x.mid }), href })
-  }
-  if (x.fine !== TEXT_NONE && x.fine !== UNCAT) {
-    all.push({ txt: catTextOf({ t: x.t, v: x.fine }), href: URL_BOARD_FINE + encodeURIComponent(x.fine) })
-  }
   const out: CrumbSeg[] = []
-  let prev = TEXT_NONE
-  for (const s of all) {
-    if (s.txt !== prev) {
-      out.push(s)
-    }
-    prev = s.txt
+  if (x.broad !== TEXT_NONE && x.broad !== UNCAT) {
+    out.push({ txt: catTextOf({ t: x.t, v: x.broad }), href: URL_BOARD_BROAD + encodeURIComponent(x.broad) })
+  }
+  const name = x.occName(x.noc)
+  if (name !== TEXT_NONE) {
+    out.push({ txt: name, href: URL_BOARD_NOC + encodeURIComponent(x.noc) })
   }
   return out
 }
@@ -2656,7 +2625,7 @@ export function seedFilter(x: SeedFilterIn): string {
 /**
  * 快照回放 / URL 兜底共用的落地口:把一份筛选写回各格。
  *
- * @param x 筛选各格的读写口、要落的筛选、只看直发的写口。
+ * @param x 筛选各格的读写口与要落的筛选。
  * @returns 无。
  */
 export function applyFiltersTo(x: ApplyFiltersIn): void {
@@ -2666,15 +2635,12 @@ export function applyFiltersTo(x: ApplyFiltersIn): void {
       s.set(v)
     }
   }
-  if (x.f[FK_DIRECT] === true) {
-    x.setDirect(true)
-  }
 }
 
 /**
  * 折叠区里有几项被选中(徽标计数)。
  *
- * @param x 筛选各格与只看直发。
+ * @param x 筛选各格。
  * @returns 计数。
  */
 export function foldActiveOf(x: FilterCountIn): number {
@@ -2685,22 +2651,16 @@ export function foldActiveOf(x: FilterCountIn): number {
       n = n + 1
     }
   }
-  if (x.directOnly) {
-    n = n + 1
-  }
   return n
 }
 
 /**
  * 有没有任何筛选在生效(「已选」行与横幅数字口径都看它)。
  *
- * @param x 筛选各格与只看直发。
+ * @param x 筛选各格。
  * @returns 有 = true。
  */
 export function anyFilterOf(x: FilterCountIn): boolean {
-  if (x.directOnly) {
-    return true
-  }
   for (const slot of Object.values(x.fState)) {
     if (slot.v !== TEXT_NONE) {
       return true
@@ -2731,14 +2691,13 @@ export function pickedShownOf(x: PickedShownIn): boolean {
  * 清除全部筛选(URL 参数不用在这儿摘:「筛选 → URL」那一处会把清空后的状态同步回地址栏 ——
  * 2026-07-19 Frank「点击清除筛选,一刷新又回去了」的老补丁已并入同一出口)。
  *
- * @param x 筛选各格与只看直发的写口。
+ * @param x 筛选各格。
  * @returns 无。
  */
 export function clearFiltersIn(x: ClearFiltersIn): void {
   for (const slot of Object.values(x.fState)) {
     slot.set(TEXT_NONE)
   }
-  x.setDirect(false)
 }
 
 /**
@@ -2766,8 +2725,10 @@ function uniq(xs: string[]): string[] {
  * 大类按行业顺序(BROAD_SLUGS = etl/noc_buckets.BROADS 的镜像),不用 uniq 的字母序 ——
  * 对中文那是按码位排的,等于乱序;清单外的值(未分类)垫底。
  *
- * @param x 维度表与当前的省/市/大类/中类/EE 类别。
- * @returns 八组选项。
+ * 2026-09-23 职业分类改两级:中 / 小类两组换成「职业」一组(职业维度 noc_openings,跟着大类与 EE 类别联动)。
+ *
+ * @param x 维度表与当前的省/市/大类/EE 类别。
+ * @returns 七组选项。
  */
 export function filterOptsOf(x: FilterOptsIn): FilterOpts {
   const code = provCodeOf(x.prov)
@@ -2777,8 +2738,7 @@ export function filterOptsOf(x: FilterOptsIn): FilterOpts {
     city: cityOptsOf({ dims: x.dims, code }),
     district: distOptsOf({ dims: x.dims, code, city: x.city }),
     broad: broadOptsOf(nc),
-    mid: midOptsOf({ nc, broad: x.broad }),
-    fine: fineOptsOf({ nc, broad: x.broad, mid: x.mid }),
+    occ: occOptsOf({ dims: x.dims, broad: x.broad, ee: x.ee }),
     ee: eeOptsOf(x.dims),
     source: sourceOptsOf(x.dims),
   }
@@ -2909,37 +2869,113 @@ function rankOf(x: RankOfIn): number {
 }
 
 /**
- * 中分类清单(跟着大类联动)。
+ * 职业清单(2026-09-23 职业分类改两级,取代中 / 小分类两个下拉):职业维度已按在招数从多到少排好;
+ * 选了大类只留这个大类的职业,选了 EE 类别再按 EE 名单收窄(名单是官方的职业码清单)。
  *
- * @param x 分类维度行与当前大类。
- * @returns 中分类。
+ * @param x 维度表、当前大类与 EE 类别。
+ * @returns 职业码。
  */
-function midOptsOf(x: MidOptsIn): string[] {
-  const out: string[] = []
-  for (const c of x.nc) {
-    if (x.broad === TEXT_NONE || c.broad === x.broad) {
-      out.push(c.mid)
+function occOptsOf(x: OccOptsIn): string[] {
+  const groups = occGroupsOf(x.dims)
+  const inEe = new Set<string>()
+  for (const c of x.dims.eeCategories) {
+    if (c.label === x.ee) {
+      inEe.add(c.noc)
     }
   }
-  return uniq(out)
+  const out: string[] = []
+  for (const o of x.dims.occupations) {
+    if (x.broad !== TEXT_NONE && o.broad !== x.broad) {
+      continue
+    }
+    if (x.ee !== TEXT_NONE && inEe.has(o.noc) === false) {
+      continue
+    }
+    const rep = groups.get(o.noc)
+    if (rep != null && rep !== o.noc) {
+      continue
+    }
+    out.push(o.noc)
+  }
+  return out
 }
 
 /**
- * 小分类清单(跟着大/中类联动)。
+ * 职业码 → 所在职业的代表码(2026-09-23 职业 = 中文短名相同的一组码,「软件开发」三个码就是一组;与查询层 lib/jobs
+ * 的 nocGroup 展开同一个口径)。代表码 = 组里在招最多的那个(职业维度已按在招数排好);大维度包没到时谁也不合,一码一组。
  *
- * @param x 分类维度行与当前大/中类。
- * @returns 小分类。
+ * @param dims 维度表。
+ * @returns 职业码 → 代表码。
  */
-function fineOptsOf(x: FineOptsIn): string[] {
-  const out: string[] = []
-  for (const c of x.nc) {
-    const broadOk = x.broad === TEXT_NONE || c.broad === x.broad
-    const midOk = x.mid === TEXT_NONE || c.mid === x.mid
-    if (broadOk && midOk) {
-      out.push(c.fine)
+export function occGroupsOf(dims: JobDims): Map<string, string> {
+  const nameOf = new Map<string, string>()
+  for (const row of dims.nocDescriptions) {
+    if (row.titleZhShort !== TEXT_NONE) {
+      nameOf.set(row.noc, row.titleZhShort)
     }
   }
-  return uniq(out)
+  const repOf = new Map<string, string>()
+  const out = new Map<string, string>()
+  for (const o of dims.occupations) {
+    const name = nameOf.get(o.noc)
+    if (name == null) {
+      out.set(o.noc, o.noc)
+      continue
+    }
+    const rep = repOf.get(name)
+    if (rep == null) {
+      repOf.set(name, o.noc)
+      out.set(o.noc, o.noc)
+    } else {
+      out.set(o.noc, rep)
+    }
+  }
+  return out
+}
+
+/**
+ * 「职业」下拉的当前值(2026-09-23):问卷 / 规划页的深链可能带好几个职业码(逗号隔开),下拉只认一个职业 ——
+ * 几个码折成代表码后只剩一个(同一个职业的组员,如「软件开发」三个码)就给这个代表码;真是好几个职业给空串
+ * (下拉显示「全部职业」,多值由职业胶囊显示与撤掉)。
+ *
+ * @param x 筛选各格与职业组(occGroupsOf)。
+ * @returns 代表码;'' = 没选或多个职业。
+ */
+export function occSlotOf(x: OccSlotIn): string {
+  const reps = new Set<string>()
+  for (const raw of slotOf({ fState: x.fState, k: FK.noc }).split(COMMA)) {
+    const code = raw.trim()
+    if (code === TEXT_NONE) {
+      continue
+    }
+    const rep = x.groups.get(code)
+    if (rep == null) {
+      reps.add(code)
+    } else {
+      reps.add(rep)
+    }
+  }
+  if (reps.size !== 1) {
+    return TEXT_NONE
+  }
+  for (const rep of reps) {
+    return rep
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「已选」行职业胶囊该显示的职业码(2026-09-23 Frank「不需要加这个吧」:单个职业已由常用一行的「职业」下拉显示,
+ * 再挂胶囊是重复;胶囊只留给下拉表达不了的多值 —— 问卷 / 规划页深链带的几个职业码)。
+ *
+ * @param x 筛选各格与职业组。
+ * @returns 职业码(可能多值);'' = 不出胶囊。
+ */
+export function chipNocOf(x: OccSlotIn): string {
+  if (occSlotOf(x) !== TEXT_NONE) {
+    return TEXT_NONE
+  }
+  return slotOf({ fState: x.fState, k: FK.noc })
 }
 
 /**
@@ -2978,11 +3014,11 @@ function sourceOptsOf(dims: JobDims): string[] {
 /**
  * 分页签名:筛选/搜索/排序/切匹配视图变化 → 回第 0 页(取数 effect 随之重拉替换)。
  *
- * @param x 当前筛选、排序与匹配视图。
+ * @param x 当前筛选与排序。
  * @returns 签名串。
  */
 export function pageSigOf(x: PageSigIn): string {
-  return filterSig(x.cur) + SIG_SEP + x.sort.key + SIG_SEP + x.sort.dir + SIG_SEP + String(x.matchView)
+  return filterSig(x.cur) + SIG_SEP + x.sort.key + SIG_SEP + x.sort.dir
 }
 
 /**
@@ -3013,6 +3049,7 @@ function idOf(j: JobFact | undefined): string {
 
 /**
  * 造「按 NOC 码取译名」的取值函数(职业胶囊与手机卡的岗名灰注同一个出口)。
+ * 2026-09-23 职业胶囊改走 makeOccName(与「职业」下拉同名),这里只剩手机卡的灰注。
  *
  * @param x 维度表与界面语言。
  * @returns NOC 码 → 译名;查不到给空串。
@@ -3025,6 +3062,28 @@ export function makeNocName(x: NocNameIn): (code: string) => string {
       }
     }
     return TEXT_NONE
+  }
+}
+
+/**
+ * 造「按职业码取职业名」的取值函数(2026-09-23 职业分类改两级):「职业」下拉、职业列、面包屑、类别弹框与职业胶囊
+ * 走这一个出口 —— 界面语言的短名,一路回退完整译名、官方英文名(lib/noc 的 pickName),同一个职业处处同一个名字。
+ * 胶囊原走 makeNocName(给完整译名,英文界面给空串、只好显示码);手机卡的灰注照旧走 makeNocName。
+ *
+ * @param x 职业描述行与界面语言。
+ * @returns 职业码 → 职业名;描述行里没有给空串。
+ */
+export function makeOccName(x: OccNameIn): (code: string) => string {
+  const byCode = new Map<string, NocDescFact>()
+  for (const row of x.rows) {
+    byCode.set(row.noc, row)
+  }
+  return function occName(code: string): string {
+    const row = byCode.get(code)
+    if (row == null) {
+      return TEXT_NONE
+    }
+    return pickName({ row, lang: x.lang })
   }
 }
 
@@ -3091,7 +3150,7 @@ export function writeColWidthCookie(value: string): void {
  * ⚠️ 逐字沿用旧实现的键集:**不含职业(fNoc)** —— 它是 2026-08-16 才加的筛选,
  * 保存筛选这边一直没跟上。改口径要连带 saved-searches 的回放一起改,不在换装批的范围。
  *
- * @param x 筛选各格与只看直发。
+ * @param x 筛选各格。
  * @returns 存库的条件对象。
  */
 export function saveFiltersOf(x: FilterCountIn): Record<string, string | boolean> {
@@ -3101,23 +3160,19 @@ export function saveFiltersOf(x: FilterCountIn): Record<string, string | boolean
       out[k] = slot.v
     }
   }
-  out[FK_DIRECT] = x.directOnly
   return out
 }
 
 /**
  * /api/jobs 的查询串:筛选参数与 URL/快照同一个出口(fState 一张表)。
  *
- * @param x 当前筛选、排序、匹配视图与页号。
+ * @param x 当前筛选、排序与页号。
  * @returns 查询串。
  */
 export function jobsQueryOf(x: JobsQueryIn): string {
   const sp = filterParamsOf(x.cur)
   sp.set(P_SORT, x.sort.key)
   sp.set(P_DIR, x.sort.dir)
-  if (x.matchView) {
-    sp.set(P_VIEW, VAL_MATCH)
-  }
   sp.set(P_PAGE, String(x.page))
   return sp.toString()
 }
@@ -3201,32 +3256,6 @@ export function replaceQuery(sp: URLSearchParams): void {
     tail = QS_HEAD + qs
   }
   window.history.replaceState(null, TEXT_NONE, window.location.pathname + tail)
-}
-
-/**
- * 手里有没有职业答案(没有就先去建档,别弹一个填不出结果的登录框)。
- *
- * @returns 有 = true。
- */
-export function hasQuizNocs(): boolean {
-  const a = readQuiz()
-  if (a == null || a.nocs == null) {
-    return false
-  }
-  return a.nocs.length > 0
-}
-
-/**
- * 这一下点匹配入口是进还是出。
- *
- * @param matchView 当前在不在匹配视图。
- * @returns 去处。
- */
-export function matchHrefOf(matchView: boolean): string {
-  if (matchView) {
-    return URL_BOARD
-  }
-  return URL_BOARD_MATCH
 }
 
 /**
@@ -3922,7 +3951,12 @@ export function jobDetailViewOf(x: JobDetailIn): JobDetailView {
   return {
     provFull,
     provHref: URL_BOARD_PROV + encodeURIComponent(x.job.province),
-    segs: catSegsOf({ t: x.t, broad: x.job.broad, mid: x.job.mid, fine: x.job.fine }),
+    segs: catSegsOf({
+      t: x.t,
+      broad: x.job.broad,
+      noc: x.job.noc,
+      occName: makeOccName({ rows: x.dims.nocDesc, lang: x.lang }),
+    }),
     alias: titleSubOf({
       row: x.job,
       lang: x.lang,
@@ -4091,28 +4125,53 @@ function relJsonTotalOf(x: RelJsonTotalIn): number {
 }
 
 /**
- * 相关职位一组该上屏的行:收起时前几行,展开了全给。
+ * 相关职位组展开钮的钮面。沿革:2026-09-22 Frank「需要一个展开的按钮吧」是一枚展开 / 收起两用钮(relShownOf 收起给前几行、
+ * 展开全给,makeRelExpand 来回切),同省同职业组只在首屏取到的 24 行里展开;2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」
+ * 选「展开时分页加载」,两枚钮拆开(照公司弹框在招职位卡「再展开 / 收起」的形),状态收进 useRelatedPages:
+ * 同公司组照旧「展开其余 N 个」一次露完已取的行;同省同职业组「再展开 N 个」,N = 这一下会多出的行数。
  *
- * @param x 这一组的行、收起首屏条数与展开态。
- * @returns 该上屏的行。
+ * @param x 取词函数、续取岗号、露了几行、取到几行、总数与是否取到底。
+ * @returns 钮面;'' = 没得展开,钮不出。
  */
-export function relShownOf(x: RelShownIn): RelatedJobFact[] {
-  if (x.open) {
-    return x.rows
+export function relMoreTextOf(x: RelMoreTextIn): string {
+  if (x.jobId === REL_NO_PAGING) {
+    if (x.loaded <= x.n) {
+      return TEXT_NONE
+    }
+    return x.t('act.showAll', { n: x.loaded - x.n })
   }
-  return x.rows.slice(0, x.firstN)
+  const k = relStepOf(x)
+  if (x.done || k <= 0) {
+    return TEXT_NONE
+  }
+  return x.t('act.showMore', { n: k })
 }
 
 /**
- * 相关职位组「展开 / 收起」钮的点击手柄(2026-09-22 Frank「需要一个展开的按钮吧」)。
+ * 同省同职业组这一下多露几行:已取的还没露完就露已取的,露完了按一页算(不超过总数)。
  *
- * @param x 展开态与落格。
- * @returns 点击手柄。
+ * @param x 露了几行、手里取到几行与总数。
+ * @returns 行数;≤ 0 = 没得展开。
  */
-export function makeRelExpand(x: RelExpandIn): ClickFn {
-  return function relExpand(): void {
-    x.set(x.open === false)
+export function relStepOf(x: RelStepIn): number {
+  if (x.loaded > x.n) {
+    return Math.min(REL_OCC_STEP_N, x.loaded - x.n)
   }
+  return Math.min(REL_OCC_STEP_N, x.total - x.n)
+}
+
+/**
+ * /api/jobs/related/occ 的响应 → 这一页的瘦行(2026-09-23 按页续取)。
+ *
+ * @param j 接口响应。
+ * @returns 这一页;缺键给空(当取到底)。
+ */
+export function toRelatedPage(j: RelatedPageJson): RelatedJobFact[] {
+  const rows = j.sameOcc
+  if (rows == null) {
+    return []
+  }
+  return rows.map(toRelatedJob)
 }
 
 /**
@@ -4198,20 +4257,6 @@ export function trackRelated(from: string): ClickFn {
   return function onRelated(): void {
     track(TRACK_REL_JOB, { [TRACK_KEY_FROM]: from })
   }
-}
-
-/**
- * 匹配档 chip 的配色类。
- *
- * @param level 档(high/mid/low/na)。
- * @returns 类名。
- */
-export function matchToneClsOf(level: string): string {
-  const cls = MATCH_TONE_CLS[level]
-  if (cls == null) {
-    return cssOf(css.matchNa)
-  }
-  return cssOf(css[cls])
 }
 
 /**
@@ -4415,20 +4460,10 @@ function cellClickOf(x: CellClickIn): ClickFn | null {
   if (x.k === COL.title) {
     return makeDescOpen({ onDesc: x.b.onDesc, job: x.job })
   }
-  if (PRO_COLS.has(x.k) && x.b.plan.isPro === false && proMatchOpenOf({ k: x.k, j: x.job }) === false) {
+  if (PRO_COLS.has(x.k) && x.b.plan.isPro === false) {
     return null
   }
   return makeFieldOpen({ onField: x.b.onField, job: x.job, k: x.k, title: x.view.pop })
-}
-
-/**
- * Pro 锁列里唯一还能点开的那一格:match 在免费额度内有值时照旧可开。
- *
- * @param x 列键与这一行。
- * @returns 可开 = true。
- */
-function proMatchOpenOf(x: ProMatchIn): boolean {
-  return x.k === COL.match && x.j.match != null
 }
 
 /**
@@ -4909,6 +4944,7 @@ export function makeCityChange(fState: FilterState): TextFn {
 
 /**
  * 造大分类下拉的换值手柄:换大类要把中/小类一起清掉。
+ * 2026-09-23 职业分类改两级:连「职业」一起清(换了大类,原来那个职业多半不在新大类里,留着就筛成零条)。
  *
  * @param fState 筛选各格。
  * @returns 换值手柄。
@@ -4918,11 +4954,13 @@ export function makeBroadChange(fState: FilterState): TextFn {
     setterOf({ fState, k: FK.broad })(v)
     setterOf({ fState, k: FK.mid })(TEXT_NONE)
     setterOf({ fState, k: FK.fine })(TEXT_NONE)
+    setterOf({ fState, k: FK.noc })(TEXT_NONE)
   }
 }
 
 /**
  * 造 EE 类别下拉的换值手柄:换类别要把大/中/小类一起清掉(大类随类别联动,留着就成了对不上的条件)。
+ * 2026-09-23 连「职业」一起清(职业选项按 EE 名单收窄,同理)。中分类下拉随两级分类撤掉,它的换值手柄 makeMidChange 一并删。
  *
  * @param fState 筛选各格。
  * @returns 换值手柄。
@@ -4933,83 +4971,7 @@ export function makeEeChange(fState: FilterState): TextFn {
     setterOf({ fState, k: FK.broad })(TEXT_NONE)
     setterOf({ fState, k: FK.mid })(TEXT_NONE)
     setterOf({ fState, k: FK.fine })(TEXT_NONE)
-  }
-}
-
-/**
- * 造中分类下拉的换值手柄:换中类要把小类清掉。
- *
- * @param fState 筛选各格。
- * @returns 换值手柄。
- */
-export function makeMidChange(fState: FilterState): TextFn {
-  return function onMid(v: string): void {
-    setterOf({ fState, k: FK.mid })(v)
-    setterOf({ fState, k: FK.fine })(TEXT_NONE)
-  }
-}
-
-/**
- * 造勾选框的换值手柄(事件形状由 React 定死,这里只把 checked 拆出来)。
- *
- * @param set 布尔的写口。
- * @returns 换值手柄。
- */
-export function makeCheckChange(set: BoolFn): (e: React.ChangeEvent<HTMLInputElement>) => void {
-  return function onCheck(e: React.ChangeEvent<HTMLInputElement>): void {
-    set(e.target.checked)
-  }
-}
-
-/**
- * 造身份预筛勾选框的换值手柄(GAP1③:勾上 = 'ok',取消 = 空)。
- *
- * @param fState 筛选各格。
- * @returns 换值手柄。
- */
-export function makeEligChange(fState: FilterState): (e: React.ChangeEvent<HTMLInputElement>) => void {
-  return function onElig(e: React.ChangeEvent<HTMLInputElement>): void {
-    setterOf({ fState, k: FK.elig })(eligValueOf(e.target.checked))
-  }
-}
-
-/**
- * 身份预筛勾上时存什么值。
- *
- * @param on 勾上没。
- * @returns 值。
- */
-function eligValueOf(on: boolean): string {
-  if (on) {
-    return ELIG_OK
-  }
-  return TEXT_NONE
-}
-
-/**
- * 造是/否类下拉的显示名函数(值 → `opt.yes` / `opt.no`)。
- *
- * @param t 取词函数。
- * @returns 显示名函数。
- */
-export function makeOptLabel(t: TFn): (v: string) => string {
-  return function optLabel(v: string): string {
-    return t(K_OPT + v)
-  }
-}
-
-/**
- * 造试点社区下拉的显示名函数:yes/no 走取词,RCIP/FCIP 是官方缩写原样出。
- *
- * @param t 取词函数。
- * @returns 显示名函数。
- */
-export function makePilotLabel(t: TFn): (v: string) => string {
-  return function pilotLabel(v: string): string {
-    if (v === PILOT_ANY || v === PILOT_NONE) {
-      return t(K_OPT + v)
-    }
-    return v
+    setterOf({ fState, k: FK.noc })(TEXT_NONE)
   }
 }
 
@@ -5092,33 +5054,6 @@ export function foldBtnClsOf(x: FoldBtnClsIn): string {
 }
 
 /**
- * 「我的匹配」钮的类:桌面专属(手机走窄屏入口条),激活时亮起来并加粗。
- *
- * @param matchView 匹配视图开着没。
- * @returns 类名。
- */
-export function matchBtnClsOf(matchView: boolean): string {
-  const base = cssOf(css.wideOnly) + SPACE + cssOf(css.btn38)
-  if (matchView) {
-    return base + SPACE + cssOf(css.btnOn) + SPACE + cssOf(css.btnBold)
-  }
-  return base
-}
-
-/**
- * 勾选型筛选的类:勾上加一档浅靛底。
- *
- * @param on 勾上没。
- * @returns 类名。
- */
-export function checkClsOf(on: boolean): string {
-  if (on) {
-    return cssOf(css.check) + SPACE + cssOf(css.checkOn)
-  }
-  return cssOf(css.check)
-}
-
-/**
  * 字段面板里一列的类:固定列灰着不可取消。
  *
  * @param always 是不是固定列。
@@ -5145,20 +5080,8 @@ export function foldCaretOf(fold: boolean): string {
 }
 
 /**
- * 「我的匹配」钮的钮面文案:在视图里出「退出」,不在出「进入」。
- *
- * @param x 取词函数与匹配视图开着没。
- * @returns 钮面文案。
- */
-export function matchLabelOf(x: MatchLabelIn): string {
-  if (x.matchView) {
-    return x.t('mv.exit')
-  }
-  return x.t('mv.entry')
-}
-
-/**
  * 字段面板里的逐列勾选(match 列不进选择器 —— 它是「我的匹配」视图专属,勾了也不出列)。
+ * 2026-09-23 match 列随「我的匹配」整拆出了列表,这里不再需要跳过它。
  *
  * @param b 职位板整台状态机。
  * @returns 逐列的展示行。
@@ -5166,9 +5089,6 @@ export function matchLabelOf(x: MatchLabelIn): string {
 export function colPanelRowsOf(b: JobsBoardPanel): ColOptionView[] {
   const out: ColOptionView[] = []
   for (const c of COLUMNS) {
-    if (c.key === COL.match) {
-      continue
-    }
     out.push({
       k: c.key,
       label: b.t(K_COL + c.key),
@@ -5204,101 +5124,30 @@ export function fieldsBtnClsOf(): string {
 }
 
 /**
- * 一行都没有时的正文。
- *
- * @param x 取词函数与匹配视图开着没。
- * @returns 一句话。
- */
-export function emptyTextOf(x: MatchLabelIn): string {
-  if (x.matchView) {
-    return x.t('mv.empty')
-  }
-  return x.t('empty')
-}
-
-/**
- * 空态里「去改档案」的链接文案:只有匹配视图出(空的匹配视图不该是死路)。
- *
- * @param x 取词函数与匹配视图开着没。
- * @returns 链接文案;普通视图给空串。
- */
-export function emptyLinkOf(x: MatchLabelIn): string {
-  if (x.matchView) {
-    return x.t('mv.editProfile')
-  }
-  return TEXT_NONE
-}
-
-/**
  * 横幅副标的主句。标题数字口径不变:库内真实总数(第 15 轮 #34);筛选/匹配态只报命中数
  * (第 17 轮 #42)。
  *
- * @param x 取词函数、有没有筛选、匹配视图与总数。
+ * @param x 取词函数、有没有筛选与总数。
  * @returns 主句。
  */
 export function subTextOf(x: SubTextIn): string {
-  if (x.anyFilter || x.matchView) {
+  if (x.anyFilter) {
     return x.t('subtitle.hits', { n: x.total })
   }
   return x.t('subtitle.count', { n: x.total })
 }
 
 /**
- * 匹配视图状态条的正文。只报「高」(第 6 轮 #23):中匹配门槛宽、数字动辄数千,报出来像灌水,
- * 反而稀释高匹配的可信度。
- *
- * @param x 取词函数与全量匹配计数。
- * @returns 一句话。
- */
-export function mvBarTextOf(x: MvBarTextIn): string {
-  if (x.totals == null || x.totals.high === 0) {
-    return x.t('mv.on')
-  }
-  return x.t('mv.on') + MV_DOT + x.t('mv.today', { h: x.totals.high })
-}
-
-/**
  * 升级弹框的由头文案。免费位用满(ss)说「Pro 可存 5 个」;匹配锁(match)带 FOMO 数字 ——
  * 拿得到今日高匹配数就报数,拿不到只说额度。其余由头不给文案(弹框用它自己的默认话术)。
+ * 2026-09-23「我的匹配」整拆:匹配锁那一档随之撤,只剩 ss 一档出文案。
  *
- * @param x 取词函数、由头、全量匹配计数与免费额度。
+ * @param x 取词函数与由头。
  * @returns 文案;不给给 undefined。
  */
 export function upsellReasonOf(x: UpsellReasonIn): string | undefined {
   if (x.upsell === UPSELL_SS) {
     return x.t('ss.pro')
-  }
-  if (x.upsell !== UPSELL_MATCH) {
-    return undefined
-  }
-  if (x.totals != null && x.totals.high > x.cap) {
-    return x.t('up.matchN', { h: x.totals.high, n: x.cap })
-  }
-  return x.t('up.match', { n: x.cap })
-}
-
-/**
- * 匿名弹框开哪一档:「我的匹配」入口开登录框,其余一律注册框(用户定:注册与购买分离)。
- *
- * @param upsell 由头。
- * @returns 登录或注册。
- */
-export function upsellModeOf(upsell: UpsellKind): AuthMode {
-  if (upsell === UPSELL_LOGIN) {
-    return AUTH_LOGIN
-  }
-  return AUTH_REGISTER
-}
-
-/**
- * 匿名弹框登录成功后回哪:只有「我的匹配」那一档直落匹配视图(Google 路径靠它)。
- *
- * @param upsell 由头。
- * @returns 去处;别的档给 undefined(回原页)。
- */
-export function upsellReturnOf(upsell: UpsellKind): string | undefined {
-  if (upsell === UPSELL_LOGIN) {
-    return URL_BOARD_MATCH
   }
   return undefined
 }
@@ -5360,7 +5209,6 @@ export function toJobPlan(x: JobPlanIn): JobPlan {
     loggedIn: u != null,
     profileOk: x.profileOk,
     profile: planProfileOf({ profileOk: x.profileOk, profile: x.profile }),
-    freeMatchCap: FREE_MATCH_JOBS_PER_DAY,
     email: strOrNull(u?.email),
     displayName: strOrNull(u?.displayName),
     avatar: strOrNull(u?.avatar),
@@ -5410,6 +5258,9 @@ export function toNocDescList(docs: NocDescDoc[]): NocDescFact[] {
       title: strOf(r.title),
       titleZh: strOf(r.titleZh),
       titleKo: strOf(r.titleKo),
+      titleZhShort: strOf(r.titleZhShort),
+      titleKoShort: strOf(r.titleKoShort),
+      titleEnShort: strOf(r.titleEnShort),
       duties: strOf(r.duties),
       requirements: strOf(r.requirements),
       fetched: strOf(r.fetched),

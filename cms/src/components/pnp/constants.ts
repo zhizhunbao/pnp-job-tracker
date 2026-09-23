@@ -86,21 +86,6 @@ export const FED_TYPE_COLOR: Record<string, string> = {
 }
 
 /**
- * 非「按职业类别」的轮次类型(联邦轮次按它分桶:在表里的按本名成桶,不在的并进职业类别桶)。
- */
-export const FED_PROGRAM = ['cec', 'french', 'pnp', 'general', 'fsw', 'fst']
-
-/**
- * 弹框先给最近几轮(#123 教训:别把全量塞进弹框)。
- */
-export const FED_SHOW = 6
-
-/**
- * 展开后最多给几轮(与 FED_SHOW 一起构成「先给 N 轮 + 可展开」)。
- */
-export const FED_MAX = 20
-
-/**
  * 职业类别轮次的桶键(不在 FED_PROGRAM 里的类型都并进这一桶)。
  */
 export const FED_CAT_KEY = '__cat'
@@ -173,19 +158,9 @@ export const PROV_QC = 'QC'
 export const PROV_NL = 'NL'
 
 /**
- * 联邦行的省码(pnp_draws 里 province=FED 的行就是 EE 轮次,零新表)。
- */
-export const PROV_FED = 'FED'
-
-/**
  * 通告行(如 ON 2026-06 改制):渲染成跨列的一条通告,不是抽选。
  */
 export const KIND_NOTICE = 'notice'
-
-/**
- * 抽选行。
- */
-export const KIND_DRAW = 'draw'
 
 /**
  * 排除清单的类型名(省里逐条点名「这些职业不受理」的那种表)。
@@ -339,11 +314,6 @@ export const SCROLL_BLOCK = 'nearest'
 export const PLAIN_BTN_KIND = 'ghost'
 
 /**
- * 历史轮次多于一轮才给展开箭头(#135:拿不到行的类别不出箭头,没东西可展开就别给假入口)。
- */
-export const HIST_EXPANDABLE_MIN = 2
-
-/**
  * 清单兜底:即便一条都没命中,也至少显这么多条。
  */
 export const ROWS_FALLBACK = 1
@@ -354,11 +324,6 @@ export const ROWS_FALLBACK = 1
 export const REFORM_COLS = 2
 
 /**
- * 抽选卡里出不出类别名的门槛:展示的类别多于一个才出(只有一个时卡头已经说清是谁)。
- */
-export const MULTI_CAT_MIN = 2
-
-/**
  * 依据链一格里几行起算「多行」:多行的格一行一块,单行的格就地铺开。
  */
 export const CELL_MULTI_MIN = 2
@@ -367,16 +332,6 @@ export const CELL_MULTI_MIN = 2
  * 细边框盒的留白档:不留(卡里紧贴标题的那层)。
  */
 export const BOX_GAP_NONE = 'none'
-
-/**
- * 细边框盒的留白档:只往上留(跟在一段文字后面的列表)。
- */
-export const BOX_GAP_TOP = 'top'
-
-/**
- * 细边框盒的留白档:上下都留(夹在两段之间的历史轮次)。
- */
-export const BOX_GAP_BOTH = 'both'
 
 /**
  * 本省最新公告最多摆几条(只摆标题与日期的事实行,不解读)。

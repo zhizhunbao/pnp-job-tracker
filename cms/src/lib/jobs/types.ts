@@ -148,6 +148,36 @@ export type JobDbRow = {
   city_ko: string | null
 
   /**
+   * 职业官方英文名(noc_descriptions 左连;没这一码 NULL,2026-09-23)。
+   */
+  occ_title: string | null
+
+  /**
+   * 职业中文完整译名。
+   */
+  occ_title_zh: string | null
+
+  /**
+   * 职业韩文完整译名。
+   */
+  occ_title_ko: string | null
+
+  /**
+   * 职业中文短名。
+   */
+  occ_zh_short: string | null
+
+  /**
+   * 职业韩文短名。
+   */
+  occ_ko_short: string | null
+
+  /**
+   * 职业英文短名。
+   */
+  occ_en_short: string | null
+
+  /**
    * 区(大渥太华社区等)。
    */
   district: string | null
@@ -495,6 +525,11 @@ export type JobRow = {
    * 城市韩文译名;'' = 没核定。
    */
   cityKo: string
+
+  /**
+   * 职业名六格(2026-09-23 随行出来,「职业」列首屏就是名字;按界面语言取哪一格走 lib/noc 的 pickName)。
+   */
+  occNames: OccNames
 
   /**
    * 区。
@@ -948,6 +983,61 @@ export type DesigEmp = {
 }
 
 /**
+ * 职业名六格(JobRow.occNames;形状正好喂 lib/noc 的 pickName)。'' = 没有。
+ */
+export type OccNames = {
+  /**
+   * 官方英文名。
+   */
+  title: string
+
+  /**
+   * 中文完整译名。
+   */
+  titleZh: string
+
+  /**
+   * 韩文完整译名。
+   */
+  titleKo: string
+
+  /**
+   * 中文短名。
+   */
+  titleZhShort: string
+
+  /**
+   * 韩文短名。
+   */
+  titleKoShort: string
+
+  /**
+   * 英文短名。
+   */
+  titleEnShort: string
+}
+
+/**
+ * 「职业」下拉的一个选项(2026-09-23 职业分类改两级):职业码、所属大类与在招数。
+ */
+export type OccOption = {
+  /**
+   * 五位职业码(筛选值)。
+   */
+  noc: string
+
+  /**
+   * 大类(选了大类只列这个大类的职业)。
+   */
+  broad: string
+
+  /**
+   * 在招数(下拉按它从多到少排)。
+   */
+  open: number
+}
+
+/**
  * NOC 官方职业描述行。
  */
 export type NocDesc = {
@@ -970,6 +1060,21 @@ export type NocDesc = {
    * 韩文名;没有则空串。
    */
   titleKo: string
+
+  /**
+   * 中文短名(窄位显示;09-23 起按定稿大表人工裁决);没有则空串。
+   */
+  titleZhShort: string
+
+  /**
+   * 韩文短名;没有则空串。
+   */
+  titleKoShort: string
+
+  /**
+   * 英文短名;没有则空串(显示时退回官方英文名)。
+   */
+  titleEnShort: string
 
   /**
    * 主要职责。
@@ -1125,6 +1230,11 @@ export type Dims = {
    * NOC 官方描述(SSR 瘦身:首屏空,788KB 大头)。
    */
   nocDescriptions: NocDesc[]
+
+  /**
+   * 「职业」下拉的选项(2026-09-23 职业分类改两级;大维度包懒取,首屏空)。
+   */
+  occupations: OccOption[]
 
   /**
    * 字段出处。
@@ -2044,76 +2154,6 @@ export type JobsPageOut = Promise<{
 }>
 
 /**
- * `loadMatchPage` 的入参(「我的匹配」视图)。
- */
-export type MatchPageIn = {
-  /**
-   * 数据库连接(池由调用方注进来)。
-   */
-  db: Db
-
-  /**
-   * 付费态。
-   */
-  pro: boolean
-
-  /**
-   * 规范化档案。
-   */
-  profile: MatchProfile
-
-  /**
-   * 维度包。
-   */
-  matchDims: MatchDims
-
-  /**
-   * 页码,0 起。
-   */
-  page: number
-
-  /**
-   * 每页行数。
-   */
-  pageSize: number
-
-  /**
-   * 排序。
-   */
-  sort: SortSpec
-}
-
-/**
- * `loadMatchPage` 的返回。
- */
-export type MatchPageOut = Promise<{
-  /**
-   * 当前页行。
-   */
-  jobs: JobRow[]
-
-  /**
-   * 命中总数。
-   */
-  total: number
-
-  /**
-   * high 计数。
-   */
-  matchHigh: number
-
-  /**
-   * mid 计数。
-   */
-  matchMid: number
-
-  /**
-   * 最近核对时刻。
-   */
-  updatedAt: string
-}>
-
-/**
  * `loadJobById` 的入参(详情页单岗;closed 岗也返回)。
  */
 export type JobByIdIn = {
@@ -2282,6 +2322,51 @@ export type RelatedOut = Promise<{
    */
   fallbackLevel: 'fine' | 'mid' | 'broad' | null
 }>
+
+/**
+ * `loadRelatedAnchor` 的入参。
+ */
+export type RelatedAnchorIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 岗位号。
+   */
+  id: number
+}
+
+/**
+ * `loadRelatedAnchor` 的返回:锚点格;查无给 null。
+ */
+export type RelatedAnchorOut = Promise<RelatedIn['job'] | null>
+
+/**
+ * `loadRelatedOccPage` 的入参(2026-09-23「同省同职业」按页续取)。
+ */
+export type RelatedOccPageIn = {
+  /**
+   * 数据库连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 本岗锚点格(同 `loadRelatedJobs`)。
+   */
+  job: RelatedIn['job']
+
+  /**
+   * 跳过前几家(卡上已经有的条数)。
+   */
+  offset: number
+}
+
+/**
+ * `loadRelatedOccPage` 的返回:这一页的瘦行。
+ */
+export type RelatedOccPageOut = Promise<RelatedJob[]>
 
 /**
  * `loadTotalAndProof` 的返回:头条总数 + 证言数字。
@@ -3200,16 +3285,6 @@ export type StrList = string[]
 export type MaybeNum = number | null
 
 /**
- * 数字格(numeric 列:pg 回字符串,Local API 回数字)。
- */
-export type NumCell = number | string | null
-
-/**
- * 字符串格。
- */
-export type StrCell = string | null
-
-/**
  * pg 错误对象的形状(code 是 pg 挂上去的,TS 看不见 —— 部署时序降级要按它分支)。
  */
 export type PgFailure = Error & {
@@ -3233,46 +3308,6 @@ export type JsonObj = { [k: string]: JsonCell }
  * 带 JSON 列的一行。
  */
 export type JsonRow = Record<string, JsonCell>
-
-/**
- * 匹配视图的装饰行:比较器只读现成值,列值与档位序由构建方先算好挂上。
- */
-export type RankedHit = {
-  /**
-   * 原始行。
-   */
-  j: JobDbRow
-
-  /**
-   * 命中档(high/mid)。
-   */
-  level: MatchLevel
-
-  /**
-   * 档位序(matchRank 先算好)。
-   */
-  rank: number
-
-  /**
-   * 排序列的取值(matchSortVal 先算好);默认序时 null。
-   */
-  v: Cell
-}
-
-/**
- * `matchSortVal` 的入参。
- */
-export type SortValIn = {
-  /**
-   * 列 key(白名单同 SORT_COLUMNS)。
-   */
-  key: string
-
-  /**
-   * 原始行。
-   */
-  j: JobDbRow
-}
 
 /**
  * 单条匹配规则的入参(六条规则同一形状)。
@@ -3801,11 +3836,6 @@ export type Plan = {
   profile: MatchProfile | null
 
   /**
-   * 免费匹配额度。
-   */
-  freeMatchCap: number
-
-  /**
    * 邮箱(#84 身份四件 SSR 直传,治头像闪);null=未登录。
    */
   email: string | null
@@ -3835,7 +3865,7 @@ export type Plan = {
  * 主表列名全集。显示顺序/默认可见/表头文案在 Table.tsx,这里只定「有哪些列」——
  * 它同时是**字段名**:顾问弹框按字段开、字段来源按字段查,都拿它当键。
  */
-export type ColKey = 'score' | 'match' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'whoCanApply' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
+export type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligibility' | 'broad' | 'mid' | 'fine' | 'teer' | 'empHours' | 'empTerm' | 'whoCanApply' | 'title' | 'company' | 'noc' | 'accessibility' | 'salary' | 'salaryYr' | 'wageMedHr' | 'wageMedYr' | 'vsMedian' | 'country' | 'province' | 'city' | 'district' | 'address' | 'source' | 'origin' | 'direct' | 'status' | 'datePosted' | 'lastSeen' | 'closedAt' | 'actions'
 
 /**
  * 弹框分组(E8-10 三合一后陆续拆出的九组)。
@@ -4506,6 +4536,21 @@ export type NocDescDim = {
   titleKo: string
 
   /**
+   * 中文短名(窄位显示;09-23 起按定稿大表人工裁决);没有则空串。
+   */
+  titleZhShort: string
+
+  /**
+   * 韩文短名;没有则空串。
+   */
+  titleKoShort: string
+
+  /**
+   * 英文短名;没有则空串(显示时退回官方英文名)。
+   */
+  titleEnShort: string
+
+  /**
    * 职责摘录。
    */
   duties: string
@@ -4544,6 +4589,31 @@ export type BigDims = {
    * NOC 描述维度。
    */
   nocDescriptions: NocDescDim[]
+
+  /**
+   * 职业维度(「职业」下拉的选项,2026-09-23)。
+   */
+  occupations: OccDim[]
+}
+
+/**
+ * 职业维度一行(SQL.DIMS_OCCUPATIONS;noc_openings 一个职业码一行)。
+ */
+export type OccDim = {
+  /**
+   * 五位职业码。
+   */
+  noc: string
+
+  /**
+   * 大类。
+   */
+  broad: string
+
+  /**
+   * 在招数(下拉按它从多到少排)。
+   */
+  open: number
 }
 
 /**

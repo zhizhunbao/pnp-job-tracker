@@ -20,6 +20,10 @@
  * 2026-09-15 Frank「可以放下来吧,如果选择市 用户可以在 input 里面输入 更方便一些。现在市太多了」:
  * 市下拉退回折叠区地理行(撤回 09-14「全部市提到全部省后面吧」)—— 全国 2,681 个市、安大略一省 632 个,
  * 下拉里翻不动;搜索框本就匹配城市字段(SEARCH_COLS 含 j.city),打字更快。本行只剩 搜索 / 省 / EE 类别 / 大类。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):本行的匹配钮撤。
+ *
+ * 2026-09-23 职业分类改两级:「职业」下拉挪进本行紧跟大类(Frank「职业分类筛选,是不是放到全部大类后面比较好」);
+ * 按最长选项定宽(Frank「这个下拉跑偏了」)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -28,10 +32,10 @@ import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Search } from '@/components/search'
 import { Select } from '@/components/select'
-import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_SM } from './constants'
+import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_LG, SELECT_SM } from './constants'
 import {
   foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeEeChange, makeEeLabel, makeProvChange, makeProvLabel,
-  matchBtnClsOf, matchLabelOf, slotOf,
+  makeSlotChange, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -65,14 +69,18 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         opts={f.opts.broad}
         all={b.t('all.broad')}
         labelOf={makeCatLabel(b.t)} />
+      <Select value={f.occValue}
+        onChange={makeSlotChange({ fState: f.fState, k: FK.noc })}
+        opts={f.opts.occ}
+        all={b.t('all.occ')}
+        labelOf={f.occName}
+        size={SELECT_LG}
+        fitLongest />
       <Button kind={BTN_SECONDARY} onClick={f.onFold}
         className={foldBtnClsOf({ fold: f.fold, foldActive: f.foldActive })}>
         {b.t('filter.more')}
         {f.foldActive > 0 && <span className={cssOf(css.foldN)}>{f.foldActive}</span>}
         <span className={cssOf(css.foldCaret)}>{foldCaretOf(f.fold)}</span>
-      </Button>
-      <Button kind={BTN_SECONDARY} onClick={b.gate.onToggle} className={matchBtnClsOf(b.matchView)}>
-        {matchLabelOf({ t: b.t, matchView: b.matchView })}
       </Button>
       {f.anyFilter && (
         <Button kind={BTN_GHOST} onClick={f.onClear} className={cssOf(css.clearFilt)}>

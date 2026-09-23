@@ -8,14 +8,18 @@
 /**
  * URL slug ↔ 本站大类(数据值);顺序即展示顺序。
  * 单一来源 = etl/noc_buckets.py 的 BROADS,改那边要同步这里。
+ * 2026-09-23 大类重排(Frank「按表来」,27 → 23,etl/noc 的 BROADS / SLUGS 同批改):slug 能沿用的沿用
+ * (财会金融 = finance、运输物流 = transport、零售销售 = retail……,已收录的榜单 / 统计页网址不变);
+ * 退役的 management / office / accounting / sport / sales / logistics / mining / social-services 不另做跳转:
+ * 统计页 /stats/<省>/<slug> 已无页面门;每日分类榜的路由白名单是 lib/rankings 的 RANKING_SLUGS(另一套榜名,本批不动)。
  */
 export const BROAD_SLUGS: [string, string][] = [
-  ['management', '管理层'], ['business', '商务'], ['administration', '行政'], ['office', '文员'], ['finance', '金融'],
-  ['accounting', '会计'], ['legal', '法律'], ['it', 'IT'], ['engineering', '工程'], ['science', '科学'],
-  ['healthcare', '医疗'], ['education', '教育'], ['social-services', '社会服务'], ['arts', '艺术'], ['sport', '体育'],
-  ['sales', '销售'], ['retail', '零售'], ['food-service', '餐饮'], ['hospitality', '住宿'], ['personal-services', '生活服务'],
-  ['trades', '技工'], ['construction', '建筑'], ['transport', '运输'], ['logistics', '物流'], ['agriculture', '农业'],
-  ['mining', '矿业'], ['manufacturing', '制造'],
+  ['executives', '高管'], ['business', '商务'], ['human-resources', '人力资源'], ['administration', '行政文员'],
+  ['customer-service', '客户服务'], ['finance', '财会金融'], ['legal', '法律'], ['it', 'IT'], ['engineering', '工程'],
+  ['science', '科研'], ['healthcare', '医疗'], ['education', '教育'], ['public-services', '公共服务'],
+  ['arts', '文体艺术'], ['food-service', '餐饮'], ['hospitality', '酒店旅游'], ['retail', '零售销售'],
+  ['personal-services', '生活服务'], ['construction', '建筑'], ['trades', '机修技工'], ['manufacturing', '制造'],
+  ['transport', '运输物流'], ['agriculture', '农林矿业'],
 ]
 
 /**
@@ -228,6 +232,7 @@ export const OCC_COL_NONE = ''
  * 组→大类形(职业/雇主段按 NOC 大类归组用)—— 终局是分组下沉 etl/noc 成 noc_categories
  * 的组列(该处注释「第二个消费者出现时搬」,现在第二个消费者到了),下沉时两处同删。
  * 改这张表必须同步改 IND_BROADS,反之亦然。
+ * 2026-09-23 大类重排(27 → 23):新大类名逐键补在表尾;旧键等数据层切完新名再清(过渡期两套都认)。
  */
 export const BROAD_TO_GROUP: Record<string, string> = {
   /**
@@ -364,4 +369,69 @@ export const BROAD_TO_GROUP: Record<string, string> = {
    * 教育文体组:体育。
    */
   '体育': 'education',
+
+  /**
+   * 商务办公组:高管(2026-09-23 大类重排新名)。
+   */
+  '高管': 'business',
+
+  /**
+   * 商务办公组:人力资源(2026-09-23 大类重排新名)。
+   */
+  '人力资源': 'business',
+
+  /**
+   * 商务办公组:行政文员(2026-09-23 大类重排新名)。
+   */
+  '行政文员': 'business',
+
+  /**
+   * 商务办公组:客户服务(2026-09-23 大类重排新名)。
+   */
+  '客户服务': 'business',
+
+  /**
+   * 商务办公组:财会金融(2026-09-23 大类重排新名)。
+   */
+  '财会金融': 'business',
+
+  /**
+   * STEM 组:科研(2026-09-23 大类重排新名)。
+   */
+  '科研': 'stem',
+
+  /**
+   * 教育文体组:公共服务(2026-09-23 大类重排新名)。
+   */
+  '公共服务': 'education',
+
+  /**
+   * 教育文体组:文体艺术(2026-09-23 大类重排新名)。
+   */
+  '文体艺术': 'education',
+
+  /**
+   * 餐饮零售组:酒店旅游(2026-09-23 大类重排新名)。
+   */
+  '酒店旅游': 'food',
+
+  /**
+   * 餐饮零售组:零售销售(2026-09-23 大类重排新名)。
+   */
+  '零售销售': 'food',
+
+  /**
+   * 技工组:机修技工(2026-09-23 大类重排新名)。
+   */
+  '机修技工': 'trades',
+
+  /**
+   * 运输物流组:运输物流(2026-09-23 大类重排新名)。
+   */
+  '运输物流': 'transport',
+
+  /**
+   * 制造农矿组:农林矿业(2026-09-23 大类重排新名)。
+   */
+  '农林矿业': 'manufacturing',
 }

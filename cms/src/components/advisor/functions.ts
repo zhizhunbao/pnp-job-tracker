@@ -19,17 +19,17 @@ import { normName, STREAM_REFORM } from '@/components/pnp'
 import { blockedSrc, isDirect } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
 import { parseLoc } from '@/lib/location'
-import { catName, nocLocalTitle } from '@/lib/noc'
+import { catName, nocLocalTitle, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS,
   AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT,
-  CAT_NONE, CENTER_DIV, CK_SEP, CLS_DEPTH_BROAD, CLS_DEPTH_FINE, CLS_DEPTH_MID, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP,
+  CAT_NONE, CENTER_DIV, CK_SEP, CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP,
   COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT,
   DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE, EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY,
   FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
-  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_FINE, FIELD_MID, FIELD_NOC, FIELD_PROVINCE,
+  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_PROVINCE,
   FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
   GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
@@ -40,7 +40,7 @@ import {
   PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT,
   P_PROV,
   ROW_KEY_BROAD,
-  ROW_KEY_FINE, ROW_KEY_MID, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
+  ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
   SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
   TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR,
   URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
@@ -56,14 +56,14 @@ import type {
   DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
   FieldPageIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
   IdRowFact,
-  IdRowsIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
+  IdRowsIn, OccNameOfIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
   LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
   LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OpenCompanyFn,
   OpenJobFn, OriginTextIn,
   PairLabelIn, PanelClsIn, PanelPos, PanelStyleIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, PointerHandlerFn,
   PrefFact, PrefJson,
   ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
-  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransJobIn, TransPillIn, TypewriterIn,
+  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn, TypewriterIn,
   VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
   FloatPanelHookIn, PanelInit, PanelSize,
 } from './types'
@@ -372,6 +372,7 @@ export function locDepthOf(field: string): number {
 
 /**
  * 点哪一级分类字段就看到第几级(07-06 用户点名:大分类弹窗不该混进中/小分类)。
+ * 2026-09-23 职业分类改两级:中 / 小两级撤,只剩大类一级。
  *
  * @param field 点开的是哪一格。
  * @returns 层级;NOC 字段给 0 —— 它要全链 + 官方职责/任职要求,不按级裁。
@@ -379,12 +380,6 @@ export function locDepthOf(field: string): number {
 export function clsDepthOf(field: string): number {
   if (field === FIELD_BROAD) {
     return CLS_DEPTH_BROAD
-  }
-  if (field === FIELD_MID) {
-    return CLS_DEPTH_MID
-  }
-  if (field === FIELD_FINE) {
-    return CLS_DEPTH_FINE
   }
   return CLS_DEPTH_NONE
 }
@@ -615,17 +610,14 @@ export function catTextOf(x: CatTextIn): string {
 }
 
 /**
- * 小类的显示名。官方层级里有 36 个中类只有一个小类(两级同名)——
- * 那时小类不再重复一遍,留空。
+ * 职业名(2026-09-23 职业分类改两级,取代 fineTextOf「小类的显示名」—— 官方层级里 36 个中类只有一个小类、两级同名时小类留空,
+ * 那一套随中 / 小类一起撤):界面语言的短名,一路回退完整译名、官方英文名(lib/noc 的 pickName,与职位板「职业」下拉同一个出口)。
  *
- * @param x 取词函数与这一岗。
- * @returns 显示名;与中类同名或未分类时给空串。
+ * @param x 这一岗的 NOC 官方描述与界面语言。
+ * @returns 职业名;表里没有这一码给空串。
  */
-export function fineTextOf(x: TransJobIn): string {
-  if (x.job.fine === x.job.mid) {
-    return TEXT_NONE
-  }
-  return catTextOf({ t: x.t, value: x.job.fine })
+export function occNameOf(x: OccNameOfIn): string {
+  return pickName({ row: x.noc, lang: x.lang })
 }
 
 /**
@@ -651,6 +643,7 @@ export function daysUpOf(x: DaysUpIn): number | null {
 
 /**
  * 分类身份卡的各行(点击字段=该行高亮;NOC 与职业名同属 `noc` 字段,点 NOC 两行齐亮)。
+ * 2026-09-23 职业分类改两级:中 / 小类两行撤,首行换成职业名(与职位板「职业」列同名),码那一行改叫「职业码」。
  * ⚠️ 大类这里走文案表直取(`broad.<值>`),与字段事实块里走 catName 的那一处不同 ——
  * 两处口径本来就不一样,换装批逐字保留,不顺手统一。
  *
@@ -667,12 +660,11 @@ export function idRowsOf(x: IdRowsIn): IdRowFact[] {
     broad = x.t(K_BROAD_HEAD + x.job.broad)
   }
   return [
-    { key: ROW_KEY_NOC, field: FIELD_NOC, label: x.t('col.noc'), value: x.job.noc },
+    { key: ROW_KEY_OCC, field: FIELD_NOC, label: x.t('col.noc'), value: occNameOf({ noc: x.noc, lang: x.lang }) },
+    { key: ROW_KEY_NOC, field: FIELD_NOC, label: x.t('fact.nocCode'), value: x.job.noc },
     { key: ROW_KEY_NOC_TITLE, field: FIELD_NOC, label: x.t('fact.nocTitle'), value: title },
     { key: ROW_KEY_TEER, field: FIELD_TEER, label: x.t('col.teer'), value: teerTextOf({ t: x.t, job: x.job }) },
     { key: ROW_KEY_BROAD, field: FIELD_BROAD, label: x.t('col.broad'), value: broad },
-    { key: ROW_KEY_MID, field: FIELD_MID, label: x.t('col.mid'), value: catTextOf({ t: x.t, value: x.job.mid }) },
-    { key: ROW_KEY_FINE, field: FIELD_FINE, label: x.t('col.fine'), value: fineTextOf({ t: x.t, job: x.job }) },
   ]
 }
 

@@ -571,14 +571,10 @@ export const ROW_KEY_TEER = 'teer'
 export const ROW_KEY_BROAD = 'broad'
 
 /**
- * 分类身份卡中类那一行的列表键。
+ * 分类身份卡职业名那一行的列表键(2026-09-23 职业分类改两级:中 / 小类两行撤,换职业名与职业码;
+ * 职业名、职业码、官方名三行同属 `noc` 字段,点职业格三行齐亮)。
  */
-export const ROW_KEY_MID = 'mid'
-
-/**
- * 分类身份卡小类那一行的列表键。
- */
-export const ROW_KEY_FINE = 'fine'
+export const ROW_KEY_OCC = 'occ'
 
 /**
  * 体量卡留学生那一行的列表键。
@@ -726,16 +722,6 @@ export const DEPTH_ADDRESS = 5
 export const CLS_DEPTH_BROAD = 1
 
 /**
- * 分类层级:中类。
- */
-export const CLS_DEPTH_MID = 2
-
-/**
- * 分类层级:小类。
- */
-export const CLS_DEPTH_FINE = 3
-
-/**
  * 分类层级:NOC 全链(五位码职业级信息只在这一格里给)。
  */
 export const CLS_DEPTH_NONE = 0
@@ -751,9 +737,10 @@ export const LOC_FIELDS = ['country', 'province', 'city', 'district', 'address']
 export const SAL_FIELDS = ['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian']
 
 /**
- * 分类组的五个字段(NOC 全链 / TEER / 大 / 中 / 小)。
+ * 分类组的字段(NOC 全链 / TEER / 大)。2026-09-23 职业分类改两级:中 / 小两个字段随表格两列一起撤
+ * (原为五个:NOC 全链 / TEER / 大 / 中 / 小)。
  */
-export const CLS_FIELDS = ['noc', 'teer', 'broad', 'mid', 'fine']
+export const CLS_FIELDS = ['noc', 'teer', 'broad']
 
 /**
  * 来源组的三个字段(来源板 / 发布渠道 / 一手转帖)。
@@ -814,16 +801,6 @@ export const FIELD_TEER = 'teer'
  * 大分类字段。
  */
 export const FIELD_BROAD = 'broad'
-
-/**
- * 中分类字段。
- */
-export const FIELD_MID = 'mid'
-
-/**
- * 小分类字段。
- */
-export const FIELD_FINE = 'fine'
 
 /**
  * 无障碍字段。

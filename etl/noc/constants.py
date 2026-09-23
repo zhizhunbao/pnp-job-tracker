@@ -297,6 +297,9 @@ BUCKETS5: dict[str, tuple[str, str]] = {
     "65101": ("生活服务", "加油与便利"),
     "74203": ("技工", "维修技工"),
     "22311": ("技工", "维修技工"),
+    "20012": ("IT", "IT"),
+    "11100": ("会计", "会计与保险"), "14200": ("会计", "会计与保险"),
+    "12201": ("金融", "金融"), "12202": ("金融", "金融"), "12203": ("金融", "金融"),
 }
 """官方 5 位(Unit)覆盖 —— 单个职业与它所在小组不是一个行业的。
 原表行间注释逐字折此(2026-08-31 并域):21111 林业专业人员;21112 农业代表顾问;
@@ -313,7 +316,12 @@ BUCKETS5: dict[str, tuple[str, str]] = {
 「零售批发中层管理」;60031 住宿服务经理;62020 餐饮服务主管;62021 行政管家;
 62024 清洁主管 —— 官方与零售主管同组;62200 主厨 —— 官方编在「专业服务」;65101
 加油站服务员;74203 汽车/卡车零部件安装维修 —— 官方编在运输组;22311 家电与商用
-设备维修 —— 官方编在「工程技术」,但它是修东西的活。"""
+设备维修 —— 官方编在「工程技术」,但它是修东西的活。
+2026-09-23 职业分类改两级(大类 → 职业)定稿大表(Frank「大表你确定就行了」)再挪 6 个:
+20012 计算机和信息系统经理 —— 官方编在「工程、建筑、科学和信息系统经理」,求职者按 IT 找;
+11100 会计师、14200 会计文员 —— 官方编在金融,归会计;12201 保险理赔、12202 保险承保、
+12203 估值评估 —— 官方与会计技术员同组,归金融。中类沿用目标大类现成的中类(中类整层要退役,
+不为它新造名字)。"""
 
 SLUGS: dict[str, str] = {
     "管理层": "management", "商务": "business", "行政": "administration", "文员": "office",
@@ -1111,6 +1119,25 @@ SHORT_FIX = {
     "83110": "伐木机械操作员", "84110": "油锯操作员",
     "42102": "军队专业人员", "44200": "作战人员",
     "40010": "政府经理-民生", "40011": "政府经理-经济",
+    "00012": "高级经理-商务",
+    "22310": "电气电子技术员", "22302": "工业制造技术员", "21210": "统计精算师", "22220": "网络技术员",
+    "41300": "社工", "42201": "社区服务工作者", "11100": "会计师", "14200": "会计文员",
+    "10022": "市场营销经理", "10029": "其他商业服务经理", "11202": "市场营销专员",
+    "12012": "图书信息主管", "12104": "就业保险税务官", "12113": "统计员", "14110": "调查统计文员",
+    "14301": "出版监管文员", "20012": "IT 经理", "21103": "气象学家", "21109": "物理科学专业人员",
+    "21120": "公共卫生安全专员", "21322": "冶金和材料工程师", "22111": "农牧渔产品检验员",
+    "22232": "职业安全专员", "31100": "临床专科医生", "31209": "其他诊疗专业人员",
+    "40019": "公共行政经理", "40030": "社会服务经理", "40040": "警务官员", "41221": "小学和幼儿园教师",
+    "41406": "体育政策顾问", "42204": "宗教工作者", "43203": "边境海关官员", "50011": "出版影视经理",
+    "53125": "服装制版师", "53202": "体育官员和裁判", "63220": "修鞋工和制鞋工", "64201": "形象顾问",
+    "65109": "其他销售相关职业", "65210": "旅宿服务辅助工", "65211": "娱乐场所服务员",
+    "65229": "个人服务辅助工", "65329": "其他服务支持职业", "70011": "住宅建造翻新经理",
+    "72010": "金工行业主管", "72023": "铁路运输运营主管", "72104": "结构钢装配工", "73310": "火车司机",
+    "74204": "公用设施维护工人", "75211": "铁路公路运输工", "83120": "渔船船长", "83121": "渔民",
+    "85102": "水产养殖捕捞工", "85104": "猎人", "92020": "机动车装配主管", "92021": "电子电气制造主管",
+    "92023": "机械金属制造主管", "93102": "造纸中控员", "94107": "金属制品操作员", "94110": "化工厂机器操作员",
+    "94112": "橡胶加工操作员", "94121": "造纸机操作员", "94123": "木材检验员", "94203": "电机变压器装配工",
+    "94205": "电器制造操作员", "94211": "木制品装配工", "95103": "木材造纸工人", "95104": "橡塑制品工人",
 }
 """短名撞车的人工裁决(按 NOC 码,照段6 的 TERM_FIX 先例)。
 模型逐条压缩,看不见「别的职业压出了同一个名字」,于是 Cooks 和 Chefs 双双变成「厨师」——
@@ -1127,7 +1154,13 @@ SHORT_FIX = {
   31111/32100 Optometrists / Opticians
   51100/14300 Librarians / library assistants
   94142/95107 plant workers / labourers(TEER4 vs 5)
-  40010/40011 Government managers - health/social vs economic analysis"""
+  40010/40011 Government managers - health/social vs economic analysis
+2026-09-23 职业分类改两级(大类 → 职业),「职业」那一层直接显示本表管的短名 —— 定稿大表
+(Frank「大表你确定就行了」)的职业名一律收进本表(00012 起那几行):
+  纠错名:22310 / 22302 官方是技术员不是工程师;21210 是统计精算不是数学家;22220 网管太口语;
+         41300 / 42201 社工与社区服务工作者原先对调了;11100 主体是会计师不是审计员
+  缩长名 / 补空名:库里短名空着、页面只能退回长全名的 59 个补上(都不超过 8 个字)
+  00012 对齐 00013–00015 的「高级经理-X」"""
 
 SHORT_FIX_KO = {
     "63200": "요리사", "62200": "셰프",
@@ -1151,9 +1184,79 @@ SHORT_FIX_KO = {
   72410/74203 汽修技师 / 零件安装与服务(TEER4)
   92015/92024 纺织皮革主管 / 其他制造主管"""
 
-SHORT_FIX_EN: dict = {}
+SHORT_FIX_EN: dict = {
+    "00011": "Senior government managers", "10019": "Administrative services managers",
+    "10020": "Insurance and brokerage managers", "10021": "Banking and credit managers",
+    "10022": "Marketing and PR managers", "10030": "Telecom carrier managers",
+    "11101": "Finance and investment analysts", "11201": "Management consultants",
+    "11202": "Marketing and PR professionals", "12011": "Finance office supervisors",
+    "12012": "Library and records supervisors", "12102": "Purchasing agents",
+    "12104": "EI and revenue officers", "12111": "Health information specialists",
+    "12112": "Records management technicians", "13111": "Legal assistants",
+    "13112": "Medical office assistants", "13201": "Logistics coordinators",
+    "20011": "Architecture & science managers", "20012": "IT managers",
+    "21103": "Meteorologists & climatologists", "21109": "Other physical scientists",
+    "21399": "Other professional engineers", "22111": "Farm and fish product inspectors",
+    "22113": "Conservation & fishery officers", "22114": "Landscape and garden technicians",
+    "22214": "Geomatics technicians", "22220": "Network and web technicians",
+    "22222": "Software testing technicians", "22232": "Health and safety specialists",
+    "22301": "Mechanical technicians", "22302": "Industrial technicians",
+    "22310": "Electronics technicians", "22311": "Electronic service technicians",
+    "22312": "Instrument technicians", "22313": "Avionics technicians",
+    "31209": "Other health practitioners", "32109": "Other therapy technicians",
+    "32121": "Medical radiation technologists", "32129": "Other medical technologists",
+    "32200": "Chinese medicine practitioners", "33109": "Other health support workers",
+    "40010": "Government managers - health", "40011": "Government managers - economic",
+    "40012": "Government managers - education", "40019": "Public administration managers",
+    "40020": "Post-secondary administrators", "40040": "Commissioned police officers",
+    "41400": "Science policy researchers", "41406": "Sports policy researchers",
+    "41409": "Other social scientists", "42102": "Armed Forces specialists",
+    "42201": "Community service workers", "42203": "Disability instructors",
+    "42204": "Religion workers", "43100": "Teacher assistants",
+    "43203": "Border services officers", "51101": "Conservators and curators",
+    "52113": "Audio and video technicians", "52119": "Film and broadcast coordinators",
+    "53111": "Film and broadcast assistants", "53125": "Textile patternmakers",
+    "53202": "Sports officials and referees", "55109": "Other performers",
+    "60020": "Retail and wholesale managers", "60030": "Restaurant managers",
+    "60040": "Customer service managers", "62023": "Customer service supervisors",
+    "63102": "Financial sales representatives", "64101": "Wholesale sales representatives",
+    "64201": "Image and personal consultants", "64313": "Transport ticket agents",
+    "64400": "Bank customer service agents", "64401": "Postal services representatives",
+    "64409": "Customer service representatives", "65210": "Hotel and travel support staff",
+    "65229": "Personal services support", "70012": "Facility managers",
+    "70021": "Postal and courier managers", "72020": "Mechanic trades supervisors",
+    "72021": "Heavy equipment crew supervisors", "72023": "Railway operations supervisors",
+    "72205": "Telecom installation technicians", "72402": "HVAC mechanics",
+    "72403": "Railway carmen/women", "72420": "Oil heating mechanics",
+    "73201": "Building maintenance workers", "73310": "Locomotive engineers",
+    "74201": "Ship deck and engine crew", "74203": "Auto parts installers",
+    "74205": "Public works equipment operators", "75211": "Transport labourers",
+    "83120": "Fishing masters and officers", "83121": "Fishermen/women",
+    "84101": "Oil and gas drilling workers", "85104": "Trappers and hunters",
+    "92010": "Metal processing supervisors", "92012": "Food processing supervisors",
+    "92020": "Vehicle assembly supervisors", "92022": "Furniture plant supervisors",
+    "92023": "Machinery plant supervisors", "92024": "Other manufacturing supervisors",
+    "92101": "Water treatment operators", "93100": "Metal process control operators",
+    "93101": "Petrochemical process operators", "93102": "Papermaking control operators",
+    "94100": "Metal processing operators", "94102": "Glass machine operators",
+    "94103": "Concrete and stone operators", "94105": "Metalworking machine operators",
+    "94107": "Metal products machine operators", "94111": "Plastics machine operators",
+    "94112": "Rubber machine operators", "94122": "Paper converting operators",
+    "94123": "Lumber graders", "94129": "Wood processing operators",
+    "94132": "Sewing machine operators", "94133": "Textile inspectors",
+    "94140": "Food processing operators", "94150": "Digital printing operators",
+    "94151": "Prepress workers", "94152": "Bindery machine operators",
+    "94203": "Motor and transformer assemblers", "94205": "Electrical apparatus operators",
+    "95100": "Metal processing labourers", "95102": "Chemical plant labourers",
+    "95103": "Wood and paper labourers", "95106": "Food processing labourers",
+    "95107": "Seafood processing labourers",
+}
 """英文短名的裁决表:官方名本身区分度高,首轮跑完看撞车报告再补
-(留空是**有意**的,不是忘了)。"""
+(留空是**有意**的,不是忘了)。
+2026-09-23 职业分类改两级,「职业」那一层在英文界面直接露出(88% 流量):补缺 99 个(官方名超 32 字符、
+模型压的没过校验就留空,在招约 1 万岗只能退回长官方名;另 8 个是译名表里压根没这条记录)、
+改 30 个缩写体与错名(Prof occs in ad mktg & PR、Other prof soc sci occs 之类;72021 官方是重型设备
+班组的**主管**,原短名写成了操作员)。全表不超 32 字符、509 个互不重名(撞车报告同源口径)。"""
 
 SHORT_FIX_BY_LANG = {"zh": SHORT_FIX, "ko": SHORT_FIX_KO, "en": SHORT_FIX_EN}
 """语言码 → 该语言的人工裁决表(原脚本是 `(("zh", SHORT_FIX), ...)` 元组序列,

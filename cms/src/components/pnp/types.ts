@@ -53,11 +53,6 @@ export type HitRefFn = (el: HTMLDivElement | null) => void
 export type NocRowMap = Map<string, PnpNocDesc>
 
 /**
- * 类别历史轮次:类别键 → 该类别的历次抽选(降序)。
- */
-export type HistMap = Map<string, PnpDraw[]>
-
-/**
  * 判定药丸的色档:ok 绿=能走 / warn 琥珀 / fail 红=排除 / na 灰=走不了。
  */
 export type PnpTone = 'ok' | 'warn' | 'fail' | 'na'
@@ -869,101 +864,6 @@ export type OccRowSpec = {
 }
 
 /**
- * 洗好的一行历史轮次。
- */
-export type HistRowSpec = {
-  /**
-   * React 列表键。
-   */
-  key: string
-
-  /**
-   * 抽选日期(交给 TimeText 渲);null=没有日期。
-   */
-  iso: string | null
-
-  /**
-   * 分数线文案。
-   */
-  crs: string
-
-  /**
-   * 邀请数文案。
-   */
-  ita: string
-}
-
-/**
- * 洗好的一行联邦轮次。
- */
-export type FedRowSpec = {
-  /**
-   * React 列表键。
-   */
-  key: string
-
-  /**
-   * 抽选日期(交给 TimeText 渲)。
-   */
-  iso: string
-
-  /**
-   * 轮次类型的人话名。
-   */
-  type: string
-
-  /**
-   * 轮次类型的色(一类一色,数据不是版式)。
-   */
-  color: string
-
-  /**
-   * 悬停提示(通道原文)。
-   */
-  title: string
-
-  /**
-   * 分数线文案。
-   */
-  crs: string
-
-  /**
-   * 邀请数文案。
-   */
-  ita: string
-}
-
-/**
- * 口径注里的一个轮次类型桶(按轮数降序,零轮的桶不出现)。
- */
-export type FedBucket = {
-  /**
-   * React 列表键(=类型键)。
-   */
-  key: string
-
-  /**
-   * 前面的分隔记号;''=第一个桶。
-   */
-  sep: string
-
-  /**
-   * 类型人话名。
-   */
-  label: string
-
-  /**
-   * 这一类占了几轮。
-   */
-  count: number
-
-  /**
-   * 这一类的色。
-   */
-  color: string
-}
-
-/**
  * 依据链一格的一行(主文案 + 灰注 + 行尾灰注)。
  */
 export type MmLine = {
@@ -1127,26 +1027,6 @@ export type NewsRowViewIn = {
    * 洗好的这一行。
    */
   r: NewsRowSpec
-}
-
-/**
- * EeHistRow(历史轮次一行)的 props。
- */
-export type HistRowViewIn = {
-  /**
-   * 洗好的这一行。
-   */
-  r: HistRowSpec
-}
-
-/**
- * FedRow(联邦轮次一行)的 props。
- */
-export type FedRowViewIn = {
-  /**
-   * 洗好的这一行。
-   */
-  r: FedRowSpec
 }
 
 /**
@@ -1365,11 +1245,6 @@ export type EeCategorySectionIn = {
   cats: PnpEeOcc[]
 
   /**
-   * 全部抽选行(联邦轮次在其中);可省 = 无轮次可列。
-   */
-  draws?: PnpDraw[]
-
-  /**
    * 职业名字典;可省 = 不出译名灰注。
    */
   nocDesc?: PnpNocDesc[]
@@ -1378,141 +1253,6 @@ export type EeCategorySectionIn = {
    * 出不出界面语言译名;可省 = 出。
    */
   showZh?: boolean
-}
-
-/**
- * EeVerdictCard(EE 判定卡)的 props。
- */
-export type EeVerdictCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 结论行的话术。
-   */
-  text: string
-
-  /**
-   * 命中了没有(命中出对勾并变蓝)。
-   */
-  hit: boolean
-
-  /**
-   * 全类别展开钮的文案;''=不出这颗钮(命中时不需要全景)。
-   */
-  allLabel: string
-
-  /**
-   * 全类别展开钮的折叠记号。
-   */
-  caret: string
-
-  /**
-   * 全类别展开开关。
-   */
-  onToggle: ClickFn
-}
-
-/**
- * EeDrawsCard(EE 最近抽选卡)的 props。
- */
-export type EeDrawsCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 有抽选记录的类别。
-   */
-  cats: PnpEeCat[]
-
-  /**
-   * 出不出类别名(只有一个类别时不出 —— 卡头已经说清是谁)。
-   */
-  showName: boolean
-
-  /**
-   * 各类别的历史轮次。
-   */
-  histOf: HistMap
-
-  /**
-   * 展开了历史的那个类别键;null=都收着。
-   */
-  openCat: string | null
-
-  /**
-   * 历史折叠开关工厂(按类别键给一只)。
-   */
-  toggleOf: ToggleOfFn
-}
-
-/**
- * EeCatDraw(一个类别的最近抽选行 + 历史)的 props。
- */
-export type EeCatDrawIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这个类别。
-   */
-  cat: PnpEeCat
-
-  /**
-   * 出不出类别名。
-   */
-  showName: boolean
-
-  /**
-   * 这个类别的历史轮次。
-   */
-  hist: PnpDraw[]
-
-  /**
-   * 历史展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 历史折叠开关。
-   */
-  onToggle: ClickFn
-}
-
-/**
- * EeDrawText(最近抽选那一行的文字)的 props。
- */
-export type EeDrawTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这个类别。
-   */
-  cat: PnpEeCat
-
-  /**
-   * 历史轮次条数(够多才出折叠记号)。
-   */
-  histCount: number
-
-  /**
-   * 历史展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 有没有历史可展开。
-   */
-  expandable: boolean
 }
 
 /**
@@ -1578,36 +1318,6 @@ export type EeOccRowIn = {
    * 命中行的 ref 盒。
    */
   matchRef: HitRef
-}
-
-/**
- * FederalRoundsCard(联邦抽选近况)的 props。
- */
-export type FederalRoundsCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 全部抽选行(联邦轮次在其中)。
-   */
-  draws: PnpDraw[]
-}
-
-/**
- * FedMix(轮次结构口径注)的 props。
- */
-export type FedMixIn = {
-  /**
-   * 打头的那句话(近 N 轮里各类各占几轮)。
-   */
-  head: string
-
-  /**
-   * 各类型的桶。
-   */
-  buckets: FedBucket[]
 }
 
 /**
@@ -1765,11 +1475,6 @@ export type EeHookIn = {
   cats: PnpEeOcc[]
 
   /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
-
-  /**
    * 职业名字典。
    */
   nocDesc: PnpNocDesc[]
@@ -1806,23 +1511,9 @@ export type EePanel = {
 
   /**
    * 这一屏要展示的类别(命中优先;未命中时看展不展开全景)。
+   * 2026-09-23 全景开关随判定卡撤,只剩命中类别。
    */
   shown: PnpEeCat[]
-
-  /**
-   * 各类别的历史轮次。
-   */
-  histOf: HistMap
-
-  /**
-   * 展开了历史的那个类别键;null=都收着。
-   */
-  openCat: string | null
-
-  /**
-   * 历史折叠开关工厂。
-   */
-  catToggleOf: ToggleOfFn
 
   /**
    * 收起了清单的类别键(清单一律默认展开,这里记的是被收起来的)。
@@ -1833,46 +1524,6 @@ export type EePanel = {
    * 清单折叠开关工厂。
    */
   listToggleOf: ToggleOfFn
-
-  /**
-   * 全类别全景展开了没有。
-   */
-  showAll: boolean
-
-  /**
-   * 全类别全景开关。
-   */
-  onShowAll: ClickFn
-}
-
-/**
- * useFederalRounds 的入参。
- */
-export type FedHookIn = {
-  /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
-}
-
-/**
- * useFederalRounds 交回的面板。
- */
-export type FedPanel = {
-  /**
-   * 展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 展开开关。
-   */
-  onToggle: ClickFn
-
-  /**
-   * 联邦轮次(降序,最多 FED_MAX 轮)。
-   */
-  rounds: PnpDraw[]
 }
 
 /**
@@ -2271,41 +1922,6 @@ export type EeGroupIn = {
 }
 
 /**
- * eeHistOf 的入参。
- */
-export type EeHistIn = {
-  /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
-}
-
-/**
- * eeShownOf 的入参。
- */
-export type EeShownIn = {
-  /**
-   * 分组后的全部类别。
-   */
-  grouped: PnpEeCat[]
-
-  /**
-   * 命中本岗的类别。
-   */
-  hit: PnpEeCat[]
-
-  /**
-   * 各类别的历史轮次。
-   */
-  histOf: HistMap
-
-  /**
-   * 全类别全景展开了没有。
-   */
-  showAll: boolean
-}
-
-/**
  * eeHitOf 的入参。
  */
 export type EeHitIn = {
@@ -2321,56 +1937,6 @@ export type EeHitIn = {
 }
 
 /**
- * eeVerdictTextOf 的入参。
- */
-export type EeVerdictTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 命中本岗的类别。
-   */
-  hit: PnpEeCat[]
-
-  /**
-   * 本岗职业码。
-   */
-  noc: string
-}
-
-/**
- * eeAllLabelOf 的入参。
- */
-export type EeAllLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 命中本岗的类别。
-   */
-  hit: PnpEeCat[]
-
-  /**
-   * 分组后的全部类别。
-   */
-  grouped: PnpEeCat[]
-}
-
-/**
- * eeDrawsCatsOf 的入参。
- */
-export type EeDrawsCatsIn = {
-  /**
-   * 这一屏要展示的类别。
-   */
-  shown: PnpEeCat[]
-}
-
-/**
  * eeLastDraw 只读的那两项(桶门签名冻结,调用方递进来的是各自域的整行)。
  */
 export type EeDrawDateRow = {
@@ -2383,36 +1949,6 @@ export type EeDrawDateRow = {
    * 上次抽选日期;''=从没抽过。
    */
   drawDate: string
-}
-
-/**
- * eeDrawTextOf 的入参。
- */
-export type EeDrawLineIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这个类别。
-   */
-  cat: PnpEeCat
-}
-
-/**
- * histRowsOf 的入参。
- */
-export type HistRowsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这个类别的历史轮次。
-   */
-  hist: PnpDraw[]
 }
 
 /**
@@ -2448,31 +1984,6 @@ export type OccRowsIn = {
    * 职业名字典。
    */
   nocRows: NocRowMap
-}
-
-/**
- * fedRoundsOf 的入参。
- */
-export type FedRoundsIn = {
-  /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
-}
-
-/**
- * fedBucketsOf 的入参。
- */
-export type FedBucketsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 联邦轮次。
-   */
-  rounds: PnpDraw[]
 }
 
 /**
@@ -2568,46 +2079,6 @@ export type MmRowOfIn = {
    * 判定的悬停提示;''=没有提示。
    */
   tip: string
-}
-
-/**
- * fedRowsOf 的入参。
- */
-export type FedRowsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 联邦轮次。
-   */
-  rounds: PnpDraw[]
-
-  /**
-   * 展开了没有(收着时只给前 FED_SHOW 轮)。
-   */
-  open: boolean
-}
-
-/**
- * fedMoreLabelOf 的入参。
- */
-export type FedMoreLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 一共几轮。
-   */
-  total: number
 }
 
 /**
@@ -2876,26 +2347,6 @@ export type CatNameClsIn = {
 }
 
 /**
- * drawLineClsOf 的入参。
- */
-export type DrawLineClsIn = {
-  /**
-   * 可点(有历史可展开时才给手型)。
-   */
-  clickable: boolean
-}
-
-/**
- * eeVerdictClsOf 的入参。
- */
-export type EeVerdictClsIn = {
-  /**
-   * 命中了没有。
-   */
-  hit: boolean
-}
-
-/**
  * boxClsOf 的入参。
  */
 export type BoxClsIn = {
@@ -2943,29 +2394,4 @@ export type ToggleSetIn = {
    * 折叠状态的写入口。
    */
   setKeys: React.Dispatch<React.SetStateAction<Set<string>>>
-}
-
-/**
- * makeCatToggleOf 的入参(单开一个:同一时刻只展开一个类别的历史)。
- */
-export type CatToggleIn = {
-  /**
-   * 当前展开的类别键;null=都收着。
-   */
-  openCat: string | null
-
-  /**
-   * 展开态的写入口。
-   */
-  setOpenCat: React.Dispatch<React.SetStateAction<string | null>>
-}
-
-/**
- * makeFlagToggle 的入参(一个开关的开合)。
- */
-export type FlagToggleIn = {
-  /**
-   * 开关的写入口。
-   */
-  setOn: React.Dispatch<React.SetStateAction<boolean>>
 }

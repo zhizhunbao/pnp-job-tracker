@@ -186,6 +186,7 @@ export const SORT_COLUMNS: Record<string, string> = {
 
   /**
    * 直接雇主(与 directOnly 筛选同一谓词)。
+   * 2026-09-23 「仅雇主直发」勾选框与它的筛选一起撤,这条谓词只剩排序列在用。
    */
   direct: `(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')`,
 
@@ -363,11 +364,6 @@ export const SCORE_HIGH = 60
  * 匹配分档线:达线 mid。
  */
 export const SCORE_MID = 30
-
-/**
- * 匹配视图候选封顶:按新鲜度取最近 N 个候选,防全表 TS 计算失控(足够覆盖真实匹配)。
- */
-export const CAND_CAP = 12000
 
 /**
  * count/updatedAt 微缓存时长(2026-07-19「排序 3-4 秒」第二刀:WHERE 不变时总数不必每次全表扫;
@@ -794,8 +790,23 @@ export const W = {
 
   /**
    * 职业多值前缀(2026-08-16 逗号分隔,与初评表「在招」同一把尺)。
+   * 2026-09-23 职业分类改两级,Frank 选「软件开发者、软件工程师、计算机程序员合成一个职业」:职业 = 中文短名相同的一组码
+   * (名字由 etl/noc 的 SHORT_FIX 管,同名即合成,撞名检测在 etl)。选中的码先展开成同名的整组再过滤 ——
+   * 问卷深链、面包屑、下拉带哪一个码进来,筛出来的都是整组;原码照存,EE / PNP 按码的判定不受影响。
+   * 短名为空的码不参与展开(UNION 保住原码自己)。三段:头 + 码数组 + 中 + 同一个码数组 + 尾。
    */
-  nocAnyOpen: 'j.noc = ANY(',
+  nocGroupHead: 'j.noc = ANY(ARRAY(SELECT g.noc FROM noc_descriptions n JOIN noc_descriptions g ON g.title_zh_short = '
+    + "n.title_zh_short WHERE n.title_zh_short <> '' AND n.noc = ANY(",
+
+  /**
+   * 职业组展开的中段(码数组之后、原码补集之前)。
+   */
+  nocGroupMid: ') UNION SELECT unnest(',
+
+  /**
+   * 职业组展开的尾段。
+   */
+  nocGroupTail: '::varchar[])))',
 
   /**
    * 大类等值前缀。
@@ -898,61 +909,6 @@ export const W = {
   scoreLow: 'j.grade_channel <= 2',
 
   /**
-   * 年薪 ≥10 万。
-   */
-  salGe100: 'j.salary_annual >= 100000',
-
-  /**
-   * 年薪 8-10 万。
-   */
-  sal80: 'j.salary_annual >= 80000 AND j.salary_annual < 100000',
-
-  /**
-   * 年薪 6-8 万。
-   */
-  sal60: 'j.salary_annual >= 60000 AND j.salary_annual < 80000',
-
-  /**
-   * 年薪 <6 万。
-   */
-  salU60: 'j.salary_annual < 60000',
-
-  /**
-   * vs 中位的护栏(两值都得有且中位非零)。
-   */
-  vsGuard: 'j.salary_annual IS NOT NULL AND j.wage_med_annual IS NOT NULL AND j.wage_med_annual <> 0',
-
-  /**
-   * 高于中位。
-   */
-  vsAbove: 'j.salary_annual >= j.wage_med_annual',
-
-  /**
-   * 高于中位 20%。
-   */
-  vsAbove20: 'j.salary_annual >= 1.2 * j.wage_med_annual',
-
-  /**
-   * 低于中位。
-   */
-  vsBelow: 'j.salary_annual < j.wage_med_annual',
-
-  /**
-   * 全职/兼职等值前缀。
-   */
-  empEq: 'j.employment_hours = ',
-
-  /**
-   * 零工口径(兼职 或 casual/seasonal)。
-   */
-  empGig: "(j.employment_hours = 'part' OR j.employment_term IN ('casual','seasonal'))",
-
-  /**
-   * 直接雇主(与 direct 排序列同一谓词)。
-   */
-  direct: "(COALESCE(j.apply_url,'') NOT ILIKE '%jobbank.gc.ca%' OR COALESCE(j.source,'') = 'Job Bank')",
-
-  /**
    * GAP1③ 无红旗(未检出=通过,宁可漏不误伤)。
    */
   eligOk: "COALESCE(j.eligibility_flag,'') = ''",
@@ -993,16 +949,6 @@ export const FV = {
   no: 'no',
 
   /**
-   * 开关真(字符串形态)。
-   */
-  trueStr: 'true',
-
-  /**
-   * 开关真(数字形态)。
-   */
-  oneStr: '1',
-
-  /**
    * RCIP。
    */
   rcip: 'RCIP',
@@ -1011,56 +957,6 @@ export const FV = {
    * FCIP。
    */
   fcip: 'FCIP',
-
-  /**
-   * 年薪档:≥10 万。
-   */
-  ge100: 'ge100',
-
-  /**
-   * 年薪档:8-10 万。
-   */
-  s80: '80',
-
-  /**
-   * 年薪档:6-8 万。
-   */
-  s60: '60',
-
-  /**
-   * 年薪档:<6 万。
-   */
-  u60: 'u60',
-
-  /**
-   * vs 中位:高于。
-   */
-  above: 'above',
-
-  /**
-   * vs 中位:高于 20%。
-   */
-  above20: 'above20',
-
-  /**
-   * vs 中位:低于。
-   */
-  below: 'below',
-
-  /**
-   * 全职。
-   */
-  full: 'full',
-
-  /**
-   * 兼职。
-   */
-  part: 'part',
-
-  /**
-   * 零工。
-   */
-  gig: 'gig',
 
   /**
    * 通道档高。
@@ -1196,26 +1092,6 @@ export const FK = {
    * 通道档。
    */
   score: 'fScore',
-
-  /**
-   * 年薪档。
-   */
-  sal: 'fSal',
-
-  /**
-   * vs 中位。
-   */
-  vs: 'fVs',
-
-  /**
-   * 雇佣形态。
-   */
-  emp: 'fEmp',
-
-  /**
-   * 只看直接雇主。
-   */
-  directOnly: 'directOnly',
 
   /**
    * 红旗。
@@ -1625,11 +1501,6 @@ export const T45_NL = 'NL'
 export const T45_COND_PROVS = ['MB', 'NS', 'NB', 'PE'] as const
 
 /**
- * 匹配视图里 match 列自身(不进取值器,按档位序)。
- */
-export const SORT_MATCH_KEY = 'match'
-
-/**
  * NOC 同小类的前缀长(前 4 位)。
  */
 export const NOC_MINOR_LEN = 4
@@ -1861,161 +1732,6 @@ export const CAT_LEVEL = {
    * 大类。
    */
   broad: 'broad',
-} as const
-
-/**
- * 匹配视图排序取值器认的列 key(与 SORT_COLUMNS 同集;switch 的 case 用它,不写裸串)。
- */
-export const CK = {
-  /**
-   * 发布时间。
-   */
-  datePosted: 'datePosted',
-
-  /**
-   * 通道档。
-   */
-  score: 'score',
-
-  /**
-   * 年薪。
-   */
-  salary: 'salary',
-
-  /**
-   * 年薪(年列)。
-   */
-  salaryYr: 'salaryYr',
-
-  /**
-   * 最后确认。
-   */
-  lastSeen: 'lastSeen',
-
-  /**
-   * 岗名。
-   */
-  title: 'title',
-
-  /**
-   * 公司名。
-   */
-  company: 'company',
-
-  /**
-   * 省。
-   */
-  province: 'province',
-
-  /**
-   * 城市。
-   */
-  city: 'city',
-
-  /**
-   * 大类。
-   */
-  broad: 'broad',
-
-  /**
-   * 中类。
-   */
-  mid: 'mid',
-
-  /**
-   * 小类。
-   */
-  fine: 'fine',
-
-  /**
-   * TEER。
-   */
-  teer: 'teer',
-
-  /**
-   * NOC 码。
-   */
-  noc: 'noc',
-
-  /**
-   * 无障碍。
-   */
-  accessibility: 'accessibility',
-
-  /**
-   * 国家。
-   */
-  country: 'country',
-
-  /**
-   * 区。
-   */
-  district: 'district',
-
-  /**
-   * 地址。
-   */
-  address: 'address',
-
-  /**
-   * 来源标签。
-   */
-  source: 'source',
-
-  /**
-   * 发布渠道。
-   */
-  origin: 'origin',
-
-  /**
-   * 粗筛信号。
-   */
-  pnp: 'pnp',
-
-  /**
-   * EE 类别。
-   */
-  ee: 'ee',
-
-  /**
-   * AIP。
-   */
-  aip: 'aip',
-
-  /**
-   * 试点。
-   */
-  pilot: 'pilot',
-
-  /**
-   * LMIA 记录。
-   */
-  lmia: 'lmia',
-
-  /**
-   * 状态。
-   */
-  status: 'status',
-
-  /**
-   * 下架时刻。
-   */
-  closedAt: 'closedAt',
-
-  /**
-   * 中位时薪。
-   */
-  wageMedHr: 'wageMedHr',
-
-  /**
-   * 中位年薪。
-   */
-  wageMedYr: 'wageMedYr',
-
-  /**
-   * vs 中位。
-   */
-  vsMedian: 'vsMedian',
 } as const
 
 
@@ -2279,7 +1995,7 @@ export const nocLabels: Record<Lang, Dict> = {
  * (#73 排序白名单同款教训,fElig 漏过一回)。
  */
 export const JOBS_FILTER_KEYS: string[] = ['q', 'fNoc', 'fProv', 'fCity', 'fDistrict', 'fBroad', 'fMid', 'fFine', 'fTeer',
-  'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fEe', 'fStatus', 'fOrigin', 'fScore', 'fSal', 'fVs', 'fEmp', 'fElig']
+  'fSource', 'fAcc', 'fPnp', 'fAip', 'fPilot', 'fEe', 'fStatus', 'fOrigin', 'fScore', 'fElig']
 
 /**
  * /api/jobs 的每页行数。
@@ -2297,31 +2013,6 @@ export const PAGE_N_MAX = 100000
  * 两者语义不同,换掉就是悄悄改了容错口径。
  */
 export const RADIX_DEC = 10
-
-/**
- * 直招开关参数名。
- */
-export const P_DIRECT = 'directOnly'
-
-/**
- * 视图参数名(match = 我的匹配)。
- */
-export const P_VIEW = 'view'
-
-/**
- * 「我的匹配」视图的参数值。
- */
-export const VIEW_MATCH = 'match'
-
-/**
- * 布尔参数的真值写法一('1')。
- */
-export const TRUE_ONE = '1'
-
-/**
- * 布尔参数的真值写法二('true')。
- */
-export const TRUE_WORD = 'true'
 
 /**
  * 页码参数名。
@@ -2347,6 +2038,21 @@ export const P_URL = 'url'
  * 岗位号参数名(/api/jobs/row)。
  */
 export const P_ID = 'id'
+
+/**
+ * 跳过条数参数名(/api/jobs/related/occ,2026-09-23「同省同职业」按页续取)。
+ */
+export const P_OFFSET = 'offset'
+
+/**
+ * 「同省同职业」一页几家(首屏那一页与展开后续取的每一页同一个数;2026-09-22 由 6 放到 24)。
+ */
+export const REL_OCC_PAGE_ROWS = 24
+
+/**
+ * 「同省同职业」续取时跳过条数的上限(最大的省 × 职业也就几百家;超了当坏请求)。
+ */
+export const REL_OCC_OFFSET_MAX = 5000
 
 /**
  * 省码参数名(/api/jobs/province)。

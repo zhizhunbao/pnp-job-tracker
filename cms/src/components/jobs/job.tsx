@@ -78,6 +78,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             sameCoLabel={d.t('detail.sameCo')}
             sameOccLabel={d.t('detail.sameOcc')}
             related={related}
+            jobId={Number(job.id)}
             fallbackHref={d.view.fallbackHref}
             fallbackText={d.view.fallbackText}
             from={relatedFromOf(job.status)}

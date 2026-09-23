@@ -21,7 +21,7 @@
  */
 export {
   BANNER_COOKIE, BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, EMPTY_MATCH_DIMS,
-  FIRST_SCREEN_ROWS, P_VIEW, VAL_MATCH,
+  FIRST_SCREEN_ROWS,
 } from './constants'
 export { Job } from './job'
 export { Jobs } from './jobs'

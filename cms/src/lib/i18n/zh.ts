@@ -518,7 +518,6 @@ export const jobsZh = {
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
  
-  'mv.today': '与你高匹配的岗位:{h} 个', 'up.matchN': '你共 {h} 个高匹配岗,免费版仅显示前 {n} 岗',
   'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
@@ -572,23 +571,19 @@ export const jobsZh = {
   // #123c:整理版 PAY 节帖面薪资兜底注
   'act.f.payFb': '(帖面薪资字段;原帖正文未写)',
   'search.placeholder': '搜索职位、公司、地点、NOC',
-  'filter.geo': '地理', 'filter.cat': '职业分类', 'filter.src': '来源', 'filter.elig': '移民资格', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
+  'filter.geo': '地理', 'filter.src': '来源', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
   // 职位类型(E6-06)+ 入职要求(E6-07A)
-  'filter.emp': '职位类型', 'all.emp': '全部类型', 'emp.full': '全职', 'emp.part': '兼职', 'emp.gig': '临时',
+  'emp.full': '全职', 'emp.part': '兼职',
   'term.permanent': '长期', 'term.term': '合同', 'term.casual': '临时', 'term.seasonal': '季节',
   'who.citizens_pr': '只招公民和永久居民', 'who.temporary_ok': '接受工签', 'who.anyone': '接受境外申请',
   'fact.edu': '学历要求', 'fact.cert': '证书/执照',
   'all.prov': '全部省', 'all.city': '全部市', 'all.district': '全部区',
-  'all.broad': '全部大类', 'all.mid': '全部中类', 'all.fine': '全部小类',
+  'all.broad': '全部大类', 'all.occ': '全部职业',
   'all.source': '全部来源', 'all.exp': '全部经验',
-  'all.pnp': '全部 PNP', 'all.aip': '全部 AIP', 'all.pilot': '试点社区', 'all.ee': '全部类别', 'all.status': '全部状态', 'all.origin': '全部渠道', 'opt.yes': '是', 'opt.no': '否',
-  'filter.num': '薪资/评分', 'filter.salary': '薪资', 'filter.score': '评分', 'filter.more': '更多筛选',
+  'all.ee': '全部类别', 'all.status': '全部状态', 'all.origin': '全部渠道',
+  'filter.num': '薪资/评分', 'filter.score': '评分', 'filter.more': '更多筛选',
   'filter.picked': '已选',
   'all.score': '全部评分', 'sc.high': '高(≥75)', 'sc.mid': '中(50–74)', 'sc.low': '低(<50)',
-  'all.sal': '全部年薪', 'sal.ge100': '≥$100K', 'sal.80': '$80–100K', 'sal.60': '$60–80K', 'sal.u60': '<$60K',
-  'all.vs': '全部对比中位', 'vs.above': '高于中位', 'vs.above20': '高出 20%+', 'vs.below': '低于中位',
-  'directOnly': '仅雇主直发',
-  'directOnly.tip': '只看雇主第一方发布的(公司 ATS / Job Bank 直发),隐藏聚合转贴',
   'fields': '字段 ({n})', 'fields.main': '主要', 'fields.all': '全选', 'fields.invert': '反选', 'fields.resetW': '列宽复位', 'fields.fixed': ' (固定)', 'cols.hidden': '{n} 列宽度不够已隐藏',
   'th.tip': '点击表头排序', 'resize.tip': '拖动改本列宽,双击按内容自适应',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
@@ -600,18 +595,15 @@ export const jobsZh = {
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 列名
-  'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.mid': '中分类', 'col.fine': '小分类', 'col.teer': 'TEER',
-  'col.company': '公司', 'col.title': '职位', 'col.noc': 'NOC', 'col.accessibility': '经验级别',
+  'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.teer': 'TEER',
+  'col.company': '公司', 'col.title': '职位', 'col.noc': '职业', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
-  'eligOnly': '须 PR', 'eligOnly.tip': '排除 JD 里明确写了「不提供担保」或「仅限公民/PR」的岗;未检出≠保证担保,只是没写',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
-  'eelist.in': '本岗 NOC {noc} 在联邦 EE「{cats}」类别清单内', 'eelist.out': '未匹配到任何 EE 类别', 'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.draw': '近期抽选 {date}:CRS {crs},发出 {size} 份邀请', 'eelist.count': '{n} 个职业',
+  'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
   // #135 历次抽选时间线(展开)
-  'eelist.hist': '看历次 {n} 轮', 'eelist.crsN': 'CRS {crs}', 'eelist.itaN': '发出 {n} 邀请',
-  'eelist.allCats': '看全部 {n} 个类别',   // #155 未命中时全景默认收起
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
   'co.hq': '总部',
@@ -631,9 +623,9 @@ export const jobsZh = {
   'broad.管理层': '管理', 'broad.商务': '商务', 'broad.行政': '行政', 'broad.文员': '文员', 'broad.金融': '金融',
   'broad.会计': '会计', 'broad.法律': '法律', 'broad.IT': '科技', 'broad.工程': '工程', 'broad.科学': '科学',
   'broad.医疗': '医疗', 'broad.教育': '教育', 'broad.社会服务': '社会', 'broad.艺术': '艺术', 'broad.体育': '体育',
-  'broad.销售': '销售', 'broad.零售': '零售', 'broad.餐饮': '餐饮', 'broad.住宿': '住宿', 'broad.生活服务': '生活',
+  'broad.销售': '销售', 'broad.零售': '零售', 'broad.餐饮': '餐饮', 'broad.住宿': '住宿', 'broad.生活服务': '生活服务',
   'broad.技工': '技工', 'broad.建筑': '建筑', 'broad.运输': '运输', 'broad.物流': '物流', 'broad.农业': '农业',
-  'broad.矿业': '矿业', 'broad.制造': '制造',
+  'broad.矿业': '矿业', 'broad.制造': '制造', 'broad.高管': '高管', 'broad.人力资源': '人力资源', 'broad.行政文员': '行政文员', 'broad.客户服务': '客户服务', 'broad.财会金融': '财会金融', 'broad.科研': '科研', 'broad.公共服务': '公共服务', 'broad.文体艺术': '文体艺术', 'broad.酒店旅游': '酒店旅游', 'broad.零售销售': '零售销售', 'broad.机修技工': '机修技工', 'broad.运输物流': '运输物流', 'broad.农林矿业': '农林矿业',
   // 经验级别
   'acc.co-op': 'co-op', 'acc.junior': '初级', 'acc.intermediate': '中级', 'acc.senior': '高级', 'acc.unknown': '—', 'acc.none': '未知(帖内未写)',
   // 渠道
@@ -678,7 +670,7 @@ export const jobsZh = {
   'mm.v.teerOk': '技能岗通用粗筛', 'mm.v.teerChannel': '{stream}通道覆盖', 'mm.v.teerLow': '低技能层级',
   'mm.v.wageAbove': '高于中位 {pct}%', 'mm.v.wageNear': '低于中位 {pct}%', 'mm.v.wageBelow': '低于中位 {pct}%', 'mm.v.wageNa': '官方无该职业当地中位数据,无法对比',
   'mm.v.lmiaHas': '招过外劳', 'mm.v.lmiaLow': '低薪岗为主', 'mm.v.lmiaNa': '中性信号', 'mm.v.lmiaNaTip': '多数雇主从未办过 LMIA,不是负面信号',
-  'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
+  'fact.nocCode': '职业码', 'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
   // TEER 档名照 IRCC 官方表逐条核(2026-07-26 实核 canada.ca/…/find-national-occupation-code):
   // TEER2 官方含 **supervisory 主管岗**(不需大专/学徒也算),原标签漏了这一档 —— 做到主管的人会误以为自己不够格。
   'teer.tip': 'TEER {n}:{l}。这是 NOC 对「该职业通常要求」的官方分类,不是对你个人学历的要求;移民通道多按 TEER 0-3 判门槛。',
@@ -707,12 +699,6 @@ export const jobsZh = {
   'cw.max': '全屏', 'cw.restore': '退出全屏',  // 桌面面板大小(手机恒全屏,不出这个钮)
   'cw.reset': '重置', 'cw.resetOk': '确认清空',   // 就地二次确认(误清一整轮问答不可逆),不上弹框
   // 档案匹配(E5-00)+ 我的匹配视图(E5-05)
-  'col.match': '与我的匹配',
-  'mv.entry': '我的匹配', 'mv.on': '只显示与你档案匹配的职位(高/中),按匹配度排序', 'mv.exit': '退出',
-  'mv.empty': '暂无命中你档案的在招职位——试试放宽目标省或更新档案。', 'mv.editProfile': '改档案',
-  'match.high': '高', 'match.mid': '中', 'match.low': '低', 'match.na': '不适用',
-  'match.tip': '你的档案与本岗的匹配度,点开看逐条依据',   // #207:裸字「高/中/低」的口径
-  'match.needProfile': '建档案', 'match.overCap': '免费版每日仅前 {n} 岗可见匹配',
   'match.title': '对我意味着什么',
   'match.disclaimer': '以上是你自报档案与公开清单/抽选数据的机械比对,不构成移民建议;以官方发布为准。',
   'match.levelLine': '匹配度:{level}',
@@ -776,7 +762,6 @@ export const jobsZh = {
   'up.cta2': '升级 Pro', 'up.salHint': 'Pro 额外显示:此岗与同职业官方工资中位数的差距(±%)——一眼判断 offer 是否偏低',
   'up.proShort': 'Pro 解锁',   // #130 锁位短注:打码占位数旁四字,长解释文案退役
   'up.lockTip.wageMedHr': '同职业官方时薪中位数,Pro 解锁', 'up.lockTip.wageMedYr': '同职业官方年薪中位数,Pro 解锁', 'up.lockTip.vsMedian': '此岗薪资与官方中位的差距(±%),Pro 解锁',
-  'up.match': '匹配详情免费版每日仅前 {n} 岗',
   'up.cta': '升级 Pro',
   'up.compare': '看完整功能对比',
   'up.noRenew': '到期不会自动续费', 'up.per30': '{v} / 30 天', 'up.pay': '确认支付 {v}', 'up.perk.quota': '无限刷题',
@@ -791,7 +776,7 @@ export const jobsZh = {
   'ob.resume.limit': '今天的解析次数用完了(5 次/天),明天再来或手动填', 'ob.resume.from': '从你的简历识别到:',
   'ss.save': '保存此筛选', 'ss.name': '给这个筛选起个名字:', 'ss.saved': '已保存,可在账户页管理', 'ss.err': '保存失败(可能已达上限)', 'ss.pro': '免费可存 2 个筛选,Pro 可存 5 个', 'ss.title': '已保存的筛选', 'ss.none': '还没有保存的筛选 —— 在职位板设好筛选后点「保存此筛选」', 'ss.del': '删除', 'ss.note': '保存的筛选可随时在这里管理;有新职位命中时会发邮件提醒',
   // 批A #134 通道直判+薪资三卡(文案铁律:一行放下,无废话)
-  'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.drawsTitle': '最近抽选', 'eelist.listTitle': '类别清单',
+  'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.listTitle': '类别清单',
   'ch.title': '这个岗能走哪条通道', 'ch.pnpRow': '省提名 PNP', 'ch.list': '清单',
   // Frank 2026-07-26「老的历史记录删了吧,改成最新的打分规则」:改制省不再铺旧通道抽选,改列现行规则四行
   'pnpdraws.nowTitle': '本省现行规则',
@@ -808,8 +793,7 @@ export const jobsZh = {
   'ch.pnp.qcWhy': '魁省不参加省提名(PNP),走自己的甄选体系(CSQ:Arrima 意向申报、PEQ 毕业生/工作经验通道),不适用本站的 PNP 判定与抽选历史。魁省动态见「资讯」页。',
   'ee.dormantTip': '该 EE 类别最近一次抽选是 {d},已超过 12 个月未抽 —— 历史归属仍算,但现阶段不是活跃通道。',
   // E6-10:原静态一句「现阶段以 CEC 与法语为主」改活数据 —— 口径注不该写死,轮次结构随政策变
-  'eefed.title': '联邦抽选近况', 'eefed.mixHead': '近 {n} 轮:', 'eefed.cat': '职业类别', 'eefed.ita': '{n} 份',
-  'eefed.french': '法语轮次按语言能力抽,与职业无关', 'eefed.more': '看更多 {n} 轮', 'eefed.less': '收起',
+  'eefed.cat': '职业类别',
   'ch.pnp.on': '能走: {label}', 'ch.pnp.generic': '凭雇主 offer 可提名', 'ch.pnp.ex': '在排除清单,走不了', 'ch.pnp.no': '走不了(排除清单或未分类)', 'ch.pnp.qc': 'QC 走省独立体系',
   'ch.ee.on': '能进类别抽选: {cats}', 'ch.ee.more': '{first} 等 {n} 类', 'ch.ee.gen': '能走 CEC 通用抽选(分数线高)', 'ch.ee.no': '走不了(TEER {teer})',
   'ch.aip.on': '能走 AIP(雇主在指定名单)', 'ch.aip.miss': '走不了(雇主不在名单)', 'ch.aip.na': '走不了(仅大西洋四省)',

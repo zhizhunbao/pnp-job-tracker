@@ -1026,6 +1026,126 @@ export const ALIAS_PREFIX = ''
 export const NEWLINE = '\n'
 
 /**
+ * 连锁品牌译名核定表(2026-09-23 Frank「subway 翻译也是错的」,选「品牌译名核定表」):名字里认出这些品牌的雇主,
+ * 中 / 韩文名一律用表里的,盖掉模型给的和库里已有的。来由:懒翻接口不带品牌旁证,09-14 把 Subway 按字面译成「地铁」
+ * 写进公司表;探索工人 09-19 翻对了「赛百味」,却被「公司表已有同版本译名就不动」挡在门外;加盟店的法人名
+ * (Tastiest II Subway Limited、PRATIK & BROTHERS LTD O/A SUBWAY)模型也常译成「……地铁」或只译法人那半截。
+ * 只收有通行中文名、名字不撞姓氏和普通词的大连锁:Wendy's / Harvey's / Desjardins 撞姓氏,Shell / Metro 撞普通词,不收;
+ * 酒店不收(一个品牌下好几个子品牌,模型给的「万怡」「智选假日」比统一成母品牌准)。加一行 = 加一个品牌,中韩两格都要填。
+ */
+export const BRAND_ALIASES = {
+  /**
+   * Subway;09-14 懒翻成「地铁」实撞。
+   */
+  subway: { re: /\bsubway\b/i, zh: '赛百味', ko: '서브웨이' },
+
+  /**
+   * McDonald's;只认带 s 的写法(McDonald 单独是常见姓氏,McDonald Construction 之类不是它)。
+   */
+  mcdonalds: { re: /\bmc ?donald['’]?s\b/i, zh: '麦当劳', ko: '맥도날드' },
+
+  /**
+   * Tim Hortons;库里译名有「蒂姆·霍顿斯」「蒂姆霍顿斯温莎」几种,统一成探索工人提示词里的写法。
+   */
+  timhortons: { re: /\btim horton['’]?s?\b/i, zh: '蒂姆霍顿', ko: '팀홀튼' },
+
+  /**
+   * KFC。
+   */
+  kfc: { re: /\bkfc\b|\bkentucky fried chicken\b/i, zh: '肯德基', ko: '케이에프씨' },
+
+  /**
+   * Pizza Hut。
+   */
+  pizzahut: { re: /\bpizza hut\b/i, zh: '必胜客', ko: '피자헛' },
+
+  /**
+   * Domino's;只认带 s 的写法(Domino 单独撞 Dominion 之类的普通词)。
+   */
+  dominos: { re: /\bdomino['’]?s\b/i, zh: '达美乐', ko: '도미노피자' },
+
+  /**
+   * Dairy Queen。
+   */
+  dairyqueen: { re: /\bdairy queen\b/i, zh: '冰雪皇后', ko: '데어리퀸' },
+
+  /**
+   * Burger King。
+   */
+  burgerking: { re: /\bburger king\b/i, zh: '汉堡王', ko: '버거킹' },
+
+  /**
+   * Starbucks。
+   */
+  starbucks: { re: /\bstarbucks\b/i, zh: '星巴克', ko: '스타벅스' },
+
+  /**
+   * Boston Pizza。
+   */
+  bostonpizza: { re: /\bboston pizza\b/i, zh: '波士顿披萨', ko: '보스턴 피자' },
+
+  /**
+   * Walmart。
+   */
+  walmart: { re: /\bwal-?mart\b/i, zh: '沃尔玛', ko: '월마트' },
+
+  /**
+   * Home Depot。
+   */
+  homedepot: { re: /\bhome depot\b/i, zh: '家得宝', ko: '홈디포' },
+
+  /**
+   * Canadian Tire;库里有「加拿大轮胎商店041号」之类带门店号的,统一成品牌名。
+   */
+  canadiantire: { re: /\bcanadian tire\b/i, zh: '加拿大轮胎', ko: '캐나디안 타이어' },
+
+  /**
+   * Loblaw / Loblaws;探索工人 09-19 译成「乐购公司」(乐购是 Tesco)实撞。
+   */
+  loblaw: { re: /\bloblaws?\b/i, zh: '罗布劳', ko: '로블로' },
+
+  /**
+   * Sobeys;库里有「索比斯资本」「索贝斯资本有限公司」两种。
+   */
+  sobeys: { re: /\bsobeys\b/i, zh: '索贝斯', ko: '소비스' },
+
+  /**
+   * Esso(加油站加盟店)。
+   */
+  esso: { re: /\besso\b/i, zh: '埃索', ko: '에쏘' },
+
+  /**
+   * Petro-Canada;库里有一行把同店的 A&W 并进来译成「派特罗加拿大/A&W快餐」。
+   */
+  petrocanada: { re: /\bpetro[- ]?canada\b/i, zh: '加拿大石油', ko: '페트로캐나다' },
+
+  /**
+   * RBC 加拿大皇家银行。
+   */
+  rbc: { re: /\brbc\b|\broyal bank of canada\b/i, zh: '加拿大皇家银行', ko: '캐나다왕립은행' },
+
+  /**
+   * TD 道明银行(TD Securities 之类不带 Bank 的子公司不认)。
+   */
+  td: { re: /\btd bank\b|\btd canada trust\b|\btoronto-dominion\b/i, zh: '道明银行', ko: '토론토도미니언은행' },
+
+  /**
+   * Scotiabank 丰业银行。
+   */
+  scotiabank: { re: /\bscotiabank\b|\bbank of nova scotia\b/i, zh: '丰业银行', ko: '스코샤은행' },
+
+  /**
+   * BMO 满地可银行;探索工人 09-19 译成「丰业金融集团」(丰业是 Scotiabank)实撞。
+   */
+  bmo: { re: /\bbmo\b|\bbank of montreal\b/i, zh: '满地可银行', ko: '몬트리올은행' },
+
+  /**
+   * CIBC 加拿大帝国商业银行。
+   */
+  cibc: { re: /\bcibc\b|\bcanadian imperial bank of commerce\b/i, zh: '加拿大帝国商业银行', ko: '캐나다임페리얼상업은행' },
+}
+
+/**
  * 官网简介翻译缓存键的尾巴。
  */
 export const DESC_KEY_TAIL = '|desc'

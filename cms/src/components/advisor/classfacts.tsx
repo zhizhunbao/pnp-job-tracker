@@ -4,6 +4,7 @@
  * 大分类弹窗不该混进中/小分类)。NOC 字段 = 全链 + 官方职责/任职要求
  * —— 五位码职业级信息只在这一格给。
  * 官方层级里有 36 个中类只有一个小类(两级同名),那时小类不再重复一遍,留空。
+ * 2026-09-23 职业分类改两级:中 / 小类两行撤;NOC 字段首行换成职业名(与职位板「职业」列同名),码那一行改叫「职业码」。
  * 2026-08-28 换装批自 Advisor.tsx 重写落位。
  *
  * @author Frank
@@ -12,9 +13,9 @@
 import { NocDutiesView } from '@/components/jobs/nocdutiesview'
 import { Row } from '@/components/row'
 import { makeT } from '@/lib/i18n'
-import { CLS_DEPTH_BROAD, CLS_DEPTH_FINE, CLS_DEPTH_MID, FIELD_NOC, FIELD_TEER } from './constants'
+import { CLS_DEPTH_BROAD, FIELD_NOC, FIELD_TEER } from './constants'
 import { FactsBox } from './factsbox'
-import { catTextOf, clsDepthOf, fineTextOf, nocOf, teerTextOf } from './functions'
+import { catTextOf, clsDepthOf, nocOf, occNameOf, teerTextOf } from './functions'
 import type { FieldFactsIn } from './types'
 
 /**
@@ -30,14 +31,13 @@ export function ClassFacts({ field, f }: FieldFactsIn) {
   const isNoc = field === FIELD_NOC
   return (
     <FactsBox>
-      {isNoc && <Row k={t('col.noc')}>{f.job.noc}</Row>}
+      {isNoc && noc != null && <Row k={t('col.noc')}>{occNameOf({ noc, lang: f.lang })}</Row>}
+      {isNoc && <Row k={t('fact.nocCode')}>{f.job.noc}</Row>}
       {isNoc && noc != null && <Row k={t('fact.nocTitle')}>{noc.title}</Row>}
       {(isNoc || field === FIELD_TEER) && <Row k={t('col.teer')}>{teerTextOf({ t, job: f.job })}</Row>}
       {(isNoc || depth >= CLS_DEPTH_BROAD) && (
         <Row k={t('col.broad')}>{catTextOf({ t, value: f.job.broad })}</Row>
       )}
-      {(isNoc || depth >= CLS_DEPTH_MID) && <Row k={t('col.mid')}>{catTextOf({ t, value: f.job.mid })}</Row>}
-      {(isNoc || depth >= CLS_DEPTH_FINE) && <Row k={t('col.fine')}>{fineTextOf({ t, job: f.job })}</Row>}
       {isNoc && <NocDutiesView noc={noc} lang={f.lang} />}
     </FactsBox>
   )

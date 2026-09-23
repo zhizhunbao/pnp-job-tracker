@@ -35,7 +35,7 @@ import {
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
   WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
   SITE_BRIEF_MAX, SITE_SOURCES_MAX, SITE_STAGES, SITE_TEXT_MAX,
-  CRAWLER_UA_RE, HDR_ACCEPT_LANGUAGE, HDR_UA,
+  CRAWLER_UA_RE, HDR_ACCEPT_LANGUAGE, HDR_UA, BRAND_ALIASES,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -58,7 +58,7 @@ import type {
   SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteOpenRow, SiteSavedOut,
   SiteStageDbRow, SiteStageOut, SiteStageRow,
   SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
-  CrawlerHeadersIn,
+  CrawlerHeadersIn, BrandCellIn, MaybeBrandAlias, ExploreNameDbRow, ExploreNameFact, ExploreNamesIn, ExploreNamesOut,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1502,6 +1502,38 @@ export function aliasCellOf(x: AliasCellIn): string {
 }
 
 /**
+ * 连锁品牌核定译名按语种取一格(懒翻公司名先查它,2026-09-23)。
+ *
+ * @param x 雇主名与语种。
+ * @returns 那一格;'' = 不是核定表里的品牌。
+ */
+export function brandCellOf(x: BrandCellIn): string {
+  const brand = brandAliasOf(x.name)
+  if (brand == null) {
+    return ALIAS_NONE
+  }
+  if (x.lang === WD_LANG_KO) {
+    return brand.ko
+  }
+  return brand.zh
+}
+
+/**
+ * 名字里认出的连锁品牌核定译名(BRAND_ALIASES,2026-09-23)。
+ *
+ * @param name 雇主名。
+ * @returns 那一行的中 / 韩文名;不是核定表里的品牌给 null。
+ */
+function brandAliasOf(name: string): MaybeBrandAlias {
+  for (const brand of Object.values(BRAND_ALIASES)) {
+    if (brand.re.test(name)) {
+      return { zh: brand.zh, ko: brand.ko }
+    }
+  }
+  return null
+}
+
+/**
  * 懒翻出来的别名落库(只填空格)。
  * 2026-09-19 Frank「这个我已经探索,完了为什么 table 下面不显示灰色的中文翻译」(Cerio 实拍):弹框里现翻的译名存了库,
  * 雇主板却还在发页缓存里的旧页 —— 存完顺手清板的页缓存(与探索队列交活 saveExploreResults 同一个动作)。
@@ -1663,6 +1695,8 @@ export function toExploreTodo(r: ExploreDbRow): ExploreTodo {
 
 /**
  * 探索队列交活:洗一遍工人交回来的结果(键非空、状态在白名单、文字限长),五个等长数组一条语句写回。
+ * 2026-09-23 名字认得出核定表里连锁品牌(BRAND_ALIASES)的,译名换成核定的并标「核定」,公司表那格照盖
+ * (不守「已有同版本就不动」—— Subway 那格就是被它挡住的)。
  *
  * @param input 连接与线格式结果。
  * @returns 写回了几条。
@@ -1689,9 +1723,23 @@ export async function saveExploreResults(input: SaveExploreIn): ExploreSavedOut 
   if (keys.length === 0) {
     return 0
   }
+  const names = await loadExploreNames({ db: input.db, keys: keys })
+  const verified: string[] = []
+  for (const [i, key] of keys.entries()) {
+    const name = names.get(key)
+    if (name == null) {
+      continue
+    }
+    const brand = brandAliasOf(name)
+    if (brand != null) {
+      zh[i] = brand.zh
+      ko[i] = brand.ko
+      verified.push(key)
+    }
+  }
   await input.db.query(SQL.EMPLOYER_EXPLORE_RESOLVE, [keys, statuses, zh, ko, notes, industries, TRANS_V])
   try {
-    await input.db.query(SQL.EMPLOYER_EXPLORE_TO_COMPANIES, [keys, zh, ko, TRANS_V])
+    await input.db.query(SQL.EMPLOYER_EXPLORE_TO_COMPANIES, [keys, zh, ko, TRANS_V, verified])
   } catch (e) {
     let why = String(e)
     if (e instanceof Error) {
@@ -1715,6 +1763,32 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
     aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
     industry: exploreIndustryOf(text(r.industry)),
   }
+}
+
+/**
+ * 一批池主键在探索队列里记的雇主名(交活时认连锁品牌用,2026-09-23)。
+ *
+ * @param input 连接与池主键。
+ * @returns 池主键 → 雇主名。
+ */
+async function loadExploreNames(input: ExploreNamesIn): ExploreNamesOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.EMPLOYER_EXPLORE_NAMES, params: [input.keys],
+    map: toExploreNameFact })
+  const out = new Map<string, string>()
+  for (const r of rows) {
+    out.set(r.key, r.name)
+  }
+  return out
+}
+
+/**
+ * `EMPLOYER_EXPLORE_NAMES` 一行 → 池主键与雇主名。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+function toExploreNameFact(r: ExploreNameDbRow): ExploreNameFact {
+  return { key: text(r.key), name: text(r.name) }
 }
 
 /**

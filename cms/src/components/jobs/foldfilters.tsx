@@ -17,6 +17,20 @@
  * 移民资格(PNP、AIP、试点社区、须 PR)、职位类型、薪资(年薪、对比中位)、发布(渠道、来源、仅雇主直发);
  * 渠道与来源两个下拉是新加的(参数 org / src 早就有,只是板上没控件)。行名全用现成词条;「发布」行借表格
  * 「发布」列同一个词条 col.direct,术语一致,也免得「来源」行里再放「全部来源」重字。
+ * 2026-09-23 Frank「是把筛选去掉先,因为不常用」:职位类型一行撤掉 —— 下拉、URL 参数 emp、接口参数 fEmp、
+ * SQL 条件一并撤(生产 10 条已存筛选里 0 条设过它);表格「工时」「雇佣期」两列照旧。
+ * 2026-09-23 Frank「薪职筛选也去掉吧」:薪资一行(年薪、对比中位)同样撤掉 —— 下拉、URL 参数 sal 与 vs、
+ * 接口参数 fSal 与 fVs、SQL 条件一并撤(已存筛选 0 条设过);表格「年薪」「vs 中位」两列与按列排序照旧。
+ * 2026-09-23 Frank「这部分是不是放到雇主筛选比较好?还是也先去掉」「逻辑应该是先找工作,然后投简历,然后看哪些公司要我。
+ * 然后在考虑这些是 AIP RCIP FCIP」「大部分英文用户,他是没有 pr 焦虑的问题的」:移民资格一行(PNP、AIP、试点社区、须 PR)
+ * 撤控件。与上两行不同,URL 参数与接口参数照旧能认 —— /start、/plan 带 pnp、aip、pilot 深链进板,「我的匹配」视图用 fElig
+ * (同 fScore 撤控件后「深链仍生效」的先例);这四格不再计入折叠徽标,因为折叠区里已没有它们的控件。
+ * 2026-09-23 Frank「这个也删掉吧。用户根本不知道什么是 雇主直发」:「仅雇主直发」勾选框撤(已存筛选 0 条勾过)。
+ * directOnly 那条布尔管线与「我的匹配」缠在同一批函数里,留待清那一批一起拆,本批只撤控件。
+ * 2026-09-23 职业分类改两级(Frank 选「两级:大类 + 职业」,设计稿 docs/design/职业分类两级-20260923.md):「职业分类」一行的
+ * 中类、小类两个下拉换成一个「职业」下拉 —— 值是职业码(筛选参数 fNoc,与问卷 / 规划页深链同一个),选项跟着大类与 EE 类别联动、
+ * 在招多的在前,显示人话短名;老深链 `?mid=` / `?fine=` 照旧能筛,只是折叠区里不再有它们的控件。
+ * 同日 Frank「职业分类筛选,是不是放到全部大类后面比较好」:「职业」下拉挪进常用一行紧跟大类,折叠区「职业分类」一行撤,剩地理、发布两行。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -24,12 +38,10 @@
 import { cssOf } from '@/components/css'
 import { Select } from '@/components/select'
 import {
-  ELIG_OK, FK, INPUT_CHECKBOX, K_EMP, K_ORIGIN, K_SAL, K_VS, OPTS_EMP, OPTS_ORIGIN, OPTS_PILOT, OPTS_SAL, OPTS_VS,
-  OPTS_YES_NO,
+  FK, K_ORIGIN, OPTS_ORIGIN,
 } from './constants'
 import {
-  checkClsOf, makeCatLabel, makeCheckChange, makeCityChange, makeEligChange, makeMidChange, makeOptLabel,
-  makePilotLabel, makePrefixLabel, makeSlotChange, slotOf,
+  makeCityChange, makePrefixLabel, makeSlotChange, slotOf,
 } from './functions'
 import type { BoardPanelIn } from './types'
 import css from './jobs.module.css'
@@ -38,7 +50,7 @@ import css from './jobs.module.css'
  * 渲染折叠区。
  *
  * @param props 职位板整台状态机。
- * @returns 六行低频筛选。
+ * @returns 两行低频筛选。
  */
 export function FoldFilters({ b }: BoardPanelIn) {
   const f = b.filters
@@ -54,46 +66,6 @@ export function FoldFilters({ b }: BoardPanelIn) {
           opts={f.opts.district} all={b.t('all.district')} />
       </div>
       <div className={cssOf(css.ctl)}>
-        <span className={cssOf(css.filtLabel)}>{b.t('filter.cat')}</span>
-        <Select value={slotOf({ fState: f.fState, k: FK.mid })} onChange={makeMidChange(f.fState)}
-          opts={f.opts.mid} all={b.t('all.mid')} labelOf={makeCatLabel(b.t)} />
-        <Select value={slotOf({ fState: f.fState, k: FK.fine })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.fine })}
-          opts={f.opts.fine} all={b.t('all.fine')} labelOf={makeCatLabel(b.t)} />
-      </div>
-      <div className={cssOf(css.ctl)}>
-        <span className={cssOf(css.filtLabel)}>{b.t('filter.elig')}</span>
-        <Select value={slotOf({ fState: f.fState, k: FK.pnp })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.pnp })}
-          opts={OPTS_YES_NO} all={b.t('all.pnp')} labelOf={makeOptLabel(b.t)} />
-        <Select value={slotOf({ fState: f.fState, k: FK.aip })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.aip })}
-          opts={OPTS_YES_NO} all={b.t('all.aip')} labelOf={makeOptLabel(b.t)} />
-        <Select value={slotOf({ fState: f.fState, k: FK.pilot })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.pilot })}
-          opts={OPTS_PILOT} all={b.t('all.pilot')} labelOf={makePilotLabel(b.t)} />
-        <label className={checkClsOf(slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK)}>
-          <input type={INPUT_CHECKBOX} checked={slotOf({ fState: f.fState, k: FK.elig }) === ELIG_OK}
-            onChange={makeEligChange(f.fState)} />
-          {b.t('eligOnly')}
-        </label>
-      </div>
-      <div className={cssOf(css.ctl)}>
-        <span className={cssOf(css.filtLabel)}>{b.t('filter.emp')}</span>
-        <Select value={slotOf({ fState: f.fState, k: FK.emp })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.emp })}
-          opts={OPTS_EMP} all={b.t('all.emp')} labelOf={makePrefixLabel({ t: b.t, prefix: K_EMP })} />
-      </div>
-      <div className={cssOf(css.ctl)}>
-        <span className={cssOf(css.filtLabel)}>{b.t('filter.salary')}</span>
-        <Select value={slotOf({ fState: f.fState, k: FK.sal })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.sal })}
-          opts={OPTS_SAL} all={b.t('all.sal')} labelOf={makePrefixLabel({ t: b.t, prefix: K_SAL })} />
-        <Select value={slotOf({ fState: f.fState, k: FK.vs })}
-          onChange={makeSlotChange({ fState: f.fState, k: FK.vs })}
-          opts={OPTS_VS} all={b.t('all.vs')} labelOf={makePrefixLabel({ t: b.t, prefix: K_VS })} />
-      </div>
-      <div className={cssOf(css.ctl)}>
         <span className={cssOf(css.filtLabel)}>{b.t('col.direct')}</span>
         <Select value={slotOf({ fState: f.fState, k: FK.origin })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.origin })}
@@ -101,10 +73,6 @@ export function FoldFilters({ b }: BoardPanelIn) {
         <Select value={slotOf({ fState: f.fState, k: FK.source })}
           onChange={makeSlotChange({ fState: f.fState, k: FK.source })}
           opts={f.opts.source} all={b.t('all.source')} />
-        <label className={checkClsOf(f.directOnly)}>
-          <input type={INPUT_CHECKBOX} checked={f.directOnly} onChange={makeCheckChange(f.onDirect)} />
-          {b.t('directOnly')}
-        </label>
       </div>
     </div>
   )

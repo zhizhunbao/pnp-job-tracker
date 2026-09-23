@@ -159,21 +159,6 @@ export type HeaderIn = {
   sticky?: boolean
 
   /**
-   * /jobs 特有:「我的匹配」切换态钮(不传 = 不渲,入口在职位高亮里)。
-   */
-  matchButton?: {
-    /**
-     * 匹配视图开着没。
-     */
-    active: boolean
-
-    /**
-     * 切换回调。
-     */
-    onClick: () => void
-  }
-
-  /**
    * /jobs 特有:带 plan 的完整账户下拉;不传 = 本域 AccountLite。
    */
   accountArea?: React.ReactNode

@@ -47,7 +47,7 @@ export function CategoryPanel({ job, lang, nocDesc, srcField }: CategoryPanelIn)
   }
   return (
     <>
-      <CategoryIdCard t={t} rows={idRowsOf({ t, job, noc })} srcField={srcField} />
+      <CategoryIdCard t={t} rows={idRowsOf({ t, job, noc, lang })} srcField={srcField} />
       <NocList head={t('fact.nocDuties')} fetched={fetched}
         items={listItemsOf(duties)}
         zhItems={zhItemsOf({ show: trans.showTrans, text: transDuties })} />

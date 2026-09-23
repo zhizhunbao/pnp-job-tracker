@@ -499,11 +499,6 @@ export const PATH_ACCOUNT_FAVS = '/account?sec=favs'
 export const PATH_ACCOUNT_SJOBS = '/account?sec=sjobs'
 
 /**
- * 匹配视图入口。
- */
-export const PATH_MATCH = '/?view=match'
-
-/**
  * Google 整页 OAuth 的入口。
  */
 export const PATH_GOOGLE_AUTH = '/api/auth/google'

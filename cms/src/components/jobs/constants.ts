@@ -30,11 +30,6 @@ export const COL = {
   score: 'score',
 
   /**
-   * 与我的匹配。
-   */
-  match: 'match',
-
-  /**
    * 省提名。
    */
   pnp: 'pnp',
@@ -338,16 +333,6 @@ export const KIND = {
    * 具名紧缺通道徽章。
    */
   stream: 'stream',
-
-  /**
-   * 匹配档 chip。
-   */
-  match: 'match',
-
-  /**
-   * 未建档引导链。
-   */
-  needProfile: 'needProfile',
 
   /**
    * Pro 锁位。
@@ -693,6 +678,16 @@ export const URL_API_JOB_TEXT = '/api/jobs/text?url='
 export const URL_API_JOB_RELATED = '/api/jobs/related?id='
 
 /**
+ * 「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」;接岗位号)。
+ */
+export const URL_API_JOB_RELATED_OCC = '/api/jobs/related/occ?id='
+
+/**
+ * 按页续取的跳过条数参数(接在岗位号后面)。
+ */
+export const Q_REL_OFFSET = '&offset='
+
+/**
  * 正文接口的岗位号参数(接在链接后;2026-09-20 服务端按岗位号找行,链接只用来去原站懒抓)。
  */
 export const URL_API_JOB_TEXT_ID = '&id='
@@ -719,11 +714,6 @@ export const URL_API_JD_FORMAT = '/api/jobs/jdformat'
 export const URL_BOARD = '/'
 
 /**
- * 进「我的匹配」视图(URL 即状态,可分享可回退)。
- */
-export const URL_BOARD_MATCH = '/?view=match'
-
-/**
  * 详情页右上角返回的落点:带 ?back=1 回流,由职位板回放筛选快照。
  */
 export const URL_BOARD_BACK = '/?back=1'
@@ -739,14 +729,9 @@ export const URL_BOARD_PROV = '/?prov='
 export const URL_BOARD_BROAD = '/?broad='
 
 /**
- * 面包屑中类格的第二段(大类之后再加中类)。
+ * 按职业码筛选的职位板(面包屑职业格;2026-09-23 职业分类改两级,取代面包屑的中类格 `&mid=` 与小类格 `/?fine=`)。
  */
-export const URL_BOARD_MID = '&mid='
-
-/**
- * 按小分类筛选的职位板(面包屑小类格)。
- */
-export const URL_BOARD_FINE = '/?fine='
+export const URL_BOARD_NOC = '/?noc='
 
 /**
  * 相似职位兜底链的分级键前缀(?prov=… 之后按级追加)。
@@ -939,30 +924,10 @@ export const URL_TO_FILTER: Record<string, string> = {
   score: 'fScore',
 
   /**
-   * 年薪档。
-   */
-  sal: 'fSal',
-
-  /**
-   * 对比当地中位。
-   */
-  vs: 'fVs',
-
-  /**
-   * 职位类型(E6-06:full/part/gig)。
-   */
-  emp: 'fEmp',
-
-  /**
    * 身份预筛(GAP1③:'ok' = 排除明确不担保/须 PR 的岗)。
    */
   elig: 'fElig',
 }
-
-/**
- * directOnly 是布尔,URL 上是 direct=1,不走 URL_TO_FILTER 那张表。
- */
-export const DIRECT_URL_KEY = 'direct'
 
 /**
  * 筛选键的名字表(= 前端 state 名 = buildJobsWhere 的键 = /api/jobs 参数名,三者同名)。
@@ -1065,48 +1030,21 @@ export const FK = {
   score: 'fScore',
 
   /**
-   * 年薪档。
-   */
-  sal: 'fSal',
-
-  /**
-   * 对比当地中位。
-   */
-  vs: 'fVs',
-
-  /**
-   * 职位类型。
-   */
-  emp: 'fEmp',
-
-  /**
    * 身份预筛。
    */
   elig: 'fElig',
 } as const
 
 /**
- * 只看直发岗的筛选键(它是布尔,不进 fState 那张表)。
- */
-export const FK_DIRECT = 'directOnly'
-
-/**
- * 身份预筛勾上时的值(GAP1③:'ok' = 排除明确不担保/须 PR 的岗)。
- */
-export const ELIG_OK = 'ok'
-
-/**
  * 折叠区里参与徽标计数的筛选键(2026-08-16:PNP/年薪 从常用一行下沉进折叠区,
  * 一并进徽标计数,否则选了却看不出来)。
+ * 2026-09-23 移民资格一行撤控件:PNP / AIP / 试点 / 身份预筛四格随之出表(深链仍能设,但折叠区里已无控件可看)。
+ * 2026-09-23 职业分类改两级:中 / 小类两格出表(下拉撤了,深链 `?mid=` / `?fine=` 仍能筛);职业(fNoc)的下拉
+ * 同日挪进常用一行(Frank「职业分类筛选,是不是放到全部大类后面比较好」),不在折叠区,不计徽标。
  */
 export const FOLD_KEYS: string[] = [
-  FK.city, FK.district, FK.mid, FK.fine, FK.pnp, FK.sal, FK.aip, FK.pilot, FK.emp, FK.vs, FK.elig, FK.origin, FK.source,
+  FK.city, FK.district, FK.origin, FK.source,
 ]
-
-/**
- * 是/否两档的下拉选项(PNP / AIP 共用)。
- */
-export const OPTS_YES_NO: string[] = ['yes', 'no']
 
 /**
  * 发布渠道下拉选项(2026-09-15 Frank「筛选也分两个吧」「一个是渠道 一个是来源」):值 = jobs.origin 枚举,
@@ -1115,32 +1053,6 @@ export const OPTS_YES_NO: string[] = ['yes', 'no']
  * 不列 directory:枚举里有、在招岗里没有,空选项不出。
  */
 export const OPTS_ORIGIN: string[] = ['jobbank', 'jobillico', 'jobboom', 'careerbeacon', 'gcjobs', 'hireac', 'ats']
-
-/**
- * 试点社区下拉选项(E6-11:yes = 任一命中,RCIP/FCIP = 指定类型)。
- */
-export const OPTS_PILOT: string[] = ['yes', 'RCIP', 'FCIP', 'no']
-
-/**
- * 职位类型下拉选项(E6-06;gig = 兼职∪casual∪seasonal,
- * 未标注岗选类型自然不命中,与「未分类」同一诚实口径)。
- */
-export const OPTS_EMP: string[] = ['full', 'part', 'gig']
-
-/**
- * 年薪档下拉选项。
- */
-export const OPTS_SAL: string[] = ['ge100', '80', '60', 'u60']
-
-/**
- * 对比中位档下拉选项。
- */
-export const OPTS_VS: string[] = ['above', 'above20', 'below']
-
-/**
- * 「我的匹配」视图的 URL 参数名。
- */
-export const P_VIEW = 'view'
 
 /**
  * 分页序号参数名。
@@ -1183,11 +1095,6 @@ export const P_BACK = 'back'
 export const VAL_ON = '1'
 
 /**
- * view 参数的匹配视图值。
- */
-export const VAL_MATCH = 'match'
-
-/**
  * 筛选签名的一格分隔(键=值)。
  */
 export const SIG_EQ = '='
@@ -1208,11 +1115,6 @@ export const QS_HEAD = '?'
 export const K_COL = 'col.'
 
 /**
- * 是/否类下拉项(`opt.yes` / `opt.no`)。
- */
-export const K_OPT = 'opt.'
-
-/**
  * 职位类型档(`emp.full` 等)。
  */
 export const K_EMP = 'emp.'
@@ -1228,24 +1130,9 @@ export const K_TERM = 'term.'
 export const K_WHO = 'who.'
 
 /**
- * 年薪档下拉项。
- */
-export const K_SAL = 'sal.'
-
-/**
- * 对比中位档下拉项。
- */
-export const K_VS = 'vs.'
-
-/**
  * TEER 档名(`teer.0` 等)。
  */
 export const K_TEER = 'teer.'
-
-/**
- * 匹配档名(`match.high` 等)。
- */
-export const K_MATCH = 'match.'
 
 /**
  * 经验级别(`acc.unknown` 等)。
@@ -1299,21 +1186,20 @@ export const DEFAULT_COLS: JobColKey[] = [
  * 2026-08-03 他自己推翻(「页面看着别扭,很多人一进来看这个页面设计就跑路了」)——
  * 首屏 13 列在 1440 上还要横滚,一进来是一张密密麻麻的表格,差异化没被读到就先被劝退了。
  * **信号没丢**:三样都在字段弹框里,手机卡片 chips 照旧;字段面板一键调回。
+ * 2026-09-23 职业分类改两级:「中分类」「小分类」两列撤,「NOC」列改叫「职业」(显示人话短名,码在点开的类别弹框里);
+ * 同日 Frank「table 部分职业是不是也放到大类后面」:职业列从职位后面挪到大分类后面(大类 › 职业,与面包屑同序)。
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布时间' },
   { key: 'ee', label: 'EE 类别' },
   { key: 'broad', label: '大分类' },
-  { key: 'mid', label: '中分类' },
-  { key: 'fine', label: '小分类' },
+  { key: 'noc', label: '职业' },
   { key: 'teer', label: 'TEER' },
   { key: 'empHours', label: '工时' },
   { key: 'empTerm', label: '雇佣期' },
   { key: 'whoCanApply', label: '谁能投' },
   { key: 'company', label: '公司' },
   { key: 'title', label: '职位', always: true },
-  { key: 'match', label: '与我的匹配' },
-  { key: 'noc', label: 'NOC' },
   { key: 'accessibility', label: '经验级别' },
   { key: 'country', label: '国家' },
   { key: 'province', label: '省' },
@@ -1338,11 +1224,6 @@ export const COLUMNS: ColSpec[] = [
   { key: 'closedAt', label: '下架时间' },
   { key: 'actions', label: '操作', always: true },
 ]
-
-/**
- * 「与我的匹配」列键 —— E5-05 独立视图专属,不进列选择器,老 cookie 里有也剔除。
- */
-export const COL_MATCH: JobColKey = 'match'
 
 /**
  * 职位名列键(唯一 always 的内容列;它的格子直开职位描述弹框)。
@@ -1371,17 +1252,18 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
  * 年薪/中位数等计算列恒短值。
  * 2026-09-14 Frank「这个太长了怎么处理」(North York 被按词折成两行):市加入不折行 —— 地名是名字,名字不截不折;
  * 列宽机器给不折行列的最短宽按整格量,长地名(Saint-Jean-sur-Richelieu 一类)会多吃一点宽,由 P90 / MAX 两轮回填消化。
+ * 2026-09-23 职业列同理(Frank 截图「软件工程师」被折成两行):职业名也是名字,中文最长 8 个字、英文短名不超 32 字符。
  */
 export const NOWRAP_COLS = new Set<JobColKey>([
   'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
-  'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'match', 'city',
+  'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'city', 'noc',
 ])
 
 /**
  * 这几列的值是**短语**不是原子值(AIP「Occupation not accepted」、LMIA、资格、匹配),
  * 中文短、英文长 —— 让它们在本列内换行,别再挤隔壁。
  */
-export const WRAP_COLS = new Set<JobColKey>(['aip', 'pilot', 'lmia', 'eligibility', 'match'])
+export const WRAP_COLS = new Set<JobColKey>(['aip', 'pilot', 'lmia', 'eligibility'])
 
 /**
  * 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要
@@ -1393,8 +1275,9 @@ export const FROZEN_COLS = new Set<JobColKey>(['datePosted', 'broad', 'company',
 /**
  * Pro 专属列(免费用户列位打码,真值本就没进浏览器)。**单一来源就是这一格** ——
  * 2026-07-25 Frank「先都显示出来」放开 vs 中位三件套后,锁只剩 match 语义位。
+ * 2026-09-23 match 随「我的匹配」整拆出表,眼下没有 Pro 专属列(机制留着,加列即生效)。
  */
-export const PRO_COLS = new Set<JobColKey>(['match'])
+export const PRO_COLS = new Set<JobColKey>([])
 
 /**
  * #152 锁位统一打码(Frank「应该给他打上马赛克那种」;#130 详情页先例推广到表格):
@@ -1441,15 +1324,6 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
    */
   broad: 'category',
 
-  /**
-   * 中分类。
-   */
-  mid: 'category',
-
-  /**
-   * 小分类。
-   */
-  fine: 'category',
 
   /**
    * ③ 公司 → 公司弹框;职位名不走本表(cellActionable 特判,直开 JD 弹框)。
@@ -1529,12 +1403,6 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
    * 2026-09-14 同上。
    */
   wageMedYr: 'none',
-
-  /**
-   * ② 「匹配」列 → 个人化解读弹框(2026-07-26:操作列「移民通道」钮下架后,
-   * 「对我意味着什么」改挂它自己的字段;score 键随三维档卡一起退役)。
-   */
-  match: 'immigration',
 
   /**
    * ⑦ 其余一律不可点(Pro 锁位的锁自己链升级弹窗,不走本路由)。
@@ -1891,16 +1759,6 @@ export const TEER_ROUTE_MAX = 3
 export const SPONSOR_GRADE_AIP_ONLY = 3
 
 /**
- * 试点类型「yes」的下拉值(任一命中)。
- */
-export const PILOT_ANY = 'yes'
-
-/**
- * 试点类型「no」的下拉值。
- */
-export const PILOT_NONE = 'no'
-
-/**
  * 头回来的人没有 cookie(88% 流量来自搜索,大多是头回),给一份默认比例兜底:
  * 首屏就按它定版式,水合后换成真量出来的像素 —— 差几个像素,不会像「自动布局→固定布局」
  * 那样整表抻一下(实测 CLS 0.087 → 0.008)。
@@ -2058,17 +1916,6 @@ export const CURSOR_NONE = ''
 export const SORT_DEFAULT: JobColKey = 'datePosted'
 
 /**
- * 匹配视图的默认排序列(2026-07-21 Frank:横幅写「按匹配度排序」得名副其实,
- * 原默认发布时间序把非今日的高匹配全压在今日中匹配下面)。
- */
-export const SORT_MATCH: JobColKey = 'match'
-
-/**
- * 换血中(第 0 页在拉)骨架行的条数。
- */
-export const SKELETON_ROWS = 8
-
-/**
  * 收藏的初始状态(心愿单)。
  */
 export const SAVED_STATUS_WISH = 'wish'
@@ -2097,16 +1944,6 @@ export const TRACK_SAVE_JOB = 'save-job'
  * 保存一套筛选。
  */
 export const TRACK_SAVE_SEARCH = 'save-search'
-
-/**
- * 进「我的匹配」视图。
- */
-export const TRACK_MATCH_VIEW = 'match-view'
-
-/**
- * 手里没有职业答案 → 先去建档。
- */
-export const TRACK_MATCH_VIEW_QUIZ = 'match-view-quiz'
 
 /**
  * 详情页浏览(漏斗第 1 步,主线 M2 收口 2026-08-02)。
@@ -2204,6 +2041,16 @@ export const REL_CO_FIRST_N = 3
  * 相似职位·同省同职业组收起时先出几行(与旧 LIMIT 6 的密度一致,展开看其余)。
  */
 export const REL_OCC_FIRST_N = 6
+
+/**
+ * 相似职位·同省同职业组每点一次「再展开」最多多露几行(2026-09-23;与服务端一页的家数一致 —— 先露已取的,露完了向接口取下一页)。
+ */
+export const REL_OCC_STEP_N = 24
+
+/**
+ * 相似职位组不按页续取的记号(同公司组):「展开其余 N 个」一次露完已取的行,同 09-22 的形。
+ */
+export const REL_NO_PAGING = 0
 
 /**
  * 大节头白名单(Job Bank 固定小节)。白名单外一律当内容行 ——「English」这类单词值
@@ -2741,16 +2588,6 @@ export const STAR_OFF = '☆'
 export const CROSS = '×'
 
 /**
- * 匹配视图状态条的退出叉(跟在文案后面)。
- */
-export const EXIT_CROSS = ' ×'
-
-/**
- * 匹配视图状态条里「今日 N 个高匹配」前的连接。
- */
-export const MV_DOT = ' · '
-
-/**
  * 「更多」按钮在途时的占位。
  */
 export const ELLIPSIS = '…'
@@ -2931,11 +2768,6 @@ export const FREE_PLAN = {
   profile: null,
 
   /**
-   * 免费匹配额度(SSR 会给真值)。
-   */
-  freeMatchCap: 0,
-
-  /**
    * 没有邮箱。
    */
   email: null,
@@ -3026,6 +2858,11 @@ export const EMPTY_DIMS = {
   nocDescriptions: [],
 
   /**
+   * 「职业」下拉的选项(2026-09-23 职业分类改两级;大维度包懒取)。
+   */
+  occupations: [],
+
+  /**
    * 事实出处。
    */
   fieldSources: [],
@@ -3075,11 +2912,6 @@ export const UPSELL_LOCK = 'lock'
  * 由头:已保存筛选的免费位用满。
  */
 export const UPSELL_SS = 'ss'
-
-/**
- * 由头:「我的匹配」入口要先登录(E9-04b:登录成功直接落匹配视图)。
- */
-export const UPSELL_LOGIN = 'login'
 
 /**
  * JD 正文在途。
@@ -3266,36 +3098,6 @@ export const UNDER_TITLE = false
 export const CRUMB_SEP = ' › '
 
 /**
- * 建档引导链尾巴上的箭头。
- */
-export const ARROW_RIGHT = '→'
-
-/**
- * 匹配档 → 它的配色类(值是 jobs.module.css 里的键名)。
- */
-export const MATCH_TONE_CLS: Record<string, string> = {
-  /**
-   * 高匹配:绿。
-   */
-  high: 'matchHigh',
-
-  /**
-   * 中匹配:蓝。
-   */
-  mid: 'matchMid',
-
-  /**
-   * 低匹配:灰。
-   */
-  low: 'matchLow',
-
-  /**
-   * 不适用:浅。
-   */
-  na: 'matchNa',
-}
-
-/**
  * 斑马纹的周期(隔行换底色)。
  */
 export const ZEBRA_MOD = 2
@@ -3312,14 +3114,14 @@ export const GRAIN_MINUTE = 'minute'
 export const SELECT_SM = 'sm'
 
 /**
+ * 下拉壳宽大档(210;2026-09-23「职业」下拉按最长选项定宽,英文职业名最长 32 字符,sm 的 150 装不下)。
+ */
+export const SELECT_LG = 'lg'
+
+/**
  * 勾选框的 type(打错就渲成文本框,静默失效)。
  */
 export const INPUT_CHECKBOX = 'checkbox'
-
-/**
- * 由头:匹配锁(弹框带 FOMO 数字)。
- */
-export const UPSELL_MATCH = 'match'
 
 /**
  * 横幅的模块名(#65/#66 五模块统一浅色带,职位板 = 蓝)。

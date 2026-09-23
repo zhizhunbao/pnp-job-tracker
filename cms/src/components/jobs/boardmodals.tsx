@@ -9,6 +9,8 @@
  * 2026-09-19 Frank「这种里面的链接都改成弹框显示」:公司组里点相似雇主 → 公司弹框(不带职位)接手,不再新开页。
  * 2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」:职位描述弹框与公司弹框并进弹框栈(advisor 的 PeekStack 画),
  * 一层层叠、只关最上面一层;字段弹框仍单独一格,垫在栈底下。
+ * 2026-09-23「我的匹配」整拆:登录档(登录成功落匹配视图)与匹配锁由头随之撤 —— 匿名弹框一律注册框、落回原页,
+ * 升级弹框的由头只剩「保存筛选满额」一种。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -17,7 +19,8 @@ import { AdvisorModal, PeekStack } from '@/components/advisor'
 import { AuthModal } from '@/components/auth'
 import { UpgradeModal } from '@/components/pricing'
 import { OnboardingWizard } from '@/components/profile'
-import { upsellModeOf, upsellReasonOf, upsellReturnOf } from './functions'
+import { AUTH_REGISTER } from './constants'
+import { upsellReasonOf } from './functions'
 import type { BoardPanelIn } from './types'
 
 /**
@@ -51,17 +54,11 @@ export function BoardModals({ b }: BoardPanelIn) {
       {m.wizard && <OnboardingWizard t={b.t} initial={b.plan.profile} onClose={m.onWizardClose} />}
       {m.upsell !== false && b.plan.loggedIn && (
         <UpgradeModal t={b.t} onClose={m.onUpsellClose}
-          reason={upsellReasonOf({
-            t: b.t,
-            upsell: m.upsell,
-            totals: b.data.matchTotals,
-            cap: b.plan.freeMatchCap,
-          })} />
+          reason={upsellReasonOf({ t: b.t, upsell: m.upsell })} />
       )}
       {m.upsell !== false && b.plan.loggedIn === false && (
-        <AuthModal t={b.t} mode={upsellModeOf(m.upsell)} onClose={m.onUpsellClose}
-          onDone={m.onUpsellDone}
-          returnTo={upsellReturnOf(m.upsell)} />
+        <AuthModal t={b.t} mode={AUTH_REGISTER} onClose={m.onUpsellClose}
+          onDone={m.onUpsellDone} />
       )}
     </>
   )

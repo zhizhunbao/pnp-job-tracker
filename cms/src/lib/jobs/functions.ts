@@ -24,7 +24,7 @@ import { ymd } from '../time'
 import {
   DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
   ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC,
-  BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAND_CAP, CAT_LEVEL, CELL_NONE, CK, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
+  BLOCKED_SRC_NONE, BROAD_NOCS_MAX, CAT_LEVEL, CELL_NONE, CNT_SEP, COLON_END_RE, COL_PROVINCE, COMMA,
   COMPANY_SLUG_COND, COMP_KEY, COOKIE_CUT, COOKIE_JOIN, COUNT_CACHE_MAX, COUNT_TTL_MS, COV, CURRENT_STATUSES,
   DATE_LEN, DIGIT_PICK_RE, DIMS_TTL_MS, DIR_ASC, DIR_DESC, DOLLAR, DRAW_STREAM_L10N, EE_KEY_L10N, EE_L10N, EE_SPLIT,
   EMAIL_RE, ENT_PAIRS, FACES_REQUEST_HDR, FACES_REQUEST_VAL, FK, FORM_CONTENT_TYPE, FV, HAS_DIGIT_RE, HAS_SUFFIX,
@@ -48,14 +48,14 @@ import {
   PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
   PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N,
   RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEO_DASH, SEO_LOC_SEP,
-  SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS, SORT_MATCH_KEY,
+  SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS,
   SORT_NONE, SPACE, SPACES_RE, SQL_SEG_NONE, SRC_DASH, SRC_JOB_BANK, SSR_DIMS_TTL_MS, STAMP_NONE, STATUS_CLOSED_WORD,
   STREAM_L10N, STREAM_NOTE_NONE, STRIP_REPL, T45_COND_PROVS, T45_NL, TEER_GENERAL_MAX, TEER_LOW_MIN, TERM_PERMANENT,
   JD_HEAD_MARK_RE, JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  JD_TRANS_MARKS_RE,
+  JD_TRANS_MARKS_RE, REL_OCC_PAGE_ROWS,
 } from './constants'
 import {
   JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
@@ -72,17 +72,17 @@ import type {
   JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
   JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
-  MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchPageIn, MatchPageOut, MatchProfile, MatchReason, MatchResult,
+  MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchProfile, MatchReason, MatchResult,
   MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption,
-  NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn,
-  NocSearchOut, NumCell, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
+  NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim,
+  NocSearchOut, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
   OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell,
   ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut,
-  QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RankedHit, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
-  RelatedOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
-  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SortValIn, SsrDimsOut,
+  QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
+  RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn, RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
+  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SsrDimsOut,
   TranslateJdIn, TransJdOut,
-  StrCell, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
+  StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
   TitleReq, JdTitleBody,
   TitleTexts, TitleTransIn, TitlesOut,
   ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut, TranslateTitlesIn, UrlHandle, WhereParam,
@@ -728,10 +728,6 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     }
     return PARAM_NONE
   }
-  const isOn = function isOn(k: string): boolean {
-    const v = filters[k]
-    return v === true || v === FV.trueStr || v === FV.oneStr
-  }
   const terms = splitQ(s(FK.q))
   for (const [i, term] of terms.entries()) {
     const ph = param(PCT + term + PCT)
@@ -784,7 +780,8 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
       }
     }
     if (codes.length > 0) {
-      conds.push(W.nocAnyOpen + param(codes) + W.close)
+      const p = param(codes)
+      conds.push(W.nocGroupHead + p + W.nocGroupMid + p + W.nocGroupTail)
     }
   }
   if (s(FK.broad) !== '') {
@@ -849,27 +846,6 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
     conds.push(W.scoreMid)
   } else if (s(FK.score) === FV.low) {
     conds.push(W.scoreLow)
-  }
-  if (s(FK.sal) === FV.ge100) {
-    conds.push(W.salGe100)
-  } else if (s(FK.sal) === FV.s80) {
-    conds.push(W.sal80)
-  } else if (s(FK.sal) === FV.s60) {
-    conds.push(W.sal60)
-  } else if (s(FK.sal) === FV.u60) {
-    conds.push(W.salU60)
-  }
-  if (s(FK.vs) === FV.above || s(FK.vs) === FV.above20 || s(FK.vs) === FV.below) {
-    let cmp: string = W.vsBelow
-    if (s(FK.vs) === FV.above) {
-      cmp = W.vsAbove
-    } else if (s(FK.vs) === FV.above20) {
-      cmp = W.vsAbove20
-    }
-    conds.push(W.open + W.vsGuard + W.and + cmp + W.close)
-  }
-  if (isOn(FK.directOnly)) {
-    conds.push(W.direct)
   }
   if (s(FK.elig) === FV.ok) {
     conds.push(W.eligOk)
@@ -987,6 +963,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     eeBroads: eeBroads,
     designatedEmployers: [],
     nocDescriptions: [],
+    occupations: [],
     fieldSources: fieldSrc,
     news: news,
   }
@@ -1193,164 +1170,29 @@ export async function loadJobsPage(input: JobsPageIn): JobsPageOut {
   return { jobs: jobs, total: total, updatedAt: updatedAt }
 }
 
-/**
- * 「我的匹配」视图(E10-01 P3):SQL 候选预筛(并集从宽,宁可多算不漏)→ TS 跑 match 留 high/mid
- * → 默认按档位降序(候选已按日期↓,stable sort 保同档内日期序)分页;表头点击在可见集内重排
- * (空值恒沉底)。匹配全放开(2026-07-21 拍板)。
- *
- * @param input 连接、分层态、维度与页。
- * @returns 当前页行、命中总数、FOMO 计数与最近核对时刻。
- */
-export async function loadMatchPage(input: MatchPageIn): MatchPageOut {
-  const nocs = input.profile.nocCodes
-  const noc4 = new Set<string>()
-  const noc3 = new Set<string>()
-  for (const c of nocs) {
-    if (c.length === NOC_LEN) {
-      noc4.add(c.slice(0, NOC_MINOR_LEN))
-      noc3.add(c.slice(0, NOC_SUBMAJOR_LEN))
-    }
-  }
-  const [cand, updRows] = await Promise.all([
-    queryRows({ db: input.db, sql: SQL.MATCH_PAGE, params: [nocs, Array.from(noc4), Array.from(noc3), CAND_CAP],
-      map: passJobRow }),
-    queryRows({ db: input.db, sql: SQL.JOBS_MAX_LAST_SEEN, params: [], map: passRow }),
-  ])
-  let matchHigh = 0
-  let matchMid = 0
-  const hits: RankedHit[] = []
-  for (const j of cand) {
-    const level = match({ profile: input.profile, job: toMatchJob(j), dims: input.matchDims }).level
-    if (level === LV.high) {
-      matchHigh += 1
-    } else if (level === LV.mid) {
-      matchMid += 1
-    } else {
-      continue
-    }
-    hits.push({ j: j, level: level, rank: matchRank(level), v: null })
-  }
-  hits.sort(byLevelDesc)
-  let sortKey = SORT_NONE
-  let sortDir = SORT_NONE
-  if (input.sort != null) {
-    sortKey = input.sort.key
-    sortDir = input.sort.dir
-  }
-  const sortable = sortKey !== '' && sortKey !== SORT_MATCH_KEY && SORT_COLUMNS[sortKey] != null
-    && (input.pro || PRO_SORTS.has(sortKey) === false)
-  if (sortable) {
-    for (const h of hits) {
-      h.v = matchSortVal({ key: sortKey, j: h.j })
-    }
-    if (sortDir === FV.asc) {
-      hits.sort(byHitValAsc)
-    } else {
-      hits.sort(byHitValDesc)
-    }
-  }
-  const pageItems = hits.slice(input.page * input.pageSize, input.page * input.pageSize + input.pageSize)
-  const jobs: JobRow[] = []
-  for (const h of pageItems) {
-    jobs.push(toJobRow({ row: h.j, matchLevel: h.level, pro: input.pro }))
-  }
-  let updatedAt = STAMP_NONE
-  const updFirst = updRows[0]
-  if (updFirst != null) {
-    updatedAt = iso(updFirst.upd)
-  }
-  return { jobs: jobs, total: hits.length, matchHigh: matchHigh, matchMid: matchMid, updatedAt: updatedAt }
-}
-
-/**
- * 匹配视图列排序的取值(命中集在 TS 内存里,按列取原始行值;白名单外 null)。
- *
- * @param input 列 key 与原始行。
- * @returns 可比较的值;取不了 null。
- */
-function matchSortVal(input: SortValIn): Cell {
-  const j = input.j
-  switch (input.key) {
-    case CK.datePosted: return iso(j.date_posted)
-    case CK.score: return numOf(j.grade_channel)
-    case CK.salary: return numOf(j.salary_annual)
-    case CK.salaryYr: return numOf(j.salary_annual)
-    case CK.lastSeen: return iso(j.last_seen)
-    case CK.title: return strOf(j.title)
-    case CK.company: return strOf(j.company_name)
-    case CK.province: return strOf(j.province)
-    case CK.city: return strOf(j.city)
-    case CK.broad: return strOf(j.broad)
-    case CK.mid: return strOf(j.mid)
-    case CK.fine: return strOf(j.fine)
-    case CK.teer: return numOf(j.teer)
-    case CK.noc: return strOf(j.noc)
-    case CK.accessibility: return strOf(j.accessibility)
-    case CK.country: return strOf(j.country)
-    case CK.district: return strOf(j.district)
-    case CK.address: return strOf(j.address)
-    case CK.source: return strOf(j.source_label)
-    case CK.origin: return strOf(j.origin)
-    case CK.pnp: {
-      if (j.pnp_eligible === true) {
-        return 1
-      }
-      return 0
-    }
-    case CK.ee: return strOf(j.ee_category)
-    case CK.aip: {
-      if (j.aip === true) {
-        return 1
-      }
-      return 0
-    }
-    case CK.pilot: return strOf(j.pilot)
-    case CK.lmia: return numOf(j.lmia_positions)
-    case CK.status: return strOf(j.status)
-    case CK.closedAt: return iso(j.closed_at)
-    case CK.wageMedHr: return numOf(j.wage_med_hourly)
-    case CK.wageMedYr: return numOf(j.wage_med_annual)
-    case CK.vsMedian: {
-      const sVal = numOf(j.salary_annual)
-      const m = numOf(j.wage_med_annual)
-      if (sVal != null && m != null && m !== 0) {
-        return sVal / m
-      }
-      return null
-    }
-    default: return null
-  }
-}
-
-/**
- * 字符串格词汇的本地短名。
- *
- * @param v 库格。
- * @returns 串;没有空串。
- */
-function strOf(v: StrCell): string {
-  if (v == null) {
-    return CELL_NONE
-  }
-  return v
-}
-
-/**
- * 数字格词汇的本地短名(matchSortVal 里一列一次)。
- *
- * @param v 库格。
- * @returns 数;没有 null。
- */
-function numOf(v: NumCell): MaybeNum {
-  if (v == null) {
-    return null
-  }
-  return Number(v)
-}
-
 // =========================================================================
 // 6. 详情、相关、证言
 // =========================================================================
+
+/**
+ * 按岗位号取相关职位的锚点格(两个相关职位接口共用;先按岗位号取本岗,不收客户端递的格)。
+ *
+ * @param input 连接与岗位号。
+ * @returns 锚点格;查无给 null。
+ */
+export async function loadRelatedAnchor(input: RelatedAnchorIn): RelatedAnchorOut {
+  const row = await loadJobById({
+    db: input.db, id: input.id, pro: false, profile: normalizeProfile(null), profileOk: false,
+    matchDims: { pnpOccupations: [], eeCategories: [] },
+  })
+  if (row == null) {
+    return null
+  }
+  return {
+    id: input.id, company: row.company, province: row.province, city: row.city, noc: row.noc,
+    fine: row.fine, mid: row.mid, broad: row.broad,
+  }
+}
 
 /**
  * E8-07 详情页:按 id 取单岗(与列表同一列集/映射;closed 岗也返回 —— 详情页保留可访问)。
@@ -1376,6 +1218,7 @@ export async function loadJobById(input: JobByIdIn): JobByIdOut {
  * 2026-09-20:在招岗也取(原只给下架岗);同职业组改四档排序(口径见 RELATED_SAME_OCC)。
  * 2026-08-11:两组都空时兜底探测三级分类「本省该级有没有在招岗」(EXISTS 命中即停),
  * 返回能筛出东西的最细一级 —— 下架页不能是死路。
+ * 2026-09-23 职业分类改两级:只探大类(中 / 小类退役;职业那一级已由「同省同职业」组承担,组空了再探职业也是空)。
  *
  * @param input 连接与本岗。
  * @returns 两组瘦行与兜底级。
@@ -1390,7 +1233,7 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   let occRows: Row[] = []
   if (job.noc !== '' && job.province !== '') {
     occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-      job.company, job.city], map: passRow })
+      job.company, job.city, REL_OCC_PAGE_ROWS, 0], map: passRow })
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)
@@ -1408,12 +1251,6 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
     return { sameCompany, sameCompanyTotal, sameOcc, sameOccTotal, fallbackLevel: null }
   }
   const levels: ['fine' | 'mid' | 'broad', string][] = []
-  if (job.fine !== '' && job.fine !== UNCAT) {
-    levels.push([CAT_LEVEL.fine, job.fine])
-  }
-  if (job.mid !== '' && job.mid !== UNCAT) {
-    levels.push([CAT_LEVEL.mid, job.mid])
-  }
   if (job.broad !== '' && job.broad !== UNCAT) {
     levels.push([CAT_LEVEL.broad, job.broad])
   }
@@ -1451,6 +1288,23 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
  */
 function toRelTotal(r: Row): number {
   return count(r.total)
+}
+
+/**
+ * 「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」):
+ * 口径与排序同 loadRelatedJobs 的同职业组(同一条 RELATED_SAME_OCC),只是从第 offset 家往后取一页。
+ *
+ * @param input 连接、锚点格与跳过几家。
+ * @returns 这一页的瘦行;本岗没职业码或没省给空。
+ */
+export async function loadRelatedOccPage(input: RelatedOccPageIn): RelatedOccPageOut {
+  const job = input.job
+  if (job.noc === '' || job.province === '') {
+    return []
+  }
+  const rows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
+    job.company, job.city, REL_OCC_PAGE_ROWS, input.offset], map: passRow })
+  return rows.map(toRelated)
 }
 
 /**
@@ -2729,19 +2583,21 @@ export async function loadCityCard(input: CityCardIn): CityCardOut {
 /**
  * 大维度包(/api/jobs/dims 的取数,E10-01 P3):城市/区/AIP 雇主/NOC 描述四张维度表。
  * 上限沿原 payload.find 的 5000/2000(写死在 SQL 里)。
+ * 2026-09-23 加第五张:职业维度(「职业」下拉的选项,noc_openings)。
  *
  * @param input 连接。
  * @returns 四张维度表。
  */
 export async function loadBigDims(input: BigDimsIn): BigDimsOut {
-  const [cities, districts, designatedEmployers, nocDescriptions] = await Promise.all([
+  const [cities, districts, designatedEmployers, nocDescriptions, occupations] = await Promise.all([
     queryRows({ db: input.db, sql: SQL.DIMS_CITIES, params: [], map: toCityDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_DISTRICTS, params: [], map: toDistrictDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_DESIGNATED, params: [], map: toDesigDim }),
     queryRows({ db: input.db, sql: SQL.DIMS_NOC_DESCRIPTIONS, params: [], map: toNocDescDim }),
+    queryRows({ db: input.db, sql: SQL.DIMS_OCCUPATIONS, params: [], map: toOccDim }),
   ])
   return { cities: cities, districts: districts, designatedEmployers: designatedEmployers,
-    nocDescriptions: nocDescriptions }
+    nocDescriptions: nocDescriptions, occupations: occupations }
 }
 
 /**
@@ -3123,6 +2979,10 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     city: text(j.city),
     cityZh: text(j.city_zh),
     cityKo: text(j.city_ko),
+    occNames: {
+      title: text(j.occ_title), titleZh: text(j.occ_title_zh), titleKo: text(j.occ_title_ko),
+      titleZhShort: text(j.occ_zh_short), titleKoShort: text(j.occ_ko_short), titleEnShort: text(j.occ_en_short),
+    },
     district: text(j.district),
     noc: text(j.noc),
     category: text(j.category),
@@ -3636,8 +3496,19 @@ export function toDesigDim(r: Row): DesigDim {
 export function toNocDescDim(r: Row): NocDescDim {
   return {
     noc: text(r.noc), title: text(r.title), titleZh: text(r.title_zh), titleKo: text(r.title_ko),
+    titleZhShort: text(r.title_zh_short), titleKoShort: text(r.title_ko_short), titleEnShort: text(r.title_en_short),
     duties: text(r.duties), requirements: text(r.requirements), fetched: text(r.fetched),
   }
+}
+
+/**
+ * 一行职业维度(SQL.DIMS_OCCUPATIONS;2026-09-23 职业分类改两级,「职业」下拉的选项)。
+ *
+ * @param r 库里的一行。
+ * @returns 职业码、大类与在招数。
+ */
+export function toOccDim(r: Row): OccDim {
+  return { noc: text(r.noc), broad: text(r.broad), open: count(r.open) }
 }
 
 /**
@@ -3779,76 +3650,6 @@ export function toJobOgFact(r: MaybeJobOgRow): JobOgFact {
 // =========================================================================
 // 回调(callbacks 抽屉 2026-08-23 撤编后的固定尾段;签名由外部库/语言定死,逐行特批)
 // =========================================================================
-
-/**
- * 匹配视图默认序:档位降序(stable sort 保同档内候选的日期序)。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负数 a 在前,正数 b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-export function byLevelDesc(a: RankedHit, b: RankedHit): number {
-  return b.rank - a.rank
-}
-
-/**
- * 匹配视图列排序·升序:空值恒沉底,同值按档位序兜底。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负数 a 在前,正数 b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-export function byHitValAsc(a: RankedHit, b: RankedHit): number {
-  const av = a.v
-  const bv = b.v
-  if (av == null || av === '') {
-    if (bv == null || bv === '') {
-      return 0
-    }
-    return 1
-  }
-  if (bv == null || bv === '') {
-    return -1
-  }
-  if (av < bv) {
-    return -1
-  }
-  if (av > bv) {
-    return 1
-  }
-  return b.rank - a.rank
-}
-
-/**
- * 匹配视图列排序·降序:空值恒沉底(不随方向翻),同值按档位序兜底。
- *
- * @param a 左行。
- * @param b 右行。
- * @returns 负数 a 在前,正数 b 在前。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由外部库/语言定死(callbacks 撤编,宪法钦定逐行特批形态)
-export function byHitValDesc(a: RankedHit, b: RankedHit): number {
-  const av = a.v
-  const bv = b.v
-  if (av == null || av === '') {
-    if (bv == null || bv === '') {
-      return 0
-    }
-    return 1
-  }
-  if (bv == null || bv === '') {
-    return -1
-  }
-  if (av < bv) {
-    return 1
-  }
-  if (av > bv) {
-    return -1
-  }
-  return b.rank - a.rank
-}
 
 /**
  * [码, 数] 元组按数降序(公司 LMIA 获批职业拆分的展示序)。

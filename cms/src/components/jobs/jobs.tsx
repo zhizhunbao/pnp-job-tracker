@@ -23,6 +23,8 @@
  * 2026-09-15 校内板切面撤销(Frank「撤吧 校内版 只是一个渠道而已」):09-13 起按状态筛选 = campus 换的
  * 板头标题「校内板」、全站证言两句收声、SEO 换头(boardTitleOf / sliceTextOf / boardMetaOf / statusValueOf)一并删 ——
  * 更多筛选有了渠道下拉,主板选 HireAC 即出全部校内岗(实测 377 条 = 切面全量),/coop 30 天 2 次浏览全是本人。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
+ * 窄屏入口条、匹配视图状态条、三态闸弹框层三件随之撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -33,7 +35,7 @@ import { IconClipboard } from '@/components/icons'
 import { Updated } from '@/components/time'
 import { BANNER_MODULE } from './constants'
 import {
-  mvBarTextOf, subTextOf,
+  subTextOf,
 } from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
@@ -41,10 +43,7 @@ import { BoardFilters } from './boardfilters'
 import { BoardLoading } from './boardloading'
 import { BoardModals } from './boardmodals'
 import { BoardTable } from './boardtable'
-import { MatchBar } from './matchbar'
-import { MatchEntry } from './matchentry'
 import { BannerFacts } from './bannerfacts'
-import { MatchGate } from './matchgate'
 import { MoreLine } from './moreline'
 import type { JobsIn } from './types'
 import css from './jobs.module.css'
@@ -64,24 +63,17 @@ export function Jobs(props: JobsIn) {
           icon={<IconClipboard />}
           title={b.t('nav.jobs')}
           sub={(
-            <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, matchView: false, total: b.data.total })} />
+            <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, total: b.data.total })} />
           )}
           images={BANNER_IMGS.jobs}
           right={<Updated iso={b.data.updatedAt} t={b.t} />} />
         <BoardFilters b={b} boxRef={boxRef} />
-        {b.matchView === false && <MatchEntry label={b.t('mv.entry')} onClick={b.gate.onToggle} />}
-        {b.matchView && (
-          <MatchBar text={mvBarTextOf({ t: b.t, totals: b.data.matchTotals })}
-            exit={b.t('mv.exit')}
-            onExit={b.gate.onToggle} />
-        )}
-        {b.data.swapping && <BoardLoading text={b.t('loading')} />}
+        <BoardLoading text={b.t('loading')} on={b.data.swapping} />
         <BoardTable b={b} headRowRef={headRowRef} />
         <BoardCards b={b} />
         <MoreLine b={b} />
       </div>
       <BoardModals b={b} />
-      <MatchGate g={b.gate} />
     </div>
   )
 }

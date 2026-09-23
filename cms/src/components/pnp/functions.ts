@@ -22,24 +22,24 @@ import {
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, COND_PROVS, DASH, DAY_START_SUFFIX, EE_DORMANT_MONTHS,
-  EV_EMPLOYER_CLICK, EV_TV_ENTRY, FED_CAT_KEY, FED_MAX, FED_PROGRAM, FED_SHOW, FED_TYPE_COLOR,
-  HIST_EXPANDABLE_MIN, KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
+  EV_EMPLOYER_CLICK, EV_TV_ENTRY, FED_CAT_KEY, FED_TYPE_COLOR,
+  KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
-  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
-  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_NL, PROV_QC, ROWS_FALLBACK,
+  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
+  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_KEY_HEAD, PROV_NL, PROV_QC, ROWS_FALLBACK,
   RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
   SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD, TEER_SKILLED_MAX,
   TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_OK, TONE_PASS, TONE_WARN, TV_KIND_PNP, TYPE_INELIGIBLE,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD, URL_PLAN_PR_HEAD,
 } from './constants'
 import type {
-  AipVerdict, BoxClsIn, CatNameClsIn, CatToggleIn, ClickFn, DimClsIn, DrawLineClsIn, DrawNoticeTextIn, DrawRowIn,
-  DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeAllLabelIn, EeDrawDateRow, EeDrawLineIn,
-  EeDrawsCatsIn, EeGroupIn,
-  EeHistIn, EeHitIn, EeShownIn, EeVerdictClsIn, EeVerdictTextIn, FedBucket, FedBucketsIn, FedLabelIn,
-  FedMoreLabelIn, FedRowSpec, FedRowsIn, FedRoundsIn, FlagToggleIn, FoldLabelIn, HasProvDrawsIn, HasProvNewsIn,
-  HiddenCountIn, HistMap, HistRowSpec, HistRowsIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
+  AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
+  DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
+  EeGroupIn,
+  EeHitIn, FedLabelIn,
+  FoldLabelIn, HasProvDrawsIn, HasProvNewsIn,
+  HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
   LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
   MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn, MmTeerCellIn, MmTone, NewsRowSpec, NewsRowsIn,
   NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob, PnpMatchOut,
@@ -673,33 +673,6 @@ export function eeGroupOf(x: EeGroupIn): PnpEeCat[] {
 }
 
 /**
- * 各类别的历次抽选(#135 Frank「应该有个下拉箭头,点开按时间线看每一轮」)。
- * 数据源是 pnp_draws 的 province=FED 行,label=类别键;近 24 月无抽选的类别拿不到行 →
- * 不出箭头(没东西可展开就别给假入口)。
- *
- * @param x 全部抽选行。
- * @returns 类别键 → 历次抽选(降序)。
- */
-export function eeHistOf(x: EeHistIn): HistMap {
-  const m: HistMap = new Map()
-  for (const d of x.draws) {
-    if (d.province !== PROV_FED || d.drawDate === TEXT_NONE) {
-      continue
-    }
-    const arr = m.get(d.label)
-    if (arr == null) {
-      m.set(d.label, [d])
-    } else {
-      arr.push(d)
-    }
-  }
-  for (const arr of m.values()) {
-    arr.sort(byDrawDateDesc)
-  }
-  return m
-}
-
-/**
  * 抽选按日期降序。
  *
  * @param a 前一行。
@@ -734,99 +707,6 @@ export function eeHitOf(x: EeHitIn): PnpEeCat[] {
 }
 
 /**
- * 这一屏要展示的类别。#155(Frank「这个没有数据还需要列吗」= E8-09 开放问题①拍板):
- * 未命中时不再铺全部类别 —— 本岗跟它们没关系,铺出来只是占屏;收成一行「未列入任何 EE 类别」+
- * 折叠入口,想看全景才展开。
- *
- * @param x 全部类别、命中类别、历史轮次与全景开关。
- * @returns 要展示的类别。
- */
-export function eeShownOf(x: EeShownIn): PnpEeCat[] {
-  if (x.hit.length > 0) {
-    return x.hit
-  }
-  if (x.showAll === false) {
-    return []
-  }
-  const out: PnpEeCat[] = []
-  for (const c of x.grouped) {
-    if (eeHasDraw(c, x.histOf)) {
-      out.push(c)
-    }
-  }
-  return out
-}
-
-/**
- * 这个类别有没有抽选记录。#167⑥(Frank「没有抽签的类别是不是就不要显示了」):展开全景时
- * 把**从未抽过签**的类别滤掉 —— 没有任何抽选记录的类别对求职者没有可操作性(不知道分数线、
- * 不知道抽没抽、无从判断),列出来只是让人多读几行(如「军职 3 个职业」「研究 2 个职业」这类)。本岗**命中**的类别永远显示 ——
- * 那是与本岗直接相关的事实,不能因无抽选就藏,所以这一判只在全景那一路上。
- * ⚠️ 判据修复(2026-08-28 Frank 拍板「修」):原文 `drawDate != null` 是 2026-07 立判据时的
- * 写法,而库里「无记录」存的是**空串**不是 null —— 恒真,全景从来一条没滤掉,#167⑥ 的拍板
- * 一直没生效。补 `!== ''` 后,从未抽签的类别在全景里按原拍板隐藏;命中类别照旧永远显示。
- *
- * @param c 一个类别。
- * @param histOf 各类别的历史轮次。
- * @returns 有没有抽选记录。
- */
-// eslint-disable-next-line local/one-parameter -- 谓词跟着被判定的那个类别走,历史表是它的查表依据
-export function eeHasDraw(c: PnpEeCat, histOf: HistMap): boolean {
-  const hist = histOf.get(c.label)
-  if (hist != null && hist.length > 0) {
-    return true
-  }
-  return c.drawDate != null && c.drawDate !== ''
-}
-
-/**
- * 有最近抽选可列的类别(CRS 与日期都在才算数)。
- *
- * @param x 这一屏要展示的类别。
- * @returns 有抽选可列的类别。
- */
-export function eeDrawsCatsOf(x: EeDrawsCatsIn): PnpEeCat[] {
-  const out: PnpEeCat[] = []
-  for (const c of x.shown) {
-    if (c.drawCrs != null && c.drawDate !== TEXT_NONE) {
-      out.push(c)
-    }
-  }
-  return out
-}
-
-/**
- * EE 判定行的话术:命中 → 列出命中的类别名;未命中 → 一句「未列入任何 EE 类别」。
- * EE ≠ PNP,是独立信号。
- *
- * @param x 取词函数、命中类别与本岗职业码。
- * @returns 判定话术。
- */
-export function eeVerdictTextOf(x: EeVerdictTextIn): string {
-  if (x.hit.length === 0) {
-    return x.t('eelist.out')
-  }
-  const names = []
-  for (const c of x.hit) {
-    names.push(eeDisplay({ t: x.t, label: c.label }))
-  }
-  return x.t('eelist.in', { noc: x.noc, cats: names.join(CAT_JOIN) })
-}
-
-/**
- * 全类别全景钮的文案(2026-07-25 Frank「这两个应该是两行吧」:展开钮从结论行拆出,独立一行)。
- *
- * @param x 取词函数、命中类别与全部类别。
- * @returns 钮文案;命中了或压根没有类别时给空串(那颗钮不出)。
- */
-export function eeAllLabelOf(x: EeAllLabelIn): string {
-  if (x.hit.length > 0 || x.grouped.length === 0) {
-    return TEXT_NONE
-  }
-  return x.t('eelist.allCats', { n: x.grouped.length })
-}
-
-/**
  * 折叠记号。
  *
  * @param open 展开了没有。
@@ -837,67 +717,6 @@ export function caretOf(open: boolean): string {
     return CARET_OPEN
   }
   return CARET_CLOSED
-}
-
-/**
- * 最近抽选那一行的话术(分数线 / 日期 / 邀请数)。
- *
- * @param x 取词函数与这个类别。
- * @returns 抽选行话术。
- */
-export function eeDrawTextOf(x: EeDrawLineIn): string {
-  return x.t('eelist.draw', {
-    crs: numTextOf(x.cat.drawCrs),
-    date: x.cat.drawDate,
-    size: numTextOf(x.cat.drawSize),
-  })
-}
-
-/**
- * 历史轮次够不够展开(拿不到行的类别不出箭头)。
- *
- * @param hist 这个类别的历史轮次。
- * @returns 出不出折叠入口。
- */
-export function histExpandable(hist: PnpDraw[]): boolean {
-  return hist.length >= HIST_EXPANDABLE_MIN
-}
-
-/**
- * 这个类别的历史轮次(拿不到就是空列)。
- *
- * @param histOf 各类别的历史轮次。
- * @param key 类别键。
- * @returns 历史轮次。
- */
-// eslint-disable-next-line local/one-parameter -- 查表:表在前、键在后,收成对象反而看不出是查表
-export function histAtOf(histOf: HistMap, key: string): PnpDraw[] {
-  const hist = histOf.get(key)
-  if (hist == null) {
-    return []
-  }
-  return hist
-}
-
-/**
- * 洗历史轮次的展示行。
- *
- * @param x 取词函数与历史轮次。
- * @returns 展示行。
- */
-export function histRowsOf(x: HistRowsIn): HistRowSpec[] {
-  const rows: HistRowSpec[] = []
-  let i = 0
-  for (const h of x.hist) {
-    rows.push({
-      key: h.drawDate + KEY_SEP + String(i),
-      iso: h.drawDate,
-      crs: x.t('eelist.crsN', { crs: numTextOf(h.score) }),
-      ita: x.t('eelist.itaN', { n: numTextOf(h.invitations) }),
-    })
-    i += 1
-  }
-  return rows
 }
 
 /**
@@ -922,61 +741,6 @@ export function occRowsOf(x: OccRowsIn): OccRowSpec[] {
     rows.push({ key: o.noc, hit, noc: o.noc, title: o.title, zh, teer, yourTag })
   }
   return rows
-}
-
-/**
- * 联邦轮次(E6-10 Frank「现在都是在抽 cec 和法语吧」):上面的类别卡只讲**本岗那一类**;
- * 联邦轮次还有 CEC、法语、省提名、通用 —— 不铺出来,用户拿着 EE 标会误判现在的行情。
- * 数据源同一个 build_ee_draws.py:pnp_draws 的 province=FED 行(label=类别键,零新表)。
- * 红线:法语按**语言能力**判定、不按职业,只在这里作通道说明与分数线参考,**绝不挂到岗位上**。
- *
- * @param x 全部抽选行。
- * @returns 联邦轮次(降序,最多 FED_MAX 轮)。
- */
-export function fedRoundsOf(x: FedRoundsIn): PnpDraw[] {
-  const rows: PnpDraw[] = []
-  for (const d of x.draws) {
-    if (d.province === PROV_FED && d.kind === KIND_DRAW && d.drawDate !== TEXT_NONE) {
-      rows.push(d)
-    }
-  }
-  rows.sort(byDrawDateDesc)
-  return rows.slice(0, FED_MAX)
-}
-
-/**
- * 口径注的分桶。按真实轮次算 —— 原来是写死的一句「现阶段以 CEC 与法语为主」,轮次结构随政策变,
- * 写死就会过期。计数说明:FED 行按类别各留 12 轮(build_ee_draws.HIST_PER_CAT),只要窗口内没被
- * 截断计数就准(实核这 20 轮跨约 3 个月,CEC 的 12 轮能回溯 6 个月以上,不截断)。
- * 桶按轮数降序,零轮的桶不出现。
- *
- * @param x 取词函数与联邦轮次。
- * @returns 各类型的桶。
- */
-export function fedBucketsOf(x: FedBucketsIn): FedBucket[] {
-  const counts = new Map<string, number>()
-  for (const d of x.rounds) {
-    let k = FED_CAT_KEY
-    if (FED_PROGRAM.includes(d.label)) {
-      k = d.label
-    }
-    let n = counts.get(k)
-    if (n == null) {
-      n = 0
-    }
-    counts.set(k, n + 1)
-  }
-  const pairs = [...counts.entries()]
-  pairs.sort(byBucketCountDesc)
-  const out: FedBucket[] = []
-  for (const [key, count] of pairs) {
-    let sep = TEXT_NONE
-    if (out.length > 0) {
-      sep = x.t('sep')
-    }
-    out.push({ key, sep, label: fedLabelOf({ t: x.t, key }), count, color: fedHeadColorOf(key) })
-  }
-  return out
 }
 
 /**
@@ -1049,47 +813,6 @@ export function fedRowColorOf(key: string): string {
     return COLOR_CAT
   }
   return c
-}
-
-/**
- * 洗联邦轮次的展示行。
- *
- * @param x 取词函数、联邦轮次与展开态。
- * @returns 展示行。
- */
-export function fedRowsOf(x: FedRowsIn): FedRowSpec[] {
-  let picked = x.rounds
-  if (x.open === false) {
-    picked = x.rounds.slice(0, FED_SHOW)
-  }
-  const rows: FedRowSpec[] = []
-  let i = 0
-  for (const d of picked) {
-    rows.push({
-      key: d.drawDate + KEY_SEP + d.label + KEY_SEP + String(i),
-      iso: d.drawDate,
-      type: eeKeyDisplay({ t: x.t, key: d.label }),
-      color: fedRowColorOf(d.label),
-      title: d.stream,
-      crs: x.t('eelist.crsN', { crs: numTextOf(d.score) }),
-      ita: x.t('eefed.ita', { n: numTextOf(d.invitations) }),
-    })
-    i += 1
-  }
-  return rows
-}
-
-/**
- * 展开钮的文案(弹框只给最近 N 轮 + 可展开;#123 教训:别把全量塞进弹框)。
- *
- * @param x 取词函数、展开态与总轮数。
- * @returns 钮文案。
- */
-export function fedMoreLabelOf(x: FedMoreLabelIn): string {
-  if (x.open) {
-    return `${CARET_OPEN} ${x.t('eefed.less')}`
-  }
-  return `${CARET_CLOSED} ${x.t('eefed.more', { n: x.total - FED_SHOW })}`
 }
 
 /**
@@ -1764,34 +1487,6 @@ export function catNameClsOf(x: CatNameClsIn): string {
 }
 
 /**
- * 最近抽选那一行的类名(有历史可展开才给手型)。
- *
- * @param x 可不可点。
- * @returns 类名。
- */
-export function drawLineClsOf(x: DrawLineClsIn): string {
-  const cls = [cssOf(css.drawLine)]
-  if (x.clickable) {
-    cls.push(cssOf(css.clickable))
-  }
-  return cls.join(CLS_SEP)
-}
-
-/**
- * EE 判定行的类名(命中变蓝)。
- *
- * @param x 命中了没有。
- * @returns 类名。
- */
-export function eeVerdictClsOf(x: EeVerdictClsIn): string {
-  const cls = [cssOf(css.eeVerdict)]
-  if (x.hit) {
-    cls.push(cssOf(css.on))
-  }
-  return cls.join(CLS_SEP)
-}
-
-/**
  * 判定药丸的类名(色档 → 类是查表不是比较:键的完整性由 Record<PnpTone, string> 管着,
  * types 加一档、这表漏配,当场 tsc 红)。
  *
@@ -1897,37 +1592,5 @@ export function makeToggleOf(x: ToggleSetIn): ToggleOfFn {
         return next
       })
     }
-  }
-}
-
-/**
- * 单开一个的开关工厂(同一时刻只展开一个类别的历史;再点一次收起)。
- *
- * @param x 当前展开的类别键与写入口。
- * @returns 开关工厂。
- */
-export function makeCatToggleOf(x: CatToggleIn): ToggleOfFn {
-  return function catToggleOf(key: string): ClickFn {
-    return function onToggle(): void {
-      if (x.openCat === key) {
-        x.setOpenCat(null)
-        return
-      }
-      x.setOpenCat(key)
-    }
-  }
-}
-
-/**
- * 一个开关的开合。
- *
- * @param x 开关的写入口。
- * @returns 点击手柄。
- */
-export function makeFlagToggle(x: FlagToggleIn): ClickFn {
-  return function onToggle(): void {
-    x.setOn(function flip(prev: boolean): boolean {
-      return prev === false
-    })
   }
 }

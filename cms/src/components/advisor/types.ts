@@ -2320,21 +2320,6 @@ export type CatTextIn = {
 }
 
 /**
- * 收带语言标的取词函数与一岗的行构造入参。
- */
-export type TransJobIn = {
-  /**
-   * 取词函数(要读 `t.lang`)。
-   */
-  t: AdvisorTransFn
-
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-}
-
-/**
  * daysUpOf 的入参。
  */
 export type DaysUpIn = {
@@ -2367,6 +2352,26 @@ export type IdRowsIn = {
    * 这一岗的 NOC 官方描述;null = 表里没有这一码。
    */
   noc: AdvisorNocDesc | null
+
+  /**
+   * 界面语言(职业名那一行按它取短名,2026-09-23)。
+   */
+  lang: AdvisorLang
+}
+
+/**
+ * occNameOf 的入参(2026-09-23 职业分类改两级)。
+ */
+export type OccNameOfIn = {
+  /**
+   * 这一岗的 NOC 官方描述;null = 表里没有这一码(给空串)。
+   */
+  noc: AdvisorNocDesc | null
+
+  /**
+   * 界面语言。
+   */
+  lang: AdvisorLang
 }
 
 /**

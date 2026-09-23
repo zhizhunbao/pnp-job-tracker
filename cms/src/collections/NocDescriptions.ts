@@ -13,6 +13,9 @@ export const NocDescriptions: CollectionConfig = {
     { name: 'titleZh', type: 'text', admin: { description: '职业名中文(本站译名,非官方 —— NOC 官方只有英/法两版)' } },
     { name: 'titleZhShort', type: 'text', admin: { description: '中文短名(≤7 字,04g 生成);窄位用,空则回退 titleZh' } },
     { name: 'titleKo', type: 'text', admin: { description: '职业名韩文(显示用灰注,非官方)' } },
+    // 2026-09-23 职业分类改两级:详情页面包屑按界面语言显示短名,韩 / 英短名要能取出来(列早由 docs/sql 建好、seed 在写,只是集合没声明)
+    { name: 'titleKoShort', type: 'text', admin: { description: '韩文短名(窄位用,空则回退 titleKo)' } },
+    { name: 'titleEnShort', type: 'text', admin: { description: '英文短名(窄位用,空则回退官方名 title)' } },
     { name: 'duties', type: 'textarea', admin: { description: '主要职责(换行分隔)' } },
     { name: 'requirements', type: 'textarea', admin: { description: '任职要求(换行分隔)' } },
     { name: 'fetched', type: 'text' },

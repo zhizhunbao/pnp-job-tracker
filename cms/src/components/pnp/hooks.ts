@@ -6,6 +6,8 @@
  * 折叠状态一律用键的集合而不是 `Record<string, boolean>`:开合只是一把键在不在,
  * 集合天然不用对象展开(宪法禁 `...`),也不会留下一堆 false 的死键。
  * 2026-08-28 换装批自 Pnp.tsx 的四个组件体收进来。
+ * 2026-09-23 EE 判定卡、最近抽选卡、联邦抽选近况卡撤(Frank「这三个卡片都删掉」),联邦轮次卡那一台随之删,
+ * EE 类别块只剩命中类别的清单折叠。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -13,10 +15,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { makeT } from '@/lib/i18n'
 import {
-  eeGroupOf, eeHistOf, eeHitOf, eeShownOf, fedRoundsOf, makeCatToggleOf, makeFlagToggle, makeToggleOf,
+  eeGroupOf, eeHitOf, makeToggleOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
 } from './functions'
-import type { EeHookIn, EePanel, FedHookIn, FedPanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel } from './types'
+import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel } from './types'
 
 /**
  * 省提名清单块整机:取词、职业名字典、命中计算、命中行滚进视野与每张清单的折叠。
@@ -48,24 +50,19 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
 /**
  * 联邦 EE 类别块整机:分组、历史轮次、命中与全景取舍,外加三处折叠
  * (类别历史单开一个、职业清单一律默认展开、全类别全景默认收起)。
+ * 2026-09-23 判定卡与最近抽选卡撤:历史轮次、全景开关、类别历史折叠随之撤,展示的就是命中类别。
  *
- * @param x 本岗、界面语言、扁平类别、全部抽选行与职业名字典。
- * @returns 取词函数、ref 盒、字典、三张派生清单与折叠状态。
+ * @param x 本岗、界面语言、扁平类别与职业名字典。
+ * @returns 取词函数、ref 盒、字典、命中类别与职业清单的折叠状态。
  */
 export function useEeCategory(x: EeHookIn): EePanel {
   const t = makeT(x.lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [openCat, setOpenCat] = useState<string | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
-  const [showAll, setShowAll] = useState(false)
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)
   }, [x.nocDesc])
-
-  const histOf = useMemo(function histsOf() {
-    return eeHistOf({ draws: x.draws })
-  }, [x.draws])
 
   const grouped = useMemo(function groupsOf() {
     return eeGroupOf({ cats: x.cats })
@@ -82,31 +79,10 @@ export function useEeCategory(x: EeHookIn): EePanel {
     nocRows,
     grouped,
     hit,
-    shown: eeShownOf({ grouped, hit, histOf, showAll }),
-    histOf,
-    openCat,
-    catToggleOf: makeCatToggleOf({ openCat, setOpenCat }),
+    shown: hit,
     closed,
     listToggleOf: makeToggleOf({ setKeys: setClosed }),
-    showAll,
-    onShowAll: makeFlagToggle({ setOn: setShowAll }),
   }
-}
-
-/**
- * 联邦抽选近况卡整机:算出要列的轮次 + 一个展开开关。
- *
- * @param x 全部抽选行。
- * @returns 展开态、开关与轮次。
- */
-export function useFederalRounds(x: FedHookIn): FedPanel {
-  const [open, setOpen] = useState(false)
-
-  const rounds = useMemo(function roundsOf() {
-    return fedRoundsOf({ draws: x.draws })
-  }, [x.draws])
-
-  return { open, onToggle: makeFlagToggle({ setOn: setOpen }), rounds }
 }
 
 /**

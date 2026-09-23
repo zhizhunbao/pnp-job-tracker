@@ -9,18 +9,16 @@
  * 另一套机器(服务端排序、冻结列、字段面板、列宽落 cookie)。硬并会把共享组件撑成怪物 ——
  * 旧拍板,2026-08-28 换装批复核仍成立(两边零行为重复)。
  * 2026-08-28 换装批自 Jobs.tsx 重写落位。
+ * 2026-09-23「我的匹配」整拆:匹配视图换血期的骨架行与空态里的「去改档案」出口随之撤,空态只剩一句话。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { cssOf } from '@/components/css'
-import { SKELETON_ROWS } from './constants'
 import { headCellsOf, isAltRow, tableClsOf, wrapClsOf } from './functions'
 import { BoardRow } from './boardrow'
 import { ColGroup } from './colgroup'
-import { EmptyNote } from './emptynote'
 import { HeadCell } from './headcell'
-import { SkeletonRow } from './skeletonrow'
 import type { BoardTableIn } from './types'
 import css from './jobs.module.css'
 
@@ -28,7 +26,7 @@ import css from './jobs.module.css'
  * 渲染职位主表。
  *
  * @param props 职位板整台状态机与表头锚点。
- * @returns 表格(换血中出骨架行,一行都没有出空态)。
+ * @returns 表格(一行都没有出空态)。
  */
 export function BoardTable({ b, headRowRef }: BoardTableIn) {
   const heads = []
@@ -36,16 +34,10 @@ export function BoardTable({ b, headRowRef }: BoardTableIn) {
     heads.push(<HeadCell key={h.k} h={h} />)
   }
   const body = []
-  if (b.matchView && b.data.swapping) {
-    for (let i = 0; i < SKELETON_ROWS; i = i + 1) {
-      body.push(<SkeletonRow key={i} cols={b.cols.shown} />)
-    }
-  } else {
-    let i = 0
-    for (const j of b.data.rows) {
-      body.push(<BoardRow key={j.id} b={b} job={j} alt={isAltRow(i)} />)
-      i = i + 1
-    }
+  let i = 0
+  for (const j of b.data.rows) {
+    body.push(<BoardRow key={j.id} b={b} job={j} alt={isAltRow(i)} />)
+    i = i + 1
   }
   return (
     <div className={wrapClsOf(b.data.swapping)}>
@@ -60,7 +52,7 @@ export function BoardTable({ b, headRowRef }: BoardTableIn) {
           {b.data.rows.length === 0 && (
             <tr>
               <td colSpan={b.cols.shown.length} className={cssOf(css.empty)}>
-                <EmptyNote text={b.emptyText} link={b.emptyLink} onOpen={b.gate.onProfile} />
+                {b.t('empty')}
               </td>
             </tr>
           )}

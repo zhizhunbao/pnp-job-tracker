@@ -36,7 +36,7 @@ import {
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
-  aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
+  aliasCellOf, brandCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
   loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone, isCrawlerHeaders,
 } from './functions'
@@ -521,6 +521,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
  * 懒翻公司名(2026-09-14 Frank「公司名也做一个懒加载翻译」「这些相似雇主的中文名都加上懒加载翻译」):
  * 库里有别名直接给;没有就让翻译器把名字当一行译,译名落回 companies.alias_zh / alias_ko(只填空格),
  * 下次谁开都不再烧。译名超长(模型在解释)不落库、不返回。
+ * 2026-09-23 先查连锁品牌核定表(BRAND_ALIASES):认得出的给核定译名,库里那格不一样就盖掉(Subway 那格「地铁」就是这里翻出来的)。
  *
  * @param req 请求体 { name, lang }。
  * @returns { ok, alias, cached }。
@@ -556,6 +557,12 @@ export async function employersAliasRoute(req: Request): Promise<Response> {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
   const have = aliasCellOf({ fact: stored, lang: lang })
+  const brand = brandCellOf({ name: name, lang: lang })
+  if (brand !== '' && brand !== have) {
+    await saveCompanyAlias({ db: db, name: name, lang: lang, alias: brand })
+    CACHE.aliasBy.set(ck, brand)
+    return Response.json({ ok: true, alias: brand, cached: false })
+  }
   if (have !== '') {
     CACHE.aliasBy.set(ck, have)
     return Response.json({ ok: true, alias: have, cached: true })

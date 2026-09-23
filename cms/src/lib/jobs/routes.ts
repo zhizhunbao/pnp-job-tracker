@@ -28,15 +28,17 @@ import {
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
   POOL_KEY_RE,
-  PROV2_RE, P_CITY, P_CODE, P_DIR, P_ID, P_DIRECT, P_DISTRICT, P_NOC, P_PAGE, P_PROV, P_SORT, P_URL, P_VIEW, RADIX_DEC,
-  SORT_NONE, STAMP_NONE, TRUE_ONE, TRUE_WORD, URL_CUT_RE, VIEW_MATCH, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
+  PROV2_RE, P_CITY, P_CODE, P_DIR, P_ID, P_DISTRICT, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, RADIX_DEC,
+  REL_OCC_OFFSET_MAX,
+  SORT_NONE, URL_CUT_RE, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
   TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage, loadMatchPage,
+  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedJobs, normalizeProfile,
+  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedAnchor,
+  loadRelatedJobs, loadRelatedOccPage, normalizeProfile,
   translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle,
 } from './functions'
@@ -68,9 +70,10 @@ export async function jobsIdMetaRoute(input: JobMetaIn): Promise<JobMeta> {
  * 入参 = /jobs 前端筛选 state 原样(白名单 JOBS_FILTER_KEYS)+ page/sort/dir;
  * 分层语义同 SSR(Pro 列剥离、免费匹配前 N)。total=同 WHERE count,前端头条命中数/
  * 「还有 N」全用它,天然自洽。「我的匹配」视图(view=match)走 loadMatchPage,未建档回空。
+ * 2026-09-23「我的匹配」整拆:view=match 那条分支与 loadMatchPage 一起撤;「只看直发」参数随勾选框撤。
  *
  * @param req 请求。
- * @returns { rows, total, page, pageSize, updatedAt }(匹配视图另带 matchHigh/matchMid)。
+ * @returns { rows, total, page, pageSize, updatedAt }。
  */
 export async function jobsRoute(req: Request): Promise<Response> {
   const sp = new URL(req.url).searchParams
@@ -80,10 +83,6 @@ export async function jobsRoute(req: Request): Promise<Response> {
     if (v != null && v !== '') {
       draft[k] = v
     }
-  }
-  const direct = sp.get(P_DIRECT)
-  if (direct === TRUE_ONE || direct === TRUE_WORD) {
-    draft[P_DIRECT] = true
   }
   const filters = draft as JobsFilters
   let page = 0
@@ -113,16 +112,6 @@ export async function jobsRoute(req: Request): Promise<Response> {
   let matchDims: MatchDims = { pnpOccupations: [], eeCategories: [] }
   if (profileOk) {
     matchDims = await loadMatchDims(db)
-  }
-  if (sp.get(P_VIEW) === VIEW_MATCH) {
-    if (profileOk === false) {
-      return Response.json({ rows: [], total: 0, page: page, pageSize: JOBS_PAGE_SIZE, updatedAt: STAMP_NONE,
-        matchHigh: 0, matchMid: 0 })
-    }
-    const m = await loadMatchPage({ db: db, pro: pro, profile: profile, matchDims: matchDims, page: page,
-      pageSize: JOBS_PAGE_SIZE, sort: { key: sortKey, dir: sortDir } })
-    return Response.json({ rows: m.jobs, total: m.total, page: page, pageSize: JOBS_PAGE_SIZE,
-      updatedAt: m.updatedAt, matchHigh: m.matchHigh, matchMid: m.matchMid })
   }
   const out = await loadJobsPage({
     db: db, pro: pro, profile: profile, profileOk: profileOk, matchDims: matchDims, filters: filters,
@@ -625,21 +614,37 @@ export async function jobsRelatedRoute(req: Request): Promise<Response> {
     return new Response(null, { status: BAD_REQUEST })
   }
   const db = await getDb()
-  const row = await loadJobById({
-    db: db, id: id, pro: false, profile: normalizeProfile(null), profileOk: false,
-    matchDims: { pnpOccupations: [], eeCategories: [] },
-  })
-  if (row == null) {
+  const job = await loadRelatedAnchor({ db: db, id: id })
+  if (job == null) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const related = await loadRelatedJobs({
-    db: db,
-    job: {
-      id: id, company: row.company, province: row.province, city: row.city, noc: row.noc,
-      fine: row.fine, mid: row.mid, broad: row.broad,
-    },
-  })
+  const related = await loadRelatedJobs({ db: db, job: job })
   return Response.json(related)
+}
+
+/**
+ * GET /api/jobs/related/occ?id=&offset=:「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」
+ * 选「展开时分页加载」):组标题的计数是剔同雇主后的总家数,首屏只取第一页,展开到头由卡片按页来取。
+ * 锚点格同 /api/jobs/related,先按岗位号取本岗。
+ *
+ * @param req 请求(?id=岗位号&offset=已取到几家)。
+ * @returns `{ sameOcc }` 这一页;id / offset 不合法 400、查无 404。
+ */
+export async function jobsRelatedOccRoute(req: Request): Promise<Response> {
+  const url = new URL(req.url)
+  const id = Number(url.searchParams.get(P_ID))
+  const offset = Number(url.searchParams.get(P_OFFSET))
+  if (Number.isInteger(id) === false || id <= 0 || Number.isInteger(offset) === false || offset < 0
+    || offset > REL_OCC_OFFSET_MAX) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  const db = await getDb()
+  const job = await loadRelatedAnchor({ db: db, id: id })
+  if (job == null) {
+    return new Response(null, { status: NOT_FOUND })
+  }
+  const sameOcc = await loadRelatedOccPage({ db: db, job: job, offset: offset })
+  return Response.json({ sameOcc })
 }
 
 /**

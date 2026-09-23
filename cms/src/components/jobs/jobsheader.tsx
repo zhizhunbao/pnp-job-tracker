@@ -7,32 +7,26 @@
  * 差异认账:未登录点「我的账户」由弹框改为 /account 302 回 /?login=1(终点同为登录框)。
  * 2026-08-28 换装批提出成文件 —— 页面门只许拼大写组件,而这颗匹配钮要带三态闸,
  * 所以顶栏连它的闸一起成件。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
+ * 匹配钮与它的三态闸随之撤,本件只剩账户区一件特有 prop。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { Header } from '@/components/header'
 import { useLang } from '@/components/i18n'
-import { useMatchGate } from './hooks'
 import { AccountArea } from './accountarea'
-import { MatchGate } from './matchgate'
 import type { JobsHeaderIn } from './types'
 
 /**
  * 渲染职位板顶栏。
  *
- * @param props 分层态与是不是直链进的匹配视图。
- * @returns 顶栏 + 它的三态闸弹框层。
+ * @param props 分层态。
+ * @returns 顶栏。
  */
-export function JobsHeader({ plan, matchView }: JobsHeaderIn) {
+export function JobsHeader({ plan }: JobsHeaderIn) {
   const [, , t] = useLang()
-  const gate = useMatchGate({ plan, matchView, t })
   return (
-    <>
-      <Header sticky loggedIn={plan.loggedIn}
-        matchButton={{ active: matchView, onClick: gate.onToggle }}
-        accountArea={<AccountArea t={t} plan={plan} />} />
-      <MatchGate g={gate} />
-    </>
+    <Header sticky loggedIn={plan.loggedIn} accountArea={<AccountArea t={t} plan={plan} />} />
   )
 }

@@ -177,13 +177,6 @@
 }
 
 /*
- * 激活且要加粗的那一档(匹配视图入口)。
- */
-.btnBold {
-  font-weight: 600;
-}
-
-/*
  * 「更多筛选」的激活计数徽标。
  */
 .foldN {
@@ -220,25 +213,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-/*
- * 勾选型筛选。
- */
-.check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  background: #ffffff;
-  white-space: nowrap;
-}
-
-/*
- * 勾上的那一档:浅靛底。
- */
-.checkOn {
-  background: #eef2ff;
 }
 
 /*
@@ -415,81 +389,38 @@
 }
 
 /*
- * ── 5. 匹配视图入口条与状态条 ────────────────────────────────────────────
- */
-
-/*
- * 窄屏专属入口条(dd24-#111:桌面顶栏本就有匹配钮,手机上它折进侧滑抽屉首屏不可见)。
- */
-.mvEntry {
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  border-radius: 9px;
-  padding: 9px 0;
-  font-size: 13.5px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-
-/*
- * 匹配视图状态条(E5-05):说明口径 + 退出。
- */
-.mvBar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 8px;
-  padding: 7px 12px;
-  margin-bottom: 8px;
-  font-size: 12.5px;
-}
-
-/*
- * 状态条正文。
- */
-.mvText {
-  color: #1e40af;
-  flex: 1;
-  min-width: 200px;
-}
-
-/*
- * 退出匹配视图。
- */
-.mvExit {
-  border: none;
-  background: none;
-  padding: 0;
-  color: #6b7280;
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 400;
-}
-
-/*
  * ── 6. 换血中(第 0 页在拉)─────────────────────────────────────────────
  */
 
 /*
  * #83(Frank「点我的匹配先跳医疗再跳科技」):整表换血期旧行原样挂着零提示,
  * 视觉像跳两次 —— 顶上出一条「更新中」。
+ * 2026-09-23 Frank「可以放到操作列,表头的后面吗?类似于雇主页 table,这样更新的时候 table 就不会上下移动了」:
+ * 那一条原先换血时才插进版面,一出一收整张表就上下跳;照雇主板 09-18 的形改成零高的定位锚常驻,
+ * 提示(.loadTip)叠在表壳右上角 —— 操作列表头那里,不占高、不跳。
  */
 .loading {
+  height: 0;
+  position: relative;
   font-size: 12.5px;
   color: #2563eb;
-  padding: 4px 2px;
+}
+
+/*
+ * 「更新中」提示:叠在表壳右上角(操作列表头上),白底垫着压在表头字上也读得清;
+ * 层级压过表头与拖宽柄(2),低于字段面板(20)。
+ */
+.loadTip {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 6px;
+  background: #ffffff;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 /*
@@ -692,27 +623,6 @@
 }
 
 /*
- * 换血骨架行:格距仍是老的 12(它不参与列宽计算,不跟 .td 走)。
- * #99(走查):进「我的匹配」换血期别把上一屏的默认(全「低」)行透出来压在
- * 「只显示高/中」横幅下 —— 自相矛盾。
- */
-.skelTd {
-  padding: 7px 12px;
-  vertical-align: top;
-  border-right: 1px solid #f3f4f6;
-}
-
-/*
- * 骨架条。
- */
-.skelBar {
-  display: block;
-  height: 12px;
-  border-radius: 4px;
-  background: #f1f3f5;
-}
-
-/*
  * 一行都没有(表格版)。
  */
 .empty {
@@ -729,18 +639,6 @@
   text-align: center;
   color: #9ca3af;
   font-size: 13px;
-}
-
-/*
- * 空态里的「去建档」链接。
- * 2026-09-23 改成钮(就地开档案向导):字号、字重、行高跟着那句空态话走,不吃 button 基座的 13px / 600。
- */
-.emptyLink {
-  color: #2563eb;
-  text-decoration: none;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
 }
 
 /*
@@ -791,49 +689,6 @@
 }
 
 /*
- * 匹配档 chip 与紧缺通道徽章:同一形态两套色。
- */
-.match {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/*
- * 高匹配。
- */
-.matchHigh {
-  background: #dcfce7;
-  color: #166534;
-}
-
-/*
- * 中匹配。
- */
-.matchMid {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-/*
- * 低匹配。
- */
-.matchLow {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-/*
- * 不适用。
- */
-.matchNa {
-  background: #fafafa;
-  color: #c4c4c8;
-}
-
-/*
  * 强档 = 省点名招,全列唯一加底色的一档。
  */
 .stream {
@@ -844,19 +699,6 @@
   color: #b45309;
   font-weight: 500;
   display: inline-block;
-}
-
-/*
- * 未建档时的引导链。
- * 2026-09-23 改成钮(就地开档案向导):字重、行高跟着表格走,不吃 button 基座的 600。
- */
-.needProfile {
-  font-size: 12px;
-  color: #2563eb;
-  text-decoration: none;
-  white-space: nowrap;
-  font-weight: inherit;
-  line-height: inherit;
 }
 
 /*
@@ -1227,13 +1069,6 @@
  * ── 11. 断点显隐(CSS 双渲染,零水合差异)────────────────────────────────
  */
 
-/*
- * 窄屏专属件:默认不出。
- */
-.onlyNarrow.onlyNarrow {
-  display: none;
-}
-
 @media (width <= 640px) {
   /*
    * #212(第 26 轮体检续):筛选行控件 38px 手机点不稳,统一 40(桌面维持 38)。
@@ -1268,22 +1103,11 @@
     display: none;
   }
 
-  /*
-   * 匹配切换手机端走窄屏入口条,筛选行那颗藏起来,两处不同时出现。
-   */
-  .wideOnly {
-    display: none;
-  }
-
   .tableWrap {
     display: none;
   }
 
   .cards {
-    display: flex;
-  }
-
-  .onlyNarrow.onlyNarrow {
     display: flex;
   }
 
@@ -1804,6 +1628,7 @@
 
 /*
  * 面包屑:职位板 › 省 › 大类 › 中类 › 小类;末段「本岗」由 H1 承担不重复。
+ * 2026-09-23 职业分类改两级:路径改成 省 › 大类 › 职业(中类、小类两段撤)。
  */
 .crumbs {
   font-size: 12px;

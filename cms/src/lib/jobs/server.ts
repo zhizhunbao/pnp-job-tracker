@@ -10,7 +10,7 @@
 export { PROV_NAME } from './constants'
 export {
   buildJobsWhere, checkedAt, companyJsonOf, loadAlertHits, loadBroadNocs, loadCompanyByJobId, loadCompanyBySlug,
-  loadJobById, loadJobRows, loadJobsPage, loadMatchPage, loadNocOpenCounts, loadQuizFacts,
+  loadJobById, loadJobRows, loadJobsPage, loadNocOpenCounts, loadQuizFacts,
   loadOccCompetition, loadRelatedJobs, loadSimilarEmployers, loadSsrDims, loadTopNocs,
   getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdSsrById,
 } from './functions'
@@ -22,7 +22,7 @@ export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer,
 
 export {
   jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
-  jobsProvinceRoute, jobsRelatedRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsTextRoute, jobsTitleRoute,
+  jobsProvinceRoute, jobsRelatedRoute, jobsRelatedOccRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsTextRoute, jobsTitleRoute,
 } from './routes'
 export {
   loadApplyUrlById, loadJdFormatted, loadJdState, loadJobOg,

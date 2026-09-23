@@ -9,15 +9,17 @@
  * 顺序改成 匹配、我的简历、我的收藏、我的求职。「管理」组只剩「升级」一项,组标题随之撤掉,
  * 「升级」留在分隔线下 —— 那条分隔线跟着「升级」一起只在免费档出,Pro 档没有「升级」,
  * 不然会和登出上面那条叠成两道线。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
+ * 「求职」组的「匹配」一项撤,收藏本就在组里,剩 我的简历、我的收藏、我的求职。
  *
  * @author Frank
  * @time 2026-08-24 01:30:00
  */
-import { IconClipboard, IconPaperclip, IconStar, IconTarget } from '@/components/icons'
+import { IconClipboard, IconPaperclip, IconStar } from '@/components/icons'
 import { Button, LinkButton } from '@/components/button'
 import {
   ARIA_MENU, PATH_ACCOUNT, PATH_ACCOUNT_FAVS, PATH_ACCOUNT_RESUME, PATH_ACCOUNT_SJOBS,
-  PATH_MATCH, PLAIN_BTN_KIND, PRO_LABEL,
+  PLAIN_BTN_KIND, PRO_LABEL,
 } from './constants'
 import { logout } from './functions'
 import type { AccountMenuPopIn } from './types'
@@ -46,7 +48,6 @@ export function AccountMenuPop({ t, email, shortName, isPro, proUntil, onUpgrade
         {isPro && proUntil !== '' && <div className={css.menuUntil}>{t('acct.plan.pro', { d: proUntil })}</div>}
       </LinkButton>
       <div className={css.menuSect}>{t('menu.sect.job')}</div>
-      <LinkButton href={PATH_MATCH} className={css.menuItem}><IconTarget /> {t('mv.entry')}</LinkButton>
       <LinkButton href={PATH_ACCOUNT_RESUME} className={css.menuItem}>
         <IconPaperclip /> {t('rm.arch.title')}
       </LinkButton>

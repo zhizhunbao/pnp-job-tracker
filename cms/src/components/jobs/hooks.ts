@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
@@ -22,31 +22,32 @@ import { ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
-  AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE, DIRECT_URL_KEY,
+  AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
-  FK_DIRECT, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
+  FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE,
   LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, P_VIEW, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
-  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, SORT_MATCH, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
+  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
-  TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MATCH_VIEW, TRACK_MATCH_VIEW_QUIZ, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
-  TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_LOGIN, UPSELL_SS,
-  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOB_RELATED, URL_API_JOBS, URL_API_JOBS_DIMS,
+  TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
+  TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
+  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOB_RELATED, URL_API_JOB_RELATED_OCC,
+  URL_API_JOBS, URL_API_JOBS_DIMS, Q_REL_OFFSET, REL_NO_PAGING,
   URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
-  URL_API_USERS_ME, URL_BOARD, URL_BOARD_MATCH, URL_TO_FILTER, VAL_MATCH, VAL_ON, WIDTH_FULL,
+  URL_API_USERS_ME, URL_BOARD, URL_TO_FILTER, VAL_ON, WIDTH_FULL,
   TITLE_TRANS_GEN, WINDOW_FEATURES,
 } from './constants'
 import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
-  clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf, emptyLinkOf, emptyTextOf,
-  fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, hasQuizNocs, initialColsOf, initialFiltersOf,
-  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeNocName, makePopupToCo,
-  makePushCoLayer, makePushJobLayer, markObSeen, matchHrefOf,
+  clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
+  fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, initialColsOf, initialFiltersOf,
+  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeOccName, makePopupToCo,
+  makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  toRelatedJobs,
+  toRelatedJobs, toRelatedPage, relMoreTextOf, relStepOf, chipNocOf, occGroupsOf, occSlotOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
 } from './functions'
 import type {
@@ -60,9 +61,9 @@ import type {
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
-  MatchGateHookIn, MatchGatePanel, MatchProfileFact, MatchTotals, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
+  MatchProfileFact, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
   OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, RelatedJobs,
-  RelatedJson, RelatedOfHookIn, SavedAddIn, SavedEditIn,
+  RelatedJobFact, RelatedJson, RelatedOfHookIn, RelatedPagesIn, RelatedPagesPanel, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UmamiWindow, UpsellKind, WrapWidthIn,
 } from './types'
@@ -416,61 +417,6 @@ export function useAccountArea(plan: JobPlan): AccountAreaPanel {
 }
 
 /**
- * 「我的匹配」三态闸(2026-07-11 用户拍板):进出匹配视图 = 整页跳(URL 即状态,可分享可回退;
- * 2026-07-17 根域直出后职位板 = 根路径)。未登录直接弹登录框(同日用户:「不要先跳转页面再弹窗」),
- * 已登录未建档才开引导 wizard(E11-05②,原直跳 /account)。
- * 2026-08-04:手里没有职业答案的先去 /account 建档 —— 原先送去 /plan/job 答题(答题卡已摘入口),
- * 而匹配吃的就是档案里的职业/目标省,建档是保留下来的那条路;有答案的照旧弹登录。
- * 🔴 2026-08-29 Frank 令改判:**匿名点它一律就地弹登录框**,那条「没答案 → 跳 /account」的支路撤销 ——
- * 它把 2026-07-11「不要先跳转页面再弹窗」那条拍板在半边人身上又踩了一遍(/account 落地照样弹框,
- * 只是先白跳一次页)。埋点仍按有没有职业答案分两个 tag 记,好继续看这两拨人的转化差。
- * 登录成功后的去处不动(returnTo = 匹配视图)。
- * 2026-09-23 账户页撤了移民档案节(Frank「只保留 我的简历 我的收藏 我的求职,其他的能删都删了」):板上「建档案」「去改档案」
- * 两处原先链去 /account,改走 onProfile —— 没登录弹登录框,登录了就地开档案向导(带着现有档案,改也走它)。
- *
- * @param x 分层态、当前视图与取词函数。
- * @returns 三态闸面板。
- */
-export function useMatchGate(x: MatchGateHookIn): MatchGatePanel {
-  const [wizard, setWizard] = useState(false)
-  const [login, setLogin] = useState(false)
-  const loggedIn = x.plan.loggedIn
-  const profileOk = x.plan.profileOk
-  const matchView = x.matchView
-  const onToggle = useCallback(function toggleMatchView(): void {
-    if (loggedIn === false) {
-      if (hasQuizNocs() === false) {
-        track(TRACK_MATCH_VIEW_QUIZ)
-      }
-      setLogin(true)
-      return
-    }
-    if (profileOk === false) {
-      setWizard(true)
-      return
-    }
-    if (matchView === false) {
-      track(TRACK_MATCH_VIEW)
-    }
-    window.location.href = matchHrefOf(matchView)
-  }, [loggedIn, profileOk, matchView])
-  const onProfile = useCallback(function openProfile(): void {
-    if (loggedIn === false) {
-      setLogin(true)
-      return
-    }
-    setWizard(true)
-  }, [loggedIn])
-  const onClose = useCallback(function closeGate(): void {
-    setWizard(false)
-    setLogin(false)
-  }, [])
-  return {
-    onToggle, onProfile, wizard, login, onClose, profile: x.plan.profile, t: x.t, onDone: makeUpsellDone(UPSELL_LOGIN),
-  }
-}
-
-/**
  * 我的求职(E9-01):已收藏映射 岗位号 → 收藏行;匿名点收藏 → 注册框(转化钩子)。
  *
  * @param x 分层态与匿名时的去处。
@@ -600,9 +546,6 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
   const [fStatus, setFStatus] = useState(seedFilter({ f: initialFilters, k: FK.status }))
   const [fOrigin, setFOrigin] = useState(seedFilter({ f: initialFilters, k: FK.origin }))
   const [fScore, setFScore] = useState(seedFilter({ f: initialFilters, k: FK.score }))
-  const [fSal, setFSal] = useState(seedFilter({ f: initialFilters, k: FK.sal }))
-  const [fVs, setFVs] = useState(seedFilter({ f: initialFilters, k: FK.vs }))
-  const [fEmp, setFEmp] = useState(seedFilter({ f: initialFilters, k: FK.emp }))
   const [fElig, setFElig] = useState(seedFilter({ f: initialFilters, k: FK.elig }))
   return {
     [FK.q]: { v: q, set: setQ },
@@ -624,9 +567,6 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
     [FK.status]: { v: fStatus, set: setFStatus },
     [FK.origin]: { v: fOrigin, set: setFOrigin },
     [FK.score]: { v: fScore, set: setFScore },
-    [FK.sal]: { v: fSal, set: setFSal },
-    [FK.vs]: { v: fVs, set: setFVs },
-    [FK.emp]: { v: fEmp, set: setFEmp },
     [FK.elig]: { v: fElig, set: setFElig },
   }
 }
@@ -644,22 +584,23 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
  */
 function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   const fState = useFilterSlots(x.initialFilters)
-  const [directOnly, setDirectOnly] = useState(x.initialFilters[FK_DIRECT] === true)
   const [fold, setFold] = useState(false)
   const q = slotOf({ fState, k: FK.q })
   const dq = useDeferredValue(q)
   const prov = slotOf({ fState, k: FK.prov })
   const city = slotOf({ fState, k: FK.city })
   const broad = slotOf({ fState, k: FK.broad })
-  const mid = slotOf({ fState, k: FK.mid })
   const ee = slotOf({ fState, k: FK.ee })
   const dims = x.dims
   const opts = useMemo(function buildOpts() {
-    return filterOptsOf({ dims, prov, city, broad, mid, ee })
-  }, [dims, prov, city, broad, mid, ee])
-  const nameOf = makeNocName({ dims, lang: x.lang })
-  const anyFilter = anyFilterOf({ fState, directOnly })
-  const nocLabel = nocLabelOf({ fNoc: slotOf({ fState, k: FK.noc }), nameOf, lang: x.lang })
+    return filterOptsOf({ dims, prov, city, broad, ee })
+  }, [dims, prov, city, broad, ee])
+  const nameOf = makeOccName({ rows: dims.nocDescriptions, lang: x.lang })
+  const groups = useMemo(function buildOccGroups() {
+    return occGroupsOf(dims)
+  }, [dims])
+  const anyFilter = anyFilterOf({ fState })
+  const nocLabel = nocLabelOf({ fNoc: chipNocOf({ fState, groups }), nameOf, lang: x.lang })
   const t = x.t
   const onLimit = x.onLimit
   const lang = x.lang
@@ -669,7 +610,7 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
       return
     }
     track(TRACK_SAVE_SEARCH)
-    const hit = await postSavedSearch({ name, filters: saveFiltersOf({ fState, directOnly }), lang })
+    const hit = await postSavedSearch({ name, filters: saveFiltersOf({ fState }), lang })
     if (hit === SAVE_OK) {
       window.alert(t('ss.saved'))
       return
@@ -686,27 +627,26 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
       opts,
       anyFilter,
       showPicked: pickedShownOf({ anyFilter, nocLabel, loggedIn: x.plan.loggedIn }),
-      foldActive: foldActiveOf({ fState, directOnly }),
+      foldActive: foldActiveOf({ fState }),
       fold,
       onFold: function toggleFold(): void {
         setFold(fold === false)
       },
-      directOnly,
-      onDirect: setDirectOnly,
       nocLabel,
+      occName: nameOf,
+      occValue: occSlotOf({ fState, groups }),
       onNocClear: function clearNoc(): void {
         setterOf({ fState, k: FK.noc })(TEXT_NONE)
       },
       onClear: function clearAll(): void {
-        clearFiltersIn({ fState, setDirect: setDirectOnly })
+        clearFiltersIn({ fState })
       },
       onSaveSearch,
     },
     q,
     setQ: setterOf({ fState, k: FK.q }),
-    cur: curFiltersOf({ fState, q: dq, directOnly }),
-    snap: curFiltersOf({ fState, q, directOnly }),
-    setDirect: setDirectOnly,
+    cur: curFiltersOf({ fState, q: dq }),
+    snap: curFiltersOf({ fState, q }),
   }
 }
 
@@ -894,8 +834,9 @@ function splitKeys(key: string): string[] {
  * 首屏 page0 非匹配、且筛选与 SSR 那次完全一致 = 服务端已经给过这批行 → 跳过首次重复拉取(不闪);
  * 无筛选时两边都是空签名,与改造前的「没筛选就不拉」等价。
  * 大维度独立加载(cities/districts/designatedEmployers/nocDescriptions),不再随职位 blob。
+ * 2026-09-23「我的匹配」整拆:取数不再分匹配视图,首屏跳过判据只看筛选签名。
  *
- * @param x props、当前筛选、排序与匹配视图。
+ * @param x props、当前筛选与排序。
  * @returns 数据面板。
  */
 function useBoardData(x: BoardDataHookIn): BoardDataPanel {
@@ -904,22 +845,20 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
   const [updatedAt, setUpdatedAt] = useState(strOf(x.props.updatedAt))
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [matchTotals, setMatchTotals] = useState<MatchTotals | null>(null)
   const reqSeq = useRef(0)
   const firstFetch = useRef(true)
   const ssrSig = useRef(filterSig(initialFiltersOf(x.props.initialFilters)))
-  const pageSig = pageSigOf({ cur: x.cur, sort: x.sort, matchView: x.matchView })
+  const pageSig = pageSigOf({ cur: x.cur, sort: x.sort })
   const [prevPageSig, setPrevPageSig] = useState(pageSig)
   if (prevPageSig !== pageSig) {
     setPrevPageSig(pageSig)
     setPage(0)
   }
   const fresh = page === 0
-  const query = jobsQueryOf({ cur: x.cur, sort: x.sort, matchView: x.matchView, page })
+  const query = jobsQueryOf({ cur: x.cur, sort: x.sort, page })
   const curSig = filterSig(x.cur)
-  const freshList = fresh && x.matchView === false
   useEffect(function loadPage() {
-    const skipFirst = firstFetch.current && freshList && curSig === ssrSig.current
+    const skipFirst = firstFetch.current && fresh && curSig === ssrSig.current
     firstFetch.current = false
     if (skipFirst) {
       return
@@ -937,7 +876,6 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
         if (d.updatedAt != null) {
           setUpdatedAt(d.updatedAt)
         }
-        setMatchTotals(matchTotalsOf(d))
         setRows(appendedRows({ d, fresh }))
       })
       .catch(swallow)
@@ -954,7 +892,6 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
     updatedAt,
     dims: x.dims,
     loading,
-    matchTotals,
     swapping: loading && fresh,
     onMore: function loadMore(): void {
       setPage(page + 1)
@@ -1030,19 +967,6 @@ function pageRowsOf(d: JobsPageJson): JobFact[] {
     return []
   }
   return d.rows
-}
-
-/**
- * 全量匹配计数(FOMO「你今日共 X 个高匹配」):match 视图端点才返回。
- *
- * @param d 响应。
- * @returns 计数;不是匹配视图给 null。
- */
-function matchTotalsOf(d: JobsPageJson): MatchTotals | null {
-  if (typeof d.matchHigh !== 'number') {
-    return null
-  }
-  return { high: d.matchHigh, mid: numOf(d.matchMid) }
 }
 
 /**
@@ -1129,7 +1053,7 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
       onUpsellClose: function closeUpsell(): void {
         setUpsell(false)
       },
-      onUpsellDone: makeUpsellDone(upsell),
+      onUpsellDone: upsellDone,
     },
     setPopup,
     onOpenJob: makePushJobLayer(stack),
@@ -1142,19 +1066,13 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
  * 统一存储,不再靠弹框回传。E9-04b:'login' 目前只有「我的匹配」入口在用 —— 登录成功
  * 直接落匹配视图(邮箱路径走这里,Google 路径走 returnTo),不再回列表让用户再点一次
  * (Frank「点我的匹配也一样」)。
+ * 2026-09-23「我的匹配」整拆:'login' 那一档随入口撤,不再按由头分去处,一律落回原页。
  *
- * @param upsell 这次弹框的由头。
- * @returns 完成回调。
+ * @returns 无。
  */
-function makeUpsellDone(upsell: UpsellKind): () => Promise<void> {
-  return async function onUpsellDone(): Promise<void> {
-    await saveQuizAnswers()
-    if (upsell === UPSELL_LOGIN) {
-      window.location.href = URL_BOARD_MATCH
-      return
-    }
-    window.location.reload()
-  }
+async function upsellDone(): Promise<void> {
+  await saveQuizAnswers()
+  window.location.reload()
 }
 
 /**
@@ -1220,6 +1138,8 @@ function useOutsideClose(boxRef: BoxRef, x: OutsideCloseIn): void {
  * 「我的匹配」视图(E5-05,D1 = B):只看命中我档案的岗;URL ?view=match 可分享可回退。
  * 分类维表随维度一起登记给 catName —— 名字住 noc_categories(broad_en/broad_ko),
  * 分类换一版就不必再往 i18n 里手加 17×3 个键(#256 那类事故的同一个根)。
+ * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
+ * 匹配视图、它的三态闸与按匹配度排序一并撤,排序初值与取消排序后的回落恒为发布时间。
  *
  * 两个 DOM 锚点(表头 `<tr>`、字段浮层外框)跟面板并列交出去,由页面件一路 props 递给
  * 真正挂 `ref={}` 的那两件 —— 理由见 types.ts 的 `HeadRowRef`。
@@ -1230,9 +1150,7 @@ function useOutsideClose(boxRef: BoxRef, x: OutsideCloseIn): void {
 export function useJobsBoard(props: JobsIn): JobsBoardOut {
   const [lang, , t] = useLang()
   const plan = planOf(props)
-  const matchRequested = props.initialMatchView === true && plan.loggedIn && plan.profileOk
-  const [matchView, setMatchView] = useState(matchRequested)
-  const [sort, setSort] = useState<SortState>(initialSortOf(matchRequested))
+  const [sort, setSort] = useState<SortState>({ key: SORT_DEFAULT, dir: DIR_DESC })
   const modals = useBoardModals({ plan })
   const setUpsell = modals.setUpsell
   function onUpsellLock(): void {
@@ -1250,7 +1168,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     plan,
     onLimit: onUpsellSs,
   })
-  const data = useBoardData({ props, dims, cur: filters.cur, sort, matchView })
+  const data = useBoardData({ props, dims, cur: filters.cur, sort })
   const [cols, boxRef, headRowRef] = useBoardCols({
     initialCols: props.initialCols,
     initialColW: colwSeedOf(props),
@@ -1258,7 +1176,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     rows: data.rows,
   })
   useCatLabels(data.dims)
-  useBoardHydrate({ fState: filters.panel.fState, setDirect: filters.setDirect, props, plan, setMatchView, setSort })
+  useBoardHydrate({ fState: filters.panel.fState, props })
   useBoardUrlSync(filters.snap)
   const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
   const blocked = useBlockedKeys(data.dims)
@@ -1272,21 +1190,24 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     modals: modals.panel,
     sort,
     onSort: function onSort(k: JobColKey): void {
-      setSort(nextSortOf({ sort, key: k, fallback: fallbackSortOf(matchView) }))
+      setSort(nextSortOf({ sort, key: k, fallback: SORT_DEFAULT }))
     },
-    matchView,
-    gate: useMatchGate({ plan, matchView, t }),
     saved: saved.saved,
     onSave: saved.onSave,
     onField: makeFieldRouter({ setPopup: modals.setPopup }),
     onDesc: modals.onOpenJob,
     onUpsellLock,
     blocked,
-    cellCtx: { t, plan, blocked, eeCats: data.dims.eeCategories },
+    cellCtx: {
+      t,
+      plan,
+      blocked,
+      eeCats: data.dims.eeCategories,
+      occName: makeOccName({ rows: data.dims.nocDescriptions, lang }),
+      lang,
+    },
     q: filters.q,
     onQ: filters.setQ,
-    emptyText: emptyTextOf({ t, matchView }),
-    emptyLink: emptyLinkOf({ t, matchView }),
     allShownText: t('allShown', { total: data.total }),
     moreText: t('loadMore', { n: data.total - data.rows.length }),
     proof: proofOf(props),
@@ -1318,32 +1239,6 @@ function colwSeedOf(props: JobsIn): ColWidthSeed | null {
     return null
   }
   return props.initialColW
-}
-
-/**
- * 首屏排序:直链进匹配视图按匹配度,否则按发布时间。
- *
- * @param matchRequested 直链进的是不是匹配视图。
- * @returns 排序态。
- */
-function initialSortOf(matchRequested: boolean): SortState {
-  if (matchRequested) {
-    return { key: SORT_MATCH, dir: DIR_DESC }
-  }
-  return { key: SORT_DEFAULT, dir: DIR_DESC }
-}
-
-/**
- * 第三下取消排序时回哪一列(匹配视图 = 匹配度,普通视图 = 发布时间)。
- *
- * @param matchView 匹配视图开着没。
- * @returns 默认排序列。
- */
-function fallbackSortOf(matchView: boolean): JobColKey {
-  if (matchView) {
-    return SORT_MATCH
-  }
-  return SORT_DEFAULT
 }
 
 /**
@@ -1404,30 +1299,23 @@ function makeFieldRouter(x: FieldRouterIn): (k: JobColKey, j: JobFact, title: st
  * 以及 URL 里的筛选(stats/rankings 回流、stats L2 下钻 mid、详情页小类 fine)——
  * 它已由服务端解析成 initialFilters 当了 state 初值,这里再读一遍只作兜底(值相同,React 自会跳过重渲)。
  * E5-05 直链回流:?view=match 且已登录已建档 → 进匹配视图并按匹配度排。
+ * 2026-09-23「我的匹配」整拆,那条直链回流随之撤;「只看直发」的写口也随勾选框一起撤。
  *
- * @param x 筛选各格、只看直发的写口、props、分层态与两个视图写口。
+ * @param x 筛选各格与 props。
  * @returns 无。
  */
 function useBoardHydrate(x: HydrateIn): void {
   const fState = x.fState
-  const setDirect = x.setDirect
   const props = x.props
-  const plan = x.plan
-  const setMatchView = x.setMatchView
-  const setSort = x.setSort
   useIsoLayoutEffect(function hydrateFromUrl() {
     const sp = readSearch()
     if (sp.get(P_BACK) === VAL_ON) {
-      applyFiltersTo({ fState, f: readSnapshot(), setDirect })
+      applyFiltersTo({ fState, f: readSnapshot() })
       sp.delete(P_BACK)
       replaceQuery(sp)
     }
-    applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters), setDirect })
+    applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters) })
     applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })
-    if (sp.get(P_VIEW) === VAL_MATCH && plan.loggedIn && plan.profileOk) {
-      setMatchView(true)
-      setSort({ key: SORT_MATCH, dir: DIR_DESC })
-    }
   }, [])
 }
 
@@ -1503,11 +1391,6 @@ function writeFiltersToUrl(snap: JobFilters): void {
       } else {
         u.searchParams.delete(urlKey)
       }
-    }
-    if (snap[FK_DIRECT] === true) {
-      u.searchParams.set(DIRECT_URL_KEY, VAL_ON)
-    } else {
-      u.searchParams.delete(DIRECT_URL_KEY)
     }
     replaceIfChanged(u)
   } catch {
@@ -1609,6 +1492,19 @@ function readRelated(r: Response): Promise<RelatedJson | null> {
     return Promise.resolve(null)
   }
   return r.json().catch(nullOf)
+}
+
+/**
+ * 「同省同职业」按页续取的响应 → 这一页的瘦行(2026-09-23)。
+ *
+ * @param r 响应。
+ * @returns 这一页;非 2xx 或解不开给 null(留原样,可再点)。
+ */
+function readRelatedPage(r: Response): Promise<RelatedJobFact[] | null> {
+  if (r.ok === false) {
+    return Promise.resolve(null)
+  }
+  return r.json().then(toRelatedPage).catch(nullOf)
 }
 
 /**
@@ -2504,6 +2400,77 @@ export function useRelatedOf(x: RelatedOfHookIn): RelatedJobs | null {
     }
   }, [id])
   return related
+}
+
+/**
+ * 相关职位一组的展开 / 收起与按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」):
+ * 同公司组照 09-22 的形,「展开其余 N 个」一次露完已取的行;同省同职业组「再展开 N 个」先露已取的,露完了按页向
+ * /api/jobs/related/occ 取下一页接在后面(取回 0 行 = 到底了,钮不再出;取失败留原样,可再点)。「收起」回到首屏那几行,
+ * 续取到的行留着,再展开不重取。换了岗位(弹框里叠开另一条)从头来。
+ *
+ * @param x 续取岗号、首屏的行、总数、收起首屏条数与取词函数。
+ * @returns 露出来的行、展开钮钮面、在途、收起钮开关与两个手柄。
+ */
+export function useRelatedPages(x: RelatedPagesIn): RelatedPagesPanel {
+  const [n, setN] = useState(x.firstN)
+  const [extra, setExtra] = useState<RelatedJobFact[]>([])
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState(false)
+  const [prevJob, setPrevJob] = useState(x.jobId)
+  if (prevJob !== x.jobId) {
+    setPrevJob(x.jobId)
+    setN(x.firstN)
+    setExtra([])
+    setDone(false)
+  }
+  const all = x.rows.concat(extra)
+  const jobId = x.jobId
+  const firstN = x.firstN
+  function onMore(): void {
+    if (jobId === REL_NO_PAGING) {
+      setN(all.length)
+      return
+    }
+    if (all.length > n) {
+      setN(n + relStepOf({ n, loaded: all.length, total: x.total }))
+      return
+    }
+    if (busy) {
+      return
+    }
+    setBusy(true)
+    fetch(URL_API_JOB_RELATED_OCC + String(jobId) + Q_REL_OFFSET + String(all.length))
+      .then(readRelatedPage)
+      .then(function onPage(got: RelatedJobFact[] | null) {
+        if (got == null) {
+          return
+        }
+        setExtra(function append(prev: RelatedJobFact[]): RelatedJobFact[] {
+          return prev.concat(got)
+        })
+        setN(function bump(prev: number): number {
+          return prev + got.length
+        })
+        if (got.length === 0) {
+          setDone(true)
+        }
+      })
+      .catch(swallow)
+      .finally(function idle() {
+        setBusy(false)
+      })
+  }
+  function onCollapse(): void {
+    setN(firstN)
+  }
+  return {
+    shown: all.slice(0, n),
+    moreText: relMoreTextOf({ t: x.t, jobId, n, loaded: all.length, total: x.total, done }),
+    busy,
+    canCollapse: n > firstN,
+    onMore,
+    onCollapse,
+  }
 }
 
 /**

@@ -18,7 +18,7 @@
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { Updated } from '@/components/time'
-import { CARD_MD_CLS, REL_CO_FIRST_N, REL_OCC_FIRST_N } from './constants'
+import { CARD_MD_CLS, REL_CO_FIRST_N, REL_NO_PAGING, REL_OCC_FIRST_N } from './constants'
 import { showFallbackOf, trackRelated } from './functions'
 import { RelatedGroup } from './relatedgroup'
 import type { JobRelatedIn } from './types'
@@ -27,11 +27,12 @@ import css from './jobs.module.css'
 /**
  * 渲染相似职位卡。
  *
- * @param props 卡标题、取词函数、更新时刻、两组小标题、相似职位、兜底链、两个埋点来源格与界面语言。
+ * @param props 卡标题、取词函数、更新时刻、两组小标题、相似职位、本岗号、兜底链、两个埋点来源格与界面语言。
  * @returns 一张白卡。
  */
 export function JobRelated({
-  head, t, updatedAt, sameCoLabel, sameOccLabel, related, fallbackHref, fallbackText, from, fromNone, lang, onOpenJob,
+  head, t, updatedAt, sameCoLabel, sameOccLabel, related, jobId, fallbackHref, fallbackText, from, fromNone, lang,
+  onOpenJob,
 }: JobRelatedIn) {
   return (
     <div className={CARD_MD_CLS}>
@@ -42,14 +43,14 @@ export function JobRelated({
       {related.sameCompany.length > 0 && (
         <div onClick={trackRelated(from)}>
           <RelatedGroup label={sameCoLabel} total={related.sameCompanyTotal} rows={related.sameCompany}
-            firstN={REL_CO_FIRST_N} t={t} lang={lang} onOpenJob={onOpenJob} />
+            firstN={REL_CO_FIRST_N} pageJobId={REL_NO_PAGING} t={t} lang={lang} onOpenJob={onOpenJob} />
         </div>
       )}
       {related.sameCompany.length > 0 && related.sameOcc.length > 0 && <div className={cssOf(css.relSep)} />}
       {related.sameOcc.length > 0 && (
         <div onClick={trackRelated(from)}>
           <RelatedGroup label={sameOccLabel} total={related.sameOccTotal} rows={related.sameOcc}
-            firstN={REL_OCC_FIRST_N} t={t} lang={lang} onOpenJob={onOpenJob} />
+            firstN={REL_OCC_FIRST_N} pageJobId={jobId} t={t} lang={lang} onOpenJob={onOpenJob} />
         </div>
       )}
       {showFallbackOf({ related, fallbackHref }) && (

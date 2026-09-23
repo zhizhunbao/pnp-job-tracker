@@ -29,6 +29,8 @@ import type { SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUps
  * 2026-09-23 多带职位名译名两格与这一行的译文版本号(Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:
  * 板上卡片与详情页标题下的灰字改出这一岗自己存的译名 —— 详情页 / 弹框逐岗翻、歧义标题带正文翻的那一份);
  * 版本号起别名 job_trans_v,同 REL_COLS(JOB_FROM 连着公司表,那边也有 trans_v)。
+ * 2026-09-23 再带职业名六格(Frank「刷新的时候为什么先显示号码」:「职业」列的名字原来等懒取的大维度包,首屏先露职业码):
+ * 官方名、中韩完整译名、三语短名随行出来,首屏就是名字;回退顺序由 lib/noc 的 pickName 一处定,SQL 不另抄。
  */
 export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS company_slug, c.address AS company_address, c.description AS company_description, c.sectors AS company_sectors,
   c.website AS company_website, c.website_source,
@@ -41,14 +43,18 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
   j.apply_url, j.official_url, j.salary, j.salary_annual, j.salary_text,
   j.wage_med_hourly, j.wage_med_annual, j.wage_low_hourly, j.wage_low_annual, j.wage_high_hourly, j.wage_high_annual, j.wage_year,
   j.source, j.source_label, j.origin, j.date_posted, j.first_seen, j.last_seen, j.status, j.closed_at, j.valid_through,
-  j.title_zh, j.title_ko, j.trans_v AS job_trans_v`
+  j.title_zh, j.title_ko, j.trans_v AS job_trans_v,
+  nd.title AS occ_title, nd.title_zh AS occ_title_zh, nd.title_ko AS occ_title_ko,
+  nd.title_zh_short AS occ_zh_short, nd.title_ko_short AS occ_ko_short, nd.title_en_short AS occ_en_short`
 
 /**
  * 职位板的 FROM/JOIN 骨架:jobs 左连 companies;2026-09-14 再左连 cities 带回人工核定的市译名 city_zh / city_ko
  * (职位弹框「工作地点」对照行市名用界面语,Frank「可以」;同 09-13 雇主页那条 join)。
+ * 2026-09-23 再左连 noc_descriptions 带回职业名(一码一行,509 码 509 行,不会翻倍;见 JOB_COLUMNS)。
  */
 export const JOB_FROM = `FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-  LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province`
+  LEFT JOIN cities ci ON ci.name = j.city AND ci.province = j.province
+  LEFT JOIN noc_descriptions nd ON nd.noc = j.noc`
 
 /**
  * 相似/相关职位用的瘦列清单
@@ -102,13 +108,6 @@ export const jobsPage = (where: string, dedupe: string, order: string, limitPh: 
  */
 export const jobsPageCount = (where: string, dedupe: string) =>
   `SELECT count(*)::int n ${JOB_FROM} WHERE ${where} AND ${dedupe}`
-
-/**
- * 「与我的匹配」候选池:命中省提名 / EE 类别 / 档案职业码(含 4 位、3 位前缀)的岗
- */
-export const MATCH_PAGE = `SELECT ${JOB_COLUMNS} ${JOB_FROM}
-       WHERE (COALESCE(j.pnp_eligible,false) OR COALESCE(j.ee_category,'') <> '' OR j.noc = ANY($1) OR LEFT(j.noc,4) = ANY($2) OR LEFT(j.noc,3) = ANY($3))
-       ORDER BY j.date_posted DESC NULLS LAST, ${BOARD_TIER}j.first_seen DESC NULLS LAST, j.id DESC LIMIT $4`
 
 /**
  * 排序子句:列与方向都来自白名单(SORT_COLUMNS),不是用户原样字符串
@@ -175,6 +174,8 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS}, count(*) OVER()::int AS
  * 1 全等同城 / 2 前缀同城 / 3 全等同省 / 4 前缀同省(09-20 那版 2、3 对调);
  * 同日「不应该只显示 6 个吧」「要显示职位数量吧」:取 6 → 24(卡上先出 6,展开看其余),
  * total = 剔同雇主后的总家数(窗口函数在 LIMIT 前、rn=1 之后算)。
+ * 2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」:条数与跳过条数改占位符
+ * ($6=一页几家,$7=跳过几家),首屏取第一页,展开到头由 /api/jobs/related/occ 按页续取(lib/jobs 的 loadRelatedOccPage)。
  */
 export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text, title_zh, title_ko,
          job_trans_v, count(*) OVER()::int AS total FROM (
@@ -187,7 +188,7 @@ export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province,
          WHERE j.province = $1 AND j.noc >= LEFT($2, 4) AND j.noc <= LEFT($2, 4) || '9' AND j.id <> $3
            AND COALESCE(c.name,'') <> $4 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
        ) r WHERE rn = 1
-       ORDER BY tier, date_posted DESC NULLS LAST, first_seen DESC NULLS LAST, id DESC LIMIT 24`
+       ORDER BY tier, date_posted DESC NULLS LAST, first_seen DESC NULLS LAST, id DESC LIMIT $6 OFFSET $7`
 
 /**
  * 相关职位都落空时的兜底探测:一次问清「本省在 fine/mid/broad 各级还有没有在招岗」,
@@ -600,16 +601,25 @@ export const EMPLOYER_EXPLORE_RESOLVE = `UPDATE employer_explore e
  * 每个读的地方都得记得两头看 —— 雇主板记得、公司弹框没记得,Ardene 在弹框里是空的)。有公司页的雇主以公司表为家:
  * 公司表那格版本号对、已有值的不动(只填空),版本号不对(老批次过期)的拿这次的盖;写完盖版本号。
  * 队列表那份照留 —— 没有公司页的雇主只有它。$1=池主键数组,$2=中文译名数组,$3=韩文译名数组(三个等长),$4=译文版本号。
+ * 2026-09-23 加 $5=「核定」池主键数组($1 的子集):连锁品牌核定表(lib/employers 的 BRAND_ALIASES)认出来的那几条照盖,
+ * 不守「版本号对、已有值不动」—— Subway 公司表那格 09-14 被懒翻写成「地铁」,探索工人 09-19 翻对的「赛百味」就是被这条挡住的。
  */
 export const EMPLOYER_EXPLORE_TO_COMPANIES = `UPDATE companies c
-      SET alias_zh = CASE WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_zh, ''), NULLIF(u.alias_zh, ''))
+      SET alias_zh = CASE WHEN u.key = ANY($5::varchar[]) THEN COALESCE(NULLIF(u.alias_zh, ''), c.alias_zh)
+                          WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_zh, ''), NULLIF(u.alias_zh, ''))
                           ELSE COALESCE(NULLIF(u.alias_zh, ''), c.alias_zh) END,
-          alias_ko = CASE WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_ko, ''), NULLIF(u.alias_ko, ''))
+          alias_ko = CASE WHEN u.key = ANY($5::varchar[]) THEN COALESCE(NULLIF(u.alias_ko, ''), c.alias_ko)
+                          WHEN c.trans_v = $4 THEN COALESCE(NULLIF(c.alias_ko, ''), NULLIF(u.alias_ko, ''))
                           ELSE COALESCE(NULLIF(u.alias_ko, ''), c.alias_ko) END,
           trans_v = $4
      FROM unnest($1::varchar[], $2::varchar[], $3::varchar[]) AS u(key, alias_zh, alias_ko)
      JOIN employer_pool p ON p.key = u.key
     WHERE c.slug = p.slug AND (u.alias_zh <> '' OR u.alias_ko <> '')`
+
+/**
+ * 探索队列交活时认连锁品牌:一批池主键在队列里记的雇主名(2026-09-23,品牌译名核定表)。$1=池主键数组。
+ */
+export const EMPLOYER_EXPLORE_NAMES = `SELECT key, name FROM employer_explore WHERE key = ANY($1::varchar[])`
 
 /**
  * 探索队列第二工种入队:公司页 / 公司弹框被真人点开(2026-09-20 Frank「下一个 session 做『按用户点开过的公司优先抓取和纠错』的队列」;
@@ -2498,8 +2508,16 @@ export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM de
 
 /**
  * 筛选下拉/弹窗的 NOC 描述维度(上限同原 payload.find 的 2000)。
+ * 2026-09-23 职业分类改两级:连三语短名一起取 ——「职业」下拉、列、面包屑、类别弹框都显示短名(lib/noc 的 pickName 一路回退)。
  */
-export const DIMS_NOC_DESCRIPTIONS = `SELECT noc, title, title_zh, title_ko, duties, requirements, fetched FROM noc_descriptions LIMIT 2000`
+export const DIMS_NOC_DESCRIPTIONS = `SELECT noc, title, title_zh, title_ko, title_zh_short, title_ko_short, title_en_short,
+      duties, requirements, fetched FROM noc_descriptions LIMIT 2000`
+
+/**
+ * 「职业」下拉的选项(2026-09-23 职业分类改两级):noc_openings 一个职业码一行,带大类与在招数(每轮灌库刷新);
+ * 只列还有在招的,在招多的在前。
+ */
+export const DIMS_OCCUPATIONS = `SELECT noc, broad, open FROM noc_openings WHERE open > 0 ORDER BY open DESC, noc LIMIT 2000`
 
 /**
  * 职名 → NOC 候选：在库职位标题 pg_trgm 相似度（真实在招岗位的 title→noc 映射，

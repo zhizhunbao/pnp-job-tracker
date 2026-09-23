@@ -1627,6 +1627,56 @@ export type ExploreTodosOut = Promise<ExploreTodo[]>
 export type ExploreSavedOut = Promise<number>
 
 /**
+ * `EMPLOYER_EXPLORE_NAMES` 一行(pg 原始)。
+ */
+export type ExploreNameDbRow = {
+  /**
+   * 池主键。
+   */
+  key: string | null
+
+  /**
+   * 队列里记的雇主名。
+   */
+  name: string | null
+}
+
+/**
+ * 洗净的一行:池主键与雇主名。
+ */
+export type ExploreNameFact = {
+  /**
+   * 池主键。
+   */
+  key: string
+
+  /**
+   * 雇主名。
+   */
+  name: string
+}
+
+/**
+ * `loadExploreNames` 的入参。
+ */
+export type ExploreNamesIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 池主键。
+   */
+  keys: string[]
+}
+
+/**
+ * `loadExploreNames` 的返回:池主键 → 雇主名。
+ */
+export type ExploreNamesOut = Promise<Map<string, string>>
+
+/**
  * `EMPLOYER_EXPLORE_STAGE` 的原始行(官网那条工种的进度 + 公司表现在的官网与总部几格)。
  */
 export type SiteStageDbRow = {
@@ -3734,6 +3784,41 @@ export type AliasCellIn = {
    * 两格。
    */
   fact: AliasFact
+
+  /**
+   * 语种(zh / ko)。
+   */
+  lang: string
+}
+
+/**
+ * 连锁品牌的核定译名(BRAND_ALIASES 的一行去掉认名字的正则)。
+ */
+export type BrandAlias = {
+  /**
+   * 中文名。
+   */
+  zh: string
+
+  /**
+   * 韩文名。
+   */
+  ko: string
+}
+
+/**
+ * `brandAliasOf` 的出参:不是表里的品牌给 null。
+ */
+export type MaybeBrandAlias = BrandAlias | null
+
+/**
+ * `brandCellOf` 的入参。
+ */
+export type BrandCellIn = {
+  /**
+   * 雇主名。
+   */
+  name: string
 
   /**
    * 语种(zh / ko)。

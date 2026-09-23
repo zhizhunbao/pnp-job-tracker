@@ -36,6 +36,7 @@ export function JobModalCards({ job, lang, onOpenJob, onOpenCompany }: JobModalC
           sameCoLabel={t('detail.sameCo')}
           sameOccLabel={t('detail.sameOcc')}
           related={related}
+          jobId={Number(job.id)}
           fallbackHref={TEXT_NONE}
           fallbackText={TEXT_NONE}
           from={TRACK_FROM_MODAL}

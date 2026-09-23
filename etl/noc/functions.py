@@ -1113,12 +1113,13 @@ def apply_short_fixes(done: dict) -> None:
     """人工裁决覆盖(始终生效,包括存量与 --force 重跑)。
 
     模型逐条压缩,看不见「别的职业压出了同一个名字」,所以撞车只能人工裁决。
+    2026-09-23 还没有译名记录的码也写:原先只改已有记录,段6 没翻出来的 8 个码(21103 气象学家、
+    85104 猎人等,连中文全名都没有)裁决表对它们不生效,与「始终生效」不符;两级分类的职业名靠本表补齐。
     """
     for lang, table in SHORT_FIX_BY_LANG.items():
         field = to_short_spec(lang).field
         for noc, fixed_name in table.items():
-            if noc in done:
-                done[noc][field] = fixed_name
+            done.setdefault(noc, {})[field] = fixed_name
 
 
 def report_short_dups(x: DupReportIn) -> None:
