@@ -3565,3 +3565,66 @@ MACRO_ANCHOR_KEYS = ("pop", "npr")
 
 MACRO_ANCHOR_GEOS = (MACRO_GEO_CA, "ON")
 """地基断言查的两个 geo。"""
+
+
+# =========================================================================
+# 22. 跨源清洗:投递邮箱(applyEmail;Job Bank 直发读 howto 役的投递区,其他来源从正文抽)
+# =========================================================================
+
+IN_HOWTO = paths.PROCESSED_JOBBANK / "howto.json"
+"""jobbank 域 howto 役的每帖投递方式(帖号 → 检查时刻 / 状态 / 邮箱 / 投递渠道 / 截止日)。
+2026-09-23 站内投递批 1,设计稿 docs/design/站内投递批1-投递邮箱入库-20260923.md。"""
+
+K_APPLY_EMAIL = "applyEmail"
+"""jobs 行键:雇主投递邮箱(没有就不落这一格;库里只给管理员读,公开接口不带)。"""
+
+K_HOWTO_STATUS = "status"
+"""howto 记录键:状态。"""
+
+K_HOWTO_EMAILS = "emails"
+"""howto 记录键:投递区里的雇主邮箱(去重保序,首个即投递邮箱)。"""
+
+K_HOWTO_UNTIL = "advertisedUntil"
+"""howto 记录键:截止日(YYYY-MM-DD)。"""
+
+K_HOWTO_AT = "checkedAt"
+"""howto 记录键:检查时刻(判下架帖的判死时刻用它)。"""
+
+HOWTO_OK = "ok"
+"""howto 状态:有投递区。"""
+
+HOWTO_GONE = "gone"
+"""howto 状态:已下架(没有投递区、截止日已过)—— 并进判死台账,与验尸判死同样下发 closed。"""
+
+APPLY_MAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+")
+"""正文里的邮箱(正文是洗过的纯文本,没有长串 base64,不必按 @ 开窗)。"""
+
+APPLY_MAIL_TRIM = ".,;:"
+"""邮箱两头要剥的标点(句末句号常被带进来)。"""
+
+APPLY_MAIL_AT = "@"
+"""邮箱里本地部分与域名的分隔。"""
+
+APPLY_CTX_BEFORE = 160
+"""判语境时往前看多少字。"""
+
+APPLY_CTX_AFTER = 60
+"""判语境时往后看多少字。"""
+
+APPLY_CTX_RE = re.compile(r"appl|resume|résumé|\bcv\b|curriculum|send|submit|postul|courriel|candidat|"
+                          r"faire parvenir|soumett|envoy|contact", re.I)
+"""投递语境词:邮箱前后出现这些才算收简历的邮箱(中英法)。"""
+
+APPLY_SKIP_CTX_RE = re.compile(r"accommodat|accessib|privacy|confidential|adaptation|handicap|disabilit|"
+                               r"unsubscribe|désabonn|equity", re.I)
+"""排除语境:无障碍 / 隐私 / 退订 / 平等就业这类邮箱不收简历(ATS 帖里的邮箱多是这种,09-23 实测)。"""
+
+APPLY_NOREPLY_RE = re.compile(r"no-?reply|donotreply|do-not-reply|ne-?pas-?repondre", re.I)
+"""noreply 类发件箱(GC Jobs 帖里常见)。"""
+
+APPLY_SKIP_HOSTS = ("jobbank", "gc.ca", "canada.ca", "jobillico.", "jobboom.", "careerbeacon.", "example.")
+"""不算雇主邮箱的域(Job Bank / 政府域 / 招聘板自己 / 示例地址)。"""
+
+PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {text} 条 · 截止日补 {until} 条 · "
+                   "有邮箱合计 {total} / {jobs}")
+"""投递邮箱段收尾一行。"""

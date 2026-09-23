@@ -42,6 +42,8 @@ from bs4 import BeautifulSoup
 from paths import JOBBANK_STORE_LOCK, WriteJsonIn, WriteTextIn, jobbank_store_lock, write_json, write_text
 from log.functions import err, say
 from fetch.functions import make_client, make_tls_context
+from crawl.functions import put_cached_pages
+from crawl.scheme import CachePage, CachePutManyIn
 from richtext.functions import md_head_of, rich_text
 from jobbank import SINCE_DAYS
 from jobbank.constants import (
@@ -101,6 +103,13 @@ from jobbank.constants import (
     VERIFY_SLEEP_DEFAULT, VERIFY_TIMEOUT_S, VERIFY_UA, WHY_AIP_TPL, WHY_CITY_IS_PROV_TPL,
     WHY_DISTRICT_TPL, WHY_OTTAWA_TPL, WHY_POSTAL_TPL, WHY_PROV_MISSING_TPL, WHY_SALARY_HIGH_TPL,
     WHY_SALARY_LOW_TPL, WHY_URL_DUP, WS_RE, ZERO_EXP_PHRASES,
+    ADVERTISED_UNTIL_RE, CRAWL_SLUG_HOWTO, ENV_HOWTO_MAX, ENV_HOWTO_SLEEP, HDR_REFERER,
+    HOWTO_CACHE_URL_TPL, HOWTO_ENDPOINT, HOWTO_ERROR, HOWTO_FLUSH_EVERY, HOWTO_FORM_BASE, HOWTO_GONE,
+    HOWTO_HEADERS, HOWTO_HTTP_OK, HOWTO_KEYS_JOBID, HOWTO_MAIL_RE, HOWTO_MAIL_TRIM, HOWTO_MARK,
+    HOWTO_MAX_DEFAULT, HOWTO_METHODS, HOWTO_NONE, HOWTO_OK, HOWTO_REFERER_TPL, HOWTO_SKIP_MAIL_HOSTS,
+    HOWTO_SLEEP_DEFAULT, HOWTO_SPACE, HOWTO_SPACE_RE, HOWTO_TAG_RE, HOWTO_TIMEOUT_S, K_HOWTO_AT,
+    K_HOWTO_EMAILS, K_HOWTO_METHODS, K_HOWTO_STATUS, K_HOWTO_UNTIL, MAIL_AT, OUT_HOWTO,
+    PRINT_HOWTO_DONE_TPL, PRINT_HOWTO_HEAD_TPL, PRINT_HOWTO_TICK_TPL,
 )
 from jobbank.scheme import (
     AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
@@ -109,6 +118,8 @@ from jobbank.scheme import (
     FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
     PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
     SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
+    HowtoBatchIn, HowtoBatchOut, HowtoFlushIn, HowtoOneIn, HowtoParseIn, HowtoPickIn, HowtoPickOut,
+    HowtoRecordIn, HowtoTallyIn, HttpPostClientLike,
 )
 
 
@@ -1564,3 +1575,181 @@ def med_text(med: float | None) -> str:
     if med:
         return MED_TPL.format(med=med)
     return MED_MISSING
+
+
+# =========================================================================
+# 11. 投递方式(How to apply:一帖一次 JSF 局部提交、只渲染投递区;独立役 howto,不进默认链)
+# =========================================================================
+
+
+def fetch_jobbank_howto() -> None:
+    """本域步骤入口(独立役 howto):板上 Job Bank 直发帖逐帖取「How to apply」→ 邮箱 / 投递渠道 /
+    截止日 / 下架,累积进 howto.json,回包原文进 crawl 层。
+
+    2026-09-23 Frank「可以,批 1 开工吧」(站内投递批 1,设计稿 docs/design/站内投递批1-投递邮箱入库-20260923.md):
+    职位板只放能在本站投的岗,先得知道每帖有没有邮箱。新帖优先;查过的不再查,上次出错的重查。
+    只读 postings.json 与验尸名单,不持仓锁、不写别人的文件(判下架写进自己的 howto.json,mart 并进死岗)。
+    """
+    now = datetime.now(timezone.utc)
+    state = load_howto()
+    postings = json.loads(IN_POSTINGS.read_text(encoding=ENC_UTF8))
+    picked = howto_targets(HowtoPickIn(postings=postings, on_board=load_on_board(),
+                                       dead=load_state()[K_DEAD], state=state))
+    budget = min(len(picked.todo), int(os.environ.get(ENV_HOWTO_MAX, HOWTO_MAX_DEFAULT)))
+    say(PRINT_HOWTO_HEAD_TPL.format(board=picked.board, done=len(state), todo=len(picked.todo),
+                                    budget=budget))
+    if budget == 0:
+        return
+    out = howto_batch(HowtoBatchIn(pids=picked.todo[:budget], state=state, now=now))
+    say(PRINT_HOWTO_DONE_TPL.format(n=budget, mail=out.mail, gone=out.gone, none=out.none,
+                                    errs=out.errs, total=len(state)))
+
+
+def load_howto() -> dict:
+    """howto.json 记录表(首跑给空表)。"""
+    if not OUT_HOWTO.exists():
+        return {}
+    return json.loads(OUT_HOWTO.read_text(encoding=ENC_UTF8))
+
+
+def howto_targets(x: HowtoPickIn) -> HowtoPickOut:
+    """挑本轮该查的帖:板上的 Job Bank 直发帖、没判死、没有记录或上次出错;帖号大的在前(= 新帖优先)。
+
+    转帖(Indeed / Jobillico 等)不查:它们在 Job Bank 页上没有投递区,投递在原站。
+    """
+    board = 0
+    keyed: list = []
+    for job in x.postings:
+        pid = job.get(K_POSTING_ID, "")
+        if pid == "" or job.get(K_DIRECT) is not True or pid in x.dead:
+            continue
+        if x.on_board is not None and pid not in x.on_board:
+            continue
+        board += 1
+        rec = x.state.get(pid)
+        if rec is not None and rec.get(K_HOWTO_STATUS) != HOWTO_ERROR:
+            continue
+        keyed.append((pid_rank_of(pid), pid))
+    keyed.sort(reverse=True)
+    todo: list = []
+    for _rank, pid in keyed:
+        todo.append(pid)
+    return HowtoPickOut(board=board, todo=todo)
+
+
+def pid_rank_of(pid: str) -> int:
+    """帖号 → 排序键(Job Bank 帖号随发布递增;不是纯数字的排最后)。"""
+    if pid.isdigit():
+        return int(pid)
+    return 0
+
+
+def howto_batch(x: HowtoBatchIn) -> HowtoBatchOut:
+    """逐帖一次 POST:解析结果原地写进记录表,回包原文攒一批进 crawl 层,每 HOWTO_FLUSH_EVERY 帖落一次盘。"""
+    out = HowtoBatchOut(mail=0, gone=0, none=0, errs=0)
+    sleep_s = float(os.environ.get(ENV_HOWTO_SLEEP, HOWTO_SLEEP_DEFAULT))
+    pages: list = []
+    with make_client(HOWTO_TIMEOUT_S) as client:
+        poster = cast(HttpPostClientLike, client)
+        for k, pid in enumerate(x.pids, 1):
+            rec = howto_one(HowtoOneIn(client=poster, pid=pid, now=x.now, pages=pages))
+            x.state[pid] = rec
+            tally_howto(HowtoTallyIn(out=out, rec=rec))
+            if k % HOWTO_FLUSH_EVERY == 0:
+                flush_howto(HowtoFlushIn(state=x.state, pages=pages))
+                say(PRINT_HOWTO_TICK_TPL.format(k=k, n=len(x.pids), mail=out.mail, gone=out.gone,
+                                                errs=out.errs))
+            time.sleep(sleep_s)
+    flush_howto(HowtoFlushIn(state=x.state, pages=pages))
+    return out
+
+
+def howto_one(x: HowtoOneIn) -> dict:
+    """查一帖:POST 投递区 → 回包进待落盘批 → 解析成一条记录;网络错 / 非 200 记 error(下轮重查)。"""
+    form = dict(HOWTO_FORM_BASE)
+    for key in HOWTO_KEYS_JOBID:
+        form[key] = x.pid
+    headers = dict(HOWTO_HEADERS)
+    headers[HDR_REFERER] = HOWTO_REFERER_TPL.format(pid=x.pid)
+    try:
+        r = x.client.post(HOWTO_ENDPOINT, data=form, headers=headers)
+    except Exception as e:  # noqa: BLE001 — 网络抖动 = 记 error,下轮重查
+        err(x.pid, e)
+        return to_howto_record(HowtoRecordIn(at=x.now, status=HOWTO_ERROR, emails=[], methods=[], until=""))
+    if r.status_code != HOWTO_HTTP_OK:
+        return to_howto_record(HowtoRecordIn(at=x.now, status=HOWTO_ERROR, emails=[], methods=[], until=""))
+    x.pages.append(CachePage(url=HOWTO_CACHE_URL_TPL.format(pid=x.pid), html=r.text, title=x.pid))
+    return howto_of(HowtoParseIn(html=r.text, now=x.now))
+
+
+def howto_of(x: HowtoParseIn) -> dict:
+    """回包 → 一条记录:有投递区 = ok(抽邮箱与渠道);没有投递区 = 截止日已过或没有截止日判 gone,没过判 none。"""
+    text = HOWTO_SPACE_RE.sub(HOWTO_SPACE, HOWTO_TAG_RE.sub(HOWTO_SPACE, x.html))
+    until = ""
+    m = ADVERTISED_UNTIL_RE.search(text)
+    if m is not None:
+        until = m.group(1)
+    i = text.lower().find(HOWTO_MARK)
+    if i < 0:
+        status = HOWTO_NONE
+        if until == "" or until < x.now.date().isoformat():
+            status = HOWTO_GONE
+        return to_howto_record(HowtoRecordIn(at=x.now, status=status, emails=[], methods=[], until=until))
+    section = text[i:]
+    return to_howto_record(HowtoRecordIn(at=x.now, status=HOWTO_OK, emails=howto_mails_of(section),
+                                         methods=howto_methods_of(section), until=until))
+
+
+def howto_mails_of(text: str) -> list:
+    """投递区里的雇主邮箱(小写、去重保序;Job Bank 自己与政府域不算)。"""
+    out: list = []
+    for raw in HOWTO_MAIL_RE.findall(text):
+        mail = raw.strip(HOWTO_MAIL_TRIM).lower()
+        if mail in out or is_skip_mail_host(mail):
+            continue
+        out.append(mail)
+    return out
+
+
+def is_skip_mail_host(mail: str) -> bool:
+    """是不是 Job Bank 自己或政府域的邮箱。"""
+    host = mail.split(MAIL_AT)[-1]
+    for word in HOWTO_SKIP_MAIL_HOSTS:
+        if word in host:
+            return True
+    return False
+
+
+def howto_methods_of(text: str) -> list:
+    """投递区里出现的投递渠道键(按 HOWTO_METHODS 的顺序)。"""
+    out: list = []
+    for key, label in HOWTO_METHODS:
+        if label in text:
+            out.append(key)
+    return out
+
+
+def to_howto_record(x: HowtoRecordIn) -> dict:
+    """howto.json 的一条(键即落盘列)。"""
+    return {K_HOWTO_AT: x.at.isoformat(), K_HOWTO_STATUS: x.status, K_HOWTO_EMAILS: x.emails,
+            K_HOWTO_METHODS: x.methods, K_HOWTO_UNTIL: x.until}
+
+
+def tally_howto(x: HowtoTallyIn) -> None:
+    """一条新记录计进本轮计数。"""
+    status = x.rec.get(K_HOWTO_STATUS)
+    if status == HOWTO_OK and len(x.rec.get(K_HOWTO_EMAILS) or []) > 0:
+        x.out.mail += 1
+    elif status == HOWTO_GONE:
+        x.out.gone += 1
+    elif status == HOWTO_NONE:
+        x.out.none += 1
+    elif status == HOWTO_ERROR:
+        x.out.errs += 1
+
+
+def flush_howto(x: HowtoFlushIn) -> None:
+    """落一次盘:回包原文批量进 crawl 层(manifest 只写一次),记录表整份原子写;写完清空待落盘批。"""
+    put_cached_pages(CachePutManyIn(slug=CRAWL_SLUG_HOWTO, pages=list(x.pages)))
+    write_json(WriteJsonIn(path=OUT_HOWTO, payload=x.state, indent=0, compact=True))
+    x.pages.clear()

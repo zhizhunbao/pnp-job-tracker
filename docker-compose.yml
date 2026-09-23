@@ -33,6 +33,15 @@ services:
       SINCE_DAYS: '3'
       TZ: EST5EDT                  # 日志用东部时区(glibc 原生,无需 tzdata);postgres 保持 UTC
 
+  howto:                           # 投递方式(2026-09-23 站内投递批 1;jobbank 域第二役):板上 Job Bank 直发帖逐帖取「How to apply」→ 邮箱 / 投递渠道 / 截止日 / 下架;只刷 processed/jobbank/howto.json 与 crawl/jobbank-howto/,灌库归 build 链;设计稿 docs/design/站内投递批1-投递邮箱入库-20260923.md
+    <<: *etl
+    environment:
+      SOURCE: howto
+      HEALTHCHECK_PING_HOWTO: ${HEALTHCHECK_PING_HOWTO:-}   # 未配 = ping_health 自然跳过
+      HOWTO_MAX: ${HOWTO_MAX:-3000}               # 每轮查多少帖(1 秒一帖约 50 分钟;首轮补抓约 10 轮追平)
+      HOWTO_SLEEP: ${HOWTO_SLEEP:-1.0}            # 每帖间隔秒数:比详情抓取慢四倍 —— Job Bank 求职者条款 2026-08-07 版禁自动化访问,动静压低
+      TZ: EST5EDT
+
   pnp:                             # 省提名事实构建 + watch/freshness 两哨兵(只刷 raw;build 角色消费灌库)
     <<: *etl
     environment:

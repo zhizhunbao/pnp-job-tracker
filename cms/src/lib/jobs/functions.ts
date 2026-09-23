@@ -62,7 +62,7 @@ import {
 } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHit, AlertHitsIn, AlertHitsOut, ApplyMailOut, ApplyUrlIn, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
+  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyMailOut, ApplyUrlIn, StoredApplyEmailIn, StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
   BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
   CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
@@ -867,11 +867,6 @@ export function buildJobsWhere(input: BuildWhereIn): JobsWhere {
       cmp = W.vsAbove20
     }
     conds.push(W.open + W.vsGuard + W.and + cmp + W.close)
-  }
-  if (s(FK.emp) === FV.full || s(FK.emp) === FV.part) {
-    conds.push(W.empEq + param(s(FK.emp)))
-  } else if (s(FK.emp) === FV.gig) {
-    conds.push(W.empGig)
   }
   if (isOn(FK.directOnly)) {
     conds.push(W.direct)
@@ -2750,6 +2745,31 @@ export async function loadBigDims(input: BigDimsIn): BigDimsOut {
 }
 
 /**
+ * 库里存好的雇主投递邮箱(2026-09-23 站内投递批 1):投递栏先问它,没有再现取 Job Bank(loadApplyEmail)。
+ * 写入方是 ETL:mart 投递邮箱段(Job Bank 直发读 howto 役的投递区,其他来源从正文抽)。
+ *
+ * @param x 连接与原帖链接。
+ * @returns 邮箱;库里没有给空串。
+ */
+export async function loadStoredApplyEmail(x: StoredApplyEmailIn): StoredApplyEmailOut {
+  const rows = await queryRows({ db: x.db, sql: SQL.APPLY_EMAIL_BY_URL, params: [x.url], map: toApplyEmailFact })
+  const first = firstOf(rows)
+  if (first == null) {
+    return MAIL_NONE
+  }
+  return first.email
+}
+
+/**
+ * APPLY_EMAIL_BY_URL 一行 → 邮箱。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一行。
+ */
+export function toApplyEmailFact(r: Row): ApplyEmailFact {
+  return { email: text(r.apply_email) }
+}
+/**
  * Job Bank 投递邮箱现抓(E9-04 B11):初始 HTML 和 ETL 存的 description 里都没有 ——
  * 邮箱藏在「Show how to apply」的 JSF 局部提交后面。两跳:GET 取 seekeractivity 表单 →
  * 复刻 JSF partial POST(render=@all)→ 从 How to apply 块附近抽邮箱。
@@ -4008,14 +4028,14 @@ function putBaseSalary(x: LdPutIn): void {
 
 /**
  * 原帖链接(缺就不放这一格)。
+ * 2026-09-23 站内投递批 1 改判:url 改填本站这一岗的页(与 canonical 同一个地址)—— 原来填原帖链接,
+ * 等于告诉 Google 这条招聘的正身在 Job Bank / 原招聘板、本站页只是转载。函数名沿用旧名。
  *
  * @param x 正在拼的对象与本岗。
  * @returns 无。
  */
 function putApplyUrl(x: LdPutIn): void {
-  if (x.job.applyUrl !== ISO_NONE) {
-    x.ld.url = x.job.applyUrl
-  }
+  x.ld.url = siteBaseOf() + JOB_PATH + String(x.job.id)
 }
 
 /**

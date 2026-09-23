@@ -25,6 +25,14 @@ export const Jobs: CollectionConfig = {
     { name: 'address', type: 'text', admin: { description: '精确地址(街号+邮编)' } },
     { name: 'region', type: 'text', index: true },
     { name: 'applyUrl', type: 'text', index: true, admin: { description: '第一方投递链接(/api/jobs/text 按此等值查询)' } },
+    // 雇主投递邮箱(2026-09-23 站内投递批 1,docs/sql/jobs-apply-email-20260923.sql):mart 投递邮箱段写(Job Bank 投递区 / 正文抽取)。
+    // 只给管理员读 —— 登录的普通账号走 Payload REST 也拿不到(不然整库雇主邮箱能被批量扒走);投递栏走 /api/jobs/applyhow。
+    {
+      name: 'applyEmail',
+      type: 'text',
+      access: { read: ({ req }) => req.user?.role === 'admin' },
+      admin: { description: '雇主投递邮箱(站内投递批 1;仅管理员可读)' },
+    },
     { name: 'officialUrl', type: 'text' },
     { name: 'salary', type: 'text', admin: { description: '原始薪资文本(悬停展示/搜索)' } },
     { name: 'salaryAnnual', type: 'number', index: true, admin: { description: '年薪折算(04d 清洗;排序/vs中位用)' } },

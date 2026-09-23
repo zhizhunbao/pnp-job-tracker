@@ -145,6 +145,12 @@ export const COMPANY_IDS_BY_NAME = `SELECT id FROM companies WHERE name ILIKE $1
 export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMIT 1`
 
 /**
+ * 库里存好的雇主投递邮箱(2026-09-23 站内投递批 1):按原帖链接取(apply_url 有索引)。$1=原帖链接。
+ * apply_email 不进 JOB_COLUMNS —— 列表与详情接口一律不带,只有投递栏 /api/jobs/applyhow 这一个出口。
+ */
+export const APPLY_EMAIL_BY_URL = `SELECT apply_email FROM jobs WHERE apply_url = $1 AND apply_email IS NOT NULL LIMIT 1`
+
+/**
  * 相关职位·同公司在招 12 条。$1=公司名,$2=排除的当前岗 id。
  * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。

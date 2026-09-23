@@ -34,6 +34,7 @@ from jobbank.functions import (
     audit_jobbank_data, build_jobbank_companies, flag_jobbank_apprentice,
     guard_jobbank_noc_sanity, parse_jobbank_details, parse_jobbank_postings,
     scrape_jobbank_details, scrape_jobbank_postings, verify_jobbank_expired,
+    fetch_jobbank_howto,
 )
 
 SCHEDULED = [
@@ -62,6 +63,7 @@ TOOLS = {
     "apprentice": flag_jobbank_apprentice,
     "noc_sanity": guard_jobbank_noc_sanity,
     "jd_index": build_jd_index,
+    "howto": fetch_jobbank_howto,
 }
 """全部可 --only 点名的步 = 默认链四步 + 六个手动件:
 
@@ -88,6 +90,9 @@ TOOLS = {
 `--only details` 会同时命中 details 与 parse_details —— 要单点后者请写全名。
 批J 两个新键与既有七键互不误命中(逐对核过:apprentice / noc_sanity 既不含既有键、
 也不被既有键含)。
+  howto      投递方式(2026-09-23 站内投递批 1):板上直发帖逐帖取「How to apply」→ 邮箱 / 投递渠道 /
+             截止日 / 下架,累积 howto.json。**本域第二役 howto 的入口**(METAS 第二条,独立容器、
+             1 小时一轮),不在默认链里;键与既有十一键互不误命中(不含也不被含)。
 """
 
 

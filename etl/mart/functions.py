@@ -192,6 +192,12 @@ from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME
 from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
+from mart.constants import (
+    APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
+    APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
+    K_HOWTO_AT, K_HOWTO_EMAILS, K_HOWTO_STATUS, K_HOWTO_UNTIL, PRINT_APPLY_TPL,
+)
+from mart.scheme import ApplyTally, HowtoRecIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -3657,11 +3663,10 @@ def build_closed_jobs() -> list:
     挂着「在招」(Fort Qu'Appelle 用户点两次申请撞过期页的那一单)。验尸拿到的 410/过期页是
     **事实**,不是「本次没抓到」的推断,不该受那条防误杀规则约束 → 单独出一张 closed_jobs,
     seed 见名单即置 closed,closedAt 用判死时刻(喂 JSON-LD 的 validThrough)。
+    2026-09-23 判死台账改走 dead_table():并上 howto 役判下架的帖。
     """
     rows: list = []
-    if not IN_EXPIRED.exists():
-        return rows
-    for pid, ts in read_table(IN_EXPIRED).get(K_DEAD, {}).items():
+    for pid, ts in dead_table().items():
         rows.append(to_closed_job_row(ClosedJobIn(pid=pid, closed_at=ts)))
     return rows
 
@@ -3672,11 +3677,10 @@ def load_expired_ids() -> set:
 
     首跑教训:mart externalId 是 `jb:<posting_id>` 前缀形,验尸文件存裸 posting_id ——
     比对必须加前缀(0 剔除实锤)。
+    2026-09-23 判死台账改走 dead_table():并上 howto 役判下架的帖。
     """
     out: set = set()
-    if not IN_EXPIRED.exists():
-        return out
-    for pid in read_table(IN_EXPIRED).get(K_DEAD, {}):
+    for pid in dead_table():
         out.add(JB_EXT_TPL.format(pid=pid))
     return out
 
@@ -3821,6 +3825,7 @@ def to_mart_tables() -> dict:
     fill_companies_lmia(ctx)
     fill_company_grades(ctx)
     fill_jd_bodies(ctx)
+    fill_apply_emails(ctx)
     say_mart_tallies(ctx)
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
@@ -4181,11 +4186,9 @@ def flow_windows_of() -> FlowWindows:
 
 
 def load_dead_dates() -> dict:
-    """expired_ids.json 的判死台账:posting_id → 判死日。"""
+    """expired_ids.json 的判死台账:posting_id → 判死日(2026-09-23 起走 dead_table(),并上 howto 役判下架的帖)。"""
     out: dict = {}
-    if not IN_EXPIRED.exists():
-        return out
-    for pid, ts in read_table(IN_EXPIRED).get(K_DEAD, {}).items():
+    for pid, ts in dead_table().items():
         d = parse_iso_date(ts)
         if d:
             out[pid] = d
@@ -5990,3 +5993,98 @@ def to_macro_row(x: MacroRowIn) -> dict:
     """macro_series 表的一行(唯一键 geo+key+period;键序即落盘列序)。"""
     return {"geo": x.geo, "key": x.key, "period": x.period, "freq": x.freq, "value": x.value,
             "asOf": x.as_of, "unit": x.unit, "source": x.source, "fetched": x.fetched}
+
+
+# =========================================================================
+# 22. 跨源清洗:投递邮箱(applyEmail;Job Bank 直发读 howto 役的投递区,其他来源从正文抽)
+# =========================================================================
+
+
+def fill_apply_emails(ctx: MartCtx) -> None:
+    """投递邮箱段:每个岗配一个雇主投递邮箱(applyEmail),Job Bank 岗顺手用截止日补 validThrough。
+
+    2026-09-23 站内投递批 1(Frank「没邮箱 跳到其他网站没有意义」「应该只给用户显示有邮箱的职位吧」):
+    Job Bank 直发帖的邮箱藏在「How to apply」按钮后面,正文里一个都没有 —— 读 jobbank 域 howto 役的投递区;
+    同一次回包还带「Advertised until」截止日,喂 JSON-LD 的 validThrough。其他来源(板帖、ATS、Job Bank 转帖)
+    从正文抽,只认投递语境里的,无障碍 / 隐私 / noreply 类排除。必须排在 fill_jd_bodies 之后(正文那时才齐)。
+    """
+    howto = load_howto_table()
+    tally = ApplyTally(jb=0, text=0, until=0)
+    for row in ctx.jobs:
+        rec = howto_rec_of(HowtoRecIn(row=row, howto=howto))
+        mail = howto_mail_of(rec)
+        if mail != "":
+            tally.jb += 1
+        else:
+            mail = text_mail_of(row.get(K_DESCRIPTION) or "")
+            if mail != "":
+                tally.text += 1
+        if mail != "":
+            row[K_APPLY_EMAIL] = mail
+        until = rec.get(K_HOWTO_UNTIL) or ""
+        if until != "" and not row.get(K_VALID_THROUGH):
+            row[K_VALID_THROUGH] = until
+            tally.until += 1
+    say(PRINT_APPLY_TPL.format(jb=tally.jb, text=tally.text, until=tally.until, total=tally.jb + tally.text,
+                               jobs=len(ctx.jobs)))
+
+
+def load_howto_table() -> dict:
+    """howto.json 记录表(文件还没有 = 空表:howto 役没跑过,投递邮箱全走正文抽取)。"""
+    if not IN_HOWTO.exists():
+        return {}
+    return read_table(IN_HOWTO)
+
+
+def howto_rec_of(x: HowtoRecIn) -> dict:
+    """一个 Job Bank 岗在 howto 里的记录(externalId = jb:<帖号>;不是 Job Bank 岗或没查过 = 空表)。"""
+    ext = x.row.get(K_EXTERNAL_ID) or ""
+    if x.row.get(K_ORIGIN) != ORIGIN_JOBBANK or not ext.startswith(JB_EXT_PREFIX):
+        return {}
+    return x.howto.get(ext[len(JB_EXT_PREFIX):]) or {}
+
+
+def howto_mail_of(rec: dict) -> str:
+    """howto 记录里的投递邮箱(有投递区且列了邮箱才有,取第一个)。"""
+    emails = rec.get(K_HOWTO_EMAILS) or []
+    if rec.get(K_HOWTO_STATUS) != HOWTO_OK or len(emails) == 0:
+        return ""
+    return str(emails[0])
+
+
+def text_mail_of(text: str) -> str:
+    """正文里第一个投递语境里的邮箱(noreply / 招聘板与政府域 / 无障碍隐私语境一律跳过;都不是给空串)。"""
+    for m in APPLY_MAIL_RE.finditer(text):
+        mail = m.group(0).strip(APPLY_MAIL_TRIM).lower()
+        if APPLY_NOREPLY_RE.search(mail) or is_skip_apply_host(mail):
+            continue
+        window = text[max(0, m.start() - APPLY_CTX_BEFORE):m.start() + APPLY_CTX_AFTER]
+        if APPLY_SKIP_CTX_RE.search(window):
+            continue
+        if APPLY_CTX_RE.search(window):
+            return mail
+    return ""
+
+
+def is_skip_apply_host(mail: str) -> bool:
+    """是不是 Job Bank / 政府域 / 招聘板自己 / 示例地址的邮箱。"""
+    host = mail.split(APPLY_MAIL_AT)[-1]
+    for word in APPLY_SKIP_HOSTS:
+        if word in host:
+            return True
+    return False
+
+
+def dead_table() -> dict:
+    """判死台账:验尸名单(expired_ids.json)并上 howto 役判下架的帖(status=gone,判死时刻 = 检查时刻)。
+
+    2026-09-23 站内投递批 1:howto 逐帖取投递区,已下架的帖回包只剩截止日 —— 同样是 Job Bank 给的事实,
+    不必等验尸轮到它。验尸名单里已有的以验尸为准。三处读判死台账的地方(剔 mart / 下发 closed / 流量统计)都走这里。
+    """
+    out: dict = {}
+    if IN_EXPIRED.exists():
+        out.update(read_table(IN_EXPIRED).get(K_DEAD, {}))
+    for pid, rec in load_howto_table().items():
+        if rec.get(K_HOWTO_STATUS) == HOWTO_GONE and pid not in out:
+            out[pid] = rec.get(K_HOWTO_AT) or ""
+    return out

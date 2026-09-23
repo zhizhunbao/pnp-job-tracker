@@ -709,3 +709,145 @@ class SanityJudgeIn:
 
     annual: float
     """本帖年薪折算(04d 算的;链序保证它先跑)。"""
+
+
+# =========================================================================
+# 11. 投递方式
+# =========================================================================
+
+
+class HttpPostClientLike(Protocol):
+    """httpx 客户端里投递方式段真用的一门(POST 表单;第 1 段 HttpClientLike 只声明了 get)。"""
+
+    def post(self, url: str, data: dict, headers: dict) -> HttpResponseLike:
+        """POST 一个表单(超时挂在客户端上,不逐次传)。"""
+        ...
+
+
+@dataclass
+class HowtoPickIn:
+    """howto_targets() 入参:从 store 里挑本轮该查的帖。"""
+
+    postings: list
+    """全部帖子行。"""
+
+    on_board: set | None
+    """09 上一轮落的「还在板上」帖号;None = 名单文件还没有,退回全查。"""
+
+    dead: dict
+    """验尸判死名单(帖号 → 判死时刻);判死的不查。"""
+
+    state: dict
+    """howto.json 已有记录(帖号 → 记录);查过的不再查,上次出错的重查。"""
+
+
+@dataclass
+class HowtoPickOut:
+    """howto_targets() 出参。"""
+
+    board: int
+    """板上 Job Bank 直发帖数(判死的不算)。"""
+
+    todo: list
+    """待查帖号(帖号大的在前 = 新帖优先)。"""
+
+
+@dataclass
+class HowtoBatchIn:
+    """howto_batch() 入参:本轮预算内的帖号 + 记录表。"""
+
+    pids: list
+    """本轮要查的帖号。"""
+
+    state: dict
+    """howto.json 记录表(原地写入)。"""
+
+    now: datetime
+    """本轮起始时刻(记录的检查时刻、截止日比较都用它)。"""
+
+
+@dataclass
+class HowtoBatchOut:
+    """howto_batch() 出参:本轮四个计数。"""
+
+    mail: int
+    """有投递区且拿到邮箱。"""
+
+    gone: int
+    """已下架。"""
+
+    none: int
+    """没有投递区但截止日未到。"""
+
+    errs: int
+    """请求出错 / 非 200(下轮重查)。"""
+
+
+@dataclass
+class HowtoOneIn:
+    """howto_one() 入参:查一帖。"""
+
+    client: HttpPostClientLike
+    """复用的客户端(伪装档 + TLS 1.2 封顶,见 fetch 叶;装配点 cast)。"""
+
+    pid: str
+    """帖号。"""
+
+    now: datetime
+    """本轮起始时刻。"""
+
+    pages: list
+    """待落盘的回包原文(CachePage;攒够一批进 crawl 层)。"""
+
+
+@dataclass
+class HowtoParseIn:
+    """howto_of() 入参:一份回包。"""
+
+    html: str
+    """回包原文(JSF 局部提交的 XML,投递区 HTML 在 CDATA 里)。"""
+
+    now: datetime
+    """本轮起始时刻(检查时刻;截止日与它的日期比)。"""
+
+
+@dataclass
+class HowtoRecordIn:
+    """to_howto_record() 入参:一条记录的五格。"""
+
+    at: datetime
+    """检查时刻。"""
+
+    status: str
+    """状态(HOWTO_OK / HOWTO_GONE / HOWTO_NONE / HOWTO_ERROR)。"""
+
+    emails: list
+    """雇主邮箱。"""
+
+    methods: list
+    """投递渠道键。"""
+
+    until: str
+    """截止日(YYYY-MM-DD;没有给空串)。"""
+
+
+@dataclass
+class HowtoTallyIn:
+    """tally_howto() 入参:一条新记录计进本轮计数。"""
+
+    out: HowtoBatchOut
+    """本轮计数(原地累加)。"""
+
+    rec: dict
+    """刚写进记录表的一条。"""
+
+
+@dataclass
+class HowtoFlushIn:
+    """flush_howto() 入参:落一次盘。"""
+
+    state: dict
+    """howto.json 记录表(整份写)。"""
+
+    pages: list
+    """待落盘的回包原文(写完清空)。"""

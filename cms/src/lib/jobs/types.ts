@@ -4567,6 +4567,36 @@ export type BigDimsOut = Promise<BigDims>
 export type ApplyMailOut = Promise<string | null>
 
 /**
+ * loadStoredApplyEmail 的入参(2026-09-23 站内投递批 1)。
+ */
+export type StoredApplyEmailIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * 原帖链接(与库里 apply_url 等值比)。
+   */
+  url: string
+}
+
+/**
+ * loadStoredApplyEmail 的出参:邮箱;库里没有给空串。
+ */
+export type StoredApplyEmailOut = Promise<string>
+
+/**
+ * APPLY_EMAIL_BY_URL 一行洗净后。
+ */
+export type ApplyEmailFact = {
+  /**
+   * 雇主投递邮箱。
+   */
+  email: string
+}
+
+/**
  * POST /api/jobs/company 的请求体形状(跨边界断言目标,逐格判后才用)。
  */
 export type CompanyBody = {

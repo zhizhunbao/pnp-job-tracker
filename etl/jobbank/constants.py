@@ -1064,3 +1064,147 @@ PRINT_SANITY_ROW_TPL = ("  {pid} | {title!r} @ {employer} | noc {noc} | "
 
 PRINT_SANITY_DONE_TPL = "NOC 失配护栏:置空 {n} 帖(泛词标题 × TEER0/1 × 薪资远低)"
 """护栏收尾一行。"""
+
+
+# =========================================================================
+# 11. 投递方式(How to apply:一帖一次 JSF 局部提交、只渲染投递区 → 邮箱 / 投递渠道 / 截止日 / 下架;独立役 howto)
+# =========================================================================
+
+HOWTO_ENDPOINT = "https://www.jobbank.gc.ca/jobsearch/pers/jobposting.xhtml"
+"""「Show how to apply」按钮背后的 JSF 表单提交地址。2026-09-23 实测:所有帖同一个地址、只换帖号,
+不必先 GET 帖页取 action(cms 投递栏现取那份 loadApplyEmail 先 GET 再 POST,一帖两请求)。"""
+
+HOWTO_FORM_BASE = {
+    "jakarta.faces.partial.ajax": "true",
+    "jakarta.faces.source": "seekeractivity",
+    "jakarta.faces.partial.execute": "seekeractivity:jobid",
+    "jakarta.faces.partial.render": "applynow",
+    "jakarta.faces.behavior.event": "action",
+    "action": "applynowbutton",
+    "seekeractivity_SUBMIT": "1",
+    "jakarta.faces.ViewState": "stateless",
+}
+"""表单固定字段,照抄 cms 的 JSF_FORM_BASE,只把 render 从 @all 改成 applynow(只渲染投递区):
+回包 3~4KB,@all 是 20 万字节的整页;邮箱、投递渠道、截止日都在投递区里(2026-09-23 实测)。"""
+
+HOWTO_KEYS_JOBID = ("jsJobId", "seekeractivity:jobid")
+"""表单里放帖号的两格。"""
+
+HOWTO_HEADERS = {
+    "Accept": "*/*",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "Faces-Request": "partial/ajax",
+}
+"""JSF 局部提交要带的三个头。"""
+
+HDR_REFERER = "Referer"
+"""请求头名:来源页(按帖号拼)。"""
+
+HOWTO_REFERER_TPL = "https://www.jobbank.gc.ca/jobsearch/jobposting/{pid}"
+"""来源页地址(与浏览器里点按钮时的来源一致)。"""
+
+HOWTO_CACHE_URL_TPL = "https://www.jobbank.gc.ca/jobsearch/jobposting/{pid}#howto"
+"""crawl 层里这份回包的地址键(帖页地址加 #howto,与帖页原文分开存)。"""
+
+CRAWL_SLUG_HOWTO = "jobbank-howto"
+"""回包原文落 crawl 层的站点 slug(data/crawl/jobbank-howto/;解析错了离线重抽,不用重抓)。"""
+
+OUT_HOWTO = paths.PROCESSED_JOBBANK / "howto.json"
+"""每帖投递方式:帖号 → 检查时刻 / 状态 / 邮箱 / 投递渠道 / 截止日;mart 投递邮箱段读它。"""
+
+ENV_HOWTO_MAX = "HOWTO_MAX"
+"""环境变量名:单轮查多少帖。"""
+
+HOWTO_MAX_DEFAULT = "3000"
+"""单轮上限默认值:1 秒一请求约 50 分钟,一小时一轮;板上直发约 3 万帖,首轮补抓约 10 轮追平,
+之后每轮只剩新帖(每天两三千)。"""
+
+ENV_HOWTO_SLEEP = "HOWTO_SLEEP"
+"""环境变量名:每次请求之间等多久(秒)。"""
+
+HOWTO_SLEEP_DEFAULT = "1.0"
+"""节流默认值:比详情抓取(0.25 秒)慢四倍 —— Job Bank 求职者条款 2026-08-07 版禁自动化访问,动静压低。"""
+
+HOWTO_TIMEOUT_S = 20.0
+"""单次请求超时。"""
+
+HOWTO_FLUSH_EVERY = 100
+"""每查多少帖落一次盘(howto.json + crawl 回包),中途被停也只丢这一小批。"""
+
+HOWTO_HTTP_OK = 200
+"""正常回包的状态码。"""
+
+HOWTO_MARK = "how to apply"
+"""投递区的标志(小写比较);回包里没有它 = 这帖已经没有投递区。"""
+
+ADVERTISED_UNTIL_RE = re.compile(r"Advertised until\s*(\d{4}-\d{2}-\d{2})")
+"""截止日(「Advertised until 2026-10-01」;已下架帖的回包只剩这一句)。"""
+
+HOWTO_TAG_RE = re.compile(r"<[^>]+>")
+"""剥标签。"""
+
+HOWTO_SPACE_RE = re.compile(r"\s+")
+"""压空白。"""
+
+HOWTO_SPACE = " "
+"""剥标签 / 压空白的替换字符。"""
+
+HOWTO_MAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+"""邮箱(回包只有 3~4KB,不存在长串回溯的问题)。"""
+
+HOWTO_MAIL_TRIM = ".,;:"
+"""邮箱两头要剥的标点(句末句号常被正则带进来)。"""
+
+MAIL_AT = "@"
+"""邮箱里本地部分与域名的分隔。"""
+
+HOWTO_SKIP_MAIL_HOSTS = ("jobbank", "gc.ca", "canada.ca")
+"""不算雇主邮箱的域(Job Bank 自己 / 政府域)。"""
+
+HOWTO_METHODS = (
+    ("email", "By email"),
+    ("online", "Online"),
+    ("mail", "By mail"),
+    ("in_person", "In person"),
+    ("phone", "By phone"),
+    ("fax", "By fax"),
+    ("jobbank", "Direct Apply"),
+)
+"""投递渠道:键 → 投递区里的原文标签(Direct Apply = 要 Job Bank Plus 账号的站内投递)。"""
+
+HOWTO_OK = "ok"
+"""状态:有投递区。"""
+
+HOWTO_GONE = "gone"
+"""状态:没有投递区,且截止日已过或没有截止日 = 已下架(mart 并进死岗名单)。"""
+
+HOWTO_NONE = "none"
+"""状态:没有投递区但截止日还没到(罕见;不重查,留痕备查)。"""
+
+HOWTO_ERROR = "error"
+"""状态:请求出错或非 200(下轮重查)。"""
+
+K_HOWTO_AT = "checkedAt"
+"""howto.json 记录键:检查时刻(UTC ISO)。"""
+
+K_HOWTO_STATUS = "status"
+"""howto.json 记录键:状态(ok / gone / none / error)。"""
+
+K_HOWTO_EMAILS = "emails"
+"""howto.json 记录键:投递区里的雇主邮箱(去重保序)。"""
+
+K_HOWTO_METHODS = "methods"
+"""howto.json 记录键:投递渠道键(HOWTO_METHODS 的键)。"""
+
+K_HOWTO_UNTIL = "advertisedUntil"
+"""howto.json 记录键:截止日(YYYY-MM-DD;没有给空串)。"""
+
+PRINT_HOWTO_HEAD_TPL = "howto: 板上直发 {board} 帖 · 已有记录 {done} · 待查 {todo} · 本轮查 {budget}"
+"""起手一行。"""
+
+PRINT_HOWTO_TICK_TPL = "howto: {k}/{n} · 有邮箱 {mail} · 下架 {gone} · 出错 {errs}"
+"""心跳行(每落一次盘报一次)。"""
+
+PRINT_HOWTO_DONE_TPL = ("howto: 本轮 {n} 帖 · 有邮箱 {mail} · 下架 {gone} · 无投递区 {none} · "
+                        "出错 {errs} · 累计记录 {total}")
+"""收尾一行。"""

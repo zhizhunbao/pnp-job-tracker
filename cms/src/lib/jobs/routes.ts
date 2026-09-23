@@ -33,7 +33,7 @@ import {
   TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptySimilar, loadApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage, loadMatchPage,
+  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage, loadMatchPage,
   loadOccCompetition,
   loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedJobs, normalizeProfile,
@@ -315,6 +315,8 @@ export async function jobsCompetitionRoute(req: Request): Promise<Response> {
  * 「Show how to apply」的 JSF 局部提交后面 —— 打开投递栏时现抓(loadApplyEmail),
  * 进程内正/负两级缓存,零批量预抓(lazy-first)。只认 jobbank.gc.ca 职位页(白名单防
  * SSRF);其他来源(ATS 原站)邮箱走前端对 jobtext 的正则,不进这里。
+ * 2026-09-23 站内投递批 1:先读库里存好的(ETL howto 役 + mart 投递邮箱段写的 jobs.apply_email),没有再现抓。
+ * 仍不要求登录(投递栏开页就来问,决定出邮箱钮还是外跳钮);批 2 改成服务端代发后,邮箱不再下发前端,这里再收紧。
  *
  * @param req 请求(?url=职位页链接)。
  * @returns { email }(空串 = 无/失败);超限 429。
@@ -335,6 +337,10 @@ export async function jobsApplyhowRoute(req: Request): Promise<Response> {
   }
   if (JB_POSTING_RE.test(raw) === false) {
     return Response.json({ email: MAIL_NONE })
+  }
+  const stored = await loadStoredApplyEmail({ db: await getDb(), url: raw })
+  if (stored !== MAIL_NONE) {
+    return Response.json({ email: stored })
   }
   const keyHead = raw.split(URL_CUT_RE)[0]
   let key = PARAM_NONE

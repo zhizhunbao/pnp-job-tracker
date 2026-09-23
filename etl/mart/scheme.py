@@ -2672,3 +2672,33 @@ class PoolAtIn:
 
     period: str
     """期键(`YYYY-MM-DD`)。"""
+
+
+# =========================================================================
+# 22. 跨源清洗:投递邮箱
+# =========================================================================
+
+
+@dataclass
+class ApplyTally:
+    """fill_apply_emails() 的三个计数(原地累加)。"""
+
+    jb: int
+    """从 howto 投递区拿到邮箱的岗。"""
+
+    text: int
+    """从正文抽到邮箱的岗。"""
+
+    until: int
+    """用 howto 截止日补上 validThrough 的岗。"""
+
+
+@dataclass
+class HowtoRecIn:
+    """howto_rec_of() 入参:一个 jobs 行 + howto 记录表。"""
+
+    row: dict
+    """jobs 行。"""
+
+    howto: dict
+    """howto.json 记录表(帖号 → 记录)。"""
