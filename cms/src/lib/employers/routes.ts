@@ -38,7 +38,7 @@ import {
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
   aliasCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
-  loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone,
+  loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone, isCrawlerHeaders,
 } from './functions'
 import { CACHE } from './variables'
 import type { EmployersTransBody, InfoBody, SponsorFilters, EmployersAliasBody, EmployersRetransBody,
@@ -180,6 +180,7 @@ export async function employersExploreDoneRoute(req: Request): Promise<Response>
  * POST /api/employers/explore/open:公司页 / 公司弹框被真人点开 → 官网那条工种入队(2026-09-20 Frank「下一个 session 做
  *『按用户点开过的公司优先抓取和纠错』的队列」;设计稿 docs/design/点开优先抓取与纠错-20260920.md)。公开端点,**只认带真人标记的**
  * (HDR_HUMAN;无头爬虫顺站点地图进来的不入队,来由见 HDR_HUMAN 的注);键只认池里真有的。
+ * 2026-09-23 再加一道服务端闸(Frank「两个都做吧」):真人标记挡不住会滚页面的爬虫,被 isCrawlerHeaders 判成爬虫的同样不入队。
  *
  * @param req 请求体 `{ name }`。
  * @returns `{ ok, stage }`;没带真人标记 / 池里没有这家 = stage 空串。
@@ -198,7 +199,7 @@ export async function employersExploreOpenRoute(req: Request): Promise<Response>
   if (name === NAME_UNSET || name.length > NAME_LEN_MAX) {
     return Response.json({ ok: false, stage: NAME_UNSET }, { status: BAD_REQUEST })
   }
-  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES) {
+  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES || isCrawlerHeaders(req.headers)) {
     return Response.json({ ok: true, stage: NAME_UNSET })
   }
   const got = await openExploreSite({ db: await getDb(), name })

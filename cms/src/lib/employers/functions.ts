@@ -35,6 +35,7 @@ import {
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
   WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
   SITE_BRIEF_MAX, SITE_SOURCES_MAX, SITE_STAGES, SITE_TEXT_MAX,
+  CRAWLER_UA_RE, HDR_ACCEPT_LANGUAGE, HDR_UA,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -57,6 +58,7 @@ import type {
   SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteOpenRow, SiteSavedOut,
   SiteStageDbRow, SiteStageOut, SiteStageRow,
   SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
+  CrawlerHeadersIn,
 } from './types'
 import { HDR_USER_AGENT } from '../http'
 // =========================================================================
@@ -1713,6 +1715,25 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
     aliasKo: text(r.aliasKo).slice(0, EXPLORE_TEXT_MAX), note: text(r.note).slice(0, EXPLORE_TEXT_MAX),
     industry: exploreIndustryOf(text(r.industry)),
   }
+}
+
+/**
+ * 这一请求是不是爬虫发的:没带接受语言(真浏览器每个请求都带)、没有浏览器标识,或标识自报是爬虫(2026-09-23,
+ * 「点开」上报被爬虫灌满的服务端那道闸;来由见 CRAWLER_UA_RE)。
+ *
+ * @param h 请求头。
+ * @returns 是爬虫 = true。
+ */
+export function isCrawlerHeaders(h: CrawlerHeadersIn): boolean {
+  const lang = h.get(HDR_ACCEPT_LANGUAGE)
+  if (lang == null || lang.trim() === '') {
+    return true
+  }
+  const ua = h.get(HDR_UA)
+  if (ua == null || ua.trim() === '') {
+    return true
+  }
+  return CRAWLER_UA_RE.test(ua)
 }
 
 /**

@@ -1968,6 +1968,16 @@ export type SiteOpenBody = {
 }
 
 /**
+ * `isCrawlerHeaders` 的入参:判爬虫只读请求头(Web 标准 Headers 天然满足)。
+ */
+export type CrawlerHeadersIn = {
+  /**
+   * 按头名取值;没有这个头 = null。
+   */
+  get: (name: string) => string | null
+}
+
+/**
  * `openExploreSite` / `loadSiteStage` 的入参。
  */
 export type SiteByNameIn = {

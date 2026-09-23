@@ -826,6 +826,19 @@ export const HDR_UA = 'user-agent'
 export const UA_LOG_MAX = 120
 
 /**
+ * 请求头名:接受语言(真浏览器每个请求都自动带;Googlebot 渲染时不带 —— 站上给爬虫出英文页认的也是这一条)。
+ */
+export const HDR_ACCEPT_LANGUAGE = 'accept-language'
+
+/**
+ * 自报家门的爬虫浏览器标识(2026-09-23 Frank「两个都做吧」:公司卡的「点开」上报被爬虫灌满,「等待调查」排到第 58 位 ——
+ * 09-21 职位页挂上公司卡后,会跑 JS 的爬虫刷职位页,页面自己一滚就触发「真人动作」事件,带着真人标记报上来;
+ * 09-22 被点开的公司 413 家,同期真人一天四五个)。Googlebot 渲染器、bingbot、GPTBot、ClaudeBot、HeadlessChrome、
+ * 「(compatible; …)」尾巴的全在里面。
+ */
+export const CRAWLER_UA_RE = /bot|crawl|spider|slurp|headless|compatible;/i
+
+/**
  * 五位职业码的形状(导出筛选 noc 参数验形)。
  */
 export const NOC5_RE = /^\d{5}$/
