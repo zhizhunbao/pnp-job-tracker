@@ -8,6 +8,7 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 一律从仓库根执行:
     python etl/company/main.py                 # 默认链(places → sites → wikihq → about → brief)
     python etl/company/main.py --only kanata   # 手动件:kanata / folders / careers / facts
+    BROWSER_CHANNEL=chrome python etl/company/main.py --only unblock   # 本机搜总部放行台(http://127.0.0.1:8787)
 """
 import sys
 from pathlib import Path
@@ -17,7 +18,7 @@ from log.functions import err, say
 from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
-    find_opened_sites, locate_career_entries, lookup_wiki_hq,
+    find_opened_sites, locate_career_entries, lookup_wiki_hq, serve_hq_desk,
     scrape_kanata_directory,
 )
 
@@ -48,6 +49,7 @@ TOOLS = {
     "brief": build_company_briefs,
     "wikihq": lookup_wiki_hq,
     "findsite": find_opened_sites,
+    "unblock": serve_hq_desk,
 }
 """全部可 --only 点名的步(含休眠引导工具)。
 
@@ -74,6 +76,11 @@ TOOLS = {
 
   wikihq 维基总部兜底(2026-09-20 Frank「官网没标总部的公司用 Wikidata P159」):sites 域官网整理成了、总部一节却没有的公司,
          按名查 Wikidata「总部所在地」→ 市 / 省 + 条目链接,落 company_wiki_hq.json 等 build 汇装(官网的总部优先)。
+
+  unblock 搜总部放行台(2026-09-22 Frank「专门弄个本地服务 我来处理这些问题」):本机开 http://127.0.0.1:8787,
+         列容器撞上人机验证的落地页(company_hq_blocked.json);点「放行」在统一 profile 窗口里打开,Frank 过验证,
+         过了当场存原文进 crawl 层、抽总部写 company_search_hq.json。本机跑,要 BROWSER_CHANNEL=chrome 与 NEWS_LLM_BASE;
+         同一 profile 同一时刻只许一个进程开,用完 Ctrl+C 收摊让位。
 
 ⚠ --only 是子串匹配:facts/places/sites/about/brief 与既有键互不误命中(逐对核过)。
 """

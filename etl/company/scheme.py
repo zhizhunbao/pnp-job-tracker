@@ -1731,6 +1731,9 @@ class SearchHqOneIn:
     google: bool
     """本机档(引擎阶梯带不带 Google)。"""
 
+    index: dict
+    """搜总部落地页的 crawl 层索引(url → 原文文件;一轮取一次,2026-09-22 放行台)。"""
+
 
 @dataclass
 class SearchHqPageIn:
@@ -1747,6 +1750,43 @@ class SearchHqPageIn:
 
     url: str
     """落地页网址(也是出处)。"""
+
+    slug: str
+    """公司 slug(撞上验证记待放行清单用)。"""
+
+    index: dict
+    """搜总部落地页的 crawl 层索引(有原文就不开浏览器)。"""
+
+
+@dataclass
+class SearchHqPageOut:
+    """search_hq_page() 出参(2026-09-22 放行台:被验证挡住的页不占这家的试页名额)。"""
+
+    rec: SearchHqRecord | None
+    """抽到并过了核对的总部;没有 = None。"""
+
+    challenged: bool
+    """这一页被人机验证挡住(已记进待放行清单)。"""
+
+
+@dataclass
+class SearchHqHtmlIn:
+    """search_hq_of_html() 入参(容器与放行台同一把尺子)。"""
+
+    llm: HttpClientLike
+    """打盒子的 httpx 客户端。"""
+
+    cfg: LlmCfg
+    """模型接线。"""
+
+    name: str
+    """公司名(在页闸 + 提示词槽)。"""
+
+    url: str
+    """落地页网址(也是出处)。"""
+
+    html: str
+    """落地页原文。"""
 
 
 @dataclass
@@ -1791,4 +1831,99 @@ class TitleHitsIn:
 
     html: str
     """首页原文(只看页头那一段)。"""
+
+
+# =========================================================================
+# 12. 搜总部放行台(2026-09-22)
+# =========================================================================
+
+
+class HqBlockedItem(BaseModel):
+    """待放行清单一行(company_hq_blocked.json 的值,url 是键;2026-09-22 Frank「专门弄个本地服务 我来处理这些问题」)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    url: str = ""
+    """被人机验证挡住的落地页。"""
+
+    slug: str = ""
+    """公司 slug(抽到总部写搜总部记录用)。"""
+
+    name: str = ""
+    """公司名(在页闸 + 提示词槽)。"""
+
+    status: str = ""
+    """pending 待放行 / ok 抽到总部 / miss 放行了没抽到 / dropped 跳过。"""
+
+    hits: int = 0
+    """容器撞上它几次。"""
+
+    first_at: str = ""
+    """头一回撞上的时刻(ISO,UTC)。"""
+
+    last_at: str = ""
+    """最近一回撞上的时刻。"""
+
+    done_at: str = ""
+    """放行台处理的时刻;没处理 = 空串。"""
+
+    note: str = ""
+    """处理结果说明(总部市省 / 没抽到 / 没过验证)。"""
+
+    at: str = ""
+    """这一行最后一次被写的时刻(两方并入盘上时新者胜)。"""
+
+
+@dataclass
+class HqBlockedIn:
+    """record_hq_blocked() 入参:撞上验证的那一家、那一页。"""
+
+    slug: str
+    """公司 slug。"""
+
+    name: str
+    """公司名。"""
+
+    url: str
+    """落地页。"""
+
+
+@dataclass
+class DeskReq:
+    """放行台读出来的一条请求。"""
+
+    method: str
+    """HTTP 方法。"""
+
+    path: str
+    """路径(已去掉查询串)。"""
+
+    body: dict
+    """JSON 正文;没有正文 = 空表。"""
+
+
+@dataclass
+class DeskResp:
+    """放行台的一条响应。"""
+
+    status: str
+    """状态行(HTTP_OK 等)。"""
+
+    ctype: str
+    """内容类型。"""
+
+    body: bytes
+    """正文字节。"""
+
+
+@dataclass
+class DeskJsonIn:
+    """desk_json() 入参。"""
+
+    status: str
+    """状态行。"""
+
+    payload: dict
+    """要回的 JSON。"""
 

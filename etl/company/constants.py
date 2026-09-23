@@ -1692,3 +1692,249 @@ K_SEEN_LAST = "last_seen"
 
 HOT_JD_GLOB_TPL = "{slug}_*.md"
 """一家公司的 JD 文件名样式(「雇主 slug_岗位 slug.md」;hot_jd_hints 按名直取)。"""
+
+# =========================================================================
+# 12. 搜总部放行台(2026-09-22 Frank「专门弄个本地服务 我来处理这些问题」:容器撞上人机验证的落地页记待放行清单,
+#     本机开一个网页,Frank 抽空在统一 profile 窗口里过验证 —— 过了当场存原文、抽总部、写记录;手动件 main --only unblock)
+# =========================================================================
+
+OUT_HQ_BLOCKED = paths.PROCESSED / "company_hq_blocked.json"
+"""[out] 搜总部待放行清单(url → HqBlockedItem)。两方写:容器 findsite 役(撞验证记一条 / 再撞加次数)与本机放行台
+(处理完标结果);落盘都并入盘上的、同一条 at 新者胜(照 write_search_hq 同款),不靠心跳让活 ——
+让活的话放行台开着期间 findsite 整轮停摆,公司卡的「等待调查」跟着卡住。"""
+
+SEARCH_HQ_CRAWL_SLUG = "search-hq"
+"""搜总部落地页原文进 crawl 层的 slug(抓取先落原文、解析离线可重算;放行台放行的页也落这里,容器下回先读它)。"""
+
+BLK_PENDING = "pending"
+"""待放行:还没人处理。"""
+
+BLK_OK = "ok"
+"""放行了、抽到总部并写进搜总部记录。"""
+
+BLK_MISS = "miss"
+"""放行了,页面上抽不出能核对的总部(原文照样进了 crawl 层)。"""
+
+BLK_DROPPED = "dropped"
+"""Frank 跳过(不值得点);容器再撞只加次数,不回待放行。"""
+
+DESK_HOST = "127.0.0.1"
+"""放行台只听本机(不对局域网开)。"""
+
+DESK_PORT = 8787
+"""放行台端口(2026-09-22 核过:不在本机 Windows 保留端口段里)。"""
+
+DESK_ITEMS_MAX = 200
+"""放行台列表最多几条:待放行全列,处理过的按处理时刻倒序补满。"""
+
+HTTP_HEAD_END = b"\r\n\r\n"
+"""HTTP 请求头的结束标记。"""
+
+HTTP_LINE_SEP = "\r\n"
+"""HTTP 头的行分隔。"""
+
+HTTP_REQ_SEP = " "
+"""请求行里方法 / 路径 / 版本的分隔。"""
+
+HTTP_HDR_SEP = ":"
+"""头名与值的分隔。"""
+
+HTTP_HDR_CONTENT_LENGTH = "content-length"
+"""请求头:正文长度(小写比对)。"""
+
+HTTP_RESP_TPL = ("HTTP/1.1 {status}\r\nContent-Type: {ctype}\r\nContent-Length: {n}\r\n"
+                 "Cache-Control: no-store\r\nConnection: close\r\n\r\n")
+"""响应头模板(一连一请求,答完即关)。"""
+
+HTTP_OK = "200 OK"
+"""状态行:成功。"""
+
+HTTP_NOT_FOUND = "404 Not Found"
+"""状态行:没这个路由。"""
+
+HTTP_FAILED = "500 Internal Server Error"
+"""状态行:处理时出错(已留痕)。"""
+
+CT_HTML_UTF8 = "text/html; charset=utf-8"
+"""页面的内容类型。"""
+
+CT_JSON_UTF8 = "application/json; charset=utf-8"
+"""接口的内容类型。"""
+
+METHOD_GET = "GET"
+"""HTTP 方法:取。"""
+
+METHOD_POST = "POST"
+"""HTTP 方法:办。"""
+
+ROUTE_PAGE = "/"
+"""放行台页面。"""
+
+ROUTE_ITEMS = "/api/items"
+"""接口:待放行清单。"""
+
+ROUTE_OPEN = "/api/open"
+"""接口:放行一条(统一 profile 窗口打开、等 Frank 过验证)。"""
+
+ROUTE_DROP = "/api/drop"
+"""接口:跳过一条。"""
+
+K_DESK_URL = "url"
+"""请求体键:要处理的落地页。"""
+
+K_DESK_ITEMS = "items"
+"""响应键:清单。"""
+
+K_DESK_STATUS = "status"
+"""响应键:这一条现在的状态。"""
+
+K_DESK_NOTE = "note"
+"""响应键:结果说明。"""
+
+K_DESK_ERROR = "error"
+"""响应键:出错说明。"""
+
+NOTE_DESK_NOT_CLEARED = "没过验证,还在待放行"
+"""窗口里没点,或点了没放行。"""
+
+NOTE_DESK_NO_PAGE = "页面没打开,还在待放行"
+"""断网 / 超时 / 页面报错。"""
+
+NOTE_DESK_NO_BROWSER = "浏览器没起来:统一 profile 可能被别的进程占着,关掉占用的窗口或容器再试"
+"""统一 profile 同一时刻只许一个进程开。"""
+
+NOTE_DESK_NO_HQ = "放行了,页面上没有能核对的总部"
+"""原文已进 crawl 层,只是抽不出。"""
+
+NOTE_DESK_HQ_TPL = "{city} {province}"
+"""抽到的总部(市 + 省)。"""
+
+NOTE_DESK_GONE = "清单里没有这条"
+"""页面上的旧行(清单已变)。"""
+
+NOTE_DESK_BAD = "没有这个接口"
+"""路由不认识。"""
+
+NOTE_DESK_NO_LLM = "放行台要本地模型抽总部:NEWS_LLM_BASE 没设,先在环境里配上再开"
+"""缺模型接线就不开台(抽总部要模型)。"""
+
+PRINT_HQ_BLOCKED_TPL = "  ⛔ 记进待放行:{name}  {url}"
+"""容器撞上验证、新记一条时的日志行。"""
+
+PRINT_DESK_UP_TPL = "放行台已开:http://{host}:{port}  待放行 {n} 条(Ctrl+C 收摊)"
+"""开台报数。"""
+
+PRINT_DESK_ROW_TPL = "  {status} {name} | {note} | {url}"
+"""放行台处理一条的日志行。"""
+
+PRINT_DESK_DOWN = "放行台已收摊"
+"""Ctrl+C 收摊。"""
+
+DESK_PAGE = """<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>搜总部放行台</title>
+<style>
+body{font:14px/1.5 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif;margin:24px;color:#1f2328;background:#f6f8fa}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:#57606a;margin:0 0 16px}
+.bar{display:flex;gap:8px;align-items:center;margin:0 0 12px}
+#msg{color:#57606a}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d0d7de}
+th,td{padding:8px 10px;border-bottom:1px solid #eaeef2;text-align:left;vertical-align:top}
+th{background:#f6f8fa;font-weight:600;color:#57606a;white-space:nowrap}
+td.url{word-break:break-all;color:#57606a;font-size:12px}
+td.act{white-space:nowrap}
+button{font:inherit;padding:4px 10px;border:1px solid #d0d7de;border-radius:6px;background:#fff;cursor:pointer}
+button.go{background:#1f883d;border-color:#1f883d;color:#fff}
+button:disabled{opacity:.5;cursor:default}
+.pending{color:#0969da}.ok{color:#1a7f37}.miss{color:#9a6700}.dropped{color:#8c959f}
+</style>
+</head>
+<body>
+<h1>搜总部放行台</h1>
+<p class="sub">点「放行」后,去弹出的 Chrome 窗口里过验证(最多等 2 分钟),结果回到这里。在自己的浏览器里打开这些链接没用。</p>
+<div class="bar"><button class="go" id="all">全部放行</button><button id="reload">刷新</button><span id="msg"></span></div>
+<table>
+<thead><tr><th>公司</th><th>落地页</th><th>被拦</th><th>最近一次</th><th>状态</th><th></th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<script>
+const LABEL = {pending: '待放行', ok: '已抽到总部', miss: '没抽到', dropped: '已跳过'};
+let busy = false;
+let items = [];
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+function when(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString('zh-CN', {hour12: false});
+}
+function setBusy(on, text) {
+  busy = on;
+  document.getElementById('msg').textContent = text;
+  for (const b of document.querySelectorAll('button')) b.disabled = on;
+}
+function render() {
+  const rows = document.getElementById('rows');
+  rows.innerHTML = '';
+  for (const it of items) {
+    const tr = document.createElement('tr');
+    const note = it.note ? '<br>' + esc(it.note) : '';
+    tr.innerHTML = '<td>' + esc(it.name) + '</td><td class="url">' + esc(it.url) + '</td><td>' + it.hits +
+      '</td><td>' + esc(when(it.last_at)) + '</td><td class="' + esc(it.status) + '">' +
+      esc(LABEL[it.status] || it.status) + note + '</td><td class="act"></td>';
+    if (it.status === 'pending') {
+      const go = document.createElement('button');
+      go.className = 'go';
+      go.textContent = '放行';
+      go.onclick = () => openOne(it);
+      const skip = document.createElement('button');
+      skip.textContent = '跳过';
+      skip.onclick = () => dropOne(it);
+      tr.lastChild.append(go, ' ', skip);
+    }
+    rows.append(tr);
+  }
+  const left = items.filter((i) => i.status === 'pending').length;
+  if (!busy) document.getElementById('msg').textContent = '待放行 ' + left + ' 条';
+}
+async function load() {
+  const r = await fetch('/api/items');
+  items = (await r.json()).items;
+  render();
+}
+async function post(path, it) {
+  const r = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({url: it.url})});
+  return r.json();
+}
+async function openOne(it) {
+  setBusy(true, '正在打开:' + it.name + ' —— 去 Chrome 窗口里过验证');
+  try {
+    const d = await post('/api/open', it);
+    setBusy(false, it.name + ':' + (d.note || LABEL[d.status] || ''));
+  } catch (e) {
+    setBusy(false, '出错了:' + e);
+  }
+  await load();
+}
+async function dropOne(it) {
+  await post('/api/drop', it);
+  await load();
+}
+document.getElementById('reload').onclick = load;
+document.getElementById('all').onclick = async () => {
+  const todo = items.filter((i) => i.status === 'pending');
+  for (const it of todo) await openOne(it);
+};
+load();
+</script>
+</body>
+</html>
+"""
+"""放行台页面(内联一页,不引外部资源;只在本机 127.0.0.1 上开)。"""

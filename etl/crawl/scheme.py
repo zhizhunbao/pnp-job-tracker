@@ -303,6 +303,28 @@ class CookieKeepIn:
 
 
 @dataclass
+class BrowserFetch:
+    """fetch_browser() 出参(2026-09-22 放行台:调用方要分清「被人机验证挡住」与别的失败,前者记进待放行清单)。"""
+
+    html: str | None
+    """渲染后的页面原文;没取回 = None。"""
+
+    challenged: bool
+    """停在人机验证页、等到点也没放行。"""
+
+
+@dataclass
+class ClearIn:
+    """challenge_cleared() 入参。"""
+
+    page: PageLike
+    """停在验证页的那个标签。"""
+
+    url: str
+    """这一页的地址(日志用)。"""
+
+
+@dataclass
 class ScopeIn:
     """is_in_scope() 入参。"""
 

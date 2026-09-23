@@ -35,9 +35,9 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from crawl.functions import (browser_live, browser_ok, close_browser, ensure_cookie_jar, fetch_browser_html, get_browser_page,
+from crawl.functions import (browser_live, browser_ok, close_browser, ensure_cookie_jar, fetch_browser, fetch_browser_html, get_browser_page,
                              get_cached_page,
-                             is_challenge_html, put_cached_page)
+                             is_challenge_html, load_cache_index, put_cached_page)
 from crawl.constants import HTML_CACHE_DIR, K_HTML, K_PAGES, K_URL, MANIFEST_FILE
 from crawl.functions import discover_urls
 from crawl.scheme import CachePutIn, DiscoverIn, PageLike, SeedSpec
@@ -120,6 +120,12 @@ from company.constants import (
     NOTE_NO_CSE, P_CSE_CX, P_CSE_KEY, P_CSE_NUM, PRINT_ABOUT_BROWSER_TPL, PULSE_RANK_MAX, BROWSER_SKIP_NOTES,
     FOUND_WIKI, K_CLAIMS, K_DATAVALUE, K_MAINSNAK, PRINT_WIKI_STOP_TPL, PROP_WEBSITE, WD_SITE_PROPS, WIKI_BACKOFF_S,
     WIKI_FAIL_STOP, WIKI_LIMIT, WIKI_SLEEP_S,
+    BLK_DROPPED, BLK_MISS, BLK_OK, BLK_PENDING, CT_HTML_UTF8, CT_JSON_UTF8, DESK_HOST, DESK_ITEMS_MAX, DESK_PAGE, DESK_PORT,
+    HTTP_FAILED, HTTP_HDR_CONTENT_LENGTH, HTTP_HDR_SEP, HTTP_HEAD_END, HTTP_LINE_SEP, HTTP_NOT_FOUND, HTTP_OK,
+    HTTP_REQ_SEP, HTTP_RESP_TPL, K_DESK_ERROR, K_DESK_ITEMS, K_DESK_NOTE, K_DESK_STATUS, K_DESK_URL, METHOD_GET, METHOD_POST,
+    NOTE_DESK_BAD, NOTE_DESK_GONE, NOTE_DESK_HQ_TPL, NOTE_DESK_NO_BROWSER, NOTE_DESK_NO_HQ, NOTE_DESK_NO_LLM, NOTE_DESK_NO_PAGE,
+    NOTE_DESK_NOT_CLEARED, OUT_HQ_BLOCKED, PRINT_DESK_DOWN, PRINT_DESK_ROW_TPL, PRINT_DESK_UP_TPL, PRINT_HQ_BLOCKED_TPL, ROUTE_DROP, ROUTE_ITEMS,
+    ROUTE_OPEN, ROUTE_PAGE, SEARCH_HQ_CRAWL_SLUG,
 )
 from company.scheme import (
     CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn, TitleHitsIn,
@@ -136,6 +142,7 @@ from company.scheme import (
     AboutTextIn, AboutTextOut, CseCfg, CseEnvelope, CseFindIn, FindSiteIn, SiteOfLinksIn,
     EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
     NameExtendIn, QuoteInTextIn, SearchHqOneIn, SearchHqPageIn, SearchHqRecord, SearchHqRoundIn,
+    DeskJsonIn, DeskReq, DeskResp, HqBlockedIn, HqBlockedItem, SearchHqHtmlIn, SearchHqPageOut,
 )
 
 # =========================================================================
@@ -2559,12 +2566,13 @@ async def search_hq_round(x: SearchHqRoundIn) -> None:
     say(PRINT_HQSEARCH_TAKE_TPL.format(n=len(x.todo), limit=SEARCH_HQ_TAKE))
     cache = read_search_hq()
     cfg = company_llm_config()
+    index = load_cache_index(SEARCH_HQ_CRAWL_SLUG)
     ok = 0
     miss = 0
     with make_client(timeout=LLM_TIMEOUT_S) as raw:
         llm = cast(HttpClientLike, raw)
         for t in x.todo:
-            rec = await search_hq_one(SearchHqOneIn(llm=llm, cfg=cfg, target=t, google=x.google))
+            rec = await search_hq_one(SearchHqOneIn(llm=llm, cfg=cfg, target=t, google=x.google, index=index))
             cache[t.slug] = rec
             if rec.status == ST_SEARCH_OK:
                 ok += 1
@@ -2578,7 +2586,8 @@ async def search_hq_round(x: SearchHqRoundIn) -> None:
 
 async def search_hq_one(x: SearchHqOneIn) -> SearchHqRecord:
     """一家:两个引擎的前几个落地页依次试,抽到过核对的地址即停;全空 = miss。
-    本站落地页跳过(官网 sites 早抓过、没地址才轮到本步;Fiscal.ai 实撞:前几名全是官网自己的页,名额被占光)。"""
+    本站落地页跳过(官网 sites 早抓过、没地址才轮到本步;Fiscal.ai 实撞:前几名全是官网自己的页,名额被占光)。
+    2026-09-22 放行台:被人机验证挡住的页已记进待放行清单,不占这家的试页名额(名录站排在前面曾把三个名额吃光)。"""
     rec = SearchHqRecord(name=x.target.name, status=ST_SEARCH_MISS, at=now_iso())
     query = SEARCH_HQ_QUERY_TPL.format(name=x.target.name)
     own = domain_of(x.target.website)
@@ -2595,23 +2604,43 @@ async def search_hq_one(x: SearchHqOneIn) -> SearchHqRecord:
                 continue
             if own != "" and domain_of(link) == own:
                 continue
+            got = await search_hq_page(SearchHqPageIn(llm=x.llm, cfg=x.cfg, name=x.target.name, url=link,
+                                                      slug=x.target.slug, index=x.index))
+            if got.challenged:
+                continue
             tried += 1
-            got = await search_hq_page(SearchHqPageIn(llm=x.llm, cfg=x.cfg, name=x.target.name, url=link))
-            if got is not None:
-                got.name = x.target.name
-                got.at = now_iso()
-                return got
+            if got.rec is not None:
+                got.rec.name = x.target.name
+                got.rec.at = now_iso()
+                return got.rec
         if tried > 0:
             break
     return rec
 
 
-async def search_hq_page(x: SearchHqPageIn) -> SearchHqRecord | None:
-    """一个落地页:有头浏览器取回 → 纯文字 → 公司名在页才喂模型 → 四行答案过原句核对;不过给 None。"""
-    html = await fetch_browser_html(x.url)
-    if html is None:
-        return None
-    text = search_page_text_of(html)
+async def search_hq_page(x: SearchHqPageIn) -> SearchHqPageOut:
+    """一个落地页 → 抽总部。2026-09-22 放行台起先读 crawl 层(放行台放行过的页、以前取回过的页都在这),
+    没有才开有头浏览器取,取回先落 crawl 层再抽(抓取先落原文);被人机验证挡住的记进待放行清单,回 challenged。"""
+    html = ""
+    hit = x.index.get(x.url)
+    if hit is not None:
+        html = Path(hit).read_text(encoding=TEXT_ENCODING, errors=READ_ERRORS)
+    if html == "":
+        got = await fetch_browser(x.url)
+        if got.challenged:
+            record_hq_blocked(HqBlockedIn(slug=x.slug, name=x.name, url=x.url))
+            return SearchHqPageOut(rec=None, challenged=True)
+        if got.html is None:
+            return SearchHqPageOut(rec=None, challenged=False)
+        html = got.html
+        put_cached_page(CachePutIn(slug=SEARCH_HQ_CRAWL_SLUG, url=x.url, html=html, title=x.name))
+    rec = search_hq_of_html(SearchHqHtmlIn(llm=x.llm, cfg=x.cfg, name=x.name, url=x.url, html=html))
+    return SearchHqPageOut(rec=rec, challenged=False)
+
+
+def search_hq_of_html(x: SearchHqHtmlIn) -> SearchHqRecord | None:
+    """落地页原文 → 纯文字 → 公司名在页才喂模型 → 四行答案过原句核对;不过给 None(容器与放行台同一把尺子)。"""
+    text = search_page_text_of(x.html)
     if x.name.lower() not in text.lower():
         return None
     try:
@@ -2896,4 +2925,199 @@ def real_link_of(href: str) -> str:
                 err(href, e)
                 return href
     return href
+
+
+# =========================================================================
+# 12. 搜总部放行台(2026-09-22 Frank「专门弄个本地服务 我来处理这些问题」:容器撞上人机验证的落地页记待放行清单,
+#     本机开一个网页,Frank 抽空在统一 profile 窗口里过验证 —— 过了当场存原文、抽总部、写记录;手动件 main --only unblock)
+# =========================================================================
+
+
+def record_hq_blocked(x: HqBlockedIn) -> None:
+    """容器撞上人机验证的落地页记进待放行清单:新页记 pending;记过的加次数、刷最近一次(处理过的不回待放行)。"""
+    items = read_hq_blocked()
+    now = now_iso()
+    item = items.get(x.url)
+    if item is None:
+        item = HqBlockedItem(url=x.url, slug=x.slug, name=x.name, status=BLK_PENDING, first_at=now)
+        say(PRINT_HQ_BLOCKED_TPL.format(name=x.name, url=x.url))
+    item.hits += 1
+    item.last_at = now
+    item.at = now
+    items[x.url] = item
+    write_hq_blocked(items)
+
+
+def read_hq_blocked() -> dict[str, HqBlockedItem]:
+    """读待放行清单(缺文件 = 空表)。"""
+    items: dict[str, HqBlockedItem] = {}
+    if OUT_HQ_BLOCKED.exists():
+        for url, d in json.loads(OUT_HQ_BLOCKED.read_text(encoding=TEXT_ENCODING)).items():
+            items[url] = HqBlockedItem.model_validate(d)
+    return items
+
+
+def write_hq_blocked(items: dict[str, HqBlockedItem]) -> None:
+    """待放行清单落盘(并入盘上更新的:同一条 at 新者胜 —— 容器与放行台两方写,照 write_search_hq 同款)。"""
+    for url, disk in read_hq_blocked().items():
+        mine = items.get(url)
+        if mine is None or disk.at > mine.at:
+            items[url] = disk
+    out: dict[str, dict] = {}
+    for url, item in items.items():
+        out[url] = item.model_dump()
+    paths.write_json(paths.WriteJsonIn(path=OUT_HQ_BLOCKED, payload=out, indent=JSON_INDENT))
+
+
+def serve_hq_desk() -> None:
+    """--only unblock 入口(Frank 本机手动):开放行台 —— 本机网页列待放行清单,点「放行」就在统一 profile 窗口里
+    打开那一页,Frank 过验证,过了当场存原文、抽总部、写搜总部记录。缺模型接线不开(抽总部要模型);Ctrl+C 收摊。"""
+    if company_llm_config().base == "":
+        say(NOTE_DESK_NO_LLM)
+        return
+    try:
+        asyncio.run(desk_main())
+    except KeyboardInterrupt:
+        say(PRINT_DESK_DOWN)
+
+
+async def desk_main() -> None:
+    """放行台主体:本机 HTTP 服务一直开着;浏览器窗口第一次点「放行」才起(统一 profile 同一时刻只许一个进程开,
+    不用就不占着),收摊时关。"""
+    server = await asyncio.start_server(desk_conn, DESK_HOST, DESK_PORT)
+    say(PRINT_DESK_UP_TPL.format(host=DESK_HOST, port=DESK_PORT, n=desk_pending_n()))
+    try:
+        async with server:
+            await server.serve_forever()
+    finally:
+        await close_browser()
+
+
+def desk_pending_n() -> int:
+    """待放行还剩几条。"""
+    n = 0
+    for item in read_hq_blocked().values():
+        if item.status == BLK_PENDING:
+            n += 1
+    return n
+
+
+async def desk_conn(  # noqa: PLR0913 — 两参是外部规定:asyncio.start_server 的回调签名
+        reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    """放行台一条连接:读请求 → 路由 → 写响应 → 关连接(一连一请求)。
+    一条请求出错不拖垮放行台:留痕、回 500。"""
+    try:
+        resp = await desk_route(await desk_read(reader))
+    except Exception as e:  # noqa: BLE001 — 放行台的请求入口:任何一条出错都留痕回 500,台子照开
+        err(ROUTE_PAGE, e)
+        resp = desk_json(DeskJsonIn(status=HTTP_FAILED, payload={K_DESK_ERROR: str(e)}))
+    head = HTTP_RESP_TPL.format(status=resp.status, ctype=resp.ctype, n=len(resp.body))
+    writer.write(head.encode(TEXT_ENCODING) + resp.body)
+    await writer.drain()
+    writer.close()
+
+
+async def desk_read(reader: asyncio.StreamReader) -> DeskReq:
+    """读一条 HTTP 请求:请求行 + 头(只认正文长度)+ JSON 正文(没有正文 = 空表)。读不懂就抛,由 desk_conn 回 500。"""
+    lines = (await reader.readuntil(HTTP_HEAD_END)).decode(TEXT_ENCODING).split(HTTP_LINE_SEP)
+    parts = lines[0].split(HTTP_REQ_SEP)
+    length = 0
+    for line in lines[1:]:
+        name, _, value = line.partition(HTTP_HDR_SEP)
+        if name.strip().lower() == HTTP_HDR_CONTENT_LENGTH:
+            length = int(value.strip())
+    body: dict = {}
+    if length > 0:
+        loaded = json.loads((await reader.readexactly(length)).decode(TEXT_ENCODING))
+        if isinstance(loaded, dict):
+            body = loaded
+    return DeskReq(method=parts[0], path=parts[1].split(QUERY_MARK)[0], body=body)
+
+
+async def desk_route(req: DeskReq) -> DeskResp:
+    """放行台路由:页面 / 清单 / 放行一条 / 跳过一条;别的回 404。"""
+    if req.method == METHOD_GET and req.path == ROUTE_PAGE:
+        return DeskResp(status=HTTP_OK, ctype=CT_HTML_UTF8, body=DESK_PAGE.encode(TEXT_ENCODING))
+    if req.method == METHOD_GET and req.path == ROUTE_ITEMS:
+        return desk_json(DeskJsonIn(status=HTTP_OK, payload={K_DESK_ITEMS: desk_items()}))
+    url = str(req.body.get(K_DESK_URL, ""))
+    if req.method == METHOD_POST and req.path == ROUTE_OPEN and url != "":
+        return desk_json(DeskJsonIn(status=HTTP_OK, payload=await desk_open(url)))
+    if req.method == METHOD_POST and req.path == ROUTE_DROP and url != "":
+        return desk_json(DeskJsonIn(status=HTTP_OK, payload=desk_drop(url)))
+    return desk_json(DeskJsonIn(status=HTTP_NOT_FOUND, payload={K_DESK_ERROR: NOTE_DESK_BAD}))
+
+
+def desk_json(x: DeskJsonIn) -> DeskResp:
+    """JSON 响应。"""
+    body = json.dumps(x.payload, ensure_ascii=False).encode(TEXT_ENCODING)
+    return DeskResp(status=x.status, ctype=CT_JSON_UTF8, body=body)
+
+
+def desk_items() -> list:
+    """放行台列表:待放行全列(最近撞上的在前),处理过的按处理时刻倒序补到 DESK_ITEMS_MAX 条。"""
+    pending: list = []
+    done: list = []
+    for url, item in read_hq_blocked().items():
+        if item.status == BLK_PENDING:
+            pending.append((item.last_at, url, item))
+        else:
+            done.append((item.done_at, url, item))
+    pending.sort(key=itemgetter(0, 1), reverse=True)
+    done.sort(key=itemgetter(0, 1), reverse=True)
+    out: list = []
+    for row in pending + done:
+        if len(out) >= DESK_ITEMS_MAX and row[2].status != BLK_PENDING:
+            break
+        out.append(row[2].model_dump())
+    return out
+
+
+async def desk_open(url: str) -> dict:
+    """放行一条:统一 profile 窗口打开这一页(验证等 Frank 点)→ 过了先落 crawl 层 → 抽总部 → 抽到写进搜总部记录;
+    清单那条标 ok / miss。没过验证 / 没打开的留在待放行,回一句说明。"""
+    item = read_hq_blocked().get(url)
+    if item is None:
+        return {K_DESK_STATUS: BLK_PENDING, K_DESK_NOTE: NOTE_DESK_GONE}
+    got = await fetch_browser(url)
+    if got.html is None:
+        return {K_DESK_STATUS: BLK_PENDING, K_DESK_NOTE: desk_fail_note(got.challenged)}
+    put_cached_page(CachePutIn(slug=SEARCH_HQ_CRAWL_SLUG, url=url, html=got.html, title=item.name))
+    with make_client(timeout=LLM_TIMEOUT_S) as raw:
+        rec = search_hq_of_html(SearchHqHtmlIn(llm=cast(HttpClientLike, raw), cfg=company_llm_config(), name=item.name,
+                                               url=url, html=got.html))
+    item.status = BLK_MISS
+    item.note = NOTE_DESK_NO_HQ
+    if rec is not None:
+        rec.name = item.name
+        rec.at = now_iso()
+        write_search_hq({item.slug: rec})
+        item.status = BLK_OK
+        item.note = NOTE_DESK_HQ_TPL.format(city=rec.hq_city, province=rec.hq_province)
+    item.done_at = now_iso()
+    item.at = item.done_at
+    write_hq_blocked({url: item})
+    say(PRINT_DESK_ROW_TPL.format(status=item.status, name=item.name, note=item.note, url=url))
+    return {K_DESK_STATUS: item.status, K_DESK_NOTE: item.note}
+
+
+def desk_fail_note(challenged: bool) -> str:
+    """放行没成的说明:验证没过 / 浏览器没起来 / 页面没打开。"""
+    if challenged:
+        return NOTE_DESK_NOT_CLEARED
+    if not browser_live():
+        return NOTE_DESK_NO_BROWSER
+    return NOTE_DESK_NO_PAGE
+
+
+def desk_drop(url: str) -> dict:
+    """跳过一条(Frank 觉得不值得点):标 dropped,容器再撞只加次数。"""
+    item = read_hq_blocked().get(url)
+    if item is None:
+        return {K_DESK_STATUS: BLK_PENDING, K_DESK_NOTE: NOTE_DESK_GONE}
+    item.status = BLK_DROPPED
+    item.done_at = now_iso()
+    item.at = item.done_at
+    write_hq_blocked({url: item})
+    return {K_DESK_STATUS: item.status, K_DESK_NOTE: item.note}
 

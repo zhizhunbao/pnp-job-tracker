@@ -355,6 +355,10 @@ NETWORK_IDLE_MS = 8000
 CHALLENGE_TIMEOUT_MS = 120000
 """人机验证框等待上限(有头环境手点)。"""
 
+CHALLENGE_UNATTENDED_MS = 10000
+"""无人值守(crawl.BROWSER_UNATTENDED)时验证页等多久:只留给不用点、自己会放行的那种;要人点的一律交还调用方
+(2026-09-22 放行台)。"""
+
 SCROLL_PASSES = 5
 """懒加载列表页的滚动次数。"""
 
@@ -808,6 +812,9 @@ PRINT_BROWSER_NONE = "浏览器不可用(playwright 未装?)"
 
 PRINT_CHALLENGE_WAIT_TPL = "  [browser] ⏳ 人机验证:请在浏览器窗口点一下验证框(最多等 {s}s,解过一次后续免验证) {url}"
 """交互式验证等待提示(有头环境手点)。"""
+
+PRINT_CHALLENGE_UNATTENDED_TPL = "  [browser] ⛔ 人机验证(无人值守,等 {s}s 看会不会自己放行) {url}"
+"""无人值守时撞验证页的日志行(容器里没有能点的窗口,不再叫人去点;2026-09-22)。"""
 
 PRINT_CHALLENGE_OK = "  [browser] ✅ 验证通过,继续"
 """验证放行。"""

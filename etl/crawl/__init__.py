@@ -26,6 +26,12 @@ BROWSER_COOKIES = os.environ.get("BROWSER_COOKIES", "")
 cookie 是 Windows Chrome 用本机账户密钥加密的,容器里 Linux chromium 读得到文件解不开;改由 Windows 端登录后
 导出明文 cookie(hireac --only export),容器加载。实测容器加载后 3.2 秒进到 HireAC 岗位列表页。"""
 
+BROWSER_UNATTENDED = os.environ.get("BROWSER_UNATTENDED", "") == "1"
+"""无人值守开关(= 1 才开;2026-09-22 Frank「专门弄个本地服务 我来处理这些问题」):容器里的有头浏览器画在
+Xvfb 虚拟屏上,没有人点得到验证框,原先照本机口径干等 120 秒必然超时(findsite 容器 48 小时撞 30 次、白等近 1 小时)。
+开着时验证页只等 CHALLENGE_UNATTENDED_MS(留给不用点、自己会放行的那种),过不去就交还调用方(fetch_browser 的
+challenged),由调用方记进待放行清单、Frank 在本机放行台统一过;本机不设,照旧等人点。"""
+
 META = {
     "role": "crawl",
     "method": "httpx",

@@ -186,6 +186,7 @@ services:
     environment:
       SOURCE: findsite
       BROWSER_COOKIES: findsite-cookies.json      # 自己一只空 cookie 罐 = 自己一个干净的有头浏览器(持久 profile 同一时刻只许一个进程开)
+      BROWSER_UNATTENDED: "1"                     # 2026-09-22 无人值守:验证页只等 10 秒,过不去的搜总部落地页记进待放行清单,Frank 本机放行台(company --only unblock)统一过
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(搜总部步从落地页抽街址;空=搜总部步跳过,2026-09-22 OPS 实撞:没配整步静默跳)
       HEALTHCHECK_PING_FINDSITE: ${HEALTHCHECK_PING_FINDSITE:-}   # 未配 = ping_health 自然跳过
       SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根(取活 / 交活的接口在同一个站)

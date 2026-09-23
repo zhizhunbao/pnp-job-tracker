@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
-from crawl import BROWSER_CHANNEL, BROWSER_COOKIES
+from crawl import BROWSER_CHANNEL, BROWSER_COOKIES, BROWSER_UNATTENDED
 from crawl.constants import (
     COOKIE_JAR_EMPTY,
     ACCEPT_HTML,
@@ -49,6 +49,7 @@ from crawl.constants import (
     CELL_TAGS,
     CHALLENGE_SNIFF_LEN,
     CHALLENGE_TIMEOUT_MS,
+    CHALLENGE_UNATTENDED_MS,
     CHANGES_FILE,
     COND_AND,
     CONSTANTS_GLOB,
@@ -221,6 +222,7 @@ from crawl.constants import (
     TIMESPEC_SECONDS,
     TITLE_CHALLENGE_MARKERS,
     TITLE_COND_TPL,
+    PRINT_CHALLENGE_UNATTENDED_TPL,
     URL_SLASH,
     SCHEME_SEP,
     VIEWPORT_H,
@@ -250,6 +252,8 @@ from crawl.scheme import (
     WalkIn,
     CookieKeepIn,
     SaveCookiesIn,
+    BrowserFetch,
+    ClearIn,
 )
 from crawl.variables import CACHE
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
@@ -549,10 +553,19 @@ async def is_page_challenged(page: PageLike) -> bool:
 
 
 async def fetch_browser_html(url: str) -> str | None:
-    """有头持久浏览器取一页渲染后 HTML(单标签严格串行);验证框等人点、懒加载滚出来。"""
+    """有头持久浏览器取一页渲染后 HTML(单标签严格串行);验证框等人点、懒加载滚出来。
+    2026-09-22 起是 fetch_browser 的薄壳:只要原文的调用方照旧拿 str | None。"""
+    got = await fetch_browser(url)
+    return got.html
+
+
+async def fetch_browser(url: str) -> BrowserFetch:
+    """有头持久浏览器取一页 → 原文 + 是不是被人机验证挡住(单标签严格串行;懒加载滚出来)。
+    2026-09-22 放行台:等验证放行拆进 challenge_cleared(本机等人点 / 无人值守只等一小会儿),
+    没放行的回 challenged,调用方据此记待放行清单。"""
     page = await get_browser_page()
     if page is None:
-        return None
+        return BrowserFetch(html=None, challenged=False)
     async with CACHE.sem:
         try:
             await page.goto(url, wait_until=DOMCONTENTLOADED, timeout=NAV_TIMEOUT_MS)
@@ -560,29 +573,45 @@ async def fetch_browser_html(url: str) -> str | None:
                 await page.wait_for_load_state(NETWORKIDLE, timeout=NETWORK_IDLE_MS)
             except Exception:  # noqa: BLE001, S110 — network-idle 超时是常态节奏,防线在产物侧
                 pass
-            if await is_page_challenged(page):
-                say(PRINT_CHALLENGE_WAIT_TPL.format(s=CHALLENGE_TIMEOUT_MS // 1000, url=url))
-                parts = []
-                for m in TITLE_CHALLENGE_MARKERS:
-                    parts.append(TITLE_COND_TPL.format(marker=m))
-                cond = COND_AND.join(parts)
-                try:
-                    await page.wait_for_function(WAIT_FN_TPL.format(cond=cond), timeout=CHALLENGE_TIMEOUT_MS)
-                    await page.wait_for_load_state(NETWORKIDLE, timeout=NETWORK_IDLE_MS)
-                    say(PRINT_CHALLENGE_OK)
-                except Exception:  # noqa: BLE001 — 没人点验证框,跳过该页
-                    say(PRINT_CHALLENGE_TIMEOUT)
-                    return None
+            if await is_page_challenged(page) and not await challenge_cleared(ClearIn(page=page, url=url)):
+                return BrowserFetch(html=None, challenged=True)
             try:
                 for _ in range(SCROLL_PASSES):
                     await page.mouse.wheel(0, SCROLL_STEP_PX)
                     await page.wait_for_timeout(SCROLL_PAUSE_MS)
             except Exception:  # noqa: BLE001, S110 — 滚动只为懒加载,失败无害
                 pass
-            return await page.content()
+            return BrowserFetch(html=await page.content(), challenged=False)
         except Exception as e:  # noqa: BLE001 — 单页拿不回按跳过,损耗在设计内
             say(PRINT_SKIP_ERR_TPL.format(name=type(e).__name__, detail=e, url=url[:100]))
-            return None
+            return BrowserFetch(html=None, challenged=False)
+
+
+async def challenge_cleared(x: ClearIn) -> bool:
+    """验证页等放行:本机叫人点、最多等 CHALLENGE_TIMEOUT_MS;无人值守(crawl.BROWSER_UNATTENDED)只等
+    CHALLENGE_UNATTENDED_MS,留给自己会放行的那种。标题不再带验证判词 = 放行,返回 True。
+    2026-09-22 放行之后的 network-idle 超时不再算没放行(原先与等验证同在一个 try:人点过了、页面迟迟静不下来,
+    整页照样丢掉 —— 放行台上 Frank 点过的页会白点)。"""
+    wait_ms = CHALLENGE_TIMEOUT_MS
+    if BROWSER_UNATTENDED:
+        wait_ms = CHALLENGE_UNATTENDED_MS
+        say(PRINT_CHALLENGE_UNATTENDED_TPL.format(s=wait_ms // 1000, url=x.url))
+    else:
+        say(PRINT_CHALLENGE_WAIT_TPL.format(s=wait_ms // 1000, url=x.url))
+    parts = []
+    for m in TITLE_CHALLENGE_MARKERS:
+        parts.append(TITLE_COND_TPL.format(marker=m))
+    try:
+        await x.page.wait_for_function(WAIT_FN_TPL.format(cond=COND_AND.join(parts)), timeout=wait_ms)
+    except Exception:  # noqa: BLE001 — 没人点验证框(或无人值守等不到自己放行),交还调用方
+        say(PRINT_CHALLENGE_TIMEOUT)
+        return False
+    say(PRINT_CHALLENGE_OK)
+    try:
+        await x.page.wait_for_load_state(NETWORKIDLE, timeout=NETWORK_IDLE_MS)
+    except Exception:  # noqa: BLE001, S110 — network-idle 超时是常态节奏,防线在产物侧
+        pass
+    return True
 
 
 async def close_browser() -> None:
