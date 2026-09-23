@@ -1719,7 +1719,7 @@ export function toExploreResult(r: ExploreResultJson): ExploreResult {
 
 /**
  * 这一请求是不是爬虫发的:没带接受语言(真浏览器每个请求都带)、没有浏览器标识,或标识自报是爬虫(2026-09-23,
- * 「点开」上报被爬虫灌满的服务端那道闸;来由见 CRAWLER_UA_RE)。
+ * 「点开」上报被爬虫灌满的服务端那道闸,同日公司现查也挡上;来由见 CRAWLER_UA_RE)。
  *
  * @param h 请求头。
  * @returns 是爬虫 = true。

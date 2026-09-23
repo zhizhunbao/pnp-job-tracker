@@ -365,6 +365,8 @@ export async function employersExportRoute(req: Request): Promise<Response> {
  * 红线:出处列表随答案返回;查不到如实回空;掉线静默 204。
  * 调查并入统一免费池(第25轮打码批;缓存命中不计费)。
  * 2026-09-19:没带「这一页有过真人动作」标记(HDR_HUMAN)的只给库里已有的,不联网现查(来由见 HDR_HUMAN 的注);真现查留一行带浏览器标识的痕。
+ * 2026-09-23 Frank「改吧,现查也挡上」:真人标记挡不住会滚页面的爬虫(09-22 晚三次现查的浏览器标识都是「(compatible; …)」,
+ * 三次都查回没出处的简介入库),被 isCrawlerHeaders 判成爬虫的同样只给库里已有的。
  *
  * @param req 请求(body 是 { name })。
  * @returns 公司信息 json;掉线/查无 204、名字非法 400、超额由 freeGate 裁决。
@@ -395,7 +397,7 @@ export async function employersInfoRoute(req: Request): Promise<Response> {
   if (row.cached != null) {
     return Response.json(row.cached)
   }
-  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES || storedOnly) {
+  if (req.headers.get(HDR_HUMAN) !== HUMAN_YES || storedOnly || isCrawlerHeaders(req.headers)) {
     return new Response(null, { status: NO_CONTENT })
   }
   let ua = req.headers.get(HDR_UA)
