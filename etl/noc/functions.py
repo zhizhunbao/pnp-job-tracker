@@ -46,6 +46,7 @@ from noc.constants import (
     TITLES_SAVE_EVERY, TITLES_TERM_FIX_TPL, TITLES_TODO_TPL,
     ARG_ALL, ARG_LIMIT, ARG_RETRANSLATE, AUDIT_HEAD_TPL, AUDIT_LABELS, AUDIT_ROW_TPL,
     BROAD_BAD_TPL, BROAD_GROUP, BROAD_HEAD_TPL, BROAD_MORE_TPL, BROAD_OK_MSG, BROAD_SHOW_MAX, BROADS,
+    BROAD_REMAP, BROAD_REMAP_CODES, OCC_MERGE,
     BUCKETS3, BUCKETS4, BUCKETS5, CACHE_HIT_TPL, CJK_RE,
     COL_CODE_DESC, COL_CODE_PREFIX, COL_EDESC, COL_ETYPE, COL_LEVEL, COL_TITLE, COLLISION_CODE_TPL,
     COLLISION_LANGS, COLLISION_OK_TPL, COLLISION_ROW_TPL, COLLISION_SEP, COLLISION_SHOW_MAX,
@@ -121,7 +122,22 @@ def teer_of(noc: str | None) -> int | None:
 
 
 def broad_of(noc: str | None) -> str:
-    """大类 = 本站浏览分类(第 2 段桶表)。映射查不到 → 未分类,不拿官方组名硬顶。"""
+    """大类 = 本站浏览分类(第 2 段桶表)。映射查不到 → 未分类,不拿官方组名硬顶。
+    2026-09-23 大类重排 27 → 23:桶表给的是桶级大类(bucket_broad_of),再过 BROAD_REMAP_CODES(逐码)
+    → BROAD_REMAP(整类)换成新大类;桶级大类缺去处当场 KeyError,不静默落未分类。"""
+    bucket = bucket_broad_of(noc)
+    if noc is None or bucket == UNCLASSIFIED:
+        return UNCLASSIFIED
+    by_code = BROAD_REMAP_CODES.get(noc)
+    if by_code is not None:
+        return by_code
+    return BROAD_REMAP[bucket]
+
+
+def bucket_broad_of(noc: str | None) -> str:
+    """桶级大类 = 三张桶表里的大类(2026-09-23 大类重排前那一层,27 个)。映射查不到 → 未分类。
+    除 broad_of 外只给要保旧口径的消费者:mart 的 BC「Any Trade」展开(技工桶)、employers 的公司行业兜底
+    (BROAD_CATEGORY)—— 新大类把几对合并了,并完说不清那两件事,按桶级查口径逐字不变。"""
     if not is_valid_noc(noc):
         return UNCLASSIFIED
     b = bucket_of(noc)
@@ -137,13 +153,14 @@ def group_of(broad: str) -> str:
 
 
 def broad_i18n(x: BroadI18nIn) -> str:
-    """大类的英/韩名(手写表;缺则退中文 —— 前端不该拿中文顶英文,体检脚本盯着不许缺)。"""
-    b = bucket_of(x.noc)
-    if b is None:
+    """大类的英/韩名(手写表;缺则退中文 —— 前端不该拿中文顶英文,体检脚本盯着不许缺)。
+    2026-09-23 大类重排起按 broad_of 的新大类查(原先直接拿桶表的大类)。"""
+    b = broad_of(x.noc)
+    if b == UNCLASSIFIED:
         return UNCLASSIFIED
-    i = I18N.get(b[0])
+    i = I18N.get(b)
     if i is None:
-        return b[0]
+        return b
     if x.lang == K_KO:
         return i[1]
     return i[0]
@@ -1127,6 +1144,7 @@ def report_short_dups(x: DupReportIn) -> None:
 
     不能静默上线(中文那次 Cooks 与 Chefs 双双变「厨师」就是这么抓到的;
     新 NOC 进来时这里会再次亮)。
+    2026-09-23 起 OCC_MERGE 声明过的码组(有意合成一个职业)不报。
     """
     for lang in x.langs:
         field = to_short_spec(lang).field
@@ -1138,7 +1156,7 @@ def report_short_dups(x: DupReportIn) -> None:
                 groups[v[field]].append(noc)
         dups = []
         for name, codes in groups.items():
-            if len(codes) > 1:
+            if len(codes) > 1 and sorted(codes) not in OCC_MERGE:
                 dups.append((name, codes))
         if len(dups) > 0:
             say(SHORT_DUP_WARN_TPL.format(lang=lang, n=len(dups)))

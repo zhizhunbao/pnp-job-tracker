@@ -16,14 +16,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import paths
-from noc.functions import broad_of, group_of, teer_of
+from noc.functions import broad_of, bucket_broad_of, group_of, teer_of
 from names.functions import category_of, sector_of
 from log.functions import say
 from employers.constants import (BROAD_CATEGORY, BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, PLACE_SEP, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT, K_EE_CATEGORY,
                                  K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
-                                 K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
+                                 K_NOC, K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
                                  LEGAL_SUFFIX_RE, LOC_PROV_SEP, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
                                  PRINT_POOL_DONE_TPL, PRINT_SOURCES_TPL, SKILLED_TEER_MAX,
@@ -389,11 +389,27 @@ def broads_of(x: KeyIn) -> list:
 
 def private_category_of(x: KeyIn) -> str | None:
     """私营雇主的公司分类兜底:在招大类从多到少逐个查 BROAD_CATEGORY,第一个查得到的算数;都查不到 / 没有在招 = None。
-    (公立 / 政府的由 names 域 category_of 按名字判,先于本函数;本函数只在它给空串时才被用到。)"""
-    for broad in broads_of(x):
+    (公立 / 政府的由 names 域 category_of 按名字判,先于本函数;本函数只在它给空串时才被用到。)
+    2026-09-23 大类重排起按桶级大类查(bucket_broads_of),口径与重排前相同,见 BROAD_CATEGORY。"""
+    for broad in bucket_broads_of(x):
         if broad in BROAD_CATEGORY:
             return BROAD_CATEGORY[broad]
     return None
+
+
+def bucket_broads_of(x: KeyIn) -> list:
+    """在招桶级大类:该雇主在招岗的职业码过 noc.bucket_broad_of(大类重排前那一层),岗多的在前;未分类不计。
+    只给公司行业兜底用(2026-09-23);雇主板的在招大类清单与筛选走 broads_of(jobs 行的新大类)。"""
+    count: Counter = Counter()
+    for rows in (x.ctx.open_by_key.get(x.key) or {}).values():
+        for row in rows:
+            broad = bucket_broad_of(row.get(K_NOC))
+            if broad != BROAD_UNCAT:
+                count[broad] += 1
+    out = []
+    for broad, _n in count.most_common():
+        out.append(broad)
+    return out
 
 
 def home_district_of(x: HomeDistrictIn) -> str | None:

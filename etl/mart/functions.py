@@ -44,7 +44,7 @@ from log.functions import err, say
 from richtext.functions import md_head_of
 from names.functions import norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
-from noc.functions import broad_of, classify, group_of, noc_of_title, teer_of
+from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
@@ -2616,12 +2616,14 @@ def expand_applies(x: ExpandAppliesIn) -> dict:
     官方那条「Any Trade」不给 NOC,只说「持 SkilledTradesBC 证书的技工」。把它展开成
     **本站分类树的「技工」大类**(noc.broad_of)—— 注意这是决定「问不问」,不是断言资格:
     问了用户还得自己勾,过度包含只会多问一句,漏掉才会让人白丢 5 分。
+    2026-09-23 大类重排后技工拆进建筑 / 机修技工两个新大类,这里改按桶级大类(noc.bucket_broad_of)的「技工」展开,
+    展开出的码与重排前逐个相同。
     """
     nocs = dict(x.applies.get(K_NOCS) or {})
     trade = (x.applies.get(K_ANY_TRADE) or "").strip()
     if trade:
         for code in x.universe:
-            if code not in nocs and broad_of(code) == BROAD_TRADES:
+            if code not in nocs and bucket_broad_of(code) == BROAD_TRADES:
                 nocs[code] = trade
     return to_applies_rule(nocs)
 

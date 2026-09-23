@@ -1666,7 +1666,8 @@ K_ANY_TRADE = "anyTrade"
 """官方那条「Any Trade」(不给 NOC,只说「持 SkilledTradesBC 证书的技工」)。"""
 
 BROAD_TRADES = "技工"
-"""本站分类树的技工大类(anyTrade 展开成它)。"""
+"""本站分类树的技工大类(anyTrade 展开成它)。2026-09-23 大类重排后这是**桶级**大类名(noc.bucket_broad_of):
+技工桶拆进了建筑 / 机修技工两个新大类,按桶级「技工」展开口径不变。"""
 
 IN_SCORE_TABLES = [paths.PNP / "bc-sirs.json", paths.PNP / "sk-points.json",
                    paths.PNP / "on-points.json", paths.PNP / "mb-points.json",

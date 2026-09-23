@@ -10,11 +10,13 @@
  * 单一来源 = etl/noc_buckets.py 的 BROADS,改那边要同步这里。
  * 2026-09-23 大类重排(Frank「按表来」,27 → 23,etl/noc 的 BROADS / SLUGS 同批改):slug 能沿用的沿用
  * (财会金融 = finance、运输物流 = transport、零售销售 = retail……,已收录的榜单 / 统计页网址不变);
- * 退役的 management / office / accounting / sport / sales / logistics / mining / social-services 不另做跳转:
+ * 退役的 office / accounting / sport / sales / logistics / mining / social-services 不另做跳转:
  * 统计页 /stats/<省>/<slug> 已无页面门;每日分类榜的路由白名单是 lib/rankings 的 RANKING_SLUGS(另一套榜名,本批不动)。
+ * 同日改:高管沿用 management,不另起 executives —— 内容仍是那几位不分行业的高管(原管理层只装这几个码),
+ * /rankings/daily-top-management 在白名单里、已收录,换名会让它空掉。
  */
 export const BROAD_SLUGS: [string, string][] = [
-  ['executives', '高管'], ['business', '商务'], ['human-resources', '人力资源'], ['administration', '行政文员'],
+  ['management', '高管'], ['business', '商务'], ['human-resources', '人力资源'], ['administration', '行政文员'],
   ['customer-service', '客户服务'], ['finance', '财会金融'], ['legal', '法律'], ['it', 'IT'], ['engineering', '工程'],
   ['science', '科研'], ['healthcare', '医疗'], ['education', '教育'], ['public-services', '公共服务'],
   ['arts', '文体艺术'], ['food-service', '餐饮'], ['hospitality', '酒店旅游'], ['retail', '零售销售'],

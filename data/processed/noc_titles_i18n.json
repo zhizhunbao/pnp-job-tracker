@@ -429,7 +429,7 @@
  "14405": {
   "zh": "运输路线和机组排班员",
   "ko": "교통 노선 및 승무원 스케줄러",
-  "zhShort": "运输调度员",
+  "zhShort": "线路排班员",
   "koShort": "교통 스케줄러",
   "enShort": "Transportation route schedulers"
  },
@@ -576,21 +576,21 @@
  "21230": {
   "zh": "计算机系统开发人员和程序员",
   "ko": "컴퓨터 시스템 개발자 및 프로그래머",
-  "zhShort": "计算机程序员",
-  "koShort": "컴퓨터 시스템 개발자",
-  "enShort": "Computer systems developers"
+  "zhShort": "软件开发",
+  "koShort": "소프트웨어 개발자",
+  "enShort": "Software developers"
  },
  "21231": {
   "zh": "软件工程师和设计师",
   "ko": "소프트웨어 엔지니어 및 디자이너",
-  "zhShort": "软件工程师",
-  "koShort": "소프트웨어 엔지니어",
-  "enShort": "Software engineers"
+  "zhShort": "软件开发",
+  "koShort": "소프트웨어 개발자",
+  "enShort": "Software developers"
  },
  "21232": {
   "zh": "软件开发员和程序员",
   "ko": "소프트웨어 개발자 및 프로그래머",
-  "zhShort": "软件开发者",
+  "zhShort": "软件开发",
   "koShort": "소프트웨어 개발자",
   "enShort": "Software developers"
  },
@@ -855,7 +855,7 @@
  "22311": {
   "zh": "电子服务技术员（家用及商用设备）",
   "ko": "전자 서비스 기술자 (가정용 및 업무용 장비)",
-  "zhShort": "家电维修技师",
+  "zhShort": "电子设备维修技师",
   "koShort": "가전수리공",
   "enShort": "Electronic service technicians"
  },
@@ -1163,7 +1163,7 @@
  "33103": {
   "zh": "药剂技术员和药剂助理",
   "ko": "약국 기술 보조원 및 약국 보조원",
-  "zhShort": "药剂员",
+  "zhShort": "药房助理",
   "koShort": "약국 보조원",
   "enShort": "Pharmacy technical assistants"
  },
@@ -2086,14 +2086,14 @@
  "65200": {
   "zh": "餐饮服务人员",
   "ko": "음식 및 음료 서빙 직원",
-  "zhShort": "餐饮服务人员",
+  "zhShort": "餐厅服务员",
   "koShort": "서빙 직원",
   "enShort": "Food and bev servers"
  },
  "65201": {
   "zh": "食品柜台服务员、厨房助手及相关辅助职业",
   "ko": "식품 카운터 보조원, 주방 보조원 및 관련 지원 직업",
-  "zhShort": "餐饮服务员",
+  "zhShort": "柜台和后厨帮工",
   "koShort": "식품 카운터 보조원",
   "enShort": "Food counter attendants"
  },
@@ -2212,14 +2212,14 @@
  "72012": {
   "zh": "管道安装工承包商和主管",
   "ko": "배관공 견적자 및 감독자",
-  "zhShort": "管道安装工",
+  "zhShort": "管道行业主管",
   "koShort": "배관공 감독자",
   "enShort": "Pipefitting supervisors"
  },
  "72013": {
   "zh": "木工行业承包商和主管",
   "ko": "목공 기술자 및 감독자",
-  "zhShort": "木工承包商",
+  "zhShort": "木工行业主管",
   "koShort": "목공 기술자 및 감독자",
   "enShort": "Carpentry supervisors"
  },
@@ -2233,7 +2233,7 @@
  "72020": {
   "zh": "承包商和主管，机械行业",
   "ko": "기계 직종 계약자 및 감독자",
-  "zhShort": "机械行业承包商",
+  "zhShort": "机修行业主管",
   "koShort": "기계직 감독자",
   "enShort": "Mechanic trades supervisors"
  },
@@ -2268,7 +2268,7 @@
  "72100": {
   "zh": "机械师和机加工及工具检验员",
   "ko": "기계공 및 기계가공·공구 검사원",
-  "zhShort": "机械师",
+  "zhShort": "机加工技师",
   "koShort": "기계공",
   "enShort": "Machinists"
  },
@@ -2408,7 +2408,7 @@
  "72400": {
   "zh": "建筑机械安装工和工业机械师",
   "ko": "건설 밀라이트 및 산업 기계공",
-  "zhShort": "机械安装工",
+  "zhShort": "工业机修工",
   "koShort": "건설 밀라이트",
   "enShort": "Construction millwrights"
  },
@@ -2477,7 +2477,7 @@
  "72421": {
   "zh": "设备维修员",
   "ko": "가전제품 수리공",
-  "zhShort": "设备维修员",
+  "zhShort": "家电维修员",
   "koShort": "가전제품 수리공",
   "enShort": "Appliance servicers"
  },
@@ -2610,7 +2610,7 @@
  "73201": {
   "zh": "一般建筑维修工人和建筑管理员",
   "ko": "일반 건물 유지보수 직원 및 건물 관리자",
-  "zhShort": "建筑维修工",
+  "zhShort": "楼宇维修工",
   "koShort": "건물 유지보수 직원",
   "enShort": "Building maintenance workers"
  },
@@ -2876,7 +2876,7 @@
  "84101": {
   "zh": "石油和天然气井钻探及相关服务人员操作员",
   "ko": "석유 및 가스 시추 관련 작업자 및 서비스 운영자",
-  "zhShort": "钻井工",
+  "zhShort": "油气钻井作业工",
   "koShort": "석유가스시추작업자",
   "enShort": "Oil and gas drilling workers"
  },
@@ -2890,7 +2890,7 @@
  "84111": {
   "zh": "林业工人",
   "ko": "임업 및 산림 작업원",
-  "zhShort": "林业工人",
+  "zhShort": "造林工人",
   "koShort": "임업 및 산림 작업원",
   "enShort": "Forestry workers"
  },
@@ -2946,14 +2946,14 @@
  "85111": {
   "zh": "石油和天然气钻探、服务及相关劳工",
   "ko": "석유 및 가스 시추 서비스 관련 노동자",
-  "zhShort": "油气钻井工",
+  "zhShort": "油气钻井普工",
   "koShort": "석유가스시추노동자",
   "enShort": "Oil and gas drilling labourers"
  },
  "85120": {
   "zh": "伐木和林业工人",
   "ko": "벌목 및 임업 노동자",
-  "zhShort": "伐木和林业工人",
+  "zhShort": "伐木林业普工",
   "koShort": "벌목 및 임업 노동자",
   "enShort": "Logging and forestry labourers"
  },
@@ -3219,7 +3219,7 @@
  "94140": {
   "zh": "食品和饮料加工过程控制与机器操作员",
   "ko": "식품 및 음료 가공 공정 제어 및 기계 조작원",
-  "zhShort": "食品饮料加工员",
+  "zhShort": "食品饮料操作员",
   "koShort": "식품 가공 조작원",
   "enShort": "Food processing operators"
  },
@@ -3296,7 +3296,7 @@
  "94204": {
   "zh": "机械装配工和检验员",
   "ko": "기계 조립원 및 검사원",
-  "zhShort": "装配检验工",
+  "zhShort": "机械装配检验工",
   "koShort": "기계 조립원 및 검사원",
   "enShort": "Mechanical assemblers"
  },
@@ -3331,21 +3331,21 @@
  "94219": {
   "zh": "其他产品装配工、精加工工和检验员",
   "ko": "기타 제품 조립원 마감공 검사원",
-  "zhShort": "产品装配工",
+  "zhShort": "其他产品装配工",
   "koShort": "제품 조립원",
   "enShort": "Other products assemblers"
  },
  "95100": {
   "zh": "矿物和金属加工劳工",
   "ko": "광물 및 금속 가공 노동자",
-  "zhShort": "矿冶劳工",
+  "zhShort": "矿冶普工",
   "koShort": "광물금속가공노동자",
   "enShort": "Metal processing labourers"
  },
  "95101": {
   "zh": "金属制造劳工",
   "ko": "금속 가공 노동자",
-  "zhShort": "金属制造劳工",
+  "zhShort": "金属制造普工",
   "koShort": "금속 가공 노동자",
   "enShort": "Metal fab labourers"
  },
@@ -3360,14 +3360,14 @@
   "zh": "木材纸浆和造纸加工工人",
   "ko": "목재 펄프 및 제지 가공 노동자",
   "koShort": "목재 펄프 가공 노동자",
-  "zhShort": "木材造纸工人",
+  "zhShort": "木材造纸普工",
   "enShort": "Wood and paper labourers"
  },
  "95104": {
   "zh": "橡胶和塑料制品制造工人",
   "ko": "고무 및 플라스틱 제품 제조 노동자",
   "enShort": "Rubber plastic labourers",
-  "zhShort": "橡塑制品工人"
+  "zhShort": "橡塑制品普工"
  },
  "95105": {
   "zh": "纺织加工和裁剪工人",
@@ -3379,7 +3379,7 @@
  "95106": {
   "zh": "食品和饮料加工工人",
   "ko": "식품 및 음료 가공 노동자",
-  "zhShort": "食品饮料加工工",
+  "zhShort": "食品饮料普工",
   "koShort": "식품 음료 가공 노동자",
   "enShort": "Food processing labourers"
  },
@@ -3392,7 +3392,7 @@
  "95109": {
   "zh": "加工制造和公用事业其他劳工",
   "ko": "가공 제조 및 유틸리티 분야의 기타 노동자",
-  "zhShort": "加工制造劳工",
+  "zhShort": "其他制造普工",
   "koShort": "기타 가공 제조 노동자",
   "enShort": "Labourers in processing"
  },
