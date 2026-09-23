@@ -1170,27 +1170,33 @@ async function resetFacts(client: DbClient): DoneOut {
  * companies 批量 upsert(按 slug;同一语句撞唯一键会整批报错,JS 侧兜底去重)。
  * 被「未变行跳过」的行不进 RETURNING → slug→id 映射改为 upsert 后单独 SELECT
  * 全量取(一条语句,秒级)。
+ * 2026-09-22 改逐片(Frank「改吧,companies 逐片处理」):整表 martRows 拼接是灌库的堆峰值 ——
+ * 生产堆上限约 256MB(512MB 实例),本机同数据实测峰值 229MB 就落在这一段,生产一过线即
+ * heap out of memory 崩溃重启、seed 502。去重集跨片共用,首见者胜的口径不变。
  *
  * @param x 连接、时刻与计数板。
  * @returns slug → 公司 id。
  */
 async function seedCompanies(x: SeedCompaniesIn): CompanyIdsOut {
   const seenSlug = new Set<string>()
-  const rows: MartRow[] = []
-  for (const r of martRows(TBL_COMPANIES)) {
-    const s = r.slug
-    if (typeof s !== 'string' || s === '' || seenSlug.has(s)) {
-      continue
-    }
-    seenSlug.add(s)
-    rows.push(toCompany({ r: r, now: x.now }))
-  }
-  await insertBatch({
-    client: x.client, table: TBL_COMPANIES, cols: COLS_COMPANIES, rows: rows,
-    suffix: SQL.companiesUpsertSuffix({
-      plain: COLS_COMPANIES_PLAIN, guarded: COLS_COMPANIES_GUARDED, coalesce: COLS_COMPANIES_COALESCE,
-    }),
+  const suffix = SQL.companiesUpsertSuffix({
+    plain: COLS_COMPANIES_PLAIN, guarded: COLS_COMPANIES_GUARDED, coalesce: COLS_COMPANIES_COALESCE,
   })
+  let total = 0
+  for (const shard of martPaths(TBL_COMPANIES)) {
+    const list: MartRow[] = JSON.parse(fs.readFileSync(shard, UTF8))
+    const rows: MartRow[] = []
+    for (const r of list) {
+      const s = r.slug
+      if (typeof s !== 'string' || s === '' || seenSlug.has(s)) {
+        continue
+      }
+      seenSlug.add(s)
+      rows.push(toCompany({ r: r, now: x.now }))
+    }
+    await insertBatch({ client: x.client, table: TBL_COMPANIES, cols: COLS_COMPANIES, rows: rows, suffix: suffix })
+    total = total + rows.length
+  }
   const idBySlug: Record<string, number> = {}
   const res = await x.client.query(SQL.COMPANIES_IDS_BY_SLUGS, [Array.from(seenSlug)])
   for (const row of res.rows) {
@@ -1198,7 +1204,7 @@ async function seedCompanies(x: SeedCompaniesIn): CompanyIdsOut {
       idBySlug[row.slug] = row.id
     }
   }
-  x.counts[TBL_COMPANIES] = rows.length
+  x.counts[TBL_COMPANIES] = total
   return { idBySlug: idBySlug }
 }
 
