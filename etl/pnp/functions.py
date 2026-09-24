@@ -46,6 +46,8 @@ from pnp.constants import (
     ABS_PROBLEM_STREAMS_TPL, ABS_PROBLEM_SUMMARY_TPL, ABS_SECTION_TAGS, ABS_SNIFF_LEN, ABS_SOURCE, ABS_STREAM_KEYS,
     ABS_SUMMARY_KEYS, ABS_SUMMARY_KW, ABS_TIMEOUT_S, ABS_UPDATED_RE, AB_AOS_LABEL, AB_AOS_NOTE, AB_AOS_STREAM,
     AB_AOS_TIMEOUT_S, AB_AOS_URL, AB_NOC5_RE, AB_NOC_STAR, AB_PDF_NOC_RE, AB_PRINT_AOS_TPL, AB_PRINT_NO_AOS,
+    AB_HEALTH_LABEL, AB_HEALTH_NOCS, AB_HEALTH_NOTE, AB_HEALTH_PROF_RE, AB_HEALTH_STREAM, AB_HEALTH_UNKNOWN_TPL,
+    AB_PRINT_HEALTH_TPL, AB_PRINT_NO_HEALTH,
     AB_PRINT_NO_TECH, AB_PRINT_TECH_TPL, AB_TABLE_HEAD_KW, AB_TECH_LABEL, AB_TECH_PDF_URL, AB_TECH_STREAM,
     AB_TECH_TIMEOUT_S, AREA_GTA, AREA_METRO, AREA_ON_LISTED, AREA_ON_OTHER, AREA_OUTSIDE_GTA, AREA_REST_BC,
     AREA_REST_NL, AREA_ST_JOHNS, ATTR_COLSPAN, ATTR_HREF, ATTR_ROWSPAN, BCR_ALL_STREAMS, BCR_EMP_STAFF_LABEL_TPL,
@@ -208,7 +210,7 @@ from pnp.constants import (
     ON_INV_DATE_COL, ON_INV_DATE_KW, ON_INV_HEAD_KW, ON_INV_HEAD_TAGS, ON_INV_NOTES_KW, ON_INV_NUM_COL,
     ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
     ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
-    OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
+    OUT_AB_HEALTH_FILE, OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
     OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
     OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
     OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_OID, OUT_PE_OID_FILE,
@@ -527,10 +529,32 @@ def parse_ab_tech(data: bytes) -> list:
     return list(occs.values())
 
 
+def parse_ab_health(html: str) -> list:
+    """医护专项页的职业清单 → {noc,name}(按 AB_HEALTH_NOCS 对码,一类多码展开);EE / 非 EE 两个选项各列一遍,去重。
+    页上出现对照表没有的职业 → 抛错(build_ab 保留旧表)。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
+    seen: set = set()
+    out: list = []
+    for li in soup.find_all(TAG_LI):
+        if li.find(TAG_LI) is not None:
+            continue
+        m = AB_HEALTH_PROF_RE.match(fold_ws(li.get_text(TEXT_JOIN_SEP, strip=True)))
+        if not m or m.group(1) in seen:
+            continue
+        seen.add(m.group(1))
+        codes = AB_HEALTH_NOCS.get(m.group(1))
+        if codes is None:
+            raise ValueError(AB_HEALTH_UNKNOWN_TPL.format(name=m.group(1)))
+        for noc, name in codes:
+            out.append({K_NOC: noc, K_NAME: name})
+    return out
+
+
 def build_ab() -> None:
     """AB AAIP 两份清单入口:AOS 不符合资格表(exclusion)+ 加速科技通道(inclusion 具名)。
 
     08_score 把「具名通道(stream)」与「资格 type」解耦:exclusion 省也能挂 inclusion 通道标签。
+    2026-09-24 加第三份:医护专项清单(inclusion 具名,Frank「AB 医疗也走机会通道?」),页从 crawl 缓存读(ab_dhcp_html)。
     """
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     occ1 = None
@@ -563,6 +587,22 @@ def build_ab() -> None:
         say(AB_PRINT_TECH_TPL.format(n=len(occ2)))
     elif occ2 is not None:
         say(AB_PRINT_NO_TECH)
+
+    occ3 = None
+    try:
+        occ3 = parse_ab_health(ab_dhcp_html())
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_HEALTH_FILE, name=type(e).__name__, detail=e))
+    if occ3:
+        paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AB_HEALTH_FILE, payload={
+            K_STREAM: AB_HEALTH_STREAM, K_LABEL: AB_HEALTH_LABEL,
+            K_PROVINCE: PROV_AB, K_TYPE: TYPE_INDEMAND, K_URL: AB_DHCP_URL, K_FETCHED: today_iso(),
+            K_NOTE: AB_HEALTH_NOTE,
+            K_OCCUPATIONS: sorted(occ3, key=noc_key_of),
+        }, indent=INDENT_2))
+        say(AB_PRINT_HEALTH_TPL.format(n=len(occ3)))
+    elif occ3 is not None:
+        say(AB_PRINT_NO_HEALTH)
 
 
 # =========================================================================
@@ -3273,13 +3313,19 @@ def ab_rr_reqs() -> ReqsOut:
 
 
 def ab_dhcp_text() -> str:
-    """医疗专线页正文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层(链自 EE 流资格页)。"""
+    """医疗专线页正文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层(链自 EE 流资格页)。
+    2026-09-24 取页拆到 ab_dhcp_html(build_ab 的医护职业清单要读 <li> 结构,两处共用一份取页)。"""
+    return fold_ws(text_of_html(TextOfHtmlIn(html=ab_dhcp_html(), drop_junk=True, main_only=True)))
+
+
+def ab_dhcp_html() -> str:
+    """医疗专线页原文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层。"""
     hit = get_cached_page(AB_DHCP_URL)
     html = hit.html
     if not html:
         html = fetch_html(FetchHtmlIn(url=AB_DHCP_URL, timeout_s=ABR_TIMEOUT_S))
         put_cached_page(CachePutIn(slug=AB_CRAWL_SLUG, url=AB_DHCP_URL, html=html, title=ABR_DHCP_TITLE))
-    return fold_ws(text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True)))
+    return html
 
 
 def ab_dhcp_reqs() -> ReqsOut:

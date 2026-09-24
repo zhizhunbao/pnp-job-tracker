@@ -912,6 +912,48 @@ AB_PRINT_TECH_TPL = "  ✓ AB 科技         {n} 个职业 → pnp/ab-tech.json"
 AB_PRINT_NO_TECH = "  ✗ Tech PDF 没解析到 NOC(保留旧表)"
 """科技通道解析空的报数。"""
 
+OUT_AB_HEALTH_FILE = "ab-health.json"
+"""AB 医护专项清单的产出文件名(2026-09-24 Frank「AB 医疗也走机会通道?」立)。"""
+
+AB_HEALTH_STREAM = "AAIP Dedicated Health Care Pathway"
+"""医护专项的官方名(Express Entry / Non-Express Entry 两个选项共用同一份职业清单)。"""
+
+AB_HEALTH_LABEL = "AB 医疗"
+"""医护专项的前端短标签(照 BC 医疗 / SK 医疗)。"""
+
+AB_HEALTH_NOTE = "官网列 9 类受监管医护职业、不给职业码;本表按 NOC 2021 对码,须持阿省对应监管机构的执业许可。"
+"""医护专项表的口径说明。"""
+
+AB_HEALTH_PROF_RE = re.compile(r"^(.+?)\s+–\s+.+\([A-Z]{2,6}\)$")
+"""医护专项页清单的一行:「Physicians – College of Physicians and Surgeon of Alberta (CPSA)」,取破折号前的职业名。"""
+
+AB_HEALTH_NOCS = {
+    "Physicians": [["31100", "Specialists in clinical and laboratory medicine"],
+                   ["31101", "Specialists in surgery"],
+                   ["31102", "General practitioners and family physicians"]],
+    "Registered Nurses (RNs)": [["31301", "Registered nurses and registered psychiatric nurses"]],
+    "Licensed Practical Nurses (LPNs)": [["32101", "Licensed practical nurses"]],
+    "Nurse Practitioners (NPs)": [["31302", "Nurse practitioners"]],
+    "Physician Assistants": [["31303", "Physician assistants, midwives and allied health professionals"]],
+    "Occupational Therapist": [["31203", "Occupational therapists"]],
+    "Physiotherapist": [["31202", "Physiotherapists"]],
+    "Clinical Social Worker": [["41300", "Social workers"]],
+    "Psychologist": [["31200", "Psychologists"]],
+}
+"""医护专项页的职业名 → NOC 2021 码与官方职业名(本站手对)。官网只给职业名与监管机构,原句
+「NOC codes cover many different occupational titles」—— 审的是监管机构的执业证明,不是职业码。
+粗筛会略宽于官方九类:31301 含注册精神科护士、31303 含助产士等、41300 不分临床与否;以官方执照为准。
+页上出现本表没有的职业 = 官方改了清单,parse_ab_health 抛错、build_ab 保留旧表,补这张表再跑。"""
+
+AB_HEALTH_UNKNOWN_TPL = "医护专项页出现对照表没有的职业:{name}(补 AB_HEALTH_NOCS 再跑)"
+"""对照表缺职业时的报错。"""
+
+AB_PRINT_HEALTH_TPL = "  ✓ AB 医疗         {n} 个职业 → pnp/ab-health.json"
+"""医护专项收尾报数。"""
+
+AB_PRINT_NO_HEALTH = "  ✗ 医护专项页没解析到职业(保留旧表)"
+"""医护专项解析空的报数。"""
+
 
 # =========================================================================
 # 3. BC 具名清单(2026 新政 Care/Build 五桶 + 主线排除清单 §3.11)
