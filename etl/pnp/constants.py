@@ -231,6 +231,12 @@ K_CODELESS = "codeless"
 K_OVERLAY = "overlay"
 """表键:叠加式排除(命中即不可,但不把该省 TEER4-5 默认放开)。"""
 
+K_SIGNAL = "signal"
+"""表键:只作参考信号 —— 不当具名通道、不进资格判定,弹框清单照列(2026-09-24 MB 在需职业 / NS 紧缺空缺,Frank 批)。"""
+
+SIGNAL_OUTS = {"mb-indemand.json", "mb-indemand-rural.json", "ns-critical.json"}
+"""只作参考信号的表(产出文件名):写表时带 K_SIGNAL。依据在 MB_BUCKETS / NS_STREAMS 的说明里(2026-09-24 Frank 批)。"""
+
 K_APPLIES_TO = "appliesTo"
 """表/行键:适用范围(SK 两张排除表分管的子类别 / BC SIRS 那行加分的适用职业)。"""
 
@@ -1194,7 +1200,10 @@ NS_STREAMS = [
      "stream": "Nova Scotia Graduate stream", "label": "NS 毕业生"},
 ]
 """每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签);
-liveinnovascotia.com 浏览器 UA 直连 200。"""
+liveinnovascotia.com 浏览器 UA 直连 200。
+2026-09-24 紧缺空缺标 signal(Frank 批「NS 紧缺空缺不当通道」,九省通道审计):官网原句「This is NOT an invitation to apply
+for a provincial nomination under the Provincial Nominee Program」—— 是招聘匹配、不是提名通道;不当具名通道、不进资格,
+格子回到默认通道 NS Skilled Worker;弹框清单照列。"""
 
 NS_NOC_PATTERNS = [
     re.compile(r"^[-*]?\s*\[\s*(\d{5})\s*[—–-]\s*([^\]]+?)\s*\]"),
@@ -1307,7 +1316,11 @@ MB_BUCKETS = {
 → 分两桶,不合并(合并会让温尼伯岗误显在需)。
 页面**不含**每职业的 stream 限定列(正文那句「limited to specific skilled streams」是概述,
 表里没有该列)→ **不猜 stream 维度**,只落 NOC+名称(宁可留空也不瞎猜)。
-在需 = EOI 抽选优先信号,非硬性资格门槛;08_score 按 inclusion 消费(TEER4-5 凭清单可走)。"""
+在需 = EOI 抽选优先信号,非硬性资格门槛;08_score 按 inclusion 消费(TEER4-5 凭清单可走)。
+2026-09-24 两桶都标 signal(Frank 批「MB 在需职业不当通道」,九省通道审计):这张单只服务留学生毕业就业通道 IES-CEP
+(官网 /mpnp/ies/cep/eligibility「a full-time job offer … in an occupation on Manitoba’s In-Demand Occupations List」),
+CEP 候选人 2026-06-11 起转入 SWM;官方 EOI 打分只列六项(language proficiency, age, work experience, education,
+adaptability, risk),没有在需职业 —— 不当具名通道、不进资格,格子回到默认通道 MB Skilled Worker;弹框清单照列。"""
 
 MB_ROW_RE = re.compile(r"^\|\s*(\d{5})\s*\|\s*\d\s*\|\s*([^|]+?)\s*\|")
 """表行:| NOC | TEER | 职业名 | 最低 CLB | 2016 对应 | 2016 技能等级 |。"""

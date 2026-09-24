@@ -408,6 +408,9 @@ class PnpStreamIn:
     prov: str
     """省码。"""
 
+    teer: int | None
+    """TEER(2026-09-24 起 SK 现有工签要看;None = 职业码没认出)。"""
+
 @dataclass
 class PnpMergeIn:
     """merge_pnp_table() 入参:把一份省表并进该省累计桶。"""

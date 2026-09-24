@@ -521,7 +521,7 @@ export const jobsZh = {
   'stream.abTech': 'AB 科技', 'stream.abHealth': 'AB 医疗', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
-  'stream.nbAipExcl': 'NB AIP 不受理', 'stream.bcHa': 'BC 卫生局', 'stream.peAipExcl': 'PE AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',
+  'stream.nbAipExcl': 'NB AIP 不受理', 'stream.bcHa': 'BC 卫生局', 'stream.skEwp': 'SK 现有工签', 'stream.peAipExcl': 'PE AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   // E6-10:联邦轮次里非「按职业类别」的那几种(CEC/法语/省提名/通用/FSW/FST),只在抽选近况里作类型名出现
   'ee.agriculture': '农业食品', 'ee.cec': 'CEC 经验类', 'ee.french': '法语', 'ee.pnpLinked': '省提名', 'ee.general': '不限类别', 'ee.fsw': '联邦技术', 'ee.fst': '联邦技工',

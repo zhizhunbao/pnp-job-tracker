@@ -92,7 +92,7 @@ from pnp.constants import (
     K_CL_KEY, K_INVITATIONS, K_IN_ASSESSMENT, K_ISSUED, K_IS_REDIRECTED, K_ITEMS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LOCATION,
     K_MAX, K_MAX_TOTAL, K_MIN_SCORE, K_MODEL, K_MONTH, K_MONTHLY, K_MUST, K_N, K_NAME, K_NOC, K_NOCS,
     K_NOMINATIONS_ISSUED, K_NOMINATIONS_YTD, K_NOTE, K_NOTICE, K_OCCUPATION, K_OCCUPATIONS, K_OP, K_OPTIONS, K_OUT,
-    K_OVERALL_DAYS, K_OVERLAY, K_PAGES, K_PAGE_REDIRECT, K_PAGE_URL, K_PASS_MARK, K_PCT, K_PENDING,
+    K_OVERALL_DAYS, K_OVERLAY, K_SIGNAL, SIGNAL_OUTS, K_PAGES, K_PAGE_REDIRECT, K_PAGE_URL, K_PASS_MARK, K_PCT, K_PENDING,
     K_PERCENTILE_LABEL, K_POINTS, K_POOL, K_POSITIONS, K_PRIORITY_SECTORS, K_PROCESSING, K_PRODUCT,
     K_PRODUCT_FORMATS, K_PRODUCT_FORMAT_ID, K_PROGRAM, K_PROMPT, K_PROV, K_PROVINCE, K_PROVINCES, K_QUARTER,
     K_QUOTE, K_RAW, K_REFUSED_DAYS, K_REGION, K_REGISTRATIONS, K_REMAINING, K_REQUESTED_URL, K_REQUIREMENTS,
@@ -923,12 +923,14 @@ def build_ns() -> None:
             say(PRINT_NO_NOC_TPL.format(out=s[K_OUT]))
             continue
         fetched = today_iso()
-        table = {
+        table: dict = {
             K_STREAM: s[K_STREAM], K_LABEL: s[K_LABEL], K_PROVINCE: PROV_NS,
             K_TYPE: TYPE_INDEMAND,
             K_URL: s[K_URL], K_FETCHED: fetched,
             K_OCCUPATIONS: occs,
         }
+        if s[K_OUT] in SIGNAL_OUTS:
+            table[K_SIGNAL] = True
         write_pnp_table(BuildTableIn(filename=s[K_OUT], table=table,
                                      line=PRINT_TABLE10_TPL.format(label=s[K_LABEL], n=len(occs),
                                                                    out=s[K_OUT], fetched=fetched)))
@@ -981,12 +983,14 @@ def build_mb() -> None:
             say(PRINT_NO_NOC_TPL.format(out=cfg[K_OUT]))
             continue
         fetched = today_iso()
-        table = {
+        table: dict = {
             K_STREAM: cfg[K_STREAM], K_LABEL: cfg[K_LABEL], K_PROVINCE: PROV_MB,
             K_TYPE: TYPE_INDEMAND, K_NOTE: cfg[K_NOTE],
             K_URL: MB_IDOL_URL, K_FETCHED: fetched,
             K_OCCUPATIONS: occs,
         }
+        if cfg[K_OUT] in SIGNAL_OUTS:
+            table[K_SIGNAL] = True
         write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
                                      line=MB_PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
                                                                     out=cfg[K_OUT], fetched=fetched)))

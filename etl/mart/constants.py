@@ -489,6 +489,10 @@ PNP_TYPE_INDEMAND = "indemand"
 PNP_TYPE_INELIGIBLE = "ineligible"
 """表语义二:exclusion/permissive(如 AAIP)—— TEER0-5 默认都符合,清单内 NOC 不符合。"""
 
+K_SIGNAL = "signal"
+"""表键:只作参考信号的表(MB 在需职业 / 乡镇在需、NS 紧缺空缺)—— load_pnp_by_prov 跳过:不当具名通道、不进资格
+(2026-09-24 Frank 批,九省通道审计)。"""
+
 K_OVERLAY = "overlay"
 """表语义三的开关:ineligible + overlay=true(如 NB 不受理清单)= **叠加式排除** ——
 不改该省默认规则(NB Skilled Worker 仍要技能岗 offer,TEER4-5 不因此放开),只是命中清单即不可。
@@ -623,6 +627,23 @@ UNIVERSAL_COND_PROVS = {"MB", "NS", "NB", "PE"}
 (immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility)、NS Skilled Worker TEER4-5
 (liveinnovascotia.com/skilled-worker)、NB Experience(gnb.ca …/nb-skilled-worker-stream.html)、
 PE Critical Worker TEER4-5(pei_workforce_application_guide.pdf)。"""
+
+EXCL_TEER03_PROVS = {"BC"}
+"""排除式省里只收 TEER 0-3 的(TEER 4-5 只有落在本省具名清单里才算):BC skills-immigration 页 Skilled Worker 一栏原句
+「Must be in a NOC TEER 0, 1, 2, or 3 occupation」。2026-09-24 Frank 批「BC 只收 TEER 0-3」(九省通道审计;原模型把 BC
+当 TEER 0-5 默认可,3,257 条 TEER 4-5 在招岗被标可提名)。ANY_PR_PATH_NOTE 里「BC/AB/SK/ON 排除式 TEER0-5 默认可」对 BC 不成立。"""
+
+SK_EWP_PROV = "SK"
+"""SK:TEER 4-5 与卡车司机只能走 Existing Work Permit(条件档)。ISW Employment Offer 页原句「your offer must be in an
+occupation in the NOC TEER level "0", "1", "2" or "3"」「Truck Drivers must apply under the Existing Work Permit sub-category」;
+EWP 页「working in Saskatchewan for at least six months on a valid work permit」、持 LMIA 工签可 TEER 0-5。
+2026-09-24 Frank 批「SK 的 TEER 4-5 改走现有工签」(九省通道审计;原模型标 Employment Offer,670 条)。"""
+
+SK_EWP_LABEL = "SK 现有工签"
+"""SK Existing Work Permit 的前端短标签(pnp_stream 在具名清单都没命中时给它)。"""
+
+SK_EWP_NOCS = {"73300"}
+"""SK 明文改走 EWP 的职业(卡车司机 73300,TEER 3 也不走 Employment Offer)。"""
 
 UNIVERSAL_PROVS = UNIVERSAL_DIRECT_PROVS | UNIVERSAL_COND_PROVS
 """五省普通通道兜底集(清单没命中也可,直可/需前置的区分由 pnp_direct 承担)。"""

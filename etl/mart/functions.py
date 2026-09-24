@@ -47,6 +47,7 @@ from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
     EE_SUPERSEDED_BY,
+    EXCL_TEER03_PROVS, K_SIGNAL, SK_EWP_LABEL, SK_EWP_NOCS, SK_EWP_PROV,
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, ENTITY_BREAK_TAG_RE, ENTITY_RE, ENTITY_TAG_RE, K_COMPANIES, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
@@ -670,13 +671,14 @@ def merge_pnp_table(x: PnpMergeIn) -> None:
 
 def load_pnp_by_prov() -> dict:
     """扫 raw/pnp/*.json 按 province 归省 → {"type","nocs","blocked","streams"}(目录驱动,加省=丢一个 json)。
-    2026-09-24 起各省具名通道按清单大小升序(stream_size_of)。"""
+    2026-09-24 起各省具名通道按清单大小升序(stream_size_of);标 signal 的表(MB 在需职业 / 乡镇在需、NS 紧缺空缺:
+    参考信号、不是提名通道)不进资格也不当具名通道,只在 pnp_occupations 里照列(Frank 批,九省通道审计)。"""
     out: dict = {}
     if not IN_PNP_DIR.exists():
         return out
     for f in sorted(IN_PNP_DIR.glob(GLOB_JSON)):
         data = read_table_soft(f)
-        if data.get(K_PROGRAM, PROGRAM_PNP) != PROGRAM_PNP:
+        if data.get(K_PROGRAM, PROGRAM_PNP) != PROGRAM_PNP or data.get(K_SIGNAL):
             continue
         prov = data.get(K_PROVINCE)
         nocs = set()
@@ -790,6 +792,8 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
       cond=MB/NS/NB/PE 先省内同雇主 6 个月)—— 直可/需前置的区分由 pnp_direct 承担。
     · 2026-09-23 Frank「这个没有省的怎么有 pnp 呢」:没有省的岗不判(省提名是省里的事,没省就无从说起),
       原先 TEER 0-3 落到「粗筛通用」被标成可提名;页面那格随之出长横,不写「走不了」。
+    · 2026-09-24 Frank 批(九省通道审计):排除式省里 BC 只收 TEER 0-3(EXCL_TEER03_PROVS),TEER 4-5 只有落在 BC 具名
+      清单里才算;SK 的 TEER 4-5 仍可走,但只能走 Existing Work Permit 条件档(见 is_sk_ewp / pnp_direct)。
     """
     if not x.prov or x.prov in NON_PNP_PROV:
         return False
@@ -797,7 +801,11 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
     if tbl and x.noc in tbl[K_BLOCKED]:
         return False
     if tbl and tbl[K_TYPE] == PNP_TYPE_INELIGIBLE:
-        return x.teer is not None and x.noc not in tbl[K_NOCS]
+        if x.teer is None or x.noc in tbl[K_NOCS]:
+            return False
+        if x.prov in EXCL_TEER03_PROVS and x.teer not in TEER_SKILLED:
+            return x.noc in x.tables.named_by_prov.get(x.prov, set())
+        return True
     nocs = prov_nocs_of(tbl)
     if x.teer in TEER_SKILLED or x.noc in nocs:
         return True
@@ -811,6 +819,13 @@ def prov_nocs_of(tbl: dict | None) -> set:
     return set()
 
 
+def is_sk_ewp(x: PnpJudgeIn) -> bool:
+    """SK 这岗只能走 Existing Work Permit(TEER 4-5 或卡车司机;条件档,须在萨省持工签满 6 个月,依据见 SK_EWP_PROV)。"""
+    if x.prov != SK_EWP_PROV or x.teer is None:
+        return False
+    return x.teer not in TEER_SKILLED or x.noc in SK_EWP_NOCS
+
+
 def pnp_direct(x: PnpJudgeIn) -> bool:
     """在 pnp_eligible 之内再分档:**拿 offer 即可入池**(不需先省内工作)。
 
@@ -819,6 +834,8 @@ def pnp_direct(x: PnpJudgeIn) -> bool:
     仅靠 MB/NS/NB/PE 普通通道兜底的 TEER4-5 → 非 direct(cond)。
     """
     if not pnp_eligible(x):
+        return False
+    if is_sk_ewp(x):
         return False
     if x.teer in TEER_SKILLED:
         return True
@@ -835,6 +852,7 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
 
     泛 TEER0-3 技能岗、exclusion 型省(无具名 in-demand 通道)、未命中 → None,
     前端对 None 退回泛标签/留空(宁可不具名,也不瞎贴通道名)。
+    2026-09-24 清单都没命中时,SK 只能走 Existing Work Permit 的可提名岗给「SK 现有工签」(Frank 批,九省通道审计)。
     """
     tbl = x.tables.by_prov.get(x.prov)
     if not tbl:
@@ -842,6 +860,9 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
     for s in tbl[K_STREAMS]:
         if x.noc in s[K_NOCS] and s[K_LABEL]:
             return s[K_LABEL]
+    judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov)
+    if is_sk_ewp(judge) and pnp_eligible(judge):
+        return SK_EWP_LABEL
     return None
 
 
@@ -1027,7 +1048,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         "score": score(ScoreIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov,
                                acc=acc, agency=x.job.agency)),
         "pnpEligible": pnp_eligible(judge),
-        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov)),
+        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer)),
         "eeCategory": x.tables.ee_by_noc.get(noc) or None,
     }
 

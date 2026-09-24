@@ -484,7 +484,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'stream.abTech': 'AB Tech', 'stream.abHealth': 'AB Health', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
   'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.peIndemand': 'PE in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
-  'stream.nbAipExcl': 'NB AIP not accepted', 'stream.bcHa': 'BC Health Authority', 'stream.peAipExcl': 'PE AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
+  'stream.nbAipExcl': 'NB AIP not accepted', 'stream.bcHa': 'BC Health Authority', 'stream.skEwp': 'SK Existing Work Permit', 'stream.peAipExcl': 'PE AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'ee.agriculture': 'Agri-food', 'ee.cec': 'CEC', 'ee.french': 'French', 'ee.pnpLinked': 'PNP', 'ee.general': 'General', 'ee.fsw': 'FSW', 'ee.fst': 'FST',
   'act.seeOfficial': 'View official posting',

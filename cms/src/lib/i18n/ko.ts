@@ -481,7 +481,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.peIndemand': 'PE 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
-  'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.bcHa': 'BC 보건 당국', 'stream.peAipExcl': 'PE AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
+  'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.bcHa': 'BC 보건 당국', 'stream.skEwp': 'SK 기존 취업허가', 'stream.peAipExcl': 'PE AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'ee.agriculture': '농식품', 'ee.cec': 'CEC 경험이민', 'ee.french': '프랑스어', 'ee.pnpLinked': '주정부 지명', 'ee.general': '전체 대상', 'ee.fsw': '연방 기술이민', 'ee.fst': '연방 기능이민',
   'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
