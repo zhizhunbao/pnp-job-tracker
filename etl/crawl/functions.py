@@ -33,6 +33,7 @@ from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, PARA_SEP, PARSER_HTML, SPACE_SEP, WS_RE
 from crawl import BROWSER_CHANNEL, BROWSER_COOKIES, BROWSER_UNATTENDED
 from crawl.constants import (
+    BLOCKED_KEEP_RATIO, BLOCKED_MIN_PREV_OK, PRINT_SEED_ATTENDED_SKIP_TPL, PRINT_SEED_BLOCKED_TPL,
     COOKIE_JAR_EMPTY,
     ACCEPT_HTML,
     ACCEPT_LANGUAGE,
@@ -1223,10 +1224,29 @@ def urls_of(manifest: Path) -> set:
 
 def discover_all() -> None:
     """役步:逐种子探索(进程内,单省失败/超时不拖全轮)→ diff 打进日志(政策雷达)。
-    全轮零成功才抛错(网断/被全面封锁,该让役知道 → FAIL_RETRY 短重试)。"""
-    ok = 0
+    全轮零成功才抛错(网断/被全面封锁,该让役知道 → FAIL_RETRY 短重试)。
+    2026-09-24 循环体挪进 run_seeds:要人点验证的种子(attended)无人值守时跳过,被拦截的一轮不覆盖地图。"""
+    run_seeds(SEEDS)
+
+
+def discover_attended() -> None:
+    """手动件:只跑要人点验证的种子(PE Radware),本机有头浏览器、撞上验证等人点
+    (2026-09-24 Frank「PE 的 crawl 用有头抓 被拦我可以点」)。"""
+    picked: list = []
     for cfg in SEEDS:
+        if SeedSpec.model_validate(cfg).attended:
+            picked.append(cfg)
+    run_seeds(picked)
+
+
+def run_seeds(seeds: list) -> None:
+    """逐种子探索的循环体(discover_all / discover_attended 共用);全批零成功才抛错。"""
+    ok = 0
+    for cfg in seeds:
         spec = SeedSpec.model_validate(cfg)
+        if spec.attended and BROWSER_UNATTENDED:
+            say(PRINT_SEED_ATTENDED_SKIP_TPL.format(slug=spec.slug))
+            continue
         slug_dir = paths.CRAWL / spec.slug
         manifest = slug_dir / MANIFEST_FILE
         prev = slug_dir / MANIFEST_PREV_FILE
@@ -1243,6 +1263,12 @@ def discover_all() -> None:
             continue
         if not manifest.exists():
             err(spec.slug, FileNotFoundError(manifest))
+            continue
+        before_ok = ok_pages_of(prev)
+        now_ok = ok_pages_of(manifest)
+        if before_ok >= BLOCKED_MIN_PREV_OK and now_ok < before_ok * BLOCKED_KEEP_RATIO:
+            say(PRINT_SEED_BLOCKED_TPL.format(slug=spec.slug, now=now_ok, before=before_ok))
+            shutil.copy2(prev, manifest)
             continue
 
         after = urls_of(manifest)
@@ -1274,7 +1300,22 @@ def discover_all() -> None:
 
     if ok == 0:
         raise RuntimeError(GUARD_ALL_FAILED)
-    say(PRINT_DISCOVER_DONE_TPL.format(ok=ok, total=len(SEEDS)))
+    say(PRINT_DISCOVER_DONE_TPL.format(ok=ok, total=len(seeds)))
+
+
+def ok_pages_of(manifest: Path) -> int:
+    """一份 manifest 里正常(status 200)的页数;缺席 / 坏了当 0(被拦截判定用)。"""
+    if not manifest.exists():
+        return 0
+    try:
+        d = json.loads(manifest.read_text(encoding=ENC_UTF8))
+    except Exception:  # noqa: BLE001 — 坏了当 0,不拿它当基线
+        return 0
+    n = 0
+    for p in d.get(K_PAGES, []):
+        if isinstance(p, dict) and p.get(K_STATUS) == STATUS_OK:
+            n += 1
+    return n
 
 
 # =========================================================================

@@ -139,6 +139,7 @@ services:
       HEALTHCHECK_PING_CRAWL: ${HEALTHCHECK_PING_CRAWL:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=crawl 域 META(3600;08-03 拍板与负载注记随迁)
       BROWSER_HEADLESS: '1'
+      BROWSER_UNATTENDED: "1"                     # 2026-09-24 容器里没人点验证:验证页只等 10 秒;要人点的种子(PE)跳过,本机 --only attended 有头跑
       TZ: EST5EDT
 
   ee:                              # 联邦 EE 类别+抽选(2026-07 改 httpx:类别页无 Akamai、行全量;月更,只刷 raw)

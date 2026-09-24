@@ -7,13 +7,14 @@ ee_categories 是回退工具(ee 域 bs4 直解失效时的浏览器版,手动�
 一律从仓库根执行:
     python etl/crawl/main.py                       # 默认链(discover 全种子)
     python etl/crawl/main.py --only ee_categories  # 回退工具
+    python etl/crawl/main.py --only attended       # 本机:只跑要人点验证的种子(PE),有头、撞验证手点
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from crawl.functions import check_official_urls, discover_all, run_ee_categories
+from crawl.functions import check_official_urls, discover_all, discover_attended, run_ee_categories
 
 SCHEDULED = [
     ("discover", discover_all),
@@ -24,11 +25,13 @@ SCHEDULED = [
 constants.URLS_DOC —— NB 迁版三周没人发现的答案)。"""
 
 TOOLS = {
+    "attended": discover_attended,
     "discover": discover_all,
     "ee_categories": run_ee_categories,
     "urls": check_official_urls,
 }
-"""全部可 --only 点名的步(含回退工具)。"""
+"""全部可 --only 点名的步(含回退工具)。
+attended:只跑要人点验证的种子(PE),**本机**有头浏览器、撞上验证 Frank 手点(2026-09-24;容器里的默认链跳过这类种子)。"""
 
 
 def main() -> int:

@@ -200,6 +200,9 @@ class SeedSpec(BaseModel):
     concurrency: int = 0
     """并发收窄(0 = 用 DISCOVER_CONCURRENCY 默认档;有墙 = 1)。"""
 
+    attended: bool = False
+    """要人点验证的种子(PE Radware):无人值守轮次跳过,本机 --only attended 有头跑、Frank 手点(2026-09-24)。"""
+
 
 class PageRow(BaseModel):
     """manifest 里的一页(discover 产出行)。"""

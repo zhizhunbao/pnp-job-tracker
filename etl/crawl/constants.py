@@ -74,12 +74,16 @@ SEED_PE_IMM = {
     "max_pages": 300,
     "keywords": "office-of-immigration,immigration",
     "concurrency": 1,
+    "attended": True,
 }
 """PE:Radware 后面(TLS 指纹墙,改 header 无用)→ 靠浏览器兜底(验证壳→chromium)。
 ⚠️ 已知盲区(2026-08-03 实测):Radware EUDA 连有头自动化浏览器都识别(CDP 探测),
 壳指纹(eudaenableagent)已能认出并转浏览器,但浏览器拿回的仍是壳 → 地图停在 1 页。
 口径数据不受影响:PE 的门槛/清单一直走官方指南 PDF(文件服务器不设防)。
-有墙一律并发 1(Frank 2026-08-03:「有墙的不要并发」)。"""
+有墙一律并发 1(Frank 2026-08-03:「有墙的不要并发」)。
+2026-09-24 标 attended(Frank「PE 的 crawl 用有头抓 被拦我可以点」「PE 改成用有头浏览器」):容器里的轮次撞墙、
+连着两轮把 manifest 与 manifest-prev 都冲成 1 页,09-21 那轮过墙抓到的原文成了孤儿(PE 抽选与 AIP 表读不到)——
+容器里跳过,改本机 `python etl/crawl/main.py --only attended` 有头跑,撞上验证 Frank 手点。"""
 
 SEED_QC_IMM = {"slug": "qc-imm", "seed": "https://www.quebec.ca/en/immigration", "depth": 3, "max_pages": 600}
 """QC 2026-08-03 Frank 改拍 —— 爬(此前因「自有体系不属 PNP」不爬)。quebec.ca 无墙,
@@ -352,8 +356,9 @@ NAV_TIMEOUT_MS = 45000
 NETWORK_IDLE_MS = 8000
 """network-idle 等待上限。"""
 
-CHALLENGE_TIMEOUT_MS = 120000
-"""人机验证框等待上限(有头环境手点)。"""
+CHALLENGE_TIMEOUT_MS = 300000
+"""人机验证框等待上限(有头环境手点)。2026-09-24 120 秒 → 300 秒(Frank「不要关那么快」:本机跑 PE 这类要人点的种子,
+窗口弹出来要找、验证码要做)。无人值守不走这个(CHALLENGE_UNATTENDED_MS)。"""
 
 CHALLENGE_UNATTENDED_MS = 10000
 """无人值守(crawl.BROWSER_UNATTENDED)时验证页等多久:只留给不用点、自己会放行的那种;要人点的一律交还调用方
@@ -421,8 +426,11 @@ TITLE_CHALLENGE_MARKERS = (
     "attention required",
     "安全验证",
     "请验证",
+    "captcha",
 )
-"""页标题里的人机验证判词(浏览器侧等待放行的条件)。"""
+"""页标题里的人机验证判词(浏览器侧等待放行的条件)。
+2026-09-24 加「captcha」:PE 本机有头抓撞上「Radware Captcha Page」,原判词认不出 → 验证码页当正文存下、一页收工关窗,
+Frank 来不及点(「不要关那么快」)。"""
 
 HTML_CHALLENGE_MARKERS = (
     "just a moment",
@@ -439,12 +447,16 @@ HTML_CHALLENGE_MARKERS = (
     "ssjsconnectorobj",
     "validate.perfdrive.com",
     "press & hold to confirm",
+    "captcha.perfdrive.com",
+    "shieldsquare",
 )
 """HTTP 200 里的验证壳判词(challenge 页当正文存档 = 脏语料)。倒数第五枚 = Radware EUDA 的
 JS 加载器壳(princeedwardisland.ca 实见,2026-08-03:200 + 125KB webpack JS,「Verifying
 your browser」文字在 12 万字开外,前 4000 字检测窗口里只有 EUDA 的常量名可认)。
 末四枚 2026-09-22 实见:Radware 另一款壳(gojobs.gov.on.ca → validate.perfdrive.com,__uzdbm 常量 +
-SSJSConnectorObj)把 JS 源码当正文存进了 OPS 的简介;zoominfo 的「Press & Hold」人机页同批。"""
+SSJSConnectorObj)把 JS 源码当正文存进了 OPS 的简介;zoominfo 的「Press & Hold」人机页同批。
+末两枚 2026-09-24 实见:Radware 验证码页(princeedwardisland.ca,标题「Radware Captcha Page」,样式表挂 captcha.perfdrive.com 的
+shieldsquare_styles)。"""
 
 CHALLENGE_SNIFF_LEN = 4000
 """验证壳判词的检测窗口(只看前 N 字)。"""
@@ -841,6 +853,18 @@ PRINT_RADAR_GONE_TPL = "    - {url}"
 """雷达消失行。"""
 
 PRINT_SEED_OK_TPL = "  ✓ {slug} {n} 页{note}"
+
+PRINT_SEED_ATTENDED_SKIP_TPL = "  · {slug} 要人点验证,无人值守跳过(本机跑 --only attended)"
+"""要人点验证的种子在无人值守轮次跳过的报数。"""
+
+PRINT_SEED_BLOCKED_TPL = "  ✗ {slug} 本轮正常页 {now} / 上一份 {before},疑似被拦截,保留上一份地图"
+"""被拦截的一轮不覆盖地图的报数。"""
+
+BLOCKED_KEEP_RATIO = 0.5
+"""本轮正常页数不到上一份的这个比例 = 疑似被拦截,恢复上一份 manifest(2026-09-24:PE 连着两轮被冲成 1 页)。"""
+
+BLOCKED_MIN_PREV_OK = 10
+"""上一份至少这么多正常页才做被拦截判定(小站本来就几页,不误判)。"""
 """种子无变化收轮。"""
 
 PRINT_DISCOVER_DONE_TPL = "===== 探索完成:{ok}/{total} 省 ====="
