@@ -54,7 +54,8 @@ import {
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
   MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER,
   PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
-  PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP,
+  K_PNP_GEN_HEAD, PNP_GENERIC_PROVS, PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE,
+  P_RESET, P_SIGNUP,
   P_SORT, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
   SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
@@ -86,6 +87,7 @@ import type {
   MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
+  PnpGenericIn,
   OccOptsIn, OccSlotIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
   PopupToCoIn, PrefixLabelIn,
@@ -935,12 +937,26 @@ function pnpCellOf(x: CellIn): CellView {
     return blankView({ kind: KIND.stream, text: streamDisplay({ t: x.cx.t, label: x.j.pnpStream }) })
   }
   if (x.j.pnpEligible === true) {
-    return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.j.province }), tone: TONE.moneyMd })
+    return blankView({ text: pnpGenericOf({ t: x.cx.t, province: x.j.province }), tone: TONE.moneyMd })
   }
   if (x.cx.blocked.pnp.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)) {
     return blankView({ text: x.cx.t('cell.pnpExcl'), tone: TONE.redSm })
   }
   return blankView({ tone: TONE.mutedSm })
+}
+
+/**
+ * 「可提名」那一档写哪条通道(2026-09-23 Frank「那这个是不是最好显示是哪个通道?」「改 全改」):九省写该省通用雇主担保通道的
+ * 名字(见 PNP_GENERIC_PROVS),其余照旧「{省} 可提名」。格子与手机卡片共用这一处。
+ *
+ * @param x 取词函数与本岗省码。
+ * @returns 格子文字。
+ */
+function pnpGenericOf(x: PnpGenericIn): string {
+  if (PNP_GENERIC_PROVS.has(x.province)) {
+    return x.t(K_PNP_GEN_HEAD + x.province)
+  }
+  return x.t('cell.pnpSkilledProv', { p: x.province })
 }
 
 /**
@@ -1153,7 +1169,7 @@ function pushTeerChip(a: ChipPushIn): void {
  */
 function pushPnpChip(a: ChipPushBlockIn): void {
   if (a.x.j.pnpEligible === true) {
-    let text = a.x.t('cell.pnpSkilledProv', { p: a.x.j.province })
+    let text = pnpGenericOf({ t: a.x.t, province: a.x.j.province })
     if (hasText(a.x.j.pnpStream)) {
       text = streamDisplay({ t: a.x.t, label: a.x.j.pnpStream })
     }

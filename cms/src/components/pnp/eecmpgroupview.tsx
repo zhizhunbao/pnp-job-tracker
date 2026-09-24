@@ -31,13 +31,13 @@ export function EeCmpGroupView({ g, open, onToggle }: EeCmpGroupIn) {
   return (
     <div className={css.cmpGroup}>
       {g.expandable && (
-        <Button kind={PLAIN_BTN_KIND} className={cmpHeadClsOf({ dim: g.dim, button: true })} onClick={onToggle}
-          title={g.tip}>
+        <Button kind={PLAIN_BTN_KIND} className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: true })}
+          onClick={onToggle} title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </Button>
       )}
       {g.expandable === false && (
-        <div className={cmpHeadClsOf({ dim: g.dim, button: false })} title={g.tip}>
+        <div className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: false })} title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </div>
       )}

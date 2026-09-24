@@ -589,10 +589,14 @@ export const jobsZh = {
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
   'cell.blockedBoth': '本省不受理',
   'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
-  'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
+  'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名',
+  'pnp.gen.AB': 'AB 机会通道', 'pnp.gen.BC': 'BC 技术移民', 'pnp.gen.SK': 'SK 雇主 offer', 'pnp.gen.ON': 'ON 劳动力优先',
+  'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',
+  'pnp.gen.NL': 'NL 技术工人', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
-  'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
+  'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
+  'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 列名
   'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.teer': 'TEER',
@@ -741,7 +745,7 @@ export const jobsZh = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
+  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.pnpProvAip': '{p}提名(PNP)及 AIP', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
   // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)
   'loc.vol': '该省移民体量', 'loc.volTag': 'IRCC 官方数',
   'loc.study': '学签持有人', 'loc.tfwp': '雇主担保类工签', 'loc.imp': '开放及豁免类工签', 'loc.impNote': 'IMP,含毕业工签',

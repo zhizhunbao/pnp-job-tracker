@@ -7,7 +7,8 @@
  * @author Frank
  * @time 2026-09-23 23:10:00
  */
-import { caretOf } from './functions'
+import { TEXT_NONE } from './constants'
+import { caretOf, cmpScoreClsOf } from './functions'
 import type { EeCmpHeadIn } from './types'
 import css from './pnp.module.css'
 
@@ -20,8 +21,11 @@ import css from './pnp.module.css'
 export function EeCmpHead({ g, open }: EeCmpHeadIn) {
   return (
     <>
-      <span className={css.cmpName}>{g.name}</span>
-      <span className={css.cmpScore}>{g.score}</span>
+      <span className={css.cmpName}>
+        {g.name}
+        {g.sub !== TEXT_NONE && <span className={css.zh}>{g.sub}</span>}
+      </span>
+      <span className={cmpScoreClsOf({ noScore: g.noScore })}>{g.score}</span>
       <span className={css.cmpDate}>{g.date}</span>
       <span className={css.cmpRounds}>{g.rounds}</span>
       <span className={css.cmpCaret}>{g.expandable && caretOf(open)}</span>

@@ -200,9 +200,9 @@
   display: grid;
 
   /*
-   * 名字吃余宽,其余定宽。
+   * 名字吃余宽,其余定宽(2026-09-23 Frank「这个间距在设计一下」:分数格放宽到「197 invitations」也放得下,轮数格按英文「12 rounds」定宽)。
    */
-  grid-template-columns: minmax(0, 1fr) 96px 84px 44px 12px;
+  grid-template-columns: minmax(0, 1fr) 104px 84px 56px 10px;
 
   /*
    * 格位(手机改两行时换排布)。
@@ -210,14 +210,14 @@
   grid-template-areas: "name score date rounds caret";
 
   /*
-   * 格间距。
+   * 格间距(三格都靠右,看上去间隔一致)。
    */
-  column-gap: 8px;
+  column-gap: 12px;
 
   /*
-   * 基线对齐。
+   * 上下居中:带中文灰字的组头是两行,右边几格不贴第一行。
    */
-  align-items: baseline;
+  align-items: center;
 
   /*
    * 占满卡宽。
@@ -250,14 +250,14 @@
   text-align: left;
 
   /*
-   * 正文字号。
+   * 字号照职业清单行(.row)。
    */
-  font-size: 13px;
+  font-size: 12.5px;
 
   /*
-   * 主文字色。
+   * 字色照职业清单行(.row;2026-09-23 Frank「内容也是黑色加粗太吓人了吧」)。
    */
-  color: var(--text);
+  color: #374151;
 }
 
 /*
@@ -281,6 +281,46 @@
 }
 
 /*
+ * 本岗对应的那一组(2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」):琥珀高亮,同清单命中行(.row.hit)。
+ */
+.cmpHead.cmpHit {
+  /*
+   * 浅琥珀底。
+   */
+  background: #fef3c7;
+
+  /*
+   * 琥珀描边。
+   */
+  border-color: #fcd34d;
+
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+}
+
+/*
+ * 抽选卡标题下的灰字(官方明说不按分数抽选的省注明一句;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
+ */
+.drawsBasis {
+  /*
+   * 灰注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与分组的间距(标题自带 6px 下距,灰字往上收一点贴着标题)。
+   */
+  margin: -2px 0 8px;
+}
+
+/*
  * 组头的名字格。
  */
 .cmpName {
@@ -290,9 +330,9 @@
   grid-area: name;
 
   /*
-   * 名字加粗一档。
+   * 常规字重(照职业清单行;2026-09-23 前是 600,Frank「黑色加粗太吓人」)。
    */
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /*
@@ -305,9 +345,9 @@
   grid-area: score;
 
   /*
-   * 加粗。
+   * 半粗(2026-09-23 前是 700,Frank「黑色加粗太吓人」)。
    */
-  font-weight: 700;
+  font-weight: 600;
 
   /*
    * 右对齐,数字对位。
@@ -323,6 +363,26 @@
    * 格位。
    */
   grid-area: date;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 靠右(三格都靠右,间隔一致)。
+   */
+  text-align: right;
+}
+
+/*
+ * 分数格写的不是分数(没公布分写邀请数、EE 从没抽过写「暂无抽选」):常规字重次级灰,不跟真分数抢眼。
+ */
+.cmpScore.cmpNoScore {
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
 
   /*
    * 次级灰。
@@ -348,6 +408,11 @@
    * 小一号。
    */
   font-size: 12px;
+
+  /*
+   * 靠右贴着折叠记号(2026-09-23 Frank「1 轮和小尖号距离太远了吧」:定宽格里靠左,空全落在记号前面)。
+   */
+  text-align: right;
 }
 
 /*
@@ -363,6 +428,36 @@
    * 三级灰。
    */
   color: var(--text3);
+}
+
+/*
+ * 命中组的名字加粗一档(同 .row.hit;其余格照常字重)。
+ */
+.cmpHit .cmpName {
+  /*
+   * 加粗一档。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 命中组的轮数跟着变色(三级灰在琥珀底上读不出来,理由同 .row.hit .noc)。
+ */
+.cmpHit .cmpRounds {
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+}
+
+/*
+ * 命中组的折叠记号跟着变色(理由同上)。
+ */
+.cmpHit .cmpCaret {
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
 }
 
 /*

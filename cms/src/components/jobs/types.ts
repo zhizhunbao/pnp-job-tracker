@@ -5439,6 +5439,21 @@ export type HeadCellView = {
 }
 
 /**
+ * pnpGenericOf 的入参。
+ */
+export type PnpGenericIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+}
+
+/**
  * saveLabelOf 的入参。
  */
 export type SaveLabelIn = {

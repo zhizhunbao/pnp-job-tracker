@@ -21,23 +21,23 @@ import { track } from '@/lib/track'
 import {
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
-  CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, COND_PROVS, DASH, DAY_START_SUFFIX, EE_DORMANT_MONTHS,
-  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR,
+  CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
+  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM,
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
   KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
-  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_NL, PROV_QC, ROWS_FALLBACK,
+  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK,
   RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
-  SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD, TEER_SKILLED_MAX,
-  TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_OK, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
+  SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD,
+  TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
 } from './constants'
 import type {
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
-  CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn,
-  HistAtIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
+  CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn,
+  EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, ZhSubIn,
   EeHitIn, FedLabelIn,
   FoldLabelIn, HasProvDrawsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
@@ -158,10 +158,7 @@ export function toDrawRow(x: DrawRowIn): DrawRowSpec {
   if (x.draw.score != null) {
     score = x.t('pnpdraws.min', { score: x.draw.score })
   }
-  let inv = TEXT_NONE
-  if (x.draw.invitations != null) {
-    inv = x.t('pnpdraws.inv', { n: x.draw.invitations })
-  }
+  const inv = invTextOf({ t: x.t, draw: x.draw })
   return {
     key: String(x.index),
     date: x.draw.drawDate,
@@ -692,6 +689,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     groups.push(cmpGroupOf({
       t: x.t,
       none: x.t('eecmp.none'),
+      sub: TEXT_NONE,
       lang: x.lang,
       key: c.key,
       name,
@@ -700,6 +698,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       score: c.drawCrs,
       draws,
       dim,
+      hit: true,
     }))
     if (dim === false && c.drawCrs != null) {
       lines.push(cmpLineOf({ t: x.t, key: c.key, cat: name, cec: cecName, diff: c.drawCrs - cecScore }))
@@ -708,6 +707,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
   groups.push(cmpGroupOf({
     t: x.t,
     none: x.t('eecmp.none'),
+    sub: TEXT_NONE,
     lang: x.lang,
     key: FED_CEC,
     name: cecName,
@@ -716,6 +716,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     score: cecScore,
     draws: cec,
     dim: false,
+    hit: false,
   }))
   const fr = histAtOf({ hist, key: FED_FRENCH })
   const frLast = fr[0]
@@ -723,6 +724,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     groups.push(cmpGroupOf({
       t: x.t,
       none: x.t('eecmp.none'),
+      sub: TEXT_NONE,
       lang: x.lang,
       key: FED_FRENCH,
       name: eeKeyDisplay({ t: x.t, key: FED_FRENCH }),
@@ -731,9 +733,28 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       score: frLast.score,
       draws: fr,
       dim: false,
+      hit: false,
     }))
   }
   return { groups, lines }
+}
+
+/**
+ * 本岗 PNP 格写的通用通道在本省抽选卡里对应哪一组(2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」)。
+ * 格子写的是具名清单通道或不可提名时不高亮(具名清单与抽选组的对照要等数据层把 rule_streams 对上号)。
+ *
+ * @param job 本岗。
+ * @returns 抽选行 stream 原值;''=不高亮。
+ */
+export function genDrawStreamOf(job: PnpJob): string {
+  if (job.pnpEligible === false || job.pnpStream !== TEXT_NONE) {
+    return TEXT_NONE
+  }
+  const s = GEN_DRAW_STREAM[job.province]
+  if (s == null) {
+    return TEXT_NONE
+  }
+  return s
 }
 
 /**
@@ -743,8 +764,11 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
  * 本岗对应哪一轮、差多少分要等数据层把「抽选通道 ↔ 职业清单」对上号(抽选行的 rule_streams 现在全空),这一版只分组不标本岗。
  * 同日 Frank「大标题都改成英文」:组名一律用官方英文通道名(原先中文界面有中文名用中文、没有用英文,一张卡里中英混排);
  * 中文名留在展开后各轮的灰注里。
+ * 同日又改:「这种中文灰字翻译只显示一个就行了吧」→ 中文名只在组头名字下灰字出一次,各轮不再逐行重复;
+ * 「这个没有分数需要显示横线吧」→ 没公布分的组头改写那一轮发了多少份邀请,邀请数也没有就空着。
+ * 同日「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格写的通用通道对应的那组(genDrawStreamOf)琥珀高亮、排最前。
  *
- * @param x 取词函数、界面语言、省码与全部抽选行。
+ * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的那一组。
  * @returns 各组(没有抽选给空列)。
  */
 export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
@@ -769,7 +793,8 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
     }
     groups.push(cmpGroupOf({
       t: x.t,
-      none: DASH,
+      none: invTextOf({ t: x.t, draw: head }),
+      sub: zhSubOf({ lang: x.lang, draw: head }),
       lang: x.lang,
       key,
       name: head.stream,
@@ -778,10 +803,42 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       score: head.score,
       draws: arr,
       dim: false,
+      hit: x.hitStream !== TEXT_NONE && key === x.hitStream,
     }))
   }
-  groups.sort(byGroupDateDesc)
+  groups.sort(byGroupHitDateDesc)
   return groups
+}
+
+/**
+ * 没公布分的组头写什么:那一轮发了多少份邀请;邀请数也没有就空着(不出长横)。
+ * 2026-09-23 同日并进 AIP 文案、改名 invTextOf(原 headInvOf),抽选行也走这一处:AIP 那组的数字是选中进入审理的申请
+ * (见 DRAW_STREAM_AIP),写「份申请入选」,不写「份邀请」。
+ *
+ * @param x 取词函数与这一轮。
+ * @returns 文字;''=没公布。
+ */
+function invTextOf(x: InvTextIn): string {
+  if (x.draw.invitations == null) {
+    return TEXT_NONE
+  }
+  if (x.draw.stream === DRAW_STREAM_AIP) {
+    return x.t('pnpdraws.sel', { n: x.draw.invitations })
+  }
+  return x.t('pnpdraws.inv', { n: x.draw.invitations })
+}
+
+/**
+ * 组头名字下的灰字:中文界面出通道中文名(与英文名同字或没有中文名就不出)。
+ *
+ * @param x 界面语言与组头那一轮。
+ * @returns 灰字;''=不出。
+ */
+function zhSubOf(x: ZhSubIn): string {
+  if (x.lang !== LANG_ZH || x.draw.streamZh === x.draw.stream) {
+    return TEXT_NONE
+  }
+  return x.draw.streamZh
 }
 
 /**
@@ -805,13 +862,17 @@ function scoredHeadOf(draws: PnpDraw[]): PnpDraw | null {
 
 /**
  * 组按最近一轮日期降序。
+ * 2026-09-23 同日加一档:本岗对应那组排最前(改名 byGroupHitDateDesc,原 byGroupDateDesc)。
  *
  * @param a 前一组。
  * @param b 后一组。
  * @returns 排序位次。
  */
 // eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
-function byGroupDateDesc(a: EeCmpGroup, b: EeCmpGroup): number {
+function byGroupHitDateDesc(a: EeCmpGroup, b: EeCmpGroup): number {
+  if (a.hit !== b.hit) {
+    return Number(b.hit) - Number(a.hit)
+  }
   if (a.date < b.date) {
     return 1
   }
@@ -876,7 +937,9 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
   const rows: DrawRowSpec[] = []
   let i = 0
   for (const d of x.draws) {
-    rows.push(toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null }))
+    const row = toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null })
+    row.streamZh = TEXT_NONE
+    rows.push(row)
     i += 1
   }
   let rounds = TEXT_NONE
@@ -886,6 +949,7 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
   return {
     key: x.key,
     name: x.name,
+    sub: x.sub,
     tip: x.tip,
     score,
     date: x.date,
@@ -893,6 +957,8 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     dim: x.dim,
     rows,
     expandable: rows.length > 0,
+    noScore: x.score == null,
+    hit: x.hit,
   }
 }
 
@@ -1590,6 +1656,23 @@ export function cmpHeadClsOf(x: CmpHeadClsIn): string {
   }
   if (x.dim) {
     cls.push(cssOf(css.dim))
+  }
+  if (x.hit) {
+    cls.push(cssOf(css.cmpHit))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 组头分数格的类名(写的不是分数时换成常规字重次级灰)。
+ *
+ * @param x 分数格写的是不是分数。
+ * @returns 类名。
+ */
+export function cmpScoreClsOf(x: CmpScoreClsIn): string {
+  const cls = [cssOf(css.cmpScore)]
+  if (x.noScore) {
+    cls.push(cssOf(css.cmpNoScore))
   }
   return cls.join(CLS_SEP)
 }

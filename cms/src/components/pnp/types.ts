@@ -858,6 +858,11 @@ export type EeCmpGroup = {
   name: string
 
   /**
+   * 名字下的灰字译名(省抽选组:中文界面出通道中文名,只在组头出一次;''=不出)。
+   */
+  sub: string
+
+  /**
    * 组头悬停说明;''=不出。
    */
   tip: string
@@ -891,6 +896,26 @@ export type EeCmpGroup = {
    * 能不能展开(有轮次就给;一轮都没有不给假入口。2026-09-23 前是两轮起才给)。
    */
   expandable: boolean
+
+  /**
+   * 分数格写的不是分数(没公布分写邀请数、从没抽过写「暂无抽选」;换成常规字重次级灰)。
+   */
+  noScore: boolean
+
+  /**
+   * 本岗对应这一组(点进来的那个格子写的就是它):琥珀高亮;省抽选卡里还排最前。
+   */
+  hit: boolean
+}
+
+/**
+ * cmpScoreClsOf 的入参。
+ */
+export type CmpScoreClsIn = {
+  /**
+   * 分数格写的不是分数。
+   */
+  noScore: boolean
 }
 
 /**
@@ -2441,9 +2466,14 @@ export type CmpGroupIn = {
   t: TFn
 
   /**
-   * 最低分缺席时组头写什么(EE:从没抽过写「暂无抽选」;省抽选:那轮没公布分写长横)。
+   * 最低分缺席时组头写什么(EE:从没抽过写「暂无抽选」;省抽选:那轮没公布分就写发了多少份邀请,邀请数也没有就空着)。
    */
   none: string
+
+  /**
+   * 名字下的灰字译名;''=不出。
+   */
+  sub: string
 
   /**
    * 界面语言。
@@ -2484,6 +2514,41 @@ export type CmpGroupIn = {
    * 压不压暗。
    */
   dim: boolean
+
+  /**
+   * 本岗对应这一组。
+   */
+  hit: boolean
+}
+
+/**
+ * invTextOf 的入参(2026-09-23 前叫 HeadInvIn,只给组头用;同日 AIP 文案并进来,抽选行也用)。
+ */
+export type InvTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一轮。
+   */
+  draw: PnpDraw
+}
+
+/**
+ * zhSubOf 的入参。
+ */
+export type ZhSubIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 组头那一轮。
+   */
+  draw: PnpDraw
 }
 
 /**
@@ -2509,6 +2574,11 @@ export type PnpDrawGroupsOfIn = {
    * 全部抽选行。
    */
   draws: PnpDraw[]
+
+  /**
+   * 本岗对应的那一组(抽选行 stream 原值);''=不高亮。
+   */
+  hitStream: string
 }
 
 /**
@@ -2536,6 +2606,11 @@ export type PnpDrawGroupsIn = {
   draws: PnpDraw[]
 
   /**
+   * 本岗对应的那一组(抽选行 stream 原值);''=不高亮。
+   */
+  hitStream: string
+
+  /**
    * 展开着的组(通道名)。
    */
   open: Set<string>
@@ -2554,6 +2629,11 @@ export type CmpHeadClsIn = {
    * 压不压暗。
    */
   dim: boolean
+
+  /**
+   * 本岗对应这一组(琥珀高亮)。
+   */
+  hit: boolean
 
   /**
    * 可不可点(有轮次才可展开)。

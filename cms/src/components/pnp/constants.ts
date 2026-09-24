@@ -148,6 +148,39 @@ export const PROGRAM_AIP = 'AIP'
 export const PROGRAM_PNP = 'PNP'
 
 /**
+ * 本省抽选卡里 AIP 那一组的通道名(抽选行 stream 原值;NB 官网把 AIP 选取与省提名邀请发在同一张抽选页)。
+ * AIP 轮次的数字是选中进入审理的申请、不是邀请(官网原句「Atlantic Immigration Program figures show applications
+ * selected for processing; all other streams show invitations issued」),文案走 pnpdraws.sel(2026-09-23)。
+ */
+export const DRAW_STREAM_AIP = 'AIP'
+
+/**
+ * PNP 格写通用雇主担保通道时(jobs 的 PNP_GENERIC_PROVS),本省抽选卡里对应的那一组(抽选行 stream 原值,
+ * etl/pnp 洗出的官方通道名):点进来琥珀高亮、排最前。2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立。
+ * 其余省对不上一一对应,不登记 = 不高亮:BC 整卡都是 Skills Immigration 的类别轮,MB / PE 组名与通道不同名,
+ * SK / NS 没有抽选,ON 改制卡暂撤。
+ */
+export const GEN_DRAW_STREAM: Record<string, string> = {
+  /**
+   * 新不伦瑞克:NB 技术工人(官网 New Brunswick Skilled Worker stream)。
+   */
+  NB: 'NB Skilled Worker',
+
+  /**
+   * 阿尔伯塔:AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)。
+   */
+  AB: 'Alberta Opportunity Stream',
+}
+
+/**
+ * 官方明说不按分数抽选的省(抽选卡标题下出一行灰字注明;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
+ * NB 出处 gnb.ca 的 invitation-selection-rounds 页原句「Invitations and selections are based on provincial labour
+ * market needs, available allocation and other priorities determined by the Government of New Brunswick.」
+ * 只收有官方原句的省:别省只是没公布分数线,不等于不按分数。
+ */
+export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
+
+/**
  * 魁省省码(走自己的体系,不属 PNP)。
  */
 export const PROV_QC = 'QC'

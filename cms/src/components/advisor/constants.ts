@@ -929,6 +929,13 @@ export const GROUP_PNP = 'pnp'
 export const K_PROV_HEAD = 'prov.'
 
 /**
+ * 省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:
+ * 两省官网把 AIP 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」
+ * (2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
+ */
+export const AIP_DRAW_PROVS = new Set(['NB', 'NL'])
+
+/**
  * 事实块按**分组**铺开的明表(E8-10 S6,2026-07-21)。
  * 收编前:点「通道」列只渲通道一条 —— 弹框标题写着「移民」,里面却只有一个字段,
  * 用户还得退出去再点 PNP、再点 EE、再点 AIP,每点一次烧一次额度。这正是 24 个弹框的病根。
