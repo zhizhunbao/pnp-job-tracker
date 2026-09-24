@@ -1561,10 +1561,15 @@ def parse_ab_draws(html: str) -> list:
 
 def is_mb_heading(tag: SoupNodeLike) -> bool:
     """整段加粗的 <p>/<h2-4> 才算子标题(如「Skilled Worker Stream」「Francophone selection」);
-    正文段落里夹 <strong> 强调的不算(全文字数要等于其唯一 <strong> 子节点的字数)。"""
+    正文段落里夹 <strong> 强调的不算(全文字数要等于其唯一 <strong> 子节点的字数)。
+    2026-09-24 空的 <strong></strong> 不算数:Draw #275 的 IES 标题前面多一个空加粗,原先两个 strong 被判成非标题,
+    块名落兜底「Expression of Interest」(九省通道审计遗留)。"""
     if tag.name not in MB_HEAD_TAGS:
         return False
-    strongs = tag.find_all(TAG_STRONG)
+    strongs = []
+    for s in tag.find_all(TAG_STRONG):
+        if s.get_text(strip=True):
+            strongs.append(s)
     if len(strongs) != 1:
         return False
     full = fold_ws(tag.get_text(TEXT_JOIN_SEP, strip=True))
