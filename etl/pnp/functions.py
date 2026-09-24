@@ -274,6 +274,19 @@ from pnp.constants import (
     ZH_PRINT_PROGRESS_TPL, ZH_PRINT_TODO_TPL, ZH_PROMPT_TPL, ZH_SAVE_EVERY, ZH_STRIP_CHARS, ZH_TEMPERATURE,
     ZH_TIMEOUT_S,
 )
+from pnp.constants import (  # 2026-09-24 九省通道审计第三批新增
+    AB_EE_TITLE, AB_LAW_LABEL, AB_LAW_NOTE, AB_LAW_SEG_RE, AB_LAW_STREAM, AB_NOC_DASH_RE, AB_PRINT_EMPTY_TPL,
+    AB_PRINT_LAW_TPL, AB_PRINT_RURAL_TPL, AB_PRINT_TOURISM_TPL, AB_RR_COMMUNITY_URL, AB_RR_INCLUDING_RE,
+    AB_RR_LIST_SPLIT_RE, AB_RR_PLACE_PREFIX_RE, AB_RR_PLACE_SKIP, AB_RR_PLACE_SUFFIX_RE, AB_RURAL_LABEL,
+    AB_RURAL_NOTE, AB_RURAL_STREAM, AB_TOURISM_LABEL, AB_TOURISM_NOTE, AB_TOURISM_STREAM, AB_TOURISM_TABLE_KW,
+    AB_TOURISM_TITLE, AB_TOURISM_URL, DRAWS_AB_MAX, K_COMMUNITIES, K_EXCLUDED, MB_DRAW_SUB_NOTE_TPL, MB_SECTION_TAGS,
+    MB_SWM_STREAM, MB_SWM_SUBS,
+    NB_PRINT_NO_PRIORITY, NB_PRINT_PRIORITY_TPL, NB_PRIORITY_LABEL, NB_PRIORITY_NOTE, NB_PRIORITY_ROW_RE,
+    NB_PRIORITY_STREAM, NB_PRIORITY_TIMEOUT_S, NB_PRIORITY_URL, NS_CONSTR_GENERIC, NS_CONSTR_LABEL,
+    NS_CONSTR_NOTE, NS_CONSTR_SEG_RE, NS_CONSTR_STREAM, NS_FACT_FOOD_PAUSE, NS_FACT_FOOD_PAUSE_KEY,
+    NS_FOOD_PAUSE_KW, NS_PRINT_CONSTR_TPL, NS_PRINT_NO_CONSTR, OUT_AB_LAW_FILE, OUT_AB_RURAL_FILE,
+    OUT_AB_TOURISM_FILE, OUT_NB_PRIORITY_FILE, OUT_NS_CONSTR_FILE, TYPE_COMMUNITY,
+)
 from pnp.scheme import (
     HttpClientLike, PdfDocLike, SoupNodeLike,
     AbCheckIn, AbSectionIn, AbStatsAcc, AbStreamRowIn, AbTableIn, AreaMapIn, BuildTableIn, CellsOut, ColIn,
@@ -281,7 +294,7 @@ from pnp.scheme import (
     HitsIn, LatestIn, LatestOut, MbAdaptCollectIn, MbAdaptOut, MbAdaptStepIn, MbAdaptStepOut, MbAnnualOut, MbBlock,
     MbBlockNameIn, MbFactorOut, MbIdolOut, MbInventoryIn, MbMonthlyIn, MbMonthlyOut, MbPageOut, MbPlanIn,
     MbPlanOut, MbSayIn, MbSimpleIn, MergeDrawsIn, NbColIn, NbDrawIn, NbGuidesOut, NbSegPickIn, NbSegsOut,
-    NbSplitIn, NbSplitLinesIn, NbStreamIn,
+    NbSplitIn, NbSplitLinesIn, NbStreamIn, AbPageIn, AbNocTableIn, MbDrawIn,
     NlEmployerStatsIn, NlIgIn, NlpCheckIn, NocLinesIn, NoticeOfIn, OccProbeIn, OnChunkIn, OnColIn, OnDrawsOut,
     OnEntryIn, OnYearIn, PageTextIn, PeDrawRowsIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut,
     RowsByLabelsIn, ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn,
@@ -606,7 +619,126 @@ def build_ab() -> None:
         say(AB_PRINT_HEALTH_TPL.format(n=len(occ3)))
     elif occ3 is not None:
         say(AB_PRINT_NO_HEALTH)
+    build_ab_law()
+    build_ab_tourism()
+    build_ab_rural()
 
+
+def build_ab_law() -> None:
+    """AB 警务专项清单(2026-09-24 九省通道审计第三批):EE 流资格页(crawl 缓存)里警务那段的 3 个职业码。"""
+    try:
+        text = fold_ws(text_of_html(TextOfHtmlIn(html=ab_page_html(AbPageIn(url=AB_EE_URL, title=AB_EE_TITLE)),
+                                                 drop_junk=True, main_only=True)))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_LAW_FILE, name=type(e).__name__, detail=e))
+        return
+    seg = AB_LAW_SEG_RE.search(text)
+    occ: dict = {}
+    if seg:
+        for m in AB_NOC_DASH_RE.finditer(seg.group(1)):
+            occ.setdefault(m.group(1), fold_ws(m.group(2)).strip())
+    if not occ:
+        say(AB_PRINT_EMPTY_TPL.format(what=OUT_AB_LAW_FILE))
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AB_LAW_FILE, payload={
+        K_STREAM: AB_LAW_STREAM, K_LABEL: AB_LAW_LABEL,
+        K_PROVINCE: PROV_AB, K_TYPE: TYPE_INDEMAND, K_URL: AB_EE_URL, K_FETCHED: today_iso(),
+        K_NOTE: AB_LAW_NOTE,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }, indent=INDENT_2))
+    say(AB_PRINT_LAW_TPL.format(n=len(occ)))
+
+
+def build_ab_tourism() -> None:
+    """AB 旅游酒店清单:资格页表 3(合格职业)。表 1 是 WCB 行业码(也是 5 位数)不能混,按表头「NOC code」认表。"""
+    try:
+        html = ab_page_html(AbPageIn(url=AB_TOURISM_URL, title=AB_TOURISM_TITLE))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_TOURISM_FILE, name=type(e).__name__, detail=e))
+        return
+    occ = ab_noc_table_of(AbNocTableIn(html=html, head_kw=AB_TOURISM_TABLE_KW))
+    if not occ:
+        say(AB_PRINT_EMPTY_TPL.format(what=OUT_AB_TOURISM_FILE))
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AB_TOURISM_FILE, payload={
+        K_STREAM: AB_TOURISM_STREAM, K_LABEL: AB_TOURISM_LABEL,
+        K_PROVINCE: PROV_AB, K_TYPE: TYPE_INDEMAND, K_URL: AB_TOURISM_URL, K_FETCHED: today_iso(),
+        K_NOTE: AB_TOURISM_NOTE,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }, indent=INDENT_2))
+    say(AB_PRINT_TOURISM_TPL.format(n=len(occ)))
+
+
+def ab_noc_table_of(x: AbNocTableIn) -> dict:
+    """首行表头含判词的那张表 → {码: 名}(首列 5 位码、次列职业名;码尾星号去掉)。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(x.html, PARSER_HTML))
+    for table in soup.find_all(TAG_TABLE):
+        trs = table.find_all(TAG_TR)
+        if not trs or x.head_kw not in fold_ws(trs[0].get_text(TEXT_JOIN_SEP, strip=True)).lower():
+            continue
+        occ: dict = {}
+        for tr in trs[1:]:
+            cells = tr.find_all([TAG_TD, TAG_TH])
+            if len(cells) < 2:
+                continue
+            code = fold_ws(cells[0].get_text(TEXT_JOIN_SEP, strip=True)).rstrip(AB_NOC_STAR)
+            if AB_NOC5_RE.match(code):
+                occ.setdefault(code, fold_ws(cells[1].get_text(TEXT_JOIN_SEP, strip=True)))
+        if occ:
+            return occ
+    return {}
+
+
+def build_ab_rural() -> None:
+    """AB 乡村振兴:指定社区页表 1 的社区地名 + 资格页排除职业表(17 码)→ ab-rural.json(type=community,
+    mart 按岗位城市对);两页都在 ab-aaip crawl 缓存。"""
+    try:
+        comm_html = ab_page_html(AbPageIn(url=AB_RR_COMMUNITY_URL, title=AB_RURAL_STREAM))
+        excl_html = ab_page_html(AbPageIn(url=AB_RR_URL, title=AB_RURAL_STREAM))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_RURAL_FILE, name=type(e).__name__, detail=e))
+        return
+    places = ab_rr_places_of(comm_html)
+    excluded = ab_noc_table_of(AbNocTableIn(html=excl_html, head_kw=AB_TABLE_HEAD_KW))
+    if not places or not excluded:
+        say(AB_PRINT_EMPTY_TPL.format(what=OUT_AB_RURAL_FILE))
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_AB_RURAL_FILE, payload={
+        K_STREAM: AB_RURAL_STREAM, K_LABEL: AB_RURAL_LABEL,
+        K_PROVINCE: PROV_AB, K_TYPE: TYPE_COMMUNITY, K_URL: AB_RR_COMMUNITY_URL, K_FETCHED: today_iso(),
+        K_NOTE: AB_RURAL_NOTE,
+        K_COMMUNITIES: sorted(places), K_EXCLUDED: sorted(excluded),
+    }, indent=INDENT_2))
+    say(AB_PRINT_RURAL_TPL.format(n=len(places), m=len(excluded)))
+
+
+def ab_rr_places_of(html: str) -> set:
+    """指定社区表 → 地名集合:每行首格「City of Brooks (including: Town of Bassano, …)」拆主名与所含地名,
+    去掉 City of / Town of 等前缀与 County / Region 后缀。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
+    places: set = set()
+    for table in soup.find_all(TAG_TABLE):
+        for tr in table.find_all(TAG_TR)[1:]:
+            cells = tr.find_all([TAG_TD, TAG_TH])
+            if not cells:
+                continue
+            for name in ab_rr_names_of(fold_ws(cells[0].get_text(TEXT_JOIN_SEP, strip=True))):
+                places.add(name)
+    return places
+
+
+def ab_rr_names_of(cell: str) -> list:
+    """一格社区文字 → 地名清单(主名 + including 里的每一个;收尾的 Greater Region 之类不算)。"""
+    parts = [cell]
+    m = AB_RR_INCLUDING_RE.match(cell)
+    if m:
+        parts = [m.group(1)] + AB_RR_LIST_SPLIT_RE.split(m.group(2))
+    out: list = []
+    for p in parts:
+        name = AB_RR_PLACE_SUFFIX_RE.sub(EMPTY_JOIN, AB_RR_PLACE_PREFIX_RE.sub(EMPTY_JOIN, p.strip())).strip()
+        if name and name.lower() not in AB_RR_PLACE_SKIP:
+            out.append(name)
+    return out
 
 # =========================================================================
 # 3. BC 具名清单(2026 新政 Care/Build 五桶 + 主线排除清单 §3.11)
@@ -808,7 +940,7 @@ def build_sk_excluded() -> None:
         K_STREAM: SK_EXCL_STREAM, K_LABEL: SK_EXCL_LABEL,
         K_PROVINCE: PROV_SK, K_PROGRAM: PROGRAM_PNP, K_TYPE: TYPE_INELIGIBLE, K_NOTE: SK_EXCL_NOTE,
         K_APPLIES_TO: SK_EXCL_APPLIES_TO, K_APPLIES_TO_QUOTE: SK_EXCL_APPLIES_TO_QUOTE,
-        K_URL: SK_EXCL_PAGE, K_FETCHED: fetched, K_EFFECTIVE: effective,
+        K_URL: SK_EXCL_PAGE, K_FETCHED: fetched, K_EFFECTIVE: effective, K_SIGNAL: True,
         K_OCCUPATIONS: occ_rows_of(occ),
     }
     write_pnp_table(BuildTableIn(filename=OUT_SK_EXCLUDED_FILE, table=table,
@@ -884,6 +1016,8 @@ def build_ns_policy() -> None:
         K_STATEMENT: ns_oid_statement(oid_empty),
         K_URL: NS_MAIN_URL,
     }]
+    if NS_FOOD_PAUSE_KW in low:
+        facts.append({K_KEY: NS_FACT_FOOD_PAUSE_KEY, K_STATEMENT: NS_FACT_FOOD_PAUSE, K_URL: NS_MAIN_URL})
     hit = NS_TEER_04_RE.search(prio_md)
     if hit:
         facts.append({
@@ -935,6 +1069,34 @@ def build_ns() -> None:
                                      line=PRINT_TABLE10_TPL.format(label=s[K_LABEL], n=len(occs),
                                                                    out=s[K_OUT], fetched=fetched)))
     build_ns_policy()
+    build_ns_construction()
+
+
+def build_ns_construction() -> None:
+    """NS 建筑子条件清单(2026-09-24 九省通道审计第三批):主线页 Construction tab 的 22 个码去掉两个通用搬运杂工码
+    (NS_CONSTR_GENERIC)→ ns-construction.json。主线页读 crawl 缓存(ns-root),同一页不抓两遍。"""
+    try:
+        text = page_text(PageTextIn(url=NS_MAIN_URL, timeout_s=MD_TIMEOUT_S, drop_junk=True, main_only=True,
+                                    cache_first=True))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_NS_CONSTR_FILE, name=type(e).__name__, detail=e))
+        return
+    seg = NS_CONSTR_SEG_RE.search(text)
+    occ: dict = {}
+    if seg:
+        for m in AB_NOC_DASH_RE.finditer(seg.group(1)):
+            if m.group(1) not in NS_CONSTR_GENERIC:
+                occ.setdefault(m.group(1), fold_ws(m.group(2)).strip())
+    if not occ:
+        say(NS_PRINT_NO_CONSTR)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_NS_CONSTR_FILE, payload={
+        K_STREAM: NS_CONSTR_STREAM, K_LABEL: NS_CONSTR_LABEL,
+        K_PROVINCE: PROV_NS, K_TYPE: TYPE_INDEMAND, K_URL: NS_MAIN_URL, K_FETCHED: today_iso(),
+        K_NOTE: NS_CONSTR_NOTE,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }, indent=INDENT_2))
+    say(NS_PRINT_CONSTR_TPL.format(n=len(occ)))
 
 
 # =========================================================================
@@ -1088,6 +1250,30 @@ def build_nb() -> None:
                                          line=NB_PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
                                                                         out=cfg[K_OUT], fetched=fetched)))
     say_nb_sector_check(md)
+    build_nb_priority()
+
+
+def build_nb_priority() -> None:
+    """NB 优先职业清单(2026-09-24 九省通道审计第三批):指南 PDF 里「• 码 – 名」逐条取 → nb-priority.json,
+    只作参考信号(SIGNAL_OUTS:只认省招聘团的 offer)。抓失败 / 解析空保留旧表。"""
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=NB_PRIORITY_URL, timeout_s=NB_PRIORITY_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001
+        say(PRINT_KEEP_OLD_TPL.format(what=OUT_NB_PRIORITY_FILE, name=type(e).__name__, detail=e))
+        return
+    occ: dict = {}
+    for m in NB_PRIORITY_ROW_RE.finditer(text):
+        occ.setdefault(m.group(1), fold_ws(m.group(2)).strip())
+    if not occ:
+        say(NB_PRINT_NO_PRIORITY)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_PNP_DIR / OUT_NB_PRIORITY_FILE, payload={
+        K_STREAM: NB_PRIORITY_STREAM, K_LABEL: NB_PRIORITY_LABEL,
+        K_PROVINCE: PROV_NB, K_TYPE: TYPE_INDEMAND, K_URL: NB_PRIORITY_URL, K_FETCHED: today_iso(),
+        K_NOTE: NB_PRIORITY_NOTE, K_SIGNAL: True,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }, indent=INDENT_2))
+    say(NB_PRINT_PRIORITY_TPL.format(n=len(occ)))
 
 
 # =========================================================================
@@ -1365,7 +1551,7 @@ def parse_ab_draws(html: str) -> list:
                 continue
             draws.append({K_DATE: d, K_STREAM: c[1], K_NOTE: "",
                           K_SCORE: int_of(c[2]), K_INVITATIONS: int_of(c[3])})
-        return draws[:DRAWS_MAX_PER_PROV]
+        return draws[:DRAWS_AB_MAX]
     return []
 
 
@@ -1396,9 +1582,13 @@ def mb_stream_blocks(art: SoupNodeLike) -> list:
     每段的名字取「最近的整段加粗子标题」;同一子标题下第 2 个带数据的 ul(比如
     「Occupation-specific selections」标题下,后面紧跟一段没有独立加粗标题的
     「broad occupational category」选法)用其前面最近的普通段落原句去区分,不瞎归并。
-    找不到任何加粗子标题(老格式/改版)→ 返回空列表,调用方退回合并成一行的老逻辑。"""
+    找不到任何加粗子标题(老格式/改版)→ 返回空列表,调用方退回合并成一行的老逻辑。
+    2026-09-24 认上层:不加粗的 h3 / h4 短标题 = 上层通道(「Skilled Worker in Manitoba」,下面三种选取的子标题才加粗),
+    加粗子标题以 Stream / Pathway 结尾的另起顶层(「Skilled Worker Stream」);块的 parent 记上层、name 记子选取
+    (九省通道审计:原先子标题盖掉上层,抽选组对不上默认通道)。期号标题是 h2,不算上层。"""
     blocks: list = []
     heading = ""
+    parent = ""
     desc = ""
     count = 0
     for tag in art.find_all(MB_BLOCK_TAGS):
@@ -1417,12 +1607,19 @@ def mb_stream_blocks(art: SoupNodeLike) -> list:
             if m_score:
                 score = int_of(m_score.group(1))
             blocks.append(MbBlock(name=name[:MB_BLOCK_NAME_CLIP] or MB_DEFAULT_STREAM,
-                                  laa=int_of(m_laa.group(1)), score=score))
+                                  laa=int_of(m_laa.group(1)), score=score, parent=parent))
             desc = ""
             continue
         text = fold_ws(tag.get_text(TEXT_JOIN_SEP, strip=True))
         if is_mb_heading(tag):
+            if MB_STREAM_TAIL_RE.search(text):
+                parent = ""
             heading = text
+            desc = ""
+            count = 0
+        elif tag.name in MB_SECTION_TAGS and text and len(text) < MB_HEAD_MAX_LEN:
+            parent = text
+            heading = ""
             desc = ""
             count = 0
         elif text:
@@ -1460,8 +1657,7 @@ def parse_mb_draws(html: str) -> list:
         blocks = mb_stream_blocks(art)
         if blocks:
             for b in blocks:
-                draws.append({K_DATE: d, K_STREAM: b.name, K_NOTE: MB_DRAW_NOTE_TPL.format(num=num),
-                              K_SCORE: b.score, K_INVITATIONS: b.laa})
+                draws.append(mb_draw_of(MbDrawIn(date=d, num=num, block=b)))
             continue
         laas = []
         for x in MB_LAA_RE.findall(body):
@@ -1484,6 +1680,20 @@ def parse_mb_draws(html: str) -> list:
         })
     draws.sort(key=draw_date_of, reverse=True)
     return draws[:DRAWS_MAX_PER_PROV]
+
+
+def mb_draw_of(x: MbDrawIn) -> dict:
+    """一段 MB 数据块 → 抽选行:有上层通道的,组名用上层、子选取进注、门槛清单键仍用子选取原名(2026-09-24);
+    老格式没写上层标题的,三种选取按名字归到 Skilled Worker in Manitoba(MB_SWM_SUBS)。"""
+    parent = x.block.parent
+    if not parent and x.block.name.startswith(MB_SWM_SUBS):
+        parent = MB_SWM_STREAM
+    if parent:
+        return {K_DATE: x.date, K_STREAM: parent, K_CL_KEY: x.block.name,
+                K_NOTE: MB_DRAW_SUB_NOTE_TPL.format(num=x.num, sub=x.block.name),
+                K_SCORE: x.block.score, K_INVITATIONS: x.block.laa}
+    return {K_DATE: x.date, K_STREAM: x.block.name, K_NOTE: MB_DRAW_NOTE_TPL.format(num=x.num),
+            K_SCORE: x.block.score, K_INVITATIONS: x.block.laa}
 
 
 def province_draws(x: ProvinceDrawsIn) -> dict:
@@ -3353,12 +3563,18 @@ def ab_dhcp_text() -> str:
 
 
 def ab_dhcp_html() -> str:
-    """医疗专线页原文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层。"""
-    hit = get_cached_page(AB_DHCP_URL)
+    """医疗专线页原文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层。
+    2026-09-24 取页挪进 ab_page_html(警务 / 旅游酒店 / 乡村振兴三表同用)。"""
+    return ab_page_html(AbPageIn(url=AB_DHCP_URL, title=ABR_DHCP_TITLE))
+
+
+def ab_page_html(x: AbPageIn) -> str:
+    """阿省官方页原文:crawl 缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层(alberta.ca 直连 200)。"""
+    hit = get_cached_page(x.url)
     html = hit.html
     if not html:
-        html = fetch_html(FetchHtmlIn(url=AB_DHCP_URL, timeout_s=ABR_TIMEOUT_S))
-        put_cached_page(CachePutIn(slug=AB_CRAWL_SLUG, url=AB_DHCP_URL, html=html, title=ABR_DHCP_TITLE))
+        html = fetch_html(FetchHtmlIn(url=x.url, timeout_s=ABR_TIMEOUT_S))
+        put_cached_page(CachePutIn(slug=AB_CRAWL_SLUG, url=x.url, html=html, title=x.title))
     return html
 
 

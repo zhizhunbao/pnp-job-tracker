@@ -360,6 +360,9 @@ class MbBlock:
     score: int | None
     """该段的最低分;None = 官方这段没写分。"""
 
+    parent: str
+    """上层通道(「Skilled Worker in Manitoba」这类下面紧跟子标题的标题);''=本段自己就是顶层(2026-09-24)。"""
+
 
 @dataclass
 class NoticeOfIn:
@@ -656,6 +659,42 @@ class NbSegPickIn:
 
     key: str
     """要取哪段(K_ANY / K_FOOD)。"""
+
+
+@dataclass
+class AbNocTableIn:
+    """ab_noc_table_of() 入参:一页 HTML + 目标表表头判词。"""
+
+    html: str
+    """页原文。"""
+
+    head_kw: str
+    """目标表首行要含的判词(小写)。"""
+
+
+@dataclass
+class MbDrawIn:
+    """mb_draw_of() 入参:一期公告里的一段数据块。"""
+
+    date: str
+    """抽选日(ISO)。"""
+
+    num: str
+    """期号。"""
+
+    block: "MbBlock"
+    """这一段。"""
+
+
+@dataclass
+class AbPageIn:
+    """ab_page_html() 入参:一张阿省官方页。"""
+
+    url: str
+    """页地址。"""
+
+    title: str
+    """落 crawl 缓存时的页标题。"""
 
 
 @dataclass

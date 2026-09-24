@@ -374,6 +374,9 @@ class PnpTables:
     named_by_prov: dict
     """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按它算)。"""
 
+    community_by_prov: dict
+    """province → 按社区名单判的通道 {label, places, excluded}(2026-09-24 AB 乡村振兴)。"""
+
     ee_by_noc: dict
     """NOC → 联邦 EE 类别中文标签(多类别 / 连接)。"""
 
@@ -410,6 +413,9 @@ class PnpStreamIn:
 
     teer: int | None
     """TEER(2026-09-24 起 SK 现有工签要看;None = 职业码没认出)。"""
+
+    city: str
+    """城市(2026-09-24 起 AB 乡村振兴要看;''=没有)。"""
 
 @dataclass
 class PnpMergeIn:
@@ -487,6 +493,9 @@ class CollectedJob:
 
     hint: str
     """源自带的 NOC(Job Bank 官方 NOC 优先于标题猜)。"""
+
+    city: str
+    """城市(2026-09-24 起 AB 乡村振兴要按城市对社区名单;''=没有)。"""
 
 
 @dataclass

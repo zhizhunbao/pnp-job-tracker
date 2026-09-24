@@ -1519,7 +1519,8 @@ export const PROV_QC = 'QC'
 /**
  * 有「通用雇主担保通道」名的九省(2026-09-23 Frank「改 全改」):PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),
  * 不再写「{省} 可提名」。出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS:AB Alberta Opportunity Stream、
- * BC Skills Immigration、SK SINP Employment Offer、ON Ontario Workforce Priority、MB Skilled Worker in Manitoba、
+ * BC Skills Immigration(2026-09-24 九省通道审计改名 BC Skilled Worker:Skills Immigration 是项目名,持 offer 的通道是它下面的
+ * Skilled Worker stream)、SK SINP Employment Offer、ON Ontario Workforce Priority、MB Skilled Worker in Manitoba、
  * NS / NB / NL Skilled Worker、PE PEI Workforce。九省之外(领地等)照旧「{省} 可提名」。
  */
 export const PNP_GENERIC_PROVS = new Set(['AB', 'BC', 'SK', 'ON', 'MB', 'NS', 'NB', 'PE', 'NL'])

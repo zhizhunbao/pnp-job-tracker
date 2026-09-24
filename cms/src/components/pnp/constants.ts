@@ -162,6 +162,8 @@ export const DRAW_STREAM_AIP = 'AIP'
  * 2026-09-24 九省通道审计改判 PE / NL:两省抽选卡只有一组、该组覆盖本省全部通道(PE「Labour & Express Entry」= Workforce
  * 各流 + PEI EE;NL「NLPNP + AIP (ITA batch)」= NLPNP 各类 + AIP 同一 EOI 池),点进来就高亮那一组;
  * MB 待 etl 把 Skilled Worker in Manitoba 那一层留作组名再登记(现组名是下层的选取方式);NS 官方只发月度总数、不分通道。
+ * 同日第三批(Frank「能都改完吗」):etl 已把 MB 那一层留作组名 → 登记 MB;BC 普通岗登记 Innovate: High Economic Impact
+ * (BC 现行抽选只剩定向类别轮与这一种不限职业的轮 —— 不在定向清单上的岗只能从这一轮进,门槛是薪资或分数)。
  */
 export const GEN_DRAW_STREAM: Record<string, string> = {
   /**
@@ -178,6 +180,16 @@ export const GEN_DRAW_STREAM: Record<string, string> = {
    * 爱德华王子岛:PE 劳工通道(Workforce 各流与 PEI EE 同一组抽选)。
    */
   PE: 'Labour & Express Entry',
+
+  /**
+   * BC 技术工人(不在定向清单上的岗只能从这一轮进)。
+   */
+  BC: 'Innovate: High Economic Impact',
+
+  /**
+   * 曼尼托巴:MB 技术工人(SWM,下面三种选取)。
+   */
+  MB: 'Skilled Worker in Manitoba',
 
   /**
    * 纽芬兰与拉布拉多:NL 技术工人(NLPNP 各类与 AIP 同一 EOI 池、同一组批次)。
@@ -231,6 +243,21 @@ export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
    * PE 在需职业(Occupations in Demand 与 Workforce 各流同一组抽选,2026-09-24 九省通道审计登记)。
    */
   'PE 在需职业': ['Labour & Express Entry'],
+
+  /**
+   * 阿省警务专项(2026-09-24 第三批)。
+   */
+  'AB 警务': ['Alberta Express Entry Stream – Law Enforcement Pathway'],
+
+  /**
+   * 阿省旅游酒店通道。
+   */
+  'AB 旅游酒店': ['Tourism and Hospitality Stream'],
+
+  /**
+   * 阿省乡村振兴(按指定社区)。
+   */
+  'AB 乡村振兴': ['Rural Renewal Stream'],
 }
 
 /**

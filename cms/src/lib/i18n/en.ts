@@ -481,7 +481,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
  
-  'stream.abTech': 'AB Tech', 'stream.abHealth': 'AB Health', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
+  'stream.abTech': 'AB Tech', 'stream.abHealth': 'AB Health', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.abLaw': 'AB Law Enforcement', 'stream.abTourism': 'AB Tourism and Hospitality', 'stream.abRural': 'AB Rural Renewal', 'stream.nsConstr': 'NS Construction', 'stream.nbPriority': 'NB Priority Occupations', 'stream.aaipExcl': 'AAIP ineligible list',
   'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.peIndemand': 'PE in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
   'stream.nbAipExcl': 'NB AIP not accepted', 'stream.bcHa': 'BC Health Authority', 'stream.skEwp': 'SK Existing Work Permit', 'stream.peAipExcl': 'PE AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
@@ -543,7 +543,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'cell.blockedBoth': 'Not accepted here',
   'cell.pnpExcl': 'Excluded', 'cell.aipBlocked': 'Not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible',
-  'pnp.gen.AB': 'AB Opportunity Stream', 'pnp.gen.BC': 'BC Skills Immigration', 'pnp.gen.SK': 'SK Employment Offer',
+  'pnp.gen.AB': 'AB Opportunity Stream', 'pnp.gen.BC': 'BC Skilled Worker', 'pnp.gen.SK': 'SK Employment Offer',
   'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'MB Skilled Worker', 'pnp.gen.NS': 'NS Skilled Worker',
   'pnp.gen.NB': 'NB Skilled Worker', 'pnp.gen.PE': 'PE Workforce', 'pnp.gen.NL': 'NL Skilled Worker', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',

@@ -478,7 +478,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
  
-  'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
+  'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.abLaw': 'AB 경찰', 'stream.abTourism': 'AB 관광 숙박', 'stream.abRural': 'AB 농촌 재생', 'stream.nsConstr': 'NS 건설', 'stream.nbPriority': 'NB 우선 직업', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.peIndemand': 'PE 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
   'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.bcHa': 'BC 보건 당국', 'stream.skEwp': 'SK 기존 취업허가', 'stream.peAipExcl': 'PE AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
@@ -540,7 +540,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'cell.blockedBoth': '본 주 접수 제외',
   'cell.pnpExcl': '제외 목록', 'cell.aipBlocked': '직종 접수 제외',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpSkilledProv': '{p} 지명 가능',
-  'pnp.gen.AB': 'AB 오퍼튜니티 스트림', 'pnp.gen.BC': 'BC 기술 이민', 'pnp.gen.SK': 'SK 고용 오퍼', 'pnp.gen.ON': 'ON 인력 우선',
+  'pnp.gen.AB': 'AB 오퍼튜니티 스트림', 'pnp.gen.BC': 'BC 숙련 노동자', 'pnp.gen.SK': 'SK 고용 오퍼', 'pnp.gen.ON': 'ON 인력 우선',
   'pnp.gen.MB': 'MB 숙련 노동자', 'pnp.gen.NS': 'NS 숙련 노동자', 'pnp.gen.NB': 'NB 숙련 노동자', 'pnp.gen.PE': 'PE 인력 스트림',
   'pnp.gen.NL': 'NL 숙련 노동자', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',

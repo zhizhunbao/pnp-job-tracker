@@ -48,6 +48,7 @@ from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_
 from mart.constants import (
     EE_SUPERSEDED_BY,
     EXCL_TEER03_PROVS, K_SIGNAL, SK_EWP_LABEL, SK_EWP_NOCS, SK_EWP_PROV,
+    K_EXCLUDED, K_PLACES, PNP_TYPE_COMMUNITY, SK_HEALTH_BROAD,
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, ENTITY_BREAK_TAG_RE, ENTITY_RE, ENTITY_TAG_RE, K_COMPANIES, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
@@ -713,6 +714,23 @@ def pnp_label_of(data: dict) -> str:
     return ""
 
 
+def load_community_tables() -> dict:
+    """raw/pnp 里按社区名单判的通道(type=community,AB 乡村振兴)→ {省: {label, places(小写), excluded}}。"""
+    out: dict = {}
+    if not IN_PNP_DIR.exists():
+        return out
+    for f in sorted(IN_PNP_DIR.glob(GLOB_JSON)):
+        data = read_table_soft(f)
+        if data.get(K_TYPE) != PNP_TYPE_COMMUNITY or not data.get(K_PROVINCE):
+            continue
+        places: set = set()
+        for p in data.get(K_COMMUNITIES, []):
+            places.add(str(p).strip().lower())
+        out[data[K_PROVINCE]] = {K_LABEL: pnp_label_of(data), K_PLACES: places,
+                                 K_EXCLUDED: set(data.get(K_EXCLUDED, []))}
+    return out
+
+
 def load_named_stream_nocs(by_prov: dict) -> dict:
     """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按**具名通道命中**算,与资格解耦)。"""
     out: dict = {}
@@ -760,6 +778,7 @@ def load_pnp_tables() -> PnpTables:
     """三张表一次装载(原 08_score 三个模块级全局的收编;值与旧全局逐字同源)。"""
     by_prov = load_pnp_by_prov()
     return PnpTables(by_prov=by_prov, named_by_prov=load_named_stream_nocs(by_prov),
+                     community_by_prov=load_community_tables(),
                      ee_by_noc=load_ee_by_noc())
 
 
@@ -820,10 +839,14 @@ def prov_nocs_of(tbl: dict | None) -> set:
 
 
 def is_sk_ewp(x: PnpJudgeIn) -> bool:
-    """SK 这岗只能走 Existing Work Permit(TEER 4-5 或卡车司机;条件档,须在萨省持工签满 6 个月,依据见 SK_EWP_PROV)。"""
+    """SK 这岗只能走 Existing Work Permit(TEER 4-5 或卡车司机;条件档,须在萨省持工签满 6 个月,依据见 SK_EWP_PROV)。
+    2026-09-24 第三批:医护大类不在医疗人才清单上的也归这里(SK_HEALTH_BROAD);在具名清单上的(医疗人才 / 科技 / 农业,
+    都是持 offer 的专项)一律不算。"""
     if x.prov != SK_EWP_PROV or x.teer is None:
         return False
-    return x.teer not in TEER_SKILLED or x.noc in SK_EWP_NOCS
+    if x.noc in x.tables.named_by_prov.get(x.prov, set()):
+        return False
+    return x.teer not in TEER_SKILLED or x.noc in SK_EWP_NOCS or x.noc[:1] == SK_HEALTH_BROAD
 
 
 def pnp_direct(x: PnpJudgeIn) -> bool:
@@ -853,6 +876,7 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
     泛 TEER0-3 技能岗、exclusion 型省(无具名 in-demand 通道)、未命中 → None,
     前端对 None 退回泛标签/留空(宁可不具名,也不瞎贴通道名)。
     2026-09-24 清单都没命中时,SK 只能走 Existing Work Permit 的可提名岗给「SK 现有工签」(Frank 批,九省通道审计)。
+    同日第三批:具名清单之后先看社区通道(AB 乡村振兴:岗位城市在指定社区名单、职业不在它的 17 个排除码里)。
     """
     tbl = x.tables.by_prov.get(x.prov)
     if not tbl:
@@ -861,6 +885,9 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
         if x.noc in s[K_NOCS] and s[K_LABEL]:
             return s[K_LABEL]
     judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov)
+    comm = x.tables.community_by_prov.get(x.prov)
+    if comm and x.city.strip().lower() in comm[K_PLACES] and x.noc not in comm[K_EXCLUDED] and pnp_eligible(judge):
+        return comm[K_LABEL]
     if is_sk_ewp(judge) and pnp_eligible(judge):
         return SK_EWP_LABEL
     return None
@@ -946,7 +973,8 @@ def collect_ats_jobs() -> list:
         for j in read_table(folder / JOBS_FILE).get(K_JOBS, []):
             out.append(CollectedJob(ext=ats_ext_of(AtsExtIn(job=j, folder=folder.name)),
                                     title=j.get(K_TITLE, ""), agency=ag,
-                                    prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint=""))
+                                    prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint="",
+                                    city=j.get(K_CITY) or ""))
     return out
 
 
@@ -971,7 +999,7 @@ def collect_jobbank_jobs() -> list:
     for j in read_rows(IN_JOBBANK):
         out.append(CollectedJob(ext=jobbank_ext_of(j), title=j.get(K_TITLE, ""),
                                 agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
-                                prov=j.get(K_PROVINCE, ""), hint=jobbank_hint_of(j)))
+                                prov=j.get(K_PROVINCE, ""), hint=jobbank_hint_of(j), city=j.get(K_CITY) or ""))
     return out
 
 
@@ -1019,7 +1047,7 @@ def collect_board_jobs() -> list:
             out.append(CollectedJob(ext=board_ext_of(BoardJobIn(job=j, origin=origin)),
                                     title=j.get(K_TITLE, ""),
                                     agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
-                                    prov=j.get(K_PROVINCE, ""), hint=""))
+                                    prov=j.get(K_PROVINCE, ""), hint="", city=j.get(K_CITY) or ""))
     return out
 
 
@@ -1050,7 +1078,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         "score": score(ScoreIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov,
                                acc=acc, agency=x.job.agency)),
         "pnpEligible": pnp_eligible(judge),
-        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer)),
+        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer, city=x.job.city)),
         "eeCategory": x.tables.ee_by_noc.get(noc) or None,
     }
 

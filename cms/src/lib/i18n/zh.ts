@@ -518,7 +518,7 @@ export const jobsZh = {
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
  
-  'stream.abTech': 'AB 科技', 'stream.abHealth': 'AB 医疗', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
+  'stream.abTech': 'AB 科技', 'stream.abHealth': 'AB 医疗', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.abLaw': 'AB 警务', 'stream.abTourism': 'AB 旅游酒店', 'stream.abRural': 'AB 乡村振兴', 'stream.nsConstr': 'NS 建筑', 'stream.nbPriority': 'NB 优先职业', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
   'stream.nbAipExcl': 'NB AIP 不受理', 'stream.bcHa': 'BC 卫生局', 'stream.skEwp': 'SK 现有工签', 'stream.peAipExcl': 'PE AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',
@@ -590,7 +590,7 @@ export const jobsZh = {
   'cell.blockedBoth': '本省不受理',
   'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名',
-  'pnp.gen.AB': 'AB 机会通道', 'pnp.gen.BC': 'BC 技术移民', 'pnp.gen.SK': 'SK 雇主 offer', 'pnp.gen.ON': 'ON 劳动力优先',
+  'pnp.gen.AB': 'AB 机会通道', 'pnp.gen.BC': 'BC 技术工人', 'pnp.gen.SK': 'SK 雇主 offer', 'pnp.gen.ON': 'ON 劳动力优先',
   'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',
   'pnp.gen.NL': 'NL 技术工人', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',

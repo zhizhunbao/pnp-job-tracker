@@ -625,7 +625,8 @@ or job offer: In a TEER 0, 1, 2, 3, 4 or 5 occupation」
 UNIVERSAL_COND_PROVS = {"MB", "NS", "NB", "PE"}
 """同上之 cond = 须先省内同雇主干满 6 个月:MB SWM
 (immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility)、NS Skilled Worker TEER4-5
-(liveinnovascotia.com/skilled-worker)、NB Experience(gnb.ca …/nb-skilled-worker-stream.html)、
+(liveinnovascotia.com/skilled-worker)、NB Experience(gnb.ca …/nb-skilled-worker-stream.html;2026-09-24 官网迁版后现址
+www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html)、
 PE Critical Worker TEER4-5(pei_workforce_application_guide.pdf)。"""
 
 EXCL_TEER03_PROVS = {"BC"}
@@ -644,6 +645,20 @@ SK_EWP_LABEL = "SK 现有工签"
 
 SK_EWP_NOCS = {"73300"}
 """SK 明文改走 EWP 的职业(卡车司机 73300,TEER 3 也不走 Employment Offer)。"""
+
+SK_HEALTH_BROAD = "3"
+"""SK 医护大类(NOC 大类 3 = 职业码首位 3):Employment Offer 页原句「Health care occupations that fall under the National
+Occupational Classification (NOC) Broad Occupational Category structure 3 must apply under the Health Talent Pathway」——
+不在医疗人才清单上的医护岗只剩现有工签(2026-09-24 九省通道审计第三批)。"""
+
+PNP_TYPE_COMMUNITY = "community"
+"""raw/pnp 表类型:按社区名单判的通道(AB 乡村振兴;带 communities / excluded,不带 occupations)。"""
+
+K_EXCLUDED = "excluded"
+"""社区表键:该通道排除的职业码。"""
+
+K_PLACES = "places"
+"""社区表装载后的地名集合(小写)。"""
 
 UNIVERSAL_PROVS = UNIVERSAL_DIRECT_PROVS | UNIVERSAL_COND_PROVS
 """五省普通通道兜底集(清单没命中也可,直可/需前置的区分由 pnp_direct 承担)。"""
@@ -1665,8 +1680,8 @@ NB 按类别定向邀请、一轮拆多行,判定层要数「某职业类别 202
 MB 2026-08-31 并入同档:同为一轮拆 4-5 行(总行+分流细分行),12 行只装两三轮,
 08-27 新轮落地把 #275 的 825 细分行挤出窗口 —— c01 金标当场红,判据与 NB 全同。"""
 
-DRAW_WIDE_PROVS = ("NB", "MB")
-"""吃 DRAW_MAX_WIDE 的两个省。"""
+DRAW_WIDE_PROVS = ("NB", "MB", "AB")
+"""吃 DRAW_MAX_WIDE 的省。2026-09-24 加 AB(九省通道审计:12 条只装得下最近几个月,旅游酒店、警务两组被截在外面)。"""
 
 DRAW_KIND_DRAW = "draw"
 """行类型:一次抽选。"""

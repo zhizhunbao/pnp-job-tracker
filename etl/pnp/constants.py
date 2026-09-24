@@ -234,8 +234,11 @@ K_OVERLAY = "overlay"
 K_SIGNAL = "signal"
 """表键:只作参考信号 —— 不当具名通道、不进资格判定,弹框清单照列(2026-09-24 MB 在需职业 / NS 紧缺空缺,Frank 批)。"""
 
-SIGNAL_OUTS = {"mb-indemand.json", "mb-indemand-rural.json", "ns-critical.json"}
-"""只作参考信号的表(产出文件名):写表时带 K_SIGNAL。依据在 MB_BUCKETS / NS_STREAMS 的说明里(2026-09-24 Frank 批)。"""
+SIGNAL_OUTS = {"mb-indemand.json", "mb-indemand-rural.json", "ns-critical.json", "ns-grad.json", "sk-excluded.json",
+               "nb-priority.json"}
+"""只作参考信号的表(产出文件名):写表时带 K_SIGNAL。依据在 MB_BUCKETS / NS_STREAMS 的说明里(2026-09-24 Frank 批)。
+同日第三批(Frank「能都改完吗」)再加三张:NS 毕业生(只对本省应届毕业生成立,照 MB 在需职业先例);SK 主线排除表
+(适用 OID / EE,不管持 offer 的 Employment Offer —— 原靠文件名序碰巧被 14 码那张盖掉);NB 优先职业(只认省政府招聘团)。"""
 
 K_APPLIES_TO = "appliesTo"
 """表/行键:适用范围(SK 两张排除表分管的子类别 / BC SIRS 那行加分的适用职业)。"""
@@ -960,6 +963,103 @@ AB_PRINT_HEALTH_TPL = "  ✓ AB 医疗         {n} 个职业 → pnp/ab-health.j
 AB_PRINT_NO_HEALTH = "  ✗ 医护专项页没解析到职业(保留旧表)"
 """医护专项解析空的报数。"""
 
+OUT_AB_LAW_FILE = "ab-law.json"
+"""AB 警务专项清单的产出文件名(2026-09-24 九省通道审计第三批)。"""
+
+AB_LAW_STREAM = "Alberta Express Entry Stream – Law Enforcement Pathway"
+"""警务专项的官方名(与抽选组同名)。"""
+
+AB_LAW_LABEL = "AB 警务"
+"""警务专项的前端短标签。"""
+
+AB_LAW_NOTE = "雇主须为阿省警察机构(AACP 成员);本表按官方列出的 3 个职业码。"
+"""警务专项表的口径说明。"""
+
+AB_LAW_SEG_RE = re.compile(r"eligible police services National Occupational Classification \(NOC\) codes and titles:"
+                           r"(.+?)Important:", re.S)
+"""EE 流资格页里警务专项那段职业码(原句「… in one of the following eligible police services National Occupational
+Classification (NOC) codes and titles: 40040 – … Important: …」)。"""
+
+AB_NOC_DASH_RE = re.compile(r"(\d{5})\s*[–—-]\s*(.+?)(?=\s*\d{5}\s*[–—-]|$)", re.S)
+"""「40040 – 职业名」一串里逐条取码与名(下一个码或段尾截断)。"""
+
+AB_TOURISM_URL = "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility"
+"""旅游酒店通道资格页(2026-09-24 九省通道审计:原不在 ab-aaip crawl 缓存 —— 首次直连取回经 put_cached_page 落缓存,
+以后只读缓存;alberta.ca 直连 200)。表 1 合格雇主行业(WCB 码)、表 2 行业协会、表 3 合格职业。"""
+
+AB_TOURISM_TITLE = "Tourism and Hospitality Stream – Eligibility | Alberta.ca"
+"""旅游酒店资格页落 crawl 缓存时的页标题。"""
+
+AB_TOURISM_TABLE_KW = "noc code"
+"""旅游酒店页里职业表(表 3)的表头判词(表 1 是 WCB 行业码,同样是 5 位数,不能混)。"""
+
+OUT_AB_TOURISM_FILE = "ab-tourism.json"
+"""AB 旅游酒店清单的产出文件名。"""
+
+AB_TOURISM_STREAM = "Tourism and Hospitality Stream"
+"""旅游酒店通道的官方名(与抽选组同名)。"""
+
+AB_TOURISM_LABEL = "AB 旅游酒店"
+"""旅游酒店通道的前端短标签。"""
+
+AB_TOURISM_NOTE = "雇主须属合格旅游酒店行业(官方表 1 的 WCB 行业码)或行业协会成员(表 2);本表只列表 3 的职业。"
+"""旅游酒店表的口径说明(雇主行业条件本站判不了,写进注)。"""
+
+AB_RR_COMMUNITY_URL = "https://www.alberta.ca/aaip-rural-renewal-stream-community-designation"
+"""乡村振兴指定社区页(表 1:社区与指定日期;在 ab-aaip crawl 缓存里)。"""
+
+AB_EE_TITLE = "Alberta Express Entry Stream – Eligibility | Alberta.ca"
+"""EE 流资格页落 crawl 缓存时的页标题(页已在 ab-aaip 缓存里,只在缓存缺失时用)。"""
+
+AB_RR_PLACE_PREFIX_RE = re.compile(r"^(?:City|Town|Village|Summer Village|County|Municipal District|Hamlet|"
+                                   r"Specialized Municipality|Regional Municipality|MD) of\s+", re.I)
+"""社区名前缀(「City of Brooks」→「Brooks」)。"""
+
+AB_RR_PLACE_SUFFIX_RE = re.compile(r"\s+(?:County|Region|Regional Municipality)$", re.I)
+"""社区名后缀(「Lac La Biche County」→「Lac La Biche」)。"""
+
+AB_RR_INCLUDING_RE = re.compile(r"^(.*?)\s*\(including:?\s*(.*?)\)\s*$", re.S)
+"""「主社区 (including: 甲, 乙 and 丙)」拆主名与所含地名。"""
+
+AB_RR_LIST_SPLIT_RE = re.compile(r",\s*|\s+and\s+")
+"""所含地名的分隔(逗号 / and)。"""
+
+AB_RR_PLACE_SKIP = ("greater region", "surrounding area", "surrounding areas")
+"""不是地名的收尾词(「… and Greater Region」)。"""
+
+OUT_AB_RURAL_FILE = "ab-rural.json"
+"""AB 乡村振兴社区表的产出文件名。"""
+
+AB_RURAL_STREAM = "Rural Renewal Stream"
+"""乡村振兴通道的官方名(与抽选组同名)。"""
+
+AB_RURAL_LABEL = "AB 乡村振兴"
+"""乡村振兴通道的前端短标签。"""
+
+AB_RURAL_NOTE = "须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算。"
+"""乡村振兴表的口径说明。"""
+
+TYPE_COMMUNITY = "community"
+"""表类型:按地点(社区名单)判的通道 —— 不带 occupations,带 communities / excluded(2026-09-24 AB 乡村振兴)。"""
+
+K_COMMUNITIES = "communities"
+"""表键:社区地名清单(小写比对用原样存)。"""
+
+K_EXCLUDED = "excluded"
+"""表键:该通道排除的职业码。"""
+
+AB_PRINT_LAW_TPL = "  ✓ AB 警务         {n} 个职业 → pnp/ab-law.json"
+"""警务专项收尾报数。"""
+
+AB_PRINT_TOURISM_TPL = "  ✓ AB 旅游酒店     {n} 个职业 → pnp/ab-tourism.json"
+"""旅游酒店收尾报数。"""
+
+AB_PRINT_RURAL_TPL = "  ✓ AB 乡村振兴     {n} 个地名 / 排除 {m} 码 → pnp/ab-rural.json"
+"""乡村振兴收尾报数。"""
+
+AB_PRINT_EMPTY_TPL = "  ✗ {what} 没解析到(保留旧表)"
+"""AB 专项表解析空的报数。"""
+
 
 # =========================================================================
 # 3. BC 具名清单(2026 新政 Care/Build 五桶 + 主线排除清单 §3.11)
@@ -1238,7 +1338,7 @@ NS_FACT_NO_MAIN_LIST_KEY = "noMainList"
 """政策事实键:主线不发清单。"""
 
 NS_FACT_NO_MAIN_LIST = ("Skilled Worker 主线不公布职业清单:按雇主 offer + TEER 判定;"
-                        "Construction 子条件按行业(NAICS 23 建筑业)判,不是 NOC 清单。")
+                        "Construction 子条件 = 建筑业雇主(NAICS 23)+ 官方列出的 22 个职业码(见 ns-construction.json)。")
 """政策事实:NS 主线不发清单。
 沿革(2026-08-03 接入):上面两条是**专项**通道;NS 的**主线** Skilled Worker 官方就不发
 职业清单,四个 tab 逐字读过:
@@ -1247,8 +1347,45 @@ NS_FACT_NO_MAIN_LIST = ("Skilled Worker 主线不公布职业清单:按雇主 of
   · Occupations in Demand  官方原话「There are no occupations listed in this category at this time.」
   · Physicians      只开给 NOC 31100/31101/31102
 所以「NS 没有主线清单」是**政策事实**,不是我们没抓到 —— 必须实抓校验并留证,
+(2026-09-24 九省通道审计更正:Construction 那个 tab 其实列了 22 个职业码 —— 原句「a full-time permanent job offer from a
+Nova Scotia employer in the construction sector (NAICS 23) in one of these NOCs」,上面「不是 NOC 清单」说反了;清单另出一表。)
 否则哪天官方真发了清单,站上还在按「无清单」口径说话(ON 2026-06 改制那次就是这么烂掉的)。
 本表**不带 occupations 键** → 08_score 目录驱动扫描天然跳过,不参与具名打分。"""
+
+NS_FACT_FOOD_PAUSE_KEY = "foodPause"
+"""政策事实键:住宿餐饮业暂停收件(2026-09-24 九省通道审计补)。"""
+
+NS_FOOD_PAUSE_KW = "must stop accepting submissions in this sector"
+"""主线页暂停收件原句的判词(小写比对)。"""
+
+NS_FACT_FOOD_PAUSE = ("住宿餐饮业(Accommodation and Food Services)自 2024-04-17 起暂停收件(官方原话:must stop accepting "
+                      "submissions in this sector while processing current inventory);按行业判,不逐岗。")
+"""政策事实:NS 住宿餐饮业暂停收件。"""
+
+NS_CONSTR_SEG_RE = re.compile(r"in the construction sector \(NAICS 23\) in one of these NOCs:(.+?)have \d+ year", re.S)
+"""主线页 Construction tab 那段职业码(到「have 1 year of work experience」为止)。"""
+
+NS_CONSTR_GENERIC = {"75101", "75119"}
+"""建筑清单里不收的两个通用码(Material handlers / Other trades helpers and labourers):哪个行业都有,「限建筑业雇主」
+这条本站判不了,按码收会把仓库搬运工也标成建筑通道(宁可留空)。"""
+
+OUT_NS_CONSTR_FILE = "ns-construction.json"
+"""NS 建筑子条件清单的产出文件名。"""
+
+NS_CONSTR_STREAM = "Nova Scotia Skilled Worker — Construction (NAICS 23)"
+"""建筑子条件的通道名。"""
+
+NS_CONSTR_LABEL = "NS 建筑"
+"""建筑子条件的前端短标签。"""
+
+NS_CONSTR_NOTE = "限建筑业雇主(NAICS 23);TEER 4-5 不要求同雇主 6 个月。75101 / 75119 两个通用码要看雇主行业,本表不收。"
+"""建筑子条件表的口径说明。"""
+
+NS_PRINT_CONSTR_TPL = "  ✓ NS 建筑         {n} 个职业 → pnp/ns-construction.json"
+"""建筑清单收尾报数。"""
+
+NS_PRINT_NO_CONSTR = "  ✗ NS 主线页没找到建筑子条件那段职业码(保留旧表)"
+"""建筑清单解析空的报数。"""
 
 NS_FACT_OID_KEY = "oidList"
 """政策事实键:OID 通道当前状态。"""
@@ -1562,7 +1699,7 @@ PE_AIP_PRINT_NO_CACHE = "  ✗ PE AIP 页不在 crawl 缓存里(保留旧表)"
 PE_AIP_PRINT_NONE = "  ✗ PE AIP 页没解析到不受理职业(保留旧表)"
 """PE AIP 页解析空的报数。"""
 
-PE_PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams"
+PE_PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand"
 """PEI Workforce 通道的人可读官方页(表级 url 用它)。"""
 
 OUT_PE_OID = paths.PNP / "pe-oid.json"
@@ -1632,6 +1769,10 @@ SK 2025 改制后无抽选、QC 不属 PNP,不产出。抓取失败/解析空 �
 
 DRAWS_TIMEOUT_S = 30
 """各省抽选页抓取超时。"""
+
+DRAWS_AB_MAX = 48
+"""AB 抽选解析上限(2026-09-24 九省通道审计:12 条只装得下最近几个月,旅游酒店、警务两组被截在窗口外;
+与 mart DRAW_WIDE_PROVS 同档)。"""
 
 DRAWS_MAX_PER_PROV = 12
 """raw 留最近 N 条;mart 再截。"""
@@ -1796,6 +1937,15 @@ MB_DRAW_NO_RE = re.compile(r"Draw\s*#(\d+)", re.I)
 MB_HEAD_TAGS = ["p", "h2", "h3", "h4"]
 """MB 子标题的候选标签(整段加粗的才算)。"""
 
+MB_SWM_STREAM = "Skilled Worker in Manitoba"
+"""MB 的上层通道名(三种选取都挂在它下面)。"""
+
+MB_SWM_SUBS = ("Occupation-specific selection", "Francophone selection", "Completed post-secondary study in Manitoba")
+"""「Skilled Worker in Manitoba」下的三种选取(子标题前缀):老格式公告没写上层标题时,按子选取名归到上层(2026-09-24)。"""
+
+MB_SECTION_TAGS = ("h3", "h4")
+"""MB 上层通道标题的候选标签(不加粗;2026-09-24 实见「<h4>Skilled Worker in Manitoba</h4>」,下层子标题才包 <strong>)。"""
+
 MB_BLOCK_TAGS = ["p", "h2", "h3", "h4", "ul"]
 """MB 一期公告里要走一遍的标签(ul 是数据块)。"""
 
@@ -1821,6 +1971,9 @@ MB_STREAM_MAX_LEN = 60
 """老格式回退时通道名的长度上限。"""
 
 MB_DRAW_NOTE_TPL = "Draw #{num}"
+
+MB_DRAW_SUB_NOTE_TPL = "Draw #{num}: {sub}"
+"""上层通道下的子选取写进注(2026-09-24:组名保留「Skilled Worker in Manitoba」,子选取不再当组名)。"""
 """MB 抽选行的 note。"""
 
 MB_HEAD_SNIFF_LEN = 300
@@ -2012,6 +2165,34 @@ NB_AIP_FULL = "atlantic immigration program"
 
 NB_AIP_SHORT = "AIP"
 """AIP 的短名。"""
+
+NB_PRIORITY_URL = "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/guide-new-brunswick-priority-occupations.pdf"
+"""NB 优先职业指南 PDF(地址来自 nb-imm crawl 缓存页里的链接,不是猜的)。原句「This job must have been offered to you as a
+direct result of a recruitment mission led by the Government of New Brunswick」—— 只认省招聘团的 offer,作参考信号。"""
+
+NB_PRIORITY_ROW_RE = re.compile(r"•\s*(\d{5})\s*[–—-]\s*([^•\n]+)")
+"""PDF 里「• 31301 – Registered nurses …」一条一行。"""
+
+OUT_NB_PRIORITY_FILE = "nb-priority.json"
+"""NB 优先职业清单的产出文件名(signal)。"""
+
+NB_PRIORITY_STREAM = "NB Skilled Worker — Priority Occupations (Government-led recruitment)"
+"""NB 优先职业的通道名。"""
+
+NB_PRIORITY_LABEL = "NB 优先职业"
+"""NB 优先职业的前端短标签。"""
+
+NB_PRIORITY_NOTE = "只认 NB 省政府招聘团直接招来的 offer;只作参考信号,不当通道。"
+"""NB 优先职业表的口径说明。"""
+
+NB_PRIORITY_TIMEOUT_S = 40
+"""NB 优先职业 PDF 抓取超时。"""
+
+NB_PRINT_PRIORITY_TPL = "  ✓ NB 优先职业     {n} 个职业 → pnp/nb-priority.json"
+"""NB 优先职业收尾报数。"""
+
+NB_PRINT_NO_PRIORITY = "  ✗ NB 优先职业 PDF 没解析到职业码(保留旧表)"
+"""NB 优先职业解析空的报数。"""
 
 NB_DEFAULT_STREAM = "NBPNP"
 """NB 没解析到通道名时的兜底。"""
