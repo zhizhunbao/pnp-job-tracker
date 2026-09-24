@@ -26,7 +26,6 @@ export function StreamRow({ r, matchRef }: StreamRowIn) {
         {r.name}
         {r.zh !== TEXT_NONE && <span className={css.zh}>{r.zh}</span>}
       </span>
-      {r.yourTag !== TEXT_NONE && <span className={tagClsOf({ muted: false })}>{r.yourTag}</span>}
       {r.gtaTag !== TEXT_NONE && <span className={tagClsOf({ muted: true })}>{r.gtaTag}</span>}
     </div>
   )

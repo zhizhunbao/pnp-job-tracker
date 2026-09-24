@@ -590,19 +590,19 @@ export const jobsZh = {
   'cell.blockedBoth': '本省不受理',
   'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
-  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.your': '本岗', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
+  'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 列名
   'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.teer': 'TEER',
-  'col.company': '公司', 'col.title': '职位', 'col.noc': '职业', 'col.accessibility': '经验级别',
+  'col.company': '公司', 'col.title': '职位', 'col.noc': '职业', 'col.nocCode': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',
   'col.pnp': 'PNP', 'col.ee': 'EE 类别', 'col.aip': 'AIP', 'col.pilot': '试点社区', 'col.lmia': '外劳记录', 'col.eligibility': '身份预筛', 'col.status': '状态', 'col.firstSeen': '首次收录', 'col.lastSeen': '最后可见', 'col.closedAt': '下架时间', 'col.score': '通道',
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
-  'eelist.source': '来源:Express Entry 类别抽选', 'eelist.your': '本岗', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
+  'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
   // #135 历次抽选时间线(展开)
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',
@@ -670,7 +670,7 @@ export const jobsZh = {
   'mm.v.teerOk': '技能岗通用粗筛', 'mm.v.teerChannel': '{stream}通道覆盖', 'mm.v.teerLow': '低技能层级',
   'mm.v.wageAbove': '高于中位 {pct}%', 'mm.v.wageNear': '低于中位 {pct}%', 'mm.v.wageBelow': '低于中位 {pct}%', 'mm.v.wageNa': '官方无该职业当地中位数据,无法对比',
   'mm.v.lmiaHas': '招过外劳', 'mm.v.lmiaLow': '低薪岗为主', 'mm.v.lmiaNa': '中性信号', 'mm.v.lmiaNaTip': '多数雇主从未办过 LMIA,不是负面信号',
-  'fact.nocCode': '职业码', 'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
+  'fact.nocTitle': '官方职业名', 'fact.nocDuties': '官方主要职责(NOC)', 'fact.nocReqs': '任职要求(NOC)',
   // TEER 档名照 IRCC 官方表逐条核(2026-07-26 实核 canada.ca/…/find-national-occupation-code):
   // TEER2 官方含 **supervisory 主管岗**(不需大专/学徒也算),原标签漏了这一档 —— 做到主管的人会误以为自己不够格。
   'teer.tip': 'TEER {n}:{l}。这是 NOC 对「该职业通常要求」的官方分类,不是对你个人学历的要求;移民通道多按 TEER 0-3 判门槛。',

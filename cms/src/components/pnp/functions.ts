@@ -542,6 +542,7 @@ export function streamKeyOf(s: PnpStream): string {
 /**
  * 洗一张清单要显示的职业行。Frank 走查#14:默认只显命中「本岗」项(其余折叠),
  * 点末尾「展开其他」才全量;命中置顶,其余保持原序;兜底:即便无命中也至少显 1 条。
+ * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(EE 类别清单同批撤)。
  *
  * @param x 取词函数、界面语言、译名开关、这张清单、本岗职业码、职业名字典与展开态。
  * @returns 展示行。
@@ -566,16 +567,12 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
   const rows: StreamRowSpec[] = []
   for (const o of picked) {
     const hit = o.noc === x.noc
-    let yourTag = TEXT_NONE
-    if (hit) {
-      yourTag = x.t('pnplist.your')
-    }
     let gtaTag = TEXT_NONE
     if (o.gtaRestricted) {
       gtaTag = x.t('pnplist.gta')
     }
     const zh = localTitleOf({ lang: x.lang, showZh: x.showZh, nocRows: x.nocRows, noc: o.noc, name: o.name })
-    rows.push({ key: o.noc + o.name, hit, noc: o.noc, name: o.name, zh, yourTag, gtaTag })
+    rows.push({ key: o.noc + o.name, hit, noc: o.noc, name: o.name, zh, gtaTag })
   }
   return rows
 }
@@ -721,24 +718,21 @@ export function caretOf(open: boolean): string {
 
 /**
  * 洗一个类别的职业清单行。
+ * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(省提名清单同批撤)。
  *
- * @param x 取词函数、界面语言、译名开关、这个类别、本岗职业码与职业名字典。
+ * @param x 界面语言、译名开关、这个类别、本岗职业码与职业名字典。
  * @returns 展示行。
  */
 export function occRowsOf(x: OccRowsIn): OccRowSpec[] {
   const rows: OccRowSpec[] = []
   for (const o of x.cat.occupations) {
     const hit = o.noc === x.noc
-    let yourTag = TEXT_NONE
-    if (hit) {
-      yourTag = x.t('eelist.your')
-    }
     let teer = TEXT_NONE
     if (o.teer != null) {
       teer = TEER_SHORT_HEAD + String(o.teer)
     }
     const zh = localTitleOf({ lang: x.lang, showZh: x.showZh, nocRows: x.nocRows, noc: o.noc, name: o.title })
-    rows.push({ key: o.noc, hit, noc: o.noc, title: o.title, zh, teer, yourTag })
+    rows.push({ key: o.noc, hit, noc: o.noc, title: o.title, zh, teer })
   }
   return rows
 }

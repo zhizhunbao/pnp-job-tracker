@@ -813,11 +813,6 @@ export type StreamRowSpec = {
   zh: string
 
   /**
-   * 「你的职业」标;''=不是本岗那一条。
-   */
-  yourTag: string
-
-  /**
    * GTA 限制标;''=这一条没有限制。
    */
   gtaTag: string
@@ -856,11 +851,6 @@ export type OccRowSpec = {
    * 技能层级文案;''=这条没标 TEER。
    */
   teer: string
-
-  /**
-   * 「你的职业」标;''=不是本岗那一条。
-   */
-  yourTag: string
 }
 
 /**
@@ -1955,11 +1945,6 @@ export type EeDrawDateRow = {
  * occRowsOf 的入参。
  */
 export type OccRowsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
   /**
    * 界面语言。
    */

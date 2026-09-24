@@ -675,6 +675,7 @@ function maskOf(k: JobColKey): string {
 /**
  * 分类族:大/中/小分类、TEER、NOC 码、经验级别。
  * 2026-09-23 职业分类改两级:中 / 小分类两列撤;NOC 列改叫「职业」,显示人话短名(码在点开的类别弹框里)。
+ * 同日 Frank「这个 NOC 字段怎么没有了」:码单列回来(nocCode),格里只放码,与改前的 NOC 列一样。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行;不是本族给 null。
@@ -693,6 +694,9 @@ function catCellOf(x: CellIn): CellView | null {
   }
   if (x.k === COL.noc) {
     return blankView({ text: occCellTextOf({ job: x.j, lang: x.cx.lang, occName: x.cx.occName }) })
+  }
+  if (x.k === COL.nocCode) {
+    return blankView({ text: dashOf(x.j.noc) })
   }
   if (x.k === COL.accessibility) {
     let level = ACC_UNKNOWN

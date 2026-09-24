@@ -110,6 +110,11 @@ export const COL = {
   noc: 'noc',
 
   /**
+   * NOC 码列(2026-09-23 职业列占了 noc 键后单起的码列)。
+   */
+  nocCode: 'nocCode',
+
+  /**
    * 经验级别。
    */
   accessibility: 'accessibility',
@@ -1188,12 +1193,15 @@ export const DEFAULT_COLS: JobColKey[] = [
  * **信号没丢**:三样都在字段弹框里,手机卡片 chips 照旧;字段面板一键调回。
  * 2026-09-23 职业分类改两级:「中分类」「小分类」两列撤,「NOC」列改叫「职业」(显示人话短名,码在点开的类别弹框里);
  * 同日 Frank「table 部分职业是不是也放到大类后面」:职业列从职位后面挪到大分类后面(大类 › 职业,与面包屑同序)。
+ * 同日 Frank「这个 NOC 字段怎么没有了」:职业列占了 noc 键,码列跟着没了 —— 码单列回来叫 NOC(键 nocCode),
+ * 紧跟职业,默认不显示,与改前一样由字段面板勾选。
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布时间' },
   { key: 'ee', label: 'EE 类别' },
   { key: 'broad', label: '大分类' },
   { key: 'noc', label: '职业' },
+  { key: 'nocCode', label: 'NOC' },
   { key: 'teer', label: 'TEER' },
   { key: 'empHours', label: '工时' },
   { key: 'empTerm', label: '雇佣期' },
@@ -1257,6 +1265,7 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
 export const NOWRAP_COLS = new Set<JobColKey>([
   'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
   'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'city', 'noc',
+  'nocCode',
 ])
 
 /**
@@ -1323,6 +1332,11 @@ export const FIELD_GROUP: Partial<Record<JobColKey, Disposition>> = {
    * 大分类。
    */
   broad: 'category',
+
+  /**
+   * NOC 码列同属分类族(2026-09-23 单列回来)。
+   */
+  nocCode: 'category',
 
 
   /**

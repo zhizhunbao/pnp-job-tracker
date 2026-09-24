@@ -155,6 +155,11 @@ export const SORT_COLUMNS: Record<string, string> = {
   noc: 'j.noc',
 
   /**
+   * NOC 码列(2026-09-23 职业列占了 noc 键,码单列回来,同样按码排)。
+   */
+  nocCode: 'j.noc',
+
+  /**
    * 无障碍。
    */
   accessibility: 'j.accessibility',

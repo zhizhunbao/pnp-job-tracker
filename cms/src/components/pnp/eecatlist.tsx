@@ -26,7 +26,7 @@ import css from './pnp.module.css'
  */
 export function EeCatList({ t, lang, showZh, cat, noc, nocRows, open, onToggle, matchRef }: EeCatListIn) {
   const rows = []
-  for (const r of occRowsOf({ t, lang, showZh, cat, noc, nocRows })) {
+  for (const r of occRowsOf({ lang, showZh, cat, noc, nocRows })) {
     rows.push(<EeOccRow key={r.key} r={r} matchRef={matchRef} />)
   }
   return (

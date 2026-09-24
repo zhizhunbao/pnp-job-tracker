@@ -29,7 +29,7 @@ import {
   COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT,
   DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE, EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY,
   FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
-  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_PROVINCE,
+  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE,
   FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
   GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
@@ -646,6 +646,8 @@ export function daysUpOf(x: DaysUpIn): number | null {
  * 2026-09-23 职业分类改两级:中 / 小类两行撤,首行换成职业名(与职位板「职业」列同名),码那一行改叫「职业码」。
  * ⚠️ 大类这里走文案表直取(`broad.<值>`),与字段事实块里走 catName 的那一处不同 ——
  * 两处口径本来就不一样,换装批逐字保留,不顺手统一。
+ * 同日 Frank 两条:「点击职业,不用都高亮吧」→ 一格点进来只亮一行(职业格亮职业行、NOC 格亮码那一行,官方职业名自成一格、
+ * 不随任何一格亮;码那一行的标签与表格 NOC 列同名);「TEER 应该放到最上面吧」→ TEER 行挪到第一行。
  *
  * @param x 取词函数、这一岗与它的 NOC 官方描述。
  * @returns 身份行(值为空的那几行由渲染方筛掉)。
@@ -660,10 +662,10 @@ export function idRowsOf(x: IdRowsIn): IdRowFact[] {
     broad = x.t(K_BROAD_HEAD + x.job.broad)
   }
   return [
-    { key: ROW_KEY_OCC, field: FIELD_NOC, label: x.t('col.noc'), value: occNameOf({ noc: x.noc, lang: x.lang }) },
-    { key: ROW_KEY_NOC, field: FIELD_NOC, label: x.t('fact.nocCode'), value: x.job.noc },
-    { key: ROW_KEY_NOC_TITLE, field: FIELD_NOC, label: x.t('fact.nocTitle'), value: title },
     { key: ROW_KEY_TEER, field: FIELD_TEER, label: x.t('col.teer'), value: teerTextOf({ t: x.t, job: x.job }) },
+    { key: ROW_KEY_OCC, field: FIELD_NOC, label: x.t('col.noc'), value: occNameOf({ noc: x.noc, lang: x.lang }) },
+    { key: ROW_KEY_NOC, field: FIELD_NOC_CODE, label: x.t('col.nocCode'), value: x.job.noc },
+    { key: ROW_KEY_NOC_TITLE, field: ROW_KEY_NOC_TITLE, label: x.t('fact.nocTitle'), value: title },
     { key: ROW_KEY_BROAD, field: FIELD_BROAD, label: x.t('col.broad'), value: broad },
   ]
 }

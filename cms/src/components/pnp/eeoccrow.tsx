@@ -8,7 +8,7 @@
  * @time 2026-08-28 17:59:16
  */
 import { TEXT_NONE } from './constants'
-import { makeHitRef, occRowClsOf, tagClsOf } from './functions'
+import { makeHitRef, occRowClsOf } from './functions'
 import type { EeOccRowIn } from './types'
 import css from './pnp.module.css'
 
@@ -27,7 +27,6 @@ export function EeOccRow({ r, matchRef }: EeOccRowIn) {
         {r.zh !== TEXT_NONE && <span className={css.zh}>{r.zh}</span>}
       </span>
       {r.teer !== TEXT_NONE && <span className={css.teer}>{r.teer}</span>}
-      {r.yourTag !== TEXT_NONE && <span className={tagClsOf({ muted: false })}>{r.yourTag}</span>}
     </div>
   )
 }

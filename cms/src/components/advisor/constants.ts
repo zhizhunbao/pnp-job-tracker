@@ -573,6 +573,7 @@ export const ROW_KEY_BROAD = 'broad'
 /**
  * 分类身份卡职业名那一行的列表键(2026-09-23 职业分类改两级:中 / 小类两行撤,换职业名与职业码;
  * 职业名、职业码、官方名三行同属 `noc` 字段,点职业格三行齐亮)。
+ * 同日 Frank「点击职业,不用都高亮吧」:一格点进来只亮一行 —— 职业格亮职业行,NOC 格亮码那一行,官方名不随任何一格亮。
  */
 export const ROW_KEY_OCC = 'occ'
 
@@ -738,9 +739,9 @@ export const SAL_FIELDS = ['salary', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMe
 
 /**
  * 分类组的字段(NOC 全链 / TEER / 大)。2026-09-23 职业分类改两级:中 / 小两个字段随表格两列一起撤
- * (原为五个:NOC 全链 / TEER / 大 / 中 / 小)。
+ * (原为五个:NOC 全链 / TEER / 大 / 中 / 小)。同日 NOC 码列单列回来,码列字段进组。
  */
-export const CLS_FIELDS = ['noc', 'teer', 'broad']
+export const CLS_FIELDS = ['noc', 'nocCode', 'teer', 'broad']
 
 /**
  * 来源组的三个字段(来源板 / 发布渠道 / 一手转帖)。
@@ -791,6 +792,11 @@ export const FIELD_LMIA = 'lmia'
  * NOC 字段。
  */
 export const FIELD_NOC = 'noc'
+
+/**
+ * NOC 码列字段(2026-09-23 职业列占了 noc 键后单起的码列;点它只亮码那一行)。
+ */
+export const FIELD_NOC_CODE = 'nocCode'
 
 /**
  * TEER 字段。
