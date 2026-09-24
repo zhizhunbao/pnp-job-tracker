@@ -278,13 +278,15 @@ export const COMPANY_LMIA_NOCS = `SELECT lmia_nocs::text FROM companies WHERE id
  * 不筛省以后要扫整个同类,生产热缓存实测 36 ~ 118ms(最宽是私营医疗约 5 千家;冷启动一次 191ms)。
  * 2026-09-22 Frank「这个相似雇主也是默认显示 6 个」(随相关职位卡同规):卡上先出 6、展开看其余;
  * 同日「如果大于 20 就展开 20」:取数封顶 20;「公司所在城市,是不是也加一下灰字」:带主市 / 主省两列。
+ * 2026-09-23 Frank「也应该显示 () 数量吧」:卡头带总数 —— total 走窗口计数(LIMIT 之前算,是全部同类雇主数,
+ * 不是取回来的 ≤20 家),每行都带同一个数。
  */
 export const SIMILAR_EMPLOYERS = `WITH a AS (
        SELECT p.key, p.sector, ARRAY(SELECT jsonb_array_elements_text(p.loc_provs)) AS provs,
               CASE WHEN p.sector IS NULL THEN COALESCE(NULLIF(x.industry, ''), p.category) ELSE p.category END AS category
        FROM employer_pool p LEFT JOIN employer_explore x ON x.key = p.key WHERE p.key = $1)
      SELECT c.slug, c.name, c.industry, c.sponsor_grade, c.alias_zh, c.alias_ko, c.trans_v, p.open_jobs_total::int open_count,
-       p.city, p.province
+       p.city, p.province, count(*) OVER ()::int AS total
      FROM a JOIN employer_pool p ON p.key <> a.key AND p.sector IS NOT DISTINCT FROM a.sector
        JOIN companies c ON c.slug = p.slug
        LEFT JOIN employer_explore x ON x.key = p.key

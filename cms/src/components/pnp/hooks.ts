@@ -59,6 +59,7 @@ export function useEeCategory(x: EeHookIn): EePanel {
   const t = makeT(x.lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
+  const [cmpOpen, setCmpOpen] = useState<Set<string>>(new Set())
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)
@@ -82,6 +83,8 @@ export function useEeCategory(x: EeHookIn): EePanel {
     shown: hit,
     closed,
     listToggleOf: makeToggleOf({ setKeys: setClosed }),
+    cmpOpen,
+    cmpToggleOf: makeToggleOf({ setKeys: setCmpOpen }),
   }
 }
 

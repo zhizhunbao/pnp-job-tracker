@@ -163,6 +163,27 @@ export const PROV_NL = 'NL'
 export const KIND_NOTICE = 'notice'
 
 /**
+ * 联邦行的省码(pnp_draws 里 province=FED 的行就是 EE 轮次,零新表)。
+ * 2026-09-23 随联邦抽选近况卡撤编删过一次,同日 EE 分数线对比卡取 CEC 最近一轮又用上。
+ */
+export const PROV_FED = 'FED'
+
+/**
+ * 抽选行。
+ */
+export const KIND_DRAW = 'draw'
+
+/**
+ * 联邦轮次里 CEC 的类别键(build_ee_draws.CAT_MAP 写的 label)。
+ */
+export const FED_CEC = 'cec'
+
+/**
+ * 联邦轮次里法语的类别键(按语言能力抽、与职业无关;分数线卡只作参照组,不出分差)。
+ */
+export const FED_FRENCH = 'french'
+
+/**
  * 排除清单的类型名(省里逐条点名「这些职业不受理」的那种表)。
  */
 export const TYPE_INELIGIBLE = 'ineligible'
@@ -268,11 +289,6 @@ export const URL_JOBS_Q_HEAD = '/?q='
 export const URL_NEWS_HEAD = '/news/'
 
 /**
- * 决策页的地址头(判定卡入口带上本岗 id)。
- */
-export const URL_PLAN_PR_HEAD = '/plan/pr?job='
-
-/**
  * 新开页的 target(站内长页与外站一律新开,rel 由 button 族补)。
  */
 export const TARGET_BLANK = '_blank'
@@ -286,16 +302,6 @@ export const LINK_ARROW = ' ↗'
  * 雇主线点击的埋点名。
  */
 export const EV_EMPLOYER_CLICK = 'pnp-employer-click'
-
-/**
- * 判定卡入口点击的埋点名。
- */
-export const EV_TV_ENTRY = 'tv-entry'
-
-/**
- * 判定卡入口埋点的 kind 值(从省提名弹框点进去的那一路)。
- */
-export const TV_KIND_PNP = 'pnp'
 
 /**
  * 担保引流卡的来源:省提名弹框(有凭证才出卡的那一路)。

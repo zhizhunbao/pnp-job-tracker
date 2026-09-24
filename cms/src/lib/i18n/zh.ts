@@ -603,6 +603,9 @@ export const jobsZh = {
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
   'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
+  'eecmp.title': '最近分数线', 'eecmp.none': '暂无抽选', 'eecmp.lower': '{cat}比 {cec}低 {n} 分',
+  'eecmp.higher': '{cat}比 {cec}高 {n} 分', 'eecmp.same': '{cat}与 {cec}同分',
+  'eecmp.rounds': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
   // #135 历次抽选时间线(展开)
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',

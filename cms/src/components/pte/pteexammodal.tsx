@@ -22,7 +22,7 @@ import css from './pte.module.css'
  */
 export function PteExamModal({ t, c }: PteExamModalIn) {
   return (
-    <Modal onClose={c.onExamCancel} size={MODAL_SM} resizable={false}>
+    <Modal onClose={c.onExamCancel} size={MODAL_SM}>
       <div className={css.examBox}>
         <div className={css.examTitle}>{t('pte.c.examTitle')}</div>
         <label className={css.label}>{t('pte.c.date')}</label>

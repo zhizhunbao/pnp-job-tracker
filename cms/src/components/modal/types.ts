@@ -45,11 +45,6 @@ export type ModalIn = {
   draggable?: boolean
 
   /**
-   * 右上角全屏/还原钮。
-   */
-  resizable?: boolean
-
-  /**
    * 额外的窗口按钮(与全屏/关闭同排;请用 iconBtnS,三颗钮一样大才叫一排)。
    */
   actions?: React.ReactNode
@@ -140,16 +135,6 @@ export type CardIn = {
  */
 export type CardOut = {
   /**
-   * 是否全屏态。
-   */
-  maximized: boolean
-
-  /**
-   * 全屏/还原切换(顺带归零拖拽位移)。
-   */
-  toggleMax: () => void
-
-  /**
    * 当前位移。
    */
   pos: DragPos
@@ -189,11 +174,6 @@ export type ClsIn = {
    * 三档宽。
    */
   size: ModalSize
-
-  /**
-   * 是否全屏态。
-   */
-  maximized: boolean
 
   /**
    * 是否可拖(居中态给手势光标)。
@@ -240,11 +220,6 @@ export type CardStyleIn = {
    * 是否窄屏(窄屏/全屏态样式全在类里,返回空)。
    */
   narrow: boolean
-
-  /**
-   * 是否全屏态。
-   */
-  maximized: boolean
 
   /**
    * 拖拽位移(进 transform)。

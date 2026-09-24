@@ -35,7 +35,7 @@ export function UpgradeModal({ t, onClose, reason }: UpgradeModalIn) {
     perks.push(<li key={key} className={css.upPerk}><IconCheck />{ICON_GAP}{t(key)}</li>)
   }
   return (
-    <Modal onClose={onClose} size={MODAL_SIZE_SM} z={Z_UPGRADE} resizable={false}>
+    <Modal onClose={onClose} size={MODAL_SIZE_SM} z={Z_UPGRADE}>
       <div className={css.upTitle}><IconStar />{ICON_GAP}{t('acct.buyTitle')}</div>
       {reason != null && reason !== TEXT_NONE && <div className={css.upReason}>{reason}</div>}
       <div className={css.upRow}>

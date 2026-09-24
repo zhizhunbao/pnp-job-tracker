@@ -3219,7 +3219,7 @@ export function toSimilar(r: Row): SimilarEmployer {
     slug: text(r.slug), name: text(r.name), industry: text(r.industry),
     sponsorGrade: numOrNull(r.sponsor_grade), openCount: count(r.open_count),
     aliasZh: vtext({ v: r.trans_v, cell: r.alias_zh }), aliasKo: vtext({ v: r.trans_v, cell: r.alias_ko }),
-    city: text(r.city), province: text(r.province),
+    city: text(r.city), province: text(r.province), total: count(r.total),
   }
 }
 

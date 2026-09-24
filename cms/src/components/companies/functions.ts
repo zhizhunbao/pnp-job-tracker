@@ -991,6 +991,21 @@ export function simShownOf(x: SimShownIn): SimilarEmployer[] {
 }
 
 /**
+ * 相似雇主卡头括号里的总数(2026-09-23 Frank「也应该显示 () 数量吧」):取行上带的窗口计数 ——
+ * 取数封顶 20 家,拿行数会把「共 57 家」写成 20。
+ *
+ * @param similar 相似雇主(非空;空表整卡不出)。
+ * @returns 同类雇主总数。
+ */
+export function simTotalOf(similar: SimilarEmployer[]): number {
+  const first = similar[0]
+  if (first == null) {
+    return 0
+  }
+  return first.total
+}
+
+/**
  * 相似雇主行右侧的主市灰字(2026-09-22 Frank「公司所在城市,是不是也加一下灰字」):
  * 紧凑格「市, 省码」;市没记就不出。
  *

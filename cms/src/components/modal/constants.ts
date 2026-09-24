@@ -152,16 +152,6 @@ export const DRAG_IGNORE_SEL = 'button, input, select, textarea, a, label, .occP
 export const SIZE_DEFAULT = 'md'
 
 /**
- * 全屏钮两态的 i18n 键:放大。
- */
-export const MAX_KEY = 'cw.max'
-
-/**
- * 全屏钮两态的 i18n 键:还原。
- */
-export const RESTORE_KEY = 'cw.restore'
-
-/**
  * 关闭钮的 aria-label(上线以来就是英文死值;要不要走 i18n 待 Frank 拍,先归位常量)。
  */
 export const CLOSE_ARIA = 'close'

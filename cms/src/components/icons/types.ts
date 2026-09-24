@@ -18,13 +18,3 @@ export type LucideIcon = React.ComponentType<LucideProps>
  * 不传就吃本域的默认(1em 跟随字号 + 基线下沉 + aria-hidden)。
  */
 export type IconFn = (p: LucideProps) => React.ReactElement
-
-/**
- * MaxIcon 的 props。
- */
-export type MaxIconIn = {
-  /**
-   * 是否全屏态(定两态图标取哪个:放大/还原)。
-   */
-  maximized: boolean
-}

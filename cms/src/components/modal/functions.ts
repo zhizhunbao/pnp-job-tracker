@@ -7,8 +7,8 @@
  */
 import { cssOf } from '@/components/css'
 import {
-  CLS_SEP, EDGE_E, EDGE_N, EDGE_S, EDGE_W, MAX_KEY, POS_ABSOLUTE, RESIZE_MAX_VH, RESIZE_MAX_VW, RESIZE_MIN_H,
-  RESIZE_MIN_W, RESTORE_KEY, TRANSFORM_NONE,
+  CLS_SEP, EDGE_E, EDGE_N, EDGE_S, EDGE_W, POS_ABSOLUTE, RESIZE_MAX_VH, RESIZE_MAX_VW, RESIZE_MIN_H,
+  RESIZE_MIN_W, TRANSFORM_NONE,
 } from './constants'
 import type { CardStyleIn, ClsIn, ClsOut, ModalSize, ResizedIn, ResizedOut } from './types'
 import css from './modal.module.css'
@@ -65,8 +65,6 @@ export function clsOf(x: ClsIn): ClsOut {
   if (x.narrow) {
     card.push(narrowCard[x.size])
     overlay.push(narrowOverlay[x.size])
-  } else if (x.maximized) {
-    card.push(css.max)
   } else {
     card.push(css.center)
     card.push(sizeCls[x.size])
@@ -87,19 +85,6 @@ export function clsOf(x: ClsIn): ClsOut {
 }
 
 /**
- * 全屏钮标签的 i18n 键选择(全屏中显示「还原」)。
- *
- * @param maximized 是否全屏态。
- * @returns i18n 键。
- */
-export function maxKeyOf(maximized: boolean): string {
-  if (maximized) {
-    return RESTORE_KEY
-  }
-  return MAX_KEY
-}
-
-/**
  * 居中态白卡的运行时样式预算:只剩拖拽位移进 transform —— 每帧连续变化的像素,
  * 类是有限枚举装不下它(三档宽/高上限/过渡开关全类化进 module.css 了)。
  * 窄屏与全屏态样式全在类里,返回空对象。
@@ -110,7 +95,7 @@ export function maxKeyOf(maximized: boolean): string {
  * @returns 白卡的 style。
  */
 export function cardStyleOf(x: CardStyleIn): React.CSSProperties {
-  if (x.narrow || x.maximized) {
+  if (x.narrow) {
     return {}
   }
   let transform = TRANSFORM_NONE

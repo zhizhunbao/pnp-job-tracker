@@ -38,7 +38,7 @@ export function PteDict({ t, d, lang }: PteDictIn) {
     }
   }
   return (
-    <Modal onClose={d.onClose} size={DICT_MODAL_SIZE} draggable resizable={false} edgeResize>
+    <Modal onClose={d.onClose} size={DICT_MODAL_SIZE} draggable edgeResize>
       <div id={DICT_ID} className={css.dict}>
         <div className={css.dictHead}>
           <span className={css.dictWord}>{d.word}</span>

@@ -7,6 +7,7 @@
  * 2026-09-22 Frank「这个相似雇主也是默认显示 6 个」(随相关职位卡同规):取数放宽到 24,收起时先出 6 家,
  * 「展开其余 N 个 ▾ / 收起 ▴」来回切(照在招职位卡的 .showAll 形)。
  * 同日 Frank「同类这个词删掉」:卡头「同类」灰注撤(词条 co.similarSub 三语与 .simSub 类一并删)。
+ * 2026-09-23 Frank「也应该显示 () 数量吧」:卡头带总数,照在招职位卡头「在招职位 (N)」的形。
  *
  * @author Frank
  * @time 2026-08-28 18:13:09
@@ -15,8 +16,8 @@ import { useState } from 'react'
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
 import { CompanySimilarRow } from './companysimilarrow'
-import { CARD_HEAD_CLS, CARD_MD_CLS, PLAIN_BTN_KIND, SIM_FIRST_N } from './constants'
-import { makeToggle, simShownOf, trackSimilar } from './functions'
+import { CARD_HEAD_CLS, CARD_MD_CLS, PAREN_CLOSE, PAREN_OPEN, PLAIN_BTN_KIND, SIM_FIRST_N } from './constants'
+import { makeToggle, simShownOf, simTotalOf, trackSimilar } from './functions'
 import type { CompanySimilarCardIn } from './types'
 import css from './companies.module.css'
 
@@ -44,7 +45,7 @@ export function CompanySimilarCard({ similar, t, lang, onOpenCompany, newTab, sh
   return (
     <div className={CARD_MD_CLS}>
       <div className={CARD_HEAD_CLS}>
-        {t('co.similar')}
+        {t('co.similar')} {PAREN_OPEN}{simTotalOf(similar)}{PAREN_CLOSE}
       </div>
       <div onClick={trackSimilar}>{rows}</div>
       {hidden > 0 && (

@@ -11,17 +11,17 @@
  * (#198/#199「多余的跳转都删掉」)。2026-07-25 走查#13:「怎么走这个通道」整卡删 ——
  * ①②③ 通用步骤 + 官方页链 = 废话,无实际价值。
  * 2026-08-28 换装批自 Pnp.tsx 整体重写成小写件形制。
+ * 2026-09-23 Frank「pnp 的这部分删了吧」:顶上的判定卡(「PNP · 走不了 / 能走」)与判定区入口卡(「能拿身份吗 ·
+ * 一键三合一判定」)撤,弹框从雇主线开始。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { TvEntryCard } from '@/components/verdict'
 import { SRC_PNP } from './constants'
-import { hasProvDraws, hasProvNews, makeTvOpen, pnpVerdictOf, shownStreamsOf, streamKeyOf } from './functions'
+import { hasProvDraws, hasProvNews, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
 import { NewsLatestBlock } from './newslatestblock'
 import { PnpDrawsBlock } from './pnpdrawsblock'
-import { PnpVerdictCard } from './pnpverdictcard'
 import { SponsorLeadCard } from './sponsorleadcard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
@@ -51,8 +51,6 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
   }
   return (
     <>
-      <PnpVerdictCard t={p.t} verdict={pnpVerdictOf({ t: p.t, job, match: p.match })} />
-      <TvEntryCard t={p.t} onOpen={makeTvOpen({ id: job.id })} />
       <SponsorLeadCard job={job} t={p.t} src={SRC_PNP} />
       {hasProvDraws({ job, draws }) && (
         <div className={css.card}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>

@@ -145,6 +145,258 @@
 }
 
 /*
+ * EE 分数线对比卡的分差行(2026-09-23;一行一条,低于 CEC 绿字)。
+ */
+.cmpLine {
+  /*
+   * 与抽选表的间距。
+   */
+  margin-top: 8px;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 次要文字色。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 分差行:低于 CEC(走这一类更容易)。
+ */
+.cmpLine.cmpLower {
+  /*
+   * 绿字。
+   */
+  color: var(--ok);
+
+  /*
+   * 加粗一档。
+   */
+  font-weight: 600;
+}
+
+/*
+ * EE 分数线对比卡的一组(本岗类别 / CEC / 法语各一组;2026-09-23 第二版)。
+ */
+.cmpGroup {
+  /*
+   * 组与组的间距。
+   */
+  margin-bottom: 6px;
+}
+
+/*
+ * 组头:名字 | 最低分 | 日期 | 轮数 | 折叠记号。后四格定宽 —— 三组各自一个网格,定宽才能让分数上下对齐、一眼可比。
+ * 类名写两遍:可展开的组头是 button 族的钮,要压过基座单类(理由同 .catHead)。
+ */
+.cmpHead.cmpHead {
+  /*
+   * 五格网格。
+   */
+  display: grid;
+
+  /*
+   * 名字吃余宽,其余定宽。
+   */
+  grid-template-columns: minmax(0, 1fr) 96px 84px 44px 12px;
+
+  /*
+   * 格位(手机改两行时换排布)。
+   */
+  grid-template-areas: "name score date rounds caret";
+
+  /*
+   * 格间距。
+   */
+  column-gap: 8px;
+
+  /*
+   * 基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 占满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 组头内衬。
+   */
+  padding: 6px 10px;
+
+  /*
+   * 细描边(与抽选表同一档)。
+   */
+  border: 1px solid var(--hairline);
+
+  /*
+   * 圆角(与抽选表同一档)。
+   */
+  border-radius: 8px;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 文字左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 正文字号。
+   */
+  font-size: 13px;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 可展开的组头:可点手型。
+ */
+.cmpHead.cmpBtn {
+  /*
+   * 手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 休眠 / 从没抽过的类别:整行压暗。
+ */
+.cmpHead.dim {
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 组头的名字格。
+ */
+.cmpName {
+  /*
+   * 格位。
+   */
+  grid-area: name;
+
+  /*
+   * 名字加粗一档。
+   */
+  font-weight: 600;
+}
+
+/*
+ * 组头的最低分格(三组上下对齐的那一列)。
+ */
+.cmpScore {
+  /*
+   * 格位。
+   */
+  grid-area: score;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 右对齐,数字对位。
+   */
+  text-align: right;
+}
+
+/*
+ * 组头的日期格。
+ */
+.cmpDate {
+  /*
+   * 格位。
+   */
+  grid-area: date;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 组头的轮数格。
+ */
+.cmpRounds {
+  /*
+   * 格位。
+   */
+  grid-area: rounds;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 组头的折叠记号格。
+ */
+.cmpCaret {
+  /*
+   * 格位。
+   */
+  grid-area: caret;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 手机:组头改两行 —— 名字与折叠记号一行,分数 / 日期 / 轮数落次行(375 宽放不下五格一行)。
+ */
+@media (width <= 640px) {
+  .cmpHead.cmpHead {
+    /*
+     * 两行排布。
+     */
+    grid-template-columns: max-content max-content minmax(0, 1fr) 12px;
+
+    /*
+     * 格位。
+     */
+    grid-template-areas:
+      "name name name caret"
+      "score date rounds rounds";
+
+    /*
+     * 行距。
+     */
+    row-gap: 2px;
+  }
+
+  .cmpScore {
+    /*
+     * 次行左对齐。
+     */
+    text-align: left;
+  }
+}
+
+/*
  * 一条抽选都没有:整块不出(改制省只列现行规则时就是这种)。
  */
 .draws.empty {
@@ -624,31 +876,6 @@
    * 与凭证行的间距。
    */
   margin-top: 8px;
-}
-
-/*
- * 判定卡里的「凭什么」小字(通用档的说明、魁省的制度说明)。
- */
-.why {
-  /*
-   * 小注字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 次级灰。
-   */
-  color: var(--text2);
-
-  /*
-   * 与判定行的间距。
-   */
-  margin-top: 6px;
-
-  /*
-   * 行距(整句读得下去)。
-   */
-  line-height: 1.7;
 }
 
 /*

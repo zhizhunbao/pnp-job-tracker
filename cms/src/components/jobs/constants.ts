@@ -1195,10 +1195,12 @@ export const DEFAULT_COLS: JobColKey[] = [
  * 同日 Frank「table 部分职业是不是也放到大类后面」:职业列从职位后面挪到大分类后面(大类 › 职业,与面包屑同序)。
  * 同日 Frank「这个 NOC 字段怎么没有了」:职业列占了 noc 键,码列跟着没了 —— 码单列回来叫 NOC(键 nocCode),
  * 紧跟职业,默认不显示,与改前一样由字段面板勾选。
+ * 同日 Frank「pnp 这里一列放到 EE 类别后面如何」:PNP 列从 AIP 前挪到 EE 类别后(两个移民信号挨着)。
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布时间' },
   { key: 'ee', label: 'EE 类别' },
+  { key: 'pnp', label: 'PNP' },
   { key: 'broad', label: '大分类' },
   { key: 'noc', label: '职业' },
   { key: 'nocCode', label: 'NOC' },
@@ -1222,7 +1224,6 @@ export const COLUMNS: ColSpec[] = [
   { key: 'source', label: '来源' },
   { key: 'origin', label: '渠道' },
   { key: 'direct', label: '发布' },
-  { key: 'pnp', label: 'PNP' },
   { key: 'aip', label: 'AIP' },
   { key: 'pilot', label: 'RCIP/FCIP' },
   { key: 'lmia', label: '外劳记录' },

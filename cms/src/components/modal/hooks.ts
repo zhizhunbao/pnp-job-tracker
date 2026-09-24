@@ -133,15 +133,16 @@ export function useLayerStack<L>(): LayerStackOut<L> {
  * 拆两个 hook 会互相依赖成环)。按下起手(落在按钮/输入件/occ 药丸上豁免)→ 移动跟手
  * → 松手释放捕获。位移与全屏态是 state(要触发重渲),拖拽中与起手快照是 ref(不重渲)。
  *
+ * 2026-09-23 全屏钮撤(Frank「这个带全屏的都去掉吧」),机器只剩拖拽。
+ *
  * @param x 外部形态(窄屏/开没开拖拽)。
- * @returns 机器面板(全屏态与切换、位移、是否在拖、三枚指针手柄)。
+ * @returns 机器面板(位移、是否在拖、三枚指针手柄)。
  */
 export function useCard(x: CardIn): CardOut {
-  const [maximized, setMaximized] = useState(false)
   const [pos, setPos] = useState<DragPos>({ x: 0, y: 0 })
   const draggingRef = useRef(false)
   const startRef = useRef<DragStart>({ x: 0, y: 0, posX: 0, posY: 0 })
-  const dragEnabled = x.draggable === true && x.narrow === false && maximized === false
+  const dragEnabled = x.draggable === true && x.narrow === false
 
   function onPointerDown(e: React.PointerEvent) {
     if (dragEnabled === false) {
@@ -180,12 +181,7 @@ export function useCard(x: CardIn): CardOut {
     return draggingRef.current
   }
 
-  function toggleMax() {
-    setMaximized(maximized === false)
-    setPos({ x: 0, y: 0 })
-  }
-
-  return { maximized, toggleMax, pos, dragging, onPointerDown, onPointerMove, onPointerUp }
+  return { pos, dragging, onPointerDown, onPointerMove, onPointerUp }
 }
 
 /**

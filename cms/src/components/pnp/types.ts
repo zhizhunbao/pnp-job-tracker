@@ -684,31 +684,6 @@ export type PnpMatchOut = {
 }
 
 /**
- * 判定卡要显示的内容(判定行 + 两条「凭什么」)。
- */
-export type PnpVerdictSpec = {
-  /**
-   * 药丸色档。
-   */
-  tone: PnpTone
-
-  /**
-   * 药丸里的结论话术(措辞红线:只说符合与否,永不说「你能/不能移民」)。
-   */
-  text: string
-
-  /**
-   * 通用档的「凭什么」;''=不出这一行。
-   */
-  why: string
-
-  /**
-   * 魁省的制度说明;''=不出这一行。
-   */
-  qcWhy: string
-}
-
-/**
  * 洗好的一行抽选(展示行:类名与文案都算完了,组件只渲)。
  */
 export type DrawRowSpec = {
@@ -851,6 +826,91 @@ export type OccRowSpec = {
    * 技能层级文案;''=这条没标 TEER。
    */
   teer: string
+}
+
+/**
+ * EE 分数线对比(本岗类别最近一轮 vs CEC 最近一轮;2026-09-23)。
+ */
+export type EeCmp = {
+  /**
+   * 分组:本岗类别在前,CEC、法语殿后(2026-09-23 第二版:三组分开列,组头 = 最近一轮,点开列全部轮次)。
+   */
+  groups: EeCmpGroup[]
+
+  /**
+   * 分差行:活跃且有分的类别各一行。
+   */
+  lines: EeCmpLine[]
+}
+
+/**
+ * 分数线卡的一组(本岗类别 / CEC / 法语)。
+ */
+export type EeCmpGroup = {
+  /**
+   * 类别键(=联邦轮次 label;React 列表键与折叠键)。
+   */
+  key: string
+
+  /**
+   * 显示名。
+   */
+  name: string
+
+  /**
+   * 组头悬停说明;''=不出。
+   */
+  tip: string
+
+  /**
+   * 最近一轮的最低分文案(从没抽过写「暂无抽选」)。
+   */
+  score: string
+
+  /**
+   * 最近一轮日期;''=从没抽过。
+   */
+  date: string
+
+  /**
+   * 轮数文案;''=一轮都没有(2026-09-23 前是不到两轮就空)。
+   */
+  rounds: string
+
+  /**
+   * 压不压暗(休眠或从没抽过的类别)。
+   */
+  dim: boolean
+
+  /**
+   * 全部轮次(降序,照抄省抽选表的行)。
+   */
+  rows: DrawRowSpec[]
+
+  /**
+   * 能不能展开(有轮次就给;一轮都没有不给假入口。2026-09-23 前是两轮起才给)。
+   */
+  expandable: boolean
+}
+
+/**
+ * 分差一行。
+ */
+export type EeCmpLine = {
+  /**
+   * React 列表键(=类别键)。
+   */
+  key: string
+
+  /**
+   * 分差文案。
+   */
+  text: string
+
+  /**
+   * 比 CEC 低吗(低 = 走这一类更容易,绿字)。
+   */
+  lower: boolean
 }
 
 /**
@@ -1151,21 +1211,6 @@ export type PnpListSectionIn = {
 }
 
 /**
- * PnpVerdictCard(省提名判定卡)的 props。
- */
-export type PnpVerdictCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 判定卡的内容。
-   */
-  verdict: PnpVerdictSpec
-}
-
-/**
  * StreamCard(一张通道清单卡)的 props。
  */
 export type StreamCardIn = {
@@ -1235,6 +1280,11 @@ export type EeCategorySectionIn = {
   cats: PnpEeOcc[]
 
   /**
+   * 全部抽选行(分数线对比卡取联邦 CEC 最近一轮);可省 = 对比卡不出。
+   */
+  draws?: PnpDraw[]
+
+  /**
    * 职业名字典;可省 = 不出译名灰注。
    */
   nocDesc?: PnpNocDesc[]
@@ -1243,6 +1293,66 @@ export type EeCategorySectionIn = {
    * 出不出界面语言译名;可省 = 出。
    */
   showZh?: boolean
+}
+
+/**
+ * EeCmpCard(EE 分数线对比卡)的 props。
+ */
+export type EeCmpCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 洗好的对比。
+   */
+  cmp: EeCmp
+
+  /**
+   * 展开着的组(类别键)。
+   */
+  open: Set<string>
+
+  /**
+   * 组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
+}
+
+/**
+ * EeCmpGroupView(分数线卡的一组)的 props。
+ */
+export type EeCmpGroupIn = {
+  /**
+   * 这一组。
+   */
+  g: EeCmpGroup
+
+  /**
+   * 展开了没有。
+   */
+  open: boolean
+
+  /**
+   * 开合手柄。
+   */
+  onToggle: ClickFn
+}
+
+/**
+ * EeCmpHead(组头那一行的文字)的 props。
+ */
+export type EeCmpHeadIn = {
+  /**
+   * 这一组。
+   */
+  g: EeCmpGroup
+
+  /**
+   * 展开了没有。
+   */
+  open: boolean
 }
 
 /**
@@ -1511,6 +1621,16 @@ export type EePanel = {
   closed: Set<string>
 
   /**
+   * 分数线卡展开着的组(默认全收:组头一行就是最近一轮,三组一眼可比)。
+   */
+  cmpOpen: Set<string>
+
+  /**
+   * 分数线卡组的开合手柄工厂。
+   */
+  cmpToggleOf: ToggleOfFn
+
+  /**
    * 清单折叠开关工厂。
    */
   listToggleOf: ToggleOfFn
@@ -1707,21 +1827,6 @@ export type SponsorShowIn = {
 }
 
 /**
- * provLabelOf 的入参。
- */
-export type ProvLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 两位省码。
-   */
-  code: string
-}
-
-/**
  * makeTrackClick 的入参。
  */
 export type TrackClickIn = {
@@ -1737,16 +1842,6 @@ export type TrackClickIn = {
 }
 
 /**
- * makeTvOpen 的入参。
- */
-export type TvOpenIn = {
-  /**
-   * 本岗主键(拼进决策页地址)。
-   */
-  id: string | number
-}
-
-/**
  * pnpMatchOf 的入参。
  */
 export type PnpMatchIn = {
@@ -1759,26 +1854,6 @@ export type PnpMatchIn = {
    * 省提名与 AIP 的扁平清单。
    */
   occ: PnpOcc[]
-}
-
-/**
- * pnpVerdictOf 的入参。
- */
-export type PnpVerdictIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本岗。
-   */
-  job: PnpJob
-
-  /**
-   * PNP 命中计算的结论。
-   */
-  match: PnpMatchOut
 }
 
 /**
@@ -2309,6 +2384,156 @@ export type DimClsIn = {
    * 压不压暗。
    */
   dim: boolean
+}
+
+/**
+ * cmpLineClsOf 的入参。
+ */
+export type CmpLineClsIn = {
+  /**
+   * 比 CEC 低吗。
+   */
+  lower: boolean
+}
+
+/**
+ * eeCmpOf 的入参。
+ */
+export type EeCmpIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(轮次行的中文名灰注只在中文界面出)。
+   */
+  lang: PnpLang
+
+  /**
+   * 本岗命中的类别。
+   */
+  cats: PnpEeCat[]
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * 联邦轮次按类别键分组(类别键 → 历次抽选,降序)。
+ */
+export type DrawHist = Map<string, PnpDraw[]>
+
+/**
+ * histAtOf 的入参。
+ */
+export type HistAtIn = {
+  /**
+   * 分组表。
+   */
+  hist: DrawHist
+
+  /**
+   * 类别键。
+   */
+  key: string
+}
+
+/**
+ * cmpGroupOf 的入参(一组的原料)。
+ */
+export type CmpGroupIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 类别键。
+   */
+  key: string
+
+  /**
+   * 显示名(类别名 / CEC / 法语)。
+   */
+  name: string
+
+  /**
+   * 组头悬停说明;''=不出。
+   */
+  tip: string
+
+  /**
+   * 最近一轮日期;''=从没抽过。
+   */
+  date: string
+
+  /**
+   * 最近一轮最低分;null = 从没抽过。
+   */
+  score: number | null
+
+  /**
+   * 这一组的历次抽选(降序;休眠类别可能已过保留窗而为空)。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 压不压暗。
+   */
+  dim: boolean
+}
+
+/**
+ * cmpHeadClsOf 的入参。
+ */
+export type CmpHeadClsIn = {
+  /**
+   * 压不压暗。
+   */
+  dim: boolean
+
+  /**
+   * 可不可点(有轮次才可展开)。
+   */
+  button: boolean
+}
+
+/**
+ * cmpLineOf 的入参。
+ */
+export type CmpLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 行键。
+   */
+  key: string
+
+  /**
+   * 类别显示名。
+   */
+  cat: string
+
+  /**
+   * CEC 显示名。
+   */
+  cec: string
+
+  /**
+   * 分差(类别最低分 - CEC 最低分)。
+   */
+  diff: number
 }
 
 /**

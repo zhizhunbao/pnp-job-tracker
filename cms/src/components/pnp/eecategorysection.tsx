@@ -8,11 +8,15 @@
  * 2026-08-28 换装批自 Pnp.tsx 整体重写成小写件形制。
  * 2026-09-23 Frank「EE 类别 最近抽选 联邦抽选近况 这三个卡片都删掉」:判定卡、最近抽选卡、联邦抽选近况卡撤,
  * 只剩命中类别的清单卡(本岗高亮);判定卡上的「看全部类别」开关随之没了,未命中的岗这一区不出东西。
+ * 同日 Frank「先改这个 EE 类别。加个卡,对比最近走 EE CEC 分和单独走医疗社服的分」:清单卡之上加「最近分数线」卡
+ * (本岗类别最近一轮 vs CEC 最近一轮 + 分差),抽选行重新从 props 传进来。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import { EeCatList } from './eecatlist'
+import { EeCmpCard } from './eecmpcard'
+import { eeCmpOf } from './functions'
 import { useEeCategory } from './hooks'
 import type { EeCategorySectionIn } from './types'
 import css from './pnp.module.css'
@@ -20,11 +24,12 @@ import css from './pnp.module.css'
 /**
  * 渲染联邦 EE 类别区。
  *
- * @param props 本岗、界面语言、扁平类别与两个显示开关(逐格注释见 EeCategorySectionIn)。
- * @returns 命中类别的清单卡;未命中不渲。
+ * @param props 本岗、界面语言、扁平类别、抽选行与两个显示开关(逐格注释见 EeCategorySectionIn)。
+ * @returns 分数线对比卡 + 命中类别的清单卡;未命中不渲。
  */
-export function EeCategorySection({ job, lang, cats, nocDesc = [], showZh = true }: EeCategorySectionIn) {
+export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: EeCategorySectionIn) {
   const p = useEeCategory({ job, lang, cats, nocDesc })
+  const cmp = eeCmpOf({ t: p.t, lang, cats: p.shown, draws })
   const lists = []
   for (const c of p.shown) {
     lists.push(<EeCatList key={c.key}
@@ -40,6 +45,7 @@ export function EeCategorySection({ job, lang, cats, nocDesc = [], showZh = true
   }
   return (
     <>
+      {cmp != null && <EeCmpCard t={p.t} cmp={cmp} open={p.cmpOpen} toggleOf={p.cmpToggleOf} />}
       {lists.length > 0 && <div className={css.card}>{lists}</div>}
     </>
   )

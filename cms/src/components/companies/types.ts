@@ -369,6 +369,11 @@ export type SimilarEmployer = {
    * 主省码;'' = 没记。
    */
   province: string
+
+  /**
+   * 同类雇主总数(每行同一个数,卡头括号里的那个;2026-09-23)。
+   */
+  total: number
 }
 
 /**

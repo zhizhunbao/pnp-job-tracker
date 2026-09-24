@@ -7,8 +7,6 @@
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-export { MaxIcon } from './maxicon'
-export type { MaxIconIn } from './types'
 export {
   IconArrowUp,
   IconMoveUpRight,

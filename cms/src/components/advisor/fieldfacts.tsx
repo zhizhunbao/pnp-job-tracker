@@ -55,7 +55,7 @@ export function FieldFacts({ field, f }: FieldFactsIn) {
   }
   if (field === FIELD_EE) {
     return (
-      <EeCategorySection job={f.job} lang={f.lang} cats={f.eeOcc}
+      <EeCategorySection job={f.job} lang={f.lang} cats={f.eeOcc} draws={f.pnpDraws}
         nocDesc={f.nocDesc} showZh={f.showZh} />
     )
   }

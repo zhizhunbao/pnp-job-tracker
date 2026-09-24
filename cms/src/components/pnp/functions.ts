@@ -22,30 +22,31 @@ import {
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, COND_PROVS, DASH, DAY_START_SUFFIX, EE_DORMANT_MONTHS,
-  EV_EMPLOYER_CLICK, EV_TV_ENTRY, FED_CAT_KEY, FED_TYPE_COLOR,
+  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR,
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
-  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
-  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_KEY_HEAD, PROV_NL, PROV_QC, ROWS_FALLBACK,
+  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
+  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_NL, PROV_QC, ROWS_FALLBACK,
   RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
   SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD, TEER_SKILLED_MAX,
-  TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_OK, TONE_PASS, TONE_WARN, TV_KIND_PNP, TYPE_INELIGIBLE,
-  UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD, URL_PLAN_PR_HEAD,
+  TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_OK, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
+  UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
 } from './constants'
 import type {
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
-  EeGroupIn,
+  CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn,
+  HistAtIn, PnpEeCatOcc,
   EeHitIn, FedLabelIn,
   FoldLabelIn, HasProvDrawsIn, HasProvNewsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
   LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
   MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn, MmTeerCellIn, MmTone, NewsRowSpec, NewsRowsIn,
   NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob, PnpMatchOut,
-  PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform, PnpStream, PnpTone, PnpVerdictIn, PnpVerdictSpec, ProvLabelIn,
+  PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform, PnpStream, PnpTone,
   ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn, SponsorLinesIn, SponsorShowIn, StreamRowSpec,
-  StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn, TvOpenIn,
+  StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
 } from './types'
 import css from './pnp.module.css'
 
@@ -288,20 +289,6 @@ export function makeSponsorClick(kind: string): ClickFn {
 }
 
 /**
- * 判定卡入口的点击手柄(#287 批D,设计 §5「modal-pnp 判定卡后」;效果图 se287-entry-pnp-modal):
- * 埋点后整页跳决策页。
- *
- * @param x 本岗主键。
- * @returns 点击手柄。
- */
-export function makeTvOpen(x: TvOpenIn): ClickFn {
-  return function onOpen(): void {
-    track(EV_TV_ENTRY, { kind: TV_KIND_PNP })
-    window.location.assign(URL_PLAN_PR_HEAD + String(x.id))
-  }
-}
-
-/**
  * PNP 命中计算(清单块与通道直判块两处共用;纯函数,改一处两边同变)。
  * AIP 清单不参与省提名判定(那是另一条路,见 aipBlockOf);魁省与缺省码的岗没有通道可比。
  *
@@ -371,71 +358,6 @@ export function hasNocOf(s: PnpStream, noc: string): boolean {
     }
   }
   return false
-}
-
-/**
- * 判定行(Frank 2026-07-26「有些岗显示可提名 但是点进去却显示走不了」)。
- * 根因=两套判定 —— 列表用服务端 pnp_eligible(08_score:排除式省 ON/AB 的 TEER 0-5 默认可),
- * 弹框却自己写死 teer<=3。实测 ON 3,254 / AB 1,328 / SK 106 个岗两边打架。
- * 修:**服务端 pnpEligible 是单一真相**,清单只负责解释「凭什么」,弹框不再自行判定能不能走。
- * Frank「qc 没有对应的通道 也没有历史」:QC 不参加 PNP 是制度事实,不是缺数 —— 把它走的是什么说清。
- *
- * @param x 取词函数、本岗与命中结论。
- * @returns 判定卡的色档、话术与两条「凭什么」。
- */
-export function pnpVerdictOf(x: PnpVerdictIn): PnpVerdictSpec {
-  if (x.job.province === PROV_QC) {
-    return { tone: TONE_NA, text: x.t('ch.pnp.qc'), why: TEXT_NONE, qcWhy: x.t('ch.pnp.qcWhy') }
-  }
-  if (x.match.excludedBy != null) {
-    const label = streamDisplay({ t: x.t, label: x.match.excludedBy.label })
-    return { tone: TONE_FAIL, text: x.t('ch.pnp.exl', { label }), why: TEXT_NONE, qcWhy: TEXT_NONE }
-  }
-  if (x.match.matched != null) {
-    const label = streamDisplay({ t: x.t, label: x.match.matched.label })
-    return { tone: TONE_OK, text: x.t('ch.pnp.on', { label }), why: TEXT_NONE, qcWhy: TEXT_NONE }
-  }
-  if (x.job.pnpEligible) {
-    return { tone: TONE_OK, text: x.t('ch.pnp.generic'), why: genericWhyOf(x), qcWhy: TEXT_NONE }
-  }
-  return { tone: TONE_NA, text: x.t('ch.pnp.no'), why: TEXT_NONE, qcWhy: TEXT_NONE }
-}
-
-/**
- * 通用档的「凭什么」(Frank 同批「显示走通用 但是不知道具体走的是什么」:把「凭什么算通用」
- * 写出来,别让用户猜)。E13-09:TEER4-5 的「凭什么」分三类 —— 排除式省(不设清单)/
- * NL(offer 即可)/ MB·NS·NB·PE 普通通道(先同雇主 6 个月)。省集合镜像 etl/08_score.UNIVERSAL_*_PROVS。
- *
- * @param x 取词函数、本岗与命中结论。
- * @returns 这一档的说明句。
- */
-export function genericWhyOf(x: PnpVerdictIn): string {
-  const teer = teerTextOf(x.job.teer)
-  if (x.job.teer != null && x.job.teer <= TEER_SKILLED_MAX) {
-    return x.t('ch.pnp.whySkilled', { teer })
-  }
-  if (x.job.province === PROV_NL) {
-    return x.t('ch.pnp.whyDirect')
-  }
-  const prov = provLabelOf({ t: x.t, code: x.job.province })
-  if (COND_PROVS.includes(x.job.province)) {
-    return x.t('ch.pnp.whyCond', { prov })
-  }
-  return x.t('ch.pnp.whyOpen', { prov, teer })
-}
-
-/**
- * 省名:字典里有就用人话名,没有原样显示省码 —— 字典缺词不该把省码吞掉。
- *
- * @param x 取词函数与省码。
- * @returns 省名或省码。
- */
-export function provLabelOf(x: ProvLabelIn): string {
-  const v = x.t(PROV_KEY_HEAD + x.code)
-  if (v === TEXT_NONE) {
-    return x.code
-  }
-  return v
 }
 
 /**
@@ -719,13 +641,14 @@ export function caretOf(open: boolean): string {
 /**
  * 洗一个类别的职业清单行。
  * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(省提名清单同批撤)。
+ * 同日「而且这个高亮的默认排到最上面 方便看」:命中行置顶,其余保持原序(省提名清单早就是命中置顶)。
  *
  * @param x 界面语言、译名开关、这个类别、本岗职业码与职业名字典。
  * @returns 展示行。
  */
 export function occRowsOf(x: OccRowsIn): OccRowSpec[] {
   const rows: OccRowSpec[] = []
-  for (const o of x.cat.occupations) {
+  for (const o of hitFirstOf(x)) {
     const hit = o.noc === x.noc
     let teer = TEXT_NONE
     if (o.teer != null) {
@@ -735,6 +658,186 @@ export function occRowsOf(x: OccRowsIn): OccRowSpec[] {
     rows.push({ key: o.noc, hit, noc: o.noc, title: o.title, zh, teer })
   }
   return rows
+}
+
+/**
+ * 类别清单的职业按「命中置顶」排(其余保持原序)。
+ *
+ * @param x 这个类别与本岗职业码(其余格不读)。
+ * @returns 排好的职业。
+ */
+function hitFirstOf(x: OccRowsIn): PnpEeCatOcc[] {
+  const hits: PnpEeCatOcc[] = []
+  const others: PnpEeCatOcc[] = []
+  for (const o of x.cat.occupations) {
+    if (o.noc === x.noc) {
+      hits.push(o)
+    } else {
+      others.push(o)
+    }
+  }
+  return hits.concat(others)
+}
+
+/**
+ * EE 分数线对比卡的内容(2026-09-23 Frank「先改这个 EE 类别。加个卡,对比最近走 EE CEC 分和单独走医疗社服的分」):
+ * 本岗类别各一组(组头按类别表带的最近一轮;休眠的、从没抽过的压暗)+ CEC 一组;活跃且有分的类别各出一行分差
+ * (休眠类别拿两年前的分比没有意义,不出分差)。拿不到 CEC 最近一轮整卡不出 —— 没有参照就不算对比。
+ * 同日第二版(Frank「这个我觉得都列全了,分开列,然后带展开,收缩。而且可以简单看到对比的」「EE 基本就这三个对比就可以了吧」):
+ * 三组分开列 —— 本岗类别、CEC、法语,组头一行 = 最近一轮(定宽列上下对齐,一眼可比),点开列全部轮次;
+ * 法语按语言能力抽、与职业无关,只作分数线参照(组头悬停说明),不出分差。
+ *
+ * @param x 取词函数、界面语言、本岗命中的类别与全部抽选行。
+ * @returns 对比;没有命中类别或拿不到 CEC 轮次给 null。
+ */
+export function eeCmpOf(x: EeCmpIn): EeCmp | null {
+  const hist = fedHistOf(x.draws)
+  const cec = histAtOf({ hist, key: FED_CEC })
+  const cecLast = cec[0]
+  if (cecLast == null || cecLast.score == null || x.cats.length === 0) {
+    return null
+  }
+  const cecScore = cecLast.score
+  const cecName = eeKeyDisplay({ t: x.t, key: FED_CEC })
+  const groups: EeCmpGroup[] = []
+  const lines: EeCmpLine[] = []
+  for (const c of x.cats) {
+    const dim = eeIsDormant(c.drawDate)
+    const name = eeDisplay({ t: x.t, label: c.label })
+    const draws = histAtOf({ hist, key: c.key })
+    groups.push(cmpGroupOf({
+      t: x.t,
+      lang: x.lang,
+      key: c.key,
+      name,
+      tip: TEXT_NONE,
+      date: c.drawDate,
+      score: c.drawCrs,
+      draws,
+      dim,
+    }))
+    if (dim === false && c.drawCrs != null) {
+      lines.push(cmpLineOf({ t: x.t, key: c.key, cat: name, cec: cecName, diff: c.drawCrs - cecScore }))
+    }
+  }
+  groups.push(cmpGroupOf({
+    t: x.t,
+    lang: x.lang,
+    key: FED_CEC,
+    name: cecName,
+    tip: TEXT_NONE,
+    date: cecLast.drawDate,
+    score: cecScore,
+    draws: cec,
+    dim: false,
+  }))
+  const fr = histAtOf({ hist, key: FED_FRENCH })
+  const frLast = fr[0]
+  if (frLast != null) {
+    groups.push(cmpGroupOf({
+      t: x.t,
+      lang: x.lang,
+      key: FED_FRENCH,
+      name: eeKeyDisplay({ t: x.t, key: FED_FRENCH }),
+      tip: x.t('eecmp.frenchTip'),
+      date: frLast.drawDate,
+      score: frLast.score,
+      draws: fr,
+      dim: false,
+    }))
+  }
+  return { groups, lines }
+}
+
+/**
+ * 联邦轮次按类别键分组(pnp_draws 的 province=FED 抽选行,label = 类别键;每组按日期降序)。
+ *
+ * @param draws 全部抽选行。
+ * @returns 类别键 → 历次抽选。
+ */
+function fedHistOf(draws: PnpDraw[]): DrawHist {
+  const m: DrawHist = new Map()
+  for (const d of draws) {
+    if (d.province !== PROV_FED || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE) {
+      continue
+    }
+    const arr = m.get(d.label)
+    if (arr == null) {
+      m.set(d.label, [d])
+    } else {
+      arr.push(d)
+    }
+  }
+  for (const arr of m.values()) {
+    arr.sort(byDrawDateDesc)
+  }
+  return m
+}
+
+/**
+ * 一组的历次抽选(拿不到就是空列)。
+ *
+ * @param x 分组表与类别键。
+ * @returns 历次抽选。
+ */
+function histAtOf(x: HistAtIn): PnpDraw[] {
+  const hist = x.hist.get(x.key)
+  if (hist == null) {
+    return []
+  }
+  return hist
+}
+
+/**
+ * 一组的展示件:组头 = 最近一轮(最低分 / 日期 / 轮数),点开列全部轮次(照抄省抽选表的行)。
+ * 休眠类别的历次轮次可能已过保留窗(联邦行每类只留最近 12 轮),组头仍按类别表带的最近一轮写。
+ * 同日 Frank「运输这个只有一个 没法展开」:一轮也给展开(展开才看得到轮次名与邀请数),轮数照写「1 轮」。
+ *
+ * @param x 一组的原料。
+ * @returns 这一组。
+ */
+function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
+  let score = x.t('eecmp.none')
+  if (x.score != null) {
+    score = x.t('pnpdraws.min', { score: x.score })
+  }
+  const rows: DrawRowSpec[] = []
+  let i = 0
+  for (const d of x.draws) {
+    rows.push(toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null }))
+    i += 1
+  }
+  let rounds = TEXT_NONE
+  if (rows.length > 0) {
+    rounds = x.t('eecmp.rounds', { n: rows.length })
+  }
+  return {
+    key: x.key,
+    name: x.name,
+    tip: x.tip,
+    score,
+    date: x.date,
+    rounds,
+    dim: x.dim,
+    rows,
+    expandable: rows.length > 0,
+  }
+}
+
+/**
+ * 分差一行:类别比 CEC 低 / 高 / 同分。
+ *
+ * @param x 取词函数、行键、两个显示名与分差。
+ * @returns 分差行。
+ */
+function cmpLineOf(x: CmpLineIn): EeCmpLine {
+  if (x.diff < 0) {
+    return { key: x.key, text: x.t('eecmp.lower', { cat: x.cat, cec: x.cec, n: -x.diff }), lower: true }
+  }
+  if (x.diff > 0) {
+    return { key: x.key, text: x.t('eecmp.higher', { cat: x.cat, cec: x.cec, n: x.diff }), lower: false }
+  }
+  return { key: x.key, text: x.t('eecmp.same', { cat: x.cat, cec: x.cec }), lower: false }
 }
 
 /**
@@ -1398,6 +1501,37 @@ export function streamClsOf(x: DimClsIn): string {
   const cls = [cssOf(css.stream)]
   if (x.dim) {
     cls.push(cssOf(css.dim))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 分数线卡组头的类名(可点的加按钮手型,休眠 / 从没抽过的压暗)。
+ *
+ * @param x 压不压暗、可不可点。
+ * @returns 类名。
+ */
+export function cmpHeadClsOf(x: CmpHeadClsIn): string {
+  const cls = [cssOf(css.cmpHead)]
+  if (x.button) {
+    cls.push(cssOf(css.cmpBtn))
+  }
+  if (x.dim) {
+    cls.push(cssOf(css.dim))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 分差行的类名(低于 CEC 绿字)。
+ *
+ * @param x 比 CEC 低吗。
+ * @returns 类名。
+ */
+export function cmpLineClsOf(x: CmpLineClsIn): string {
+  const cls = [cssOf(css.cmpLine)]
+  if (x.lower) {
+    cls.push(cssOf(css.cmpLower))
   }
   return cls.join(CLS_SEP)
 }

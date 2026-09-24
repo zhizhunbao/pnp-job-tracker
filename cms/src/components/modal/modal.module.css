@@ -110,18 +110,6 @@
 }
 
 /*
- * 全屏态(右上角放大):近全窗 + 尺寸过渡。
- */
-.max {
-  width: 96vw;
-  height: 94vh;
-  max-height: 94vh;
-  padding: 24px 24px 20px;
-  transform: none;
-  transition: width .2s, height .2s;
-}
-
-/*
  * pad=false:内容自管内衬(整页 JD 这类)。
  */
 .noPad {

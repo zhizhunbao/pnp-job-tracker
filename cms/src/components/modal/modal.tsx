@@ -12,24 +12,25 @@
  *
  * 决策记录:#314 全屏钮的 title/aria-label 原是写死中文,英韩界面属性残留中文 ——
  * 改经 useLang 取词(cw.restore/cw.max)。
+ * 2026-09-23 Frank「这个带全屏的都去掉吧」:全屏 / 还原钮整功能撤(resizable 开关、全屏态、MaxIcon 随删),
+ * 拖拽与四边缩放不动。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 import { useRef } from 'react'
 import { Button } from '@/components/button'
-import { useLang } from '@/components/i18n'
 import { CLOSE_ARIA, PLAIN_BTN_KIND, SIZE_DEFAULT, Z_MODAL } from './constants'
-import { cardStyleOf, clsOf, maxKeyOf, stopClick } from './functions'
-import { IconX, MaxIcon } from '@/components/icons'
+import { cardStyleOf, clsOf, stopClick } from './functions'
+import { IconX } from '@/components/icons'
 import { useCard, useEdgeResize, useEscClose, useIsNarrow, useOverlayClose } from './hooks'
 import { ResizeHandles } from './resizehandles'
 import type { ModalIn } from './types'
 import css from './modal.module.css'
 
 /**
- * 居中弹框壳:sm=390, md=560, lg=760;支持 header 按住拖拽移动(draggable)
- * 与右上角全屏/还原(resizable);edgeResize = 四边四角拖拽缩放(2026-09-04 pte 字典弹框先例)。
+ * 居中弹框壳:sm=390, md=560, lg=760;支持 header 按住拖拽移动(draggable);
+ * edgeResize = 四边四角拖拽缩放(2026-09-04 pte 字典弹框先例)。右上角全屏 / 还原钮 2026-09-23 撤。
  *
  * @param props 关闭回调与形态开关。
  * @returns 弹框。
@@ -41,13 +42,11 @@ export function Modal({
   pad = true,
   tall = false,
   draggable = true,
-  resizable = true,
   edgeResize = false,
   actions,
   children,
 }: ModalIn) {
   const ov = useOverlayClose(onClose)
-  const [, , t] = useLang()
   const narrow = useIsNarrow()
   const card = useCard({ narrow, draggable })
   useEscClose(onClose)
@@ -55,16 +54,14 @@ export function Modal({
   const cls = clsOf({
     narrow,
     size,
-    maximized: card.maximized,
     draggable,
     pad,
     tall,
     dragging: card.dragging(),
   })
   const cardRef = useRef<HTMLDivElement | null>(null)
-  const rs = useEdgeResize({ enabled: edgeResize && narrow === false && card.maximized === false, cardRef })
-  const cardStyle = cardStyleOf({ narrow, maximized: card.maximized, pos: card.pos, size: rs.size })
-  const maxLabel = t(maxKeyOf(card.maximized))
+  const rs = useEdgeResize({ enabled: edgeResize && narrow === false, cardRef })
+  const cardStyle = cardStyleOf({ narrow, pos: card.pos, size: rs.size })
 
   return (
     // eslint-disable-next-line react/forbid-dom-props -- 层级是调用方传的运行时数据(有 z+10 算术叠层)
@@ -79,22 +76,13 @@ export function Modal({
         style={cardStyle}>
         <div className={css.acts} onClick={stopClick}>
           {actions}
-          {resizable && narrow === false && (
-            <Button kind={PLAIN_BTN_KIND}
-              onClick={card.toggleMax}
-              ariaLabel={maxLabel}
-              title={maxLabel}
-              className={css.iconBtn}>
-              <MaxIcon maximized={card.maximized} />
-            </Button>
-          )}
           <Button kind={PLAIN_BTN_KIND}
             onClick={onClose}
             ariaLabel={CLOSE_ARIA}
             className={css.iconBtn}><IconX /></Button>
         </div>
         {children}
-        {edgeResize && narrow === false && card.maximized === false && <ResizeHandles startOf={rs.startOf} />}
+        {edgeResize && narrow === false && <ResizeHandles startOf={rs.startOf} />}
       </div>
     </div>
   )
