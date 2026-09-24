@@ -669,7 +669,8 @@ def merge_pnp_table(x: PnpMergeIn) -> None:
 
 
 def load_pnp_by_prov() -> dict:
-    """扫 raw/pnp/*.json 按 province 归省 → {"type","nocs","blocked","streams"}(目录驱动,加省=丢一个 json)。"""
+    """扫 raw/pnp/*.json 按 province 归省 → {"type","nocs","blocked","streams"}(目录驱动,加省=丢一个 json)。
+    2026-09-24 起各省具名通道按清单大小升序(stream_size_of)。"""
     out: dict = {}
     if not IN_PNP_DIR.exists():
         return out
@@ -688,7 +689,15 @@ def load_pnp_by_prov() -> dict:
         merge_pnp_table(PnpMergeIn(bucket=bucket, kind=data.get(K_TYPE, PNP_TYPE_INDEMAND),
                                    overlay=bool(data.get(K_OVERLAY)), nocs=nocs,
                                    label=pnp_label_of(data)))
+    for tbl in out.values():
+        tbl[K_STREAMS].sort(key=stream_size_of)
     return out
+
+
+def stream_size_of(s: dict) -> int:
+    """具名通道按清单大小排(pnp_stream 取第一个命中的 —— 清单越小越具体越先;2026-09-24 九省通道审计:
+    原按文件名序,BC 兽医 2 码被医疗单抢先、SK 21100 被医疗单抢先)。sort 的 key。"""
+    return len(s[K_NOCS])
 
 
 def pnp_label_of(data: dict) -> str:

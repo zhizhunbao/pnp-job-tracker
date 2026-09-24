@@ -1853,6 +1853,7 @@ export const STREAM_L10N: Record<string, string> = {
   'MB 在需职业': 'stream.mbIndemand', 'MB 乡镇在需': 'stream.mbRural', 'PE 在需职业': 'stream.peIndemand',
   'NB 不符合清单': 'stream.nbExcl', 'NB 餐饮住宿不符合': 'stream.nbExclFood',
   'NB AIP 不受理': 'stream.nbAipExcl', 'NB AIP 餐饮住宿不受理': 'stream.nbAipExclFood',
+  'BC 卫生局': 'stream.bcHa', 'PE AIP 不受理': 'stream.peAipExcl',
 }
 /**
  * pnp_requirements.stream(官方通道名,键按 normReqStream 归一)→ 三语显示短名。

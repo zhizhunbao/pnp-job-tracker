@@ -213,18 +213,21 @@ from pnp.constants import (
     OUT_AB_HEALTH_FILE, OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
     OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
     OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
-    OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_OID, OUT_PE_OID_FILE,
+    OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_AIP_FILE, OUT_PE_OID,
+    OUT_PE_OID_FILE,
     OUT_PE_REQ, OUT_PNP_DIR, OUT_SK_EXCLUDED_FILE, OUT_SK_JOBOFFER_FILE, OUT_SK_POINTS, OUT_SK_REQ, OUT_SK_STATS,
     PARSER_LXML, PER_EFFECTIVE_RE, PER_EMP_LABEL_TPL, PER_EMP_STREAM, PER_EMP_YEARS_RE, PER_EXP_LABEL_TPL,
     PER_EXP_OID_RE, PER_EXP_RE, PER_LANG_LABEL_TPL, PER_LANG_RE, PER_PROBLEM_EMPLOYER, PER_PROBLEM_EXP,
     PER_PROBLEM_EXP_OID, PER_PROBLEM_LANG, PER_PROBLEM_LANG_MULTI_TPL, PER_PROBLEM_NO_VERSION,
     PER_SECTION_EMPLOYER, PER_SECTION_EXP, PER_SECTION_LANG, PER_SKILLED_STREAM, PER_SOURCE, PER_STREAM,
-    PER_TEER_03, PE_GUIDE_TIMEOUT_S, PE_GUIDE_URL, PE_MIN_EXPECTED, PE_NAME_CLIP, PE_NOC_LINE_RE, PE_OID_LABEL,
+    PER_TEER_03, PE_AIP_LABEL, PE_AIP_NOTE, PE_AIP_NOT_ACCEPTED_RE, PE_AIP_PRINT_NONE, PE_AIP_PRINT_NO_CACHE,
+    PE_AIP_PRINT_TPL, PE_AIP_STREAM, PE_AIP_URL,
+    PE_GUIDE_TIMEOUT_S, PE_GUIDE_URL, PE_MIN_EXPECTED, PE_NAME_CLIP, PE_NOC_LINE_RE, PE_OID_LABEL,
     PE_OID_NOTE, PE_OID_STREAM, PE_PAGE_URL, PE_PRINT_DONE_TPL, PE_PRINT_FAIL_TPL, PE_PRINT_NO_SECTION,
     PE_PRINT_OCC_TPL, PE_PRINT_TOO_FEW_TPL, PE_SCAN_LEN, PE_SECTION_RE, PLURAL_S, PLUS_JOIN_SEP, PRINT_BULLET,
     PRINT_DONE_PATH_TPL, PRINT_FACTOR15_TPL, PRINT_FACTOR_TPL, PRINT_KEEP_OLD_TPL, PRINT_NO_NOC_TPL, PRINT_OUT_TPL,
     PRINT_SELFCHECK_FAIL, PRINT_TABLE10_TPL, PRINT_TABLE_TPL, PROBLEM_EMP_YEARS_MISSING, PROBLEM_EXP_MISSING,
-    PROBLEM_NO_EFFECTIVE, PROGRAM_PNP, PROV_AB, PROV_BC, PROV_MB, PROV_NB, PROV_NL, PROV_NS, PROV_ON, PROV_PE,
+    PROBLEM_NO_EFFECTIVE, PROGRAM_AIP, PROGRAM_PNP, PROV_AB, PROV_BC, PROV_MB, PROV_NB, PROV_NL, PROV_NS, PROV_ON, PROV_PE,
     PROV_SK, REQ_SUBJECT_APPLICANT, REQ_SUBJECT_EMPLOYER, SEMI_JOIN_SEP, SIRS_ADDITIONAL_RE, SIRS_ANY_TRADE_RE,
     SIRS_AREA_HEAD_KW, SIRS_AREA_MAX, SIRS_AREA_ROW_RE, SIRS_COLON, SIRS_DESIGNATION_RE, SIRS_DESIG_ANCHOR,
     SIRS_DESIG_MIN, SIRS_EDU_HEAD_KW, SIRS_EDU_HEAD_KW2, SIRS_EDU_MAX, SIRS_EDU_ROW_RE, SIRS_EFFECTIVE_RE,
@@ -1063,6 +1066,8 @@ def build_nb() -> None:
             continue
         segs = nb_notice_segs(notice)
         for key in (K_ANY, K_FOOD):
+            if key not in nt:
+                continue
             cfg = cast(dict, nt[key])
             occs = parse_nb_nocs(nb_seg_of(NbSegPickIn(segs=segs, key=key)))
             if not occs:
@@ -1170,6 +1175,31 @@ def build_nl() -> None:
 # =========================================================================
 # 9. PE 在需职业(走官方指南 PDF —— 网页在 Radware 后面)
 # =========================================================================
+
+
+def build_pe_aip() -> None:
+    """PE AIP 不受理表入口(2026-09-24 九省通道审计补):AIP 背书申请页只读 crawl 缓存,页上「… applications (NOC #####)
+    are not being accepted」逐条取;缓存没有 / 解析空 → 保留旧表。本步单开(不挂 build_pe:那步读指南 PDF,抓失败整步返回)。"""
+    OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
+    hit = get_cached_page(PE_AIP_URL)
+    if not hit.html:
+        say(PE_AIP_PRINT_NO_CACHE)
+        return
+    text = fold_ws(text_of_html(TextOfHtmlIn(html=hit.html, drop_junk=True, main_only=True)))
+    occ: dict = {}
+    for m in PE_AIP_NOT_ACCEPTED_RE.finditer(text):
+        occ.setdefault(m.group(2), fold_ws(m.group(1)).strip())
+    if not occ:
+        say(PE_AIP_PRINT_NONE)
+        return
+    fetched = today_iso()
+    table = {
+        K_STREAM: PE_AIP_STREAM, K_LABEL: PE_AIP_LABEL,
+        K_PROVINCE: PROV_PE, K_PROGRAM: PROGRAM_AIP, K_TYPE: TYPE_INELIGIBLE, K_OVERLAY: True, K_NOTE: PE_AIP_NOTE,
+        K_URL: PE_AIP_URL, K_FETCHED: fetched,
+        K_OCCUPATIONS: occ_rows_of(occ),
+    }
+    write_pnp_table(BuildTableIn(filename=OUT_PE_AIP_FILE, table=table, line=PE_AIP_PRINT_TPL.format(n=len(occ))))
 
 
 def build_pe() -> None:

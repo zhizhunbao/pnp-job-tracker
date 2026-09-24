@@ -159,6 +159,9 @@ export const DRAW_STREAM_AIP = 'AIP'
  * etl/pnp 洗出的官方通道名):点进来琥珀高亮、排最前。2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立。
  * 其余省对不上一一对应,不登记 = 不高亮:BC 整卡都是 Skills Immigration 的类别轮,MB / PE 组名与通道不同名,
  * SK / NS 没有抽选,ON 改制卡暂撤。
+ * 2026-09-24 九省通道审计改判 PE / NL:两省抽选卡只有一组、该组覆盖本省全部通道(PE「Labour & Express Entry」= Workforce
+ * 各流 + PEI EE;NL「NLPNP + AIP (ITA batch)」= NLPNP 各类 + AIP 同一 EOI 池),点进来就高亮那一组;
+ * MB 待 etl 把 Skilled Worker in Manitoba 那一层留作组名再登记(现组名是下层的选取方式);NS 官方只发月度总数、不分通道。
  */
 export const GEN_DRAW_STREAM: Record<string, string> = {
   /**
@@ -170,6 +173,16 @@ export const GEN_DRAW_STREAM: Record<string, string> = {
    * 阿尔伯塔:AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)。
    */
   AB: 'Alberta Opportunity Stream',
+
+  /**
+   * 爱德华王子岛:PE 劳工通道(Workforce 各流与 PEI EE 同一组抽选)。
+   */
+  PE: 'Labour & Express Entry',
+
+  /**
+   * 纽芬兰与拉布拉多:NL 技术工人(NLPNP 各类与 AIP 同一 EOI 池、同一组批次)。
+   */
+  NL: 'NLPNP + AIP (ITA batch)',
 }
 
 /**
@@ -213,6 +226,11 @@ export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
    * BC 法语教师定向。
    */
   'BC 法语教师': ['Care: Education'],
+
+  /**
+   * PE 在需职业(Occupations in Demand 与 Workforce 各流同一组抽选,2026-09-24 九省通道审计登记)。
+   */
+  'PE 在需职业': ['Labour & Express Entry'],
 }
 
 /**

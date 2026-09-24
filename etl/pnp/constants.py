@@ -968,18 +968,22 @@ Impact 全行业)→ 不产出。"""
 
 BC_SECTION_BUCKET = {
     "health care": "health",
-    "health authority-eligible occupations": "health",
+    "health authority-eligible occupations": "health_authority",
     "childcare": "childcare",
     "education": "education",
     "veterinary care": "vet",
     "construction trades": "construction",
 }
 """md 节标题(#### 小节 / ### Health Authority 大节)→ 桶;**同桶多节取并集**
-(Care/Health care 定向邀请 ∪ Health Authority 通道职业 —— 同为医疗信号,粗筛不分雇主)。"""
+(Care/Health care 定向邀请 ∪ Health Authority 通道职业 —— 同为医疗信号,粗筛不分雇主)。
+2026-09-24 拆开(九省通道审计):两张本是不同通道的单 —— 定向 Care: Health 有抽选组,卫生局通道要雇主是省卫生局、没有抽选;
+并桶后只在卫生局单上的 15 个码被标「BC 医疗」、点进去误高亮 Care: Health。卫生局单另出一桶。"""
 
 BC_BUCKETS = {
     "health": {"out": "bc-health.json", "label": "BC 医疗",
-               "stream": "BC PNP Care: health targeted ITA / Health Authority stream"},
+               "stream": "BC PNP Care: health targeted ITA"},
+    "health_authority": {"out": "bc-health-authority.json", "label": "BC 卫生局",
+                         "stream": "BC PNP Skills Immigration: Health Authority stream"},
     "childcare": {"out": "bc-childcare.json", "label": "BC 幼教",
                   "stream": "BC PNP Care: childcare targeted ITA"},
     "education": {"out": "bc-education.json", "label": "BC 法语教师",
@@ -989,7 +993,7 @@ BC_BUCKETS = {
     "construction": {"out": "bc-construction.json", "label": "BC 建筑技工",
                      "stream": "BC PNP Build: construction trades targeted ITA"},
 }
-"""五个专项桶的产出文件 / 前端短标签 / 官方通道名。"""
+"""五个专项桶的产出文件 / 前端短标签 / 官方通道名(2026-09-24 卫生局单拆出,成六桶)。"""
 
 BC_NOC_LINE_RE = re.compile(r"^(\d{5})\s+(.+?)\s*$")
 """页面职业行:"31301 Registered nurses …"(无列表符号)。"""
@@ -1364,9 +1368,7 @@ NB_NOTICES = [
     {"key": "aip", "program": "AIP", "must": ("endorsement applications", "NAICS 72"),
      "stream": "Atlantic Immigration Program (NB) — occupations not being considered for endorsement",
      "any": {"out": "nb-aip-ineligible.json", "label": "NB AIP 不受理",
-             "note": "自 2026-02-03 起,NB 不受理这些职业的 AIP 背书申请(不论雇主属什么行业),雇主是否指定雇主都一样。"},
-     "food": {"out": "nb-aip-ineligible-food.json", "label": "NB AIP 餐饮住宿不受理",
-              "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的 AIP 背书申请。" + NB_FOOD_NOTE}},
+             "note": "自 2026-09-14 起,NB 不受理这些职业的 AIP 背书申请(不论雇主属什么行业),雇主是否指定雇主都一样。"}},
 ]
 """同一页两条通告,列表不同、管的项目也不同 —— 一条管省提名(EOI/ITA),一条管 AIP 背书。
 program 决定下游怎么用:PNP 表进 08_score 资格判定;AIP 表只作展示维度(08 跳过,前端判 AIP 那一行)。
@@ -1378,6 +1380,9 @@ program 决定下游怎么用:PNP 表进 08_score 资格判定;AIP 表只作展�
   · nb-aip-ineligible-food.json 「NB AIP 餐饮住宿不受理」—— 10 个 NOC,住宿餐饮业(同款条件性)
   雇主是不是 AIP 指定雇主**不影响**这条:官方明说这些岗的背书申请一律不受理 —— 故「指定雇主」
   与「本岗职业不受理」要同时说清,不能只显前者(2026-07-26 Frank 拍板补此表)。
+  2026-09-24:官方 09-14 新通告撤了 AIP 的住宿餐饮业限制(原句 has removed the restriction under the Atlantic
+  Immigration Program (AIP) for candidates working in the Accommodation and Food Services sector (NAICS 72)),
+  AIP 这条只剩 any 一张(8 个码);nb-aip-ineligible-food.json 作废删除,build_nb 见配置没有 food 就跳过。
 四表都是 `type=ineligible`(命中=不符合)+ **`overlay=true`**:与 AAIP 那种「本省无 TEER 门槛、
 除清单外全可」不同,NB 的排除是**叠加**在默认 TEER 规则上的(NB Skilled Worker 仍要技能岗 offer)
 —— 08_score 见 overlay 只做「命中即不可」,不把该省 TEER4-5 默认放开。"""
@@ -1389,9 +1394,11 @@ Past notices),块的认领仍靠 NB_NOTICES 的 must 关键词;PNP/AIP 两节排
 之前,notice_of 先匹配先赢,旧通告存档不会被误认(首修时曾切 ###:整页一块,两条通告
 认领同一块,四表数字互相污染 24/13/24/13 —— 数字对不上老表当场暴露,改本值后 14/13/6/10 归位)。"""
 
-NB_NOC_LINE_RE = re.compile(r"NOC\s*(\d{5})\s*\*{0,2}\s*[–—-]\s*\*{0,2}\s*(.+?)\s*"
-                            r"(?=\*{0,2}\s*NOC\s*\d{5}|$)", re.S)
-"""官方写法:**NOC 63200** – Cooks(粗体记号与破折号形式不稳定,宽松匹配)。"""
+NB_NOC_LINE_RE = re.compile(r"NOC(?:\s|\*)*(\d{5})\s*\*{0,2}\s*[–—-]\s*\*{0,2}\s*(.+?)\s*"
+                            r"(?=\*{0,2}\s*NOC(?:\s|\*)*\d{5}|$)", re.S)
+"""官方写法:**NOC 63200** – Cooks(粗体记号与破折号形式不稳定,宽松匹配)。
+2026-09-24 放宽 NOC 与码之间:09-14 那条 AIP 通告写成「**NOC** **14400** – …」(两段粗体),原式要求连写,
+解析 0 条、一直保旧表(官方 8 个码,我们停在 6 个;九省通道审计查出)。"""
 
 NB_TAIL_RE = re.compile(r"\s+(?:However\b|Additionally\b|In addition\b|This restriction\b|>).*$", re.S)
 """清单末条会粘上后文正文(官方一段到底,无列表标签)→ 名字在这些词处截断。"""
@@ -1512,6 +1519,35 @@ PE_GUIDE_URL = "https://www.princeedwardisland.ca/sites/default/files/publicatio
 「Verifying your browser before proceeding...」壳,2026-08-03 用全套浏览器头 + http1.1 复验仍被挡),
 而**文件服务器 `/sites/default/files/` 不挡** —— 官方申请指南 PDF 直接 200。
 于是本站的 PE 口径取自官方申请指南原文,而不是网页。"""
+
+PE_AIP_URL = "https://www.princeedwardisland.ca/en/service/atlantic-immigration-program-endorsement-application"
+"""PE 的 AIP 背书申请页(2026-09-24 九省通道审计补表)。PE 官网在反爬墙后:**只读 crawl 缓存**(pe-imm,09-21 那轮过墙抓到),
+缓存没有就保留旧表,不直抓。"""
+
+PE_AIP_NOT_ACCEPTED_RE = re.compile(r"([A-Z][A-Za-z ]+?) applications \(NOC (\d{5})\) are not being accepted")
+"""页上原句「Transport Truck Driver applications (NOC 73300) are not being accepted under Prince Edward Island's
+Atlantic Immigration Program」—— 取职业名与码。"""
+
+OUT_PE_AIP_FILE = "pe-aip-ineligible.json"
+"""PE AIP 不受理表的产出文件名。"""
+
+PE_AIP_STREAM = "Atlantic Immigration Program (PE) — occupations not being accepted for endorsement"
+"""PE AIP 不受理表的通道名(照 NB AIP 表的写法)。"""
+
+PE_AIP_LABEL = "PE AIP 不受理"
+"""PE AIP 不受理表的前端短标签。"""
+
+PE_AIP_NOTE = "PEI 的 AIP 自 2025-01-24 起只收医疗、建筑、制造三个行业的背书申请;另有这些职业不受理。"
+"""PE AIP 不受理表的口径说明(行业限制按行业、不逐岗判,只进注)。"""
+
+PE_AIP_PRINT_TPL = "  ✓ PE AIP 不受理    {n} 个职业 → pnp/pe-aip-ineligible.json"
+"""PE AIP 表收尾报数。"""
+
+PE_AIP_PRINT_NO_CACHE = "  ✗ PE AIP 页不在 crawl 缓存里(保留旧表)"
+"""PE AIP 页没缓存的报数。"""
+
+PE_AIP_PRINT_NONE = "  ✗ PE AIP 页没解析到不受理职业(保留旧表)"
+"""PE AIP 页解析空的报数。"""
 
 PE_PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-pnp-workforce-streams"
 """PEI Workforce 通道的人可读官方页(表级 url 用它)。"""
