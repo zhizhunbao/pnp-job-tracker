@@ -37,7 +37,7 @@ import type {
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
   CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn,
-  DrawGroupNameIn, HistAtIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
+  HistAtIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
   EeHitIn, FedLabelIn,
   FoldLabelIn, HasProvDrawsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
@@ -741,6 +741,8 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
  * 按通道(官方轮次名)分组,组头 = 最近一轮带分的那轮(同日有一轮没公布分的不拿来当组头),点开列全部轮次,组按最近一轮日期降序
  * —— 各通道分数上下对齐,定向轮与不限职业的轮一眼可比。组件与组形照抄 EE 分数线卡(cmpGroupOf / EeCmpGroupView)。
  * 本岗对应哪一轮、差多少分要等数据层把「抽选通道 ↔ 职业清单」对上号(抽选行的 rule_streams 现在全空),这一版只分组不标本岗。
+ * 同日 Frank「大标题都改成英文」:组名一律用官方英文通道名(原先中文界面有中文名用中文、没有用英文,一张卡里中英混排);
+ * 中文名留在展开后各轮的灰注里。
  *
  * @param x 取词函数、界面语言、省码与全部抽选行。
  * @returns 各组(没有抽选给空列)。
@@ -770,7 +772,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       none: DASH,
       lang: x.lang,
       key,
-      name: drawGroupNameOf({ lang: x.lang, draw: head }),
+      name: head.stream,
       tip: TEXT_NONE,
       date: head.drawDate,
       score: head.score,
@@ -799,19 +801,6 @@ function scoredHeadOf(draws: PnpDraw[]): PnpDraw | null {
     return null
   }
   return first
-}
-
-/**
- * 组名:中文界面用通道中文名(没有才退官方英文名),其余界面用官方英文名。
- *
- * @param x 界面语言与组头那一轮。
- * @returns 组名。
- */
-function drawGroupNameOf(x: DrawGroupNameIn): string {
-  if (x.lang === LANG_ZH && x.draw.streamZh !== TEXT_NONE) {
-    return x.draw.streamZh
-  }
-  return x.draw.stream
 }
 
 /**

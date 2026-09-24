@@ -2487,21 +2487,6 @@ export type CmpGroupIn = {
 }
 
 /**
- * drawGroupNameOf 的入参。
- */
-export type DrawGroupNameIn = {
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
-
-  /**
-   * 组头那一轮。
-   */
-  draw: PnpDraw
-}
-
-/**
  * pnpDrawGroupsOf 的入参。
  */
 export type PnpDrawGroupsOfIn = {
@@ -2511,7 +2496,7 @@ export type PnpDrawGroupsOfIn = {
   t: TFn
 
   /**
-   * 界面语言(组名:中文界面用通道中文名,其余用官方英文名)。
+   * 界面语言(展开后各轮的中文灰注只在中文界面出)。
    */
   lang: PnpLang
 
