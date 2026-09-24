@@ -335,11 +335,6 @@ export const KIND = {
   text: 'text',
 
   /**
-   * 具名紧缺通道徽章。
-   */
-  stream: 'stream',
-
-  /**
    * Pro 锁位。
    */
   lock: 'lock',

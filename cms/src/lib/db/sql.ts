@@ -1790,10 +1790,12 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
 
 /**
  * 首屏维度表·抽选 200 条(numeric 列回来是字符串,见段注红线)。
+ * 2026-09-24 200 → 400:mart 已按省封顶(普通省 12、NB / MB 48、联邦每类 12,上限约 290 行),
+ * NB 抽选按官方四组读回历史后全表 186 行、余量只剩 14 —— 超了截掉的是最旧的轮次,弹框里悄悄少数据。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
        score, scale, invitations, note, label, url, fetched
-     FROM pnp_draws ORDER BY draw_date DESC, id LIMIT 200`
+     FROM pnp_draws ORDER BY draw_date DESC, id LIMIT 400`
 
 /**
  * 首屏维度表·EE 类别。

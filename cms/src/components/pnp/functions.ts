@@ -22,7 +22,7 @@ import {
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
-  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM,
+  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM, NAMED_DRAW_STREAMS,
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
@@ -742,19 +742,28 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
 /**
  * 本岗 PNP 格写的通用通道在本省抽选卡里对应哪一组(2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」)。
  * 格子写的是具名清单通道或不可提名时不高亮(具名清单与抽选组的对照要等数据层把 rule_streams 对上号)。
+ * 2026-09-24 改名 drawHitStreamsOf(原 genDrawStreamOf)、改回多组:具名清单通道按 NAMED_DRAW_STREAMS 对组
+ * (Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」),对不上的照旧不高亮。
  *
  * @param job 本岗。
- * @returns 抽选行 stream 原值;''=不高亮。
+ * @returns 抽选行 stream 原值的清单;空列 = 不高亮。
  */
-export function genDrawStreamOf(job: PnpJob): string {
-  if (job.pnpEligible === false || job.pnpStream !== TEXT_NONE) {
-    return TEXT_NONE
+export function drawHitStreamsOf(job: PnpJob): string[] {
+  if (job.pnpStream !== TEXT_NONE) {
+    const named = NAMED_DRAW_STREAMS[job.pnpStream]
+    if (named == null) {
+      return []
+    }
+    return named
+  }
+  if (job.pnpEligible === false) {
+    return []
   }
   const s = GEN_DRAW_STREAM[job.province]
   if (s == null) {
-    return TEXT_NONE
+    return []
   }
-  return s
+  return [s]
 }
 
 /**
@@ -766,7 +775,7 @@ export function genDrawStreamOf(job: PnpJob): string {
  * 中文名留在展开后各轮的灰注里。
  * 同日又改:「这种中文灰字翻译只显示一个就行了吧」→ 中文名只在组头名字下灰字出一次,各轮不再逐行重复;
  * 「这个没有分数需要显示横线吧」→ 没公布分的组头改写那一轮发了多少份邀请,邀请数也没有就空着。
- * 同日「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格写的通用通道对应的那组(genDrawStreamOf)琥珀高亮、排最前。
+ * 同日「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格写的通道对应的组(drawHitStreamsOf)琥珀高亮、排最前。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的那一组。
  * @returns 各组(没有抽选给空列)。
@@ -803,7 +812,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       score: head.score,
       draws: arr,
       dim: false,
-      hit: x.hitStream !== TEXT_NONE && key === x.hitStream,
+      hit: x.hitStreams.includes(key),
     }))
   }
   groups.sort(byGroupHitDateDesc)

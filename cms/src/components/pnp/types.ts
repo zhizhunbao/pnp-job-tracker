@@ -2576,9 +2576,9 @@ export type PnpDrawGroupsOfIn = {
   draws: PnpDraw[]
 
   /**
-   * 本岗对应的那一组(抽选行 stream 原值);''=不高亮。
+   * 本岗对应的组(抽选行 stream 原值);空列 = 不高亮。
    */
-  hitStream: string
+  hitStreams: string[]
 }
 
 /**
@@ -2606,9 +2606,9 @@ export type PnpDrawGroupsIn = {
   draws: PnpDraw[]
 
   /**
-   * 本岗对应的那一组(抽选行 stream 原值);''=不高亮。
+   * 本岗对应的组(抽选行 stream 原值);空列 = 不高亮。
    */
-  hitStream: string
+  hitStreams: string[]
 
   /**
    * 展开着的组(通道名)。

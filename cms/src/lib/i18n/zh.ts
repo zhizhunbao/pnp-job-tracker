@@ -518,7 +518,7 @@ export const jobsZh = {
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
  
-  'stream.abTech': 'AB 科技', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
+  'stream.abTech': 'AB 科技', 'stream.abHealth': 'AB 医疗', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
   'stream.nbAipExcl': 'NB AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',

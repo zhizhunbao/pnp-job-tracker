@@ -21,9 +21,9 @@ import css from './pnp.module.css'
  * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组与开合手柄工厂。
  * @returns 抽选卡;本省没有抽选给 null。
  */
-export function PnpDrawGroups({ t, lang, province, draws, hitStream, open, toggleOf }: PnpDrawGroupsIn) {
+export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf }: PnpDrawGroupsIn) {
   const groups = []
-  for (const g of pnpDrawGroupsOf({ t, lang, province, draws, hitStream })) {
+  for (const g of pnpDrawGroupsOf({ t, lang, province, draws, hitStreams })) {
     groups.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
   }
   if (groups.length === 0) {

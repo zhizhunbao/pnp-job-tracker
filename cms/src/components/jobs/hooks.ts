@@ -1165,6 +1165,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     blocked,
     cellCtx: {
       t,
+      tEn: makeT(LANG_EN),
       plan,
       blocked,
       eeCats: data.dims.eeCategories,

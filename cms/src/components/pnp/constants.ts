@@ -173,6 +173,49 @@ export const GEN_DRAW_STREAM: Record<string, string> = {
 }
 
 /**
+ * PNP 格写具名清单通道时(jobs 的 pnpStream,数据层中文标签),本省抽选卡里对应的组(抽选行 stream 原值):
+ * 点进来琥珀高亮、排最前。2026-09-24 Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」引出 —— 阿省医护专项清单进库,
+ * 同批把与抽选组一一对得上的具名清单登记进来;SK / MB / NS / PE 的具名清单对不上抽选组,不登记 = 不高亮。
+ */
+export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
+  /**
+   * 阿省医护专项(Dedicated Health Care Pathway,EE 与非 EE 两版分开抽;另一组 Priority Sectors (Health Care)
+   * 是 EE 的医疗行业定向,范围比 9 个受监管职业宽,不算)。
+   */
+  'AB 医疗': ['Dedicated Health Care Pathway – Express Entry', 'Dedicated Health Care Pathway – non-Express Entry'],
+
+  /**
+   * 阿省加速科技通道。
+   */
+  'AB 科技': ['Alberta Express Entry Stream – Accelerated Tech Pathway'],
+
+  /**
+   * BC 医疗定向。
+   */
+  'BC 医疗': ['Care: Health'],
+
+  /**
+   * BC 幼教定向。
+   */
+  'BC 幼教': ['Care: Childcare'],
+
+  /**
+   * BC 兽医定向。
+   */
+  'BC 兽医': ['Care: Veterinary Care'],
+
+  /**
+   * BC 建筑技工定向。
+   */
+  'BC 建筑技工': ['Build: Construction Trades'],
+
+  /**
+   * BC 法语教师定向。
+   */
+  'BC 法语教师': ['Care: Education'],
+}
+
+/**
  * 官方明说不按分数抽选的省(抽选卡标题下出一行灰字注明;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
  * NB 出处 gnb.ca 的 invitation-selection-rounds 页原句「Invitations and selections are based on provincial labour
  * market needs, available allocation and other priorities determined by the Government of New Brunswick.」

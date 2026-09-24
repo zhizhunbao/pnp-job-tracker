@@ -481,7 +481,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
  
-  'stream.abTech': 'AB Tech', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
+  'stream.abTech': 'AB Tech', 'stream.abHealth': 'AB Health', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.aaipExcl': 'AAIP ineligible list',
   'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.peIndemand': 'PE in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
   'stream.nbAipExcl': 'NB AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',

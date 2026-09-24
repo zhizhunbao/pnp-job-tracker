@@ -1845,7 +1845,7 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
  * (第 9 轮 #24,照大类 cat.* 先例;数据层不动,ETL 新增 label 时这里补一行即可)。
  */
 export const STREAM_L10N: Record<string, string> = {
-  'AB 科技': 'stream.abTech', 'SK 医疗': 'stream.skHealth', 'SK 科技': 'stream.skTech',
+  'AB 科技': 'stream.abTech', 'AB 医疗': 'stream.abHealth', 'SK 医疗': 'stream.skHealth', 'SK 科技': 'stream.skTech',
   'SK 农业': 'stream.skAgri', 'NS 紧缺空缺': 'stream.nsCritical', 'NS 毕业生': 'stream.nsGrad',
   'AAIP 不符合清单': 'stream.aaipExcl',
   'BC 医疗': 'stream.bcHealth', 'BC 幼教': 'stream.bcChildcare', 'BC 法语教师': 'stream.bcEdu',

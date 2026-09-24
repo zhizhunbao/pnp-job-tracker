@@ -23,7 +23,7 @@
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { genDrawStreamOf, hasProvDraws, reformOf, shownStreamsOf, streamKeyOf } from './functions'
+import { drawHitStreamsOf, hasProvDraws, reformOf, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
 import { PnpDrawGroups } from './pnpdrawgroups'
 import { StreamCard } from './streamcard'
@@ -55,7 +55,7 @@ export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = t
   return (
     <>
       {showDraws && (
-        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStream={genDrawStreamOf(job)}
+        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={drawHitStreamsOf(job)}
           open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}
       {cards}

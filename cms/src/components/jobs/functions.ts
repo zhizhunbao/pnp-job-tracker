@@ -48,7 +48,8 @@ import {
   JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
   JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED,
   KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO, LANG_ZH, LAYER_CO, LAYER_JOB,
+  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO, LANG_ZH, LAYER_CO,
+  LAYER_JOB,
   LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
   MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
   MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
@@ -87,7 +88,7 @@ import type {
   MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
   MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
-  PnpGenericIn,
+  PnpGenericCellIn, PnpGenericIn, PnpNamedCellIn,
   OccOptsIn, OccSlotIn,
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
   PopupToCoIn, PrefixLabelIn,
@@ -605,6 +606,7 @@ function blankView(x: Partial<CellView>): CellView {
   const base: CellView = {
     kind: KIND.text,
     text: DASH,
+    sub: TEXT_NONE,
     tone: TONE.plain,
     title: TEXT_NONE,
     href: TEXT_NONE,
@@ -934,10 +936,10 @@ function pnpCellOf(x: CellIn): CellView {
     return blankView({ text: x.cx.t('cell.pnpQc'), tone: TONE.purpleSm })
   }
   if (hasText(x.j.pnpStream)) {
-    return blankView({ kind: KIND.stream, text: streamDisplay({ t: x.cx.t, label: x.j.pnpStream }) })
+    return pnpNamedCellOf({ cx: x.cx, label: x.j.pnpStream })
   }
   if (x.j.pnpEligible === true) {
-    return blankView({ text: pnpGenericOf({ t: x.cx.t, province: x.j.province }), tone: TONE.moneyMd })
+    return pnpGenericCellOf({ cx: x.cx, province: x.j.province })
   }
   if (x.cx.blocked.pnp.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)) {
     return blankView({ text: x.cx.t('cell.pnpExcl'), tone: TONE.redSm })
@@ -946,8 +948,45 @@ function pnpCellOf(x: CellIn): CellView {
 }
 
 /**
+ * 具名通道那一格(2026-09-24 同「可提名」格改两行,Frank「这个要不都改成上面英文,下面中文灰字」):
+ * 上行英文短名、下行界面语言译名灰字(英文界面不出第二行)。
+ * 同日 Frank「这种胶囊样式都去掉吧。都改成一致的」:琥珀徽章撤,与「可提名」格同一绿字色档。
+ *
+ * @param x 格子上下文与数据层的通道标签。
+ * @returns 展示行。
+ */
+function pnpNamedCellOf(x: PnpNamedCellIn): CellView {
+  const view = blankView({ text: streamDisplay({ t: x.cx.tEn, label: x.label }), tone: TONE.moneyMd })
+  if (x.cx.lang !== LANG_EN) {
+    view.sub = streamDisplay({ t: x.cx.t, label: x.label })
+  }
+  return view
+}
+
+/**
+ * 「可提名」那一格(2026-09-24 Frank「这个要不都改成上面英文,下面中文灰字」):九省上行写通用通道的英文官方名、
+ * 下行界面语言译名灰字(英文界面不出第二行;中文「技术工人」直译易误读成手艺人,Frank「接待员和行政助理也属于技术工人?」),
+ * 其余照旧一行「{省} 可提名」。手机卡片的胶囊仍走 pnpGenericOf 一行。
+ *
+ * @param x 格子上下文与本岗省码。
+ * @returns 展示行。
+ */
+function pnpGenericCellOf(x: PnpGenericCellIn): CellView {
+  if (PNP_GENERIC_PROVS.has(x.province) === false) {
+    return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.province }), tone: TONE.moneyMd })
+  }
+  const key = K_PNP_GEN_HEAD + x.province
+  const view = blankView({ text: x.cx.tEn(key), tone: TONE.moneyMd })
+  if (x.cx.lang !== LANG_EN) {
+    view.sub = x.cx.t(key)
+  }
+  return view
+}
+
+/**
  * 「可提名」那一档写哪条通道(2026-09-23 Frank「那这个是不是最好显示是哪个通道?」「改 全改」):九省写该省通用雇主担保通道的
  * 名字(见 PNP_GENERIC_PROVS),其余照旧「{省} 可提名」。格子与手机卡片共用这一处。
+ * 2026-09-24 起格子改走 pnpGenericCellOf(两行),这里只剩手机卡片的胶囊。
  *
  * @param x 取词函数与本岗省码。
  * @returns 格子文字。

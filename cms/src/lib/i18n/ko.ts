@@ -478,7 +478,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
  
-  'stream.abTech': 'AB 테크', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
+  'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.peIndemand': 'PE 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
   'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',

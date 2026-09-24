@@ -164,7 +164,7 @@ export type CellTone =
 /**
  * 这一格由哪个哑组件渲。
  */
-export type CellKind = 'text' | 'stream' | 'lock' | 'actions'
+export type CellKind = 'text' | 'lock' | 'actions'
 
 /**
  * 单元格展示行:每一格都已经算成文本 + 色档 + 链接,单元格组件只读它,不再碰库行。
@@ -179,6 +179,11 @@ export type CellView = {
    * 显示文本(lock 档给假占位数,actions 档不用)。
    */
   text: string
+
+  /**
+   * 第二行灰字;''=不出(2026-09-24 PNP 通道格:上行英文官方名、下行界面语言译名)。
+   */
+  sub: string
 
   /**
    * 色档。
@@ -220,6 +225,11 @@ export type CellCtx = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 英文取词函数(PNP 通道格上行写英文官方名,界面语言不是英文也要)。
+   */
+  tEn: TFn
 
   /**
    * 分层态(Pro 列打码看它)。
@@ -1238,16 +1248,6 @@ export type CellTextIn = {
    * 展示行。
    */
   view: CellView
-}
-
-/**
- * StreamCell(具名紧缺通道徽章)的 props。
- */
-export type StreamCellIn = {
-  /**
-   * 通道名。
-   */
-  text: string
 }
 
 /**
@@ -5436,6 +5436,36 @@ export type HeadCellView = {
    * 点表头换排序。
    */
   onSort: ClickFn
+}
+
+/**
+ * pnpNamedCellOf 的入参。
+ */
+export type PnpNamedCellIn = {
+  /**
+   * 格子上下文(两个取词函数与界面语言)。
+   */
+  cx: CellCtx
+
+  /**
+   * 数据层的具名通道标签(如「AB 医疗」,STREAM_L10N 的键)。
+   */
+  label: string
+}
+
+/**
+ * pnpGenericCellOf 的入参。
+ */
+export type PnpGenericCellIn = {
+  /**
+   * 格子上下文(两个取词函数与界面语言)。
+   */
+  cx: CellCtx
+
+  /**
+   * 本岗省码。
+   */
+  province: string
 }
 
 /**
