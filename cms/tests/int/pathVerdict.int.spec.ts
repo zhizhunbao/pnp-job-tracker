@@ -124,7 +124,10 @@ describe('mart 实况', () => {
     expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
     // 2026-09-11 630 → 634:省清单周更净增 4(mart 不进 git 无旧快照可逐行对;当日分布
     // SK 257 / MB 158 / AB 78 / BC 72 / NB 43 / NS 18 / PE 8,下次漂移按省对这里)。
-    expect(data.occupations).toHaveLength(634)
+    // 2026-09-24 634 → 743:九省通道审计补表 —— AB +32(医护专项 11、警务 3、旅游酒店 18)、BC +31(医疗拆成
+    // 定向 31 与卫生局 46)、NB +25(优先职业 33、AIP 不受理 6 → 8、AIP 餐饮表作废 −10)、NS +20(建筑子条件)、
+    // PE +1(AIP 73300);当日分布 SK 257 / MB 158 / AB 110 / BC 103 / NB 68 / NS 38 / PE 9。
+    expect(data.occupations).toHaveLength(743)
     // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
     // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
     const byProvince: Record<string, number> = {}
