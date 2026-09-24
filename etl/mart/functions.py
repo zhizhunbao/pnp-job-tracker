@@ -930,7 +930,9 @@ def score(x: ScoreIn) -> int:
 
 
 def collect_ats_jobs() -> list:
-    """ATS 公司档(processed/<region>/companies/<slug>/)里的岗 → 待评分清单。"""
+    """ATS 公司档(processed/<region>/companies/<slug>/)里的岗 → 待评分清单。
+    2026-09-24 省份先读地点清洗写回的 province 格、读不到才猜(与 to_ats_job_fields 同口径):原先只拿地点文字猜,
+    「Canada - Ottawa - …」认不出省 → 09-23「没有省的岗不判」把 46 条 ON 的 TEER 0-3 岗判成不可提名(九省通道审计查出)。"""
     out: list = []
     if not IN_ATS_COMPANIES.exists():
         return out
@@ -944,7 +946,7 @@ def collect_ats_jobs() -> list:
         for j in read_table(folder / JOBS_FILE).get(K_JOBS, []):
             out.append(CollectedJob(ext=ats_ext_of(AtsExtIn(job=j, folder=folder.name)),
                                     title=j.get(K_TITLE, ""), agency=ag,
-                                    prov=guess_prov(j.get(K_LOCATION, "")), hint=""))
+                                    prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint=""))
     return out
 
 
