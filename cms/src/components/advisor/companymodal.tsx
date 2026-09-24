@@ -15,7 +15,7 @@
 import { CompanyPanel } from '@/components/companies/companypanel'
 import { makeT } from '@/lib/i18n'
 import { AdvisorHead } from './advisorhead'
-import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN } from './constants'
+import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN, TEXT_NONE } from './constants'
 import { FloatPanel } from './floatpanel'
 import { companyPageOf } from './functions'
 import { useCompanyModal, useFloatPanel } from './hooks'
@@ -32,7 +32,7 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
   const m = useCompanyModal()
   const panel = useFloatPanel({ prefKey: ADV_PREF, defW: ADV_PANEL_W, defH: ADV_PANEL_H })
   const head = (
-    <AdvisorHead t={t} group={GROUP_COMPANY}
+    <AdvisorHead t={t} group={GROUP_COMPANY} province={TEXT_NONE}
       title={name}
       sub={m.alias}
       freeLeft={null}

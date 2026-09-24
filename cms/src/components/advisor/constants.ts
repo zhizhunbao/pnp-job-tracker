@@ -919,6 +919,16 @@ export const GROUP_LOCATION = 'location'
 export const GROUP_COMPANY = 'company'
 
 /**
+ * 省提名分组(页眉小标带本岗的省;2026-09-23)。
+ */
+export const GROUP_PNP = 'pnp'
+
+/**
+ * 省名词条的键头(`prov.` + 省码 → 界面语言省全名)。
+ */
+export const K_PROV_HEAD = 'prov.'
+
+/**
  * 事实块按**分组**铺开的明表(E8-10 S6,2026-07-21)。
  * 收编前:点「通道」列只渲通道一条 —— 弹框标题写着「移民」,里面却只有一个字段,
  * 用户还得退出去再点 PNP、再点 EE、再点 AIP,每点一次烧一次额度。这正是 24 个弹框的病根。

@@ -31,6 +31,7 @@ import {
   FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
   FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE,
   FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
+  GROUP_PNP, K_GROUP_HEAD, K_PROV_HEAD,
   GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
   K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
   K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST,
@@ -54,7 +55,7 @@ import type {
   CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   DiffCellFact,
   DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
-  FieldPageIn, FirstTextIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
+  FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
   IdRowFact,
   IdRowsIn, OccNameOfIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
   LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
@@ -217,6 +218,20 @@ export function firstTextOf(x: FirstTextIn): string {
     }
   }
   return DASH
+}
+
+/**
+ * 弹框页眉的灰色小标(分组名)。2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组带上本岗的省 ——
+ * 「新不伦瑞克省提名(PNP)」;没有省、魁省(不参加 PNP)照旧写分组名。
+ *
+ * @param x 取词函数、分组与本岗省码。
+ * @returns 小标文字。
+ */
+export function kickerOf(x: KickerIn): string {
+  if (x.group === GROUP_PNP && x.province !== TEXT_NONE && x.province !== PROV_QC) {
+    return x.t('grp.pnpProv', { p: x.t(K_PROV_HEAD + x.province) })
+  }
+  return x.t(K_GROUP_HEAD + x.group)
 }
 
 /**

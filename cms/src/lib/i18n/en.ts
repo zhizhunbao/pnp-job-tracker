@@ -678,7 +678,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
+  'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
   'loc.vol': 'Provincial immigration volume', 'loc.volTag': 'IRCC official data',
   'loc.study': 'Study permit holders', 'loc.tfwp': 'Employer-specific work permits', 'loc.imp': 'Open & exempt work permits', 'loc.impNote': 'IMP, incl. PGWP',
   'loc.asOf': '({y} year-end stock)', 'loc.alloc': 'PNP annual allocation', 'loc.allocBoth': '(2026; 2025: {b})', 'loc.allocY26': '(2026)', 'loc.allocY25': '(2025)',

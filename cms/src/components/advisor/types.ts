@@ -1621,6 +1621,11 @@ export type AdvisorHeadBlockIn = {
   group: string
 
   /**
+   * 本岗省码(省提名组的小标带上它;公司弹框与没有省的岗给空串)。
+   */
+  province: string
+
+  /**
    * 大标题。
    */
   title: string
@@ -3154,6 +3159,26 @@ export type ZhLabelIn = {
    * 对照开着没有。
    */
   show: boolean
+}
+
+/**
+ * kickerOf 的入参。
+ */
+export type KickerIn = {
+  /**
+   * 取词函数。
+   */
+  t: AdvisorTFn
+
+  /**
+   * 分组。
+   */
+  group: string
+
+  /**
+   * 本岗省码;''=没有。
+   */
+  province: string
 }
 
 /**

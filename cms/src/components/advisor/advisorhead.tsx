@@ -11,14 +11,15 @@
  * #189 公司组额度注已随 E8-11 B1 退役:公司数据走 `/api/jobs/company` 免额度,没烧池无可显。
  * #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复。
  * 2026-08-28 换装批自 Advisor.tsx 的页眉段提出成件。
+ * 2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组的小标带上本岗的省(kickerOf)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { cssOf } from '@/components/css'
 import { IconCompass } from '@/components/icons'
-import { AI_ADVISOR_ON, GROUP_IMMIGRATION, K_GROUP_HEAD, TEXT_NONE } from './constants'
-import { makeActsDown } from './functions'
+import { AI_ADVISOR_ON, GROUP_IMMIGRATION, TEXT_NONE } from './constants'
+import { kickerOf, makeActsDown } from './functions'
 import type { AdvisorHeadBlockIn } from './types'
 import css from './advisor.module.css'
 
@@ -28,19 +29,20 @@ import css from './advisor.module.css'
  * 2026-09-16 Frank「公司的也对照改一下」:照 ActHead 同形 —— 译名拆成独占一整行的译名行,右端挂切换控件(ctl 槽,
  * 公司组是中文对照开关),按下不起拖动。
  *
- * @param props 取词函数、分组、标题、副标、剩余次数与切换控件。
+ * @param props 取词函数、分组、本岗省码、标题、副标、剩余次数与切换控件。
  * @returns 页眉左块 + 译名行。
  */
-export function AdvisorHead({ t, group, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
+export function AdvisorHead({ t, group, province, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
   const withAi = group === GROUP_IMMIGRATION && AI_ADVISOR_ON
+  const kicker = kickerOf({ t, group, province })
   return (
     <>
       <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
         <div className={cssOf(css.kicker)}>
-          {withAi === false && t(K_GROUP_HEAD + group)}
+          {withAi === false && kicker}
           {withAi && <IconCompass />}
           {withAi && t('advisor.tag')}
-          {withAi && <span className={cssOf(css.kickerSub)}>{t(K_GROUP_HEAD + group)}</span>}
+          {withAi && <span className={cssOf(css.kickerSub)}>{kicker}</span>}
           {withAi && freeLeft != null && (
             <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>
           )}

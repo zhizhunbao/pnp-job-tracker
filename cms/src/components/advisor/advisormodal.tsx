@@ -70,7 +70,7 @@ export function AdvisorModal({
     showZh: m.showZh,
   }
   const head = (
-    <AdvisorHead t={t} group={group}
+    <AdvisorHead t={t} group={group} province={job.province}
       title={modalTitleOf({ group, job, title })}
       sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft}
