@@ -15,6 +15,9 @@
  * 照旧变宽。07-17「不要有空白」针对的是封顶 150 时短值剩的大段空白,占位宽度内的那一两字余量不算。
  * 2026-09-23 Frank「这个下拉跑偏了」(职位板「职业」下拉:职业名比「全部职业」长,弹出列表按全文排、比壳宽,右边伸出一截):
  * 加 fitLongest —— 镜像再叠上全部选项,壳宽 = 最宽的那个(仍封顶),弹出列表与壳对齐;不传照旧按当前值量。
+ * 同日 Frank「这个默认太长了吧」(「全部职业」壳 155px,同排三颗 99px):fitLongest 撤回 —— 职业名已全部补成 8 字以内的
+ * 中文短名,展开列表比壳宽出的那截与省份下拉(「纽芬兰与拉布拉多省」)同量级;原生 select 的弹出列表宽度由浏览器定,
+ * 壳宽与「列表不伸出」只能二选一,取壳宽与同排一致。
  *
  * @author Frank
  * @time 2026-08-24 10:00:00
@@ -34,7 +37,7 @@ import css from './select.module.css'
  * @returns 下拉。
  */
 export function Select({
-  value, onChange, opts, all, labelOf, size = BOX_SIZE_DEFAULT, tap = false, fitLongest = false,
+  value, onChange, opts, all, labelOf, size = BOX_SIZE_DEFAULT, tap = false,
 }: SelectIn) {
   let labelIn = null
   if (labelOf != null) {
@@ -54,19 +57,14 @@ export function Select({
     selCls = `${selCls} ${css.tap}`
   }
   const opels = []
-  const widest = []
   for (const o of list) {
     opels.push(<option key={o} value={o}>{optionLabelOf({ labelOf: labelIn, o })}</option>)
-    if (fitLongest) {
-      widest.push(<span key={o} className={css.measureLine}>{optionLabelOf({ labelOf: labelIn, o })}</span>)
-    }
   }
   return (
     <span className={boxCls}>
       <span aria-hidden className={`${base} ${css.measure}`}>
         <span className={css.measureLine}>{all}</span>
         <span className={css.measureLine}>{shown}</span>
-        {widest}
       </span>
       <select value={value} onChange={makeSelectChange(onChange)} className={selCls}>
         <option value="">{all}</option>

@@ -74,8 +74,7 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         opts={f.opts.occ}
         all={b.t('all.occ')}
         labelOf={f.occName}
-        size={SELECT_LG}
-        fitLongest />
+        size={SELECT_LG} />
       <Button kind={BTN_SECONDARY} onClick={f.onFold}
         className={foldBtnClsOf({ fold: f.fold, foldActive: f.foldActive })}>
         {b.t('filter.more')}
