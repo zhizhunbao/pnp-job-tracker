@@ -13,15 +13,18 @@
  * 2026-08-28 换装批自 Pnp.tsx 整体重写成小写件形制。
  * 2026-09-23 Frank「pnp 的这部分删了吧」:顶上的判定卡(「PNP · 走不了 / 能走」)与判定区入口卡(「能拿身份吗 ·
  * 一键三合一判定」)撤,弹框从雇主线开始。
+ * 同日 Frank「这个删掉」:「本省最新公告」卡撤(地点弹框的省份卡里照旧有)。
+ * 同日「这个要不要分类」「和 EE 那个一样」:本省抽选卡换成分组形(PnpDrawGroups,照 EE 分数线卡);
+ * 「安省的这部分删了吧。安省这部分要重新设计一下」:改制省(安省)这里不出抽选 / 现行规则卡,等重新设计;
+ * 「这个默认展开吧」:通道职业清单默认展开。地点弹框的省份卡仍用 PnpDrawsBlock(最近 1 / 3 轮),不动。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import { SRC_PNP } from './constants'
-import { hasProvDraws, hasProvNews, shownStreamsOf, streamKeyOf } from './functions'
+import { hasProvDraws, reformOf, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
-import { NewsLatestBlock } from './newslatestblock'
-import { PnpDrawsBlock } from './pnpdrawsblock'
+import { PnpDrawGroups } from './pnpdrawgroups'
 import { SponsorLeadCard } from './sponsorleadcard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
@@ -33,8 +36,9 @@ import css from './pnp.module.css'
  * @param props 本岗、界面语言、清单、抽选、动态与两个显示开关(逐格注释见 PnpListSectionIn)。
  * @returns 一组卡片。
  */
-export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], showZh = true }: PnpListSectionIn) {
+export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = true }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc })
+  const showDraws = hasProvDraws({ job, draws }) && reformOf({ province: job.province }) == null
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc })) {
     const key = streamKeyOf(s)
@@ -45,18 +49,16 @@ export function PnpListSection({ job, lang, occ, draws, news, nocDesc = [], show
       stream={s}
       noc={job.noc}
       nocRows={p.nocRows}
-      open={p.open.has(key)}
+      open={p.closed.has(key) === false}
       onToggle={p.toggleOf(key)}
       matchRef={p.matchRef} />)
   }
   return (
     <>
       <SponsorLeadCard job={job} t={p.t} src={SRC_PNP} />
-      {hasProvDraws({ job, draws }) && (
-        <div className={css.card}><PnpDrawsBlock province={job.province} lang={lang} draws={draws} /></div>
-      )}
-      {hasProvNews({ job, news }) && (
-        <div className={css.card}><NewsLatestBlock province={job.province} lang={lang} news={news} /></div>
+      {showDraws && (
+        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} open={p.drawOpen}
+          toggleOf={p.drawToggleOf} />
       )}
       {cards}
     </>

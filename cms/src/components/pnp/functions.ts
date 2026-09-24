@@ -37,9 +37,9 @@ import type {
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
   CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn,
-  HistAtIn, PnpEeCatOcc,
+  DrawGroupNameIn, HistAtIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
   EeHitIn, FedLabelIn,
-  FoldLabelIn, HasProvDrawsIn, HasProvNewsIn,
+  FoldLabelIn, HasProvDrawsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
   LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
   MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn, MmTeerCellIn, MmTone, NewsRowSpec, NewsRowsIn,
@@ -405,24 +405,6 @@ export function hasProvDraws(x: HasProvDrawsIn): boolean {
 }
 
 /**
- * 本省有没有公告可列(E12-06;QC 也显 —— MIFI 部委新闻,资格口径由 /news 声明)。
- *
- * @param x 本岗与全部动态。
- * @returns 出不出公告卡。
- */
-export function hasProvNews(x: HasProvNewsIn): boolean {
-  if (x.job.province === TEXT_NONE) {
-    return false
-  }
-  for (const n of x.news) {
-    if (n.region === x.job.province) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
  * 要展开哪几张清单。#125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;
  * 被排除 → 只展示排除清单;都没有 → 清单整体不渲(原全量铺浏览语境退役)——
  * 判定行已说清结论,不相干的清单只是噪音。
@@ -709,6 +691,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     const draws = histAtOf({ hist, key: c.key })
     groups.push(cmpGroupOf({
       t: x.t,
+      none: x.t('eecmp.none'),
       lang: x.lang,
       key: c.key,
       name,
@@ -724,6 +707,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
   }
   groups.push(cmpGroupOf({
     t: x.t,
+    none: x.t('eecmp.none'),
     lang: x.lang,
     key: FED_CEC,
     name: cecName,
@@ -738,6 +722,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
   if (frLast != null) {
     groups.push(cmpGroupOf({
       t: x.t,
+      none: x.t('eecmp.none'),
       lang: x.lang,
       key: FED_FRENCH,
       name: eeKeyDisplay({ t: x.t, key: FED_FRENCH }),
@@ -749,6 +734,102 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     }))
   }
   return { groups, lines }
+}
+
+/**
+ * 省提名弹框的本省抽选分组(2026-09-23 Frank「这个要不要分类」「和 EE 那个一样」「这样我就知道可提名的和在紧缺名单的分差多少」):
+ * 按通道(官方轮次名)分组,组头 = 最近一轮带分的那轮(同日有一轮没公布分的不拿来当组头),点开列全部轮次,组按最近一轮日期降序
+ * —— 各通道分数上下对齐,定向轮与不限职业的轮一眼可比。组件与组形照抄 EE 分数线卡(cmpGroupOf / EeCmpGroupView)。
+ * 本岗对应哪一轮、差多少分要等数据层把「抽选通道 ↔ 职业清单」对上号(抽选行的 rule_streams 现在全空),这一版只分组不标本岗。
+ *
+ * @param x 取词函数、界面语言、省码与全部抽选行。
+ * @returns 各组(没有抽选给空列)。
+ */
+export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
+  const hist: DrawHist = new Map()
+  for (const d of x.draws) {
+    if (d.province !== x.province || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE) {
+      continue
+    }
+    const arr = hist.get(d.stream)
+    if (arr == null) {
+      hist.set(d.stream, [d])
+    } else {
+      arr.push(d)
+    }
+  }
+  const groups: EeCmpGroup[] = []
+  for (const [key, arr] of hist) {
+    arr.sort(byDrawDateDesc)
+    const head = scoredHeadOf(arr)
+    if (head == null) {
+      continue
+    }
+    groups.push(cmpGroupOf({
+      t: x.t,
+      none: DASH,
+      lang: x.lang,
+      key,
+      name: drawGroupNameOf({ lang: x.lang, draw: head }),
+      tip: TEXT_NONE,
+      date: head.drawDate,
+      score: head.score,
+      draws: arr,
+      dim: false,
+    }))
+  }
+  groups.sort(byGroupDateDesc)
+  return groups
+}
+
+/**
+ * 一组的组头那一轮:最近一轮带分的(同日两轮、一轮没公布分时不拿它当组头);都没分给最近一轮。
+ *
+ * @param draws 这一组的历次抽选(降序)。
+ * @returns 组头那一轮;空组给 null。
+ */
+function scoredHeadOf(draws: PnpDraw[]): PnpDraw | null {
+  for (const d of draws) {
+    if (d.score != null) {
+      return d
+    }
+  }
+  const first = draws[0]
+  if (first == null) {
+    return null
+  }
+  return first
+}
+
+/**
+ * 组名:中文界面用通道中文名(没有才退官方英文名),其余界面用官方英文名。
+ *
+ * @param x 界面语言与组头那一轮。
+ * @returns 组名。
+ */
+function drawGroupNameOf(x: DrawGroupNameIn): string {
+  if (x.lang === LANG_ZH && x.draw.streamZh !== TEXT_NONE) {
+    return x.draw.streamZh
+  }
+  return x.draw.stream
+}
+
+/**
+ * 组按最近一轮日期降序。
+ *
+ * @param a 前一组。
+ * @param b 后一组。
+ * @returns 排序位次。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byGroupDateDesc(a: EeCmpGroup, b: EeCmpGroup): number {
+  if (a.date < b.date) {
+    return 1
+  }
+  if (a.date > b.date) {
+    return -1
+  }
+  return 0
 }
 
 /**
@@ -799,7 +880,7 @@ function histAtOf(x: HistAtIn): PnpDraw[] {
  * @returns 这一组。
  */
 function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
-  let score = x.t('eecmp.none')
+  let score = x.none
   if (x.score != null) {
     score = x.t('pnpdraws.min', { score: x.score })
   }

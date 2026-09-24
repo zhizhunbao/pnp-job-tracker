@@ -1189,11 +1189,6 @@ export type PnpListSectionIn = {
   draws: PnpDraw[]
 
   /**
-   * 全部动态。
-   */
-  news: PnpNewsSlim[]
-
-  /**
    * 档案语言分(调用方仍在传,本块**不读** —— E12-09 自评打分已迁到「移民路径」页,
    * 这一格随消费页换装批一起摘;先收下,免得调用点当场 tsc 红)。
    */
@@ -1545,14 +1540,24 @@ export type PnpListPanel = {
   match: PnpMatchOut
 
   /**
-   * 展开了的清单键。
+   * 收起了的清单键(2026-09-23 Frank「这个默认展开吧」:清单默认全展开,记的是收起的那些;此前记展开的)。
    */
-  open: Set<string>
+  closed: Set<string>
 
   /**
    * 折叠开关工厂。
    */
   toggleOf: ToggleOfFn
+
+  /**
+   * 本省抽选卡展开着的组(默认全收:组头一行就是最近一轮)。
+   */
+  drawOpen: Set<string>
+
+  /**
+   * 本省抽选卡组的开合手柄工厂。
+   */
+  drawToggleOf: ToggleOfFn
 }
 
 /**
@@ -2077,21 +2082,6 @@ export type HasProvDrawsIn = {
 }
 
 /**
- * hasProvNews 的入参。
- */
-export type HasProvNewsIn = {
-  /**
-   * 本岗。
-   */
-  job: PnpJob
-
-  /**
-   * 全部动态。
-   */
-  news: PnpNewsSlim[]
-}
-
-/**
  * tagClsOf 的入参。
  */
 export type TagClsIn = {
@@ -2451,6 +2441,11 @@ export type CmpGroupIn = {
   t: TFn
 
   /**
+   * 最低分缺席时组头写什么(EE:从没抽过写「暂无抽选」;省抽选:那轮没公布分写长横)。
+   */
+  none: string
+
+  /**
    * 界面语言。
    */
   lang: PnpLang
@@ -2489,6 +2484,81 @@ export type CmpGroupIn = {
    * 压不压暗。
    */
   dim: boolean
+}
+
+/**
+ * drawGroupNameOf 的入参。
+ */
+export type DrawGroupNameIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 组头那一轮。
+   */
+  draw: PnpDraw
+}
+
+/**
+ * pnpDrawGroupsOf 的入参。
+ */
+export type PnpDrawGroupsOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(组名:中文界面用通道中文名,其余用官方英文名)。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * PnpDrawGroups(省提名弹框的本省抽选卡)的 props。
+ */
+export type PnpDrawGroupsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 展开着的组(通道名)。
+   */
+  open: Set<string>
+
+  /**
+   * 组的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
 }
 
 /**

@@ -30,7 +30,8 @@ import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel 
 export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const t = makeT(x.lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [open, setOpen] = useState<Set<string>>(new Set())
+  const [closed, setClosed] = useState<Set<string>>(new Set())
+  const [drawOpen, setDrawOpen] = useState<Set<string>>(new Set())
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)
@@ -44,7 +45,16 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     scrollIntoHit({ ref: matchRef })
   }, [match.streams])
 
-  return { t, matchRef, nocRows, match, open, toggleOf: makeToggleOf({ setKeys: setOpen }) }
+  return {
+    t,
+    matchRef,
+    nocRows,
+    match,
+    closed,
+    toggleOf: makeToggleOf({ setKeys: setClosed }),
+    drawOpen,
+    drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
+  }
 }
 
 /**
