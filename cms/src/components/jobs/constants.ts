@@ -1821,16 +1821,6 @@ export const TARGET_P90 = 'p90'
 export const TARGET_MAX = 'max'
 
 /**
- * 列宽拖拽的鼠标按下事件名。
- */
-export const EV_MOUSE_MOVE = 'mousemove'
-
-/**
- * 列宽拖拽的鼠标松开事件名。
- */
-export const EV_MOUSE_UP = 'mouseup'
-
-/**
  * 点空白处关下拉/关面板用的按下事件名。
  */
 export const EV_MOUSE_DOWN = 'mousedown'
@@ -1871,11 +1861,6 @@ export const TABLE_SEL = 'table'
 export const TBODY_ROW_SEL = 'tbody tr'
 
 /**
- * 表头单元格选择器(拖拽时从竖线往上找)。
- */
-export const TH_SEL = 'th'
-
-/**
  * 量宽第一趟:整表按内容撑开(允许溢出)。
  */
 export const LAYOUT_AUTO = 'auto'
@@ -1899,16 +1884,6 @@ export const WIDTH_ZERO = '0'
  * 表格不溢出时的宽度(百分比,交给浏览器)。
  */
 export const WIDTH_FULL = '100%'
-
-/**
- * 拖列时全局光标。
- */
-export const CURSOR_COL_RESIZE = 'col-resize'
-
-/**
- * 拖完还原光标。
- */
-export const CURSOR_NONE = ''
 
 /**
  * 本视图默认排序列(#127 拍板:发布时间最新在前,旧 0-100 分不再参与任何排序)。

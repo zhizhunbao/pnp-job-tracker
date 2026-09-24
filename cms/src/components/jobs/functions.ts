@@ -12,6 +12,8 @@
  * 它们的调用点在**本批不许动的地方** —— 前两个在 components/advisor(本批只许改它的
  * import 行),第三个在 tests/int/colResize.int.spec.ts 的九条断言里。签名由外部消费者
  * 定死,收成 `XxxIn` 就要改那两处;等 advisor 换装批一起收。
+ * 2026-09-23 拖列整功能撤(Frank「拖动功能去掉吧」,线上拖了没反应):`resizeColWidths` 连同那份测试一并删,
+ * 特批只剩前两处;列宽的纯算法只剩分宽(allocateColWidths)一个。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -32,8 +34,8 @@ import {
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
   CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
   COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
-  COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, CURSOR_COL_RESIZE, CURSOR_NONE, DASH, DATE_LEN,
-  DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, EV_MOUSE_MOVE, EV_MOUSE_UP,
+  COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, DASH, DATE_LEN,
+  DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX,
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
   FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
@@ -58,7 +60,7 @@ import {
   SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
   SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
   SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
-  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TH_SEL, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
+  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
   TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
   TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
   UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD,
@@ -71,12 +73,12 @@ import type {
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, CardTitlesIn,
   CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
-  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColResizeIn, ColResizeStartIn, ColSpec, CompanyPeek,
-  ColStatsIn, ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
-  DescOpenIn, DistOptsIn, DonorsIn, DragIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
+  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek,
+  ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
+  DescOpenIn, DistOptsIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
   FieldOpenIn, FillIn,
   FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn,
-  FrozenStyleIn, GapIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
+  FrozenStyleIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLineViewIn, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn,
   JdSecHeadIn,
   JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
@@ -88,10 +90,10 @@ import type {
   PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
   PopupToCoIn, PrefixLabelIn,
   ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn, RelatedJobFact, RelatedPageJson,
-  RelatedJobJson, RelatedJobs, RelatedJson, ResizeBindIn,
+  RelatedJobJson, RelatedJobs, RelatedJson,
   RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
-  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TakerIn, TextFn,
+  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TextFn,
   ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, WantsIn,
   WidthsKeyIn,
   JobBodyPanel,
@@ -1285,122 +1287,11 @@ function nOf(x: NumOrIn): number {
 }
 
 /**
- * 拖列的**纯算法**(Excel 式,2026-08-16 Frank「有时候右边的列移动,有时候左边的列移动,
- * 能不能统一都改成右边的列整体移动」):把第 idx 列拉到 want 宽,总宽恒定不变。
- * · idx 左边的列一律不动(先前全局重分,左边会跟着跳)
- * · 拉宽:差额从**右边**列里出,自最右一列开始逐列让到各自下限;中间列宽度不变 = 整体平移
- * · 缩窄:腾出的宽度按**内容**给(见 takerOf),不按位置甩给最右一列
- * · 最后一列没有右邻居,只能反过来向左要(否则拖了没反应)
- * 总宽恒定不变,所以「永不横滚」那条铁律仍然成立。
- *
- * @param base 拖之前各列的实宽。
- * @param idx 被拖的是第几列。
- * @param want 想把它拉到多宽。
- * @param floors 各列下限(表头不折行:max(FLOOR, head, word))。
- * @param maxes 各列内容自然宽(缩窄时按它决定谁接手);不给就退回最右一列。
- * @returns 整数像素,和恒等于输入和。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由 tests/int/colResize 的九条断言定死(承重墙)
-export function resizeColWidths(
-  base: number[], idx: number, want: number, floors: number[], maxes?: number[],
-): number[] {
-  const w = base.slice()
-  if (idx < 0 || idx >= w.length) {
-    return w
-  }
-  const donors = donorsOf({ idx, len: w.length })
-  const target = Math.max(nOf({ v: floors[idx], or: COL_FLOOR }), want)
-  let need = target - nOf({ v: base[idx], or: COL_FLOOR })
-  if (need < 0) {
-    const t = takerOf({ donors, w, maxes })
-    w[t] = nOf({ v: w[t], or: COL_FLOOR }) - need
-    need = 0
-  }
-  for (const d of donors) {
-    if (need === 0) {
-      break
-    }
-    const give = Math.min(need, nOf({ v: w[d], or: COL_FLOOR }) - nOf({ v: floors[d], or: COL_FLOOR }))
-    w[d] = nOf({ v: w[d], or: COL_FLOOR }) - give
-    need = need - give
-  }
-  w[idx] = nOf({ v: base[idx], or: COL_FLOOR }) + (target - nOf({ v: base[idx], or: COL_FLOOR }) - need)
-  const out = []
-  for (const v of w) {
-    out.push(Math.round(v))
-  }
-  return out
-}
-
-/**
- * 让宽的列按什么顺序找:右边有列就自最右一列往左,最后一列只能向左邻居要。
- *
- * @param x 被拖列与总列数。
- * @returns 让宽列的下标序列。
- */
-function donorsOf(x: DonorsIn): number[] {
-  const out = []
-  if (x.idx < x.len - 1) {
-    for (let i = x.len - 1; i > x.idx; i = i - 1) {
-      out.push(i)
-    }
-    return out
-  }
-  for (let i = x.idx - 1; i >= 0; i = i - 1) {
-    out.push(i)
-  }
-  return out
-}
-
-/**
- * 缩窄一列时,腾出来的宽度归谁 —— 和分宽规则③同一条:**给内容最需要的那列**。
- * 先前按位置给最右一列:那通常是「操作」(内容恒短),于是每缩一次就在右端空出一大片
- * (Frank「操作右面空了一大截」的老毛病换个入口又长出来)。
- * 缺口最大的优先;都补平了(或压根没量到内容)就给内容最长的那列;maxes 缺席才退回最右一列。
- *
- * @param x 让宽列、当前各列宽、各列自然宽。
- * @returns 接手的列下标。
- */
-function takerOf(x: TakerIn): number {
-  const first = nOf({ v: x.donors[0], or: 0 })
-  const maxes = x.maxes
-  if (maxes == null) {
-    return first
-  }
-  let best = first
-  let bestGap = gapOf({ maxes, w: x.w, i: first })
-  let widest = first
-  for (const i of x.donors) {
-    const gap = gapOf({ maxes, w: x.w, i })
-    if (gap > bestGap) {
-      best = i
-      bestGap = gap
-    }
-    if (nOf({ v: maxes[i], or: 0 }) > nOf({ v: maxes[widest], or: 0 })) {
-      widest = i
-    }
-  }
-  if (bestGap > 0) {
-    return best
-  }
-  return widest
-}
-
-/**
- * 这一列还差多少才够放下它的内容。
- *
- * @param x 各列自然宽、当前宽、第几列。
- * @returns 缺口(不为负)。
- */
-function gapOf(x: GapIn): number {
-  return Math.max(0, nOf({ v: x.maxes[x.i], or: 0 }) - nOf({ v: x.w[x.i], or: 0 }))
-}
-
-/**
  * 纯函数:按「① 表头第一 → ② 内容第二 → ③ 余量给最长那列」把可分宽度分给各列
  * (Frank「列宽应该优先考虑 title 宽度,其次是内容宽度」)。
  * ① 表头永不折行、永不截断,顺带保底:再挤也不把一个词拦腰断成「Newfoundlan / d」。
  * ④ 总宽恒等于容器宽 → **永不横滚**;只有「表头都放不下」或用户手动拖宽才允许滚。
+ * 2026-09-23 拖列撤,钉死的宽(pinned)随删,只剩「表头都放不下」一种会滚。
  *
  * @param x 各列的量宽结果与可分宽度。
  * @returns 各列像素,和恒等于可分宽度(除非表头都放不下)。
@@ -1410,20 +1301,8 @@ export function allocateColWidths(x: AllocateIn): Record<string, number> {
   if (x.cols.length === 0) {
     return out
   }
-  const flex: Alloc[] = []
-  let room = x.avail
-  for (const c of x.cols) {
-    if (c.pinned == null) {
-      flex.push(c)
-    } else {
-      const pw = Math.round(c.pinned)
-      out[c.key] = pw
-      room = room - pw
-    }
-  }
-  if (flex.length === 0) {
-    return out
-  }
+  const flex: Alloc[] = x.cols
+  const room = x.avail
   let used = 0
   for (const c of flex) {
     const w = Math.max(COL_FLOOR, c.head, c.word)
@@ -2388,130 +2267,6 @@ function maxOf(xs: number[]): number {
 }
 
 /**
- * 造拖列的手柄。**Excel 式**(2026-08-16 Frank「有时候右边的列移动,有时候左边的列移动,
- * 能不能统一都改成右边的列整体移动」):拖之前**把所有列按当前实宽钉住**(左边从此一动不动),
- * 被拖列吃掉位移,差额只从**右边**列里出、且从最右一列开始逐列让 —— 中间那些列宽度不变,
- * 整体平移,正是 Excel 的手感。总宽恒定不变,所以「永不横滚」那条铁律仍然成立。
- * 让宽的下限仍是「表头不折行」;最后一列没有右邻居 → 只能反过来从它左边那列让,否则拖了没反应。
- *
- * ⚠️ 列集与量宽结果走活引用:直接闭包会钉死在首帧的值(列集换了、量宽更新了都读不到)。
- *
- * @param x 列集与量宽结果的活引用、手动宽的写回口。
- * @returns 交给表头竖线的 onMouseDown 手柄。
- */
-export function makeColResize(x: ColResizeIn): (i: ColResizeStartIn) => void {
-  return function startResize(i: ColResizeStartIn): void {
-    i.e.preventDefault()
-    i.e.stopPropagation()
-    const th = (i.e.currentTarget as HTMLElement).closest(TH_SEL) as HTMLElement | null
-    const rowEl = thRow(th)
-    if (th == null || rowEl == null) {
-      return
-    }
-    const base = thWidths(rowEl)
-    const order = x.keysRef.current
-    const idx = order.indexOf(i.key)
-    if (idx < 0 || base.length !== order.length) {
-      return
-    }
-    const floors = floorsOf({ order, measured: x.measuredRef.current })
-    const maxes = maxesOf({ order, measured: x.measuredRef.current })
-    dragCols({ base, idx, floors, maxes, order, startX: i.e.clientX, setManual: x.setManual })
-  }
-}
-
-/**
- * 竖线所在的表头行。
- *
- * @param th 表头格;null = 没找到。
- * @returns 表头行;没找到给 null。
- */
-function thRow(th: HTMLElement | null): HTMLElement | null {
-  if (th == null) {
-    return null
-  }
-  return th.parentElement
-}
-
-/**
- * 表头各格的当前实宽。
- *
- * @param rowEl 表头行。
- * @returns 各列实宽。
- */
-function thWidths(rowEl: HTMLElement): number[] {
-  const out: number[] = []
-  for (const el of Array.from(rowEl.children)) {
-    out.push((el as HTMLElement).getBoundingClientRect().width)
-  }
-  return out
-}
-
-/**
- * 各列的下限:表头不折行(max(FLOOR, head, word))。
- *
- * @param x 列集与量宽结果。
- * @returns 各列下限。
- */
-function floorsOf(x: ColStatsIn): number[] {
-  const out: number[] = []
-  for (const k of x.order) {
-    const m = x.measured[k]
-    if (m == null) {
-      out.push(COL_FLOOR)
-    } else {
-      out.push(Math.max(COL_FLOOR, m.head, m.word))
-    }
-  }
-  return out
-}
-
-/**
- * 各列的内容自然宽(缩窄时按它决定谁接手)。
- *
- * @param x 列集与量宽结果。
- * @returns 各列自然宽。
- */
-function maxesOf(x: ColStatsIn): number[] {
-  const out: number[] = []
-  for (const k of x.order) {
-    const m = x.measured[k]
-    if (m == null) {
-      out.push(0)
-    } else {
-      out.push(m.max)
-    }
-  }
-  return out
-}
-
-/**
- * 挂上拖动期间的全局监听(拖到表头外面也得跟手),松开即摘。
- *
- * @param x 拖列要用的全部量。
- * @returns 无。
- */
-function dragCols(x: DragIn): void {
-  function onMove(ev: MouseEvent): void {
-    const want = Math.round(nOf({ v: x.base[x.idx], or: COL_FLOOR }) + (ev.clientX - x.startX))
-    const w = resizeColWidths(x.base, x.idx, want, x.floors, x.maxes)
-    const next: Record<string, number> = {}
-    for (let i = 0; i < x.order.length; i = i + 1) {
-      next[String(x.order[i])] = nOf({ v: w[i], or: COL_FLOOR })
-    }
-    x.setManual(next)
-  }
-  function onUp(): void {
-    document.removeEventListener(EV_MOUSE_MOVE, onMove)
-    document.removeEventListener(EV_MOUSE_UP, onUp)
-    document.body.style.cursor = CURSOR_NONE
-  }
-  document.addEventListener(EV_MOUSE_MOVE, onMove)
-  document.addEventListener(EV_MOUSE_UP, onUp)
-  document.body.style.cursor = CURSOR_COL_RESIZE
-}
-
-/**
  * 固定左列的累计左偏移:先量固定列实宽 → 算累计 left,再贴 sticky(先计算再显示)。
  * 列宽变了必须重量:sticky 的 left 是**累计实宽**,拖列改了左侧列宽而偏移量还停在旧值,
  * 固定列就会钉在旧位置、拿不透明底色盖住右邻居(Frank 2026-08-16「怎么穿透了职位列」)。
@@ -2580,30 +2335,6 @@ export function makeDescOpen(x: DescOpenIn): ClickFn {
 export function makeColAction(x: ColActionIn): ClickFn {
   return function colAction(): void {
     x.act(x.k)
-  }
-}
-
-/**
- * 造这一列竖线的按下手柄。
- *
- * @param x 列宽机器与列键。
- * @returns 鼠标按下手柄。
- */
-export function makeResizeStart(x: ResizeBindIn): (e: React.MouseEvent) => void {
-  return function onResize(e: React.MouseEvent): void {
-    x.cw.startResize({ e, key: x.k })
-  }
-}
-
-/**
- * 造这一列竖线的双击手柄(该列回归自动)。
- *
- * @param x 列宽机器与列键。
- * @returns 点击手柄。
- */
-export function makeAutoFit(x: ResizeBindIn): ClickFn {
-  return function autoFit(): void {
-    x.cw.autoFit(x.k)
   }
 }
 
@@ -4360,9 +4091,6 @@ export function headCellsOf(b: JobsBoardPanel): HeadCellView[] {
         line: HEAD_LINE,
       }),
       onSort: makeColAction({ act: b.onSort, k: c.key }),
-      onResize: makeResizeStart({ cw: b.cols.cw, k: c.key }),
-      onAutoFit: makeAutoFit({ cw: b.cols.cw, k: c.key }),
-      resizeTip: b.t('resize.tip'),
     })
   }
   return out

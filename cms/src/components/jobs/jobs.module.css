@@ -541,27 +541,6 @@
 }
 
 /*
- * 列右缘竖线:拖动钉死本列宽 / 双击该列回归自动。
- */
-.resize {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 13px;
-  height: 100%;
-  cursor: col-resize;
-  z-index: 2;
-}
-
-.resize:hover {
-  background: #93c5fd;
-}
-
-.resize:active {
-  background: #3b82f6;
-}
-
-/*
  * 数据格。格距(7px 6px)、越界裁剪、断词规则都在这儿 —— 格子里唯一还内联的是
  * 逐格判定色里的动态色(大分类跟着 NOC 分类走)与冻结列的 sticky 偏移,那两样是算出来的。
  */
@@ -1127,14 +1106,6 @@
 .measure th {
   white-space: nowrap;
   overflow: visible;
-}
-
-/*
- * 量宽时把列宽拖拽条藏掉:它是 position:absolute;right:0,量内容的 Range 会把它算进去,
- * 于是每个表头都被量成「整列宽」(实测 vs 中位表头量出 132px,真实文字只要 56px)。
- */
-.measure .resize {
-  display: none;
 }
 
 /*

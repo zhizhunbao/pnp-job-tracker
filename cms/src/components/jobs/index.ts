@@ -27,7 +27,7 @@ export { Job } from './job'
 export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
 export {
-  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, resizeColWidths, toCatLabelList,
+  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toCatLabelList,
   toJobPlan, toNocDescList, toSearchParams,
 } from './functions'
 export type {

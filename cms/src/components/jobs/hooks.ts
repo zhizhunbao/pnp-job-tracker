@@ -43,7 +43,7 @@ import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
   fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, initialColsOf, initialFiltersOf,
-  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColResize, makeColWidth, makeOccName, makePopupToCo,
+  jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeOccName, makePopupToCo,
   makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
@@ -53,8 +53,8 @@ import {
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
   ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
-  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure, ColResizeIn,
-  ColResizeStartIn, ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
+  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure,
+  ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
   JobPeekPanel,
   IntentProfileIn,
@@ -86,6 +86,8 @@ if (typeof window !== 'undefined') {
  * 首帧还没数据时量不到,下一帧继续试(老版本在这儿把 key 提前记死,于是线上永远停在
  * 「没量到」的均分状态)。触发点二见 useWrapWidth,触发点三见 makeColResize。
  * 换列集 → 手动宽作废(新列在固定布局里会塌成 0)。
+ * 2026-09-23 拖列整功能撤(Frank「拖动功能去掉吧」,线上拖了没反应):触发点三、手动宽与
+ * resizeColWidths 一并删,只剩前两条触发。
  *
  * @param headRowRef 表头锚点(单独一格收,理由见 types.ts 的 `HeadRowRef`)。
  * @param x 列集、数据指纹、格内边距与 cookie 种子。
@@ -95,14 +97,11 @@ if (typeof window !== 'undefined') {
 export function useColWidths(headRowRef: HeadRowRef, x: ColWidthsIn): ColWidthsPanel {
   const [measured, setMeasured] = useState<Record<string, ColMeasure>>({})
   const [wrapW, setWrapW] = useState(0)
-  const [manual, setManual] = useState<Record<string, number>>({})
   const doneKey = useRef(TEXT_NONE)
   const keysKey = x.keys.join(COMMA)
   const keysRef = useRef(x.keys)
-  const measuredRef = useRef(measured)
   useEffect(function syncLiveRefs() {
     keysRef.current = x.keys
-    measuredRef.current = measured
   })
   const pad = x.pad
   const dataKey = x.dataKey
@@ -120,34 +119,13 @@ export function useColWidths(headRowRef: HeadRowRef, x: ColWidthsIn): ColWidthsP
   })
   useFontRemeasure(doneKey)
   useWrapWidth(headRowRef, { keysKey, setWrapW })
-  const [prevKeysKey, setPrevKeysKey] = useState(keysKey)
-  if (prevKeysKey !== keysKey) {
-    setPrevKeysKey(keysKey)
-    setManual({})
-  }
   return useColWidthsPanel({
     keys: x.keys,
     keysKey,
     seed: x.seed,
     measured,
     wrapW,
-    manual,
-    setManual,
-    startResize: useColResize({ keysRef, measuredRef, setManual }),
   })
-}
-
-/**
- * 拖列竖线的手柄:两个活引用(列集 / 量宽结果)在这里收下,做成手柄再往下交。
- * 拖列口径本身没搬,仍是 ./functions 的 makeColResize;这层只是**收 ref 的那道门**——
- * react-hooks/refs 闸只放行 `use*` 收 ref,渲染期把 ref 交给普通函数一律算越界
- * (哪怕工厂体内要等按下竖线才读它)。
- *
- * @param x 列集与量宽结果的活引用、手动宽的写口。
- * @returns 按下竖线的手柄。
- */
-function useColResize(x: ColResizeIn): (i: ColResizeStartIn) => void {
-  return makeColResize(x)
 }
 
 /**
@@ -230,14 +208,14 @@ function useWrapWidth(headRowRef: HeadRowRef, x: WrapWidthIn): void {
  * 偏移量一旦跟不上拖动就把隔壁列盖住(2026-08-16 Frank 实拍「穿透了职位列」)。
  * 种子只在「还没量到 + 列集对得上」时顶班:量到了立刻换成像素(同一批数据,差几像素看不出来)。
  *
- * @param x 列集、种子、量宽结果、容器宽与手动宽。
+ * @param x 列集、种子、量宽结果与容器宽。
  * @returns 列宽面板。
  */
 function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
   const cols: Alloc[] = []
   let minTotal = 0
   for (const k of x.keys) {
-    const one = allocOf({ k, m: x.measured[k], pinned: x.manual[k] })
+    const one = allocOf({ k, m: x.measured[k] })
     cols.push(one)
     minTotal = minTotal + floorOf(one)
   }
@@ -251,26 +229,18 @@ function useColWidthsPanel(x: ColWidthsPanelIn): ColWidthsPanel {
   const measuredReady = avail > 0 && Object.keys(x.measured).length > 0
   useSeedCookie({ measuredReady, keysKey: x.keysKey, px, total, keys: x.keys })
   const useSeed = measuredReady === false && x.seed != null && x.seed.keys === x.keysKey
-  const setManual = x.setManual
-  function autoFit(): void {
-    setManual({})
-  }
   return {
     ready: measuredReady || useSeed,
     width: makeColWidth({ measuredReady, px, useSeed, seed: x.seed, keys: x.keys }),
     tableWidth: tableWidthOf({ measuredReady, overflow, total }),
     overflow: measuredReady && overflow,
-    startResize: x.startResize,
-    autoFit,
-    hasManual: Object.keys(x.manual).length > 0,
-    reset: autoFit,
   }
 }
 
 /**
  * 一列的分宽输入(量不到就用下限兜)。
  *
- * @param x 列键、量宽结果与钉死的宽。
+ * @param x 列键与量宽结果。
  * @returns 分宽输入。
  */
 function allocOf(x: AllocOfIn): Alloc {
@@ -281,22 +251,17 @@ function allocOf(x: AllocOfIn): Alloc {
     one.p90 = x.m.p90
     one.max = x.m.max
   }
-  if (x.pinned != null) {
-    one.pinned = x.pinned
-  }
   return one
 }
 
 /**
  * 这一列最少要占多宽(钉死的按钉死算,其余按表头不折行算)。
+ * 2026-09-23 拖列撤,不再有钉死的宽,一律按表头不折行算。
  *
  * @param c 分宽输入。
  * @returns 最小宽。
  */
 function floorOf(c: Alloc): number {
-  if (c.pinned != null) {
-    return c.pinned
-  }
   return Math.max(COL_FLOOR, c.head, c.word)
 }
 

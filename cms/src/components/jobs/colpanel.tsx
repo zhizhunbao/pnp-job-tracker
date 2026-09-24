@@ -43,11 +43,6 @@ export function ColPanel({ b }: BoardPanelIn) {
         <Button kind={BTN_GHOST} onClick={b.cols.onInvert} className={cssOf(css.colBtn)}>
           {b.t('fields.invert')}
         </Button>
-        {b.cols.cw.hasManual && (
-          <Button kind={BTN_GHOST} onClick={b.cols.cw.reset} className={cssOf(css.colBtn)}>
-            {b.t('fields.resetW')}
-          </Button>
-        )}
       </div>
       {rows}
     </div>

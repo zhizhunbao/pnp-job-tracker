@@ -324,6 +324,7 @@ export type ColMeasure = {
 
 /**
  * 分宽时一列的输入:量到的四个数 + 钉死的宽(手动拖过或调用方写死)。
+ * 2026-09-23 拖列撤,钉死的宽随删,只剩量到的四个数。
  */
 export type Alloc = {
   /**
@@ -350,41 +351,6 @@ export type Alloc = {
    * 最长值宽。
    */
   max: number
-
-  /**
-   * 钉死的宽;缺席 = 参与瓜分。
-   */
-  pinned?: number
-}
-
-/**
- * 拖列纯算法的入参(Excel 式:总宽恒定不变)。
- */
-export type ResizeIn = {
-  /**
-   * 拖之前各列的实宽。
-   */
-  base: number[]
-
-  /**
-   * 被拖的是第几列。
-   */
-  idx: number
-
-  /**
-   * 想把它拉到多宽。
-   */
-  want: number
-
-  /**
-   * 各列下限(表头不折行)。
-   */
-  floors: number[]
-
-  /**
-   * 各列内容自然宽(缩窄时按它决定谁接手);缺席 = 退回最右一列。
-   */
-  maxes?: number[]
 }
 
 /**
@@ -479,26 +445,6 @@ export type ColWidthsPanel = {
    * 总宽超容器(表头都放不下 / 手动拖宽)→ 需要横滚,此时才有必要固定左列。
    */
   overflow: boolean
-
-  /**
-   * 按下列右缘竖线:钉死本列宽,其余列照规则重分。
-   */
-  startResize: (i: ColResizeStartIn) => void
-
-  /**
-   * 双击竖线:该列回归自动。
-   */
-  autoFit: (key: string) => void
-
-  /**
-   * 有没有手动拖过的列(有才出「恢复列宽」)。
-   */
-  hasManual: boolean
-
-  /**
-   * 全部手动宽作废。
-   */
-  reset: ClickFn
 }
 
 /**
@@ -2807,61 +2753,6 @@ export type NumOrIn = {
 }
 
 /**
- * donorsOf 的入参。
- */
-export type DonorsIn = {
-  /**
-   * 被拖的是第几列。
-   */
-  idx: number
-
-  /**
-   * 总列数。
-   */
-  len: number
-}
-
-/**
- * takerOf 的入参。
- */
-export type TakerIn = {
-  /**
-   * 让宽列的下标序列。
-   */
-  donors: number[]
-
-  /**
-   * 当前各列宽。
-   */
-  w: number[]
-
-  /**
-   * 各列内容自然宽;缺席 = 退回最右一列。
-   */
-  maxes: number[] | undefined
-}
-
-/**
- * gapOf 的入参。
- */
-export type GapIn = {
-  /**
-   * 各列内容自然宽。
-   */
-  maxes: number[]
-
-  /**
-   * 当前各列宽。
-   */
-  w: number[]
-
-  /**
-   * 第几列。
-   */
-  i: number
-}
-
-/**
  * allocateColWidths 的入参。
  */
 export type AllocateIn = {
@@ -3207,41 +3098,6 @@ export type MeasureOut = {
 }
 
 /**
- * makeColResize 的入参:拖列要用的活引用(列集与量宽结果都会变,不能闭包在首帧)。
- */
-export type ColResizeIn = {
-  /**
-   * 当前列集的活引用。
-   */
-  keysRef: React.RefObject<string[]>
-
-  /**
-   * 量宽结果的活引用。
-   */
-  measuredRef: React.RefObject<Record<string, ColMeasure>>
-
-  /**
-   * 把算出来的手动宽写回去。
-   */
-  setManual: (w: Record<string, number>) => void
-}
-
-/**
- * 按下列右缘竖线时交进来的东西。
- */
-export type ColResizeStartIn = {
-  /**
-   * 鼠标按下事件。
-   */
-  e: React.MouseEvent
-
-  /**
-   * 被拖的列键。
-   */
-  key: string
-}
-
-/**
  * 开一格字段弹框的手柄工厂入参。
  */
 export type FieldOpenIn = {
@@ -3309,21 +3165,6 @@ export type ColActionIn = {
    * 列键。
    */
   k: JobColKey
-}
-
-/**
- * 拖列手柄工厂的入参。
- */
-export type ResizeBindIn = {
-  /**
-   * 列宽机器。
-   */
-  cw: ColWidthsPanel
-
-  /**
-   * 列键。
-   */
-  k: string
 }
 
 /**
@@ -3443,46 +3284,6 @@ export type MeasureWordIn = {
 }
 
 /**
- * 拖动期间要用的全部量。
- */
-export type DragIn = {
-  /**
-   * 拖之前各列的实宽。
-   */
-  base: number[]
-
-  /**
-   * 被拖的是第几列。
-   */
-  idx: number
-
-  /**
-   * 各列下限。
-   */
-  floors: number[]
-
-  /**
-   * 各列内容自然宽。
-   */
-  maxes: number[]
-
-  /**
-   * 列集(顺序即列序)。
-   */
-  order: string[]
-
-  /**
-   * 按下时的横坐标。
-   */
-  startX: number
-
-  /**
-   * 把算出来的手动宽写回去。
-   */
-  setManual: (w: Record<string, number>) => void
-}
-
-/**
  * headCell 的入参:取表头的第几格。
  */
 export type HeadCellAtIn = {
@@ -3525,21 +3326,6 @@ export type CellWidthsIn = {
    * 第几列。
    */
   i: number
-}
-
-/**
- * floorsOf / maxesOf 的入参。
- */
-export type ColStatsIn = {
-  /**
-   * 列集(顺序即列序)。
-   */
-  order: string[]
-
-  /**
-   * 量宽结果。
-   */
-  measured: Record<string, ColMeasure>
 }
 
 /**
@@ -4255,22 +4041,6 @@ export type ColWidthsPanelIn = {
    * 容器可分宽度。
    */
   wrapW: number
-
-  /**
-   * 手动拖出来的宽。
-   */
-  manual: Record<string, number>
-
-  /**
-   * 手动宽的写口。
-   */
-  setManual: (w: Record<string, number>) => void
-
-  /**
-   * 拖列竖线的手柄。两个活引用(列集 / 量宽结果)留在 useColWidths 里就地做成手柄再传进来 ——
-   * ref 不许裹进复合入参,见 `HeadRowRef` 的说明。
-   */
-  startResize: (i: ColResizeStartIn) => void
 }
 
 /**
@@ -4466,11 +4236,6 @@ export type AllocOfIn = {
    * 这一列量到的四个数;缺席 = 还没量到。
    */
   m: ColMeasure | undefined
-
-  /**
-   * 钉死的宽;缺席 = 参与瓜分。
-   */
-  pinned: number | undefined
 }
 
 /**
@@ -5671,21 +5436,6 @@ export type HeadCellView = {
    * 点表头换排序。
    */
   onSort: ClickFn
-
-  /**
-   * 按下右缘竖线开拖。
-   */
-  onResize: (e: React.MouseEvent) => void
-
-  /**
-   * 双击竖线:本列回归自动。
-   */
-  onAutoFit: ClickFn
-
-  /**
-   * 竖线的悬停说明。
-   */
-  resizeTip: string
 }
 
 /**
