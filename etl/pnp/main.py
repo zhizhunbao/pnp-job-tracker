@@ -59,12 +59,15 @@ SCHEDULED = [
     ("mb_stats", build_mb_stats),
     ("nl_employers", build_nl_employers),
     ("watch_allocations", watch_prov_allocations),
+    ("draw_streams_zh", translate_draw_streams),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
 2026-08-30 批B 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
 2026-09-15 mb_stats / nl_employers 从手动件挂进链(watch 哨兵之前;Frank「3,那 10 个源也查一下」):两步纯读 crawl 缓存
 不发请求,缓存每小时在刷;不进链时两份产物停在 08-30,被 raw/pnp/*.json 两天保鲜规则判超期、拖红心跳。当日手动各跑一次均通过。
 另外四个手动件 on_stats / mb_points / nl_points / sk_joboffer 会打官网,进不进链待 Frank 拍。
+2026-09-23 draw_streams_zh 从手动件挂进链尾(Frank「这个如果没有中文翻译也要加 AI 自动翻译吧」):只翻缓存里没有的
+通道名(本地 Ollama),新通道名下一轮汇装就带中文;校验没过 / 超时的留到下一轮再翻。钉在最末:盒子不在线时只拖它自己。
 
   build_ab               AB AAIP(实时,exclusion 排除式)
   build_bc               BC 2026 新政 Care/Build 清单(实时,2026-07-25 接入;旧 tech 定向 2024-12 关)
@@ -174,6 +177,7 @@ TOOLS = {
   nl_employers         NL 指定雇主名录(纯读 crawl 缓存,不发请求)
   sk_joboffer          SK Job Offer 排除清单(另一张 PDF)
   draw_streams_zh      抽选流名中文灰注(本地 Ollama,批量翻译不进定时链)
+                       —— 2026-09-23 起进默认链尾(只翻缓存里没有的,见 SCHEDULED 沿革),这里仍可单跑
   watch_allocations    名额公告哨兵(只提醒不写表,自身失败不拦役;2026-08-31 批D 起进默认链尾)
   c01_gold             C4 金标审计:案例 C01 的数字必须能从 mart 查出(批D 自 ops 收编,手动)
   gate_quotes          门槛取证器:13 条通道三类闸的官方候选原句(批D 收编,手动;

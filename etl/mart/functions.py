@@ -3009,13 +3009,17 @@ def to_draw_base(x: DrawBaseIn) -> dict:
 
 
 def to_pnp_draw_row(x: DrawRowIn) -> dict:
-    """pnp_draws 表的一行抽选。"""
+    """pnp_draws 表的一行抽选。
+
+    门槛清单按 checklistKey 对(2026-09-23 NB 抽选 stream 改 stream 级名后,清单仍按「通道 (pathway)」挂键);
+    没有这一格的省照旧按 stream 对。
+    """
     row = dict(x.base)
     stream = x.draw.get("stream", "")
     row.update({"kind": DRAW_KIND_DRAW, "drawDate": x.draw.get("date"), "stream": stream,
                 "streamZh": x.stream_zh.get(stream), "score": x.draw.get("score"),
                 "invitations": x.draw.get("invitations"), "note": x.draw.get("note", ""),
-                "checklist": x.checklist.get(stream)})
+                "checklist": x.checklist.get(x.draw.get("checklistKey") or stream)})
     return row
 
 

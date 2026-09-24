@@ -84,6 +84,12 @@ TAG_MAIN = "main"
 TAG_H1 = "h1"
 """一级标题标签名。"""
 
+TAG_H3 = "h3"
+"""三级标题标签名(NB 官网 2026-08-31 改版后,最新一轮块的通道名挂在 <h3> 里)。"""
+
+TAG_TH = "th"
+"""表头格标签名(NB 历史表的表头格可能是 <th>,与 <td> 一并认)。"""
+
 ATTR_HREF = "href"
 """链接地址属性名。"""
 
@@ -263,6 +269,10 @@ K_SCORE = "score"
 
 K_INVITATIONS = "invitations"
 """行键:邀请数。"""
+
+K_CL_KEY = "checklistKey"
+"""行键:门槛清单键(2026-09-23 NB 抽选 stream 改 stream 级名后,门槛清单仍按「通道 (pathway)」对 ——
+draw_checklists 的键就是这个拼法;mart 有它先用它,没有用 stream)。"""
 
 K_SCALE = "scale"
 """表键:省自评分制名(前端展示必须声明「省自评分制,非 CRS」)。"""
@@ -1808,9 +1818,10 @@ NB_ORDINAL_RE = re.compile(r"(\d)(st|nd|rd|th)\b", re.I)
 NB_ORDINAL_SUB = r"\1"
 """序数词去掉后只留数字。"""
 
-NB_RANGE_RE = re.compile(r"^([A-Za-z]+)\s+\d{1,2}\s*(?:to|[–-])\s*(\d{1,2}),\s*(\d{4})$")
+NB_RANGE_RE = re.compile(r"^([A-Za-z]+)\s+\d{1,2}\s*(?:to|and|[–-])\s*(\d{1,2}),\s*(\d{4})$")
 """NB 官方日期常写成区间(「July 16 to 18, 2026」「October 6-7, 2025」)——
-**取最后一天**当抽选日(那天邀请才算发出)。"""
+**取最后一天**当抽选日(那天邀请才算发出)。
+2026-09-23 加「and」:历史表有两天并写一格的(「August 10 and 20, 2026」,AIP),同样取后一天。"""
 
 NB_RANGE_TPL = "{mon} {day2}, {yr}"
 """区间日期折成单日的模板。"""
@@ -1848,6 +1859,63 @@ NB_PROV_PREFIX_RE = re.compile(r"^New Brunswick\s+", re.I)
 NB_PROV_SHORT_SUB = "NB "
 """pathway 名里的 New Brunswick 缩成 NB。"""
 
+NB_STREAM_COL_KW = "stream"
+"""NB 历史表(2026-08-31 改版后的六列大表)的通道列表头。"""
+
+NB_INV_COL_KWS = ("invitations issued", "applications selected")
+"""NB 历史表邀请数列表头的判词(2026 表头写「Invitations issued / Applications selected」,2025 表只写前半)。"""
+
+NB_STREAM_SHORT_TPL = "NB {base}"
+"""省提名三通道的 stream 级名(官网「New Brunswick Skilled Worker stream」→「NB Skilled Worker」)。
+2026-09-23 起抽选行的 stream 就是它(原「Skilled Worker (NB Experience + NB Graduates)」拼 pathway,
+一个通道被拆成十几组):弹框按它分组、按它对本岗高亮(Frank「所以这个 NB 技术工人点进去应该哪个高亮」);
+pathway 挪进注,门槛清单键仍用原拼法(K_CL_KEY)。"""
+
+NB_PATHWAY_NAMES = (
+    "New Brunswick Experience",
+    "New Brunswick Graduates",
+    "New Brunswick Priorities",
+    "Employment in New Brunswick",
+    "Francophone Workers in New Brunswick",
+    "New Brunswick Francophone Priorities",
+)
+"""NB 官方 pathway 名(照历史表原文;顺序即规范序)。最新一轮块的 pathway 格不用 <br>,几条空格连写
+(「New Brunswick Graduates New Brunswick Experience」),按这张名单认出来再切;有一段认不出整格原样留,不猜。
+规范序:同一组 pathway 不论官网怎么排、大小写怎么写,都拼出同一个门槛清单键(draw_checklists 的键)。"""
+
+NB_CATEGORY_NAMES = (
+    "Education, social and community services",
+    "Francophone applicants, all sectors",
+    "Professional and IT occupations",
+    "Professional occupations",
+    "Professional and IT",
+    "Professional & IT",
+    "Construction trades",
+    "Construction",
+    "Food and accommodation",
+    "Sales and services",
+    "Transportation",
+    "Manufacturing",
+    "Other trades",
+    "Health care",
+    "Healthcare",
+    "All sectors",
+)
+"""NB 官方职业类别名(照历史表原文;最新一轮块同样空格连写,认法同 NB_PATHWAY_NAMES,长名优先,
+大小写不计;切出来保留原文片段 —— 只进注,不当键)。"""
+
+NB_NOTE_PATHS_TPL = "Pathways: {paths}"
+"""NB 一轮的 pathway 注(stream 级分组后 pathway 不再拼进通道名)。"""
+
+NB_NOTE_SEP = ". "
+"""NB 注里 pathway 段与职业类别段的分隔。"""
+
+NB_INT_RE = re.compile(r"\d[\d,]*")
+"""NB 邀请数格里的数(历史表带脚注记号「8 ◊」,整格喂 int_of 认不出)。"""
+
+NB_HAS_LETTER_RE = re.compile(r"[A-Za-z]")
+"""NB 多行格里有字母才算一行(AIP 的 pathway 格是 &nbsp; 或乱码「�」,不当 pathway)。"""
+
 NB_AIP_FULL = "atlantic immigration program"
 """AIP 的官方全名(小写比对)。"""
 
@@ -1858,7 +1926,7 @@ NB_DEFAULT_STREAM = "NBPNP"
 """NB 没解析到通道名时的兜底。"""
 
 NB_STREAM_TPL = "{base} ({paths})"
-"""NB 通道名 + pathway 清单的拼法。"""
+"""NB 通道名 + pathway 清单的拼法。2026-09-23 起不再当 stream,只当门槛清单键(K_CL_KEY)。"""
 
 NB_CATEGORIES_TPL = "Categories: {names}"
 """NB 职业类别的 note 拼法。"""

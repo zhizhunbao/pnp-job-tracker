@@ -659,6 +659,68 @@ class NbSegPickIn:
 
 
 @dataclass
+class NbDrawIn:
+    """nb_draw_of() 入参:一轮 NB 抽选的原料(最新一轮块与历史表两种表共用)。"""
+
+    date: str
+    """官网日期原文(可能是区间)。"""
+
+    base: str
+    """通道名(已去 New Brunswick 前缀与 stream 尾;AIP 折成短名;认不出为空串)。"""
+
+    pathways: list
+    """pathway 格的各行(可能一行挤着几条)。"""
+
+    categories: list
+    """职业类别格的各行(可能一行挤着几条)。"""
+
+    inv: str
+    """邀请数格原文(可能带脚注记号)。"""
+
+
+@dataclass
+class NbSplitIn:
+    """nb_known_split() 入参:一行文字 + 官方名单。"""
+
+    text: str
+    """一行(可能几条官方名空格连写)。"""
+
+    names: tuple
+    """官方名单。"""
+
+    canon: bool
+    """切出来给名单里的规范写法(True)还是原文片段(False)。"""
+
+
+@dataclass
+class NbSplitLinesIn:
+    """nb_split_lines() 入参:多行 + 官方名单。"""
+
+    lines: list
+    """各行。"""
+
+    names: tuple
+    """官方名单。"""
+
+    canon: bool
+    """同 NbSplitIn.canon。"""
+
+
+@dataclass
+class NbColIn:
+    """nb_col_lines() / nb_col_text() 入参:历史表一行的格 + 列号表 + 列键。"""
+
+    cells: list
+    """这一行的格。"""
+
+    cols: dict
+    """列键 → 列号。"""
+
+    key: str
+    """要取的列键。"""
+
+
+@dataclass
 class NbStreamIn:
     """nb_stream_of() 入参:通道名 + pathway 清单。"""
 

@@ -87,7 +87,7 @@ from pnp.constants import (
     K_COUNT, K_CRAWLED_AT, K_DATE, K_DESC, K_DESIGNATION, K_DETAIL, K_DRAWS, K_EFFECTIVE, K_EMPLOYERS,
     K_ENHANCED_YTD, K_EOI_POOL, K_ERROR, K_EXCLUDES_NOC, K_FACTOR, K_FACTORS, K_FACTS, K_FAMILY_SIZE, K_FETCHED,
     K_FIRST, K_FLOOR_AT, K_FMT, K_FOOD, K_GROUP, K_GROUP_MAX, K_GUIDE_EFFECTIVE, K_HTML, K_INVENTORY,
-    K_INVITATIONS, K_IN_ASSESSMENT, K_ISSUED, K_IS_REDIRECTED, K_ITEMS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LOCATION,
+    K_CL_KEY, K_INVITATIONS, K_IN_ASSESSMENT, K_ISSUED, K_IS_REDIRECTED, K_ITEMS, K_KEY, K_LABEL, K_LABEL_YEAR, K_LOCATION,
     K_MAX, K_MAX_TOTAL, K_MIN_SCORE, K_MODEL, K_MONTH, K_MONTHLY, K_MUST, K_N, K_NAME, K_NOC, K_NOCS,
     K_NOMINATIONS_ISSUED, K_NOMINATIONS_YTD, K_NOTE, K_NOTICE, K_OCCUPATION, K_OCCUPATIONS, K_OP, K_OPTIONS, K_OUT,
     K_OVERALL_DAYS, K_OVERLAY, K_PAGES, K_PAGE_REDIRECT, K_PAGE_URL, K_PASS_MARK, K_PCT, K_PENDING,
@@ -134,9 +134,11 @@ from pnp.constants import (
     NBR_PROBLEM_LANG_TPL, NBR_PROBLEM_NO_VERSION, NBR_PROBLEM_RESIDENCE, NBR_PROBLEM_TENURE, NBR_RESIDENCE_RE,
     NBR_SECTION_EXP, NBR_SECTION_LANG, NBR_SECTION_RESIDENCE, NBR_SOURCE, NBR_STREAM, NBR_TIMEOUT_S, NBR_UNKNOWN,
     NBR_VERSION_RE, NB_AIP_FULL, NB_AIP_SHORT, NB_APP_SELECTED_KEY, NB_CATEGORIES_KW, NB_CATEGORIES_TPL,
-    NB_DEFAULT_STREAM, NB_DRAW_DATE_KW, NB_INV_ISSUED_KEY, NB_LABEL_STRIP, NB_NAME_MAX, NB_NAME_STRIP,
-    NB_NOC_LINE_RE, NB_NOTICES, NB_NOTICE_SPLIT, NB_NO_DATA, NB_OCC_KW, NB_OCC_ROW_KEY, NB_ORDINAL_RE,
+    NB_CATEGORY_NAMES, NB_DEFAULT_STREAM, NB_DRAW_DATE_KW, NB_HAS_LETTER_RE, NB_INT_RE, NB_INV_COL_KWS,
+    NB_INV_ISSUED_KEY, NB_LABEL_STRIP, NB_NAME_MAX, NB_NAME_STRIP, NB_NOC_LINE_RE, NB_NOTE_PATHS_TPL,
+    NB_NOTE_SEP, NB_NOTICES, NB_NOTICE_SPLIT, NB_NO_DATA, NB_OCC_KW, NB_OCC_ROW_KEY, NB_ORDINAL_RE,
     NB_ORDINAL_SUB, NB_PAGE_CURRENT_LABEL, NB_PAGE_ERR_TPL, NB_PAGE_HISTORY_LABEL, NB_PATHWAYS_KW,
+    NB_PATHWAY_NAMES, NB_STREAM_COL_KW, NB_STREAM_SHORT_TPL,
     NB_PRINT_NO_NOTICE_TPL, NB_PRINT_SECTOR_GONE_TPL, NB_PRINT_SECTOR_OK_TPL, NB_PRINT_TABLE_TPL,
     NB_PROV_PREFIX_RE, NB_PROV_SHORT_SUB, NB_RANGE_RE, NB_RANGE_TPL, NB_SECTOR_DATE_KW, NB_SECTOR_KWS,
     NB_SECTOR_NOTICE, NB_SPLIT_QUOTE, NB_STREAM_TAIL_RE, NB_STREAM_TPL, NB_TAIL_RE, NB_URL, NLE_EMPLOYER_PREFIX,
@@ -254,7 +256,8 @@ from pnp.constants import (
     SK_EXCL_ROW_RE, SK_EXCL_SHORT_LABEL, SK_EXCL_STREAM, SK_EXCL_UPDATED_RE, SK_NOC_PATTERNS, SK_NOTE,
     SK_PDF_TIMEOUT_S, SK_PRINT_EXCL_FAIL_TPL, SK_PRINT_EXCL_TPL, SK_PRINT_NO_EXCL, SK_PRINT_NO_FORMAT, SK_STREAMS,
     STRIP_DOT_COMMA, STRIP_DOT_SPACE, STRIP_STAR_DOT, TAG_A, TAG_ARTICLE, TAG_B, TAG_BR, TAG_DD, TAG_DL, TAG_DT,
-    TAG_H1, TAG_LI, TAG_MAIN, TAG_P, TAG_STRONG, TAG_TABLE, TAG_TD, TAG_TR, TAG_UL, TEXT_JOIN_SEP, TYPE_INDEMAND,
+    TAG_H1, TAG_H3, TAG_LI, TAG_MAIN, TAG_P, TAG_STRONG, TAG_TABLE, TAG_TD, TAG_TH, TAG_TR, TAG_UL, TEXT_JOIN_SEP,
+    TYPE_INDEMAND,
     TYPE_INELIGIBLE, TYPE_POLICY, TYPE_PRIORITY, UNIT_CAD_YR, UNIT_CLB, UNIT_EMPLOYEES, UNIT_MONTHS, UNIT_YEARS,
     WATCH_ALLOC_RE, WATCH_CACHE_DIR, WATCH_HTML_GLOB, WATCH_KEY_TPL, WATCH_MAX_ALERTS, WATCH_NEWS_TEXT_TPL,
     WATCH_NOM_RE, WATCH_NOTE, WATCH_NUM_RE, WATCH_N_MAX, WATCH_N_MIN, WATCH_PRINT_CRASH_TPL, WATCH_PRINT_DONE_TPL,
@@ -272,7 +275,8 @@ from pnp.scheme import (
     CollectTenureIn, CountIn, DaysIn, EmployerRowIn, FactorCountsIn, FailIn, FetchHtmlIn, HasGroupIn, HitSrcIn,
     HitsIn, LatestIn, LatestOut, MbAdaptCollectIn, MbAdaptOut, MbAdaptStepIn, MbAdaptStepOut, MbAnnualOut, MbBlock,
     MbBlockNameIn, MbFactorOut, MbIdolOut, MbInventoryIn, MbMonthlyIn, MbMonthlyOut, MbPageOut, MbPlanIn,
-    MbPlanOut, MbSayIn, MbSimpleIn, MergeDrawsIn, NbGuidesOut, NbSegPickIn, NbSegsOut, NbStreamIn,
+    MbPlanOut, MbSayIn, MbSimpleIn, MergeDrawsIn, NbColIn, NbDrawIn, NbGuidesOut, NbSegPickIn, NbSegsOut,
+    NbSplitIn, NbSplitLinesIn, NbStreamIn,
     NlEmployerStatsIn, NlIgIn, NlpCheckIn, NocLinesIn, NoticeOfIn, OccProbeIn, OnChunkIn, OnColIn, OnDrawsOut,
     OnEntryIn, OnYearIn, PageTextIn, PeDrawRowsIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut,
     RowsByLabelsIn, ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn,
@@ -1581,12 +1585,13 @@ def iso_nb_of(s: str) -> str | None:
 def nb_br_lines(cell: SoupNodeLike) -> list:
     """官方表格用 <br> 分隔多行(Pathways 可多条、Occupational categories 常见 5+ 条),
     不能直接 get_text 合并——那样逗号本就出现在类别名里(如「Education, social and community
-    services」),会分不清是类别名内部逗号还是分隔符。按 <br> 切出原生的每行文本。"""
+    services」),会分不清是类别名内部逗号还是分隔符。按 <br> 切出原生的每行文本。
+    2026-09-23:没字母的行不算(AIP 的 pathway 格是 &nbsp; 或乱码「�」)。"""
     for br in cell.find_all(TAG_BR):
         br.replace_with(LINE_JOIN_SEP)
     out: list = []
     for x in cell.get_text(LINE_JOIN_SEP).split(LINE_JOIN_SEP):
-        if x.strip():
+        if x.strip() and NB_HAS_LETTER_RE.search(x):
             out.append(fold_ws(x).strip())
     return out
 
@@ -1596,13 +1601,16 @@ def is_bold_paragraph(tag: SoupNodeLike) -> bool:
     return tag.name == TAG_P and tag.find(TAG_B) is not None
 
 
+def is_nb_stream_head(tag: SoupNodeLike) -> bool:
+    """NB 通道名所在的标签:改版前是居中加粗段落,2026-08-31 改版后是 <h3>(2026-09-23 补认)。"""
+    return tag.name == TAG_H3 or is_bold_paragraph(tag)
+
+
 def nb_stream_of(x: NbStreamIn) -> str:
-    """通道名 + pathway 清单的拼法(pathway 名里的 New Brunswick 缩成 NB)。"""
+    """通道名 + pathway 清单的拼法(pathway 名里的 New Brunswick 缩成 NB)。
+    2026-09-23 起不再当 stream(stream 改 stream 级名,见 nb_stream_short_of),只当门槛清单键(K_CL_KEY)。"""
     if x.pathways:
-        short: list = []
-        for p in x.pathways:
-            short.append(NB_PROV_PREFIX_RE.sub(NB_PROV_SHORT_SUB, p))
-        joined = PLUS_JOIN_SEP.join(short)
+        joined = nb_paths_of(x.pathways)
         if x.base:
             return NB_STREAM_TPL.format(base=x.base, paths=joined)
         return joined
@@ -1628,42 +1636,196 @@ def nb_table_rows(table: SoupNodeLike) -> dict:
     return rows
 
 
+def nb_paths_of(pathways: list) -> str:
+    """pathway 清单 → 「NB Experience + NB Graduates」(New Brunswick 缩成 NB;顺序照入参)。"""
+    short: list = []
+    for p in pathways:
+        short.append(NB_PROV_PREFIX_RE.sub(NB_PROV_SHORT_SUB, p))
+    return PLUS_JOIN_SEP.join(short)
+
+
 def nb_base_stream(table: SoupNodeLike) -> str:
-    """通道名 = 表格前最近一个居中加粗段落(官方原文,如「New Brunswick Skilled Worker stream」)。"""
-    head = table.find_previous(is_bold_paragraph)
-    base = ""
+    """通道名 = 表格前最近一个通道名标签(官方原文,如「New Brunswick Skilled Worker stream」)。
+    2026-09-23 起 <h3> 也认(is_nb_stream_head),清洗挪进 nb_clean_base(历史表的 Stream 列同用)。"""
+    head = table.find_previous(is_nb_stream_head)
     if head:
-        base = fold_ws(head.get_text(TEXT_JOIN_SEP, strip=True))
-    base = NB_STREAM_TAIL_RE.sub(EMPTY_JOIN, base).strip()
+        return nb_clean_base(head.get_text(TEXT_JOIN_SEP, strip=True))
+    return EMPTY_JOIN
+
+
+def nb_clean_base(text: str) -> str:
+    """官网通道名 → 去掉尾部 stream 与前缀 New Brunswick;AIP 全名折成短名。"""
+    base = NB_STREAM_TAIL_RE.sub(EMPTY_JOIN, fold_ws(text)).strip()
     base = NB_PROV_PREFIX_RE.sub(EMPTY_JOIN, base)
     if base.lower() == NB_AIP_FULL:
         return NB_AIP_SHORT
     return base
 
 
+def nb_stream_short_of(base: str) -> str:
+    """stream 级通道名:AIP 原样,省提名三通道加 NB 前缀(「Skilled Worker」→「NB Skilled Worker」);
+    认不出通道名落兜底 NBPNP(不猜)。"""
+    if base == NB_AIP_SHORT:
+        return base
+    if base:
+        return NB_STREAM_SHORT_TPL.format(base=base)
+    return NB_DEFAULT_STREAM
+
+
+def nb_known_split(x: NbSplitIn) -> list:
+    """一行里空格连写的官方名(最新一轮块的 pathway / 职业类别格)按名单切开:长名优先、大小写不计、
+    必须落在词界上;有一段认不出就整行原样返回(不猜)。"""
+    text = x.text.strip()
+    out: list = []
+    i = 0
+    while i < len(text):
+        if text[i].isspace():
+            i += 1
+            continue
+        best = EMPTY_JOIN
+        for name in x.names:
+            if len(name) > len(best) and text[i:i + len(name)].lower() == name.lower():
+                best = name
+        end = i + len(best)
+        if best == EMPTY_JOIN or (end < len(text) and not text[end].isspace()):
+            return [text]
+        if x.canon:
+            out.append(best)
+        else:
+            out.append(text[i:end])
+        i = end
+    return out
+
+
+def nb_split_lines(x: NbSplitLinesIn) -> list:
+    """多行逐行按名单切(历史表一格一行本来就是一条,切了还是它自己)。"""
+    out: list = []
+    for line in x.lines:
+        out += nb_known_split(NbSplitIn(text=line, names=x.names, canon=x.canon))
+    return out
+
+
+def nb_path_rank(p: str) -> int:
+    """pathway 的规范序号(名单外的排最后;sort 的 key,原 lambda 形退役)。"""
+    if p in NB_PATHWAY_NAMES:
+        return NB_PATHWAY_NAMES.index(p)
+    return len(NB_PATHWAY_NAMES)
+
+
+def nb_int_of(s: str) -> int | None:
+    """邀请数格 → 数(历史表带脚注记号「8 ◊」;认不出 None,不猜)。"""
+    m = NB_INT_RE.search(s or EMPTY_JOIN)
+    if not m:
+        return None
+    return int_of(m.group(0))
+
+
+def nb_draw_of(x: NbDrawIn) -> dict | None:
+    """一轮 NB 抽选 → 抽选行(最新一轮块与历史表共用):stream 用 stream 级名,pathway 与职业类别进注,
+    门槛清单键仍按「通道 (pathway)」拼(pathway 取规范写法、规范序)。日期认不出给 None。"""
+    d = iso_nb_of(x.date)
+    if not d:
+        return None
+    pathways = nb_split_lines(NbSplitLinesIn(lines=x.pathways, names=NB_PATHWAY_NAMES, canon=True))
+    pathways.sort(key=nb_path_rank)
+    categories = nb_split_lines(NbSplitLinesIn(lines=x.categories, names=NB_CATEGORY_NAMES, canon=False))
+    parts: list = []
+    if pathways:
+        parts.append(NB_NOTE_PATHS_TPL.format(paths=nb_paths_of(pathways)))
+    if categories:
+        parts.append(NB_CATEGORIES_TPL.format(names=LIST_JOIN_SEP.join(categories)))
+    note = NB_NOTE_SEP.join(parts)
+    return {K_DATE: d, K_STREAM: nb_stream_short_of(x.base),
+            K_CL_KEY: nb_stream_of(NbStreamIn(base=x.base, pathways=pathways)),
+            K_NOTE: note[:DRAWS_NOTE_CLIP], K_SCORE: None, K_INVITATIONS: nb_int_of(x.inv)}
+
+
+def nb_col_key_of(label: str) -> str:
+    """历史表一格表头 → 列键(不认识给空串:Cut-off 等列不取)。"""
+    if label in (NB_DRAW_DATE_KW, NB_STREAM_COL_KW, NB_PATHWAYS_KW, NB_OCC_ROW_KEY):
+        return label
+    for kw in NB_INV_COL_KWS:
+        if kw in label:
+            return NB_INV_ISSUED_KEY
+    return EMPTY_JOIN
+
+
+def nb_history_cols(tr: SoupNodeLike) -> dict:
+    """历史表首行 → {列键: 列号}。"""
+    cols: dict = {}
+    i = 0
+    for c in tr.find_all([TAG_TD, TAG_TH]):
+        key = nb_col_key_of(fold_ws(c.get_text(TEXT_JOIN_SEP, strip=True)).lower())
+        if key:
+            cols[key] = i
+        i += 1
+    return cols
+
+
+def nb_col_lines(x: NbColIn) -> list:
+    """历史表一行里某列的各行(<br> 切;没这列给空列)。"""
+    if x.key not in x.cols:
+        return []
+    return nb_br_lines(x.cells[x.cols[x.key]])
+
+
+def nb_col_text(x: NbColIn) -> str:
+    """历史表一行里某列的整格文字(没这列给空串)。"""
+    if x.key not in x.cols:
+        return EMPTY_JOIN
+    return x.cells[x.cols[x.key]].get_text(TEXT_JOIN_SEP, strip=True)
+
+
+def nb_history_draws(table: SoupNodeLike) -> list:
+    """历史表(2026-08-31 改版后的六列大表:Date of draw / Stream / Cut-off / Pathways / Occupational
+    categories selected / Invitations issued(/ Applications selected))→ 抽选行;按首行表头认列,
+    首行不是这种表头给空列(交回两列块的解析)。2026-09-23 补:原解析器把它当两列块读,整张跳过。"""
+    trs = table.find_all(TAG_TR)
+    if not trs:
+        return []
+    cols = nb_history_cols(trs[0])
+    if NB_DRAW_DATE_KW not in cols or NB_STREAM_COL_KW not in cols:
+        return []
+    need = max(cols.values())
+    draws: list = []
+    for tr in trs[1:]:
+        cells = tr.find_all([TAG_TD, TAG_TH])
+        if len(cells) <= need:
+            continue
+        d = nb_draw_of(NbDrawIn(
+            date=nb_col_text(NbColIn(cells=cells, cols=cols, key=NB_DRAW_DATE_KW)),
+            base=nb_clean_base(nb_col_text(NbColIn(cells=cells, cols=cols, key=NB_STREAM_COL_KW))),
+            pathways=nb_col_lines(NbColIn(cells=cells, cols=cols, key=NB_PATHWAYS_KW)),
+            categories=nb_col_lines(NbColIn(cells=cells, cols=cols, key=NB_OCC_ROW_KEY)),
+            inv=nb_col_text(NbColIn(cells=cells, cols=cols, key=NB_INV_ISSUED_KEY))))
+        if d:
+            draws.append(d)
+    return draws
+
+
 def parse_nb_draws(html: str) -> list:
     """ImmigrationNB 的「表格块」格式(当期页与 previous-invitations-*.html 通用):
     每轮一段「<p><b>通道名</b></p> + <table>」,表格是「标签: 值」两列行(Date of draw /
     Cut-off date and time / Pathways(可无,如 AIP) / Invitations issued 或 Applications selected /
-    Occupational categories selected)。按类别定向发邀请、官方不发分数线 —— score 恒 None。"""
+    Occupational categories selected)。按类别定向发邀请、官方不发分数线 —— score 恒 None。
+    2026-09-23 跟 08-31 改版:历史表六列大表先认(nb_history_draws),其余照两列块读;
+    一轮拼成一行交给 nb_draw_of(stream 级名、pathway 进注、门槛清单键)。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
+        hist = nb_history_draws(table)
+        if hist:
+            draws += hist
+            continue
         rows = nb_table_rows(table)
         if NB_DRAW_DATE_KW not in rows:
             continue
-        d = iso_nb_of(str(rows[NB_DRAW_DATE_KW]))
-        if not d:
-            continue
-        pathways = rows.get(NB_PATHWAYS_KW) or []
-        categories = rows.get(NB_OCC_ROW_KEY) or []
-        note = ""
-        if categories:
-            note = NB_CATEGORIES_TPL.format(names=LIST_JOIN_SEP.join(categories))
-        inv = int_of(rows.get(NB_INV_ISSUED_KEY) or rows.get(NB_APP_SELECTED_KEY))
-        draws.append({K_DATE: d,
-                      K_STREAM: nb_stream_of(NbStreamIn(base=nb_base_stream(table), pathways=pathways)),
-                      K_NOTE: note[:DRAWS_NOTE_CLIP], K_SCORE: None, K_INVITATIONS: inv})
+        inv = rows.get(NB_INV_ISSUED_KEY) or rows.get(NB_APP_SELECTED_KEY) or EMPTY_JOIN
+        d = nb_draw_of(NbDrawIn(date=str(rows[NB_DRAW_DATE_KW]), base=nb_base_stream(table),
+                                pathways=rows.get(NB_PATHWAYS_KW) or [], categories=rows.get(NB_OCC_ROW_KEY) or [],
+                                inv=str(inv)))
+        if d:
+            draws.append(d)
     draws.sort(key=draw_date_of, reverse=True)
     return draws[:DRAWS_NB_MAX]
 
@@ -1687,7 +1849,7 @@ def build_nb_draws(old: dict) -> dict:
     seen: set = set()
     merged: list = []
     for d in draws:
-        key = (d[K_DATE], d[K_STREAM], d[K_INVITATIONS])
+        key = (d[K_DATE], d[K_CL_KEY], d[K_INVITATIONS])
         if key in seen:
             continue
         seen.add(key)
