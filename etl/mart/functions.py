@@ -46,6 +46,7 @@ from names.functions import norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
+    EE_SUPERSEDED_BY,
     AB_SPOT_METRICS, AB_SUMMARY_METRICS, ACC_POINTS, ACC_POINTS_DEFAULT, ACC_RULES, ACC_UNKNOWN,
     ACTIVE_BUSY, ACTIVE_MID, AGENCY_NOTE, AGENCY_RE, AGG_NEW_DAYS, AIP_PROVS, AIP_TEERS, ALL,
     AND_ABOVE_RE, ATS_EXT_TPL, ATS_LOC_TPL, ATS_REMOTE_RE, K_HQ, OTTAWA_LOOKALIKE_RE, ENTITY_BREAK_TAG_RE, ENTITY_RE, ENTITY_TAG_RE, K_COMPANIES, AVG_DAYS_MIN_N, BC_PROC_LABEL_TPL, CITIES,
@@ -729,7 +730,18 @@ def load_ee_by_noc() -> dict:
                 acc[noc].append(lab)
     out: dict = {}
     for noc, labs in acc.items():
-        out[noc] = SLASH.join(labs)
+        out[noc] = SLASH.join(ee_labels_kept(labs))
+    return out
+
+
+def ee_labels_kept(labs: list) -> list:
+    """一个职业同属几个 EE 类别时,被别的类别盖住的那个不标(EE_SUPERSEDED_BY;2026-09-23 医生类盖住医疗社服)。"""
+    out = []
+    for lab in labs:
+        by = EE_SUPERSEDED_BY.get(lab)
+        if by is not None and by in labs:
+            continue
+        out.append(lab)
     return out
 
 
@@ -767,8 +779,10 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
     · 其余(inclusion 表省 MB/NS/NB/PE/NL):TEER0-3 粗筛通用,TEER4-5 清单命中可,
       **清单没命中也有五省普通通道兜底**(E13-09:direct=NL 拿 offer 即可;
       cond=MB/NS/NB/PE 先省内同雇主 6 个月)—— 直可/需前置的区分由 pnp_direct 承担。
+    · 2026-09-23 Frank「这个没有省的怎么有 pnp 呢」:没有省的岗不判(省提名是省里的事,没省就无从说起),
+      原先 TEER 0-3 落到「粗筛通用」被标成可提名;页面那格随之出长横,不写「走不了」。
     """
-    if x.prov in NON_PNP_PROV:
+    if not x.prov or x.prov in NON_PNP_PROV:
         return False
     tbl = x.tables.by_prov.get(x.prov)
     if tbl and x.noc in tbl[K_BLOCKED]:

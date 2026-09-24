@@ -608,17 +608,19 @@ export function byDrawDateDesc(a: PnpDraw, b: PnpDraw): number {
 
 /**
  * 命中本岗的类别。
+ * 2026-09-23 Frank「对于 EE 医生类,在这找医生类的工作肯定对标的是医生类啊」:改按岗位行上的 EE 类别标签取
+ * (数据层 mart 定的,医生类盖住医疗社服),不再按职业码逐个类别清单现查 —— 现查会把医生岗又算回医疗社服,
+ * 和表格那一格对不上。类别清单本身照官方原样,两类都列医生。
  *
- * @param x 全部类别与本岗职业码。
- * @returns 命中的类别。
+ * @param x 全部类别与本岗的 EE 类别标签。
+ * @returns 命中的类别(标签顺序)。
  */
 export function eeHitOf(x: EeHitIn): PnpEeCat[] {
   const hit: PnpEeCat[] = []
-  for (const c of x.grouped) {
-    for (const o of c.occupations) {
-      if (o.noc === x.noc) {
+  for (const label of x.eeCategory.split(CAT_JOIN)) {
+    for (const c of x.grouped) {
+      if (c.label === label.trim()) {
         hit.push(c)
-        break
       }
     }
   }

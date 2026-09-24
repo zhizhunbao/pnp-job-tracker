@@ -1517,11 +1517,6 @@ export type FloatPanelOut = {
   full: boolean
 
   /**
-   * 全屏/还原切换。
-   */
-  toggleFull: () => void
-
-  /**
    * 浮层的运行时几何(全屏时是空对象 —— 那一档的样式全在类里)。
    */
   panelStyle: React.CSSProperties
@@ -3159,21 +3154,6 @@ export type ZhLabelIn = {
    * 对照开着没有。
    */
   show: boolean
-}
-
-/**
- * fullTitleOf 的入参。
- */
-export type FullTitleIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 全屏态。
-   */
-  full: boolean
 }
 
 /**

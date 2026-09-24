@@ -54,7 +54,7 @@ import type {
   CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   DiffCellFact,
   DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
-  FieldPageIn, FirstTextIn, FullTitleIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
+  FieldPageIn, FirstTextIn, GapClsIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
   IdRowFact,
   IdRowsIn, OccNameOfIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
   LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
@@ -1899,19 +1899,6 @@ export function caretOf(x: OnClsIn): string {
     return CARET_DOWN
   }
   return CARET_RIGHT
-}
-
-/**
- * 全屏钮的悬停提示(全屏中显示「退出全屏」)。
- *
- * @param x 取词函数与全屏态。
- * @returns 提示语。
- */
-export function fullTitleOf(x: FullTitleIn): string {
-  if (x.full) {
-    return x.t('advisor.exitFull')
-  }
-  return x.t('advisor.full')
 }
 
 /**

@@ -11,16 +11,18 @@
  * → 公司页)全屏钮换成箭头,本页整页跳;窄屏也出(全屏钮窄屏不出是因为窄屏本来就全屏,箭头不是那回事)。没落地页的照旧全屏钮。
  * 同日 Frank「这个箭头长一点。并且打开新页面」:换长箭头 MoveUpRight;改新标签页打开(本域 TARGET_BLANK 口径:
  * 弹框里点出去的一律新标签,别把弹框关掉)—— 上一行「本页整页跳」作废。target 给了值 LinkButton 就走裸 a,不走 next/link 预取。
+ * 2026-09-23 Frank「这个带全屏的都去掉吧」:没落地页的框的全屏钮撤,桌面不再有全屏态(记住的全屏也不再认,免得撤了钮回不来);
+ * 窄屏照旧强制全屏。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { IconMaximize, IconMinimize, IconMoveUpRight, IconRefresh } from '@/components/icons'
+import { IconMoveUpRight, IconRefresh } from '@/components/icons'
 import { overlayCls, useOverlayClose } from '@/components/modal'
 import { BTN_GHOST, CLOSE_MARK, CLS_SEP, TARGET_BLANK, TEXT_NONE } from './constants'
-import { fullTitleOf, makeActsDown, panelBodyClsOf, panelClsOf, panelHeadClsOf, stopClick } from './functions'
+import { makeActsDown, panelBodyClsOf, panelClsOf, panelHeadClsOf, stopClick } from './functions'
 import { ResizeHandles } from './resizehandles'
 import type { FloatPanelIn } from './types'
 import css from './advisor.module.css'
@@ -35,7 +37,6 @@ export function FloatPanel({
   panel, head, onClose, t, tight, jdBody, actsStopDrag, onRefresh, pageHref, children,
 }: FloatPanelIn) {
   const ov = useOverlayClose(onClose)
-  const fullLabel = fullTitleOf({ t, full: panel.full })
   return (
     <div onMouseDown={ov.onMouseDown} onClick={ov.onClick} className={cssOf(css.scrim) + CLS_SEP + overlayCls()}>
       {/* eslint-disable-next-line react/forbid-dom-props -- 浮层的位置与尺寸是每帧连续变化的运行时像素(panelStyleOf) */}
@@ -54,13 +55,6 @@ export function FloatPanel({
                 ariaLabel={t('detail.openFull')}
                 className={cssOf(css.iconBtn)}>
                 <IconMoveUpRight />
-              </Button>
-            )}
-            {pageHref === TEXT_NONE && panel.narrow === false && (
-              <Button kind={BTN_GHOST} onClick={panel.toggleFull} title={fullLabel} ariaLabel={fullLabel}
-                className={cssOf(css.iconBtn)}>
-                {panel.full && <IconMinimize />}
-                {panel.full === false && <IconMaximize />}
               </Button>
             )}
             <Button kind={BTN_GHOST} onClick={onClose} className={cssOf(css.iconBtn)}>{CLOSE_MARK}</Button>

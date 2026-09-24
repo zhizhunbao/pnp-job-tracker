@@ -167,6 +167,8 @@ function limitCtaOf(x: AdvisorCtaIn): string {
  * 记了位置,窗口一缩小上次那个坐标就在屏外,弹框打开即消失。
  * 2026-09-21 Frank「会出现 先一个小框，然后在放大」:记忆原先在挂载后的 effect 里补(先按默认尺寸画一帧,再跳成记住的尺寸 / 全屏);
  * 弹框都是用户点了才开、只在浏览器里画,首帧就按记忆算(panelInitOf,读不到本地存储照旧给默认),那一跳没了。
+ * 2026-09-23 Frank「这个带全屏的都去掉吧」:全屏钮撤,全屏态只剩窄屏强制那一种 —— 记忆里的全屏不再认
+ * (认了就会有人卡在全屏里、又没有钮退出)。
  *
  * @param x 记忆键与默认宽高。
  * @returns 浮层机器面板。
@@ -176,18 +178,11 @@ export function useFloatPanel(x: FloatPanelHookIn): FloatPanelOut {
   const [init] = useState<PanelInit>(function initPanel(): PanelInit {
     return panelInitOf(x)
   })
-  const [fullPref, setFullPref] = useState(init.full)
   const [size, setSize] = useState<PanelSize>(init.size)
   const [pos, setPos] = useState<PanelPos>(init.pos)
   const sizeRef = useRef<PanelSize>(size)
-  const full = fullPref || narrow
+  const full = narrow
   const prefKey = x.prefKey
-
-  function toggleFull(): void {
-    const next = fullPref === false
-    savePrefOf({ key: prefKey, patch: { full: next, w: null, h: null } })
-    setFullPref(next)
-  }
 
   function onEdgeDown(dir: string): PointerHandlerFn {
     return makeResizeStart({ full, prefKey, size, pos, sizeRef, setSize, setPos, dir })
@@ -196,7 +191,6 @@ export function useFloatPanel(x: FloatPanelHookIn): FloatPanelOut {
   return {
     narrow,
     full,
-    toggleFull,
     panelStyle: panelStyleOf({ full, pos, size }),
     onHeadDown: makeDragStart({ full, pos, setPos }),
     onEdgeDown,

@@ -469,6 +469,13 @@ IN_EE_CATEGORIES = paths.EE / "federal-categories.json"
 """联邦 Express Entry「类别抽选」清单(全国单一源,与 PNP 是两条不同路 → 独立信号,
 不混 pnpEligible)。文件无 = 不标。"""
 
+EE_SUPERSEDED_BY = {"医疗社服": "医生"}
+"""EE 类别的覆盖关系:一个职业同时在键、值两类里时只标值那一类(键被值盖住)。
+2026-09-23 Frank「对于 EE 医生类,在这找医生类的工作肯定对标的是医生类啊」:医生(31100 / 31101 / 31102)官方同时列在
+「医疗社服」与「医生」两类 —— 区别只在经验在哪:医疗社服类「近 3 年 12 个月,in Canada or abroad」,医生类「in Canada」
+(canada.ca category-based-selection 页原句,crawl fed-ee)。本站是加拿大职位板,找医生岗的人对标医生类(最近一轮 198 分 vs 475),
+岗上只标「医生」;类别清单(维度表)照官方原样两类都列。"""
+
 PROGRAM_PNP = "PNP"
 """项目码:省提名(表级默认)。"""
 

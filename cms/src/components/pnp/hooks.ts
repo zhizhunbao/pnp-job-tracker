@@ -73,7 +73,7 @@ export function useEeCategory(x: EeHookIn): EePanel {
     scrollIntoHit({ ref: matchRef })
   }, [grouped])
 
-  const hit = eeHitOf({ grouped, noc: x.job.noc })
+  const hit = eeHitOf({ grouped, eeCategory: x.job.eeCategory })
   return {
     t,
     matchRef,

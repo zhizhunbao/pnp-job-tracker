@@ -1087,7 +1087,7 @@ export const consultZh = {
   'advisor.loading': '⏳ 努力思考中…',
   'advisor.failed': '生成失败({code})',
   'advisor.offline': '网络异常,AI 判断暂时不可用——上方事实与官方链接不受影响。',
-  'advisor.footAI': '由 AI 生成 · 可能有误,仅供参考', 'advisor.full': '全屏', 'advisor.exitFull': '退出全屏',
+  'advisor.footAI': '由 AI 生成 · 可能有误,仅供参考',
   'advisor.chatPlaceholder': '基于上方事实追问这个职位…', 'advisor.chatSend': '发送',
   'advisor.sug.title': '这个职位走「雇主 offer → 省提名」最大的坑是什么?', 'advisor.sug.company': '这家公司有雇外国人的历史吗?对求职者靠谱吗?', 'advisor.sug.generic': '这条信号对我拿省提名意味着什么?',
   'advisor.sug.title2': '这个职位的薪资和要求,在同类岗位里算什么水平?', 'advisor.sug.title3': '面试或接 offer 前,我该跟雇主确认哪几件事?',

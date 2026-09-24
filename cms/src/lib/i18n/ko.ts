@@ -982,7 +982,7 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'advisor.loading': '⏳ 고민 중…',
   'advisor.failed': '생성 실패 ({code})',
   'advisor.offline': '네트워크 오류 — AI 분석을 일시적으로 사용할 수 없습니다. 위의 사실과 공식 링크는 정상입니다.',
-  'advisor.footAI': 'AI 생성 · 부정확할 수 있음, 참고용', 'advisor.full': '전체 화면', 'advisor.exitFull': '전체 화면 나가기',
+  'advisor.footAI': 'AI 생성 · 부정확할 수 있음, 참고용',
   'advisor.chatPlaceholder': '위 정보를 바탕으로 이 채용에 대해 질문하세요…', 'advisor.chatSend': '보내기',
   'advisor.sug.title': '이 공고, 고용주 오퍼 → 주정부 지명(PNP) 경로로 갈 때 가장 큰 함정은?', 'advisor.sug.company': '이 회사는 외국인 고용 이력이 있나요? 지원자 입장에서 믿을 만한가요?', 'advisor.sug.generic': '이 시그널이 제 주정부 지명(PNP) 가능성에 어떤 의미인가요?',
   'advisor.sug.title2': '이 공고의 급여와 요건은 비슷한 포지션 대비 어느 수준인가요?', 'advisor.sug.title3': '면접이나 오퍼 수락 전에 고용주에게 꼭 확인할 것은?',

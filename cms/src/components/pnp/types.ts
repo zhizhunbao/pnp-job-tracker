@@ -1996,9 +1996,9 @@ export type EeHitIn = {
   grouped: PnpEeCat[]
 
   /**
-   * 本岗职业码。
+   * 本岗的 EE 类别标签(数据层给的,多类用 / 连;''=不属任何类)。
    */
-  noc: string
+  eeCategory: string
 }
 
 /**

@@ -989,7 +989,7 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.loading': '⏳ Thinking hard…',
   'advisor.failed': 'Failed ({code})',
   'advisor.offline': 'Network issue — the AI read is temporarily unavailable. The facts and official links above are unaffected.',
-  'advisor.footAI': 'AI-generated · may be inaccurate, for reference only', 'advisor.full': 'Fullscreen', 'advisor.exitFull': 'Exit fullscreen',
+  'advisor.footAI': 'AI-generated · may be inaccurate, for reference only',
   'advisor.chatPlaceholder': 'Ask about this job, grounded in the facts above…', 'advisor.chatSend': 'Send',
   'advisor.sug.title': 'What are the biggest pitfalls of this job for the employer-offer → PNP route?', 'advisor.sug.company': 'Has this company hired foreign workers before? How reliable is it for applicants?', 'advisor.sug.generic': 'What does this signal mean for my PNP chances?',
   'advisor.sug.title2': 'How do this job’s pay and requirements compare with similar postings?', 'advisor.sug.title3': 'What should I confirm with the employer before interviewing or accepting?',

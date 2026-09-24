@@ -1262,11 +1262,12 @@ export const COL_SALARY_YR: JobColKey = 'salaryYr'
  * 2026-09-14 Frank「这个太长了怎么处理」(North York 被按词折成两行):市加入不折行 —— 地名是名字,名字不截不折;
  * 列宽机器给不折行列的最短宽按整格量,长地名(Saint-Jean-sur-Richelieu 一类)会多吃一点宽,由 P90 / MAX 两轮回填消化。
  * 2026-09-23 职业列同理(Frank 截图「软件工程师」被折成两行):职业名也是名字,中文最长 8 个字、英文短名不超 32 字符。
+ * 同日 PNP 列同理(Frank 截图「ON 可提名」折成「ON 可提 / 名」):通道短标签不折行。
  */
 export const NOWRAP_COLS = new Set<JobColKey>([
   'datePosted', 'lastSeen', 'closedAt', 'salaryYr', 'wageMedHr', 'wageMedYr', 'vsMedian', 'teer',
   'empHours', 'empTerm', 'whoCanApply', 'status', 'direct', 'aip', 'pilot', 'lmia', 'eligibility', 'city', 'noc',
-  'nocCode',
+  'nocCode', 'pnp',
 ])
 
 /**
