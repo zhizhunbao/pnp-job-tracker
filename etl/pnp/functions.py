@@ -279,8 +279,8 @@ from pnp.constants import (  # 2026-09-24 九省通道审计第三批新增
     AB_PRINT_LAW_TPL, AB_PRINT_RURAL_TPL, AB_PRINT_TOURISM_TPL, AB_RR_COMMUNITY_URL, AB_RR_INCLUDING_RE,
     AB_RR_LIST_SPLIT_RE, AB_RR_PLACE_PREFIX_RE, AB_RR_PLACE_SKIP, AB_RR_PLACE_SUFFIX_RE, AB_RURAL_LABEL,
     AB_RURAL_NOTE, AB_RURAL_STREAM, AB_TOURISM_LABEL, AB_TOURISM_NOTE, AB_TOURISM_STREAM, AB_TOURISM_TABLE_KW,
-    AB_TOURISM_TITLE, AB_TOURISM_URL, DRAWS_AB_MAX, K_COMMUNITIES, K_EXCLUDED, MB_DRAW_SUB_NOTE_TPL, MB_SECTION_TAGS,
-    MB_SWM_STREAM, MB_SWM_SUBS,
+    AB_TOURISM_GENERIC, AB_TOURISM_TITLE, AB_TOURISM_URL, DRAWS_AB_MAX, K_COMMUNITIES, K_EXCLUDED, MB_DRAW_SUB_NOTE_TPL,
+    MB_SECTION_TAGS, MB_SWM_STREAM, MB_SWM_SUBS,
     NB_PRINT_NO_PRIORITY, NB_PRINT_PRIORITY_TPL, NB_PRIORITY_LABEL, NB_PRIORITY_NOTE, NB_PRIORITY_ROW_RE,
     NB_PRIORITY_STREAM, NB_PRIORITY_TIMEOUT_S, NB_PRIORITY_URL, NS_CONSTR_GENERIC, NS_CONSTR_LABEL,
     NS_CONSTR_NOTE, NS_CONSTR_SEG_RE, NS_CONSTR_STREAM, NS_FACT_FOOD_PAUSE, NS_FACT_FOOD_PAUSE_KEY,
@@ -650,13 +650,17 @@ def build_ab_law() -> None:
 
 
 def build_ab_tourism() -> None:
-    """AB 旅游酒店清单:资格页表 3(合格职业)。表 1 是 WCB 行业码(也是 5 位数)不能混,按表头「NOC code」认表。"""
+    """AB 旅游酒店清单:资格页表 3(合格职业)。表 1 是 WCB 行业码(也是 5 位数)不能混,按表头「NOC code」认表;
+    哪行都有的通用码(AB_TOURISM_GENERIC)不收。"""
     try:
         html = ab_page_html(AbPageIn(url=AB_TOURISM_URL, title=AB_TOURISM_TITLE))
     except Exception as e:  # noqa: BLE001
         say(PRINT_KEEP_OLD_TPL.format(what=OUT_AB_TOURISM_FILE, name=type(e).__name__, detail=e))
         return
-    occ = ab_noc_table_of(AbNocTableIn(html=html, head_kw=AB_TOURISM_TABLE_KW))
+    occ: dict = {}
+    for code, name in ab_noc_table_of(AbNocTableIn(html=html, head_kw=AB_TOURISM_TABLE_KW)).items():
+        if code not in AB_TOURISM_GENERIC:
+            occ[code] = name
     if not occ:
         say(AB_PRINT_EMPTY_TPL.format(what=OUT_AB_TOURISM_FILE))
         return
