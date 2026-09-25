@@ -21,6 +21,8 @@ META = 域即役的调度声明(形制字段;本域不挂容器,interval 只是�
 2026-09-25 单役 META 改多役 METAS(jobbank 先例;Frank 勾「试保活续命」):原 hireac 役原样成第一条;
 第二条 hireac-keepalive 役同容器每 30 分钟 --only keepalive 进一次板写回 cookie —— 会话闲置约一个多小时就过期,
 日更一轮必撞登录墙(09-15 成功后 2 小时 11 分首报过期)。单元名另起,build 链 after 只认 jobbank,不会被带着跑。
+2026-09-25 当天撤回保活役(Frank「按 B 办,保活撤掉」):实测 13:20 前后登录,13:51 保活成功,14:21 已落未登录页 ——
+闲置 30 分钟内或登录后约 1 小时就失效,30 分钟保活无效。改成过期就弹窗手动登(想刷新时 Frank 说一声);METAS 只剩抓取役。
 
 @author Frank
 @time 2026-09-13
@@ -39,14 +41,5 @@ METAS = [
         "seed": False,           # 抓取源只刷 raw/processed,不灌库(灌库归 load 域 build 链)
         "ping": True,            # 2026-09-15 进容器:本角色唯一单元,登录过期停轮不发心跳 → healthchecks 邮件提醒(原:无容器无心跳)
         "only": "",
-    },
-    {
-        "name": "hireac-keepalive",
-        "role": "hireac",        # 同容器(SOURCE=hireac):守护循环逐个单元串行跑,不会和抓取同时开浏览器
-        "method": "browser",
-        "interval": 1800,        # 30 分钟进一次板,赶在闲置过期(约一个多小时)之前;失败也按 1800 重试
-        "seed": False,
-        "ping": False,           # 心跳只挂抓取役:保活成功不代表抓取成功,别让它把告警盖掉
-        "only": "keepalive",
     },
 ]

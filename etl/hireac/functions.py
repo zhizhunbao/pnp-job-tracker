@@ -106,7 +106,8 @@ def export_hireac_cookies() -> None:
     """--only export 入口(Frank 本机手动;2026-09-15 进容器):本机 Chrome 共享 profile 里登录好 HireAC 后,把学院与微软登录的
     cookie 导成 PROFILE_DIR/COOKIES_FILE 给容器 hireac 役加载。登录过期时先在本机 Chrome 重登,再跑这一步。
     2026-09-25 容器里也跑它当保活(--only keepalive 同一个函数,Frank 勾「试保活续命」):cookie 模式下读文件进板、
-    确认还登着、写回同一个文件 —— 会话闲置约一个多小时就过期,日更一轮必撞,每 30 分钟进一次板让它别闲着。"""
+    确认还登着、写回同一个文件 —— 会话闲置约一个多小时就过期,日更一轮必撞,每 30 分钟进一次板让它别闲着。
+    同日撤回:30 分钟保活第 2 轮已落未登录页,保活无效,保活役与 keepalive 键已删(见 hireac/__init__)。"""
     asyncio.run(export_in_browser())
 
 
