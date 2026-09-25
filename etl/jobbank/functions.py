@@ -68,6 +68,7 @@ from jobbank.constants import (
     K_ANNUAL, K_APPRENTICE_FRIENDLY, K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY,
     K_COUNT, K_CUTOFF, K_DATE, K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT,
     K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_WHO_CAN_APPLY,
+    K_DETAIL_STALE,
     DETAIL_BACKFILL_MAX,
     SEL_AUDIENCE, WHO_ANYONE, WHO_ANYONE_MARK, WHO_CITIZENS, WHO_TEMPORARY, WHO_TEMPORARY_MARK,
     K_EXPERIENCE_REQ, K_EXTERNAL_ID, K_FETCHED_AT, K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN,
@@ -117,7 +118,7 @@ from jobbank.scheme import (
     JdIndexUpdates, JdMdScan, JdMergeIn,
     FlagRowIn, HttpClientLike, JobMdIn, LabelIn, ListingIn, MergeIn, MergeOut, NeedIn, PageIn,
     PageOut, ProvinceIn, ReqIn, SanityJudgeIn, SanityRowIn, SanityWageIn, SaveIn, ShouldParseIn,
-    SoupNodeLike, StemIn, TickIn, VerifyIn, VerifyOut,
+    SoupNodeLike, StaleIn, StemIn, TickIn, TitleChangeIn, VerifyIn, VerifyOut,
     HowtoBatchIn, HowtoBatchOut, HowtoFlushIn, HowtoOneIn, HowtoParseIn, HowtoPickIn, HowtoPickOut,
     HowtoRecordIn, HowtoTallyIn, HttpPostClientLike,
 )
@@ -241,6 +242,29 @@ def detail_html_index() -> dict:
     return index
 
 
+def is_detail_stale(x: StaleIn) -> bool:
+    """这帖记着详情欠重抓(K_DETAIL_STALE,来由见常量)、且手上最新的详情快照早于记账时刻 → 要重抓。"""
+    at = x.job.get(K_DETAIL_STALE)
+    if not at:
+        return False
+    if x.raw_file is None:
+        return True
+    return html_at_of(x.raw_file) < datetime.fromisoformat(at)
+
+
+def is_stale_refreshed(x: StaleIn) -> bool:
+    """这帖欠着重抓、而手上已有不早于记账时刻的详情快照 → 拿它重解析并销账。"""
+    at = x.job.get(K_DETAIL_STALE)
+    if not at or x.raw_file is None:
+        return False
+    return html_at_of(x.raw_file) >= datetime.fromisoformat(at)
+
+
+def html_at_of(path: Path) -> datetime:
+    """详情快照的落盘时刻(文件 mtime,UTC;落盘走 temp+rename,mtime 即抓取时刻)。"""
+    return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+
+
 # =========================================================================
 # 2. 列表快照抓取(全职业 · 按省 · sort=D · 增量:只存原始 HTML,不解析不合并)
 # =========================================================================
@@ -352,7 +376,7 @@ def parse_jobbank_postings() -> None:
         write_postings(by_id)
     say(PRINT_PARSE_DONE_TPL.format(snap=snap.name, rows=len(rows), added=merged.added,
                                     updated=merged.updated, skipped=merged.skipped_old,
-                                    cutoff=cutoff, base=base, total=len(by_id)))
+                                    cutoff=cutoff, base=base, total=len(by_id), stale=merged.stale))
 
 
 def since_days_of() -> int:
@@ -447,10 +471,12 @@ def load_postings() -> dict:
 
 
 def merge_rows(x: MergeIn) -> MergeOut:
-    """本轮行并进累积 store:只覆盖原始抓取字段,保留衍生字段;早于截止日的跳过。"""
+    """本轮行并进累积 store:只覆盖原始抓取字段,保留衍生字段;早于截止日的跳过。
+    2026-09-25:已抓过详情的帖列表标题变了 → 记 K_DETAIL_STALE(详情欠一次重抓,来由见常量)。"""
     added = 0
     updated = 0
     skipped_old = 0
+    stale = 0
     for row in x.rows:
         posted = listing_date_of(row[K_DATE])
         if posted is not None and posted < x.cutoff:
@@ -461,13 +487,16 @@ def merge_rows(x: MergeIn) -> MergeOut:
             continue
         scraped = to_scraped_row(row)
         if pid in x.by_id:
+            if is_title_changed(TitleChangeIn(job=x.by_id[pid], title=scraped[K_TITLE])):
+                x.by_id[pid][K_DETAIL_STALE] = x.fetched
+                stale += 1
             x.by_id[pid].update(scraped)
             updated += 1
         else:
             x.by_id[pid] = scraped
             added += 1
         x.by_id[pid][K_LAST_SEEN] = x.fetched
-    return MergeOut(added=added, updated=updated, skipped_old=skipped_old)
+    return MergeOut(added=added, updated=updated, skipped_old=skipped_old, stale=stale)
 
 
 def to_scraped_row(row: dict) -> dict:
@@ -476,6 +505,13 @@ def to_scraped_row(row: dict) -> dict:
     for key in SCRAPED_KEYS:
         out[key] = row.get(key, "")
     return out
+
+
+def is_title_changed(x: TitleChangeIn) -> bool:
+    """已抓过详情的帖,这轮列表标题和 store 里的不一样(忽略大小写与空白;这轮标题空不算)。"""
+    if not x.job.get(K_DETAIL_FETCHED) or norm(x.title) == "":
+        return False
+    return norm(x.title).lower() != norm(x.job.get(K_TITLE, "")).lower()
 
 
 def write_postings(by_id: dict) -> None:
@@ -546,12 +582,15 @@ def needs_detail(x: NeedIn) -> bool:
     """要抓 = 有 url/帖号、HTML 没抓过、且(未富集 或 还缺官方 noc)。
 
     后者让存量帖一次性重抓拿 NOC(覆盖历史)。
+    2026-09-25:列表标题变过、手上的详情快照早于那次变化的,HTML 抓过也重抓(is_detail_stale)。
     """
     pid = pid_of(x.job)
     if pid == "":
         return False
     if not x.job.get(K_URL):
         return False
+    if is_detail_stale(StaleIn(job=x.job, raw_file=x.have.get(pid))):
+        return True
     if pid in x.have:
         return False
     if x.job.get(K_DETAIL_FETCHED) and x.job.get(K_NOC):
@@ -580,6 +619,7 @@ def parse_jobbank_details() -> None:
     """本域步骤入口:解析详情快照,原地富集帖子行并写详情 .md。
 
     两者作为一个发布事务持锁,防止 build 读到新 md、却仍读到旧 postings(或反过来)。
+    2026-09-25:欠重抓的帖拿到新快照(is_stale_refreshed)当强制重解析,不占回填名额,解析完销账。
     """
     say(PRINT_DETAILS_IN_TPL.format(root=IN_SNAP_ROOT))
     say(PRINT_DETAILS_OUT_TPL.format(postings=IN_POSTINGS, details=OUT_DETAILS))
@@ -597,9 +637,11 @@ def parse_jobbank_details() -> None:
         forced_ids = reparse_ids()
         parsed = 0
         backfilled = 0
+        resynced = 0
         for job in jobs:
             raw_file = have.get(pid_of(job))
-            forced = reparse or pid_of(job) in forced_ids
+            refreshed = is_stale_refreshed(StaleIn(job=job, raw_file=raw_file))
+            forced = reparse or pid_of(job) in forced_ids or refreshed
             if not should_parse(ShouldParseIn(job=job, raw_file=raw_file, reparse=forced)):
                 continue
             if is_backfill_only(job) and not forced:
@@ -607,13 +649,16 @@ def parse_jobbank_details() -> None:
                     continue
                 backfilled += 1
             enrich_job(EnrichIn(job=job, raw_file=cast(Path, raw_file), seen=seen, index=index))
+            if refreshed:
+                job.pop(K_DETAIL_STALE)
+                resynced += 1
             parsed += 1
         if parsed > 0:
             write_enriched(jobs)
             write_jd_index(index)
         tally = store_tally(jobs)
     say(PRINT_DETAILS_DONE_TPL.format(parsed=parsed, addrs=tally.addrs, webs=tally.webs,
-                                      emp=tally.emp, certs=tally.certs, out=OUT_DETAILS))
+                                      emp=tally.emp, certs=tally.certs, out=OUT_DETAILS, resynced=resynced))
 
 
 def reparse_ids() -> set:

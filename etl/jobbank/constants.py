@@ -115,6 +115,13 @@ K_DETAIL_FETCHED = "detail_fetched"
 K_LAST_SEEN = "last_seen"
 """帖子行键:本帖最近一次在增量抓取里露面的时刻(mart 透传 lastSeen,验尸排序看它)。"""
 
+K_DETAIL_STALE = "detail_stale"
+"""帖子行键:列表标题变过、详情页欠一次重抓(值 = 发现变化的那份列表快照的抓取时刻,UTC ISO;缺 = 不欠)。
+2026-09-25 Frank 批(McCain 实撞):Job Bank 9-21 把 AgCareers 转来的「Food Scientist」归成 software developer(21232),
+9-22 改成 agricultural scientist —— 列表标题跟上了,详情每帖只抓一次,职业码停在 21232。列表合并发现标题变了记这一笔,
+详情抓取步见账重抓,解析步拿到不早于记账时刻的快照才重解析并销账。比的是新旧两次列表标题,不拿列表标题比详情页标题:
+中介帖的列表标题尾巴挂着中介说明,两边永远对不上(抽样 600 帖 599 同、1 条即此)。"""
+
 SEL_ARTICLE = "article"
 """列表页里一帖一个 <article>。"""
 
@@ -301,8 +308,8 @@ PRINT_WROTE_TPL = "Wrote {n} postings → {out}"
 """写回 store 的一行。"""
 
 PRINT_PARSE_DONE_TPL = ("解析 {snap}: {rows} 行 → +{added} new · {updated} updated · "
-                        "{skipped} 跳过(早于 {cutoff}) · base {base} → {total}")
-"""列表解析收尾一行(逐字沿用原文案)。"""
+                        "{skipped} 跳过(早于 {cutoff}) · base {base} → {total} · {stale} 帖标题变了、详情待重抓")
+"""列表解析收尾一行(逐字沿用原文案;2026-09-25 尾部加标题变更计数)。"""
 
 
 # =========================================================================
@@ -600,8 +607,9 @@ PRINT_NO_POSTINGS = "没有 postings.json,跳过"
 """store 还不存在时的一行。"""
 
 PRINT_DETAILS_DONE_TPL = ("Parsed {parsed} new details · {addrs} with address · {webs} with website "
-                          "· {emp} with employment · {certs} with certificates → postings 富集 + {out}")
-"""详情解析收尾一行(逐字沿用原文案)。"""
+                          "· {emp} with employment · {certs} with certificates → postings 富集 + {out}"
+                          " · {resynced} 帖标题变更重抓后重解析")
+"""详情解析收尾一行(逐字沿用原文案;2026-09-25 尾部加标题变更销账计数)。"""
 
 
 # =========================================================================

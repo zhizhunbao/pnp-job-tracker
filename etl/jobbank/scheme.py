@@ -101,6 +101,17 @@ class HttpClientLike(Protocol):
 
 
 @dataclass
+class StaleIn:
+    """is_detail_stale() / is_stale_refreshed() 入参:一帖 + 它手上最新的详情快照。"""
+
+    job: dict
+    """帖子行(读 K_DETAIL_STALE)。"""
+
+    raw_file: "Path | None"
+    """该帖最新的详情 HTML 快照;None = 还没抓过。"""
+
+
+@dataclass
 class LabelIn:
     """clean_labeled() 入参:一段文本 + 要剥掉的前缀标签(「Location: …」)。"""
 
@@ -230,7 +241,7 @@ class MergeIn:
 
 @dataclass
 class MergeOut:
-    """merge_rows() 出参:三个计数。"""
+    """merge_rows() 出参:四个计数。"""
 
     added: int
     """新增的帖数。"""
@@ -240,6 +251,20 @@ class MergeOut:
 
     skipped_old: int
     """因早于截止日跳过的行数。"""
+
+    stale: int
+    """已抓过详情、这轮列表标题变了的帖数(记了详情欠重抓;2026-09-25)。"""
+
+
+@dataclass
+class TitleChangeIn:
+    """is_title_changed() 入参:store 里的帖 + 这轮列表抓到的标题。"""
+
+    job: dict
+    """store 里的帖子行(合并前)。"""
+
+    title: str
+    """这轮列表行的标题。"""
 
 
 # =========================================================================
