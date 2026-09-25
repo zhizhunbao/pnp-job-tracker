@@ -453,6 +453,11 @@ export const COUNT_CITY_REFRESH = 'cityStatsRefreshed'
 export const COUNT_POOL_REFRESH = 'employerPoolOpenRefreshed'
 
 /**
+ * /seed 响应里「截止日已过的板帖下架」那一格的键(2026-09-25 过期兜底;值 = 下架条数,取舍见 SQL.CLOSE_PAST_DEADLINE)。
+ */
+export const COUNT_PAST_DEADLINE = 'closedPastDeadline'
+
+/**
  * 城市快照「近 7 天」口径回看几天(date_posted 是 YYYY-MM-DD varchar,折日期串按字典序比)。
  */
 export const CITY_NEW7_DAYS = 7

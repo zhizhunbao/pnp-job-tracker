@@ -1187,7 +1187,9 @@ Frank「不应该放到职位里面吧」→ 同日改成**按渠道给 status**
 (详情页免造),但职位板 / 统计 / 榜单 / 雇主池全按 status=open 取数,campus 只进一级导航「校内板」页 /coop
 (枚举 DDL:docs/sql/jobs-origin-hireac.sql + jobs-status-campus.sql)。
 2026-09-15 一级导航「校内板」与 /coop 页撤销(Frank「校内版只是一个渠道而已」),campus 帖改由主板渠道筛选看到。
-2026-09-13 gcjobs 照此加行(联邦公务员招聘站公开搜索 ≈ 400 帖,Frank「那 GC Jobs 接一下吧」;枚举 DDL jobs-origin-gcjobs.sql)。"""
+2026-09-13 gcjobs 照此加行(联邦公务员招聘站公开搜索 ≈ 400 帖,Frank「那 GC Jobs 接一下吧」;枚举 DDL jobs-origin-gcjobs.sql)。
+2026-09-25 过期兜底(/fe hireAC,Frank「过期兜底做吧」):评分与汇装两处读仓时按板域同一口径再剔一遍过截止日的帖
+(read_board_rows),板域停轮也不上板;库里已在架的由 seed 的 CLOSE_PAST_DEADLINE 收关。三段原地清洗照读全仓,不替板域删行。"""
 
 BOARD_EXT_TPL = "{origin}:{pid}"
 """板帖的 externalId(`jobillico:<帖号>`;与 jb: 前缀同律 —— 帖号只在各自板内唯一,前缀防撞)。"""
@@ -1197,6 +1199,9 @@ K_ORIGIN = "origin"
 
 PRINT_INOUT_BOARD_TPL = "IN/OUT board     : {out}"
 """三段跨源清洗对每个板仓的 IN/OUT 留痕。"""
+
+PRINT_BOARD_EXPIRED_TPL = "board expired    : {out} 过截止日 {n} 帖不上板"
+"""读板仓时按截止日剔掉的帖数留痕(2026-09-25 过期兜底;板域照常出仓时是 0,不是 0 = 那个板域停轮了)。"""
 
 
 # =========================================================================

@@ -189,7 +189,7 @@ from mart.constants import (
     VISA_RULES, WAGE_NATIONAL, WEEKLY_DAYS, WEEKLY_DONE_TPL, WEEKLY_N, WORD_BOUND_TPL, WP_TAIL_RE,
     WS_RE, YEAR_END_TPL, YEAR_LEN, YEAR_START_TPL,
 )
-from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_INOUT_BOARD_TPL
+from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_BOARD_EXPIRED_TPL, PRINT_INOUT_BOARD_TPL
 from mart.constants import IN_SITE_PAGES, K_REPLACES, K_SITE_HOST, SITE_PAGES_DEAD
 from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
 from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
@@ -1043,11 +1043,28 @@ def collect_board_jobs() -> list:
     for path, origin in IN_BOARD_STORES:
         if not path.exists():
             continue
-        for j in read_rows(path):
+        for j in read_board_rows(path):
             out.append(CollectedJob(ext=board_ext_of(BoardJobIn(job=j, origin=origin)),
                                     title=j.get(K_TITLE, ""),
                                     agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
                                     prov=j.get(K_PROVINCE, ""), hint="", city=j.get(K_CITY) or ""))
+    return out
+
+
+def read_board_rows(path: Path) -> list:
+    """板仓里截止日还没过的行(2026-09-25 过期兜底,Frank「过期兜底做吧」):过期原本只靠板域出仓时剔,
+    板域一停(HireAC 登录过期停轮 10 天)过期帖就一直挂在板上。评分与汇装两处读仓时按板域同一口径再剔一遍 ——
+    截止日非空且早于今天(ISO 字符串比,当天不剔);三段原地清洗照读全仓,不替板域删行。"""
+    rows = read_rows(path)
+    today = date.today().isoformat()
+    out: list = []
+    for j in rows:
+        until = j.get(K_SRC_VALID_THROUGH) or ""
+        if until != "" and until < today:
+            continue
+        out.append(j)
+    if len(out) < len(rows):
+        say(PRINT_BOARD_EXPIRED_TPL.format(out=path, n=len(rows) - len(out)))
     return out
 
 
@@ -1904,11 +1921,12 @@ def collect_board_rows(ctx: MartCtx) -> None:
     仓与 Job Bank 仓同键:中介两道过滤、展示去重、「见过」集三件与 collect_jobbank_rows 逐位相同
     (先记「见过」再展示去重,顺序同样是硬的)。板帖不进验尸(过期由板域按 validThrough 出仓),
     externalId 带板名前缀不与 jb: 相撞。
+    2026-09-25 过期兜底:读仓走 read_board_rows,过截止日的连「见过」集也不进;库里已在架的由 seed 按截止日收关。
     """
     for path, origin in IN_BOARD_STORES:
         if not path.exists():
             continue
-        for j in read_rows(path):
+        for j in read_board_rows(path):
             if MART_AGENCY_RE.search(j.get(K_EMPLOYER, "")):
                 continue
             if AGENCY_NOTE in (j.get(K_TITLE) or "").lower():

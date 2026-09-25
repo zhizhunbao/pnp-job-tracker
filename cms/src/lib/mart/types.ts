@@ -342,6 +342,21 @@ export type CloseDeadIn = {
 }
 
 /**
+ * `closePastDeadlineJobs` 的入参。
+ */
+export type ClosePastDeadlineIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳(写进 closed_at 与 updated_at)。
+   */
+  now: string
+}
+
+/**
  * `markHiddenDups` 的入参。
  */
 export type MarkHiddenIn = {

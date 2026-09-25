@@ -41,7 +41,7 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_POOL_REFRESH,
+  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH,
   COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
@@ -55,7 +55,7 @@ import {
   UTF8,
 } from './constants'
 import type {
-  BoolOut, CaughtError, CloseDeadIn, CloseStaleIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
+  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
   RefreshCityIn, RefreshPoolIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
@@ -964,7 +964,7 @@ export function dimSpecs(): DimSpecs {
 
 /**
  * seed 一轮:维度表全量重建 → stats_daily 追加 → news upsert →(reset 时清事实表)→
- * companies/jobs 批量 upsert → 实测判死下架 → 「本次未见 + 超 30 天」下架 → 重复标记 →
+ * companies/jobs 批量 upsert → 实测判死下架 → 截止日已过的板帖下架 → 「本次未见 + 超 30 天」下架 → 重复标记 →
  * 「本轮见过但没进 mart」打 is_dup(2026-09-06)→ 心跳。
  * 全程单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)。
  *
@@ -991,6 +991,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     const seen = await seedJobs({ client: client, now: now, idBySlug: companies.idBySlug, counts: counts })
     if (x.reset === false) {
       closedDead = await closeDeadJobs({ client: client, now: now })
+      counts[COUNT_PAST_DEADLINE] = await closePastDeadlineJobs({ client: client, now: now })
     }
     const martCount = seen.ids.length
     unionSeenIds(seen)
@@ -1281,6 +1282,21 @@ async function closeDeadJobs(x: CloseDeadIn): CountOut {
   await insertBatch({ client: x.client, table: TBL_DEAD_EXT, cols: COLS_DEAD_EXT, rows: rows, suffix: SUFFIX_NONE })
   await x.client.query(SQL.ANALYZE_DEAD_EXT)
   const res = await x.client.query(SQL.CLOSE_DEAD_EXT, [x.now])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 截止日已过的板帖立即下架(2026-09-25 过期兜底),同样不受「本次未见 + 30 天」约束:
+ * 截止日是发帖方自己写的事实,不是「本次没抓到」的推断。取舍全文见 SQL.CLOSE_PAST_DEADLINE。
+ *
+ * @param x 连接与时刻。
+ * @returns 下架的条数。
+ */
+async function closePastDeadlineJobs(x: ClosePastDeadlineIn): CountOut {
+  const res = await x.client.query(SQL.CLOSE_PAST_DEADLINE, [x.now])
   if (res.rowCount != null) {
     return res.rowCount
   }

@@ -2220,6 +2220,18 @@ export const CLOSE_DEAD_EXT = `UPDATE jobs SET status='closed', closed_at=COALES
            FROM dead_ext d WHERE d.external_id = jobs.external_id AND jobs.status='open'`
 
 /**
+ * 截止日已过的板帖关掉(2026-09-25 /fe hireAC,Frank「过期兜底做吧」)。$1=时刻。
+ * 板帖过期原本只靠板域出仓 + CLOSE_STALE,而 CLOSE_STALE 要「发布满 30 天」才关:板域停轮时过期帖一直挂着,
+ * 板域正常剔了也要再挂近一个月(当天实查:jobboom 35 / gcjobs 37 / careerbeacon 6 / hireac 89 条过了截止日仍在招)。
+ * 截止日是发帖方自己写的事实,不需要 30 天去对冲。Job Bank 不在内:它的截止日是详情只抓一次时记下的,
+ * 雇主延期后会是旧值,下架走验尸(CLOSE_DEAD_EXT)。
+ * 口径同板域出仓:截止日期(纯日期存成 UTC 零点)早于多伦多的今天才关,截止日当天不关。
+ */
+export const CLOSE_PAST_DEADLINE = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
+         WHERE status IN ('open', 'campus') AND origin <> 'jobbank' AND valid_through IS NOT NULL
+           AND (valid_through AT TIME ZONE 'UTC')::date < (now() AT TIME ZONE 'America/Toronto')::date`
+
+/**
  * 超龄且本轮没再见到的岗关掉。$1=时刻,$2=最早允许的发布日。
  * campus(校内板帖,2026-09-13 第三态)与 open 一并收关:不在本轮列表即下架。
  */
