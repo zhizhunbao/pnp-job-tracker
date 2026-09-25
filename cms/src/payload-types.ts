@@ -420,6 +420,10 @@ export interface Company {
    */
   hqSource?: string | null;
   /**
+   * 总部是母公司的(页面灰注母公司)
+   */
+  hqParent?: boolean | null;
+  /**
    * 官网最近一次整理成的时刻(sites 域)
    */
   siteCheckedAt?: string | null;
@@ -569,6 +573,10 @@ export interface Job {
    * 第一方投递链接(/api/jobs/text 按此等值查询)
    */
   applyUrl?: string | null;
+  /**
+   * 雇主投递邮箱(站内投递批 1;仅管理员可读)
+   */
+  applyEmail?: string | null;
   officialUrl?: string | null;
   /**
    * 原始薪资文本(悬停展示/搜索)
@@ -1240,6 +1248,14 @@ export interface NocDescription {
    */
   titleKo?: string | null;
   /**
+   * 韩文短名(窄位用,空则回退 titleKo)
+   */
+  titleKoShort?: string | null;
+  /**
+   * 英文短名(窄位用,空则回退官方名 title)
+   */
+  titleEnShort?: string | null;
+  /**
    * 主要职责(换行分隔)
    */
   duties?: string | null;
@@ -1413,6 +1429,42 @@ export interface EmployerPool {
    */
   lmiaLastQuarter?: string | null;
   /**
+   * 指定资格所在地 string[](「项目|地点」:AIP|NB、RCIP|Sudbury, ON;非指定为空);DDL docs/sql/employer-explore-industry-20260919.sql
+   */
+  designatedPlaces?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 在招 EE 类别 string[](联邦 EE 类别中文标签,岗多的在前;空 = 没有在招 / 都不属 EE 类别);雇主板「全部类别」下拉按它筛;DDL docs/sql/employer-pool-ees-20260919.sql(GIN 索引)
+   */
+  ees?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 在招大类 string[](职位板那套本站大类,岗多的在前;空 = 没有在招 / 都未分类);雇主板「全部类别」下拉按它筛;DDL docs/sql/employer-pool-broads-20260918.sql(GIN 索引)
+   */
+  broads?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * 主区:主省主市的在招岗里出现最多的区;空 = 岗都没带区(etl/employers home_district_of);DDL docs/sql/employer-pool-district-20260918.sql
    */
   district?: string | null;
@@ -1420,6 +1472,10 @@ export interface EmployerPool {
    * 雇主类别:federal / government(省级)/ municipal / indigenous / public;空 = 私营。按名字判(etl/names sector_of);DDL docs/sql/employer-pool-sector-20260918.sql
    */
   sector?: string | null;
+  /**
+   * 公司分类(与 sector 两级联动的第二级):公立 / 政府按名字判(etl/names category_of:hospital / healthauth / university / gov-admin …),私营 = 按在招岗大类反推的本站公司行业 15 类兜底(tech / retail …;反推不出为空,板上读数时 employer_explore.industry 模型判的优先);DDL docs/sql/employer-pool-category-20260919.sql
+   */
+  category?: string | null;
   /**
    * 本站构建日(evidence 随行)
    */
@@ -2837,6 +2893,7 @@ export interface CompaniesSelect<T extends boolean = true> {
   hqProvince?: T;
   hqQuote?: T;
   hqSource?: T;
+  hqParent?: T;
   siteCheckedAt?: T;
   description?: T;
   isDesignatedEmployer?: T;
@@ -2883,6 +2940,7 @@ export interface JobsSelect<T extends boolean = true> {
   address?: T;
   region?: T;
   applyUrl?: T;
+  applyEmail?: T;
   officialUrl?: T;
   salary?: T;
   salaryAnnual?: T;
@@ -3121,6 +3179,8 @@ export interface NocDescriptionsSelect<T extends boolean = true> {
   titleZh?: T;
   titleZhShort?: T;
   titleKo?: T;
+  titleKoShort?: T;
+  titleEnShort?: T;
   duties?: T;
   requirements?: T;
   fetched?: T;
@@ -3197,8 +3257,12 @@ export interface EmployerPoolSelect<T extends boolean = true> {
   websiteKnown?: T;
   lmiaSkilledTotal?: T;
   lmiaLastQuarter?: T;
+  designatedPlaces?: T;
+  ees?: T;
+  broads?: T;
   district?: T;
   sector?: T;
+  category?: T;
   fetched?: T;
   updatedAt?: T;
   createdAt?: T;
