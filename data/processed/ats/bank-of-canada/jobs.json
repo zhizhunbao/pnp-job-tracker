@@ -1,7 +1,7 @@
 {
   "ats": "successfactors",
   "token": "",
-  "count": 11,
+  "count": 14,
   "jobs": [
     {
       "title": "Master's Scholarship Award for Women in Economics and Finance",
@@ -11,16 +11,7 @@
       "posted": "2026-09-08",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Senior Business Analyst, IT",
@@ -30,16 +21,7 @@
       "posted": "2026-09-10",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Project Manager",
@@ -49,16 +31,7 @@
       "posted": "2026-09-12",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Solutions Integrator - Identity Governance and Administration",
@@ -68,16 +41,7 @@
       "posted": "2026-09-11",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
     },
     {
       "title": "Senior Platform Analyst - Database Services (Cloud/DBaaS)",
@@ -87,16 +51,7 @@
       "posted": "2026-09-11",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Senior Sector Resilience Analyst",
@@ -106,16 +61,7 @@
       "posted": "2026-09-17",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Platform Analytics Developer",
@@ -125,16 +71,7 @@
       "posted": "2026-09-14",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Adjudication Analyst, Unclaimed Properties Operations",
@@ -144,16 +81,7 @@
       "posted": "2026-09-14",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Analyst, Cyber Assurance",
@@ -163,16 +91,7 @@
       "posted": "2026-09-24",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
     },
     {
       "title": "Assistant Director, Endpoint Management",
@@ -182,16 +101,17 @@
       "posted": "2026-09-25",
       "address": "",
       "salary": "",
-      "tech": false,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": false
+    },
+    {
+      "title": "IT Security Assessment Specialist",
+      "location": "Ottawa (Downtown), ON",
+      "url": "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-IT-Security-Assessment-Specialist-ON/606477317/",
+      "department": "",
+      "posted": "2026-09-25",
+      "address": "",
+      "salary": "",
+      "tech": true
     },
     {
       "title": "Analyst, Retail Payments Supervision",
@@ -201,16 +121,27 @@
       "posted": "2026-09-11",
       "address": "",
       "salary": "",
-      "tech": true,
-      "apprentice_friendly": false,
-      "country": "Canada",
-      "province": "ON",
-      "city": "Ottawa",
-      "district": "",
-      "aip": false,
-      "pilot": "",
-      "pilotCommunity": "",
-      "pilotEmployer": false
+      "tech": true
+    },
+    {
+      "title": "Executive Administrative Assistant",
+      "location": "",
+      "url": "https://careers.bankofcanada.ca/job/Various-locations-Executive-Administrative-Assistant/603102617/",
+      "department": "",
+      "posted": "2026-09-12",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Research Assistant (Bachelor's Degree, Recent Graduates)",
+      "location": "Various locations, ON",
+      "url": "https://careers.bankofcanada.ca/job/Various-locations-Research-Assistant-%28Bachelor&amp;apos;s-Degree%2C-Recent-Graduates%29-ON/605889817/",
+      "department": "",
+      "posted": "2026-09-08",
+      "address": "",
+      "salary": "",
+      "tech": false
     }
   ]
 }

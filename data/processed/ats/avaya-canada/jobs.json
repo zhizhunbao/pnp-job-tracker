@@ -1,6 +1,97 @@
 {
   "ats": "successfactors",
   "token": "",
-  "count": 0,
-  "jobs": []
+  "count": 9,
+  "jobs": [
+    {
+      "title": "Senior Manager - Global Revenue Accounting (Pune Site Lead & Partner Management)",
+      "location": "Pune, MH",
+      "url": "https://careers.avaya.com/job/Pune-Senior-Manager-Global-Revenue-Accounting-%28Pune-Site-Lead-&amp;-Partner-Management%29-MH/1430021233/",
+      "department": "",
+      "posted": "2026-08-26",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Software Sr Engineering Manager",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Pune-Software-Sr-Engineering-Manager/1381090833/",
+      "department": "",
+      "posted": "2026-04-07",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Technical Support Manager II",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Hyderabad-Technical-Support-Manager-II/1440542033/",
+      "department": "",
+      "posted": "2026-09-23",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Operations Assistant",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Virtual-Operations-Assistant/1388473033/",
+      "department": "",
+      "posted": "2026-09-17",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Pricing Analytics Specialist II",
+      "location": "Pune, MH",
+      "url": "https://careers.avaya.com/job/Pune-Pricing-Analytics-Specialist-II-MH/1427353433/",
+      "department": "",
+      "posted": "2026-09-16",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "Deal Specialist",
+      "location": "Buenos Aires, B",
+      "url": "https://careers.avaya.com/job/Buenos-Aires-Deal-Specialist-B/1427481533/",
+      "department": "",
+      "posted": "2026-09-16",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "CX Regional Channel Sales Director",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Virtual-CX-Regional-Channel-Sales-Director/1427167433/",
+      "department": "",
+      "posted": "2026-09-15",
+      "address": "",
+      "salary": "",
+      "tech": false
+    },
+    {
+      "title": "AI Solutions Demo Specialist / Engineer",
+      "location": "",
+      "url": "https://careers.avaya.com/job/New-York-AI-Solutions-Demo-Specialist-Engineer/1388513033/",
+      "department": "",
+      "posted": "2026-09-09",
+      "address": "",
+      "salary": "",
+      "tech": true
+    },
+    {
+      "title": "Senior Technical Account Engineer - BAE Systems",
+      "location": "",
+      "url": "https://careers.avaya.com/job/Virtual-Senior-Technical-Account-Engineer-BAE-Systems/1432735433/",
+      "department": "",
+      "posted": "2026-09-01",
+      "address": "",
+      "salary": "",
+      "tech": true
+    }
+  ]
 }

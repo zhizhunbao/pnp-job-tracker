@@ -1,7 +1,7 @@
 {
   "ats": "oraclecloud",
   "token": "",
-  "count": 19,
+  "count": 20,
   "jobs": [
     {
       "title": "Early Careers Talent Acquisition Student",
@@ -235,6 +235,25 @@
       "title": "Customer Applications Eng Co-op/Intern",
       "location": "Ottawa, Ontario",
       "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/39430",
+      "department": "Trainee",
+      "posted": "2026-09-15",
+      "address": "600 March Road, Ottawa, K2K 2T6",
+      "salary": "",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Customer Technical Support Co-op/Intern",
+      "location": "Ottawa, Ontario",
+      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/39973",
       "department": "Trainee",
       "posted": "2026-09-15",
       "address": "600 March Road, Ottawa, K2K 2T6",

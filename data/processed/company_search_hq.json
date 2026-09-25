@@ -3688,5 +3688,125 @@
     "hq_quote": "",
     "hq_source": "",
     "at": "2026-09-25T01:01:39.621554Z"
+  },
+  "fop-experts-conseils-inc": {
+    "name": "FOP Experts Conseils inc.",
+    "status": "ok",
+    "hq_address": "202-9420 BLVD Taschereau",
+    "hq_city": "Brossard",
+    "hq_province": "QC",
+    "hq_quote": "FOP EXPERTS CONSEILS INC. 202-9420 BLVD Taschereau, Brossard (Québec), J4x2w2",
+    "hq_source": "https://opengovca.com/quebec-business/1175431106",
+    "at": "2026-09-25T16:02:59.161447Z"
+  },
+  "allen-entrepreneur-g-n-ral-inc": {
+    "name": "Allen Entrepreneur Général inc.",
+    "status": "ok",
+    "hq_address": "118 rue de la Gare Saint-Henri",
+    "hq_city": "QC",
+    "hq_province": "QC",
+    "hq_quote": "118 rue de la Gare Saint-Henri, QC, G0R 3E0",
+    "hq_source": "https://www.cmeq.org/trouver-un-entrepreneur/rbq-2427-6784-61/",
+    "at": "2026-09-25T16:03:41.068918Z"
+  },
+  "azimut-management": {
+    "name": "Azimut Management",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-09-25T16:03:41.069277Z"
+  },
+  "crt-construction-inc": {
+    "name": "CRT Construction inc.",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-09-25T16:04:18.014603Z"
+  },
+  "gcm-consultants-inc": {
+    "name": "GCM Consultants inc.",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-09-25T16:05:10.961836Z"
+  },
+  "general-dynamics-produits-de-d-fense-et-syst-mes-tactiques": {
+    "name": "General Dynamics Produits de défense et Systèmes Tactiques",
+    "status": "ok",
+    "hq_address": "5, montée des Arsenaux",
+    "hq_city": "Repentigny",
+    "hq_province": "QC",
+    "hq_quote": "Siège social et usine LAP General Dynamics Produits de défense et Systèmes tactiques-Canada Inc. 5, montée des Arsenaux Repentigny, (Québec) Canada J5Z 2P4",
+    "hq_source": "https://www.gdotscanada.com/fr/contact/",
+    "at": "2026-09-25T16:07:59.712098Z"
+  },
+  "groupe-canam": {
+    "name": "Groupe Canam",
+    "status": "ok",
+    "hq_address": "11505 1 Ere Ave Suite 500",
+    "hq_city": "Saint-Georges",
+    "hq_province": "QC",
+    "hq_quote": "Groupe Canam - Siège social is located at 11505 1 Ere Ave Suite 500 in Saint-Georges, Quebec G5Y 7H5.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/quebec/saint-georges/corporate-office/891189-groupe-canam-siege-social",
+    "at": "2026-09-25T16:08:14.083665Z"
+  },
+  "industries-machinex-inc": {
+    "name": "Industries Machinex inc.",
+    "status": "ok",
+    "hq_address": "2121 Rue Olivier",
+    "hq_city": "Plessisville",
+    "hq_province": "",
+    "hq_quote": "Industries Machinex Inc. is located at 2121 Rue Olivier in Plessisville, Quebec G6L 3G9.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/quebec/plessisville/machining-manufacturer/485730-industries-machinex-inc",
+    "at": "2026-09-25T16:08:44.508794Z"
+  },
+  "inogec-inc": {
+    "name": "INOGEC inc.",
+    "status": "miss",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "at": "2026-09-25T16:08:44.508999Z"
+  },
+  "regulvar-inc": {
+    "name": "Regulvar inc.",
+    "status": "ok",
+    "hq_address": "2310 Saint Laurent Boulevard Unit 203",
+    "hq_city": "Ottawa",
+    "hq_province": "ON",
+    "hq_quote": "The registered office location is at 2310 Saint Laurent Boulevard Unit 203, Ottawa, ON K1G 5H9 .",
+    "hq_source": "https://opengovca.com/corporation/2896192",
+    "at": "2026-09-25T16:09:56.367968Z"
+  },
+  "tehora": {
+    "name": "TEHORA",
+    "status": "ok",
+    "hq_address": "116 Albert St Suite 200 & 300",
+    "hq_city": "Ottawa",
+    "hq_province": "ON",
+    "hq_quote": "Tehora is located at 116 Albert St Suite 200 & 300 in Ottawa, Ontario K1P 5G3.",
+    "hq_source": "https://canada.chamberofcommerce.com/business-directory/ontario/ottawa/business-management-consultant/865572-tehora",
+    "at": "2026-09-25T16:13:11.432380Z"
+  },
+  "umano-medical": {
+    "name": "Umano Medical",
+    "status": "ok",
+    "hq_address": "230 Boulevard Nilus-Leclerc",
+    "hq_city": "L'Islet",
+    "hq_province": "",
+    "hq_quote": "Umano Medical is headquartered in L'Islet, 230 Boulevard Nilus-Leclerc, Canada, and has 2 office locations.",
+    "hq_source": "https://craft.co/umano-medical/locations",
+    "at": "2026-09-25T16:13:33.632163Z"
   }
 }

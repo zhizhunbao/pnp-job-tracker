@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "giatecscientific",
-  "count": 8,
+  "count": 9,
   "jobs": [
     {
       "title": "Talent Community @ Giatec",
@@ -162,6 +162,27 @@
       "district": "",
       "salaryAnnual": 75000,
       "salaryText": "$55K–$95K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Enterprise Account Executive RMC Solutions — North America",
+      "location": "Ottawa, Ontario",
+      "url": "https://giatecscientific.bamboohr.com/careers/307",
+      "department": "Sales & Success",
+      "posted": "",
+      "address": "",
+      "salary": "$120,000 - 170,000",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 145000,
+      "salaryText": "$120K–$170K/yr",
       "aip": false,
       "pilot": "",
       "pilotCommunity": "",
