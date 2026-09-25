@@ -1,7 +1,7 @@
 {
  "source": "Express Entry category-based selection — who's eligible for each category",
  "province": "FED",
- "fetched": "2026-09-13",
+ "fetched": "2026-09-24",
  "note": "One stream per category (official category name); occupation tables live in ee_categories.",
  "programs": [
   "EE-category"
@@ -19,7 +19,7 @@
    "basis": "",
    "label": "French: NCLC 7 in all 4 abilities",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -33,7 +33,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -47,7 +47,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -61,7 +61,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -75,7 +75,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -89,7 +89,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -103,7 +103,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -117,7 +117,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -131,7 +131,7 @@
    "basis": "windowYears=3",
    "label": "12 months of full-time work experience in a listed occupation within the past 3 years",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -145,7 +145,7 @@
    "basis": "",
    "label": "be a Foreign Skilled Military Applicant (FSMA) eligible foreign national who is serving in a recognized foreign military with a minimum of ten years of continuous service has work experience and training aligned with the main duties of one or more of these National Occupational Classification occupations: 40042 (Commissioned officers of the Canadian Armed Forces) 42102 (Specialized members of the Canadian Armed Forces) 43204 (Operations members of the Canadian Armed Forces)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -159,7 +159,7 @@
    "basis": "",
    "label": "have an offer of arranged employment with the Canadian Armed Forces that is made by the Canadian Forces Recruiting Group for continuous full-time work in Canada lasting at least 3 years listed in National Occupational Classification 40042 (Commissioned officers of the Canadian Armed Forces) 42102 (Specialized members of the Canadian Armed Forces) 43204 (Operations members of the Canadian Armed Forces)",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   },
   {
    "program": "EE-category",
@@ -173,7 +173,7 @@
    "basis": "",
    "label": "have at least a 2-year post-secondary credential If you completed your education outside Canada, you’ll need to get your education credential assessed to show that it’s equal",
    "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations/category-based-selection.html",
-   "fetched": "2026-09-13"
+   "fetched": "2026-09-24"
   }
  ]
 }

@@ -1,5 +1,5 @@
 {
-  "careers_url": "https://careers.mattr.com/",
-  "ats": "",
-  "status": 200
+  "careers_url": "https://careers.mattr.com",
+  "ats": "successfactors",
+  "status": "200"
 }

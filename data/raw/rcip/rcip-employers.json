@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-12",
+ "fetched": "2026-09-25",
  "note": "各社区官方公示的指定雇主名单(批C 自动刷新,pilot_extractors 逐社区抽取;塌方保旧)。『指定』≠『在招』;excluded/de-designated 已在抽取层剔除;Peace Liard 官方待公示。",
  "rows": [
   {
@@ -2006,7 +2006,7 @@
    "community": "North Bay and Area",
    "province": "ON",
    "type": "RCIP",
-   "name": "Redpath Canada Limited",
+   "name": "Redpath Mining Inc",
    "location": "",
    "url": "https://nbrcip.ca/designated-employers/"
   },
@@ -2391,6 +2391,54 @@
    "province": "ON",
    "type": "RCIP",
    "name": "Sturgeon Dental",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Appleton Denture Clinic",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "North Bay Welding & Metal Fabrications Inc",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Mister Transmission North Bay",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Canor Construction",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Magnetawan First Nation",
+   "location": "",
+   "url": "https://nbrcip.ca/designated-employers/"
+  },
+  {
+   "community": "North Bay and Area",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "SAPPHIRE AUTOCAR",
    "location": "",
    "url": "https://nbrcip.ca/designated-employers/"
   },
@@ -4872,6 +4920,14 @@
    "type": "RCIP",
    "name": "The Installation Group – 2722703 Ontario Inc",
    "location": "10 Bulmer Avenue, Sudbury, Ontario P3C 3J3",
+   "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
+  },
+  {
+   "community": "Sudbury, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "The Renovation King",
+   "location": "",
    "url": "https://investsudbury.ca/why-sudbury/newcomers/rcipfcip/"
   },
   {
@@ -8448,7 +8504,7 @@
    "type": "RCIP",
    "name": "(1852075 Ontario Inc.)- Nook",
    "location": "1-271 Bay St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8456,7 +8512,7 @@
    "type": "RCIP",
    "name": "1000024408 Ontario LTD - The Tilted Turrent",
    "location": "135 Archibald St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8464,7 +8520,7 @@
    "type": "RCIP",
    "name": "1000455057 Ontario Inc. - Noodle Bowl",
    "location": "2624 Victoria Ave E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8472,7 +8528,7 @@
    "type": "RCIP",
    "name": "1001146802 ONTARIO INC.- True North General Contracting",
    "location": "103 James St. S. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8480,7 +8536,7 @@
    "type": "RCIP",
    "name": "1164309 Ontario LTD- Furniture Recycle",
    "location": "133 Hardisty St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8488,7 +8544,7 @@
    "type": "RCIP",
    "name": "1164354 Ontario Inc- End of the Roll",
    "location": "600 Squier St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8496,7 +8552,7 @@
    "type": "RCIP",
    "name": "1191070 Ontario Ltd- RFL Holdings",
    "location": "102 Centennial Sq Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8504,7 +8560,7 @@
    "type": "RCIP",
    "name": "123Dentist Inc.- Current River Family Dental",
    "location": "901 Red River Road, Unit 3, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8512,7 +8568,7 @@
    "type": "RCIP",
    "name": "123Dentist- Northwood Family Dental",
    "location": "2606 Victoria Ave E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8520,7 +8576,7 @@
    "type": "RCIP",
    "name": "123dentist.- Oasis Family Dental",
    "location": "501 EDWARD STREET N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8528,7 +8584,7 @@
    "type": "RCIP",
    "name": "1304914 ONTARIO INC- Joey's Only Seafood",
    "location": "Unit 140A, 595 west Arthur st, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8536,7 +8592,7 @@
    "type": "RCIP",
    "name": "13428290 Canada Inc- Superior Shores Hotel By Best Western/ Quality Inn & Suites Thunder Bay Downtown",
    "location": "61 Cumberland Street N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8544,7 +8600,7 @@
    "type": "RCIP",
    "name": "1383781 Ontario Limited- Madhouse Grill",
    "location": "295 Bay Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8552,7 +8608,7 @@
    "type": "RCIP",
    "name": "14194047 CANADA INC.- E.S.S.H.A’S THREADING & BEAUTY STUDIO",
    "location": "2620 Victoria Avenue East ,Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8560,7 +8616,7 @@
    "type": "RCIP",
    "name": "1526404 Ontario Limited - Bakeshop (Shaw Bakeshop)",
    "location": "1181 Golf Links Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8568,7 +8624,7 @@
    "type": "RCIP",
    "name": "16085776 Canada Inc. -Exotic Indian Eats",
    "location": "229 Pearl St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8576,7 +8632,7 @@
    "type": "RCIP",
    "name": "1670726 ONTARIO INC.- Lot 66",
    "location": "66 South Court Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8584,7 +8640,7 @@
    "type": "RCIP",
    "name": "1670729 Ontario Inc - The Power Centre",
    "location": "740 Arthur Street West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8592,7 +8648,7 @@
    "type": "RCIP",
    "name": "1752581 Ontario Limited- Impact Promotions",
    "location": "1008 Victoria Ave East, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8600,7 +8656,7 @@
    "type": "RCIP",
    "name": "1776603 Ontario Inc- Holiday Inn Express",
    "location": "1041 Carrick Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8608,7 +8664,7 @@
    "type": "RCIP",
    "name": "1778769 ONTARIO INC - Strasser & Lang",
    "location": "675 Harold Cres Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8616,7 +8672,7 @@
    "type": "RCIP",
    "name": "1876118 Ontario Ltd- Makkinga Contracting",
    "location": "570 Squier Place, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8624,7 +8680,7 @@
    "type": "RCIP",
    "name": "1902037 Ontario Ltd.- Fort William Curling Club Kitchen",
    "location": "218 Vickers St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8632,7 +8688,7 @@
    "type": "RCIP",
    "name": "1928147 Ontario Inc.- Crown & Birch",
    "location": "825 Fort William Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8640,7 +8696,7 @@
    "type": "RCIP",
    "name": "1Northwest Security Services Inc",
    "location": "105 May Street N, Suite 217 Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8648,7 +8704,7 @@
    "type": "RCIP",
    "name": "2080061 Ontario Inc.- SkyCare Air Ambulance",
    "location": "304 Hector Dougall Way, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8656,7 +8712,7 @@
    "type": "RCIP",
    "name": "2269135 Ontario Inc. - Wackys Eat Drink Game On",
    "location": "540 High Street S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8664,7 +8720,7 @@
    "type": "RCIP",
    "name": "2342555 Ontario Inc. Nurse Next Door",
    "location": "250 Algoma Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8672,7 +8728,7 @@
    "type": "RCIP",
    "name": "2528689 Ontario Inc.- Half-Way Motors Power Sports",
    "location": "1230 Carrick St. Unit A, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8680,7 +8736,7 @@
    "type": "RCIP",
    "name": "2666375 Ontario Limited- Relax Motel",
    "location": "387 Cumberland Street N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8688,7 +8744,7 @@
    "type": "RCIP",
    "name": "2782588- Terralux General Contractors and Development Limited",
    "location": "820 Gordon Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8696,7 +8752,7 @@
    "type": "RCIP",
    "name": "2853345 Ontario Inc- Osaka Sushi",
    "location": "801 Central Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8704,7 +8760,7 @@
    "type": "RCIP",
    "name": "2854931 Ontario Inc. - Mobilecare",
    "location": "1000 Fort William Rd, Unit 52B, P7B 6B9, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8712,7 +8768,7 @@
    "type": "RCIP",
    "name": "366956 Ontario Ltd.- Garden Lake Timber",
    "location": "433 HIGHWAY 527 Shuniah",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8720,7 +8776,7 @@
    "type": "RCIP",
    "name": "587435 Ontario Inc.- DRD Construction",
    "location": "517 N. Hardisty Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8728,7 +8784,7 @@
    "type": "RCIP",
    "name": "A1 Concrete Inc.",
    "location": "1199 Russell Street",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8736,7 +8792,7 @@
    "type": "RCIP",
    "name": "Aarons Sales and Leasing (NCR Leasing)",
    "location": "1174 Roland Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8744,7 +8800,7 @@
    "type": "RCIP",
    "name": "ABA DENTAL CLINIC",
    "location": "995-A Memorial Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8752,7 +8808,7 @@
    "type": "RCIP",
    "name": "Ace Automotive",
    "location": "113 Leith Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8760,7 +8816,7 @@
    "type": "RCIP",
    "name": "Advantage pharmacy",
    "location": "1165 Barton St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8768,7 +8824,7 @@
    "type": "RCIP",
    "name": "Ali Davoudpour Dentistry Professional Corporation- Intercity Dental Centre",
    "location": "201-1000 Fort William Rd.",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8776,7 +8832,7 @@
    "type": "RCIP",
    "name": "Allen Equipment Contracting Corporation- Allen Contracting Corp",
    "location": "36 Rubin Dr, Murillo",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8784,7 +8840,7 @@
    "type": "RCIP",
    "name": "Allstate Insurance Company of Canada",
    "location": "1186 Memorial Ave. Unit 2B, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8792,7 +8848,7 @@
    "type": "RCIP",
    "name": "ALS Canada Ltd",
    "location": "1081 Barton Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8800,7 +8856,7 @@
    "type": "RCIP",
    "name": "Amber & Ekam Freightlines Inc.",
    "location": "905 Commerce Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8808,7 +8864,7 @@
    "type": "RCIP",
    "name": "Apex Investigation & Security Inc.",
    "location": "391 Oliver Rad, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8816,7 +8872,7 @@
    "type": "RCIP",
    "name": "Aroma bliss",
    "location": "36 Cumberland St S Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8824,7 +8880,7 @@
    "type": "RCIP",
    "name": "Auburn Retailing Ltd.- Canadian Tire 083 Auto Service Centre",
    "location": "939 Fort William Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8832,7 +8888,7 @@
    "type": "RCIP",
    "name": "Aviation InterTec Services Inc.",
    "location": "Suite 300 - 100 Princess Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8840,7 +8896,7 @@
    "type": "RCIP",
    "name": "Balmoral Dental Lab",
    "location": "109 Algoma Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8848,7 +8904,7 @@
    "type": "RCIP",
    "name": "Barb's Laundromat",
    "location": "242 Brunswick Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8856,7 +8912,7 @@
    "type": "RCIP",
    "name": "Bay City Contractors",
    "location": "1123 Russell St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8864,7 +8920,7 @@
    "type": "RCIP",
    "name": "Bayshore HealthCare",
    "location": "1260 Golf Link Roads, Suite #103, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8872,7 +8928,7 @@
    "type": "RCIP",
    "name": "Baywood Dental",
    "location": "131 East Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8880,7 +8936,7 @@
    "type": "RCIP",
    "name": "Bennett's Bakery Limited/ The Persian Man/ Nucci's Bake a Deli",
    "location": "899 Tungsten St, Thunder Bay; 400 Balmoral St, Thunder Bay; 801 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8888,7 +8944,7 @@
    "type": "RCIP",
    "name": "Best Buy Canada",
    "location": "767 Memorial Avenue Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8896,7 +8952,7 @@
    "type": "RCIP",
    "name": "Bight Restaurant",
    "location": "2201 Sleeping Giant Parkway, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8904,7 +8960,7 @@
    "type": "RCIP",
    "name": "Bingwi Neyaashi Anishinaabek",
    "location": "292 Court Street S. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8912,7 +8968,7 @@
    "type": "RCIP",
    "name": "Bloomex- Rollason Flowers",
    "location": "128 Frederica St E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8920,7 +8976,7 @@
    "type": "RCIP",
    "name": "BNL Contracting Ltd.",
    "location": "174 Munro Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8928,7 +8984,7 @@
    "type": "RCIP",
    "name": "Bombay One Stop Inc.",
    "location": "2605 Victoria Ave E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8936,7 +8992,7 @@
    "type": "RCIP",
    "name": "Bookkeeper 4 You Ltd.",
    "location": "267 Park Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8944,23 +9000,23 @@
    "type": "RCIP",
    "name": "Boreal Tree Service",
    "location": "741 Harold Cres, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Boreal Tree Service",
-   "location": "741 Harold Cres, Thunder Bay 426 Balmoral Street, or 130 Castlegreen Drive , or 475 N.",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "741 Harold Cres, Thunder Bay 426 Balmoral Street, or 130 Castlegreen Drive , or 475 N. Cumberland St, or 325",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Brain Injury Services of Northern Ontario",
-   "location": "Cumberland St, or 325 Archibald St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "Archibald St. Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8968,7 +9024,7 @@
    "type": "RCIP",
    "name": "Breeny's Auto Body",
    "location": "111 Vickers St N Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8976,7 +9032,7 @@
    "type": "RCIP",
    "name": "Budget Blinds Of Thunder Bay",
    "location": "615 A Memorial Ave , Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8984,7 +9040,7 @@
    "type": "RCIP",
    "name": "C&M Tile and Granites",
    "location": "556 Eleventh Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -8992,7 +9048,7 @@
    "type": "RCIP",
    "name": "CANADA MICROBLADING INC- Canada Microblading",
    "location": "2817 Arthur St E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9000,7 +9056,7 @@
    "type": "RCIP",
    "name": "Canadian Lakehead Exhibition",
    "location": "425 Northern Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9008,23 +9064,23 @@
    "type": "RCIP",
    "name": "Canadian Sterling Corp- Need A Car Superstore",
    "location": "655 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Canadian Tire #34",
-   "location": "1221 ARTHUR STREET W, Thunder Bay 939 Fort William Road (Canadian Tire) and 341 Main Street",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "1221 ARTHUR STREET W, Thunder Bay 939 Fort William Road (Canadian Tire) and 341 Main Street (Party City) Thunder",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Canadian Tire Store #083 and Party City Store #840",
-   "location": "(Party City) Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9032,7 +9088,7 @@
    "type": "RCIP",
    "name": "Canwind Logistics Ltd.",
    "location": "490 Maureen St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9040,7 +9096,7 @@
    "type": "RCIP",
    "name": "CARA Engineering Inc.",
    "location": "202-106 Cumberland St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9048,7 +9104,7 @@
    "type": "RCIP",
    "name": "Caribou Restaurant Inc.- Caribou Restaurant + Wine Bar",
    "location": "727 Hewitson St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9056,7 +9112,7 @@
    "type": "RCIP",
    "name": "CAROL'S CAKES",
    "location": "110 Waterloo St S. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9064,7 +9120,7 @@
    "type": "RCIP",
    "name": "CARS ON ALLOY LTD - MAROSTICA SUBARU",
    "location": "502 SIXTEENTH AVE. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9072,7 +9128,7 @@
    "type": "RCIP",
    "name": "Chartwell Master Care LP. dba Isabella- Chartwell Isabella Retirement Residence",
    "location": "1350 Isabella St E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9080,7 +9136,7 @@
    "type": "RCIP",
    "name": "Children's Aid Society of the District of Thunder Bay",
    "location": "1110 Jade Court Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9088,7 +9144,7 @@
    "type": "RCIP",
    "name": "Children's Centre Thunder Bay",
    "location": "283 Lisgar Street Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9096,7 +9152,7 @@
    "type": "RCIP",
    "name": "Chinese Express Restaurant",
    "location": "601 W. Arthur Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9104,7 +9160,7 @@
    "type": "RCIP",
    "name": "Chuck's Roadhouse Bar & Grill",
    "location": "610 Arthur St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9112,7 +9168,7 @@
    "type": "RCIP",
    "name": "Cirro by AirSuite",
    "location": "1205 Amber Drive, Suite 109",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9120,7 +9176,7 @@
    "type": "RCIP",
    "name": "CJSD Incorporated (Dougall Media)",
    "location": "87 Hill Street North Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9128,7 +9184,7 @@
    "type": "RCIP",
    "name": "Clara Industrial Services Limited",
    "location": "1130 Commerce Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9136,7 +9192,7 @@
    "type": "RCIP",
    "name": "Comfort Inn Thunder Bay",
    "location": "660 Arthur Street West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9144,7 +9200,7 @@
    "type": "RCIP",
    "name": "Community Clothing Assistance",
    "location": "404 May Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9152,7 +9208,7 @@
    "type": "RCIP",
    "name": "Community Living Thunder Bay",
    "location": "1501 Dease St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9160,7 +9216,7 @@
    "type": "RCIP",
    "name": "Complete Renovations",
    "location": "573 Tupper st, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9168,7 +9224,7 @@
    "type": "RCIP",
    "name": "Confederation College of Applied Arts & Technology",
    "location": "1450 Nakina Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9176,7 +9232,7 @@
    "type": "RCIP",
    "name": "Control HVAC & Refrigeration Ltd",
    "location": "1519 Donald St E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9184,7 +9240,7 @@
    "type": "RCIP",
    "name": "COPPOLA HOME (THUNDER BAY) LIMITED- Coppola Contracting",
    "location": "269 Red River Road Thunder Bay Ontario P7B1A9",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9192,7 +9248,7 @@
    "type": "RCIP",
    "name": "Corporate Impressions Ltd.- Mallon's Promotional Products & Clothing",
    "location": "901 Copper Crescent, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9200,7 +9256,7 @@
    "type": "RCIP",
    "name": "Corporation of the City of Thunder Bay",
    "location": "500 Donald St. E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9208,7 +9264,7 @@
    "type": "RCIP",
    "name": "Cozy Corner Service Inc.",
    "location": "1460 rosslyn road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9216,7 +9272,7 @@
    "type": "RCIP",
    "name": "CREATIVE THERAPY ASSOCIATES",
    "location": "1-883 TUNGSTEN STREET, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9224,7 +9280,7 @@
    "type": "RCIP",
    "name": "Crossroads Motor Inn Limited- Thunder Bay Crossroads, Motor Inn",
    "location": "655 W. Arthur Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9232,7 +9288,7 @@
    "type": "RCIP",
    "name": "CSH (Hilldale) Inc.- Chartwell Hilldale Retirement Residence",
    "location": "309 Hilldale Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9240,7 +9296,7 @@
    "type": "RCIP",
    "name": "CSH Glacier Ridge Inc- Chartwell Glacier Ridge Retirement Residence",
    "location": "1261 Jasper Drive Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9248,7 +9304,7 @@
    "type": "RCIP",
    "name": "CSH Select Thunder Bay Inc.- Chartwell Thunder Bay Retirement Residence",
    "location": "770 Arundel St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9256,7 +9312,7 @@
    "type": "RCIP",
    "name": "Curans Heart Centre Corp.",
    "location": "1165 Barton Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9264,7 +9320,7 @@
    "type": "RCIP",
    "name": "CVH (No.9) - Southbridge Roseview, Southbridge Pinewood, Southbridge Lakehead",
    "location": "99 Shuniah Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9272,7 +9328,7 @@
    "type": "RCIP",
    "name": "D.R. FAWCETT SOLUTIONS INC.",
    "location": "255 Farm Road, Neebing, ON",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9280,7 +9336,7 @@
    "type": "RCIP",
    "name": "Dawson Diner",
    "location": "1889 Dawson Road Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9288,7 +9344,7 @@
    "type": "RCIP",
    "name": "Days Inn & Suites by Wyndham Thunder Bay",
    "location": "645 Sibley Dr, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9296,7 +9352,7 @@
    "type": "RCIP",
    "name": "DELTA HOTELS",
    "location": "2240 Sleeping Giant Parkway, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9304,7 +9360,7 @@
    "type": "RCIP",
    "name": "Denkymax African Food Market & Thunder Bay African Restaurant",
    "location": "59 Court Street N, Thunder Bay & 220 May Street N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9312,7 +9368,7 @@
    "type": "RCIP",
    "name": "Dingwell's Machinery & Supply Ltd.",
    "location": "963 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9320,7 +9376,7 @@
    "type": "RCIP",
    "name": "Doctor Abdelgader Dentistry Professional Corporation",
    "location": "3 - 815 Fort William Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9328,7 +9384,7 @@
    "type": "RCIP",
    "name": "Dollar Contracting Ltd.",
    "location": "48 Carl Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9336,7 +9392,7 @@
    "type": "RCIP",
    "name": "Dominion Motors(Thunder Bay-1984)Limited",
    "location": "882 Copper Crescent Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9344,7 +9400,7 @@
    "type": "RCIP",
    "name": "Domtar - (Resolute Forest Products - Sawmill)",
    "location": "156 Darrel Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9352,7 +9408,7 @@
    "type": "RCIP",
    "name": "Donatis Brothers Inc - (Construction)",
    "location": "1141 Barton St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9360,7 +9416,7 @@
    "type": "RCIP",
    "name": "Done-Rite Imports Inc.- Done-Rite Tires & Auto",
    "location": "1020 Carrick St., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9368,7 +9424,7 @@
    "type": "RCIP",
    "name": "Dowhos and Kam Professional Corporation- Grandview Family Dental",
    "location": "570 Red River Rd Unit 3, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9376,7 +9432,7 @@
    "type": "RCIP",
    "name": "Dr Morshed Sikder Dentistry Professional Corporation- Victoria Dental Clinic",
    "location": "910 Victoria Ave E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9384,7 +9440,7 @@
    "type": "RCIP",
    "name": "Dr S. Hadi Dentistry Professional Corporation- Serene Dental",
    "location": "400 Balmoral St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9392,7 +9448,7 @@
    "type": "RCIP",
    "name": "Dr. Nawfal Al-Hashimi Dentistry Professional Corporation- Thunder Bay Endodontics",
    "location": "167 Cumberland St N Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9400,7 +9456,15 @@
    "type": "RCIP",
    "name": "Dr. Stephen Carlson Professional Dentistry Corporation- Birch Point Dental",
    "location": "147 Algoma St, South Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Drift Day Spa / Reveal Medi Spa",
+   "location": "109 Regina Ave #3, Thunder Bay, 701 Memorial Ave Unit 6, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9408,7 +9472,7 @@
    "type": "RCIP",
    "name": "DS Malhi Transport ltd",
    "location": "300 Water Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9416,7 +9480,7 @@
    "type": "RCIP",
    "name": "Dusty's Car Care Centre",
    "location": "319 May Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9424,7 +9488,7 @@
    "type": "RCIP",
    "name": "Dutchak Scrap Metal Ltd",
    "location": "705 Hammond Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9432,7 +9496,15 @@
    "type": "RCIP",
    "name": "Eco Carbon Foam Inc.",
    "location": "94 Vibert Rd. South, Rosslyn",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "EcoSuperior",
+   "location": "562 Red River Rd Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9440,7 +9512,7 @@
    "type": "RCIP",
    "name": "Eddy Lee's Chinese Restaurant",
    "location": "863 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9448,7 +9520,7 @@
    "type": "RCIP",
    "name": "Edoardo Veneruz Pharmacy Ltd - Shoppers Drug Mart 677 & 679",
    "location": "900 E Arthur St & 425 N Edward Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9456,23 +9528,23 @@
    "type": "RCIP",
    "name": "Edward St. Dental",
    "location": "136 Edward St. South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Elevate NWO",
-   "location": "102-106 Cumberland Street North Thunder Bay 727 Memorial Avenue, Thunder Bay; 1100 Arthur Street West,",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "102-106 Cumberland Street North Thunder Bay 727 Memorial Avenue, Thunder Bay; 1100 Arthur Street West, Thunder Bay; 100",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Enterprise Rent-A-Car",
-   "location": "Thunder Bay; 100 Princess Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "Princess Street, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9480,7 +9552,31 @@
    "type": "RCIP",
    "name": "Equipment World Inc.",
    "location": "988 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Erb Transport Limited",
+   "location": "580 8th Ave, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Evergreen Pharmacy",
+   "location": "150 King George's Park Drive, Rosslyn",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "EVERLAST THUNDER BAY",
+   "location": "612 High St S Thunder Bay 1100 Memorial Ave.#3,Thunder Bay, Arthur St W,Thunder Bay/ 843 Red River Road",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9488,7 +9584,7 @@
    "type": "RCIP",
    "name": "Fat Panda",
    "location": "1100 Memorial Ave.#3, Thunder Bay, Arthur St W, Thunder Bay / 843 Red River Road unit 11 Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9496,7 +9592,7 @@
    "type": "RCIP",
    "name": "Finn Way General Contractor Inc.",
    "location": "1301 Walsh St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9504,7 +9600,7 @@
    "type": "RCIP",
    "name": "Five Star Bakery 1982 Ltd. -Five Star Bakery and Dagwoods Bakery and Deli",
    "location": "225 Pacific Ave. and 290 East Brock Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9512,7 +9608,7 @@
    "type": "RCIP",
    "name": "FLAWLESS THREADING AND BEAUTY BAR INC",
    "location": "831 May Street North unit 2, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9520,7 +9616,7 @@
    "type": "RCIP",
    "name": "Focus NDTIS INC.",
    "location": "821 North Vickers Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9528,7 +9624,23 @@
    "type": "RCIP",
    "name": "Forma Professional Beauty Inc / 2102225 Ontario LTD",
    "location": "1163 Waterford St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Fort Garry Industries",
+   "location": "2525 Inkster Blvd, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Fort Williams Baptist Church",
+   "location": "1800 Moodie Street, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9536,7 +9648,7 @@
    "type": "RCIP",
    "name": "FOUNTAIN TIRE",
    "location": "788 CENTRAL AVENUE, THUNDER BAY",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9544,7 +9656,7 @@
    "type": "RCIP",
    "name": "Freight Managers Inc",
    "location": "5221 Townline Road, Murillo",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9552,7 +9664,7 @@
    "type": "RCIP",
    "name": "FRP SYSTEMS LTD.",
    "location": "804 MADDONNELL STREET, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9560,7 +9672,7 @@
    "type": "RCIP",
    "name": "Fun-Tastic Castles",
    "location": "25 Marlborough Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9568,7 +9680,7 @@
    "type": "RCIP",
    "name": "G3 Canada Ltd.- Grain Terminal",
    "location": "200 Darrel Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9576,7 +9688,7 @@
    "type": "RCIP",
    "name": "GardaWorld Security",
    "location": "Unit 206 C - 1000 Fort William Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9584,7 +9696,7 @@
    "type": "RCIP",
    "name": "Gardewine- Trucking and General Freight Handling",
    "location": "230 Main Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9592,7 +9704,7 @@
    "type": "RCIP",
    "name": "Gary Wenzel Electrical Solutions",
    "location": "801 Gore St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9600,7 +9712,7 @@
    "type": "RCIP",
    "name": "Gateway Casinos & Entertainment Ltd.",
    "location": "50 Cumberland St S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9608,15 +9720,7 @@
    "type": "RCIP",
    "name": "George Jeffrey Children's Centre",
    "location": "200 Brock Street East, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
-  },
-  {
-   "community": "Thunder Bay, ON",
-   "province": "ON",
-   "type": "RCIP",
-   "name": "Gerry's driving academy",
-   "location": "270 Windsor Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9624,7 +9728,7 @@
    "type": "RCIP",
    "name": "GFL Environmental",
    "location": "3000 Highway 61, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9632,7 +9736,7 @@
    "type": "RCIP",
    "name": "GFL Environmental Services Inc",
    "location": "26 Haniak Road, Rosslyn",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9640,7 +9744,7 @@
    "type": "RCIP",
    "name": "Giorg",
    "location": "114 Syndicate Ave. North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9648,7 +9752,7 @@
    "type": "RCIP",
    "name": "GOLDEN WOK",
    "location": "106 May St S,Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9656,7 +9760,7 @@
    "type": "RCIP",
    "name": "Goose Creek Investments - Neebing Roadhouse",
    "location": "2121 Highway 61, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9664,7 +9768,7 @@
    "type": "RCIP",
    "name": "Gore Motors Honda",
    "location": "361 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9672,7 +9776,7 @@
    "type": "RCIP",
    "name": "Great Canadian Oil Change",
    "location": "1160 Memorial Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9680,7 +9784,7 @@
    "type": "RCIP",
    "name": "Green Mantle",
    "location": "4744 Highway 11/17 Kakabecka Falls",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9688,7 +9792,15 @@
    "type": "RCIP",
    "name": "Grenville Wee Wonders Daycare Inc.",
    "location": "313 Grenville Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Hakim Optical",
+   "location": "1086 Memorial Ave Unit 3, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9696,7 +9808,7 @@
    "type": "RCIP",
    "name": "Half-Way Motors (1989) Ltd.- Halfway Motors Nissan",
    "location": "940 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9704,7 +9816,7 @@
    "type": "RCIP",
    "name": "Hampton Inn & Suites by Hilton Thunder Bay",
    "location": "760 Arthur Street West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9712,7 +9824,7 @@
    "type": "RCIP",
    "name": "HARBOURVIEW HEALTH FACILITY LTD.- Agent for Dr. Lawrence D. Watral, Dentist",
    "location": "1221 E. Victoria Avenue Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9720,7 +9832,7 @@
    "type": "RCIP",
    "name": "HC Transport Inc",
    "location": "16 Twin City Crossroads, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9728,7 +9840,7 @@
    "type": "RCIP",
    "name": "HearingLife Canada",
    "location": "843 Red River Road, Suite 3, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9736,7 +9848,7 @@
    "type": "RCIP",
    "name": "HILL STREET FINANCIAL SERVICES (DOUGALL MEDIA)",
    "location": "87 Hill Street North Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9744,7 +9856,7 @@
    "type": "RCIP",
    "name": "HILLCREST NEIGHBOUR VILLAGE INC",
    "location": "96 HIGH STREET NORTH, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9752,7 +9864,7 @@
    "type": "RCIP",
    "name": "Home Depot",
    "location": "359 Main Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9760,7 +9872,7 @@
    "type": "RCIP",
    "name": "Home Ec. Restaurant Group (Tomlin)",
    "location": "28 Cumberland St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9768,7 +9880,7 @@
    "type": "RCIP",
    "name": "Home2 Suites by Hilton Thunder Bay",
    "location": "740 Arthur Street West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9776,7 +9888,7 @@
    "type": "RCIP",
    "name": "Howard Johnson by Wyndham Thunder Bay",
    "location": "686 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9784,7 +9896,7 @@
    "type": "RCIP",
    "name": "HPG",
    "location": "231 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9792,7 +9904,7 @@
    "type": "RCIP",
    "name": "Ingaged Creative Productions Inc.",
    "location": "610 Simpson St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9800,7 +9912,7 @@
    "type": "RCIP",
    "name": "Inspired Cabinetry & Granite Inc",
    "location": "146 Gore St West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9808,7 +9920,7 @@
    "type": "RCIP",
    "name": "Jaclyn Ritson Pharmacy Limited- Shoppers Drug Mark (300 Memorial)",
    "location": "300 Memorial Avenue Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9816,7 +9928,7 @@
    "type": "RCIP",
    "name": "Janzen's Pharmacy - The Link on Lillie St.",
    "location": "300 Lillie St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9824,7 +9936,7 @@
    "type": "RCIP",
    "name": "Jennifer Sullivan Psychology Professional Corporation- Sullivan + Associates Clinical Psychology",
    "location": "960 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9832,7 +9944,7 @@
    "type": "RCIP",
    "name": "JF Cleaning and Protection Inc.",
    "location": "376 Memorial Ave., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9840,7 +9952,7 @@
    "type": "RCIP",
    "name": "JKS Enterprises - DIAMOND TAXI",
    "location": "113 Leith Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9848,7 +9960,7 @@
    "type": "RCIP",
    "name": "Jones Insurance",
    "location": "521 Memorial Avenue Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9856,7 +9968,7 @@
    "type": "RCIP",
    "name": "Jordan- Lot 88",
    "location": "45 Court Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9864,7 +9976,7 @@
    "type": "RCIP",
    "name": "Kal Tire",
    "location": "590 CENTRAL AVE Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9872,7 +9984,7 @@
    "type": "RCIP",
    "name": "Ka-Na-Chi-Hih Healing Lodge",
    "location": "920 Tungsten Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9880,7 +9992,7 @@
    "type": "RCIP",
    "name": "KAREN BEAUCHAMP PROFESSIONAL CORPORATION",
    "location": "105-920 TUNGSTEN STREET, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9888,7 +10000,7 @@
    "type": "RCIP",
    "name": "Karen Hill Personal Real Estate Corp -Karen Hill Realty",
    "location": "1002 - 715 Hewitson St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9896,7 +10008,7 @@
    "type": "RCIP",
    "name": "KASPER BUS LINES",
    "location": "947 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9904,7 +10016,7 @@
    "type": "RCIP",
    "name": "Kavuru's Indian Bistro",
    "location": "250 RedRiver road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9912,7 +10024,7 @@
    "type": "RCIP",
    "name": "Kelly's Nutrition Centre",
    "location": "820 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9920,7 +10032,7 @@
    "type": "RCIP",
    "name": "KELSEYS Original Roadhouse",
    "location": "805 Memorial Ave., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9928,7 +10040,7 @@
    "type": "RCIP",
    "name": "Kinderplace Childcare Centre Inc",
    "location": "1000 Huron Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9936,7 +10048,7 @@
    "type": "RCIP",
    "name": "Kingsway Inn Motel",
    "location": "345 Kingsway Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9944,7 +10056,7 @@
    "type": "RCIP",
    "name": "Kurves Brow Bar",
    "location": "1000 Fort William Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9952,7 +10064,7 @@
    "type": "RCIP",
    "name": "Lakehead District School Board",
    "location": "2135 Sills St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9960,7 +10072,7 @@
    "type": "RCIP",
    "name": "Lakehead Freightways Inc.",
    "location": "161 Main Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9968,7 +10080,7 @@
    "type": "RCIP",
    "name": "Lakehead Roofing & Metal Cladding Ltd.",
    "location": "1190 Russell Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9976,7 +10088,7 @@
    "type": "RCIP",
    "name": "Lakehead Social Planning Council (LSPC)",
    "location": "125 SYNDICATE AVE. S, VICTORIA MALL, THUNDER BAY",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9984,7 +10096,7 @@
    "type": "RCIP",
    "name": "Lakehead University",
    "location": "955 Oliver Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -9992,7 +10104,7 @@
    "type": "RCIP",
    "name": "Lakehead University Student Union",
    "location": "955 Oliver Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10000,7 +10112,7 @@
    "type": "RCIP",
    "name": "LAND OF SPICES",
    "location": "707 Memorial Avenue, Unit 1, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10008,7 +10120,7 @@
    "type": "RCIP",
    "name": "Landmark Inn Limited Partnership",
    "location": "1010 Dawson Rd; Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10016,7 +10128,7 @@
    "type": "RCIP",
    "name": "Langen Glass",
    "location": "248 Secord Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10024,7 +10136,7 @@
    "type": "RCIP",
    "name": "Laurence Management Group Ltd.",
    "location": "350 County Blvd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10032,7 +10144,7 @@
    "type": "RCIP",
    "name": "Levaero Aviation",
    "location": "2039 Derek Burney Dr, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10040,7 +10152,7 @@
    "type": "RCIP",
    "name": "LifeLabs LP",
    "location": "1040 Oliver Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10048,7 +10160,7 @@
    "type": "RCIP",
    "name": "Little George's Child Care Centre",
    "location": "110 Sherbrooke Street, Thunder Bay ON",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10056,7 +10168,7 @@
    "type": "RCIP",
    "name": "Little Lions Child and Family Centre",
    "location": "211 Clarke St., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10064,7 +10176,7 @@
    "type": "RCIP",
    "name": "Lowerys, Limited",
    "location": "540 Central Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10072,7 +10184,7 @@
    "type": "RCIP",
    "name": "LTL Contracting LTD",
    "location": "227 HWY 527, Shuniah",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10080,7 +10192,7 @@
    "type": "RCIP",
    "name": "M Builds - General Contractors",
    "location": "955 Cobalt Crescent Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10088,7 +10200,7 @@
    "type": "RCIP",
    "name": "Mahmowenchike Family Development Centre",
    "location": "150 Redwood Avenue West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10096,7 +10208,7 @@
    "type": "RCIP",
    "name": "Mahon Electric Company Limited",
    "location": "635 MOUNTDALE AVE, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10104,7 +10216,7 @@
    "type": "RCIP",
    "name": "Maintair Aviation",
    "location": "305 Hector Dougall Way, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10112,7 +10224,7 @@
    "type": "RCIP",
    "name": "MALTESE GROCERY LTD",
    "location": "301 Pearl Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10120,7 +10232,7 @@
    "type": "RCIP",
    "name": "Mario's Bowl",
    "location": "710 Memorial Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10128,7 +10240,7 @@
    "type": "RCIP",
    "name": "Marnics",
    "location": "910 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10136,7 +10248,15 @@
    "type": "RCIP",
    "name": "MARTEN FALLS FIRST NATION",
    "location": "577 11TH AVENUE, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Mascarin Collision Centre Ltd",
+   "location": "610 Harold Cres, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10144,7 +10264,7 @@
    "type": "RCIP",
    "name": "Matawa First Nations Management",
    "location": "200 N Lillie st, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10152,7 +10272,7 @@
    "type": "RCIP",
    "name": "Maverick AV",
    "location": "1543 Arthur St East Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10160,7 +10280,7 @@
    "type": "RCIP",
    "name": "Medical Diagnostics & Consulting",
    "location": "1-820 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10168,7 +10288,7 @@
    "type": "RCIP",
    "name": "Medical Esthetics Thunder Bay",
    "location": "215 red river rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10176,7 +10296,7 @@
    "type": "RCIP",
    "name": "Medical Esthetics Thunder Bay",
    "location": "215 red river rd",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10184,7 +10304,7 @@
    "type": "RCIP",
    "name": "Memorial Avenue Dentistry",
    "location": "790 Memorial Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10192,7 +10312,7 @@
    "type": "RCIP",
    "name": "Memorial Home Hardware Building Centre",
    "location": "901 Memorial Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10200,7 +10320,7 @@
    "type": "RCIP",
    "name": "Mid-Canada Truck Services Inc. - Maxim Truck & Trailer",
    "location": "125 Conservation Road Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10208,7 +10328,7 @@
    "type": "RCIP",
    "name": "Mike's Roadhouse",
    "location": "1021 Carrick Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10216,7 +10336,7 @@
    "type": "RCIP",
    "name": "mileage auto plus",
    "location": "230 simpson street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10224,7 +10344,7 @@
    "type": "RCIP",
    "name": "Miller Precast",
    "location": "58 Cooper Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10232,7 +10352,7 @@
    "type": "RCIP",
    "name": "Ministry of Natural Resources",
    "location": "435 James Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10240,7 +10360,7 @@
    "type": "RCIP",
    "name": "Ministry of Transportation - Airports Office",
    "location": "623 James St. S., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10248,7 +10368,7 @@
    "type": "RCIP",
    "name": "MNP",
    "location": "1205 Amber Drive, Suite 210, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10256,7 +10376,7 @@
    "type": "RCIP",
    "name": "MobileKlinik",
    "location": "1000 Fort William Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10264,7 +10384,7 @@
    "type": "RCIP",
    "name": "Modbox Modular",
    "location": "1820 Bailey Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10272,7 +10392,7 @@
    "type": "RCIP",
    "name": "Modstruct Inc",
    "location": "1820 Bailey Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10280,7 +10400,7 @@
    "type": "RCIP",
    "name": "Mongo's Grill",
    "location": "1075 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10288,7 +10408,7 @@
    "type": "RCIP",
    "name": "Monsoon Tandoor Fresh",
    "location": "588 Arthur street west unit 4 Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10296,7 +10416,7 @@
    "type": "RCIP",
    "name": "Montana's BBQ & Bar",
    "location": "615 Sibley Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10304,7 +10424,7 @@
    "type": "RCIP",
    "name": "Monty's Joint",
    "location": "513 Victoria Avenue E. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10312,7 +10432,7 @@
    "type": "RCIP",
    "name": "Motion LP",
    "location": "1154 Roland St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10320,7 +10440,7 @@
    "type": "RCIP",
    "name": "MOVATI Athletic",
    "location": "1185 Arthur St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10328,7 +10448,7 @@
    "type": "RCIP",
    "name": "MUHIUDDIN AHMAD / FENIX MAINTENANCE",
    "location": "401 University Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10336,7 +10456,7 @@
    "type": "RCIP",
    "name": "Murillo Millwoks",
    "location": "2 Rubin Park, Murillo",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10344,7 +10464,7 @@
    "type": "RCIP",
    "name": "Nanabijou Childcare Centre",
    "location": "965 Oliver Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10352,7 +10472,7 @@
    "type": "RCIP",
    "name": "Narvi's Auto Service",
    "location": "918 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10360,7 +10480,7 @@
    "type": "RCIP",
    "name": "Nature's Nest Preschool & Childcare Centre",
    "location": "264 Wilson St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10368,7 +10488,7 @@
    "type": "RCIP",
    "name": "Nishnawbe Aski Development Fund",
    "location": "100 Little Lake Road, Suite 101 Fort William First Nation",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10376,7 +10496,7 @@
    "type": "RCIP",
    "name": "Nordex Contracting Inc",
    "location": "1249 Rosslyn Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10384,7 +10504,7 @@
    "type": "RCIP",
    "name": "Norteños Taqueria / Norteños Cantina",
    "location": "698 Arthur St W, Thunder Bay / 235 Red River Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10392,7 +10512,7 @@
    "type": "RCIP",
    "name": "North Country Premium Sausage",
    "location": "319 EUCLID AVE, THUNDER BAY",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10400,7 +10520,7 @@
    "type": "RCIP",
    "name": "North Star Air",
    "location": "1480 Walsh Street West Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10408,7 +10528,7 @@
    "type": "RCIP",
    "name": "NORTHERN TURF EQUIPMENT",
    "location": "710B Balmoral St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10416,7 +10536,7 @@
    "type": "RCIP",
    "name": "NorthWind Family Ministries",
    "location": "141 May St S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10424,7 +10544,7 @@
    "type": "RCIP",
    "name": "NORWEST COMMUNITY HEALTH",
    "location": "525 Simpson Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10432,7 +10552,7 @@
    "type": "RCIP",
    "name": "NovaCare Health and Wellness Center",
    "location": "1600 Dease street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10440,7 +10560,7 @@
    "type": "RCIP",
    "name": "Nucci's Bake a Deli",
    "location": "801 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10448,7 +10568,7 @@
    "type": "RCIP",
    "name": "Odena Foods",
    "location": "4751 Hwy 11-17 Kakabeka Falls",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10456,7 +10576,7 @@
    "type": "RCIP",
    "name": "Open-Mind Interiors Ltd",
    "location": "151 Brock St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10464,7 +10584,7 @@
    "type": "RCIP",
    "name": "OPS - official Parcel Service",
    "location": "870 Tungsten Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10472,7 +10592,7 @@
    "type": "RCIP",
    "name": "OPTIONS NORTHWEST",
    "location": "95 N. Cumberland St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10480,7 +10600,7 @@
    "type": "RCIP",
    "name": "Oshki Pimache O Win Education and Training Institute- The Wenjack Education Institute",
    "location": "106 Centennial Sq. 2nd floor Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10488,7 +10608,7 @@
    "type": "RCIP",
    "name": "Our Kids Count",
    "location": "704 McKenzie St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10496,7 +10616,7 @@
    "type": "RCIP",
    "name": "PACE",
    "location": "409 George St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10504,7 +10624,7 @@
    "type": "RCIP",
    "name": "ParaMed Home Health Care",
    "location": "91 Cumberland Street South, Suite 200, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10512,7 +10632,7 @@
    "type": "RCIP",
    "name": "Parklane Homes",
    "location": "930 Neebing Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10520,7 +10640,7 @@
    "type": "RCIP",
    "name": "Partners In Rehab",
    "location": "79 Court Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10528,7 +10648,7 @@
    "type": "RCIP",
    "name": "Party City #840",
    "location": "341 Main Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10536,7 +10656,7 @@
    "type": "RCIP",
    "name": "Payroll Xpress Limited",
    "location": "1085 Carrick Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10544,7 +10664,7 @@
    "type": "RCIP",
    "name": "Performance Kia",
    "location": "1150 Central Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10552,7 +10672,7 @@
    "type": "RCIP",
    "name": "Perimeter Aviation LP",
    "location": "216 Round Blvd. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10560,7 +10680,7 @@
    "type": "RCIP",
    "name": "Pho Umami Inc",
    "location": "845 May St. N. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10568,7 +10688,7 @@
    "type": "RCIP",
    "name": "Pioneer Construction Inc.",
    "location": "1344 Oliver Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10576,7 +10696,7 @@
    "type": "RCIP",
    "name": "Port Arthur Family Dental",
    "location": "68 Algoma St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10584,7 +10704,7 @@
    "type": "RCIP",
    "name": "Precision Wood Design",
    "location": "41 Rubin Dr, Murillo",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10592,7 +10712,7 @@
    "type": "RCIP",
    "name": "Prince Arthur Waterfront Hotel",
    "location": "17 N Cumberland Street Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10600,7 +10720,15 @@
    "type": "RCIP",
    "name": "Print Pros Plus",
    "location": "720 May Street N; Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Prisma Painting / Prisma Property Services",
+   "location": "320 May Street South P7E 1B6, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10608,7 +10736,7 @@
    "type": "RCIP",
    "name": "Punjaabi Indian Cuisine",
    "location": "1186 Memorial Avenue, Unit 10, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10616,7 +10744,7 @@
    "type": "RCIP",
    "name": "Quadera Property Management",
    "location": "3-2612 Victoria Ave E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10624,7 +10752,7 @@
    "type": "RCIP",
    "name": "QUICK REPAIR SERVICES INC.",
    "location": "300 WATER STREET, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10632,7 +10760,7 @@
    "type": "RCIP",
    "name": "Ranta Contracting Inc.",
    "location": "1191 Balsam Street Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10640,7 +10768,7 @@
    "type": "RCIP",
    "name": "RAS Maintenance Services",
    "location": "334 Cumberland St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10648,7 +10776,7 @@
    "type": "RCIP",
    "name": "RD CAP INC. - Beaux Daddy's",
    "location": "1575, HWY 61 , Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10656,7 +10784,7 @@
    "type": "RCIP",
    "name": "Rebel Barbers & Company",
    "location": "509 Edward Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10664,7 +10792,7 @@
    "type": "RCIP",
    "name": "Red Lion Smokehouse",
    "location": "16 Cumberland Street South Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10672,7 +10800,7 @@
    "type": "RCIP",
    "name": "Red River Dental",
    "location": "777 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10680,7 +10808,7 @@
    "type": "RCIP",
    "name": "Redwood Park Church",
    "location": "2609 Redwood Avenue E, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10688,7 +10816,7 @@
    "type": "RCIP",
    "name": "Reliance Home Comfort",
    "location": "285 Memorial Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10696,7 +10824,7 @@
    "type": "RCIP",
    "name": "Renewable Forest Products",
    "location": "3144 Arthur St West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10704,7 +10832,7 @@
    "type": "RCIP",
    "name": "REP Security Inc",
    "location": "116 Maplewood St South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10712,7 +10840,7 @@
    "type": "RCIP",
    "name": "Ritson & Sons Contracting Ltd.",
    "location": "141 Frederica St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10720,7 +10848,7 @@
    "type": "RCIP",
    "name": "RJ Concrete",
    "location": "1696 Melbourne Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10728,7 +10856,7 @@
    "type": "RCIP",
    "name": "RLP Security Services Ltd.",
    "location": "1265 Arthur Street East Suite #706, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10736,7 +10864,7 @@
    "type": "RCIP",
    "name": "Robert Roukema - Almada Upholstery",
    "location": "414 May Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10744,7 +10872,7 @@
    "type": "RCIP",
    "name": "Roberta Nugent/Paul Maybroda- Shooters Tavern",
    "location": "377 Memorial Ave Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10752,7 +10880,7 @@
    "type": "RCIP",
    "name": "Roma Bakery",
    "location": "401 Frederica ST W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10760,7 +10888,7 @@
    "type": "RCIP",
    "name": "Roots Community Food Centre",
    "location": "450 Fort William Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10768,7 +10896,7 @@
    "type": "RCIP",
    "name": "Royal Canadian Legion Slovak Legion Branch 129",
    "location": "801 Atlantic Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10776,7 +10904,7 @@
    "type": "RCIP",
    "name": "Royal LePage Lannon Realty",
    "location": "1141 Barton St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10784,7 +10912,7 @@
    "type": "RCIP",
    "name": "Royal Paan",
    "location": "1186 Memorial Avenue, Unit 10, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10792,7 +10920,7 @@
    "type": "RCIP",
    "name": "RUGGEDAIR INDUSTRIES LTD",
    "location": "710 NORAH CRES THUNDER BAY",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10800,7 +10928,7 @@
    "type": "RCIP",
    "name": "RUNA PACHA NATIVE ARTS & CRAFTS",
    "location": "1000 Fort William Rd, Unit 46C Intercity Shopping Centre, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10808,7 +10936,7 @@
    "type": "RCIP",
    "name": "Rural Roots Children's Centre",
    "location": "1946 A Mountain Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10816,7 +10944,7 @@
    "type": "RCIP",
    "name": "Rural Roots Children's Centre",
    "location": "1946 A Mountain Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10824,7 +10952,7 @@
    "type": "RCIP",
    "name": "Rutter Urban Forestry Ltd.",
    "location": "349 Mooney Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10832,7 +10960,7 @@
    "type": "RCIP",
    "name": "S&A Thunder Bay Airlane Inc. -Ramada Thunder Bay",
    "location": "698 Arthur Street West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10840,7 +10968,7 @@
    "type": "RCIP",
    "name": "S&A Thunder Bay TL Inc.- Travelodge by Wyndham, Thunder Bay",
    "location": "450 Memorial Avenue, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10848,7 +10976,7 @@
    "type": "RCIP",
    "name": "S.R.C Coating Systems",
    "location": "1163 Waterford st Unit #B, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10856,7 +10984,7 @@
    "type": "RCIP",
    "name": "Safety Net Security Ltd",
    "location": "1158 Russell Street, Suite D Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10864,7 +10992,7 @@
    "type": "RCIP",
    "name": "Safeway",
    "location": "1. 115 Arthur Street W & 1015 Dawson Rd Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10872,7 +11000,7 @@
    "type": "RCIP",
    "name": "Schoolhouse Playcare Centre of Lakehead Inc.",
    "location": "130 Churchill Dr. W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10880,7 +11008,7 @@
    "type": "RCIP",
    "name": "Scott Family Dental",
    "location": "276 Park Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10888,7 +11016,7 @@
    "type": "RCIP",
    "name": "Seler Restaurant & Wine",
    "location": "555 Dunlop St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10896,7 +11024,7 @@
    "type": "RCIP",
    "name": "SHELTER HOUSE",
    "location": "420 George St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10904,23 +11032,23 @@
    "type": "RCIP",
    "name": "Shoppers Drug Mart #1525 (Red River)",
    "location": "901 Red River Road Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "SHOPPERS DRUG MART #680",
-   "location": "1186 MEMORIAL AVE Thunder Bay Store 681 - 194 N. Court St Thunder Bay,- 572 Arthur St W,",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "1186 MEMORIAL AVE Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Shoppers Drug Mart 681 and Shoppers Drug Mart 1312",
-   "location": "Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "Store 681 - 194 N. Court St Thunder Bay,- 572 Arthur St W, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10928,7 +11056,7 @@
    "type": "RCIP",
    "name": "Sierra Builders",
    "location": "555 central ave Thunder Bay on",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10936,7 +11064,7 @@
    "type": "RCIP",
    "name": "Silver Hotels (YQT North) Inc - Days Inn by Wyndham Thunder Bay North",
    "location": "1250 Golf Links Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10944,7 +11072,7 @@
    "type": "RCIP",
    "name": "SJ DRIVING ACADEMY INC.",
    "location": "406 Westview Place, Thunder bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10952,7 +11080,7 @@
    "type": "RCIP",
    "name": "Skaf's Just Basics",
    "location": "470 Hodder Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10960,7 +11088,7 @@
    "type": "RCIP",
    "name": "Sky Fill Aviation Refueling Inc.",
    "location": "316 hector dougall way, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10968,7 +11096,7 @@
    "type": "RCIP",
    "name": "Sleep Country Canada Inc.",
    "location": "389 MAIN STREET, UNIT B2, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10976,7 +11104,7 @@
    "type": "RCIP",
    "name": "Sleeping Giant Brewing Co",
    "location": "712 Macdonell Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10984,7 +11112,7 @@
    "type": "RCIP",
    "name": "Smart Modular Canada",
    "location": "24 Haniak Rd. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -10992,7 +11120,7 @@
    "type": "RCIP",
    "name": "Societa Italiana Di Benevolenza Principe Di Piemonte of Fort William- Davinci Centre",
    "location": "340 Waterloo Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11000,7 +11128,7 @@
    "type": "RCIP",
    "name": "Sovereign Dental",
    "location": "2& 3-1101 Arthur St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11008,7 +11136,7 @@
    "type": "RCIP",
    "name": "Sovereign Dental",
    "location": "911 Fort William Rd #3, Thunder Bay, & 1101 Arthur St W Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11016,7 +11144,7 @@
    "type": "RCIP",
    "name": "SRL Contracting Corp.",
    "location": "105 May St N Unit 7, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11024,7 +11152,7 @@
    "type": "RCIP",
    "name": "SRS WINDOWS AND DOORS INC",
    "location": "936 Tungsten Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11032,23 +11160,23 @@
    "type": "RCIP",
    "name": "St. Joseph's Care Group",
    "location": "35 Algoma Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Stacy Tabachak/ S&H Confections- Flossed Out",
-   "location": "1000 Fort William Road, Unit 24, Thunder Bay 2118 Arthur St E, Thunder Bay, and 141 Bayberry Cr, Thunder",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "1000 Fort William Road, Unit 24, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
    "province": "ON",
    "type": "RCIP",
    "name": "Step By Step Child Care Centres",
-   "location": "Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "location": "2118 Arthur St E, Thunder Bay, and 141 Bayberry Cr, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11056,7 +11184,7 @@
    "type": "RCIP",
    "name": "Stuffy Riders",
    "location": "1000 Fort william Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11064,7 +11192,7 @@
    "type": "RCIP",
    "name": "Super 8 by Wyndham",
    "location": "439 Memorial Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11072,7 +11200,7 @@
    "type": "RCIP",
    "name": "Superior Foods",
    "location": "1090 Lithium Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11080,7 +11208,7 @@
    "type": "RCIP",
    "name": "Superior Hyundai",
    "location": "1142 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11088,7 +11216,7 @@
    "type": "RCIP",
    "name": "Superior Janitorial",
    "location": "196 Evans St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11096,7 +11224,7 @@
    "type": "RCIP",
    "name": "Superior Screen Printing",
    "location": "115 N. Cumberland Street",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11104,7 +11232,7 @@
    "type": "RCIP",
    "name": "SUPERIOR SHERCOR LIMITED - MR. LUBE (STORES 61 & 129)",
    "location": "645 ARTHUR STREET WEST, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11112,7 +11240,7 @@
    "type": "RCIP",
    "name": "Superior Shores Gaming Association",
    "location": "435 Memorial Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11120,7 +11248,7 @@
    "type": "RCIP",
    "name": "Superior Urology clinic",
    "location": "146 South Court St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11128,7 +11256,15 @@
    "type": "RCIP",
    "name": "Superior Yard Works Inc.",
    "location": "135 Windemere Ave S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Sushi 7",
+   "location": "1072 Oliver Road, Unit 2, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11136,7 +11272,7 @@
    "type": "RCIP",
    "name": "Sushi Station",
    "location": "280 Algoma st.s Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11144,7 +11280,7 @@
    "type": "RCIP",
    "name": "Swartz Fine Fashions",
    "location": "148 Frederica St. West, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11152,7 +11288,7 @@
    "type": "RCIP",
    "name": "Swell Bakery",
    "location": "15A St. Paul St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11160,7 +11296,7 @@
    "type": "RCIP",
    "name": "Sysco Thunder Bay",
    "location": "840 McKeller St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11168,7 +11304,7 @@
    "type": "RCIP",
    "name": "T BAY ULTRASOUND",
    "location": "1265 ARTHUR STREET EAST, SUITE 407, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11176,7 +11312,7 @@
    "type": "RCIP",
    "name": "T&T AUTO SUPPLY (THUNDER BAY) LTD",
    "location": "427 Kingston St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11184,7 +11320,7 @@
    "type": "RCIP",
    "name": "Tara Labate Pharmacy LTD.- Shoppers Drug Mart #678",
    "location": "640 River St, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11192,7 +11328,7 @@
    "type": "RCIP",
    "name": "Taranis Contracting Group Ltd",
    "location": "1473 Rosslyn Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11200,7 +11336,7 @@
    "type": "RCIP",
    "name": "Taylor Made Construction",
    "location": "Suite 6,105 May Street North, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11208,7 +11344,7 @@
    "type": "RCIP",
    "name": "TbayPost (Dougall Media)",
    "location": "87 Hill Street North Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11216,7 +11352,15 @@
    "type": "RCIP",
    "name": "Teleco",
    "location": "1218 Amber Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "TELSTAR MOTEL",
+   "location": "Po box 161 4746 Hwy 11-17, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11224,7 +11368,15 @@
    "type": "RCIP",
    "name": "Termax Service Group Inc",
    "location": "782 Macdonell Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Thai Kitchen",
+   "location": "11 Cumberland St S, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11232,7 +11384,7 @@
    "type": "RCIP",
    "name": "The Bank of Nova Scotia",
    "location": "745 Hewitson Street Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11240,7 +11392,7 @@
    "type": "RCIP",
    "name": "THE BRICK",
    "location": "869 Fort William Rd. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11248,7 +11400,7 @@
    "type": "RCIP",
    "name": "The Canadian Wild Rice Mercantile Ltd.",
    "location": "776 Macdonell Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11256,7 +11408,7 @@
    "type": "RCIP",
    "name": "The Courthouse Hotel, Thunder Bay",
    "location": "277 Camelot St., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11264,7 +11416,7 @@
    "type": "RCIP",
    "name": "The Eddy Restaurant",
    "location": "4744 Highway 11/17, P.O.Box 269, Kakabeka Falls",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11272,7 +11424,7 @@
    "type": "RCIP",
    "name": "The Haven Hostel",
    "location": "226 Ambrose Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11280,7 +11432,7 @@
    "type": "RCIP",
    "name": "The Industry Social House",
    "location": "782 Macdonell St Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11288,7 +11440,7 @@
    "type": "RCIP",
    "name": "The Lakehead Motors",
    "location": "951 Memorial Ave. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11296,7 +11448,7 @@
    "type": "RCIP",
    "name": "The Persian Man",
    "location": "899 Tungsten Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11304,7 +11456,7 @@
    "type": "RCIP",
    "name": "The Salvation Army - Journey to Life Centre",
    "location": "545 Cumberland St. N., Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11312,7 +11464,7 @@
    "type": "RCIP",
    "name": "The Superior Inn Hotel & Conference Centre",
    "location": "555 West Arthur Street Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11320,7 +11472,7 @@
    "type": "RCIP",
    "name": "The Tilted Turret",
    "location": "135 Archibald St N, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11328,7 +11480,7 @@
    "type": "RCIP",
    "name": "THE UPS STORE 096",
    "location": "1100 MEMORIAL AVE, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11336,7 +11488,7 @@
    "type": "RCIP",
    "name": "Thriftys Inc (2005)",
    "location": "1000 Fort William Road Unit #B7/8, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11344,7 +11496,7 @@
    "type": "RCIP",
    "name": "Thunder Airlines",
    "location": "310 Hector Dougall Way, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11352,7 +11504,7 @@
    "type": "RCIP",
    "name": "Thunder Apple North Inc.- Applebees",
    "location": "1155 Alloy Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11360,7 +11512,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Auto Parts",
    "location": "520 Squier Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11368,7 +11520,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Aviation Ltd",
    "location": "309 Hector Dougall Way, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11376,7 +11528,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Catholic District School Board",
    "location": "459 Victoria Ave W Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11384,7 +11536,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Chamber of Commerce",
    "location": "34 Cumberland St N, Suite 702, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11392,7 +11544,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Counselling",
    "location": "544 Winnipeg Ave Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11400,7 +11552,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Electronics",
    "location": "87 Hill Street North Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11408,7 +11560,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Elite Soccer Inc.",
    "location": "535 Chapples Park Drive, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11416,7 +11568,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Estate Sales & Auction",
    "location": "2015 Metcalfe Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11424,7 +11576,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Estate Sales & Auction",
    "location": "2015 Metcalfe Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11432,7 +11584,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Harley-Davidson",
    "location": "636 Arthur Street West",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11440,7 +11592,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Husky Travel Centre",
    "location": "1120 Alloy Dr, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11448,7 +11600,15 @@
    "type": "RCIP",
    "name": "Thunder Bay Hydraulics",
    "location": "701 Montreal St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Thunder Bay International Airports Authority Inc.",
+   "location": "340 100 PRINCESS ST, Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11456,7 +11616,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Mitsubishi",
    "location": "872 Copper Crescent Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11464,7 +11624,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Multi Trades Inc.",
    "location": "1520 Edward St S. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11472,7 +11632,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Naturopathic Clinic",
    "location": "219 Algoma Street South, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11480,7 +11640,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Public Library",
    "location": "285 Red River Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11488,7 +11648,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Regional Health Sciences Centre",
    "location": "980 Oliver Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11496,7 +11656,7 @@
    "type": "RCIP",
    "name": "THUNDER BAY VENTURES",
    "location": "1043 Gorham St Unit D, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11504,7 +11664,7 @@
    "type": "RCIP",
    "name": "THUNDER BAY VENTURES",
    "location": "1043 Gorham St Unit D, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11512,7 +11672,7 @@
    "type": "RCIP",
    "name": "Thunder Bay Xerographix Inc.",
    "location": "910 Alloy Dr, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11520,7 +11680,7 @@
    "type": "RCIP",
    "name": "TINA'S BREAKFAST AND LUNCH",
    "location": "1170 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11528,7 +11688,7 @@
    "type": "RCIP",
    "name": "Tom Jones Corporation",
    "location": "560 Squier Place, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11536,7 +11696,15 @@
    "type": "RCIP",
    "name": "Tomlin",
    "location": "202 1/2 Red River Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
+  },
+  {
+   "community": "Thunder Bay, ON",
+   "province": "ON",
+   "type": "RCIP",
+   "name": "Toodaloo Pest & Wildlife Services",
+   "location": "1095 Roland St Thunder Bay",
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11544,7 +11712,7 @@
    "type": "RCIP",
    "name": "Top Rung Painting",
    "location": "47 Ruttan st Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11552,7 +11720,7 @@
    "type": "RCIP",
    "name": "Toromont Cat",
    "location": "620 Beaverhall Pl, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11560,7 +11728,7 @@
    "type": "RCIP",
    "name": "Triad Exterior Contracting Ltd.",
    "location": "800 Norah Cres. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11568,7 +11736,7 @@
    "type": "RCIP",
    "name": "Turn-key Construction INC.",
    "location": "1450 Rosslyn Road",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11576,7 +11744,7 @@
    "type": "RCIP",
    "name": "U2Fastener",
    "location": "100 Main Street, Keefer Terminal, Suite 500, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11584,7 +11752,7 @@
    "type": "RCIP",
    "name": "Unitized Manufacturing (2020) Ltd.",
    "location": "676 Squier St. Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11592,7 +11760,7 @@
    "type": "RCIP",
    "name": "Urban Abbey",
    "location": "308 Red River Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11600,7 +11768,7 @@
    "type": "RCIP",
    "name": "Used Car Superstore",
    "location": "819 Fort William Road Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11608,7 +11776,7 @@
    "type": "RCIP",
    "name": "Valhalla Hotel & Conference Centre",
    "location": "1 Valhalla Inn Road, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11616,7 +11784,7 @@
    "type": "RCIP",
    "name": "Vanderwees Garden Gallery",
    "location": "6488 Mapleward Road, Thunder Bay,",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11624,7 +11792,7 @@
    "type": "RCIP",
    "name": "Vedic Cultural Centre, Thunder Bay",
    "location": "1600 Dease Street, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11632,7 +11800,7 @@
    "type": "RCIP",
    "name": "Victorian Order of Nurses for Canada - VON Canada",
    "location": "1265 Arthur St E Suite 600, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11640,7 +11808,7 @@
    "type": "RCIP",
    "name": "VP'S CLEANING SERVICE",
    "location": "UNIT B, 217 ALGOMA ST S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11648,7 +11816,7 @@
    "type": "RCIP",
    "name": "Walid Shabana Medicine Professional Corporation",
    "location": "146 Court St S, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11656,7 +11824,7 @@
    "type": "RCIP",
    "name": "Wal-Mart Canada Corp",
    "location": "1020 Dawson Rd, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11664,7 +11832,7 @@
    "type": "RCIP",
    "name": "Wal-Mart Canada Corp",
    "location": "1101 Arthur St W, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11672,7 +11840,7 @@
    "type": "RCIP",
    "name": "Wal-Mart Canada Corp",
    "location": "777 Memorial Ave, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11680,7 +11848,7 @@
    "type": "RCIP",
    "name": "WASABI RESTAURANT",
    "location": "538 ARTHUR ST WEST, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11688,7 +11856,7 @@
    "type": "RCIP",
    "name": "Wasaya Airways",
    "location": "201 Kelner Place, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11696,7 +11864,7 @@
    "type": "RCIP",
    "name": "WAYNE TOYOTA",
    "location": "787 CENTRAL AVE, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11704,7 +11872,7 @@
    "type": "RCIP",
    "name": "WESTFORT FAMILY DENTAL",
    "location": "124 FREDERICA STREET EAST , Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11712,7 +11880,7 @@
    "type": "RCIP",
    "name": "Wesway",
    "location": "#210-1703 Victoria Avenue East, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11720,7 +11888,7 @@
    "type": "RCIP",
    "name": "WILCO CONTRACTORS SUPERIOR INC",
    "location": "3031 ARTHUR STREET, WEST Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11728,7 +11896,7 @@
    "type": "RCIP",
    "name": "Woking Bird Restaurant",
    "location": "425 Edward St N (unit 5). Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11736,7 +11904,7 @@
    "type": "RCIP",
    "name": "YM Inc. (Ventes) - Thriftys Inc (2005)",
    "location": "1000 Fort William Road Unit #B7/8, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11744,7 +11912,7 @@
    "type": "RCIP",
    "name": "YM, Inc (Sales)- Urban Kids",
    "location": "1000 Fort William Road Unit #49A Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Thunder Bay, ON",
@@ -11752,7 +11920,7 @@
    "type": "RCIP",
    "name": "YM, Inc (Sales) Urban Planet",
    "location": "1000 Fort William Road Unit #S-1, Thunder Bay",
-   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/08/As-of-August-13-2026.pdf"
+   "url": "https://gotothunderbay.ca/wp-content/uploads/2026/09/As-of-Sept-17-2026.pdf"
   },
   {
    "community": "Steinbach, MB",
@@ -13902,8 +14070,24 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Agilion Accounting & Advisory",
+   "location": "Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Doane Grant Thornton LLP",
    "location": "Castlegar, Nelson & Trail offices",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "StellarVista Credit Union",
+   "location": "Trail",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -13998,6 +14182,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Storzuk Morris and Szucs Okanagan Physiotherapist Corp.",
+   "location": "Grand Forks",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Trail Association for Community Living",
    "location": "",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -14024,6 +14216,14 @@
    "type": "RCIP",
    "name": "Brent Kennedy Learning Centre",
    "location": "South Slocan",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Castlegar Community Services",
+   "location": "",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14128,6 +14328,14 @@
    "type": "RCIP",
    "name": "Kimsis Art School",
    "location": "Castlegar",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Kootenai Community Centre Society",
+   "location": "Creston",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14240,6 +14448,14 @@
    "type": "RCIP",
    "name": "The Schoolhouse ECLC",
    "location": "Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Trail & District Public Library",
+   "location": "Trail",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14366,6 +14582,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Bear Country Kitchen Store",
+   "location": "Rossland",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Beauties Pizza",
    "location": "Nelson",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -14408,6 +14632,14 @@
    "type": "RCIP",
    "name": "The Black Cauldron",
    "location": "",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Black Fin Sushi",
+   "location": "Trail",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14462,8 +14694,8 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
-   "name": "Busaba Thai",
-   "location": "Nelson",
+   "name": "Busaba Thai Cafe",
+   "location": "Nelson & Creston",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14471,7 +14703,7 @@
    "province": "BC",
    "type": "RCIP",
    "name": "Canadian Tire",
-   "location": "Trail",
+   "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14488,6 +14720,14 @@
    "type": "RCIP",
    "name": "Casey’s Community House",
    "location": "Creston",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Castlegar Hyundai",
+   "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14574,6 +14814,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Connects Wireless",
+   "location": "Castlegar & Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Cowan Office Supplies",
    "location": "Nelson",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -14646,6 +14894,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Eclipse Stores",
+   "location": "Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Edgewood General Store",
    "location": "Edgewood",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -14712,6 +14968,14 @@
    "type": "RCIP",
    "name": "Gabriella’s Restaurant",
    "location": "Rossland",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Gilbert Auto Parts",
+   "location": "Nelson",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -14808,6 +15072,14 @@
    "type": "RCIP",
    "name": "The Josie Hotel",
    "location": "Rossland",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Julio’s Lounge & Romano’s Runways",
+   "location": "Creston",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15158,6 +15430,30 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Rona",
+   "location": "Trail",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Rossland Lumber",
+   "location": "Rossland",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "The Royal",
+   "location": "Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Safety Net Security",
    "location": "Trail",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -15240,6 +15536,14 @@
    "type": "RCIP",
    "name": "Slocan Gas Bar (grocery store only)",
    "location": "Slocan Park",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Snowwater Heli Skiing",
+   "location": "South Slocan",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15366,6 +15670,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Ticca Tikka",
+   "location": "Trail",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Valhalla Inn",
    "location": "Creston",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -15398,6 +15710,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Village Ski Hut",
+   "location": "Nelson",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Western Traveler Motel",
    "location": "Grand Forks",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -15408,6 +15728,14 @@
    "type": "RCIP",
    "name": "Westland Insurance Group",
    "location": "Grand Forks",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "West’s Department Store",
+   "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15550,6 +15878,14 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "CPS Development",
+   "location": "Kaslo",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "D.R. Drywall",
    "location": "Nelson",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -15568,6 +15904,14 @@
    "type": "RCIP",
    "name": "GFL Environmental",
    "location": "Trail",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Glendale Tires",
+   "location": "Nelson",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15630,7 +15974,23 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Markin Contracting",
+   "location": "Castlegar",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Martech Electrical Systems",
+   "location": "Castlegar",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Martech Motor Winding",
    "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
@@ -15648,6 +16008,14 @@
    "type": "RCIP",
    "name": "Mercer Forestry Services",
    "location": "",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Morrison Insulation",
+   "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15790,6 +16158,22 @@
    "community": "West Kootenay, BC",
    "province": "BC",
    "type": "RCIP",
+   "name": "Trail Roofing",
+   "location": "Trail",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Trowelex Rentals & Sales",
+   "location": "Castlegar",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
    "name": "Valet Restorations",
    "location": "Castlegar",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
@@ -15808,6 +16192,14 @@
    "type": "RCIP",
    "name": "Venture Mechanical Systems",
    "location": "Castlegar",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Wild West Drilling",
+   "location": "Creston",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {
@@ -15904,6 +16296,14 @@
    "type": "RCIP",
    "name": "KC Recycling",
    "location": "Trail",
+   "url": "https://westkootenayimmigration.ca/designated-employers/"
+  },
+  {
+   "community": "West Kootenay, BC",
+   "province": "BC",
+   "type": "RCIP",
+   "name": "Kootenay Beds",
+   "location": "Genelle",
    "url": "https://westkootenayimmigration.ca/designated-employers/"
   },
   {

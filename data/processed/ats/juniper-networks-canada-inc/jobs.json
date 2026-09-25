@@ -1,0 +1,26 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Software Developer",
+      "location": "Kanata, Ontario, Canada",
+      "url": "https://hpe.wd5.myworkdayjobs.com/Jobsathpe/job/Kanata-Ontario-Canada/Software-Developer_1214376-2",
+      "department": "",
+      "posted": "2026-09-22",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "Kanata",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
+}

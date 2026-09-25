@@ -1,0 +1,23 @@
+{
+  "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+  "label": "AB 警务",
+  "province": "AB",
+  "type": "indemand",
+  "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-eligibility",
+  "fetched": "2026-09-25",
+  "note": "雇主须为阿省警察机构(AACP 成员);本表按官方列出的 3 个职业码。",
+  "occupations": [
+    {
+      "noc": "40040",
+      "name": "Commissioned (management) police offers and related occupations in public protection services"
+    },
+    {
+      "noc": "41310",
+      "name": "Police investigators and other investigative occupations"
+    },
+    {
+      "noc": "42100",
+      "name": "Police officers (except commissioned)"
+    }
+  ]
+}

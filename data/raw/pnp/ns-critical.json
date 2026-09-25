@@ -4,7 +4,7 @@
   "province": "NS",
   "type": "indemand",
   "url": "https://liveinnovascotia.com/critical-vacancies",
-  "fetched": "2026-09-12",
+  "fetched": "2026-09-25",
   "occupations": [
     {
       "noc": "22300",
@@ -62,5 +62,6 @@
       "noc": "73102",
       "name": "Plasterers, drywall installers and finishers and lathers"
     }
-  ]
+  ],
+  "signal": true
 }

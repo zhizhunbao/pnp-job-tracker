@@ -1,7 +1,7 @@
 {
   "ats": "recruitee",
   "token": "huaweicanada",
-  "count": 18,
+  "count": 19,
   "jobs": [
     {
       "title": "Engineer - 6G RF Packaging",
@@ -61,6 +61,27 @@
       "district": "",
       "salaryAnnual": 131000,
       "salaryText": "$106K–$156K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Engineer - Physical Layer",
+      "location": "Ottawa, Ontario, Canada",
+      "url": "https://huaweicanada.recruitee.com/o/engineer-physical-layer",
+      "department": "Advanced Wireless Technology Lab",
+      "posted": "2026-09-15",
+      "address": "",
+      "salary": "$104,000 to $154,000",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 129000,
+      "salaryText": "$104K–$154K/yr",
       "aip": false,
       "pilot": "",
       "pilotCommunity": "",

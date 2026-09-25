@@ -1,0 +1,91 @@
+{
+  "stream": "Nova Scotia Skilled Worker — Construction (NAICS 23)",
+  "label": "NS 建筑",
+  "province": "NS",
+  "type": "indemand",
+  "url": "https://liveinnovascotia.com/skilled-worker",
+  "fetched": "2026-09-25",
+  "note": "限建筑业雇主(NAICS 23);TEER 4-5 不要求同雇主 6 个月。75101 / 75119 两个通用码要看雇主行业,本表不收。",
+  "occupations": [
+    {
+      "noc": "70010",
+      "name": "Construction managers"
+    },
+    {
+      "noc": "70011",
+      "name": "Home building and renovation managers"
+    },
+    {
+      "noc": "72011",
+      "name": "Contractors and supervisors, electrical trades and telecommunications occupations"
+    },
+    {
+      "noc": "72014",
+      "name": "Contractors and supervisors, other construction trades, installers, repairers and servicers"
+    },
+    {
+      "noc": "72020",
+      "name": "Contractors and supervisors, mechanic trades"
+    },
+    {
+      "noc": "72102",
+      "name": "Sheet metal workers"
+    },
+    {
+      "noc": "72106",
+      "name": "Welders and related machine operators"
+    },
+    {
+      "noc": "72200",
+      "name": "Electricians (except industrial and power system)"
+    },
+    {
+      "noc": "72201",
+      "name": "Industrial electricians"
+    },
+    {
+      "noc": "72310",
+      "name": "Carpenters"
+    },
+    {
+      "noc": "72320",
+      "name": "Bricklayers"
+    },
+    {
+      "noc": "72401",
+      "name": "Heavy-duty equipment mechanics"
+    },
+    {
+      "noc": "72402",
+      "name": "Heating, refrigeration and air conditioning mechanics"
+    },
+    {
+      "noc": "72500",
+      "name": "Crane operators"
+    },
+    {
+      "noc": "73100",
+      "name": "Concrete finishers"
+    },
+    {
+      "noc": "73102",
+      "name": "Plasterers, drywall installers and finishers and lathers"
+    },
+    {
+      "noc": "73110",
+      "name": "Roofers and shinglers"
+    },
+    {
+      "noc": "73200",
+      "name": "Residential and commercial installers and servicers"
+    },
+    {
+      "noc": "73400",
+      "name": "Heavy equipment operators"
+    },
+    {
+      "noc": "75110",
+      "name": "Construction trades helpers and labourers"
+    }
+  ]
+}

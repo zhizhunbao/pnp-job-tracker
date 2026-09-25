@@ -1,0 +1,26 @@
+{
+  "ats": "smartrecruiters",
+  "token": "CheckPointSoftwareTechnologies2",
+  "count": 1,
+  "jobs": [
+    {
+      "title": "Diamond Services Engineer",
+      "location": "Ottawa, ON",
+      "url": "https://jobs.smartrecruiters.com/CheckPointSoftwareTechnologies2/744000138662349",
+      "department": "",
+      "posted": "2026-07-20",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
+}

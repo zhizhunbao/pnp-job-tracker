@@ -4,54 +4,54 @@
   "source": "AAIP processing information",
   "url": "https://www.alberta.ca/aaip-processing-information",
   "note": "AAIP 官方处理信息页:配额/已发/剩余、积压游标(正在审哪天收到的申请)、**EOI 池内人数**(被抽中概率的分母 —— 单轮概率 ≈ 当轮邀请数 ÷ 池内人数)与抽选史。官方注明所有数字随时可变、配额可在 stream 间腾挪;医生与法语者走联邦附加名额,不占本省配额。抽选史的 canonical 维度表仍由 build_draws.py 维护,本表原样留档。",
-  "asOf": "2026-09-09",
-  "fetched": "2026-09-12",
+  "asOf": "2026-09-23",
+  "fetched": "2026-09-25",
   "summary": {
     "allocation": 6603,
-    "issued": 4864,
-    "remaining": 1739,
-    "toProcess": 1238
+    "issued": 5221,
+    "remaining": 1382,
+    "toProcess": 1092
   },
   "streams": [
     {
       "stream": "Alberta Opportunity Stream",
       "allocation": 3562,
-      "issued": 2725,
-      "remaining": 837,
-      "toProcess": 484,
+      "issued": 2911,
+      "remaining": 651,
+      "toProcess": 464,
       "assessingUpTo": "June 17, 2026 (currently excludes those who received a work permit support letter under the ‘Temporary public policy to facilitate work permits for prospective Provincial Nominee Program candidates’)"
     },
     {
       "stream": "Rural Renewal Stream",
       "allocation": 1057,
-      "issued": 673,
-      "remaining": 384,
-      "toProcess": 95,
-      "assessingUpTo": "August 11, 2026"
+      "issued": 740,
+      "remaining": 317,
+      "toProcess": 44,
+      "assessingUpTo": "August 17, 2026"
     },
     {
       "stream": "Tourism and Hospitality Stream",
       "allocation": 156,
       "issued": 141,
       "remaining": 15,
-      "toProcess": 5,
+      "toProcess": "Less than 10",
       "assessingUpTo": "July 27, 2026"
     },
     {
       "stream": "Dedicated Health Care Pathways",
       "allocation": 518,
-      "issued": 310,
-      "remaining": 208,
-      "toProcess": 27,
-      "assessingUpTo": "July 30, 2026"
+      "issued": 331,
+      "remaining": 187,
+      "toProcess": 30,
+      "assessingUpTo": "August 29, 2026"
     },
     {
       "stream": "Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs in Alberta)",
       "allocation": 619,
-      "issued": 447,
-      "remaining": 172,
-      "toProcess": 176,
-      "assessingUpTo": "June 17, 2026"
+      "issued": 485,
+      "remaining": 134,
+      "toProcess": 149,
+      "assessingUpTo": "June 23, 2026"
     },
     {
       "stream": "Law Enforcement Pathway",
@@ -64,55 +64,91 @@
     {
       "stream": "Priority sector draws and other initiatives (construction, manufacturing, agriculture, aviation, and including skilled trades linked to each sector, etc.)",
       "allocation": 619,
-      "issued": 527,
-      "remaining": 92,
-      "toProcess": 230,
+      "issued": 571,
+      "remaining": 48,
+      "toProcess": 187,
       "assessingUpTo": "June 24, 2026"
     },
     {
       "stream": "Entrepreneur Streams",
       "allocation": 60,
-      "issued": 34,
-      "remaining": 26,
-      "toProcess": 221,
+      "issued": 35,
+      "remaining": 25,
+      "toProcess": 217,
       "assessingUpTo": "Business applications are evaluated upon receipt"
     }
   ],
   "eoiPool": [
     {
       "stream": "Alberta Opportunity Stream",
-      "count": 22381
+      "count": 22315
     },
     {
       "stream": "Dedicated Health Care Pathways (Express Entry and Non-Express Entry)",
-      "count": 1302
+      "count": 1222
     },
     {
       "stream": "Rural Renewal Stream",
-      "count": 1750
+      "count": 1736
     },
     {
       "stream": "Tourism and Hospitality Stream",
-      "count": 3372
+      "count": 3275
     },
     {
       "stream": "Accelerated Tech Pathway",
-      "count": 2039
+      "count": 1992
     },
     {
       "stream": "Law Enforcement Pathway",
-      "count": 46
+      "count": 45
     },
     {
       "stream": "Priority sector draws and other initiatives",
-      "count": 5067
+      "count": 5011
     },
     {
       "stream": "Total:",
-      "count": 35957
+      "count": 35596
     }
   ],
   "draws": [
+    {
+      "date": "September 23, 2026",
+      "stream": "Alberta Opportunity Stream",
+      "minScore": 58,
+      "invitations": 113
+    },
+    {
+      "date": "September 22, 2026",
+      "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+      "minScore": 59,
+      "invitations": 100
+    },
+    {
+      "date": "September 21, 2026",
+      "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+      "minScore": 49,
+      "invitations": "Less than 10"
+    },
+    {
+      "date": "September 18, 2026",
+      "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+      "minScore": 62,
+      "invitations": 100
+    },
+    {
+      "date": "September 15, 2026",
+      "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+      "minScore": 60,
+      "invitations": 18
+    },
+    {
+      "date": "September 10, 2026",
+      "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+      "minScore": 60,
+      "invitations": 48
+    },
     {
       "date": "September 9, 2026",
       "stream": "Dedicated Health Care Pathway – Express Entry",

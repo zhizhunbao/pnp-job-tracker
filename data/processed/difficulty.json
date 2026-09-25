@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11",
+ "generated": "2026-09-24",
  "trAsOf": "2026-04",
  "rows": [
   {
@@ -31,7 +31,7 @@
      "invitations": 2400,
      "tier": "easy",
      "source": "https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     },
     {
      "key": "scoreLevel",
@@ -69,20 +69,20 @@
     },
     {
      "key": "activity",
-     "value": 23,
-     "invitations": 2996,
+     "value": 24,
+     "invitations": 3029,
      "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     },
     {
      "key": "scoreLevel",
-     "value": 50,
-     "latestScore": 94,
+     "value": 10,
+     "latestScore": 60,
      "scale": "SIRS",
-     "tier": "mid",
+     "tier": "easy",
      "source": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
-     "asOf": "2026-09-10"
+     "asOf": "2026-09-17"
     }
    ]
   },
@@ -111,20 +111,20 @@
     },
     {
      "key": "activity",
-     "value": 22,
-     "invitations": 3361,
+     "value": 48,
+     "invitations": 7865,
      "tier": "easy",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     },
     {
      "key": "scoreLevel",
-     "value": 82,
-     "latestScore": 60,
+     "value": 62,
+     "latestScore": 58,
      "scale": "WEOI",
-     "tier": "tight",
+     "tier": "mid",
      "source": "https://www.alberta.ca/aaip-processing-information",
-     "asOf": "2026-09-09"
+     "asOf": "2026-09-23"
     }
    ]
   },
@@ -178,11 +178,11 @@
     },
     {
      "key": "activity",
-     "value": 21,
-     "invitations": 4700,
+     "value": 25,
+     "invitations": 5174,
      "tier": "easy",
      "source": "https://immigratemanitoba.com/draws/",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     }
    ]
   },
@@ -229,11 +229,11 @@
     },
     {
      "key": "activity",
-     "value": 22,
-     "invitations": 2601,
+     "value": 23,
+     "invitations": 2643,
      "tier": "easy",
      "source": "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     }
    ]
   },
@@ -255,11 +255,11 @@
     },
     {
      "key": "activity",
-     "value": 13,
-     "invitations": 2147,
+     "value": 14,
+     "invitations": 2209,
      "tier": "easy",
      "source": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     }
    ]
   },
@@ -270,10 +270,10 @@
     {
      "key": "activity",
      "value": 6,
-     "invitations": 899,
+     "invitations": 993,
      "tier": "mid",
      "source": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
-     "asOf": "2026-09-11"
+     "asOf": "2026-09-24"
     }
    ]
   }

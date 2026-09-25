@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-12",
+ "fetched": "2026-09-16",
  "note": "名额公告哨兵 state(去重用)。命中≠核实:数字进 pnp_allocations.json 前必须人工回官方页核对原句。",
  "watch": {
   "ON": [

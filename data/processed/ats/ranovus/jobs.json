@@ -1,7 +1,7 @@
 {
   "ats": "bamboohr",
   "token": "ranovus",
-  "count": 8,
+  "count": 9,
   "jobs": [
     {
       "title": "Silicon Photonics Designer and Tester Engineer",
@@ -143,6 +143,25 @@
       "location": "Ottawa, Ontario",
       "url": "https://ranovus.bamboohr.com/careers/76",
       "department": "System Design & Modelling",
+      "posted": "",
+      "address": "",
+      "salary": "",
+      "tech": true,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Senior Finance Manager & Analyst ",
+      "location": "Ottawa, Ontario",
+      "url": "https://ranovus.bamboohr.com/careers/77",
+      "department": "Finance",
       "posted": "",
       "address": "",
       "salary": "",

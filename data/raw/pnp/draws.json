@@ -1,12 +1,33 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-12",
+  "fetched": "2026-09-25",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
       "scale": "SIRS",
       "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
       "draws": [
+        {
+          "date": "2026-09-24",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $52/hour and $105,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 426
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 131,
+          "invitations": 288
+        },
+        {
+          "date": "2026-09-17",
+          "stream": "Temporary Rural/Remote Health Support Initiative",
+          "note": "Points",
+          "score": 60,
+          "invitations": 33
+        },
         {
           "date": "2026-09-10",
           "stream": "Care: Childcare",
@@ -176,6 +197,48 @@
       "url": "https://www.alberta.ca/aaip-processing-information",
       "draws": [
         {
+          "date": "2026-09-23",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 58,
+          "invitations": 113
+        },
+        {
+          "date": "2026-09-22",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 59,
+          "invitations": 100
+        },
+        {
+          "date": "2026-09-21",
+          "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+          "note": "",
+          "score": 49,
+          "invitations": null
+        },
+        {
+          "date": "2026-09-18",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 62,
+          "invitations": 100
+        },
+        {
+          "date": "2026-09-15",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 60,
+          "invitations": 18
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 60,
+          "invitations": 48
+        },
+        {
           "date": "2026-09-09",
           "stream": "Dedicated Health Care Pathway – Express Entry",
           "note": "",
@@ -328,6 +391,146 @@
           "note": "",
           "score": 59,
           "invitations": 100
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Tourism and Hospitality Stream",
+          "note": "",
+          "score": 71,
+          "invitations": 61
+        },
+        {
+          "date": "2026-06-17",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 58,
+          "invitations": 720
+        },
+        {
+          "date": "2026-06-15",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 50,
+          "invitations": 56
+        },
+        {
+          "date": "2026-06-12",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 52,
+          "invitations": 37
+        },
+        {
+          "date": "2026-06-11",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 63,
+          "invitations": 50
+        },
+        {
+          "date": "2026-06-10",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 51,
+          "invitations": 54
+        },
+        {
+          "date": "2026-06-09",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 45,
+          "invitations": 35
+        },
+        {
+          "date": "2026-06-08",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 60,
+          "invitations": 49
+        },
+        {
+          "date": "2026-06-05",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 50,
+          "invitations": 462
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 53,
+          "invitations": 49
+        },
+        {
+          "date": "2026-05-29",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 55,
+          "invitations": 200
+        },
+        {
+          "date": "2026-05-27",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 51,
+          "invitations": 993
+        },
+        {
+          "date": "2026-05-25",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 50,
+          "invitations": 83
+        },
+        {
+          "date": "2026-05-22",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 48,
+          "invitations": 76
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 56,
+          "invitations": 99
+        },
+        {
+          "date": "2026-05-20",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)",
+          "note": "",
+          "score": 61,
+          "invitations": 50
+        },
+        {
+          "date": "2026-05-13",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 57,
+          "invitations": 61
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 57,
+          "invitations": 146
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 54,
+          "invitations": 832
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 50,
+          "invitations": 12
         }
       ]
     },
@@ -337,23 +540,57 @@
       "url": "https://immigratemanitoba.com/draws/",
       "draws": [
         {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #280: Occupation-specific selections",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
+          "note": "Draw #280: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
+          "score": 760,
+          "invitations": 417
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #280: Francophone selection",
+          "score": null,
+          "invitations": 16
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #280",
+          "score": null,
+          "invitations": 40
+        },
+        {
           "date": "2026-09-10",
-          "stream": "Occupation-specific selections",
-          "note": "Draw #279",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #279: Occupation-specific selections",
           "score": null,
           "invitations": 233
         },
         {
           "date": "2026-09-10",
-          "stream": "Francophone selection",
-          "note": "Draw #279",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #279: Francophone selection",
           "score": null,
           "invitations": 11
         },
         {
           "date": "2026-09-10",
-          "stream": "Completed post-secondary study in Manitoba",
-          "note": "Draw #279",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #279: Completed post-secondary study in Manitoba",
           "score": 825,
           "invitations": 508
         },
@@ -366,22 +603,25 @@
         },
         {
           "date": "2026-08-27",
-          "stream": "Occupation-specific selections",
-          "note": "Draw #278",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #278: Occupation-specific selections",
           "score": null,
           "invitations": 62
         },
         {
           "date": "2026-08-27",
-          "stream": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
-          "note": "Draw #278",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
+          "note": "Draw #278: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
           "score": 731,
           "invitations": 600
         },
         {
           "date": "2026-08-27",
-          "stream": "Francophone selection",
-          "note": "Draw #278",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #278: Francophone selection",
           "score": null,
           "invitations": 21
         },
@@ -401,22 +641,25 @@
         },
         {
           "date": "2026-07-30",
-          "stream": "Occupation-specific selections",
-          "note": "Draw #276",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #276: Occupation-specific selections",
           "score": null,
           "invitations": 74
         },
         {
           "date": "2026-07-30",
-          "stream": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
-          "note": "Draw #276",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
+          "note": "Draw #276: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
           "score": 632,
           "invitations": 605
         },
         {
           "date": "2026-07-30",
-          "stream": "Francophone selection",
-          "note": "Draw #276",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #276: Francophone selection",
           "score": null,
           "invitations": 17
         },
@@ -429,31 +672,34 @@
         },
         {
           "date": "2026-07-16",
-          "stream": "Expression of Interest",
+          "stream": "International Education Stream (IES) – Graduate Internship Pathway (GIP)",
           "note": "Draw #275",
           "score": null,
           "invitations": 78
         },
         {
           "date": "2026-07-16",
-          "stream": "Occupation-specific selection",
-          "note": "Draw #275",
+          "stream": "Skilled Worker in Manitoba",
+          "note": "Draw #275: Occupation-specific selection",
           "score": null,
-          "invitations": 24
+          "invitations": 24,
+          "checklistKey": "Occupation-specific selection"
         },
         {
           "date": "2026-07-16",
-          "stream": "Francophone selection",
-          "note": "Draw #275",
+          "stream": "Skilled Worker in Manitoba",
+          "note": "Draw #275: Francophone selection",
           "score": null,
-          "invitations": 84
+          "invitations": 84,
+          "checklistKey": "Francophone selection"
         },
         {
           "date": "2026-07-16",
-          "stream": "Completed post-secondary study in Manitoba",
-          "note": "Draw #275",
+          "stream": "Skilled Worker in Manitoba",
+          "note": "Draw #275: Completed post-secondary study in Manitoba",
           "score": 825,
-          "invitations": 1874
+          "invitations": 1874,
+          "checklistKey": "Completed post-secondary study in Manitoba"
         },
         {
           "date": "2026-07-16",
@@ -578,6 +824,13 @@
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-09-18",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 61, AIP – 01",
+          "score": null,
+          "invitations": 62
+        },
         {
           "date": "2026-09-10",
           "stream": "NLPNP + AIP (ITA batch)",
@@ -705,228 +958,388 @@
       "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html",
       "draws": [
         {
+          "date": "2026-09-18",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Construction, Education, social and community services, Manufacturing, Other trades, Professional and IT, Sa",
+          "score": null,
+          "invitations": 197
+        },
+        {
+          "date": "2026-09-17",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Construction, Education, social and community services, Manufacturing, Other trades, Professional and IT, Sal",
+          "score": null,
+          "invitations": 102
+        },
+        {
+          "date": "2026-09-11",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: Construction, Education, social and community services, Manufacturing, O",
+          "score": null,
+          "invitations": 251
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "AIP",
+          "checklistKey": "AIP",
+          "note": "Categories: Construction, Education, social and community services, Manufacturing, Other trades, Professional and IT, Sales and services, Transportation",
+          "score": null,
+          "invitations": 60
+        },
+        {
+          "date": "2026-08-20",
+          "stream": "AIP",
+          "checklistKey": "AIP",
+          "note": "Categories: Construction trades, Education, social and community services, Manufacturing, Other trades, Professional and IT, Sales and services, Transportation",
+          "score": null,
+          "invitations": 68
+        },
+        {
           "date": "2026-07-22",
           "stream": "AIP",
+          "checklistKey": "AIP",
           "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
           "score": null,
           "invitations": 114
         },
         {
           "date": "2026-07-18",
-          "stream": "NB Graduates",
-          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Graduates)",
+          "note": "Pathways: NB Graduates. Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT",
           "score": null,
           "invitations": 209
         },
         {
           "date": "2026-07-18",
-          "stream": "NB Experience + NB Priorities",
-          "note": "Categories: Construction trades, Health care",
-          "score": null,
-          "invitations": 58
-        },
-        {
-          "date": "2026-07-18",
-          "stream": "Skilled Worker (NB Graduates)",
-          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
-          "score": null,
-          "invitations": 209
-        },
-        {
-          "date": "2026-07-18",
-          "stream": "Skilled Worker (NB Experience + NB Priorities)",
-          "note": "Categories: Construction trades, Health care",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Priorities)",
+          "note": "Pathways: NB Experience + NB Priorities. Categories: Construction trades, Health care",
           "score": null,
           "invitations": 58
         },
         {
           "date": "2026-07-16",
-          "stream": "Employment in New Brunswick",
-          "note": "Categories: Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services",
           "score": null,
           "invitations": 115
         },
         {
           "date": "2026-07-16",
-          "stream": "Francophone workers in New Brunswick + NB Francophone priorities",
-          "note": "Categories: Education, social and community services, Food and accommodation, Health care, Manufacturing, Professional and IT, Sales and services, Transportatio",
-          "score": null,
-          "invitations": 254
-        },
-        {
-          "date": "2026-07-16",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
-          "score": null,
-          "invitations": 115
-        },
-        {
-          "date": "2026-07-16",
-          "stream": "Strategic Initiative (Francophone workers in New Brunswick + NB Francophone priorities)",
-          "note": "Categories: Education, social and community services, Food and accommodation, Health care, Manufacturing, Professional and IT, Sales and services, Transportatio",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: Education, social and community services, Food and accommodation, Health",
           "score": null,
           "invitations": 254
         },
         {
           "date": "2026-06-04",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Transportation",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and I",
           "score": null,
           "invitations": 75
         },
         {
           "date": "2026-06-03",
-          "stream": "Strategic Initiative (NB Francophone Priorities)",
-          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Sales and services, Transportation",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (NB Francophone Priorities)",
+          "note": "Pathways: NB Francophone Priorities. Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT,",
           "score": null,
           "invitations": 94
         },
         {
           "date": "2026-06-03",
-          "stream": "Strategic Initiative (Francophone Workers in New Brunswick)",
-          "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professional and IT, Transportation, Sales and services",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick)",
+          "note": "Pathways: Francophone Workers in New Brunswick. Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Professio",
           "score": null,
           "invitations": 52
         },
         {
           "date": "2026-06-03",
           "stream": "AIP",
+          "checklistKey": "AIP",
           "note": "Categories: Construction trades, Education, social and community services, Health care, Manufacturing, Other trades, Professional and IT, Sales and services, Tr",
           "score": null,
           "invitations": 97
         },
         {
           "date": "2026-06-03",
-          "stream": "Skilled Worker (NB Experience)",
-          "note": "Categories: Construction trades, Health care",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience)",
+          "note": "Pathways: NB Experience. Categories: Construction trades, Health care",
           "score": null,
           "invitations": 243
         },
         {
           "date": "2026-06-03",
-          "stream": "Skilled Worker (NB Graduates)",
-          "note": "Categories: Education, social and community services, Construction trades, Health care, Transportation",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Graduates)",
+          "note": "Pathways: NB Graduates. Categories: Education, social and community services, Construction trades, Health care, Transportation",
           "score": null,
           "invitations": 138
         },
         {
           "date": "2026-05-03",
-          "stream": "Skilled Worker (NB Experience + NB Graduates)",
-          "note": "Categories: All sectors",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: All sectors",
           "score": null,
           "invitations": 113
         },
         {
           "date": "2026-05-01",
           "stream": "AIP",
+          "checklistKey": "AIP",
           "note": "Categories: Transportation, Manufacturing, Construction Trades",
           "score": null,
           "invitations": 50
         },
         {
           "date": "2026-05-01",
-          "stream": "Skilled Worker (NB Experience + NB Graduates)",
-          "note": "Categories: Healthcare",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Healthcare",
           "score": null,
           "invitations": 87
         },
         {
           "date": "2026-04-30",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: Healthcare, Professional & IT",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Healthcare, Professional & IT",
           "score": null,
           "invitations": 17
         },
         {
           "date": "2026-04-30",
-          "stream": "Strategic Initiative (NB francophone priorities + Francophone workers in New Brunswick)",
-          "note": "Categories: All sectors",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: All sectors",
           "score": null,
           "invitations": 106
         },
         {
           "date": "2026-04-01",
           "stream": "AIP",
+          "checklistKey": "AIP",
           "note": "Categories: Transportation, Manufacturing",
           "score": null,
           "invitations": 118
         },
         {
           "date": "2026-03-30",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: Health care, Professional and IT occupations",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Health care, Professional and IT occupations",
           "score": null,
           "invitations": 25
         },
         {
           "date": "2026-03-06",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
           "score": null,
           "invitations": 29
         },
         {
           "date": "2026-03-06",
-          "stream": "Skilled Worker (NB Experience + NB Graduates)",
-          "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Health care, Education, social and community services, Construction trades, Professional occupations",
           "score": null,
           "invitations": 279
         },
         {
           "date": "2026-03-06",
-          "stream": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
-          "note": "Categories: All sectors",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: All sectors",
           "score": null,
           "invitations": 189
         },
         {
           "date": "2026-03-06",
           "stream": "AIP",
+          "checklistKey": "AIP",
           "note": "Categories: Health care, Education, social and community services, Construction trades, Professional occupations, Transportation, Manufacturing",
           "score": null,
           "invitations": 125
         },
         {
           "date": "2026-02-11",
-          "stream": "Skilled Worker (NB Experience + NB Graduates)",
-          "note": "Categories: Health care",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Health care",
           "score": null,
           "invitations": 196
         },
         {
           "date": "2026-02-02",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: All sectors",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: All sectors",
           "score": null,
           "invitations": 170
         },
         {
           "date": "2026-02-02",
-          "stream": "Strategic Initiative (NB Francophone Priorities + Francophone Workers in New Brunswick)",
-          "note": "Categories: All sectors",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (Francophone Workers in New Brunswick + NB Francophone Priorities)",
+          "note": "Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: All sectors",
           "score": null,
           "invitations": 160
         },
         {
           "date": "2026-01-15",
-          "stream": "Express Entry (Employment in New Brunswick)",
-          "note": "Categories: All sectors",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: All sectors",
           "score": null,
           "invitations": 20
         },
         {
           "date": "2026-01-15",
-          "stream": "Skilled Worker (NB experience + NB graduates)",
-          "note": "Categories: All sectors",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: All sectors",
           "score": null,
           "invitations": 244
         },
         {
           "date": "2026-01-15",
-          "stream": "Strategic Initiative (NB Francophone priorities)",
-          "note": "Categories: All sectors",
+          "stream": "NB Strategic Initiative",
+          "checklistKey": "Strategic Initiative (NB Francophone Priorities)",
+          "note": "Pathways: NB Francophone Priorities. Categories: All sectors",
           "score": null,
           "invitations": 115
+        },
+        {
+          "date": "2025-12-09",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Francophone applicants, all sectors",
+          "score": null,
+          "invitations": 8
+        },
+        {
+          "date": "2025-12-09",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Francophone applicants, all sectors",
+          "score": null,
+          "invitations": 102
+        },
+        {
+          "date": "2025-11-16",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: all sectors",
+          "score": null,
+          "invitations": 35
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: All sectors",
+          "score": null,
+          "invitations": 221
+        },
+        {
+          "date": "2025-10-07",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience)",
+          "note": "Pathways: NB Experience. Categories: Health care",
+          "score": null,
+          "invitations": 91
+        },
+        {
+          "date": "2025-10-07",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Graduates)",
+          "note": "Pathways: NB Graduates. Categories: Health care, Education and social & community services, Construction trades, Note: The October 6-7 draw period did not inclu",
+          "score": null,
+          "invitations": 210
+        },
+        {
+          "date": "2025-08-19",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience)",
+          "note": "Pathways: NB Experience. Categories: Health care, Education and social & community services, Construction trades, Note: The August 11-19 draw period did not inc",
+          "score": null,
+          "invitations": 481
+        },
+        {
+          "date": "2025-08-19",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Graduates)",
+          "note": "Pathways: NB Graduates. Categories: All sectors, Note: The August 11-19 draw period did not include NOC 42201 - Social and community service workers, NOC 62200 ",
+          "score": null,
+          "invitations": 389
+        },
+        {
+          "date": "2025-08-19",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience)",
+          "note": "Pathways: NB Experience. Categories: Francophone candidates in all sectors, Note: The August 11-19 draw period did not include NOC 42201 - Social and community ",
+          "score": null,
+          "invitations": 132
+        },
+        {
+          "date": "2025-08-19",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: All sectors, Note: The August 11-19 draw period did not include NOC 42201 - Social and community service work",
+          "score": null,
+          "invitations": 50
+        },
+        {
+          "date": "2025-06-17",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Priority Occupations)",
+          "note": "Pathways: NB Priority Occupations. Categories: Health care",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2025-06-17",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Graduates)",
+          "note": "Pathways: NB Graduates. Categories: All sectors, Note: The June 16 & 17 draw was limited to candidates with work permits expiring in 2025 and in January and Feb",
+          "score": null,
+          "invitations": 274
+        },
+        {
+          "date": "2025-06-16",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: All sectors, Note: This draw was limited to candidates who have been working full time for a New Brunswick em",
+          "score": null,
+          "invitations": 297
+        },
+        {
+          "date": "2025-06-16",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience)",
+          "note": "Pathways: NB Experience. Categories: Health care, Education and social & community services, Construction trades, Note: The June 16 draw was limited to candidat",
+          "score": null,
+          "invitations": 25
+        },
+        {
+          "date": "2025-05-05",
+          "stream": "NB Skilled Worker",
+          "checklistKey": "Skilled Worker (NB Experience + NB Graduates)",
+          "note": "Pathways: NB Experience + NB Graduates. Categories: Health care, Education and social & community services, Construction trades, Note: The May 5 draw did not in",
+          "score": null,
+          "invitations": 432
         }
       ]
     },
@@ -935,6 +1348,13 @@
       "scale": null,
       "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
       "draws": [
+        {
+          "date": "2026-09-17",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 195
+        },
         {
           "date": "2026-08-20",
           "stream": "Labour & Express Entry",

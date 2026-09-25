@@ -162,5 +162,30 @@
  "Express Entry (Employment in New Brunswick)": {
   "zh": "新不伦瑞克省就业抽选",
   "translatedAt": "2026-08-08T07:31:39.944425+00:00"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Health Care)": {
+  "zh": "阿省医护优先通道",
+  "translatedAt": "2026-09-24T03:49:22.916856+00:00"
+ },
+ "NB Skilled Worker": {
+  "zh": "新省技术工人",
+  "translatedAt": "2026-09-24T03:51:15.587482+00:00"
+ },
+ "NB Express Entry": {
+  "zh": "新不伦瑞克省快速通道",
+  "translatedAt": "2026-09-24T03:52:11.354991+00:00"
+ },
+ "NB Strategic Initiative": {
+  "zh": "新省法语专项通道",
+  "translatedAt": "2026-09-24T03:52:59.704626+00:00",
+  "note": "2026-09-24 人工改:官网 strategic-initiative 页是法语者专项(NCLC 5、不限职业),qwen 译「定向抽选」不准;与旧键「Strategic Initiative (…)」同译"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Manufacturing)": {
+  "zh": "阿省制造业定向移民",
+  "translatedAt": "2026-09-24T17:11:20.389717+00:00"
+ },
+ "Tourism and Hospitality Stream": {
+  "zh": "旅游酒店业通道",
+  "translatedAt": "2026-09-24T17:12:13.938844+00:00"
  }
 }

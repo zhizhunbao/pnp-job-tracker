@@ -1,0 +1,55 @@
+{
+  "stream": "AAIP Dedicated Health Care Pathway",
+  "label": "AB 医疗",
+  "province": "AB",
+  "type": "indemand",
+  "url": "https://www.alberta.ca/dedicated-health-care-pathway",
+  "fetched": "2026-09-25",
+  "note": "官网列 9 类受监管医护职业、不给职业码;本表按 NOC 2021 对码,须持阿省对应监管机构的执业许可。",
+  "occupations": [
+    {
+      "noc": "31100",
+      "name": "Specialists in clinical and laboratory medicine"
+    },
+    {
+      "noc": "31101",
+      "name": "Specialists in surgery"
+    },
+    {
+      "noc": "31102",
+      "name": "General practitioners and family physicians"
+    },
+    {
+      "noc": "31200",
+      "name": "Psychologists"
+    },
+    {
+      "noc": "31202",
+      "name": "Physiotherapists"
+    },
+    {
+      "noc": "31203",
+      "name": "Occupational therapists"
+    },
+    {
+      "noc": "31301",
+      "name": "Registered nurses and registered psychiatric nurses"
+    },
+    {
+      "noc": "31302",
+      "name": "Nurse practitioners"
+    },
+    {
+      "noc": "31303",
+      "name": "Physician assistants, midwives and allied health professionals"
+    },
+    {
+      "noc": "32101",
+      "name": "Licensed practical nurses"
+    },
+    {
+      "noc": "41300",
+      "name": "Social workers"
+    }
+  ]
+}

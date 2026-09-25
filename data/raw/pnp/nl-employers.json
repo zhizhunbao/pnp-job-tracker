@@ -3,7 +3,7 @@
   "label": "NL 官网指定雇主名录",
   "source": "NLPNP designated employers",
   "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/atlantic-immigration-program/designated-employers",
-  "fetched": "2026-08-30",
+  "fetched": "2026-09-16",
   "employers": [
     {
       "name": "10112755 Canada Inc. o/a Strobel TEK",
@@ -2251,6 +2251,17 @@
       "url": "https://www.gov.nl.ca/immigration/employer/clarenville-foods-inc-o-a-jungle-jims-restaurant"
     },
     {
+      "name": "Clean Cut Kitchens Inc. o/a Clean Cut Kitchens",
+      "location": "Paradise",
+      "nocs": [
+        {
+          "noc": "73200",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/clean-cut-kitchens-inc-o-a-clean-cut-kitchens"
+    },
+    {
       "name": "Clear Risk Inc.",
       "location": "St John's",
       "nocs": [
@@ -4237,6 +4248,21 @@
       "url": "https://www.gov.nl.ca/immigration/employer/hingsing-trading-inc"
     },
     {
+      "name": "Hoi Tian Ltd. o/a Hey Yang Yang Restaurant",
+      "location": "St. John's",
+      "nocs": [
+        {
+          "noc": "62020",
+          "title": null
+        },
+        {
+          "noc": "64300",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/hoi-tian-ltd-o-a-hey-yang-yang-restaurant"
+    },
+    {
       "name": "Horner Investments Limited o/a Little Caesars – White Rose",
       "location": "St. John's",
       "nocs": [
@@ -4246,6 +4272,17 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/horner-investments-limited-o-a-little-caesars-white-rose"
+    },
+    {
+      "name": "Hotel Port aux Basques",
+      "location": "Port Aux Basques",
+      "nocs": [
+        {
+          "noc": "62022",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/hotel-port-aux-basques"
     },
     {
       "name": "House’s Limited o/a Shallow Bay Motel & Cabins",
@@ -5694,6 +5731,17 @@
       "url": "https://www.gov.nl.ca/immigration/employer/mount-olives-anglican-church-corporation-o-a-mount-olives"
     },
     {
+      "name": "MOVERS PRO Ltd.",
+      "location": "Mount Pearl",
+      "nocs": [
+        {
+          "noc": "73300",
+          "title": null
+        }
+      ],
+      "url": "https://www.gov.nl.ca/immigration/employer/movers-pro-ltd"
+    },
+    {
       "name": "Moxies Leaseholds (St. John’s) Inc. o/a Moxies Grill & Bars",
       "location": "St. John's",
       "nocs": [
@@ -5792,6 +5840,12 @@
         }
       ],
       "url": "https://www.gov.nl.ca/immigration/employer/music-industry-association-of-newfoundland-and-labrador-inc-o-a-music-nl"
+    },
+    {
+      "name": "NAILS ZEN INC. o/a Nails Zen",
+      "location": "",
+      "nocs": [],
+      "url": "https://www.gov.nl.ca/immigration/employer/nails-zen-inc-o-a-nails-zen"
     },
     {
       "name": "Nain Hotel Ltd. o/a Atsanik Hotel",

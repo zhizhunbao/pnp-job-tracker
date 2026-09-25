@@ -1,8 +1,29 @@
 {
   "ats": "lever",
   "token": "magnetforensics",
-  "count": 3,
+  "count": 4,
   "jobs": [
+    {
+      "title": "Product Management Lead",
+      "location": "Waterloo / Ottawa / Toronto/ Ontario",
+      "url": "https://jobs.lever.co/magnetforensics/465fb92b-a66f-4de8-9cd9-9f0f91da698e",
+      "department": "Product Management",
+      "posted": "2026-06-23",
+      "address": "",
+      "salary": "$175,000 - $225,000",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 200000,
+      "salaryText": "$175K–$225K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
     {
       "title": "Product Management Lead, Private Sector",
       "location": "Waterloo / Ottawa / Toronto/ Ontario",

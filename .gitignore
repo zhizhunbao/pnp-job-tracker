@@ -50,6 +50,9 @@ cms/dev.log
 /data/processed/jobillico/
 # sites 域产物(官网抓取记录 + 七节整理记录,上万家、随月更滚动;原文在 crawl 层,容器间走绑定卷不靠 git;2026-09-19)
 /data/processed/sites/
+# jdformat 域产物(局域网 qwen 逐帖预生成的整理版,只留在招岗;汇装并进 jobs.jd_formatted,库里有同一份;单文件 51MB 过 GitHub 50MB 警告线,
+# 2026-09-25 Frank「全提交一下」清点时发现从没入过库,照 sites 待遇不入 git)
+/data/processed/jdformat/
 /data/mart/
 # paths 域写权探针残留(不该入库)
 .write_probe

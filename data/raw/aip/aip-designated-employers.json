@@ -979,6 +979,12 @@
   },
   {
     "province": "NL",
+    "employer": "Clean Cut Kitchens Inc. o/a Clean Cut Kitchens",
+    "location": "Paradise",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Clear Risk Inc.",
     "location": "St John's",
     "tech": true
@@ -1855,8 +1861,20 @@
   },
   {
     "province": "NL",
+    "employer": "Hoi Tian Ltd. o/a Hey Yang Yang Restaurant",
+    "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Horner Investments Limited o/a Little Caesars – White Rose",
     "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "Hotel Port aux Basques",
+    "location": "Port Aux Basques",
     "tech": false
   },
   {
@@ -2503,6 +2521,12 @@
   },
   {
     "province": "NL",
+    "employer": "MOVERS PRO Ltd.",
+    "location": "Mount Pearl",
+    "tech": false
+  },
+  {
+    "province": "NL",
     "employer": "Moxies Leaseholds (St. John’s) Inc. o/a Moxies Grill & Bars",
     "location": "St. John's",
     "tech": false
@@ -2547,6 +2571,12 @@
     "province": "NL",
     "employer": "Music Industry Association of Newfoundland and Labrador, Inc. o/a Music NL",
     "location": "St. John's",
+    "tech": false
+  },
+  {
+    "province": "NL",
+    "employer": "NAILS ZEN INC. o/a Nails Zen",
+    "location": "",
     "tech": false
   },
   {

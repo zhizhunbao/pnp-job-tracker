@@ -1,0 +1,3588 @@
+{
+ "url": "https://minwage-salairemin.service.canada.ca/en/general.html",
+ "fetched": "2026-09-24",
+ "rows": [
+  {
+   "province": "AB",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 0.95
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1966-07-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1967-08-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.15
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1968-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.25
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1970-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.4
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1970-10-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.55
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1973-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.75
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1973-10-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.9
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1974-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 2.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 2.25
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1975-07-01",
+   "expiryDate": "1999-10-01",
+   "rate": 2.5
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1976-03-01",
+   "expiryDate": "1999-10-01",
+   "rate": 2.75
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1977-03-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1980-05-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.5
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1981-05-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.8
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1988-09-01",
+   "expiryDate": "1999-10-01",
+   "rate": 4.5
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1992-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 5.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1998-10-01",
+   "expiryDate": "1999-10-01",
+   "rate": 5.4
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1999-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 5.65
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "1999-10-01",
+   "expiryDate": "2005-09-01",
+   "rate": 5.9
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2005-09-01",
+   "expiryDate": "2007-09-01",
+   "rate": 7.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2007-09-01",
+   "expiryDate": "2008-03-31",
+   "rate": 8.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2008-04-01",
+   "expiryDate": "2009-03-31",
+   "rate": 8.4
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2009-04-01",
+   "expiryDate": "2011-08-31",
+   "rate": 8.8
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2011-09-01",
+   "expiryDate": "2012-08-31",
+   "rate": 9.4
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2012-09-01",
+   "expiryDate": "2013-08-31",
+   "rate": 9.75
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2013-09-01",
+   "expiryDate": "2014-08-31",
+   "rate": 9.95
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2014-09-01",
+   "expiryDate": "2015-09-30",
+   "rate": 10.2
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2015-10-01",
+   "expiryDate": "2016-10-01",
+   "rate": 11.2
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2016-10-01",
+   "expiryDate": "2017-09-30",
+   "rate": 12.2
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2017-10-01",
+   "expiryDate": "2018-10-01",
+   "rate": 13.6
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2018-10-01",
+   "expiryDate": "2019-06-25",
+   "rate": 15.0
+  },
+  {
+   "province": "AB",
+   "effectiveDate": "2019-06-26",
+   "expiryDate": "",
+   "rate": 15.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1967-05-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.1
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1967-11-01",
+   "expiryDate": "1999-10-01",
+   "rate": 1.25
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1970-05-04",
+   "expiryDate": "1999-10-01",
+   "rate": 1.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1972-12-04",
+   "expiryDate": "1999-10-01",
+   "rate": 2.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1973-12-03",
+   "expiryDate": "1999-10-01",
+   "rate": 2.25
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1974-06-03",
+   "expiryDate": "1999-10-01",
+   "rate": 2.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1975-12-01",
+   "expiryDate": "1999-10-01",
+   "rate": 2.75
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1976-01-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1980-07-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.4
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1980-12-01",
+   "expiryDate": "1999-10-01",
+   "rate": 3.65
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1988-07-01",
+   "expiryDate": "1999-10-01",
+   "rate": 4.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1989-10-01",
+   "expiryDate": "1999-10-01",
+   "rate": 4.75
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1990-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 5.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1992-02-01",
+   "expiryDate": "1999-10-01",
+   "rate": 5.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1993-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 6.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1995-03-01",
+   "expiryDate": "1999-10-01",
+   "rate": 6.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1995-10-01",
+   "expiryDate": "1999-10-01",
+   "rate": 7.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "1998-04-01",
+   "expiryDate": "1999-10-01",
+   "rate": 7.15
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2000-11-01",
+   "expiryDate": "2001-11-01",
+   "rate": 7.6
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2001-11-01",
+   "expiryDate": "2011-04-30",
+   "rate": 8.0
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2011-05-01",
+   "expiryDate": "2011-10-31",
+   "rate": 8.75
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2011-11-01",
+   "expiryDate": "2012-04-30",
+   "rate": 9.5
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2012-05-01",
+   "expiryDate": "2015-09-14",
+   "rate": 10.25
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2015-09-15",
+   "expiryDate": "2016-09-15",
+   "rate": 10.45
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2016-09-15",
+   "expiryDate": "2017-09-14",
+   "rate": 10.85
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2017-09-15",
+   "expiryDate": "2018-05-30",
+   "rate": 11.35
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2018-06-01",
+   "expiryDate": "2019-06-01",
+   "rate": 12.65
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2019-06-01",
+   "expiryDate": "2020-06-01",
+   "rate": 13.85
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2020-06-01",
+   "expiryDate": "2021-05-31",
+   "rate": 14.6
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2021-06-01",
+   "expiryDate": "2022-05-31",
+   "rate": 15.2
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2022-06-01",
+   "expiryDate": "2023-06-01",
+   "rate": 15.65
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2023-06-01",
+   "expiryDate": "2024-05-31",
+   "rate": 16.75
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2024-06-01",
+   "expiryDate": "2025-06-01",
+   "rate": 17.4
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2026-06-01",
+   "expiryDate": "2025-06-01",
+   "rate": 17.85
+  },
+  {
+   "province": "BC",
+   "effectiveDate": "2026-06-01",
+   "expiryDate": "",
+   "rate": 18.25
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1965-07-01",
+   "expiryDate": "1996-12-18",
+   "rate": 1.25
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1970-07-01",
+   "expiryDate": "1996-12-18",
+   "rate": 1.65
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1971-07-01",
+   "expiryDate": "1996-12-18",
+   "rate": 1.75
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1972-11-01",
+   "expiryDate": "1996-12-18",
+   "rate": 1.9
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1974-04-01",
+   "expiryDate": "1996-12-18",
+   "rate": 2.2
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1975-07-23",
+   "expiryDate": "1996-12-18",
+   "rate": 2.6
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1976-04-01",
+   "expiryDate": "1996-12-18",
+   "rate": 2.9
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1980-12-01",
+   "expiryDate": "1996-12-18",
+   "rate": 3.25
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1981-05-01",
+   "expiryDate": "1996-12-18",
+   "rate": 3.5
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1986-05-26",
+   "expiryDate": "1996-12-18",
+   "rate": 4.0
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "1996-07-17",
+   "expiryDate": "1996-12-18",
+   "rate": 0.0
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2021-12-29",
+   "expiryDate": "2022-03-31",
+   "rate": 15.0
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2023-03-31",
+   "rate": 15.55
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2024-03-31",
+   "rate": 16.65
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2024-04-01",
+   "expiryDate": "2025-04-01",
+   "rate": 17.3
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2025-04-01",
+   "expiryDate": "2026-04-01",
+   "rate": 17.75
+  },
+  {
+   "province": "CA",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "",
+   "rate": 18.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.7
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.75
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1965-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.8
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1965-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.85
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1966-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.9
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1966-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.92
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1966-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1967-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.1
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1968-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1968-08-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.2
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1968-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.25
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1969-12-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.35
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1970-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1971-11-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.65
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1972-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.75
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1973-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.9
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1974-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.3
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1975-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.6
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1976-09-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.95
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1979-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.05
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1980-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1981-03-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.35
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1981-09-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.55
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1982-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1985-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.3
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1987-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1987-09-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.7
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1991-03-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1995-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.25
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1996-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.4
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "1999-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2001-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.25
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2002-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2003-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.75
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2004-04-01",
+   "expiryDate": "2005-04-01",
+   "rate": 7.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2005-04-01",
+   "expiryDate": "2006-04-01",
+   "rate": 7.25
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2006-04-01",
+   "expiryDate": "2007-04-01",
+   "rate": 7.6
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2007-04-01",
+   "expiryDate": "2008-03-31",
+   "rate": 8.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2008-04-01",
+   "expiryDate": "2009-04-30",
+   "rate": 8.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2009-05-01",
+   "expiryDate": "2009-09-30",
+   "rate": 8.75
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2009-10-01",
+   "expiryDate": "2010-09-30",
+   "rate": 9.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2010-10-01",
+   "expiryDate": "2011-09-30",
+   "rate": 9.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2011-10-01",
+   "expiryDate": "2012-09-30",
+   "rate": 10.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2012-10-01",
+   "expiryDate": "2013-09-30",
+   "rate": 10.25
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2013-10-01",
+   "expiryDate": "2014-09-30",
+   "rate": 10.45
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2014-10-01",
+   "expiryDate": "2015-09-30",
+   "rate": 10.7
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2015-10-01",
+   "expiryDate": "2017-09-30",
+   "rate": 11.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2017-10-01",
+   "expiryDate": "2018-10-01",
+   "rate": 11.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2018-10-01",
+   "expiryDate": "2019-10-01",
+   "rate": 11.35
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2019-10-01",
+   "expiryDate": "2020-10-01",
+   "rate": 11.65
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2020-10-01",
+   "expiryDate": "2021-09-30",
+   "rate": 11.9
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2021-10-01",
+   "expiryDate": "2022-09-30",
+   "rate": 11.95
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-03-31",
+   "rate": 13.5
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2023-09-30",
+   "rate": 14.15
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2024-10-01",
+   "expiryDate": "2025-10-01",
+   "rate": 15.8
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2025-10-01",
+   "expiryDate": "2026-10-01",
+   "rate": 16.0
+  },
+  {
+   "province": "MB",
+   "effectiveDate": "2026-10-01",
+   "expiryDate": "",
+   "rate": 16.4
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "1965-06-30",
+   "rate": 0.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1965-07-01",
+   "expiryDate": "1966-06-30",
+   "rate": 0.8
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1966-07-01",
+   "expiryDate": "1967-12-31",
+   "rate": 0.9
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1968-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1970-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.15
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1971-09-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1972-03-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.4
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1973-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1974-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1974-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.9
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.15
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1975-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.3
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1976-06-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.55
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1976-11-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.8
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1980-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.05
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1980-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.35
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1982-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.8
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1986-09-15",
+   "expiryDate": "2004-04-01",
+   "rate": 4.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1989-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1989-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1990-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1991-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1996-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "1996-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2000-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2001-07-01",
+   "expiryDate": "2004-01-01",
+   "rate": 5.9
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2002-08-01",
+   "expiryDate": "2004-01-01",
+   "rate": 6.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2004-01-01",
+   "expiryDate": "2005-01-01",
+   "rate": 6.2
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2005-01-01",
+   "expiryDate": "2006-01-01",
+   "rate": 6.3
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2006-01-01",
+   "expiryDate": "2006-07-01",
+   "rate": 6.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2006-07-01",
+   "expiryDate": "2007-01-05",
+   "rate": 6.7
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2007-01-05",
+   "expiryDate": "2007-07-01",
+   "rate": 7.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2007-07-01",
+   "expiryDate": "2008-03-30",
+   "rate": 7.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2008-03-31",
+   "expiryDate": "2009-04-14",
+   "rate": 7.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2009-09-01",
+   "expiryDate": "2010-03-31",
+   "rate": 8.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2010-04-01",
+   "expiryDate": "2010-08-31",
+   "rate": 8.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2010-09-01",
+   "expiryDate": "2011-03-31",
+   "rate": 9.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2011-04-01",
+   "expiryDate": "2012-03-31",
+   "rate": 9.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2011-09-01",
+   "expiryDate": "2014-12-30",
+   "rate": 10.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2014-12-31",
+   "expiryDate": "2016-04-01",
+   "rate": 10.3
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2016-04-01",
+   "expiryDate": "2017-04-01",
+   "rate": 10.65
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2017-04-01",
+   "expiryDate": "2018-04-01",
+   "rate": 11.0
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2019-04-01",
+   "rate": 11.25
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2019-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 11.5
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2021-03-31",
+   "rate": 11.7
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2021-04-01",
+   "expiryDate": "2022-03-31",
+   "rate": 11.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2022-09-30",
+   "rate": 12.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-03-31",
+   "rate": 13.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2024-03-31",
+   "rate": 14.75
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2024-04-01",
+   "expiryDate": "2025-04-01",
+   "rate": 15.3
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2025-04-01",
+   "expiryDate": "2026-04-01",
+   "rate": 15.65
+  },
+  {
+   "province": "NB",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "",
+   "rate": 15.9
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 0.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 0.7
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1968-05-01",
+   "expiryDate": "2002-11-01",
+   "rate": 0.85
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1968-05-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.1
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1970-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1970-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.25
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1972-06-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.4
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1974-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.8
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1974-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.2
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1976-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1979-06-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.8
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1980-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.15
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1981-03-31",
+   "expiryDate": "2002-11-01",
+   "rate": 3.45
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1983-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1985-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1988-04-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.25
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1991-04-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1996-09-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1997-04-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.25
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "1999-10-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2002-05-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2002-11-01",
+   "expiryDate": "2005-06-01",
+   "rate": 6.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2005-06-01",
+   "expiryDate": "2006-01-01",
+   "rate": 6.25
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2006-01-01",
+   "expiryDate": "2006-06-01",
+   "rate": 6.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2006-06-01",
+   "expiryDate": "2007-01-05",
+   "rate": 6.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2007-01-01",
+   "expiryDate": "2007-09-30",
+   "rate": 7.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2007-10-01",
+   "expiryDate": "2008-03-31",
+   "rate": 7.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2008-04-01",
+   "expiryDate": "2009-12-31",
+   "rate": 8.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2009-01-01",
+   "expiryDate": "2009-06-30",
+   "rate": 8.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2009-07-01",
+   "expiryDate": "2009-12-31",
+   "rate": 9.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2010-01-01",
+   "expiryDate": "2010-06-30",
+   "rate": 9.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2010-07-01",
+   "expiryDate": "2014-09-30",
+   "rate": 10.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2014-10-01",
+   "expiryDate": "2015-09-30",
+   "rate": 10.25
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2015-10-01",
+   "expiryDate": "2017-04-01",
+   "rate": 10.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2017-04-01",
+   "expiryDate": "2017-09-30",
+   "rate": 10.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2017-10-01",
+   "expiryDate": "2018-03-31",
+   "rate": 11.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 11.15
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2019-04-01",
+   "expiryDate": "2020-03-31",
+   "rate": 11.4
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2020-10-01",
+   "rate": 11.65
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2020-10-01",
+   "expiryDate": "2021-04-01",
+   "rate": 12.15
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2021-04-01",
+   "expiryDate": "2021-10-01",
+   "rate": 12.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2021-10-01",
+   "expiryDate": "2022-03-31",
+   "rate": 12.75
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2022-09-30",
+   "rate": 13.2
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-03-31",
+   "rate": 13.7
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2023-09-30",
+   "rate": 14.5
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2023-10-01",
+   "expiryDate": "2024-03-31",
+   "rate": 15.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2024-04-01",
+   "expiryDate": "2025-04-01",
+   "rate": 15.6
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2025-04-01",
+   "expiryDate": "2026-04-01",
+   "rate": 16.0
+  },
+  {
+   "province": "NL",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "",
+   "rate": 16.35
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1965-02-20",
+   "expiryDate": "2004-04-01",
+   "rate": 0.8
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1965-02-20",
+   "expiryDate": "2004-04-01",
+   "rate": 1.05
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1966-06-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.85
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1966-06-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.1
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1968-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 0.9
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1968-04-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.15
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1968-08-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1968-08-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.25
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1971-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.1
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1971-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.3
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1971-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.2
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1971-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.35
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1972-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.55
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1973-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.65
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1974-07-01",
+   "expiryDate": "2004-04-01",
+   "rate": 1.8
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1974-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.2
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1975-03-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.25
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1976-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1977-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 2.75
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1980-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1981-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.3
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1982-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 3.75
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1985-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1989-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1991-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 4.75
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1992-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1993-01-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.15
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1996-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.35
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1997-02-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "1999-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.6
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2000-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.7
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2001-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 5.8
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2002-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2003-10-01",
+   "expiryDate": "2004-04-01",
+   "rate": 6.25
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2004-04-01",
+   "expiryDate": "2005-10-01",
+   "rate": 6.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2005-10-01",
+   "expiryDate": "2006-04-01",
+   "rate": 6.8
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2006-04-01",
+   "expiryDate": "2007-05-01",
+   "rate": 7.15
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2007-05-01",
+   "expiryDate": "2008-04-30",
+   "rate": 7.6
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2008-05-01",
+   "expiryDate": "2009-03-31",
+   "rate": 8.1
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2009-04-01",
+   "expiryDate": "2010-03-31",
+   "rate": 8.6
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2010-04-01",
+   "expiryDate": "2010-09-30",
+   "rate": 9.2
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2010-10-01",
+   "expiryDate": "2011-09-30",
+   "rate": 9.65
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2011-10-01",
+   "expiryDate": "2012-03-31",
+   "rate": 10.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2012-04-01",
+   "expiryDate": "2013-03-31",
+   "rate": 10.15
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2013-04-01",
+   "expiryDate": "2014-03-31",
+   "rate": 10.3
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2014-04-01",
+   "expiryDate": "2015-03-31",
+   "rate": 10.4
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2015-04-01",
+   "expiryDate": "2016-04-01",
+   "rate": 10.6
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2016-04-01",
+   "expiryDate": "2017-04-01",
+   "rate": 10.7
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2017-04-01",
+   "expiryDate": "2018-04-01",
+   "rate": 10.85
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2019-04-01",
+   "rate": 11.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2019-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 11.55
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2021-04-01",
+   "rate": 12.55
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2021-04-01",
+   "expiryDate": "2022-03-31",
+   "rate": 12.95
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2022-09-30",
+   "rate": 13.35
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-03-31",
+   "rate": 13.6
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2023-09-30",
+   "rate": 14.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2023-10-01",
+   "expiryDate": "2024-03-31",
+   "rate": 15.0
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2024-04-01",
+   "expiryDate": "2025-04-01",
+   "rate": 15.2
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2025-04-01",
+   "expiryDate": "2025-10-01",
+   "rate": 15.7
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2025-10-01",
+   "expiryDate": "2026-04-01",
+   "rate": 16.5
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "",
+   "rate": 16.75
+  },
+  {
+   "province": "NS",
+   "effectiveDate": "2026-10-01",
+   "expiryDate": "",
+   "rate": 17.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1968-07-01",
+   "expiryDate": "2003-12-28",
+   "rate": 1.25
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1970-09-01",
+   "expiryDate": "2003-12-28",
+   "rate": 1.5
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1973-09-01",
+   "expiryDate": "2003-12-28",
+   "rate": 2.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1974-04-01",
+   "expiryDate": "2003-12-28",
+   "rate": 2.5
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1976-06-01",
+   "expiryDate": "2003-12-28",
+   "rate": 3.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1980-05-15",
+   "expiryDate": "2003-12-28",
+   "rate": 3.5
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1982-08-01",
+   "expiryDate": "2003-12-28",
+   "rate": 4.25
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1986-04-01",
+   "expiryDate": "2003-12-28",
+   "rate": 5.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "1991-04-01",
+   "expiryDate": "2003-12-28",
+   "rate": 7.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2003-12-28",
+   "expiryDate": "2010-03-31",
+   "rate": 8.25
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2010-04-01",
+   "expiryDate": "2011-03-31",
+   "rate": 9.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2011-04-01",
+   "expiryDate": "2015-05-31",
+   "rate": 10.0
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2015-06-01",
+   "expiryDate": "2018-04-01",
+   "rate": 12.5
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2021-09-30",
+   "rate": 13.46
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2021-09-01",
+   "expiryDate": "2023-08-31",
+   "rate": 15.2
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2023-09-01",
+   "expiryDate": "2024-08-31",
+   "rate": 16.05
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2024-09-01",
+   "expiryDate": "2025-09-01",
+   "rate": 16.7
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2025-09-01",
+   "expiryDate": "2026-09-01",
+   "rate": 16.95
+  },
+  {
+   "province": "NT",
+   "effectiveDate": "2026-09-01",
+   "expiryDate": "",
+   "rate": 17.2
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "1999-04-01",
+   "expiryDate": "2003-03-03",
+   "rate": 6.5
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "1999-04-01",
+   "expiryDate": "2003-03-03",
+   "rate": 7.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2003-03-03",
+   "expiryDate": "2008-09-04",
+   "rate": 8.5
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2008-09-05",
+   "expiryDate": "2010-12-31",
+   "rate": 10.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2011-01-01",
+   "expiryDate": "2016-04-01",
+   "rate": 11.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2016-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 13.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2023-12-31",
+   "rate": 16.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2024-01-01",
+   "expiryDate": "2025-09-01",
+   "rate": 19.0
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2025-09-01",
+   "expiryDate": "2026-09-01",
+   "rate": 19.75
+  },
+  {
+   "province": "NU",
+   "effectiveDate": "2026-09-01",
+   "expiryDate": "",
+   "rate": 20.17
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 0.9
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 0.95
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-03-30",
+   "expiryDate": "2004-02-01",
+   "rate": 1.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1965-12-27",
+   "expiryDate": "2004-02-01",
+   "rate": 1.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1969-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.3
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1970-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.5
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1971-04-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.65
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1973-02-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.8
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1974-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1974-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.25
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1975-05-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.4
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1976-03-15",
+   "expiryDate": "2004-02-01",
+   "rate": 2.65
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1978-08-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.85
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1979-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1981-03-31",
+   "expiryDate": "2004-02-01",
+   "rate": 3.3
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1981-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.5
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1984-03-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.85
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1984-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1986-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.35
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1987-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.55
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1988-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.75
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1989-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1990-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.4
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1991-11-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1992-11-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.35
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1994-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.7
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "1995-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.85
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2004-02-01",
+   "expiryDate": "2006-02-01",
+   "rate": 7.15
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2005-02-01",
+   "expiryDate": "2006-02-01",
+   "rate": 7.45
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2006-02-01",
+   "expiryDate": "2007-02-01",
+   "rate": 7.75
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2007-02-01",
+   "expiryDate": "2008-03-30",
+   "rate": 8.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2008-03-31",
+   "expiryDate": "2009-03-30",
+   "rate": 8.75
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2009-03-31",
+   "expiryDate": "2010-03-30",
+   "rate": 9.5
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2010-03-31",
+   "expiryDate": "2014-05-31",
+   "rate": 10.25
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2014-06-01",
+   "expiryDate": "2015-09-30",
+   "rate": 11.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2015-10-01",
+   "expiryDate": "2016-10-01",
+   "rate": 11.25
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2016-10-01",
+   "expiryDate": "2017-09-30",
+   "rate": 11.4
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2017-10-01",
+   "expiryDate": "0201-12-31",
+   "rate": 11.6
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2018-01-01",
+   "expiryDate": "2020-09-30",
+   "rate": 14.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2020-10-01",
+   "expiryDate": "2021-09-30",
+   "rate": 14.25
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2021-10-01",
+   "expiryDate": "2021-12-31",
+   "rate": 14.35
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2022-01-01",
+   "expiryDate": "2022-09-30",
+   "rate": 15.0
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-09-30",
+   "rate": 15.5
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2024-10-01",
+   "expiryDate": "2025-10-01",
+   "rate": 17.2
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2025-10-01",
+   "expiryDate": "2026-10-01",
+   "rate": 17.6
+  },
+  {
+   "province": "ON",
+   "effectiveDate": "2026-10-01",
+   "expiryDate": "",
+   "rate": 17.95
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2004-01-01",
+   "rate": 1.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1966-04-16",
+   "expiryDate": "2004-01-01",
+   "rate": 1.1
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1968-07-01",
+   "expiryDate": "2004-01-01",
+   "rate": 0.8
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1969-01-01",
+   "expiryDate": "2004-01-01",
+   "rate": 0.85
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1969-07-01",
+   "expiryDate": "2004-01-01",
+   "rate": 0.95
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1969-09-01",
+   "expiryDate": "2004-01-01",
+   "rate": 1.25
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1972-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.1
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1973-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.3
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1973-07-01",
+   "expiryDate": "2001-02-01",
+   "rate": 1.4
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1974-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.65
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1974-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 1.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1975-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.05
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1975-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.3
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1976-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1977-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 2.7
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1978-11-26",
+   "expiryDate": "2004-02-01",
+   "rate": 2.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1980-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1981-07-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.3
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1982-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 3.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1985-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1988-10-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.25
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1989-04-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1991-04-01",
+   "expiryDate": "2004-02-01",
+   "rate": 4.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1996-09-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.15
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "1997-09-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.4
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2000-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.6
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2001-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 5.8
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2002-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2003-01-01",
+   "expiryDate": "2004-02-01",
+   "rate": 6.25
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2004-01-01",
+   "expiryDate": "2005-01-01",
+   "rate": 6.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2005-01-01",
+   "expiryDate": "2006-04-01",
+   "rate": 6.8
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2006-04-01",
+   "expiryDate": "2007-04-01",
+   "rate": 7.15
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2007-04-01",
+   "expiryDate": "2008-04-30",
+   "rate": 7.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2008-05-01",
+   "expiryDate": "2008-09-30",
+   "rate": 7.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2008-10-01",
+   "expiryDate": "2009-05-31",
+   "rate": 8.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2009-06-01",
+   "expiryDate": "2009-09-30",
+   "rate": 8.2
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2009-10-01",
+   "expiryDate": "2010-05-31",
+   "rate": 8.4
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2010-06-01",
+   "expiryDate": "2010-09-30",
+   "rate": 8.7
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2010-10-01",
+   "expiryDate": "2011-05-31",
+   "rate": 9.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2011-06-01",
+   "expiryDate": "2011-09-30",
+   "rate": 9.3
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2011-10-01",
+   "expiryDate": "2012-03-31",
+   "rate": 9.6
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2012-04-01",
+   "expiryDate": "2014-05-31",
+   "rate": 10.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2014-06-01",
+   "expiryDate": "2014-09-30",
+   "rate": 10.2
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2014-10-01",
+   "expiryDate": "2015-06-30",
+   "rate": 10.35
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2015-07-01",
+   "expiryDate": "2016-06-01",
+   "rate": 10.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2016-06-01",
+   "expiryDate": "2016-09-30",
+   "rate": 10.75
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2016-10-01",
+   "expiryDate": "2017-04-01",
+   "rate": 11.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2017-04-01",
+   "expiryDate": "2018-04-01",
+   "rate": 11.25
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2019-04-01",
+   "rate": 11.55
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2019-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 12.25
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2021-04-01",
+   "rate": 12.85
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2021-04-01",
+   "expiryDate": "2022-03-31",
+   "rate": 13.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2022-12-31",
+   "rate": 13.7
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2023-01-01",
+   "expiryDate": "2023-09-30",
+   "rate": 14.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2023-10-01",
+   "expiryDate": "2024-03-31",
+   "rate": 15.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2024-10-01",
+   "expiryDate": "2025-10-01",
+   "rate": 16.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2025-10-01",
+   "expiryDate": "2026-04-01",
+   "rate": 16.5
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "2026-10-01",
+   "rate": 17.0
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2026-10-01",
+   "expiryDate": "2027-04-01",
+   "rate": 17.3
+  },
+  {
+   "province": "PE",
+   "effectiveDate": "2027-04-01",
+   "expiryDate": "",
+   "rate": 17.6
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1965-01-01",
+   "expiryDate": "2003-02-01",
+   "rate": 0.7
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1965-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 0.85
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1966-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1967-04-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.05
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1968-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.25
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1970-05-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.35
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1970-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.4
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1971-05-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.45
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1971-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.5
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1972-08-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.6
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1972-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.65
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1973-05-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.7
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1973-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 1.85
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1974-05-01",
+   "expiryDate": "2003-02-01",
+   "rate": 2.1
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1974-11-01",
+   "expiryDate": "2003-02-01",
+   "rate": 2.3
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1975-06-01",
+   "expiryDate": "2003-02-01",
+   "rate": 2.6
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1975-12-01",
+   "expiryDate": "2003-02-01",
+   "rate": 2.8
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1976-07-01",
+   "expiryDate": "2003-02-01",
+   "rate": 2.87
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1977-01-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1977-07-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.15
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1978-01-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.27
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1978-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.37
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1979-04-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.47
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1980-04-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.65
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1981-04-01",
+   "expiryDate": "2003-02-01",
+   "rate": 3.85
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1981-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 4.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1986-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 4.35
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1987-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 4.55
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1988-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 4.75
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1989-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 5.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1990-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 5.3
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1991-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 5.55
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1992-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 5.7
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1993-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 5.85
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1994-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 6.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1995-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 6.45
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1996-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 6.7
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1997-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 6.8
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "1998-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 6.9
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2001-02-01",
+   "expiryDate": "2003-02-01",
+   "rate": 7.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2002-10-01",
+   "expiryDate": "2003-02-01",
+   "rate": 7.2
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2003-02-01",
+   "expiryDate": "2004-05-01",
+   "rate": 7.3
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2004-05-01",
+   "expiryDate": "2005-05-01",
+   "rate": 7.45
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2005-05-01",
+   "expiryDate": "2006-05-01",
+   "rate": 7.6
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2006-05-01",
+   "expiryDate": "2007-05-01",
+   "rate": 7.75
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2007-05-01",
+   "expiryDate": "2008-04-30",
+   "rate": 8.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2008-05-01",
+   "expiryDate": "2009-04-30",
+   "rate": 8.5
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2009-05-01",
+   "expiryDate": "2010-05-10",
+   "rate": 9.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2010-05-01",
+   "expiryDate": "2011-04-30",
+   "rate": 9.5
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2011-05-01",
+   "expiryDate": "2012-04-30",
+   "rate": 9.65
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2012-05-01",
+   "expiryDate": "2013-04-30",
+   "rate": 9.9
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2013-05-01",
+   "expiryDate": "2014-04-30",
+   "rate": 10.15
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2014-05-01",
+   "expiryDate": "2015-04-30",
+   "rate": 10.35
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2015-05-01",
+   "expiryDate": "2016-05-01",
+   "rate": 10.55
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2016-05-01",
+   "expiryDate": "2017-05-01",
+   "rate": 10.75
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2017-05-01",
+   "expiryDate": "2018-05-01",
+   "rate": 11.25
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2018-05-01",
+   "expiryDate": "2019-05-01",
+   "rate": 12.0
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2019-05-01",
+   "expiryDate": "2020-05-01",
+   "rate": 12.5
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2020-05-01",
+   "expiryDate": "2021-04-30",
+   "rate": 13.1
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2021-05-01",
+   "expiryDate": "2022-04-30",
+   "rate": 13.5
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2022-05-01",
+   "expiryDate": "2023-04-30",
+   "rate": 14.25
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2023-05-01",
+   "expiryDate": "2023-04-30",
+   "rate": 15.25
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2024-05-01",
+   "expiryDate": "2025-05-01",
+   "rate": 15.75
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2025-05-01",
+   "expiryDate": "2026-05-01",
+   "rate": 16.1
+  },
+  {
+   "province": "QC",
+   "effectiveDate": "2026-05-01",
+   "expiryDate": "",
+   "rate": 16.6
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1968-10-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.05
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1969-10-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1971-06-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1972-01-02",
+   "expiryDate": "2002-11-01",
+   "rate": 1.7
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1972-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 1.75
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1973-12-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1974-07-02",
+   "expiryDate": "2002-11-01",
+   "rate": 2.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1975-03-31",
+   "expiryDate": "2002-11-01",
+   "rate": 2.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1976-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 2.8
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1977-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1978-01-31",
+   "expiryDate": "2002-11-01",
+   "rate": 3.15
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1978-06-30",
+   "expiryDate": "2002-11-01",
+   "rate": 3.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1979-10-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1980-05-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.65
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1981-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 3.85
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1981-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1982-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1985-08-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1990-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 4.75
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1990-07-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1992-12-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.35
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1996-12-01",
+   "expiryDate": "2002-11-01",
+   "rate": 5.6
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "1999-01-01",
+   "expiryDate": "2002-11-01",
+   "rate": 6.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2002-05-01",
+   "expiryDate": "2002-11-01",
+   "rate": 6.35
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2002-11-01",
+   "expiryDate": "2005-09-01",
+   "rate": 6.65
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2005-09-01",
+   "expiryDate": "2006-03-01",
+   "rate": 7.05
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2006-03-01",
+   "expiryDate": "2007-03-01",
+   "rate": 7.55
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2007-03-01",
+   "expiryDate": "2008-01-01",
+   "rate": 7.95
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2008-01-01",
+   "expiryDate": "2008-04-30",
+   "rate": 8.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2008-05-01",
+   "expiryDate": "2009-04-30",
+   "rate": 8.6
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2009-05-01",
+   "expiryDate": "2011-08-31",
+   "rate": 9.25
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2011-09-01",
+   "expiryDate": "2012-11-30",
+   "rate": 9.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2012-12-01",
+   "expiryDate": "2014-09-30",
+   "rate": 10.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2014-10-01",
+   "expiryDate": "2015-09-30",
+   "rate": 10.2
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2015-10-01",
+   "expiryDate": "2016-10-01",
+   "rate": 10.5
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2016-10-01",
+   "expiryDate": "2017-09-30",
+   "rate": 10.72
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2017-10-01",
+   "expiryDate": "2018-10-01",
+   "rate": 10.96
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2018-10-01",
+   "expiryDate": "2019-10-01",
+   "rate": 11.06
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2019-10-01",
+   "expiryDate": "2020-10-01",
+   "rate": 11.32
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2020-10-01",
+   "expiryDate": "2021-09-30",
+   "rate": 11.45
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2021-10-01",
+   "expiryDate": "2022-09-30",
+   "rate": 11.81
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2022-10-01",
+   "expiryDate": "2023-09-30",
+   "rate": 13.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2024-10-01",
+   "expiryDate": "2025-10-01",
+   "rate": 15.0
+  },
+  {
+   "province": "SK",
+   "effectiveDate": "2025-10-01",
+   "expiryDate": "",
+   "rate": 15.35
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1968-07-01",
+   "expiryDate": "1998-10-01",
+   "rate": 1.25
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1970-05-01",
+   "expiryDate": "1998-10-01",
+   "rate": 1.5
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1972-01-01",
+   "expiryDate": "1998-10-01",
+   "rate": 1.75
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1973-06-01",
+   "expiryDate": "1998-10-01",
+   "rate": 2.0
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1974-01-01",
+   "expiryDate": "1998-10-01",
+   "rate": 2.3
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1975-07-23",
+   "expiryDate": "1998-10-01",
+   "rate": 2.7
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1976-04-01",
+   "expiryDate": "1998-10-01",
+   "rate": 3.0
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1980-12-01",
+   "expiryDate": "1998-10-01",
+   "rate": 3.35
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1981-05-01",
+   "expiryDate": "1998-10-01",
+   "rate": 3.6
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1985-01-01",
+   "expiryDate": "1998-10-01",
+   "rate": 4.25
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1987-05-01",
+   "expiryDate": "1998-10-01",
+   "rate": 4.75
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1988-05-01",
+   "expiryDate": "1998-10-01",
+   "rate": 5.39
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1990-04-01",
+   "expiryDate": "1998-10-01",
+   "rate": 5.97
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1991-04-01",
+   "expiryDate": "1998-10-01",
+   "rate": 6.24
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1994-10-01",
+   "expiryDate": "1998-10-01",
+   "rate": 6.72
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1995-10-01",
+   "expiryDate": "1998-10-01",
+   "rate": 6.86
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1998-04-01",
+   "expiryDate": "1998-10-01",
+   "rate": 7.06
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "1998-10-01",
+   "expiryDate": "2006-05-01",
+   "rate": 7.2
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2006-05-01",
+   "expiryDate": "2004-04-01",
+   "rate": 8.25
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2007-04-01",
+   "expiryDate": "2008-03-31",
+   "rate": 8.37
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2008-04-01",
+   "expiryDate": "2009-03-31",
+   "rate": 8.58
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2009-04-01",
+   "expiryDate": "2010-03-31",
+   "rate": 8.89
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2010-04-01",
+   "expiryDate": "2011-03-31",
+   "rate": 8.93
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2011-01-01",
+   "expiryDate": "2012-03-31",
+   "rate": 9.0
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2012-04-01",
+   "expiryDate": "2012-04-30",
+   "rate": 9.27
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2012-05-01",
+   "expiryDate": "2013-03-31",
+   "rate": 10.3
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2013-04-01",
+   "expiryDate": "2014-03-31",
+   "rate": 10.54
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2014-04-01",
+   "expiryDate": "2015-03-31",
+   "rate": 10.72
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2015-04-01",
+   "expiryDate": "2016-04-01",
+   "rate": 10.86
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2016-04-01",
+   "expiryDate": "2017-04-01",
+   "rate": 11.07
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2017-04-01",
+   "expiryDate": "2018-04-01",
+   "rate": 11.32
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2018-04-01",
+   "expiryDate": "2019-04-01",
+   "rate": 11.51
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2019-04-01",
+   "expiryDate": "2020-04-01",
+   "rate": 12.71
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2020-04-01",
+   "expiryDate": "2021-04-01",
+   "rate": 13.71
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2021-04-01",
+   "expiryDate": "2021-07-30",
+   "rate": 13.85
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2021-08-01",
+   "expiryDate": "2022-03-31",
+   "rate": 15.2
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2022-04-01",
+   "expiryDate": "2023-03-31",
+   "rate": 15.7
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2023-04-01",
+   "expiryDate": "2024-03-31",
+   "rate": 16.77
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2024-04-01",
+   "expiryDate": "2025-04-01",
+   "rate": 17.59
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2025-04-01",
+   "expiryDate": "2026-04-01",
+   "rate": 17.94
+  },
+  {
+   "province": "YT",
+   "effectiveDate": "2026-04-01",
+   "expiryDate": "",
+   "rate": 18.51
+  }
+ ]
+}

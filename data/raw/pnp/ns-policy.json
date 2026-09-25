@@ -6,16 +6,21 @@
   "type": "policy",
   "codeless": true,
   "url": "https://liveinnovascotia.com/skilled-worker",
-  "fetched": "2026-09-12",
+  "fetched": "2026-09-25",
   "facts": [
     {
       "key": "noMainList",
-      "statement": "Skilled Worker 主线不公布职业清单:按雇主 offer + TEER 判定;Construction 子条件按行业(NAICS 23 建筑业)判,不是 NOC 清单。",
+      "statement": "Skilled Worker 主线不公布职业清单:按雇主 offer + TEER 判定;Construction 子条件 = 建筑业雇主(NAICS 23)+ 官方列出的 22 个职业码(见 ns-construction.json)。",
       "url": "https://liveinnovascotia.com/skilled-worker"
     },
     {
       "key": "oidList",
       "statement": "Occupations in Demand 通道当前**没有任何职业在列**(官方原话:There are no occupations listed in this category at this time)。",
+      "url": "https://liveinnovascotia.com/skilled-worker"
+    },
+    {
+      "key": "foodPause",
+      "statement": "住宿餐饮业(Accommodation and Food Services)自 2024-04-17 起暂停收件(官方原话:must stop accepting submissions in this sector while processing current inventory);按行业判,不逐岗。",
       "url": "https://liveinnovascotia.com/skilled-worker"
     },
     {

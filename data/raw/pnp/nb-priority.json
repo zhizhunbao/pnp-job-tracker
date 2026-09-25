@@ -1,0 +1,144 @@
+{
+  "stream": "NB Skilled Worker — Priority Occupations (Government-led recruitment)",
+  "label": "NB 优先职业",
+  "province": "NB",
+  "type": "indemand",
+  "url": "https://www.gnb.ca/content/dam/GNB3/t/fhc-fmc/immigration/docs/guide-new-brunswick-priority-occupations.pdf",
+  "fetched": "2026-09-25",
+  "note": "只认 NB 省政府招聘团直接招来的 offer;只作参考信号,不当通道。",
+  "signal": true,
+  "occupations": [
+    {
+      "noc": "31301",
+      "name": "Registered nurses and registered psychiatric nurses"
+    },
+    {
+      "noc": "32101",
+      "name": "Licensed practical nurses"
+    },
+    {
+      "noc": "32109",
+      "name": "Other technical occupations in therapy and assessment"
+    },
+    {
+      "noc": "32124",
+      "name": "Pharmacy technicians"
+    },
+    {
+      "noc": "33101",
+      "name": "Medical laboratory assistants and related technical occupations"
+    },
+    {
+      "noc": "33102",
+      "name": "Nurse aides, orderlies, and patient service associates"
+    },
+    {
+      "noc": "33109",
+      "name": "Other assisting occupations in support of health services"
+    },
+    {
+      "noc": "41220",
+      "name": "Secondary school teachers"
+    },
+    {
+      "noc": "41221",
+      "name": "Elementary school and kindergarten teachers"
+    },
+    {
+      "noc": "42201",
+      "name": "Social and community service workers"
+    },
+    {
+      "noc": "42202",
+      "name": "Early childhood educators and assistants"
+    },
+    {
+      "noc": "43100",
+      "name": "Elementary and secondary school teacher assistants"
+    },
+    {
+      "noc": "44101",
+      "name": "Home support workers, caregivers, and related occupations"
+    },
+    {
+      "noc": "70010",
+      "name": "Construction managers"
+    },
+    {
+      "noc": "70011",
+      "name": "Home building and renovation managers"
+    },
+    {
+      "noc": "72011",
+      "name": "Contractors and supervisors, electrical trades, and telecommunications"
+    },
+    {
+      "noc": "72014",
+      "name": "Contractors and supervisors, other construction trades, installers, repairers,"
+    },
+    {
+      "noc": "72020",
+      "name": "Contractors and supervisors, mechanic trades"
+    },
+    {
+      "noc": "72102",
+      "name": "Sheet metal workers"
+    },
+    {
+      "noc": "72106",
+      "name": "Welders and related machine operators"
+    },
+    {
+      "noc": "72200",
+      "name": "Electricians (except industrial and power system)"
+    },
+    {
+      "noc": "72201",
+      "name": "Industrial electricians"
+    },
+    {
+      "noc": "72310",
+      "name": "Carpenters"
+    },
+    {
+      "noc": "72320",
+      "name": "Bricklayers"
+    },
+    {
+      "noc": "72401",
+      "name": "Heavy-duty equipment mechanics"
+    },
+    {
+      "noc": "72402",
+      "name": "Heating, refrigeration, and air conditioning mechanics"
+    },
+    {
+      "noc": "72500",
+      "name": "Crane operators"
+    },
+    {
+      "noc": "73100",
+      "name": "Concrete finishers"
+    },
+    {
+      "noc": "73102",
+      "name": "Plasterers, drywall installers, and finishers and lathers"
+    },
+    {
+      "noc": "73110",
+      "name": "Roofers and shinglers"
+    },
+    {
+      "noc": "73200",
+      "name": "Residential and commercial installers and servicers"
+    },
+    {
+      "noc": "73400",
+      "name": "Heavy equipment operators"
+    },
+    {
+      "noc": "75110",
+      "name": "Construction trades helpers and labourers"
+    }
+  ]
+}

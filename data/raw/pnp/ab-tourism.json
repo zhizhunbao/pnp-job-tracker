@@ -1,0 +1,63 @@
+{
+  "stream": "Tourism and Hospitality Stream",
+  "label": "AB 旅游酒店",
+  "province": "AB",
+  "type": "indemand",
+  "url": "https://www.alberta.ca/tourism-and-hospitality-stream-eligibility",
+  "fetched": "2026-09-25",
+  "note": "雇主须属合格旅游酒店行业(官方表 1 的 WCB 行业码)或行业协会成员(表 2);本表只列表 3 的职业,其中保洁 / 洗衣 / 娱乐项目负责人这几个哪行都有的码不收。",
+  "occupations": [
+    {
+      "noc": "60030",
+      "name": "Restaurant and food services managers"
+    },
+    {
+      "noc": "60031",
+      "name": "Accommodation service managers"
+    },
+    {
+      "noc": "62020",
+      "name": "Food service supervisors"
+    },
+    {
+      "noc": "62200",
+      "name": "Chefs"
+    },
+    {
+      "noc": "63200",
+      "name": "Cooks"
+    },
+    {
+      "noc": "64300",
+      "name": "Maîtres d’hôtel and hosts/hostesses"
+    },
+    {
+      "noc": "64301",
+      "name": "Bartenders"
+    },
+    {
+      "noc": "64314",
+      "name": "Hotel front desk clerks"
+    },
+    {
+      "noc": "64320",
+      "name": "Tour and travel guides"
+    },
+    {
+      "noc": "64322",
+      "name": "Outdoor sport and recreational guides"
+    },
+    {
+      "noc": "65200",
+      "name": "Food and beverage servers"
+    },
+    {
+      "noc": "65201",
+      "name": "Food counter attendants, kitchen helpers and related support occupations"
+    },
+    {
+      "noc": "65210",
+      "name": "Support occupations in accommodation, travel, and facilities set-up services"
+    }
+  ]
+}

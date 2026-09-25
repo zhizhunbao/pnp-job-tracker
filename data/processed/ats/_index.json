@@ -240,6 +240,12 @@
     "has_careers": false
   },
   {
+    "slug": "aviasim",
+    "name": "AviaSim",
+    "website": "https://www.aviasim.ca/?gad_source=6&gad_campaignid=23501282532&gbraid=0AAAAApDwNTua8e1Zd26w3ALY5sGWIkOiu&gclid=CjwKCAjwpK3SBhASEiwAtV1SPC5Y7dH-_2QKc1A8f7xRM8yEH22IiMFK_iYwa0xsg1TybCoRu0TmRhoCZE4QAvD_BwE",
+    "has_careers": false
+  },
+  {
     "slug": "avocet-aerospace-technologies-inc",
     "name": "Avocet Aerospace Technologies Inc",
     "website": "https://avocetaerospace.com/about-avocet-aerospace-technologies/",
@@ -594,6 +600,12 @@
     "has_careers": false
   },
   {
+    "slug": "chressa-law",
+    "name": "Chressa Law",
+    "website": "https://chressalaw.com/",
+    "has_careers": false
+  },
+  {
     "slug": "christiane-j-lessard-r-m-f-t",
     "name": "Christiane J Lessard R M F T",
     "website": "https://www.yodah.ca/a-propos-de-moi-about-me",
@@ -609,7 +621,7 @@
     "slug": "ciena-corporation-canada",
     "name": "Ciena Corporation Canada",
     "website": "https://www.ciena.com/",
-    "has_careers": false
+    "has_careers": true
   },
   {
     "slug": "circle-k",
@@ -963,7 +975,7 @@
     "slug": "entrust",
     "name": "Entrust",
     "website": "https://www.entrust.com/",
-    "has_careers": false
+    "has_careers": true
   },
   {
     "slug": "epiphan-systems-inc",
@@ -1905,7 +1917,7 @@
     "slug": "mitel",
     "name": "Mitel",
     "website": "https://www.mitel.com/en-ca",
-    "has_careers": false
+    "has_careers": true
   },
   {
     "slug": "mnp-debt-ltd",
@@ -1989,6 +2001,12 @@
     "slug": "nordion",
     "name": "Nordion",
     "website": "http://www.nordion.com/",
+    "has_careers": false
+  },
+  {
+    "slug": "notary-pro",
+    "name": "Notary Pro",
+    "website": "https://www.notarypro.ca/notary/6715803?utm_campaign=gbp-listing&utm_medium=organic&utm_source=gbp&utm_content=ON_K2K_3B8_1",
     "has_careers": false
   },
   {
@@ -2232,9 +2250,21 @@
     "has_careers": false
   },
   {
+    "slug": "prometric-test-center",
+    "name": "Prometric Test Center",
+    "website": "https://www.prometric.com/",
+    "has_careers": false
+  },
+  {
     "slug": "purecolo-inc",
     "name": "Purecolo Inc.",
     "website": "http://purecolo.ca/",
+    "has_careers": false
+  },
+  {
+    "slug": "purespiritit",
+    "name": "PureSpiritIT",
+    "website": "https://purespiritsolutions.com/",
     "has_careers": false
   },
   {
@@ -2595,6 +2625,12 @@
     "slug": "space-credibility-canada-inc",
     "name": "Space Credibility Canada Inc.",
     "website": "https://credibility.space/",
+    "has_careers": false
+  },
+  {
+    "slug": "spec-to-silicon-inc",
+    "name": "Spec To Silicon Inc",
+    "website": "https://spectosilicon.com/",
     "has_careers": false
   },
   {
@@ -3118,5 +3154,35 @@
     "name": "Zendelity",
     "website": "https://www.zendelity.com/",
     "has_careers": false
+  },
+  {
+    "slug": "lumentum",
+    "name": "Lumentum",
+    "website": "https://www.lumentum.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "giatec-scientific-inc",
+    "name": "Giatec Scientific Inc.",
+    "website": "https://www.giatecscientific.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "rewind",
+    "name": "Rewind",
+    "website": "https://rewind.com/",
+    "has_careers": true
+  },
+  {
+    "slug": "bank-of-canada",
+    "name": "Bank of Canada",
+    "website": "https://www.bankofcanada.ca/",
+    "has_careers": true
+  },
+  {
+    "slug": "telesat",
+    "name": "Telesat",
+    "website": "https://www.telesat.com/",
+    "has_careers": true
   }
 ]

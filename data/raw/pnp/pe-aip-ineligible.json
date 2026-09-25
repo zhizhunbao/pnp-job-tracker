@@ -1,0 +1,17 @@
+{
+  "stream": "Atlantic Immigration Program (PE) — occupations not being accepted for endorsement",
+  "label": "PE AIP 不受理",
+  "province": "PE",
+  "program": "AIP",
+  "type": "ineligible",
+  "overlay": true,
+  "note": "PEI 的 AIP 自 2025-01-24 起只收医疗、建筑、制造三个行业的背书申请;另有这些职业不受理。",
+  "url": "https://www.princeedwardisland.ca/en/service/atlantic-immigration-program-endorsement-application",
+  "fetched": "2026-09-25",
+  "occupations": [
+    {
+      "noc": "73300",
+      "name": "Transport Truck Driver"
+    }
+  ]
+}

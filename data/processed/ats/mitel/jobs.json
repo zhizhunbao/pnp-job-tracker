@@ -1,0 +1,49 @@
+{
+  "ats": "myworkdayjobs",
+  "token": "",
+  "count": 2,
+  "jobs": [
+    {
+      "title": "Finance Business Partner (Hybrid)",
+      "location": "Ottawa",
+      "url": "https://mitel.wd3.myworkdayjobs.com/mitelcareers/job/Ottawa/Finance-Business-Partner_R012578",
+      "department": "",
+      "posted": "2026-09-04",
+      "address": "",
+      "salary": "$84,000.00 - $99,000.00",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 91500,
+      "salaryText": "$84K–$99K/yr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    },
+    {
+      "title": "Senior Mechanical Designer",
+      "location": "Ottawa",
+      "url": "https://mitel.wd3.myworkdayjobs.com/mitelcareers/job/Ottawa/Senior-Mechanical-Designer_R012840",
+      "department": "",
+      "posted": "2026-08-04",
+      "address": "",
+      "salary": "$80",
+      "tech": false,
+      "apprentice_friendly": false,
+      "country": "Canada",
+      "province": "ON",
+      "city": "Ottawa",
+      "district": "",
+      "salaryAnnual": 166400,
+      "salaryText": "$80/hr",
+      "aip": false,
+      "pilot": "",
+      "pilotCommunity": "",
+      "pilotEmployer": false
+    }
+  ]
+}

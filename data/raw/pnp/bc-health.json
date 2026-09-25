@@ -1,10 +1,10 @@
 {
-  "stream": "BC PNP Care: health targeted ITA / Health Authority stream",
+  "stream": "BC PNP Care: health targeted ITA",
   "label": "BC 医疗",
   "province": "BC",
   "type": "indemand",
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
-  "fetched": "2026-09-12",
+  "fetched": "2026-09-25",
   "occupations": [
     {
       "noc": "30010",
@@ -23,16 +23,8 @@
       "name": "General practitioners and family physicians"
     },
     {
-      "noc": "31103",
-      "name": "Veterinarians"
-    },
-    {
       "noc": "31110",
       "name": "Dentists"
-    },
-    {
-      "noc": "31111",
-      "name": "Optometrists"
     },
     {
       "noc": "31112",
@@ -87,10 +79,6 @@
       "name": "Physician assists, midwives and allied health profs"
     },
     {
-      "noc": "32100",
-      "name": "Opticians"
-    },
-    {
       "noc": "32101",
       "name": "Licensed practical nurses"
     },
@@ -101,18 +89,6 @@
     {
       "noc": "32103",
       "name": "Respiratory therapists, clinical perfusionists and cardiopulmonary technologists"
-    },
-    {
-      "noc": "32104",
-      "name": "Animal health technologists and veterinary technicians"
-    },
-    {
-      "noc": "32109",
-      "name": "Other technical occupations in therapy and assessment"
-    },
-    {
-      "noc": "32110",
-      "name": "Denturists"
     },
     {
       "noc": "32111",
@@ -139,28 +115,8 @@
       "name": "Cardiology technologists and elect. diagnostic techs"
     },
     {
-      "noc": "32124",
-      "name": "Pharmacy technicians"
-    },
-    {
-      "noc": "32129",
-      "name": "Other medical technologists and technicians"
-    },
-    {
       "noc": "32200",
       "name": "Traditional Chinese medicine practitioners and acupuncturists"
-    },
-    {
-      "noc": "32201",
-      "name": "Massage therapists"
-    },
-    {
-      "noc": "32209",
-      "name": "Other practitioners of healing"
-    },
-    {
-      "noc": "33100",
-      "name": "Dental assistants and dental laboratory assistants"
     },
     {
       "noc": "33101",
@@ -171,24 +127,8 @@
       "name": "Nurse aides, orderlies and patient service associates"
     },
     {
-      "noc": "33103",
-      "name": "Pharmacy technical assistants and pharmacy assistants"
-    },
-    {
-      "noc": "33109",
-      "name": "Other assisting occupations in support of health services"
-    },
-    {
       "noc": "41300",
       "name": "Social workers"
-    },
-    {
-      "noc": "41301",
-      "name": "Therapists in counselling and related specialized therapies"
-    },
-    {
-      "noc": "42201",
-      "name": "Social and community service workers"
     }
   ]
 }
