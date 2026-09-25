@@ -25,23 +25,24 @@ import paths
 from paths import JOBBANK_STORE_LOCK, jobbank_store_lock
 from log.functions import say
 from richtext.functions import rich_text_of
+from crawl import BROWSER_COOKIES
 from crawl.constants import PROFILE_DIR
 from crawl.functions import close_browser, get_browser_page, load_cache_index, put_cached_pages, save_browser_cookies
 from crawl.scheme import CachePage, CachePutManyIn, SaveCookiesIn
 from hireac import DETAILS_PER_RUN
 from hireac.constants import (
     ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, COOKIE_DOMAINS, COOKIES_FILE, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
-    DETAIL_MARK, DETAIL_SLEEP_MS, DETAIL_TICK, ENC_UTF8, ERR_BROWSER_DOWN, ERR_LOGIN_TPL, ERR_NO_VIEW_ALL,
+    DETAIL_MARK, DETAIL_SLEEP_MS, DETAIL_TICK, ENC_UTF8, ERR_BROWSER_DOWN, ERR_COOKIES_MISSING_TPL, ERR_LOGIN_TPL, ERR_NO_PAGER_SORT_TPL, ERR_NO_VIEW_ALL,
     ERR_PAGE_STALE_TPL, ERR_PAGE_WAIT_TPL, ERR_TOO_MANY_FAILS_TPL, ERRORS_REPLACE, COUNTRY_CA, F_ADDRESS, F_APPLY_CC, F_APPLY_EMAIL,
     F_APPLY_WEB, F_CATEGORY, F_CITY, F_COUNTRY, F_DEADLINE, F_DESCRIPTION, F_DESCRIPTION_CC, F_DIVISION, F_HOURS,
     F_JOB_TYPE, F_LANGUAGE, F_LOCATION, F_LOCATION_CC, F_ORG, F_POSITION_TYPE, F_POSTAL, F_PREFERRED,
     F_PROCEDURE, F_PROVINCE, F_QUALIFICATIONS, F_REQUIREMENTS, RICH_FIELDS, F_SALARY, F_TERM, F_TITLE, F_WEBSITE,
-    FAIL_MAX, FETCH_JS, FIELD_RE, FLUSH_EVERY, FORM_RE, GROUP_KEY, GROUP_VALUE, HOURS_OF_KIND, HTTP_OK,
+    FAIL_MAX, FETCH_JS, FIELD_RE, FLUSH_EVERY, FORM_RE, GROUP_DIR, GROUP_KEY, GROUP_ORDER, GROUP_VALUE, HOURS_OF_KIND, HTTP_OK,
     HOURLY_MAX, HOURLY_MIN, HTTP_PREFIX, IN_JOBS, IN_ROWS, JSON_INDENT, K_ADDRESS, K_CITY, K_DATE, K_DESCRIPTION, K_DIRECT,
     K_EMPLOYER, K_EMPLOYER_URL, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_INDUSTRY, K_LANG, K_LAST_SEEN,
     K_NOC, K_POSTING_ID, K_POSTING_ID_FORM, K_PROVINCE, K_SALARY, K_SOURCE, K_TITLE, K_TITLE_ORIG, K_URL,
     K_VALID_THROUGH, KIND_HOURLY_KEY, KIND_SALARY_KEY, KIND_UNIT_WORD, LANG_EN, LIST_KEY_TPL, LIST_SETTLE_MS, LOAD_PAGE_JS_TPL, LOGIN_HOST, NAV_TIMEOUT_MS,
-    NOT_LOGGED_PATH, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGE_NUM_RE, PAGE_ONE, PAGE_WAIT_STEP_MS,
+    NOT_LOGGED_PATH, OUT_JOBS, OUT_POSTINGS, OUT_ROWS, PAGE_NUM_RE, PAGE_ONE, PAGE_SORT_RE, PAGE_WAIT_STEP_MS,
     PAGE_WAIT_TRIES, PERCENT, POSTINGS_URL, PRINT_COOKIES_TPL, PRINT_DETAIL_BAD_TPL, PRINT_DETAIL_DONE_TPL,
     PRINT_DETAIL_HEAD_TPL, PRINT_DETAIL_TICK_TPL, PRINT_PAGE_TPL, PRINT_PARSE_DONE_TPL, PRINT_ROWS_DONE_TPL,
     PRINT_STORE_DONE_TPL, PROV_CODE_OF_NAME, PROV_CODES, PROV_OF_CITY, QUOTE_DOUBLE, QUOTE_SINGLE,
@@ -51,7 +52,7 @@ from hireac.constants import (
 )
 from hireac.scheme import (
     BrowserPageLike, DetailBatchIn, DetailBatchOut, DetailFieldsIn, DetailKeyIn, FreshHtmlIn, JobFact, Location,
-    ParseTally, PickIn, PostingRowIn, StoreTally, UnitByKindIn, WaitPageIn,
+    PageJsIn, ParseTally, PickIn, PostingRowIn, StoreTally, UnitByKindIn, WaitPageIn,
 )
 
 
@@ -82,6 +83,7 @@ def scrape_hireac() -> None:
 
 async def scrape_in_browser() -> None:
     """进板 → 翻页收行表 → 回放未缓存详情;会话结束关浏览器(Frank 2026-09-13「别老重复打开关闭浏览器」)。"""
+    require_cookie_file()
     raw_page = await get_browser_page()
     if raw_page is None:
         raise RuntimeError(ERR_BROWSER_DOWN)
@@ -102,12 +104,15 @@ async def scrape_in_browser() -> None:
 
 def export_hireac_cookies() -> None:
     """--only export 入口(Frank 本机手动;2026-09-15 进容器):本机 Chrome 共享 profile 里登录好 HireAC 后,把学院与微软登录的
-    cookie 导成 PROFILE_DIR/COOKIES_FILE 给容器 hireac 役加载。登录过期时先在本机 Chrome 重登,再跑这一步。"""
+    cookie 导成 PROFILE_DIR/COOKIES_FILE 给容器 hireac 役加载。登录过期时先在本机 Chrome 重登,再跑这一步。
+    2026-09-25 容器里也跑它当保活(--only keepalive 同一个函数,Frank 勾「试保活续命」):cookie 模式下读文件进板、
+    确认还登着、写回同一个文件 —— 会话闲置约一个多小时就过期,日更一轮必撞,每 30 分钟进一次板让它别闲着。"""
     asyncio.run(export_in_browser())
 
 
 async def export_in_browser() -> None:
     """进板确认已登录(open_board 落到登录页即抛,不导坏 cookie)→ cookie 按域名筛后落盘;会话结束关浏览器。"""
+    require_cookie_file()
     raw_page = await get_browser_page()
     if raw_page is None:
         raise RuntimeError(ERR_BROWSER_DOWN)
@@ -118,6 +123,16 @@ async def export_in_browser() -> None:
         say(PRINT_COOKIES_TPL.format(n=kept, path=PROFILE_DIR / COOKIES_FILE))
     finally:
         await close_browser()
+
+
+def require_cookie_file() -> None:
+    """cookie 模式(容器,BROWSER_COOKIES 非空)下登录文件必须在,不在就直说缺登录;本机持久 profile 模式不查。
+    不查的话 crawl 起浏览器读文件失败会吞成「浏览器兜底不可用」,本域再报「浏览器起不来」(2026-09-19 起实撞 10 天)。"""
+    if BROWSER_COOKIES == "":
+        return
+    path = PROFILE_DIR / BROWSER_COOKIES
+    if not path.exists():
+        raise RuntimeError(ERR_COOKIES_MISSING_TPL.format(path=path))
 
 
 async def open_board(page: BrowserPageLike) -> None:
@@ -141,7 +156,7 @@ async def collect_rows(page: BrowserPageLike) -> dict:
     current = await page.evaluate(CURRENT_PAGE_JS)
     if str(current) != str(PAGE_ONE):
         stale = set(rows_of_page(html))
-        await page.evaluate(LOAD_PAGE_JS_TPL.format(n=PAGE_ONE))
+        await page.evaluate(page_js_of(PageJsIn(html=html, n=PAGE_ONE)))
         arrived = await wait_page(WaitPageIn(page=page, n=PAGE_ONE))
         if not arrived:
             raise RuntimeError(ERR_PAGE_WAIT_TPL.format(n=PAGE_ONE))
@@ -159,7 +174,7 @@ async def collect_rows(page: BrowserPageLike) -> dict:
             if n >= last:
                 break
             n += 1
-            await page.evaluate(LOAD_PAGE_JS_TPL.format(n=n))
+            await page.evaluate(page_js_of(PageJsIn(html=html, n=n)))
             arrived = await wait_page(WaitPageIn(page=page, n=n))
             if not arrived:
                 raise RuntimeError(ERR_PAGE_WAIT_TPL.format(n=n))
@@ -167,6 +182,15 @@ async def collect_rows(page: BrowserPageLike) -> dict:
     finally:
         put_cached_pages(CachePutManyIn(slug=SLUG_CRAWL, pages=pages))
     return rows
+
+
+def page_js_of(x: PageJsIn) -> str:
+    """翻到第 n 页的页内调用:排序列与方向照抄当前页分页器 —— 会话记着排序,新登录默认 ID 倒序,
+    写死正序会和第 1 页重叠(2026-09-25 实撞)。抄不到就抛错停轮,不退回写死的排序。"""
+    m = PAGE_SORT_RE.search(x.html)
+    if m is None:
+        raise RuntimeError(ERR_NO_PAGER_SORT_TPL.format(n=x.n))
+    return LOAD_PAGE_JS_TPL.format(order=m.group(GROUP_ORDER), direction=m.group(GROUP_DIR), n=x.n)
 
 
 async def wait_page(x: WaitPageIn) -> bool:

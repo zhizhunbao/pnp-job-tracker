@@ -13,6 +13,7 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
     python etl/hireac/main.py --only parse                        # 单步调试(见 TOOLS;parse/store 只读缓存,不起浏览器)
     DETAILS_PER_RUN=200 BROWSER_CHANNEL=chrome python etl/hireac/main.py   # 压小每轮回放量
     BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export  # 本机 Chrome 登录后把 cookie 导给容器
+    python etl/hireac/main.py --only keepalive                    # 容器保活役(2026-09-25):进板确认还登着、写回 cookie
 
 @author Frank
 @time 2026-09-13
@@ -42,9 +43,11 @@ TOOLS = {
     "parse": parse_hireac_details,
     "store": build_hireac_postings,
     "export": export_hireac_cookies,
+    "keepalive": export_hireac_cookies,
 }
 """全部可 --only 点名的步(与默认链同一份三步,本域没有不进链的手动件)。
-2026-09-15 多一个不进链的手动件 export:本机 Chrome 登录后把 cookie 导给容器(BROWSER_CHANNEL=chrome 下跑)。"""
+2026-09-15 多一个不进链的手动件 export:本机 Chrome 登录后把 cookie 导给容器(BROWSER_CHANNEL=chrome 下跑)。
+2026-09-25 keepalive = 同一个函数换个名给容器保活役点(日志里分得清是保活还是手动导出);--only 子串匹配,与其余四键互不包含。"""
 
 
 def main() -> int:

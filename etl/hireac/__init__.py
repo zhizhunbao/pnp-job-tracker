@@ -18,6 +18,9 @@ Cloudflare 403,2026-09-13 实撞);列表靠页内 loadPostingTable() 翻页。�
 加载它有头抓(实测 3.2 秒进岗位列表页),每轮登录成功后写回续期;登录过期停轮不发心跳 → healthchecks 邮件提醒 Frank。
 
 META = 域即役的调度声明(形制字段;本域不挂容器,interval 只是声明)。
+2026-09-25 单役 META 改多役 METAS(jobbank 先例;Frank 勾「试保活续命」):原 hireac 役原样成第一条;
+第二条 hireac-keepalive 役同容器每 30 分钟 --only keepalive 进一次板写回 cookie —— 会话闲置约一个多小时就过期,
+日更一轮必撞登录墙(09-15 成功后 2 小时 11 分首报过期)。单元名另起,build 链 after 只认 jobbank,不会被带着跑。
 
 @author Frank
 @time 2026-09-13
@@ -27,10 +30,23 @@ import os
 DETAILS_PER_RUN = os.environ.get("DETAILS_PER_RUN", "1000")
 """每轮最多回放多少张详情页(全板 604 帖一轮约 7 分钟;之后只抓列表里的新帖号)。"""
 
-META = {
-    "role": "hireac",
-    "method": "browser",     # 登录态浏览器(共享 profile);不对应任何 Dockerfile,本机手动跑 —— 2026-09-15 起容器 hireac 役用 crawl 重镜像 + cookie 文件
-    "interval": 86400,       # 声明值:板日更,手动一天一跑够用
-    "seed": False,           # 抓取源只刷 raw/processed,不灌库(灌库归 load 域 build 链)
-    "ping": True,            # 2026-09-15 进容器:本角色唯一单元,登录过期停轮不发心跳 → healthchecks 邮件提醒(原:无容器无心跳)
-}
+METAS = [
+    {
+        "name": "hireac",
+        "role": "hireac",
+        "method": "browser",     # 登录态浏览器(共享 profile);不对应任何 Dockerfile,本机手动跑 —— 2026-09-15 起容器 hireac 役用 crawl 重镜像 + cookie 文件
+        "interval": 86400,       # 声明值:板日更,手动一天一跑够用
+        "seed": False,           # 抓取源只刷 raw/processed,不灌库(灌库归 load 域 build 链)
+        "ping": True,            # 2026-09-15 进容器:本角色唯一单元,登录过期停轮不发心跳 → healthchecks 邮件提醒(原:无容器无心跳)
+        "only": "",
+    },
+    {
+        "name": "hireac-keepalive",
+        "role": "hireac",        # 同容器(SOURCE=hireac):守护循环逐个单元串行跑,不会和抓取同时开浏览器
+        "method": "browser",
+        "interval": 1800,        # 30 分钟进一次板,赶在闲置过期(约一个多小时)之前;失败也按 1800 重试
+        "seed": False,
+        "ping": False,           # 心跳只挂抓取役:保活成功不代表抓取成功,别让它把告警盖掉
+        "only": "keepalive",
+    },
+]

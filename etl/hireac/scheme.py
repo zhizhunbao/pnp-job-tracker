@@ -50,6 +50,17 @@ class BrowserPageLike(Protocol):
 
 
 @dataclass
+class PageJsIn:
+    """page_js_of() 入参(照当前页分页器的排序拼出翻到第 n 页的页内调用)。"""
+
+    html: str
+    """当前页原文(分页器在里头)。"""
+
+    n: int
+    """目标页号。"""
+
+
+@dataclass
 class WaitPageIn:
     """wait_page() 入参(等分页器的当前页号变成 n)。"""
 

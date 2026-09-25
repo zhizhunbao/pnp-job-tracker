@@ -86,8 +86,10 @@ CLICK_VIEW_ALL_JS = (
 )
 """点开「View all available postings」(概览页的钮,javascript:void 链,只能页内点)。"""
 
-LOAD_PAGE_JS_TPL = "loadPostingTable('', 'ID',  'Forward', '{n}','advanced','', null)"
-"""页内翻页函数(2026-09-13 实测自分页器 onclick 抄形:排序列空 / 按 ID / 正序 / 页号 / advanced)。"""
+LOAD_PAGE_JS_TPL = "loadPostingTable('', '{order}',  '{direction}', '{n}','advanced','', null)"
+"""页内翻页函数(2026-09-13 实测自分页器 onclick 抄形:排序列空 / 按 ID / 正序 / 页号 / advanced)。
+2026-09-25 排序列与方向改成照抄当前页分页器(PAGE_SORT_RE):新登录的会话默认按 ID 倒序,写死正序翻第 2 页
+与第 1 页重叠(实测 46~100 行),fresh_html 判「表格还是上一页」停轮 —— 抓取停 10 天后重登的首轮实撞。"""
 
 CURRENT_PAGE_JS = "() => { const e = document.querySelector('input[id^=currentPage]'); return e ? e.value : ''; }"
 """分页器隐藏格里的当前页号(翻页到位的判据)。"""
@@ -100,6 +102,9 @@ PAGE_WAIT_TRIES = 60
 
 PAGE_NUM_RE = re.compile(r"loadPostingTable\('[^']*', '[^']*',\s+'[^']*', '(\d+)','advanced'")
 """分页器里的页号(取最大值 = 总页数;排序状态随会话变,列名与方向不写死)。"""
+
+PAGE_SORT_RE = re.compile(r"loadPostingTable\('', '(?P<order>[^']*)',\s+'(?P<dir>[^']*)', '\d+','advanced'")
+"""分页器里的排序列与方向(首参为空的才是分页钮;列头排序钮首参是新列名,不取)。翻页照抄它,会话排序不动。"""
 
 PAGE_ONE = 1
 """首页页号。"""
@@ -115,6 +120,12 @@ GROUP_KEY = "k"
 
 GROUP_VALUE = "v"
 """正则命名组:值。"""
+
+GROUP_ORDER = "order"
+"""正则命名组:分页器的排序列。"""
+
+GROUP_DIR = "dir"
+"""正则命名组:分页器的排序方向。"""
 
 QUOTE_SINGLE = "'"
 """JS 对象字面量的引号(换成双引号后即合法 JSON)。"""
@@ -177,6 +188,11 @@ ERR_LOGIN_TPL = ("登录态过期,停在 {url};请 Frank 在本机 Chrome 里重
 """进板落到登录页 / 未登录页时抛出的话(不静默降级)。
 原句「请 Frank 在共享 profile 里重登 HireAC 后再跑」;2026-09-15 进容器后补上重导 cookie 这一步。"""
 
+ERR_COOKIES_MISSING_TPL = ("登录 cookie 文件不在({path});请 Frank 在本机 Chrome 里重登 HireAC,"
+                           "再跑 BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export 把新登录导给容器")
+"""cookie 模式(容器)下登录文件缺失时抛出的话(2026-09-25 Frank 勾「报错改准」:09-19 共享 profile 被重建、文件跟着没了,
+crawl 与本域两层都报成「浏览器起不来 / 装 uv sync」,停轮 10 天没人看出是缺登录)。"""
+
 COOKIES_FILE = "hireac-cookies.json"
 """登录 cookie 文件名(crawl PROFILE_DIR 下,随 .browser-profile/ 被 gitignore;= docker-compose hireac 役的 BROWSER_COOKIES)。
 2026-09-15 进容器:Windows 端 --only export 导出,容器每轮登录成功后写回续期。"""
@@ -193,6 +209,9 @@ ERR_NO_VIEW_ALL = "概览页没找到「View all available postings」钮(页面
 
 ERR_PAGE_WAIT_TPL = "翻到第 {n} 页超时"
 """翻页轮询超时抛出的话。"""
+
+ERR_NO_PAGER_SORT_TPL = "要翻到第 {n} 页,但当前页分页器里没找到排序参数(页面改版?)"
+"""翻页前抄不到会话排序时抛出的话(不退回写死的排序,宁可停轮)。"""
 
 ERR_PAGE_STALE_TPL = "第 {n} 页页号到了但表格一直是上一页的行,停轮(不少收)"
 """翻页后表格迟迟不换新行时抛出的话(2026-09-15 实撞:页号先到、表格后重绘,第 2、3 页各读进约 50 行旧页,
