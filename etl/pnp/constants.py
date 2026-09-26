@@ -6016,8 +6016,10 @@ ZH_MODEL = "qwen3.6:latest"
 ZH_TEMPERATURE = 0
 """零温 = 可复现。"""
 
-ZH_TIMEOUT_S = 60
-"""单条翻译超时。"""
+ZH_TIMEOUT_S = 240
+"""单条翻译超时。
+2026-09-26 晚 60 → 240(拆成 pnp_drawzh 单元、翻不成即红之后实查):盒子同时在跑 jdformat / classify / explore / sites /
+company 简介,请求排队,60 秒一条条超时(当天 4 个流名轮轮 ReadTimeout);同一台盒子的另外四个域都等 240 秒,对齐。"""
 
 ZH_CJK_RE = re.compile(r"[一-鿿]")
 """校验:结果里必须有汉字。"""
