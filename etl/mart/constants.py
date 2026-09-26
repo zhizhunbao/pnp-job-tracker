@@ -476,6 +476,13 @@ EE_SUPERSEDED_BY = {"医疗社服": "医生"}
 (canada.ca category-based-selection 页原句,crawl fed-ee)。本站是加拿大职位板,找医生岗的人对标医生类(最近一轮 198 分 vs 475),
 岗上只标「医生」;类别清单(维度表)照官方原样两类都列。"""
 
+NON_EE_PROV = {"QC"}
+"""岗上不挂联邦 EE 类别的省:EE 三个项目官方都要求住魁省以外 —— FSW 页原句「You must plan to live outside the province of
+Quebec」(canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/who-can-apply/
+federal-skilled-workers.html),CEC、FST 两页同句(同目录 canadian-experience-class.html、federal-skilled-trades.html;
+crawl fed-ee 2026-09-26 复核)。魁省的 offer 拿去走 EE 就得离开魁省,岗上挂类别 = 拿假前提指路;类别维度表照官方原样列全。
+2026-09-26 /fe Frank 勾(首页评估:魁省岗照挂 EE 类别 4,866 条)。"""
+
 PROGRAM_PNP = "PNP"
 """项目码:省提名(表级默认)。"""
 
@@ -609,8 +616,59 @@ finance/customer success 六条)。
 最后一条 00012 是**兜底**:管理岗 → TEER0。
 """
 
-NON_PNP_PROV = {"QC"}
-"""不属 PNP 体系的省:魁省走自己的甄选(CSQ/Arrima),不发省提名 → 一律不标 pnpEligible。"""
+NON_PNP_PROV = {"QC", "NU"}
+"""不属 PNP 体系的省:魁省走自己的甄选(CSQ/Arrima),不发省提名 → 一律不标 pnpEligible。
+NU 同理:IRCC EE 年报脚注原句「Quebec and Nunavut do not operate Provincial Nominee Programs」
+(canada.ca/en/immigration-refugees-citizenship/corporate/publications-manuals/express-entry-year-end-report-2022.html,
+2021 年报同句;crawl fed-ee 2026-09-26 复核)。2026-09-26 Frank 拍「NU 一律不可提名」(此前 NU 的 TEER 0-3 岗落进「粗筛通用」
+被标可提名)。宏观序列 prPnp 行同一口径跳过(IRCC 那张表眼下没有 NU 行,实际不变)。"""
+
+PROV_OFFER_BLOCKED = {
+    "ON": ("part", "term", "seasonal", "casual"),
+    "BC": ("part", "term", "seasonal", "casual"),
+    "SK": ("part", "term", "seasonal", "casual"),
+    "NS": ("part", "term", "seasonal", "casual"),
+    "YT": ("part", "term", "seasonal", "casual"),
+    "NT": ("part", "term", "seasonal", "casual"),
+    "AB": ("part", "seasonal", "casual"),
+    "MB": ("part", "seasonal", "casual"),
+    "NB": ("part", "seasonal"),
+    "NL": ("part", "seasonal"),
+    "PE": ("part", "seasonal"),
+}
+"""雇主 offer 省提名对 offer 形态的官方门槛:省 → 过不了的工时 / 雇佣期取值(employmentHours 的 part;employmentTerm 的
+term / seasonal / casual —— 两格值域不相交,并在一张表)。只卡源写明的值:空串 = 没标注,放行(源没写 ≠ 兼职);
+QC、NU 不在表里:两地不属 PNP,pnp_eligible 按 NON_PNP_PROV 先判掉(依据见该常量)。逐省原句(crawl 缓存,2026-09-26 复核):
+ON「The job offer must be for a full-time and permanent position.」ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream
+  (International Student 页同句;2026 改制页 TEER 0-3、TEER 4-5 两条路都写「with a full-time and permanent job offer」)
+BC「Must have a full-time, indeterminate (no end date) job offer from an eligible B.C. employer」
+  welcomebc.ca/immigrate-to-b-c/skills-immigration(Health Authority 同句)
+SK「You must have a letter of offer for full-time, permanent job from a Saskatchewan employer」saskatchewan.ca …/
+  applicants-international-skilled-workers/international-skilled-worker-with-employment-offer(Existing Work Permit 页
+  「Have a permanent full-time job offer from a Saskatchewan employer.」)
+MB「a Manitoba company has offered you a full-time, long-term job after you have completed six months or more of
+  continuous full-time employment with that company」immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility;
+  毕业生通道原句「You must have a full-time job offer from an eligible Manitoba employer with a minimum 1-year contract」
+  immigratemanitoba.com/mpnp/ies/cep/eligibility —— 合同工只要够一年就能走,term 源头不写时长,不卡
+  (2026-09-26 Frank「不卡」);季节工、casual 不是 long-term,照卡
+NS「have a full-time permanent job offer from a Nova Scotia employer」liveinnovascotia.com/skilled-worker
+  (Occupations in Demand 同页「have a permanent, full-time job offer」)
+YT「have a full-time and year-round job offer from an eligible Yukon employer」yukon.ca/en/immigrate-yukon;
+  「The employer offers a full-time, permanent position to an eligible foreign worker.」yukon.ca/en/yukon-nominee-program
+NT「you must have a valid full-time and permanent job offer from an NWT employer」
+  immigratenwt.ca/newsroom/nwt-nominee-program-opens-updated-selection-process
+AB「must have a full-time job offer or employment contract from an Alberta employer」+ 同页「not eligible … part-time,
+  casual or seasonal employees, regardless of their working hours」alberta.ca/aaip-alberta-opportunity-stream-eligibility
+  (Tourism and Hospitality、Rural Renewal、Express Entry 三页同句;term 合同不在排除之列,不卡)
+NB「A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.」
+  gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html
+  (同页三条路逐条写「full time non-seasonal position」/「full-time, non-seasonal job offer」)
+NL「Not seasonal, part-time, or short-term (under 12 months)」gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/
+  provincial-nominee-program/employers/employer-criteria(term 合同源不写时长,够不够 12 个月判不了,不卡)
+PE「have a full-time, non-seasonal (i.e. permanent or minimum of two years) job offer from a PEI employer」
+  princeedwardisland.ca/en/information/office-of-immigration/skilled-workers-in-pei(term 同理不卡)
+2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」(首页评估:在招去重里 7,790 条兼职或非长期岗照挂通道名,ON 3,721);
+同日拍「按官方原句落」,曼省合同工「不卡」。"""
 
 TEER_SKILLED = (0, 1, 2, 3)
 """技能岗 TEER 集(粗筛通用档)。"""
@@ -790,6 +848,13 @@ SEARCH_NOC_RE = re.compile(r"NOC\s*(\d{5})")
 
 K_SEARCH_OCCUPATION = "search_occupation"
 """搜索时用的职业词键。"""
+
+K_SRC_EMPLOYMENT_HOURS = "employment_hours"
+"""Job Bank / 板仓帖子行的工时键(full / part;没标注 = 空)。评分段判通道要看(PROV_OFFER_BLOCKED),
+与汇装段 to_jb_job_fields 读的是同一格。"""
+
+K_SRC_EMPLOYMENT_TERM = "employment_term"
+"""Job Bank / 板仓帖子行的雇佣期键(permanent / term / seasonal / casual;没标注 = 空)。用途同上。"""
 
 POSTING_URL_RE = re.compile(r"/jobposting/(\d+)")
 """帖 URL 里的稳定帖号(不用含 ?source= 查询串的完整 URL;见 docs/source-framework.md)。"""
@@ -3681,3 +3746,11 @@ APPLY_SKIP_HOSTS = ("jobbank", "gc.ca", "canada.ca", "jobillico.", "jobboom.", "
 PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {text} 条 · 截止日补 {until} 条(取自验尸帖页 {page})· "
                    "有邮箱合计 {total} / {jobs}")
 """投递邮箱段收尾一行(2026-09-26 加「取自验尸帖页」数:截止日用了验尸刷新的帖页那份、没用 howto 那份的岗数)。"""
+
+
+# =========================================================================
+# 23. 自测(用例住 scheme)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(同 indexing / ats / gate 自查;2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立)。"""

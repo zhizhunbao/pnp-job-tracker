@@ -12,6 +12,7 @@ build 链在默认链之前先 `--only locations` / `--only salary` / `--only pi
 一律从仓库根执行:
     python etl/mart/main.py                  # 默认链(4 步;mart 主表约 9 分钟)
     python etl/mart/main.py --only rankings  # 单步调试(见 TOOLS)
+    python etl/mart/main.py --only test      # 自测:省提名 offer 门槛 / 魁省 EE / 工时雇佣期取值口径(2026-09-26)
 """
 import sys
 from pathlib import Path
@@ -20,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
     build_city_names, build_dli_table, build_mart, build_mart_rankings, build_mart_stats, clean_job_locations,
-    clean_job_salary, flag_job_pilot, score_mart_jobs,
+    clean_job_salary, flag_job_pilot, run_tests, score_mart_jobs,
 )
 
 SCHEDULED = [
@@ -48,6 +49,7 @@ TOOLS = {
     "pilot_flag": flag_job_pilot,
     "cities": build_city_names,
     "dli_table": build_dli_table,
+    "test": run_tests,
 }
 """全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 两个手动件:
 
@@ -70,6 +72,10 @@ TOOLS = {
 (逐对核过:locations / salary / pilot_flag 既不含既有键、也不被既有键含);cities 与
 七个既有键同样逐对核过互不含;dli_table 与八个既有键逐对核过互不含(⚠ `--only dli`
 会命中它,但 dli 域自己的门键在 etl/dli/main.py,两门不撞)。
+
+  test        自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立;用例住 scheme 的 MartOfferTest,不读不写
+              仓内文件)。手动件,不进任何链;与九个既有键逐对核过互不含(build 链点名的 locations / salary /
+              pilot_flag 都不是 test 的子串)。
 """
 
 

@@ -15,10 +15,15 @@ mart 产出行**不上 dataclass**:一表一形共 27 张、列名即 DB 列名(
 **逐格顺序即文件契约**(seed 直接灌库、cms 直接读)—— 行构造一律住 functions 的 `to_*`
 行构造器(方言律⑩:json 边界的键只许住 to_*),形状真相是那些 to_* 函数本身。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
+§23 自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立):unittest 用例集 ——「不用 class」的外部库例外,
+先例 indexing.scheme / ats.scheme / gate.scheme,跑法 `python etl/mart/main.py --only test`;被测的 mart.functions 与
+mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环)。
 """
+import unittest
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from unittest import mock
 
 
 # =========================================================================
@@ -397,6 +402,12 @@ class PnpJudgeIn:
     prov: str
     """省码。"""
 
+    hours: str
+    """这岗的工时(full / part;''= 没标注,或职业 × 省级判定本就不看具体 offer)。2026-09-26 起 offer_fits 要看。"""
+
+    term: str
+    """这岗的雇佣期(permanent / term / seasonal / casual;''= 同上)。2026-09-26 起 offer_fits 要看。"""
+
 
 @dataclass
 class PnpStreamIn:
@@ -416,6 +427,26 @@ class PnpStreamIn:
 
     city: str
     """城市(2026-09-24 起 AB 乡村振兴要看;''=没有)。"""
+
+    hours: str
+    """这岗的工时(同 PnpJudgeIn.hours;2026-09-26 起过不了该省 offer 门槛就不挂通道名)。"""
+
+    term: str
+    """这岗的雇佣期(同 PnpJudgeIn.term)。"""
+
+
+@dataclass
+class EeLabelIn:
+    """ee_label_of() 入参:一条岗的职业码 + 省。"""
+
+    tables: PnpTables
+    """省表装载结果(用它的 ee_by_noc)。"""
+
+    noc: str
+    """NOC 码。"""
+
+    prov: str
+    """省码(NON_EE_PROV 里的省不挂类别)。"""
 
 @dataclass
 class PnpMergeIn:
@@ -496,6 +527,37 @@ class CollectedJob:
 
     city: str
     """城市(2026-09-24 起 AB 乡村振兴要按城市对社区名单;''=没有)。"""
+
+    hours: str
+    """工时(emp_of 取的值:源标注优先、整理版补空;''= 都没写)。2026-09-26 起判通道要看。"""
+
+    term: str
+    """雇佣期(同上)。"""
+
+
+@dataclass
+class EmpOfIn:
+    """emp_of() 入参:源标注的两格 + 这岗的 jdformat 整理记录。"""
+
+    hours: str
+    """源标注的工时(''= 源没写;ATS 岗源头就没有这格)。"""
+
+    term: str
+    """源标注的雇佣期(同上)。"""
+
+    rec: dict | None
+    """jdformat 整理记录(load_formatted 的一行;None = 这岗没整理过)。"""
+
+
+@dataclass
+class EmpOut:
+    """emp_of() 的产出:这岗落到岗位行、也拿去判通道的工时 / 雇佣期。"""
+
+    hours: str
+    """工时(''= 源与整理版都没写)。"""
+
+    term: str
+    """雇佣期(同上)。"""
 
 
 @dataclass
@@ -2714,3 +2776,265 @@ class HowtoRecIn:
 
     howto: dict
     """howto.json 记录表(帖号 → 记录)。"""
+
+
+# =========================================================================
+# 23. 自测(用例住 scheme)
+# =========================================================================
+
+
+class MartOfferTest(unittest.TestCase):
+    """省提名 offer 门槛与 EE 省别自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」同批):offer_fits 省 × 工时 ×
+    雇佣期穷举(含空值)对照手写金标 / pnp_eligible 与 pnp_stream 带门槛前后的性质(过门槛 = 原判,不过 = 两格都不挂)/
+    QC、NU 不属 PNP 一律不挂 / 魁省不挂 EE 类别 / emp_of 取值口径与 fill_formatted 落列逐格不变 / 评分行整行接线。
+    形制照宪法判定层测试:穷举输入断言性质 + 手写金标 + 变异探针,不做快照矩阵;全程不读不写仓内文件(省表在用例里现造)。"""
+
+    def golden_blocked(self) -> dict[str, set[str]]:
+        """手写金标:各省官方原句逐字读成「卡哪几个值」(与 constants.PROV_OFFER_BLOCKED 各写一份、互相对照;原句见该常量)。
+        full-time + permanent / indeterminate 的省四值全卡;AB 原句点名 part-time、casual、seasonal 三种;MB 的 long-term
+        卡兼职、季节、casual,合同工照毕业生通道「minimum 1-year contract」放行(2026-09-26 Frank「不卡」);只写
+        non-seasonal / not seasonal 的 NB、NL、PE 卡兼职与季节两值。"""
+        four = {"part", "term", "seasonal", "casual"}
+        return {"ON": four, "BC": four, "SK": four, "NS": four, "YT": four, "NT": four,
+                "AB": {"part", "seasonal", "casual"}, "MB": {"part", "seasonal", "casual"},
+                "NB": {"part", "seasonal"}, "NL": {"part", "seasonal"}, "PE": {"part", "seasonal"}}
+
+    def provs(self) -> list[str]:
+        """穷举用的省码:十一个有 PNP 口径的省与领地 + QC、NU(不属 PNP)+ 空串(没有省)+ 一个不存在的码。"""
+        return ["ON", "BC", "SK", "MB", "NS", "YT", "NT", "AB", "NB", "NL", "PE", "QC", "NU", "", "XX"]
+
+    def hours_values(self) -> list[str]:
+        """工时全部取值(含空值)。"""
+        return ["", "full", "part"]
+
+    def term_values(self) -> list[str]:
+        """雇佣期全部取值(含空值)。"""
+        return ["", "permanent", "term", "seasonal", "casual"]
+
+    def tables(self) -> PnpTables:
+        """现造省表(形同 load_pnp_by_prov 的桶):ON 在需式一条具名通道(卡车司机 73300);AB 排除式,排除 65201、
+        具名通道一条(汽修 72410);SK 排除式空表;EE 类别表一码(21231 → STEM)。"""
+        by_prov = {
+            "ON": {"type": "indemand", "nocs": {"73300"}, "blocked": set(),
+                   "streams": [{"label": "ON 具名", "nocs": {"73300"}}]},
+            "AB": {"type": "ineligible", "nocs": {"65201"}, "blocked": set(),
+                   "streams": [{"label": "AB 具名", "nocs": {"72410"}}]},
+            "SK": {"type": "ineligible", "nocs": set(), "blocked": set(), "streams": []},
+        }
+        return PnpTables(by_prov=by_prov, named_by_prov={"ON": {"73300"}, "AB": {"72410"}}, community_by_prov={},
+                         ee_by_noc={"21231": "STEM"})
+
+    def judge(self, prov: str, noc: str, hours: str, term: str) -> PnpJudgeIn:
+        """造一份判定入参(TEER 取职业码第二位)。"""
+        return PnpJudgeIn(tables=self.tables(), noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term)
+
+    def stream_in(self, prov: str, noc: str, hours: str, term: str) -> PnpStreamIn:
+        """造一份通道名入参(城市给空串:社区通道不在本组用例里)。"""
+        return PnpStreamIn(tables=self.tables(), noc=noc, prov=prov, teer=int(noc[1]), city="", hours=hours, term=term)
+
+    def fits_of(self, prov: str, hours: str, term: str) -> bool:
+        """独立对照尺:按手写金标判过不过门槛(不经被测函数)。"""
+        blocked = self.golden_blocked().get(prov, set())
+        return hours not in blocked and term not in blocked
+
+    def test_offer_fits_exhaustive(self) -> None:
+        """穷举 省 × 工时 × 雇佣期(含空值)逐格对照手写金标;另断言四条性质:两格都空一律放行、全职 + 永久一律放行、
+        表外的省(QC / NU / 空 / 不存在)一律放行、表内的省兼职与季节工一律不放行。"""
+        from mart import functions as fn
+        for prov in self.provs():
+            for hours in self.hours_values():
+                for term in self.term_values():
+                    got = fn.offer_fits(self.judge(prov, "21231", hours, term))
+                    self.assertEqual(got, self.fits_of(prov, hours, term), (prov, hours, term))
+            self.assertTrue(fn.offer_fits(self.judge(prov, "21231", "", "")), prov)
+            self.assertTrue(fn.offer_fits(self.judge(prov, "21231", "full", "permanent")), prov)
+        for prov in ("QC", "NU", "", "XX"):
+            for hours in self.hours_values():
+                for term in self.term_values():
+                    self.assertTrue(fn.offer_fits(self.judge(prov, "21231", hours, term)), (prov, hours, term))
+        for prov in self.golden_blocked():
+            self.assertFalse(fn.offer_fits(self.judge(prov, "21231", "part", "")), prov)
+            self.assertFalse(fn.offer_fits(self.judge(prov, "21231", "", "seasonal")), prov)
+
+    def test_offer_fits_golden(self) -> None:
+        """手写金标:按各省原句逐条读出来的代表格(term 合同在 AB / MB / NB / NL / PE 不卡;casual 只在 NB / NL / PE 不卡)。"""
+        from mart import functions as fn
+        cases = [
+            ("ON", "part", "permanent", False), ("ON", "full", "term", False), ("ON", "full", "permanent", True),
+            ("ON", "", "", True), ("ON", "full", "", True), ("ON", "", "seasonal", False),
+            ("BC", "full", "casual", False), ("SK", "", "term", False), ("MB", "full", "term", True),
+            ("MB", "", "term", True), ("MB", "part", "term", False), ("MB", "full", "casual", False),
+            ("MB", "full", "seasonal", False), ("MB", "full", "permanent", True),
+            ("NS", "part", "", False), ("YT", "full", "seasonal", False), ("NT", "full", "term", False),
+            ("AB", "full", "term", True), ("AB", "full", "casual", False), ("AB", "part", "", False),
+            ("AB", "", "seasonal", False), ("NB", "full", "casual", True), ("NB", "full", "seasonal", False),
+            ("NL", "full", "term", True), ("NL", "part", "permanent", False), ("PE", "", "term", True),
+            ("PE", "full", "seasonal", False), ("QC", "part", "casual", True), ("NU", "part", "seasonal", True),
+            ("", "part", "casual", True),
+        ]
+        for prov, hours, term, want in cases:
+            with self.subTest(prov=prov, hours=hours, term=term):
+                self.assertEqual(fn.offer_fits(self.judge(prov, "21231", hours, term)), want)
+
+    def test_offer_table_mutation_probe(self) -> None:
+        """变异探针:把常量表里 AB 改成只卡兼职(= 只读了「full-time job offer」那半句)、把 MB 改回连合同工一起卡
+        (= 没照 Frank 09-26「不卡」),穷举对照都必须当场抓到分歧 —— 证明 offer_fits 读的是那张表、穷举用例真能拦住表被改错。"""
+        from mart import constants as c
+        from mart import functions as fn
+        for prov, bad in (("AB", ("part",)), ("MB", ("part", "term", "seasonal", "casual"))):
+            with mock.patch.dict(c.PROV_OFFER_BLOCKED, {prov: bad}):
+                diffs = 0
+                for hours in self.hours_values():
+                    for term in self.term_values():
+                        if fn.offer_fits(self.judge(prov, "21231", hours, term)) != self.fits_of(prov, hours, term):
+                            diffs += 1
+                self.assertGreater(diffs, 0, prov)
+        self.assertTrue(fn.offer_fits(self.judge("AB", "21231", "full", "term")))
+        self.assertFalse(fn.offer_fits(self.judge("AB", "21231", "full", "casual")))
+        self.assertTrue(fn.offer_fits(self.judge("MB", "21231", "full", "term")))
+
+    def test_pnp_gate_property(self) -> None:
+        """性质:带上工时 / 雇佣期后,过门槛的格 pnp_eligible 与 pnp_stream 都等于两格给空串时的原判;不过门槛的两格都不挂
+        (False / None)。穷举 省 × 四个职业码(具名通道码、排除码、TEER 1、TEER 5)× 工时 × 雇佣期。"""
+        from mart import functions as fn
+        for prov in self.provs():
+            for noc in ("73300", "72410", "65201", "21231", "95106"):
+                base_e = fn.pnp_eligible(self.judge(prov, noc, "", ""))
+                base_s = fn.pnp_stream(self.stream_in(prov, noc, "", ""))
+                for hours in self.hours_values():
+                    for term in self.term_values():
+                        key = (prov, noc, hours, term)
+                        got_e = fn.pnp_eligible(self.judge(prov, noc, hours, term))
+                        got_s = fn.pnp_stream(self.stream_in(prov, noc, hours, term))
+                        if self.fits_of(prov, hours, term):
+                            self.assertEqual(got_e, base_e, key)
+                            self.assertEqual(got_s, base_s, key)
+                        else:
+                            self.assertFalse(got_e, key)
+                            self.assertIsNone(got_s, key)
+
+    def test_pnp_gate_golden(self) -> None:
+        """手写金标:具名通道岗兼职 → 两格都不挂;没标注 → 照旧挂;AB 的 term 合同照旧挂、casual 不挂;MB 的 TEER 1 合同工
+        照旧可、季节工不可;魁省与 NU 不属 PNP → 任何工时 / 雇佣期都不可(NU 2026-09-26 Frank 拍)。"""
+        from mart import functions as fn
+        cases = [
+            ("ON", "73300", "full", "permanent", True, "ON 具名"), ("ON", "73300", "part", "permanent", False, None),
+            ("ON", "73300", "", "", True, "ON 具名"), ("ON", "21231", "full", "term", False, None),
+            ("ON", "21231", "full", "", True, None), ("AB", "72410", "full", "term", True, "AB 具名"),
+            ("AB", "72410", "full", "casual", False, None), ("AB", "65201", "full", "permanent", False, None),
+            ("MB", "21231", "full", "term", True, None), ("MB", "21231", "full", "seasonal", False, None),
+            ("QC", "21231", "full", "permanent", False, None), ("NU", "21231", "full", "permanent", False, None),
+            ("NU", "21231", "", "", False, None), ("NU", "21231", "part", "seasonal", False, None),
+        ]
+        for prov, noc, hours, term, want_e, want_s in cases:
+            with self.subTest(prov=prov, noc=noc, hours=hours, term=term):
+                self.assertEqual(fn.pnp_eligible(self.judge(prov, noc, hours, term)), want_e)
+                self.assertEqual(fn.pnp_stream(self.stream_in(prov, noc, hours, term)), want_s)
+
+    def test_non_pnp_provs(self) -> None:
+        """性质:QC、NU 两地穷举 职业码 × 工时 × 雇佣期 一律不可、一律不挂通道名 —— 连省表里硬塞一条它们的具名通道
+        (现实里没有)也不挂,「一律」不靠数据碰巧缺席。"""
+        from mart import functions as fn
+        tables = self.tables()
+        for prov in ("QC", "NU"):
+            tables.by_prov[prov] = {"type": "indemand", "nocs": {"21231"}, "blocked": set(),
+                                    "streams": [{"label": prov + " 具名", "nocs": {"21231"}}]}
+        for prov in ("QC", "NU"):
+            for noc in ("21231", "73300", "95106"):
+                for hours in self.hours_values():
+                    for term in self.term_values():
+                        key = (prov, noc, hours, term)
+                        judge = PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term)
+                        self.assertFalse(fn.pnp_eligible(judge), key)
+                        self.assertIsNone(fn.pnp_stream(PnpStreamIn(tables=tables, noc=noc, prov=prov, teer=int(noc[1]),
+                                                                    city="", hours=hours, term=term)), key)
+
+    def test_ee_label(self) -> None:
+        """EE 类别:魁省一律不挂;别的省(连同没有省的岗)职业码在类别表上才挂,不在给 None。穷举省 × 两个职业码。"""
+        from mart import functions as fn
+        tables = self.tables()
+        for prov in self.provs():
+            for noc in ("21231", "95106"):
+                got = fn.ee_label_of(EeLabelIn(tables=tables, noc=noc, prov=prov))
+                if prov == "QC" or noc != "21231":
+                    self.assertIsNone(got, (prov, noc))
+                else:
+                    self.assertEqual(got, "STEM", (prov, noc))
+
+    def test_emp_of_golden(self) -> None:
+        """取值口径金标:源标注优先、源空才用整理版、整理版缺格或没整理记录给空串。"""
+        from mart import functions as fn
+        rec = {"hrs": "part", "term": "term"}
+        cases = [
+            ("full", "", rec, "full", "term"), ("", "", rec, "part", "term"), ("", "permanent", rec, "part", "permanent"),
+            ("", "", None, "", ""), ("full", "casual", None, "full", "casual"), ("", "", {}, "", ""),
+            ("", "", {"hrs": "", "term": "seasonal"}, "", "seasonal"),
+        ]
+        for hours, term, r, want_h, want_t in cases:
+            with self.subTest(hours=hours, term=term, rec=r):
+                got = fn.emp_of(EmpOfIn(hours=hours, term=term, rec=r))
+                self.assertEqual((got.hours, got.term), (want_h, want_t))
+
+    def old_fill_emp(self, fields: dict, rec: dict) -> None:
+        """对照尺:2026-09-26 收进 emp_of 之前 fill_formatted 里的「只填空」原写法(逐字抄,不经被测函数)。"""
+        if not fields.get("employmentTerm") and rec.get("term"):
+            fields["employmentTerm"] = rec["term"]
+        if not fields.get("employmentHours") and rec.get("hrs"):
+            fields["employmentHours"] = rec["hrs"]
+
+    def test_fill_formatted_unchanged(self) -> None:
+        """收编前后落列逐格不变(连键序):岗位行两格各取 缺席 / None / 空串 / 有值,整理记录两格各取 缺席 / 空串 / 有值,
+        全组合跑新 fill_formatted 与原写法对照。"""
+        from mart import functions as fn
+        cells: list[tuple[str, str | None] | None] = [None, ("x", None), ("x", ""), ("x", "v")]
+        rec_cells: list[str | None] = [None, "", "r"]
+        for t_cell in cells:
+            for h_cell in cells:
+                for r_term in rec_cells:
+                    for r_hrs in rec_cells:
+                        fields: dict = {"title": "t"}
+                        if t_cell is not None:
+                            fields["employmentTerm"] = t_cell[1]
+                        if h_cell is not None:
+                            fields["employmentHours"] = h_cell[1]
+                        rec: dict = {"formatted": "f", "at": "a"}
+                        if r_term is not None:
+                            rec["term"] = r_term
+                        if r_hrs is not None:
+                            rec["hrs"] = r_hrs
+                        want = dict(fields)
+                        want["jdFormatted"] = "f"
+                        want["jdFormattedAt"] = "a"
+                        self.old_fill_emp(want, rec)
+                        got = dict(fields)
+                        fn.fill_formatted(FillFormattedIn(fields=got, rec=rec))
+                        self.assertEqual(list(got.items()), list(want.items()), (t_cell, h_cell, r_term, r_hrs))
+
+    def test_scored_row_wiring(self) -> None:
+        """评分行整行接线:兼职的具名通道岗两格都不挂、分数照算;魁省 EE 码岗不挂类别;安省同码全职永久岗挂类别;
+        NU 的 TEER 1 全职永久岗不可提名、EE 类别照挂(NU 在魁省以外)。"""
+        from mart import functions as fn
+        tables = self.tables()
+        part = CollectedJob(ext="jb:1", title="Truck Driver", agency=False, prov="ON", hint="73300", city="",
+                            hours="part", term="permanent")
+        row = fn.to_scored_row(ScoredRowIn(tables=tables, job=part, labels={}))
+        self.assertFalse(row["pnpEligible"])
+        self.assertIsNone(row["pnpStream"])
+        self.assertGreater(row["score"], 0)
+        full = CollectedJob(ext="jb:2", title="Truck Driver", agency=False, prov="ON", hint="73300", city="",
+                            hours="full", term="permanent")
+        row = fn.to_scored_row(ScoredRowIn(tables=tables, job=full, labels={}))
+        self.assertTrue(row["pnpEligible"])
+        self.assertEqual(row["pnpStream"], "ON 具名")
+        qc = CollectedJob(ext="jb:3", title="Software Engineer", agency=False, prov="QC", hint="21231", city="",
+                          hours="full", term="permanent")
+        self.assertIsNone(fn.to_scored_row(ScoredRowIn(tables=tables, job=qc, labels={}))["eeCategory"])
+        on = CollectedJob(ext="jb:4", title="Software Engineer", agency=False, prov="ON", hint="21231", city="",
+                          hours="full", term="permanent")
+        self.assertEqual(fn.to_scored_row(ScoredRowIn(tables=tables, job=on, labels={}))["eeCategory"], "STEM")
+        nu = CollectedJob(ext="jb:5", title="Software Engineer", agency=False, prov="NU", hint="21231", city="",
+                          hours="full", term="permanent")
+        row = fn.to_scored_row(ScoredRowIn(tables=tables, job=nu, labels={}))
+        self.assertFalse(row["pnpEligible"])
+        self.assertIsNone(row["pnpStream"])
+        self.assertEqual(row["eeCategory"], "STEM")

@@ -34,6 +34,8 @@ import html
 import json
 import re
 import statistics
+import sys
+import unittest
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -195,6 +197,8 @@ from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME
 from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
+from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
+from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -774,6 +778,14 @@ def ee_labels_kept(labs: list) -> list:
     return out
 
 
+def ee_label_of(x: EeLabelIn) -> str | None:
+    """一条岗的联邦 EE 类别标签(职业码在类别清单上才有,没有给 None);NON_EE_PROV 里的省(魁省)一律不挂 ——
+    EE 三个项目官方都要求住魁省以外,依据见 constants.NON_EE_PROV(2026-09-26 /fe Frank 勾)。"""
+    if x.prov in NON_EE_PROV:
+        return None
+    return x.tables.ee_by_noc.get(x.noc) or None
+
+
 def load_pnp_tables() -> PnpTables:
     """三张表一次装载(原 08_score 三个模块级全局的收编;值与旧全局逐字同源)。"""
     by_prov = load_pnp_by_prov()
@@ -813,8 +825,12 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
       原先 TEER 0-3 落到「粗筛通用」被标成可提名;页面那格随之出长横,不写「走不了」。
     · 2026-09-24 Frank 批(九省通道审计):排除式省里 BC 只收 TEER 0-3(EXCL_TEER03_PROVS),TEER 4-5 只有落在 BC 具名
       清单里才算;SK 的 TEER 4-5 仍可走,但只能走 Existing Work Permit 条件档(见 is_sk_ewp / pnp_direct)。
+    · 2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」:这岗的工时 / 雇佣期过不了该省官方 offer 门槛(offer_fits)
+      → 不可,先于清单判;没标注的格放行,保持原判。同日 Frank 拍 NU 同魁省一律不可(IRCC 年报原句见 NON_PNP_PROV)。
     """
     if not x.prov or x.prov in NON_PNP_PROV:
+        return False
+    if not offer_fits(x):
         return False
     tbl = x.tables.by_prov.get(x.prov)
     if tbl and x.noc in tbl[K_BLOCKED]:
@@ -829,6 +845,16 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
     if x.teer in TEER_SKILLED or x.noc in nocs:
         return True
     return x.teer is not None and x.prov in UNIVERSAL_PROVS
+
+
+def offer_fits(x: PnpJudgeIn) -> bool:
+    """这岗的工时 / 雇佣期过不过该省雇主 offer 省提名的官方门槛(逐省原句与卡哪几个值见 constants.PROV_OFFER_BLOCKED)。
+
+    只卡源写明的值:空串(源没写、整理版也没抽到)放行 —— 没标注 ≠ 兼职;表外的省(QC、NU 不属 PNP,pnp_eligible /
+    pnp_stream 先判掉)这里放行。职业 × 省级的判定(prov_list_of)两格给空串,天然不受影响。
+    """
+    blocked = PROV_OFFER_BLOCKED.get(x.prov, ())
+    return x.hours not in blocked and x.term not in blocked
 
 
 def prov_nocs_of(tbl: dict | None) -> set:
@@ -877,14 +903,16 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
     前端对 None 退回泛标签/留空(宁可不具名,也不瞎贴通道名)。
     2026-09-24 清单都没命中时,SK 只能走 Existing Work Permit 的可提名岗给「SK 现有工签」(Frank 批,九省通道审计)。
     同日第三批:具名清单之后先看社区通道(AB 乡村振兴:岗位城市在指定社区名单、职业不在它的 17 个排除码里)。
+    2026-09-26 /fe Frank 勾:工时 / 雇佣期过不了该省官方 offer 门槛(offer_fits)的岗一律不挂通道名,先于清单判;
+    不属 PNP 的省(NON_PNP_PROV:QC、NU)同样不挂 —— 两地本就没有省表,这一判让「一律」不靠数据碰巧缺席。
     """
+    judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov, hours=x.hours, term=x.term)
     tbl = x.tables.by_prov.get(x.prov)
-    if not tbl:
+    if x.prov in NON_PNP_PROV or not tbl or not offer_fits(judge):
         return None
     for s in tbl[K_STREAMS]:
         if x.noc in s[K_NOCS] and s[K_LABEL]:
             return s[K_LABEL]
-    judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov)
     comm = x.tables.community_by_prov.get(x.prov)
     if comm and x.city.strip().lower() in comm[K_PLACES] and x.noc not in comm[K_EXCLUDED] and pnp_eligible(judge):
         return comm[K_LABEL]
@@ -956,10 +984,11 @@ def score(x: ScoreIn) -> int:
     return max(0, min(SCORE_MAX, s))
 
 
-def collect_ats_jobs() -> list:
+def collect_ats_jobs(formatted: dict) -> list:
     """ATS 公司档(processed/<region>/companies/<slug>/)里的岗 → 待评分清单。
     2026-09-24 省份先读地点清洗写回的 province 格、读不到才猜(与 to_ats_job_fields 同口径):原先只拿地点文字猜,
-    「Canada - Ottawa - …」认不出省 → 09-23「没有省的岗不判」把 46 条 ON 的 TEER 0-3 岗判成不可提名(九省通道审计查出)。"""
+    「Canada - Ottawa - …」认不出省 → 09-23「没有省的岗不判」把 46 条 ON 的 TEER 0-3 岗判成不可提名(九省通道审计查出)。
+    2026-09-26 工时 / 雇佣期随岗带上(判通道要看):ATS 源头没有这两格(to_ats_job_fields 也不带),只有 jdformat 整理版抽的。"""
     out: list = []
     if not IN_ATS_COMPANIES.exists():
         return out
@@ -971,11 +1000,28 @@ def collect_ats_jobs() -> list:
             prof = read_table(folder / PROFILE_FILE)
         ag = bool(AGENCY_RE.search(agency_probe_of(prof)))
         for j in read_table(folder / JOBS_FILE).get(K_JOBS, []):
-            out.append(CollectedJob(ext=ats_ext_of(AtsExtIn(job=j, folder=folder.name)),
+            ext = ats_ext_of(AtsExtIn(job=j, folder=folder.name))
+            emp = emp_of(EmpOfIn(hours="", term="", rec=formatted.get(ext)))
+            out.append(CollectedJob(ext=ext,
                                     title=j.get(K_TITLE, ""), agency=ag,
                                     prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint="",
-                                    city=j.get(K_CITY) or ""))
+                                    city=j.get(K_CITY) or "", hours=emp.hours, term=emp.term))
     return out
+
+
+def emp_of(x: EmpOfIn) -> EmpOut:
+    """一条岗的工时 / 雇佣期:源标注优先,源没写才用 jdformat 整理记录里模型抽的那格,都没有给空串(= 没标注)。
+    评分段判通道(collect_* → to_scored_row)与岗位装配段落列(fill_formatted「只填空」)共用这一把尺子 ——
+    判定与展示看同一个值(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」)。"""
+    hours = x.hours
+    term = x.term
+    if x.rec is None:
+        return EmpOut(hours=hours, term=term)
+    if hours == "":
+        hours = x.rec.get(K_FORMAT_HRS) or ""
+    if term == "":
+        term = x.rec.get(K_FORMAT_TERM) or ""
+    return EmpOut(hours=hours, term=term)
 
 
 def agency_probe_of(prof: dict) -> str:
@@ -991,15 +1037,19 @@ def ats_ext_of(x: AtsExtIn) -> str:
     return ATS_EXT_TPL.format(folder=x.folder, title=x.job.get(K_TITLE, ""))
 
 
-def collect_jobbank_jobs() -> list:
-    """Job Bank 累积当前态里的岗 → 待评分清单(官方 NOC 优先于标题猜)。"""
+def collect_jobbank_jobs(formatted: dict) -> list:
+    """Job Bank 累积当前态里的岗 → 待评分清单(官方 NOC 优先于标题猜;工时 / 雇佣期走 emp_of,2026-09-26)。"""
     out: list = []
     if not IN_JOBBANK.exists():
         return out
     for j in read_rows(IN_JOBBANK):
-        out.append(CollectedJob(ext=jobbank_ext_of(j), title=j.get(K_TITLE, ""),
+        ext = jobbank_ext_of(j)
+        emp = emp_of(EmpOfIn(hours=j.get(K_SRC_EMPLOYMENT_HOURS) or "", term=j.get(K_SRC_EMPLOYMENT_TERM) or "",
+                             rec=formatted.get(ext)))
+        out.append(CollectedJob(ext=ext, title=j.get(K_TITLE, ""),
                                 agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
-                                prov=j.get(K_PROVINCE, ""), hint=jobbank_hint_of(j), city=j.get(K_CITY) or ""))
+                                prov=j.get(K_PROVINCE, ""), hint=jobbank_hint_of(j), city=j.get(K_CITY) or "",
+                                hours=emp.hours, term=emp.term))
     return out
 
 
@@ -1036,18 +1086,22 @@ def jobbank_ext_of(j: dict) -> str:
     return JB_EXT_TPL.format(pid=j.get(K_POSTING_ID, ""))
 
 
-def collect_board_jobs() -> list:
+def collect_board_jobs(formatted: dict) -> list:
     """第三方板仓(processed/<板>/postings.json)里的岗 → 待评分清单(板不给 NOC,hint 空 → 按标题分类;
-    2026-09-06 jobillico/jobboom 立域)。"""
+    2026-09-06 jobillico/jobboom 立域;工时 / 雇佣期与 Job Bank 同键同尺,走 emp_of,2026-09-26)。"""
     out: list = []
     for path, origin in IN_BOARD_STORES:
         if not path.exists():
             continue
         for j in read_board_rows(path):
-            out.append(CollectedJob(ext=board_ext_of(BoardJobIn(job=j, origin=origin)),
+            ext = board_ext_of(BoardJobIn(job=j, origin=origin))
+            emp = emp_of(EmpOfIn(hours=j.get(K_SRC_EMPLOYMENT_HOURS) or "", term=j.get(K_SRC_EMPLOYMENT_TERM) or "",
+                                 rec=formatted.get(ext)))
+            out.append(CollectedJob(ext=ext,
                                     title=j.get(K_TITLE, ""),
                                     agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
-                                    prov=j.get(K_PROVINCE, ""), hint="", city=j.get(K_CITY) or ""))
+                                    prov=j.get(K_PROVINCE, ""), hint="", city=j.get(K_CITY) or "",
+                                    hours=emp.hours, term=emp.term))
     return out
 
 
@@ -1076,7 +1130,8 @@ def board_ext_of(x: BoardJobIn) -> str:
 def to_scored_row(x: ScoredRowIn) -> dict:
     """一条岗的评分行(externalId 为键,给 09 汇装 join)。
     2026-09-22:源码先过具名冲突黑名单(SRC_NOC_BLOCKLIST)—— JB 把 TAB 技师帖归 11201 那类官方错标,
-    命中不认源码,落回标题规则 → classify。"""
+    命中不认源码,落回标题规则 → classify。
+    2026-09-26 /fe Frank 勾:通道两格带上这岗的工时 / 雇佣期(offer_fits),EE 类别走 ee_label_of(魁省不挂)。"""
     noc = x.job.hint
     if (x.job.title.strip().lower(), noc) in SRC_NOC_BLOCKLIST:
         noc = ""
@@ -1086,7 +1141,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         noc = x.labels.get(x.job.ext, "")
     teer = teer_of_noc(noc)
     acc = accessibility(x.job.title)
-    judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov)
+    judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov, hours=x.job.hours, term=x.job.term)
     category = CATEGORY_UNCLASSIFIED
     if teer is not None:
         category = TEER_LABEL_TPL.format(teer=teer)
@@ -1095,17 +1150,20 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         "score": score(ScoreIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov,
                                acc=acc, agency=x.job.agency)),
         "pnpEligible": pnp_eligible(judge),
-        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer, city=x.job.city)),
-        "eeCategory": x.tables.ee_by_noc.get(noc) or None,
+        "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer, city=x.job.city,
+                                            hours=x.job.hours, term=x.job.term)),
+        "eeCategory": ee_label_of(EeLabelIn(tables=x.tables, noc=noc, prov=x.job.prov)),
     }
 
 
 def score_mart_jobs() -> None:
-    """步骤①:NOC → TEER → 每 TEER 自己的评分表 + pnpEligible/pnpStream(processed/all-scored.json)。"""
+    """步骤①:NOC → TEER → 每 TEER 自己的评分表 + pnpEligible/pnpStream(processed/all-scored.json)。
+    2026-09-26 起同时读 jdformat 整理表:源没标工时 / 雇佣期的岗拿整理版补(emp_of),判通道与岗位行看同一个值。"""
     tables = load_pnp_tables()
     labels = load_classify()
+    formatted = load_formatted()
     out = []
-    for job in collect_ats_jobs() + collect_jobbank_jobs() + collect_board_jobs():
+    for job in collect_ats_jobs(formatted) + collect_jobbank_jobs(formatted) + collect_board_jobs(formatted):
         out.append(to_scored_row(ScoredRowIn(tables=tables, job=job, labels=labels)))
     OUT_SCORED.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_SCORED, payload=out, indent=INDENT_2))
@@ -1837,15 +1895,18 @@ def add_job(x: AddJobIn) -> None:
 
 def fill_formatted(x: FillFormattedIn) -> None:
     """整理版并进岗位行(2026-09-15):jdFormatted / jdFormattedAt 两格直落;就业性质 / 工时只填空
-    (官方标注优先,同 cms 懒生成路 —— 三维档随后按补齐的两格算)。没整理记录一格不动。"""
+    (官方标注优先,同 cms 懒生成路 —— 三维档随后按补齐的两格算)。没整理记录一格不动。
+    2026-09-26「只填空」的取值收进 emp_of(评分段判通道同一把尺子,判定与展示不分叉),落列结果逐格不变。"""
     if x.rec is None:
         return
     x.fields[K_JD_FORMATTED] = x.rec[K_FORMAT_TEXT]
     x.fields[K_JD_FORMATTED_AT] = x.rec[K_FORMAT_AT]
-    if not x.fields.get(K_EMPLOYMENT_TERM) and x.rec.get(K_FORMAT_TERM):
-        x.fields[K_EMPLOYMENT_TERM] = x.rec[K_FORMAT_TERM]
-    if not x.fields.get(K_EMPLOYMENT_HOURS) and x.rec.get(K_FORMAT_HRS):
-        x.fields[K_EMPLOYMENT_HOURS] = x.rec[K_FORMAT_HRS]
+    emp = emp_of(EmpOfIn(hours=x.fields.get(K_EMPLOYMENT_HOURS) or "", term=x.fields.get(K_EMPLOYMENT_TERM) or "",
+                         rec=x.rec))
+    if emp.term != "":
+        x.fields[K_EMPLOYMENT_TERM] = emp.term
+    if emp.hours != "":
+        x.fields[K_EMPLOYMENT_HOURS] = emp.hours
 
 
 def collect_ats_rows(ctx: MartCtx) -> None:
@@ -4562,10 +4623,11 @@ def prov_list_of(x: ProvListIn) -> str:
 
     E13-05:全国 occ 行的 pnpProvs **复用本域的 pnp_eligible / pnp_direct / any_pr_path**
     (禁复制判定逻辑)—— 全溶前它们住 08_score,统计件靠 importlib 按路径拉;批I 同域后直调。
+    职业 × 省级的口径不看具体 offer:工时 / 雇佣期给空串(offer_fits 放行,2026-09-26)。
     """
     got = []
     for p in PNP_PROV_ORDER:
-        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p)
+        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p, hours="", term="")
         if x.mode == PROV_MODE_DIRECT and pnp_direct(judge):
             got.append(p)
         elif x.mode == PROV_MODE_COND and pnp_eligible(judge) and not pnp_direct(judge):
@@ -6214,3 +6276,16 @@ def dead_table() -> dict:
         if rec.get(K_HOWTO_STATUS) == HOWTO_GONE and pid not in out:
             out[pid] = rec.get(K_HOWTO_AT) or ""
     return out
+
+
+# =========================================================================
+# 23. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑省提名 offer 门槛与 EE 省别自测(用例集住 scheme 的 MartOfferTest,先例 indexing / ats /
+    gate.scheme);有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(MartOfferTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)
