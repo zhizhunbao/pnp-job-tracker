@@ -17,6 +17,7 @@ META = {
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
     "fresh": [      # 保鲜契约(语义见 sched.K_FRESH)
-        {"file": "raw/minwage/minimum_wage.json", "cadence_days": 8},
+        {"file": "raw/minwage/minimum_wage.json", "cadence_days": 2},   # 2026-09-26 Frank「最次也是日更」:原 8 天 → 2
+                                                                        # (日更一轮 + 一天余量;本域日更)
     ],
 }

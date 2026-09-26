@@ -16,7 +16,8 @@ META = {
     "seed": False,
     "ping": False,  # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
     "fresh": [      # 保鲜契约(2026-08-31 批O:source_manifest 退役,行原样搬入;语义见 sched.K_FRESH)
-        {"file": "raw/aip/aip-designated-employers.json", "cadence_days": 7, "key": "mtime",
+                    # 2026-09-26 Frank「最次也是日更」:原 7 天 → 2(日更一轮 + 一天余量;本域小时更)
+        {"file": "raw/aip/aip-designated-employers.json", "cadence_days": 2, "key": "mtime",
          "note": "名录是 list 无 fetched(B3-3 未销),先看文件 mtime"},
     ],
 }

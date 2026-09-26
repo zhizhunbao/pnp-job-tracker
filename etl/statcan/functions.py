@@ -16,6 +16,11 @@ docs/design/把脉页省份段-契约-20260906.md §1:四张宏观表 → raw/st
 硬闸口径:段5 任一张表失败 → 打 ⚠ 保留那张旧表、其余表照跑,收尾 sys.exit(1) 让本轮红;
 段3/段4 沿用搬来前的口径(抓取失败即 return,保留旧表)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch / crawl)。
+2026-09-26 全部 6 处 WDS / NAICS 请求改走 fetch 叶的 TLS 1.2 封顶上下文(verify=make_tls_context()):
+StatCan(www150.statcan.gc.ca)对 Python 默认(可协商 1.3)的握手间歇性直接断连 ——
+「SSL: UNEXPECTED_EOF_WHILE_READING」,容器与本机同测默认档 4/6、封顶 1.2 档 6/6(且快 5 倍);与 fetch 叶
+2026-09-10 Job Bank 那次同一类握手指纹拦截。此前 cubes 每轮总有一两张表撞上 → exit 1 → 链尾 city 从 09-22 起没跑过。
+搬来的段3 / 段4 为此破例改了请求行(只加 verify 一格,其余一字未动)。
 """
 import csv
 import io
@@ -28,6 +33,7 @@ import httpx
 import paths
 from log.functions import say
 from fetch.constants import HDR_UA
+from fetch.functions import make_tls_context
 from crawl.functions import put_cached_page
 from crawl.scheme import CachePutIn
 from statcan.constants import (
@@ -95,7 +101,7 @@ def dim_pos_of(dim: dict) -> int:
 def wds_meta(pid: int) -> CubeMeta:
     """一张表的元数据 → 标题 + 按段位排好的维度成员表(非 SUCCESS 即抛,交调用方保留旧表)。"""
     r = httpx.post(WDS_META_URL, json=[{K_PRODUCT_ID: pid}], headers={HDR_UA: WDS_UA},
-                   timeout=WDS_META_TIMEOUT_S)
+                   timeout=WDS_META_TIMEOUT_S, verify=make_tls_context())
     r.raise_for_status()
     blk = r.json()[0]
     if blk.get(K_STATUS) != STATUS_SUCCESS:
@@ -113,7 +119,7 @@ def wds_meta(pid: int) -> CubeMeta:
 def wds_data(x: WdsDataIn) -> WdsDataOut:
     """按坐标一发全取 → 响应块 + 响应原文(原文由调用方进 crawl 层)。"""
     r = httpx.post(WDS_DATA_URL, json=x.requests, headers={HDR_UA: WDS_UA},
-                   timeout=WDS_DATA_TIMEOUT_S)
+                   timeout=WDS_DATA_TIMEOUT_S, verify=make_tls_context())
     r.raise_for_status()
     return WdsDataOut(blocks=r.json(), text=r.text)
 
@@ -155,7 +161,7 @@ def to_number(v: object) -> float | int:
 def series(vector: int) -> dict:
     """一条 WDS 向量 → {季度参考日: 值}(非 SUCCESS 即抛,交调用方保留旧表)。"""
     r = httpx.post(NPR_WDS, json=[{K_VECTOR_ID: vector, K_LATEST_N: NPR_QUARTERS}],
-                   headers={HDR_UA: NPR_UA}, timeout=NPR_TIMEOUT_S)
+                   headers={HDR_UA: NPR_UA}, timeout=NPR_TIMEOUT_S, verify=make_tls_context())
     r.raise_for_status()
     blk = r.json()[0]
     if blk.get(K_STATUS) != STATUS_SUCCESS:
@@ -241,7 +247,7 @@ def scrape_statcan_npr() -> None:
 def member_ids() -> MemberIds:
     """metadata 解析省/证型的 memberId(不写死:StatCan 重排成员时坐标会静默错位)。"""
     r = httpx.post(TRP_META_URL, json=[{K_PRODUCT_ID: TRP_PID}], headers={HDR_UA: TRP_UA},
-                   timeout=TRP_META_TIMEOUT_S)
+                   timeout=TRP_META_TIMEOUT_S, verify=make_tls_context())
     r.raise_for_status()
     geo: dict = {}
     typ: dict = {}
@@ -329,7 +335,7 @@ def scrape_statcan_tr_prov() -> None:
         if len(ids.geo) < TRP_MIN_PROV or len(ids.types) < TRP_MIN_TYPES:
             raise RuntimeError(TRP_DIM_FAIL_TPL.format(geo=len(ids.geo), typ=len(ids.types)))
         r = httpx.post(TRP_DATA_URL, json=tr_prov_requests(ids), headers={HDR_UA: TRP_UA},
-                       timeout=TRP_DATA_TIMEOUT_S)
+                       timeout=TRP_DATA_TIMEOUT_S, verify=make_tls_context())
         r.raise_for_status()
         by_prov = tr_prov_by_prov(ByProvIn(blocks=r.json(), ids=ids))
         latest = latest_ref_of(by_prov)
@@ -764,7 +770,8 @@ def scrape_statcan_naics() -> None:
     条数或译名表对不上即抛,整表不更新(保留旧文件)。
     """
     say(NAICS_PRINT_OUT_TPL.format(path=OUT_NAICS))
-    r = httpx.get(NAICS_CSV_URL, headers={HDR_UA: WDS_UA}, timeout=NAICS_TIMEOUT_S, follow_redirects=True)
+    r = httpx.get(NAICS_CSV_URL, headers={HDR_UA: WDS_UA}, timeout=NAICS_TIMEOUT_S, follow_redirects=True,
+                  verify=make_tls_context())
     r.raise_for_status()
     text = r.content.decode(NAICS_ENC)
     put_cached_page(CachePutIn(slug=CRAWL_SLUG, url=NAICS_CSV_URL, html=text, title=NAICS_TITLE))

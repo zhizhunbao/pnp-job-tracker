@@ -22,8 +22,10 @@ META = {
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
     "fresh": [      # 保鲜契约(语义见 sched.K_FRESH;两张老表的条目自 ircc 域 META 搬来,路径不变)
-        {"glob": "raw/statcan/*.json", "cadence_days": 8},
-        {"file": "raw/ircc/npr_share.json", "cadence_days": 8},
-        {"file": "raw/ircc/statcan_tr_prov.json", "cadence_days": 8},
+        # 2026-09-26 Frank「最次也是日更」:三条原 8 天 → 2(本域日更一轮 + 一天余量;同日 TLS 1.2 封顶修掉握手断连、
+        # 门改每步兜住、naics 进链,之后才压 —— 不修先压 = city_macro / naics 当场红)
+        {"glob": "raw/statcan/*.json", "cadence_days": 2},
+        {"file": "raw/ircc/npr_share.json", "cadence_days": 2},
+        {"file": "raw/ircc/statcan_tr_prov.json", "cadence_days": 2},
     ],
 }

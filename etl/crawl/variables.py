@@ -3,6 +3,7 @@
 浏览器兜底是持久单例(一个有头窗口一个复用标签,页与页严格串行 —— 并发自动化标签
 更容易触发人机检测),其可变状态全住 CACHE 一格格数清;launch 竞态由 lock 管,
 串行由 sem(上限 1)管。asyncio 原语在 3.11 是懒绑事件循环的,import 期创建安全。
+2026-09-26 起第二个容器 MANIFESTS(读门的 manifest 索引)—— 与浏览器单例不是一种状态,不并进 CACHE。
 """
 import asyncio
 from types import SimpleNamespace
@@ -15,3 +16,8 @@ pw = playwright 驱动;context = 持久上下文(cf_clearance 随 profile
 (警告一次,后续 403 页直接跳过);lock = 启动互斥;sem = 单标签串行闸(上限 1);
 patches = 已装配的站点脚本补丁表(route 回调只收一参,补丁表从这格取 —— 2026-09-03 由
 lambda 闭包改成容器格,过形制闸一参令)。"""
+
+MANIFESTS = SimpleNamespace(entries={})
+"""读门 get_cached_page 的进程内 manifest 索引(第二种状态,2026-09-26 lead 派工④「crawl 读缓存提速」):
+entries = {manifest 路径: ManifestEntry}。每次读门都先 stat 全部 manifest,签名(inode, mtime_ns, size)变了 / 新出现的
+才重读重解析,消失的当场摘掉 —— 结果与逐次全读同源,省的只是重复的读与解析(对照自测 CacheIndexTest)。"""

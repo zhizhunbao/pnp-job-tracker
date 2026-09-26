@@ -19,6 +19,7 @@ docs/design/etl分域-20260829.md §4)。
 import json
 import re
 import sys
+import unittest
 from datetime import date, datetime, timezone
 from typing import cast
 from urllib.parse import urljoin
@@ -30,8 +31,8 @@ from bs4 import BeautifulSoup
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
-from crawl.functions import convert_md, get_cached_page, put_cached_page
-from crawl.scheme import CachePutIn, ConvertIn
+from crawl.functions import convert_md, get_cached_page, load_cache_index, put_cached_page, url_variants_of
+from crawl.scheme import CacheHit, CachePutIn, ConvertIn
 from pnp.constants import (
     ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL, ABR_EMP_REVENUE_RE,
     ABR_EMP_STAFF_LABEL_TPL, ABR_EMP_STAFF_RE, ABR_EMP_STREAM, ABR_EMP_YEARS_LABEL_TPL, ABR_EMP_YEARS_RE,
@@ -205,11 +206,11 @@ from pnp.constants import (
     ONS_PRINT_ALLOC_TPL, ONS_PRINT_ISSUED_TPL, ONS_PRINT_NO_PROCESSING, ONS_PRINT_REDIRECT_TPL,
     ONS_PRINT_SKIPPED_TPL, ONS_PRINT_YEAR_VALUE_TPL, ONS_PROBLEM_EMPTY, ONS_REACHED_RE, ONS_REDIRECT_FAILED,
     ONS_SECTION_TPL, ONS_SEED_URL, ONS_SOURCE, ONS_TIMEOUT_S, ONS_UNIT_NOMINATIONS, ONS_UPDATES_URL_TPL, ONS_WAYBACK_STAMP_TPL,
-    ONS_WAYBACK_TPL,
+    ONS_WAYBACK_TPL, ONS_YEAR_TITLE_TPL,
     ONS_YEARS_BACK, ON_BLOB_AHEAD_NEW, ON_BLOB_AHEAD_OLD, ON_ENTRY_DATE_TPL, ON_ENTRY_NOYEAR_RE, ON_ENTRY_RE,
     ON_INV_DATE_COL, ON_INV_DATE_KW, ON_INV_HEAD_KW, ON_INV_HEAD_TAGS, ON_INV_NOTES_KW, ON_INV_NUM_COL,
     ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
-    ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
+    ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, ON_CRAWL_SLUG, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
     OUT_AB_HEALTH_FILE, OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
     OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
     OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
@@ -301,6 +302,7 @@ from pnp.scheme import (
     SirsSectionIn, SkAllocCheckIn,
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
     OnWaybackIn, TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
+    SlugPageIn,
 )
 from pnp.constants import (
     C01_APPLIES_JO, C01_APPLIES_OIDEE, C01_BAD_TPL, C01_D_COUNT_TPL, C01_D_JULY_TPL,
@@ -394,6 +396,23 @@ def page_text(x: PageTextIn) -> str:
     if not html:
         html = fetch_html(FetchHtmlIn(url=x.url, timeout_s=x.timeout_s))
     return text_of_html(TextOfHtmlIn(html=html, drop_junk=x.drop_junk, main_only=x.main_only))
+
+
+def slug_cached_page(x: SlugPageIn) -> CacheHit:
+    """已知 crawl slug 的一页缓存 → CacheHit(原文 + 缓存文件写盘那天);该 slug 没爬到这页 → CacheHit(None, 空串)。
+    2026-09-26 立(段10 NS / QC 抽选、段27 ON 逐年页、段39 ON 守望三段共用):读门 get_cached_page 每问一次都扫
+    全部 manifest(8 千多个,pnp 容器里实测一次 143 秒);种子已知的页改走 crawl 的单 slug 索引 load_cache_index
+    (0.2 秒)。日期取缓存文件的修改日 —— crawl 每轮成功抓到就重写原文,修改日即这页真正被取回的那天。
+    同日稍后读门本身已提速(进程内索引:容器首次约 11 秒、之后每次约 4 秒),本门仍快一个量级,三段照用;
+    要不要并回读门(只留一个读缓存出口)待 lead 定。"""
+    index = load_cache_index(x.slug)
+    for u in sorted(url_variants_of(x.url)):
+        f = index.get(u)
+        if f is None:
+            continue
+        day = datetime.fromtimestamp(f.stat().st_mtime).date().isoformat()
+        return CacheHit(html=f.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), fetched=day)
+    return CacheHit(html=None, fetched=EMPTY_JOIN)
 
 
 def fetch_md(url: str) -> str:
@@ -1436,6 +1455,14 @@ def build_pe() -> None:
 # =========================================================================
 # 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
+from pnp.constants import (  # noqa: E402 — 段10 2026-09-26 补 NS / QC 两省的常量单列一块(同段35–38 先例)
+    DRAWS_NS_LABEL, DRAWS_NS_SLUG, DRAWS_NS_URL, DRAWS_PRINT_NO_CACHE_TPL, DRAWS_PRINT_PARSE_FAIL_TPL, DRAWS_QC_LABEL,
+    DRAWS_QC_MAX, DRAWS_QC_SCALE, DRAWS_QC_SLUG, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
+    NS_DRAW_MONTH_RE, NS_DRAW_MONTH_TPL,
+    NS_DRAW_NOTE_TPL, NS_DRAW_STREAM, NS_FOCUS_HEAD, NS_FOCUS_TAGS, PROV_QC, QC_BODY_CLASS, QC_BODY_TAG,
+    QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
+)
+from pnp.scheme import CachedDrawsIn, QcDrawIn  # noqa: E402 — 同上
 
 
 def fetch_draws_page(url: str) -> str:
@@ -2229,6 +2256,143 @@ def build_pe_draws(old: dict) -> dict:
     return {K_LABEL: DRAWS_PE_LABEL, K_SCALE: scale, K_URL: DRAWS_PE_URL, K_DRAWS: draws}
 
 
+def build_ns_draws(old: dict) -> dict:
+    """NS(2026-09-26):**只读 crawl 缓存**的月度选取页(ns-root 种子每小时在刷,不另发请求;同 PE)。"""
+    hit = slug_cached_page(SlugPageIn(slug=DRAWS_NS_SLUG, url=DRAWS_NS_URL))
+    return cached_draws_of(CachedDrawsIn(prov=PROV_NS, url=DRAWS_NS_URL, html=hit.html, parse=parse_ns_draws,
+                                         scale=None, label=DRAWS_NS_LABEL, old=old))
+
+
+def build_qc_draws(old: dict) -> dict:
+    """QC(2026-09-26):**只读 crawl 缓存**里最新那一年的 PSTQ 邀请页(crawl 域 qc-pstq 窄种子每小时在刷;
+    今年页还没挂出来就退上一年页)。QC 不属 PNP —— 只收邀请事实,label / scale 写 PSTQ。"""
+    this_year = date.today().year
+    url = DRAWS_QC_URL_TPL.format(year=this_year)
+    html = None
+    for year in range(this_year, this_year - DRAWS_QC_YEARS_BACK, -1):
+        hit = slug_cached_page(SlugPageIn(slug=DRAWS_QC_SLUG, url=DRAWS_QC_URL_TPL.format(year=year)))
+        if hit.html is not None:
+            url = DRAWS_QC_URL_TPL.format(year=year)
+            html = hit.html
+            break
+    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=html, parse=parse_qc_draws,
+                                         scale=DRAWS_QC_SCALE, label=DRAWS_QC_LABEL, old=old))
+
+
+def cached_draws_of(x: CachedDrawsIn) -> dict:
+    """只读 crawl 缓存的一省抽选(NS / QC 共用;PE 另有「解析到分数线才挂 scale」的规矩,不并):
+    原文 → 解析 → 报数;缓存没有 / 解析塌方 / 解析为空一律**保留旧数据**(宁可留旧不留错)。"""
+    if x.html is None or x.html == EMPTY_JOIN:
+        say(DRAWS_PRINT_NO_CACHE_TPL.format(prov=x.prov, url=x.url))
+        return x.old.get(x.prov) or {}
+    try:
+        draws = x.parse(x.html)
+    except Exception as e:  # noqa: BLE001 — 官网改版解析塌方:留痕后保留旧数据(同 province_draws 的兜底)
+        say(DRAWS_PRINT_PARSE_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
+        return x.old.get(x.prov) or {}
+    if len(draws) == 0:
+        say(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
+        return x.old.get(x.prov) or {}
+    say(DRAWS_PRINT_OK_TPL.format(prov=x.prov, n=len(draws), date=draws[0][K_DATE],
+                                  stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                  score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
+    return {K_LABEL: x.label, K_SCALE: x.scale, K_URL: x.url, K_DRAWS: draws}
+
+
+def parse_ns_draws(html: str) -> list:
+    """NS 月度选取表:| 月份 年 | 人数(或 TBD)|。一月一行:drawDate 记 YYYY-MM(官方只到月,不编哪天)、
+    score 恒 None(官方不发分数线)、TBD 的月份不落行;note 挂页上「Occupational focus」列项(整页一份)。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
+    note = ns_focus_note(soup)
+    draws: list = []
+    for table in soup.find_all(TAG_TABLE):
+        for row in expand_table(table):
+            if len(row) < 2:
+                continue
+            month = ns_month_of(row[0])
+            inv = int_of(row[1])
+            if month is None or inv is None:
+                continue
+            draws.append({K_DATE: month, K_STREAM: NS_DRAW_STREAM, K_NOTE: note,
+                          K_SCORE: None, K_INVITATIONS: inv})
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_MAX_PER_PROV]
+
+
+def ns_month_of(cell: str) -> str | None:
+    """NS 月份格「January 2026」→「2026-01」;不是月份格返回 None。"""
+    m = NS_DRAW_MONTH_RE.match(cell.strip())
+    if m is None or m.group(1) not in MONTHS_TITLE:
+        return None
+    return NS_DRAW_MONTH_TPL.format(year=m.group(2), month=MONTHS_TITLE.index(m.group(1)) + 1)
+
+
+def ns_focus_note(soup: SoupNodeLike) -> str:
+    """NS 页「Occupational focus」小标题下方列表 → note(官方列项原文逗号连);没有这个小标题 → 空串(不编)。"""
+    for head in soup.find_all(NS_FOCUS_TAGS):
+        if NS_FOCUS_HEAD not in fold_ws(head.get_text(TEXT_JOIN_SEP, strip=True)).lower():
+            continue
+        groups: list = []
+        for li in head.find_next(TAG_UL).find_all(TAG_LI):
+            groups.append(fold_ws(li.get_text(TEXT_JOIN_SEP, strip=True)))
+        if len(groups) == 0:
+            return EMPTY_JOIN
+        return NS_DRAW_NOTE_TPL.format(groups=LIST_JOIN_SEP.join(groups))[:DRAWS_NOTE_CLIP]
+    return EMPTY_JOIN
+
+
+def parse_qc_draws(html: str) -> list:
+    """QC PSTQ 逐年邀请页:h2「Stream N: …」分段,每轮一个折叠块(h2「Invitations for <日期>」+ 其后第一个
+    panel-body)→ 一轮一个 stream 一行。stream 段以外的 h2(汇总表、Other invitations …)清空当前段,其下不收。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
+    stream = EMPTY_JOIN
+    draws: list = []
+    for head in soup.find_all(QC_HEAD_TAG):
+        text = fold_ws(head.get_text(TEXT_JOIN_SEP, strip=True))
+        m = QC_DRAW_HEAD_RE.match(text)
+        if m is None:
+            stream = qc_stream_of(text)
+            continue
+        day = iso_nb_of(m.group(1))
+        if stream == EMPTY_JOIN or day is None:
+            continue
+        body = fold_ws(head.find_next(QC_BODY_TAG, class_=QC_BODY_CLASS).get_text(TEXT_JOIN_SEP, strip=True))
+        draws.append(qc_draw_of(QcDrawIn(date=day, stream=stream, body=body)))
+    draws.sort(key=draw_date_of, reverse=True)
+    return draws[:DRAWS_QC_MAX]
+
+
+def qc_stream_of(head: str) -> str:
+    """一个 h2 标题 → 当前 stream 段名(「Stream N: …」原文);别的标题 → 空串(出了 stream 段)。"""
+    if head.startswith(QC_STREAM_PREFIX):
+        return head
+    return EMPTY_JOIN
+
+
+def qc_draw_of(x: QcDrawIn) -> dict:
+    """QC 一轮一个 stream → 一行:invitations = 本轮该 stream 的邀请总数(官方占位 XXX → None,不拿各档人数去凑);
+    score = 各邀请档最低分里最小的那个(= 本轮被邀请者的最低分;Stream 4 不计分 → None);两档以上时各档分数进 note。"""
+    inv = None
+    m = QC_DRAW_INV_RE.search(x.body)
+    if m is not None:
+        inv = int_of(m.group(1))
+    scores: list = []
+    for sm in QC_DRAW_SCORE_RE.finditer(x.body):
+        n = int_of(sm.group(1))
+        if n is not None:
+            scores.append(n)
+    score = None
+    if len(scores) > 0:
+        score = min(scores)
+    note = EMPTY_JOIN
+    if len(scores) > 1:
+        parts: list = []
+        for n in scores:
+            parts.append(str(n))
+        note = QC_DRAW_NOTE_TPL.format(scores=LIST_JOIN_SEP.join(parts))[:DRAWS_NOTE_CLIP]
+    return {K_DATE: x.date, K_STREAM: x.stream, K_NOTE: note, K_SCORE: score, K_INVITATIONS: inv}
+
+
 def old_on_draws(old: dict) -> list:
     """上一轮 ON 的抽选行(invitations 页抓不到时退回,不清空)。"""
     return (old.get(PROV_ON) or {}).get(K_DRAWS) or []
@@ -2282,6 +2446,38 @@ def merge_draws(x: MergeDrawsIn) -> list:
     return out
 
 
+def merged_draws_of(x: MergeDrawsIn) -> list:
+    """并回历史的分派(2026-09-26):官方会回头改数的省(DRAWS_REVISABLE_PROVS)走「日期 + stream」覆盖式,其余照旧四格去重。"""
+    if x.prov in DRAWS_REVISABLE_PROVS:
+        return merge_revisable_draws(x)
+    return merge_draws(x)
+
+
+def merge_revisable_draws(x: MergeDrawsIn) -> list:
+    """覆盖式并回历史:本轮解析到的行全收;旧行只留本轮没有的「日期 + stream」(页面已下架的旧年份 / 旧月份)——
+    同一轮官方改了数(占位 XXX 补成真数、月度合计修订),新值替掉旧值,不留两行。"""
+    prev = (x.old.get(x.prov) or {}).get(K_DRAWS) or []
+    seen: set = set()
+    out: list = []
+    for d in x.new:
+        seen.add(draw_slot_of(d))
+        out.append(d)
+    for d in prev:
+        if draw_slot_of(d) in seen:
+            continue
+        seen.add(draw_slot_of(d))
+        out.append(d)
+    out.sort(key=draw_date_or_empty_of, reverse=True)
+    if len(out) > len(x.new):
+        say(DRAWS_PRINT_MERGE_TPL.format(prov=x.prov, new=len(x.new), out=len(out)))
+    return out
+
+
+def draw_slot_of(d: dict) -> tuple:
+    """抽选行的「轮次位」(日期 + stream 两格;覆盖式并回的去重键 —— 同一位上以本轮值为准)。"""
+    return (d.get(K_DATE), d.get(K_STREAM))
+
+
 def old_provinces() -> dict:
     """上一轮 draws.json 的 provinces 块(读不出当空,不拿半份数据盖好数据)。"""
     if not OUT_DRAWS.exists():
@@ -2295,7 +2491,9 @@ def old_provinces() -> dict:
 
 def build_draws() -> None:
     """省抽选事实入口:五省实抓 + ON 通告 + PE 读缓存,逐省并回历史后整表落盘。
-    (PE 2026-09-10 接入,是唯一不发请求的一省 —— 官网在 Radware 墙后,原文只能从 crawl 层取。)"""
+    (PE 2026-09-10 接入,是唯一不发请求的一省 —— 官网在 Radware 墙后,原文只能从 crawl 层取。)
+    2026-09-26 再接两份只读缓存的:NS 月度选取人数、QC PSTQ 邀请记录(QC 不属 PNP,只收邀请事实);
+    这两省官方会回头改数,并回历史走覆盖式(merged_draws_of 分派)。"""
     say(PRINT_OUT_TPL.format(path=OUT_DRAWS))
     old = old_provinces()
     provinces = {
@@ -2310,10 +2508,12 @@ def build_draws() -> None:
                                                 scale=None, label=DRAWS_NL_LABEL, old=old)),
         PROV_NB: build_nb_draws(old),
         PROV_PE: build_pe_draws(old),
+        PROV_NS: build_ns_draws(old),
+        PROV_QC: build_qc_draws(old),
     }
     for p, v in provinces.items():
         if isinstance(v, dict) and v.get(K_DRAWS):
-            v[K_DRAWS] = merge_draws(MergeDrawsIn(prov=p, new=v[K_DRAWS], old=old))
+            v[K_DRAWS] = merged_draws_of(MergeDrawsIn(prov=p, new=v[K_DRAWS], old=old))
     kept: dict = {}
     total = 0
     for p, v in provinces.items():
@@ -5165,9 +5365,12 @@ def is_blocked_page(text: str) -> bool:
 
 def fetch_on_year_page(year: int) -> YearPageOut:
     """(text, url, fetched)——缓存优先(on-oinp 种子已抓),缓存没有再 httpx 兜底;
-    两边都拿不到或被反爬拦截 → text=None。"""
+    两边都拿不到或被反爬拦截 → text=None。
+    2026-09-26:拿回的不是那一年的页(官方撤档转去档案馆落地页,见 ONS_YEAR_TITLE_TPL)同拦截页一样退 Wayback;
+    缓存改走单 slug 索引(slug_cached_page)—— 一轮问 12 年,全 manifest 扫描的读门在容器里要 28 分钟
+    (读门同日稍后提速到每次约 4 秒,12 次仍近 1 分钟;单 slug 索引一次 0.2 秒)。"""
     url = ONS_UPDATES_URL_TPL.format(year=year)
-    hit = get_cached_page(url)
+    hit = slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=url))
     html = hit.html
     fetched = hit.fetched
     if not html:
@@ -5181,7 +5384,8 @@ def fetch_on_year_page(year: int) -> YearPageOut:
     text = ""
     if html:
         text = text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True))
-    if not html or is_blocked_page(text):
+    off_page = ONS_YEAR_TITLE_TPL.format(year=year).lower() not in text.lower()
+    if not html or is_blocked_page(text) or off_page:
         return fetch_on_year_wayback(OnWaybackIn(url=url, year=year))
     return YearPageOut(text=text, url=url, fetched=fetched)
 
@@ -7127,3 +7331,95 @@ def scrape_pe_iidi() -> None:
         K_NOMINATIONS_ISSUED_FISCAL: sorted(nom_by_year.values(), key=neg_year_of),
     }, indent=INDENT_2))
     say(PRINT_DONE_PATH_TPL.format(path=OUT_PE_STATS))
+
+
+# =========================================================================
+# 39. ON 劳动力优先表守望(官方流页原句还在 → 刷人工核对表的日期;2026-09-26)
+# =========================================================================
+from pnp.constants import (  # noqa: E402 — 段39 常量单列一块(同段35–38 先例)
+    OWP_DATE_RE, OWP_FETCHED_RE, OWP_PRINT_BAD_TABLE_TPL, OWP_PRINT_BLOCKED_TPL, OWP_PRINT_CRASH_TPL,
+    OWP_PRINT_NO_CACHE_TPL, OWP_PRINT_NO_QUOTE_TPL, OWP_PRINT_OK_TPL, OWP_PRINT_SAME_TPL, OWP_QUOTE, OWP_TABLE,
+    OWP_V_BLOCKED, OWP_V_NO_CACHE, OWP_V_NO_QUOTE, OWP_V_OK,
+)
+from pnp.scheme import OwpRefreshIn  # noqa: E402 — 同上
+
+
+def watch_on_workforce() -> None:
+    """ON 劳动力优先表守望入口(每轮一次,纯读 crawl 缓存不发请求):判定 ok → 人工表的 fetched 刷成缓存抓取日;
+    其余三态只留痕不动表。**自身任何失败都不拦役**(同名额哨兵 —— 判死交给保鲜闸,本步只管举证与留痕)。"""
+    try:
+        run_on_workforce_watch()
+    except Exception as e:  # noqa: BLE001 — 读缓存 / 读写人工表的 I/O 失败留痕后放行,不拖本域后面的步
+        say(OWP_PRINT_CRASH_TPL.format(name=type(e).__name__, detail=e))
+
+
+def run_on_workforce_watch() -> None:
+    """守望一轮:单 slug 索引取官方流页缓存 → 判定 → (ok 时)只替换人工表里 fetched 那一格日期落盘(按字节读写,换行照旧)。"""
+    hit = slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=ON_WORKFORCE_URL))
+    kind = owp_verdict_of(hit.html)
+    if kind == OWP_V_NO_CACHE:
+        say(OWP_PRINT_NO_CACHE_TPL.format(url=ON_WORKFORCE_URL))
+        return
+    if kind == OWP_V_BLOCKED:
+        say(OWP_PRINT_BLOCKED_TPL.format(url=ON_WORKFORCE_URL, cached=hit.fetched))
+        return
+    if kind == OWP_V_NO_QUOTE:
+        say(OWP_PRINT_NO_QUOTE_TPL.format(url=ON_WORKFORCE_URL, cached=hit.fetched, quote=OWP_QUOTE))
+        return
+    text = OWP_TABLE.read_bytes().decode(ENC_UTF8)
+    new = owp_refreshed_of(OwpRefreshIn(text=text, date=hit.fetched))
+    m = OWP_FETCHED_RE.search(text)
+    if new is None or m is None:
+        say(OWP_PRINT_BAD_TABLE_TPL.format(path=OWP_TABLE, n=len(OWP_FETCHED_RE.findall(text))))
+        return
+    if new == text:
+        say(OWP_PRINT_SAME_TPL.format(cached=hit.fetched, old=m.group(1)))
+        return
+    paths.write_text(paths.WriteTextIn(path=OWP_TABLE, text=new, newline=EMPTY_JOIN))
+    say(OWP_PRINT_OK_TPL.format(cached=hit.fetched, old=m.group(1), new=hit.fetched))
+
+
+def owp_verdict_of(html: str | None) -> str:
+    """官方流页原文 → 守望判定(四态见 constants 的 OWP_V_*):没原文 → 缓存缺失;拦截页 → blocked;
+    正文(<main>)去空白转小写后含举证原句 → ok;否则 no-quote。纯函数,自测覆盖。"""
+    if html is None or html == EMPTY_JOIN:
+        return OWP_V_NO_CACHE
+    text = text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True))
+    if is_blocked_page(text):
+        return OWP_V_BLOCKED
+    if squashed_of(OWP_QUOTE) in squashed_of(text):
+        return OWP_V_OK
+    return OWP_V_NO_QUOTE
+
+
+def squashed_of(s: str) -> str:
+    """去掉全部空白并转小写(原句比对用:页面标签切分会在括号内外、链接前后多插空格)。"""
+    return WS_RE.sub(EMPTY_JOIN, s).lower()
+
+
+def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
+    """人工表原文 → 刷过日期的原文:fetched 格必须恰好一处(否则 None,不动表);缓存日形状不对或不比表里新
+    → 原样返回(不往回刷);其余字节一个不动(手排版表,只替换那一格)。纯函数,自测覆盖。"""
+    if len(OWP_FETCHED_RE.findall(x.text)) != 1:
+        return None
+    m = OWP_FETCHED_RE.search(x.text)
+    if m is None or OWP_DATE_RE.fullmatch(x.date) is None or x.date <= m.group(1):
+        return x.text
+    return x.text[:m.start(1)] + x.date + x.text[m.end(1):]
+
+
+# =========================================================================
+# 40. 自测(用例住 scheme:ON 守望判定 + 门的「一步失败其余照跑」;2026-09-26)
+# =========================================================================
+from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
+from pnp.scheme import ChainKeepGoingTest, OnWorkforceWatchTest  # noqa: E402 — 同上
+
+
+def run_tests() -> None:
+    """test 步入口:跑本域自测(用例集住 scheme 的 OnWorkforceWatchTest / ChainKeepGoingTest,库垫片先例
+    indexing / gate);有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。"""
+    suite = unittest.TestSuite()
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChainKeepGoingTest))
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

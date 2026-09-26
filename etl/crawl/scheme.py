@@ -4,14 +4,27 @@
 进函数前经 SeedSpec.model_validate 洗成有效行(律⑨:边界行形状 = pydantic)。
 asyncio 原语与 httpx 客户端字段原按存量宽型(object)登记,2026-08-31 批G 收紧成 Protocol
 (company/scheme.py 的 HttpClientLike/TagLike 样张):只声明本域真用的格,装配点 cast。
+2026-09-26 末尾另住读门对照自测 CacheIndexTest(unittest 要求以 TestCase 子类交付用例 ——「不用 class」的外部库例外,
+先例 gate.scheme / indexing.scheme;跑法 `python etl/crawl/main.py --only test`);被测的 crawl.functions 在用例体内现取
+(functions 反过来 import 本文件,顶部 import 会成环)。
 """
 
+import json
+import os
+import tempfile
+import unittest
 from asyncio import Lock, Semaphore
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
+from unittest import mock
 
 from pydantic import BaseModel, ConfigDict
+
+from crawl.constants import (
+    ENC_UTF8, ERRORS_REPLACE, HTML_CACHE_DIR, K_CRAWLED_AT, K_HTML, K_PAGES, K_STATUS, K_URL, MANIFEST_FILE,
+    MANIFEST_GLOB, STATUS_OK,
+)
 
 MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
 """域内 pydantic 统一配置(company 样张同款:多余键忽略)。"""
@@ -235,6 +248,56 @@ class CacheHit:
     fetched: str
     """该轮 crawl 的日期(ISO,YYYY-MM-DD);没爬到 = 空串。出处日期必须是页面
     真正被取回的那天,不是脚本跑的今天。"""
+
+
+@dataclass
+class ManifestSig:
+    """manifest_sig_of() 出参:一份 manifest 的路径与签名(2026-09-26 读门索引)。"""
+
+    path: Path
+    """data/crawl/<slug>/manifest.json。"""
+
+    sig: tuple | None
+    """(inode, mtime_ns, size);None = 这个子目录下没有 manifest(或 stat 不了,同旧 glob 不列它)。"""
+
+
+@dataclass
+class ManifestEntry:
+    """读门索引里的一份 manifest(2026-09-26;只存读门要的三样,不存整份页清单)。"""
+
+    path: Path
+    """data/crawl/<slug>/manifest.json(挑中后 html_cache 从它的父目录找)。"""
+
+    sig: tuple | None
+    """读它时的签名;下次 stat 签名不同 = 文件换过,重读。"""
+
+    at: str
+    """crawled_at 原文(旧实现同款 str(... or ""));同 URL 多种子命中取最新的比较键。"""
+
+    rows: dict | None
+    """url → [(页序, html 文件名), …]:只收 status 200 且 html 非空的页行,保留页序;None = 读不出 / 解析不了(旧实现的 continue)。"""
+
+
+@dataclass
+class CacheLookupIn:
+    """cached_hit_of() 入参:一份索引快照里查一个 URL(读门本体;对照自测拿同一份快照批量查)。"""
+
+    entries: list
+    """manifest_entries() 的结果(按路径序)。"""
+
+    url: str
+    """要取的页(尾斜杠两种写法都认)。"""
+
+
+@dataclass
+class CachedNamesIn:
+    """cached_names_of() 入参:一份 manifest 里命中这个 URL 任一写法的页行。"""
+
+    rows: dict
+    """ManifestEntry.rows。"""
+
+    want: set
+    """url_variants_of() 给的几种写法。"""
 
 
 @dataclass
@@ -481,3 +544,188 @@ class UrlVerdict:
 
     soft: str
     """软故障描述(异常名或「HTTP 4xx/5xx」;空 = 无)。"""
+
+
+class CacheIndexTest(unittest.TestCase):
+    """读门对照自测(2026-09-26 lead 派工④「crawl 读缓存提速」同批):新读门(进程内索引)与旧实现(逐次 glob 全读,
+    原样抄在 legacy_get 里当金标)逐 URL 比 html 与 fetched。两块:① 造一棵临时 data/crawl 覆盖各条挑选规则与失效
+    路径(同 URL 多种子取最新、并列取路径序、非 200 / 空 html 跳过、首行文件缺席落到下一行、尾斜杠两写、坏 JSON、
+    无 manifest 的目录、根上零散文件;改写 / 删除 / 新增 manifest 后再比);② 真 data/crawl 上抽样(没有就跳过)。
+    ①不联网、只写临时目录;②只读。"""
+
+    def legacy_get(self, url: str) -> CacheHit:
+        """旧实现原样(2026-09-26 提速前的 get_cached_page 函数体,一字不改;金标)。"""
+        from crawl import functions as fn
+        want = fn.url_variants_of(url)
+        best = None
+        for man in sorted(fn.paths.CRAWL.glob(MANIFEST_GLOB)):
+            try:
+                d = json.loads(man.read_text(encoding=ENC_UTF8))
+            except Exception:  # noqa: BLE001, S112 — 旧实现原样
+                continue
+            at = str(d.get(K_CRAWLED_AT) or "")
+            for p in d.get(K_PAGES, []):
+                if p.get(K_STATUS) != STATUS_OK or not p.get(K_HTML) or p.get(K_URL) not in want:
+                    continue
+                f = man.parent / HTML_CACHE_DIR / p[K_HTML]
+                if f.exists() and (best is None or at > best[0]):
+                    best = (at, f)
+        if best is None:
+            return CacheHit(html=None, fetched="")
+        return CacheHit(html=best[1].read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), fetched=best[0][:10])
+
+    def put_manifest(self, root: Path, slug: str, doc: dict) -> None:
+        """写一份 manifest(临时文件 + os.replace,同真写门的原子写)。"""
+        d = root / slug
+        (d / HTML_CACHE_DIR).mkdir(parents=True, exist_ok=True)
+        tmp = d / (MANIFEST_FILE + ".tmp")
+        tmp.write_text(json.dumps(doc), encoding=ENC_UTF8)
+        os.replace(tmp, d / MANIFEST_FILE)
+
+    def put_html(self, root: Path, slug: str, name: str) -> None:
+        """写一份缓存页(正文带上 slug 与文件名,挑错了一比就露)。"""
+        d = root / slug / HTML_CACHE_DIR
+        d.mkdir(parents=True, exist_ok=True)
+        (d / name).write_text("<html>" + slug + "/" + name + "</html>", encoding=ENC_UTF8)
+
+    def page(self, url: object, html: object, status: object) -> dict:
+        """manifest 的一行页。"""
+        return {K_URL: url, "title": "", "depth": 0, K_STATUS: status, K_HTML: html}
+
+    def build_tree(self, root: Path) -> None:
+        """造临时 data/crawl:每条挑选规则至少一个命中点。"""
+        u1 = "https://x.test/a"
+        u3 = "https://x.test/c"
+        u4 = "https://x.test/d"
+        u5 = "https://x.test/e"
+        for slug, name in (("s1", "a1.html"), ("s1", "a3.html"), ("s1", "a3b.html"), ("s2", "b1.html"),
+                           ("s3", "c1.html"), ("s4", "d2.html"), ("s7", "g1.html")):
+            self.put_html(root, slug, name)
+        self.put_manifest(root, "s1", {K_CRAWLED_AT: "2026-09-01T10:00:00", K_PAGES: [
+            self.page(u1, "a1.html", 200), self.page("https://x.test/b", "a2.html", 404),
+            self.page(u3 + "/", "a3.html", 200), self.page(u3, "a3b.html", 200)]})
+        self.put_manifest(root, "s2", {K_CRAWLED_AT: "2026-09-05T10:00:00", K_PAGES: [self.page(u1, "b1.html", 200)]})
+        self.put_manifest(root, "s3", {K_CRAWLED_AT: "2026-09-05T10:00:00", K_PAGES: [self.page(u1, "c1.html", 200)]})
+        self.put_manifest(root, "s4", {K_CRAWLED_AT: "2026-09-10T08:00:00", K_PAGES: [
+            self.page(u4, "gone.html", 200), self.page(u4 + "/", "d2.html", 200)]})
+        (root / "s5").mkdir()
+        (root / "s5" / MANIFEST_FILE).write_text("{not json", encoding=ENC_UTF8)
+        (root / "s6").mkdir()
+        (root / "stray.txt").write_text("x", encoding=ENC_UTF8)
+        self.put_manifest(root, "s7", {K_PAGES: [self.page(u5, "", 200), self.page(u5, "g1.html", "200"),
+                                                 self.page(u5, "g1.html", 200), self.page(None, "g1.html", 200)]})
+
+    def urls(self) -> list:
+        """要比的 URL:树里每个写法 + 尾斜杠对偶 + 一个不存在的。"""
+        out: list = []
+        for base in ("https://x.test/a", "https://x.test/b", "https://x.test/c", "https://x.test/d",
+                     "https://x.test/e", "https://x.test/zzz"):
+            out.append(base)
+            out.append(base + "/")
+        return out
+
+    def assert_same(self, urls: list) -> None:
+        """逐 URL:新读门 == 旧实现(html 与 fetched 两格都比)。"""
+        from crawl import functions as fn
+        for u in urls:
+            with self.subTest(url=u):
+                got = fn.get_cached_page(u)
+                want = self.legacy_get(u)
+                self.assertEqual((got.html, got.fetched), (want.html, want.fetched))
+
+    def test_rules_match_legacy(self) -> None:
+        """挑选规则金标:新旧逐 URL 相同;另钉几条性质(最新种子赢、并列取路径序在前、首行文件缺席落到下一行)。"""
+        from crawl import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_tree(root)
+            with mock.patch.object(fn.paths, "CRAWL", root):
+                self.assert_same(self.urls())
+                self.assertIn("s2/b1.html", str(fn.get_cached_page("https://x.test/a").html))
+                self.assertIn("s1/a3.html", str(fn.get_cached_page("https://x.test/c").html))
+                self.assertIn("s4/d2.html", str(fn.get_cached_page("https://x.test/d").html))
+                self.assertIsNone(fn.get_cached_page("https://x.test/b").html)
+
+    def test_invalidation_matches_legacy(self) -> None:
+        """失效金标:首轮查过(索引已建)后改写 / 删除 / 新增 manifest、删缓存页,再比仍逐 URL 相同。
+        改写含同尺寸的一次(原子写换 inode,签名照样认得出)。"""
+        from crawl import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_tree(root)
+            with mock.patch.object(fn.paths, "CRAWL", root):
+                self.assert_same(self.urls())
+                self.put_html(root, "s3", "c2.html")
+                self.put_manifest(root, "s3", {K_CRAWLED_AT: "2026-09-06T10:00:00", K_PAGES: [
+                    self.page("https://x.test/a", "c2.html", 200)]})
+                self.assert_same(self.urls())
+                self.assertIn("s3/c2.html", str(fn.get_cached_page("https://x.test/a").html))
+                self.put_manifest(root, "s3", {K_CRAWLED_AT: "2026-09-06T10:00:01", K_PAGES: [
+                    self.page("https://x.test/a", "c1.html", 200)]})
+                self.assert_same(self.urls())
+                (root / "s2" / MANIFEST_FILE).unlink()
+                self.put_html(root, "s8", "h1.html")
+                self.put_manifest(root, "s8", {K_CRAWLED_AT: "2026-09-20T00:00:00", K_PAGES: [
+                    self.page("https://x.test/b/", "h1.html", 200)]})
+                (root / "s4" / HTML_CACHE_DIR / "d2.html").unlink()
+                self.assert_same(self.urls())
+                self.assertIn("s8/h1.html", str(fn.get_cached_page("https://x.test/b").html))
+
+    def test_real_crawl_sample(self) -> None:
+        """真 data/crawl 抽样(只读;没有就跳过):同一份索引快照上批量比 —— 每 25 份 manifest 取第一个 200 行的
+        URL(连尾斜杠对偶)+ 一个不存在的,新读门本体 cached_hit_of 与旧实现规则逐个比;另拿 legacy_get 原样
+        对 get_cached_page 比 3 个 URL(旧实现一次要全读一遍,只抽 3 个)。"""
+        from crawl import functions as fn
+        mans = sorted(fn.paths.CRAWL.glob(MANIFEST_GLOB))
+        if len(mans) == 0:
+            self.skipTest("本机没有 data/crawl")
+        picks: list = []
+        for man in mans[::25]:
+            try:
+                d = json.loads(man.read_text(encoding=ENC_UTF8))
+            except Exception:  # noqa: BLE001, S112 — 抽样时坏 manifest 跳过(金标一侧同样跳过)
+                continue
+            for p in d.get(K_PAGES, []):
+                if p.get(K_STATUS) == STATUS_OK and p.get(K_HTML) and isinstance(p.get(K_URL), str):
+                    picks.append(p[K_URL])
+                    picks.append(p[K_URL].rstrip("/") + "/")
+                    break
+        picks.append("https://x.test/definitely-not-cached")
+        entries = fn.manifest_entries()
+        oracle = self.legacy_batch(picks)
+        for u in picks:
+            with self.subTest(url=u):
+                got = fn.cached_hit_of(CacheLookupIn(entries=entries, url=u))
+                self.assertEqual((got.html, got.fetched), oracle[u])
+        self.assert_same([picks[0], picks[len(picks) // 2], picks[-1]])
+
+    def legacy_batch(self, urls: list) -> dict:
+        """旧实现的挑选规则一遍扫完多个 URL(规则逐字同 legacy_get,只是把「每个 URL 各扫一遍」并成一遍;
+        页行按写法反查它属于哪几个待比 URL)→ {url: (html, fetched)}。"""
+        from crawl import functions as fn
+        by_variant: dict = {}
+        best: dict = {}
+        for u in urls:
+            best[u] = None
+            for v in fn.url_variants_of(u):
+                by_variant.setdefault(v, []).append(u)
+        for man in sorted(fn.paths.CRAWL.glob(MANIFEST_GLOB)):
+            try:
+                d = json.loads(man.read_text(encoding=ENC_UTF8))
+            except Exception:  # noqa: BLE001, S112 — 旧实现原样
+                continue
+            at = str(d.get(K_CRAWLED_AT) or "")
+            for p in d.get(K_PAGES, []):
+                if p.get(K_STATUS) != STATUS_OK or not p.get(K_HTML):
+                    continue
+                for u in by_variant.get(p.get(K_URL), []):
+                    f = man.parent / HTML_CACHE_DIR / p[K_HTML]
+                    if f.exists() and (best[u] is None or at > best[u][0]):
+                        best[u] = (at, f)
+        out: dict = {}
+        for u in urls:
+            if best[u] is None:
+                out[u] = (None, "")
+            else:
+                out[u] = (best[u][1].read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), best[u][0][:10])
+        return out

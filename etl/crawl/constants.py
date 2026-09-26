@@ -89,6 +89,18 @@ SEED_QC_IMM = {"slug": "qc-imm", "seed": "https://www.quebec.ca/en/immigration",
 """QC 2026-08-03 Frank 改拍 —— 爬(此前因「自有体系不属 PNP」不爬)。quebec.ca 无墙,
 先建地图与政策雷达,PNP 决策引擎仍不给 QC 下结论(那是消费层的事)。"""
 
+SEED_QC_PSTQ = {
+    "slug": "qc-pstq",
+    "seed": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/invitation",
+    "depth": 1,
+    "max_pages": 20,
+    "concurrency": 1,
+}
+"""QC PSTQ 邀请页一支(2026-09-26 lead 派工「魁省 PSTQ 邀请数据进 pnp_draws」):邀请总页在 qc-imm 地图里
+(深度 3),逐年邀请记录子页 /invitation/<年> 在深度 4,qc-imm 够不着;整站加深一层 = 每轮多抓几百页,
+改立这颗窄种子只圈邀请页一支(路径前缀限域,深度 1 = 总页 + 逐年子页),新年份子页挂出来即自动进地图。
+读的人是 pnp 域抽选段(QC 行,项目名 PSTQ —— QC 自成体系,不属 PNP)。"""
+
 SEED_NT_IMM = {"slug": "nt-imm", "seed": "https://www.immigratenwt.ca/", "depth": 2, "max_pages": 300}
 """NT(偏远地区,2026-08-03 Frank:「偏远地区也加上」)。"""
 
@@ -182,6 +194,7 @@ SEEDS = [
     SEED_ON_OINP,
     SEED_PE_IMM,
     SEED_QC_IMM,
+    SEED_QC_PSTQ,
     SEED_NT_IMM,
     SEED_YT_IMM,
     SEED_NU_IMM,
@@ -191,7 +204,8 @@ SEEDS = [
     SEED_FED_CAREGIVER,
     SEED_FED_EE,
 ]
-"""种子册全序(九省 + QC + 三地区 + 联邦五案;PE/NU 已知盲区留种子每轮试)。"""
+"""种子册全序(九省 + QC + 三地区 + 联邦五案;PE/NU 已知盲区留种子每轮试)。
+QC 两颗:整站 qc-imm + PSTQ 邀请一支 qc-pstq(2026-09-26 加,理由见 SEED_QC_PSTQ)。"""
 
 K_SLUG = "slug"
 """种子/manifest 键:slug。"""
@@ -727,7 +741,15 @@ SCHEME_SEP = "://"
 """URL 协议分隔。"""
 
 MANIFEST_GLOB = "*/manifest.json"
-"""cache 正门扫描的地图路径样式(相对 data/crawl/)。"""
+"""cache 正门扫描的地图路径样式(相对 data/crawl/)。
+2026-09-26 起读门不再逐次 glob(改为 listdir + 并行 stat,见 CACHE_IO_WORKERS);本式只剩读门对照自测里的旧实现金标在用,
+两边枚举的是同一批文件(data/crawl/ 下每个子目录里的 manifest.json)。"""
+
+CACHE_IO_WORKERS = 32
+"""读门 get_cached_page 并行 stat / 读 manifest 的线程数(2026-09-26 lead 派工④「crawl 读缓存提速」)。
+实测(8,813 份 manifest、38 MB):pnp 容器里旧实现串行 glob 32 秒 + 读 37 秒,单次读门 143 秒(bind mount 的逐文件开销);
+改成进程内索引后,每次仍 stat 全部 manifest(32 线程 3 秒),只有签名变了的才重读(进程内首次全读 32 线程 8.7 秒);
+16 / 64 线程不更快。本机同口径:stat 0.9 秒、首读 3 秒。"""
 
 ENC_UTF8 = "utf-8"
 """读写编码。"""
@@ -958,3 +980,11 @@ URLS_P_OK_TPL = "✓ urls 哨兵:{total} 条官方 URL 无硬红(软留痕 {soft
 
 COOKIE_JAR_EMPTY = "[]"
 """空 cookie 罐的文件内容(见 functions.ensure_cookie_jar;2026-09-20 自 sites 域收进本叶 —— 第二个消费者 company 的 findsite 步到了)。"""
+
+
+# =========================================================================
+# 8. 自测(用例住 scheme:读门对照 CacheIndexTest;2026-09-26)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(同 indexing / gate / pnp 自查)。"""

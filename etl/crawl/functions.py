@@ -16,9 +16,12 @@ import ast
 import asyncio
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
+import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
 from typing import cast
@@ -47,6 +50,7 @@ from crawl.constants import (
     BLOCK_TAGS,
     BOLD_TAGS,
     BROWSER_ARGS,
+    CACHE_IO_WORKERS,
     CELL_TAGS,
     CHALLENGE_SNIFF_LEN,
     CHALLENGE_TIMEOUT_MS,
@@ -124,7 +128,6 @@ from crawl.constants import (
     LIST_TAGS,
     LOCALE,
     MANIFEST_FILE,
-    MANIFEST_GLOB,
     MANIFEST_PREV_FILE,
     MD_BOLD_TPL,
     MD_CELL_SEP,
@@ -191,6 +194,7 @@ from crawl.constants import (
     SKIP_HREF_PREFIXES,
     SKIP_PATH_PATTERNS,
     STATUS_OK,
+    TEST_VERBOSITY,
     URL_DEAD_CODES,
     URL_HTTP_PREFIXES,
     URL_SKIP_MARKS,
@@ -235,6 +239,8 @@ from crawl.scheme import (
     HttpAsyncClientLike,
     PageLike,
     CacheHit,
+    CacheLookupIn,
+    CachedNamesIn,
     CachePutIn,
     CachePutManyIn,
     ConvertIn,
@@ -255,8 +261,11 @@ from crawl.scheme import (
     SaveCookiesIn,
     BrowserFetch,
     ClearIn,
+    ManifestEntry,
+    ManifestSig,
+    CacheIndexTest,
 )
-from crawl.variables import CACHE
+from crawl.variables import CACHE, MANIFESTS
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
 
 
@@ -281,24 +290,116 @@ def get_cached_page(url: str) -> CacheHit:
     「官方不公布」)。先查 manifest,再谈抓不到。
     约定:同 URL 多种子命中取 crawled_at 最新;只认 status 200;调用方自决报错还是回退
     (本项目惯例:自校未过保留旧表,别拿半份数据盖好数据)。
+    2026-09-26 提速(lead 派工④,Frank 拍「crawl 读缓存提速」):manifest 改走进程内索引(manifest_entries)——
+    每次照旧先看全部 manifest(并行 stat),签名没变的不重读不重解析;挑选规则一字未改(同 URL 多种子取 crawled_at
+    最新、并列取路径序在前的那份、同一份里取页序第一个文件还在盘上的行),对外签名与结果不变。
+    pnp 容器实测单次 143 秒 → 进程内首次约 11 秒、之后每次约 4 秒;对照自测 CacheIndexTest 拿旧实现当金标。
     """
-    want = url_variants_of(url)
+    return cached_hit_of(CacheLookupIn(entries=manifest_entries(), url=url))
+
+
+def cached_hit_of(x: CacheLookupIn) -> CacheHit:
+    """读门本体:在一份索引快照里挑这个 URL 的缓存页(规则同 get_cached_page 文件头;拆出来是为了对照自测
+    能拿同一份快照批量查,不必每个 URL 都重新 stat 一遍)。"""
+    want = url_variants_of(x.url)
     best = None
-    for man in sorted(paths.CRAWL.glob(MANIFEST_GLOB)):
-        try:
-            d = json.loads(man.read_text(encoding=ENC_UTF8))
-        except Exception:  # noqa: BLE001, S112 — 单个 manifest 坏了不拖垮其余种子
+    for entry in x.entries:
+        if entry.rows is None:
             continue
-        at = str(d.get(K_CRAWLED_AT) or "")
-        for p in d.get(K_PAGES, []):
-            if p.get(K_STATUS) != STATUS_OK or not p.get(K_HTML) or p.get(K_URL) not in want:
-                continue
-            f = man.parent / HTML_CACHE_DIR / p[K_HTML]
-            if f.exists() and (best is None or at > best[0]):
-                best = (at, f)
+        for name in cached_names_of(CachedNamesIn(rows=entry.rows, want=want)):
+            f = entry.path.parent / HTML_CACHE_DIR / name
+            if f.exists() and (best is None or entry.at > best[0]):
+                best = (entry.at, f)
     if best is None:
         return CacheHit(html=None, fetched="")
     return CacheHit(html=best[1].read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), fetched=best[0][:10])
+
+
+def cached_names_of(x: CachedNamesIn) -> list:
+    """一份 manifest 里命中任一写法的页行 → html 文件名清单,按页序(旧实现逐页扫、先到先得,顺序是语义)。"""
+    hits: list = []
+    for u in x.want:
+        for hit in x.rows.get(u, []):
+            hits.append(hit)
+    hits.sort(key=page_index_of)
+    names: list = []
+    for hit in hits:
+        names.append(hit[1])
+    return names
+
+
+def page_index_of(hit: tuple) -> int:
+    """(页序, 文件名) 的页序(排序键)。"""
+    return hit[0]
+
+
+def manifest_entries() -> list:
+    """全部 manifest 的当前索引,按路径序(同旧实现 sorted(glob) 的序):data/crawl/ 下每个子目录的 manifest.json
+    并行 stat 定签名,签名变了 / 新出现的并行重读,消失的从索引摘掉。签名 =(inode, mtime_ns, size):
+    原子写(临时文件 + os.replace,paths.write_text 与 crawl 三个写门都是)必换 inode,就地写必动 mtime。
+    缓存只住进程内(crawl.variables.MANIFESTS),不落盘 —— 各进程各自验,没有跨进程一致性问题。"""
+    if paths.CRAWL.is_dir() is False:
+        return []
+    cands: list = []
+    for name in os.listdir(paths.CRAWL):
+        cands.append(paths.CRAWL / name / MANIFEST_FILE)
+    with ThreadPoolExecutor(max_workers=CACHE_IO_WORKERS) as pool:
+        sigs = list(pool.map(manifest_sig_of, cands))
+    live: list = []
+    todo: list = []
+    for s in sigs:
+        if s.sig is None:
+            continue
+        live.append(s)
+        old = MANIFESTS.entries.get(s.path)
+        if old is None or old.sig != s.sig:
+            todo.append(s)
+    fresh: dict = {}
+    if len(todo) > 0:
+        with ThreadPoolExecutor(max_workers=CACHE_IO_WORKERS) as pool:
+            for e in pool.map(manifest_entry_of, todo):
+                fresh[e.path] = e
+    entries: dict = {}
+    out: list = []
+    for s in sorted(live, key=sig_path_of):
+        e = fresh.get(s.path)
+        if e is None:
+            e = MANIFESTS.entries[s.path]
+        entries[s.path] = e
+        out.append(e)
+    MANIFESTS.entries = entries
+    return out
+
+
+def sig_path_of(s: ManifestSig) -> Path:
+    """签名行的路径(排序键:Path 比较 = 旧实现 sorted(glob) 的序)。"""
+    return s.path
+
+
+def manifest_sig_of(path: Path) -> ManifestSig:
+    """一个子目录的 manifest 签名;没有 manifest(子目录里没这个文件、根上的零散文件)= sig None。
+    stat 不了不是错误:旧实现的 glob 也不列它们,这里照样不列。"""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return ManifestSig(path=path, sig=None)
+    return ManifestSig(path=path, sig=(st.st_ino, st.st_mtime_ns, st.st_size))
+
+
+def manifest_entry_of(s: ManifestSig) -> ManifestEntry:
+    """读一份 manifest 进索引:crawled_at 原文 + url → [(页序, html 文件名)](只收 status 200 且 html 非空的行)。
+    读不出 / 解析不了 → rows None(旧实现同款跳过;签名不变就不再重读)。解析出来不是对象的,照旧实现在取键处当场炸。"""
+    try:
+        d = json.loads(s.path.read_text(encoding=ENC_UTF8))
+    except Exception:  # noqa: BLE001 — 单个 manifest 坏了不拖垮其余种子(旧实现同款跳过)
+        return ManifestEntry(path=s.path, sig=s.sig, at="", rows=None)
+    at = str(d.get(K_CRAWLED_AT) or "")
+    rows: dict = {}
+    for i, p in enumerate(d.get(K_PAGES, [])):
+        if p.get(K_STATUS) != STATUS_OK or not p.get(K_HTML):
+            continue
+        rows.setdefault(p.get(K_URL), []).append((i, p[K_HTML]))
+    return ManifestEntry(path=s.path, sig=s.sig, at=at, rows=rows)
 
 
 def put_cached_page(x: CachePutIn) -> Path:
@@ -1508,3 +1609,16 @@ def bare_host_of(url: str) -> str:
     if host.startswith(WWW_PREFIX):
         return host[len(WWW_PREFIX) :]
     return host
+
+
+# =========================================================================
+# 8. 自测(用例住 scheme:读门对照 CacheIndexTest;2026-09-26)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """test 步入口:跑读门对照自测(新读门 vs 旧实现金标,临时树 + 真 data/crawl 抽样;库垫片先例 indexing / gate);
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(CacheIndexTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

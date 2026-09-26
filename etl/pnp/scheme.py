@@ -9,14 +9,21 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
 省提名的产出行不上 pydantic:各省表结构互不相同且**逐格顺序即文件契约**(raw/pnp/*.json 直接
 被 09 汇装读),行构造留在 functions 的表段里按 K_ 键逐格写全,校验靠各步自校硬闸。
 import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍零)。
+2026-09-26 起末段另住 ON 劳动力优先表守望的自测用例集(unittest 要求以 TestCase 子类交付用例 ——
+「不用 class」的外部库例外,先例 gate.scheme / indexing.scheme;跑法 `python etl/pnp/main.py --only test`);
+被测的 pnp.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
 """
+import json
 import re
+import unittest
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Callable, Iterator, Protocol
 
-from pnp.constants import GQ_SKIP_TAGS
+from pnp.constants import (
+    GQ_SKIP_TAGS, ON_CRAWL_SLUG, ON_WORKFORCE_URL, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE, OWP_V_NO_QUOTE, OWP_V_OK,
+)
 
 
 class SoupNodeLike(Protocol):
@@ -43,6 +50,10 @@ class SoupNodeLike(Protocol):
 
     def find_previous(self, *args: object, **kwargs: object) -> "SoupNodeLike":
         """文档序向前第一个命中(表格找它上方最近的标题用)。"""
+        ...
+
+    def find_next(self, *args: object, **kwargs: object) -> "SoupNodeLike":
+        """文档序向后第一个命中(QC 折叠块标题找它的正文、NS 小标题找它下方的列表用;2026-09-26)。"""
         ...
 
     def get_text(self, *args: object, **kwargs: object) -> str:
@@ -172,6 +183,17 @@ class PageTextIn:
 
     cache_first: bool = False
     """True = 先查 crawl 缓存(每小时一轮的整站爬),没有才发请求 —— 同一页不抓两遍。"""
+
+
+@dataclass
+class SlugPageIn:
+    """slug_cached_page() 入参:已知 crawl slug 的一页(2026-09-26)。"""
+
+    slug: str
+    """crawl 种子 slug(data/crawl/<slug>/,crawl.constants 的 SEED_* 同名)。"""
+
+    url: str
+    """页地址(尾斜杠两种写法都认)。"""
 
 
 @dataclass
@@ -334,6 +356,46 @@ class PeDrawRowsIn:
 
     note: str
     """该轮的选择依据原文(官方 Selection Attributes 列,已截断)。"""
+
+
+@dataclass
+class QcDrawIn:
+    """qc_draw_of() 入参:QC 一轮一个 stream 的折叠块 → 一行抽选(2026-09-26)。"""
+
+    date: str
+    """ISO 邀请日(两天一轮取后一天)。"""
+
+    stream: str
+    """所在 stream 段的标题原文(「Stream 1: Highly qualified and specialized skills」)。"""
+
+    body: str
+    """折叠块正文(已折空白;不换行空格的千分位已折成普通空格)。"""
+
+
+@dataclass
+class CachedDrawsIn:
+    """cached_draws_of() 入参:只读 crawl 缓存的一省抽选(NS / QC,2026-09-26)。"""
+
+    prov: str
+    """省码。"""
+
+    url: str
+    """官方抽选页(进 draws.json 的 url;缓存落空时报数用)。"""
+
+    html: str | None
+    """读门取回的页面原文;None = crawl 缓存里没有这页。"""
+
+    parse: ParseDrawsFn
+    """本省的解析器。"""
+
+    scale: str | None
+    """计分制名(None = 官方不发分数线)。"""
+
+    label: str
+    """前端显示的项目族名。"""
+
+    old: dict
+    """上一轮的 provinces 块(缓存落空 / 解析塌方 / 解析为空 → 原样保留)。"""
 
 
 @dataclass
@@ -1686,3 +1748,176 @@ class PeTablesIn:
 
     url: str
     """报告 URL(进每行出处)。"""
+
+
+# =========================================================================
+# 39. ON 劳动力优先表守望(2026-09-26)
+# =========================================================================
+
+
+@dataclass
+class OwpRefreshIn:
+    """owp_refreshed_of() 入参:人工表原文与缓存抓取日。"""
+
+    text: str
+    """on-workforce-priority.json 的原文(按字节解码,换行照旧)。"""
+
+    date: str
+    """crawl 缓存那轮的日期(ISO;读门没给 / 形状不对 → 不刷)。"""
+
+
+class OnWorkforceWatchTest(unittest.TestCase):
+    """ON 劳动力优先表守望自测(2026-09-26 Frank 定守望同批):判定四态(原句在 / 原句不在 / 缓存缺失 / 拦截页)
+    + 表里日期的字符串替换 + 真页真表金标。判定与替换都是纯函数,全程不联网、不写仓内文件;
+    金标只读仓里的真表与 crawl 缓存里的真页(本机没有缓存就跳过)。"""
+
+    def page_of(self, body: str) -> str:
+        """造一页 ontario.ca 形的 HTML:正文在 <main> 里,外面带导航与页脚噪音。"""
+        return ("<html><head><title>Ontario Workforce Priority stream | ontario.ca</title></head><body>"
+                "<nav>Home Immigration Ontario Immigrant Nominee Program</nav><main>" + body + "</main>"
+                "<footer>Updated: August 11, 2026</footer></body></html>")
+
+    def table_of(self, fetched: str) -> str:
+        """造一份手排版的人工表原文(两空格缩进、LF 换行,同真表的排法)。"""
+        return ('{\n  "province": "ON",\n  "type": "ineligible",\n  "fetched": "' + fetched + '",\n'
+                '  "note": "官方不设职业清单",\n  "occupations": []\n}\n')
+
+    def test_quote_present(self) -> None:
+        """原句在 → ok:真页的切法(分类名是链接、NOC 包 <abbr>、行内换行缩进)照认;大小写与空白变化不影响。"""
+        from pnp import functions as fn
+        real = ('<h2>Overview</h2><p>The Ontario Workforce Priority stream offers eligible skilled foreign workers '
+                'with a qualifying job offer and work experience in any <a href="https://www.canada.ca/en/'
+                'immigration-refugees-citizenship/services/immigrate-canada/find-national-occupation-code.html">'
+                'National Occupational Classification</a> (<abbr>NOC</abbr>) occupation a pathway to apply to '
+                'permanently live and work in Ontario.</p>')
+        self.assertEqual(fn.owp_verdict_of(self.page_of(real)), OWP_V_OK)
+        spaced = "<p>Work\n    experience in ANY National Occupational\tClassification ( NOC ) occupation.</p>"
+        self.assertEqual(fn.owp_verdict_of(self.page_of(spaced)), OWP_V_OK)
+
+    def test_quote_absent(self) -> None:
+        """原句不在 → no-quote:改成清单式写法、只剩 TEER 字样、原句只剩半句、原句只在导航里(不在正文)都算不在。"""
+        from pnp import functions as fn
+        cases = [
+            "<p>work experience in an eligible occupation listed below</p><ul><li>21231 Software engineers</li></ul>",
+            "<p>Job offers in TEER 0, 1, 2 or 3 occupations only.</p>",
+            "<p>work experience in any National Occupational Classification</p>",
+            "<p>Overview of the stream.</p>",
+        ]
+        for body in cases:
+            with self.subTest(body=body):
+                self.assertEqual(fn.owp_verdict_of(self.page_of(body)), OWP_V_NO_QUOTE)
+        in_nav = ("<html><body><nav>work experience in any National Occupational Classification (NOC) occupation</nav>"
+                  "<main><p>Overview of the stream.</p></main></body></html>")
+        self.assertEqual(fn.owp_verdict_of(in_nav), OWP_V_NO_QUOTE)
+
+    def test_cache_missing(self) -> None:
+        """缓存缺失 → no-cache:读门给 None(没爬到)与空串一个口径。"""
+        from pnp import functions as fn
+        self.assertEqual(fn.owp_verdict_of(None), OWP_V_NO_CACHE)
+        self.assertEqual(fn.owp_verdict_of(""), OWP_V_NO_CACHE)
+
+    def test_blocked_page(self) -> None:
+        """Radware 验证壳 → blocked(不当成官方改版,也不刷)。"""
+        from pnp import functions as fn
+        shell = "<html><head><title>Radware Captcha Page</title></head><body><p>Please verify you are human</p></body></html>"
+        self.assertEqual(fn.owp_verdict_of(shell), OWP_V_BLOCKED)
+
+    def test_refresh_text(self) -> None:
+        """日期替换:只换 fetched 那一格(其余字节一个不动);缓存日不比表里新、缓存日形状不对 → 原样;
+        fetched 格不是恰好一处 → None(不动表)。"""
+        from pnp import functions as fn
+        table = self.table_of("2026-07-25")
+        got = fn.owp_refreshed_of(OwpRefreshIn(text=table, date="2026-09-26"))
+        self.assertEqual(got, self.table_of("2026-09-26"))
+        for date in ("2026-07-25", "2026-07-01", "", "2026-9-26", "tomorrow"):
+            with self.subTest(date=date):
+                self.assertEqual(fn.owp_refreshed_of(OwpRefreshIn(text=table, date=date)), table)
+        crlf = table.replace("\n", "\r\n")
+        self.assertEqual(fn.owp_refreshed_of(OwpRefreshIn(text=crlf, date="2026-09-26")),
+                         self.table_of("2026-09-26").replace("\n", "\r\n"))
+        missing = table.replace('"fetched"', '"checked"')
+        self.assertIsNone(fn.owp_refreshed_of(OwpRefreshIn(text=missing, date="2026-09-26")))
+        doubled = table.replace('"occupations": []', '"occupations": [],\n  "fetched": "2026-07-25"')
+        self.assertIsNone(fn.owp_refreshed_of(OwpRefreshIn(text=doubled, date="2026-09-26")))
+
+    def test_real_page_and_table(self) -> None:
+        """金标:crawl 缓存里的真流页判 ok;仓里的真表刷一个更新的日期后仍是合法 JSON,且除 fetched 外逐键不变。"""
+        from pnp import functions as fn
+        hit = fn.slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=ON_WORKFORCE_URL))
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有 ON 流页(本机未跑 crawl)")
+        self.assertEqual(fn.owp_verdict_of(hit.html), OWP_V_OK)
+        text = Path(OWP_TABLE).read_bytes().decode("utf-8")
+        got = fn.owp_refreshed_of(OwpRefreshIn(text=text, date="2999-12-31"))
+        self.assertIsNotNone(got)
+        before = json.loads(text)
+        after = json.loads(str(got))
+        self.assertEqual(after["fetched"], "2999-12-31")
+        before["fetched"] = after["fetched"]
+        self.assertEqual(after, before)
+        self.assertEqual(len(str(got)), len(text))
+
+
+# =========================================================================
+# 40. 自测(门的「一步失败其余照跑」;2026-09-26)
+# =========================================================================
+
+
+class ChainKeepGoingTest(unittest.TestCase):
+    """pnp 门 run_steps 自测(2026-09-26 Frank「一步失败不再拖停整轮」同批):中间一步抛异常、一步走自校硬闸
+    sys.exit(1),后面的步照跑,返回码 1;全过返回 0;sys.exit(0) 不算失败;失败的步不管排在哪都不影响别的步。
+    假步是本类的方法(记下自己跑过),不联网不写仓;门的进度行照打。"""
+
+    def setUp(self) -> None:
+        """每条用例一份干净的跑步记录。"""
+        self.ran: list[str] = []
+
+    def step_ok(self) -> None:
+        """正常步:记一笔。"""
+        self.ran.append("ok")
+
+    def step_raise(self) -> None:
+        """抓取 / 解析塌方的步:抛普通异常。"""
+        self.ran.append("raise")
+        raise RuntimeError("fake step crash")
+
+    def step_exit(self) -> None:
+        """走自校硬闸的步(fail_keep_old / fail_zh 的 sys.exit(1))。"""
+        self.ran.append("exit")
+        raise SystemExit(1)
+
+    def step_exit_zero(self) -> None:
+        """sys.exit(0) 收尾的步(成功,不算失败)。"""
+        self.ran.append("exit0")
+        raise SystemExit(0)
+
+    def test_failure_keeps_going(self) -> None:
+        """金标:异常步与硬闸步都在中间,后面的步照跑、一个不少,返回码 1。"""
+        from pnp import main as door
+        code = door.run_steps([("a", self.step_ok), ("b", self.step_raise), ("c", self.step_exit),
+                               ("d", self.step_ok)])
+        self.assertEqual(code, 1)
+        self.assertEqual(self.ran, ["ok", "raise", "exit", "ok"])
+
+    def test_all_pass(self) -> None:
+        """全过 → 返回 0;sys.exit(0) 的步算过。"""
+        from pnp import main as door
+        self.assertEqual(door.run_steps([("a", self.step_ok), ("b", self.step_exit_zero), ("c", self.step_ok)]), 0)
+        self.assertEqual(self.ran, ["ok", "exit0", "ok"])
+        self.assertEqual(door.run_steps([]), 0)
+
+    def test_failure_anywhere(self) -> None:
+        """性质:四步里坏步放在任一位置(异常 / 硬闸两种坏法),每一步都跑到,返回码恒为 1。"""
+        from pnp import main as door
+        for bad in (self.step_raise, self.step_exit):
+            for pos in range(4):
+                with self.subTest(bad=bad.__name__, pos=pos):
+                    self.ran = []
+                    steps: list = []
+                    for i in range(4):
+                        fn = self.step_ok
+                        if i == pos:
+                            fn = bad
+                        steps.append((str(i), fn))
+                    self.assertEqual(door.run_steps(steps), 1)
+                    self.assertEqual(len(self.ran), 4)

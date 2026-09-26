@@ -10,6 +10,13 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 一律从仓库根执行:
     python etl/pnp/main.py                     # 默认链(28 步)
     python etl/pnp/main.py --only draws        # 单步调试 / 手动工具(见 TOOLS)
+
+⚡ 2026-09-26 改判(/fe Frank「一步失败不再拖停整轮」):门改为**每步各自兜住**(run_steps)—— 失败那步保留旧表
+(各步的硬闸本来就不覆盖)、打 ✗ 留痕,其余步照跑;本轮末尾只要有一步失败仍返回 1,调度器照旧扣 ping、告警照常。
+SystemExit 也在门里接住(自校硬闸 fail_keep_old / fail_zh 走 sys.exit(1),不接住就还是一步炸全轮)。
+依据:mb_stats 因官方改句自校失败,把链尾 nl_employers / watch_allocations / draw_streams_zh 拖停 10 天
+(09-16 → 09-26 三份产物被保鲜闸判超期;同类旧账:pnp 24 步一根绳的 25 天陈账)。
+上面「一步失败中止本轮」「exit 1 的步骤钉末尾」两条从此只剩排序习惯,不再是语义;原文保留作沿革。
 """
 import sys
 from pathlib import Path
@@ -22,9 +29,9 @@ from pnp.functions import (
     build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_req, build_nl,
     build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points,
     build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_req, build_sk, build_sk_joboffer,
-    build_sk_points, build_sk_req, build_sk_stats, gate_quotes,
+    build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
-    watch_prov_allocations,
+    watch_on_workforce, watch_prov_allocations,
 )
 
 SCHEDULED = [
@@ -37,6 +44,7 @@ SCHEDULED = [
     ("nl", build_nl),
     ("pe", build_pe),
     ("pe_aip", build_pe_aip),
+    ("on_workforce", watch_on_workforce),
     ("draws", build_draws),
     ("ns_allocations", scrape_ns_allocations),
     ("bc_req", build_bc_req),
@@ -61,6 +69,10 @@ SCHEDULED = [
     ("nl_employers", build_nl_employers),
     ("watch_allocations", watch_prov_allocations),
     ("draw_streams_zh", translate_draw_streams),
+    ("sk_joboffer", build_sk_joboffer),
+    ("on_stats", build_on_stats),
+    ("mb_points", build_mb_points),
+    ("nl_points", build_nl_points),
 ]
 """默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
 2026-08-30 批B 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
@@ -69,6 +81,16 @@ SCHEDULED = [
 另外四个手动件 on_stats / mb_points / nl_points / sk_joboffer 会打官网,进不进链待 Frank 拍。
 2026-09-23 draw_streams_zh 从手动件挂进链尾(Frank「这个如果没有中文翻译也要加 AI 自动翻译吧」):只翻缓存里没有的
 通道名(本地 Ollama),新通道名下一轮汇装就带中文;校验没过 / 超时的留到下一轮再翻。钉在最末:盒子不在线时只拖它自己。
+2026-09-26 on_workforce 守望挂进链(/fe Frank「安省劳动力优先清单感觉是死掉了」→「你建议怎么弄」→ lead 建议守望):
+纯读 crawl 缓存的 ON 流页,举证原句还在就刷人工表 on-workforce-priority.json 的日期,不在只留痕;自身失败不拦役,
+所以排在具名清单一组的尾巴、所有硬闸步之前(排后面会被 mb_stats 这类自校失败连带拖停,表就假性超期)。
+同日 draws 步多收两省:NS 月度选取人数、QC PSTQ 邀请(都只读 crawl 缓存,QC 不属 PNP)。
+2026-09-26 四个手动件 sk_joboffer / on_stats / mb_points / nl_points 挂进链尾(Frank 定保鲜标准「我现在职位是小时更新。
+其他最次也是日更」—— 上面 09-15 那句「进不进链待 Frank 拍」就此拍定):四份产物停在 08-30 / 09-09,被两天保鲜规则判超期。
+打官网的量每轮 +10 次(ontario.ca 1、web.archive.org 4、immigratemanitoba 1、gov.nl.ca 2、publications.saskatchewan.ca 2)。
+排在 draw_streams_zh 之后:后三个自校失败会 exit 1,钉最末只拖它们自己;sk_joboffer 失败不退出,排在三者前面。
+2026-09-26 同日门改判(Frank「一步失败不再拖停整轮」,见文件头):任一步失败不再中止本轮 —— 上面各处「排末尾免得
+拖累后面」的排序理由从此只剩习惯,不再是语义;顺序仍保留(先具名清单、后门槛 / 统计,出事时日志好读)。
 
   build_ab               AB AAIP(实时,exclusion 排除式)
   build_bc               BC 2026 新政 Care/Build 清单(实时,2026-07-25 接入;旧 tech 定向 2024-12 关)
@@ -78,6 +100,7 @@ SCHEDULED = [
   build_nb               NB 不受理职业两表(实时,E6-09;叠加式排除 overlay)
   build_nl               NL 优先处理职位(2026-08-03;职位名文本非 NOC,不参与打分)
   build_pe               PE 在需职业 8 个(2026-08-03;走官方指南 PDF——PEI 网页在 Radware 后面)
+  watch_on_workforce     ON 劳动力优先表守望(2026-09-26;原句在 → 刷人工表日期,不在 → ✗ 留痕;不拦役)
   build_draws            E6-04 省抽选事实(BC/AB/MB+ON通告;无 occupations 键,08 扫表跳过)
   scrape_ns_allocations  NS 官方年度配额(唯一上开放平台的省;沿革:原 ircc 役搭车,月→周无害)
 
@@ -135,6 +158,7 @@ TOOLS = {
     "nl": build_nl,
     "pe": build_pe,
     "pe_aip": build_pe_aip,
+    "on_workforce": watch_on_workforce,
     "draws": build_draws,
     "ns_allocations": scrape_ns_allocations,
     "bc_req": build_bc_req,
@@ -167,6 +191,7 @@ TOOLS = {
     "watch_allocations": watch_prov_allocations,
     "c01_gold": audit_c01_gold,
     "gate_quotes": gate_quotes,
+    "test": run_tests,
 }
 """全部可 --only 点名的步(默认链 28 步 + 不进链的手动件)。
 不进默认链的十个及其理由:
@@ -178,12 +203,16 @@ TOOLS = {
   nl_points            NL EE 分值表(Annex A PDF)
   nl_employers         NL 指定雇主名录(纯读 crawl 缓存,不发请求)
   sk_joboffer          SK Job Offer 排除清单(另一张 PDF)
+                       —— mb_stats / nl_employers 2026-09-15 起、on_stats / mb_points / nl_points / sk_joboffer
+                       2026-09-26 起进默认链(见 SCHEDULED 沿革),这里仍可单跑
   draw_streams_zh      抽选流名中文灰注(本地 Ollama,批量翻译不进定时链)
                        —— 2026-09-23 起进默认链尾(只翻缓存里没有的,见 SCHEDULED 沿革),这里仍可单跑
   watch_allocations    名额公告哨兵(只提醒不写表,自身失败不拦役;2026-08-31 批D 起进默认链尾)
   c01_gold             C4 金标审计:案例 C01 的数字必须能从 mart 查出(批D 自 ops 收编,手动)
   gate_quotes          门槛取证器:13 条通道三类闸的官方候选原句(批D 收编,手动;
                        可再跟通道名只扫点名的,如 --only gate_quotes PE-sw)
+  test                 本域自测(2026-09-26;unittest,不联网不写仓):ON 劳动力优先表守望判定 +
+                       门的「一步失败其余照跑、返回码仍为 1」
 """
 
 
@@ -201,13 +230,28 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
+    return run_steps(todo)
+
+
+def run_steps(todo: list) -> int:
+    """按序跑一串 (步名, 函数),**一步失败不拖停其余步**(2026-09-26 改判,见文件头):失败那步保留旧表、打 ✗ 留痕,
+    后面的照跑;有一步失败本轮就返回 1(告警照常),全过返回 0。sys.exit(0) 不算失败。
+    SystemExit 在这里接住:自校硬闸走 sys.exit(1),`except Exception` 接不到它。自测见 scheme 的 ChainKeepGoingTest。"""
+    failed = []
     for name, fn in todo:
         say(f"→ {name}")
         try:
             fn()
-        except Exception as e:  # noqa: BLE001
+        except SystemExit as e:
+            if e.code not in (0, None):
+                failed.append(name)
+                say(f"✗ {name} 退出码 {e.code}(本步保留旧表,其余步照跑)")
+        except Exception as e:  # noqa: BLE001 — 门是最外层兜底:任一步炸了留痕记失败,不拖停后面的步
             err(name, e)
-            return 1
+            failed.append(name)
+    if len(failed) > 0:
+        say(f"✗ 本轮 {len(failed)}/{len(todo)} 步失败:{'/'.join(failed)}(均保留旧表,其余步已照跑;本轮记失败)")
+        return 1
     say(f"✓ 本域 {len(todo)} 步全过")
     return 0
 

@@ -17,7 +17,9 @@ META = {
     "seed": False,
     "ping": True,   # 本角色的 healthchecks 心跳由本域发
     "fresh": [      # 保鲜契约(2026-08-31 批O:source_manifest 退役,行原样搬入;语义见 sched.K_FRESH)
-        {"glob": "raw/ircc/*.json", "cadence_days": 4},
+        {"glob": "raw/ircc/*.json", "cadence_days": 2},   # 2026-09-26 Frank「最次也是日更」:原 4 天 → 2(日更一轮 +
+                                                          # 一天余量,按日期差判,跨零点 / 一轮失败重试不误报);本域日更,
+                                                          # 同目录的 allocation_watch / ns_allocations 由 pnp 小时更
         {"file": "raw/ircc/pnp_allocations.json", "cadence_days": 60, "key": "checkedAt",
          "note": "人工核对表(配额)"},
         {"file": "raw/ircc/levels_plan.json", "cadence_days": 60, "key": "checkedAt",

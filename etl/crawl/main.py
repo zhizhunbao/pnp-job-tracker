@@ -8,13 +8,14 @@ ee_categories 是回退工具(ee 域 bs4 直解失效时的浏览器版,手动�
     python etl/crawl/main.py                       # 默认链(discover 全种子)
     python etl/crawl/main.py --only ee_categories  # 回退工具
     python etl/crawl/main.py --only attended       # 本机:只跑要人点验证的种子(PE),有头、撞验证手点
+    python etl/crawl/main.py --only test           # 读门对照自测(新索引读门 vs 旧实现金标;2026-09-26)
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
-from crawl.functions import check_official_urls, discover_all, discover_attended, run_ee_categories
+from crawl.functions import check_official_urls, discover_all, discover_attended, run_ee_categories, run_tests
 
 SCHEDULED = [
     ("discover", discover_all),
@@ -29,9 +30,11 @@ TOOLS = {
     "discover": discover_all,
     "ee_categories": run_ee_categories,
     "urls": check_official_urls,
+    "test": run_tests,
 }
 """全部可 --only 点名的步(含回退工具)。
-attended:只跑要人点验证的种子(PE),**本机**有头浏览器、撞上验证 Frank 手点(2026-09-24;容器里的默认链跳过这类种子)。"""
+attended:只跑要人点验证的种子(PE),**本机**有头浏览器、撞上验证 Frank 手点(2026-09-24;容器里的默认链跳过这类种子)。
+test:读门 get_cached_page 对照自测(2026-09-26 提速同批;临时树 + 真 data/crawl 抽样,只读不联网),不进默认链。"""
 
 
 def main() -> int:

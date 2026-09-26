@@ -806,6 +806,9 @@ PROV_PE = "PE"
 PROV_ON = "ON"
 """省码:安大略。"""
 
+PROV_QC = "QC"
+"""省码:魁北克(自成体系不属 PNP;本域只在抽选段收它的 PSTQ 邀请记录,2026-09-26)。"""
+
 WORD_N = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
           "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12}
 """官方英文数词 → 数字。
@@ -1771,7 +1774,9 @@ OUT_DRAWS = paths.PNP / "draws.json"
 """抽选事实表(⚠️ **无 occupations 键** —— 08_score 目录驱动扫 raw/pnp/*.json 时天然跳过)。
 **事实展示层,非资格判定**:各省分制互不相通(BC=SIRS / AB=WEOI / MB=MPNP EOI),都不是 CRS ——
 score 一律带 scale 标注,前端展示必须声明「省自评分制,非 CRS」。
-SK 2025 改制后无抽选、QC 不属 PNP,不产出。抓取失败/解析空 → 该省保留旧数据。"""
+SK 2025 改制后无抽选、QC 不属 PNP,不产出。抓取失败/解析空 → 该省保留旧数据。
+2026-09-26 补两省(lead 派工「补数据」):NS 月度选取人数(DRAWS_NS_URL)、QC PSTQ 邀请记录(DRAWS_QC_URL_TPL)——
+QC 仍不属 PNP,只收它自己的 PSTQ 邀请事实,label / scale 写 PSTQ,不标 PNP、不进任何 PNP 判定。"""
 
 DRAWS_TIMEOUT_S = 30
 """各省抽选页抓取超时。"""
@@ -1836,6 +1841,37 @@ DRAWS_PE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immig
 Entry),**分数线官方只对 Business 那一类公布**(Minimum Point Threshold),
 Labour 那类恒 None —— 不是抓漏了,是官方不发。末行是年度 Total 汇总,不是抽选。"""
 
+DRAWS_NS_URL = "https://liveinnovascotia.com/eoi-selection"
+"""NS EOI 月度选取页(2026-09-26 lead 派工接入,海洋四省第四份):官方按月公布从 EOI 池选中的人数
+(「Nova Scotia selected the following number of candidates from the Expression of Interest (EOI) pool during
+the months noted below」),**只到月、不发逐轮日期、不发分数线**,未公布的月份写 TBD。NSNP 各通道与 AIP
+指定 / 背书走同一个 EOI 池(eoi-process 页 2025-11-28 公告)。只读 crawl 缓存(ns-root 种子每小时在刷,
+同 PE 先例),不另发请求。"""
+
+DRAWS_QC_URL_TPL = ("https://www.quebec.ca/en/immigration/permanent/skilled-workers/"
+                    "skilled-worker-selection-program/invitation/{year}")
+"""QC PSTQ 逐年邀请记录页(2026-09-26 lead 派工接入;邀请总页链出,crawl 域同日为它立窄种子 qc-pstq)。
+页形:h2「Stream N: …」分四段,每段一轮一个折叠块(h2「Invitations for <日期>」+ 其后的 panel-body),
+块内有本轮该 stream 的邀请总数与各邀请档的最低分。只读 crawl 缓存,不另发请求。
+⚠ QC 自成体系,不属 PNP:label / scale 一律写项目名 PSTQ,不标 PNP。"""
+
+DRAWS_NS_SLUG = "ns-root"
+"""NS 月度选取页所在的 crawl 种子 slug(crawl.constants.SEED_NS_ROOT,每小时一轮;单 slug 索引读缓存,见 slug_cached_page)。"""
+
+DRAWS_QC_SLUG = "qc-pstq"
+"""QC 逐年邀请页所在的 crawl 种子 slug(crawl.constants.SEED_QC_PSTQ,2026-09-26 立,每小时一轮)。"""
+
+DRAWS_QC_YEARS_BACK = 2
+"""QC 逐年页往前探几年(年初新一年的页还没挂出来时退回上一年页;不写死年份,明年不静默过期)。"""
+
+DRAWS_QC_MAX = 48
+"""QC 一年的抽选行上限(四个 stream 各一行 × 约一月一轮;与 NB / AB 的 48 同档,整年留在 raw,mart 再截)。"""
+
+DRAWS_REVISABLE_PROVS = (PROV_NS, PROV_QC)
+"""官方会回头改数的省(2026-09-26):NS 是月度合计、QC 页上有占位数(2026-08-27 那轮 Stream 2 写的是
+「invited XXX people」)—— 并回历史时按「日期 + stream」去重、本轮值覆盖旧值(merge_revisable_draws);
+走四格去重(merge_draws)会把改过数的同一轮留成两行。"""
+
 DRAWS_NUM_STRIP_RE = re.compile(r"[,\s]")
 """数字里的千分位逗号与空白(int_of 先剥再转)。"""
 
@@ -1884,8 +1920,22 @@ DRAWS_MB_LABEL = "MPNP Expression of Interest"
 DRAWS_MB_SCALE = "MPNP EOI"
 """MB 的省自评分制名。"""
 
-DRAWS_NL_LABEL = "NLPNP + AIP(ITA 批次)"
-"""NL 抽选块的前端族名(scale=None —— 官方只发邀请数不发分数线,前端不得凭空造一条「分数线」列)。"""
+DRAWS_NL_LABEL = "NLPNP + AIP"
+"""NL 抽选块的前端族名(scale=None —— 官方只发邀请数不发分数线,前端不得凭空造一条「分数线」列)。
+2026-09-26 改(lead 派工:英文界面卡标题显示「Recent draws NLPNP + AIP(ITA 批次)」):原值「NLPNP + AIP(ITA 批次)」——
+label 经 mart 进 pnp_draws.label,三语卡标题 pnpdraws.title 原样插值不翻译,中文括注就混进了英 / 韩界面;
+「ITA batch」已在 stream 名 NL_DRAW_STREAM 里,label 只留项目名,与 NB「NBPNP + AIP」同形。"""
+
+DRAWS_NS_LABEL = "NSNP + AIP"
+"""NS 抽选块的前端族名(2026-09-26;scale=None —— 官方只发月度选取人数,不发分数线)。只写项目名,
+三语卡标题原样显示,与 NB / NL 同形。"""
+
+DRAWS_QC_LABEL = "PSTQ"
+"""QC 抽选块的前端族名(2026-09-26):Programme de sélection des travailleurs qualifiés。魁省自有体系,不属 PNP ——
+不许写成 PNP;只写项目名,三语卡标题原样显示。"""
+
+DRAWS_QC_SCALE = "PSTQ"
+"""QC 的邀请计分制名(Arrima 意向库按 PSTQ 计分表排序;与 CRS、各省 EOI 分互不可比,前端必须带标注)。"""
 
 DRAWS_NB_LABEL = "NBPNP + AIP"
 """NB 抽选块的前端族名(scale=None —— 按职业类别定向发邀请,官方同样不发分数线)。"""
@@ -2061,6 +2111,55 @@ NL_DRAW_ITA_KW = "ita"
 
 NL_DRAW_STREAM = "NLPNP + AIP (ITA batch)"
 """NL 抽选行的通道名(官方按批次发,不分通道)。"""
+
+NS_DRAW_MONTH_RE = re.compile(r"^([A-Z][a-z]+)\s+(\d{4})$")
+"""NS 月度表的月份格(「January 2026」);人数格认不出(TBD)= 该月未公布,不落行。"""
+
+NS_DRAW_MONTH_TPL = "{year}-{month:02d}"
+"""NS 月度行的 drawDate:官方只到月,记 ISO 年-月(同 mb-stats 统计期 YYYY-MM 的口径),不编具体哪天。"""
+
+NS_DRAW_STREAM = "Monthly EOI selections"
+"""NS 月度行的 stream(官方页没有通道名,只有「从 EOI 池选中」的月度合计)。"""
+
+NS_FOCUS_HEAD = "occupational focus"
+"""NS 页小标题「Occupational focus」(小写比对):其下列表是选中者的职业大类,整页一份,挂在每一行 note 上
+(同 PE 选择依据列跨整年的先例)。"""
+
+NS_FOCUS_TAGS = ["h2", "h3", "h4"]
+"""找「Occupational focus」小标题时要走的标签。"""
+
+NS_DRAW_NOTE_TPL = "Occupational focus: {groups}"
+"""NS 月度行的 note(官方小标题 + 官方列项原文,逗号连)。"""
+
+QC_DRAW_HEAD_RE = re.compile(r"^Invitations?\s+(?:for|of)\s+(.+\d{4})$", re.I)
+"""QC 逐轮折叠块标题(「Invitations for June 4, 2026」「Invitations for March 19 and 20, 2026」;
+两天一轮取后一天,同 NB 区间日期的取法 iso_nb_of)。"""
+
+QC_STREAM_PREFIX = "Stream "
+"""QC 的 stream 段标题前缀(「Stream 1: Highly qualified and specialized skills」原文整句进 stream);
+其余 h2(汇总表、Other invitations …)一律清空当前 stream,其下的折叠块不收。"""
+
+QC_HEAD_TAG = "h2"
+"""QC 页 stream 段标题与逐轮折叠块标题共用的标签。"""
+
+QC_BODY_TAG = "div"
+"""逐轮折叠块正文的标签。"""
+
+QC_BODY_CLASS = "panel-body"
+"""逐轮折叠块正文的 class(标题之后文档序第一个)。"""
+
+QC_DRAW_INV_RE = re.compile(r"invited\s+(\d{1,3}(?:[ ,]\d{3})+|\d+)\s+(?:people|persons|individuals)", re.I)
+"""本轮该 stream 的邀请总数(千分位是不换行空格,折空白后如「invited 1 094 people」);
+官方占位「invited XXX people」认不出 → invitations=None,不拿各档人数加总去猜。"""
+
+QC_DRAW_SCORE_RE = re.compile(r"score\s*(?:\(PDF[^)]*\))?\s*"
+                              r"(?:of\s+(?:at\s+least\s+)?|equal\s+to\s+or\s+greater\s+than\s+)"
+                              r"(\d{1,3}(?:[ ,]\d{3})*)\s*points", re.I)
+"""各邀请档的最低分,官方三种写法:「score (PDF 299 Kb) of 782 points or higher」「of at least 741 points」
+「equal to or greater than 800 points」。Stream 4(杰出人才)不计分,一档都没有 → score=None。"""
+
+QC_DRAW_NOTE_TPL = "Minimum score by invitation profile: {scores}"
+"""QC 行的 note:本轮各邀请档的最低分按页面顺序列出(score 列取其中最小 = 本轮被邀请者的最低分;只一档不写)。"""
 
 NB_ORDINAL_RE = re.compile(r"(\d)(st|nd|rd|th)\b", re.I)
 """NB 日期里的序数词(「May 1st, 2026」)。"""
@@ -2254,6 +2353,12 @@ DRAWS_PRINT_ON_OK_TPL = "  ✓ ON  {n:>2} 条抽选(其中 {scored} 条带分数
 
 DRAWS_PRINT_PE_NO_CACHE_TPL = "  ✗ PE 抽选页不在 crawl 缓存里: {url}(保留旧数据)"
 """PE 读门落空的报数(官网在 Radware 墙后,只能等 crawl 役过墙那轮;不退化成直抓)。"""
+
+DRAWS_PRINT_NO_CACHE_TPL = "  ✗ {prov} 抽选页不在 crawl 缓存里: {url}(保留旧数据)"
+"""NS / QC 读门落空的报数(2026-09-26;两省同 PE 只读缓存,等 crawl 役补上,不退化成直抓)。"""
+
+DRAWS_PRINT_PARSE_FAIL_TPL = "  ✗ {prov} 抽选页解析失败: {name} {detail}(保留旧数据)"
+"""NS / QC 缓存页解析塌方的报数(官网改版;没发请求,所以不叫「抓取失败」)。"""
 
 DRAWS_PRINT_PE_OK_TPL = ("  ✓ PE  {n:>2} 条(其中 {scored} 条带分数线)  最近 {date} {stream}"
                          "  inv={inv}  缓存 {fetched}")
@@ -2517,6 +2622,11 @@ BCR_FACTOR_ORDER = ("language", "income", "experience", "empYears", "empStaff")
 ON_WORKFORCE_URL = "https://www.ontario.ca/page/ontario-workforce-priority-stream"
 """Ontario Workforce Priority 通道页(on-req 与 on-points 两段共用,原为两份抄本)。
 ontario.ca 直连 200,不需要浏览器。"""
+
+ON_CRAWL_SLUG = "on-oinp"
+"""ON 官方站在 crawl 层的种子 slug(crawl.constants.SEED_ON_OINP,每小时一轮)。2026-09-26 起段27 逐年页与段39 守望
+走单 slug 索引读缓存(slug_cached_page)—— 全 manifest 扫描的读门在 pnp 容器里一次 143 秒,段27 一轮要问 12 次。
+(同日稍后 crawl 读门已提速:容器里进程内首次约 11 秒、之后每次约 4 秒;单 slug 索引仍快一个量级,段27 / 段39 照用。)"""
 
 ONR_EMPLOYER_URL = "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide"
 """OINP 雇主指南页(雇主侧:经营年限 / 营业额 / 全职雇员数 + 工资档)。"""
@@ -4888,6 +4998,11 @@ ONS_WAYBACK_TPL = "https://web.archive.org/web/{stamp}/{url}"
 ONS_WAYBACK_STAMP_TPL = "{year}0601"
 """Wayback 快照时间戳(次年 6 月 1 日,Wayback 会就近取)。"""
 
+ONS_YEAR_TITLE_TPL = "{year} Ontario Immigrant Nominee Program Updates"
+"""逐年页的页题(小写比对;2021 页题是小写 updates)。缓存 / 实抓拿回的正文里没有本年页题 = 不是那一年的页 →
+同拦截页一样退 Wayback。2026-09-26 实撞:2023 页已被官方撤档,ontario.ca 把它转到「Archived websites」档案馆
+落地页 —— 不是拦截页,旧判据放它过去,重跑时 2023 年配额 16,500 那行当场丢了。"""
+
 OUT_ON_STATS = paths.PNP / "on-stats.json"
 """ON 运营统计落盘处。
 ⚠️ 这一段一上来就撞见一个「页面没了」:官方原本有一页专门叫「OINP Application
@@ -5023,8 +5138,13 @@ MBS_NOTE = ("MPNP 官方运营统计:年度配额与年初至今提名/拒/LAA/�
             "那是爬取种子只圈了 /mpnp/、漏了 /resources/data/ 造成的误判。")
 """表级口径说明。"""
 
-MBS_ALLOC_RE = re.compile(r"(For \d{4}, Manitoba was allocated ([\d,]+) nominations in total\.)", re.I)
-"""「For 2026, Manitoba was allocated 6,239 nominations in total.」(整句捕获 → label 就是官方原文)。"""
+MBS_ALLOC_RE = re.compile(r"(For \d{4}, Manitoba was allocated ([\d,]+) nominations in total(?:\.|:[^.]*\.))",
+                          re.I)
+"""「For 2026, Manitoba was allocated 6,239 nominations in total.」(整句捕获 → label 就是官方原文)。
+2026-09-26:8 月追加名额后官方改成「For 2026, Manitoba was allocated 8,000 nominations in total: 6,239 in
+January 2026, and 1,761 in August 2026.」—— 冒号后的分批明细一并收进 label(整句仍是官方原文),值取总数;
+句号收尾的旧句式照认。本句 09-16 起认不出 → mb_stats 自校拦下、本域链中止,链尾 nl_employers /
+watch_allocations / draw_streams_zh 十天没跑(mb-stats / nl-employers / allocation_watch 被保鲜闸判超期)。"""
 
 MBS_COMMIT_RE = re.compile(r"(The MPNP[^.]{0,40}commitment to assess\w* complete applications "
                            r"is within (\d+) months?\.(?:\s*Incomplete applications[^.]*standard\.)?)", re.I)
@@ -6535,3 +6655,67 @@ PE_IIDI_PRINT_FAIL_TPL = "  ✗ PE IIDI 抓取失败: {name} {detail}(保留旧�
 
 PE_NO_TABLE = "no table"
 """跳过原因:两张表都没有。"""
+
+
+# =========================================================================
+# 39. ON 劳动力优先表守望(官方流页原句还在 → 刷人工核对表的日期;2026-09-26)
+# =========================================================================
+
+OWP_TABLE = paths.PNP / "on-workforce-priority.json"
+"""被守望的人工核对表(ON 劳动力优先流「官方不设职业清单 → 排除集为空」,2026-07-25 Frank 拍板建表,Frank 抽查制)。
+2026-09-26 /fe Frank「安省劳动力优先清单感觉是死掉了」→ 对照官方流页:职业集合零差异,只是复核日期停在 07-25、
+超了 60 天保鲜期;Frank 问「你建议怎么弄」→ lead 建议守望、Frank 定:本段每轮读 crawl 缓存里的官方流页
+(ON_WORKFORCE_URL),举证原句还在就把表的 fetched 刷成缓存抓取日 —— 手排版表,只替换那一格日期,不 json.dump;
+原句不在 = 官方可能重新引入了职业清单 → 报错留痕、不刷,60 天后保鲜闸转红,等 Frank 人工核。"""
+
+OWP_QUOTE = "work experience in any National Occupational Classification (NOC) occupation"
+"""举证原句(流页 Overview 首段;2026-09-26 复核时页脚 Updated: August 11, 2026)。比对前两边都去掉全部空白、
+转小写 —— 页面里分类名是链接、NOC 缩写包在 <abbr> 里,抽文本时括号内外会多出空格。"""
+
+OWP_FETCHED_RE = re.compile(r'"fetched": "(\d{4}-\d{2}-\d{2})"')
+"""表里 fetched 那一格(手排版原样);必须恰好一处,多了少了都不动表。"""
+
+OWP_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+"""缓存抓取日的形状(读门给的是 crawled_at 前十位);形状不对就不刷,不拿怪值写进人工表。"""
+
+OWP_V_OK = "ok"
+"""判定:缓存页在、原句在 → 可以刷日期。"""
+
+OWP_V_NO_CACHE = "no-cache"
+"""判定:crawl 缓存里没有这页 → 不刷(等 crawl 补上)。"""
+
+OWP_V_BLOCKED = "blocked"
+"""判定:缓存里是反爬拦截页(ontario.ca 偶发 Radware 验证壳)→ 不刷,也不当成官方改版。"""
+
+OWP_V_NO_QUOTE = "no-quote"
+"""判定:页在、原句不在 → 官方可能改版或重新引入职业清单 → 不刷,等 Frank 人工核。"""
+
+OWP_PRINT_OK_TPL = "  ✓ ON 劳动力优先表:官方流页原句还在(缓存 {cached}),fetched {old} → {new}"
+"""刷了日期的报数。"""
+
+OWP_PRINT_SAME_TPL = "  ✓ ON 劳动力优先表:官方流页原句还在(缓存 {cached}),fetched 已是 {old},不动"
+"""缓存日不比表里新(同一天或更旧)时的报数 —— 不往回刷。"""
+
+OWP_PRINT_NO_CACHE_TPL = "  ✗ ON 劳动力优先表守望:官方流页不在 crawl 缓存里({url})—— 不刷日期,等 crawl 补上"
+"""缓存缺失的留痕。"""
+
+OWP_PRINT_BLOCKED_TPL = "  ✗ ON 劳动力优先表守望:缓存里的官方流页是拦截页({url},缓存 {cached})—— 不刷日期,等 crawl 下一轮"
+"""拦截页的留痕。"""
+
+OWP_PRINT_NO_QUOTE_TPL = ("  ✗ ON 劳动力优先表守望:官方流页({url},缓存 {cached})找不到举证原句「{quote}」"
+                          "—— 官方可能重新引入职业清单;不刷日期,请 Frank 人工核")
+"""原句不在的留痕(保鲜闸 60 天后转红是第二道网)。"""
+
+OWP_PRINT_BAD_TABLE_TPL = "  ✗ ON 劳动力优先表守望:{path} 里 fetched 格不是恰好一处(命中 {n} 处)—— 不动表"
+"""表格式不对的留痕(有人改过排版;宁可不刷也不拿半懂的替换写坏人工表)。"""
+
+OWP_PRINT_CRASH_TPL = "  ✗ ON 劳动力优先表守望失败: {name} {detail}(不刷日期,不拦役)"
+"""整步读写出错的留痕(同名额哨兵:守望自身失败不拦本域链)。"""
+
+
+# =========================================================================
+# 40. 自测(用例住 scheme:ON 守望判定 + 门的「一步失败其余照跑」;2026-09-26)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(同 indexing / gate 自查)。"""

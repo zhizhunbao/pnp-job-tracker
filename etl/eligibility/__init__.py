@@ -22,11 +22,12 @@ META = {
     "seed": False,
     "ping": False,             # 报警走 pnp 链尾 freshness 哨兵(盯产物文件,跨容器有效)
     "fresh": [                 # 保鲜契约(语义见 sched.K_FRESH;三份规则表各一条,fetched 字段即抓取日)
-        {"file": "raw/ircc/aip_rules.json", "cadence_days": 7, "key": "fetched",
+                               # 2026-09-26 Frank「最次也是日更」:三条原 7 天 → 2(日更一轮 + 一天余量;本域小时更)
+        {"file": "raw/ircc/aip_rules.json", "cadence_days": 2, "key": "fetched",
          "note": "AIP 申请人门槛(原 aip 域产,2026-09-06 搬入本域,路径不变)"},
-        {"file": "raw/ircc/rcip_rules.json", "cadence_days": 7, "key": "fetched",
+        {"file": "raw/ircc/rcip_rules.json", "cadence_days": 2, "key": "fetched",
          "note": "RCIP 申请人门槛(2026-09-06 新增)"},
-        {"file": "raw/ircc/fcip_rules.json", "cadence_days": 7, "key": "fetched",
+        {"file": "raw/ircc/fcip_rules.json", "cadence_days": 2, "key": "fetched",
          "note": "FCIP 申请人门槛(2026-09-06 新增)"},
     ],
 }
