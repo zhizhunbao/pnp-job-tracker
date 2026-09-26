@@ -23,9 +23,10 @@ ETL_DIR = REPO_ROOT / "etl"
 """被扫的根(域目录都在它下面)。"""
 
 DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "explore", "fcip",
-           "fetch", "fsa", "gate", "hwcr", "ircc", "jdformat", "jobbank", "lmia", "load", "log", "mart", "news",
-           "noc", "paths", "pnp", "rcip", "richtext", "eligibility", "sched", "wages"]
+           "fetch", "fsa", "gate", "hwcr", "indexing", "ircc", "jdformat", "jobbank", "lmia", "load", "log", "mart",
+           "news", "noc", "paths", "pnp", "rcip", "richtext", "eligibility", "sched", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+indexing 2026-09-26 立域(Frank 勾「接 Indexing API」「这个最好能自动更新」:读线上 sitemap 职位分册,主动通知 Google 来抓 / 来删)
 richtext 2026-09-20 立叶(Frank「richtext 五个源全换」:HTML → 带结构的纯文本,块级序列化唯一一份;
 同 fetch/crawl/noc 双重身份 = 既被扫也可被依赖。域名不取 html —— etl/ 走 sys.path.insert,
 `etl/html/` 会遮蔽标准库 html,而十个域 import 它、其中五个正是本叶的消费者)

@@ -95,3 +95,6 @@ cms/dev.log
 /reports/
 # ECDICT 全量词典 csv(66MB,pte-dict 步的输入;可从 skywind3000/ECDICT 重下;2026-09-04)
 /data/raw/pte/dict/
+# Google Indexing API 服务账号 JSON 密钥(indexing 域,2026-09-26;Frank 亲手放,根 .env 的 GOOGLE_INDEXING_KEY_FILE 指过来)。
+# 按目录整体忽略,别按单个文件点名 —— 点名的规则挡不住复制品(见上面 credentials 那条教训)。
+/secrets/

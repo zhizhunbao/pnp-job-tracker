@@ -187,6 +187,10 @@ PROCESSED_HWCR = PROCESSED / "hwcr"
 """hwcr 域组织后产物(2026-09-04):lisgar-rooms.json + lisgar-rooms.md(出租单间按到
 Lisgar Collegiate 距离排)。⚠ 同 RAW_HWCR:私用清单,不灌库不上线。"""
 
+PROCESSED_INDEXING = PROCESSED / "indexing"
+"""indexing 域产物(2026-09-26 立域,Google Indexing API 主动通知):state.json = 已通知过的网址(类型 + 时刻)、
+已撤回 / 已退役的网址、按太平洋时区日记的当日已用额度;每轮读回来接着算,不灌库。"""
+
 MART = DATA / "mart"
 """load 层:09 产出的最终表(seed 灌库;R3 下 load 域 upload 上传)。"""
 

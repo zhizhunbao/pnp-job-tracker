@@ -16,6 +16,10 @@ dependencies = [
     "openpyxl>=3.1",
     "pydantic>=2.13.5",
     "wn",
+    # RS256 签名:indexing 域(2026-09-26 立,Google Indexing API)拿服务账号私钥签 JWT 换 access token。
+    # 标准库签不了 RSA、已装依赖里也没有能签的(Frank 同意「可能加一个依赖」);手写 RSA = 自造密码学,不上砧板。
+    # 通用轻镜像 etl/sched/Dockerfile 的 pip 行要同步加(依赖真相分裂两处的教训,见 openpyxl 注)。
+    "cryptography>=46",
 ]
 
 [project.optional-dependencies]

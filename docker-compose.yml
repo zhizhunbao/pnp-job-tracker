@@ -315,6 +315,14 @@ services:
                                                   # 7,500 条存量三天左右铺完,之后每天新帖一轮就能消化
       TZ: EST5EDT
 
+  indexing:                        # Google Indexing API 主动通知(2026-09-26 立域;Frank 勾「接 Indexing API」):读线上 sitemap 职位分册 → 先撤回离开的(404 / 410 / noindex 才发)→ 再推没推过的(lastmod 新→旧,每天 200 次额度);只刷 processed/indexing/,不灌库
+    <<: *etl                       # ⚠ 镜像要带 cryptography(RS256 签名;2026-09-26 已加进 etl/sched/Dockerfile 的 pip 行);起的时候只起它 —— docker compose up -d --build indexing(整栈 up -d 会把停着的 hireac 拉起来)
+    environment:
+      SOURCE: indexing
+      HEALTHCHECK_PING_INDEXING: ${HEALTHCHECK_PING_INDEXING:-}   # 未配 = ping_health 自然跳过
+      GOOGLE_INDEXING_KEY_FILE: ${GOOGLE_INDEXING_KEY_FILE:-secrets/google-indexing.json}   # 服务账号 JSON 密钥路径(相对仓库根,/secrets/ 已 gitignore);默认这条路径 = 文件一放下下一轮自动开推,不用改 .env、不用重建容器;文件不在 = 每轮一行警告跳过
+      TZ: EST5EDT
+
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:
