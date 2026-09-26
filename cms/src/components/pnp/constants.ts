@@ -521,6 +521,12 @@ export const CAT_JOIN = '/'
 export const KEY_SEP = '-'
 
 /**
+ * 省提名弹框事实索引里键的分隔(清单键形如 `NS|NS 建筑`、排除键形如 `SK|65201`;2026-09-26 首屏事实索引立,
+ * 见 pnpFactsIndexOf)。
+ */
+export const FACTS_KEY_SEP = '|'
+
+/**
  * 技能层级的窄位前缀(清单行里只给一个字母 + 数字)。
  */
 export const TEER_SHORT_HEAD = 'T'

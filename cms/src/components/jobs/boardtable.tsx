@@ -10,12 +10,14 @@
  * 旧拍板,2026-08-28 换装批复核仍成立(两边零行为重复)。
  * 2026-08-28 换装批自 Jobs.tsx 重写落位。
  * 2026-09-23「我的匹配」整拆:匹配视图换血期的骨架行与空态里的「去改档案」出口随之撤,空态只剩一句话。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:表身随首屏本省闸挂类(rowsClsOf)—— 服务端照旧渲全国 50 行
+ * (爬虫要读),设备时区对得上省的访客在本省那一页到之前看不到它们;表头与版面照占,换进来不整体跳。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { cssOf } from '@/components/css'
-import { headCellsOf, isAltRow, tableClsOf, wrapClsOf } from './functions'
+import { headCellsOf, isAltRow, rowsClsOf, tableClsOf, wrapClsOf } from './functions'
 import { BoardRow } from './boardrow'
 import { ColGroup } from './colgroup'
 import { HeadCell } from './headcell'
@@ -47,7 +49,7 @@ export function BoardTable({ b, headRowRef }: BoardTableIn) {
         <thead>
           <tr ref={headRowRef} className={cssOf(css.headRow)}>{heads}</tr>
         </thead>
-        <tbody>
+        <tbody className={rowsClsOf(b.data.gate)}>
           {body}
           {b.data.rows.length === 0 && (
             <tr>

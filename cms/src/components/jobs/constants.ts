@@ -618,6 +618,31 @@ export const PROV_PICK_COOKIE = 'jobsProvPick1'
 export const PROV_PICK_MAX_AGE_S = 31536000
 
 /**
+ * 首屏本省闸(2026-09-26 /fe 首页 Frank「首屏整表替换」:SSR 先渲全国、约 2 秒后按时区换本省,表行 / 卡片整体跳,
+ * CLS 手机 0.40、桌面 0.58)的首帧脚本命中时插的样式:把闸的两个开关置上 —— 表身与卡片流藏起(版面照占),
+ * 「更新中」提示亮起。开关的用处写在 jobs.module.css 的 .homeGate 一段;脚本只在设备时区对得上省时插它
+ * (lib/location 的 homeGateJsOf),不用 cookie、不看 IP(Frank 09-14 / 09-18 两拍)。
+ */
+export const HOME_GATE_CSS = ':root{--home-gate:hidden;--home-tip:flex}'
+
+/**
+ * 首屏本省闸 · 待定:服务端与水合那一遍(地址栏没带省、没带搜索词)。设备时区对得上省的,首帧脚本已把全国过渡态压住;
+ * 对不上的,过渡态照常显示(与改前一致)。
+ */
+export const HOME_GATE_MAYBE = 'maybe'
+
+/**
+ * 首屏本省闸 · 关着:水合后已预选了省,本省那一页还在路上 —— 板根挂 .homeGateOn 就地置开关
+ * (客户端跳转进板没有首帧脚本,靠这一档)。
+ */
+export const HOME_GATE_ON = 'on'
+
+/**
+ * 首屏本省闸 · 放开:没预选(地址栏带了省或搜索词、时区对不上),或本省那一页已落地。
+ */
+export const HOME_GATE_OFF = 'off'
+
+/**
  * cookie 串的路径与时效段(拼在值之后)。
  */
 export const COOKIE_PATH_AGE = '; path=/; max-age='
@@ -3120,6 +3145,26 @@ export const ZEBRA_MOD = 2
  * 原 GRAIN_SECOND 唯一消费者就是卡底,随拍板整个换档)。
  */
 export const GRAIN_MINUTE = 'minute'
+
+/**
+ * 职位名下日期行里日期的字色档:time 桶 TimeText 的正文档(随日期行的深色;灰的只有标签)。
+ */
+export const TIME_TONE_NORMAL = 'normal'
+
+/**
+ * 职位名下日期行两格的列表键(2026-09-26)。
+ */
+export const DATE_CELL = {
+  /**
+   * 发布日那格。
+   */
+  posted: 'posted',
+
+  /**
+   * 截止日那格。
+   */
+  closes: 'closes',
+}
 
 /**
  * 筛选行的下拉与搜索框统一走 sm 档(壳宽 150,与 38 高的钮对齐)。

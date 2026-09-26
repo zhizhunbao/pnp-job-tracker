@@ -8,7 +8,7 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
@@ -24,6 +24,7 @@ import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
+  HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
   KEY_ESCAPE, LANG_EN, LIMIT_RE, METHOD_DELETE,
@@ -40,7 +41,8 @@ import {
   TITLE_TRANS_GEN, WINDOW_FEATURES,
 } from './constants'
 import {
-  allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedKeysOf,
+  allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedSetsOf,
+  homeGateAfterOf, homeGateInitOf, hydratingClientOf, hydratingServerOf, subscribeNever,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
   fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, initialColsOf, initialFiltersOf,
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeOccName, makePopupToCo,
@@ -49,13 +51,16 @@ import {
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
   toRelatedJobs, toRelatedPage, relMoreTextOf, relStepOf, chipNocOf, occGroupsOf, occSlotOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
+  jobDatesOf,
 } from './functions'
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
   ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
-  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ClickFn, ColMeasure,
+  BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
+  ClickFn, ColMeasure,
   ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
-  FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
+  FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HomeGate,
+  HydrateIn,
   JobPeekPanel,
   IntentProfileIn,
   JdFormatHookIn, JdFormatPanel, JdStatus, JdTextHookIn, JdTextPanel, JdTransHookIn, JdTransPanel, JobBodyHookIn,
@@ -67,6 +72,7 @@ import type {
   RelatedJobFact, RelatedJson, RelatedOfHookIn, RelatedPagesIn, RelatedPagesPanel, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UpsellKind, UrlSettleIn, WrapWidthIn,
+  JobDateCell, JobDatesIn,
 } from './types'
 
 /**
@@ -801,16 +807,19 @@ function splitKeys(key: string): string[] {
  * 无筛选时两边都是空签名,与改造前的「没筛选就不拉」等价。
  * 大维度独立加载(cities/districts/designatedEmployers/nocDescriptions),不再随职位 blob。
  * 2026-09-23「我的匹配」整拆:取数不再分匹配视图,首屏跳过判据只看筛选签名。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:首屏本省闸住在这一台 —— 初值按 URL 定(homeGateInitOf),
+ * 水合那一步按预选结果落 on / off(写口交出去),第 0 页落地(成败都算)就放开。
  *
  * @param x props、当前筛选与排序。
- * @returns 数据面板。
+ * @returns 数据面板与首屏本省闸的写口。
  */
-function useBoardData(x: BoardDataHookIn): BoardDataPanel {
+function useBoardData(x: BoardDataHookIn): BoardDataOut {
   const [rows, setRows] = useState<JobFact[]>(x.props.jobs)
   const [total, setTotal] = useState(totalOf(x.props))
   const [updatedAt, setUpdatedAt] = useState(strOf(x.props.updatedAt))
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [gate, setGate] = useState<HomeGate>(homeGateInitOf(initialFiltersOf(x.props.initialFilters)))
   const reqSeq = useRef(0)
   const firstFetch = useRef(true)
   const ssrSig = useRef(filterSig(initialFiltersOf(x.props.initialFilters)))
@@ -848,21 +857,24 @@ function useBoardData(x: BoardDataHookIn): BoardDataPanel {
       .finally(function endLoad() {
         if (seq === reqSeq.current) {
           setLoading(false)
+          setGate(HOME_GATE_OFF)
         }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 只跟「查询串变了」走;skipFirst 是首帧一次性判据,进依赖会多打一次
   }, [query])
-  return {
+  const panel: BoardDataPanel = {
     rows,
     total,
     updatedAt,
     dims: x.dims,
     loading,
     swapping: loading && fresh,
+    gate,
     onMore: function loadMore(): void {
       setPage(page + 1)
     },
   }
+  return [panel, setGate]
 }
 
 /**
@@ -1134,7 +1146,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     plan,
     onLimit: onUpsellSs,
   })
-  const data = useBoardData({ props, dims, cur: filters.cur, sort })
+  const [data, setGate] = useBoardData({ props, dims, cur: filters.cur, sort })
   const [cols, boxRef, headRowRef] = useBoardCols({
     initialCols: props.initialCols,
     initialColW: colwSeedOf(props),
@@ -1142,10 +1154,11 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     rows: data.rows,
   })
   useCatLabels(data.dims)
-  useBoardHydrate({ fState: filters.panel.fState, props })
+  useBoardHydrate({ fState: filters.panel.fState, props, setGate })
   const onQCommit = useBoardUrlSync(filters.snap)
   const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
-  const blocked = useBlockedKeys(data.dims)
+  const blocked = useBlockedKeys(props.pnpFacts)
+  const hydrating = useHydrating()
   const panel: JobsBoardPanel = {
     t,
     lang,
@@ -1169,6 +1182,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
       tEn: makeT(LANG_EN),
       plan,
       blocked,
+      pnpIndex: props.pnpFacts.index,
       eeCats: data.dims.eeCategories,
       occName: makeOccName({ rows: data.dims.nocDescriptions, lang }),
       lang,
@@ -1180,6 +1194,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     allShownText: t('allShown', { total: data.total }),
     moreText: t('loadMore', { n: data.total - data.rows.length }),
     proof: proofOf(props),
+    hydrating,
   }
   return [panel, headRowRef, boxRef]
 }
@@ -1212,15 +1227,26 @@ function colwSeedOf(props: JobsIn): ColWidthSeed | null {
 
 /**
  * 官方具名排除清单:整表算一次 `省码|NOC` 命中集,逐行 O(1) 查。
+ * 2026-09-26 /fe 首页 Frank:清单整表不再随首屏内联(弹框打开才懒取),键由服务端 boardPnpOf 压好随板下发,
+ * 这里只把两串键装成集合。
  *
- * @param dims 维度表。
+ * @param facts 随首屏下发的省提名事实。
  * @returns 两套键集。
  */
-function useBlockedKeys(dims: JobDims): BlockedKeys {
-  const rows = dims.pnpOccupations
+function useBlockedKeys(facts: BoardPnpFacts): BlockedKeys {
   return useMemo(function buildBlocked() {
-    return blockedKeysOf(rows)
-  }, [rows])
+    return blockedSetsOf(facts)
+  }, [facts])
+}
+
+/**
+ * 还在水合没:服务端渲与水合那一遍给 true,水合完、或客户端跳转进来的新挂载给 false
+ * (2026-09-26 首屏本省闸的首帧脚本只渲在这一段里 —— 见 subscribeNever)。
+ *
+ * @returns 在水合 = true。
+ */
+function useHydrating(): boolean {
+  return useSyncExternalStore(subscribeNever, hydratingClientOf, hydratingServerOf)
 }
 
 /**
@@ -1269,13 +1295,16 @@ function makeFieldRouter(x: FieldRouterIn): (k: JobColKey, j: JobFact, title: st
  * 它已由服务端解析成 initialFilters 当了 state 初值,这里再读一遍只作兜底(值相同,React 自会跳过重渲)。
  * E5-05 直链回流:?view=match 且已登录已建档 → 进匹配视图并按匹配度排。
  * 2026-09-23「我的匹配」整拆,那条直链回流随之撤;「只看直发」的写口也随勾选框一起撤。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:预选完按结果落首屏本省闸 —— 预选了省就关着等本省那一页,没预选当场放开。
+ * 这一步在绘制前跑:客户端跳转进板(没有首帧脚本)时,全国过渡态一帧都不画出来。
  *
- * @param x 筛选各格与 props。
+ * @param x 筛选各格、props 与首屏本省闸的写口。
  * @returns 无。
  */
 function useBoardHydrate(x: HydrateIn): void {
   const fState = x.fState
   const props = x.props
+  const setGate = x.setGate
   useIsoLayoutEffect(function hydrateFromUrl() {
     const sp = readSearch()
     if (sp.get(P_BACK) === VAL_ON) {
@@ -1284,7 +1313,7 @@ function useBoardHydrate(x: HydrateIn): void {
       replaceQuery(sp)
     }
     applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters) })
-    applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })
+    setGate(homeGateAfterOf(applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })))
   }, [])
 }
 
@@ -2396,6 +2425,18 @@ export function useJobDetail(x: JobIn): JobDetailPanel {
     lang,
     view: jobDetailViewOf({ job: x.job, dims: x.dims, lang, t, related: x.related, trans }),
   }
+}
+
+/**
+ * 职位名下那行日期(2026-09-26;详情页与职位弹框同一台):「此刻」在首渲那一拍取一次 ——
+ * 截止格按天判过期,渲染之间不必再读时钟(与 advisor 时间事实块 useState(Date.now) 同款)。
+ *
+ * @param x 本岗与取词函数。
+ * @returns 0 ~ 2 格,发布在前。
+ */
+export function useJobDates(x: JobDatesIn): JobDateCell[] {
+  const [now] = useState(Date.now)
+  return jobDatesOf({ job: x.job, t: x.t, now })
 }
 
 /**

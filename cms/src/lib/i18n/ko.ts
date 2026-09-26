@@ -494,6 +494,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',
   'detail.catSec': '직업 분류',
+  // 2026-09-26 공고명 아래 날짜 줄(상세 페이지와 공고 팝업 제목 아래): 마감 칸 라벨, 게시 칸은 col.datePosted 재사용
+  'detail.closes': '지원 마감',
   // E12-08 등급(1-5) 상세
   'gr.dim.channel': '이민 경로', 'gr.dim.salary': '급여 수준', 'gr.dim.emp': '고용 형태',
   'gr.channel.5': '주정부 지명 목록 포함: {v}', 'gr.channel.4': '{v} 기술직, 부족직종 그룹', 'gr.channel.3': '{v} 기술직',
@@ -558,7 +560,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.count': '{n}개 직업',
   'eecmp.title': '최근 커트라인', 'eecmp.none': '추첨 없음', 'eecmp.lower': '{cat}: {cec}보다 {n}점 낮음',
   'eecmp.higher': '{cat}: {cec}보다 {n}점 높음', 'eecmp.same': '{cat}: {cec}와 동점',
-  'eecmp.rounds': '{n}회', 'eecmp.frenchTip': '프랑스어 추첨은 직업이 아니라 언어 능력으로 선발합니다',
+  'eecmp.rounds': '{n}회', 'eecmp.roundsOne': '{n}회', 'eecmp.frenchTip': '프랑스어 추첨은 직업이 아니라 언어 능력으로 선발합니다',
   'eelist.occTitle': '포함 직업',
   'col.actions': '작업', 'act.immigValue': '이민 가치', 'act.descTitle': '직무 설명', 'act.site': '웹사이트', 'co.wiki': '위키백과', 'co.careers': '채용 페이지', 'act.addr': '주소', 'act.jobsHere': '이 회사의 공고', 'act.showAll': '나머지 {n}개 펼치기 ▾', 'act.showMore': '{n}개 더 보기', 'act.collapse': '접기 ▴', 'act.retrans': '재번역', 'unit.perHr': '/시간', 'unit.perYr': '/년', 'act.showAllBoard': '채용 보드에서 나머지 {n}개 보기', 'act.noText': '이 공고의 본문이 아직 없습니다 — 신규 공고는 보통 다음 날 등록되며, 일부 소스는 본문을 제공하지 않습니다.', 'act.loadingText': '로딩 중…', 'jd.busy': '조금 빠르게 보고 있어요. 잠시 후 다시 시도해 주세요.',
   'co.hq': '본사',

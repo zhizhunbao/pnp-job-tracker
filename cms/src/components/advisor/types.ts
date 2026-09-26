@@ -309,6 +309,86 @@ export type AdvisorPnpOccs = PnpOcc[]
 export type AdvisorPnpDraws = PnpDraw[]
 
 /**
+ * 省提名两张整表(2026-09-26 起弹框打开才懒取,见 usePnpData)。
+ */
+export type AdvisorPnpData = {
+  /**
+   * 省提名职业清单。
+   */
+  occ: AdvisorPnpOccs
+
+  /**
+   * 各省抽选记录。
+   */
+  draws: AdvisorPnpDraws
+}
+
+/**
+ * `/api/jobs/pnp` 的响应(线格式:缺席 = 服务端没给那张表;null = 请求没成)。
+ */
+export type PnpDataJson = {
+  /**
+   * 省提名职业清单。
+   */
+  pnpOccupations?: AdvisorPnpOccs
+
+  /**
+   * 各省抽选记录。
+   */
+  pnpDraws?: AdvisorPnpDraws
+} | null
+
+/**
+ * usePnpData 的入参。
+ */
+export type PnpDataHookIn = {
+  /**
+   * 铺哪一组(只有正文读两表的组才懒取)。
+   */
+  group: AdvisorGroup
+}
+
+/**
+ * usePnpData 交回的面板。
+ */
+export type PnpDataPanel = {
+  /**
+   * 正文能渲了没(不读两表的组恒为 true;读两表的组要等两表到齐)。
+   */
+  ready: boolean
+
+  /**
+   * 懒取失败(弹框改出「加载失败」那句,不拿空表冒充「官方没有」)。
+   */
+  failed: boolean
+
+  /**
+   * 省提名职业清单(还没到给空列 —— 那时 ready 为 false,正文不渲)。
+   */
+  occ: AdvisorPnpOccs
+
+  /**
+   * 各省抽选记录(同上)。
+   */
+  draws: AdvisorPnpDraws
+}
+
+/**
+ * makeLoadPnpData 的入参。
+ */
+export type LoadPnpDataIn = {
+  /**
+   * 两表到齐的落格。
+   */
+  setData: (d: AdvisorPnpData) => void
+
+  /**
+   * 懒取失败的落格。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
  * 官方新闻(外域整表,整份喂给 NewsLatestBlock / PnpListSection)。
  */
 export type AdvisorNewsList = NewsSlim[]
@@ -1671,6 +1751,11 @@ export type ActHeadIn = {
   freeLeft: number | null
 
   /**
+   * 岗位名下那行日期(jobs 桶 JobDates,与详情页 H1 下同一件;2026-09-26)。
+   */
+  dates: React.ReactNode
+
+  /**
    * 译名行右端的切换控件(jobs 桶 JdSwitches;2026-09-16 Frank「放到一行」)。
    */
   ctl: React.ReactNode
@@ -1904,6 +1989,8 @@ export type AdvisorModalPanel = {
 
 /**
  * AdvisorModal 的 props(门上冻结的契约,消费者六处按它传)。
+ * 2026-09-26 /fe 首页 Frank:省提名清单与抽选两格撤出契约 —— 两张整表不再随首屏内联,弹框打开时自己懒取(usePnpData);
+ * 眼下唯一的消费者是职位板的弹框层(BoardModals),同批改掉。
  */
 export type AdvisorModalIn = {
   /**
@@ -1935,16 +2022,6 @@ export type AdvisorModalIn = {
    * 分层态。
    */
   plan: AdvisorPlan
-
-  /**
-   * 省提名职业清单。
-   */
-  pnpOcc: AdvisorPnpOccs
-
-  /**
-   * 各省抽选记录。
-   */
-  pnpDraws: AdvisorPnpDraws
 
   /**
    * 官方新闻。

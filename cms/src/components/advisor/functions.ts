@@ -44,13 +44,14 @@ import {
   ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
   SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
   TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR,
-  URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
+  URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_PNP, URL_API_JOBS_RETRANSLATE,
   URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP,
   VOL_KEY_PNP_PR,
   VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
+  AdvisorPnpData, LoadPnpDataIn, PnpDataJson,
   AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
   CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   DiffCellFact,
@@ -1470,6 +1471,68 @@ export function makeLoadCompanyJobs(x: LoadCompanyJobsIn): LoadFn {
     const url = URL_API_JOBS_COMPANY + encodeURIComponent(x.company) + URL_PAGE_FIRST
     fetch(url, { credentials: CREDENTIALS_INCLUDE }).then(read).then(land).catch(fall)
   }
+}
+
+/**
+ * 省提名清单与抽选两张整表的懒取(2026-09-26 /fe 首页 Frank:首页每次内联约 380KB 的这两张表,弹框近 30 天真实用户
+ * 打开 0 次 —— 改成字段弹框打开才取)。取到一次记进 CACHE,整页复用;没取成落 failed —— 不拿空表冒充「官方没有」。
+ *
+ * @param x 两表到齐与失败的落格。
+ * @returns 取数函数(收一只「弹框关了没」的旗子)。
+ */
+export function makeLoadPnpData(x: LoadPnpDataIn): LoadFn {
+  return function loadPnpData(flag: DeadFlag): void {
+    function read(r: Response): Promise<PnpDataJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function land(j: PnpDataJson): void {
+      if (flag.dead) {
+        return
+      }
+      const d = toPnpData(j)
+      if (d == null) {
+        x.setFailed(true)
+        return
+      }
+      CACHE.pnpData = d
+      x.setData(d)
+    }
+    function fall(): void {
+      if (flag.dead === false) {
+        x.setFailed(true)
+      }
+    }
+    fetch(URL_API_JOBS_PNP).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * `/api/jobs/pnp` 的响应 → 两张整表(行构造器:请求没成、或缺了哪张表,都当没取到 —— 缺表不是「那张表是空的」)。
+ *
+ * @param j 响应。
+ * @returns 两张整表;没取到给 null。
+ */
+function toPnpData(j: PnpDataJson): AdvisorPnpData | null {
+  if (j == null || j.pnpOccupations == null || j.pnpDraws == null) {
+    return null
+  }
+  return { occ: j.pnpOccupations, draws: j.pnpDraws }
+}
+
+/**
+ * 喂给弹框正文的两张表:还没到就给两张空表(那时读两表的组 ready 为 false、正文不渲,空表不会被当成「官方没有」)。
+ *
+ * @param data 懒取到的两张整表;null = 还没到。
+ * @returns 两张表。
+ */
+export function pnpDataOf(data: AdvisorPnpData | null): AdvisorPnpData {
+  if (data == null) {
+    return { occ: [], draws: [] }
+  }
+  return data
 }
 
 /**

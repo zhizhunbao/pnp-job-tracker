@@ -4,6 +4,7 @@
  * 混进服务端依赖会把连接池整条链拉进浏览器包(tsc 全绿,build 才炸 —— 2026-08-18 实撞,dev 白屏)。
  * functions.ts 不 import payload(池由调用方注进来),所以这里可以放心转发它的纯函数。
  * 门里只有转发(闸 door-forward-only)。
+ * 2026-09-26 门上加 isExpiredJob:职位名下日期行(components/jobs)的截止那格与 JobPosting 同一条过期判定。
  *
  * @author Frank
  * @time 2026-08-22 00:05:00
@@ -14,8 +15,8 @@ export { nocLabels } from './constants'
 export { SITE_FALLBACK } from './constants'
 export { drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay, reqStreamDisplay, streamDisplay } from './functions'
 export {
-  blockedSrc, hasProfile, isDirect, isJdNone, match, matchRank, normalizeProfile, provListCoverage, reasonEn,
-  sourceLabel, statusEn,
+  blockedSrc, hasProfile, isDirect, isExpiredJob, isJdNone, match, matchRank, normalizeProfile, provListCoverage,
+  reasonEn, sourceLabel, statusEn,
 } from './functions'
 export type {
   BroadNoc, CityCard, CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, JsonCell, JsonObj, MatchDims, MatchJob, NocOpenCount, ProvCard, QuizFacts, TopNoc,

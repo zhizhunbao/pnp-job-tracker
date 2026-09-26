@@ -36,7 +36,8 @@ import {
 import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage,
   loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadCityCard,
+  loadSimilarEmployers, generateJdFormatted, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
+  loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedAnchor,
   loadRelatedJobs, loadRelatedOccPage, normalizeProfile,
   translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
@@ -216,6 +217,22 @@ export async function jobsCompanyRoute(req: Request): Promise<Response> {
 export async function jobsDimsRoute(_req: Request): Promise<Response> {
   const dims = await loadBigDims({ db: await getDb() })
   return Response.json({ dims }, { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } })
+}
+
+/**
+ * GET /api/jobs/pnp:省提名清单与抽选两张整表(2026-09-26 /fe 首页 Frank:首页每次内联约 380KB 的这两张表,
+ * 省提名弹框近 30 天真实用户打开 0 次 —— 改成字段弹框打开才懒取)。站级数据、与用户无关:取数走首屏维度那层
+ * 10 分钟单件缓存(getSsrDims,与首屏同一份,不另起查询),浏览器再缓存 5 分钟 + SWR(同 dims 包)。
+ *
+ * @param _req 请求(不读参数)。
+ * @returns { pnpOccupations, pnpDraws } 两张整表。
+ */
+export async function jobsPnpRoute(_req: Request): Promise<Response> {
+  const dims = await getSsrDims(await getDb())
+  return Response.json(
+    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws },
+    { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
+  )
 }
 
 /**

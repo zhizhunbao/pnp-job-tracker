@@ -8,6 +8,7 @@
 
 import {
   ALL_PROVS, COUNTRY_CANADA, F_CITY, F_COUNTRY, F_DISTRICT, F_PROVINCE, LOC_NONE, MAPS_URL, NOTE_L, NOTE_R,
+  HOME_GATE_CSS_SLOT, HOME_GATE_JS, HOME_GATE_ZONES_SLOT,
   LANG_FR_HEAD, PROV_KEY, PROV_NAMES, PROV_QC, SEP_COMMA, TZ_EASTERN, TZ_PROVINCE,
 } from './constants'
 import type { CleanProvsIn, HqLineIn, LocJob, MapQueryIn, ParsedLoc, ProvList, ProvNameIn } from './types'
@@ -163,4 +164,19 @@ export function homeProvinceOf(): string {
     return PROV_QC
   }
   return prov
+}
+
+/**
+ * 首帧脚本:设备时区对得上时区表里的省(与 homeProvinceOf 同一张 TZ_PROVINCE),就往 `<head>` 插一段给定的样式。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」立:服务端不知道时区(只用时区、不记上次所选、不看 IP —— 09-14 / 09-18 两拍),
+ * 没带省的首屏只能先渲全国;这段脚本在浏览器解析到它时当场判、早于首帧绘制,让职位板把「马上要被换成本省」的全国列表压住。
+ * 它只问「会不会预选」,不分省 —— 选哪一省仍归 homeProvinceOf(东部时区还要看语言分安省 / 魁省)。
+ * 脚本是另一种介质(页面 JS 到之前就得跑),所以是模板串;时区清单由 TZ_PROVINCE 现拼,不另抄一份。
+ *
+ * @param css 命中时插入的样式(调用方给;本函数不认识任何类名)。
+ * @returns 一段自执行脚本的源码。
+ */
+export function homeGateJsOf(css: string): string {
+  return HOME_GATE_JS.split(HOME_GATE_ZONES_SLOT).join(JSON.stringify(Object.keys(TZ_PROVINCE)))
+    .split(HOME_GATE_CSS_SLOT).join(JSON.stringify(css))
 }

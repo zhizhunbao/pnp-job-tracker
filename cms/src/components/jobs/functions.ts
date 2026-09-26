@@ -18,16 +18,16 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { eeIsDormant, eeLastDraw } from '@/components/pnp'
+import { eeIsDormant, eeLastDraw, pnpFactsIndexOf, pnpFactsShownOf } from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { makeT } from '@/lib/i18n'
-import { eeDisplay, isDirect, isJdNone, sourceLabel, streamDisplay } from '@/lib/jobs'
-import { PROV_NAMES, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
+import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel, streamDisplay } from '@/lib/jobs'
+import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
-import { fmtLocalSec, ymd } from '@/lib/time'
+import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
@@ -37,7 +37,8 @@ import {
   COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, DASH, DATE_LEN,
   DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX,
   FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
-  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HTTP_PAYMENT, HTTP_TOO_MANY,
+  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HOME_GATE_CSS, HOME_GATE_MAYBE,
+  HOME_GATE_OFF, HOME_GATE_ON, HTTP_PAYMENT, HTTP_TOO_MANY,
   JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
   JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
   JD_GUESS_NEXT_PARA_LEN,
@@ -69,10 +70,12 @@ import {
   URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
   URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD, REL_NO_PAGING, REL_OCC_STEP_N,
+  DATE_CELL,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
-  AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, CardTitlesIn,
+  AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
+  CardsClsIn, HomeGate, LoadTipIn, PnpActiveIn, PnpChipIn,
   CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
   CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
   ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek,
@@ -100,6 +103,7 @@ import type {
   ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, WantsIn,
   WidthsKeyIn,
   JobBodyPanel,
+  JobDateCell, JobDatesOfIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -501,6 +505,61 @@ export function blockedKeysOf(rows: PnpOccRow[]): BlockedKeys {
 }
 
 /**
+ * 随首屏下发给职位板的维度:整包维度逐格照抄,只把省提名清单与抽选两张整表换成空表。
+ * 2026-09-26 /fe 首页 Frank:这两张表每次随首页内联约 380KB(清单 ~293KB、抽选 ~91KB),而省提名弹框近 30 天
+ * 真实用户打开 0 次 —— 改成弹框打开才懒取(/api/jobs/pnp,advisor 域 usePnpData);格子要的排除键与弹框事实索引
+ * 另由 boardPnpOf 压成几串键随板下发。服务端门照旧拿整包(匹配维度要清单)。
+ *
+ * @param dims 首屏整包维度(服务端取的那份)。
+ * @returns 下发给板的维度。
+ */
+export function boardDimsOf(dims: JobDims): JobDims {
+  return {
+    provinces: dims.provinces,
+    cities: dims.cities,
+    districts: dims.districts,
+    nocCategories: dims.nocCategories,
+    sources: dims.sources,
+    experienceLevels: dims.experienceLevels,
+    pnpOccupations: [],
+    pnpDraws: [],
+    eeCategories: dims.eeCategories,
+    eeBroads: dims.eeBroads,
+    designatedEmployers: dims.designatedEmployers,
+    nocDescriptions: dims.nocDescriptions,
+    occupations: dims.occupations,
+    fieldSources: dims.fieldSources,
+    news: dims.news,
+  }
+}
+
+/**
+ * 格子要的省提名事实(服务端门里从两张整表压好,随首屏下发;2026-09-26 起整表不再内联,见 boardDimsOf):
+ * 官方具名排除两套键(口径同 blockedKeysOf)+ 省提名弹框的事实索引(pnp 域 pnpFactsIndexOf,与弹框出卡同一判据)。
+ *
+ * @param dims 首屏整包维度(服务端取的那份)。
+ * @returns 排除键与弹框事实索引。
+ */
+export function boardPnpOf(dims: JobDims): BoardPnpFacts {
+  const blocked = blockedKeysOf(dims.pnpOccupations)
+  return {
+    pnpBlocked: Array.from(blocked.pnp),
+    aipBlocked: Array.from(blocked.aip),
+    index: pnpFactsIndexOf({ occ: dims.pnpOccupations, draws: dims.pnpDraws }),
+  }
+}
+
+/**
+ * 随板下发的排除键 → 逐行 O(1) 查的两套键集(整表算一次;2026-09-26 起键在服务端压好,这里只装集合)。
+ *
+ * @param facts 随首屏下发的省提名事实。
+ * @returns 两套键集。
+ */
+export function blockedSetsOf(facts: BoardPnpFacts): BlockedKeys {
+  return { pnp: new Set(facts.pnpBlocked), aip: new Set(facts.aipBlocked) }
+}
+
+/**
  * 这个格子点了有没有反应 —— 收编后 none 一档不再开弹框,若仍渲成手型
  * 就成了「看着能点、点了没反应」,比不能点更糟。手型与真实行为绑同一个判据。
  * title 例外:它不走 FIELD_GROUP,直开职位描述弹框(2026-07-19 Frank 拍板)。
@@ -521,6 +580,7 @@ export function cellActionable(k: JobColKey): boolean {
  * PNP/EE/AIP 的「—」格(无信号)摘可点 —— 点开只会看到「走不了」,没有意义。
  * 2026-07-26 Frank「恢复可点」:命中官方具名清单的走不了 = 有依据可看,重新可点
  * (泛判定的「—」仍不可点)。
+ * 2026-09-26 /fe 首页 Frank(止血):省提名格再加一道「弹框里真有卡可出」,见 pnpActiveOf。
  *
  * @param x 列键、库行、上下文。
  * @returns 可点 = true。
@@ -531,7 +591,7 @@ export function cellActive(x: CellIn): boolean {
   }
   const key = x.j.province + BLOCK_KEY_SEP + x.j.noc
   if (x.k === COL.pnp) {
-    return x.j.pnpEligible === true || x.cx.blocked.pnp.has(key)
+    return pnpActiveOf({ j: x.j, blocked: x.cx.blocked, pnpIndex: x.cx.pnpIndex })
   }
   if (x.k === COL.ee) {
     return hasText(x.j.eeCategory)
@@ -543,6 +603,25 @@ export function cellActive(x: CellIn): boolean {
     return hasText(x.j.pilot)
   }
   return true
+}
+
+/**
+ * 省提名这一格可不可点(表格格子与手机卡胶囊同一个判据)。先得有信号:可提名,或被官方具名清单排除
+ * (批A「走不了的就别给点了」、07-26「恢复可点」两拍照旧);
+ * 2026-09-26 /fe 首页 Frank(止血):再得弹框里真有卡可出 —— 本省抽选卡或清单卡(pnp 域 pnpFactsShownOf,
+ * 与弹框自己出卡同一判据)。可点的省提名格里 20,809 条(安省 17,651、NS 1,609、SK 1,533、领地 16)点开只有标题:
+ * 安省改制不出抽选卡且没有清单,NS / SK 的通用岗与领地既无清单也无抽选。改成不可点、字照显示;
+ * 判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后这些格子自然恢复可点。
+ *
+ * @param x 库行、排除清单与省提名弹框的事实索引。
+ * @returns 可点 = true。
+ */
+function pnpActiveOf(x: PnpActiveIn): boolean {
+  const excluded = x.blocked.pnp.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)
+  if (x.j.pnpEligible !== true && excluded === false) {
+    return false
+  }
+  return pnpFactsShownOf({ province: x.j.province, noc: x.j.noc, stream: x.j.pnpStream, index: x.pnpIndex })
 }
 
 /**
@@ -1212,7 +1291,7 @@ function pushPnpChip(a: ChipPushBlockIn): void {
     if (hasText(a.x.j.pnpStream)) {
       text = streamDisplay({ t: a.x.t, label: a.x.j.pnpStream })
     }
-    a.out.push(chipOf({ tone: CHIP.amber, text, k: COL.pnp, tip: TEXT_NONE }))
+    a.out.push(pnpChipOf({ x: a.x, tone: CHIP.amber, text }))
     return
   }
   if (a.pnpExcl === false) {
@@ -1222,7 +1301,19 @@ function pushPnpChip(a: ChipPushBlockIn): void {
   if (a.aipBlocked) {
     text = a.x.t('cell.blockedBoth')
   }
-  a.out.push(chipOf({ tone: CHIP.red, text, k: COL.pnp, tip: TEXT_NONE }))
+  a.out.push(pnpChipOf({ x: a.x, tone: CHIP.red, text }))
+}
+
+/**
+ * 造省提名那一枚胶囊:可点与否跟表格那一格同一个判据(pnpActiveOf),不只看这一列点不点得开
+ * (2026-09-26 /fe 首页 Frank 止血:弹框里没卡可出的,胶囊字照显示、不给点 —— 手机是主流量,卡上与表格一个样)。
+ *
+ * @param x 胶囊排的入参、语义色档与显示文本。
+ * @returns 胶囊规格。
+ */
+function pnpChipOf(x: PnpChipIn): ChipSpec {
+  const act = cellActionable(COL.pnp) && pnpActiveOf({ j: x.x.j, blocked: x.x.blocked, pnpIndex: x.x.pnpIndex })
+  return { tone: x.tone, text: x.text, k: COL.pnp, tip: TEXT_NONE, act }
 }
 
 /**
@@ -3463,6 +3554,36 @@ export function origLinkLabelOf(x: OrigLinkLabelIn): string {
 }
 
 /**
+ * 职位名下面那行日期的格(2026-09-26 Frank 看过效果图点头;详情页 H1 下、职位弹框标题下同一件 JobDates):
+ * 发布一格(库里有发布日才出)、截止一格(发帖方写了截止日且没过期才出)。来源没给截止日就只出发布一格,不编「预计截止」。
+ * 过期口径 = lib/jobs 的 isExpiredJob(与 JobPosting 同一条,已下架也算过期),「今天」按多伦多日期,截止日当天还算在期。
+ *
+ * @param x 本岗、取词函数与此刻。
+ * @returns 0 ~ 2 格,发布在前。
+ */
+export function jobDatesOf(x: JobDatesOfIn): JobDateCell[] {
+  const cells: JobDateCell[] = []
+  if (x.job.datePosted !== TEXT_NONE) {
+    cells.push({ k: DATE_CELL.posted, label: x.t('col.datePosted'), iso: x.job.datePosted })
+  }
+  if (x.job.validThrough !== TEXT_NONE && isExpiredJob({ job: x.job, today: todayOf(x.now) }) === false) {
+    cells.push({ k: DATE_CELL.closes, label: x.t('detail.closes'), iso: x.job.validThrough })
+  }
+  return cells
+}
+
+/**
+ * 多伦多今天的日期 'YYYY-MM-DD'(站点时区口径归 lib/time:fmtLocal 按渥太华时间出「日期 时分」,ymd 裁到日期)。
+ * 与库里收录口径 SQL.SEO_JOB_OK、过期关帖比的是同一个「今天」。
+ *
+ * @param now 此刻(毫秒)。
+ * @returns 日期串。
+ */
+function todayOf(now: number): string {
+  return ymd(fmtLocal(new Date(now).toISOString()))
+}
+
+/**
  * 中文对照开关的字:在途 / 失败 / 平时「中文对照」。
  * 2026-09-16 Frank 效果图点头「可以,就这样做」:钮改开关,开 / 关由轨道表达,字不再随开关说「显示 / 收起」;
  * 原「收起 / 展开」两支(cat.hideZh / cat.showZh)撤。在途加倍类 transBusyClsOf 随之撤(开关件禁用自带降透明)。
@@ -4340,15 +4461,71 @@ export function wrapClsOf(swapping: boolean): string {
 
 /**
  * 卡片流的类:整表换血期半透明。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:首屏本省闸没放开时加挂闸类(真藏不藏由闸的开关定,见 jobs.module.css);
+ * 入参由单个布尔改成两格。
  *
- * @param swapping 换血中没。
+ * @param x 换血中没与首屏本省闸。
  * @returns 类名。
  */
-export function cardsClsOf(swapping: boolean): string {
-  if (swapping) {
-    return cssOf(css.cards) + SPACE + cssOf(css.dim)
+export function cardsClsOf(x: CardsClsIn): string {
+  let cls = cssOf(css.cards)
+  if (x.swapping) {
+    cls = cls + SPACE + cssOf(css.dim)
   }
-  return cssOf(css.cards)
+  if (x.gate !== HOME_GATE_OFF) {
+    cls = cls + SPACE + cssOf(css.homeGate)
+  }
+  return cls
+}
+
+/**
+ * 表身(各行)的类:首屏本省闸没放开时挂闸类(真藏不藏由闸的开关定,见 jobs.module.css)。
+ *
+ * @param gate 首屏本省闸。
+ * @returns 类名;放开给空串。
+ */
+export function rowsClsOf(gate: HomeGate): string {
+  if (gate === HOME_GATE_OFF) {
+    return TEXT_NONE
+  }
+  return cssOf(css.homeGate)
+}
+
+/**
+ * 板根的类:水合后已预选了省、本省那一页还在路上时挂 .homeGateOn,就地把闸的两个开关置上
+ * (客户端跳转进板没有首帧脚本,靠这一档把全国过渡态压住)。
+ *
+ * @param gate 首屏本省闸。
+ * @returns 类名。
+ */
+export function pageClsOf(gate: HomeGate): string {
+  if (gate === HOME_GATE_ON) {
+    return cssOf(css.page) + SPACE + cssOf(css.homeGateOn)
+  }
+  return cssOf(css.page)
+}
+
+/**
+ * 「更新中」提示出不出:换血中照旧出;首屏本省闸没放开时也出(闸没真开着时由 CSS 藏住,见 .homeTip)。
+ *
+ * @param x 换血中没与首屏本省闸。
+ * @returns 出 = true。
+ */
+export function loadTipOnOf(x: LoadTipIn): boolean {
+  return x.on || x.gate !== HOME_GATE_OFF
+}
+
+/**
+ * 「更新中」提示的类:换血中是原样那一条;只因首屏本省闸而出的那一条加挂 .homeTip(闸真开着才看得见)。
+ *
+ * @param on 换血中没。
+ * @returns 类名。
+ */
+export function loadTipClsOf(on: boolean): string {
+  if (on) {
+    return cssOf(css.loadTip)
+  }
+  return cssOf(css.loadTip) + SPACE + cssOf(css.homeTip)
 }
 
 /**
@@ -4493,7 +4670,13 @@ export function boardCardViewOf(x: BoardCardIn): BoardCardView {
     provHref: mapsUrl(mapQuery({ field: COL.province, job: x.job })),
     cityText: L.city,
     provText: L.prov,
-    chips: chipSpecsOf({ j: x.job, t: x.b.t, blocked: x.b.blocked, eeCats: x.b.data.dims.eeCategories }),
+    chips: chipSpecsOf({
+      j: x.job,
+      t: x.b.t,
+      blocked: x.b.blocked,
+      pnpIndex: x.b.cellCtx.pnpIndex,
+      eeCats: x.b.data.dims.eeCategories,
+    }),
     saved,
     starLabel: saveLabelOf({ t: x.b.t, saved }),
     star: starOf(saved),
@@ -4628,7 +4811,7 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 东部时区看浏览器语言,法语当魁省其余当安省;海洋三省分不出不预选。列表照发布时间排,只是预选一格。
  *
  * @param x 筛选各格与首屏筛选。
- * @returns 无。
+ * @returns 这一回预选了省没(2026-09-26 起交回,原先无返回):预选了 = 本省那一页在路上,首屏本省闸等它落地。
  * 2026-09-14 晚 Frank「全部市 好像和省没联动上」:省槽存的是全名(市联动靠 provCodeOf 全名→码),
  * 这里先前直接写了两位码,壳上显示对、市却退成全国 —— 改成经 PROV_NAMES 换全名再落格。
  * 2026-09-17 改判(Frank 实撞「现在默认不是根据用户的时区 选省份了」→「改:选了具体省才记住」):原规矩「亲手动过一次
@@ -4636,30 +4819,118 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 下次照常按时区预选。
  * 2026-09-19 Frank「我点击看岗位的时候,跳转之后就不要限制省份了吧」:URL 带着搜索词进来(雇主板「看岗位」= `?q=雇主名`)
  * 就不预选省 —— 人是来找这家的岗的,Parks Canada 的岗在 NS / MB,预选安省 = 0 个职位。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:「URL 带省 / 带搜索词就不预选」那两道提成 homeGivenOf,首屏本省闸的初值共用它。
  */
-export function applyHomeProvince(x: HomeProvinceIn): void {
-  const given = x.initial[FK.prov]
-  if (typeof given === 'string' && given !== TEXT_NONE) {
-    return
-  }
-  const asked = x.initial[FK.q]
-  if (typeof asked === 'string' && asked !== TEXT_NONE) {
-    return
+export function applyHomeProvince(x: HomeProvinceIn): boolean {
+  if (homeGivenOf(x.initial)) {
+    return false
   }
   const picked = pickedProvOf()
   if (picked !== TEXT_NONE) {
     setterOf({ fState: x.fState, k: FK.prov })(picked)
-    return
+    return true
   }
   const prov = homeProvinceOf()
   if (prov === TEXT_NONE) {
-    return
+    return false
   }
   const full = PROV_NAMES[prov]
   if (full == null) {
-    return
+    return false
   }
   setterOf({ fState: x.fState, k: FK.prov })(full)
+  return true
+}
+
+/**
+ * 地址栏已经说了省或搜索词没 —— 说了就不按时区预选省(applyHomeProvince 与首屏本省闸 homeGateInitOf 共用这一处)。
+ *
+ * @param initial 首屏筛选(URL 带来的)。
+ * @returns 说了 = true。
+ */
+function homeGivenOf(initial: JobFilters): boolean {
+  const given = initial[FK.prov]
+  if (typeof given === 'string' && given !== TEXT_NONE) {
+    return true
+  }
+  const asked = initial[FK.q]
+  return typeof asked === 'string' && asked !== TEXT_NONE
+}
+
+/**
+ * 首屏本省闸的初值(2026-09-26 /fe 首页 Frank「首屏整表替换」:SSR 先渲全国 50 行、约 2 秒后按时区换本省,
+ * 表行 / 卡片整体跳):地址栏带了省或搜索词 = 不会预选,闸放开;否则挂「待定」—— 设备时区对得上省的,
+ * 首帧前那段内联脚本(HomeGate)已把全国过渡态压住。服务端与水合那一遍都按它渲(同一份入参同一个值,水合零差异)。
+ *
+ * @param initial 首屏筛选(URL 带来的)。
+ * @returns 闸的初值。
+ */
+export function homeGateInitOf(initial: JobFilters): HomeGate {
+  if (homeGivenOf(initial)) {
+    return HOME_GATE_OFF
+  }
+  return HOME_GATE_MAYBE
+}
+
+/**
+ * 首屏本省闸的首帧脚本(HomeGate 原样内联):设备时区对得上省(lib/location 的时区表)就把闸的两个开关置上。
+ *
+ * @returns 一段自执行脚本的源码。
+ */
+export function homeGateScriptOf(): string {
+  return homeGateJsOf(HOME_GATE_CSS)
+}
+
+/**
+ * 「还在水合没」这份外部状态的订阅(useSyncExternalStore 要一只):它不会再变(水合完就一直是 false),交回空退订。
+ * 首帧脚本只该待在服务端那份 HTML 里 —— React 在客户端造出来的 script 从不执行,留着只是死件(开发态还报一次告警)。
+ *
+ * @param _onChange 状态变了叫醒 React 的回调(用不上:这份状态不会变)。
+ * @returns 退订手柄。
+ */
+export function subscribeNever(_onChange: ClickFn): ClickFn {
+  return stayPut
+}
+
+/**
+ * 空退订(什么都不用做)。
+ *
+ * @returns 无。
+ */
+function stayPut(): void {
+  return
+}
+
+/**
+ * 客户端快照:水合完了、或客户端跳转进来的新挂载 —— 不在水合。
+ *
+ * @returns false。
+ */
+export function hydratingClientOf(): boolean {
+  return false
+}
+
+/**
+ * 服务端快照:服务端渲与水合那一遍 —— 在水合。
+ *
+ * @returns true。
+ */
+export function hydratingServerOf(): boolean {
+  return true
+}
+
+/**
+ * 水合那一步预选完,首屏本省闸落哪一档:预选了省 = on(本省那一页在路上,第 0 页落地才放开);
+ * 没预选 = off(过渡态本就是终态,当场放开)。
+ *
+ * @param preselected 这一回预选了省没。
+ * @returns 闸的下一档。
+ */
+export function homeGateAfterOf(preselected: boolean): HomeGate {
+  if (preselected) {
+    return HOME_GATE_ON
+  }
+  return HOME_GATE_OFF
 }
 
 /**

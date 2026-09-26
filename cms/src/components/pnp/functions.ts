@@ -26,7 +26,8 @@ import {
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
-  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, MATCH_LEVEL_HEAD, MONTH_DAYS,
+  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, FACTS_KEY_SEP, MATCH_LEVEL_HEAD,
+  MONTH_DAYS,
   NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK,
   RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
   SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD,
@@ -41,10 +42,11 @@ import type {
   EeHitIn, FedLabelIn,
   FoldLabelIn, HasProvDrawsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
-  LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
+  FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
   MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn, MmTeerCellIn, MmTone, NewsRowSpec, NewsRowsIn,
   NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob, PnpMatchOut,
-  PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform, PnpStream, PnpTone,
+  PnpFactsIndex, PnpFactsIndexIn, PnpFactsShownIn, PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform, PnpStream,
+  PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow,
   ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn, SponsorLinesIn, SponsorShowIn, StreamRowSpec,
   StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
 } from './types'
@@ -288,16 +290,48 @@ export function makeSponsorClick(kind: string): ClickFn {
 /**
  * PNP 命中计算(清单块与通道直判块两处共用;纯函数,改一处两边同变)。
  * AIP 清单不参与省提名判定(那是另一条路,见 aipBlockOf);魁省与缺省码的岗没有通道可比。
+ * 2026-09-26 /fe 首页 Frank 改判:命中清单改认数据层 pnp_stream —— 格子写哪张清单,弹框就展开哪张。
+ * 原先这里按职业码自己找、取最后一个命中,也不跳过参考信号清单:NS 木匠一类 82 条格子写「NS Construction」
+ * (数据层取清单最小的第一个命中),点开却是「NS Critical Vacancies」参考清单。参考信号清单(MB 在需、NS 紧缺空缺)
+ * 数据层从不写进 pnp_stream,于是也不再当命中清单;排除清单照旧按职业码认。
  *
  * @param x 本岗与扁平清单。
  * @returns 本省通道、命中与排除。
  */
 export function pnpMatchOf(x: PnpMatchIn): PnpMatchOut {
+  const streams = pnpStreamsOf({ province: x.job.province, occ: x.occ })
+  let matched: PnpStream | null = null
+  let excludedBy: PnpStream | null = null
+  let hasInclusion = false
+  for (const s of streams) {
+    if (s.type === TYPE_INELIGIBLE) {
+      if (hasNocOf(s, x.job.noc)) {
+        excludedBy = s
+      }
+    } else {
+      hasInclusion = true
+      if (x.job.pnpStream !== TEXT_NONE && s.label === x.job.pnpStream) {
+        matched = s
+      }
+    }
+  }
+  return { streams, matched, excluded: excludedBy != null, excludedBy, hasInclusion }
+}
+
+/**
+ * 一省的省提名清单:扁平清单行按 label 分组成通道(AIP 背书清单不算;魁省与缺省码的岗没有通道可比)。
+ * 2026-09-26 自 pnpMatchOf 体内原样提出:弹框命中计算与首屏的事实索引(pnpFactsIndexOf)共用这一处分组,
+ * 格子判「弹框有没有清单卡」与弹框自己出卡才是同一份清单。
+ *
+ * @param x 省码与扁平清单。
+ * @returns 本省通道(清单行的原序)。
+ */
+function pnpStreamsOf(x: PnpStreamsIn): PnpStream[] {
   const streams: PnpStream[] = []
-  if (x.job.province !== PROV_QC && x.job.province !== TEXT_NONE) {
+  if (x.province !== PROV_QC && x.province !== TEXT_NONE) {
     const byLabel = new Map<string, PnpStream>()
     for (const r of x.occ) {
-      if (r.province !== x.job.province || programOf(r) !== PROGRAM_PNP) {
+      if (r.province !== x.province || programOf(r) !== PROGRAM_PNP) {
         continue
       }
       let s = byLabel.get(r.label)
@@ -309,22 +343,7 @@ export function pnpMatchOf(x: PnpMatchIn): PnpMatchOut {
     }
     streams.push(...byLabel.values())
   }
-  let matched: PnpStream | null = null
-  let excludedBy: PnpStream | null = null
-  let hasInclusion = false
-  for (const s of streams) {
-    if (s.type === TYPE_INELIGIBLE) {
-      if (hasNocOf(s, x.job.noc)) {
-        excludedBy = s
-      }
-    } else {
-      hasInclusion = true
-      if (hasNocOf(s, x.job.noc)) {
-        matched = s
-      }
-    }
-  }
-  return { streams, matched, excluded: excludedBy != null, excludedBy, hasInclusion }
+  return streams
 }
 
 /**
@@ -384,21 +403,125 @@ export function numTextOf(v: number | null): string | number {
 }
 
 /**
- * 本省有没有抽选可列(魁省不出这张卡 —— 它不参加 PNP)。
+ * 省提名弹框的事实索引:清单与抽选两张整表压成三串键(服务端门里算一次,随首屏下发;整表 2026-09-26 起弹框打开才懒取)。
+ * 格子凭它判「弹框里有没有卡可出」(pnpFactsShownOf)—— 抽选那串就是 hasProvDraws 为真的省,清单与排除两串就是
+ * pnpStreamsOf 分出来的纳入型清单与排除清单点名的职业:与弹框自己出卡(PnpListSection)同一套判据,不另写一份
+ * (排除那串不借职位板的排除键:那份按清单行算,这份按弹框分组算,判「弹框出不出卡」只认弹框自己的分组)。
  *
- * @param x 本岗与全部抽选行。
+ * @param x 两张整表。
+ * @returns 出得了抽选卡的省码、认得出的纳入型清单键与排除清单点名的职业键。
+ */
+export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
+  const draws: string[] = []
+  for (const province of distinctProvsOf(x.draws)) {
+    if (hasProvDraws({ province, draws: x.draws })) {
+      draws.push(province)
+    }
+  }
+  const lists: string[] = []
+  const excluded: string[] = []
+  for (const province of distinctProvsOf(x.occ)) {
+    for (const s of pnpStreamsOf({ province, occ: x.occ })) {
+      if (s.type !== TYPE_INELIGIBLE) {
+        lists.push(factKeyOf({ province, tail: s.label }))
+        continue
+      }
+      for (const o of s.occupations) {
+        excluded.push(factKeyOf({ province, tail: o.noc }))
+      }
+    }
+  }
+  return { draws, lists, excluded }
+}
+
+/**
+ * 这一岗的省提名弹框有没有卡可出:本省抽选卡,或清单卡(命中的纳入清单 = 数据层 pnp_stream 那张;被排除 = 点名它的排除清单)。
+ * 2026-09-26 /fe 首页 Frank(止血):格子可不可点只看它 —— 安省改制不出抽选卡且没有清单、NS / SK 的通用岗与领地
+ * 既无清单也无抽选,这两万来条点开只有标题;判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后自然恢复可点。
+ *
+ * 魁省与缺省码的岗弹框里没有卡(清单分组与抽选卡两处都先把它们挡掉,见 pnpStreamsOf / hasProvDraws),这里同样先挡。
+ *
+ * @param x 本岗省码、职业码、数据层通道标签与事实索引。
+ * @returns 有卡可出 = true。
+ */
+export function pnpFactsShownOf(x: PnpFactsShownIn): boolean {
+  if (x.province === PROV_QC || x.province === TEXT_NONE) {
+    return false
+  }
+  const exclKey = factKeyOf({ province: x.province, tail: x.noc })
+  if (x.index.draws.includes(x.province) || x.index.excluded.includes(exclKey)) {
+    return true
+  }
+  if (x.stream === TEXT_NONE) {
+    return false
+  }
+  return x.index.lists.includes(factKeyOf({ province: x.province, tail: x.stream }))
+}
+
+/**
+ * 事实索引的键(省码 + 键尾:纳入型清单用清单名 —— 即数据层 pnp_stream 的取值;排除那串用职业码)。
+ *
+ * @param x 省码与键尾。
+ * @returns 键(形如 `NS|NS 建筑`、`SK|65201`)。
+ */
+function factKeyOf(x: FactKeyIn): string {
+  return x.province + FACTS_KEY_SEP + x.tail
+}
+
+/**
+ * 表里出现过的省码(去重,保持首次出现的先后)。
+ *
+ * @param rows 带省码的行(清单行或抽选行)。
+ * @returns 省码。
+ */
+function distinctProvsOf(rows: ProvRow[]): string[] {
+  const out: string[] = []
+  for (const r of rows) {
+    if (out.includes(r.province) === false) {
+      out.push(r.province)
+    }
+  }
+  return out
+}
+
+/**
+ * 本省有没有抽选可列(魁省不出这张卡 —— 它不参加 PNP)。
+ * 2026-09-26 /fe 首页 Frank:这一处收成省提名弹框「出不出本省抽选卡」的完整判据 —— 原先改制省那道(安省不出,见 reformOf)
+ * 写在 PnpListSection 里、「一轮带日期的抽选都没有」那道藏在 PnpDrawGroups 的空组判断里,三处拼起来才是答案;
+ * 格子要照弹框出不出卡判可不可点(pnpFactsIndexOf),判据只能有一份。入参由本岗改成省码(首屏索引按省算)。
+ *
+ * @param x 省码与全部抽选行。
  * @returns 出不出抽选卡。
  */
 export function hasProvDraws(x: HasProvDrawsIn): boolean {
-  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
+  if (x.province === PROV_QC || x.province === TEXT_NONE || reformOf({ province: x.province }) != null) {
     return false
   }
+  return provDrawHistOf({ province: x.province, draws: x.draws }).size > 0
+}
+
+/**
+ * 本省的抽选按通道分组(只收带日期的抽选行,通告行不算;组内保持来稿序,排序归调用方)。
+ * 2026-09-26 自 pnpDrawGroupsOf 体内原样提出:抽选卡出不出(hasProvDraws)与卡里分哪几组共用这一处 ——
+ * 一组都分不出来,抽选卡就不出。
+ *
+ * @param x 省码与全部抽选行。
+ * @returns 通道原值 → 历次抽选。
+ */
+function provDrawHistOf(x: ProvDrawHistIn): DrawHist {
+  const hist: DrawHist = new Map()
   for (const d of x.draws) {
-    if (d.province === x.job.province) {
-      return true
+    if (d.province !== x.province || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE) {
+      continue
+    }
+    const arr = hist.get(d.stream)
+    if (arr == null) {
+      hist.set(d.stream, [d])
+    } else {
+      arr.push(d)
     }
   }
-  return false
+  return hist
 }
 
 /**
@@ -781,18 +904,7 @@ export function drawHitStreamsOf(job: PnpJob): string[] {
  * @returns 各组(没有抽选给空列)。
  */
 export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
-  const hist: DrawHist = new Map()
-  for (const d of x.draws) {
-    if (d.province !== x.province || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE) {
-      continue
-    }
-    const arr = hist.get(d.stream)
-    if (arr == null) {
-      hist.set(d.stream, [d])
-    } else {
-      arr.push(d)
-    }
-  }
+  const hist = provDrawHistOf({ province: x.province, draws: x.draws })
   const groups: EeCmpGroup[] = []
   for (const [key, arr] of hist) {
     arr.sort(byDrawDateDesc)
@@ -934,6 +1046,7 @@ function histAtOf(x: HistAtIn): PnpDraw[] {
  * 一组的展示件:组头 = 最近一轮(最低分 / 日期 / 轮数),点开列全部轮次(照抄省抽选表的行)。
  * 休眠类别的历次轮次可能已过保留窗(联邦行每类只留最近 12 轮),组头仍按类别表带的最近一轮写。
  * 同日 Frank「运输这个只有一个 没法展开」:一轮也给展开(展开才看得到轮次名与邀请数),轮数照写「1 轮」。
+ * 2026-09-26 /fe 首页 Frank:英文一轮写「1 round」不再是「1 rounds」—— 一轮单走 eecmp.roundsOne(中韩两门文案同原句)。
  *
  * @param x 一组的原料。
  * @returns 这一组。
@@ -952,7 +1065,9 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     i += 1
   }
   let rounds = TEXT_NONE
-  if (rows.length > 0) {
+  if (rows.length === 1) {
+    rounds = x.t('eecmp.roundsOne', { n: rows.length })
+  } else if (rows.length > 1) {
     rounds = x.t('eecmp.rounds', { n: rows.length })
   }
   return {

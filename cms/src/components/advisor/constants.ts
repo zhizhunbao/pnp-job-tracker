@@ -247,6 +247,24 @@ export const URL_API_JOBS_COMPANY = '/api/jobs?q='
 export const URL_PAGE_FIRST = '&page=0'
 
 /**
+ * 省提名清单与抽选两张整表的懒取接口(2026-09-26 /fe 首页 Frank:首页不再内联这两张表,字段弹框打开才取)。
+ */
+export const URL_API_JOBS_PNP = '/api/jobs/pnp'
+
+/**
+ * 正文要读省提名清单 / 抽选整表的分组(2026-09-26 起两表懒取:这几组开框先等两表到齐再渲正文,别的组照旧当场出)。
+ * 移民组(依据链读清单)、省提名组(清单卡 + 本省抽选卡)、EE 组(分数线卡读联邦轮次)、AIP 组(不受理清单)、
+ * 地点组(省份卡读本省抽选)—— 与各组正文真读 pnpOcc / pnpDraws 的那几件逐一对过;
+ * 新增读这两表的组要在这里登记,否则那组开框会拿到空表。
+ */
+export const PNP_DATA_GROUPS = new Set(['immigration', 'pnp', 'ee', 'aip', 'location'])
+
+/**
+ * 两表懒取失败时那句话的提醒框色:notice 域四色里的红(2026-09-26;文案沿用雇主板同义的 de.loadFailed,不另起词条)。
+ */
+export const NOTICE_ERR = 'err'
+
+/**
  * 省地区统计页的地址头(地点弹框的「打开完整页」——它有专属 SEO 页)。
  */
 export const URL_STATS_HEAD = '/stats/'

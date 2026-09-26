@@ -19,11 +19,13 @@
  * 「这个默认展开吧」:通道职业清单默认展开。地点弹框的省份卡仍用 PnpDrawsBlock(最近 1 / 3 轮),不动。
  * 同日 Frank「这个删掉」「担保雇主这个怎么还显示」:雇主线卡(担保雇主:AIP 指定 / LMIA 获批 + 看它全部在招职位)撤,
  * 弹框从本省抽选开始。
+ * 2026-09-26 /fe 首页 Frank:抽选卡出不出整句收进 hasProvDraws(改制省那道原先写在这里),格子可不可点照同一句判
+ * (pnpFactsIndexOf);清单卡的命中改认数据层 pnp_stream(见 pnpMatchOf)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { drawHitStreamsOf, hasProvDraws, reformOf, shownStreamsOf, streamKeyOf } from './functions'
+import { drawHitStreamsOf, hasProvDraws, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
 import { PnpDrawGroups } from './pnpdrawgroups'
 import { StreamCard } from './streamcard'
@@ -37,7 +39,7 @@ import type { PnpListSectionIn } from './types'
  */
 export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = true }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc })
-  const showDraws = hasProvDraws({ job, draws }) && reformOf({ province: job.province }) == null
+  const showDraws = hasProvDraws({ province: job.province, draws })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc })) {
     const key = streamKeyOf(s)

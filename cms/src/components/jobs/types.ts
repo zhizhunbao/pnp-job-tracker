@@ -252,6 +252,11 @@ export type CellCtx = {
   blocked: BlockedKeys
 
   /**
+   * 省提名弹框的事实索引(省提名格可不可点看它,2026-09-26)。
+   */
+  pnpIndex: PnpShownIndex
+
+  /**
    * 维度表里的 EE 类别(算「休眠」要看最近抽选日)。
    */
   eeCats: JobDims['eeCategories']
@@ -281,6 +286,64 @@ export type BlockedKeys = {
    */
   aip: Set<string>
 }
+
+/**
+ * 省提名弹框的事实索引(pnp 域 pnpFactsIndexOf 算、pnpFactsShownOf 读;本域只原样递,形状照抄 pnp 域的
+ * PnpFactsIndex)。2026-09-26 /fe 首页 Frank:清单与抽选两张整表弹框打开才懒取,格子凭它判「弹框有没有卡可出」。
+ */
+export type PnpShownIndex = {
+  /**
+   * 弹框出得了本省抽选卡的省码。
+   */
+  draws: string[]
+
+  /**
+   * 弹框认得出的纳入型清单,键 `省码|清单名`。
+   */
+  lists: string[]
+
+  /**
+   * 弹框出得了排除清单卡的职业,键 `省码|NOC`。
+   */
+  excluded: string[]
+}
+
+/**
+ * 格子要的省提名事实(服务端 boardPnpOf 从两张整表压好,随首屏下发;2026-09-26 起整表不再内联)。
+ */
+export type BoardPnpFacts = {
+  /**
+   * 省提名官方具名排除的 `省码|NOC`(格子红字、手机胶囊、弹框排除清单卡都看它)。
+   */
+  pnpBlocked: string[]
+
+  /**
+   * 大西洋试点不受理的 `省码|NOC`。
+   */
+  aipBlocked: string[]
+
+  /**
+   * 省提名弹框的事实索引。
+   */
+  index: PnpShownIndex
+}
+
+/**
+ * 首屏本省闸(2026-09-26 /fe 首页 Frank「首屏整表替换」):maybe = 服务端与水合那一遍(设备时区对得上省的,
+ * 首帧前的内联脚本已把全国过渡态压住)、on = 水合后已按时区 / 上次所选预选了省,本省那一页还在路上、
+ * off = 放开(没预选,或本省那一页已落地)。
+ */
+export type HomeGate = 'maybe' | 'on' | 'off'
+
+/**
+ * 首屏本省闸的写口(数据整台交出来给水合那一步用)。
+ */
+export type GateSetFn = (g: HomeGate) => void
+
+/**
+ * useBoardData 交回的两格:数据面板 + 首屏本省闸的写口(写口不进面板 —— 视图只读闸,不写)。
+ */
+export type BoardDataOut = [BoardDataPanel, GateSetFn]
 
 /**
  * cellViewOf 一族的入参(列键 + 库行 + 上下文)。
@@ -517,6 +580,11 @@ export type ChipSpecsIn = {
   blocked: BlockedKeys
 
   /**
+   * 省提名弹框的事实索引(省提名胶囊可不可点看它,与表格那一格同一个判据,2026-09-26)。
+   */
+  pnpIndex: PnpShownIndex
+
+  /**
    * 维度表里的 EE 类别。
    */
   eeCats: JobDims['eeCategories']
@@ -690,6 +758,11 @@ export type BoardDataPanel = {
    * 第 0 页在拉 = 整表换血:表格/卡片半透明 + 顶部「更新中」条(#83)。
    */
   swapping: boolean
+
+  /**
+   * 首屏本省闸(2026-09-26):没放开时表身与卡片流挂闸类,「更新中」提示照闸的开关出。
+   */
+  gate: HomeGate
 
   /**
    * 再翻一页。
@@ -1024,6 +1097,11 @@ export type JobsBoardPanel = {
    * 差异化证言数字(第 5 轮 #14)。
    */
   proof: ProofCount
+
+  /**
+   * 还在水合没(首屏本省闸的首帧脚本只在服务端那份 HTML 与水合那一遍里渲,2026-09-26)。
+   */
+  hydrating: boolean
 }
 
 /**
@@ -1050,6 +1128,12 @@ export type JobsIn = {
    * 维度表(可省 = 空维度,由客户端补拉)。
    */
   dims?: JobDims
+
+  /**
+   * 格子要的省提名事实(官方具名排除两套键 + 省提名弹框的事实索引,服务端 boardPnpOf 压好;
+   * 2026-09-26 /fe 首页 Frank:清单与抽选两张整表不再随首屏内联,弹框打开才懒取)。
+   */
+  pnpFacts: BoardPnpFacts
 
   /**
    * cookie 里的列集(可省 = 默认列)。
@@ -1203,6 +1287,11 @@ export type BoardLoadingIn = {
    * 换血中没(2026-09-23 起锚常驻,只有换血中才出提示)。
    */
   on: boolean
+
+  /**
+   * 首屏本省闸(2026-09-26):没放开时也出这条提示,但只在闸真开着时看得见(闸的开关见 jobs.module.css)。
+   */
+  gate: HomeGate
 }
 
 /**
@@ -1897,6 +1986,61 @@ export type JdOrigLinkIn = {
    * JD 身体状态机。
    */
   d: JobBodyPanel
+}
+
+/**
+ * JobDates(职位名下那行日期:发布 / 截止两格)的 props,也是 useJobDates 的入参。
+ */
+export type JobDatesIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * jobDatesOf 的入参。
+ */
+export type JobDatesOfIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 此刻(毫秒;由 useJobDates 在首渲那一拍取)。
+   */
+  now: number
+}
+
+/**
+ * 职位名下日期行的一格(jobDatesOf 产出)。
+ */
+export type JobDateCell = {
+  /**
+   * 格键(列表键,DATE_CELL 两档之一)。
+   */
+  k: string
+
+  /**
+   * 标签(界面语言)。
+   */
+  label: string
+
+  /**
+   * 日期的 ISO 串(TimeText 裁成 YYYY-MM-DD)。
+   */
+  iso: string
 }
 
 /**
@@ -3479,6 +3623,76 @@ export type BoardDataHookIn = {
 }
 
 /**
+ * cardsClsOf 的入参。
+ */
+export type CardsClsIn = {
+  /**
+   * 换血中没。
+   */
+  swapping: boolean
+
+  /**
+   * 首屏本省闸。
+   */
+  gate: HomeGate
+}
+
+/**
+ * loadTipOnOf 的入参。
+ */
+export type LoadTipIn = {
+  /**
+   * 换血中没。
+   */
+  on: boolean
+
+  /**
+   * 首屏本省闸。
+   */
+  gate: HomeGate
+}
+
+/**
+ * pnpActiveOf 的入参(表格省提名格与手机卡省提名胶囊共用)。
+ */
+export type PnpActiveIn = {
+  /**
+   * 库行。
+   */
+  j: JobFact
+
+  /**
+   * 官方具名排除清单。
+   */
+  blocked: BlockedKeys
+
+  /**
+   * 省提名弹框的事实索引。
+   */
+  pnpIndex: PnpShownIndex
+}
+
+/**
+ * pnpChipOf 的入参。
+ */
+export type PnpChipIn = {
+  /**
+   * 库行、取词函数、排除清单、事实索引与 EE 维度。
+   */
+  x: ChipSpecsIn
+
+  /**
+   * 语义色档。
+   */
+  tone: string
+
+  /**
+   * 显示文本。
+   */
+  text: string
+}
+
+/**
  * 分类维表里本域真读的那几格。
  */
 export type NocCatRow = {
@@ -4416,6 +4630,11 @@ export type HydrateIn = {
    * 组件收到的 props。
    */
   props: JobsIn
+
+  /**
+   * 首屏本省闸的写口(预选了省 = on,没预选 = off;2026-09-26)。
+   */
+  setGate: GateSetFn
 }
 
 /**

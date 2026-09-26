@@ -1887,6 +1887,21 @@ export type PnpMatchIn = {
 }
 
 /**
+ * pnpStreamsOf 的入参。
+ */
+export type PnpStreamsIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 省提名与 AIP 的扁平清单。
+   */
+  occ: PnpOcc[]
+}
+
+/**
  * shownStreamsOf 的入参。
  */
 export type ShownStreamsIn = {
@@ -1899,6 +1914,92 @@ export type ShownStreamsIn = {
    * 本岗职业码。
    */
   noc: string
+}
+
+/**
+ * 省提名弹框的事实索引(2026-09-26 /fe 首页 Frank:清单与抽选两张整表改成弹框打开才懒取,
+ * 首屏只带这三串键,格子凭它判「弹框里有没有卡可出」)。
+ */
+export type PnpFactsIndex = {
+  /**
+   * 弹框出得了本省抽选卡的省码(hasProvDraws 为真的那几省)。
+   */
+  draws: string[]
+
+  /**
+   * 弹框认得出的纳入型清单,键 `省码|清单名`(pnpStreamsOf 分出来的非排除清单)。
+   */
+  lists: string[]
+
+  /**
+   * 弹框出得了排除清单卡的职业,键 `省码|NOC`(pnpStreamsOf 分出来的排除清单里点名的职业)。
+   */
+  excluded: string[]
+}
+
+/**
+ * pnpFactsIndexOf 的入参。
+ */
+export type PnpFactsIndexIn = {
+  /**
+   * 省提名与 AIP 的扁平清单(整表)。
+   */
+  occ: PnpOcc[]
+
+  /**
+   * 全部抽选行(整表)。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * pnpFactsShownOf 的入参。
+ */
+export type PnpFactsShownIn = {
+  /**
+   * 本岗省码。
+   */
+  province: string
+
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 本岗的数据层通道标签(pnp_stream);''=没命中具名清单。
+   */
+  stream: string
+
+  /**
+   * 事实索引。
+   */
+  index: PnpFactsIndex
+}
+
+/**
+ * factKeyOf 的入参。
+ */
+export type FactKeyIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 键尾:清单名(pnp_occupations.label,与数据层 pnp_stream 同一套取值)或职业码。
+   */
+  tail: string
+}
+
+/**
+ * 带省码的一行(清单行与抽选行都是;distinctProvsOf 只读这一格)。
+ */
+export type ProvRow = {
+  /**
+   * 省码。
+   */
+  province: string
 }
 
 /**
@@ -2092,13 +2193,28 @@ export type FedLabelIn = {
 }
 
 /**
- * hasProvDraws 的入参。
+ * hasProvDraws 的入参(2026-09-26 由本岗改成省码:首屏事实索引按省算,见 pnpFactsIndexOf)。
  */
 export type HasProvDrawsIn = {
   /**
-   * 本岗。
+   * 省码。
    */
-  job: PnpJob
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * provDrawHistOf 的入参。
+ */
+export type ProvDrawHistIn = {
+  /**
+   * 省码。
+   */
+  province: string
 
   /**
    * 全部抽选行。

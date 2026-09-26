@@ -452,6 +452,53 @@
 }
 
 /*
+ * 首屏本省闸(2026-09-26 /fe 首页 Frank「首屏整表替换」:SSR 先渲全国、约 2 秒后按时区换本省,表行 / 卡片整体跳,
+ * CLS 手机 0.40、桌面 0.58)。没带省的首屏照旧渲全国 50 行(爬虫要读),设备时区对得上省的访客马上要被换成本省 ——
+ * 这 50 行是过渡态,不给看;版面照占(visibility,不是 display),本省那一页换进来不整体跳。
+ * 开关是 --home-gate / --home-tip 两个变量:首帧前那段内联脚本(HomeGate)命中时在 :root 上置;水合后已预选了省、
+ * 本省那一页还在路上时由板根的 .homeGateOn 置(客户端跳转进板没有首帧脚本,靠它);都没置 = 过渡态照常显示,与改前一致。
+ * 8 秒兜底:脚本跑了而页面 JS 没起来(部署换版时旧页拉不到新包),到点照常显示、提示收起 —— 不把真内容藏死。
+ */
+.homeGate {
+  visibility: var(--home-gate, visible);
+  animation: home-gate-open 0s linear 8s forwards;
+}
+
+/*
+ * 板根:水合后已预选了省、本省那一页还在路上 —— 就地把闸的两个开关置上。
+ */
+.homeGateOn {
+  --home-gate: hidden;
+  --home-tip: flex;
+}
+
+/*
+ * 只因首屏本省闸而出的「更新中」提示:长相同 .loadTip,闸真开着才看得见(没开 = 不是马上要换,不提示)。
+ */
+.loadTip.homeTip {
+  display: var(--home-tip, none);
+  animation: home-tip-off 0s linear 8s forwards;
+}
+
+/*
+ * 闸的 8 秒兜底:表身与卡片流照常显示。
+ */
+@keyframes home-gate-open {
+  to {
+    visibility: visible;
+  }
+}
+
+/*
+ * 闸的 8 秒兜底:那条提示收起。
+ */
+@keyframes home-tip-off {
+  to {
+    visibility: hidden;
+  }
+}
+
+/*
  * ── 7. 主表 ──────────────────────────────────────────────────────────────
  */
 
@@ -1655,6 +1702,40 @@
   font-size: 22px;
   line-height: 1.35;
   color: #111827;
+}
+
+/*
+ * 职位名下面那行日期(2026-09-26 Frank 看过效果图点头;JobDates,详情页 H1 下与职位弹框标题下同一件):
+ * 发布、截止两格,格间留空隙不用分隔符;窄屏放不下时第二格整格折到下一行,格内不拆。
+ */
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 4px;
+  font-size: 14px;
+  color: #111827;
+
+  /*
+   * 弹框页眉(flex 折行容器)里:排在窗口钮之后、独占一整行,与译名行同档(order 1,DOM 在它前面所以排它上面);
+   * 详情页的块级流里这两格不起作用 —— 两种宿主同一份样式(同 time 桶 .updated 先例)。
+   */
+  order: 1;
+  flex-basis: 100%;
+}
+
+/*
+ * 日期行的一格:标签与日期不拆行。
+ */
+.dateCell {
+  white-space: nowrap;
+}
+
+/*
+ * 日期行的标签灰(日期随行深色)。
+ */
+.dateK {
+  color: #9ca3af;
 }
 
 /*

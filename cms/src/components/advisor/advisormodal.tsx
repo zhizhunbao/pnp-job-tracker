@@ -14,27 +14,32 @@
  * 2026-09-14 Frank「按钮都去掉」:字段弹框的钮条撤(FieldActs 件随撤);中 / 韩界面对照默认开(hooks)。
  * 2026-09-16 Frank「公司的也对照改一下」:公司组页眉译名行右端挂中文对照开关(通用件 Switch,状态 = 既有的 showZh),
  * 公司弹框正文的对照行随它开合;与职位描述弹框同一副样子。
+ * 2026-09-26 /fe 首页 Frank:省提名清单与抽选两张整表不再随首屏内联,本框打开时自己懒取(usePnpData):
+ * 正文读两表的组(PNP_DATA_GROUPS)等两表到齐再渲,等的时候出全站统一的加载行(Loading),取挂了出红色提醒框;
+ * 别的组(公司、分类……)照旧当场出。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
+import { Loading } from '@/components/loading'
+import { Notice } from '@/components/notice'
 import { MeansForMe } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import {
-  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION,
+  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION, NOTICE_ERR,
 } from './constants'
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { FloatPanel } from './floatpanel'
 import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf } from './functions'
-import { useAdvisorModal, useFloatPanel } from './hooks'
+import { useAdvisorModal, useFloatPanel, usePnpData } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 
 /**
  * 渲染字段顾问弹框。
  *
- * @param props 分组、入口格、这一岗、标题、语言、分层态、七张维度表与两个回调。
+ * @param props 分组、入口格、这一岗、标题、语言、分层态、五张维度表与两个回调(省提名两表本框自己懒取)。
  * @returns 浮层。
  */
 export function AdvisorModal({
@@ -44,8 +49,6 @@ export function AdvisorModal({
   title,
   lang,
   plan,
-  pnpOcc,
-  pnpDraws,
   news,
   eeOcc,
   desigEmp,
@@ -56,12 +59,13 @@ export function AdvisorModal({
 }: AdvisorModalIn) {
   const t = makeT(lang)
   const m = useAdvisorModal({ group, field, job, lang })
+  const pnp = usePnpData({ group })
   const panel = useFloatPanel({ prefKey: ADV_PREF, defW: ADV_PANEL_W, defH: ADV_PANEL_H })
   const f: AdvisorFacts = {
     job,
     lang,
-    pnpOcc,
-    pnpDraws,
+    pnpOcc: pnp.occ,
+    pnpDraws: pnp.draws,
     news,
     profileClb: planClbOf({ plan }),
     eeOcc,
@@ -80,17 +84,21 @@ export function AdvisorModal({
     <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
       onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}
       pageHref={fieldPageOf({ group, slug: job.companySlug })}>
-      {group === GROUP_IMMIGRATION && (
-        <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnpOcc} eeOcc={eeOcc} nocDesc={nocDesc} />
+      {pnp.ready === false && pnp.failed === false && <Loading text={t('act.loadingText')} />}
+      {pnp.failed && <Notice kind={NOTICE_ERR}>{t('de.loadFailed')}</Notice>}
+      {pnp.ready && group === GROUP_IMMIGRATION && (
+        <MeansForMe job={job} lang={lang} plan={plan} pnpOcc={pnp.occ} eeOcc={eeOcc} nocDesc={nocDesc} />
       )}
-      <AdvisorBody group={group} field={field}
-        companyJobs={m.companyJobs}
-        onOpenJob={onOpenJob}
-        onOpenCompany={onOpenCompany}
-        onCompanyAlias={m.onCompanyAlias}
-        onCompanyTransBusy={m.onTransBusy}
-        gen={m.gen}
-        f={f} />
+      {pnp.ready && (
+        <AdvisorBody group={group} field={field}
+          companyJobs={m.companyJobs}
+          onOpenJob={onOpenJob}
+          onOpenCompany={onOpenCompany}
+          onCompanyAlias={m.onCompanyAlias}
+          onCompanyTransBusy={m.onTransBusy}
+          gen={m.gen}
+          f={f} />
+      )}
       {m.aiOn && (
         <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />
       )}

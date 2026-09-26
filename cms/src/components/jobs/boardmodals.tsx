@@ -11,6 +11,8 @@
  * 一层层叠、只关最上面一层;字段弹框仍单独一格,垫在栈底下。
  * 2026-09-23「我的匹配」整拆:登录档(登录成功落匹配视图)与匹配锁由头随之撤 —— 匿名弹框一律注册框、落回原页,
  * 升级弹框的由头只剩「保存筛选满额」一种。
+ * 2026-09-26 /fe 首页 Frank:省提名清单与抽选两张整表不再随首屏内联,字段弹框打开时自己懒取(advisor 域 usePnpData),
+ * 这里不再递这两格。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -39,8 +41,6 @@ export function BoardModals({ b }: BoardPanelIn) {
           title={m.popup.title}
           lang={b.lang}
           plan={b.plan}
-          pnpOcc={b.data.dims.pnpOccupations}
-          pnpDraws={b.data.dims.pnpDraws}
           news={b.data.dims.news}
           eeOcc={b.data.dims.eeCategories}
           desigEmp={b.data.dims.designatedEmployers}

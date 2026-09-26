@@ -14,6 +14,8 @@
  *
  * ⚠️ 门上这几个名字是**承重墙**:两个页面门、header 的账户区、seed/api 与 tests/int 都在用,
  * cookie 键名与值格式更是线上有存量的 —— 改名要连它们一起改。
+ * 2026-09-26 /fe 首页 Frank:门上加 boardDimsOf / boardPnpOf 两名 —— 职位板门拿整包维度,下发给板前去掉省提名清单与抽选
+ * 两张整表(弹框打开才懒取),格子要的排除键与弹框事实索引压成几串键随板下发。
  * 对应 lib 域:lib/jobs。
  *
  * @author Frank
@@ -27,7 +29,7 @@ export { Job } from './job'
 export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
 export {
-  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toCatLabelList,
+  boardDimsOf, boardPnpOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toCatLabelList,
   toJobPlan, toNocDescList, toSearchParams,
 } from './functions'
 export type {

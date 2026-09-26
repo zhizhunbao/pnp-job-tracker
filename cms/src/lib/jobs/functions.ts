@@ -20,7 +20,7 @@ import type {
 import { hqLineOf } from '../location'
 import { JOBS_LOG, log } from '../log'
 import { fill } from '../template'
-import { ymd } from '../time'
+import { fmtLocal, ymd } from '../time'
 import {
   DESIGNATED_PLACE_GAP, DESIGNATED_PLACE_SEP,
   ACCEPT_ANY, ACCEPT_HTML, ALERT_WHERE_START, AMP, AMP_ENT_RE, APPLY_SLICE_LEN, APPLY_TIMEOUT_MS, BLOCKED_SRC,
@@ -67,7 +67,7 @@ import type {
   CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
   CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
   DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
-  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire, MaybeJobId,
+  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire, MaybeJobId,
   JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
   JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobOgDbRow,
   JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
@@ -3689,7 +3689,7 @@ export function byEntryCountDesc(a: [string, number], b: [string, number]): numb
  */
 export function jobPostingJsonOf(input: JobPostingIn): string {
   const job = input.job
-  if (input.seoOk === false || isExpiredJob(job)) {
+  if (input.seoOk === false || isExpiredJob({ job, today: ymd(fmtLocal(new Date().toISOString())) })) {
     return ISO_NONE
   }
   const ld: JsonObj = {}
@@ -3723,18 +3723,22 @@ function putPosted(x: LdPutIn): void {
 
 /**
  * 这一岗在 Google 眼里算不算过期:已下架,或发帖方写的截止日已经过了(按 UTC 日期比,截止日当天还算在期)。
+ * 2026-09-26 职位名下的日期行(详情页 H1 下、职位弹框标题下)截止那格复用这一条(过期就不出),不另写第二份判定;
+ * 「今天」随之改由调用方递(纯函数不自己读时钟,测试才注得进固定值):JobPosting 照旧递 UTC 今天,日期行递多伦多今天
+ * (与库里收录口径 SQL.SEO_JOB_OK、过期关帖同一个「今天」)。
+ * 同日 lead 拍板统一:JobPosting 也改递多伦多今天 —— 递 UTC 时,截止日当天多伦多 20 点后 JobPosting 已不出、日期行与 sitemap 仍算在期,三处口径打架。
  *
- * @param job 本岗。
+ * @param x 本岗与今天的日期。
  * @returns 过期 = true。
  */
-function isExpiredJob(job: JobRow): boolean {
-  if (job.status === STATUS_CLOSED_WORD) {
+export function isExpiredJob(x: ExpiredJobIn): boolean {
+  if (x.job.status === STATUS_CLOSED_WORD) {
     return true
   }
-  if (job.validThrough === ISO_NONE) {
+  if (x.job.validThrough === ISO_NONE) {
     return false
   }
-  return job.validThrough.slice(0, DATE_LEN) < new Date().toISOString().slice(0, DATE_LEN)
+  return x.job.validThrough.slice(0, DATE_LEN) < x.today
 }
 
 /**

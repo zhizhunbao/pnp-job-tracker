@@ -4953,6 +4953,21 @@ export type LdPutIn = {
 }
 
 /**
+ * `isExpiredJob` 的入参:本岗与「今天」(今天由调用方递,口径见函数注释)。
+ */
+export type ExpiredJobIn = {
+  /**
+   * 本岗(只读状态与截止日两格)。
+   */
+  job: JobRow
+
+  /**
+   * 今天的日期 'YYYY-MM-DD'。
+   */
+  today: string
+}
+
+/**
  * 详情页 SEO 头要用的那一行(洗净的事实)。
  */
 export type JobMetaFact = {

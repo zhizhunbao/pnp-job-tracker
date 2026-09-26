@@ -25,6 +25,8 @@
  * 更多筛选有了渠道下拉,主板选 HireAC 即出全部校内岗(实测 377 条 = 切面全量),/coop 30 天 2 次浏览全是本人。
  * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
  * 窄屏入口条、匹配视图状态条、三态闸弹框层三件随之撤。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:板根换成随首屏本省闸挂类(pageClsOf),最前面那段首帧脚本(HomeGate)
+ * 只在服务端那份 HTML 与水合那一遍里渲 —— 设备时区对得上省的,全国过渡态首帧前就压住,本省那一页到了再亮。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -35,7 +37,7 @@ import { IconClipboard } from '@/components/icons'
 import { Updated } from '@/components/time'
 import { BANNER_MODULE } from './constants'
 import {
-  subTextOf,
+  pageClsOf, subTextOf,
 } from './functions'
 import { useJobsBoard } from './hooks'
 import { BoardCards } from './boardcards'
@@ -44,6 +46,7 @@ import { BoardLoading } from './boardloading'
 import { BoardModals } from './boardmodals'
 import { BoardTable } from './boardtable'
 import { BannerFacts } from './bannerfacts'
+import { HomeGate } from './homegate'
 import { MoreLine } from './moreline'
 import type { JobsIn } from './types'
 import css from './jobs.module.css'
@@ -57,7 +60,8 @@ import css from './jobs.module.css'
 export function Jobs(props: JobsIn) {
   const [b, headRowRef, boxRef] = useJobsBoard(props)
   return (
-    <div className={cssOf(css.page)}>
+    <div className={pageClsOf(b.data.gate)}>
+      {b.hydrating && <HomeGate />}
       <div className={cssOf(css.main)}>
         <Banner module={BANNER_MODULE}
           icon={<IconClipboard />}
@@ -68,7 +72,7 @@ export function Jobs(props: JobsIn) {
           images={BANNER_IMGS.jobs}
           right={<Updated iso={b.data.updatedAt} t={b.t} />} />
         <BoardFilters b={b} boxRef={boxRef} />
-        <BoardLoading text={b.t('loading')} on={b.data.swapping} />
+        <BoardLoading text={b.t('loading')} on={b.data.swapping} gate={b.data.gate} />
         <BoardTable b={b} headRowRef={headRowRef} />
         <BoardCards b={b} />
         <MoreLine b={b} />

@@ -16,6 +16,9 @@
  * lib/jobs 的 getSsrDims(门里不许有函数体)。
  * 2026-09-23「我的匹配」整拆(Frank「我觉得 我的匹配 功能也可以去掉。让用户自己筛 职位 直接 收藏」):
  * 门不再读 view 参数,顶栏与板都不再收匹配视图初值。
+ * 2026-09-26 /fe 首页 Frank:首页 HTML 每次内联约 380KB 的省提名清单与抽选两张整表,而省提名弹框近 30 天真实用户打开 0 次 ——
+ * 门里照旧取整包维度(匹配维度要清单),下发给板的那份经 boardDimsOf 去掉两张整表(弹框打开才懒取 /api/jobs/pnp),
+ * 格子要的排除键与弹框事实索引由 boardPnpOf 压成几串键随板下发。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -27,7 +30,7 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import {
   BOARD_META, COLS_COOKIE, COLW_COOKIE, DEFAULT_COLW_SEED, FIRST_SCREEN_ROWS, Jobs, JobsHeader,
-  colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
+  boardDimsOf, boardPnpOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toJobPlan, toSearchParams,
 } from '@/components/jobs'
 import { Frame } from '@/components/shell'
 import { dbOf } from '@/lib/db/server'
@@ -94,7 +97,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
       <Jobs key={filterSig(filters)}
         jobs={jobs}
         updatedAt={updatedAt}
-        dims={dims}
+        dims={boardDimsOf(dims)}
+        pnpFacts={boardPnpOf(dims)}
         initialCols={colsFromCookie(jar.get(COLS_COOKIE)?.value)}
         initialColW={initialColW}
         plan={plan}

@@ -537,6 +537,8 @@ export const jobsZh = {
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',
   // #142 职业分类三级(可点即按该级筛职位板)
   'detail.catSec': '职业分类',
+  // 2026-09-26 职位名下的日期行(详情页与职位弹框标题下):截止那格的标签;发布那格复用 col.datePosted
+  'detail.closes': '截止',
   // E12-08 档位(1-5)拆解
   'gr.dim.channel': '移民通道', 'gr.dim.salary': '薪资质量', 'gr.dim.emp': '雇佣质量',
   'gr.channel.5': '命中具体通道:{v}', 'gr.channel.4': '{v}:技能类职业,且属官方紧缺职业段', 'gr.channel.3': '{v}:技能类职业(TEER 0-3),满足多数省提名通道的职业门槛',
@@ -609,7 +611,7 @@ export const jobsZh = {
   'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
   'eecmp.title': '最近分数线', 'eecmp.none': '暂无抽选', 'eecmp.lower': '{cat}比 {cec}低 {n} 分',
   'eecmp.higher': '{cat}比 {cec}高 {n} 分', 'eecmp.same': '{cat}与 {cec}同分',
-  'eecmp.rounds': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
+  'eecmp.rounds': '{n} 轮', 'eecmp.roundsOne': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
   // #135 历次抽选时间线(展开)
   'eelist.occTitle': '包含职业',
   'col.actions': '操作', 'act.immigValue': '移民价值', 'act.descTitle': '职位描述', 'act.site': '官网', 'co.wiki': '维基百科', 'co.careers': '招聘页', 'act.addr': '地址', 'act.jobsHere': '该公司在榜职位', 'act.showAll': '展开其余 {n} 个 ▾', 'act.showMore': '再展开 {n} 个', 'act.collapse': '收起 ▴', 'act.retrans': '重译', 'unit.perHr': '/小时', 'unit.perYr': '/年', 'act.showAllBoard': '在职位板查看其余 {n} 个', 'act.noText': '本站暂未收录这条帖子的正文——新帖正文通常次日到位,部分聚合源不提供。', 'act.loadingText': '加载中…', 'jd.busy': '这条看得有点快,稍等一下再看。',

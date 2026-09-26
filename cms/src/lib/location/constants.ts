@@ -145,3 +145,23 @@ export const LANG_FR_HEAD = 'fr'
  * 魁省省码(东部时区 + 法语浏览器 = 魁省)。
  */
 export const PROV_QC = 'QC'
+
+/**
+ * 首帧脚本的模板(homeGateJsOf 填两个槽):设备时区在清单里,就往 `<head>` 插一段样式;
+ * 浏览器 API 拿不到(老环境)就什么都不做。2026-09-26 /fe 首页 Frank「首屏整表替换」立。
+ * 🔴 这是浏览器直接执行的源码(页面 JS 到之前就跑,没有打包器替它转译):只许 ES5 写法,改它等于改线上脚本。
+ */
+export const HOME_GATE_JS = '(function(){try{var z=__ZONES__;'
+  + 'if(z.indexOf(Intl.DateTimeFormat().resolvedOptions().timeZone)<0){return}'
+  + "var s=document.createElement('style');s.textContent=__CSS__;document.head.appendChild(s)"
+  + '}catch(e){}})()'
+
+/**
+ * 首帧脚本模板里「时区清单」那个槽(填 TZ_PROVINCE 的键,JSON 数组)。
+ */
+export const HOME_GATE_ZONES_SLOT = '__ZONES__'
+
+/**
+ * 首帧脚本模板里「命中时插的样式」那个槽(填调用方给的样式,JSON 字符串)。
+ */
+export const HOME_GATE_CSS_SLOT = '__CSS__'

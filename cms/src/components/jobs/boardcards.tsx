@@ -7,6 +7,7 @@
  * 2026-09-23 Frank「统一成标题译名」「应该优先使用详情下的翻译 更准吧」:卡上职位名下那条改成标题译名,库里还没有的这一页一次批量懒翻;
  * 只在窄屏(卡片真出来的那一档)打接口 —— 桌面卡片是 display:none,别白翻。
  * 2026-09-23「我的匹配」整拆:空态里的「去改档案」出口随之撤,空态只剩一句话。
+ * 2026-09-26 /fe 首页 Frank「首屏整表替换」:卡片流随首屏本省闸挂类(cardsClsOf 改收两格),与表身同一道闸。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -33,7 +34,7 @@ export function BoardCards({ b }: BoardPanelIn) {
     cards.push(<BoardCard key={j.id} b={b} job={j} titleMap={titleMap} />)
   }
   return (
-    <div className={cardsClsOf(b.data.swapping)}>
+    <div className={cardsClsOf({ swapping: b.data.swapping, gate: b.data.gate })}>
       {cards}
       {b.data.rows.length === 0 && (
         <div className={cssOf(css.emptyCards)}>

@@ -497,6 +497,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'Posting closed, shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',
   'detail.catSec': 'Occupation category',
+  // 2026-09-26 date line under the job title (detail page and job modal): label of the deadline cell; the posted cell reuses col.datePosted
+  'detail.closes': 'Closes',
   // E12-08 grade (1-5) breakdown
   'gr.dim.channel': 'Immigration pathway', 'gr.dim.salary': 'Salary quality', 'gr.dim.emp': 'Employment quality',
   'gr.channel.5': 'Named on a provincial stream list: {v}', 'gr.channel.4': 'Skilled ({v}) in an in-demand group', 'gr.channel.3': 'Skilled tier ({v})',
@@ -561,7 +563,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'eelist.source': 'Source: Express Entry category-based selection', 'eelist.loading': 'Loading EE list…', 'eelist.count': '{n} occupations',
   'eecmp.title': 'Latest cutoffs', 'eecmp.none': 'No draws yet', 'eecmp.lower': '{cat} is {n} points below {cec}',
   'eecmp.higher': '{cat} is {n} points above {cec}', 'eecmp.same': '{cat} matches {cec}',
-  'eecmp.rounds': '{n} rounds', 'eecmp.frenchTip': 'French rounds select on language ability, not occupation',
+  'eecmp.rounds': '{n} rounds', 'eecmp.roundsOne': '{n} round', 'eecmp.frenchTip': 'French rounds select on language ability, not occupation',
   'eelist.occTitle': 'Occupations included',
   'col.actions': 'Actions', 'act.immigValue': 'Immigration value', 'act.descTitle': 'Job description', 'act.site': 'Website', 'co.wiki': 'Wikipedia', 'co.careers': 'Careers', 'act.addr': 'Address', 'act.jobsHere': 'Listings by this company', 'act.showAll': 'Show {n} more ▾', 'act.showMore': 'Show {n} more', 'act.collapse': 'Collapse ▴', 'act.retrans': 'Retranslate', 'unit.perHr': '/hr', 'unit.perYr': '/yr', 'act.showAllBoard': 'See {n} more on the job board', 'act.noText': 'No description text on file for this posting yet — new posts usually arrive within a day; some aggregator sources never provide one.', 'act.loadingText': 'Loading…', 'jd.busy': 'Loading these quickly — give it a moment and try again.',
   'co.hq': 'Headquarters',
