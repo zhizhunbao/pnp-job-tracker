@@ -1864,6 +1864,13 @@ export const TEER_LOWEST = 5
 export const TEER_REASONS_SHOWN = 4
 
 /**
+ * 曼省估分理由「近期抽选」最多列几轮(2026-09-26 lead 拍板):mart 抽选改成保留最近 12 个月全部轮次后,
+ * 曼省近一年约 46 轮,全列会成一堵墙;只列最近 8 轮(约近 3 个月,与 PNP 弹框「近 90 天」同一口径)。
+ * 参照线(refDraw 取最新一轮有分的)不受影响。
+ */
+export const MB_DRAWS_SHOWN = 8
+
+/**
  * 语言目标档默认 8:雅思一次提两档是最常见的可行目标。**分值仍全部查表**,这里只决定问哪一档。
  */
 export const CLB_TARGET_DEFAULT = 8

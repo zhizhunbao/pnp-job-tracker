@@ -1797,10 +1797,11 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
  * 2026-09-24 200 → 400:mart 已按省封顶(普通省 12、NB / MB 48、联邦每类 12,上限约 290 行),
  * NB 抽选按官方四组读回历史后全表 186 行、余量只剩 14 —— 超了截掉的是最旧的轮次,弹框里悄悄少数据。
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL)。
+ * 2026-09-26 400 → 1000:mart 抽选改成保留最近 12 个月全部轮次(各省补全后非魁省约 380 行),400 只剩约 20 行余量。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
        score, scale, invitations, note, label, url, fetched
-     FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 400`
+     FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 1000`
 
 /**
  * 首屏维度表·EE 类别。
@@ -1970,13 +1971,13 @@ export const PR_PLAN_JOBS = `SELECT j.id, j.title, j.noc, j.teer, COALESCE(j.pnp
 export const NOC_ALL_TITLES = `SELECT noc, title, COALESCE(title_zh, '') AS title_zh FROM noc_descriptions ORDER BY title`
 
 /**
- * 起步页的近 400 轮抽选(有分或有邀请数的)。
+ * 起步页的近 1000 轮抽选(有分或有邀请数的;2026-09-26 400 → 1000,理由同 DIMS_PNP_DRAWS)。
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL;把脉页只取前 50 行,魁省行还会挤掉省提名轮次)。
  */
 export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
         AND COALESCE(province, '') <> 'QC'
-      ORDER BY draw_date DESC LIMIT 400`
+      ORDER BY draw_date DESC LIMIT 1000`
 
 /**
  * 起步页的近 80 条新闻。

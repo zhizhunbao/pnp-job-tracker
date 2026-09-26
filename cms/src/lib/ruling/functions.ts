@@ -26,7 +26,7 @@ import { makeT } from '../i18n'
 import { pickOutside, rankRows } from '../plan'
 import type { RankCtx } from '../plan'
 import {
-  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS,
+  AB_LOCAL_EXP, AIP_PROVINCES, AIP_SOURCE, AMP, AND_WORD, APPLIES_OFFER, AREA_I_MAX, ASKABLE_FACTORS, AVAIL, BASIS, MB_DRAWS_SHOWN,
   BASIS_MIN_YEARS, BLOCKED_BY, BLOCK_COST, CARD_SLOT, CARD_STATE, CASES, CASE_C01, CASE_DESC_SEP, CASE_ID,
   CASE_KEY_HEAD, CASE_LABEL_TAIL, CASE_Q_TAIL, CASE_TIERS, CASE_TITLE_TAIL, CLB_IN_LABEL,
   CLB_TARGET_DEFAULT, COMPARE_ROLE, COMP_KEY, CONDITION, CRS_GRID_LABEL, DATE_LEN, DATE_LEN_DAY, DESIGNATION_MULTI,
@@ -5010,7 +5010,7 @@ function mbWarnings(input: MbWarningsIn): MbWarningsOut {
   const mbTop = firstOf(mbScored)
   if (mbTop != null) {
     const drawParts: string[] = []
-    for (const d of mbScored) {
+    for (const d of mbScored.slice(0, MB_DRAWS_SHOWN)) {
       let note = NO_SEGMENT
       if (d.note !== '') {
         note = SPACE + d.note
