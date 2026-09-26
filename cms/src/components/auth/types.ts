@@ -191,21 +191,6 @@ export type RegisterErrIn = {
 }
 
 /**
- * umami 打点脚本挂在 window 上的形状(站外脚本注入,只认这一格)。
- */
-export type UmamiHost = {
-  /**
-   * 打点对象;脚本没加载到就没有。
-   */
-  umami?: {
-    /**
-     * 发一个事件。
-     */
-    track: (name: string) => void
-  }
-}
-
-/**
  * useClickOutside 的入参。
  */
 export type ClickOutsideIn = {

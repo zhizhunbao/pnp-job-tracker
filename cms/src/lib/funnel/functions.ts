@@ -1,6 +1,7 @@
 /**
  * 漏斗域的行为:事件归一与转化率 —— 纯函数,单测锁行为(tests/int/funnel)。
  * 路由只负责 UPSERT,判断都在这里;白名单与链定义见 constants 头。
+ * 2026-09-26 /fe Frank:对话链的 chatRates 随整条链撤;来源判定添机器人一格(判定在 lib/http 的 isBotUa)。
  *
  * @author Frank
  * @time 2026-08-22 19:27:15
@@ -8,10 +9,12 @@
 
 import { SQL } from '../db'
 import {
-  ALIAS, CHAT_STEPS, DECISION_STEPS, HOST_NONE, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, RATE_ROUND_DIV,
+  ALIAS, DECISION_STEPS, HOST_NONE, LEGACY_STEPS, LOCAL_HOST_RE, PROP_OK, RATE_ROUND_DIV,
   RATE_ROUND_SCALE, SOURCE,
 } from './constants'
-import type { FunnelHitIn, HostHeadersIn, MaybeFunnelHit, RateList, RatesOfIn, RecordHitIn, RecordedOut, StepCounts } from './types'
+import type {
+  FunnelHitIn, HostHeadersIn, MaybeFunnelHit, RateList, RatesOfIn, RecordHitIn, RecordedOut, StepCounts,
+} from './types'
 
 /**
  * 站内埋点名(+ 可选分组)→ 入库的一行;不在白名单的返回 null(静默丢弃,不报错)。
@@ -48,22 +51,14 @@ export function toFunnelHit(input: FunnelHitIn): MaybeFunnelHit {
 /**
  * 旧五步的相邻转化率(四格)。**对话两步不许接进来** —— 两形态是并行对照,
  * 混算会算出「报告 → 挂件打开」这种没有因果的比值,而这张表就是拿来做撤旧页判断的。
+ * 2026-09-26 /fe Frank:旧链撤到只剩「定价 → 付费」,四格变一格;对话链(原 chatRates,两格:
+ * 打开 → 答复 → 反馈)整条撤了,上面那句禁令留作当初为什么。
  *
  * @param counts 各步计数。
- * @returns 四格转化率。
+ * @returns 一格转化率(定价 → 付费)。
  */
 export function stepRates(counts: StepCounts): RateList {
   return ratesOf({ steps: LEGACY_STEPS, counts: counts })
-}
-
-/**
- * 对话链的转化率(两格:打开 → 答复 → 反馈)。
- *
- * @param counts 各步计数。
- * @returns 两格转化率。
- */
-export function chatRates(counts: StepCounts): RateList {
-  return ratesOf({ steps: CHAT_STEPS, counts: counts })
 }
 
 /**

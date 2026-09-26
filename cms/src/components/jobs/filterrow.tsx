@@ -25,6 +25,9 @@
  * 2026-09-23 职业分类改两级:「职业」下拉挪进本行紧跟大类(Frank「职业分类筛选,是不是放到全部大类后面比较好」);
  * 按最长选项定宽(Frank「这个下拉跑偏了」)。
  *
+ * 2026-09-26 /fe Frank:地址栏的关键词改成停手才写(见 hooks 的 useBoardUrlSync),搜索框外那层 span
+ * 接住从输入框冒上来的回车 / 失焦,当场写回;通用 Search 件一个字没动。
+ *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
@@ -51,7 +54,7 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
   const f = b.filters
   return (
     <div className={cssOf(css.ctl)}>
-      <span className={cssOf(css.search)}>
+      <span className={cssOf(css.search)} onKeyDown={b.onQKey} onBlur={b.onQCommit}>
         <Search value={b.q} onChange={b.onQ} placeholder={b.t('search.placeholder')} size={SELECT_SM} />
       </span>
       <Select value={slotOf({ fState: f.fState, k: FK.prov })}

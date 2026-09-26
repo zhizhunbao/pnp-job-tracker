@@ -257,6 +257,8 @@ export const DEL_MARK = '×'
 /**
  * 周报开关的统计事件名(E5-07 §3.4 漏斗第 3 步:周报是留存钩的主力,
  * 订阅/退订都要能看见 —— 退订量本身就是信号)。
+ * 2026-09-26 /fe Frank:同名进第一方漏斗白名单(lib/funnel 的 ALIAS;只计数不成链),
+ * 订阅 / 退订按开关值分组(true / false)。
  */
 export const EV_WEEKLY = 'weekly-optin'
 

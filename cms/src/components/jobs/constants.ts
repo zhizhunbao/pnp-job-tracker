@@ -1110,6 +1110,13 @@ export const SIG_SEP = '&'
 export const QS_HEAD = '?'
 
 /**
+ * 搜索框停手多久才把关键词写回地址栏(毫秒)。2026-09-26 /fe Frank:原先每敲一个字 replaceState 一次,
+ * Umami 把每个中间态都记成一次浏览(q=o、q=ot、q=otta……);改成停手这么久再写,回车 / 失焦立即写。
+ * 只管地址栏 —— 取数照旧跟手(useDeferredValue 那一份)、快照照旧每次都写、别的筛选格照旧当场写。
+ */
+export const Q_URL_SETTLE_MS = 600
+
+/**
  * 列名取词键前缀(`col.` + 列键)。
  */
 export const K_COL = 'col.'
@@ -1866,6 +1873,11 @@ export const EV_RESIZE = 'resize'
 export const KEY_ESCAPE = 'Escape'
 
 /**
+ * 回车键名(搜索框回车 = 当场把关键词写回地址栏,不等停手)。
+ */
+export const KEY_ENTER = 'Enter'
+
+/**
  * 量宽时整表临时加的类(不折行 + 按内容撑开,量完立刻摘)。
  */
 export const MEASURE_CLS = 'jtMeasure'
@@ -2007,6 +2019,7 @@ export const TRACK_JD_MATCH_OPEN = 'jd-match-open'
 
 /**
  * 投递(E9-04)—— 走 umami 全局对象,带投递方式。
+ * 2026-09-26 /fe Frank:改走统一上报门 lib/track,同名进第一方漏斗白名单(只计数不成链)。
  */
 export const TRACK_APPLY = 'apply'
 

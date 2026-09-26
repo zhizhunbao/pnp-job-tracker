@@ -5,4 +5,4 @@
  * @time 2026-08-22 23:00:00
  */
 
-export { track } from './functions'
+export { syncTrackSwitch, track } from './functions'

@@ -7,19 +7,21 @@
  * 洗净的事实行,于是整块逻辑浏览器也打得进包。
  * 2026-09-03 上面这句里的「返回钮手柄工厂」撤编(Frank「所有主页面都不应该有返回按钮」),
  * 理由压在 propLineClsOf 的 JSDoc 里。
+ * 2026-09-26 /fe Frank 撤两条死链:「三条并行链」剩旧链残段(定价 → 付费)与 PR 评估两条,
+ * 一律按名查表(旧链不再按 FUNNEL_STEPS 序号取格);锁区按入口那条分组行随 lock-seen 撤。
  *
  * @author Frank
  * @time 2026-08-27 03:00:00
  */
 import { count, text } from '@/lib/db'
 import {
-  CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, chatRates, decisionRates, stepRates,
+  DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS, decisionRates, stepRates,
 } from '@/lib/funnel'
 import { cssOf } from '@/components/css'
 import {
   ALIGN_RIGHT, CLS_SEP, COL_D1_KEY, COL_D1_TEXT, COL_D30_KEY, COL_D30_TEXT, COL_D7_KEY, COL_D7_TEXT,
   COL_RATE_KEY, COL_RATE_TEXT, COL_STEP_KEY, COL_STEP_TEXT, PAY_NONE, PAY_NOTE_HEAD, PAY_NOTE_TAIL,
-  PROP_GAP, RATE_NONE, RATE_SUFFIX, STEP_LABEL, STEP_LOCK_SEEN, STEP_PRICING_OPEN, STEP_REPORT_OPEN,
+  PROP_GAP, RATE_NONE, RATE_SUFFIX, STEP_LABEL, STEP_PRICING_OPEN,
   TEXT_NONE,
 } from './constants'
 import type {
@@ -32,16 +34,15 @@ import css from './funnel.module.css'
 /**
  * 把两条查询的事实行洗成整块看板:漏斗表的十五行、尾行的真实付费两个数、
  * 两条分组行,以及「一条计数都没有」那面旗。
+ * 2026-09-26 /fe Frank:分组行只剩「打开定价按来路」一条(锁区曝光按入口那条随 lock-seen 撤)。
  *
  * @param x 两条查询各自洗好的事实行。
  * @returns 看板展示数据。
  */
 export function toFunnelBoard(x: FunnelBoardIn): FunnelBoard {
   const counts = stepCountsOf({ events: x.events })
-  const legacyRates = stepRates(counts)
   const chainRate = chainRateOf({ counts })
   const rows: FunnelCellRow[] = []
-  let index = 0
   for (const event of FUNNEL_STEPS) {
     rows.push({
       key: event,
@@ -49,14 +50,12 @@ export function toFunnelBoard(x: FunnelBoardIn): FunnelBoard {
       d30Text: String(sumStepOf({ events: x.events, event, window: COL_D30_KEY })),
       d7Text: String(sumStepOf({ events: x.events, event, window: COL_D7_KEY })),
       d1Text: String(sumStepOf({ events: x.events, event, window: COL_D1_KEY })),
-      rateText: rateTextOf({ chainRate, legacyRates, event, index }),
+      rateText: rateTextOf({ chainRate, event }),
     })
-    index = index + 1
   }
   return {
     rows,
     pay: toFunnelPayCellRow(x.pays),
-    byEntry: toFunnelPropRows({ events: x.events, event: STEP_LOCK_SEEN }),
     byPricing: toFunnelPropRows({ events: x.events, event: STEP_PRICING_OPEN }),
     empty: isEmptyCounts(counts),
   }
@@ -96,15 +95,17 @@ export function sumStepOf(x: SumStepIn): number {
 /**
  * 三条链并行,各算各的相邻转化率(混算会算出「报告 → 打开评估页」这种没有因果的比值)。
  * 旧形态那条链另走 `stepRates` 按序号取,所以这张表里只有对话链与 PR 评估链两条。
+ * 2026-09-26 /fe Frank:对话链整条撤;旧链(只剩定价 → 付费)也进这张表按名查 —— 按序号取格
+ * 靠的是它排在 FUNNEL_STEPS 最前面,一撤步就错位(会把付费的比值安到定价头上)。
  *
  * @param x 各步近 30 天计数。
  * @returns 步骤名 → 相对上一步的转化率。
  */
 export function chainRateOf(x: ChainRateIn): RateMap {
   const map: RateMap = new Map()
-  const chat = chainEntriesOf({ steps: CHAT_STEPS, rates: chatRates(x.counts) })
+  const legacy = chainEntriesOf({ steps: LEGACY_STEPS, rates: stepRates(x.counts) })
   const decision = chainEntriesOf({ steps: DECISION_STEPS, rates: decisionRates(x.counts) })
-  for (const entry of chat) {
+  for (const entry of legacy) {
     map.set(entry.step, entry.rate)
   }
   for (const entry of decision) {
@@ -153,7 +154,7 @@ export function stepLabelOf(event: string): string {
 /**
  * 「比上一步」那一格的字;这一步不给转化率时出横杠。
  *
- * @param x 两套转化率与这一步的身份。
+ * @param x 链的转化率表与这一步的身份(2026-09-26 前还带旧链那套按序号的转化率)。
  * @returns 显示串。
  */
 export function rateTextOf(x: RateTextIn): string {
@@ -172,26 +173,19 @@ export function rateTextOf(x: RateTextIn): string {
  * 职位详情页**不是**报告的唯一来路,首页 CTA 直接进 /plan/pr 的占了绝大多数
  * (实测 16 里 12 条是 pr 卡),拿 ① 当 ② 的分母算出来的百分比没有意义。
  * ③④⑤ 是真父子关系,照旧给。
+ * 2026-09-26 /fe Frank:② ③ 撤出白名单,旧链只剩「④ → ⑤」这条真父子边;三条链一律按名查 chainRate,
+ * 不再按序号取格(上面「按序号取」那句是撤前的做法),② 的特判随 ② 退役。上面那条判据还在管事:
+ * ① 不接到 ④ 前面,理由同 ② —— 定价的来路不止详情页,① 不是它的分母。
  *
- * @param x 两套转化率与这一步的身份。
+ * @param x 链的转化率表与这一步的身份。
  * @returns 转化率;不给时是 null。
  */
 function rateOf(x: RateTextIn): number | null {
-  if (x.chainRate.has(x.event)) {
-    const chained = x.chainRate.get(x.event)
-    if (chained == null) {
-      return null
-    }
-    return chained
-  }
-  if (x.index === 0 || x.event === STEP_REPORT_OPEN || x.index >= LEGACY_STEPS.length) {
+  const chained = x.chainRate.get(x.event)
+  if (chained == null) {
     return null
   }
-  const legacy = x.legacyRates[x.index - 1]
-  if (legacy == null) {
-    return null
-  }
-  return legacy
+  return chained
 }
 
 /**

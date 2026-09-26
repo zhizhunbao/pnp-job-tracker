@@ -11,6 +11,8 @@
  * 「所有的 table 右上角都应该有一个更新时间」:同一个位置改挂 Updated(time 桶)。
  * 这页的文案是硬编码中文(只给 Frank 看),但更新时间那一句是全站通用词,取词照全站走
  * useLang —— 全站唯一的更新时间形只收 t,不为一页 fork 第二个实现。
+ * 2026-09-26 /fe Frank 撤两条死链:锁区曝光按入口那条分组行与 ② 的脚注随步骤撤;
+ * 剩下的「打开定价按来路」成了表下第一条,不再收窄间距(tight 是给「紧跟在另一条下面」的)。
  *
  * @author Frank
  * @time 2026-08-27 03:00:00
@@ -20,7 +22,7 @@ import { Shell } from '@/components/shell'
 import { Table } from '@/components/table'
 import { Updated } from '@/components/time'
 import {
-  EMPTY_TEXT, ENTRY_HEAD_TEXT, PRICING_HEAD_TEXT, RATE_NOTE_TEXT, SUBTITLE_TEXT, TITLE_TEXT,
+  EMPTY_TEXT, PRICING_HEAD_TEXT, SUBTITLE_TEXT, TITLE_TEXT,
 } from './constants'
 import { funnelColsOf, funnelRowKeyOf } from './functions'
 import { FunnelPayRow } from './funnelpayrow'
@@ -32,7 +34,7 @@ import css from './funnel.module.css'
  * 漏斗看板正文。
  *
  * @param props 服务端门洗好的整块看板数据与数据更新时刻(逐格注释见 FunnelIn)。
- * @returns 正文(Shell 轨 + 一张白卡:标题行、漏斗表、两条分组行、脚注与空态)。
+ * @returns 正文(Shell 轨 + 一张白卡:标题行、漏斗表、分组行与空态;2026-09-26 前是两条分组行加一条脚注)。
  */
 export function Funnel({ board, updatedAt }: FunnelIn) {
   const [, , t] = useLang()
@@ -53,9 +55,7 @@ export function Funnel({ board, updatedAt }: FunnelIn) {
             bare
             foot={<FunnelPayRow pay={board.pay} />} />
         </div>
-        {board.byEntry.length > 0 && <FunnelPropLine head={ENTRY_HEAD_TEXT} items={board.byEntry} />}
-        {board.byPricing.length > 0 && <FunnelPropLine head={PRICING_HEAD_TEXT} items={board.byPricing} tight />}
-        <div className={css.note}>{RATE_NOTE_TEXT}</div>
+        {board.byPricing.length > 0 && <FunnelPropLine head={PRICING_HEAD_TEXT} items={board.byPricing} />}
         {board.empty && <div className={css.empty}>{EMPTY_TEXT}</div>}
       </div>
     </Shell>

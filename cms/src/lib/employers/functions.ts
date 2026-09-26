@@ -35,7 +35,7 @@ import {
   WD_LANGS, WD_LANG_EN, WD_LANG_KO, WD_LANG_ZH, WD_LANG_ZH_CN, WD_LANG_ZH_HANS, WD_LIMIT, WD_PROPS, WD_SITE_EN,
   WD_TIMEOUT_MS, WD_TYPE_ITEM, WD_UA, WEBSITE_NONE, ALIAS_KEY_SEP, DESC_KEY_TAIL,
   SITE_BRIEF_MAX, SITE_SOURCES_MAX, SITE_STAGES, SITE_TEXT_MAX,
-  CRAWLER_UA_RE, HDR_ACCEPT_LANGUAGE, HDR_UA, BRAND_ALIASES,
+  HDR_ACCEPT_LANGUAGE, HDR_UA, BRAND_ALIASES,
 } from './constants'
 import { RESEARCH_PROMPT_HEAD, RESEARCH_PROMPT_TAIL, RESEARCH_SEARCH_TAIL, RESEARCH_SYSTEM } from './prompts'
 import { CACHE } from './variables'
@@ -60,7 +60,7 @@ import type {
   SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
   CrawlerHeadersIn, BrandCellIn, MaybeBrandAlias, ExploreNameDbRow, ExploreNameFact, ExploreNamesIn, ExploreNamesOut,
 } from './types'
-import { HDR_USER_AGENT } from '../http'
+import { HDR_USER_AGENT, isBotUa } from '../http'
 // =========================================================================
 // 1. 雇主板:筛选口径(纯函数,int 测试直打这里)
 // =========================================================================
@@ -1793,7 +1793,8 @@ function toExploreNameFact(r: ExploreNameDbRow): ExploreNameFact {
 
 /**
  * 这一请求是不是爬虫发的:没带接受语言(真浏览器每个请求都带)、没有浏览器标识,或标识自报是爬虫(2026-09-23,
- * 「点开」上报被爬虫灌满的服务端那道闸,同日公司现查也挡上;来由见 CRAWLER_UA_RE)。
+ * 「点开」上报被爬虫灌满的服务端那道闸,同日公司现查也挡上;来由见 lib/http 的 BOT_UA_RE)。
+ * 2026-09-26 浏览器标识那半并进 lib/http 的 isBotUa(与漏斗上报同一份判定,原 CRAWLER_UA_RE 的记录随迁)。
  *
  * @param h 请求头。
  * @returns 是爬虫 = true。
@@ -1803,11 +1804,7 @@ export function isCrawlerHeaders(h: CrawlerHeadersIn): boolean {
   if (lang == null || lang.trim() === '') {
     return true
   }
-  const ua = h.get(HDR_UA)
-  if (ua == null || ua.trim() === '') {
-    return true
-  }
-  return CRAWLER_UA_RE.test(ua)
+  return isBotUa({ ua: h.get(HDR_UA) })
 }
 
 /**

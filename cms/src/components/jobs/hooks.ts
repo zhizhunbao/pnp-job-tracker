@@ -24,10 +24,10 @@ import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
-  FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
-  HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ESCAPE,
-  LANG_EN, LIMIT_RE, METHOD_DELETE,
-  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
+  FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
+  HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
+  KEY_ESCAPE, LANG_EN, LIMIT_RE, METHOD_DELETE,
+  METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
@@ -53,7 +53,7 @@ import {
 import type {
   AccountAreaPanel, Alloc, AllocOfIn, AppendRowsIn, ApplyBarIn, ApplyBarPanel, ApplyEmailPickIn, ApplyHowJson,
   ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
-  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ColMeasure,
+  BoardDataHookIn, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoxRef, ClickFn, ColMeasure,
   ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HydrateIn,
   JobPeekPanel,
@@ -62,10 +62,11 @@ import type {
   JobBodyPanel, JobColKey, JobDetailPanel, JobDims, JobFact, JobFilters, JobIn, JobPlan, JobsBoardOut, JobsBoardPanel,
   JobsIn, JobsPageJson,
   MatchProfileFact, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
-  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, RelatedJobs,
+  OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, QKeyEvent, QKeyFn,
+  RelatedJobs,
   RelatedJobFact, RelatedJson, RelatedOfHookIn, RelatedPagesIn, RelatedPagesPanel, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
-  TableWidthIn, TransJson, TranslateIn, TransStatus, UmamiWindow, UpsellKind, WrapWidthIn,
+  TableWidthIn, TransJson, TranslateIn, TransStatus, UpsellKind, UrlSettleIn, WrapWidthIn,
 } from './types'
 
 /**
@@ -1142,7 +1143,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
   })
   useCatLabels(data.dims)
   useBoardHydrate({ fState: filters.panel.fState, props })
-  useBoardUrlSync(filters.snap)
+  const onQCommit = useBoardUrlSync(filters.snap)
   const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
   const blocked = useBlockedKeys(data.dims)
   const panel: JobsBoardPanel = {
@@ -1174,6 +1175,8 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     },
     q: filters.q,
     onQ: filters.setQ,
+    onQCommit,
+    onQKey: makeQKey(onQCommit),
     allShownText: t('allShown', { total: data.total }),
     moreText: t('loadMore', { n: data.total - data.rows.length }),
     proof: proofOf(props),
@@ -1324,21 +1327,97 @@ function readSnapshot(): JobFilters {
  * 全默认就把参数/快照清掉,不留陈年状态。URL 只动自己管的那几个 key,别人的参数(view 等)
  * 原样留着。Frank 2026-08-03「右键一刷新,之前的选项也没有保持」→ 筛选进 URL:刷新能复原、
  * 链接能分享,而搜索引擎进来的干净 /jobs 依旧是干净板(没参数就没筛选,不会替陌生人预设条件)。
+ * 2026-09-26 /fe Frank:搜索框每敲一个字 replaceState 一次,Umami 把 q=o、q=ot、q=otta……每个中间态
+ * 都记成一次浏览 → 只有关键词在变时,地址栏等停手 Q_URL_SETTLE_MS 再写;回车 / 失焦用交回的手柄当场写。
+ * 别的筛选格一变照旧当场写(连同当时的关键词一起,排着的那次随 effect 清理作废);快照照旧每次都写。
+ * 排着的那次到点时先核对路径,切走了就不写(卸载时 effect 清理也会把它作废)。
+ * (导出只给 tests/int/boardUrlSync 直接点文件锁这套时序;桶不出,生产消费方只有 useJobsBoard。)
  *
  * @param snap 当前非默认筛选(关键词未防抖)。
- * @returns 无。
+ * @returns 当场把当前筛选写进地址栏的手柄(回车 / 失焦用)。
  */
-function useBoardUrlSync(snap: JobFilters): void {
+export function useBoardUrlSync(snap: JobFilters): ClickFn {
   const sig = filterSig(snap)
+  const restSig = filterSig(restFiltersOf(snap))
   const hydrated = useRef(false)
+  const rest = useRef(restSig)
   useEffect(function syncUrlAndSnapshot() {
-    if (hydrated.current) {
-      writeFiltersToUrl(snap)
-    }
-    hydrated.current = true
     writeSnapshot(snap)
+    if (hydrated.current === false) {
+      hydrated.current = true
+      return
+    }
+    if (restSig !== rest.current) {
+      rest.current = restSig
+      writeFiltersToUrl(snap)
+      return
+    }
+    const path = window.location.pathname
+    const settle = window.setTimeout(function writeSettledQ() {
+      writeFiltersIfStill({ snap, path })
+    }, Q_URL_SETTLE_MS)
+    return function dropSettledQ() {
+      window.clearTimeout(settle)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 签名变了才同步(snap 每渲一次都是新对象)
   }, [sig])
+  return makeUrlCommit(snap)
+}
+
+/**
+ * 关键词以外的那几格筛选(比签名用:只有它们变了,地址栏才不等停手)。
+ *
+ * @param snap 当前非默认筛选。
+ * @returns 去掉关键词后的筛选。
+ */
+function restFiltersOf(snap: JobFilters): JobFilters {
+  const rest: JobFilters = {}
+  for (const [k, v] of Object.entries(snap)) {
+    if (k !== FILTER_Q) {
+      rest[k] = v
+    }
+  }
+  return rest
+}
+
+/**
+ * 停手后那一次写:路径还是排定时那一页才写(到点前已经切走 = 这次作废)。
+ *
+ * @param x 排定时的筛选与路径。
+ * @returns 无。
+ */
+function writeFiltersIfStill(x: UrlSettleIn): void {
+  if (window.location.pathname !== x.path) {
+    return
+  }
+  writeFiltersToUrl(x.snap)
+}
+
+/**
+ * 造「当场写回地址栏」的手柄(回车 / 失焦;排着的那次到点再写一遍同样的地址,replaceIfChanged 不重复写)。
+ *
+ * @param snap 当前非默认筛选。
+ * @returns 手柄。
+ */
+function makeUrlCommit(snap: JobFilters): ClickFn {
+  return function commitUrl(): void {
+    writeFiltersToUrl(snap)
+  }
+}
+
+/**
+ * 造搜索框按键手柄:回车当场写回地址栏;输入法合成中的回车是在选字,不算。
+ *
+ * @param commit 当场写回的手柄。
+ * @returns 按键手柄。
+ */
+function makeQKey(commit: ClickFn): QKeyFn {
+  return function onQKey(e: QKeyEvent): void {
+    if (e.key !== KEY_ENTER || e.nativeEvent.isComposing === true) {
+      return
+    }
+    commit()
+  }
 }
 
 /**
@@ -2196,19 +2275,14 @@ function clearApplyIntent(): void {
 
 /**
  * E9-04 投递事件(走环境注入的统计对象,没注入就不发)。
+ * 2026-09-26 /fe Frank:改走统一上报门 lib/track(umami + 第一方漏斗)—— 原先只直调 umami,
+ * 被拦截器挡掉就没了;投递方式记成第一方的低基数分组,邮箱本身永不上报。
  *
  * @param email 投递邮箱;'' = 外跳原帖。
  * @returns 无。
  */
 function trackApply(email: string): void {
-  try {
-    const w = window as UmamiWindow
-    if (w.umami != null) {
-      w.umami.track(TRACK_APPLY, { [TRACK_KEY_MODE]: applyModeOf(email) })
-    }
-  } catch {
-    return
-  }
+  track(TRACK_APPLY, { [TRACK_KEY_MODE]: applyModeOf(email) })
 }
 
 /**

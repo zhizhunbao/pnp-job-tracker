@@ -10,6 +10,7 @@
  */
 import { cssOf } from '@/components/css'
 import { resetAnswersMemory } from '@/lib/quiz'
+import { track } from '@/lib/track'
 import {
   CARD_CLS, CLS_SEP, CRED_INCLUDE, EV_WEEKLY, FAV_NOTE_KEY, FAV_TITLE_KEY,
   HDR_CONTENT_TYPE, METHOD_DELETE, METHOD_PATCH, METHOD_POST, MIME_JSON, Q_SEARCH_HEAD, QP_OK,
@@ -23,7 +24,7 @@ import type {
   NarrowClsIn, NavBtnClsIn, NavLabelIn,
   RefreshFn, RefreshIn, ResumeClearIn, ResumeHookIn, SavedJobFact, SavedJobsRespJson,
   SearchHrefIn, Sec, SecPickFn, SecPickIn, SjStatus, SjTitleKeys,
-  SjTitleKeysIn, UmamiWindow, WeeklyToggleFn, WeeklyToggleIn,
+  SjTitleKeysIn, WeeklyToggleFn, WeeklyToggleIn,
 } from './types'
 import css from './account.module.css'
 
@@ -322,6 +323,8 @@ export function makeJobRemove(x: JobRemoveIn): () => Promise<void> {
  * 造一枚周报开关的 change 手柄(E9-02b):显示语义取反(勾 = 订阅,存的是退订),
  * 先拨本地,发 umami 的订阅/退订事件(统计对象由环境注入,没有就不发、发挂了不挡),
  * 再 PATCH 跟投(失败静默)。
+ * 2026-09-26 /fe Frank:订阅/退订事件改走统一上报门 lib/track(umami + 第一方漏斗,两条腿各自吞错,
+ * 照旧不挡 PATCH)—— 原先直调 window.umami,被拦截器挡掉就没了;开关值 on 记成第一方的低基数分组。
  *
  * @param x 登录人 id 与退订落格。
  * @returns 勾选框 change 手柄。
@@ -330,14 +333,7 @@ export function makeWeeklyToggle(x: WeeklyToggleIn): WeeklyToggleFn {
   return async function toggleWeekly(e): Promise<void> {
     const optOut = e.target.checked === false
     x.setOptOut(optOut)
-    const w = window as UmamiWindow
-    try {
-      if (w.umami != null) {
-        w.umami.track(EV_WEEKLY, { on: String(optOut === false) })
-      }
-    } catch {
-      ignoreWriteErr()
-    }
+    track(EV_WEEKLY, { on: String(optOut === false) })
     try {
       await fetch(URL_USER_HEAD + x.userId, {
         method: METHOD_PATCH,

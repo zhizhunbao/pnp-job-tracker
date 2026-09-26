@@ -353,6 +353,7 @@ export const KEY_ERR_RESET_BAD = 'acct.resetBad'
 /**
  * umami 的注册成功事件名:漏斗里「注册」那一格数的就是它,
  * 改名等于把改名前后的数据断成两截。
+ * 2026-09-26 /fe Frank:同名进第一方漏斗白名单(lib/funnel 的 ALIAS),改名连第一方那截一起断。
  */
 export const EVENT_SIGNUP = 'signup'
 

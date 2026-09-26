@@ -170,6 +170,7 @@ export type FunnelPropCellRow = {
 
 /**
  * 整块看板的展示数据(服务端门洗好,视图件零业务逻辑)。
+ * 2026-09-26 /fe Frank:「锁区曝光按入口分组」那一格(byEntry)随 lock-seen 撤出白名单退役。
  */
 export type FunnelBoard = {
   /**
@@ -181,11 +182,6 @@ export type FunnelBoard = {
    * 尾行的真实付费两个数。
    */
   pay: FunnelPayCellRow
-
-  /**
-   * 锁区曝光按入口分组;一条都没有就不渲那一行。
-   */
-  byEntry: FunnelPropCellRow[]
 
   /**
    * 打开定价按来路分组;一条都没有就不渲那一行。
@@ -315,6 +311,8 @@ export type RateMap = Map<string, number | null>
 
 /**
  * `rateTextOf` 的入参。
+ * 2026-09-26 /fe Frank:旧链也并进 chainRate 按名查,原先那两格(旧链按 LEGACY_STEPS 顺序的转化率、
+ * 这一步在 FUNNEL_STEPS 里的序号)随之退役 —— 按序号对格一撤步就错位。
  */
 export type RateTextIn = {
   /**
@@ -323,19 +321,9 @@ export type RateTextIn = {
   chainRate: RateMap
 
   /**
-   * 旧形态那条链的相邻转化率(按 LEGACY_STEPS 的顺序)。
-   */
-  legacyRates: (number | null)[]
-
-  /**
    * 这一步的埋点名。
    */
   event: string
-
-  /**
-   * 这一步在 FUNNEL_STEPS 里的序号。
-   */
-  index: number
 }
 
 /**

@@ -60,6 +60,16 @@ export type ClickFn = () => void
 export type TextFn = (v: string) => void
 
 /**
+ * 搜索框外层接住的按键事件(从输入框冒上来;只读 key 与输入法合成态)。
+ */
+export type QKeyEvent = React.KeyboardEvent<HTMLElement>
+
+/**
+ * 搜索框按键手柄。
+ */
+export type QKeyFn = (e: QKeyEvent) => void
+
+/**
  * 筛选对象:键 = 筛选键,值 = 非空字符串;directOnly 为 true 时才在。
  * 全默认 = 空对象(没参数就是干净板)。
  */
@@ -989,6 +999,16 @@ export type JobsBoardPanel = {
    * 换关键词。
    */
   onQ: TextFn
+
+  /**
+   * 当场把关键词写回地址栏(搜索框失焦;平时停手 Q_URL_SETTLE_MS 才写)。
+   */
+  onQCommit: ClickFn
+
+  /**
+   * 搜索框按键(回车 = 当场写回地址栏,输入法合成中的回车不算)。
+   */
+  onQKey: QKeyFn
 
   /**
    * 「已全部显示」那句话。
@@ -4329,19 +4349,18 @@ export type SaveSearchIn = {
 }
 
 /**
- * 带统计对象的 window(归一前形状:统计脚本由环境注入,没注入时这一格压根不存在)。
- * 只声明本域真用的那一格 —— 形状本域自己声明,不从别的域取。
+ * 关键词停手后写回地址栏那一下的入参(2026-09-26 /fe:定时器到点时先核对还在不在原来那一页)。
  */
-export type UmamiWindow = {
+export type UrlSettleIn = {
   /**
-   * 环境注入的统计对象;没有就不发。
+   * 排定时的整套非默认筛选。
    */
-  umami?: {
-    /**
-     * 上报一个事件(E9-04:投递)。
-     */
-    track: (event: string, data: Record<string, string>) => void
-  }
+  snap: JobFilters
+
+  /**
+   * 排定时的路径;到点时路径变了(已经切走)就不写,免得把关键词写到别的页的地址上。
+   */
+  path: string
 }
 
 /**

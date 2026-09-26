@@ -220,6 +220,7 @@ export const EVENT_PAY_CLICK = 'pay-click'
 
 /**
  * 发起 Stripe Checkout 的埋点事件名(E7-02)。
+ * 2026-09-26 /fe Frank:同名进第一方漏斗白名单(lib/funnel 的 ALIAS;只计数不成链)。
  */
 export const EVENT_CHECKOUT = 'checkout'
 

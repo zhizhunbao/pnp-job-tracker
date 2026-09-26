@@ -265,27 +265,6 @@ export type CheckoutRespJson = {
 }
 
 /**
- * 环境注入的 umami 统计对象的形状(只声明本域真用的 track 一格)。
- */
-export type UmamiLike = {
-  /**
-   * 上报一个事件:事件名 + 随事件带的属性(档位 30 / 90,用来分辨两张 Pro 卡的转化)。
-   * 两参签名由 umami 这个外部脚本定死,不是本域的契约。
-   */
-  track: (event: string, data: Record<string, string>) => void
-}
-
-/**
- * 带 umami 的 window(归一前形状:埋点脚本被拦截或还没加载时整格缺席)。
- */
-export type UmamiWindow = {
-  /**
-   * 环境注入的统计对象;没有就不发。
-   */
-  umami?: UmamiLike
-}
-
-/**
  * trackCheckout 的入参。
  */
 export type TrackCheckoutIn = {

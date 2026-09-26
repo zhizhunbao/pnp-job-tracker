@@ -21,7 +21,7 @@ import type {
   BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn, CtaLabelOfIn, CtaSlotClsIn, FeatureClsIn,
   FlagSetIn, FromKindOfIn, LockMsgOfIn, MaskTextOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
   PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
-  PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UmamiWindow, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
+  PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
   UpgradeOpen, UpgradeOpenIn, UpgradeOpenOfIn, UpgradeSetIn,
 } from './types'
 import css from './pricing.module.css'
@@ -297,19 +297,14 @@ export function trackPayClick(x: TrackPayClickIn): void {
 /**
  * 发起 Stripe Checkout 那一下的埋点(E7-02)。统计对象由环境注入,按 UmamiWindow
  * 收形:没有就不发,发挂了也不挡购买 —— 这一步不许因为埋点失败而拦住付款。
+ * 2026-09-26 /fe Frank:改走统一上报门 lib/track(umami + 第一方漏斗,档位记成第一方的低基数分组)——
+ * 原先只直调 umami,被拦截器挡掉就没了。「不许拦住付款」那条红线照旧:门里两条腿各自吞错,
+ * 第一方走 sendBeacon,紧接着整页跳 Stripe 也送得出去;UmamiWindow 形状随之退役。
  *
  * @param x 发起的是哪一档。
  */
 export function trackCheckout(x: TrackCheckoutIn): void {
-  const w = window as UmamiWindow
-  if (w.umami == null) {
-    return
-  }
-  try {
-    w.umami.track(EVENT_CHECKOUT, { plan: x.plan })
-  } catch {
-    return
-  }
+  track(EVENT_CHECKOUT, { plan: x.plan })
 }
 
 /**

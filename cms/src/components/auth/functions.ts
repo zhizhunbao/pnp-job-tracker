@@ -7,6 +7,7 @@
  * @time 2026-08-24 01:30:00
  */
 import { fieldsOf, missingFields, pullAndMerge, readAnswers } from '@/lib/quiz'
+import { track } from '@/lib/track'
 import {
   API_FORGOT, API_LOGIN, API_LOGOUT, API_RESET, API_USERS, AVATAR_PALETTE, BODY_NONE, CREDENTIALS_INCLUDE,
   EVENT_SIGNUP, FLOW_DONE, FLOW_ERR, FLOW_SENT, HASH_BASE, HTTP_BAD_REQUEST, HTTP_POST, KEY_ERR_CRED, KEY_ERR_EXISTS,
@@ -20,7 +21,7 @@ import {
 } from './constants'
 import type {
   AccountMenuHandlesIn, AccountMenuHandlesOut, AuthFlowIn, AuthFlowOut, AuthFooterHandlesIn, AuthFooterHandlesOut,
-  FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn, UmamiHost,
+  FinishAuthIn, PwLevel, QuizDestIn, RegisterErrIn,
 } from './types'
 import { HDR_CONTENT_TYPE } from '@/lib/http'
 
@@ -204,18 +205,13 @@ export function registerErrKeyOf(x: RegisterErrIn): string {
 /**
  * 注册成功打点(umami 是站外脚本挂的全局,拿不到就算了)。
  * window 上是外部脚本注入的全局形状(UmamiHost),跨边界断言收在体内那一处。
+ * 2026-09-26 /fe Frank:改走统一上报门 lib/track(umami + 第一方漏斗)—— 原先只直调 umami,
+ * 被拦截器挡掉就没了;window 的形状与断言随之归门里那一处(UmamiHost 退役),拿不到照旧算了(门里吞错)。
  *
  * @returns 无。
  */
 export function trackSignup() {
-  try {
-    const w = window as UmamiHost
-    if (w.umami != null) {
-      w.umami.track(EVENT_SIGNUP)
-    }
-  } catch {
-    return
-  }
+  track(EVENT_SIGNUP)
 }
 
 /**

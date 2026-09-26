@@ -249,26 +249,6 @@ export type MeRespJson = {
 }
 
 /**
- * 环境注入的 umami 统计对象的形状(只声明本域真用的 track 一格)。
- */
-export type UmamiLike = {
-  /**
-   * 上报一个事件(E7-02:Checkout 发起)。
-   */
-  track: (event: string, data: Record<string, string>) => void
-}
-
-/**
- * 带 umami 的 window(归一前形状:统计脚本没加载时缺席)。
- */
-export type UmamiWindow = {
-  /**
-   * 环境注入的统计对象;没有就不发。
-   */
-  umami?: UmamiLike
-}
-
-/**
  * useAccountPage 状态机器的面板:门(page.tsx)只拿这一份 + 拼组件
  * (2026-08-26 Frank 看完拼装版实拍「还是有一堆函数啊」—— state/effect/handler
  * 全部收进 hooks,门里不再有任何函数体;闸 local/page-no-logic)。

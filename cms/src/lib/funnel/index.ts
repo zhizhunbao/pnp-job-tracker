@@ -6,6 +6,6 @@
  * @time 2026-08-22 19:27:15
  */
 
-export { CHAT_STEPS, DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS } from './constants'
-export { chatRates, decisionRates, isLocalHost, stepRates, toFunnelHit } from './functions'
+export { DECISION_STEPS, FUNNEL_STEPS, LEGACY_STEPS } from './constants'
+export { decisionRates, isLocalHost, stepRates, toFunnelHit } from './functions'
 export type { FunnelHit, StepCounts, TrackValue } from './types'

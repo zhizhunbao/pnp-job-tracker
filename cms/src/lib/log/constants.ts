@@ -836,3 +836,23 @@ export const GUIDE_LOG = {
   answerFailed: 'answer call failed, recorded as question: ',
 } as const
 
+/**
+ * 埋点域(lib/track)的日志字面量(2026-09-26 /fe 自排除开关批立)。
+ * 这两行出在浏览器控制台(埋点门在客户端跑),不进服务端日志。
+ */
+export const TRACK_LOG = {
+  /**
+   * 这个域每一行日志的来源标签。
+   */
+  tag: 'track',
+
+  /**
+   * 读自排除键抛了(无痕模式 / 站点数据被禁):这一笔照常计数,后面接错误。
+   */
+  offReadFailed: 'notrack read failed, counting as usual: ',
+
+  /**
+   * 网址开关写 / 删自排除键抛了:这台设备的开关没拨成,后面接错误。
+   */
+  switchFailed: 'notrack switch failed: ',
+} as const
