@@ -14,18 +14,21 @@ door.constants — 门循环词表(提示行模板 / 算成功的退出码 / 自
 STEP_START_TPL = "→ {name}"
 """每步开跑一行(原各门 say(f"→ {name}") 原样)。"""
 
-STEP_EXIT_TPL = "✗ {name} 退出码 {code}(其余步照跑)"
+STEP_EXIT_TPL = "✗ {name} 退出码 {code}"
 """一步走 sys.exit(非 0)的留痕(行首 ✗ = 调度层升 ERROR)。2026-09-26 自 pnp 门搬来时去掉了「本步保留旧表」——
-那是 pnp / statcan 各步自己硬闸的保证,门叶担保不了所有域。"""
+那是 pnp / statcan 各步自己硬闸的保证,门叶担保不了所有域。
+同日晚改判回 fail-fast(见 functions.run_steps):尾巴「(其余步照跑)」随之去掉。"""
 
-CHAIN_FAIL_TPL = "✗ 本轮 {n}/{total} 步失败:{names}(其余步已照跑;本轮记失败)"
-"""收口行:有步失败(同上,去掉 pnp 专属的「均保留旧表」)。"""
+CHAIN_FAIL_TPL = "✗ 本轮中止于 {name}(后面 {left} 步未跑)"
+"""收口行:有步失败(同上,去掉 pnp 专属的「均保留旧表」)。
+2026-09-26 晚改判回 fail-fast:原句「✗ 本轮 {n}/{total} 步失败:{names}(其余步已照跑;本轮记失败)」改成报中止点与没跑的步数。"""
 
 CHAIN_OK_TPL = "✓ 本域 {n} 步全过"
 """收口行:全过(原各门同句原样)。"""
 
 NAMES_SEP = "/"
-"""失败步名的拼接符。"""
+"""失败步名的拼接符。
+2026-09-26 晚改判回 fail-fast 后一轮至多一个失败步,本常量不再被引用,原文保留作沿革。"""
 
 EXIT_OK_CODES = (0, None)
 """SystemExit 里算「成功」的退出码(sys.exit() / sys.exit(0))。"""

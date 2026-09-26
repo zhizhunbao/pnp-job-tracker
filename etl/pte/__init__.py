@@ -20,11 +20,16 @@ raw 响应先落 data/raw/pte/ptebank/,组织库与雷达同 ynwac 形。地图�
 
 META:2026-09-01 Frank 拍板挂 docker 调度(SOURCE=pte,一域一容器)—— 新题雷达周更自动跑,
 零登录、只碰公开 bundle。投票/评论那层是登录门控,不在自动链(需登录态,人工/半自动另说)。
+2026-09-26 晚改判(保鲜标准 Frank「我现在职位是小时更新。其他最次也是日更」;「其中一个失败,其余照跑?那我怎么知道
+这个失败」→「拆 + 每个单元配 ping」):日更,配 ping(HEALTHCHECK_PING_PTE);上面「周更自动跑」一句就此作废,原文保留。
 """
 META = {
     "role": "pte",
     "method": "httpx",
-    "interval": 604800,        # 7d 周更(机经变化慢;只抓公开 bundle 跑 diff,零登录)
+    "interval": 86400,         # 7d 周更(机经变化慢;只抓公开 bundle 跑 diff,零登录)
+                               # —— 2026-09-26 晚改日更(Frank「我现在职位是小时更新。其他最次也是日更」)
     "seed": False,             # 研究域,不灌库
-    "ping": False,             # 不占 healthchecks 心跳(不接生产监控)
+    "ping": True,              # 不占 healthchecks 心跳(不接生产监控)
+                               # —— 2026-09-26 晚改 True(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」
+                               # →「拆 + 每个单元配 ping」)
 }

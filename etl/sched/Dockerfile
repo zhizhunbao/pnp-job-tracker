@@ -14,6 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir "httpx>=0.27" "beautifulsoup4>=4.12" "pymupdf>=1.24" "lxml>=5.0" "loguru>=0.7" "openpyxl>=3.1" "pydantic>=2.7" "cryptography>=46"  # openpyxl: build_lmia 解析 ESDC 季度 XLSX(E6-02);pydantic: 边界行形状校验(2026-08-30 全域采用);cryptography: indexing 域给 Google 服务账号签 RS256(2026-09-26,与 pyproject 同步)
+RUN pip install --no-cache-dir "httpx>=0.27" "beautifulsoup4>=4.12" "pymupdf>=1.24" "lxml>=5.0" "loguru>=0.7" "openpyxl>=3.1" "pydantic>=2.7" "cryptography>=46" "zhconv>=1.4"  # openpyxl: build_lmia 解析 ESDC 季度 XLSX(E6-02);pydantic: 边界行形状校验(2026-08-30 全域采用);cryptography: indexing 域给 Google 服务账号签 RS256(2026-09-26,与 pyproject 同步);zhconv: pnp 抽选流名灰注的繁简转换(2026-09-26 晚补:原只手工装在旧 pnp 容器里,拆单元换新容器即丢 —— pyproject 早登记「镜像解冻时随统一重启补装」,今晚兑现)
 # 2026-08-31 批K:入口自 etl/auto_update.py 迁 etl/sched/main.py(调度器立域,默认链=守护循环,语义不变)
 CMD ["python", "etl/sched/main.py"]

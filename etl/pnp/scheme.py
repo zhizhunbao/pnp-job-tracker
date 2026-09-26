@@ -315,8 +315,16 @@ class ProvinceDrawsIn:
     label: str
     """前端显示的通道族名。"""
 
-    old: dict
-    """上一轮的 provinces 块(抓失败/解析空 → 原样保留)。"""
+
+@dataclass
+class PutDrawsIn:
+    """put_prov_draws() 入参:一省抽选单元的落盘(2026-09-26 晚按省拆;并回本省历史 → draws-<省>.json)。"""
+
+    prov: str
+    """省码(文件名取它的小写)。"""
+
+    block: dict
+    """本轮建好的省块(label / scale / url / draws,ON 另有 notice);走到落盘的都是全部官方页成功的。"""
 
 
 @dataclass
@@ -393,9 +401,6 @@ class CachedDrawsIn:
 
     label: str
     """前端显示的项目族名。"""
-
-    old: dict
-    """上一轮的 provinces 块(缓存落空 / 解析塌方 / 解析为空 → 原样保留)。"""
 
 
 @dataclass

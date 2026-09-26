@@ -26,6 +26,7 @@ from indexing.functions import dry_round, notify_round, run_tests
 SCHEDULED = [("notify", notify_round)]
 """默认链(调度真相):一步 notify —— 先撤回、再推新;抛错即中止本轮(403 不是资源所有者 / 网络断 / 换 token 失败都算)。
 2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+同日晚改判回一步失败即中止(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):门叶改回 fail-fast,本门一字不改;互不相干的步拆成各自的调度单元(各自容器、各自 ping)。
 """
 
 TOOLS = {

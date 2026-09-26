@@ -91,7 +91,7 @@ from mart.constants import (
     K_MW_EFFECTIVE, K_MW_FETCHED, K_MW_FROM, K_MW_NEXT, K_MW_PROVINCE, K_MW_RATE, K_MW_ROWS, K_MW_SINCE,
     MACRO_KEY_MIN_WAGE, MINWAGE_LANDING, MINWAGE_YEAR_END_TPL, UNIT_DOLLARS_HOURLY, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
     IN_MART_COMPANIES, IN_MART_JOBS, IN_MART_NOC_DESC, IN_NEWS, IN_NL_EMPLOYERS, IN_NOC_DESC,
-    IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS, IN_PNP_STATS,
+    IN_PILOT, IN_PILOT_EMP, IN_PILOT_OCC, IN_PILOT_QUOTA, IN_PNP_DIR, IN_PNP_DRAWS_DIR, IN_PNP_DRAWS_GLOB, IN_PNP_STATS, NO_PNP_DRAWS_TPL,
     IN_REQ_TABLES, IN_SCORED, IN_SCORE_TABLES, IN_STATCAN, IN_WAGES, ISO_PREFIX_RE, JB_EXT_PREFIX,
     JB_EXT_TPL, JB_LOC_TPL, JD_BUCKET_DIV, JD_BUCKET_NO_PID, JD_BUCKET_TPL, JD_DEDUP_MIN, JD_MATCH_TPL, JD_NOISE,
     JD_APOS_MARK, JD_DASH_MARK, JD_HEAD_MARK_RE, JD_KEEP_GROUP, JOBBANK_HOST, K_JD_BODY, K_JD_PID, MART_JD_INDEX_MISSING_TPL, MD_UNDERSCORE_RE, QMARK_APOS_RE, QMARK_DASH_RE, DOMAIN_ATS, DOMAIN_JOBBANK,
@@ -2747,11 +2747,17 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
     (province="FED")—— 该表列型完全够用,**零新表零 DDL**;省块按 province 过滤天然不串味。
     2026-09-26 改判(lead 定):每省收最近 DRAW_WINDOW_MONTHS 个月的全部抽选行(原「最新 12 / 48 行」),
     弹框「近 90 天 N 轮 / 共邀请 X 人」才不会被一轮拆多行的省少算;改制通告行、联邦 EE 行照旧。
+    2026-09-26 晚 pnp 抽选按省拆:改读 raw/pnp/draws-*.json 各省一份,基准日期(fetched)也按省取(某省单元失败时
+    它那份停在上次成功的日期,不再被别省的成功带着前移)。一份都没有 = 产出方出事,当场报错不出空表(空表灌库会清掉
+    线上全部省抽选;原先文件缺失时静默出 0 行)。
     """
     rows: list = []
     cut = draw_cut_of(date.today())
-    if IN_PNP_DRAWS.exists():
-        pd = read_table_soft(IN_PNP_DRAWS)
+    files = sorted(IN_PNP_DRAWS_DIR.glob(IN_PNP_DRAWS_GLOB))
+    if len(files) == 0:
+        raise RuntimeError(NO_PNP_DRAWS_TPL.format(dir=IN_PNP_DRAWS_DIR, glob=IN_PNP_DRAWS_GLOB))
+    for f in files:
+        pd = read_table_soft(f)
         for prov, v in pd.get(K_PROVINCES, {}).items():
             base = to_draw_base(DrawBaseIn(province=prov, table=v, fetched=pd.get(K_FETCHED, "")))
             for dr in v.get(K_DRAWS, []):

@@ -1729,8 +1729,17 @@ K_CL_URL = "url"
 K_CL_ITEMS = "items"
 """清单里的条目格。"""
 
-IN_PNP_DRAWS = paths.PNP / "draws.json"
-"""省抽选事实(BC/AB/MB+ON 通告,pnp 域 build_draws 产,E6-04)。"""
+IN_PNP_DRAWS_DIR = paths.PNP
+"""省抽选事实(BC/AB/MB+ON 通告,pnp 域 build_draws 产,E6-04)。
+2026-09-26 晚 pnp 抽选按省拆(Frank 选「按省拆」):原 `IN_PNP_DRAWS = paths.PNP / "draws.json"` 九省一份,
+改为本目录下一省一份(IN_PNP_DRAWS_GLOB),每份外形照旧 {source, fetched, provinces: {省: 块}}、只装一省;
+产出方 pnp 域 put_prov_draws。某省单元失败时它那份文件保留上一版(fetched 不前移),其余省照常。"""
+
+IN_PNP_DRAWS_GLOB = "draws-*.json"
+"""各省抽选文件的样式(2026-09-26 晚;与 pnp 域 DRAWS_FILE_GLOB 同形,域间不互取常量,各自声明)。"""
+
+NO_PNP_DRAWS_TPL = "{dir} 下一份 {glob} 都没有 —— pnp 抽选单元出事了,不出空表(空表灌库会清掉线上全部省抽选)"
+"""省抽选一份都读不到的报错(2026-09-26 晚按省拆时立;原先文件缺失静默出 0 行)。"""
 
 K_PROVINCES = "provinces"
 """抽选表按省索引的键。"""

@@ -2,7 +2,7 @@
 door 叶唯一入口(基础设施叶:无 META、不进调度;门只为自测留一个 --only test)。
 
 一律从仓库根执行:
-    python etl/door/main.py --only test    # 门循环自测(一步失败其余照跑、返回码仍为 1)
+    python etl/door/main.py --only test    # 门循环自测(一步失败即中止、返回码 1;2026-09-26 晚由「其余照跑」改判)
 
 @author Frank
 @time 2026-09-26 16:09:33

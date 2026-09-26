@@ -5,6 +5,12 @@
 # 2026-08-31 Frank 拍板:本地闲置的 postgres/cms 两 service 删除(07-16 割接 Render 后,
 # dev 直连生产库、seed 直打 offer2pr.com,这套本地件零流量还顶着陈 schema 报错)——
 # 全栈 = 15 个 ETL 容器,一域一容器,SOURCE=域名,节奏真相在各域 META。
+# 2026-09-26 晚改为「一单元一容器」(Frank「我他妈之前让你拆成多个 docker 你非的合一起」「其中一个失败,其余照跑?
+# 那我怎么知道这个失败」→ 拍「拆 + 每个单元配 ping」「一单元一容器」「抽选按省拆」「资格表拆三个」):
+# 一个 service = 一个调度单元(SOURCE = 单元名,声明在各域 __init__ 的 META / METAS)= 一个 healthchecks 检查项
+# (HEALTHCHECK_PING_<单元名大写>,根 .env 配值;没配 = 不发)。单元内一步失败即中止,哪个单元坏了哪个检查项红。
+# pnp 拆 20 个、company 例行链拆 3 个、eligibility 拆 3 个,crawl / ee / ircc / statcan 各拆 2 个,qs 自 dli 容器搬出。
+# ⚠ 整栈 up -d 会把停着的 hireac 拉起来(2026-09-26 Frank「HireAC 先不弄了」):起停一律点名 service。
 #
 # 用法(仓库根执行):
 #   无人值守全栈:docker compose up -d --build
@@ -23,10 +29,18 @@ x-etl: &etl                        # 通用数据层镜像(httpx 类源 + build/
   extra_hosts:
     - 'host.docker.internal:host-gateway'
 
+x-hc: &hc                         # 2026-09-26 晚(Frank「拆 + 每个单元配 ping」):每个容器都带 healthchecks API 密钥 ——
+                                  # 没配 HEALTHCHECK_PING_<单元名> 的单元开跑即按单元名自建 / 取自己的检查项(sched ping_url_of);
+                                  # 密钥在根 .env,Frank 亲手放;空 = 照旧只认 HEALTHCHECK_PING_<单元名>
+  HEALTHCHECKS_API_KEY: ${HEALTHCHECKS_API_KEY:-}
+  HEALTHCHECKS_API_URL: ${HEALTHCHECKS_API_URL:-http://healthchecks:8000}   # 同日 Frank 选「本机自建(免费)」:缺省指本 compose 的 healthchecks 服务;
+                                  # 托管版免费档只有 20 个检查项,全舰队约 63 个;托管版原有 6 个照旧走 .env 里 HEALTHCHECK_PING_<单元名> 的地址
+
 services:
   jobbank:                         # 抓 Job Bank(只刷 raw/jobbank/)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: jobbank
       HEALTHCHECK_PING_JOBBANK: ${HEALTHCHECK_PING_JOBBANK:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=域 META(jobbank 域 3600;2026-07-16 拍板文字随迁)
@@ -36,96 +50,309 @@ services:
   howto:                           # 投递方式(2026-09-23 站内投递批 1;jobbank 域第二役):板上 Job Bank 直发帖逐帖取「How to apply」→ 邮箱 / 投递渠道 / 截止日 / 下架;只刷 processed/jobbank/howto.json 与 crawl/jobbank-howto/,灌库归 build 链;设计稿 docs/design/站内投递批1-投递邮箱入库-20260923.md
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: howto
       HEALTHCHECK_PING_HOWTO: ${HEALTHCHECK_PING_HOWTO:-}   # 未配 = ping_health 自然跳过
       HOWTO_MAX: ${HOWTO_MAX:-3000}               # 每轮查多少帖(1 秒一帖约 50 分钟;首轮补抓约 10 轮追平)
       HOWTO_SLEEP: ${HOWTO_SLEEP:-1.0}            # 每帖间隔秒数:比详情抓取慢四倍 —— Job Bank 求职者条款 2026-08-07 版禁自动化访问,动静压低
       TZ: EST5EDT
 
-  pnp:                             # 省提名事实构建 + watch/freshness 两哨兵(只刷 raw;build 角色消费灌库)
+  # pnp 域 2026-09-26 晚拆成 20 个单元(Frank「我他妈之前让你拆成多个 docker 你非的合一起」「其中一个失败,其余照跑?
+  # 那我怎么知道这个失败」→ 拍「拆 + 每个单元配 ping」「一单元一容器」「抽选按省拆」):原先一个 pnp 容器跑 38 步、只有一个 ping,
+  # 改为一单元一容器一 ping(HEALTHCHECK_PING_<单元名大写>),单元内一步失败即中止;单元清单与切法见 etl/pnp/main.py 的 UNITS。
+  # 原 pnp service 逐字留档:
+  #   pnp:  # 省提名事实构建 + watch/freshness 两哨兵(只刷 raw;build 角色消费灌库)
+  #     SOURCE: pnp
+  #     HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}     ← 整个 pnp 一个检查项,随拆退役
+  #     # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=pnp 域 META(3600;#128 拍板文字随迁,批2 周更回归已修)
+  #     # 2026-08-31 批N「一域一容器」:原合租本角色的 aip/citations/dli/fcip/rcip 各自成 service,
+  #     # 本容器只剩 pnp 域;freshness 哨兵盯的是产物文件,跨容器仍有效(批O 随 manifest 退役重排)
+  pnp_ab:                          # 阿省 AAIP:排除清单 / 门槛 / 配额统计(alberta.ca)
     <<: *etl
     environment:
-      SOURCE: pnp
-      HEALTHCHECK_PING_PNP: ${HEALTHCHECK_PING_PNP:-}
-      # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=pnp 域 META(3600;#128 拍板文字随迁,批2 周更回归已修)
-      # 2026-08-31 批N「一域一容器」:原合租本角色的 aip/citations/dli/fcip/rcip 各自成 service,
-      # 本容器只剩 pnp 域;freshness 哨兵盯的是产物文件,跨容器仍有效(批O 随 manifest 退役重排)
+      <<: *hc
+      SOURCE: pnp_ab
+      HEALTHCHECK_PING_PNP_AB: ${HEALTHCHECK_PING_PNP_AB:-}
+      TZ: EST5EDT
+
+  pnp_bc:                          # 卑诗 BC PNP:定向清单 / 门槛 / SIRS 分值 / 统计 / 已发提名(welcomebc.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_bc
+      HEALTHCHECK_PING_PNP_BC: ${HEALTHCHECK_PING_PNP_BC:-}
+      TZ: EST5EDT
+
+  pnp_sk:                          # 萨省 SINP:三通道清单 / 工作邀约排除表 / 分值 / 门槛 / 统计(saskatchewan.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_sk
+      HEALTHCHECK_PING_PNP_SK: ${HEALTHCHECK_PING_PNP_SK:-}
+      TZ: EST5EDT
+
+  pnp_mb:                          # 曼省 MPNP:在需职业 / 门槛 / EOI 分值 / 统计(immigratemanitoba.com)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_mb
+      HEALTHCHECK_PING_PNP_MB: ${HEALTHCHECK_PING_PNP_MB:-}
+      TZ: EST5EDT
+
+  pnp_ns:                          # 新斯 NSNP:通道清单 / 门槛 / 已发提名 / 年度配额(liveinnovascotia.com + data.novascotia.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_ns
+      HEALTHCHECK_PING_PNP_NS: ${HEALTHCHECK_PING_PNP_NS:-}
+      TZ: EST5EDT
+
+  pnp_nb:                          # 新不 NBPNP:不受理职业 / 门槛(gnb.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_nb
+      HEALTHCHECK_PING_PNP_NB: ${HEALTHCHECK_PING_PNP_NB:-}
+      TZ: EST5EDT
+
+  pnp_nl:                          # 纽省 NLPNP:优先职位 / 门槛 / 分值 / 指定雇主(gov.nl.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_nl
+      HEALTHCHECK_PING_PNP_NL: ${HEALTHCHECK_PING_PNP_NL:-}
+      TZ: EST5EDT
+
+  pnp_pe:                          # 爱德华王子岛 PEI PNP:在需职业 / AIP 排除 / 门槛 / 配额与提名(princeedwardisland.ca PDF)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_pe
+      HEALTHCHECK_PING_PNP_PE: ${HEALTHCHECK_PING_PNP_PE:-}
+      TZ: EST5EDT
+
+  pnp_on:                          # 安省 OINP:劳动力优先表守望 / 门槛 / 分值 / 运营统计(ontario.ca)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_on
+      HEALTHCHECK_PING_PNP_ON: ${HEALTHCHECK_PING_PNP_ON:-}
+      TZ: EST5EDT
+
+  pnp_draws_ab:                    # 阿省抽选(一省一份 raw/pnp/draws-ab.json;任一页失败本单元红、文件不动)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_ab
+      HEALTHCHECK_PING_PNP_DRAWS_AB: ${HEALTHCHECK_PING_PNP_DRAWS_AB:-}
+      TZ: EST5EDT
+
+  pnp_draws_bc:                    # 卑诗抽选(官方页 + 逐年存档 PDF)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_bc
+      HEALTHCHECK_PING_PNP_DRAWS_BC: ${HEALTHCHECK_PING_PNP_DRAWS_BC:-}
+      TZ: EST5EDT
+
+  pnp_draws_mb:                    # 曼省抽选(首页实抓 + 第 2~5 页读 crawl 缓存)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_mb
+      HEALTHCHECK_PING_PNP_DRAWS_MB: ${HEALTHCHECK_PING_PNP_DRAWS_MB:-}
+      TZ: EST5EDT
+
+  pnp_draws_nb:                    # 新不抽选(当期页 + 本年历史页)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_nb
+      HEALTHCHECK_PING_PNP_DRAWS_NB: ${HEALTHCHECK_PING_PNP_DRAWS_NB:-}
+      TZ: EST5EDT
+
+  pnp_draws_nl:                    # 纽省抽选
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_nl
+      HEALTHCHECK_PING_PNP_DRAWS_NL: ${HEALTHCHECK_PING_PNP_DRAWS_NL:-}
+      TZ: EST5EDT
+
+  pnp_draws_ns:                    # 新斯月度选取人数(只读 crawl 缓存)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_ns
+      HEALTHCHECK_PING_PNP_DRAWS_NS: ${HEALTHCHECK_PING_PNP_DRAWS_NS:-}
+      TZ: EST5EDT
+
+  pnp_draws_on:                    # 安省抽选(更新页通告 + invitations 页)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_on
+      HEALTHCHECK_PING_PNP_DRAWS_ON: ${HEALTHCHECK_PING_PNP_DRAWS_ON:-}
+      TZ: EST5EDT
+
+  pnp_draws_pe:                    # 爱德华王子岛抽选(只读 crawl 缓存:官网在 Radware 墙后)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_pe
+      HEALTHCHECK_PING_PNP_DRAWS_PE: ${HEALTHCHECK_PING_PNP_DRAWS_PE:-}
+      TZ: EST5EDT
+
+  pnp_draws_qc:                    # 魁省 PSTQ 邀请(只读 crawl 缓存;QC 不属 PNP,只收邀请事实)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_draws_qc
+      HEALTHCHECK_PING_PNP_DRAWS_QC: ${HEALTHCHECK_PING_PNP_DRAWS_QC:-}
+      TZ: EST5EDT
+
+  pnp_drawzh:                      # 抽选流名中文灰注(局域网 Ollama;盯九个抽选单元的轮次标记,有流名没翻成即红)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_drawzh
+      HEALTHCHECK_PING_PNP_DRAWZH: ${HEALTHCHECK_PING_PNP_DRAWZH:-}
+      TZ: EST5EDT
+
+  pnp_watch:                       # 名额公告哨兵(只读配额表 / crawl 缓存 / news,不发请求)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_watch
+      HEALTHCHECK_PING_PNP_WATCH: ${HEALTHCHECK_PING_PNP_WATCH:-}
       TZ: EST5EDT
 
   aip:                             # AIP 大西洋试点:指定雇主名单 + 规则(原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: aip
+      HEALTHCHECK_PING_AIP: ${HEALTHCHECK_PING_AIP:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       TZ: EST5EDT
 
-  eligibility:                     # 联邦试点申请人门槛库(AIP/RCIP/FCIP quote-anchored;2026-09-06 立域,aip 域规则步搬入;域名由 rules 改)
+  # eligibility 2026-09-26 晚拆成三个单元(AIP / RCIP / FCIP 三张表互不相干,一表一容器一 ping;Frank 选「拆三个」)。
+  # 原 service 逐字留档:
+  #   eligibility:  # 联邦试点申请人门槛库(AIP/RCIP/FCIP quote-anchored;2026-09-06 立域,aip 域规则步搬入;域名由 rules 改)
+  #     SOURCE: eligibility
+  eligibility_aip:                 # AIP 申请人门槛表(只读 crawl 缓存,零网络)
     <<: *etl
     environment:
-      SOURCE: eligibility
+      <<: *hc
+      SOURCE: eligibility_aip
+      HEALTHCHECK_PING_ELIGIBILITY_AIP: ${HEALTHCHECK_PING_ELIGIBILITY_AIP:-}
+      TZ: EST5EDT
+
+  eligibility_rcip:                # RCIP 申请人门槛表(同上)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: eligibility_rcip
+      HEALTHCHECK_PING_ELIGIBILITY_RCIP: ${HEALTHCHECK_PING_ELIGIBILITY_RCIP:-}
+      TZ: EST5EDT
+
+  eligibility_fcip:                # FCIP 申请人门槛表(同上)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: eligibility_fcip
+      HEALTHCHECK_PING_ELIGIBILITY_FCIP: ${HEALTHCHECK_PING_ELIGIBILITY_FCIP:-}
       TZ: EST5EDT
 
   citations:                       # 官方引用着陆页核验(field-sources 32 行;原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: citations
+      HEALTHCHECK_PING_CITATIONS: ${HEALTHCHECK_PING_CITATIONS:-}   # 2026-09-26 晚补
       TZ: EST5EDT
 
   dli:                             # DLI 指定院校 + PGWP 资格表(原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: dli
+      HEALTHCHECK_PING_DLI: ${HEALTHCHECK_PING_DLI:-}   # 2026-09-26 晚补;qs 同日搬出本容器自成一个
+      TZ: EST5EDT
+
+  qs:                              # QS 加拿大院校排名(2026-09-26 晚自 dli 容器搬出自成一个:原寄住 dli 角色,Frank「拆成多个 docker」)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: qs
+      HEALTHCHECK_PING_QS: ${HEALTHCHECK_PING_QS:-}
       TZ: EST5EDT
 
   fcip:                            # FCIP 法语社区试点三件(社区/职业/配额;原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: fcip
+      HEALTHCHECK_PING_FCIP: ${HEALTHCHECK_PING_FCIP:-}   # 2026-09-26 晚补
       TZ: EST5EDT
 
   rcip:                            # RCIP 乡村社区试点三件(雇主/职业/配额;原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: rcip
+      HEALTHCHECK_PING_RCIP: ${HEALTHCHECK_PING_RCIP:-}   # 2026-09-26 晚补
       TZ: EST5EDT
 
   lmia:                            # ESDC 正面 LMIA 雇主季表(原挂 ee 角色,批N 拆出)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: lmia
+      HEALTHCHECK_PING_LMIA: ${HEALTHCHECK_PING_LMIA:-}   # 2026-09-26 晚补
       TZ: EST5EDT
 
   ats:                             # Kanata 第一方 ATS 抓岗(2026-08-31 批N 启用 —— 此前 META 就位、服务注释态休眠)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: ats
+      HEALTHCHECK_PING_ATS: ${HEALTHCHECK_PING_ATS:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       SINCE_DAYS: '3'
       TZ: EST5EDT
 
   jobillico:                       # Jobillico 全国板抓岗(2026-09-06 立域,Frank「两站都接」;站点地图 → 详情 ld+json → processed/jobillico/)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: jobillico
+      HEALTHCHECK_PING_JOBILLICO: ${HEALTHCHECK_PING_JOBILLICO:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       DETAILS_PER_RUN: '3000'      # 每轮详情页上限(首轮 3.5 万张分十几轮跑完;域 __init__ 同名默认值)
       TZ: EST5EDT
 
   jobboom:                         # Jobboom 雇主直发岗(2026-09-06 立域;站点地图剔 /job-bank/ 转载 86% → 详情 ld+json → processed/jobboom/)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: jobboom
+      HEALTHCHECK_PING_JOBBOOM: ${HEALTHCHECK_PING_JOBBOOM:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       DETAILS_PER_RUN: '3000'
       TZ: EST5EDT
 
   careerbeacon:                    # CareerBeacon 大西洋四省板(2026-09-11 立域;NS/NB/NL/PE 列表页分页 → 详情 ld+json → processed/careerbeacon/)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: careerbeacon
+      HEALTHCHECK_PING_CAREERBEACON: ${HEALTHCHECK_PING_CAREERBEACON:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       DETAILS_PER_RUN: '3000'      # 每轮详情页上限(首轮约 1.2 万张分四五轮跑完;域 __init__ 同名默认值)
       TZ: EST5EDT
 
   gcjobs:                          # GC Jobs 联邦公务员招聘站(2026-09-13 立域;会话式两拉:搜索分页 → 岗位页 → processed/gcjobs/)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: gcjobs
+      HEALTHCHECK_PING_GCJOBS: ${HEALTHCHECK_PING_GCJOBS:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       DETAILS_PER_RUN: '1000'      # 每轮岗位页上限(公开搜索约 400 帖,首轮一次抓完;域 __init__ 同名默认值)
       TZ: EST5EDT
 
@@ -135,25 +362,47 @@ services:
       context: .                   # bfs_crawler 的浏览器兜底(403/验证壳→chromium)只有这个镜像跑得动
       dockerfile: etl/crawl/Dockerfile
     environment:
+      <<: *hc
       SOURCE: crawl
       HEALTHCHECK_PING_CRAWL: ${HEALTHCHECK_PING_CRAWL:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=crawl 域 META(3600;08-03 拍板与负载注记随迁)
       BROWSER_HEADLESS: '1'
       BROWSER_UNATTENDED: "1"                     # 2026-09-24 容器里没人点验证:验证页只等 10 秒;要人点的种子(PE)跳过,本机 --only attended 有头跑
       TZ: EST5EDT
+    # 2026-09-26 晚 crawl 域拆两个单元(Frank「拆成多个 docker」):本容器只剩 discover(探索 + 站点地图 diff),
+    # 各域常量里的官方 URL 哨兵(urls)自成 crawl_urls 容器 —— 两件互不相干,不再一个坏了拖另一个、共用一个 ping。
+
+  crawl_urls:                      # 官方 URL 哨兵(2026-09-26 晚自 crawl 拆出):各域 constants 里的官方 URL 逐条实测,404 / 410 / 跨站重定向即红(httpx,轻镜像)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: crawl_urls
+      HEALTHCHECK_PING_CRAWL_URLS: ${HEALTHCHECK_PING_CRAWL_URLS:-}
+      TZ: EST5EDT
 
   ee:                              # 联邦 EE 类别+抽选(2026-07 改 httpx:类别页无 Akamai、行全量;月更,只刷 raw)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: ee
       HEALTHCHECK_PING_EE: ${HEALTHCHECK_PING_EE:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=ee 域 META(3600;#128 文字随迁,批2 月更回归已修)
       TZ: EST5EDT
     # 回退:源站重新上 Akamai 时恢复 crawl 重镜像(build dockerfile: docker/etl/crawl/Dockerfile + BROWSER_HEADLESS=1)
+    # 2026-09-26 晚 ee 域拆两个单元:本容器只剩类别 + 抽选(IRCC 实抓);门槛两表(rules / category_rules,读 fed-ee 缓存)自成 ee_rules。
+
+  ee_rules:                        # 联邦 EE 门槛两表(2026-09-26 晚自 ee 拆出;只读 crawl 缓存的 fed-ee 页,官方原句核验不过即红)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: ee_rules
+      HEALTHCHECK_PING_EE_RULES: ${HEALTHCHECK_PING_EE_RULES:-}
+      TZ: EST5EDT
 
   news:                            # 官方移民新闻聚合(E12-06;只刷 raw/news/,build 角色消费灌库)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: news
       HEALTHCHECK_PING_NEWS: ${HEALTHCHECK_PING_NEWS:-}
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=news 域 META(3600;#128 文字随迁,批2 12h 回归已修)
@@ -173,17 +422,47 @@ services:
   # brief(局域网 qwen 五节简介);节奏在 company 域 META(6h)。
   # 2026-09-08 换 crawl 重镜像(Playwright + Xvfb 有头):about 步兜底要浏览器;持久 profile 与 crawl
   # 容器同一份 bind-mount(chromium 单例锁:两容器撞上时后起的那个 launch 失败、本轮只走 httpx,不双开)。
-  company:                         # 把脉页雇主数据链(role=enrich;company 域 SCHEDULED 四步)
+  # 2026-09-26 晚 company 域的例行链拆成三个单元(Frank「拆成多个 docker」「那我怎么知道这个失败」):places / sites+wikihq /
+  # about+brief 三组互不相干,一组一容器一 ping。只有 about 要浏览器,留重镜像;places 与 sites 只发 HTTP,走通用轻镜像。
+  # 原 company service 逐字留档(role 从 enrich 改为三个单元各自的名字,HEALTHCHECK_PING_ENRICH 随之退役):
+  #   company:  # 把脉页雇主数据链(role=enrich;company 域 SCHEDULED 四步)
+  #     build: etl/crawl/Dockerfile(重镜像)
+  #     SOURCE: enrich
+  #     HEALTHCHECK_PING_ENRICH: ${HEALTHCHECK_PING_ENRICH:-}
+  #     GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
+  #     GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,空=复用 GOOGLE_PLACES_KEY;CX 缺=sites 步退 DDG
+  #     GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
+  #     NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
+  #     NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+  enrich_places:                   # 雇主 Google Places 地址(company 域 places 步;Google 免费额内,轻镜像)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: enrich_places
+      HEALTHCHECK_PING_ENRICH_PLACES: ${HEALTHCHECK_PING_ENRICH_PLACES:-}
+      GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
+      TZ: EST5EDT
+
+  enrich_sites:                    # 雇主官网 + 维基总部(company 域 sites + wikihq 两步,同打 Wikidata;搜索兜底走 DDG,轻镜像)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: enrich_sites
+      HEALTHCHECK_PING_ENRICH_SITES: ${HEALTHCHECK_PING_ENRICH_SITES:-}
+      GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;CSE 密钥空时复用这把
+      GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,空=复用 GOOGLE_PLACES_KEY;CX 缺=sites 步退 DDG
+      GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
+      TZ: EST5EDT
+
+  enrich_about:                    # 雇主官网正文 → 五节简介(company 域 about + brief 两步;about 403 / JS 壳走浏览器兜底,留重镜像)
     <<: *etl
     build:
       context: .
       dockerfile: etl/crawl/Dockerfile
     environment:
-      SOURCE: enrich
-      HEALTHCHECK_PING_ENRICH: ${HEALTHCHECK_PING_ENRICH:-}
-      GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
-      GOOGLE_CSE_KEY: ${GOOGLE_CSE_KEY:-}         # 根 .env;Programmable Search JSON API 密钥,空=复用 GOOGLE_PLACES_KEY;CX 缺=sites 步退 DDG
-      GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
+      <<: *hc
+      SOURCE: enrich_about
+      HEALTHCHECK_PING_ENRICH_ABOUT: ${HEALTHCHECK_PING_ENRICH_ABOUT:-}
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
       TZ: EST5EDT
@@ -194,6 +473,7 @@ services:
       context: .
       dockerfile: etl/crawl/Dockerfile
     environment:
+      <<: *hc
       SOURCE: findsite
       BROWSER_COOKIES: findsite-cookies.json      # 自己一只空 cookie 罐 = 自己一个干净的有头浏览器(持久 profile 同一时刻只许一个进程开)
       BROWSER_UNATTENDED: "1"                     # 2026-09-22 无人值守:验证页只等 10 秒,过不去的搜总部落地页记进待放行清单,Frank 本机放行台(company --only unblock)统一过
@@ -213,6 +493,7 @@ services:
       context: .
       dockerfile: etl/crawl/Dockerfile
     environment:
+      <<: *hc
       SOURCE: hireac
       BROWSER_COOKIES: hireac-cookies.json            # = hireac 域 COOKIES_FILE;空串会退回持久 profile(容器里解不开,别留空)
       HEALTHCHECK_PING_HIREAC: ${HEALTHCHECK_PING_HIREAC:-}   # 根 .env;空 = 不发心跳(登录过期就没有邮件提醒)
@@ -221,38 +502,67 @@ services:
   pte:                             # ynwac 机经研究:抓公开 bundle → 解析 → diff 新题雷达(周更;只产 data/pte/,不灌库)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: pte
+      HEALTHCHECK_PING_PTE: ${HEALTHCHECK_PING_PTE:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       YNWAC_TOKEN: ${YNWAC_TOKEN:-}   # 考过投票+评论用(登录门控);根 .env 注入 auth_token,空=跳过votes步;JWT 过期换新
       TZ: EST5EDT
 
   hwcr:                            # 海外超人渥太华站房屋帖 → Lisgar 附近出租单间清单(私用;小时更;只产 data/raw|processed/hwcr/,不灌库)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: hwcr
+      HEALTHCHECK_PING_HWCR: ${HEALTHCHECK_PING_HWCR:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       TZ: EST5EDT
 
   ircc:                            # IRCC 开放数据月更(E12-07 #116 难度指数:学签/工签存量+PNP 登陆;配额=人工维护表不在此)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: ircc
+      HEALTHCHECK_PING_IRCC: ${HEALTHCHECK_PING_IRCC:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=ircc 域 META(86400;#128 文字随迁)
+      TZ: EST5EDT
+    # 2026-09-26 晚 ircc 域拆两个单元:本容器只剩开放数据 + 难度指数(有先后依赖);PGWP 规则与费用表两步自成 ircc_rules。
+
+  ircc_rules:                      # IRCC PGWP 规则 + 费用表(2026-09-26 晚自 ircc 拆出;与开放数据互不相干)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: ircc_rules
+      HEALTHCHECK_PING_IRCC_RULES: ${HEALTHCHECK_PING_IRCC_RULES:-}
       TZ: EST5EDT
 
   statcan:                         # StatCan WDS 日更:人口 / 临时居民 / GDP / 失业率(2026-09-06 自 ircc 搬出两段 + 新增四表)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: statcan
+      HEALTHCHECK_PING_STATCAN: ${HEALTHCHECK_PING_STATCAN:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
+      TZ: EST5EDT
+    # 2026-09-26 晚 statcan 域拆两个单元:本容器只剩同一 WDS 接口的四张表;NAICS 类目表(另一个端点)自成 statcan_naics。
+
+  statcan_naics:                   # StatCan NAICS 行业类目表(2026-09-26 晚自 statcan 拆出;另一个端点)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: statcan_naics
+      HEALTHCHECK_PING_STATCAN_NAICS: ${HEALTHCHECK_PING_STATCAN_NAICS:-}
       TZ: EST5EDT
 
   minwage:                         # ESDC 最低工资数据库日更:各省法定最低工资现行档 + 1965 起历次调整(2026-09-13 立域)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: minwage
+      HEALTHCHECK_PING_MINWAGE: ${HEALTHCHECK_PING_MINWAGE:-}   # 2026-09-26 晚补(每个单元一个 ping);未配 = ping_health 自然跳过
       TZ: EST5EDT
 
   explore:                         # 雇主探索队列的后台工人(2026-09-18 立域;取活 → 局域网 qwen 翻雇主名 → 交活,不产 data/ 文件)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: explore
       HEALTHCHECK_PING_EXPLORE: ${HEALTHCHECK_PING_EXPLORE:-}   # 未配 = ping_health 自然跳过
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / classify / company 同一台盒子);空=本域跳过
@@ -268,6 +578,7 @@ services:
       context: .
       dockerfile: etl/crawl/Dockerfile
     environment:
+      <<: *hc
       SOURCE: sites
       BROWSER_COOKIES: sites-cookies.json         # cookie 模式 = 干净的有头浏览器、不开持久 profile(那份 profile 同一时刻只许一个进程开,company / crawl 在用;公司官网不要登录态);文件不在 fetch 步自己建一只空罐
       HEALTHCHECK_PING_SITES: ${HEALTHCHECK_PING_SITES:-}       # 未配 = ping_health 自然跳过
@@ -283,6 +594,7 @@ services:
       context: .
       dockerfile: etl/crawl/Dockerfile
     environment:
+      <<: *hc
       SOURCE: visit
       BROWSER_COOKIES: visit-cookies.json         # 自己一只空 cookie 罐 = 自己一个干净的有头浏览器,不和 sites 例行轮抢同一个标签页
       HEALTHCHECK_PING_VISIT: ${HEALTHCHECK_PING_VISIT:-}   # 未配 = ping_health 自然跳过
@@ -295,6 +607,7 @@ services:
   jdformat:                        # 岗位正文 → 五节整理版预生成(2026-09-15 立域;局域网 qwen,只刷 processed/jdformat/,build 角色汇装灌库)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: jdformat
       HEALTHCHECK_PING_JDFORMAT: ${HEALTHCHECK_PING_JDFORMAT:-}
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news / company 同一台盒子同一个变量);空=format 步跳过
@@ -305,6 +618,7 @@ services:
   classify:                        # 未分类岗 → bge-m3 候选检索 + qwen 选码(2026-09-15 立域;只刷 processed/classify/,build 角色汇装灌库)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: classify
       HEALTHCHECK_PING_CLASSIFY: ${HEALTHCHECK_PING_CLASSIFY:-}   # 未配 = ping_health 自然跳过
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 jdformat / company 同一台盒子同一个变量);空=本域跳过
@@ -318,6 +632,7 @@ services:
   indexing:                        # Google Indexing API 主动通知(2026-09-26 立域;Frank 勾「接 Indexing API」):读线上 sitemap 职位分册 → 先撤回离开的(404 / 410 / noindex 才发)→ 再推没推过的(lastmod 新→旧,每天 200 次额度);只刷 processed/indexing/,不灌库
     <<: *etl                       # ⚠ 镜像要带 cryptography(RS256 签名;2026-09-26 已加进 etl/sched/Dockerfile 的 pip 行);起的时候只起它 —— docker compose up -d --build indexing(整栈 up -d 会把停着的 hireac 拉起来)
     environment:
+      <<: *hc
       SOURCE: indexing
       HEALTHCHECK_PING_INDEXING: ${HEALTHCHECK_PING_INDEXING:-}   # 未配 = ping_health 自然跳过
       GOOGLE_INDEXING_KEY_FILE: ${GOOGLE_INDEXING_KEY_FILE:-secrets/google-indexing.json}   # 服务账号 JSON 密钥路径(相对仓库根,/secrets/ 已 gitignore);默认这条路径 = 文件一放下下一轮自动开推,不用改 .env、不用重建容器;文件不在 = 每轮一行警告跳过
@@ -326,6 +641,7 @@ services:
   backup:                          # 每日 pg_dump 生产库 → backups/(E7-01;家里机=运维盒)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: backup
       # SCRAPE_INTERVAL 2026-08-31 批F 退役:节奏真相=load 域 METAS backup 役(86400)
       BACKUP_DATABASE_URI: ${BACKUP_DATABASE_URI:-}   # docker/.env 注入 Supabase 连接串;空=跳过
@@ -335,6 +651,7 @@ services:
   build:                           # 跨源清洗→评分→mart→seed(灌库唯一角色)
     <<: *etl
     environment:
+      <<: *hc
       SOURCE: build
       HEALTHCHECK_PING_BUILD: ${HEALTHCHECK_PING_BUILD:-}
       HEALTHCHECK_PING_FRESHNESS: ${HEALTHCHECK_PING_FRESHNESS:-}   # 2026-09-15 方案 3:全舰队保鲜闸通过才 ping 这个检查项;只配给 build(每小时一轮)
@@ -342,6 +659,41 @@ services:
       SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}  # 灌库端点由根 .env 提供(现值即生产);2026-08-31 本地 cms 容器删除后 :3001 默认档随之退役
       SEED_TOKEN: ${SEED_TOKEN:-}  # 云端 seed 鉴权(根 .env 注入);upload_mart 推 /api/mart 同用这对(E7-04,Supabase Storage 已退役)
       TZ: EST5EDT                  # 日志东部时区
+
+  # 本机自建 healthchecks(2026-09-26 晚,Frank 选「本机自建(免费)」):托管版免费档只有 20 个检查项,拆成一单元一容器后
+  # 全舰队约 63 个 —— 本机起官方开源版,检查项不限数,SQLite 存在命名卷 hcdata(删容器不丢)。页面 http://localhost:8000
+  # (只绑本机);ETL 容器按服务名 http://healthchecks:8000 调 API 建检查项、打 ping(PING_ENDPOINT 因此写服务名)。
+  # 托管版上原有的 6 个(jobbank / ee / build / backup / hireac / 保鲜)照旧 —— 顺带当「这台机器整个挂了」的外部报警。
+  # Frank 亲手:建管理员账号(docker compose exec healthchecks /opt/healthchecks/manage.py createsuperuser)、
+  # 页面里建 API 密钥放进根 .env 的 HEALTHCHECKS_API_KEY、告警邮箱的 Gmail 应用专用密码放 HC_EMAIL_USER / HC_EMAIL_PASSWORD;
+  # HC_SECRET_KEY(会话签名用的随机串)由 lead 生成进根 .env。
+  healthchecks:
+    image: healthchecks/healthchecks:v4.4   # 2026-08-31 发布的稳定版,钉版本不追 latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8000:8000'
+    volumes:
+      - hcdata:/data
+    environment:
+      DB: sqlite
+      DB_NAME: /data/hc.sqlite
+      DEBUG: 'False'
+      SECRET_KEY: ${HC_SECRET_KEY:-}
+      SITE_ROOT: http://localhost:8000
+      SITE_NAME: offer2pr ETL
+      PING_ENDPOINT: http://healthchecks:8000/ping/
+      ALLOWED_HOSTS: localhost,127.0.0.1,healthchecks
+      REGISTRATION_OPEN: 'False'
+      EMAIL_HOST: ${HC_EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: '587'
+      EMAIL_USE_TLS: 'True'
+      EMAIL_HOST_USER: ${HC_EMAIL_USER:-}
+      EMAIL_HOST_PASSWORD: ${HC_EMAIL_PASSWORD:-}
+      DEFAULT_FROM_EMAIL: ${HC_EMAIL_USER:-healthchecks@localhost}
+      TZ: EST5EDT
+
+volumes:
+  hcdata:                          # 本机 healthchecks 的 SQLite(检查项、ping 记录、账号)
 
 # postgres/cms 两 service + pgdata 卷 2026-08-31 Frank 拍板删除:07-16 割接 Render 后
 # 本地 dev 直连生产库、seed 直打 offer2pr.com,这套本地件零流量、schema 停摆只剩报错。

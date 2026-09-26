@@ -1,0 +1,328 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "BC": {
+      "label": "BC PNP Skills Immigration",
+      "scale": "SIRS",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply",
+      "draws": [
+        {
+          "date": "2026-09-24",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $52/hour and $105,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 426
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 131,
+          "invitations": 288
+        },
+        {
+          "date": "2026-09-17",
+          "stream": "Temporary Rural/Remote Health Support Initiative",
+          "note": "Points",
+          "score": 60,
+          "invitations": 33
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 99,
+          "invitations": 182
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 76,
+          "invitations": 143
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 90,
+          "invitations": null
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 94,
+          "invitations": 104
+        },
+        {
+          "date": "2026-08-20",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $55/hour and $110,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 337
+        },
+        {
+          "date": "2026-08-20",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 132,
+          "invitations": 265
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 102,
+          "invitations": 183
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 84,
+          "invitations": 124
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Education",
+          "note": "All priority education occupations *",
+          "score": 68,
+          "invitations": null
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 72,
+          "invitations": 6
+        },
+        {
+          "date": "2026-08-06",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 88,
+          "invitations": 187
+        },
+        {
+          "date": "2026-07-23",
+          "stream": "Temporary Rural/Remote Health Support Initiative",
+          "note": "Points",
+          "score": 50,
+          "invitations": 60
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $58/hour and $115,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 223
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 132,
+          "invitations": 346
+        },
+        {
+          "date": "2026-07-09",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only *",
+          "score": 108,
+          "invitations": 91
+        },
+        {
+          "date": "2026-07-09",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 96,
+          "invitations": 116
+        },
+        {
+          "date": "2026-07-09",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 88,
+          "invitations": null
+        },
+        {
+          "date": "2026-07-09",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 97,
+          "invitations": 136
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $62/hour and $125,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 130
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 136,
+          "invitations": 149
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators *",
+          "score": 111,
+          "invitations": 91
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 100,
+          "invitations": 117
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 92,
+          "invitations": 6
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 101,
+          "invitations": 128
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $59/hour and $120,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 225
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 135,
+          "invitations": 212
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only (NOC 42202) *",
+          "score": 115,
+          "invitations": 86
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 108,
+          "invitations": 117
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 100,
+          "invitations": 9
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations (including workers who have apprenticeships registered with SkilledTradesBC) *",
+          "score": 108,
+          "invitations": 121
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 252
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 232
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 195
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 135 points",
+          "score": 135,
+          "invitations": 265
+        },
+        {
+          "date": "2026-02-04",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $70/hour and $145,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 206
+        },
+        {
+          "date": "2026-02-04",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 223
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $84/hour and $170,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 96
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 314
+        },
+        {
+          "date": "2025-10-02",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $90/hour and $175,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 114
+        },
+        {
+          "date": "2025-10-02",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 140 points",
+          "score": 140,
+          "invitations": 360
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $105/hour, currently working full-time in B.C. for the supporting employer, and the job offer is NOC TEER 0 or 1",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 150 points",
+          "score": 150,
+          "invitations": 47
+        }
+      ]
+    }
+  }
+}

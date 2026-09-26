@@ -9,5 +9,7 @@ META = {
     "method": "httpx",
     "interval": 3600,          # 1h(2026-08-31 Frank「都改成小时更新也不费劲」;原周更)
     "seed": False,
-    "ping": False,  # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
+    "ping": True,   # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
+                    # —— 2026-09-26 晚改 True(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」
+                    # →「拆 + 每个单元配 ping」)
 }

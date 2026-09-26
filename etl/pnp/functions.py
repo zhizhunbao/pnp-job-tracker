@@ -22,7 +22,8 @@ import sys
 import time
 import unittest
 from datetime import date, datetime, timezone
-from typing import cast
+from pathlib import Path
+from typing import NoReturn, cast
 from urllib.parse import urljoin
 
 import pymupdf
@@ -83,7 +84,7 @@ from pnp.constants import (
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
     FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
-    HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH, IN_NEWS_FILE,
+    HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH_DIR, IN_NEWS_FILE,
     IN_NL_HTML_CACHE, IN_NL_MANIFEST, K_ALLOCATION, K_ALLOC_PROGRAM, K_ALLOC_VALUE, K_ALLOC_YEAR, K_ANNUAL, K_ANY,
     K_ANY_TRADE, K_API, K_APPLIES_AREA, K_APPLIES_CONDITION, K_APPLIES_NOC, K_APPLIES_TEER, K_APPLIES_TO,
     K_APPLIES_TO_QUOTE, K_APPROVED_DAYS, K_AS_OF_LOWER, K_BAND_COUNT, K_BASIS, K_BODY_EN, K_BONUS, K_BY_PROGRAM,
@@ -213,7 +214,7 @@ from pnp.constants import (
     ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
     ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
     OUT_AB_HEALTH_FILE, OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
-    OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
+    OUT_BC_STATS, OUT_DRAWS_FILE_TPL, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
     OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
     OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_AIP_FILE, OUT_PE_OID,
     OUT_PE_OID_FILE,
@@ -272,7 +273,7 @@ from pnp.constants import (
     WATCH_PRINT_NO_TABLE, WATCH_PRINT_NS_DIFF_TPL, WATCH_PRINT_NS_FAIL_TPL, WATCH_PRINT_NS_MISSING_TPL,
     WATCH_PROV_NAMES, WATCH_QUOTE_CLIP, WATCH_SLUG_PROV, WATCH_SRC_NEWS, WATCH_SRC_TPL, WATCH_TAG_RE, WATCH_WINDOW,
     WATCH_YEAR_FIELD_RE, WATCH_YEAR_FIELD_TPL, WATCH_YEAR_MAX, WATCH_YEAR_MIN, WORD_N, ZH_CJK_RE, ZH_LOCALE_CN,
-    ZH_MAX_LEN, ZH_MODEL, ZH_OLLAMA_URL, ZH_PRINT_BAD_TPL, ZH_PRINT_DONE_TPL, ZH_PRINT_IN_OUT_TPL,
+    ZH_MAX_LEN, ZH_MODEL, ZH_OLLAMA_URL, ZH_PRINT_BAD_TPL, ZH_PRINT_DONE_TPL, ZH_PRINT_IN_OUT_TPL, ZH_PRINT_LEFT_TPL,
     ZH_PRINT_PROGRESS_TPL, ZH_PRINT_TODO_TPL, ZH_PROMPT_TPL, ZH_SAVE_EVERY, ZH_STRIP_CHARS, ZH_TEMPERATURE,
     ZH_TIMEOUT_S,
 )
@@ -1445,12 +1446,12 @@ from pnp.constants import (  # noqa: E402 — 段10 2026-09-26 补 NS / QC 两�
     DRAWS_BC_ARCHIVE_URL_TPL, DRAWS_BC_ARCHIVE_YEARS, DRAWS_BC_NOT_PDF_TPL, DRAWS_BC_PDF_MAGIC,
     DRAWS_PRINT_BC_ARCHIVE_TPL,
     DRAWS_NS_LABEL, DRAWS_NS_URL, DRAWS_PRINT_NO_CACHE_TPL, DRAWS_PRINT_PARSE_FAIL_TPL, DRAWS_QC_LABEL,
-    DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
+    DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS, DRAWS_FILE_GLOB,
     NS_DRAW_MONTH_RE, NS_DRAW_MONTH_TPL,
     NS_DRAW_NOTE_TPL, NS_DRAW_STREAM, NS_FOCUS_HEAD, NS_FOCUS_TAGS, PROV_QC, QC_BODY_CLASS, QC_BODY_TAG,
     QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
 )
-from pnp.scheme import BcProseIn, CachedDrawsIn, QcDrawIn  # noqa: E402 — 同上
+from pnp.scheme import BcProseIn, CachedDrawsIn, PutDrawsIn, QcDrawIn  # noqa: E402 — 同上
 
 
 def fetch_draws_page(url: str) -> str:
@@ -1766,19 +1767,26 @@ def mb_draw_of(x: MbDrawIn) -> dict:
 
 
 def province_draws(x: ProvinceDrawsIn) -> dict:
-    """一省抽选:抓 → 解析 → 报数;抓不到/解析空一律**保留旧数据**(宁可留旧不留错)。"""
+    """一省抽选:抓 → 解析 → 报数;抓不到/解析空一律**保留旧数据**(宁可留旧不留错)。
+    2026-09-26 晚按省拆单元:「保留旧数据」改由 keep_old_draws 兑现 —— 本省文件不重写、本单元退出码 1、不发 ping。"""
     try:
         draws = x.parse(fetch_draws_page(x.url))
-    except Exception as e:  # noqa: BLE001
-        say(DRAWS_PRINT_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
-        return x.old.get(x.prov) or {}
+    except Exception as e:  # noqa: BLE001 — 抓取 / 解析塌方:留痕后本单元按失败收口(文件不动)
+        keep_old_draws(DRAWS_PRINT_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
     if not draws:
-        say(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
-        return x.old.get(x.prov) or {}
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
     say(DRAWS_PRINT_OK_TPL.format(prov=x.prov, n=len(draws), date=draws[0][K_DATE],
                                   stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                   score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
     return {K_LABEL: x.label, K_SCALE: x.scale, K_URL: x.url, K_DRAWS: draws}
+
+
+def keep_old_draws(line: str) -> NoReturn:
+    """一省抽选单元的失败出口(2026-09-26 晚,Frank 选「按省拆」+「那我怎么知道这个失败」):报这一行(✗ …保留旧数据)
+    → 退出码 1。本省 draws-<省>.json 不重写(留上次全部页面都成功的那版,fetched 不前移),本单元不发 ping ——
+    哪省的页坏了,哪省的检查项红。此前九省一份文件时,单省失败只打一行、整步照样算成功,告警永远是绿的。"""
+    say(line)
+    sys.exit(1)
 
 
 def on_text_lines(html: str) -> list:
@@ -2183,10 +2191,12 @@ def parse_nb_draws(html: str) -> list:
     return draws
 
 
-def build_nb_draws(old: dict) -> dict:
+def build_nb_draws() -> None:
     """两页合并:当期页(最新一轮,~5 条)+ previous-invitations-2026.html(本年历史,~20+ 条)。
     任一页抓失败不清空、拿另一页结果照跑(循 BC/AB「抓失败→保留旧数据」的兜底,但 NB 是两页,
-    两页都失败才真正退回旧数据)。"""
+    两页都失败才真正退回旧数据)。
+    2026-09-26 晚按省拆单元改判:**任一页失败本单元即失败**(keep_old_draws:文件不重写、不发 ping)——
+    一页坏了也要有人知道;上面「拿另一页结果照跑」作废,原文保留作沿革。两页都失败的报数照旧。"""
     draws: list = []
     errors: list = []
     for label, url in ((NB_PAGE_CURRENT_LABEL, DRAWS_NB_URL), (NB_PAGE_HISTORY_LABEL, DRAWS_NB_PREV_URL)):
@@ -2195,10 +2205,9 @@ def build_nb_draws(old: dict) -> dict:
         except Exception as e:  # noqa: BLE001
             errors.append(NB_PAGE_ERR_TPL.format(label=label, name=type(e).__name__, detail=e))
     if not draws:
-        say(DRAWS_PRINT_NB_FAIL_TPL.format(errors=SEMI_JOIN_SEP.join(errors) or NB_NO_DATA))
-        return old.get(PROV_NB) or {}
+        keep_old_draws(DRAWS_PRINT_NB_FAIL_TPL.format(errors=SEMI_JOIN_SEP.join(errors) or NB_NO_DATA))
     if errors:
-        say(DRAWS_PRINT_NB_PARTIAL_TPL.format(errors=SEMI_JOIN_SEP.join(errors)))
+        keep_old_draws(DRAWS_PRINT_NB_PARTIAL_TPL.format(errors=SEMI_JOIN_SEP.join(errors)))
     seen: set = set()
     merged: list = []
     for d in draws:
@@ -2211,7 +2220,8 @@ def build_nb_draws(old: dict) -> dict:
     say(DRAWS_PRINT_NB_OK_TPL.format(n=len(merged), date=merged[0][K_DATE],
                                      stream=merged[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                      score=merged[0][K_SCORE], inv=merged[0][K_INVITATIONS]))
-    return {K_LABEL: DRAWS_NB_LABEL, K_SCALE: None, K_URL: DRAWS_NB_URL, K_DRAWS: merged}
+    put_prov_draws(PutDrawsIn(prov=PROV_NB, block={K_LABEL: DRAWS_NB_LABEL, K_SCALE: None, K_URL: DRAWS_NB_URL,
+                                                   K_DRAWS: merged}))
 
 
 def iso_pe_of(s: str) -> str | None:
@@ -2264,17 +2274,16 @@ def parse_pe_draws(html: str) -> list:
     return []
 
 
-def build_pe_draws(old: dict) -> dict:
+def build_pe_draws() -> None:
     """PE:**只读 crawl 缓存**(官网在 Radware 墙后,定向直抓拿回的是拦截页)。
-    缓存里没有这页 / 解析不出 → 保留旧数据(宁可留旧不留错,与别省的兜底同语义)。"""
+    缓存里没有这页 / 解析不出 → 保留旧数据(宁可留旧不留错,与别省的兜底同语义)。
+    2026-09-26 晚按省拆单元:保留旧数据走 keep_old_draws(本单元失败、不发 ping)。"""
     hit = get_cached_page(DRAWS_PE_URL)
     if not hit.html:
-        say(DRAWS_PRINT_PE_NO_CACHE_TPL.format(url=DRAWS_PE_URL))
-        return old.get(PROV_PE) or {}
+        keep_old_draws(DRAWS_PRINT_PE_NO_CACHE_TPL.format(url=DRAWS_PE_URL))
     draws = parse_pe_draws(hit.html)
     if not draws:
-        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_PE))
-        return old.get(PROV_PE) or {}
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_PE))
     scored = 0
     for d in draws:
         if d[K_SCORE] is not None:
@@ -2285,29 +2294,32 @@ def build_pe_draws(old: dict) -> dict:
     scale = None
     if scored:
         scale = DRAWS_PE_SCALE
-    return {K_LABEL: DRAWS_PE_LABEL, K_SCALE: scale, K_URL: DRAWS_PE_URL, K_DRAWS: draws}
+    put_prov_draws(PutDrawsIn(prov=PROV_PE, block={K_LABEL: DRAWS_PE_LABEL, K_SCALE: scale, K_URL: DRAWS_PE_URL,
+                                                   K_DRAWS: draws}))
 
 
-def build_bc_draws(old: dict) -> dict:
+def build_bc_draws() -> None:
     """BC(2026-09-26 抽选补全):官方页照旧实抓(表格轮 + 2026 年 1~4 月散文轮)+ 已落 crawl 层的逐年存档 PDF
-    (本地读,不发请求);官方页抓不到时只用存档,两边都一轮没有 → 保留旧数据(同 province_draws 的兜底)。"""
+    (本地读,不发请求);官方页抓不到时只用存档,两边都一轮没有 → 保留旧数据(同 province_draws 的兜底)。
+    2026-09-26 晚按省拆单元改判:**官方页抓不到本单元即失败**(keep_old_draws)—— 存档是过去年份、早已并进历史,
+    只剩存档的一轮等于旧数据换个新日期,还让告警一直绿着;上面「只用存档」作废,原文保留作沿革。"""
     draws: list = []
     try:
         draws += parse_bc_draws(fetch_draws_page(DRAWS_BC_URL))
-    except Exception as e:  # noqa: BLE001 — 官方页抓取失败留痕后照读存档(同 province_draws 的抓失败兜底)
-        say(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_BC, name=type(e).__name__, detail=e))
+    except Exception as e:  # noqa: BLE001 — 官方页抓取失败:留痕后本单元按失败收口(文件不动)
+        keep_old_draws(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_BC, name=type(e).__name__, detail=e))
     for year in DRAWS_BC_ARCHIVE_YEARS:
         f = DRAWS_BC_ARCHIVE_DIR / DRAWS_BC_ARCHIVE_FILE_TPL.format(year=year)
         if f.exists():
             draws += bc_pdf_draws(pdf_text(f.read_bytes()))
     if len(draws) == 0:
-        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_BC))
-        return old.get(PROV_BC) or {}
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_BC))
     draws.sort(key=draw_date_of, reverse=True)
     say(DRAWS_PRINT_OK_TPL.format(prov=PROV_BC, n=len(draws), date=draws[0][K_DATE],
                                   stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                   score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
-    return {K_LABEL: DRAWS_BC_LABEL, K_SCALE: DRAWS_BC_SCALE, K_URL: DRAWS_BC_URL, K_DRAWS: draws}
+    put_prov_draws(PutDrawsIn(prov=PROV_BC, block={K_LABEL: DRAWS_BC_LABEL, K_SCALE: DRAWS_BC_SCALE,
+                                                   K_URL: DRAWS_BC_URL, K_DRAWS: draws}))
 
 
 def bc_pdf_draws(text: str) -> list:
@@ -2347,26 +2359,28 @@ def fetch_bc_draw_archive() -> None:
         time.sleep(DRAWS_BACKFILL_GAP_S)
 
 
-def build_mb_draws(old: dict) -> dict:
+def build_mb_draws() -> None:
     """MB(2026-09-26 抽选补全):首页照旧实抓(最近 10 期)+ 第 2..DRAWS_MB_PAGES 页读 crawl 缓存(更早的轮),
-    同一份解析器并成一张;首页抓不到时只用缓存页,缓存页也一轮都没有 → 保留旧数据(同 province_draws 的兜底)。"""
+    同一份解析器并成一张;首页抓不到时只用缓存页,缓存页也一轮都没有 → 保留旧数据(同 province_draws 的兜底)。
+    2026-09-26 晚按省拆单元改判:**首页抓不到本单元即失败**(keep_old_draws)—— 新轮只在首页,缓存页是更早的轮、
+    早已并进历史;上面「只用缓存页」作废,原文保留作沿革。"""
     draws: list = []
     try:
         draws += parse_mb_draws(fetch_draws_page(DRAWS_MB_URL))
-    except Exception as e:  # noqa: BLE001 — 首页抓取失败留痕后照读缓存页(同 province_draws 的抓失败兜底)
-        say(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_MB, name=type(e).__name__, detail=e))
+    except Exception as e:  # noqa: BLE001 — 首页抓取失败:留痕后本单元按失败收口(文件不动)
+        keep_old_draws(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_MB, name=type(e).__name__, detail=e))
     for n in range(2, DRAWS_MB_PAGES + 1):
         html = get_cached_page(DRAWS_MB_PAGE_TPL.format(n=n)).html
         if html is not None:
             draws += parse_mb_draws(html)
     if len(draws) == 0:
-        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_MB))
-        return old.get(PROV_MB) or {}
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_MB))
     draws.sort(key=draw_date_of, reverse=True)
     say(DRAWS_PRINT_OK_TPL.format(prov=PROV_MB, n=len(draws), date=draws[0][K_DATE],
                                   stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                   score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
-    return {K_LABEL: DRAWS_MB_LABEL, K_SCALE: DRAWS_MB_SCALE, K_URL: DRAWS_MB_URL, K_DRAWS: draws}
+    put_prov_draws(PutDrawsIn(prov=PROV_MB, block={K_LABEL: DRAWS_MB_LABEL, K_SCALE: DRAWS_MB_SCALE,
+                                                   K_URL: DRAWS_MB_URL, K_DRAWS: draws}))
 
 
 def fetch_mb_draw_pages() -> None:
@@ -2380,13 +2394,14 @@ def fetch_mb_draw_pages() -> None:
         time.sleep(DRAWS_BACKFILL_GAP_S)
 
 
-def build_ns_draws(old: dict) -> dict:
+def build_ns_draws() -> None:
     """NS(2026-09-26):**只读 crawl 缓存**的月度选取页(ns-root 种子每小时在刷,不另发请求;同 PE)。"""
-    return cached_draws_of(CachedDrawsIn(prov=PROV_NS, url=DRAWS_NS_URL, html=get_cached_page(DRAWS_NS_URL).html,
-                                         parse=parse_ns_draws, scale=None, label=DRAWS_NS_LABEL, old=old))
+    put_prov_draws(PutDrawsIn(prov=PROV_NS, block=cached_draws_of(CachedDrawsIn(
+        prov=PROV_NS, url=DRAWS_NS_URL, html=get_cached_page(DRAWS_NS_URL).html, parse=parse_ns_draws, scale=None,
+        label=DRAWS_NS_LABEL))))
 
 
-def build_qc_draws(old: dict) -> dict:
+def build_qc_draws() -> None:
     """QC(2026-09-26):**只读 crawl 缓存**里今年与去年的 PSTQ 逐年邀请页(crawl 域 qc-pstq 窄种子每小时在刷),
     两年的轮并成一份(同日抽选补全:原先只读最新一年)。QC 不属 PNP —— 只收邀请事实,label / scale 写 PSTQ。"""
     this_year = date.today().year
@@ -2399,24 +2414,22 @@ def build_qc_draws(old: dict) -> dict:
     joined = None
     if len(pages) > 0:
         joined = EMPTY_JOIN.join(pages)
-    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=joined, parse=parse_qc_draws,
-                                         scale=DRAWS_QC_SCALE, label=DRAWS_QC_LABEL, old=old))
+    put_prov_draws(PutDrawsIn(prov=PROV_QC, block=cached_draws_of(CachedDrawsIn(
+        prov=PROV_QC, url=url, html=joined, parse=parse_qc_draws, scale=DRAWS_QC_SCALE, label=DRAWS_QC_LABEL))))
 
 
 def cached_draws_of(x: CachedDrawsIn) -> dict:
     """只读 crawl 缓存的一省抽选(NS / QC 共用;PE 另有「解析到分数线才挂 scale」的规矩,不并):
-    原文 → 解析 → 报数;缓存没有 / 解析塌方 / 解析为空一律**保留旧数据**(宁可留旧不留错)。"""
+    原文 → 解析 → 报数;缓存没有 / 解析塌方 / 解析为空一律**保留旧数据**(宁可留旧不留错)。
+    2026-09-26 晚按省拆单元:保留旧数据走 keep_old_draws(本单元失败、不发 ping)。"""
     if x.html is None or x.html == EMPTY_JOIN:
-        say(DRAWS_PRINT_NO_CACHE_TPL.format(prov=x.prov, url=x.url))
-        return x.old.get(x.prov) or {}
+        keep_old_draws(DRAWS_PRINT_NO_CACHE_TPL.format(prov=x.prov, url=x.url))
     try:
         draws = x.parse(x.html)
-    except Exception as e:  # noqa: BLE001 — 官网改版解析塌方:留痕后保留旧数据(同 province_draws 的兜底)
-        say(DRAWS_PRINT_PARSE_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
-        return x.old.get(x.prov) or {}
+    except Exception as e:  # noqa: BLE001 — 官网改版解析塌方:留痕后本单元按失败收口(文件不动)
+        keep_old_draws(DRAWS_PRINT_PARSE_FAIL_TPL.format(prov=x.prov, name=type(e).__name__, detail=e))
     if len(draws) == 0:
-        say(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
-        return x.old.get(x.prov) or {}
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=x.prov))
     say(DRAWS_PRINT_OK_TPL.format(prov=x.prov, n=len(draws), date=draws[0][K_DATE],
                                   stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                   score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
@@ -2517,29 +2530,24 @@ def qc_draw_of(x: QcDrawIn) -> dict:
     return {K_DATE: x.date, K_STREAM: x.stream, K_NOTE: note, K_SCORE: score, K_INVITATIONS: inv}
 
 
-def old_on_draws(old: dict) -> list:
-    """上一轮 ON 的抽选行(invitations 页抓不到时退回,不清空)。"""
-    return (old.get(PROV_ON) or {}).get(K_DRAWS) or []
-
-
-def build_on_draws(old: dict) -> dict:
-    """ON:通告取更新页(新通道细则的第一手动静),抽选记录取 invitations 页(带分数区间)。"""
+def build_on_draws() -> None:
+    """ON:通告取更新页(新通道细则的第一手动静),抽选记录取 invitations 页(带分数区间)。
+    2026-09-26 晚按省拆单元改判:两页任一抓不到 / 解析空,本单元即失败(keep_old_draws,文件不重写、不发 ping)。
+    此前 invitations 页抓不到或解析空时退回上一轮的抽选行(old_on_draws,「不清空」)、照样落盘 —— 新轮进不来,
+    文件日期却天天前移,告警也一直绿着;退回件随改判删除。"""
     try:
         parsed = parse_on(fetch_draws_page(DRAWS_ON_URL))
-    except Exception as e:  # noqa: BLE001
-        say(DRAWS_PRINT_ON_FAIL_TPL.format(name=type(e).__name__, detail=e))
-        return old.get(PROV_ON) or {}
+    except Exception as e:  # noqa: BLE001 — 更新页抓取失败:留痕后本单元按失败收口(文件不动)
+        keep_old_draws(DRAWS_PRINT_ON_FAIL_TPL.format(name=type(e).__name__, detail=e))
     notice = parsed.notice
     if not notice:
-        say(DRAWS_PRINT_ON_NO_ENTRY)
-        return old.get(PROV_ON) or {}
+        keep_old_draws(DRAWS_PRINT_ON_NO_ENTRY)
     try:
         draws = parse_on_draws(fetch_draws_page(DRAWS_ON_INV_URL))
-    except Exception as e:  # noqa: BLE001
-        say(DRAWS_PRINT_ON_INV_FAIL_TPL.format(name=type(e).__name__, detail=e))
-        draws = old_on_draws(old)
+    except Exception as e:  # noqa: BLE001 — invitations 页抓取失败:同上
+        keep_old_draws(DRAWS_PRINT_ON_INV_FAIL_TPL.format(name=type(e).__name__, detail=e))
     if not draws:
-        draws = old_on_draws(old)
+        keep_old_draws(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_ON))
     scored = 0
     for d in draws:
         if d.get(K_SCORE) is not None:
@@ -2549,8 +2557,8 @@ def build_on_draws(old: dict) -> dict:
     scale = None
     if scored:
         scale = DRAWS_ON_SCALE
-    return {K_LABEL: DRAWS_ON_LABEL, K_SCALE: scale,
-            K_URL: DRAWS_ON_INV_URL, K_DRAWS: draws, K_NOTICE: notice}
+    put_prov_draws(PutDrawsIn(prov=PROV_ON, block={K_LABEL: DRAWS_ON_LABEL, K_SCALE: scale,
+                                                   K_URL: DRAWS_ON_INV_URL, K_DRAWS: draws, K_NOTICE: notice}))
 
 
 def merge_draws(x: MergeDrawsIn) -> list:
@@ -2602,52 +2610,50 @@ def draw_slot_of(d: dict) -> tuple:
     return (d.get(K_DATE), d.get(K_STREAM))
 
 
-def old_provinces() -> dict:
-    """上一轮 draws.json 的 provinces 块(读不出当空,不拿半份数据盖好数据)。"""
-    if not OUT_DRAWS.exists():
+def old_provinces(path: Path) -> dict:
+    """上一轮本省 draws-<省>.json 的 provinces 块(读不出当空,不拿半份数据盖好数据)。
+    2026-09-26 晚按省拆:原读九省一份的 draws.json,改读本省那份(路径由 put_prov_draws 给)。"""
+    if not path.exists():
         return {}
     try:
-        return json.loads(OUT_DRAWS.read_text(encoding=ENC_UTF8)).get(K_PROVINCES, {})
+        return json.loads(path.read_text(encoding=ENC_UTF8)).get(K_PROVINCES, {})
     except Exception as e:  # noqa: BLE001
-        err(OUT_DRAWS, e)
+        err(path, e)
         return {}
 
 
-def build_draws() -> None:
-    """省抽选事实入口:五省实抓 + ON 通告 + PE 读缓存,逐省并回历史后整表落盘。
+def build_ab_draws() -> None:
+    """AB 抽选单元(pnp_draws_ab)入口:AAIP 抽选页实抓。"""
+    put_prov_draws(PutDrawsIn(prov=PROV_AB, block=province_draws(ProvinceDrawsIn(
+        prov=PROV_AB, url=DRAWS_AB_URL, parse=parse_ab_draws, scale=DRAWS_AB_SCALE, label=DRAWS_AB_LABEL))))
+
+
+def build_nl_draws() -> None:
+    """NL 抽选单元(pnp_draws_nl)入口:NLPNP 抽选页实抓(官方不发分数线,scale 留 None)。"""
+    put_prov_draws(PutDrawsIn(prov=PROV_NL, block=province_draws(ProvinceDrawsIn(
+        prov=PROV_NL, url=DRAWS_NL_URL, parse=parse_nl_draws, scale=None, label=DRAWS_NL_LABEL))))
+
+
+def put_prov_draws(x: PutDrawsIn) -> None:
+    """一省抽选单元的落盘(2026-09-26 晚,Frank 选「按省拆」:一省一份文件、一省一个调度单元、一省一个 ping)。
+    走到这里的块都是本省全部官方页抓到、解析出来的(任一页失败在建块处就 keep_old_draws 退出了,文件不动);
+    本轮行并回本省历史(merged_draws_of 分派:NS / QC 覆盖式,其余四格去重)→ 写 draws-<省>.json,外形照旧
+    {source, fetched, provinces: {省: 块}}(只装一省),消费端(mart / ircc / 本域灰注)按目录 glob 拼回九省。
+    九省一份时代的入口 build_draws 原文:「省抽选事实入口:五省实抓 + ON 通告 + PE 读缓存,逐省并回历史后整表落盘。
     (PE 2026-09-10 接入,是唯一不发请求的一省 —— 官网在 Radware 墙后,原文只能从 crawl 层取。)
     2026-09-26 再接两份只读缓存的:NS 月度选取人数、QC PSTQ 邀请记录(QC 不属 PNP,只收邀请事实);
-    这两省官方会回头改数,并回历史走覆盖式(merged_draws_of 分派)。"""
-    say(PRINT_OUT_TPL.format(path=OUT_DRAWS))
-    old = old_provinces()
-    provinces = {
-        PROV_BC: build_bc_draws(old),
-        PROV_AB: province_draws(ProvinceDrawsIn(prov=PROV_AB, url=DRAWS_AB_URL, parse=parse_ab_draws,
-                                                scale=DRAWS_AB_SCALE, label=DRAWS_AB_LABEL, old=old)),
-        PROV_MB: build_mb_draws(old),
-        PROV_ON: build_on_draws(old),
-        PROV_NL: province_draws(ProvinceDrawsIn(prov=PROV_NL, url=DRAWS_NL_URL, parse=parse_nl_draws,
-                                                scale=None, label=DRAWS_NL_LABEL, old=old)),
-        PROV_NB: build_nb_draws(old),
-        PROV_PE: build_pe_draws(old),
-        PROV_NS: build_ns_draws(old),
-        PROV_QC: build_qc_draws(old),
-    }
-    for p, v in provinces.items():
-        if isinstance(v, dict) and v.get(K_DRAWS):
-            v[K_DRAWS] = merged_draws_of(MergeDrawsIn(prov=p, new=v[K_DRAWS], old=old))
-    kept: dict = {}
-    total = 0
-    for p, v in provinces.items():
-        if v:
-            kept[p] = v
-            total += len(v.get(K_DRAWS, []))
-    paths.write_json(paths.WriteJsonIn(path=OUT_DRAWS, payload={
+    这两省官方会回头改数,并回历史走覆盖式(merged_draws_of 分派)。」
+    当年的问题:九省写一份文件,单省失败只打一行「保留旧数据」、整步照样算成功,文件日期照样前移,告警一直是绿的。"""
+    path = OUT_PNP_DIR / OUT_DRAWS_FILE_TPL.format(prov=x.prov.lower())
+    say(PRINT_OUT_TPL.format(path=path))
+    block = x.block
+    block[K_DRAWS] = merged_draws_of(MergeDrawsIn(prov=x.prov, new=block[K_DRAWS], old=old_provinces(path)))
+    paths.write_json(paths.WriteJsonIn(path=path, payload={
         K_SOURCE: DRAWS_SOURCE,
         K_FETCHED: today_iso(),
-        K_PROVINCES: kept,
+        K_PROVINCES: {x.prov: block},
     }, indent=INDENT_2))
-    say(DRAWS_PRINT_DONE_TPL.format(path=OUT_DRAWS, n=total, provs=len(kept)))
+    say(DRAWS_PRINT_DONE_TPL.format(path=path, n=len(block[K_DRAWS])))
 
 
 # =========================================================================
@@ -6567,14 +6573,16 @@ def build_sk_joboffer() -> None:
 
 
 def distinct_streams() -> list:
-    """draws.json 全部省块的 distinct stream 名(dict 保序:先出现先翻,比 set 更好读日志)。"""
-    data = json.loads(IN_DRAWS_FOR_ZH.read_text(encoding=ENC_UTF8))
+    """draws.json 全部省块的 distinct stream 名(dict 保序:先出现先翻,比 set 更好读日志)。
+    2026-09-26 晚按省拆:改扫 raw/pnp/draws-*.json 各省一份(文件名序),每份的 provinces 块只装一省。"""
     seen: dict = {}
-    for _prov, v in data.get(K_PROVINCES, {}).items():
-        for dr in v.get(K_DRAWS, []):
-            s = (dr.get(K_STREAM) or "").strip()
-            if s:
-                seen.setdefault(s, None)
+    for f in sorted(IN_DRAWS_FOR_ZH_DIR.glob(DRAWS_FILE_GLOB)):
+        data = json.loads(f.read_text(encoding=ENC_UTF8))
+        for _prov, v in data.get(K_PROVINCES, {}).items():
+            for dr in v.get(K_DRAWS, []):
+                s = (dr.get(K_STREAM) or "").strip()
+                if s:
+                    seen.setdefault(s, None)
     return list(seen.keys())
 
 
@@ -6604,8 +6612,10 @@ def save_stream_zh(cache: dict) -> None:
 
 
 def translate_draw_streams() -> None:
-    """抽选流名中文灰注入口:只翻缓存里没有的,校验不过的留到下轮。"""
-    say(ZH_PRINT_IN_OUT_TPL.format(in_path=IN_DRAWS_FOR_ZH, out_path=OUT_DRAW_STREAM_ZH))
+    """抽选流名中文灰注入口:只翻缓存里没有的,校验不过的留到下轮。
+    2026-09-26 晚拆成单元 pnp_drawzh(一单元一 ping):本轮有流名没翻成(盒子不在线 / 校验不过)→ 已翻的照存,
+    本单元退出码 1 不发 ping —— 此前翻不成只打一行、整步算成功,盒子掉线几天也没人知道。"""
+    say(ZH_PRINT_IN_OUT_TPL.format(in_path=IN_DRAWS_FOR_ZH_DIR / DRAWS_FILE_GLOB, out_path=OUT_DRAW_STREAM_ZH))
     streams = distinct_streams()
     cache: dict = {}
     if OUT_DRAW_STREAM_ZH.exists():
@@ -6631,6 +6641,9 @@ def translate_draw_streams() -> None:
                 say(ZH_PRINT_PROGRESS_TPL.format(done=i + 1, total=len(todo), hit=done))
     save_stream_zh(cache)
     say(ZH_PRINT_DONE_TPL.format(path=OUT_DRAW_STREAM_ZH, done=done, todo=len(todo), cached=len(cache)))
+    if done < len(todo):
+        say(ZH_PRINT_LEFT_TPL.format(left=len(todo) - done))
+        sys.exit(1)
 
 
 # =========================================================================

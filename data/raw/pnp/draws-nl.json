@@ -1,0 +1,216 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "NL": {
+      "label": "NLPNP + AIP",
+      "scale": null,
+      "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
+      "draws": [
+        {
+          "date": "2026-09-25",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 41",
+          "score": null,
+          "invitations": 41
+        },
+        {
+          "date": "2026-09-18",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 61, AIP – 01",
+          "score": null,
+          "invitations": 62
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 36",
+          "score": null,
+          "invitations": 36
+        },
+        {
+          "date": "2026-09-04",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 97",
+          "score": null,
+          "invitations": 97
+        },
+        {
+          "date": "2026-08-26",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 94, AIP – 46",
+          "score": null,
+          "invitations": 140
+        },
+        {
+          "date": "2026-08-18",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 122",
+          "score": null,
+          "invitations": 122
+        },
+        {
+          "date": "2026-08-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 186, AIP – 22",
+          "score": null,
+          "invitations": 208
+        },
+        {
+          "date": "2026-07-28",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 400, AIP – 45",
+          "score": null,
+          "invitations": 445
+        },
+        {
+          "date": "2026-07-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 17, AIP – 40",
+          "score": null,
+          "invitations": 57
+        },
+        {
+          "date": "2026-06-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 89, AIP – 19",
+          "score": null,
+          "invitations": 108
+        },
+        {
+          "date": "2026-05-28",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 84, AIP – 19",
+          "score": null,
+          "invitations": 103
+        },
+        {
+          "date": "2026-05-11",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 168, AIP – 18",
+          "score": null,
+          "invitations": 186
+        },
+        {
+          "date": "2026-05-01",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 157, AIP – 33",
+          "score": null,
+          "invitations": 190
+        },
+        {
+          "date": "2026-04-13",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 177, AIP – 33",
+          "score": null,
+          "invitations": 210
+        },
+        {
+          "date": "2026-03-30",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 209, AIP – 36",
+          "score": null,
+          "invitations": 245
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 362, AIP – 83",
+          "score": null,
+          "invitations": 445
+        },
+        {
+          "date": "2025-11-12",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 220, AIP – 110",
+          "score": null,
+          "invitations": 330
+        },
+        {
+          "date": "2025-10-22",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 55, AIP – 45",
+          "score": null,
+          "invitations": 100
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 73, AIP – 52",
+          "score": null,
+          "invitations": 125
+        },
+        {
+          "date": "2025-09-26",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 107, AIP – 110",
+          "score": null,
+          "invitations": 217
+        },
+        {
+          "date": "2025-09-12",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 218, AIP – 135",
+          "score": null,
+          "invitations": 353
+        },
+        {
+          "date": "2025-08-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 125, AIP – 77",
+          "score": null,
+          "invitations": 202
+        },
+        {
+          "date": "2025-08-13",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 180, AIP – 51",
+          "score": null,
+          "invitations": 231
+        },
+        {
+          "date": "2025-07-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 100, AIP – 50",
+          "score": null,
+          "invitations": 150
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 300, AIP – 59",
+          "score": null,
+          "invitations": 359
+        },
+        {
+          "date": "2025-06-24",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 257, AIP – 63",
+          "score": null,
+          "invitations": 320
+        },
+        {
+          "date": "2025-05-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 351, AIP – 54",
+          "score": null,
+          "invitations": 405
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 281, AIP – 47",
+          "score": null,
+          "invitations": 328
+        },
+        {
+          "date": "2025-04-03",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 206, AIP – 50",
+          "score": null,
+          "invitations": 256
+        }
+      ]
+    }
+  }
+}

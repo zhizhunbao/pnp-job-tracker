@@ -206,7 +206,116 @@ ENV_PING_TPL = "HEALTHCHECK_PING_{role}"
 (env 缺省不 ping)。批2 拆多单元后 ping 权收紧:每角色只授一只(META["ping"]=True),
 防「兄弟单元的 ping 遮住本单元失败」—— pnp 角色授给 pnp 域(链尾 freshness 绿 =
 数据真新鲜,B3-1 语义保真;2026-08-31 批D ops 拆散后 ping 权随 freshness 迁 pnp)。
-2026-09-15 方案 3(Frank「3,那 10 个源也查一下」):角色心跳只凭本轮成败,不再过保鲜闸;保鲜另走 ENV_PING_FRESH。"""
+2026-09-15 方案 3(Frank「3,那 10 个源也查一下」):角色心跳只凭本轮成败,不再过保鲜闸;保鲜另走 ENV_PING_FRESH。
+2026-09-26 晚一单元一容器(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):每个单元自己就是一个角色,
+ping 权人人有;本键没配的单元改由 ENV_HC_API_KEY 按角色名自动建检查项(见 functions.ping_url_of),配了的照旧用它。"""
+
+ENV_HC_API_KEY = "HEALTHCHECKS_API_KEY"
+"""healthchecks 项目 API 密钥(读写档)的环境键(2026-09-26 晚立;根 .env 由 Frank 亲手放,「别发在聊天里」)。
+有它时,没配 ENV_PING_TPL 的单元开跑即按角色名建 / 取自己的检查项 —— 新开一个单元不用再手工建检查项、抄地址进 .env。"""
+
+ENV_HC_API_URL = "HEALTHCHECKS_API_URL"
+"""healthchecks API 根的环境键(缺省 = 托管版 HC_API_DEFAULT;自建版填它自己的根)。"""
+
+HC_API_DEFAULT = "https://healthchecks.io"
+"""托管版 API 根。"""
+
+HC_CHECKS_PATH = "/api/v3/checks/"
+"""建 / 取检查项的端点(POST;带 unique=["name"] 时同名已存在就更新并返回它,不重建)。"""
+
+HC_HDR_KEY = "X-Api-Key"
+"""API 密钥的请求头名(官方文档原名)。"""
+
+HC_API_TIMEOUT_S = 20
+"""API 请求放弃线。"""
+
+HC_OK_CODES = (200, 201)
+"""建 / 取检查项成功的状态码(201 = 新建,200 = 同名已存在、已更新)。"""
+
+HC_K_NAME = "name"
+"""检查项契约键:名字(= 角色名,唯一键)。"""
+
+HC_K_TAGS = "tags"
+"""检查项契约键:标签(空格分隔)。"""
+
+HC_K_DESC = "desc"
+"""检查项契约键:说明。"""
+
+HC_K_TIMEOUT = "timeout"
+"""检查项契约键:超时秒。"""
+
+HC_K_GRACE = "grace"
+"""检查项契约键:宽限秒。"""
+
+HC_K_CHANNELS = "channels"
+"""检查项契约键:通知渠道。"""
+
+HC_K_UNIQUE = "unique"
+"""检查项契约键:按哪些字段判「同一个检查项」。"""
+
+HC_K_PING_URL = "ping_url"
+"""API 回包里 ping 地址的键。"""
+
+HC_CHANNELS_ALL = "*"
+"""通知渠道取值:项目里已有的全部渠道(Frank 的邮箱)。"""
+
+HC_TAGS_TPL = "etl {dom}"
+"""检查项标签(控制台按域筛)。"""
+
+HC_DESC_TPL = "etl/{dom} 的调度单元 {role}(容器 SOURCE={role}):成功一轮 ping 一次,一轮间隔 {interval} 秒;连续失败半小时起发 /fail,正文是出错的行"
+"""检查项说明(控制台与邮件里看得到)。"""
+
+HC_TIMEOUT_MIN_S = 3600
+"""超时下限一小时:60 秒 / 5 分钟一轮的队列工人也按一小时算(一小时内有一轮成功就算活着)。"""
+
+HC_GRACE_MIN_S = 14400
+"""宽限下限四小时(2026-09-26 晚按容器日志实测定:最长的小时级单元一轮跑 3 小时 —— sites 177 分钟,
+两次成功之间最长 4 小时;宽限小于它,好好的单元也会报警)。"""
+
+HC_GRACE_FACTOR = 2
+"""宽限 = 两倍间隔(再夹在上下限之间):六小时一轮的单元一轮能跑 7.6 小时(company 实测 458 分钟),两倍才容得下。"""
+
+HC_GRACE_MAX_S = 86400
+"""宽限上限一天:日更单元超时一天 + 宽限一天 = 两天没成功就报(对齐保鲜标准「最次日更」+ 一天余量)。"""
+
+HC_REG_OK_TPL = "✓ healthchecks 检查项 {role} 就位(API 建 / 取)"
+"""按角色名建 / 取检查项成功(地址不打进日志:带检查项 UUID)。"""
+
+HC_REG_FAIL_TPL = "✗ healthchecks 检查项 {role} 建 / 取失败 {status}: {body} —— 本轮收尾再试"
+"""API 回了非成功码(免费档满 20 个检查项时也是这行)。"""
+
+HC_REG_ERR_TPL = "✗ healthchecks 检查项 {role} 建 / 取失败({name})—— 本轮收尾再试"
+"""API 请求本身出错(网络等)。"""
+
+HC_REG_BODY_CLIP = 200
+"""失败回包进日志的截断长度。"""
+
+HC_FAIL_SUFFIX = "/fail"
+"""ping 地址后缀:发它 = 检查项当场转红(官方语义「the job has failed」)。"""
+
+HC_FAIL_AFTER_S = 1800
+"""连续失败多久才发 /fail(2026-09-26 晚):偶发的一轮超时不报,连续失败满半小时才报 ——
+小时级单元等于第二轮还失败,60 秒一轮的队列工人等于连续失败半小时。成功一轮清零,检查项随下一次成功 ping 转绿。
+为什么要发 /fail:新建的检查项在收到第一次 ping 之前一直是灰的、永不报警 —— 一上来就坏着的单元(qs、ee 门槛表)
+等不到成功 ping,不发 /fail 就永远没人知道。"""
+
+HC_FAIL_BODY_TPL = "单元 {role} 连续失败 {mins} 分钟(本轮的出错行,最多 {n} 行):\n{lines}"
+"""/fail 正文(healthchecks 告警邮件里原样显示 —— 哪个单元、多久、为什么)。"""
+
+HC_FAIL_NO_LINES = "(本轮没有 ✗ 行,见容器日志 docker compose logs {role})"
+"""/fail 正文里没有 ✗ 行时的占位(例如灌库那步失败只在调度层留痕)。"""
+
+HC_FAIL_LINES = 20
+"""/fail 正文最多带几行出错行(取本轮最后的那几行)。"""
+
+HC_FAIL_BODY_MAX = 3000
+"""/fail 正文截断长度(字符):自建版 PING_BODY_LIMIT 缺省 10000 字节,中文一字三字节,3000 字才放得下;邮件里十几行足够定位。"""
+
+HC_FAIL_SENT_TPL = "✗ healthchecks /fail 已发(连续失败 {mins} 分钟)"
+"""/fail 发出去的留痕。"""
+
+SEC_PER_MIN = 60
+"""秒 → 分(连续失败时长报分钟)。"""
 
 PING_TIMEOUT_S = 10
 """心跳请求放弃线。"""

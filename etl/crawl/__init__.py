@@ -10,6 +10,15 @@ get_cached_page(读缓存)与 convert_md(HTML→md 现转);与 fetch 的分工 �
 
 META = 域即役的调度声明(2026-08-29 批2):role=挂哪个角色容器(SOURCE 环境变量),
 interval=本域一轮的间隔秒;入口固定 etl/crawl/main.py。
+2026-09-26 晚改判(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」→ 选「拆 + 每个单元配 ping」「一单元一容器」,
+pnp 同批同形):单役 META 拆成 METAS 两役(一域多役,load 首例的形),一役 = 一个调度单元 = 一个容器(SOURCE = 役名)
+= 一个 healthchecks 检查项(HEALTHCHECK_PING_<役名大写>);入口同门不同 --only(= 役名,main.UNITS 整名命中),
+单元内一步失败即中止。拆的由头:全种子探索与 urls 哨兵互不依赖,合在一个 ping 下分不清是探索坏了还是官方 URL 死了。
+原单役 META 各键逐条落进每一役:
+  role="crawl" → 各役自己的名字(第一役仍叫 crawl);interval=3600 / seed=False / ping=True / method="httpx" 两役照抄。
+原单役 META 的键上注释(逐字留档):
+  interval 3600  1h(2026-08-03 Frank 拍板)
+  ping True      本角色的 healthchecks 心跳由本域发
 """
 import os
 
@@ -32,10 +41,13 @@ Xvfb 虚拟屏上,没有人点得到验证框,原先照本机口径干等 120 �
 开着时验证页只等 CHALLENGE_UNATTENDED_MS(留给不用点、自己会放行的那种),过不去就交还调用方(fetch_browser 的
 challenged),由调用方记进待放行清单、Frank 在本机放行台统一过;本机不设,照旧等人点。"""
 
-META = {
-    "role": "crawl",
-    "method": "httpx",
-    "interval": 3600,          # 1h(2026-08-03 Frank 拍板)
-    "seed": False,
-    "ping": True,   # 本角色的 healthchecks 心跳由本域发
-}
+METAS = [
+    {"name": "crawl", "role": "crawl", "only": "crawl", "method": "httpx", "interval": 3600, "seed": False,
+     "ping": True},
+    {"name": "crawl_urls", "role": "crawl_urls", "only": "crawl_urls", "method": "httpx", "interval": 3600,
+     "seed": False, "ping": True},
+]
+"""本域两役(2026-09-26 晚拆,见文件头):
+  crawl       discover:全种子探索 + 站点地图 diff(政策雷达),产 data/crawl/(步骤见 main.UNITS)
+  crawl_urls  urls:官方 URL 活性哨兵(各域 constants 里的官方 URL 逐条实测,404 / 410 / 跨站跳 = 硬红)
+间隔一律 3600(照原单役 META)。"""

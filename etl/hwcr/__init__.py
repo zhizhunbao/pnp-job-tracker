@@ -17,11 +17,15 @@ hwcr 域:海外超人便民信息系统(m.hwcr.vip)渥太华站房屋帖 → Lis
 
 META:一域一容器(SOURCE=hwcr),小时更(2026-08-31 Frank「都改成小时更新也不费劲」);
 每轮只翻到 RECENT_DAYS 窗口为止(约 2-3 页 × 200 条),不占 healthchecks 心跳。
+2026-09-26 晚改判(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」→「拆 + 每个单元配 ping」):配 ping
+(HEALTHCHECK_PING_HWCR);上面「不占 healthchecks 心跳」一句就此作废,原文保留。
 """
 META = {
     "role": "hwcr",
     "method": "httpx",
     "interval": 3600,          # 1h(租房帖时效短,新帖当天就被抢;成本 = 每轮 3 个 GET)
     "seed": False,             # 私用域,不灌库
-    "ping": False,             # 不占 healthchecks 心跳(不接生产监控)
+    "ping": True,              # 不占 healthchecks 心跳(不接生产监控)
+                               # —— 2026-09-26 晚改 True(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」
+                               # →「拆 + 每个单元配 ping」)
 }

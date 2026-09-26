@@ -69,6 +69,17 @@ class Unit:
     consumed_at: float
     """已消费的上游最新 mtime(消费者判「有没有新轮次」用)。"""
 
+    dom: str
+    """所属域(2026-09-26 晚加:按单元自动建 healthchecks 检查项时打标签用)。"""
+
+    ping_url: str
+    """本单元的心跳地址(2026-09-26 晚加):HEALTHCHECK_PING_<角色> 配了就是它;没配而有 HEALTHCHECKS_API_KEY =
+    开跑时按角色名向 healthchecks 建 / 取检查项拿到的地址;空 = 不发(没配也没密钥,或 API 没取到 —— 每轮收尾再试)。"""
+
+    failing_since: float
+    """本单元从哪一刻起连续失败(epoch 秒;0 = 上一轮是成功的)。连续失败满 HC_FAIL_AFTER_S 起每轮给检查项
+    发一次 /fail(2026-09-26 晚加,见 functions.fail_health)。"""
+
 
 # =========================================================================
 # 3. 单步执行(子进程 + loguru 前缀截获)
@@ -100,6 +111,17 @@ class RunStepIn:
     """本单元的日志面(前缀 = 角色·单元)。"""
 
 
+@dataclass
+class RunStepOut:
+    """run_step() 出参(2026-09-26 晚:原只回成败,多带本步的 ✗ 行 —— 失败时进 /fail 的正文)。"""
+
+    ok: bool
+    """子进程退出码为 0。"""
+
+    errors: list[str]
+    """本步输出里的告警行(行首 ✗ 或 !,即升 ERROR 级的那些),原样按序。"""
+
+
 # =========================================================================
 # 4. 轮次收尾(seed / alerts / ping)
 # =========================================================================
@@ -126,3 +148,47 @@ class PingIn:
 
     ok_msg: str
     """成功时打的日志行。"""
+
+
+@dataclass
+class FailHealthIn:
+    """fail_health() 入参:一轮失败的收尾(2026-09-26 晚)。"""
+
+    unit: Unit
+    """失败的单元(连续失败起点记在它身上)。"""
+
+    errors: list[str]
+    """本轮收集到的 ✗ 行(进 /fail 正文;没有就写「见容器日志」)。"""
+
+
+@dataclass
+class FailPingIn:
+    """send_fail() 入参:给检查项发 /fail(正文会出现在告警邮件里)。"""
+
+    url: str
+    """/fail 地址(ping 地址 + HC_FAIL_SUFFIX)。"""
+
+    body: str
+    """正文:哪个单元、连续失败多久、本轮的 ✗ 行。"""
+
+
+@dataclass
+class RegisterIn:
+    """registered_ping_url() 入参:按角色名向 healthchecks API 建 / 取检查项(2026-09-26 晚)。"""
+
+    unit: Unit
+    """要建检查项的单元(节奏定超时与宽限,域名打标签)。"""
+
+    key: str
+    """healthchecks 项目的 API 密钥(读写档;根 .env 的 HEALTHCHECKS_API_KEY,Frank 亲手放)。"""
+
+
+@dataclass
+class HcTiming:
+    """hc_timing_of() 出参:检查项的超时与宽限(秒)。"""
+
+    timeout: int
+    """两次成功 ping 之间应有的间隔(= 本单元一轮的间隔,最少一小时)。"""
+
+    grace: int
+    """超时后再等多久才报警(容下一轮跑得久 + 一次失败重试,见 constants.HC_GRACE_*)。"""

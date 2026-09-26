@@ -25,6 +25,7 @@ from gate.functions import check_shape, prune_baseline, report_ruff, run_lock_te
 SCHEDULED = []
 """默认链(调度真相):空 —— 工具域,不进定时链,全在 TOOLS。
 2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+同日晚改判回一步失败即中止(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):门叶改回 fail-fast,本门一字不改;互不相干的步拆成各自的调度单元(各自容器、各自 ping)。
 """
 
 TOOLS = {

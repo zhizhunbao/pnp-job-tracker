@@ -3,6 +3,8 @@ door.scheme — 门叶的形状件 + 门循环自测(unittest 要求以 TestCase
 先例 gate.scheme / indexing.scheme;跑法 `python etl/door/main.py --only test`)。
 被测的 door.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
 2026-09-26 ChainKeepGoingTest 随 run_steps 自 pnp.scheme 整类搬来(用例一字未改,被测对象从 pnp 门换成本叶)。
+同日晚门改判回 fail-fast(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):类改名 ChainFailFastTest,
+三例断言随之改成「坏步之后一步不跑」。
 
 @author Frank
 @time 2026-09-26 16:09:33
@@ -14,13 +16,16 @@ import unittest
 # =========================================================================
 
 # =========================================================================
-# 2. 自测(门的「一步失败其余照跑」)
+# 2. 自测(门的「一步失败即中止」;2026-09-26 午后曾是「一步失败其余照跑」)
 # =========================================================================
 
 
-class ChainKeepGoingTest(unittest.TestCase):
-    """门循环 run_steps 自测(2026-09-26 Frank「一步失败不再拖停整轮」同批):中间一步抛异常、一步走自校硬闸
-    sys.exit(1),后面的步照跑,返回码 1;全过返回 0;sys.exit(0) 不算失败;失败的步不管排在哪都不影响别的步。
+class ChainFailFastTest(unittest.TestCase):
+    """门循环 run_steps 自测(2026-09-26 晚 Frank「其中一个失败,其余照跑?那我怎么知道这个失败」同批):
+    一步抛异常或走自校硬闸 sys.exit(1),后面的步一个不跑,返回码 1;全过返回 0;sys.exit(0) 不算失败、接着跑。
+    午后版(类名 ChainKeepGoingTest)原文:「门循环 run_steps 自测(2026-09-26 Frank「一步失败不再拖停整轮」同批):
+    中间一步抛异常、一步走自校硬闸 sys.exit(1),后面的步照跑,返回码 1;全过返回 0;sys.exit(0) 不算失败;
+    失败的步不管排在哪都不影响别的步。」
     假步是本类的方法(记下自己跑过),不联网不写仓;门的进度行照打。"""
 
     def setUp(self) -> None:
@@ -46,13 +51,17 @@ class ChainKeepGoingTest(unittest.TestCase):
         self.ran.append("exit0")
         raise SystemExit(0)
 
-    def test_failure_keeps_going(self) -> None:
-        """金标:异常步与硬闸步都在中间,后面的步照跑、一个不少,返回码 1。"""
+    def test_failure_stops_round(self) -> None:
+        """金标:异常步排第二,后面的硬闸步与正常步都不跑,返回码 1;硬闸步排第二同理。
+        (午后版 test_failure_keeps_going 断言的是四步全跑。)"""
         from door import functions as door
         code = door.run_steps([("a", self.step_ok), ("b", self.step_raise), ("c", self.step_exit),
                                ("d", self.step_ok)])
         self.assertEqual(code, 1)
-        self.assertEqual(self.ran, ["ok", "raise", "exit", "ok"])
+        self.assertEqual(self.ran, ["ok", "raise"])
+        self.ran = []
+        self.assertEqual(door.run_steps([("a", self.step_ok), ("b", self.step_exit), ("c", self.step_ok)]), 1)
+        self.assertEqual(self.ran, ["ok", "exit"])
 
     def test_all_pass(self) -> None:
         """全过 → 返回 0;sys.exit(0) 的步算过。"""
@@ -62,7 +71,8 @@ class ChainKeepGoingTest(unittest.TestCase):
         self.assertEqual(door.run_steps([]), 0)
 
     def test_failure_anywhere(self) -> None:
-        """性质:四步里坏步放在任一位置(异常 / 硬闸两种坏法),每一步都跑到,返回码恒为 1。"""
+        """性质:四步里坏步放在任一位置(异常 / 硬闸两种坏法),跑到坏步为止(pos + 1 步),返回码恒为 1。
+        (午后版断言的是每一步都跑到。)"""
         from door import functions as door
         for bad in (self.step_raise, self.step_exit):
             for pos in range(4):
@@ -75,4 +85,4 @@ class ChainKeepGoingTest(unittest.TestCase):
                             fn = bad
                         steps.append((str(i), fn))
                     self.assertEqual(door.run_steps(steps), 1)
-                    self.assertEqual(len(self.ran), 4)
+                    self.assertEqual(len(self.ran), pos + 1)

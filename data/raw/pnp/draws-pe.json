@@ -1,0 +1,76 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "PE": {
+      "label": "PEI PNP Expressions of Interest",
+      "scale": null,
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/expression-of-interest-draws",
+      "draws": [
+        {
+          "date": "2026-09-17",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 195
+        },
+        {
+          "date": "2026-08-20",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 181
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 195
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 182
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 113
+        },
+        {
+          "date": "2026-04-16",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 127
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 101
+        },
+        {
+          "date": "2026-02-19",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 109
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Labour & Express Entry",
+          "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
+          "score": null,
+          "invitations": 26
+        }
+      ]
+    }
+  }
+}

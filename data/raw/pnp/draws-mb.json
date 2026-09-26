@@ -1,0 +1,677 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "MB": {
+      "label": "MPNP Expression of Interest",
+      "scale": "MPNP EOI",
+      "url": "https://immigratemanitoba.com/draws/",
+      "draws": [
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #280: Occupation-specific selections",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
+          "note": "Draw #280: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in Broad Occupational Category 2 – Natural an",
+          "score": 760,
+          "invitations": 417
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #280: Francophone selection",
+          "score": null,
+          "invitations": 16
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #280",
+          "score": null,
+          "invitations": 40
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #279: Occupation-specific selections",
+          "score": null,
+          "invitations": 233
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #279: Francophone selection",
+          "score": null,
+          "invitations": 11
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #279: Completed post-secondary study in Manitoba",
+          "score": 825,
+          "invitations": 508
+        },
+        {
+          "date": "2026-09-10",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #279",
+          "score": null,
+          "invitations": 41
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #278: Occupation-specific selections",
+          "score": null,
+          "invitations": 62
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
+          "note": "Draw #278: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in major group 72 – Technical trades and tran",
+          "score": 731,
+          "invitations": 600
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #278: Francophone selection",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #278",
+          "score": null,
+          "invitations": 58
+        },
+        {
+          "date": "2026-08-13",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #277",
+          "score": null,
+          "invitations": 53
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections",
+          "note": "Draw #276: Occupation-specific selections",
+          "score": null,
+          "invitations": 74
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
+          "note": "Draw #276: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in broad occupational category 9 – Occupation",
+          "score": 632,
+          "invitations": 605
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #276: Francophone selection",
+          "score": null,
+          "invitations": 17
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #276",
+          "score": null,
+          "invitations": 70
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "International Education Stream (IES) – Graduate Internship Pathway (GIP)",
+          "note": "Draw #275",
+          "score": null,
+          "invitations": 78
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #275: Occupation-specific selection",
+          "score": null,
+          "invitations": 24
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
+          "note": "Draw #275: Francophone selection",
+          "score": null,
+          "invitations": 84
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #275: Completed post-secondary study in Manitoba",
+          "score": 825,
+          "invitations": 1874
+        },
+        {
+          "date": "2026-07-16",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #275",
+          "score": null,
+          "invitations": 86
+        },
+        {
+          "date": "2026-07-02",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #274",
+          "score": null,
+          "invitations": 77
+        },
+        {
+          "date": "2026-06-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #273",
+          "score": null,
+          "invitations": 124
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #272",
+          "score": null,
+          "invitations": null
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #271",
+          "score": null,
+          "invitations": 96
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #270: Occupation-specific selection",
+          "score": null,
+          "invitations": 431
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #270",
+          "score": null,
+          "invitations": 475
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #269: Occupation-specific selection",
+          "score": null,
+          "invitations": 192
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #269",
+          "score": null,
+          "invitations": 116
+        },
+        {
+          "date": "2026-04-09",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #268",
+          "score": null,
+          "invitations": 32
+        },
+        {
+          "date": "2026-03-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #267",
+          "score": null,
+          "invitations": 14
+        },
+        {
+          "date": "2026-03-12",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #266",
+          "score": null,
+          "invitations": 46
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #265",
+          "score": null,
+          "invitations": 72
+        },
+        {
+          "date": "2026-02-12",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #264",
+          "score": null,
+          "invitations": 29
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #263",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #262",
+          "score": null,
+          "invitations": 55
+        },
+        {
+          "date": "2025-12-31",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #261: Occupation-specific selection",
+          "score": null,
+          "invitations": 353
+        },
+        {
+          "date": "2025-12-31",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #261",
+          "score": null,
+          "invitations": 68
+        },
+        {
+          "date": "2025-12-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #260",
+          "score": null,
+          "invitations": 63
+        },
+        {
+          "date": "2025-12-05",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #259",
+          "score": null,
+          "invitations": 184
+        },
+        {
+          "date": "2025-11-20",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #258",
+          "score": null,
+          "invitations": 35
+        },
+        {
+          "date": "2025-11-06",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #257",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2025-10-23",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #256",
+          "score": null,
+          "invitations": 29
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #255: Occupation-specific selection",
+          "score": null,
+          "invitations": 583
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #255",
+          "score": null,
+          "invitations": 279
+        },
+        {
+          "date": "2025-09-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #254",
+          "score": null,
+          "invitations": 911
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "International Education Stream",
+          "note": "Draw #253",
+          "score": null,
+          "invitations": 1866
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "Citizens of Ukraine Selection",
+          "note": "Draw #253",
+          "score": null,
+          "invitations": 1466
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #253",
+          "score": 812,
+          "invitations": 15
+        },
+        {
+          "date": "2025-08-21",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #252",
+          "score": 612,
+          "invitations": 77
+        },
+        {
+          "date": "2025-08-07",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #251",
+          "score": 724,
+          "invitations": 37
+        },
+        {
+          "date": "2025-07-24",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #250",
+          "score": 611,
+          "invitations": 19
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "Graduate Internship Pathway (GIP)",
+          "note": "Draw #249",
+          "score": null,
+          "invitations": 40
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #249",
+          "score": 673,
+          "invitations": 27
+        },
+        {
+          "date": "2025-06-26",
+          "stream": "Close relative in Manitoba selection",
+          "note": "Draw #248",
+          "score": null,
+          "invitations": 478
+        },
+        {
+          "date": "2025-06-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #248",
+          "score": 712,
+          "invitations": 14
+        },
+        {
+          "date": "2025-06-12",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #247: Expression of Interest",
+          "score": 613,
+          "invitations": 36
+        },
+        {
+          "date": "2025-05-29",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #246: Expression of Interest",
+          "score": 606,
+          "invitations": 30
+        },
+        {
+          "date": "2025-05-15",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #245: Expression of Interest",
+          "score": 626,
+          "invitations": 62
+        },
+        {
+          "date": "2025-05-01",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #244: Expression of Interest",
+          "score": 727,
+          "invitations": 26
+        },
+        {
+          "date": "2025-04-17",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #243: Expression of Interest",
+          "score": 621,
+          "invitations": 27
+        },
+        {
+          "date": "2025-04-03",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #242: Expression of Interest",
+          "score": 721,
+          "invitations": 4
+        },
+        {
+          "date": "2025-03-21",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #241: Completed post-secondary study in Manitoba",
+          "score": 844,
+          "invitations": 101
+        },
+        {
+          "date": "2025-03-21",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #241: Expression of Interest",
+          "score": 705,
+          "invitations": 7
+        },
+        {
+          "date": "2025-03-06",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #240: Expression of Interest",
+          "score": 861,
+          "invitations": 98
+        },
+        {
+          "date": "2025-03-06",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #240: Expression of Interest",
+          "score": 724,
+          "invitations": 13
+        },
+        {
+          "date": "2025-02-20",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #239: Expression of Interest",
+          "score": null,
+          "invitations": 19
+        },
+        {
+          "date": "2025-02-20",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #239: Expression of Interest",
+          "score": 711,
+          "invitations": 22
+        },
+        {
+          "date": "2025-02-06",
+          "stream": "International Education Stream",
+          "note": "Draw #238",
+          "score": null,
+          "invitations": 59
+        },
+        {
+          "date": "2025-02-06",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #238: Expression of Interest",
+          "score": 612,
+          "invitations": 17
+        },
+        {
+          "date": "2025-01-23",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #237: Expression of Interest",
+          "score": 609,
+          "invitations": 128
+        },
+        {
+          "date": "2025-01-09",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #236: Completed post-secondary study in Manitoba",
+          "score": 838,
+          "invitations": 145
+        },
+        {
+          "date": "2025-01-09",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Region-specific selection (Winkler)",
+          "note": "Draw #236: Region-specific selection (Winkler)",
+          "score": 615,
+          "invitations": 52
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #235: Expression of Interest",
+          "score": 857,
+          "invitations": 239
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #235: Expression of Interest",
+          "score": null,
+          "invitations": 18
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
+          "note": "Draw #235: 2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
+          "score": 632,
+          "invitations": 19
+        },
+        {
+          "date": "2024-12-18",
+          "stream": "International Education Stream",
+          "note": "Draw #234",
+          "score": null,
+          "invitations": 297
+        },
+        {
+          "date": "2024-12-18",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #234: Expression of Interest",
+          "score": 630,
+          "invitations": 102
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Close relative in Manitoba selection",
+          "note": "Draw #233: Close relative in Manitoba selection",
+          "score": 840,
+          "invitations": 89
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #233: Expression of Interest",
+          "score": null,
+          "invitations": 165
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #233: Expression of Interest",
+          "score": 617,
+          "invitations": 25
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": 672,
+          "invitations": 41
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": null,
+          "invitations": 188
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": 709,
+          "invitations": 45
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": 872,
+          "invitations": 50
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": null,
+          "invitations": 156
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": 703,
+          "invitations": 47
+        }
+      ]
+    }
+  }
+}

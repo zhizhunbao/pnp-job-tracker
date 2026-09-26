@@ -1,0 +1,335 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "QC": {
+      "label": "PSTQ",
+      "scale": "PSTQ",
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/invitation/2026",
+      "draws": [
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 634, 706, 696",
+          "score": 634,
+          "invitations": 86
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 631, 706, 698, 611",
+          "score": 611,
+          "invitations": 316
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 631, 697, 696, 380",
+          "score": 380,
+          "invitations": 110
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 7
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 639, 710, 694",
+          "score": 639,
+          "invitations": 87
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 638, 706, 695, 616",
+          "score": 616,
+          "invitations": null
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 639, 694, 393",
+          "score": 393,
+          "invitations": 109
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 651, 702, 701",
+          "score": 651,
+          "invitations": 105
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 656, 702, 621",
+          "score": 621,
+          "invitations": 296
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 649, 700, 376",
+          "score": 376,
+          "invitations": 110
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 628, 726, 656",
+          "score": 628,
+          "invitations": 74
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 628, 726, 628",
+          "score": 628,
+          "invitations": 289
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 628, 656, 656, 475",
+          "score": 475,
+          "invitations": 131
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 7
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 677, 666, 692",
+          "score": 666,
+          "invitations": 1094
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 624, 653, 652",
+          "score": 624,
+          "invitations": 756
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 562, 556, 580, 637",
+          "score": 556,
+          "invitations": 677
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 22
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 716, 571, 704",
+          "score": 571,
+          "invitations": 983
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 660, 494, 660",
+          "score": 494,
+          "invitations": 506
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 632, 495, 382, 625, 728",
+          "score": 382,
+          "invitations": 1058
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 8
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 718, 588, 709",
+          "score": 588,
+          "invitations": 893
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 679, 505, 662",
+          "score": 505,
+          "invitations": 509
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 672, 563, 397, 650, 740",
+          "score": 397,
+          "invitations": 1118
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 741, 627, 722",
+          "score": 627,
+          "invitations": 907
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 756, 562, 688",
+          "score": 562,
+          "invitations": 495
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 730, 632, 452, 693, 774",
+          "score": 452,
+          "invitations": 1141
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 6
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 782, 674, 737",
+          "score": 674,
+          "invitations": 1094
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 800, 609, 657",
+          "score": 609,
+          "invitations": 683
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 781, 694, 546, 722, 855",
+          "score": 546,
+          "invitations": 750
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 20
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 781, 644",
+          "score": 644,
+          "invitations": 605
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 573, 612",
+          "score": 573,
+          "invitations": 604
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 717, 535",
+          "score": 535,
+          "invitations": 649
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "",
+          "score": 760,
+          "invitations": 227
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2025-08-14",
+          "stream": "Stream 3: Regulated professions",
+          "note": "",
+          "score": 766,
+          "invitations": 275
+        },
+        {
+          "date": "2025-07-31",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "",
+          "score": 661,
+          "invitations": 273
+        },
+        {
+          "date": "2025-07-17",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "",
+          "score": 768,
+          "invitations": 216
+        },
+        {
+          "date": "2025-07-17",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 22
+        }
+      ]
+    }
+  }
+}

@@ -8,7 +8,10 @@ interval=本域一轮的间隔秒;入口固定 etl/lmia/main.py,步骤清单在 
 META = {
     "role": "lmia",     # 2026-08-31 批N Frank「一域一容器」:原挂 ee 角色,拆出自役
     "method": "httpx",
-    "interval": 2592000,       # 月检查:ESDC LMIA 季度数据,已缓存季度不重下
+    "interval": 86400,         # 月检查:ESDC LMIA 季度数据,已缓存季度不重下
+                               # —— 2026-09-26 晚改日更(Frank「我现在职位是小时更新。其他最次也是日更」)
     "seed": False,
-    "ping": False,  # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
+    "ping": True,   # 报警走 pnp 链尾 freshness 哨兵(盯的是产物文件,跨容器仍有效;批O 重排)
+                    # —— 2026-09-26 晚改 True(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」
+                    # →「拆 + 每个单元配 ping」)
 }

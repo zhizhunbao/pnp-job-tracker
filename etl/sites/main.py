@@ -23,6 +23,7 @@ from sites.functions import build_site_facts, fetch_site_pages, visit_queue
 SCHEDULED = [("fetch", fetch_site_pages), ("facts", build_site_facts)]
 """默认链(调度真相):先抓原文进 crawl 层,再读缓存整理;抛错即中止本轮。
 2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+同日晚改判回一步失败即中止(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):门叶改回 fail-fast,本门一字不改;互不相干的步拆成各自的调度单元(各自容器、各自 ping)。
 """
 
 TOOLS = {

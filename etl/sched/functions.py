@@ -43,6 +43,11 @@ from sched.constants import (
     FRESH_K_KEY, FRESH_K_NOTE, FRESH_KEY_DEFAULT, FRESH_KEY_MTIME, FRESH_P_ALL_OK_TPL,
     FRESH_P_BADDATE_TPL, FRESH_P_MISSING_TPL, FRESH_P_NOSTAMP_TPL, FRESH_P_STALE_NOTE_TPL,
     FRESH_P_STALE_TPL, FRESH_P_SUMMARY_TPL, FRESH_STAMP_LEN,
+    ENV_HC_API_KEY, ENV_HC_API_URL, HC_API_DEFAULT, HC_API_TIMEOUT_S, HC_CHANNELS_ALL, HC_CHECKS_PATH, HC_DESC_TPL,
+    HC_FAIL_AFTER_S, HC_FAIL_BODY_MAX, HC_FAIL_BODY_TPL, HC_FAIL_LINES, HC_FAIL_NO_LINES, HC_FAIL_SENT_TPL,
+    HC_FAIL_SUFFIX, HC_GRACE_FACTOR, HC_GRACE_MAX_S, HC_GRACE_MIN_S, HC_HDR_KEY, HC_K_CHANNELS, HC_K_DESC,
+    HC_K_GRACE, HC_K_NAME, HC_K_PING_URL, HC_K_TAGS, HC_K_TIMEOUT, HC_K_UNIQUE, HC_OK_CODES, HC_REG_BODY_CLIP,
+    HC_REG_ERR_TPL, HC_REG_FAIL_TPL, HC_REG_OK_TPL, HC_TAGS_TPL, HC_TIMEOUT_MIN_S, SEC_PER_MIN,
     INIT_GLOB, K_AFTER, K_FRESH, K_INTERVAL, K_NAME, K_ONLY, K_PING, K_ROLE,
     K_SEED, KV_SEP, LVL_ERROR, LVL_INFO, MANUAL_SEED_URL, META_FAIL_TPL, NAME_JOIN, NEWLINE,
     NOT_DOMAIN, NOW_END_TPL, NOW_FAIL_TPL, NOW_HEAD_TPL, NOW_OK_TPL, NO_UNIT_TPL,
@@ -52,7 +57,8 @@ from sched.constants import (
     UNKNOWN_ROLE_TPL, U_LINE_TPL, U_MODE_CONSUMER_TPL, U_MODE_EVERY_TPL, U_SEED_SUFFIX_TPL,
     VAL_ONE,
 )
-from sched.scheme import FreshStampIn, LogLike, MetaHit, PingIn, RunStepIn, ToUnitIn, Unit
+from sched.scheme import (FailHealthIn, FailPingIn, FreshStampIn, HcTiming, LogLike, MetaHit, PingIn, RegisterIn,
+                          RunStepIn, RunStepOut, ToUnitIn, Unit)
 
 
 # =========================================================================
@@ -121,6 +127,9 @@ def to_unit(x: ToUnitIn) -> Unit:
         ping=bool(x.meta.get(K_PING, False)),
         next_at=0.0,
         consumed_at=0.0,
+        dom=x.dom,
+        ping_url="",
+        failing_since=0.0,
     )
 
 
@@ -152,7 +161,9 @@ def units_of_name(name: str) -> list[Unit]:
 def watch() -> None:
     """常驻守护:开场报清单,而后每 POLL_S 秒查一遍谁到点,到点的跑一轮。
 
-    容器一起来先跑一轮(next_at 出厂 0);一轮失败只短重试,不退出容器。"""
+    容器一起来先跑一轮(next_at 出厂 0);一轮失败只短重试,不退出容器。
+    2026-09-26 晚:开场先给持 ping 权的单元定好心跳地址(配了 HEALTHCHECK_PING_<角色> 用它,没配而有 API 密钥就
+    按角色名建 / 取检查项)—— 一上来就坏着的单元也先有了检查项,连续失败时才发得出 /fail。"""
     role = current_role()
     units = load_units()
     if len(units) == 0:
@@ -160,6 +171,8 @@ def watch() -> None:
         raise SystemExit(1)
     for unit in units:
         announce(unit)
+        if unit.ping:
+            unit.ping_url = ping_url_of(unit)
     while True:
         for unit in units:
             if is_due(unit) is False:
@@ -228,15 +241,22 @@ def run_once(x: Unit) -> bool:
     """跑一个单元的一轮:顺序执行 steps,一步失败即中止本轮;seed=True 才在成功后灌库。
 
     日志前缀 = 角色·单元(2026-08-30 批A:多单元混流里每行可归属;单单元角色不变样)。
+    2026-09-26 晚:失败轮走 fail_health(连续失败满半小时给检查项发 /fail,正文带本轮 ✗ 行),成功轮清零失败起点。
     """
     ulog = cast(LogLike, logger.bind(source=source_of(x)))
+    errors: list[str] = []
     for step in x.steps:
-        if run_step(RunStepIn(step=step, log=ulog)) is False:
+        out = run_step(RunStepIn(step=step, log=ulog))
+        errors.extend(out.errors)
+        if out.ok is False:
             ulog.error(STEP_FAIL_MSG)
+            fail_health(FailHealthIn(unit=x, errors=errors))
             return False
     if x.seed:
         if finish_seed() is False:
+            fail_health(FailHealthIn(unit=x, errors=errors))
             return False
+    x.failing_since = 0.0
     ping_health(x)
     return True
 
@@ -249,8 +269,9 @@ def source_of(x: Unit) -> str:
     return SOURCE_UNIT_TPL.format(role=role, name=x.name)
 
 
-def run_step(x: RunStepIn) -> bool:
-    """跑一个 step,逐行截获其 stdout/stderr → 套统一 loguru 前缀打印(前缀=角色·单元)。"""
+def run_step(x: RunStepIn) -> RunStepOut:
+    """跑一个 step,逐行截获其 stdout/stderr → 套统一 loguru 前缀打印(前缀=角色·单元)。
+    2026-09-26 晚:顺手收下升 ERROR 级的行(✗ / ! 开头),失败时进 /fail 正文。"""
     x.log.info(STEP_RUN_TPL.format(cmd=CMD_SEP.join(x.step)))
     env = dict(os.environ)
     env[ENV_UNBUFFERED] = VAL_ONE
@@ -258,12 +279,16 @@ def run_step(x: RunStepIn) -> bool:
     proc = subprocess.Popen(x.step, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             text=True, encoding=ENC_UTF8, errors=ERRORS_REPLACE,
                             bufsize=1, env=env)
+    errors: list[str] = []
     # pyrefly: ignore[not-iterable] — Popen 带 stdout=PIPE 时 proc.stdout 恒非 None(存根按无 PIPE 的形留了 None 档)
     for raw in proc.stdout:
         line = raw.rstrip(NEWLINE)
         if line.strip() != "":
-            x.log.log(level_of(line), line)
-    return proc.wait() == 0
+            level = level_of(line)
+            x.log.log(level, line)
+            if level == LVL_ERROR:
+                errors.append(line)
+    return RunStepOut(ok=proc.wait() == 0, errors=errors)
 
 
 def level_of(line: str) -> str:
@@ -306,12 +331,14 @@ def ping_health(x: Unit) -> None:
     2026-09-15 方案 3(Frank「3,那 10 个源也查一下」):拆成两件 —— 角色心跳只凭本轮成败直接发;保鲜闸只在配了
     ENV_PING_FRESH 的单元跑,通过才 ping 保鲜检查项。原因:闸挡在每个角色前面时,10 个源超期让四个检查项一起红了两周,
     新接的 hireac 成功也发不出心跳,报警分不清是哪个角色的事。
+    2026-09-26 晚:角色心跳地址改由 ping_url_of 定(开场定一次,没定下来的每轮收尾再试一次)。
     """
     if x.ping is False:
         return
-    url = os.environ.get(ENV_PING_TPL.format(role=current_role().upper()), "")
-    if url != "":
-        send_ping(PingIn(url=url, ok_msg=PING_OK_MSG))
+    if x.ping_url == "":
+        x.ping_url = ping_url_of(x)
+    if x.ping_url != "":
+        send_ping(PingIn(url=x.ping_url, ok_msg=PING_OK_MSG))
     fresh_url = os.environ.get(ENV_PING_FRESH, "")
     if fresh_url == "":
         return
@@ -328,6 +355,84 @@ def send_ping(x: PingIn) -> None:
         logger.error(PING_FAIL_TPL.format(name=type(e).__name__))
         return
     logger.info(x.ok_msg)
+
+
+def ping_url_of(x: Unit) -> str:
+    """本单元的心跳地址(2026-09-26 晚立,Frank「拆 + 每个单元配 ping」):HEALTHCHECK_PING_<角色> 配了就用它(老检查项
+    原样);没配而有 HEALTHCHECKS_API_KEY → 按角色名向 healthchecks 建 / 取检查项,用它的地址;两样都没有 = 空串(不发,同旧语义)。
+    新开一个单元从此不用手工建检查项、抄地址进 .env —— 容器一起来就有自己的检查项。"""
+    url = os.environ.get(ENV_PING_TPL.format(role=current_role().upper()), "")
+    if url != "":
+        return url
+    key = os.environ.get(ENV_HC_API_KEY, "")
+    if key == "":
+        return ""
+    return registered_ping_url(RegisterIn(unit=x, key=key))
+
+
+def registered_ping_url(x: RegisterIn) -> str:
+    """按角色名建 / 取检查项,返回它的 ping 地址(unique=name:同名已存在就更新超时 / 宽限 / 说明并原样返回,反复开跑不会建重);
+    API 出错或回非成功码(免费档满了也在这)只留痕返回空串 —— 本轮不发 ping,收尾再试,不影响本轮成败。"""
+    role = current_role()
+    timing = hc_timing_of(x.unit.interval_s)
+    base = os.environ.get(ENV_HC_API_URL, HC_API_DEFAULT)
+    body = {
+        HC_K_NAME: role,
+        HC_K_TAGS: HC_TAGS_TPL.format(dom=x.unit.dom),
+        HC_K_DESC: HC_DESC_TPL.format(dom=x.unit.dom, role=role, interval=x.unit.interval_s),
+        HC_K_TIMEOUT: timing.timeout,
+        HC_K_GRACE: timing.grace,
+        HC_K_CHANNELS: HC_CHANNELS_ALL,
+        HC_K_UNIQUE: [HC_K_NAME],
+    }
+    try:
+        r = httpx.post(base + HC_CHECKS_PATH, headers={HC_HDR_KEY: x.key}, json=body, timeout=HC_API_TIMEOUT_S)
+    except Exception as e:  # noqa: BLE001 — 建检查项失败不影响本轮成败,留痕后收尾再试
+        logger.error(HC_REG_ERR_TPL.format(role=role, name=type(e).__name__))
+        return ""
+    if r.status_code not in HC_OK_CODES:
+        logger.error(HC_REG_FAIL_TPL.format(role=role, status=r.status_code, body=r.text[:HC_REG_BODY_CLIP]))
+        return ""
+    logger.info(HC_REG_OK_TPL.format(role=role))
+    return str(r.json()[HC_K_PING_URL])
+
+
+def hc_timing_of(interval_s: int) -> HcTiming:
+    """检查项的超时与宽限:超时 = 一轮的间隔(最少一小时);宽限 = 两倍间隔,夹在四小时与一天之间
+    (小时级单元 5 小时没成功才报,六小时的 18 小时,日更的两天;依据见 constants.HC_GRACE_*)。"""
+    timeout = max(interval_s, HC_TIMEOUT_MIN_S)
+    grace = max(HC_GRACE_MIN_S, min(interval_s * HC_GRACE_FACTOR, HC_GRACE_MAX_S))
+    return HcTiming(timeout=timeout, grace=grace)
+
+
+def fail_health(x: FailHealthIn) -> None:
+    """一轮失败的收尾(2026-09-26 晚,Frank「那我怎么知道这个失败」):记下连续失败的起点;连续失败满
+    HC_FAIL_AFTER_S 起,每个失败轮给本单元的检查项发一次 /fail,正文 = 本轮最后几行 ✗ 行 —— 检查项当场转红,
+    告警邮件里写着哪个单元、失败了多久、哪一步为什么。偶发的一轮失败不报;成功一轮清零(run_once),下一次成功 ping 即转绿。"""
+    now = time.time()
+    if x.unit.failing_since == 0.0:
+        x.unit.failing_since = now
+    if x.unit.ping is False or now - x.unit.failing_since < HC_FAIL_AFTER_S:
+        return
+    if x.unit.ping_url == "":
+        x.unit.ping_url = ping_url_of(x.unit)
+    if x.unit.ping_url == "":
+        return
+    mins = int((now - x.unit.failing_since) / SEC_PER_MIN)
+    lines = NEWLINE.join(x.errors[-HC_FAIL_LINES:])
+    if lines == "":
+        lines = HC_FAIL_NO_LINES.format(role=current_role())
+    body = HC_FAIL_BODY_TPL.format(role=current_role(), mins=mins, n=HC_FAIL_LINES, lines=lines)
+    send_fail(FailPingIn(url=x.unit.ping_url + HC_FAIL_SUFFIX, body=body[:HC_FAIL_BODY_MAX]))
+    logger.error(HC_FAIL_SENT_TPL.format(mins=mins))
+
+
+def send_fail(x: FailPingIn) -> None:
+    """发一次 /fail(正文随请求体走,healthchecks 原样显示在告警邮件里);打不通只留痕,不影响本轮。"""
+    try:
+        httpx.post(x.url, content=x.body.encode(ENC_UTF8), timeout=PING_TIMEOUT_S)
+    except Exception as e:  # noqa: BLE001 — /fail 打不通只留痕,同 send_ping
+        logger.error(PING_FAIL_TPL.format(name=type(e).__name__))
 
 
 def freshness_ok() -> bool:

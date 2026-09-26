@@ -1,0 +1,62 @@
+{
+  "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
+  "fetched": "2026-09-26",
+  "provinces": {
+    "NS": {
+      "label": "NSNP + AIP",
+      "scale": null,
+      "url": "https://liveinnovascotia.com/eoi-selection",
+      "draws": [
+        {
+          "date": "2026-07",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 671
+        },
+        {
+          "date": "2026-06",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 531
+        },
+        {
+          "date": "2026-05",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 789
+        },
+        {
+          "date": "2026-04",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 161
+        },
+        {
+          "date": "2026-03",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 370
+        },
+        {
+          "date": "2026-02",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 357
+        },
+        {
+          "date": "2026-01",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 363
+        }
+      ]
+    }
+  }
+}

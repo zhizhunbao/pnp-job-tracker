@@ -18,66 +18,75 @@ SystemExit 也在门里接住(自校硬闸 fail_keep_old / fail_zh 走 sys.exit(
 (09-16 → 09-26 三份产物被保鲜闸判超期;同类旧账:pnp 24 步一根绳的 25 天陈账)。
 上面「一步失败中止本轮」「exit 1 的步骤钉末尾」两条从此只剩排序习惯,不再是语义;原文保留作沿革。
 同日稍后(Frank「推广」)run_steps 纯移动进 door 叶,各域门共用(自测 ChainKeepGoingTest 随迁);本门只剩一行 return。
+⚡ 同日晚再改判(Frank「我他妈之前让你拆成多个 docker 你非的合一起」「其中一个失败,其余照跑?那我怎么知道这个失败」):
+一条链一个 ping,「其余照跑」把哪步坏了藏进了日志 —— 撤回照跑,door 叶改回一步失败即中止;本域拆成 20 个调度单元
+(UNITS:九省各一、抽选九省各一、灰注、名额哨兵),一单元一容器一 ping,容器跑 `--only <单元名>`。
+SCHEDULED 不再是调度真相,只剩手动全跑;调度声明从 META 改为 __init__ 的 METAS(一单元一条)。
+    python etl/pnp/main.py --only pnp_ab       # 跑一个单元(容器就是这么跑的)
 """
 import sys
+from itertools import chain
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import say
 from door.functions import run_steps
 from pnp.functions import (
-    audit_c01_gold, build_ab, build_ab_req, build_ab_stats, build_bc, build_bc_req, build_bc_sirs,
-    build_bc_stats, build_bc_stats_processing, build_draws, build_mb, build_mb_points,
-    build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_req, build_nl,
-    build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points,
-    build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_req, build_sk, build_sk_joboffer, fetch_mb_draw_pages,
+    audit_c01_gold, build_ab, build_ab_draws, build_ab_req, build_ab_stats, build_bc, build_bc_draws, build_bc_req,
+    build_bc_sirs, build_bc_stats, build_bc_stats_processing, build_mb, build_mb_draws, build_mb_points,
+    build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_draws, build_nb_req, build_nl, build_nl_draws,
+    build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_draws, build_ns_req, build_on_draws,
+    build_on_points, build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_draws, build_pe_req,
+    build_qc_draws, build_sk, build_sk_joboffer, fetch_mb_draw_pages,
     fetch_bc_draw_archive,
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
     watch_on_workforce, watch_prov_allocations,
 )
 
-SCHEDULED = [
-    ("ab", build_ab),
-    ("bc", build_bc),
-    ("sk", build_sk),
-    ("ns", build_ns),
-    ("mb", build_mb),
-    ("nb", build_nb),
-    ("nl", build_nl),
-    ("pe", build_pe),
-    ("pe_aip", build_pe_aip),
-    ("on_workforce", watch_on_workforce),
-    ("draws", build_draws),
-    ("ns_allocations", scrape_ns_allocations),
-    ("bc_req", build_bc_req),
-    ("on_req", build_on_req),
-    ("on_points", build_on_points),
-    ("bc_sirs", build_bc_sirs),
-    ("sk_points", build_sk_points),
-    ("ab_req", build_ab_req),
-    ("sk_req", build_sk_req),
-    ("mb_req", build_mb_req),
-    ("ns_req", build_ns_req),
-    ("nb_req", build_nb_req),
-    ("pe_req", build_pe_req),
-    ("nl_req", build_nl_req),
-    ("sk_stats", build_sk_stats),
-    ("ab_stats", build_ab_stats),
-    ("bc_stats", build_bc_stats),
-    ("ns_stats", scrape_ns_stats),
-    ("bc_nominations", scrape_bc_nominations),
-    ("pe_iidi", scrape_pe_iidi),
-    ("mb_stats", build_mb_stats),
-    ("nl_employers", build_nl_employers),
-    ("watch_allocations", watch_prov_allocations),
-    ("draw_streams_zh", translate_draw_streams),
-    ("sk_joboffer", build_sk_joboffer),
-    ("on_stats", build_on_stats),
-    ("mb_points", build_mb_points),
-    ("nl_points", build_nl_points),
-]
-"""默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
+UNITS = {
+    "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats)],
+    "pnp_bc": [("bc", build_bc), ("bc_req", build_bc_req), ("bc_sirs", build_bc_sirs), ("bc_stats", build_bc_stats),
+               ("bc_nominations", scrape_bc_nominations)],
+    "pnp_sk": [("sk", build_sk), ("sk_joboffer", build_sk_joboffer), ("sk_points", build_sk_points),
+               ("sk_req", build_sk_req), ("sk_stats", build_sk_stats)],
+    "pnp_mb": [("mb", build_mb), ("mb_req", build_mb_req), ("mb_points", build_mb_points),
+               ("mb_stats", build_mb_stats)],
+    "pnp_ns": [("ns", build_ns), ("ns_req", build_ns_req), ("ns_stats", scrape_ns_stats),
+               ("ns_allocations", scrape_ns_allocations)],
+    "pnp_nb": [("nb", build_nb), ("nb_req", build_nb_req)],
+    "pnp_nl": [("nl", build_nl), ("nl_req", build_nl_req), ("nl_points", build_nl_points),
+               ("nl_employers", build_nl_employers)],
+    "pnp_pe": [("pe", build_pe), ("pe_aip", build_pe_aip), ("pe_req", build_pe_req), ("pe_iidi", scrape_pe_iidi)],
+    "pnp_on": [("on_workforce", watch_on_workforce), ("on_req", build_on_req), ("on_points", build_on_points),
+               ("on_stats", build_on_stats)],
+    "pnp_draws_ab": [("draws_ab", build_ab_draws)],
+    "pnp_draws_bc": [("draws_bc", build_bc_draws)],
+    "pnp_draws_mb": [("draws_mb", build_mb_draws)],
+    "pnp_draws_nb": [("draws_nb", build_nb_draws)],
+    "pnp_draws_nl": [("draws_nl", build_nl_draws)],
+    "pnp_draws_ns": [("draws_ns", build_ns_draws)],
+    "pnp_draws_on": [("draws_on", build_on_draws)],
+    "pnp_draws_pe": [("draws_pe", build_pe_draws)],
+    "pnp_draws_qc": [("draws_qc", build_qc_draws)],
+    "pnp_drawzh": [("draw_streams_zh", translate_draw_streams)],
+    "pnp_watch": [("watch_allocations", watch_prov_allocations)],
+}
+"""调度单元(调度真相,2026-09-26 晚立;Frank「我他妈之前让你拆成多个 docker 你非的合一起」「其中一个失败,其余照跑?
+那我怎么知道这个失败」→ 选「拆 + 每个单元配 ping」「一单元一容器」「抽选按省拆」)。
+一单元 = 一个容器(SOURCE = 单元名)= 一个 healthchecks 检查项;容器跑 `python etl/pnp/main.py --only <单元>`,
+单元内按序跑、**一步失败即中止**(door 叶),哪个单元坏了哪个 ping 红。声明(role / interval / ping)在 __init__ 的 METAS。
+切法:一省的清单 / 门槛 / 分值 / 统计同一个官方来源一个单元(省内步骤无数据依赖,同站坏了一起坏);各省抽选页
+另成一省一单元(一省一份 draws-<省>.json,见 functions.put_prov_draws);两件跨省的各成一单元 ——
+pnp_drawzh 盯九个抽选单元的轮次标记(新流名一进来就翻),pnp_watch 只读配额表 / crawl 缓存 / news。
+手动件(TOOLS 里不进任何单元的)归属:mb_req_swm、mb_draw_pages 随 pnp_mb 的来源,bc_stats_processing、
+bc_draw_archive 随 pnp_bc 的来源;c01_gold、gate_quotes、test 是审计 / 取证 / 自测,不进任何单元。"""
+
+SCHEDULED = list(chain.from_iterable(UNITS.values()))
+"""默认链(不带参数跑 = 各单元的步按 UNITS 顺序拼成一串;一步失败即中止)。
+2026-09-26 晚改判:容器不再跑这条链(每个容器只跑自己那个单元,见 UNITS);它只剩「手动全跑一遍」这个用途,
+下面整段沿革与排序理由原文保留 —— 步名与函数一一对应,只是分进了各单元。
+原文:默认链(调度真相):按序执行,一步抛错即中止本轮。逐步沿革与排序理由(原 STEPS 行内注释
 2026-08-30 批B 逐字搬进本 docstring —— 方言律「注释只许 docstring」):
 2026-09-15 mb_stats / nl_employers 从手动件挂进链(watch 哨兵之前;Frank「3,那 10 个源也查一下」):两步纯读 crawl 缓存
 不发请求,缓存每小时在刷;不进链时两份产物停在 08-30,被 raw/pnp/*.json 两天保鲜规则判超期、拖红心跳。当日手动各跑一次均通过。
@@ -162,7 +171,15 @@ TOOLS = {
     "pe": build_pe,
     "pe_aip": build_pe_aip,
     "on_workforce": watch_on_workforce,
-    "draws": build_draws,
+    "draws_ab": build_ab_draws,
+    "draws_bc": build_bc_draws,
+    "draws_mb": build_mb_draws,
+    "draws_nb": build_nb_draws,
+    "draws_nl": build_nl_draws,
+    "draws_ns": build_ns_draws,
+    "draws_on": build_on_draws,
+    "draws_pe": build_pe_draws,
+    "draws_qc": build_qc_draws,
     "mb_draw_pages": fetch_mb_draw_pages,
     "bc_draw_archive": fetch_bc_draw_archive,
     "ns_allocations": scrape_ns_allocations,
@@ -199,6 +216,8 @@ TOOLS = {
     "test": run_tests,
 }
 """全部可 --only 点名的步(默认链 28 步 + 不进链的手动件)。
+2026-09-26 晚按省拆:原 draws 一步(九省一份 draws.json)拆成 draws_ab … draws_qc 九步,各属一个抽选单元;
+`--only draws` 仍能一次跑完九省(子串命中)。点名单元(pnp_ab 这类整名)先于本表匹配,见 main。
 不进默认链的十个及其理由:
   bc_stats_processing  只重算 BC 处理时长(纯读 crawl 缓存;原 --processing-only 开关)
   mb_req_swm           只重算 MB SWM 在职时长(纯读 crawl 缓存;原 --swm-only 开关)
@@ -224,9 +243,11 @@ TOOLS = {
 
 
 def main() -> int:
-    """跑默认链或 --only 点名的单步;返回进程退出码。"""
+    """跑默认链、点名的调度单元(UNITS,名字整名命中;容器走这条)或 --only 点名的单步;返回进程退出码。"""
     args = sys.argv[1:]
     if len(args) >= 2 and args[0] == "--only":
+        if args[1] in UNITS:
+            return run_steps(UNITS[args[1]])
         picked = []
         for k, f in TOOLS.items():
             if args[1] in k:

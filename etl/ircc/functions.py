@@ -48,8 +48,8 @@ from crawl.functions import convert_md
 from crawl.scheme import ConvertIn
 from ircc.constants import (
     ACTIVITY_DAYS, ACTIVITY_EASY, ACTIVITY_TIGHT, ASOF_MONTH_LEN, COMP_EASY, COMP_ROUND,
-    COMP_TIGHT, DIFF_DONE_TPL, DIFF_NO_LATEST_REF, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
-    FACTOR_COMP, FACTOR_QUOTA_TREND, FACTOR_SCORE_LEVEL, IN_ALLOC, IN_DRAWS, IN_TR_PROV, K_SCALE,
+    COMP_TIGHT, DIFF_DONE_TPL, DIFF_NO_DRAWS_TPL, DIFF_NO_LATEST_REF, DIFF_PRINT_TPL, DIFF_PROVS, DIFF_ROW_TPL, FACTOR_ACTIVITY,
+    FACTOR_COMP, FACTOR_QUOTA_TREND, FACTOR_SCORE_LEVEL, IN_ALLOC, IN_DRAWS_DIR, IN_DRAWS_GLOB, IN_TR_PROV, K_SCALE,
     OUT_DIFFICULTY, QUOTA_YEAR_LATEST, QUOTA_YEAR_PREV, SCORE_DAYS, SCORE_EASY_PCT,
     SCORE_MIN_DRAWS, SCORE_TIGHT_PCT, TIER_EASY, TIER_MID, TIER_TIGHT, TREND_ROUND, TREND_TIGHT,
     BLANK_VALUES, COMMA, ENC_UTF8, FEE_FACTOR, FEE_OP, FEE_UNIT, FEES_BIO_ITEMS, FEES_BULLET_TPL,
@@ -986,10 +986,15 @@ def build_ircc_difficulty() -> None:
       · 「一步失败中止本轮」的硬闸改由本函数抛出的异常兑现(门 main 捕获后 return 1),
         与旧的「子进程非零即中止」同义;批I3 溶段后连步骤文件也没了,语义不变。
     """
-    say(DIFF_PRINT_TPL.format(tr=IN_TR_PROV, alloc=IN_ALLOC, draws=IN_DRAWS, out=OUT_DIFFICULTY))
+    say(DIFF_PRINT_TPL.format(tr=IN_TR_PROV, alloc=IN_ALLOC, draws=IN_DRAWS_DIR / IN_DRAWS_GLOB, out=OUT_DIFFICULTY))
     tr = json.loads(IN_TR_PROV.read_text(encoding=ENC_UTF8))
     alloc = to_alloc_table(json.loads(IN_ALLOC.read_text(encoding=ENC_UTF8)))
-    draws = to_draws_table(json.loads(IN_DRAWS.read_text(encoding=ENC_UTF8)))
+    files = sorted(IN_DRAWS_DIR.glob(IN_DRAWS_GLOB))
+    if len(files) == 0:
+        raise RuntimeError(DIFF_NO_DRAWS_TPL.format(dir=IN_DRAWS_DIR, glob=IN_DRAWS_GLOB))
+    draws: dict = {}
+    for f in files:
+        draws.update(to_draws_table(json.loads(f.read_text(encoding=ENC_UTF8))))
     by_prov = tr.get(K_BY_PROV)
     if not by_prov:
         by_prov = {}

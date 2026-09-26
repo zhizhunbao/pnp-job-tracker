@@ -1770,13 +1770,20 @@ PE_PRINT_OCC_TPL = "      · {noc} {name}"
 # 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
 
-OUT_DRAWS = paths.PNP / "draws.json"
+OUT_DRAWS_FILE_TPL = "draws-{prov}.json"
 """抽选事实表(⚠️ **无 occupations 键** —— 08_score 目录驱动扫 raw/pnp/*.json 时天然跳过)。
+2026-09-26 晚按省拆(Frank 选「按省拆」:一省一份文件、一省一个单元):原 `OUT_DRAWS = paths.PNP / "draws.json"`
+九省一份,改为一省一份 OUT_PNP_DIR / 本模板(省码小写,draws-ab.json …);每份外形照旧
+{source, fetched, provinces: {省: 块}},只装一省。九省同写一份时一省解析坏了、整步照样算成功,告警永远绿。
+下面是九省一份时代的原文:
 **事实展示层,非资格判定**:各省分制互不相通(BC=SIRS / AB=WEOI / MB=MPNP EOI),都不是 CRS ——
 score 一律带 scale 标注,前端展示必须声明「省自评分制,非 CRS」。
 SK 2025 改制后无抽选、QC 不属 PNP,不产出。抓取失败/解析空 → 该省保留旧数据。
 2026-09-26 补两省(lead 派工「补数据」):NS 月度选取人数(DRAWS_NS_URL)、QC PSTQ 邀请记录(DRAWS_QC_URL_TPL)——
 QC 仍不属 PNP,只收它自己的 PSTQ 邀请事实,label / scale 写 PSTQ,不标 PNP、不进任何 PNP 判定。"""
+
+DRAWS_FILE_GLOB = "draws-*.json"
+"""各省抽选文件的样式(2026-09-26 晚按省拆;本域灰注按它扫 OUT_PNP_DIR,mart / ircc 两个消费端各自声明同名样式)。"""
 
 DRAWS_TIMEOUT_S = 30
 """各省抽选页抓取超时。"""
@@ -2398,8 +2405,9 @@ DRAWS_PRINT_OK_TPL = ("  ✓ {prov:<3} {n:>2} 条  最近 {date} {stream}"
 DRAWS_PRINT_NB_FAIL_TPL = "  ✗ NB 两页都抓取/解析失败: {errors}(保留旧数据)"
 """NB 两页都失败的报数。"""
 
-DRAWS_PRINT_NB_PARTIAL_TPL = "  ⚠ NB 有一页失败(用另一页结果续跑): {errors}"
-"""NB 一页失败的报数。"""
+DRAWS_PRINT_NB_PARTIAL_TPL = "  ✗ NB 有一页失败: {errors}(保留旧数据)"
+"""NB 一页失败的报数。
+2026-09-26 晚按省拆单元改判:一页失败本单元即失败(见 functions.build_nb_draws);原句「⚠ NB 有一页失败(用另一页结果续跑): {errors}」。"""
 
 DRAWS_PRINT_NB_OK_TPL = "  ✓ NB  {n:>2} 条  最近 {date} {stream}  score={score} inv={inv}"
 """NB 收尾报数。"""
@@ -2410,8 +2418,9 @@ DRAWS_PRINT_ON_FAIL_TPL = "  ✗ ON 更新页抓取失败: {name} {detail}(保�
 DRAWS_PRINT_ON_NO_ENTRY = "  ✗ ON 没解析到更新条目(保留旧数据)"
 """ON 更新页解析空的报数。"""
 
-DRAWS_PRINT_ON_INV_FAIL_TPL = "  ✗ ON invitations 页抓取失败: {name} {detail}(保留旧抽选)"
-"""ON invitations 页抓取失败的报数(退回旧数据里的 draws,不清空)。"""
+DRAWS_PRINT_ON_INV_FAIL_TPL = "  ✗ ON invitations 页抓取失败: {name} {detail}(保留旧数据)"
+"""ON invitations 页抓取失败的报数(退回旧数据里的 draws,不清空)。
+2026-09-26 晚按省拆单元改判:整份 draws-on.json 保留旧版、本单元失败(见 functions.build_on_draws);原句尾巴「(保留旧抽选)」。"""
 
 DRAWS_PRINT_ON_OK_TPL = "  ✓ ON  {n:>2} 条抽选(其中 {scored} 条带分数线)  最新通告 {date} {note}"
 """ON 收尾报数。"""
@@ -2442,8 +2451,9 @@ DRAWS_PRINT_MERGE_TPL = "  [merge] {prov} 本轮解析 {new} 条,并回历史后
 而一轮已经发生过的抽选不会消失,少了只能是我们没解析到。官方页通常只挂最近几轮,
 所以正确做法是**并回历史**而不是替换。"""
 
-DRAWS_PRINT_DONE_TPL = "✓ {path}  ({n} 条抽选 / {provs} 省)"
-"""抽选表收尾报数。"""
+DRAWS_PRINT_DONE_TPL = "✓ {path}  ({n} 条抽选)"
+"""抽选表收尾报数。
+2026-09-26 晚按省拆后一份只装一省,原句尾巴「/ {provs} 省」去掉。"""
 
 
 # =========================================================================
@@ -5981,8 +5991,10 @@ SKJ_PRINT_PROBE_MISS = "  → 72310 carpenter 不在 Job Offer 排除清单内"
 # 33. 抽选流名中文灰注(本地 Ollama 意译;非默认链,手动跑)
 # =========================================================================
 
-IN_DRAWS_FOR_ZH = paths.PNP / "draws.json"
+IN_DRAWS_FOR_ZH_DIR = paths.PNP
 """灰注的取词来源(全部省块的 distinct stream 名)。
+2026-09-26 晚按省拆:原 `IN_DRAWS_FOR_ZH = paths.PNP / "draws.json"` 一份,改扫本目录的 DRAWS_FILE_GLOB(各省一份)。
+下面「draws.json 全部省块」即各省文件拼起来的全部省块。
 范围(#280,Frank 走查:zh 态弹框「最近抽选」卡与 /start 抽选表满屏英文流名)= draws.json 全部
 省块(实测有抽选记录的是 AB/BC/MB/NB/NL/ON,其余省走门槛/分制表没有逐期抽选流)的 distinct
 stream 名(2026-08-08 实测 41 个,远低于「预计 <200」的口径线,一遍能跑完不用分批预算)。
@@ -6046,6 +6058,9 @@ ZH_PRINT_PROGRESS_TPL = "  {done}/{total} · 命中 {hit}"
 
 ZH_PRINT_DONE_TPL = "done → {path} · 本轮翻译 {done}/{todo}(累计缓存 {cached})"
 """收尾报数。"""
+
+ZH_PRINT_LEFT_TPL = "✗ 还有 {left} 个流名没翻成(见上),本单元记失败,下轮重试"
+"""本轮有流名没翻成的收口行(2026-09-26 晚拆单元 pnp_drawzh:翻不成就退出码 1、不发 ping)。"""
 
 
 # =========================================================================

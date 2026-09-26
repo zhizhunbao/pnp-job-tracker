@@ -758,8 +758,16 @@ temp_residents.json(IRCC)不再进本段;其余消费端(省弹框体量卡等)�
 IN_ALLOC = paths.IRCC / "pnp_allocations.json"
 """段7 输入②:人工核定的九省 PNP 配额表(逐年官方原句 + 出处,不是本域抓的)。"""
 
-IN_DRAWS = paths.PNP / "draws.json"
-"""段7 输入③:pnp 域的省抽选记录(仅 BC/AB/MB/ON/NL/NB 有官方抽选数据)。"""
+IN_DRAWS_DIR = paths.PNP
+"""段7 输入③:pnp 域的省抽选记录(仅 BC/AB/MB/ON/NL/NB 有官方抽选数据)。
+2026-09-26 晚 pnp 抽选按省拆(Frank 选「按省拆」):原 `IN_DRAWS = paths.PNP / "draws.json"` 九省一份,改为本目录下
+一省一份(IN_DRAWS_GLOB),每份外形照旧 {source, fetched, provinces: {省: 块}}、只装一省,本段读完拼回九省。"""
+
+IN_DRAWS_GLOB = "draws-*.json"
+"""各省抽选文件的样式(2026-09-26 晚;与 pnp 域 DRAWS_FILE_GLOB 同形,域间不互取常量,各自声明)。"""
+
+DIFF_NO_DRAWS_TPL = "{dir} 下一份 {glob} 都没有 —— pnp 抽选单元出事了,难度指数不能缺抽选因子硬算"
+"""省抽选一份都读不到的报错(2026-09-26 晚按省拆时立;九省一份时文件缺失由 read_text 当场炸,语义同)。"""
 
 OUT_DIFFICULTY = paths.PROCESSED / "difficulty.json"
 """段7 输出:processed/difficulty.json(唯一消费者 = mart 的 build_mart_stats)。
