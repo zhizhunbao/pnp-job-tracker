@@ -13,11 +13,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from wages.functions import build_esdc_wage_medians, build_statcan_jvws, build_statcan_jvws_mart
 
 SCHEDULED = []
-"""无默认链(本域三步全靠手动点名,节奏见各步源的更新频率)。"""
+"""无默认链(本域三步全靠手动点名,节奏见各步源的更新频率)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "medians": build_esdc_wage_medians,
@@ -41,15 +44,7 @@ def main() -> int:
     else:
         say(f"本域无默认链,用 --only 点名(可选:{'/'.join(TOOLS)})")
         return 1
-    for name, fn in picked:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(picked)} 步全过")
-    return 0
+    return run_steps(picked)
 
 
 if __name__ == "__main__":

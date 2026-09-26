@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
@@ -34,7 +35,9 @@ SCHEDULED = [
 搜索每轮 Google 25 家 / DDG 60 家、正文 400 家、qwen 简介 400 家),enrich 容器亮回;老 enrich 步(首页 meta 简介)退出默认链
 留作手动件 —— about 步抓的正文盖过它,且两步都打 DDG 会双倍撞限流。
 2026-09-20 wikihq 进链(紧跟 sites,两步都打 Wikidata、错开不叠):官网没标总部的公司查「总部所在地」,一轮 ≤200 家约半小时;
-挂本役不另开域的由头 = 它用的就是本域那套 Wikidata 查询与严格名字闸(行为不许复制到别的域)。"""
+挂本役不另开域的由头 = 它用的就是本域那套 Wikidata 查询与严格名字闸(行为不许复制到别的域)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "kanata": scrape_kanata_directory,
@@ -100,15 +103,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

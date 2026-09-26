@@ -14,7 +14,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from minwage.functions import scrape_minwage_rates
 
 SCHEDULED = [
@@ -23,6 +24,7 @@ SCHEDULED = [
 """默认链(调度真相):按序执行,一步抛错即中止本轮。
 
   scrape_minwage_rates   官方 JSON → 一般成人档逐次调整(省 × 生效日 × 时薪,1965 起)
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
 """
 
 TOOLS = {
@@ -45,15 +47,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

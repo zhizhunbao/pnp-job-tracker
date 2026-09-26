@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from crawl.functions import check_official_urls, discover_all, discover_attended, run_ee_categories, run_tests
 
 SCHEDULED = [
@@ -23,7 +24,9 @@ SCHEDULED = [
 ]
 """默认链(调度真相):全种子探索 + diff 政策雷达 → urls 哨兵钉链尾(2026-08-31 批Q:
 各域 constants 里的官方 URL 逐条实测,404/410/跨站跳 = 硬红扣 ping;判据见
-constants.URLS_DOC —— NB 迁版三周没人发现的答案)。"""
+constants.URLS_DOC —— NB 迁版三周没人发现的答案)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "attended": discover_attended,
@@ -51,15 +54,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

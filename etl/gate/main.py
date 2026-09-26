@@ -18,11 +18,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from gate.functions import check_shape, prune_baseline, report_ruff, run_lock_tests
 
 SCHEDULED = []
-"""默认链(调度真相):空 —— 工具域,不进定时链,全在 TOOLS。"""
+"""默认链(调度真相):空 —— 工具域,不进定时链,全在 TOOLS。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "shape": check_shape,
@@ -53,15 +56,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

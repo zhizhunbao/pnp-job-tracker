@@ -31,8 +31,8 @@ from bs4 import BeautifulSoup
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
-from crawl.functions import convert_md, get_cached_page, load_cache_index, put_cached_page, url_variants_of
-from crawl.scheme import CacheHit, CachePutIn, ConvertIn
+from crawl.functions import convert_md, get_cached_page, put_cached_page
+from crawl.scheme import CachePutIn, ConvertIn
 from pnp.constants import (
     ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL, ABR_EMP_REVENUE_RE,
     ABR_EMP_STAFF_LABEL_TPL, ABR_EMP_STAFF_RE, ABR_EMP_STREAM, ABR_EMP_YEARS_LABEL_TPL, ABR_EMP_YEARS_RE,
@@ -210,7 +210,7 @@ from pnp.constants import (
     ONS_YEARS_BACK, ON_BLOB_AHEAD_NEW, ON_BLOB_AHEAD_OLD, ON_ENTRY_DATE_TPL, ON_ENTRY_NOYEAR_RE, ON_ENTRY_RE,
     ON_INV_DATE_COL, ON_INV_DATE_KW, ON_INV_HEAD_KW, ON_INV_HEAD_TAGS, ON_INV_NOTES_KW, ON_INV_NUM_COL,
     ON_INV_NUM_KW, ON_INV_RE, ON_INV_SCORE_COL, ON_INV_STREAM_CLIP, ON_LINE_MIN_LEN, ON_PAGE_YEAR_RE, ON_SCORE_RE,
-    ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, ON_CRAWL_SLUG, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
+    ON_TAG_RE, ON_TAG_STRIP_RE, ON_TITLE_CLIP, ON_WORKFORCE_URL, OP_GE, OP_NONE, OUT_AAIP_INELIGIBLE_FILE,
     OUT_AB_HEALTH_FILE, OUT_AB_REQ, OUT_AB_STATS, OUT_AB_TECH_FILE, OUT_ALLOC_WATCH, OUT_BC_INELIGIBLE_FILE, OUT_BC_REQ, OUT_BC_SIRS,
     OUT_BC_STATS, OUT_DRAWS, OUT_DRAW_STREAM_ZH, OUT_IRCC_DIR, OUT_MB_POINTS, OUT_MB_REQ, OUT_MB_STATS, OUT_NB_REQ,
     OUT_NL_EMPLOYERS, OUT_NL_POINTS, OUT_NL_PRIORITY, OUT_NL_PRIORITY_FILE, OUT_NL_REQ, OUT_NS_ALLOCATIONS,
@@ -302,7 +302,6 @@ from pnp.scheme import (
     SirsSectionIn, SkAllocCheckIn,
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
     OnWaybackIn, TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
-    SlugPageIn,
 )
 from pnp.constants import (
     C01_APPLIES_JO, C01_APPLIES_OIDEE, C01_BAD_TPL, C01_D_COUNT_TPL, C01_D_JULY_TPL,
@@ -396,23 +395,6 @@ def page_text(x: PageTextIn) -> str:
     if not html:
         html = fetch_html(FetchHtmlIn(url=x.url, timeout_s=x.timeout_s))
     return text_of_html(TextOfHtmlIn(html=html, drop_junk=x.drop_junk, main_only=x.main_only))
-
-
-def slug_cached_page(x: SlugPageIn) -> CacheHit:
-    """已知 crawl slug 的一页缓存 → CacheHit(原文 + 缓存文件写盘那天);该 slug 没爬到这页 → CacheHit(None, 空串)。
-    2026-09-26 立(段10 NS / QC 抽选、段27 ON 逐年页、段39 ON 守望三段共用):读门 get_cached_page 每问一次都扫
-    全部 manifest(8 千多个,pnp 容器里实测一次 143 秒);种子已知的页改走 crawl 的单 slug 索引 load_cache_index
-    (0.2 秒)。日期取缓存文件的修改日 —— crawl 每轮成功抓到就重写原文,修改日即这页真正被取回的那天。
-    同日稍后读门本身已提速(进程内索引:容器首次约 11 秒、之后每次约 4 秒),本门仍快一个量级,三段照用;
-    要不要并回读门(只留一个读缓存出口)待 lead 定。"""
-    index = load_cache_index(x.slug)
-    for u in sorted(url_variants_of(x.url)):
-        f = index.get(u)
-        if f is None:
-            continue
-        day = datetime.fromtimestamp(f.stat().st_mtime).date().isoformat()
-        return CacheHit(html=f.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), fetched=day)
-    return CacheHit(html=None, fetched=EMPTY_JOIN)
 
 
 def fetch_md(url: str) -> str:
@@ -1456,8 +1438,8 @@ def build_pe() -> None:
 # 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
 from pnp.constants import (  # noqa: E402 — 段10 2026-09-26 补 NS / QC 两省的常量单列一块(同段35–38 先例)
-    DRAWS_NS_LABEL, DRAWS_NS_SLUG, DRAWS_NS_URL, DRAWS_PRINT_NO_CACHE_TPL, DRAWS_PRINT_PARSE_FAIL_TPL, DRAWS_QC_LABEL,
-    DRAWS_QC_MAX, DRAWS_QC_SCALE, DRAWS_QC_SLUG, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
+    DRAWS_NS_LABEL, DRAWS_NS_URL, DRAWS_PRINT_NO_CACHE_TPL, DRAWS_PRINT_PARSE_FAIL_TPL, DRAWS_QC_LABEL,
+    DRAWS_QC_MAX, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
     NS_DRAW_MONTH_RE, NS_DRAW_MONTH_TPL,
     NS_DRAW_NOTE_TPL, NS_DRAW_STREAM, NS_FOCUS_HEAD, NS_FOCUS_TAGS, PROV_QC, QC_BODY_CLASS, QC_BODY_TAG,
     QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
@@ -2258,24 +2240,20 @@ def build_pe_draws(old: dict) -> dict:
 
 def build_ns_draws(old: dict) -> dict:
     """NS(2026-09-26):**只读 crawl 缓存**的月度选取页(ns-root 种子每小时在刷,不另发请求;同 PE)。"""
-    hit = slug_cached_page(SlugPageIn(slug=DRAWS_NS_SLUG, url=DRAWS_NS_URL))
-    return cached_draws_of(CachedDrawsIn(prov=PROV_NS, url=DRAWS_NS_URL, html=hit.html, parse=parse_ns_draws,
-                                         scale=None, label=DRAWS_NS_LABEL, old=old))
+    return cached_draws_of(CachedDrawsIn(prov=PROV_NS, url=DRAWS_NS_URL, html=get_cached_page(DRAWS_NS_URL).html,
+                                         parse=parse_ns_draws, scale=None, label=DRAWS_NS_LABEL, old=old))
 
 
 def build_qc_draws(old: dict) -> dict:
     """QC(2026-09-26):**只读 crawl 缓存**里最新那一年的 PSTQ 邀请页(crawl 域 qc-pstq 窄种子每小时在刷;
     今年页还没挂出来就退上一年页)。QC 不属 PNP —— 只收邀请事实,label / scale 写 PSTQ。"""
     this_year = date.today().year
-    url = DRAWS_QC_URL_TPL.format(year=this_year)
-    html = None
-    for year in range(this_year, this_year - DRAWS_QC_YEARS_BACK, -1):
-        hit = slug_cached_page(SlugPageIn(slug=DRAWS_QC_SLUG, url=DRAWS_QC_URL_TPL.format(year=year)))
-        if hit.html is not None:
-            url = DRAWS_QC_URL_TPL.format(year=year)
-            html = hit.html
-            break
-    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=html, parse=parse_qc_draws,
+    src = latest_cached_year(LatestIn(url_tpl=DRAWS_QC_URL_TPL,
+                                      years=range(this_year, this_year - DRAWS_QC_YEARS_BACK, -1)))
+    url = src.url
+    if url == EMPTY_JOIN:
+        url = DRAWS_QC_URL_TPL.format(year=this_year)
+    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=src.html, parse=parse_qc_draws,
                                          scale=DRAWS_QC_SCALE, label=DRAWS_QC_LABEL, old=old))
 
 
@@ -5366,11 +5344,9 @@ def is_blocked_page(text: str) -> bool:
 def fetch_on_year_page(year: int) -> YearPageOut:
     """(text, url, fetched)——缓存优先(on-oinp 种子已抓),缓存没有再 httpx 兜底;
     两边都拿不到或被反爬拦截 → text=None。
-    2026-09-26:拿回的不是那一年的页(官方撤档转去档案馆落地页,见 ONS_YEAR_TITLE_TPL)同拦截页一样退 Wayback;
-    缓存改走单 slug 索引(slug_cached_page)—— 一轮问 12 年,全 manifest 扫描的读门在容器里要 28 分钟
-    (读门同日稍后提速到每次约 4 秒,12 次仍近 1 分钟;单 slug 索引一次 0.2 秒)。"""
+    2026-09-26:拿回的不是那一年的页(官方撤档转去档案馆落地页,见 ONS_YEAR_TITLE_TPL)同拦截页一样退 Wayback。"""
     url = ONS_UPDATES_URL_TPL.format(year=year)
-    hit = slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=url))
+    hit = get_cached_page(url)
     html = hit.html
     fetched = hit.fetched
     if not html:
@@ -7354,8 +7330,8 @@ def watch_on_workforce() -> None:
 
 
 def run_on_workforce_watch() -> None:
-    """守望一轮:单 slug 索引取官方流页缓存 → 判定 → (ok 时)只替换人工表里 fetched 那一格日期落盘(按字节读写,换行照旧)。"""
-    hit = slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=ON_WORKFORCE_URL))
+    """守望一轮:读门取官方流页缓存 → 判定 → (ok 时)只替换人工表里 fetched 那一格日期落盘(按字节读写,换行照旧)。"""
+    hit = get_cached_page(ON_WORKFORCE_URL)
     kind = owp_verdict_of(hit.html)
     if kind == OWP_V_NO_CACHE:
         say(OWP_PRINT_NO_CACHE_TPL.format(url=ON_WORKFORCE_URL))
@@ -7409,17 +7385,17 @@ def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
 
 
 # =========================================================================
-# 40. 自测(用例住 scheme:ON 守望判定 + 门的「一步失败其余照跑」;2026-09-26)
+# 40. 自测(用例住 scheme:ON 守望判定;2026-09-26)
 # =========================================================================
 from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
-from pnp.scheme import ChainKeepGoingTest, OnWorkforceWatchTest  # noqa: E402 — 同上
+from pnp.scheme import OnWorkforceWatchTest  # noqa: E402 — 同上
 
 
 def run_tests() -> None:
-    """test 步入口:跑本域自测(用例集住 scheme 的 OnWorkforceWatchTest / ChainKeepGoingTest,库垫片先例
-    indexing / gate);有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。"""
+    """test 步入口:跑本域自测(用例集住 scheme 的 OnWorkforceWatchTest,库垫片先例 indexing / gate);
+    有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。门循环的自测 ChainKeepGoingTest 2026-09-26 随 run_steps
+    搬去 door 叶(`python etl/door/main.py --only test`)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ChainKeepGoingTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

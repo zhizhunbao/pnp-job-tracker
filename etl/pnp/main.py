@@ -17,12 +17,14 @@ SystemExit 也在门里接住(自校硬闸 fail_keep_old / fail_zh 走 sys.exit(
 依据:mb_stats 因官方改句自校失败,把链尾 nl_employers / watch_allocations / draw_streams_zh 拖停 10 天
 (09-16 → 09-26 三份产物被保鲜闸判超期;同类旧账:pnp 24 步一根绳的 25 天陈账)。
 上面「一步失败中止本轮」「exit 1 的步骤钉末尾」两条从此只剩排序习惯,不再是语义;原文保留作沿革。
+同日稍后(Frank「推广」)run_steps 纯移动进 door 叶,各域门共用(自测 ChainKeepGoingTest 随迁);本门只剩一行 return。
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from pnp.functions import (
     audit_c01_gold, build_ab, build_ab_req, build_ab_stats, build_bc, build_bc_req, build_bc_sirs,
     build_bc_stats, build_bc_stats_processing, build_draws, build_mb, build_mb_points,
@@ -211,8 +213,8 @@ TOOLS = {
   c01_gold             C4 金标审计:案例 C01 的数字必须能从 mart 查出(批D 自 ops 收编,手动)
   gate_quotes          门槛取证器:13 条通道三类闸的官方候选原句(批D 收编,手动;
                        可再跟通道名只扫点名的,如 --only gate_quotes PE-sw)
-  test                 本域自测(2026-09-26;unittest,不联网不写仓):ON 劳动力优先表守望判定 +
-                       门的「一步失败其余照跑、返回码仍为 1」
+  test                 本域自测(2026-09-26;unittest,不联网不写仓):ON 劳动力优先表守望判定
+                       (门循环的自测随 run_steps 搬去 door 叶)
 """
 
 
@@ -231,29 +233,6 @@ def main() -> int:
     else:
         todo = SCHEDULED
     return run_steps(todo)
-
-
-def run_steps(todo: list) -> int:
-    """按序跑一串 (步名, 函数),**一步失败不拖停其余步**(2026-09-26 改判,见文件头):失败那步保留旧表、打 ✗ 留痕,
-    后面的照跑;有一步失败本轮就返回 1(告警照常),全过返回 0。sys.exit(0) 不算失败。
-    SystemExit 在这里接住:自校硬闸走 sys.exit(1),`except Exception` 接不到它。自测见 scheme 的 ChainKeepGoingTest。"""
-    failed = []
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except SystemExit as e:
-            if e.code not in (0, None):
-                failed.append(name)
-                say(f"✗ {name} 退出码 {e.code}(本步保留旧表,其余步照跑)")
-        except Exception as e:  # noqa: BLE001 — 门是最外层兜底:任一步炸了留痕记失败,不拖停后面的步
-            err(name, e)
-            failed.append(name)
-    if len(failed) > 0:
-        say(f"✗ 本轮 {len(failed)}/{len(todo)} 步失败:{'/'.join(failed)}(均保留旧表,其余步已照跑;本轮记失败)")
-        return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
 
 
 if __name__ == "__main__":

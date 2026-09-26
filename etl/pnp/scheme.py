@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Callable, Iterator, Protocol
 
 from pnp.constants import (
-    GQ_SKIP_TAGS, ON_CRAWL_SLUG, ON_WORKFORCE_URL, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE, OWP_V_NO_QUOTE, OWP_V_OK,
+    GQ_SKIP_TAGS, ON_WORKFORCE_URL, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE, OWP_V_NO_QUOTE, OWP_V_OK,
 )
 
 
@@ -183,17 +183,6 @@ class PageTextIn:
 
     cache_first: bool = False
     """True = 先查 crawl 缓存(每小时一轮的整站爬),没有才发请求 —— 同一页不抓两遍。"""
-
-
-@dataclass
-class SlugPageIn:
-    """slug_cached_page() 入参:已知 crawl slug 的一页(2026-09-26)。"""
-
-    slug: str
-    """crawl 种子 slug(data/crawl/<slug>/,crawl.constants 的 SEED_* 同名)。"""
-
-    url: str
-    """页地址(尾斜杠两种写法都认)。"""
 
 
 @dataclass
@@ -1843,7 +1832,7 @@ class OnWorkforceWatchTest(unittest.TestCase):
     def test_real_page_and_table(self) -> None:
         """金标:crawl 缓存里的真流页判 ok;仓里的真表刷一个更新的日期后仍是合法 JSON,且除 fetched 外逐键不变。"""
         from pnp import functions as fn
-        hit = fn.slug_cached_page(SlugPageIn(slug=ON_CRAWL_SLUG, url=ON_WORKFORCE_URL))
+        hit = fn.get_cached_page(ON_WORKFORCE_URL)
         if hit.html is None:
             self.skipTest("crawl 缓存里没有 ON 流页(本机未跑 crawl)")
         self.assertEqual(fn.owp_verdict_of(hit.html), OWP_V_OK)
@@ -1857,67 +1846,3 @@ class OnWorkforceWatchTest(unittest.TestCase):
         self.assertEqual(after, before)
         self.assertEqual(len(str(got)), len(text))
 
-
-# =========================================================================
-# 40. 自测(门的「一步失败其余照跑」;2026-09-26)
-# =========================================================================
-
-
-class ChainKeepGoingTest(unittest.TestCase):
-    """pnp 门 run_steps 自测(2026-09-26 Frank「一步失败不再拖停整轮」同批):中间一步抛异常、一步走自校硬闸
-    sys.exit(1),后面的步照跑,返回码 1;全过返回 0;sys.exit(0) 不算失败;失败的步不管排在哪都不影响别的步。
-    假步是本类的方法(记下自己跑过),不联网不写仓;门的进度行照打。"""
-
-    def setUp(self) -> None:
-        """每条用例一份干净的跑步记录。"""
-        self.ran: list[str] = []
-
-    def step_ok(self) -> None:
-        """正常步:记一笔。"""
-        self.ran.append("ok")
-
-    def step_raise(self) -> None:
-        """抓取 / 解析塌方的步:抛普通异常。"""
-        self.ran.append("raise")
-        raise RuntimeError("fake step crash")
-
-    def step_exit(self) -> None:
-        """走自校硬闸的步(fail_keep_old / fail_zh 的 sys.exit(1))。"""
-        self.ran.append("exit")
-        raise SystemExit(1)
-
-    def step_exit_zero(self) -> None:
-        """sys.exit(0) 收尾的步(成功,不算失败)。"""
-        self.ran.append("exit0")
-        raise SystemExit(0)
-
-    def test_failure_keeps_going(self) -> None:
-        """金标:异常步与硬闸步都在中间,后面的步照跑、一个不少,返回码 1。"""
-        from pnp import main as door
-        code = door.run_steps([("a", self.step_ok), ("b", self.step_raise), ("c", self.step_exit),
-                               ("d", self.step_ok)])
-        self.assertEqual(code, 1)
-        self.assertEqual(self.ran, ["ok", "raise", "exit", "ok"])
-
-    def test_all_pass(self) -> None:
-        """全过 → 返回 0;sys.exit(0) 的步算过。"""
-        from pnp import main as door
-        self.assertEqual(door.run_steps([("a", self.step_ok), ("b", self.step_exit_zero), ("c", self.step_ok)]), 0)
-        self.assertEqual(self.ran, ["ok", "exit0", "ok"])
-        self.assertEqual(door.run_steps([]), 0)
-
-    def test_failure_anywhere(self) -> None:
-        """性质:四步里坏步放在任一位置(异常 / 硬闸两种坏法),每一步都跑到,返回码恒为 1。"""
-        from pnp import main as door
-        for bad in (self.step_raise, self.step_exit):
-            for pos in range(4):
-                with self.subTest(bad=bad.__name__, pos=pos):
-                    self.ran = []
-                    steps: list = []
-                    for i in range(4):
-                        fn = self.step_ok
-                        if i == pos:
-                            fn = bad
-                        steps.append((str(i), fn))
-                    self.assertEqual(door.run_steps(steps), 1)
-                    self.assertEqual(len(self.ran), 4)

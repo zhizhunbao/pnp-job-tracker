@@ -19,12 +19,14 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 依据:cubes 每轮总有一两张表撞上 StatCan 的握手断连(根因同日修:请求改走 TLS 1.2 封顶,见 functions 文件头)→
 exit 1 → 链尾 city 从 09-22 起一轮没跑,city_macro 停在 09-22。上面「一步失败中止本轮」「exit 1 钉末尾」两条从此只剩
 排序习惯,原文保留作沿革。同日 naics 进默认链(见 TOOLS 沿革),上一行「不进定时链」作废。
+同日稍后(Frank「推广」)run_steps 纯移动进 door 叶,各域门共用;本门只剩一行 return。
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from statcan.functions import (scrape_statcan_city, scrape_statcan_cubes, scrape_statcan_naics, scrape_statcan_npr,
                                scrape_statcan_tr_prov)
 
@@ -76,29 +78,6 @@ def main() -> int:
     else:
         todo = SCHEDULED
     return run_steps(todo)
-
-
-def run_steps(todo: list) -> int:
-    """按序跑一串 (步名, 函数),**一步失败不拖停其余步**(2026-09-26 改判,见文件头;与 pnp 门 run_steps 同形,
-    那边有自测 ChainKeepGoingTest):失败那步保留旧表、打 ✗ 留痕,后面的照跑;有一步失败返回 1,全过返回 0;
-    sys.exit(0) 不算失败。SystemExit 在这里接住:cubes 的收尾硬闸走 sys.exit(1),`except Exception` 接不到它。"""
-    failed = []
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except SystemExit as e:
-            if e.code not in (0, None):
-                failed.append(name)
-                say(f"✗ {name} 退出码 {e.code}(本步保留旧表,其余步照跑)")
-        except Exception as e:  # noqa: BLE001 — 门是最外层兜底:任一步炸了留痕记失败,不拖停后面的步
-            err(name, e)
-            failed.append(name)
-    if len(failed) > 0:
-        say(f"✗ 本轮 {len(failed)}/{len(todo)} 步失败:{'/'.join(failed)}(均保留旧表,其余步已照跑;本轮记失败)")
-        return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
 
 
 if __name__ == "__main__":

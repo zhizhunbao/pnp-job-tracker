@@ -16,14 +16,17 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from fcip.functions import build_pilot_communities, build_pilot_details, build_pilot_quota
 
 SCHEDULED = [
     ("details", build_pilot_details),
     ("quota", build_pilot_quota),
 ]
-"""默认链(调度真相):按序执行,一步抛错即中止本轮(与 rcip 域同序,批E 拆域后各跑各的)。"""
+"""默认链(调度真相):按序执行,一步抛错即中止本轮(与 rcip 域同序,批E 拆域后各跑各的)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "details": build_pilot_details,
@@ -51,15 +54,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,8 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     # pyrefly: ignore[missing-attribute] — typeshed 把 sys.stdout 标成 TextIO,运行时是 TextIOWrapper(带 reconfigure)
     sys.stdout.reconfigure(encoding="utf-8")
 
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from news.functions import (
     score_missing, scrape_immigration_news, translate_missing, translate_titles_missing,
 )
@@ -28,6 +29,7 @@ SCHEDULED = [("scrape", scrape_immigration_news), ("score", score_missing),
 
 score 是轻量必跑(新条目才有徽标/上 banner);translate 预翻已停(budget 0),
 恢复 = 调 NEWS_TRANSLATE_BUDGET;titles 独立预算默认开(NEWS_TITLE_TRANSLATE_BUDGET)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
 """
 
 TOOLS = {
@@ -53,15 +55,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

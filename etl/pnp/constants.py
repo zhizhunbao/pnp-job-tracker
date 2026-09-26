@@ -1855,12 +1855,6 @@ DRAWS_QC_URL_TPL = ("https://www.quebec.ca/en/immigration/permanent/skilled-work
 块内有本轮该 stream 的邀请总数与各邀请档的最低分。只读 crawl 缓存,不另发请求。
 ⚠ QC 自成体系,不属 PNP:label / scale 一律写项目名 PSTQ,不标 PNP。"""
 
-DRAWS_NS_SLUG = "ns-root"
-"""NS 月度选取页所在的 crawl 种子 slug(crawl.constants.SEED_NS_ROOT,每小时一轮;单 slug 索引读缓存,见 slug_cached_page)。"""
-
-DRAWS_QC_SLUG = "qc-pstq"
-"""QC 逐年邀请页所在的 crawl 种子 slug(crawl.constants.SEED_QC_PSTQ,2026-09-26 立,每小时一轮)。"""
-
 DRAWS_QC_YEARS_BACK = 2
 """QC 逐年页往前探几年(年初新一年的页还没挂出来时退回上一年页;不写死年份,明年不静默过期)。"""
 
@@ -2622,11 +2616,6 @@ BCR_FACTOR_ORDER = ("language", "income", "experience", "empYears", "empStaff")
 ON_WORKFORCE_URL = "https://www.ontario.ca/page/ontario-workforce-priority-stream"
 """Ontario Workforce Priority 通道页(on-req 与 on-points 两段共用,原为两份抄本)。
 ontario.ca 直连 200,不需要浏览器。"""
-
-ON_CRAWL_SLUG = "on-oinp"
-"""ON 官方站在 crawl 层的种子 slug(crawl.constants.SEED_ON_OINP,每小时一轮)。2026-09-26 起段27 逐年页与段39 守望
-走单 slug 索引读缓存(slug_cached_page)—— 全 manifest 扫描的读门在 pnp 容器里一次 143 秒,段27 一轮要问 12 次。
-(同日稍后 crawl 读门已提速:容器里进程内首次约 11 秒、之后每次约 4 秒;单 slug 索引仍快一个量级,段27 / 段39 照用。)"""
 
 ONR_EMPLOYER_URL = "https://www.ontario.ca/page/oinp-employer-job-offer-streams-employer-guide"
 """OINP 雇主指南页(雇主侧:经营年限 / 营业额 / 全职雇员数 + 工资档)。"""
@@ -6714,7 +6703,7 @@ OWP_PRINT_CRASH_TPL = "  ✗ ON 劳动力优先表守望失败: {name} {detail}(
 
 
 # =========================================================================
-# 40. 自测(用例住 scheme:ON 守望判定 + 门的「一步失败其余照跑」;2026-09-26)
+# 40. 自测(用例住 scheme:ON 守望判定;2026-09-26)
 # =========================================================================
 
 TEST_VERBOSITY = 2

@@ -22,11 +22,13 @@ REPO_ROOT = paths.ROOT
 ETL_DIR = REPO_ROOT / "etl"
 """被扫的根(域目录都在它下面)。"""
 
-DOMAINS = ["aip", "ats", "careerbeacon", "citations", "classify", "company", "crawl", "dli", "ee",
+DOMAINS = ["aip", "ats", "careerbeacon", "citations", "classify", "company", "crawl", "dli", "door", "ee",
            "eligibility", "employers", "explore", "fcip", "fetch", "fsa", "gate", "hireac", "hwcr", "indexing",
            "ircc", "jdformat", "jobbank", "jobboom", "jobillico", "lmia", "load", "log", "mart", "minwage",
            "names", "news", "noc", "paths", "pnp", "rcip", "richtext", "sched", "sites", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+door 2026-09-26 立叶(Frank「推广」:「每步各自兜住」的门循环 run_steps 自 pnp / statcan 两门收成一片叶,
+各域门共用;双重身份同 names/richtext = 既被扫也可被依赖)。
 2026-09-26 补登下列八个(立域时漏登 = 此前一直没被扫;行内日期是立域日,新→旧):
 sites 2026-09-19 立域(Frank「有官网的公司,我是不是应该定期抓取 etl 啊,这样就不用 AI 探索内容,AI 只做整理」
 「官网不光是总部,还是他的业务 以及 其他用户想知道的内容」「不能先把对应的官网先缓存到本地吗 html」:
@@ -61,8 +63,10 @@ fetch/crawl 2026-08-30 零字符串溶完即入册(INFRA 身份不变:域可引;
 crawl 2026-08-30 批A 升格基础设施(判据:被十几个 build 当地基读缓存 ——「换掉它
 业务一个字不用改」;正门 from crawl.cache import …,path-hack 黑通道批B 拆光)"""
 
-INFRA = {"paths", "fetch", "log", "noc", "crawl", "names", "richtext"}
+INFRA = {"paths", "fetch", "log", "noc", "crawl", "names", "richtext", "door"}
 """基础设施叶:域可引(判据「换掉它业务一个字不用改」)。
+door 2026-09-26 入册(Frank「推广」):域门跑一串步的唯一实现 run_steps(一步失败其余照跑、有失败仍返回 1);
+推广前 pnp / statcan 两门各有一份,先收一再推广(行为重复不许)。只依赖 log 叶。
 richtext 2026-09-20 入册(设计稿 docs/design/职位正文结构下沉-20260920.md):「这段 HTML 原本长什么样」
 唯一一把尺子 —— 立叶前同一个行为在 ats/jobillico/jobboom/careerbeacon/hireac 复制了五份、后四份逐字相同、
 五份都把换行连同标签一起碾成空格(在招 22,099 条 Jobillico 岗正文落成一整行);jobbank 的 serialize_node

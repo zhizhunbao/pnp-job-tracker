@@ -19,7 +19,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from aip.functions import flag_aip_jobs, scrape_aip_employers
 
 SCHEDULED = [
@@ -30,7 +31,9 @@ SCHEDULED = [
 rules 2026-08-31 批O 收编进链(原「随 crawl 缓存轮次手动重跑」—— 保鲜闸上线后手动件
 = 每 4 天一次人工闹钟,实测 aip_rules.json 停 23 天没人跑;它只读 crawl 缓存零网络开销,
 入链即免人工。引用核验未过 → 保留旧表 + SystemExit(1) 中止本轮 → 扣 ping 转红,报警
-语义与手动时代一字不差,只是不再依赖人记得跑)。"""
+语义与手动时代一字不差,只是不再依赖人记得跑)。
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
+"""
 
 TOOLS = {
     "employers": scrape_aip_employers,
@@ -60,15 +63,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

@@ -1,26 +1,24 @@
 """
-employers 域唯一入口(一域一门;2026-08-30 立域,company 全溶门形)。
+door 叶唯一入口(基础设施叶:无 META、不进调度;门只为自测留一个 --only test)。
 
-本域无自带役:池表由 build 役末段点名(mart 之后、upload 之前 —— 池表也要随轮上传)。
 一律从仓库根执行:
-    python etl/employers/main.py                # 默认链(pool)
-    python etl/employers/main.py --only pool
+    python etl/door/main.py --only test    # 门循环自测(一步失败其余照跑、返回码仍为 1)
+
+@author Frank
+@time 2026-09-26 16:09:33
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import say
-from door.functions import run_steps
-from employers.functions import build_employer_pool
+from door.functions import run_steps, run_tests
 
-SCHEDULED = [("pool", build_employer_pool)]
-"""默认链:雇主池两表(全局 + 分桶)。
-2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
-"""
+SCHEDULED = []
+"""默认链(调度真相):空 —— 基础设施叶,只有自测工具。"""
 
 TOOLS = {
-    "pool": build_employer_pool,
+    "test": run_tests,
 }
 """全部可 --only 点名的步。"""
 

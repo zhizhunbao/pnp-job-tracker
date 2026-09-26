@@ -22,7 +22,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from ircc.functions import (
     build_ircc_difficulty, build_ircc_fees, build_ircc_pgwp_rules, scrape_ircc_stats,
 )
@@ -50,6 +51,7 @@ etl/statcan/main.py 的 SCHEDULED —— 它们抓的是 StatCan 的表,不是 I
 
   build_ircc_pgwp_rules   联邦 PGWP 规则库(quote-anchored;引用消失即保留旧表 exit 1)
   build_ircc_fees         G8:联邦段官方规费(段落定位+交叉自校硬闸;拆中介报价的原料)
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
 """
 
 TOOLS = {
@@ -76,15 +78,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

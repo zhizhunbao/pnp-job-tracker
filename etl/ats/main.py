@@ -26,7 +26,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from ats.functions import build_jd_index, extract_ats_salary, run_tests, scrape_ats_jobs
 
 SCHEDULED = [
@@ -38,6 +39,7 @@ META.steps 一一对应,两步都不带实参(旧役册同样不带):
 
   scrape  逐司读 careers.json → 调各家 ATS 公开 JSON → 就地写回 jobs.json + jobs/*.md
   salary  extract_ats_salary:从上一步落好的描述里抽结构化薪资(原 clean/04b,批H2 归户)
+2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
 """
 
 TOOLS = {
@@ -69,15 +71,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":
