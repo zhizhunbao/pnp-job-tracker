@@ -70,8 +70,17 @@ export const LI_COOKIE = 'o2p_li'
 
 /**
  * 新用户 loginProvider 标记(随机密码,用户不持有 —— 走 Google 或忘记密码自设)。
+ * 2026-09-26 /fe Frank:同值兼作第一方漏斗 signup 的渠道分组(邮箱注册那一处记 email ——
+ * 与 users.loginProvider 列同一套词,分组值就是注册来路)。
  */
 export const PROVIDER_GOOGLE = 'google'
+
+/**
+ * 第一方漏斗的注册成功事件名:Google 首次建号在回调路由里记这一格。与邮箱注册那一处
+ * (components/auth 的 EVENT_SIGNUP,经 lib/track 上报)同名,两条来路落进同一个事件、按渠道分组;
+ * 改名要两处连同 lib/funnel 的 ALIAS 一起改,否则 Google 那截成了白名单外被丢(2026-09-26 /fe Frank)。
+ */
+export const EVENT_SIGNUP = 'signup'
 
 /**
  * 回调路径(redirect_uri = SITE + 它;两跳共用一处)。

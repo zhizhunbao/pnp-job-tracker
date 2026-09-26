@@ -72,6 +72,7 @@ export type GoogleLoginIn = {
 
 /**
  * `loginWithGoogle` 的产物:签好的会话 token 与种 cookie 要的两样。
+ * 2026-09-26 /fe Frank:外加「这次是不是当场建号」一格,回调路由据此记注册数。
  */
 export type GoogleLogin = {
   /**
@@ -88,6 +89,13 @@ export type GoogleLogin = {
    * 会话 cookie 前缀(payload.config 未配则默认 'payload')。
    */
   cookiePrefix: string
+
+  /**
+   * 这次是不是当场建的号:库里没有这个邮箱、新建了用户 = true;按邮箱关联登录的老账号
+   * (含先前用邮箱注册的)= false。回调路由据此给第一方漏斗记一笔 signup,老账号再登录不记
+   * (2026-09-26 /fe Frank:Google 首次建号原先不计,注册数偏低)。
+   */
+  created: boolean
 }
 
 /**
@@ -267,6 +275,7 @@ export type CallbackOutcome = {
 
   /**
    * 签好的会话三件。
+   * 2026-09-26 /fe Frank:外加是否当场建号一格(路由据此记注册数,见 GoogleLogin.created)。
    */
   session: GoogleLogin
 

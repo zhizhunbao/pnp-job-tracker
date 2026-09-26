@@ -66,6 +66,9 @@ export type FunnelStep = (typeof FUNNEL_STEPS)[number]
  * 没有父子关系(投递不是注册的下一步,周报开关也不接在发起付款后面),排成链算相邻转化率只会算出
  * 没有意义的比值,所以不进任何 *_STEPS。prop 是低基数枚举:投递记方式(email|web)、发起付款记档位、
  * 周报记开关(true|false)、注册不分组 —— 🔴 邮箱、公司名、岗位号永不进 prop。
+ * 2026-09-26 /fe Frank 改判:注册改记渠道(email|google)—— Google 首次建号原先不计,注册数偏低。
+ * 邮箱注册在前端经 lib/track 打(mode 格);Google 建号只有服务端知道,由会话域回调路由直接落表
+ * (不进 Umami)。上面「注册不分组」作废,留作当初为什么。
  */
 export const ALIAS: Record<string, FunnelStep> = {
   'modal-jd': 'jd-open',

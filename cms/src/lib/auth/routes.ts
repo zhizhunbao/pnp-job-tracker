@@ -2,14 +2,20 @@
  * 会话域的 HTTP 芯（第十一抽屉）：Google 登录两跳的取参与 302 拼装。
  * 判定链整条在 functions 的 googleCallback（失败留痕也在那）；
  * 顶层只有 handler（闸 routes-shape）。
+ * 2026-09-26 /fe Frank:当场建号(session.created)在这里给第一方漏斗记一笔 signup(google)——
+ * 建号只有服务端知道;写法照漏斗路由(toFunnelHit + recordHit,池由本芯注入),本机来源不计。
  *
  * @author Frank
  * @time 2026-08-23 01:30:00
  */
-import { FOUND, HDR_LOCATION, HDR_SET_COOKIE, NOT_FOUND } from '../http'
+import { getDb } from '../db/server'
+import { isLocalHost, toFunnelHit } from '../funnel'
+import { recordHit, siteHostOf } from '../funnel/server'
+import { FOUND, HDR_HOST, HDR_LOCATION, HDR_ORIGIN, HDR_SET_COOKIE, NOT_FOUND } from '../http'
 import {
-  COOKIE_DEL_VALUE, FAIL_PATH, FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, HDR_COOKIE, K_FAIL, MSG_NOT_CONFIGURED,
-  PARAM_CODE, PARAM_ERROR, PARAM_RETURN_TO, PARAM_STATE, RETURN_COOKIE, RETURN_NONE, RETURN_RE, SITE, STATE_COOKIE,
+  COOKIE_DEL_VALUE, EVENT_SIGNUP, FAIL_PATH, FLOW_COOKIE_AGE, GOOGLE_CLIENT_ID, HDR_COOKIE, K_FAIL, MSG_NOT_CONFIGURED,
+  PARAM_CODE, PARAM_ERROR, PARAM_RETURN_TO, PARAM_STATE, PROVIDER_GOOGLE, RETURN_COOKIE, RETURN_NONE, RETURN_RE, SITE,
+  STATE_COOKIE,
 } from './constants'
 import { googleCallback, googleConsentUrl, oauthCookie, readCookie, sessionCookies } from './functions'
 
@@ -42,6 +48,8 @@ export async function googleStartRoute(req: Request): Promise<Response> {
 
 /**
  * GET /api/auth/google/callback：第 2 跳 —— 取参 → googleCallback 判定链 → 按 kind 拼 302。
+ * 2026-09-26 /fe Frank:成功且当场建号 = 第一方漏斗记一笔 signup(google);老账号再登录不记,
+ * 本机来源不计(dev 直连生产库,同漏斗路由口径);不进 Umami(服务端没有 window.umami)。
  *
  * @param req 回调请求（code/state 在 searchParams，state/return 在 cookie）。
  * @returns 302（成功种会话 cookie；失败带 oauth=fail）。
@@ -65,6 +73,13 @@ export async function googleCallbackRoute(req: Request): Promise<Response> {
         [HDR_SET_COOKIE]: oauthCookie({ name: STATE_COOKIE, value: COOKIE_DEL_VALUE, maxAge: 0 }),
       },
     })
+  }
+  if (outcome.session.created) {
+    const host = siteHostOf({ origin: req.headers.get(HDR_ORIGIN), host: req.headers.get(HDR_HOST) })
+    const hit = toFunnelHit({ name: EVENT_SIGNUP, prop: PROVIDER_GOOGLE })
+    if (hit != null && isLocalHost(host) === false) {
+      await recordHit({ db: await getDb(), hit: hit })
+    }
   }
   const [tokenCookie, traceCookie] = sessionCookies(outcome.session)
   return new Response(null, {

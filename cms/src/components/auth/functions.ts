@@ -17,7 +17,7 @@ import {
   AVATAR_COLOR_NONE, PATH_ROOT, PW_CLASSES_MEDIUM, PW_CLASSES_STRONG, PW_CLASS_RES, PW_LONG_LEN, PW_LV_MEDIUM,
   PW_LV_STRONG, PW_LV_WEAK,
   PW_MIN_LEN, P_JOB, P_NEXT, P_QUIZ, QS_RETURN_TO, QUIZ_DECISION_PR, QUIZ_ON, QUIZ_PATH, QUIZ_STAGE_BASIC,
-  REGISTER_EXISTS_RE, REGISTER_WEAK_PW_RE, SAFE_PATH_RE, TOKEN_NONE,
+  REGISTER_EXISTS_RE, REGISTER_WEAK_PW_RE, SAFE_PATH_RE, SIGNUP_VIA_EMAIL, TOKEN_NONE,
 } from './constants'
 import type {
   AccountMenuHandlesIn, AccountMenuHandlesOut, AuthFlowIn, AuthFlowOut, AuthFooterHandlesIn, AuthFooterHandlesOut,
@@ -207,11 +207,12 @@ export function registerErrKeyOf(x: RegisterErrIn): string {
  * window 上是外部脚本注入的全局形状(UmamiHost),跨边界断言收在体内那一处。
  * 2026-09-26 /fe Frank:改走统一上报门 lib/track(umami + 第一方漏斗)—— 原先只直调 umami,
  * 被拦截器挡掉就没了;window 的形状与断言随之归门里那一处(UmamiHost 退役),拿不到照旧算了(门里吞错)。
+ * 同日添渠道分组 mode=email:Google 首次建号只有服务端知道,在 lib/auth 的回调路由里记 google。
  *
  * @returns 无。
  */
 export function trackSignup() {
-  track(EVENT_SIGNUP)
+  track(EVENT_SIGNUP, { mode: SIGNUP_VIA_EMAIL })
 }
 
 /**

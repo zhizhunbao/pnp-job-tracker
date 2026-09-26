@@ -358,6 +358,13 @@ export const KEY_ERR_RESET_BAD = 'acct.resetBad'
 export const EVENT_SIGNUP = 'signup'
 
 /**
+ * 注册成功事件的渠道分组值:邮箱注册。Google 首次建号在 lib/auth 的回调路由里记 google,两格并列,
+ * 与 users.loginProvider 列同一套词。走 track 的 mode 格 —— lib/track 的 pickProp 本就认这一格,不扩白名单。
+ * 🔴 只许低基数枚举:邮箱地址、用户 id 永不进分组(2026-09-26 /fe Frank)。
+ */
+export const SIGNUP_VIA_EMAIL = 'email'
+
+/**
  * 邮箱框的 type:交给浏览器做基本格式校验,手机上还会换成带 @ 的键盘。
  */
 export const INPUT_TYPE_EMAIL = 'email'

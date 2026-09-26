@@ -77,6 +77,8 @@ describe('转化四事件的分组值', () => {
     track('apply', { mode: 'web' })
     track('weekly-optin', { on: 'false' })
     track('checkout', { plan: '90' })
+    // 2026-09-26 /fe Frank 改判:注册调用点改带渠道(email|google,见 signup.int.spec.ts);
+    // 这里只锁门的性质 —— 不带 data 的事件 prop 为 null
     track('signup')
     expect(await sentOf(beacon)).toEqual([
       { event: 'apply', prop: 'email' },

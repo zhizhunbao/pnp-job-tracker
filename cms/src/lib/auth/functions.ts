@@ -225,9 +225,11 @@ export function safeReturnPath(raw: MaybeCookie): string {
  * (用户不持有,走 Google 或忘记密码自设)。失败抛,由路由统一 302 fail。
  * 体内三张 no-explicit-any 特批牌都是同一个接缝:payload 用户的生成型跟 collection 走,
  * 本域只读 id/avatar/displayName/sessions 几格。
+ * 2026-09-26 /fe Frank:产物带 created —— 按邮箱没查到、走了建号那一支才是 true;
+ * 回调路由据此记一笔注册,关联登录的老账号不记(Google 首次建号原先不计,注册数偏低)。
  *
  * @param input 已验证的三格。
- * @returns token 与种 cookie 要的两样。
+ * @returns token 与种 cookie 要的两样,外加是否当场建号。
  */
 export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
   const payload = await getPayload({ config: await config })
@@ -237,6 +239,7 @@ export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload 生成型接缝(理由见函数 JSDoc)
   let user = found.docs[0] as any
+  const created = user == null
   const backfill: Record<string, string> = {}
   if (user == null) {
     const rand = Array.from(crypto.getRandomValues(new Uint8Array(PASSWORD_BYTE_LEN)), toHex).join(HEX_SEP)
@@ -279,7 +282,7 @@ export async function loginWithGoogle(input: GoogleLoginIn): GoogleLoginOut {
   if (typeof cfg.cookiePrefix === 'string' && cfg.cookiePrefix !== '') {
     cookiePrefix = cfg.cookiePrefix
   }
-  return { token: token, tokenExpiration: tokenExpiration, cookiePrefix: cookiePrefix }
+  return { token: token, tokenExpiration: tokenExpiration, cookiePrefix: cookiePrefix, created: created }
 }
 
 /**
