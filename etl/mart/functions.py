@@ -198,7 +198,7 @@ from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
-    K_HOWTO_AT, K_HOWTO_EMAILS, K_HOWTO_STATUS, K_HOWTO_UNTIL, PRINT_APPLY_TPL,
+    K_HOWTO_AT, K_HOWTO_EMAILS, K_HOWTO_STATUS, K_HOWTO_UNTIL, K_VERIFY_UNTIL, PRINT_APPLY_TPL,
 )
 from mart.scheme import ApplyTally, HowtoRecIn
 from mart.scheme import (
@@ -2097,7 +2097,9 @@ def fill_jd_bodies(ctx: MartCtx) -> None:
 
 
 def to_ats_job_fields(x: AtsJobIn) -> dict:
-    """ATS 岗 → jobs 行的来源侧字段(键序即落盘列序)。"""
+    """ATS 岗 → jobs 行的来源侧字段(键序即落盘列序)。
+    截止日 validThrough 同板帖口径「有就写,没有就不写」:ats 域只抽雇主招聘系统里明写的那一格(纯日期,jobs.json 的
+    valid_through,键名与板仓同),空串 → None 不落列(2026-09-26 /fe Frank「补」;过了截止日由 seed 的 CLOSE_PAST_DEADLINE 下架)。"""
     return {
         "title": x.job.get("title"), "source": x.ats, "origin": ORIGIN_ATS,
         "country": x.job.get("country"),
@@ -2111,6 +2113,7 @@ def to_ats_job_fields(x: AtsJobIn) -> dict:
         "pilotCommunity": x.job.get("pilotCommunity") or "",
         "pilotEmployer": bool(x.job.get("pilotEmployer")),
         "apprenticeFriendly": False, "datePosted": x.job.get("posted"), "lastSeen": x.seen_at,
+        K_VALID_THROUGH: x.job.get(K_SRC_VALID_THROUGH) or None,
     }
 
 
@@ -6105,9 +6108,14 @@ def fill_apply_emails(ctx: MartCtx) -> None:
     Job Bank 直发帖的邮箱藏在「How to apply」按钮后面,正文里一个都没有 —— 读 jobbank 域 howto 役的投递区;
     同一次回包还带「Advertised until」截止日,喂 JSON-LD 的 validThrough。其他来源(板帖、ATS、Job Bank 转帖)
     从正文抽,只认投递语境里的,无障碍 / 隐私 / noreply 类排除。必须排在 fill_jd_bodies 之后(正文那时才齐)。
+    2026-09-26 /fe Frank「到期即验 + 刷新截止日」:Job Bank 岗的截止日改读验尸台账里的帖页截止日(jobbank 域验尸每次验活
+    都重读帖页,延期跟得上;09-26 抽样活帖 9% 帖页截止日比库里晚),缺席才用 howto 只抓一次的那份。帖页截止日连非 Indeed
+    的 Job Bank 转帖也有,这些岗从此也带 validThrough。
     """
     howto = load_howto_table()
+    page_until = load_page_until()
     tally = ApplyTally(jb=0, text=0, until=0)
+    from_page = 0
     for row in ctx.jobs:
         rec = howto_rec_of(HowtoRecIn(row=row, howto=howto))
         mail = howto_mail_of(rec)
@@ -6120,11 +6128,15 @@ def fill_apply_emails(ctx: MartCtx) -> None:
         if mail != "":
             row[K_APPLY_EMAIL] = mail
         until = rec.get(K_HOWTO_UNTIL) or ""
+        page = page_until.get(jb_pid_of(row)) or ""
+        if page != "":
+            until = page
+            from_page += 1
         if until != "" and not row.get(K_VALID_THROUGH):
             row[K_VALID_THROUGH] = until
             tally.until += 1
-    say(PRINT_APPLY_TPL.format(jb=tally.jb, text=tally.text, until=tally.until, total=tally.jb + tally.text,
-                               jobs=len(ctx.jobs)))
+    say(PRINT_APPLY_TPL.format(jb=tally.jb, text=tally.text, until=tally.until, page=from_page,
+                               total=tally.jb + tally.text, jobs=len(ctx.jobs)))
 
 
 def load_howto_table() -> dict:
@@ -6134,12 +6146,28 @@ def load_howto_table() -> dict:
     return read_table(IN_HOWTO)
 
 
+def load_page_until() -> dict:
+    """验尸台账里的帖页截止日(帖号 → YYYY-MM-DD;空串 = 帖页没写)。台账文件还没有、或还是 2026-09-26 之前的旧形
+    (没有这一格)= 空表:截止日全走 howto。"""
+    if not IN_EXPIRED.exists():
+        return {}
+    return read_table(IN_EXPIRED).get(K_VERIFY_UNTIL) or {}
+
+
 def howto_rec_of(x: HowtoRecIn) -> dict:
     """一个 Job Bank 岗在 howto 里的记录(externalId = jb:<帖号>;不是 Job Bank 岗或没查过 = 空表)。"""
-    ext = x.row.get(K_EXTERNAL_ID) or ""
-    if x.row.get(K_ORIGIN) != ORIGIN_JOBBANK or not ext.startswith(JB_EXT_PREFIX):
+    pid = jb_pid_of(x.row)
+    if pid == "":
         return {}
-    return x.howto.get(ext[len(JB_EXT_PREFIX):]) or {}
+    return x.howto.get(pid) or {}
+
+
+def jb_pid_of(row: dict) -> str:
+    """jobs 行的 Job Bank 帖号(externalId = jb:<帖号>;不是 Job Bank 岗给空串)。howto 记录与验尸帖页截止日共用这把尺子。"""
+    ext = row.get(K_EXTERNAL_ID) or ""
+    if row.get(K_ORIGIN) != ORIGIN_JOBBANK or not ext.startswith(JB_EXT_PREFIX):
+        return ""
+    return ext[len(JB_EXT_PREFIX):]
 
 
 def howto_mail_of(rec: dict) -> str:

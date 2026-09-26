@@ -11,10 +11,17 @@ sys.path[0] 时 httpx/bs4 内部 import types 当场炸)。
   Pyrefly 对 Protocol 实参判定保守,装配点用 typing.cast 喂真客户端(断言只住装配点)。
 方法签名按「本域怎么调」收窄,默认值是库形状特批(cms「库定死签名的除外」同律)。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
+§4 自测(2026-09-26 /fe Frank「补」截止日批立):unittest 用例集 + HTTP 替身 ——「不用 class」的外部库例外,
+先例 indexing.scheme / gate.scheme,跑法 `python etl/ats/main.py --only test`;被测的 ats.functions 在用例体内现取
+(functions 反过来 import 本文件,顶部 import 会成环)。
 """
-from dataclasses import dataclass
+import tempfile
+import unittest
+from dataclasses import dataclass, field
+from datetime import date, timedelta
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, cast
+from unittest import mock
 
 
 # =========================================================================
@@ -84,6 +91,10 @@ class AtsJob:
 
     tech: bool = False
     """标题命中科技岗判据(抓完统一打标)。"""
+
+    valid_through: str = ""
+    """截止日(YYYY-MM-DD):雇主招聘系统里明写的才有(Workday / SuccessFactors / Oracle / Recruitee / Greenhouse
+    各有一格),其余空串 —— 不推算(2026-09-26 /fe Frank「补」)。"""
 
 
 @dataclass
@@ -489,3 +500,189 @@ class PhenomJobIn:
 
     html: str
     """职位页原文。"""
+
+
+# =========================================================================
+# 4. 自测(用例住 scheme)
+# =========================================================================
+
+
+@dataclass
+class FakeResponse:
+    """HTTP 响应替身(HttpResponseLike 的两格)。"""
+
+    text: str
+    """正文。"""
+
+    def json(self) -> object:
+        """载荷(本组用例只读页面正文,不走 JSON)。"""
+        return None
+
+
+@dataclass
+class FakeClient:
+    """HTTP 替身:GET 按网址查 pages(查不到回空页),每次记进 asked;本组用例只走 GET。"""
+
+    pages: dict[str, str]
+    """网址 → 页面原文。"""
+
+    asked: list[str] = field(default_factory=list)
+    """GET 过的网址(按先后)。"""
+
+    def get(self, url: str, headers: dict | None = None) -> FakeResponse:
+        """GET(替身;headers 照库形状收下不用)。"""
+        self.asked.append(url)
+        return FakeResponse(text=self.pages.get(url, ""))
+
+
+class AtsDeadlineTest(unittest.TestCase):
+    """截止日抽取自测(2026-09-26 /fe Frank「补」同批):共享的截止日归一 / 五家行构造器各取自家那一格 / 落盘行带键 /
+    SuccessFactors 缓存页过期判定与重取。形制照宪法判定层测试:穷举输入断言性质 + 手写金标(写法样例取自当天实测载荷),
+    不做快照矩阵;全程不联网、不写仓内文件(认不出的写法会留痕,用例里把 err 换成替身并数它被叫了几次;
+    缓存索引 / 缓存写门 / 清单翻页 / 礼貌间隔全换替身,缓存页落临时目录)。"""
+
+    def sf_page(self, valid: str) -> str:
+        """造一张 SuccessFactors 职位页:标题 + 发布时刻 + 截止时刻三格微数据(valid 给空串 = 页上没写截止)。"""
+        meta = ""
+        if valid != "":
+            meta = '<meta itemprop="validThrough" content="' + valid + '">'
+        return ('<div class="jobDisplayShell" itemscope="itemscope" itemtype="http://schema.org/JobPosting">'
+                '<span itemprop="title">Senior Analyst</span>'
+                '<meta itemprop="datePosted" content="Tue Sep 08 00:00:00 UTC 2026">' + meta + "</div>")
+
+    def sf_stamp(self, offset: int) -> str:
+        """今天往后 offset 天(负数往前)写成 SuccessFactors 的时刻写法(多伦多零点 = 04:00 UTC,与实测页同形)。"""
+        return (date.today() + timedelta(days=offset)).strftime("%a %b %d 04:00:00 UTC %Y")
+
+    def calendar_iso(self, raw: str) -> str:
+        """独立对照尺:`YYYY-MM-DD` 在日历上真有这天就原样给回,否则空串(按年月日整数现造,不经被测函数)。"""
+        parts = raw.split("-")
+        try:
+            return date(int(parts[0]), int(parts[1]), int(parts[2])).isoformat()
+        except ValueError:
+            return ""
+
+    def test_deadline_golden(self) -> None:
+        """截止日归一金标:纯日期 / 带时刻带时区 / 带空格 UTC / 首尾空白 / ISO 基本式 → 日期部分(不换时区);
+        None 与空白静默给空;别的写法、日历上没有的日子 → 空串且每个都留痕。"""
+        from ats import functions as fn
+        quiet = [
+            ("2026-09-30", "2026-09-30"),
+            ("2026-10-01T03:59:00+00:00", "2026-10-01"),
+            ("2026-10-15T23:59:59.000Z", "2026-10-15"),
+            ("2026-09-24 14:15:22 UTC", "2026-09-24"),
+            ("  2026-09-30  ", "2026-09-30"),
+            ("20260930", "2026-09-30"),
+            ("", ""),
+            ("   ", ""),
+            (None, ""),
+        ]
+        loud = ["Thu Oct 01 04:00:00 UTC 2026", "September 30, 2026", "2026/09/30", "2026-9-30", "30-09-2026",
+                "2026-02-30", "2026-13-01", "2026-00-10", 1790453708000]
+        with mock.patch.object(fn, "err") as spy:
+            for raw, want in quiet:
+                with self.subTest(raw=raw):
+                    self.assertEqual(fn.deadline_of(raw), want)
+            self.assertEqual(spy.call_count, 0)
+            for bad in loud:
+                with self.subTest(bad=bad):
+                    self.assertEqual(fn.deadline_of(bad), "")
+            self.assertEqual(spy.call_count, len(loud))
+
+    def test_deadline_exhaustive(self) -> None:
+        """穷举性质:2026–2027 每一天 × 四种写法都取回同一天;月 00–13 × 日 00–32 全组合里,日历上有这天才原样取回、
+        没有就空串 —— 输出只有「空串」与「合法 YYYY-MM-DD」两种形。"""
+        from ats import functions as fn
+        day = date(2026, 1, 1)
+        while day < date(2028, 1, 1):
+            iso = day.isoformat()
+            for raw in (iso, iso + "T00:00:00-04:00", iso + " 12:00:00 UTC", iso + "T23:59:59.000Z"):
+                self.assertEqual(fn.deadline_of(raw), iso, raw)
+            day = day + timedelta(days=1)
+        with mock.patch.object(fn, "err"):
+            for month in range(14):
+                for dom in range(33):
+                    raw = "2026-" + str(month).zfill(2) + "-" + str(dom).zfill(2)
+                    self.assertEqual(fn.deadline_of(raw), self.calendar_iso(raw), raw)
+
+    def test_adapters_golden(self) -> None:
+        """五家行构造器金标:各取自家那一格(写法取自 2026-09-26 实测载荷);格子空 / 缺席 → 空串,不拿发布日之类的别的日子顶。"""
+        from ats import functions as fn
+        posting = {"title": "QNX Developer", "locationsText": "Ottawa, Ontario"}
+        info = {"title": "QNX Developer", "startDate": "2026-09-13", "endDate": "2026-09-30"}
+        self.assertEqual(fn.to_workday_job(WorkdayJobIn(posting=posting, info=info)).valid_through, "2026-09-30")
+        no_end = {"title": "QNX Developer", "startDate": "2026-09-13"}
+        self.assertEqual(fn.to_workday_job(WorkdayJobIn(posting=posting, info=no_end)).valid_through, "")
+        self.assertEqual(fn.to_workday_job(WorkdayJobIn(posting=posting, info={})).valid_through, "")
+        row = {"Id": "40266", "Title": "Engineer", "PostedDate": "2026-09-18", "PostingEndDate": "2026-10-05"}
+        detail = {"ExternalPostedStartDate": "2026-09-18T13:41:47+00:00", "ExternalPostedEndDate": "2026-10-01T03:59:00+00:00"}
+        self.assertEqual(fn.to_orc_job(OrcJobIn(row=row, detail=detail, host="h", site="CX_1")).valid_through, "2026-10-01")
+        self.assertEqual(fn.to_orc_job(OrcJobIn(row=row, detail={}, host="h", site="CX_1")).valid_through, "2026-10-05")
+        bare = {"Id": "40266", "Title": "Engineer", "PostedDate": "2026-09-18", "PostingEndDate": None}
+        blank = {"ExternalPostedEndDate": None}
+        self.assertEqual(fn.to_orc_job(OrcJobIn(row=bare, detail=blank, host="h", site="CX_1")).valid_through, "")
+        offer = {"title": "Researcher", "created_at": "2026-09-24 14:15:22 UTC", "close_at": "2026-10-10 23:59:00 UTC"}
+        self.assertEqual(fn.to_recruitee_job(offer).valid_through, "2026-10-10")
+        self.assertEqual(fn.to_recruitee_job({"title": "Researcher", "close_at": None}).valid_through, "")
+        gh = {"title": "Engineer", "updated_at": "2026-09-25T16:45:00-04:00", "application_deadline": "2026-10-15T23:59:59.000Z"}
+        self.assertEqual(fn.to_greenhouse_job(gh).valid_through, "2026-10-15")
+        self.assertEqual(fn.to_greenhouse_job({"title": "Engineer", "application_deadline": None}).valid_through, "")
+        url = "https://careers.bankofcanada.ca/job/Ottawa-Analyst/1234/"
+        cases = [("Thu Oct 01 04:00:00 UTC 2026", "2026-10-01"), ("Tue Dec 01 05:00:00 UTC 2026", "2026-12-01"),
+                 ("Tue Oct 06 18:30:00 UTC 2026", "2026-10-06"), ("", ""), ("2026-10-01", "")]
+        for valid, want in cases:
+            with self.subTest(valid=valid):
+                job = fn.to_sf_job(SfJobIn(url=url, html=self.sf_page(valid)))
+                if job is None:
+                    self.fail(valid)
+                self.assertEqual(job.valid_through, want)
+                self.assertEqual(job.posted, "2026-09-08")
+
+    def test_job_row_carries_deadline(self) -> None:
+        """落盘行:valid_through 键有值原样写、没有写空串(mart 那头 `or None` 不落列);description 照旧不进清单。"""
+        from ats import functions as fn
+        full = AtsJob(title="Dev", location="Ottawa, Ontario", url="https://x/job/1", department="", posted="2026-09-13",
+                      address="", salary="", description="<p>body</p>", valid_through="2026-09-30")
+        row = fn.to_job_row(full)
+        self.assertEqual(row["valid_through"], "2026-09-30")
+        self.assertNotIn("description", row)
+        bare = AtsJob(title="Dev", location="Ottawa, Ontario", url="https://x/job/1", department="", posted="2026-09-13",
+                      address="")
+        self.assertEqual(fn.to_job_row(bare)["valid_through"], "")
+
+    def test_sf_lapsed(self) -> None:
+        """缓存页过期判定(口径同 seed:早于今天才算过,当天不算):穷举今天前后各 400 天,过期当且仅当偏移为负;
+        没写截止 / 写法认不出 → 不算过期(不为认不出的页多打请求)。"""
+        from ats import functions as fn
+        for offset in range(-400, 401):
+            self.assertEqual(fn.is_sf_lapsed(self.sf_page(self.sf_stamp(offset))), offset < 0, offset)
+        self.assertFalse(fn.is_sf_lapsed(self.sf_page("")))
+        self.assertFalse(fn.is_sf_lapsed(self.sf_page("2026-09-01")))
+
+    def test_sf_refetch_only_lapsed(self) -> None:
+        """清单三页 = 没缓存 / 缓存未过期 / 缓存已过期:只请求第一、三页,这两页回写缓存;已过期那页重取回来带着延后的
+        新截止日(雇主延期)→ 落出的岗用新日子,不拿缓存里的旧日子误关。"""
+        from ats import functions as fn
+        urls = ["https://sf.example/job/a/1/", "https://sf.example/job/b/2/", "https://sf.example/job/c/3/"]
+        later = self.sf_page(self.sf_stamp(10))
+        client = FakeClient(pages={urls[0]: later, urls[2]: later})
+        with tempfile.TemporaryDirectory() as tmp:
+            fine = Path(tmp) / "fine.html"
+            fine.write_text(self.sf_page(self.sf_stamp(3)), encoding="utf-8")
+            lapsed = Path(tmp) / "lapsed.html"
+            lapsed.write_text(self.sf_page(self.sf_stamp(-3)), encoding="utf-8")
+            with mock.patch.object(fn, "sf_job_urls", return_value=urls), \
+                    mock.patch.object(fn, "load_cache_index", return_value={urls[1]: fine, urls[2]: lapsed}), \
+                    mock.patch.object(fn, "put_cached_pages") as put, mock.patch.object(fn.time, "sleep"):
+                jobs = fn.fetch_successfactors(SfFetchIn(client=cast(HttpClientLike, client),
+                                                         careers_url="https://sf.example/search/", company="acme"))
+        self.assertEqual(client.asked, [urls[0], urls[2]])
+        written: list[str] = []
+        for page in put.call_args.args[0].pages:
+            written.append(page.url)
+        self.assertEqual(written, [urls[0], urls[2]])
+        got: list[str] = []
+        for job in jobs:
+            got.append(job.valid_through)
+        want = (date.today() + timedelta(days=10)).isoformat()
+        self.assertEqual(got, [want, (date.today() + timedelta(days=3)).isoformat(), want])

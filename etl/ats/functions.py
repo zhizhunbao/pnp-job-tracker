@@ -16,15 +16,19 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
 ① 原 `--region` argparse —— 它 parse 完就扔,地域早已由 paths.COMPANIES 决定,零行为;
 ② 原 summary/skipped 两个明细清单 —— 只被 len()/sum() 消费(排序结果都没人看),
    收成 ScrapeTally 三个计数,收尾那行输出逐字不变。
+2026-09-26 /fe Frank「补」截止日:雇主招聘系统里明写的截止日抽进 AtsJob.valid_through(§1 deadline_of 归一 +
+各家行构造器取自家那一格;SuccessFactors 缓存页过期重取见 is_sf_lapsed),自测住 §4(`--only test`)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import html
 import json
 import re
+import sys
 import time
+import unittest
 from pathlib import Path
 from urllib.parse import urlsplit
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import cast
 
 from fetch.constants import WS_RE
@@ -73,8 +77,11 @@ from ats.constants import (
     EF_DELAY_S, EF_DETAIL_URL_TPL, EF_JOB_URL_TPL, EF_MAX_PAGES, EF_PAGE_SIZE, EF_SEARCH_URL_TPL, EF_SITE_RE, EF_WHERE,
     EIGHTFOLD, K_DATA, K_EF_BODY, K_EF_LOCATIONS, K_EF_NAME, K_EF_POSTED_TS, K_EF_PUBLIC_URL, K_POSITIONS,
     K_LD_GRAPH, K_WP_LINK, WPCAREERS, WP_DELAY_S, WP_MAX_PAGES, WP_PAGE_SIZE, WP_PAGE_TPL, WP_SPOT_SEP,
+    K_APPLICATION_DEADLINE, K_CLOSE_AT, K_END_DATE, K_ORC_POSTED_END, K_ORC_POSTING_END, K_VALID_THROUGH, SF_VALID_RE,
+    TEST_VERBOSITY,
 )
 from ats.scheme import (
+    AtsDeadlineTest,
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
@@ -129,6 +136,23 @@ def iso_of(value: object) -> str:
             err(value, e)
             return ""
     return str(value)[:ISO_DATE_LEN]
+
+
+def deadline_of(value: object) -> str:
+    """源里明写的截止日 → YYYY-MM-DD(2026-09-26 /fe Frank「补」):取前 10 位,是 ISO 日期且日历上真有这天才收
+    (`2026-09-30` / `2026-10-01T03:59:00+00:00` / `2026-09-24 14:15:22 UTC` 都取日期部分,不换时区 —— seed 那头
+    也是按日期比);格子空静默给空,写了却认不出的给空并留痕(平台换了写法要知道)。只抽不推算:没有就是空串。
+    SuccessFactors 那种 `Thu Oct 01 04:00:00 UTC 2026` 不走这里(走 sf_date_of,与它的发布时刻同一把尺)。"""
+    if value is None:
+        return ""
+    head = str(value).strip()[:ISO_DATE_LEN]
+    if head == "":
+        return ""
+    try:
+        return date.fromisoformat(head).isoformat()
+    except ValueError as e:
+        err(value, e)
+        return ""
 
 
 # =========================================================================
@@ -270,13 +294,13 @@ def greenhouse_jobs(x: AtsFetchIn) -> list:
 
 
 def to_greenhouse_job(row: dict) -> AtsJob:
-    """Greenhouse 载荷 → AtsJob。"""
+    """Greenhouse 载荷 → AtsJob(截止日取 application_deadline,空就空;2026-09-26 /fe Frank「补」)。"""
     location = row.get(K_LOCATION) or {}
     content = row.get(K_CONTENT, "") or ""
     return AtsJob(title=row[K_TITLE], location=location.get(K_NAME, ""),
                   url=row.get(K_ABSOLUTE_URL, ""), department="",
                   posted=iso_of(row.get(K_UPDATED_AT, "")), address=address_of(content),
-                  description=content)
+                  description=content, valid_through=deadline_of(row.get(K_APPLICATION_DEADLINE)))
 
 
 def lever_jobs(x: AtsFetchIn) -> list:
@@ -384,14 +408,15 @@ def recruitee_jobs(x: AtsFetchIn) -> list:
 
 
 def to_recruitee_job(row: dict) -> AtsJob:
-    """Recruitee 载荷 → AtsJob。"""
+    """Recruitee 载荷 → AtsJob(截止日取 close_at,空就空;2026-09-26 /fe Frank「补」)。"""
     description = row.get(K_DESCRIPTION, "") or ""
     return AtsJob(title=row.get(K_TITLE, ""),
                   location=row.get(K_LOCATION, "") or row.get(K_CITY, ""),
                   url=row.get(K_CAREERS_URL) or row.get(K_URL, ""),
                   department=row.get(K_DEPARTMENT, ""),
                   posted=iso_of(row.get(K_PUBLISHED_AT) or row.get(K_CREATED_AT_SNAKE)),
-                  address=address_of(description), description=description)
+                  address=address_of(description), description=description,
+                  valid_through=deadline_of(row.get(K_CLOSE_AT)))
 
 
 def smartrecruiters_jobs(x: AtsFetchIn) -> list:
@@ -563,13 +588,14 @@ def workday_detail(x: WorkdayDetailIn) -> dict:
 
 
 def to_workday_job(x: WorkdayJobIn) -> AtsJob:
-    """Workday 载荷 → AtsJob(详情缺格时退回翻页行给的标题/地点)。"""
+    """Workday 载荷 → AtsJob(详情缺格时退回翻页行给的标题/地点;截止日取详情的 endDate,翻页行没有这格 ——
+    详情取不到就空着,不拿别的日子顶;2026-09-26 /fe Frank「补」)。"""
     description = x.info.get(K_JOB_DESCRIPTION, "") or ""
     return AtsJob(title=x.info.get(K_TITLE) or x.posting.get(K_TITLE, ""),
                   location=x.info.get(K_LOCATION) or x.posting.get(K_LOCATIONS_TEXT, ""),
                   url=x.info.get(K_EXTERNAL_URL, ""), department="",
                   posted=iso_of(x.info.get(K_START_DATE, "")), address=address_of(description),
-                  salary="", description=description)
+                  salary="", description=description, valid_through=deadline_of(x.info.get(K_END_DATE)))
 
 
 def fetch_phenom(x: PhenomFetchIn) -> list:
@@ -640,7 +666,8 @@ def fetch_oracle(x: OrcFetchIn) -> list:
 
 
 def to_orc_job(x: OrcJobIn) -> AtsJob:
-    """Oracle 清单行 + 详情 → AtsJob:地点取详情里第一处办公地点的「市, 省」,没有才退回清单的主地点文本。"""
+    """Oracle 清单行 + 详情 → AtsJob:地点取详情里第一处办公地点的「市, 省」,没有才退回清单的主地点文本。
+    截止日取详情的对外发布截止,空了退清单行的发布截止,都空就空(2026-09-26 /fe Frank「补」)。"""
     place: dict = {}
     works = x.detail.get(K_ORC_WORK) or []
     if works:
@@ -657,7 +684,8 @@ def to_orc_job(x: OrcJobIn) -> AtsJob:
                   url=ORC_JOB_URL_TPL.format(host=x.host, site=x.site, jid=x.row.get(K_ORC_ID)),
                   department=x.detail.get(K_ORC_JOB_FUNCTION, "") or "", posted=iso_of(x.row.get(K_ORC_POSTED, "")),
                   address=join_parts([place.get(K_ORC_STREET, ""), place.get(K_ORC_TOWN, ""), place.get(K_ORC_POSTAL, "")]),
-                  salary="", description=PARA_SEP.join(parts))
+                  salary="", description=PARA_SEP.join(parts),
+                  valid_through=deadline_of(x.detail.get(K_ORC_POSTED_END) or x.row.get(K_ORC_POSTING_END)))
 
 
 def fetch_eightfold(x: OrcFetchIn) -> list:
@@ -783,7 +811,9 @@ def to_wp_job(x: PhenomJobIn) -> AtsJob | None:
 
 def fetch_successfactors(x: SfFetchIn) -> list:
     """SuccessFactors 招聘站:搜索页(按地点词筛)翻页列职位页 → 逐页读微数据。页面原文先进 crawl 层,缓存里有的不再请求;
-    搜索页取不到 = 这家本轮没岗(空表,调用方按跳过处理,不拿空表盖旧数据)。"""
+    搜索页取不到 = 这家本轮没岗(空表,调用方按跳过处理,不拿空表盖旧数据)。
+    例外(2026-09-26 /fe Frank「补」):缓存页写的截止日已过、清单里却还挂着 = 雇主延了期,重取一次刷新缓存(见 is_sf_lapsed;
+    每轮只多打这几页,当天实测 0 页)。重取失败照不在缓存的页处理:留痕、本轮跳过这一岗。"""
     parts = urlsplit(x.careers_url)
     origin = parts.scheme + URL_SCHEME_SEP + parts.netloc
     urls = sf_job_urls(SfFetchIn(client=x.client, careers_url=origin, company=x.company))
@@ -793,9 +823,10 @@ def fetch_successfactors(x: SfFetchIn) -> list:
     out = []
     for url in urls:
         hit = cached.get(url)
+        page = ""
         if hit is not None:
             page = Path(hit).read_text(encoding=ENC_UTF8)
-        else:
+        if hit is None or is_sf_lapsed(page):
             try:
                 page = x.client.get(url).text
             except Exception as e:  # noqa: BLE001 — 一页取不到不拖累别的页
@@ -831,7 +862,8 @@ def sf_job_urls(x: SfFetchIn) -> list:
 
 
 def to_sf_job(x: SfJobIn) -> AtsJob | None:
-    """职位页 → AtsJob:读页面里的 JobPosting 微数据;没有标题(页面已下架成空壳)= None。"""
+    """职位页 → AtsJob:读页面里的 JobPosting 微数据;没有标题(页面已下架成空壳)= None。
+    截止日取微数据 validThrough(与发布时刻同一写法,同一把尺取日期),页上没写就空(2026-09-26 /fe Frank「补」)。"""
     title = SF_TITLE_RE.search(x.html)
     if title is None:
         title = SF_PAGE_TITLE_RE.search(x.html)
@@ -841,12 +873,14 @@ def to_sf_job(x: SfJobIn) -> AtsJob | None:
     region = SF_REGION_RE.search(x.html)
     desc = SF_DESC_RE.search(x.html)
     posted = SF_POSTED_RE.search(x.html)
+    valid = SF_VALID_RE.search(x.html)
     description = ""
     if desc is not None:
         description = desc.group(1)
     return AtsJob(title=html.unescape(title.group(1)), location=join_parts([group_of(locality), group_of(region)]),
                   url=x.url, department="", posted=sf_date_of(group_of(posted)),
-                  address=address_of(description), salary="", description=description)
+                  address=address_of(description), salary="", description=description,
+                  valid_through=sf_date_of(group_of(valid)))
 
 
 def group_of(m: re.Match | None) -> str:
@@ -862,6 +896,15 @@ def sf_date_of(text: str) -> str:
         return datetime.strptime(text, SF_POSTED_FMT).date().isoformat()
     except ValueError:
         return ""
+
+
+def is_sf_lapsed(html: str) -> bool:
+    """缓存里的职位页写的截止日已经过了(早于今天;当天不算,口径同 seed 的 CLOSE_PAST_DEADLINE)。
+    职位页只在头一回见到时取、之后一直读缓存,雇主延了期缓存里还是旧日子 —— 清单里还挂着、缓存却写着过期的,
+    调用方重取一次刷新缓存;不刷的话 seed 会按旧截止日把还在招的岗误关(2026-09-26 /fe Frank「补」)。
+    没写截止 / 写法认不出 = 不算过期(不为它多打请求)。"""
+    until = sf_date_of(group_of(SF_VALID_RE.search(html)))
+    return until != "" and until < date.today().isoformat()
 
 
 def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
@@ -972,10 +1015,12 @@ def to_job_row(job: AtsJob) -> dict:
     键序即原脚本各家行构造的插入序(tech 殿后,与 `jb["tech"] = …` 后补同位);
     唯一差别:原来只有 lever/bamboohr 两家带 salary 键,现在归一形状人人都有
     (给不出的是空串,下游一律 `.get("salary")` 取值,空串与缺键同义)。
+    2026-09-26 /fe Frank「补」:发布日后面加截止日 valid_through(同理人人都有,给不出是空串;mart 汇装取成 validThrough,
+    空串不落列)。
     """
     return {K_TITLE: job.title, K_LOCATION: job.location, K_URL: job.url,
-            K_DEPARTMENT: job.department, K_POSTED: job.posted, K_ADDRESS: job.address,
-            K_SALARY: job.salary, K_TECH: job.tech}
+            K_DEPARTMENT: job.department, K_POSTED: job.posted, K_VALID_THROUGH: job.valid_through,
+            K_ADDRESS: job.address, K_SALARY: job.salary, K_TECH: job.tech}
 
 
 # =========================================================================
@@ -1045,3 +1090,16 @@ def salary_of(text: str) -> str:
 def clean_salary(text: str) -> str:
     """抽出的薪资串归一:实体还原、压空白、去首尾标点。"""
     return WS_RE.sub(SPACE_SEP, text.replace(NBSP_ENTITY, SPACE_SEP)).strip(SALARY_STRIP_CHARS)
+
+
+# =========================================================================
+# 4. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑截止日抽取自测(用例集住 scheme 的 AtsDeadlineTest,先例 indexing / gate.scheme);
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(AtsDeadlineTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

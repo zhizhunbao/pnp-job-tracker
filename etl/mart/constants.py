@@ -3639,6 +3639,10 @@ K_HOWTO_UNTIL = "advertisedUntil"
 K_HOWTO_AT = "checkedAt"
 """howto 记录键:检查时刻(判下架帖的判死时刻用它)。"""
 
+K_VERIFY_UNTIL = "until"
+"""验尸台账(IN_EXPIRED,jobbank 域验尸产)的帖页截止日格:帖号 → YYYY-MM-DD(空串 = 帖页没写,Indeed 转帖那样)。
+2026-09-26 /fe Frank「到期即验 + 刷新截止日」:验尸每次验活都重读帖页,比 howto 只抓一次的截止日新,validThrough 优先用它。"""
+
 HOWTO_OK = "ok"
 """howto 状态:有投递区。"""
 
@@ -3674,6 +3678,6 @@ APPLY_NOREPLY_RE = re.compile(r"no-?reply|donotreply|do-not-reply|ne-?pas-?repon
 APPLY_SKIP_HOSTS = ("jobbank", "gc.ca", "canada.ca", "jobillico.", "jobboom.", "careerbeacon.", "example.")
 """不算雇主邮箱的域(Job Bank / 政府域 / 招聘板自己 / 示例地址)。"""
 
-PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {text} 条 · 截止日补 {until} 条 · "
+PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {text} 条 · 截止日补 {until} 条(取自验尸帖页 {page})· "
                    "有邮箱合计 {total} / {jobs}")
-"""投递邮箱段收尾一行。"""
+"""投递邮箱段收尾一行(2026-09-26 加「取自验尸帖页」数:截止日用了验尸刷新的帖页那份、没用 howto 那份的岗数)。"""

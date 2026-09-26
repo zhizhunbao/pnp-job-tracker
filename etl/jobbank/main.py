@@ -23,6 +23,7 @@ postings.json 的跨进程锁照旧只在两个解析段里持有(与 build 角�
 一律从仓库根执行:
     python etl/jobbank/main.py                    # 默认链(4 步)
     python etl/jobbank/main.py --only companies   # 单步调试(见 TOOLS)
+    python etl/jobbank/main.py --only test        # 本域自测(不联网、不读写仓内文件)
 """
 import sys
 from pathlib import Path
@@ -34,7 +35,7 @@ from jobbank.functions import (
     audit_jobbank_data, build_jobbank_companies, flag_jobbank_apprentice,
     guard_jobbank_noc_sanity, parse_jobbank_details, parse_jobbank_postings,
     scrape_jobbank_details, scrape_jobbank_postings, verify_jobbank_expired,
-    fetch_jobbank_howto,
+    fetch_jobbank_howto, run_tests,
 )
 
 SCHEDULED = [
@@ -64,6 +65,7 @@ TOOLS = {
     "noc_sanity": guard_jobbank_noc_sanity,
     "jd_index": build_jd_index,
     "howto": fetch_jobbank_howto,
+    "test": run_tests,
 }
 """全部可 --only 点名的步 = 默认链四步 + 六个手动件:
 
@@ -93,6 +95,8 @@ TOOLS = {
   howto      投递方式(2026-09-23 站内投递批 1):板上直发帖逐帖取「How to apply」→ 邮箱 / 投递渠道 /
              截止日 / 下架,累积 howto.json。**本域第二役 howto 的入口**(METAS 第二条,独立容器、
              1 小时一轮),不在默认链里;键与既有十一键互不误命中(不含也不被含)。
+  test       本域自测(2026-09-26 到期即验批立,先有死岗验尸的挑帖与帖页截止日抽取;用例住 scheme 的
+             JobbankVerifyTest,照 indexing 域 `--only test` 先例);键与既有十一键互不误命中(不含也不被含)。
 """
 
 

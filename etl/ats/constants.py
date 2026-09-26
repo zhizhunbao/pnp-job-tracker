@@ -89,6 +89,11 @@ K_DESCRIPTION = "description"
 K_POSTED = "posted"
 """职位行键:发布日。"""
 
+K_VALID_THROUGH = "valid_through"
+"""职位行键:截止日(YYYY-MM-DD;雇主招聘系统里明写的才有,没有为空串 —— 只抽不推算,不拿发布日 + N 天顶)。
+键名照板仓 postings.json 同名,mart 汇装用同一个键取(2026-09-26 /fe Frank「补」:在架 ATS 岗截止日 0%,
+抽到后 seed 的 CLOSE_PAST_DEADLINE 过了截止日自动下架,详情页 JobPosting 也带上)。"""
+
 K_TECH = "tech"
 """职位行键:是不是科技岗(标题判据打标)。"""
 
@@ -288,6 +293,13 @@ K_ORC_TITLE = "Title"
 K_ORC_POSTED = "PostedDate"
 """Oracle 职位键:发布日。"""
 
+K_ORC_POSTED_END = "ExternalPostedEndDate"
+"""Oracle 详情键:对外发布截止时刻(与 ExternalPostedStartDate 同为 ISO 带时区;2026-09-26 Nokia 24 岗实测全空,有值才取;
+2026-09-26 /fe Frank「补」)。"""
+
+K_ORC_POSTING_END = "PostingEndDate"
+"""Oracle 清单键:发布截止日(详情那格空时退它;同日实测同样全空)。"""
+
 K_ORC_COUNTRY = "PrimaryLocationCountry"
 """Oracle 职位键:主地点国家码。"""
 
@@ -341,6 +353,11 @@ SF_POSTED_RE = re.compile(r'itemprop="datePosted"\s+content="([^"]+)"')
 
 SF_POSTED_FMT = "%a %b %d %H:%M:%S UTC %Y"
 """发布时刻的格式。"""
+
+SF_VALID_RE = re.compile(r'itemprop="validThrough"\s+content="([^"]+)"')
+"""职位页微数据:截止时刻(与发布时刻同一写法 `Thu Oct 01 04:00:00 UTC 2026`,按 SF_POSTED_FMT 取日期)。
+2026-09-26 实测缓存页:Bank of Canada 20/20、BWXT 37/78、Avaya 3/11 页上有,Kanata Electronic / Rogers 没有
+(2026-09-26 /fe Frank「补」)。"""
 
 SF_LOCALITY_RE = re.compile(r'itemprop="addressLocality"\s+content="([^"]*)"')
 """职位页微数据:市。"""
@@ -527,6 +544,10 @@ K_EXTERNAL_URL = "externalUrl"
 K_START_DATE = "startDate"
 """Workday 详情键:开始日期(当发布日用)。"""
 
+K_END_DATE = "endDate"
+"""Workday 详情键:截止日(纯日期 `2026-09-30`;与职位页 JSON-LD 的 validThrough 同值 —— 2026-09-26 BlackBerry 实测。
+详情本来就逐岗在取,零额外请求;2026-09-26 /fe Frank「补」)。"""
+
 OTTAWA_LOC_RE = re.compile(
     r"ottawa|kanata|nepean|gloucester|orl[eé]ans|stittsville|manotick|barrhaven", re.I)
 """Workday 公司多为全球招聘,客户端按地点过滤到 Ottawa 都会区。"""
@@ -539,6 +560,10 @@ K_CONTENT = "content"
 
 K_UPDATED_AT = "updated_at"
 """Greenhouse 职位键:更新时刻。"""
+
+K_APPLICATION_DEADLINE = "application_deadline"
+"""Greenhouse 职位键:投递截止(2026-09-26 实测公开清单里有这一格,Stripe 702 岗全空;本站两家 Greenhouse 公司现 0 岗,
+有值才取;2026-09-26 /fe Frank「补」)。"""
 
 K_NAME = "name"
 """通用子键:名字(greenhouse 的 location.name / smartrecruiters 的岗位名)。"""
@@ -635,6 +660,10 @@ K_PUBLISHED_AT = "published_at"
 
 K_CREATED_AT_SNAKE = "created_at"
 """Recruitee 职位键:创建时刻(发布时刻缺时兜底)。"""
+
+K_CLOSE_AT = "close_at"
+"""Recruitee 职位键:截止时刻(同载荷的 created_at 写作 `2026-09-24 14:15:22 UTC`;2026-09-26 CMC(huaweicanada)178 岗
+实测全空,有值才取;2026-09-26 /fe Frank「补」)。"""
 
 K_REGION = "region"
 """SmartRecruiters 地点子键:省/州。"""
@@ -797,3 +826,11 @@ PRINT_SALARY_DONE_TPL = "Extracted salary for {updated}/{total} ATS jobs (from .
 
 PRINT_SALARY_INOUT_TPL = "IN/OUT companies : {path}"
 """抽薪资起手打印的输入输出路径(宪法:运行时打印全路径)。"""
+
+
+# =========================================================================
+# 4. 自测(用例住 scheme)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(同 indexing / gate 自查;2026-09-26 /fe Frank「补」截止日批立)。"""

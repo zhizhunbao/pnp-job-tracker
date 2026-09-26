@@ -13,6 +13,7 @@ postings.json(外加把 ATS 岗写成一致的空值),故归 jobbank;它们**不
 文案 *_TPL);**显式循环令**:禁推导/genexp/lambda(排序键提成具名函数);
 **一参令**:函数至多一参,多入参收 scheme 的 XxxIn dataclass,多返回值收 XxxOut;
 **内嵌禁令**:原详情抓取的 need()、质检的 flag() 两个内嵌函数出户成顶层具名函数。
+2026-09-26 到期即验批(Frank)加第 12 段自测:用例住 scheme 的 JobbankVerifyTest,门 `--only test`。
 帖子行保持 dict(理由见 scheme.py 头注:postings.json 是开放累积 store,下游几个域还要
 往同一行上挂字段),键一律 K_ 词族;bs4/httpx 经 scheme 的 Protocol,cast 只住装配点。
 日志口径:域内不裸 print,报数走 log.functions.say;⚠/✗ 行首的告警逐字保留
@@ -31,6 +32,7 @@ import json
 import os
 import sys
 import time
+import unittest
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -111,6 +113,8 @@ from jobbank.constants import (
     HOWTO_SLEEP_DEFAULT, HOWTO_SPACE, HOWTO_SPACE_RE, HOWTO_TAG_RE, HOWTO_TIMEOUT_S, K_HOWTO_AT,
     K_HOWTO_EMAILS, K_HOWTO_METHODS, K_HOWTO_STATUS, K_HOWTO_UNTIL, MAIL_AT, OUT_HOWTO,
     PRINT_HOWTO_DONE_TPL, PRINT_HOWTO_HEAD_TPL, PRINT_HOWTO_TICK_TPL,
+    K_UNTIL, PAGE_UNTIL_RE, RECHECK_NO_UNTIL_DAYS, RECHECK_PAST_UNTIL_HOURS, TEST_VERBOSITY,
+    TIER_NORMAL, TIER_OVERDUE, TIER_RECHECK, UNTIL_END_UTC_H, VERIFY_YOUNG_DAYS,
 )
 from jobbank.scheme import (
     AllOldIn, ApprenticeRowIn, ApprenticeTally, CandidateIn, CandidateOut, CategoryIn, CheckIn,
@@ -121,6 +125,7 @@ from jobbank.scheme import (
     SoupNodeLike, StaleIn, StemIn, TickIn, TitleChangeIn, VerifyIn, VerifyOut,
     HowtoBatchIn, HowtoBatchOut, HowtoFlushIn, HowtoOneIn, HowtoParseIn, HowtoPickIn, HowtoPickOut,
     HowtoRecordIn, HowtoTallyIn, HttpPostClientLike,
+    JobbankVerifyTest, JudgeIn, PickIn, PickOut, TallyPickIn, UntilKnownIn,
 )
 
 
@@ -1322,30 +1327,39 @@ def neg_len_of(item: tuple) -> int:
 
 
 def verify_jobbank_expired() -> None:
-    """本域步骤入口:按死亡风险排序,每轮小批验尸,判死结果累积落盘。"""
+    """本域步骤入口:按死亡风险排序,每轮小批验尸,判死结果累积落盘。
+
+    2026-09-26 /fe Frank「到期即验 + 刷新截止日」「转帖复查间隔改 2 天」:验尸本来就下载整页,顺手把帖页截止日
+    记进判死名单的 until 格;挑帖先看截止日 —— 过完了还没验的排队头,过完后验过还活着的约 12 小时一验,延期了
+    按新截止日重排;发布不满 3 天的新帖先不验,Indeed 转帖(帖页没有截止日)2 天一验。判死口径不变。
+    同日 lead 细节拍板:2 天一档的判据从「Indeed 转帖」改成「帖页没有截止日的转帖」(验尸记的 until 格为空串)。
+    帖页原文照旧不落盘(验尸从来不存档,本批不扩大存档范围),截止日从已拿到的回包里抽。
+    """
     now = datetime.now(timezone.utc)
     state = load_state()
     postings = json.loads(IN_POSTINGS.read_text(encoding=ENC_UTF8))
     on_board = load_on_board()
     picked = candidates_of(CandidateIn(postings=postings, state=state, on_board=on_board,
-                                       now=now))
+                                       howto=load_howto(), now=now))
     budget = int(os.environ.get(ENV_VERIFY_MAX, VERIFY_MAX_DEFAULT))
-    say(PRINT_VERIFY_HEAD_TPL.format(cands=len(picked.cands), off_board=picked.off_board,
-                                     fresh=picked.fresh,
+    say(PRINT_VERIFY_HEAD_TPL.format(cands=len(picked.cands), overdue=picked.overdue, recheck=picked.recheck,
+                                     normal=len(picked.cands) - picked.overdue - picked.recheck,
+                                     off_board=picked.off_board, young=picked.young, fresh=picked.fresh,
                                      budget=min(len(picked.cands), budget)))
     if len(picked.cands) == 0:
         return
     out = verify_batch(VerifyIn(cands=picked.cands[:budget], state=state, now=now))
     write_text(WriteTextIn(path=OUT_STATE, text=json.dumps(state, ensure_ascii=False)))
-    say(PRINT_VERIFY_DONE_TPL.format(dead=out.dead, alive=out.alive, errs=out.errs,
+    say(PRINT_VERIFY_DONE_TPL.format(dead=out.dead, alive=out.alive, extended=out.extended, errs=out.errs,
                                      total=len(state[K_DEAD])))
 
 
 def load_state() -> dict:
-    """判死/验活名单(首跑给空壳)。"""
-    if not OUT_STATE.exists():
-        return {K_DEAD: {}, K_CHECKED: {}}
-    return json.loads(OUT_STATE.read_text(encoding=ENC_UTF8))
+    """判死/验活名单(首跑给空壳)。2026-09-26 起多一格帖页截止日(K_UNTIL),旧文件没有这格就补空表。"""
+    state = {K_DEAD: {}, K_CHECKED: {}, K_UNTIL: {}}
+    if OUT_STATE.exists():
+        state.update(json.loads(OUT_STATE.read_text(encoding=ENC_UTF8)))
+    return state
 
 
 def load_on_board() -> set | None:
@@ -1364,32 +1378,111 @@ def candidates_of(x: CandidateIn) -> CandidateOut:
     队头 900 个中 216 个白验。名单晚一轮无妨:新帖最不可能是死的)。
     风险键:last_seen 越旧越先验(实测:陈旧>14天 52% 死 / ≤3天 9% 死;缺 last_seen 的是
     早期帖,一并排最前);同龄按发布日老的先。
+    2026-09-26 到期即验(Frank):「距上次检查>RECHECK_DAYS」改由 pick_of 按截止日分三档判(TIER_*):截止日过完
+    还没验的排最前,过完后验过还活着的 12 小时一验,其余走常规档(上面的风险键照旧,帖页没写截止日的转帖间隔 2 天,
+    发布不满 3 天的新帖不进候选)。截止日用 until_known_of 取:验尸自己记的帖页截止日优先,没有退回 howto 役那份。
     """
-    recheck_before = (x.now - timedelta(days=RECHECK_DAYS)).isoformat()
     fresh_after = (x.now - timedelta(days=VERIFY_FRESH_DAYS)).isoformat()
-    off_board = 0
-    fresh = 0
-    cands = []
+    out = CandidateOut(cands=[], off_board=0, fresh=0, young=0, overdue=0, recheck=0)
     for job in x.postings:
         pid = job.get(K_POSTING_ID, "")
         url = job.get(K_URL, "")
         if pid == "" or VERIFY_HOST not in url or pid in x.state[K_DEAD]:
             continue
-        if x.state[K_CHECKED].get(pid, "") > recheck_before:
+        page_in = UntilKnownIn(state=x.state, howto=x.howto, pid=pid)
+        until = until_known_of(page_in)
+        pick = pick_of(PickIn(job=job, checked=x.state[K_CHECKED].get(pid, ""), until=until,
+                              no_until=is_no_until(page_in), now=x.now))
+        if pick.young:
+            out.young += 1
+        if pick.due is False:
             continue
         if x.on_board is not None and pid not in x.on_board:
-            off_board += 1
+            out.off_board += 1
             continue
-        last_seen = job.get(K_LAST_SEEN) or ""
-        posted = expired_date_of(job.get(K_DATE, ""))
-        posted_key = ""
-        if posted is not None:
-            posted_key = posted.isoformat()
-        if last_seen > fresh_after:
-            fresh += 1
-        cands.append(((last_seen, posted_key), pid, url))
-    cands.sort()
-    return CandidateOut(cands=cands, off_board=off_board, fresh=fresh)
+        tally_pick(TallyPickIn(out=out, key=pick.key, fresh=(job.get(K_LAST_SEEN) or "") > fresh_after))
+        out.cands.append((pick.key, pid, url, until))
+    out.cands.sort()
+    return out
+
+
+def until_known_of(x: UntilKnownIn) -> str:
+    """挑帖用的截止日:验尸自己记的帖页截止日优先(每次验活都重读帖页,延期跟得上;空串 = 帖页没写,照空串用);
+    还没记过的退回 howto 役那份(只抓一次,直发帖才有);都没有给空串。"""
+    page = x.state[K_UNTIL]
+    if x.pid in page:
+        return page[x.pid]
+    rec = x.howto.get(x.pid)
+    if rec is None:
+        return ""
+    return rec.get(K_HOWTO_UNTIL) or ""
+
+
+def is_no_until(x: UntilKnownIn) -> bool:
+    """验尸验活过这帖、帖页没写截止日(K_UNTIL 格记的空串)。没验过 = False:不知道不等于没有。"""
+    return x.state[K_UNTIL].get(x.pid) == ""
+
+
+def pick_of(x: PickIn) -> PickOut:
+    """一帖此刻该不该验、排哪一档(纯函数;节奏常量见 constants 第 8 段)。
+
+    截止日过完(UNTIL_END_UTC_H)压过一切:那之后没验过 = TIER_OVERDUE 马上验;验过还活着(截止日没挪)=
+    TIER_RECHECK,距上次验满 RECHECK_PAST_UNTIL_HOURS 才验。截止日没过完或没有截止日:发布不满
+    VERIFY_YOUNG_DAYS 天的不验;其余 TIER_NORMAL,距上次验满 recheck_gap_of 才验(没验过的马上验)。
+    """
+    checked = checked_at_of(x.checked)
+    end = until_end_of(x.until)
+    if end is not None and x.now >= end:
+        if checked is None or checked < end:
+            return PickOut(due=True, young=False, key=(TIER_OVERDUE, x.until, x.checked))
+        return PickOut(due=x.now - checked >= timedelta(hours=RECHECK_PAST_UNTIL_HOURS), young=False,
+                       key=(TIER_RECHECK, x.checked, x.until))
+    posted = expired_date_of(x.job.get(K_DATE, ""))
+    if posted is not None and x.now - posted < timedelta(days=VERIFY_YOUNG_DAYS):
+        return PickOut(due=False, young=True, key=())
+    posted_key = ""
+    if posted is not None:
+        posted_key = posted.isoformat()
+    return PickOut(due=checked is None or x.now - checked >= recheck_gap_of(x), young=False,
+                   key=(TIER_NORMAL, x.job.get(K_LAST_SEEN) or "", posted_key))
+
+
+def checked_at_of(text: str) -> datetime | None:
+    """上次验活时刻(本段自己写的 ISO 串)→ datetime;空串 = 没验活过,给 None。"""
+    if text == "":
+        return None
+    return datetime.fromisoformat(text)
+
+
+def until_end_of(until: str) -> datetime | None:
+    """截止日 → 按「截止日已过完」处理的时刻(D 当天 00:00 UTC + UNTIL_END_UTC_H 小时);空串给 None(没有截止日);
+    写坏了留痕后也给 None(两个来源都是本域正则抽的 YYYY-MM-DD,只有日历上不存在的日子会走到这)。"""
+    if until == "":
+        return None
+    try:
+        day = datetime.strptime(until, ISO_DATE_FMT).replace(tzinfo=timezone.utc)
+    except ValueError as e:
+        err(until, e)
+        return None
+    return day + timedelta(hours=UNTIL_END_UTC_H)
+
+
+def recheck_gap_of(x: PickIn) -> timedelta:
+    """常规档的复检间隔:帖页没写截止日的转帖 RECHECK_NO_UNTIL_DAYS 天(到期即验管不到,只能勤验;2026-09-26 lead
+    细节拍板,原判据是「Indeed 转帖」),其余 RECHECK_DAYS 天(直发帖帖页没写截止日也在其余里)。"""
+    if x.job.get(K_DIRECT) is not True and x.no_until:
+        return timedelta(days=RECHECK_NO_UNTIL_DAYS)
+    return timedelta(days=RECHECK_DAYS)
+
+
+def tally_pick(x: TallyPickIn) -> None:
+    """一个入选的候选计进报数(三档里的前两档各数一个;常规档里 last_seen 近 3 天的另数一个,它们排在队尾)。"""
+    if x.key[0] == TIER_OVERDUE:
+        x.out.overdue += 1
+    elif x.key[0] == TIER_RECHECK:
+        x.out.recheck += 1
+    elif x.fresh:
+        x.out.fresh += 1
 
 
 def expired_date_of(text: str) -> datetime | None:
@@ -1407,29 +1500,52 @@ def expired_date_of(text: str) -> datetime | None:
 
 
 def verify_batch(x: VerifyIn) -> VerifyOut:
-    """逐帖验尸:410/404 或 <title> 含过期标记 = 判死;网络错误保留活口,下轮再验。"""
-    dead = 0
-    alive = 0
-    errs = 0
+    """逐帖验尸:410/404 或 <title> 含过期标记 = 判死;网络错误保留活口,下轮再验。
+    2026-09-26 起判死 / 验活拆进 judge_page(纯状态更新,单测直接喂回包),验活时顺手记帖页截止日。"""
+    out = VerifyOut(dead=0, alive=0, errs=0, extended=0)
     sleep_s = float(os.environ.get(ENV_VERIFY_SLEEP, VERIFY_SLEEP_DEFAULT))
     with httpx.Client(headers={HDR_UA: VERIFY_UA}, timeout=VERIFY_TIMEOUT_S,
                       follow_redirects=True, verify=make_tls_context()) as client:
-        for _key, pid, url in x.cands:
+        for _key, pid, url, until in x.cands:
             try:
                 r = client.get(url)
             except Exception as e:  # noqa: BLE001 — 网络抖动=保留活口,下轮再验
                 err(url, e)
-                errs += 1
+                out.errs += 1
                 time.sleep(sleep_s)
                 continue
-            if r.status_code in VERIFY_DEAD_CODES or VERIFY_MARKER in r.text[:VERIFY_HEAD_BYTES]:
-                x.state[K_DEAD][pid] = x.now.isoformat()
-                dead += 1
-            else:
-                x.state[K_CHECKED][pid] = x.now.isoformat()
-                alive += 1
+            judge_page(JudgeIn(state=x.state, out=out, pid=pid, until=until, status=r.status_code, html=r.text,
+                               now=x.now))
             time.sleep(sleep_s)
-    return VerifyOut(dead=dead, alive=alive, errs=errs)
+    return out
+
+
+def judge_page(x: JudgeIn) -> None:
+    """一份帖页 → 判死或验活,原地写进判死名单与本轮计数(不碰网络)。
+
+    判死口径不变:410/404,或页头 VERIFY_HEAD_BYTES 字节里含过期标记;判死时摘掉这帖的截止日格。
+    验活:记验活时刻 + 帖页截止日(帖页没写记空串 —— 挑帖时就不再退回 howto 那份,转帖从此进 2 天一档);
+    比挑帖时知道的晚 = 延期。
+    """
+    if x.status in VERIFY_DEAD_CODES or VERIFY_MARKER in x.html[:VERIFY_HEAD_BYTES]:
+        x.state[K_DEAD][x.pid] = x.now.isoformat()
+        x.state[K_UNTIL].pop(x.pid, None)
+        x.out.dead += 1
+        return
+    x.state[K_CHECKED][x.pid] = x.now.isoformat()
+    page = page_until_of(x.html)
+    x.state[K_UNTIL][x.pid] = page
+    if x.until != "" and page > x.until:
+        x.out.extended += 1
+    x.out.alive += 1
+
+
+def page_until_of(html: str) -> str:
+    """帖页上的截止日(「Advertised until」那格的 microdata validThrough,YYYY-MM-DD);帖页没写给空串。"""
+    m = PAGE_UNTIL_RE.search(html)
+    if m is None:
+        return ""
+    return m.group(1)
 
 
 # =========================================================================
@@ -1798,3 +1914,16 @@ def flush_howto(x: HowtoFlushIn) -> None:
     put_cached_pages(CachePutManyIn(slug=CRAWL_SLUG_HOWTO, pages=list(x.pages)))
     write_json(WriteJsonIn(path=OUT_HOWTO, payload=x.state, indent=0, compact=True))
     x.pages.clear()
+
+
+# =========================================================================
+# 12. 自测(用例住 scheme;先有死岗验尸的挑帖与帖页截止日抽取)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """test 步入口:跑本域自测(用例集住 scheme 的 JobbankVerifyTest,库垫片先例 gate.scheme / indexing.scheme);
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(JobbankVerifyTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)
