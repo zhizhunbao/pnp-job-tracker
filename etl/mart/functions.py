@@ -30,6 +30,7 @@ clean/05f 试点打标(flag_job_pilot)。判据:它们对 ATS 与 JB 两源过�
 副作用一处:第 8 段的薪资兜底原来「按路径拉 clean/04d 取 apply_to」,现在直调本域第 18 段的
 apply_salary_to,`MartCtx.apply_salary` 随之换成 `salary_guards`(SalaryModuleLike 退役)。
 """
+import calendar
 import html
 import json
 import re
@@ -75,7 +76,7 @@ from mart.constants import (
     COVERAGE_COMPLETE, CO_SALARY_CUTS, DAILY_DAYS, DAILY_DONE_TPL, DAILY_MIN, DAILY_N,
     DAILY_ROWS_TPL, DAILY_SCORE_GATE, DAILY_SLUG_TPL, DATE_FMTS, DATE_FMT_ISO, DATE_FMT_LONG,
     DATE_LEN, DEDUP_KEY_TPL, DESIGNATED_DEDUP_TPL, DIGIT_RE, DRAW_KIND_DRAW, DRAW_KIND_NOTICE,
-    DRAW_MAX, DRAW_MAX_WIDE, DRAW_WIDE_PROVS, EDGE_PUNCT_RE, EE_ROUNDS_URL, EMPTY_VALUES,
+    DRAW_MONTH_RE, DRAW_MONTHS_PER_YEAR, DRAW_WINDOW_MONTHS, EDGE_PUNCT_RE, EE_ROUNDS_URL, EMPTY_VALUES,
     EMP_DIRECT, EMP_FULL, EMP_HITS_GRADE, EMP_PERMANENT, EM_DASH, ENC_UTF8, ENRICH_KEYS, ENRICH_OK,
     EN_DASH, ESCAPE_WINDOW, FAME_BIG_OPEN, FAME_MULTI_PROV, FAME_TINY_OPEN,
     FLAG_NO_SPONSORSHIP, FLAG_PR_REQUIRED, FLOW_14D, FLOW_28D, FLOW_30D, FLOW_60D, FLOW_BLANK,
@@ -2720,14 +2721,22 @@ def load_draw_checklists() -> dict:
     return out
 
 
-def draw_limit_of(prov: str) -> int:
-    """截断放宽(C4):普通省 8→12;NB 按类别定向邀请、一轮拆多行,判定层要数「某职业类别
-    2026 年被选中几轮」→ 给一年的量(48,与 build_draws 的 NB 上限一致)。
-    MB 2026-08-31 并入同档:同为一轮拆 4-5 行(总行+分流细分行),12 行只装两三轮,
-    08-27 新轮落地把 #275 的 825 细分行挤出窗口 —— c01 金标当场红,判据与 NB 全同。"""
-    if prov in DRAW_WIDE_PROVS:
-        return DRAW_MAX_WIDE
-    return DRAW_MAX
+def draw_cut_of(today: date) -> str:
+    """抽选窗口的起点(ISO,含):今天往前 DRAW_WINDOW_MONTHS 个月的同一天;那个月没有这一天就取月底。
+    2026-09-26 起替代原 draw_limit_of 的「每省最新 N 行」(那段注释原文搬进了 constants.DRAW_WINDOW_MONTHS)。"""
+    year, month0 = divmod(today.year * DRAW_MONTHS_PER_YEAR + today.month - 1 - DRAW_WINDOW_MONTHS, DRAW_MONTHS_PER_YEAR)
+    month = month0 + 1
+    return date(year, month, min(today.day, calendar.monthrange(year, month)[1])).isoformat()
+
+
+def draw_day_of(draw_date: str) -> str:
+    """drawDate → 跟窗口起点比的那一天:ISO 日原样;只到月的(NS 月度选取「2026-07」)取该月最后一天。"""
+    m = DRAW_MONTH_RE.fullmatch(draw_date)
+    if m is None:
+        return draw_date
+    year = int(m.group(1))
+    month = int(m.group(2))
+    return date(year, month, calendar.monthrange(year, month)[1]).isoformat()
 
 
 def build_pnp_draws(x: DrawsBuildIn) -> list:
@@ -2736,13 +2745,18 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
     各省分制互不相通且都非 CRS(scale 标注),纯事实展示层,不进评分/匹配。每省 ≤8 条,
     全量历史在 raw。#135(Frank「点开按时间线看每一轮」):联邦 EE 历次抽选并进本表
     (province="FED")—— 该表列型完全够用,**零新表零 DDL**;省块按 province 过滤天然不串味。
+    2026-09-26 改判(lead 定):每省收最近 DRAW_WINDOW_MONTHS 个月的全部抽选行(原「最新 12 / 48 行」),
+    弹框「近 90 天 N 轮 / 共邀请 X 人」才不会被一轮拆多行的省少算;改制通告行、联邦 EE 行照旧。
     """
     rows: list = []
+    cut = draw_cut_of(date.today())
     if IN_PNP_DRAWS.exists():
         pd = read_table_soft(IN_PNP_DRAWS)
         for prov, v in pd.get(K_PROVINCES, {}).items():
             base = to_draw_base(DrawBaseIn(province=prov, table=v, fetched=pd.get(K_FETCHED, "")))
-            for dr in v.get(K_DRAWS, [])[:draw_limit_of(prov)]:
+            for dr in v.get(K_DRAWS, []):
+                if draw_day_of(str(dr.get(K_DATE) or "")) < cut:
+                    continue
                 rows.append(to_pnp_draw_row(DrawRowIn(base=base, draw=dr,
                                                       stream_zh=x.stream_zh,
                                                       checklist=x.checklist)))

@@ -1783,23 +1783,48 @@ DRAWS_TIMEOUT_S = 30
 
 DRAWS_AB_MAX = 48
 """AB 抽选解析上限(2026-09-24 九省通道审计:12 条只装得下最近几个月,旅游酒店、警务两组被截在窗口外;
-与 mart DRAW_WIDE_PROVS 同档)。"""
+与 mart DRAW_WIDE_PROVS 同档)。
+2026-09-26 退役(lead 派工「抽选补全」:AB 页上 2026 年 80 轮只留了最近 48、BC / MB / ON / NL 只留 12 ——
+raw 是只增不减的历史,解析处不再截断,整页有多少收多少;前端展示的截断只在 mart(DRAW_MAX / DRAW_MAX_WIDE)。
+本常量不再被引用,原文保留作沿革。)"""
 
 DRAWS_MAX_PER_PROV = 12
-"""raw 留最近 N 条;mart 再截。"""
+"""raw 留最近 N 条;mart 再截。
+2026-09-26 起抽选解析(BC / MB / ON / NL / PE / NS)不再用它截断 raw(见 DRAWS_AB_MAX 的退役说明);
+只剩 ON 更新页的通告解析 parse_on 还在用(那份抽选行本来就不落盘,只取通告)。"""
 
 DRAWS_NB_MAX = 48
 """NB 例外(C4):按职业类别定向邀请,一轮拆 4-5 行(一通道一行),12 条只装得下两轮半 ——
-三月那轮建筑类 279 邀请就被挤掉了。判定层要数「某类别一年被选中几轮」,给 NB 留一年的量。"""
+三月那轮建筑类 279 邀请就被挤掉了。判定层要数「某类别一年被选中几轮」,给 NB 留一年的量。
+2026-09-26 退役(lead 派工「抽选补全」:AB 页上 2026 年 80 轮只留了最近 48、BC / MB / ON / NL 只留 12 ——
+raw 是只增不减的历史,解析处不再截断,整页有多少收多少;前端展示的截断只在 mart(DRAW_MAX / DRAW_MAX_WIDE)。
+本常量不再被引用,原文保留作沿革。)"""
 
 DRAWS_BC_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply"
 """BC Skills Immigration ITA 表。"""
 
 DRAWS_AB_URL = "https://www.alberta.ca/aaip-processing-information"
-"""AB「Draw information」表。"""
+"""AB「Draw information」表。
+2026-09-26:页上只有当年(2026 年 80 轮);2025 年轮次官方页已不展示、ab-aaip 地图里也没有存档页 ——
+lead 定不另找,记为本站未收录(不是「官方不公布」)。"""
 
 DRAWS_MB_URL = "https://immigratemanitoba.com/draws/"
 """MB /draws/ 索引页(每期一个 <article class=post>)。"""
+
+DRAWS_MB_PAGE_TPL = "https://immigratemanitoba.com/draws/page/{n}/"
+"""MB 索引翻页(WordPress 分页,一页 10 期;2026-09-26 抽选补全:首页只有最近 10 期 —— 2026-05-21 起,
+1~5 月在第 2 页,2025 年在第 3~5 页)。第 2 页 crawl 役 mb-root 每小时顺手缓存;更早的页由手动件
+mb_draw_pages 抓进 crawl 层(slug mb-draws),抽选步只读缓存、不在定时链里多发请求。"""
+
+DRAWS_MB_PAGES = 5
+"""MB 往回读到第几页(2..本值都从 crawl 缓存读;2026-09-26 实测第 4 页止于 2025-03-21,第 5 页到 2025 年初)。分页会随新一期上线往后挪,
+旧快照照样是真事实,并回历史时去重,不怕挪。"""
+
+DRAWS_MB_CRAWL_SLUG = "mb-draws"
+"""手动件 mb_draw_pages 落缓存的 slug(不是 crawl 种子 —— 种子的 manifest 每轮整份重写,手动放进去的页会被冲掉)。"""
+
+DRAWS_BACKFILL_GAP_S = 2
+"""抽选补历史的两个手动件(mb_draw_pages / bc_draw_archive)逐个请求之间的间隔秒数(对官方站小量带间隔)。"""
 
 DRAWS_ON_URL = "https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-updates"
 """ON 更新页(只当通告用)。
@@ -1856,10 +1881,7 @@ DRAWS_QC_URL_TPL = ("https://www.quebec.ca/en/immigration/permanent/skilled-work
 ⚠ QC 自成体系,不属 PNP:label / scale 一律写项目名 PSTQ,不标 PNP。"""
 
 DRAWS_QC_YEARS_BACK = 2
-"""QC 逐年页往前探几年(年初新一年的页还没挂出来时退回上一年页;不写死年份,明年不静默过期)。"""
-
-DRAWS_QC_MAX = 48
-"""QC 一年的抽选行上限(四个 stream 各一行 × 约一月一轮;与 NB / AB 的 48 同档,整年留在 raw,mart 再截)。"""
+"""QC 逐年页往前读几年(今年 + 去年,缓存里有几年收几年;不写死年份,明年不静默过期)。"""
 
 DRAWS_REVISABLE_PROVS = (PROV_NS, PROV_QC)
 """官方会回头改数的省(2026-09-26):NS 是月度合计、QC 页上有占位数(2026-08-27 那轮 Stream 2 写的是
@@ -1880,6 +1902,55 @@ DRAWS_PE_HEAD_KW = "invitation date"
 
 DRAWS_BC_MIN_COLS = 5
 """BC 一行至少几格才当数据行。"""
+
+DRAWS_BC_ARCHIVE_URL_TPL = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-invitations-to-apply-si-{year}-pdf"
+"""BC Skills Immigration 逐年邀请存档 PDF(archives 页「Skills Immigration invitations to apply <年>」链出;
+2026-09-26 抽选补全)。2025 年那份与 2026 年页上的散文轮同一格式(日期 + 总数句 + 两条列项);
+2018–2024 各份也挂在 archives 页,格式没核过,先不收(加年份 = 先核格式)。"""
+
+DRAWS_BC_ARCHIVE_YEARS = (2025,)
+"""收哪几年的存档 PDF(只收格式核过的)。2026-09-26 lead 定:2018–2024 各份不收。"""
+
+DRAWS_BC_ARCHIVE_DIR = paths.CRAWL / "bc-draws-archive"
+"""存档 PDF 原文落点(crawl 层;PDF 不走 put_cached_page 的 HTML 门,照 sk-sinp 先例直接落文件)。"""
+
+DRAWS_BC_ARCHIVE_FILE_TPL = "si-{year}.pdf"
+"""存档 PDF 文件名。"""
+
+DRAWS_BC_ARCHIVE_TIMEOUT_S = 60
+"""存档 PDF 下载超时。"""
+
+DRAWS_BC_PDF_MAGIC = b"%PDF"
+"""PDF 魔数(拿回的不是 PDF 就不落盘)。"""
+
+DRAWS_BC_NOT_PDF_TPL = "BC 存档不是 PDF: {url}"
+"""存档下载回来不是 PDF 的报错。"""
+
+BC_PDF_ROUND_RE = re.compile(r"On ([A-Z][a-z]+ \d{1,2}, \d{4}), the BC PNP issued invitations to apply to ([\d,]+) "
+                             r"candidates who will create high economic impact(.*?)"
+                             r"(?=On [A-Z][a-z]+ \d{1,2}, \d{4}, the BC PNP issued|$)", re.S)
+"""存档 PDF 里的一轮(折空白后的全文;到下一轮开头或文末为止)。"""
+
+BC_PDF_ITEM_RE = re.compile(r"•\s*([^•]*?)\s*\(([\d,]+) candidates\)")
+"""一轮里的列项(条件原文 + 人数)。"""
+
+DRAWS_BC_HEI_STREAM = "Innovate: High Economic Impact"
+"""BC 散文轮的 stream 名(2026-09-26 抽选补全):2026 年 1~4 月的「高经济影响」邀请不在表里,是一轮一个 h3 日期
++ 一段「issued invitations to apply to N candidates who will create high economic impact」+ 两条列项;5 月起同类邀请
+进表,ITA type 写的就是这个名 —— 散文轮用同一个名,前端按类别归组才对得上。"""
+
+BC_PROSE_HEAD_TAG = "h3"
+"""BC 散文轮的日期小标题标签。"""
+
+BC_PROSE_INV_RE = re.compile(r"issued invitations to apply to ([\d,]+) candidates who will create high economic impact",
+                             re.I)
+"""散文轮正文的总邀请数句(官方原句;认不出 = 不是散文轮,跳过)。"""
+
+BC_PROSE_ITEM_RE = re.compile(r"^(.*?)\s*\(([\d,]+) candidates\)[\s,.;]*(?:or)?[\s.]*$", re.I)
+"""散文轮列项:「A minimum wage of $62/hour … TEER 0, 1, 2 or 3 (252 candidates), or」→(条件原文, 人数)。"""
+
+BC_PROSE_SCORE_RE = re.compile(r"minimum score of (\d+) points", re.I)
+"""列项里的最低分(「A minimum score of 138 points」;工资档那条没有分 → score 空)。"""
 
 DRAWS_AB_MIN_COLS = 4
 """AB 一行至少几格才当数据行。"""
@@ -2347,6 +2418,12 @@ DRAWS_PRINT_ON_OK_TPL = "  ✓ ON  {n:>2} 条抽选(其中 {scored} 条带分数
 
 DRAWS_PRINT_PE_NO_CACHE_TPL = "  ✗ PE 抽选页不在 crawl 缓存里: {url}(保留旧数据)"
 """PE 读门落空的报数(官网在 Radware 墙后,只能等 crawl 役过墙那轮;不退化成直抓)。"""
+
+DRAWS_PRINT_MB_PAGE_TPL = "  ✓ MB 翻页进缓存 {url}({n} 行)"
+"""手动件 mb_draw_pages 逐页报数(2026-09-26)。"""
+
+DRAWS_PRINT_BC_ARCHIVE_TPL = "  ✓ BC 存档 PDF 进缓存 {path}({n} 行)"
+"""手动件 bc_draw_archive 逐年报数(2026-09-26)。"""
 
 DRAWS_PRINT_NO_CACHE_TPL = "  ✗ {prov} 抽选页不在 crawl 缓存里: {url}(保留旧数据)"
 """NS / QC 读门落空的报数(2026-09-26;两省同 PE 只读缓存,等 crawl 役补上,不退化成直抓)。"""

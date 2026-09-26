@@ -1,6 +1,6 @@
 {
   "source": "Provincial nominee program draw results (BC/AB/MB official pages)",
-  "fetched": "2026-09-25",
+  "fetched": "2026-09-26",
   "provinces": {
     "BC": {
       "label": "BC PNP Skills Immigration",
@@ -188,6 +188,139 @@
           "note": "All priority veterinary care occupations",
           "score": 92,
           "invitations": 6
+        },
+        {
+          "date": "2026-06-02",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations *",
+          "score": 101,
+          "invitations": 128
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $59/hour and $120,000/year, and NOC 0, 1, 2, or 3",
+          "score": null,
+          "invitations": 225
+        },
+        {
+          "date": "2026-05-14",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Points",
+          "score": 135,
+          "invitations": 212
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Childcare",
+          "note": "Early childhood educators only (NOC 42202) *",
+          "score": 115,
+          "invitations": 86
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Health",
+          "note": "All priority health care occupations *",
+          "score": 108,
+          "invitations": 117
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Care: Veterinary Care",
+          "note": "All priority veterinary care occupations",
+          "score": 100,
+          "invitations": 9
+        },
+        {
+          "date": "2026-05-06",
+          "stream": "Build: Construction Trades",
+          "note": "All priority construction occupations (including workers who have apprenticeships registered with SkilledTradesBC) *",
+          "score": 108,
+          "invitations": 121
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 252
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 232
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 195
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 135 points",
+          "score": 135,
+          "invitations": 265
+        },
+        {
+          "date": "2026-02-04",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $70/hour and $145,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 206
+        },
+        {
+          "date": "2026-02-04",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 223
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $84/hour and $170,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 96
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 138 points",
+          "score": 138,
+          "invitations": 314
+        },
+        {
+          "date": "2025-10-02",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum wage of $90/hour and $175,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+          "score": null,
+          "invitations": 114
+        },
+        {
+          "date": "2025-10-02",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 140 points",
+          "score": 140,
+          "invitations": 360
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "Innovate: High Economic Impact",
+          "note": "Minimum wage of $105/hour, currently working full-time in B.C. for the supporting employer, and the job offer is NOC TEER 0 or 1",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "Innovate: High Economic Impact",
+          "note": "A minimum score of 150 points",
+          "score": 150,
+          "invitations": 47
         }
       ]
     },
@@ -531,6 +664,230 @@
           "note": "",
           "score": 50,
           "invitations": 12
+        },
+        {
+          "date": "2026-04-27",
+          "stream": "Tourism and Hospitality Stream",
+          "note": "",
+          "score": 71,
+          "invitations": 98
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+          "note": "",
+          "score": 58,
+          "invitations": null
+        },
+        {
+          "date": "2026-04-16",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 46,
+          "invitations": 37
+        },
+        {
+          "date": "2026-04-15",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 55,
+          "invitations": 50
+        },
+        {
+          "date": "2026-04-14",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)",
+          "note": "",
+          "score": 60,
+          "invitations": 50
+        },
+        {
+          "date": "2026-04-13",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 59,
+          "invitations": 62
+        },
+        {
+          "date": "2026-04-10",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 65,
+          "invitations": 447
+        },
+        {
+          "date": "2026-04-09",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 50,
+          "invitations": 74
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 59,
+          "invitations": 146
+        },
+        {
+          "date": "2026-03-27",
+          "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+          "note": "",
+          "score": 46,
+          "invitations": null
+        },
+        {
+          "date": "2026-03-26",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 50,
+          "invitations": 60
+        },
+        {
+          "date": "2026-03-24",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 54,
+          "invitations": 102
+        },
+        {
+          "date": "2026-03-19",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
+          "note": "",
+          "score": 59,
+          "invitations": 109
+        },
+        {
+          "date": "2026-03-17",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 50,
+          "invitations": 27
+        },
+        {
+          "date": "2026-03-16",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+          "note": "",
+          "score": 63,
+          "invitations": 50
+        },
+        {
+          "date": "2026-03-13",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 51,
+          "invitations": 349
+        },
+        {
+          "date": "2026-03-12",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 47,
+          "invitations": 47
+        },
+        {
+          "date": "2026-03-06",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 56,
+          "invitations": 139
+        },
+        {
+          "date": "2026-03-05",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 61,
+          "invitations": 832
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 55,
+          "invitations": 30
+        },
+        {
+          "date": "2026-02-24",
+          "stream": "Tourism and Hospitality Stream",
+          "note": "",
+          "score": 73,
+          "invitations": 68
+        },
+        {
+          "date": "2026-02-20",
+          "stream": "Alberta Opportunity Stream – Priority Sectors",
+          "note": "",
+          "score": 56,
+          "invitations": 831
+        },
+        {
+          "date": "2026-02-19",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Construction)",
+          "note": "",
+          "score": 61,
+          "invitations": 50
+        },
+        {
+          "date": "2026-02-17",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+          "note": "",
+          "score": 49,
+          "invitations": null
+        },
+        {
+          "date": "2026-02-12",
+          "stream": "Alberta Express Entry Stream – Priority Sectors (Manufacturing)",
+          "note": "",
+          "score": 50,
+          "invitations": 32
+        },
+        {
+          "date": "2026-02-11",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 59,
+          "invitations": 147
+        },
+        {
+          "date": "2026-02-10",
+          "stream": "Rural Renewal Stream",
+          "note": "",
+          "score": 54,
+          "invitations": 212
+        },
+        {
+          "date": "2026-02-06",
+          "stream": "Alberta Express Entry Stream – Law Enforcement Pathway",
+          "note": "",
+          "score": 50,
+          "invitations": null
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Alberta Opportunity Stream",
+          "note": "",
+          "score": 57,
+          "invitations": 915
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Alberta Express Entry Stream – Accelerated Tech Pathway",
+          "note": "",
+          "score": 63,
+          "invitations": 148
+        },
+        {
+          "date": "2026-01-27",
+          "stream": "Dedicated Health Care Pathway – non-Express Entry",
+          "note": "",
+          "score": 45,
+          "invitations": 43
+        },
+        {
+          "date": "2026-01-26",
+          "stream": "Dedicated Health Care Pathway – Express Entry",
+          "note": "",
+          "score": 61,
+          "invitations": 63
         }
       ]
     },
@@ -680,26 +1037,26 @@
         {
           "date": "2026-07-16",
           "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
           "note": "Draw #275: Occupation-specific selection",
           "score": null,
-          "invitations": 24,
-          "checklistKey": "Occupation-specific selection"
+          "invitations": 24
         },
         {
           "date": "2026-07-16",
           "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Francophone selection",
           "note": "Draw #275: Francophone selection",
           "score": null,
-          "invitations": 84,
-          "checklistKey": "Francophone selection"
+          "invitations": 84
         },
         {
           "date": "2026-07-16",
           "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
           "note": "Draw #275: Completed post-secondary study in Manitoba",
           "score": 825,
-          "invitations": 1874,
-          "checklistKey": "Completed post-secondary study in Manitoba"
+          "invitations": 1874
         },
         {
           "date": "2026-07-16",
@@ -728,6 +1085,480 @@
           "note": "Draw #272",
           "score": null,
           "invitations": null
+        },
+        {
+          "date": "2026-05-21",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #271",
+          "score": null,
+          "invitations": 96
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #270: Occupation-specific selection",
+          "score": null,
+          "invitations": 431
+        },
+        {
+          "date": "2026-05-07",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #270",
+          "score": null,
+          "invitations": 475
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #269: Occupation-specific selection",
+          "score": null,
+          "invitations": 192
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #269",
+          "score": null,
+          "invitations": 116
+        },
+        {
+          "date": "2026-04-09",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #268",
+          "score": null,
+          "invitations": 32
+        },
+        {
+          "date": "2026-03-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #267",
+          "score": null,
+          "invitations": 14
+        },
+        {
+          "date": "2026-03-12",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #266",
+          "score": null,
+          "invitations": 46
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #265",
+          "score": null,
+          "invitations": 72
+        },
+        {
+          "date": "2026-02-12",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #264",
+          "score": null,
+          "invitations": 29
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #263",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2026-01-15",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #262",
+          "score": null,
+          "invitations": 55
+        },
+        {
+          "date": "2025-12-31",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #261: Occupation-specific selection",
+          "score": null,
+          "invitations": 353
+        },
+        {
+          "date": "2025-12-31",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #261",
+          "score": null,
+          "invitations": 68
+        },
+        {
+          "date": "2025-12-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #260",
+          "score": null,
+          "invitations": 63
+        },
+        {
+          "date": "2025-12-05",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #259",
+          "score": null,
+          "invitations": 184
+        },
+        {
+          "date": "2025-11-20",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #258",
+          "score": null,
+          "invitations": 35
+        },
+        {
+          "date": "2025-11-06",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #257",
+          "score": null,
+          "invitations": 47
+        },
+        {
+          "date": "2025-10-23",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #256",
+          "score": null,
+          "invitations": 29
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Occupation-specific selection",
+          "note": "Draw #255: Occupation-specific selection",
+          "score": null,
+          "invitations": 583
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #255",
+          "score": null,
+          "invitations": 279
+        },
+        {
+          "date": "2025-09-18",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #254",
+          "score": null,
+          "invitations": 911
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "International Education Stream",
+          "note": "Draw #253",
+          "score": null,
+          "invitations": 1866
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "Citizens of Ukraine Selection",
+          "note": "Draw #253",
+          "score": null,
+          "invitations": 1466
+        },
+        {
+          "date": "2025-09-04",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #253",
+          "score": 812,
+          "invitations": 15
+        },
+        {
+          "date": "2025-08-21",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #252",
+          "score": 612,
+          "invitations": 77
+        },
+        {
+          "date": "2025-08-07",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #251",
+          "score": 724,
+          "invitations": 37
+        },
+        {
+          "date": "2025-07-24",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #250",
+          "score": 611,
+          "invitations": 19
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "Graduate Internship Pathway (GIP)",
+          "note": "Draw #249",
+          "score": null,
+          "invitations": 40
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #249",
+          "score": 673,
+          "invitations": 27
+        },
+        {
+          "date": "2025-06-26",
+          "stream": "Close relative in Manitoba selection",
+          "note": "Draw #248",
+          "score": null,
+          "invitations": 478
+        },
+        {
+          "date": "2025-06-26",
+          "stream": "Skilled Worker Stream",
+          "note": "Draw #248",
+          "score": 712,
+          "invitations": 14
+        },
+        {
+          "date": "2025-06-12",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #247: Expression of Interest",
+          "score": 613,
+          "invitations": 36
+        },
+        {
+          "date": "2025-05-29",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #246: Expression of Interest",
+          "score": 606,
+          "invitations": 30
+        },
+        {
+          "date": "2025-05-15",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #245: Expression of Interest",
+          "score": 626,
+          "invitations": 62
+        },
+        {
+          "date": "2025-05-01",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #244: Expression of Interest",
+          "score": 727,
+          "invitations": 26
+        },
+        {
+          "date": "2025-04-17",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #243: Expression of Interest",
+          "score": 621,
+          "invitations": 27
+        },
+        {
+          "date": "2025-04-03",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #242: Expression of Interest",
+          "score": 721,
+          "invitations": 4
+        },
+        {
+          "date": "2025-03-21",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #241: Completed post-secondary study in Manitoba",
+          "score": 844,
+          "invitations": 101
+        },
+        {
+          "date": "2025-03-21",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #241: Expression of Interest",
+          "score": 705,
+          "invitations": 7
+        },
+        {
+          "date": "2025-03-06",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #240: Expression of Interest",
+          "score": 861,
+          "invitations": 98
+        },
+        {
+          "date": "2025-03-06",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #240: Expression of Interest",
+          "score": 724,
+          "invitations": 13
+        },
+        {
+          "date": "2025-02-20",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #239: Expression of Interest",
+          "score": null,
+          "invitations": 19
+        },
+        {
+          "date": "2025-02-20",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #239: Expression of Interest",
+          "score": 711,
+          "invitations": 22
+        },
+        {
+          "date": "2025-02-06",
+          "stream": "International Education Stream",
+          "note": "Draw #238",
+          "score": null,
+          "invitations": 59
+        },
+        {
+          "date": "2025-02-06",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #238: Expression of Interest",
+          "score": 612,
+          "invitations": 17
+        },
+        {
+          "date": "2025-01-23",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #237: Expression of Interest",
+          "score": 609,
+          "invitations": 128
+        },
+        {
+          "date": "2025-01-09",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Completed post-secondary study in Manitoba",
+          "note": "Draw #236: Completed post-secondary study in Manitoba",
+          "score": 838,
+          "invitations": 145
+        },
+        {
+          "date": "2025-01-09",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Region-specific selection (Winkler)",
+          "note": "Draw #236: Region-specific selection (Winkler)",
+          "score": 615,
+          "invitations": 52
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #235: Expression of Interest",
+          "score": 857,
+          "invitations": 239
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #235: Expression of Interest",
+          "score": null,
+          "invitations": 18
+        },
+        {
+          "date": "2024-12-27",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
+          "note": "Draw #235: 2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.",
+          "score": 632,
+          "invitations": 19
+        },
+        {
+          "date": "2024-12-18",
+          "stream": "International Education Stream",
+          "note": "Draw #234",
+          "score": null,
+          "invitations": 297
+        },
+        {
+          "date": "2024-12-18",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #234: Expression of Interest",
+          "score": 630,
+          "invitations": 102
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Close relative in Manitoba selection",
+          "note": "Draw #233: Close relative in Manitoba selection",
+          "score": 840,
+          "invitations": 89
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #233: Expression of Interest",
+          "score": null,
+          "invitations": 165
+        },
+        {
+          "date": "2024-11-22",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #233: Expression of Interest",
+          "score": 617,
+          "invitations": 25
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "Occupation-specific selection",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": 672,
+          "invitations": 41
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": null,
+          "invitations": 188
+        },
+        {
+          "date": "2024-11-08",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #232: Expression of Interest",
+          "score": 709,
+          "invitations": 45
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "Skilled Worker in Manitoba",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": 872,
+          "invitations": 50
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "International Education Stream",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": null,
+          "invitations": 156
+        },
+        {
+          "date": "2024-10-24",
+          "stream": "Skilled Worker Overseas",
+          "checklistKey": "Expression of Interest",
+          "note": "Draw #231: Expression of Interest",
+          "score": 703,
+          "invitations": 47
         }
       ]
     },
@@ -812,6 +1643,1721 @@
           "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
           "score": 34,
           "invitations": 79
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 430
+        },
+        {
+          "date": "2026-04-23",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 162
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "Masters Graduate stream",
+          "note": "General draw. Please refer to the OINP Program Updates page for more information.",
+          "score": 61,
+          "invitations": 674
+        },
+        {
+          "date": "2026-04-22",
+          "stream": "PhD Graduate stream",
+          "note": "General draw. Please refer to the OINP Program Updates page for more information.",
+          "score": 56,
+          "invitations": 244
+        },
+        {
+          "date": "2026-04-15",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 36,
+          "invitations": 1024
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
+          "score": 43,
+          "invitations": 15
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
+          "score": 35,
+          "invitations": 81
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 46,
+          "invitations": 9
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 20,
+          "invitations": 512
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
+          "score": 63,
+          "invitations": 41
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 57,
+          "invitations": 16
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 46,
+          "invitations": 1123
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Francophones candidates. Please refer to the OINP Program Updates page for more information.",
+          "score": 25,
+          "invitations": 24
+        },
+        {
+          "date": "2026-04-08",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 33,
+          "invitations": 7
+        },
+        {
+          "date": "2026-04-01",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
+          "score": 56,
+          "invitations": 372
+        },
+        {
+          "date": "2026-04-01",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
+          "score": 85,
+          "invitations": 355
+        },
+        {
+          "date": "2026-04-01",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Priority Occupations in the Mining Sector. Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 32
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 57,
+          "invitations": 64
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 54,
+          "invitations": 28
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 53,
+          "invitations": 99
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 55,
+          "invitations": 51
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for the Greater Toronto Area (GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 61,
+          "invitations": 355
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 83,
+          "invitations": 79
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 80,
+          "invitations": 29
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 81,
+          "invitations": 152
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 82,
+          "invitations": 82
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for the Greater Toronto Area (GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 90,
+          "invitations": 76
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 31
+        },
+        {
+          "date": "2026-03-25",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA). Please refer to the OINP Program Updates page for more information.",
+          "score": 32,
+          "invitations": 66
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
+          "score": 36,
+          "invitations": 97
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 47,
+          "invitations": 11
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 61,
+          "invitations": 17
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 30,
+          "invitations": 11
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "Masters Graduate stream",
+          "note": "Targeted draw. Please refer to the OINP Program Updates page for more information.",
+          "score": 30,
+          "invitations": 582
+        },
+        {
+          "date": "2026-03-18",
+          "stream": "PhD Graduate stream",
+          "note": "Targeted draw. Please refer to the OINP Program Updates page for more information.",
+          "score": 49,
+          "invitations": 525
+        },
+        {
+          "date": "2026-02-18",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades-related occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 50,
+          "invitations": 951
+        },
+        {
+          "date": "2026-02-18",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades-related occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 80,
+          "invitations": 453
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Physicians. Please refer to the OINP Program Updates page for more information.",
+          "score": 33,
+          "invitations": 129
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration (REDI). Please refer to the OINP Program Updates page for more information.",
+          "score": 44,
+          "invitations": 14
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 36,
+          "invitations": 634
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 69,
+          "invitations": 26
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for healthcare and early childhood education occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 56,
+          "invitations": 1015
+        },
+        {
+          "date": "2026-02-02",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 7
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 54,
+          "invitations": 89
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 51,
+          "invitations": 29
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 51,
+          "invitations": 103
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
+          "score": 49,
+          "invitations": 84
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 77,
+          "invitations": 93
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 77,
+          "invitations": 39
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 73,
+          "invitations": 136
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
+          "score": 71,
+          "invitations": 105
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Eastern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 30,
+          "invitations": 123
+        },
+        {
+          "date": "2025-12-11",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Central Ontario (excluding GTA ). Please refer to the OINP Program Updates page for more information.",
+          "score": 30,
+          "invitations": 115
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 45,
+          "invitations": 29
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 49,
+          "invitations": 398
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 63,
+          "invitations": 33
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 73,
+          "invitations": 659
+        },
+        {
+          "date": "2025-12-10",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 30,
+          "invitations": 14
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 51,
+          "invitations": 24
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 38,
+          "invitations": 671
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page page for more information.",
+          "score": 75,
+          "invitations": 53
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 56,
+          "invitations": 757
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 33,
+          "invitations": 13
+        },
+        {
+          "date": "2025-10-09",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 31,
+          "invitations": 162
+        },
+        {
+          "date": "2025-09-03",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 42,
+          "invitations": 1134
+        },
+        {
+          "date": "2025-09-03",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for other priority occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 63,
+          "invitations": 759
+        },
+        {
+          "date": "2025-09-02",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 41,
+          "invitations": 1305
+        },
+        {
+          "date": "2025-09-02",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health occupations and early childhood educators and assistants. Please refer to the OINP Program Updates page for more information.",
+          "score": 58,
+          "invitations": 1105
+        },
+        {
+          "date": "2025-09-02",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health occupations. Please refer to the OINP Program Updates page for more information.",
+          "score": 33,
+          "invitations": 233
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 53,
+          "invitations": 94
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 45,
+          "invitations": 57
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Updates page for more information.",
+          "score": 66,
+          "invitations": 236
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 68,
+          "invitations": 56
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Updates page for more information.",
+          "score": 34,
+          "invitations": 25
+        },
+        {
+          "date": "2025-06-06",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
+          "score": 36,
+          "invitations": 32
+        },
+        {
+          "date": "2025-06-06",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
+          "score": 54,
+          "invitations": 34
+        },
+        {
+          "date": "2025-06-06",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for additional candidates in Greater Sudbury/Grand Sudbury. Please refer to the OINP Program Update page for more information.",
+          "score": 32,
+          "invitations": 6
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
+          "score": 36,
+          "invitations": 391
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ). Please refer to the OINP Program Update page for more information.",
+          "score": null,
+          "invitations": 411
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Career development practitioners and career counsellors (except education). Please refer to the OINP Program Update page for more information.",
+          "score": null,
+          "invitations": 5
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for candidates in Eastern Ontario. Please refer to the OINP Program Update page for more information.",
+          "score": 85,
+          "invitations": 334
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
+          "score": 54,
+          "invitations": 493
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ) Please refer to the OINP Program Update page for more information.",
+          "score": null,
+          "invitations": 363
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for more information.",
+          "score": 68,
+          "invitations": 1350
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for candidates in Northern Ontario. Please refer to the OINP Program Update page for more information.",
+          "score": 32,
+          "invitations": 89
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Economic Development through Immigration ( REDI ) Please refer to the OINP Program Update page for more information.",
+          "score": null,
+          "invitations": 69
+        },
+        {
+          "date": "2025-06-03",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for more information.",
+          "score": 34,
+          "invitations": 214
+        },
+        {
+          "date": "2025-01-15",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 4
+        },
+        {
+          "date": "2024-10-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 48,
+          "invitations": 885
+        },
+        {
+          "date": "2024-10-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 52,
+          "invitations": 841
+        },
+        {
+          "date": "2024-10-08",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2024-09-17",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 53,
+          "invitations": 1249
+        },
+        {
+          "date": "2024-09-17",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 45,
+          "invitations": 194
+        },
+        {
+          "date": "2024-09-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 15
+        },
+        {
+          "date": "2024-09-10",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health professions Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 67,
+          "invitations": 806
+        },
+        {
+          "date": "2024-09-10",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 67,
+          "invitations": 1017
+        },
+        {
+          "date": "2024-09-10",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 34,
+          "invitations": 649
+        },
+        {
+          "date": "2024-08-13",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 50,
+          "invitations": 420
+        },
+        {
+          "date": "2024-08-13",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 54,
+          "invitations": 958
+        },
+        {
+          "date": "2024-07-16",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 5
+        },
+        {
+          "date": "2024-07-16",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for other priority occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 77,
+          "invitations": 839
+        },
+        {
+          "date": "2024-07-16",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 81,
+          "invitations": 424
+        },
+        {
+          "date": "2024-07-16",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 35,
+          "invitations": 265
+        },
+        {
+          "date": "2024-07-16",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 81,
+          "invitations": 424
+        },
+        {
+          "date": "2024-07-09",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 54,
+          "invitations": 1556
+        },
+        {
+          "date": "2024-07-09",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 50,
+          "invitations": 110
+        },
+        {
+          "date": "2024-06-17",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Early childhood educators and assistants candidates",
+          "score": 39,
+          "invitations": 106
+        },
+        {
+          "date": "2024-06-17",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Early childhood educators and assistants candidates",
+          "score": 60,
+          "invitations": 84
+        },
+        {
+          "date": "2024-06-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Early childhood educators and assistants candidates",
+          "score": 43,
+          "invitations": 124
+        },
+        {
+          "date": "2024-06-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Early childhood educators and assistants candidates",
+          "score": 65,
+          "invitations": 120
+        },
+        {
+          "date": "2024-04-23",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 53,
+          "invitations": 209
+        },
+        {
+          "date": "2024-04-23",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2024-03-19",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 52,
+          "invitations": 1370
+        },
+        {
+          "date": "2024-03-19",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 42,
+          "invitations": 104
+        },
+        {
+          "date": "2024-03-12",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 11
+        },
+        {
+          "date": "2024-03-12",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General Draw",
+          "score": 72,
+          "invitations": 1306
+        },
+        {
+          "date": "2024-03-12",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 66,
+          "invitations": 649
+        },
+        {
+          "date": "2024-03-12",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 72,
+          "invitations": 684
+        },
+        {
+          "date": "2024-02-08",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General Draw",
+          "score": 78,
+          "invitations": 1182
+        },
+        {
+          "date": "2024-02-08",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 73,
+          "invitations": 1252
+        },
+        {
+          "date": "2024-01-24",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2024-01-24",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 50,
+          "invitations": 1344
+        },
+        {
+          "date": "2024-01-24",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 45,
+          "invitations": 125
+        },
+        {
+          "date": "2024-01-19",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 50,
+          "invitations": 1654
+        },
+        {
+          "date": "2024-01-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 33,
+          "invitations": 630
+        },
+        {
+          "date": "2024-01-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 40,
+          "invitations": 821
+        },
+        {
+          "date": "2023-12-05",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 34,
+          "invitations": 761
+        },
+        {
+          "date": "2023-12-05",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 43,
+          "invitations": 1663
+        },
+        {
+          "date": "2023-12-05",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 13
+        },
+        {
+          "date": "2023-12-05",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 30,
+          "invitations": 262
+        },
+        {
+          "date": "2023-10-30",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 43,
+          "invitations": 1051
+        },
+        {
+          "date": "2023-10-30",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 42,
+          "invitations": 66
+        },
+        {
+          "date": "2023-09-25",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 10
+        },
+        {
+          "date": "2023-09-19",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 40,
+          "invitations": 71
+        },
+        {
+          "date": "2023-08-30",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 44,
+          "invitations": 772
+        },
+        {
+          "date": "2023-08-15",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 30,
+          "invitations": 375
+        },
+        {
+          "date": "2023-08-15",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health and tech occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 46,
+          "invitations": 1131
+        },
+        {
+          "date": "2023-08-15",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 61,
+          "invitations": 408
+        },
+        {
+          "date": "2023-08-15",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for tech and health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 61,
+          "invitations": 445
+        },
+        {
+          "date": "2023-08-15",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 23,
+          "invitations": 256
+        },
+        {
+          "date": "2023-08-01",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information.",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2023-08-01",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 48,
+          "invitations": 755
+        },
+        {
+          "date": "2023-08-01",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 39,
+          "invitations": 84
+        },
+        {
+          "date": "2023-07-28",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 11
+        },
+        {
+          "date": "2023-06-20",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 36,
+          "invitations": 426
+        },
+        {
+          "date": "2023-06-20",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for health occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 33,
+          "invitations": 318
+        },
+        {
+          "date": "2023-06-20",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 26,
+          "invitations": 256
+        },
+        {
+          "date": "2023-06-06",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 57,
+          "invitations": 451
+        },
+        {
+          "date": "2023-06-06",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 46,
+          "invitations": 1175
+        },
+        {
+          "date": "2023-06-06",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 42,
+          "invitations": 134
+        },
+        {
+          "date": "2023-05-12",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 14
+        },
+        {
+          "date": "2023-05-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 43,
+          "invitations": 400
+        },
+        {
+          "date": "2023-05-09",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for tech and health occupations Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 62,
+          "invitations": 584
+        },
+        {
+          "date": "2023-04-11",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General Draw",
+          "score": 30,
+          "invitations": 295
+        },
+        {
+          "date": "2023-04-04",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 6
+        },
+        {
+          "date": "2023-04-04",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 52,
+          "invitations": 752
+        },
+        {
+          "date": "2023-04-04",
+          "stream": "PhD Graduate stream",
+          "note": "General Draw",
+          "score": 48,
+          "invitations": 131
+        },
+        {
+          "date": "2023-03-31",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 13
+        },
+        {
+          "date": "2023-03-14",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2023-03-14",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 70,
+          "invitations": 606
+        },
+        {
+          "date": "2023-03-14",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 74,
+          "invitations": 300
+        },
+        {
+          "date": "2023-02-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 30,
+          "invitations": 304
+        },
+        {
+          "date": "2023-02-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2023-01-31",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for tech and health occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 53,
+          "invitations": 611
+        },
+        {
+          "date": "2023-01-27",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 10
+        },
+        {
+          "date": "2023-01-25",
+          "stream": "Masters Graduate stream",
+          "note": "General Draw",
+          "score": 44,
+          "invitations": 692
+        },
+        {
+          "date": "2023-01-24",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways. Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2023-01-24",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General Draw",
+          "score": 82,
+          "invitations": 620
+        },
+        {
+          "date": "2023-01-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 35,
+          "invitations": 402
+        },
+        {
+          "date": "2023-01-10",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2022-12-22",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 14
+        },
+        {
+          "date": "2022-12-21",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 46,
+          "invitations": 725
+        },
+        {
+          "date": "2022-10-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2022-10-25",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 35,
+          "invitations": 535
+        },
+        {
+          "date": "2022-10-25",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 24,
+          "invitations": 106
+        },
+        {
+          "date": "2022-09-27",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 3
+        },
+        {
+          "date": "2022-09-20",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 33,
+          "invitations": 823
+        },
+        {
+          "date": "2022-08-30",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2022-08-30",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 37,
+          "invitations": 680
+        },
+        {
+          "date": "2022-08-30",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 26,
+          "invitations": 101
+        },
+        {
+          "date": "2022-08-17",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 30
+        },
+        {
+          "date": "2022-07-27",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2022-07-15",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 33
+        },
+        {
+          "date": "2022-06-29",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2022-06-29",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General draw",
+          "score": 74,
+          "invitations": 424
+        },
+        {
+          "date": "2022-06-29",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General draw",
+          "score": 24,
+          "invitations": 293
+        },
+        {
+          "date": "2022-06-01",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 62,
+          "invitations": 217
+        },
+        {
+          "date": "2022-06-01",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General draw",
+          "score": 79,
+          "invitations": 229
+        },
+        {
+          "date": "2022-06-01",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 38,
+          "invitations": 491
+        },
+        {
+          "date": "2022-06-01",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 28,
+          "invitations": 65
+        },
+        {
+          "date": "2022-05-04",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "General draw",
+          "score": 27,
+          "invitations": 57
+        },
+        {
+          "date": "2022-03-30",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 23,
+          "invitations": 155
+        },
+        {
+          "date": "2022-03-30",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing, agricultural occupations and select trades occupations. Please refer to the OINP Program Update page for a list of targ",
+          "score": 21,
+          "invitations": 65
+        },
+        {
+          "date": "2022-03-30",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 39,
+          "invitations": 398
+        },
+        {
+          "date": "2022-03-03",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2022-03-01",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 39,
+          "invitations": 456
+        },
+        {
+          "date": "2022-03-01",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 42,
+          "invitations": 215
+        },
+        {
+          "date": "2022-03-01",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General draw",
+          "score": 72,
+          "invitations": 411
+        },
+        {
+          "date": "2022-03-01",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 41,
+          "invitations": 238
+        },
+        {
+          "date": "2022-02-28",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 16,
+          "invitations": 173
+        },
+        {
+          "date": "2022-02-22",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 8
+        },
+        {
+          "date": "2022-02-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 24,
+          "invitations": 476
+        },
+        {
+          "date": "2022-02-09",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 41,
+          "invitations": 166
+        },
+        {
+          "date": "2022-02-09",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing, agricultural and select trades occupations. Please refer to the OINP Program Update page for a list of targeted occupat",
+          "score": 15,
+          "invitations": 107
+        },
+        {
+          "date": "2022-01-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 38,
+          "invitations": 264
+        },
+        {
+          "date": "2022-01-11",
+          "stream": "Employer Job Offer: International Student stream",
+          "note": "General draw",
+          "score": 59,
+          "invitations": 762
+        },
+        {
+          "date": "2022-01-11",
+          "stream": "Employer Job Offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 11,
+          "invitations": 58
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 37,
+          "invitations": 470
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 33
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General Draw",
+          "score": 62,
+          "invitations": 583
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer job offer: International Student stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 37
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": 20,
+          "invitations": 53
+        },
+        {
+          "date": "2021-12-07",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 10
+        },
+        {
+          "date": "2021-10-27",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 20
+        },
+        {
+          "date": "2021-10-20",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC ’s project page for more information",
+          "score": null,
+          "invitations": 4
+        },
+        {
+          "date": "2021-10-20",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 35,
+          "invitations": 479
+        },
+        {
+          "date": "2021-10-20",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 25,
+          "invitations": 63
+        },
+        {
+          "date": "2021-09-22",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": null,
+          "invitations": 65
+        },
+        {
+          "date": "2021-09-22",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 7
+        },
+        {
+          "date": "2021-09-21",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General Draw",
+          "score": 37,
+          "invitations": 406
+        },
+        {
+          "date": "2021-09-21",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 36
+        },
+        {
+          "date": "2021-09-21",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General Draw",
+          "score": 61,
+          "invitations": 523
+        },
+        {
+          "date": "2021-09-21",
+          "stream": "Employer job offer: International Student stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 30
+        },
+        {
+          "date": "2021-09-14",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 35,
+          "invitations": 627
+        },
+        {
+          "date": "2021-09-14",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 16,
+          "invitations": 64
+        },
+        {
+          "date": "2021-08-26",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 20
+        },
+        {
+          "date": "2021-08-25",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 37,
+          "invitations": 326
+        },
+        {
+          "date": "2021-08-18",
+          "stream": "Masters Graduate stream",
+          "note": "General draw",
+          "score": 39,
+          "invitations": 402
+        },
+        {
+          "date": "2021-08-18",
+          "stream": "PhD Graduate stream",
+          "note": "General draw",
+          "score": 17,
+          "invitations": 77
+        },
+        {
+          "date": "2021-08-11",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": null,
+          "invitations": 48
+        },
+        {
+          "date": "2021-08-06",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Economic Mobility Pathways Project candidates. Please refer to IRCC’s project page for more information",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2021-07-15",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for health, manufacturing and agricultural occupations. Please refer to the OINP Program Update page for a list of targeted occupations.",
+          "score": null,
+          "invitations": 54
+        },
+        {
+          "date": "2021-07-15",
+          "stream": "Employer job offer: In-Demand Skills stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 1
+        },
+        {
+          "date": "2021-07-13",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 24
+        },
+        {
+          "date": "2021-07-13",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General draw",
+          "score": 33,
+          "invitations": 1211
+        },
+        {
+          "date": "2021-07-13",
+          "stream": "Employer job offer: International Student stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 19
+        },
+        {
+          "date": "2021-07-13",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General draw",
+          "score": 62,
+          "invitations": 431
+        },
+        {
+          "date": "2021-07-07",
+          "stream": "Entrepreneur stream",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2021-06-16",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "General draw",
+          "score": 38,
+          "invitations": 569
+        },
+        {
+          "date": "2021-06-16",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General draw",
+          "score": 66,
+          "invitations": 371
+        },
+        {
+          "date": "2021-05-26",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General draw",
+          "score": 73,
+          "invitations": 147
+        },
+        {
+          "date": "2021-05-26",
+          "stream": "Employer job offer: International Student stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 11
+        },
+        {
+          "date": "2021-05-25",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw for Regional Immigration Pilot candidates. Please refer to the OINP Regional Pilot page for more information.",
+          "score": null,
+          "invitations": 64
+        },
+        {
+          "date": "2021-05-18",
+          "stream": "Employer job offer: International Student stream",
+          "note": "General draw",
+          "score": 77,
+          "invitations": 138
+        },
+        {
+          "date": "2021-05-11",
+          "stream": "Employer Job Offer: Foreign Worker stream",
+          "note": "Targeted draw in health and skilled trades occupations. Please refer to the OINP Program Update page for a list of targeted occupations",
+          "score": 31,
+          "invitations": 81
         }
       ],
       "notice": {
@@ -820,10 +3366,17 @@
       }
     },
     "NL": {
-      "label": "NLPNP + AIP(ITA 批次)",
+      "label": "NLPNP + AIP",
       "scale": null,
       "url": "https://www.gov.nl.ca/immigration/invitations-to-apply-updates/",
       "draws": [
+        {
+          "date": "2026-09-25",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 41",
+          "score": null,
+          "invitations": 41
+        },
         {
           "date": "2026-09-18",
           "stream": "NLPNP + AIP (ITA batch)",
@@ -949,6 +3502,76 @@
           "note": "NLPNP – 73, AIP – 52",
           "score": null,
           "invitations": 125
+        },
+        {
+          "date": "2025-09-26",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 107, AIP – 110",
+          "score": null,
+          "invitations": 217
+        },
+        {
+          "date": "2025-09-12",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 218, AIP – 135",
+          "score": null,
+          "invitations": 353
+        },
+        {
+          "date": "2025-08-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 125, AIP – 77",
+          "score": null,
+          "invitations": 202
+        },
+        {
+          "date": "2025-08-13",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 180, AIP – 51",
+          "score": null,
+          "invitations": 231
+        },
+        {
+          "date": "2025-07-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 100, AIP – 50",
+          "score": null,
+          "invitations": 150
+        },
+        {
+          "date": "2025-07-10",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 300, AIP – 59",
+          "score": null,
+          "invitations": 359
+        },
+        {
+          "date": "2025-06-24",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 257, AIP – 63",
+          "score": null,
+          "invitations": 320
+        },
+        {
+          "date": "2025-05-29",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 351, AIP – 54",
+          "score": null,
+          "invitations": 405
+        },
+        {
+          "date": "2025-05-08",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 281, AIP – 47",
+          "score": null,
+          "invitations": 328
+        },
+        {
+          "date": "2025-04-03",
+          "stream": "NLPNP + AIP (ITA batch)",
+          "note": "NLPNP – 206, AIP – 50",
+          "score": null,
+          "invitations": 256
         }
       ]
     },
@@ -1340,6 +3963,14 @@
           "note": "Pathways: NB Experience + NB Graduates. Categories: Health care, Education and social & community services, Construction trades, Note: The May 5 draw did not in",
           "score": null,
           "invitations": 432
+        },
+        {
+          "date": "2025-04-09",
+          "stream": "NB Express Entry",
+          "checklistKey": "Express Entry (Employment in New Brunswick)",
+          "note": "Pathways: Employment in New Brunswick. Categories: Healthcare, Education and Social & Community Services, Construction Trades, Note: This draw was limited to ca",
+          "score": null,
+          "invitations": 45
         }
       ]
     },
@@ -1410,6 +4041,391 @@
           "note": "Invitations were extended to individuals working in occupations and priority sectors based on economic impact in Prince Edward Island. International graduates f",
           "score": null,
           "invitations": 26
+        }
+      ]
+    },
+    "NS": {
+      "label": "NSNP + AIP",
+      "scale": null,
+      "url": "https://liveinnovascotia.com/eoi-selection",
+      "draws": [
+        {
+          "date": "2026-07",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 671
+        },
+        {
+          "date": "2026-06",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 531
+        },
+        {
+          "date": "2026-05",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 789
+        },
+        {
+          "date": "2026-04",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 161
+        },
+        {
+          "date": "2026-03",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 370
+        },
+        {
+          "date": "2026-02",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 357
+        },
+        {
+          "date": "2026-01",
+          "stream": "Monthly EOI selections",
+          "note": "Occupational focus: Healthcare occupations, Skilled trades, Other priority occupations aligned with current labour‑market needs",
+          "score": null,
+          "invitations": 363
+        }
+      ]
+    },
+    "QC": {
+      "label": "PSTQ",
+      "scale": "PSTQ",
+      "url": "https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/invitation/2026",
+      "draws": [
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 634, 706, 696",
+          "score": 634,
+          "invitations": 86
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 631, 706, 698, 611",
+          "score": 611,
+          "invitations": 316
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 631, 697, 696, 380",
+          "score": 380,
+          "invitations": 110
+        },
+        {
+          "date": "2026-09-24",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 7
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 639, 710, 694",
+          "score": 639,
+          "invitations": 87
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 638, 706, 695, 616",
+          "score": 616,
+          "invitations": null
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 639, 694, 393",
+          "score": 393,
+          "invitations": 109
+        },
+        {
+          "date": "2026-08-27",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 651, 702, 701",
+          "score": 651,
+          "invitations": 105
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 656, 702, 621",
+          "score": 621,
+          "invitations": 296
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 649, 700, 376",
+          "score": 376,
+          "invitations": 110
+        },
+        {
+          "date": "2026-07-30",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 628, 726, 656",
+          "score": 628,
+          "invitations": 74
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 628, 726, 628",
+          "score": 628,
+          "invitations": 289
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 628, 656, 656, 475",
+          "score": 475,
+          "invitations": 131
+        },
+        {
+          "date": "2026-07-03",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 7
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 677, 666, 692",
+          "score": 666,
+          "invitations": 1094
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 624, 653, 652",
+          "score": 624,
+          "invitations": 756
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 562, 556, 580, 637",
+          "score": 556,
+          "invitations": 677
+        },
+        {
+          "date": "2026-06-04",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 22
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 716, 571, 704",
+          "score": 571,
+          "invitations": 983
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 660, 494, 660",
+          "score": 494,
+          "invitations": 506
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 632, 495, 382, 625, 728",
+          "score": 382,
+          "invitations": 1058
+        },
+        {
+          "date": "2026-04-30",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 8
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 718, 588, 709",
+          "score": 588,
+          "invitations": 893
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 679, 505, 662",
+          "score": 505,
+          "invitations": 509
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 672, 563, 397, 650, 740",
+          "score": 397,
+          "invitations": 1118
+        },
+        {
+          "date": "2026-03-20",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 2
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 741, 627, 722",
+          "score": 627,
+          "invitations": 907
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 756, 562, 688",
+          "score": 562,
+          "invitations": 495
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 730, 632, 452, 693, 774",
+          "score": 452,
+          "invitations": 1141
+        },
+        {
+          "date": "2026-02-26",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 6
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 782, 674, 737",
+          "score": 674,
+          "invitations": 1094
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 800, 609, 657",
+          "score": 609,
+          "invitations": 683
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 781, 694, 546, 722, 855",
+          "score": 546,
+          "invitations": 750
+        },
+        {
+          "date": "2026-01-29",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 20
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "Minimum score by invitation profile: 781, 644",
+          "score": 644,
+          "invitations": 605
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "Minimum score by invitation profile: 573, 612",
+          "score": 573,
+          "invitations": 604
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 3: Regulated professions",
+          "note": "Minimum score by invitation profile: 717, 535",
+          "score": 535,
+          "invitations": 649
+        },
+        {
+          "date": "2025-12-04",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 12
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "",
+          "score": 760,
+          "invitations": 227
+        },
+        {
+          "date": "2025-08-28",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 21
+        },
+        {
+          "date": "2025-08-14",
+          "stream": "Stream 3: Regulated professions",
+          "note": "",
+          "score": 766,
+          "invitations": 275
+        },
+        {
+          "date": "2025-07-31",
+          "stream": "Stream 2: Intermediate and manual skills",
+          "note": "",
+          "score": 661,
+          "invitations": 273
+        },
+        {
+          "date": "2025-07-17",
+          "stream": "Stream 1: Highly qualified and specialized skills",
+          "note": "",
+          "score": 768,
+          "invitations": 216
+        },
+        {
+          "date": "2025-07-17",
+          "stream": "Stream 4: Exceptional talent",
+          "note": "",
+          "score": null,
+          "invitations": 22
         }
       ]
     }

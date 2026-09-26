@@ -348,6 +348,17 @@ class PeDrawRowsIn:
 
 
 @dataclass
+class BcProseIn:
+    """bc_prose_items() 入参:BC 一个散文轮的日期小标题(2026-09-26 抽选补全)。"""
+
+    head: SoupNodeLike
+    """该轮的 h3 日期小标题节点(列项必须挂在它之下)。"""
+
+    date: str
+    """ISO 抽选日。"""
+
+
+@dataclass
 class QcDrawIn:
     """qc_draw_of() 入参:QC 一轮一个 stream 的折叠块 → 一行抽选(2026-09-26)。"""
 

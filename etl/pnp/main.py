@@ -30,7 +30,8 @@ from pnp.functions import (
     build_bc_stats, build_bc_stats_processing, build_draws, build_mb, build_mb_points,
     build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_req, build_nl,
     build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_req, build_on_points,
-    build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_req, build_sk, build_sk_joboffer,
+    build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_req, build_sk, build_sk_joboffer, fetch_mb_draw_pages,
+    fetch_bc_draw_archive,
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
     watch_on_workforce, watch_prov_allocations,
@@ -162,6 +163,8 @@ TOOLS = {
     "pe_aip": build_pe_aip,
     "on_workforce": watch_on_workforce,
     "draws": build_draws,
+    "mb_draw_pages": fetch_mb_draw_pages,
+    "bc_draw_archive": fetch_bc_draw_archive,
     "ns_allocations": scrape_ns_allocations,
     "bc_req": build_bc_req,
     "on_req": build_on_req,
@@ -213,6 +216,8 @@ TOOLS = {
   c01_gold             C4 金标审计:案例 C01 的数字必须能从 mart 查出(批D 自 ops 收编,手动)
   gate_quotes          门槛取证器:13 条通道三类闸的官方候选原句(批D 收编,手动;
                        可再跟通道名只扫点名的,如 --only gate_quotes PE-sw)
+  mb_draw_pages        MB 抽选索引第 2..5 页进 crawl 缓存(2026-09-26 抽选补全;只补历史,新轮由 draws 首页实抓跟上)
+  bc_draw_archive      BC 逐年存档 PDF(2025)进 crawl 层(同日;过去年份不变,不进定时链)
   test                 本域自测(2026-09-26;unittest,不联网不写仓):ON 劳动力优先表守望判定
                        (门循环的自测随 run_steps 搬去 door 叶)
 """

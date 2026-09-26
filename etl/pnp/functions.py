@@ -19,6 +19,7 @@ docs/design/etl分域-20260829.md §4)。
 import json
 import re
 import sys
+import time
 import unittest
 from datetime import date, datetime, timezone
 from typing import cast
@@ -71,7 +72,7 @@ from pnp.constants import (
     BC_WORKERS_PAGE_URL, CELL_TAGS, COMMA, DATE_FMT_LONG, DIGIT_RE, DRAWS_AB_HEAD_KW, DRAWS_AB_LABEL,
     DRAWS_AB_MIN_COLS, DRAWS_AB_SCALE, DRAWS_AB_URL, DRAWS_BC_HEAD_KW, DRAWS_BC_LABEL, DRAWS_BC_MIN_COLS,
     DRAWS_BC_SCALE, DRAWS_BC_URL, DRAWS_MAX_PER_PROV, DRAWS_MB_LABEL, DRAWS_MB_SCALE, DRAWS_MB_URL, DRAWS_NB_LABEL,
-    DRAWS_NB_MAX, DRAWS_NB_PREV_URL, DRAWS_NB_URL, DRAWS_NL_LABEL, DRAWS_NL_URL, DRAWS_NOTE_CLIP,
+    DRAWS_NB_PREV_URL, DRAWS_NB_URL, DRAWS_NL_LABEL, DRAWS_NL_URL, DRAWS_NOTE_CLIP,
     DRAWS_NOTICE_CLIP, DRAWS_NUM_STRIP_RE, DRAWS_ON_INV_URL, DRAWS_ON_LABEL, DRAWS_ON_SCALE, DRAWS_ON_URL,
     DRAWS_PE_BIZ_COL, DRAWS_PE_BIZ_SCORE_COL, DRAWS_PE_BIZ_STREAM, DRAWS_PE_DATE_FMT, DRAWS_PE_HEAD_KW,
     DRAWS_PE_LABEL, DRAWS_PE_LABOUR_COL, DRAWS_PE_LABOUR_STREAM, DRAWS_PE_MIN_COLS, DRAWS_PE_NOTE_COL,
@@ -280,7 +281,7 @@ from pnp.constants import (  # 2026-09-24 九省通道审计第三批新增
     AB_PRINT_LAW_TPL, AB_PRINT_RURAL_TPL, AB_PRINT_TOURISM_TPL, AB_RR_COMMUNITY_URL, AB_RR_INCLUDING_RE,
     AB_RR_LIST_SPLIT_RE, AB_RR_PLACE_PREFIX_RE, AB_RR_PLACE_SKIP, AB_RR_PLACE_SUFFIX_RE, AB_RURAL_LABEL,
     AB_RURAL_NOTE, AB_RURAL_STREAM, AB_TOURISM_LABEL, AB_TOURISM_NOTE, AB_TOURISM_STREAM, AB_TOURISM_TABLE_KW,
-    AB_TOURISM_GENERIC, AB_TOURISM_TITLE, AB_TOURISM_URL, DRAWS_AB_MAX, K_COMMUNITIES, K_EXCLUDED, MB_DRAW_SUB_NOTE_TPL,
+    AB_TOURISM_GENERIC, AB_TOURISM_TITLE, AB_TOURISM_URL, K_COMMUNITIES, K_EXCLUDED, MB_DRAW_SUB_NOTE_TPL,
     MB_SECTION_TAGS, MB_SWM_STREAM, MB_SWM_SUBS,
     NB_PRINT_NO_PRIORITY, NB_PRINT_PRIORITY_TPL, NB_PRIORITY_LABEL, NB_PRIORITY_NOTE, NB_PRIORITY_ROW_RE,
     NB_PRIORITY_STREAM, NB_PRIORITY_TIMEOUT_S, NB_PRIORITY_URL, NS_CONSTR_GENERIC, NS_CONSTR_LABEL,
@@ -1438,13 +1439,18 @@ def build_pe() -> None:
 # 10. 省抽选事实(E6-04:BC / AB / MB / NB / NL / PE 最近抽选 + ON 改制通告)
 # =========================================================================
 from pnp.constants import (  # noqa: E402 — 段10 2026-09-26 补 NS / QC 两省的常量单列一块(同段35–38 先例)
+    BC_PROSE_HEAD_TAG, BC_PROSE_INV_RE, BC_PROSE_ITEM_RE, BC_PROSE_SCORE_RE, DRAWS_BC_HEI_STREAM, DRAWS_MB_CRAWL_SLUG,
+    DRAWS_BACKFILL_GAP_S, DRAWS_MB_PAGE_TPL, DRAWS_MB_PAGES, DRAWS_PRINT_MB_PAGE_TPL,
+    BC_PDF_ITEM_RE, BC_PDF_ROUND_RE, DRAWS_BC_ARCHIVE_DIR, DRAWS_BC_ARCHIVE_FILE_TPL, DRAWS_BC_ARCHIVE_TIMEOUT_S,
+    DRAWS_BC_ARCHIVE_URL_TPL, DRAWS_BC_ARCHIVE_YEARS, DRAWS_BC_NOT_PDF_TPL, DRAWS_BC_PDF_MAGIC,
+    DRAWS_PRINT_BC_ARCHIVE_TPL,
     DRAWS_NS_LABEL, DRAWS_NS_URL, DRAWS_PRINT_NO_CACHE_TPL, DRAWS_PRINT_PARSE_FAIL_TPL, DRAWS_QC_LABEL,
-    DRAWS_QC_MAX, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
+    DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, DRAWS_REVISABLE_PROVS,
     NS_DRAW_MONTH_RE, NS_DRAW_MONTH_TPL,
     NS_DRAW_NOTE_TPL, NS_DRAW_STREAM, NS_FOCUS_HEAD, NS_FOCUS_TAGS, PROV_QC, QC_BODY_CLASS, QC_BODY_TAG,
     QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
 )
-from pnp.scheme import CachedDrawsIn, QcDrawIn  # noqa: E402 — 同上
+from pnp.scheme import BcProseIn, CachedDrawsIn, QcDrawIn  # noqa: E402 — 同上
 
 
 def fetch_draws_page(url: str) -> str:
@@ -1543,8 +1549,53 @@ def parse_bc_draws(html: str) -> list:
             seen.add(key)
             draws.append({K_DATE: d, K_STREAM: row[1], K_NOTE: row[2][:DRAWS_NOTE_CLIP],
                           K_SCORE: int_of(row[3]), K_INVITATIONS: int_of(row[4])})
-        return draws[:DRAWS_MAX_PER_PROV]
+        for r in bc_prose_draws(soup):
+            key = (r[K_DATE], r[K_STREAM], r[K_SCORE], r[K_INVITATIONS])
+            if key in seen:
+                continue
+            seen.add(key)
+            draws.append(r)
+        draws.sort(key=draw_date_of, reverse=True)
+        return draws
     return []
+
+
+def bc_prose_draws(soup: SoupNodeLike) -> list:
+    """BC 散文轮(2026-09-26 抽选补全;2026 年 1~4 月的高经济影响邀请没进表):h3 日期 → 其后第一段含总邀请数句 →
+    同一个 h3 下的列项一条一行(条件原文进 note,「minimum score of N points」那条带分);列项认不出就落一行总数。"""
+    out: list = []
+    for head in soup.find_all(BC_PROSE_HEAD_TAG):
+        d = iso_of(fold_ws(head.get_text(TEXT_JOIN_SEP, strip=True)))
+        if not d:
+            continue
+        m = BC_PROSE_INV_RE.search(fold_ws(head.find_next(TAG_P).get_text(TEXT_JOIN_SEP, strip=True)))
+        if m is None:
+            continue
+        items = bc_prose_items(BcProseIn(head=head, date=d))
+        if len(items) == 0:
+            items.append({K_DATE: d, K_STREAM: DRAWS_BC_HEI_STREAM, K_NOTE: EMPTY_JOIN, K_SCORE: None,
+                          K_INVITATIONS: int_of(m.group(1))})
+        out += items
+    return out
+
+
+def bc_prose_items(x: BcProseIn) -> list:
+    """一个散文轮 h3 下的列项 → 行(列表必须挂在同一个 h3 之下,防止串到下一轮)。"""
+    out: list = []
+    ul = x.head.find_next(TAG_UL)
+    if ul is None or ul.find_previous(BC_PROSE_HEAD_TAG) is not x.head:
+        return out
+    for li in ul.find_all(TAG_LI):
+        mi = BC_PROSE_ITEM_RE.match(fold_ws(li.get_text(TEXT_JOIN_SEP, strip=True)))
+        if mi is None:
+            continue
+        score = None
+        ms = BC_PROSE_SCORE_RE.search(mi.group(1))
+        if ms is not None:
+            score = int(ms.group(1))
+        out.append({K_DATE: x.date, K_STREAM: DRAWS_BC_HEI_STREAM, K_NOTE: mi.group(1)[:DRAWS_NOTE_CLIP],
+                    K_SCORE: score, K_INVITATIONS: int_of(mi.group(2))})
+    return out
 
 
 def parse_ab_draws(html: str) -> list:
@@ -1564,7 +1615,7 @@ def parse_ab_draws(html: str) -> list:
                 continue
             draws.append({K_DATE: d, K_STREAM: c[1], K_NOTE: "",
                           K_SCORE: int_of(c[2]), K_INVITATIONS: int_of(c[3])})
-        return draws[:DRAWS_AB_MAX]
+        return draws
     return []
 
 
@@ -1697,7 +1748,7 @@ def parse_mb_draws(html: str) -> list:
             K_INVITATIONS: inv,
         })
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_MAX_PER_PROV]
+    return draws
 
 
 def mb_draw_of(x: MbDrawIn) -> dict:
@@ -1845,7 +1896,7 @@ def parse_on_draws(html: str) -> list:
             draws.append({K_DATE: d, K_STREAM: stream, K_NOTE: note,
                           K_SCORE: score, K_INVITATIONS: int_of(row[i_num])})
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_MAX_PER_PROV]
+    return draws
 
 
 def parse_nl_draws(html: str) -> list:
@@ -1871,7 +1922,7 @@ def parse_nl_draws(html: str) -> list:
             draws.append({K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note,
                           K_SCORE: None, K_INVITATIONS: int_of(row[1])})
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_MAX_PER_PROV]
+    return draws
 
 
 def iso_nb_of(s: str) -> str | None:
@@ -2129,7 +2180,7 @@ def parse_nb_draws(html: str) -> list:
         if d:
             draws.append(d)
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_NB_MAX]
+    return draws
 
 
 def build_nb_draws(old: dict) -> dict:
@@ -2157,7 +2208,6 @@ def build_nb_draws(old: dict) -> dict:
         seen.add(key)
         merged.append(d)
     merged.sort(key=draw_date_of, reverse=True)
-    merged = merged[:DRAWS_NB_MAX]
     say(DRAWS_PRINT_NB_OK_TPL.format(n=len(merged), date=merged[0][K_DATE],
                                      stream=merged[0][K_STREAM][:DRAWS_STREAM_CLIP],
                                      score=merged[0][K_SCORE], inv=merged[0][K_INVITATIONS]))
@@ -2210,7 +2260,7 @@ def parse_pe_draws(html: str) -> list:
                 note = row[DRAWS_PE_NOTE_COL][:DRAWS_NOTE_CLIP]
             draws += pe_draw_rows(PeDrawRowsIn(date=d, row=row, note=note))
         draws.sort(key=draw_date_of, reverse=True)
-        return draws[:DRAWS_MAX_PER_PROV]
+        return draws
     return []
 
 
@@ -2238,6 +2288,98 @@ def build_pe_draws(old: dict) -> dict:
     return {K_LABEL: DRAWS_PE_LABEL, K_SCALE: scale, K_URL: DRAWS_PE_URL, K_DRAWS: draws}
 
 
+def build_bc_draws(old: dict) -> dict:
+    """BC(2026-09-26 抽选补全):官方页照旧实抓(表格轮 + 2026 年 1~4 月散文轮)+ 已落 crawl 层的逐年存档 PDF
+    (本地读,不发请求);官方页抓不到时只用存档,两边都一轮没有 → 保留旧数据(同 province_draws 的兜底)。"""
+    draws: list = []
+    try:
+        draws += parse_bc_draws(fetch_draws_page(DRAWS_BC_URL))
+    except Exception as e:  # noqa: BLE001 — 官方页抓取失败留痕后照读存档(同 province_draws 的抓失败兜底)
+        say(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_BC, name=type(e).__name__, detail=e))
+    for year in DRAWS_BC_ARCHIVE_YEARS:
+        f = DRAWS_BC_ARCHIVE_DIR / DRAWS_BC_ARCHIVE_FILE_TPL.format(year=year)
+        if f.exists():
+            draws += bc_pdf_draws(pdf_text(f.read_bytes()))
+    if len(draws) == 0:
+        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_BC))
+        return old.get(PROV_BC) or {}
+    draws.sort(key=draw_date_of, reverse=True)
+    say(DRAWS_PRINT_OK_TPL.format(prov=PROV_BC, n=len(draws), date=draws[0][K_DATE],
+                                  stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                  score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
+    return {K_LABEL: DRAWS_BC_LABEL, K_SCALE: DRAWS_BC_SCALE, K_URL: DRAWS_BC_URL, K_DRAWS: draws}
+
+
+def bc_pdf_draws(text: str) -> list:
+    """BC 逐年存档 PDF 全文 → 行(与页上散文轮同一格式:一轮一句总数 + 列项;列项一条一行,认不出就落一行总数)。"""
+    out: list = []
+    for m in BC_PDF_ROUND_RE.finditer(fold_ws(text)):
+        d = iso_of(m.group(1))
+        if not d:
+            continue
+        before = len(out)
+        for mi in BC_PDF_ITEM_RE.finditer(m.group(3)):
+            cond = mi.group(1).strip()
+            score = None
+            ms = BC_PROSE_SCORE_RE.search(cond)
+            if ms is not None:
+                score = int(ms.group(1))
+            out.append({K_DATE: d, K_STREAM: DRAWS_BC_HEI_STREAM, K_NOTE: cond[:DRAWS_NOTE_CLIP],
+                        K_SCORE: score, K_INVITATIONS: int_of(mi.group(2))})
+        if len(out) == before:
+            out.append({K_DATE: d, K_STREAM: DRAWS_BC_HEI_STREAM, K_NOTE: EMPTY_JOIN, K_SCORE: None,
+                        K_INVITATIONS: int_of(m.group(2))})
+    return out
+
+
+def fetch_bc_draw_archive() -> None:
+    """手动件 bc_draw_archive(2026-09-26 抽选补全):BC 逐年存档 PDF 实抓落 crawl 层(DRAWS_BC_ARCHIVE_DIR),
+    逐年间隔 DRAWS_BACKFILL_GAP_S 秒;抽选步随后读本地文件。存档是过去年份,不变,不必进定时链。"""
+    DRAWS_BC_ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    for year in DRAWS_BC_ARCHIVE_YEARS:
+        url = DRAWS_BC_ARCHIVE_URL_TPL.format(year=year)
+        data = fetch_bytes(FetchHtmlIn(url=url, timeout_s=DRAWS_BC_ARCHIVE_TIMEOUT_S))
+        if data.startswith(DRAWS_BC_PDF_MAGIC) is False:
+            raise RuntimeError(DRAWS_BC_NOT_PDF_TPL.format(url=url))
+        f = DRAWS_BC_ARCHIVE_DIR / DRAWS_BC_ARCHIVE_FILE_TPL.format(year=year)
+        f.write_bytes(data)
+        say(DRAWS_PRINT_BC_ARCHIVE_TPL.format(path=f, n=len(bc_pdf_draws(pdf_text(data)))))
+        time.sleep(DRAWS_BACKFILL_GAP_S)
+
+
+def build_mb_draws(old: dict) -> dict:
+    """MB(2026-09-26 抽选补全):首页照旧实抓(最近 10 期)+ 第 2..DRAWS_MB_PAGES 页读 crawl 缓存(更早的轮),
+    同一份解析器并成一张;首页抓不到时只用缓存页,缓存页也一轮都没有 → 保留旧数据(同 province_draws 的兜底)。"""
+    draws: list = []
+    try:
+        draws += parse_mb_draws(fetch_draws_page(DRAWS_MB_URL))
+    except Exception as e:  # noqa: BLE001 — 首页抓取失败留痕后照读缓存页(同 province_draws 的抓失败兜底)
+        say(DRAWS_PRINT_FAIL_TPL.format(prov=PROV_MB, name=type(e).__name__, detail=e))
+    for n in range(2, DRAWS_MB_PAGES + 1):
+        html = get_cached_page(DRAWS_MB_PAGE_TPL.format(n=n)).html
+        if html is not None:
+            draws += parse_mb_draws(html)
+    if len(draws) == 0:
+        say(DRAWS_PRINT_EMPTY_TPL.format(prov=PROV_MB))
+        return old.get(PROV_MB) or {}
+    draws.sort(key=draw_date_of, reverse=True)
+    say(DRAWS_PRINT_OK_TPL.format(prov=PROV_MB, n=len(draws), date=draws[0][K_DATE],
+                                  stream=draws[0][K_STREAM][:DRAWS_STREAM_CLIP],
+                                  score=draws[0][K_SCORE], inv=draws[0][K_INVITATIONS]))
+    return {K_LABEL: DRAWS_MB_LABEL, K_SCALE: DRAWS_MB_SCALE, K_URL: DRAWS_MB_URL, K_DRAWS: draws}
+
+
+def fetch_mb_draw_pages() -> None:
+    """手动件 mb_draw_pages(2026-09-26 抽选补全):MB 索引第 2..DRAWS_MB_PAGES 页实抓进 crawl 层(slug mb-draws),
+    逐页间隔 DRAWS_BACKFILL_GAP_S 秒;抽选步随后从缓存读。只补历史 —— 新轮每小时由首页实抓跟上,不必进定时链。"""
+    for n in range(2, DRAWS_MB_PAGES + 1):
+        url = DRAWS_MB_PAGE_TPL.format(n=n)
+        html = fetch_draws_page(url)
+        put_cached_page(CachePutIn(slug=DRAWS_MB_CRAWL_SLUG, url=url, html=html, title=EMPTY_JOIN))
+        say(DRAWS_PRINT_MB_PAGE_TPL.format(url=url, n=len(parse_mb_draws(html))))
+        time.sleep(DRAWS_BACKFILL_GAP_S)
+
+
 def build_ns_draws(old: dict) -> dict:
     """NS(2026-09-26):**只读 crawl 缓存**的月度选取页(ns-root 种子每小时在刷,不另发请求;同 PE)。"""
     return cached_draws_of(CachedDrawsIn(prov=PROV_NS, url=DRAWS_NS_URL, html=get_cached_page(DRAWS_NS_URL).html,
@@ -2245,15 +2387,19 @@ def build_ns_draws(old: dict) -> dict:
 
 
 def build_qc_draws(old: dict) -> dict:
-    """QC(2026-09-26):**只读 crawl 缓存**里最新那一年的 PSTQ 邀请页(crawl 域 qc-pstq 窄种子每小时在刷;
-    今年页还没挂出来就退上一年页)。QC 不属 PNP —— 只收邀请事实,label / scale 写 PSTQ。"""
+    """QC(2026-09-26):**只读 crawl 缓存**里今年与去年的 PSTQ 逐年邀请页(crawl 域 qc-pstq 窄种子每小时在刷),
+    两年的轮并成一份(同日抽选补全:原先只读最新一年)。QC 不属 PNP —— 只收邀请事实,label / scale 写 PSTQ。"""
     this_year = date.today().year
-    src = latest_cached_year(LatestIn(url_tpl=DRAWS_QC_URL_TPL,
-                                      years=range(this_year, this_year - DRAWS_QC_YEARS_BACK, -1)))
-    url = src.url
-    if url == EMPTY_JOIN:
-        url = DRAWS_QC_URL_TPL.format(year=this_year)
-    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=src.html, parse=parse_qc_draws,
+    url = DRAWS_QC_URL_TPL.format(year=this_year)
+    pages: list = []
+    for year in range(this_year, this_year - DRAWS_QC_YEARS_BACK, -1):
+        html = get_cached_page(DRAWS_QC_URL_TPL.format(year=year)).html
+        if html is not None:
+            pages.append(html)
+    joined = None
+    if len(pages) > 0:
+        joined = EMPTY_JOIN.join(pages)
+    return cached_draws_of(CachedDrawsIn(prov=PROV_QC, url=url, html=joined, parse=parse_qc_draws,
                                          scale=DRAWS_QC_SCALE, label=DRAWS_QC_LABEL, old=old))
 
 
@@ -2294,7 +2440,7 @@ def parse_ns_draws(html: str) -> list:
             draws.append({K_DATE: month, K_STREAM: NS_DRAW_STREAM, K_NOTE: note,
                           K_SCORE: None, K_INVITATIONS: inv})
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_MAX_PER_PROV]
+    return draws
 
 
 def ns_month_of(cell: str) -> str | None:
@@ -2337,7 +2483,7 @@ def parse_qc_draws(html: str) -> list:
         body = fold_ws(head.find_next(QC_BODY_TAG, class_=QC_BODY_CLASS).get_text(TEXT_JOIN_SEP, strip=True))
         draws.append(qc_draw_of(QcDrawIn(date=day, stream=stream, body=body)))
     draws.sort(key=draw_date_of, reverse=True)
-    return draws[:DRAWS_QC_MAX]
+    return draws
 
 
 def qc_stream_of(head: str) -> str:
@@ -2475,12 +2621,10 @@ def build_draws() -> None:
     say(PRINT_OUT_TPL.format(path=OUT_DRAWS))
     old = old_provinces()
     provinces = {
-        PROV_BC: province_draws(ProvinceDrawsIn(prov=PROV_BC, url=DRAWS_BC_URL, parse=parse_bc_draws,
-                                                scale=DRAWS_BC_SCALE, label=DRAWS_BC_LABEL, old=old)),
+        PROV_BC: build_bc_draws(old),
         PROV_AB: province_draws(ProvinceDrawsIn(prov=PROV_AB, url=DRAWS_AB_URL, parse=parse_ab_draws,
                                                 scale=DRAWS_AB_SCALE, label=DRAWS_AB_LABEL, old=old)),
-        PROV_MB: province_draws(ProvinceDrawsIn(prov=PROV_MB, url=DRAWS_MB_URL, parse=parse_mb_draws,
-                                                scale=DRAWS_MB_SCALE, label=DRAWS_MB_LABEL, old=old)),
+        PROV_MB: build_mb_draws(old),
         PROV_ON: build_on_draws(old),
         PROV_NL: province_draws(ProvinceDrawsIn(prov=PROV_NL, url=DRAWS_NL_URL, parse=parse_nl_draws,
                                                 scale=None, label=DRAWS_NL_LABEL, old=old)),
