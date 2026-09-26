@@ -718,11 +718,10 @@ describe('红线不变量', () => {
     expect(out.every((v) => v.score === undefined)).toBe(true)
   })
 
-  it('NL 指定雇主是 supporting fact:649 家里 4 家申报过 72310(2026-08-31 官方名录 639 → 645,pnp 域 C01 金标同步;2026-09-16 645 → 650:nl_employers 步 09-15 挂进 pnp 自动刷新链,官方名录新增 5 家;2026-09-26 650 → 649:官方名录撤下 Central Health,nl_employers 被 mb_stats 拖停 10 天后补跑刷新)', () => {
+  it('NL 指定雇主是 supporting fact:N 家里 M 家申报过 72310(2026-08-31 官方名录 639 → 645,pnp 域 C01 金标同步;2026-09-16 645 → 650:nl_employers 步 09-15 挂进 pnp 自动刷新链,官方名录新增 5 家;2026-09-26 650 → 649 → 650:同一天官方名录来回变、ETL 每轮重写 mart —— 家数随名录走,断言改成只钉「是事实、不是官方条文」与句形,不再写死家数)', () => {
     const nl = byKey(list, 'NL-intl-grad')
     const fact = nl.reasons.find((r) => /指定雇主/.test(r.text))!
-    expect(fact.text).toContain('649')
-    expect(fact.text).toContain('4 家')
+    expect(fact.text).toMatch(/^\d+ 家 NL 指定雇主中 \d+ 家申报过 72310$/)
     expect(fact.quote, 'NL 雇主名录不是官方条文,不许伪装成 quote').toBeUndefined()
   })
 })

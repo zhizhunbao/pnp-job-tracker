@@ -950,8 +950,10 @@ export const K_PROV_HEAD = 'prov.'
  * 省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:
  * 两省官网把 AIP 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」
  * (2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
+ * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP
+ * 走同一个 EOI 池,官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。
  */
-export const AIP_DRAW_PROVS = new Set(['NB', 'NL'])
+export const AIP_DRAW_PROVS = new Set(['NB', 'NL', 'NS'])
 
 /**
  * 事实块按**分组**铺开的明表(E8-10 S6,2026-07-21)。

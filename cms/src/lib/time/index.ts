@@ -12,5 +12,5 @@
  * @time 2026-08-24 12:00:00
  */
 export { DAY_MS, TZ } from './constants'
-export { daysSince, fmtLocal, fmtLocalSec, ymd } from './functions'
+export { daysSince, fmtLocal, fmtLocalSec, fmtLocalShort, ymd } from './functions'
 export type { DaysSinceIn } from './types'

@@ -4,6 +4,7 @@
  * ;冷解读 2026-09-12 Frank「这个解读 解读了个寂寞」 撤;操作钮 2026-09-13 Frank「列名应该叫操作,然后有两个按钮」加,
  * 与桌面表同两枚:官方页 / 门槛,门槛钮没去处的行不出)。末条不出分隔线 —— 白卡自己有描边。
  * 2026-08-28 换装批自 Pulse.tsx 提出成文件。
+ * 2026-09-26 lead 定:人数前的标随行带(invLabel)—— 选取口径的省(NS)写「入选」,其余照旧「邀请」。
  *
  * @author Frank
  * @time 2026-08-28 14:20:00
@@ -33,7 +34,7 @@ export function DrawCard({ row, last, t }: DrawCardIn) {
           {t('home.dr.score')}<span className={css.drawVal}>{row.score}</span>
         </span>
         <span className={css.drawStat}>
-          {t('home.dr.inv')}<span className={css.drawVal}>{row.invitations}</span>
+          {row.invLabel}<span className={css.drawVal}>{row.invitations}</span>
         </span>
       </div>
       <div className={css.drawActs}>

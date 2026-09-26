@@ -3,6 +3,7 @@
  * plan 域的单元格:抽选表的邀请数列。这张表的入选条件是「有分数线**或**有邀请数」——
  * 只摆分数线的话,靠邀请数入选的行(NL/MB/NB)整行都是横杠,把它入选的那个事实藏了。
  * 2026-08-28 换装批自 Decision.tsx 的 inv 列 render 提出成件。
+ * 2026-09-26 lead 定:格子读 invCell —— 选取口径的省(NS)写「N 人入选」,其余照旧只写数。
  *
  * @author Frank
  * @time 2026-08-28 00:30:00
@@ -17,5 +18,5 @@ import css from './plan.module.css'
  * @returns 邀请数(官方缺位就是那根横杠)。
  */
 export function DrawInvCell(r: DrawCellRow) {
-  return <span className={css.drawInvCell}>{r.inv}</span>
+  return <span className={css.drawInvCell}>{r.invCell}</span>
 }

@@ -31,6 +31,8 @@
  * 中类、小类两个下拉换成一个「职业」下拉 —— 值是职业码(筛选参数 fNoc,与问卷 / 规划页深链同一个),选项跟着大类与 EE 类别联动、
  * 在招多的在前,显示人话短名;老深链 `?mid=` / `?fine=` 照旧能筛,只是折叠区里不再有它们的控件。
  * 同日 Frank「职业分类筛选,是不是放到全部大类后面比较好」:「职业」下拉挪进常用一行紧跟大类,折叠区「职业分类」一行撤,剩地理、发布两行。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头(手机常用一行压成两行):EE 类别下拉手机上收进本区,排第一行(行名借表格「EE 类别」列的
+ * 词条 col.ee);桌面它照旧在常用一行,本区这一行桌面不出(CSS 双渲染,两份绑同一格)。09-23「EE 先都留着」—— 只挪位置不删。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -41,7 +43,7 @@ import {
   FK, K_ORIGIN, OPTS_ORIGIN,
 } from './constants'
 import {
-  makeCityChange, makePrefixLabel, makeSlotChange, slotOf,
+  makeCityChange, makeEeChange, makeEeLabel, makePrefixLabel, makeSlotChange, slotOf,
 } from './functions'
 import type { BoardPanelIn } from './types'
 import css from './jobs.module.css'
@@ -50,12 +52,18 @@ import css from './jobs.module.css'
  * 渲染折叠区。
  *
  * @param props 职位板整台状态机。
- * @returns 两行低频筛选。
+ * @returns 两行低频筛选(手机端另有 EE 类别一行排在最前)。
  */
 export function FoldFilters({ b }: BoardPanelIn) {
   const f = b.filters
   return (
     <div className={cssOf(css.fold)}>
+      <div className={`${cssOf(css.ctl)} ${cssOf(css.foldEe)}`}>
+        <span className={cssOf(css.filtLabel)}>{b.t('col.ee')}</span>
+        <Select value={slotOf({ fState: f.fState, k: FK.ee })}
+          onChange={makeEeChange(f.fState)}
+          opts={f.opts.ee} all={b.t('all.ee')} labelOf={makeEeLabel(b.t)} />
+      </div>
       <div className={cssOf(css.ctl)}>
         <span className={cssOf(css.filtLabel)}>{b.t('filter.geo')}</span>
         <Select value={slotOf({ fState: f.fState, k: FK.city })}

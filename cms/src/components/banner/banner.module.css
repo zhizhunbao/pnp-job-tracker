@@ -679,3 +679,101 @@
    */
   background: #ffffff;
 }
+
+/*
+ * 窄屏紧凑档(2026-09-26 /fe 首页 Frank 看效果图点头;Banner 的 compact 格):宽屏这个类一格规则都没有,照旧。
+ */
+
+@media (width <= 640px) {
+  /*
+   * 图版外框:不定高、不裁圆角,退成一行字的外框(与下文的 14px 间距照旧)。
+   */
+  .imgBanner.compact {
+    height: auto;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  /*
+   * 图、暗化层、圆点收起(纯装饰,窄屏寸土寸金)。
+   */
+  .compact .img,
+  .compact .shade,
+  .compact .dots {
+    display: none;
+  }
+
+  /*
+   * 内容层:页名 + 副题靠左、右槽靠右,一行按基线排开(撤掉窄屏的上下叠)。
+   */
+  .compact .body {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 2px;
+    color: #111827;
+  }
+
+  /*
+   * 左块:页名与副题同一行。
+   */
+  .compact .bodyLeft {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  /*
+   * 页名:深色大字,不压影,不折行(韩文「채용공고」在 360 屏被挤时会按音节断成两行);行高按字号定
+   * (全局 h1 的窄屏行高随屏宽跳档,这里不跟)。
+   */
+  .compact .h1 {
+    line-height: 1.6;
+    text-shadow: none;
+    white-space: nowrap;
+  }
+
+  /*
+   * 页名前的图标收起(一行里只留字)。
+   */
+  .compact .h1 > svg {
+    display: none;
+  }
+
+  /*
+   * 副题:灰字、不压影、不另起行距。
+   */
+  .compact .imgSub,
+  .compact .bandSub {
+    font-size: 14px;
+    color: #6b7280;
+    opacity: 1;
+    margin-top: 0;
+    text-shadow: none;
+    white-space: nowrap;
+  }
+
+  /*
+   * 右槽:浅灰小字、不压影,随行基线对齐(撤掉窄屏的贴右下)。
+   */
+  .compact .bodyRight,
+  .compact .bandRight {
+    align-self: auto;
+    color: #9ca3af;
+    opacity: 1;
+    text-shadow: none;
+  }
+
+  /*
+   * 渐变带外框(图挂了回落到这里):去底色、去圆角,与图版的紧凑档同一行形。
+   */
+  .band.compact {
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 0 2px;
+    border-radius: 0;
+    background: none;
+    color: #111827;
+  }
+}

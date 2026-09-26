@@ -4,6 +4,7 @@
  * (2026-09-13 Frank「用户只想知道门槛是什么。比如 1 2 3 这种」「先简化」「先出一版」;
  * 同日早些的四层版(限定职业 / 通道资格 / 资料库)撤)。清单随行带来,不取数;没写清单的行不出钮,
  * 万一带进来的是 null(列没上)出「本站未收录」。壳走 modal 桶,标题走 title 桶。
+ * 2026-09-26 lead 定:人数前的标随行带(invLabel)—— 选取口径的省(NS)写「入选」,其余照旧「邀请」。
  *
  * @author Frank
  * @time 2026-09-13 18:00:00
@@ -45,7 +46,7 @@ export function RulesModal({ t, lang, row, onClose }: RulesModalIn) {
           {t('home.dr.score')}<span className={css.drawVal}>{row.score}</span>
         </span>
         <span className={css.drawStat}>
-          {t('home.dr.inv')}<span className={css.drawVal}>{row.invitations}</span>
+          {row.invLabel}<span className={css.drawVal}>{row.invitations}</span>
         </span>
       </div>
       {row.drawNote !== TEXT_NONE && <p className={css.rulesQuote}>{row.drawNote}</p>}

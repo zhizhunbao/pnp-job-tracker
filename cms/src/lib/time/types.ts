@@ -22,6 +22,21 @@ export type DaysSinceIn = {
 }
 
 /**
+ * fmtLocalShort 的入参。
+ */
+export type FmtShortIn = {
+  /**
+   * 要写的时刻(库里的 UTC ISO 串)。
+   */
+  iso: string
+
+  /**
+   * 参照的此刻(毫秒;判「是不是今天」用 —— 纯函数不自己读时钟,测试里可注固定值)。
+   */
+  now: number
+}
+
+/**
  * cutFallback 的入参。
  */
 export type CutFallbackIn = {

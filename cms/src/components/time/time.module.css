@@ -96,3 +96,29 @@
    */
   text-align: right;
 }
+
+/*
+ * 窄屏短写那一句(2026-09-26 /fe 首页 Frank 看效果图点头「Updated 12:57」;Updated 的 narrowShort 档):宽屏收起。
+ */
+.updatedShort {
+  /*
+   * 宽屏不出(宽屏出写全的那一句)。
+   */
+  display: none;
+}
+
+@media (width <= 640px) {
+  /*
+   * 窄屏收起写全的那一句(只在 narrowShort 档才有这一格)。
+   */
+  .updatedFull {
+    display: none;
+  }
+
+  /*
+   * 窄屏出短写那一句。
+   */
+  .updatedShort {
+    display: inline;
+  }
+}

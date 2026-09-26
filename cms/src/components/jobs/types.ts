@@ -790,6 +790,11 @@ export type BoardFiltersPanel = {
   anyFilter: boolean
 
   /**
+   * 用户自己设没设过筛选(进板时预选的本省不算;2026-09-26 /fe 首页:窄屏的「清除筛选」只在它为真时出)。
+   */
+  userFilter: boolean
+
+  /**
    * 「已选」行渲不渲(2026-08-29:清除筛选搬回输入行后,这一行可能一件都不剩)。
    */
   showPicked: boolean
@@ -798,6 +803,11 @@ export type BoardFiltersPanel = {
    * 折叠区里有几项被选中(徽标计数)。
    */
   foldActive: number
+
+  /**
+   * 窄屏折叠区里有几项被选中(2026-09-26 /fe 首页:EE 类别在手机上收进了折叠区,算进窄屏那枚徽标)。
+   */
+  foldActiveNarrow: number
 
   /**
    * 折叠区展开着没。
@@ -3570,6 +3580,11 @@ export type BoardFiltersHookOut = {
    * 当前非默认筛选(关键词未防抖 —— URL 与快照按它走)。
    */
   snap: JobFilters
+
+  /**
+   * 记下进板时预选的省(水合那一步写;'' = 没预选)—— 判「用户自己设没设过筛选」用。
+   */
+  setHomeProv: TextFn
 }
 
 /**
@@ -3750,6 +3765,21 @@ export type FilterCountIn = {
    * 筛选各格。
    */
   fState: FilterState
+}
+
+/**
+ * userFilterOf 的入参。
+ */
+export type UserFilterIn = {
+  /**
+   * 筛选各格。
+   */
+  fState: FilterState
+
+  /**
+   * 进板时预选的省(省全名;'' = 没预选)。
+   */
+  homeProv: string
 }
 
 /**
@@ -4635,6 +4665,11 @@ export type HydrateIn = {
    * 首屏本省闸的写口(预选了省 = on,没预选 = off;2026-09-26)。
    */
   setGate: GateSetFn
+
+  /**
+   * 记下进板时预选的省(2026-09-26 /fe 首页:窄屏「清除筛选」不把它算作用户设的筛选)。
+   */
+  setHomeProv: TextFn
 }
 
 /**
@@ -5924,6 +5959,26 @@ export type FoldBtnClsIn = {
    * 折叠区里有几项被选中。
    */
   foldActive: number
+
+  /**
+   * 窄屏折叠区里有几项被选中(EE 类别在手机上收进了折叠区;2026-09-26 /fe 首页)。
+   */
+  foldActiveNarrow: number
+}
+
+/**
+ * foldNClsOf 的入参。
+ */
+export type FoldNClsIn = {
+  /**
+   * 折叠区里有几项被选中(宽屏那枚徽标)。
+   */
+  foldActive: number
+
+  /**
+   * 窄屏折叠区里有几项被选中(窄屏那枚徽标)。
+   */
+  foldActiveNarrow: number
 }
 
 /**

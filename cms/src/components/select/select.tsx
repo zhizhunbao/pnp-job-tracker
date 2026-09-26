@@ -18,6 +18,8 @@
  * 同日 Frank「这个默认太长了吧」(「全部职业」壳 155px,同排三颗 99px):fitLongest 撤回 —— 职业名已全部补成 8 字以内的
  * 中文短名,展开列表比壳宽出的那截与省份下拉(「纽芬兰与拉布拉多省」)同量级;原生 select 的弹出列表宽度由浏览器定,
  * 壳宽与「列表不伸出」只能二选一,取壳宽与同排一致。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头(手机筛选行压成两行):壳可追加宿主给的类(className),只作排版定位 ——
+ * 职位板手机端按格定宽、把 EE 类别收进更多筛选,靠的就是它;不传照旧。
  *
  * @author Frank
  * @time 2026-08-24 10:00:00
@@ -37,7 +39,7 @@ import css from './select.module.css'
  * @returns 下拉。
  */
 export function Select({
-  value, onChange, opts, all, labelOf, size = BOX_SIZE_DEFAULT, tap = false,
+  value, onChange, opts, all, labelOf, size = BOX_SIZE_DEFAULT, tap = false, className,
 }: SelectIn) {
   let labelIn = null
   if (labelOf != null) {
@@ -50,7 +52,10 @@ export function Select({
     md: `${css.box} ${css.md}`,
     lg: `${css.box} ${css.lg}`,
   }
-  const boxCls = sizeCls[size]
+  let boxCls = sizeCls[size]
+  if (className != null) {
+    boxCls = `${boxCls} ${className}`
+  }
   const base = inputClsOf({ size: SIZE_DEFAULT, search: false, extra: null })
   let selCls = `${base} ${css.overlay}`
   if (tap) {

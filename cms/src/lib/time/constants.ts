@@ -46,6 +46,16 @@ export const MIN_LEN = 16
 export const SEC_LEN = 19
 
 /**
+ * 'YYYY-MM-DD HH:mm' 里年份段 '2026-' 的长度(裁掉它剩 'MM-DD HH:mm';短写跨天那一档用)。
+ */
+export const YEAR_PREFIX_LEN = 5
+
+/**
+ * 'YYYY-MM-DD HH:mm' 里日期段 '2026-08-24 ' 的长度(连同后面那个空格;裁掉它剩 'HH:mm',短写当天那一档用)。
+ */
+export const DATE_PREFIX_LEN = 11
+
+/**
  * ISO 里日期与时间的分隔符(退化路径把它换成空格)。
  */
 export const ISO_T = 'T'

@@ -600,6 +600,23 @@ export const jobsZh = {
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
+  // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
+  // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)
+  // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
+  'pnpfacts.streams': '本岗能走的通道',
+  'pnpfacts.latest': '最近一轮',
+  'pnpfacts.selected': '入选',
+  'pnpfacts.people': '{n} 人',
+  'pnpfacts.apps': '{n} 份申请',
+  'pnpfacts.rounds90': '近 {d} 天 {n} 轮',
+  'pnpfacts.rounds90One': '近 {d} 天 {n} 轮',
+  'pnpfacts.invTotal': '共邀请 {n} 人',
+  'pnpfacts.selTotal': '共 {n} 份申请入选',
+  'pnpfacts.selPeopleTotal': '共 {n} 人入选',
+  'pnpfacts.selPeople': '{n} 人入选',
+  'pnpfacts.allGroups': '查看全省 {n} 组 ▾',
+  'pnpfacts.invIssued': '已发邀请',
+  'pnpfacts.none': '暂无',
   // 列名
   'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.teer': 'TEER',
   'col.company': '公司', 'col.title': '职位', 'col.noc': '职业', 'col.nocCode': 'NOC', 'col.accessibility': '经验级别',

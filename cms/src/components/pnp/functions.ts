@@ -16,9 +16,12 @@ import { tagClsOf as baseTagClsOf } from '@/components/tag'
 import { eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
-import { DAY_MS } from '@/lib/time'
+import { DAY_MS, fmtLocal, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
+  COUNT_AIP, COUNT_INV, COUNT_LABEL_KEY, COUNT_ROW_KEY, COUNT_SEL, COUNT_TOTAL_KEY, COUNT_VALUE_KEY, DRAWS_FORM_GROUPS,
+  DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, DRAW_WINDOW_DAYS, HOST_RE, LANG_EN,
+  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, NUM_LOCALE, PNP_GEN_HEAD,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -35,6 +38,9 @@ import {
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
 } from './constants'
 import type {
+  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawFeat, DrawsForm,
+  FactCardOfIn, FactCardSpec, FactLinkSpec, FactRowSpec, FactValueClsIn, FeatCellSpec, FeatOfIn, LatestSinceIn,
+  MonthRowsIn, RoundRowsIn, RoundsTextIn, WindowStatsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
   CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn,
@@ -403,10 +409,21 @@ export function numTextOf(v: number | null): string | number {
 }
 
 /**
+ * 人数带千分位(本岗那一组的人数格与合计;2026-09-26)。
+ *
+ * @param n 人数。
+ * @returns 「2,264」这样的文本。
+ */
+function numStrOf(n: number): string {
+  return n.toLocaleString(NUM_LOCALE)
+}
+
+/**
  * 省提名弹框的事实索引:清单与抽选两张整表压成三串键(服务端门里算一次,随首屏下发;整表 2026-09-26 起弹框打开才懒取)。
  * 格子凭它判「弹框里有没有卡可出」(pnpFactsShownOf)—— 抽选那串就是 hasProvDraws 为真的省,清单与排除两串就是
  * pnpStreamsOf 分出来的纳入型清单与排除清单点名的职业:与弹框自己出卡(PnpListSection)同一套判据,不另写一份
  * (排除那串不借职位板的排除键:那份按清单行算,这份按弹框分组算,判「弹框出不出卡」只认弹框自己的分组)。
+ * 2026-09-26 同日「补完整」:hasProvDraws 收进了抽选卡的三种形(见 drawsFormOf),抽选那串随之多出 NS、ON,形状不变。
  *
  * @param x 两张整表。
  * @returns 出得了抽选卡的省码、认得出的纳入型清单键与排除清单点名的职业键。
@@ -440,16 +457,23 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
  * 既无清单也无抽选,这两万来条点开只有标题;判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后自然恢复可点。
  *
  * 魁省与缺省码的岗弹框里没有卡(清单分组与抽选卡两处都先把它们挡掉,见 pnpStreamsOf / hasProvDraws),这里同样先挡。
+ * 2026-09-26 同日「补完整」:抽选卡多了两种形(NS 按月选取人数、ON 改制现状),都经 hasProvDraws 进 draws 那串,本函数不用改;
+ * 排除那串只对不可提名的岗算数(与弹框 shownStreamsOf 同一道)—— SK 主线不合格表是参考信号表,数据层不拿它判资格,
+ * 可提名的岗弹框不再出那张排除卡,这里也不再凭它判「有卡」。弹框顶上的「本岗能走的通道」卡只是抬头,不单独算「有卡」:
+ * 只有它一张的弹框,内容与格子一字不差,等于点开只有标题。
  *
- * @param x 本岗省码、职业码、数据层通道标签与事实索引。
+ * @param x 本岗省码、职业码、数据层通道标签、可提名与否与事实索引。
  * @returns 有卡可出 = true。
  */
 export function pnpFactsShownOf(x: PnpFactsShownIn): boolean {
   if (x.province === PROV_QC || x.province === TEXT_NONE) {
     return false
   }
+  if (x.index.draws.includes(x.province)) {
+    return true
+  }
   const exclKey = factKeyOf({ province: x.province, tail: x.noc })
-  if (x.index.draws.includes(x.province) || x.index.excluded.includes(exclKey)) {
+  if (x.eligible === false && x.index.excluded.includes(exclKey)) {
     return true
   }
   if (x.stream === TEXT_NONE) {
@@ -489,21 +513,54 @@ function distinctProvsOf(rows: ProvRow[]): string[] {
  * 2026-09-26 /fe 首页 Frank:这一处收成省提名弹框「出不出本省抽选卡」的完整判据 —— 原先改制省那道(安省不出,见 reformOf)
  * 写在 PnpListSection 里、「一轮带日期的抽选都没有」那道藏在 PnpDrawGroups 的空组判断里,三处拼起来才是答案;
  * 格子要照弹框出不出卡判可不可点(pnpFactsIndexOf),判据只能有一份。入参由本岗改成省码(首屏索引按省算)。
+ * 同日「补完整」:抽选卡多了两种形,出哪一种收进 drawsFormOf,这里只剩「出不出」—— 判据仍是这一份。
  *
  * @param x 省码与全部抽选行。
  * @returns 出不出抽选卡。
  */
 export function hasProvDraws(x: HasProvDrawsIn): boolean {
-  if (x.province === PROV_QC || x.province === TEXT_NONE || reformOf({ province: x.province }) != null) {
-    return false
+  return drawsFormOf(x) !== DRAWS_FORM_NONE
+}
+
+/**
+ * 本省抽选卡出哪一种形(2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头):
+ * ① 魁省与缺省码的岗不出(魁省不属省提名);
+ * ② 改制省(安省,见 reformOf)出现状:改制后有官方公告才出(最新公告日、改制后发没发过邀请),
+ *    改制前的旧通道抽选照旧不列;
+ * ③ 有带日期的轮次 → 按通道分组;
+ * ④ 只有到月的汇总行(NS 每月从 EOI 池选取人数)→ 按月列。
+ * 形不写死省份:哪一形全看这省的抽选行长什么样,数据变了卡跟着变。
+ *
+ * @param x 省码与全部抽选行。
+ * @returns 抽选卡的形。
+ */
+export function drawsFormOf(x: HasProvDrawsIn): DrawsForm {
+  if (x.province === PROV_QC || x.province === TEXT_NONE) {
+    return DRAWS_FORM_NONE
   }
-  return provDrawHistOf({ province: x.province, draws: x.draws }).size > 0
+  const reform = reformOf({ province: x.province })
+  if (reform != null) {
+    const notice = latestSinceOf({ province: x.province, draws: x.draws, since: reform.since, kind: KIND_NOTICE })
+    if (notice == null) {
+      return DRAWS_FORM_NONE
+    }
+    return DRAWS_FORM_STATUS
+  }
+  if (provDrawHistOf({ province: x.province, draws: x.draws }).size > 0) {
+    return DRAWS_FORM_GROUPS
+  }
+  if (monthRowsOf({ province: x.province, draws: x.draws }).length > 0) {
+    return DRAWS_FORM_MONTHLY
+  }
+  return DRAWS_FORM_NONE
 }
 
 /**
  * 本省的抽选按通道分组(只收带日期的抽选行,通告行不算;组内保持来稿序,排序归调用方)。
  * 2026-09-26 自 pnpDrawGroupsOf 体内原样提出:抽选卡出不出(hasProvDraws)与卡里分哪几组共用这一处 ——
  * 一组都分不出来,抽选卡就不出。
+ * 同日「补完整」:只到月的汇总行(NS 每月选取人数)不是一轮抽选,不进分组(否则「近 90 天几轮」会把 `YYYY-MM` 当日期比),
+ * 它们单走按月那一种卡(monthRowsOf)。
  *
  * @param x 省码与全部抽选行。
  * @returns 通道原值 → 历次抽选。
@@ -511,7 +568,7 @@ export function hasProvDraws(x: HasProvDrawsIn): boolean {
 function provDrawHistOf(x: ProvDrawHistIn): DrawHist {
   const hist: DrawHist = new Map()
   for (const d of x.draws) {
-    if (d.province !== x.province || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE) {
+    if (d.province !== x.province || d.kind !== KIND_DRAW || d.drawDate === TEXT_NONE || isMonthOnly(d.drawDate)) {
       continue
     }
     const arr = hist.get(d.stream)
@@ -525,13 +582,154 @@ function provDrawHistOf(x: ProvDrawHistIn): DrawHist {
 }
 
 /**
+ * 这个抽选日期是不是只到月(`YYYY-MM`:一个月的汇总,不是一轮)。
+ *
+ * @param date 抽选日期。
+ * @returns 只到月 = true。
+ */
+function isMonthOnly(date: string): boolean {
+  return date.length === MONTH_DATE_LEN
+}
+
+/**
+ * 本省按月的选取人数行(只到月的抽选行,人数没公布的月份不列;降序,最多一年)。
+ * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 官网只按月公布从 EOI 池里选了多少人(liveinnovascotia.com/eoi-selection),
+ * 日期照官方写到月 —— 这里只按字符串比先后(同长的 `YYYY-MM` 字典序即时间序),不拿它算天数。
+ *
+ * @param x 省码与全部抽选行。
+ * @returns 按月的行(降序)。
+ */
+export function monthRowsOf(x: MonthRowsIn): PnpDraw[] {
+  const rows: PnpDraw[] = []
+  for (const d of x.draws) {
+    if (d.province !== x.province || d.kind !== KIND_DRAW) {
+      continue
+    }
+    if (isMonthOnly(d.drawDate) === false || d.invitations == null) {
+      continue
+    }
+    rows.push(d)
+  }
+  rows.sort(byDrawDateDesc)
+  return rows.slice(0, MONTHLY_ROWS_MAX)
+}
+
+/**
+ * 某一天(改制生效日)及以后,本省最近的一行某类别(官方公告或抽选)。
+ *
+ * @param x 省码、全部抽选行、起算日与行类别。
+ * @returns 最近那一行;没有给 null。
+ */
+function latestSinceOf(x: LatestSinceIn): PnpDraw | null {
+  let best: PnpDraw | null = null
+  for (const d of x.draws) {
+    if (d.province !== x.province || d.kind !== x.kind || d.drawDate < x.since) {
+      continue
+    }
+    if (best == null || d.drawDate > best.drawDate) {
+      best = d
+    }
+  }
+  return best
+}
+
+/**
+ * 抽选卡按月 / 改制现状两种形的内容(分组形另走 PnpDrawGroups;形由 drawsFormOf 判,出卡判据只有一份)。
+ *
+ * @param x 取词函数、省码与全部抽选行。
+ * @returns 事实卡;分组形或不出卡给 null。
+ */
+export function factCardOf(x: FactCardOfIn): FactCardSpec | null {
+  const form = drawsFormOf({ province: x.province, draws: x.draws })
+  if (form === DRAWS_FORM_STATUS) {
+    return statusCardOf(x)
+  }
+  if (form === DRAWS_FORM_MONTHLY) {
+    return monthlyCardOf(x)
+  }
+  return null
+}
+
+/**
+ * 改制省的现状卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头 —— 原先安省这里不出卡、格子点开只有标题):
+ * 两行全取自数据:① 最新公告 = 改制后最近一条官方公告的日期(pnp_draws 的 notice 行;悬停出公告原句);
+ * ② 已发邀请 = 改制后有没有抽选行,没有写「暂无」(琥珀),有就写最近那一轮的日期。
+ * 底部官方链接取那条公告行记的官方页。旧通道停发日、官方页更新日数据层还没有,不出这两格(不写死)。
+ * 同日 lead 定:① 的标签用通用的「最新公告」(复用 tl.tabNews),不写「EOI 注册开放」—— notice 行是数据层抓 ON 更新页的
+ * 最新一条(etl/pnp parse_on),ON 发下一条公告那一行就换了,具体标签会随之指错;数据层给公告分类型后再说具体事件。
+ * ② 由抽选行推出,不受这一条影响。
+ *
+ * @param x 取词函数、省码与全部抽选行。
+ * @returns 现状卡;不是改制省或改制后没有公告给 null。
+ */
+function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
+  const reform = reformOf({ province: x.province })
+  if (reform == null) {
+    return null
+  }
+  const notice = latestSinceOf({ province: x.province, draws: x.draws, since: reform.since, kind: KIND_NOTICE })
+  if (notice == null) {
+    return null
+  }
+  const round = latestSinceOf({ province: x.province, draws: x.draws, since: reform.since, kind: KIND_DRAW })
+  let issued = x.t('pnpfacts.none')
+  let strong = true
+  if (round != null) {
+    issued = round.drawDate
+    strong = false
+  }
+  const rows: FactRowSpec[] = [
+    { key: KIND_NOTICE, k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note, strong: false },
+    { key: KIND_DRAW, k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE, strong },
+  ]
+  return { title: x.t('pnpdraws.title', { label: notice.label }), rows, link: factLinkOf(notice.url) }
+}
+
+/**
+ * 按月选取人数卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 原先既无清单也无抽选,格子点开只有标题):
+ * 一月一行,日期照官方写到月,人数写「入选」(官方是从 EOI 池里选取,不是发邀请;见 DRAW_SELECT_PROVS)。
+ *
+ * @param x 取词函数、省码与全部抽选行。
+ * @returns 按月卡;本省没有按月的行给 null。
+ */
+function monthlyCardOf(x: FactCardOfIn): FactCardSpec | null {
+  const months = monthRowsOf({ province: x.province, draws: x.draws })
+  const first = months[0]
+  if (first == null) {
+    return null
+  }
+  const rows: FactRowSpec[] = []
+  for (const d of months) {
+    rows.push({ key: d.drawDate, k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE, strong: false })
+  }
+  return { title: x.t('pnpdraws.title', { label: first.label }), rows, link: factLinkOf(first.url) }
+}
+
+/**
+ * 事实卡底部那条官方链接(显示站名,新开页)。
+ *
+ * @param url 数据层记的官方页地址。
+ * @returns 链接;认不出站名给 null(不出链接)。
+ */
+function factLinkOf(url: string): FactLinkSpec | null {
+  const m = HOST_RE.exec(url)
+  if (m == null || m.groups == null || m.groups.host == null) {
+    return null
+  }
+  return { href: url, text: m.groups.host + LINK_ARROW }
+}
+
+/**
  * 要展开哪几张清单。#125 → 2026-07-25 Frank 收紧「不覆盖就不用显示」:命中 → 只展示命中的清单;
  * 被排除 → 只展示排除清单;都没有 → 清单整体不渲(原全量铺浏览语境退役)——
  * 判定行已说清结论,不相干的清单只是噪音。
  * 一省可有多张排除表(NB:通用 14 个 NOC + 餐饮住宿 13 个)→ 只展示真正命中本岗的那张,
  * 否则会铺一张与本岗无关的清单(兜底行还会随便挑一条),同 #125③ 口径。
+ * 2026-09-26 /fe 首页 Frank「止血 + 补完整」(顺手修):排除清单卡只给数据层判不可提名的岗。SK 主线不合格表只管
+ * OID / EE 两个子类(数据层标了参考信号,不拿它判资格),持 offer 的 SK 岗照样可提名 —— 原先按职业码一碰就出排除卡,
+ * 格子写「可提名」、弹框出「排除」,数百条自相矛盾。
  *
- * @param x 命中结论与本岗职业码。
+ * @param x 命中结论、本岗职业码与可提名与否。
  * @returns 要展开的清单。
  */
 export function shownStreamsOf(x: ShownStreamsIn): PnpStream[] {
@@ -546,11 +744,55 @@ export function shownStreamsOf(x: ShownStreamsIn): PnpStream[] {
       }
       continue
     }
-    if (x.match.excluded && s.type === TYPE_INELIGIBLE && hasNocOf(s, x.noc)) {
+    if (x.eligible === false && x.match.excluded && s.type === TYPE_INELIGIBLE && hasNocOf(s, x.noc)) {
       out.push(s)
     }
   }
   return out
+}
+
+/**
+ * 本岗能走的通道(弹框顶上那张卡;2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头):
+ * 口径与职位板 PNP 格一致(jobs 域 pnpCellOf)—— 数据层有具名通道标签(pnp_stream)就列它,没有而可提名就列该省的通用通道名
+ * (`pnp.gen.{省}` 词条;查不到词条的省不列,格子那边写「{省} 可提名」,那不是通道名);主文案英文官方名、界面语言译名作灰字。
+ * 现在一岗只有一个值,出参留成清单:「一岗列出全部通道」立项后这里直接加条目,卡不用改。
+ * 魁省不属省提名、缺省码的岗无从说起,都不列。
+ *
+ * @param x 两个取词函数、界面语言、译名开关与本岗。
+ * @returns 通道条目;不列给空列。
+ */
+export function channelsOf(x: ChannelsIn): ChannelSpec[] {
+  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
+    return []
+  }
+  if (x.job.pnpStream !== TEXT_NONE) {
+    const en = streamDisplay({ t: x.tEn, label: x.job.pnpStream })
+    const local = streamDisplay({ t: x.t, label: x.job.pnpStream })
+    return [channelOf({ lang: x.lang, showZh: x.showZh, key: x.job.pnpStream, en, local })]
+  }
+  if (x.job.pnpEligible === false) {
+    return []
+  }
+  const key = PNP_GEN_HEAD + x.job.province
+  const en = x.tEn(key)
+  if (en === key) {
+    return []
+  }
+  return [channelOf({ lang: x.lang, showZh: x.showZh, key, en, local: x.t(key) })]
+}
+
+/**
+ * 一条通道条目(英文名作主文案;非英文界面且开着译名、译名又与英文不同字才出灰字)。
+ *
+ * @param x 界面语言、译名开关、列表键、英文名与界面语言名。
+ * @returns 通道条目。
+ */
+function channelOf(x: ChannelOfIn): ChannelSpec {
+  let sub = TEXT_NONE
+  if (x.lang !== LANG_EN && x.showZh && x.local !== x.en) {
+    sub = x.local
+  }
+  return { key: x.key, name: x.en, sub }
 }
 
 /**
@@ -932,9 +1174,152 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
 }
 
 /**
+ * 分组形的本省抽选卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头 —— 原先阿省一框铺满 13 组):
+ * 本岗那一组(格子写的通道对得上的组,drawHitStreamsOf)单独摊开成三格 + 灰字统计;其余组收进「查看全省 N 组」,
+ * 展开后照旧组头一行(pnpDrawGroupsOf 那一套)。对不上本岗那一组时整卡只剩开关,不拿别的组冒充「本岗那一组」。
+ *
+ * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组与灰字统计的窗口起点。
+ * @returns 抽选卡;本省分不出组给 null。
+ */
+export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
+  const groups = pnpDrawGroupsOf({
+    t: x.t,
+    lang: x.lang,
+    province: x.province,
+    draws: x.draws,
+    hitStreams: x.hitStreams,
+  })
+  if (groups.length === 0) {
+    return null
+  }
+  const hist = provDrawHistOf({ province: x.province, draws: x.draws })
+  const feats: DrawFeat[] = []
+  const others: EeCmpGroup[] = []
+  for (const g of groups) {
+    if (g.hit === false) {
+      others.push(g)
+      continue
+    }
+    const arr = histAtOf({ hist, key: g.key }).slice().sort(byDrawDateDesc)
+    const head = scoredHeadOf(arr)
+    if (head != null) {
+      feats.push(featOf({ t: x.t, lang: x.lang, key: g.key, head, draws: arr, cut: x.cut }))
+    }
+  }
+  const first = firstDrawOf(drawRowsOf({ province: x.province, draws: x.draws, reform: null, limit: null }))
+  let label = TEXT_NONE
+  if (first != null) {
+    label = first.label
+  }
+  return { title: drawsTitleOf({ t: x.t, reform: null, first }), label, feats, others, total: groups.length }
+}
+
+/**
+ * 本岗那一组的展示件:三格(最近一轮 | 分数线 | 人数;没公布的格不出)+ 灰字统计 + 展开后的全部轮次。
+ * 三格取组头那一轮(同分组卡:最近一轮带分的),与展开后列表里那一组的组头同一轮。
+ *
+ * @param x 一组的原料。
+ * @returns 这一组。
+ */
+function featOf(x: FeatOfIn): DrawFeat {
+  const kind = countKindOf(x.head)
+  const cells: FeatCellSpec[] = [{ k: x.t('pnpfacts.latest'), v: x.head.drawDate }]
+  if (x.head.score != null) {
+    cells.push({ k: x.t('rpt.s.d.score'), v: String(x.head.score) })
+  }
+  if (x.head.invitations != null) {
+    cells.push({ k: x.t(COUNT_LABEL_KEY[kind]), v: x.t(COUNT_VALUE_KEY[kind], { n: numStrOf(x.head.invitations) }) })
+  }
+  return {
+    key: x.key,
+    name: x.head.stream,
+    sub: zhSubOf({ lang: x.lang, draw: x.head }),
+    cells,
+    stats: windowStatsOf({ t: x.t, draws: x.draws, cut: x.cut, kind }),
+    rows: roundRowsOf({ t: x.t, lang: x.lang, draws: x.draws }),
+  }
+}
+
+/**
+ * 本岗那一组的灰字统计:近 90 天几轮,外加这几轮合计多少人 —— 窗口里哪一轮没公布人数,合计就不出(少算一轮的合计是假数)。
+ * 窗口起点 cut 由调用方按弹框打开那一刻算好传进来(纯函数不读时钟);只到月的汇总行不在分组里,不会拿 `YYYY-MM` 来比。
+ *
+ * @param x 取词函数、这一组的历次抽选、窗口起点与人数口径。
+ * @returns 灰字(轮数一条,合计一条)。
+ */
+function windowStatsOf(x: WindowStatsIn): string[] {
+  let n = 0
+  let sum = 0
+  let complete = true
+  for (const d of x.draws) {
+    if (d.drawDate < x.cut) {
+      continue
+    }
+    n += 1
+    if (d.invitations == null) {
+      complete = false
+    } else {
+      sum += d.invitations
+    }
+  }
+  const stats = [roundsTextOf({ t: x.t, n })]
+  if (n > 0 && complete) {
+    stats.push(x.t(COUNT_TOTAL_KEY[x.kind], { n: numStrOf(sum) }))
+  }
+  return stats
+}
+
+/**
+ * 「近 90 天几轮」那一句(英文一轮写 round;同 eecmp.roundsOne 的做法)。
+ *
+ * @param x 取词函数与轮数。
+ * @returns 那一句。
+ */
+function roundsTextOf(x: RoundsTextIn): string {
+  if (x.n === 1) {
+    return x.t('pnpfacts.rounds90One', { n: x.n, d: DRAW_WINDOW_DAYS })
+  }
+  return x.t('pnpfacts.rounds90', { n: x.n, d: DRAW_WINDOW_DAYS })
+}
+
+/**
+ * 「查看全省 N 组」那个开关的字(展开后改「收起」,同清单卡末尾的开关)。
+ *
+ * @param x 取词函数、展开态、全省组数与轮次标签。
+ * @returns 开关的字。
+ */
+export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
+  if (x.open) {
+    return x.t('pnplist.foldOther')
+  }
+  return x.t('pnpfacts.allGroups', { n: x.total, label: x.label })
+}
+
+/**
+ * 灰字统计窗口的起点:此刻往前 90 天那一天(渥太华日期 `YYYY-MM-DD`,与抽选日期同一口径)。
+ *
+ * @param now 此刻(毫秒;由调用方在弹框打开时取一次)。
+ * @returns 窗口起点。
+ */
+export function drawCutOf(now: number): string {
+  return ymd(fmtLocal(new Date(now - DRAW_WINDOW_DAYS * DAY_MS).toISOString()))
+}
+
+/**
+ * 此刻(毫秒;给 useState 的惰性初值用 —— 弹框打开那一刻取一次,重渲不变)。
+ *
+ * @returns 此刻。
+ */
+export function nowOf(): number {
+  return Date.now()
+}
+
+/**
  * 没公布分的组头写什么:那一轮发了多少份邀请;邀请数也没有就空着(不出长横)。
  * 2026-09-23 同日并进 AIP 文案、改名 invTextOf(原 headInvOf),抽选行也走这一处:AIP 那组的数字是选中进入审理的申请
  * (见 DRAW_STREAM_AIP),写「份申请入选」,不写「份邀请」。
+ * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 的数字是每月从 EOI 池选取的人数,写「人入选」(DRAW_SELECT_PROVS);
+ * 三种口径的词条收进 COUNT_ROW_KEY 一张表(countKindOf 判口径)。
  *
  * @param x 取词函数与这一轮。
  * @returns 文字;''=没公布。
@@ -943,10 +1328,23 @@ function invTextOf(x: InvTextIn): string {
   if (x.draw.invitations == null) {
     return TEXT_NONE
   }
-  if (x.draw.stream === DRAW_STREAM_AIP) {
-    return x.t('pnpdraws.sel', { n: x.draw.invitations })
+  return x.t(COUNT_ROW_KEY[countKindOf(x.draw)], { n: x.draw.invitations })
+}
+
+/**
+ * 这一轮的人数是什么口径:AIP 那组 = 选中进入审理的申请;官方写「选取」的省 = 从 EOI 池选取的人;其余 = 发出的邀请。
+ *
+ * @param draw 这一轮。
+ * @returns 人数口径。
+ */
+function countKindOf(draw: PnpDraw): CountKind {
+  if (draw.stream === DRAW_STREAM_AIP) {
+    return COUNT_AIP
   }
-  return x.t('pnpdraws.inv', { n: x.draw.invitations })
+  if (DRAW_SELECT_PROVS.has(draw.province)) {
+    return COUNT_SEL
+  }
+  return COUNT_INV
 }
 
 /**
@@ -1056,14 +1454,7 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
   if (x.score != null) {
     score = x.t('pnpdraws.min', { score: x.score })
   }
-  const rows: DrawRowSpec[] = []
-  let i = 0
-  for (const d of x.draws) {
-    const row = toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null })
-    row.streamZh = TEXT_NONE
-    rows.push(row)
-    i += 1
-  }
+  const rows = roundRowsOf({ t: x.t, lang: x.lang, draws: x.draws })
   let rounds = TEXT_NONE
   if (rows.length === 1) {
     rounds = x.t('eecmp.roundsOne', { n: rows.length })
@@ -1084,6 +1475,25 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     noScore: x.score == null,
     hit: x.hit,
   }
+}
+
+/**
+ * 一组点开后的全部轮次(照抄省抽选表的行;中文名只在组头灰字出一次,各轮不再逐行重复 —— 2026-09-23 Frank
+ * 「这种中文灰字翻译只显示一个就行了吧」)。2026-09-26 自 cmpGroupOf 体内原样提出:本岗那一组(featOf)展开的也是这一份。
+ *
+ * @param x 取词函数、界面语言与这一组的历次抽选。
+ * @returns 展示行。
+ */
+function roundRowsOf(x: RoundRowsIn): DrawRowSpec[] {
+  const rows: DrawRowSpec[] = []
+  let i = 0
+  for (const d of x.draws) {
+    const row = toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null })
+    row.streamZh = TEXT_NONE
+    rows.push(row)
+    i += 1
+  }
+  return rows
 }
 
 /**
@@ -1799,6 +2209,29 @@ export function cmpScoreClsOf(x: CmpScoreClsIn): string {
     cls.push(cssOf(css.cmpNoScore))
   }
   return cls.join(CLS_SEP)
+}
+
+/**
+ * 事实卡值格的类名(「暂无」这类状态值琥珀加粗;2026-09-26)。
+ *
+ * @param x 要不要加粗。
+ * @returns 类名。
+ */
+export function factValueClsOf(x: FactValueClsIn): string {
+  const cls = [cssOf(css.ruleV)]
+  if (x.strong) {
+    cls.push(cssOf(css.factStrong))
+  }
+  return cls.join(CLS_SEP)
+}
+
+/**
+ * 「本岗能走的通道」一条的类名(细边框盒 + 条目内衬;2026-09-26)。
+ *
+ * @returns 类名。
+ */
+export function channelClsOf(): string {
+  return cssOf(css.box) + CLS_SEP + cssOf(css.channel)
 }
 
 /**

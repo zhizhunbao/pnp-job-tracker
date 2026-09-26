@@ -50,7 +50,7 @@ URL_HOME_CITY_HEAD,
   URL_CITY_API,
 WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
-TAG_FED, PROV_FED, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
+TAG_FED, PROV_FED, DRAW_SELECT_PROVS, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
   W_PROG, W_STREAM, W_SCORE, W_INV,
   COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
@@ -3279,6 +3279,9 @@ export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
 
 /**
  * 洗一期抽选:官方英文名主文案 + 界面语言译名灰注(与旧版同口径)。
+ * 2026-09-26 lead 定:官方口径是从 EOI 池选取的省(DRAW_SELECT_PROVS,NS)人数写「入选」—— 桌面表那一格写「N 人入选」,
+ * 手机卡与门槛弹框的标换成「入选」(invLabel);词条复用省提名弹框的 pnpfacts.selPeople / pnpfacts.selected。
+ * NS 的日期官方只到月,ymd 只裁不补,照原样出(`2026-07`)。
  *
  * @param x 这一期与洗行要的上下文。
  * @returns 展示行。
@@ -3288,6 +3291,15 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
   if (x.r.province === PROV_FED) {
     prog = TAG_FED
   }
+  const invitations = numTextOf(x.r.invitations)
+  let invCell = invitations
+  let invLabel = x.t('home.dr.inv')
+  if (DRAW_SELECT_PROVS.has(x.r.province)) {
+    invLabel = x.t('pnpfacts.selected')
+    if (x.r.invitations != null) {
+      invCell = x.t('pnpfacts.selPeople', { n: x.r.invitations })
+    }
+  }
   const row: DrawCellRow = {
     key: String(x.i),
     date: ymd(x.r.date),
@@ -3295,7 +3307,9 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
     main: drawMainOf(x),
     note: drawNoteOf(x),
     score: numTextOf(x.r.score),
-    invitations: numTextOf(x.r.invitations),
+    invitations,
+    invCell,
+    invLabel,
     href: x.r.url,
     hasChecklist: x.r.checklist != null,
     onRules: noop,
@@ -3495,13 +3509,13 @@ export function drawScoreOf(r: DrawCellRow): string {
 }
 
 /**
- * 邀请数单元格。
+ * 邀请数单元格(2026-09-26 起读 invCell:选取口径的省写「N 人入选」)。
  *
  * @param r 这一期。
  * @returns 邀请数文案。
  */
 export function drawInvOf(r: DrawCellRow): string {
-  return r.invitations
+  return r.invCell
 }
 
 /**

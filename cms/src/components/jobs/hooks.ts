@@ -44,7 +44,8 @@ import {
   allocateColWidths, anyFilterOf, applyEmailOf, applyFiltersTo, applyHomeProvince, authFromUrl, blockedSetsOf,
   homeGateAfterOf, homeGateInitOf, hydratingClientOf, hydratingServerOf, subscribeNever,
   clearFiltersIn, colsKeyOf, colWidthSeedValue, curFiltersOf, dataKeyOf, defaultColsOf,
-  fetchJobText, filterOptsOf, filterSig, foldActiveOf, frozenKeysOf, initialColsOf, initialFiltersOf,
+  fetchJobText, filterOptsOf, filterSig, foldActiveNarrowOf, foldActiveOf, frozenKeysOf, homeProvPickOf, initialColsOf,
+  initialFiltersOf, userFilterOf,
   jobDetailViewOf, jobsQueryOf, keysOf, lastOf, makeColWidth, makeOccName, makePopupToCo,
   makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
@@ -550,6 +551,8 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
  * useDeferredValue 让搜索输入跟手(cur 滞后一帧触发重拉);URL 与快照走**未防抖**的 snap。
  * 保存此筛选(E5-03;D1 2026-07-19 降免费):登录即可存,免费 2 / Pro 5 —— 免费触上限才弹升级。
  * 2026-08-16 Frank「保存此筛选没有必要吧」→ 留:它是「简化操作才收费」那条定价原则的落点。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头:记下进板时预选的省(写口交给水合那一步),面板多两格 ——
+ * 用户自己设没设过筛选(窄屏「清除筛选」看它)、窄屏折叠区徽标计数(EE 类别在手机上收进了折叠区)。
  *
  * @param x 初始筛选、维度表、界面语言、取词函数、分层态与触上限时的去处。
  * @returns 筛选面板与内部要用的几样。
@@ -557,6 +560,7 @@ function useFilterSlots(initialFilters: JobFilters): FilterState {
 function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
   const fState = useFilterSlots(x.initialFilters)
   const [fold, setFold] = useState(false)
+  const [homeProv, setHomeProv] = useState(TEXT_NONE)
   const q = slotOf({ fState, k: FK.q })
   const dq = useDeferredValue(q)
   const prov = slotOf({ fState, k: FK.prov })
@@ -598,8 +602,10 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
       fState,
       opts,
       anyFilter,
+      userFilter: userFilterOf({ fState, homeProv }),
       showPicked: pickedShownOf({ anyFilter, nocLabel, loggedIn: x.plan.loggedIn }),
       foldActive: foldActiveOf({ fState }),
+      foldActiveNarrow: foldActiveNarrowOf({ fState }),
       fold,
       onFold: function toggleFold(): void {
         setFold(fold === false)
@@ -619,6 +625,7 @@ function useBoardFilters(x: BoardFiltersHookIn): BoardFiltersHookOut {
     setQ: setterOf({ fState, k: FK.q }),
     cur: curFiltersOf({ fState, q: dq }),
     snap: curFiltersOf({ fState, q }),
+    setHomeProv,
   }
 }
 
@@ -1154,7 +1161,7 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     rows: data.rows,
   })
   useCatLabels(data.dims)
-  useBoardHydrate({ fState: filters.panel.fState, props, setGate })
+  useBoardHydrate({ fState: filters.panel.fState, props, setGate, setHomeProv: filters.setHomeProv })
   const onQCommit = useBoardUrlSync(filters.snap)
   const saved = useSavedJobs({ plan, onAnon: onUpsellLock })
   const blocked = useBlockedKeys(props.pnpFacts)
@@ -1297,14 +1304,16 @@ function makeFieldRouter(x: FieldRouterIn): (k: JobColKey, j: JobFact, title: st
  * 2026-09-23「我的匹配」整拆,那条直链回流随之撤;「只看直发」的写口也随勾选框一起撤。
  * 2026-09-26 /fe 首页 Frank「首屏整表替换」:预选完按结果落首屏本省闸 —— 预选了省就关着等本省那一页,没预选当场放开。
  * 这一步在绘制前跑:客户端跳转进板(没有首帧脚本)时,全国过渡态一帧都不画出来。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头:同一步记下预选的是哪一省(与落格同一个 homeProvPickOf),窄屏「清除筛选」不算它。
  *
- * @param x 筛选各格、props 与首屏本省闸的写口。
+ * @param x 筛选各格、props、首屏本省闸与预选省的两个写口。
  * @returns 无。
  */
 function useBoardHydrate(x: HydrateIn): void {
   const fState = x.fState
   const props = x.props
   const setGate = x.setGate
+  const setHomeProv = x.setHomeProv
   useIsoLayoutEffect(function hydrateFromUrl() {
     const sp = readSearch()
     if (sp.get(P_BACK) === VAL_ON) {
@@ -1313,6 +1322,7 @@ function useBoardHydrate(x: HydrateIn): void {
       replaceQuery(sp)
     }
     applyFiltersTo({ fState, f: initialFiltersOf(props.initialFilters) })
+    setHomeProv(homeProvPickOf(initialFiltersOf(props.initialFilters)))
     setGate(homeGateAfterOf(applyHomeProvince({ fState, initial: initialFiltersOf(props.initialFilters) })))
   }, [])
 }

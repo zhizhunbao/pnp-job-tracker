@@ -28,6 +28,11 @@
  * 2026-09-26 /fe Frank:地址栏的关键词改成停手才写(见 hooks 的 useBoardUrlSync),搜索框外那层 span
  * 接住从输入框冒上来的回车 / 失焦,当场写回;通用 Search 件一个字没动。
  *
+ * 2026-09-26 /fe 首页 Frank 看效果图点头(手机 375,桌面不动):手机端本行压成两行 —— 搜索独占一行,「省 | 大类」一行、
+ * 「职业 | 更多筛选」一行(排法全在 jobs.module.css 的 .ctlMain 断点段,四个下拉壳各挂一个定位类);EE 类别下拉手机上收进
+ * 更多筛选(折叠区那一份见 foldfilters.tsx,徽标另数一枚),桌面照旧在本行;「清除筛选」手机上只在用户自己设了筛选时出
+ * (进板时预选的本省不算),桌面照旧有筛选就出。
+ *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
@@ -37,8 +42,8 @@ import { Search } from '@/components/search'
 import { Select } from '@/components/select'
 import { BTN_GHOST, BTN_SECONDARY, FK, SELECT_LG, SELECT_SM } from './constants'
 import {
-  foldBtnClsOf, foldCaretOf, makeBroadChange, makeCatLabel, makeEeChange, makeEeLabel, makeProvChange, makeProvLabel,
-  makeSlotChange, slotOf,
+  clearClsOf, foldBtnClsOf, foldCaretOf, foldNClsOf, foldNNarrowClsOf, makeBroadChange, makeCatLabel, makeEeChange,
+  makeEeLabel, makeProvChange, makeProvLabel, makeSlotChange, slotOf,
 } from './functions'
 import { ColFields } from './colfields'
 import type { BoardBoxIn } from './types'
@@ -53,7 +58,7 @@ import css from './jobs.module.css'
 export function FilterRow({ b, boxRef }: BoardBoxIn) {
   const f = b.filters
   return (
-    <div className={cssOf(css.ctl)}>
+    <div className={`${cssOf(css.ctl)} ${cssOf(css.ctlMain)}`}>
       <span className={cssOf(css.search)} onKeyDown={b.onQKey} onBlur={b.onQCommit}>
         <Search value={b.q} onChange={b.onQ} placeholder={b.t('search.placeholder')} size={SELECT_SM} />
       </span>
@@ -61,31 +66,40 @@ export function FilterRow({ b, boxRef }: BoardBoxIn) {
         onChange={makeProvChange(f.fState)}
         opts={f.opts.prov}
         all={b.t('all.prov')}
-        labelOf={makeProvLabel(b.t)} />
+        labelOf={makeProvLabel(b.t)}
+        className={cssOf(css.ctlProv)} />
       <Select value={slotOf({ fState: f.fState, k: FK.ee })}
         onChange={makeEeChange(f.fState)}
         opts={f.opts.ee}
         all={b.t('all.ee')}
-        labelOf={makeEeLabel(b.t)} />
+        labelOf={makeEeLabel(b.t)}
+        className={cssOf(css.ctlEe)} />
       <Select value={slotOf({ fState: f.fState, k: FK.broad })}
         onChange={makeBroadChange(f.fState)}
         opts={f.opts.broad}
         all={b.t('all.broad')}
-        labelOf={makeCatLabel(b.t)} />
+        labelOf={makeCatLabel(b.t)}
+        className={cssOf(css.ctlBroad)} />
       <Select value={f.occValue}
         onChange={makeSlotChange({ fState: f.fState, k: FK.noc })}
         opts={f.opts.occ}
         all={b.t('all.occ')}
         labelOf={f.occName}
-        size={SELECT_LG} />
+        size={SELECT_LG}
+        className={cssOf(css.ctlOcc)} />
       <Button kind={BTN_SECONDARY} onClick={f.onFold}
-        className={foldBtnClsOf({ fold: f.fold, foldActive: f.foldActive })}>
+        className={foldBtnClsOf({ fold: f.fold, foldActive: f.foldActive, foldActiveNarrow: f.foldActiveNarrow })}>
         {b.t('filter.more')}
-        {f.foldActive > 0 && <span className={cssOf(css.foldN)}>{f.foldActive}</span>}
+        {f.foldActive > 0 && (
+          <span className={foldNClsOf({ foldActive: f.foldActive, foldActiveNarrow: f.foldActiveNarrow })}>
+            {f.foldActive}
+          </span>
+        )}
+        {f.foldActiveNarrow !== f.foldActive && <span className={foldNNarrowClsOf()}>{f.foldActiveNarrow}</span>}
         <span className={cssOf(css.foldCaret)}>{foldCaretOf(f.fold)}</span>
       </Button>
       {f.anyFilter && (
-        <Button kind={BTN_GHOST} onClick={f.onClear} className={cssOf(css.clearFilt)}>
+        <Button kind={BTN_GHOST} onClick={f.onClear} className={clearClsOf(f.userFilter)}>
           {b.t('clear')}
         </Button>
       )}

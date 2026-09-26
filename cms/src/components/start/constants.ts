@@ -863,6 +863,13 @@ export const TAG_IRCC = 'IRCC'
 export const PROV_FED = 'FED'
 
 /**
+ * 官方口径是「从 EOI 池里选取」而不是「发邀请」的省:近期抽选里这些省的人数写「入选」(2026-09-26 lead 定)。
+ * NS 出处 liveinnovascotia.com/eoi-selection 原句「Nova Scotia selected the following number of candidates from the
+ * Expression of Interest (EOI) pool during the months noted below」。与 components/pnp 的 DRAW_SELECT_PROVS 同值(各域一份)。
+ */
+export const DRAW_SELECT_PROVS = new Set(['NS'])
+
+/**
  * 表格列的 key:抽选日期。
  */
 export const COL_DATE = 'date'

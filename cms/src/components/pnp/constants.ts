@@ -269,6 +269,166 @@ export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
 export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
 
 /**
+ * 官方口径是「从 EOI 池里选取」而不是「发邀请」的省(抽选行的人数写「入选」;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
+ * NS 出处 liveinnovascotia.com/eoi-selection 原句「Nova Scotia selected the following number of candidates from the
+ * Expression of Interest (EOI) pool during the months noted below」(crawl ns-root 缓存,Last Updated: August 17, 2026)。
+ * 只收有官方原句的省。
+ */
+export const DRAW_SELECT_PROVS = new Set(['NS'])
+
+/**
+ * 只到月的抽选日期长度(`YYYY-MM` = 7;NS 按月公布选取人数,数据层照官方写到月,不补日)。
+ * 这种行是一个月的汇总,不是一轮抽选:不进分组、不算「近 90 天几轮」,单走按月那一种卡(见 monthRowsOf)。
+ */
+export const MONTH_DATE_LEN = 7
+
+/**
+ * 按月那一种抽选卡最多列几个月(一年;显示窗口,不是事实)。
+ */
+export const MONTHLY_ROWS_MAX = 12
+
+/**
+ * 本岗那一组的灰字统计窗口(近多少天的轮数与合计人数;2026-09-26 Frank 看过效果图点头「近 90 天 4 轮」)。
+ */
+export const DRAW_WINDOW_DAYS = 90
+
+/**
+ * 本省抽选卡「查看全省 N 组」那个开关在展开集合里的键(组键是官方通道名,不会与它撞;同 FED_CAT_KEY 的写法)。
+ */
+export const DRAWS_ALL_KEY = '__all'
+
+/**
+ * 本省抽选卡的形:按通道分组(带日期的轮次)。
+ */
+export const DRAWS_FORM_GROUPS = 'groups'
+
+/**
+ * 本省抽选卡的形:按月列选取人数(只到月的汇总行,NS)。
+ */
+export const DRAWS_FORM_MONTHLY = 'monthly'
+
+/**
+ * 本省抽选卡的形:改制省的现状(改制后的官方公告 + 改制后发没发过邀请,ON)。
+ */
+export const DRAWS_FORM_STATUS = 'status'
+
+/**
+ * 本省抽选卡的形:不出卡。
+ */
+export const DRAWS_FORM_NONE = 'none'
+
+/**
+ * 人数口径:AIP 那一组(选中进入审理的申请,见 DRAW_STREAM_AIP)。
+ */
+export const COUNT_AIP = 'aip'
+
+/**
+ * 人数口径:从 EOI 池里选取的人(DRAW_SELECT_PROVS)。
+ */
+export const COUNT_SEL = 'sel'
+
+/**
+ * 人数口径:发出的邀请(其余)。
+ */
+export const COUNT_INV = 'inv'
+
+/**
+ * 抽选行人数那一格的文案键(按人数口径;2026-09-26 起 NS 的选取人数写「入选」,不再借「份邀请」)。
+ */
+export const COUNT_ROW_KEY: Record<'aip' | 'sel' | 'inv', string> = {
+  /**
+   * AIP:{n} 份申请入选。
+   */
+  aip: 'pnpdraws.sel',
+
+  /**
+   * EOI 选取:{n} 人入选。
+   */
+  sel: 'pnpfacts.selPeople',
+
+  /**
+   * 邀请:{n} 份邀请。
+   */
+  inv: 'pnpdraws.inv',
+}
+
+/**
+ * 本岗那一组人数格的标签键(邀请复用报告抽选表的「邀请」,与全站抽选表同一个词)。
+ */
+export const COUNT_LABEL_KEY: Record<'aip' | 'sel' | 'inv', string> = {
+  /**
+   * AIP:入选。
+   */
+  aip: 'pnpfacts.selected',
+
+  /**
+   * EOI 选取:入选。
+   */
+  sel: 'pnpfacts.selected',
+
+  /**
+   * 邀请。
+   */
+  inv: 'rpt.s.d.inv',
+}
+
+/**
+ * 本岗那一组人数格的值键(带单位:人 / 份申请)。
+ */
+export const COUNT_VALUE_KEY: Record<'aip' | 'sel' | 'inv', string> = {
+  /**
+   * AIP:{n} 份申请。
+   */
+  aip: 'pnpfacts.apps',
+
+  /**
+   * EOI 选取:{n} 人。
+   */
+  sel: 'pnpfacts.people',
+
+  /**
+   * 邀请:{n} 人。
+   */
+  inv: 'pnpfacts.people',
+}
+
+/**
+ * 本岗那一组灰字合计的文案键(近 90 天那几轮加起来)。
+ */
+export const COUNT_TOTAL_KEY: Record<'aip' | 'sel' | 'inv', string> = {
+  /**
+   * AIP:共 {n} 份申请入选。
+   */
+  aip: 'pnpfacts.selTotal',
+
+  /**
+   * EOI 选取:共 {n} 人入选。
+   */
+  sel: 'pnpfacts.selPeopleTotal',
+
+  /**
+   * 邀请:共邀请 {n} 人。
+   */
+  inv: 'pnpfacts.invTotal',
+}
+
+/**
+ * 通用通道名词条的键头(`pnp.gen.` + 省码;与职位板 PNP 格 jobs 域的 K_PNP_GEN_HEAD 读同一组词条 ——
+ * 域之间不互取常量,各抄一份)。拼出的键查不到词条 = 该省没有通用通道名(领地等),「本岗能走的通道」卡不列。
+ */
+export const PNP_GEN_HEAD = 'pnp.gen.'
+
+/**
+ * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
+ */
+export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i
+
+/**
+ * 数字的显示地区(千分位按加拿大英文习惯,与把脉页 start 域 NUM_LOCALE 同值;各域一份)。
+ */
+export const NUM_LOCALE = 'en-CA'
+
+/**
  * 魁省省码(走自己的体系,不属 PNP)。
  */
 export const PROV_QC = 'QC'
@@ -318,6 +478,11 @@ export const TEER_SKILLED_MAX = 3
  * 中文界面的语言码(英文流名的中文灰注只在它下面出)。
  */
 export const LANG_ZH = 'zh'
+
+/**
+ * 英文的语言码(「本岗能走的通道」主文案一律英文官方名,界面语言译名作灰字;同职位板 PNP 格)。
+ */
+export const LANG_EN = 'en'
 
 /**
  * 省名文案键的前缀(拼省码取人话省名)。

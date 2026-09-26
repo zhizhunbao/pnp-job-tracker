@@ -82,7 +82,7 @@ import type {
   ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
   DescOpenIn, DistOptsIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
   FieldOpenIn, FillIn,
-  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn,
+  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn,
   FrozenStyleIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
   JdLineView, JdLineViewIn, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn,
   JdSecHeadIn,
@@ -100,7 +100,7 @@ import type {
   RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
   SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
   SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TextFn,
-  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, WantsIn,
+  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn,
   WidthsKeyIn,
   JobBodyPanel,
   JobDateCell, JobDatesOfIn,
@@ -612,6 +612,7 @@ export function cellActive(x: CellIn): boolean {
  * 与弹框自己出卡同一判据)。可点的省提名格里 20,809 条(安省 17,651、NS 1,609、SK 1,533、领地 16)点开只有标题:
  * 安省改制不出抽选卡且没有清单,NS / SK 的通用岗与领地既无清单也无抽选。改成不可点、字照显示;
  * 判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后这些格子自然恢复可点。
+ * 同日「补完整」:pnp 域判「有卡」多吃一格可提名与否(可提名的岗弹框不出排除清单卡,排除键对它不算数)。
  *
  * @param x 库行、排除清单与省提名弹框的事实索引。
  * @returns 可点 = true。
@@ -621,7 +622,8 @@ function pnpActiveOf(x: PnpActiveIn): boolean {
   if (x.j.pnpEligible !== true && excluded === false) {
     return false
   }
-  return pnpFactsShownOf({ province: x.j.province, noc: x.j.noc, stream: x.j.pnpStream, index: x.pnpIndex })
+  const eligible = x.j.pnpEligible === true
+  return pnpFactsShownOf({ province: x.j.province, noc: x.j.noc, stream: x.j.pnpStream, eligible, index: x.pnpIndex })
 }
 
 /**
@@ -2538,6 +2540,21 @@ export function foldActiveOf(x: FilterCountIn): number {
 }
 
 /**
+ * 窄屏折叠区的徽标计数(2026-09-26 /fe 首页 Frank 看效果图点头):EE 类别下拉在手机上收进「更多筛选」,
+ * 选了它也要进徽标;宽屏它在常用一行,不进(foldActiveOf 照旧)。
+ *
+ * @param x 筛选各格。
+ * @returns 计数。
+ */
+export function foldActiveNarrowOf(x: FilterCountIn): number {
+  const n = foldActiveOf(x)
+  if (slotOf({ fState: x.fState, k: FK.ee }) !== TEXT_NONE) {
+    return n + 1
+  }
+  return n
+}
+
+/**
  * 有没有任何筛选在生效(「已选」行与横幅数字口径都看它)。
  *
  * @param x 筛选各格。
@@ -2546,6 +2563,23 @@ export function foldActiveOf(x: FilterCountIn): number {
 export function anyFilterOf(x: FilterCountIn): boolean {
   for (const slot of Object.values(x.fState)) {
     if (slot.v !== TEXT_NONE) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 用户自己设没设过筛选(2026-09-26 /fe 首页 Frank 看效果图点头:「清除筛选」只在这时出,窄屏):
+ * 进板时预选的本省(按时区或上次所选,homeProvPickOf)不算;地址栏带来的条件算(那是链接给的,不是预选)。
+ * 蕴含 anyFilterOf;没预选省时两者等价。
+ *
+ * @param x 筛选各格与进板时预选的省('' = 没预选)。
+ * @returns 设过 = true。
+ */
+export function userFilterOf(x: UserFilterIn): boolean {
+  for (const [k, slot] of Object.entries(x.fState)) {
+    if (slot.v !== TEXT_NONE && (k !== FK.prov || slot.v !== x.homeProv)) {
       return true
     }
   }
@@ -4820,26 +4854,42 @@ export function makeSlotChange(x: SlotIn): TextFn {
  * 2026-09-19 Frank「我点击看岗位的时候,跳转之后就不要限制省份了吧」:URL 带着搜索词进来(雇主板「看岗位」= `?q=雇主名`)
  * 就不预选省 —— 人是来找这家的岗的,Parks Canada 的岗在 NS / MB,预选安省 = 0 个职位。
  * 2026-09-26 /fe 首页 Frank「首屏整表替换」:「URL 带省 / 带搜索词就不预选」那两道提成 homeGivenOf,首屏本省闸的初值共用它。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头(「清除筛选」只在用户自己设了筛选时出,预选的本省不算):「预选哪一省」提成 homeProvPickOf,
+ * 本件只剩落格;板上记下预选值、判「用户设没设过」共用它,两处不分叉。
  */
 export function applyHomeProvince(x: HomeProvinceIn): boolean {
-  if (homeGivenOf(x.initial)) {
+  const home = homeProvPickOf(x.initial)
+  if (home === TEXT_NONE) {
     return false
+  }
+  setterOf({ fState: x.fState, k: FK.prov })(home)
+  return true
+}
+
+/**
+ * 进板时预选哪一省(applyHomeProvince 落格与板上记预选值共用;口径与沿革见 applyHomeProvince):地址栏带了省或搜索词 = 不预选;
+ * 上次亲手选过具体省 = 那一省;否则按设备时区(对不上加拿大、海洋三省分不出 = 不预选)。
+ *
+ * @param initial 首屏筛选(URL 带来的)。
+ * @returns 省全名;'' = 不预选。
+ */
+export function homeProvPickOf(initial: JobFilters): string {
+  if (homeGivenOf(initial)) {
+    return TEXT_NONE
   }
   const picked = pickedProvOf()
   if (picked !== TEXT_NONE) {
-    setterOf({ fState: x.fState, k: FK.prov })(picked)
-    return true
+    return picked
   }
   const prov = homeProvinceOf()
   if (prov === TEXT_NONE) {
-    return false
+    return TEXT_NONE
   }
   const full = PROV_NAMES[prov]
   if (full == null) {
-    return false
+    return TEXT_NONE
   }
-  setterOf({ fState: x.fState, k: FK.prov })(full)
-  return true
+  return full
 }
 
 /**
@@ -5101,8 +5151,9 @@ export function makeCatLabel(t: TFn): (v: string) => string {
 
 /**
  * 「更多筛选」钮的类:展开着或折叠区里有选中项就亮起来。
+ * 2026-09-26 /fe 首页:只有窄屏折叠区里有选中项(EE 类别在手机上收进了折叠区)时,只在窄屏亮。
  *
- * @param x 展开着没与徽标计数。
+ * @param x 展开着没与宽屏、窄屏两个徽标计数。
  * @returns 类名。
  */
 export function foldBtnClsOf(x: FoldBtnClsIn): string {
@@ -5110,7 +5161,47 @@ export function foldBtnClsOf(x: FoldBtnClsIn): string {
   if (x.fold || x.foldActive > 0) {
     return base + SPACE + cssOf(css.btnOn)
   }
+  if (x.foldActiveNarrow > 0) {
+    return base + SPACE + cssOf(css.btnOnNarrow)
+  }
   return base
+}
+
+/**
+ * 「更多筛选」宽屏那枚徽标的类(2026-09-26 /fe 首页):窄屏另数一枚(EE 类别在手机上收进了折叠区)且两枚数得不一样时,
+ * 这一枚窄屏收起;数得一样就是原来那一枚。
+ *
+ * @param x 宽屏与窄屏两个计数。
+ * @returns 类名。
+ */
+export function foldNClsOf(x: FoldNClsIn): string {
+  if (x.foldActiveNarrow !== x.foldActive) {
+    return cssOf(css.foldN) + SPACE + cssOf(css.foldNWide)
+  }
+  return cssOf(css.foldN)
+}
+
+/**
+ * 「更多筛选」窄屏那枚徽标的类(只在两枚数得不一样时渲;宽屏收起)。
+ *
+ * @returns 类名。
+ */
+export function foldNNarrowClsOf(): string {
+  return cssOf(css.foldN) + SPACE + cssOf(css.foldNNarrow)
+}
+
+/**
+ * 「清除筛选」的类(2026-09-26 /fe 首页 Frank 看效果图点头):用户自己没设过筛选(只有进板时预选的本省)时窄屏收起,
+ * 宽屏照旧有筛选就出。
+ *
+ * @param userFilter 用户自己设没设过筛选(userFilterOf)。
+ * @returns 类名。
+ */
+export function clearClsOf(userFilter: boolean): string {
+  if (userFilter) {
+    return cssOf(css.clearFilt)
+  }
+  return cssOf(css.clearFilt) + SPACE + cssOf(css.hideNarrow)
 }
 
 /**

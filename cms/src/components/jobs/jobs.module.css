@@ -216,6 +216,21 @@
 }
 
 /*
+ * 折叠区的 EE 类别一行(2026-09-26 /fe 首页 Frank 看效果图点头:手机上 EE 类别下拉收进更多筛选):
+ * 桌面不出 —— 桌面它照旧在常用一行;手机端的显形见断点段。
+ */
+.foldEe {
+  display: none;
+}
+
+/*
+ * 「更多筛选」窄屏那枚徽标(EE 类别算进去了、与宽屏数得不一样时才渲):桌面不出,手机端的显形见断点段。
+ */
+.foldNNarrow {
+  display: none;
+}
+
+/*
  * ── 3. 字段选择器 ────────────────────────────────────────────────────────
  */
 
@@ -1140,6 +1155,56 @@
    */
   .more button {
     min-height: 40px;
+  }
+}
+
+@media (width <= 640px) {
+  /*
+   * 常用一行压成两行(2026-09-26 /fe 首页 Frank 看效果图点头,桌面不动):搜索独占一行(.search 见上段),
+   * 「省 | 大类」一行(省约占 38%、大类吃剩下)、「职业 | 更多筛选」一行。靠折行自然排:大类与职业的底宽 50%,
+   * 两格排不进同一行;哪一格的字放不下同排,它自己掉到下一行吃满(伸展比 100 : 1,同排时剩下的宽几乎全给它)——
+   * 名字不截断。量宽下拉的「按内容定宽」上限在这里解除,壳跟着格宽走。
+   */
+  .ctlMain > .ctlProv {
+    flex: 1 0 38%;
+    max-width: none;
+  }
+
+  .ctlMain > .ctlBroad,
+  .ctlMain > .ctlOcc {
+    flex: 100 0 50%;
+    max-width: none;
+  }
+
+  /*
+   * EE 类别下拉手机上收进更多筛选(折叠区那一份 .foldEe 在这里显形)。
+   */
+  .ctlMain > .ctlEe {
+    display: none;
+  }
+
+  .foldEe {
+    display: flex;
+  }
+
+  /*
+   * 「更多筛选」的徽标:两枚数得不一样时(EE 类别算进了窄屏那枚),宽屏那枚收起、窄屏那枚显形。
+   */
+  .foldNWide {
+    display: none;
+  }
+
+  .foldNNarrow {
+    display: inline;
+  }
+
+  /*
+   * 只有窄屏折叠区里有选中项(EE 类别)时,「更多筛选」只在窄屏亮起来(值同 .btnOn)。
+   */
+  .btnOnNarrow {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
   }
 }
 

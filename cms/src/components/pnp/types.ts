@@ -200,6 +200,11 @@ export type PnpDraw = {
    * 展示标签(省抽选=通道名;联邦行=类别键)。
    */
   label: string
+
+  /**
+   * 官方页(数据层抓这一行的那一页;2026-09-26 起事实卡底部的官方链接读它)。
+   */
+  url: string
 }
 
 /**
@@ -939,6 +944,183 @@ export type EeCmpLine = {
 }
 
 /**
+ * 本省抽选卡的形(2026-09-26 /fe 首页 Frank「止血 + 补完整」):groups = 按通道分组(带日期的轮次)、
+ * monthly = 按月列选取人数(只到月的汇总行,NS)、status = 改制省的现状(ON)、none = 不出卡。
+ */
+export type DrawsForm = 'groups' | 'monthly' | 'status' | 'none'
+
+/**
+ * 抽选人数的口径:aip = 选中进入审理的申请、sel = 从 EOI 池里选取的人、inv = 发出的邀请。
+ */
+export type CountKind = 'aip' | 'sel' | 'inv'
+
+/**
+ * 「本岗能走的通道」卡的一条(2026-09-26;口径同职位板 PNP 格:具名通道先,可提名退该省通用通道名)。
+ */
+export type ChannelSpec = {
+  /**
+   * React 列表键(数据层通道标签或通用通道名的词条键)。
+   */
+  key: string
+
+  /**
+   * 英文官方名(主文案)。
+   */
+  name: string
+
+  /**
+   * 界面语言译名灰字;''=不出(英文界面、关了译名、或与英文同字)。
+   */
+  sub: string
+}
+
+/**
+ * 本岗那一组(本省抽选卡里格子对应的那组)的一格:标签在上、值在下。
+ */
+export type FeatCellSpec = {
+  /**
+   * 标签(最近一轮 / 分数线 / 邀请;也作 React 列表键,三格各不同)。
+   */
+  k: string
+
+  /**
+   * 值(日期 / 分数 / 人数)。
+   */
+  v: string
+}
+
+/**
+ * 本岗那一组的展示件(2026-09-26 Frank 看过效果图点头:同一行三格「最近一轮 | 分数线 | 邀请」,
+ * 下一行灰字「近 90 天几轮」「合计多少人」;点组名展开全部轮次)。
+ */
+export type DrawFeat = {
+  /**
+   * 组键(抽选行 stream 原值;React 列表键与开合键)。
+   */
+  key: string
+
+  /**
+   * 组名(官方英文通道名)。
+   */
+  name: string
+
+  /**
+   * 组名下的中文灰字;''=不出。
+   */
+  sub: string
+
+  /**
+   * 三格(没公布分的组不出分数格,没公布人数的不出人数格)。
+   */
+  cells: FeatCellSpec[]
+
+  /**
+   * 灰字统计(近 90 天几轮;那几轮人数都公布了才出合计)。
+   */
+  stats: string[]
+
+  /**
+   * 全部轮次(降序,照抄省抽选表的行;展开才出)。
+   */
+  rows: DrawRowSpec[]
+}
+
+/**
+ * 分组形的本省抽选卡(本岗那一组摊开,其余组收进「查看全省 N 组」)。
+ */
+export type DrawCard = {
+  /**
+   * 卡标题(「本省最近抽选 {轮次标签}」)。
+   */
+  title: string
+
+  /**
+   * 轮次标签(官方项目名,如 AAIP;「查看全省 N 组」的英文文案要它)。
+   */
+  label: string
+
+  /**
+   * 本岗对应的组(格子写的通道对得上的那几组;对不上给空列)。
+   */
+  feats: DrawFeat[]
+
+  /**
+   * 其余组(照旧组头一行 + 点开列轮次;收在开关后面)。
+   */
+  others: EeCmpGroup[]
+
+  /**
+   * 全省一共几组(开关文案里的 N)。
+   */
+  total: number
+}
+
+/**
+ * 事实卡的一行(项 | 值 两列;改制省现状与按月选取人数两种卡共用)。
+ */
+export type FactRowSpec = {
+  /**
+   * React 列表键。
+   */
+  key: string
+
+  /**
+   * 项(左格)。
+   */
+  k: string
+
+  /**
+   * 值(右格)。
+   */
+  v: string
+
+  /**
+   * 项的悬停提示(官方原句;''=不出)。
+   */
+  tip: string
+
+  /**
+   * 值要不要琥珀加粗(「暂无」这类状态值)。
+   */
+  strong: boolean
+}
+
+/**
+ * 事实卡底部的官方链接。
+ */
+export type FactLinkSpec = {
+  /**
+   * 官方页地址(数据层抓取时记的那一页)。
+   */
+  href: string
+
+  /**
+   * 显示文字(站名 + 新开页记号)。
+   */
+  text: string
+}
+
+/**
+ * 事实卡(改制省现状 / 按月选取人数;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
+ */
+export type FactCardSpec = {
+  /**
+   * 卡标题(同本省抽选卡:「本省最近抽选 {轮次标签}」)。
+   */
+  title: string
+
+  /**
+   * 各行。
+   */
+  rows: FactRowSpec[]
+
+  /**
+   * 官方链接;null=数据里的地址认不出站名(不出链接)。
+   */
+  link: FactLinkSpec | null
+}
+
+/**
  * 依据链一格的一行(主文案 + 灰注 + 行尾灰注)。
  */
 export type MmLine = {
@@ -1538,6 +1720,11 @@ export type PnpListHookIn = {
    * 职业名字典。
    */
   nocDesc: PnpNocDesc[]
+
+  /**
+   * 出不出界面语言译名(「本岗能走的通道」那条的灰字也跟它走)。
+   */
+  showZh: boolean
 }
 
 /**
@@ -1583,6 +1770,16 @@ export type PnpListPanel = {
    * 本省抽选卡组的开合手柄工厂。
    */
   drawToggleOf: ToggleOfFn
+
+  /**
+   * 本岗能走的通道(弹框顶上那张卡;2026-09-26)。
+   */
+  channels: ChannelSpec[]
+
+  /**
+   * 本岗那一组灰字统计的窗口起点(`YYYY-MM-DD`;弹框打开那一刻起算近 90 天)。
+   */
+  cut: string
 }
 
 /**
@@ -1914,6 +2111,11 @@ export type ShownStreamsIn = {
    * 本岗职业码。
    */
   noc: string
+
+  /**
+   * 数据层判本岗可提名(pnp_eligible;可提名的岗不出排除清单卡 —— 2026-09-26 SK 主线表是参考信号表)。
+   */
+  eligible: boolean
 }
 
 /**
@@ -1923,6 +2125,7 @@ export type ShownStreamsIn = {
 export type PnpFactsIndex = {
   /**
    * 弹框出得了本省抽选卡的省码(hasProvDraws 为真的那几省)。
+   * 2026-09-26「补完整」起抽选卡三种形都算:按通道分组、按月选取人数(NS)、改制省现状(ON),见 drawsFormOf。
    */
   draws: string[]
 
@@ -1933,6 +2136,7 @@ export type PnpFactsIndex = {
 
   /**
    * 弹框出得了排除清单卡的职业,键 `省码|NOC`(pnpStreamsOf 分出来的排除清单里点名的职业)。
+   * 2026-09-26 起只对不可提名的岗算数(见 pnpFactsShownOf 的 eligible)。
    */
   excluded: string[]
 }
@@ -1970,6 +2174,11 @@ export type PnpFactsShownIn = {
    * 本岗的数据层通道标签(pnp_stream);''=没命中具名清单。
    */
   stream: string
+
+  /**
+   * 数据层判本岗可提名(pnp_eligible;可提名的岗弹框不出排除清单卡,排除那串键不算数)。
+   */
+  eligible: boolean
 
   /**
    * 事实索引。
@@ -2727,7 +2936,12 @@ export type PnpDrawGroupsIn = {
   hitStreams: string[]
 
   /**
-   * 展开着的组(通道名)。
+   * 本岗那一组灰字统计的窗口起点(`YYYY-MM-DD`,这一天及以后的轮次算「近 90 天」;2026-09-26)。
+   */
+  cut: string
+
+  /**
+   * 展开着的组(通道名;「查看全省 N 组」那个开关的键是 DRAWS_ALL_KEY)。
    */
   open: Set<string>
 
@@ -2735,6 +2949,336 @@ export type PnpDrawGroupsIn = {
    * 组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
+}
+
+/**
+ * DrawFeatView(本岗那一组)的 props。
+ */
+export type DrawFeatViewIn = {
+  /**
+   * 这一组。
+   */
+  f: DrawFeat
+
+  /**
+   * 全部轮次展开了没有。
+   */
+  open: boolean
+
+  /**
+   * 开合手柄。
+   */
+  onToggle: ClickFn
+}
+
+/**
+ * PnpChannelCard(本岗能走的通道)的 props。
+ */
+export type PnpChannelCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 通道条目(现在单值,结构可放多条)。
+   */
+  channels: ChannelSpec[]
+}
+
+/**
+ * PnpFactCard(改制省现状 / 按月选取人数)的 props。
+ */
+export type PnpFactCardIn = {
+  /**
+   * 洗好的卡。
+   */
+  spec: FactCardSpec
+}
+
+/**
+ * drawCardOf 的入参。
+ */
+export type DrawCardOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 本岗对应的组(抽选行 stream 原值);空列 = 没有本岗那一组。
+   */
+  hitStreams: string[]
+
+  /**
+   * 灰字统计的窗口起点(`YYYY-MM-DD`)。
+   */
+  cut: string
+}
+
+/**
+ * featOf 的入参。
+ */
+export type FeatOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 组键。
+   */
+  key: string
+
+  /**
+   * 组头那一轮(同分组卡:最近一轮带分的,都没分给最近一轮)。
+   */
+  head: PnpDraw
+
+  /**
+   * 这一组的历次抽选(降序)。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 灰字统计的窗口起点(`YYYY-MM-DD`)。
+   */
+  cut: string
+}
+
+/**
+ * windowStatsOf 的入参。
+ */
+export type WindowStatsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一组的历次抽选。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 窗口起点(`YYYY-MM-DD`)。
+   */
+  cut: string
+
+  /**
+   * 人数口径(合计那句说邀请还是入选)。
+   */
+  kind: CountKind
+}
+
+/**
+ * roundsTextOf 的入参。
+ */
+export type RoundsTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 窗口里的轮数。
+   */
+  n: number
+}
+
+/**
+ * roundRowsOf 的入参。
+ */
+export type RoundRowsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 这一组的历次抽选(降序)。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * allGroupsLabelOf 的入参。
+ */
+export type AllGroupsLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 其余组展开了没有。
+   */
+  open: boolean
+
+  /**
+   * 全省一共几组。
+   */
+  total: number
+
+  /**
+   * 轮次标签(官方项目名)。
+   */
+  label: string
+}
+
+/**
+ * factCardOf 的入参。
+ */
+export type FactCardOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * monthRowsOf 的入参。
+ */
+export type MonthRowsIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+}
+
+/**
+ * latestSinceOf 的入参。
+ */
+export type LatestSinceIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 起算日(`YYYY-MM-DD`,改制生效日;这一天及以后的才算)。
+   */
+  since: string
+
+  /**
+   * 行类别(notice = 官方公告、draw = 抽选)。
+   */
+  kind: string
+}
+
+/**
+ * factValueClsOf 的入参。
+ */
+export type FactValueClsIn = {
+  /**
+   * 值要不要琥珀加粗。
+   */
+  strong: boolean
+}
+
+/**
+ * channelsOf 的入参。
+ */
+export type ChannelsIn = {
+  /**
+   * 界面语取词函数(译名灰字)。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数(主文案一律英文官方名)。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出界面语言译名。
+   */
+  showZh: boolean
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+}
+
+/**
+ * channelOf 的入参。
+ */
+export type ChannelOfIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出界面语言译名。
+   */
+  showZh: boolean
+
+  /**
+   * React 列表键。
+   */
+  key: string
+
+  /**
+   * 英文名。
+   */
+  en: string
+
+  /**
+   * 界面语言名。
+   */
+  local: string
 }
 
 /**

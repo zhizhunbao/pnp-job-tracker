@@ -5,12 +5,13 @@
  * 分数与邀请数**官方没公布就不出那一格** —— 折成 0 等于替官方编数。
  * #106:官方来源外链撤(归拢到 /resources),所以这一半没有链接。
  * 2026-08-28 换装批自 Timeline.tsx 的事件行三目提出成具名小件。
+ * 2026-09-26 lead 定:人数话术收进 invTextOf —— NS 是从 EOI 池选取的人数,写「入选」不写「邀请」。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
  */
 import { SCALE_NOTE_CLOSE, SCALE_NOTE_OPEN } from './constants'
-import { eventTitleOf, isScaleShown } from './functions'
+import { eventTitleOf, invTextOf, isScaleShown } from './functions'
 import type { DrawLineIn } from './types'
 import css from './timeline.module.css'
 
@@ -34,7 +35,7 @@ export function DrawLine({ t, row }: DrawLineIn) {
           )}
         </span>
       )}
-      {row.invitations != null && <span className={css.inv}>{t('tl.inv', { n: row.invitations })}</span>}
+      {row.invitations != null && <span className={css.inv}>{invTextOf({ t, row })}</span>}
     </>
   )
 }

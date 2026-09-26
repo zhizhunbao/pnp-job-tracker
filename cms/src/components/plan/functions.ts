@@ -54,7 +54,8 @@ import {
   COL_DAYS, COL_DRAW_DATE, COL_DRAW_INV, COL_DRAW_PROV, COL_DRAW_SCORE, COL_DRAW_STREAM, COL_FLOW, COL_GAP, COL_JOBS,
   COL_LINE_CUT, COL_LINE_DATE, COL_LINE_STREAM, COL_LINE_YOU, COL_NEW30, COL_OPEN, COL_PATH, COL_POOL, COL_POOL_STUDY,
   COL_POOL_WORK, COL_PROVINCE, COL_QUOTA, COL_RANK, COL_RANK_LABEL, COL_RATIO, COL_TIME, CRED_INCLUDE, DATE_SEP,
-  DECISION_PR, DRAW_KIND_NOTICE, EDU_OF, EV_KEYDOWN, FACTOR_WORK5, FACTOR_WORK610, FORM_KEY_AUTO, FORM_KEY_END,
+  DECISION_PR, DRAW_KIND_NOTICE, DRAW_SELECT_PROVS, EDU_OF, EV_KEYDOWN, FACTOR_WORK5, FACTOR_WORK610,
+  FORM_KEY_AUTO, FORM_KEY_END,
   FORM_KEY_FOCUS_HEAD, GAP_FULL, GAP_KEY_RE, GATE_KEY_SEP, GATE_NEED_REQUIRED, GATE_STATUS, GROUP_ORDER, GUIDE_SEP,
   HDR_CONTENT_TYPE, INTERNAL_PATH_RE, KEY_AFTER_OFFER_GAP, KEY_AFTER_OFFER_OK, KEY_AFTER_OFFER_TIER, KEY_BELOW_LINE,
   KEY_BLOCKED, KEY_BLOCKED_OFFER, KEY_BTN_BACK, KEY_BTN_RESUME, KEY_BTN_START, KEY_DATA_GAP, KEY_ESC, KEY_FEDERAL,
@@ -2011,23 +2012,36 @@ export function occCompColsOf(x: OccColsIn): PlanCol<OccCellRow>[] {
 /**
  * 洗一行抽选展示行。这张表的入选条件是「有分数线**或**有邀请数」—— 只摆分数线的话,
  * 靠邀请数入选的行(NL/MB/NB)整行都是「—」,把它入选的那个事实藏了。
+ * 2026-09-26 lead 定:官方口径是从 EOI 池选取的省(DRAW_SELECT_PROVS,NS)人数写「入选」—— 桌面表那一格写
+ * 「N 人入选」,手机卡的标换成「入选」;词条复用省提名弹框的 pnpfacts.selPeople / pnpfacts.selected。
+ * NS 的日期官方只到月,照原样出(`2026-07`),不补日。
  *
  * @param x 取词函数、省名取名函数与这一行事实。
  * @returns 展示行。
  */
 export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
   const r = x.r
+  const inv = dashTextOf(r.invitations)
+  let invCell = inv
+  let invLabel = x.t('rpt.s.d.inv')
+  if (DRAW_SELECT_PROVS.has(r.province)) {
+    invLabel = x.t('pnpfacts.selected')
+    if (r.invitations != null) {
+      invCell = x.t('pnpfacts.selPeople', { n: r.invitations })
+    }
+  }
   return {
     key: r.province,
     provName: x.provDisp(r.province),
     provCode: r.province,
     date: r.drawDate,
     stream: streamDisplay({ t: x.t, label: r.stream }),
-    inv: dashTextOf(r.invitations),
+    inv,
+    invCell,
     invSort: r.invitations,
     score: dashTextOf(r.score),
     scoreSort: r.score,
-    invLabel: x.t('rpt.s.d.inv'),
+    invLabel,
   }
 }
 

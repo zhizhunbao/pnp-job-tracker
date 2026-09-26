@@ -7,13 +7,15 @@
  *(首帧只下首图,省手机 100–150KB,LCP 不再等三张)。同日 Frank 拍板文字统一:每页
  * 图标 + 页名 + 一句副题,副题 ≤18 汉字 / 40 英文字符一行放完(不折行不省略);数字胶囊撤编。
  * 2026-08-24 自 ui/Banner.tsx 拆出(一个 tsx 一个组件;轮播机器在 hooks)。
+ * 2026-09-26 /fe 首页:外框随 compact 挂窄屏紧凑档类(图、暗化层、圆点在窄屏收起,见 banner.module.css 末段)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
+import { cssOf } from '@/components/css'
 import { BannerDots } from './bannerdots'
 import { IMG_CREDIT } from './constants'
-import { moduleClsOf } from './functions'
+import { boxClsOf } from './functions'
 import type { ImageBannerIn } from './types'
 import css from './banner.module.css'
 
@@ -29,6 +31,7 @@ export function ImageBanner({
   title,
   sub,
   right,
+  compact,
   imgs,
   idx,
   reach,
@@ -37,7 +40,7 @@ export function ImageBanner({
   pick,
   fail,
 }: ImageBannerIn) {
-  const boxCls = `${css.imgBanner} ${moduleClsOf(module)}`
+  const boxCls = boxClsOf({ base: cssOf(css.imgBanner), module, compact })
   const cur = idx % imgs.length
 
   const imgEls = []

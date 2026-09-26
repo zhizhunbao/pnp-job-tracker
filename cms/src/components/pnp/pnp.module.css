@@ -321,6 +321,296 @@
 }
 
 /*
+ * 「本岗能走的通道」的一条(细边框盒 .box 里一行通道名 + 译名灰字;2026-09-26 Frank 看过效果图点头)。
+ */
+.channel {
+  /*
+   * 条目内衬。
+   */
+  padding: 8px 12px;
+
+  /*
+   * 通道名字号(照卡标题一档,比清单行大)。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 半粗。
+   */
+  font-weight: 600;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+}
+
+/*
+ * 多条通道之间的间距(「一岗列出全部通道」立项后才会多条)。
+ */
+.channel + .channel {
+  /*
+   * 上 6。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 本省抽选卡里本岗那一组(DrawFeatView;2026-09-26):组名行 + 三格 + 灰字统计,琥珀字(同命中组 .cmpHit 的色)。
+ */
+.feat {
+  /*
+   * 与下一块的间距。
+   */
+  margin-bottom: 8px;
+}
+
+/*
+ * 组名行(button 族的钮,点它展开全部轮次;类名写两遍压过钮的基座单类,理由同 .cmpHead)。
+ */
+.featHead.featHead {
+  /*
+   * 名字与折叠记号一行两端。
+   */
+  display: flex;
+
+  /*
+   * 两端对齐。
+   */
+  justify-content: space-between;
+
+  /*
+   * 记号与名字首行对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 名字与记号的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 占满卡宽。
+   */
+  width: 100%;
+
+  /*
+   * 零内衬(卡已有内衬)。
+   */
+  padding: 0;
+
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 文字左对齐(钮基座会居中)。
+   */
+  text-align: left;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 深琥珀字(同 .cmpHit)。
+   */
+  color: #92400e;
+}
+
+/*
+ * 组名(官方英文通道名;长名自然折行,不截断)。
+ */
+.featName {
+  /*
+   * 组名字号。
+   */
+  font-size: 13.5px;
+
+  /*
+   * 加粗(本岗那一组是这张卡的主角)。
+   */
+  font-weight: 700;
+
+  /*
+   * 长名允许折行。
+   */
+  white-space: normal;
+}
+
+/*
+ * 组名行末的折叠记号。
+ */
+.featCaret {
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 不被压缩。
+   */
+  flex-shrink: 0;
+}
+
+/*
+ * 三格里的一格(标签在上、值在下;格子由通用 Grid 排列)。
+ */
+.featCell {
+  /*
+   * 自成一块。
+   */
+  display: block;
+
+  /*
+   * 与组名行的间距。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 格的标签(最近一轮 / 分数线 / 人数)。
+ */
+.featK {
+  /*
+   * 自成一行。
+   */
+  display: block;
+
+  /*
+   * 标签字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 警示琥珀(比值浅一档)。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 格的值。
+ */
+.featV {
+  /*
+   * 自成一行。
+   */
+  display: block;
+
+  /*
+   * 值字号(比正文大一档,一眼看数)。
+   */
+  font-size: 15px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+
+  /*
+   * 日期与数字不折行。
+   */
+  white-space: nowrap;
+
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 三格下面那行灰字统计(近 90 天几轮、合计多少人;一条一格,放不下自然换行)。
+ */
+.featStats {
+  /*
+   * 一行几格。
+   */
+  display: flex;
+
+  /*
+   * 放不下就换行。
+   */
+  flex-wrap: wrap;
+
+  /*
+   * 格间距。
+   */
+  column-gap: 14px;
+
+  /*
+   * 与三格的间距。
+   */
+  margin-top: 6px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+
+  /*
+   * 警示琥珀。
+   */
+  color: var(--warn);
+}
+
+/*
+ * 事实卡的状态值(「暂无」这类;2026-09-26 效果图:琥珀加粗)。类名写两遍压过 .ruleV 的字色。
+ */
+.factStrong.factStrong {
+  /*
+   * 深琥珀字。
+   */
+  color: #92400e;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+}
+
+/*
+ * 事实卡底部的官方链接那一行。
+ */
+.srcRow {
+  /*
+   * 与两列表的间距。
+   */
+  margin-top: 8px;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12px;
+}
+
+/*
+ * 官方链接(品牌蓝,不带下划线;新开页记号跟在站名后)。
+ */
+.srcLink {
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 无下划线。
+   */
+  text-decoration: none;
+}
+
+/*
  * 组头的名字格。
  */
 .cmpName {

@@ -972,9 +972,14 @@ export type DrawCellRow = {
   stream: string
 
   /**
-   * 邀请数成句(官方缺位就是那根横杠)。
+   * 邀请数成句(官方缺位就是那根横杠;手机卡跟在「邀请 / 入选」标后面)。
    */
   inv: string
+
+  /**
+   * 桌面表人数那一格(2026-09-26:选取口径的省写「N 人入选」,其余同 inv)。
+   */
+  invCell: string
 
   /**
    * 邀请数排序键。
@@ -992,7 +997,7 @@ export type DrawCellRow = {
   scoreSort: number | null
 
   /**
-   * 手机卡的「邀请数」标。
+   * 手机卡的「邀请数」标(2026-09-26:选取口径的省换成「入选」)。
    */
   invLabel: string
 }

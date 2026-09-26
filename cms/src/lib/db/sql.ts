@@ -1070,8 +1070,12 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
 
 /**
  * 抽选记录全量(plan 的时间线按省抽节奏用)。
+ * 2026-09-26 起不读魁省行:数据层今起把魁省 PSTQ 邀请记录写进同一张表,魁省不属省提名,
+ * PSTQ 放哪 Frank 还没定 —— 读 pnp_draws 的四条查询(本条、DIMS_PNP_DRAWS、PNP_DRAWS_RECENT、PNP_DRAWS_FULL)一律先挡掉,
+ * 定了位置另起专用查询。
  */
-export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws`
+export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws
+     WHERE COALESCE(province, '') <> 'QC'`
 
 /**
  * 每个 EE 类别最近一轮(DISTINCT ON)。
@@ -1792,10 +1796,11 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
  * 首屏维度表·抽选 200 条(numeric 列回来是字符串,见段注红线)。
  * 2026-09-24 200 → 400:mart 已按省封顶(普通省 12、NB / MB 48、联邦每类 12,上限约 290 行),
  * NB 抽选按官方四组读回历史后全表 186 行、余量只剩 14 —— 超了截掉的是最旧的轮次,弹框里悄悄少数据。
+ * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL)。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
        score, scale, invitations, note, label, url, fetched
-     FROM pnp_draws ORDER BY draw_date DESC, id LIMIT 400`
+     FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 400`
 
 /**
  * 首屏维度表·EE 类别。
@@ -1966,9 +1971,11 @@ export const NOC_ALL_TITLES = `SELECT noc, title, COALESCE(title_zh, '') AS titl
 
 /**
  * 起步页的近 400 轮抽选(有分或有邀请数的)。
+ * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL;把脉页只取前 50 行,魁省行还会挤掉省提名轮次)。
  */
 export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
+        AND COALESCE(province, '') <> 'QC'
       ORDER BY draw_date DESC LIMIT 400`
 
 /**
@@ -2181,9 +2188,11 @@ export const PNP_OCCUPATIONS_FULL = `SELECT province, stream, label, program, ty
 
 /**
  * 抽选记录全列(ruling 判定底表)。
+ * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL)。
  */
 export const PNP_DRAWS_FULL = `SELECT province, label, scale, kind, draw_date, stream, score, invitations, note, url, fetched
-            FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' ORDER BY draw_date DESC`
+            FROM pnp_draws WHERE COALESCE(draw_date,'') <> '' AND COALESCE(province, '') <> 'QC'
+            ORDER BY draw_date DESC`
 
 /**
  * 计分表全量(ruling 判定底表;与 EE_POINTS_GRID 分开:那条带筛选参数)。

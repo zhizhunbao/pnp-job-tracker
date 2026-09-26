@@ -583,6 +583,21 @@ export type ScaleIn = {
 }
 
 /**
+ * invTextOf 的入参:取词函数与这一条事件。
+ */
+export type InvTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一条事件(读省码与人数)。
+   */
+  row: EventRow
+}
+
+/**
  * newsHrefOf 的入参:站内 slug。
  */
 export type SlugIn = {

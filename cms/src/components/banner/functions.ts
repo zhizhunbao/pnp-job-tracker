@@ -5,8 +5,23 @@
  * @time 2026-08-24 04:30:00
  */
 import { cssOf } from '@/components/css'
-import type { BannerModule, DotPickFn, DotPickIn } from './types'
+import type { BannerModule, BoxClsIn, DotPickFn, DotPickIn } from './types'
 import css from './banner.module.css'
+
+/**
+ * 两形态外框的类:形态基座 + 配色档,开了窄屏紧凑档再挂 .compact(2026-09-26 /fe 首页;
+ * 紧凑档的规则全在窄屏断点里,宽屏挂了也不改一格)。
+ *
+ * @param x 形态基座类、模块名与紧凑档开没开。
+ * @returns 外框 className。
+ */
+export function boxClsOf(x: BoxClsIn): string {
+  const cls = `${x.base} ${moduleClsOf(x.module)}`
+  if (x.compact) {
+    return `${cls} ${cssOf(css.compact)}`
+  }
+  return cls
+}
 
 /**
  * 模块 → 配色档类(查表,键完整性由 Record<BannerModule, string> 管)。

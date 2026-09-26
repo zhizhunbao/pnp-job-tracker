@@ -1364,6 +1364,13 @@ export const STAGE_EXPLORE = 'explore'
 export const DRAW_KIND_NOTICE = 'notice'
 
 /**
+ * 官方口径是「从 EOI 池里选取」而不是「发邀请」的省:「各省最近抽选」里这些省的人数写「入选」(2026-09-26 lead 定)。
+ * NS 出处 liveinnovascotia.com/eoi-selection 原句「Nova Scotia selected the following number of candidates from the
+ * Expression of Interest (EOI) pool during the months noted below」。与 components/pnp 的 DRAW_SELECT_PROVS 同值(各域一份)。
+ */
+export const DRAW_SELECT_PROVS = new Set(['NS'])
+
+/**
  * 估分结论的达标态:下界已经 >= 官方线(判定归 lib/points 的 lineStateOf)。
  */
 export const LINE_ABOVE = 'above'

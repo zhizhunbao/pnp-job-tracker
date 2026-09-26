@@ -6,11 +6,14 @@
  * 2026-07-25 Frank 走查#12:抽选列表四列对齐(日期/流名/最低分/份邀请)—— 整块一个 grid,
  * 列宽跨行对齐(非逐行 flex);SIRS 口径脚注删(#11,「分数只与本省历史比」已是常识噪音)。
  * 2026-08-28 换装批自 Pnp.tsx 整体重写成小写件形制。
+ * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:魁省在块里自己挡(抽选表今起进了 PSTQ 轮次,魁省不属省提名;
+ * PSTQ 放哪 Frank 还没定,哪个调用方都不该把它当本省抽选铺出来 —— 原先只有地点弹框的省份卡在外面挡了)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import { makeT } from '@/lib/i18n'
+import { PROV_QC } from './constants'
 import { DrawNotice } from './drawnotice'
 import { DrawRow } from './drawrow'
 import {
@@ -24,9 +27,12 @@ import css from './pnp.module.css'
  * 渲染本省最近抽选块。
  *
  * @param props 省码、界面语言、全部抽选行与条数上限(逐格注释见 PnpDrawsBlockIn)。
- * @returns 抽选块;本省既无抽选也没改制时给 null(整块不出现)。
+ * @returns 抽选块;本省既无抽选也没改制、或是魁省时给 null(整块不出现)。
  */
 export function PnpDrawsBlock({ province, lang, draws, limit }: PnpDrawsBlockIn) {
+  if (province === PROV_QC) {
+    return null
+  }
   const t = makeT(lang)
   const reform = reformOf({ province })
   let cap: number | null = null

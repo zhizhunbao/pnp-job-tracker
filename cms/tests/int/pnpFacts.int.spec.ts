@@ -8,6 +8,12 @@
 // MB 在需是参考信号清单、不当命中清单;SK 排除清单点名的岗弹框出那张排除清单;SK 现有工签既无清单也无抽选;魁省什么都不出。
 // 探针:旧命中规则(按职业码找、取最后一个命中)在 NS 金标上给出另一张清单 —— 金标分得开新旧两版,不是恒真断言。
 // 另:英文轮数单复数(eecmp.roundsOne)。
+// 2026-09-26 同日「止血 + 补完整」(Frank 看过效果图点头)追加:抽选卡三种形(分组 / NS 按月选取人数 / 安省改制现状,drawsFormOf)
+// 都算「有卡」;排除清单卡只给不可提名的岗(SK 主线不合格表是参考信号表);顶上「本岗能走的通道」卡只是抬头,单独不算「有卡」。
+// 金标跟着改的两条:安省改制后有官方公告 → 出现状卡(原「无卡」);其余照旧。新金标:阿省机会通道本岗那一组三格 + 近 90 天 4 轮、
+// 合计 2,264 人(手写自 09-26 实查的五轮);NS 按月「671 人入选」、日期到月;魁省 PSTQ 哪一形都不出;通道卡的名字口径同 PNP 格。
+// 探针:把排除卡的可提名闸拿掉,SK 可提名岗就又出排除卡;把只到月的行放进分组,NS 就会被按「轮」统计 —— 两处金标都分得开。
+// 同日 lead 定:安省现状卡那一行改通用的「最新公告」(tl.tabNews),金标随之改。
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -16,7 +22,8 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
-  hasProvDraws, pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
+  allGroupsLabelOf, channelsOf, drawCardOf, drawCutOf, drawsFormOf, factCardOf, hasProvDraws, monthRowsOf,
+  pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
 } from '@/components/pnp/functions'
 import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpStream } from '@/components/pnp/types'
 import { blockedKeysOf, blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
@@ -45,20 +52,23 @@ function occ(p: Partial<PnpOcc>): PnpOcc {
 function draw(p: Partial<PnpDraw>): PnpDraw {
   return {
     province: '', kind: 'draw', drawDate: '2026-09-01', stream: 'S', streamZh: '', score: 60, invitations: 10,
-    note: '', label: '', ...p,
+    note: '', label: '', url: '', ...p,
   }
 }
 
-/** 弹框拿整表自己出卡:本省抽选卡,或清单卡(与 PnpListSection 的两道判据逐字同一组函数) */
+/**
+ * 弹框拿整表自己出卡:本省抽选卡(三种形之一),或清单卡(与 PnpListSection 的两道判据逐字同一组函数;
+ * 「本岗能走的通道」卡只是抬头,不算)
+ */
 function modalHasCards(j: PnpJob, o: PnpOcc[], d: PnpDraw[]): boolean {
-  const cards = shownStreamsOf({ match: pnpMatchOf({ job: j, occ: o }), noc: j.noc })
+  const cards = shownStreamsOf({ match: pnpMatchOf({ job: j, occ: o }), noc: j.noc, eligible: j.pnpEligible })
   return hasProvDraws({ province: j.province, draws: d }) || cards.length > 0
 }
 
 /** 格子凭首屏事实索引判(职位板 pnpActiveOf 里的第二道);索引可预先算好传进来 */
 function cellSaysCards(j: PnpJob, o: PnpOcc[], d: PnpDraw[], pre?: PnpFactsIndex): boolean {
   const index = pre ?? pnpFactsIndexOf({ occ: o, draws: d })
-  return pnpFactsShownOf({ province: j.province, noc: j.noc, stream: j.pnpStream, index })
+  return pnpFactsShownOf({ province: j.province, noc: j.noc, stream: j.pnpStream, eligible: j.pnpEligible, index })
 }
 
 /** 旧命中规则(改判前的 pnpMatchOf):按职业码找,取最后一个命中,不跳过参考信号清单 —— 只给探针用 */
@@ -84,10 +94,11 @@ const occArb = fc.record({
   noc: fc.constantFrom(...NOCS),
 }).map((r) => occ(r))
 
+// 2026-09-26 加一个只到月的日期('2026-07',NS 月度选取人数那种行):按月形与分组形的分界也进性质检查
 const drawArb = fc.record({
   province: fc.constantFrom(...PROVS, 'FED'),
   kind: fc.constantFrom('draw', 'notice'),
-  drawDate: fc.constantFrom('', '2026-01-15', '2026-07-01'),
+  drawDate: fc.constantFrom('', '2026-01-15', '2026-07-01', '2026-07'),
   stream: fc.constantFrom('A', 'B'),
 }).map((r) => draw(r))
 
@@ -180,7 +191,7 @@ describe('金标', () => {
     const carpenter = job({ province: 'NS', noc: '72310', pnpStream: 'NS 建筑' })
     const m = pnpMatchOf({ job: carpenter, occ: nsLists })
     expect(m.matched?.label).toBe('NS 建筑')
-    expect(shownStreamsOf({ match: m, noc: '72310' }).map((s: PnpStream) => s.label)).toEqual(['NS 建筑'])
+    expect(shownStreamsOf({ match: m, noc: '72310', eligible: true }).map((s: PnpStream) => s.label)).toEqual(['NS 建筑'])
     expect(cellSaysCards(carpenter, nsLists, [])).toBe(true)
   })
 
@@ -197,11 +208,17 @@ describe('金标', () => {
     expect(cellSaysCards(general, nsLists, [])).toBe(false)
   })
 
-  it('安省改制:有 4 月的旧抽选也不出抽选卡,没有清单 → 无卡', () => {
-    const draws = [draw({ province: 'ON', drawDate: '2026-04-23' }), draw({ province: 'ON', kind: 'notice', drawDate: '2026-08-04' })]
+  // 2026-09-26 同日「补完整」改判:安省改制后有官方公告 → 出现状卡(最新公告 / 已发邀请),原先这里「无卡」;
+  // 改制后一条公告都没有照旧无卡,旧通道的 4 月抽选照旧不列
+  it('安省改制:旧抽选不列;改制后有公告 → 现状卡(有卡),没有公告 → 无卡', () => {
+    const old = draw({ province: 'ON', drawDate: '2026-04-23' })
+    const draws = [old, draw({ province: 'ON', kind: 'notice', drawDate: '2026-08-04' })]
     const on = job({ province: 'ON', noc: '21231', pnpStream: '' })
-    expect(hasProvDraws({ province: 'ON', draws })).toBe(false)
-    expect(cellSaysCards(on, [], draws)).toBe(false)
+    expect(drawsFormOf({ province: 'ON', draws })).toBe('status')
+    expect(hasProvDraws({ province: 'ON', draws })).toBe(true)
+    expect(cellSaysCards(on, [], draws)).toBe(true)
+    expect(drawsFormOf({ province: 'ON', draws: [old] })).toBe('none')
+    expect(cellSaysCards(on, [], [old])).toBe(false)
   })
 
   it('MB 在需(参考信号清单):不当命中清单,但本省有抽选卡 → 有卡', () => {
@@ -209,15 +226,15 @@ describe('金标', () => {
     const d = [draw({ province: 'MB', drawDate: '2026-09-24', stream: 'Skilled Worker in Manitoba' })]
     const mb = job({ province: 'MB', noc: '65200', pnpStream: '' })
     expect(pnpMatchOf({ job: mb, occ: o }).matched).toBeNull()
-    expect(shownStreamsOf({ match: pnpMatchOf({ job: mb, occ: o }), noc: '65200' })).toEqual([])
+    expect(shownStreamsOf({ match: pnpMatchOf({ job: mb, occ: o }), noc: '65200', eligible: true })).toEqual([])
     expect(cellSaysCards(mb, o, d)).toBe(true)
   })
 
-  it('SK 排除清单点名:弹框出那张排除清单 → 有卡;SK 现有工签:无清单无抽选 → 无卡', () => {
+  it('SK 排除清单点名(不可提名的岗):弹框出那张排除清单 → 有卡;SK 现有工签:无清单无抽选 → 无卡', () => {
     const o = [occ({ province: 'SK', label: 'SK 主线不合格清单', type: 'ineligible', noc: '65201' })]
     const excluded = job({ province: 'SK', noc: '65201', pnpStream: '', pnpEligible: false })
     const ewp = job({ province: 'SK', noc: '73300', pnpStream: 'SK 现有工签' })
-    expect(shownStreamsOf({ match: pnpMatchOf({ job: excluded, occ: o }), noc: '65201' }).map((s) => s.label))
+    expect(shownStreamsOf({ match: pnpMatchOf({ job: excluded, occ: o }), noc: '65201', eligible: false }).map((s) => s.label))
       .toEqual(['SK 主线不合格清单'])
     expect(cellSaysCards(excluded, o, [])).toBe(true)
     expect(cellSaysCards(ewp, o, [])).toBe(false)
@@ -242,5 +259,163 @@ describe('英文轮数单复数(eecmp.roundsOne)', () => {
     expect(rounds('zh', one)).toEqual(['1 轮'])
     expect(rounds('zh', two)).toEqual(['2 轮'])
     expect(rounds('ko', one)).toEqual(['1회'])
+  })
+})
+
+describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡只给不可提名、通道卡', () => {
+  const zh = makeT('zh')
+  const en = makeT('en')
+  const ko = makeT('ko')
+  const AOS = 'Alberta Opportunity Stream'
+  // 手写金标:09-26 实查 data/mart/pnp_draws.json 阿省机会通道最近五轮(06-17 那轮在 90 天窗口外)
+  const ab = [
+    draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-09-23', score: 58, invitations: 113 }),
+    draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-09-01', score: 56, invitations: 575 }),
+    draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-08-14', score: 58, invitations: 743 }),
+    draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-07-15', score: 53, invitations: 833 }),
+    draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-06-17', score: 58, invitations: 720 }),
+    draw({ province: 'AB', label: 'AAIP', stream: 'Rural Renewal Stream', drawDate: '2026-08-11', score: 51, invitations: 30 }),
+  ]
+  const CUT = '2026-06-28'
+  const cellsOf = (c: { k: string, v: string }[]) => c.map((x) => [x.k, x.v])
+
+  it('阿省机会通道(本岗那一组):三格 + 近 90 天 4 轮、合计 2,264 人;其余组收进开关', () => {
+    const card = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [AOS], cut: CUT })
+    expect(card?.title).toBe('本省最近抽选 AAIP')
+    expect(card?.total).toBe(2)
+    expect(card?.feats.map((f) => f.key)).toEqual([AOS])
+    expect(card?.others.map((g) => g.key)).toEqual(['Rural Renewal Stream'])
+    const f = card!.feats[0]!
+    expect(cellsOf(f.cells)).toEqual([['最近一轮', '2026-09-23'], ['分数线', '58'], ['邀请', '113 人']])
+    expect(f.stats).toEqual(['近 90 天 4 轮', '共邀请 2,264 人'])
+    expect(f.rows.length).toBe(5)
+    const e = drawCardOf({ t: en, lang: 'en', province: 'AB', draws: ab, hitStreams: [AOS], cut: CUT })!.feats[0]!
+    expect(cellsOf(e.cells)).toEqual([['Latest', '2026-09-23'], ['Cutoff', '58'], ['Invited', '113']])
+    expect(e.stats).toEqual(['4 rounds in 90 days', '2,264 invited'])
+    const k = drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], cut: CUT })!.feats[0]!
+    expect(k.stats).toEqual(['최근 90일 4회', '총 2,264명 초청'])
+  })
+
+  it('开关文案:收着「查看全省 N 组」,开着「收起」;对不上本岗那一组时整卡只剩开关', () => {
+    expect(allGroupsLabelOf({ t: zh, open: false, total: 13, label: 'AAIP' })).toBe('查看全省 13 组 ▾')
+    expect(allGroupsLabelOf({ t: en, open: false, total: 13, label: 'AAIP' })).toBe('All 13 AAIP streams ▾')
+    expect(allGroupsLabelOf({ t: zh, open: true, total: 13, label: 'AAIP' })).toBe('收起 ▴')
+    const none = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [], cut: CUT })
+    expect(none?.feats).toEqual([])
+    expect(none?.others.length).toBe(2)
+  })
+
+  it('窗口里有一轮没公布人数就不出合计;一轮写 round;没公布分不出分数格;AIP 那组写入选 / 份申请', () => {
+    const gap = [
+      draw({ province: 'BC', stream: 'A', drawDate: '2026-09-20', score: 90, invitations: 10 }),
+      draw({ province: 'BC', stream: 'A', drawDate: '2026-09-10', score: 88, invitations: null }),
+    ]
+    expect(drawCardOf({ t: zh, lang: 'zh', province: 'BC', draws: gap, hitStreams: ['A'], cut: CUT })!.feats[0]!.stats)
+      .toEqual(['近 90 天 2 轮'])
+    const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 40 })]
+    const aipZh = drawCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, hitStreams: ['AIP'], cut: CUT })!.feats[0]!
+    expect(cellsOf(aipZh.cells)).toEqual([['最近一轮', '2026-09-10'], ['入选', '40 份申请']])
+    expect(aipZh.stats).toEqual(['近 90 天 1 轮', '共 40 份申请入选'])
+    const aipEn = drawCardOf({ t: en, lang: 'en', province: 'NB', draws: one, hitStreams: ['AIP'], cut: CUT })!.feats[0]!
+    expect(aipEn.stats).toEqual(['1 round in 90 days', '40 selected'])
+  })
+
+  it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进分组(不按「轮」统计)', () => {
+    const src = 'https://liveinnovascotia.com/eoi-selection'
+    const month = (drawDate: string, invitations: number | null) => draw({
+      province: 'NS', label: 'NSNP + AIP', stream: 'Monthly EOI selections', drawDate, score: null, invitations, url: src,
+    })
+    const ns = [month('2026-06', 531), month('2026-07', 671), month('2026-08', null)]
+    expect(drawsFormOf({ province: 'NS', draws: ns })).toBe('monthly')
+    expect(monthRowsOf({ province: 'NS', draws: ns }).map((d) => d.drawDate)).toEqual(['2026-07', '2026-06'])
+    expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [] })).toEqual([])
+    const card = factCardOf({ t: zh, province: 'NS', draws: ns })
+    expect(card?.title).toBe('本省最近抽选 NSNP + AIP')
+    expect(card?.rows.map((r) => [r.k, r.v])).toEqual([['2026-07', '671 人入选'], ['2026-06', '531 人入选']])
+    expect(card?.link).toEqual({ href: src, text: 'liveinnovascotia.com ↗' })
+    expect(factCardOf({ t: en, province: 'NS', draws: ns })?.rows[0]?.v).toBe('671 selected')
+    // 探针:同一省换成带日的轮次就走分组形 —— 按月与分组的分界是日期形,不是省码
+    const daily = [draw({ province: 'NS', stream: 'Monthly EOI selections', drawDate: '2026-07-15', score: null, invitations: 5 })]
+    expect(drawsFormOf({ province: 'NS', draws: daily })).toBe('groups')
+    expect(factCardOf({ t: zh, province: 'NS', draws: daily })).toBeNull()
+  })
+
+  // 同日 lead 定:那一行的标签用通用的「最新公告」(复用 tl.tabNews),不写「EOI 注册开放」—— 公告行是更新页的最新一条,会换
+  it('安省改制现状:最新公告 = 改制后公告日(悬停出原句),改制后没抽选写「暂无」;有了就写那一轮的日期', () => {
+    const note = 'portal now open to Ontario Workforce Priority Stream expressions of interest'
+    const url = 'https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply'
+    const on = [
+      draw({ province: 'ON', label: 'OINP', drawDate: '2026-04-23', stream: 'Employer Job Offer: Foreign Worker stream', url }),
+      draw({ province: 'ON', label: 'OINP', kind: 'notice', drawDate: '2026-08-04', stream: '', score: null, invitations: null, note, url }),
+    ]
+    const card = factCardOf({ t: zh, province: 'ON', draws: on })
+    expect(card?.title).toBe('本省最近抽选 OINP')
+    expect(card?.rows.map((r) => [r.k, r.v, r.strong])).toEqual([['最新公告', '2026-08-04', false], ['已发邀请', '暂无', true]])
+    expect(card?.rows[0]?.tip).toBe(note)
+    expect(card?.link).toEqual({ href: url, text: 'ontario.ca ↗' })
+    expect(factCardOf({ t: en, province: 'ON', draws: on })?.rows.map((r) => [r.k, r.v]))
+      .toEqual([['Latest updates', '2026-08-04'], ['Invitations issued', 'None yet']])
+    expect(factCardOf({ t: ko, province: 'ON', draws: on })?.rows.map((r) => [r.k, r.v]))
+      .toEqual([['최신 공지', '2026-08-04'], ['초청 발급', '아직 없음']])
+    const after = [...on, draw({ province: 'ON', label: 'OINP', drawDate: '2026-10-01', stream: 'Ontario Workforce Priority' })]
+    expect(factCardOf({ t: zh, province: 'ON', draws: after })?.rows[1]).toMatchObject({ v: '2026-10-01', strong: false })
+  })
+
+  it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
+    const qc = [draw({ province: 'QC', label: 'PSTQ', stream: 'Stream 1', drawDate: '2026-09-24', score: 634, invitations: 86 })]
+    expect(drawsFormOf({ province: 'QC', draws: qc })).toBe('none')
+    expect(factCardOf({ t: zh, province: 'QC', draws: qc })).toBeNull()
+    expect(cellSaysCards(job({ province: 'QC', noc: '21231' }), [], qc)).toBe(false)
+  })
+
+  it('SK 主线不合格表(参考信号):可提名的岗不出排除卡、格子也不凭它可点;探针:拿掉可提名闸就又出', () => {
+    const o = [occ({ province: 'SK', label: 'SK 主线不合格清单', type: 'ineligible', noc: '41200' })]
+    const ok = job({ province: 'SK', noc: '41200', pnpStream: '', pnpEligible: true })
+    const m = pnpMatchOf({ job: ok, occ: o })
+    expect(shownStreamsOf({ match: m, noc: '41200', eligible: true })).toEqual([])
+    expect(cellSaysCards(ok, o, [])).toBe(false)
+    expect(shownStreamsOf({ match: m, noc: '41200', eligible: false }).map((s) => s.label)).toEqual(['SK 主线不合格清单'])
+  })
+
+  it('性质:排除清单卡只出现在不可提名的岗上;只到月的行永远不进分组', () => {
+    fc.assert(fc.property(fc.array(occArb, { maxLength: 30 }), jobArb, (o, j) => {
+      const shown = shownStreamsOf({ match: pnpMatchOf({ job: j, occ: o }), noc: j.noc, eligible: j.pnpEligible })
+      if (shown.some((s) => s.type === 'ineligible')) {
+        expect(j.pnpEligible).toBe(false)
+      }
+    }), { numRuns: 2000 })
+    fc.assert(fc.property(fc.array(drawArb, { maxLength: 20 }), fc.constantFrom(...PROVS), (d, province) => {
+      for (const g of pnpDrawGroupsOf({ t: zh, lang: 'zh', province, draws: d, hitStreams: [] })) {
+        for (const r of g.rows) {
+          expect(r.date.length).toBe(10)
+        }
+      }
+    }), { numRuns: 1000 })
+  })
+
+  it('通道卡:具名先、可提名退通用名;领地、魁省、不可提名不列;英文主文案 + 界面语言灰字', () => {
+    const at = (j: PnpJob, lang: 'zh' | 'en' | 'ko', showZh = true) =>
+      channelsOf({ t: makeT(lang), tEn: en, lang, showZh, job: j })
+    expect(at(job({ province: 'AB' }), 'zh')).toEqual([{ key: 'pnp.gen.AB', name: 'AB Opportunity Stream', sub: 'AB 机会通道' }])
+    expect(at(job({ province: 'AB' }), 'en')).toEqual([{ key: 'pnp.gen.AB', name: 'AB Opportunity Stream', sub: '' }])
+    expect(at(job({ province: 'AB' }), 'zh', false)[0]?.sub).toBe('')
+    expect(at(job({ province: 'AB', pnpStream: 'AB 医疗' }), 'zh')).toEqual([{ key: 'AB 医疗', name: 'AB Health', sub: 'AB 医疗' }])
+    expect(at(job({ province: 'SK', pnpStream: 'SK 现有工签' }), 'zh')[0]?.name).toBe('SK Existing Work Permit')
+    expect(at(job({ province: 'NT' }), 'zh')).toEqual([])
+    expect(at(job({ province: 'QC', pnpStream: 'X' }), 'zh')).toEqual([])
+    expect(at(job({ province: 'AB', pnpEligible: false }), 'zh')).toEqual([])
+  })
+
+  it('统计窗口起点:此刻往前 90 天的渥太华日期', () => {
+    expect(drawCutOf(Date.parse('2026-09-26T16:00:00Z'))).toBe('2026-06-28')
+    expect(drawCutOf(Date.parse('2026-09-26T03:00:00Z'))).toBe('2026-06-27')
+  })
+
+  it('data/mart 真数据:魁省不出卡,NS 按月,安省现状,阿省分组', () => {
+    const d = mart<PnpDraw>('pnp_draws')
+    expect(drawsFormOf({ province: 'QC', draws: d })).toBe('none')
+    expect(drawsFormOf({ province: 'NS', draws: d })).toBe('monthly')
+    expect(drawsFormOf({ province: 'ON', draws: d })).toBe('status')
+    expect(drawsFormOf({ province: 'AB', draws: d })).toBe('groups')
   })
 })

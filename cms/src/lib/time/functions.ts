@@ -7,8 +7,28 @@
  * @author Frank
  * @time 2026-08-22 19:27:15
  */
-import { DATE_EMPTY, DAY_MS, FMT_MIN, FMT_SEC, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE, YMD_LEN } from './constants'
-import type { CutFallbackIn, DaysSinceIn, MaybeDays, MaybeIso } from './types'
+import {
+  DATE_EMPTY, DATE_PREFIX_LEN, DAY_MS, FMT_MIN, FMT_SEC, ISO_LOCALE, ISO_T, MIDNIGHT_SUFFIX, MIN_LEN, SEC_LEN, SPACE,
+  YEAR_PREFIX_LEN, YMD_LEN,
+} from './constants'
+import type { CutFallbackIn, DaysSinceIn, FmtShortIn, MaybeDays, MaybeIso } from './types'
+
+/**
+ * 短写(2026-09-26 /fe 首页 Frank 看效果图点头:手机职位板头一行「Updated 12:57」):
+ * 与此刻同一天(渥太华日期)只写时刻 'HH:mm',不是同一天写 'MM-DD HH:mm' —— 停更一天不会看着像今天刚更。
+ * 格式照 fmtLocal 的出串裁,不另起一套 Intl 选项;「今天」与 jobs 域 todayOf 同一个口径(fmtLocal 出日期再 ymd)。
+ *
+ * @param x 要写的时刻与此刻。
+ * @returns 'HH:mm' 或 'MM-DD HH:mm'。
+ */
+export function fmtLocalShort(x: FmtShortIn): string {
+  const at = fmtLocal(x.iso)
+  const today = ymd(fmtLocal(new Date(x.now).toISOString()))
+  if (ymd(at) === today) {
+    return at.slice(DATE_PREFIX_LEN)
+  }
+  return at.slice(YEAR_PREFIX_LEN)
+}
 
 /**
  * 到分(列表「更新时间」页脚等)。

@@ -3133,9 +3133,19 @@ export type DrawCellRow = {
   score: string
 
   /**
-   * 邀请数;官方没公布给横杠。
+   * 邀请数;官方没公布给横杠(手机卡与门槛弹框里跟在 invLabel 后面)。
    */
   invitations: string
+
+  /**
+   * 桌面表人数那一格(2026-09-26:选取口径的省写「N 人入选」,其余同 invitations)。
+   */
+  invCell: string
+
+  /**
+   * 手机卡与门槛弹框里人数前的标(「邀请」;选取口径的省换成「入选」,2026-09-26)。
+   */
+  invLabel: string
 
   /**
    * 官方抽选页地址(操作列「官方页」钮去处;2026-09-13 Frank「列名应该叫操作,然后有两个按钮」)。

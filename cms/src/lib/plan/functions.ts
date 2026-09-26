@@ -561,6 +561,9 @@ function comparisonsOf(input: ComparisonsIn): PlanComparisons {
  * FED 行不混省节奏(另走 eeCadence,历史未入库只报「距今」;二期历史入库后并入 cadence)。
  * 省级节奏按 省×项目 分组(kind=draw 且有日期);分组键 = label||stream(项目级)——
  * stream 每期写法不同(BC 各 ITA 因素/AB 各期描述),按它分组会碎成一期一卡。
+ * 2026-09-26 lead 定(Frank 批的「补完整」范围):节奏只收日期齐到日(`YYYY-MM-DD`)的抽选 —— NS 按月公布选取人数、
+ * 日期只到月(`2026-07`),拿它算「距今 N 天 / 平均间隔」会被当成当月 1 号,多算最多一个月、还误上「拖长了」;
+ * 这种行照旧进事件流(日期原样到月),只是不进节奏统计。
  *
  * @param db 数据库连接(池由调用方注进来)。
  * @returns 事件流、省级节奏与联邦 EE 距今。
@@ -589,7 +592,7 @@ export async function fetchTimeline(db: Db): TimelineOut {
       continue
     }
     const d = day(r.draw_date)
-    if (d === '') {
+    if (d.length !== DATE10_LEN) {
       continue
     }
     let name = TEXT_NONE

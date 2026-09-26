@@ -27,6 +27,9 @@
  * 窄屏入口条、匹配视图状态条、三态闸弹框层三件随之撤。
  * 2026-09-26 /fe 首页 Frank「首屏整表替换」:板根换成随首屏本省闸挂类(pageClsOf),最前面那段首帧脚本(HomeGate)
  * 只在服务端那份 HTML 与水合那一遍里渲 —— 设备时区对得上省的,全国过渡态首帧前就压住,本省那一页到了再亮。
+ * 2026-09-26 /fe 首页 Frank 看效果图点头(手机 375,桌面不动):横幅开窄屏紧凑档 —— 手机上蓝色大图收成一行
+ * 「Jobs 18590 jobs …… Updated 12:57」(Frank 同日补「数字 jobs 那个和更新时间放到一行吧」),更新时间窄屏短写
+ * (当天只写时刻、不是当天写「月-日 时刻」,值仍是 checkedAt 单源);桌面横幅一格不动。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -70,7 +73,8 @@ export function Jobs(props: JobsIn) {
             <BannerFacts count={subTextOf({ t: b.t, anyFilter: false, total: b.data.total })} />
           )}
           images={BANNER_IMGS.jobs}
-          right={<Updated iso={b.data.updatedAt} t={b.t} />} />
+          right={<Updated iso={b.data.updatedAt} t={b.t} narrowShort />}
+          compact />
         <BoardFilters b={b} boxRef={boxRef} />
         <BoardLoading text={b.t('loading')} on={b.data.swapping} gate={b.data.gate} />
         <BoardTable b={b} headRowRef={headRowRef} />
