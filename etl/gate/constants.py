@@ -22,10 +22,25 @@ REPO_ROOT = paths.ROOT
 ETL_DIR = REPO_ROOT / "etl"
 """被扫的根(域目录都在它下面)。"""
 
-DOMAINS = ["aip", "ats", "citations", "company", "crawl", "dli", "ee", "employers", "explore", "fcip",
-           "fetch", "fsa", "gate", "hwcr", "indexing", "ircc", "jdformat", "jobbank", "lmia", "load", "log", "mart",
-           "news", "noc", "paths", "pnp", "rcip", "richtext", "eligibility", "sched", "wages"]
+DOMAINS = ["aip", "ats", "careerbeacon", "citations", "classify", "company", "crawl", "dli", "ee",
+           "eligibility", "employers", "explore", "fcip", "fetch", "fsa", "gate", "hireac", "hwcr", "indexing",
+           "ircc", "jdformat", "jobbank", "jobboom", "jobillico", "lmia", "load", "log", "mart", "minwage",
+           "names", "news", "noc", "paths", "pnp", "rcip", "richtext", "sched", "sites", "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+2026-09-26 补登下列八个(立域时漏登 = 此前一直没被扫;行内日期是立域日,新→旧):
+sites 2026-09-19 立域(Frank「有官网的公司,我是不是应该定期抓取 etl 啊,这样就不用 AI 探索内容,AI 只做整理」
+「官网不光是总部,还是他的业务 以及 其他用户想知道的内容」「不能先把对应的官网先缓存到本地吗 html」:
+有官网的在招公司,定期把官网原文缓存到本地,再由局域网模型整理成事实)
+classify 2026-09-15 立域(Frank「洗分类是非常重要的,如果没有分类,基本没法理解职位」
+「职位的分类,公司的分类。之后就可以类比,相似,这些」「清洗分类是不是需要单独创建一个域来处理比较好」:
+岗位与公司的分类判定)
+hireac 2026-09-13 立域(Algonquin College HireAC(Orbis 门户)岗位板抓取)
+minwage 2026-09-13 立域(Frank「省的话 这个省的法律要求 最低工资 是有用的」:ESDC 最低工资数据库 → raw)
+careerbeacon 2026-09-12 立域(CareerBeacon(careerbeacon.com)大西洋四省岗位抓取)
+jobboom 2026-09-06 立域(Jobboom(jobboom.com)雇主直发岗抓取)
+jobillico 2026-09-06 立域(Jobillico(jobillico.com)全国职位板抓岗)
+names 2026-08-31 立叶(Frank「需要一个 name 域专门处理名字问题」:公司名归一基础设施叶;
+双重身份同 noc/richtext = 既被扫也可被依赖)
 indexing 2026-09-26 立域(Frank 勾「接 Indexing API」「这个最好能自动更新」:读线上 sitemap 职位分册,主动通知 Google 来抓 / 来删)
 richtext 2026-09-20 立叶(Frank「richtext 五个源全换」:HTML → 带结构的纯文本,块级序列化唯一一份;
 同 fetch/crawl/noc 双重身份 = 既被扫也可被依赖。域名不取 html —— etl/ 走 sys.path.insert,
