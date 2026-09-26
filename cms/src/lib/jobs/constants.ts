@@ -2661,6 +2661,16 @@ export const LD_MONETARY = 'MonetaryAmount'
 export const LD_QUANTITATIVE = 'QuantitativeValue'
 
 /**
+ * JSON-LD 的类型:属性值(JobPosting 的 identifier 格用;2026-09-26 /fe SEO 批)。
+ */
+export const LD_PROPERTY_VALUE = 'PropertyValue'
+
+/**
+ * JobPosting identifier 的 name(站名;value 填本站岗号,2026-09-26 /fe SEO 批定)。
+ */
+export const LD_ID_NAME = 'offer2pr'
+
+/**
  * JSON-LD 的国家码(全站只收加拿大岗)。
  */
 export const LD_COUNTRY = 'CA'
@@ -2721,9 +2731,11 @@ export const SEO_LOC_SEP = ', '
 export const LD_LT_RE = /</g
 
 /**
- * `<` 的 Unicode 转义序列。
+ * `<` 的 Unicode 转义序列(六个字符:反斜杠 + u003c)。
+ * 2026-09-26 修:00be3e82 搬家时把 e0094546 原写的双反斜杠抄成了单反斜杠 —— JS 里那就是 `<` 本身,
+ * escapeLd 把 `<` 换成 `<`,一个没转;第三方正文带闭合脚本标签就能提前关掉 JSON-LD 脚本(XSS)。
  */
-export const LD_LT_ESC = '\u003c'
+export const LD_LT_ESC = '\\u003c'
 
 /**
  * 兼职的工时值。

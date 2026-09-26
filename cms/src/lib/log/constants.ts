@@ -391,9 +391,10 @@ export const SEO_LOG = {
   tag: 'seo',
 
   /**
-   * 分片计数查库失败(回落 1 片 —— 空片无害,0 片 = 整个 sitemap 消失)。
+   * 索引取两侧清单失败(照列满全部固定分片,只是不给 lastmod)。
+   * 原判(countFail,2026-09-26 片数固定前):分片计数查库失败(回落 1 片 —— 空片无害,0 片 = 整个 sitemap 消失)。
    */
-  countFail: 'sitemap shard count failed, falling back to 1 shard: ',
+  indexFail: 'sitemap index rows failed, listing all shards without lastmod: ',
 
   /**
    * 单片查库失败(回空片,不 500 —— sitemap 请求不该打挂站点)。

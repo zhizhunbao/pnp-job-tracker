@@ -15,9 +15,19 @@
 export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com').replace(/\/$/, '')
 
 /**
- * 每片 URL 数(jobs 与 companies 同一容量;片数按库内现量自适应,2026-08-02 撑爆定案)。
+ * 职位分片的固定片数(片号 = 岗 id 对它取模)。
+ * 原判(SHARD_SIZE = 5000):每片 URL 数(jobs 与 companies 同一容量;片数按库内现量自适应,2026-08-02 撑爆定案)。
+ * 2026-09-26 改判(/fe SEO,Frank 勾「给 Google 新鲜信号」):按位置切 —— 第 N 片 = id 升序第 N 个五千 ——
+ * 关掉一个老岗,后面每个网址都往前挪一格,各片内容天天整体换,Google 看到的是「每片都改了」,真新鲜信号淹在挪片噪音里。
+ * 改成 id 取模的固定片数:一个岗永远落同一片,与清单里还有谁无关。10 片 × 单册上限五万 = 50 万,
+ * 当天收录口径 2.4 万(每片约 2,400,各片差不到 4%)。
  */
-export const SHARD_SIZE = 5000
+export const JOB_SHARDS = 10
+
+/**
+ * 公司分片的固定片数(片号 = 公司 id 对它取模;改判同 JOB_SHARDS)。当天有在架岗的公司 3.7 万家(每片约 4,600)。
+ */
+export const CO_SHARDS = 8
 
 /**
  * 核心页清单(E7-03 + E5-04 §2;path/priority/freq 三格一行)。
@@ -32,13 +42,10 @@ export const CORE_PAGES = [
 
   /**
    * PTE 刷题题单(默认型;2026-09-03 批二上线,日用页)。
+   * 即 PTE 题单 · 朗读:同日 /pte 门厅撤成 301 → /pte/ra 后这条改指 /pte/ra,与原「朗读」那条同址重复;
+   * 2026-09-26 并成一条(/pte 本身没有页,next.config 301 兜底,不进册)。
    */
   { path: '/pte/ra', priority: 0.8, freq: 'daily' },
-
-  /**
-   * PTE 题单 · 朗读。
-   */
-  { path: '/pte/ra', priority: 0.7, freq: 'daily' },
 
   /**
    * PTE 题单 · 复述句子。
@@ -175,6 +182,12 @@ export const SITEMAP_PATH = '/api/sitemaps/core.xml'
 export const JOB_SHARD_PATH = '/api/sitemaps/jobs-{n}.xml'
 
 /**
+ * 近 7 天新岗册路径(2026-09-26 /fe SEO「给 Google 新鲜信号」:收录口径里发布不满 7 天的岗,按 lastmod 倒序;
+ * 同一网址也在它自己的取模片里,Google 允许一址多册)。
+ */
+export const JOB_NEW_PATH = '/api/sitemaps/jobs-new.xml'
+
+/**
  * 公司分片路径模板。
  */
 export const CO_SHARD_PATH = '/api/sitemaps/companies-{n}.xml'
@@ -202,8 +215,14 @@ export const INDEX_XML_TAIL = `</sitemapindex>`
 
 /**
  * sitemapindex 单条模板(`{loc}`/`{mod}` 两槽)。
+ * 2026-09-26 起 `{mod}` 填该片条目里最晚的 lastmod(真值;原先整张索引填请求时刻)。
  */
 export const INDEX_ITEM_TPL = `  <sitemap><loc>{loc}</loc><lastmod>{mod}</lastmod></sitemap>`
+
+/**
+ * sitemapindex 单条模板 · 不带落款(`{loc}` 一槽;2026-09-26:核心册与空片没有真值,整个 lastmod 元素不出,不给空标签)。
+ */
+export const INDEX_ITEM_NOMOD_TPL = `  <sitemap><loc>{loc}</loc></sitemap>`
 
 /**
  * 响应头:内容类型。
@@ -249,6 +268,11 @@ export const SM_FILE_INDEX = 'index.xml'
 export const SM_FILE_CORE = 'core.xml'
 
 /**
+ * 万册壳的分发件名:近 7 天新岗册(与 JOB_NEW_PATH 末段同名;职位分册件名形只认数字片号,撞不上它)。
+ */
+export const SM_FILE_JOBS_NEW = 'jobs-new.xml'
+
+/**
  * 职位分册件名形(捕获组 = 片号)。
  */
 export const SM_JOBS_FILE_RE = /^jobs-(?<n>\d+)\.xml$/
@@ -276,6 +300,16 @@ export const URLSET_XML_TAIL = '</urlset>'
 export const URLSET_ITEM_TPL = `<url>
 <loc>{loc}</loc>
 <lastmod>{mod}</lastmod>
+<changefreq>{freq}</changefreq>
+<priority>{pri}</priority>
+</url>`
+
+/**
+ * urlset 单条模板 · 不带 lastmod(2026-09-26 /fe SEO:没有真改动时刻的条目整个元素不出 —— 核心册全是这种;
+ * 原先核心册填请求时刻,是假新鲜信号)。
+ */
+export const URLSET_ITEM_NOMOD_TPL = `<url>
+<loc>{loc}</loc>
 <changefreq>{freq}</changefreq>
 <priority>{pri}</priority>
 </url>`

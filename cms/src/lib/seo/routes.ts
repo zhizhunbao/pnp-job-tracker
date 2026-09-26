@@ -9,6 +9,8 @@
  * 🔴 分片/索引取数的 getDb 裹在兜底里(08-23 裸构建事故的不变量;库抖时 sitemap
  * 请求也不该 500):索引取不到按两侧各 1 片出册(空片无害,绝不 0 片 —— 0 片 =
  * 整个 sitemap 消失),分册取不到回空册。日志留痕不静默。
+ * 2026-09-26 /fe SEO 批改判:片数固定(职位 10 片 + 公司 8 片 + 近 7 天新岗册 jobs-new.xml + 核心册 = 20 张),
+ * 索引取不到清单就照列满这 20 张、只是不给 lastmod —— 「绝不 0 片」由固定片数天然成立;分册取不到照旧回空册。
  *
  * @author Frank
  * @time 2026-08-23 23:30:00
@@ -17,11 +19,11 @@ import { NOT_FOUND } from '../http'
 import { getDb } from '../db/server'
 import { log, SEO_LOG } from '../log'
 import {
-  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadCompanyShardCount, loadCompanyShardPage,
-  loadJobShardCount, loadJobShardPage, shardNoOf, urlsetXmlOf,
+  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadCompanyShardPage, loadIndexRows,
+  loadJobShardPage, loadJobsNewPage, shardNoOf, urlsetXmlOf,
 } from './functions'
-import { SM_CO_FILE_RE, SM_FILE_CORE, SM_FILE_INDEX, SM_JOBS_FILE_RE } from './constants'
-import type { Sitemap } from './types'
+import { SM_CO_FILE_RE, SM_FILE_CORE, SM_FILE_INDEX, SM_FILE_JOBS_NEW, SM_JOBS_FILE_RE } from './constants'
+import type { IndexXmlIn, Sitemap } from './types'
 
 /**
  * GET /sitemaps/[file]:按件名分发 —— index.xml 现查两侧片数吐 sitemapindex
@@ -29,6 +31,8 @@ import type { Sitemap } from './types'
  * core.xml 吐核心页平铺册(零库依赖);jobs-N.xml / companies-N.xml 吐对应分册
  * (loadXxxShardPage 体内自带库抖兜底,这里只兜 getDb 那一口)。
  * 件名不合形 404;片号越界给空册(无害,索引不会列出越界号)。
+ * 2026-09-26:index.xml 改取两侧清单算每片最晚的 lastmod(片数固定,不再计数);新增 jobs-new.xml 近 7 天新岗册,
+ * 兜底同分册。
  *
  * @param req 触发请求(读路径末段当件名)。
  * @returns XML 响应(一小时缓存);不认识的件名 404。
@@ -36,20 +40,25 @@ import type { Sitemap } from './types'
 export async function sitemapFileRoute(req: Request): Promise<Response> {
   const file = fileOf(req.url)
   if (file === SM_FILE_INDEX) {
-    let jobs = 1
-    let companies = 1
+    let rows: IndexXmlIn = { jobs: [], companies: [] }
     try {
-      const db = await getDb()
-      const [j, c] = await Promise.all([loadJobShardCount({ db }), loadCompanyShardCount({ db })])
-      jobs = j
-      companies = c
+      rows = await loadIndexRows({ db: await getDb() })
     } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.countFail + String(e) })
+      log({ tag: SEO_LOG.tag, text: SEO_LOG.indexFail + String(e) })
     }
-    return new Response(indexXmlOf({ jobs, companies, now: new Date().toISOString() }), { headers: indexHeadersOf() })
+    return new Response(indexXmlOf(rows), { headers: indexHeadersOf() })
   }
   if (file === SM_FILE_CORE) {
     return new Response(urlsetXmlOf(coreSitemapOf()), { headers: indexHeadersOf() })
+  }
+  if (file === SM_FILE_JOBS_NEW) {
+    let rows: Sitemap = []
+    try {
+      rows = await loadJobsNewPage({ db: await getDb() })
+    } catch (e) {
+      log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
+    }
+    return new Response(urlsetXmlOf(rows), { headers: indexHeadersOf() })
   }
   const jobNo = shardNoOf({ re: SM_JOBS_FILE_RE, file: file })
   if (jobNo != null) {

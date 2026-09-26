@@ -3236,6 +3236,7 @@ export type JdByIdIn = {
 
 /**
  * 详情页 SSR 直出的 JD 两样(2026-09-15:整理版也服务端直出 —— 正文区只出整理版,爬虫要的是它)。
+ * 2026-09-26 加第三格收录旗(/fe SEO:JobPosting 出不出,库里按站点地图同一段口径判)。
  */
 export type JdSsr = {
   /**
@@ -3247,6 +3248,11 @@ export type JdSsr = {
    * 五节整理版(节标记已顶到行首);没生过是 null(前端照旧懒生成)。
    */
   formatted: MaybeStr
+
+  /**
+   * 这岗进不进 sitemap、出不出 JobPosting(SQL.SEO_JOB_OK 一处判;查无此岗 false)。
+   */
+  seoOk: boolean
 }
 
 /**
@@ -4899,6 +4905,11 @@ export type JobPostingIn = {
    * 库里存着的 JD 正文;空串 = 没有,退回拼装串。
    */
   jdText: string
+
+  /**
+   * 库里判的收录口径(SQL.SEO_JOB_OK,与 sitemap 职位册同一段);false 整条不出。
+   */
+  seoOk: boolean
 }
 
 /**

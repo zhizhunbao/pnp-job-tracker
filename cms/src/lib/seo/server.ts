@@ -6,6 +6,6 @@
  */
 export { sitemapFileRoute } from './routes'
 export {
-  loadCompanyShardCount, loadCompanyShardPage,
-  loadJobShardCount, loadJobShardPage,
+  loadCompanyShardPage,
+  loadJobShardPage,
 } from './functions'

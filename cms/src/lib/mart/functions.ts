@@ -41,8 +41,8 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH,
-  COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
+  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_BOARD,
+  BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO, COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
@@ -55,7 +55,7 @@ import {
   UTF8,
 } from './constants'
 import type {
-  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
+  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CloseUnseenBoardIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
   RefreshCityIn, RefreshPoolIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
@@ -964,7 +964,8 @@ export function dimSpecs(): DimSpecs {
 
 /**
  * seed 一轮:维度表全量重建 → stats_daily 追加 → news upsert →(reset 时清事实表)→
- * companies/jobs 批量 upsert → 实测判死下架 → 截止日已过的板帖下架 → 「本次未见 + 超 30 天」下架 → 重复标记 →
+ * companies/jobs 批量 upsert → 实测判死下架 → 截止日已过的板帖下架 → 「本次未见 + 超 30 天」下架 →
+ * 本轮不在板仓的板帖下架(2026-09-26)→ 重复标记 →
  * 「本轮见过但没进 mart」打 is_dup(2026-09-06)→ 心跳。
  * 全程单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)。
  *
@@ -998,6 +999,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     counts[MART_SEEN_IDS] = seen.ids.length
     if (x.reset === false && seen.ids.length > 0) {
       closed = await closeStaleJobs({ client: client, now: now, ids: seen.ids })
+      counts[COUNT_UNSEEN_BOARD] = await closeUnseenBoardJobs({ client: client, now: now })
     }
     await client.query(SQL.MARK_DUPS)
     const hidden = seen.ids.slice(martCount)
@@ -1352,6 +1354,22 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
   await x.client.query(SQL.SEEN_EXT_INSERT, [x.ids])
   await x.client.query(SQL.ANALYZE_SEEN_EXT)
   const res = await x.client.query(SQL.CLOSE_STALE, [x.now, cutoff])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 板帖本轮不在板仓即下架(2026-09-26 /fe 清死帖),不受「本次未见 + 30 天」约束:板仓是当前态,
+ * 不在仓里 = 板上撤了,不是「本次没抓到」的推断。只管 BOARD_ORIGINS,渠道闸与取舍全文见 SQL.CLOSE_UNSEEN_BOARD。
+ * 复用 closeStaleJobs 建好的 seen_ext,所以只能排在它后面。
+ *
+ * @param x 连接与时刻。
+ * @returns 下架的条数。
+ */
+async function closeUnseenBoardJobs(x: CloseUnseenBoardIn): CountOut {
+  const res = await x.client.query(SQL.CLOSE_UNSEEN_BOARD, [x.now, BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO])
   if (res.rowCount != null) {
     return res.rowCount
   }

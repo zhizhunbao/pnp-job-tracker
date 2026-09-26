@@ -402,6 +402,21 @@ export type CloseStaleIn = {
 }
 
 /**
+ * `closeUnseenBoardJobs` 的入参(对账面 seen_ext 已由 closeStaleJobs 建好)。
+ */
+export type CloseUnseenBoardIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳(写进 closed_at 与 updated_at)。
+   */
+  now: string
+}
+
+/**
  * `refreshCityStats` 的入参(2026-09-11 城市段重设计批:seed 收尾在库内重算城市快照)。
  */
 export type RefreshCityIn = {

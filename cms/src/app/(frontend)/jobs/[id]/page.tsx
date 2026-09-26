@@ -119,7 +119,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <JsonLd json={jobPostingJsonOf({ job, jdText: jd.text })} />
+      <JsonLd json={jobPostingJsonOf({ job, jdText: jd.text, seoOk: jd.seoOk })} />
       <Frame>
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}

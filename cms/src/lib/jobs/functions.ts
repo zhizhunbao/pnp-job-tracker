@@ -37,8 +37,8 @@ import {
   JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
   JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA,
   JOB_PATH, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
-  LD_CURRENCY, LD_FULL_TIME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
-  LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
+  LD_CURRENCY, LD_FULL_TIME, LD_ID_NAME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
+  LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_PROPERTY_VALUE, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
   LINE_SPACES_RE, LMIA_SOURCE, LV, MAIL_AT, MAIL_DOMAIN_NONE, MAIL_NONE, MAIL_RE, MAIL_SKIP_SUFFIXES, MAIL_SKIP_WORD,
   MAIN_LIST_COVERAGE, MARK_HEAD, MARK_TAIL, MED_SELECT, META_AT, META_BAR, META_DOT, META_IN, META_NOT_FOUND,
   META_SOME_EMPLOYER, META_SPACE, META_TAIL, NL, NOC_JOIN_SLASH, NOC_LEN, NOC_MINOR_LEN, NOC_NONE, NOC_RE,
@@ -1832,17 +1832,19 @@ export async function searchNocByTitle(input: NocSearchIn): NocSearchOut {
  * 塞进每次页面渲染 TTFB 不可控(lazy-first 铁律);库里没有的格给空串 / null,前端照旧走懒取路径。
  * 2026-09-15 加整理版:当天下午走查批把正文区改成只出整理版(整理版没回来只出转圈),原文直出被压住,
  * Googlebot 抓到的仍是转圈 —— 整理版落在 jobs.jd_formatted,库里有就一并直出。
+ * 2026-09-26 同一行带出收录旗 seoOk(/fe SEO):JobPosting 出不出与 sitemap 职位册同一段 SQL(SEO_JOB_OK)判,
+ * TS 不再写一遍;查无此岗 false。
  *
  * @param input 连接与职位号。
- * @returns 脱敏原文与整理版;库里没有的格给空串 / null。
+ * @returns 脱敏原文、整理版与收录旗;库里没有的格给空串 / null。
  */
 export async function loadJdSsrById(input: JdByIdIn): JdSsrOut {
   const rows = await queryRows({ db: input.db, sql: SQL.JD_BY_JOB_ID, params: [input.id], map: toJdSsrRow })
   const first = rows[0]
   if (first == null) {
-    return { text: JD_NONE, formatted: null }
+    return { text: JD_NONE, formatted: null, seoOk: false }
   }
-  return { text: scrubPii(first.text), formatted: first.formatted }
+  return { text: scrubPii(first.text), formatted: first.formatted, seoOk: first.seoOk }
 }
 
 /**
@@ -3527,12 +3529,13 @@ export function toJdFormattedCell(r: Row): MaybeStr {
 
 /**
  * 一行详情页 SSR 的正文与整理版(SQL.JD_BY_JOB_ID)。原文只做值级清洗(去首尾空白、空当无),脱敏在出口做。
+ * 2026-09-26 加收录旗:库里 SEO_JOB_OK 判出的布尔,只认 true(pg 给 null 也当不收)。
  *
  * @param r 库里的一行。
- * @returns 原文(没有空串)与整理版(没生过、或五节全空 = null)。
+ * @returns 原文(没有空串)、整理版(没生过、或五节全空 = null)与收录旗。
  */
 export function toJdSsrRow(r: Row): JdSsr {
-  return { text: text(r.description).trim(), formatted: jdShownOrNull(textOrNull(r.jd_formatted)) }
+  return { text: text(r.description).trim(), formatted: jdShownOrNull(textOrNull(r.jd_formatted)), seoOk: r.seo_ok === true }
 }
 
 /**
@@ -3677,13 +3680,16 @@ export function byEntryCountDesc(a: [string, number], b: [string, number]): numb
  * 2026-09-17 Frank「下架肯定要去掉啊」:**过期岗不出 JobPosting** —— Google 招聘标记政策原文「We don't allow expired job postings」,
  * 违者可人工处罚并移除招聘信息;此前下架页(1.4 万,带 noindex)仍照出标记、validThrough 写着过去的日子,Search Console
  * 招聘富结果有效 0。两种算过期:已下架(status = closed);在招但发帖方写的截止日已过(09-17 库里 740 条)。给空串,JsonLd 壳见空不渲。
+ * 2026-09-26 /fe SEO(Frank「先只包含有邮件能投的」):sitemap 职位册、JobPosting、Indexing API 三处只放同一批岗 ——
+ * 出不出由库里 SQL.SEO_JOB_OK 判(在架 + 非重复 + 有投递邮箱 + 有发布日 + 正文够长 + 没过截止日),布尔随正文那一行带来,
+ * TS 不再写第二份判定;上面的过期判断照留。没邮箱的岗页面照常可访问、可被收,只是不出标记。同日补 identifier(本站岗号)。
  *
- * @param input 本岗与库里存着的正文。
- * @returns 可直接塞进 script 标签的 JSON 串(`<` 已转义,见下);过期岗给空串。
+ * @param input 本岗、库里存着的正文与收录旗。
+ * @returns 可直接塞进 script 标签的 JSON 串(`<` 已转义,见下);不收录或过期给空串。
  */
 export function jobPostingJsonOf(input: JobPostingIn): string {
   const job = input.job
-  if (isExpiredJob(job)) {
+  if (input.seoOk === false || isExpiredJob(job)) {
     return ISO_NONE
   }
   const ld: JsonObj = {}
@@ -3698,6 +3704,7 @@ export function jobPostingJsonOf(input: JobPostingIn): string {
   putHiringOrg({ ld, job })
   putBaseSalary({ ld, job })
   putApplyUrl({ ld, job })
+  putIdentifier({ ld, job })
   return escapeLd(JSON.stringify(ld))
 }
 
@@ -3837,6 +3844,21 @@ function putBaseSalary(x: LdPutIn): void {
  */
 function putApplyUrl(x: LdPutIn): void {
   x.ld.url = siteBaseOf() + JOB_PATH + String(x.job.id)
+}
+
+/**
+ * 编号(2026-09-26 /fe SEO 批):Google 招聘标记的推荐格 identifier —— 这条招聘的唯一编号,
+ * name 写站名、value 写本站岗号(与 url 末段同一个号)。
+ *
+ * @param x 正在拼的对象与本岗。
+ * @returns 无。
+ */
+function putIdentifier(x: LdPutIn): void {
+  const id: JsonObj = {}
+  id[LD_KEY_TYPE] = LD_PROPERTY_VALUE
+  id.name = LD_ID_NAME
+  id.value = String(x.job.id)
+  x.ld.identifier = id
 }
 
 /**

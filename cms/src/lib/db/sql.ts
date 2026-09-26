@@ -1825,11 +1825,21 @@ export const DIMS_FIELD_SOURCES = `SELECT field, kind, publisher, url, title, de
 // =========================================================================
 
 /**
- * 站点地图的在架口径片段(⚠️ 与 OPEN_COND 不是一个口径:这里无表别名、`<> 'closed'`
- * 把 NULL 与其它状态都算在架 —— sitemap 宁多收不漏收;2026-08-23 自 app 文件搬入,
- * SQL 片段的家在本叶)。
+ * 职位的收录口径片段:一条岗进 sitemap、出 JobPosting,当且仅当下面六格全过(无表别名,直接拼在 `FROM jobs` 后面;
+ * 站点地图全量与详情页 SSR 那条按 id 取正文的查询拼的是同一段 —— 单一口径,TS 里不再写一遍判定)。
+ * 原判(SITEMAP_ACTIVE,站点地图的在架口径片段):⚠️ 与 OPEN_COND 不是一个口径:这里无表别名、`<> 'closed'`
+ * 把 NULL 与其它状态都算在架 —— sitemap 宁多收不漏收;2026-08-23 自 app 文件搬入,SQL 片段的家在本叶。
+ * 2026-09-26 改判(/fe SEO,Frank 勾「清死帖和薄页」「给 Google 新鲜信号」,拍「先只包含有邮件能投的」):
+ * 在架口径照旧(campus 算在架),「宁多收不漏收」收窄成六格 —— 非重复帖;有投递邮箱;有发布日(Google 必填);
+ * 正文够长(≥ 300 字节,对齐 lib/jobs 的 JD_MIN_LEN「短于它多半是壳页」;用 octet_length 是因为它只读 TOAST 头不解压,
+ * length() 会把 8 万行正文全解出来);没过截止日(口径照抄 CLOSE_PAST_DEADLINE:纯日期存成 UTC 零点,
+ * 早于多伦多的今天才算过,截止日当天不算)。没邮箱的岗页面照常可访问、可被收,只是不进 sitemap、不出 JobPosting;
+ * 职位板不动。当天生产实测 23,944 条(Job Bank 21,797 / Jobillico 1,533 / Jobboom 524 / 其他 90),近 7 天发布 3,768 条。
  */
-export const SITEMAP_ACTIVE = `COALESCE(status,'open') <> 'closed'`
+export const SEO_JOB_OK = `COALESCE(status,'open') <> 'closed' AND is_dup IS NOT TRUE
+  AND COALESCE(apply_email,'') <> '' AND date_posted IS NOT NULL
+  AND octet_length(COALESCE(description,'')) >= 300
+  AND (valid_through IS NULL OR (valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)`
 
 /**
  * 职位站点地图分片计数。a1=在架口径片段。
@@ -1875,19 +1885,27 @@ export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS
 /**
  * 职位站点地图全量(一次拉齐,进程内切片;2026-09-03 GSC 实查:逐片 OFFSET 现查 10–24 秒、
  * 索引两个 count 63 秒,Google 读索引后子表逐个超时 → 「发现 0 页」,新岗一个没进索引)。a1=口径片段。
+ * 2026-09-26 改列(/fe SEO「给 Google 新鲜信号」):last_seen 退役 —— 它是每轮抓取都刷的「最近还看见」,拿它当 lastmod
+ * 等于天天告诉 Google 全站都改了;mod = 上架时刻与整理版生成时刻取晚(两个都是页面真变了的事件),
+ * fresh = 近 7 天发布(jobs-new 册的成员,进程内按它挑)。当天生产 EXPLAIN ANALYZE 四次 0.5–1.0 秒(顺扫,出 2.4 万行)。
  *
- * @param a1 在架口径片段(SITEMAP_ACTIVE)。
+ * @param a1 收录口径片段(SEO_JOB_OK)。
  * @returns 全量 SELECT 语句。
  */
-export const jobsSitemapAll = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1} ORDER BY id ASC`
+export const jobsSitemapAll = (a1: string) => `SELECT id, GREATEST(COALESCE(first_seen, date_posted), jd_formatted_at) AS mod,
+       date_posted >= now() - interval '7 days' AS fresh
+       FROM jobs WHERE ${a1} ORDER BY id ASC`
 
 /**
  * 公司站点地图全量(同上,一次拉齐进程内切片)。a1=FROM 骨架。
+ * 2026-09-26 改列(同职位侧):带公司 id(片号 = id 取模,进程内挑),lastmod 改旗下在架岗最晚的上架时刻
+ * (新岗上架 = 公司页的在招列表真变了),不再用 max(last_seen)。成员口径不变。当天生产 EXPLAIN ANALYZE 四次 0.8–1.7 秒
+ * (与改列前同一计划,出 3.7 万家)。
  *
  * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
  * @returns 全量 SELECT 语句。
  */
-export const coSitemapAll = (a1: string) => `SELECT c.slug, max(j.last_seen) AS last_seen ${a1}
+export const coSitemapAll = (a1: string) => `SELECT c.id, c.slug, max(j.first_seen) AS mod ${a1}
        GROUP BY c.id, c.slug
        ORDER BY c.id ASC`
 
@@ -1918,8 +1936,9 @@ export const FUNNEL_USERS = `SELECT count(pro_until)::int pro,
 /**
  * 详情页 SSR 的 JD 正文与整理版。$1=职位 id。2026-09-15 加 jd_formatted:正文区只出整理版(Frank 2026-09-14
  * 「不要显示原文,直接显示整理之后的」),库里有整理版就服务端直出,爬虫抓到的 HTML 才有正文。
+ * 2026-09-26 加 seo_ok(/fe SEO):这岗出不出 JobPosting,拼的就是站点地图那段 SEO_JOB_OK —— 两处一个口径。
  */
-export const JD_BY_JOB_ID = `SELECT description, jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
+export const JD_BY_JOB_ID = `SELECT description, jd_formatted, (${SEO_JOB_OK}) AS seo_ok FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
  * 详情页 metadata 用的瘦行。$1=职位 id。
@@ -2237,6 +2256,27 @@ export const CLOSE_PAST_DEADLINE = `UPDATE jobs SET status='closed', closed_at=$
  */
 export const CLOSE_STALE = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
          WHERE status IN ('open', 'campus') AND date_posted < $2
+           AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
+
+/**
+ * 板帖本轮不在板仓里就关,不再等「发布满 30 天」(2026-09-26 /fe umami + GSC,Frank 勾「清死帖和薄页」)。
+ * $1=时刻,$2=板帖渠道清单,$3=该渠道本轮至少要见到的在架占比。
+ * 为什么只管板帖:板仓是当前态(jobillico 按板方站点地图出仓,不在图里即 gone),本轮不在仓里 = 板上撤了;
+ * 当天实查在架未见 6,521 条(jobillico 6,192),抽 8 条去原站 jobillico 8 / 8 回 410、jobboom 6 / 8 回 410,
+ * 却照挂在招、照进 sitemap —— Google 招聘政策原句「We don't allow expired job postings」。
+ * Job Bank 不在内:列表是增量抓,本轮没见到不等于撤了(805 误杀教训),下架走验尸(CLOSE_DEAD_EXT)+ CLOSE_STALE。
+ * ATS 不在内:逐司抓常抓一半(Sienna 仓 09-18 482 岗、09-25 快照 17、今天 376),本轮对账会把在招的成批关掉。
+ * 渠道闸($3):某渠道本轮见到的在架行不到这个占比,就当这一轮板域抓坏了,整渠道跳过不关 ——
+ * 防的是板仓被半截抓取写空后全渠道下架;误关的行下轮重新出现在 mart,upsert 按 EXCLUDED.status 自愈回在招。
+ * 须在 CLOSE_STALE 之后跑(seen_ext 由它建表灌数)。$3 必须显式转 numeric:不转时 PG 按 count(*) 把它推成 bigint,
+ * 传 0.5 整条报错、整轮 seed 回滚(本批只读干跑实撞)。
+ */
+export const CLOSE_UNSEEN_BOARD = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
+         WHERE status IN ('open', 'campus') AND origin::text = ANY($2::text[])
+           AND origin::text IN (
+             SELECT j.origin::text FROM jobs j LEFT JOIN seen_ext s ON s.external_id = j.external_id
+              WHERE j.status IN ('open', 'campus') AND j.origin::text = ANY($2::text[])
+              GROUP BY j.origin HAVING count(s.external_id) >= $3::numeric * count(*))
            AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
 
 /**

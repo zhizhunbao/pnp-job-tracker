@@ -192,6 +192,20 @@ export const BATCH_ROWS = 300
 export const EXPIRE_DAYS = 30
 
 /**
+ * 「本轮不在板仓即下架」管的板帖渠道(2026-09-26 /fe Frank「清死帖」;取舍见 SQL.CLOSE_UNSEEN_BOARD)。
+ * 照抄 etl/mart/constants.py 的 IN_BOARD_STORES 各行 origin —— 那边加一个板,这里跟着加一格;
+ * 不在清单里的新渠道照旧只走 EXPIRE_DAYS 那条老规则(宁可晚关,不误关)。
+ */
+export const BOARD_ORIGINS = ['jobillico', 'jobboom', 'careerbeacon', 'hireac', 'gcjobs']
+
+/**
+ * 板帖渠道闸:某渠道本轮见到的在架行至少占它在架总数的这个比例,才按「本轮不在板仓」下架。
+ * 当天实数:jobillico 72.8%、jobboom 88.1%、gcjobs 86.8%、hireac 98.1%、careerbeacon 100%(首轮含积压的死帖);
+ * 板仓被半截抓取写空时占比会塌到一半以下,整渠道跳过。
+ */
+export const BOARD_SEEN_MIN_RATIO = 0.5
+
+/**
  * 计数哨兵:本轮无该表上传,跳过保留现有行(E12-03 防线:mart 文件缺失 ≠ 空表;
  * 要真清空一张维度表 = 上传内容为 [] 的文件,显式意图)。
  */
@@ -456,6 +470,11 @@ export const COUNT_POOL_REFRESH = 'employerPoolOpenRefreshed'
  * /seed 响应里「截止日已过的板帖下架」那一格的键(2026-09-25 过期兜底;值 = 下架条数,取舍见 SQL.CLOSE_PAST_DEADLINE)。
  */
 export const COUNT_PAST_DEADLINE = 'closedPastDeadline'
+
+/**
+ * /seed 响应里「本轮不在板仓的板帖下架」那一格的键(2026-09-26 /fe 清死帖;值 = 下架条数,取舍见 SQL.CLOSE_UNSEEN_BOARD)。
+ */
+export const COUNT_UNSEEN_BOARD = 'closedUnseenBoard'
 
 /**
  * 城市快照「近 7 天」口径回看几天(date_posted 是 YYYY-MM-DD varchar,折日期串按字典序比)。

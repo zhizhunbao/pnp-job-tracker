@@ -13,12 +13,12 @@ import type { SeoCache } from './types'
  */
 export const CACHE: SeoCache = {
   /**
-   * 职位分片清单(在架岗 id + last_seen 全量,一小时 TTL)。
+   * 职位分片清单(收录口径的岗 id + lastmod + 近 7 天旗全量,一小时 TTL;2026-09-26 前是在架岗 id + last_seen)。
    */
   jobs: null,
 
   /**
-   * 公司分片清单(有在招岗的公司 slug + last_seen 全量,一小时 TTL)。
+   * 公司分片清单(有在招岗的公司 id + slug + lastmod 全量,一小时 TTL;2026-09-26 前是 slug + last_seen)。
    */
   companies: null,
 
