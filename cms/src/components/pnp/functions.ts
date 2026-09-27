@@ -21,7 +21,7 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
   DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
-  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, PNP_GEN_HEAD,
+  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, PNP_GEN_HEAD, ROUNDS_KEYS,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -623,19 +623,28 @@ function latestSinceOf(x: LatestSinceIn): PnpDraw | null {
 
 /**
  * 抽选卡按月 / 改制现状两种形的内容(分组形另走 PnpDrawGroups;形由 drawsFormOf 判,出卡判据只有一份)。
+ * 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月形(NS)改走 PnpDrawGroups 的组头行(monthlyGroupOf),
+ * 这里只剩改制现状一种;原 monthlyCardOf 随之删。
  *
  * @param x 取词函数、省码与全部抽选行。
- * @returns 事实卡;分组形或不出卡给 null。
+ * @returns 事实卡;分组形、按月形或不出卡给 null。
  */
 export function factCardOf(x: FactCardOfIn): FactCardSpec | null {
   const form = drawsFormOf({ province: x.province, draws: x.draws })
   if (form === DRAWS_FORM_STATUS) {
     return statusCardOf(x)
   }
-  if (form === DRAWS_FORM_MONTHLY) {
-    return monthlyCardOf(x)
-  }
   return null
+}
+
+/**
+ * 抽选卡走不走分组形(PnpDrawGroups):带日期的轮次分组,或按月公布的那一组(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」)。
+ *
+ * @param form 抽选卡的形。
+ * @returns 走分组卡 = true。
+ */
+export function drawGroupsShownOf(form: DrawsForm): boolean {
+  return form === DRAWS_FORM_GROUPS || form === DRAWS_FORM_MONTHLY
 }
 
 /**
@@ -673,29 +682,6 @@ function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
     { k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE },
   ]
   return { title: x.t('pnpdraws.head'), cells, source: sourceLinkOf({ t: x.t, url: notice.url }) }
-}
-
-/**
- * 按月选取人数卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 原先既无清单也无抽选,格子点开只有标题):
- * 一月一行,日期照官方写到月,人数写「入选」(官方是从 EOI 池里选取,不是发邀请;见 DRAW_SELECT_PROVS)。
- * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:一月一格横排(标签 = 月份、值 = 人数,手机上自动折行),末格「来源」;
- * 标题只留「本省最近抽选」、轮次标签降成灰字(原先一月一行「项 | 值」竖排 + 底部链接)。
- * 同晚轮次标签灰字撤、「来源」挪到标题那一行右端(理由同 statusCardOf)。
- *
- * @param x 取词函数、省码与全部抽选行。
- * @returns 按月卡;本省没有按月的行给 null。
- */
-function monthlyCardOf(x: FactCardOfIn): FactCardSpec | null {
-  const months = monthRowsOf({ province: x.province, draws: x.draws })
-  const first = months[0]
-  if (first == null) {
-    return null
-  }
-  const cells: FeatCellSpec[] = []
-  for (const d of months) {
-    cells.push({ k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE })
-  }
-  return { title: x.t('pnpdraws.head'), cells, source: sourceLinkOf({ t: x.t, url: first.url }) }
 }
 
 /**
@@ -1061,6 +1047,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       draws,
       dim,
       hit: true,
+      perMonth: false,
     }))
     if (dim === false && c.drawCrs != null) {
       lines.push(cmpLineOf({ t: x.t, key: c.key, cat: name, cec: cecName, diff: c.drawCrs - cecScore }))
@@ -1079,6 +1066,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     draws: cec,
     dim: false,
     hit: false,
+    perMonth: false,
   }))
   const fr = histAtOf({ hist, key: FED_FRENCH })
   const frLast = fr[0]
@@ -1096,6 +1084,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       draws: fr,
       dim: false,
       hit: false,
+      perMonth: false,
     }))
   }
   return { groups, lines }
@@ -1165,10 +1154,43 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       draws: arr,
       dim: false,
       hit: x.hitStreams.includes(key),
+      perMonth: false,
     }))
   }
   groups.sort(byGroupHitDateDesc)
   return groups
+}
+
+/**
+ * 按月公布的省(NS)那一组(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」):
+ * 官方只按月公布 EOI 池的总选取人数、不分通道,原先一月一格横排在琥珀 / 浅蓝底块里;改成与其余省同一种组头行 ——
+ * 组头 = 最近一个月(人数写「人入选」,计数写「N 个月」不写「N 轮」),点开逐月一行;官方写的职业重点(抽选行 note)挂组头悬停。
+ * 本岗在本省可提名时(GEN_DRAW_STREAM 登记了 NS)这一组就是本岗通道的抽选,标命中。
+ *
+ * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
+ * @returns 这一组;本省没有按月的行给 null。
+ */
+function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
+  const months = monthRowsOf({ province: x.province, draws: x.draws })
+  const head = months[0]
+  if (head == null) {
+    return null
+  }
+  return cmpGroupOf({
+    t: x.t,
+    none: invTextOf({ t: x.t, draw: head }),
+    sub: zhSubOf({ lang: x.lang, draw: head }),
+    lang: x.lang,
+    key: head.stream,
+    name: head.stream,
+    tip: head.note,
+    date: head.drawDate,
+    score: null,
+    draws: months,
+    dim: false,
+    hit: x.hitStreams.includes(head.stream),
+    perMonth: true,
+  })
 }
 
 /**
@@ -1180,6 +1202,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
  * 其余组改为默认展开(开合初值见 usePnpList)。
  * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组不再单独摊开(三格 + 灰字统计 + 另一套折叠记号撤),
  * 改成与其余组同一种组头行,排最前、浅蓝底,开关收起时也留着;「来源」挪到卡片标题那一行右端(本省抽选页,三种卡同一处)。
+ * 2026-09-27 按月公布的省(NS)也走这张卡:按月那一组(monthlyGroupOf)排在带日期的各组之后(NS 只有这一组)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 抽选卡;本省分不出组给 null。
@@ -1192,6 +1215,16 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     draws: x.draws,
     hitStreams: x.hitStreams,
   })
+  const monthly = monthlyGroupOf({
+    t: x.t,
+    lang: x.lang,
+    province: x.province,
+    draws: x.draws,
+    hitStreams: x.hitStreams,
+  })
+  if (monthly != null) {
+    groups.push(monthly)
+  }
   if (groups.length === 0) {
     return null
   }
@@ -1375,11 +1408,15 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     score = x.t('pnpdraws.min', { score: x.score })
   }
   const rows = roundRowsOf({ t: x.t, lang: x.lang, draws: x.draws })
+  let keys = ROUNDS_KEYS
+  if (x.perMonth) {
+    keys = MONTHS_KEYS
+  }
   let rounds = TEXT_NONE
   if (rows.length === 1) {
-    rounds = x.t('eecmp.roundsOne', { n: rows.length })
+    rounds = x.t(keys.one, { n: rows.length })
   } else if (rows.length > 1) {
-    rounds = x.t('eecmp.rounds', { n: rows.length })
+    rounds = x.t(keys.many, { n: rows.length })
   }
   return {
     key: x.key,

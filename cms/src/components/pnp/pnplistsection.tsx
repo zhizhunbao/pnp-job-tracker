@@ -27,8 +27,7 @@
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { DRAWS_FORM_GROUPS } from './constants'
-import { drawHitStreamsOf, drawsFormOf, factCardOf, shownStreamsOf, streamKeyOf } from './functions'
+import { drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, factCardOf, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
 import { PnpChannelCard } from './pnpchannelcard'
 import { PnpDrawGroups } from './pnpdrawgroups'
@@ -63,7 +62,7 @@ export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = t
   return (
     <>
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
-      {form === DRAWS_FORM_GROUPS && (
+      {drawGroupsShownOf(form) && (
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={drawHitStreamsOf(job)}
           open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}

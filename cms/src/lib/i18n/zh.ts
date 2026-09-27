@@ -600,6 +600,8 @@ export const jobsZh = {
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
   'pnpdraws.head': '本省最近抽选',
+  // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月公布的那一组(NS)组头计数写几个月,不写几轮
+  'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、

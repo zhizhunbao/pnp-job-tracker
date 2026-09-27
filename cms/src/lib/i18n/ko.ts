@@ -550,6 +550,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.title': '최근 추첨 {label}', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청', 'pnpdraws.sel': '{n}건 선정',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
   'pnpdraws.head': '최근 추첨',
+  // 2026-09-27 월별 공개 그룹(NS): 회차가 아니라 개월 수로 표시
+  'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드

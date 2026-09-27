@@ -2795,6 +2795,11 @@ export type CmpGroupIn = {
    * 本岗对应这一组。
    */
   hit: boolean
+
+  /**
+   * 按月公布的那一组(NS;组头计数写「N 个月」不写「N 轮」,2026-09-27)。
+   */
+  perMonth: boolean
 }
 
 /**

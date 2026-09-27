@@ -164,6 +164,9 @@ export const DRAW_STREAM_AIP = 'AIP'
  * MB 待 etl 把 Skilled Worker in Manitoba 那一层留作组名再登记(现组名是下层的选取方式);NS 官方只发月度总数、不分通道。
  * 同日第三批(Frank「能都改完吗」):etl 已把 MB 那一层留作组名 → 登记 MB;BC 普通岗登记 Innovate: High Economic Impact
  * (BC 现行抽选只剩定向类别轮与这一种不限职业的轮 —— 不在定向清单上的岗只能从这一轮进,门槛是薪资或分数)。
+ * 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:NS 抽选卡改成同一种组头行(按月那一组),
+ * 照 NL 口径登记 NS —— 官方只按月公布 EOI 池的总选取人数(liveinnovascotia.com/eoi-selection「Nova Scotia selected the following
+ * number of candidates from the Expression of Interest (EOI) pool」),NSNP 各流与 AIP 同一个池,这一组覆盖本省全部通道。
  */
 export const GEN_DRAW_STREAM: Record<string, string> = {
   /**
@@ -195,6 +198,11 @@ export const GEN_DRAW_STREAM: Record<string, string> = {
    * 纽芬兰与拉布拉多:NL 技术工人(NLPNP 各类与 AIP 同一 EOI 池、同一组批次)。
    */
   NL: 'NLPNP + AIP (ITA batch)',
+
+  /**
+   * 新斯科舍:NS 技术工人(NSNP 各流与 AIP 同一个 EOI 池,官方只发月度总数;组名是 etl 给按月行起的名字,2026-09-27)。
+   */
+  NS: 'Monthly EOI selections',
 }
 
 /**
@@ -326,6 +334,36 @@ export const COUNT_SEL = 'sel'
  * 人数口径:发出的邀请(其余)。
  */
 export const COUNT_INV = 'inv'
+
+/**
+ * 组头计数的文案键:按轮计(省抽选各组、EE 分数线各组)。
+ */
+export const ROUNDS_KEYS: Record<'one' | 'many', string> = {
+  /**
+   * 一轮(英文单数)。
+   */
+  one: 'eecmp.roundsOne',
+
+  /**
+   * 多轮。
+   */
+  many: 'eecmp.rounds',
+}
+
+/**
+ * 组头计数的文案键:按月计(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:NS 按月那一组写「N 个月」,不写「N 轮」)。
+ */
+export const MONTHS_KEYS: Record<'one' | 'many', string> = {
+  /**
+   * 一个月(英文单数)。
+   */
+  one: 'pnpdraws.monthsOne',
+
+  /**
+   * 多个月。
+   */
+  many: 'pnpdraws.months',
+}
 
 /**
  * 抽选行人数那一格的文案键(按人数口径;2026-09-26 起 NS 的选取人数写「入选」,不再借「份邀请」)。

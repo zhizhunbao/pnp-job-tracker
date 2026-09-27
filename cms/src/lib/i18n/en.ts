@@ -556,6 +556,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
   'pnpdraws.head': 'Recent draws',
+  // 2026-09-27 monthly group (NS): the head counts months, not rounds
+  'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards

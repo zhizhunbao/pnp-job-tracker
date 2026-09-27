@@ -17,6 +17,8 @@
 // 同日晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改成与其余组同一种组头行(三格、近 90 天统计与窗口起点撤,
 // 那三条金标随之删);「来源是不是也放到条上」→ 标题那一行右端,三种卡同一条、取本省抽选页。新金标:阿省机会通道那组排最前、
 // 组头「最低 58 分 / 2026-09-23 / 5 轮」、开关收起也在;没公布分的 AIP 那组组头写「40 份申请入选」;来源三语一条。
+// 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:NS 按月那一形改走分组卡的组头行(官方只发月度总数,
+// 一组;组头 = 最近一个月「671 人入选」、计数写「2 个月」不写「2 轮」、点开逐月一行),本岗在 NS 可提名时标命中;事实卡只剩安省。
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -25,7 +27,7 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
-  allGroupsLabelOf, channelsOf, drawCardOf, drawsFormOf, factCardOf, hasProvDraws, monthRowsOf,
+  allGroupsLabelOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, factCardOf, hasProvDraws, monthRowsOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
 } from '@/components/pnp/functions'
 import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpStream } from '@/components/pnp/types'
@@ -319,7 +321,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(aipEn?.hits.map(headOf)).toEqual([['AIP', true, '40 selected', '2026-09-10', '1 round']])
   })
 
-  it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进分组(不按「轮」统计)', () => {
+  it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进按轮分组,自成按月一组(计数写「个月」)', () => {
     const src = 'https://liveinnovascotia.com/eoi-selection'
     const month = (drawDate: string, invitations: number | null) => draw({
       province: 'NS', label: 'NSNP + AIP', stream: 'Monthly EOI selections', drawDate, score: null, invitations, url: src,
@@ -328,11 +330,21 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(drawsFormOf({ province: 'NS', draws: ns })).toBe('monthly')
     expect(monthRowsOf({ province: 'NS', draws: ns }).map((d) => d.drawDate)).toEqual(['2026-07', '2026-06'])
     expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [] })).toEqual([])
-    const card = factCardOf({ t: zh, province: 'NS', draws: ns })
+    expect(factCardOf({ t: zh, province: 'NS', draws: ns })).toBeNull()
+    const hitNs = drawHitStreamsOf(job({ province: 'NS', noc: '72310', pnpEligible: true }))
+    expect(hitNs).toEqual(['Monthly EOI selections'])
+    const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: hitNs })
     expect(card?.title).toBe('本省最近抽选')
-    expect(card?.cells.map((c) => [c.k, c.v])).toEqual([['2026-07', '671 人入选'], ['2026-06', '531 人入选']])
+    expect(card?.hits.map((g) => [g.key, g.hit, g.score, g.date, g.rounds, g.rows.length]))
+      .toEqual([['Monthly EOI selections', true, '671 人入选', '2026-07', '2 个月', 2]])
+    expect(card?.others).toEqual([])
     expect(card?.source).toEqual({ label: '来源', text: 'liveinnovascotia.com ↗', href: src })
-    expect(factCardOf({ t: en, province: 'NS', draws: ns })?.cells[0]?.v).toBe('671 selected')
+    const en1 = drawCardOf({ t: en, lang: 'en', province: 'NS', draws: [ns[1]!], hitStreams: hitNs })
+    expect(en1?.hits.map((g) => [g.score, g.rounds])).toEqual([['671 selected', '1 month']])
+    // 不可提名的 NS 岗:同一组照出,不标命中
+    const cold = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [] })
+    expect(cold?.hits).toEqual([])
+    expect(cold?.others.map((g) => g.hit)).toEqual([false])
     // 探针:同一省换成带日的轮次就走分组形 —— 按月与分组的分界是日期形,不是省码
     const daily = [draw({ province: 'NS', stream: 'Monthly EOI selections', drawDate: '2026-07-15', score: null, invitations: 5 })]
     expect(drawsFormOf({ province: 'NS', draws: daily })).toBe('groups')
