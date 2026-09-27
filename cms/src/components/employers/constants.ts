@@ -750,6 +750,11 @@ export const W_POOL_DESIGNATED = 12
 export const NOC_DESC_NONE = []
 
 /**
+ * 弹框栈的公司层(2026-09-27 本板并进弹框栈;PeekCoLayer.kind 的字面量,与 advisor 域同名同值,本域自抄)。
+ */
+export const LAYER_CO = 'company'
+
+/**
  * 雇主板操作列的宽(两只 mini 钮并排;2026-09-19「看公司」换成「官网」,仍是两只,宽不动)。
  */
 export const W_POOL_ACT = 14

@@ -13,6 +13,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '@/components/i18n'
+import { useLayerStack } from '@/components/modal'
 import { useColPick } from '@/components/table'
 import {
   ALIAS_KEYS_SEP, ALIAS_POLL_MS, ALIAS_POLL_ROUNDS_MAX, COLS_STORE_KEY, Q_DEBOUNCE_MS, TEXT_NONE,
@@ -20,13 +21,13 @@ import {
 import {
   boardUrlOf, colKeysOf, employerColsOf, forceKeysOf, loadBoard, makeClear, makeEe, makeEntryPick, makeFoldToggle,
   addrQsOf, aliasPollKeysOf, applyHomeProv, foldCountOf, loadAliasPatch, makeCategory, reportSeen,
-  makeCity, makeCloseJob, makeCloseModal, makeDistrict, makeJobToCompany,
-  makeLmiaPick, makeMore, makeProv,
+  makeCity, makeDistrict,
+  makeLmiaPick, makeMore, makeProv, makePushCoLayer,
   makeQCommit, makeSector, makeSort,
   qsOf, sortStateOf,
 } from './functions'
 import type {
-  AliasPatch, AliasPollIn, EmpJob, EmpModal, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PoolFilters, PoolPage,
+  AliasPatch, AliasPollIn, EmployersIn, EmployersPanel, EmpPeekPanel, MoreIn, PeekLayer, PoolFilters, PoolPage,
   QCommitIn,
 } from './types'
 
@@ -172,23 +173,17 @@ function useQDebounce(x: QCommitIn): void {
  * 点相似雇主同框换一家。自成一台小机器 —— 它与筛选 / 懒取那一摊状态互不咬合。
  * 2026-09-21 职位描述弹框正文下面接了公司信息卡与相关职位卡,多两根线:点公司名 = 关职位框、公司框换成那一家;
  * 点相关职位 = 职位框换那一岗。本板没并进弹框栈(职位板 / 详情页 / 公司页那三处并了)。
+ * 2026-09-27 并进弹框栈(Frank「问题太多了」那轮复核实测:单开公司弹框 Esc 关不掉,叠开职位后 Esc 两层都关不掉 ——
+ * Esc 只在 modal 域 useLayerStack 里绑,浮层壳不管,本板两格 useState 直渲两框就没人接 Esc):改起 useLayerStack,
+ * 渲染交 advisor 的 PeekStack,× 与 Esc 都只关最上面一层,点遮罩照旧关最上面一层。上一条的两根线与「本板没并进弹框栈」随之作废 ——
+ * 职位描述弹框里点公司名 / 相关职位都往上叠一层(与职位板 / 公司页 / 职位页三处一致);公司框里点相似雇主同框换一家的口径不变。
  *
  * @param x 页面 props(只读分层态)。
  * @returns 弹框层面板。
  */
 function useEmpPeek(x: EmployersIn): EmpPeekPanel {
-  const [modal, setModal] = useState<EmpModal | null>(null)
-  const [peekJob, setPeekJob] = useState<EmpJob | null>(null)
-  return {
-    plan: x.plan,
-    modal,
-    onOpenCompany: setModal,
-    onCloseModal: makeCloseModal({ setModal }),
-    peekJob,
-    onOpenJob: setPeekJob,
-    onCloseJob: makeCloseJob({ setPeekJob }),
-    onJobToCompany: makeJobToCompany({ setPeekJob, setModal }),
-  }
+  const stack = useLayerStack<PeekLayer>()
+  return { plan: x.plan, stack, onOpenCompany: makePushCoLayer(stack) }
 }
 
 /**

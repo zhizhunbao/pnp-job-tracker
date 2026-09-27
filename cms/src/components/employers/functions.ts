@@ -64,7 +64,7 @@ import {
   METHOD_POST, MIME_JSON,
   EV_ROW, EV_SEARCH,
   EV_VIEW_JOBS, HOME_SEARCH_HEAD, JOBS_SEARCH_HEAD, KEY_SECTOR_HEAD, KEY_SEP, KIND_AIP,
-  KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LINK_SELECTOR, MAP_COUNTRY,
+  KIND_LMIA, KIND_NAMED, LANG_KO, LANG_ZH, LAYER_CO, LINK_SELECTOR, MAP_COUNTRY,
   META_PROV_RE, META_SCOPE_SEP, MINI_BTN_KIND,
   MONEY_DIV, MONEY_HEAD,
   MONEY_TAIL, PROV_KEY_HEAD, P_DIR, P_ENTRY, P_GROUP, P_LMIA, P_PAGE, P_PROGRAM,
@@ -96,8 +96,8 @@ import type {
   ColKeysIn, CookieJarLike, EeTextIn,
   CategoryOptsIn, PickedIn,
   AliasesJson, AliasPatch, AliasPollKeysIn, LoadAliasPatchIn, PatchedAliasIn,
-  ReportSeenIn, CloseJobIn, CloseModalIn, EmpModal, EmpPickWords, JobToCompanyIn, KeepShownIn, MapHrefIn, NameClickIn,
-  OpenCompanyFn, PickWordsIn,
+  ReportSeenIn, EmpModal, EmpPickWords, KeepShownIn, MapHrefIn, NameClickIn,
+  OpenCompanyFn, PeekStackRef, PickWordsIn,
   PoolWidthIn,
   ListClsIn, LoadBoardIn, MoneyIn, MoreBtnClsIn, MoreIn, MorePageIn,
   NocNameFn, NoteTextIn, OnLabelIn,
@@ -2454,44 +2454,20 @@ export function makeNamePeek(x: NameClickIn): ClickFn {
 }
 
 /**
- * 造关公司弹框的手柄。
+ * 造弹框栈上「叠开一家公司」的手柄(2026-09-27 本板并进弹框栈:点雇主名 = 往栈上叠公司弹框)。
+ * 原先配套的三只手柄(关公司框 / 关职位框 / 职位框里点公司名)同日退役:关框归栈的 pop(× 与 Esc 同一只),
+ * 框里各处点击改由渲染件 PeekStack 定。退役那只「职位框里点公司名」的 2026-09-21 口径是「关职位框,公司框换成那一家 ——
+ * 本板的职位框都是从公司框里点出来的,点的多半就是底下那一家,效果等于点回公司框」;2026-09-27 起改为往上叠一层,
+ * 与职位板 / 公司页 / 职位页三处一致(关掉上面那层就回到职位框)。
  *
- * @param x 弹框态落格。
- * @returns 弹框的 onClose。
+ * @param stack 弹框栈。
+ * @returns 点雇主名的开框落格。
  */
-export function makeCloseModal(x: CloseModalIn): ClickFn {
-  function onCloseModal(): void {
-    x.setModal(null)
+export function makePushCoLayer(stack: PeekStackRef): OpenCompanyFn {
+  function pushCoLayer(peek: EmpModal): void {
+    stack.push({ kind: LAYER_CO, co: peek })
   }
-  return onCloseModal
-}
-
-/**
- * 造关职位描述弹框的手柄(公司弹框里点在招职位叠开的那一个)。
- *
- * @param x 弹框态落格。
- * @returns 弹框的 onClose。
- */
-export function makeCloseJob(x: CloseJobIn): ClickFn {
-  function onCloseJob(): void {
-    x.setPeekJob(null)
-  }
-  return onCloseJob
-}
-
-/**
- * 造「职位描述弹框里点公司名」的手柄(2026-09-21 职位框正文下面接了公司信息卡):关职位框,公司框换成那一家 ——
- * 本板的职位框都是从公司框里点出来的,点的多半就是底下那一家,效果等于点回公司框。
- *
- * @param x 两个弹框态落格。
- * @returns 手柄。
- */
-export function makeJobToCompany(x: JobToCompanyIn): OpenCompanyFn {
-  function onJobToCompany(peek: EmpModal): void {
-    x.setPeekJob(null)
-    x.setModal(peek)
-  }
-  return onJobToCompany
+  return pushCoLayer
 }
 
 /**

@@ -21,11 +21,13 @@
  * 2026-09-18 晚 Frank「不在官方指定雇主清单内,警惕任何承诺担保的说法 这个怎么还没删掉」:查证态那句防坑注也撤(searchNoteOf 退役)。
  * 2026-09-19 Frank「这个链接还是改成弹框公司吧」:点雇主名开公司弹框(09-18 上午版恢复);框里点在招职位叠开职位描述弹框、
  * 点相似雇主同框换一家(同日「这种里面的链接都改成弹框显示」)。
+ * 2026-09-27 两个弹框并进弹框栈(advisor 的 PeekStack,与职位板 / 公司页 / 职位页同一件):一层层叠,× 与 Esc 都只关最上面一层
+ * (此前本板直渲两框,Esc 一层都关不掉,见 hooks 的 useEmpPeek)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { ActModal, CompanyModal } from '@/components/advisor'
+import { PeekStack } from '@/components/advisor'
 import { Banner, BANNER_IMGS } from '@/components/banner'
 import { IconUsers } from '@/components/icons'
 import { Shell } from '@/components/shell'
@@ -60,19 +62,7 @@ export function Employers({ initial, initialFilters, updatedAt, initialCols, pla
           <EmployerBoard p={p} />
         </div>
       </Shell>
-      {p.peek.modal != null && (
-        <CompanyModal slug={p.peek.modal.slug} name={p.peek.modal.name} lang={p.lang}
-          onOpenJob={p.peek.onOpenJob}
-          onOpenCompany={p.peek.onOpenCompany}
-          onClose={p.peek.onCloseModal} />
-      )}
-      {p.peek.peekJob != null && (
-        <ActModal key={p.peek.peekJob.id} job={p.peek.peekJob} lang={p.lang} plan={p.peek.plan}
-          nocDesc={NOC_DESC_NONE}
-          onOpenJob={p.peek.onOpenJob}
-          onOpenCompany={p.peek.onJobToCompany}
-          onClose={p.peek.onCloseJob} />
-      )}
+      <PeekStack stack={p.peek.stack} lang={p.lang} plan={p.peek.plan} nocDesc={NOC_DESC_NONE} />
     </div>
   )
 }

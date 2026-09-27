@@ -2129,6 +2129,7 @@ export type EmployersPanel = {
 
 /**
  * useEmpPeek 交回的弹框层(2026-09-19):点雇主名开公司弹框,框里点在招职位再叠开职位描述弹框。
+ * 2026-09-27 并进弹框栈:原先「开着哪家」「那一岗」两格与关框 / 点公司名几个手柄并进 stack,各层的开关由渲染件 PeekStack 接手。
  */
 export type EmpPeekPanel = {
   /**
@@ -2137,39 +2138,74 @@ export type EmpPeekPanel = {
   plan: EmpPlan
 
   /**
-   * 开着的公司弹框(点了哪家;框里点相似雇主 = 同框换一家);null = 没开。
+   * 弹框栈(2026-09-27:公司弹框与职位描述弹框一层层叠,× 与 Esc 都只关最上面一层)。
    */
-  modal: EmpModal | null
+  stack: PeekStackRef
 
   /**
-   * 点雇主名 / 框里点相似雇主:开 / 换公司弹框。
+   * 点雇主名:叠开公司弹框(2026-09-27 起框里点相似雇主不再走这一格 —— 同框换一家由弹框栈的渲染件接手)。
    */
   onOpenCompany: OpenCompanyFn
+}
+
+/**
+ * 弹框栈的职位层(2026-09-27;与 advisor 域的同名形状同形,本域自抄)。
+ */
+export type PeekJobLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'job'
 
   /**
-   * 关公司弹框。
+   * 这一岗(整行)。
    */
-  onCloseModal: ClickFn
+  job: EmpJob
+}
+
+/**
+ * 弹框栈的公司层。
+ */
+export type PeekCoLayer = {
+  /**
+   * 层的种类。
+   */
+  kind: 'company'
 
   /**
-   * 公司弹框里点的那一岗(叠开职位描述弹框);null = 没开。
+   * 这一家。
    */
-  peekJob: EmpJob | null
+  co: EmpModal
+}
+
+/**
+ * 弹框栈的一层。
+ */
+export type PeekLayer = PeekJobLayer | PeekCoLayer
+
+/**
+ * 弹框栈(modal 域 useLayerStack 的出参;形状本域自抄):各层从下到上与三个手柄。
+ */
+export type PeekStackRef = {
+  /**
+   * 从下到上的各层。
+   */
+  layers: PeekLayer[]
 
   /**
-   * 公司弹框里点在招职位。
+   * 叠上一层。
    */
-  onOpenJob: (j: EmpJob) => void
+  push: (layer: PeekLayer) => void
 
   /**
-   * 关职位描述弹框。
+   * 换掉最上面一层。
    */
-  onCloseJob: ClickFn
+  swapTop: (layer: PeekLayer) => void
 
   /**
-   * 职位描述弹框里点公司信息卡的公司名(2026-09-21):关职位框、公司框换成那一家(本板没改成弹框栈,见 useEmpPeek)。
+   * 关掉最上面一层。
    */
-  onJobToCompany: OpenCompanyFn
+  pop: () => void
 }
 
 /**
@@ -2723,41 +2759,6 @@ export type NameClickIn = {
    * 开公司弹框的落格。
    */
   onOpen: OpenCompanyFn
-}
-
-/**
- * makeCloseModal 的入参。
- */
-export type CloseModalIn = {
-  /**
-   * 弹框态落格。
-   */
-  setModal: (m: EmpModal | null) => void
-}
-
-/**
- * makeCloseJob 的入参。
- */
-export type CloseJobIn = {
-  /**
-   * 职位描述弹框态落格。
-   */
-  setPeekJob: (j: EmpJob | null) => void
-}
-
-/**
- * makeJobToCompany 的入参。
- */
-export type JobToCompanyIn = {
-  /**
-   * 职位描述弹框态落格(先关它)。
-   */
-  setPeekJob: (j: EmpJob | null) => void
-
-  /**
-   * 公司弹框态落格。
-   */
-  setModal: (m: EmpModal | null) => void
 }
 
 /**
