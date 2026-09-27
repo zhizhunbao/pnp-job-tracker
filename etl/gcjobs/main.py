@@ -4,12 +4,17 @@ gcjobs 域唯一入口(一域一门;门直调 functions.py 的段函数 —— �
 SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮**:
 搜索分页枚举 → 岗位页抓取(每轮封顶)→ 岗位页解析 → 站外正文(2026-09-14 加)→ postings 仓。
 「一步失败中止本轮」由段函数抛出的异常兑现(main 的 except 捕获后 return 1)。
+2026-09-27 门循环改走 door 叶 run_steps(五个招聘板门同批;door 叶 09-26 晚已定 fail-fast):一步失败即中止本轮,与原门同义,
+SystemExit 也在门里接住(test 步的 sys.exit(1) 原先穿门成进程退出码 1,现在由门记本步失败、同样返回 1)。
+迁前先补上枚举的破口 —— 某页回 200 却零帖、比上一轮板仓漏两成以上,枚举步一律抛错、列表行表不落盘,门不跑建仓
+(翻页取不到本来就抛错停轮)。
 调度声明(role/interval)在本域 __init__.py 的 META;auto_update 按 role 自动发现。
 一律从仓库根执行:
     python etl/gcjobs/main.py                  # 默认链(5 步)
     python etl/gcjobs/main.py --only store     # 单步调试(见 TOOLS)
     DETAILS_PER_RUN=50 python etl/gcjobs/main.py   # 本地验收压小每轮抓取量
     python etl/gcjobs/main.py --only test      # 地点归一自测(不联网、不写仓内文件;2026-09-27 立)
+                                               # 同日起连「枚举失败 → 不出快照 / 不下架」一起测
 
 @author Frank
 @time 2026-09-13
@@ -18,7 +23,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
+from log.functions import say
+from door.functions import run_steps
 from gcjobs.functions import (
     build_gcjobs_postings, parse_gcjobs_details, scrape_gcjobs_details, scrape_gcjobs_external, scrape_gcjobs_pages,
     run_tests,
@@ -38,6 +44,7 @@ SCHEDULED = [
   parse    缓存原文 → 标题 / 机构 / 字段格 / 各节 → raw/gcjobs/jobs.json(增量,已解析不重解)
   external 带外链的帖 → 外站页面进 crawl/board-gcjobs-external/ → 抽正文 → raw/gcjobs/external.json(2026-09-14 加,增量)
   store    事实 × 列表行 → processed/gcjobs/postings.json(当前态,Job Bank 仓同形)
+2026-09-27 门循环改走 door 叶 run_steps:一步失败即中止本轮(与原门同义);pages 枚举不全先抛错不落盘,store 就不跑。
 """
 
 TOOLS = {
@@ -67,15 +74,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

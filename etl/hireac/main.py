@@ -8,11 +8,15 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
 🔴 本域只在 Frank 本机手动跑(登录态是 Windows Chrome 加密 cookie,容器拿不到),不进 docker-compose。
 2026-09-15 进容器(Frank「docker 本身不是能装浏览器吗 有头的 把凭证复制进去不就行了么」):上一行作废 ——
 本机 --only export 把登录 cookie 导成文件,docker-compose hireac 役加载它按 META 节奏自动跑;本机手动跑仍可用。
+2026-09-27 门循环改走 door 叶 run_steps(五个招聘板门同批;door 叶 09-26 晚已定 fail-fast):一步失败即中止本轮,与原门同义,
+SystemExit 也在门里接住。迁前先补上列表的破口 —— 首页零行、比上一轮板仓漏两成以上,抓取步一律抛错、列表行表不落盘,
+门不跑解析与建仓(翻页超时 / 表格不换页 / 登录过期本来就抛错停轮)。
 一律从仓库根执行:
     BROWSER_CHANNEL=chrome python etl/hireac/main.py            # 默认链(3 步)
     python etl/hireac/main.py --only parse                        # 单步调试(见 TOOLS;parse/store 只读缓存,不起浏览器)
     DETAILS_PER_RUN=200 BROWSER_CHANNEL=chrome python etl/hireac/main.py   # 压小每轮回放量
     BROWSER_CHANNEL=chrome python etl/hireac/main.py --only export  # 本机 Chrome 登录后把 cookie 导给容器
+    python etl/hireac/main.py --only test                         # 「枚举失败 → 不出快照 / 不下架」自测(不起浏览器、不写仓内文件;2026-09-27 立)
 
 @author Frank
 @time 2026-09-13
@@ -21,8 +25,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from log.functions import err, say
-from hireac.functions import build_hireac_postings, export_hireac_cookies, parse_hireac_details, scrape_hireac
+from log.functions import say
+from door.functions import run_steps
+from hireac.functions import build_hireac_postings, export_hireac_cookies, parse_hireac_details, run_tests, scrape_hireac
 
 SCHEDULED = [
     ("scrape", scrape_hireac),
@@ -35,6 +40,7 @@ SCHEDULED = [
            + 未缓存详情页内回放 → crawl/board-hireac/(每轮 DETAILS_PER_RUN 张)
   parse    缓存原文 → 「标签: 值」表格 → raw/hireac/jobs.json(增量,已解析不重解)
   store    事实 × 行表 → processed/hireac/postings.json(当前态,Job Bank 仓同形)
+2026-09-27 门循环改走 door 叶 run_steps:一步失败即中止本轮(与原门同义);scrape 列表不全先抛错不落盘,parse / store 就不跑。
 """
 
 TOOLS = {
@@ -42,11 +48,14 @@ TOOLS = {
     "parse": parse_hireac_details,
     "store": build_hireac_postings,
     "export": export_hireac_cookies,
+    "test": run_tests,
 }
 """全部可 --only 点名的步(与默认链同一份三步,本域没有不进链的手动件)。
 2026-09-15 多一个不进链的手动件 export:本机 Chrome 登录后把 cookie 导给容器(BROWSER_CHANNEL=chrome 下跑)。
 2026-09-25 keepalive = 同一个函数换个名给容器保活役点(日志里分得清是保活还是手动导出);--only 子串匹配,与其余四键互不包含。
-同日撤回(保活实测无效,见 __init__):keepalive 键随保活役一起删。"""
+同日撤回(保活实测无效,见 __init__):keepalive 键随保活役一起删。
+2026-09-27 再多一个不进链的手动件 test:「枚举失败 → 不出快照 / 不下架」自测(门迁 door 叶同批立;用例住 scheme §5,
+有失败退出码 1;子串匹配:test 与其余四键互不包含)。"""
 
 
 def main() -> int:
@@ -63,15 +72,7 @@ def main() -> int:
         todo = picked
     else:
         todo = SCHEDULED
-    for name, fn in todo:
-        say(f"→ {name}")
-        try:
-            fn()
-        except Exception as e:  # noqa: BLE001
-            err(name, e)
-            return 1
-    say(f"✓ 本域 {len(todo)} 步全过")
-    return 0
+    return run_steps(todo)
 
 
 if __name__ == "__main__":

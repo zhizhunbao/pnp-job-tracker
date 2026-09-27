@@ -6,6 +6,8 @@ hireac 域函数 —— 四段与 constants.py / scheme.py 同名同序镜像:�
 抽出的事实进 data/raw/hireac/jobs.json,归一后的行进 data/processed/hireac/postings.json;
 跨源清洗(地点归一 / 薪资归一 / 试点打标)仍归 mart 域,本域只做「值级」清洗(to_* 行构造器)。
 浏览器走 crawl 域 get_browser_page(async 单例,共享 profile 带登录态),所以抓取步是 asyncio 壳。
+2026-09-27 门迁 door 叶同批:§2 列表不全(某页零行 / 比上一轮板仓漏两成以上)一律抛错、列表行表不落盘,门一步失败即中止,
+解析与建仓不跑 —— 没列到的帖不再被当成下架;新立 §5 自测(`--only test`)。
 
 @author Frank
 @time 2026-09-13
@@ -14,7 +16,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
 import time
+import unittest
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from html import unescape
@@ -29,6 +33,8 @@ from crawl import BROWSER_COOKIES
 from crawl.constants import PROFILE_DIR
 from crawl.functions import close_browser, get_browser_page, load_cache_index, put_cached_pages, save_browser_cookies
 from crawl.scheme import CachePage, CachePutManyIn, SaveCookiesIn
+from door.functions import guard_shrink
+from door.scheme import ShrinkIn
 from hireac import DETAILS_PER_RUN
 from hireac.constants import (
     ADDRESS_SEP, ANNUAL_MIN, CLICK_VIEW_ALL_JS, COLON, COMMA, COMMA_SP, COOKIE_DOMAINS, COOKIES_FILE, CURRENT_PAGE_JS, DEADLINE_FMTS, DESC_SEP, DETAIL_KEY_TPL,
@@ -49,10 +55,12 @@ from hireac.constants import (
     RATE_FLOOR_S, ROW_RE, SALARY_RANGE_TPL, SALARY_SNIPPET_RE, SALARY_TPL, SALARY_UNIT_WORD, SCRIPT_RE, SECONDS_FMT,
     SETTLE_MS, SLUG_CRAWL, SOURCE_LABEL, SPACE, TAG_RE,
     TERM_OF_KIND, UTC_Z, VIEW_ALL_SETTLE_MS, WAIT_DOM, WS_RE,
+    ERR_PAGE_EMPTY_TPL, IN_POSTINGS, SHRINK_LABEL, TEST_VERBOSITY,
 )
 from hireac.scheme import (
     BrowserPageLike, DetailBatchIn, DetailBatchOut, DetailFieldsIn, DetailKeyIn, FreshHtmlIn, JobFact, Location,
     PageJsIn, ParseTally, PickIn, PostingRowIn, StoreTally, UnitByKindIn, WaitPageIn,
+    HireacEnumGuardTest,
 )
 
 
@@ -71,6 +79,16 @@ def load_json_dict(path: Path) -> dict:
     return {}
 
 
+def load_json_list(path: Path) -> list:
+    """读一份 JSON 数组;文件不在或不是数组给空清单(2026-09-27 立:换版闸读上一轮板仓,首轮无仓是常态)。"""
+    if not path.exists():
+        return []
+    loaded = json.loads(path.read_text(encoding=ENC_UTF8))
+    if isinstance(loaded, list):
+        return loaded
+    return []
+
+
 # =========================================================================
 # 2. 抓取(登录态浏览器一次会话:列表翻页 → 行表;未缓存详情页内回放 → crawl 层)
 # =========================================================================
@@ -82,7 +100,9 @@ def scrape_hireac() -> None:
 
 
 async def scrape_in_browser() -> None:
-    """进板 → 翻页收行表 → 回放未缓存详情;会话结束关浏览器(Frank 2026-09-13「别老重复打开关闭浏览器」)。"""
+    """进板 → 翻页收行表 → 回放未缓存详情;会话结束关浏览器(Frank 2026-09-13「别老重复打开关闭浏览器」)。
+    2026-09-27 门迁 door 叶同批:行表落盘前先过 door 叶的当前态换版闸(本轮一行都没有,或上一轮板仓里此刻仍在架的帖
+    有两成以上不在本轮列表 → 抛错停轮,行表不落盘、详情不回放,门不跑解析与建仓);某页零行在 collect_rows 里就抛。"""
     require_cookie_file()
     raw_page = await get_browser_page()
     if raw_page is None:
@@ -93,6 +113,7 @@ async def scrape_in_browser() -> None:
         kept = await save_browser_cookies(SaveCookiesIn(file=PROFILE_DIR / COOKIES_FILE, domains=COOKIE_DOMAINS))
         say(PRINT_COOKIES_TPL.format(n=kept, path=PROFILE_DIR / COOKIES_FILE))
         rows = await collect_rows(page)
+        guard_shrink(ShrinkIn(live=live_ids_of(date.today().isoformat()), fresh=set(rows), label=SHRINK_LABEL))
         OUT_ROWS.parent.mkdir(parents=True, exist_ok=True)
         paths.write_json(paths.WriteJsonIn(path=OUT_ROWS, payload=rows, indent=JSON_INDENT))
         say(PRINT_ROWS_DONE_TPL.format(ids=len(rows), out=OUT_ROWS))
@@ -152,7 +173,9 @@ async def collect_rows(page: BrowserPageLike) -> dict:
     """列表页逐页翻(页内 JS 翻页,轮询当前页号到位)→ 原文进 crawl 层 → 行号 → 详情表单参数;
     中途异常也把攒下的列表页先落盘。
     起点必须是第 1 页:板在会话里记着上次看到哪页,点开「全部在招」直接停在那页(2026-09-15 实撞:上一轮停在第 7 页,
-    下一轮首读只有 8 行、真正的第 1 页 100 行一行没收)。分页器页号不是 1 就先翻回第 1 页,等表格换成新行再读。"""
+    下一轮首读只有 8 行、真正的第 1 页 100 行一行没收)。分页器页号不是 1 就先翻回第 1 页,等表格换成新行再读。
+    2026-09-27 起(门迁 door 叶同批)读到零行的页一律抛错停轮(ERR_PAGE_EMPTY_TPL;第 2 页起 fresh_html 本就要求非空,
+    实际补的是首页那一刀)。"""
     html = await page.content()
     current = await page.evaluate(CURRENT_PAGE_JS)
     if str(current) != str(PAGE_ONE):
@@ -169,6 +192,8 @@ async def collect_rows(page: BrowserPageLike) -> dict:
     try:
         while True:
             page_rows = rows_of_page(html)
+            if len(page_rows) == 0:
+                raise RuntimeError(ERR_PAGE_EMPTY_TPL.format(n=n))
             rows.update(page_rows)
             pages.append(CachePage(url=LIST_KEY_TPL.format(base=POSTINGS_URL, n=n), html=html, title=""))
             say(PRINT_PAGE_TPL.format(n=n, last=last, rows=len(rows)))
@@ -239,6 +264,18 @@ def rows_of_page(html: str) -> dict:
         if f is None:
             continue
         out[m.group(GROUP_KEY)] = json.loads(f.group(1).replace(QUOTE_SINGLE, QUOTE_DOUBLE))
+    return out
+
+
+def live_ids_of(today: str) -> set:
+    """换版闸的基线(2026-09-27 立):上一轮板仓里此刻仍该在架的行号 —— 截止日为空或还没过(口径同 §4 建仓那一刀
+    「已过截止日」,过了的本来就该出仓,不算漏;本板常停几天再跑,这一刀让停多久都不误判)。板仓还没有(首轮)给空集。"""
+    out: set = set()
+    for row in load_json_list(IN_POSTINGS):
+        until = row.get(K_VALID_THROUGH) or ""
+        if until != "" and until < today:
+            continue
+        out.add(row.get(K_POSTING_ID))
     return out
 
 
@@ -563,3 +600,16 @@ def employer_url_of(f: JobFact) -> str:
     if f.website.startswith(HTTP_PREFIX):
         return f.website
     return ""
+
+
+# =========================================================================
+# 5. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑「枚举失败 → 不出快照 / 不下架」自测(用例集住 scheme 的 HireacEnumGuardTest,
+    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(HireacEnumGuardTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

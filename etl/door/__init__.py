@@ -5,6 +5,8 @@ door 域:域门(etl/<域>/main.py)跑一串步的公共件(基础设施叶,2026-
 边界:只管「跑步骤的顺序与成败记账」;选哪些步(默认链 / --only 点名)留在各门,步里干什么是各域自己的事,
 何时跑哪个域是 sched 的事(进程级,本叶是门内的函数级)。依赖只指向 log 叶(报行);没有业务 import 它的东西,
 换掉它业务一个字不用改 = 基础设施叶(gate 的 INFRA 名单登记)。
+2026-09-27 边界多一件(只加不改):当前态换版闸 guard_shrink —— 一步要写出「当前在册」清单前判它能不能当真
+(新清单空 / 上一版在册项漏太多 = 这一步失败),「成败记账」的「成败」从此也包括这一条;判的只是两个集合,不认任何业务字段。
 沿革:2026-09-26 /fe Frank「一步失败不再拖停整轮」先在 pnp、statcan 两门各写一份 run_steps;同日 Frank「推广」
 → 搬进本叶(纯移动:哪些步跑、返回码怎么算一字不改),各域门改为 `return run_steps(todo)`。
 同日晚改判(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」「我他妈之前让你拆成多个 docker 你非的合一起」):
@@ -16,6 +18,9 @@ door 域:域门(etl/<域>/main.py)跑一串步的公共件(基础设施叶,2026-
   mart   score → mart → rankings → stats 严格上下游;jobbank 列表 → 解析 → 详情 → 详情解析(两域另有子工在改);
   careerbeacon / gcjobs / hireac / jobboom / jobillico  store 步按枚举表算当前态 —— 枚举步半途失败还接着 store,
          没枚举到的帖会被当成下架(破坏性下游);
+         → 2026-09-27 五门迁入:枚举步自己半途失败(单页 / 单张子图取不到、首页空壳)一律抛错、枚举表不落盘,
+           落盘前再过本叶的当前态换版闸 guard_shrink(新清单空、或上一版在架帖漏两成以上 = 抛错),
+           门一步失败即中止,建仓不跑,板仓与库都还是上一版;各板用例 `python etl/<板>/main.py --only test`;
   pte    十九步各源 → pte-mart → 灌库,源步半途失败留下的残缺数据会被 pte-mart 带进库。
 正门 = from door.functions import run_steps(件套以包名被引,与 log / names 同形)。
 本 __init__ 零 import:sched 域发现会 exec 每个 etl/*/__init__,基础设施叶无 META。

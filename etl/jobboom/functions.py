@@ -5,11 +5,15 @@ jobboom 域函数 —— 四段与 constants.py / scheme.py 同名同序镜像:�
 数据链(2026-09-02 铁律):详情页原文经 crawl 批量写门进 data/crawl/board-jobboom/,抽出的
 事实进 data/raw/jobboom/jobs.json,归一后的行进 data/processed/jobboom/postings.json;
 跨源清洗(地点归一 / 薪资归一 / 试点打标)仍归 mart 域,本域只做「值级」清洗(to_* 行构造器)。
+2026-09-27 门迁 door 叶同批:§2 枚举不全(索引或子图取不到 / 回空壳 / 比上一轮板仓漏两成以上)一律抛错、枚举表不落盘,
+门一步失败即中止,建仓不跑 —— 没枚举到的帖不再被当成下架;新立 §7 自测(`--only test`)。
 """
 from __future__ import annotations
 
 import json
+import sys
 import time
+import unittest
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -22,6 +26,8 @@ from log.functions import err, say
 from richtext.functions import rich_text_of
 from crawl.functions import load_cache_index, put_cached_page, put_cached_pages
 from crawl.scheme import CachePage, CachePutIn, CachePutManyIn
+from door.functions import guard_shrink
+from door.scheme import ShrinkIn
 from jobboom import DETAILS_PER_RUN
 from jobboom.constants import (
     ADDRESS_SEP, CLIENT_TIMEOUT_S, COMMA, DETAIL_SLEEP_S, DETAIL_TICK, ENC_UTF8, ERRORS_REPLACE,
@@ -38,10 +44,12 @@ from jobboom.constants import (
     SLUG_CRAWL, SOURCE_LABEL, SPACE, SYNDICATED_EMPLOYER, TERM_OF_TYPE, UTC_Z, WS_RE,
 )
 from jobboom.constants import IN_TITLES, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL, TITLES_PER_RUN
+from jobboom.constants import ERR_SITEMAP_EMPTY_TPL, ERR_SITEMAP_TPL, IN_POSTINGS, SHRINK_LABEL, TEST_VERBOSITY
 from noc.functions import translate_title_todo
 from jobboom.scheme import (
     ParseIn, DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     SalaryTextIn, SitemapIn, StoreTally, UrlsOut,
+    JobboomEnumGuardTest,
 )
 
 
@@ -60,13 +68,25 @@ def load_json_dict(path: Path) -> dict:
     return {}
 
 
+def load_json_list(path: Path) -> list:
+    """读一份 JSON 数组;文件不在或不是数组给空清单(2026-09-27 立:换版闸读上一轮板仓,首轮无仓是常态)。"""
+    if not path.exists():
+        return []
+    loaded = json.loads(path.read_text(encoding=ENC_UTF8))
+    if isinstance(loaded, list):
+        return loaded
+    return []
+
+
 # =========================================================================
 # 2. 站点地图枚举(index → sitemap_job_postings_N.xml → 帖号 → URL)
 # =========================================================================
 
 
 def scrape_jobboom_sitemap() -> None:
-    """本域步骤入口:索引 → 职位子图 → 帖号 → URL 表(同帖号英法两版取英文)。"""
+    """本域步骤入口:索引 → 职位子图 → 帖号 → URL 表(同帖号英法两版取英文)。
+    2026-09-27 门迁 door 叶同批:落盘前先过 door 叶的当前态换版闸(本轮一个直发帖号都没有 —— 索引里没认出职位子图也算 ——
+    或上一轮板仓里此刻仍在架的帖有两成以上不在本轮枚举 → 抛错停轮,枚举表不落盘,门不跑建仓);取不到 / 空壳在 collect_sitemap_urls 里就抛。"""
     locs: list = []
     with make_client(CLIENT_TIMEOUT_S) as raw_client:
         client = cast(HttpClientLike, raw_client)
@@ -77,21 +97,27 @@ def scrape_jobboom_sitemap() -> None:
             say(PRINT_SITEMAP_TPL.format(url=child, n=len(found)))
             locs.extend(found)
     out = urls_by_id(locs)
+    guard_shrink(ShrinkIn(live=live_ids_of(date.today().isoformat()), fresh=set(out.urls), label=SHRINK_LABEL))
     OUT_URLS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_URLS, payload=out.urls, indent=JSON_INDENT))
     say(PRINT_URLS_DONE_TPL.format(ids=len(out.urls), syndicated=out.syndicated, out=OUT_URLS))
 
 
 def collect_sitemap_urls(x: SitemapIn) -> list:
-    """取一张站点地图(原文进 crawl 层)→ <loc> 清单;取不到留痕给空清单(下轮再来)。"""
+    """取一张站点地图(原文进 crawl 层)→ <loc> 清单;取不到留痕给空清单(下轮再来)。
+    2026-09-27 改判(门迁 door 叶同批;lead 派工「列表枚举半途失败时本轮必须中止、不写出当前在招快照」):上句「取不到留痕给空清单」
+    作废 —— 原行尾牌「单张图取不到就留痕跳过,不拖垮整轮」在本板的代价是整板清空(职位子图只有一张)。
+    现在网络错 / 非 2xx、回 200 却一条 <loc> 都没有,一律抛错停轮(枚举表不落盘)。"""
     try:
         resp = x.client.get(x.url)
         resp.raise_for_status()
-    except Exception as e:  # noqa: BLE001 — 单张图取不到就留痕跳过,不拖垮整轮
-        err(x.url, e)
-        return []
+    except Exception as e:
+        raise RuntimeError(ERR_SITEMAP_TPL.format(url=x.url, err=e)) from e
     put_cached_page(CachePutIn(slug=SLUG_CRAWL, url=x.url, html=resp.text, title=""))
-    return LOC_RE.findall(resp.text)
+    locs = LOC_RE.findall(resp.text)
+    if len(locs) == 0:
+        raise RuntimeError(ERR_SITEMAP_EMPTY_TPL.format(url=x.url))
+    return locs
 
 
 def urls_by_id(locs: list) -> UrlsOut:
@@ -114,6 +140,18 @@ def lang_of(url: str) -> str:
     if JOB_URL_RE.match(url) is None:
         return ""
     return LANG_EN
+
+
+def live_ids_of(today: str) -> set:
+    """换版闸的基线(2026-09-27 立):上一轮板仓里此刻仍该在架的帖号 —— 截止日为空或还没过(口径同建仓段那一刀
+    「已过截止日」,过了的本来就该出仓,不算漏)。板仓还没有(首轮)给空集,闸只查本轮枚举空不空。"""
+    out: set = set()
+    for row in load_json_list(IN_POSTINGS):
+        until = row.get(K_VALID_THROUGH) or ""
+        if until != "" and until < today:
+            continue
+        out.add(row.get(K_POSTING_ID))
+    return out
 
 
 # =========================================================================
@@ -431,3 +469,16 @@ def hours_of(types: list) -> str:
         if word is not None:
             return word
     return ""
+
+
+# =========================================================================
+# 7. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑「枚举失败 → 不出快照 / 不下架」自测(用例集住 scheme 的 JobboomEnumGuardTest,
+    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(JobboomEnumGuardTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

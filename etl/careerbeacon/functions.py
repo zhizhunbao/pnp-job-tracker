@@ -5,6 +5,8 @@ careerbeacon 域函数 —— 五段与 constants.py / scheme.py 同名同序镜
 数据链(2026-09-02 铁律):列表页与详情页原文经 crawl 批量写门进 data/crawl/board-careerbeacon/,
 抽出的事实进 data/raw/careerbeacon/jobs.json,归一后的行进 data/processed/careerbeacon/postings.json;
 跨源清洗(地点归一 / 薪资归一 / 试点打标)仍归 mart 域,本域只做「值级」清洗(to_* 行构造器)。
+2026-09-27 门迁 door 叶同批:§2 枚举不全(单页取不到 / 首页空壳 / 比上一轮板仓漏两成以上)一律抛错、枚举表不落盘,
+门一步失败即中止,建仓不跑 —— 没枚举到的帖不再被当成下架;新立 §6 自测(`--only test`)。
 
 @author Frank
 @time 2026-09-11
@@ -12,7 +14,9 @@ careerbeacon 域函数 —— 五段与 constants.py / scheme.py 同名同序镜
 from __future__ import annotations
 
 import json
+import sys
 import time
+import unittest
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -25,6 +29,8 @@ from log.functions import err, say
 from richtext.functions import rich_text_of
 from crawl.functions import load_cache_index, put_cached_pages
 from crawl.scheme import CachePage, CachePutManyIn
+from door.functions import guard_shrink
+from door.scheme import ShrinkIn
 from careerbeacon import DETAILS_PER_RUN
 from careerbeacon.constants import (
     ADDRESS_SEP, CLIENT_TIMEOUT_S, COMMA, DETAIL_SLEEP_S, DETAIL_TICK, ENC_UTF8, ERRORS_REPLACE,
@@ -40,10 +46,12 @@ from careerbeacon.constants import (
     PRINT_PROV_TPL, PRINT_STORE_DONE_TPL, PRINT_URLS_DONE_TPL, PROV_OF_SLUG, RATE_FLOOR_S,
     SALARY_RANGE_TPL, SALARY_TPL, SALARY_UNIT_WORD, SECONDS_FMT, SITE_BASE, SLUG_CRAWL, SOURCE_LABEL,
     SPACE, TERM_OF_TYPE, UTC_Z, WS_RE,
+    ERR_LIST_PAGE_TPL, ERR_PAGE_EMPTY_TPL, IN_POSTINGS, SHRINK_LABEL, TEST_VERBOSITY,
 )
 from careerbeacon.scheme import (
     ParseIn, DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     ProvinceIn, ProvinceOut, SalaryTextIn, StoreTally,
+    CareerbeaconEnumGuardTest,
 )
 
 
@@ -62,13 +70,25 @@ def load_json_dict(path: Path) -> dict:
     return {}
 
 
+def load_json_list(path: Path) -> list:
+    """读一份 JSON 数组;文件不在或不是数组给空清单(2026-09-27 立:换版闸读上一轮板仓,首轮无仓是常态)。"""
+    if not path.exists():
+        return []
+    loaded = json.loads(path.read_text(encoding=ENC_UTF8))
+    if isinstance(loaded, list):
+        return loaded
+    return []
+
+
 # =========================================================================
 # 2. 省列表页枚举(四省 jobs-in-<slug> 分页 → 帖号 → URL)
 # =========================================================================
 
 
 def scrape_careerbeacon_pages() -> None:
-    """本域步骤入口:四省列表页逐页翻(页数从页内现取)→ 帖号 → URL 表。"""
+    """本域步骤入口:四省列表页逐页翻(页数从页内现取)→ 帖号 → URL 表。
+    2026-09-27 门迁 door 叶同批:落盘前先过 door 叶的当前态换版闸(本轮一个帖号都没有,或上一轮板仓里此刻仍在架的帖
+    有两成以上不在本轮枚举 → 抛错停轮,枚举表不落盘,门不跑建仓);单页取不到 / 首页空壳在 collect_province_urls 里就抛。"""
     urls: dict = {}
     with make_client(CLIENT_TIMEOUT_S) as raw_client:
         client = cast(HttpClientLike, raw_client)
@@ -76,6 +96,7 @@ def scrape_careerbeacon_pages() -> None:
             got = collect_province_urls(ProvinceIn(client=client, slug=slug))
             say(PRINT_PROV_TPL.format(slug=slug, pages=got.pages, n=len(got.urls)))
             urls.update(got.urls)
+    guard_shrink(ShrinkIn(live=live_ids_of(date.today().isoformat()), fresh=set(urls), label=SHRINK_LABEL))
     OUT_URLS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_URLS, payload=urls, indent=JSON_INDENT))
     say(PRINT_URLS_DONE_TPL.format(ids=len(urls), out=OUT_URLS))
@@ -83,7 +104,11 @@ def scrape_careerbeacon_pages() -> None:
 
 def collect_province_urls(x: ProvinceIn) -> ProvinceOut:
     """一个省的列表页逐页取回(原文攒批进 crawl 层,首页取到总页数)→ 帖号 → URL;
-    单页失败留痕跳过;中途异常也把攒下的先落盘。"""
+    单页失败留痕跳过;中途异常也把攒下的先落盘。
+    2026-09-27 改判(门迁 door 叶同批;lead 派工「列表枚举半途失败时本轮必须中止、不写出当前在招快照」):上句「单页失败留痕跳过」
+    与原 except 行尾牌「单页取不到就留痕跳过,下轮再来」作废 —— 跳过的那页上的帖进不了枚举表,建仓按「不在本轮枚举」剔掉、
+    seed 再按「不在板仓」关掉,等于把没枚举到的岗当成下架。
+    现在单页网络错 / 非 2xx、省首页回 200 却一条岗链都没有,一律抛错停轮;「中途异常也把攒下的先落盘」照旧(落的是 crawl 层原文)。"""
     pages: list = []
     urls: dict = {}
     done = 0
@@ -95,14 +120,14 @@ def collect_province_urls(x: ProvinceIn) -> ProvinceOut:
             try:
                 resp = x.client.get(url)
                 resp.raise_for_status()
-            except Exception as e:  # noqa: BLE001 — 单页取不到就留痕跳过,下轮再来
-                err(url, e)
-                page += 1
-                time.sleep(LIST_SLEEP_S)
-                continue
+            except Exception as e:
+                raise RuntimeError(ERR_LIST_PAGE_TPL.format(url=url, err=e)) from e
             pages.append(CachePage(url=url, html=resp.text, title=""))
             done += 1
-            urls.update(urls_of_page(resp.text))
+            found = urls_of_page(resp.text)
+            if page == PAGE_ONE and len(found) == 0:
+                raise RuntimeError(ERR_PAGE_EMPTY_TPL.format(url=url))
+            urls.update(found)
             if page == PAGE_ONE:
                 last = last_page_of(resp.text)
             page += 1
@@ -127,6 +152,18 @@ def last_page_of(html: str) -> int:
         if int(n) > last:
             last = int(n)
     return last
+
+
+def live_ids_of(today: str) -> set:
+    """换版闸的基线(2026-09-27 立):上一轮板仓里此刻仍该在架的帖号 —— 截止日为空或还没过(口径同 §5 建仓那一刀
+    「已过截止日」,过了的本来就该出仓,不算漏)。板仓还没有(首轮)给空集,闸只查本轮枚举空不空。"""
+    out: set = set()
+    for row in load_json_list(IN_POSTINGS):
+        until = row.get(K_VALID_THROUGH) or ""
+        if until != "" and until < today:
+            continue
+        out.add(row.get(K_POSTING_ID))
+    return out
 
 
 # =========================================================================
@@ -412,3 +449,16 @@ def hours_of(types: list) -> str:
         if word is not None:
             return word
     return ""
+
+
+# =========================================================================
+# 6. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑「枚举失败 → 不出快照 / 不下架」自测(用例集住 scheme 的 CareerbeaconEnumGuardTest,
+    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(CareerbeaconEnumGuardTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

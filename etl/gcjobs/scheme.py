@@ -11,14 +11,20 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 §7 自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立):unittest 用例集 ——「不用 class」的外部库例外,
 先例 ats.scheme / indexing.scheme,跑法 `python etl/gcjobs/main.py --only test`;被测的 gcjobs.functions 在用例体内现取
 (functions 反过来 import 本文件,顶部 import 会成环)。
+同日门迁 door 叶同批,§7 加「枚举失败 → 不出快照 / 不下架」一组(GcEnumGuardTest + HTTP 替身)。
 
 @author Frank
 @time 2026-09-13
 """
+import json
 import re
+import tempfile
 import unittest
-from dataclasses import dataclass
+from contextlib import ExitStack, nullcontext
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Protocol
+from unittest import mock
 
 
 # =========================================================================
@@ -406,3 +412,210 @@ class GcLocationTest(unittest.TestCase):
                     self.assertEqual((loc.city, loc.province), (city, province))
                     if loc.city != "":
                         self.assertNotEqual(loc.province, "")
+
+
+@dataclass
+class FakeResponse:
+    """HTTP 响应替身(HttpResponseLike 的两格;状态码 ≥ 400 时 raise_for_status 抛,形同 httpx;2026-09-27 门迁 door 叶同批立)。"""
+
+    text: str
+    """正文。"""
+
+    status: int
+    """状态码。"""
+
+    def raise_for_status(self) -> object:
+        """非 2xx 抛错(替身抛 RuntimeError 带状态码),否则回自己。"""
+        if self.status >= 400:
+            raise RuntimeError("HTTP " + str(self.status))
+        return self
+
+
+@dataclass
+class FakeClient:
+    """HTTP 替身:GET 按网址查 pages 回 200(头照库形状收下不用);网址在 down 里就直接抛;都不在回 404。"""
+
+    pages: dict
+    """网址 → 页面原文。"""
+
+    down: set = field(default_factory=set)
+    """一 GET 就抛网络错的网址。"""
+
+    def get(self, url: str, headers: dict) -> FakeResponse:
+        """GET(替身)。"""
+        if url in self.down:
+            raise ConnectionError("fake network down: " + url)
+        if url in self.pages:
+            return FakeResponse(text=self.pages[url], status=200)
+        return FakeResponse(text="", status=404)
+
+
+class GcEnumGuardTest(unittest.TestCase):
+    """「枚举失败 → 不出快照 / 不下架」自测(2026-09-27 门迁 door 叶同批立)。
+
+    假站:壳页给会话 id,搜索两页(第 1 页 5001~5004 带「of 2 [」分页器、第 2 页 5005~5007);上一轮板仓 = 这 7 帖在架
+    + 3 帖(5901~5903)此刻已过截止日。把真枚举步与真建仓步按门的顺序接进 door.run_steps 跑:壳页 / 第 2 页取不到(404 / 断网)、
+    第 2 页回 200 却零帖、分页器丢了(只剩首页,漏四成多),门都返回 1、建仓不跑,列表行表与板仓一个字节不变 ——
+    mart / seed 读到的还是上一版,没枚举到的帖不会被下架;齐全的一轮与只少一帖(一成四)的一轮放行,板仓照新列表重写(阳性对照)。
+    全程不联网、不写仓内文件:网络换替身,列表行表 / 事实表 / 站外正文表 / 板仓指到临时目录,crawl 写门、仓锁、礼貌间隔换替身。"""
+
+    live = ["5001", "5002", "5003", "5004", "5005", "5006", "5007"]
+    """上一轮板仓里在架的 7 帖。"""
+
+    expired = ["5901", "5902", "5903"]
+    """上一轮板仓里此刻已过截止日的 3 帖。"""
+
+    sid = "ABC123"
+    """假会话 id(SID_RE 认大写十六进制)。"""
+
+    def shell_url(self) -> str:
+        """搜索壳页网址(走被测模块的常量)。"""
+        from gcjobs.constants import SEARCH_PATH, SHELL_QS, SITE_BASE
+        return SITE_BASE + SEARCH_PATH + SHELL_QS
+
+    def page_url(self, n: int) -> str:
+        """会话里第 n 页正文的网址(首页走首拉查询串,其余走翻页串)。"""
+        from gcjobs.constants import FIRST_PAGE_QS, PAGE_QS_TPL, SEARCH_PATH, SESSION_PATH_TPL, SITE_BASE
+        base = SESSION_PATH_TPL.format(base=SITE_BASE, path=SEARCH_PATH, sid=self.sid)
+        if n == 1:
+            return base + FIRST_PAGE_QS
+        return base + PAGE_QS_TPL.format(n=n, prev=n - 1)
+
+    def result_page(self, pids: list, last: int) -> str:
+        """一页搜索正文:给定帖的列表行(标题链 + 两格)+ 分页器(last > 1 时带「of N [」)。"""
+        html = "<ul>"
+        for pid in pids:
+            html += ('<li class="searchResult"><a href="/psrs-srfp/applicant/page1800?poster=' + pid + '" title="t">'
+                     "Analyst " + pid + '</a><div class="tableCell">Closing date: 2099-12-31<br>Statistics Canada'
+                     '<br>Ottawa (Ontario)</div><div class="tableCell">English essential<br>$60,000 to $70,000</div></li>')
+        html += "</ul>"
+        if last > 1:
+            html += "<p>Page 1 of " + str(last) + " [Next / Last]</p>"
+        return html
+
+    def site(self) -> dict:
+        """齐全的假站:网址 → 原文。"""
+        return {
+            self.shell_url(): "<html><a href='/psrs-srfp/applicant/page2440;jsessionid=" + self.sid + "'>x</a></html>",
+            self.page_url(1): self.result_page(["5001", "5002", "5003", "5004"], 2),
+            self.page_url(2): self.result_page(["5005", "5006", "5007"], 1),
+        }
+
+    def site_without(self, url: str) -> dict:
+        """齐全假站去掉一张(那张 GET 回 404)。"""
+        out: dict = {}
+        for k, v in self.site().items():
+            if k != url:
+                out[k] = v
+        return out
+
+    def fact(self, pid: str, closing: str) -> dict:
+        """事实表里的一帖(建仓段按它出行;截止日 closing)。"""
+        return asdict(JobFact(
+            posting_id=pid, url="https://psjobs-emploisfp.psc-cfp.gc.ca/psrs-srfp/applicant/page1800?poster=" + pid,
+            external_url="", title="Analyst " + pid, employer="Statistics Canada", division="", location="Ottawa (Ontario)",
+            city="Ottawa", province="ON", salary="$60,000 to $70,000", level="", who="", tenure="",
+            language="English essential", closing=closing, description="", first_seen="2026-09-20",
+        ))
+
+    def seed_files(self, tmp: Path) -> None:
+        """临时目录里铺上一轮的三份文件:列表行表 10 帖、事实表 10 帖 + 本轮新帖 5008、板仓 10 行(3 行此刻已过截止日)。"""
+        rows: dict = {}
+        facts: dict = {}
+        stored: list = []
+        for pid in self.live:
+            facts[pid] = self.fact(pid, "2099-12-31")
+        for pid in self.expired:
+            facts[pid] = self.fact(pid, "2000-01-01")
+        facts["5008"] = self.fact("5008", "2099-12-31")
+        for pid in self.live + self.expired:
+            rows[pid] = asdict(ListRow(title=facts[pid]["title"], closing=facts[pid]["closing"], org="Statistics Canada",
+                                       location="Ottawa (Ontario)", language="English essential", salary=""))
+            stored.append({"posting_id": pid, "title": facts[pid]["title"], "valid_through": facts[pid]["closing"]})
+        (tmp / "rows.json").write_text(json.dumps(rows), encoding="utf-8")
+        (tmp / "jobs.json").write_text(json.dumps(facts), encoding="utf-8")
+        (tmp / "postings.json").write_text(json.dumps(stored), encoding="utf-8")
+
+    def files_of(self, tmp: Path) -> dict:
+        """三份文件的原文(文件名 → 文本)。"""
+        out: dict = {}
+        for name in ("rows.json", "jobs.json", "postings.json"):
+            out[name] = (tmp / name).read_text(encoding="utf-8")
+        return out
+
+    def round_of(self, client: FakeClient) -> tuple:
+        """铺好上一轮文件,在替身沙箱里按门的顺序跑「枚举 → 建仓」两步;返回 (门的返回码, 跑前三份文件, 跑后三份文件)。"""
+        from gcjobs import functions as fn
+        from door import functions as door
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            self.seed_files(tmp)
+            before = self.files_of(tmp)
+            with ExitStack() as stack:
+                for name in ("OUT_ROWS", "IN_ROWS"):
+                    stack.enter_context(mock.patch.object(fn, name, tmp / "rows.json"))
+                stack.enter_context(mock.patch.object(fn, "IN_JOBS", tmp / "jobs.json"))
+                stack.enter_context(mock.patch.object(fn, "IN_EXTERNAL", tmp / "external.json"))
+                for name in ("OUT_POSTINGS", "IN_POSTINGS"):
+                    stack.enter_context(mock.patch.object(fn, name, tmp / "postings.json"))
+                stack.enter_context(mock.patch.object(fn, "make_client", return_value=nullcontext(client)))
+                stack.enter_context(mock.patch.object(fn, "put_cached_pages"))
+                stack.enter_context(mock.patch.object(fn, "LIST_SLEEP_S", 0))
+                stack.enter_context(mock.patch.object(fn, "jobbank_store_lock", return_value=nullcontext()))
+                code = door.run_steps([("pages", fn.scrape_gcjobs_pages), ("store", fn.build_gcjobs_postings)])
+            after = self.files_of(tmp)
+        return code, before, after
+
+    def stored_ids_of(self, text: str) -> list:
+        """板仓原文里的帖号(排好序)。"""
+        out: list = []
+        for row in json.loads(text):
+            out.append(row["posting_id"])
+        return sorted(out)
+
+    def assert_kept(self, client: FakeClient) -> None:
+        """跑一轮,断言门返回 1 且三份文件一字不变。"""
+        code, before, after = self.round_of(client)
+        self.assertEqual(code, 1)
+        self.assertEqual(after, before)
+
+    def test_fetch_error_stops_round(self) -> None:
+        """取不到 —— 第 2 页回 404、第 2 页断网、壳页回 404(拿不到会话)—— 门返回 1、建仓不跑,三份文件一字不变。"""
+        cases = [("page2-404", FakeClient(pages=self.site_without(self.page_url(2)))),
+                 ("page2-down", FakeClient(pages=self.site(), down={self.page_url(2)})),
+                 ("shell-404", FakeClient(pages=self.site_without(self.shell_url())))]
+        for label, client in cases:
+            with self.subTest(case=label):
+                self.assert_kept(client)
+
+    def test_empty_page_stops_round(self) -> None:
+        """第 2 页回 200 却一条列表行都没有(会话丢了 / 改版的形)→ 门返回 1、三份文件一字不变。"""
+        site = self.site()
+        site[self.page_url(2)] = "<ul></ul>"
+        self.assert_kept(FakeClient(pages=site))
+
+    def test_pager_lost_stops_round(self) -> None:
+        """首页分页器丢了(不带「of 2 [」,只翻首页)→ 本轮 4 帖,上一版在架 7 帖漏 3 帖(四成多,过两成)
+        → 换版闸拦下,门返回 1、三份文件一字不变。"""
+        site = self.site()
+        site[self.page_url(1)] = self.result_page(["5001", "5002", "5003", "5004"], 1)
+        self.assert_kept(FakeClient(pages=site))
+
+    def test_complete_round_rewrites(self) -> None:
+        """阳性对照:齐全的一轮(第 2 页多一条新帖 5008)→ 门返回 0,列表行表换成本轮 8 帖,板仓照新列表重写为 8 行;
+        上一版里过了截止日的 3 帖不在本轮照样放行。"""
+        site = self.site()
+        site[self.page_url(2)] = self.result_page(["5005", "5006", "5007", "5008"], 1)
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 0)
+        self.assertEqual(sorted(json.loads(after["rows.json"])), sorted(self.live + ["5008"]))
+        self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(self.live + ["5008"]))
+        self.assertEqual(after["jobs.json"], before["jobs.json"])
+
+    def test_small_churn_passes(self) -> None:
+        """正常撤帖放行:第 2 页少了 5007(上一版在架 7 帖漏 1 帖,一成四,没过两成)→ 门返回 0,板仓里没有 5007。"""
+        site = self.site()
+        site[self.page_url(2)] = self.result_page(["5005", "5006"], 1)
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 0)
+        self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(self.live[:-1]))

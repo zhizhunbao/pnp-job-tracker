@@ -7,6 +7,8 @@ gcjobs 域函数 —— 五段与 constants.py / scheme.py 同名同序镜像:�
 跨源清洗(地点归一 / 薪资归一 / 试点打标)仍归 mart 域,本域只做「值级」清洗(to_* 行构造器)。
 站的取法(2026-09-13 实测):壳页拿会话 → 同 URL 再带 isSecondPartOfPage=1 拿正文;翻页参数与正文标一次发。
 2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:地点归一加「City, Province」退路(§4 comma_location_of),新立 §7 自测(`--only test`)。
+同日门迁 door 叶同批:§2 枚举不全(某页回 200 却零帖 / 比上一轮板仓漏两成以上)一律抛错、列表行表不落盘,门一步失败即中止,
+建仓不跑 —— 没枚举到的帖不再被当成下架;§5 ld_nodes_of 的两处列表推导改显式循环(形制闸⑧,本域不在闸的 DOMAINS 里没报)。
 
 @author Frank
 @time 2026-09-13
@@ -32,6 +34,8 @@ from fetch.functions import make_client, make_polite_client
 from log.functions import err, say
 from crawl.functions import get_cached_page, load_cache_index, put_cached_page, put_cached_pages
 from crawl.scheme import CachePage, CachePutIn, CachePutManyIn
+from door.functions import guard_shrink
+from door.scheme import ShrinkIn
 from gcjobs import DETAILS_PER_RUN
 from gcjobs.constants import (
     ACCEPT_LANGUAGE, ATTR_TYPE, BLOCK_END_RE, BR_RE, CLIENT_TIMEOUT_S, CLOSING_CUT, CLOSING_FMTS, CLOSING_PREFIX,
@@ -54,11 +58,12 @@ from gcjobs.constants import (
     SLUG_CRAWL, SLUG_CRAWL_EXTERNAL, SOURCE_LABEL, SPACE, STUDENT_MARK, TAG_CLOSE, TAG_LI_EXT, TAG_RE, TAG_SCRIPT,
     TERM_WORD, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
     LOC_STAR_MARK, PLACE_CUT_RE, PROV_TAIL_RE, TEST_VERBOSITY,
+    ERR_PAGE_EMPTY_TPL, IN_POSTINGS, SHRINK_LABEL,
 )
 from gcjobs.scheme import (
     DetailBatchIn, DetailBatchOut, DetailIn, ExternalFetchIn, ExternalTally, HttpClientLike, JobFact, ListRow,
     Location, MatchIn, PageIn, PagesOut, ParseTally, PostingRowIn, Session, StoreTally,
-    GcLocationTest,
+    GcLocationTest, GcEnumGuardTest,
 )
 
 
@@ -75,6 +80,16 @@ def load_json_dict(path: Path) -> dict:
     if isinstance(loaded, dict):
         return loaded
     return {}
+
+
+def load_json_list(path: Path) -> list:
+    """读一份 JSON 数组;文件不在或不是数组给空清单(2026-09-27 立:换版闸读上一轮板仓,首轮无仓是常态)。"""
+    if not path.exists():
+        return []
+    loaded = json.loads(path.read_text(encoding=ENC_UTF8))
+    if isinstance(loaded, list):
+        return loaded
+    return []
 
 
 def headers_of() -> dict:
@@ -108,17 +123,22 @@ def poster_session_url_of(x: Session) -> str:
 
 
 def scrape_gcjobs_pages() -> None:
-    """本域步骤入口:公开搜索逐页翻(页数从首页正文现取)→ 帖号 → 列表行表(当前态)。"""
+    """本域步骤入口:公开搜索逐页翻(页数从首页正文现取)→ 帖号 → 列表行表(当前态)。
+    2026-09-27 门迁 door 叶同批:落盘前先过 door 叶的当前态换版闸(本轮一帖都没有,或上一轮板仓里此刻仍在架的帖
+    有两成以上不在本轮列表 → 抛错停轮,列表行表不落盘,门不跑建仓);某页回 200 却零帖在 collect_rows 里就抛。"""
     with make_client(CLIENT_TIMEOUT_S) as raw_client:
         session = open_session(cast(HttpClientLike, raw_client))
         got = collect_rows(session)
+    guard_shrink(ShrinkIn(live=live_ids_of(date.today().isoformat()), fresh=set(got.rows), label=SHRINK_LABEL))
     OUT_ROWS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_ROWS, payload=got.rows, indent=JSON_INDENT))
     say(PRINT_ROWS_DONE_TPL.format(ids=len(got.rows), pages=got.pages, out=OUT_ROWS))
 
 
 def collect_rows(session: Session) -> PagesOut:
-    """首页正文取总页数,逐页翻(原文攒批进 crawl 层)→ 帖号 → 列表行;中途异常也把攒下的先落盘。"""
+    """首页正文取总页数,逐页翻(原文攒批进 crawl 层)→ 帖号 → 列表行;中途异常也把攒下的先落盘。
+    2026-09-27 起(门迁 door 叶同批)某页回 200 却一条列表行都没有 → 抛错停轮(见 ERR_PAGE_EMPTY_TPL);
+    翻页取不到(非 2xx)照旧由 fetch_page 抛。"""
     pages: list = []
     rows: dict = {}
     done = 0
@@ -129,7 +149,10 @@ def collect_rows(session: Session) -> PagesOut:
             html = fetch_page(PageIn(session=session, n=n))
             pages.append(CachePage(url=page_key_of(n), html=html, title=""))
             done += 1
-            for pid, row in rows_of_page(html).items():
+            found = rows_of_page(html)
+            if len(found) == 0:
+                raise RuntimeError(ERR_PAGE_EMPTY_TPL.format(n=n, url=page_key_of(n)))
+            for pid, row in found.items():
                 rows[pid] = asdict(row)
             if n == PAGE_ONE:
                 last = last_page_of(html)
@@ -208,6 +231,18 @@ def closing_of_row(first: str) -> str:
 def plain_of(html: str) -> str:
     """HTML 片段 → 单行纯文本(剥标签、解实体、折空白)。"""
     return WS_RE.sub(SPACE, unescape(TAG_RE.sub(SPACE, html))).replace(NEWLINE, SPACE).strip()
+
+
+def live_ids_of(today: str) -> set:
+    """换版闸的基线(2026-09-27 立):上一轮板仓里此刻仍该在架的帖号 —— 截止日为空或还没过(口径同 §6 建仓那一刀
+    「已过截止日」,过了的本来就该出仓,不算漏)。板仓还没有(首轮)给空集,闸只查本轮列表空不空。"""
+    out: set = set()
+    for row in load_json_list(IN_POSTINGS):
+        until = row.get(K_VALID_THROUGH) or ""
+        if until != "" and until < today:
+            continue
+        out.add(row.get(K_POSTING_ID))
+    return out
 
 
 # =========================================================================
@@ -582,15 +617,25 @@ def ld_description_of(soup: BeautifulSoup) -> str:
 
 
 def ld_nodes_of(data: object) -> list:
-    """ld+json 的顶层可能是单条、数组或 @graph 打包;摊成字典清单。"""
+    """ld+json 的顶层可能是单条、数组或 @graph 打包;摊成字典清单。
+    2026-09-27 两处列表推导改走 dicts_of 显式循环(形制闸⑧「显式循环令」;行为不变)。"""
     if isinstance(data, list):
-        return [d for d in data if isinstance(d, dict)]
+        return dicts_of(data)
     if isinstance(data, dict):
         graph = data.get(LD_KEY_GRAPH)
         if isinstance(graph, list):
-            return [d for d in graph if isinstance(d, dict)]
+            return dicts_of(graph)
         return [data]
     return []
+
+
+def dicts_of(items: list) -> list:
+    """清单里是字典的那些,原序(2026-09-27 自 ld_nodes_of 的两处列表推导拆出)。"""
+    out: list = []
+    for item in items:
+        if isinstance(item, dict):
+            out.append(item)
+    return out
 
 
 def main_container_of(soup: BeautifulSoup) -> Tag | None:
@@ -765,7 +810,11 @@ def full_description_of(x: PostingRowIn) -> str:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑地点归一自测(用例集住 scheme 的 GcLocationTest,先例 ats / indexing / gate.scheme;
-    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立);有失败 sys.exit(1),退出码穿门报红。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(GcLocationTest)
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立);有失败 sys.exit(1),退出码穿门报红。
+    同日门迁 door 叶同批起连「枚举失败 → 不出快照 / 不下架」自测 GcEnumGuardTest 一起跑(门接住 sys.exit(1) 报本步失败)。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for case in (GcLocationTest, GcEnumGuardTest):
+        suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

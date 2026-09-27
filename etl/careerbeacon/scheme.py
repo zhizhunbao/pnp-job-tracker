@@ -8,12 +8,21 @@ careerbeacon 域行形状(一参令 XxxIn / 单返回值 XxxOut;照 jobillico/sc
 ② **域内接线形状 XxxIn** = dataclass —— 多入参函数的一参令载体;
 ③ **库形状 Protocol** —— httpx 客户端/响应只声明本域真用的格;装配点用 typing.cast 喂真客户端。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
+§6 自测(2026-09-27 门迁 door 叶同批立):unittest 用例集 + HTTP 替身 ——「不用 class」的外部库例外,先例 gcjobs / ats / door.scheme,
+跑法 `python etl/careerbeacon/main.py --only test`;被测的 careerbeacon.functions 与 door 叶在用例体内现取
+(functions 反过来 import 本文件,顶部 import 会成环)。
 
 @author Frank
 @time 2026-09-11
 """
-from dataclasses import dataclass
+import json
+import tempfile
+import unittest
+from contextlib import ExitStack, nullcontext
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Protocol
+from unittest import mock
 
 
 # =========================================================================
@@ -28,7 +37,8 @@ class HttpResponseLike(Protocol):
     """响应体文本(列表页 / 详情页 HTML)。"""
 
     def raise_for_status(self) -> object:
-        """非 2xx 抛错(单页失败按跳过留痕)。"""
+        """非 2xx 抛错(单页失败按跳过留痕)。
+        2026-09-27 起只有详情页照旧跳过;列表页失败改抛错停轮(枚举不全不落盘,见 functions.collect_province_urls)。"""
         ...
 
 
@@ -239,3 +249,207 @@ class StoreTally:
 
     blank: int
     """无标题(解析残缺)的帖数。"""
+
+
+# =========================================================================
+# 6. 自测(用例住 scheme)
+# =========================================================================
+
+
+@dataclass
+class FakeResponse:
+    """HTTP 响应替身(HttpResponseLike 的两格;状态码 ≥ 400 时 raise_for_status 抛,形同 httpx)。"""
+
+    text: str
+    """正文。"""
+
+    status: int
+    """状态码。"""
+
+    def raise_for_status(self) -> object:
+        """非 2xx 抛错(替身抛 RuntimeError 带状态码),否则回自己。"""
+        if self.status >= 400:
+            raise RuntimeError("HTTP " + str(self.status))
+        return self
+
+
+@dataclass
+class FakeClient:
+    """HTTP 替身:GET 按网址查 pages 回 200;网址在 down 里就直接抛(断网 / 超时的形);都不在回 404。"""
+
+    pages: dict
+    """网址 → 页面原文。"""
+
+    down: set = field(default_factory=set)
+    """一 GET 就抛网络错的网址。"""
+
+    def get(self, url: str) -> FakeResponse:
+        """GET(替身)。"""
+        if url in self.down:
+            raise ConnectionError("fake network down: " + url)
+        if url in self.pages:
+            return FakeResponse(text=self.pages[url], status=200)
+        return FakeResponse(text="", status=404)
+
+
+class CareerbeaconEnumGuardTest(unittest.TestCase):
+    """「枚举失败 → 不出快照 / 不下架」自测(2026-09-27 门迁 door 叶同批立)。
+
+    假站两省:NS 两页(101~103 / 104~105)、PE 一页(201~202);上一轮板仓 = 这 7 帖在架 + 3 帖(901~903)此刻已过截止日。
+    把真枚举步与真建仓步按门的顺序接进 door.run_steps 跑:单页取不到(404 / 断网)、省首页回拦截页、分页器只剩首页(漏两成以上)
+    三种坏法,门都返回 1、建仓不跑,枚举表与板仓一个字节不变 —— mart / seed 读到的还是上一版,没枚举到的帖不会被下架;
+    齐全的一轮与只少一帖(一成四,正常撤帖)的一轮放行,两步都跑、板仓照新枚举重写(阳性对照:证明用例看得见建仓)。
+    上一版里过了截止日的 3 帖本轮不在枚举里(占上一版三成)也放行:它们本就该出仓,不算漏。
+    全程不联网、不写仓内文件:网络换替身,枚举表 / 事实表 / 板仓指到临时目录,crawl 写门、仓锁、礼貌间隔换替身。"""
+
+    live = ["101", "102", "103", "104", "105", "201", "202"]
+    """上一轮板仓里在架的 7 帖。"""
+
+    expired = ["901", "902", "903"]
+    """上一轮板仓里此刻已过截止日的 3 帖(本轮不在枚举里是正常出仓)。"""
+
+    def url_of(self, slug: str, n: int) -> str:
+        """省列表页第 n 页的网址(走被测模块的模板)。"""
+        from careerbeacon.constants import LIST_URL_TPL
+        return LIST_URL_TPL.format(slug=slug, n=n)
+
+    def list_page(self, pids: list, last: int) -> str:
+        """一张列表页:给定帖的岗链(带 utm 查询串,照实测)+ 分页链接(last > 1 时带到末页的页号链)。"""
+        html = "<html><body>"
+        for pid in pids:
+            html += '<a href="https://www.careerbeacon.com/en/job/' + pid + '/acme/developer/halifax-ns?utm_source=cb">x</a>'
+        if last > 1:
+            html += '<a href="?page=' + str(last) + '">' + str(last) + "</a>"
+        return html + "</body></html>"
+
+    def site(self) -> dict:
+        """齐全的假站:网址 → 页面原文(NS 首页带到第 2 页的分页链接)。"""
+        return {
+            self.url_of("nova-scotia", 1): self.list_page(["101", "102", "103"], 2),
+            self.url_of("nova-scotia", 2): self.list_page(["104", "105"], 1),
+            self.url_of("prince-edward-island", 1): self.list_page(["201", "202"], 1),
+        }
+
+    def site_without(self, url: str) -> dict:
+        """齐全假站去掉一张页(那张页 GET 回 404)。"""
+        out: dict = {}
+        for k, v in self.site().items():
+            if k != url:
+                out[k] = v
+        return out
+
+    def fact(self, pid: str, until: str) -> dict:
+        """事实表里的一帖(建仓段按它出行;截止日 until)。"""
+        return asdict(JobFact(
+            posting_id=pid, url="https://www.careerbeacon.com/en/job/" + pid + "/acme/developer/halifax-ns",
+            title="Developer " + pid, employer="Acme", employer_url="", city="Halifax", province="NS", postal="",
+            street="", country="CA", date_posted="2026-09-20", valid_through=until, salary_lo="", salary_hi="",
+            salary_unit="", employment_types=[], industry="", description="",
+        ))
+
+    def seed_files(self, tmp: Path) -> None:
+        """临时目录里铺上一轮的三份文件:枚举表 10 帖、事实表 10 帖 + 本轮新帖 106、板仓 10 行(3 行此刻已过截止日)。"""
+        urls: dict = {}
+        facts: dict = {}
+        rows: list = []
+        for pid in self.live:
+            facts[pid] = self.fact(pid, "2099-12-31")
+        for pid in self.expired:
+            facts[pid] = self.fact(pid, "2000-01-01")
+        facts["106"] = self.fact("106", "2099-12-31")
+        for pid in self.live + self.expired:
+            urls[pid] = facts[pid]["url"]
+            rows.append({"posting_id": pid, "title": facts[pid]["title"], "valid_through": facts[pid]["valid_through"]})
+        (tmp / "urls.json").write_text(json.dumps(urls), encoding="utf-8")
+        (tmp / "jobs.json").write_text(json.dumps(facts), encoding="utf-8")
+        (tmp / "postings.json").write_text(json.dumps(rows), encoding="utf-8")
+
+    def files_of(self, tmp: Path) -> dict:
+        """三份文件的原文(文件名 → 文本)。"""
+        out: dict = {}
+        for name in ("urls.json", "jobs.json", "postings.json"):
+            out[name] = (tmp / name).read_text(encoding="utf-8")
+        return out
+
+    def round_of(self, client: FakeClient) -> tuple:
+        """铺好上一轮文件,在替身沙箱里按门的顺序跑「枚举 → 建仓」两步;返回 (门的返回码, 跑前三份文件, 跑后三份文件)。"""
+        from careerbeacon import functions as fn
+        from door import functions as door
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            self.seed_files(tmp)
+            before = self.files_of(tmp)
+            with ExitStack() as stack:
+                for name in ("OUT_URLS", "IN_URLS"):
+                    stack.enter_context(mock.patch.object(fn, name, tmp / "urls.json"))
+                stack.enter_context(mock.patch.object(fn, "IN_JOBS", tmp / "jobs.json"))
+                for name in ("OUT_POSTINGS", "IN_POSTINGS"):
+                    stack.enter_context(mock.patch.object(fn, name, tmp / "postings.json"))
+                stack.enter_context(mock.patch.object(fn, "PROV_OF_SLUG", {"nova-scotia": "NS", "prince-edward-island": "PE"}))
+                stack.enter_context(mock.patch.object(fn, "make_client", return_value=nullcontext(client)))
+                stack.enter_context(mock.patch.object(fn, "put_cached_pages"))
+                stack.enter_context(mock.patch.object(fn, "LIST_SLEEP_S", 0))
+                stack.enter_context(mock.patch.object(fn, "jobbank_store_lock", return_value=nullcontext()))
+                code = door.run_steps([("pages", fn.scrape_careerbeacon_pages), ("store", fn.build_careerbeacon_postings)])
+            after = self.files_of(tmp)
+        return code, before, after
+
+    def stored_ids_of(self, text: str) -> list:
+        """板仓原文里的帖号(排好序)。"""
+        out: list = []
+        for row in json.loads(text):
+            out.append(row["posting_id"])
+        return sorted(out)
+
+    def test_page_error_stops_round(self) -> None:
+        """单页取不到 —— NS 第 2 页 404、NS 第 2 页断网、PE 首页 404 —— 门返回 1、建仓不跑,三份文件一字不变。"""
+        second = self.url_of("nova-scotia", 2)
+        pe = self.url_of("prince-edward-island", 1)
+        cases = [("ns2-404", FakeClient(pages=self.site_without(second))),
+                 ("ns2-down", FakeClient(pages=self.site(), down={second})),
+                 ("pe1-404", FakeClient(pages=self.site_without(pe)))]
+        for label, client in cases:
+            with self.subTest(case=label):
+                code, before, after = self.round_of(client)
+                self.assertEqual(code, 1)
+                self.assertEqual(after, before)
+
+    def test_blocked_first_page_stops_round(self) -> None:
+        """省首页回 200 却是拦截页(一条岗链都没有)→ 门返回 1、三份文件一字不变(整省不会被当成零帖)。"""
+        site = self.site()
+        site[self.url_of("prince-edward-island", 1)] = "<html><body>Access denied</body></html>"
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 1)
+        self.assertEqual(after, before)
+
+    def test_pager_lost_stops_round(self) -> None:
+        """分页器只剩首页(NS 首页不带第 2 页的链接)→ 本轮 5 帖,上一版在架 7 帖漏 2 帖(近三成,过两成)
+        → 换版闸拦下:门返回 1、三份文件一字不变。"""
+        site = self.site()
+        site[self.url_of("nova-scotia", 1)] = self.list_page(["101", "102", "103"], 1)
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 1)
+        self.assertEqual(after, before)
+
+    def test_complete_round_rewrites(self) -> None:
+        """阳性对照:齐全的一轮(NS 第 2 页多一条新帖 106)→ 门返回 0,枚举表换成本轮 8 帖,板仓照新枚举重写为 8 行;
+        上一版里过了截止日的 3 帖不在本轮(占上一版三成)照样放行。"""
+        site = self.site()
+        site[self.url_of("nova-scotia", 2)] = self.list_page(["104", "105", "106"], 1)
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 0)
+        self.assertEqual(sorted(json.loads(after["urls.json"])), sorted(self.live + ["106"]))
+        self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(self.live + ["106"]))
+        self.assertEqual(after["jobs.json"], before["jobs.json"])
+
+    def test_small_churn_passes(self) -> None:
+        """正常撤帖放行:NS 第 2 页少了 104(上一版在架 7 帖漏 1 帖,一成四,没过两成)→ 门返回 0,板仓里没有 104。"""
+        site = self.site()
+        site[self.url_of("nova-scotia", 2)] = self.list_page(["105"], 1)
+        code, before, after = self.round_of(FakeClient(pages=site))
+        self.assertEqual(code, 0)
+        want: list = []
+        for pid in self.live:
+            if pid != "104":
+                want.append(pid)
+        self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(want))

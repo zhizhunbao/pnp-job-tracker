@@ -6,6 +6,9 @@ door.functions — 门循环:各域 main.py 跑一串 (步名, 函数) 的唯一
 同日晚改判回「一步失败即中止」(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」,见 run_steps):
 各门照旧 `return run_steps(todo)` 不用改,互不相干的步拆成各自的调度单元(各域 __init__ 的 METAS)。
 依赖单边:本文件 → constants / scheme + log 叶(报行)。门叶不 import 任何业务域。
+2026-09-27 加 §2 当前态换版闸 guard_shrink(五个招聘板门迁进本叶同批,只加不改:run_steps 一字未动):
+板域枚举步写「当前在招」清单前过它,判不过就抛错 = 这一步失败,由 run_steps 中止本轮。
+「漏多少算抓坏」五板一把尺子住这,不各抄一份(宪法「行为重复不许」);各板只管按自家口径算出上一版的在册项。
 
 @author Frank
 @time 2026-09-26 16:09:33
@@ -15,9 +18,10 @@ import unittest
 
 from log.functions import err, say
 from door.constants import (
-    CHAIN_FAIL_TPL, CHAIN_OK_TPL, EXIT_OK_CODES, STEP_EXIT_TPL, STEP_START_TPL, TEST_VERBOSITY,
+    CHAIN_FAIL_TPL, CHAIN_OK_TPL, EMPTY_TPL, EXIT_OK_CODES, GONE_RATIO_MAX, SHRINK_TPL, STEP_EXIT_TPL,
+    STEP_START_TPL, TEST_VERBOSITY,
 )
-from door.scheme import ChainFailFastTest
+from door.scheme import ChainFailFastTest, ShrinkGuardTest, ShrinkIn
 
 # =========================================================================
 # 1. 跑一串步(门循环)
@@ -54,14 +58,38 @@ def run_steps(todo: list) -> int:
 
 
 # =========================================================================
-# 2. 自测(用例住 scheme)
+# 2. 当前态换版闸(一步要写出「当前在册」清单前,先比上一版漏了多少)
+# =========================================================================
+
+
+def guard_shrink(x: ShrinkIn) -> None:
+    """当前态换版闸(2026-09-27 立,五个招聘板门迁进本叶同批):新清单一项都没有,或上一版此刻仍该在册的项
+    有超过 GONE_RATIO_MAX 不在新清单里 → 抛 RuntimeError。调用方在把新清单落盘之前调它;抛出即这一步失败,
+    run_steps 接住中止本轮 —— 新清单不落盘、后面的步(板域 = 建仓)不跑,下游看到的仍是上一版,没枚举到的帖不会被当成下架。
+    新清单里多出来的项(新帖)不影响判定。自测见 scheme 的 ShrinkGuardTest。"""
+    if len(x.fresh) == 0:
+        raise RuntimeError(EMPTY_TPL.format(label=x.label))
+    gone = 0
+    for item in x.live:
+        if item not in x.fresh:
+            gone += 1
+    if gone > len(x.live) * GONE_RATIO_MAX:
+        raise RuntimeError(SHRINK_TPL.format(label=x.label, live=len(x.live), gone=gone, ratio=GONE_RATIO_MAX))
+
+
+# =========================================================================
+# 3. 自测(用例住 scheme)
 # =========================================================================
 
 
 def run_tests() -> None:
     """test 步入口:跑门循环自测(用例集住 scheme 的 ChainFailFastTest,库垫片先例 indexing / gate;
     2026-09-26 晚随 fail-fast 改判由 ChainKeepGoingTest 改名);
-    有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(ChainFailFastTest)
+    有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。
+    2026-09-27 起同跑当前态换版闸自测 ShrinkGuardTest(随 §2 立)。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for case in (ChainFailFastTest, ShrinkGuardTest):
+        suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
