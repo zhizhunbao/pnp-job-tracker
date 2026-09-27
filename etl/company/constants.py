@@ -1612,8 +1612,10 @@ GOOGLE_SEARCH_URL = "https://www.google.com/search?hl=en&gl=ca&q="
 BING_SEARCH_URL = "https://www.bing.com/search?setmkt=en-CA&q="
 """Bing 搜索地址(2026-09-20 六家实测:有头浏览器不弹验证,结果与 DDG 几乎一样且更干净)。"""
 
-DDG_BROWSER_URL = "https://duckduckgo.com/html/?q="
-"""DuckDuckGo 搜索地址(有头浏览器;Bing 出问题时的替补。原先被封的是 httpx 直打接口那条路)。"""
+DDG_BROWSER_URL = "https://html.duckduckgo.com/html/?q="
+"""DuckDuckGo 搜索地址(有头浏览器;Bing 出问题时的替补。原先被封的是 httpx 直打接口那条路)。
+2026-09-26 晚改(Frank 勾「修 4 条过期地址」):原 `https://duckduckgo.com/html/?q=` 已跨站跳到 html.duckduckgo.com
+(crawl_urls 哨兵硬红),直接写新址,与 DDG_HTML_URL 同主机。"""
 
 JS_GOOGLE_LINKS = "() => [...document.querySelectorAll('a:has(h3)')].map(a => a.href)"
 """页内取 Google 结果链接。"""

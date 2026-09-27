@@ -52,8 +52,11 @@ SPACE = " "
 ERRORS_REPLACE = "replace"
 """读缓存原文的解码策略(坏字节不炸整页)。"""
 
-SITE_BASE = "https://emploisfp-psjobs.cfp-psc.gc.ca"
-"""站根。"""
+SITE_BASE = "https://psjobs-emploisfp.psc-cfp.gc.ca"
+"""站根。
+2026-09-26 晚换新域名(Frank 勾「修 4 条过期地址」):原 `https://emploisfp-psjobs.cfp-psc.gc.ca` 的站根已跨站跳到本域
+(crawl_urls 哨兵硬红);旧域的搜索页 / 岗位页当时仍直接 200,新域同路径实测同一份内容(page2440 搜索、page1800?poster= 岗位)。
+岗位身份是帖号不是网址,换域只改链接;详情缓存按网址记,换域后第一轮会把约 400 帖重抓一遍进 crawl 层。"""
 
 SEARCH_PATH = "/psrs-srfp/applicant/page2440"
 """公开岗位搜索页(壳 + 正文两拉)。"""

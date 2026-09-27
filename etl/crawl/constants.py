@@ -943,12 +943,17 @@ URL_SKIP_MARKS = (
     "publications.saskatchewan.ca/api/",
     "oauth2.googleapis.com",
     "indexing.googleapis.com",
+    "dl26yht2ovo33.cloudfront.net/public/web/distFolder/",
+    "jobsearch/pers/jobposting.xhtml",
 )
 """不进哨兵的 URL 特征:模板占位、存档站(自带逐份重试路,503 阵发不当官方死讯)、本机/内网、
 API 基址(2026-08-31 首扫误报三条定型:裸基址不带参数 GET 天然 404/405,健康与否由消费它们
 的步每轮实证,哨兵只管「人能读的页」)。
 2026-09-26 晚补 Google 两条(indexing 域同日立域时带进来的取令牌 / 发通知端点,只收 POST,GET 必 404;
-crawl_urls 拆成自己的单元后第一轮就红在这两条上)。"""
+crawl_urls 拆成自己的单元后第一轮就红在这两条上)。
+同晚再补两条(Frank 勾「修 4 条过期地址」):本域 SCRIPT_PATCH_ROWS 的 url_contains 是站点脚本网址的**前缀**
+(main- 后面跟哈希,拿来做子串匹配,不是页,GET 必 404);jobbank 的 HOWTO_ENDPOINT 是 JSF 表单提交地址(只收 POST,
+裸 GET 回 410)。两条都不是「人能读的页」。"""
 
 URL_TIMEOUT_S = 30
 """单条 URL 实测超时秒数。"""
