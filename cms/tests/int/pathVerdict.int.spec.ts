@@ -75,6 +75,15 @@ const CEC = [...data.draws]
 if (!CEC?.score) throw new Error('data/mart/pnp_draws.json 里没有带分线的 CEC 轮次,fixture 塌了')
 const CEC_LINE = CEC.score as number
 
+// 2026-09-27 Frank「都修」:MB 参照线同 CEC 一样会漂 —— MB 单池单分制,refDraw 取全省日期最新、带分线的一轮,
+// 08-29、09-11 两次换届都是手改金标,09-24 新一轮 760 又顶掉 09-10 的 825。改从同一份 fixture 现推,断言接线;
+// 估分 695 / 天花板 715 / 外省学习 −100 / 叠外省工作 595 这些不许动的数照旧写死。
+const MB_REF = [...data.draws]
+  .filter((d) => d.province === 'MB' && d.kind === 'draw' && d.score != null)
+  .sort((a, b) => (a.drawDate < b.drawDate ? 1 : -1))[0]
+if (!MB_REF?.score) throw new Error('data/mart/pnp_draws.json 里没有带分线的 MB 轮次,fixture 塌了')
+const MB_REF_LINE = MB_REF.score as number
+
 const C01: VerdictProfile = {
   age: 40,
   married: false,                 // 配偶在中国、不随行申请 → CRS 走 without-spouse 表
@@ -127,7 +136,10 @@ describe('mart 实况', () => {
     // 2026-09-24 634 → 743:九省通道审计补表 —— AB +32(医护专项 11、警务 3、旅游酒店 18)、BC +31(医疗拆成
     // 定向 31 与卫生局 46)、NB +25(优先职业 33、AIP 不受理 6 → 8、AIP 餐饮表作废 −10)、NS +20(建筑子条件)、
     // PE +1(AIP 73300);当日分布 SK 257 / MB 158 / AB 110 / BC 103 / NB 68 / NS 38 / PE 9。
-    expect(data.occupations).toHaveLength(743)
+    // 2026-09-27 743 → 738:按省对,只有 AB 110 → 105 —— b9b971f9(09-24 同日)AB 旅游酒店清单去掉保洁 65310 / 65311 / 65312、
+    // 洗衣干洗 65320、娱乐项目负责人 54100 五个哪行都有的通用码(18 → 13,通道条件是雇主属旅游酒店业,本站判不了);
+    // 当日分布 SK 257 / MB 158 / AB 105 / BC 103 / NB 68 / NS 38 / PE 9。
+    expect(data.occupations).toHaveLength(738)
     // 分值表**按省钉**,不钉总数:钉总数时加一个省(2026-08-10 接纽省)只会报「164 变 192」,
     // 看不出是哪张表动了,红了也没人认领。按省钉,失败信息自己说出是哪个省的官方表变了。
     const byProvince: Record<string, number> = {}
@@ -303,12 +315,13 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
   //(见 lib/ruling verdictReasons 的 gulfLineApplies 注),故 MB-swm 维持 viable。
   // 2026-09-11 再换届:官方 2026-09-10 抽选出「Completed post-secondary study in Manitoba」
   // 专场 score 825 —— MB 单池单分制全省回退(refDraw 注)取最新有分线的一轮,参照线 825/731。
-  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照 825 与 731', () => {
+  // 2026-09-27 三换届(09-24 新一轮 760):参照线改从 fixture 现推(MB_REF,见文件头),不再逐次手改金标。
+  it('MB-swm 三条 warning:外省学习 −100 / 再叠外省工作 → 595 / 估分 695 天花板 715 对照最新一轮抽选线', () => {
     const mb = byKey(list, 'MB-swm')
     expect(mb.score?.system).toBe('MPNP EOI')
     expect(mb.score?.value).toBe(695)
     expect(mb.score?.ceiling).toBe(715)
-    expect(mb.score?.refLine).toBe(825)
+    expect(mb.score?.refLine).toBe(MB_REF_LINE)
 
     const study = mb.reasons.find((r) => (r.quote ?? '') === 'Studies in another province')
     expect(study, '外省学习 −100 必须带官方档位标签').toBeTruthy()
@@ -320,8 +333,7 @@ describe('金标 ②:open 按「offer 到手后还要等多久」分档', () => 
 
     const lines = mb.reasons.find((r) => /上界 715/.test(r.text))
     expect(lines).toBeTruthy()
-    expect(lines!.text).toContain('825')
-    expect(lines!.text).toContain('731')
+    expect(lines!.text).toContain(`${MB_REF_LINE} ${MB_REF.drawDate}`)
     expect(lines!.evidence?.url).toContain('immigratemanitoba.com')
 
     // 曼省的自雇/在学期间经验不计,官方原句在库里
