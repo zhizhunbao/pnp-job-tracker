@@ -70,7 +70,7 @@ from jobbank.constants import (
     K_ANNUAL, K_APPRENTICE_FRIENDLY, K_CATEGORY, K_CERTIFICATES, K_CHECKED, K_CITY, K_COMPANY,
     K_COUNT, K_CUTOFF, K_DATE, K_DATE_DETAIL, K_DEAD, K_DESCRIPTION, K_DETAIL_FETCHED, K_DIRECT,
     K_DISTRICT, K_EDUCATION, K_EMAIL, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_WHO_CAN_APPLY,
-    K_DETAIL_STALE,
+    K_DETAIL_STALE, K_VALID_THROUGH,
     DETAIL_BACKFILL_MAX,
     SEL_AUDIENCE, WHO_ANYONE, WHO_ANYONE_MARK, WHO_CITIZENS, WHO_TEMPORARY, WHO_TEMPORARY_MARK,
     K_EXPERIENCE_REQ, K_EXTERNAL_ID, K_FETCHED_AT, K_FILE, K_JOB_COUNT, K_JOBS, K_LAST_SEEN,
@@ -125,7 +125,7 @@ from jobbank.scheme import (
     SoupNodeLike, StaleIn, StemIn, TickIn, TitleChangeIn, VerifyIn, VerifyOut,
     HowtoBatchIn, HowtoBatchOut, HowtoFlushIn, HowtoOneIn, HowtoParseIn, HowtoPickIn, HowtoPickOut,
     HowtoRecordIn, HowtoTallyIn, HttpPostClientLike,
-    JobbankVerifyTest, JudgeIn, PickIn, PickOut, TallyPickIn, UntilKnownIn,
+    JobbankDetailParseTest, JobbankVerifyTest, JudgeIn, PickIn, PickOut, TallyPickIn, UntilKnownIn,
 )
 
 
@@ -625,6 +625,9 @@ def parse_jobbank_details() -> None:
 
     两者作为一个发布事务持锁,防止 build 读到新 md、却仍读到旧 postings(或反过来)。
     2026-09-25:欠重抓的帖拿到新快照(is_stale_refreshed)当强制重解析,不占回填名额,解析完销账。
+    2026-09-27 截止日批收口:存量回填只补还在板上的帖(load_on_board,同验尸 / howto 的挑法)—— 死帖与下架帖补截止日没人看得到,
+    首轮不筛时待补 17.6 万帖(其中约 11 万验尸已判死),每轮多占仓锁约 20 分钟、职位更新周期从约 68 分钟拉到约 92 分钟;
+    筛完约 2.7 万帖,约 9 轮补完。在板名单缺(首跑)= 不筛,照旧按额度补。
     """
     say(PRINT_DETAILS_IN_TPL.format(root=IN_SNAP_ROOT))
     say(PRINT_DETAILS_OUT_TPL.format(postings=IN_POSTINGS, details=OUT_DETAILS))
@@ -643,6 +646,7 @@ def parse_jobbank_details() -> None:
         parsed = 0
         backfilled = 0
         resynced = 0
+        on_board = load_on_board()
         for job in jobs:
             raw_file = have.get(pid_of(job))
             refreshed = is_stale_refreshed(StaleIn(job=job, raw_file=raw_file))
@@ -651,6 +655,8 @@ def parse_jobbank_details() -> None:
                 continue
             if is_backfill_only(job) and not forced:
                 if backfilled >= DETAIL_BACKFILL_MAX:
+                    continue
+                if on_board is not None and pid_of(job) not in on_board:
                     continue
                 backfilled += 1
             enrich_job(EnrichIn(job=job, raw_file=cast(Path, raw_file), seen=seen, index=index))
@@ -679,7 +685,8 @@ def reparse_ids() -> set:
 
 
 def is_backfill_only(job: dict) -> bool:
-    """这帖早已富集完(有 detail_fetched / noc / 雇佣形态),这次重解析只为补新键 —— 受 DETAIL_BACKFILL_MAX 限量。"""
+    """这帖早已富集完(有 detail_fetched / noc / 雇佣形态),这次重解析只为补新键 —— 受 DETAIL_BACKFILL_MAX 限量。
+    2026-09-27 截止日批的存量回填(只缺 K_VALID_THROUGH 的已富集帖)同走此判据与限额,判据不用改:缺哪个新键都一样。"""
     return bool(job.get(K_DETAIL_FETCHED) and job.get(K_NOC) and K_EMPLOYMENT_HOURS in job)
 
 
@@ -687,19 +694,24 @@ def should_parse(x: ShouldParseIn) -> bool:
     """有原始 HTML、且(没解析过 或 还缺官方 noc 或 还缺雇佣形态键)→ 解析。
 
     缺键条件让存量帖自动回填新字段(noc 回填同款先例,无需重抓);REPARSE=1 全部重解析。
+    2026-09-27 Frank 勾「Job Bank 截止日」:缺截止日键(K_VALID_THROUGH)也算缺 —— 存量帖回填帖页截止日,只读本地详情
+    快照、不联网;已富集帖只为补这一键的由 is_backfill_only 归进 DETAIL_BACKFILL_MAX 限额(每轮至多多这么多帖),
+    新帖照旧不受限。键在(哪怕空串 = 帖页没写)即抽过,不再为它重解析。
     """
     if pid_of(x.job) == "" or x.raw_file is None:
         return False
     if x.reparse:
         return True
     if x.job.get(K_DETAIL_FETCHED) and x.job.get(K_NOC) and K_EMPLOYMENT_HOURS in x.job \
-            and K_WHO_CAN_APPLY in x.job:
+            and K_WHO_CAN_APPLY in x.job and K_VALID_THROUGH in x.job:
         return False
     return True
 
 
 def enrich_job(x: EnrichIn) -> None:
-    """一帖:解析详情 HTML → 原地写地址/发布日/官网/NOC/雇佣形态/入职要求 + 落 .md。"""
+    """一帖:解析详情 HTML → 原地写地址/发布日/官网/NOC/雇佣形态/入职要求 + 落 .md。
+    2026-09-27 Frank 勾「Job Bank 截止日」:加写帖页「Advertised until」截止日(K_VALID_THROUGH)—— 判定复用验尸的
+    page_until_of(同一种帖页,不另抄一份);帖页没写(Indeed 转帖)照写空串,键在即「抽过」,should_parse 不再回填它。"""
     raw_html = x.raw_file.read_text(encoding=ENC_UTF8)
     soup = cast(SoupNodeLike, BeautifulSoup(raw_html, PARSER_HTML))
     addr = spaced_text(soup.select_one(SEL_ADDRESS))
@@ -721,6 +733,7 @@ def enrich_job(x: EnrichIn) -> None:
     x.job[K_EMPLOYMENT_TERM] = employment.term
     x.job[K_EMPLOYMENT_HOURS] = employment.hours
     x.job[K_WHO_CAN_APPLY] = who_can_apply_of(soup)
+    x.job[K_VALID_THROUGH] = page_until_of(raw_html)
     x.job[K_CERTIFICATES] = req_section(ReqIn(soup=soup, heading=HEADING_CERTIFICATES))
     x.job[K_EDUCATION] = EDUCATION_JOIN_SEP.join(
         req_section(ReqIn(soup=soup, heading=HEADING_EDUCATION)))
@@ -1541,7 +1554,8 @@ def judge_page(x: JudgeIn) -> None:
 
 
 def page_until_of(html: str) -> str:
-    """帖页上的截止日(「Advertised until」那格的 microdata validThrough,YYYY-MM-DD);帖页没写给空串。"""
+    """帖页上的截止日(「Advertised until」那格的 microdata validThrough,YYYY-MM-DD);帖页没写给空串。
+    2026-09-27 截止日批起详情解析 enrich_job 也用它抽帖子行的 K_VALID_THROUGH(详情快照与验尸回包是同一种帖页,判定只此一份)。"""
     m = PAGE_UNTIL_RE.search(html)
     if m is None:
         return ""
@@ -1923,7 +1937,10 @@ def flush_howto(x: HowtoFlushIn) -> None:
 
 def run_tests() -> None:
     """test 步入口:跑本域自测(用例集住 scheme 的 JobbankVerifyTest,库垫片先例 gate.scheme / indexing.scheme);
-    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(JobbankVerifyTest)
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
+    2026-09-27 截止日批加第二集 JobbankDetailParseTest(详情抽截止日 + 回填限额归类),两集同一趟跑(多集写法照 pnp)。"""
+    suite = unittest.TestSuite()
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(JobbankVerifyTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(JobbankDetailParseTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

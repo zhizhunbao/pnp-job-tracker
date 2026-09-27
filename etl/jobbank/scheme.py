@@ -16,7 +16,10 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 例外(2026-09-26 到期即验批):第 12 段自测用例集(unittest.TestCase,「不用 class」的外部库例外,先例
 gate.scheme 的 JobbankStoreLockTest、indexing.scheme 的 IndexingDecisionTest)引本域 constants 造帖子行与名单;
 被测的 jobbank.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
+2026-09-27 截止日批(Frank 勾「Job Bank 截止日」)加第二个用例集 JobbankDetailParseTest,同一例外、同一取法。
 """
+import itertools
+import tempfile
 import unittest
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -27,6 +30,7 @@ from unittest import mock
 from jobbank.constants import (
     K_CHECKED, K_DATE, K_DEAD, K_DIRECT, K_HOWTO_UNTIL, K_LAST_SEEN, K_POSTING_ID, K_SOURCE, K_UNTIL, K_URL,
     TIER_NORMAL, TIER_OVERDUE, TIER_RECHECK,
+    K_DETAIL_FETCHED, K_EMPLOYER, K_EMPLOYMENT_HOURS, K_NOC, K_TITLE, K_VALID_THROUGH, K_WHO_CAN_APPLY,
 )
 
 
@@ -1395,3 +1399,151 @@ class JobbankVerifyTest(unittest.TestCase):
         late = [("2026-09-01 00:00", 200, ""), ("2026-10-06 00:00", 410, "")]
         self.assertEqual(self.run_rounds(old, {}, ("2026-09-26 00:00", "2026-10-08 00:00", "2026-09-24 00:00"), late),
                          ["10-01 00:00", "10-03 00:00", "10-05 00:00", "10-07 00:00"])
+
+
+class JobbankDetailParseTest(unittest.TestCase):
+    """详情解析自测(2026-09-27 截止日批立,Frank 勾「Job Bank 截止日」;`--only test` 与上一集同一趟跑):enrich_job 从详情
+    快照抽「Advertised until」截止日写进帖子行 K_VALID_THROUGH —— 输入是本地真快照里那一段的原样片段,不贴整页;存量回填的
+    限额归类(should_parse / is_backfill_only):已富集帖只缺这一键的走 DETAIL_BACKFILL_MAX 限额,新帖不占额度,抽过一次
+    (哪怕空串)就不再为它重解析。过没过期不在这判、抽出来原样落:Job Bank 岗下架只走判死台账(验尸 + howto 判下架;seed 的
+    CLOSE_PAST_DEADLINE 不关 jobbank 渠道),sitemap / JobPosting 按「早于多伦多今天才算过、当天不算」读 validThrough。
+    形制照判定层测试:手写金标 + 穷举性质;全程不联网、不写仓内文件(片段套成一页落临时目录,写 .md 的 write_detail_md
+    换替身)。"""
+
+    def job_of(self, pid: str) -> dict:
+        """造一条列表解析刚并进来、还没抓详情的帖子行。"""
+        return {K_POSTING_ID: pid, K_TITLE: "cook", K_EMPLOYER: "Acme",
+                K_URL: "https://www.jobbank.gc.ca/jobsearch/jobposting/" + pid}
+
+    def old_row_of(self, pid: str) -> dict:
+        """造一条截止日批之前就富集完的帖子行:抓过详情、有 noc、雇佣形态与谁能投两键都在,唯独没有截止日键。"""
+        job = self.job_of(pid)
+        job[K_DETAIL_FETCHED] = True
+        job[K_NOC] = "63200"
+        job[K_EMPLOYMENT_HOURS] = "full"
+        job[K_WHO_CAN_APPLY] = ""
+        return job
+
+    def fragment_of(self, pid: str) -> str:
+        """本地详情快照里「Advertised until」那一段的原样片段(帖号 → 片段):直发 50146693(2026-09-25 快照)、转自
+        Talent.com 的 50370266(09-26)、Indeed 转帖 50370159(09-26,帖页没这一格,抄的是同一位置)、已过期的直发
+        49825613(07-02 快照,截止日 07-15)。"""
+        fragments = {
+            "50146693": ('</form>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t<h3>Advertised until</h3>\n'
+                         '\t\t\t\t<p property="validThrough">2026-10-05\n'
+                         '\t\t\t\t\t<span id="tp_expiryDate" class="timepickler"></span>\n\t\t\t\t</p></div>\n\t</div>'),
+            "50370266": ('</form>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="clearfix"></div>\n\t\t\t\t</div>\n'
+                         '\t\t\t\t<h3>Advertised until</h3>\n\t\t\t\t<p property="validThrough">2026-10-03\n'
+                         '\t\t\t\t\t<span id="tp_expiryDate" class="timepickler"></span>\n\t\t\t\t</p></div>\n\t</div>'),
+            "50370159": ('</form>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="clearfix"></div>\n\t\t\t\t</div></div>\n\t</div>\n'
+                         '\t\t\t\t \t\n\n\t\t\t\t\t<div class="job-posting-detail-common">'),
+            "49825613": ('</form>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t<h3>Advertised until</h3>\n'
+                         '\t\t\t\t<p property="validThrough">2026-07-15\n'
+                         '\t\t\t\t\t<span id="tp_expiryDate" class="timepickler"></span>\n\t\t\t\t</p></div>\n\t</div>'),
+        }
+        return fragments[pid]
+
+    def enriched_of(self, job: dict, fragment: str) -> dict:
+        """片段套成一页落进临时目录,跑一次 enrich_job(写 .md 换替身并断言只写一次),返回原地富集后的同一条帖子行。"""
+        from jobbank import functions as fn
+        page = "<html><head><title>cook - Job posting - Job Bank</title></head><body>" + fragment + "</body></html>"
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp) / (job[K_POSTING_ID] + ".html")
+            raw.write_text(page, encoding="utf-8")
+            with mock.patch.object(fn, "write_detail_md") as md:
+                fn.enrich_job(EnrichIn(job=job, raw_file=raw, seen=set(),
+                                       index=JdIndexUpdates(entries={}, bodies={})))
+            md.assert_called_once()
+        return job
+
+    def test_snapshot_until_golden(self) -> None:
+        """截止日抽取金标:直发帖 50146693 与非 Indeed 转帖 50370266 抽出帖页那一天;Indeed 转帖 50370159 帖页没这一格 →
+        记空串、键照样在(已抽过);已过期的 49825613(07-15)原样落,过没过期不在这判。重解析以手上最新快照为准:旧值被
+        覆盖,新快照没写就记空串。判定只走验尸那一份 page_until_of(换替身即见效,没有第二份抄本)。"""
+        from jobbank import functions as fn
+        cases = [("50146693", "2026-10-05"), ("50370266", "2026-10-03"), ("50370159", ""), ("49825613", "2026-07-15")]
+        for pid, want in cases:
+            with self.subTest(pid=pid):
+                job = self.enriched_of(self.job_of(pid), self.fragment_of(pid))
+                self.assertIn(K_VALID_THROUGH, job)
+                self.assertEqual(job[K_VALID_THROUGH], want)
+                self.assertIs(job[K_DETAIL_FETCHED], True)
+        stale = self.job_of("50146693")
+        stale[K_VALID_THROUGH] = "2026-09-20"
+        self.assertEqual(self.enriched_of(stale, self.fragment_of("50146693"))[K_VALID_THROUGH], "2026-10-05")
+        self.assertEqual(self.enriched_of(stale, self.fragment_of("50370159"))[K_VALID_THROUGH], "")
+        with mock.patch.object(fn, "page_until_of", return_value="2099-12-31") as judge:
+            routed = self.enriched_of(self.job_of("50370266"), self.fragment_of("50370266"))
+        self.assertEqual(routed[K_VALID_THROUGH], "2099-12-31")
+        judge.assert_called_once()
+
+    def test_backfill_budget(self) -> None:
+        """回填限额归类金标:已富集帖只缺截止日键 → 要解析、且算回填(吃 DETAIL_BACKFILL_MAX 额度,一轮不会全量重解析);
+        截止日键在(有日子或空串)→ 不再解析;没抓过详情的新帖 → 要解析、不算回填(新帖不占额度);没有详情快照 → 不解析
+        (回填只读本地快照,从不联网重抓);REPARSE / 名单强制照旧全解析。回填一次即收敛:Indeed 转帖跑过 enrich_job 记下
+        空串,下一轮不再入选。"""
+        from jobbank import functions as fn
+        raw = Path("50370159.html")
+        dated = self.old_row_of("50370266")
+        dated[K_VALID_THROUGH] = "2026-10-03"
+        blank = self.old_row_of("50370159")
+        blank[K_VALID_THROUGH] = ""
+        cases = [
+            ("只缺截止日键", self.old_row_of("50370159"), raw, False, (True, True)),
+            ("截止日有日子", dated, raw, False, (False, True)),
+            ("截止日空串", blank, raw, False, (False, True)),
+            ("新帖", self.job_of("50370326"), raw, False, (True, False)),
+            ("没有快照", self.old_row_of("50370159"), None, False, (False, True)),
+            ("强制重解析", dated, raw, True, (True, True)),
+        ]
+        for name, job, path, forced, want in cases:
+            with self.subTest(name=name):
+                got = fn.should_parse(ShouldParseIn(job=job, raw_file=path, reparse=forced))
+                self.assertEqual((got, fn.is_backfill_only(job)), want)
+        indeed = self.old_row_of("50370159")
+        self.assertTrue(fn.should_parse(ShouldParseIn(job=indeed, raw_file=raw, reparse=False)))
+        self.enriched_of(indeed, self.fragment_of("50370159"))
+        self.assertEqual(indeed[K_VALID_THROUGH], "")
+        self.assertFalse(fn.should_parse(ShouldParseIn(job=indeed, raw_file=raw, reparse=False)))
+
+    def test_backfill_properties(self) -> None:
+        """穷举性质(帖号有无 × 抓过详情 3 态 × noc 3 态 × 雇佣形态键 3 态 × 谁能投键 3 态 × 截止日键 3 态 × 快照有无 ×
+        强制与否,1,944 组):① should_parse 等于规格(有帖号、有快照,且强制或「抓过详情 + 有 noc + 三个键都在」不成立);
+        ② 比加截止日这一格之前的判据多出来的解析,全是不强制、算回填(is_backfill_only)的 —— 每轮解析量至多多
+        DETAIL_BACKFILL_MAX;③ 截止日键在(有日子或空串)时结论与旧判据逐组相同 —— 抽过一次就不再为它重解析。"""
+        from jobbank import functions as fn
+        pids = [{}, {K_POSTING_ID: "50370266"}]
+        fetched = [{}, {K_DETAIL_FETCHED: False}, {K_DETAIL_FETCHED: True}]
+        nocs = [{}, {K_NOC: ""}, {K_NOC: "63200"}]
+        hours = [{}, {K_EMPLOYMENT_HOURS: ""}, {K_EMPLOYMENT_HOURS: "full"}]
+        whos = [{}, {K_WHO_CAN_APPLY: ""}, {K_WHO_CAN_APPLY: "anyone"}]
+        untils = [{}, {K_VALID_THROUGH: ""}, {K_VALID_THROUGH: "2026-10-03"}]
+        n = 0
+        for parts in itertools.product(pids, fetched, nocs, hours, whos, untils):
+            job: dict = {}
+            for part in parts:
+                job.update(part)
+            for raw in (None, Path("50370266.html")):
+                for forced in (False, True):
+                    n += 1
+                    got = fn.should_parse(ShouldParseIn(job=job, raw_file=raw, reparse=forced))
+                    new = self.rule_of(job, raw, forced, (K_EMPLOYMENT_HOURS, K_WHO_CAN_APPLY, K_VALID_THROUGH))
+                    old = self.rule_of(job, raw, forced, (K_EMPLOYMENT_HOURS, K_WHO_CAN_APPLY))
+                    label = (job, raw, forced)
+                    self.assertEqual(got, new, label)
+                    if got and old is False:
+                        self.assertEqual((forced, fn.is_backfill_only(job)), (False, True), label)
+                    if K_VALID_THROUGH in job:
+                        self.assertEqual(got, old, label)
+        self.assertEqual(n, 2 * 3 ** 5 * 2 * 2)
+
+    def rule_of(self, job: dict, raw: "Path | None", forced: bool, keys: tuple) -> bool:
+        """should_parse 的规格(独立对照尺,不经被测函数):有帖号、有快照,且强制或「抓过详情 + 有 noc + keys 全在」不成立。"""
+        if job.get(K_POSTING_ID, "") == "" or raw is None:
+            return False
+        if forced:
+            return True
+        done = job.get(K_DETAIL_FETCHED) is True and job.get(K_NOC, "") != ""
+        for key in keys:
+            done = done and key in job
+        return done is False

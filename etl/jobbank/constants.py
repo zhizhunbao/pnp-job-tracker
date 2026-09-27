@@ -467,7 +467,12 @@ WHO_TEMPORARY_MARK = "temporary resident"
 DETAIL_BACKFILL_MAX = 3000
 """一轮最多回填几帖(已富集过、只为补新键的重解析)。2026-09-05 实撞:who_can_apply 上线让 136k 帖一口气全重解析,
 持仓锁两小时不放,build 整轮卡在等锁没法汇装 seed;改成每轮回填一批(约 10 分钟),几十轮慢慢补齐,
-新抓的帖不受此限。"""
+新抓的帖不受此限。
+2026-09-27 截止日批(Frank 勾「Job Bank 截止日」)的存量回填同走这份额度、不另开:已富集帖只缺 K_VALID_THROUGH 键的
+约 17.6 万帖,每轮 3,000 约 59 轮追平;只读本地详情快照,不联网、不重抓。09-27 03:08 首轮实测:解析 4,154 帖
+(新帖 14 + 每轮都重解析的无 NOC 帖约 1,140 + 回填 3,000)持锁 27.6 分钟(此前每轮 7~9 分钟),即 3,000 帖约 20 分钟、不是上面的约 10 分钟;
+同轮 build 等锁 18.5 分钟。
+同日收口:存量回填只补还在板上的帖(parse_jobbank_details 读 mart_open_ids,同验尸 / howto 的挑法),待补降到约 2.7 万帖、约 9 轮。"""
 """详情页的雇佣形态(Full/Part time)。"""
 
 SEL_HIRING_ORG = '[property="hiringOrganization"]'
@@ -539,6 +544,16 @@ K_EDUCATION = "education"
 
 K_DATE_DETAIL = "date_detail"
 """帖子行键:详情页给的发布日(比列表页准)。"""
+
+K_VALID_THROUGH = "valid_through"
+"""帖子行键:详情页「Advertised until」那格的截止日(YYYY-MM-DD,原样落;空串 = 帖页没写,Indeed 转帖源头就不给;
+缺键 = 还没被带这一格的详情解析过,should_parse 见缺即回填)。
+2026-09-27 Frank 勾「Job Bank 截止日」:在架 Job Bank 岗 validThrough 缺 43%,非 Indeed 转帖与直发帖的详情快照里本来就有
+这一格(抽样 79/80),详情解析一直没抽。判定复用验尸的 page_until_of / PAGE_UNTIL_RE(同一种帖页,不另抄一份);
+键名照板仓与 ATS 的 valid_through(mart 取源行截止日认的就是这个键)。过没过期不在这判:Job Bank 岗下架只走判死台账
+(验尸 + howto 判下架;seed 的 CLOSE_PAST_DEADLINE 不关 jobbank 渠道),sitemap / JobPosting 按「早于多伦多今天才算过、
+当天不算」读 validThrough。本地实测(09-27):在架 62,922 条缺 validThrough 的 26,976 条(42.9%)里非 Indeed 18,991 条,
+抽样 99% 快照有这一格;回填 + mart 接上后在架缺口约降到 13%(剩下几乎全是 Indeed 转帖)。"""
 
 ENV_REPARSE = "REPARSE"
 """环境变量名:REPARSE=1 强制重解析全部(改了描述提取逻辑后回填用)。"""
@@ -985,7 +1000,9 @@ PAGE_UNTIL_RE = re.compile(r"property=[\"']validThrough[\"'][^>]*>\s*(\d{4}-\d{2
 """帖页截止日:「Advertised until」下面那格的 microdata(`<p property="validThrough">2026-10-05`)。
 2026-09-26 抽样活帖:直发 70/72、非 Indeed 转帖 18/18 有,Indeed 0/10 没有;死帖(410)页没有。
 不借 howto 段的 ADVERTISED_UNTIL_RE:那条跑在剥了标签的 3~4KB 投递区回包上,帖页整页约 20 万字节,
-逐帖剥标签白费;microdata 是同一格的机读形。"""
+逐帖剥标签白费;microdata 是同一格的机读形。
+2026-09-27 截止日批起详情解析(第 5 段 enrich_job)也经 page_until_of 用它给帖子行抽 K_VALID_THROUGH:详情快照与验尸
+回包是同一种帖页,判定只此一份。"""
 
 VERIFY_DATE_FMTS = ("%B %d, %Y", ISO_DATE_FMT)
 """发布日的两种写法(列表页原文 / ISO);ISO 那种只取前 10 位。"""
