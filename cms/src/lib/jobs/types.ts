@@ -4660,6 +4660,11 @@ export type StoredApplyEmailIn = {
    * 原帖链接(与库里 apply_url 等值比)。
    */
   url: string
+
+  /**
+   * 岗位号(2026-09-27 起前端随链接一起带;有就按它取,不按链接);null = 老前端没带,退回按链接取。
+   */
+  id: MaybeJobId
 }
 
 /**
@@ -4710,16 +4715,6 @@ export type JdStateRow = {
    * 岗 id。
    */
   id: number
-
-  /**
-   * 官方标注的就业性质；没有是 null（生成时只补空）。
-   */
-  term: MaybeStr
-
-  /**
-   * 官方标注的工时类型；同上。
-   */
-  hours: MaybeStr
 
   /**
    * 已有的整理版；没生过是 null。
@@ -4789,22 +4784,13 @@ export type DraftJdIn = {
 
 /**
  * 一份过了校验的整理版草稿:正文与顺带抽出的两个字段。
+ * 2026-09-27 起只剩正文(懒整理不再回写工时 / 雇佣期,两格随之撤;见 generateJdFormatted)。
  */
 export type JdDraft = {
   /**
    * 整理版正文(已剥尾部字段行)。
    */
   out: string
-
-  /**
-   * [TERM]= 抽出的任期;'' = 没抽到。
-   */
-  term: string
-
-  /**
-   * [HRS]= 抽出的工时;'' = 没抽到。
-   */
-  hrs: string
 }
 
 /**

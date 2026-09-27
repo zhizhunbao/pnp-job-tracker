@@ -31,11 +31,11 @@ import {
   HOURS_FULL, HOURS_PART, HOW_APPLY_RE, HREF_ENT_PAIRS, HTML_NONE, ISO_NONE, JB_APPLY_ANCHOR, JB_DESC_RE,
   JB_EXT_LINK_RE, JB_INNER_ENT_PAIRS, JB_LINK_NONE, JB_ORIGIN, JB_REQ_ANCHOR, JB_SECTION_CAP, JB_URL_RE,
   JD_BAD_HOST_172_RE, JD_BAD_HOST_RE, JD_BLOCK_BREAK_RE, JD_BUDGET_MARGIN, JD_DASH_PREFIX_RE, JD_DIGITS_RE,
-  JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_FIELD_NONE, JD_GEN_TIMEOUT_MS, JD_GEN_TRIES, JD_HEAD_JUNK_RE,
-  JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HOURS_VALUES, JD_HRS_RE, JD_HTML_CAP, JD_LINE_MIN, JD_EMPTY_STRIP_RE, JD_MARK_INLINE_RE,
+  JD_FAILED_MAX, JD_FETCH_TIMEOUT_MS, JD_GEN_TIMEOUT_MS, JD_GEN_TRIES, JD_HEAD_JUNK_RE,
+  JD_HEAD_MAX_LINES, JD_HEAD_SHRINK_MAX, JD_HTML_CAP, JD_LINE_MIN, JD_EMPTY_STRIP_RE, JD_MARK_INLINE_RE,
   JD_MARK_LINE_REPL, JD_MAX_LEN, JD_MIN_LEN, JD_NEG_TTL_MS, JD_NONE, JD_NONE_LOOSE_MAX, JD_NONE_LOOSE_RE, JD_NONE_RE,
   JD_NONE_TEXT, JD_ORPHAN_LEN, JD_OUT_MAX_BASE, JD_OUT_MAX_RATIO, JD_OUT_MIN_LEN, JD_PARA_LEN, JD_PROTO_RE,
-  JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_TERM_RE, JD_TERM_VALUES, JD_UA,
+  JD_SECTION_MARKS, JD_SEO_MAX, JD_STRIP_BLOCK_RE, JD_TAG_RE, JD_TAIL_STRIP_RE, JD_UA,
   JOB_PATH, JSF_FORM_BASE, JSF_KEY_JOBID, JSF_KEY_JSJOBID, LANG_EN, LANG_KO, LANG_KO_CODE, LD_CONTEXT, LD_COUNTRY,
   LD_CURRENCY, LD_FULL_TIME, LD_ID_NAME, LD_JOB_POSTING, LD_KEY_CONTEXT, LD_KEY_TYPE, LD_LT_ESC, LD_LT_RE, LD_MONETARY,
   LD_ORGANIZATION, LD_PART_TIME, LD_PLACE, LD_POSTAL, LD_PROPERTY_VALUE, LD_QUANTITATIVE, LD_TEMPORARY, LD_UNIT_YEAR, LEVEL_RANK,
@@ -2605,12 +2605,20 @@ export async function loadBigDims(input: BigDimsIn): BigDimsOut {
 /**
  * 库里存好的雇主投递邮箱(2026-09-23 站内投递批 1):投递栏先问它,没有再现取 Job Bank(loadApplyEmail)。
  * 写入方是 ETL:mart 投递邮箱段(Job Bank 直发读 howto 役的投递区,其他来源从正文抽)。
+ * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:带了岗位号就按岗位号取(APPLY_EMAIL_BY_ID;所有来源都问),
+ * 没带(老前端)才按链接取。
  *
- * @param x 连接与原帖链接。
+ * @param x 连接、原帖链接与岗位号。
  * @returns 邮箱;库里没有给空串。
  */
 export async function loadStoredApplyEmail(x: StoredApplyEmailIn): StoredApplyEmailOut {
-  const rows = await queryRows({ db: x.db, sql: SQL.APPLY_EMAIL_BY_URL, params: [x.url], map: toApplyEmailFact })
+  let sql = SQL.APPLY_EMAIL_BY_URL
+  let params: Array<string | number> = [x.url]
+  if (x.id != null) {
+    sql = SQL.APPLY_EMAIL_BY_ID
+    params = [x.id]
+  }
+  const rows = await queryRows({ db: x.db, sql: sql, params: params, map: toApplyEmailFact })
   const first = firstOf(rows)
   if (first == null) {
     return MAIL_NONE
@@ -2772,6 +2780,8 @@ export async function loadJdState(input: JdFormattedIn): JdStateOut {
 /**
  * JD 五节整理生成（J2）：friendChat 按提示头整理 → 校验 → 存列 = 永久缓存；
  * 顺带抽 [TERM]/[HRS] 补空字段（只补空不覆盖官方标注，622 缺失岗兜底）。
+ * 2026-09-27 Frank「这种能走哪个渠道的信息非常重要」「千万不能 搞错」:工时 / 雇佣期是判省提名通道的输入(mart 的 offer_fits),这里补写进库、可提名那格却要等下一轮汇装才重算 —— 页面出了「兼职」还标「NL 技术工人」。改成只由 ETL 汇装写这两格(jdformat 队列自己抽,fill_formatted 与评分段同一把尺子 emp_of,与可提名同一轮落库),懒整理只写整理稿。
+ * 提示头照旧让模型吐 [TERM]/[HRS] 两行(与 ETL 那份提示同形,不动),存列前由 JD_TAIL_STRIP_RE 剥掉。
  * 红线：只搬运不发挥 —— 输出里的多位数字必须在原文出现，否则整条拒收；
  * 原文永不覆盖。正文预算 = FRIEND_INPUT_MAX - 提示头 - 边距（#123d：上游硬上限
  * 6000，超长帖截前段，尾部缺节由 (not stated) + 前端兜底）。
@@ -2786,12 +2796,6 @@ export async function generateJdFormatted(input: GenerateJdIn): GenerateJdOut {
   }
   const out = jdMarkLinesOf(scrubPii(draft.out))
   await input.db.query(SQL.JD_SET_FORMATTED, [out, input.state.id])
-  if (draft.term !== '' && JD_TERM_VALUES.includes(draft.term) && input.state.term == null) {
-    await input.db.query(SQL.JD_SET_EMP_TERM, [draft.term, input.state.id])
-  }
-  if (draft.hrs !== '' && JD_HOURS_VALUES.includes(draft.hrs) && input.state.hours == null) {
-    await input.db.query(SQL.JD_SET_EMP_HOURS, [draft.hrs, input.state.id])
-  }
   return out
 }
 
@@ -2834,17 +2838,7 @@ async function draftJdFormatted(x: DraftJdIn): DraftJdOut {
  * @returns 草稿(未校验)。
  */
 function jdDraftOf(answer: string): JdDraft {
-  let term = JD_FIELD_NONE
-  const termM = JD_TERM_RE.exec(answer)
-  if (termM != null && termM.groups != null && termM.groups.term != null) {
-    term = termM.groups.term.toLowerCase()
-  }
-  let hrs = JD_FIELD_NONE
-  const hrsM = JD_HRS_RE.exec(answer)
-  if (hrsM != null && hrsM.groups != null && hrsM.groups.hrs != null) {
-    hrs = hrsM.groups.hrs.toLowerCase()
-  }
-  return { out: answer.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim(), term: term, hrs: hrs }
+  return { out: answer.replace(JD_TAIL_STRIP_RE, STRIP_REPL).trim() }
 }
 
 /**
@@ -3546,8 +3540,7 @@ export function toJdSsrRow(r: Row): JdSsr {
  */
 export function toJdStateRow(r: Row): JdStateRow {
   return {
-    id: count(r.id), term: textOrNull(r.employment_term),
-    hours: textOrNull(r.employment_hours), formatted: jdMarkLinesOrNull(textOrNull(r.jd_formatted)),
+    id: count(r.id), formatted: jdMarkLinesOrNull(textOrNull(r.jd_formatted)),
   }
 }
 

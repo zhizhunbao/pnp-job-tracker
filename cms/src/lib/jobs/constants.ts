@@ -2324,30 +2324,6 @@ export const HOW_APPLY_RE = /how to apply/i
 export const JD_SECTION_MARKS: string[] = ['ROLE', 'REQS', 'PAY', 'WORKHOURS', 'APPLY']
 
 /**
- * 就业性质的合法值（只补空不覆盖官方标注）。
- */
-export const JD_TERM_VALUES: string[] = ['permanent', 'term', 'casual', 'seasonal']
-
-/**
- * 工时类型的合法值。
- */
-export const JD_HOURS_VALUES: string[] = ['full', 'part']
-
-/**
- * 输出尾部 [TERM]= 行的抽取。
- *
- * 捕获组 `term`:雇佣期限词(小写后须落在 JD_TERM_VALUES 里才采信)。
- */
-export const JD_TERM_RE = /\[TERM\]=\s*(?<term>\w+)/
-
-/**
- * 输出尾部 [HRS]= 行的抽取。
- *
- * 捕获组 `hrs`:工时类型词(小写后须落在 JD_HOURS_VALUES 里才采信)。
- */
-export const JD_HRS_RE = /\[HRS\]=\s*(?<hrs>\w+)/
-
-/**
  * 把尾部字段行从正文里剥掉。
  */
 export const JD_TAIL_STRIP_RE = /\[(TERM|HRS)\]=[^\n]*/g
@@ -2584,13 +2560,6 @@ export const MAIL_NONE = ''
  * 域名只用来对黑名单后缀做排除,取不到就等于不排除 —— 空串保证那几条 endsWith 全不命中。
  */
 export const MAIL_DOMAIN_NONE = ''
-
-/**
- * JD 整理版里模型没吐出这一格(雇佣类型、工时)。
- * 这两格是**从模型输出里抽**的枚举,不是我们算的:抽不到就留空,
- * 由校验那一步决定整篇要不要作废,不在这里替它填一个「全职」。
- */
-export const JD_FIELD_NONE = ''
 
 /**
  * 官方通道名不出译注:界面本来就是英文(译注是给中文、韩文界面加的小注),

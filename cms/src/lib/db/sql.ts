@@ -150,6 +150,13 @@ export const JOB_BY_ID = `SELECT ${JOB_COLUMNS} ${JOB_FROM} WHERE j.id = $1 LIMI
 export const APPLY_EMAIL_BY_URL = `SELECT apply_email FROM jobs WHERE apply_url = $1 AND apply_email IS NOT NULL LIMIT 1`
 
 /**
+ * 库里存好的雇主投递邮箱,按岗位号取(2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:非 Job Bank 来源存好的邮箱
+ * 原先一个都没问过)。按岗位号不按链接 —— 多条岗共用一个门户链接(HireAC)时按链接会串岗,同 JD 链 09-20 改按岗位号。$1=岗位号。
+ * 出口规矩同上一条:只有 /api/jobs/applyhow。
+ */
+export const APPLY_EMAIL_BY_ID = `SELECT apply_email FROM jobs WHERE id = $1 AND apply_email IS NOT NULL LIMIT 1`
+
+/**
  * 相关职位·同公司在招 12 条。$1=公司名,$2=排除的当前岗 id。
  * 2026-09-21 剔重复帖(同公司同标题同城、MARK_DUPS 标了 is_dup 的):GrowCo 温室经理的同公司组里同一条 labourer 出了两遍;
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
@@ -1587,16 +1594,6 @@ export const ALERT_NEW_COUNT_BY_PAIRS = `SELECT count(*)::int AS n FROM jobs
 export const JD_SET_FORMATTED = `UPDATE jobs SET jd_formatted = $1, jd_formatted_at = now() WHERE id = $2`
 
 /**
- * 只在原值为空时补雇佣形态,不覆盖已解析出的值
- */
-export const JD_SET_EMP_TERM = `UPDATE jobs SET employment_term = $1 WHERE id = $2 AND (employment_term IS NULL OR employment_term = '')`
-
-/**
- * 只在原值为空时补工时形态,同上。$1=值,$2=职位 id。
- */
-export const JD_SET_EMP_HOURS = `UPDATE jobs SET employment_hours = $1 WHERE id = $2 AND (employment_hours IS NULL OR employment_hours = '')`
-
-/**
  * 职位对照两格 + 版本(2026-09-14 落库:换版不再清零)。$1=职位 id。
  * 2026-09-20 改键:原按投递链接(apply_url)找行 —— HireAC 91 条岗共用同一个登录门户网址(另有同雇主官网、GC Jobs 重复帖 7 组),
  * 读是 LIMIT 1 随便一条、写是 91 条一起盖(生产实撞:园艺工岗挂着疼痛诊所的译文)。JD 这条链一律改按职位 id。
@@ -1692,8 +1689,9 @@ export const TITLE_TRANS_SAVE_KO = `UPDATE jobs
 
 /**
  * JD 状态行:整理版 + 雇佣期 / 工时(懒整理的落格)。$1=职位 id(2026-09-20 改键,见 JD_TRANS_BY_ID)。
+ * 2026-09-27 懒整理不再回写雇佣期 / 工时(判省提名通道的输入只由 ETL 汇装写),两列随之不取。
  */
-export const JD_STATE_BY_ID = `SELECT id, employment_term, employment_hours, jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
+export const JD_STATE_BY_ID = `SELECT id, jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
 
 // =========================================================================
 // 19. 新闻与评论

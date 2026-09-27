@@ -26,14 +26,15 @@ import {
   DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
-  HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JB_POSTING_RE, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
+  HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
   KEY_ESCAPE, LANG_EN, LIMIT_RE, METHOD_DELETE,
   METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
-  URL_API_APPLY_HOW, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE, URL_API_JOB_RELATED, URL_API_JOB_RELATED_OCC,
+  URL_API_APPLY_HOW, URL_API_APPLY_HOW_ID, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
+  URL_API_JOB_RELATED, URL_API_JOB_RELATED_OCC,
   URL_API_JOBS, URL_API_JOBS_DIMS, Q_REL_OFFSET, REL_NO_PAGING,
   URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
@@ -1705,6 +1706,7 @@ export function useJobBody(x: JobBodyHookIn): JobBodyPanel {
 
 /**
  * 投递邮箱:Job Bank 岗懒查来的优先,其次从正文正则兜底。「怎么投」节与投递栏共用同一份结果。
+ * 2026-09-27 起懒查对所有来源都问库里存好的邮箱(按岗位号,见 useApplyHow),x.jb 不再只是 Job Bank 的。
  *
  * @param x 懒查来的邮箱与正文。
  * @returns 邮箱;都没有给空串。
@@ -2012,6 +2014,9 @@ async function postTranslate(x: TranslateIn): Promise<string> {
 /**
  * 投递邮箱(E9-04,dd24-#110 从投递栏上提):JB 岗藏在「Show how to apply」的 JSF 后面 →
  * 懒查 /api/jobs/applyhow;非 JB 岗正文常直接带邮箱,由正则兜底(见 applyEmailPick)。
+ * 2026-09-27 Frank「CareerBeacon 渠道的职位 全是前往投递」:库里存着 CareerBeacon 等来源抽好的邮箱(492 条 CareerBeacon),
+ * 这里原先只对 JB 链接发问、别的来源当场收工,存好的邮箱从没用上。改成每岗都问(带岗位号,服务端按岗位号取;
+ * JB 存的没有才现抓),正则兜底照旧。
  * done 出结果(成败都算):OAuth 回跳续投要等它,别把邮箱岗投成外跳。
  *
  * @param job 本岗。
@@ -2021,16 +2026,13 @@ function useApplyHow(job: JobFact): ApplyHowPanel {
   const [email, setEmail] = useState(TEXT_NONE)
   const [done, setDone] = useState(false)
   const url = strOf(job.applyUrl)
+  const id = String(job.id)
   useEffect(function loadApplyHow() {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 懒查邮箱前的起手式:换岗先清上一岗的,非 JB 岗当场收工
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 懒查邮箱前的起手式:换岗先清上一岗的(09-27 起非 JB 岗也问,不再当场收工)
     setEmail(TEXT_NONE)
-    if (JB_POSTING_RE.test(url) === false) {
-      setDone(true)
-      return
-    }
     setDone(false)
     const ctrl = new AbortController()
-    fetch(URL_API_APPLY_HOW + encodeURIComponent(url), { signal: ctrl.signal })
+    fetch(URL_API_APPLY_HOW + encodeURIComponent(url) + URL_API_APPLY_HOW_ID + id, { signal: ctrl.signal })
       .then(readApplyHow)
       .then(function onHow(d: ApplyHowJson | null) {
         if (d != null && d.email != null) {
@@ -2046,7 +2048,7 @@ function useApplyHow(job: JobFact): ApplyHowPanel {
     return function stopHow() {
       ctrl.abort()
     }
-  }, [url])
+  }, [url, id])
   return { email, done }
 }
 

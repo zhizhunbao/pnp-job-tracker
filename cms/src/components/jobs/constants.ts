@@ -723,6 +723,11 @@ export const URL_API_JOB_TEXT_ID = '&id='
 export const URL_API_APPLY_HOW = '/api/jobs/applyhow?url='
 
 /**
+ * 投递方式懒查带的岗位号参数(2026-09-27:库里存好的邮箱按岗位号取、所有来源都问;同 URL_API_JOB_TEXT_ID 的写法)。
+ */
+export const URL_API_APPLY_HOW_ID = '&id='
+
+/**
  * 整理版逐句翻译(行位保真)。
  */
 export const URL_API_JD_TRANSLATE = '/api/jobs/jd-translate'
