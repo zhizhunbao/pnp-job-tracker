@@ -6,6 +6,7 @@ gcjobs 域函数 —— 五段与 constants.py / scheme.py 同名同序镜像:�
 抽出的事实进 data/raw/gcjobs/jobs.json,归一后的行进 data/processed/gcjobs/postings.json;
 跨源清洗(地点归一 / 薪资归一 / 试点打标)仍归 mart 域,本域只做「值级」清洗(to_* 行构造器)。
 站的取法(2026-09-13 实测):壳页拿会话 → 同 URL 再带 isSecondPartOfPage=1 拿正文;翻页参数与正文标一次发。
+2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:地点归一加「City, Province」退路(§4 comma_location_of),新立 §7 自测(`--only test`)。
 
 @author Frank
 @time 2026-09-13
@@ -13,7 +14,9 @@ gcjobs 域函数 —— 五段与 constants.py / scheme.py 同名同序镜像:�
 from __future__ import annotations
 
 import json
+import sys
 import time
+import unittest
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 from html import unescape
@@ -50,10 +53,12 @@ from gcjobs.constants import (
     SCRIPT_RE, SEARCH_PATH, SECONDS_FMT, SECTION_ENDS, SECTION_START, SESSION_PATH_TPL, SHELL_QS, SID_RE, SITE_BASE,
     SLUG_CRAWL, SLUG_CRAWL_EXTERNAL, SOURCE_LABEL, SPACE, STUDENT_MARK, TAG_CLOSE, TAG_LI_EXT, TAG_RE, TAG_SCRIPT,
     TERM_WORD, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
+    LOC_STAR_MARK, PLACE_CUT_RE, PROV_TAIL_RE, TEST_VERBOSITY,
 )
 from gcjobs.scheme import (
     DetailBatchIn, DetailBatchOut, DetailIn, ExternalFetchIn, ExternalTally, HttpClientLike, JobFact, ListRow,
     Location, MatchIn, PageIn, PagesOut, ParseTally, PostingRowIn, Session, StoreTally,
+    GcLocationTest,
 )
 
 
@@ -372,8 +377,10 @@ def fields_of(html: str) -> dict:
 def location_of(text: str) -> Location:
     """地点原文 → (城, 省):截掉尾随提醒后取第一个括号内是认得的省名的「City (Province)」,城 = 其前文
     的最后一段(多地点逗号隔);「Various …」、「… Other locations」或没有认得的省名 → 城省都留空
-    (原文仍在 address 格;宁可留空不瞎猜 —— 2026-09-14 前认不出时整句当城市,脏了城市下拉)。"""
-    head = text.split(LOC_NOTE_MARK, 1)[0]
+    (原文仍在 address 格;宁可留空不瞎猜 —— 2026-09-14 前认不出时整句当城市,脏了城市下拉)。
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:尾随说明也从 `*` 截断;没有认得的括号省名时,
+    退一步认「City, Province」「City, XX」写法(comma_location_of),还认不出才城省留空。"""
+    head = text.split(LOC_NOTE_MARK, 1)[0].split(LOC_STAR_MARK, 1)[0]
     if VARIOUS_MARK in head.lower():
         return Location(city="", province="")
     for m in LOC_RE.finditer(head):
@@ -384,7 +391,32 @@ def location_of(text: str) -> Location:
         if OTHER_LOC_MARK in city:
             city = ""
         return Location(city=city, province=province)
-    return Location(city="", province="")
+    return comma_location_of(head)
+
+
+def comma_location_of(head: str) -> Location:
+    """「City, Province」「City, XX」写法 → (城, 省)(location_of 认不出括号省名时的退路;2026-09-27 Frank 勾
+    「ATS 工时、雇佣期、薪资和小修」):取第一个「, 省全名或省码」,城 = 其前文最后一段(括号 / 逗号 / 分号 / 冒号之后)。
+    只看第一个;那段不像地名(叙述句「… the RCMP Academy in Regina, SK」)或是「… Other locations」→ 城省都留空(宁可留空不瞎猜)。
+    省名查 PROV_CODE_OF_NAME 换码,省码原样。"""
+    m = PROV_TAIL_RE.search(head)
+    if m is None:
+        return Location(city="", province="")
+    city = PLACE_CUT_RE.split(head[:m.start()])[-1].strip()
+    if OTHER_LOC_MARK in city or is_place_name(city) is False:
+        return Location(city="", province="")
+    return Location(city=city, province=PROV_CODE_OF_NAME.get(m.group(1), m.group(1)))
+
+
+def is_place_name(text: str) -> bool:
+    """像不像地名:非空、每个词首字大写(「Lake Louise」「Tsuut'ina」「Mâskwâcîs」);有词首字小写(the / in)或数字开头的不算。"""
+    words = text.split()
+    if len(words) == 0:
+        return False
+    for word in words:
+        if word[0].isupper() is False:
+            return False
+    return True
 
 
 def closing_iso_of(text: str) -> str:
@@ -724,3 +756,16 @@ def full_description_of(x: PostingRowIn) -> str:
     if body != "":
         head.append(body)
     return NEWLINE.join(head)
+
+
+# =========================================================================
+# 7. 自测(用例住 scheme)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑地点归一自测(用例集住 scheme 的 GcLocationTest,先例 ats / indexing / gate.scheme;
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立);有失败 sys.exit(1),退出码穿门报红。"""
+    suite = unittest.TestLoader().loadTestsFromTestCase(GcLocationTest)
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)

@@ -94,6 +94,15 @@ K_VALID_THROUGH = "valid_through"
 键名照板仓 postings.json 同名,mart 汇装用同一个键取(2026-09-26 /fe Frank「补」:在架 ATS 岗截止日 0%,
 抽到后 seed 的 CLOSE_PAST_DEADLINE 过了截止日自动下架,详情页 JobPosting 也带上)。"""
 
+K_EMPLOYMENT_HOURS = "employment_hours"
+"""职位行键:工时(full / part;招聘站结构化数据里认得出的才写,认不出为空串 —— 没标注 ≠ 兼职,不猜)。
+键名与取值照板仓 postings.json 同名同词(Job Bank 仓 HOURS_FULL / HOURS_PART),mart 汇装用同一个键取
+(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」;键值与改 mart 的一侧约定死,别改)。"""
+
+K_EMPLOYMENT_TERM = "employment_term"
+"""职位行键:雇佣期(permanent / term / casual / seasonal;认不出为空串)。键名与取值照板仓 postings.json 同名同词
+(Job Bank 仓 TERM_MAP),同上一批、同一份约定。"""
+
 K_TECH = "tech"
 """职位行键:是不是科技岗(标题判据打标)。"""
 
@@ -413,6 +422,38 @@ K_LD_LOCALITY = "addressLocality"
 
 K_LD_REGION = "addressRegion"
 """JSON-LD 键:省码。"""
+
+K_LD_EMPLOYMENT_TYPE = "employmentType"
+"""JSON-LD 键:雇佣类型(串或串数组)。Sienna(Phenom)写 schema.org 枚举 `["PART_TIME"]`,Calian(自建 WordPress 站)写自由文本
+`"Full Time"`;2026-09-27 实测缓存:Sienna 在架 376 岗全有,Calian 在架 236 岗 227 岗有(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+
+K_LD_WORK_HOURS = "workHours"
+"""JSON-LD 键:工作时长文本(只有 Phenom 给,如 `24 hours per week`)。同日实测 Sienna 这格是 employmentType 的模板回声
+(PART_TIME 一律 24、FULL_TIME 一律 40,连标题写反了的帖也照此),跟 employmentType 一起当标签读,数字不折算成全职 / 兼职(不猜)。"""
+
+LABEL_SEP_RE = re.compile(r"[\W_]+")
+"""雇佣标签归一:非字母数字(下划线、连字符、逗号、括号、空白)的连串折成一个空格 ——
+`FULL_TIME`、`Full-time`、`Full Time` 都成 `full time`,再按整词比短语表。"""
+
+EMPLOYMENT_HOURS_OF = {
+    "full time": "full", "part time": "part",
+    "temps plein": "full", "temps partiel": "part",
+}
+"""工时短语(标签归一后)→ 工时值(与 K_EMPLOYMENT_HOURS 同词)。schema.org 的 FULL_TIME / PART_TIME 归一后就是前两个;
+Calian 自由文本「Full Time」「Full-time, contract」同样命中,魁省岗写法语「Temps Plein」「Temps-partiel」。
+一组标签里同时中 full 与 part(Calian「Full-time or Part-time」)= 判不了,留空;认不出的(「Student」、错字「Full-tiime」)也留空
+(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:认不出一律空串,不猜)。"""
+
+EMPLOYMENT_TERM_OF = {
+    "permanent": "permanent",
+    "temporary": "term", "contractor": "term", "contract": "term",
+    "per diem": "casual", "casual": "casual", "occasionnel": "casual",
+    "seasonal": "seasonal",
+}
+"""雇佣期短语(标签归一后)→ 雇佣期值(与 K_EMPLOYMENT_TERM 同词)。按 schema.org employmentType 口径:TEMPORARY / CONTRACTOR → term,
+PER_DIEM → casual,SEASONAL → seasonal;自由文本 Permanent / Contract / Casual / Occasionnel 同义归入。
+INTERN / VOLUNTEER / OTHER 不在表里 = 不写;命中两种不同的值 = 判不了,留空(同上一批)。
+只读结构化标签:Sienna 标题里写的 Temporary / Permanent / Casual 不算(它的 employmentType 只有工时,雇佣期因此全空)。"""
 
 TOKEN_RE = {
     ATS_GREENHOUSE: re.compile(
@@ -799,11 +840,25 @@ UNIT_RE_SRC = (r"(?:\s*(?:CAD|USD))?(?:\s*(?:per\s+hour|/\s?hour|hourly|per\s+ye
                r"/\s?year|per\s+annum|annually|a\s+year))?")
 """币种与计薪周期后缀(原 UNIT)。"""
 
+RATE_OF_PAY_RE_SRC = r"rate of pay(?:\s|[:\-–—]|</?[a-z]+>|&lt;/?[a-z]+&gt;|\bmin\b|\bstarting at\b)*"
+"""锚词「rate of pay」+ 到金额之间只许夹标签胶水:空白、冒号、连字符 / 破折号、标签(含转义残留 `&lt;strong&gt;`)、Min、starting at ——
+2026-09-27 实测 Sienna 421 处的全部间隔写法就这几种(`: ` 353 处、单空格 60 处,余下是 `: Min ` / `: starting at ` / 标签)。
+不给字符窗:「Rate of pay: competitive, plus a $1,000 signing bonus」里的奖金数够不着(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+
+SALARIES_RE_SRC = r"salaries\b[^$\n.;]{0,80}?\brange\s+from\s+"
+"""锚词「salaries」:同一句(不跨句号 / 分号 / 换行)80 字内要接「range from」再紧跟金额 —— Bank of Canada 的写法
+「Salaries are based on qualifications and experience and typically range from $126,765 to $149,135 (job grade 18)」。
+「competitive salaries and a $2,500 signing bonus」这类句子里没有 range from,不认(同上一批)。"""
+
 ANCHORED_RE = re.compile(
-    r"(?:salary range|pay range|hiring salary range|base salary range|salary|compensation)"
-    r"[^$]{0,80}(" + RANGE_RE_SRC + UNIT_RE_SRC + ")", re.I)
+    r"(?:(?:salary range|pay range|hiring salary range|base salary range|salary|compensation)[^$]{0,80}"
+    r"|" + RATE_OF_PAY_RE_SRC + r"|" + SALARIES_RE_SRC + r")(" + RANGE_RE_SRC + UNIT_RE_SRC + ")", re.I)
 """关键词锚定(更准):salary/pay/compensation … 后面 80 字符内出现金额。
-80 而非 40:覆盖 "compensation (based on 2,080 hours per year) ranges from $X" 这种长前缀。"""
+80 而非 40:覆盖 "compensation (based on 2,080 hours per year) ranges from $X" 这种长前缀。
+2026-09-27 加两个锚词(Frank 勾「ATS 工时、雇佣期、薪资和小修」):Bank of Canada 写「Salaries … typically range from $X to $Y」、
+Sienna 写「Rate of Pay: $X - $Y」,原来都没认出(salary 认不了 salaries,时薪不带单位又过不了兜底正则)。两个新锚词**不走 80 字窗**,
+各带一段收紧的桥(RATE_OF_PAY_RE_SRC / SALARIES_RE_SRC)—— 宽窗会把同句里的奖金 / 报销上限 / 营收数当薪资。
+老六个锚词与 80 字窗一字未动(全部 ATS .md 新旧对跑:只有空格被补上,已有值零变化)。"""
 
 WITH_UNIT_RE = re.compile(
     r"(" + RANGE_RE_SRC + r"\s*(?:CAD|USD)?\s*(?:per\s+hour|/\s?hour|hourly|per\s+year|"

@@ -239,6 +239,10 @@ LOC_NOTE_MARK = "⚠"
 """地点格尾随的提醒自此截断(「Regina (Saskatchewan) ⚠️Applicants are encouraged to apply ONLY if…」
 整句当城市名进了城市下拉,Frank 2026-09-14 实拍)。"""
 
+LOC_STAR_MARK = "*"
+"""地点格尾随说明的另一种起头,自此截断(帖 2457515「Regina, Saskatchewan *Applicants are encouraged to apply ONLY if…」、
+2392236「Cambridge Bay (Nunavut), … *In the Spirit of the Nunavut Agreement…」;2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+
 LOC_RE = re.compile(r"\(([^()]*)\)")
 """地点里的每个括号段;第一个括号内是认得的省名的那段即「City (Province)」,城 = 其前文
 (2026-09-14 改:原 `^(.*?)\\s*\\((.*?)\\)\\s*$` 要求括号收尾,尾随提醒或多地点一来整句就成了城市名)。"""
@@ -275,6 +279,17 @@ PROV_CODE_OF_NAME = {
     "Yukon": "YT",
 }
 """省名(英法两写)→ 省码;不在表里(如「National Capital Region」)留空省。"""
+
+PROV_TAIL_RE = re.compile(r",\s*(" + "|".join(map(re.escape, list(PROV_CODE_OF_NAME) + sorted(set(PROV_CODE_OF_NAME.values()))))
+                          + r")(?![\w-])")
+"""「City, Province」「City, XX」写法里逗号后的省:省名(英法,取自 PROV_CODE_OF_NAME 的键)或两位省码(取自它的值),区分大小写,
+后面不许紧跟字母数字或连字符 ——「Charlottetown, PEI」的 PEI、「Iqaluit, ON-call」、小写 on 都不认。
+2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:有帖地点这么写(帖 2455089「Tsuut'ina, Alberta」、2457515、2454105…),
+原来只认「City (Province)」,认不出就城省都空着;同日 raw 事实 591 帖新旧对跑,认回 7 帖、已有值零变化。"""
+
+PLACE_CUT_RE = re.compile(r"[(,;:]")
+"""「City, Province」退路里城市那段的左界:取省前面最后一个括号 / 逗号 / 分号 / 冒号之后的文字
+(「Lake Louise-Yoho Operating Area (Lake Louise, AB)」→ Lake Louise;「501 Tollgate Rd E, Cornwall, ON」→ Cornwall)。"""
 
 TAG_RE = re.compile(r"<[^>]+>")
 """HTML → 纯文本:剥标签。"""
@@ -518,3 +533,10 @@ SECONDS_FMT = "%Y-%m-%dT%H:%M:%S"
 
 PRINT_STORE_DONE_TPL = "[OK] postings 仓 {rows} 行(剔:不在本轮列表 {gone} / 已过截止日 {expired} / 无标题 {blank})→ {out}"
 """建仓收尾。"""
+
+# =========================================================================
+# 7. 自测(用例住 scheme)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(同 ats / indexing / gate 自查;2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立)。"""

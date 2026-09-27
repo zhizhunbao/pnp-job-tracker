@@ -18,6 +18,8 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
    收成 ScrapeTally 三个计数,收尾那行输出逐字不变。
 2026-09-26 /fe Frank「补」截止日:雇主招聘系统里明写的截止日抽进 AtsJob.valid_through(§1 deadline_of 归一 +
 各家行构造器取自家那一格;SuccessFactors 缓存页过期重取见 is_sf_lapsed),自测住 §4(`--only test`)。
+2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:自建 WordPress 站 / Phenom 两家行构造器从 JSON-LD 的 employmentType
+(Phenom 另读 workHours)归一出工时 / 雇佣期(§2 employment_of),落盘行多两键;薪资锚词加 salaries / rate of pay(constants §3)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import html
@@ -78,10 +80,12 @@ from ats.constants import (
     EIGHTFOLD, K_DATA, K_EF_BODY, K_EF_LOCATIONS, K_EF_NAME, K_EF_POSTED_TS, K_EF_PUBLIC_URL, K_POSITIONS,
     K_LD_GRAPH, K_WP_LINK, WPCAREERS, WP_DELAY_S, WP_MAX_PAGES, WP_PAGE_SIZE, WP_PAGE_TPL, WP_SPOT_SEP,
     K_APPLICATION_DEADLINE, K_CLOSE_AT, K_END_DATE, K_ORC_POSTED_END, K_ORC_POSTING_END, K_VALID_THROUGH, SF_VALID_RE,
+    EMPLOYMENT_HOURS_OF, EMPLOYMENT_TERM_OF, K_EMPLOYMENT_HOURS, K_EMPLOYMENT_TERM, K_LD_EMPLOYMENT_TYPE, K_LD_WORK_HOURS,
+    LABEL_SEP_RE,
     TEST_VERBOSITY,
 )
 from ats.scheme import (
-    AtsDeadlineTest,
+    AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest, EmploymentOut, LabelHitIn,
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
@@ -781,7 +785,8 @@ def wp_job_urls(x: SfFetchIn) -> list:
 
 def to_wp_job(x: PhenomJobIn) -> AtsJob | None:
     """职位页 → AtsJob:读页面里 JobPosting 那一块 JSON-LD(常包在 @graph 里);一岗多地的把各地「市, 省」用分号串起来
-    (汇装按文本里有没有渥太华判地点,只取第一处会把「Laval + Ottawa」这种岗丢掉)。没有 JobPosting = None。"""
+    (汇装按文本里有没有渥太华判地点,只取第一处会把「Laval + Ottawa」这种岗丢掉)。没有 JobPosting = None。
+    工时 / 雇佣期取 employmentType(Calian 写自由文本「Full Time」「Full-time, contract」;2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
     for block in PH_LD_RE.findall(x.html):
         try:
             data = json.loads(block)
@@ -803,10 +808,48 @@ def to_wp_job(x: PhenomJobIn) -> AtsJob | None:
                 if spot and spot not in spots:
                     spots.append(spot)
             description = html.unescape(node.get(K_DESCRIPTION, "") or "")
+            kind = employment_of(ld_labels_of(node.get(K_LD_EMPLOYMENT_TYPE)))
             return AtsJob(title=html.unescape(node.get(K_TITLE, "") or ""), location=WP_SPOT_SEP.join(spots), url=x.url,
                           department="", posted=iso_of(node.get(K_LD_DATE_POSTED, "")), address=address_of(description),
-                          salary="", description=description)
+                          salary="", description=description, employment_hours=kind.hours, employment_term=kind.term)
     return None
+
+
+def ld_labels_of(value: object) -> list:
+    """JSON-LD 的标签格(employmentType / workHours:串、串数组或缺席)→ 串清单;数组里不是串的元素跳过,
+    缺席或别的形状给空清单。"""
+    if isinstance(value, str):
+        return [value]
+    out: list = []
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                out.append(item)
+    return out
+
+
+def employment_of(labels: list) -> EmploymentOut:
+    """职位页的雇佣标签 → 工时 + 雇佣期(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):每条标签小写、符号折空格、
+    首尾垫空格,再整词比 EMPLOYMENT_HOURS_OF / EMPLOYMENT_TERM_OF 两张短语表(schema.org 枚举与 Calian 自由文本同一把尺)。
+    认不出、或一组标签里打架(full 与 part 都中)→ 那一格空串,不猜。"""
+    norm: list = []
+    for label in labels:
+        norm.append(SPACE_SEP + LABEL_SEP_RE.sub(SPACE_SEP, label.lower()).strip() + SPACE_SEP)
+    return EmploymentOut(hours=label_hit_of(LabelHitIn(labels=norm, table=EMPLOYMENT_HOURS_OF)),
+                         term=label_hit_of(LabelHitIn(labels=norm, table=EMPLOYMENT_TERM_OF)))
+
+
+def label_hit_of(x: LabelHitIn) -> str:
+    """归一后的标签里整词命中短语表 → 对应值;一个没中给空串,中了两种不同的值(「Full-time or Part-time」)= 判不了,也给空串。"""
+    found = ""
+    for label in x.labels:
+        for phrase, value in x.table.items():
+            if SPACE_SEP + phrase + SPACE_SEP not in label:
+                continue
+            if found != "" and found != value:
+                return ""
+            found = value
+    return found
 
 
 def fetch_successfactors(x: SfFetchIn) -> list:
@@ -910,7 +953,9 @@ def is_sf_lapsed(html: str) -> bool:
 def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
     """职位页 → AtsJob:读页面里 schema.org JobPosting 那一块 JSON-LD;没有(页面已下架成空壳)= None。
     JSON-LD 里的 description 是**实体转义过的 HTML**(`&lt;p&gt;&lt;strong&gt;…`),先还原一层成正常 HTML 再往下走 ——
-    2026-09-19 Frank 实拍「ATS 抓的这个工作怎么这么乱」:Sienna 482 岗的正文满屏 `&lt;br /&gt;`。"""
+    2026-09-19 Frank 实拍「ATS 抓的这个工作怎么这么乱」:Sienna 482 岗的正文满屏 `&lt;br /&gt;`。
+    工时 / 雇佣期取 employmentType(`["PART_TIME"]`)连同 workHours 一起当标签读;workHours 的小时数不折算(2026-09-27 Frank 勾
+    「ATS 工时、雇佣期、薪资和小修」;Sienna 的雇佣期只写在标题里,结构化数据没有 → 空串)。"""
     for block in PH_LD_RE.findall(x.html):
         try:
             data = json.loads(block)
@@ -924,9 +969,10 @@ def to_phenom_job(x: PhenomJobIn) -> AtsJob | None:
         address = place.get(K_LD_ADDRESS) or {}
         location = join_parts([address.get(K_LD_LOCALITY, ""), address.get(K_LD_REGION, "")])
         description = html.unescape(data.get(K_DESCRIPTION, "") or "")
+        kind = employment_of(ld_labels_of(data.get(K_LD_EMPLOYMENT_TYPE)) + ld_labels_of(data.get(K_LD_WORK_HOURS)))
         return AtsJob(title=data.get(K_TITLE, ""), location=location, url=x.url, department="",
                       posted=iso_of(data.get(K_LD_DATE_POSTED, "")), address=address_of(description),
-                      salary="", description=description)
+                      salary="", description=description, employment_hours=kind.hours, employment_term=kind.term)
     return None
 
 
@@ -1017,10 +1063,13 @@ def to_job_row(job: AtsJob) -> dict:
     (给不出的是空串,下游一律 `.get("salary")` 取值,空串与缺键同义)。
     2026-09-26 /fe Frank「补」:发布日后面加截止日 valid_through(同理人人都有,给不出是空串;mart 汇装取成 validThrough,
     空串不落列)。
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:薪资后面加 employment_hours / employment_term(同理人人都有,
+    认不出是空串;键名与取值照板仓同词,与改 mart 的一侧约定死)。
     """
     return {K_TITLE: job.title, K_LOCATION: job.location, K_URL: job.url,
             K_DEPARTMENT: job.department, K_POSTED: job.posted, K_VALID_THROUGH: job.valid_through,
-            K_ADDRESS: job.address, K_SALARY: job.salary, K_TECH: job.tech}
+            K_ADDRESS: job.address, K_SALARY: job.salary, K_EMPLOYMENT_HOURS: job.employment_hours,
+            K_EMPLOYMENT_TERM: job.employment_term, K_TECH: job.tech}
 
 
 # =========================================================================
@@ -1099,7 +1148,11 @@ def clean_salary(text: str) -> str:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑截止日抽取自测(用例集住 scheme 的 AtsDeadlineTest,先例 indexing / gate.scheme);
-    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(AtsDeadlineTest)
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
+    2026-09-27 起连同工时 / 雇佣期(AtsEmploymentTest)与薪资锚词(AtsSalaryTest)两组一起跑(Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for case in (AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest):
+        suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

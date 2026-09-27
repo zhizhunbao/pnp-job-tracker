@@ -8,11 +8,15 @@ gcjobs 域行形状(一参令 XxxIn / 单返回值 XxxOut;照 careerbeacon/schem
 ② **域内接线形状 XxxIn** = dataclass —— 多入参函数的一参令载体;
 ③ **库形状 Protocol** —— httpx 客户端/响应只声明本域真用的格(本域每次 GET 带头,所以 get 收 headers)。
 import 只有标准库(叶子律:形状本域自声明,零跨域)。
+§7 自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立):unittest 用例集 ——「不用 class」的外部库例外,
+先例 ats.scheme / indexing.scheme,跑法 `python etl/gcjobs/main.py --only test`;被测的 gcjobs.functions 在用例体内现取
+(functions 反过来 import 本文件,顶部 import 会成环)。
 
 @author Frank
 @time 2026-09-13
 """
 import re
+import unittest
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -310,3 +314,95 @@ class StoreTally:
 
     blank: int
     """无标题(解析残缺)的帖数。"""
+
+
+# =========================================================================
+# 7. 自测(用例住 scheme)
+# =========================================================================
+
+
+class GcLocationTest(unittest.TestCase):
+    """地点归一自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):location_of 的「City (Province)」主路与
+    「City, Province / City, XX」退路金标(原文取自 raw 事实里的真帖)+ 全省名省码穷举性质 + 尾随说明不改结果。
+    只喂字符串,不联网、不读仓内文件。"""
+
+    golden = [
+        ("Wabush (Newfoundland and Labrador)", "Wabush", "NL"),
+        ("Regina (Saskatchewan) ⚠️Applicants are encouraged to apply ONLY if they are able to relocate", "Regina", "SK"),
+        ("Cambridge Bay (Nunavut), Iqaluit (Nunavut), Rankin Inlet (Nunavut) *In the Spirit of the Nunavut Agreement",
+         "Cambridge Bay", "NU"),
+        ("National Capital Region - Other locations (Ontario)", "", "ON"),
+        ("Ottawa (Ontario), Gatineau, Quebec", "Ottawa", "ON"),
+        ("Tsuut'ina, Alberta", "Tsuut'ina", "AB"),
+        ("Regina, Saskatchewan *Applicants are encouraged to apply ONLY if they are able to relocate or commute to the "
+         "advertised location of work.", "Regina", "SK"),
+        ("Radium Hot Springs, BC or Field, BC or Lake Louise, AB depending on the position being filled", "Radium Hot Springs", "BC"),
+        ("Lake Louise-Yoho Operating Area (Lake Louise, AB)", "Lake Louise", "AB"),
+        ("Pê Sâkâstêw Center (Mâskwâcîs, Alberta), Kwìkwèxwelhp Healing Village (Harrison Mills, British Colombia)",
+         "Mâskwâcîs", "AB"),
+        ("501 Tollgate Rd E, Cornwall, ON", "Cornwall", "ON"),
+        ("Ottawa, Ontario (Canada)", "Ottawa", "ON"),
+        ("Québec, Québec", "Québec", "QC"),
+        ("Various Locations", "", ""),
+        ("Various locations across Canada. Recruits are trained at the Canada Border Services College in Rigaud, Quebec.",
+         "", ""),
+        ("Montréal - Other locations, Québec", "", ""),
+        ("Successful applicants who are accepted as a cadet with the RCMP, will begin an extensive 26-week training program "
+         "at Depot, the RCMP Academy in Regina, SK. *** Note that Regina will be the choice of work location", "", ""),
+        ("Charlottetown, PEI", "", ""),
+        ("Iqaluit, on a rotational basis", "", ""),
+        ("Iqaluit, ON-call rotation", "", ""),
+        ("Jobs are located in Nunavut: Iqaluit, Cambridge Bay, Rankin Inlet, Pangnirtung, Pond Inlet, and other locations "
+         "in Nunavut", "", ""),
+        ("Nova Scotia", "", ""),
+        ("Fundy National Park", "", ""),
+        ("⭐", "", ""),
+        ("", "", ""),
+    ]
+    """(地点原文, 城, 省码) 金标:前五条是括号主路(含尾随 ⚠ / * 说明、Other locations 只留省、括号优先于后面的逗号写法);
+    中间八条是逗号退路认回的(Tsuut'ina / Regina / Radium Hot Springs / Lake Louise / Mâskwâcîs 是在列真帖,Cornwall 已下架);
+    后面全留空:Various、Other locations、叙述句(RCMP 那句的「Regina, SK」前面是「the RCMP Academy in」)、
+    非标准缩写 PEI、小写 on、ON-call、多地清单、光省名、公园名、表情、空串。"""
+
+    names = {
+        "Alberta": "AB", "British Columbia": "BC", "Colombie-Britannique": "BC", "Manitoba": "MB",
+        "New Brunswick": "NB", "Nouveau-Brunswick": "NB", "Newfoundland and Labrador": "NL",
+        "Terre-Neuve-et-Labrador": "NL", "Nova Scotia": "NS", "Nouvelle-Écosse": "NS",
+        "Northwest Territories": "NT", "Territoires du Nord-Ouest": "NT", "Nunavut": "NU", "Ontario": "ON",
+        "Prince Edward Island": "PE", "Île-du-Prince-Édouard": "PE", "Quebec": "QC", "Québec": "QC",
+        "Saskatchewan": "SK", "Yukon": "YT",
+    }
+    """独立对照尺:省名(英法)→ 省码,在用例里现写,不经被测模块的表。"""
+
+    def test_location_golden(self) -> None:
+        """地点原文 → (城, 省码) 金标。"""
+        from gcjobs import functions as fn
+        for text, city, province in self.golden:
+            with self.subTest(text=text):
+                loc = fn.location_of(text)
+                self.assertEqual((loc.city, loc.province), (city, province))
+
+    def test_every_province_both_forms(self) -> None:
+        """穷举性质:每个省名 × 有无尾随说明(`*…` / `⚠️…`)——「Townsville (省名)」「Townsville, 省名」「Townsville, 省码」
+        都取回 (Townsville, 码);省码小写、省码后接字母(PEI 式)或连字符(ON-call 式)都不认,城省留空。"""
+        from gcjobs import functions as fn
+        for name, code in self.names.items():
+            for tail in ("", " *Applicants are encouraged to apply", " ⚠️Note: relocation required"):
+                for text in ("Townsville (" + name + ")" + tail, "Townsville, " + name + tail, "Townsville, " + code + tail):
+                    loc = fn.location_of(text)
+                    self.assertEqual((loc.city, loc.province), ("Townsville", code), text)
+            for text in ("Townsville, " + code.lower(), "Townsville, " + code + "I", "Townsville, " + code + "-call"):
+                loc = fn.location_of(text)
+                self.assertEqual((loc.city, loc.province), ("", ""), text)
+
+    def test_footnote_never_changes(self) -> None:
+        """性质:金标每条原文后面再接一段 `*…` 或 `⚠️…` 说明(说明里夹着一个干净的「Note: 城市, 省」,不截断就会被逗号退路认走),
+        结果不变;城有值时省必有值。"""
+        from gcjobs import functions as fn
+        for text, city, province in self.golden:
+            for tail in (" *Note: Halifax, Nova Scotia", " ⚠️Note: Halifax, NS"):
+                with self.subTest(text=text, tail=tail):
+                    loc = fn.location_of(text + tail)
+                    self.assertEqual((loc.city, loc.province), (city, province))
+                    if loc.city != "":
+                        self.assertNotEqual(loc.province, "")

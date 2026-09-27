@@ -9,6 +9,7 @@ SCHEDULED = 本域步骤真相 —— **顺序即语义,一步失败中止本轮
     python etl/gcjobs/main.py                  # 默认链(5 步)
     python etl/gcjobs/main.py --only store     # 单步调试(见 TOOLS)
     DETAILS_PER_RUN=50 python etl/gcjobs/main.py   # 本地验收压小每轮抓取量
+    python etl/gcjobs/main.py --only test      # 地点归一自测(不联网、不写仓内文件;2026-09-27 立)
 
 @author Frank
 @time 2026-09-13
@@ -20,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from gcjobs.functions import (
     build_gcjobs_postings, parse_gcjobs_details, scrape_gcjobs_details, scrape_gcjobs_external, scrape_gcjobs_pages,
+    run_tests,
 )
 
 SCHEDULED = [
@@ -44,8 +46,11 @@ TOOLS = {
     "parse": parse_gcjobs_details,
     "external": scrape_gcjobs_external,
     "store": build_gcjobs_postings,
+    "test": run_tests,
 }
-"""全部可 --only 点名的步(与默认链同一份五步,本域没有不进链的手动件)。"""
+"""全部可 --only 点名的步(与默认链同一份五步,本域没有不进链的手动件)。
+2026-09-27 起多一个不进链的手动件 test:地点归一自测(Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立;
+用例住 scheme §7,有失败退出码 1;子串匹配:test 与五步的键互不包含)。"""
 
 
 def main() -> int:

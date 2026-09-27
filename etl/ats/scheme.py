@@ -14,7 +14,9 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 §4 自测(2026-09-26 /fe Frank「补」截止日批立):unittest 用例集 + HTTP 替身 ——「不用 class」的外部库例外,
 先例 indexing.scheme / gate.scheme,跑法 `python etl/ats/main.py --only test`;被测的 ats.functions 在用例体内现取
 (functions 反过来 import 本文件,顶部 import 会成环)。
+2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」,§4 加两组:工时 / 雇佣期(AtsEmploymentTest)、薪资锚词(AtsSalaryTest)。
 """
+import json
 import tempfile
 import unittest
 from dataclasses import dataclass, field
@@ -95,6 +97,14 @@ class AtsJob:
     valid_through: str = ""
     """截止日(YYYY-MM-DD):雇主招聘系统里明写的才有(Workday / SuccessFactors / Oracle / Recruitee / Greenhouse
     各有一格),其余空串 —— 不推算(2026-09-26 /fe Frank「补」)。"""
+
+    employment_hours: str = ""
+    """工时(full / part):职位页 JSON-LD 的 employmentType(Phenom 另读 workHours)认得出的才有,
+    现只有自建 WordPress 站(Calian)与 Phenom(Sienna)两家读;认不出空串 —— 没标注 ≠ 兼职,不猜
+    (2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+
+    employment_term: str = ""
+    """雇佣期(permanent / term / casual / seasonal):同上一格的来源与口径,认不出空串。"""
 
 
 @dataclass
@@ -364,6 +374,28 @@ class ScrapeTally:
 
     skipped: int
     """跳过的公司数(ATS 不支持 / 认不出 token / 抓炸 / Workday 零命中)。"""
+
+
+@dataclass
+class EmploymentOut:
+    """employment_of() 出参:职位页结构化标签归一出的工时与雇佣期(各自认不出为空串)。"""
+
+    hours: str
+    """工时:full / part / 空串。"""
+
+    term: str
+    """雇佣期:permanent / term / casual / seasonal / 空串。"""
+
+
+@dataclass
+class LabelHitIn:
+    """label_hit_of() 入参:归一后的标签 + 一张短语表。"""
+
+    labels: list
+    """归一后的标签(小写、符号折空格、首尾各垫一个空格,短语按整词比)。"""
+
+    table: dict
+    """短语 → 值(EMPLOYMENT_HOURS_OF 或 EMPLOYMENT_TERM_OF)。"""
 
 
 # =========================================================================
@@ -686,3 +718,206 @@ class AtsDeadlineTest(unittest.TestCase):
             got.append(job.valid_through)
         want = (date.today() + timedelta(days=10)).isoformat()
         self.assertEqual(got, [want, (date.today() + timedelta(days=3)).isoformat(), want])
+
+
+class AtsEmploymentTest(unittest.TestCase):
+    """工时 / 雇佣期抽取自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):标签归一金标(写法取自当天 Calian / Sienna
+    缓存页实测值 + schema.org 枚举)+ 枚举全子集穷举性质 + 两家行构造器从 JSON-LD 取值 + 落盘行带键。
+    职位页按实测结构现造,不联网、不读仓内文件。"""
+
+    def ld_page(self, node: dict) -> str:
+        """造一张职位页:head 里一块 JSON-LD(node 原样序列化)。"""
+        return ('<html><head><script type="application/ld+json">' + json.dumps(node, ensure_ascii=False)
+                + "</script></head><body></body></html>")
+
+    def test_employment_golden(self) -> None:
+        """标签 → (工时, 雇佣期) 金标:Calian 自由文本、Sienna 枚举 + workHours、法语写法、一组标签里打架 = 空、
+        认不出(Student / 错字 / INTERN 类 / 词中子串)= 空、缺席 = 空。"""
+        from ats import functions as fn
+        cases = [
+            (["Full Time"], "full", ""),
+            (["Part Time"], "part", ""),
+            (["PART_TIME"], "part", ""),
+            (["PART_TIME", "24 hours per week"], "part", ""),
+            (["FULL_TIME", "40 hours per week"], "full", ""),
+            (["TEMPORARY"], "", "term"),
+            (["CONTRACTOR"], "", "term"),
+            (["FULL_TIME", "TEMPORARY"], "full", "term"),
+            (["PER_DIEM"], "", "casual"),
+            (["SEASONAL"], "", "seasonal"),
+            (["Casual"], "", "casual"),
+            (["Contract"], "", "term"),
+            (["Permanent Full Time"], "full", "permanent"),
+            (["Full-time, contract"], "full", "term"),
+            (["Full-Time, 1 year contract (renewable)"], "full", "term"),
+            (["Full-time, Casual"], "full", "casual"),
+            (["Temps Plein"], "full", ""),
+            (["Temps-partiel"], "part", ""),
+            (["Occasionnel"], "", "casual"),
+            (["Full-time or Part-time"], "", ""),
+            (["Full-time and Part-time"], "", ""),
+            (["Casual, Part-time, or Full-time"], "", "casual"),
+            (["FULL_TIME", "Part time"], "", ""),
+            (["TEMPORARY", "PER_DIEM"], "", ""),
+            (["INTERN"], "", ""),
+            (["VOLUNTEER"], "", ""),
+            (["OTHER"], "", ""),
+            (["Student"], "", ""),
+            (["Full-tiime"], "", ""),
+            (["Subcontractor"], "", ""),
+            (["24 hours per week"], "", ""),
+            ([], "", ""),
+        ]
+        for labels, hours, term in cases:
+            with self.subTest(labels=labels):
+                got = fn.employment_of(labels)
+                self.assertEqual((got.hours, got.term), (hours, term))
+
+    def test_employment_enum_subsets(self) -> None:
+        """穷举性质:schema.org 八个枚举 + SEASONAL 的全部 512 个子集 × 正反两种顺序 —— 工时 = FULL_TIME / PART_TIME 恰好在一个时取它,
+        否则空;雇佣期 = 子集映射出的雇佣期值恰好一种时取它,否则空(INTERN / VOLUNTEER / OTHER 不映射);与顺序无关。
+        对照尺在用例里独立现写,不经被测函数的短语表。"""
+        from ats import functions as fn
+        enums = ["FULL_TIME", "PART_TIME", "CONTRACTOR", "TEMPORARY", "INTERN", "VOLUNTEER", "PER_DIEM", "OTHER", "SEASONAL"]
+        term_of = {"CONTRACTOR": "term", "TEMPORARY": "term", "PER_DIEM": "casual", "SEASONAL": "seasonal"}
+        for mask in range(1 << len(enums)):
+            picked: list[str] = []
+            for i in range(len(enums)):
+                if mask >> i & 1:
+                    picked.append(enums[i])
+            hours = ""
+            if "FULL_TIME" in picked and "PART_TIME" not in picked:
+                hours = "full"
+            if "PART_TIME" in picked and "FULL_TIME" not in picked:
+                hours = "part"
+            terms: set[str] = set()
+            for name in picked:
+                if name in term_of:
+                    terms.add(term_of[name])
+            term = ""
+            if len(terms) == 1:
+                term = terms.pop()
+            for order in (picked, picked[::-1]):
+                got = fn.employment_of(order)
+                self.assertEqual((got.hours, got.term), (hours, term), order)
+
+    def test_ld_labels_shapes(self) -> None:
+        """JSON-LD 标签格的形状:串 → 一个;串数组 → 逐个(非串元素跳过);缺席 / 数字 / 对象 → 空清单。"""
+        from ats import functions as fn
+        self.assertEqual(fn.ld_labels_of("Full Time"), ["Full Time"])
+        self.assertEqual(fn.ld_labels_of(["PART_TIME", "TEMPORARY"]), ["PART_TIME", "TEMPORARY"])
+        self.assertEqual(fn.ld_labels_of(["FULL_TIME", 3, None, {"x": 1}]), ["FULL_TIME"])
+        self.assertEqual(fn.ld_labels_of(None), [])
+        self.assertEqual(fn.ld_labels_of(40), [])
+        self.assertEqual(fn.ld_labels_of({"@type": "DefinedTerm"}), [])
+
+    def test_adapters_employment(self) -> None:
+        """两家行构造器从 JSON-LD 取值(结构照 2026-09-27 缓存页):Calian 的 JobPosting 包在 @graph 里、写自由文本「Full Time」;
+        Sienna 顶层 JobPosting、枚举数组 + workHours;Sienna 标题里的「Temporary」不算(只读结构化标签);两格都缺 → 空串。"""
+        from ats import functions as fn
+        place = {"@type": "Place", "address": {"@type": "PostalAddress", "addressLocality": "Ottawa", "addressRegion": "ON"}}
+        calian = {"@context": "https://schema.org", "@graph": [
+            {"@type": "WebPage", "name": "Careers"},
+            {"@type": "JobPosting", "title": "Physics Resource - Specialist", "datePosted": "2026-09-18 12:14:13",
+             "employmentType": "Full Time", "jobLocation": [place], "description": "<p>Role</p>"}]}
+        job = fn.to_wp_job(PhenomJobIn(url="https://careers.calian.com/careers/df-physics-resource-specialist-58285/",
+                                       html=self.ld_page(calian)))
+        if job is None:
+            self.fail("calian")
+        self.assertEqual((job.employment_hours, job.employment_term), ("full", ""))
+        url = "https://careers.siennaliving.ca/job/SILICACOOKT078826EXTERNALENCA/Cook-Temporary-Part-Time-6am-to-2pm"
+        sienna = {"@type": "JobPosting", "@context": "http://schema.org", "title": "Cook - Temporary Part Time - 6am to 2pm",
+                  "datePosted": "2026-09-14", "employmentType": ["PART_TIME"], "workHours": "24 hours per week",
+                  "jobLocation": place, "description": "&lt;p&gt;Role&lt;/p&gt;"}
+        temp = dict(sienna)
+        temp["employmentType"] = ["FULL_TIME", "TEMPORARY"]
+        bare = dict(sienna)
+        del bare["employmentType"]
+        del bare["workHours"]
+        cases = [(sienna, ("part", "")), (temp, ("full", "term")), (bare, ("", ""))]
+        for node, want in cases:
+            with self.subTest(want=want):
+                job = fn.to_phenom_job(PhenomJobIn(url=url, html=self.ld_page(node)))
+                if job is None:
+                    self.fail(url)
+                self.assertEqual((job.employment_hours, job.employment_term), want)
+                self.assertEqual(job.location, "Ottawa, ON")
+
+    def test_job_row_carries_employment(self) -> None:
+        """落盘行:employment_hours / employment_term 两键有值原样写、没有写空串(与 valid_through 同理人人都有)。"""
+        from ats import functions as fn
+        full = AtsJob(title="Cook", location="Ottawa, ON", url="https://x/job/1", department="", posted="2026-09-14",
+                      address="", employment_hours="part", employment_term="term")
+        row = fn.to_job_row(full)
+        self.assertEqual((row["employment_hours"], row["employment_term"]), ("part", "term"))
+        bare = AtsJob(title="Cook", location="Ottawa, ON", url="https://x/job/1", department="", posted="2026-09-14",
+                      address="")
+        row = fn.to_job_row(bare)
+        self.assertEqual((row["employment_hours"], row["employment_term"]), ("", ""))
+
+
+class AtsSalaryTest(unittest.TestCase):
+    """薪资锚词自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):两个新锚词的正例(写法取自 Bank of Canada / Sienna 的
+    .md 实文)+ 不该认的反例(奖金、报销上限、营收、预算、奖学金 —— 离锚词再近也不认)+ 正反拼接性质 + 老锚词回归。
+    全程只喂字符串,不读仓内文件。"""
+
+    positives = [
+        ("• • Salaries are based on qualifications and experience and typically range from $126,765 to $149,135 (job grade 18)",
+         "$126,765 to $149,135"),
+        ("Rate of Pay: $24.55 (as per collective agreement)", "$24.55"),
+        ("Rate of Pay: $55,451.00 - $69,314.00", "$55,451.00 - $69,314.00"),
+        ("Rate of Pay $23.00 - $25.00 per hour", "$23.00 - $25.00 per hour"),
+        ("Rate of Pay: Min $20.50", "$20.50"),
+        ("Rate of Pay: starting at $22.40", "$22.40"),
+        ("Rate of Pay:</strong> $24.00", "$24.00"),
+        ("Rate of Pay: &lt;/span&gt;&lt;strong&gt;$24.00", "$24.00"),
+    ]
+    """正例(原文, 应抽出的薪资串):Bank of Canada 一条 + Sienna 七种胶水写法。"""
+
+    negatives = [
+        "We offer competitive salaries and a $2,500 signing bonus.",
+        "Rate of pay: competitive, plus a $1,000 signing bonus",
+        "Rate of pay: as per collective agreement. Referral bonus of $500 for eligible staff.",
+        "Rate of pay: as per collective agreement. Tuition reimbursement up to $5,000.",
+        "Annual revenues range from $10 million to $50 million.",
+        "Salaries and benefits make up most of our $40 million budget.",
+        "Salaries are reviewed yearly. Revenue ranges from $5 to $9 million.",
+        "These $10,000 CAD scholarships are awarded to female identifying candidates specializing in economics and finance.",
+    ]
+    """反例(都该抽出空串):奖金、报销上限、营收、预算、奖学金;最后一条是 Bank of Canada 在架帖原文。"""
+
+    def test_new_anchors_golden(self) -> None:
+        """两个新锚词金标:「Salaries … range from」与「Rate of Pay」后跟冒号 / 空格 / Min / starting at / 标签残留。"""
+        from ats import functions as fn
+        for text, want in self.positives:
+            with self.subTest(text=text):
+                self.assertEqual(fn.salary_of(text), want)
+
+    def test_non_salary_amounts(self) -> None:
+        """反例一律空串。"""
+        from ats import functions as fn
+        for text in self.negatives:
+            with self.subTest(text=text):
+                self.assertEqual(fn.salary_of(text), "")
+
+    def test_negatives_never_steal(self) -> None:
+        """拼接性质:每条反例放在每条正例前面或后面(换行隔开),抽出的都还是正例那份薪资 —— 非薪资金额抢不走锚定。"""
+        from ats import functions as fn
+        for text, want in self.positives:
+            for noise in self.negatives:
+                with self.subTest(text=text, noise=noise):
+                    self.assertEqual(fn.salary_of(noise + "\n" + text), want)
+                    self.assertEqual(fn.salary_of(text + "\n" + noise), want)
+
+    def test_old_anchors_unchanged(self) -> None:
+        """老锚词回归:salary range、compensation 长前缀、兜底带单位金额照旧;一个金额都没有给空串。"""
+        from ats import functions as fn
+        cases = [
+            ("Salary range: $80,000 - $100,000 annually", "$80,000 - $100,000 annually"),
+            ("Total compensation (based on 2,080 hours per year) ranges from $52,000 to $60,000", "$52,000 to $60,000"),
+            ("Hourly wage $19.50 per hour, weekends", "$19.50 per hour"),
+            ("No numbers here", ""),
+        ]
+        for text, want in cases:
+            with self.subTest(text=text):
+                self.assertEqual(fn.salary_of(text), want)

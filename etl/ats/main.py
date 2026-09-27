@@ -20,7 +20,7 @@ sources/ats 役册 META.steps):抓各家 ATS 公开 JSON → 抽 ATS 结构化�
 一律从仓库根执行:
     python etl/ats/main.py                 # 默认链(2 步)
     python etl/ats/main.py --only salary   # 单步调试(见 TOOLS)
-    python etl/ats/main.py --only test     # 截止日抽取自测(不联网、不写仓内文件)
+    python etl/ats/main.py --only test     # 截止日抽取自测(不联网、不写仓内文件);2026-09-27 起连工时 / 雇佣期 / 薪资锚词
 """
 import sys
 from pathlib import Path
@@ -54,6 +54,7 @@ TOOLS = {
   jd_index   全扫 companies/*/jobs/*.md 重建索引 index.json(2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」):只在首轮回填
              或索引损坏时跑;之后 scrape 落盘时增量维护,mart 读侧只读索引)。
   test       截止日抽取自测(2026-09-26 /fe Frank「补」同批;用例住 scheme §4,有失败退出码 1)。
+             2026-09-27 起同跑工时 / 雇佣期、薪资锚词两组(Frank 勾「ATS 工时、雇佣期、薪资和小修」)。
   (子串匹配:四个键两两无包含关系,点名任一只命中它自己。)
 """
 
