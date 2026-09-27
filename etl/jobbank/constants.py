@@ -472,7 +472,8 @@ DETAIL_BACKFILL_MAX = 3000
 约 17.6 万帖,每轮 3,000 约 59 轮追平;只读本地详情快照,不联网、不重抓。09-27 03:08 首轮实测:解析 4,154 帖
 (新帖 14 + 每轮都重解析的无 NOC 帖约 1,140 + 回填 3,000)持锁 27.6 分钟(此前每轮 7~9 分钟),即 3,000 帖约 20 分钟、不是上面的约 10 分钟;
 同轮 build 等锁 18.5 分钟。
-同日收口:存量回填只补还在板上的帖(parse_jobbank_details 读 mart_open_ids,同验尸 / howto 的挑法),待补降到约 2.7 万帖、约 9 轮。"""
+同日收口:存量回填只补还在板上的帖(parse_jobbank_details 读 mart_open_ids,同验尸 / howto 的挑法),待补降到约 2.7 万帖、约 9 轮。
+更正(同日 11:20 实数):在板名单 mart_open_ids 6.3 万帖里 1.83 万已有键,待补 4.47 万帖、约 15 轮;「2.7 万」是 mart 里 validThrough 列还空着的岗数,口径不同。"""
 """详情页的雇佣形态(Full/Part time)。"""
 
 SEL_HIRING_ORG = '[property="hiringOrganization"]'

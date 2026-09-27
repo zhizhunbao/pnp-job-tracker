@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from typing import cast
 
 import httpx
+import paths
 from classify.constants import (
     ANSWER_NONE, BODY_MAX_LEN, CAND_DUTIES_MAX, CAND_JOIN, CAND_K, CAND_LINE_TPL, CAND_SCORE_SEP,
     CLASSIFY_LIMIT, CLASSIFY_V, CLIENT_TIMEOUT_S, CODE_RE, CORPUS_TPL, DEFAULT_LIMIT, DUTIES_MAX,
@@ -177,12 +178,14 @@ def pick_todo(x: PickTodoIn) -> list[JobDoc]:
 
 
 def write_labels(cache: dict[str, LabelRecord]) -> None:
-    """记录表落盘(externalId → 记录;每 FLUSH_N 条与收尾各一次)。"""
+    """记录表落盘(externalId → 记录;每 FLUSH_N 条与收尾各一次)。
+    2026-09-27 Frank「都修」:改走 paths.write_json(临时文件 + os.replace + 重试)。原先裸 Path.write_text 打开即截断,
+    撞上 build 容器正在读这份文件就 Errno 22 Invalid argument(09-27 01:18、03:56 两次),整轮中止、这一轮判的码白丢。"""
     OUT_JOBS.parent.mkdir(parents=True, exist_ok=True)
     body: dict[str, object] = {}
     for ext, rec in cache.items():
         body[ext] = rec.model_dump()
-    OUT_JOBS.write_text(json.dumps(body, ensure_ascii=False, indent=JSON_INDENT), encoding=TEXT_ENCODING)
+    paths.write_json(paths.WriteJsonIn(path=OUT_JOBS, payload=body, indent=JSON_INDENT))
 
 
 def ok_count_of(cache: dict[str, LabelRecord]) -> int:
@@ -621,7 +624,7 @@ def write_sample(picked: list[JobDoc]) -> None:
     exts: list[str] = []
     for job in picked:
         exts.append(job.ext)
-    OUT_PILOT_SAMPLE.write_text(json.dumps(exts, ensure_ascii=False, indent=JSON_INDENT), encoding=TEXT_ENCODING)
+    paths.write_json(paths.WriteJsonIn(path=OUT_PILOT_SAMPLE, payload=exts, indent=JSON_INDENT))
 
 
 def picked_by_exts(x: PickByExtsIn) -> list[JobDoc]:
@@ -662,7 +665,7 @@ def write_pilot(x: WritePilotIn) -> None:
     lines: list[str] = [TSV_SEP.join(PILOT_HEADERS)]
     for job in x.jobs:
         lines.append(TSV_SEP.join(pilot_row_of(PilotRowIn(job=job, cache=x.cache, doc_of=x.doc_of))))
-    OUT_PILOT.write_text(LINE_SEP.join(lines), encoding=TEXT_ENCODING)
+    paths.write_text(paths.WriteTextIn(path=OUT_PILOT, text=LINE_SEP.join(lines), encoding=TEXT_ENCODING))
 
 
 def pilot_row_of(x: PilotRowIn) -> list[str]:

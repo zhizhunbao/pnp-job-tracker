@@ -628,6 +628,7 @@ def parse_jobbank_details() -> None:
     2026-09-27 截止日批收口:存量回填只补还在板上的帖(load_on_board,同验尸 / howto 的挑法)—— 死帖与下架帖补截止日没人看得到,
     首轮不筛时待补 17.6 万帖(其中约 11 万验尸已判死),每轮多占仓锁约 20 分钟、职位更新周期从约 68 分钟拉到约 92 分钟;
     筛完约 2.7 万帖,约 9 轮补完。在板名单缺(首跑)= 不筛,照旧按额度补。
+    更正(同日 11:20 实数):在板名单 mart_open_ids 6.3 万帖里 1.83 万已有键,待补 4.47 万帖、约 15 轮;「2.7 万」是 mart 里 validThrough 列还空着的岗数,口径不同。
     """
     say(PRINT_DETAILS_IN_TPL.format(root=IN_SNAP_ROOT))
     say(PRINT_DETAILS_OUT_TPL.format(postings=IN_POSTINGS, details=OUT_DETAILS))
@@ -686,8 +687,10 @@ def reparse_ids() -> set:
 
 def is_backfill_only(job: dict) -> bool:
     """这帖早已富集完(有 detail_fetched / noc / 雇佣形态),这次重解析只为补新键 —— 受 DETAIL_BACKFILL_MAX 限量。
-    2026-09-27 截止日批的存量回填(只缺 K_VALID_THROUGH 的已富集帖)同走此判据与限额,判据不用改:缺哪个新键都一样。"""
-    return bool(job.get(K_DETAIL_FETCHED) and job.get(K_NOC) and K_EMPLOYMENT_HOURS in job)
+    2026-09-27 截止日批的存量回填(只缺 K_VALID_THROUGH 的已富集帖)同走此判据与限额,判据不用改:缺哪个新键都一样。
+    2026-09-27 Frank「都修」:同 should_parse 去掉「有 noc」—— 帖页没写 NOC 的帖也是富集完了,补新键同样吃额度、同样只补在板帖
+    (原先它们缺新键时不算回填,不限量)。"""
+    return bool(job.get(K_DETAIL_FETCHED) and K_EMPLOYMENT_HOURS in job)
 
 
 def should_parse(x: ShouldParseIn) -> bool:
@@ -697,12 +700,16 @@ def should_parse(x: ShouldParseIn) -> bool:
     2026-09-27 Frank 勾「Job Bank 截止日」:缺截止日键(K_VALID_THROUGH)也算缺 —— 存量帖回填帖页截止日,只读本地详情
     快照、不联网;已富集帖只为补这一键的由 is_backfill_only 归进 DETAIL_BACKFILL_MAX 限额(每轮至多多这么多帖),
     新帖照旧不受限。键在(哪怕空串 = 帖页没写)即抽过,不再为它重解析。
+    2026-09-27 Frank「都修」:「解析完」不再要求有官方 noc。帖页本来就没写 NOC 的约 1,100 帖原先每轮都被当成没解析完、
+    不受回填额度限制重解析一遍,白占仓锁约 8 分钟;NOC 护栏(guard_jobbank_noc_sanity)置空的 23 帖更糟 —— 重解析把帖页上的
+    错码写回去,汇装链里的护栏再置空,每轮来回翻。快照没变,重解析结果就不会变:没 NOC 就是没 NOC。快照换了
+    (is_stale_refreshed)与 REPARSE / REPARSE_IDS 照旧强制重解析;noc 回填的先例已跑完(没 NOC 的帖每轮都重解析过)。
     """
     if pid_of(x.job) == "" or x.raw_file is None:
         return False
     if x.reparse:
         return True
-    if x.job.get(K_DETAIL_FETCHED) and x.job.get(K_NOC) and K_EMPLOYMENT_HOURS in x.job \
+    if x.job.get(K_DETAIL_FETCHED) and K_EMPLOYMENT_HOURS in x.job \
             and K_WHO_CAN_APPLY in x.job and K_VALID_THROUGH in x.job:
         return False
     return True

@@ -1510,7 +1510,8 @@ class JobbankDetailParseTest(unittest.TestCase):
         """穷举性质(帖号有无 × 抓过详情 3 态 × noc 3 态 × 雇佣形态键 3 态 × 谁能投键 3 态 × 截止日键 3 态 × 快照有无 ×
         强制与否,1,944 组):① should_parse 等于规格(有帖号、有快照,且强制或「抓过详情 + 有 noc + 三个键都在」不成立);
         ② 比加截止日这一格之前的判据多出来的解析,全是不强制、算回填(is_backfill_only)的 —— 每轮解析量至多多
-        DETAIL_BACKFILL_MAX;③ 截止日键在(有日子或空串)时结论与旧判据逐组相同 —— 抽过一次就不再为它重解析。"""
+        DETAIL_BACKFILL_MAX;③ 截止日键在(有日子或空串)时结论与旧判据逐组相同 —— 抽过一次就不再为它重解析。
+        2026-09-27 Frank「都修」:规格去掉「有 noc」(见 should_parse),加 ④ noc 三态(没有键 / 空串 / 有码)结论逐组相同。"""
         from jobbank import functions as fn
         pids = [{}, {K_POSTING_ID: "50370266"}]
         fetched = [{}, {K_DETAIL_FETCHED: False}, {K_DETAIL_FETCHED: True}]
@@ -1535,15 +1536,39 @@ class JobbankDetailParseTest(unittest.TestCase):
                         self.assertEqual((forced, fn.is_backfill_only(job)), (False, True), label)
                     if K_VALID_THROUGH in job:
                         self.assertEqual(got, old, label)
+                    bare = dict(job)
+                    bare.pop(K_NOC, None)
+                    self.assertEqual(fn.should_parse(ShouldParseIn(job=bare, raw_file=raw, reparse=forced)), got, label)
         self.assertEqual(n, 2 * 3 ** 5 * 2 * 2)
 
+    def test_no_noc_page_parsed_once(self) -> None:
+        """金标(2026-09-27 Frank「都修」):帖页没写 NOC 的帖跑过一次 enrich_job 就算解析完,下一轮不再入选;NOC 护栏置空
+        (noc 空串)的已富集帖同样不入选 —— 不再每轮把错码写回去;快照换了(强制)照旧重解析;这类帖缺新键时算回填、吃额度。"""
+        from jobbank import functions as fn
+        raw = Path("50370159.html")
+        page = self.job_of("50370159")
+        self.assertTrue(fn.should_parse(ShouldParseIn(job=page, raw_file=raw, reparse=False)))
+        self.enriched_of(page, self.fragment_of("50370159"))
+        self.assertNotIn(K_NOC, page)
+        self.assertFalse(fn.should_parse(ShouldParseIn(job=page, raw_file=raw, reparse=False)))
+        self.assertTrue(fn.should_parse(ShouldParseIn(job=page, raw_file=raw, reparse=True)))
+        guarded = self.old_row_of("50146693")
+        guarded[K_NOC] = ""
+        guarded[K_VALID_THROUGH] = "2026-10-05"
+        self.assertFalse(fn.should_parse(ShouldParseIn(job=guarded, raw_file=raw, reparse=False)))
+        missing = self.old_row_of("50370266")
+        missing.pop(K_NOC)
+        self.assertEqual((fn.should_parse(ShouldParseIn(job=missing, raw_file=raw, reparse=False)),
+                          fn.is_backfill_only(missing)), (True, True))
+
     def rule_of(self, job: dict, raw: "Path | None", forced: bool, keys: tuple) -> bool:
-        """should_parse 的规格(独立对照尺,不经被测函数):有帖号、有快照,且强制或「抓过详情 + 有 noc + keys 全在」不成立。"""
+        """should_parse 的规格(独立对照尺,不经被测函数):有帖号、有快照,且强制或「抓过详情 + 有 noc + keys 全在」不成立。
+        2026-09-27 Frank「都修」:规格去掉「有 noc」,只剩「抓过详情 + keys 全在」。"""
         if job.get(K_POSTING_ID, "") == "" or raw is None:
             return False
         if forced:
             return True
-        done = job.get(K_DETAIL_FETCHED) is True and job.get(K_NOC, "") != ""
+        done = job.get(K_DETAIL_FETCHED) is True
         for key in keys:
             done = done and key in job
         return done is False
