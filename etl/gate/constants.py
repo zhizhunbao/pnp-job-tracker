@@ -25,8 +25,11 @@ ETL_DIR = REPO_ROOT / "etl"
 DOMAINS = ["aip", "ats", "careerbeacon", "citations", "classify", "company", "crawl", "dli", "door", "ee",
            "eligibility", "employers", "explore", "fcip", "fetch", "fsa", "gate", "hireac", "hwcr", "indexing",
            "ircc", "jdformat", "jobbank", "jobboom", "jobillico", "lmia", "load", "log", "mart", "minwage",
-           "names", "news", "noc", "paths", "pnp", "rcip", "richtext", "sched", "sites", "wages"]
+           "names", "news", "noc", "paths", "pnp", "pte", "qs", "rcip", "richtext", "sched", "sites", "statcan",
+           "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
+2026-09-27 补登 pte / qs / statcan(Frank「问题太多了」「能用多 agent 修么」:三域存量硬红 26 条改代码清零后登记,
+改前改后同一份输入对拍逐字一致;gcjobs 另一批清完再登)。
 door 2026-09-26 立叶(Frank「推广」:「每步各自兜住」的门循环 run_steps 自 pnp / statcan 两门收成一片叶,
 各域门共用;双重身份同 names/richtext = 既被扫也可被依赖)。
 2026-09-26 补登下列八个(立域时漏登 = 此前一直没被扫;行内日期是立域日,新→旧):

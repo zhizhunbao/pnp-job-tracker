@@ -1,9 +1,15 @@
 """pte.functions — ynwac 对照库抽取(bundle 直取 → 数据模块配平 → JS 字面量规范化 → 分组落盘)。
 
-2026-09-01 立域。IN = ynwac 首页 → main.<hash>.js(公开静态,零鉴权);
-OUT = data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/except 隔离:
+2026-09-01 立域。IN: ynwac 首页 → main.<hash>.js(公开静态,零鉴权);
+OUT: data/pte/ynwac-bank.json(私有研究,不进 mart/DB)。逐数组 try/except 隔离:
 一个模块的诡异嵌套引号解析不动就跳过留痕,不拖垮整轮、不静默丢(no silent cap)。
 数据纯净假设:题库是 webpack 数据模块(只有 字符串/数字/布尔/数组/对象),无函数无计算值。
+
+2026-09-27 形制闸清零批(Frank「问题太多了」「先不要加新功能」,lead 定改代码清掉;本文件 23 条硬红):
+上两行 IN / OUT 原写「= 」,OUT 那行行首被闸⑥顶层常量正则(按原文扫)误认成常量,改冒号;
+裸串(getattr 属性名 / 事件名 / 替换式 / 打开模式 / 词频空值 / 换行)提名进 constants;推导式与 genexp 展开成
+显式循环(值与顺序不变);猩际两个 request 监听由闭包工厂改成顶层具名回调 + variables.CACHE 收集槽
+(照 crawl rewrite_route 先例)。每处行为逐字不变(改前改后同一份输入对拍,产出一致)。
 """
 import asyncio
 import base64
@@ -118,12 +124,15 @@ from pte.constants import (A_K_B64, ANSWER_SEP, AUDIO_URL_TPL, BLANK_OPTS_RE, BL
                            MERGE_SRC_ORDER, MIME_MP3, MIME_WAV, NORM_DROP, NORM_SPACE_RE, NORM_TEXT_RE, OUT_TTS_DIR,
                            OUT_TTS_INDEX, OUT_TTS_VOICES_DIR, P_MERGE_TPL, P_TTS_DONE_TPL, P_TTS_FAIL_TPL,
                            P_TTS_VOICE_TPL, TTS_FILE_SEP, TTS_K_FILE, TTS_K_MIME, TTS_K_ROWS, TTS_K_VOICE,
-                           TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX)
+                           TTS_MODEL_SUFFIX, TTS_MP3_SUFFIX, TTS_VOICE, TTS_WAV_SUFFIX,
+                           DICT_FRQ_UNSET, DK_ATTR_NEW_PAGE, DK_ATTR_PAGES, TIGHT_SUB, WAV_OPEN_MODE, XJ_ATTR_URL,
+                           XJ_EVENT_REQUEST, ZH_LINE_SEP)
 from pte.scheme import (SnippetTitleIn, SentenceRowsIn, TranslateIn, FamilyIn, WnSense, WnWord, DictRowIn, BankIn, CloseIn, CollectIn, DiffIn, DkEntryIn, DkImagesIn, DkPageIn, DkPageLike,
                         Group, GroupIn, HttpClientLike, MediaRowIn, PbBankIn, PbGroupsIn, PbRowIn,
                         DaysIn, RadarIn, RecentRowIn, RecentSummaryIn, SnapshotIn, VoteGetIn,
                         XjExamIn, XjExamUrlIn, XjGroupIn, XjListIn, XjPageLike, XjRowIn, XjSignalsIn,
                         XjUrlIn, DkSegmentIn, PteQuestionIn, QuestionTextIn, TtsOneIn)
+from pte.variables import CACHE
 
 
 # =========================================================================
@@ -1294,10 +1303,10 @@ def dk_browser_ok() -> bool:
 
 def dk_first_page(ctx: object) -> object:
     """持久上下文的首页(persistent context 自带一页;没有就新开)。外部库形状,装配点 cast 收窄。"""
-    pages = getattr(ctx, "pages")
+    pages = getattr(ctx, DK_ATTR_PAGES)
     if isinstance(pages, list) and len(pages) > 0:
         return pages[0]
-    return getattr(ctx, "new_page")()
+    return getattr(ctx, DK_ATTR_NEW_PAGE)()
 
 
 def dk_list_of(x: DkPageIn) -> list:
@@ -1528,11 +1537,21 @@ def dk_images_of(urls: list) -> list:
     out = []
     for u in urls:
         s = str(u)
-        if any(m in s for m in DK_AVATAR_MARKS):
+        if is_dk_avatar(s):
             continue
         if s not in out:
             out.append(s)
     return out
+
+
+def is_dk_avatar(url: str) -> bool:
+    """图片地址带任一头像标记(DK_AVATAR_MARKS)即 True —— 评论区头像 / TTS 头像不是题图。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):原是 dk_images_of 里的 any(genexp),展开成显式循环,
+    命中即返回,判定不变。"""
+    for m in DK_AVATAR_MARKS:
+        if m in url:
+            return True
+    return False
 
 
 def dk_images_fetch(x: DkImagesIn) -> int:
@@ -1688,7 +1707,8 @@ def yn_signals_of(today: date) -> dict:
     """ynwac votes.json → {(源,型,id): 信号}(seen = 评论考试记录最晚日期;votes = 考过票数;文件不在 = 空表)。
 
     未来日期剔除(2026-09-02 实撞:用户把预约考试日也写成「考试记录」,出现 2027-07-14 之类;
-    今天之后的不是「考过」,不进 seen 也不计数)。"""
+    今天之后的不是「考过」,不进 seen 也不计数)。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):剔未来日期的列表推导展开成显式循环,留下的日期与顺序不变。"""
     out = {}
     if not OUT_VOTES.exists():
         return out
@@ -1698,7 +1718,10 @@ def yn_signals_of(today: date) -> dict:
     for code, rows in v[V_K_TYPES].items():
         t = YN_VOTE_TYPE.get(code, TYPE_UNKNOWN)
         for r in rows:
-            dates = [d for d in exam_dates_of(r[V_K_COMMENTS]) if d <= cutoff]
+            dates = []
+            for d in exam_dates_of(r[V_K_COMMENTS]):
+                if d <= cutoff:
+                    dates.append(d)
             seen = None
             if len(dates) > 0:
                 seen = max(dates)
@@ -1827,7 +1850,8 @@ async def xj_lists_async() -> None:
     OUT_XJ_RAW_DIR.mkdir(parents=True, exist_ok=True)
     xp = cast(XjPageLike, page)
     urls: list = []
-    xp.on("request", make_xj_url_sink(urls))
+    CACHE.xj_urls = urls
+    xp.on(XJ_EVENT_REQUEST, xj_url_sink)
     total = 0
     try:
         for model in XJ_MODELS:
@@ -1845,13 +1869,15 @@ async def xj_lists_async() -> None:
     say(P_XJ_LISTS_DONE_TPL.format(models=len(XJ_MODELS), total=total, dir=OUT_XJ_RAW_DIR))
 
 
-def make_xj_url_sink(urls: list) -> object:
-    """request 监听工厂:把页面自发的 single_num_v2 请求地址收进 urls(外部库回调接缝,形状由 playwright 定)。"""
-    def sink(req: object) -> None:
-        u = str(getattr(req, "url", ""))
-        if XJ_API_SINGLE in u:
-            urls.append(u)
-    return sink
+def xj_url_sink(req: object) -> None:
+    """request 监听:把页面自发的 single_num_v2 请求地址收进 CACHE.xj_urls(外部库回调接缝,形状由 playwright 定 ——
+    回调只收一参 request)。
+    2026-09-27 形制闸清零批(闸⑨内嵌函数禁令):原是 make_xj_url_sink(urls) 工厂里的闭包 sink(工厂文档原文:
+    「request 监听工厂:把页面自发的 single_num_v2 请求地址收进 urls(外部库回调接缝,形状由 playwright 定)」),
+    照 crawl rewrite_route 先例改成顶层具名 + 容器格;收集槽由 xj_lists_async 开头换进 CACHE,判词与收集行为不变。"""
+    u = str(getattr(req, XJ_ATTR_URL, ""))
+    if XJ_API_SINGLE in u:
+        CACHE.xj_urls.append(u)
 
 
 async def xj_list_of(x: XjListIn) -> list:
@@ -1936,7 +1962,8 @@ async def xj_exam_async() -> None:
         return
     xp = cast(XjPageLike, page)
     urls: list = []
-    xp.on("request", make_xj_exam_url_sink(urls))
+    CACHE.xj_exam_urls = urls
+    xp.on(XJ_EVENT_REQUEST, xj_exam_url_sink)
     today = date.today()
     old = xj_exam_rows_of()
     known_id = 0
@@ -1965,13 +1992,14 @@ async def xj_exam_async() -> None:
     say(P_XJ_EXAM_DONE_TPL.format(new=len(new), total=len(rows), keep=XJ_EXAM_KEEP_D, path=OUT_XJ_EXAM))
 
 
-def make_xj_exam_url_sink(urls: list) -> object:
-    """request 监听工厂:把页面自发的 comments/exam 请求地址收进 urls(外部库回调接缝)。"""
-    def sink(req: object) -> None:
-        u = str(getattr(req, "url", ""))
-        if XJ_API_EXAM in u:
-            urls.append(u)
-    return sink
+def xj_exam_url_sink(req: object) -> None:
+    """request 监听:把页面自发的 comments/exam 请求地址收进 CACHE.xj_exam_urls(外部库回调接缝,回调只收一参)。
+    2026-09-27 形制闸清零批(闸⑨内嵌函数禁令):原是 make_xj_exam_url_sink(urls) 工厂里的闭包 sink(工厂文档原文:
+    「request 监听工厂:把页面自发的 comments/exam 请求地址收进 urls(外部库回调接缝)」),照 xj_url_sink 同改;
+    收集槽由 xj_exam_async 开头换进 CACHE,判词与收集行为不变。"""
+    u = str(getattr(req, XJ_ATTR_URL, ""))
+    if XJ_API_EXAM in u:
+        CACHE.xj_exam_urls.append(u)
 
 
 def xj_exam_rows_of() -> list:
@@ -2164,7 +2192,8 @@ def to_xj_index_rows(bank: dict) -> list:
 
 def xj_signals_of(x: XjSignalsIn) -> dict:
     """猩际库 → {(源,型,id): 信号}(seen = 考试记录最晚日期,未来日期剔(ynwac 同律);seen_n = 持有条数;
-    votes = exam_count;freq 本源无 null;库不在 = 空表)。"""
+    votes = exam_count;freq 本源无 null;库不在 = 空表)。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):剔未来日期的列表推导展开成显式循环,留下的日期与顺序不变。"""
     out = {}
     if not OUT_XJ_BANK.exists():
         return out
@@ -2173,7 +2202,10 @@ def xj_signals_of(x: XjSignalsIn) -> dict:
     cutoff = x.today.isoformat()
     for g in bank[OUT_K_GROUPS]:
         for q in g[OUT_K_QUESTIONS]:
-            dates = [d for d in q[XJ_K_EXAM_DATES] if d <= cutoff]
+            dates = []
+            for d in q[XJ_K_EXAM_DATES]:
+                if d <= cutoff:
+                    dates.append(d)
             seen = None
             if len(dates) > 0:
                 seen = max(dates)
@@ -2499,8 +2531,8 @@ def dk_segment_of(x: DkSegmentIn) -> str:
             continue
         tokens.append(s)
     joined = TOKEN_JOIN.join(tokens)
-    joined = PUNCT_TIGHT_RE.sub(r"\1", joined)
-    return OPEN_TIGHT_RE.sub(r"\1", joined).strip()
+    joined = PUNCT_TIGHT_RE.sub(TIGHT_SUB, joined)
+    return OPEN_TIGHT_RE.sub(TIGHT_SUB, joined).strip()
 
 
 def merge_same_text(rows: list) -> list:
@@ -2739,7 +2771,7 @@ def tts_one(x: TtsOneIn) -> dict:
     """一题:合成 wav → (ffmpeg 在)转 mp3 删 wav → 索引行。"""
     stem = x.qid.replace(QID_SEP, TTS_FILE_SEP)
     wav = OUT_TTS_DIR / (stem + TTS_WAV_SUFFIX)
-    with wave.open(str(wav), "wb") as w:
+    with wave.open(str(wav), WAV_OPEN_MODE) as w:
         x.voice.synthesize_wav(x.text, w)  # pyrefly: ignore[missing-attribute] — PiperVoice 形状不在本域声明
     out = wav
     mime = MIME_WAV
@@ -2775,14 +2807,18 @@ def audio_rows_of(rows: list) -> list:
 
 def run_pte_dict() -> None:
     """字典步:mart 题行切词表 → 在 ECDICT csv 里两趟查(本词 + 原形)→ processed dict.json + mart pte_dict.json。
-    词典 csv 不在就报错停(不猜、不打外网)。"""
+    词典 csv 不在就报错停(不猜、不打外网)。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):原形集的集合推导展开成显式循环,集合不变。"""
     if not IN_DICT_CSV.exists():
         raise FileNotFoundError(str(IN_DICT_CSV))
     with (MART / MART_QUESTIONS_FILE).open(encoding=ENC_UTF8) as f:
         qrows = json.load(f)
     vocab = vocab_of(qrows)
     found = dict_lookup(vocab)
-    lemmas = {lemma_of(v[DICT_CSV_K_EXCHANGE]) for v in found.values()} - set(found) - {""}
+    lemmas: set = set()
+    for v in found.values():
+        lemmas.add(lemma_of(v[DICT_CSV_K_EXCHANGE]))
+    lemmas = lemmas - set(found) - {""}
     base = dict_lookup(lemmas)
     base.update(found)
     rows = []
@@ -2859,7 +2895,7 @@ def dict_row_of(x: DictRowIn) -> dict:
     if not collins and root is not None:
         collins = root[DICT_CSV_K_COLLINS]
     frq = x.hit[DICT_CSV_K_FRQ]
-    if root is not None and root[DICT_CSV_K_FRQ] not in ("", "0"):
+    if root is not None and root[DICT_CSV_K_FRQ] not in DICT_FRQ_UNSET:
         frq = root[DICT_CSV_K_FRQ]
     definition = x.hit[DICT_CSV_K_DEFINITION]
     if root is not None and root[DICT_CSV_K_DEFINITION]:
@@ -2868,7 +2904,7 @@ def dict_row_of(x: DictRowIn) -> dict:
             D_K_TRANSLATION: expand_domains(translation.replace(DICT_CSV_NL, DICT_NL)), D_K_LEMMA: lemma,
             D_K_TAG: tag, D_K_COLLINS: int(collins) if collins.isdigit() else 0,
             D_K_FRQ: int(frq) if frq.isdigit() else 0,
-            D_K_DEFINITION: definition.replace(DICT_CSV_NL, "\n"),
+            D_K_DEFINITION: definition.replace(DICT_CSV_NL, DICT_NL),
             D_K_FORMS: forms_of(x.hit[DICT_CSV_K_EXCHANGE])}
 
 
@@ -2902,8 +2938,11 @@ def attach_phonetics(rows: list) -> None:
 
 
 def borrow_phonetics(rows: list) -> None:
-    """屈折形自己没英/美音标的,借原形的(examples → example;Frank 2026-09-04 实撞「英 — 」空档)。"""
-    by_word: dict = {r[D_K_WORD]: r for r in rows}
+    """屈折形自己没英/美音标的,借原形的(examples → example;Frank 2026-09-04 实撞「英 — 」空档)。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):词 → 行的字典推导展开成显式循环(同词后行盖前行,与推导一致)。"""
+    by_word: dict = {}
+    for r in rows:
+        by_word[r[D_K_WORD]] = r
     for r in rows:
         root = by_word.get(r[D_K_LEMMA])
         if root is None:
@@ -2958,7 +2997,8 @@ def attach_families(rows: list) -> None:
 
 
 def family_of(x: FamilyIn) -> dict:
-    """一词的派生词族 {pos: [词...]}(排序去重;本词与原形不算;只留 n / v / a,s 并进 a;桶空不出)。"""
+    """一词的派生词族 {pos: [词...]}(排序去重;本词与原形不算;只留 n / v / a,s 并进 a;桶空不出)。
+    2026-09-27 形制闸清零批(闸⑧显式循环令):出桶的字典推导展开成显式循环,键序与值不变。"""
     own = {x.word, x.lemma}
     buckets: dict = {}
     for head in (x.word, x.lemma):
@@ -2980,7 +3020,11 @@ def family_of(x: FamilyIn) -> dict:
                     if lemma in own:
                         continue
                     buckets.setdefault(pos, set()).add(lemma)
-    return {pos: sorted(words) for pos, words in buckets.items() if words}
+    out: dict = {}
+    for pos, words in buckets.items():
+        if words:
+            out[pos] = sorted(words)
+    return out
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -3046,9 +3090,12 @@ def sha1_of(text: str) -> str:
 
 
 def translate_batch(x: TranslateIn) -> list:
-    """一批句子编号送模型,按编号解析回来;行数或编号对不上给空清单(调用方计失败)。"""
-    lines = [ZH_LINE_TPL.format(n=i + 1, text=s) for i, s in enumerate(x.sentences)]
-    body = {ZH_K_MODEL: ZH_MODEL, ZH_K_PROMPT: ZH_PROMPT_TPL.format(lines="\n".join(lines)), ZH_K_STREAM: False,
+    """一批句子编号送模型,按编号解析回来;行数或编号对不上给空清单(调用方计失败)。
+    2026-09-27 形制闸清零批(闸⑧⑦):编号行的列表推导展开成显式循环,两处换行裸串提名 ZH_LINE_SEP,送出与读回不变。"""
+    lines: list = []
+    for i, s in enumerate(x.sentences):
+        lines.append(ZH_LINE_TPL.format(n=i + 1, text=s))
+    body = {ZH_K_MODEL: ZH_MODEL, ZH_K_PROMPT: ZH_PROMPT_TPL.format(lines=ZH_LINE_SEP.join(lines)), ZH_K_STREAM: False,
             ZH_K_OPTIONS: ZH_OPTIONS, ZH_K_THINK: False}
     try:
         resp = x.client.post(ZH_OLLAMA_URL, json=body)
@@ -3057,7 +3104,7 @@ def translate_batch(x: TranslateIn) -> list:
         err(ZH_OLLAMA_URL, e)
         return []
     got: dict = {}
-    for line in text.split("\n"):
+    for line in text.split(ZH_LINE_SEP):
         m = ZH_LINE_RE.match(line)
         if m is not None:
             got[int(m.group(1))] = m.group(2).strip()

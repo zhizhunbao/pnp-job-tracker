@@ -549,6 +549,17 @@ CSD_NAME_RE = r"^(?P<base>.+?) \((?P<typ>[^()]*)\), (?P<prov>[A-Za-z .]+)$"
 再取 ' / ' 前的英文半)。base 里带逗号的('Thunder Bay, Unorganized')自然匹配不上任何城市键,
 不用另滤。"""
 
+CSD_BASE_GROUP = "base"
+"""CSD_NAME_RE 的命名组:城市名本体(双语名再取 CSD_BILINGUAL_SEP 前的英文半)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):本组与下两组的组名原是 functions
+体内裸串,犯零字符串令,提名进这里 —— 值与上面正则里的组名逐字相同,取组行为不变。"""
+
+CSD_TYP_GROUP = "typ"
+"""CSD_NAME_RE 的命名组:市制类型缩写(按 CSD_TYPE_PREF 排优先序;2026-09-27 同批提名)。"""
+
+CSD_PROV_GROUP = "prov"
+"""CSD_NAME_RE 的命名组:省全名(经 PROV_CODE 换两位省码;2026-09-27 同批提名)。"""
+
 CSD_TYPE_PREF = ("CV", "CY", "C", "V", "RGM", "SM", "T", "MU", "VL", "DM")
 """同省同名多个 CSD 时的市制优先序(城 > 镇 > 区):Langley 城(CY)与 Langley 乡(DM)、
 North Vancouver 城与区、Hamilton 城(C)与乡镇(TP)、Moncton/Bathurst 城(C)与堂区(P)同名 ——

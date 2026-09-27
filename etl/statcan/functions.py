@@ -21,6 +21,8 @@ StatCan(www150.statcan.gc.ca)对 Python 默认(可协商 1.3)的握手间歇性�
 「SSL: UNEXPECTED_EOF_WHILE_READING」,容器与本机同测默认档 4/6、封顶 1.2 档 6/6(且快 5 倍);与 fetch 叶
 2026-09-10 Job Bank 那次同一类握手指纹拦截。此前 cubes 每轮总有一两张表撞上 → exit 1 → 链尾 city 从 09-22 起没跑过。
 搬来的段3 / 段4 为此破例改了请求行(只加 verify 一格,其余一字未动)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):段6 取 CSD_NAME_RE 命名组用的三个组名裸串
+提名进 constants(CSD_BASE_GROUP / CSD_TYP_GROUP / CSD_PROV_GROUP),值逐字相同,行为不变。
 """
 import csv
 import io
@@ -63,6 +65,7 @@ from statcan.constants import (
     CITY_PROBE_FAIL_TPL, CITY_STAT_DIM, CITY_STAT_MEMBER, CITY_UNEMP_LATEST_N,
     CITY_UNEMP_PID, CITY_UNEMP_PROBE_CMA, CITY_UNEMP_PROBE_MAX, CITY_UNEMP_PROBE_MIN,
     CSD_BILINGUAL_SEP, CSD_NAME_RE, CSD_TYPE_PREF, K_CITY, K_CITY_ROWS, K_CMA, K_PIDS,
+    CSD_BASE_GROUP, CSD_PROV_GROUP, CSD_TYP_GROUP,
     K_POP_PERIOD, K_POP_VAL, K_PROVINCE, K_UNEMP_PERIOD, K_UNEMP_RATE, OUT_CITY_MACRO,
     K_NAICS_CODE, K_NAICS_LEVEL, K_NAICS_PARENT, K_NAICS_ROWS, K_NAICS_VERSION, K_NAME_EN, K_NAME_KO,
     K_NAME_ZH, NAICS_COL_CODE, NAICS_COL_LEVEL, NAICS_COL_PARENT, NAICS_COL_TITLE,
@@ -556,10 +559,10 @@ def csd_key_of(member_name: str) -> str | None:
     m = re.match(CSD_NAME_RE, member_name)
     if m is None:
         return None
-    prov = PROV_CODE.get(m.group("prov"))
+    prov = PROV_CODE.get(m.group(CSD_PROV_GROUP))
     if prov is None:
         return None
-    base = m.group("base")
+    base = m.group(CSD_BASE_GROUP)
     if CSD_BILINGUAL_SEP in base:
         base = base.split(CSD_BILINGUAL_SEP)[0]
     return base + CITY_KEY_SEP + prov
@@ -586,7 +589,7 @@ def csd_pick(x: CsdPickIn) -> dict:
         key = csd_key_of(name)
         if key is None or key not in x.wanted or m is None:
             continue
-        rank = csd_type_rank(m.group("typ"))
+        rank = csd_type_rank(m.group(CSD_TYP_GROUP))
         got = best.get(key)
         if got is None or rank < got[0]:
             best[key] = (rank, int(mid))

@@ -887,6 +887,14 @@ DK_NAV_TIMEOUT_MS = 60000
 DK_PAGE_WAIT_S = 4.0
 """列表页 networkidle 后再等(Vuex 灌表有尾巴)。"""
 
+DK_ATTR_PAGES = "pages"
+"""持久上下文(playwright BrowserContext)的属性名:已开标签清单(外部库形状,getattr 取)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):本格与 DK_ATTR_NEW_PAGE 原是 dk_first_page
+体内裸串,犯零字符串令,提名进这里,值逐字相同。"""
+
+DK_ATTR_NEW_PAGE = "new_page"
+"""持久上下文的方法名:新开一个标签(没有现成标签时用;2026-09-27 同批提名)。"""
+
 DK_ENTRY_WAIT_S = 3.0
 """题页 networkidle 后再等(正文渲染)。"""
 
@@ -1184,6 +1192,14 @@ XJ_MODEL_TYPE = {
 
 XJ_API_SINGLE = "/api/v1/questions/single_num_v2"
 """单题元数据接口路径(截取页面自发请求的判词;响应 data.item 密文不存,只取明文格)。"""
+
+XJ_EVENT_REQUEST = "request"
+"""页面事件名:页面每发一个请求触发一次(列表步 / 流步都靠它截页面自发的接口地址)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):本格与 XJ_ATTR_URL 原是 functions 体内裸串,
+犯零字符串令,提名进这里,值逐字相同。"""
+
+XJ_ATTR_URL = "url"
+"""playwright Request 的属性名:请求地址(监听回调 getattr 取,缺席当空串;2026-09-27 同批提名)。"""
 
 XJ_P_NUM = "num"
 """单题接口 query 参数:题号(沿链只改这一个参数)。"""
@@ -1605,6 +1621,11 @@ PUNCT_TIGHT_RE = re.compile(r"\s+([,.;:!?%)\]'’”])")
 OPEN_TIGHT_RE = re.compile(r"([(\[$“‘])\s+")
 """开括号/开引号后多出的空格。"""
 
+TIGHT_SUB = r"\1"
+"""PUNCT_TIGHT_RE / OPEN_TIGHT_RE 两个收紧的替换式:只留捕获的标点 / 开括号本体,吃掉多出的空格。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):原是 dk_segment_of 体内两处裸串,
+犯零字符串令,提名进这里,值逐字相同。"""
+
 P_MART_DONE_TPL = "✓ pte mart:{types} 题型 · {questions} 题(有音频 {audio} · 押题 {predicted})→ {dir}"
 """日志:出表收口。"""
 
@@ -1663,6 +1684,11 @@ TTS_MODEL_SUFFIX = ".onnx"
 
 TTS_WAV_SUFFIX = ".wav"
 """piper 直出的 wav 后缀(ffmpeg 在就转 mp3 删 wav)。"""
+
+WAV_OPEN_MODE = "wb"
+"""wave.open 写 wav 的打开模式(写 + 二进制)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):原是 tts_one 体内裸串(闸只豁免 "w",
+不豁免 "wb"),提名进这里,值逐字相同。"""
 
 TTS_MP3_SUFFIX = ".mp3"
 """压缩后的 mp3 后缀(32 kbps 单声道,一句 ~8 KB,RA 段落 ~80 KB)。"""
@@ -1758,6 +1784,11 @@ D_K_COLLINS = "collins"
 
 DICT_CSV_K_FRQ = "frq"
 """csv 列:当代语料词频排名(COCA;越小越常见;0 = 没排)。"""
+
+DICT_FRQ_UNSET = ("", "0")
+"""csv frq 格的「没排」两形(空串与 0):原形的 frq 是其中之一就不借给屈折形。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):原是 dict_row_of 体内元组字面量里的裸串 "0",
+犯零字符串令,整只元组提名进这里,值逐字相同。"""
 
 D_K_FRQ = "frq"
 """字典行:词频排名;0 = 没排(屈折形一律用原形的 —— designed 自己的排名很靠后会被标成难词)。"""
@@ -1907,6 +1938,11 @@ ZH_PROMPT_TPL = ("Translate each numbered English sentence into natural Simplifi
 
 ZH_LINE_TPL = "{n}. {text}"
 """编号行。"""
+
+ZH_LINE_SEP = "\n"
+"""编号行之间的换行(送模型时拼行、读回译文时切行,同一个)。
+2026-09-27 形制闸清零批(Frank「问题太多了」,lead 定改代码清掉):原是 translate_batch 体内两处裸串,
+犯零字符串令,提名进这里,值逐字相同。"""
 
 ZH_LINE_RE = re.compile(r"^\s*(\d+)\s*[.、:：)]\s*(.+)$")
 """解析输出行:编号 + 译文。"""
