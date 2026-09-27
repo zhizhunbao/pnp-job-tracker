@@ -561,11 +561,6 @@ export const GATE_F = {
   empStaff: 'empStaff',
 
   /**
-   * 各流的 offer 条文(只拿来点开看原句)。
-   */
-  jobOffer: 'jobOffer',
-
-  /**
    * 指定社区推荐信。
    */
   endorse: 'communityEndorsement',
@@ -675,16 +670,6 @@ export const GATE_FORM_ORDER = ['part', 'casual', 'seasonal', 'term']
  * 「不收」清单一项的文案键前缀。
  */
 export const GATE_FORM_HEAD = 'pnpgate.no.'
-
-/**
- * 工时档的文案键前缀(同职位板的 `emp.full` / `emp.part`)。
- */
-export const GATE_EMP_HEAD = 'emp.'
-
-/**
- * 雇佣期档的文案键前缀(同职位板的 `term.permanent` 等)。
- */
-export const GATE_TERM_HEAD = 'term.'
 
 /**
  * 魁省省码(走自己的体系,不属 PNP)。

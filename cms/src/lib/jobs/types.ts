@@ -5018,16 +5018,6 @@ export type PnpReqRow = {
   basis: string
 
   /**
-   * 英文摘要或官方原文。
-   */
-  label: string
-
-  /**
-   * 官方原文(逐字);'' = 原文就在 label 里。
-   */
-  valueText: string
-
-  /**
    * 出处页。
    */
   url: string

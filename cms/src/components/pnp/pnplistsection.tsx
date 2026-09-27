@@ -71,7 +71,7 @@ export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [],
   return (
     <>
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
-      {gate != null && <PnpGateCard spec={gate} open={p.gateOpen} toggleOf={p.gateToggleOf} />}
+      {gate != null && <PnpGateCard spec={gate} />}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawGroupsShownOf(form) && (
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams} ops={ops}

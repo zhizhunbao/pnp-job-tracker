@@ -560,7 +560,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   'pnpdraws.ytdInv': '{year}년 초청 {n}건', 'pnpdraws.ytdSel': '{year}년 선정 {n}명',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
-  'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ', 'pnpgate.mine': '이 직무: {v}',
+  'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',
   'pnpgate.k.emp': '고용주', 'pnpgate.k.other': '기타',
   'pnpgate.offerFull': '풀타임', 'pnpgate.offerNot': '{list} 제외', 'pnpgate.no.part': '파트타임', 'pnpgate.no.casual': '임시직',

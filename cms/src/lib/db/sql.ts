@@ -567,15 +567,16 @@ export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') 
 /**
  * 省提名弹框「本岗通道的门槛」卡的原料(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」):门槛表里卡上用得到的几类 ——
  * offer 形态 / 语言 / 经验 / EE 三项 / 雇主三项 / 社区推荐信 / 执照,外加各流的 offer 条文(点开看原句用)。
+ * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:点开看原句撤了,offer 条文与原句两列不再取。
  * 不按省筛:全国几百行一份,走 10 分钟单件缓存;卡只在登记了通道对照的省出(先上 AB)。applies_condition 同全量那条走 to_jsonb 防缺列。
  */
 export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, value, unit, COALESCE(applies_teer, '') AS applies_teer,
        COALESCE(applies_noc, '') AS applies_noc, COALESCE(applies_area, '') AS applies_area,
        COALESCE(to_jsonb(q) ->> 'applies_condition', '') AS applies_condition, COALESCE(basis, '') AS basis,
-       COALESCE(label, '') AS label, COALESCE(value_text, '') AS value_text, COALESCE(url, '') AS url, seq
+       COALESCE(url, '') AS url, seq
      FROM pnp_requirements q
      WHERE program = 'PNP' AND factor IN ('offerForm', 'language', 'experience', 'eeProfile', 'eeProgram', 'crs', 'empYears',
-       'empRevenue', 'empStaff', 'jobOffer', 'communityEndorsement', 'licensing')
+       'empRevenue', 'empStaff', 'communityEndorsement', 'licensing')
      ORDER BY province, stream, seq`
 
 // =========================================================================

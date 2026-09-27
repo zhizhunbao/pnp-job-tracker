@@ -38,8 +38,8 @@ import {
   SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD,
   TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
-  BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL, GATE_EMP_HEAD, GATE_F,
-  GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_TERM_HEAD, GATE_UNIT_CLB,
+  BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL, GATE_F,
+  GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB,
   GATE_UNIT_MONTHS, GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP,
 } from './constants'
 import type {
@@ -61,8 +61,8 @@ import type {
   PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow,
   ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn, SponsorLinesIn, SponsorShowIn, StreamRowSpec,
   StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
-  BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateQuote, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
-  MineLineIn, NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
+  BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
+  NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
 } from './types'
 import css from './pnp.module.css'
 
@@ -1459,6 +1459,7 @@ function yearOf(r: PnpOps): string {
  * 不出;本岗通道那几条流一行门槛都没有就不出卡(只剩全省那两行会读成门槛只有这些)。语言按本岗职业码 → TEER → 不限挑那一档;
  * 每行点开看官方原句。只陈列门槛,不判「你够不够」。本岗通道 → 门槛表里的流靠 NAMED_REQ_STREAMS / GEN_REQ_STREAMS 对照
  * (先上 AB,别的省没登记就不出卡)。
+ * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:点开看原句撤了,值一项一行纯文字;原文 / 本岗对照要提以后单独开卡。
  *
  * @param x 取词函数、本岗与门槛表。
  * @returns 门槛卡;本岗通道没登记对照或没有门槛行给 null。
@@ -1534,6 +1535,7 @@ function gateUrlOf(x: GateUrlIn): string {
 /**
  * 「雇主 offer」行:全职 + 不收哪几种(offer 形态行的编码值,按 GATE_FORM_ORDER 排),下面灰字摆本岗的工时 / 雇佣期;
  * 点开是 offer 形态原文与本岗通道各流的 offer 条文。
+ * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:本岗灰字与点开的原文都撤了,只列门槛。
  * 同日 375 实拍:「全职」与「不收……」分两行(一行一条;挤一行时窄屏折断在词中间)。
  *
  * @param x 各行构造器的共同入参。
@@ -1554,40 +1556,11 @@ function offerRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (names.length === 0) {
     return null
   }
-  const quoted = [form]
-  for (const r of x.chan) {
-    if (r.factor === GATE_F.jobOffer) {
-      quoted.push(r)
-    }
-  }
   return {
     key: GATE_ROW.offer,
     label: x.t('pnpgate.k.offer'),
     lines: [x.t('pnpgate.offerFull'), capFirstOf(x.t('pnpgate.offerNot', { list: names.join(x.t('pnpgate.sep')) }))],
-    sub: mineLineOf({ t: x.t, job: x.job }),
-    quotes: quotesOf(quoted),
   }
-}
-
-/**
- * 「本岗 全职、长期」那行灰字(工时、雇佣期用职位板同一套词;原帖都没写给「原帖未写明」)。
- *
- * @param x 取词函数与本岗。
- * @returns 灰字。
- */
-function mineLineOf(x: MineLineIn): string {
-  const parts: string[] = []
-  if (x.job.employmentHours !== TEXT_NONE) {
-    parts.push(x.t(GATE_EMP_HEAD + x.job.employmentHours))
-  }
-  if (x.job.employmentTerm !== TEXT_NONE) {
-    parts.push(x.t(GATE_TERM_HEAD + x.job.employmentTerm))
-  }
-  let v = x.t('fact.unstated')
-  if (parts.length > 0) {
-    v = parts.join(x.t('pnpgate.sep'))
-  }
-  return x.t('pnpgate.mine', { v })
 }
 
 /**
@@ -1611,8 +1584,6 @@ function langRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.lang,
     label: x.t('pnpgate.k.lang'),
     lines: [x.t('pnpgate.lang', { n: row.value })],
-    sub: TEXT_NONE,
-    quotes: quotesOf([row]),
   }
 }
 
@@ -1709,15 +1680,13 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
     return null
   }
   const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
-  const quoted = [main]
   if (local != null && local.value != null) {
     const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
     if (w !== TEXT_NONE) {
       lines.push(x.t('pnpgate.expLocal', { n: local.value, w, prov: x.t(PROV_KEY_HEAD + x.job.province) }))
-      quoted.push(local)
     }
   }
-  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, sub: TEXT_NONE, quotes: quotesOf(quoted) }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines }
 }
 
 /**
@@ -1745,21 +1714,17 @@ function expLineOf(x: ExpLineIn): string {
  */
 function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
   const parts: string[] = []
-  const quoted: PnpReq[] = []
   const profile = rowOfFactor({ rows: x.chan, factor: GATE_F.eeProfile })
   if (profile != null) {
     parts.push(x.t('pnpgate.eeProfile'))
-    quoted.push(profile)
   }
   const program = rowOfFactor({ rows: x.chan, factor: GATE_F.eeProgram })
   if (program != null) {
     parts.push(x.t('pnpgate.eeProgram'))
-    quoted.push(program)
   }
   const crs = rowOfFactor({ rows: x.chan, factor: GATE_F.crs })
   if (crs != null && crs.value != null) {
     parts.push(x.t('pnpgate.crs', { n: crs.value }))
-    quoted.push(crs)
   }
   if (parts.length === 0) {
     return null
@@ -1768,8 +1733,6 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.ee,
     label: x.t('pnpgate.k.ee'),
     lines: parts.map(capFirstOf),
-    sub: TEXT_NONE,
-    quotes: quotesOf(quoted),
   }
 }
 
@@ -1788,21 +1751,17 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const parts: string[] = []
-  const quoted: PnpReq[] = []
   const years = rowOfFactor({ rows: emp, factor: GATE_F.empYears })
   if (years != null && years.value != null) {
     parts.push(x.t('pnpgate.empYears', { n: years.value, prov }))
-    quoted.push(years)
   }
   const revenue = rowOfFactor({ rows: emp, factor: GATE_F.empRevenue })
   if (revenue != null && revenue.value != null) {
     parts.push(x.t('pnpgate.empRevenue', { n: revenue.value.toLocaleString(NUM_LOCALE) }))
-    quoted.push(revenue)
   }
   const staff = rowOfFactor({ rows: emp, factor: GATE_F.empStaff })
   if (staff != null && staff.value != null) {
     parts.push(x.t('pnpgate.empStaff', { n: staff.value }))
-    quoted.push(staff)
   }
   if (parts.length === 0) {
     return null
@@ -1811,8 +1770,6 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.emp,
     label: x.t('pnpgate.k.emp'),
     lines: parts.map(capFirstOf),
-    sub: TEXT_NONE,
-    quotes: quotesOf(quoted),
   }
 }
 
@@ -1824,16 +1781,13 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
  */
 function otherRowOf(x: GateRowOfIn): GateRowSpec | null {
   const parts: string[] = []
-  const quoted: PnpReq[] = []
   const endorse = rowOfFactor({ rows: x.chan, factor: GATE_F.endorse })
   if (endorse != null) {
     parts.push(x.t('pnpgate.endorse'))
-    quoted.push(endorse)
   }
   const licensing = rowOfFactor({ rows: x.chan, factor: GATE_F.licensing })
   if (licensing != null) {
     parts.push(x.t('pnpgate.licensing'))
-    quoted.push(licensing)
   }
   if (parts.length === 0) {
     return null
@@ -1842,8 +1796,6 @@ function otherRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.other,
     label: x.t('pnpgate.k.other'),
     lines: parts.map(capFirstOf),
-    sub: TEXT_NONE,
-    quotes: quotesOf(quoted),
   }
 }
 
@@ -1874,29 +1826,6 @@ function rowOfFactor(x: RowOfFactorIn): PnpReq | null {
     }
   }
   return null
-}
-
-/**
- * 几条门槛行 → 点开露出的原文:有逐字原文(valueText)用它,没有用 label(那几条的 label 就是官方原文);同一句只出一次。
- *
- * @param rows 门槛行。
- * @returns 原文。
- */
-function quotesOf(rows: PnpReq[]): GateQuote[] {
-  const out: GateQuote[] = []
-  const seen = new Set<string>()
-  for (const r of rows) {
-    let text = r.valueText
-    if (text === TEXT_NONE) {
-      text = r.label
-    }
-    if (text === TEXT_NONE || seen.has(text)) {
-      continue
-    }
-    seen.add(text)
-    out.push({ key: text, text })
-  }
-  return out
 }
 
 /**

@@ -43,7 +43,6 @@ const mart = <T>(name: string): T[] =>
 function job(p: Partial<PnpJob>): PnpJob {
   return {
     id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', eeCategory: '', company: '', aip: false,
-    employmentHours: '', employmentTerm: '',
     salaryAnnual: null, wageMedAnnual: null, lmiaPositions: null, lmiaPositionsSkilled: null, lmiaLastQuarter: '',
     ...p,
   }
@@ -431,71 +430,57 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NB', draws: nb, hitStreams: [], ops })?.ytd).toBe('2026 年已发 4,170 份邀请')
   })
 
-  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:手写金标 = 当天 AB 门槛表实数(pnp ab-req.json + 汇装 offer 形态行)
+  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:手写金标 = 当天 AB 门槛表实数(pnp ab-req.json + 汇装 offer 形态行)。
+  // 同日 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」:卡上只列门槛(原句点开、本岗灰字撤)
   const AOS_URL = 'https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility'
   const EMP_URL = 'https://www.alberta.ca/job-offer-and-employer-requirements'
   const req = (p: Partial<PnpReq>): PnpReq => ({
     province: 'AB', stream: 'AAIP Alberta Opportunity Stream', subject: 'applicant', factor: 'language', op: '>=',
-    value: 5, unit: 'CLB', appliesTeer: '', appliesNoc: '', appliesArea: '', appliesCondition: '', basis: '', label: '',
-    valueText: '', url: AOS_URL, ...p,
+    value: 5, unit: 'CLB', appliesTeer: '', appliesNoc: '', appliesArea: '', appliesCondition: '', basis: '', url: AOS_URL,
+    ...p,
   })
-  const OFFER_QUOTE = 'All applicants, including PGWP holders, must have a full-time job offer … part-time, casual or seasonal employees'
+  const EMP = 'AAIP (job offer & employer requirements, all streams)'
+  const EE = 'AAIP Alberta Express Entry Stream'
+  const RR = 'AAIP Rural Renewal Stream'
   const abReqs: PnpReq[] = [
-    req({ value: 5, appliesTeer: '0,1,2,3', label: 'CLB 5 in each English (or NCLC 5 in each French) language skill (TEER 0-3)' }),
-    req({ value: 4, appliesTeer: '4,5', label: 'CLB 4 in each English (or NCLC 4 in each French) language skill (TEER 4-5)' }),
-    req({ value: 7, appliesNoc: '33102', label: 'CLB 7 in each English (or NCLC 7 in each French) language skill for NOC 33102' }),
-    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30', label: '24 months of full-time work experience' }),
-    req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18',
-      label: '24 months of full-time work experience' }),
-    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empYears', value: 2,
-      unit: 'years', label: 'The Alberta employer must have been in continuous and active operation for 2 fiscal years', url: EMP_URL }),
-    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empRevenue',
-      value: 400000, unit: 'CAD/yr', label: 'minimum total gross annual revenue of $400,000', url: EMP_URL }),
-    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empStaff', value: 3,
-      unit: 'employees', label: 'minimum of 3 full-time employees', url: EMP_URL }),
+    req({ value: 5, appliesTeer: '0,1,2,3' }),
+    req({ value: 4, appliesTeer: '4,5' }),
+    req({ value: 7, appliesNoc: '33102' }),
+    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30' }),
+    req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18' }),
+    req({ stream: EMP, subject: 'employer', factor: 'empYears', value: 2, unit: 'years', url: EMP_URL }),
+    req({ stream: EMP, subject: 'employer', factor: 'empRevenue', value: 400000, unit: 'CAD/yr', url: EMP_URL }),
+    req({ stream: EMP, subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', url: EMP_URL }),
     req({ stream: 'Job offer (all streams)', subject: 'offer', factor: 'offerForm', op: 'notIn', value: null, unit: '',
-      basis: 'valueCode=part,seasonal,casual', label: 'Full-time job offer; not eligible: part, seasonal, casual',
-      valueText: OFFER_QUOTE }),
-    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'eeProfile', op: 'rule', value: null, unit: '',
-      label: 'Active federal Express Entry profile required' }),
-    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'eeProgram', op: 'rule', value: null, unit: '',
-      label: 'Must qualify for CEC, FSW or FST' }),
-    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'crs', value: 300, unit: 'CRS', label: 'Minimum CRS score of 300' }),
-    req({ stream: 'AAIP Alberta Express Entry Stream — Accelerated Tech Pathway', factor: 'jobOffer', op: 'rule', value: null,
-      unit: '', label: 'Full-time Alberta job offer with an Alberta tech-industry employer' }),
-    req({ stream: 'AAIP Rural Renewal Stream', factor: 'communityEndorsement', op: 'rule', value: null, unit: '',
-      label: 'Endorsement of Candidate letter from the Designated Community (valid one year)' }),
-    req({ stream: 'AAIP Rural Renewal Stream', factor: 'experience', value: 12, unit: 'months', basis: 'windowMonths=18',
-      label: '12 months of full-time work experience (last 18 months)' }),
-    req({ stream: 'AAIP Rural Renewal Stream', value: 5, appliesTeer: '0,1,2,3', label: 'CLB 5 in each skill (TEER 0-3)' }),
-    req({ stream: 'AAIP Tourism and Hospitality Stream', factor: 'experience', value: 6, unit: 'months', basis: 'employerTenure',
-      label: '6 consecutive months with your current employer' }),
-    req({ stream: 'AAIP Tourism and Hospitality Stream', value: 4, label: 'CLB 4 in each English (or NCLC 4 in each French) skill' }),
+      basis: 'valueCode=part,seasonal,casual' }),
+    req({ stream: EE, factor: 'eeProfile', op: 'rule', value: null, unit: '' }),
+    req({ stream: EE, factor: 'eeProgram', op: 'rule', value: null, unit: '' }),
+    req({ stream: EE, factor: 'crs', value: 300, unit: 'CRS' }),
+    req({ stream: RR, factor: 'communityEndorsement', op: 'rule', value: null, unit: '' }),
+    req({ stream: RR, factor: 'experience', value: 12, unit: 'months', basis: 'windowMonths=18' }),
+    req({ stream: RR, value: 5, appliesTeer: '0,1,2,3' }),
+    req({ stream: 'AAIP Tourism and Hospitality Stream', factor: 'experience', value: 6, unit: 'months', basis: 'employerTenure' }),
+    req({ stream: 'AAIP Tourism and Hospitality Stream', value: 4 }),
     req({ province: 'BC', stream: 'BC PNP Skills Immigration', value: 4 }),
   ]
-  const abJob = job({ province: 'AB', noc: '72310', teer: 2, employmentHours: 'full', employmentTerm: 'permanent' })
-  const gateOf = (card: ReturnType<typeof gateCardOf>) => card?.rows.map((r) => [r.label, r.lines, r.sub])
+  const abJob = job({ province: 'AB', noc: '72310', teer: 2 })
+  const gateOf = (card: ReturnType<typeof gateCardOf>) => card?.rows.map((r) => [r.label, r.lines])
 
-  it('「本岗通道的门槛」卡:AB 机会通道四行(offer 形态 + 本岗对照 / 语言档 / 经验两款 / 雇主三项),来源同抽选卡的钮', () => {
+  it('「本岗通道的门槛」卡:AB 机会通道四行(offer 形态 / 语言档 / 经验两款 / 雇主三项),只列门槛;来源同抽选卡的钮', () => {
     const card = gateCardOf({ t: zh, job: abJob, reqs: abReqs })
     expect(card?.title).toBe('本岗通道的门槛')
     expect(card?.source).toEqual({ text: '来源 ↗', href: AOS_URL })
     expect(gateOf(card)).toEqual([
-      ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], '本岗 全职、长期'],
-      ['语言', ['英语或法语每项 CLB 5'], ''],
-      ['工作经验', ['24 个月全职经验(近 30 个月内)', '或在本省工作 12 个月(近 18 个月内)'], ''],
-      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], ''],
+      ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
+      ['语言', ['英语或法语每项 CLB 5']],
+      ['工作经验', ['24 个月全职经验(近 30 个月内)', '或在本省 12 个月(近 18 个月内)']],
+      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
     ])
-    expect(card?.rows[0]?.quotes.map((q) => q.text)).toEqual([OFFER_QUOTE])
-    expect(card?.rows[2]?.quotes.length).toBe(1)
     // 语言档:TEER 4 → CLB 4;职业码点名的 33102 → CLB 7(最具体,压过它的 TEER 3 档)
     expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs })?.rows[1]?.lines)
       .toEqual(['英语或法语每项 CLB 4'])
     expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs })?.rows[1]?.lines)
       .toEqual(['英语或法语每项 CLB 7'])
-    // 原帖没写工时 / 雇佣期:灰字照实写「原帖未标注」
-    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 2 }), reqs: abReqs })?.rows[0]?.sub)
-      .toBe('本岗 原帖未标注')
     const enCard = gateCardOf({ t: en, job: abJob, reqs: abReqs })
     expect([enCard?.title, enCard?.rows.map((r) => r.label)]).toEqual(
       ['Stream requirements', ['Job offer', 'Language', 'Experience', 'Employer']])
@@ -507,12 +492,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('门槛卡:科技专线出 EE 行、乡村振兴出社区推荐信、旅游酒店是同雇主在职;没登记对照 / 不可提名 / 本岗通道没有门槛行都不出卡', () => {
     const tech = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 科技' }), reqs: abReqs })
     expect(gateOf(tech)).toEqual([
-      ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], '本岗 全职、长期'],
-      ['EE', ['联邦 EE 档案', '符合 CEC、FSW 或 FST', 'CRS ≥ 300'], ''],
-      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], ''],
+      ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
+      ['EE', ['联邦 EE 档案', '符合 CEC、FSW 或 FST', 'CRS ≥ 300']],
+      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
     ])
-    // 科技专线自己的 offer 条文(科技行业雇主)在「雇主 offer」那行点开能看到
-    expect(tech?.rows[0]?.quotes.length).toBe(2)
     const rural = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 乡村振兴' }), reqs: abReqs })
     expect(rural?.rows.map((r) => r.key)).toEqual(['offer', 'lang', 'exp', 'emp', 'other'])
     expect(rural?.rows[2]?.lines).toEqual(['12 个月全职经验(近 18 个月内)'])

@@ -112,16 +112,6 @@ export type PnpJob = {
   pnpStream: string
 
   /**
-   * 工时(full / part);'' = 原帖没写(门槛卡「雇主 offer」行摆本岗对照;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
-   */
-  employmentHours: string
-
-  /**
-   * 雇佣期(permanent / term / casual / seasonal);'' = 原帖没写(同上)。
-   */
-  employmentTerm: string
-
-  /**
    * EE 类别命中。
    */
   eeCategory: string
@@ -1316,34 +1306,9 @@ export type PnpReq = {
   basis: string
 
   /**
-   * 英文摘要或官方原文。
-   */
-  label: string
-
-  /**
-   * 官方原文(逐字);'' = 原文就在 label 里。
-   */
-  valueText: string
-
-  /**
    * 出处页。
    */
   url: string
-}
-
-/**
- * 门槛卡一行点开后的一句官方原文。
- */
-export type GateQuote = {
-  /**
-   * React 列表键。
-   */
-  key: string
-
-  /**
-   * 原文(逐字,英文)。
-   */
-  text: string
 }
 
 /**
@@ -1364,16 +1329,6 @@ export type GateRowSpec = {
    * 值,一行一条(经验的「或」款另起一行)。
    */
   lines: string[]
-
-  /**
-   * 值下的灰字(雇主 offer 那行摆本岗的工时 / 雇佣期);'' = 不出。
-   */
-  sub: string
-
-  /**
-   * 点开露出的官方原文。
-   */
-  quotes: GateQuote[]
 }
 
 /**
@@ -1547,21 +1502,6 @@ export type ExpLineIn = {
 }
 
 /**
- * mineLineOf 的入参。
- */
-export type MineLineIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本岗。
-   */
-  job: PnpJob
-}
-
-/**
  * PnpGateCard 的 props。
  */
 export type PnpGateCardIn = {
@@ -1569,36 +1509,6 @@ export type PnpGateCardIn = {
    * 洗好的卡。
    */
   spec: GateCardSpec
-
-  /**
-   * 展开着的行。
-   */
-  open: Set<string>
-
-  /**
-   * 行的开合手柄工厂。
-   */
-  toggleOf: ToggleOfFn
-}
-
-/**
- * PnpGateValue(门槛卡一行的值格)的 props。
- */
-export type PnpGateValueIn = {
-  /**
-   * 这一行。
-   */
-  row: GateRowSpec
-
-  /**
-   * 展开着没有。
-   */
-  open: boolean
-
-  /**
-   * 开合手柄。
-   */
-  onToggle: ClickFn
 }
 
 /**
@@ -2261,16 +2171,6 @@ export type PnpListPanel = {
    * 本省抽选卡组的开合手柄工厂。
    */
   drawToggleOf: ToggleOfFn
-
-  /**
-   * 门槛卡展开着的行(默认全收:值一行就是摘要,点开看原句;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
-   */
-  gateOpen: Set<string>
-
-  /**
-   * 门槛卡行的开合手柄工厂。
-   */
-  gateToggleOf: ToggleOfFn
 
   /**
    * 本岗能走的通道(弹框顶上那张卡;2026-09-26)。
