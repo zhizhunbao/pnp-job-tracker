@@ -302,8 +302,10 @@ HC_FAIL_AFTER_S = 1800
 HC_FAIL_BODY_TPL = "单元 {role} 连续失败 {mins} 分钟(本轮的出错行,最多 {n} 行):\n{lines}"
 """/fail 正文(healthchecks 告警邮件里原样显示 —— 哪个单元、多久、为什么)。"""
 
-HC_FAIL_NO_LINES = "(本轮没有 ✗ 行,见容器日志 docker compose logs {role})"
-"""/fail 正文里没有 ✗ 行时的占位(例如灌库那步失败只在调度层留痕)。"""
+HC_FAIL_NO_LINES = "(本轮没有 ✗ 行,见单元 {role} 的容器日志)"
+"""/fail 正文里没有 ✗ 行时的占位(例如灌库那步失败只在调度层留痕)。
+同晚 compose 服务名加类别前缀(job_ / co_ / fed_ / ops_ …)后服务名不再等于单元名,原句「见容器日志 docker compose logs {role}」
+里的命令就不对了,改成只点单元名。"""
 
 HC_FAIL_LINES = 20
 """/fail 正文最多带几行出错行(取本轮最后的那几行)。"""
