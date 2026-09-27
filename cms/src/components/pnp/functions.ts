@@ -13,7 +13,7 @@
  */
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
-import { eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
+import { drawStreamNote, eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
 import { DAY_MS, fmtLocal, ymd } from '@/lib/time'
@@ -39,7 +39,7 @@ import {
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawFeat, DrawsForm,
-  FactCardOfIn, FactCardSpec, FactLinkSpec, FactRowSpec, FactValueClsIn, FeatCellSpec, FeatOfIn, LatestSinceIn,
+  FactCardOfIn, FactCardSpec, FeatCellSpec, FeatOfIn, LatestSinceIn, SourceCellIn,
   MonthRowsIn, RoundRowsIn, RoundsTextIn, WindowStatsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
@@ -148,16 +148,14 @@ export function drawsTitleOf(x: DrawsTitleIn): string {
 /**
  * 洗一行抽选:压暗档、中文灰注、悬停提示与两个数值格的话术都在这里算完。
  * #280:zh 态英文流名 + 中文灰注(次行);streamZh 缺列/还没翻到 = 不出注,纯英文,不是报错。
+ * 2026-09-26 晚:灰注改走 zhSubOf(人工定表优先、机器译名兜底,与组头同一个出口;名字与通道卡一致)。
  *
  * @param x 取词函数、界面语言、这一行、序号与改制登记。
  * @returns 展示行。
  */
 export function toDrawRow(x: DrawRowIn): DrawRowSpec {
   const dim = x.reform != null && x.draw.drawDate < x.reform.since
-  let streamZh = TEXT_NONE
-  if (x.lang === LANG_ZH) {
-    streamZh = x.draw.streamZh
-  }
+  const streamZh = zhSubOf({ lang: x.lang, draw: x.draw })
   let title = x.draw.stream
   if (x.draw.note !== TEXT_NONE) {
     title = x.draw.note
@@ -658,6 +656,8 @@ export function factCardOf(x: FactCardOfIn): FactCardSpec | null {
  * 同日 lead 定:① 的标签用通用的「最新公告」(复用 tl.tabNews),不写「EOI 注册开放」—— notice 行是数据层抓 ON 更新页的
  * 最新一条(etl/pnp parse_on),ON 发下一条公告那一行就换了,具体标签会随之指错;数据层给公告分类型后再说具体事件。
  * ② 由抽选行推出,不受这一条影响。
+ * 同日晚 Frank「这种排版是不是太空了」「这个要所有省和通道的格式保持一致吧」:两行「项 | 值」竖排 + 底部链接,改成与分组卡本岗那一组
+ * 同一种横排格子(末格「来源」);标题只留「本省最近抽选」、轮次标签降成灰字;「暂无」不再琥珀加粗(本岗改由整块琥珀底标出)。
  *
  * @param x 取词函数、省码与全部抽选行。
  * @returns 现状卡;不是改制省或改制后没有公告给 null。
@@ -673,21 +673,25 @@ function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
   }
   const round = latestSinceOf({ province: x.province, draws: x.draws, since: reform.since, kind: KIND_DRAW })
   let issued = x.t('pnpfacts.none')
-  let strong = true
   if (round != null) {
     issued = round.drawDate
-    strong = false
   }
-  const rows: FactRowSpec[] = [
-    { key: KIND_NOTICE, k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note, strong: false },
-    { key: KIND_DRAW, k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE, strong },
+  const cells: FeatCellSpec[] = [
+    { k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note, href: TEXT_NONE },
+    { k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE, href: TEXT_NONE },
   ]
-  return { title: x.t('pnpdraws.title', { label: notice.label }), rows, link: factLinkOf(notice.url) }
+  const source = sourceCellOf({ t: x.t, url: notice.url })
+  if (source != null) {
+    cells.push(source)
+  }
+  return { title: x.t('pnpdraws.head'), label: notice.label, cells }
 }
 
 /**
  * 按月选取人数卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 原先既无清单也无抽选,格子点开只有标题):
  * 一月一行,日期照官方写到月,人数写「入选」(官方是从 EOI 池里选取,不是发邀请;见 DRAW_SELECT_PROVS)。
+ * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:一月一格横排(标签 = 月份、值 = 人数,手机上自动折行),末格「来源」;
+ * 标题只留「本省最近抽选」、轮次标签降成灰字(原先一月一行「项 | 值」竖排 + 底部链接)。
  *
  * @param x 取词函数、省码与全部抽选行。
  * @returns 按月卡;本省没有按月的行给 null。
@@ -698,25 +702,30 @@ function monthlyCardOf(x: FactCardOfIn): FactCardSpec | null {
   if (first == null) {
     return null
   }
-  const rows: FactRowSpec[] = []
+  const cells: FeatCellSpec[] = []
   for (const d of months) {
-    rows.push({ key: d.drawDate, k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE, strong: false })
+    cells.push({ k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE, href: TEXT_NONE })
   }
-  return { title: x.t('pnpdraws.title', { label: first.label }), rows, link: factLinkOf(first.url) }
+  const source = sourceCellOf({ t: x.t, url: first.url })
+  if (source != null) {
+    cells.push(source)
+  }
+  return { title: x.t('pnpdraws.head'), label: first.label, cells }
 }
 
 /**
  * 事实卡底部那条官方链接(显示站名,新开页)。
+ * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:改成三种抽选卡共用的末格「来源」(原名 factLinkOf,底部单独一行)。
  *
- * @param url 数据层记的官方页地址。
- * @returns 链接;认不出站名给 null(不出链接)。
+ * @param x 取词函数与数据层记的官方页地址。
+ * @returns 来源格;认不出站名给 null(不出这一格)。
  */
-function factLinkOf(url: string): FactLinkSpec | null {
-  const m = HOST_RE.exec(url)
+function sourceCellOf(x: SourceCellIn): FeatCellSpec | null {
+  const m = HOST_RE.exec(x.url)
   if (m == null || m.groups == null || m.groups.host == null) {
     return null
   }
-  return { href: url, text: m.groups.host + LINK_ARROW }
+  return { k: x.t('col.source'), v: m.groups.host + LINK_ARROW, tip: TEXT_NONE, href: x.url }
 }
 
 /**
@@ -1177,6 +1186,9 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
  * 分组形的本省抽选卡(2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头 —— 原先阿省一框铺满 13 组):
  * 本岗那一组(格子写的通道对得上的组,drawHitStreamsOf)单独摊开成三格 + 灰字统计;其余组收进「查看全省 N 组」,
  * 展开后照旧组头一行(pnpDrawGroupsOf 那一套)。对不上本岗那一组时整卡只剩开关,不拿别的组冒充「本岗那一组」。
+ * 同日晚 Frank「这部分怎么改的这么乱了」「默认也别合并啊」:标题只留「本省最近抽选」(pnpdraws.head),轮次标签 label 由卡里
+ * 另起一行灰字;原为 drawsTitleOf 拼成「本省最近抽选 BC PNP Skills Immigration」一行中英混排(地点弹框的省份卡仍用 drawsTitleOf)。
+ * 其余组改为默认展开(开合初值见 usePnpList)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组与灰字统计的窗口起点。
  * @returns 抽选卡;本省分不出组给 null。
@@ -1211,11 +1223,12 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
   if (first != null) {
     label = first.label
   }
-  return { title: drawsTitleOf({ t: x.t, reform: null, first }), label, feats, others, total: groups.length }
+  return { title: x.t('pnpdraws.head'), label, feats, others, total: groups.length }
 }
 
 /**
  * 本岗那一组的展示件:三格(最近一轮 | 分数线 | 人数;没公布的格不出)+ 灰字统计 + 展开后的全部轮次。
+ * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:末尾加一格「来源」(本省抽选页,新开页),与安省 / 新斯科舍的卡同形。
  * 三格取组头那一轮(同分组卡:最近一轮带分的),与展开后列表里那一组的组头同一轮。
  *
  * @param x 一组的原料。
@@ -1223,12 +1236,21 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
  */
 function featOf(x: FeatOfIn): DrawFeat {
   const kind = countKindOf(x.head)
-  const cells: FeatCellSpec[] = [{ k: x.t('pnpfacts.latest'), v: x.head.drawDate }]
+  const cells: FeatCellSpec[] = [{ k: x.t('pnpfacts.latest'), v: x.head.drawDate, tip: TEXT_NONE, href: TEXT_NONE }]
   if (x.head.score != null) {
-    cells.push({ k: x.t('rpt.s.d.score'), v: String(x.head.score) })
+    cells.push({ k: x.t('rpt.s.d.score'), v: String(x.head.score), tip: TEXT_NONE, href: TEXT_NONE })
   }
   if (x.head.invitations != null) {
-    cells.push({ k: x.t(COUNT_LABEL_KEY[kind]), v: x.t(COUNT_VALUE_KEY[kind], { n: numStrOf(x.head.invitations) }) })
+    cells.push({
+      k: x.t(COUNT_LABEL_KEY[kind]),
+      v: x.t(COUNT_VALUE_KEY[kind], { n: numStrOf(x.head.invitations) }),
+      tip: TEXT_NONE,
+      href: TEXT_NONE,
+    })
+  }
+  const source = sourceCellOf({ t: x.t, url: x.head.url })
+  if (source != null) {
+    cells.push(source)
   }
   return {
     key: x.key,
@@ -1349,11 +1371,18 @@ function countKindOf(draw: PnpDraw): CountKind {
 
 /**
  * 组头名字下的灰字:中文界面出通道中文名(与英文名同字或没有中文名就不出)。
+ * 2026-09-26 晚 Frank「上下名字怎么对不上」「名字都用一个不行么」:先查人工定表 drawStreamNote —— 与本站通道同一个项目的
+ * 那几组直接就是通道名(同职位板 PNP 格、弹框通道卡),也是 /start 抽选表走的同一个出口;表里没有的,中文界面才退回数据层的
+ * 机器译名(原先只看机器译名:BC Build 那组叫「建筑业技工通道」,上面通道卡叫「BC 建筑技工」)。韩文界面随之也出表里的译名。
  *
  * @param x 界面语言与组头那一轮。
  * @returns 灰字;''=不出。
  */
 function zhSubOf(x: ZhSubIn): string {
+  const note = drawStreamNote({ stream: x.draw.stream, lang: x.lang })
+  if (note !== TEXT_NONE) {
+    return note
+  }
   if (x.lang !== LANG_ZH || x.draw.streamZh === x.draw.stream) {
     return TEXT_NONE
   }
@@ -2212,26 +2241,13 @@ export function cmpScoreClsOf(x: CmpScoreClsIn): string {
 }
 
 /**
- * 事实卡值格的类名(「暂无」这类状态值琥珀加粗;2026-09-26)。
- *
- * @param x 要不要加粗。
- * @returns 类名。
- */
-export function factValueClsOf(x: FactValueClsIn): string {
-  const cls = [cssOf(css.ruleV)]
-  if (x.strong) {
-    cls.push(cssOf(css.factStrong))
-  }
-  return cls.join(CLS_SEP)
-}
-
-/**
  * 「本岗能走的通道」一条的类名(细边框盒 + 条目内衬;2026-09-26)。
+ * 同日晚 Frank「这部分怎么改的这么乱了」:不再套细边框盒(卡里套卡),只剩条目样式。
  *
  * @returns 类名。
  */
 export function channelClsOf(): string {
-  return cssOf(css.box) + CLS_SEP + cssOf(css.channel)
+  return cssOf(css.channel)
 }
 
 /**

@@ -1817,25 +1817,37 @@ export const PROV_PREFIX_TRIM_RE = /^[\s:：—–-]+/
  * 英文界面只显英文」)。有限集人工定表(现 17 条,取自 pnp_draws 实际出现过的通道名),
  * 照「宁可留空也不瞎猜」—— 表里没有的原样只显英文,不让模型现编译名。
  * 官方英文名永远是主文案,译名只是灰字小注。
+ * 2026-09-26 晚 Frank「上下名字怎么对不上」「名字都用一个不行么」:与本站通道同一个项目的十一条(BC 五条、阿省六条,
+ * 对照见 components/pnp 的 NAMED_DRAW_STREAMS;PE 那组 Labour & Express Entry 覆盖好几条通道,不是同一个项目,不并)
+ * 译名一律改成通道名本身(职位板 PNP 格、弹框通道卡用的那个;阿省医护两组各带 EE / 非 EE),原先是另起的
+ * 「Build:建筑技工」「EE 定向:科技加速」这类;补 Care: Education、Tourism and Hospitality Stream 两条。
+ * 同理通用通道里与抽选组同一个项目的三省(GEN_DRAW_STREAM:AB 机会通道、MB 技术工人、NB 技术工人)也用通道名,
+ * 补 Skilled Worker in Manitoba、NB Skilled Worker 两条,现 21 条。BC / PE / NL 的通用通道与抽选组不是同一个东西
+ * (BC 普通岗从 Innovate 那一类轮进、PE / NL 那一组覆盖好几条通道),名字不并。
+ * 与 i18n stream.* 的中文 / 韩文由 tests/int/streamNames.int.spec.ts 锁住,改一处必须两处一起改。
  */
 export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
   // AB(AAIP)
-  'Rural Renewal Stream': { zh: '乡镇振兴通道', ko: '농촌 재생 스트림' },
-  'Alberta Opportunity Stream': { zh: '阿尔伯塔机会通道', ko: '앨버타 기회 스트림' },
-  'Dedicated Health Care Pathway – Express Entry': { zh: '医护专项(EE 通道)', ko: '의료 전용 경로(EE)' },
-  'Dedicated Health Care Pathway – non-Express Entry': { zh: '医护专项(非 EE)', ko: '의료 전용 경로(비 EE)' },
-  'Alberta Express Entry Stream – Law Enforcement Pathway': { zh: 'EE 定向:执法', ko: 'EE 지정: 법 집행' },
-  'Alberta Express Entry Stream – Accelerated Tech Pathway': { zh: 'EE 定向:科技加速', ko: 'EE 지정: 기술 가속' },
+  'Rural Renewal Stream': { zh: 'AB 乡村振兴', ko: 'AB 농촌 재생' },
+  'Alberta Opportunity Stream': { zh: 'AB 机会通道', ko: 'AB 오퍼튜니티 스트림' },
+  'Dedicated Health Care Pathway – Express Entry': { zh: 'AB 医疗(EE)', ko: 'AB 보건(EE)' },
+  'Dedicated Health Care Pathway – non-Express Entry': { zh: 'AB 医疗(非 EE)', ko: 'AB 보건(비 EE)' },
+  'Alberta Express Entry Stream – Law Enforcement Pathway': { zh: 'AB 警务', ko: 'AB 경찰' },
+  'Alberta Express Entry Stream – Accelerated Tech Pathway': { zh: 'AB 科技', ko: 'AB 테크' },
+  'Tourism and Hospitality Stream': { zh: 'AB 旅游酒店', ko: 'AB 관광 숙박' },
   'Alberta Express Entry Stream – Priority Sectors (Agriculture)': { zh: 'EE 定向:农业', ko: 'EE 지정: 농업' },
   'Alberta Express Entry Stream – Priority Sectors (Construction)': { zh: 'EE 定向:建筑', ko: 'EE 지정: 건설' },
   // BC(2026 新政三大类)
   'Innovate: High Economic Impact': { zh: 'Innovate:高经济贡献', ko: 'Innovate: 높은 경제 기여' },
-  'Care: Health': { zh: 'Care:医疗', ko: 'Care: 의료' },
-  'Care: Childcare': { zh: 'Care:幼教', ko: 'Care: 보육' },
-  'Care: Veterinary Care': { zh: 'Care:兽医', ko: 'Care: 수의' },
-  'Build: Construction Trades': { zh: 'Build:建筑技工', ko: 'Build: 건설 기능직' },
+  'Care: Health': { zh: 'BC 医疗', ko: 'BC 보건' },
+  'Care: Childcare': { zh: 'BC 幼教', ko: 'BC 보육' },
+  'Care: Veterinary Care': { zh: 'BC 兽医', ko: 'BC 수의' },
+  'Build: Construction Trades': { zh: 'BC 建筑技工', ko: 'BC 건설 기능직' },
+  'Care: Education': { zh: 'BC 法语教师', ko: 'BC 프랑스어 교사' },
   'Temporary Rural/Remote Health Support Initiative': { zh: '乡镇偏远医疗支援(临时)', ko: '농촌·오지 의료 지원(임시)' },
   // MB / ON
+  'Skilled Worker in Manitoba': { zh: 'MB 技术工人', ko: 'MB 숙련 노동자' },
+  'NB Skilled Worker': { zh: 'NB 技术工人', ko: 'NB 숙련 노동자' },
   'Skilled Worker Stream': { zh: '技术工人通道', ko: '숙련 인력 스트림' },
   'Employer Job Offer: Foreign Worker stream': { zh: '雇主 offer:海外工人(已关停)', ko: '고용주 오퍼: 해외 근로자(폐지)' },
   'Employer Job Offer: International Student stream': { zh: '雇主 offer:国际学生(已关停)', ko: '고용주 오퍼: 유학생(폐지)' },

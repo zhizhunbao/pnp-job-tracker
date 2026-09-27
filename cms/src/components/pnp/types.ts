@@ -976,17 +976,29 @@ export type ChannelSpec = {
 
 /**
  * 本岗那一组(本省抽选卡里格子对应的那组)的一格:标签在上、值在下。
+ * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:三种抽选卡(分组 / 改制省现状 / 按月选取)共用这一格
+ * (FeatCells 一处渲染),末格「来源」是官方页链接。
  */
 export type FeatCellSpec = {
   /**
-   * 标签(最近一轮 / 分数线 / 邀请;也作 React 列表键,三格各不同)。
+   * 标签(最近一轮 / 分数线 / 邀请 / 最新公告 / 月份 / 来源;也作 React 列表键,一卡之内各不同)。
    */
   k: string
 
   /**
-   * 值(日期 / 分数 / 人数)。
+   * 值(日期 / 分数 / 人数;链接格是站名 + 新开页记号)。
    */
   v: string
+
+  /**
+   * 标签的悬停提示(官方原句,如安省最新公告那一句);''=不出。
+   */
+  tip: string
+
+  /**
+   * 值是链接时的地址(新开页);''=值是纯文字。
+   */
+  href: string
 }
 
 /**
@@ -1056,68 +1068,23 @@ export type DrawCard = {
 }
 
 /**
- * 事实卡的一行(项 | 值 两列;改制省现状与按月选取人数两种卡共用)。
- */
-export type FactRowSpec = {
-  /**
-   * React 列表键。
-   */
-  key: string
-
-  /**
-   * 项(左格)。
-   */
-  k: string
-
-  /**
-   * 值(右格)。
-   */
-  v: string
-
-  /**
-   * 项的悬停提示(官方原句;''=不出)。
-   */
-  tip: string
-
-  /**
-   * 值要不要琥珀加粗(「暂无」这类状态值)。
-   */
-  strong: boolean
-}
-
-/**
- * 事实卡底部的官方链接。
- */
-export type FactLinkSpec = {
-  /**
-   * 官方页地址(数据层抓取时记的那一页)。
-   */
-  href: string
-
-  /**
-   * 显示文字(站名 + 新开页记号)。
-   */
-  text: string
-}
-
-/**
  * 事实卡(改制省现状 / 按月选取人数;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
  */
 export type FactCardSpec = {
   /**
-   * 卡标题(同本省抽选卡:「本省最近抽选 {轮次标签}」)。
+   * 卡标题(同本省抽选卡:「本省最近抽选」;2026-09-26 晚起轮次标签不再拼进标题)。
    */
   title: string
 
   /**
-   * 各行。
+   * 轮次标签(官方项目名,如 OINP / NSNP;标题下一行灰字;''=不出)。
    */
-  rows: FactRowSpec[]
+  label: string
 
   /**
-   * 官方链接;null=数据里的地址认不出站名(不出链接)。
+   * 横排的格子(2026-09-26 晚起与分组卡本岗那一组同一种格;原先是「项 | 值」两列竖排 + 底部一条链接)。
    */
-  link: FactLinkSpec | null
+  cells: FeatCellSpec[]
 }
 
 /**
@@ -2987,6 +2954,31 @@ export type PnpChannelCardIn = {
 }
 
 /**
+ * FeatCells(抽选卡横排格子,三种卡共用)的 props。
+ */
+export type FeatCellsIn = {
+  /**
+   * 各格。
+   */
+  cells: FeatCellSpec[]
+}
+
+/**
+ * sourceCellOf 的入参。
+ */
+export type SourceCellIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 数据层记的官方页地址。
+   */
+  url: string
+}
+
+/**
  * PnpFactCard(改制省现状 / 按月选取人数)的 props。
  */
 export type PnpFactCardIn = {
@@ -3209,16 +3201,6 @@ export type LatestSinceIn = {
    * 行类别(notice = 官方公告、draw = 抽选)。
    */
   kind: string
-}
-
-/**
- * factValueClsOf 的入参。
- */
-export type FactValueClsIn = {
-  /**
-   * 值要不要琥珀加粗。
-   */
-  strong: boolean
 }
 
 /**

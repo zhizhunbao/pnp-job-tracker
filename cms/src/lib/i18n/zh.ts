@@ -598,6 +598,8 @@ export const jobsZh = {
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
+  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
+  'pnpdraws.head': '本省最近抽选',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
@@ -618,7 +620,8 @@ export const jobsZh = {
   'pnpfacts.invIssued': '已发邀请',
   'pnpfacts.none': '暂无',
   // 列名
-  'col.datePosted': '发布时间', 'col.broad': '大分类', 'col.teer': 'TEER',
+  // 2026-09-26 晚 Frank「发布时间 改成 发布日期」:显示的只是日期;职位板列名与职位页日期行共用这一条,一起改
+  'col.datePosted': '发布日期', 'col.broad': '大分类', 'col.teer': 'TEER',
   'col.company': '公司', 'col.title': '职位', 'col.noc': '职业', 'col.nocCode': 'NOC', 'col.accessibility': '经验级别',
   'col.country': '国家', 'col.province': '省', 'col.city': '市', 'col.district': '区', 'col.address': '地址',
   'col.salary': '薪资', 'col.salaryYr': '年薪', 'col.wageMedHr': '中位时薪', 'col.wageMedYr': '中位年薪', 'col.vsMedian': 'vs 中位', 'col.source': '来源', 'col.origin': '渠道', 'col.direct': '发布',

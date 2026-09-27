@@ -26,6 +26,7 @@
  * 页上的弹框改成弹框栈(advisor 的 PeekStack):职位 → 公司 → 另一条职位一层层叠,只关最上面一层。标题下不另出公司名
  * (Frank「有公司卡的话,上面的显示公司名就可以去掉了」)。
  * 2026-09-26 Frank 看过效果图点头:H1 下、译名行上加一行日期(JobDates:发布、截止两格,与职位弹框标题下同一件)。
+ * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到译名行下面(H1 → 译名 → 日期;职位弹框页眉同改)。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -66,11 +67,11 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             <BackButton fallback={URL_BOARD_BACK} label={d.t('detail.back')} />
           </div>
           <h1 className={cssOf(css.title)}>{job.title}</h1>
-          <JobDates job={job} t={d.t} />
           <div className={cssOf(css.titleRow)}>
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
             <JdOrigLink d={body} />
           </div>
+          <JobDates job={job} t={d.t} />
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany} />

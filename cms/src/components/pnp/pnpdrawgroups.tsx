@@ -7,13 +7,15 @@
  * 「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格对应的那组琥珀高亮、排最前。
  * 2026-09-26 /fe 首页 Frank「止血 + 补完整」看过效果图点头:卡里只摊开本岗那一组(DrawFeatView:三格 + 灰字统计),
  * 其余组收进「查看全省 N 组」开关,点开照旧组头一行、开关落到末尾改「收起」(同清单卡末尾的开关)。
+ * 同日晚 Frank「这部分怎么改的这么乱了」「默认也别合并啊」:其余组默认就展开(开关初值见 usePnpList,末尾照旧「收起」可收);
+ * 标题只留「本省最近抽选」,轮次标签另起一行灰字;本岗那组改琥珀底、字回黑 / 灰两档(样式见 pnp.module.css 的 .feat)。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { DRAWS_ALL_KEY, DRAW_NO_SCORE_PROVS, PLAIN_BTN_KIND } from './constants'
+import { DRAWS_ALL_KEY, DRAW_NO_SCORE_PROVS, PLAIN_BTN_KIND, TEXT_NONE } from './constants'
 import { DrawFeatView } from './drawfeatview'
 import { EeCmpGroupView } from './eecmpgroupview'
 import { allGroupsLabelOf, drawCardOf } from './functions'
@@ -44,7 +46,10 @@ export function PnpDrawGroups({ t, lang, province, draws, hitStreams, cut, open,
   }
   return (
     <div className={css.card}>
-      <div className={css.cardHead}>{card.title}</div>
+      <div className={css.cardHead}>
+        {card.title}
+        {card.label !== TEXT_NONE && <span className={css.zh}>{card.label}</span>}
+      </div>
       {DRAW_NO_SCORE_PROVS.has(province) && <div className={css.drawsBasis}>{t('pnpdraws.noScore')}</div>}
       {feats}
       {others}

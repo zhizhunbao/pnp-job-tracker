@@ -1223,9 +1223,10 @@ export const DEFAULT_COLS: JobColKey[] = [
  * 同日 Frank「这个 NOC 字段怎么没有了」:职业列占了 noc 键,码列跟着没了 —— 码单列回来叫 NOC(键 nocCode),
  * 紧跟职业,默认不显示,与改前一样由字段面板勾选。
  * 同日 Frank「pnp 这里一列放到 EE 类别后面如何」:PNP 列从 AIP 前挪到 EE 类别后(两个移民信号挨着)。
+ * 2026-09-26 晚 Frank「发布时间 改成 发布日期」:第一列 label 随 i18n col.datePosted 改名。
  */
 export const COLUMNS: ColSpec[] = [
-  { key: 'datePosted', label: '发布时间' },
+  { key: 'datePosted', label: '发布日期' },
   { key: 'ee', label: 'EE 类别' },
   { key: 'pnp', label: 'PNP' },
   { key: 'broad', label: '大分类' },

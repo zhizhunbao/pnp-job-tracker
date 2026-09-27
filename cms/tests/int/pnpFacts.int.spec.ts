@@ -281,7 +281,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   it('阿省机会通道(本岗那一组):三格 + 近 90 天 4 轮、合计 2,264 人;其余组收进开关', () => {
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [AOS], cut: CUT })
-    expect(card?.title).toBe('本省最近抽选 AAIP')
+    expect(card?.title).toBe('本省最近抽选')
+    expect(card?.label).toBe('AAIP')
     expect(card?.total).toBe(2)
     expect(card?.feats.map((f) => f.key)).toEqual([AOS])
     expect(card?.others.map((g) => g.key)).toEqual(['Rural Renewal Stream'])
@@ -330,10 +331,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(monthRowsOf({ province: 'NS', draws: ns }).map((d) => d.drawDate)).toEqual(['2026-07', '2026-06'])
     expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [] })).toEqual([])
     const card = factCardOf({ t: zh, province: 'NS', draws: ns })
-    expect(card?.title).toBe('本省最近抽选 NSNP + AIP')
-    expect(card?.rows.map((r) => [r.k, r.v])).toEqual([['2026-07', '671 人入选'], ['2026-06', '531 人入选']])
-    expect(card?.link).toEqual({ href: src, text: 'liveinnovascotia.com ↗' })
-    expect(factCardOf({ t: en, province: 'NS', draws: ns })?.rows[0]?.v).toBe('671 selected')
+    expect(card?.title).toBe('本省最近抽选')
+    expect(card?.label).toBe('NSNP + AIP')
+    expect(card?.cells.map((c) => [c.k, c.v, c.href])).toEqual([
+      ['2026-07', '671 人入选', ''], ['2026-06', '531 人入选', ''], ['来源', 'liveinnovascotia.com ↗', src],
+    ])
+    expect(factCardOf({ t: en, province: 'NS', draws: ns })?.cells[0]?.v).toBe('671 selected')
     // 探针:同一省换成带日的轮次就走分组形 —— 按月与分组的分界是日期形,不是省码
     const daily = [draw({ province: 'NS', stream: 'Monthly EOI selections', drawDate: '2026-07-15', score: null, invitations: 5 })]
     expect(drawsFormOf({ province: 'NS', draws: daily })).toBe('groups')
@@ -349,16 +352,18 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       draw({ province: 'ON', label: 'OINP', kind: 'notice', drawDate: '2026-08-04', stream: '', score: null, invitations: null, note, url }),
     ]
     const card = factCardOf({ t: zh, province: 'ON', draws: on })
-    expect(card?.title).toBe('本省最近抽选 OINP')
-    expect(card?.rows.map((r) => [r.k, r.v, r.strong])).toEqual([['最新公告', '2026-08-04', false], ['已发邀请', '暂无', true]])
-    expect(card?.rows[0]?.tip).toBe(note)
-    expect(card?.link).toEqual({ href: url, text: 'ontario.ca ↗' })
-    expect(factCardOf({ t: en, province: 'ON', draws: on })?.rows.map((r) => [r.k, r.v]))
+    expect(card?.title).toBe('本省最近抽选')
+    expect(card?.label).toBe('OINP')
+    expect(card?.cells.map((c) => [c.k, c.v, c.href])).toEqual([
+      ['最新公告', '2026-08-04', ''], ['已发邀请', '暂无', ''], ['来源', 'ontario.ca ↗', url],
+    ])
+    expect(card?.cells[0]?.tip).toBe(note)
+    expect(factCardOf({ t: en, province: 'ON', draws: on })?.cells.slice(0, 2).map((c) => [c.k, c.v]))
       .toEqual([['Latest updates', '2026-08-04'], ['Invitations issued', 'None yet']])
-    expect(factCardOf({ t: ko, province: 'ON', draws: on })?.rows.map((r) => [r.k, r.v]))
+    expect(factCardOf({ t: ko, province: 'ON', draws: on })?.cells.slice(0, 2).map((c) => [c.k, c.v]))
       .toEqual([['최신 공지', '2026-08-04'], ['초청 발급', '아직 없음']])
     const after = [...on, draw({ province: 'ON', label: 'OINP', drawDate: '2026-10-01', stream: 'Ontario Workforce Priority' })]
-    expect(factCardOf({ t: zh, province: 'ON', draws: after })?.rows[1]).toMatchObject({ v: '2026-10-01', strong: false })
+    expect(factCardOf({ t: zh, province: 'ON', draws: after })?.cells[1]).toMatchObject({ v: '2026-10-01', href: '' })
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
@@ -396,10 +401,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('通道卡:具名先、可提名退通用名;领地、魁省、不可提名不列;英文主文案 + 界面语言灰字', () => {
     const at = (j: PnpJob, lang: 'zh' | 'en' | 'ko', showZh = true) =>
       channelsOf({ t: makeT(lang), tEn: en, lang, showZh, job: j })
-    expect(at(job({ province: 'AB' }), 'zh')).toEqual([{ key: 'pnp.gen.AB', name: 'AB Opportunity Stream', sub: 'AB 机会通道' }])
-    expect(at(job({ province: 'AB' }), 'en')).toEqual([{ key: 'pnp.gen.AB', name: 'AB Opportunity Stream', sub: '' }])
+    expect(at(job({ province: 'AB' }), 'zh')).toEqual([{ key: 'pnp.gen.AB', name: 'Alberta Opportunity Stream', sub: 'AB 机会通道' }])
+    expect(at(job({ province: 'AB' }), 'en')).toEqual([{ key: 'pnp.gen.AB', name: 'Alberta Opportunity Stream', sub: '' }])
     expect(at(job({ province: 'AB' }), 'zh', false)[0]?.sub).toBe('')
-    expect(at(job({ province: 'AB', pnpStream: 'AB 医疗' }), 'zh')).toEqual([{ key: 'AB 医疗', name: 'AB Health', sub: 'AB 医疗' }])
+    expect(at(job({ province: 'AB', pnpStream: 'AB 医疗' }), 'zh')).toEqual([{ key: 'AB 医疗', name: 'Dedicated Health Care Pathway', sub: 'AB 医疗' }])
     expect(at(job({ province: 'SK', pnpStream: 'SK 现有工签' }), 'zh')[0]?.name).toBe('SK Existing Work Permit')
     expect(at(job({ province: 'NT' }), 'zh')).toEqual([])
     expect(at(job({ province: 'QC', pnpStream: 'X' }), 'zh')).toEqual([])

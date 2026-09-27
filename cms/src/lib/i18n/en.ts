@@ -481,8 +481,10 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
  
-  'stream.abTech': 'AB Tech', 'stream.abHealth': 'AB Health', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.abLaw': 'AB Law Enforcement', 'stream.abTourism': 'AB Tourism and Hospitality', 'stream.abRural': 'AB Rural Renewal', 'stream.nsConstr': 'NS Construction', 'stream.nbPriority': 'NB Priority Occupations', 'stream.aaipExcl': 'AAIP ineligible list',
-  'stream.bcHealth': 'BC Health', 'stream.bcChildcare': 'BC Childcare', 'stream.bcEdu': 'BC French teachers', 'stream.bcVet': 'BC Veterinary', 'stream.bcConstr': 'BC Construction trades',
+  // 2026-09-26 晚 Frank「上下名字怎么对不上」「名字都用一个不行么」:有抽选组对应的十个通道,英文名改用省里官方原名(抽选页 / 通道页上的写法;原先是我们自起的 AB Tech / BC Construction trades 这类短名,与弹框抽选卡的组名对不上)。
+  // 阿省 EE 定向那几个官方组名带上级前缀「Alberta Express Entry Stream –」,这里取后半截官方名,格子里一行放得下;中文 / 韩文名不动。
+  'stream.abTech': 'Accelerated Tech Pathway', 'stream.abHealth': 'Dedicated Health Care Pathway', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.abLaw': 'Law Enforcement Pathway', 'stream.abTourism': 'Tourism and Hospitality Stream', 'stream.abRural': 'Rural Renewal Stream', 'stream.nsConstr': 'NS Construction', 'stream.nbPriority': 'NB Priority Occupations', 'stream.aaipExcl': 'AAIP ineligible list',
+  'stream.bcHealth': 'Care: Health', 'stream.bcChildcare': 'Care: Childcare', 'stream.bcEdu': 'Care: Education', 'stream.bcVet': 'Care: Veterinary Care', 'stream.bcConstr': 'Build: Construction Trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.peIndemand': 'PE in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
   'stream.nbAipExcl': 'NB AIP not accepted', 'stream.bcHa': 'BC Health Authority', 'stream.skEwp': 'SK Existing Work Permit', 'stream.peAipExcl': 'PE AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
@@ -545,12 +547,15 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'cell.blockedBoth': 'Not accepted here',
   'cell.pnpExcl': 'Excluded', 'cell.aipBlocked': 'Not accepted',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible',
-  'pnp.gen.AB': 'AB Opportunity Stream', 'pnp.gen.BC': 'BC Skilled Worker', 'pnp.gen.SK': 'SK Employment Offer',
-  'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'MB Skilled Worker', 'pnp.gen.NS': 'NS Skilled Worker',
+  // 2026-09-26 晚 Frank「名字都用一个不行么」:与抽选组同一个项目的通用通道,英文改用官方原名(AB / MB;NB 原本就同名)
+  'pnp.gen.AB': 'Alberta Opportunity Stream', 'pnp.gen.BC': 'BC Skilled Worker', 'pnp.gen.SK': 'SK Employment Offer',
+  'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'Skilled Worker in Manitoba', 'pnp.gen.NS': 'NS Skilled Worker',
   'pnp.gen.NB': 'NB Skilled Worker', 'pnp.gen.PE': 'PE Workforce', 'pnp.gen.NL': 'NL Skilled Worker', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
+  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
+  'pnpdraws.head': 'Recent draws',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards

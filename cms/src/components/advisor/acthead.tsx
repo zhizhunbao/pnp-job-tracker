@@ -8,6 +8,7 @@
  * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「可以」:译名自左块拆出成译名行,右端挂切换控件(ctl 槽,
  * jobs 桶 JdSwitches);译名行在标题栏里折到窗口钮下方占满整宽,按下不起拖动(点控件不会把弹框拖走)。
  * 2026-09-26 Frank 看过效果图点头:岗位名下加一行日期(dates 槽,jobs 桶 JobDates;与详情页 H1 下同一件、同一位置)。
+ * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到灰字译名行下面(岗位名 → 译名 → 日期;详情页同改)。
  * 日期行不进左块:与译名行一样折到标题与窗口钮那一行下面、独占一整行 —— 手机全屏档左块被窗口钮占去一截,两格并排放不下。
  *
  * @author Frank
@@ -35,11 +36,11 @@ export function ActHead({ t, title, sub, freeLeft, dates, ctl }: ActHeadIn) {
         </div>
         <h3 className={cssOf(css.title)}>{title}</h3>
       </div>
-      {dates}
       <div className={cssOf(css.subRow)} onPointerDown={makeActsDown({ stop: true })}>
         {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
         <span className={cssOf(css.subCtl)}>{ctl}</span>
       </div>
+      {dates}
     </>
   )
 }
