@@ -65,7 +65,7 @@ export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = t
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {form === DRAWS_FORM_GROUPS && (
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={drawHitStreamsOf(job)}
-          cut={p.cut} open={p.drawOpen} toggleOf={p.drawToggleOf} />
+          open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}
       {fact != null && <PnpFactCard spec={fact} />}
       {cards}

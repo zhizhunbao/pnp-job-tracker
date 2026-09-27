@@ -16,8 +16,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { makeT } from '@/lib/i18n'
 import { DRAWS_ALL_KEY, LANG_EN } from './constants'
 import {
-  channelsOf, drawCutOf, eeGroupOf, eeHitOf, makeToggleOf,
-  matchResultOf, nocRowsOf, nowOf, pnpMatchOf, scrollIntoHit,
+  channelsOf, eeGroupOf, eeHitOf, makeToggleOf,
+  matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
 } from './functions'
 import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel } from './types'
 
@@ -27,9 +27,10 @@ import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel 
  * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:多交两样 —— 本岗能走的通道(弹框顶上那张卡)与本岗那一组灰字统计的窗口起点
  * (弹框打开那一刻取一次此刻,往前 90 天;重渲不变)。
  * 同日晚 Frank「默认也别合并啊」:抽选卡的开合初值带上 DRAWS_ALL_KEY —— 其余组一打开就展开,末尾「收起」照旧可收。
+ * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改成组头行、灰字统计撤,统计窗口起点(此刻 − 90 天)随之不再交。
  *
  * @param x 本岗、界面语言、扁平清单、职业名字典与译名开关。
- * @returns 取词函数、ref 盒、字典、命中结论、折叠状态、通道条目与统计窗口起点。
+ * @returns 取词函数、ref 盒、字典、命中结论、折叠状态与通道条目。
  */
 export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const t = makeT(x.lang)
@@ -37,7 +38,6 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const matchRef = useRef<HTMLDivElement | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
   const [drawOpen, setDrawOpen] = useState<Set<string>>(new Set([DRAWS_ALL_KEY]))
-  const [now] = useState(nowOf)
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)
@@ -61,7 +61,6 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
     channels: channelsOf({ t, tEn, lang: x.lang, showZh: x.showZh, job: x.job }),
-    cut: drawCutOf(now),
   }
 }
 

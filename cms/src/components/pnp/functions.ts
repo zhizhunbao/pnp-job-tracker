@@ -16,12 +16,12 @@ import { tagClsOf as baseTagClsOf } from '@/components/tag'
 import { drawStreamNote, eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
-import { DAY_MS, fmtLocal, ymd } from '@/lib/time'
+import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  COUNT_AIP, COUNT_INV, COUNT_LABEL_KEY, COUNT_ROW_KEY, COUNT_SEL, COUNT_TOTAL_KEY, COUNT_VALUE_KEY, DRAWS_FORM_GROUPS,
-  DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, DRAW_WINDOW_DAYS, HOST_RE, LANG_EN,
-  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, NUM_LOCALE, PNP_GEN_HEAD,
+  COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
+  DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
+  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, PNP_GEN_HEAD,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -38,9 +38,9 @@ import {
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
 } from './constants'
 import type {
-  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawFeat, DrawsForm,
-  FactCardOfIn, FactCardSpec, FeatCellSpec, FeatOfIn, LatestSinceIn, SourceCellIn,
-  MonthRowsIn, RoundRowsIn, RoundsTextIn, WindowStatsIn,
+  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
+  FactCardOfIn, FactCardSpec, FeatCellSpec, LatestSinceIn, SourceLink, SourceLinkIn,
+  MonthRowsIn, RoundRowsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
   CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn,
@@ -407,16 +407,6 @@ export function numTextOf(v: number | null): string | number {
 }
 
 /**
- * 人数带千分位(本岗那一组的人数格与合计;2026-09-26)。
- *
- * @param n 人数。
- * @returns 「2,264」这样的文本。
- */
-function numStrOf(n: number): string {
-  return n.toLocaleString(NUM_LOCALE)
-}
-
-/**
  * 省提名弹框的事实索引:清单与抽选两张整表压成三串键(服务端门里算一次,随首屏下发;整表 2026-09-26 起弹框打开才懒取)。
  * 格子凭它判「弹框里有没有卡可出」(pnpFactsShownOf)—— 抽选那串就是 hasProvDraws 为真的省,清单与排除两串就是
  * pnpStreamsOf 分出来的纳入型清单与排除清单点名的职业:与弹框自己出卡(PnpListSection)同一套判据,不另写一份
@@ -658,6 +648,8 @@ export function factCardOf(x: FactCardOfIn): FactCardSpec | null {
  * ② 由抽选行推出,不受这一条影响。
  * 同日晚 Frank「这种排版是不是太空了」「这个要所有省和通道的格式保持一致吧」:两行「项 | 值」竖排 + 底部链接,改成与分组卡本岗那一组
  * 同一种横排格子(末格「来源」);标题只留「本省最近抽选」、轮次标签降成灰字;「暂无」不再琥珀加粗(本岗改由整块琥珀底标出)。
+ * 同晚 Frank「这个下面还有必要灰字吗」:轮次标签灰字撤(弹框顶上已写省提名名称);「上面这个高亮是不是格式改成和下面的一样的」:
+ * 分组卡本岗那一组改成组头行,「来源」随之从末格挪到卡片标题那一行右端(三种卡同一处,sourceLinkOf)。
  *
  * @param x 取词函数、省码与全部抽选行。
  * @returns 现状卡;不是改制省或改制后没有公告给 null。
@@ -677,14 +669,10 @@ function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
     issued = round.drawDate
   }
   const cells: FeatCellSpec[] = [
-    { k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note, href: TEXT_NONE },
-    { k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE, href: TEXT_NONE },
+    { k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note },
+    { k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE },
   ]
-  const source = sourceCellOf({ t: x.t, url: notice.url })
-  if (source != null) {
-    cells.push(source)
-  }
-  return { title: x.t('pnpdraws.head'), label: notice.label, cells }
+  return { title: x.t('pnpdraws.head'), cells, source: sourceLinkOf({ t: x.t, url: notice.url }) }
 }
 
 /**
@@ -692,6 +680,7 @@ function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
  * 一月一行,日期照官方写到月,人数写「入选」(官方是从 EOI 池里选取,不是发邀请;见 DRAW_SELECT_PROVS)。
  * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:一月一格横排(标签 = 月份、值 = 人数,手机上自动折行),末格「来源」;
  * 标题只留「本省最近抽选」、轮次标签降成灰字(原先一月一行「项 | 值」竖排 + 底部链接)。
+ * 同晚轮次标签灰字撤、「来源」挪到标题那一行右端(理由同 statusCardOf)。
  *
  * @param x 取词函数、省码与全部抽选行。
  * @returns 按月卡;本省没有按月的行给 null。
@@ -704,28 +693,27 @@ function monthlyCardOf(x: FactCardOfIn): FactCardSpec | null {
   }
   const cells: FeatCellSpec[] = []
   for (const d of months) {
-    cells.push({ k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE, href: TEXT_NONE })
+    cells.push({ k: d.drawDate, v: invTextOf({ t: x.t, draw: d }), tip: TEXT_NONE })
   }
-  const source = sourceCellOf({ t: x.t, url: first.url })
-  if (source != null) {
-    cells.push(source)
-  }
-  return { title: x.t('pnpdraws.head'), label: first.label, cells }
+  return { title: x.t('pnpdraws.head'), cells, source: sourceLinkOf({ t: x.t, url: first.url }) }
 }
 
 /**
- * 事实卡底部那条官方链接(显示站名,新开页)。
+ * 抽选卡标题那一行右端的官方链接(「来源」+ 站名,新开页)。
  * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:改成三种抽选卡共用的末格「来源」(原名 factLinkOf,底部单独一行)。
+ * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:分组卡本岗那一组改成组头行,格子没了,「来源」挪到卡片标题那一行右端,
+ * 三种卡同一处(改名 sourceLinkOf,原 sourceCellOf);Frank 问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页
+ * (各通道的轮次都在同一页上),一张卡一条就够。
  *
  * @param x 取词函数与数据层记的官方页地址。
- * @returns 来源格;认不出站名给 null(不出这一格)。
+ * @returns 来源链接;认不出站名给 null(不出)。
  */
-function sourceCellOf(x: SourceCellIn): FeatCellSpec | null {
+function sourceLinkOf(x: SourceLinkIn): SourceLink | null {
   const m = HOST_RE.exec(x.url)
   if (m == null || m.groups == null || m.groups.host == null) {
     return null
   }
-  return { k: x.t('col.source'), v: m.groups.host + LINK_ARROW, tip: TEXT_NONE, href: x.url }
+  return { label: x.t('col.source'), text: m.groups.host + LINK_ARROW, href: x.url }
 }
 
 /**
@@ -1150,6 +1138,7 @@ export function drawHitStreamsOf(job: PnpJob): string[] {
  * 同日又改:「这种中文灰字翻译只显示一个就行了吧」→ 中文名只在组头名字下灰字出一次,各轮不再逐行重复;
  * 「这个没有分数需要显示横线吧」→ 没公布分的组头改写那一轮发了多少份邀请,邀请数也没有就空着。
  * 同日「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格写的通道对应的组(drawHitStreamsOf)琥珀高亮、排最前。
+ * 2026-09-26 晚 Frank「全站高亮要不要都改成蓝色」:本岗高亮改浅蓝(样式见 pnp.module.css 的 .cmpHit;琥珀全站另有提示 / 付费的意思)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的那一组。
  * @returns 各组(没有抽选给空列)。
@@ -1189,8 +1178,10 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
  * 同日晚 Frank「这部分怎么改的这么乱了」「默认也别合并啊」:标题只留「本省最近抽选」(pnpdraws.head),轮次标签 label 由卡里
  * 另起一行灰字;原为 drawsTitleOf 拼成「本省最近抽选 BC PNP Skills Immigration」一行中英混排(地点弹框的省份卡仍用 drawsTitleOf)。
  * 其余组改为默认展开(开合初值见 usePnpList)。
+ * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组不再单独摊开(三格 + 灰字统计 + 另一套折叠记号撤),
+ * 改成与其余组同一种组头行,排最前、浅蓝底,开关收起时也留着;「来源」挪到卡片标题那一行右端(本省抽选页,三种卡同一处)。
  *
- * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组与灰字统计的窗口起点。
+ * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 抽选卡;本省分不出组给 null。
  */
 export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
@@ -1204,104 +1195,23 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
   if (groups.length === 0) {
     return null
   }
-  const hist = provDrawHistOf({ province: x.province, draws: x.draws })
-  const feats: DrawFeat[] = []
+  const hits: EeCmpGroup[] = []
   const others: EeCmpGroup[] = []
   for (const g of groups) {
-    if (g.hit === false) {
+    if (g.hit) {
+      hits.push(g)
+    } else {
       others.push(g)
-      continue
-    }
-    const arr = histAtOf({ hist, key: g.key }).slice().sort(byDrawDateDesc)
-    const head = scoredHeadOf(arr)
-    if (head != null) {
-      feats.push(featOf({ t: x.t, lang: x.lang, key: g.key, head, draws: arr, cut: x.cut }))
     }
   }
   const first = firstDrawOf(drawRowsOf({ province: x.province, draws: x.draws, reform: null, limit: null }))
   let label = TEXT_NONE
+  let source: SourceLink | null = null
   if (first != null) {
     label = first.label
+    source = sourceLinkOf({ t: x.t, url: first.url })
   }
-  return { title: x.t('pnpdraws.head'), label, feats, others, total: groups.length }
-}
-
-/**
- * 本岗那一组的展示件:三格(最近一轮 | 分数线 | 人数;没公布的格不出)+ 灰字统计 + 展开后的全部轮次。
- * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:末尾加一格「来源」(本省抽选页,新开页),与安省 / 新斯科舍的卡同形。
- * 三格取组头那一轮(同分组卡:最近一轮带分的),与展开后列表里那一组的组头同一轮。
- *
- * @param x 一组的原料。
- * @returns 这一组。
- */
-function featOf(x: FeatOfIn): DrawFeat {
-  const kind = countKindOf(x.head)
-  const cells: FeatCellSpec[] = [{ k: x.t('pnpfacts.latest'), v: x.head.drawDate, tip: TEXT_NONE, href: TEXT_NONE }]
-  if (x.head.score != null) {
-    cells.push({ k: x.t('rpt.s.d.score'), v: String(x.head.score), tip: TEXT_NONE, href: TEXT_NONE })
-  }
-  if (x.head.invitations != null) {
-    cells.push({
-      k: x.t(COUNT_LABEL_KEY[kind]),
-      v: x.t(COUNT_VALUE_KEY[kind], { n: numStrOf(x.head.invitations) }),
-      tip: TEXT_NONE,
-      href: TEXT_NONE,
-    })
-  }
-  const source = sourceCellOf({ t: x.t, url: x.head.url })
-  if (source != null) {
-    cells.push(source)
-  }
-  return {
-    key: x.key,
-    name: x.head.stream,
-    sub: zhSubOf({ lang: x.lang, draw: x.head }),
-    cells,
-    stats: windowStatsOf({ t: x.t, draws: x.draws, cut: x.cut, kind }),
-    rows: roundRowsOf({ t: x.t, lang: x.lang, draws: x.draws }),
-  }
-}
-
-/**
- * 本岗那一组的灰字统计:近 90 天几轮,外加这几轮合计多少人 —— 窗口里哪一轮没公布人数,合计就不出(少算一轮的合计是假数)。
- * 窗口起点 cut 由调用方按弹框打开那一刻算好传进来(纯函数不读时钟);只到月的汇总行不在分组里,不会拿 `YYYY-MM` 来比。
- *
- * @param x 取词函数、这一组的历次抽选、窗口起点与人数口径。
- * @returns 灰字(轮数一条,合计一条)。
- */
-function windowStatsOf(x: WindowStatsIn): string[] {
-  let n = 0
-  let sum = 0
-  let complete = true
-  for (const d of x.draws) {
-    if (d.drawDate < x.cut) {
-      continue
-    }
-    n += 1
-    if (d.invitations == null) {
-      complete = false
-    } else {
-      sum += d.invitations
-    }
-  }
-  const stats = [roundsTextOf({ t: x.t, n })]
-  if (n > 0 && complete) {
-    stats.push(x.t(COUNT_TOTAL_KEY[x.kind], { n: numStrOf(sum) }))
-  }
-  return stats
-}
-
-/**
- * 「近 90 天几轮」那一句(英文一轮写 round;同 eecmp.roundsOne 的做法)。
- *
- * @param x 取词函数与轮数。
- * @returns 那一句。
- */
-function roundsTextOf(x: RoundsTextIn): string {
-  if (x.n === 1) {
-    return x.t('pnpfacts.rounds90One', { n: x.n, d: DRAW_WINDOW_DAYS })
-  }
-  return x.t('pnpfacts.rounds90', { n: x.n, d: DRAW_WINDOW_DAYS })
+  return { title: x.t('pnpdraws.head'), label, hits, others, total: groups.length, source }
 }
 
 /**
@@ -1315,25 +1225,6 @@ export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
     return x.t('pnplist.foldOther')
   }
   return x.t('pnpfacts.allGroups', { n: x.total, label: x.label })
-}
-
-/**
- * 灰字统计窗口的起点:此刻往前 90 天那一天(渥太华日期 `YYYY-MM-DD`,与抽选日期同一口径)。
- *
- * @param now 此刻(毫秒;由调用方在弹框打开时取一次)。
- * @returns 窗口起点。
- */
-export function drawCutOf(now: number): string {
-  return ymd(fmtLocal(new Date(now - DRAW_WINDOW_DAYS * DAY_MS).toISOString()))
-}
-
-/**
- * 此刻(毫秒;给 useState 的惰性初值用 —— 弹框打开那一刻取一次,重渲不变)。
- *
- * @returns 此刻。
- */
-export function nowOf(): number {
-  return Date.now()
 }
 
 /**
@@ -1509,6 +1400,7 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
 /**
  * 一组点开后的全部轮次(照抄省抽选表的行;中文名只在组头灰字出一次,各轮不再逐行重复 —— 2026-09-23 Frank
  * 「这种中文灰字翻译只显示一个就行了吧」)。2026-09-26 自 cmpGroupOf 体内原样提出:本岗那一组(featOf)展开的也是这一份。
+ * 同晚 featOf 随本岗那一组改组头行撤掉,只剩 cmpGroupOf 一处调用。
  *
  * @param x 取词函数、界面语言与这一组的历次抽选。
  * @returns 展示行。

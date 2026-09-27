@@ -203,6 +203,7 @@ export type PnpDraw = {
 
   /**
    * 官方页(数据层抓这一行的那一页;2026-09-26 起事实卡底部的官方链接读它)。
+   * 同晚起三种抽选卡标题那一行右端的「来源」读它(每省一页:各通道的轮次都在同一页上)。
    */
   url: string
 }
@@ -978,15 +979,17 @@ export type ChannelSpec = {
  * 本岗那一组(本省抽选卡里格子对应的那组)的一格:标签在上、值在下。
  * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:三种抽选卡(分组 / 改制省现状 / 按月选取)共用这一格
  * (FeatCells 一处渲染),末格「来源」是官方页链接。
+ * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:分组卡本岗那一组改成组头行,格子只剩安省现状与新斯科舍按月两种卡在用;
+ * 「来源」挪到卡片标题那一行右端(SourceLink),链接格随之撤(原 href 那一格)。
  */
 export type FeatCellSpec = {
   /**
-   * 标签(最近一轮 / 分数线 / 邀请 / 最新公告 / 月份 / 来源;也作 React 列表键,一卡之内各不同)。
+   * 标签(最新公告 / 已发邀请 / 月份;也作 React 列表键,一卡之内各不同)。
    */
   k: string
 
   /**
-   * 值(日期 / 分数 / 人数;链接格是站名 + 新开页记号)。
+   * 值(日期 / 人数 / 暂无)。
    */
   v: string
 
@@ -994,55 +997,35 @@ export type FeatCellSpec = {
    * 标签的悬停提示(官方原句,如安省最新公告那一句);''=不出。
    */
   tip: string
+}
+
+/**
+ * 抽选卡标题那一行右端的官方链接(「来源」+ 站名,新开页;三种抽选卡同一处,2026-09-26 晚 Frank 选「标题那一行右端」,问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页,各通道同一个链接)。
+ */
+export type SourceLink = {
+  /**
+   * 标签(「来源」)。
+   */
+  label: string
 
   /**
-   * 值是链接时的地址(新开页);''=值是纯文字。
+   * 链接字(站名 + 新开页记号)。
+   */
+  text: string
+
+  /**
+   * 官方页地址。
    */
   href: string
 }
 
 /**
- * 本岗那一组的展示件(2026-09-26 Frank 看过效果图点头:同一行三格「最近一轮 | 分数线 | 邀请」,
- * 下一行灰字「近 90 天几轮」「合计多少人」;点组名展开全部轮次)。
- */
-export type DrawFeat = {
-  /**
-   * 组键(抽选行 stream 原值;React 列表键与开合键)。
-   */
-  key: string
-
-  /**
-   * 组名(官方英文通道名)。
-   */
-  name: string
-
-  /**
-   * 组名下的中文灰字;''=不出。
-   */
-  sub: string
-
-  /**
-   * 三格(没公布分的组不出分数格,没公布人数的不出人数格)。
-   */
-  cells: FeatCellSpec[]
-
-  /**
-   * 灰字统计(近 90 天几轮;那几轮人数都公布了才出合计)。
-   */
-  stats: string[]
-
-  /**
-   * 全部轮次(降序,照抄省抽选表的行;展开才出)。
-   */
-  rows: DrawRowSpec[]
-}
-
-/**
- * 分组形的本省抽选卡(本岗那一组摊开,其余组收进「查看全省 N 组」)。
+ * 分组形的本省抽选卡(本岗那一组排最前,其余组收在「查看全省 N 组」开关后面)。
+ * 2026-09-26 晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组不再单独摊开,与其余组同一种组头行。
  */
 export type DrawCard = {
   /**
-   * 卡标题(「本省最近抽选 {轮次标签}」)。
+   * 卡标题(「本省最近抽选」;2026-09-26 晚起轮次标签不再拼进标题)。
    */
   title: string
 
@@ -1052,9 +1035,9 @@ export type DrawCard = {
   label: string
 
   /**
-   * 本岗对应的组(格子写的通道对得上的那几组;对不上给空列)。
+   * 本岗对应的组(格子写的通道对得上的那几组;浅蓝组头行,开关收起时也留着;对不上给空列)。
    */
-  feats: DrawFeat[]
+  hits: EeCmpGroup[]
 
   /**
    * 其余组(照旧组头一行 + 点开列轮次;收在开关后面)。
@@ -1065,10 +1048,16 @@ export type DrawCard = {
    * 全省一共几组(开关文案里的 N)。
    */
   total: number
+
+  /**
+   * 标题右端的官方来源(本省抽选页);认不出站名给 null(不出)。
+   */
+  source: SourceLink | null
 }
 
 /**
  * 事实卡(改制省现状 / 按月选取人数;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
+ * 2026-09-26 晚 Frank「这个下面还有必要灰字吗」:轮次标签灰字撤(原 label 格)。
  */
 export type FactCardSpec = {
   /**
@@ -1077,14 +1066,14 @@ export type FactCardSpec = {
   title: string
 
   /**
-   * 轮次标签(官方项目名,如 OINP / NSNP;标题下一行灰字;''=不出)。
-   */
-  label: string
-
-  /**
    * 横排的格子(2026-09-26 晚起与分组卡本岗那一组同一种格;原先是「项 | 值」两列竖排 + 底部一条链接)。
    */
   cells: FeatCellSpec[]
+
+  /**
+   * 标题右端的官方来源(同分组卡);认不出站名给 null(不出)。
+   */
+  source: SourceLink | null
 }
 
 /**
@@ -1742,11 +1731,6 @@ export type PnpListPanel = {
    * 本岗能走的通道(弹框顶上那张卡;2026-09-26)。
    */
   channels: ChannelSpec[]
-
-  /**
-   * 本岗那一组灰字统计的窗口起点(`YYYY-MM-DD`;弹框打开那一刻起算近 90 天)。
-   */
-  cut: string
 }
 
 /**
@@ -2903,11 +2887,6 @@ export type PnpDrawGroupsIn = {
   hitStreams: string[]
 
   /**
-   * 本岗那一组灰字统计的窗口起点(`YYYY-MM-DD`,这一天及以后的轮次算「近 90 天」;2026-09-26)。
-   */
-  cut: string
-
-  /**
    * 展开着的组(通道名;「查看全省 N 组」那个开关的键是 DRAWS_ALL_KEY)。
    */
   open: Set<string>
@@ -2916,26 +2895,6 @@ export type PnpDrawGroupsIn = {
    * 组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
-}
-
-/**
- * DrawFeatView(本岗那一组)的 props。
- */
-export type DrawFeatViewIn = {
-  /**
-   * 这一组。
-   */
-  f: DrawFeat
-
-  /**
-   * 全部轮次展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 开合手柄。
-   */
-  onToggle: ClickFn
 }
 
 /**
@@ -2964,9 +2923,24 @@ export type FeatCellsIn = {
 }
 
 /**
- * sourceCellOf 的入参。
+ * DrawsHead(抽选卡标题那一行:左标题、右来源,三种卡共用)的 props。
  */
-export type SourceCellIn = {
+export type DrawsHeadIn = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 官方来源;null = 不出。
+   */
+  source: SourceLink | null
+}
+
+/**
+ * sourceLinkOf 的入参(2026-09-26 晚改名,原 SourceCellIn)。
+ */
+export type SourceLinkIn = {
   /**
    * 取词函数。
    */
@@ -3016,86 +2990,6 @@ export type DrawCardOfIn = {
    * 本岗对应的组(抽选行 stream 原值);空列 = 没有本岗那一组。
    */
   hitStreams: string[]
-
-  /**
-   * 灰字统计的窗口起点(`YYYY-MM-DD`)。
-   */
-  cut: string
-}
-
-/**
- * featOf 的入参。
- */
-export type FeatOfIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
-
-  /**
-   * 组键。
-   */
-  key: string
-
-  /**
-   * 组头那一轮(同分组卡:最近一轮带分的,都没分给最近一轮)。
-   */
-  head: PnpDraw
-
-  /**
-   * 这一组的历次抽选(降序)。
-   */
-  draws: PnpDraw[]
-
-  /**
-   * 灰字统计的窗口起点(`YYYY-MM-DD`)。
-   */
-  cut: string
-}
-
-/**
- * windowStatsOf 的入参。
- */
-export type WindowStatsIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这一组的历次抽选。
-   */
-  draws: PnpDraw[]
-
-  /**
-   * 窗口起点(`YYYY-MM-DD`)。
-   */
-  cut: string
-
-  /**
-   * 人数口径(合计那句说邀请还是入选)。
-   */
-  kind: CountKind
-}
-
-/**
- * roundsTextOf 的入参。
- */
-export type RoundsTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 窗口里的轮数。
-   */
-  n: number
 }
 
 /**

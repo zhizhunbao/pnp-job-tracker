@@ -9,14 +9,18 @@
  * 其余组收进「查看全省 N 组」开关,点开照旧组头一行、开关落到末尾改「收起」(同清单卡末尾的开关)。
  * 同日晚 Frank「这部分怎么改的这么乱了」「默认也别合并啊」:其余组默认就展开(开关初值见 usePnpList,末尾照旧「收起」可收);
  * 标题只留「本省最近抽选」,轮次标签另起一行灰字;本岗那组改琥珀底、字回黑 / 灰两档(样式见 pnp.module.css 的 .feat)。
+ * 同晚 Frank「这个下面还有必要灰字吗」:那行轮次标签灰字(AAIP / OINP …)也撤 —— 弹框顶上已写「阿尔伯塔省提名(PNP)」,重复。
+ * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组也走 EeCmpGroupView,与其余组同一种组头行(DrawFeatView 撤),
+ * 排最前、开关收起时也留着;「全站高亮要不要都改成蓝色」:本岗高亮改浅蓝(.cmpHit)。「来源」挪到标题那一行右端(DrawsHead;
+ * Frank 选「标题那一行右端」,问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页,各通道同一个链接)。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { DRAWS_ALL_KEY, DRAW_NO_SCORE_PROVS, PLAIN_BTN_KIND, TEXT_NONE } from './constants'
-import { DrawFeatView } from './drawfeatview'
+import { DRAWS_ALL_KEY, DRAW_NO_SCORE_PROVS, PLAIN_BTN_KIND } from './constants'
+import { DrawsHead } from './drawshead'
 import { EeCmpGroupView } from './eecmpgroupview'
 import { allGroupsLabelOf, drawCardOf } from './functions'
 import type { PnpDrawGroupsIn } from './types'
@@ -25,17 +29,17 @@ import css from './pnp.module.css'
 /**
  * 渲染本省抽选分组卡。
  *
- * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、灰字统计的窗口起点、展开着的组与开合手柄工厂。
+ * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组与开合手柄工厂。
  * @returns 抽选卡;本省没有抽选给 null。
  */
-export function PnpDrawGroups({ t, lang, province, draws, hitStreams, cut, open, toggleOf }: PnpDrawGroupsIn) {
-  const card = drawCardOf({ t, lang, province, draws, hitStreams, cut })
+export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf }: PnpDrawGroupsIn) {
+  const card = drawCardOf({ t, lang, province, draws, hitStreams })
   if (card == null) {
     return null
   }
-  const feats = []
-  for (const f of card.feats) {
-    feats.push(<DrawFeatView key={f.key} f={f} open={open.has(f.key)} onToggle={toggleOf(f.key)} />)
+  const hits = []
+  for (const g of card.hits) {
+    hits.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
   }
   const allOpen = open.has(DRAWS_ALL_KEY)
   const others = []
@@ -46,12 +50,9 @@ export function PnpDrawGroups({ t, lang, province, draws, hitStreams, cut, open,
   }
   return (
     <div className={css.card}>
-      <div className={css.cardHead}>
-        {card.title}
-        {card.label !== TEXT_NONE && <span className={css.zh}>{card.label}</span>}
-      </div>
+      <DrawsHead title={card.title} source={card.source} />
       {DRAW_NO_SCORE_PROVS.has(province) && <div className={css.drawsBasis}>{t('pnpdraws.noScore')}</div>}
-      {feats}
+      {hits}
       {others}
       {card.others.length > 0 && (
         <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(DRAWS_ALL_KEY)}>

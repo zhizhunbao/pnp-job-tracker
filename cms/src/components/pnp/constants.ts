@@ -288,11 +288,6 @@ export const MONTH_DATE_LEN = 7
 export const MONTHLY_ROWS_MAX = 12
 
 /**
- * 本岗那一组的灰字统计窗口(近多少天的轮数与合计人数;2026-09-26 Frank 看过效果图点头「近 90 天 4 轮」)。
- */
-export const DRAW_WINDOW_DAYS = 90
-
-/**
  * 本省抽选卡「查看全省 N 组」那个开关在展开集合里的键(组键是官方通道名,不会与它撞;同 FED_CAT_KEY 的写法)。
  */
 export const DRAWS_ALL_KEY = '__all'
@@ -353,66 +348,6 @@ export const COUNT_ROW_KEY: Record<'aip' | 'sel' | 'inv', string> = {
 }
 
 /**
- * 本岗那一组人数格的标签键(邀请复用报告抽选表的「邀请」,与全站抽选表同一个词)。
- */
-export const COUNT_LABEL_KEY: Record<'aip' | 'sel' | 'inv', string> = {
-  /**
-   * AIP:入选。
-   */
-  aip: 'pnpfacts.selected',
-
-  /**
-   * EOI 选取:入选。
-   */
-  sel: 'pnpfacts.selected',
-
-  /**
-   * 邀请。
-   */
-  inv: 'rpt.s.d.inv',
-}
-
-/**
- * 本岗那一组人数格的值键(带单位:人 / 份申请)。
- */
-export const COUNT_VALUE_KEY: Record<'aip' | 'sel' | 'inv', string> = {
-  /**
-   * AIP:{n} 份申请。
-   */
-  aip: 'pnpfacts.apps',
-
-  /**
-   * EOI 选取:{n} 人。
-   */
-  sel: 'pnpfacts.people',
-
-  /**
-   * 邀请:{n} 人。
-   */
-  inv: 'pnpfacts.people',
-}
-
-/**
- * 本岗那一组灰字合计的文案键(近 90 天那几轮加起来)。
- */
-export const COUNT_TOTAL_KEY: Record<'aip' | 'sel' | 'inv', string> = {
-  /**
-   * AIP:共 {n} 份申请入选。
-   */
-  aip: 'pnpfacts.selTotal',
-
-  /**
-   * EOI 选取:共 {n} 人入选。
-   */
-  sel: 'pnpfacts.selPeopleTotal',
-
-  /**
-   * 邀请:共邀请 {n} 人。
-   */
-  inv: 'pnpfacts.invTotal',
-}
-
-/**
  * 通用通道名词条的键头(`pnp.gen.` + 省码;与职位板 PNP 格 jobs 域的 K_PNP_GEN_HEAD 读同一组词条 ——
  * 域之间不互取常量,各抄一份)。拼出的键查不到词条 = 该省没有通用通道名(领地等),「本岗能走的通道」卡不列。
  */
@@ -422,11 +357,6 @@ export const PNP_GEN_HEAD = 'pnp.gen.'
  * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
  */
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i
-
-/**
- * 数字的显示地区(千分位按加拿大英文习惯,与把脉页 start 域 NUM_LOCALE 同值;各域一份)。
- */
-export const NUM_LOCALE = 'en-CA'
 
 /**
  * 魁省省码(走自己的体系,不属 PNP)。

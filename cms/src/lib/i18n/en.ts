@@ -559,16 +559,9 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
+  // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
-  'pnpfacts.latest': 'Latest',
   'pnpfacts.selected': 'Selected',
-  'pnpfacts.people': '{n}',
-  'pnpfacts.apps': '{n}',
-  'pnpfacts.rounds90': '{n} rounds in {d} days',
-  'pnpfacts.rounds90One': '{n} round in {d} days',
-  'pnpfacts.invTotal': '{n} invited',
-  'pnpfacts.selTotal': '{n} selected',
-  'pnpfacts.selPeopleTotal': '{n} selected',
   'pnpfacts.selPeople': '{n} selected',
   'pnpfacts.allGroups': 'All {n} {label} streams ▾',
   'pnpfacts.invIssued': 'Invitations issued',

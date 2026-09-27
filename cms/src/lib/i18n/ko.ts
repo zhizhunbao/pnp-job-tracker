@@ -553,16 +553,9 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
+  // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',
-  'pnpfacts.latest': '최근 회차',
   'pnpfacts.selected': '선정',
-  'pnpfacts.people': '{n}명',
-  'pnpfacts.apps': '{n}건',
-  'pnpfacts.rounds90': '최근 {d}일 {n}회',
-  'pnpfacts.rounds90One': '최근 {d}일 {n}회',
-  'pnpfacts.invTotal': '총 {n}명 초청',
-  'pnpfacts.selTotal': '총 {n}건 선정',
-  'pnpfacts.selPeopleTotal': '총 {n}명 선정',
   'pnpfacts.selPeople': '{n}명 선정',
   'pnpfacts.allGroups': '주 전체 {n}개 스트림 보기 ▾',
   'pnpfacts.invIssued': '초청 발급',
