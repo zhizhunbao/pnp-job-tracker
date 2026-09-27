@@ -28,6 +28,7 @@ import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel 
  * (弹框打开那一刻取一次此刻,往前 90 天;重渲不变)。
  * 同日晚 Frank「默认也别合并啊」:抽选卡的开合初值带上 DRAWS_ALL_KEY —— 其余组一打开就展开,末尾「收起」照旧可收。
  * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改成组头行、灰字统计撤,统计窗口起点(此刻 − 90 天)随之不再交。
+ * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:多交门槛卡的开合(默认全收,值一行就是摘要,点开看原句)。
  *
  * @param x 本岗、界面语言、扁平清单、职业名字典与译名开关。
  * @returns 取词函数、ref 盒、字典、命中结论、折叠状态与通道条目。
@@ -38,6 +39,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const matchRef = useRef<HTMLDivElement | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
   const [drawOpen, setDrawOpen] = useState<Set<string>>(new Set([DRAWS_ALL_KEY]))
+  const [gateOpen, setGateOpen] = useState<Set<string>>(new Set())
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)
@@ -60,6 +62,8 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     toggleOf: makeToggleOf({ setKeys: setClosed }),
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
+    gateOpen,
+    gateToggleOf: makeToggleOf({ setKeys: setGateOpen }),
     channels: channelsOf({ t, tEn, lang: x.lang, showZh: x.showZh, job: x.job }),
   }
 }

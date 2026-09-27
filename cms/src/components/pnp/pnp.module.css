@@ -560,63 +560,6 @@
 }
 
 /*
- * 事实卡底部的官方链接那一行。
- * 2026-09-26 晚 Frank「来源是不是也放到条上」→ 选「标题那一行右端」:改成三种抽选卡标题那一行右端的来源(DrawsHead),
- * 「来源」灰字 + 站名链接;与两列表的上边距随之撤。
- */
-.srcRow {
-  /*
-   * 小注字号。
-   */
-  font-size: 12px;
-
-  /*
-   * 标签与链接一行。
-   */
-  display: inline-flex;
-
-  /*
-   * 标签与链接的间距。
-   */
-  gap: 6px;
-
-  /*
-   * 基线对齐。
-   */
-  align-items: baseline;
-
-  /*
-   * 站名不折行。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 来源的标签(「来源」)。
- */
-.srcK {
-  /*
-   * 次级灰。
-   */
-  color: var(--text2);
-}
-
-/*
- * 官方链接(品牌蓝,不带下划线;新开页记号跟在站名后)。
- */
-.srcLink {
-  /*
-   * 品牌蓝。
-   */
-  color: var(--primary);
-
-  /*
-   * 无下划线。
-   */
-  text-decoration: none;
-}
-
-/*
  * 组头的名字格。
  */
 .cmpName {
@@ -2170,4 +2113,190 @@
      */
     text-align: left !important;
   }
+}
+
+/*
+ * 「本岗通道的门槛」卡一行的值格(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」):整格一枚 ghost 钮(点开看原句)——
+ * 摘要左、开合记号右,钮自身的内衬 / 圆角 / 底色清零,读起来和公司信息卡的值一样。button 桶的样式全在 :where() 里(零权重),单类即可压过。
+ */
+.gateBtn {
+  /*
+   * 摘要与记号排一行。
+   */
+  display: flex;
+
+  /*
+   * 吃满值格。
+   */
+  width: 100%;
+
+  /*
+   * 记号顶着第一行。
+   */
+  align-items: flex-start;
+
+  /*
+   * 摘要左、记号右。
+   */
+  justify-content: space-between;
+
+  /*
+   * 摘要与记号的间距。
+   */
+  gap: 8px;
+
+  /*
+   * 清掉钮的内衬。
+   */
+  padding: 0;
+
+  /*
+   * 清掉钮的圆角。
+   */
+  border-radius: 0;
+
+  /*
+   * 无底色。
+   */
+  background: none;
+
+  /*
+   * 字色随值格。
+   */
+  color: inherit;
+
+  /*
+   * 字号随值格。
+   */
+  font: inherit;
+
+  /*
+   * 左对齐。
+   */
+  text-align: left;
+
+  /*
+   * 长句照常折行(button 桶底座 .btn 是 nowrap,整格是钮就被带上;2026-09-27 本机 375 实拍冲出卡右边)。
+   */
+  white-space: normal;
+
+  /*
+   * 手型。
+   */
+  cursor: pointer;
+}
+
+/*
+ * 门槛值格的摘要列(一行一条往下排)。
+ */
+.gateText {
+  /*
+   * 竖排。
+   */
+  display: flex;
+
+  /*
+   * 一行一条。
+   */
+  flex-direction: column;
+
+  /*
+   * 长句能折行。
+   */
+  min-width: 0;
+}
+
+/*
+ * 门槛值格摘要的一条。
+ */
+.gateLine {
+  /*
+   * 独占一行。
+   */
+  display: block;
+}
+
+/*
+ * 雇主 offer 那行下面的本岗对照灰字。
+ */
+.gateSub {
+  /*
+   * 独占一行。
+   */
+  display: block;
+
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 二级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 门槛值格右端的开合记号。
+ */
+.gateCaret {
+  /*
+   * 不被摘要挤窄。
+   */
+  flex-shrink: 0;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+}
+
+/*
+ * 点开后露出的官方原句区。
+ */
+.gateQuotes {
+  /*
+   * 独占一块。
+   */
+  display: block;
+
+  /*
+   * 与摘要的间距。
+   */
+  margin-top: 4px;
+}
+
+/*
+ * 一句官方原文(逐字英文)。
+ */
+.gateQuote {
+  /*
+   * 一句一行块。
+   */
+  display: block;
+
+  /*
+   * 句与句的间距。
+   */
+  margin-top: 4px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 行高放松一点,长句好读。
+   */
+  line-height: 1.5;
+
+  /*
+   * 二级灰。
+   */
+  color: var(--text2);
 }

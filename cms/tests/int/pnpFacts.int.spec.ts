@@ -28,10 +28,10 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  quotaCardOf, ytdLineOf,
+  quotaCardOf, ytdLineOf, gateCardOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
 } from '@/components/pnp/functions'
-import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpStream } from '@/components/pnp/types'
+import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpReq, PnpStream } from '@/components/pnp/types'
 import { blockedKeysOf, blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
@@ -43,6 +43,7 @@ const mart = <T>(name: string): T[] =>
 function job(p: Partial<PnpJob>): PnpJob {
   return {
     id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', eeCategory: '', company: '', aip: false,
+    employmentHours: '', employmentTerm: '',
     salaryAnnual: null, wageMedAnnual: null, lmiaPositions: null, lmiaPositionsSkilled: null, lmiaLastQuarter: '',
     ...p,
   }
@@ -289,17 +290,19 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   it('阿省机会通道(本岗那一组):与其余组同一种组头行,排最前、标命中;来源在标题右端(三语一条)', () => {
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [AOS], ops: [] })
-    expect(card?.title).toBe('本省最近抽选')
+    expect(card?.title).toBe('本省抽选')
     expect(card?.label).toBe('AAIP')
     expect(card?.total).toBe(2)
     expect(card?.hits.map(headOf)).toEqual([[AOS, true, '最低 58 分', '2026-09-23', '5 轮']])
     expect(card?.hits[0]?.rows.length).toBe(5)
+    // 2026-09-27 Frank 选「不拆,去重复」:组里各轮是同一个流,组头已写,展开行不再逐行重复通道名
+    expect(card?.hits[0]?.rows.map((r) => r.stream)).toEqual(['', '', '', '', ''])
     expect(card?.others.map(headOf)).toEqual([['Rural Renewal Stream', false, '最低 51 分', '2026-08-11', '1 轮']])
-    expect(card?.source).toEqual({ label: '来源', text: 'alberta.ca ↗', href: AB_SRC })
+    expect(card?.source).toEqual({ text: '来源 ↗', href: AB_SRC })
     const e = drawCardOf({ t: en, lang: 'en', province: 'AB', draws: ab, hitStreams: [AOS], ops: [] })
     expect(e?.hits.map(headOf)).toEqual([[AOS, true, 'min 58', '2026-09-23', '5 rounds']])
-    expect(e?.source).toEqual({ label: 'Source', text: 'alberta.ca ↗', href: AB_SRC })
-    expect(drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], ops: [] })?.source?.label).toBe('출처')
+    expect(e?.source).toEqual({ text: 'Source ↗', href: AB_SRC })
+    expect(drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], ops: [] })?.source?.text).toBe('출처 ↗')
   })
 
   it('开关文案:收着「查看全省 N 组」,开着「收起」;对不上本岗那一组时没有命中行,来源照旧', () => {
@@ -334,11 +337,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const hitNs = drawHitStreamsOf(job({ province: 'NS', noc: '72310', pnpEligible: true }))
     expect(hitNs).toEqual(['Monthly EOI selections'])
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: hitNs, ops: [] })
-    expect(card?.title).toBe('本省最近抽选')
+    expect(card?.title).toBe('本省抽选')
     expect(card?.hits.map((g) => [g.key, g.hit, g.score, g.date, g.rounds, g.rows.length]))
       .toEqual([['Monthly EOI selections', true, '671 人入选', '2026-07', '2 个月', 2]])
     expect(card?.others).toEqual([])
-    expect(card?.source).toEqual({ label: '来源', text: 'liveinnovascotia.com ↗', href: src })
+    expect(card?.source).toEqual({ text: '来源 ↗', href: src })
     const en1 = drawCardOf({ t: en, lang: 'en', province: 'NS', draws: [ns[1]!], hitStreams: hitNs, ops: [] })
     expect(en1?.hits.map((g) => [g.score, g.rounds])).toEqual([['671 selected', '1 month']])
     // 不可提名的 NS 岗:同一组照出,不标命中
@@ -364,8 +367,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const hitOn = drawHitStreamsOf(job({ province: 'ON', noc: '63200', pnpEligible: true }))
     expect(hitOn).toEqual(['Ontario Workforce Priority Stream'])
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'ON', draws: on, hitStreams: hitOn, ops: [] })
-    expect(card?.title).toBe('本省最近抽选')
-    expect(card?.source).toEqual({ label: '来源', text: 'ontario.ca ↗', href: url })
+    expect(card?.title).toBe('本省抽选')
+    expect(card?.source).toEqual({ text: '来源 ↗', href: url })
     expect(card?.others).toEqual([])
     expect(card?.hits.map((g) => [g.name, g.sub, g.score, g.date, g.rounds, g.expandable, g.tip]))
       .toEqual([['ON Workforce Priority', 'ON 劳动力优先', '暂无邀请', '2026-08-04', '', false, note]])
@@ -402,7 +405,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       ['全省', ['6,603', '5,221', '1,382']], ['本岗通道', ['3,562', '2,911', '651']],
     ])
     expect(ab?.asOf).toBe('截至 2026-09-23')
-    expect(ab?.source).toEqual({ label: '来源', text: 'alberta.ca ↗', href: url })
+    expect(ab?.source).toEqual({ text: '来源 ↗', href: url })
     const abEn = quotaCardOf({ t: en, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'] })
     expect([abEn?.title, abEn?.heads, abEn?.asOf]).toEqual(['2026 allocation', ['Total', 'Nominated', 'Remaining'], 'As of 2026-09-23'])
     // 本岗那组对不上通道键(旅游酒店没有通道级行):只出全省一行,不拿近似名硬配
@@ -426,6 +429,103 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(ytdLineOf({ t: zh, province: 'AB', ops })).toBe('')
     const nb = [draw({ province: 'NB', stream: 'NB Skilled Worker', drawDate: '2026-09-18', score: null, invitations: 197 })]
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NB', draws: nb, hitStreams: [], ops })?.ytd).toBe('2026 年已发 4,170 份邀请')
+  })
+
+  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:手写金标 = 当天 AB 门槛表实数(pnp ab-req.json + 汇装 offer 形态行)
+  const AOS_URL = 'https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility'
+  const EMP_URL = 'https://www.alberta.ca/job-offer-and-employer-requirements'
+  const req = (p: Partial<PnpReq>): PnpReq => ({
+    province: 'AB', stream: 'AAIP Alberta Opportunity Stream', subject: 'applicant', factor: 'language', op: '>=',
+    value: 5, unit: 'CLB', appliesTeer: '', appliesNoc: '', appliesArea: '', appliesCondition: '', basis: '', label: '',
+    valueText: '', url: AOS_URL, ...p,
+  })
+  const OFFER_QUOTE = 'All applicants, including PGWP holders, must have a full-time job offer … part-time, casual or seasonal employees'
+  const abReqs: PnpReq[] = [
+    req({ value: 5, appliesTeer: '0,1,2,3', label: 'CLB 5 in each English (or NCLC 5 in each French) language skill (TEER 0-3)' }),
+    req({ value: 4, appliesTeer: '4,5', label: 'CLB 4 in each English (or NCLC 4 in each French) language skill (TEER 4-5)' }),
+    req({ value: 7, appliesNoc: '33102', label: 'CLB 7 in each English (or NCLC 7 in each French) language skill for NOC 33102' }),
+    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30', label: '24 months of full-time work experience' }),
+    req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18',
+      label: '24 months of full-time work experience' }),
+    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empYears', value: 2,
+      unit: 'years', label: 'The Alberta employer must have been in continuous and active operation for 2 fiscal years', url: EMP_URL }),
+    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empRevenue',
+      value: 400000, unit: 'CAD/yr', label: 'minimum total gross annual revenue of $400,000', url: EMP_URL }),
+    req({ stream: 'AAIP (job offer & employer requirements, all streams)', subject: 'employer', factor: 'empStaff', value: 3,
+      unit: 'employees', label: 'minimum of 3 full-time employees', url: EMP_URL }),
+    req({ stream: 'Job offer (all streams)', subject: 'offer', factor: 'offerForm', op: 'notIn', value: null, unit: '',
+      basis: 'valueCode=part,seasonal,casual', label: 'Full-time job offer; not eligible: part, seasonal, casual',
+      valueText: OFFER_QUOTE }),
+    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'eeProfile', op: 'rule', value: null, unit: '',
+      label: 'Active federal Express Entry profile required' }),
+    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'eeProgram', op: 'rule', value: null, unit: '',
+      label: 'Must qualify for CEC, FSW or FST' }),
+    req({ stream: 'AAIP Alberta Express Entry Stream', factor: 'crs', value: 300, unit: 'CRS', label: 'Minimum CRS score of 300' }),
+    req({ stream: 'AAIP Alberta Express Entry Stream — Accelerated Tech Pathway', factor: 'jobOffer', op: 'rule', value: null,
+      unit: '', label: 'Full-time Alberta job offer with an Alberta tech-industry employer' }),
+    req({ stream: 'AAIP Rural Renewal Stream', factor: 'communityEndorsement', op: 'rule', value: null, unit: '',
+      label: 'Endorsement of Candidate letter from the Designated Community (valid one year)' }),
+    req({ stream: 'AAIP Rural Renewal Stream', factor: 'experience', value: 12, unit: 'months', basis: 'windowMonths=18',
+      label: '12 months of full-time work experience (last 18 months)' }),
+    req({ stream: 'AAIP Rural Renewal Stream', value: 5, appliesTeer: '0,1,2,3', label: 'CLB 5 in each skill (TEER 0-3)' }),
+    req({ stream: 'AAIP Tourism and Hospitality Stream', factor: 'experience', value: 6, unit: 'months', basis: 'employerTenure',
+      label: '6 consecutive months with your current employer' }),
+    req({ stream: 'AAIP Tourism and Hospitality Stream', value: 4, label: 'CLB 4 in each English (or NCLC 4 in each French) skill' }),
+    req({ province: 'BC', stream: 'BC PNP Skills Immigration', value: 4 }),
+  ]
+  const abJob = job({ province: 'AB', noc: '72310', teer: 2, employmentHours: 'full', employmentTerm: 'permanent' })
+  const gateOf = (card: ReturnType<typeof gateCardOf>) => card?.rows.map((r) => [r.label, r.lines, r.sub])
+
+  it('「本岗通道的门槛」卡:AB 机会通道四行(offer 形态 + 本岗对照 / 语言档 / 经验两款 / 雇主三项),来源同抽选卡的钮', () => {
+    const card = gateCardOf({ t: zh, job: abJob, reqs: abReqs })
+    expect(card?.title).toBe('本岗通道的门槛')
+    expect(card?.source).toEqual({ text: '来源 ↗', href: AOS_URL })
+    expect(gateOf(card)).toEqual([
+      ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], '本岗 全职、长期'],
+      ['语言', ['英语或法语每项 CLB 5'], ''],
+      ['工作经验', ['24 个月全职经验(近 30 个月内)', '或在本省工作 12 个月(近 18 个月内)'], ''],
+      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], ''],
+    ])
+    expect(card?.rows[0]?.quotes.map((q) => q.text)).toEqual([OFFER_QUOTE])
+    expect(card?.rows[2]?.quotes.length).toBe(1)
+    // 语言档:TEER 4 → CLB 4;职业码点名的 33102 → CLB 7(最具体,压过它的 TEER 3 档)
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs })?.rows[1]?.lines)
+      .toEqual(['英语或法语每项 CLB 4'])
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs })?.rows[1]?.lines)
+      .toEqual(['英语或法语每项 CLB 7'])
+    // 原帖没写工时 / 雇佣期:灰字照实写「原帖未标注」
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 2 }), reqs: abReqs })?.rows[0]?.sub)
+      .toBe('本岗 原帖未标注')
+    const enCard = gateCardOf({ t: en, job: abJob, reqs: abReqs })
+    expect([enCard?.title, enCard?.rows.map((r) => r.label)]).toEqual(
+      ['Stream requirements', ['Job offer', 'Language', 'Experience', 'Employer']])
+    expect(enCard?.rows[0]?.lines).toEqual(['Full-time', 'Not part-time, casual, seasonal'])
+    expect(enCard?.rows[3]?.lines).toEqual(['Operating in Alberta for 2+ fiscal years', 'Revenue ≥ $400,000', '≥ 3 full-time staff'])
+    expect(gateCardOf({ t: ko, job: abJob, reqs: abReqs })?.title).toBe('이 스트림의 요건')
+  })
+
+  it('门槛卡:科技专线出 EE 行、乡村振兴出社区推荐信、旅游酒店是同雇主在职;没登记对照 / 不可提名 / 本岗通道没有门槛行都不出卡', () => {
+    const tech = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 科技' }), reqs: abReqs })
+    expect(gateOf(tech)).toEqual([
+      ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], '本岗 全职、长期'],
+      ['EE', ['联邦 EE 档案', '符合 CEC、FSW 或 FST', 'CRS ≥ 300'], ''],
+      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], ''],
+    ])
+    // 科技专线自己的 offer 条文(科技行业雇主)在「雇主 offer」那行点开能看到
+    expect(tech?.rows[0]?.quotes.length).toBe(2)
+    const rural = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 乡村振兴' }), reqs: abReqs })
+    expect(rural?.rows.map((r) => r.key)).toEqual(['offer', 'lang', 'exp', 'emp', 'other'])
+    expect(rural?.rows[2]?.lines).toEqual(['12 个月全职经验(近 18 个月内)'])
+    expect(rural?.rows[4]?.lines).toEqual(['指定社区推荐信'])
+    const tourism = gateCardOf({ t: zh, job: job({ ...abJob, teer: 5, pnpStream: 'AB 旅游酒店' }), reqs: abReqs })
+    expect(tourism?.rows[1]?.lines).toEqual(['英语或法语每项 CLB 4'])
+    expect(tourism?.rows[2]?.lines).toEqual(['在现雇主全职满 6 个月'])
+    expect(gateCardOf({ t: zh, job: job({ province: 'BC', noc: '72310', teer: 2 }), reqs: abReqs })).toBeNull()
+    expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpEligible: false }), reqs: abReqs })).toBeNull()
+    expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'BC 医疗' }), reqs: abReqs })).toBeNull()
+    // 登记了对照但门槛表里还没有这条流(换版窗口 / 抓挂了):只剩全省两行会读成门槛只有这些 —— 整卡不出
+    expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 医疗' }), reqs: abReqs })).toBeNull()
+    expect(gateCardOf({ t: zh, job: abJob, reqs: [] })).toBeNull()
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {

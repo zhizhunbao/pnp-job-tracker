@@ -36,7 +36,7 @@ import {
 import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage,
   loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, getPnpOps, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
+  loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
   loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedAnchor,
   loadRelatedJobs, loadRelatedOccPage, normalizeProfile,
@@ -226,16 +226,18 @@ export async function jobsDimsRoute(_req: Request): Promise<Response> {
  *
  * 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:多带一张当年配额行 pnpOps(getPnpOps,同样 10 分钟单件缓存),
  * 给弹框的「{年} 年配额」卡与抽选卡「全年已邀请」那一行。
+ * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:再带门槛行 pnpReqs(getPnpReqs,同样 10 分钟单件缓存),给「本岗通道的门槛」卡。
  *
  * @param _req 请求(不读参数)。
- * @returns { pnpOccupations, pnpDraws, pnpOps } 三张表。
+ * @returns { pnpOccupations, pnpDraws, pnpOps, pnpReqs } 四张表。
  */
 export async function jobsPnpRoute(_req: Request): Promise<Response> {
   const db = await getDb()
   const dims = await getSsrDims(db)
   const ops = await getPnpOps(db)
+  const reqs = await getPnpReqs(db)
   return Response.json(
-    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops },
+    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
 }

@@ -26,14 +26,18 @@
  * 2026-09-27 NS 按月与安省改制两种形也改走 PnpDrawGroups 的组头行(Frank「还是横着排的」、勾「安省改一行组头」),PnpFactCard 退役。
  * 同日 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:通道卡与抽选卡之间加「{年} 年配额」卡(PnpQuotaCard);
  * 抽选卡标题下多一行「全年已发邀请 / 已入选」(ops 递进 PnpDrawGroups)。
+ * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:通道卡与配额卡之间加「本岗通道的门槛」卡(PnpGateCard,版式照公司信息卡的「行名 - 值」)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, quotaCardOf, shownStreamsOf, streamKeyOf } from './functions'
+import {
+  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, quotaCardOf, shownStreamsOf, streamKeyOf,
+} from './functions'
 import { usePnpList } from './hooks'
 import { PnpChannelCard } from './pnpchannelcard'
 import { PnpDrawGroups } from './pnpdrawgroups'
+import { PnpGateCard } from './pnpgatecard'
 import { PnpQuotaCard } from './pnpquotacard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
@@ -44,11 +48,12 @@ import type { PnpListSectionIn } from './types'
  * @param props 本岗、界面语言、清单、抽选、动态与两个显示开关(逐格注释见 PnpListSectionIn)。
  * @returns 一组卡片。
  */
-export function PnpListSection({ job, lang, occ, draws, ops, nocDesc = [], showZh = true }: PnpListSectionIn) {
+export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh })
   const form = drawsFormOf({ province: job.province, draws })
   const hitStreams = drawHitStreamsOf(job)
   const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams })
+  const gate = gateCardOf({ t: p.t, job, reqs })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)
@@ -66,6 +71,7 @@ export function PnpListSection({ job, lang, occ, draws, ops, nocDesc = [], showZ
   return (
     <>
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
+      {gate != null && <PnpGateCard spec={gate} open={p.gateOpen} toggleOf={p.gateToggleOf} />}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawGroupsShownOf(form) && (
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams} ops={ops}

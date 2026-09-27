@@ -76,7 +76,7 @@ import type {
   MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption,
   NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim,
   NocSearchOut, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
-  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, ProfileJsonCell,
+  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell,
   ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut,
   QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
   RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn, RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
@@ -941,6 +941,32 @@ export async function getPnpOps(db: Db): PnpOpsOut {
  */
 export async function loadPnpOps(db: Db): PnpOpsOut {
   return queryRowsOrEmpty({ db: db, sql: SQL.PNP_OPS_QUOTA, params: [], map: toPnpOpsRow })
+}
+
+/**
+ * 省提名门槛行,带 10 分钟单件缓存(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;TTL 同配额行)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 门槛行。
+ */
+export async function getPnpReqs(db: Db): PnpReqsOut {
+  const hit = CACHE.pnpReqs
+  if (hit != null && Date.now() - hit.ts < SSR_DIMS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await loadPnpReqs(db)
+  CACHE.pnpReqs = { rows: rows, ts: Date.now() }
+  return rows
+}
+
+/**
+ * 省提名门槛行现查(口径见 SQL.PNP_GATE_REQS);查挂回空(宁可不出卡)。
+ *
+ * @param db 数据库连接。
+ * @returns 门槛行。
+ */
+export async function loadPnpReqs(db: Db): PnpReqsOut {
+  return queryRowsOrEmpty({ db: db, sql: SQL.PNP_GATE_REQS, params: [], map: toPnpReqRow })
 }
 
 /**
@@ -3161,6 +3187,21 @@ export function toPnpOpsRow(r: Row): PnpOpsRow {
   return {
     province: text(r.province), metric: text(r.metric), scopeKind: text(r.scope_kind), streamKey: text(r.stream_key),
     value: count(r.value), asOf: text(r.as_of), period: text(r.period), url: text(r.url),
+  }
+}
+
+/**
+ * PNP_GATE_REQS 一行 → 门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;门槛数值保 null —— 条文行官方没给数,折 0 = 替官方编数)。
+ *
+ * @param r 原始行。
+ * @returns 门槛行。
+ */
+export function toPnpReqRow(r: Row): PnpReqRow {
+  return {
+    province: text(r.province), stream: text(r.stream), subject: text(r.subject), factor: text(r.factor),
+    op: text(r.op), value: numOrNull(r.value), unit: text(r.unit), appliesTeer: text(r.applies_teer),
+    appliesNoc: text(r.applies_noc), appliesArea: text(r.applies_area), appliesCondition: text(r.applies_condition),
+    basis: text(r.basis), label: text(r.label), valueText: text(r.value_text), url: text(r.url), seq: count(r.seq),
   }
 }
 

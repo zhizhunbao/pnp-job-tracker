@@ -469,6 +469,224 @@ export const QUOTA_KEY_LABEL = 'l'
 export const YEAR_LEN = 4
 
 /**
+ * 「本岗通道的门槛」卡:本岗 PNP 格写的具名通道 → 门槛表(pnp_requirements.stream)里对应的官方流(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;
+ * 先上 AB,没登记的通道不出卡)。键同 NAMED_DRAW_STREAMS(岗位行 pnpStream 原值);流名逐字照门槛表(含长破折号)。
+ * 医疗专线有 EE / 非 EE 两版,登非 EE 版(持 offer 在阿省工作、没有 EE 档案也能走的那一版);警务专线是 EE 流的一支,
+ * 官方资格页只写了 EE 流的最低要求。
+ */
+export const NAMED_REQ_STREAMS: Record<string, string[]> = {
+  /**
+   * 阿省科技加速专线:EE 流最低要求 + 专线两条。
+   */
+  'AB 科技': ['AAIP Alberta Express Entry Stream', 'AAIP Alberta Express Entry Stream — Accelerated Tech Pathway'],
+
+  /**
+   * 阿省医护专项(非 EE 版)。
+   */
+  'AB 医疗': ['AAIP Dedicated Health Care Pathway — Non-Express Entry'],
+
+  /**
+   * 阿省乡村振兴流。
+   */
+  'AB 乡村振兴': ['AAIP Rural Renewal Stream'],
+
+  /**
+   * 阿省旅游酒店流(2026-09-27 同批从官方资格页补抓的五条)。
+   */
+  'AB 旅游酒店': ['AAIP Tourism and Hospitality Stream'],
+
+  /**
+   * 阿省警务专线(EE 流最低要求)。
+   */
+  'AB 警务': ['AAIP Alberta Express Entry Stream'],
+}
+
+/**
+ * 同上,本岗 PNP 格没写具名通道、落省默认通道时:省码 → 门槛表里的流(口径同 GEN_DRAW_STREAM)。
+ */
+export const GEN_REQ_STREAMS: Record<string, string[]> = {
+  /**
+   * 阿省默认通道 = Alberta Opportunity Stream。
+   */
+  AB: ['AAIP Alberta Opportunity Stream'],
+}
+
+/**
+ * 门槛卡读的因素名(门槛表 factor 列原值)。
+ */
+export const GATE_F = {
+  /**
+   * offer 形态(全职 / 不收哪几种;汇装从 PROV_OFFER_BLOCKED 出的行)。
+   */
+  offerForm: 'offerForm',
+
+  /**
+   * 语言。
+   */
+  language: 'language',
+
+  /**
+   * 工作经验。
+   */
+  experience: 'experience',
+
+  /**
+   * 联邦 EE 档案。
+   */
+  eeProfile: 'eeProfile',
+
+  /**
+   * 符合 CEC / FSW / FST。
+   */
+  eeProgram: 'eeProgram',
+
+  /**
+   * CRS 分数线。
+   */
+  crs: 'crs',
+
+  /**
+   * 雇主经营年限。
+   */
+  empYears: 'empYears',
+
+  /**
+   * 雇主年收入。
+   */
+  empRevenue: 'empRevenue',
+
+  /**
+   * 雇主全职员工数。
+   */
+  empStaff: 'empStaff',
+
+  /**
+   * 各流的 offer 条文(只拿来点开看原句)。
+   */
+  jobOffer: 'jobOffer',
+
+  /**
+   * 指定社区推荐信。
+   */
+  endorse: 'communityEndorsement',
+
+  /**
+   * 职业执照或注册。
+   */
+  licensing: 'licensing',
+}
+
+/**
+ * 门槛卡的行键(React 列表键,也是开合状态的键)。
+ */
+export const GATE_ROW = {
+  /**
+   * 雇主 offer。
+   */
+  offer: 'offer',
+
+  /**
+   * 语言。
+   */
+  lang: 'lang',
+
+  /**
+   * 工作经验。
+   */
+  exp: 'exp',
+
+  /**
+   * EE。
+   */
+  ee: 'ee',
+
+  /**
+   * 雇主。
+   */
+  emp: 'emp',
+
+  /**
+   * 其他。
+   */
+  other: 'other',
+}
+
+/**
+ * 门槛表里雇主侧的主体值。
+ */
+export const GATE_SUBJECT_EMPLOYER = 'employer'
+
+/**
+ * 门槛表「不低于」算子。
+ */
+export const GATE_OP_GE = '>='
+
+/**
+ * 语言门槛的单位。
+ */
+export const GATE_UNIT_CLB = 'CLB'
+
+/**
+ * 经验门槛的单位。
+ */
+export const GATE_UNIT_MONTHS = 'months'
+
+/**
+ * 阿省境内经验替代行的条件标记(门槛表 appliesCondition 原值)。
+ */
+export const GATE_COND_LOCAL = 'ab-local-experience'
+
+/**
+ * 口径包的分隔符(`k=v;k=v`)。
+ */
+export const BASIS_SEP = ';'
+
+/**
+ * 口径包里键与值之间的等号。
+ */
+export const BASIS_KV = '='
+
+/**
+ * 口径包的窗口期键(近 N 个月内)。
+ */
+export const BASIS_WINDOW = 'windowMonths'
+
+/**
+ * 口径包的「同雇主在职」标记。
+ */
+export const BASIS_TENURE = 'employerTenure'
+
+/**
+ * 口径包的编码值键(offer 形态行:过不了的工时 / 雇佣期取值)。
+ */
+export const BASIS_VALUE_CODE = 'valueCode'
+
+/**
+ * 编码值里取值之间的分隔符。
+ */
+export const VALUE_CODE_SEP = ','
+
+/**
+ * 「不收」清单的显示顺序(照官方原句「part-time, casual or seasonal」的次序,合同工殿后)。
+ */
+export const GATE_FORM_ORDER = ['part', 'casual', 'seasonal', 'term']
+
+/**
+ * 「不收」清单一项的文案键前缀。
+ */
+export const GATE_FORM_HEAD = 'pnpgate.no.'
+
+/**
+ * 工时档的文案键前缀(同职位板的 `emp.full` / `emp.part`)。
+ */
+export const GATE_EMP_HEAD = 'emp.'
+
+/**
+ * 雇佣期档的文案键前缀(同职位板的 `term.permanent` 等)。
+ */
+export const GATE_TERM_HEAD = 'term.'
+
+/**
  * 魁省省码(走自己的体系,不属 PNP)。
  */
 export const PROV_QC = 'QC'
@@ -644,6 +862,11 @@ export const SCROLL_BLOCK = 'nearest'
  * 裸 <button> 一律改经 button 族):ghost 底最素,视觉全由本域的加倍类定形。
  */
 export const PLAIN_BTN_KIND = 'ghost'
+
+/**
+ * 卡片标题行右端「来源 ↗」那颗钮的档(2026-09-27 Frank「这个来源看着很突兀 按钮」→ 选「描边小钮」):白底蓝字细边,配 sm 小号。
+ */
+export const SRC_BTN_KIND = 'secondary'
 
 /**
  * 清单兜底:即便一条都没命中,也至少显这么多条。

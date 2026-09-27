@@ -49,7 +49,7 @@ import type { FieldFactsIn } from './types'
 export function FieldFacts({ field, f }: FieldFactsIn) {
   if (field === FIELD_PNP) {
     return (
-      <PnpListSection job={f.job} lang={f.lang} occ={f.pnpOcc} draws={f.pnpDraws} ops={f.pnpOps}
+      <PnpListSection job={f.job} lang={f.lang} occ={f.pnpOcc} draws={f.pnpDraws} ops={f.pnpOps} reqs={f.pnpReqs}
         profileClb={f.profileClb} nocDesc={f.nocDesc} showZh={f.showZh} />
     )
   }

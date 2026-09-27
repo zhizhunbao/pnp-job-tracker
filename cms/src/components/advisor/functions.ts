@@ -51,7 +51,7 @@ import {
 } from './constants'
 import type {
   ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
-  AdvisorPnpData, AdvisorPnpOps, LoadPnpDataIn, PnpDataJson,
+  AdvisorPnpData, AdvisorPnpOps, AdvisorPnpReqs, LoadPnpDataIn, PnpDataJson,
   AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
   CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   DiffCellFact,
@@ -1523,7 +1523,11 @@ function toPnpData(j: PnpDataJson): AdvisorPnpData | null {
   if (j.pnpOps != null) {
     ops = j.pnpOps
   }
-  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops }
+  let reqs: AdvisorPnpReqs = []
+  if (j.pnpReqs != null) {
+    reqs = j.pnpReqs
+  }
+  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs }
 }
 
 /**
@@ -1534,7 +1538,7 @@ function toPnpData(j: PnpDataJson): AdvisorPnpData | null {
  */
 export function pnpDataOf(data: AdvisorPnpData | null): AdvisorPnpData {
   if (data == null) {
-    return { occ: [], draws: [], ops: [] }
+    return { occ: [], draws: [], ops: [], reqs: [] }
   }
   return data
 }

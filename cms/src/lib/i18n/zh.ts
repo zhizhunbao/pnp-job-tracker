@@ -599,7 +599,8 @@ export const jobsZh = {
   'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
   'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
-  'pnpdraws.head': '本省最近抽选',
+  // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
+  'pnpdraws.head': '本省抽选',
   // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月公布的那一组(NS)组头计数写几个月,不写几轮
   'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
   // 2026-09-27 Frank 勾「安省改一行组头」:改制省那一行没抽选时写这一句;原现状卡「已发邀请 / 暂无」两条随卡退役
@@ -608,6 +609,18 @@ export const jobsZh = {
   'pnpquota.title': '{year} 年配额', 'pnpquota.total': '总数', 'pnpquota.issued': '已发提名',
   'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
   'pnpdraws.ytdInv': '{year} 年已发 {n} 份邀请', 'pnpdraws.ytdSel': '{year} 年已入选 {n} 人',
+  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
+  'pnpgate.title': '本岗通道的门槛', 'pnpgate.sep': '、', 'pnpgate.mine': '本岗 {v}',
+  'pnpgate.k.offer': '雇主 offer', 'pnpgate.k.lang': '语言', 'pnpgate.k.exp': '工作经验', 'pnpgate.k.ee': 'EE',
+  'pnpgate.k.emp': '雇主', 'pnpgate.k.other': '其他',
+  'pnpgate.offerFull': '全职', 'pnpgate.offerNot': '不收{list}', 'pnpgate.no.part': '兼职', 'pnpgate.no.casual': '临时工',
+  'pnpgate.no.seasonal': '季节工', 'pnpgate.no.term': '合同工',
+  'pnpgate.lang': '英语或法语每项 CLB {n}',
+  'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
+  'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省工作 {n} 个月(近 {w} 个月内)',
+  'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
+  'pnpgate.empYears': '在本省经营满 {n} 个财年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
+  'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、

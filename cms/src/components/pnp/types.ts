@@ -112,6 +112,16 @@ export type PnpJob = {
   pnpStream: string
 
   /**
+   * 工时(full / part);'' = 原帖没写(门槛卡「雇主 offer」行摆本岗对照;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
+   */
+  employmentHours: string
+
+  /**
+   * 雇佣期(permanent / term / casual / seasonal);'' = 原帖没写(同上)。
+   */
+  employmentTerm: string
+
+  /**
    * EE 类别命中。
    */
   eeCategory: string
@@ -980,12 +990,7 @@ export type ChannelSpec = {
  */
 export type SourceLink = {
   /**
-   * 标签(「来源」)。
-   */
-  label: string
-
-  /**
-   * 链接字(站名 + 新开页记号)。
+   * 钮上的字(「来源 ↗」;2026-09-27 Frank「这个来源看着很突兀 按钮」→ 选「描边小钮」,站名不再上钮,原先「来源」标签 + 站名两格并成这一格)。
    */
   text: string
 
@@ -1244,6 +1249,356 @@ export type PnpQuotaCardIn = {
    * 洗好的卡。
    */
   spec: QuotaCardSpec
+}
+
+/**
+ * 省提名门槛表的一行(lib/jobs PNP_GATE_REQS 洗净后整份透传;本域只声明真读的格,2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
+ */
+export type PnpReq = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 官方流名。
+   */
+  stream: string
+
+  /**
+   * 主体:applicant / employer / offer。
+   */
+  subject: string
+
+  /**
+   * 因素(见 GATE_F)。
+   */
+  factor: string
+
+  /**
+   * 算子。
+   */
+  op: string
+
+  /**
+   * 门槛数值;条文行与编码行是 null。
+   */
+  value: number | null
+
+  /**
+   * 单位;条文行给 ''。
+   */
+  unit: string
+
+  /**
+   * 只对这几档 TEER 生效(逗号串);'' = 不限。
+   */
+  appliesTeer: string
+
+  /**
+   * 只对这几个职业码前缀生效(逗号串);'' = 不限。
+   */
+  appliesNoc: string
+
+  /**
+   * 只对这个区域生效;'' = 全省。
+   */
+  appliesArea: string
+
+  /**
+   * 非地域的适用条件;'' = 对谁都适用。
+   */
+  appliesCondition: string
+
+  /**
+   * 口径包(`k=v;k=v`)。
+   */
+  basis: string
+
+  /**
+   * 英文摘要或官方原文。
+   */
+  label: string
+
+  /**
+   * 官方原文(逐字);'' = 原文就在 label 里。
+   */
+  valueText: string
+
+  /**
+   * 出处页。
+   */
+  url: string
+}
+
+/**
+ * 门槛卡一行点开后的一句官方原文。
+ */
+export type GateQuote = {
+  /**
+   * React 列表键。
+   */
+  key: string
+
+  /**
+   * 原文(逐字,英文)。
+   */
+  text: string
+}
+
+/**
+ * 门槛卡的一行(行名 - 值;值点开看原句)。
+ */
+export type GateRowSpec = {
+  /**
+   * 行键(见 GATE_ROW)。
+   */
+  key: string
+
+  /**
+   * 行名(雇主 offer / 语言 …)。
+   */
+  label: string
+
+  /**
+   * 值,一行一条(经验的「或」款另起一行)。
+   */
+  lines: string[]
+
+  /**
+   * 值下的灰字(雇主 offer 那行摆本岗的工时 / 雇佣期);'' = 不出。
+   */
+  sub: string
+
+  /**
+   * 点开露出的官方原文。
+   */
+  quotes: GateQuote[]
+}
+
+/**
+ * 「本岗通道的门槛」卡(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
+ */
+export type GateCardSpec = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 标题右端的官方来源;认不出站名给 null。
+   */
+  source: SourceLink | null
+
+  /**
+   * 行。
+   */
+  rows: GateRowSpec[]
+}
+
+/**
+ * gateCardOf 的入参。
+ */
+export type GateCardOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 门槛表(全国)。
+   */
+  reqs: PnpReq[]
+}
+
+/**
+ * 门槛卡各行构造器的共同入参。
+ */
+export type GateRowOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 本省全部门槛行(offer 形态与雇主三项是全省一份)。
+   */
+  mine: PnpReq[]
+
+  /**
+   * 本岗通道那几条流的门槛行。
+   */
+  chan: PnpReq[]
+}
+
+/**
+ * gateUrlOf 的入参。
+ */
+export type GateUrlIn = {
+  /**
+   * 本岗通道那几条流的门槛行。
+   */
+  chan: PnpReq[]
+}
+
+/**
+ * rowOfFactor 的入参。
+ */
+export type RowOfFactorIn = {
+  /**
+   * 门槛行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 因素名。
+   */
+  factor: string
+}
+
+/**
+ * langPickOf 的入参。
+ */
+export type LangPickIn = {
+  /**
+   * 本岗通道的语言行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+}
+
+/**
+ * nocHitOf 的入参。
+ */
+export type NocHitIn = {
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 门槛行的职业码前缀(逗号串)。
+   */
+  applies: string
+}
+
+/**
+ * teerHitOf 的入参。
+ */
+export type TeerHitIn = {
+  /**
+   * 本岗 TEER;null = 未分类。
+   */
+  teer: number | null
+
+  /**
+   * 门槛行的 TEER 档(逗号串)。
+   */
+  applies: string
+}
+
+/**
+ * basisValueOf / basisHasOf 的入参。
+ */
+export type BasisKeyIn = {
+  /**
+   * 口径包。
+   */
+  basis: string
+
+  /**
+   * 键。
+   */
+  key: string
+}
+
+/**
+ * expLineOf 的入参。
+ */
+export type ExpLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 经验行。
+   */
+  r: PnpReq
+
+  /**
+   * 月数(调用方已判过不是 null)。
+   */
+  n: number
+}
+
+/**
+ * mineLineOf 的入参。
+ */
+export type MineLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+}
+
+/**
+ * PnpGateCard 的 props。
+ */
+export type PnpGateCardIn = {
+  /**
+   * 洗好的卡。
+   */
+  spec: GateCardSpec
+
+  /**
+   * 展开着的行。
+   */
+  open: Set<string>
+
+  /**
+   * 行的开合手柄工厂。
+   */
+  toggleOf: ToggleOfFn
+}
+
+/**
+ * PnpGateValue(门槛卡一行的值格)的 props。
+ */
+export type PnpGateValueIn = {
+  /**
+   * 这一行。
+   */
+  row: GateRowSpec
+
+  /**
+   * 展开着没有。
+   */
+  open: boolean
+
+  /**
+   * 开合手柄。
+   */
+  onToggle: ClickFn
 }
 
 /**
@@ -1525,6 +1880,11 @@ export type PnpListSectionIn = {
    * 当年省提名配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;给「{年} 年配额」卡与抽选卡「全年已邀请」那一行)。
    */
   ops: PnpOps[]
+
+  /**
+   * 省提名门槛表(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;给「本岗通道的门槛」卡)。
+   */
+  reqs: PnpReq[]
 
   /**
    * 档案语言分(调用方仍在传,本块**不读** —— E12-09 自评打分已迁到「移民路径」页,
@@ -1901,6 +2261,16 @@ export type PnpListPanel = {
    * 本省抽选卡组的开合手柄工厂。
    */
   drawToggleOf: ToggleOfFn
+
+  /**
+   * 门槛卡展开着的行(默认全收:值一行就是摘要,点开看原句;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
+   */
+  gateOpen: Set<string>
+
+  /**
+   * 门槛卡行的开合手柄工厂。
+   */
+  gateToggleOf: ToggleOfFn
 
   /**
    * 本岗能走的通道(弹框顶上那张卡;2026-09-26)。

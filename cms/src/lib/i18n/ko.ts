@@ -549,7 +549,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnplist.qc': '퀘벡주는 자체 선발(CSQ/Arrima)을 사용하므로 PNP 대상 아님',
   'pnpdraws.title': '최근 추첨 {label}', 'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청', 'pnpdraws.sel': '{n}건 선정',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
-  'pnpdraws.head': '최근 추첨',
+  // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
+  'pnpdraws.head': '주 추첨',
   // 2026-09-27 월별 공개 그룹(NS): 회차가 아니라 개월 수로 표시
   'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
   // 2026-09-27 개편 주(ON) 행: 추첨이 아직 없을 때; 현황 카드의 두 라벨은 카드와 함께 삭제
@@ -558,6 +559,19 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   'pnpdraws.ytdInv': '{year}년 초청 {n}건', 'pnpdraws.ytdSel': '{year}년 선정 {n}명',
+  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
+  'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ', 'pnpgate.mine': '이 직무: {v}',
+  'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',
+  'pnpgate.k.emp': '고용주', 'pnpgate.k.other': '기타',
+  'pnpgate.offerFull': '풀타임', 'pnpgate.offerNot': '{list} 제외', 'pnpgate.no.part': '파트타임', 'pnpgate.no.casual': '임시직',
+  'pnpgate.no.seasonal': '계절직', 'pnpgate.no.term': '계약직',
+  'pnpgate.lang': '영어 또는 프랑스어 영역별 CLB {n}',
+  'pnpgate.exp': '풀타임 경력 {n}개월', 'pnpgate.expWin': '최근 {w}개월 내 풀타임 경력 {n}개월',
+  'pnpgate.expTenure': '현 고용주에서 풀타임 {n}개월', 'pnpgate.expLocal': '또는 최근 {w}개월 내 {prov}에서 {n}개월',
+  'pnpgate.eeProfile': 'Express Entry 프로필', 'pnpgate.eeProgram': 'CEC, FSW 또는 FST 충족', 'pnpgate.crs': 'CRS ≥ {n}',
+  'pnpgate.empYears': '{prov}에서 {n}회계연도 이상 운영', 'pnpgate.empRevenue': '연매출 ≥ ${n}',
+  'pnpgate.empStaff': '풀타임 직원 ≥ {n}명',
+  'pnpgate.endorse': '지정 커뮤니티 추천서', 'pnpgate.licensing': '직종 면허 또는 등록',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드

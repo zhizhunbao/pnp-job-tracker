@@ -3740,6 +3740,11 @@ export type JobsCache = {
   pnpOps: PnpOpsCache | null
 
   /**
+   * 省提名门槛行(10 分钟 TTL,同配额行;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」);null = 冷。
+   */
+  pnpReqs: PnpReqsCache | null
+
+  /**
    * WHERE 签名 → 总数微缓存(30s;300 组防涨)。
    */
   counts: Map<string, CountSlot>
@@ -4941,6 +4946,111 @@ export type PnpOpsCache = {
    * 当年配额行。
    */
   rows: PnpOpsRow[]
+
+  /**
+   * 拉到的时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * 省提名弹框「本岗通道的门槛」卡的一行原料(PNP_GATE_REQS 洗净;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
+ */
+export type PnpReqRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 官方流名(offer 形态那行是「Job offer (all streams)」,雇主三项是该省「all streams」那条)。
+   */
+  stream: string
+
+  /**
+   * 主体:applicant / employer / offer(offer 形态门槛)。
+   */
+  subject: string
+
+  /**
+   * 因素(language / experience / crs / empYears …;offer 形态是 offerForm)。
+   */
+  factor: string
+
+  /**
+   * 算子(>= / rule / notIn …)。
+   */
+  op: string
+
+  /**
+   * 门槛数值;条文行与编码行是 null(官方没给数,不折 0)。
+   */
+  value: number | null
+
+  /**
+   * 单位(CLB / months / CAD/yr …);条文行给 ''。
+   */
+  unit: string
+
+  /**
+   * 只对这几档 TEER 生效(逗号串);'' = 不限。
+   */
+  appliesTeer: string
+
+  /**
+   * 只对这几个职业码前缀生效(逗号串);'' = 不限。
+   */
+  appliesNoc: string
+
+  /**
+   * 只对这个区域生效;'' = 全省。
+   */
+  appliesArea: string
+
+  /**
+   * 非地域的适用条件(如 ab-local-experience);'' = 对谁都适用。
+   */
+  appliesCondition: string
+
+  /**
+   * 口径包(`k=v;k=v`:windowMonths / employerTenure / valueCode …);'' = 没有。
+   */
+  basis: string
+
+  /**
+   * 英文摘要或官方原文。
+   */
+  label: string
+
+  /**
+   * 官方原文(逐字);'' = 原文就在 label 里。
+   */
+  valueText: string
+
+  /**
+   * 出处页。
+   */
+  url: string
+
+  /**
+   * 表内序号。
+   */
+  seq: number
+}
+
+/**
+ * `loadPnpReqs` / `getPnpReqs` 的返回。
+ */
+export type PnpReqsOut = Promise<PnpReqRow[]>
+
+/**
+ * 门槛行缓存的一格。
+ */
+export type PnpReqsCache = {
+  /**
+   * 门槛行。
+   */
+  rows: PnpReqRow[]
 
   /**
    * 拉到的时刻(毫秒)。

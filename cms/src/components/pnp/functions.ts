@@ -38,6 +38,9 @@ import {
   SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD,
   TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
+  BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL, GATE_EMP_HEAD, GATE_F,
+  GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_TERM_HEAD, GATE_UNIT_CLB,
+  GATE_UNIT_MONTHS, GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
@@ -58,6 +61,8 @@ import type {
   PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow,
   ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn, SponsorLinesIn, SponsorShowIn, StreamRowSpec,
   StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
+  BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateQuote, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
+  MineLineIn, NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
 } from './types'
 import css from './pnp.module.css'
 
@@ -717,13 +722,14 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  *
  * @param x 取词函数与数据层记的官方页地址。
  * @returns 来源链接;认不出站名给 null(不出)。
+ * 2026-09-27 Frank「这个来源看着很突兀 按钮」→ 选「描边小钮」:钮上只写「来源 ↗」,站名只用来认出这是个像样的网址。
  */
 function sourceLinkOf(x: SourceLinkIn): SourceLink | null {
   const m = HOST_RE.exec(x.url)
   if (m == null || m.groups == null || m.groups.host == null) {
     return null
   }
-  return { label: x.t('col.source'), text: m.groups.host + LINK_ARROW, href: x.url }
+  return { text: x.t('col.source') + LINK_ARROW, href: x.url }
 }
 
 /**
@@ -1447,6 +1453,483 @@ function yearOf(r: PnpOps): string {
   return r.asOf.slice(0, YEAR_LEN)
 }
 
+/**
+ * 「本岗通道的门槛」卡(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」,看过效果图;版式照公司信息卡「行名 - 值」一行一条):
+ * 行 = 雇主 offer / 语言 / 工作经验 / EE / 雇主 / 其他,只出本岗通道官方有的项 —— 门槛表(pnp_requirements)里挑,挑不到的行
+ * 不出;本岗通道那几条流一行门槛都没有就不出卡(只剩全省那两行会读成门槛只有这些)。语言按本岗职业码 → TEER → 不限挑那一档;
+ * 每行点开看官方原句。只陈列门槛,不判「你够不够」。本岗通道 → 门槛表里的流靠 NAMED_REQ_STREAMS / GEN_REQ_STREAMS 对照
+ * (先上 AB,别的省没登记就不出卡)。
+ *
+ * @param x 取词函数、本岗与门槛表。
+ * @returns 门槛卡;本岗通道没登记对照或没有门槛行给 null。
+ */
+export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
+  const streams = gateStreamsOf(x.job)
+  if (streams.length === 0) {
+    return null
+  }
+  const mine: PnpReq[] = []
+  const chan: PnpReq[] = []
+  for (const r of x.reqs) {
+    if (r.province !== x.job.province) {
+      continue
+    }
+    mine.push(r)
+    if (streams.includes(r.stream)) {
+      chan.push(r)
+    }
+  }
+  if (chan.length === 0) {
+    return null
+  }
+  const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
+  const rows: GateRowSpec[] = []
+  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), eeRowOf(one), empRowOf(one), otherRowOf(one)]) {
+    if (row != null) {
+      rows.push(row)
+    }
+  }
+  return { title: x.t('pnpgate.title'), source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan }) }), rows }
+}
+
+/**
+ * 本岗通道在门槛表里对应哪几条流(口径同 drawHitStreamsOf:具名通道查 NAMED_REQ_STREAMS,落省默认通道查 GEN_REQ_STREAMS)。
+ *
+ * @param job 本岗。
+ * @returns 流名;没登记给空数组。
+ */
+function gateStreamsOf(job: PnpJob): string[] {
+  if (job.pnpStream !== TEXT_NONE) {
+    const named = NAMED_REQ_STREAMS[job.pnpStream]
+    if (named == null) {
+      return []
+    }
+    return named
+  }
+  if (job.pnpEligible === false) {
+    return []
+  }
+  const s = GEN_REQ_STREAMS[job.province]
+  if (s == null) {
+    return []
+  }
+  return s
+}
+
+/**
+ * 标题右端来源的出处页:本岗通道第一条带网址的门槛行。
+ *
+ * @param x 本岗通道的门槛行。
+ * @returns 网址;都没有给 ''。
+ */
+function gateUrlOf(x: GateUrlIn): string {
+  for (const r of x.chan) {
+    if (r.url !== TEXT_NONE) {
+      return r.url
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「雇主 offer」行:全职 + 不收哪几种(offer 形态行的编码值,按 GATE_FORM_ORDER 排),下面灰字摆本岗的工时 / 雇佣期;
+ * 点开是 offer 形态原文与本岗通道各流的 offer 条文。
+ * 同日 375 实拍:「全职」与「不收……」分两行(一行一条;挤一行时窄屏折断在词中间)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本省没登记 offer 形态给 null。
+ */
+function offerRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const form = rowOfFactor({ rows: x.mine, factor: GATE_F.offerForm })
+  if (form == null) {
+    return null
+  }
+  const code = basisValueOf({ basis: form.basis, key: BASIS_VALUE_CODE }).split(VALUE_CODE_SEP)
+  const names: string[] = []
+  for (const f of GATE_FORM_ORDER) {
+    if (code.includes(f)) {
+      names.push(x.t(GATE_FORM_HEAD + f))
+    }
+  }
+  if (names.length === 0) {
+    return null
+  }
+  const quoted = [form]
+  for (const r of x.chan) {
+    if (r.factor === GATE_F.jobOffer) {
+      quoted.push(r)
+    }
+  }
+  return {
+    key: GATE_ROW.offer,
+    label: x.t('pnpgate.k.offer'),
+    lines: [x.t('pnpgate.offerFull'), capFirstOf(x.t('pnpgate.offerNot', { list: names.join(x.t('pnpgate.sep')) }))],
+    sub: mineLineOf({ t: x.t, job: x.job }),
+    quotes: quotesOf(quoted),
+  }
+}
+
+/**
+ * 「本岗 全职、长期」那行灰字(工时、雇佣期用职位板同一套词;原帖都没写给「原帖未写明」)。
+ *
+ * @param x 取词函数与本岗。
+ * @returns 灰字。
+ */
+function mineLineOf(x: MineLineIn): string {
+  const parts: string[] = []
+  if (x.job.employmentHours !== TEXT_NONE) {
+    parts.push(x.t(GATE_EMP_HEAD + x.job.employmentHours))
+  }
+  if (x.job.employmentTerm !== TEXT_NONE) {
+    parts.push(x.t(GATE_TERM_HEAD + x.job.employmentTerm))
+  }
+  let v = x.t('fact.unstated')
+  if (parts.length > 0) {
+    v = parts.join(x.t('pnpgate.sep'))
+  }
+  return x.t('pnpgate.mine', { v })
+}
+
+/**
+ * 「语言」行:本岗通道的 CLB 门槛挑一档(职业码点名的 → 本岗 TEER 那档 → 不限档)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;挑不出给 null。
+ */
+function langRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const langs: PnpReq[] = []
+  for (const r of x.chan) {
+    if (r.factor === GATE_F.language && r.op === GATE_OP_GE && r.unit === GATE_UNIT_CLB && r.value != null) {
+      langs.push(r)
+    }
+  }
+  const row = langPickOf({ rows: langs, job: x.job })
+  if (row == null || row.value == null) {
+    return null
+  }
+  return {
+    key: GATE_ROW.lang,
+    label: x.t('pnpgate.k.lang'),
+    lines: [x.t('pnpgate.lang', { n: row.value })],
+    sub: TEXT_NONE,
+    quotes: quotesOf([row]),
+  }
+}
+
+/**
+ * 在语言行里挑本岗那一档:职业码前缀点名的最具体,其次本岗 TEER 所在的档,最后不限 TEER 也不限职业的那行。
+ *
+ * @param x 语言行与本岗。
+ * @returns 那一行;都不适用给 null。
+ */
+function langPickOf(x: LangPickIn): PnpReq | null {
+  let byTeer: PnpReq | null = null
+  let general: PnpReq | null = null
+  for (const r of x.rows) {
+    if (r.appliesNoc !== TEXT_NONE) {
+      if (nocHitOf({ noc: x.job.noc, applies: r.appliesNoc })) {
+        return r
+      }
+      continue
+    }
+    if (r.appliesTeer !== TEXT_NONE) {
+      if (byTeer == null && teerHitOf({ teer: x.job.teer, applies: r.appliesTeer })) {
+        byTeer = r
+      }
+      continue
+    }
+    if (general == null) {
+      general = r
+    }
+  }
+  if (byTeer != null) {
+    return byTeer
+  }
+  return general
+}
+
+/**
+ * 本岗职业码落不落在门槛行点名的前缀里。
+ *
+ * @param x 职业码与前缀串。
+ * @returns 落在给 true。
+ */
+function nocHitOf(x: NocHitIn): boolean {
+  if (x.noc === TEXT_NONE) {
+    return false
+  }
+  for (const p of x.applies.split(VALUE_CODE_SEP)) {
+    const head = p.trim()
+    if (head !== TEXT_NONE && x.noc.startsWith(head)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 本岗 TEER 在不在门槛行的 TEER 档里。
+ *
+ * @param x TEER 与档位串。
+ * @returns 在给 true;本岗未分类给 false。
+ */
+function teerHitOf(x: TeerHitIn): boolean {
+  if (x.teer == null) {
+    return false
+  }
+  for (const p of x.applies.split(VALUE_CODE_SEP)) {
+    if (p.trim() === String(x.teer)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 「工作经验」行:通用那条(近 N 个月内 / 同雇主在职)一行,阿省境内替代款「或……」另起一行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有按月计的经验门槛给 null。
+ */
+function expRowOf(x: GateRowOfIn): GateRowSpec | null {
+  let main: PnpReq | null = null
+  let local: PnpReq | null = null
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (r.appliesCondition === TEXT_NONE && main == null) {
+      main = r
+    }
+    if (r.appliesCondition === GATE_COND_LOCAL && local == null) {
+      local = r
+    }
+  }
+  if (main == null || main.value == null) {
+    return null
+  }
+  const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
+  const quoted = [main]
+  if (local != null && local.value != null) {
+    const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
+    if (w !== TEXT_NONE) {
+      lines.push(x.t('pnpgate.expLocal', { n: local.value, w, prov: x.t(PROV_KEY_HEAD + x.job.province) }))
+      quoted.push(local)
+    }
+  }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, sub: TEXT_NONE, quotes: quotesOf(quoted) }
+}
+
+/**
+ * 通用经验那一条的写法:同雇主在职 / 近 N 个月内 / 只写月数。
+ *
+ * @param x 取词函数、经验行与月数。
+ * @returns 文案。
+ */
+function expLineOf(x: ExpLineIn): string {
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_TENURE })) {
+    return x.t('pnpgate.expTenure', { n: x.n })
+  }
+  const w = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW })
+  if (w !== TEXT_NONE) {
+    return x.t('pnpgate.expWin', { n: x.n, w })
+  }
+  return x.t('pnpgate.exp', { n: x.n })
+}
+
+/**
+ * 「EE」行(科技、警务这类 EE 流):联邦 EE 档案、符合 CEC / FSW / FST、CRS 线,有哪条列哪条。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道不是 EE 流给 null。
+ */
+function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const parts: string[] = []
+  const quoted: PnpReq[] = []
+  const profile = rowOfFactor({ rows: x.chan, factor: GATE_F.eeProfile })
+  if (profile != null) {
+    parts.push(x.t('pnpgate.eeProfile'))
+    quoted.push(profile)
+  }
+  const program = rowOfFactor({ rows: x.chan, factor: GATE_F.eeProgram })
+  if (program != null) {
+    parts.push(x.t('pnpgate.eeProgram'))
+    quoted.push(program)
+  }
+  const crs = rowOfFactor({ rows: x.chan, factor: GATE_F.crs })
+  if (crs != null && crs.value != null) {
+    parts.push(x.t('pnpgate.crs', { n: crs.value }))
+    quoted.push(crs)
+  }
+  if (parts.length === 0) {
+    return null
+  }
+  return {
+    key: GATE_ROW.ee,
+    label: x.t('pnpgate.k.ee'),
+    lines: parts.map(capFirstOf),
+    sub: TEXT_NONE,
+    quotes: quotesOf(quoted),
+  }
+}
+
+/**
+ * 「雇主」行:本省雇主侧三项(经营年限 / 年收入 / 全职员工),只取不分区的全省那档(分区的省后面批次再接)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本省没有雇主侧门槛给 null。
+ */
+function empRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const emp: PnpReq[] = []
+  for (const r of x.mine) {
+    if (r.subject === GATE_SUBJECT_EMPLOYER && r.appliesArea === TEXT_NONE && r.value != null) {
+      emp.push(r)
+    }
+  }
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const parts: string[] = []
+  const quoted: PnpReq[] = []
+  const years = rowOfFactor({ rows: emp, factor: GATE_F.empYears })
+  if (years != null && years.value != null) {
+    parts.push(x.t('pnpgate.empYears', { n: years.value, prov }))
+    quoted.push(years)
+  }
+  const revenue = rowOfFactor({ rows: emp, factor: GATE_F.empRevenue })
+  if (revenue != null && revenue.value != null) {
+    parts.push(x.t('pnpgate.empRevenue', { n: revenue.value.toLocaleString(NUM_LOCALE) }))
+    quoted.push(revenue)
+  }
+  const staff = rowOfFactor({ rows: emp, factor: GATE_F.empStaff })
+  if (staff != null && staff.value != null) {
+    parts.push(x.t('pnpgate.empStaff', { n: staff.value }))
+    quoted.push(staff)
+  }
+  if (parts.length === 0) {
+    return null
+  }
+  return {
+    key: GATE_ROW.emp,
+    label: x.t('pnpgate.k.emp'),
+    lines: parts.map(capFirstOf),
+    sub: TEXT_NONE,
+    quotes: quotesOf(quoted),
+  }
+}
+
+/**
+ * 「其他」行:指定社区推荐信、职业执照或注册(乡村振兴、医护专项这类流才有)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;都没有给 null。
+ */
+function otherRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const parts: string[] = []
+  const quoted: PnpReq[] = []
+  const endorse = rowOfFactor({ rows: x.chan, factor: GATE_F.endorse })
+  if (endorse != null) {
+    parts.push(x.t('pnpgate.endorse'))
+    quoted.push(endorse)
+  }
+  const licensing = rowOfFactor({ rows: x.chan, factor: GATE_F.licensing })
+  if (licensing != null) {
+    parts.push(x.t('pnpgate.licensing'))
+    quoted.push(licensing)
+  }
+  if (parts.length === 0) {
+    return null
+  }
+  return {
+    key: GATE_ROW.other,
+    label: x.t('pnpgate.k.other'),
+    lines: parts.map(capFirstOf),
+    sub: TEXT_NONE,
+    quotes: quotesOf(quoted),
+  }
+}
+
+/**
+ * 一行首字母大写(英文各项词条一律小写起头,排第几由数据定,落成行再把行首大写;中文、韩文没有大小写,原样返回)。
+ * 同日 375 实拍后雇主 / EE / 其他三行改一项一行(顿号连成一行窄屏折断在项中间),每项各自成行、各自行首大写。
+ *
+ * @param s 拼好的一行。
+ * @returns 行首大写后的文案。
+ */
+function capFirstOf(s: string): string {
+  if (s === TEXT_NONE) {
+    return s
+  }
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+/**
+ * 门槛行里第一条是这个因素的。
+ *
+ * @param x 门槛行与因素名。
+ * @returns 那一行;没有给 null。
+ */
+function rowOfFactor(x: RowOfFactorIn): PnpReq | null {
+  for (const r of x.rows) {
+    if (r.factor === x.factor) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 几条门槛行 → 点开露出的原文:有逐字原文(valueText)用它,没有用 label(那几条的 label 就是官方原文);同一句只出一次。
+ *
+ * @param rows 门槛行。
+ * @returns 原文。
+ */
+function quotesOf(rows: PnpReq[]): GateQuote[] {
+  const out: GateQuote[] = []
+  const seen = new Set<string>()
+  for (const r of rows) {
+    let text = r.valueText
+    if (text === TEXT_NONE) {
+      text = r.label
+    }
+    if (text === TEXT_NONE || seen.has(text)) {
+      continue
+    }
+    seen.add(text)
+    out.push({ key: text, text })
+  }
+  return out
+}
+
+/**
+ * 口径包里某个键的值(`windowMonths=30;valueCode=part,casual` 里取 windowMonths)。
+ *
+ * @param x 口径包与键。
+ * @returns 值;没有给 ''。
+ */
+function basisValueOf(x: BasisKeyIn): string {
+  const head = x.key + BASIS_KV
+  for (const p of x.basis.split(BASIS_SEP)) {
+    if (p.startsWith(head)) {
+      return p.slice(head.length)
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 口径包里有没有这个标记(`employerTenure` 这种不带值的,或带值的键)。
+ *
+ * @param x 口径包与键。
+ * @returns 有给 true。
+ */
+function basisHasOf(x: BasisKeyIn): boolean {
+  for (const p of x.basis.split(BASIS_SEP)) {
+    if (p === x.key || p.startsWith(x.key + BASIS_KV)) {
+      return true
+    }
+  }
+  return false
+}
+
 
 /**
  * 「查看全省 N 组」那个开关的字(展开后改「收起」,同清单卡末尾的开关)。
@@ -1639,20 +2122,45 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
  * 一组点开后的全部轮次(照抄省抽选表的行;中文名只在组头灰字出一次,各轮不再逐行重复 —— 2026-09-23 Frank
  * 「这种中文灰字翻译只显示一个就行了吧」)。2026-09-26 自 cmpGroupOf 体内原样提出:本岗那一组(featOf)展开的也是这一份。
  * 同晚 featOf 随本岗那一组改组头行撤掉,只剩 cmpGroupOf 一处调用。
+ * 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:各轮同一个流名时通道名也不逐行重复(sameStreamOf)。
  *
  * @param x 取词函数、界面语言与这一组的历次抽选。
  * @returns 展示行。
  */
 function roundRowsOf(x: RoundRowsIn): DrawRowSpec[] {
   const rows: DrawRowSpec[] = []
+  const same = sameStreamOf(x.draws)
   let i = 0
   for (const d of x.draws) {
     const row = toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null })
     row.streamZh = TEXT_NONE
+    if (same) {
+      row.stream = TEXT_NONE
+    }
     rows.push(row)
     i += 1
   }
   return rows
+}
+
+/**
+ * 一组的各轮是不是同一个流名(2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:组头已经写了通道名,各轮是同一个流就不再逐行重复,
+ * 只留日期与分数 / 邀请数;流名不一样的组照旧逐行写,那是真有不同的子流)。
+ *
+ * @param draws 这一组的历次抽选。
+ * @returns 全是同一个流名给 true;空组给 false。
+ */
+function sameStreamOf(draws: PnpDraw[]): boolean {
+  const first = draws[0]
+  if (first == null) {
+    return false
+  }
+  for (const d of draws) {
+    if (d.stream !== first.stream) {
+      return false
+    }
+  }
+  return true
 }
 
 /**

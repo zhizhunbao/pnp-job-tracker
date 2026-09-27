@@ -555,7 +555,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
   'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
-  'pnpdraws.head': 'Recent draws',
+  // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
+  'pnpdraws.head': 'Provincial draws',
   // 2026-09-27 monthly group (NS): the head counts months, not rounds
   'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
   // 2026-09-27 reform-province row (ON) with no rounds yet; the status card's two labels retire
@@ -565,6 +566,23 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
   'pnpquota.asOf': 'As of {date}',
   'pnpdraws.ytdInv': '{n} invitations in {year}', 'pnpdraws.ytdSel': '{n} selected in {year}',
+  // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
+  'pnpgate.title': 'Stream requirements', 'pnpgate.sep': ', ', 'pnpgate.mine': 'This job: {v}',
+  'pnpgate.k.offer': 'Job offer', 'pnpgate.k.lang': 'Language', 'pnpgate.k.exp': 'Experience', 'pnpgate.k.ee': 'EE',
+  'pnpgate.k.emp': 'Employer', 'pnpgate.k.other': 'Other',
+  'pnpgate.offerFull': 'Full-time', 'pnpgate.offerNot': 'not {list}', 'pnpgate.no.part': 'part-time',
+  'pnpgate.no.casual': 'casual',
+  'pnpgate.no.seasonal': 'seasonal', 'pnpgate.no.term': 'fixed-term',
+  'pnpgate.lang': 'CLB {n} in each English or French skill',
+  'pnpgate.exp': '{n} months of full-time experience',
+  'pnpgate.expWin': '{n} months of full-time experience (within the last {w} months)',
+  'pnpgate.expTenure': '{n} months full-time with your current employer',
+  'pnpgate.expLocal': 'or {n} months in {prov} (within the last {w} months)',
+  'pnpgate.eeProfile': 'Express Entry profile', 'pnpgate.eeProgram': 'qualifies for CEC, FSW or FST',
+  'pnpgate.crs': 'CRS ≥ {n}',
+  'pnpgate.empYears': 'operating in {prov} for {n}+ fiscal years', 'pnpgate.empRevenue': 'revenue ≥ ${n}',
+  'pnpgate.empStaff': '≥ {n} full-time staff',
+  'pnpgate.endorse': 'community endorsement letter', 'pnpgate.licensing': 'occupation licensing or registration',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards

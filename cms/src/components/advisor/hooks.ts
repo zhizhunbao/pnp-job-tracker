@@ -471,6 +471,7 @@ export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
     occ: got.occ,
     draws: got.draws,
     ops: got.ops,
+    reqs: got.reqs,
   }
 }
 

@@ -35,6 +35,12 @@ export const CACHE: JobsCache = {
   pnpOps: null,
 
   /**
+   * 省提名门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」):/api/jobs/pnp 随配额行一起给弹框的「本岗通道的门槛」卡。
+   * 同一个 10 分钟 TTL(门槛表随 seed 日更);开机是空的。
+   */
+  pnpReqs: null,
+
+  /**
    * WHERE 签名 → 总数微缓存(2026-07-19「排序 3-4 秒」第二刀)。
    */
   counts: new Map(),
