@@ -172,7 +172,7 @@ from pnp.constants import (
     NLR_STAFF_SJ_LABEL_TPL, NLR_STAFF_SJ_RE, NLR_STREAM, NLR_TEST_TEERS_RE, NLR_TIMEOUT_S, NLR_WHAT_EMP_YEARS,
     NLR_WHAT_IG_AGE, NLR_WHAT_IG_DISCRETION, NLR_WHAT_IG_HOURS, NLR_WHAT_IG_MONTHS, NLR_WHAT_IG_PGWP,
     NLR_WHAT_IG_TEER, NLR_WHAT_IG_TEER4, NLR_WHAT_STAFF_OUT, NLR_WHAT_STAFF_SJ, NL_DETAIL_SPLIT_RE,
-    NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
+    NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, K_PNP_INVITATIONS, NL_NOTE_AIP_RE, NL_NOTE_PNP_RE, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
     NL_MD_LINK_SUB, NL_PRINT_DONE_TPL, NL_PRINT_FAIL_TPL, NL_PRINT_NO_POSITION, NL_PRINT_SECTOR_TPL,
     NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP_AIP, NL_SECTOR_RE,
     NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_EFFECTIVE_RE, NSR_EMP_LABEL_TPL, NSR_EMP_YEARS_RE,
@@ -1908,7 +1908,8 @@ def parse_on_draws(html: str) -> list:
 
 
 def parse_nl_draws(html: str) -> list:
-    """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。"""
+    """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。
+    2026-09-27 每行多一格 pnpInvitations(省提名那一份,见 nl_pnp_invitations_of);invitations 照旧是本批合计。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_LXML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
@@ -1927,10 +1928,37 @@ def parse_nl_draws(html: str) -> list:
             note = ""
             if len(row) > 2:
                 note = fold_ws(row[2])[:DRAWS_NOTE_CLIP]
-            draws.append({K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note,
-                          K_SCORE: None, K_INVITATIONS: int_of(row[1])})
+            dr = {K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note, K_SCORE: None, K_INVITATIONS: int_of(row[1])}
+            dr[K_PNP_INVITATIONS] = nl_pnp_invitations_of(dr)
+            draws.append(dr)
     draws.sort(key=draw_date_of, reverse=True)
     return draws
+
+
+def nl_pnp_invitations_of(draw: dict) -> int | None:
+    """NL 一批 ITA 里省提名(NLPNP)那一份(2026-09-27):Notes 列「NLPNP – 61, AIP – 01」拆出 NLPNP 的数,两项加起来
+    必须等于本批总数才认;只写了 AIP 一项且等于总数 = 这批 NLPNP 0 份。认不出或对不上给 None —— 不猜,汇装见 None 整省不出合计。
+
+    @param draw 一行 NL 抽选(note / invitations 两格已填)。
+    @returns 省提名份数;认不出给 None。
+    """
+    total = draw.get(K_INVITATIONS)
+    if isinstance(total, int) is False:
+        return None
+    note = str(draw.get(K_NOTE) or "")
+    pnp = NL_NOTE_PNP_RE.search(note)
+    aip = NL_NOTE_AIP_RE.search(note)
+    if pnp is None and aip is None:
+        return None
+    n_pnp = 0
+    n_aip = 0
+    if pnp is not None:
+        n_pnp = int(pnp.group(1))
+    if aip is not None:
+        n_aip = int(aip.group(1))
+    if n_pnp + n_aip != total:
+        return None
+    return n_pnp
 
 
 def iso_nb_of(s: str) -> str | None:
@@ -7545,7 +7573,7 @@ def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
 # 40. 自测(用例住 scheme:ON 守望判定;2026-09-26)
 # =========================================================================
 from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
-from pnp.scheme import OnWorkforceWatchTest  # noqa: E402 — 同上
+from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest  # noqa: E402 — 同上
 
 
 def run_tests() -> None:
@@ -7554,5 +7582,6 @@ def run_tests() -> None:
     搬去 door 叶(`python etl/door/main.py --only test`)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

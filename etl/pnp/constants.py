@@ -2184,6 +2184,17 @@ NL_DRAW_ITA_KW = "ita"
 NL_DRAW_STREAM = "NLPNP + AIP (ITA batch)"
 """NL 抽选行的通道名(官方按批次发,不分通道)。"""
 
+K_PNP_INVITATIONS = "pnpInvitations"
+"""NL 抽选行键:这一批 ITA 里省提名(NLPNP)那一份的邀请数(2026-09-27 Frank 勾「全年已邀请合计」「2026 名额小表」:
+NL 每批 NLPNP 与 AIP 同批发、Notes 列分列;省提名弹框的配额是 NLPNP 单列,汇装的「全年已邀请」只加这一份才对得上,
+与 NB 剔 AIP 同口径)。Notes 认不出或两项加起来对不上本批总数 = None(不猜)。invitations 格照旧是本批合计。"""
+
+NL_NOTE_PNP_RE = re.compile(r"NLPNP\s*[–—-]\s*(\d+)")
+"""Notes 列里的省提名份数(「NLPNP – 61, AIP – 01」;官方用 EN dash,em dash 与连字符也认)。"""
+
+NL_NOTE_AIP_RE = re.compile(r"AIP\s*[–—-]\s*(\d+)")
+"""Notes 列里的 AIP 份数(只用来核对两项加起来等于本批总数)。"""
+
 NS_DRAW_MONTH_RE = re.compile(r"^([A-Z][a-z]+)\s+(\d{4})$")
 """NS 月度表的月份格(「January 2026」);人数格认不出(TBD)= 该月未公布,不落行。"""
 

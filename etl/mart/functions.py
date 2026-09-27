@@ -207,6 +207,7 @@ from mart.constants import (
     DRAW_YTD_INVITE_LABEL_TPL, DRAW_YTD_SELECT_LABEL_TPL, K_ALLOC_NOTE, METRIC_INVITATIONS_YTD, METRIC_SELECTIONS_YTD,
     PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL, UNIT_INVITATIONS,
 )
+from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INVITATIONS
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, OpsExtraBaseIn, SalaryHitIn, YtdLabelIn,
 )
@@ -3329,6 +3330,7 @@ def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
 def draw_ytd_of(x: DrawYtdOfIn) -> DrawYtdOut:
     """一省本年带日期的抽选行 → 合计与三个计数。不算邀请的 stream(DRAW_NOT_INVITE_STREAMS)记 dropped 不进合计;
     人数不是整数(没公布)或日期认不出(不知道是不是今年的)记 unknown —— 调用方见 unknown 就整省不出。
+    2026-09-27 NL 这类批次里夹着 AIP 的省(DRAW_PNP_PART_PROVS)改读省提名那一份(K_PNP_INVITATIONS),缺这一格同样记 unknown。
 
     @param x 省码、该省 draws[] 与本年。
     @returns 合计、计入行数、未知行数、剔出行数、最近日期。
@@ -3348,6 +3350,8 @@ def draw_ytd_of(x: DrawYtdOfIn) -> DrawYtdOut:
             out.dropped += 1
             continue
         n = dr.get(K_INVITATIONS)
+        if x.prov in DRAW_PNP_PART_PROVS:
+            n = dr.get(K_PNP_INVITATIONS)
         if isinstance(n, int) is False or isinstance(n, bool):
             out.unknown += 1
             continue
@@ -3365,6 +3369,8 @@ def ytd_label_of(x: YtdLabelIn) -> str:
     @returns label。
     """
     label = x.tpl.format(n=x.got.rounds, year=x.year)
+    if x.prov in DRAW_PNP_PART_PROVS:
+        label = DRAW_YTD_PNP_ONLY_TPL.format(label=label)
     if x.got.dropped == 0:
         return label
     return DRAW_YTD_DROP_TPL.format(label=label, n=x.got.dropped,

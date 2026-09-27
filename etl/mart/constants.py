@@ -2197,7 +2197,20 @@ METRIC_INVITATIONS_YTD = "invitations_ytd"
 带日期的抽选行人数加总,一省一行。口径四条:① 本年任一轮人数没公布(null)或日期认不出 → 该省不出这一行(少算一轮的合计
 是假数);② NB 的 AIP 组是「选中进入审理的申请」不是邀请,不并进来(DRAW_NOT_INVITE_STREAMS);③ NS 按月公布的是 EOI 选取人数,
 另出 METRIC_SELECTIONS_YTD,不叫邀请;④ QC / FED 不出(不属 PNP)。asOf = 本年最近一轮的日期,url = 该省抽选页。
-⚠ NL 的 ITA 批次是 NLPNP 与 AIP 同批发的邀请(每轮 note 里分列),按上面四条照计入,label 不另拆。"""
+⚠ NL 的 ITA 批次是 NLPNP 与 AIP 同批发的邀请(每轮 note 里分列),按上面四条照计入,label 不另拆。
+2026-09-27 同日改判(Frank 勾「补抓缺的省 2026 配额」补进 NL 配额 2,379 = NLPNP 单列):合计旁边就是只算省提名的配额,
+带 AIP 的合计(2,695)看着像超发 —— NL 改为只加省提名那一份(DRAW_PNP_PART_PROVS,读 pnp 域拆好的 K_PNP_INVITATIONS),
+与 ② NB 剔 AIP 同口径:「全年已邀请」一律只算省提名。"""
+
+K_PNP_INVITATIONS = "pnpInvitations"
+"""抽选行键:这一批里省提名那一份的邀请数(pnp 域从 NL 的 Notes 拆;2026-09-27)。域间不互取常量,键名照 pnp 域各自声明。"""
+
+DRAW_PNP_PART_PROVS = ("NL",)
+"""ITA 批次里夹着 AIP 的省(2026-09-27):「全年已邀请」只加每行的 K_PNP_INVITATIONS;哪一行缺这一格(pnp 域认不出 Notes、
+或该行是拆格上线前落的历史行)= 该轮不知道 → 按口径 ① 整省不出。"""
+
+DRAW_YTD_PNP_ONLY_TPL = "{label}, provincial nominee invitations only (AIP issued in the same batches excluded)"
+"""只加省提名那一份时 label 补的一句(NL)。"""
 
 METRIC_SELECTIONS_YTD = "selections_ytd"
 """省级「全年已选取」:NS 按月公布从 EOI 池选中的人数(官方原句「Nova Scotia selected the following number of candidates from

@@ -3600,6 +3600,29 @@ class MartOpsExtraTest(unittest.TestCase):
         with mock.patch.object(fn, "DRAW_SELECT_PROVS", ()):
             self.assertEqual(self.ytd()["NS"]["metric"], "invitations_ytd")
 
+    def test_ytd_pnp_part_only(self) -> None:
+        """NL(2026-09-27):批次合计里夹着 AIP,只加省提名那一份 —— 2026 两行 61 + 41 = 102(不是合计 62 + 41 = 103),去年那行不算;
+        有一行缺省提名那一格(拆格前的历史行 / Notes 认不出)→ NL 整省不出;label 写明只算省提名。"""
+        from mart import functions as fn
+
+        def nl(draws: list) -> dict:
+            ctx = OpsCtx(rows=[], seqs={})
+            table = {"fetched": "2026-09-27", "provinces": {"NL": {"url": "https://nl.example/ita", "draws": draws}}}
+            fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=[table], year="2026"))
+            return {r["province"]: r for r in ctx.rows}
+
+        rows = [{"date": "2026-09-25", "stream": "NLPNP + AIP (ITA batch)", "invitations": 41, "pnpInvitations": 41},
+                {"date": "2026-09-18", "stream": "NLPNP + AIP (ITA batch)", "invitations": 62, "pnpInvitations": 61},
+                {"date": "2025-11-12", "stream": "NLPNP + AIP (ITA batch)", "invitations": 330}]
+        got = nl(rows)["NL"]
+        self.assertEqual((got["metric"], got["value"], got["asOf"]), ("invitations_ytd", 102, "2026-09-25"))
+        self.assertIn("provincial nominee invitations only", got["label"])
+        gap = [{"date": "2026-09-25", "stream": "NLPNP + AIP (ITA batch)", "invitations": 41, "pnpInvitations": 41},
+               {"date": "2026-03-06", "stream": "NLPNP + AIP (ITA batch)", "invitations": 445}]
+        self.assertNotIn("NL", nl(gap))
+        with mock.patch.object(fn, "DRAW_PNP_PART_PROVS", ()):
+            self.assertEqual(nl(rows)["NL"]["value"], 103)
+
     def test_as_of_month_from_period(self) -> None:
         """截至月(2026-09-27 省提名弹框「2026 年配额」卡的「截至」行):MB 月度块 throughMonth 英文月名 → `YYYY-MM`、
         SK 季度 → 该季最后一个月;认不得给空串(不猜);官方写了 asOf 的照写不改。"""

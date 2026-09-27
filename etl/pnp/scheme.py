@@ -1771,6 +1771,37 @@ class OwpRefreshIn:
     """crawl 缓存那轮的日期(ISO;读门没给 / 形状不对 → 不刷)。"""
 
 
+class NlDrawSplitTest(unittest.TestCase):
+    """NL 抽选行拆省提名份数自测(2026-09-27 Frank 勾「全年已邀请合计」):Notes 两项 / 只有一项 / 对不上 / 认不出 + 解析金标。
+    全程不联网、不读仓内文件。"""
+
+    def test_split_golden(self) -> None:
+        """金标:官方 Notes 的几种写法(真页 2026 年各批原样);两项加起来等于本批总数才认,只有 AIP 一项且等于总数 = 0。"""
+        from pnp import functions as fn
+        cases = [("NLPNP – 61, AIP – 01", 62, 61), ("NLPNP – 41", 41, 41), ("NLPNP – 94, AIP – 46", 140, 94),
+                 ("AIP – 40", 40, 0), ("NLPNP - 36", 36, 36), ("NLPNP — 17, AIP — 40", 57, 17)]
+        for note, total, want in cases:
+            self.assertEqual(fn.nl_pnp_invitations_of({"note": note, "invitations": total}), want, note)
+
+    def test_split_refuses_to_guess(self) -> None:
+        """对不上总数、一项都认不出、总数没公布 → None(汇装见 None 整省不出合计,不拿本批合计顶)。"""
+        from pnp import functions as fn
+        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 94, AIP – 46", "invitations": 141}))
+        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 36", "invitations": 40}))
+        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "", "invitations": 10}))
+        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 36", "invitations": None}))
+
+    def test_parse_table_golden(self) -> None:
+        """解析金标:照真页的表形(无 <th>,首行 <td> 是表头)造两行,invitations 仍是本批合计、pnpInvitations 是省提名那一份。"""
+        from pnp import functions as fn
+        html = ("<table><tr><td>Date Issued</td><td>Number of ITAs Issued</td><td>Notes</td></tr>"
+                "<tr><td>September 18, 2026</td><td>62</td><td>NLPNP – 61, AIP – 01</td></tr>"
+                "<tr><td>September 25, 2026</td><td>41</td><td>NLPNP – 41</td></tr></table>")
+        got = fn.parse_nl_draws(html)
+        self.assertEqual([(d["date"], d["invitations"], d["pnpInvitations"]) for d in got],
+                         [("2026-09-25", 41, 41), ("2026-09-18", 62, 61)])
+
+
 class OnWorkforceWatchTest(unittest.TestCase):
     """ON 劳动力优先表守望自测(2026-09-26 Frank 定守望同批):判定四态(原句在 / 原句不在 / 缓存缺失 / 拦截页)
     + 表里日期的字符串替换 + 真页真表金标。判定与替换都是纯函数,全程不联网、不写仓内文件;
