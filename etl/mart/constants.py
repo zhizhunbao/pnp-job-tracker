@@ -902,7 +902,9 @@ K_DESCRIPTION = "description"
 
 K_SRC_VALID_THROUGH = "valid_through"
 """板仓帖子行:发帖方自己写的截止日(Jobillico / Jobboom / CareerBeacon / GC Jobs / HireAC 的 ld+json 带,100% 有;
-Job Bank 仓没有这一格)。"""
+Job Bank 仓没有这一格)。
+2026-09-27 Frank 勾「Job Bank 截止日」:Job Bank 仓起也有这一格(jobbank 详情解析抽帖页「Advertised until」,键同;
+帖页没写的 Indeed 转帖是空串),to_jb_job_fields 照读;ATS 仓 jobs.json 同键(2026-09-26 起)。"""
 
 K_VALID_THROUGH = "validThrough"
 """jobs 行:截止日(2026-09-16 Frank「有就写,没有就不写」:板帖照搬发帖方的截止日,Job Bank 帖没有就不落键)。"""
@@ -2096,6 +2098,12 @@ MONTH_ABBR_LEN = 3
 MB_YTD_TPL = "{year} Jan-{month}"
 """MB 年内累计的期次形。"""
 
+QUARTER_RE = re.compile(r"(\d{4})Q([1-4])")
+"""季度口径的期次(SK 官方统计表「2026Q2」;fullmatch 用)。"""
+
+QUARTER_END_MONTH = {"1": "03", "2": "06", "3": "09", "4": "12"}
+"""季度号 → 该季最后一个月的两位月号(季度口径的截至月;2026-09-27 省提名弹框「2026 年配额」卡的「截至」行用)。"""
+
 METRIC_ALLOCATION = "allocation"
 """配额指标名。"""
 
@@ -2167,6 +2175,58 @@ ON_PROCESSING_NOTE = (
     "别拿顶层(已下线那页)给数字背书。label = 官方原句(quote-anchored)。"
 )
 """ON 为什么没有处理时长行。"""
+
+K_ALLOC_NOTE = "note"
+"""人工核对表(IN_IRCC_ALLOC)一行的 note 格:逐年出处说明,官方原句一律用「」括着(2026-09-27 补配额行取 label 用)。"""
+
+ALLOC_QUOTE_RE = re.compile(r"「([^」]+)」")
+"""核对表 note 里的一句官方原句。"""
+
+ALLOC_NUM_TPL = "{n:,}"
+"""配额数的千分位写法(在 note 的原句里认「6,254」这种写法)。"""
+
+DATASET_ID_RE = re.compile(r"^[a-z0-9]{4}-[a-z0-9]{4}$")
+"""开放数据平台(Socrata)数据集页 URL 的末段 ID(「8rf7-hw2p」)。末段是它 = 出处是官方数据集页,倒数第二段是数据集名
+(连字符还原成空格:「Annual-Allocations-for-Immigration-Programs」→「Annual Allocations for Immigration Programs」)。"""
+
+PRINT_ALLOC_GAP_TPL = "  + pnp_ops_stats {prov} {year} allocation = {value:,}(人工核对表;label:{label})"
+"""配额补行的留痕(一省一行)。"""
+
+METRIC_INVITATIONS_YTD = "invitations_ytd"
+"""省级「全年已邀请」(2026-09-27 Frank 勾「2026 名额小表」:省提名弹框「2026 年配额」卡读)—— 本年(抽选日期所在年 = 今年)
+带日期的抽选行人数加总,一省一行。口径四条:① 本年任一轮人数没公布(null)或日期认不出 → 该省不出这一行(少算一轮的合计
+是假数);② NB 的 AIP 组是「选中进入审理的申请」不是邀请,不并进来(DRAW_NOT_INVITE_STREAMS);③ NS 按月公布的是 EOI 选取人数,
+另出 METRIC_SELECTIONS_YTD,不叫邀请;④ QC / FED 不出(不属 PNP)。asOf = 本年最近一轮的日期,url = 该省抽选页。
+⚠ NL 的 ITA 批次是 NLPNP 与 AIP 同批发的邀请(每轮 note 里分列),按上面四条照计入,label 不另拆。"""
+
+METRIC_SELECTIONS_YTD = "selections_ytd"
+"""省级「全年已选取」:NS 按月公布从 EOI 池选中的人数(官方原句「Nova Scotia selected the following number of candidates from
+the Expression of Interest (EOI) pool during the months noted below」,liveinnovascotia.com/eoi-selection;2026-09-27)。"""
+
+UNIT_INVITATIONS = "invitations"
+"""单位:邀请数(与 MB 月度页 laa_ytd 同一个单位词)。"""
+
+DRAW_SELECT_PROVS = ("NS",)
+"""按「选取」而不是「邀请」公布的省:出 METRIC_SELECTIONS_YTD,单位 people(官方原句数的是 candidates)。"""
+
+DRAW_NOT_INVITE_STREAMS = {"NB": ("AIP",)}
+"""省 → 这些 stream 的人数不是邀请,不进「全年已邀请」合计(2026-09-27)。NB 抽选页原句「Atlantic Immigration Program figures show
+applications selected for processing; all other streams show invitations issued.」
+(gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html,crawl nb-imm 缓存)。
+stream 名照 pnp 域写进 draws-nb.json 的 AIP 行(域间不互取常量,各自声明)。"""
+
+DRAW_YTD_INVITE_LABEL_TPL = "Sum of {n} rounds in {year}"
+"""「全年已邀请」行的 label(N = 计入的抽选行数,一行 = 一条通道的一轮)。本表 label 列装英文(DDL 注「官方原文(英文)」),
+三语界面原样显示,不写中文 —— 同 pnp 域 DRAWS_NL_LABEL 撤中文括注的先例。"""
+
+DRAW_YTD_SELECT_LABEL_TPL = "Sum of {n} monthly selections in {year}"
+"""「全年已选取」行的 label(NS:一行 = 一个月的选取人数)。"""
+
+DRAW_YTD_DROP_TPL = "{label}, excluding {n} {streams} rows (applications selected for processing, not invitations)"
+"""本年有行被剔出合计时 label 补的一句(NB 的 AIP 组)。"""
+
+PRINT_YTD_SKIP_TPL = "  · pnp_ops_stats {prov} 不出 {metric}:{year} 年有 {n} 轮人数没公布或日期认不出(少算一轮的合计是假数)"
+"""省级全年合计因缺数不出行时的留痕。"""
 
 
 # =========================================================================
@@ -3102,38 +3162,153 @@ SAL_ONE_TPL = "{money}{sub}"
 SAL_RANGE_TPL = "{lo}–{hi}{sub}"
 """区间薪资的规范文本(如 "$96K–$135K/yr";连接号是 EN dash,逐字沿用)。"""
 
-SAL_TXT_AMT = r"\$\s?\d[\d,]*(?:\.\d+)?[Kk]?"
-"""正文里一个金额的写法($ 锚定,允许千分位 / 任意小数位 / K 后缀)。只作拼装用,不单独 compile。"""
+SAL_TXT_DOLLAR = "$"
+"""正文里连一个 $ 都没有就不挖(两档的每种金额写法都带 $;2026-09-27 加这道前置:新写法的正则比原来重一倍,
+本地 29,219 条板帖正文里只有 11,690 条带 $,先筛掉其余,整轮反比原来快)。"""
 
-SAL_TXT_RANGE = r"(?:\s*(?:-|–|—|to|and|à|et)\s*" + SAL_TXT_AMT + r")?"
-"""紧跟着的区间上限(可无)。中英文连接词都认:2026-09-15 实测 jobboom 法文帖用「à/et」。"""
+SAL_TXT_SP = r"[ \u00a0\u202f]"
+"""金额里当千分位用的空格:普通空格 / 不换行空格 / 窄不换行空格三种(2026-09-27 Frank 勾「薪资抽取补三种写法」:
+Nunavik 那批帖写「Min. $98 420 yearly」、魁省法文帖写「47 000 $」)。只作拼装用,不单独 compile。"""
 
-SAL_TXT_PERIOD = (r"(?:\s*(?:per\s+hour|an\s+hour|/\s?hour|/\s?hr\b|hourly|per\s+year|/\s?year"
-                  r"|annually|per\s+annum|yearly|par\s+heure|/\s?heure))")
+SAL_TXT_AMT_PRE = (r"\$\s?(?:\d{1,3}(?:" + SAL_TXT_SP + r"\d{3}(?!\d))+(?:\.\d+)?(?!\.?\d)"
+                   r"|\d[\d,]*(?:\.\d+)?(?!\.?\d)(?!,\d)[Kk]?(?!" + SAL_TXT_SP + r"\d{3}(?!\d)))")
+"""$ 在数前的一个金额:原写法(千分位逗号 / 任意小数位 / K 后缀)+ 空格千分位(「$98 420」)。只作拼装用。
+几道后看守 2026-09-27 立:数后面不许还跟着数 —— 不拦的话回溯会把「$98 420」切成「$98」、把「$74.984.00」切成「$74.98」,
+原写法下 Nunavik 帖「Min. $43 348 yearly」被读成 $43 时薪、「starting annual salary of $74.984.00」被读成 $74.98 时薪(本地对拍实撞)。"""
+
+SAL_TXT_BARE = (r"(?<![\d.,$])(?:\d{1,3}(?:(?:" + SAL_TXT_SP + r"|,)\d{3}(?!\d))+|\d+)"
+                r"(?:[.,]\s?\d{1,2}(?!\d))?")
+"""不带 $ 的一个数(法文写法:空格或逗号千分位、逗号或点小数 ——「47 000」「18,50」「17, 00」;2026-09-27)。
+前看守:不许从别的数中间起头。只作拼装用:后面跟 $ 就是 SAL_TXT_AMT_POST;法文区间的下限可以不带 $(见 SAL_TXT_MONEY)。"""
+
+SAL_TXT_AMT_POST = SAL_TXT_BARE + r"\s?\$(?!\s?\d)"
+"""$ 在数后的一个金额(魁省法文帖「25$」「47 000 $」「18,50 $」;2026-09-27)。只作拼装用。
+后看守:$ 后面紧跟数字说明它是下一个金额的前缀 ——「Pay Band 17 $40.610 to $43.510」里的 17 是工资级别号,
+不拦就读成 $17 时薪(本地对拍实撞)。"""
+
+SAL_TXT_AMT = "(?:" + SAL_TXT_AMT_PRE + "|" + SAL_TXT_AMT_POST + ")"
+"""正文里一个金额的写法($ 锚定,允许千分位 / 任意小数位 / K 后缀)。只作拼装用,不单独 compile。
+2026-09-27 起是两种写法的并:SAL_TXT_AMT_PRE(上一句说的原写法 + 空格千分位)与 SAL_TXT_AMT_POST($ 在数后的法文写法)。"""
+
+SAL_TXT_PER_HR = (r"per\s+hour|an\s+hour|/\s?hour|/\s?hr\b|hourly|par\s+heure|/\s?heure"
+                  r"|(?:de\s+|à\s+)?l['’]\s?heure|/\s?h\b")
+"""按小时的周期词(英法;2026-09-27 补法文「de l'heure」「l’heure」「/h」)。只作拼装用。"""
+
+SAL_TXT_PER_YR = (r"per\s+year|/\s?year|annually|per\s+annum|yearly|a\s+year|par\s+ann[ée]e|par\s+an\b"
+                  r"|/\s?ann[ée]e|/\s?an\b|l['’]an\b|annuellement")
+"""按年的周期词(英法;2026-09-27 补「a year」与法文「par année」「par an」「/an」「annuellement」)。只作拼装用。"""
+
+SAL_TXT_PER_BIWK = r"bi[-\s]?weekly|every\s+two\s+weeks|aux\s+deux\s+semaines|toutes\s+les\s+deux\s+semaines"
+"""按两周的周期词(2026-09-27 立:CareerBeacon 大西洋省公职帖「Salary Range: $2,013.12 - $2,244.03 Bi-Weekly」)。
+换年薪走 SAL_MULT 的 biwk 26 期 —— 与 Job Bank 仓按周 / 按月那套同一张倍数表,不另立常量。只作拼装用。"""
+
+SAL_TXT_PER = "(?:" + SAL_TXT_PER_BIWK + "|" + SAL_TXT_PER_HR + "|" + SAL_TXT_PER_YR + ")"
+"""三种周期词的并(2026-09-27)。只作拼装用。"""
+
+SAL_TXT_MAX_WORD = r"(?:max(?:imum)?\.?\s*(?:of\s+|de\s+)?:?\s*)"
+"""区间上限前的「Max. / maximum of / maximum de」(Nunavik 帖「Min. $98 420 yearly, max. $135 335 yearly」
+「Minimum of $63,716 and maximum of $109,329 per year」;2026-09-27)。只作拼装用。"""
+
+SAL_TXT_RANGE = (r"(?:(?:\s*" + SAL_TXT_PER + r")?\s*(?:(?:-|–|—|to|and|à|et)\s*|,\s*(?=max)|(?=max))"
+                 + SAL_TXT_MAX_WORD + "?" + SAL_TXT_AMT + ")?")
+"""紧跟着的区间上限(可无)。中英文连接词都认:2026-09-15 实测 jobboom 法文帖用「à/et」。
+2026-09-27 放宽三处:上限前可有「max. / maximum of」;下限后可先跟一个周期词(「26$/h et 33$/h」「$45 942 yearly,
+Max. $77 377 yearly」);逗号或不写连接词,只在后面紧跟 max 时才算连成区间(防「$50,000, $5,000 bonus」被连成一段)。"""
+
+SAL_TXT_MONEY = ("(?:" + SAL_TXT_BARE + r"\s*(?:-|–|—|à|et|to)\s*" + SAL_TXT_AMT_POST
+                 + "|" + SAL_TXT_AMT + SAL_TXT_RANGE + ")")
+"""一处薪资金额(单值或区间),两种形:① 下限是裸数、上限 $ 在数后的法文区间「22 à 25 $」—— 不认它就只剩上限 25 被当成单值,
+把区间说成了上限;② 金额 + 可选的区间上限。只作拼装用(2026-09-27)。"""
+
+SAL_TXT_PERIOD = r"(?:\s*" + SAL_TXT_PER + ")"
 """金额后面紧跟的周期词。有它 = 单位是雇主自己写的,不用猜。
 ⚠ 2026-09-15 实撞:docstring 写在小括号**里面**会被 Python 当成隐式字符串拼接接进正则,第一档整档失效
-(单元校验里「$22.40 - $25.40 per hour」挖不出来才发现)—— 括号先收口,docstring 另起一行。"""
+(单元校验里「$22.40 - $25.40 per hour」挖不出来才发现)—— 括号先收口,docstring 另起一行。
+2026-09-27 起由 SAL_TXT_PER 拼成:原来的十二个词一个不少,另补法文、「a year」与两周。"""
 
-SAL_TXT_UNIT_RE = re.compile("(" + SAL_TXT_AMT + SAL_TXT_RANGE + ")(" + SAL_TXT_PERIOD + ")", re.I)
-"""正文挖薪资第一档(强):金额 + 紧跟的周期词。捕获组 1 = 金额(串),捕获组 2 = 周期词。"""
+SAL_TXT_UNIT_RE = re.compile("(" + SAL_TXT_MONEY + ")(" + SAL_TXT_PERIOD + ")", re.I)
+"""正文挖薪资第一档(强):金额 + 紧跟的周期词。捕获组 1 = 金额(串),捕获组 2 = 周期词。
+(2026-09-27 起金额段是 SAL_TXT_MONEY:含 $ 在数后的写法与裸数下限的法文区间。)"""
+
+SAL_TXT_PERIOD_AHEAD_RE = re.compile(SAL_TXT_PERIOD, re.I)
+"""第二档挖到的金额后面紧跟周期词吗(match 用;2026-09-27 立)。跟着 = 雇主自己写了单位、第一档已按它判过不可信,
+第二档不许再拿量级改口 ——「Wage: $25 - $30 bi-weekly」这种把时薪填进两周格的,原本会被第二档猜成 $25–$30 时薪;
+口径同 SAL_UNIT_MIN 对「$14.00 to $15.75 biweekly」整条置空。"""
 
 SAL_TXT_CUE = (r"(?:salary|salaries|compensation|wage|wages|pay range|pay rate|pay grade|rate of pay"
-               r"|hourly rate|remuneration|rémunération|salaire|taux horaire)")
+               r"|hourly rate|remuneration|rémunération|salaire|taux horaire|\bearnings?\b|salarial)")
 """薪资线索词:金额前 SAL_TXT_NEAR_MAX 字内出现它,这个金额才算在说薪资。
-没有线索词的裸金额一律不认 —— 正文里的 $ 多半是奖金 / 营业额 / 折扣。"""
+没有线索词的裸金额一律不认 —— 正文里的 $ 多半是奖金 / 营业额 / 折扣。
+2026-09-27 补两个:「earning」(「Total earning range: $18.00 - $27.00」;带词边界,不带会吃进 learning)、
+法文「salarial(e)」(「échelle salariale」「fourchette salariale」)。"""
 
-SAL_TXT_NEAR_RE = re.compile(SAL_TXT_CUE + r"[^.\n]{0,100}?(" + SAL_TXT_AMT + SAL_TXT_RANGE + ")", re.I)
-"""正文挖薪资第二档(弱):线索词 + 100 字内的金额,没有周期词 —— 单位靠 SAL_TXT_* 量级闸判。"""
+SAL_TXT_NEAR_RE = re.compile(SAL_TXT_CUE + r"(?:[^.\n]{0,100}?|[^.\n]{0,30}?\n\s*)(" + SAL_TXT_MONEY + ")", re.I)
+"""正文挖薪资第二档(弱):线索词 + 100 字内的金额,没有周期词 —— 单位靠 SAL_TXT_* 量级闸判。
+2026-09-27 补标签与金额分两行的形(「Salary:」下一行「$42,000.00 - $92,000.00」):线索词后 30 字内换行、
+下一个非空行开头就是金额,也算。"""
 
-SAL_TXT_UPTO_RE = re.compile(r"(?:up\s+to|as\s+much\s+as|jusqu.{0,2}à|maximum\s+of)\s*$", re.I)
+SAL_TXT_UPTO_RE = re.compile(r"(?:up\s+to|as\s+much\s+as|jusqu.{0,2}à|maximum\s+of|atteindre)\s*$", re.I)
 """金额前面是「最多」这类封顶话术就整条不认(2026-09-15 实撞「Up to $140,000」):
-那是上限不是这个岗给的钱,当薪资显示等于替雇主把天花板说成底薪。"""
+那是上限不是这个岗给的钱,当薪资显示等于替雇主把天花板说成底薪。
+2026-09-27 补法文「(pouvant) atteindre」:「Salaire concurrentiel pouvant atteindre 60 000 $ par année」—— 法文金额写法认出来之后,
+它就是一条封顶话术。"""
 
 SAL_TXT_BACK = 16
 """往金额前面回看多少字找封顶话术。"""
 
+SAL_TXT_NOT_PAY_RE = re.compile(
+    r"bonus|signing|sign-on|\bprimes?\b|allowance|allocation|reimburs|rembours|cr[ée]dit"
+    r"|(?:spending|wellness|health)\s+account|(?:annual|in)\s+revenue|revenues?\s+of|chiffre\s+d['’]affaires"
+    r"|\bfines?\b|amende|penalt|pénalit|\bfees?\b|frais|cost[-\s]of[-\s]living|coût\s+de\s+la\s+vie|differential"
+    r"|tuition|scolarit|relocation|déménagement|referral|parrainage|potenti|premium|discount|rabais|remise|gift"
+    r"|cadeau|insurance|pension|retraite|rrsp|\breer\b|cotisation|contribution|incentive|incitati|retention"
+    r"|rétention|overtime|heures\s+supplémentaires|temps\s+supplémentaire|indemnit|forfait|valued\s+at|value\s+of"
+    r"|d['’]une\s+valeur|valeur\s+de|worth", re.I)
+"""非工资金额的挂名词(2026-09-27 Frank 勾「薪资抽取补三种写法」同批的红线:不许误吃非薪资金额):奖金 / 签约奖 / 补贴 / 报销 /
+营收 / 罚款 / 规费 / 生活费差额 / 学费 / 搬家 / 推荐奖 / 收入潜力 / 保险养老 / 加班 / 优惠礼品。金额所在分句里、最后一个线索词之后
+出现它,这个金额就不是这个岗的工资(截分句见 SAL_TXT_CUT_RE)。故意不收 sales / budget / account / commission 这类也常出现在
+职位名与机构名里的词(「Sales Representative $50,000 per year」「Public Service Commission」不能拦)。
+本地对拍拦下的真例:GC Jobs 驻外津贴「total amount of these allowances will normally fall between $24,595 to $49,517 per year」、
+医生招聘奖「Physician Recruitment Incentive Pilot — $300,000 ($150,000 per year)」、「Earning potential of over $35/hr」;
+代价是「compensation … includes salary and sales incentives and is expected to be between $X」这种含提成的总包区间也不认。"""
+
+SAL_TXT_CUT_RE = re.compile(r"[;•\n!?|]|\.(?=\s|[A-ZÀ-Ý])|\bpay\s*:|" + SAL_TXT_CUE, re.I)
+"""找「金额所在分句」的切点:分号 / 项目符 / 换行 / 竖线 / 句末点(点后是空白或大写 —— 小数点不算),以及线索词与
+「Pay:」标签(2026-09-27)。挂名词只看最后一个切点之后那一截:「Shift Premium: 2nd Shift ($3) … Pay: $25.52/hr」
+切在 Pay 之后,Premium 不算。"""
+
+SAL_TXT_NOT_PAY_BACK = 60
+"""往金额前面回看多少字找挂名词(再按 SAL_TXT_CUT_RE 截到分句)。"""
+
+SAL_TXT_NOT_PAY_AFTER_RE = re.compile(
+    r"\s*(?:de\s+|in\s+|en\s+|d['’]\s?)?(?:signing|sign-on|bonus|primes?\b|allowance|allocation|cr[ée]dits?"
+    r"|rembours|reimburs|incentive|incitati|gift|cadeau)", re.I)
+"""金额后面紧挨着就是挂名词(「$25,000 signing bonus」「5 000 $ de prime」;match 用,2026-09-27)。只收紧挨的 ——
+「$25/h + bonus」「$25/h plus bonuses」中间隔着加号,那是工资另加奖金,不拦。"""
+
+SAL_TXT_NOT_PAY_AHEAD = 30
+"""往金额后面看多少字找紧挨的挂名词。"""
+
 SAL_TXT_NUM_RE = re.compile(r"\d[\d,]*(?:\.\d+)?[Kk]?")
 """从挖出的串里取数(带 K 后缀一起取,由 salary_text_vals 还原)。"""
+
+SAL_TXT_TOKEN_RE = re.compile(r"\d{1,3}(?:[ ,]\d{3}(?!\d))+(?:\.\d+|,\s?\d{1,2}(?!\d))?|\d+(?:\.\d+|,\s?\d{1,2}(?!\d))?")
+"""从 tidy 过的金额串里切出一个个数(空白已压成单个空格、K 已还原成千):空格或逗号千分位 + 点或逗号小数(2026-09-27)。"""
+
+SAL_TXT_FRAC_RE = re.compile(r"(?:,\s?(\d{1,2})|\.(\d+))$")
+"""一个数的小数部分:逗号后一两位 = 法文小数逗号(「18,50」「17, 00」),点后任意位(「40.610」原样保留)。"""
+
+SAL_TXT_THOUSANDS_RE = re.compile(r"[ ,]")
+"""整数部分里的千分位(空格 / 逗号),去掉再转数。"""
+
+SAL_TXT_INT_TPL = "${n:,}"
+"""挖出的金额的规范写法:整数(「$47,000」;下游 SAL_MONEY_RE 只认 $ 在前、逗号千分位、点小数)。"""
+
+SAL_TXT_FRAC_TPL = "${n:,}.{frac}"
+"""规范写法:带小数的金额,小数位照原文(「$18.50」「$40.610」)。"""
+
+SAL_TXT_CANON_RANGE_TPL = "{lo} - {hi}"
+"""规范写法:区间。"""
 
 SAL_TXT_K_SUFFIX = "Kk"
 """千位后缀:「$55K」= 55,000(2026-09-15 实撞:不认它会把 $55K 年薪读成 $55 时薪)。"""
@@ -3154,14 +3329,24 @@ SAL_TXT_HR_MIN = 14
 SAL_TXT_HR_MAX = 150
 """可信时薪上限(与 SAL_HOURLY_FOLD_MAX 同值:高于它多半是把年薪填进了时薪格)。"""
 
-SAL_TXT_HR_RE = re.compile(r"hour|/\s?hr\b|hourly|heure", re.I)
-"""周期词是不是「小时」(英法两种写法)。"""
+SAL_TXT_HR_RE = re.compile(r"hour|/\s?hr\b|hourly|heure|/\s?h\b", re.I)
+"""周期词是不是「小时」(英法两种写法)。2026-09-27 补「/h」(「20,94 $/h」)。"""
+
+SAL_TXT_BIWK_RE = re.compile(r"bi[-\s]?week|two\s+weeks|deux\s+semaines", re.I)
+"""周期词是不是「两周」(先于小时判;2026-09-27)。"""
 
 SAL_TXT_YR_TAIL = " per year"
 """第二档判成年薪时补给下游尺子的周期词(parse_salary 按它定单位)。"""
 
 SAL_TXT_HR_TAIL = " per hour"
 """第二档判成时薪时补的周期词。"""
+
+SAL_TXT_BIWK_TAIL = " bi-weekly"
+"""判成两周薪时补的周期词(parse_salary 的 SAL_BIWEEK_RE 认它,按 SAL_MULT 的 26 期年化;2026-09-27)。"""
+
+SAL_TXT_TAILS = {SAL_UNIT_HR: SAL_TXT_HR_TAIL, SAL_UNIT_YR: SAL_TXT_YR_TAIL, SAL_UNIT_BIWK: SAL_TXT_BIWK_TAIL}
+"""单位 → 补给下游尺子的周期词。2026-09-27 起第一档也补规范周期词,不再原样带正文里的周期词 ——
+法文与两周写法下游 salary_unit_of 认不全(「aux deux semaines」会被量级兜底判成年薪),挖出的串一律写成下游认得的形。"""
 
 SAL_TXT_TRIM = " ,;."
 """挖出的串两头要削掉的标点(实撞「$43,000, per year」)。"""
@@ -3766,9 +3951,29 @@ APPLY_CTX_RE = re.compile(r"appl|resume|résumé|\bcv\b|curriculum|send|submit|p
                           r"faire parvenir|soumett|envoy|contact", re.I)
 """投递语境词:邮箱前后出现这些才算收简历的邮箱(中英法)。"""
 
-APPLY_SKIP_CTX_RE = re.compile(r"accommodat|accessib|privacy|confidential|adaptation|handicap|disabilit|"
+APPLY_SKIP_CTX_RE = re.compile(r"accommodat|accessib|privacy|adaptation|handicap|disabilit|"
                                r"unsubscribe|désabonn|equity", re.I)
-"""排除语境:无障碍 / 隐私 / 退订 / 平等就业这类邮箱不收简历(ATS 帖里的邮箱多是这种,09-23 实测)。"""
+"""排除语境:无障碍 / 隐私 / 退订 / 平等就业这类邮箱不收简历(ATS 帖里的邮箱多是这种,09-23 实测)。
+2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」(其中「邮箱 confidentialité 误删」):confidential 挪出本表,改由 APPLY_CONFIDENTIAL_RE 判(投递动作紧挨在邮箱前就不因它排除);
+本表剩下的词照旧见一个排一个。"""
+
+APPLY_CONFIDENTIAL_RE = re.compile(r"confidential", re.I)
+"""「保密」语境(confidential / confidentiality / confidentialité;2026-09-27 自 APPLY_SKIP_CTX_RE 拆出)。窗口里有它,
+只有邮箱紧前面是投递动作(APPLY_VERB_NEAR_RE)才收:「Faites-nous parvenir votre curriculum vitae en toute confidentialité
+à l'adresse jfg@…」「send us your application in complete confidentiality at: rh@…」是投递邮箱,原判把它们当保密邮箱丢了。"""
+
+APPLY_VERB_BEFORE = 120
+"""判「投递动作紧挨在邮箱前」时往前看多少字(2026-09-27)。"""
+
+APPLY_VERB_NEAR_RE = re.compile(
+    r"(?:\bapply\b|\bapplying\b|\bpostul\w*)[^!?;\n]{0,60}$"
+    r"|(?:\b(?:send|submit|forward)\b|parvenir|\benvoy\w*|\bsoumett\w*|\btransmett\w*)[^!?;\n]{0,60}?"
+    r"(?:\bc\.?v\b\.?|curriculum|r[ée]sum[ée]|candidature|applications?\b)[^!?;\n]{0,60}$", re.I)
+"""邮箱紧前面(同一分句、60 字内)是投递动作(2026-09-27;search 用于邮箱前 APPLY_VERB_BEFORE 字):「投递」本身
+(apply / postulez)直接算;「寄送」类动词(send / submit / forward / faites parvenir / envoyez / soumettez / transmettez)
+要带上投递物(CV / résumé / curriculum / candidature / application)才算 —— Bell 帖法文版「Pour faire une demande en toute
+confidentialité, envoyez un courriel directement à votre responsable du recrutement ou à retail.recruitment@bell.ca」是便利安排
+(accommodements)的联系邮箱,「envoyez un courriel」不带投递物,照旧排除。"""
 
 APPLY_NOREPLY_RE = re.compile(r"no-?reply|donotreply|do-not-reply|ne-?pas-?repondre", re.I)
 """noreply 类发件箱(GC Jobs 帖里常见)。"""

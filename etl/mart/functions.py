@@ -196,15 +196,31 @@ from mart.constants import BOARD_EXT_TPL, IN_BOARD_STORES, K_ORIGIN, PRINT_BOARD
 from mart.constants import IN_SITE_PAGES, K_REPLACES, K_SITE_HOST, SITE_PAGES_DEAD
 from mart.constants import HOST_WWW_PREFIX, JD_LABEL_HEAD_RE, NAME_FLAT_RE, NAME_FLAT_REPL, NOT_OFFICIAL_HOSTS
 from mart.constants import SAL_DAY_MIN, SAL_UNIT_MIN
+from mart.constants import QUARTER_END_MONTH, QUARTER_RE
+from mart.constants import (
+    SAL_TXT_BIWK_RE, SAL_TXT_CANON_RANGE_TPL, SAL_TXT_CUT_RE, SAL_TXT_DOLLAR, SAL_TXT_FRAC_RE, SAL_TXT_FRAC_TPL,
+    SAL_TXT_INT_TPL, SAL_TXT_NOT_PAY_AFTER_RE, SAL_TXT_NOT_PAY_AHEAD, SAL_TXT_NOT_PAY_BACK, SAL_TXT_NOT_PAY_RE,
+    SAL_TXT_PERIOD_AHEAD_RE, SAL_TXT_TAILS, SAL_TXT_THOUSANDS_RE, SAL_TXT_TOKEN_RE,
+)
+from mart.constants import (
+    ALLOC_NUM_TPL, ALLOC_QUOTE_RE, DATASET_ID_RE, DRAW_NOT_INVITE_STREAMS, DRAW_SELECT_PROVS, DRAW_YTD_DROP_TPL,
+    DRAW_YTD_INVITE_LABEL_TPL, DRAW_YTD_SELECT_LABEL_TPL, K_ALLOC_NOTE, METRIC_INVITATIONS_YTD, METRIC_SELECTIONS_YTD,
+    PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL, UNIT_INVITATIONS,
+)
+from mart.scheme import (
+    AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, OpsExtraBaseIn, SalaryHitIn, YtdLabelIn,
+)
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
+from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
     K_HOWTO_AT, K_HOWTO_EMAILS, K_HOWTO_STATUS, K_HOWTO_UNTIL, K_VERIFY_UNTIL, PRINT_APPLY_TPL,
 )
+from mart.constants import APPLY_CONFIDENTIAL_RE, APPLY_VERB_BEFORE, APPLY_VERB_NEAR_RE
 from mart.scheme import ApplyTally, HowtoRecIn
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
@@ -989,7 +1005,9 @@ def collect_ats_jobs(formatted: dict) -> list:
     """ATS 公司档(processed/<region>/companies/<slug>/)里的岗 → 待评分清单。
     2026-09-24 省份先读地点清洗写回的 province 格、读不到才猜(与 to_ats_job_fields 同口径):原先只拿地点文字猜,
     「Canada - Ottawa - …」认不出省 → 09-23「没有省的岗不判」把 46 条 ON 的 TEER 0-3 岗判成不可提名(九省通道审计查出)。
-    2026-09-26 工时 / 雇佣期随岗带上(判通道要看):ATS 源头没有这两格(to_ats_job_fields 也不带),只有 jdformat 整理版抽的。"""
+    2026-09-26 工时 / 雇佣期随岗带上(判通道要看):ATS 源头没有这两格(to_ats_job_fields 也不带),只有 jdformat 整理版抽的。
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:ats 域给 jobs.json 的岗位行加了 employment_hours / employment_term
+    两格(键名与取值同 Job Bank 仓),这里改读它们(源标注优先,源没写才用整理版,同 emp_of);老数据缺键 = 空串,照常跑。"""
     out: list = []
     if not IN_ATS_COMPANIES.exists():
         return out
@@ -1002,7 +1020,8 @@ def collect_ats_jobs(formatted: dict) -> list:
         ag = bool(AGENCY_RE.search(agency_probe_of(prof)))
         for j in read_table(folder / JOBS_FILE).get(K_JOBS, []):
             ext = ats_ext_of(AtsExtIn(job=j, folder=folder.name))
-            emp = emp_of(EmpOfIn(hours="", term="", rec=formatted.get(ext)))
+            emp = emp_of(EmpOfIn(hours=j.get(K_SRC_EMPLOYMENT_HOURS) or "", term=j.get(K_SRC_EMPLOYMENT_TERM) or "",
+                                 rec=formatted.get(ext)))
             out.append(CollectedJob(ext=ext,
                                     title=j.get(K_TITLE, ""), agency=ag,
                                     prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint="",
@@ -2161,7 +2180,10 @@ def fill_jd_bodies(ctx: MartCtx) -> None:
 def to_ats_job_fields(x: AtsJobIn) -> dict:
     """ATS 岗 → jobs 行的来源侧字段(键序即落盘列序)。
     截止日 validThrough 同板帖口径「有就写,没有就不写」:ats 域只抽雇主招聘系统里明写的那一格(纯日期,jobs.json 的
-    valid_through,键名与板仓同),空串 → None 不落列(2026-09-26 /fe Frank「补」;过了截止日由 seed 的 CLOSE_PAST_DEADLINE 下架)。"""
+    valid_through,键名与板仓同),空串 → None 不落列(2026-09-26 /fe Frank「补」;过了截止日由 seed 的 CLOSE_PAST_DEADLINE 下架)。
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:工时 / 雇佣期两格照 Job Bank 那两格的写法落列(源键同 Job Bank 仓,
+    落列键 employmentTerm / employmentHours 同 to_jb_job_fields);空串与缺键(老数据)都不落列,整理版补空仍归 fill_formatted
+    —— 与评分段 collect_ats_jobs 判通道用的是同一把尺子 emp_of。"""
     return {
         "title": x.job.get("title"), "source": x.ats, "origin": ORIGIN_ATS,
         "country": x.job.get("country"),
@@ -2175,12 +2197,15 @@ def to_ats_job_fields(x: AtsJobIn) -> dict:
         "pilotCommunity": x.job.get("pilotCommunity") or "",
         "pilotEmployer": bool(x.job.get("pilotEmployer")),
         "apprenticeFriendly": False, "datePosted": x.job.get("posted"), "lastSeen": x.seen_at,
+        "employmentTerm": x.job.get(K_SRC_EMPLOYMENT_TERM), "employmentHours": x.job.get(K_SRC_EMPLOYMENT_HOURS),
         K_VALID_THROUGH: x.job.get(K_SRC_VALID_THROUGH) or None,
     }
 
 
 def to_jb_job_fields(j: dict) -> dict:
-    """Job Bank 帖 → jobs 行的来源侧字段(比 ATS 多雇佣形态 + 入职要求四格,E6-06/E6-07A)。"""
+    """Job Bank 帖 → jobs 行的来源侧字段(比 ATS 多雇佣形态 + 入职要求四格,E6-06/E6-07A)。
+    2026-09-27 Frank 勾「Job Bank 截止日」:jobbank 详情解析起帖子行也有截止日(帖页「Advertised until」,键同板仓),照板帖
+    「有就写,没有就不写」落 validThrough;帖页没写(Indeed 转帖)是空串 → 不落列。验尸 / howto 那份更新的由 fill_apply_emails 覆盖。"""
     return {
         "title": j.get("title"), "source": j.get("source") or SOURCE_JOB_BANK,
         "origin": ORIGIN_JOBBANK, "country": j.get("country"),
@@ -2197,6 +2222,7 @@ def to_jb_job_fields(j: dict) -> dict:
         "employmentTerm": j.get("employment_term"), "employmentHours": j.get("employment_hours"),
         "whoCanApply": j.get("who_can_apply"),
         "certificates": j.get("certificates") or None, "education": j.get("education"),
+        K_VALID_THROUGH: j.get(K_SRC_VALID_THROUGH) or None,
     }
 
 
@@ -2750,14 +2776,11 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
     2026-09-26 晚 pnp 抽选按省拆:改读 raw/pnp/draws-*.json 各省一份,基准日期(fetched)也按省取(某省单元失败时
     它那份停在上次成功的日期,不再被别省的成功带着前移)。一份都没有 = 产出方出事,当场报错不出空表(空表灌库会清掉
     线上全部省抽选;原先文件缺失时静默出 0 行)。
+    2026-09-27 读文件那几行原样提成 load_draw_tables(运营统计的「全年已邀请」读同一份,不另写一份读法),口径一字未改。
     """
     rows: list = []
     cut = draw_cut_of(date.today())
-    files = sorted(IN_PNP_DRAWS_DIR.glob(IN_PNP_DRAWS_GLOB))
-    if len(files) == 0:
-        raise RuntimeError(NO_PNP_DRAWS_TPL.format(dir=IN_PNP_DRAWS_DIR, glob=IN_PNP_DRAWS_GLOB))
-    for f in files:
-        pd = read_table_soft(f)
+    for pd in load_draw_tables():
         for prov, v in pd.get(K_PROVINCES, {}).items():
             base = to_draw_base(DrawBaseIn(province=prov, table=v, fetched=pd.get(K_FETCHED, "")))
             for dr in v.get(K_DRAWS, []):
@@ -2773,6 +2796,21 @@ def build_pnp_draws(x: DrawsBuildIn) -> list:
             rows.append(to_ee_draw_row(EeDrawIn(category=cat_key, draw=dr,
                                                 fetched=x.ee_fetched, checklist=x.checklist)))
     return rows
+
+
+def load_draw_tables() -> list:
+    """各省抽选文件(raw/pnp/draws-*.json,一份一省)按文件名序读齐;一份都没有 = 产出方出事,当场报错不出空表。
+    2026-09-27 自 build_pnp_draws 体内原样提出:pnp_draws 与运营统计的「全年已邀请」共用这一份读法。
+
+    @returns 各份文件读出来的整份(坏文件 = 空表,read_table_soft 留痕)。
+    """
+    files = sorted(IN_PNP_DRAWS_DIR.glob(IN_PNP_DRAWS_GLOB))
+    if len(files) == 0:
+        raise RuntimeError(NO_PNP_DRAWS_TPL.format(dir=IN_PNP_DRAWS_DIR, glob=IN_PNP_DRAWS_GLOB))
+    out: list = []
+    for f in files:
+        out.append(read_table_soft(f))
+    return out
 
 
 def load_noc_universe() -> list:
@@ -3058,7 +3096,9 @@ def fill_mb_annual_ops(x: MbAnnualIn) -> None:
 
 def fill_mb_ops(x: OpsProvIn) -> None:
     """MB 有**两个**官方源(月度数据页 + 年报),各自的 url/fetched/统计期都不一样 ——
-    一行的出处必须指向那个数字真正的来源页,别拿月度页给年报的处理天数背书。"""
+    一行的出处必须指向那个数字真正的来源页,别拿月度页给年报的处理天数背书。
+    2026-09-27 Frank 勾「2026 名额小表」:月度块的行带上截至月 asOf(`YYYY-MM`,见 mb_as_of_of)—— 省提名弹框
+    「2026 年配额」卡的「截至」行读它;统计期 period 照旧写「2026 Jan-Aug」。"""
     m = x.data.get(K_MONTHLY) or {}
     year = str(m.get(K_YEAR) or "")
     thru = str(m.get(K_THROUGH_MONTH) or "")
@@ -3066,12 +3106,26 @@ def fill_mb_ops(x: OpsProvIn) -> None:
     if thru:
         ytd = MB_YTD_TPL.format(year=year, month=thru[:MONTH_ABBR_LEN])
     fill_mb_monthly_ops(MbBlockIn(
-        ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=m, as_of="")),
+        ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=m, as_of=mb_as_of_of(m))),
         monthly=m, page=m.get(K_SECTION, ""), year=year, ytd=ytd))
     an = x.data.get(K_ANNUAL) or {}
     fill_mb_annual_ops(MbAnnualIn(
         ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=an, as_of="")),
         annual=an, year=str(an.get(K_YEAR) or ""), section=an.get(K_SECTION, "")))
+
+
+def mb_as_of_of(m: dict) -> str:
+    """MB 月度块的截至月:年 + throughMonth(官方写英文月名全称「August」,取前三个字母转月号)→ `YYYY-MM`
+    (月度表是年初至今累计,截至月就是它写明的那个月;2026-09-27)。认不得给空串 —— 不出「截至」,不猜。
+
+    @param m 月度块。
+    @returns 截至月或空串。
+    """
+    year = str(m.get(K_YEAR) or "")
+    month = MACRO_MONTH_NUM.get(str(m.get(K_THROUGH_MONTH) or "")[:MONTH_ABBR_LEN], "")
+    if year == "" or month == "":
+        return ""
+    return MACRO_ASOF_TPL.format(year=year, month=month)
 
 
 def fill_on_ops(x: OpsProvIn) -> None:
@@ -3121,6 +3175,8 @@ def build_pnp_ops_stats(files: list) -> list:
     ⚠️ 单位不换算:官方发 months 就 processing_months、发 weeks 就 processing_weeks、发 days
     就 processing_days。3 个月折成 13 周 = 替官方编了个它没给的精度(BC 只说「约 80% 的案子在
     3 个月内」)。metric 名带单位后缀,消费端一眼看得出官方到底给的是什么。
+    2026-09-27 Frank 勾「2026 名额小表」(省提名弹框「2026 年配额」卡读本表):各省表出完后再补两类行,列与既有行同形 ——
+    本年没有 allocation 行的省从人工核对表补配额(fill_alloc_gap_ops),各省本年抽选人数合计(fill_draw_ytd_ops)。
     """
     ctx = OpsCtx(rows=[], seqs={})
     for src in files:
@@ -3145,8 +3201,174 @@ def build_pnp_ops_stats(files: list) -> list:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
             # 后者没有这些键 → 这一步对它是空转,不重复出行
             fill_year_metric_ops(arg)
+    year = str(date.today().year)
+    fill_alloc_gap_ops(AllocGapIn(ctx=ctx, table=load_alloc_table(), year=year))
+    fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=load_draw_tables(), year=year))
     warn_stream_key_clash(ctx.rows)
     return ctx.rows
+
+
+def load_alloc_table() -> dict:
+    """人工核对表 pnp_allocations.json(只读;文件没有 = 空表,配额一行不补)。读法同 fill_alloc / macro_alloc_rows(硬依赖档:
+    文件在却读不动就当场抛)。
+
+    @returns 核对表整份。
+    """
+    if not IN_IRCC_ALLOC.exists():
+        return {}
+    return read_table(IN_IRCC_ALLOC)
+
+
+def fill_alloc_gap_ops(x: AllocGapIn) -> None:
+    """本年在运营统计里没有省级 allocation 行的省,从人工核对表补一行(2026-09-27 Frank 勾「2026 名额小表」)。
+
+    AB / MB / ON / SK 各自的官方统计页当年就给配额(各省 *-stats.json 出行);BC、NS 本年配额只在人工核对表里
+    (BC:welcomebc.ca 新闻页 2026-08-18 那条原句;NS:省开放数据集,AIP 另列不并入)。补行只读核对表:period = 年、
+    url = 核对表里该年那一格记的出处、label = note 里含这个数的官方原句,没有原句取出处数据集名(alloc_label_of);
+    该年是空的或没记出处的省不补。已有本年行的省一行不加 —— 同一年两份配额只会让消费端挑错。
+
+    @param x 行累加器、核对表与本年。
+    """
+    have = alloc_provs_of(AllocProvsIn(rows=x.ctx.rows, year=x.year))
+    col = ALLOC_YEAR_PREFIX + x.year
+    for r in x.table.get(K_ROWS, []):
+        prov = r.get(K_PROV, "")
+        value = r.get(col)
+        url = (r.get(K_SOURCES) or {}).get(col) or ""
+        if prov in have or isinstance(value, int) is False or url == "":
+            continue
+        label = alloc_label_of(AllocLabelIn(note=r.get(K_ALLOC_NOTE) or "", value=value, year=x.year, url=url))
+        base = to_ops_extra_base(OpsExtraBaseIn(province=prov, as_of="", period=x.year, url=url,
+                                                fetched=x.table.get(K_CHECKED_AT, "")))
+        add_ops_row(OpsRowIn(ctx=x.ctx, base=base, metric=METRIC_ALLOCATION, scope="", kind="", label=label,
+                             raw=value, unit=UNIT_NOMINATIONS, text="", section="", period=x.year))
+        say(PRINT_ALLOC_GAP_TPL.format(prov=prov, year=x.year, value=value, label=label))
+
+
+def alloc_provs_of(x: AllocProvsIn) -> set:
+    """运营统计里已有本年省级 allocation 行的省(省级 = scope 空;年见 ops_year_of)。
+
+    @param x 运营统计行与本年。
+    @returns 省码集合。
+    """
+    out: set = set()
+    for r in x.rows:
+        if r.get(K_METRIC) == METRIC_ALLOCATION and r.get(K_SCOPE) == "" and ops_year_of(r) == x.year:
+            out.add(r.get(K_PROVINCE, ""))
+    return out
+
+
+def ops_year_of(row: dict) -> str:
+    """一行运营统计的年:period 打头的四位年(「2026」「2026Q2」「2026 Jan-Aug」);period 空取 asOf 的(AB 官方页只给 asOf)。
+
+    @param row 运营统计行。
+    @returns 四位年串;两格都空给空串。
+    """
+    period = row.get(K_PERIOD) or ""
+    if period != "":
+        return period[:YEAR_LEN]
+    return (row.get(K_AS_OF) or "")[:YEAR_LEN]
+
+
+def alloc_label_of(x: AllocLabelIn) -> str:
+    """补配额行的 label:核对表 note 里同时写着这个数(千分位写法)与这一年的那句官方原句;没有就取出处数据集名;
+    都没有给空串(label 只放官方措辞,不编句子)。
+
+    @param x note、配额数、本年与出处。
+    @returns label。
+    """
+    num = ALLOC_NUM_TPL.format(n=x.value)
+    for m in ALLOC_QUOTE_RE.finditer(x.note):
+        if num in m.group(1) and x.year in m.group(1):
+            return m.group(1)
+    return dataset_name_of(x.url)
+
+
+def dataset_name_of(url: str) -> str:
+    """开放数据集页 URL → 数据集名(Socrata 页形 /<类别>/<数据集名>/<4x4 ID>,名里的连字符还原成空格);不是这种页给空串。
+
+    @param url 出处 URL。
+    @returns 数据集名或空串。
+    """
+    head, _sep, last = urlparse(url).path.strip(SLASH).rpartition(SLASH)
+    if DATASET_ID_RE.fullmatch(last) is None:
+        return ""
+    return head.rpartition(SLASH)[2].replace(HYPHEN, SPACE)
+
+
+def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
+    """各省本年抽选人数合计 → 一省一行 invitations_ytd(NS 是 selections_ytd);口径四条见 constants.METRIC_INVITATIONS_YTD
+    (2026-09-27 Frank 勾「2026 名额小表」)。本年有人数没公布的轮次 = 该省不出行,留痕一行。
+
+    @param x 行累加器、各省抽选文件与本年。
+    """
+    for pd in x.tables:
+        for prov, v in pd.get(K_PROVINCES, {}).items():
+            if prov in NON_PNP_PROV or prov == PROV_FED:
+                continue
+            got = draw_ytd_of(DrawYtdOfIn(prov=prov, draws=v.get(K_DRAWS, []), year=x.year))
+            if got.rounds + got.unknown == 0:
+                continue
+            metric = METRIC_INVITATIONS_YTD
+            unit = UNIT_INVITATIONS
+            tpl = DRAW_YTD_INVITE_LABEL_TPL
+            if prov in DRAW_SELECT_PROVS:
+                metric = METRIC_SELECTIONS_YTD
+                unit = UNIT_PEOPLE
+                tpl = DRAW_YTD_SELECT_LABEL_TPL
+            if got.unknown > 0:
+                say(PRINT_YTD_SKIP_TPL.format(prov=prov, metric=metric, year=x.year, n=got.unknown))
+                continue
+            base = to_ops_extra_base(OpsExtraBaseIn(province=prov, as_of=got.latest, period=x.year,
+                                                    url=v.get(K_URL, ""), fetched=pd.get(K_FETCHED, "")))
+            add_ops_row(OpsRowIn(ctx=x.ctx, base=base, metric=metric, scope="", kind="",
+                                 label=ytd_label_of(YtdLabelIn(tpl=tpl, got=got, year=x.year, prov=prov)),
+                                 raw=got.total, unit=unit, text="", section="", period=x.year))
+
+
+def draw_ytd_of(x: DrawYtdOfIn) -> DrawYtdOut:
+    """一省本年带日期的抽选行 → 合计与三个计数。不算邀请的 stream(DRAW_NOT_INVITE_STREAMS)记 dropped 不进合计;
+    人数不是整数(没公布)或日期认不出(不知道是不是今年的)记 unknown —— 调用方见 unknown 就整省不出。
+
+    @param x 省码、该省 draws[] 与本年。
+    @returns 合计、计入行数、未知行数、剔出行数、最近日期。
+    """
+    out = DrawYtdOut(total=0, rounds=0, unknown=0, dropped=0, latest="")
+    skip = DRAW_NOT_INVITE_STREAMS.get(x.prov, ())
+    for dr in x.draws:
+        day = str(dr.get(K_DATE) or "")
+        if day == "":
+            continue
+        if ISO_PREFIX_RE.match(day) is None and DRAW_MONTH_RE.fullmatch(day) is None:
+            out.unknown += 1
+            continue
+        if day[:YEAR_LEN] != x.year:
+            continue
+        if dr.get(K_STREAM, "") in skip:
+            out.dropped += 1
+            continue
+        n = dr.get(K_INVITATIONS)
+        if isinstance(n, int) is False or isinstance(n, bool):
+            out.unknown += 1
+            continue
+        out.total += n
+        out.rounds += 1
+        if draw_day_of(day) > draw_day_of(out.latest):
+            out.latest = day
+    return out
+
+
+def ytd_label_of(x: YtdLabelIn) -> str:
+    """全年合计行的 label(英文,三语界面原样显示):「Sum of N rounds in 2026」;有被剔出合计的行时补一句剔了几行、为什么。
+
+    @param x 模板、合计、本年与省码。
+    @returns label。
+    """
+    label = x.tpl.format(n=x.got.rounds, year=x.year)
+    if x.got.dropped == 0:
+        return label
+    return DRAW_YTD_DROP_TPL.format(label=label, n=x.got.dropped,
+                                    streams=SLASH.join(DRAW_NOT_INVITE_STREAMS.get(x.prov, ())))
 
 
 def to_pnp_occupation_row(x: PnpOccIn) -> dict:
@@ -3334,10 +3556,24 @@ def to_ops_base(d: dict) -> dict:
     """一份省运营统计表的表级底座。
 
     SK 官方没有 asOf,只有季度口径 → asOf 留空、period 放 quarter(其余省 period 留空)。
+    2026-09-27 Frank 勾「2026 名额小表」:官方没写 asOf 时由季度推截至月(「2026Q2」→「2026-06」,见 quarter_as_of_of)——
+    只到月,不编日子;省提名弹框「2026 年配额」卡的「截至」行读它。period 照旧放 quarter。
     """
     return {"province": d.get("province", ""), "program": d.get("program", PROGRAM_PNP),
-            "asOf": d.get("asOf", ""), "period": d.get("quarter", ""),
+            "asOf": d.get("asOf") or quarter_as_of_of(d.get("quarter") or ""), "period": d.get("quarter", ""),
             "url": d.get("url", ""), "fetched": d.get("fetched", "")}
+
+
+def quarter_as_of_of(quarter: str) -> str:
+    """季度口径的截至月:`YYYYQn` → 该季最后一个月 `YYYY-MM`(2026-09-27);认不得给空串。
+
+    @param quarter 季度串(SK 表级 quarter 格)。
+    @returns 截至月或空串。
+    """
+    m = QUARTER_RE.fullmatch(quarter)
+    if m is None:
+        return ""
+    return MACRO_ASOF_TPL.format(year=m.group(1), month=QUARTER_END_MONTH[m.group(2)])
 
 
 def to_ops_sub_base(x: SubBaseIn) -> dict:
@@ -3346,6 +3582,13 @@ def to_ops_sub_base(x: SubBaseIn) -> dict:
     row.update({"url": x.block.get("url", ""), "fetched": x.block.get("fetched", ""),
                 "asOf": x.as_of})
     return row
+
+
+def to_ops_extra_base(x: OpsExtraBaseIn) -> dict:
+    """运营统计补行(人工核对表的配额 / 抽选文件的全年合计;2026-09-27)的出处底座 —— 键与 to_ops_base 逐格同名同序,
+    落出来的行与既有行完全同形。"""
+    return {"province": x.province, "program": PROGRAM_PNP, "asOf": x.as_of, "period": x.period,
+            "url": x.url, "fetched": x.fetched}
 
 
 def to_ops_row(x: OpsRowOut) -> dict:
@@ -5297,10 +5540,14 @@ def salary_from_text(desc: str) -> str:
     行为不复制,这里只负责「把正文里的薪资话找出来」。
     两档:① 金额 + 紧跟周期词(单位是雇主写的);② 线索词 + 100 字内的金额(单位靠量级闸判)。
     两档都过可信度闸(salary_text_ok),过不了整条不认 —— **判不了就不说**,别替雇主编数。
+    2026-09-27 Frank 勾「薪资抽取补三种写法」:两档都认 $ 在数后 / 空格千分位 / 法文与两周周期词 / 标签与金额分两行,
+    并加挂名词闸不吃奖金 / 营收 / 报销 / 罚款(各正则的注释在 constants 第 18 段);正文里没有 $ 直接不挖(SAL_TXT_DOLLAR)。
 
     @param desc 岗位正文。
     @returns 薪资串(形同板自己给的那格);挖不出或不可信给空串。
     """
+    if SAL_TXT_DOLLAR not in desc:
+        return ""
     hit = salary_unit_hit_of(desc)
     if hit != "":
         return hit
@@ -5308,28 +5555,32 @@ def salary_from_text(desc: str) -> str:
 
 
 def salary_unit_hit_of(desc: str) -> str:
-    """第一档:金额后面紧跟周期词。单位是雇主自己写的,只判金额可信不可信。"""
+    """第一档:金额后面紧跟周期词。单位是雇主自己写的,只判金额可信不可信。
+    2026-09-27 Frank 勾「薪资抽取补三种写法」:金额认 $ 在数后与空格千分位、周期词认法文与两周;前后文挂着奖金 / 补贴 / 报销 /
+    营收 / 罚款的金额不认(salary_hit_blocked);挖出的串写成下游认得的规范形(salary_canon_of + 规范周期词)。"""
     for m in SAL_TXT_UNIT_RE.finditer(desc):
-        if SAL_TXT_UPTO_RE.search(desc[max(0, m.start() - SAL_TXT_BACK):m.start()]) is not None:
+        if salary_hit_blocked(SalaryHitIn(desc=desc, start=m.start(1), end=m.end(1))):
             continue
-        unit = SAL_UNIT_YR
-        if SAL_TXT_HR_RE.search(m.group(2)) is not None:
-            unit = SAL_UNIT_HR
-        body = tidy_salary_text(m.group(1))
+        unit = salary_period_unit_of(m.group(2))
+        body = salary_canon_of(tidy_salary_text(m.group(1)))
         if salary_text_ok(SalaryTextIn(body=body, unit=unit)):
-            return tidy_salary_text(m.group(1) + m.group(2))
+            return body + SAL_TXT_TAILS[unit]
     return ""
 
 
 def salary_cue_hit_of(desc: str) -> str:
     """第二档:线索词后 100 字内的金额,没有周期词 —— 量级说了算:
-    下限 ≥ 年薪线当年薪、整段落在时薪区间当时薪;两头都不像(150~20,000 那段,多半是日 / 周 / 双周薪)整条不认。"""
+    下限 ≥ 年薪线当年薪、整段落在时薪区间当时薪;两头都不像(150~20,000 那段,多半是日 / 周 / 双周薪)整条不认。
+    2026-09-27:同第一档过前后文挂名词闸;金额后面紧跟周期词的不猜(雇主写了单位、第一档已判它不可信,见
+    SAL_TXT_PERIOD_AHEAD_RE);标签与金额分两行的形也认(见 SAL_TXT_NEAR_RE)。"""
     m = SAL_TXT_NEAR_RE.search(desc)
     if m is None:
         return ""
-    if SAL_TXT_UPTO_RE.search(desc[max(0, m.start(1) - SAL_TXT_BACK):m.start(1)]) is not None:
+    if salary_hit_blocked(SalaryHitIn(desc=desc, start=m.start(1), end=m.end(1))):
         return ""
-    body = tidy_salary_text(m.group(1))
+    if SAL_TXT_PERIOD_AHEAD_RE.match(desc, m.end(1)) is not None:
+        return ""
+    body = salary_canon_of(tidy_salary_text(m.group(1)))
     if salary_text_ok(SalaryTextIn(body=body, unit=SAL_UNIT_YR)):
         return body + SAL_TXT_YR_TAIL
     if salary_text_ok(SalaryTextIn(body=body, unit=SAL_UNIT_HR)):
@@ -5337,14 +5588,91 @@ def salary_cue_hit_of(desc: str) -> str:
     return ""
 
 
+def salary_hit_blocked(x: SalaryHitIn) -> bool:
+    """这个金额被前后文判成「不是这个岗的工资」了吗:前面紧挨着封顶话术(up to / jusqu'à / pouvant atteindre)、
+    同一分句里最后一个线索词之后挂着奖金 / 补贴 / 报销 / 营收 / 罚款这类词,或金额后面紧挨着「signing bonus / de prime」
+    (2026-09-27 自两档各自的封顶判断收拢成这一处,挂名词两道是同日新增)。
+
+    @param x 正文与金额段起止。
+    @returns 不认这个金额给 True。
+    """
+    if SAL_TXT_UPTO_RE.search(x.desc[max(0, x.start - SAL_TXT_BACK):x.start]) is not None:
+        return True
+    if salary_not_pay_before(x.desc[max(0, x.start - SAL_TXT_NOT_PAY_BACK):x.start]):
+        return True
+    return SAL_TXT_NOT_PAY_AFTER_RE.match(x.desc[x.end:x.end + SAL_TXT_NOT_PAY_AHEAD]) is not None
+
+
+def salary_not_pay_before(back: str) -> bool:
+    """金额前面这一截里,最后一个切点(分句边界 / 线索词 / Pay: 标签)之后有没有挂名词(2026-09-27)。
+
+    @param back 金额前面 SAL_TXT_NOT_PAY_BACK 字的正文。
+    @returns 有挂名词给 True。
+    """
+    cut = 0
+    for m in SAL_TXT_CUT_RE.finditer(back):
+        cut = m.end()
+    return SAL_TXT_NOT_PAY_RE.search(back[cut:]) is not None
+
+
+def salary_period_unit_of(period: str) -> str:
+    """第一档的周期词 → 单位(两周先判,再判小时,其余是年;2026-09-27 起多了两周)。
+
+    @param period 金额后面紧跟的周期词。
+    @returns SAL_UNIT_BIWK / SAL_UNIT_HR / SAL_UNIT_YR。
+    """
+    if SAL_TXT_BIWK_RE.search(period) is not None:
+        return SAL_UNIT_BIWK
+    if SAL_TXT_HR_RE.search(period) is not None:
+        return SAL_UNIT_HR
+    return SAL_UNIT_YR
+
+
+def salary_canon_of(body: str) -> str:
+    """挖出的金额串 → 下游尺子认得的规范写法(2026-09-27):每个数写成 $ 打头、逗号千分位、点小数(「47 000 $」「18,50 $」
+    这类法文写法由此统一;小数位照原文),两个数连成区间;夹在中间的周期词与 max 一概不带(周期由调用方按单位补)。
+
+    @param body tidy 过的金额串(空白已压平、K 已还原成千)。
+    @returns 规范串;一个数都没有给空串。
+    """
+    parts: list = []
+    for tok in SAL_TXT_TOKEN_RE.findall(body):
+        parts.append(canon_money_of(tok))
+    if len(parts) == 0:
+        return ""
+    if len(parts) == 1:
+        return parts[0]
+    return SAL_TXT_CANON_RANGE_TPL.format(lo=parts[0], hi=parts[-1])
+
+
+def canon_money_of(tok: str) -> str:
+    """一个数 → 「$」打头的规范写法:逗号后一两位是法文小数逗号,其余逗号与空格是千分位(2026-09-27)。
+
+    @param tok 金额串里切出的一个数。
+    @returns 规范写法(「$47,000」「$18.50」)。
+    """
+    m = SAL_TXT_FRAC_RE.search(tok)
+    head = tok
+    frac = ""
+    if m is not None:
+        head = tok[:m.start()]
+        frac = m.group(1) or m.group(2)
+    n = int(SAL_TXT_THOUSANDS_RE.sub("", head))
+    if frac == "":
+        return SAL_TXT_INT_TPL.format(n=n)
+    return SAL_TXT_FRAC_TPL.format(n=n, frac=frac)
+
+
 def salary_text_ok(x: SalaryTextIn) -> bool:
-    """挖出来的金额按这个单位讲得通吗(时薪看上限落在区间内、年薪看下限够不够高)。"""
+    """挖出来的金额按这个单位讲得通吗(时薪看上限落在区间内、年薪看下限够不够高)。
+    2026-09-27:非时薪一律先按 SAL_MULT 年化再比年薪线(年薪倍数是 1,判法不变;两周薪 × 26),另加上限 —— 年化后下限就到
+    SAL_ANNUAL_MAX 的是营收 / 预算,不是工资(parse_salary 本来也会把它整条置空,这里不让它先占了薪资格)。"""
     vals = salary_text_vals(x.body)
     if len(vals) == 0:
         return False
     if x.unit == SAL_UNIT_HR:
         return SAL_TXT_HR_MIN <= max(vals) <= SAL_TXT_HR_MAX
-    return min(vals) >= SAL_TXT_YR_MIN
+    return SAL_TXT_YR_MIN <= min(vals) * SAL_MULT[x.unit] < SAL_ANNUAL_MAX
 
 
 def salary_text_vals(body: str) -> list:
@@ -6193,6 +6521,9 @@ def fill_apply_emails(ctx: MartCtx) -> None:
     2026-09-26 /fe Frank「到期即验 + 刷新截止日」:Job Bank 岗的截止日改读验尸台账里的帖页截止日(jobbank 域验尸每次验活
     都重读帖页,延期跟得上;09-26 抽样活帖 9% 帖页截止日比库里晚),缺席才用 howto 只抓一次的那份。帖页截止日连非 Indeed
     的 Job Bank 转帖也有,这些岗从此也带 validThrough。
+    2026-09-27 Frank 勾「Job Bank 截止日」:帖子行自带详情快照里的截止日(to_jb_job_fields)后,这里改成有就覆盖 ——
+    验尸帖页(每次验活重读,延期跟得上)> howto(只抓一次)> 详情快照(首抓那次);原先「行里没有才补」会让快照那份一次性的日期
+    挡住验尸刷新的。非 Job Bank 行这里 until 恒为空串,不受影响。
     """
     howto = load_howto_table()
     page_until = load_page_until()
@@ -6214,7 +6545,7 @@ def fill_apply_emails(ctx: MartCtx) -> None:
         if page != "":
             until = page
             from_page += 1
-        if until != "" and not row.get(K_VALID_THROUGH):
+        if until != "":
             row[K_VALID_THROUGH] = until
             tally.until += 1
     say(PRINT_APPLY_TPL.format(jb=tally.jb, text=tally.text, until=tally.until, page=from_page,
@@ -6261,13 +6592,18 @@ def howto_mail_of(rec: dict) -> str:
 
 
 def text_mail_of(text: str) -> str:
-    """正文里第一个投递语境里的邮箱(noreply / 招聘板与政府域 / 无障碍隐私语境一律跳过;都不是给空串)。"""
+    """正文里第一个投递语境里的邮箱(noreply / 招聘板与政府域 / 无障碍隐私语境一律跳过;都不是给空串)。
+    2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」(其中「邮箱 confidentialité 误删」):「保密」语境不再见了就排 —— 邮箱紧前面是投递动作(is_apply_verb_near)时照收,
+    无障碍 / 便利安排 / 隐私等其余排除语境照旧。"""
     for m in APPLY_MAIL_RE.finditer(text):
         mail = m.group(0).strip(APPLY_MAIL_TRIM).lower()
         if APPLY_NOREPLY_RE.search(mail) or is_skip_apply_host(mail):
             continue
         window = text[max(0, m.start() - APPLY_CTX_BEFORE):m.start() + APPLY_CTX_AFTER]
         if APPLY_SKIP_CTX_RE.search(window):
+            continue
+        if APPLY_CONFIDENTIAL_RE.search(window) and is_apply_verb_near(
+                text[max(0, m.start() - APPLY_VERB_BEFORE):m.start()]) is False:
             continue
         if APPLY_CTX_RE.search(window):
             return mail
@@ -6281,6 +6617,16 @@ def is_skip_apply_host(mail: str) -> bool:
         if word in host:
             return True
     return False
+
+
+def is_apply_verb_near(before: str) -> bool:
+    """邮箱紧前面是不是投递动作:「投递」本身(apply / postulez)直接算,「寄送」类动词(send / faites parvenir / envoyez …)
+    要带上投递物(CV / candidature / application)才算(词表与判法见 constants.APPLY_VERB_NEAR_RE;2026-09-27)。
+
+    @param before 邮箱前面 APPLY_VERB_BEFORE 字的正文。
+    @returns 是投递动作给 True。
+    """
+    return APPLY_VERB_NEAR_RE.search(before) is not None
 
 
 def dead_table() -> dict:
@@ -6305,7 +6651,11 @@ def dead_table() -> dict:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑省提名 offer 门槛与 EE 省别自测(用例集住 scheme 的 MartOfferTest,先例 indexing / ats /
-    gate.scheme);有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(MartOfferTest)
+    gate.scheme);有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
+    2026-09-27 加四组:薪资写法(MartSalaryTextTest)/ 投递邮箱(MartApplyMailTest)/ ATS 工时雇佣期(MartAtsEmpTest)/
+    运营统计补行(MartOpsExtraTest),一个套件跑完。"""
+    suite = unittest.TestSuite()
+    for case in (MartOfferTest, MartSalaryTextTest, MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest):
+        suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

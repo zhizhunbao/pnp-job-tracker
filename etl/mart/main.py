@@ -76,6 +76,7 @@ TOOLS = {
   test        自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立;用例住 scheme 的 MartOfferTest,不读不写
               仓内文件)。手动件,不进任何链;与九个既有键逐对核过互不含(build 链点名的 locations / salary /
               pilot_flag 都不是 test 的子串)。
+              2026-09-27 同一个套件再加四组:薪资写法 / 投递邮箱 / ATS 工时雇佣期 / 运营统计补行(见 functions.run_tests)。
 """
 
 

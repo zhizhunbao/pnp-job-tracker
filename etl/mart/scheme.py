@@ -18,7 +18,11 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 §23 自测(2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立):unittest 用例集 ——「不用 class」的外部库例外,
 先例 indexing.scheme / ats.scheme / gate.scheme,跑法 `python etl/mart/main.py --only test`;被测的 mart.functions 与
 mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环)。
+2026-09-27 同段加四组(薪资写法 / 投递邮箱 / ATS 工时雇佣期 / 运营统计补行);ATS 那组在系统临时目录现造公司档,不碰仓内文件。
 """
+import json
+import re
+import tempfile
 import unittest
 from dataclasses import dataclass
 from datetime import date
@@ -1507,6 +1511,133 @@ class OpsRowOut:
     """统计期(None = 不落该键)。"""
 
 
+@dataclass
+class OpsExtraBaseIn:
+    """to_ops_extra_base() 入参:运营统计补行(人工核对表配额 / 抽选文件全年合计)的出处五格(2026-09-27)。"""
+
+    province: str
+    """省码。"""
+
+    as_of: str
+    """口径日(配额补行没有 = 空串;全年合计 = 最近一轮的日期)。"""
+
+    period: str
+    """统计期(本年,四位年串)。"""
+
+    url: str
+    """出处(核对表里该年那一格的来源 / 该省抽选页)。"""
+
+    fetched: str
+    """取回日(核对表 checkedAt / 抽选文件 fetched)。"""
+
+
+@dataclass
+class AllocGapIn:
+    """fill_alloc_gap_ops() 入参:行累加器 + 人工核对表 + 本年(2026-09-27)。"""
+
+    ctx: OpsCtx
+    """行累加器(各省统计表出完的行都在里面,判「本年有没有 allocation 行」看它)。"""
+
+    table: dict
+    """人工核对表 pnp_allocations.json 整份(只读;文件没有 = 空表)。"""
+
+    year: str
+    """本年(四位年串)。"""
+
+
+@dataclass
+class AllocProvsIn:
+    """alloc_provs_of() 入参。"""
+
+    rows: list
+    """运营统计行。"""
+
+    year: str
+    """本年。"""
+
+
+@dataclass
+class AllocLabelIn:
+    """alloc_label_of() 入参:核对表一行的 note + 本年配额数 + 本年 + 出处。"""
+
+    note: str
+    """核对表该省那一行的 note(官方原句一律用「」括着)。"""
+
+    value: int
+    """本年配额数(在原句里按千分位写法找它)。"""
+
+    year: str
+    """本年。"""
+
+    url: str
+    """本年那一格的出处(开放数据集页 → 取数据集名)。"""
+
+
+@dataclass
+class DrawYtdIn:
+    """fill_draw_ytd_ops() 入参(2026-09-27)。"""
+
+    ctx: OpsCtx
+    """行累加器。"""
+
+    tables: list
+    """各省抽选文件读出来的整份(load_draw_tables;一份一省,外形 {source, fetched, provinces: {省: 块}})。"""
+
+    year: str
+    """本年。"""
+
+
+@dataclass
+class DrawYtdOfIn:
+    """draw_ytd_of() 入参:一省的抽选行 + 本年。"""
+
+    prov: str
+    """省码(挑不算邀请的 stream 用)。"""
+
+    draws: list
+    """该省抽选块的 draws[]。"""
+
+    year: str
+    """本年。"""
+
+
+@dataclass
+class DrawYtdOut:
+    """draw_ytd_of() 出参:一省本年带日期抽选行的合计与三个计数。"""
+
+    total: int
+    """计入的人数合计。"""
+
+    rounds: int
+    """计入的行数(一行 = 一条通道的一轮)。"""
+
+    unknown: int
+    """人数没公布或日期认不出的行数(> 0 = 该省不出合计)。"""
+
+    dropped: int
+    """本年里因「不是邀请」被剔出合计的行数(NB 的 AIP 组)。"""
+
+    latest: str
+    """计入行里最近的日期(原样:ISO 日或只到月的 YYYY-MM)。"""
+
+
+@dataclass
+class YtdLabelIn:
+    """ytd_label_of() 入参。"""
+
+    tpl: str
+    """label 模板(邀请 / 选取两种)。"""
+
+    got: DrawYtdOut
+    """该省合计。"""
+
+    year: str
+    """本年。"""
+
+    prov: str
+    """省码(剔出行的 stream 名按它取)。"""
+
+
 # =========================================================================
 # 11. mart:ee 三表
 # =========================================================================
@@ -2401,7 +2532,21 @@ class SalaryTextIn:
     """挖出的金额串(已归一空白、已还原 K)。"""
 
     unit: str
-    """按哪种单位判(SAL_UNIT_HR / SAL_UNIT_YR)。"""
+    """按哪种单位判(SAL_UNIT_HR / SAL_UNIT_YR)。2026-09-27 起还有 SAL_UNIT_BIWK(两周)。"""
+
+
+@dataclass
+class SalaryHitIn:
+    """salary_hit_blocked() 入参:正文 + 挖到的金额段在正文里的起止(2026-09-27)。"""
+
+    desc: str
+    """岗位正文。"""
+
+    start: int
+    """金额段起点(往前看封顶话术与挂名词)。"""
+
+    end: int
+    """金额段终点(往后看紧挨的挂名词)。"""
 
 
 @dataclass
@@ -3038,3 +3183,434 @@ class MartOfferTest(unittest.TestCase):
         self.assertFalse(row["pnpEligible"])
         self.assertIsNone(row["pnpStream"])
         self.assertEqual(row["eeCategory"], "STEM")
+
+
+class MartSalaryTextTest(unittest.TestCase):
+    """正文挖薪资自测(2026-09-27 Frank 勾「薪资抽取补三种写法」):新写法逐条金标(取证样例原句,出自 Jobillico / Jobboom /
+    CareerBeacon 正文)、非薪资金额反例一律不挖、旧注释里记着的原判照过、挖出的串经下游 parse_salary 单位不变、两道挂名词闸的
+    变异探针。全程只喂字符串,不读不写仓内文件。"""
+
+    def positives(self) -> list[tuple[str, str]]:
+        """手写金标:(正文片段, 该挖出的串)。"""
+        return [
+            ("Salaire : 25$ à 37$ de l'heure", "$25 - $37 per hour"),
+            ("Rémunération : 25$ à 37$", "$25 - $37 per hour"),
+            ("Salaire : 47 000 $ - 50 000 $ par année", "$47,000 - $50,000 per year"),
+            ("Taux horaire : 18,50 $/heure", "$18.50 per hour"),
+            ("Salaire : 23,10 $ l'heure + assurances collectives", "$23.10 per hour"),
+            ("Poste de jour | 20,94 $/h | 4 jours/semaine | Permanent", "$20.94 per hour"),
+            ("Salaire : 22 à 25 $ de l’heure", "$22 - $25 per hour"),
+            ("Salaire annuel entre 47 064 $ et 66 039 $ selon l’expérience", "$47,064 - $66,039 per year"),
+            ("Échelle de rémunération totale : 17, 00 $ - 25, 00 $. Le taux horaire convenu", "$17.00 - $25.00 per hour"),
+            ("Salary: Min. $98 420 yearly", "$98,420 per year"),
+            ("Place of work: Kuujjuaq\nSalary: Min. $98 420 yearly, max. $135 335 yearly (class 94)",
+             "$98,420 - $135,335 per year"),
+            ("Salary: Min. $60 074 - Max. $102 839 a year (Class 9)", "$60,074 - $102,839 per year"),
+            ("Salary: Min.: $43 348 yearly – Max. $71 800 yearly (Class 6)", "$43,348 - $71,800 per year"),
+            ("Salary: Minimum of $63,716 and maximum of $109,329 per year", "$63,716 - $109,329 per year"),
+            ("Pay Grade: TE 26\n\nSalary Range: $2,013.12 - $2,244.03 Bi-Weekly\n\nEmployment Equity Statement",
+             "$2,013.12 - $2,244.03 bi-weekly"),
+            ("## Wage\n\n$ 2,807 to $ 3,448 bi-weekly based on education", "$2,807 - $3,448 bi-weekly"),
+            ("Total earning range: $18.00 - $27.00 The agreed upon hourly rate will be commensurate with experience",
+             "$18.00 - $27.00 per hour"),
+            ("Salary:\n\n$42,000.00 - $92,000.00\nPay Type:\n\nSalaried", "$42,000.00 - $92,000.00 per year"),
+            ("Salary or Pay Band: Pay Band 17 $40.610 to $43.510 (3 step range)", "$40.610 - $43.510 per hour"),
+            ("Candidats de 18 à 25 ans; salaire : 22 $/h", "$22 per hour"),
+            ("Shift Premium: 2nd Shift ($3) 3rd Shift ($4) Weekend ($3) Pay: $25.52/hr", "$25.52 per hour"),
+        ]
+
+    def negatives(self) -> list[str]:
+        """反例:营收、签约奖金、报销上限、罚款、年龄数字、补贴 / 生活费差额、收入潜力、封顶话术、写了两周却是时薪量级 —— 一律不挖。"""
+        return [
+            "Notre entreprise réalise un chiffre d'affaires de 800 000 $ par année.",
+            "The company generates $2 500 000 per year in revenue.",
+            "With annual revenue of $750,000 per year, we are growing fast.",
+            "Rémunération : prime à la signature de 25 000 $",
+            "Compensation: $25,000 signing bonus after 6 months",
+            "Prime de soir de 15 $/h",
+            "Remboursement annuel de 30 000 $ par année pour les études",
+            "Tuition reimbursement up to $5,250 per year",
+            "Remboursement des frais jusqu’à 1 000 $ par année",
+            "Toute absence non motivée entraîne une amende de 20 $ de l’heure.",
+            "Late cancellations incur a fine of $50 per hour.",
+            "Âge : 18 ans et plus. Salaire à discuter.",
+            "Cost of living differential: Minimum of $20 500/year",
+            "The total amount of these allowances will normally fall between $24,595 to $49,517 per year",
+            "vous avez le potentiel de gagner 70 000 $ par an",
+            "Earning potential of over $35/hr in one of our busy salons",
+            "Salaire concurrentiel pouvant atteindre 60 000 $ par année",
+            "Up to $140,000",
+            "Prime de 4$/h",
+            "Wage: $25 - $30 bi-weekly",
+            "starting annual salary of $74.984.00",
+        ]
+
+    def documented(self) -> list[tuple[str, str]]:
+        """旧注释里记着的原判(2026-09-15 那批):照过 —— 串换成规范写法,parse_salary 算出的年薪与文本不变。"""
+        return [
+            ("expected range of compensation for this role is $53,000-$78,000", "$53,000 - $78,000 per year"),
+            ("$22.40 - $25.40 per hour", "$22.40 - $25.40 per hour"),
+            ("Salary: $43,000, per year", "$43,000 per year"),
+            ("Salary: $55K", "$55,000 per year"),
+            ("$4,000 per year", ""),
+            ("$5.95/hour night premium", ""),
+            ("Salary: To be discussed", ""),
+        ]
+
+    def parse(self, raw: str) -> SalaryOut:
+        """下游那把尺子(parse_salary)读挖出的串。"""
+        from mart import functions as fn
+        return fn.parse_salary(SalaryParseIn(raw=raw, guards=SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)))
+
+    def test_new_formats_golden(self) -> None:
+        """新写法逐条金标。"""
+        from mart import functions as fn
+        for text, want in self.positives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.salary_from_text(text), want)
+
+    def test_non_salary_amounts_rejected(self) -> None:
+        """反例一律不挖(空串)。"""
+        from mart import functions as fn
+        for text in self.negatives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.salary_from_text(text), "")
+
+    def test_documented_cases_unchanged(self) -> None:
+        """原判照过:串与金标一致;parse_salary 读规范串与读旧式原串结果相同(年薪与显示文本)。"""
+        from mart import functions as fn
+        old_raw = {"$53,000 - $78,000 per year": "$53,000-$78,000 per year", "$43,000 per year": "$43,000, per year"}
+        for text, want in self.documented():
+            with self.subTest(text=text):
+                got = fn.salary_from_text(text)
+                self.assertEqual(got, want)
+                if want in old_raw:
+                    self.assertEqual(self.parse(got), self.parse(old_raw[want]))
+
+    def test_mined_strings_parse_to_same_unit(self) -> None:
+        """性质:每条挖出的串,下游 parse_salary 都能年化、单位与挖的时候判的一致(时薪 /hr、年薪 /yr、两周 /2wk)。"""
+        for text, want in self.positives():
+            with self.subTest(text=text):
+                out = self.parse(want)
+                shown = out.text or ""
+                self.assertIsNotNone(out.annual)
+                if want.endswith("per hour"):
+                    self.assertTrue(shown.endswith("/hr"), shown)
+                elif want.endswith("bi-weekly"):
+                    self.assertTrue(shown.endswith("/2wk"), shown)
+                else:
+                    self.assertTrue(shown.endswith("/yr"), shown)
+
+    def test_biweekly_annualised_26(self) -> None:
+        """两周薪按 26 期年化(SAL_MULT 的 biwk):$2,013.12–$2,244.03 → 中点 × 26 = 55,343。"""
+        self.assertEqual(self.parse("$2,013.12 - $2,244.03 bi-weekly").annual, 55343)
+
+    def test_not_pay_guard_probe(self) -> None:
+        """变异探针:两道挂名词闸换成永不命中,奖金 / 营收 / 罚款 / 报销那几条反例当场被挖出来 —— 证明拦住它们的是这两道闸,
+        而不是碰巧量级不对。"""
+        from mart import functions as fn
+        never = re.compile(r"(?!x)x")
+        probes = ["Notre entreprise réalise un chiffre d'affaires de 800 000 $ par année.",
+                  "Rémunération : prime à la signature de 25 000 $", "Compensation: $25,000 signing bonus after 6 months",
+                  "Late cancellations incur a fine of $50 per hour.",
+                  "Remboursement annuel de 30 000 $ par année pour les études"]
+        with mock.patch.object(fn, "SAL_TXT_NOT_PAY_RE", never), mock.patch.object(fn, "SAL_TXT_NOT_PAY_AFTER_RE", never):
+            for text in probes:
+                with self.subTest(text=text):
+                    self.assertNotEqual(fn.salary_from_text(text), "")
+        for text in probes:
+            self.assertEqual(fn.salary_from_text(text), "")
+
+
+class MartApplyMailTest(unittest.TestCase):
+    """正文抽投递邮箱自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」(其中「邮箱 confidentialité 误删」)):保密语境里紧挨着投递动作的邮箱要收、便利安排 / 无障碍 / 隐私类
+    照旧排除(Bell 帖英法两版原句)、硬排除词不被投递动词改口的性质、投递动作判据的变异探针。"""
+
+    def positives(self) -> list[tuple[str, str]]:
+        """手写金标:(正文片段, 该抽到的邮箱)。"""
+        return [
+            ("Faites-nous parvenir votre curriculum vitae en toute confidentialité à l’adresse jfg@jean-francoisgiroux.com "
+             "à l’attention de Jean-François Giroux", "jfg@jean-francoisgiroux.com"),
+            ("Please send us your application in complete confidentiality at: rh@groupemontpetit.com, specifying the "
+             "reference number: 26-0123P.", "rh@groupemontpetit.com"),
+            ("Faites parvenir votre CV en toute confidentialité à emplois@acme.ca", "emplois@acme.ca"),
+            ("Postulez en toute confidentialité à carrieres@acme.ca", "carrieres@acme.ca"),
+            ("Apply online or via info@neobridge.ca for confidential consideration.", "info@neobridge.ca"),
+            ("Send your resume to hr@acme.ca", "hr@acme.ca"),
+        ]
+
+    def negatives(self) -> list[str]:
+        """反例:便利安排 / 无障碍 / 隐私 / 泛泛的咨询邮箱。"""
+        return [
+            "Nous encourageons les personnes qui pourraient avoir besoin d’accommodements pendant le processus d’embauche "
+            "à nous en informer. Pour faire une demande en toute confidentialité, envoyez un courriel directement à votre "
+            "responsable du recrutement ou à retail.recruitment@bell.ca afin de prendre les dispositions nécessaires.",
+            "We encourage individuals who may require accommodations during the hiring process to let us know. For a "
+            "confidential inquiry, email your recruiter or retail.recruitment@bell.ca to make arrangements.",
+            "If you require accommodation, please send your request in confidence to accessibility@acme.ca",
+            "Toutes les candidatures seront traitées en toute confidentialité. Questions : info@acme.ca",
+            "Please send your application through our portal; for confidential questions write to help@acme.ca",
+        ]
+
+    def test_golden(self) -> None:
+        """正反金标。"""
+        from mart import functions as fn
+        for text, want in self.positives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.text_mail_of(text), want)
+        for text in self.negatives():
+            with self.subTest(text=text):
+                self.assertEqual(fn.text_mail_of(text), "")
+
+    def test_hard_skip_words_never_overridden(self) -> None:
+        """性质:保密语境 + 紧挨的投递动作,只要窗口里有无障碍 / 便利安排 / 隐私 / 退订 / 平等就业这类词,一律照旧排除。"""
+        from mart import functions as fn
+        for word in ("accommodation", "accessibility", "privacy", "adaptation", "handicap", "disability",
+                     "unsubscribe", "désabonner", "equity"):
+            with self.subTest(word=word):
+                text = "Send your CV in complete confidentiality to hr@acme.ca (" + word + ")"
+                self.assertEqual(fn.text_mail_of(text), "")
+
+    def test_verb_rule_probe(self) -> None:
+        """变异探针:投递动作判据换成永不命中,保密语境那几条正例全部丢掉、不带保密词的那条照收 —— 证明救回它们的是这条判据。"""
+        from mart import functions as fn
+        with mock.patch.object(fn, "APPLY_VERB_NEAR_RE", re.compile(r"(?!x)x")):
+            for text, want in self.positives():
+                with self.subTest(text=text):
+                    if want == "hr@acme.ca":
+                        self.assertEqual(fn.text_mail_of(text), want)
+                    else:
+                        self.assertEqual(fn.text_mail_of(text), "")
+
+
+class MartAtsEmpTest(unittest.TestCase):
+    """ATS 工时 / 雇佣期透传自测(2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」):to_ats_job_fields 落列键名与 Job Bank 同、
+    缺键老数据不落列;collect_ats_jobs 读源两格;评分段(判通道)与岗位装配段(fill_formatted 落列)穷举组合下取值逐格相同。
+    公司档在系统临时目录现造(mock 掉 IN_ATS_COMPANIES),不碰仓内文件。"""
+
+    def src_cells(self) -> list[str | None]:
+        """岗位行一格的四种状态:缺键 / 空串 / 两种有值(None 代表缺键)。"""
+        return [None, "", "full", "part"]
+
+    def term_cells(self) -> list[str | None]:
+        """雇佣期一格的状态(None 代表缺键)。"""
+        return [None, "", "permanent", "casual"]
+
+    def recs(self) -> list[dict | None]:
+        """整理记录的状态:没整理 / 两格都缺 / 只有工时 / 两格都有。"""
+        return [None, {"formatted": "f", "at": "a"}, {"formatted": "f", "at": "a", "hrs": "part"},
+                {"formatted": "f", "at": "a", "hrs": "full", "term": "term"}]
+
+    def job_of(self, n: int, hours: str | None, term: str | None) -> dict:
+        """现造一条 ATS 岗(None = 不写这个键)。"""
+        job: dict = {"title": "Engineer " + str(n), "url": "https://jobs.example.test/" + str(n)}
+        if hours is not None:
+            job["employment_hours"] = hours
+        if term is not None:
+            job["employment_term"] = term
+        return job
+
+    def test_fields_keys_same_as_jobbank(self) -> None:
+        """落列键名与 Job Bank 帖同(employmentTerm / employmentHours);有值照落,空串与缺键经 present_of 都不落列。"""
+        from mart import functions as fn
+        jb = fn.to_jb_job_fields({"employment_term": "term", "employment_hours": "part"})
+        ats = fn.to_ats_job_fields(AtsJobIn(job={"employment_term": "term", "employment_hours": "part"}, ats="lever",
+                                            website=None, seen_at="t"))
+        self.assertEqual((ats["employmentTerm"], ats["employmentHours"]), (jb["employmentTerm"], jb["employmentHours"]))
+        for job in ({}, {"employment_term": "", "employment_hours": ""}):
+            fields = fn.to_ats_job_fields(AtsJobIn(job=job, ats="lever", website=None, seen_at="t"))
+            kept = fn.present_of(fields)
+            self.assertNotIn("employmentTerm", kept)
+            self.assertNotIn("employmentHours", kept)
+
+    def test_collect_and_fill_same_ruler(self) -> None:
+        """穷举 源工时 × 源雇佣期 × 整理记录:评分段 collect_ats_jobs 取到的两格 == 岗位装配段 to_ats_job_fields + fill_formatted
+        落列的两格(缺席按空串比);另断言源标注优先、源空才用整理版、缺键老数据照常跑。"""
+        from mart import functions as fn
+        combos = []
+        jobs = []
+        n = 0
+        for hours in self.src_cells():
+            for term in self.term_cells():
+                for rec in self.recs():
+                    n += 1
+                    job = self.job_of(n, hours, term)
+                    jobs.append(job)
+                    combos.append((job, rec))
+        formatted: dict = {}
+        for job, rec in combos:
+            if rec is not None:
+                formatted[job["url"]] = rec
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "acme"
+            folder.mkdir()
+            (folder / "jobs.json").write_text(json.dumps({"jobs": jobs}), encoding="utf-8")
+            with mock.patch.object(fn, "IN_ATS_COMPANIES", Path(tmp)):
+                got = fn.collect_ats_jobs(formatted)
+        self.assertEqual(len(got), len(combos))
+        by_ext = {}
+        for c in got:
+            by_ext[c.ext] = c
+        for job, rec in combos:
+            with self.subTest(job=job, rec=rec):
+                scored = by_ext[job["url"]]
+                fields = fn.to_ats_job_fields(AtsJobIn(job=job, ats="lever", website=None, seen_at="t"))
+                fn.fill_formatted(FillFormattedIn(fields=fields, rec=rec))
+                shown = (fields.get("employmentHours") or "", fields.get("employmentTerm") or "")
+                self.assertEqual((scored.hours, scored.term), shown)
+                src_h = job.get("employment_hours") or ""
+                if src_h != "":
+                    self.assertEqual(scored.hours, src_h)
+                elif rec is not None:
+                    self.assertEqual(scored.hours, rec.get("hrs") or "")
+                else:
+                    self.assertEqual(scored.hours, "")
+
+
+class MartOpsExtraTest(unittest.TestCase):
+    """运营统计补行自测(2026-09-27 Frank 勾「2026 名额小表」):人工核对表补配额(本年已有行不补、该年没数 / 没出处不补、label 取
+    含本数的原句或数据集名、补完再跑不重复)+ 全年已邀请四条口径(缺数整省不出 / NB 的 AIP 不并入 / NS 另出选取 / QC 与 FED 不出)
+    + 合计与最近日期金标 + 行形与既有行同形 + 变异探针。核对表与抽选文件在用例里现造,不读仓内文件。"""
+
+    def ctx_with_rows(self) -> OpsCtx:
+        """现造各省统计表已出的省级 allocation 行:ON 2026(period 年)、AB(只有 asOf)、SK(period 季度)、MB 只有 2025。"""
+        from mart import functions as fn
+        ctx = OpsCtx(rows=[], seqs={})
+        for prov, period, as_of in (("ON", "2026", ""), ("AB", "", "2026-09-23"), ("SK", "2026Q2", ""), ("MB", "2025", "")):
+            base = fn.to_ops_base({"province": prov, "asOf": as_of, "quarter": period, "url": "u", "fetched": "f"})
+            fn.add_ops_row(OpsRowIn(ctx=ctx, base=base, metric="allocation", scope="", kind="", label="", raw=1,
+                                    unit="spots", text="", section="", period=None))
+        return ctx
+
+    def alloc_table(self) -> dict:
+        """现造人工核对表(形同 pnp_allocations.json)。"""
+        news = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news"
+        ns = "https://data.novascotia.ca/Immigration-and-Migration/Annual-Allocations-for-Immigration-Programs/8rf7-hw2p"
+        return {"checkedAt": "2026-08-15", "rows": [
+            {"prov": "ON", "y2026": 14119, "sources": {"y2026": "https://on.example/2026"}, "note": ""},
+            {"prov": "AB", "y2026": 6603, "sources": {"y2026": "https://ab.example"}, "note": ""},
+            {"prov": "SK", "y2026": 4761, "sources": {"y2026": "https://sk.example"}, "note": ""},
+            {"prov": "MB", "y2026": 8000, "sources": {"y2026": "https://mb.example"},
+             "note": "官方原句「For 2026, Manitoba was allocated 8,000 nominations in total.」"},
+            {"prov": "BC", "y2026": 6254, "sources": {"y2026": news},
+             "note": "「total allocation of 6,214 for 2025」;2026-08-18 条目「has received an additional 1,000 nominations "
+                     "from the federal government, resulting in an allocation of 6,254 for 2026」"},
+            {"prov": "NS", "y2026": 2344, "sources": {"y2026": ns}, "note": "省官方开放数据(NSNP 单列)"},
+            {"prov": "NB", "y2026": None, "sources": {}, "note": ""},
+            {"prov": "PE", "y2026": 1500, "sources": {}, "note": ""},
+            {"prov": "NL", "y2026": 2000, "sources": {"y2026": "https://nl.example/page"}, "note": "无原句"},
+        ]}
+
+    def test_alloc_gap_rows(self) -> None:
+        """只补本年没有行的省(BC / NS / MB / NL),AB(只有 asOf)与 SK(季度 period)算已有;该年空或没出处的 NB / PE 不补;
+        label 取含本数与本年的那句原句(不是 2025 那句)、NS 取数据集名、没有可引的给空串;行与既有行键同名同序;再跑一次不重复。"""
+        from mart import functions as fn
+        ctx = self.ctx_with_rows()
+        before = len(ctx.rows)
+        fn.fill_alloc_gap_ops(AllocGapIn(ctx=ctx, table=self.alloc_table(), year="2026"))
+        added = ctx.rows[before:]
+        by_prov = {}
+        for r in added:
+            by_prov[r["province"]] = r
+        self.assertEqual(set(by_prov), {"BC", "NS", "MB", "NL"})
+        bc = by_prov["BC"]
+        self.assertEqual((bc["metric"], bc["value"], bc["unit"], bc["period"], bc["scope"], bc["scopeKind"], bc["asOf"]),
+                         ("allocation", 6254, "nominations", "2026", "", "", ""))
+        self.assertEqual(bc["label"], "has received an additional 1,000 nominations from the federal government, "
+                                      "resulting in an allocation of 6,254 for 2026")
+        self.assertTrue(bc["url"].startswith("https://www.welcomebc.ca/"))
+        self.assertEqual(bc["fetched"], "2026-08-15")
+        self.assertEqual(by_prov["NS"]["label"], "Annual Allocations for Immigration Programs")
+        self.assertEqual(by_prov["MB"]["label"], "For 2026, Manitoba was allocated 8,000 nominations in total.")
+        self.assertEqual(by_prov["NL"]["label"], "")
+        for r in added:
+            self.assertEqual(list(r.keys()), list(ctx.rows[0].keys()))
+        fn.fill_alloc_gap_ops(AllocGapIn(ctx=ctx, table=self.alloc_table(), year="2026"))
+        self.assertEqual(len(ctx.rows), before + len(added))
+
+    def draw_file(self, prov: str, draws: list[dict]) -> dict:
+        """现造一份抽选文件(形同 draws-*.json:一份一省)。"""
+        return {"fetched": "2026-09-27", "provinces": {prov: {"url": "https://" + prov.lower() + ".example/draws",
+                                                              "draws": draws}}}
+
+    def draw_tables(self) -> list[dict]:
+        """现造各省抽选文件。"""
+        one = self.draw_file
+        return [
+            one("ON", [{"date": "2026-04-30", "stream": "FW", "invitations": 786},
+                       {"date": "2026-04-30", "stream": "IS", "invitations": 277},
+                       {"date": "2026-02-02", "stream": "FW", "invitations": 100},
+                       {"date": "2025-12-10", "stream": "FW", "invitations": None},
+                       {"date": "", "stream": "FW", "invitations": 5}]),
+            one("AB", [{"date": "2026-09-21", "stream": "Law", "invitations": None},
+                       {"date": "2026-09-22", "stream": "Tech", "invitations": 100}]),
+            one("NB", [{"date": "2026-09-18", "stream": "NB Skilled Worker", "invitations": 197},
+                       {"date": "2026-09-10", "stream": "AIP", "invitations": 60},
+                       {"date": "2026-08-20", "stream": "AIP", "invitations": None},
+                       {"date": "2026-07-16", "stream": "NB Express Entry", "invitations": 115}]),
+            one("NS", [{"date": "2026-07", "stream": "Monthly EOI selections", "invitations": 671},
+                       {"date": "2026-06", "stream": "Monthly EOI selections", "invitations": 531},
+                       {"date": "2025-12", "stream": "Monthly EOI selections", "invitations": 400}]),
+            one("QC", [{"date": "2026-09-24", "stream": "Stream 1", "invitations": 86}]),
+            one("FED", [{"date": "2026-09-24", "stream": "CEC", "invitations": 3000}]),
+            one("BC", [{"date": "June 4, 2026", "stream": "Care", "invitations": 10},
+                       {"date": "2026-09-24", "stream": "Tech", "invitations": 426}]),
+            one("PE", [{"date": "2025-09-17", "stream": "Labour", "invitations": 195}]),
+        ]
+
+    def ytd(self) -> dict:
+        """跑一遍全年合计,按省收行。"""
+        from mart import functions as fn
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=self.draw_tables(), year="2026"))
+        out = {}
+        for r in ctx.rows:
+            out[r["province"]] = r
+        return out
+
+    def test_ytd_four_rules(self) -> None:
+        """四条口径:① AB 本年有一轮人数没公布、BC 有一行日期认不出 → 两省不出(ON 去年那轮 null 不影响今年);② NB 的 AIP 两行
+        (含一行 null)不并入;③ NS 出 selections_ytd、单位 people;④ QC、FED 不出。PE 本年没有抽选 → 不出。"""
+        got = self.ytd()
+        self.assertEqual(set(got), {"ON", "NB", "NS"})
+        self.assertEqual((got["NB"]["metric"], got["NB"]["value"], got["NB"]["unit"]), ("invitations_ytd", 312, "invitations"))
+        self.assertIn("excluding 2 AIP rows", got["NB"]["label"])
+        self.assertEqual((got["NS"]["metric"], got["NS"]["value"], got["NS"]["unit"]), ("selections_ytd", 1202, "people"))
+
+    def test_ytd_golden_row(self) -> None:
+        """金标:ON 本年三行 786 + 277 + 100 = 1,163,asOf = 最近一轮 2026-04-30,url = 该省抽选页,period = 本年,label 写三轮;
+        NS 的 asOf 只到月(不编具体哪天);行与 to_ops_base 出的行键同名同序。"""
+        from mart import functions as fn
+        got = self.ytd()
+        on = got["ON"]
+        self.assertEqual((on["value"], on["asOf"], on["url"], on["period"], on["label"]),
+                         (1163, "2026-04-30", "https://on.example/draws", "2026", "Sum of 3 rounds in 2026"))
+        self.assertEqual(got["NS"]["asOf"], "2026-07")
+        ref = OpsCtx(rows=[], seqs={})
+        fn.add_ops_row(OpsRowIn(ctx=ref, base=fn.to_ops_base({"province": "ON"}), metric="allocation", scope="",
+                                kind="", label="", raw=1, unit="spots", text="", section="", period="2026"))
+        self.assertEqual(list(on.keys()), list(ref.rows[0].keys()))
+
+    def test_ytd_rule_tables_probe(self) -> None:
+        """变异探针:把「不算邀请的 stream」表清空,NB 的合计当场变(且那行 null 让 NB 整省不出);把「按选取公布的省」表清空,
+        NS 就被当成邀请 —— 证明 ② ③ 两条读的是那两张表。"""
+        from mart import functions as fn
+        with mock.patch.object(fn, "DRAW_NOT_INVITE_STREAMS", {}):
+            self.assertNotIn("NB", self.ytd())
+        with mock.patch.object(fn, "DRAW_SELECT_PROVS", ()):
+            self.assertEqual(self.ytd()["NS"]["metric"], "invitations_ytd")
+
+    def test_as_of_month_from_period(self) -> None:
+        """截至月(2026-09-27 省提名弹框「2026 年配额」卡的「截至」行):MB 月度块 throughMonth 英文月名 → `YYYY-MM`、
+        SK 季度 → 该季最后一个月;认不得给空串(不猜);官方写了 asOf 的照写不改。"""
+        from mart import functions as fn
+        self.assertEqual(fn.mb_as_of_of({"year": 2026, "throughMonth": "August"}), "2026-08")
+        self.assertEqual(fn.mb_as_of_of({"year": 2026, "throughMonth": "Sept."}), "2026-09")
+        self.assertEqual(fn.mb_as_of_of({"year": 2026, "throughMonth": "Août"}), "")
+        self.assertEqual(fn.mb_as_of_of({"year": 2026}), "")
+        self.assertEqual([fn.quarter_as_of_of(q) for q in ("2026Q1", "2026Q2", "2025Q3", "2025Q4")],
+                         ["2026-03", "2026-06", "2025-09", "2025-12"])
+        self.assertEqual([fn.quarter_as_of_of(q) for q in ("2026", "2026Q5", "")], ["", "", ""])
+        self.assertEqual(fn.to_ops_base({"province": "SK", "quarter": "2026Q2"})["asOf"], "2026-06")
+        ab = fn.to_ops_base({"province": "AB", "asOf": "2026-09-23", "quarter": "2026Q2"})
+        self.assertEqual(ab["asOf"], "2026-09-23")
