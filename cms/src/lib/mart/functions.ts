@@ -41,8 +41,8 @@ import {
   COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
-  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_BOARD,
-  BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO, COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
+  CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_ATS, COUNT_UNSEEN_BOARD,
+  ATS_UNSEEN_DAYS, BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO, COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
@@ -55,7 +55,7 @@ import {
   UTF8,
 } from './constants'
 import type {
-  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CloseUnseenBoardIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
+  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CloseUnseenAtsIn, CloseUnseenBoardIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
   RefreshCityIn, RefreshPoolIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
@@ -1000,6 +1000,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     if (x.reset === false && seen.ids.length > 0) {
       closed = await closeStaleJobs({ client: client, now: now, ids: seen.ids })
       counts[COUNT_UNSEEN_BOARD] = await closeUnseenBoardJobs({ client: client, now: now })
+      counts[COUNT_UNSEEN_ATS] = await closeUnseenAtsJobs({ client: client, now: now })
     }
     await client.query(SQL.MARK_DUPS)
     const hidden = seen.ids.slice(martCount)
@@ -1370,6 +1371,22 @@ async function closeStaleJobs(x: CloseStaleIn): CountOut {
  */
 async function closeUnseenBoardJobs(x: CloseUnseenBoardIn): CountOut {
   const res = await x.client.query(SQL.CLOSE_UNSEEN_BOARD, [x.now, BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * ATS 岗连续 ATS_UNSEEN_DAYS 天一轮都没见到就下架(2026-09-27 Frank「关掉 ATS 僵尸岗」;取舍与当天实查全文见 SQL.CLOSE_UNSEEN_ATS)。
+ * 复用 closeStaleJobs 建好的 seen_ext,所以只能排在它后面。
+ *
+ * @param x 连接与时刻。
+ * @returns 下架的条数。
+ */
+async function closeUnseenAtsJobs(x: CloseUnseenAtsIn): CountOut {
+  const cutoff = new Date(Date.parse(x.now) - ATS_UNSEEN_DAYS * DAY_MS).toISOString()
+  const res = await x.client.query(SQL.CLOSE_UNSEEN_ATS, [x.now, cutoff])
   if (res.rowCount != null) {
     return res.rowCount
   }

@@ -402,6 +402,21 @@ export type CloseStaleIn = {
 }
 
 /**
+ * `closeUnseenAtsJobs` 的入参(对账面 seen_ext 已由 closeStaleJobs 建好;2026-09-27 Frank「关掉 ATS 僵尸岗」)。
+ */
+export type CloseUnseenAtsIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳(写进 closed_at 与 updated_at,也是「往前 ATS_UNSEEN_DAYS 天」的起点)。
+   */
+  now: string
+}
+
+/**
  * `closeUnseenBoardJobs` 的入参(对账面 seen_ext 已由 closeStaleJobs 建好)。
  */
 export type CloseUnseenBoardIn = {

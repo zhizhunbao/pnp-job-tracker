@@ -2288,6 +2288,20 @@ export const CLOSE_UNSEEN_BOARD = `UPDATE jobs SET status='closed', closed_at=$1
            AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
 
 /**
+ * ATS 岗连续多天一轮都没见到就下架(2026-09-27 Frank「关掉 ATS 僵尸岗」)。$1=时刻,$2=上次见到的下限(此刻往前 ATS_UNSEEN_DAYS 天)。
+ * 为什么不照板帖「本轮不在即关」:ATS 逐司抓常抓一半(见上一条 CLOSE_UNSEEN_BOARD;当天实查 Sienna 213 条 6 小时内还见过、
+ * 汇装那一轮没见到),一轮对账会把在招的成批关掉。改看 last_seen(岗每轮进 mart 就被 upsert 刷新):连续多天一轮都没见到 = 源头撤了。
+ * 当天实查线上在架 ATS 1,227 条,本轮见到 255;没见到的 972 条里上次见到 >7 天 478、3-7 天 78、1-3 天 178、24 小时内 238
+ * (Renesas 一家 326 条,它的当前岗位文件是 0 个岗);原先只有 CLOSE_STALE(发布满 30 天)能关它们,9 月入库的一直挂着,
+ * 79 条没有发布日的永远关不掉。
+ * 抓取容器整个停摆时公司文件还在、mart 照样把里面的岗记作本轮见过,NOT EXISTS 那一句挡住,不会整渠道误关;
+ * 误关的行下轮重新出现在 mart,upsert 按 EXCLUDED.status 自愈回在招。须在 CLOSE_STALE 之后跑(seen_ext 由它建表灌数)。
+ */
+export const CLOSE_UNSEEN_ATS = `UPDATE jobs SET status='closed', closed_at=$1, updated_at=$1
+         WHERE status IN ('open', 'campus') AND origin = 'ats' AND last_seen < $2
+           AND NOT EXISTS (SELECT 1 FROM seen_ext s WHERE s.external_id = jobs.external_id)`
+
+/**
  * 同公司同标题同城的重复岗打 is_dup(保最新一条)。
  * 2026-09-18:同组里有雇主直抓(origin = 'ats')的先留它,再比日期 —— 招聘板转发的那份可能只有一段套话
  * (Sienna 推给 Jobillico 的正文只有 335 字企业文化,完整正文只在它自己的招聘站上;同日把 Sienna 接进 ATS 直抓后,

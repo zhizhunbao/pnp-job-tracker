@@ -477,6 +477,17 @@ export const COUNT_PAST_DEADLINE = 'closedPastDeadline'
 export const COUNT_UNSEEN_BOARD = 'closedUnseenBoard'
 
 /**
+ * ATS 岗连续多少天一轮都没见到才下架(2026-09-27 Frank「关掉 ATS 僵尸岗」;取舍见 SQL.CLOSE_UNSEEN_ATS)。
+ * 3 天:逐司抓半截是一两轮的事(Sienna 当天 6 小时内还见过),连续三天一轮都没见到才算源头撤了。
+ */
+export const ATS_UNSEEN_DAYS = 3
+
+/**
+ * /seed 响应里「ATS 岗连续多天没见到下架」那一格的键(2026-09-27 Frank「关掉 ATS 僵尸岗」;值 = 下架条数)。
+ */
+export const COUNT_UNSEEN_ATS = 'closedUnseenAts'
+
+/**
  * 城市快照「近 7 天」口径回看几天(date_posted 是 YYYY-MM-DD varchar,折日期串按字典序比)。
  */
 export const CITY_NEW7_DAYS = 7
