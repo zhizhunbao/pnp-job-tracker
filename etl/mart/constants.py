@@ -596,7 +596,9 @@ NOC_RULES = [
     (r"general office|office (clerk|support)|administrative clerk|filing clerk|\bclerk\b", "14100"),
     (r"shipper|receiver|material handler|warehouse (worker|associate)|order (picker|fulfilment)|"
      r"forklift", "75101"),
-    (r"food service supervisor|retail (supervisor|team lead)|shift supervisor|\bsupervisor\b", "62020"),
+    (r"food service supervisor|(restaurant|kitchen|cafeteria|dining room|banquet|food (assembly|services?)) supervisor|"
+     r"supervisor[,\s-]+food services?", "62020"),
+    (r"retail (supervisor|team lead)", "62010"),
     (r"service station attendant|gas (bar |station )?attendant|parking attendant|\battendant\b", "65100"),
     (r"painter|drywall|roofer|flooring|insulation|glazier", "73100"),
     (r"\binstaller\b|installation tech", "72404"),
@@ -614,6 +616,13 @@ finance/customer success 六条)。
   75101 技工 T5 / 62020 服务 T2 / 65100 服务 T5 / 73100 技工 T3 / 72404 技工 T2 /
   75110 技工 T5。
 最后一条 00012 是**兜底**:管理岗 → TEER0。
+2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」)实撞:62020 那条原写
+「food service supervisor|retail (supervisor|team lead)|shift supervisor|单词边界 supervisor」,裸 supervisor 把源里没写 NOC 的
+「XX Supervisor」一律落进餐饮服务主管(NB 医院放射技师主管、UNB 交通主管、省交通厅公路主管因此被餐饮住宿清单挡掉;
+Jobillico / Jobboom / CareerBeacon 这类不写 NOC 的源里,Home Depot 部门主管、维修主管、学生督导都落了进来)。改为:
+只有带餐饮语境的主管归 62020;零售主管归 62010(Retail sales supervisors,原先也错落 62020);shift supervisor 撤
+(在招 3 条全是零售:Costco 试吃、Familiprix)。其余「XX Supervisor」不硬塞,交官方示例职称表(noc_of_title),
+查不到 = 未分类(CLAUDE.md「未匹配 NOC 标未分类」)。
 """
 
 NON_PNP_PROV = {"QC", "NU"}

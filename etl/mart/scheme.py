@@ -3223,6 +3223,20 @@ class MartOfferTest(unittest.TestCase):
         self.assertIsNone(row["pnpStream"])
         self.assertEqual(row["eeCategory"], "STEM")
 
+    def test_title_noc_supervisors(self) -> None:
+        """标题兜底归类的主管三分(2026-09-27 九省体检 NB / NL 实撞):带餐饮语境的归 62020;零售主管归 62010;
+        裸 supervisor / shift supervisor 不硬塞进 62020(交官方示例职称表,查不到 = 未分类)。金标取在招岗真标题。"""
+        from mart import functions as fn
+        for t in ("food service supervisor", "Restaurant Supervisor", "kitchen supervisor", "cafeteria supervisor",
+                  "unit supervisor - food services"):
+            self.assertEqual(fn.classify_title(t), "62020", t)
+        for t in ("Retail supervisor-south centre mall", "Merchandiser retail team lead"):
+            self.assertEqual(fn.classify_title(t), "62010", t)
+        for t in ("Traffic Supervisor", "Highway Supervisor", "Medical Radiation Technologist 3 (Supervisor)",
+                  "Speech language pathologist 2 - supervisor", "Shift Supervisor", "Maintenance Supervisor",
+                  "Department Supervisor"):
+            self.assertNotEqual(fn.classify_title(t), "62020", t)
+
 
 class MartSalaryTextTest(unittest.TestCase):
     """正文挖薪资自测(2026-09-27 Frank 勾「薪资抽取补三种写法」):新写法逐条金标(取证样例原句,出自 Jobillico / Jobboom /
