@@ -23,15 +23,15 @@
  * (pnpFactsIndexOf);清单卡的命中改认数据层 pnp_stream(见 pnpMatchOf)。
  * 同日「止血 + 补完整」(效果图点头):顶上加「本岗能走的通道」卡(PnpChannelCard);本省抽选卡按数据分三种形
  * (drawsFormOf:分组 / NS 按月选取人数 / 安省改制现状,后两种走 PnpFactCard);排除清单卡只给不可提名的岗。
+ * 2026-09-27 NS 按月与安省改制两种形也改走 PnpDrawGroups 的组头行(Frank「还是横着排的」、勾「安省改一行组头」),PnpFactCard 退役。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-import { drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, factCardOf, shownStreamsOf, streamKeyOf } from './functions'
+import { drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, shownStreamsOf, streamKeyOf } from './functions'
 import { usePnpList } from './hooks'
 import { PnpChannelCard } from './pnpchannelcard'
 import { PnpDrawGroups } from './pnpdrawgroups'
-import { PnpFactCard } from './pnpfactcard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
 
@@ -44,7 +44,6 @@ import type { PnpListSectionIn } from './types'
 export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = true }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh })
   const form = drawsFormOf({ province: job.province, draws })
-  const fact = factCardOf({ t: p.t, province: job.province, draws })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)
@@ -66,7 +65,6 @@ export function PnpListSection({ job, lang, occ, draws, nocDesc = [], showZh = t
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={drawHitStreamsOf(job)}
           open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}
-      {fact != null && <PnpFactCard spec={fact} />}
       {cards}
     </>
   )

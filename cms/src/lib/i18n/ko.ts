@@ -552,6 +552,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.head': '최근 추첨',
   // 2026-09-27 월별 공개 그룹(NS): 회차가 아니라 개월 수로 표시
   'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
+  // 2026-09-27 개편 주(ON) 행: 추첨이 아직 없을 때; 현황 카드의 두 라벨은 카드와 함께 삭제
+  'pnpdraws.noInvYet': '아직 초청 없음',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
@@ -560,8 +562,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpfacts.selected': '선정',
   'pnpfacts.selPeople': '{n}명 선정',
   'pnpfacts.allGroups': '주 전체 {n}개 스트림 보기 ▾',
-  'pnpfacts.invIssued': '초청 발급',
-  'pnpfacts.none': '아직 없음',
   'col.datePosted': '게시일', 'col.broad': '대분류', 'col.teer': 'TEER',
   'col.company': '회사명', 'col.title': '직책', 'col.noc': '직무', 'col.nocCode': 'NOC', 'col.accessibility': '경력 수준',
   'col.country': '국가', 'col.province': '주/도', 'col.city': '시', 'col.district': '구/군', 'col.address': '주소',

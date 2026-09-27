@@ -976,30 +976,6 @@ export type ChannelSpec = {
 }
 
 /**
- * 本岗那一组(本省抽选卡里格子对应的那组)的一格:标签在上、值在下。
- * 2026-09-26 晚 Frank「这个要所有省和通道的格式保持一致吧」:三种抽选卡(分组 / 改制省现状 / 按月选取)共用这一格
- * (FeatCells 一处渲染),末格「来源」是官方页链接。
- * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:分组卡本岗那一组改成组头行,格子只剩安省现状与新斯科舍按月两种卡在用;
- * 「来源」挪到卡片标题那一行右端(SourceLink),链接格随之撤(原 href 那一格)。
- */
-export type FeatCellSpec = {
-  /**
-   * 标签(最新公告 / 已发邀请 / 月份;也作 React 列表键,一卡之内各不同)。
-   */
-  k: string
-
-  /**
-   * 值(日期 / 人数 / 暂无)。
-   */
-  v: string
-
-  /**
-   * 标签的悬停提示(官方原句,如安省最新公告那一句);''=不出。
-   */
-  tip: string
-}
-
-/**
  * 抽选卡标题那一行右端的官方链接(「来源」+ 站名,新开页;三种抽选卡同一处,2026-09-26 晚 Frank 选「标题那一行右端」,问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页,各通道同一个链接)。
  */
 export type SourceLink = {
@@ -1051,27 +1027,6 @@ export type DrawCard = {
 
   /**
    * 标题右端的官方来源(本省抽选页);认不出站名给 null(不出)。
-   */
-  source: SourceLink | null
-}
-
-/**
- * 事实卡(改制省现状 / 按月选取人数;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
- * 2026-09-26 晚 Frank「这个下面还有必要灰字吗」:轮次标签灰字撤(原 label 格)。
- */
-export type FactCardSpec = {
-  /**
-   * 卡标题(同本省抽选卡:「本省最近抽选」;2026-09-26 晚起轮次标签不再拼进标题)。
-   */
-  title: string
-
-  /**
-   * 横排的格子(2026-09-26 晚起与分组卡本岗那一组同一种格;原先是「项 | 值」两列竖排 + 底部一条链接)。
-   */
-  cells: FeatCellSpec[]
-
-  /**
-   * 标题右端的官方来源(同分组卡);认不出站名给 null(不出)。
    */
   source: SourceLink | null
 }
@@ -2918,16 +2873,6 @@ export type PnpChannelCardIn = {
 }
 
 /**
- * FeatCells(抽选卡横排格子,三种卡共用)的 props。
- */
-export type FeatCellsIn = {
-  /**
-   * 各格。
-   */
-  cells: FeatCellSpec[]
-}
-
-/**
  * DrawsHead(抽选卡标题那一行:左标题、右来源,三种卡共用)的 props。
  */
 export type DrawsHeadIn = {
@@ -2955,16 +2900,6 @@ export type SourceLinkIn = {
    * 数据层记的官方页地址。
    */
   url: string
-}
-
-/**
- * PnpFactCard(改制省现状 / 按月选取人数)的 props。
- */
-export type PnpFactCardIn = {
-  /**
-   * 洗好的卡。
-   */
-  spec: FactCardSpec
 }
 
 /**
@@ -3040,26 +2975,6 @@ export type AllGroupsLabelIn = {
    * 轮次标签(官方项目名)。
    */
   label: string
-}
-
-/**
- * factCardOf 的入参。
- */
-export type FactCardOfIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
 }
 
 /**

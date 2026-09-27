@@ -602,6 +602,8 @@ export const jobsZh = {
   'pnpdraws.head': '本省最近抽选',
   // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月公布的那一组(NS)组头计数写几个月,不写几轮
   'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
+  // 2026-09-27 Frank 勾「安省改一行组头」:改制省那一行没抽选时写这一句;原现状卡「已发邀请 / 暂无」两条随卡退役
+  'pnpdraws.noInvYet': '暂无邀请',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
@@ -612,8 +614,6 @@ export const jobsZh = {
   'pnpfacts.selected': '入选',
   'pnpfacts.selPeople': '{n} 人入选',
   'pnpfacts.allGroups': '查看全省 {n} 组 ▾',
-  'pnpfacts.invIssued': '已发邀请',
-  'pnpfacts.none': '暂无',
   // 列名
   // 2026-09-26 晚 Frank「发布时间 改成 发布日期」:显示的只是日期;职位板列名与职位页日期行共用这一条,一起改
   'col.datePosted': '发布日期', 'col.broad': '大分类', 'col.teer': 'TEER',

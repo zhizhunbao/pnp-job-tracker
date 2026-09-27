@@ -558,6 +558,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.head': 'Recent draws',
   // 2026-09-27 monthly group (NS): the head counts months, not rounds
   'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
+  // 2026-09-27 reform-province row (ON) with no rounds yet; the status card's two labels retire
+  'pnpdraws.noInvYet': 'No invitations yet',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
@@ -566,8 +568,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpfacts.selected': 'Selected',
   'pnpfacts.selPeople': '{n} selected',
   'pnpfacts.allGroups': 'All {n} {label} streams ▾',
-  'pnpfacts.invIssued': 'Invitations issued',
-  'pnpfacts.none': 'None yet',
   'col.datePosted': 'Posted', 'col.broad': 'Group', 'col.teer': 'TEER',
   'col.company': 'Company', 'col.title': 'Title', 'col.noc': 'Occupation', 'col.nocCode': 'NOC', 'col.accessibility': 'Level',
   'col.country': 'Country', 'col.province': 'Province', 'col.city': 'City', 'col.district': 'District', 'col.address': 'Address',

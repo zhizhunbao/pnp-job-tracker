@@ -13,6 +13,7 @@
  */
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
+import { makeT } from '@/lib/i18n'
 import { drawStreamNote, eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
@@ -39,7 +40,7 @@ import {
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
-  FactCardOfIn, FactCardSpec, FeatCellSpec, LatestSinceIn, SourceLink, SourceLinkIn,
+  LatestSinceIn, SourceLink, SourceLinkIn,
   MonthRowsIn, RoundRowsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
@@ -622,29 +623,14 @@ function latestSinceOf(x: LatestSinceIn): PnpDraw | null {
 }
 
 /**
- * 抽选卡按月 / 改制现状两种形的内容(分组形另走 PnpDrawGroups;形由 drawsFormOf 判,出卡判据只有一份)。
- * 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月形(NS)改走 PnpDrawGroups 的组头行(monthlyGroupOf),
- * 这里只剩改制现状一种;原 monthlyCardOf 随之删。
- *
- * @param x 取词函数、省码与全部抽选行。
- * @returns 事实卡;分组形、按月形或不出卡给 null。
- */
-export function factCardOf(x: FactCardOfIn): FactCardSpec | null {
-  const form = drawsFormOf({ province: x.province, draws: x.draws })
-  if (form === DRAWS_FORM_STATUS) {
-    return statusCardOf(x)
-  }
-  return null
-}
-
-/**
  * 抽选卡走不走分组形(PnpDrawGroups):带日期的轮次分组,或按月公布的那一组(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」)。
+ * 同日 Frank 勾「安省改一行组头」(看过效果图):改制现状(安省)也改走分组卡的一行组头(statusGroupOf),三种形都走这一张卡,出卡即走分组卡。
  *
  * @param form 抽选卡的形。
  * @returns 走分组卡 = true。
  */
 export function drawGroupsShownOf(form: DrawsForm): boolean {
-  return form === DRAWS_FORM_GROUPS || form === DRAWS_FORM_MONTHLY
+  return form !== DRAWS_FORM_NONE
 }
 
 /**
@@ -659,11 +645,15 @@ export function drawGroupsShownOf(form: DrawsForm): boolean {
  * 同一种横排格子(末格「来源」);标题只留「本省最近抽选」、轮次标签降成灰字;「暂无」不再琥珀加粗(本岗改由整块琥珀底标出)。
  * 同晚 Frank「这个下面还有必要灰字吗」:轮次标签灰字撤(弹框顶上已写省提名名称);「上面这个高亮是不是格式改成和下面的一样的」:
  * 分组卡本岗那一组改成组头行,「来源」随之从末格挪到卡片标题那一行右端(三种卡同一处,sourceLinkOf)。
+ * 2026-09-27 Frank 勾「安省改一行组头」(看过效果图):两格横排改成与其余省同一种组头行(statusGroupOf,原 statusCardOf)——
+ * 名字走通用通道名(pnp.gen.<省>,与上面「本岗能走的通道」卡同一个);改制后没有抽选写「暂无邀请」、有了写那一轮的人数 / 分数;
+ * 日期 = 改制后最近一轮,还没有就写最新公告日;悬停出公告原句;点开列改制后的轮次(没有就不能点)。
+ * 本岗在本省可提名时(GEN_DRAW_STREAM 登记了该省)标命中。上面 ①② 两格与「最新公告」「已发邀请」两个标签随之撤。
  *
- * @param x 取词函数、省码与全部抽选行。
- * @returns 现状卡;不是改制省或改制后没有公告给 null。
+ * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
+ * @returns 这一组;不是改制省或改制后没有公告给 null。
  */
-function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
+function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   const reform = reformOf({ province: x.province })
   if (reform == null) {
     return null
@@ -672,16 +662,48 @@ function statusCardOf(x: FactCardOfIn): FactCardSpec | null {
   if (notice == null) {
     return null
   }
-  const round = latestSinceOf({ province: x.province, draws: x.draws, since: reform.since, kind: KIND_DRAW })
-  let issued = x.t('pnpfacts.none')
-  if (round != null) {
-    issued = round.drawDate
+  const rounds: PnpDraw[] = []
+  for (const d of x.draws) {
+    if (d.province === x.province && d.kind === KIND_DRAW && d.drawDate >= reform.since) {
+      rounds.push(d)
+    }
   }
-  const cells: FeatCellSpec[] = [
-    { k: x.t('tl.tabNews'), v: notice.drawDate, tip: notice.note },
-    { k: x.t('pnpfacts.invIssued'), v: issued, tip: TEXT_NONE },
-  ]
-  return { title: x.t('pnpdraws.head'), cells, source: sourceLinkOf({ t: x.t, url: notice.url }) }
+  rounds.sort(byDrawDateDesc)
+  const genKey = PNP_GEN_HEAD + x.province
+  const en = makeT(LANG_EN)(genKey)
+  let sub = TEXT_NONE
+  if (x.lang !== LANG_EN && x.t(genKey) !== en) {
+    sub = x.t(genKey)
+  }
+  let key = notice.label
+  const registered = GEN_DRAW_STREAM[x.province]
+  if (registered != null) {
+    key = registered
+  }
+  const head = rounds[0]
+  let none = x.t('pnpdraws.noInvYet')
+  let date = notice.drawDate
+  let score: number | null = null
+  if (head != null) {
+    none = invTextOf({ t: x.t, draw: head })
+    date = head.drawDate
+    score = head.score
+  }
+  return cmpGroupOf({
+    t: x.t,
+    none,
+    sub,
+    lang: x.lang,
+    key,
+    name: en,
+    tip: notice.note,
+    date,
+    score,
+    draws: rounds,
+    dim: false,
+    hit: x.hitStreams.includes(key),
+    perMonth: false,
+  })
 }
 
 /**
@@ -1203,27 +1225,31 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组不再单独摊开(三格 + 灰字统计 + 另一套折叠记号撤),
  * 改成与其余组同一种组头行,排最前、浅蓝底,开关收起时也留着;「来源」挪到卡片标题那一行右端(本省抽选页,三种卡同一处)。
  * 2026-09-27 按月公布的省(NS)也走这张卡:按月那一组(monthlyGroupOf)排在带日期的各组之后(NS 只有这一组)。
+ * 同日改制省(安省)也走这张卡:只出改制后那一组(statusGroupOf),改制前的旧通道分组不出(旧通道已全部废止)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 抽选卡;本省分不出组给 null。
  */
 export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
-  const groups = pnpDrawGroupsOf({
+  const gx: PnpDrawGroupsOfIn = {
     t: x.t,
     lang: x.lang,
     province: x.province,
     draws: x.draws,
     hitStreams: x.hitStreams,
-  })
-  const monthly = monthlyGroupOf({
-    t: x.t,
-    lang: x.lang,
-    province: x.province,
-    draws: x.draws,
-    hitStreams: x.hitStreams,
-  })
-  if (monthly != null) {
-    groups.push(monthly)
+  }
+  let groups: EeCmpGroup[] = []
+  if (drawsFormOf({ province: x.province, draws: x.draws }) === DRAWS_FORM_STATUS) {
+    const status = statusGroupOf(gx)
+    if (status != null) {
+      groups.push(status)
+    }
+  } else {
+    groups = pnpDrawGroupsOf(gx)
+    const monthly = monthlyGroupOf(gx)
+    if (monthly != null) {
+      groups.push(monthly)
+    }
   }
   if (groups.length === 0) {
     return null

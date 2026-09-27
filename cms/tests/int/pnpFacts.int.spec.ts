@@ -27,7 +27,7 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
-  allGroupsLabelOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, factCardOf, hasProvDraws, monthRowsOf,
+  allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
 } from '@/components/pnp/functions'
 import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpStream } from '@/components/pnp/types'
@@ -330,7 +330,6 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(drawsFormOf({ province: 'NS', draws: ns })).toBe('monthly')
     expect(monthRowsOf({ province: 'NS', draws: ns }).map((d) => d.drawDate)).toEqual(['2026-07', '2026-06'])
     expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [] })).toEqual([])
-    expect(factCardOf({ t: zh, province: 'NS', draws: ns })).toBeNull()
     const hitNs = drawHitStreamsOf(job({ province: 'NS', noc: '72310', pnpEligible: true }))
     expect(hitNs).toEqual(['Monthly EOI selections'])
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: hitNs })
@@ -348,34 +347,42 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 探针:同一省换成带日的轮次就走分组形 —— 按月与分组的分界是日期形,不是省码
     const daily = [draw({ province: 'NS', stream: 'Monthly EOI selections', drawDate: '2026-07-15', score: null, invitations: 5 })]
     expect(drawsFormOf({ province: 'NS', draws: daily })).toBe('groups')
-    expect(factCardOf({ t: zh, province: 'NS', draws: daily })).toBeNull()
   })
 
   // 同日 lead 定:那一行的标签用通用的「最新公告」(复用 tl.tabNews),不写「EOI 注册开放」—— 公告行是更新页的最新一条,会换
-  it('安省改制现状:最新公告 = 改制后公告日(悬停出原句),改制后没抽选写「暂无」;有了就写那一轮的日期', () => {
+  // 2026-09-27 Frank 勾「安省改一行组头」:两格横排改成与其余省同一种组头行,名字 = 通道卡那个通用通道名
+  it('安省改制现状:一行组头(名字同通道卡),没抽选写「暂无邀请」、日期 = 最新公告日(悬停出原句);有了写那一轮', () => {
     const note = 'portal now open to Ontario Workforce Priority Stream expressions of interest'
     const url = 'https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp-invitations-apply'
     const on = [
       draw({ province: 'ON', label: 'OINP', drawDate: '2026-04-23', stream: 'Employer Job Offer: Foreign Worker stream', url }),
       draw({ province: 'ON', label: 'OINP', kind: 'notice', drawDate: '2026-08-04', stream: '', score: null, invitations: null, note, url }),
     ]
-    const card = factCardOf({ t: zh, province: 'ON', draws: on })
+    expect(drawsFormOf({ province: 'ON', draws: on })).toBe('status')
+    expect(drawGroupsShownOf('status')).toBe(true)
+    const hitOn = drawHitStreamsOf(job({ province: 'ON', noc: '63200', pnpEligible: true }))
+    expect(hitOn).toEqual(['Ontario Workforce Priority Stream'])
+    const card = drawCardOf({ t: zh, lang: 'zh', province: 'ON', draws: on, hitStreams: hitOn })
     expect(card?.title).toBe('本省最近抽选')
-    expect(card?.cells.map((c) => [c.k, c.v])).toEqual([['最新公告', '2026-08-04'], ['已发邀请', '暂无']])
     expect(card?.source).toEqual({ label: '来源', text: 'ontario.ca ↗', href: url })
-    expect(card?.cells[0]?.tip).toBe(note)
-    expect(factCardOf({ t: en, province: 'ON', draws: on })?.cells.slice(0, 2).map((c) => [c.k, c.v]))
-      .toEqual([['Latest updates', '2026-08-04'], ['Invitations issued', 'None yet']])
-    expect(factCardOf({ t: ko, province: 'ON', draws: on })?.cells.slice(0, 2).map((c) => [c.k, c.v]))
-      .toEqual([['최신 공지', '2026-08-04'], ['초청 발급', '아직 없음']])
+    expect(card?.others).toEqual([])
+    expect(card?.hits.map((g) => [g.name, g.sub, g.score, g.date, g.rounds, g.expandable, g.tip]))
+      .toEqual([['ON Workforce Priority', 'ON 劳动力优先', '暂无邀请', '2026-08-04', '', false, note]])
+    const enCard = drawCardOf({ t: en, lang: 'en', province: 'ON', draws: on, hitStreams: hitOn })
+    expect(enCard?.hits.map((g) => [g.name, g.sub, g.score])).toEqual([['ON Workforce Priority', '', 'No invitations yet']])
+    expect(drawCardOf({ t: ko, lang: 'ko', province: 'ON', draws: on, hitStreams: hitOn })?.hits[0]?.score).toBe('아직 초청 없음')
+    // 改制前的旧通道轮次不出;改制后有了抽选就写那一轮
     const after = [...on, draw({ province: 'ON', label: 'OINP', drawDate: '2026-10-01', stream: 'Ontario Workforce Priority' })]
-    expect(factCardOf({ t: zh, province: 'ON', draws: after })?.cells[1]).toMatchObject({ v: '2026-10-01' })
+    expect(drawCardOf({ t: zh, lang: 'zh', province: 'ON', draws: after, hitStreams: hitOn })?.hits
+      .map((g) => [g.score, g.date, g.rounds, g.rows.length])).toEqual([['最低 60 分', '2026-10-01', '1 轮', 1]])
+    // 不可提名的安省岗:同一行照出,不标命中
+    expect(drawCardOf({ t: zh, lang: 'zh', province: 'ON', draws: on, hitStreams: [] })?.others.map((g) => g.hit)).toEqual([false])
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
     const qc = [draw({ province: 'QC', label: 'PSTQ', stream: 'Stream 1', drawDate: '2026-09-24', score: 634, invitations: 86 })]
     expect(drawsFormOf({ province: 'QC', draws: qc })).toBe('none')
-    expect(factCardOf({ t: zh, province: 'QC', draws: qc })).toBeNull()
+    expect(drawGroupsShownOf('none')).toBe(false)
     expect(cellSaysCards(job({ province: 'QC', noc: '21231' }), [], qc)).toBe(false)
   })
 

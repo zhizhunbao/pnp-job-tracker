@@ -203,6 +203,13 @@ export const GEN_DRAW_STREAM: Record<string, string> = {
    * 新斯科舍:NS 技术工人(NSNP 各流与 AIP 同一个 EOI 池,官方只发月度总数;组名是 etl 给按月行起的名字,2026-09-27)。
    */
   NS: 'Monthly EOI selections',
+
+  /**
+   * 安大略:ON 劳动力优先(2026-06 改制后只剩 Ontario Workforce Priority Stream 一条,官方公告原句「portal now open to Ontario
+   * Workforce Priority Stream expressions of interest」;抽选卡那一行的组键,显示名走 pnp.gen.ON,同通道卡;
+   * 2026-09-27 Frank 勾「安省改一行组头」(看过效果图))。
+   */
+  ON: 'Ontario Workforce Priority Stream',
 }
 
 /**
