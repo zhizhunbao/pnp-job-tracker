@@ -670,6 +670,53 @@ PE「have a full-time, non-seasonal (i.e. permanent or minimum of two years) job
 2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」(首页评估:在招去重里 7,790 条兼职或非长期岗照挂通道名,ON 3,721);
 同日拍「按官方原句落」,曼省合同工「不卡」。"""
 
+PROV_OFFER_QUOTE = {
+    "AB": (
+        "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility",
+        ("All applicants, including PGWP holders, must have a full-time job offer or employment contract from an "
+         "Alberta employer to work in their current occupation in Alberta when the application is submitted and when "
+         "we assess it."),
+        ("The following individuals are not eligible to apply for or be nominated under the Alberta Opportunity "
+         "Stream, even if they have a job offer to work 30 hours a week or more in a 12-month period: part-time, "
+         "casual or seasonal employees, regardless of their working hours"),
+    ),
+}
+"""省 → offer 形态门槛的出处页与官方原句(出处页, 原句…)(2026-09-27 Frank 勾「门槛卡」:省提名弹框「本岗通道的门槛」卡的
+「雇主 offer」行读它)。过不了的取值照旧只写在 PROV_OFFER_BLOCKED 一处,offer_form_rows 按省把两张表拼成 pnp_requirements 行
+—— 评分段 offer_fits 与展示读同一份取值。原句逐字取自 crawl 缓存里的官方页(ab-aaip 缓存,2026-09-27 核);先上 AB,
+其余省随门槛卡分批逐省核网址与原句再补(PROV_OFFER_BLOCKED 注释里的旧路径不拿来拼网址)。"""
+
+OFFER_FORM_STREAM = "Job offer (all streams)"
+"""offer 形态门槛行的通道名:本省凡要雇主 offer 的流都成立。名字里不带任何流名 —— 判定引擎按通道名正则挑行
+(lib/pathways 的 reqStream),挑不到它。"""
+
+OFFER_FORM_SUBJECT = "offer"
+"""offer 形态门槛行的主体:不写 applicant / employer —— 判定引擎与门槛量尺只按这两个值分派,新行不进判定(判定已在评分段)。"""
+
+OFFER_FORM_FACTOR = "offerForm"
+"""offer 形态门槛的因素名。"""
+
+OFFER_FORM_OP = "notIn"
+"""offer 形态门槛的算子:工时 / 雇佣期取值不在 valueCode 那几个里才过。"""
+
+OFFER_FORM_VALUE_SEP = ","
+"""过不了的取值拼成编码串的分隔符(value 列是整数,编码串按惯例折进 basis 的 valueCode)。"""
+
+OFFER_QUOTE_SEP = " … "
+"""同一页两句原文之间的省略号(两句都是逐字原文,中间隔了别的段落)。"""
+
+OFFER_FORM_LABEL_TPL = "Full-time job offer; not eligible: {forms}"
+"""offer 形态门槛行的英文摘要(同别的条文行:label 是摘要,valueText 是原文)。"""
+
+OFFER_FORM_LABEL_SEP = ", "
+"""英文摘要里取值之间的分隔符。"""
+
+OFFER_FORM_SECTION = "Job offer"
+"""offer 形态门槛行的出处节名。"""
+
+OFFER_FORM_FETCHED = "2026-09-27"
+"""offer 形态原句的核对日(逐字对过 crawl 缓存里的官方页)。"""
+
 TEER_SKILLED = (0, 1, 2, 3)
 """技能岗 TEER 集(粗筛通用档)。"""
 

@@ -1234,6 +1234,23 @@ class ReqRowIn:
 
 
 @dataclass
+class OfferFormIn:
+    """to_offer_form_table() / to_offer_form_rule() 入参(2026-09-27 门槛卡批一)。"""
+
+    prov: str
+    """省码。"""
+
+    url: str
+    """出处页。"""
+
+    quotes: tuple
+    """官方原句(一到几句,逐字)。"""
+
+    blocked: tuple
+    """过不了的工时 / 雇佣期取值(PROV_OFFER_BLOCKED 那一省)。"""
+
+
+@dataclass
 class ScoreFactorIn:
     """to_pnp_score_factor_row() 入参。"""
 
@@ -2933,6 +2950,28 @@ class MartOfferTest(unittest.TestCase):
     雇佣期穷举(含空值)对照手写金标 / pnp_eligible 与 pnp_stream 带门槛前后的性质(过门槛 = 原判,不过 = 两格都不挂)/
     QC、NU 不属 PNP 一律不挂 / 魁省不挂 EE 类别 / emp_of 取值口径与 fill_formatted 落列逐格不变 / 评分行整行接线。
     形制照宪法判定层测试:穷举输入断言性质 + 手写金标 + 变异探针,不做快照矩阵;全程不读不写仓内文件(省表在用例里现造)。"""
+
+    def test_offer_form_rows(self) -> None:
+        """offer 形态门槛行(2026-09-27 门槛卡批一):只出登记了原句的省(先上 AB);取值编码与 PROV_OFFER_BLOCKED 那一省逐值相同
+        (评分与展示读同一份,变异探针:改门槛表行跟着变);主体不是 applicant / employer(不进判定);行键与各省门槛文件出的行同名同序。"""
+        from mart import functions as fn
+        rows = fn.offer_form_rows()
+        self.assertEqual([r["province"] for r in rows], ["AB"])
+        ab = rows[0]
+        self.assertEqual(ab["basis"], "valueCode=part,seasonal,casual")
+        self.assertIsNone(ab["value"])
+        self.assertEqual((ab["subject"], ab["factor"], ab["op"]), ("offer", "offerForm", "notIn"))
+        self.assertIn("must have a full-time job offer", ab["valueText"])
+        self.assertIn("part-time, casual or seasonal employees", ab["valueText"])
+        self.assertEqual(ab["url"], "https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility")
+        self.assertNotIn(ab["subject"], ("applicant", "employer"))
+        ref = fn.to_pnp_requirement_row(ReqRowIn(base=fn.to_req_table_base({"province": "AB"}), rule={"factor": "language"},
+                                                 seq=0))
+        self.assertEqual(list(ab.keys()), list(ref.keys()))
+        with mock.patch.object(fn, "PROV_OFFER_BLOCKED", {"AB": ("part",)}):
+            self.assertEqual(fn.offer_form_rows()[0]["basis"], "valueCode=part")
+        with mock.patch.object(fn, "PROV_OFFER_BLOCKED", {}):
+            self.assertEqual(fn.offer_form_rows(), [])
 
     def golden_blocked(self) -> dict[str, set[str]]:
         """手写金标:各省官方原句逐字读成「卡哪几个值」(与 constants.PROV_OFFER_BLOCKED 各写一份、互相对照;原句见该常量)。

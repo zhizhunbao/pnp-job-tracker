@@ -3427,7 +3427,9 @@ ABR_COND_LOCAL = "ab-local-experience"
 """阿省境内经验替代行的条件标记。"""
 
 ABR_BASIS_WINDOW_TPL = "windowMonths={n}"
-"""替代行把窗口期写进 basis。"""
+"""替代行把窗口期写进 basis。
+2026-09-27 Frank 勾「门槛卡」:通用 24 个月那行也写(官方原句「within the last 30 months」,原先只写进 label)——
+省提名弹框「本岗通道的门槛」卡按它出「近 30 个月内」;判定引擎与门槛量尺都不读 windowMonths(只认 employerTenure),判定不变。"""
 
 ABR_SECTION_LANG_TABLE = "Language requirements — Table 2"
 """语言两档的出处节名。"""
@@ -3622,6 +3624,40 @@ ABR_PROBLEM_RR_LANG = "乡村振兴语言表没解析到"
 
 ABR_RR_EXP_BASIS = "windowMonths=18"
 """乡村振兴经验行的口径:近 18 个月内。"""
+
+ABR_TOURISM_STREAM = "AAIP Tourism and Hospitality Stream"
+"""通道名:旅游酒店流(要求行照 AAIP 各流的写法带「AAIP」前缀;职业清单那份 AB_TOURISM_STREAM 沿用清单页的叫法)。"""
+
+ABR_SECTION_TOURISM = "Tourism and Hospitality Stream — Eligibility"
+"""段名:旅游酒店流资格要求。"""
+
+ABR_TOURISM_EXP_BASIS = "employerTenure"
+"""旅游酒店经验行的口径:在现雇主处在职(官方原句「must have been for the same employer as your current Alberta job
+offer」)—— 同 MB SWM / ON 的 employerTenure 先例,判定引擎只摆门槛不判定。"""
+
+ABR_TOURISM_RULES = (
+    (re.compile(r"you must have been working full-time \(30 hours per week minimum\) with an approved Tourism and "
+                r"Hospitality employer, in one of the eligible occupations, for a minimum of (\d+) consecutive months "
+                r"\(or minimum of 780 hours\)"),
+     FACTOR_EXPERIENCE, UNIT_MONTHS,
+     "{n} consecutive months (or 780 hours) of full-time work with your current approved Tourism and Hospitality employer",
+     "旅游酒店经验要求没解析到"),
+    (re.compile(r"minimum of (\d+) for each English language skill, or minimum of \d+ for each French language skill"),
+     FACTOR_LANGUAGE, UNIT_CLB, "CLB {n} in each English (or NCLC {n} in each French) language skill",
+     "旅游酒店语言要求没解析到"),
+    (re.compile(r"You must have a full-time job offer or employment contract for an eligible occupation in Alberta with "
+                r"your current employer\."),
+     FACTOR_JOB_OFFER, "", "Full-time job offer or employment contract in an eligible occupation with your current employer",
+     "旅游酒店 offer 要求没解析到"),
+    (re.compile(r"Your current employment, and Alberta job offer must be with a single, approved Tourism and Hospitality "
+                r"employer\."),
+     FACTOR_JOB_OFFER, "", "Current employment and job offer with a single approved Tourism and Hospitality employer",
+     "旅游酒店合格雇主要求没解析到"),
+    (re.compile(r"you must have completed a minimum of high school education equivalent to Canadian standards"),
+     FACTOR_EDUCATION, "", "Minimum high school education equivalent to Canadian standards", "旅游酒店学历要求没解析到"),
+)
+"""旅游酒店流五条(2026-09-27 Frank 勾「门槛卡」:先上 AB、缺的补抓 —— 这条流 1,397 条在招岗原先一条门槛都没有):
+经验与语言是数值行,offer 两条与学历是条文行;原句取自 crawl 缓存里的官方资格页(AB_TOURISM_URL,九省通道审计时已落缓存)。"""
 
 AB_DHCP_URL = "https://www.alberta.ca/dedicated-health-care-pathway"
 """AAIP 医疗专线页(Express Entry / Non-Express Entry 两个选项同页)。地址来自 EE 流资格页正文里的链接

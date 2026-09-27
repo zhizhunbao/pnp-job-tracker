@@ -347,6 +347,9 @@ from pnp.constants import (
 """2026-09-13「抓」批(ON 三条 EJO 流关闭通告 / AB Express Entry 流与乡村振兴流 / MB 国际教育流三路径)
 的常量单列一块 —— 同上一块的理由:主块按字母序排满,批量插名易错行;ruff 未启 isort,多块合法。"""
 from pnp.scheme import MbIesTableIn, RuleRowsIn
+from pnp.constants import (  # 2026-09-27 门槛卡批一(AB 旅游酒店流门槛)新增
+    ABR_SECTION_TOURISM, ABR_TOURISM_EXP_BASIS, ABR_TOURISM_RULES, ABR_TOURISM_STREAM,
+)
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -3814,7 +3817,8 @@ def ab_language_reqs(txt: str) -> ReqsOut:
 
 
 def ab_experience_reqs(txt: str) -> ReqsOut:
-    """经验:两条「或」款各落一行(#320)——通用 24 个月 + 阿省境内 12 个月的条件行。"""
+    """经验:两条「或」款各落一行(#320)——通用 24 个月 + 阿省境内 12 个月的条件行。
+    2026-09-27 Frank 勾「门槛卡」:通用行也把窗口期写进 basis(见 ABR_BASIS_WINDOW_TPL)。"""
     rows: list = []
     problems: list = []
     any_m = ABR_EXP_ANY_RE.search(txt)
@@ -3823,6 +3827,7 @@ def ab_experience_reqs(txt: str) -> ReqsOut:
         label = ABR_EXP_LABEL_TPL.format(months=any_m.group(1), window=any_m.group(2),
                                          ab_months=ab_m.group(1), ab_window=ab_m.group(2))
         rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(any_m.group(1)), unit=UNIT_MONTHS,
+                                    basis=ABR_BASIS_WINDOW_TPL.format(n=any_m.group(2)),
                                     section=ABR_SECTION_EXP, label=label)))
         rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(ab_m.group(1)), unit=UNIT_MONTHS,
                                     applies_condition=ABR_COND_LOCAL,
@@ -3921,6 +3926,19 @@ def ab_rr_reqs() -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def ab_tourism_reqs() -> ReqsOut:
+    """旅游酒店流:五条(同雇主在职 6 个月 + 语言一档 + offer 两条 + 学历),读 crawl 缓存里的官方资格页
+    (2026-09-27 Frank 勾「门槛卡」:先上 AB、缺的补抓 —— 这条流原先一条门槛都没有)。经验行标同雇主在职口径。"""
+    html = ab_page_html(AbPageIn(url=AB_TOURISM_URL, title=AB_TOURISM_TITLE))
+    txt = fold_ws(text_of_html(TextOfHtmlIn(html=html, drop_junk=True, main_only=True)))
+    part = rule_rows(RuleRowsIn(to_row=to_ab_req, txt=txt, stream=ABR_TOURISM_STREAM, url=AB_TOURISM_URL,
+                                section=ABR_SECTION_TOURISM, rules=ABR_TOURISM_RULES))
+    for r in part.rows:
+        if r[K_FACTOR] == FACTOR_EXPERIENCE:
+            r[K_BASIS] = ABR_TOURISM_EXP_BASIS
+    return part
+
+
 def ab_dhcp_text() -> str:
     """医疗专线页正文:缓存有就读缓存,没有直连取回并经 put_cached_page 落 crawl 层(链自 EE 流资格页)。
     2026-09-24 取页拆到 ab_dhcp_html(build_ab 的医护职业清单要读 <li> 结构,两处共用一份取页)。"""
@@ -3970,7 +3988,8 @@ def ab_dhcp_reqs() -> ReqsOut:
 
 
 def build_ab_req() -> None:
-    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流 + 医疗专线。"""
+    """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流 + 医疗专线。
+    2026-09-27 Frank 勾「门槛卡」:加旅游酒店流(ab_tourism_reqs)。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_REQ))
     txt = page_text(PageTextIn(url=AB_AOS_URL, timeout_s=ABR_TIMEOUT_S,
                                drop_junk=False, main_only=True))
@@ -3984,7 +4003,7 @@ def build_ab_req() -> None:
     employer = ab_employer_reqs(emp_txt)
     reqs += employer.rows
     problems += employer.problems
-    for part in (ab_ee_reqs(), ab_rr_reqs(), ab_dhcp_reqs()):
+    for part in (ab_ee_reqs(), ab_rr_reqs(), ab_dhcp_reqs(), ab_tourism_reqs()):
         reqs += part.rows
         problems += part.problems
     if problems:

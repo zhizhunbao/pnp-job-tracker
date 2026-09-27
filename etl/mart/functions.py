@@ -208,6 +208,11 @@ from mart.constants import (
     PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL, UNIT_INVITATIONS,
 )
 from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INVITATIONS
+from mart.constants import (
+    OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
+    OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
+)
+from mart.scheme import OfferFormIn
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, OpsExtraBaseIn, SalaryHitIn, YtdLabelIn,
 )
@@ -2888,7 +2893,40 @@ def build_pnp_requirements(files: list) -> list:
             say(REQ_NO_PROVINCE_TPL.format(name=src.name, n=len(tbl[K_REQUIREMENTS])))
         for i, r in enumerate(tbl.get(K_REQUIREMENTS, [])):
             rows.append(to_pnp_requirement_row(ReqRowIn(base=base, rule=r, seq=i)))
+    rows += offer_form_rows()
     return rows
+
+
+def offer_form_rows() -> list:
+    """offer 形态门槛 → pnp_requirements 行,一省一行(2026-09-27 Frank 勾「门槛卡」:弹框「本岗通道的门槛」卡的「雇主 offer」行)。
+    过不了的取值取 PROV_OFFER_BLOCKED(与评分段 offer_fits 同一张表),出处与原句取 PROV_OFFER_QUOTE;没登记原句的省不出行。
+    行形与各省门槛表出的行同形(to_pnp_requirement_row):取值编码串照惯例折进 basis 的 valueCode,valueText 是原文。
+
+    @returns 行。
+    """
+    rows: list = []
+    for prov, spec in PROV_OFFER_QUOTE.items():
+        blocked = PROV_OFFER_BLOCKED.get(prov)
+        if blocked is None:
+            continue
+        x = OfferFormIn(prov=prov, url=spec[0], quotes=tuple(spec[1:]), blocked=tuple(blocked))
+        rows.append(to_pnp_requirement_row(ReqRowIn(base=to_req_table_base(to_offer_form_table(x)),
+                                                    rule=to_offer_form_rule(x), seq=len(rows))))
+    return rows
+
+
+def to_offer_form_table(x: OfferFormIn) -> dict:
+    """offer 形态门槛的表级底座(键同各省门槛文件的表头,交 to_req_table_base 归一)。"""
+    return {"province": x.prov, "program": PROGRAM_PNP, "url": x.url, "pageUrl": x.url, "guideEffective": "",
+            "fetched": OFFER_FORM_FETCHED}
+
+
+def to_offer_form_rule(x: OfferFormIn) -> dict:
+    """offer 形态门槛的一条(键同各省门槛文件 requirements[] 的一条;value 是编码串,to_pnp_requirement_row 折进 basis)。"""
+    return {"stream": OFFER_FORM_STREAM, "subject": OFFER_FORM_SUBJECT, "factor": OFFER_FORM_FACTOR, "op": OFFER_FORM_OP,
+            "value": OFFER_FORM_VALUE_SEP.join(x.blocked), "valueText": OFFER_QUOTE_SEP.join(x.quotes), "unit": "",
+            "label": OFFER_FORM_LABEL_TPL.format(forms=OFFER_FORM_LABEL_SEP.join(x.blocked)),
+            "section": OFFER_FORM_SECTION}
 
 
 def stat_val(x: StatValIn) -> StatValOut:
