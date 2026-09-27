@@ -350,6 +350,10 @@ from pnp.scheme import MbIesTableIn, RuleRowsIn
 from pnp.constants import (  # 2026-09-27 门槛卡批一(AB 旅游酒店流门槛)新增
     ABR_SECTION_TOURISM, ABR_TOURISM_EXP_BASIS, ABR_TOURISM_RULES, ABR_TOURISM_STREAM,
 )
+from pnp.constants import (  # 2026-09-27 萨省「持 offer 直接申请、不经 EOI 抽选」事实入库新增
+    FACTOR_EOI_DRAW, SKR_DIRECT_LABEL, SKR_DIRECT_RE, SKR_DIRECT_STREAM, SKR_DIRECT_URL, SKR_PROBLEM_DIRECT,
+    SKR_SECTION_DIRECT,
+)
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -4114,8 +4118,29 @@ def sk_employer_reqs(emp_txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def sk_direct_reqs(txt: str) -> ReqsOut:
+    """持 offer 直接申请、不经 EOI 抽选(2026-09-27):官方原句整段匹配到 → 一行 eoiDraw / op=none(原句进 valueText);
+    没匹配到 → 记一条自校问题、不出行(不拿关键词凑,措辞变了要人重读)。照 on_closed_reqs 的形。
+
+    @param txt Connecting Family Members 页的正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    m = SKR_DIRECT_RE.search(txt)
+    if m is None:
+        problems.append(SKR_PROBLEM_DIRECT)
+    else:
+        rows.append(to_sk_req(ReqIn(stream=SKR_DIRECT_STREAM, factor=FACTOR_EOI_DRAW, op=OP_NONE,
+                                    value_text=m.group(0), section=SKR_SECTION_DIRECT,
+                                    label=SKR_DIRECT_LABEL, url=SKR_DIRECT_URL)))
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_sk_req() -> None:
-    """SK 门槛入口:EO / OID 两页交叉核对 + 雇主注册闸门页。"""
+    """SK 门槛入口:EO / OID 两页交叉核对 + 雇主注册闸门页。
+    2026-09-27 末尾加一页:Connecting Family Members 页的「持 offer 直接申请、不经 EOI 抽选」原句(读 crawl 缓存优先,
+    同 ON 三条 EJO 流关闭通告;原句没匹配到同样按自校失败收口)。新行排在最后,既有三行的 seq 不动。"""
     say(PRINT_OUT_TPL.format(path=OUT_SK_REQ))
     pages = SkPagesIn(eo=page_text(PageTextIn(url=SKR_EO_URL, timeout_s=SKR_TIMEOUT_S,
                                               drop_junk=False, main_only=True)),
@@ -4131,6 +4156,10 @@ def build_sk_req() -> None:
     employer = sk_employer_reqs(emp_txt)
     reqs += employer.rows
     problems += employer.problems
+    direct = sk_direct_reqs(fold_ws(page_text(PageTextIn(url=SKR_DIRECT_URL, timeout_s=SKR_TIMEOUT_S,
+                                                         drop_junk=True, main_only=True, cache_first=True))))
+    reqs += direct.rows
+    problems += direct.problems
     if problems:
         fail_zh(problems)
     OUT_SK_REQ.parent.mkdir(parents=True, exist_ok=True)
@@ -7592,15 +7621,17 @@ def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
 # 40. 自测(用例住 scheme:ON 守望判定;2026-09-26)
 # =========================================================================
 from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
-from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest  # noqa: E402 — 同上
+from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest  # noqa: E402 — 同上
 
 
 def run_tests() -> None:
     """test 步入口:跑本域自测(用例集住 scheme 的 OnWorkforceWatchTest,库垫片先例 indexing / gate);
     有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。门循环的自测 ChainKeepGoingTest 2026-09-26 随 run_steps
-    搬去 door 叶(`python etl/door/main.py --only test`)。"""
+    搬去 door 叶(`python etl/door/main.py --only test`)。
+    2026-09-27 加 SkDirectApplyTest(萨省「持 offer 直接申请、不经 EOI 抽选」原句的认句与拒猜)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkDirectApplyTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

@@ -22,7 +22,8 @@ from pathlib import Path
 from typing import Callable, Iterator, Protocol
 
 from pnp.constants import (
-    GQ_SKIP_TAGS, ON_WORKFORCE_URL, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE, OWP_V_NO_QUOTE, OWP_V_OK,
+    FACTOR_EOI_DRAW, GQ_SKIP_TAGS, ON_WORKFORCE_URL, OP_NONE, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE,
+    OWP_V_NO_QUOTE, OWP_V_OK, SKR_DIRECT_STREAM, SKR_DIRECT_URL,
 )
 
 
@@ -1892,4 +1893,52 @@ class OnWorkforceWatchTest(unittest.TestCase):
         before["fetched"] = after["fetched"]
         self.assertEqual(after, before)
         self.assertEqual(len(str(got)), len(text))
+
+
+class SkDirectApplyTest(unittest.TestCase):
+    """SK「持 offer 直接申请、不经 EOI 抽选」认句自测(2026-09-27,lead 派工「萨省『直接申请不抽选』事实没入库」):
+    官方原句整段在 → 出一行 eoiDraw / op=none(原句原样进 valueText);措辞一变 → 不出行、记自校问题(不拿关键词凑)。
+    纯函数用例不联网不读仓;金标只读 crawl 缓存里的真页(本机没有缓存就跳过)。"""
+
+    QUOTE = ("An employment offer provides applicants with the ability to apply directly to the SINP. "
+             "Applicants without employment offers must be invited to apply through the Expression of Interest system.")
+    """官方原句(Connecting Family Members to Saskatchewan's Labour Market 页 Employment Offer 小节,2026-09-27 缓存原样)。"""
+
+    def test_quote_golden(self) -> None:
+        """金标:原句夹在真页前后文里 → 恰好一行,各格照 streamClosed 那一行的形;大小写变化照认。"""
+        from pnp import functions as fn
+        txt = ("These connections help approved applicants successfully settle in Saskatchewan as a permanent "
+               "resident. Employment Offer " + self.QUOTE + " Applicants with employment offers receive 30 points "
+               "on the International Skilled Worker's Points Grid .")
+        got = fn.sk_direct_reqs(txt)
+        self.assertEqual(got.problems, [])
+        self.assertEqual(len(got.rows), 1)
+        row = got.rows[0]
+        self.assertEqual((row["factor"], row["op"], row["value"], row["valueText"]),
+                         (FACTOR_EOI_DRAW, OP_NONE, None, self.QUOTE))
+        self.assertEqual((row["stream"], row["subject"], row["url"]), (SKR_DIRECT_STREAM, "applicant", SKR_DIRECT_URL))
+        self.assertEqual(len(fn.sk_direct_reqs(txt.upper()).rows), 1)
+
+    def test_refuses_to_guess(self) -> None:
+        """措辞变了(must → may、只剩前半句、只剩后半句、两句倒序)或页面空 → 不出行、恰好一条自校问题。"""
+        from pnp import functions as fn
+        first, second = self.QUOTE.split(". ", 1)
+        cases = [self.QUOTE.replace("must be invited", "may be invited"), first + ".", second,
+                 second + " " + first + ".", ""]
+        for txt in cases:
+            with self.subTest(txt=txt):
+                got = fn.sk_direct_reqs(txt)
+                self.assertEqual(got.rows, [])
+                self.assertEqual(len(got.problems), 1)
+
+    def test_real_page(self) -> None:
+        """金标:crawl 缓存里的真页按入口同一种取文法(去噪、只取正文、压平空白)能认出原句。"""
+        from pnp import functions as fn
+        hit = fn.get_cached_page(SKR_DIRECT_URL)
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有 SK Connecting Family Members 页(本机未跑 crawl)")
+        txt = fn.fold_ws(fn.text_of_html(TextOfHtmlIn(html=hit.html, drop_junk=True, main_only=True)))
+        got = fn.sk_direct_reqs(txt)
+        self.assertEqual(got.problems, [])
+        self.assertEqual(got.rows[0]["valueText"], self.QUOTE)
 

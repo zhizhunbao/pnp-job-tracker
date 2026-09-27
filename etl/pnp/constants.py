@@ -701,6 +701,11 @@ FACTOR_STREAM_CLOSED = "streamClosed"
 """门槛因素:通道已关闭的官方通告(2026-09-13 ON 三条 Employer Job Offer 流随 OINP 重组关闭,
 抽选表还有它们 4 月的旧轮 —— 关闭事实本身就是这条通道的「门槛」)。"""
 
+FACTOR_EOI_DRAW = "eoiDraw"
+"""门槛因素:EOI 邀请(抽选)这一步。配 op=none = 官方明说**不经这一步**(是断言不是缺失):持省内雇主 offer
+直接递申请,没有「进池等抽选」。2026-09-27 立(lead 派工「萨省『直接申请不抽选』事实没入库,萨省格仍不可点」):
+照 streamClosed 的形 —— 通道级的进件事实,官方原句 + 出处页落一行门槛;首用者 SK(见 SKR_DIRECT_RE)。"""
+
 FACTOR_CRS = "crs"
 """门槛因素:联邦 CRS 分数下限(AB Express Entry 流 300)。"""
 
@@ -3753,6 +3758,12 @@ SKR_EMPLOYER_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewa
 `live-in-saskatchewan/…/saskatchewan-immigrant-nominee-program` 这条居民侧路径,雇主侧在
 `hire-a-foreign-worker` 命名空间下,种子没覆盖,按铁律③ httpx 现抓)。"""
 
+SKR_DIRECT_URL = SK_BASE_URL + "connecting-family-members-to-saskatchewans-labour-market"
+"""「持 offer 直接申请、不走 EOI 抽选」那句官方原句所在的页(International Skilled Worker 类的
+Connecting Family Members to Saskatchewan's Labour Market 页,Employment Offer 小节)。crawl sk-sinp 种子已缓存
+(depth 3,2026-09-27 那轮在),读缓存优先、没有才现抓 —— 同 ON 三条 EJO 流关闭通告的读法(on_closed_reqs)。
+2026-09-27 立:此前这条事实只钉在 sk-stats.json 的表级 note 里(SKS_NOTE,引的是 EOI 系统页),没进库。"""
+
 OUT_SK_REQ = paths.PNP / "sk-req.json"
 """SK 门槛表落盘处。
 **两个官方页各抓一遍再交叉核对**:两页都写「CLB 4」「近 10 年内至少 1 年本职业工作经验」——
@@ -3773,16 +3784,24 @@ consecutive months in Saskatchewan」。**不收雇员数/营业额** —— 官
 0-5 人档 $250,000、101+ 人档 $7,500,000+)。这两条只对**特定情形/特定行业**成立,不是「SK 雇主
 通用门槛」—— 硬塞成 empStaff/empRevenue 通用行,会被规则引擎当成全体 SK 雇主都要达标的数,比不说
 更危险(同「门槛错一位比没有更危险」的红线)。
-自校是硬闸:任何一组没解析到、或两页对不上就**保留旧表不覆盖**并 exit 1。"""
+自校是硬闸:任何一组没解析到、或两页对不上就**保留旧表不覆盖**并 exit 1。
+2026-09-27 加一条(lead 派工「萨省『直接申请不抽选』事实没入库」):**持 offer 直接申请、不经 EOI 抽选**
+(factor=eoiDraw、op=none,原句见 SKR_DIRECT_RE)—— 照 ON 三条 EJO 流关闭通告那一行的形(通道级进件事实,
+官方原句进 valueText);原句没匹配到同样算自校失败(官方改了措辞,这条断言得有人重读)。只入库,展示另议。"""
 
 SKR_TIMEOUT_S = 45
-"""SK 三页抓取超时。"""
+"""SK 三页抓取超时。2026-09-27 起第四页(持 offer 直接申请原句页,缓存没有时现抓)同用这一档。"""
 
 SKR_STREAM = "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)"
 """申请人侧的通道名。"""
 
 SKR_EMP_STREAM = "SINP — Employer Certificate of Registration (all streams)"
 """雇主侧的通道名。"""
+
+SKR_DIRECT_STREAM = "SINP International Skilled Worker (with an employment offer)"
+"""持 offer 直接申请那一行的通道名(2026-09-27):原句说的是 International Skilled Worker 类里**持萨省雇主 offer**
+的申请人 —— 即 Employment Offer 子类与三条要 offer 的 Talent Pathway;Occupations In-Demand / Express Entry 无 offer,
+原句后半句明说它们要经 EOI 邀请,不在这一行里。"""
 
 SKR_LANG_RE = re.compile(r"language score of at least (?:\d+ ?[–—-] ?)?Canadian Language Benchmark \(CLB\) (\d)", re.I)
 """「Have a language score of at least Canadian Language Benchmark (CLB) 4」(EO 页)
@@ -3799,6 +3818,18 @@ SKR_EMP_YEARS_RE = re.compile(
     r"actively operate the business as the employer for no less than (\d+) consecutive months in Saskatchewan", re.I)
 """雇主侧:Apply for a Certificate of Registration 页,Qualification and Application Requirements 段。"""
 
+SKR_DIRECT_RE = re.compile(r"An employment offer provides applicants with the ability to apply directly to the SINP\. "
+                           r"Applicants without employment offers must be invited to apply through the Expression of "
+                           r"Interest system\.", re.I)
+"""持 offer 直接申请、不经 EOI 抽选的官方原句(2026-09-27;SKR_DIRECT_URL 页 Employment Offer 小节,两句连读整段锚定):
+「An employment offer provides applicants with the ability to apply directly to the SINP. Applicants without employment
+offers must be invited to apply through the Expression of Interest system.」—— 前句是「直接申请」,后句是「无 offer
+才经 EOI 邀请」;官方改一个词就判没匹配到(自校失败,须人工重读),不放宽成关键词命中。
+同一事实另有两处官方旁证(不另出行,留作复核线索):EOI 系统页「If you are eligible under the Occupations In-Demand or
+Express Entry, you will be able to submit an Expression of Interest (EOI).」;医护 EOI 池页「foreign workers who receive
+an employment offer from a Saskatchewan employer do not need to create an EOI profile but can apply directly to the
+Health Talent Pathway or the Student Category」。"""
+
 SKR_SECTION_LANG = "Eligibility — Language"
 """语言的出处节名。"""
 
@@ -3807,6 +3838,9 @@ SKR_SECTION_EXP = "Eligibility — Work experience"
 
 SKR_SECTION_EMPLOYER = "Apply for a Certificate of Registration — Qualification and Application Requirements"
 """雇主侧的出处节名。"""
+
+SKR_SECTION_DIRECT = "Connecting Family Members to Saskatchewan's Labour Market — Employment Offer"
+"""持 offer 直接申请那一行的出处节名(页名 + 小节名,照官方原文;2026-09-27)。"""
 
 SKR_LANG_LABEL_TPL = ("Canadian Language Benchmark (CLB) {clb} or higher; employers and "
                       "regulatory bodies may require higher scores")
@@ -3824,6 +3858,10 @@ SKR_EMP_LABEL_TPL = ("[Employer] actively operate the business as the employer f
                      "conditional, non-general numeric paths: the <24-month exemption and the hospitality/"
                      "truck-transport renewal revenue tiers)")
 """雇主侧的 label。"""
+
+SKR_DIRECT_LABEL = ("Applicants with an employment offer apply directly to the SINP (no Expression of Interest draw); "
+                    "applicants without an employment offer must be invited through the Expression of Interest system")
+"""持 offer 直接申请那一行的 label(照原句两半各说一件事;2026-09-27)。"""
 
 MARK_OK = "✓"
 """两页交叉核对里「这页有」的记号。"""
@@ -3850,11 +3888,16 @@ SKR_PROBLEM_EXP_DIFF_TPL = ("两页经验门槛对不上:EO {eo_years} 年/近 {
 SKR_PROBLEM_EMPLOYER = "雇主侧经营年限没解析到(apply-for-a-certificate-of-registration 页可能改版)"
 """自校问题:雇主侧经营年限。"""
 
+SKR_PROBLEM_DIRECT = ("持 offer 直接申请的官方原句没匹配到(connecting-family-members-to-saskatchewans-labour-market 页"
+                      "可能改版或改了措辞,「不经 EOI 抽选」这条断言须人工重读)")
+"""自校问题:持 offer 直接申请那句原句(2026-09-27)。"""
+
 SKR_SOURCE = "SINP — International Skilled Worker (Employment Offer & Occupations In-Demand)"
 """表级来源名。"""
 
-SKR_FACTOR_ORDER = ("language", "experience", "empYears")
-"""收尾按因素报条数的顺序(NS/PE 门槛同序,各自单列免得改一处动三省)。"""
+SKR_FACTOR_ORDER = ("language", "experience", "empYears", "eoiDraw")
+"""收尾按因素报条数的顺序(NS/PE 门槛同序,各自单列免得改一处动三省)。
+2026-09-27 末尾加 eoiDraw(持 offer 直接申请那一行,见 SKR_DIRECT_RE)。"""
 
 
 # =========================================================================
