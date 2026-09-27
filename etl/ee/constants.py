@@ -776,17 +776,17 @@ QUOTE_CLIP = 90
 RULES = (
     {"program": "CEC", "page": "cec", "factor": "workTeer", "op": "in", "value": "0,1,2,3", "unit": "TEER",
      "label": "CEC: skilled work experience must be TEER 0/1/2/3",
-     "quote": "be in 1 or more of these NOC categories: training, education, experience and responsibilities (TEER) 0, 1, 2, or 3"},
+     "quote": "be in 1 or more of these NOC categories: training, education, experience and responsibilities (TEER) 0, 1, 2 or 3"},
     {"program": "CEC", "page": "cec", "factor": "workHours", "op": ">=", "value": 1560, "unit": "hours",
      "basis": "windowYears=3;minYears=1;hoursPerWeek=30",
      "label": "CEC: 1 year (1,560 hours) of Canadian skilled work in the 3 years before applying",
-     "quote": "be at least 1 year of work or 1,560 hours total (30 hours per week) in the 3 years before you apply"},
+     "quote": "total at least 1 year of work or 1,560 hours total (30 hours per week) in the 3 years before you apply"},
     {"program": "CEC", "page": "cec", "factor": "workLocation", "op": "rule", "value": "canada", "unit": "",
      "label": "CEC: experience must be gained in Canada while authorized to work",
-     "quote": "be gained by working in Canada while authorized to work under temporary resident status"},
+     "quote": "be gained by working in Canada (including the province of Quebec) while authorized to work under temporary resident status"},
     {"program": "CEC", "page": "cec", "factor": "workSelfEmployed", "op": "rule", "value": "excluded", "unit": "",
      "label": "CEC: self-employment and full-time-student work experience do not count",
-     "quote": "Self-employment and work experience gained while you were a full-time student"},
+     "quote": "You can’t count work experience if you were studying full-time while you worked (co-op work terms also don’t count) you were self-employed (some physicians can count their time spent self-employed)"},
     {"program": "CEC", "page": "cec", "factor": "education", "op": "rule", "value": "none", "unit": "",
      "label": "CEC: no education requirement",
      "quote": "There is no education requirement for the Canadian Experience Class"},
@@ -820,7 +820,7 @@ RULES = (
     {"program": "FSW", "page": "fsw", "factor": "proofOfFunds", "op": "rule", "value": "required-unless-jobofer", "unit": "",
      "basis": "waivedIf=legallyWorkInCanada+validJobOffer",
      "label": "FSW: proof of funds required unless legally able to work in Canada with a valid job offer",
-     "quote": "You don't need proof of funds if you: are currently able to legally work in Canada, and have a valid job offer from an employer in Canada"},
+     "quote": "No, you don't need proof of funds if you: are currently able to legally work in Canada, and have a valid job offer from an employer in Canada"},
     {"program": "FSW", "page": "fsw", "factor": "residence", "op": "rule", "value": "outside-QC", "unit": "",
      "label": "FSW: must plan to live outside Quebec",
      "quote": "You must plan to live outside the province of Quebec"},
@@ -866,7 +866,24 @@ page: cec/fsw/fst/lang(rcip_rural/fcip_elig 2026-09-06 起只给 programs 块当
     RCIP 语言门槛按 offer 的 TEER 分档(2026-08-14 补;stream=teer-a-b 闭区间,引擎 fedLangApplies 消费)。
   ---- Francophone Community Immigration Pilot (FCIP) ----(末 3 条)
     2026-08-15:FCIP 立成第 14 条通道,门槛行**自己一份**(先前 program='FCIP' 一行都没有,
-    判定层只能如实落「本站未收录」)。语言是它与 RCIP 最大的区别:NCLC 5 一刀切、且是**法语**。"""
+    判定层只能如实落「本站未收录」)。语言是它与 RCIP 最大的区别:NCLC 5 一刀切、且是**法语**。
+
+2026-09-26 晚 重核 5 句(Frank 拍「重核 EE 门槛 5 句」;ee_rules 自校连轮 ✗ 5/23):IRCC 2026-09-24 改版 CEC / FSW 两页
+(Page details 2026-06-22 → 2026-09-24,fed-ee crawl 缓存 2026-09-26 取回)。五条逐句对照新页,要求都没变,只换 quote,
+value / unit / basis / label 一格未动:
+  CEC/workTeer:只删了「or」前的逗号(IRCC 页面改版,原句为
+    「be in 1 or more of these NOC categories: training, education, experience and responsibilities (TEER) 0, 1, 2, or 3」)。
+  CEC/workHours:句首 be 改 total,1,560 小时 / 3 年窗 / 每周 30 小时照旧(IRCC 页面改版,原句为
+    「be at least 1 year of work or 1,560 hours total (30 hours per week) in the 3 years before you apply」)。
+  CEC/workLocation:插进「(including the province of Quebec)」;新页另挂远程子条(人在加拿大境内 + 加拿大雇主),
+    crs-criteria 页 2026-06-22 版已写「Working remotely counts if you were physically in Canada」,不是新要求;
+    本行 value 不表达雇主国别,子条不收(IRCC 页面改版,原句为
+    「be gained by working in Canada while authorized to work under temporary resident status」)。
+  CEC/workSelfEmployed:改成「You can’t count work experience if」列表,quote 连医生例外括注一并照抄;医生例外
+    2023-04-25 起就有(EE 2023 年报),value 仍 excluded(IRCC 页面改版,原句为
+    「Self-employment and work experience gained while you were a full-time student」)。
+  FSW/proofOfFunds:前加问句小标题,句首成「No, you」,两条免除条件照旧(IRCC 页面改版,原句为
+    「You don't need proof of funds if you: are currently able to legally work in Canada, and have a valid job offer from an employer in Canada」)。"""
 
 
 # =========================================================================
