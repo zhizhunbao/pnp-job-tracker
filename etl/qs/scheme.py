@@ -81,6 +81,17 @@ class QsFile(BaseModel):
 
 
 @dataclass
+class CurlGetIn:
+    """curl_get() 入参(照 etl/wages 同名形;2026-09-26 晚补:着陆页 / 端点两跳要的浏览器头不同,头随网址一起传)。"""
+
+    url: str
+    """目标网址。"""
+
+    headers: tuple[str, ...]
+    """这一跳专属的请求头行(「名: 值」;两跳共用的 CURL_HDRS_BROWSER 由 curl_get 自己带)。"""
+
+
+@dataclass
 class QsFold:
     """fold_qs_rows() 出参:折完的榜行 + rank 解析不动的校名(留痕)。"""
 

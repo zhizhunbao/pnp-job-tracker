@@ -14,11 +14,12 @@ from datetime import date
 import paths
 from log.functions import say
 from qs.constants import (
-    BAD_RANK_TPL, BROWSER_UA, CURL_CMD, CURL_FAIL_TPL, CURL_FLAG_MAX_TIME, CURL_FLAG_UA, DLI_NAME,
+    BAD_RANK_TPL, BROWSER_UA, CURL_CMD, CURL_ENCODING, CURL_FAIL_TPL, CURL_FLAG_HEADER, CURL_FLAG_MAX_TIME,
+    CURL_FLAG_UA, CURL_HDRS_BROWSER, CURL_HDRS_ENDPOINT, CURL_HDRS_LANDING, DLI_NAME,
     ENDPOINT_TPL, FETCH_TIMEOUT_S, IN_TPL, ITEMS_PER_PAGE, LANDING,
     MIN_ROWS, NID_RE, NID_TPL, NO_NID_TPL, OUT_FILE, OUT_INDENT, OUT_TPL, TOO_FEW_TPL, WROTE_TPL,
 )
-from qs.scheme import QsFile, QsFold, QsRow, QsSource, QsSourceRow
+from qs.scheme import CurlGetIn, QsFile, QsFold, QsRow, QsSource, QsSourceRow
 
 
 # =========================================================================
@@ -39,12 +40,17 @@ def nid_of(html: str) -> str:
     return m.group(1)
 
 
-def curl_get(url: str) -> str:
-    """curl 子进程 GET(topuniversities 掐 httpx 的 TLS 指纹,照 wages statcan 先例)。"""
-    args = list(CURL_CMD) + [CURL_FLAG_MAX_TIME, str(FETCH_TIMEOUT_S), CURL_FLAG_UA, BROWSER_UA, url]
-    result = subprocess.run(args, capture_output=True, text=True, encoding="utf-8")
+def curl_get(x: CurlGetIn) -> str:
+    """curl 子进程 GET(topuniversities 掐 httpx 的 TLS 指纹,照 wages statcan 先例)。
+    2026-09-26 晚补:Cloudflare 升档后只带 UA 的请求一律吃质询页 —— 原来只传 -A,现在逐行带上浏览器头
+    (两跳共用的 CURL_HDRS_BROWSER + 这一跳专属的 x.headers);HTTP ≥ 400 由 curl --fail 退 22 当场失败。"""
+    args = list(CURL_CMD) + [CURL_FLAG_MAX_TIME, str(FETCH_TIMEOUT_S), CURL_FLAG_UA, BROWSER_UA]
+    for line in CURL_HDRS_BROWSER + x.headers:
+        args += [CURL_FLAG_HEADER, line]
+    args.append(x.url)
+    result = subprocess.run(args, capture_output=True, text=True, encoding=CURL_ENCODING)
     if result.returncode != 0:
-        raise RuntimeError(CURL_FAIL_TPL.format(code=result.returncode, url=url))
+        raise RuntimeError(CURL_FAIL_TPL.format(code=result.returncode, url=x.url))
     return result.stdout
 
 
@@ -73,9 +79,10 @@ def build_qs_ca() -> None:
     """
     say(IN_TPL.format(url=LANDING))
     say(OUT_TPL.format(path=OUT_FILE))
-    nid = nid_of(curl_get(LANDING))
+    nid = nid_of(curl_get(CurlGetIn(url=LANDING, headers=CURL_HDRS_LANDING)))
     say(NID_TPL.format(nid=nid))
-    source = QsSource.model_validate_json(curl_get(ENDPOINT_TPL.format(nid=nid, n=ITEMS_PER_PAGE)))
+    source = QsSource.model_validate_json(curl_get(CurlGetIn(url=ENDPOINT_TPL.format(nid=nid, n=ITEMS_PER_PAGE),
+                                                             headers=CURL_HDRS_ENDPOINT)))
     fold = fold_qs_rows(source.score_nodes)
     if len(fold.skipped) > 0:
         say(BAD_RANK_TPL.format(names=fold.skipped))
