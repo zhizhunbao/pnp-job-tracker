@@ -1770,40 +1770,6 @@
 }
 
 /*
- * 职位名下面那行日期(2026-09-26 Frank 看过效果图点头;JobDates,详情页 H1 下与职位弹框标题下同一件):
- * 发布、截止两格,格间留空隙不用分隔符;窄屏放不下时第二格整格折到下一行,格内不拆。
- */
-.dates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 8px 0 4px;
-  font-size: 14px;
-  color: #111827;
-
-  /*
-   * 弹框页眉(flex 折行容器)里:排在窗口钮之后、独占一整行,与译名行同档(order 1,DOM 在它前面所以排它上面);
-   * 详情页的块级流里这两格不起作用 —— 两种宿主同一份样式(同 time 桶 .updated 先例)。
-   */
-  order: 1;
-  flex-basis: 100%;
-}
-
-/*
- * 日期行的一格:标签与日期不拆行。
- */
-.dateCell {
-  white-space: nowrap;
-}
-
-/*
- * 日期行的标签灰(日期随行深色)。
- */
-.dateK {
-  color: #9ca3af;
-}
-
-/*
  * 职位名译名对照(#151 口径,与公司页在招职位同款)。
  */
 .titleAlias {

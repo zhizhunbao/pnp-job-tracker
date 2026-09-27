@@ -27,6 +27,7 @@
  * (Frank「有公司卡的话,上面的显示公司名就可以去掉了」)。
  * 2026-09-26 Frank 看过效果图点头:H1 下、译名行上加一行日期(JobDates:发布、截止两格,与职位弹框标题下同一件)。
  * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到译名行下面(H1 → 译名 → 日期;职位弹框页眉同改)。
+ * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(JobBody → JdContent 末尾挂),这里那一行撤。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -42,7 +43,6 @@ import { useJobBody, useJobDetail, useJobPeek } from './hooks'
 import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
-import { JobDates } from './jobdates'
 import { JobRelated } from './jobrelated'
 import type { JobIn } from './types'
 import css from './jobs.module.css'
@@ -71,7 +71,6 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
             {d.view.alias !== TEXT_NONE && <div className={cssOf(css.titleAlias)}>{d.view.alias}</div>}
             <JdOrigLink d={body} />
           </div>
-          <JobDates job={job} t={d.t} />
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany} />

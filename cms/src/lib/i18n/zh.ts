@@ -677,6 +677,8 @@ export const jobsZh = {
   // ⚠ 同日事故:这条注释曾写在本行行尾,把后面 act.aiWorking / act.aiFail 两个词条一起注释掉,页面直出键名;注释只许独占一行。
   'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.viewOrig': '查看原帖', 'act.backFmt': '返回整理版', 'act.aiWorking': 'AI 整理中，先看原文…', 'act.aiFail': 'AI 整理没成功',
   'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
+  // 2026-09-27 Frank「放到 jd 正文部分如何」「格式不对啊 怎么是灰字」→ 看过效果图选 ①:日期改成正文里单独一节(两行标签复用 col.datePosted / detail.closes)
+  'act.f.dates': '日期',
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   // 2026-09-20 官网整理记录的后三节(只认官网页面原句)
   'co.f.offices': '其他办公地点', 'co.f.newcomers': '新移民与外籍员工', 'co.f.benefits': '福利与招聘',

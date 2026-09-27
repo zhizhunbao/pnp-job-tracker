@@ -4,6 +4,8 @@
 //   ② 截止格 = 发帖方写了截止日 且 没过期 —— 过期口径就是 lib/jobs 的 isExpiredJob(与 JobPosting 同一条,已下架也算过期);
 //   ③ 「今天」按多伦多日期,截止日当天还算在期(晚上 8 点后 UTC 已是明天,不许提前收掉);
 //   ④ 至多两格、发布在前,日期原样递给 TimeText(裁成 YYYY-MM-DD 是它的事,这里只验裁出来的日子对)。
+// 2026-09-27 Frank「放到 jd 正文部分如何」→ 选 ①:JobDates 改成正文里单独一节「日期」(小标题 + 一行一条),渲染段改认 li,
+// 并钉住小标题;四件性质不变。
 import fc from 'fast-check'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -185,7 +187,7 @@ describe('性质:任意截止日 × 任意此刻 × 任意状态', () => {
 })
 
 describe('JobDates 渲染(真时钟,截止日取远未来 / 远过去,结果不随跑测的日子变)', () => {
-  /** 挂一次组件,交回每一格的文本;整行没渲给 null。 */
+  /** 挂一次组件,交回每一格(节里每一行 li)的文本;整节没渲给 null。 */
   function cellTexts(job: JobRow): string[] | null {
     ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
     const host = document.createElement('div')
@@ -193,10 +195,10 @@ describe('JobDates 渲染(真时钟,截止日取远未来 / 远过去,结果不�
     act(() => {
       root.render(React.createElement(JobDates, { job, t }))
     })
-    const row = host.firstElementChild
+    const sec = host.firstElementChild
     let out: string[] | null = null
-    if (row != null) {
-      out = Array.from(row.children).map((c) => String(c.textContent))
+    if (sec != null) {
+      out = Array.from(sec.querySelectorAll('li')).map((c) => String(c.textContent))
     }
     act(() => {
       root.unmount()
@@ -213,6 +215,20 @@ describe('JobDates 渲染(真时钟,截止日取远未来 / 远过去,结果不�
 
   it('截止日已过:只剩发布一格', () => {
     expect(cellTexts(jobOf({ valid_through: '2000-01-01T00:00:00.000Z' }))).toEqual(['col.datePosted 2026-09-25'])
+  })
+
+  it('小标题:正文里一节「日期」,两行在它下面', () => {
+    ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+    const host = document.createElement('div')
+    const root = createRoot(host)
+    act(() => {
+      root.render(React.createElement(JobDates, { job: jobOf({ valid_through: '2999-12-31T00:00:00.000Z' }), t }))
+    })
+    const head = host.querySelector('ul')?.previousElementSibling
+    expect(head?.textContent).toBe('act.f.dates')
+    act(() => {
+      root.unmount()
+    })
   })
 
   it('一格都没有:整行不渲(不留空行)', () => {

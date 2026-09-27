@@ -10,6 +10,7 @@
  * 2026-09-26 Frank 看过效果图点头:岗位名下加一行日期(dates 槽,jobs 桶 JobDates;与详情页 H1 下同一件、同一位置)。
  * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到灰字译名行下面(岗位名 → 译名 → 日期;详情页同改)。
  * 日期行不进左块:与译名行一样折到标题与窗口钮那一行下面、独占一整行 —— 手机全屏档左块被窗口钮占去一截,两格并排放不下。
+ * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(jobs 桶 JdContent 末尾),dates 槽撤。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -23,10 +24,10 @@ import css from './advisor.module.css'
 /**
  * 渲染职位描述弹框的页眉左块。
  *
- * @param props 取词函数、岗位名、译名、剩余次数、日期行与切换控件。
- * @returns 页眉左块 + 日期行 + 译名行。
+ * @param props 取词函数、岗位名、译名、剩余次数与切换控件。
+ * @returns 页眉左块 + 译名行。
  */
-export function ActHead({ t, title, sub, freeLeft, dates, ctl }: ActHeadIn) {
+export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
   return (
     <>
       <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
@@ -40,7 +41,6 @@ export function ActHead({ t, title, sub, freeLeft, dates, ctl }: ActHeadIn) {
         {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
         <span className={cssOf(css.subCtl)}>{ctl}</span>
       </div>
-      {dates}
     </>
   )
 }

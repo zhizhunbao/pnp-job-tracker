@@ -6,6 +6,7 @@
  * 2026-09-21 Frank「参考一下公司弹框」「是不是把公司信息放到一个框里,单独放到下面」:正文下面(投递栏之上)接公司信息卡
  * 与相关职位卡(jobs 桶 JobModalCards,点文件不走桶 —— 同上两件的理由);点公司名 / 相关职位经宿主注的两个回调往弹框栈上叠。
  * 2026-09-26 Frank 看过效果图点头:页眉岗位名下挂日期行(jobs 桶 JobDates,点文件同上理由;与详情页 H1 下同一件)。
+ * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(JobBody 里挂),页眉 dates 槽撤。
  *
  * @author Frank
  * @time 2026-09-16 21:30:00
@@ -13,7 +14,6 @@
 import { useJobBody } from '@/components/jobs/hooks'
 import { JdOrigLink } from '@/components/jobs/jdoriglink'
 import { JobBody } from '@/components/jobs/jobbody'
-import { JobDates } from '@/components/jobs/jobdates'
 import { JobModalCards } from '@/components/jobs/jobmodalcards'
 import { makeT } from '@/lib/i18n'
 import { TEXT_NONE, URL_JOB_HEAD } from './constants'
@@ -37,7 +37,6 @@ export function ActJd({ job, lang, plan, onClose, panel, sub, a, onOpenJob, onOp
     <ActHead t={t} title={firstTextOf({ list: [job.title] })}
       sub={sub}
       freeLeft={a.freeLeft}
-      dates={<JobDates job={job} t={t} />}
       ctl={<JdOrigLink d={d} />} />
   )
   return (

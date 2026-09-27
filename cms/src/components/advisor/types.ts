@@ -1751,11 +1751,6 @@ export type ActHeadIn = {
   freeLeft: number | null
 
   /**
-   * 岗位名下那行日期(jobs 桶 JobDates,与详情页 H1 下同一件;2026-09-26)。
-   */
-  dates: React.ReactNode
-
-  /**
    * 译名行右端的切换控件(jobs 桶 JdSwitches;2026-09-16 Frank「放到一行」)。
    */
   ctl: React.ReactNode
