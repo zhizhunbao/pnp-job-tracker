@@ -333,6 +333,147 @@
 }
 
 /*
+ * 「{年} 年配额」小表(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」):行名一列 + 1–3 列值,列宽随内容,
+ * 数字右对齐、等宽;列数由 quotaCols1/2/3 定。
+ */
+.quotaGrid {
+  /*
+   * 网格。
+   */
+  display: grid;
+
+  /*
+   * 列间距(同效果图)。
+   */
+  column-gap: 28px;
+
+  /*
+   * 行间距。
+   */
+  row-gap: 2px;
+
+  /*
+   * 行名与数字基线对齐。
+   */
+  align-items: baseline;
+
+  /*
+   * 等宽数字。
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 一列值。
+ */
+.quotaCols1 {
+  /*
+   * 行名 + 1 列。
+   */
+  grid-template-columns: max-content max-content;
+}
+
+/*
+ * 两列值。
+ */
+.quotaCols2 {
+  /*
+   * 行名 + 2 列。
+   */
+  grid-template-columns: max-content repeat(2, max-content);
+}
+
+/*
+ * 三列值。
+ */
+.quotaCols3 {
+  /*
+   * 行名 + 3 列。
+   */
+  grid-template-columns: max-content repeat(3, max-content);
+}
+
+/*
+ * 列名(总数 / 已发提名 / 剩余)。
+ */
+.quotaHead {
+  /*
+   * 小一号。
+   */
+  font-size: 12px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+
+  /*
+   * 与数字同列靠右。
+   */
+  text-align: right;
+}
+
+/*
+ * 行名(全省 / 本岗通道)。
+ */
+.quotaLabel {
+  /*
+   * 正文小字。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 次级灰。
+   */
+  color: var(--text2);
+}
+
+/*
+ * 一格数字。
+ */
+.quotaV {
+  /*
+   * 数字大一档,一眼看数。
+   */
+  font-size: 15px;
+
+  /*
+   * 加粗。
+   */
+  font-weight: 700;
+
+  /*
+   * 主文字色。
+   */
+  color: var(--text);
+
+  /*
+   * 右对齐。
+   */
+  text-align: right;
+}
+
+/*
+ * 表下「截至 {日期}」。
+ */
+.quotaAsOf {
+  /*
+   * 与表的间距。
+   */
+  margin-top: 4px;
+
+  /*
+   * 小字。
+   */
+  font-size: 12px;
+
+  /*
+   * 三级灰。
+   */
+  color: var(--text3);
+}
+
+/*
  * 「本岗能走的通道」的一条(细边框盒 .box 里一行通道名 + 译名灰字;2026-09-26 Frank 看过效果图点头)。
  */
 .channel {

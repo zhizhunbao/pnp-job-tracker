@@ -465,7 +465,13 @@ export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
   }, [waiting])
 
   const got = pnpDataOf(data)
-  return { ready: needs === false || data != null, failed: needs && failed, occ: got.occ, draws: got.draws }
+  return {
+    ready: needs === false || data != null,
+    failed: needs && failed,
+    occ: got.occ,
+    draws: got.draws,
+    ops: got.ops,
+  }
 }
 
 /**

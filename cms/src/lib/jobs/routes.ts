@@ -36,7 +36,7 @@ import {
 import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage,
   loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
+  loadSimilarEmployers, generateJdFormatted, getPnpOps, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
   loadBigDims, loadCityCard,
   loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedAnchor,
   loadRelatedJobs, loadRelatedOccPage, normalizeProfile,
@@ -224,13 +224,18 @@ export async function jobsDimsRoute(_req: Request): Promise<Response> {
  * 省提名弹框近 30 天真实用户打开 0 次 —— 改成字段弹框打开才懒取)。站级数据、与用户无关:取数走首屏维度那层
  * 10 分钟单件缓存(getSsrDims,与首屏同一份,不另起查询),浏览器再缓存 5 分钟 + SWR(同 dims 包)。
  *
+ * 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:多带一张当年配额行 pnpOps(getPnpOps,同样 10 分钟单件缓存),
+ * 给弹框的「{年} 年配额」卡与抽选卡「全年已邀请」那一行。
+ *
  * @param _req 请求(不读参数)。
- * @returns { pnpOccupations, pnpDraws } 两张整表。
+ * @returns { pnpOccupations, pnpDraws, pnpOps } 三张表。
  */
 export async function jobsPnpRoute(_req: Request): Promise<Response> {
-  const dims = await getSsrDims(await getDb())
+  const db = await getDb()
+  const dims = await getSsrDims(db)
+  const ops = await getPnpOps(db)
   return Response.json(
-    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws },
+    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
 }

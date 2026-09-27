@@ -560,6 +560,11 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
   // 2026-09-27 reform-province row (ON) with no rounds yet; the status card's two labels retire
   'pnpdraws.noInvYet': 'No invitations yet',
+  // 2026-09-27 allocation card (own box) and the draws card's year-to-date line
+  'pnpquota.title': '{year} allocation', 'pnpquota.total': 'Total', 'pnpquota.issued': 'Nominated',
+  'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
+  'pnpquota.asOf': 'As of {date}',
+  'pnpdraws.ytdInv': '{n} invitations in {year}', 'pnpdraws.ytdSel': '{n} selected in {year}',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards

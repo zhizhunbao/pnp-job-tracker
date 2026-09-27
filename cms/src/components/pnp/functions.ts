@@ -22,7 +22,8 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
   DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
-  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, PNP_GEN_HEAD, ROUNDS_KEYS,
+  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE, OPS_INV_YTD,
+  OPS_SCOPE_STREAM, OPS_SEL_YTD, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -40,7 +41,8 @@ import {
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
-  LatestSinceIn, SourceLink, SourceLinkIn,
+  LatestSinceIn, SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec,
+  QuotaStreamIn, YtdLineIn,
   MonthRowsIn, RoundRowsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
@@ -1270,8 +1272,181 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     label = first.label
     source = sourceLinkOf({ t: x.t, url: first.url })
   }
-  return { title: x.t('pnpdraws.head'), label, hits, others, total: groups.length, source }
+  return {
+    title: x.t('pnpdraws.head'),
+    label,
+    hits,
+    others,
+    total: groups.length,
+    source,
+    ytd: ytdLineOf({ t: x.t, province: x.province, ops: x.ops }),
+  }
 }
+
+/**
+ * 抽选卡标题下「全年已发邀请 / 已入选」那一行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」、勾「全年已邀请合计」):
+ * 读汇装出的 invitations_ytd(逐轮邀请加总)/ selections_ytd(NS 按月选取人数加总);汇装那边当年任一轮没公布人数就不出这一行,
+ * 这里不自己加(前端不换算)。AIP 那组的「份申请入选」不在邀请合计里(汇装已剔)。
+ *
+ * @param x 取词函数、省码与当年配额行。
+ * @returns 那一行;这一省没有合计给 ''。
+ */
+export function ytdLineOf(x: YtdLineIn): string {
+  const rows: PnpOps[] = []
+  for (const r of x.ops) {
+    if (r.province === x.province && r.scopeKind === TEXT_NONE) {
+      rows.push(r)
+    }
+  }
+  const inv = opsPickOf({ rows, streamKey: TEXT_NONE, metrics: [OPS_INV_YTD] })
+  if (inv != null) {
+    return x.t('pnpdraws.ytdInv', { year: yearOf(inv), n: inv.value.toLocaleString(NUM_LOCALE) })
+  }
+  const sel = opsPickOf({ rows, streamKey: TEXT_NONE, metrics: [OPS_SEL_YTD] })
+  if (sel != null) {
+    return x.t('pnpdraws.ytdSel', { year: yearOf(sel), n: sel.value.toLocaleString(NUM_LOCALE) })
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 「{年} 年配额」卡(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;看过效果图,标题照 Frank「每个框先设计一个 title」那张表):
+ * 列 = 总数 / 已发提名 / 剩余,只列这个省官方有的项(安省只有总数就只一列,不拿长横凑);行 = 全省,本岗对应的抽选组与配额行的
+ * 通道键对得上(阿省公布到通道)再加「本岗通道」一行;表下「截至 {日期}」取官方写的截至日,没写就不出。数字全是官方原数,不自己减。
+ *
+ * @param x 取词函数、省码、当年配额行与本岗对应的抽选组。
+ * @returns 配额卡;这一省当年一项都没有给 null。
+ */
+export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
+  const mine: PnpOps[] = []
+  for (const r of x.ops) {
+    if (r.province === x.province) {
+      mine.push(r)
+    }
+  }
+  const cols: string[][] = []
+  const heads: string[] = []
+  for (const [metrics, head] of QUOTA_COLS) {
+    if (opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics }) != null) {
+      cols.push(metrics)
+      heads.push(x.t(head))
+    }
+  }
+  const firstCol = cols[0]
+  if (firstCol == null) {
+    return null
+  }
+  const first = opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics: firstCol })
+  if (first == null) {
+    return null
+  }
+  const rows = [quotaRowOf({ rows: mine, streamKey: TEXT_NONE, cols, label: x.t('pnpquota.prov') })]
+  const streamKey = quotaStreamKeyOf({ rows: mine, hitStreams: x.hitStreams })
+  if (streamKey !== TEXT_NONE) {
+    rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
+  }
+  let asOf = TEXT_NONE
+  if (first.asOf !== TEXT_NONE) {
+    asOf = x.t('pnpquota.asOf', { date: first.asOf })
+  }
+  return {
+    title: x.t('pnpquota.title', { year: yearOf(first) }),
+    source: sourceLinkOf({ t: x.t, url: first.url }),
+    heads,
+    rows,
+    asOf,
+  }
+}
+
+/**
+ * 配额卡的一行:逐列在这一层(全省 / 某通道)挑那一项的官方数,千分位;这一层没有这一项写长横(列是按全省有的项开的,
+ * 通道那一行可能缺某一项 —— 如阿省执法通道只公布了配额)。
+ *
+ * @param x 这一省的配额行、层级、列与行名。
+ * @returns 一行。
+ */
+function quotaRowOf(x: QuotaRowIn): QuotaRowSpec {
+  const cells: string[] = []
+  for (const metrics of x.cols) {
+    const r = opsPickOf({ rows: x.rows, streamKey: x.streamKey, metrics })
+    if (r == null) {
+      cells.push(DASH)
+    } else {
+      cells.push(r.value.toLocaleString(NUM_LOCALE))
+    }
+  }
+  return { key: x.label, label: x.label, cells }
+}
+
+/**
+ * 本岗对应的抽选组在配额行里是哪条通道:抽选组名小写后与通道级配额行的通道键逐字相等才算(阿省机会通道、旅游酒店通道这类);
+ * 对不上给 '' —— 不拿近似名硬配(医护那组抽选名与配额名单复数不同,就不出通道那一行)。
+ *
+ * @param x 这一省的配额行与本岗对应的抽选组。
+ * @returns 通道键;对不上给 ''。
+ */
+function quotaStreamKeyOf(x: QuotaStreamIn): string {
+  for (const h of x.hitStreams) {
+    const k = h.toLowerCase()
+    for (const r of x.rows) {
+      if (r.scopeKind === OPS_SCOPE_STREAM && r.streamKey === k) {
+        return k
+      }
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 在一省的配额行里挑一行:层级对(streamKey 空 = 全省那一层,否则通道级且通道键相等)、指标名在认的那几个里。
+ *
+ * @param x 这一省的配额行、层级与指标名。
+ * @returns 那一行;没有给 null。
+ */
+function opsPickOf(x: OpsPickIn): PnpOps | null {
+  for (const r of x.rows) {
+    if (x.metrics.includes(r.metric) === false) {
+      continue
+    }
+    if (x.streamKey === TEXT_NONE && r.scopeKind === TEXT_NONE) {
+      return r
+    }
+    if (x.streamKey !== TEXT_NONE && r.scopeKind === OPS_SCOPE_STREAM && r.streamKey === x.streamKey) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 配额小表的网格类:列数随这一省官方有几项变(1–3 列值 + 1 列行名),一个列数一个类,不写内联样式。
+ *
+ * @param n 值的列数。
+ * @returns 类名。
+ */
+export function quotaGridClsOf(n: number): string {
+  const byCount = [cssOf(css.quotaCols1), cssOf(css.quotaCols2), cssOf(css.quotaCols3)]
+  let cols = byCount[byCount.length - 1]
+  const pick = byCount[n - 1]
+  if (pick != null) {
+    cols = pick
+  }
+  return cssOf(css.quotaGrid) + SPACE + String(cols)
+}
+
+/**
+ * 配额行是哪一年的:统计期打头(`2026`、`2026 Jan-Aug`、`2026Q2`),没有统计期看截至日。
+ *
+ * @param r 一行配额。
+ * @returns 年份(4 位)。
+ */
+function yearOf(r: PnpOps): string {
+  if (r.period !== TEXT_NONE) {
+    return r.period.slice(0, YEAR_LEN)
+  }
+  return r.asOf.slice(0, YEAR_LEN)
+}
+
 
 /**
  * 「查看全省 N 组」那个开关的字(展开后改「收起」,同清单卡末尾的开关)。

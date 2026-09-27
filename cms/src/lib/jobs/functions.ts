@@ -76,7 +76,7 @@ import type {
   MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption,
   NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim,
   NocSearchOut, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
-  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, ProfileJsonCell,
+  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, ProfileJsonCell,
   ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut,
   QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
   RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn, RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
@@ -915,6 +915,32 @@ export async function getSsrDims(db: Db): SsrDimsOut {
   const dims = await loadSsrDims(db)
   CACHE.ssrDims = { dims: dims, ts: Date.now() }
   return dims
+}
+
+/**
+ * 省提名配额行,带 10 分钟单件缓存(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;TTL 同首屏维度)。
+ *
+ * @param db 数据库连接(池由调用方注进来)。
+ * @returns 当年配额行。
+ */
+export async function getPnpOps(db: Db): PnpOpsOut {
+  const hit = CACHE.pnpOps
+  if (hit != null && Date.now() - hit.ts < SSR_DIMS_TTL_MS) {
+    return hit.rows
+  }
+  const rows = await loadPnpOps(db)
+  CACHE.pnpOps = { rows: rows, ts: Date.now() }
+  return rows
+}
+
+/**
+ * 省提名配额行现查(口径见 SQL.PNP_OPS_QUOTA);查挂回空(宁可不出卡)。
+ *
+ * @param db 数据库连接。
+ * @returns 当年配额行。
+ */
+export async function loadPnpOps(db: Db): PnpOpsOut {
+  return queryRowsOrEmpty({ db: db, sql: SQL.PNP_OPS_QUOTA, params: [], map: toPnpOpsRow })
 }
 
 /**
@@ -3122,6 +3148,19 @@ export function toPnpDraw(r: Row): PnpDraw {
     streamZh: text(r.streamZh), score: numOrNull(r.score), scale: text(r.scale),
     invitations: numOrNull(r.invitations), note: text(r.note), label: text(r.label),
     url: text(r.url), fetched: text(r.fetched),
+  }
+}
+
+/**
+ * PNP_OPS_QUOTA 一行 → 配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ *
+ * @param r 原始行。
+ * @returns 配额行。
+ */
+export function toPnpOpsRow(r: Row): PnpOpsRow {
+  return {
+    province: text(r.province), metric: text(r.metric), scopeKind: text(r.scope_kind), streamKey: text(r.stream_key),
+    value: count(r.value), asOf: text(r.as_of), period: text(r.period), url: text(r.url),
   }
 }
 

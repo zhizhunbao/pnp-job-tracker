@@ -404,6 +404,71 @@ export const PNP_GEN_HEAD = 'pnp.gen.'
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i
 
 /**
+ * 数字的显示地区(千分位按加拿大英文习惯,与把脉页 start 域、城市 city 域同值;各域一份)。
+ * 2026-09-27 上午随本岗那一组的三格一起删过,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:配额卡的数字要千分位,加回来。
+ */
+export const NUM_LOCALE = 'en-CA'
+
+/**
+ * 运营统计里「配额」那一格的指标名(pnp_ops_stats.metric)。
+ */
+export const OPS_ALLOCATION = 'allocation'
+
+/**
+ * 运营统计里「已发提名」那一格可能的指标名:阿省官方写 issued,曼省 / 萨省写年初至今的 nominations_ytd(同一件事,两省各叫各的)。
+ */
+export const OPS_ISSUED_METRICS = ['issued', 'nominations_ytd']
+
+/**
+ * 运营统计里「剩余」那一格的指标名(目前只有阿省官方直接公布)。
+ */
+export const OPS_REMAINING = 'remaining'
+
+/**
+ * 全年已发邀请合计的指标名(汇装按当年抽选行加总,缺一轮不出)。
+ */
+export const OPS_INV_YTD = 'invitations_ytd'
+
+/**
+ * 全年已入选合计的指标名(NS 按月 EOI 选取人数加总;不叫邀请)。
+ */
+export const OPS_SEL_YTD = 'selections_ytd'
+
+/**
+ * 运营统计里通道级那一层的口径名(scope_kind;全省那一层是空串)。
+ */
+export const OPS_SCOPE_STREAM = 'stream'
+
+/**
+ * 「{年} 年配额」卡的列:每列认哪几个指标名 · 列名的词条键(顺序即列序;只列这个省官方有的项,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ */
+export const QUOTA_COLS: [string[], string][] = [
+  [[OPS_ALLOCATION], 'pnpquota.total'],
+  [OPS_ISSUED_METRICS, 'pnpquota.issued'],
+  [[OPS_REMAINING], 'pnpquota.remaining'],
+]
+
+/**
+ * 配额小表左上角那个空格的 React 列表键。
+ */
+export const QUOTA_KEY_CORNER = 'corner'
+
+/**
+ * 配额小表列名格的 React 列表键前缀。
+ */
+export const QUOTA_KEY_HEAD = 'h'
+
+/**
+ * 配额小表行名格的 React 列表键前缀。
+ */
+export const QUOTA_KEY_LABEL = 'l'
+
+/**
+ * 年份在统计期 / 截至日里的长度(`2026 Jan-Aug`、`2026Q2`、`2026-09-23` 的头 4 位)。
+ */
+export const YEAR_LEN = 4
+
+/**
  * 魁省省码(走自己的体系,不属 PNP)。
  */
 export const PROV_QC = 'QC'

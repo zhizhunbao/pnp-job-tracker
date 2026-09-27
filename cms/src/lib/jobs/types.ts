@@ -3735,6 +3735,11 @@ export type JobsCache = {
   ssrDims: SsrDimsCache | null
 
   /**
+   * 省提名配额行(10 分钟 TTL,同首屏维度;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」);null = 冷。
+   */
+  pnpOps: PnpOpsCache | null
+
+  /**
    * WHERE 签名 → 总数微缓存(30s;300 组防涨)。
    */
   counts: Map<string, CountSlot>
@@ -4871,6 +4876,71 @@ export type SsrDimsCache = {
    * 整包维度。
    */
   dims: SsrDims
+
+  /**
+   * 拉到的时刻(毫秒)。
+   */
+  ts: number
+}
+
+/**
+ * 省提名弹框「{年} 年配额」卡的一行原料(PNP_OPS_QUOTA 洗净;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ */
+export type PnpOpsRow = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 指标(allocation / issued / nominations_ytd / remaining / invitations_ytd / selections_ytd)。
+   */
+  metric: string
+
+  /**
+   * 口径层级:'' = 全省,'stream' = 通道级。
+   */
+  scopeKind: string
+
+  /**
+   * 通道键(小写官方通道名);全省行为 ''。
+   */
+  streamKey: string
+
+  /**
+   * 数值。
+   */
+  value: number
+
+  /**
+   * 截至日(`YYYY-MM-DD`);官方没写给 ''。
+   */
+  asOf: string
+
+  /**
+   * 统计期(如 `2026`、`2026 Jan-Aug`、`2026Q2`);没有给 ''。
+   */
+  period: string
+
+  /**
+   * 官方页。
+   */
+  url: string
+}
+
+/**
+ * `loadPnpOps` / `getPnpOps` 的返回。
+ */
+export type PnpOpsOut = Promise<PnpOpsRow[]>
+
+/**
+ * 配额行缓存的一格。
+ */
+export type PnpOpsCache = {
+  /**
+   * 当年配额行。
+   */
+  rows: PnpOpsRow[]
 
   /**
    * 拉到的时刻(毫秒)。

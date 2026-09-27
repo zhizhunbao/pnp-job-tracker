@@ -66,6 +66,7 @@ export function AdvisorModal({
     lang,
     pnpOcc: pnp.occ,
     pnpDraws: pnp.draws,
+    pnpOps: pnp.ops,
     news,
     profileClb: planClbOf({ plan }),
     eeOcc,

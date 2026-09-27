@@ -15,7 +15,8 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,理由见文件头(原样透传的外域整份行)
 import type {
-  ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, ProvInfo,
+  ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpOpsRow,
+  ProvInfo,
 } from '@/lib/jobs'
 
 /**
@@ -309,6 +310,11 @@ export type AdvisorPnpOccs = PnpOcc[]
 export type AdvisorPnpDraws = PnpDraw[]
 
 /**
+ * 当年省提名配额行(外域整表,整份喂给 PnpListSection;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ */
+export type AdvisorPnpOps = PnpOpsRow[]
+
+/**
  * 省提名两张整表(2026-09-26 起弹框打开才懒取,见 usePnpData)。
  */
 export type AdvisorPnpData = {
@@ -321,6 +327,11 @@ export type AdvisorPnpData = {
    * 各省抽选记录。
    */
   draws: AdvisorPnpDraws
+
+  /**
+   * 当年配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;老服务端没给 = 空列,那张卡不出)。
+   */
+  ops: AdvisorPnpOps
 }
 
 /**
@@ -336,6 +347,11 @@ export type PnpDataJson = {
    * 各省抽选记录。
    */
   pnpDraws?: AdvisorPnpDraws
+
+  /**
+   * 当年配额行(2026-09-27 起;换版窗口里老服务端没给)。
+   */
+  pnpOps?: AdvisorPnpOps
 } | null
 
 /**
@@ -371,6 +387,11 @@ export type PnpDataPanel = {
    * 各省抽选记录(同上)。
    */
   draws: AdvisorPnpDraws
+
+  /**
+   * 当年配额行(同上;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+   */
+  ops: AdvisorPnpOps
 }
 
 /**
@@ -468,6 +489,11 @@ export type AdvisorFacts = {
    * 各省抽选记录。
    */
   pnpDraws: AdvisorPnpDraws
+
+  /**
+   * 当年省提名配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+   */
+  pnpOps: AdvisorPnpOps
 
   /**
    * 官方新闻。

@@ -550,6 +550,20 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
      WHERE (scope_kind = '' OR scope_kind IS NULL)
        AND metric IN ('allocation','issued','nominations_issued','nominations_ytd','nominations_issued_fy','remaining')`
 
+/**
+ * 省提名弹框「{年} 年配额」卡与抽选卡「全年已邀请」那一行的原料(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ * 当年(统计期或截至日以今年开头)的配额 / 已发提名 / 剩余,全省口径加通道级(scope_kind = 'stream',阿省到通道;
+ * 萨省的行业档 sector 不取),另带汇装按抽选行加总的全年已邀请 / 已入选(invitations_ytd / selections_ytd,缺一轮不出)。
+ */
+export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') AS scope_kind,
+       COALESCE(stream_key, '') AS stream_key, value, COALESCE(as_of, '') AS as_of, COALESCE(period, '') AS period,
+       COALESCE(url, '') AS url
+     FROM pnp_ops_stats
+     WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'selections_ytd')
+       AND COALESCE(scope_kind, '') IN ('', 'stream') AND value IS NOT NULL
+       AND (COALESCE(period, '') LIKE to_char(now(), 'YYYY') || '%' OR COALESCE(as_of, '') LIKE to_char(now(), 'YYYY') || '%')
+     ORDER BY province, metric, seq`
+
 // =========================================================================
 // 9. 雇主 —— 官方名录 / 在招 / 担保
 // =========================================================================

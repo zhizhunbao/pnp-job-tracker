@@ -22,5 +22,6 @@ export type {
   BroadNoc, CityCard, CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, JsonCell, JsonObj, MatchDims, MatchJob, NocOpenCount, ProvCard, QuizFacts, TopNoc,
   OccCompetitionRow,
   ProfileJson,
-  MatchProfile, MatchReason, MatchResult, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpStream, ProvInfo, ProvListCoverage,
+  MatchProfile, MatchReason, MatchResult, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpOpsRow, PnpStream, ProvInfo,
+  ProvListCoverage,
 } from './types'

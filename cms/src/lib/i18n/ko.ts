@@ -554,6 +554,10 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
   // 2026-09-27 개편 주(ON) 행: 추첨이 아직 없을 때; 현황 카드의 두 라벨은 카드와 함께 삭제
   'pnpdraws.noInvYet': '아직 초청 없음',
+  // 2026-09-27 배정 카드(별도 박스)와 추첨 카드의 연간 누계 줄
+  'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
+  'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
+  'pnpdraws.ytdInv': '{year}년 초청 {n}건', 'pnpdraws.ytdSel': '{year}년 선정 {n}명',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   'pnpdraws.notice': 'OINP 개편({date}): 기존 스트림 폐지 및 EOI 초청 중단, 신규 Ontario Workforce Priority 스트림 기준 미정',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드

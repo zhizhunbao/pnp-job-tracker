@@ -29,6 +29,12 @@ export const CACHE: JobsCache = {
   ssrDims: null,
 
   /**
+   * 省提名配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」):/api/jobs/pnp 随两张整表一起给弹框。
+   * 与首屏维度同一个 10 分钟 TTL(随 seed 小时级更新);不塞进首屏维度包 —— 职位板首屏用不着它。开机是空的。
+   */
+  pnpOps: null,
+
+  /**
    * WHERE 签名 → 总数微缓存(2026-07-19「排序 3-4 秒」第二刀)。
    */
   counts: new Map(),

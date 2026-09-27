@@ -604,6 +604,10 @@ export const jobsZh = {
   'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
   // 2026-09-27 Frank 勾「安省改一行组头」:改制省那一行没抽选时写这一句;原现状卡「已发邀请 / 暂无」两条随卡退役
   'pnpdraws.noInvYet': '暂无邀请',
+  // 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」,标题照「每个框先设计一个 title」那张表;勾「全年已邀请合计」
+  'pnpquota.title': '{year} 年配额', 'pnpquota.total': '总数', 'pnpquota.issued': '已发提名',
+  'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
+  'pnpdraws.ytdInv': '{year} 年已发 {n} 份邀请', 'pnpdraws.ytdSel': '{year} 年已入选 {n} 人',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
