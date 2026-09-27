@@ -558,7 +558,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-27 배정 카드(별도 박스)와 추첨 카드의 연간 누계 줄
   'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
-  'pnpdraws.ytdInv': '{year}년 초청 {n}건', 'pnpdraws.ytdSel': '{year}년 선정 {n}명',
+  // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
+  'pnpquota.inv': '초청 완료', 'pnpquota.sel': '선정 완료',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',

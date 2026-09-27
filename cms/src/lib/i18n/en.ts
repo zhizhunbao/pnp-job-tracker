@@ -565,7 +565,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpquota.title': '{year} allocation', 'pnpquota.total': 'Total', 'pnpquota.issued': 'Nominated',
   'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
   'pnpquota.asOf': 'As of {date}',
-  'pnpdraws.ytdInv': '{n} invitations in {year}', 'pnpdraws.ytdSel': '{n} selected in {year}',
+  // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire
+  'pnpquota.inv': 'Invited', 'pnpquota.sel': 'Selected',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': 'Stream requirements', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': 'Job offer', 'pnpgate.k.lang': 'Language', 'pnpgate.k.exp': 'Experience', 'pnpgate.k.ee': 'EE',

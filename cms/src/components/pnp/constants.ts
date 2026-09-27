@@ -441,11 +441,14 @@ export const OPS_SCOPE_STREAM = 'stream'
 
 /**
  * 「{年} 年配额」卡的列:每列认哪几个指标名 · 列名的词条键(顺序即列序;只列这个省官方有的项,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
+ * 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进来,排在剩余之后(已发邀请;NS 叫已入选)。
  */
 export const QUOTA_COLS: [string[], string][] = [
   [[OPS_ALLOCATION], 'pnpquota.total'],
   [OPS_ISSUED_METRICS, 'pnpquota.issued'],
   [[OPS_REMAINING], 'pnpquota.remaining'],
+  [[OPS_INV_YTD], 'pnpquota.inv'],
+  [[OPS_SEL_YTD], 'pnpquota.sel'],
 ]
 
 /**

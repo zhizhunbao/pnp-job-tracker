@@ -1024,11 +1024,6 @@ export type DrawCard = {
    * 标题右端的官方来源(本省抽选页);认不出站名给 null(不出)。
    */
   source: SourceLink | null
-
-  /**
-   * 标题下「全年已发邀请 / 已入选」那一行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;汇装按当年抽选行加总、缺一轮不出);'' = 不出。
-   */
-  ytd: string
 }
 
 /**
@@ -1112,6 +1107,7 @@ export type QuotaCardSpec = {
 
   /**
    * 列名(总数 / 已发提名 / 剩余,只列这个省官方有的项)。
+   * 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」:抽选卡那行全年合计并进来,多「已发邀请 / 已入选」两项。
    */
   heads: string[]
 
@@ -1121,7 +1117,7 @@ export type QuotaCardSpec = {
   rows: QuotaRowSpec[]
 
   /**
-   * 表下「截至 {日期}」那一行;官方没写截至日给 ''。
+   * 表下「截至 {日期}」那一行(取最右一列带截至日的那格,2026-09-27);官方没写截至日给 ''。
    */
   asOf: string
 }
@@ -1149,26 +1145,6 @@ export type QuotaCardOfIn = {
    * 本岗对应的抽选组(抽选行 stream 原值;小写后与配额行的通道键对得上才出「本岗通道」那一行)。
    */
   hitStreams: string[]
-}
-
-/**
- * ytdLineOf 的入参。
- */
-export type YtdLineIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 当年省提名配额行。
-   */
-  ops: PnpOps[]
 }
 
 /**
@@ -3337,11 +3313,6 @@ export type PnpDrawGroupsIn = {
   hitStreams: string[]
 
   /**
-   * 当年省提名配额行(抽选卡标题下「全年已邀请」那一行读它;2026-09-27)。
-   */
-  ops: PnpOps[]
-
-  /**
    * 展开着的组(通道名;「查看全省 N 组」那个开关的键是 DRAWS_ALL_KEY)。
    */
   open: Set<string>
@@ -3425,11 +3396,6 @@ export type DrawCardOfIn = {
    * 本岗对应的组(抽选行 stream 原值);空列 = 没有本岗那一组。
    */
   hitStreams: string[]
-
-  /**
-   * 当年省提名配额行(「全年已邀请」那一行;2026-09-27)。
-   */
-  ops: PnpOps[]
 }
 
 /**

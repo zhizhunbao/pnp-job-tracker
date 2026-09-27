@@ -14,6 +14,7 @@
  * 排最前、开关收起时也留着;「全站高亮要不要都改成蓝色」:本岗高亮改浅蓝(.cmpHit)。「来源」挪到标题那一行右端(DrawsHead;
  * Frank 选「标题那一行右端」,问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页,各通道同一个链接)。
  * 2026-09-27 Frank 勾「全年已邀请合计」:标题下一行灰字「{年} 年已发 N 份邀请」(NS 写「已入选 N 人」),汇装加总、缺一轮不出。
+ * 同日 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:那一行并进「{年} 年配额」卡当一列(quotaCardOf),这里撤。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
@@ -33,8 +34,8 @@ import css from './pnp.module.css'
  * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组与开合手柄工厂。
  * @returns 抽选卡;本省没有抽选给 null。
  */
-export function PnpDrawGroups({ t, lang, province, draws, hitStreams, ops, open, toggleOf }: PnpDrawGroupsIn) {
-  const card = drawCardOf({ t, lang, province, draws, hitStreams, ops })
+export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf }: PnpDrawGroupsIn) {
+  const card = drawCardOf({ t, lang, province, draws, hitStreams })
   if (card == null) {
     return null
   }
@@ -52,7 +53,6 @@ export function PnpDrawGroups({ t, lang, province, draws, hitStreams, ops, open,
   return (
     <div className={css.card}>
       <DrawsHead title={card.title} source={card.source} />
-      {card.ytd !== '' && <div className={css.drawsBasis}>{card.ytd}</div>}
       {DRAW_NO_SCORE_PROVS.has(province) && <div className={css.drawsBasis}>{t('pnpdraws.noScore')}</div>}
       {hits}
       {others}

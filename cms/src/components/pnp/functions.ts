@@ -22,8 +22,8 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
   DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
-  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE, OPS_INV_YTD,
-  OPS_SCOPE_STREAM, OPS_SEL_YTD, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
+  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE,
+  OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -45,7 +45,7 @@ import {
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
   LatestSinceIn, SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec,
-  QuotaStreamIn, YtdLineIn,
+  QuotaStreamIn,
   MonthRowsIn, RoundRowsIn,
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
@@ -1285,40 +1285,18 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     others,
     total: groups.length,
     source,
-    ytd: ytdLineOf({ t: x.t, province: x.province, ops: x.ops }),
   }
-}
-
-/**
- * 抽选卡标题下「全年已发邀请 / 已入选」那一行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」、勾「全年已邀请合计」):
- * 读汇装出的 invitations_ytd(逐轮邀请加总)/ selections_ytd(NS 按月选取人数加总);汇装那边当年任一轮没公布人数就不出这一行,
- * 这里不自己加(前端不换算)。AIP 那组的「份申请入选」不在邀请合计里(汇装已剔)。
- *
- * @param x 取词函数、省码与当年配额行。
- * @returns 那一行;这一省没有合计给 ''。
- */
-export function ytdLineOf(x: YtdLineIn): string {
-  const rows: PnpOps[] = []
-  for (const r of x.ops) {
-    if (r.province === x.province && r.scopeKind === TEXT_NONE) {
-      rows.push(r)
-    }
-  }
-  const inv = opsPickOf({ rows, streamKey: TEXT_NONE, metrics: [OPS_INV_YTD] })
-  if (inv != null) {
-    return x.t('pnpdraws.ytdInv', { year: yearOf(inv), n: inv.value.toLocaleString(NUM_LOCALE) })
-  }
-  const sel = opsPickOf({ rows, streamKey: TEXT_NONE, metrics: [OPS_SEL_YTD] })
-  if (sel != null) {
-    return x.t('pnpdraws.ytdSel', { year: yearOf(sel), n: sel.value.toLocaleString(NUM_LOCALE) })
-  }
-  return TEXT_NONE
 }
 
 /**
  * 「{年} 年配额」卡(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;看过效果图,标题照 Frank「每个框先设计一个 title」那张表):
  * 列 = 总数 / 已发提名 / 剩余,只列这个省官方有的项(安省只有总数就只一列,不拿长横凑);行 = 全省,本岗对应的抽选组与配额行的
  * 通道键对得上(阿省公布到通道)再加「本岗通道」一行;表下「截至 {日期}」取官方写的截至日,没写就不出。数字全是官方原数,不自己减。
+ * 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行「全年已发邀请 / 已入选」(原 ytdLineOf)并进来当一列
+ * —— 读汇装出的 invitations_ytd(逐轮邀请加总)/ selections_ytd(NS 按月选取人数加总),汇装那边当年任一轮没公布人数就不出,
+ * 这里不自己加;AIP 那组的「份申请入选」不在合计里(汇装已剔)。没有配额只有合计的省(NB、PE)这张卡就只这一列。
+ * 截至日改取最右一列带截至日的那格:配额总数是全年定数(安省、NS、NL 不写截至日),截至日跟着会动的那几项走;
+ * 同一省几项的截至日当天核过一致(阿省三项同为 2026-09-23),哪天分叉了这一行要改成逐项写。
  *
  * @param x 取词函数、省码、当年配额行与本岗对应的抽选组。
  * @returns 配额卡;这一省当年一项都没有给 null。
@@ -1351,9 +1329,16 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
   if (streamKey !== TEXT_NONE) {
     rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
   }
+  let asOfDate = TEXT_NONE
+  for (const metrics of cols) {
+    const r = opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics })
+    if (r != null && r.asOf !== TEXT_NONE) {
+      asOfDate = r.asOf
+    }
+  }
   let asOf = TEXT_NONE
-  if (first.asOf !== TEXT_NONE) {
-    asOf = x.t('pnpquota.asOf', { date: first.asOf })
+  if (asOfDate !== TEXT_NONE) {
+    asOf = x.t('pnpquota.asOf', { date: asOfDate })
   }
   return {
     title: x.t('pnpquota.title', { year: yearOf(first) }),
@@ -1426,6 +1411,8 @@ function opsPickOf(x: OpsPickIn): PnpOps | null {
 
 /**
  * 配额小表的网格类:列数随这一省官方有几项变(1–3 列值 + 1 列行名),一个列数一个类,不写内联样式。
+ * 2026-09-27 并入已发邀请 / 已入选后 QUOTA_COLS 五项,但当天各省最多三项(阿省总数 / 已发提名 / 剩余,阿省汇装不出全年已发邀请);
+ * 哪天一省凑出四项,这里加一档并先验 375 宽。
  *
  * @param n 值的列数。
  * @returns 类名。

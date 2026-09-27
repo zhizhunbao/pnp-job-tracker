@@ -26,6 +26,7 @@
  * 2026-09-27 NS 按月与安省改制两种形也改走 PnpDrawGroups 的组头行(Frank「还是横着排的」、勾「安省改一行组头」),PnpFactCard 退役。
  * 同日 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:通道卡与抽选卡之间加「{年} 年配额」卡(PnpQuotaCard);
  * 抽选卡标题下多一行「全年已发邀请 / 已入选」(ops 递进 PnpDrawGroups)。
+ * 同日 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:那一行并进配额卡当一列,ops 不再递进抽选卡。
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:通道卡与配额卡之间加「本岗通道的门槛」卡(PnpGateCard,版式照公司信息卡的「行名 - 值」)。
  *
  * @author Frank
@@ -74,7 +75,7 @@ export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [],
       {gate != null && <PnpGateCard spec={gate} />}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawGroupsShownOf(form) && (
-        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams} ops={ops}
+        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams}
           open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}
       {cards}
