@@ -167,10 +167,14 @@ class JobFact:
     description: str
     """描述纯文本。"""
 
+    badges: list = field(default_factory=list)
+    """详情页「Job Details」标签原文清单(In-person / Full-time / Permanent / …;2026-09-28 加,解析段从缓存原文抽)。
+    带默认值:加这一格之前落盘的事实行没有这个键,建仓段 JobFact(**row) 照样构造;全量重解析(`--only reparse`)后补齐。"""
+
 
 @dataclass
 class LdPostingIn:
-    """to_job_fact() 入参(一块 JobPosting 字典 + 它来自哪个 URL)。"""
+    """to_job_fact() 入参(一块 JobPosting 字典 + 它来自哪个 URL + 同页的「Job Details」标签)。"""
 
     posting_id: str
     """帖号。"""
@@ -180,6 +184,9 @@ class LdPostingIn:
 
     data: dict
     """ld+json 解出的 JobPosting 字典。"""
+
+    badges: list
+    """同一张详情页的「Job Details」标签原文(badges_of 抽;2026-09-28 加)。"""
 
 
 @dataclass
@@ -232,6 +239,17 @@ class SalaryTextIn:
 
     unit: str
     """schema.org 单位词。"""
+
+
+@dataclass
+class BadgeWordIn:
+    """badge_word_of() 入参(一帖的标签清单 + 按哪张表译词;2026-09-28 加)。"""
+
+    badges: list
+    """「Job Details」标签原文清单。"""
+
+    table: dict
+    """标签原文 → Job Bank 词(TERM_OF_BADGE 或 HOURS_OF_BADGE)。"""
 
 
 @dataclass
@@ -453,3 +471,82 @@ class CareerbeaconEnumGuardTest(unittest.TestCase):
             if pid != "104":
                 want.append(pid)
         self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(want))
+
+
+class CareerbeaconBadgeTest(unittest.TestCase):
+    """「Job Details」标签定雇佣期限 / 工时自测(2026-09-28 Frank 勾「抽源页已有字段」立)。
+
+    标签段抽取喂真页形状的片段(小标题 + div.badge,后接 Benefits 小标题);期限与工时的金标取自在架真帖的组合:
+    标签分得出的(Relief / Casual、Seasonal、Permanent)压过 ld+json 的粗分类;标签没写、或同帖写了两种的,
+    退回 ld+json 清单里第一个能译的(与改动前同一口径)。只喂字符串,不联网、不读仓内文件。"""
+
+    page = (
+        '<h3 class="h6 text-dark fw-semibold mb-1">\n\t\tJob Details:\t\t</h3>\n'
+        '<div class="d-flex flex-wrap justify-content-start mb-3">\n'
+        '<div class="badge badge-primary px-3 py-2 me-2 mb-2">\n\t\tIn-person\t</div>\n'
+        '<div class="badge badge-primary px-3 py-2 me-2 mb-2">\n\t\t$52.31 - $64.92 / hour\t</div>\n'
+        '<div class="badge badge-primary px-3 py-2 me-2 mb-2">\n\t\tFull-time\t</div>\n'
+        '<div class="badge badge-primary px-3 py-2 me-2 mb-2">\n\t\tPermanent\t</div>\n'
+        '</div>\n'
+        '<h3 class="h6 text-dark fw-semibold mb-1">Benefits:</h3>\n'
+        '<div class="d-flex"><span>Bonuses &amp; Incentives</span></div><hr class="hr">'
+    )
+    """真页形状的片段(2026-09-28 取自 NL Health Services 的 Nurse Practitioner 帖,缩成四个标签)。"""
+
+    terms = [
+        (["In-person", "Full-time", "Permanent", "Experienced"], ["FULL_TIME"], "permanent"),
+        (["In-person", "Full-time", "Relief / Casual"], ["TEMPORARY"], "casual"),
+        (["In-person", "Full-time", "Seasonal"], ["TEMPORARY"], "seasonal"),
+        (["In-person", "Contract"], ["CONTRACTOR"], "term"),
+        (["In-person", "Full-time", "Permanent", "Temporary"], ["FULL_TIME", "TEMPORARY"], "term"),
+        (["In-person", "Full-time", "Experienced"], ["FULL_TIME"], ""),
+        ([], ["INTERN"], "term"),
+        (["Student"], [], ""),
+    ]
+    """(标签, ld+json 雇佣形态, 期望期限词) 金标:前四条标签压过 ld+json;第五条同帖两种期限退回 ld+json 第一个能译的;
+    第六条标签与 ld+json 都不表期限留空;第七条老事实行没有标签照旧读 ld+json;Student 是资历档不译。"""
+
+    hours = [
+        (["Full-time", "Permanent"], ["TEMPORARY"], "full"),
+        (["Part-time"], ["FULL_TIME"], "part"),
+        (["Full-time", "Part-time"], ["PART_TIME", "FULL_TIME"], "part"),
+        (["In-person"], [], ""),
+    ]
+    """(标签, ld+json 雇佣形态, 期望工时词) 金标:标签优先;同帖既全职又兼职退回 ld+json 第一个;都没写留空。"""
+
+    def fact_of(self, badges: list, types: list) -> JobFact:
+        """只填标签与雇佣形态两格的事实行(其余格与本用例无关)。"""
+        return JobFact(
+            posting_id="1", url="", title="", employer="", employer_url="", city="", province="", postal="", street="",
+            country="", date_posted="", valid_through="", salary_lo="", salary_hi="", salary_unit="",
+            employment_types=types, industry="", description="", badges=badges,
+        )
+
+    def test_badges_of_page(self) -> None:
+        """标签段抽取:四个标签原样(折空白)按页序出来,Benefits 段不混进来;页上没有这一段给空清单。"""
+        from careerbeacon.functions import badges_of
+        self.assertEqual(badges_of(self.page), ["In-person", "$52.31 - $64.92 / hour", "Full-time", "Permanent"])
+        self.assertEqual(badges_of("<html><body><h3>Benefits:</h3></body></html>"), [])
+
+    def test_term_golden(self) -> None:
+        """期限金标逐条过。"""
+        from careerbeacon.functions import term_of
+        for badges, types, want in self.terms:
+            with self.subTest(badges=badges, types=types):
+                self.assertEqual(term_of(self.fact_of(badges, types)), want)
+
+    def test_hours_golden(self) -> None:
+        """工时金标逐条过。"""
+        from careerbeacon.functions import hours_of
+        for badges, types, want in self.hours:
+            with self.subTest(badges=badges, types=types):
+                self.assertEqual(hours_of(self.fact_of(badges, types)), want)
+
+    def test_old_fact_row_loads(self) -> None:
+        """加格前落盘的事实行(没有 badges 键)照样构造成事实,标签按空清单算。"""
+        row: dict = {}
+        for k, v in asdict(self.fact_of([], ["FULL_TIME"])).items():
+            if k != "badges":
+                row[k] = v
+        self.assertEqual(JobFact(**row).badges, [])
+

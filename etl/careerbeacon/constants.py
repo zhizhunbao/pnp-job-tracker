@@ -218,6 +218,14 @@ TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
 """连续空白折一个。"""
 
+BADGE_BLOCK_RE = re.compile(r"Job Details:\s*</h3>(.*?)(?:<h3|<hr)", re.S)
+"""详情页「Job Details:」小标题下那排标签所在的一段(到下一个小标题或分隔线为止;2026-09-28 实测在架帖 1,474 张里
+1,473 张有)。ld+json 的 employmentType 只分 FULL_TIME / PART_TIME / TEMPORARY,页上这排标签才写 Permanent、
+Relief / Casual、Seasonal(Frank「CareerBeacon 来源的 jobs 经常数据不全」,查出雇佣期空着的帖页上多半写着)。"""
+
+BADGE_RE = re.compile(r"<div class=\"badge[^\"]*\"[^>]*>(.*?)</div>", re.S)
+"""那一段里的单个标签(div.badge;内文剥标签折空白即标签原文:In-person / Full-time / Permanent / Experienced / 薪资区间…)。"""
+
 PRINT_PARSE_DONE_TPL = "[OK] 解析 {parsed} 张(跳过已解析 {skipped},无 JobPosting {missing})→ {out}"
 """解析收尾。"""
 
@@ -329,6 +337,24 @@ HOURS_OF_TYPE = {
     "PART_TIME": "part",
 }
 """employmentType → Job Bank 工时词。"""
+
+TERM_OF_BADGE = {
+    "Permanent": "permanent",
+    "Temporary": "term",
+    "Contract": "term",
+    "Term": "term",
+    "Relief / Casual": "casual",
+    "Seasonal": "seasonal",
+}
+"""「Job Details」标签 → Job Bank 雇佣期限词(2026-09-28 实测在架帖出现过的期限类标签全在这)。比 ld+json 细:
+同一帖 ld+json 只给 TEMPORARY 的,标签分得出临时工(Relief / Casual)与季节性。Student、Student / Internship
+跟 Experienced、Entry Level 排在一起,是资历档不是期限,不收(宁空不猜)。"""
+
+HOURS_OF_BADGE = {
+    "Full-time": "full",
+    "Part-time": "part",
+}
+"""「Job Details」标签 → Job Bank 工时词。"""
 
 UTC_Z = "Z"
 """ISO 串的 UTC 标记(Job Bank 仓 last_seen 同款「2026-09-06T21:24:06Z」)。"""

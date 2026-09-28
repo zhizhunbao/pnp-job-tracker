@@ -414,6 +414,48 @@ class GcLocationTest(unittest.TestCase):
                         self.assertNotEqual(loc.province, "")
 
 
+class GcTenureTest(unittest.TestCase):
+    """任期栏 → 雇佣期限 / 工时自测(2026-09-28 Frank 勾「抽源页已有字段」立)。金标原文取自在架真帖的任期栏:
+    写明一种期限的给那种;一栏列了几种(一次招聘各种任期都招)留空;调动方式(Acting / Deployment…)不算期限;
+    学生岗照旧定期。只喂字符串,不联网、不读仓内文件。"""
+
+    golden = [
+        ("Indeterminate", "permanent", ""),
+        ("INDETERMINATE", "permanent", ""),
+        ("Indeterminate, deployment", "permanent", ""),
+        ("Indeterminate full-time position", "permanent", "full"),
+        ("Permanent Full-Time", "permanent", "full"),
+        ("Six-month Term (with the possibility of extension), Acting, Assignment", "term", ""),
+        ("Term, Acting or Assignment-at-level, depending on status of the selected candidate", "term", ""),
+        ("Specified Period - two (2) years", "term", ""),
+        ("One year", "term", ""),
+        ("6 months", "term", ""),
+        ("These are temporary opportunities to March 2028 with the possibility of extension.", "term", ""),
+        ("CASUAL", "casual", ""),
+        ("Casual Employment - **90 working days per calendar year**", "casual", ""),
+        ("This M.Sc. RAP Bursary will start January 2027 and end January 2029. It is expected that the student will "
+         "work part-time (approximately 22.5 hours per week) for a two-year period (eight semesters).", "term", "part"),
+        ("This is a student position of 37 hours per week for a 1.5 year period from Fall 2026 to Winter 2027.", "term", ""),
+        ("Acting, Assignment, Deployment, Indeterminate, Secondment, Specified period", "", ""),
+        ("Permanent (Indeterminate), Temporary (Term), Acting, and Deployment", "", ""),
+        ("Temporary (term), Casual - Full-Time (37.5 hours/week)", "", "full"),
+        ("👉 Staffing needs include opportunities for permanent, temporary, and casual employment (note: casual work is "
+         "offered for a fixed duration not exceeding 90 working days in the same calendar year).", "", ""),
+        ("Anticipatory Staffing - A pool of qualified candidates will be created", "", ""),
+        ("Employment Tenure - Anticipatory", "", ""),
+        ("", "", ""),
+    ]
+    """(任期栏原文, 期望期限词, 期望工时词) 金标:前十五条写明一种期限(含学生岗两条、全职 / 兼职字样两条);
+    后七条几种期限并列、只写调动方式或没写期限,期限留空。"""
+
+    def test_golden(self) -> None:
+        """金标逐条过:期限与工时两格都对。"""
+        from gcjobs import functions as fn
+        for text, term, hours in self.golden:
+            with self.subTest(text=text):
+                self.assertEqual((fn.term_of(text), fn.hours_of(text)), (term, hours))
+
+
 @dataclass
 class FakeResponse:
     """HTTP 响应替身(HttpResponseLike 的两格;状态码 ≥ 400 时 raise_for_status 抛,形同 httpx;2026-09-27 门迁 door 叶同批立)。"""

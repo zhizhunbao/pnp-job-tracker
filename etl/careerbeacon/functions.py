@@ -47,11 +47,13 @@ from careerbeacon.constants import (
     SALARY_RANGE_TPL, SALARY_TPL, SALARY_UNIT_WORD, SECONDS_FMT, SITE_BASE, SLUG_CRAWL, SOURCE_LABEL,
     SPACE, TERM_OF_TYPE, UTC_Z, WS_RE,
     ERR_LIST_PAGE_TPL, ERR_PAGE_EMPTY_TPL, IN_POSTINGS, SHRINK_LABEL, TEST_VERBOSITY,
+    BADGE_BLOCK_RE, BADGE_RE, HOURS_OF_BADGE, TAG_RE, TERM_OF_BADGE,
 )
 from careerbeacon.scheme import (
     ParseIn, DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     ProvinceIn, ProvinceOut, SalaryTextIn, StoreTally,
     CareerbeaconEnumGuardTest,
+    BadgeWordIn, CareerbeaconBadgeTest,
 )
 
 
@@ -252,11 +254,12 @@ def parse_details(x: ParseIn) -> None:
         path = have.get(url)
         if path is None:
             continue
-        data = job_posting_of(path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE))
+        page = path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)
+        data = job_posting_of(page)
         if data is None:
             tally.missing += 1
             continue
-        fact = to_job_fact(LdPostingIn(posting_id=pid, url=url, data=data))
+        fact = to_job_fact(LdPostingIn(posting_id=pid, url=url, data=data, badges=badges_of(page)))
         facts[pid] = asdict(fact)
         tally.parsed += 1
     OUT_JOBS.parent.mkdir(parents=True, exist_ok=True)
@@ -296,7 +299,21 @@ def to_job_fact(x: LdPostingIn) -> JobFact:
         employment_types=types_of(x.data.get(LD_EMPLOYMENT_TYPE)),
         industry=text_of(x.data.get(LD_INDUSTRY)),
         description=rich_text_of(text_of(x.data.get(LD_DESCRIPTION))),
+        badges=x.badges,
     )
+
+
+def badges_of(page: str) -> list:
+    """详情页「Job Details」那排标签 → 原文清单(剥标签折空白,空的剔;页上没有这一段给空清单)。"""
+    m = BADGE_BLOCK_RE.search(page)
+    if m is None:
+        return []
+    out: list = []
+    for raw in BADGE_RE.findall(m.group(1)):
+        text = WS_RE.sub(SPACE, TAG_RE.sub(SPACE, raw)).strip()
+        if text != "":
+            out.append(text)
+    return out
 
 
 def dict_of(value: object) -> dict:
@@ -395,7 +412,7 @@ def to_posting_row(x: PostingRowIn) -> dict:
         K_SALARY: salary_text_of(SalaryTextIn(lo=f.salary_lo, hi=f.salary_hi, unit=f.salary_unit)),
         K_DATE: f.date_posted, K_SOURCE: SOURCE_LABEL, K_DIRECT: False, K_URL: f.url,
         K_ADDRESS: address_of(f), K_NOC: "", K_LAST_SEEN: x.seen_at,
-        K_EMPLOYMENT_TERM: term_of(f.employment_types), K_EMPLOYMENT_HOURS: hours_of(f.employment_types),
+        K_EMPLOYMENT_TERM: term_of(f), K_EMPLOYMENT_HOURS: hours_of(f),
         K_DESCRIPTION: f.description, K_VALID_THROUGH: f.valid_through, K_LANG: LANG_EN,
         K_INDUSTRY: f.industry, K_EMPLOYER_URL: f.employer_url,
     }
@@ -433,22 +450,42 @@ def address_of(f: JobFact) -> str:
     return ADDRESS_SEP.join(parts)
 
 
-def term_of(types: list) -> str:
-    """雇佣形态清单里第一个能译成 Job Bank 期限词的;没有给空串。"""
-    for t in types:
-        word = TERM_OF_TYPE.get(t)
-        if word is not None:
-            return word
+def term_of(f: JobFact) -> str:
+    """雇佣期限:「Job Details」标签译出的词优先(比 ld+json 细,分得出临时工与季节性;2026-09-28);
+    标签没写或同帖写了两种(Permanent 与 Temporary),退回 ld+json 雇佣形态清单里第一个能译成期限词的;都没有给空串。"""
+    word = badge_word_of(BadgeWordIn(badges=f.badges, table=TERM_OF_BADGE))
+    if word != "":
+        return word
+    for t in f.employment_types:
+        found = TERM_OF_TYPE.get(t)
+        if found is not None:
+            return found
     return ""
 
 
-def hours_of(types: list) -> str:
-    """雇佣形态清单里第一个能译成 Job Bank 工时词的;没有给空串。"""
-    for t in types:
-        word = HOURS_OF_TYPE.get(t)
-        if word is not None:
-            return word
+def hours_of(f: JobFact) -> str:
+    """工时:「Job Details」标签译出的词优先(2026-09-28);标签没写或同帖既 Full-time 又 Part-time,
+    退回 ld+json 雇佣形态清单里第一个能译成工时词的;都没有给空串。"""
+    word = badge_word_of(BadgeWordIn(badges=f.badges, table=HOURS_OF_BADGE))
+    if word != "":
+        return word
+    for t in f.employment_types:
+        found = HOURS_OF_TYPE.get(t)
+        if found is not None:
+            return found
     return ""
+
+
+def badge_word_of(x: BadgeWordIn) -> str:
+    """标签清单按表译词:译出来恰好一种词才给它;一个都译不出,或译出两种以上(同帖两种期限)给空串 —— 不替它挑。"""
+    words: set = set()
+    for b in x.badges:
+        word = x.table.get(b)
+        if word is not None:
+            words.add(word)
+    if len(words) != 1:
+        return ""
+    return words.pop()
 
 
 # =========================================================================
@@ -458,7 +495,11 @@ def hours_of(types: list) -> str:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑「枚举失败 → 不出快照 / 不下架」自测(用例集住 scheme 的 CareerbeaconEnumGuardTest,
-    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(CareerbeaconEnumGuardTest)
+    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。
+    2026-09-28 加「Job Details」标签定雇佣期限 / 工时自测 CareerbeaconBadgeTest,一起跑。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for case in (CareerbeaconEnumGuardTest, CareerbeaconBadgeTest):
+        suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

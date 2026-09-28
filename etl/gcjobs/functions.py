@@ -59,11 +59,12 @@ from gcjobs.constants import (
     TERM_WORD, TITLE_RE, UNIT_ANNUAL, UNIT_HOURLY, UTC_Z, VARIOUS_MARK, WS_RE, XHR,
     LOC_STAR_MARK, PLACE_CUT_RE, PROV_TAIL_RE, TEST_VERBOSITY,
     ERR_PAGE_EMPTY_TPL, IN_POSTINGS, SHRINK_LABEL,
+    TENURE_HOURS_RES, TENURE_TERM_RES,
 )
 from gcjobs.scheme import (
     DetailBatchIn, DetailBatchOut, DetailIn, ExternalFetchIn, ExternalTally, HttpClientLike, JobFact, ListRow,
     Location, MatchIn, PageIn, PagesOut, ParseTally, PostingRowIn, Session, StoreTally,
-    GcLocationTest, GcEnumGuardTest,
+    GcLocationTest, GcEnumGuardTest, GcTenureTest,
 )
 
 
@@ -748,7 +749,7 @@ def date_key_of(row: dict) -> str:
 
 def to_posting_row(x: PostingRowIn) -> dict:
     """事实 → Job Bank 仓同形的行(键序即落盘列序,与其余板仓逐键同形;mart 的 to_jb_job_fields 按这些键取)。
-    站外帖 url 给雇主外链;发布日 = 首见日(站上不给);工时不分栏恒空。"""
+    站外帖 url 给雇主外链;发布日 = 首见日(站上不给);工时不分栏恒空(2026-09-28 起认任期栏里写明的 full-time / part-time)。"""
     f = x.fact
     url = f.url
     if f.external_url != "":
@@ -758,7 +759,7 @@ def to_posting_row(x: PostingRowIn) -> dict:
         K_CITY: f.city, K_PROVINCE: f.province, K_SALARY: salary_text_of(f.salary),
         K_DATE: f.first_seen, K_SOURCE: SOURCE_LABEL, K_DIRECT: True, K_URL: url,
         K_ADDRESS: f.location, K_NOC: "", K_LAST_SEEN: x.seen_at,
-        K_EMPLOYMENT_TERM: term_of(f.tenure), K_EMPLOYMENT_HOURS: "",
+        K_EMPLOYMENT_TERM: term_of(f.tenure), K_EMPLOYMENT_HOURS: hours_of(f.tenure),
         K_DESCRIPTION: full_description_of(x), K_VALID_THROUGH: f.closing, K_LANG: LANG_EN,
         K_INDUSTRY: "", K_EMPLOYER_URL: "", K_WHO_CAN_APPLY: f.who,
     }
@@ -778,10 +779,32 @@ def salary_text_of(text: str) -> str:
 
 
 def term_of(tenure: str) -> str:
-    """雇佣期文本里说是学生岗 → 定期(term);其余不猜给空串。"""
+    """雇佣期文本里说是学生岗 → 定期(term);其余不猜给空串。
+    2026-09-28 Frank 勾「抽源页已有字段」:其余按 TENURE_TERM_RES 逐词认(Indeterminate → 长期等);学生岗与认出的词
+    合起来恰好一种才给,认出两种以上(同一次招聘各种任期都招)或一种都没有,仍给空串。"""
+    words: set = set()
     if STUDENT_MARK in tenure.lower():
-        return TERM_WORD
-    return ""
+        words.add(TERM_WORD)
+    for word, rx in TENURE_TERM_RES.items():
+        if rx.search(tenure):
+            words.add(word)
+    return only_word_of(words)
+
+
+def hours_of(tenure: str) -> str:
+    """任期栏里写明的工时 → Job Bank 工时词(2026-09-28;GC Jobs 页上没有工时栏):两种都写或都没写给空串。"""
+    words: set = set()
+    for word, rx in TENURE_HOURS_RES.items():
+        if rx.search(tenure):
+            words.add(word)
+    return only_word_of(words)
+
+
+def only_word_of(words: set) -> str:
+    """认出的词集里恰好一个才给它,否则空串(不替原文挑)。"""
+    if len(words) != 1:
+        return ""
+    return words.pop()
 
 
 def full_description_of(x: PostingRowIn) -> str:
@@ -811,10 +834,11 @@ def full_description_of(x: PostingRowIn) -> str:
 def run_tests() -> None:
     """本域手动件 `--only test`:跑地点归一自测(用例集住 scheme 的 GcLocationTest,先例 ats / indexing / gate.scheme;
     2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」随地点小修立);有失败 sys.exit(1),退出码穿门报红。
-    同日门迁 door 叶同批起连「枚举失败 → 不出快照 / 不下架」自测 GcEnumGuardTest 一起跑(门接住 sys.exit(1) 报本步失败)。"""
+    同日门迁 door 叶同批起连「枚举失败 → 不出快照 / 不下架」自测 GcEnumGuardTest 一起跑(门接住 sys.exit(1) 报本步失败)。
+    2026-09-28 加任期栏 → 雇佣期限 / 工时自测 GcTenureTest,一起跑。"""
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    for case in (GcLocationTest, GcEnumGuardTest):
+    for case in (GcLocationTest, GcEnumGuardTest, GcTenureTest):
         suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

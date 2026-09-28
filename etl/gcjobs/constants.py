@@ -528,6 +528,24 @@ STUDENT_MARK = "student"
 TERM_WORD = "term"
 """Job Bank 雇佣期限词:定期。"""
 
+TENURE_TERM_RES = {
+    "permanent": re.compile(r"\bindeterminate\b|\bpermanent\b", re.I),
+    "term": re.compile(r"specified period|\bterm\b|\btemporary\b|\bdeterminate\b"
+                       r"|\b(?:one|two|three|four|five|six|\d+)[- ]?(?:year|month)s?\b", re.I),
+    "casual": re.compile(r"\bcasual\b", re.I),
+}
+"""任期栏(Employment tenure)里认期限的词 → Job Bank 期限词(2026-09-28 Frank 勾「抽源页已有字段」;原先只认学生岗,
+写明 Indeterminate 的也空着):Indeterminate / Permanent → 长期;Specified period / Term / Temporary / determinate /
+「One year」「6 months」→ 定期;Casual → 临时工。Acting / Assignment / Deployment / Secondment 是在职公务员的调动方式、
+不是期限,不认。一栏认出两种以上(同一次招聘各种任期都招)不替它挑。"""
+
+TENURE_HOURS_RES = {
+    "full": re.compile(r"full[- ]?time", re.I),
+    "part": re.compile(r"part[- ]?time", re.I),
+}
+"""任期栏里写明的工时(「Indeterminate full-time position」「… will work part-time」)→ Job Bank 工时词(2026-09-28;
+GC Jobs 页上没有工时栏,原先恒空)。两种都写或都没写留空。"""
+
 DESC_LANG_TPL = "Language requirements: {lang}"
 """描述首行:语言要求(列表行给的)。"""
 
