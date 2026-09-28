@@ -230,6 +230,14 @@ services:
       HEALTHCHECK_PING_PNP_WATCH: ${HEALTHCHECK_PING_PNP_WATCH:-}
       TZ: EST5EDT
 
+  pnp_pathways:                    # 全国通道对照表(2026-09-28 立域):人工核定的通道对照每小时对一遍 raw/pnp 现值,对上才写 processed/pathways/,
+    <<: *etl                       # 对不上逐条报红、扣 ping;只读本地文件,不发请求;mart 直通进库。起的时候只起它 —— docker compose up -d pnp_pathways
+    environment:
+      <<: *hc
+      SOURCE: pathways
+      HEALTHCHECK_PING_PATHWAYS: ${HEALTHCHECK_PING_PATHWAYS:-}
+      TZ: EST5EDT
+
   fed_aip:                             # AIP 大西洋试点:指定雇主名单 + 规则(原挂 pnp 角色,批N 拆出)
     <<: *etl
     environment:

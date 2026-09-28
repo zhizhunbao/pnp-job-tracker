@@ -86,7 +86,7 @@ from mart.constants import (
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI,
-    IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
+    IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_PATHWAYS, PATHWAYS_MISSING_TPL, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
     K_MW_EFFECTIVE, K_MW_FETCHED, K_MW_FROM, K_MW_NEXT, K_MW_PROVINCE, K_MW_RATE, K_MW_ROWS, K_MW_SINCE,
     MACRO_KEY_MIN_WAGE, MINWAGE_LANDING, MINWAGE_YEAR_END_TPL, UNIT_DOLLARS_HOURLY, IN_JVWS_RAW, IN_LMIA, IN_LMIA_XLSX_DIR, IN_MART_CLOSED,
@@ -4245,6 +4245,30 @@ def build_field_sources() -> list:
     return read_table_soft(IN_FIELD_SOURCES).get(K_ROWS, [])
 
 
+def build_pathways() -> list:
+    """全国通道对照表(2026-09-28 立 pathways 域):那边每轮对过 raw/pnp 才写,这里直通,只多算一格 quotaKey。
+    缺文件照 field_sources 出空表,但要喊出来(产物在仓库里跟踪着,缺了就是出事了)。"""
+    if not IN_PATHWAYS.exists():
+        say(PATHWAYS_MISSING_TPL.format(path=IN_PATHWAYS))
+        return []
+    rows: list = []
+    for r in read_table_soft(IN_PATHWAYS).get(K_ROWS, []):
+        rows.append(to_pathway_row(r))
+    return rows
+
+
+def to_pathway_row(r: dict) -> dict:
+    """通道一行原样带过来,配额行的官方写法(quotaScope)旁边补 join 键 quotaKey:与 pnp_ops_stats.streamKey 同一个
+    stream_key 归一(去括号补充说明、小写、压空白),前端按它配配额行,不在展示层洗字(没有配额行的通道两格都是 None)。"""
+    out = dict(r)
+    scope = r.get("quotaScope")
+    if scope:
+        out["quotaKey"] = stream_key(scope)
+    else:
+        out["quotaKey"] = None
+    return out
+
+
 def build_noc_descriptions(x: NocDescIn) -> list:
     """NOC 官方名+主要职责维度(只收数据集出现过的 NOC,控制前端 payload;
     duties/requirements 存换行拼接文本)。"""
@@ -4523,6 +4547,7 @@ def to_mart_tables() -> dict:
         "pnp_score_factors": build_pnp_score_factors(universe),
         "pnp_requirements": build_pnp_requirements(IN_REQ_TABLES),
         "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
+        "pathways": build_pathways(),
         "ee_categories": build_ee_categories(ee_draws.by_category),
         "ee_points_grid": build_ee_points_grid(EePointsIn(crs_src=IN_EE_CRS,
                                                           elig_src=IN_EE_ELIG)),

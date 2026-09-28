@@ -38,7 +38,7 @@ import {
   COLS_DESIGNATED_EMPLOYERS, COLS_DISTRICTS, COLS_DLI, COLS_EE_CATEGORIES, COLS_EE_POINTS_GRID,
   COLS_EMPLOYER_POOL, COLS_EMPLOYER_POOL_BUCKETS, COLS_EXPERIENCE_LEVELS, COLS_FIELD_SOURCES, COLS_JOBS, COLS_JOBS_COALESCE, COLS_JOBS_FIXED, COLS_NEWS,
   COLS_MACRO_SERIES, COLS_NEWS_CACHE, COLS_NOC_CATEGORIES, COLS_NOC_DESCRIPTIONS, COLS_NOC_OPENINGS, COLS_PILOT_COMMUNITIES,
-  COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS,
+  COLS_PILOT_OCCUPATIONS, COLS_PILOT_QUOTA, COLS_PNP_DRAWS, COLS_PTE_AUDIO, COLS_PTE_DICT, COLS_PTE_QUESTIONS, COLS_PTE_SENTENCES, COLS_PTE_TYPES, COLS_PNP_OCCUPATIONS, COLS_PNP_OPS_STATS, COLS_PATHWAYS,
   COLS_PNP_REQUIREMENTS, COLS_PNP_SCORE_FACTORS, COLS_PROVINCES, COLS_RANKINGS, COLS_ROW_TS, COLS_SOURCES,
   COLS_STATS, COLS_STATS_CITY, COLS_STATS_DAILY, COLS_STATS_OCCUPATION, COUNT_NO_TABLE, COUNT_NO_UPLOAD,
   CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_ATS, COUNT_UNSEEN_BOARD,
@@ -50,7 +50,7 @@ import {
   TBL_EE_POINTS_GRID, TBL_EMPLOYER_POOL, TBL_EMPLOYER_POOL_BUCKETS, TBL_EXPERIENCE_LEVELS, TBL_FIELD_SOURCES, TBL_JOBS, TBL_NEWS, TBL_NOC_CATEGORIES,
   TBL_MACRO_SERIES,
   TBL_NOC_DESCRIPTIONS, TBL_NOC_OPENINGS, TBL_PILOT_COMMUNITIES, TBL_PILOT_OCCUPATIONS, TBL_PILOT_QUOTA, TBL_PTE_AUDIO, TBL_PTE_DICT, TBL_PTE_QUESTIONS, TBL_PTE_SENTENCES, TBL_PTE_TYPES,
-  TBL_PNP_DRAWS, TBL_PNP_OCCUPATIONS, TBL_PNP_OPS_STATS, TBL_PNP_REQUIREMENTS, TBL_PNP_SCORE_FACTORS,
+  TBL_PNP_DRAWS, TBL_PNP_OCCUPATIONS, TBL_PNP_OPS_STATS, TBL_PATHWAYS, TBL_PNP_REQUIREMENTS, TBL_PNP_SCORE_FACTORS,
   TBL_PROVINCES, TBL_RANKINGS, TBL_SOURCES, TBL_STATS, TBL_STATS_CITY, TBL_STATS_DAILY, TBL_STATS_OCCUPATION,
   UTF8,
 } from './constants'
@@ -567,6 +567,24 @@ function toPnpOpsStat(r: MartRow): MartRow {
 }
 
 /**
+ * pathways 行(2026-09-28 通道表批一)。三个清单格序列化成 JSON 串喂 jsonb(空清单照写 []:「没有」是事实,不折 null);
+ * board_label / quota_scope / quota_key 保 null(省默认通道、没有通道级配额的通道本来就没有)。
+ *
+ * @param r mart 行。
+ * @returns 库行。
+ */
+function toPathway(r: MartRow): MartRow {
+  return {
+    key: cellOf(r.key), seq: cellOf(r.seq), province: cellOf(r.province), program: cellOf(r.program),
+    plain_zh: cellOf(r.plainZh), plain_en: cellOf(r.plainEn), plain_ko: cellOf(r.plainKo), official_name: cellOf(r.officialName),
+    board_label: cellOf(r.boardLabel), is_default: truthyOf(r.isDefault), draw_streams: jsonTextOf(r.drawStreams),
+    req_streams: jsonTextOf(r.reqStreams), quota_scope: cellOf(r.quotaScope), quota_key: cellOf(r.quotaKey),
+    occ_labels: jsonTextOf(r.occLabels), status: cellOf(r.status), url: cellOf(r.url), quote: cellOf(r.quote),
+    checked: cellOf(r.checked),
+  }
+}
+
+/**
  * ee_categories 行。
  *
  * @param r mart 行。
@@ -941,6 +959,7 @@ export function dimSpecs(): DimSpecs {
     { table: TBL_PNP_SCORE_FACTORS, cols: COLS_PNP_SCORE_FACTORS, toRow: toPnpScoreFactor },
     { table: TBL_PNP_REQUIREMENTS, cols: COLS_PNP_REQUIREMENTS, toRow: toPnpRequirement },
     { table: TBL_PNP_OPS_STATS, cols: COLS_PNP_OPS_STATS, toRow: toPnpOpsStat },
+    { table: TBL_PATHWAYS, cols: COLS_PATHWAYS, toRow: toPathway },
     { table: TBL_EE_CATEGORIES, cols: COLS_EE_CATEGORIES, toRow: toEeCategory },
     { table: TBL_EE_POINTS_GRID, cols: COLS_EE_POINTS_GRID, toRow: toEePointsGrid },
     { table: TBL_NOC_DESCRIPTIONS, cols: COLS_NOC_DESCRIPTIONS, toRow: toNocDescription },

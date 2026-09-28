@@ -25,7 +25,7 @@ ETL_DIR = REPO_ROOT / "etl"
 DOMAINS = ["aip", "ats", "careerbeacon", "citations", "classify", "company", "crawl", "dli", "door", "ee",
            "eligibility", "employers", "explore", "fcip", "fetch", "fsa", "gate", "gcjobs", "hireac", "hwcr", "indexing",
            "ircc", "jdformat", "jobbank", "jobboom", "jobillico", "lmia", "load", "log", "mart", "minwage",
-           "names", "news", "noc", "paths", "pnp", "pte", "qs", "rcip", "richtext", "sched", "sites", "statcan",
+           "names", "news", "noc", "paths", "pathways", "pnp", "pte", "qs", "rcip", "richtext", "sched", "sites", "statcan",
            "wages"]
 """被扫的域清单(新立域在此登记,不登记 = 不被查 = 白写)。
 2026-09-27 补登 pte / qs / statcan(Frank「问题太多了」「能用多 agent 修么」:三域存量硬红 26 条改代码清零后登记,

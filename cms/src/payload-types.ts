@@ -76,6 +76,7 @@ export interface Config {
     'pnp-score-factors': PnpScoreFactor;
     'pnp-requirements': PnpRequirement;
     'pnp-ops-stats': PnpOpsStat;
+    pathways: Pathway;
     dli: Dli;
     'ee-categories': EeCategory;
     'ee-points-grid': EePointsGrid;
@@ -125,6 +126,7 @@ export interface Config {
     'pnp-score-factors': PnpScoreFactorsSelect<false> | PnpScoreFactorsSelect<true>;
     'pnp-requirements': PnpRequirementsSelect<false> | PnpRequirementsSelect<true>;
     'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
+    pathways: PathwaysSelect<false> | PathwaysSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'ee-points-grid': EePointsGridSelect<false> | EePointsGridSelect<true>;
@@ -1071,6 +1073,115 @@ export interface PnpOpsStat {
    */
   section?: string | null;
   seq?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pathways".
+ */
+export interface Pathway {
+  id: number;
+  /**
+   * 我们的编号(直白、稳定、不随官网改名):bc-skilled-worker
+   */
+  key?: string | null;
+  /**
+   * 表内顺序(一组抽选覆盖几条通道时按它拼名字)
+   */
+  seq?: number | null;
+  /**
+   * 省码;联邦项目写 FED
+   */
+  province?: string | null;
+  /**
+   * PNP / AIP
+   */
+  program?: string | null;
+  /**
+   * 我们的中文名(= 职位板 PNP 格那个)
+   */
+  plainZh?: string | null;
+  /**
+   * 我们的英文名(09-28「界面显示直白名,官方原名放灰字」;英文界面换它在批二)
+   */
+  plainEn?: string | null;
+  /**
+   * 我们的韩文名
+   */
+  plainKo?: string | null;
+  /**
+   * 官方英文原名(照抄这条通道自己那一页)
+   */
+  officialName?: string | null;
+  /**
+   * 岗位上挂的通道名(= jobs.pnp_stream 取值);省默认通道为空
+   */
+  boardLabel?: string | null;
+  /**
+   * 省默认通道:本省可提名但没挂具名通道的岗落它
+   */
+  isDefault?: boolean | null;
+  /**
+   * 官方用来邀请它的抽选组 string[](pnp_draws.stream 原值)
+   */
+  drawStreams?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 门槛表里的流 string[](pnp_requirements.stream 原值;门槛卡没接的省为空)
+   */
+  reqStreams?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 配额表里这条通道那一行的官方写法(pnp_ops_stats.scope 原值;没有通道级配额为空)
+   */
+  quotaScope?: string | null;
+  /**
+   * 配额行 join 键(mart 用 pnp_ops_stats.stream_key 同一个归一算出;不展示)
+   */
+  quotaKey?: string | null;
+  /**
+   * 职业清单 label string[](pnp_occupations.label 原值;具名清单通道才有)
+   */
+  occLabels?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * open / paused / closed
+   */
+  status?: string | null;
+  /**
+   * 出处页
+   */
+  url?: string | null;
+  /**
+   * 出处页官方原句(英文,照抄)
+   */
+  quote?: string | null;
+  /**
+   * 人工核对日(ISO)
+   */
+  checked?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2632,6 +2743,10 @@ export interface PayloadLockedDocument {
         value: number | PnpOpsStat;
       } | null)
     | ({
+        relationTo: 'pathways';
+        value: number | Pathway;
+      } | null)
+    | ({
         relationTo: 'dli';
         value: number | Dli;
       } | null)
@@ -3110,6 +3225,33 @@ export interface PnpOpsStatsSelect<T extends boolean = true> {
   fetched?: T;
   section?: T;
   seq?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pathways_select".
+ */
+export interface PathwaysSelect<T extends boolean = true> {
+  key?: T;
+  seq?: T;
+  province?: T;
+  program?: T;
+  plainZh?: T;
+  plainEn?: T;
+  plainKo?: T;
+  officialName?: T;
+  boardLabel?: T;
+  isDefault?: T;
+  drawStreams?: T;
+  reqStreams?: T;
+  quotaScope?: T;
+  quotaKey?: T;
+  occLabels?: T;
+  status?: T;
+  url?: T;
+  quote?: T;
+  checked?: T;
   updatedAt?: T;
   createdAt?: T;
 }

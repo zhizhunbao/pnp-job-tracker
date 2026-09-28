@@ -349,6 +349,11 @@ export const TBL_PNP_REQUIREMENTS = 'pnp_requirements'
 export const TBL_PNP_OPS_STATS = 'pnp_ops_stats'
 
 /**
+ * 全国通道对照表(2026-09-28 通道表批一;一行 = 一条本站认的通道,etl/pathways 自校过才写)。
+ */
+export const TBL_PATHWAYS = 'pathways'
+
+/**
  * 联邦 EE 类别表。
  */
 export const TBL_EE_CATEGORIES = 'ee_categories'
@@ -628,6 +633,12 @@ export const COLS_PNP_REQUIREMENTS = ['province', 'program', 'stream', 'subject'
  * null + value_text 存原文,映射器里禁折 0。
  */
 export const COLS_PNP_OPS_STATS = ['province', 'program', 'metric', 'scope', 'scope_kind', 'stream_key', 'label', 'value', 'value_text', 'unit', 'as_of', 'period', 'url', 'fetched', 'section', 'seq']
+
+/**
+ * pathways 列(三个清单格是 jsonb)。⚠️ 新表,建表走 docs/sql/pathways-20260928.sql:表还没建时 seed 按 tableExists 跳过;
+ * 建了表却漏了 payload_locked_documents_rels.pathways_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
+ */
+export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', 'plain_en', 'plain_ko', 'official_name', 'board_label', 'is_default', 'draw_streams', 'req_streams', 'quota_scope', 'quota_key', 'occ_labels', 'status', 'url', 'quote', 'checked']
 
 /**
  * ee_categories 列。

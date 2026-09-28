@@ -1,0 +1,678 @@
+{
+  "rows": [
+    {
+      "key": "ab-opportunity",
+      "seq": 1,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 机会通道",
+      "plainEn": "AB Opportunity",
+      "plainKo": "AB 오퍼튜니티 스트림",
+      "officialName": "Alberta Opportunity Stream",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Alberta Opportunity Stream"
+      ],
+      "reqStreams": [
+        "AAIP Alberta Opportunity Stream"
+      ],
+      "quotaScope": "Alberta Opportunity Stream",
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-alberta-opportunity-stream",
+      "quote": "The Alberta Opportunity Stream is for temporary foreign workers who are already working full-time in Alberta and have a full-time job offer from an Alberta employer in an eligible occupation.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ab-accelerated-tech",
+      "seq": 2,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 科技",
+      "plainEn": "AB Tech",
+      "plainKo": "AB 테크",
+      "officialName": "Accelerated Tech Pathway",
+      "boardLabel": "AB 科技",
+      "isDefault": false,
+      "drawStreams": [
+        "Alberta Express Entry Stream – Accelerated Tech Pathway"
+      ],
+      "reqStreams": [
+        "AAIP Alberta Express Entry Stream",
+        "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway"
+      ],
+      "quotaScope": "Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs in Alberta)",
+      "occLabels": [
+        "AB 科技"
+      ],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream",
+      "quote": "a job offer for an eligible tech occupation from an Alberta employer in an eligible tech industry under the Accelerated Tech Pathway.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ab-dedicated-health-care",
+      "seq": 3,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 医疗",
+      "plainEn": "AB Health",
+      "plainKo": "AB 보건",
+      "officialName": "Dedicated Health Care Pathway",
+      "boardLabel": "AB 医疗",
+      "isDefault": false,
+      "drawStreams": [
+        "Dedicated Health Care Pathway – Express Entry",
+        "Dedicated Health Care Pathway – non-Express Entry"
+      ],
+      "reqStreams": [
+        "AAIP Dedicated Health Care Pathway — Non-Express Entry"
+      ],
+      "quotaScope": "Dedicated Health Care Pathways",
+      "occLabels": [
+        "AB 医疗"
+      ],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-application-streams",
+      "quote": "Dedicated Health Care Pathway – Qualified individuals with job offers in eligible health care professions can apply to be nominated for permanent residence in Alberta.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ab-law-enforcement",
+      "seq": 4,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 警务",
+      "plainEn": "AB Law Enforcement",
+      "plainKo": "AB 경찰",
+      "officialName": "Law Enforcement Pathway",
+      "boardLabel": "AB 警务",
+      "isDefault": false,
+      "drawStreams": [
+        "Alberta Express Entry Stream – Law Enforcement Pathway"
+      ],
+      "reqStreams": [
+        "AAIP Alberta Express Entry Stream"
+      ],
+      "quotaScope": "Law Enforcement Pathway",
+      "occLabels": [
+        "AB 警务"
+      ],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream",
+      "quote": "a job offer from an Alberta Association of Chiefs of Police member in one of the eligible police services occupations under the Law Enforcement Pathway.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ab-tourism-hospitality",
+      "seq": 5,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 旅游酒店",
+      "plainEn": "AB Tourism & Hospitality",
+      "plainKo": "AB 관광 숙박",
+      "officialName": "Tourism and Hospitality Stream",
+      "boardLabel": "AB 旅游酒店",
+      "isDefault": false,
+      "drawStreams": [
+        "Tourism and Hospitality Stream"
+      ],
+      "reqStreams": [
+        "AAIP Tourism and Hospitality Stream"
+      ],
+      "quotaScope": "Tourism and Hospitality Stream",
+      "occLabels": [
+        "AB 旅游酒店"
+      ],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-application-streams",
+      "quote": "Tourism and Hospitality Stream – Qualified candidates who live and work in Alberta and have a full-time job offer to continue working with an Alberta tourism and hospitality sector employer.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ab-rural-renewal",
+      "seq": 6,
+      "province": "AB",
+      "program": "PNP",
+      "plainZh": "AB 乡村振兴",
+      "plainEn": "AB Rural Renewal",
+      "plainKo": "AB 농촌 재생",
+      "officialName": "Rural Renewal Stream",
+      "boardLabel": "AB 乡村振兴",
+      "isDefault": false,
+      "drawStreams": [
+        "Rural Renewal Stream"
+      ],
+      "reqStreams": [
+        "AAIP Rural Renewal Stream"
+      ],
+      "quotaScope": "Rural Renewal Stream",
+      "occLabels": [
+        "AB 乡村振兴"
+      ],
+      "status": "open",
+      "url": "https://www.alberta.ca/aaip-rural-renewal-stream",
+      "quote": "The Rural Renewal Stream empowers rural communities to recruit and retain foreign nationals to live, work and settle in their communities.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-skilled-worker",
+      "seq": 7,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 技术工人",
+      "plainEn": "BC Skilled Worker",
+      "plainKo": "BC 숙련 노동자",
+      "officialName": "Skilled Worker stream",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Innovate: High Economic Impact"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration",
+      "quote": "Through Skills Immigration, workers who meet specific eligibility criteria based on their job offer can choose to apply to the Skilled Worker or Health Authority stream.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-health-authority",
+      "seq": 8,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 卫生局",
+      "plainEn": "BC Health Authority",
+      "plainKo": "BC 보건 당국",
+      "officialName": "Health Authority stream",
+      "boardLabel": "BC 卫生局",
+      "isDefault": false,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 卫生局"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news",
+      "quote": "The BC PNP Health Authority stream will continue to nominate qualified healthcare professionals who work in the public sector directly delivering healthcare services.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-healthcare",
+      "seq": 9,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 医疗",
+      "plainEn": "BC Health",
+      "plainKo": "BC 보건",
+      "officialName": "Care: Health",
+      "boardLabel": "BC 医疗",
+      "isDefault": false,
+      "drawStreams": [
+        "Care: Health"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 医疗"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "quote": "British Columbia has a critical need for workers in key sectors of the care economy, particularly in healthcare, education, childcare, and veterinary care.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-childcare",
+      "seq": 10,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 幼教",
+      "plainEn": "BC Childcare",
+      "plainKo": "BC 보육",
+      "officialName": "Care: Childcare",
+      "boardLabel": "BC 幼教",
+      "isDefault": false,
+      "drawStreams": [
+        "Care: Childcare"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 幼教"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "quote": "Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and veterinary technologists who are working toward Canadian certification will be prioritized.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-veterinary",
+      "seq": 11,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 兽医",
+      "plainEn": "BC Veterinary",
+      "plainKo": "BC 수의",
+      "officialName": "Care: Veterinary Care",
+      "boardLabel": "BC 兽医",
+      "isDefault": false,
+      "drawStreams": [
+        "Care: Veterinary Care"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 兽医"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "quote": "Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and veterinary technologists who are working toward Canadian certification will be prioritized.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-construction-trades",
+      "seq": 12,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 建筑技工",
+      "plainEn": "BC Construction Trades",
+      "plainKo": "BC 건설 기능직",
+      "officialName": "Build: Construction Trades",
+      "boardLabel": "BC 建筑技工",
+      "isDefault": false,
+      "drawStreams": [
+        "Build: Construction Trades"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 建筑技工"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "quote": "To see which workers may benefit from targeted invitations to apply, see the Build section of the BC PNP's selection of workers list.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "bc-french-teachers",
+      "seq": 13,
+      "province": "BC",
+      "program": "PNP",
+      "plainZh": "BC 法语教师",
+      "plainEn": "BC French Teachers",
+      "plainKo": "BC 프랑스어 교사",
+      "officialName": "Care: Education",
+      "boardLabel": "BC 法语教师",
+      "isDefault": false,
+      "drawStreams": [
+        "Care: Education"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "BC 法语教师"
+      ],
+      "status": "open",
+      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+      "quote": "Certified early childhood educators, French-speaking elementary and secondary school teachers, and veterinarians and veterinary technologists who are working toward Canadian certification will be prioritized.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "sk-employment-offer",
+      "seq": 14,
+      "province": "SK",
+      "program": "PNP",
+      "plainZh": "SK 雇主 offer",
+      "plainEn": "SK Employment Offer",
+      "plainKo": "SK 고용 오퍼",
+      "officialName": "International Skilled Worker: Employment Offer",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "quote": "International Skilled Worker: Employment Offer: For high-skilled workers (occupations that typically require post-secondary education) who are not working in Saskatchewan.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "sk-health-talent",
+      "seq": 15,
+      "province": "SK",
+      "program": "PNP",
+      "plainZh": "SK 医疗",
+      "plainEn": "SK Health",
+      "plainKo": "SK 보건",
+      "officialName": "Health Talent Pathway",
+      "boardLabel": "SK 医疗",
+      "isDefault": false,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "SK 医疗"
+      ],
+      "status": "open",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "sk-tech-talent",
+      "seq": 16,
+      "province": "SK",
+      "program": "PNP",
+      "plainZh": "SK 科技",
+      "plainEn": "SK Tech",
+      "plainKo": "SK 테크",
+      "officialName": "Innovation and Tech Talent Pathway",
+      "boardLabel": "SK 科技",
+      "isDefault": false,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "SK 科技"
+      ],
+      "status": "open",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "sk-agriculture-talent",
+      "seq": 17,
+      "province": "SK",
+      "program": "PNP",
+      "plainZh": "SK 农业",
+      "plainEn": "SK Agriculture",
+      "plainKo": "SK 농업",
+      "officialName": "Agriculture Talent Pathway",
+      "boardLabel": "SK 农业",
+      "isDefault": false,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "SK 农业"
+      ],
+      "status": "open",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "quote": "Agriculture Talent Pathway: For general farm workers, nursery/greenhouse workers and workers in select food and beverage processing occupations.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "sk-existing-work-permit",
+      "seq": 18,
+      "province": "SK",
+      "program": "PNP",
+      "plainZh": "SK 现有工签",
+      "plainEn": "SK Existing Work Permit",
+      "plainKo": "SK 기존 취업허가",
+      "officialName": "Skilled Worker With Existing Work Permit",
+      "boardLabel": "SK 现有工签",
+      "isDefault": false,
+      "drawStreams": [],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/assess-your-eligibility",
+      "quote": "Skilled-Worker with Existing Work Permit: For high-skilled foreign workers (with post-secondary education) with a valid work permit.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "mb-skilled-worker-in-manitoba",
+      "seq": 19,
+      "province": "MB",
+      "program": "PNP",
+      "plainZh": "MB 技术工人",
+      "plainEn": "MB Skilled Worker",
+      "plainKo": "MB 숙련 노동자",
+      "officialName": "Skilled Worker in Manitoba",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Skilled Worker in Manitoba"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm",
+      "quote": "The Skilled Worker in Manitoba (SWM) Pathway nominates applicants who have a strong connection to our province through ongoing employment and sufficient skills, education and training, work experience and official language proficiency to make an immediate and ongoing contribution to the Manitoba economy and our community at large.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "on-workforce-priority",
+      "seq": 20,
+      "province": "ON",
+      "program": "PNP",
+      "plainZh": "ON 劳动力优先",
+      "plainEn": "ON Workforce Priority",
+      "plainKo": "ON 인력 우선",
+      "officialName": "Ontario Workforce Priority stream",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Ontario Workforce Priority Stream"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+      "quote": "The Ontario Workforce Priority stream offers eligible skilled foreign workers with a qualifying job offer and work experience in any National Occupational Classification (NOC) occupation a pathway to apply to permanently live and work in Ontario.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "on-employer-job-offer-foreign-worker",
+      "seq": 21,
+      "province": "ON",
+      "program": "PNP",
+      "plainZh": "雇主 offer:海外工人",
+      "plainEn": "Employer Offer: Foreign Worker",
+      "plainKo": "고용주 오퍼: 해외 근로자",
+      "officialName": "Employer Job Offer: Foreign Worker stream",
+      "boardLabel": null,
+      "isDefault": false,
+      "drawStreams": [
+        "Employer Job Offer: Foreign Worker stream"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "closed",
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream",
+      "quote": "The Employer Job Offer: Foreign Worker stream gives foreign workers with a job offer in a skilled occupation, or eligible physicians, the opportunity to apply to permanently live and work in Ontario.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "on-employer-job-offer-international-student",
+      "seq": 22,
+      "province": "ON",
+      "program": "PNP",
+      "plainZh": "雇主 offer:国际学生",
+      "plainEn": "Employer Offer: International Student",
+      "plainKo": "고용주 오퍼: 유학생",
+      "officialName": "Employer Job Offer: International Student stream",
+      "boardLabel": null,
+      "isDefault": false,
+      "drawStreams": [
+        "Employer Job Offer: International Student stream"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "closed",
+      "url": "https://www.ontario.ca/page/oinp-employer-job-offer-international-student-stream",
+      "quote": "The Employer Job Offer: International Student stream gives international students with a job offer in a skilled occupation the opportunity to apply to permanently live and work in Ontario.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ns-skilled-worker",
+      "seq": 23,
+      "province": "NS",
+      "program": "PNP",
+      "plainZh": "NS 技术工人",
+      "plainEn": "NS Skilled Worker",
+      "plainKo": "NS 숙련 노동자",
+      "officialName": "Skilled Worker stream",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Monthly EOI selections"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://liveinnovascotia.com/skilled-worker",
+      "quote": "The Skilled Worker stream helps employers recruit foreign workers and recently graduated international students whose skills are needed in Nova Scotia.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "ns-construction",
+      "seq": 24,
+      "province": "NS",
+      "program": "PNP",
+      "plainZh": "NS 建筑",
+      "plainEn": "NS Construction",
+      "plainKo": "NS 건설",
+      "officialName": "Construction Worker",
+      "boardLabel": "NS 建筑",
+      "isDefault": false,
+      "drawStreams": [
+        "Monthly EOI selections"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "NS 建筑"
+      ],
+      "status": "open",
+      "url": "https://liveinnovascotia.com/resources/nsnp-update-four-consolidated-streams",
+      "quote": "Skilled Worker: The Construction Worker sub-criteria are the same eligibility requirements as the former Critical Construction Worker Pilot.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "nb-skilled-worker",
+      "seq": 25,
+      "province": "NB",
+      "program": "PNP",
+      "plainZh": "NB 技术工人",
+      "plainEn": "NB Skilled Worker",
+      "plainKo": "NB 숙련 노동자",
+      "officialName": "New Brunswick Skilled Worker stream",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "NB Skilled Worker"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
+      "quote": "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "nl-skilled-worker",
+      "seq": 26,
+      "province": "NL",
+      "program": "PNP",
+      "plainZh": "NL 技术工人",
+      "plainEn": "NL Skilled Worker",
+      "plainKo": "NL 숙련 노동자",
+      "officialName": "NLPNP Skilled Worker Category",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "NLPNP + AIP (ITA batch)"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.gov.nl.ca/immigration/skilled-workers-category",
+      "quote": "The NLPNP Skilled Worker Category is a permanent residence pathway for international workers and prospective immigrants who have skills that are beneficial to the Newfoundland and Labrador labour market.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "pe-workforce",
+      "seq": 27,
+      "province": "PE",
+      "program": "PNP",
+      "plainZh": "PE 劳工通道",
+      "plainEn": "PE Workforce",
+      "plainKo": "PE 인력 스트림",
+      "officialName": "Workforce Category",
+      "boardLabel": null,
+      "isDefault": true,
+      "drawStreams": [
+        "Labour & Express Entry"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/supporting-a-worker-for-immigration",
+      "quote": "The Workforce Category is an employer-driven category, designed to help you fill permanent labour shortages and skill gaps in your business by supporting foreign nationals for permanent residency.",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "pe-occupations-in-demand",
+      "seq": 28,
+      "province": "PE",
+      "program": "PNP",
+      "plainZh": "PE 在需职业",
+      "plainEn": "PE in-demand",
+      "plainKo": "PE 수요 직종",
+      "officialName": "Occupations in Demand Stream",
+      "boardLabel": "PE 在需职业",
+      "isDefault": false,
+      "drawStreams": [
+        "Labour & Express Entry"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [
+        "PE 在需职业"
+      ],
+      "status": "open",
+      "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/occupations-in-demand",
+      "quote": "Occupations in Demand Stream under the PEI PNP Workforce Category",
+      "checked": "2026-09-28"
+    },
+    {
+      "key": "aip",
+      "seq": 29,
+      "province": "FED",
+      "program": "AIP",
+      "plainZh": "AIP",
+      "plainEn": "AIP",
+      "plainKo": "AIP",
+      "officialName": "Atlantic Immigration Program",
+      "boardLabel": null,
+      "isDefault": false,
+      "drawStreams": [
+        "AIP",
+        "NLPNP + AIP (ITA batch)",
+        "Monthly EOI selections"
+      ],
+      "reqStreams": [],
+      "quotaScope": null,
+      "occLabels": [],
+      "status": "open",
+      "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/atlantic-immigration.html",
+      "quote": "The Atlantic Immigration Program is a pathway to permanent residence for skilled foreign workers and international graduates from a Canadian institution who want to work and live in 1 of Canada’s 4 Atlantic provinces—New Brunswick, Nova Scotia, Prince Edward Island or Newfoundland and Labrador.",
+      "checked": "2026-09-28"
+    }
+  ]
+}

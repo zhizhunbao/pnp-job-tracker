@@ -2861,6 +2861,12 @@ TABLE_DLI = "dli"
 IN_FIELD_SOURCES = paths.RAW / "sources" / "field-sources.json"
 """字段级来源注册表(citations 域 verify_field_source_pages 产,E4-04;汇装层直通)。"""
 
+IN_PATHWAYS = paths.PROCESSED / "pathways" / "pathways.json"
+"""全国通道对照表(pathways 域每轮自校过才写,2026-09-28 立域;汇装层直通,只多算一格配额行 join 键)。"""
+
+PATHWAYS_MISSING_TPL = "✗ 通道对照表不在:{path} —— 先跑 python etl/pathways/main.py(本轮 pathways 表出空表)"
+"""通道对照表缺文件(仓库里跟踪着这份产物,缺了就是出事了,喊出来)。"""
+
 K_OPEN = "open"
 """在招计数格(职业在招量桶 / rankings 聚合桶)。"""
 
