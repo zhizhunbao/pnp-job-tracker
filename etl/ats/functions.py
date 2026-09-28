@@ -20,6 +20,7 @@ constants.py / scheme.py 同名同序镜像),各段入口函数与原脚本同�
 各家行构造器取自家那一格;SuccessFactors 缓存页过期重取见 is_sf_lapsed),自测住 §4(`--only test`)。
 2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:自建 WordPress 站 / Phenom 两家行构造器从 JSON-LD 的 employmentType
 (Phenom 另读 workHours)归一出工时 / 雇佣期(§2 employment_of),落盘行多两键;薪资锚词加 salaries / rate of pay(constants §3)。
+2026-09-27 BambooHR 发布日改从详情取(§2 bamboo_detail;清单行没有 datePosted,立域以来发布日全空;详情本来就逐岗在取,不多发请求)。
 依赖单边:本文件 → constants/scheme + 基础设施叶(paths / log / fetch)。
 """
 import html
@@ -85,7 +86,7 @@ from ats.constants import (
     TEST_VERBOSITY,
 )
 from ats.scheme import (
-    AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest, EmploymentOut, LabelHitIn,
+    AtsBambooPostedTest, AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest, EmploymentOut, LabelHitIn,
     JdMdScan,
     AtsFetchIn, AtsFetchOut, AtsJob, BambooDetail, BambooJobIn, CompanyIn, CompanyOut, DetailIn,
     FillIn, HttpClientLike, HttpResponseLike, SalaryTally, ScrapeTally, SmartJobIn, TokenIn,
@@ -377,19 +378,24 @@ def bamboohr_jobs(x: AtsFetchIn) -> list:
 
 
 def bamboo_detail(x: DetailIn) -> BambooDetail:
-    """BambooHR 单岗详情:完整描述 + 结构化 compensation;取不到给两格空串。"""
+    """BambooHR 单岗详情:完整描述 + 结构化 compensation;取不到给两格空串。
+    2026-09-27 顺手读发布日(同一份详情体里的 datePosted,不多发请求;清单行没有这一格,见 constants 的 K_DATE_POSTED);
+    取不到同样给空串。"""
     try:
         payload = json_obj(x.client.get(BAMBOO_DETAIL_URL_TPL.format(token=x.token, jid=x.job_id)))
     except Exception as e:  # noqa: BLE001 — 单岗详情取不到照旧收这一岗(原脚本静默 pass,批I 补留痕)
         err(ERR_ATS_TPL.format(ats=ATS_BAMBOOHR, token=x.token), e)
-        return BambooDetail(description="", compensation="")
+        return BambooDetail(description="", compensation="", posted="")
     opening = (payload.get(K_RESULT) or {}).get(K_JOB_OPENING) or {}
     return BambooDetail(description=opening.get(K_DESCRIPTION, ""),
-                        compensation=(opening.get(K_COMPENSATION) or "").strip())
+                        compensation=(opening.get(K_COMPENSATION) or "").strip(),
+                        posted=iso_of(opening.get(K_DATE_POSTED)))
 
 
 def to_bamboo_job(x: BambooJobIn) -> AtsJob:
-    """BambooHR 载荷 → AtsJob(地点可能是 {city,state} 也可能是裸串)。"""
+    """BambooHR 载荷 → AtsJob(地点可能是 {city,state} 也可能是裸串)。
+    2026-09-27 发布日改取详情那一格(原句 `posted=iso_of(x.row.get(K_DATE_POSTED, ""))`:清单行没有 datePosted,
+    立域以来 BambooHR 岗的发布日一直是空串)。"""
     raw_location = x.row.get(K_LOCATION) or {}
     location = str(raw_location)
     if isinstance(raw_location, dict):
@@ -397,7 +403,7 @@ def to_bamboo_job(x: BambooJobIn) -> AtsJob:
     return AtsJob(title=x.row.get(K_JOB_OPENING_NAME, ""), location=location,
                   url=BAMBOO_JOB_URL_TPL.format(token=x.token, jid=x.job_id),
                   department=x.row.get(K_DEPARTMENT_LABEL, ""),
-                  posted=iso_of(x.row.get(K_DATE_POSTED, "")),
+                  posted=x.detail.posted,
                   address=address_of(x.detail.description), salary=x.detail.compensation,
                   description=x.detail.description)
 
@@ -1149,10 +1155,11 @@ def clean_salary(text: str) -> str:
 def run_tests() -> None:
     """本域手动件 `--only test`:跑截止日抽取自测(用例集住 scheme 的 AtsDeadlineTest,先例 indexing / gate.scheme);
     有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
-    2026-09-27 起连同工时 / 雇佣期(AtsEmploymentTest)与薪资锚词(AtsSalaryTest)两组一起跑(Frank 勾「ATS 工时、雇佣期、薪资和小修」)。"""
+    2026-09-27 起连同工时 / 雇佣期(AtsEmploymentTest)与薪资锚词(AtsSalaryTest)两组一起跑(Frank 勾「ATS 工时、雇佣期、薪资和小修」)。
+    同日再加 BambooHR 发布日改从详情取一组(AtsBambooPostedTest)。"""
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    for case in (AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest):
+    for case in (AtsDeadlineTest, AtsEmploymentTest, AtsSalaryTest, AtsBambooPostedTest):
         suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

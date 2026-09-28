@@ -453,7 +453,8 @@ PORT_SEP = ":"
 """netloc 里剥端口。"""
 
 WWW_PREFIX = "www."
-"""归一化裸域时剥掉。"""
+"""归一化裸域时剥掉。
+2026-09-27 about 步补 www. 再试(www_url_of)也用它:拼的方向相反,是同一个前缀。"""
 
 GOV_DOMAIN_SUFFIX = ".gc.ca"
 """联邦域一律不算公司官网。"""
@@ -1221,6 +1222,13 @@ BROWSER_SKIP_NOTES = ["ConnectError", "ConnectTimeout"]
 (2026-09-08 重镜像首跑实录:ConnectError 三家全是死站或脏网址,零回收;ReadTimeout 反而救回 Home Depot、
 McDonald's 两家 —— 所以只排这两类,超时照转)。"""
 
+WWW_RETRY_NOTES = ["ConnectError", "ConnectTimeout"]
+"""首页 httpx 报这两类(连不上:域名不解析 / 拒连 / 握手失败 / 连接超时)、官网又是裸域名时,补 www. 再抓一次首页
+(2026-09-27 立,Minds Alive 实撞:公司表记 mindsalive.ca,httpx ConnectError 记了 fail,零出处的编造简介一直挂着;
+sites 域同一家补 www. 抓成了 —— 照 sites 域 2026-09-20 那条规矩:只在首页、只在打不开时、只补一次)。
+与 BROWSER_SKIP_NOTES 同值不同角色:那条管「别转浏览器」,这条管「补 www.」;连上了才出的错
+(4xx / 5xx / 验证壳 / 读超时)不补。"""
+
 PRINT_ABOUT_BROWSER_TPL = "  浏览器兜底 {name} → {url}({why})"
 """about 步每次转浏览器报一行(why = 403 / 验证壳 / 无正文,试跑期人眼复核)。"""
 
@@ -1940,3 +1948,11 @@ load();
 </html>
 """
 """放行台页面(内联一页,不引外部资源;只在本机 127.0.0.1 上开)。"""
+
+
+# =========================================================================
+# 13. 自测(用例住 scheme;2026-09-27 随 about 步补 www. 再试立,手动件 main --only test)
+# =========================================================================
+
+TEST_VERBOSITY = 2
+"""unittest 运行档:逐条打用例名与结果(ats / gate 同档)。"""

@@ -15,6 +15,7 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 容器跑 `--only <单元名>`,单元内一步失败即中止(door 叶);findsite 役照旧走 TOOLS 单件。
 SCHEDULED 不再是调度真相,只剩手动全跑;调度声明仍在 __init__ 的 METAS(由两役改为四役,一单元一条)。
     python etl/company/main.py --only enrich_about   # 跑一个单元(容器就是这么跑的)
+    python etl/company/main.py --only test   # about 步补 www. 再试的自测(2026-09-27 立;不联网、不写仓内文件)
 """
 import sys
 from itertools import chain
@@ -27,7 +28,7 @@ from company.functions import (
     build_company_briefs, build_company_folders, crawl_company_about, enrich_company_facts,
     enrich_company_websites, lookup_company_places, lookup_sponsor_websites, scrape_company_careers,
     find_opened_sites, locate_career_entries, lookup_wiki_hq, serve_hq_desk,
-    scrape_kanata_directory,
+    scrape_kanata_directory, run_tests,
 )
 
 UNITS = {
@@ -74,6 +75,7 @@ TOOLS = {
     "wikihq": lookup_wiki_hq,
     "findsite": find_opened_sites,
     "unblock": serve_hq_desk,
+    "test": run_tests,
 }
 """全部可 --only 点名的步(含休眠引导工具)。
 
@@ -106,7 +108,11 @@ TOOLS = {
          过了当场存原文进 crawl 层、抽总部写 company_search_hq.json。本机跑,要 BROWSER_CHANNEL=chrome 与 NEWS_LLM_BASE;
          同一 profile 同一时刻只许一个进程开,用完 Ctrl+C 收摊让位。
 
+  test   about 步补 www. 再试的自测(2026-09-27 立,Minds Alive 实撞;用例住 scheme §13,不联网、不写仓内文件,
+         有失败退出码 1);手动件,不进任何单元。
+
 ⚠ --only 是子串匹配:facts/places/sites/about/brief 与既有键互不误命中(逐对核过)。
+2026-09-27 加 test 键同样逐对核过:它不是任何既有键的子串,既有键也都不是它的子串。
 """
 
 

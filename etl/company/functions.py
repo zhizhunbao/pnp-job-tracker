@@ -20,7 +20,9 @@ import functools
 import html as html_lib
 import json
 import os
+import sys
 import time
+import unittest
 import urllib.parse
 import urllib.request
 from operator import itemgetter
@@ -126,6 +128,7 @@ from company.constants import (
     NOTE_DESK_BAD, NOTE_DESK_GONE, NOTE_DESK_HQ_TPL, NOTE_DESK_NO_BROWSER, NOTE_DESK_NO_HQ, NOTE_DESK_NO_LLM, NOTE_DESK_NO_PAGE,
     NOTE_DESK_NOT_CLEARED, OUT_HQ_BLOCKED, PRINT_DESK_DOWN, PRINT_DESK_ROW_TPL, PRINT_DESK_UP_TPL, PRINT_HQ_BLOCKED_TPL, ROUTE_DROP, ROUTE_ITEMS,
     ROUTE_OPEN, ROUTE_PAGE, SEARCH_HQ_CRAWL_SLUG,
+    TEST_VERBOSITY, WWW_RETRY_NOTES,
 )
 from company.scheme import (
     CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn, TitleHitsIn,
@@ -143,6 +146,7 @@ from company.scheme import (
     EntitySiteIn, FindOut, WikiFindIn, WikiLoopIn,
     NameExtendIn, QuoteInTextIn, SearchHqOneIn, SearchHqPageIn, SearchHqRecord, SearchHqRoundIn,
     DeskJsonIn, DeskReq, DeskResp, HqBlockedIn, HqBlockedItem, SearchHqHtmlIn, SearchHqPageOut,
+    AboutWwwRetryTest, HomePageOut,
 )
 
 # =========================================================================
@@ -1878,23 +1882,27 @@ def pick_about_todo(x: PickAboutIn) -> list[AboutTarget]:
 async def fetch_about(x: AboutFetchIn) -> AboutRecord:
     """抓一家:首页 → 找 About 链接 → About 页;两页正文合一(短于 ABOUT_TEXT_MIN 记 fail)。
     前 PULSE_RANK_MAX 名:httpx 拿不到转浏览器;拿到了但正文太短(JS 壳)再用浏览器渲染一次。
-    rec.browser 只记「浏览器真跑过」(profile 被别的容器占着而起不来 ≠ 试过,下轮还排)。"""
+    rec.browser 只记「浏览器真跑过」(profile 被别的容器占着而起不来 ≠ 试过,下轮还排)。
+    2026-09-27 首页改走 fetch_home_page(裸域名连不上补 www. 再抓一次):往后找 About 页、JS 壳重渲都以真抓成首页的
+    那个地址为准(相对链接按它解析、同站按它判),rec.website 也记它。"""
     rec = AboutRecord(name=x.target.name, website=x.target.website, fetched=now_iso())
     allow = x.target.rank < PULSE_RANK_MAX
-    home = await fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name,
-                                        browser=allow, force=False))
+    first = await fetch_home_page(x)
+    home = first.page
+    target = AboutTarget(slug=x.target.slug, name=x.target.name, website=first.url, rank=x.target.rank)
+    rec.website = first.url
     rec.browser = home.tried
     if home.html == "":
         rec.status = ST_FAIL
         rec.note = home.note
         return rec
-    got = await about_text_of(AboutTextIn(client=x.client, target=x.target, home_html=home.html, browser=home.rendered))
+    got = await about_text_of(AboutTextIn(client=x.client, target=target, home_html=home.html, browser=home.rendered))
     if len(got.text.strip()) < ABOUT_TEXT_MIN and allow and not home.rendered:
-        shown = await fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name,
+        shown = await fetch_site_page(PageIn(client=x.client, url=target.website, title=x.target.name,
                                              browser=True, force=True))
         rec.browser = shown.tried
         if shown.html != "":
-            got = await about_text_of(AboutTextIn(client=x.client, target=x.target, home_html=shown.html, browser=True))
+            got = await about_text_of(AboutTextIn(client=x.client, target=target, home_html=shown.html, browser=True))
     if len(got.text.strip()) < ABOUT_TEXT_MIN:
         rec.status = ST_FAIL
         rec.note = NOTE_NO_TEXT
@@ -1903,6 +1911,35 @@ async def fetch_about(x: AboutFetchIn) -> AboutRecord:
     rec.text = got.text.strip()
     rec.status = ST_OK
     return rec
+
+
+async def fetch_home_page(x: AboutFetchIn) -> HomePageOut:
+    """首页一页:先抓公司表里的官网;httpx 报 WWW_RETRY_NOTES 两类(连不上)、官网又是裸域名的,补 www. 再抓一次,
+    抓成了就以带 www. 的为准(2026-09-27 立,Minds Alive 实撞:mindsalive.ca 裸域名 ConnectError,带 www. 能开)。
+    规矩照 sites 域 fetch_site(2026-09-20):只在首页、只在打不开时、只补一次;补的那次也走 fetch_site_page
+    (crawl 层有原文直接用、前排名次照样有浏览器兜底)。补了也没抓成的,原因记补的那一次(sites 同),地址仍是原官网。"""
+    allow = x.target.rank < PULSE_RANK_MAX
+    home = await fetch_site_page(PageIn(client=x.client, url=x.target.website, title=x.target.name,
+                                        browser=allow, force=False))
+    www = www_url_of(x.target.website)
+    if home.html != "" or home.note not in WWW_RETRY_NOTES or www == "":
+        return HomePageOut(page=home, url=x.target.website)
+    again = await fetch_site_page(PageIn(client=x.client, url=www, title=x.target.name, browser=allow, force=False))
+    if again.html == "":
+        return HomePageOut(page=again, url=x.target.website)
+    return HomePageOut(page=again, url=www)
+
+
+def www_url_of(url: str) -> str:
+    """裸域名的官网补上 www. 的那个地址;本来就带 www. 的(不分大小写)与认不出主机名的给空串(不用再试)。
+    2026-09-27 照 sites 域同名函数同构声明:同一套判据、同一种拼法(协议 + :// + www. + 主机名 + 路径,查询串与锚点不带)。
+    sites 不是基础设施叶,域间不互借函数,只能各自声明(抬进 fetch 叶收成一份要另立批次)。
+    sites 那边的来由原句:2026-09-20 有头浏览器首轮实撞,公司表里记的是裸域名,证书 / 服务只挂在 www 上 ——
+    johnsoncontrols.ca 报证书名不符、petsmart.com 直接拒连,带 www. 都能开。"""
+    parsed = urlparse(url)
+    if parsed.netloc == "" or parsed.netloc.lower().startswith(WWW_PREFIX):
+        return ""
+    return URL_ROOT_TPL.format(scheme=parsed.scheme, netloc=WWW_PREFIX + parsed.netloc) + parsed.path
 
 
 async def about_text_of(x: AboutTextIn) -> AboutTextOut:
@@ -3120,4 +3157,19 @@ def desk_drop(url: str) -> dict:
     item.at = item.done_at
     write_hq_blocked({url: item})
     return {K_DESK_STATUS: item.status, K_DESK_NOTE: item.note}
+
+
+# =========================================================================
+# 13. 自测(用例住 scheme;2026-09-27 随 about 步补 www. 再试立,手动件 main --only test)
+# =========================================================================
+
+
+def run_tests() -> None:
+    """本域手动件 `--only test`:跑 about 步补 www. 再试的自测(用例集住 scheme 的 AboutWwwRetryTest,先例 ats / gate.scheme);
+    不联网、不读写仓内文件;有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    suite.addTests(loader.loadTestsFromTestCase(AboutWwwRetryTest))
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)
 

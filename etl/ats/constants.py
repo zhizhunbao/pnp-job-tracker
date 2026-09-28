@@ -676,7 +676,12 @@ K_DEPARTMENT_LABEL = "departmentLabel"
 """BambooHR 职位键:部门名。"""
 
 K_DATE_POSTED = "datePosted"
-"""BambooHR 职位键:发布日。"""
+"""BambooHR 职位键:发布日。
+2026-09-27 改从详情取(bamboo_detail 的 jobOpening 体里读这一格):清单行本来就没有它 —— 立域以来 BambooHR 岗的
+posted 一直是空串(当天实数:processed 里 BambooHR 档案 12 家、岗 51 条,posted 全空)。详情本来就逐岗在取(描述 + 薪资),
+不多发请求。
+⚠ 本批红线不许对 BambooHR 发请求,详情体里这一格的名字没拿实测载荷核过;取不到照旧空串(不瞎猜),
+下一轮 ats 例行抓取落盘就能看出取没取到。"""
 
 K_CITY = "city"
 """地点子键:城市(bamboohr / recruitee / smartrecruiters 共用名)。"""

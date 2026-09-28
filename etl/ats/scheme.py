@@ -15,6 +15,7 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 先例 indexing.scheme / gate.scheme,跑法 `python etl/ats/main.py --only test`;被测的 ats.functions 在用例体内现取
 (functions 反过来 import 本文件,顶部 import 会成环)。
 2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」,§4 加两组:工时 / 雇佣期(AtsEmploymentTest)、薪资锚词(AtsSalaryTest)。
+同日 §4 再加一组:BambooHR 发布日改从详情取(AtsBambooPostedTest,JSON 接口替身 JsonResponse / JsonClient)。
 """
 import json
 import tempfile
@@ -226,13 +227,17 @@ class SmartJobIn:
 
 @dataclass
 class BambooDetail:
-    """bamboo_detail() 出参:详情页给的描述与结构化薪资(取不到 = 两格空串)。"""
+    """bamboo_detail() 出参:详情页给的描述与结构化薪资(取不到 = 两格空串)。
+    2026-09-27 多一格发布日(清单行没有,改从详情取;取不到同样空串)。"""
 
     description: str
     """描述 HTML。"""
 
     compensation: str
     """结构化薪资文本。"""
+
+    posted: str
+    """发布日(YYYY-MM-DD,详情 jobOpening 的 datePosted 经 iso_of 归一;没有 = 空串)。"""
 
 
 @dataclass
@@ -921,3 +926,113 @@ class AtsSalaryTest(unittest.TestCase):
         for text, want in cases:
             with self.subTest(text=text):
                 self.assertEqual(fn.salary_of(text), want)
+
+
+@dataclass
+class JsonResponse:
+    """JSON 响应替身(HttpResponseLike 的两格;BambooHR 清单 / 详情两个接口只读载荷)。"""
+
+    payload: object
+    """载荷原样。"""
+
+    text: str = ""
+    """正文(本组用例不读)。"""
+
+    def json(self) -> object:
+        """载荷。"""
+        return self.payload
+
+
+@dataclass
+class JsonClient:
+    """HTTP 替身:GET 按网址先查 errors(抛那个异常)、再查 payloads 回 JSON 载荷;每次记进 asked。本组用例只走 GET。"""
+
+    payloads: dict[str, object]
+    """网址 → 载荷。"""
+
+    errors: dict[str, Exception] = field(default_factory=dict)
+    """网址 → GET 时抛的异常。"""
+
+    asked: list[str] = field(default_factory=list)
+    """GET 过的网址(按先后)。"""
+
+    def get(self, url: str, headers: dict | None = None) -> JsonResponse:
+        """GET(替身;headers 照库形状收下不用)。"""
+        self.asked.append(url)
+        if url in self.errors:
+            raise self.errors[url]
+        return JsonResponse(payload=self.payloads.get(url))
+
+
+class AtsBambooPostedTest(unittest.TestCase):
+    """BambooHR 发布日改从详情取自测(2026-09-27;清单行没有 datePosted,立域以来 BambooHR 岗发布日全是空串):
+    清单 + 详情两个接口换替身 —— 载荷结构照 BambooHR 公开 careers 接口手写(清单行只有岗位号 / 名 / 部门 / 地点,
+    详情 result.jobOpening 带描述 / 薪资 / datePosted;⚠ datePosted 这一格没拿实测载荷核过,本批不许对 BambooHR 发请求),
+    地点与岗位号取自 processed 里真有的一家(Giatec)。断言:发布日取详情那一格、请求数不变(一个清单 + 每岗一个详情)、
+    日期写法金标、详情取不到时三格空串且留痕。全程不联网、不读写仓内文件。"""
+
+    def test_posted_from_detail(self) -> None:
+        """清单行没有发布日、详情里有:发布日取详情那一格;描述 / 薪资照旧取详情;请求 = 一个清单 + 每岗一个详情(不多发)。"""
+        from ats import functions as fn
+        list_url = "https://giatecscientific.bamboohr.com/careers/list"
+        d292 = "https://giatecscientific.bamboohr.com/careers/292/detail"
+        d167 = "https://giatecscientific.bamboohr.com/careers/167/detail"
+        rows = [{"id": "292", "jobOpeningName": "IT Operations Lead",
+                 "departmentLabel": "Software Development - SmartMix", "employmentStatusLabel": "Full-Time",
+                 "location": {"city": "Ottawa", "state": "Ontario"}},
+                {"id": "167", "jobOpeningName": "Talent Community @ Giatec", "departmentLabel": None,
+                 "location": {"city": "Ottawa", "state": "Ontario"}}]
+        client = JsonClient(payloads={
+            list_url: {"meta": {"totalCount": 2}, "result": rows},
+            d292: {"result": {"jobOpening": {"jobOpeningName": "IT Operations Lead", "datePosted": "2026-09-15",
+                                             "description": "<p>Run IT operations.</p>", "compensation": " $90,000 "}}},
+            d167: {"result": {"jobOpening": {"jobOpeningName": "Talent Community @ Giatec", "datePosted": "2025-11-03",
+                                             "description": "<p>Join us.</p>", "compensation": None}}},
+        })
+        jobs = fn.bamboohr_jobs(AtsFetchIn(client=cast(HttpClientLike, client), ats="bamboohr",
+                                           token="giatecscientific"))
+        self.assertEqual(client.asked, [list_url, d292, d167])
+        got: list[tuple] = []
+        for job in jobs:
+            got.append((job.title, job.location, job.posted, job.salary, job.url))
+        self.assertEqual(got, [
+            ("IT Operations Lead", "Ottawa, Ontario", "2026-09-15", "$90,000",
+             "https://giatecscientific.bamboohr.com/careers/292"),
+            ("Talent Community @ Giatec", "Ottawa, Ontario", "2025-11-03", "",
+             "https://giatecscientific.bamboohr.com/careers/167"),
+        ])
+        self.assertEqual(fn.to_job_row(jobs[0])["posted"], "2026-09-15")
+
+    def test_posted_shapes(self) -> None:
+        """详情 datePosted 的写法:纯日期 / 带时刻带时区 → 日期部分;缺席 / None / 空串 / 详情体为空 → 空串(不拿别的日子顶)。"""
+        from ats import functions as fn
+        url = "https://acme.bamboohr.com/careers/7/detail"
+        cases = [("2026-09-15", "2026-09-15"), ("2026-09-15T13:02:11-04:00", "2026-09-15"), ("", "")]
+        for raw, want in cases:
+            with self.subTest(raw=raw):
+                opening = {"description": "<p>x</p>", "datePosted": raw}
+                client = JsonClient(payloads={url: {"result": {"jobOpening": opening}}})
+                self.assertEqual(fn.bamboo_detail(DetailIn(client=cast(HttpClientLike, client), token="acme",
+                                                           job_id="7")).posted, want)
+        bare = [{"result": {"jobOpening": {"description": "<p>x</p>"}}},
+                {"result": {"jobOpening": {"datePosted": None}}},
+                {"result": {"jobOpening": None}}, {"result": None}]
+        for payload in bare:
+            with self.subTest(payload=payload):
+                client = JsonClient(payloads={url: payload})
+                self.assertEqual(fn.bamboo_detail(DetailIn(client=cast(HttpClientLike, client), token="acme",
+                                                           job_id="7")).posted, "")
+
+    def test_detail_unreachable(self) -> None:
+        """详情取不到(抛错):这一岗照收,发布日 / 描述 / 薪资三格空串,留痕一次(不静默)。"""
+        from ats import functions as fn
+        list_url = "https://acme.bamboohr.com/careers/list"
+        detail = "https://acme.bamboohr.com/careers/7/detail"
+        row = {"id": "7", "jobOpeningName": "Dev", "location": "Remote"}
+        client = JsonClient(payloads={list_url: {"result": [row]}}, errors={detail: RuntimeError("boom")})
+        with mock.patch.object(fn, "err") as spy:
+            jobs = fn.bamboohr_jobs(AtsFetchIn(client=cast(HttpClientLike, client), ats="bamboohr", token="acme"))
+        self.assertEqual(spy.call_count, 1)
+        self.assertEqual(len(jobs), 1)
+        job = jobs[0]
+        self.assertEqual((job.posted, job.description, job.salary, job.location), ("", "", "", "Remote"))

@@ -15,13 +15,19 @@ company 域行形状(三件套形制**全站样张**,2026-08-30)。
 库类型用 Protocol 只声明真用的格;字段默认值是形状语义,不违「函数禁默认参」。
 import 两个洞:typing/标准库/pydantic + **本域 constants**(2026-08-30 开:兜底值与
 清洗词表进形状配置,单向边无环 —— 叶子律的域内松绑,跨域仍零)。
+§13 自测(2026-09-27 随 about 步补 www. 再试立):unittest 用例集 + HTTP / crawl 层替身 ——「不用 class」的外部库例外,
+先例 ats.scheme / gate.scheme,跑法 `python etl/company/main.py --only test`;被测的 company.functions 与造连接异常用的
+httpx 都在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环;httpx 不进顶部,两个洞照旧)。
 """
+import asyncio
+import unittest
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Protocol, cast
+from unittest import mock
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
-from company.constants import HTTPS_PREFIX, KANATA_REGION_LABEL, URL_SCHEMES
+from company.constants import ABOUT_TEXT_MIN, HTTPS_PREFIX, KANATA_REGION_LABEL, PULSE_RANK_MAX, URL_SCHEMES
 
 MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
 """边界模型统一配置:多余键忽略(外来 json 什么都可能带)、按字段名构造照常、
@@ -1189,7 +1195,9 @@ class AboutRecord(BaseModel):
     """公司名。"""
 
     website: str = ""
-    """官网(首页 URL)。"""
+    """官网(首页 URL)。
+    2026-09-27:裸域名连不上、补 www. 抓成的,记补过 www. 的那个(正文真从它读来,brief 步拿它当第一条出处);
+    没抓成的仍记公司表里的原官网。"""
 
     about_url: str = ""
     """About 页 URL;空串 = 首页没露出介绍页链接。"""
@@ -1288,6 +1296,17 @@ class AboutFetchIn:
 
     target: AboutTarget
     """待抓公司。"""
+
+
+@dataclass
+class HomePageOut:
+    """fetch_home_page 的出参(2026-09-27 立:裸域名连不上补 www. 再抓一次首页,入参同 fetch_about)。"""
+
+    page: "PageOut"
+    """首页那一页;补过 www. 的就是补的那一次(没抓成时原因也是那一次的)。"""
+
+    url: str
+    """真抓成首页的地址(补 www. 抓成的就是带 www. 的那个);没抓成 = 原官网。"""
 
 
 @dataclass
@@ -1926,4 +1945,278 @@ class DeskJsonIn:
 
     payload: dict
     """要回的 JSON。"""
+
+
+# =========================================================================
+# 13. 自测(用例住 scheme;2026-09-27 随 about 步补 www. 再试立)
+# =========================================================================
+
+
+@dataclass
+class FakeResponse:
+    """HTTP 响应替身(HttpResponseLike 的四格;本组用例只读正文与状态)。"""
+
+    text: str
+    """正文。"""
+
+    status_code: int
+    """状态码。"""
+
+    is_success: bool
+    """2xx 判定。"""
+
+    def json(self) -> object:
+        """载荷(本组用例不走 JSON)。"""
+        return None
+
+
+@dataclass
+class FakeClient:
+    """HTTP 替身:GET 按网址先查 errors(抛那个异常 = 连不上 / 读超时)、再查 pages(回 200 页面),都没有回 404;
+    每次记进 asked。本组用例只走 GET。"""
+
+    pages: dict[str, str]
+    """网址 → 页面原文。"""
+
+    errors: dict[str, Exception]
+    """网址 → GET 时抛的异常(httpx 的真异常,用例体内现造)。"""
+
+    asked: list[str] = field(default_factory=list)
+    """GET 过的网址(按先后)。"""
+
+    def get(self, url: str, *, params: dict | None = None, headers: dict | None = None,
+            timeout: float | None = None) -> FakeResponse:
+        """GET(替身;params / headers / timeout 照库形状收下不用)。"""
+        self.asked.append(url)
+        if url in self.errors:
+            raise self.errors[url]
+        if url in self.pages:
+            return FakeResponse(text=self.pages[url], status_code=200, is_success=True)
+        return FakeResponse(text="", status_code=404, is_success=False)
+
+
+class CachePutLike(Protocol):
+    """crawl 写门入参里本组用例真读的格(真身是 crawl 叶的 CachePutIn;形状本域自声明,只声明真读的格)。"""
+
+    url: str
+    """这一页的网址。"""
+
+
+@dataclass
+class FakeHit:
+    """crawl 读门出参替身(真身是 crawl 叶的 CacheHit,两格照抄)。"""
+
+    html: str | None
+    """页面原文;没有 = None。"""
+
+    fetched: str
+    """取回日期(本组用例不读)。"""
+
+
+@dataclass
+class FakeCrawl:
+    """crawl 层读写门与浏览器的替身:读门按 cached 命中(没有的一律未命中 = 真去抓),写门只记网址不落盘;
+    浏览器按 rendered 回渲染态原文(没有的回 None = 打不开),要过的网址记进 rendered_asked。"""
+
+    cached: dict[str, str]
+    """网址 → crawl 层里已有的原文。"""
+
+    rendered: dict[str, str]
+    """网址 → 浏览器渲染出的原文。"""
+
+    put: list[str] = field(default_factory=list)
+    """经写门落 crawl 层的网址(按先后)。"""
+
+    rendered_asked: list[str] = field(default_factory=list)
+    """浏览器要过的网址(按先后)。"""
+
+    def get(self, url: str) -> FakeHit:
+        """读门(替身)。"""
+        return FakeHit(html=self.cached.get(url), fetched="")
+
+    def put_page(self, x: CachePutLike) -> None:
+        """写门(替身):只记网址。"""
+        self.put.append(x.url)
+
+    async def render(self, url: str) -> str | None:
+        """浏览器取一页(替身)。"""
+        self.rendered_asked.append(url)
+        return self.rendered.get(url)
+
+    def live(self) -> bool:
+        """浏览器单例活着(替身恒真:要过浏览器就算真跑过)。"""
+        return True
+
+
+@dataclass
+class AboutCase:
+    """AboutWwwRetryTest.run_case 的入参:一家的官网、名次、HTTP 替身、crawl 层与浏览器替身。"""
+
+    website: str
+    """公司表里记的官网。"""
+
+    rank: int
+    """大类名次(< PULSE_RANK_MAX 才许转浏览器)。"""
+
+    client: FakeClient
+    """HTTP 替身。"""
+
+    crawl: FakeCrawl
+    """crawl 层与浏览器替身。"""
+
+
+class AboutWwwRetryTest(unittest.TestCase):
+    """about 步裸域名补 www. 再试自测(2026-09-27,Minds Alive 实撞:mindsalive.ca 裸域名 ConnectError、带 www. 能开):
+    www_url_of 金标 + 穷举性质;fetch_about 首页的几种下场 —— 连不上两类 → 补 www.,介绍页按带 www. 的首页解析;
+    连上了才出的错 / 本来带 www. → 不补;补了也没抓成 → 照实记失败;www 那页 crawl 层已有 → 不发请求;
+    前排名次连不上 → 照旧不转浏览器、先补 www.,JS 壳重渲的是带 www. 的首页。
+    形制照宪法判定层测试:穷举输入断言性质 + 手写金标(网址与页面结构照 sites 域抓回的实测页),不做快照矩阵;
+    全程不联网、不读写仓内文件:HTTP 换替身,crawl 层读写门与浏览器换 FakeCrawl。"""
+
+    site = "https://mindsalive.ca"
+    """裸域名官网(Minds Alive 公司表里记的就是它)。"""
+
+    www = "https://www.mindsalive.ca"
+    """补上 www. 的首页。"""
+
+    about = "https://www.mindsalive.ca/service/about/"
+    """首页露出的介绍页(路径照实测:末段 about)。"""
+
+    def home_html(self) -> str:
+        """造首页:店名一行 + 一条同站介绍页链接(相对地址 —— 解析要以真抓成的首页为基址)。"""
+        return ('<html><body><h1>Minds Alive! Toys Crafts Games &amp; Books</h1>'
+                '<a href="/service/about/">About</a></body></html>')
+
+    def about_html(self) -> str:
+        """造介绍页:正文够 ABOUT_TEXT_MIN(句子照实测页)。"""
+        return "<html><body><p>" + "Minds Alive! was created in 1997. " * 20 + "</p></body></html>"
+
+    def run_case(self, x: AboutCase) -> AboutRecord:
+        """跑一家 fetch_about:crawl 读写门、浏览器、浏览器存活探针换成 x.crawl 的替身,HTTP 用 x.client。"""
+        from company import functions as fn
+        target = AboutTarget(slug="minds-alive", name="Minds Alive", website=x.website, rank=x.rank)
+        with mock.patch.object(fn, "get_cached_page", x.crawl.get), \
+                mock.patch.object(fn, "put_cached_page", x.crawl.put_page), \
+                mock.patch.object(fn, "fetch_browser_html", x.crawl.render), \
+                mock.patch.object(fn, "browser_live", x.crawl.live):
+            return asyncio.run(fn.fetch_about(AboutFetchIn(client=cast(HttpClientLike, x.client), target=target)))
+
+    def test_www_url_golden(self) -> None:
+        """www_url_of 金标:裸域名补 www.(协议 / 端口 / 路径照留,查询串与锚点不带,与 sites 域同一种拼法);
+        本来带 www.(不分大小写)、没协议认不出主机名、空串 → 空串。"""
+        from company import functions as fn
+        cases = [
+            ("https://mindsalive.ca", "https://www.mindsalive.ca"),
+            ("https://mindsalive.ca/", "https://www.mindsalive.ca/"),
+            ("http://johnsoncontrols.ca", "http://www.johnsoncontrols.ca"),
+            ("https://petsmart.com/en-ca/about/", "https://www.petsmart.com/en-ca/about/"),
+            ("https://example.ca/a?b=1#c", "https://www.example.ca/a"),
+            ("https://example.ca:8443/x", "https://www.example.ca:8443/x"),
+            ("https://www.mindsalive.ca", ""),
+            ("https://WWW.Example.com/", ""),
+            ("mindsalive.ca", ""),
+            ("", ""),
+        ]
+        for url, want in cases:
+            with self.subTest(url=url):
+                self.assertEqual(fn.www_url_of(url), want)
+
+    def test_www_url_properties(self) -> None:
+        """穷举性质:两种协议 × 五种主机名 × 四种路径 × 四种 www 写法(无 / www. / WWW. / Www.)——
+        没带 www 的恰好补一次(结果 = 协议://www.主机名路径),补过的再补给空串(不叠 www.www.);带了的一律空串。"""
+        from company import functions as fn
+        hosts = ["mindsalive.ca", "johnsoncontrols.ca", "a.b.example.co.uk", "xn--caf-dma.ca", "example.ca:8443"]
+        paths = ["", "/", "/about/", "/a/b.html"]
+        for scheme in ("http", "https"):
+            for host in hosts:
+                for path in paths:
+                    for mark in ("", "www.", "WWW.", "Www."):
+                        url = scheme + "://" + mark + host + path
+                        got = fn.www_url_of(url)
+                        with self.subTest(url=url):
+                            if mark != "":
+                                self.assertEqual(got, "")
+                                continue
+                            self.assertEqual(got, scheme + "://www." + host + path)
+                            self.assertEqual(fn.www_url_of(got), "")
+
+    def test_bare_unreachable_retries_www(self) -> None:
+        """裸域名连不上(ConnectError / ConnectTimeout 两类)→ 补 www. 抓首页,介绍页按带 www. 的首页解析 → 成;
+        请求依次 = 裸域名、www 首页、www 介绍页;落 crawl 层的是 www 两页;记录的官网 = 带 www. 的;尾段名次不起浏览器。"""
+        import httpx
+        for exc in (httpx.ConnectError("getaddrinfo failed"), httpx.ConnectTimeout("timed out")):
+            with self.subTest(exc=type(exc).__name__):
+                client = FakeClient(pages={self.www: self.home_html(), self.about: self.about_html()},
+                                    errors={self.site: exc})
+                crawl = FakeCrawl(cached={}, rendered={})
+                rec = self.run_case(AboutCase(website=self.site, rank=PULSE_RANK_MAX, client=client, crawl=crawl))
+                self.assertEqual((rec.status, rec.note), ("ok", ""))
+                self.assertEqual((rec.website, rec.about_url), (self.www, self.about))
+                self.assertGreaterEqual(len(rec.text), ABOUT_TEXT_MIN)
+                self.assertFalse(rec.browser)
+                self.assertEqual(client.asked, [self.site, self.www, self.about])
+                self.assertEqual(crawl.put, [self.www, self.about])
+                self.assertEqual(crawl.rendered_asked, [])
+
+    def test_reachable_errors_no_retry(self) -> None:
+        """连上了才出的错不补 www.(404 / 读超时):只请求裸域名一次,照实记失败,官网照旧 —— www 那两页备着也不去碰。"""
+        import httpx
+        cases: list[tuple[dict[str, Exception], str]] = [
+            ({}, "http 404"), ({self.site: httpx.ReadTimeout("read timed out")}, "ReadTimeout")]
+        for errors, note in cases:
+            with self.subTest(note=note):
+                client = FakeClient(pages={self.www: self.home_html(), self.about: self.about_html()}, errors=errors)
+                crawl = FakeCrawl(cached={}, rendered={})
+                rec = self.run_case(AboutCase(website=self.site, rank=PULSE_RANK_MAX, client=client, crawl=crawl))
+                self.assertEqual((rec.status, rec.note, rec.website), ("fail", note, self.site))
+                self.assertEqual(client.asked, [self.site])
+                self.assertEqual(crawl.put, [])
+
+    def test_already_www_no_retry(self) -> None:
+        """官网本来就带 www. 的连不上:不再补(不叠 www.www.),照实记失败。"""
+        import httpx
+        client = FakeClient(pages={}, errors={self.www: httpx.ConnectError("connection refused")})
+        crawl = FakeCrawl(cached={}, rendered={})
+        rec = self.run_case(AboutCase(website=self.www, rank=PULSE_RANK_MAX, client=client, crawl=crawl))
+        self.assertEqual((rec.status, rec.note, rec.website), ("fail", "ConnectError", self.www))
+        self.assertEqual(client.asked, [self.www])
+
+    def test_www_also_fails(self) -> None:
+        """补了 www. 也没抓成:原因记补的那一次(sites 同),官网仍记公司表里的原官网;两次请求都照实发了。"""
+        import httpx
+        cases: list[tuple[dict[str, Exception], str]] = [
+            ({self.site: httpx.ConnectError("a"), self.www: httpx.ConnectError("b")}, "ConnectError"),
+            ({self.site: httpx.ConnectError("a")}, "http 404")]
+        for errors, note in cases:
+            with self.subTest(note=note):
+                client = FakeClient(pages={}, errors=errors)
+                crawl = FakeCrawl(cached={}, rendered={})
+                rec = self.run_case(AboutCase(website=self.site, rank=PULSE_RANK_MAX, client=client, crawl=crawl))
+                self.assertEqual((rec.status, rec.note, rec.website), ("fail", note, self.site))
+                self.assertEqual(client.asked, [self.site, self.www])
+
+    def test_www_from_crawl_cache(self) -> None:
+        """www 那两页 crawl 层里已有(生产上 sites 域抓过的就在这层):补 www. 直接用缓存原文、不发请求,
+        网络只碰裸域名那一次;缓存页不重写。"""
+        import httpx
+        client = FakeClient(pages={}, errors={self.site: httpx.ConnectError("getaddrinfo failed")})
+        crawl = FakeCrawl(cached={self.www: self.home_html(), self.about: self.about_html()}, rendered={})
+        rec = self.run_case(AboutCase(website=self.site, rank=PULSE_RANK_MAX, client=client, crawl=crawl))
+        self.assertEqual((rec.status, rec.website, rec.about_url), ("ok", self.www, self.about))
+        self.assertEqual(client.asked, [self.site])
+        self.assertEqual(crawl.put, [])
+
+    def test_top_rank_unreachable(self) -> None:
+        """前排名次(许转浏览器)裸域名连不上:照旧不转浏览器(BROWSER_SKIP_NOTES),先补 www.;www 首页是 JS 壳(正文太短)时,
+        重渲的是带 www. 的首页 —— 不拿打不开的裸域名去开浏览器。"""
+        import httpx
+        shell = "<html><body><div id='app'></div></body></html>"
+        client = FakeClient(pages={self.www: shell}, errors={self.site: httpx.ConnectError("getaddrinfo failed")})
+        crawl = FakeCrawl(cached={}, rendered={self.www: self.home_html() + self.about_html()})
+        rec = self.run_case(AboutCase(website=self.site, rank=0, client=client, crawl=crawl))
+        self.assertEqual(client.asked, [self.site, self.www])
+        self.assertEqual(crawl.rendered_asked[0], self.www)
+        self.assertNotIn(self.site, crawl.rendered_asked)
+        self.assertEqual((rec.status, rec.website), ("ok", self.www))
+        self.assertTrue(rec.browser)
 
