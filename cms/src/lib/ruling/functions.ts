@@ -590,14 +590,21 @@ function occupationRows(input: OccupationRowsIn): OccupationRowsOut {
 }
 /**
  * 职业在该省的**不合格清单**上 —— 命中就是硬伤。
+ * 2026-09-27 Frank 拍板「看得出才改判」、选「只上纯属改对的」(同一批把判定卡改成同一口径):数据层判了可提名的岗不出硬伤行(条件式清单 ——
+ * NB 餐饮住宿 13 码只挡餐饮住宿业雇主、AB 带星号码只挡官方点名的那一小类 —— 数据层已按雇主放行,这里再按职业码一刀切
+ * 会与职位板打架);只认管带 offer 岗的清单(appliesToOfferOf:SK 主线不合格表只管 OID / EE,原先持 offer 的 SK 岗照样
+ * 在职业关被标「清单命中」)。
  *
  * @param input 岗位、该职业在本省命中的清单行。
  * @returns 每命中一张清单一行;没命中则空。
  */
 function occExcludedRows(input: OccExcludedRowsIn): OccExcludedRowsOut {
   const out: TripleRow[] = []
+  if (input.job.pnpEligible === true) {
+    return out
+  }
   for (const o of input.mine) {
-    if (o.type !== OCC_INELIGIBLE) {
+    if (o.type !== OCC_INELIGIBLE || appliesToOfferOf(o) === false) {
       continue
     }
     out.push({
@@ -611,6 +618,17 @@ function occExcludedRows(input: OccExcludedRowsIn): OccExcludedRowsOut {
     })
   }
   return out
+}
+/**
+ * 这张清单管不管带雇主 offer 的岗:appliesTo 空 = 全项目,管;写明 Employment Offer 子类的,管;只点名别的子类的
+ * (SK 主线不合格表「OID/EE」)不管 —— 官方原句「these occupations may be eligible through the International Skilled Worker
+ * Employment Offer subcategory」。2026-09-27 Frank 拍板「看得出才改判」、选「只上纯属改对的」(同一批把判定卡改成同一口径)。
+ *
+ * @param o 一行清单。
+ * @returns 管 = true。
+ */
+function appliesToOfferOf(o: OccupationRow): boolean {
+  return o.appliesTo === '' || o.appliesTo.toLowerCase().includes(APPLIES_OFFER)
 }
 /**
  * 职业在某张**具名(定向)清单**上。

@@ -569,7 +569,19 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpquota.asOf': 'As of {date}',
   // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire
   // 2026-09-27 NS selections count the whole EOI pool (NSNP and AIP share it) while the total next to it is NSNP only
-  'pnpquota.inv': 'Invited', 'pnpquota.sel': 'Selected (incl. AIP)',
+  // 2026-09-27 invitations are invitations to apply, not nominations; per-column as-of when the dates differ
+  'pnpquota.inv': 'Invited to apply', 'pnpquota.sel': 'Selected (incl. AIP)', 'pnpquota.asOfCol': '{col} as of {date}',
+  // 2026-09-27 draws card: which selection each expanded row is (data-layer selection code → UI words)
+  'pnpdraws.sep': ', ',
+  'pnpsel.occ': 'Occupation-specific', 'pnpsel.top': 'Top scorers ({cat})', 'pnpsel.topAny': 'Top scorers',
+  'pnpsel.franco': 'Francophone', 'pnpsel.grad': 'Manitoba graduates', 'pnpsel.wage': 'Wage ≥ ${hour}/hr and ${year}/yr',
+  'pnpsel.points': 'By score',
+  'pnpsel.cat.0': 'management', 'pnpsel.cat.1': 'business and finance', 'pnpsel.cat.2': 'sciences', 'pnpsel.cat.3': 'health',
+  'pnpsel.cat.4': 'education and community', 'pnpsel.cat.5': 'arts and sport', 'pnpsel.cat.6': 'sales and service',
+  'pnpsel.cat.7': 'trades and transport', 'pnpsel.cat.8': 'natural resources', 'pnpsel.cat.9': 'manufacturing',
+  'pnpsel.cat.72': 'technical trades',
+  'pnpsel.path.exp': 'NB Experience', 'pnpsel.path.grad': 'NB Graduates', 'pnpsel.path.prio': 'NB Priorities',
+  'pnpsel.path.frwork': 'Francophone Workers in NB', 'pnpsel.path.frprio': 'NB Francophone Priorities',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': 'Stream requirements', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': 'Job offer', 'pnpgate.k.lang': 'Language', 'pnpgate.k.exp': 'Experience', 'pnpgate.k.ee': 'EE',

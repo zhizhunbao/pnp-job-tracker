@@ -1831,8 +1831,15 @@ export const PROV_PREFIX_TRIM_RE = /^[\s:：—–-]+/
  * 补 Skilled Worker in Manitoba、NB Skilled Worker 两条,现 21 条。BC / PE / NL 的通用通道与抽选组不是同一个东西
  * (BC 普通岗从 Innovate 那一类轮进、PE / NL 那一组覆盖好几条通道),名字不并。
  * 与 i18n stream.* 的中文 / 韩文由 tests/int/streamNames.int.spec.ts 锁住,改一处必须两处一起改。
+ * 2026-09-27 Frank 看抽选卡「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」:
+ * 覆盖本站通道、但与通道不是同一个项目的组(BC Innovate、PE Labour & EE、NL 批次、NS 按月),灰字改写成它邀请的职位板通道名
+ * (Frank 先前选「组下灰字写通道名」,看过效果图)—— 三语都出,所以多一格 en(只这几组有;其余组英文界面照旧不出灰字);
+ * 通道名由 streamNames 锁名测试逐语言对 i18n pnp.gen.* / stream.*。MB「Skilled Worker Stream」是省里定向招募直接发的邀请,
+ * 与本岗那组「Skilled Worker in Manitoba」名字几乎一样,灰字改「MB 定向招募」(三语),分开。
+ * 同批撤掉组头灰字的机器译名兜底(照本段原话「表里没有的原样只显英文,不让模型现编译名」),体检点名译错 / 撞名的几组补人工名:
+ * 阿省 EE 定向四组与机会通道定向组、曼省 GIP、NB 快速通道 / 法语专项 / AIP。
  */
-export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
+export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string; en?: string }> = {
   // AB(AAIP)
   'Rural Renewal Stream': { zh: 'AB 乡村振兴', ko: 'AB 농촌 재생' },
   'Alberta Opportunity Stream': { zh: 'AB 机会通道', ko: 'AB 오퍼튜니티 스트림' },
@@ -1843,8 +1850,13 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
   'Tourism and Hospitality Stream': { zh: 'AB 旅游酒店', ko: 'AB 관광 숙박' },
   'Alberta Express Entry Stream – Priority Sectors (Agriculture)': { zh: 'EE 定向:农业', ko: 'EE 지정: 농업' },
   'Alberta Express Entry Stream – Priority Sectors (Construction)': { zh: 'EE 定向:建筑', ko: 'EE 지정: 건설' },
+  'Alberta Express Entry Stream – Priority Sectors (Health Care)': { zh: 'EE 定向:医疗', ko: 'EE 지정: 보건' },
+  'Alberta Express Entry Stream – Priority Sectors (Manufacturing)': { zh: 'EE 定向:制造', ko: 'EE 지정: 제조' },
+  'Alberta Express Entry Stream – Priority Sectors (Aviation and skilled trade)': { zh: 'EE 定向:航空与技工', ko: 'EE 지정: 항공·기능직' },
+  'Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)': { zh: 'EE 定向:建筑与技工', ko: 'EE 지정: 건설·기능직' },
+  'Alberta Opportunity Stream – Priority Sectors': { zh: 'AB 机会通道(定向行业)', ko: 'AB 오퍼튜니티(지정 산업)' },
   // BC(2026 新政三大类)
-  'Innovate: High Economic Impact': { zh: 'Innovate:高经济贡献', ko: 'Innovate: 높은 경제 기여' },
+  'Innovate: High Economic Impact': { zh: 'BC 技术工人', ko: 'BC 숙련 노동자', en: 'BC Skilled Worker' },
   'Care: Health': { zh: 'BC 医疗', ko: 'BC 보건' },
   'Care: Childcare': { zh: 'BC 幼教', ko: 'BC 보육' },
   'Care: Veterinary Care': { zh: 'BC 兽医', ko: 'BC 수의' },
@@ -1854,7 +1866,16 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string }> = {
   // MB / ON
   'Skilled Worker in Manitoba': { zh: 'MB 技术工人', ko: 'MB 숙련 노동자' },
   'NB Skilled Worker': { zh: 'NB 技术工人', ko: 'NB 숙련 노동자' },
-  'Skilled Worker Stream': { zh: '技术工人通道', ko: '숙련 인력 스트림' },
+  'Skilled Worker Stream': { zh: 'MB 定向招募', ko: 'MB 표적 모집', en: 'MB targeted recruitment' },
+  'International Education Stream (IES) – Graduate Internship Pathway (GIP)': { zh: 'MB 硕博实习', ko: 'MB 대학원 인턴십' },
+  // NB / PE / NL / NS(覆盖本站通道的组写通道名,三语)
+  'NB Express Entry': { zh: 'NB 快速通道', ko: 'NB 익스프레스 엔트리' },
+  'NB Strategic Initiative': { zh: 'NB 法语专项', ko: 'NB 불어권 특별' },
+  'AIP': { zh: 'AIP 大西洋移民计划', ko: 'AIP 대서양 이민 프로그램' },
+  'Labour & Express Entry': { zh: 'PE 劳工通道、PE 在需职业', ko: 'PE 인력 스트림, PE 수요 직종', en: 'PE Workforce, PE in-demand' },
+  'NLPNP + AIP (ITA batch)': { zh: 'NL 技术工人、AIP', ko: 'NL 숙련 노동자, AIP', en: 'NL Skilled Worker, AIP' },
+  'Monthly EOI selections': { zh: 'NS 技术工人、NS 建筑、AIP', ko: 'NS 숙련 노동자, NS 건설, AIP',
+    en: 'NS Skilled Worker, NS Construction, AIP' },
   'Employer Job Offer: Foreign Worker stream': { zh: '雇主 offer:海外工人(已关停)', ko: '고용주 오퍼: 해외 근로자(폐지)' },
   'Employer Job Offer: International Student stream': { zh: '雇主 offer:国际学生(已关停)', ko: '고용주 오퍼: 유학생(폐지)' },
 }

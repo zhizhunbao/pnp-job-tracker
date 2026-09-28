@@ -301,6 +301,74 @@ export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
 export const DRAW_SELECT_PROVS = new Set(['NS'])
 
 /**
+ * 抽选行 selection 短码的拆法:种类 + 最多两个参数(数据层写成「种类:参数:参数」,如 wage:52:105000、top:2、path:exp+prio、occ)。
+ * 组名 kind / arg / arg2,取值走 `m.groups`。
+ * 2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」:同一组同一天几行各是哪一项,数据层按官方原句判成短码,前端按码翻三语。
+ */
+export const SEL_CODE_RE = /^(?<kind>[a-z]+)(?::(?<arg>[^:]+))?(?::(?<arg2>[^:]+))?$/
+
+/**
+ * selection 短码里多条路径的连接符(NB:path:exp+prio)。
+ */
+export const SEL_PATH_SEP = '+'
+
+/**
+ * 不带参数的几种选取 → 词条键。
+ */
+export const SEL_KEYS: Record<string, string> = {
+  /**
+   * 曼省定向职业(Occupation-specific selection)。
+   */
+  occ: 'pnpsel.occ',
+
+  /**
+   * 曼省法语(Francophone selection)。
+   */
+  franco: 'pnpsel.franco',
+
+  /**
+   * 曼省毕业(Completed post-secondary study in Manitoba)。
+   */
+  grad: 'pnpsel.grad',
+
+  /**
+   * 按分数(BC Points / A minimum score of N points)。
+   */
+  points: 'pnpsel.points',
+}
+
+/**
+ * 高分者那一种(top:N,N = 官方写的大类 / 主类码,如 2、72)。
+ */
+export const SEL_TOP = 'top'
+
+/**
+ * 工资档那一种(wage:时薪:年薪)。
+ */
+export const SEL_WAGE = 'wage'
+
+/**
+ * 按路径那一种(NB:path:exp+prio)。
+ */
+export const SEL_PATH = 'path'
+
+/**
+ * 按分数那一档:组里有几种选取时,组头的最低分只在组头那一轮是这一档时出(BC 的分数档对整组都成立;
+ * 曼省的分数只属于某一大类的高分者,不出)。
+ */
+export const SEL_POINTS = 'points'
+
+/**
+ * 高分者大类名的词条键前缀(pnpsel.cat.2 = 理工)。
+ */
+export const SEL_CAT_HEAD = 'pnpsel.cat.'
+
+/**
+ * 路径名的词条键前缀(pnpsel.path.exp = NB 工作经验)。
+ */
+export const SEL_PATH_HEAD = 'pnpsel.path.'
+
+/**
  * 只到月的抽选日期长度(`YYYY-MM` = 7;NS 按月公布选取人数,数据层照官方写到月,不补日)。
  * 这种行是一个月的汇总,不是一轮抽选:不进分组、不算「近 90 天几轮」,单走按月那一种卡(见 monthRowsOf)。
  */

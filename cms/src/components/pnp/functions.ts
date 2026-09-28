@@ -23,7 +23,8 @@ import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
   DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
   LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE,
-  OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
+  OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
+  SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -31,7 +32,7 @@ import {
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
   KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
-  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, LANG_ZH, FACTS_KEY_SEP, MATCH_LEVEL_HEAD,
+  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, FACTS_KEY_SEP, MATCH_LEVEL_HEAD,
   MONTH_DAYS,
   NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK,
   RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
@@ -50,7 +51,8 @@ import type {
   AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
   DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
   CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn,
-  EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, ZhSubIn,
+  EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, DrawSubIn, AsOfLinesIn, ColAsOfIn,
+  SelectionLabelIn,
   EeHitIn, FedLabelIn,
   FoldLabelIn, HasProvDrawsIn,
   HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
@@ -157,13 +159,14 @@ export function drawsTitleOf(x: DrawsTitleIn): string {
  * 洗一行抽选:压暗档、中文灰注、悬停提示与两个数值格的话术都在这里算完。
  * #280:zh 态英文流名 + 中文灰注(次行);streamZh 缺列/还没翻到 = 不出注,纯英文,不是报错。
  * 2026-09-26 晚:灰注改走 zhSubOf(人工定表优先、机器译名兜底,与组头同一个出口;名字与通道卡一致)。
+ * 2026-09-27 zhSubOf 改名 drawSubOf(英文界面也可能出灰字),机器译名兜底撤掉(见 drawSubOf)。
  *
  * @param x 取词函数、界面语言、这一行、序号与改制登记。
  * @returns 展示行。
  */
 export function toDrawRow(x: DrawRowIn): DrawRowSpec {
   const dim = x.reform != null && x.draw.drawDate < x.reform.since
-  const streamZh = zhSubOf({ lang: x.lang, draw: x.draw })
+  const streamZh = drawSubOf({ lang: x.lang, draw: x.draw })
   let title = x.draw.stream
   if (x.draw.note !== TEXT_NONE) {
     title = x.draw.note
@@ -1178,16 +1181,22 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
     if (head == null) {
       continue
     }
+    let score = head.score
+    let none = invTextOf({ t: x.t, draw: head })
+    if (isMixedSelectionOf(arr) && head.selection !== SEL_POINTS) {
+      score = null
+      none = TEXT_NONE
+    }
     groups.push(cmpGroupOf({
       t: x.t,
-      none: invTextOf({ t: x.t, draw: head }),
-      sub: zhSubOf({ lang: x.lang, draw: head }),
+      none,
+      sub: drawSubOf({ lang: x.lang, draw: head }),
       lang: x.lang,
       key,
       name: head.stream,
       tip: TEXT_NONE,
       date: head.drawDate,
-      score: head.score,
+      score,
       draws: arr,
       dim: false,
       hit: x.hitStreams.includes(key),
@@ -1216,7 +1225,7 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   return cmpGroupOf({
     t: x.t,
     none: invTextOf({ t: x.t, draw: head }),
-    sub: zhSubOf({ lang: x.lang, draw: head }),
+    sub: drawSubOf({ lang: x.lang, draw: head }),
     lang: x.lang,
     key: head.stream,
     name: head.stream,
@@ -1304,6 +1313,7 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
  * 这里不自己加;AIP 那组的「份申请入选」不在合计里(汇装已剔)。没有配额只有合计的省(NB、PE)这张卡就只这一列。
  * 截至日改取最右一列带截至日的那格:配额总数是全年定数(安省、NS、NL 不写截至日),截至日跟着会动的那几项走;
  * 同一省几项的截至日当天核过一致(阿省三项同为 2026-09-23),哪天分叉了这一行要改成逐项写。
+ * 同日晚果然分叉(曼省补上全年已邀请后:已发提名截至 08 月、已邀请申请截至 09-24)→ 改逐项写,挪到右下角(asOfLinesOf)。
  *
  * @param x 取词函数、省码、当年配额行与本岗对应的抽选组。
  * @returns 配额卡;这一省当年一项都没有给 null。
@@ -1317,10 +1327,13 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
   }
   const cols: string[][] = []
   const heads: string[] = []
+  const dates: string[] = []
   for (const [metrics, head] of QUOTA_COLS) {
-    if (opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics }) != null) {
+    const picked = opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics })
+    if (picked != null) {
       cols.push(metrics)
       heads.push(x.t(head))
+      dates.push(colAsOfOf({ metrics, row: picked }))
     }
   }
   const firstCol = cols[0]
@@ -1336,24 +1349,60 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
   if (streamKey !== TEXT_NONE) {
     rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
   }
-  let asOfDate = TEXT_NONE
-  for (const metrics of cols) {
-    const r = opsPickOf({ rows: mine, streamKey: TEXT_NONE, metrics })
-    if (r != null && r.asOf !== TEXT_NONE) {
-      asOfDate = r.asOf
-    }
-  }
-  let asOf = TEXT_NONE
-  if (asOfDate !== TEXT_NONE) {
-    asOf = x.t('pnpquota.asOf', { date: asOfDate })
-  }
   return {
     title: x.t('pnpquota.title', { year: yearOf(first) }),
     source: sourceLinkOf({ t: x.t, url: first.url }),
     heads,
     rows,
-    asOf,
+    asOfLines: asOfLinesOf({ t: x.t, heads, dates }),
   }
+}
+
+/**
+ * 配额卡右下角的截至行(2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」;同日 Frank「这个截止日期放到右下角呢」):
+ * 各列官方截至日一致只写一行「截至 {日期}」;不一致逐列写「{列名}截至 {日期}」(曼省已发提名截至 08 月、已邀请申请截至 09-24,
+ * 原先只写最右一列那天,读成提名数也截至 09-24)。没写截至日的列不写;配额总数是全年定数,它那一格的截至日(曼省月度页、
+ * 阿省处理页的页面日期)也不写(colAsOfOf)。
+ *
+ * @param x 取词函数、列名与各列截至日。
+ * @returns 截至行;都没写给空列。
+ */
+function asOfLinesOf(x: AsOfLinesIn): string[] {
+  const distinct: string[] = []
+  for (const d of x.dates) {
+    if (d !== TEXT_NONE && distinct.includes(d) === false) {
+      distinct.push(d)
+    }
+  }
+  const only = distinct[0]
+  if (only == null) {
+    return []
+  }
+  if (distinct.length === 1) {
+    return [x.t('pnpquota.asOf', { date: only })]
+  }
+  const lines: string[] = []
+  for (let i = 0; i < x.dates.length; i += 1) {
+    const date = x.dates[i]
+    const col = x.heads[i]
+    if (date != null && col != null && date !== TEXT_NONE) {
+      lines.push(x.t('pnpquota.asOfCol', { col, date }))
+    }
+  }
+  return lines
+}
+
+/**
+ * 一列的截至日:配额总数那一列是全年定数,不算它的截至日(给 '');其余照官方写的截至日(2026-09-27)。
+ *
+ * @param x 这一列认的指标名与挑到的那一行。
+ * @returns 截至日;'' = 不写。
+ */
+function colAsOfOf(x: ColAsOfIn): string {
+  if (x.metrics.includes(OPS_ALLOCATION)) {
+    return TEXT_NONE
+  }
+  return x.row.asOf
 }
 
 /**
@@ -1915,19 +1964,15 @@ function countKindOf(draw: PnpDraw): CountKind {
  * 2026-09-26 晚 Frank「上下名字怎么对不上」「名字都用一个不行么」:先查人工定表 drawStreamNote —— 与本站通道同一个项目的
  * 那几组直接就是通道名(同职位板 PNP 格、弹框通道卡),也是 /start 抽选表走的同一个出口;表里没有的,中文界面才退回数据层的
  * 机器译名(原先只看机器译名:BC Build 那组叫「建筑业技工通道」,上面通道卡叫「BC 建筑技工」)。韩文界面随之也出表里的译名。
+ * 2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」:改名 drawSubOf(原 zhSubOf)—— 覆盖本站通道的组英文界面也出灰字(写它邀请的通道名,
+ * 见 lib/jobs DRAW_STREAM_L10N 的 en 格);机器译名兜底撤掉(PE 那组译成「面向联邦快通在职技工」、NL 用了俗称「纽省」、
+ * 曼省两组中文几乎同名,体检点名),表里没有的只显官方英文名,不让模型现编译名。
  *
  * @param x 界面语言与组头那一轮。
  * @returns 灰字;''=不出。
  */
-function zhSubOf(x: ZhSubIn): string {
-  const note = drawStreamNote({ stream: x.draw.stream, lang: x.lang })
-  if (note !== TEXT_NONE) {
-    return note
-  }
-  if (x.lang !== LANG_ZH || x.draw.streamZh === x.draw.stream) {
-    return TEXT_NONE
-  }
-  return x.draw.streamZh
+function drawSubOf(x: DrawSubIn): string {
+  return drawStreamNote({ stream: x.draw.stream, lang: x.lang })
 }
 
 /**
@@ -2075,6 +2120,8 @@ function roundCountOf(draws: PnpDraw[]): number {
  * 「这种中文灰字翻译只显示一个就行了吧」)。2026-09-26 自 cmpGroupOf 体内原样提出:本岗那一组(featOf)展开的也是这一份。
  * 同晚 featOf 随本岗那一组改组头行撤掉,只剩 cmpGroupOf 一处调用。
  * 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:各轮同一个流名时通道名也不逐行重复(sameStreamOf)。
+ * 2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」:去重复后同一天几行分不开(曼省一期几项选取、BC 工资档与分数档、NB 按路径)——
+ * 组里不止一种选取时(isMixedSelectionOf),流名那一格改写这一行是哪一项(selectionLabelOf);只有一种的照旧空着。
  *
  * @param x 取词函数、界面语言与这一组的历次抽选。
  * @returns 展示行。
@@ -2082,17 +2129,90 @@ function roundCountOf(draws: PnpDraw[]): number {
 function roundRowsOf(x: RoundRowsIn): DrawRowSpec[] {
   const rows: DrawRowSpec[] = []
   const same = sameStreamOf(x.draws)
+  const mixed = isMixedSelectionOf(x.draws)
   let i = 0
   for (const d of x.draws) {
     const row = toDrawRow({ t: x.t, lang: x.lang, draw: d, index: i, reform: null })
     row.streamZh = TEXT_NONE
     if (same) {
       row.stream = TEXT_NONE
+      if (mixed) {
+        row.stream = selectionLabelOf({ t: x.t, code: d.selection })
+      }
     }
     rows.push(row)
     i += 1
   }
   return rows
+}
+
+/**
+ * 这一组里是不是不止一种选取(数据层 selection 短码去重后多于一种;空串也算一种 —— 认不出的行与认得出的行并存时照样要分开写)。
+ * 2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」。
+ *
+ * @param draws 这一组的历次抽选。
+ * @returns 不止一种 = true。
+ */
+function isMixedSelectionOf(draws: PnpDraw[]): boolean {
+  const seen = new Set<string>()
+  for (const d of draws) {
+    seen.add(d.selection)
+  }
+  return seen.size > 1
+}
+
+/**
+ * 一行是哪一项选取的界面词:数据层短码 → 三语(2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」)。
+ * 定向职业 / 法语 / 曼省毕业 / 按分数查 SEL_KEYS;高分者带大类名(词条里没有那一类就只写「高分者」);工资档带时薪与年薪;
+ * NB 路径逐条取名、顿号连。短码认不出或参数缺给 ''(不猜)。
+ *
+ * @param x 取词函数与短码。
+ * @returns 界面词;'' = 不写。
+ */
+function selectionLabelOf(x: SelectionLabelIn): string {
+  const m = SEL_CODE_RE.exec(x.code)
+  if (m == null || m.groups == null) {
+    return TEXT_NONE
+  }
+  const kind = m.groups.kind
+  if (kind == null) {
+    return TEXT_NONE
+  }
+  const fixed = SEL_KEYS[kind]
+  if (fixed != null) {
+    return x.t(fixed)
+  }
+  const arg = m.groups.arg
+  if (arg == null) {
+    return TEXT_NONE
+  }
+  if (kind === SEL_TOP) {
+    const catKey = SEL_CAT_HEAD + arg
+    const cat = x.t(catKey)
+    if (cat === catKey) {
+      return x.t('pnpsel.topAny')
+    }
+    return x.t('pnpsel.top', { cat })
+  }
+  if (kind === SEL_WAGE) {
+    const year = m.groups.arg2
+    if (year == null) {
+      return TEXT_NONE
+    }
+    return x.t('pnpsel.wage', { hour: arg, year: Number(year).toLocaleString(NUM_LOCALE) })
+  }
+  if (kind === SEL_PATH) {
+    const names: string[] = []
+    for (const code of arg.split(SEL_PATH_SEP)) {
+      const key = SEL_PATH_HEAD + code
+      const name = x.t(key)
+      if (name !== key) {
+        names.push(name)
+      }
+    }
+    return names.join(x.t('pnpdraws.sep'))
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -2333,6 +2453,7 @@ export function matchResultOf(x: MatchResultIn): PnpMatchResult | null {
       noc: r.noc,
       url: r.url,
       fetched: r.fetched,
+      appliesTo: r.appliesTo,
     })
   }
   const eeCategories = []

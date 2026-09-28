@@ -1131,8 +1131,9 @@ export const NEWS_RECENT = `SELECT region, title, date, slug, importance, url FR
 
 /**
  * 档案匹配吃的省提名清单(只吃 program=PNP,口径红线见上方段注)。
+ * 2026-09-27 多取 applies_to(匹配引擎「被清单挡」只认管带 offer 岗的清单;SK 主线不合格表只管 OID / EE)。
  */
-export const MATCH_PNP_OCCUPATIONS = `SELECT province, label, type, noc, url, fetched
+export const MATCH_PNP_OCCUPATIONS = `SELECT province, label, type, noc, url, fetched, COALESCE(applies_to, '') AS "appliesTo"
      FROM pnp_occupations WHERE COALESCE(program, 'PNP') = 'PNP'`
 
 /**
@@ -1826,9 +1827,10 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
  * NB 抽选按官方四组读回历史后全表 186 行、余量只剩 14 —— 超了截掉的是最旧的轮次,弹框里悄悄少数据。
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL)。
  * 2026-09-26 400 → 1000:mart 抽选改成保留最近 12 个月全部轮次(各省补全后非魁省约 380 行),400 只剩约 20 行余量。
+ * 2026-09-27 多取 selection(同一组同一天几行各是哪一项选取;列 2026-09-28 按 docs/sql/pnp-draws-selection-20260928.sql 加)。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
-       score, scale, invitations, note, label, url, fetched
+       score, scale, invitations, note, label, url, fetched, COALESCE(selection, '') AS selection
      FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 1000`
 
 /**

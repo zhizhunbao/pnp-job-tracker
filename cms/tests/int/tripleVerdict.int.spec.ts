@@ -421,9 +421,30 @@ describe('B2 结论句 · 确定性层', () => {
         url: PE_PAGE, fetched: '2026-08-12',
       })],
     }
-    const card = tripleVerdict(PE_JOB, COMPANY, noOffer, withIneligible, { nowYear: NOW_YEAR })
+    // 2026-09-27 岗位改 pnpEligible: false —— 无条件排除清单上的岗,数据层本就判不可提名(PE_JOB 写 true 与这张清单自相矛盾)
+    const card = tripleVerdict({ ...PE_JOB, pnpEligible: false }, COMPANY, noOffer, withIneligible, { nowYear: NOW_YEAR })
     expect(card.conclusion).toMatchObject({ kind: 'excluded', key: 'tv.sum.excluded', params: { prov: 'PE', list: 'PE 不符合清单' } })
     expect(rowOf(card, 'tv.you.gate')).toBeUndefined()   // 硬伤在前,不再报闸
+  })
+
+  // 2026-09-27 Frank 拍板「看得出才改判」、选「只上纯属改对的」:判定卡与职位板同一口径
+  it('数据层判可提名(条件式清单已按雇主放行)不出清单硬伤行;只管 OID / EE 的清单也不出', () => {
+    const withIneligible: VerdictData = {
+      ...PE_DATA,
+      occupations: [...PE_DATA.occupations, O({
+        province: 'PE', type: 'ineligible', stream: 'PEI PNP — ineligible occupations', label: 'PE 不符合清单',
+        noc: '65200', name: 'Food counter attendants and kitchen helpers', url: PE_PAGE, fetched: '2026-08-12',
+      })],
+    }
+    expect(rowsOf(tripleVerdict(PE_JOB, COMPANY, noOffer, withIneligible, { nowYear: NOW_YEAR }), 'tv.occ.excluded')).toHaveLength(0)
+    const oidOnly: VerdictData = {
+      ...PE_DATA,
+      occupations: [...PE_DATA.occupations, O({
+        province: 'PE', type: 'ineligible', stream: 'X', label: 'X', noc: '65200', appliesTo: 'OID/EE',
+      })],
+    }
+    const card = tripleVerdict({ ...PE_JOB, pnpEligible: false }, COMPANY, noOffer, oidOnly, { nowYear: NOW_YEAR })
+    expect(rowsOf(card, 'tv.occ.excluded')).toHaveLength(0)
   })
 
   it('一条可判通道都没有时说「本站未收录」,不说「你不行」', () => {

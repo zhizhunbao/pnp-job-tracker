@@ -562,7 +562,17 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
   // 2026-09-27 NS 선정 수는 EOI 풀 전체(NSNP와 AIP가 같은 풀), 옆의 총수는 NSNP만
-  'pnpquota.inv': '초청 완료', 'pnpquota.sel': '선정 완료(AIP 포함)',
+  // 2026-09-27 초청은 신청 초청(지명이 아님);날짜가 다른 열은 열마다 기준일 표시
+  'pnpquota.inv': '신청 초청', 'pnpquota.sel': '선정 완료(AIP 포함)', 'pnpquota.asOfCol': '{col} {date} 기준',
+  // 2026-09-27 추첨 카드 펼친 행: 어떤 선정 항목인지(데이터 계층 selection 코드 → 화면 문구)
+  'pnpdraws.sep': ', ',
+  'pnpsel.occ': '직종 지정', 'pnpsel.top': '고득점자({cat})', 'pnpsel.topAny': '고득점자', 'pnpsel.franco': '불어권',
+  'pnpsel.grad': '매니토바 졸업생', 'pnpsel.wage': '시급 ${hour} 이상, 연봉 ${year} 이상', 'pnpsel.points': '점수순',
+  'pnpsel.cat.0': '관리', 'pnpsel.cat.1': '비즈니스·금융', 'pnpsel.cat.2': '이공', 'pnpsel.cat.3': '보건', 'pnpsel.cat.4': '교육·사회',
+  'pnpsel.cat.5': '문화·스포츠', 'pnpsel.cat.6': '판매·서비스', 'pnpsel.cat.7': '기능·운송', 'pnpsel.cat.8': '천연자원',
+  'pnpsel.cat.9': '제조', 'pnpsel.cat.72': '기술직',
+  'pnpsel.path.exp': 'NB 경력', 'pnpsel.path.grad': 'NB 졸업생', 'pnpsel.path.prio': 'NB 우선', 'pnpsel.path.frwork': 'NB 불어권 근로자',
+  'pnpsel.path.frprio': 'NB 불어권 우선',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',

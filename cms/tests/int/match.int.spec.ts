@@ -6,9 +6,9 @@ import { match, normalizeProfile, hasProfile, matchRank, type MatchDims, type Ma
 // ── fixture 维度(形状与 page.tsx dims 一致,数据虚构但结构真实) ──
 const dims: MatchDims = {
   pnpOccupations: [
-    { province: 'ON', label: 'OINP 紧缺技能', type: 'indemand', noc: '33102', url: 'https://ontario.ca/x', fetched: '2026-06-28' },
-    { province: 'ON', label: 'OINP 科技', type: 'indemand', noc: '21232', url: 'https://ontario.ca/tech', fetched: '2026-06-28' },
-    { province: 'AB', label: 'AAIP 排除清单', type: 'ineligible', noc: '65200', url: 'https://alberta.ca/x', fetched: '2026-06-28' },
+    { province: 'ON', label: 'OINP 紧缺技能', type: 'indemand', noc: '33102', url: 'https://ontario.ca/x', fetched: '2026-06-28', appliesTo: '' },
+    { province: 'ON', label: 'OINP 科技', type: 'indemand', noc: '21232', url: 'https://ontario.ca/tech', fetched: '2026-06-28', appliesTo: '' },
+    { province: 'AB', label: 'AAIP 排除清单', type: 'ineligible', noc: '65200', url: 'https://alberta.ca/x', fetched: '2026-06-28', appliesTo: '' },
   ],
   eeCategories: [
     { category: 'stem', label: 'STEM', noc: '21232', drawCrs: 491, drawDate: '2026-06-04', url: 'https://canada.ca/ee', fetched: '2026-06-28' },
@@ -63,11 +63,33 @@ describe('match rules v1', () => {
   })
 
   it('psw × AB 排除清单岗:excluded fail + TEER5 无通道 → low', () => {
-    const r = match({ profile: psw, job: job({ noc: '65200', teer: 5, province: 'AB', pnpEligible: true }), dims })
+    // 2026-09-27 夹具改 pnpEligible: false —— 无条件排除清单上的岗,数据层本就判不可提名(原夹具写 true 自相矛盾)
+    const r = match({ profile: psw, job: job({ noc: '65200', teer: 5, province: 'AB', pnpEligible: false }), dims })
     const prov = r.reasons.find((x) => x.rule === 'prov')!
     expect(prov.key).toBe('match.r.prov.excluded')
     expect(r.reasons.find((x) => x.key === 'match.r.teer.low')).toBeTruthy()
     expect(r.level).toBe('low')
+  })
+
+  // 2026-09-27 Frank 拍板「看得出才改判」、选「只上纯属改对的」:条件式清单数据层已按雇主放行(pnpEligible = true)就不再判被挡;
+  // 只点名 OID / EE 子类的清单(SK 主线不合格表)不当带 offer 岗的被挡理由
+  it('数据层判可提名的岗不判「被清单挡」;只管 OID / EE 的清单不当被挡理由', () => {
+    const released = match({ profile: psw, job: job({ noc: '65200', teer: 5, province: 'AB', pnpEligible: true }), dims })
+    expect(released.reasons.some((x) => x.key === 'match.r.prov.excluded')).toBe(false)
+    const skDims: MatchDims = {
+      pnpOccupations: [{ province: 'SK', label: 'SK 主线不合格清单', type: 'ineligible', noc: '64100', url: 'https://x',
+        fetched: '2026-09-27', appliesTo: 'OID/EE' }],
+      eeCategories: [],
+    }
+    const part = match({ profile: psw, job: job({ noc: '64100', teer: 4, province: 'SK', pnpEligible: false }), dims: skDims })
+    expect(part.reasons.some((x) => x.key === 'match.r.prov.excluded')).toBe(false)
+    const offerDims: MatchDims = {
+      pnpOccupations: [{ province: 'SK', label: 'SK Job Offer 不合格清单', type: 'ineligible', noc: '64100', url: 'https://x',
+        fetched: '2026-09-27', appliesTo: 'Employment Offer' }],
+      eeCategories: [],
+    }
+    const blocked = match({ profile: psw, job: job({ noc: '64100', teer: 4, province: 'SK', pnpEligible: false }), dims: offerDims })
+    expect(blocked.reasons.some((x) => x.key === 'match.r.prov.excluded')).toBe(true)
   })
 
   it('psw × ON 护理岗:同小类 NOC 33103→33102?否——完全一致才 exact;无 CRS → ee.noCrs 提示', () => {

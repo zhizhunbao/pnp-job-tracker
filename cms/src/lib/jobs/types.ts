@@ -890,6 +890,12 @@ export type PnpDraw = {
    * 抓取时刻。
    */
   fetched: string
+
+  /**
+   * 同一组同一天几行各是哪一项选取(数据层按官方原句判的短码:occ / top:N / franco / grad / wage:H:Y / points /
+   * path:a+b;认不出空串;2026-09-27 Frank「照改,加这一列」)。
+   */
+  selection: string
 }
 
 /**
@@ -1699,6 +1705,11 @@ export type PnpOccDim = {
    * 抓取时刻。
    */
   fetched: string
+
+  /**
+   * 清单管哪几条子类(官方原文;'' = 全项目;2026-09-27):只点名别的子类的(SK「OID/EE」)不当「被清单挡」的理由。
+   */
+  appliesTo: string
 }
 
 /**

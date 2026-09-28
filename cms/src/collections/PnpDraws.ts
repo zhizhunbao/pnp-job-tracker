@@ -16,6 +16,9 @@ export const PnpDraws: CollectionConfig = {
     // 2026-09-13:抽选类别门槛清单(人工核定表 data/processed/draw_checklists.json,mart 拼 {url, items} JSON 串)。
     // ⚠️ 新列,生产库必须先手动跑 docs/sql/pnp-draws-checklist-20260913.sql,再部署本改动 + 灌 seed。
     { name: 'checklist', type: 'text', admin: { description: '门槛清单 JSON 串 {url, items:[{zh,en,ko}]}(把脉页门槛弹框 1 2 3;NULL=未收录)' } },
+    // 2026-09-27 Frank「照改,加这一列」:同一组同一天几行各是哪一项选取(etl/pnp 按官方原句判的短码;认不出空串)。
+    // ⚠️ 新列,生产库已按 docs/sql/pnp-draws-selection-20260928.sql 加好(2026-09-28 执行),部署本改动后清 seed_state 再灌。
+    { name: 'selection', type: 'text', admin: { description: '选取项短码 occ / top:N / franco / grad / wage:H:Y / points / path:a+b' } },
     { name: 'score', type: 'number', admin: { description: '最低邀请分 — 省自评分制,非 CRS!展示必须带 scale' } },
     { name: 'scale', type: 'text', admin: { description: '分制名(SIRS/WEOI/MPNP EOI)' } },
     { name: 'invitations', type: 'number' },

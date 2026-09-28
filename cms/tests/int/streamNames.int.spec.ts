@@ -4,6 +4,8 @@
  * 通道卡「BC Construction trades / BC 建筑技工」,抽选组「Build: Construction Trades / 建筑业技工通道」,/start 抽选表又是
  * 「Build:建筑技工」。改后英文一律省里官方原名、中文 / 韩文一律通道名;本文件把两边锁在一起,改一处必须两处一起改。
  * 不是同一个项目的不锁:PE 那组 Labour & Express Entry、NL 那组 NLPNP + AIP 各覆盖好几条通道,BC 普通岗从 Innovate 那一类轮进。
+ * 2026-09-27 Frank「这个高亮和上面的能走通道也不匹配啊」→ 选「组下灰字写通道名」(看过效果图):这几组的灰字改写它邀请的通道名,
+ * 三语都出 —— 本文件同批加一条,锁住「组下灰字含本岗通道名」(通用通道 BC / PE / NL / NS,具名通道 PE 在需职业、NS 建筑)。
  *
  * @author Frank
  * @time 2026-09-26 23:10:00
@@ -58,6 +60,34 @@ describe('同一个项目全站一个名字', () => {
       expect(drawStreamNote({ stream: d, lang: 'zh' }), p).toBe(makeT('zh')(key))
       expect(drawStreamNote({ stream: d, lang: 'ko' }), p).toBe(makeT('ko')(key))
     }
+  })
+
+  it('覆盖本站通道的组:组下灰字写它邀请的通道名,三语都含本岗通道名(通用 BC / PE / NL / NS,具名 PE 在需职业 / NS 建筑)', () => {
+    const langs = ['zh', 'en', 'ko'] as const
+    for (const p of ['BC', 'PE', 'NL', 'NS']) {
+      const d = GEN_DRAW_STREAM[p]
+      if (d == null) {
+        throw new Error('GEN_DRAW_STREAM 缺省 ' + p)
+      }
+      for (const lang of langs) {
+        expect(drawStreamNote({ stream: d, lang }).includes(makeT(lang)('pnp.gen.' + p)), `${p} ${lang}`).toBe(true)
+      }
+    }
+    for (const label of NOT_SAME_PROGRAM) {
+      const key = STREAM_L10N[label]
+      const draws = NAMED_DRAW_STREAMS[label]
+      if (key == null || draws == null) {
+        throw new Error('对照表缺 ' + label)
+      }
+      for (const d of draws) {
+        for (const lang of langs) {
+          expect(drawStreamNote({ stream: d, lang }).includes(makeT(lang)(key)), `${label} ${lang}`).toBe(true)
+        }
+      }
+    }
+    // 曼省两组名字几乎一样:省里定向招募那组灰字写「MB 定向招募」,与本岗那组「MB 技术工人」分开
+    expect(drawStreamNote({ stream: 'Skilled Worker Stream', lang: 'zh' })).toBe('MB 定向招募')
+    expect(drawStreamNote({ stream: 'Skilled Worker in Manitoba', lang: 'zh' })).toBe('MB 技术工人')
   })
 
   it('金标:卑诗建筑技工那一组,上下同名', () => {

@@ -206,6 +206,12 @@ export type PnpDraw = {
    * 同晚起三种抽选卡标题那一行右端的「来源」读它(每省一页:各通道的轮次都在同一页上)。
    */
   url: string
+
+  /**
+   * 同一组同一天几行各是哪一项选取(数据层短码 occ / top:N / franco / grad / wage:H:Y / points / path:a+b;
+   * 认不出空串;2026-09-27 Frank「照改,加这一列」)。
+   */
+  selection: string
 }
 
 /**
@@ -1122,9 +1128,61 @@ export type QuotaCardSpec = {
   rows: QuotaRowSpec[]
 
   /**
-   * 表下「截至 {日期}」那一行(取最右一列带截至日的那格,2026-09-27);官方没写截至日给 ''。
+   * 表下右端「截至 {日期}」那几行:各列截至日一致只写一行;不一致逐列写「{列名}截至 {日期}」(2026-09-27 Frank「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」
+   * —— 曼省已发提名截至 08 月、已邀请申请截至 09-24,原先只写最右一列的 09-24,读成提名数也截至 09-24;
+   * 同日 Frank「这个截止日期放到右下角呢」)。官方都没写截至日给空列。
    */
-  asOf: string
+  asOfLines: string[]
+}
+
+/**
+ * asOfLinesOf 的入参(列名与各列截至日逐格对齐)。
+ */
+export type AsOfLinesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 列名(已取词)。
+   */
+  heads: string[]
+
+  /**
+   * 各列的截至日('' = 官方没写)。
+   */
+  dates: string[]
+}
+
+/**
+ * colAsOfOf 的入参。
+ */
+export type ColAsOfIn = {
+  /**
+   * 这一列认的指标名。
+   */
+  metrics: string[]
+
+  /**
+   * 这一列在全省那一层挑到的配额行。
+   */
+  row: PnpOps
+}
+
+/**
+ * selectionLabelOf 的入参。
+ */
+export type SelectionLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 数据层的 selection 短码(occ / top:N / franco / grad / wage:H:Y / points / path:a+b;'' = 认不出)。
+   */
+  code: string
 }
 
 /**
@@ -3256,7 +3314,7 @@ export type InvTextIn = {
 /**
  * zhSubOf 的入参。
  */
-export type ZhSubIn = {
+export type DrawSubIn = {
   /**
    * 界面语言。
    */

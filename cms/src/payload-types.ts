@@ -837,6 +837,10 @@ export interface PnpDraw {
    */
   checklist?: string | null;
   /**
+   * 选取项短码 occ / top:N / franco / grad / wage:H:Y / points / path:a+b
+   */
+  selection?: string | null;
+  /**
    * 最低邀请分 — 省自评分制,非 CRS!展示必须带 scale
    */
   score?: number | null;
@@ -3018,6 +3022,7 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   stream?: T;
   streamZh?: T;
   checklist?: T;
+  selection?: T;
   score?: T;
   scale?: T;
   invitations?: T;

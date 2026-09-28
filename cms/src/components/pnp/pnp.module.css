@@ -463,6 +463,11 @@
   margin-top: 4px;
 
   /*
+   * 右下角(2026-09-27 Frank「这个截止日期放到右下角呢」;几列日期不一致时逐列一行)。
+   */
+  text-align: right;
+
+  /*
    * 小字。
    */
   font-size: 12px;

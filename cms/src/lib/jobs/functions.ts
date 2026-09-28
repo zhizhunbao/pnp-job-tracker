@@ -444,6 +444,10 @@ function eeRule(input: RuleIn): RuleScoreOut {
  * 本站没有该省清单数据时不给「查过没有」的假结论 —— 分数走 TEER 粗筛同档,理由说实话(uncovered)。
  * E13-09:TEER4-5 的通过理由分三类(NL=offer 即可;MB/NS/NB/PE=先同雇主 6 个月;其余开放),
  * 翻案岗不再拿假理由;省集合镜像 etl/08_score。
+ * 2026-09-27 Frank 拍板「看得出才改判」、选「只上纯属改对的」(同一批把判定卡改成同一口径):
+ * 「被清单挡」只认管带 offer 岗的清单(isOfferList:SK 主线不合格表只管 OID / EE),且数据层判了可提名的岗不再判被挡 ——
+ * 条件式清单(NB 餐饮住宿 13 码只挡餐饮住宿业雇主、AB 带星号码只挡官方点名的那一小类)数据层已按雇主放行,这里再按职业码
+ * 一刀切会与职位板打架。
  *
  * @param input 档案、岗位与维度。
  * @returns 该规则的加分与理由。
@@ -473,7 +477,7 @@ function provRule(input: RuleIn): RuleScoreOut {
     if (r.type !== TYPE_INELIGIBLE && named == null) {
       named = r
     }
-    if (r.type === TYPE_INELIGIBLE && excluded == null) {
+    if (r.type === TYPE_INELIGIBLE && excluded == null && isOfferList(r.appliesTo) && job.pnpEligible === false) {
       excluded = r
     }
   }
@@ -2466,17 +2470,21 @@ function ratioMapOf(rows: OccDiffFacts): RatioMap {
 
 /**
  * 官方通道名 → 界面语言的译名;英文界面与表里没有的一律返回空(只显官方英文名)。
+ * 2026-09-27 Frank 看抽选卡「这个数据怎么回事」「这两个还不一样吗」「这他妈弄的乱七八糟的」,看过效果图选「照改,加这一列」:表里带 en 的几组(覆盖本站通道的组、MB 定向招募)英文界面也出灰字 —— 写它邀请的通道名。
  *
  * @param input 官方通道名与界面语言。
  * @returns 译名;不出译名则空串。
  */
 export function drawStreamNote(input: DrawStreamNoteIn): string {
-  if (input.lang === LANG_EN) {
-    return STREAM_NOTE_NONE
-  }
   const hit = DRAW_STREAM_L10N[(input.stream || PARAM_NONE).trim()]
   if (hit == null) {
     return STREAM_NOTE_NONE
+  }
+  if (input.lang === LANG_EN) {
+    if (hit.en == null) {
+      return STREAM_NOTE_NONE
+    }
+    return hit.en
   }
   if (input.lang === LANG_KO) {
     return hit.ko
@@ -3159,7 +3167,7 @@ export function toEeBroad(r: Row): EeBroad {
 export function toPnpOccDim(r: Row): PnpOccDim {
   return {
     province: text(r.province), label: text(r.label), type: text(r.type), noc: text(r.noc),
-    url: text(r.url), fetched: iso(r.fetched),
+    url: text(r.url), fetched: iso(r.fetched), appliesTo: text(r.appliesTo),
   }
 }
 
@@ -3188,7 +3196,7 @@ export function toPnpDraw(r: Row): PnpDraw {
     province: text(r.province), kind: text(r.kind), drawDate: text(r.drawDate), stream: text(r.stream),
     streamZh: text(r.streamZh), score: numOrNull(r.score), scale: text(r.scale),
     invitations: numOrNull(r.invitations), note: text(r.note), label: text(r.label),
-    url: text(r.url), fetched: text(r.fetched),
+    url: text(r.url), fetched: text(r.fetched), selection: text(r.selection),
   }
 }
 

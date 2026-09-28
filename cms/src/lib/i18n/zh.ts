@@ -612,7 +612,18 @@ export const jobsZh = {
   'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列,原 pnpdraws.ytdInv / ytdSel 两条随行退役
   // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同一个池),旁边的总数只算 NSNP,列名注明含 AIP,免得读成超发
-  'pnpquota.inv': '已发邀请', 'pnpquota.sel': '已入选(含 AIP)',
+  // 2026-09-27 Frank「已发 提名 和 已发邀请是什么意思」:邀请是请你递交申请、不是提名,列名改「已邀请申请」;
+  // 同日「这个截止日期放到右下角呢」:几列截至日不一致时逐列写(pnpquota.asOfCol)
+  'pnpquota.inv': '已邀请申请', 'pnpquota.sel': '已入选(含 AIP)', 'pnpquota.asOfCol': '{col}截至 {date}',
+  // 2026-09-27 Frank「这个数据怎么回事」「照改,加这一列」:抽选卡展开行写是哪一项选取(数据层 selection 短码 → 界面词)
+  'pnpdraws.sep': '、',
+  'pnpsel.occ': '定向职业', 'pnpsel.top': '高分者({cat}类)', 'pnpsel.topAny': '高分者', 'pnpsel.franco': '法语', 'pnpsel.grad': '曼省毕业',
+  'pnpsel.wage': '时薪 ≥ ${hour} 且年薪 ≥ ${year}', 'pnpsel.points': '按分数',
+  'pnpsel.cat.0': '管理', 'pnpsel.cat.1': '商业金融', 'pnpsel.cat.2': '理工', 'pnpsel.cat.3': '医疗', 'pnpsel.cat.4': '教育社区',
+  'pnpsel.cat.5': '文体', 'pnpsel.cat.6': '销售服务', 'pnpsel.cat.7': '技工交通', 'pnpsel.cat.8': '农林资源', 'pnpsel.cat.9': '制造',
+  'pnpsel.cat.72': '技工',
+  'pnpsel.path.exp': 'NB 工作经验', 'pnpsel.path.grad': 'NB 毕业生', 'pnpsel.path.prio': 'NB 优先', 'pnpsel.path.frwork': 'NB 法语工人',
+  'pnpsel.path.frprio': 'NB 法语优先',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': '本岗通道的门槛', 'pnpgate.sep': '、',
   'pnpgate.k.offer': '雇主 offer', 'pnpgate.k.lang': '语言', 'pnpgate.k.exp': '工作经验', 'pnpgate.k.ee': 'EE',
