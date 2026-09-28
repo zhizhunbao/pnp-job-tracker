@@ -1850,21 +1850,6 @@
       "count": 1
     }
   },
-  "src/lib/advisor/functions.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/lib/advisor/routes.ts": {
-    "local/function-length": {
-      "count": 1
-    }
-  },
-  "src/lib/advisor/types.ts": {
-    "local/no-import-in-leaf": {
-      "count": 4
-    }
-  },
   "src/lib/agent/constants.ts": {
     "local/no-import-in-leaf": {
       "count": 1

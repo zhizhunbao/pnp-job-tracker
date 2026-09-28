@@ -16,7 +16,7 @@ export { SITE_FALLBACK } from './constants'
 export { drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay, reqStreamDisplay, streamDisplay } from './functions'
 export {
   blockedSrc, hasProfile, isDirect, isExpiredJob, isJdNone, isOfferList, match, matchRank, normalizeProfile, provListCoverage,
-  reasonEn, sourceLabel, statusEn,
+  sourceLabel,
 } from './functions'
 export type {
   BroadNoc, CityCard, CoGradeDetail, ColKey, DesigEmp, Dims, EeCat, EeOcc, FieldGroup, FieldSource, JobRow, JsonCell, JsonObj, MatchDims, MatchJob, NocOpenCount, ProvCard, QuizFacts, TopNoc,

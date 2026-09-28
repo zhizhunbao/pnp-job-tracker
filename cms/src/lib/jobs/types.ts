@@ -1876,7 +1876,7 @@ export type CoverageIn = {
 }
 
 /**
- * 文本或没有(statusEn 等的返回)。
+ * 文本或没有(statusEn 等的返回;statusEn 2026-09-28 随 lib/advisor 删掉,别的取数照用)。
  */
 export type MaybeStr = string | null
 

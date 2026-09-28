@@ -1331,7 +1331,7 @@ export const LV = {
 } as const
 
 /**
- * 匹配理由的 i18n 键(match.r.*;三语文案在 lib/i18n,英文事实行在 prompts.REASON_EN)。
+ * 匹配理由的 i18n 键(match.r.*;三语文案在 lib/i18n,英文事实行在 prompts.REASON_EN —— 那张表只给顾问写提示词用,2026-09-28 随 lib/advisor 删)。
  */
 export const RK = {
   /**

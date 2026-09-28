@@ -20,8 +20,9 @@ const BARRELS = ['agent', 'db', 'i18n', 'jobs', 'pathways', 'gauge', 'points', '
   // profile/auth/stripe 只有 server 门(纯服务端域),照样进名单 —— ABSOLUTE 拦直点文件,ALLOW 放行 server。
   'funnel', 'location', 'noc', 'rankings', 'mail', 'lmia', 'track', 'profile', 'auth', 'stripe',
   // 2026-08-23 log/error 自单文件升目录(Frank「log 和 error 呢」),既有 '../log' import 经桶续命。
-  'log', 'error', 'news', 'mart', 'advisor', 'seo', 'alerts',
+  'log', 'error', 'news', 'mart', 'seo', 'alerts',
   // 2026-09-05 批二立 guide 替 consult;批三 consult 目录已删,它那行一起撤。
+  // 2026-09-28 advisor 域删(Frank「接口也删了吧」:/api/advisor 前端零调用方),它那一名与下面 server 门三条一起撤。
   'guide']
 const ABSOLUTE = BARRELS.map((m) => `**/lib/${m}/*`)
 // jobs / points / ruling / employers / plan / quiz / stats / quota / pathways 有**两个门**(index=客户端也安全的那半、server=要连库的那半;
@@ -53,7 +54,6 @@ const ALLOW = [
   '!**/lib/news/server', '!./news/server', '!../news/server',
   '!**/lib/noc/server', '!./noc/server', '!../noc/server',
   '!**/lib/mart/server', '!./mart/server', '!../mart/server',
-  '!**/lib/advisor/server', '!./advisor/server', '!../advisor/server',
   '!**/lib/seo/server', '!./seo/server', '!../seo/server',
   '!**/lib/guide/server', '!./guide/server', '!../guide/server',
 ]
@@ -495,7 +495,8 @@ const localRules = {
         // Next 是静态分析路由模块拿到它们的,搬进域再 re-export 就读不到了(和「模块路径不能起名」
         // 同一类:那不是我们的代码组织问题,是平台的契约)。2026-08-24 立,表是封闭的。
         // ⚠️ 只放行**名字**;值仍受别的闸管。绝大多数路由不需要它们(POST 本就不静态化、
-        //    route handler 默认就是 nodejs 运行时),写了通常是缺省值 —— 见 advisor 壳的退役记录。
+        //    route handler 默认就是 nodejs 运行时),写了通常是缺省值 —— 见 advisor 壳的退役记录
+        //    (那个壳 2026-09-28 随 /api/advisor 删了,记录在 git 史里)。
         const SEGMENT_CONFIG = new Set([
           'dynamic', 'dynamicParams', 'revalidate', 'fetchCache',
           'runtime', 'preferredRegion', 'maxDuration',

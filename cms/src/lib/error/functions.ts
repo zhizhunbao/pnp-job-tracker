@@ -7,17 +7,15 @@
  */
 
 import {
-  ADVISOR_ERR_NAME, ADVISOR_LLM_DOWN_MSG,
-  CHAT_ERR_NAME, DB_ERR_NAME, DB_POOL_MSG, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX,
-  ERR_NAME, ERR_TAIL_NONE, HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MART_ERR_NAME, MART_HEAD, MART_META_TAIL,
-  MART_NO_SOURCE_HEAD, MART_NO_SOURCE_MID, MART_NO_SOURCE_TAIL, MART_SHARD_MID, MART_SHARD_OF, MART_SHARD_TAIL,
-  MSG_SEP, TRANSLATE_ERR_NAME,
+  DB_ERR_NAME, DB_POOL_MSG, ERR_BY_STATUS, ERR_BY_TYPE, ERR_DEFAULT, ERR_FIELD_NONE, ERR_MSG_MAX, ERR_NAME,
+  ERR_TAIL_NONE, HTTP_ERROR_TYPE, LEGACY_TOO_LONG, LEGACY_TOO_LONG_TYPE, MART_ERR_NAME, MART_HEAD, MART_META_TAIL,
+  MART_NO_SOURCE_HEAD, MART_NO_SOURCE_MID, MART_NO_SOURCE_TAIL, MART_SHARD_MID, MART_SHARD_OF, MART_SHARD_TAIL, MSG_SEP,
+  TRANSLATE_ERR_NAME,
 } from './constants'
 import type {
-  AdvisorErrorOut, ChatErrorIn, ChatErrorOut, ChatFailure, DbErrorOut, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn,
-  GatewayErrorOfIn, GatewayErrorOfOut, GatewayErrorOut, GatewayFailure, HasNameIn, HasNameOut, LlmErrorIn,
-  LlmErrorOut, LlmFailure, MartErrorOut, MartMetaErrorIn, MartShardErrorIn, MartSourceErrorIn, TranslateErrorIn,
-  TranslateErrorOut,
+  DbErrorOut, FailIn, FailOut, GatewayErrorBody, GatewayErrorIn, GatewayErrorOfIn, GatewayErrorOfOut, GatewayErrorOut,
+  GatewayFailure, HasNameIn, HasNameOut, LlmErrorIn, LlmErrorOut, LlmFailure, MartErrorOut, MartMetaErrorIn,
+  MartShardErrorIn, MartSourceErrorIn, TranslateErrorIn, TranslateErrorOut,
 } from './types'
 
 // =========================================================================
@@ -145,31 +143,6 @@ export function translateError(input: TranslateErrorIn): TranslateErrorOut {
 }
 
 // =========================================================================
-// 5. 对话域(lib/chat)
-// =========================================================================
-
-/**
- * 造一个对话编排的失败。
- *
- * @param input 错误码、留痕、可选的槽位。
- * @returns 对话编排的失败。
- */
-export function chatError<Slots>(input: ChatErrorIn<Slots>): ChatErrorOut<Slots> {
-  return Object.assign(fail({ name: CHAT_ERR_NAME, msg: input.msg, code: input.code }), { slots: input.slots })
-}
-
-/**
- * 判它是不是对话编排的失败。调用方先用 `instanceof Error` 收窄,再交给它,
- * 并在这一行把自己的槽位类型填进去(`isChatError<Slots>(e)`)。
- *
- * @param err catch 里接住、已经收窄成 Error 的那个。
- * @returns 是不是对话编排的那一种。
- */
-export function isChatError<Slots>(err: Error): err is ChatFailure<Slots> {
-  return hasName({ err, name: CHAT_ERR_NAME })
-}
-
-// =========================================================================
 // 数据库层(lib/db)—— 摸池失败(2026-08-26)
 // =========================================================================
 
@@ -222,18 +195,4 @@ export function martSourceError(input: MartSourceErrorIn): MartErrorOut {
     msg: MART_NO_SOURCE_HEAD + input.tmp + MART_NO_SOURCE_MID + input.local + MART_NO_SOURCE_TAIL,
     code: null,
   })
-}
-
-// =========================================================================
-// 顾问域(lib/advisor)—— 流式起头失败(2026-08-26 自 new Error 收编)
-// =========================================================================
-
-/**
- * 造一个「上游模型不可用」的失败(advisor 流式一个字没吐时 controller.error 用;
- * 话术与原 new Error 逐字一致)。
- *
- * @returns 顾问流式起头失败。
- */
-export function advisorLlmError(): AdvisorErrorOut {
-  return fail({ name: ADVISOR_ERR_NAME, msg: ADVISOR_LLM_DOWN_MSG, code: null })
 }

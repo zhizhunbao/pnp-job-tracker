@@ -59,7 +59,7 @@ import {
   JD_TRANS_MARKS_RE, REL_OCC_PAGE_ROWS,
 } from './constants'
 import {
-  JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, REASON_EN, STATUS_EN, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
+  JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
 } from './prompts'
 import { CACHE } from './variables'
 import type {
@@ -604,37 +604,6 @@ function nocRule(input: RuleIn): NocRuleOut {
     reasons: [{ rule: RULE.noc, verdict: VD.fail, key: RK.nocNone, params: { noc: job.noc,
       yours: p.nocCodes.join(SPACE + NOC_JOIN_SLASH + SPACE) }, source: null }],
   }
-}
-
-/**
- * 理由 → advisor 用的英文事实行(与 UI 三语同源同数字;未知键回退键名)。
- *
- * @param r 一条理由。
- * @returns 英文事实行。
- */
-export function reasonEn(r: MatchReason): string {
-  const tpl = REASON_EN[r.key]
-  if (tpl == null) {
-    return r.key
-  }
-  return fill({ tpl: tpl, params: r.params })
-}
-
-/**
- * 分型 → 英文路径语境(喂 advisor grounding)。
- *
- * @param s 分型 slug;null/未知 = 没有语境。
- * @returns 语境行;没有则 null。
- */
-export function statusEn(s: MaybeStr): MaybeStr {
-  if (s == null) {
-    return null
-  }
-  const hit = STATUS_EN[s]
-  if (hit == null) {
-    return null
-  }
-  return hit
 }
 
 // =========================================================================
