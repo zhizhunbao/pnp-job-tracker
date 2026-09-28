@@ -14,7 +14,7 @@
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
 import { makeT } from '@/lib/i18n'
-import { drawStreamNote, eeDisplay, eeKeyDisplay, match as matchJob, streamDisplay } from '@/lib/jobs'
+import { drawStreamNote, eeDisplay, eeKeyDisplay, isOfferList, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
 import { DAY_MS } from '@/lib/time'
@@ -23,7 +23,7 @@ import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
   DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
   LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE,
-  OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
+  OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
   TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
   AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
   CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
@@ -334,6 +334,10 @@ export function pnpMatchOf(x: PnpMatchIn): PnpMatchOut {
  * 一省的省提名清单:扁平清单行按 label 分组成通道(AIP 背书清单不算;魁省与缺省码的岗没有通道可比)。
  * 2026-09-26 自 pnpMatchOf 体内原样提出:弹框命中计算与首屏的事实索引(pnpFactsIndexOf)共用这一处分组,
  * 格子判「弹框有没有清单卡」与弹框自己出卡才是同一份清单。
+ * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):官方写明只管不走雇主 offer 的子类的排除清单不进来(SK 主线不合格表只管 OID / EE,
+ * 官方原句「these occupations may be eligible through the International Skilled Worker Employment Offer subcategory」)——
+ * 职位板上的岗都带 offer,原先兼职 / 合同这类因工时雇佣期不可提名的 SK 岗,弹框把这张表当成排除原因出卡(255 条)。
+ * 判法与职位板格子同一把尺子(lib/jobs isOfferList)。
  *
  * @param x 省码与扁平清单。
  * @returns 本省通道(清单行的原序)。
@@ -344,6 +348,9 @@ function pnpStreamsOf(x: PnpStreamsIn): PnpStream[] {
     const byLabel = new Map<string, PnpStream>()
     for (const r of x.occ) {
       if (r.province !== x.province || programOf(r) !== PROGRAM_PNP) {
+        continue
+      }
+      if (r.type === TYPE_INELIGIBLE && isOfferList(r.appliesTo) === false) {
         continue
       }
       let s = byLabel.get(r.label)
@@ -1325,7 +1332,7 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
     return null
   }
   const rows = [quotaRowOf({ rows: mine, streamKey: TEXT_NONE, cols, label: x.t('pnpquota.prov') })]
-  const streamKey = quotaStreamKeyOf({ rows: mine, hitStreams: x.hitStreams })
+  const streamKey = quotaStreamKeyOf({ rows: mine, hitStreams: x.hitStreams, pnpStream: x.pnpStream })
   if (streamKey !== TEXT_NONE) {
     rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
   }
@@ -1372,13 +1379,22 @@ function quotaRowOf(x: QuotaRowIn): QuotaRowSpec {
 /**
  * 本岗对应的抽选组在配额行里是哪条通道:抽选组名小写后与通道级配额行的通道键逐字相等才算(阿省机会通道、旅游酒店通道这类);
  * 对不上给 '' —— 不拿近似名硬配(医护那组抽选名与配额名单复数不同,就不出通道那一行)。
+ * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):先查人工对照表 QUOTA_STREAM_KEYS(本岗具名通道 → 配额行通道键;阿省医护 / 科技 /
+ * 警务三条组名与配额名不同字),再按组名小写逐字相等配;仍不拿近似名硬配。
  *
  * @param x 这一省的配额行与本岗对应的抽选组。
  * @returns 通道键;对不上给 ''。
  */
 function quotaStreamKeyOf(x: QuotaStreamIn): string {
+  const keys: string[] = []
+  const named = QUOTA_STREAM_KEYS[x.pnpStream]
+  if (named != null) {
+    keys.push(named)
+  }
   for (const h of x.hitStreams) {
-    const k = h.toLowerCase()
+    keys.push(h.toLowerCase())
+  }
+  for (const k of keys) {
     for (const r of x.rows) {
       if (r.scopeKind === OPS_SCOPE_STREAM && r.streamKey === k) {
         return k
@@ -1866,6 +1882,7 @@ export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
  * (见 DRAW_STREAM_AIP),写「份申请入选」,不写「份邀请」。
  * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 的数字是每月从 EOI 池选取的人数,写「人入选」(DRAW_SELECT_PROVS);
  * 三种口径的词条收进 COUNT_ROW_KEY 一张表(countKindOf 判口径)。
+ * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):人数加千分位(原「1874 份邀请」,配额卡与标题行都有千分位,这里没有)。
  *
  * @param x 取词函数与这一轮。
  * @returns 文字;''=没公布。
@@ -1874,7 +1891,7 @@ function invTextOf(x: InvTextIn): string {
   if (x.draw.invitations == null) {
     return TEXT_NONE
   }
-  return x.t(COUNT_ROW_KEY[countKindOf(x.draw)], { n: x.draw.invitations })
+  return x.t(COUNT_ROW_KEY[countKindOf(x.draw)], { n: x.draw.invitations.toLocaleString(NUM_LOCALE) })
 }
 
 /**
@@ -1998,6 +2015,7 @@ function histAtOf(x: HistAtIn): PnpDraw[] {
  * 休眠类别的历次轮次可能已过保留窗(联邦行每类只留最近 12 轮),组头仍按类别表带的最近一轮写。
  * 同日 Frank「运输这个只有一个 没法展开」:一轮也给展开(展开才看得到轮次名与邀请数),轮数照写「1 轮」。
  * 2026-09-26 /fe 首页 Frank:英文一轮写「1 round」不再是「1 rounds」—— 一轮单走 eecmp.roundsOne(中韩两门文案同原句)。
+ * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):轮数改数不同的抽选日期(roundCountOf),不数行。
  *
  * @param x 一组的原料。
  * @returns 这一组。
@@ -2012,11 +2030,12 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
   if (x.perMonth) {
     keys = MONTHS_KEYS
   }
+  const count = roundCountOf(x.draws)
   let rounds = TEXT_NONE
-  if (rows.length === 1) {
-    rounds = x.t(keys.one, { n: rows.length })
-  } else if (rows.length > 1) {
-    rounds = x.t(keys.many, { n: rows.length })
+  if (count === 1) {
+    rounds = x.t(keys.one, { n: count })
+  } else if (count > 1) {
+    rounds = x.t(keys.many, { n: count })
   }
   return {
     key: x.key,
@@ -2032,6 +2051,23 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     noScore: x.score == null,
     hit: x.hit,
   }
+}
+
+/**
+ * 一组一共几轮:数不同的抽选日期,不数行(2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」)实撞)—— 同一天的一次抽选
+ * 可能分几行记:曼省一期(Draw #N)下有定向职业 / 法语 / 曼省毕业几项选取,BC 同一天的工资档与分数档是一次发放两个条件;
+ * 各算一轮会把曼省 Skilled Worker in Manitoba 的 9 期数成 19 轮、BC Innovate 的 10 次数成 20 轮。
+ * 按月公布的那一组(NS)一行就是一个月,不受影响。
+ *
+ * @param draws 这一组的历次抽选。
+ * @returns 轮数。
+ */
+function roundCountOf(draws: PnpDraw[]): number {
+  const days = new Set<string>()
+  for (const d of draws) {
+    days.add(d.drawDate)
+  }
+  return days.size
 }
 
 /**

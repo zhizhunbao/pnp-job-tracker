@@ -820,6 +820,11 @@ export type PnpOcc = {
    * 抓取时刻。
    */
   fetched: string
+
+  /**
+   * 清单管哪几条子类(官方原文;'' = 全项目;2026-09-27)。判它挡不挡带 offer 的岗走 isOfferList。
+   */
+  appliesTo: string
 }
 
 /**

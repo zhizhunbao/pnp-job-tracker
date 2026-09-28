@@ -487,6 +487,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'stream.bcHealth': 'Care: Health', 'stream.bcChildcare': 'Care: Childcare', 'stream.bcEdu': 'Care: Education', 'stream.bcVet': 'Care: Veterinary Care', 'stream.bcConstr': 'Build: Construction Trades',
   'stream.mbIndemand': 'MB in-demand', 'stream.mbRural': 'MB rural in-demand', 'stream.peIndemand': 'PE in-demand', 'stream.nbExcl': 'NB ineligible list', 'stream.nbExclFood': 'NB hospitality ineligible',
   'stream.nbAipExcl': 'NB AIP not accepted', 'stream.bcHa': 'BC Health Authority', 'stream.skEwp': 'SK Existing Work Permit', 'stream.peAipExcl': 'PE AIP not accepted', 'stream.nbAipExclFood': 'NB AIP hospitality not accepted',
+  // 2026-09-27 three ineligible-list card titles had no entries, so the English UI showed the Chinese label
+  'stream.bcExcl': 'BC ineligible list', 'stream.skExclMain': 'SK OID / EE ineligible list', 'stream.skExclOffer': 'SK Employment Offer ineligible list',
   'ee.healthcare': 'Healthcare', 'ee.stem': 'STEM', 'ee.trade': 'Trades', 'ee.education': 'Education', 'ee.transport': 'Transport', 'ee.physicians': 'Physicians', 'ee.seniorMgr': 'Senior managers', 'ee.researchers': 'Researchers', 'ee.military': 'Military',
   'ee.agriculture': 'Agri-food', 'ee.cec': 'CEC', 'ee.french': 'French', 'ee.pnpLinked': 'PNP', 'ee.general': 'General', 'ee.fsw': 'FSW', 'ee.fst': 'FST',
   'act.seeOfficial': 'View official posting',
@@ -566,7 +568,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpquota.remaining': 'Remaining', 'pnpquota.prov': 'Province', 'pnpquota.stream': 'This stream',
   'pnpquota.asOf': 'As of {date}',
   // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire
-  'pnpquota.inv': 'Invited', 'pnpquota.sel': 'Selected',
+  // 2026-09-27 NS selections count the whole EOI pool (NSNP and AIP share it) while the total next to it is NSNP only
+  'pnpquota.inv': 'Invited', 'pnpquota.sel': 'Selected (incl. AIP)',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': 'Stream requirements', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': 'Job offer', 'pnpgate.k.lang': 'Language', 'pnpgate.k.exp': 'Experience', 'pnpgate.k.ee': 'EE',

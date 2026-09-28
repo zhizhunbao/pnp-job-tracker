@@ -15,9 +15,10 @@ import { drawStreamNote } from '@/lib/jobs'
 import { STREAM_L10N } from '@/lib/jobs/constants'
 
 /**
- * 具名通道里与抽选组不是同一个项目的(PE 那组覆盖 Occupations in Demand 与 Workforce 各流)。
+ * 具名通道里与抽选组不是同一个项目的(PE 那组覆盖 Occupations in Demand 与 Workforce 各流;
+ * 2026-09-27 九省体检登记 NS 建筑 → NS 按月那一组,那一组覆盖 NSNP 各流与 AIP)。
  */
-const NOT_SAME_PROGRAM = new Set(['PE 在需职业'])
+const NOT_SAME_PROGRAM = new Set(['PE 在需职业', 'NS 建筑'])
 
 /**
  * 通用通道里与抽选组同一个项目的省(BC / PE / NL 不是同一个东西,见文件头)。

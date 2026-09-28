@@ -126,7 +126,8 @@ describe('mart 实况', () => {
     // 联邦类别抽选资格(program='EE-category')+12 → 429
     // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:AB 旅游酒店流五条(官方资格页补抓)+ 汇装出的 AB offer 形态一行
     //(subject='offer',判定引擎不读)→ 435
-    expect(data.requirements).toHaveLength(435)
+    // 2026-09-27 九省体检:SK「持 offer 直接申请、不经 EOI 抽选」官方原句入门槛表一行(factor=eoiDraw,判定引擎不读)→ 436
+    expect(data.requirements).toHaveLength(436)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。

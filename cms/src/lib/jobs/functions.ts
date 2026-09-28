@@ -46,6 +46,7 @@ import {
   OG_IMG_ALT, OG_IMG_H, OG_IMG_W, OG_JOB_PATH_HEAD, OG_JOB_PATH_TAIL, OPEN_COND, ORDER_DATE_TAIL, ORDER_DEFAULT_COL,
   ORDER_FRESH, ORIGIN_TITLE_HEAD, PARAM_NONE, PCT, PCT_SCALE, PG_CODE_NONE, PG_UNDEFINED_COLUMN, PG_UNDEFINED_TABLE,
   PHONE_RE, PII_MASK, PREV_LINE_NONE, PROGRAM_PNP, PROOF_TTL_MS, PROV_CODE, PROV_CODE_NONE, PROV_MAX_WORDS,
+  APPLIES_OFFER,
   PROV_MIN_WORDS, PROV_PREFIX_TRIM_RE, PRO_SORTS, PTS, Q_MAX_TERMS, Q_SHORT_LEN, REDIRECT_FOLLOW, REQ_STREAM_L10N,
   RK, RULE, SCORE_HIGH, SCORE_MID, SEARCH_COLS, SEEKER_ACTION_RE, SEEKER_JOBID_RE, SEO_DASH, SEO_LOC_SEP,
   SEO_PAREN_L, SEO_PAREN_R, SEP_KEY, SITE_ENV, SITE_FALLBACK, SITE_NAME, SITE_TAIL_RE, SORT_COLUMNS,
@@ -116,6 +117,19 @@ export function sourceLabel(j: JobRow): string {
     return SRC_DASH
   }
   return j.sourceLabel
+}
+
+/**
+ * 这张清单管不管带雇主 offer 的岗(职位板上的岗都带 offer):appliesTo 空 = 全项目,管;写明雇主 offer 子类的,管;
+ * 只点名别的子类的(SK 主线不合格表「OID/EE」)不管 —— 官方原句「these occupations may be eligible through the
+ * International Skilled Worker Employment Offer subcategory」。2026-09-27 九省体检立:格子(jobs 域 blockedKeysOf)与
+ * 弹框(pnp 域 pnpStreamsOf)同一把尺子。
+ *
+ * @param appliesTo 清单的适用子类(官方原文)。
+ * @returns 管 = true。
+ */
+export function isOfferList(appliesTo: string): boolean {
+  return appliesTo === '' || appliesTo.toLowerCase().includes(APPLIES_OFFER)
 }
 
 /**
@@ -3108,6 +3122,7 @@ export function toPnpOcc(r: Row): PnpOcc {
     province: text(r.province), stream: text(r.stream), label: text(r.label), type: text(r.type),
     program: program, noc: text(r.noc), name: text(r.name),
     gtaRestricted: r.gtaRestricted === true, url: text(r.url), fetched: text(r.fetched),
+    appliesTo: text(r.appliesTo),
   }
 }
 

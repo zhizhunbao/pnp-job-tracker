@@ -15,7 +15,7 @@ export { nocLabels } from './constants'
 export { SITE_FALLBACK } from './constants'
 export { drawStreamNote, dropProvPrefix, eeDisplay, eeKeyDisplay, reqStreamDisplay, streamDisplay } from './functions'
 export {
-  blockedSrc, hasProfile, isDirect, isExpiredJob, isJdNone, match, matchRank, normalizeProfile, provListCoverage,
+  blockedSrc, hasProfile, isDirect, isExpiredJob, isJdNone, isOfferList, match, matchRank, normalizeProfile, provListCoverage,
   reasonEn, sourceLabel, statusEn,
 } from './functions'
 export type {

@@ -2739,6 +2739,11 @@ export type PnpOccRow = {
    * NOC 码。
    */
   noc: string
+
+  /**
+   * 清单管哪几条子类(官方原文;'' = 全项目;2026-09-27):只点名别的子类的(SK「OID/EE」)不进排除集。
+   */
+  appliesTo: string
 }
 
 /**

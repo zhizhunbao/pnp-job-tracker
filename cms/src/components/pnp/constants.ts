@@ -30,9 +30,12 @@ export const STREAM_REFORM: Record<string, {
 }> = {
   /**
    * 安大略:2026-06 改制,原 8 条流废止。
+   * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):since 由 06-01 改为官方生效日 06-25(2026 更新页 June 26 条原句
+   * 「These amendments came into force on June 25, 2026.」;06-26 是公告日,旧流归档页的 May 30 是各流停收日)。
+   * 06-01 到 06-25 之间没有轮次,显示不变。
    */
   ON: {
-    since: '2026-06-01',
+    since: '2026-06-25',
     rules: [['pnpdraws.on.k1', 'pnpdraws.on.v1'], ['pnpdraws.on.k2', 'pnpdraws.on.v2'],
       ['pnpdraws.on.k3', 'pnpdraws.on.v3'], ['pnpdraws.on.k4', 'pnpdraws.on.v4']],
   },
@@ -273,6 +276,12 @@ export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
    * 阿省乡村振兴(按指定社区)。
    */
   'AB 乡村振兴': ['Rural Renewal Stream'],
+
+  /**
+   * NS 建筑(2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):官方 eoi-process 页 2025-11-28 条 NSNP 各流与 AIP 同一个 EOI 池,
+   * 建筑是 Skilled Worker 流下的子条件 —— 与通用岗同一组按月选取;原先没登记,点进来那一组不高亮)。
+   */
+  'NS 建筑': ['Monthly EOI selections'],
 }
 
 /**
@@ -450,6 +459,30 @@ export const QUOTA_COLS: [string[], string][] = [
   [[OPS_INV_YTD], 'pnpquota.inv'],
   [[OPS_SEL_YTD], 'pnpquota.sel'],
 ]
+
+/**
+ * 本岗具名通道 → 配额行的通道键(2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):阿省医护 / 科技 / 警务三条的抽选组名与
+ * 官方配额表的通道名不同字 —— 抽选「Dedicated Health Care Pathway – Express Entry」对配额「Dedicated Health Care Pathways」、
+ * 抽选「Alberta Express Entry Stream – Accelerated Tech Pathway」对配额「Accelerated Tech Pathway」,按组名小写逐字相等配不上,
+ * 配额卡缺「本岗通道」那一行。官方 aaip-processing-information 页 Table 6 / Table 7 就是这三行。键同 NAMED_DRAW_STREAMS
+ * (岗位行 pnpStream 原值),值是配额行的通道键(小写官方通道名)。
+ */
+export const QUOTA_STREAM_KEYS: Record<string, string> = {
+  /**
+   * 阿省医护专项(Table 6 Dedicated Health Care Pathways)。
+   */
+  'AB 医疗': 'dedicated health care pathways',
+
+  /**
+   * 阿省加速科技通道(Table 7 Accelerated Tech Pathway)。
+   */
+  'AB 科技': 'accelerated tech pathway',
+
+  /**
+   * 阿省警务专项(Table 7 Law Enforcement Pathway)。
+   */
+  'AB 警务': 'law enforcement pathway',
+}
 
 /**
  * 配额小表左上角那个空格的 React 列表键。

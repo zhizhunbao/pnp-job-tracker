@@ -1814,9 +1814,10 @@ export const DIMS_EXPERIENCE_LEVELS = `SELECT name FROM experience_levels ORDER 
 
 /**
  * 首屏维度表·省提名清单(camelCase 别名对齐 Local API 字段,见段注)。
+ * 2026-09-27 九省体检多取 applies_to(清单管哪几条子类):SK 主线不合格表只管 OID / EE,不拿它挡带 offer 的岗。
  */
 export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, program, noc, name,
-       gta_restricted AS "gtaRestricted", url, fetched
+       gta_restricted AS "gtaRestricted", url, fetched, COALESCE(applies_to, '') AS "appliesTo"
      FROM pnp_occupations ORDER BY id LIMIT 5000`
 
 /**

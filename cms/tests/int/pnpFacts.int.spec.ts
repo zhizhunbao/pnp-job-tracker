@@ -35,6 +35,7 @@ import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpReq, PnpStream 
 import { blockedKeysOf, blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
+import { isOfferList } from '@/lib/jobs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const mart = <T>(name: string): T[] =>
@@ -51,7 +52,7 @@ function job(p: Partial<PnpJob>): PnpJob {
 function occ(p: Partial<PnpOcc>): PnpOcc {
   return {
     province: '', stream: '', label: '', type: 'indemand', program: 'PNP', noc: '', name: '', gtaRestricted: false,
-    url: '', fetched: '', ...p,
+    url: '', fetched: '', appliesTo: '', ...p,
   }
 }
 
@@ -98,6 +99,7 @@ const occArb = fc.record({
   type: fc.constantFrom('indemand', 'ineligible'),
   program: fc.constantFrom('PNP', 'AIP', ''),
   noc: fc.constantFrom(...NOCS),
+  appliesTo: fc.constantFrom('', 'OID/EE', 'Employment Offer'),
 }).map((r) => occ(r))
 
 // 2026-09-26 加一个只到月的日期('2026-07',NS 月度选取人数那种行):按月形与分组形的分界也进性质检查
@@ -246,6 +248,23 @@ describe('金标', () => {
     expect(cellSaysCards(ewp, o, [])).toBe(false)
   })
 
+  // 2026-09-27 九省体检:SK 主线不合格表只管 OID / EE(appliesTo),兼职 / 合同这类不可提名的 SK 岗原先把它当排除原因(255 条)
+  it('SK 主线不合格表只管 OID / EE:不可提名的岗也不拿它当排除原因,格子与弹框同一把尺子;Job Offer 表照挡', () => {
+    const oid = occ({ province: 'SK', label: 'SK 主线不合格清单', type: 'ineligible', noc: '64100', appliesTo: 'OID/EE' })
+    const offer = occ({ province: 'SK', label: 'SK Job Offer 不合格清单', type: 'ineligible', noc: '65201',
+      appliesTo: 'Employment Offer' })
+    const part = job({ province: 'SK', noc: '64100', pnpStream: '', pnpEligible: false })
+    expect(shownStreamsOf({ match: pnpMatchOf({ job: part, occ: [oid, offer] }), noc: '64100', eligible: false })).toEqual([])
+    expect(cellSaysCards(part, [oid, offer], [])).toBe(false)
+    const cook = job({ province: 'SK', noc: '65201', pnpStream: '', pnpEligible: false })
+    expect(shownStreamsOf({ match: pnpMatchOf({ job: cook, occ: [oid, offer] }), noc: '65201', eligible: false })
+      .map((s) => s.label)).toEqual(['SK Job Offer 不合格清单'])
+    expect([...blockedKeysOf([oid, offer]).pnp]).toEqual(['SK|65201'])
+    expect([isOfferList(''), isOfferList('Employment Offer'), isOfferList('OID/EE')]).toEqual([true, true, false])
+    // 同批:NS 建筑那组(按月选取,NSNP 各流与 AIP 同一个 EOI 池)原先没登记,点进来不高亮
+    expect(drawHitStreamsOf(job({ province: 'NS', noc: '72310', pnpStream: 'NS 建筑' }))).toEqual(['Monthly EOI selections'])
+  })
+
   it('魁省:什么卡都不出', () => {
     const o = [occ({ province: 'QC', label: 'QC 清单', type: 'ineligible', noc: '11111' })]
     const qc = job({ province: 'QC', noc: '11111', pnpStream: 'QC 清单' })
@@ -265,6 +284,20 @@ describe('英文轮数单复数(eecmp.roundsOne)', () => {
     expect(rounds('zh', one)).toEqual(['1 轮'])
     expect(rounds('zh', two)).toEqual(['2 轮'])
     expect(rounds('ko', one)).toEqual(['1회'])
+  })
+
+  // 2026-09-27 九省体检:轮数原先数行 —— MB Skilled Worker in Manitoba 9 期数成 19 轮、BC Innovate 10 次数成 20 轮
+  it('轮数数不同的抽选日期:同一天分几行记的算一轮;各行照旧逐行列出,人数带千分位', () => {
+    const sw = 'Skilled Worker in Manitoba'
+    const d = [draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: null, invitations: 16 }),
+      draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: 760, invitations: 417 }),
+      draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: null, invitations: 1 }),
+      draw({ province: 'MB', stream: sw, drawDate: '2026-09-10', score: null, invitations: 1874 })]
+    const g = pnpDrawGroupsOf({ t: makeT('zh'), lang: 'zh', province: 'MB', draws: d, hitStreams: [] })
+    expect(g.map((x) => x.rounds)).toEqual(['2 轮'])
+    expect(g[0]?.rows.map((r) => r.inv).sort()).toEqual(['1 份邀请', '1,874 份邀请', '16 份邀请', '417 份邀请'])
+    const en = pnpDrawGroupsOf({ t: makeT('en'), lang: 'en', province: 'MB', draws: d.slice(0, 3), hitStreams: [] })
+    expect(en.map((x) => x.rounds)).toEqual(['1 round'])
   })
 })
 
@@ -397,7 +430,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       op({ province: 'MB', metric: 'nominations_ytd', value: 3777, asOf: '', period: '2026 Jan-Aug' }),
       op({ province: 'ON', value: 14119, asOf: '', period: '2026', url: 'https://www.ontario.ca/page/x' }),
     ]
-    const ab = quotaCardOf({ t: zh, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'] })
+    const ab = quotaCardOf({ t: zh, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'], pnpStream: '' })
     expect(ab?.title).toBe('2026 年配额')
     expect(ab?.heads).toEqual(['总数', '已发提名', '剩余'])
     expect(ab?.rows.map((r) => [r.label, r.cells])).toEqual([
@@ -405,16 +438,26 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     ])
     expect(ab?.asOf).toBe('截至 2026-09-23')
     expect(ab?.source).toEqual({ text: '来源 ↗', href: url })
-    const abEn = quotaCardOf({ t: en, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'] })
+    const abEn = quotaCardOf({ t: en, province: 'AB', ops, hitStreams: ['Alberta Opportunity Stream'], pnpStream: '' })
     expect([abEn?.title, abEn?.heads, abEn?.asOf]).toEqual(['2026 allocation', ['Total', 'Nominated', 'Remaining'], 'As of 2026-09-23'])
+    // 2026-09-27 九省体检:阿省医护 / 科技 / 警务三条抽选组名与配额通道名不同字,按具名通道查人工对照表(QUOTA_STREAM_KEYS)
+    const dhc = 'dedicated health care pathways'
+    const withDhc = [...ops, op({ scopeKind: 'stream', streamKey: dhc, value: 518 }),
+      op({ metric: 'issued', scopeKind: 'stream', streamKey: dhc, value: 331 }),
+      op({ metric: 'remaining', scopeKind: 'stream', streamKey: dhc, value: 187 })]
+    const health = quotaCardOf({ t: zh, province: 'AB', ops: withDhc, pnpStream: 'AB 医疗',
+      hitStreams: ['Dedicated Health Care Pathway – Express Entry', 'Dedicated Health Care Pathway – non-Express Entry'] })
+    expect(health?.rows.map((r) => [r.label, r.cells])).toEqual([
+      ['全省', ['6,603', '5,221', '1,382']], ['本岗通道', ['518', '331', '187']],
+    ])
     // 本岗那组对不上通道键(旅游酒店没有通道级行):只出全省一行,不拿近似名硬配
-    expect(quotaCardOf({ t: zh, province: 'AB', ops, hitStreams: ['Tourism and Hospitality Stream'] })?.rows.length).toBe(1)
+    expect(quotaCardOf({ t: zh, province: 'AB', ops, hitStreams: ['Tourism and Hospitality Stream'], pnpStream: '' })?.rows.length).toBe(1)
     // 曼省:总数 + 年初至今已发(另一个指标名),没有剩余就不出那一列;官方没写截至日就不出那一行
-    const mb = quotaCardOf({ t: zh, province: 'MB', ops, hitStreams: [] })
+    const mb = quotaCardOf({ t: zh, province: 'MB', ops, hitStreams: [], pnpStream: '' })
     expect([mb?.heads, mb?.rows[0]?.cells, mb?.asOf]).toEqual([['总数', '已发提名'], ['8,000', '3,777'], ''])
     // 安省:只有总数就只一列
-    expect(quotaCardOf({ t: zh, province: 'ON', ops, hitStreams: [] })?.rows[0]?.cells).toEqual(['14,119'])
-    expect(quotaCardOf({ t: zh, province: 'NL', ops, hitStreams: [] })).toBeNull()
+    expect(quotaCardOf({ t: zh, province: 'ON', ops, hitStreams: [], pnpStream: '' })?.rows[0]?.cells).toEqual(['14,119'])
+    expect(quotaCardOf({ t: zh, province: 'NL', ops, hitStreams: [], pnpStream: '' })).toBeNull()
   })
 
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列;金标 = 当天线上 pnp_ops_stats 实数
@@ -429,18 +472,19 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       q({ province: 'NS', value: 2344 }), q({ province: 'NS', metric: 'selections_ytd', value: 3242, asOf: '2026-07' }),
       q({ province: 'NB', metric: 'invitations_ytd', value: 3538, asOf: '2026-09-18', url: nbUrl }),
     ]
-    const on = quotaCardOf({ t: zh, province: 'ON', ops, hitStreams: [] })
+    const on = quotaCardOf({ t: zh, province: 'ON', ops, hitStreams: [], pnpStream: '' })
     expect([on?.title, on?.heads, on?.rows.map((r) => r.cells), on?.asOf]).toEqual([
       '2026 年配额', ['总数', '已发邀请'], [['14,119', '13,105']], '截至 2026-04-30',
     ])
     // 来源照旧跟第一列(总数那一页);邀请合计的出处是下面抽选卡那个来源
     expect(on?.source?.href).toBe('https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-allocation')
-    expect(quotaCardOf({ t: en, province: 'ON', ops, hitStreams: [] })?.heads).toEqual(['Total', 'Invited'])
-    expect(quotaCardOf({ t: ko, province: 'ON', ops, hitStreams: [] })?.heads).toEqual(['총', '초청 완료'])
-    const ns = quotaCardOf({ t: zh, province: 'NS', ops, hitStreams: [] })
-    expect([ns?.heads, ns?.rows[0]?.cells, ns?.asOf]).toEqual([['总数', '已入选'], ['2,344', '3,242'], '截至 2026-07'])
+    expect(quotaCardOf({ t: en, province: 'ON', ops, hitStreams: [], pnpStream: '' })?.heads).toEqual(['Total', 'Invited'])
+    expect(quotaCardOf({ t: ko, province: 'ON', ops, hitStreams: [], pnpStream: '' })?.heads).toEqual(['총', '초청 완료'])
+    const ns = quotaCardOf({ t: zh, province: 'NS', ops, hitStreams: [], pnpStream: '' })
+    // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同池),旁边的总数只算 NSNP —— 列名注明含 AIP
+    expect([ns?.heads, ns?.rows[0]?.cells, ns?.asOf]).toEqual([['总数', '已入选(含 AIP)'], ['2,344', '3,242'], '截至 2026-07'])
     // NB 没有配额只有合计:卡照出,只这一列,来源是抽选页
-    const nb = quotaCardOf({ t: zh, province: 'NB', ops, hitStreams: [] })
+    const nb = quotaCardOf({ t: zh, province: 'NB', ops, hitStreams: [], pnpStream: '' })
     expect([nb?.title, nb?.heads, nb?.rows[0]?.cells, nb?.asOf, nb?.source?.href]).toEqual([
       '2026 年配额', ['已发邀请'], ['3,538'], '截至 2026-09-18', nbUrl,
     ])

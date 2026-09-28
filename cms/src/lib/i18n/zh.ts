@@ -522,6 +522,8 @@ export const jobsZh = {
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
   'stream.nbAipExcl': 'NB AIP 不受理', 'stream.bcHa': 'BC 卫生局', 'stream.skEwp': 'SK 现有工签', 'stream.peAipExcl': 'PE AIP 不受理', 'stream.nbAipExclFood': 'NB AIP 餐饮住宿不受理',
+  // 2026-09-27 九省体检:三张排除清单卡标题原先没登记词条,英文 / 韩文界面直出中文;中文照数据层清单名
+  'stream.bcExcl': 'BC 不合格职业', 'stream.skExclMain': 'SK 主线不合格清单', 'stream.skExclOffer': 'SK Job Offer 不合格清单',
   'ee.healthcare': '医疗社服', 'ee.stem': 'STEM', 'ee.trade': '技工', 'ee.education': '教育', 'ee.transport': '运输', 'ee.physicians': '医生', 'ee.seniorMgr': '高管', 'ee.researchers': '研究', 'ee.military': '军职',
   // E6-10:联邦轮次里非「按职业类别」的那几种(CEC/法语/省提名/通用/FSW/FST),只在抽选近况里作类型名出现
   'ee.agriculture': '农业食品', 'ee.cec': 'CEC 经验类', 'ee.french': '法语', 'ee.pnpLinked': '省提名', 'ee.general': '不限类别', 'ee.fsw': '联邦技术', 'ee.fst': '联邦技工',
@@ -609,7 +611,8 @@ export const jobsZh = {
   'pnpquota.title': '{year} 年配额', 'pnpquota.total': '总数', 'pnpquota.issued': '已发提名',
   'pnpquota.remaining': '剩余', 'pnpquota.prov': '全省', 'pnpquota.stream': '本岗通道', 'pnpquota.asOf': '截至 {date}',
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列,原 pnpdraws.ytdInv / ytdSel 两条随行退役
-  'pnpquota.inv': '已发邀请', 'pnpquota.sel': '已入选',
+  // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同一个池),旁边的总数只算 NSNP,列名注明含 AIP,免得读成超发
+  'pnpquota.inv': '已发邀请', 'pnpquota.sel': '已入选(含 AIP)',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': '本岗通道的门槛', 'pnpgate.sep': '、',
   'pnpgate.k.offer': '雇主 offer', 'pnpgate.k.lang': '语言', 'pnpgate.k.exp': '工作经验', 'pnpgate.k.ee': 'EE',

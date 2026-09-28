@@ -24,7 +24,7 @@ import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { makeT } from '@/lib/i18n'
-import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel, streamDisplay } from '@/lib/jobs'
+import { eeDisplay, isDirect, isExpiredJob, isJdNone, isOfferList, sourceLabel, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
@@ -487,7 +487,7 @@ export function blockedKeysOf(rows: PnpOccRow[]): BlockedKeys {
   const pnp = new Set<string>()
   const aip = new Set<string>()
   for (const r of rows) {
-    if (r.type !== PNP_OCC_INELIGIBLE) {
+    if (r.type !== PNP_OCC_INELIGIBLE || isOfferList(r.appliesTo) === false) {
       continue
     }
     let program = r.program

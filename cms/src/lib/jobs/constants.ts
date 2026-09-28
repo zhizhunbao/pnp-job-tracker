@@ -1715,6 +1715,12 @@ export const CNT_SEP = '|'
 export const PROGRAM_PNP = 'PNP'
 
 /**
+ * 清单 appliesTo 里点名雇主 offer 子类的写法(小写比;2026-09-27 九省体检:SK Job Offer 不合格表写「Employment Offer」,
+ * 主线不合格表写「OID/EE」—— 后者不管带 offer 的岗。判法同 lib/ruling 的 APPLIES_OFFER,各域各自声明)。
+ */
+export const APPLIES_OFFER = 'employment offer'
+
+/**
  * 公司详情按 slug 的 WHERE(与 companyDetail SQL 的表别名对齐)。
  */
 export const COMPANY_SLUG_COND = 'c.slug = $1'
@@ -1868,6 +1874,7 @@ export const STREAM_L10N: Record<string, string> = {
   'NB 不符合清单': 'stream.nbExcl', 'NB 餐饮住宿不符合': 'stream.nbExclFood',
   'NB AIP 不受理': 'stream.nbAipExcl', 'NB AIP 餐饮住宿不受理': 'stream.nbAipExclFood',
   'BC 卫生局': 'stream.bcHa', 'PE AIP 不受理': 'stream.peAipExcl', 'SK 现有工签': 'stream.skEwp',
+  'BC 不合格职业': 'stream.bcExcl', 'SK 主线不合格清单': 'stream.skExclMain', 'SK Job Offer 不合格清单': 'stream.skExclOffer',
 }
 /**
  * pnp_requirements.stream(官方通道名,键按 normReqStream 归一)→ 三语显示短名。

@@ -53,7 +53,7 @@ export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [],
   const p = usePnpList({ job, lang, occ, nocDesc, showZh })
   const form = drawsFormOf({ province: job.province, draws })
   const hitStreams = drawHitStreamsOf(job)
-  const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams })
+  const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, pnpStream: job.pnpStream })
   const gate = gateCardOf({ t: p.t, job, reqs })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {

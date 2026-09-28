@@ -482,6 +482,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.peIndemand': 'PE 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
   'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.bcHa': 'BC 보건 당국', 'stream.skEwp': 'SK 기존 취업허가', 'stream.peAipExcl': 'PE AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',
+  // 2026-09-27 제외 목록 카드 제목 3개에 항목이 없어 한국어 화면에 중국어가 그대로 나오던 문제
+  'stream.bcExcl': 'BC 제외 목록', 'stream.skExclMain': 'SK OID / EE 제외 목록', 'stream.skExclOffer': 'SK 잡 오퍼 제외 목록',
   'ee.healthcare': '보건·사회서비스', 'ee.stem': 'STEM', 'ee.trade': '기능직', 'ee.education': '교육', 'ee.transport': '운수', 'ee.physicians': '의사', 'ee.seniorMgr': '고위 관리자', 'ee.researchers': '연구', 'ee.military': '군 경력',
   'ee.agriculture': '농식품', 'ee.cec': 'CEC 경험이민', 'ee.french': '프랑스어', 'ee.pnpLinked': '주정부 지명', 'ee.general': '전체 대상', 'ee.fsw': '연방 기술이민', 'ee.fst': '연방 기능이민',
   'act.seeOfficial': 'View official posting',   // 2026-09-14 Frank「这种统一使用英文」:官方原帖链接三语同用英文
@@ -559,7 +561,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpquota.title': '{year}년 배정', 'pnpquota.total': '총', 'pnpquota.issued': '지명 완료',
   'pnpquota.remaining': '잔여', 'pnpquota.prov': '주 전체', 'pnpquota.stream': '이 스트림', 'pnpquota.asOf': '{date} 기준',
   // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
-  'pnpquota.inv': '초청 완료', 'pnpquota.sel': '선정 완료',
+  // 2026-09-27 NS 선정 수는 EOI 풀 전체(NSNP와 AIP가 같은 풀), 옆의 총수는 NSNP만
+  'pnpquota.inv': '초청 완료', 'pnpquota.sel': '선정 완료(AIP 포함)',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
   'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',

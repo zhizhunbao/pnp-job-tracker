@@ -261,6 +261,11 @@ export type PnpOcc = {
    * 抓取时刻。
    */
   fetched: string
+
+  /**
+   * 清单管哪几条子类(官方原文;'' = 全项目)。SK 主线不合格表是「OID/EE」,不管带 offer 的岗(2026-09-27)。
+   */
+  appliesTo: string
 }
 
 /**
@@ -1145,6 +1150,11 @@ export type QuotaCardOfIn = {
    * 本岗对应的抽选组(抽选行 stream 原值;小写后与配额行的通道键对得上才出「本岗通道」那一行)。
    */
   hitStreams: string[]
+
+  /**
+   * 本岗 PNP 格的具名通道(数据层 pnp_stream;'' = 省默认通道),配额行的通道键先查 QUOTA_STREAM_KEYS(2026-09-27)。
+   */
+  pnpStream: string
 }
 
 /**
@@ -1180,6 +1190,11 @@ export type QuotaStreamIn = {
    * 这一省的配额行。
    */
   rows: PnpOps[]
+
+  /**
+   * 本岗 PNP 格的具名通道(数据层 pnp_stream;'' = 省默认通道),先查 QUOTA_STREAM_KEYS(2026-09-27)。
+   */
+  pnpStream: string
 
   /**
    * 本岗对应的抽选组(抽选行 stream 原值)。
