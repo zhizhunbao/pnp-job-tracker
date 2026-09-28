@@ -20,6 +20,8 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环)。
 2026-09-27 同段加四组(薪资写法 / 投递邮箱 / ATS 工时雇佣期 / 运营统计补行);ATS 那组在系统临时目录现造公司档,不碰仓内文件。
 同日九省体检修复批再加 MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的排除表;真表金标只读仓里 raw/pnp 两张表)。
+同日 Frank 拍板「看得出才改判」再加 MartEmployerSectorTest(雇主行业三态 + 五条改判规则;现造 raw/pnp 小表落系统临时目录走真装载器,
+真表金标只读仓里 raw/pnp)。同日 Frank 选「只上纯属改对的」:其中 NS 建筑、AB 科技两条改为现状金标,实际改判的是四条。
 """
 import json
 import re
@@ -379,13 +381,16 @@ class PnpTables:
     """
 
     by_prov: dict
-    """province → {"type", "nocs", "blocked", "streams"}。"""
+    """province → {"type", "nocs", "blocked", "cond", "partial", "streams"}(cond / partial 两格 2026-09-27「看得出才改判」加:
+    条件式叠加排除的码 → 行业键、排除表里官方带星号的码;通道桶另带 cond 格)。"""
 
     named_by_prov: dict
-    """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按它算)。"""
+    """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按它算;带雇主行业条件的码也在 —— 省点名了这个职业,
+    分数不随雇主变,2026-09-27)。同日 Frank 选「只上纯属改对的」:并的是各通道 named 格,行级带条件的码(SK 农业带星号码)不在,
+    与合入前逐码相同(见 constants.K_NAMED)。"""
 
     community_by_prov: dict
-    """province → 按社区名单判的通道 {label, places, excluded}(2026-09-24 AB 乡村振兴)。"""
+    """province → 按社区名单判的通道 {label, places, excluded, partial}(2026-09-24 AB 乡村振兴;partial 2026-09-27 加)。"""
 
     ee_by_noc: dict
     """NOC → 联邦 EE 类别中文标签(多类别 / 连接)。"""
@@ -417,6 +422,16 @@ class PnpJudgeIn:
     """这岗的城市(''= 没有,或职业 × 省级判定本就不看具体城市)。2026-09-27 起 pnp_eligible 要看:岗位在 AB 乡村振兴
     指定社区的,资格只认该通道自己的排除表(is_community_hit)。"""
 
+    employer: str
+    """这岗的雇主名(''= 没有,或职业 × 省级判定本就不落到哪个雇主 —— 按看不出判)。2026-09-27 Frank 拍板「看得出才改判」起要看:
+    带雇主行业条件的清单(K_EMPLOYER_SECTOR)按它判三态。"""
+
+    title: str
+    """这岗的职位名(''= 同上)。2026-09-27 起 AB 带星号码要看(K_PARTIAL:看得出不属官方点名的那一小类才不排除)。"""
+
+    certs: str
+    """这岗源头写明的证书要求(Job Bank 证书栏逐条以换行连接;别的源没有这一栏、或职业 × 省级判定 = '')。用途同 title。"""
+
 
 @dataclass
 class PnpStreamIn:
@@ -442,6 +457,73 @@ class PnpStreamIn:
 
     term: str
     """这岗的雇佣期(同 PnpJudgeIn.term)。"""
+
+    employer: str
+    """这岗的雇主名(同 PnpJudgeIn.employer;2026-09-27 起带行业条件的具名清单看得出雇主在该行业才挂)。"""
+
+    title: str
+    """这岗的职位名(同 PnpJudgeIn.title)。"""
+
+    certs: str
+    """这岗的证书栏(同 PnpJudgeIn.certs)。"""
+
+
+@dataclass
+class SectorIn:
+    """employer_sector_of() 入参:一个行业键 + 一个雇主名(2026-09-27 Frank 拍板「看得出才改判」)。"""
+
+    sector: str
+    """行业键(SECTOR_* 之一;本域不认得的键按看不出判)。"""
+
+    employer: str
+    """雇主名(''= 没有)。"""
+
+
+@dataclass
+class StreamHitIn:
+    """is_stream_hit() 入参:一条具名通道桶 + 这岗的判定入参(2026-09-27)。"""
+
+    stream: dict
+    """通道桶(to_pnp_stream_bucket 的形:label / nocs / cond)。"""
+
+    judge: PnpJudgeIn
+    """这岗的判定入参(职业码与雇主名在里面)。"""
+
+
+@dataclass
+class CodeExclIn:
+    """is_code_excluded() 入参:一张排除表的码集与其中带星号的码 + 这岗的判定入参(AOS 与乡村振兴两张表共用,2026-09-27)。"""
+
+    codes: set
+    """排除码集。"""
+
+    partial: set
+    """其中官方带星号的码(同码只一小类不合格)。"""
+
+    judge: PnpJudgeIn
+    """这岗的判定入参。"""
+
+
+@dataclass
+class SectorWarnIn:
+    """say_unknown_sectors() 入参:一张表的文件名 + 它的条件码表(2026-09-27)。"""
+
+    file: str
+    """raw/pnp 下的文件名。"""
+
+    cond: dict
+    """这张表里带雇主行业条件的码 → 行业键。"""
+
+
+@dataclass
+class WordsIn:
+    """is_any_word() 入参:一组词(一词一条的编译正则)+ 一段文字(2026-09-27)。"""
+
+    words: tuple
+    """词表(constants 里 *_WORDS 的一格)。"""
+
+    text: str
+    """要查的文字(雇主名;或 职位名 + 雇主名 + 证书栏)。"""
 
 
 @dataclass
@@ -476,6 +558,15 @@ class PnpMergeIn:
     label: str
     """具名通道标签(inclusion 表才用得上)。"""
 
+    cond: dict
+    """本表带雇主行业条件的码 → 行业键(cond_of 取;没有条件 = 空,2026-09-27)。"""
+
+    partial: set
+    """本表官方带星号的码(partial_of 取;排除表才有,2026-09-27)。"""
+
+    named: set
+    """本表算进省点名的码(本表 NOC 集减去行级带条件的码,row_cond_of 取;2026-09-27,见 constants.K_NAMED)。"""
+
 @dataclass
 class PnpStreamBucketIn:
     """to_pnp_stream_bucket() 入参。"""
@@ -485,6 +576,12 @@ class PnpStreamBucketIn:
 
     nocs: set
     """该通道的 NOC 集。"""
+
+    cond: dict
+    """该通道带雇主行业条件的码 → 行业键(2026-09-27)。"""
+
+    named: set
+    """该通道算进省点名的码(2026-09-27,见 constants.K_NAMED)。"""
 
 
 # =========================================================================
@@ -542,6 +639,13 @@ class CollectedJob:
 
     term: str
     """雇佣期(同上)。"""
+
+    employer: str
+    """雇主名(Job Bank / 板仓帖子行的 employer 格,ATS 取公司档 profile 的 name;''= 没写)。2026-09-27 Frank 拍板「看得出才改判」起
+    判带行业条件的清单要看 —— 只用岗行里已有的名字,不连库、不新抓公司数据。"""
+
+    certs: str
+    """证书栏(Job Bank 帖子行 certificates 逐条以换行连接;板仓与 ATS 没有 = '')。2026-09-27 起 AB 带星号码要看。"""
 
 
 @dataclass
@@ -3002,25 +3106,28 @@ class MartOfferTest(unittest.TestCase):
 
     def tables(self) -> PnpTables:
         """现造省表(形同 load_pnp_by_prov 的桶):ON 在需式一条具名通道(卡车司机 73300);AB 排除式,排除 65201、
-        具名通道一条(汽修 72410);SK 排除式空表;EE 类别表一码(21231 → STEM)。"""
+        具名通道一条(汽修 72410);SK 排除式空表;EE 类别表一码(21231 → STEM)。
+        2026-09-27「看得出才改判」:桶形多了 cond / partial 两格,这里给空(本组不带雇主行业条件,另有 MartEmployerSectorTest)。"""
         by_prov = {
-            "ON": {"type": "indemand", "nocs": {"73300"}, "blocked": set(),
-                   "streams": [{"label": "ON 具名", "nocs": {"73300"}}]},
-            "AB": {"type": "ineligible", "nocs": {"65201"}, "blocked": set(),
-                   "streams": [{"label": "AB 具名", "nocs": {"72410"}}]},
-            "SK": {"type": "ineligible", "nocs": set(), "blocked": set(), "streams": []},
+            "ON": {"type": "indemand", "nocs": {"73300"}, "blocked": set(), "cond": {}, "partial": set(),
+                   "streams": [{"label": "ON 具名", "nocs": {"73300"}, "cond": {}}]},
+            "AB": {"type": "ineligible", "nocs": {"65201"}, "blocked": set(), "cond": {}, "partial": set(),
+                   "streams": [{"label": "AB 具名", "nocs": {"72410"}, "cond": {}}]},
+            "SK": {"type": "ineligible", "nocs": set(), "blocked": set(), "cond": {}, "partial": set(), "streams": []},
         }
         return PnpTables(by_prov=by_prov, named_by_prov={"ON": {"73300"}, "AB": {"72410"}}, community_by_prov={},
                          ee_by_noc={"21231": "STEM"})
 
     def judge(self, prov: str, noc: str, hours: str, term: str) -> PnpJudgeIn:
-        """造一份判定入参(TEER 取职业码第二位;城市给空串 —— 社区通道另有 MartRuralRenewalTest,2026-09-27)。"""
+        """造一份判定入参(TEER 取职业码第二位;城市给空串 —— 社区通道另有 MartRuralRenewalTest,2026-09-27;
+        雇主名 / 职位名 / 证书栏给空串 —— 雇主行业条件另有 MartEmployerSectorTest,同日)。"""
         return PnpJudgeIn(tables=self.tables(), noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term,
-                          city="")
+                          city="", employer="", title="", certs="")
 
     def stream_in(self, prov: str, noc: str, hours: str, term: str) -> PnpStreamIn:
-        """造一份通道名入参(城市给空串:社区通道不在本组用例里)。"""
-        return PnpStreamIn(tables=self.tables(), noc=noc, prov=prov, teer=int(noc[1]), city="", hours=hours, term=term)
+        """造一份通道名入参(城市、雇主名、职位名、证书栏给空串:社区通道与雇主行业条件不在本组用例里)。"""
+        return PnpStreamIn(tables=self.tables(), noc=noc, prov=prov, teer=int(noc[1]), city="", hours=hours, term=term,
+                           employer="", title="", certs="")
 
     def fits_of(self, prov: str, hours: str, term: str) -> bool:
         """独立对照尺:按手写金标判过不过门槛(不经被测函数)。"""
@@ -3127,18 +3234,19 @@ class MartOfferTest(unittest.TestCase):
         from mart import functions as fn
         tables = self.tables()
         for prov in ("QC", "NU"):
-            tables.by_prov[prov] = {"type": "indemand", "nocs": {"21231"}, "blocked": set(),
-                                    "streams": [{"label": prov + " 具名", "nocs": {"21231"}}]}
+            tables.by_prov[prov] = {"type": "indemand", "nocs": {"21231"}, "blocked": set(), "cond": {}, "partial": set(),
+                                    "streams": [{"label": prov + " 具名", "nocs": {"21231"}, "cond": {}}]}
         for prov in ("QC", "NU"):
             for noc in ("21231", "73300", "95106"):
                 for hours in self.hours_values():
                     for term in self.term_values():
                         key = (prov, noc, hours, term)
                         judge = PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term,
-                                           city="")
+                                           city="", employer="", title="", certs="")
                         self.assertFalse(fn.pnp_eligible(judge), key)
                         self.assertIsNone(fn.pnp_stream(PnpStreamIn(tables=tables, noc=noc, prov=prov, teer=int(noc[1]),
-                                                                    city="", hours=hours, term=term)), key)
+                                                                    city="", hours=hours, term=term, employer="",
+                                                                    title="", certs="")), key)
 
     def test_ee_label(self) -> None:
         """EE 类别:魁省一律不挂;别的省(连同没有省的岗)职业码在类别表上才挂,不在给 None。穷举省 × 两个职业码。"""
@@ -3207,24 +3315,24 @@ class MartOfferTest(unittest.TestCase):
         from mart import functions as fn
         tables = self.tables()
         part = CollectedJob(ext="jb:1", title="Truck Driver", agency=False, prov="ON", hint="73300", city="",
-                            hours="part", term="permanent")
+                            hours="part", term="permanent", employer="", certs="")
         row = fn.to_scored_row(ScoredRowIn(tables=tables, job=part, labels={}))
         self.assertFalse(row["pnpEligible"])
         self.assertIsNone(row["pnpStream"])
         self.assertGreater(row["score"], 0)
         full = CollectedJob(ext="jb:2", title="Truck Driver", agency=False, prov="ON", hint="73300", city="",
-                            hours="full", term="permanent")
+                            hours="full", term="permanent", employer="", certs="")
         row = fn.to_scored_row(ScoredRowIn(tables=tables, job=full, labels={}))
         self.assertTrue(row["pnpEligible"])
         self.assertEqual(row["pnpStream"], "ON 具名")
         qc = CollectedJob(ext="jb:3", title="Software Engineer", agency=False, prov="QC", hint="21231", city="",
-                          hours="full", term="permanent")
+                          hours="full", term="permanent", employer="", certs="")
         self.assertIsNone(fn.to_scored_row(ScoredRowIn(tables=tables, job=qc, labels={}))["eeCategory"])
         on = CollectedJob(ext="jb:4", title="Software Engineer", agency=False, prov="ON", hint="21231", city="",
-                          hours="full", term="permanent")
+                          hours="full", term="permanent", employer="", certs="")
         self.assertEqual(fn.to_scored_row(ScoredRowIn(tables=tables, job=on, labels={}))["eeCategory"], "STEM")
         nu = CollectedJob(ext="jb:5", title="Software Engineer", agency=False, prov="NU", hint="21231", city="",
-                          hours="full", term="permanent")
+                          hours="full", term="permanent", employer="", certs="")
         row = fn.to_scored_row(ScoredRowIn(tables=tables, job=nu, labels={}))
         self.assertFalse(row["pnpEligible"])
         self.assertIsNone(row["pnpStream"])
@@ -3265,22 +3373,25 @@ class MartRuralRenewalTest(unittest.TestCase):
     """现造的指定社区(小写,同 load_community_tables 的形)。"""
 
     def tables(self, excluded: set, places: set) -> PnpTables:
-        """现造省表:AB 排除式(排除 AOS 五码)+ 一条具名通道(汽修 72410)+ 乡村振兴社区表(名单与排除码由用例给)。"""
-        by_prov = {"AB": {"type": "ineligible", "nocs": set(self.AOS), "blocked": set(),
-                          "streams": [{"label": "AB 具名", "nocs": {"72410"}}]}}
-        comm = {"AB": {"label": "AB 乡村振兴", "places": set(places), "excluded": set(excluded)}}
+        """现造省表:AB 排除式(排除 AOS 五码)+ 一条具名通道(汽修 72410)+ 乡村振兴社区表(名单与排除码由用例给)。
+        2026-09-27「看得出才改判」:桶形多了 cond / partial 两格,这里给空(带星号码另有 MartEmployerSectorTest)。"""
+        by_prov = {"AB": {"type": "ineligible", "nocs": set(self.AOS), "blocked": set(), "cond": {}, "partial": set(),
+                          "streams": [{"label": "AB 具名", "nocs": {"72410"}, "cond": {}}]}}
+        comm = {"AB": {"label": "AB 乡村振兴", "places": set(places), "excluded": set(excluded), "partial": set()}}
         return PnpTables(by_prov=by_prov, named_by_prov={"AB": {"72410"}}, community_by_prov=comm, ee_by_noc={})
 
     def both(self, tables: PnpTables, row: tuple) -> tuple:
-        """一格 (城市, 职业码, 工时, 雇佣期) → (pnp_eligible, pnp_stream);职业码空串 = 没认出(TEER None)。"""
+        """一格 (城市, 职业码, 工时, 雇佣期) → (pnp_eligible, pnp_stream);职业码空串 = 没认出(TEER None)。
+        雇主名 / 职位名 / 证书栏给空串(2026-09-27:本组不带雇主行业条件)。"""
         from mart import functions as fn
         city, noc, hours, term = row
         teer = None
         if noc != "":
             teer = int(noc[1])
-        judge = PnpJudgeIn(tables=tables, noc=noc, teer=teer, prov="AB", hours=hours, term=term, city=city)
+        judge = PnpJudgeIn(tables=tables, noc=noc, teer=teer, prov="AB", hours=hours, term=term, city=city,
+                           employer="", title="", certs="")
         stream = fn.pnp_stream(PnpStreamIn(tables=tables, noc=noc, prov="AB", teer=teer, city=city, hours=hours,
-                                           term=term))
+                                           term=term, employer="", title="", certs=""))
         return fn.pnp_eligible(judge), stream
 
     def test_rrs_golden(self) -> None:
@@ -3338,11 +3449,11 @@ class MartRuralRenewalTest(unittest.TestCase):
                 ("jb:50069779", "elementary school teacher", "41221", "Rocky Mountain House")]
         for ext, title, noc, city in jobs:
             job = CollectedJob(ext=ext, title=title, agency=False, prov="AB", hint=noc, city=city, hours="full",
-                               term="permanent")
+                               term="permanent", employer="", certs="")
             row = fn.to_scored_row(ScoredRowIn(tables=tables, job=job, labels={}))
             self.assertEqual((row["pnpEligible"], row["pnpStream"]), (True, "AB 乡村振兴"), ext)
             moved = CollectedJob(ext=ext, title=title, agency=False, prov="AB", hint=noc, city="Edmonton",
-                                 hours="full", term="permanent")
+                                 hours="full", term="permanent", employer="", certs="")
             row = fn.to_scored_row(ScoredRowIn(tables=tables, job=moved, labels={}))
             self.assertEqual((row["pnpEligible"], row["pnpStream"]), (False, None), ext)
 
@@ -3355,6 +3466,517 @@ class MartRuralRenewalTest(unittest.TestCase):
         self.assertEqual(self.both(self.tables(self.AOS, self.PLACES), ece), (False, None))
         self.assertEqual(self.both(self.tables(self.RRS - {"00010"}, self.PLACES), mp), (True, "AB 乡村振兴"))
         self.assertEqual(self.both(self.tables(self.RRS, {"rocky mountain house"}), ece), (False, None))
+
+
+class MartEmployerSectorTest(unittest.TestCase):
+    """「看得出才改判」自测(2026-09-27 Frank 拍板):雇主行业三态 employer_sector_of 与四条改判规则(NB 餐饮住宿放行、
+    BC 法语教师、AB 带星号码、SK 农业带星号码)。形制照宪法判定层测试:真数据金标(雇主名 / 职位名 / 证书栏都是 2026-09-27
+    mart 在招岗原样)+ 性质 + 变异探针(词表逐词删、表上的条件键删,金标当场跟着变);省表走真装载器(现造 raw/pnp 小表落系统临时目录,
+    不碰仓内文件),规则真表金标读仓里 raw/pnp(只读;pnp 单元还没按新口径重建时跳过)。
+    同日 Frank 选「只上纯属改对的」:NS 建筑、AB 科技两条不接线,规则金标改成现状金标(修前修后通道名一致);两个行业键的词表金标
+    与逐词探针照留(第二步的高置信层);分数与职业级通道档照原样(省点名不收行级带条件的码,test_named_unchanged)。"""
+
+    GOLDEN = {
+        "naics72": [
+            ("AW Restaurant", "in"), ("Québec Resto", "in"), ("C4U Cafe", "in"), ("Carey Centre Cafeteria", "in"),
+            ("Taj Bistro", "in"), ("Brasserie 1026", "in"), ("Q Pizza", "in"), ("O Sushi", "in"), ("DINER 81", "in"),
+            ("Tavern 1883", "in"), ("Cedars Eatery", "in"), ("L-Eat Catering", "in"), ("MASTER CATERERS 2005 LTD.", "in"),
+            ("Buffet Royale", "in"), ("DONAIR DUDE", "in"), ("SHAWARMA CORNER", "in"), ("Dojo Ramen", "in"),
+            ("Park Hotel", "in"), ("Motel 8", "in"), ("Nomi Resort", "in"), ("Banff International Hostel", "in"),
+            ("Dashwood Manor Seaside Bed & Breakfast", "in"), ("Mimi's Pub", "in"), ("DESI BAR & GRILL", "in"),
+            ("A & W Food Services", "in"), ("Tim Horton", "in"), ("McDonald's", "in"), ("Dairy Queen", "in"),
+            ("Burger King", "in"), ("Starbucks", "in"), ("Kingston Marriott", "in"), ("Tru By Hilton", "in"),
+            ("Best Western", "in"), ("HOLIDAY INN", "in"), ("Days Inn", "in"), ("Comfort Inn", "in"), ("Quality inn", "in"),
+            ("RAMADA INN", "in"), ("WYNDHAM GARDEN", "in"), ("Sheraton Laval", "in"), ("Sodexo Canada Ltd", "in"),
+            ("Aramark Canada Ltd.", "in"), ("Compass Group Canada", "in"), ("Pattersons Family Restaurant", "in"),
+            ("St. Paul's Hospital", "out"), ("Bio Health Center", "out"), ("Wolfville Nursing Home", "out"),
+            ("Long Term Care Facility", "out"), ("Retirement Home", "out"), ("Laura Manor Special Care Home", "out"),
+            ("Government of Canada", "out"), ("City of Delta", "out"), ("Department of Health", "out"),
+            ("National Defence", "out"), ("Canadian Forces Non-Public Funds", "out"), ("Correctional Service Canada", "out"),
+            ("Fisheries and Oceans Canada     - Canadian Coast Guard - Fleet* (* Note: Effective 1 September 2025, the "
+             "Canadian Coast Guard has transferred to DND by Order-in-Council.)", "out"),
+            ("Parks Canada", "out"), ("BC Public Service", "out"),
+            ("School District No. 52", "out"), ("Conseil scolaire catholique MonAvenir", "out"), ("OC Cleaning", "out"),
+            ("D&P Janitorial", "out"), ("Cooke Aquaculture Inc.", "out"), ("DTL Grocery", "out"),
+            ("Garg's Groceries", "out"), ("T&T Supermarket", "out"), ("YXL Convenience", "out"), ("Kays Wholesale", "out"),
+            ("Vitalité Health Network", "out"), ("Windsor Court Retirement Residence", "out"), ("Mama's Grocery", "out"),
+            ("Department of Tourism, Heritage & Culture", "out"), ("Lanark Lodge Long Term Care Home", "out"),
+            ("Southern Comfort Villa Residence", "unknown"), ("Villa du Repos Inc.", "unknown"), ("Petro Canada", "unknown"),
+            ("Royal Oaks Golf Club", "unknown"), ("Amsterdam Inn & Suites", "unknown"), ("Inn Style Ltd", "unknown"),
+            ("Fairmont Dentistry", "unknown"), ("EDO JAPAN University Heights", "unknown"), ("Osmow's College SQ", "unknown"),
+            ("19th Hole Indoor Golf & Social", "unknown"), ("CRB Supermarket / Riverside Restaurant", "unknown"),
+            ("Bahay Kubo Filipino Restaurant and Groceries", "unknown"), ("Aladdin Donair Wholesale", "unknown"), ("", "unknown"),
+        ],
+        "naics23": [
+            ("T2 Construction", "in"), ("JS Contracting", "in"), ("Local Contractor", "in"), ("KC Roofing", "in"),
+            ("J&M Drywall", "in"), ("Omega Formwork Inc.", "in"), ("Maco Paving", "in"), ("W&B Excavating", "in"),
+            ("BLR Excavation", "in"), ("X Masonry", "in"), ("KDG Plumbing", "in"), ("OSG Renovation", "in"),
+            ("Habermehl Contracting Ltd", "in"), ("CASTONE CONSTRUCTION LIMITED", "in"),
+            ("Work Bangers Construction Inc.", "in"),
+            ("WE Landscape", "out"), ("Lawn Hero", "out"), ("Irving Shipbuilding", "out"), ("JOEY Shipyards", "out"),
+            ("Tidal Boatworks 2017", "out"), ("PAL Aerospace", "out"), ("FV FOODS", "out"), ("W Farms", "out"),
+            ("Econo lumber", "out"), ("Ardent Mills ULC", "out"), ("UNIVERSITE LAVAL", "out"), ("ABM College", "out"),
+            ("Akiva School", "out"), ("St. Paul's Hospital", "out"), ("Government of Canada", "out"), ("City of Delta", "out"),
+            ("Fed Supply", "out"), ("Gulf Coast Materials", "out"), ("Matériaux Audet", "out"), ("HJV Equipment", "out"),
+            ("Town Car Rental", "out"), ("Click Modular Homes", "out"), ("Accumetal Manufacturing Inc.", "out"),
+            ("BIOTHEC FORESTERIE INC.", "out"), ("MBC Logging", "out"), ("OC Cleaning", "out"), ("D&P Janitorial", "out"),
+            ("COMMUNITY BUILDERS", "out"), ("BBX Moving", "out"), ("PAL TRUCKING", "out"), ("SR TRANSPORT", "out"),
+            ("DGA Global Hauling", "out"), ("East West Gardening Services Ltd.", "out"), ("Oxford Frozen Foods", "out"),
+            ("IMP Aerospace and Defence", "out"), ("The Government of Nova Scotia", "out"),
+            ("Armdale Lawn Care Incorporated", "out"),
+            ("K.P. LABOUR CONTRACTOR LTD.", "unknown"), ("JCB Construction Canada", "unknown"),
+            ("LIMA'S GARDENS AND CONSTRUCTION INC.", "unknown"), ("Kappil Contracting On Demand Inc.", "unknown"),
+            ("Lawncraft Landscaping & construction Ltd.", "unknown"), ("Coastal Drywall Supplies Ltd", "unknown"),
+            ("HMC Construction modulaire", "unknown"), ("Michelin North America Canada Inc.", "unknown"),
+            ("Haggerty Electrical Ltd.", "unknown"), ("JAZ Renovations LTD / Paint Guys", "unknown"),
+        ],
+        "bcPublicSchool": [
+            ("School District No. 52", "in"), ("School District #74 (Gold Trail)", "in"),
+            ("Conseil scolaire catholique MonAvenir", "in"),
+            ("Catholic Independent Schools Diocese of Prince George", "out"), ("AB - private household", "out"),
+            ("IQRA Islamic School", "unknown"), ("Lax Kw'alaams Band", "unknown"), ("Department of National Defence", "unknown"),
+            ("Canadian Forces Non-Public Funds", "unknown"),
+        ],
+        "abTech": [
+            ("Lakes Software", "in"), ("Pluto IT Solutions", "in"), ("ThirdEye CyberSecurity", "in"),
+            ("Visual-Eyes Software (SOTH Inc.)", "in"), ("Princeton IT Services Inc", "in"),
+            ("MGR Workforce", "out"), ("YES Employment Services", "out"),
+            ("Robert Half", "unknown"), ("Alberta Health Services", "unknown"), ("Microsoft Canada", "unknown"),
+            ("Richie It Solutions Inc", "unknown"), ("Tech-Eyes", "unknown"), ("Accenture", "unknown"),
+        ],
+        "skAgriFood": [
+            ("W Farms", "in"), ("JBC Cattle Inc.", "in"), ("DAM Livestock", "in"), ("HARVEST GRAIN KINDERSLEY LTD.", "in"),
+            ("Harvest Grain Zealandia Ltd", "in"), ("Superior Pulses Inc.", "in"), ("Oxford Frozen Foods", "in"),
+            ("Canada Packers", "in"), ("Patton Poultry Breeders Inc.", "in"), ("Lovingly Made Flour Mills", "in"),
+            ("Saputo Dairy Products Canada G.P.", "in"),
+            ("Fed Supply", "out"), ("FENS MARKET", "out"), ("BOLD Centre", "out"), ("HJV Equipment", "out"),
+            ("Williams Machinery LP", "out"), ("All Budget Car Dealer", "out"), ("Hardy Sales", "out"),
+            ("Town Car Rental", "out"), ("VISTA CREDIT", "out"), ("K5 Insurance", "out"), ("Fed Finance", "out"),
+            ("Grasshopper Retail Inc.", "out"), ("Noodle store", "out"), ("DTL Grocery", "out"), ("T&T Supermarket", "out"),
+            ("AW Restaurant", "out"), ("A & W Food Services", "out"), ("L-Eat Catering", "out"), ("Kays Wholesale", "out"),
+            ("BG Distribution", "out"), ("SR TRANSPORT", "out"), ("PAL TRUCKING", "out"), ("DGA Global Hauling", "out"),
+            ("MV Express", "out"), ("K.P. LABOUR CONTRACTOR LTD.", "out"), ("HORIZON EMPLOI", "out"),
+            ("Employment Hero", "out"), ("Wood", "out"), ("ATMS Cabinet", "out"), ("AB Millwork Ltd", "out"),
+            ("Edge Grain", "unknown"), ("Ah-So Sushi Farm Boy Kingston", "unknown"), ("Caledonia Clover Farm", "unknown"),
+            ("Farm Lending Canada Inc", "unknown"), ("Steve's Livestock Transport", "unknown"),
+            ("Vanee Farm Centre Inc", "unknown"), ("NutraSun Foods Ltd.", "unknown"), ("Maple Leaf Foods Inc.", "unknown"),
+            ("Canada Golden Foods Limited.", "unknown"), ("Bourgault Industries Ltd.", "unknown"),
+            ("Flaman Group of Companies", "unknown"), ("Flaman Fitness", "unknown"), ("BOURGAULT MACHINES INC", "unknown"),
+            ("The Home Depot Canada", "unknown"),
+        ],
+    }
+    """真数据金标:行业键 → (雇主名, 三态)。雇主名全是 2026-09-27 mart 在招岗的原样(Job Bank / 板仓 employer 格);每张词表的
+    每个词都至少有一家「删了这个词判法就变」的雇主在里面(test_word_probe 逐词删着验),另收派工点名的例子与核词时撞出来的反例。
+    三态逐家人工核过(见交付报告抽样清单)。"""
+
+    PARTIAL_GOLDEN = [
+        ("60040", "nail salon manager", "Gloss nail bar", "", True),
+        ("60040", "hairstyling salon manager", "Hello Hair Salon Ltd.", "", True),
+        ("60040", "barber shop manager", "ROMANTIKO BARBER SHOP - SIERRA", "", True),
+        ("60040", "truck wash manager", "CALGARY CAR TRUCK WASH & LUBE CORP", "", True),
+        ("60040", "cleaning service manager", "EYAEYO CLEANING SERVICES LTD.", "", True),
+        ("60040", "janitorial services manager", "MR. PERFECT SERVICES LTD.", "", True),
+        ("60040", "laundry manager", "Northern Lights Inn", "", True),
+        ("60040", "tattoo studio manager", "Don’t Cry Tattoo Corp", "", True),
+        ("60040", "pet grooming salon manager", "Oh My Dog Spa and Grooming - North", "", True),
+        ("60040", "driving school manager", "Punjab Driving Academy & Globe Driving Academy", "", True),
+        ("60040", "manager, home care service", "Trista", "", True),
+        ("60040", "spa manager", "Leela Eco Spa", "", False),
+        ("60040", "esthetic services manager", "Gratitude Beauty Inc.", "", False),
+        ("60040", "Beauty salon supervisor", "Velvet Salon & Spa Inc", "", False),
+        ("60040", "", "", "", False),
+        ("33100", "dental assistant", "Cameron Dental", "", True),
+        ("33100", "registered dental assistant", "Cool Dental", "", True),
+        ("33100", "chair-side assistant - dental", "Ocean Periodontal & Dental Implant Centre", "", True),
+        ("33100", "dental laboratory assistant", "style153 dental lab", "", False),
+        ("33100", "dental laboratory technician assistant", "JAIJIA DENTAL LAB", "", False),
+        ("42200", "paralegal", "Gloria E. Hammermeister Law", "", True),
+        ("42200", "legal services officer - courts", "Native Counselling Services of Alberta", "", True),
+        ("42200", "", "", "", False),
+        ("42202", "early childhood educator (ece) - level 3", "PRECIOUS STARS DAYCARE & OSC", "", True),
+        ("42202", "early childhood educator (ECE)", "Little Tots Daycare",
+         "Child development supervisor (ECE level 3)\nEarly Childhood Education (ECE) Certificate\nFirst Aid Certificate\n"
+         "CPR Certificate", True),
+        ("42202", "child care worker - level 2", "Kids Avenue Early Learning Centre",
+         "Child development worker (ECE level 2)\nFirst Aid Certificate\nCPR Certificate", True),
+        ("42202", "early childhood educator (ECE) assistant", "Little Feet Daycare",
+         "Child development assistant (ECE level 1)\nChild development worker (ECE level 2)\n"
+         "Early Childhood Education (ECE) Certificate\nFirst Aid Certificate", False),
+        ("42202", "early childhood educator (ece) - level 1", "Les Petits Géants", "", False),
+        ("42202", "early childhood educator (ECE)", "Sunshine Childcare", "Early Childhood Education (ECE) Certificate",
+         False),
+        ("42202", "early childhood educator (ECE)", "BrightPath Kids Canada", "", False),
+    ]
+    """带星号码真数据金标:(职业码, 职位名, 雇主名, 证书栏, 看得出不属官方点名那一小类)。除两条空串格外都是 2026-09-27 在招岗原样
+    (AB 为主;「Northern Lights Inn」jb:50244694、「Ocean Periodontal & Dental Implant Centre」jb:50181394 是 BC 的同码岗,拿来给
+    laundry / chair-side 两词作证)。BrightPath 那条(jb:50379011)正文自由文本里写着「Level 2 Certification OR B.Ed.」,但评分段读不到
+    正文,照挡(见交付报告;那岗是兼职,本就过不了阿省 offer 门槛)。"""
+
+    PARTIAL_INSIDE_WITNESS = [
+        ("60040", "nail salon manager", "Lotus Massage Nails"), ("60040", "cleaning service manager", "Elite Escort Services"),
+        ("60040", "hair salon manager", "Body Rub Studio"), ("60040", "nail salon manager", "Parlour 9 Nails"),
+        ("60040", "tattoo studio manager", "Erotic Ink"), ("60040", "nail salon manager", "Sensual Nails"),
+        ("60040", "cleaning service manager", "Adult Services Cleaning"),
+        ("33100", "dental assistant", "Smile Dental Lab"), ("33100", "dental assistant - laboratory", "Bright Dental"),
+        ("33100", "dental assistant (bench)", "Bright Dental"), ("33100", "dental assistant", "Denture Clinic Inc."),
+        ("33100", "dental assistant", "ABC Dental Technology"),
+        ("42200", "justice of the peace", "Alberta Courts"), ("42200", "juge de paix", "Cour du Québec"),
+        ("42202", "early childhood educator - level 1 or level 2", "Happy Daycare"),
+        ("42202", "early childhood educator assistant - level 2", "Happy Daycare"),
+        ("42202", "early childhood educator - level 2 or uncertified", "Happy Daycare"),
+    ]
+    """否决词的现造作证格(职业码, 职位名, 雇主名):每格恰好命中一个否决词、又带一个放行词 —— 删掉那个否决词就该放行。在招里没有
+    按摩院 / 太平绅士 / 牙科技工所招 dental assistant 这类岗,否决词只能拿现造格验(派工要求的变异探针,2026-09-27)。"""
+
+    def state_of(self, sector: str, name: str) -> str:
+        """一个名字的三态(被测函数)。"""
+        from mart import functions as fn
+        return fn.employer_sector_of(SectorIn(sector=sector, employer=name))
+
+    def test_golden(self) -> None:
+        """真数据金标逐家对照(五个行业键全在;每个行业三态都有例子)。"""
+        from mart import constants as c
+        self.assertEqual(set(self.GOLDEN), set(c.SECTOR_IN_WORDS))
+        self.assertEqual(set(c.SECTOR_IN_WORDS), set(c.SECTOR_OUT_WORDS))
+        for sector, cases in self.GOLDEN.items():
+            states = set()
+            for name, want in cases:
+                states.add(want)
+                with self.subTest(sector=sector, name=name):
+                    self.assertEqual(self.state_of(sector, name), want)
+            self.assertLessEqual({"in", "unknown"}, states, sector)
+
+    def test_word_probe(self) -> None:
+        """变异探针:两张词表逐词删(每次只删一个),该行业的金标至少一家当场变判 —— 词表改一词就红;也证明每个词都有真雇主作证。"""
+        from mart import constants as c
+        for table in (c.SECTOR_IN_WORDS, c.SECTOR_OUT_WORDS):
+            for sector, words in table.items():
+                for i in range(len(words)):
+                    short = words[:i] + words[i + 1:]
+                    changed = 0
+                    with mock.patch.dict(table, {sector: short}):
+                        for name, want in self.GOLDEN[sector]:
+                            if self.state_of(sector, name) != want:
+                                changed += 1
+                    self.assertGreater(changed, 0, (sector, words[i].pattern))
+
+    def test_property(self) -> None:
+        """性质:空名 / 纯空白 / 名字里并列商号(斜杠)一律看不出;本域不认得的行业键一律看不出;在行业的名字拼上一个不在行业的词
+        (两边都命中)一律看不出;名字整体转大写不改判 —— 科技那条除外:只认大写 IT(小写 it 是代词),「Richie It Solutions Inc」
+        看不出、转成大写才认得出,这是有意的,单独断言。"""
+        from mart import constants as c
+        for sector in c.SECTOR_IN_WORDS:
+            for name in ("", "   "):
+                self.assertEqual(self.state_of(sector, name), "unknown", (sector, name))
+            ins = []
+            outs = []
+            for name, want in self.GOLDEN[sector]:
+                if want == "in":
+                    ins.append(name)
+                if want == "out":
+                    outs.append(name)
+                if name.strip() == "":
+                    continue
+                self.assertEqual(self.state_of(sector, name + " / Other Co"), "unknown", (sector, name))
+                if sector != "abTech":
+                    self.assertEqual(self.state_of(sector, name.upper()), want, (sector, name))
+            for a in ins:
+                for b in outs[:3]:
+                    self.assertEqual(self.state_of(sector, a + " " + b), "unknown", (sector, a, b))
+        self.assertEqual(self.state_of("abTech", "Richie It Solutions Inc"), "unknown")
+        self.assertEqual(self.state_of("abTech", "RICHIE IT SOLUTIONS INC"), "in")
+        self.assertEqual(self.state_of("abTech", "Fix It Services"), "unknown")
+        self.assertEqual(self.state_of("bcHealthAuthority", "Fraser Health Authority"), "unknown")
+        self.assertEqual(self.state_of("nope", "T2 Construction"), "unknown")
+
+    def outside_of(self, row: tuple) -> bool:
+        """一格带星号码金标 → is_partial_outside(被测函数;省表与城市在这一判里不看,给空)。"""
+        from mart import functions as fn
+        noc, title, employer, certs = row[:4]
+        tables = PnpTables(by_prov={}, named_by_prov={}, community_by_prov={}, ee_by_noc={})
+        return fn.is_partial_outside(PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov="AB", hours="", term="",
+                                                city="", employer=employer, title=title, certs=certs))
+
+    def test_partial_golden(self) -> None:
+        """带星号码真数据金标逐格对照;表上带星号而本站没定判据的码(现造 99999)一律看不出。"""
+        for row in self.PARTIAL_GOLDEN:
+            with self.subTest(row=row[:3]):
+                self.assertEqual(self.outside_of(row), row[4])
+        self.assertFalse(self.outside_of(("99999", "anything", "Any Co", "")))
+
+    def test_partial_word_probe(self) -> None:
+        """变异探针:放行词逐词删,真金标至少一格从放行变不放行;否决词逐词删,现造作证格从不放行变放行(每格恰好靠那一个词挡住)。"""
+        from mart import constants as c
+        for noc, words in c.PARTIAL_OUTSIDE_WORDS.items():
+            for i in range(len(words)):
+                with mock.patch.dict(c.PARTIAL_OUTSIDE_WORDS, {noc: words[:i] + words[i + 1:]}):
+                    changed = 0
+                    for row in self.PARTIAL_GOLDEN:
+                        if row[0] == noc and self.outside_of(row) != row[4]:
+                            changed += 1
+                self.assertGreater(changed, 0, (noc, words[i].pattern))
+        for noc, words in c.PARTIAL_INSIDE_WORDS.items():
+            for i in range(len(words)):
+                flipped = 0
+                for w_noc, title, employer in self.PARTIAL_INSIDE_WITNESS:
+                    if w_noc != noc:
+                        continue
+                    self.assertFalse(self.outside_of((noc, title, employer, "")), (noc, title))
+                    with mock.patch.dict(c.PARTIAL_INSIDE_WORDS, {noc: words[:i] + words[i + 1:]}):
+                        if self.outside_of((noc, title, employer, "")):
+                            flipped += 1
+                self.assertGreater(flipped, 0, (noc, words[i].pattern))
+
+    def raw_tables(self) -> dict:
+        """现造的 raw/pnp 小表(文件名 → 表;形同 pnp 域 build_* 的产出,新键照 2026-09-27 口径):NB 两张叠加排除(不论行业 3 码 /
+        餐饮住宿 4 码带 naics72)、NS 建筑(现状:官方 22 码剔 75101 / 75119 共 20 码,不带行业键)、BC 排除表 + 法语教师(带
+        bcPublicSchool)、AB 的 AOS 表(带星号四码 partial)+ 科技(现状:不带行业键)+ 乡村振兴(排除 3 码,全带星号)、SK Job Offer
+        排除表 + 农业(带星号的行级 skAgriFood)。NS 建筑与 AB 科技两张照现状写:2026-09-27 Frank 选「只上纯属改对的」。"""
+        ns = []
+        for noc in ("70010", "70011", "72011", "72014", "72020", "72102", "72106", "72200", "72201", "72310", "72320",
+                    "72401", "72402", "72500", "73100", "73102", "73110", "73200", "73400", "75110"):
+            ns.append({"noc": noc})
+        return {
+            "nb-ineligible.json": {"province": "NB", "type": "ineligible", "overlay": True, "label": "NB 不符合清单",
+                                   "occupations": [{"noc": "65100"}, {"noc": "94142"}, {"noc": "95106"}]},
+            "nb-ineligible-food.json": {"province": "NB", "type": "ineligible", "overlay": True, "label": "NB 餐饮住宿不符合",
+                                        "employerSector": "naics72",
+                                        "occupations": [{"noc": "62020"}, {"noc": "63200"}, {"noc": "65201"},
+                                                        {"noc": "65310"}]},
+            "ns-construction.json": {"province": "NS", "type": "indemand", "label": "NS 建筑", "occupations": ns},
+            "bc-ineligible.json": {"province": "BC", "type": "ineligible", "label": "BC 不合格职业",
+                                   "occupations": [{"noc": "65201"}]},
+            "bc-education.json": {"province": "BC", "type": "indemand", "label": "BC 法语教师",
+                                  "employerSector": "bcPublicSchool", "occupations": [{"noc": "41220"}, {"noc": "41221"}]},
+            "aaip-ineligible.json": {"province": "AB", "type": "ineligible", "label": "AAIP 不符合清单",
+                                     "occupations": [{"noc": "60040", "partial": True}, {"noc": "42200", "partial": True},
+                                                     {"noc": "42202", "partial": True}, {"noc": "33100", "partial": True},
+                                                     {"noc": "00010", "partial": False}, {"noc": "41221", "partial": False}]},
+            "ab-tech.json": {"province": "AB", "type": "indemand", "label": "AB 科技",
+                             "occupations": [{"noc": "21232"}, {"noc": "22222"}, {"noc": "32120"}]},
+            "ab-rural.json": {"province": "AB", "type": "community", "label": "AB 乡村振兴",
+                              "communities": ["Medicine Hat"], "excluded": ["00010", "33100", "60040"],
+                              "excludedPartial": ["33100", "60040"]},
+            "sk-joboffer-excluded.json": {"province": "SK", "type": "ineligible", "label": "SK Job Offer 不合格清单",
+                                          "occupations": [{"noc": "65201"}]},
+            "sk-agri.json": {"province": "SK", "type": "indemand", "label": "SK 农业",
+                             "occupations": [{"noc": "85100"}, {"noc": "75101", "employerSector": "skAgriFood"},
+                                             {"noc": "95106", "employerSector": "skAgriFood"}]},
+        }
+
+    def load_tables(self, raw: dict) -> PnpTables:
+        """把现造小表落到系统临时目录,真装载器 load_pnp_tables 读进来(IN_PNP_DIR / IN_EE_CATEGORIES 临时指过去)。"""
+        from mart import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, table in raw.items():
+                (root / name).write_text(json.dumps(table, ensure_ascii=False), encoding="utf-8")
+            with mock.patch.object(fn, "IN_PNP_DIR", root), mock.patch.object(fn, "IN_EE_CATEGORIES", root / "none.json"):
+                return fn.load_pnp_tables()
+
+    def scored(self, tables: PnpTables, job: tuple) -> tuple:
+        """一条在招岗 (岗号, 省, 城市, 职业码, 雇主名, 职位名, 工时, 雇佣期, 证书栏) → (pnpEligible, pnpStream)(整行接线)。"""
+        from mart import functions as fn
+        ext, prov, city, noc, employer, title, hours, term, certs = job
+        row = fn.to_scored_row(ScoredRowIn(tables=tables, job=CollectedJob(
+            ext=ext, title=title, agency=False, prov=prov, hint=noc, city=city, hours=hours, term=term, employer=employer,
+            certs=certs), labels={}))
+        return row["pnpEligible"], row["pnpStream"]
+
+    def jobs(self) -> list:
+        """规则金标:(在招岗, 修后 (pnpEligible, pnpStream))。岗全是 2026-09-27 mart 在招行原样(工时 / 雇佣期 / 证书栏照抄);
+        判的是现造省表(raw_tables)上的修后判法 —— 修前 NB 餐饮住宿码与 AB 带星号码一律不可、带条件的具名清单按码一律挂名。
+        NS 建筑、AB 科技两组是现状金标(修前修后通道名一致:造船厂、轮胎厂、卫生局照旧挂名,75101 照旧不在 NS 建筑清单上;
+        2026-09-27 Frank 选「只上纯属改对的」)。"""
+        return [
+            (("careerbeacon:1834701", "NB", "Grand Falls", "63200", "Vitalité Health Network", "Food Services - Cook", "full",
+              "term", ""), (True, None)),
+            (("careerbeacon:2233635", "NB", "St. George", "63200", "Cooke Aquaculture Inc.", "Deckhand/Cook - Large Vessel",
+              "full", "", ""), (True, None)),
+            (("gcjobs:2422528", "NB", "Dorchester", "65201", "Correctional Service Canada",
+              "Food Service Attendant, consider a career with the Correctional Service of Canada–Atlantic Region", "full",
+              "permanent", ""), (True, None)),
+            (("jb:50283658", "NB", "Fredericton", "62020", "Windsor Court Retirement Residence", "assistant kitchen manager",
+              "full", "permanent", ""), (True, None)),
+            (("jb:50294478", "NB", "Sackville", "63200", "Pattersons Family Restaurant", "licensed cook", "full", "permanent",
+              ""), (False, None)),
+            (("jb:50276199", "NB", "Bathurst", "62020", "Southern Comfort Villa Residence", "kitchen supervisor", "full",
+              "permanent", ""), (False, None)),
+            (("jb:50337811", "NB", "St. George", "95106", "Cooke Aquaculture Inc.", "labourer - food and beverage processing",
+              "full", "permanent", ""), (False, None)),
+            (("jb:50364690", "NB", "Saint John", "65310", "Maid in Heaven Cleaning Inc.", "maid - cleaning services", "part",
+              "permanent", ""), (False, None)),
+            (("jb:50364425", "NS", "Bedford", "72310", "Habermehl Contracting Ltd", "carpenter", "full", "permanent", ""),
+             (True, "NS 建筑")),
+            (("jb:50356489", "NS", "Sydney", "75101", "Work Bangers Construction Inc.", "material handler", "full",
+              "permanent", ""), (True, None)),
+            (("jb:50241179", "NS", "Halifax", "75110", "Irving Shipbuilding", "construction labourer", "full", "permanent",
+              ""), (True, "NS 建筑")),
+            (("jb:50266499", "NS", "Waterville", "72201", "Michelin North America Canada Inc.", "industrial electrician",
+              "full", "permanent", ""), (True, "NS 建筑")),
+            (("jb:50294237", "BC", "Surrey", "41221", "IQRA Islamic School", "elementary school teacher", "full", "permanent",
+              "Provincial or Territorial Teaching Certificate"), (True, None)),
+            (("jb:49948052", "BC", "Prince Rupert", "41221", "Catholic Independent Schools Diocese of Prince George",
+              "teacher, primary school", "full", "permanent", "Provincial or Territorial Teaching Certificate"),
+             (True, None)),
+            (("jb:50316794", "AB", "Red Deer", "22222", "Visual-Eyes Software (SOTH Inc.)", "software tester", "full", "",
+              ""), (True, "AB 科技")),
+            (("jobillico:17565351", "AB", "Calgary", "32120", "Alberta Health Services",
+              "Magnetic resonance imaging technologist i", "full", "permanent", ""), (True, "AB 科技")),
+            (("jb:50357104", "AB", "Edmonton", "21232", "Richie It Solutions Inc", "software developer", "full", "permanent",
+              ""), (True, "AB 科技")),
+            (("jb:50357627", "AB", "Medicine Hat", "60040", "Gloss nail bar", "nail salon manager", "full", "permanent", ""),
+             (True, "AB 乡村振兴")),
+            (("jb:50350834", "AB", "Calgary", "60040", "Leela Eco Spa", "spa manager", "full", "permanent", ""),
+             (False, None)),
+            (("jb:50362776", "AB", "Fort Saskatchewan", "33100", "Cameron Dental", "dental assistant", "full", "permanent",
+              ""), (True, None)),
+            (("jb:50366436", "AB", "Calgary", "33100", "style153 dental lab", "dental laboratory assistant", "full",
+              "permanent", ""), (False, None)),
+            (("jb:50358206", "AB", "Edmonton", "42200", "Gloria E. Hammermeister Law", "paralegal", "full", "permanent", ""),
+             (True, None)),
+            (("jb:50377628", "AB", "Fort McMurray", "42202", "Little Tots Daycare", "early childhood educator (ECE)", "full",
+              "permanent", "Child development supervisor (ECE level 3)\nEarly Childhood Education (ECE) Certificate\n"
+              "First Aid Certificate\nCPR Certificate"), (True, None)),
+            (("jb:50098047", "AB", "Sylvan Lake", "42202", "Sylvan Lake Daycare", "early childhood educator (ECE)", "full",
+              "permanent", "Child development assistant (ECE level 1)\nChild development worker (ECE level 2)\n"
+              "Early Childhood Education (ECE) Certificate\nFirst Aid Certificate\nCPR Certificate"), (False, None)),
+            (("jb:50163008", "SK", "Zealandia", "75101", "Harvest Grain Zealandia Ltd", "material handler", "full",
+              "permanent", ""), (True, "SK 农业")),
+            (("jb:50093344", "SK", "Verwood", "95106", "Superior Pulses Inc.", "food processing labourer", "full", "permanent",
+              ""), (True, "SK 农业")),
+            (("jb:50077095", "SK", "Regina", "75101", "NutraSun Foods Ltd.", "material handler", "full", "permanent", ""),
+             (True, "SK 现有工签")),
+            (("jb:50355761", "SK", "Saskatoon", "75101", "Two Men And A Truck", "material handler", "full", "permanent", ""),
+             (True, "SK 现有工签")),
+        ]
+
+    def test_rules_golden(self) -> None:
+        """规则金标整行接线:NB 医院 / 水产养殖 / 联邦监狱 / 养老院的厨房岗放行、餐馆照挡、看不出(Villa Residence)照挡、不论行业
+        那张表照挡、兼职照 offer 门槛挡;BC 法语教师私校 / 教会学校不挂;AB 带星号码按一小类判;SK 农业只挂给看得出的农业 / 食品制造雇主,
+        看不出的照旧落现有工签。NS 建筑、AB 科技是现状金标(2026-09-27 Frank 选「只上纯属改对的」):造船厂 / 轮胎厂照旧挂 NS 建筑、
+        75101 照旧不在 NS 建筑清单上,卫生局 / 小写 It 的公司照旧挂 AB 科技。"""
+        tables = self.load_tables(self.raw_tables())
+        for job, want in self.jobs():
+            with self.subTest(ext=job[0]):
+                self.assertEqual(self.scored(tables, job), want)
+
+    def test_rules_occupation_level(self) -> None:
+        """性质:职业 × 省级(雇主 / 职位名 / 证书栏给空串)一律看不出 —— NB 餐饮住宿码照挡、AB 带星号码照挡、带条件的具名清单不算
+        命中(SK 农业带星号 75101 落现有工签档而非直可)。现状金标(2026-09-27 Frank 选「只上纯属改对的」):NS 建筑表不带条件,
+        TEER 5 的 75110 照旧直可,雇主是谁都一样。"""
+        from mart import functions as fn
+        tables = self.load_tables(self.raw_tables())
+        for prov, noc in (("NB", "63200"), ("AB", "60040"), ("AB", "42202")):
+            judge = PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov=prov, hours="", term="", city="", employer="",
+                               title="", certs="")
+            self.assertFalse(fn.pnp_eligible(judge), (prov, noc))
+        judge = PnpJudgeIn(tables=tables, noc="75101", teer=5, prov="SK", hours="", term="", city="", employer="", title="",
+                           certs="")
+        self.assertTrue(fn.pnp_eligible(judge))
+        self.assertFalse(fn.pnp_direct(judge))
+        for employer in ("", "Irving Shipbuilding", "Habermehl Contracting Ltd"):
+            judge = PnpJudgeIn(tables=tables, noc="75110", teer=5, prov="NS", hours="", term="", city="", employer=employer,
+                               title="construction worker", certs="")
+            self.assertTrue(fn.pnp_direct(judge), employer)
+
+    def test_rules_mutation_probe(self) -> None:
+        """变异探针:表上的条件键删掉(= pnp 单元还是旧口径的表)→ 金标退回改前判法:NB 医院厨师不可、AB 牙医诊所助理不可、
+        SK 搬运工(NutraSun)挂 SK 农业、BC 私校老师挂 BC 法语教师;乡村振兴社区(Medicine Hat)里的美甲店经理同理不可。证明判法读的是
+        表上的键,不是职业码碰巧。反向探针:给 NS 建筑表补上 naics23(= 第二步接线的样子),造船厂当场摘掉 NS 建筑 —— 现状金标
+        靠的是表上没有这个键(2026-09-27 Frank 选「只上纯属改对的」)。"""
+        raw = self.raw_tables()
+        del raw["nb-ineligible-food.json"]["employerSector"]
+        del raw["bc-education.json"]["employerSector"]
+        for o in raw["aaip-ineligible.json"]["occupations"]:
+            o["partial"] = False
+        for o in raw["sk-agri.json"]["occupations"]:
+            o.pop("employerSector", None)
+        raw["ab-rural.json"]["excludedPartial"] = []
+        tables = self.load_tables(raw)
+        vit = ("careerbeacon:1834701", "NB", "Grand Falls", "63200", "Vitalité Health Network", "Food Services - Cook",
+               "full", "term", "")
+        dent = ("jb:50362776", "AB", "Fort Saskatchewan", "33100", "Cameron Dental", "dental assistant", "full", "permanent",
+                "")
+        nut = ("jb:50077095", "SK", "Regina", "75101", "NutraSun Foods Ltd.", "material handler", "full", "permanent", "")
+        cis = ("jb:49948052", "BC", "Prince Rupert", "41221", "Catholic Independent Schools Diocese of Prince George",
+               "teacher, primary school", "full", "permanent", "Provincial or Territorial Teaching Certificate")
+        nail = ("jb:50357627", "AB", "Medicine Hat", "60040", "Gloss nail bar", "nail salon manager", "full", "permanent", "")
+        self.assertEqual(self.scored(tables, vit), (False, None))
+        self.assertEqual(self.scored(tables, dent), (False, None))
+        self.assertEqual(self.scored(tables, nut), (True, "SK 农业"))
+        self.assertEqual(self.scored(tables, cis), (True, "BC 法语教师"))
+        self.assertEqual(self.scored(tables, nail), (False, None))
+        self.assertEqual(self.scored(self.load_tables(self.raw_tables()), nail), (True, "AB 乡村振兴"))
+        wired = self.raw_tables()
+        wired["ns-construction.json"]["employerSector"] = "naics23"
+        irv = ("jb:50241179", "NS", "Halifax", "75110", "Irving Shipbuilding", "construction labourer", "full", "permanent", "")
+        self.assertEqual(self.scored(self.load_tables(wired), irv), (True, None))
+        self.assertEqual(self.scored(self.load_tables(self.raw_tables()), irv), (True, "NS 建筑"))
+
+    def test_named_unchanged(self) -> None:
+        """性质 + 变异探针(2026-09-27 Frank 选「只上纯属改对的」):省点名(score 的 +12、职业级通道档)照合入前 —— SK 农业行级带条件
+        的星号码不算点名、不带条件的照算;整表带条件的 BC 法语教师照算;同一个星号码岗,雇主认得出(Harvest Grain)也好、认不出也好,
+        分数一样。探针:把星号码行上的 employerSector 删掉(= 合入前一版照收的表),它当场算进点名。"""
+        from mart import functions as fn
+        tables = self.load_tables(self.raw_tables())
+        self.assertEqual(tables.named_by_prov["SK"], {"85100"})
+        self.assertLessEqual({"41220", "41221"}, tables.named_by_prov["BC"])
+        self.assertIn("75110", tables.named_by_prov["NS"])
+        scores = set()
+        for employer in ("Harvest Grain Zealandia Ltd", "NutraSun Foods Ltd."):
+            row = fn.to_scored_row(ScoredRowIn(tables=tables, job=CollectedJob(
+                ext="x", title="material handler", agency=False, prov="SK", hint="75101", city="Regina", hours="full",
+                term="permanent", employer=employer, certs=""), labels={}))
+            scores.add(row["score"])
+        self.assertEqual(len(scores), 1)
+        raw = self.raw_tables()
+        for o in raw["sk-agri.json"]["occupations"]:
+            o.pop("employerSector", None)
+        self.assertEqual(self.load_tables(raw).named_by_prov["SK"], {"85100", "75101", "95106"})
+
+    def test_real_tables(self) -> None:
+        """真表金标(读仓里 raw/pnp,只读):pnp 单元按 2026-09-27 口径重建过的表才验 —— NB 餐饮住宿表带 naics72、BC 法语教师表带
+        bcPublicSchool 而卫生局表不带、AOS 表带星号的恰好是 60040 / 42200 / 42202 / 33100、乡村振兴表带星号的恰好是 60040 / 42200 /
+        33100、SK 农业表带星号七码都标 skAgriFood;现状金标(同日 Frank 选「只上纯属改对的」):NS 建筑表照旧 20 码、不含 75101 /
+        75119、不带行业键,AB 科技表不带行业键。表还是旧口径(没有新键)就跳过:等容器换版、pnp 各省单元跑过一轮再验。"""
+        from mart import functions as fn
+        if not fn.IN_PNP_DIR.exists():
+            self.skipTest("仓里没有 raw/pnp")
+        paths_of = {}
+        for f in sorted(fn.IN_PNP_DIR.glob("*.json")):
+            paths_of[f.name] = f
+        need = ("nb-ineligible-food.json", "ns-construction.json", "bc-education.json", "ab-tech.json",
+                "aaip-ineligible.json", "ab-rural.json", "sk-agri.json", "bc-health-authority.json")
+        for name in need:
+            if name not in paths_of:
+                self.skipTest("仓里缺 raw/pnp/" + name)
+        tbl = {}
+        for name in need:
+            tbl[name] = json.loads(paths_of[name].read_text(encoding="utf-8"))
+        if "employerSector" not in tbl["nb-ineligible-food.json"] or "excludedPartial" not in tbl["ab-rural.json"]:
+            self.skipTest("raw/pnp 还是旧口径(pnp 单元未按 2026-09-27 口径重建)")
+        self.assertEqual(tbl["nb-ineligible-food.json"].get("employerSector"), "naics72")
+        ns_codes = set()
+        for o in tbl["ns-construction.json"]["occupations"]:
+            ns_codes.add(o["noc"])
+        self.assertEqual(len(ns_codes), 20)
+        self.assertEqual({"75101", "75119"} & ns_codes, set())
+        self.assertNotIn("employerSector", tbl["ns-construction.json"])
+        self.assertEqual(tbl["bc-education.json"].get("employerSector"), "bcPublicSchool")
+        self.assertNotIn("employerSector", tbl["bc-health-authority.json"])
+        self.assertNotIn("employerSector", tbl["ab-tech.json"])
+        partial = set()
+        for o in tbl["aaip-ineligible.json"]["occupations"]:
+            if o.get("partial") is True:
+                partial.add(o["noc"])
+        self.assertEqual(partial, {"60040", "42200", "42202", "33100"})
+        self.assertEqual(set(tbl["ab-rural.json"]["excludedPartial"]), {"60040", "42200", "33100"})
+        marked = set()
+        for o in tbl["sk-agri.json"]["occupations"]:
+            if o.get("employerSector") == "skAgriFood":
+                marked.add(o["noc"])
+        self.assertEqual(marked, {"14401", "75101", "94140", "94141", "94143", "94204", "95106"})
 
 
 class MartSalaryTextTest(unittest.TestCase):

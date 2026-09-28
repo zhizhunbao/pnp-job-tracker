@@ -13,14 +13,17 @@ import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍
 「不用 class」的外部库例外,先例 gate.scheme / indexing.scheme;跑法 `python etl/pnp/main.py --only test`);
 被测的 pnp.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
 2026-09-27 九省体检修复批再住三组:MbDrawTotalTest / DrawMergeTest / SkAgriStarTest(同一个 test 步跑)。
+同日 Frank 拍板「看得出才改判」再住一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表)。
 """
 import json
 import re
+import tempfile
 import unittest
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Callable, Iterator, Protocol
+from unittest import mock
 
 from pnp.constants import (
     FACTOR_EOI_DRAW, GQ_SKIP_TAGS, ON_WORKFORCE_URL, OP_NONE, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE,
@@ -29,6 +32,7 @@ from pnp.constants import (
 from pnp.constants import (  # 2026-09-27 九省体检修复批的三组自测用
     DRAWS_ON_INV_URL, K_SECTOR_QUOTE, SK_AGRI_SECTOR_QUOTE, SK_NOC_PATTERNS, SK_STREAMS,
 )
+from pnp.constants import SK_AGRI_SECTOR  # 2026-09-27 Frank 拍板「看得出才改判」(SK 农业带星号码标行业键)
 
 
 class SoupNodeLike(Protocol):
@@ -735,7 +739,8 @@ class NocLinesIn:
 
 @dataclass
 class SkSectorIn:
-    """sk_sector_free() 入参:农业通道页去掉带星号的职业码(2026-09-27 九省体检)。"""
+    """sk_sector_free() 入参:农业通道页去掉带星号的职业码(2026-09-27 九省体检)。
+    同日 Frank 拍板「看得出才改判」:函数改名 sk_sector_marked(带星号码照收并标行业键),入参多一格 sector。"""
 
     md: str
     """页面 md(同 parse_noc_lines 吃的那份)。"""
@@ -745,6 +750,9 @@ class SkSectorIn:
 
     quote: str
     """星号脚注原句(SK_STREAMS 那条的 sectorQuote 键)。"""
+
+    sector: str
+    """带星号码行上要记的雇主行业键(SK_STREAMS 那条的 employerSector 键;2026-09-27)。"""
 
 
 @dataclass
@@ -2152,7 +2160,9 @@ class DrawMergeTest(unittest.TestCase):
 class SkAgriStarTest(unittest.TestCase):
     """SK 农业通道带星号职业码不收自测(2026-09-27 九省体检:星号 = 担保雇主须属 NAICS 11 / 311 / 33311 / 411 / 49313,
     本站判不了,照 AB_TOURISM_GENERIC 先例不收)。纯函数用例现造 md(照真页 md 的表格行写法),金标读 crawl 缓存里的真页;
-    变异探针改的是官方页上的星号(本站的「表」就是星号本身)。"""
+    变异探针改的是官方页上的星号(本站的「表」就是星号本身)。
+    2026-09-27 Frank 拍板「看得出才改判」:带星号码改为照收并在行上标 employerSector(sk_sector_marked)—— 下面「留下的码」
+    改读「不带行业条件的码」,原金标一格不变;另断言带星号码一个不少地在表里、都标了 SK_AGRI_SECTOR。"""
 
     KEPT = {"84120", "85100", "85101", "85103"}
     """手写金标:2026-09-27 真页上不带星号的四个码(畜牧 / 牲畜 / 收割 / 苗圃温室)。"""
@@ -2169,21 +2179,44 @@ class SkAgriStarTest(unittest.TestCase):
           "NAICS 11 – Agriculture, forestry, fishing and hunting\nNAICS 311 – Food manufacturing\n")
     """照真页 md 写法现造的一段(表格行 + 星号脚注)。"""
 
-    def occs_of(self, md: str) -> list | None:
-        """同 build_sk 的前两步:按 SK 行写法解析 → 去星号码;返回留下的码(自校没过返回 None)。"""
+    def rows_of(self, md: str) -> list | None:
+        """同 build_sk 的前两步:按 SK 行写法解析 → 带星号码标行业键(sk_sector_marked);自校没过返回 None(2026-09-27)。"""
         from pnp import functions as fn
         occs = fn.parse_noc_lines(NocLinesIn(md=md, patterns=SK_NOC_PATTERNS))
-        kept = fn.sk_sector_free(SkSectorIn(md=md, occs=occs, quote=SK_AGRI_SECTOR_QUOTE))
-        if kept is None:
-            return kept
+        return fn.sk_sector_marked(SkSectorIn(md=md, occs=occs, quote=SK_AGRI_SECTOR_QUOTE, sector=SK_AGRI_SECTOR))
+
+    def occs_of(self, md: str) -> list | None:
+        """同 build_sk 的前两步:按 SK 行写法解析 → 去星号码;返回留下的码(自校没过返回 None)。
+        2026-09-27 起「留下的码」= 行上不带 employerSector 的码(带星号码照收但标了行业键,见 marked_of)。"""
+        rows = self.rows_of(md)
+        if rows is None:
+            return rows
         out = []
-        for o in kept:
-            out.append(o["noc"])
+        for o in rows:
+            if "employerSector" not in o:
+                out.append(o["noc"])
+        return out
+
+    def marked_of(self, md: str) -> dict | None:
+        """带星号、标了行业键的码 → 行业键(自校没过返回 None;2026-09-27)。"""
+        rows = self.rows_of(md)
+        if rows is None:
+            return rows
+        out = {}
+        for o in rows:
+            if "employerSector" in o:
+                out[o["noc"]] = o["employerSector"]
         return out
 
     def test_synthetic_golden(self) -> None:
-        """带星号的三码不收、不带的两码照收;星号码认的是职业名尾巴上的星号(名字已剥掉星号的解析结果不受影响)。"""
+        """带星号的三码不收、不带的两码照收;星号码认的是职业名尾巴上的星号(名字已剥掉星号的解析结果不受影响)。
+        2026-09-27 起带星号的三码照收、标 skAgriFood(清单卡照官方全列),不带的两码原样。"""
         self.assertEqual(self.occs_of(self.MD), ["84120", "85100"])
+        self.assertEqual(self.marked_of(self.MD), {"14401": "skAgriFood", "75101": "skAgriFood", "95106": "skAgriFood"})
+        rows = self.rows_of(self.MD)
+        if rows is None:
+            self.fail("现造页自校没过")
+        self.assertEqual(len(rows), 5)
 
     def test_refuses_to_guess(self) -> None:
         """脚注原句不在(措辞变了)→ None;脚注在却一个星号码都没认出(版式变了)→ None;两种都保留旧表。"""
@@ -2193,12 +2226,17 @@ class SkAgriStarTest(unittest.TestCase):
         self.assertIsNone(self.occs_of(no_star))
 
     def test_only_agri_carries_quote(self) -> None:
-        """只有农业那条带 sectorQuote 键:医疗页的星号意思不同(「也可走 Employment Offer」),不许被这条规则去码。"""
+        """只有农业那条带 sectorQuote 键:医疗页的星号意思不同(「也可走 Employment Offer」),不许被这条规则去码。
+        2026-09-27 起同一条还带 employerSector = skAgriFood(与 mart 域的行业键逐字相同),别的两条不带。"""
         carried = []
+        sectors = []
         for s in SK_STREAMS:
             if K_SECTOR_QUOTE in s:
                 carried.append(s["out"])
+            if "employerSector" in s:
+                sectors.append((s["out"], s["employerSector"]))
         self.assertEqual(carried, ["sk-agri.json"])
+        self.assertEqual(sectors, [("sk-agri.json", "skAgriFood")])
 
     def test_real_page(self) -> None:
         """金标:crawl 缓存里的农业通道真页 → 带星号七码全部不收,留下四码;另跑一遍变异探针 —— 把 75101 的星号去掉、
@@ -2215,6 +2253,11 @@ class SkAgriStarTest(unittest.TestCase):
         if kept is None:
             self.fail("真页自校没过(脚注原句或星号码认不出)")
         self.assertEqual(set(kept), self.KEPT)
+        marked = self.marked_of(md)
+        if marked is None:
+            self.fail("真页自校没过")
+        self.assertEqual(set(marked), self.STARRED)
+        self.assertEqual(set(marked.values()), {"skAgriFood"})
         mutated = md.replace("| Material handlers* |", "| Material handlers |").replace(
             "| Specialized livestock workers and farm machinery operators |",
             "| Specialized livestock workers and farm machinery operators* |")
@@ -2223,4 +2266,133 @@ class SkAgriStarTest(unittest.TestCase):
         if kept is None:
             self.fail("变异后的页自校没过(星号还在,不该判改版)")
         self.assertEqual(set(kept), (self.KEPT - {"84120"}) | {"75101"})
+
+
+class EmployerSectorTablesTest(unittest.TestCase):
+    """雇主行业条件与带星号码如实记进表的自测(2026-09-27 Frank 拍板「看得出才改判」:pnp 域只记官方写的条件,判雇主归 mart)。
+    配置金标(三个行业键挂在哪几张表;卫生局表不挂)+ 现造页纯函数用例 + crawl 缓存真页金标(本机没跑 crawl 就跳过)+ 变异探针
+    (改页上的星号,记下的码当场跟着变)。建表那步落系统临时目录,不碰仓内文件;缓存缺页一律跳过,不联网。
+    同日 Frank 选「只上纯属改对的」:NS 建筑、AB 科技两张表维持现状(不带行业键,NS 建筑照旧 20 码),这两项改成现状金标。"""
+
+    AOS_PARTIAL = {"60040", "42200", "42202", "33100"}
+    """手写金标:AOS 页 Table 1 带星号的四个码(2026-09-27 crawl 缓存 ab-aaip bbf84819… 原样)。"""
+
+    RRS_PARTIAL = {"60040", "42200", "33100"}
+    """手写金标:乡村振兴页 Table 1 带星号的三个码(同日 ab-aaip 0cf7f671… 原样)。"""
+
+    NS_22 = {"70010", "70011", "72011", "72014", "72020", "72102", "72106", "72200", "72201", "72310", "72320", "72401",
+             "72402", "72500", "73100", "73102", "73110", "73200", "73400", "75101", "75110", "75119"}
+    """手写金标:NS Skilled Worker 页 CONSTRUCTION 页签列出的 22 码(同日 ns-root 495d2957… 原样)。"""
+
+    TABLE_HTML = ("<table><tr><th>NOC code (2021)</th><th>NOC TEER category</th><th>Occupation</th></tr>"
+                  "<tr><td>00010</td><td>0</td><td>Legislators</td></tr>"
+                  "<tr><td>60040*</td><td>0</td><td>Escort agency managers, massage parlour managers</td></tr>"
+                  "<tr><td>42200*</td><td>2</td><td>Justices of the peace</td></tr></table>")
+    """照真页写法现造的一张排除表(表头判词 + 一行不带星号 + 两行带星号)。"""
+
+    def test_config_keys(self) -> None:
+        """配置金标:NB 餐饮住宿段 naics72、BC 法语教师桶 bcPublicSchool、SK 农业那条 skAgriFood;BC 卫生局桶不挂(官方卫生局名单
+        不在缓存,不凭印象列);别的 NB 段、BC 桶、SK 条都不挂。现状金标(2026-09-27 Frank 选「只上纯属改对的」):NS 建筑照旧剔掉
+        75101 / 75119 两个通用码(NS_CONSTR_GENERIC 原样),AB 科技表不带行业键见 test_ab_tech_status_quo。"""
+        from pnp import constants as c
+        nb = []
+        for nt in c.NB_NOTICES:
+            for key in ("any", "food"):
+                seg = nt.get(key)
+                if isinstance(seg, dict) and "employerSector" in seg:
+                    nb.append((nt["key"], key, seg["employerSector"]))
+        self.assertEqual(nb, [("pnp", "food", "naics72")])
+        bc = []
+        for key, cfg in c.BC_BUCKETS.items():
+            if "employerSector" in cfg:
+                bc.append((key, cfg["employerSector"]))
+        self.assertEqual(bc, [("education", "bcPublicSchool")])
+        self.assertNotIn("employerSector", c.BC_BUCKETS["health_authority"])
+        self.assertEqual(c.SK_AGRI_SECTOR, "skAgriFood")
+        self.assertEqual(c.NS_CONSTR_GENERIC, {"75101", "75119"})
+
+    def test_aos_partial_synthetic(self) -> None:
+        """现造表:带星号的两行 partial 为真、不带的为假;码尾星号照旧剥掉(码与名字不受影响)。"""
+        from pnp import functions as fn
+        rows = fn.parse_ab_aos(self.TABLE_HTML)
+        got = {}
+        for r in rows:
+            got[r["noc"]] = r["partial"]
+        self.assertEqual(got, {"00010": False, "60040": True, "42200": True})
+        self.assertEqual(fn.ab_starred_of(AbNocTableIn(html=self.TABLE_HTML, head_kw="noc code")), {"60040", "42200"})
+        self.assertEqual(fn.ab_starred_of(AbNocTableIn(html=self.TABLE_HTML.replace("*", ""), head_kw="noc code")), set())
+
+    def test_aos_partial_real(self) -> None:
+        """金标:crawl 缓存里的 AOS 真页 → 34 码、带星号恰好四码;变异探针:去掉 42202 的星号,记下的码当场少一个。"""
+        from pnp import functions as fn
+        hit = fn.get_cached_page("https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility")
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有 AOS 资格页(本机未跑 crawl)")
+        rows = fn.parse_ab_aos(hit.html)
+        partial = set()
+        for r in rows:
+            if r["partial"]:
+                partial.add(r["noc"])
+        self.assertEqual(len(rows), 34)
+        self.assertEqual(partial, self.AOS_PARTIAL)
+        mutated = hit.html.replace("42202*", "42202")
+        self.assertNotEqual(mutated, hit.html)
+        partial = set()
+        for r in fn.parse_ab_aos(mutated):
+            if r["partial"]:
+                partial.add(r["noc"])
+        self.assertEqual(partial, self.AOS_PARTIAL - {"42202"})
+
+    def test_rrs_starred_real(self) -> None:
+        """金标:crawl 缓存里的乡村振兴资格真页 → 17 码里带星号恰好三码;变异探针:去掉 33100 的星号,当场少一个。"""
+        from pnp import functions as fn
+        hit = fn.get_cached_page("https://www.alberta.ca/aaip-rural-renewal-stream-eligibility")
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有乡村振兴资格页(本机未跑 crawl)")
+        self.assertEqual(len(fn.ab_noc_table_of(AbNocTableIn(html=hit.html, head_kw="noc code"))), 17)
+        self.assertEqual(fn.ab_starred_of(AbNocTableIn(html=hit.html, head_kw="noc code")), self.RRS_PARTIAL)
+        mutated = hit.html.replace("33100*", "33100")
+        self.assertNotEqual(mutated, hit.html)
+        self.assertEqual(fn.ab_starred_of(AbNocTableIn(html=mutated, head_kw="noc code")), self.RRS_PARTIAL - {"33100"})
+
+    def test_ns_construction_real(self) -> None:
+        """现状金标(2026-09-27 Frank 选「只上纯属改对的」):crawl 缓存里的 NS Skilled Worker 真页 → 建表照旧写出 20 码(官方 22 码
+        去掉 75101 / 75119)、不带 employerSector;变异探针:把 NS_CONSTR_GENERIC 清空,当场变回官方 22 码 —— 证明是这张剔除表在剔,
+        不是页上碰巧少了。表落系统临时目录;缓存里没有这页就跳过(建表那步缓存缺页会直连,本用例不许联网)。"""
+        from pnp import functions as fn
+        if fn.get_cached_page(fn.NS_MAIN_URL).html is None:
+            self.skipTest("crawl 缓存里没有 NS Skilled Worker 页(本机未跑 crawl)")
+        for generic, want in ((fn.NS_CONSTR_GENERIC, self.NS_22 - {"75101", "75119"}), (set(), self.NS_22)):
+            with tempfile.TemporaryDirectory() as tmp:
+                with mock.patch.object(fn, "OUT_PNP_DIR", Path(tmp)), mock.patch.object(fn, "NS_CONSTR_GENERIC", generic):
+                    fn.build_ns_construction()
+                table = json.loads((Path(tmp) / "ns-construction.json").read_text(encoding="utf-8"))
+            codes = set()
+            for o in table["occupations"]:
+                codes.add(o["noc"])
+            self.assertEqual(codes, want)
+            self.assertNotIn("employerSector", table)
+
+    def test_ab_tech_status_quo(self) -> None:
+        """现状金标(2026-09-27 Frank 选「只上纯属改对的」):AB 科技表照旧不带 employerSector(雇主是不是科技业本批不判,等第二步)。
+        build_ab 整跑一遍、取数全打桩:AOS 页取不到(留旧表)、科技 PDF 换成现造两行、医护页取不到、警务 / 旅游 / 乡村振兴三步跳过;
+        表落系统临时目录,不联网、不碰仓内文件。"""
+        from pnp import functions as fn
+        occs = [{"noc": "21231", "teer": 1, "name": "Software engineers and designers"},
+                {"noc": "21232", "teer": 1, "name": "Software developers and programmers"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            with (mock.patch.object(fn, "OUT_PNP_DIR", Path(tmp)),
+                  mock.patch.object(fn, "fetch_html", side_effect=RuntimeError("offline")),
+                  mock.patch.object(fn, "fetch_bytes", return_value=b""),
+                  mock.patch.object(fn, "parse_ab_tech", return_value=occs),
+                  mock.patch.object(fn, "ab_dhcp_html", side_effect=RuntimeError("offline")),
+                  mock.patch.object(fn, "build_ab_law"), mock.patch.object(fn, "build_ab_tourism"),
+                  mock.patch.object(fn, "build_ab_rural")):
+                fn.build_ab()
+            table = json.loads((Path(tmp) / "ab-tech.json").read_text(encoding="utf-8"))
+        self.assertNotIn("employerSector", table)
+        codes = []
+        for o in table["occupations"]:
+            codes.append(o["noc"])
+        self.assertEqual(codes, ["21231", "21232"])
 

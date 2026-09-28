@@ -234,6 +234,18 @@ K_OVERLAY = "overlay"
 K_SIGNAL = "signal"
 """表键:只作参考信号 —— 不当具名通道、不进资格判定,弹框清单照列(2026-09-24 MB 在需职业 / NS 紧缺空缺,Frank 批)。"""
 
+K_EMPLOYER_SECTOR = "employerSector"
+"""表 / 行键:这张清单(或这一码)只对这个行业的雇主成立,值是一个行业键(naics72 / bcPublicSchool / skAgriFood,各省段的
+*_SECTOR 常量;与 mart 域那份逐字相同,两域各自声明)。官方原句写的是雇主行业条件 —— 本域只把条件如实记进表,判雇主属不属该行业
+归 mart 评分段(看得出才改判,看不出照原判)。2026-09-27 Frank 拍板「看得出才改判」。
+同日 Frank 选「只上纯属改对的」:NS 建筑与 AB 科技两张表本批不写这个键、维持现状(NS 建筑照旧不收 75101 / 75119,见
+NS_CONSTR_GENERIC),等第二步(模型判雇主行业)再接;mart 域的 naics23 / abTech 两个行业键与词表留着,当第二步的高置信层。"""
+
+K_PARTIAL = "partial"
+"""排除表 occupations 行键(布尔):该码官方带星号 —— 同码里只一小类不合格(AOS 页表头注原句「This National Occupation
+Classification (NOC) code consists of both eligible occupations and ineligible occupations.」);Occupation 栏写的就是不合格的
+那一小类。原先解析时星号一剥了之、整码按不符合(AB_NOC_STAR 旧注);2026-09-27 Frank 拍板「看得出才改判」起如实记下,判归 mart。"""
+
 SIGNAL_OUTS = {"mb-indemand.json", "mb-indemand-rural.json", "ns-critical.json", "ns-grad.json", "sk-excluded.json",
                "nb-priority.json"}
 """只作参考信号的表(产出文件名):写表时带 K_SIGNAL。依据在 MB_BUCKETS / NS_STREAMS 的说明里(2026-09-24 Frank 批)。
@@ -891,7 +903,9 @@ AB_TABLE_HEAD_KW = "noc code"
 """找列头含「NOC code」的那张表。"""
 
 AB_NOC_STAR = "*"
-"""NOC 尾部的星号(去掉 —— 保守按不符合处理)。"""
+"""NOC 尾部的星号(去掉 —— 保守按不符合处理)。
+2026-09-27 Frank 拍板「看得出才改判」:码尾星号照旧剥掉,但带星号这件事记进行格 K_PARTIAL(AOS 表)/ K_EXCLUDED_PARTIAL
+(乡村振兴表),不再一律按不符合 —— 看得出这岗不属官方点名的那一小类才放行,判归 mart。"""
 
 FILETYPE_PDF = "pdf"
 """pymupdf 的 filetype 参数(内存流开 PDF)。"""
@@ -908,8 +922,11 @@ AB_AOS_STREAM = "AAIP Alberta Opportunity Stream"
 AB_AOS_LABEL = "AAIP 不符合清单"
 """AOS 表的前端短标签。"""
 
-AB_AOS_NOTE = "除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。"
-"""AOS 表的口径说明。"""
+AB_AOS_NOTE = ("除本表外 TEER0-5 都符合;原带 * 的码(行上 partial)同码里只 Occupation 栏写的那一小类不合格,"
+               "看得出这岗不属那一小类才放行,看不出照不符合。")
+"""AOS 表的口径说明。
+2026-09-27 Frank 拍板「看得出才改判」:原值「除本表外 TEER0-5 都符合;原带 * 为条件性不符合,粗筛下按不符合处理。」
+改为上值(带星号码如实记 partial,判归 mart 评分段)。"""
 
 AB_TECH_STREAM = "AAIP Accelerated Tech Pathway"
 """科技通道的官方名。"""
@@ -1050,8 +1067,10 @@ AB_RURAL_STREAM = "Rural Renewal Stream"
 AB_RURAL_LABEL = "AB 乡村振兴"
 """乡村振兴通道的前端短标签。"""
 
-AB_RURAL_NOTE = "须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算。"
-"""乡村振兴表的口径说明。"""
+AB_RURAL_NOTE = ("须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算(其中带 * 的几码 = excludedPartial,"
+                 "只 Occupation 栏写的那一小类不算)。")
+"""乡村振兴表的口径说明。
+2026-09-27 Frank 拍板「看得出才改判」:原值「须由指定社区背书;按岗位所在城市对社区名单,官方 17 个排除职业不算。」补上带星号码一句。"""
 
 TYPE_COMMUNITY = "community"
 """表类型:按地点(社区名单)判的通道 —— 不带 occupations,带 communities / excluded(2026-09-24 AB 乡村振兴)。"""
@@ -1061,6 +1080,9 @@ K_COMMUNITIES = "communities"
 
 K_EXCLUDED = "excluded"
 """表键:该通道排除的职业码。"""
+
+K_EXCLUDED_PARTIAL = "excludedPartial"
+"""表键:排除码里官方带星号的那几个(乡村振兴页 Table 1 的 60040 / 42200 / 33100;同 K_PARTIAL 的口径,2026-09-27 立)。"""
 
 AB_PRINT_LAW_TPL = "  ✓ AB 警务         {n} 个职业 → pnp/ab-law.json"
 """警务专项收尾报数。"""
@@ -1107,13 +1129,18 @@ BC_BUCKETS = {
     "childcare": {"out": "bc-childcare.json", "label": "BC 幼教",
                   "stream": "BC PNP Care: childcare targeted ITA"},
     "education": {"out": "bc-education.json", "label": "BC 法语教师",
-                  "stream": "BC PNP Care: education targeted ITA (French-speaking)"},
+                  "stream": "BC PNP Care: education targeted ITA (French-speaking)", "employerSector": "bcPublicSchool"},
     "vet": {"out": "bc-vet.json", "label": "BC 兽医",
             "stream": "BC PNP Care: veterinary targeted ITA"},
     "construction": {"out": "bc-construction.json", "label": "BC 建筑技工",
                      "stream": "BC PNP Build: construction trades targeted ITA"},
 }
-"""五个专项桶的产出文件 / 前端短标签 / 官方通道名(2026-09-24 卫生局单拆出,成六桶)。"""
+"""五个专项桶的产出文件 / 前端短标签 / 官方通道名(2026-09-24 卫生局单拆出,成六桶)。
+2026-09-27 Frank 拍板「看得出才改判」:法语教师桶多一个 employerSector 键(写进表级 K_EMPLOYER_SECTOR = bcPublicSchool)——
+官方原句「To receive a targeted invitation to apply, French-speaking teachers (NOC 41220 or 41221) must be employed in B.C.’s public
+K-12 system and have a CLB 5 or higher in French.」(crawl 缓存 bc-immigrate 806e0e95…,Education 一节),看得出雇主是公立学区才贴名。
+卫生局桶本批不带:官方只写「a full-time, indeterminate (no end date) job offer from a B.C. health authority employer」(skills-immigration
+页),crawl 缓存里没有列出卫生局名单的官方原句,不凭印象列名,等名单先落缓存再加(派工「找不到官方列名就停下」)。"""
 
 BC_NOC_LINE_RE = re.compile(r"^(\d{5})\s+(.+?)\s*$")
 """页面职业行:"31301 Registered nurses …"(无列表符号)。"""
@@ -1206,14 +1233,22 @@ Agriculture, forestry, fishing and hunting / 311 – Food manufacturing / 33311 
 94143 / 94204 / 95106 七个)要求担保雇主属上面五个行业之一,本站判不了雇主行业 —— 原先一律按码贴「SK 农业」,零售、
 建材、仓储雇主的搬运工、仓管员也挂上了。照 AB_TOURISM_GENERIC 的先例:带星号码不收进农业表,这些岗退回默认通道
 (TEER 4-5 落 mart 的 SK 现有工签档)。星号从官方页现读,不另抄一份码表(官方加减星号自动跟上);自校:这句不在
-(措辞变了)或在却一个星号码都没认出(版式变了)→ 保留旧表,不硬猜。"""
+(措辞变了)或在却一个星号码都没认出(版式变了)→ 保留旧表,不硬猜。
+2026-09-27 Frank 拍板「看得出才改判」(同日第二批):带星号码不再删,照收进农业表并在行上记 employerSector = skAgriFood
+(sk_sector_marked;清单卡照官方 11 码全列)—— 看得出雇主属农业或食品制造的才贴回「SK 农业」,看不出照旧落现有工签档,判归 mart。
+星号现读与两条自校不变。"""
 
 SK_SECTOR_STAR = "*"
 """职业名尾部的星号(= 这个职业挂着脚注里的雇主行业条件)。"""
 
 K_SECTOR_QUOTE = "sectorQuote"
 """SK_STREAMS 配置键:星号脚注原句 —— 带这个键的页,带星号的职业码不收(只有农业通道带;医疗页的星号意思是「也可走
-Employment Offer / Existing Skilled Workers」,与雇主行业无关,不带这个键)。"""
+Employment Offer / Existing Skilled Workers」,与雇主行业无关,不带这个键)。
+2026-09-27 Frank 拍板「看得出才改判」:带这个键的页,带星号的职业码改为照收并在行上记该条配置的 employerSector(不再删)。"""
+
+SK_AGRI_SECTOR = "skAgriFood"
+"""SK 农业通道带星号码的雇主行业键(脚注五个 NAICS:11 / 311 / 33311 / 411 / 49313;写进 sk-agri.json 带星号那几行的
+K_EMPLOYER_SECTOR,2026-09-27 Frank 拍板「看得出才改判」)。"""
 
 SK_STREAMS = [
     {"url": SK_BASE_URL + "health-talent-pathway", "out": "sk-health.json",
@@ -1221,10 +1256,12 @@ SK_STREAMS = [
     {"url": SK_BASE_URL + "sinp-innovation-tech-talent-pathway", "out": "sk-tech.json",
      "stream": "SINP Innovation & Tech Talent Pathway", "label": "SK 科技"},
     {"url": SK_BASE_URL + "agriculture-talent-pathway", "out": "sk-agri.json",
-     "stream": "SINP Agriculture Talent Pathway", "label": "SK 农业", "sectorQuote": SK_AGRI_SECTOR_QUOTE},
+     "stream": "SINP Agriculture Talent Pathway", "label": "SK 农业", "sectorQuote": SK_AGRI_SECTOR_QUOTE,
+     "employerSector": SK_AGRI_SECTOR},
 ]
 """每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签)。
-2026-09-27 农业那条多一个 sectorQuote 键:带星号的职业码不收(依据见 SK_AGRI_SECTOR_QUOTE)。"""
+2026-09-27 农业那条多一个 sectorQuote 键:带星号的职业码不收(依据见 SK_AGRI_SECTOR_QUOTE)。
+2026-09-27 第二批(Frank 拍板「看得出才改判」)再多一个 employerSector 键:带星号码照收、行上记这个行业键(见 K_SECTOR_QUOTE)。"""
 
 SK_PRINT_SECTOR_FAIL_TPL = "  ✗ {out}:星号脚注原句不在,或在却没认出带星号的职业码(改版?保留旧表,请人工复核)"
 """农业表带星号码自校没过的报数(2026-09-27)。"""
@@ -1537,11 +1574,20 @@ E6-09 全省核查纠正了两条旧假设:
 NB_SPLIT_QUOTE = "regardless of sectors"
 """官方原文的分界句:此句之前 = NAICS 72 条件性,之后 = 无条件。"""
 
-NB_FOOD_NOTE = ("官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,"
-                "按多数情形判不符合,请按自己雇主的实际行业核对。")
+NB_FOOD_NOTE = ("官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站按雇主名里一眼能认的行业词判,"
+                "看得出雇主不属住宿餐饮业的放行,看不出的按不符合,请按自己雇主的实际行业核对。")
 """住宿餐饮两表的共同尾注(**条件性**:官方原文「雇主本身不属住宿餐饮业(NAICS 72)的同款岗
 仍可提交 EOI」。本站没有雇主 NAICS 行业字段(不猜),按多数情形判不符合,条件写进 label 与
-note,由用户对自己雇主行业做最后判断 —— 粗筛信号,非资格认定)。"""
+note,由用户对自己雇主行业做最后判断 —— 粗筛信号,非资格认定)。
+2026-09-27 Frank 拍板「看得出才改判」:原值「官方留了口子:雇主本身不属住宿餐饮业的同款岗仍可提交——本站无雇主行业字段,
+按多数情形判不符合,请按自己雇主的实际行业核对。」改为上值 —— 表上记 K_EMPLOYER_SECTOR = NB_FOOD_SECTOR,mart 评分段按雇主名判
+三态:看得出不在住宿餐饮业(医院 / 政府 / 养老院 / 保洁公司…)才放行,在或看不出照旧不符合。"""
+
+NB_FOOD_SECTOR = "naics72"
+"""NB 餐饮住宿不符合表的雇主行业键(写进 nb-ineligible-food.json 表级 K_EMPLOYER_SECTOR;2026-09-27 Frank 拍板「看得出才改判」)。
+官方原句「not considering any expressions of interest … to candidates working in the accommodation and food services sector (NAICS 72)」
+「However, candidates in these types of jobs can still submit an expression of interest if they are employed by a business not
+directly in the accommodation or food service sector (NAICS 72).」(crawl 缓存 nb-imm 7d81dd6b…)。"""
 
 NB_NOTICES = [
     {"key": "pnp", "program": "PNP", "must": ("expressions of interest", "NAICS 72"),
@@ -1549,7 +1595,8 @@ NB_NOTICES = [
      "any": {"out": "nb-ineligible.json", "label": "NB 不符合清单",
              "note": "自 2026-02-03 起,NB 不受理这些职业的省提名 EOI/ITA(不论雇主属什么行业)。"},
      "food": {"out": "nb-ineligible-food.json", "label": "NB 餐饮住宿不符合",
-              "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的省提名 EOI/ITA。" + NB_FOOD_NOTE}},
+              "note": "自 2026-02-03 起,NB 不受理住宿餐饮业(NAICS 72)这些职业的省提名 EOI/ITA。" + NB_FOOD_NOTE,
+              "employerSector": NB_FOOD_SECTOR}},
     {"key": "aip", "program": "AIP", "must": ("endorsement applications", "NAICS 72"),
      "stream": "Atlantic Immigration Program (NB) — occupations not being considered for endorsement",
      "any": {"out": "nb-aip-ineligible.json", "label": "NB AIP 不受理",

@@ -358,6 +358,9 @@ from pnp.constants import (  # 2026-09-27 九省体检修复批新增(MB 整期�
     K_SECTOR_QUOTE, MB_TOTAL_RE, SK_PRINT_SECTOR_FAIL_TPL, SK_SECTOR_STAR,
 )
 from pnp.scheme import DrawCoverIn, SkSectorIn  # 同上(并回历史挡残缺旧行 / 农业表去星号码)
+from pnp.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业条件与带星号码如实记进表,判归 mart)
+    K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_PARTIAL,
+)
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -525,7 +528,8 @@ def noc_key_of(row: dict) -> str:
 
 
 def parse_ab_aos(html: str) -> list:
-    """找列头含「NOC code」的表,抽 {noc,teer,name};去掉 NOC 星号(保守按不符合)。"""
+    """找列头含「NOC code」的表,抽 {noc,teer,name};去掉 NOC 星号(保守按不符合)。
+    2026-09-27 Frank 拍板「看得出才改判」:星号照旧剥掉,但记进行格 partial(带星号 = 同码只 name 栏那一小类不合格,判归 mart)。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         rows = table.find_all(TAG_TR)
@@ -543,7 +547,8 @@ def parse_ab_aos(html: str) -> list:
             teer = None
             if c[1].isdigit():
                 teer = int(c[1])
-            occs.setdefault(noc, {K_NOC: noc, K_TEER: teer, K_NAME: fold_ws(c[2]).strip(STRIP_DOT_SPACE)})
+            occs.setdefault(noc, {K_NOC: noc, K_TEER: teer, K_NAME: fold_ws(c[2]).strip(STRIP_DOT_SPACE),
+                                  K_PARTIAL: c[0].endswith(AB_NOC_STAR)})
         return list(occs.values())
     return []
 
@@ -709,7 +714,8 @@ def ab_noc_table_of(x: AbNocTableIn) -> dict:
 
 def build_ab_rural() -> None:
     """AB 乡村振兴:指定社区页表 1 的社区地名 + 资格页排除职业表(17 码)→ ab-rural.json(type=community,
-    mart 按岗位城市对);两页都在 ab-aaip crawl 缓存。"""
+    mart 按岗位城市对);两页都在 ab-aaip crawl 缓存。
+    2026-09-27 Frank 拍板「看得出才改判」:排除表里带星号的码另记 excludedPartial(同 AOS 表 partial 的口径,判归 mart)。"""
     try:
         comm_html = ab_page_html(AbPageIn(url=AB_RR_COMMUNITY_URL, title=AB_RURAL_STREAM))
         excl_html = ab_page_html(AbPageIn(url=AB_RR_URL, title=AB_RURAL_STREAM))
@@ -726,8 +732,34 @@ def build_ab_rural() -> None:
         K_PROVINCE: PROV_AB, K_TYPE: TYPE_COMMUNITY, K_URL: AB_RR_COMMUNITY_URL, K_FETCHED: today_iso(),
         K_NOTE: AB_RURAL_NOTE,
         K_COMMUNITIES: sorted(places), K_EXCLUDED: sorted(excluded),
+        K_EXCLUDED_PARTIAL: sorted(ab_starred_of(AbNocTableIn(html=excl_html, head_kw=AB_TABLE_HEAD_KW))),
     }, indent=INDENT_2))
     say(AB_PRINT_RURAL_TPL.format(n=len(places), m=len(excluded)))
+
+
+def ab_starred_of(x: AbNocTableIn) -> set:
+    """首行表头含判词的那张表里,码尾带星号的职业码(= 同码只一小类不合格;与 ab_noc_table_of 认的是同一张表、同一格,
+    2026-09-27 Frank 拍板「看得出才改判」)。"""
+    soup = cast(SoupNodeLike, BeautifulSoup(x.html, PARSER_HTML))
+    for table in soup.find_all(TAG_TABLE):
+        trs = table.find_all(TAG_TR)
+        if not trs or x.head_kw not in fold_ws(trs[0].get_text(TEXT_JOIN_SEP, strip=True)).lower():
+            continue
+        codes = 0
+        out: set = set()
+        for tr in trs[1:]:
+            cells = tr.find_all([TAG_TD, TAG_TH])
+            if len(cells) < 2:
+                continue
+            raw = fold_ws(cells[0].get_text(TEXT_JOIN_SEP, strip=True))
+            if AB_NOC5_RE.match(raw) is None:
+                continue
+            codes += 1
+            if raw.endswith(AB_NOC_STAR):
+                out.add(raw.rstrip(AB_NOC_STAR))
+        if codes > 0:
+            return out
+    return set()
 
 
 def ab_rr_places_of(html: str) -> set:
@@ -827,7 +859,8 @@ def build_bc_ineligible() -> None:
 
 
 def build_bc() -> None:
-    """BC 具名清单入口:先落主线排除清单(PDF),再按节标题分桶落五个专项清单。"""
+    """BC 具名清单入口:先落主线排除清单(PDF),再按节标题分桶落五个专项清单。
+    2026-09-27 Frank 拍板「看得出才改判」:桶配置带 employerSector 的(法语教师),表上照写这个键(判雇主归 mart)。"""
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     build_bc_ineligible()
     try:
@@ -848,6 +881,8 @@ def build_bc() -> None:
             K_URL: BC_URL, K_FETCHED: fetched,
             K_OCCUPATIONS: occs,
         }
+        if K_EMPLOYER_SECTOR in cfg:
+            table[K_EMPLOYER_SECTOR] = cfg[K_EMPLOYER_SECTOR]
         write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
                                      line=PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
                                                                  out=cfg[K_OUT], fetched=fetched)))
@@ -969,7 +1004,8 @@ def build_sk_excluded() -> None:
 
 def build_sk() -> None:
     """SK 具名清单入口:三条 Talent Pathway(inclusion)+ 主线排除清单(exclusion)。
-    2026-09-27 九省体检:带 sectorQuote 键的页(农业通道)先去掉带星号的职业码(sk_sector_free),自校没过保留旧表。"""
+    2026-09-27 九省体检:带 sectorQuote 键的页(农业通道)先去掉带星号的职业码(sk_sector_free),自校没过保留旧表。
+    2026-09-27 Frank 拍板「看得出才改判」:带星号码改为照收、行上记该条配置的 employerSector(sk_sector_marked),自校照旧。"""
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     for s in SK_STREAMS:
         try:
@@ -980,7 +1016,7 @@ def build_sk() -> None:
         occs = parse_noc_lines(NocLinesIn(md=md, patterns=SK_NOC_PATTERNS))
         quote = s.get(K_SECTOR_QUOTE)
         if quote is not None:
-            kept = sk_sector_free(SkSectorIn(md=md, occs=occs, quote=quote))
+            kept = sk_sector_marked(SkSectorIn(md=md, occs=occs, quote=quote, sector=s.get(K_EMPLOYER_SECTOR) or ""))
             if kept is None:
                 say(SK_PRINT_SECTOR_FAIL_TPL.format(out=s[K_OUT]))
                 continue
@@ -1001,10 +1037,13 @@ def build_sk() -> None:
     build_sk_excluded()
 
 
-def sk_sector_free(x: SkSectorIn) -> list | None:
-    """农业通道表去掉带星号的职业码(星号 = 担保雇主须属脚注里那几个 NAICS 行业,本站判不了;照 AB_TOURISM_GENERIC
-    先例不收,依据见 constants.SK_AGRI_SECTOR_QUOTE)。自校没过 → None,调用方保留旧表:脚注原句不在(措辞变了),
-    或在却一个星号码都没认出(版式变了)。2026-09-27 九省体检立。"""
+def sk_sector_marked(x: SkSectorIn) -> list | None:
+    """农业通道表里带星号的职业码照收,并在行上记 employerSector(x.sector)—— 不带星号的行原样;雇主属不属脚注那几个 NAICS
+    归 mart 按雇主名判,看不出照旧落现有工签档。自校没过 → None,调用方保留旧表(两条自校不变)。
+    2026-09-27 Frank 拍板「看得出才改判」由 sk_sector_free 改名改行为(带星号码由「删」改为「照收并标行业键」)。
+    原注(同日九省体检立,逐字):「农业通道表去掉带星号的职业码(星号 = 担保雇主须属脚注里那几个 NAICS 行业,本站判不了;照
+    AB_TOURISM_GENERIC 先例不收,依据见 constants.SK_AGRI_SECTOR_QUOTE)。自校没过 → None,调用方保留旧表:脚注原句不在(措辞变了),
+    或在却一个星号码都没认出(版式变了)。2026-09-27 九省体检立。」"""
     if x.quote.lower() not in fold_ws(x.md).lower():
         return None
     starred = sk_starred_nocs(x.md)
@@ -1012,7 +1051,9 @@ def sk_sector_free(x: SkSectorIn) -> list | None:
         return None
     rows: list = []
     for o in x.occs:
-        if o[K_NOC] not in starred:
+        if o[K_NOC] in starred:
+            rows.append({K_NOC: o[K_NOC], K_NAME: o[K_NAME], K_EMPLOYER_SECTOR: x.sector})
+        else:
             rows.append(o)
     return rows
 
@@ -1273,7 +1314,8 @@ def say_nb_sector_check(md: str) -> None:
 
 
 def build_nb() -> None:
-    """NB 不受理清单入口:同页两条通告 × 不论行业/住宿餐饮两段 = 四张表。"""
+    """NB 不受理清单入口:同页两条通告 × 不论行业/住宿餐饮两段 = 四张表。
+    2026-09-27 Frank 拍板「看得出才改判」:段配置带 employerSector 的(住宿餐饮那段),表上照写这个键(判雇主归 mart)。"""
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     try:
         md = fetch_md(NB_URL)
@@ -1301,6 +1343,8 @@ def build_nb() -> None:
                 K_URL: NB_URL, K_FETCHED: fetched,
                 K_OCCUPATIONS: occs,
             }
+            if K_EMPLOYER_SECTOR in cfg:
+                table[K_EMPLOYER_SECTOR] = cfg[K_EMPLOYER_SECTOR]
             write_pnp_table(BuildTableIn(filename=cfg[K_OUT], table=table,
                                          line=NB_PRINT_TABLE_TPL.format(label=cfg[K_LABEL], n=len(occs),
                                                                         out=cfg[K_OUT], fetched=fetched)))
@@ -7721,6 +7765,7 @@ def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
 from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
 from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest  # noqa: E402 — 同上
 from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
+from pnp.scheme import EmployerSectorTablesTest  # noqa: E402 — 同上(2026-09-27 Frank 拍板「看得出才改判」)
 
 
 def run_tests() -> None:
@@ -7729,7 +7774,9 @@ def run_tests() -> None:
     搬去 door 叶(`python etl/door/main.py --only test`)。
     2026-09-27 加 SkDirectApplyTest(萨省「持 offer 直接申请、不经 EOI 抽选」原句的认句与拒猜)。
     同日九省体检修复批再加三组:MbDrawTotalTest(MB 缺 LAA 行认整期总数句)、DrawMergeTest(并回历史:本轮行彼此只去
-    逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。"""
+    逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。
+    同日 Frank 拍板「看得出才改判」再加一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表;SkAgriStarTest 随之改为
+    「带星号码照收并标行业键」)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -7737,5 +7784,6 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MbDrawTotalTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawMergeTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(EmployerSectorTablesTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

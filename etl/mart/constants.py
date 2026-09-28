@@ -817,6 +817,289 @@ ANY_PR_PATH_NOTE = (
 """口径 v2(2026-08-07 深夜 Frank 拍板「排除清单口径」,v1 的 inclusion 模型被官方原句证伪)
 的逐省锚句台账 —— 判定函数 any_pr_path 的举证在此,代码里只留一句指路。"""
 
+K_EMPLOYER_SECTOR = "employerSector"
+"""raw/pnp 表键:这张清单只对这个行业的雇主成立,值是下面 SECTOR_* 行业键之一(pnp 域 build_* 写,本域读)。可以挂在表级
+(整张表都带条件:NB 餐饮住宿、BC 法语教师),也可以挂在 occupations 行级(只这一码带条件:SK 农业带星号码)。
+纳入式清单:看得出雇主在该行业才贴通道名;叠加式排除(NB 餐饮住宿):看得出雇主不在该行业才放行 —— 两边「看不出」都照原判
+(不贴 / 照挡)。2026-09-27 Frank 拍板「看得出才改判」(第一步只用官方名单与雇主名里一眼能认的行业词,模型判行业是第二步、另立项)。
+同日 Frank 选「只上纯属改对的」:NS 建筑、AB 科技两张表本批不带这个键(维持现状,见 SECTOR_NAICS23 / SECTOR_AB_TECH)。
+值与 pnp 域那份逐字相同(两域各自声明,不互取常量)。"""
+
+K_PARTIAL = "partial"
+"""raw/pnp 表键(排除表的 occupations 行级,布尔):该码官方带星号 —— AOS / 乡村振兴两页表头注原句「This National Occupation
+Classification (NOC) code consists of both eligible occupations and ineligible occupations. The ‘Occupation’ column specifies which
+occupations are ineligible for each NOC Code listed.」,同码里只一小类不合格;省桶 / 社区桶里同名格 = 这些码的集合。
+2026-09-27 Frank 拍板「看得出才改判」:看得出这岗不属那一小类才不排除(判据 PARTIAL_OUTSIDE_WORDS),看不出照旧整码排除。"""
+
+K_EXCLUDED_PARTIAL = "excludedPartial"
+"""社区表键(ab-rural.json):排除码里官方带星号的那几个(乡村振兴页 Table 1 的 60040 / 42200 / 33100;2026-09-27 起 pnp 域写)。"""
+
+K_COND = "cond"
+"""省桶 / 通道桶格:带雇主行业条件的码 → 行业键。省桶里是条件式叠加排除(NB 餐饮住宿 13 码),通道桶里是条件式具名清单
+(整表带条件的每码都在,SK 农业只有带星号的码在);不带条件的码不进这一格(2026-09-27)。"""
+
+K_NAMED = "named"
+"""通道桶格:这条通道算进「省点名」的码(score 的 +12、职业级通道档 named_any 都按它)= 清单码减去**行级**带条件的码
+(SK 农业带星号码)。2026-09-27 Frank 选「只上纯属改对的」:带星号码按雇主贴回通道名,但分数与通道档照原样 —— 合入前这几码
+不在表上、不算点名;整表带条件的(BC 法语教师)合入前就在表上,照算。省点名要不要跟着雇主判,等 Frank 拍板再改。"""
+
+SECTOR_IN = "in"
+"""雇主行业三态之一:雇主名里一眼看得出在该行业(命中该行业的 SECTOR_IN_WORDS、不命中 SECTOR_OUT_WORDS)。"""
+
+SECTOR_OUT = "out"
+"""雇主行业三态之一:一眼看得出不在该行业(命中 SECTOR_OUT_WORDS、不命中 SECTOR_IN_WORDS)。"""
+
+SECTOR_UNKNOWN = "unknown"
+"""雇主行业三态之一:看不出 —— 两边都没命中、两边都命中(名字自相矛盾)、名字空、名字里并列多个商号(SECTOR_MULTI_MARK),
+或表上写的行业键本域不认得。看不出一律照原判(2026-09-27 Frank 拍板「看不出的照原样挡,具名通道退回默认通道」)。"""
+
+SECTOR_NAICS72 = "naics72"
+"""行业键:住宿餐饮业(NAICS 72)—— NB 餐饮住宿 13 码的叠加排除只对它成立。"""
+
+SECTOR_NAICS23 = "naics23"
+"""行业键:建筑业(NAICS 23)—— NS 建筑子条件的 22 码只对它成立。
+2026-09-27 Frank 选「只上纯属改对的」,本批不接线:ns-construction.json 不写这个键、照旧 20 码(剔 75101 / 75119),NS 建筑照旧按码贴;
+这里的词表与出处留着,当第二步(模型判雇主行业)的高置信层。"""
+
+SECTOR_BC_PUBLIC_SCHOOL = "bcPublicSchool"
+"""行业键:BC 公立 K-12(学区 / 法语学区 Conseil scolaire francophone)—— BC 法语教师定向邀请只对它成立。"""
+
+SECTOR_AB_TECH = "abTech"
+"""行业键:阿省科技业(AAIP 科技 NAICS 清单)—— AB 加速科技通道只对它成立。
+2026-09-27 Frank 选「只上纯属改对的」,本批不接线:ab-tech.json 不写这个键,AB 科技照旧按码贴;词表与出处留着,当第二步的高置信层。"""
+
+SECTOR_SK_AGRI_FOOD = "skAgriFood"
+"""行业键:萨省农业通道星号脚注的五个 NAICS(11 / 311 / 33311 / 411 / 49313)—— SK 农业带星号的七码只对它成立。"""
+
+SECTOR_SOURCE = {
+    SECTOR_NAICS72: (
+        "https://www.gnb.ca/en/topic/family-home-community/immigration/important-notices.html",
+        ("Immigration New Brunswick is not considering any expressions of interest for issuing any invitations to apply to "
+         "candidates working in the accommodation and food services sector (NAICS 72). … However, candidates in these types "
+         "of jobs can still submit an expression of interest if they are employed by a business not directly in the "
+         "accommodation or food service sector (NAICS 72)."),
+    ),
+    SECTOR_NAICS23: (
+        "https://liveinnovascotia.com/skilled-worker",
+        ("To submit an expression of interest (EOI) you must: have a full-time permanent job offer from a Nova Scotia employer "
+         "in the construction sector (NAICS 23) in one of these NOCs:"),
+    ),
+    SECTOR_BC_PUBLIC_SCHOOL: (
+        "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/about-the-bc-provincial-nominee-program",
+        ("To receive a targeted invitation to apply, French-speaking teachers (NOC 41220 or 41221) must be employed in B.C.’s "
+         "public K-12 system and have a CLB 5 or higher in French."),
+    ),
+    SECTOR_AB_TECH: (
+        "https://www.alberta.ca/aaip-alberta-express-entry-stream-eligibility",
+        ("is for an Alberta employer whose primary business activities belong to the Alberta tech industry, as defined by the "
+         "AAIP list of eligible North American Industry Classification System (NAICS) codes … The following individuals are "
+         "not eligible to apply for or be nominated under the Accelerated Tech Pathway … independent contractors or temporary "
+         "agency workers"),
+    ),
+    SECTOR_SK_AGRI_FOOD: (
+        ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+         "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/"
+         "agriculture-talent-pathway"),
+        ("*Occupations that require the sponsoring employer to be under: NAICS 11 – Agriculture, forestry, fishing and hunting "
+         "NAICS 311 – Food manufacturing NAICS 33311 – Agricultural implement manufacturing NAICS 411 – Farm product merchant "
+         "wholesalers NAICS 49313 – Farm product and warehousing"),
+    ),
+}
+"""行业键 → (官方出处页, 官方原句)。原句逐字取自 crawl 缓存(2026-09-27 核):nb-imm 7d81dd6b…、ns-root 495d2957…(CONSTRUCTION 页签)、
+bc-immigrate 806e0e95…(Education 一节)、ab-aaip 85fb5efa…(Accelerated Tech Pathway 一段)、sk-sinp 6e54338d…(职业表下的星号脚注)。
+⚠ AB 科技:原句里的「AAIP list of eligible NAICS codes」是一份 PDF(页上链到 lbr-aaip-tech-pathway-naics-codes-list.pdf),不在
+crawl 缓存里 —— 词表只收「软件 / IT 服务 / 网络安全」这类任何科技业定义都覆盖的核心词,不拿印象去对那份清单(2026-09-27)。
+⚠ BC 卫生局(Health Authority stream)本批不立行业键:官方只写「a full-time, indeterminate (no end date) job offer from a B.C.
+health authority employer」,crawl 缓存里找不到列出卫生局名单的官方原句,不凭印象列名(Frank 派工「找不到官方列名就停下」)。
+⚠ naics23 / abTech 两条出处留着但本批不接线(2026-09-27 Frank 选「只上纯属改对的」,见 SECTOR_NAICS23 / SECTOR_AB_TECH)。"""
+
+SECTOR_IN_WORDS = {
+    SECTOR_NAICS72: (
+        re.compile(r"\brestaurants?\b", re.I), re.compile(r"\bresto\b", re.I), re.compile(r"\bcaf[eé]s?\b", re.I),
+        re.compile(r"\bcafeteria\b", re.I), re.compile(r"\bbistro\b", re.I), re.compile(r"\bbrasserie\b", re.I),
+        re.compile(r"\bpizz(?:a|eria)\b", re.I), re.compile(r"\bsushi\b", re.I), re.compile(r"\bdiner\b", re.I),
+        re.compile(r"\btavern\b", re.I), re.compile(r"\beatery\b", re.I), re.compile(r"\bcatering\b", re.I),
+        re.compile(r"\bcaterers?\b", re.I), re.compile(r"\bbuffet\b", re.I), re.compile(r"\bdonair\b", re.I),
+        re.compile(r"\bshawarma\b", re.I), re.compile(r"\bramen\b", re.I), re.compile(r"\bhotels?\b", re.I),
+        re.compile(r"\bmotels?\b", re.I), re.compile(r"\bresorts?\b", re.I), re.compile(r"\bhostel\b", re.I),
+        re.compile(r"\bbed (?:and|&) breakfast\b", re.I), re.compile(r"\bpub\b", re.I),
+        re.compile(r"\bbar (?:and|&) grill\b", re.I), re.compile(r"\bfood services?\b", re.I),
+        re.compile(r"\btim hortons?\b", re.I), re.compile(r"\bmcdonald'?s\b", re.I), re.compile(r"\bdairy queen\b", re.I),
+        re.compile(r"\bburger king\b", re.I), re.compile(r"\bstarbucks\b", re.I), re.compile(r"\bmarriott\b", re.I),
+        re.compile(r"\bhilton\b", re.I), re.compile(r"\bbest western\b", re.I), re.compile(r"\bholiday inn\b", re.I),
+        re.compile(r"\bdays inn\b", re.I), re.compile(r"\bcomfort inn\b", re.I), re.compile(r"\bquality inn\b", re.I),
+        re.compile(r"\bramada\b", re.I), re.compile(r"\bwyndham\b", re.I), re.compile(r"\bsheraton\b", re.I),
+        re.compile(r"\bsodexo\b", re.I), re.compile(r"\baramark\b", re.I), re.compile(r"\bcompass group\b", re.I),
+    ),
+    SECTOR_NAICS23: (
+        re.compile(r"\bconstruction\b", re.I), re.compile(r"\bcontracting\b", re.I), re.compile(r"\bcontractors?\b", re.I),
+        re.compile(r"\broofing\b", re.I), re.compile(r"\bdrywall\b", re.I), re.compile(r"\bformwork\b", re.I),
+        re.compile(r"\bpaving\b", re.I), re.compile(r"\bexcavating\b", re.I), re.compile(r"\bexcavation\b", re.I),
+        re.compile(r"\bmasonry\b", re.I), re.compile(r"\bplumbing\b", re.I), re.compile(r"\brenovations?\b", re.I),
+    ),
+    SECTOR_BC_PUBLIC_SCHOOL: (
+        re.compile(r"\bschool district\b", re.I), re.compile(r"\bconseil scolaire\b", re.I),
+    ),
+    SECTOR_AB_TECH: (
+        re.compile(r"\bsoftware\b", re.I), re.compile(r"(?-i:\bIT\b) (?:solutions|services|consulting)\b", re.I),
+        re.compile(r"\bcyber ?security\b", re.I),
+    ),
+    SECTOR_SK_AGRI_FOOD: (
+        re.compile(r"\bfarms?\b", re.I), re.compile(r"\bcattle\b", re.I), re.compile(r"\blivestock\b", re.I),
+        re.compile(r"\bgrain\b", re.I), re.compile(r"\bpulses\b", re.I), re.compile(r"\bfrozen foods\b", re.I),
+        re.compile(r"\bpackers\b", re.I), re.compile(r"\bpoultry (?:processors?|farms?|breeders?)\b", re.I),
+        re.compile(r"\bflour mills?\b", re.I), re.compile(r"\bdairy products\b", re.I),
+    ),
+}
+"""行业键 → 雇主名里「一眼看得出在该行业」的词,一词一条(2026-09-27 Frank 拍板「看得出才改判」:行业词只收一眼能认的)。
+每个词都拿在招真岗的雇主名人工核过(抽样清单见本批交付报告;误判为 0 才收),且每个词都在自测金标里有一家「删了这个词判法就变」的
+在招真雇主作证(MartEmployerSectorTest 的变异探针逐词删);在招里找不到这种雇主的词不收(核不了)。核的时候删掉的词与理由(例子都是在招岗原样):
+· 住宿餐饮:不收裸 inn / lodge / bar / grill / kitchen —— 「Inn Style Ltd」招的是发廊经理、「Lanark Lodge Long Term Care Home」是
+  养老院、「Gloss nail bar」招美甲店经理、kitchen 撞橱柜安装;fairmont 撞「Fairmont Dentistry」;fast food / boston pizza 与
+  restaurant / pizza 重复(没有只靠它们认出的雇主)。本表本批只当否决用(NB 规则里「在行业」与「看不出」同判,见 is_blocked)。
+· 建筑:不收 builders(「COMMUNITY BUILDERS」招居家护理员)、insulation(「SOL Thermal Insulation Covers」招生产协调员)、裸 electric /
+  electrical / HVAC / concrete(公用事业、制造、批发都用),宁可看不出。
+· BC 公立 K-12:school district(BC 公立学区的名字就叫 School District No. N)与 conseil scolaire(公立法语学区;BC 只有一家,
+  Conseil scolaire francophone de la Colombie-Britannique —— 在招里还没有它的岗,拿安省三家公立法语学区作证)。
+· 科技:官方 NAICS 清单 PDF 不在缓存(见 SECTOR_SOURCE),只收 software / 大写 IT 的 solutions·services·consulting / cyber security;
+  technolog* / tech / systems / networks / cloud 撞得太多(「SSN Networks Inc Canada」招保安、「Cloud 9 Vape」「Cloud Naan Inc.」是烟具店与
+  餐馆、手机维修店也叫 Tech),小写 it 是代词(Fix It 一类),故只认大写 IT。
+· 萨省农业:不收 foods / food / meats / agri* / seeds / feedlot —— 「Foods」常见于餐饮与零售的公司名(「LUXORE FOODS 8TH STREET LTD.」
+  招快餐店经理、「Lucky Dollar Foods」招零售店长、「Global Pet Foods」招宠物店店员、「Umami Foods Canada」招批发采购);agri* 撞联邦农业部
+  (「AGRICULTURE AND AGRI-FOOD CANADA」)与设备经销(「Centre Agricole CASE IH」招零件专员);seeds 撞「Orange Seeds Montessori Centre」;
+  feedlot 在招里没有。grain 的木纹义(「Edge Grain」招木匠)与 farm 的零售 / 金融义(「Caledonia Clover Farm」、「Farm Lending Canada Inc」)
+  交 SECTOR_OUT_WORDS 否决。因此派工例子里 Maple Leaf Foods / NutraSun Foods / Canada Golden Foods / Bourgault / Flaman 名字里没有能单独
+  成立的行业词,本批看不出(按品牌名认会认错:在招里另有「Flaman Fitness」与「BOURGAULT MACHINES INC」两家同名不同业的),留给第二步。
+· 2026-09-27 Frank 选「只上纯属改对的」:建筑、科技两张词表(连同 SECTOR_OUT_WORDS 里的同键两张)本批不接线 —— NS 建筑、AB 科技两张
+  清单不带行业键、照旧按码贴;词表留着(逐词探针照跑),当第二步(模型判雇主行业)的高置信层。"""
+
+SECTOR_OUT_WORDS = {
+    SECTOR_NAICS72: (
+        re.compile(r"\bhospitals?\b", re.I),
+        re.compile(r"\bhealth (?:network|authority|authorities|services|centre|center|region)\b", re.I),
+        re.compile(r"\bnursing homes?\b", re.I), re.compile(r"\blong[- ]term care\b", re.I),
+        re.compile(r"\bretirement (?:residence|home|living|community|village)\b", re.I),
+        re.compile(r"\bspecial care home\b", re.I), re.compile(r"\bgovernment\b", re.I),
+        re.compile(r"^(?:the )?(?:city|town|village|county|municipality|regional municipality|municipal district|district"
+                   r"|province) of\b", re.I),
+        re.compile(r"\bdepartment of\b", re.I), re.compile(r"\bnational defence\b", re.I),
+        re.compile(r"\bcanadian forces\b", re.I), re.compile(r"\bcorrectional service", re.I),
+        re.compile(r"\bcoast guard\b", re.I), re.compile(r"\bparks canada\b", re.I), re.compile(r"\bpublic service\b", re.I),
+        re.compile(r"\bschool (?:district|division|board)\b", re.I), re.compile(r"\bconseil scolaire\b", re.I),
+        re.compile(r"\bcleaning\b", re.I), re.compile(r"\bjanitorial\b", re.I), re.compile(r"\baquaculture\b", re.I),
+        re.compile(r"\bgrocery\b", re.I), re.compile(r"\bgroceries\b", re.I), re.compile(r"\bsupermarkets?\b", re.I),
+        re.compile(r"\bconvenience\b", re.I), re.compile(r"\bwholesale\b", re.I),
+    ),
+    SECTOR_NAICS23: (
+        re.compile(r"\blandscap\w*", re.I), re.compile(r"\blawn\b", re.I), re.compile(r"\bshipbuild\w*", re.I),
+        re.compile(r"\bshipyards?\b", re.I), re.compile(r"\bboat ?(?:builders?|works)\b", re.I),
+        re.compile(r"\baerospace\b", re.I), re.compile(r"\bfoods?\b", re.I), re.compile(r"\bfarms?\b", re.I),
+        re.compile(r"\blumber\b", re.I), re.compile(r"\bmills?\b", re.I), re.compile(r"\buniversit\w*", re.I),
+        re.compile(r"\bcollege\b", re.I), re.compile(r"\bschools?\b", re.I), re.compile(r"\bhospitals?\b", re.I),
+        re.compile(r"\bgovernment\b", re.I),
+        re.compile(r"^(?:the )?(?:city|town|village|county|municipality|district) of\b", re.I),
+        re.compile(r"\bsuppl(?:y|ies|iers?)\b", re.I), re.compile(r"\bmaterials?\b", re.I),
+        re.compile(r"\bmat[ée]riaux\b", re.I), re.compile(r"\bequipment\b", re.I), re.compile(r"\brentals?\b", re.I),
+        re.compile(r"\bmodul\w*", re.I), re.compile(r"\bmanufactur\w*", re.I), re.compile(r"\blabou?r contractors?\b", re.I),
+        re.compile(r"\bforest\w*", re.I), re.compile(r"\blogging\b", re.I), re.compile(r"\bcleaning\b", re.I),
+        re.compile(r"\bjanitorial\b", re.I), re.compile(r"\bcommunity\b", re.I), re.compile(r"\bmoving\b", re.I),
+        re.compile(r"\btrucking\b", re.I), re.compile(r"\btransport\w*", re.I), re.compile(r"\bhauling\b", re.I),
+        re.compile(r"\bgardens?\b", re.I), re.compile(r"\bgardening\b", re.I), re.compile(r"\bjcb\b", re.I),
+        re.compile(r"\bon demand\b", re.I),
+    ),
+    SECTOR_BC_PUBLIC_SCHOOL: (
+        re.compile(r"\bindependent\b", re.I), re.compile(r"\bprivate\b", re.I),
+    ),
+    SECTOR_AB_TECH: (
+        re.compile(r"\bworkforce\b", re.I), re.compile(r"\bemployment (?:agency|services)\b", re.I),
+    ),
+    SECTOR_SK_AGRI_FOOD: (
+        re.compile(r"\bsuppl(?:y|ies)\b", re.I), re.compile(r"\bmarkets?\b", re.I), re.compile(r"\bcent(?:re|er)\b", re.I),
+        re.compile(r"\bequipment\b", re.I), re.compile(r"\bmachinery\b", re.I), re.compile(r"\bdealers?\b", re.I),
+        re.compile(r"\bsales\b", re.I), re.compile(r"\brentals?\b", re.I), re.compile(r"\bfarm boy\b", re.I),
+        re.compile(r"\bclover farm\b", re.I), re.compile(r"\bcredit\b", re.I), re.compile(r"\blending\b", re.I),
+        re.compile(r"\binsurance\b", re.I), re.compile(r"\bfinanc\w*", re.I), re.compile(r"\bretail\b", re.I),
+        re.compile(r"\bstores?\b", re.I), re.compile(r"\bgrocer\w*", re.I), re.compile(r"\bsupermarkets?\b", re.I),
+        re.compile(r"\brestaurants?\b", re.I), re.compile(r"\bfood services?\b", re.I), re.compile(r"\bcatering\b", re.I),
+        re.compile(r"\bwholesale\b", re.I), re.compile(r"\bdistribut\w*", re.I), re.compile(r"\btransport\w*", re.I),
+        re.compile(r"\btrucking\b", re.I), re.compile(r"\bhauling\b", re.I), re.compile(r"\bexpress\b", re.I),
+        re.compile(r"\blabou?r (?:services|contractors?)\b", re.I), re.compile(r"\bemploi\b", re.I),
+        re.compile(r"\bemployment\b", re.I), re.compile(r"\bwood\w*", re.I), re.compile(r"\bcabinet\w*", re.I),
+        re.compile(r"\bmillwork\b", re.I), re.compile(r"\bedge grain\b", re.I),
+    ),
+}
+"""行业键 → 雇主名里「一眼看得出不在该行业」的词,一词一条。两个用处:① 三态的「不在该行业」(NB 餐饮住宿靠它放行:医院 / 卫生网络 /
+养老院 / 政府 / 学区 / 保洁公司 / 水产养殖 / 超市便利店 / 批发);② 否决 —— 同一个名字两边都命中 = 名字自相矛盾,一律看不出
+(「CRB Supermarket / Riverside Restaurant」「Lawncraft Landscaping & construction Ltd.」「Steve's Livestock Transport」「Edge Grain」)。
+收词口径与 SECTOR_IN_WORDS 相同(每个词在自测里有一家在招真雇主作证)。核的时候删掉的词:住宿餐饮这边不收 golf(「19th Hole Indoor
+Golf & Social」招厨师)、university / college(「EDO JAPAN University Heights」「Osmow's College SQ」是餐馆,地名里带)、ministry of /
+custodial / réseau de santé / hotel-dieu / board of education(在招里没有只靠它们认出的雇主);建筑与科技这边的 staffing / recruit /
+personnel / talent / placement / prefab、萨省农业这边的 implements / state farm / end grain 同理不收(中介岗在汇装时整条滤掉)。
+2026-09-27 Frank 拍板「看得出才改判」。"""
+
+SECTOR_MULTI_MARK = "/"
+"""雇主名里并列多个商号的记号(「Greco Xpress Petawawa / Becker's Convenience Store」「… O/A McDonald's Restaurant」):
+一个名字里两家店,看不出是哪家雇的,一律看不出(2026-09-27)。"""
+
+SECTOR_UNKNOWN_TPL = "  ⚠ raw/pnp/{file} 写的雇主行业键 {sector} 本域不认得:这张表带条件的码一律按看不出判(补 SECTOR_IN_WORDS 再跑)"
+"""表上写了本域不认得的行业键时的报数(pnp 域先加了新行业、本域还没跟上;照看不出判 = 纳入式不贴、排除式照挡,不静默放行)。"""
+
+PARTIAL_INSIDE_WORDS = {
+    "60040": (
+        re.compile(r"massage", re.I), re.compile(r"escort", re.I), re.compile(r"body ?rub", re.I),
+        re.compile(r"parlou?r", re.I), re.compile(r"erotic", re.I), re.compile(r"sensual", re.I),
+        re.compile(r"adult (?:entertainment|services?)", re.I),
+    ),
+    "33100": (
+        re.compile(r"\blabs?\b", re.I), re.compile(r"laborator", re.I), re.compile(r"\bbench\b", re.I),
+        re.compile(r"denture", re.I), re.compile(r"dental techn", re.I),
+    ),
+    "42200": (
+        re.compile(r"justices? of (?:the )?peace", re.I), re.compile(r"juges? de paix", re.I),
+    ),
+    "42202": (
+        re.compile(r"level\s*(?:1|i|one)\b", re.I), re.compile(r"\bassistant\b", re.I),
+        re.compile(r"uncertified|without certification", re.I),
+    ),
+}
+"""带星号码 → 这岗落在官方点名不合格的那一小类里的迹象(职位名 + 雇主名 + Job Bank 证书栏里任一处命中即算;命中一律照旧排除),一词一条。
+官方点名的一小类(AOS 页 Table 1 与乡村振兴页 Table 1 的 Occupation 栏,crawl 缓存 ab-aaip bbf84819… / 0cf7f671… 原样;
+出处页 https://www.alberta.ca/aaip-alberta-opportunity-stream-eligibility
+与 https://www.alberta.ca/aaip-rural-renewal-stream-eligibility):
+60040「Escort agency managers, massage parlour managers」;33100「Dental laboratory assistants/bench workers」(乡村振兴页写
+「Dental laboratory bench workers」);42200「Justices of the peace」;42202「Early childhood educators who do not have certification through
+Alberta Children's Services – Child Care Staff Certification Office or who have been certified as Level 1 Early Childhood Educator
+(formerly Child Development Assistant)」(只 AOS 表带,乡村振兴表不排 42202)。42202 这格也收「assistant」(一级证旧名 Child Development
+Assistant 也由它认;幼教助理岗多半收一级证)。这些词只作否决,在招里多数没有「只靠它挡住」的岗,自测拿现造职位名作证。
+2026-09-27 Frank 拍板「看得出才改判」:「幼教证书看不出(除非正文明写 Level 2 / Level 3 认证),看不出的照旧挡」。"""
+
+PARTIAL_OUTSIDE_WORDS = {
+    "60040": (
+        re.compile(r"\bnails?\b", re.I), re.compile(r"\bhair\w*", re.I), re.compile(r"\bbarber\w*", re.I),
+        re.compile(r"\bwash\b", re.I), re.compile(r"\bcleaning\b", re.I), re.compile(r"\bjanitorial\b", re.I),
+        re.compile(r"\blaundry\b", re.I), re.compile(r"\btattoo\w*", re.I), re.compile(r"\bgrooming\b", re.I),
+        re.compile(r"\bdriving school\b", re.I), re.compile(r"\bhome care\b", re.I),
+    ),
+    "33100": (
+        re.compile(r"\bdental assistant\b", re.I), re.compile(r"\bchair-?side assistant\b", re.I),
+    ),
+    "42200": (
+        re.compile(r"\w"),
+    ),
+    "42202": (
+        re.compile(r"level\s*(?:2|3|ii|iii|two|three)\b", re.I),
+    ),
+}
+"""带星号码 → 看得出不属那一小类的迹象(同一段文字;PARTIAL_INSIDE_WORDS 一个都没命中、这里命中一个才放行),一词一条
+(2026-09-27 Frank 拍板「看得出才改判」):
+60040 = 美甲 / 美发 / 理发 / 洗车 / 保洁 / 洗衣 / 纹身 / 宠物美容 / 驾校 / 居家护理 这类(NOC 60040 自己的示例职称里与按摩院、陪侍公司
+并列的那些;spa、beauty、esthetic 不收 —— 看不出是不是按摩);33100 = 职位名写明牙医诊所的 dental assistant / chair-side assistant
+(不是技工所);42200 = 任何职位名(派工原话「标题不是 justice of the peace 的 42200」放行 —— 太平绅士交 PARTIAL_INSIDE_WORDS 否决);
+42202 = 证书栏或职位名明写二级 / 三级证(Job Bank 证书栏原样写「Child development worker (ECE level 2)」「Child development supervisor
+(ECE level 3)」),同时提到一级证的交 PARTIAL_INSIDE_WORDS 否决。正文自由文本本步不读(评分段读不到正文,见交付报告),只认职位名、
+雇主名与证书栏。每个词在自测金标里有在招真岗作证(删了这个词这岗就不放行);cleaners / dry clean / pest control / dental assisting /
+child development worker·supervisor 与别的词重复或在招里没有,不收。表上带星号、这里没有判据的码(官方以后新加星号)一律看不出、照旧排除。"""
+
 
 # =========================================================================
 # 6. 评分:打分与产出(原 08_score 下半)
@@ -916,6 +1199,11 @@ K_SRC_EMPLOYMENT_HOURS = "employment_hours"
 
 K_SRC_EMPLOYMENT_TERM = "employment_term"
 """Job Bank / 板仓帖子行的雇佣期键(permanent / term / seasonal / casual;没标注 = 空)。用途同上。"""
+
+K_CERTIFICATES = "certificates"
+"""Job Bank 帖子行的证书栏键(详情页「Certificates, licences, memberships, and courses」逐条,清单;没有 = 空清单)。
+评分段判 AB 带星号码要看(42202 幼教:证书栏写明 ECE level 2 / level 3 才看得出不属一级证那一小类,见 PARTIAL_OUTSIDE_WORDS;
+2026-09-27 Frank 拍板「看得出才改判」)。板仓与 ATS 没有这一栏。逐条以 NL 连成一段文字交判定(判据正则按行内词找)。"""
 
 POSTING_URL_RE = re.compile(r"/jobposting/(\d+)")
 """帖 URL 里的稳定帖号(不用含 ?source= 查询串的完整 URL;见 docs/source-framework.md)。"""

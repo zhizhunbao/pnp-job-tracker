@@ -222,6 +222,12 @@ from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
 from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
+from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业三态 + 带星号码)
+    K_CERTIFICATES, K_COND, K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_NAMED, K_PARTIAL, PARTIAL_INSIDE_WORDS,
+    PARTIAL_OUTSIDE_WORDS, SECTOR_IN, SECTOR_IN_WORDS, SECTOR_MULTI_MARK, SECTOR_OUT, SECTOR_OUT_WORDS, SECTOR_UNKNOWN,
+    SECTOR_UNKNOWN_TPL,
+)
+from mart.scheme import CodeExclIn, MartEmployerSectorTest, SectorIn, SectorWarnIn, StreamHitIn, WordsIn  # 同上
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -685,15 +691,23 @@ def detect_visa_flag(text: str) -> VisaFlagOut:
 
 
 def merge_pnp_table(x: PnpMergeIn) -> None:
-    """把一份省 PNP 维护表并进该省的累计桶(三种语义见 constants.PNP_TABLE_SEMANTICS)。"""
+    """把一份省 PNP 维护表并进该省的累计桶(三种语义见 constants.PNP_TABLE_SEMANTICS)。
+    2026-09-27 Frank 拍板「看得出才改判」:叠加式排除里带雇主行业条件的码(NB 餐饮住宿)不进 blocked、进 cond(码 → 行业键,
+    is_blocked 按雇主判);排除表连同官方带星号的码一起记(partial);具名通道桶带上本表的 cond,以及算进省点名的码(named,
+    同日 Frank 选「只上纯属改对的」:行级带条件的码不算,见 constants.K_NAMED)。"""
     if x.kind == PNP_TYPE_INELIGIBLE and x.overlay:
-        x.bucket[K_BLOCKED].update(x.nocs)
+        for noc in x.nocs:
+            if noc in x.cond:
+                x.bucket[K_COND][noc] = x.cond[noc]
+            else:
+                x.bucket[K_BLOCKED].add(noc)
     elif x.kind == PNP_TYPE_INELIGIBLE:
         x.bucket[K_TYPE] = PNP_TYPE_INELIGIBLE
         x.bucket[K_NOCS] = set(x.nocs)
+        x.bucket[K_PARTIAL] = set(x.partial)
     else:
         x.bucket[K_STREAMS].append(to_pnp_stream_bucket(PnpStreamBucketIn(
-            label=x.label, nocs=x.nocs)))
+            label=x.label, nocs=x.nocs, cond=x.cond, named=x.named)))
         if x.bucket[K_TYPE] != PNP_TYPE_INELIGIBLE:
             x.bucket[K_NOCS].update(x.nocs)
 
@@ -717,12 +731,58 @@ def load_pnp_by_prov() -> dict:
         if not prov or (not nocs and data.get(K_TYPE) != PNP_TYPE_INELIGIBLE):
             continue
         bucket = out.setdefault(prov, to_pnp_prov_bucket())
+        cond = cond_of(data)
+        say_unknown_sectors(SectorWarnIn(file=f.name, cond=cond))
         merge_pnp_table(PnpMergeIn(bucket=bucket, kind=data.get(K_TYPE, PNP_TYPE_INDEMAND),
                                    overlay=bool(data.get(K_OVERLAY)), nocs=nocs,
-                                   label=pnp_label_of(data)))
+                                   label=pnp_label_of(data), cond=cond, partial=partial_of(data),
+                                   named=nocs - row_cond_of(data)))
     for tbl in out.values():
         tbl[K_STREAMS].sort(key=stream_size_of)
     return out
+
+
+def cond_of(data: dict) -> dict:
+    """一张 raw/pnp 表里带雇主行业条件的码 → 行业键:occupations 行级的 employerSector 优先,其次表级;都没有的码不进
+    (2026-09-27 Frank 拍板「看得出才改判」;键的语义见 constants.K_EMPLOYER_SECTOR)。"""
+    table_sector = data.get(K_EMPLOYER_SECTOR) or ""
+    out: dict = {}
+    for o in data.get(K_OCCUPATIONS, []):
+        noc = o.get(K_NOC)
+        if not noc:
+            continue
+        sector = o.get(K_EMPLOYER_SECTOR) or table_sector
+        if sector != "":
+            out[noc] = sector
+    return out
+
+
+def partial_of(data: dict) -> set:
+    """一张 raw/pnp 排除表里官方带星号的码(occupations 行级 partial 为真;2026-09-27,语义见 constants.K_PARTIAL)。"""
+    out: set = set()
+    for o in data.get(K_OCCUPATIONS, []):
+        if o.get(K_NOC) and o.get(K_PARTIAL) is True:
+            out.add(o[K_NOC])
+    return out
+
+
+def row_cond_of(data: dict) -> set:
+    """一张 raw/pnp 表里 occupations 行上自带雇主行业条件的码(行级 employerSector;SK 农业带星号码)—— 这些码不算进省点名
+    (K_NAMED:2026-09-27 Frank 选「只上纯属改对的」,分数与通道档照合入前,合入前它们不在表上)。表级条件不算在内。"""
+    out: set = set()
+    for o in data.get(K_OCCUPATIONS, []):
+        if o.get(K_NOC) and o.get(K_EMPLOYER_SECTOR):
+            out.add(o[K_NOC])
+    return out
+
+
+def say_unknown_sectors(x: SectorWarnIn) -> None:
+    """表上写了本域不认得的行业键 → 逐个报一行(这些码照看不出判,不静默放行;2026-09-27)。"""
+    seen: set = set()
+    for sector in x.cond.values():
+        if sector not in SECTOR_IN_WORDS and sector not in seen:
+            seen.add(sector)
+            say(SECTOR_UNKNOWN_TPL.format(file=x.file, sector=sector))
 
 
 def stream_size_of(s: dict) -> int:
@@ -743,7 +803,8 @@ def pnp_label_of(data: dict) -> str:
 
 
 def load_community_tables() -> dict:
-    """raw/pnp 里按社区名单判的通道(type=community,AB 乡村振兴)→ {省: {label, places(小写), excluded}}。"""
+    """raw/pnp 里按社区名单判的通道(type=community,AB 乡村振兴)→ {省: {label, places(小写), excluded, partial}}。
+    partial = 排除码里官方带星号的那几个(2026-09-27 Frank 拍板「看得出才改判」,与 AOS 表同口径;老表没这个键 = 空集,照旧整码排除)。"""
     out: dict = {}
     if not IN_PNP_DIR.exists():
         return out
@@ -755,17 +816,20 @@ def load_community_tables() -> dict:
         for p in data.get(K_COMMUNITIES, []):
             places.add(str(p).strip().lower())
         out[data[K_PROVINCE]] = {K_LABEL: pnp_label_of(data), K_PLACES: places,
-                                 K_EXCLUDED: set(data.get(K_EXCLUDED, []))}
+                                 K_EXCLUDED: set(data.get(K_EXCLUDED, [])),
+                                 K_PARTIAL: set(data.get(K_EXCLUDED_PARTIAL, []))}
     return out
 
 
 def load_named_stream_nocs(by_prov: dict) -> dict:
-    """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按**具名通道命中**算,与资格解耦)。"""
+    """province → 具名通道 NOC 并集(score() 的 +12「省点名招」按**具名通道命中**算,与资格解耦)。
+    2026-09-27 Frank 选「只上纯属改对的」:并的是各通道的 named 格(行级带条件的码不算,见 constants.K_NAMED)—— 分数与职业级通道档
+    与合入前逐码相同。"""
     out: dict = {}
     for prov, tbl in by_prov.items():
         acc: set = set()
         for st in tbl[K_STREAMS]:
-            acc.update(st[K_NOCS])
+            acc.update(st[K_NAMED])
         if acc:
             out[prov] = acc
     return out
@@ -856,26 +920,122 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
       不再过 AOS 的 34 码表 —— 原先 Medicine Hat 的幼教、Rocky Mountain House 的小学老师这类「AOS 排除、RRS 不排除」的岗
       被判不可,通道名也跟着挂不上(pnp_stream 的社区分支先过本函数)。同页托育岗「须持 Level 2 / Level 3 ECE 证书」
       这类持证条件,本批不判。
+    · 2026-09-27 Frank 拍板「看得出才改判」:三处按雇主 / 这岗改判,看不出一律照原判 ——
+      ① 叠加式排除带行业条件的码(NB 餐饮住宿 13 码)走 is_blocked:看得出雇主不在住宿餐饮业才放行;
+      ② 排除表里官方带星号的码(AOS 60040 / 42200 / 42202 / 33100,乡村振兴同口径)走 is_excluded / is_code_excluded:
+         看得出这岗不属官方点名的那一小类才不排除;
+      ③ 具名清单带行业条件的码(BC TEER 4-5 与纳入式省的清单命中)走 is_listed:看得出雇主在该行业才算落在清单上。
+      职业 × 省级的判定(prov_list_of)雇主 / 职位名 / 证书栏给空串 = 看不出,三处都照原判。
     """
     if not x.prov or x.prov in NON_PNP_PROV:
         return False
     if not offer_fits(x):
         return False
     tbl = x.tables.by_prov.get(x.prov)
-    if tbl and x.noc in tbl[K_BLOCKED]:
+    if is_blocked(x):
         return False
     if is_community_hit(x):
         return True
     if tbl and tbl[K_TYPE] == PNP_TYPE_INELIGIBLE:
-        if x.teer is None or x.noc in tbl[K_NOCS]:
+        if x.teer is None or is_excluded(x):
             return False
         if x.prov in EXCL_TEER03_PROVS and x.teer not in TEER_SKILLED:
-            return x.noc in x.tables.named_by_prov.get(x.prov, set())
+            return is_listed(x)
         return True
-    nocs = prov_nocs_of(tbl)
-    if x.teer in TEER_SKILLED or x.noc in nocs:
+    if x.teer in TEER_SKILLED or is_listed(x):
         return True
     return x.teer is not None and x.prov in UNIVERSAL_PROVS
+
+
+def is_blocked(x: PnpJudgeIn) -> bool:
+    """这岗命中该省叠加式排除(NB 不受理清单):无条件的码一律挡;带雇主行业条件的码(NB 餐饮住宿,cond 格)看得出雇主
+    **不在**该行业才放行,在或看不出照挡(2026-09-27 Frank 拍板「看得出雇主不在该行业,就放行」;依据见 SECTOR_SOURCE)。"""
+    tbl = x.tables.by_prov.get(x.prov)
+    if not tbl:
+        return False
+    if x.noc in tbl[K_BLOCKED]:
+        return True
+    sector = tbl[K_COND].get(x.noc)
+    if sector is None:
+        return False
+    return employer_sector_of(SectorIn(sector=sector, employer=x.employer)) != SECTOR_OUT
+
+
+def is_excluded(x: PnpJudgeIn) -> bool:
+    """排除式省(AOS / BC / SK):这岗的职业码在排除表上且不因带星号放行(is_code_excluded;2026-09-27)。"""
+    tbl = x.tables.by_prov.get(x.prov)
+    if not tbl or tbl[K_TYPE] != PNP_TYPE_INELIGIBLE:
+        return False
+    return is_code_excluded(CodeExclIn(codes=tbl[K_NOCS], partial=tbl[K_PARTIAL], judge=x))
+
+
+def is_code_excluded(x: CodeExclIn) -> bool:
+    """职业码在这张排除表上 → 排除;该码官方带星号(同码只一小类不合格)且看得出这岗不属那一小类 → 不排除。
+    AOS 表(is_excluded)与乡村振兴表(is_community_hit)共用这一把尺子(2026-09-27 Frank 拍板「看得出才改判」)。"""
+    if x.judge.noc not in x.codes:
+        return False
+    return x.judge.noc not in x.partial or is_partial_outside(x.judge) is False
+
+
+def is_partial_outside(x: PnpJudgeIn) -> bool:
+    """带星号码:看得出这岗不属官方点名不合格的那一小类(职位名 + 雇主名 + 证书栏里一个 PARTIAL_INSIDE_WORDS 的迹象都没有、
+    有 PARTIAL_OUTSIDE_WORDS 的迹象)→ True;该码本站没定判据、或看不出 → False(照旧排除;2026-09-27)。"""
+    inside = PARTIAL_INSIDE_WORDS.get(x.noc)
+    outside = PARTIAL_OUTSIDE_WORDS.get(x.noc)
+    if inside is None or outside is None:
+        return False
+    text = NL.join((x.title, x.employer, x.certs))
+    if is_any_word(WordsIn(words=inside, text=text)):
+        return False
+    return is_any_word(WordsIn(words=outside, text=text))
+
+
+def is_any_word(x: WordsIn) -> bool:
+    """这段文字命中这组词里的任一条(词表一词一条,见 constants.SECTOR_IN_WORDS 的收词口径;2026-09-27)。"""
+    for word in x.words:
+        if word.search(x.text) is not None:
+            return True
+    return False
+
+
+def is_listed(x: PnpJudgeIn) -> bool:
+    """这岗落在该省某张具名清单上(清单带雇主行业条件的码,看得出雇主在该行业才算;2026-09-27 起替原先
+    「职业码在该省清单并集里」的两处判法:纳入式省的资格 / 直可,BC TEER 4-5 与 SK 现有工签的「在具名清单上」)。"""
+    tbl = x.tables.by_prov.get(x.prov)
+    if not tbl:
+        return False
+    for s in tbl[K_STREAMS]:
+        if is_stream_hit(StreamHitIn(stream=s, judge=x)):
+            return True
+    return False
+
+
+def is_stream_hit(x: StreamHitIn) -> bool:
+    """这岗命中这条具名通道:职业码在通道清单上;该码带雇主行业条件(cond 格)的,还要看得出雇主在该行业
+    (2026-09-27 Frank 拍板「看得出雇主在该行业,才贴具名通道」;看不出 / 不在 = 不算命中,退回默认通道)。"""
+    if x.judge.noc not in x.stream[K_NOCS]:
+        return False
+    sector = x.stream[K_COND].get(x.judge.noc)
+    if sector is None:
+        return True
+    return employer_sector_of(SectorIn(sector=sector, employer=x.judge.employer)) == SECTOR_IN
+
+
+def employer_sector_of(x: SectorIn) -> str:
+    """雇主名 → 该行业三态(SECTOR_IN / SECTOR_OUT / SECTOR_UNKNOWN;2026-09-27 Frank 拍板「看得出才改判」,第一步只认
+    雇主名里一眼能认的行业词 —— 词表与核对口径见 constants.SECTOR_IN_WORDS / SECTOR_OUT_WORDS)。名字空、并列多个商号、两边都命中、
+    行业键本域不认得,一律看不出。各省共用这一处。"""
+    words_in = SECTOR_IN_WORDS.get(x.sector)
+    words_out = SECTOR_OUT_WORDS.get(x.sector)
+    if words_in is None or words_out is None or x.employer.strip() == "" or SECTOR_MULTI_MARK in x.employer:
+        return SECTOR_UNKNOWN
+    hit_in = is_any_word(WordsIn(words=words_in, text=x.employer))
+    hit_out = is_any_word(WordsIn(words=words_out, text=x.employer))
+    if hit_in and hit_out is False:
+        return SECTOR_IN
+    if hit_out and hit_in is False:
+        return SECTOR_OUT
+    return SECTOR_UNKNOWN
 
 
 def offer_fits(x: PnpJudgeIn) -> bool:
@@ -888,30 +1048,28 @@ def offer_fits(x: PnpJudgeIn) -> bool:
     return x.hours not in blocked and x.term not in blocked
 
 
-def prov_nocs_of(tbl: dict | None) -> set:
-    """该省资格 NOC 集(没这个省的表 = 空集)。"""
-    if tbl:
-        return tbl[K_NOCS]
-    return set()
-
-
 def is_community_hit(x: PnpJudgeIn) -> bool:
     """这岗落在该省按社区名单判的通道里(AB 乡村振兴):城市在指定社区名单、职业码认得出(TEER 非空)、且不在该通道
     **自己**的排除表里(ab-rural.json 的 excluded = 官方 RRS 资格页 Table 1 的 17 码)—— 不看 AOS 那张 34 码表。
-    pnp_eligible 与 pnp_stream 的社区分支共用这一把尺子(2026-09-27 九省体检立)。"""
+    pnp_eligible 与 pnp_stream 的社区分支共用这一把尺子(2026-09-27 九省体检立)。
+    2026-09-27 Frank 拍板「看得出才改判」:排除表里带星号的码(60040 / 42200 / 33100)与 AOS 表同口径,走 is_code_excluded。"""
     comm = x.tables.community_by_prov.get(x.prov)
     if comm is None or x.teer is None:
         return False
-    return x.city.strip().lower() in comm[K_PLACES] and x.noc not in comm[K_EXCLUDED]
+    if x.city.strip().lower() not in comm[K_PLACES]:
+        return False
+    return is_code_excluded(CodeExclIn(codes=comm[K_EXCLUDED], partial=comm[K_PARTIAL], judge=x)) is False
 
 
 def is_sk_ewp(x: PnpJudgeIn) -> bool:
     """SK 这岗只能走 Existing Work Permit(TEER 4-5 或卡车司机;条件档,须在萨省持工签满 6 个月,依据见 SK_EWP_PROV)。
     2026-09-24 第三批:医护大类不在医疗人才清单上的也归这里(SK_HEALTH_BROAD);在具名清单上的(医疗人才 / 科技 / 农业,
-    都是持 offer 的专项)一律不算。"""
+    都是持 offer 的专项)一律不算。
+    2026-09-27 Frank 拍板「看得出才改判」:「在具名清单上」改走 is_listed —— 农业清单带星号的码要看得出雇主属农业 / 食品制造
+    才算在清单上,看不出的照旧落现有工签档(与上一批「带星号码一律不贴」的落点一致)。"""
     if x.prov != SK_EWP_PROV or x.teer is None:
         return False
-    if x.noc in x.tables.named_by_prov.get(x.prov, set()):
+    if is_listed(x):
         return False
     return x.teer not in TEER_SKILLED or x.noc in SK_EWP_NOCS or x.noc[:1] == SK_HEALTH_BROAD
 
@@ -922,6 +1080,9 @@ def pnp_direct(x: PnpJudgeIn) -> bool:
     榜A「雇主担保可提名省份」直陈行用它;eligible−direct = 「先省内工作 6 个月」灰行。
     TEER0-3 通用、排除式省默认、具名清单命中、NL 普通通道 → direct;
     仅靠 MB/NS/NB/PE 普通通道兜底的 TEER4-5 → 非 direct(cond)。
+    2026-09-27 Frank 拍板「看得出才改判」:「具名清单命中」改走 is_listed(带行业条件的码看得出雇主在该行业才算)。
+    同日 Frank 选「只上纯属改对的」:NS 建筑表不带行业条件(维持现状),它的 TEER 4-5 码照旧算具名清单命中 = direct;
+    带条件的只剩 BC 法语教师(TEER 1,本就 direct)与 SK 农业带星号码(SK 走 is_sk_ewp 判),本函数的结论与改前逐格相同。
     """
     if not pnp_eligible(x):
         return False
@@ -932,7 +1093,7 @@ def pnp_direct(x: PnpJudgeIn) -> bool:
     tbl = x.tables.by_prov.get(x.prov)
     if tbl and tbl[K_TYPE] == PNP_TYPE_INELIGIBLE:
         return True
-    if x.noc in prov_nocs_of(tbl):
+    if is_listed(x):
         return True
     return x.prov in UNIVERSAL_DIRECT_PROVS
 
@@ -948,14 +1109,18 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
     不属 PNP 的省(NON_PNP_PROV:QC、NU)同样不挂 —— 两地本就没有省表,这一判让「一律」不靠数据碰巧缺席。
     2026-09-27 九省体检:社区分支改走 is_community_hit(只认乡村振兴自己的 17 码排除表),pnp_eligible 同步放行 ——
     原先这里先过 pnp_eligible,而它用 AOS 的 34 码表,把 RRS 不排除的幼教 42202、小学教师 41221 这批挡掉。
+    2026-09-27 Frank 拍板「看得出雇主在该行业,才贴具名通道」:清单带雇主行业条件的码(BC 法语教师、SK 农业带星号码)走
+    is_stream_hit —— 看得出雇主在该行业才挂这条通道名;看不出 / 不在就跳过这条,往下找(别的清单、社区、现有工签),
+    都没有给 None,前端落该省默认通道(「具名通道退回默认通道」)。同日 Frank 选「只上纯属改对的」:NS 建筑、AB 科技两张表
+    不带行业条件,照旧按码贴(等第二步模型判行业再接)。
     """
     judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov, hours=x.hours, term=x.term,
-                       city=x.city)
+                       city=x.city, employer=x.employer, title=x.title, certs=x.certs)
     tbl = x.tables.by_prov.get(x.prov)
     if x.prov in NON_PNP_PROV or not tbl or not offer_fits(judge):
         return None
     for s in tbl[K_STREAMS]:
-        if x.noc in s[K_NOCS] and s[K_LABEL]:
+        if s[K_LABEL] and is_stream_hit(StreamHitIn(stream=s, judge=judge)):
             return s[K_LABEL]
     if is_community_hit(judge) and pnp_eligible(judge):
         return x.tables.community_by_prov[x.prov][K_LABEL]
@@ -973,10 +1138,10 @@ def any_pr_path(x: PnpJudgeIn) -> bool:
     (AAIP/BC/SK 排除集、NB 不受理 overlay),且联邦三路(EE / AIP / 保育专项)也救不回来。
     sector 级暂停(NS 餐饮住宿 2024-04 起)与保育专项闭门同属「暂停≠无路」,不判死只留痕。
     RCIP 社区级不进省判(站级脚注);QC 走自身体系不判死;teer=None 由调用方留空不硬判。
+    2026-09-27 Frank 拍板「看得出才改判」:命中判法改走 is_blocked / is_excluded(与 pnp_eligible 同一把尺子);职业 × 省级这一格
+    雇主与职位名给空串 = 看不出,带条件的码照旧算命中,判死结果与改前逐格相同。
     """
-    tbl = x.tables.by_prov.get(x.prov)
-    blocked = bool(tbl) and (x.noc in tbl[K_BLOCKED]
-                             or (tbl[K_TYPE] == PNP_TYPE_INELIGIBLE and x.noc in tbl[K_NOCS]))
+    blocked = is_blocked(x) or is_excluded(x)
     if not blocked:
         return True
     if x.teer in TEER_SKILLED or x.noc in x.tables.ee_by_noc:
@@ -987,13 +1152,15 @@ def any_pr_path(x: PnpJudgeIn) -> bool:
 
 
 def to_pnp_prov_bucket() -> dict:
-    """一个省的累计桶初值(type/nocs/blocked/streams 四格)。"""
-    return {"type": PNP_TYPE_INDEMAND, "nocs": set(), "blocked": set(), "streams": []}
+    """一个省的累计桶初值(type/nocs/blocked/streams 四格;2026-09-27 加 cond / partial 两格:条件式叠加排除的码 → 行业键、
+    排除表里官方带星号的码)。"""
+    return {"type": PNP_TYPE_INDEMAND, "nocs": set(), "blocked": set(), "cond": {}, "partial": set(), "streams": []}
 
 
 def to_pnp_stream_bucket(x: PnpStreamBucketIn) -> dict:
-    """一条具名通道的桶(标签 + 该通道的 NOC 集)。"""
-    return {"label": x.label, "nocs": x.nocs}
+    """一条具名通道的桶(标签 + 该通道的 NOC 集;2026-09-27 加 cond:带雇主行业条件的码 → 行业键;同日加 named:算进省点名的码,
+    见 constants.K_NAMED)。"""
+    return {"label": x.label, "nocs": x.nocs, "cond": x.cond, "named": x.named}
 
 
 # =========================================================================
@@ -1033,7 +1200,8 @@ def collect_ats_jobs(formatted: dict) -> list:
     「Canada - Ottawa - …」认不出省 → 09-23「没有省的岗不判」把 46 条 ON 的 TEER 0-3 岗判成不可提名(九省通道审计查出)。
     2026-09-26 工时 / 雇佣期随岗带上(判通道要看):ATS 源头没有这两格(to_ats_job_fields 也不带),只有 jdformat 整理版抽的。
     2026-09-27 Frank 勾「ATS 工时、雇佣期、薪资和小修」:ats 域给 jobs.json 的岗位行加了 employment_hours / employment_term
-    两格(键名与取值同 Job Bank 仓),这里改读它们(源标注优先,源没写才用整理版,同 emp_of);老数据缺键 = 空串,照常跑。"""
+    两格(键名与取值同 Job Bank 仓),这里改读它们(源标注优先,源没写才用整理版,同 emp_of);老数据缺键 = 空串,照常跑。
+    2026-09-27 Frank 拍板「看得出才改判」:雇主名随岗带上(公司档 profile 的 name,与中介判定读的是同一格),ATS 没有证书栏。"""
     out: list = []
     if not IN_ATS_COMPANIES.exists():
         return out
@@ -1051,7 +1219,8 @@ def collect_ats_jobs(formatted: dict) -> list:
             out.append(CollectedJob(ext=ext,
                                     title=j.get(K_TITLE, ""), agency=ag,
                                     prov=j.get(K_PROVINCE) or guess_prov(j.get(K_LOCATION, "")), hint="",
-                                    city=j.get(K_CITY) or "", hours=emp.hours, term=emp.term))
+                                    city=j.get(K_CITY) or "", hours=emp.hours, term=emp.term,
+                                    employer=prof.get(K_NAME) or "", certs=""))
     return out
 
 
@@ -1084,7 +1253,8 @@ def ats_ext_of(x: AtsExtIn) -> str:
 
 
 def collect_jobbank_jobs(formatted: dict) -> list:
-    """Job Bank 累积当前态里的岗 → 待评分清单(官方 NOC 优先于标题猜;工时 / 雇佣期走 emp_of,2026-09-26)。"""
+    """Job Bank 累积当前态里的岗 → 待评分清单(官方 NOC 优先于标题猜;工时 / 雇佣期走 emp_of,2026-09-26)。
+    2026-09-27 Frank 拍板「看得出才改判」:雇主名与证书栏随岗带上(帖子行已有的 employer / certificates 两格,不另抓)。"""
     out: list = []
     if not IN_JOBBANK.exists():
         return out
@@ -1095,7 +1265,8 @@ def collect_jobbank_jobs(formatted: dict) -> list:
         out.append(CollectedJob(ext=ext, title=j.get(K_TITLE, ""),
                                 agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
                                 prov=j.get(K_PROVINCE, ""), hint=jobbank_hint_of(j), city=j.get(K_CITY) or "",
-                                hours=emp.hours, term=emp.term))
+                                hours=emp.hours, term=emp.term, employer=j.get(K_EMPLOYER) or "",
+                                certs=NL.join(j.get(K_CERTIFICATES) or [])))
     return out
 
 
@@ -1134,7 +1305,8 @@ def jobbank_ext_of(j: dict) -> str:
 
 def collect_board_jobs(formatted: dict) -> list:
     """第三方板仓(processed/<板>/postings.json)里的岗 → 待评分清单(板不给 NOC,hint 空 → 按标题分类;
-    2026-09-06 jobillico/jobboom 立域;工时 / 雇佣期与 Job Bank 同键同尺,走 emp_of,2026-09-26)。"""
+    2026-09-06 jobillico/jobboom 立域;工时 / 雇佣期与 Job Bank 同键同尺,走 emp_of,2026-09-26)。
+    2026-09-27 Frank 拍板「看得出才改判」:雇主名随岗带上(板仓 employer 格);板仓没有证书栏。"""
     out: list = []
     for path, origin in IN_BOARD_STORES:
         if not path.exists():
@@ -1147,7 +1319,7 @@ def collect_board_jobs(formatted: dict) -> list:
                                     title=j.get(K_TITLE, ""),
                                     agency=bool(AGENCY_RE.search(j.get(K_EMPLOYER, ""))),
                                     prov=j.get(K_PROVINCE, ""), hint="", city=j.get(K_CITY) or "",
-                                    hours=emp.hours, term=emp.term))
+                                    hours=emp.hours, term=emp.term, employer=j.get(K_EMPLOYER) or "", certs=""))
     return out
 
 
@@ -1177,7 +1349,10 @@ def to_scored_row(x: ScoredRowIn) -> dict:
     """一条岗的评分行(externalId 为键,给 09 汇装 join)。
     2026-09-22:源码先过具名冲突黑名单(SRC_NOC_BLOCKLIST)—— JB 把 TAB 技师帖归 11201 那类官方错标,
     命中不认源码,落回标题规则 → classify。
-    2026-09-26 /fe Frank 勾:通道两格带上这岗的工时 / 雇佣期(offer_fits),EE 类别走 ee_label_of(魁省不挂)。"""
+    2026-09-26 /fe Frank 勾:通道两格带上这岗的工时 / 雇佣期(offer_fits),EE 类别走 ee_label_of(魁省不挂)。
+    2026-09-27 Frank 拍板「看得出才改判」:通道两格再带上雇主名 / 职位名 / 证书栏(带行业条件的清单与带星号码按它们判);
+    分数照旧只看职业码、不看雇主(+12「省点名招」按 named_by_prov;同日 Frank 选「只上纯属改对的」,行级带条件的码不算进去,
+    分数与改前逐条相同,见 constants.K_NAMED)。"""
     noc = x.job.hint
     if (x.job.title.strip().lower(), noc) in SRC_NOC_BLOCKLIST:
         noc = ""
@@ -1188,7 +1363,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
     teer = teer_of_noc(noc)
     acc = accessibility(x.job.title)
     judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov, hours=x.job.hours, term=x.job.term,
-                       city=x.job.city)
+                       city=x.job.city, employer=x.job.employer, title=x.job.title, certs=x.job.certs)
     category = CATEGORY_UNCLASSIFIED
     if teer is not None:
         category = TEER_LABEL_TPL.format(teer=teer)
@@ -1198,7 +1373,8 @@ def to_scored_row(x: ScoredRowIn) -> dict:
                                acc=acc, agency=x.job.agency)),
         "pnpEligible": pnp_eligible(judge),
         "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer, city=x.job.city,
-                                            hours=x.job.hours, term=x.job.term)),
+                                            hours=x.job.hours, term=x.job.term, employer=x.job.employer,
+                                            title=x.job.title, certs=x.job.certs)),
         "eeCategory": ee_label_of(EeLabelIn(tables=x.tables, noc=noc, prov=x.job.prov)),
     }
 
@@ -4953,10 +5129,13 @@ def prov_list_of(x: ProvListIn) -> str:
     (禁复制判定逻辑)—— 全溶前它们住 08_score,统计件靠 importlib 按路径拉;批I 同域后直调。
     职业 × 省级的口径不看具体 offer:工时 / 雇佣期给空串(offer_fits 放行,2026-09-26)。
     城市同样给空串(2026-09-27:乡村振兴按岗位城市判,职业 × 省级这一格不落到哪个社区,照旧按 AOS 表判)。
+    雇主名 / 职位名 / 证书栏同样给空串(2026-09-27 Frank 拍板「看得出才改判」:这一格不落到哪个雇主 = 看不出 —— 带行业条件的
+    叠加排除与带星号码照挡,带行业条件的具名清单不算命中)。同日 Frank 选「只上纯属改对的」后 NS 建筑表不带条件,这一格与改前逐格相同。
     """
     got = []
     for p in PNP_PROV_ORDER:
-        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p, hours="", term="", city="")
+        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p, hours="", term="", city="", employer="",
+                           title="", certs="")
         if x.mode == PROV_MODE_DIRECT and pnp_direct(judge):
             got.append(p)
         elif x.mode == PROV_MODE_COND and pnp_eligible(judge) and not pnp_direct(judge):
@@ -6720,10 +6899,12 @@ def run_tests() -> None:
     gate.scheme);有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
     2026-09-27 加四组:薪资写法(MartSalaryTextTest)/ 投递邮箱(MartApplyMailTest)/ ATS 工时雇佣期(MartAtsEmpTest)/
     运营统计补行(MartOpsExtraTest),一个套件跑完。
-    同日九省体检修复批再加一组:MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的 17 码排除表)。"""
+    同日九省体检修复批再加一组:MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的 17 码排除表)。
+    同日 Frank 拍板「看得出才改判」再加一组:MartEmployerSectorTest(雇主行业三态 + 五条改判规则的真数据金标 / 性质 / 变异探针;
+    同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。"""
     suite = unittest.TestSuite()
-    for case in (MartOfferTest, MartRuralRenewalTest, MartSalaryTextTest, MartApplyMailTest, MartAtsEmpTest,
-                 MartOpsExtraTest):
+    for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
+                 MartAtsEmpTest, MartOpsExtraTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
