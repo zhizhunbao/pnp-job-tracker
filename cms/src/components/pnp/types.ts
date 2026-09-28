@@ -3985,3 +3985,93 @@ export type PnpTitleIn = {
    */
   title: string
 }
+
+/**
+ * 省提名格 / 胶囊 / 通道卡判「写什么、能不能点」要读的四格(职位板的库行整行递进来,只读这几格)。
+ */
+export type PnpCellJob = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 数据层给的具名通道标签;'' = 没有。
+   */
+  pnpStream: string
+
+  /**
+   * 数据层判的可提名。
+   */
+  pnpEligible: boolean
+}
+
+/**
+ * pnpNameOf 的入参。
+ */
+export type PnpNameIn = {
+  /**
+   * 通道键(pnpChannelKeyOf 给的:具名通道标签,或 `pnp.gen.` + 省码)。
+   */
+  key: string
+
+  /**
+   * 取哪一种语言的名字(英文行给英文取词,灰字行给界面语言取词)。
+   */
+  t: TFn
+}
+
+/**
+ * 官方具名排除清单的两套键集(`省码|NOC`)。
+ */
+export type PnpBlocked = {
+  /**
+   * 省提名不受理。
+   */
+  pnp: Set<string>
+
+  /**
+   * 大西洋试点不受理。
+   */
+  aip: Set<string>
+}
+
+/**
+ * 查排除键的入参。
+ */
+export type PnpExclIn = {
+  /**
+   * 这一岗(读省码与职业码)。
+   */
+  job: PnpCellJob
+
+  /**
+   * 两套键集。
+   */
+  blocked: PnpBlocked
+}
+
+/**
+ * pnpCellActiveOf 的入参。
+ */
+export type PnpCellActiveIn = {
+  /**
+   * 这一岗。
+   */
+  job: PnpCellJob
+
+  /**
+   * 两套排除键集。
+   */
+  blocked: PnpBlocked
+
+  /**
+   * 省提名弹框的事实索引(首屏随板下发)。
+   */
+  index: PnpFactsIndex
+}

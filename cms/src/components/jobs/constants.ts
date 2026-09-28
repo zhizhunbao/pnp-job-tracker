@@ -1560,38 +1560,10 @@ export const UNCAT = '未分类'
 export const PROV_QC = 'QC'
 
 /**
- * 有「通用雇主担保通道」名的九省(2026-09-23 Frank「改 全改」):PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),
- * 不再写「{省} 可提名」。出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS:AB Alberta Opportunity Stream、
- * BC Skills Immigration(2026-09-24 九省通道审计改名 BC Skilled Worker:Skills Immigration 是项目名,持 offer 的通道是它下面的
- * Skilled Worker stream)、SK SINP Employment Offer、ON Ontario Workforce Priority、MB Skilled Worker in Manitoba、
- * NS / NB / NL Skilled Worker、PE PEI Workforce。九省之外(领地等)照旧「{省} 可提名」。
- */
-export const PNP_GENERIC_PROVS = new Set(['AB', 'BC', 'SK', 'ON', 'MB', 'NS', 'NB', 'PE', 'NL'])
-
-/**
- * 通用通道名词条的键头。
- */
-export const K_PNP_GEN_HEAD = 'pnp.gen.'
-
-/**
  * 省码与 NOC 拼成排除清单键的分隔符(键形如 `ON|72310`)。
+ * 2026-09-28 排除键的拼与查随省提名弹框自立迁进 pnp 桶(EXCL_KEY_SEP);这里只剩量宽指纹(dataKeyOf)借它拼串。
  */
 export const BLOCK_KEY_SEP = '|'
-
-/**
- * 官方具名排除清单里「不受理」那一档的类型值。
- */
-export const PNP_OCC_INELIGIBLE = 'ineligible'
-
-/**
- * 排除清单的默认所属项目(没写 program 的行按 PNP 算)。
- */
-export const PNP_OCC_PROGRAM_PNP = 'PNP'
-
-/**
- * 排除清单里 AIP 那一档的 program 值。
- */
-export const PNP_OCC_PROGRAM_AIP = 'AIP'
 
 /**
  * 年薪换算成「$NK/yr」的除数。

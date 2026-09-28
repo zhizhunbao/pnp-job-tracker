@@ -25,6 +25,8 @@
  * 判据只在本域一份,职位板经桶取用。
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):桶门再加两名 —— PnpModal(职位板直开,不再经 advisor 的字段弹框)
  * 与 usePnpData(整表懒取自 advisor 迁入,advisor 别的组反过来从这里取)。
+ * 同日第 4 步:职位板省提名格「写什么 / 能不能点」与官方具名排除键收进本域 —— pnpChannelKeyOf / pnpNameOf(格子、手机胶囊、
+ * 通道卡同一个名字)、pnpCellActiveOf(格子能不能点 = 弹框有没有卡)、pnpBlockedKeysOf / pnpExcludedOf / aipExcludedOf(拼键查键一处)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -39,6 +41,7 @@ export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
-  aipBlockOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpFactsIndexOf, pnpFactsShownOf,
+  aipBlockOf, aipExcludedOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpBlockedKeysOf, pnpCellActiveOf,
+  pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf,
 } from './functions'
 export { usePnpData } from './hooks'

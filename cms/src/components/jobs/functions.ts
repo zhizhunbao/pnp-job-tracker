@@ -18,92 +18,74 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { eeIsDormant, eeLastDraw, pnpFactsIndexOf, pnpFactsShownOf } from '@/components/pnp'
+import {
+  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpCellActiveOf, pnpChannelKeyOf,
+  pnpExcludedOf, pnpNameOf,
+} from '@/components/pnp'
 import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
 import { BROAD_SLUGS } from '@/lib/stats'
 import { makeT } from '@/lib/i18n'
-import { eeDisplay, isDirect, isExpiredJob, isJdNone, isOfferList, sourceLabel, streamDisplay } from '@/lib/jobs'
+import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
-  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX,
-  CARET_CLOSED, CARET_OPEN, CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS,
-  COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR, COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE,
-  COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE, CSS_STICKY, DASH, DATE_LEN,
-  DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX,
-  FIELD_GROUP, FILTER_PROV, FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW,
-  FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX, HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HOME_GATE_CSS, HOME_GATE_MAYBE,
-  HOME_GATE_OFF, HOME_GATE_ON, HTTP_PAYMENT, HTTP_TOO_MANY,
-  JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE, JD_DASH_ITEM_RE,
-  JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
-  JD_GUESS_NEXT_PARA_LEN,
-  JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN,
-  JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE, JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS,
-  JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL, JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE,
-  JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC, JD_SEC_PAY, JD_SEC_ROLE,
-  JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE, JD_SUB_HEADS,
-  JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED,
-  KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP, K_LOCK_TIP, K_ORIGIN,
-  K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO, LANG_ZH, LAYER_CO,
-  LAYER_JOB,
-  LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO, MAILTO_BODY, MAILTO_SUBJECT,
-  MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN, MAIL_BODY_QUOTE, MAIL_CRLF,
-  MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
-  MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER,
-  PNP_OCC_INELIGIBLE, PNP_OCC_PROGRAM_AIP, PNP_OCC_PROGRAM_PNP, PREF_KEY, PROV_PICK_COOKIE,
-  K_PNP_GEN_HEAD, PNP_GENERIC_PROVS, PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE,
-  P_RESET, P_SIGNUP,
-  P_SORT, QS_HEAD, RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE,
-  SAVED_STATUS_WISH, SEC_MODE, SEP_EN, SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC,
-  SORT_MARK_DESC, SORT_MARK_IDLE, SPACE, SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
-  SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK, SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN,
-  SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL, TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX,
-  TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED, TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN,
-  TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE, TRANS_ERROR,
-  TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE,
-  UPSELL_SS, URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD,
-  URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY, URL_LEVEL_AMP,
-  URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
-  YEAR_MONTH_LEN, ZEBRA_MOD, REL_NO_PAGING, REL_OCC_STEP_N,
-  DATE_CELL,
+  AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX, CARET_CLOSED, CARET_OPEN,
+  CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR,
+  COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE,
+  CSS_STICKY, DASH, DATE_LEN, DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, FIELD_GROUP, FILTER_PROV,
+  FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW, FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX,
+  HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HOME_GATE_CSS, HOME_GATE_MAYBE, HOME_GATE_OFF, HOME_GATE_ON, HTTP_PAYMENT,
+  HTTP_TOO_MANY, JB_MAIL_HOST, JD_ALT_SEP, JD_BARE_LABEL_RE, JD_BULLET_MARK, JD_BULLET_PREFIX, JD_BULLET_RE,
+  JD_DASH_ITEM_RE, JD_GUESS_BAD_RE, JD_GUESS_MAX_LEN, JD_GUESS_MAX_WORDS, JD_GUESS_MIN_LEN, JD_GUESS_MIN_WORDS,
+  JD_GUESS_NEXT_PARA_LEN, JD_HEAD_MARK, JD_DASH_PREFIX_RE, JD_LONG_LINE_LEN, JD_DUP_MAX_LEN, JD_EMPHASIS_RE, JD_ESC_RE,
+  JD_ESC_TO, JD_GLUE_TPL, JD_HR_DASH_TPL, JD_HR_LABELS, JD_HR_LINE_TO, JD_HR_LINE_TPL, JD_INLINE_LABELS, JD_INLINE_TPL,
+  JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC,
+  JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
+  JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
+  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO,
+  LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO,
+  MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
+  MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
+  MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
+  PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
+  RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
+  SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
+  SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED, SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK,
+  SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN, SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL,
+  TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED,
+  TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN, TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE,
+  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_SS,
+  URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD, URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
+  URL_LEVEL_AMP, URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
+  YEAR_MONTH_LEN, ZEBRA_MOD, REL_NO_PAGING, REL_OCC_STEP_N, DATE_CELL,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
-  CardsClsIn, HomeGate, LoadTipIn, PnpActiveIn, PnpChipIn,
-  CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone, CellView,
-  CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn, CityOptsIn,
-  ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek,
-  ColWant, ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn,
-  DescOpenIn, DistOptsIn, FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn,
-  FieldOpenIn, FillIn,
-  FilterCountIn, FilterOpts, FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn,
-  FrozenStyleIn, HeadCellAtIn, HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn,
-  JdLineView, JdLineViewIn, JdLinesIn, JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn,
-  JdSecHeadIn,
-  JdSecModeIn, JdSectionMode, JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView,
-  JobDims, JobFact, JobFilters, JobPlan, JobPlanIn, JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn,
-  MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn, MeasureOut, MeasurePassIn,
-  MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
+  CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
+  CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
+  CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek, ColWant,
+  ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
+  FallbackHrefIn, FallbackTextIn, FallbackValueIn, FetchJobTextIn, FieldOpenIn, FillIn, FilterCountIn, FilterOpts,
+  FilterOptsIn, FilterState, FilterValueIn, FixedNoteIn, FoldBtnClsIn, FoldNClsIn, FrozenStyleIn, HeadCellAtIn,
+  HeadCellView, HeadClsIn, HeadTitleIn, HomeProvinceIn, JdCityLocalIn, JdLineView, JdLineViewIn, JdLinesIn,
+  JdLocationSectionIn, JdLocationZhIn, JdPair, JdPairsIn, JdPayIn, JdReIn, JdSecHeadIn, JdSecModeIn, JdSectionMode,
+  JdSectionView, JdSectionsIn, JobColKey, JobDetailIn, JobDetailView, JobDims, JobFact, JobFilters, JobPlan, JobPlanIn,
+  JobTextOut, JobsBoardPanel, JobsQueryIn, KMoneyIn, MailBodyIn, MailtoIn, MapHrefIn, MatchProfileFact, MeasureIn,
+  MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
-  PnpGenericCellIn, PnpGenericIn, PnpNamedCellIn,
-  OccOptsIn, OccSlotIn,
-  PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn, PlanProfileIn, PnpOccRow,
-  PopupToCoIn, PrefixLabelIn,
-  ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn, RelatedJobFact, RelatedPageJson,
-  RelatedJobJson, RelatedJobs, RelatedJson,
-  RoundIn, SaveLabelIn, SaveToggleIn, SavedEntry,
-  SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn, ShowRelatedIn,
-  SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TextFn,
-  ThWidthIn, TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn,
-  WidthsKeyIn,
-  JobBodyPanel,
-  JobDateCell, JobDatesOfIn,
+  OccOptsIn, OccSlotIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn,
+  PlanProfileIn, PopupToCoIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn,
+  RelatedJobFact, RelatedPageJson, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
+  SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
+  ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TextFn, ThWidthIn,
+  TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
+  JobBodyPanel, JobDateCell, JobDatesOfIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -476,35 +458,6 @@ export function nextSortOf(x: NextSortIn): SortState {
 }
 
 /**
- * 官方具名排除清单:整表算一次 `省码|NOC` 命中集,逐行 O(1) 查。
- * E6-09(2026-07-26 Frank「恢复可点」):命中官方具名排除清单的岗,格子要说结论、
- * 要能点开看依据 —— 与「TEER 不够」这种泛判定不同。
- *
- * @param rows pnp-occupations 维度行。
- * @returns 两套键集。
- */
-export function blockedKeysOf(rows: PnpOccRow[]): BlockedKeys {
-  const pnp = new Set<string>()
-  const aip = new Set<string>()
-  for (const r of rows) {
-    if (r.type !== PNP_OCC_INELIGIBLE || isOfferList(r.appliesTo) === false) {
-      continue
-    }
-    let program = r.program
-    if (program === TEXT_NONE) {
-      program = PNP_OCC_PROGRAM_PNP
-    }
-    const key = r.province + BLOCK_KEY_SEP + r.noc
-    if (program === PNP_OCC_PROGRAM_AIP) {
-      aip.add(key)
-    } else {
-      pnp.add(key)
-    }
-  }
-  return { pnp, aip }
-}
-
-/**
  * 随首屏下发给职位板的维度:整包维度逐格照抄,只把省提名清单与抽选两张整表换成空表。
  * 2026-09-26 /fe 首页 Frank:这两张表每次随首页内联约 380KB(清单 ~293KB、抽选 ~91KB),而省提名弹框近 30 天
  * 真实用户打开 0 次 —— 改成弹框打开才懒取(/api/jobs/pnp,advisor 域 usePnpData);格子要的排除键与弹框事实索引
@@ -536,12 +489,13 @@ export function boardDimsOf(dims: JobDims): JobDims {
 /**
  * 格子要的省提名事实(服务端门里从两张整表压好,随首屏下发;2026-09-26 起整表不再内联,见 boardDimsOf):
  * 官方具名排除两套键(口径同 blockedKeysOf)+ 省提名弹框的事实索引(pnp 域 pnpFactsIndexOf,与弹框出卡同一判据)。
+ * 2026-09-28 排除键的算法随省提名弹框自立迁进 pnp 桶(pnpBlockedKeysOf,原本域 blockedKeysOf),这里只压成数组随板下发。
  *
  * @param dims 首屏整包维度(服务端取的那份)。
  * @returns 排除键与弹框事实索引。
  */
 export function boardPnpOf(dims: JobDims): BoardPnpFacts {
-  const blocked = blockedKeysOf(dims.pnpOccupations)
+  const blocked = pnpBlockedKeysOf(dims.pnpOccupations)
   return {
     pnpBlocked: Array.from(blocked.pnp),
     aipBlocked: Array.from(blocked.aip),
@@ -581,6 +535,7 @@ export function cellActionable(k: JobColKey): boolean {
  * 2026-07-26 Frank「恢复可点」:命中官方具名清单的走不了 = 有依据可看,重新可点
  * (泛判定的「—」仍不可点)。
  * 2026-09-26 /fe 首页 Frank(止血):省提名格再加一道「弹框里真有卡可出」,见 pnpActiveOf。
+ * 2026-09-28 省提名格与 AIP 格的判据收进 pnp 桶(pnpCellActiveOf / aipExcludedOf;pnpActiveOf 随之迁走)。
  *
  * @param x 列键、库行、上下文。
  * @returns 可点 = true。
@@ -589,41 +544,19 @@ export function cellActive(x: CellIn): boolean {
   if (cellActionable(x.k) === false) {
     return false
   }
-  const key = x.j.province + BLOCK_KEY_SEP + x.j.noc
   if (x.k === COL.pnp) {
-    return pnpActiveOf({ j: x.j, blocked: x.cx.blocked, pnpIndex: x.cx.pnpIndex })
+    return pnpCellActiveOf({ job: x.j, blocked: x.cx.blocked, index: x.cx.pnpIndex })
   }
   if (x.k === COL.ee) {
     return hasText(x.j.eeCategory)
   }
   if (x.k === COL.aip) {
-    return x.j.aip === true || x.cx.blocked.aip.has(key)
+    return x.j.aip === true || aipExcludedOf({ job: x.j, blocked: x.cx.blocked })
   }
   if (x.k === COL.pilot) {
     return hasText(x.j.pilot)
   }
   return true
-}
-
-/**
- * 省提名这一格可不可点(表格格子与手机卡胶囊同一个判据)。先得有信号:可提名,或被官方具名清单排除
- * (批A「走不了的就别给点了」、07-26「恢复可点」两拍照旧);
- * 2026-09-26 /fe 首页 Frank(止血):再得弹框里真有卡可出 —— 本省抽选卡或清单卡(pnp 域 pnpFactsShownOf,
- * 与弹框自己出卡同一判据)。可点的省提名格里 20,809 条(安省 17,651、NS 1,609、SK 1,533、领地 16)点开只有标题:
- * 安省改制不出抽选卡且没有清单,NS / SK 的通用岗与领地既无清单也无抽选。改成不可点、字照显示;
- * 判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后这些格子自然恢复可点。
- * 同日「补完整」:pnp 域判「有卡」多吃一格可提名与否(可提名的岗弹框不出排除清单卡,排除键对它不算数)。
- *
- * @param x 库行、排除清单与省提名弹框的事实索引。
- * @returns 可点 = true。
- */
-function pnpActiveOf(x: PnpActiveIn): boolean {
-  const excluded = x.blocked.pnp.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)
-  if (x.j.pnpEligible !== true && excluded === false) {
-    return false
-  }
-  const eligible = x.j.pnpEligible === true
-  return pnpFactsShownOf({ province: x.j.province, noc: x.j.noc, stream: x.j.pnpStream, eligible, index: x.pnpIndex })
 }
 
 /**
@@ -1008,6 +941,11 @@ function signalCellOf(x: CellIn): CellView | null {
  * 中 = 可提名(带省码 —— Frank 2026-07-26「最好是显示 可哪个省的提名」:省提名是**逐省**的,
  * 光写「可提名」会让人以为哪儿都能走)、E6-09 官方具名排除 = 红字说结论(格子可点看依据)、
  * 其余走不了仍是灰「—」。
+ * 具名通道与九省通用通道两格(2026-09-24 Frank「这个要不都改成上面英文,下面中文灰字」):上行英文名、下行界面语言译名灰字
+ * (英文界面不出第二行;中文「技术工人」直译易误读成手艺人,Frank「接待员和行政助理也属于技术工人?」);同日 Frank
+ * 「这种胶囊样式都去掉吧。都改成一致的」:琥珀徽章撤,两格同一绿字色档。九省之外(领地等)照旧一行「{省} 可提名」。
+ * 2026-09-28 写哪条通道、叫什么名字收进 pnp 桶(pnpChannelKeyOf / pnpNameOf,与手机胶囊、弹框通道卡同一处判);
+ * 原 pnpNamedCellOf / pnpGenericCellOf / pnpGenericOf 三件并掉,这里只剩色档与拼格。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
@@ -1016,67 +954,21 @@ function pnpCellOf(x: CellIn): CellView {
   if (x.j.province === PROV_QC) {
     return blankView({ text: x.cx.t('cell.pnpQc'), tone: TONE.purpleSm })
   }
-  if (hasText(x.j.pnpStream)) {
-    return pnpNamedCellOf({ cx: x.cx, label: x.j.pnpStream })
+  const key = pnpChannelKeyOf(x.j)
+  if (key !== TEXT_NONE) {
+    const view = blankView({ text: pnpNameOf({ key, t: x.cx.tEn }), tone: TONE.moneyMd })
+    if (x.cx.lang !== LANG_EN) {
+      view.sub = pnpNameOf({ key, t: x.cx.t })
+    }
+    return view
   }
   if (x.j.pnpEligible === true) {
-    return pnpGenericCellOf({ cx: x.cx, province: x.j.province })
+    return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.j.province }), tone: TONE.moneyMd })
   }
-  if (x.cx.blocked.pnp.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)) {
+  if (pnpExcludedOf({ job: x.j, blocked: x.cx.blocked })) {
     return blankView({ text: x.cx.t('cell.pnpExcl'), tone: TONE.redSm })
   }
   return blankView({ tone: TONE.mutedSm })
-}
-
-/**
- * 具名通道那一格(2026-09-24 同「可提名」格改两行,Frank「这个要不都改成上面英文,下面中文灰字」):
- * 上行英文短名、下行界面语言译名灰字(英文界面不出第二行)。
- * 同日 Frank「这种胶囊样式都去掉吧。都改成一致的」:琥珀徽章撤,与「可提名」格同一绿字色档。
- *
- * @param x 格子上下文与数据层的通道标签。
- * @returns 展示行。
- */
-function pnpNamedCellOf(x: PnpNamedCellIn): CellView {
-  const view = blankView({ text: streamDisplay({ t: x.cx.tEn, label: x.label }), tone: TONE.moneyMd })
-  if (x.cx.lang !== LANG_EN) {
-    view.sub = streamDisplay({ t: x.cx.t, label: x.label })
-  }
-  return view
-}
-
-/**
- * 「可提名」那一格(2026-09-24 Frank「这个要不都改成上面英文,下面中文灰字」):九省上行写通用通道的英文官方名、
- * 下行界面语言译名灰字(英文界面不出第二行;中文「技术工人」直译易误读成手艺人,Frank「接待员和行政助理也属于技术工人?」),
- * 其余照旧一行「{省} 可提名」。手机卡片的胶囊仍走 pnpGenericOf 一行。
- *
- * @param x 格子上下文与本岗省码。
- * @returns 展示行。
- */
-function pnpGenericCellOf(x: PnpGenericCellIn): CellView {
-  if (PNP_GENERIC_PROVS.has(x.province) === false) {
-    return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.province }), tone: TONE.moneyMd })
-  }
-  const key = K_PNP_GEN_HEAD + x.province
-  const view = blankView({ text: x.cx.tEn(key), tone: TONE.moneyMd })
-  if (x.cx.lang !== LANG_EN) {
-    view.sub = x.cx.t(key)
-  }
-  return view
-}
-
-/**
- * 「可提名」那一档写哪条通道(2026-09-23 Frank「那这个是不是最好显示是哪个通道?」「改 全改」):九省写该省通用雇主担保通道的
- * 名字(见 PNP_GENERIC_PROVS),其余照旧「{省} 可提名」。格子与手机卡片共用这一处。
- * 2026-09-24 起格子改走 pnpGenericCellOf(两行),这里只剩手机卡片的胶囊。
- *
- * @param x 取词函数与本岗省码。
- * @returns 格子文字。
- */
-function pnpGenericOf(x: PnpGenericIn): string {
-  if (PNP_GENERIC_PROVS.has(x.province)) {
-    return x.t(K_PNP_GEN_HEAD + x.province)
-  }
-  return x.t('cell.pnpSkilledProv', { p: x.province })
 }
 
 /**
@@ -1128,7 +1020,7 @@ function monthOf(iso: string): string {
  * @returns 展示行。
  */
 function aipCellOf(x: CellIn): CellView {
-  if (x.cx.blocked.aip.has(x.j.province + BLOCK_KEY_SEP + x.j.noc)) {
+  if (aipExcludedOf({ job: x.j, blocked: x.cx.blocked })) {
     return blankView({ text: x.cx.t('cell.aipBlocked'), tone: TONE.redSm })
   }
   if (x.j.aip === true) {
@@ -1220,9 +1112,8 @@ export function makeAgeText(x: AgeTextIn): AgeTextFn {
 export function chipSpecsOf(x: ChipSpecsIn): ChipSpec[] {
   const out: ChipSpec[] = []
   const isQc = x.j.province === PROV_QC
-  const bk = x.j.province + BLOCK_KEY_SEP + x.j.noc
-  const pnpExcl = x.blocked.pnp.has(bk)
-  const aipBlocked = x.blocked.aip.has(bk)
+  const pnpExcl = pnpExcludedOf({ job: x.j, blocked: x.blocked })
+  const aipBlocked = aipExcludedOf({ job: x.j, blocked: x.blocked })
   if (anyRouteOf({ j: x.j, isQc, pnpExcl, aipBlocked })) {
     pushTeerChip({ out, x })
     pushPnpChip({ out, x, pnpExcl, aipBlocked })
@@ -1283,15 +1174,17 @@ function pushTeerChip(a: ChipPushIn): void {
  * (BC 医疗),通用才显「可提名」;命中排除清单显结论。
  * Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时,
  * 这一枚就写「本省不受理」,AIP 那枚不再出。
+ * 2026-09-28 写哪条通道、叫什么名字走 pnp 桶(pnpChannelKeyOf / pnpNameOf),与表格格子、弹框通道卡同一处判。
  *
  * @param a 收集器、入参与两条排除判定。
  * @returns 无。
  */
 function pushPnpChip(a: ChipPushBlockIn): void {
   if (a.x.j.pnpEligible === true) {
-    let text = pnpGenericOf({ t: a.x.t, province: a.x.j.province })
-    if (hasText(a.x.j.pnpStream)) {
-      text = streamDisplay({ t: a.x.t, label: a.x.j.pnpStream })
+    const key = pnpChannelKeyOf(a.x.j)
+    let text = a.x.t('cell.pnpSkilledProv', { p: a.x.j.province })
+    if (key !== TEXT_NONE) {
+      text = pnpNameOf({ key, t: a.x.t })
     }
     a.out.push(pnpChipOf({ x: a.x, tone: CHIP.amber, text }))
     return
@@ -1307,14 +1200,14 @@ function pushPnpChip(a: ChipPushBlockIn): void {
 }
 
 /**
- * 造省提名那一枚胶囊:可点与否跟表格那一格同一个判据(pnpActiveOf),不只看这一列点不点得开
+ * 造省提名那一枚胶囊:可点与否跟表格那一格同一个判据(pnpActiveOf,2026-09-28 起 pnp 桶的 pnpCellActiveOf),不只看这一列点不点得开
  * (2026-09-26 /fe 首页 Frank 止血:弹框里没卡可出的,胶囊字照显示、不给点 —— 手机是主流量,卡上与表格一个样)。
  *
  * @param x 胶囊排的入参、语义色档与显示文本。
  * @returns 胶囊规格。
  */
 function pnpChipOf(x: PnpChipIn): ChipSpec {
-  const act = cellActionable(COL.pnp) && pnpActiveOf({ j: x.x.j, blocked: x.x.blocked, pnpIndex: x.x.pnpIndex })
+  const act = cellActionable(COL.pnp) && pnpCellActiveOf({ job: x.x.j, blocked: x.x.blocked, index: x.x.pnpIndex })
   return { tone: x.tone, text: x.text, k: COL.pnp, tip: TEXT_NONE, act }
 }
 

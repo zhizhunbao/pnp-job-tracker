@@ -1280,3 +1280,19 @@ export const K_LOAD_FAILED = 'de.loadFailed'
  * 整表没取成时那句话的提醒框色:notice 域四色里的红。
  */
 export const NOTICE_ERR = 'err'
+
+/**
+ * 有「通用雇主担保通道」名的九省(2026-09-23 Frank「改 全改」):PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),
+ * 不再写「{省} 可提名」。出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS:AB Alberta Opportunity Stream、
+ * BC Skills Immigration(2026-09-24 九省通道审计改名 BC Skilled Worker:Skills Immigration 是项目名,持 offer 的通道是它下面的
+ * Skilled Worker stream)、SK SINP Employment Offer、ON Ontario Workforce Priority、MB Skilled Worker in Manitoba、
+ * NS / NB / NL Skilled Worker、PE PEI Workforce。九省之外(领地等)照旧「{省} 可提名」。
+ * 2026-09-28 自 jobs 迁入(省提名弹框自立第 4 步):原先职位板格子按这张表判、弹框通道卡按「英文词条查不查得到」判,
+ * 两种判法同一个事实 —— 并成这一张,格子、手机胶囊、通道卡都走 pnpChannelKeyOf。
+ */
+export const GEN_CHANNEL_PROVS = new Set(['AB', 'BC', 'SK', 'ON', 'MB', 'NS', 'NB', 'PE', 'NL'])
+
+/**
+ * 省码与 NOC 拼成排除清单键的分隔符(键形如 `ON|72310`;2026-09-28 随排除键自 jobs 迁入,拼键与查键都只在本域)。
+ */
+export const EXCL_KEY_SEP = '|'

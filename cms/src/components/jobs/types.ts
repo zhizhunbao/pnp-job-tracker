@@ -2717,36 +2717,6 @@ export type NextSortIn = {
 }
 
 /**
- * 官方具名清单维表里本域真读的那几格。
- */
-export type PnpOccRow = {
-  /**
-   * 清单类型;只有 'ineligible' 那一档进排除集。
-   */
-  type: string
-
-  /**
-   * 所属项目(PNP / AIP);空串按 PNP 算。
-   */
-  program: string
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * NOC 码。
-   */
-  noc: string
-
-  /**
-   * 清单管哪几条子类(官方原文;'' = 全项目;2026-09-27):只点名别的子类的(SK「OID/EE」)不进排除集。
-   */
-  appliesTo: string
-}
-
-/**
  * kMoneyOf 的入参。
  */
 export type KMoneyIn = {
@@ -3665,26 +3635,6 @@ export type LoadTipIn = {
    * 首屏本省闸。
    */
   gate: HomeGate
-}
-
-/**
- * pnpActiveOf 的入参(表格省提名格与手机卡省提名胶囊共用)。
- */
-export type PnpActiveIn = {
-  /**
-   * 库行。
-   */
-  j: JobFact
-
-  /**
-   * 官方具名排除清单。
-   */
-  blocked: BlockedKeys
-
-  /**
-   * 省提名弹框的事实索引。
-   */
-  pnpIndex: PnpShownIndex
 }
 
 /**
@@ -5694,51 +5644,6 @@ export type HeadCellView = {
    * 点表头换排序。
    */
   onSort: ClickFn
-}
-
-/**
- * pnpNamedCellOf 的入参。
- */
-export type PnpNamedCellIn = {
-  /**
-   * 格子上下文(两个取词函数与界面语言)。
-   */
-  cx: CellCtx
-
-  /**
-   * 数据层的具名通道标签(如「AB 医疗」,STREAM_L10N 的键)。
-   */
-  label: string
-}
-
-/**
- * pnpGenericCellOf 的入参。
- */
-export type PnpGenericCellIn = {
-  /**
-   * 格子上下文(两个取词函数与界面语言)。
-   */
-  cx: CellCtx
-
-  /**
-   * 本岗省码。
-   */
-  province: string
-}
-
-/**
- * pnpGenericOf 的入参。
- */
-export type PnpGenericIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本岗省码。
-   */
-  province: string
 }
 
 /**

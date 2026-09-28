@@ -30,9 +30,11 @@ import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   quotaCardOf, gateCardOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
+  pnpBlockedKeysOf, pnpChannelKeyOf,
 } from '@/components/pnp/functions'
+import { GEN_CHANNEL_PROVS } from '@/components/pnp/constants'
 import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpReq, PnpStream } from '@/components/pnp/types'
-import { blockedKeysOf, blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
+import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
 import { isOfferList } from '@/lib/jobs'
@@ -132,7 +134,7 @@ describe('索引判「有卡」⇔ 弹框整表判「有卡」', () => {
     const index = pnpFactsIndexOf({ occ: o, draws: d })
     // 数据口径:真数据里「按清单行算的排除键」(格子红字)与「按弹框分组算的排除键」(弹框排除清单卡)一个不差 ——
     // 哪天出了同名清单混两种类型的行,这一条先红。
-    expect(new Set(index.excluded)).toEqual(blockedKeysOf(o).pnp)
+    expect(new Set(index.excluded)).toEqual(pnpBlockedKeysOf(o).pnp)
     const provs = [...new Set(o.map((r) => r.province)), 'ON', 'QC', 'NT', '']
     const nocs = [...new Set(o.map((r) => r.noc)), '99999']
     let checked = 0
@@ -158,11 +160,11 @@ describe('索引判「有卡」⇔ 弹框整表判「有卡」', () => {
 })
 
 describe('服务端压的键与整表现算一致', () => {
-  it('排除键装回集合 = blockedKeysOf 现算', () => {
+  it('排除键装回集合 = pnpBlockedKeysOf 现算', () => {
     fc.assert(fc.property(fc.array(occArb, { maxLength: 40 }), fc.array(drawArb, { maxLength: 10 }), (o, d) => {
       const dims = { pnpOccupations: o, pnpDraws: d } as unknown as JobDims
       const got = blockedSetsOf(boardPnpOf(dims))
-      const want = blockedKeysOf(o)
+      const want = pnpBlockedKeysOf(o)
       expect([...got.pnp].sort()).toEqual([...want.pnp].sort())
       expect([...got.aip].sort()).toEqual([...want.aip].sort())
       expect(boardPnpOf(dims).index).toEqual(pnpFactsIndexOf({ occ: o, draws: d }))
@@ -259,7 +261,7 @@ describe('金标', () => {
     const cook = job({ province: 'SK', noc: '65201', pnpStream: '', pnpEligible: false })
     expect(shownStreamsOf({ match: pnpMatchOf({ job: cook, occ: [oid, offer] }), noc: '65201', eligible: false })
       .map((s) => s.label)).toEqual(['SK Job Offer 不合格清单'])
-    expect([...blockedKeysOf([oid, offer]).pnp]).toEqual(['SK|65201'])
+    expect([...pnpBlockedKeysOf([oid, offer]).pnp]).toEqual(['SK|65201'])
     expect([isOfferList(''), isOfferList('Employment Offer'), isOfferList('OID/EE')]).toEqual([true, true, false])
     // 同批:NS 建筑那组(按月选取,NSNP 各流与 AIP 同一个 EOI 池)原先没登记,点进来不高亮
     expect(drawHitStreamsOf(job({ province: 'NS', noc: '72310', pnpStream: 'NS 建筑' }))).toEqual(['Monthly EOI selections'])
@@ -672,6 +674,30 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(at(job({ province: 'NT' }), 'zh')).toEqual([])
     expect(at(job({ province: 'QC', pnpStream: 'X' }), 'zh')).toEqual([])
     expect(at(job({ province: 'AB', pnpEligible: false }), 'zh')).toEqual([])
+  })
+
+  it('通用通道九省表与三语词条一一对上;格子与通道卡写同一条(2026-09-28 两种判法并成 pnpChannelKeyOf)', () => {
+    // 原先职位板格子认 jobs 的九省表、弹框通道卡认「英文词条查不查得到」—— 并成一张表后,这条锁住表与三语词条不脱节
+    // (加一省通用通道只写了词条没进表,或反过来,这里先红)。
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const t = makeT(lang)
+      for (const p of ['AB', 'BC', 'SK', 'MB', 'ON', 'QC', 'NS', 'NB', 'PE', 'NL', 'YT', 'NT', 'NU']) {
+        expect(t('pnp.gen.' + p) !== 'pnp.gen.' + p, lang + ':' + p).toBe(GEN_CHANNEL_PROVS.has(p))
+      }
+    }
+    const en = makeT('en')
+    fc.assert(fc.property(
+      fc.constantFrom('AB', 'BC', 'SK', 'NS', 'ON', 'YT', 'QC', ''), fc.boolean(), fc.constantFrom('', 'AB 医疗', 'NS 建筑'),
+      (province, pnpEligible, pnpStream) => {
+        const j = job({ province, pnpEligible, pnpStream })
+        const key = pnpChannelKeyOf(j)
+        const card = channelsOf({ t: makeT('zh'), tEn: en, lang: 'zh', showZh: true, job: j })
+        if (province === 'QC' || province === '' || key === '') {
+          expect(card).toEqual([])
+        } else {
+          expect(card.map((c) => c.key)).toEqual([key])
+        }
+      }), { numRuns: 200 })
   })
 
   it('data/mart 真数据:魁省不出卡,NS 按月,安省现状,阿省分组', () => {

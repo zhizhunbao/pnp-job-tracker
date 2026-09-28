@@ -43,6 +43,7 @@ import {
   GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB,
   GATE_UNIT_MONTHS, GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP,
   URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV, K_KICKER_PROV_AIP,
+  GEN_CHANNEL_PROVS, EXCL_KEY_SEP,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
@@ -67,6 +68,7 @@ import type {
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
   NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
   DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn,
+  PnpBlocked, PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -791,20 +793,13 @@ export function channelsOf(x: ChannelsIn): ChannelSpec[] {
   if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
     return []
   }
-  if (x.job.pnpStream !== TEXT_NONE) {
-    const en = streamDisplay({ t: x.tEn, label: x.job.pnpStream })
-    const local = streamDisplay({ t: x.t, label: x.job.pnpStream })
-    return [channelOf({ lang: x.lang, showZh: x.showZh, key: x.job.pnpStream, en, local })]
-  }
-  if (x.job.pnpEligible === false) {
+  const key = pnpChannelKeyOf(x.job)
+  if (key === TEXT_NONE) {
     return []
   }
-  const key = PNP_GEN_HEAD + x.job.province
-  const en = x.tEn(key)
-  if (en === key) {
-    return []
-  }
-  return [channelOf({ lang: x.lang, showZh: x.showZh, key, en, local: x.t(key) })]
+  const en = pnpNameOf({ key, t: x.tEn })
+  const local = pnpNameOf({ key, t: x.t })
+  return [channelOf({ lang: x.lang, showZh: x.showZh, key, en, local })]
 }
 
 /**
@@ -3269,4 +3264,107 @@ export function pnpTitleOf(x: PnpTitleIn): string {
     }
   }
   return DASH
+}
+
+/**
+ * 这一岗的省提名写哪条通道(职位板格子、手机胶囊、弹框顶上的通道卡同一个判据):数据层给了具名通道就是它;
+ * 否则可提名且本省有通用雇主担保通道(GEN_CHANNEL_PROVS)就是那条通用通道(键 `pnp.gen.` + 省码);都不是给空串。
+ * 2026-09-23 Frank「那这个是不是最好显示是哪个通道?」「改 全改」:可提名那一档写通用通道名,不再写「{省} 可提名」
+ * (原 jobs 的 pnpGenericOf;格子与手机卡片共用)。
+ * 2026-09-28 省提名弹框自立第 4 步:原先格子(jobs)与通道卡(本域)各判一遍,判法还不一样,并成这一处。
+ *
+ * @param job 这一岗(读具名通道、可提名与省码)。
+ * @returns 通道键;没有给空串。
+ */
+export function pnpChannelKeyOf(job: PnpCellJob): string {
+  if (job.pnpStream !== TEXT_NONE) {
+    return job.pnpStream
+  }
+  if (job.pnpEligible !== true || GEN_CHANNEL_PROVS.has(job.province) === false) {
+    return TEXT_NONE
+  }
+  return PNP_GEN_HEAD + job.province
+}
+
+/**
+ * 通道键的显示名:通用通道走词条 `pnp.gen.` + 省码,具名通道走 lib/jobs 的 streamDisplay(一个项目一个名字)。
+ * 英文行传英文取词、灰字行传界面语言取词。
+ *
+ * @param x 通道键与取词函数。
+ * @returns 显示名。
+ */
+export function pnpNameOf(x: PnpNameIn): string {
+  if (x.key.startsWith(PNP_GEN_HEAD)) {
+    return x.t(x.key)
+  }
+  return streamDisplay({ t: x.t, label: x.key })
+}
+
+/**
+ * 省提名这一格可不可点(表格格子与手机卡胶囊同一个判据)。先得有信号:可提名,或被官方具名清单排除
+ * (批A「走不了的就别给点了」、07-26「恢复可点」两拍照旧);
+ * 2026-09-26 /fe 首页 Frank(止血):再得弹框里真有卡可出 —— 本省抽选卡或清单卡(pnpFactsShownOf,
+ * 与弹框自己出卡同一判据)。可点的省提名格里 20,809 条(安省 17,651、NS 1,609、SK 1,533、领地 16)点开只有标题:
+ * 安省改制不出抽选卡且没有清单,NS / SK 的通用岗与领地既无清单也无抽选。改成不可点、字照显示;
+ * 判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后这些格子自然恢复可点。
+ * 同日「补完整」:pnp 域判「有卡」多吃一格可提名与否(可提名的岗弹框不出排除清单卡,排除键对它不算数)。
+ * 2026-09-28 自 jobs 迁入(省提名弹框自立第 4 步):「格子能不能点」与「弹框出什么卡」住同一个域,加卡时回头改判据不用跨域找。
+ *
+ * @param x 这一岗、两套排除键与弹框事实索引。
+ * @returns 可点 = true。
+ */
+export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
+  const excluded = pnpExcludedOf({ job: x.job, blocked: x.blocked })
+  if (x.job.pnpEligible !== true && excluded === false) {
+    return false
+  }
+  const eligible = x.job.pnpEligible === true
+  const job = x.job
+  return pnpFactsShownOf({ province: job.province, noc: job.noc, stream: job.pnpStream, eligible, index: x.index })
+}
+
+/**
+ * 官方具名排除清单:整表算一次 `省码|NOC` 命中集,逐行 O(1) 查。
+ * E6-09(2026-07-26 Frank「恢复可点」):命中官方具名排除清单的岗,格子要说结论、
+ * 要能点开看依据 —— 与「TEER 不够」这种泛判定不同。只收管带 offer 的岗的清单(isOfferList,与弹框清单卡同一把尺子)。
+ * 2026-09-28 自 jobs 的 blockedKeysOf 迁入(省提名弹框自立第 4 步):拼键与查键都在本域,项目归属走本域 programOf。
+ *
+ * @param rows 省提名与 AIP 的扁平清单(整表)。
+ * @returns 两套键集。
+ */
+export function pnpBlockedKeysOf(rows: PnpOcc[]): PnpBlocked {
+  const pnp = new Set<string>()
+  const aip = new Set<string>()
+  for (const r of rows) {
+    if (r.type !== TYPE_INELIGIBLE || isOfferList(r.appliesTo) === false) {
+      continue
+    }
+    const key = r.province + EXCL_KEY_SEP + r.noc
+    if (programOf(r) === PROGRAM_AIP) {
+      aip.add(key)
+    } else {
+      pnp.add(key)
+    }
+  }
+  return { pnp, aip }
+}
+
+/**
+ * 这一岗在不在省提名官方具名排除清单上。
+ *
+ * @param x 这一岗与两套键集。
+ * @returns 在 = true。
+ */
+export function pnpExcludedOf(x: PnpExclIn): boolean {
+  return x.blocked.pnp.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
+}
+
+/**
+ * 这一岗在不在大西洋试点官方具名不受理清单上。
+ *
+ * @param x 这一岗与两套键集。
+ * @returns 在 = true。
+ */
+export function aipExcludedOf(x: PnpExclIn): boolean {
+  return x.blocked.aip.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
 }
