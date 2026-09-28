@@ -8,21 +8,20 @@
  * @time 2026-08-28 12:45:00
  */
 import { cssOf } from '@/components/css'
-import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
+import { FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { track } from '@/lib/track'
 import {
   CLS_SEP, CRED_INCLUDE, DAYS_30, DAYS_90, EVENT_CHECKOUT, EVENT_PAY_CLICK, EVENT_PRICING_OPEN, EVENT_SHOT_CLICK,
-  EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, LK_MASK_CLS, MASK_LINES, MASK_SEP, METHOD_POST,
+  EVENT_UPGRADE_OPEN, FROM_RE, HDR_CONTENT_TYPE, KIND_DIRECT, LANG_ZH, METHOD_POST,
   MIME_JSON, PCT_FULL, PER_30_DIV, PLAN_30, PLAN_90, PRICE_CURRENCY_RE, PRICE_DECIMALS, PRICE_DIGITS_RE,
-  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TEXT_NONE, UPGRADE_AUTH, UPGRADE_BUY, URL_CHECKOUT, URL_SHOT_EN,
+  PRICE_DISPLAY_DEFAULT, PRICE_SEP, P_FROM, TEXT_NONE, URL_CHECKOUT, URL_SHOT_EN,
   URL_SHOT_ZH, WIDE_GAP,
 } from './constants'
 import type {
-  BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn, CtaLabelOfIn, CtaSlotClsIn, FeatureClsIn,
-  FlagSetIn, FromKindOfIn, LockMsgOfIn, MaskTextOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
+  BuyClsIn, BuyFn, CardClsIn, CheckoutRespJson, CheckoutUrlOfIn, ClickFn, CtaSlotClsIn, FeatureClsIn,
+  FlagSetIn, FromKindOfIn, Per30In, PerDayOfIn, PerLabelIn, PickedPriceIn, PlanPickIn,
   PlanSelectIn, Price, PriceAmountOfIn, PriceCaps, PriceCurrencyOfIn, PricePlan, PriceTexts, PricingBuyIn,
   PricingShotOfIn, SavePctOfIn, TrackCheckoutIn, TrackPayClickIn, UpBuyClsIn, UpCardClsIn, UpgradeBuyIn,
-  UpgradeOpen, UpgradeOpenIn, UpgradeOpenOfIn, UpgradeSetIn,
 } from './types'
 import css from './pricing.module.css'
 
@@ -199,14 +198,14 @@ export function priceCurrencyOf(x: PriceCurrencyOfIn): string {
  * 页面版由服务端读 env 算好随 props 下发,弹窗版没有服务端这一手,只能用默认值 ——
  * 哪天真用 env 改分层数字,这几个常量要么 NEXT_PUBLIC 化,要么改由调用方传进来。
  *
- * @returns 免费与 Pro 的档位数四格。
+ * 2026-09-28 AI 顾问删(Frank「残留也删了吧」):顾问两格(免费试用、Pro 日上限)随之撤,剩免费档两格。
+ *
+ * @returns 免费档的档位数两格。
  */
 export function clientCapsOf(): PriceCaps {
   return {
-    advisor: FREE_ADVISOR_TRIES,
     jobtext: FREE_JOBTEXT_TRIES,
     match: FREE_MATCH_JOBS_PER_DAY,
-    proAdvisor: PRO_ADVISOR_DAILY,
   }
 }
 
@@ -336,74 +335,6 @@ export function makePlanPick(x: PlanPickIn): ClickFn {
 }
 
 /**
- * 造升级钮的点击手柄:按点它那一刻的登录态决定开哪一层。
- *
- * @param x 三态落格与登录态。
- * @returns 挂到钮上的手柄。
- */
-export function makeUpgradeOpen(x: UpgradeOpenIn): ClickFn {
-  return function openUpgrade(): void {
-    x.set(upgradeOpenOf({ loggedIn: x.loggedIn }))
-  }
-}
-
-/**
- * 点升级钮该开哪一层:已登录直接谈价(升级弹框),未登录先要身份(注册弹框)——
- * 答题前注册闸是收费的地基,身份先留下,「自动帮你做」才有落点。
- *
- * @param x 登录态。
- * @returns 该开的那一层。
- */
-export function upgradeOpenOf(x: UpgradeOpenOfIn): UpgradeOpen {
-  if (x.loggedIn) {
-    return UPGRADE_BUY
-  }
-  return UPGRADE_AUTH
-}
-
-/**
- * 造一枚「把升级钮三态拨成定值」的手柄(眼下只用来关)。
- *
- * @param x 三态落格与要拨成的值。
- * @returns 点一下拨过去的手柄。
- */
-export function makeUpgradeSet(x: UpgradeSetIn): ClickFn {
-  return function setUpgrade(): void {
-    x.set(x.v)
-  }
-}
-
-/**
- * 升级钮上写什么字:调用方给了就用它,没给按形态取默认词
- * (文字链跟在一句灰注后面,用短的那个;实心钮独立成块,用长的那个)。
- *
- * @param x 取词函数、调用方指定的文案与形态。
- * @returns 钮上写的字。
- */
-export function ctaLabelOf(x: CtaLabelOfIn): string {
-  if (x.label != null && x.label !== TEXT_NONE) {
-    return x.label
-  }
-  if (x.link) {
-    return x.t('up.cta')
-  }
-  return x.t('up.cta2')
-}
-
-/**
- * 锁行的灰注:调用方给了就用它(如 429 限流的话术),没给用默认的额度话术。
- *
- * @param x 取词函数与调用方指定的灰注。
- * @returns 锁行上写的字。
- */
-export function lockMsgOf(x: LockMsgOfIn): string {
-  if (x.msg != null && x.msg !== TEXT_NONE) {
-    return x.msg
-  }
-  return x.t('up.quota')
-}
-
-/**
  * 30 天档价格行的灰字小注:计价口径 + 每天单价。
  *
  * @param x 取词函数与该档的每天单价。
@@ -530,25 +461,4 @@ export function cardClsOf(x: CardClsIn): string {
     return [cssOf(css.card), cssOf(css.cardHot)].join(CLS_SEP)
   }
   return cssOf(css.card)
-}
-
-/**
- * 打码占位的假文本:取前几行拼成一段。整块渲成一个文本节点、靠 pre-line 断行,
- * 是为了不在 tsx 里逐行造节点(组件体内不许声明内嵌函数)——
- * 行数、字形与断行位置与逐行渲染一模一样。
- *
- * @param x 打码几行。
- * @returns 拼好的假文本。
- */
-export function maskTextOf(x: MaskTextOfIn): string {
-  return MASK_LINES.slice(0, x.lines).join(MASK_SEP)
-}
-
-/**
- * 打码块的类名预算:全局层的 lkMask(模糊、不可选中、不吃鼠标)+ 本域负责断行的那一格。
- *
- * @returns 拼好的 className。
- */
-export function maskClsOf(): string {
-  return [LK_MASK_CLS, cssOf(css.maskLines)].join(CLS_SEP)
 }

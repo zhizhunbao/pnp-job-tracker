@@ -26,17 +26,16 @@ import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf, untranslatedOf } from '@/components/jobtitle'
 import { OB_SEEN_KEY } from '@/components/profile'
 import { BROAD_SLUGS } from '@/lib/stats'
-import { makeT } from '@/lib/i18n'
 import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, AI_BOLD_RE, AI_GAP_RE, AI_GAP_TO, AI_LEAD_BLANK_RE, AI_TAIL_BLANK_RE, APPLY_MAIL_RE, AT, AUTH_LOGIN,
+  ACC_UNKNOWN, APPLY_MAIL_RE, AT, AUTH_LOGIN,
   AUTH_REGISTER, AUTH_RESET, BLOCK_KEY_SEP, BROAD_ORDER_LAST, CANADA_MAIL_SUFFIX, CARET_CLOSED, CARET_OPEN,
   CELL_TONE_CLS, CHIP, CHIP_TONE_CLS, COL, COLS_COOKIE, COLS_MAX_AGE_S, COLUMNS, COLW_COOKIE, COLW_MAX_AGE_S, COL_FLOOR,
-  COMMA, COMPANY_MIN_LEN, COMPANY_SUFFIX_RE, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE,
+  COMMA, COOKIE_EQ, COOKIE_PATH_AGE, COOKIE_SAMESITE, COOKIE_SEP, CSS_BORDER_NONE,
   CSS_STICKY, DASH, DATE_LEN, DEFAULT_COLS, DIR_ASC, DIR_DESC, DISPOSITION_NONE, EE_PREFIX, FIELD_GROUP, FILTER_PROV,
   FILTER_Q, FK, FMT_QUOTA, FOLD_KEYS, FROZEN_COLS, FROZEN_EDGE_SHADOW, FROZEN_LINE_SHADOW, FROZEN_Z, GC_MAIL_SUFFIX,
   HDR_FREE_LEFT, HEAD_BG, HEAD_LINE, HOME_GATE_CSS, HOME_GATE_MAYBE, HOME_GATE_OFF, HOME_GATE_ON, HTTP_PAYMENT,
@@ -47,18 +46,18 @@ import {
   JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC,
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
   JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
-  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_SUG_GENERIC, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO,
+  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO,
   LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO,
   MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
   MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
   MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
-  RE_ESC_RE, RE_FLAG_G, RE_FLAG_GI, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
+  RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
   SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
-  SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED, SUG_CUT_RE, SUG_DEDUP_TO, SUG_DEDUP_TPL, SUG_HEAD_MARK,
-  SUG_LAST_MAX, SUG_LAST_MIN, SUG_MARK, SUG_MAX_LEN, SUG_QUESTION_RE, SUG_TAIL_MAX, TABLE_SEL, TABLE_WRAP_SEL,
+  SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
+  TABLE_SEL, TABLE_WRAP_SEL,
   TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED,
-  TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN, TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB, TRAIL_WS_RE,
+  TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN, TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB,
   TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_SS,
   URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD, URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
   URL_LEVEL_AMP, URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
@@ -67,7 +66,7 @@ import {
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
   AuthFromUrlOut, BlockedKeys, BoardCardIn, BoardCardView, BoardCellIn, BoardCellView, BoardPnpFacts, CardTitlesIn,
-  CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CapSugIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
+  CardsClsIn, HomeGate, LoadTipIn, PnpChipIn, CatLabel, CatLabelIn, CatSegsIn, CellClickIn, CellIn, CellTone,
   CellView, CellWidthsIn, ChipClickIn, ChipIn, ChipPushBlockIn, ChipPushIn, ChipPushQcIn, ChipSpec, ChipSpecsIn,
   CityOptsIn, ClearFiltersIn, ClickFn, ColActionIn, ColMeasure, ColOptionView, ColSpec, CompanyPeek, ColWant,
   ColWidthFnIn, ColWidthSeed, CookieIn, CopyLabelIn, CrumbSeg, CurFiltersIn, DataKeyIn, DescOpenIn, DistOptsIn,
@@ -83,7 +82,7 @@ import type {
   PlanProfileIn, PopupToCoIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn,
   RelatedJobFact, RelatedPageJson, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
   SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
-  ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, SugOut, TFn, TextFn, ThWidthIn,
+  ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn,
 } from './types'
@@ -580,19 +579,6 @@ function dashOf(s: string | null | undefined): string {
     return DASH
   }
   return String(s)
-}
-
-/**
- * 库里可空的文本 → 空串(算派生值时用,别把 null 带进拼串)。
- *
- * @param s 库值。
- * @returns 文本;没有给空串。
- */
-function textOf(s: string | null | undefined): string {
-  if (s == null) {
-    return TEXT_NONE
-  }
-  return s
 }
 
 /**
@@ -1960,96 +1946,6 @@ function mailBodyOf(x: MailBodyIn): string {
 }
 
 /**
- * 从完整回复里摘建议问题:① ❓ 标记行(协议,第 15 轮 #36 用户点名「基于具体内容生成问题」);
- * ② 兜底 = 末行是独立短问句(模型偶发漏打标记,问题裸奔在正文结尾 —— 2026-07-11 用户实机撞到)。
- * 都没有 → 原文返回,chip 走罐头池。兜底分支同过 capSug(第 16 轮它绕过了)。
- *
- * @param s 完整回复。
- * @param company 雇主名(把它换成指代词,见 scrubCompany)。
- * @param lang 界面语言(取指代词那句文案)。
- * @returns 正文与建议问题。
- */
-// eslint-disable-next-line local/one-parameter -- 签名由 advisor 的调用点定死(本批只许动它的 import 行)
-export function extractSug(s: string, company?: string, lang?: string): SugOut {
-  const co = textOf(company)
-  const i = s.lastIndexOf(SUG_MARK)
-  if (i >= 0 && s.length - i <= SUG_TAIL_MAX) {
-    const raw = s.slice(i + SUG_MARK.length).trim()
-    return { body: s.slice(0, i).replace(TRAIL_WS_RE, TEXT_NONE), sug: capSug({ q: raw, company: co, lang }) }
-  }
-  const t = s.replace(TRAIL_WS_RE, TEXT_NONE)
-  const nl = t.lastIndexOf(NEWLINE)
-  const last = t.slice(nl + 1).trim()
-  const ok = nl > 0 && last.length >= SUG_LAST_MIN && last.length <= SUG_LAST_MAX
-    && SUG_QUESTION_RE.test(last) && last.startsWith(SUG_HEAD_MARK) === false
-  if (ok) {
-    return { body: t.slice(0, nl).replace(TRAIL_WS_RE, TEXT_NONE), sug: capSug({ q: last, company: co, lang }) }
-  }
-  return { body: t, sug: TEXT_NONE }
-}
-
-/**
- * 建议问题长度红线(2026-07-11 用户拍板「不要太长」):>60 字裁到首个问号;
- * 还收不住 → 弃用退罐头。先剥 **(#43)+ 公司名指代(#49)。
- *
- * @param x 原句、雇主名与界面语言。
- * @returns 收得住的问题;收不住给空串。
- */
-function capSug(x: CapSugIn): string {
-  const q = scrubCompany({ q: x.q.replace(AI_BOLD_RE, TEXT_NONE), company: x.company, lang: x.lang })
-  if (q.length <= SUG_MAX_LEN) {
-    return q
-  }
-  const m = q.match(SUG_CUT_RE)
-  if (m == null) {
-    return TEXT_NONE
-  }
-  return String(m[0])
-}
-
-/**
- * #49(第 19 轮):#44 的 prompt 约束(雇主用「这家公司」指代)模型不稳定遵守,
- * 缓存换血即复发(「TABOCHE TECHNOLOGY过去是否…」「ERA是否…」实拍)——
- * 前端兜底:占位里把公司名(含去后缀核心名)统一替换成指代词,相邻重复再合一。
- *
- * @param x 原句、雇主名与界面语言。
- * @returns 换过指代词的句子。
- */
-function scrubCompany(x: CapSugIn): string {
-  if (x.company === TEXT_NONE) {
-    return x.q
-  }
-  let lang = LANG_ZH
-  if (x.lang != null) {
-    lang = x.lang
-  }
-  const generic = makeT(lang as Parameters<typeof makeT>[0])(K_SUG_GENERIC)
-  const core = x.company.replace(COMPANY_SUFFIX_RE, TEXT_NONE).trim()
-  const names = Array.from(new Set([x.company.trim(), core]))
-  names.sort(byLengthDesc)
-  let q = x.q
-  for (const n of names) {
-    if (n.length >= COMPANY_MIN_LEN) {
-      q = q.replace(new RegExp(n.replace(RE_ESC_RE, JD_ESC_TO), RE_FLAG_GI), generic)
-    }
-  }
-  return q.replace(new RegExp(SUG_DEDUP_TPL.replace(JD_TPL_SLOT, generic), RE_FLAG_G), SUG_DEDUP_TO)
-}
-
-/**
- * 长的排前面(先换长名再换短名,免得短名把长名切碎)。比较器的两参一返由
- * `Array.prototype.sort` 定死 —— 宪法钦定的豁免形态。
- *
- * @param a 前一项。
- * @param b 后一项。
- * @returns 排序权重。
- */
-// eslint-disable-next-line local/one-parameter -- 比较器签名由 Array.prototype.sort 定死(宪法钦定的豁免形态)
-function byLengthDesc(a: string, b: string): number {
-  return b.length - a.length
-}
-
-/**
  * 面包屑的职业分类路径段。沿革:原是「省 › 大 › 中 › 小」,同名相邻跳过、不铺重复;2026-09-23 职业分类改两级,
  * 改成「省 › 大类 › 职业」—— 职业段显示人话短名,点了回板上按这个职业码筛(`?noc=`,与问卷 / 规划页深链同一个参数)。
  *
@@ -3284,32 +3180,6 @@ export function nocBlockHeadOf(x: NocHeadIn): string {
     return x.head
   }
   return x.head + PAREN_L + x.fetched + PAREN_R
-}
-
-/**
- * AI 文本的一段:去段首尾空行 + 压多余空行,免大空隙。
- *
- * @param seg 切出来的一段。
- * @returns 正文;整段是空白就给空串(那一段不渲)。
- */
-export function aiParaOf(seg: string): string {
-  return seg.replace(AI_LEAD_BLANK_RE, TEXT_NONE).replace(AI_TAIL_BLANK_RE, TEXT_NONE).replace(AI_GAP_RE, AI_GAP_TO)
-}
-
-/**
- * AI 文本里【小标题】的类:首个不留上距。
- * ⚠️ 这一条**没有**跟着 JD 正文那样改 `:first-child` —— renderAI 对空段返回 null(不产出节点),
- * 首个 null 会让 `:first-child` 落到下一个元素上,与原逻辑不等价(main.css 第 15 段的旧注释
- * 就是在说这件事)。
- *
- * @param i 第几段。
- * @returns 类名。
- */
-export function aiHeadClsOf(i: number): string {
-  if (i === 0) {
-    return cssOf(css.aiHead) + SPACE + cssOf(css.aiHeadFirst)
-  }
-  return cssOf(css.aiHead)
 }
 
 /**

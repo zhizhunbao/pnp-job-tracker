@@ -23,20 +23,9 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const MIME_JSON = 'application/json'
 
 /**
- * 纯 JD 速读(职位弹框,2026-07-21 Frank「只速读这个 job 的内容即可,
- * 不需要过度解读移民信号」)。
- */
-export const FIELD_JD_READ = 'jdRead'
-
-/**
  * 空串:没有文本 / 没有标题。
  */
 export const TEXT_NONE = ''
-
-/**
- * 一个空格(图标与文字之间)。
- */
-export const SPACE = ' '
 
 /**
  * 顾问弹框的尺寸记忆键(记 `{full, w, h}`;位置每次打开居中,避免窗口缩小后跑出屏外)。
@@ -131,21 +120,6 @@ export const URL_JOB_HEAD = '/jobs/'
 export const POOL_KEY_HEAD = 'n:'
 
 /**
- * 市级取数的城市参数名。
- */
-export const P_CITY = 'city'
-
-/**
- * 市级取数的省码参数名。
- */
-export const P_PROV = 'prov'
-
-/**
- * 市级取数的区参数名(点区进来才带)。
- */
-export const P_DISTRICT = 'district'
-
-/**
  * 带上登录 cookie 取数(同公司在榜岗按登录态给字段)。
  */
 export const CREDENTIALS_INCLUDE = 'include'
@@ -184,11 +158,6 @@ export const CARET_DOWN = '▾'
  * 折叠开关收起态的记号。
  */
 export const CARET_RIGHT = '▸'
-
-/**
- * 外链尾巴(点出去会离开本页)。
- */
-export const ARROW_EXTERNAL = '↗'
 
 /**
  * 枚举多值时的顿号(全站禁「·」「/」杂糅,枚举一律顿号)。
@@ -272,17 +241,6 @@ export const NEWLINE = '\n'
 export const LANG_EN = 'en'
 
 /**
- * 加拿大(国家格缺席时的兜底:本站只收加拿大的岗)。
- */
-export const COUNTRY_CANADA = 'Canada'
-
-/**
- * 魁北克省码。QC 走自己的移民体系,不属 PNP —— 省级卡组里它的通道数与配额行都不出,
- * 换成一句独立体系说明。
- */
-export const PROV_QC = 'QC'
-
-/**
  * 岗位下架态。
  */
 export const STATUS_CLOSED = 'closed'
@@ -297,11 +255,6 @@ export const STATUS_OPEN = 'open'
  * 「未分类」不是一个分类,摆上去是噪音。
  */
 export const CAT_NONE = '未分类'
-
-/**
- * 抽选记录里的「公告」类型(只是通知不是真抽选,判「改制后抽没抽过」时不算数)。
- */
-export const DRAW_KIND_NOTICE = 'notice'
 
 /**
  * JD 取数被防滥用闸挡下的档名(#201:429 = JD 宽松防滥用闸偶发,JD 已免费,非付费墙)。
@@ -762,12 +715,6 @@ export const HEAD_KEY_HR = 'head1'
  * ESDC 表表头年薪格的列表键。
  */
 export const HEAD_KEY_YR = 'head2'
-
-/**
- * 正文蓝链的全局类名(main.css 第 5 段 `.link`:品牌蓝 + 无下划线)。地图链接用它 ——
- * 它是**跨域共用的词汇**;地点卡里的值链接走本域私有的 .valueLink(那一处历来是自己的蓝)。
- */
-export const LINK_CLS = 'link'
 
 /**
  * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量)。

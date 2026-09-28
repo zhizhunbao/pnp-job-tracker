@@ -448,12 +448,10 @@ export const reportZh = {
   'pw.sig.dliTotal': '全国共 {n} 所可申 PGWP 的公立院校(IRCC 官方名单);选目标省后按省显示',
   'pw.sig.dliAtl': '大西洋四省有 {n} 所可申 PGWP 的公立院校,含 {names} 等',
   'pw.sig.aipEmp': '本站收录 {n} 家 AIP 指定雇主(可在职位板筛)',
-  'diff.title': '移民难度', 'diff.easy': '机会较多', 'diff.mid': '一般', 'diff.tight': '竞争激烈',
+  'diff.easy': '机会较多', 'diff.mid': '一般', 'diff.tight': '竞争激烈',
   // Frank 2026-07-26 走查:难度卡拆成「标签 | 值 | 注」三列(原来一行一整句,列对不齐也读不快)
-  'diff.k.comp': '竞争比', 'diff.v.comp': '{v} : 1',
-  'diff.k.trend': '配额同比', 'diff.k.act': '近 180 天抽选', 'diff.v.act': '{n} 次', 'diff.n.act': '邀请 {m} 人', 'diff.n.actOld': '邀请 {m} 人(均为改制前旧通道)',
-  'diff.k.score': '最新分数线', 'diff.v.score': '{s} 分', 'diff.n.score': '处自身近两年 {p}% 分位({sc} 分制)',
-  'diff.comp': '竞争比 {v}:1', 'diff.compNote': '学签+工签在库 {pool} 人({py} 年末,官方年度数据)÷ 提名配额 {quota}({y} 年配额)',
+  // 2026-09-28 难度卡随地点弹框删(Frank「残留也删了吧」):三列键 diff.k / v / n 与 diff.title、diff.compNote 撤
+  'diff.comp': '竞争比 {v}:1',
   'diff.trend': '配额同比 {v}', 'diff.act': '近 180 天抽选 {n} 次(邀请 {m} 人)', 'diff.score': '分数线处自身近两年 {p}% 分位(最新 {s} 分,{sc} 分制)',
 
   // #287 批D · 一键三合一判定卡(tv.*;行 key 对应 tripleVerdict §6.1)
@@ -789,7 +787,7 @@ export const jobsZh = {
   'match.r.lmia.na': '该雇主近两年无获批 LMIA 记录(多数雇主从未办过,非负面信号)',
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
-  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.pnpProvAip': '{p}提名(PNP)及 AIP', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
+  'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.pnpProvAip': '{p}提名(PNP)及 AIP', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
   // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)。2026-09-28 地点弹框删,这段只剩别处还在用的词条
   'loc.src': '来源:IRCC 开放数据(年末存量,官方数四舍五入到 5)。',
   // E8-12b 市级卡(点市看市):就业市场/PGWP 院校/AIP 雇主。2026-09-28 随地点弹框删,这段只剩别处还在用的词条
@@ -797,15 +795,12 @@ export const jobsZh = {
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
   'cat.showZh': '显示中文对照', 'cat.pair': '中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
   'up.title': '升级 Pro 解锁',
-  'up.advisor': '今日免费解读已用完,明天自动恢复。Pro 不限次数——每个岗、每个字段都能随时问。',
   'up.jobtext': '今日 JD 摘录免费次数已用完,明天自动恢复。Pro 不限次数。',
   // #160 打码占位旁的一行短注:一句话说清「为什么看不到、什么时候能看到」,卖点搬进弹窗不在这堆
-  'up.quota': '今日免费额度已用完,明天恢复',
   'up.maskMatch': '匹配详情已锁',
   'up.cta2': '升级 Pro', 'up.salHint': 'Pro 额外显示:此岗与同职业官方工资中位数的差距(±%)——一眼判断 offer 是否偏低',
   'up.proShort': 'Pro 解锁',   // #130 锁位短注:打码占位数旁四字,长解释文案退役
   'up.lockTip.wageMedHr': '同职业官方时薪中位数,Pro 解锁', 'up.lockTip.wageMedYr': '同职业官方年薪中位数,Pro 解锁', 'up.lockTip.vsMedian': '此岗薪资与官方中位的差距(±%),Pro 解锁',
-  'up.cta': '升级 Pro',
   'up.compare': '看完整功能对比',
   'up.noRenew': '到期不会自动续费', 'up.per30': '{v} / 30 天', 'up.pay': '确认支付 {v}', 'up.perk.quota': '无限刷题',
   'up.perk.sync': '练过跨设备同步',
@@ -847,7 +842,6 @@ export const jobsZh = {
   'sal.low': '低位', 'sal.med': '中位', 'sal.high': '高位', 'sal.above': '比中位高 {p}%', 'sal.below': '比中位低 {p}%',
   'src.label': '来源', 'src.fetched': '抓取于 {d}', 'src.derived': '本站算法,由上方事实计算', 'src.official': '官方原帖', 'src.unverified': '未验证(仅链接)',
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
-  'jd.sugGeneric': '这家公司',
 }
 
 // =========================================================================
@@ -1046,7 +1040,7 @@ export const siteZh = {
   'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30 天', 'price.per90': '90 天',
   'price.f1': '职位列表、筛选、搜索(每日更新)', 'price.f2': 'PNP、EE 类别、AIP 标记', 'price.f3': '「与我的匹配」+ 依据链',
-  'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位、中位列)', 'price.f7': 'AI 顾问档案感知(带上你的档案分析)',
+  'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位、中位列)',
   'price.f8': '保存筛选 5 个位(免费 2 个)', 'price.f9': '地区统计跨省对比',
   'price.no': '—', 'price.unlimited': '不限', 'price.firstN': '每日前 {n} 岗', 'price.dayN': '每日 {n} 次', 'price.fairN': '每日 {n} 次(公平使用)',
   // #64 三卡版(f2 拆三行=一行只说一件事)
@@ -1118,17 +1112,9 @@ export const siteZh = {
  *    用户永远看不到它们,也不需要翻译。别把「给人看的」和「给模型看的」混进一个抽屉。
  */
 export const consultZh = {
+  // 2026-09-28 AI 顾问删(Frank「残留也删了吧」):advisor.* 只剩 advisor.left(职位描述弹框的 JD 摘录额度行),其余生成 / 追问 / 免责词条撤
   'advisor.left': '免费今日剩 {n} 次',
-  'advisor.failed': '生成失败({code})',
-  'advisor.footAI': '由 AI 生成 · 可能有误,仅供参考',
-  'advisor.chatPlaceholder': '基于上方事实追问这个职位…', 'advisor.chatSend': '发送',
-  'advisor.sug.title': '这个职位走「雇主 offer → 省提名」最大的坑是什么?', 'advisor.sug.company': '这家公司有雇外国人的历史吗?对求职者靠谱吗?', 'advisor.sug.generic': '这条信号对我拿省提名意味着什么?',
-  'advisor.sug.title2': '这个职位的薪资和要求,在同类岗位里算什么水平?', 'advisor.sug.title3': '面试或接 offer 前,我该跟雇主确认哪几件事?',
-  'advisor.sug.company2': '这家公司的规模和稳定性,撑得起漫长的移民流程吗?', 'advisor.sug.company3': '拿到这家的 offer 后,第一步该做什么?',
-  'advisor.sug.generic2': '这里面有什么风险或时间窗口需要注意?', 'advisor.sug.generic3': '基于以上,我下一步最该做的一件事是什么?',
   'ai.retry': '重试',
-  'advisor.footTpl': '自动生成,不构成移民或法律建议',
-  'advisor.applyLink': '投递页', 'advisor.siteLink': '公司官网',
   // 对话即产品(C2):landing 主输入框。错误码一句一说 —— 笼统的「稍后再试」让用户白重试(简历对照实撞)
   // 标题=身份词(2026-08-06 Frank「有冗余」:原「说说你的情况」与输入框占位重复,动作指引留给占位符)
   'chat.title': '站内向导', 'chat.ph': '想看什么,或者想问什么', 'chat.send': '发送',
@@ -1173,7 +1159,6 @@ export const consultZh = {
   // 答复反馈(2026-08-05)。**点踩是数据缺口报警器,不是训练信号** —— 用户在替我们标注
   // 「这里答不好」,而且按真实频次排好序。所以问句要轻到不烦人、又显眼到有人愿意点。
 
-  'advisor.disclaimer': 'AI 生成判断,非移民建议(我们非持牌顾问 RCIC),以官方来源为准',
 }
 
 // =========================================================================

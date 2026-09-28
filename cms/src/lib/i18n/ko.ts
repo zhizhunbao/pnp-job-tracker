@@ -413,11 +413,8 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
   'pw.sig.dliTotal': '전국 PGWP 신청 가능 공립 기관 총 {n}곳(IRCC 공식 명단); 목표 주 선택 시 주별 표시',
   'pw.sig.dliAtl': '대서양 4주에 PGWP 신청 가능한 공립 기관 {n}곳, {names} 등 포함',
   'pw.sig.aipEmp': '본 사이트에 AIP 지정 고용주 {n}곳 수록(채용 보드에서 필터 가능)',
-  'diff.title': '이민 난이도', 'diff.easy': '기회 많음', 'diff.mid': '보통', 'diff.tight': '경쟁 치열',
-  'diff.k.comp': '경쟁률', 'diff.v.comp': '{v} : 1',
-  'diff.k.trend': '쿼터 전년 대비', 'diff.k.act': '최근 180일 추첨', 'diff.v.act': '{n}회', 'diff.n.act': '초청 {m}명', 'diff.n.actOld': '초청 {m}명(모두 개편 전 폐지 스트림)',
-  'diff.k.score': '최신 커트라인', 'diff.v.score': '{s}점', 'diff.n.score': '자체 2년 기준 상위 {p}% ({sc})',
-  'diff.comp': '경쟁률 {v}:1', 'diff.compNote': '학업+취업 허가 보유 {pool}명({py}년 말, 최신 연간 IRCC 데이터) ÷ 지명 쿼터 {quota}({y}년 쿼터)',
+  'diff.easy': '기회 많음', 'diff.mid': '보통', 'diff.tight': '경쟁 치열',
+  'diff.comp': '경쟁률 {v}:1',
   'diff.trend': '쿼터 전년 대비 {v}', 'diff.act': '최근 180일 추첨 {n}회(초청 {m}명)', 'diff.score': '컷오프가 해당 주 자체 2년 분포의 {p}% 분위(최근 {s}점, {sc})',
 
   // #287 批D · 영주권 판정 카드 (tv.*)
@@ -720,19 +717,16 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.lowOnly': '고용주 최근 2년 승인 LMIA {n}건(최근 {q})은 전부 농업/저임금 스트림 — 대부분 계절성 고용으로 숙련 스폰서 근거가 약해 가점 없음',
   'match.r.lmia.na': '이 고용주 최근 2년 승인 LMIA 기록 없음(대부분의 고용주는 필요한 적이 없음; 부정적 신호 아님)',
   // 付费墙(E3-05)
-  'grp.company': '회사', 'grp.pnpProv': '{p} 주정부 지명(PNP)', 'grp.pnpProvAip': '{p} 주정부 지명(PNP) 및 AIP', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.location': '위치', 'grp.pnp': '주정부 지명(PNP)', 'grp.ee': '연방 EE', 'grp.aip': 'AIP 지정 고용주', 'grp.pilot': '시범 커뮤니티(RCIP/FCIP)', 'grp.salary': '급여 대조',
+  'grp.company': '회사', 'grp.pnpProv': '{p} 주정부 지명(PNP)', 'grp.pnpProvAip': '{p} 주정부 지명(PNP) 및 AIP', 'grp.immigration': '이민', 'grp.category': '직업 분류', 'grp.pnp': '주정부 지명(PNP)', 'grp.ee': '연방 EE', 'grp.aip': 'AIP 지정 고용주', 'grp.pilot': '시범 커뮤니티(RCIP/FCIP)', 'grp.salary': '급여 대조',
   'loc.src': '출처: IRCC 공개 데이터(연말 기준, 5 단위 반올림).',
   'loc.dirLink': '고용주 디렉토리',
   'cat.showZh': '한국어 대조 보기', 'cat.pair': '한국어 대조', 'cat.hideZh': '한국어 대조 접기', 'cat.translating': '번역 중…', 'cat.transErr': '번역 사용 불가',
   'up.title': 'Pro 업그레이드로 잠금 해제',
-  'up.advisor': '오늘 무료 해설 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한 — 어떤 공고든, 어떤 항목이든 언제나 질문 가능.',
   'up.jobtext': '오늘 JD 발췌 무료 횟수를 모두 사용했습니다. 내일 자동 복구됩니다. Pro는 무제한.',
-  'up.quota': '오늘 무료 사용량 소진 — 내일 복구',
   'up.maskMatch': '매칭 상세 잠김',
   'up.cta2': 'Pro 업그레이드', 'up.salHint': 'Pro 추가 표시: 이 공고와 동일 직업 공식 중위 임금의 격차(±%) — 낮은 오퍼를 한눈에 판단',
   'up.proShort': 'Pro 전용',
   'up.lockTip.wageMedHr': '동일 직업 공식 시급 중위값, Pro 잠금 해제', 'up.lockTip.wageMedYr': '동일 직업 공식 연봉 중위값, Pro 잠금 해제', 'up.lockTip.vsMedian': '이 공고 급여와 공식 중위값의 격차(±%), Pro 잠금 해제',
-  'up.cta': 'Pro 업그레이드',
   'up.compare': '전체 기능 비교',
   'up.noRenew': '자동 갱신 없음', 'up.per30': '{v} / 30일', 'up.pay': '{v} 결제', 'up.perk.quota': '무제한 연습',
   'up.perk.sync': '기기 간 진도 동기화',
@@ -769,7 +763,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'sal.low': '하위', 'sal.med': '중위', 'sal.high': '상위', 'sal.above': '중위보다 {p}% 높음', 'sal.below': '중위보다 {p}% 낮음',
   'src.label': '출처', 'src.fetched': '{d} 수집', 'src.derived': '본 사이트 알고리즘(위 사실로 계산)', 'src.official': '공식 공고', 'src.unverified': '미검증(링크만)',
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
-  'jd.sugGeneric': '이 회사',
 }
 
 // =========================================================================
@@ -945,7 +938,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'price.free': '무료', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30일', 'price.per90': '90일',
   'price.f1': '채용 공고 목록, 필터, 검색(매일 업데이트)', 'price.f2': 'PNP, EE 카테고리, AIP 표시', 'price.f3': '"나에게 맞는 공고" + 근거 링크',
-  'price.f5': '채용 공고 구조화 발췌', 'price.f6': '중위 임금 비교(vs 중위값, 중위 열)', 'price.f7': '프로필 기반 AI 상담사(내 프로필 분석 포함)',
+  'price.f5': '채용 공고 구조화 발췌', 'price.f6': '중위 임금 비교(vs 중위값, 중위 열)',
   'price.f8': '저장된 검색 조건 5개(무료 버전: 2개)', 'price.f9': '지역 통계 주 간 비교',
   'price.no': '—', 'price.unlimited': '무제한', 'price.firstN': '하루 상위 {n}개 공고', 'price.dayN': '하루 {n}회', 'price.fairN': '하루 {n}회(공정 사용)',
   'price.f2a': 'PNP 주정부 지명 표시', 'price.f2b': 'EE 카테고리 표시', 'price.f2c': 'AIP 대서양 고용주 표시',
@@ -1011,16 +1004,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
  */
 export const consultKo: Record<keyof typeof consultZh, string> = {
   'advisor.left': '오늘 무료 {n}회 남음',
-  'advisor.failed': '생성 실패 ({code})',
-  'advisor.footAI': 'AI 생성 · 부정확할 수 있음, 참고용',
-  'advisor.chatPlaceholder': '위 정보를 바탕으로 이 채용에 대해 질문하세요…', 'advisor.chatSend': '보내기',
-  'advisor.sug.title': '이 공고, 고용주 오퍼 → 주정부 지명(PNP) 경로로 갈 때 가장 큰 함정은?', 'advisor.sug.company': '이 회사는 외국인 고용 이력이 있나요? 지원자 입장에서 믿을 만한가요?', 'advisor.sug.generic': '이 시그널이 제 주정부 지명(PNP) 가능성에 어떤 의미인가요?',
-  'advisor.sug.title2': '이 공고의 급여와 요건은 비슷한 포지션 대비 어느 수준인가요?', 'advisor.sug.title3': '면접이나 오퍼 수락 전에 고용주에게 꼭 확인할 것은?',
-  'advisor.sug.company2': '이 회사의 규모와 안정성으로 긴 이민 절차를 감당할 수 있을까요?', 'advisor.sug.company3': '여기서 오퍼를 받으면 먼저 무엇을 해야 하나요?',
-  'advisor.sug.generic2': '주의해야 할 리스크나 시한이 있나요?', 'advisor.sug.generic3': '지금 상황에서 가장 중요한 다음 한 걸음은 무엇인가요?',
   'ai.retry': '다시 시도',
-  'advisor.footTpl': '자동 생성이며 이민·법률 자문이 아닙니다',
-  'advisor.applyLink': '지원하기', 'advisor.siteLink': '회사 웹사이트',
   // 대화형 랜딩(C2). 오류 코드마다 다른 안내 — 뭉뚱그린 "잠시 후 다시"는 헛된 재시도만 부름
   'chat.title': '사이트 안내', 'chat.ph': '보고 싶은 것, 묻고 싶은 것', 'chat.send': '보내기',
   'chat.waiting': '찾는 중',
@@ -1045,7 +1029,6 @@ export const consultKo: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'PR 경로 점검', 'guide.dest.pte': 'PTE 연습', 'guide.dest.news': '뉴스', 'guide.dest.cases': '사례',
   'guide.dest.rankings': '순위', 'guide.dest.timeline': '타임라인', 'guide.dest.resources': '자료실', 'guide.dest.pricing': '요금',
   'guide.dest.account': '내 계정',
-  'advisor.disclaimer': 'AI 기반 판단이며 이민 자문이 아닙니다(당사는 RCIC가 아님) · 공식 출처를 기준으로 확인하세요.',
 }
 
 // =========================================================================

@@ -416,11 +416,8 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
   'pw.sig.dliTotal': '{n} PGWP-eligible public institutions across Canada (IRCC official list); pick target provinces to narrow',
   'pw.sig.dliAtl': 'The four Atlantic provinces have {n} PGWP-eligible public institutions, incl. {names}',
   'pw.sig.aipEmp': 'This site indexes {n} AIP designated employers (filterable on the job board)',
-  'diff.title': 'Immigration difficulty', 'diff.easy': 'More room', 'diff.mid': 'Moderate', 'diff.tight': 'Competitive',
-  'diff.k.comp': 'Competition ratio', 'diff.v.comp': '{v} : 1',
-  'diff.k.trend': 'Allocation YoY', 'diff.k.act': 'Draws in 180 days', 'diff.v.act': '{n}', 'diff.n.act': '{m} invitations', 'diff.n.actOld': '{m} invitations, all from streams closed in the redesign',
-  'diff.k.score': 'Latest cutoff', 'diff.v.score': '{s}', 'diff.n.score': '{p}th percentile of its own 2-year history ({sc})',
-  'diff.comp': 'Competition ratio {v}:1', 'diff.compNote': '{pool} study+work permit holders (year-end {py}, latest annual IRCC data) ÷ {quota} nomination spaces ({y} allocation)',
+  'diff.easy': 'More room', 'diff.mid': 'Moderate', 'diff.tight': 'Competitive',
+  'diff.comp': 'Competition ratio {v}:1',
   'diff.trend': 'Allocation YoY {v}', 'diff.act': '{n} draws in last 180 days ({m} invitations)', 'diff.score': 'Cutoff at the {p}th percentile of this province’s own 2-year history (latest {s}, {sc} scale)',
 
   // #287 批D · PR verdict card (tv.*)
@@ -733,19 +730,16 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.lowOnly': 'Employer’s {n} approved LMIA positions (latest {q}) are all Primary Agriculture / Low Wage streams — mostly seasonal hiring, weak evidence for skilled sponsorship; no points added',
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
-  'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.pnpProvAip': '{p} PNP and AIP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
+  'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.pnpProvAip': '{p} PNP and AIP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
   'loc.src': 'Source: IRCC open data (year-end stock, rounded to the nearest 5).',
   'loc.dirLink': 'Employer directory',
   'cat.showZh': 'Show translation', 'cat.pair': 'Translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
   'up.title': 'Upgrade to Pro to unlock',
-  'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
   'up.jobtext': "Today's free JD excerpts are used up — they reset tomorrow. Pro is unlimited.",
-  'up.quota': "Today's free quota is used up — resets tomorrow",
   'up.maskMatch': 'Match details locked',
   'up.cta2': 'Upgrade to Pro', 'up.salHint': 'Pro also shows: this job vs the official median wage for the occupation (±%) — spot a low offer at a glance',
   'up.proShort': 'Pro only',
   'up.lockTip.wageMedHr': 'Official median hourly wage for this occupation — Pro', 'up.lockTip.wageMedYr': 'Official median annual wage for this occupation — Pro', 'up.lockTip.vsMedian': 'How this job pays vs the official median (±%) — Pro',
-  'up.cta': 'Upgrade to Pro',
   'up.compare': 'See full comparison',
   'up.noRenew': 'No auto-renewal', 'up.per30': '{v} / 30 days', 'up.pay': 'Pay {v}', 'up.perk.quota': 'Unlimited practice',
   'up.perk.sync': 'Progress synced across devices',
@@ -782,7 +776,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'sal.low': 'Low', 'sal.med': 'Median', 'sal.high': 'High', 'sal.above': '{p}% above median', 'sal.below': '{p}% below median',
   'src.label': 'Source', 'src.fetched': 'fetched {d}', 'src.derived': 'Site algorithm, computed from the facts above', 'src.official': 'Official posting', 'src.unverified': 'unverified (link only)',
   // #49 兜底:占位里把公司名统一替换成指代词(prompt 约束模型不稳定遵守)
-  'jd.sugGeneric': 'this company',
 }
 
 // =========================================================================
@@ -962,7 +955,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'price.free': 'Free', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30 days', 'price.per90': '90 days',
   'price.f1': 'Job list, filters, search (daily updates)', 'price.f2': 'PNP, EE category, AIP flags', 'price.f3': '"Match for me" + evidence chain',
-  'price.f5': 'Structured JD excerpts', 'price.f6': 'Median-wage comparison (vs median, median columns)', 'price.f7': 'Profile-aware AI advisor (analysis with your profile)',
+  'price.f5': 'Structured JD excerpts', 'price.f6': 'Median-wage comparison (vs median, median columns)',
   'price.f8': '5 saved-search slots (free: 2)', 'price.f9': 'Region stats: province comparison',
   'price.no': '—', 'price.unlimited': 'Unlimited', 'price.firstN': 'First {n} jobs / day', 'price.dayN': '{n} / day', 'price.fairN': '{n} / day (fair use)',
   'price.f2a': 'PNP nominee-stream flags', 'price.f2b': 'EE category flags', 'price.f2c': 'AIP Atlantic-employer flags',
@@ -1028,16 +1021,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
  */
 export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.left': '{n} free uses left today',
-  'advisor.failed': 'Failed ({code})',
-  'advisor.footAI': 'AI-generated · may be inaccurate, for reference only',
-  'advisor.chatPlaceholder': 'Ask about this job, grounded in the facts above…', 'advisor.chatSend': 'Send',
-  'advisor.sug.title': 'What are the biggest pitfalls of this job for the employer-offer → PNP route?', 'advisor.sug.company': 'Has this company hired foreign workers before? How reliable is it for applicants?', 'advisor.sug.generic': 'What does this signal mean for my PNP chances?',
-  'advisor.sug.title2': 'How do this job’s pay and requirements compare with similar postings?', 'advisor.sug.title3': 'What should I confirm with the employer before interviewing or accepting?',
-  'advisor.sug.company2': 'Is this company big and stable enough to support a long immigration process?', 'advisor.sug.company3': 'If I get an offer here, what should I do first?',
-  'advisor.sug.generic2': 'Any risks or time windows I should watch here?', 'advisor.sug.generic3': 'Given all this, what single next step matters most?',
   'ai.retry': 'Retry',
-  'advisor.footTpl': 'Auto-generated, not immigration or legal advice',
-  'advisor.applyLink': 'Apply', 'advisor.siteLink': 'Website',
   // Chat-first landing (C2). Every error code says its own thing — a generic "try later" makes users retry for nothing
   'chat.title': 'Site guide', 'chat.ph': 'What to see, or what to ask', 'chat.send': 'Send',
   'chat.waiting': 'Looking',
@@ -1062,7 +1046,6 @@ export const consultEn: Record<keyof typeof consultZh, string> = {
   'guide.dest.plan_pr': 'the PR path check', 'guide.dest.pte': 'PTE practice', 'guide.dest.news': 'news', 'guide.dest.cases': 'cases',
   'guide.dest.rankings': 'rankings', 'guide.dest.timeline': 'the timeline', 'guide.dest.resources': 'resources', 'guide.dest.pricing': 'pricing',
   'guide.dest.account': 'your account',
-  'advisor.disclaimer': 'AI-generated assessment, not immigration advice (we are not RCIC); verify with official sources',
 }
 
 // =========================================================================

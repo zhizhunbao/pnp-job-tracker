@@ -15,13 +15,9 @@
  * 整这么多用户不会嫌烦吗」):jobtext / advisor / resume 共用一个每日池,用户全站只看一个数。
  * 单价一律 1 次/调用(顾问已切朋友模型 #105,按成本分池的老理由不再成立);
  * 超池 → 402 升级提示;未登录走 IP 限流不进这里。
+ * 2026-09-28 AI 顾问删(Frank「残留也删了吧」):池里只剩 jobtext / resume,顾问的别名与 Pro 日上限两个常量撤。
  */
 export const FREE_DAILY_TRIES = Number(process.env.FREE_DAILY_TRIES || 20)
-
-/**
- * advisor 每日试用 = 统一池别名(#124;定价页/弹窗显示处自动一致)。
- */
-export const FREE_ADVISOR_TRIES = FREE_DAILY_TRIES
 
 /**
  * jobtext(JD 摘录)每日试用 = 统一池别名(#124)。
@@ -32,11 +28,6 @@ export const FREE_JOBTEXT_TRIES = FREE_DAILY_TRIES
  * 匿名(未登录)IP 每日池。🔴 必须低于登录额度 —— 倒挂劝退注册(第 2 轮 #5 教训)。
  */
 export const ANON_DAILY_TRIES = Number(process.env.ANON_DAILY_TRIES || 10)
-
-/**
- * Pro 用户 advisor 个人日上限(防滥用,不是卖点限制)。
- */
-export const PRO_ADVISOR_DAILY = Number(process.env.PRO_ADVISOR_DAILY || 200)
 
 /**
  * Pro 用户对话个人日上限(2026-08-18 Frank「chat 部分,每个用户给限额」)。

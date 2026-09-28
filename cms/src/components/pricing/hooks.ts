@@ -11,14 +11,14 @@
  */
 import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
-import { PLAN_DEFAULT, TEXT_NONE, UPGRADE_CLOSED } from './constants'
+import { PLAN_DEFAULT, TEXT_NONE } from './constants'
 import {
-  makeFlagSet, makePlanPick, makePlanSelect, makePricingBuy, makeUpgradeBuy, makeUpgradeOpen, makeUpgradeSet,
+  makeFlagSet, makePlanPick, makePlanSelect, makePricingBuy, makeUpgradeBuy,
   reloadPage, trackPricingModalOpen, trackPricingOpen, trackShotClick, trackUpgradeOpen,
 } from './functions'
 import type {
-  PricePlan, PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel, UpgradeCtaHookIn, UpgradeCtaPanel,
-  UpgradeModalHookIn, UpgradeModalPanel, UpgradeOpen,
+  PricePlan, PricingBuyHookIn, PricingBuyPanel, PricingModalPanel, PricingPanel,
+  UpgradeModalHookIn, UpgradeModalPanel,
 } from './types'
 
 /**
@@ -113,20 +113,5 @@ export function useUpgradeModal(x: UpgradeModalHookIn): UpgradeModalPanel {
     onBuy,
     onCompareOpen: makeFlagSet({ set: setCompare, v: true }),
     onCompareClose: makeFlagSet({ set: setCompare, v: false }),
-  }
-}
-
-/**
- * 升级钮整机:一格三态(什么都没开 / 升级弹框 / 注册弹框)与开关两只手柄。
- *
- * @param x 登录态。
- * @returns 视图要的整块面板:三态 + 手柄。
- */
-export function useUpgradeCta(x: UpgradeCtaHookIn): UpgradeCtaPanel {
-  const [open, setOpen] = useState<UpgradeOpen>(UPGRADE_CLOSED)
-  return {
-    open,
-    onOpen: makeUpgradeOpen({ set: setOpen, loggedIn: x.loggedIn }),
-    onClose: makeUpgradeSet({ set: setOpen, v: UPGRADE_CLOSED }),
   }
 }

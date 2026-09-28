@@ -230,16 +230,6 @@ export function hourTextOf(n: number | null): string {
 }
 
 /**
- * 千位分隔的数字。
- *
- * @param n 数。
- * @returns 带千位分隔的文本。
- */
-export function numOf(n: number): string {
-  return Number(n).toLocaleString()
-}
-
-/**
  * 点哪一级分类字段就看到第几级(07-06 用户点名:大分类弹窗不该混进中/小分类)。
  * 2026-09-23 职业分类改两级:中 / 小两级撤,只剩大类一级。
  *

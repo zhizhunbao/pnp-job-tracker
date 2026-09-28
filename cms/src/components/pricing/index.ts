@@ -16,7 +16,6 @@
  * @author Frank
  * @time 2026-08-28 12:45:00
  */
-export { LockedText } from './lockedtext'
 export { Pricing } from './pricing'
 export { PricingCard } from './pricingcard'
 export { PricingModal } from './pricingmodal'

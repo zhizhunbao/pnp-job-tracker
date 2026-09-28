@@ -13,7 +13,7 @@
  * @time 2026-08-28 12:45:00
  */
 import { headers } from 'next/headers'
-import { FREE_ADVISOR_TRIES, FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY, PRO_ADVISOR_DAILY } from '@/lib/quota'
+import { FREE_JOBTEXT_TRIES, FREE_MATCH_JOBS_PER_DAY } from '@/lib/quota'
 import { getUser, isPro } from '@/lib/quota/server'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
@@ -35,10 +35,8 @@ export default async function PricingPage() {
       <Pricing loggedIn={user != null}
         pro={isPro(user)}
         caps={{
-          advisor: FREE_ADVISOR_TRIES,
           jobtext: FREE_JOBTEXT_TRIES,
           match: FREE_MATCH_JOBS_PER_DAY,
-          proAdvisor: PRO_ADVISOR_DAILY,
         }} />
       <Footer />
     </Frame>

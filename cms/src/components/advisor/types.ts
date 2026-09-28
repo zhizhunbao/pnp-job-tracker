@@ -34,11 +34,6 @@ export type AdvisorJob = JobRow
 export type AdvisorPlan = Plan
 
 /**
- * 这一段生成的是哪一种:顾问初判(含移民路径)/ 纯 JD 速读 / 公司速读。
- */
-export type AdvisorField = 'title' | 'jdRead' | 'coRead'
-
-/**
  * 取词函数(与 lib/i18n 的 TFn 同形 —— 宪法「types 自声明」)。
  */
 export type AdvisorTFn = (key: string, vars?: Record<string, string | number>) => string
@@ -393,21 +388,6 @@ export type JobTextPanel = {
    * 被 JD 宽松防滥用闸挡下(#201:429 偶发,JD 已免费,非付费墙)。
    */
   limited: boolean
-}
-
-/**
- * KvRow 的 props(市/区体量卡那种定宽标签行)。
- */
-export type KvRowIn = {
-  /**
-   * 标签。
-   */
-  label: string
-
-  /**
-   * 值。
-   */
-  value: string
 }
 
 /**
@@ -1316,21 +1296,6 @@ export type OriginTextIn = {
    * 数据层写的渠道值。
    */
   origin: string
-}
-
-/**
- * mapQueryOf 的入参。
- */
-export type MapQueryIn = {
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 看到第几级(点省=省的地图,不带街址)。
-   */
-  depth: number
 }
 
 /**

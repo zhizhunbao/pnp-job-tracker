@@ -917,11 +917,6 @@ export const SALARY_DIV = 1000
 export const URL_JOBS_Q_HEAD = '/?q='
 
 /**
- * 动态详情页的地址头。
- */
-export const URL_NEWS_HEAD = '/news/'
-
-/**
  * 新开页的 target(站内长页与外站一律新开,rel 由 button 族补)。
  */
 export const TARGET_BLANK = '_blank'

@@ -440,31 +440,6 @@ export type PnpEeCat = {
 }
 
 /**
- * 一条官方动态(本省最新公告只摆标题与日期)。
- */
-export type PnpNewsSlim = {
-  /**
-   * 地区码(省码或联邦)。
-   */
-  region: string
-
-  /**
-   * 官方原标题。
-   */
-  title: string
-
-  /**
-   * 官方发布日期。
-   */
-  date: string
-
-  /**
-   * 详情页地址的最后一段。
-   */
-  slug: string
-}
-
-/**
  * 职业官方名行(译名从这里取;字典缺词就不出灰注)。
  */
 export type PnpNocDesc = {
@@ -2310,21 +2285,6 @@ export type DrawRowIn = {
    * 本省的改制登记;null=没改制。
    */
   reform: PnpReform | null
-}
-
-/**
- * newsRowsOf 的入参。
- */
-export type NewsRowsIn = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 全部动态。
-   */
-  news: PnpNewsSlim[]
 }
 
 /**

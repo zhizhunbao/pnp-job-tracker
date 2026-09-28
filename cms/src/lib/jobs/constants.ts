@@ -2103,21 +2103,6 @@ export const REL_OCC_PAGE_ROWS = 24
 export const REL_OCC_OFFSET_MAX = 5000
 
 /**
- * 城市参数名(/api/jobs/city)。
- */
-export const P_CITY = 'city'
-
-/**
- * 省参数名(/api/jobs/city)。
- */
-export const P_PROV = 'prov'
-
-/**
- * 区参数名(/api/jobs/city)。
- */
-export const P_DISTRICT = 'district'
-
-/**
  * 职业码参数名(/api/jobs/competition)。
  */
 export const P_NOC = 'noc'
@@ -2141,11 +2126,6 @@ export const AH_DAILY_DEFAULT = 60
  * 投递方式限额键前缀。
  */
 export const AH_LIMIT_PREFIX = 'ah:'
-
-/**
- * 两位省码形状。
- */
-export const PROV2_RE = /^[A-Z]{2}$/
 
 /**
  * 五位职业码形状。

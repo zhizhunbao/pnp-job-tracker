@@ -78,11 +78,6 @@ export const TEXT_NONE = ''
 export const CLS_SEP = ' '
 
 /**
- * aria-hidden 的真值。React 的 aria-* 收字符串,写 'true' 与渲染出的 HTML 一字不差。
- */
-export const ARIA_TRUE = 'true'
-
-/**
  * 图标与它旁边那句话之间的半角空格。它是**文案里的分隔**,与拼 className 的那一个
  * 不是同一件事,所以各有各的名字(同名同义件在 legal 域)。
  */
@@ -275,62 +270,3 @@ export const PLAIN_BTN_KIND = 'ghost'
  * 白底描边钮的变体(免费卡未登录时的「免费注册」)。
  */
 export const BTN_SECONDARY = 'secondary'
-
-/**
- * 付费琥珀钮的变体(实心升级钮 ⭐)。
- */
-export const BTN_PRO = 'pro'
-
-/**
- * 升级钮什么都没开着的态。
- */
-export const UPGRADE_CLOSED = ''
-
-/**
- * 升级钮开着升级弹框的态(已登录点它走这条)。
- */
-export const UPGRADE_BUY = 'up'
-
-/**
- * 升级钮开着注册弹框的态(未登录点它走这条 —— 先有身份才谈付费)。
- */
-export const UPGRADE_AUTH = 'auth'
-
-/**
- * 打码占位的四行假文本(#160)。糊掉的是**假文本**,零成本:额度判定本就在调用之前,
- * 拦下就不生成(不预跑、不占那台 qwen、不排队),真内容只在放行时才生成,一次都不浪费。
- * 真值同理不下发 —— blur 是视觉效果不是访问控制,右键就能读,故服务端剥离 + 前端渲假值
- * (与 #130 / #152 同一套)。四行长短不一,是为了让打码块看着像一段真话。
- */
-export const MASK_LINES = [
-  '████████████████████████████████',
-  '██████████████████████████',
-  '███████████████████████████████████',
-  '████████████████████',
-]
-
-/**
- * 打码几行的缺省档(三行 = 一段短答的体量)。
- */
-export const MASK_LINES_DEFAULT = 3
-
-/**
- * 打码块各行之间的换行符(整块渲成一个文本节点,靠 `.maskLines` 的 pre-line 断行)。
- */
-export const MASK_SEP = '\n'
-
-/**
- * 打码锁区外壳的全局类名。真身写在 main.css 第 12 段的全局层,不是 CSS Module 生成的
- * 哈希名,所以取不到 `css.lkText`,只能按这个固定字符串拼(改名要连 main.css 一起改)。
- */
-export const LK_TEXT_CLS = 'lkText'
-
-/**
- * 打码块本体的全局类名(模糊、不可选中、不吃鼠标;同上住在全局层)。
- */
-export const LK_MASK_CLS = 'lkMask'
-
-/**
- * 锁行(打码块脚注)的全局类名(同上住在全局层)。
- */
-export const LK_FOOT_CLS = 'lkFoot'

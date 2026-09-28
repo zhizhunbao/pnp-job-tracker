@@ -1,6 +1,6 @@
 /**
  * pricing 域(定价页与定价件)的自足形状:各视图的 props 契约、状态机器交给视图的整块面板,
- * 以及每个函数的入参。档位数(免费额度四格)本域**自己声明**一份 —— 宪法 08-25
+ * 以及每个函数的入参。档位数(免费额度两格;2026-09-28 顾问两格撤之前是四格)本域**自己声明**一份 —— 宪法 08-25
  * 「types 自声明」:形状不从别的域取,结构相同即兼容,少声明一格 tsc 当场拦。
  * 2026-08-28 换装批第二波补进价卡三件的形状(展示价容器、档位标识、Checkout 线格式、
  * 埋点对象的归一前形状、升级钮三态)。
@@ -28,13 +28,9 @@ export type ClickFn = () => void
 /**
  * 免费与 Pro 的档位数(服务端 lib/quota 读 env 算好后随 props 下来 ——
  * 客户端直接 import 拿到的是**构建期**的默认值,改 env 就不准了)。
+ * 2026-09-28 AI 顾问删(Frank「残留也删了吧」):顾问两格(advisor 免费试用、proAdvisor Pro 日上限)撤,剩免费档两格。
  */
 export type PriceCaps = {
-  /**
-   * 免费用户的 AI 顾问总试用次数。
-   */
-  advisor: number
-
   /**
    * 免费用户的岗位文本解析总试用次数。
    */
@@ -44,11 +40,6 @@ export type PriceCaps = {
    * 免费用户每天可匹配的岗位数。
    */
   match: number
-
-  /**
-   * Pro 用户每天的 AI 顾问次数。
-   */
-  proAdvisor: number
 }
 
 /**
@@ -66,7 +57,7 @@ export type PricingIn = {
   pro: boolean
 
   /**
-   * 档位数四格。
+   * 档位数两格。
    */
   caps: PriceCaps
 }
@@ -410,52 +401,6 @@ export type CardClsIn = {
 }
 
 /**
- * maskTextOf 的入参:打码几行。
- */
-export type MaskTextOfIn = {
-  /**
-   * 打码几行(至多 MASK_LINES 的长度)。
-   */
-  lines: number
-}
-
-/**
- * ctaLabelOf 的入参:升级钮上写什么字。
- */
-export type CtaLabelOfIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 调用方指定的文案;缺席 = 按形态取默认词。未登录 429 场景的出路是「登录 / 注册」
-   * 不是「升级 Pro」—— 文案随场景变,行为还是同一个组件。
-   */
-  label?: string
-
-  /**
-   * 是不是文字链形态(两种形态的默认词不一样:文字链短、实心钮长一点)。
-   */
-  link: boolean
-}
-
-/**
- * lockMsgOf 的入参:锁行的灰注。
- */
-export type LockMsgOfIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 调用方指定的灰注;缺席 = 默认的额度话术。
-   */
-  msg?: string
-}
-
-/**
  * ctaSlotClsOf 的入参:免费卡底那格占位是哪一种。
  */
 export type CtaSlotClsIn = {
@@ -481,51 +426,6 @@ export type PerLabelIn = {
 }
 
 /**
- * 升级钮的三态:什么都没开 / 开着升级弹框 / 开着注册弹框。
- */
-export type UpgradeOpen = '' | 'up' | 'auth'
-
-/**
- * upgradeOpenOf 的入参:点升级钮时的登录态。
- */
-export type UpgradeOpenOfIn = {
-  /**
-   * 登录没登录(已登录开升级弹框,未登录开注册弹框)。
-   */
-  loggedIn: boolean
-}
-
-/**
- * makeUpgradeOpen 的入参:升级钮三态的落格与点它那一刻的登录态。
- */
-export type UpgradeOpenIn = {
-  /**
-   * 三态的落格。
-   */
-  set: (v: UpgradeOpen) => void
-
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-}
-
-/**
- * makeUpgradeSet 的入参:升级钮三态的落格与要拨成的值。
- */
-export type UpgradeSetIn = {
-  /**
-   * 三态的落格。
-   */
-  set: (v: UpgradeOpen) => void
-
-  /**
-   * 拨成什么。
-   */
-  v: UpgradeOpen
-}
-
-/**
  * PricingCard(对照三卡 + CTA 三态)的 props。页面版与弹窗版共用同一份代码,不许 fork。
  */
 export type PricingCardIn = {
@@ -545,7 +445,7 @@ export type PricingCardIn = {
   pro: boolean
 
   /**
-   * 档位数四格。价卡本身不读它,是调用方一直在传的对外契约:定价页由服务端下发真值,
+   * 档位数两格。价卡本身不读它,是调用方一直在传的对外契约:定价页由服务端下发真值,
    * 弹窗版给构建期默认值(哪天分层数字改走 env,读的就是这一格而不是 import 来的常量)。
    */
   caps: PriceCaps
@@ -773,16 +673,6 @@ export type UpgradeModalHookIn = {
 }
 
 /**
- * useUpgradeCta 的入参。
- */
-export type UpgradeCtaHookIn = {
-  /**
-   * 登录没登录(决定点了开哪一层)。
-   */
-  loggedIn: boolean
-}
-
-/**
  * usePricingBuy 交给视图的面板:购买流的忙态与手柄。
  */
 export type PricingBuyPanel = {
@@ -865,113 +755,6 @@ export type UpgradeModalPanel = {
    * 「确认支付」:按选中档去 Checkout。
    */
   onPay: () => void
-}
-
-/**
- * UpgradeCta(统一升级钮)的 props。
- */
-export type UpgradeCtaIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录(已登录开升级弹框,未登录开注册弹框)。
-   */
-  loggedIn: boolean
-
-  /**
-   * 传给升级弹框的缘由;可省 = 弹框里不出这一行。
-   */
-  reason?: string
-
-  /**
-   * 钮文案;可省 = 按形态取默认词。
-   */
-  label?: string
-
-  /**
-   * 文字链形态(#160):打码占位旁的 CTA 不该再是实心钮 —— 一屏若干处打码,
-   * 每处一枚棕钮就是又一堵墙;实心钮留给顶栏与弹窗,稀缺性就是它的说服力。
-   * 两种形态行为完全一致。可省 = 实心钮。
-   */
-  link?: boolean
-}
-
-/**
- * useUpgradeCta 交给视图的面板:三态与两只手柄。
- */
-export type UpgradeCtaPanel = {
-  /**
-   * 现在开着哪一层。
-   */
-  open: UpgradeOpen
-
-  /**
-   * 点钮:按登录态决定开升级弹框还是注册弹框。
-   */
-  onOpen: ClickFn
-
-  /**
-   * 关掉开着的那一层。
-   */
-  onClose: ClickFn
-}
-
-/**
- * LockedText(打码锁区)的 props。
- */
-export type LockedTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录(锁行的 CTA 靠它决定开哪一层)。
-   */
-  loggedIn: boolean
-
-  /**
-   * 打码几行;可省 = 三行。
-   */
-  lines?: number
-
-  /**
-   * 锁行的灰注;可省 = 默认的额度话术。
-   */
-  msg?: string
-
-  /**
-   * 锁行 CTA 的文案;可省 = 默认的升级词。
-   */
-  ctaLabel?: string
-}
-
-/**
- * LockFoot(锁行:锁 + 灰注 + 文字链 CTA)的 props。
- */
-export type LockFootIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 登录没登录。
-   */
-  loggedIn: boolean
-
-  /**
-   * 灰注;可省 = 默认的额度话术。
-   */
-  msg?: string
-
-  /**
-   * CTA 文案;可省 = 默认的升级词。
-   */
-  ctaLabel?: string
 }
 
 /**

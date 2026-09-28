@@ -3906,8 +3906,9 @@ export type ColKey = 'score' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'lmia' | 'eligib
 
 /**
  * 弹框分组(E8-10 三合一后陆续拆出的九组)。
+ * 2026-09-28 地点弹框删(Frank「残留也删了吧」):'location' 一组撤,剩八组。
  */
-export type FieldGroup = 'company' | 'immigration' | 'category' | 'location' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'
+export type FieldGroup = 'company' | 'immigration' | 'category' | 'pnp' | 'ee' | 'aip' | 'pilot' | 'salary'
 
 // =========================================================================
 // 8. 职业竞争面(该职业各省在招;2026-08-22 自 lib/score 并入)

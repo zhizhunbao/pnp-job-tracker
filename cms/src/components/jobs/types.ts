@@ -3092,41 +3092,6 @@ export type MailBodyIn = {
 }
 
 /**
- * extractSug 交回的两半。
- */
-export type SugOut = {
-  /**
-   * 正文(已摘掉建议行)。
-   */
-  body: string
-
-  /**
-   * 建议问题;'' = 没摘到(chip 走罐头池)。
-   */
-  sug: string
-}
-
-/**
- * capSug / scrubCompany 的入参。
- */
-export type CapSugIn = {
-  /**
-   * 原句。
-   */
-  q: string
-
-  /**
-   * 雇主名;'' = 不替换。
-   */
-  company: string
-
-  /**
-   * 界面语言;缺席按中文取指代词。
-   */
-  lang: string | undefined
-}
-
-/**
  * catSegsOf 的入参。
  */
 export type CatSegsIn = {

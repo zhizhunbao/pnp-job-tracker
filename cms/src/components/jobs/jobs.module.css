@@ -1383,30 +1383,6 @@
  */
 
 /*
- * AI 文本里的【小标题】。
- */
-.aiHead {
-  display: block;
-  margin-bottom: 2px;
-  color: #111827;
-  margin-top: 10px;
-}
-
-/*
- * 首个【小标题】不留上距。
- */
-.aiHeadFirst {
-  margin-top: 0;
-}
-
-/*
- * AI 文本的一段(保留换行)。
- */
-.aiPara {
-  white-space: pre-wrap;
-}
-
-/*
  * ── 16. JD:主面板 ─────────────────────────────────────────────────────
  */
 
