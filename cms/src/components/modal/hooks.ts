@@ -2,21 +2,19 @@
 /**
  * modal 域的状态机器:窄屏判定、overlay 关闭手势、Esc 关闭、header 拖拽
  * (hooks 抽屉 —— 调用位置被 React 规则定死的单独一格,这个域有几台机器一眼数得清)。
+ * 2026-09-28 并壳(Frank「别并存啊」「你都重构了 还并存什么」):拖动(useCard)与拉伸(useEdgeResize)两台、
+ * 连同 advisor 浮层壳的一台(useFloatPanel:拖动 / 八向拉伸 / 尺寸记忆),合成一台 useFrame;
+ * Esc 由「各挂各的」改成按打开先后排号,只有最上面那个接(弹框栈不再自己管 Esc)。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { EV_CHANGE, EV_KEYDOWN, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL, NARROW_BP } from './constants'
 import {
-  DRAG_IGNORE_SEL, EV_CHANGE, EV_KEYDOWN, EV_POINTERMOVE, EV_POINTERUP, KEY_ESC, MQ_MAX_WIDTH_HEAD, MQ_MAX_WIDTH_TAIL,
-  NARROW_BP,
-} from './constants'
-import { elOf, resizedOf } from './functions'
-import type {
-  CardIn, CardOut, DragPos, DragStart, EdgeResizeIn, EdgeResizeOut, LayerStackOut, OverlayHandlers, ResizeEdge,
-  ResizeSize,
-  ResizeStart,
-} from './types'
+  downOf, frameInitOf, frameStyleOf, isTopEsc, joinEsc, leaveEsc, makeDragStart, makeResizeStart, memoOf, minSizeOf,
+} from './functions'
+import type { FrameBox, FrameIn, FrameOut, LayerStackOut, OverlayHandlers, PointerHandlerFn, ResizeEdge } from './types'
 
 /**
  * 窄屏判定(E8-03,单一来源):≤640px 弹窗一律全屏。
@@ -65,24 +63,33 @@ export function useOverlayClose(onClose: () => void): OverlayHandlers {
 }
 
 /**
- * Esc 关闭:挂窗口级 keydown,卸载时摘除。
+ * Esc 关闭:挂上时按打开先后领号(variables 的 CACHE),Esc 只让最上面那个关 ——
+ * 2026-09-28 并壳(Frank「别并存啊」):原先各挂各的,一按全关;弹框栈(职位 → 公司 → 职位)与职位板字段弹框
+ * 各自另挂一份互相让。现在谁后打开谁在上面,叠几层都是一层一层关。
+ * 号只在挂上时领一次:回调换了(每渲一次都是新函数)只更新镜像格,不重新排队 —— 重排就会把底下那层抬到最上面。
  *
  * @param onClose 关闭回调。
  * @returns 无。
  */
 export function useEscClose(onClose: () => void) {
+  const latest = useRef(onClose)
+  useEffect(function syncClose() {
+    latest.current = onClose
+  })
   useEffect(function bind() {
+    const id = joinEsc()
     function onKey(e: KeyboardEvent) {
-      if (e.key === KEY_ESC) {
-        onClose()
+      if (e.key === KEY_ESC && isTopEsc(id)) {
+        latest.current()
       }
     }
     window.addEventListener(EV_KEYDOWN, onKey)
     function off() {
       window.removeEventListener(EV_KEYDOWN, onKey)
+      leaveEsc(id)
     }
     return off
-  }, [onClose])
+  }, [])
 }
 
 /**
@@ -90,6 +97,7 @@ export function useEscClose(onClose: () => void) {
  * 职位 → 公司 → 另一条职位……一层层往上叠,关掉最上面一层就回到下面那层。Esc 也只关最上面一层 ——
  * 原先各宿主各挂一个 Esc、一按全关(职位板 closeBoth、公司页 useCompanyPeek),叠起来就回不去了。
  * 各层是什么、点了往上叠还是同框换,由宿主与渲染件(advisor 的 PeekStack)定;这里只管次序。
+ * 2026-09-28 并壳:栈不再自己挂 Esc —— 每一层都是 Modal,Modal 按打开先后排号接 Esc(useEscClose),最上面那层关的就是 pop。
  *
  * @returns 各层与三个手柄。
  */
@@ -110,121 +118,46 @@ export function useLayerStack<L>(): LayerStackOut<L> {
       return prev.slice(0, -1)
     })
   }, [])
-  const open = layers.length > 0
-  useEffect(function bindEsc() {
-    if (open === false) {
-      return
-    }
-    function onKey(e: KeyboardEvent): void {
-      if (e.key === KEY_ESC) {
-        pop()
-      }
-    }
-    window.addEventListener(EV_KEYDOWN, onKey)
-    return function off(): void {
-      window.removeEventListener(EV_KEYDOWN, onKey)
-    }
-  }, [open, pop])
   return { layers, push, swapTop, pop }
 }
 
 /**
- * 白卡形态整机:全屏态 + header 拖拽(一台机器 —— 全屏切换要复位位移、全屏中禁拖,
- * 拆两个 hook 会互相依赖成环)。按下起手(落在按钮/输入件/occ 药丸上豁免)→ 移动跟手
- * → 松手释放捕获。位移与全屏态是 state(要触发重渲),拖拽中与起手快照是 ref(不重渲)。
+ * 白卡整机(2026-09-28 并壳,一台管全站弹框):拖动 + 八向拉伸 + 尺寸记忆。
+ * 普通弹框照遮罩居中、宽高跟档位与内容走,第一次拖动 / 拉伸时量一下此刻的位置钉在视口上;
+ * 窗口形(带标题栏)首帧就按记忆尺寸居中钉住,拉完把宽高写回记忆。窄屏(E8-03)强制全屏:不拖、不拉、不出把手。
+ * 拖动只挂一块手柄:窗口形挂标题栏(正文要能选字),普通弹框挂整张白卡(按钮、输入件这类豁免)。
+ * 2026-09-21 Frank「会出现 先一个小框，然后在放大」:首帧就按记忆算(frameInitOf),不在挂载后再跳。
+ * 2026-09-23 Frank「这个带全屏的都去掉吧」:全屏钮撤,全屏态只剩窄屏强制那一种。
  *
- * 2026-09-23 全屏钮撤(Frank「这个带全屏的都去掉吧」),机器只剩拖拽。
+ * 外层也可以自己起一台交给 Modal(frame):职位描述弹框重新翻译后整块重挂内容,位置尺寸跟着外层走不丢
+ * (原浮层壳的 useFloatPanel 就是外层起的,同一个理由)。
  *
- * @param x 外部形态(窄屏/开没开拖拽)。
- * @returns 机器面板(位移、是否在拖、三枚指针手柄)。
+ * @param x 窗口形尺寸规格与普通弹框的两个开关。
+ * @returns 机器面板(连同窄屏态)。
  */
-export function useCard(x: CardIn): CardOut {
-  const [pos, setPos] = useState<DragPos>({ x: 0, y: 0 })
-  const draggingRef = useRef(false)
-  const startRef = useRef<DragStart>({ x: 0, y: 0, posX: 0, posY: 0 })
-  const dragEnabled = x.draggable === true && x.narrow === false
+export function useFrame(x: FrameIn): FrameOut {
+  const narrow = useIsNarrow()
+  const [box, setBox] = useState<FrameBox | null>(function initBox(): FrameBox | null {
+    return frameInitOf({ win: x.win })
+  })
+  const win = x.win != null
+  const live = narrow === false
+  const canDrag = live && (win || x.draggable)
+  const canSize = live && (win || x.edgeResize)
+  const memo = memoOf(x)
+  const min = minSizeOf({ win })
+  const onDrag = makeDragStart({ enabled: canDrag, box, setBox })
 
-  function onPointerDown(e: React.PointerEvent) {
-    if (dragEnabled === false) {
-      return
-    }
-    if (elOf(e.target).closest(DRAG_IGNORE_SEL)) {
-      return
-    }
-    draggingRef.current = true
-    startRef.current = { x: e.clientX, y: e.clientY, posX: pos.x, posY: pos.y }
-    elOf(e.target).setPointerCapture(e.pointerId)
+  function startOf(edge: ResizeEdge): PointerHandlerFn {
+    return makeResizeStart({ enabled: canSize, box, setBox, edge, memo, min })
   }
 
-  function onPointerMove(e: React.PointerEvent) {
-    if (draggingRef.current === false) {
-      return
-    }
-    const dx = e.clientX - startRef.current.x
-    const dy = e.clientY - startRef.current.y
-    setPos({ x: startRef.current.posX + dx, y: startRef.current.posY + dy })
+  return {
+    narrow,
+    style: frameStyleOf({ narrow, box }),
+    onCardDown: downOf({ on: win === false, fn: onDrag }),
+    onBarDown: downOf({ on: win, fn: onDrag }),
+    startOf,
+    resizable: canSize,
   }
-
-  function onPointerUp(e: React.PointerEvent) {
-    if (draggingRef.current === false) {
-      return
-    }
-    draggingRef.current = false
-    try {
-      elOf(e.target).releasePointerCapture(e.pointerId)
-    } catch {
-      return
-    }
-  }
-
-  function dragging(): boolean {
-    return draggingRef.current
-  }
-
-  return { pos, dragging, onPointerDown, onPointerMove, onPointerUp }
-}
-
-/**
- * 四边 / 四角拖拽缩放:按下把手记快照(尺寸 + 视口位置),窗口级跟手写尺寸;卡片拖过后改绝对定位钉在起手位置,
- * n / w 边随宽高挪 left / top 让对边不动;松开摘监听。
- * 最小 240×120,最大视口 92%×85%。
- *
- * @param x 开关、卡片 ref、位移与落位移。
- * @returns 尺寸与把手起手工厂。
- */
-export function useEdgeResize(x: EdgeResizeIn): EdgeResizeOut {
-  const [size, setSize] = useState<ResizeSize>({ w: null, h: null, left: null, top: null })
-  const startRef = useRef<ResizeStart | null>(null)
-
-  function move(ev: PointerEvent): void {
-    const st = startRef.current
-    if (st == null) {
-      return
-    }
-      const next = resizedOf({ st, dx: ev.clientX - st.x, dy: ev.clientY - st.y })
-    setSize({ w: next.w, h: next.h, left: next.left, top: next.top })
-  }
-
-  function up(): void {
-    startRef.current = null
-    window.removeEventListener(EV_POINTERMOVE, move)
-    window.removeEventListener(EV_POINTERUP, up)
-  }
-
-  function startOf(edge: ResizeEdge): (e: React.PointerEvent) => void {
-    return function start(e: React.PointerEvent): void {
-      const el = x.cardRef.current
-      if (x.enabled === false || el == null) {
-        return
-      }
-      e.preventDefault()
-      e.stopPropagation()
-      const r = el.getBoundingClientRect()
-      startRef.current = { x: e.clientX, y: e.clientY, w: r.width, h: r.height, left: r.left, top: r.top, edge }
-      window.addEventListener(EV_POINTERMOVE, move)
-      window.addEventListener(EV_POINTERUP, up)
-    }
-  }
-
-  return { size, startOf }
 }

@@ -11,15 +11,13 @@
  * 同日晚 Frank「还有这两个是不是要换个位置」:日期行挪到灰字译名行下面(岗位名 → 译名 → 日期;详情页同改)。
  * 日期行不进左块:与译名行一样折到标题与窗口钮那一行下面、独占一整行 —— 手机全屏档左块被窗口钮占去一截,两格并排放不下。
  * 2026-09-27 Frank「放到 jd 正文部分如何」→ 看过效果图选 ①:日期改成正文里单独一节(jobs 桶 JdContent 末尾),dates 槽撤。
+ * 2026-09-28 并壳(Frank「别并存啊」):版式(左块 + 译名行)并进 modal 桶的 ModalHead,这里只剩「小标写什么」。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { cssOf } from '@/components/css'
-import { TEXT_NONE } from './constants'
-import { makeActsDown } from './functions'
+import { KickerNote, ModalHead } from '@/components/modal'
 import type { ActHeadIn } from './types'
-import css from './advisor.module.css'
 
 /**
  * 渲染职位描述弹框的页眉左块。
@@ -29,18 +27,12 @@ import css from './advisor.module.css'
  */
 export function ActHead({ t, title, sub, freeLeft, ctl }: ActHeadIn) {
   return (
-    <>
-      <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
-        <div className={cssOf(css.kicker)}>
+    <ModalHead title={title} sub={sub} ctl={ctl}
+      kicker={(
+        <>
           {t('act.descTitle')}
-          {freeLeft != null && <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>}
-        </div>
-        <h3 className={cssOf(css.title)}>{title}</h3>
-      </div>
-      <div className={cssOf(css.subRow)} onPointerDown={makeActsDown({ stop: true })}>
-        {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
-        <span className={cssOf(css.subCtl)}>{ctl}</span>
-      </div>
-    </>
+          {freeLeft != null && <KickerNote text={t('advisor.left', { n: freeLeft })} />}
+        </>
+      )} />
   )
 }

@@ -142,74 +142,6 @@ export const JD_PANEL_W = 760
 export const JD_PANEL_H = 640
 
 /**
- * 浮层最小宽(px):再窄两列事实行就挤成一团。
- */
-export const PANEL_W_MIN = 360
-
-/**
- * 浮层最小高(px)。
- */
-export const PANEL_H_MIN = 280
-
-/**
- * 浮层与视口边缘的留白(px):算居中位与钳制记忆尺寸时,先从视口宽高里扣掉它,
- * 免得贴边贴到看不见拉伸手柄。
- */
-export const VIEWPORT_GAP = 24
-
-/**
- * 浮层左上角的最小坐标(px):再往上就把标题栏顶出屏外,拖不回来。
- */
-export const PANEL_POS_MIN = 12
-
-/**
- * 首帧还没测到视口时的落位横坐标(服务端渲染没有 window)。
- */
-export const PANEL_POS_X0 = 80
-
-/**
- * 首帧还没测到视口时的落位纵坐标。
- */
-export const PANEL_POS_Y0 = 60
-
-/**
- * 八向拉伸的方向名,顺序即渲染顺序(四条边在前、四个角在后 —— 角块要盖在边条上)。
- * 每个方向的边距与光标是**样式**,住 advisor.module.css 的 .edgeN … .edgeSe;
- * 这里只留身份,拼类走 functions 的 edgeClsOf。
- */
-export const PANEL_DIRS = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se']
-
-/**
- * 方向名里的「东」(右边跟手,右边界外扩)。
- */
-export const DIR_E = 'e'
-
-/**
- * 方向名里的「南」(下边跟手)。
- */
-export const DIR_S = 's'
-
-/**
- * 方向名里的「西」(左边跟手:宽反向变,同时挪左上角)。
- */
-export const DIR_W = 'w'
-
-/**
- * 方向名里的「北」(上边跟手:高反向变,同时挪左上角)。
- */
-export const DIR_N = 'n'
-
-/**
- * 指针移动的事件名(平台定值,打错是静默失效 —— 监听器绑不上不报错)。
- */
-export const EV_POINTER_MOVE = 'pointermove'
-
-/**
- * 指针松开的事件名。
- */
-export const EV_POINTER_UP = 'pointerup'
-
-/**
  * 分类弹框的职责/要求翻译接口(懒调朋友那台 qwen,进程缓存;数据层只存英文)。
  */
 export const URL_API_NOC_TRANSLATE = '/api/noc/translate'
@@ -365,11 +297,6 @@ export const CARET_RIGHT = '▸'
  * 外链尾巴(点出去会离开本页)。
  */
 export const ARROW_EXTERNAL = '↗'
-
-/**
- * 关闭钮上的叉。
- */
-export const CLOSE_MARK = '×'
 
 /**
  * 枚举多值时的顿号(全站禁「·」「/」杂糅,枚举一律顿号)。
@@ -1189,11 +1116,6 @@ export const HEAD_KEY_YR = 'head2'
  * 它是**跨域共用的词汇**;地点卡里的值链接走本域私有的 .valueLink(那一处历来是自己的蓝)。
  */
 export const LINK_CLS = 'link'
-
-/**
- * 居中位的除数:视口宽高减去浮层之后,左右(上下)各留一半。
- */
-export const CENTER_DIV = 2
 
 /**
  * 弹框栈的职位层(2026-09-21;PeekJobLayer.kind 的字面量)。

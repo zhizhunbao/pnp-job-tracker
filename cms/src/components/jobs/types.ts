@@ -4408,21 +4408,6 @@ export type OutsideCloseIn = {
 }
 
 /**
- * useEscClose 的入参。
- */
-export type EscCloseIn = {
-  /**
-   * 开着没。
-   */
-  open: boolean
-
-  /**
-   * 关的动作。
-   */
-  onClose: ClickFn
-}
-
-/**
  * jobsQueryOf 的入参。
  */
 export type JobsQueryIn = {

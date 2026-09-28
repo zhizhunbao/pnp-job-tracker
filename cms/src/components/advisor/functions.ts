@@ -23,51 +23,36 @@ import { catName, nocLocalTitle, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS,
-  AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT,
-  CAT_NONE, CENTER_DIV, CK_SEP, CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP,
-  COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT,
-  DEPTH_PROVINCE, DIR_E, DIR_N, DIR_S, DIR_W, DRAW_KIND_NOTICE, EV_POINTER_MOVE, EV_POINTER_UP, FAC_ACTIVITY,
-  FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
-  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE,
-  FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
-  AIP_DRAW_PROVS, GROUP_PNP, K_GROUP_HEAD, K_PROV_HEAD,
-  GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED,
-  K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD,
-  K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST,
-  MIME_JSON, MONEY_HEAD,
-  NEWLINE, OCC_TYPE_INELIGIBLE, PANEL_H_MIN, PANEL_POS_MIN, PANEL_POS_X0, PANEL_POS_Y0, PANEL_W_MIN, PAREN_CLOSE,
-  PAREN_OPEN, PCT_TAIL,
-  PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT,
-  P_PROV,
-  ROW_KEY_BROAD,
-  ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
-  SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN,
-  TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV, URL_API_ADVISOR,
-  URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_PNP, URL_API_JOBS_RETRANSLATE,
-  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VIEWPORT_GAP, VOL_KEY_ALLOC, VOL_KEY_IMP,
-  VOL_KEY_PNP_PR,
-  VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
+  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS, AREA_KEY_MED,
+  AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CK_SEP,
+  CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP, COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS,
+  DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DRAW_KIND_NOTICE, FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND,
+  FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY, FIELD_COMPANY, FIELD_COUNTRY,
+  FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN,
+  FIELD_WAGE_MED_HR, GROUP_COMPANY, AIP_DRAW_PROVS, GROUP_PNP, K_GROUP_HEAD, K_PROV_HEAD, GROUP_SECTIONS,
+  HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD,
+  K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB,
+  LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE,
+  OCC_TYPE_INELIGIBLE, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
+  PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE,
+  ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN, SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL,
+  TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS,
+  TYPE_RATE_DIV, URL_API_ADVISOR, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_PNP,
+  URL_API_JOBS_RETRANSLATE, URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC,
+  VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  ActNoteIn, ActsDownIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc,
-  AdvisorPnpData, AdvisorPnpOps, AdvisorPnpReqs, LoadPnpDataIn, PnpDataJson,
-  AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn,
-  CardHeadIn, CatTextIn, CenterPosIn, CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
-  DiffCellFact,
-  DiffCellsIn, DiffFactor, DiffFactorIn, DragStartIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn,
-  FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn, HeadClsIn, HeadSubIn,
-  IdRowFact,
-  IdRowsIn, OccNameOfIn, JdBodyClsIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn,
-  LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
+  ActNoteIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc, AdvisorPnpData,
+  AdvisorPnpOps, AdvisorPnpReqs, LoadPnpDataIn, PnpDataJson, AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn,
+  AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CityJson, CompanyJobsJson, CompanyPeek,
+  CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, DrainStreamIn, EsdcRowFact,
+  FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn,
+  HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
+  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
   LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OpenCompanyFn,
-  OpenJobFn, OriginTextIn,
-  PairLabelIn, PanelClsIn, PanelPos, PanelStyleIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, PointerHandlerFn,
-  PrefFact, PrefJson,
-  ProvJson, ProvStreamsIn, RefreshFn, ResizeNextIn, ResizeNextOut, ResizeStartIn, RunLongIn, SavePrefIn,
-  StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn, TypewriterIn,
-  VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
-  FloatPanelHookIn, PanelInit, PanelSize,
+  OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, ProvJson, ProvStreamsIn,
+  RefreshFn, RunLongIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn, TypewriterIn, VolRowFact,
+  VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -1003,38 +988,6 @@ export function kvKeyClsOf(x: NarrowClsIn): string {
 }
 
 /**
- * 浮层标题栏的类名(紧凑档 = 职位描述弹框;全屏时不给拖动光标 —— 全屏拖不动)。
- *
- * @param x 全屏态与紧凑档。
- * @returns 类名。
- */
-export function panelHeadClsOf(x: HeadClsIn): string {
-  const cls = [cssOf(css.panelHead)]
-  if (x.tight) {
-    cls.push(cssOf(css.panelHeadTight))
-  }
-  if (x.full) {
-    cls.push(cssOf(css.panelHeadFull))
-  }
-  return cls.join(CLS_SEP)
-}
-
-/**
- * 浮层正文的类名(JD 档:整栏读正文,字号大一档、底衬归零让投递栏贴底)。
- * 2026-07-25 用户「穿墙」:底部原 20px 内衬在 sticky 投递栏下方留缝,滚动到底
- * JD 从缝里透出卡片圆角外 → 底内衬归 0,底部留白改由投递栏自带。
- *
- * @param x 走不走 JD 档。
- * @returns 类名。
- */
-export function panelBodyClsOf(x: JdBodyClsIn): string {
-  if (x.jd) {
-    return cssOf(css.panelBody) + CLS_SEP + cssOf(css.panelBodyJd)
-  }
-  return cssOf(css.panelBody)
-}
-
-/**
  * JD 摘录小标题的类名(上面有别的行时才留上距)。
  *
  * @param x 上面有没有别的行。
@@ -1045,30 +998,6 @@ export function excerptHeadClsOf(x: GapClsIn): string {
     return cssOf(css.excerptHead) + CLS_SEP + cssOf(css.excerptGap)
   }
   return cssOf(css.excerptHead)
-}
-
-/**
- * 八向拉伸手柄的类名(边距与光标是**样式**,按方向查表)。
- *
- * @param dir 方向名。
- * @returns 类名;方向名不认识时只给手柄底座(不炸)。
- */
-export function edgeClsOf(dir: string): string {
-  const map: Record<string, string> = {
-    n: cssOf(css.edgeN),
-    s: cssOf(css.edgeS),
-    w: cssOf(css.edgeW),
-    e: cssOf(css.edgeE),
-    nw: cssOf(css.edgeNw),
-    ne: cssOf(css.edgeNe),
-    sw: cssOf(css.edgeSw),
-    se: cssOf(css.edgeSe),
-  }
-  const hit = map[dir]
-  if (hit == null) {
-    return cssOf(css.handle)
-  }
-  return cssOf(css.handle) + CLS_SEP + hit
 }
 
 /**
@@ -1088,193 +1017,6 @@ export function diffToneClsOf(tier: string): string {
     return cssOf(css.diff)
   }
   return cssOf(css.diff) + CLS_SEP + hit
-}
-
-/**
- * 浮层的运行时几何。位置与尺寸是**每帧连续变化的像素**,类是有限枚举装不下它
- * (全屏那一档没有这种像素,样式全在 .panelFull 里,所以返回空对象)。
- *
- * @param x 全屏态、位置与尺寸。
- * @returns 浮层的 style。
- */
-export function panelStyleOf(x: PanelStyleIn): React.CSSProperties {
-  if (x.full) {
-    return {}
-  }
-  return { left: x.pos.x, top: x.pos.y, width: x.size.w, height: x.size.h }
-}
-
-/**
- * 按尺寸算居中位。先从视口里扣掉边缘留白再居中,并给左上角兜一个最小坐标 ——
- * 否则窗口比浮层还小时标题栏会被顶出屏外,拖都拖不回来。
- *
- * @param x 浮层宽高。
- * @returns 左上角坐标。
- */
-export function centerPosOf(x: CenterPosIn): PanelPos {
-  const w = Math.min(x.w, window.innerWidth - VIEWPORT_GAP)
-  const h = Math.min(x.h, window.innerHeight - VIEWPORT_GAP)
-  return {
-    x: Math.max(PANEL_POS_MIN, (window.innerWidth - w) / CENTER_DIV),
-    y: Math.max(PANEL_POS_MIN, (window.innerHeight - h) / CENTER_DIV),
-  }
-}
-
-/**
- * 读浮层记忆。
- *
- * @param key 记忆键。
- * @returns 记忆。读不到、存的不是 JSON、浏览器禁了本地存储时给空记忆
- * —— 记忆是锦上添花,拿不到就用默认尺寸,不该连累弹框打不开。
- */
-export function readPrefOf(key: string): PrefFact {
-  const empty: PrefFact = { full: false, w: null, h: null }
-  try {
-    const raw = localStorage.getItem(key)
-    if (raw == null) {
-      return empty
-    }
-    const p: PrefJson = JSON.parse(raw)
-    let w: number | null = null
-    let h: number | null = null
-    if (p.w != null && p.h != null) {
-      w = p.w
-      h = p.h
-    }
-    return { full: p.full === true, w, h }
-  } catch {
-    return empty
-  }
-}
-
-/**
- * 写浮层记忆(与已存的合并后写回 —— 只改这次动过的那几格)。
- *
- * @param x 记忆键与这次要改的格。
- * @returns 无。浏览器禁了本地存储时静默作罢,同上:记不住尺寸不影响用。
- */
-export function savePrefOf(x: SavePrefIn): void {
-  const old = readPrefOf(x.key)
-  let full = old.full
-  let w = old.w
-  let h = old.h
-  if (x.patch.full != null) {
-    full = x.patch.full
-  }
-  if (x.patch.w != null) {
-    w = x.patch.w
-  }
-  if (x.patch.h != null) {
-    h = x.patch.h
-  }
-  try {
-    localStorage.setItem(x.key, JSON.stringify({ full, w, h }))
-  } catch {
-    return
-  }
-}
-
-/**
- * 一帧拉伸的算式:东/南向只改尺寸(右下边跟手),西/北向改尺寸的同时挪左上角
- * (左上边跟手、右下边钉住)。到了最小尺寸就钉住 —— 西/北向此时要把左上角
- * 反推回去,不然会出现「拉不动了但框还在飘」。
- *
- * @param x 方向、位移与起手时的尺寸位置。
- * @returns 这一帧的尺寸与位置。
- */
-export function resizeNextOf(x: ResizeNextIn): ResizeNextOut {
-  let w = x.size.w
-  let h = x.size.h
-  let px = x.pos.x
-  let py = x.pos.y
-  if (x.dir.includes(DIR_E)) {
-    w = x.size.w + x.dx
-  }
-  if (x.dir.includes(DIR_S)) {
-    h = x.size.h + x.dy
-  }
-  if (x.dir.includes(DIR_W)) {
-    w = x.size.w - x.dx
-    px = x.pos.x + x.dx
-  }
-  if (x.dir.includes(DIR_N)) {
-    h = x.size.h - x.dy
-    py = x.pos.y + x.dy
-  }
-  if (w < PANEL_W_MIN) {
-    if (x.dir.includes(DIR_W)) {
-      px = x.pos.x + x.size.w - PANEL_W_MIN
-    }
-    w = PANEL_W_MIN
-  }
-  if (h < PANEL_H_MIN) {
-    if (x.dir.includes(DIR_N)) {
-      py = x.pos.y + x.size.h - PANEL_H_MIN
-    }
-    h = PANEL_H_MIN
-  }
-  return { size: { w, h }, pos: { x: px, y: py } }
-}
-
-/**
- * 标题栏拖动的起手手柄(原生 pointer 事件,无依赖)。
- *
- * @param x 全屏态、当前位置与位置落格。
- * @returns 按下手柄。
- */
-export function makeDragStart(x: DragStartIn): PointerHandlerFn {
-  return function startDrag(e: React.PointerEvent): void {
-    if (x.full) {
-      return
-    }
-    e.preventDefault()
-    const ox = e.clientX - x.pos.x
-    const oy = e.clientY - x.pos.y
-    function move(ev: PointerEvent): void {
-      x.setPos({ x: ev.clientX - ox, y: ev.clientY - oy })
-    }
-    function up(): void {
-      window.removeEventListener(EV_POINTER_MOVE, move)
-      window.removeEventListener(EV_POINTER_UP, up)
-    }
-    window.addEventListener(EV_POINTER_MOVE, move)
-    window.addEventListener(EV_POINTER_UP, up)
-  }
-}
-
-/**
- * 八向拉伸的起手手柄(用户点名:上下左右都可放大缩小)。松手时把尺寸写进记忆 ——
- * 读的是镜像格不是 state:闭包里的 state 停在按下那一刻,写回去就把整段拉伸丢了。
- *
- * @param x 全屏态、记忆键、当前尺寸位置、镜像格、两个落格与方向。
- * @returns 按下手柄。
- */
-export function makeResizeStart(x: ResizeStartIn): PointerHandlerFn {
-  return function startResize(e: React.PointerEvent): void {
-    if (x.full) {
-      return
-    }
-    e.preventDefault()
-    e.stopPropagation()
-    const sx = e.clientX
-    const sy = e.clientY
-    const size = x.size
-    const pos = x.pos
-    x.sizeRef.current = size
-    function move(ev: PointerEvent): void {
-      const next = resizeNextOf({ dir: x.dir, dx: ev.clientX - sx, dy: ev.clientY - sy, size, pos })
-      x.sizeRef.current = next.size
-      x.setSize(next.size)
-      x.setPos(next.pos)
-    }
-    function up(): void {
-      savePrefOf({ key: x.prefKey, patch: { full: null, w: x.sizeRef.current.w, h: x.sizeRef.current.h } })
-      window.removeEventListener(EV_POINTER_MOVE, move)
-      window.removeEventListener(EV_POINTER_UP, up)
-    }
-    window.addEventListener(EV_POINTER_MOVE, move)
-    window.addEventListener(EV_POINTER_UP, up)
-  }
 }
 
 /**
@@ -2020,46 +1762,6 @@ export function companyPageOf(slug: string): string {
 }
 
 /**
- * 浮层白卡的类名。
- *
- * @param x 全屏态。
- * @returns 类名。
- */
-export function panelClsOf(x: PanelClsIn): string {
-  if (x.full) {
-    return cssOf(css.panel) + CLS_SEP + cssOf(css.panelFull)
-  }
-  return cssOf(css.panel)
-}
-
-/**
- * 卡内点击不许冒到遮罩 —— 否则点哪都算点外面,弹框当场关掉。
- *
- * @param e 鼠标事件。
- * @returns 无。
- */
-export function stopClick(e: React.MouseEvent): void {
-  e.stopPropagation()
-}
-
-/**
- * 窗口钮排的按下手柄。⚠️ 两个弹框在这里**本来就不一致**:职位描述弹框拦下拖动起手
- * (点全屏钮不会顺带把整框拖走),顾问弹框不拦。换装批逐字保留这个差异 ——
- * 见桶里的行为疑点台账,清剿批统一。
- *
- * @param x 拦不拦。
- * @returns 按下手柄。
- */
-export function makeActsDown(x: ActsDownIn): PointerHandlerFn {
-  return function onActsDown(e: React.PointerEvent): void {
-    if (x.stop === false) {
-      return
-    }
-    e.stopPropagation()
-  }
-}
-
-/**
  * 开合手柄(组件体内不许声明函数,所以开关的翻转做成工厂)。
  *
  * @param x 当前开合与落格。
@@ -2159,23 +1861,4 @@ export function peekKeyOf(x: PeekKeyIn): string {
     return String(x.at) + PEEK_KEY_SEP + String(x.layer.job.id)
   }
   return String(x.at) + PEEK_KEY_SEP + LAYER_CO
-}
-
-/**
- * 浮层首帧的全屏 / 尺寸 / 位置(2026-09-21 Frank「会出现 先一个小框，然后在放大」):直接按记忆算,
- * 记忆读不到(服务端 / 本地存储被禁)照旧默认尺寸;位置按首帧尺寸居中,服务端给固定初值。
- *
- * @param x 记忆键与默认宽高。
- * @returns 首帧三格。
- */
-export function panelInitOf(x: FloatPanelHookIn): PanelInit {
-  const p = readPrefOf(x.prefKey)
-  let size: PanelSize = { w: x.defW, h: x.defH }
-  if (p.w != null && p.h != null) {
-    size = { w: p.w, h: p.h }
-  }
-  if (typeof window === 'undefined') {
-    return { full: p.full, size, pos: { x: PANEL_POS_X0, y: PANEL_POS_Y0 } }
-  }
-  return { full: p.full, size, pos: centerPosOf(size) }
 }

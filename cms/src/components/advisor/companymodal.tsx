@@ -8,6 +8,7 @@
  * 2026-09-18 晚雇主板那个入口改判撤了;2026-09-19 Frank「这种里面的链接都改成弹框显示」起,它是「点相似雇主」开的那个框 ——
  * 宿主(公司页 / 职位板)注两个回调:点在招职位叠开职位描述弹框、点相似雇主同框换一家。
  * CompanyPanel 点**文件**不走 companies 桶:那只桶里的公司页正文反过来要本件,走桶就成环。
+ * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs。
  *
  * @author Frank
  * @time 2026-09-18 20:00:00
@@ -15,11 +16,12 @@
 import { CompanyPanel } from '@/components/companies/companypanel'
 import { makeT } from '@/lib/i18n'
 import { AdvisorHead } from './advisorhead'
+import { Modal } from '@/components/modal'
 import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN, TEXT_NONE } from './constants'
-import { FloatPanel } from './floatpanel'
 import { companyPageOf } from './functions'
-import { useCompanyModal, useFloatPanel } from './hooks'
+import { useCompanyModal } from './hooks'
 import type { CompanyModalIn } from './types'
+import { WinActs } from './winacts'
 
 /**
  * 渲染公司弹框(不带职位)。
@@ -30,7 +32,6 @@ import type { CompanyModalIn } from './types'
 export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClose }: CompanyModalIn) {
   const t = makeT(lang)
   const m = useCompanyModal()
-  const panel = useFloatPanel({ prefKey: ADV_PREF, defW: ADV_PANEL_W, defH: ADV_PANEL_H })
   const head = (
     <AdvisorHead t={t} group={GROUP_COMPANY} province={TEXT_NONE}
       title={name}
@@ -39,11 +40,12 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
       ctl={null} />
   )
   return (
-    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
-      onRefresh={null} pageHref={companyPageOf(slug)}>
+    <Modal onClose={onClose}
+      win={{ head, memo: ADV_PREF, w: ADV_PANEL_W, h: ADV_PANEL_H, jd: false }}
+      actions={<WinActs t={t} onRefresh={null} pageHref={companyPageOf(slug)} />}>
       <CompanyPanel job={null} slug={slug} jobs={m.jobs} lang={lang} onOpenJob={onOpenJob}
         onOpenCompany={onOpenCompany}
         onAlias={m.onAlias} showTrans={lang !== LANG_EN} onTransBusy={m.onTransBusy} />
-    </FloatPanel>
+    </Modal>
   )
 }

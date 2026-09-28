@@ -17,11 +17,13 @@
  * 2026-09-26 /fe 首页 Frank:省提名清单与抽选两张整表不再随首屏内联,本框打开时自己懒取(usePnpData):
  * 正文读两表的组(PNP_DATA_GROUPS)等两表到齐再渲,等的时候出全站统一的加载行(Loading),取挂了出红色提醒框;
  * 别的组(公司、分类……)照旧当场出。
+ * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs,Esc 由 Modal 按打开先后排号接。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { Loading } from '@/components/loading'
+import { Modal } from '@/components/modal'
 import { Notice } from '@/components/notice'
 import { MeansForMe } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
@@ -31,10 +33,10 @@ import {
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
-import { FloatPanel } from './floatpanel'
 import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf } from './functions'
-import { useAdvisorModal, useFloatPanel, usePnpData } from './hooks'
+import { useAdvisorModal, usePnpData } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
+import { WinActs } from './winacts'
 
 /**
  * 渲染字段顾问弹框。
@@ -60,7 +62,6 @@ export function AdvisorModal({
   const t = makeT(lang)
   const m = useAdvisorModal({ group, field, job, lang })
   const pnp = usePnpData({ group })
-  const panel = useFloatPanel({ prefKey: ADV_PREF, defW: ADV_PANEL_W, defH: ADV_PANEL_H })
   const f: AdvisorFacts = {
     job,
     lang,
@@ -83,9 +84,12 @@ export function AdvisorModal({
       ctl={null} />
   )
   return (
-    <FloatPanel panel={panel} head={head} onClose={onClose} t={t} tight={false} jdBody={false} actsStopDrag={false}
-      onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}
-      pageHref={fieldPageOf({ group, slug: job.companySlug })}>
+    <Modal onClose={onClose}
+      win={{ head, memo: ADV_PREF, w: ADV_PANEL_W, h: ADV_PANEL_H, jd: false }}
+      actions={(
+        <WinActs t={t} onRefresh={companyRefreshOf({ plan, group, job, onDone: m.onRetranslated })}
+          pageHref={fieldPageOf({ group, slug: job.companySlug })} />
+      )}>
       {pnp.ready === false && pnp.failed === false && <Loading text={t('act.loadingText')} />}
       {pnp.failed && <Notice kind={NOTICE_ERR}>{t('de.loadFailed')}</Notice>}
       {pnp.ready && group === GROUP_IMMIGRATION && (
@@ -104,6 +108,6 @@ export function AdvisorModal({
       {m.aiOn && (
         <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />
       )}
-    </FloatPanel>
+    </Modal>
   )
 }

@@ -1,5 +1,7 @@
 /**
  * modal 域的形状:两组件的 props 契约、overlay 手柄与拖拽机器的进出口。
+ * 2026-09-28 并壳(Frank「别并存啊」「你都重构了 还并存什么」):advisor 浮层壳的形状并进来,
+ * 拖动 / 拉伸两台机器(useCard、useEdgeResize)合成一台 useFrame,旧的位移 / 尺寸 / 快照形状随之换成 FrameBox 一族。
  *
  * @author Frank
  * @time 2026-08-24 04:30:00
@@ -8,7 +10,57 @@
 /**
  * 三档宽的档名。
  */
-export type ModalSize = 'sm' | 'md' | 'lg' | 'fit' | 'fit'
+export type ModalSize = 'sm' | 'md' | 'lg' | 'fit'
+
+/**
+ * 窗口形的尺寸规格:记忆键 + 没有记忆时的宽高。
+ */
+export type FrameSize = {
+  /**
+   * 尺寸记忆的本地存储键(同一个键的弹框共用一份记住的宽高)。
+   */
+  memo: string
+
+  /**
+   * 没有记忆时的宽(px)。
+   */
+  w: number
+
+  /**
+   * 没有记忆时的高(px)。
+   */
+  h: number
+}
+
+/**
+ * 窗口形(带标题栏)的规格:职位描述 / 公司 / 字段弹框这类长内容弹框 —— 标题栏钉住、正文单独滚、尺寸记在本地。
+ */
+export type ModalWin = {
+  /**
+   * 标题栏左块(一般是 ModalHead)。
+   */
+  head: React.ReactNode
+
+  /**
+   * 尺寸记忆的本地存储键(同一个键的弹框共用一份记住的宽高)。
+   */
+  memo: string
+
+  /**
+   * 没有记忆时的宽(px)。
+   */
+  w: number
+
+  /**
+   * 没有记忆时的高(px)。
+   */
+  h: number
+
+  /**
+   * 正文走职位描述档(底内衬归零、纵向弹性列,投递栏贴底;字号行高照 JD 正文)。
+   */
+  jd: boolean
+}
 
 /**
  * Modal 的 props。
@@ -45,7 +97,7 @@ export type ModalIn = {
   draggable?: boolean
 
   /**
-   * 额外的窗口按钮(与全屏/关闭同排;请用 iconBtnS,三颗钮一样大才叫一排)。
+   * 额外的窗口按钮(与关闭钮同排;用本域的 ModalBtn,几颗钮一样大才叫一排)。
    */
   actions?: React.ReactNode
 
@@ -58,6 +110,136 @@ export type ModalIn = {
    * 四边 / 四角可拖拽缩放(光标到边上变缩放形;2026-09-04 pte 字典弹框先例,Frank「像应用那种」)。
    */
   edgeResize?: boolean
+
+  /**
+   * 窗口形规格(给了就走带标题栏的窗口形:可拖可拉、记住尺寸;size / pad / tall / draggable / edgeResize 不再起作用)。
+   */
+  win?: ModalWin
+
+  /**
+   * 外层起的白卡机器(useFrame):弹框内容要整块重挂(职位描述弹框重新翻译后)时位置尺寸不丢;不给就用弹框自己的。
+   */
+  frame?: FrameOut
+}
+
+/**
+ * 标题栏左块的 props(窗口形专用:灰色小标 + 大标题 + 译名行)。
+ */
+export type ModalHeadIn = {
+  /**
+   * 灰色小标那一行的内容(文字,或文字 + KickerNote)。
+   */
+  kicker: React.ReactNode
+
+  /**
+   * 大标题(岗位名 / 公司名)。
+   */
+  title: string
+
+  /**
+   * 大标题下的界面语译名;空串 = 不出。
+   */
+  sub: string
+
+  /**
+   * 译名行右端的控件(切换钮这类);没有给 null。
+   */
+  ctl: React.ReactNode
+}
+
+/**
+ * 灰色小标里的副段(剩余次数这类)的 props。
+ */
+export type KickerNoteIn = {
+  /**
+   * 副段文字。
+   */
+  text: string
+}
+
+/**
+ * 窗口图标钮的 props(关闭 / 重新翻译 / 打开落地页 —— 几颗一样大才叫一排)。
+ */
+export type ModalBtnIn = {
+  /**
+   * 读屏名。
+   */
+  aria: string
+
+  /**
+   * 悬停提示;不给就不出。
+   */
+  tip?: string
+
+  /**
+   * 点击动作(与 href 二选一)。
+   */
+  onClick?: () => void
+
+  /**
+   * 链接地址(与 onClick 二选一)。
+   */
+  href?: string
+
+  /**
+   * 链接打开方式。
+   */
+  target?: string
+
+  /**
+   * 图标。
+   */
+  children: React.ReactNode
+}
+
+/**
+ * 窗口形标题栏的 props。
+ */
+export type ModalBarIn = {
+  /**
+   * 标题栏左块。
+   */
+  head: React.ReactNode
+
+  /**
+   * 额外的窗口按钮。
+   */
+  actions?: React.ReactNode
+
+  /**
+   * 关闭回调。
+   */
+  onClose: () => void
+
+  /**
+   * 标题栏按下(拖动起手)。
+   */
+  onDown: PointerHandlerFn
+
+  /**
+   * 是否窄屏(窄屏全屏,标题栏不给拖动光标)。
+   */
+  narrow: boolean
+}
+
+/**
+ * 窗口钮排的 props。
+ */
+export type ModalActsIn = {
+  /**
+   * 额外的窗口按钮。
+   */
+  actions?: React.ReactNode
+
+  /**
+   * 关闭回调。
+   */
+  onClose: () => void
+
+  /**
+   * 排在标题栏里(窗口形)还是浮在白卡右上角(普通弹框)。
+   */
+  bar: boolean
 }
 
 /**
@@ -76,93 +258,122 @@ export type OverlayHandlers = {
 }
 
 /**
- * 拖拽位移(相对居中位的像素偏移)。
+ * 指针按下的手柄。
  */
-export type DragPos = {
+export type PointerHandlerFn = (e: React.PointerEvent) => void
+
+/**
+ * 缩放把手在哪条边 / 哪个角。
+ */
+export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+
+/**
+ * 弹框被拖动 / 拉伸之后钉在视口上的位置与尺寸;null 的宽高 = 没拉过,宽高照尺寸档与内容走。
+ */
+export type FrameBox = {
   /**
-   * 横向偏移(px)。
+   * 左边(视口 px)。
    */
   x: number
 
   /**
-   * 纵向偏移(px)。
+   * 上边(视口 px)。
    */
   y: number
+
+  /**
+   * 宽(px);null = 没拉过。
+   */
+  w: number | null
+
+  /**
+   * 高(px);null = 没拉过。
+   */
+  h: number | null
 }
 
 /**
- * 拖拽起手快照(按下那一刻的指针位与卡位)。
+ * 拉伸时的位置与尺寸(四格都有值)。
  */
-export type DragStart = {
+export type SizedBox = {
   /**
-   * 按下时指针横坐标。
+   * 左边(视口 px)。
    */
   x: number
 
   /**
-   * 按下时指针纵坐标。
+   * 上边(视口 px)。
    */
   y: number
 
   /**
-   * 按下时卡的横向偏移。
+   * 宽(px)。
    */
-  posX: number
+  w: number
 
   /**
-   * 按下时卡的纵向偏移。
+   * 高(px)。
    */
-  posY: number
+  h: number
 }
 
 /**
- * useCard 的入参:机器要感知的两个外部形态。
+ * useFrame 的入参:弹框形态的三个开关。
  */
-export type CardIn = {
+export type FrameIn = {
   /**
-   * 是否窄屏(窄屏禁拖)。
+   * 窗口形的尺寸规格;不给 = 普通弹框(弹框 props 原样递进来,归一前的形状)。
+   */
+  win?: FrameSize
+
+  /**
+   * 普通弹框开没开拖动。
+   */
+  draggable: boolean
+
+  /**
+   * 普通弹框开没开拉伸。
+   */
+  edgeResize: boolean
+}
+
+/**
+ * useFrame 交回的机器面板。
+ */
+export type FrameOut = {
+  /**
+   * 是否窄屏(窄屏全屏,不拖不拉)。
    */
   narrow: boolean
 
   /**
-   * 调用方开没开拖拽。
+   * 白卡的运行时样式(拖过 / 拉过 / 窗口形才有值)。
    */
-  draggable: boolean
+  style: React.CSSProperties
+
+  /**
+   * 白卡按下(普通弹框的拖动起手;窗口形不起)。
+   */
+  onCardDown: PointerHandlerFn
+
+  /**
+   * 标题栏按下(窗口形的拖动起手)。
+   */
+  onBarDown: PointerHandlerFn
+
+  /**
+   * 某条边 / 角的起手手柄工厂。
+   */
+  startOf: (edge: ResizeEdge) => PointerHandlerFn
+
+  /**
+   * 渲不渲把手。
+   */
+  resizable: boolean
 }
 
 /**
- * useCard 交回的机器面板(全屏态与拖拽是一台机器:全屏要复位位移、全屏中禁拖)。
- */
-export type CardOut = {
-  /**
-   * 当前位移。
-   */
-  pos: DragPos
-
-  /**
-   * 此刻是否在拖(读 ref,渲染期取用不触发重渲)。
-   */
-  dragging: () => boolean
-
-  /**
-   * 按下起手(落在豁免目标上不起)。
-   */
-  onPointerDown: (e: React.PointerEvent) => void
-
-  /**
-   * 移动跟手。
-   */
-  onPointerMove: (e: React.PointerEvent) => void
-
-  /**
-   * 松手收尾(释放指针捕获)。
-   */
-  onPointerUp: (e: React.PointerEvent) => void
-}
-
-
-/**
- * clsOf 的入参:决定遮罩与白卡形态的五个开关。
+ * clsOf 的入参:决定遮罩与白卡形态的六个开关。
  */
 export type ClsIn = {
   /**
@@ -191,9 +402,9 @@ export type ClsIn = {
   tall: boolean
 
   /**
-   * 此刻是否在拖(拖中关过渡)。
+   * 是否窗口形。
    */
-  dragging: boolean
+  win: boolean
 }
 
 /**
@@ -212,103 +423,92 @@ export type ClsOut = {
 }
 
 /**
- * cardStyleOf 的入参:居中态还剩的唯一运行时样式 —— 拖拽位移。
- * (三档宽/高上限/过渡开关全类化进 module.css 了,2026-08-24 Frank「改成用 class 不行吗」。)
+ * frameStyleOf 的入参。
  */
-export type CardStyleIn = {
+export type FrameStyleIn = {
   /**
-   * 是否窄屏(窄屏/全屏态样式全在类里,返回空)。
+   * 是否窄屏(窄屏全屏样式全在类里,返回空)。
    */
   narrow: boolean
 
   /**
-   * 拖拽位移(进 transform)。
+   * 钉住的位置与尺寸;null = 还没动过,照遮罩居中。
    */
-  pos: DragPos
-
-  /**
-   * 拖出来的尺寸(px);null = 没拖过。
-   */
-  size: ResizeSize
+  box: FrameBox | null
 }
 
 /**
- * 拖拽缩放后的尺寸;两格 null = 还没拖过,走尺寸档。
+ * 窄屏开关(标题栏类名)。
  */
-export type ResizeSize = {
+export type BarClsIn = {
   /**
-   * 宽(px)。
+   * 是否窄屏。
    */
-  w: number | null
-
-  /**
-   * 高(px)。
-   */
-  h: number | null
-
-  /**
-   * 拖起手时卡片左边(视口 px);拖后卡片改绝对定位钉在这(Frank 2026-09-04「放大缩小的时候框要固定住」)。
-   */
-  left: number | null
-
-  /**
-   * 拖起手时卡片上边(视口 px)。
-   */
-  top: number | null
+  narrow: boolean
 }
 
 /**
- * 缩放把手在哪条边 / 哪个角。
+ * 正文档开关(窗口形正文类名)。
  */
-export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
-
-/**
- * useEdgeResize 的入参。
- */
-export type EdgeResizeIn = {
+export type BodyClsIn = {
   /**
-   * 开着没(窄屏 / 全屏态不开)。
+   * 是否职位描述档。
    */
-  enabled: boolean
-
-  /**
-   * 卡片元素 ref(起手时量当前尺寸与位置)。
-   */
-  cardRef: React.RefObject<HTMLDivElement | null>
+  jd: boolean
 }
 
 /**
- * useEdgeResize 交回的面板:尺寸 + 八个把手的起手。
+ * frameOf 的入参:外层起的机器与弹框自己的机器。
  */
-export type EdgeResizeOut = {
+export type FramePickIn = {
   /**
-   * 拖出来的尺寸。
+   * 外层起的;不给 = 没起(弹框 props 原样递进来,归一前的形状)。
    */
-  size: ResizeSize
+  ext?: FrameOut
 
   /**
-   * 某条边 / 角的起手手柄(按下即开始跟手)。
+   * 弹框自己的。
    */
-  startOf: (edge: ResizeEdge) => (e: React.PointerEvent) => void
+  own: FrameOut
 }
 
 /**
- * sizedStyleOf 的入参。
+ * useFrame 首帧算式的入参(窄屏态由机器自己量)。
  */
-export type SizedStyleIn = {
+export type FrameInitIn = {
   /**
-   * 基础样式。
+   * 窗口形的尺寸规格;不给 = 普通弹框(弹框 props 原样递进来,归一前的形状)。
    */
-  base: React.CSSProperties
-
-  /**
-   * 拖出来的尺寸。
-   */
-  size: ResizeSize
+  win?: FrameSize
 }
 
 /**
- * 缩放起手快照。
+ * 最小尺寸的入参。
+ */
+export type MinSizeIn = {
+  /**
+   * 是否窗口形。
+   */
+  win: boolean
+}
+
+/**
+ * 最小尺寸。
+ */
+export type MinSize = {
+  /**
+   * 最小宽(px)。
+   */
+  w: number
+
+  /**
+   * 最小高(px)。
+   */
+  h: number
+}
+
+/**
+ * 拉伸起手快照。
  */
 export type ResizeStart = {
   /**
@@ -322,29 +522,14 @@ export type ResizeStart = {
   y: number
 
   /**
-   * 起手宽。
+   * 起手时的位置与尺寸。
    */
-  w: number
-
-  /**
-   * 起手高。
-   */
-  h: number
+  box: SizedBox
 
   /**
    * 哪条边。
    */
   edge: ResizeEdge
-
-  /**
-   * 起手时卡片左边(视口 px)。
-   */
-  left: number
-
-  /**
-   * 起手时卡片上边(视口 px)。
-   */
-  top: number
 }
 
 /**
@@ -365,31 +550,161 @@ export type ResizedIn = {
    * 指针垂直位移。
    */
   dy: number
+
+  /**
+   * 最小尺寸。
+   */
+  min: MinSize
 }
 
 /**
- * resizedOf 的返回。
+ * 按下那一刻的位置(还没动过就量白卡)的入参。
  */
-export type ResizedOut = {
+export type BoxNowIn = {
   /**
-   * 新宽。
+   * 钉住的位置与尺寸;null = 还没动过。
+   */
+  box: FrameBox | null
+
+  /**
+   * 白卡元素(从按下的那块往上找到的)。
+   */
+  el: Element | null
+}
+
+/**
+ * 拖动起手工厂的入参。
+ */
+export type DragStartIn = {
+  /**
+   * 开没开(窄屏 / 没开拖动 / 不是这块手柄时不起)。
+   */
+  enabled: boolean
+
+  /**
+   * 当前钉住的位置与尺寸。
+   */
+  box: FrameBox | null
+
+  /**
+   * 位置落格。
+   */
+  setBox: (b: FrameBox) => void
+}
+
+/**
+ * 拉伸起手工厂的入参。
+ */
+export type ResizeStartIn = {
+  /**
+   * 开没开。
+   */
+  enabled: boolean
+
+  /**
+   * 当前钉住的位置与尺寸。
+   */
+  box: FrameBox | null
+
+  /**
+   * 位置尺寸落格。
+   */
+  setBox: (b: FrameBox) => void
+
+  /**
+   * 哪条边。
+   */
+  edge: ResizeEdge
+
+  /**
+   * 尺寸记忆键;空串 = 不记。
+   */
+  memo: string
+
+  /**
+   * 最小尺寸。
+   */
+  min: MinSize
+}
+
+/**
+ * 按下手柄的挑选入参(拖动只挂在一块手柄上:窗口形挂标题栏、普通弹框挂整张白卡)。
+ */
+export type DownPickIn = {
+  /**
+   * 这块手柄起不起。
+   */
+  on: boolean
+
+  /**
+   * 起的话用的手柄。
+   */
+  fn: PointerHandlerFn
+}
+
+/**
+ * 本地存储里的尺寸记忆(线格式:缺席 = 没记过;老版本还多存一格全屏,已不认)。
+ */
+export type PrefJson = {
+  /**
+   * 宽(px)。
+   */
+  w?: number | null
+
+  /**
+   * 高(px)。
+   */
+  h?: number | null
+}
+
+/**
+ * 读出来的尺寸记忆;null = 没记过。
+ */
+export type PrefFact = {
+  /**
+   * 宽(px)。
+   */
+  w: number | null
+
+  /**
+   * 高(px)。
+   */
+  h: number | null
+}
+
+/**
+ * 写尺寸记忆的入参。
+ */
+export type SavePrefIn = {
+  /**
+   * 记忆键。
+   */
+  key: string
+
+  /**
+   * 宽(px)。
    */
   w: number
 
   /**
-   * 新高。
+   * 高(px)。
    */
   h: number
+}
+
+/**
+ * 居中的入参:弹框宽高。
+ */
+export type CenterIn = {
+  /**
+   * 宽(px)。
+   */
+  w: number
 
   /**
-   * 新左边(拖 w 边时随宽变,对边钉住)。
+   * 高(px)。
    */
-  left: number
-
-  /**
-   * 新上边(拖 n 边时随高变)。
-   */
-  top: number
+  h: number
 }
 
 /**
@@ -399,7 +714,7 @@ export type ResizeHandlesIn = {
   /**
    * 某条边 / 角的起手手柄工厂。
    */
-  startOf: (edge: ResizeEdge) => (e: React.PointerEvent) => void
+  startOf: (edge: ResizeEdge) => PointerHandlerFn
 }
 
 /**

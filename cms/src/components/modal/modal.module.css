@@ -3,6 +3,10 @@
  * 值与原内联逐格相等,渲染不变)。
  * 运行时数据(zIndex、拖拽 transform、按档宽与 vh 上限的 CSS 变量)仍经 style 进 ——
  * table 域头注同一条 style 白名单。
+ * 2026-09-28 并壳(Frank「别并存啊」「你都重构了 还并存什么」):advisor 浮层壳的样式(白卡 .panel、标题栏、窗口钮、
+ * 正文、八向手柄)并进来成「窗口形」;白卡三格(圆角 / 投影 / 滚动收敛)与窗口钮原本就是照本域逐格抄的,合回一份。
+ * 拖动不再走 transform:拖过 / 拉过之后白卡钉在视口坐标上(style 给 position / left / top / 宽高),.center 的位移过渡与
+ * .dragging 随之退役。
  */
 
 /*
@@ -31,25 +35,29 @@
 }
 
 /*
- * 白卡基座(规范值同 constants 的 CARD)。
+ * 白卡基座(两种形共用:白底、规范圆角与投影、卡内滚到头不把滚动传给遮罩后面的页面)。
  */
 .card {
-  position: relative;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 24px 60px rgb(0 0 0 / 30%);
   overscroll-behavior: contain;
+}
+
+/*
+ * 普通弹框的白卡:整卡内滚;给卡内绝对定位的动作排当参照系。
+ */
+.flow {
+  position: relative;
   overflow-y: auto;
 }
 
 /*
- * 居中态:高上限默认 85vh(94vh 档见 .tall)、位移过渡在这;
- * 宽按档见 .sm/.md/.lg,拖拽位移是每帧连续变化的运行时数据走 style。
+ * 居中态:高上限默认 85vh(94vh 档见 .tall);宽按档见 .sm/.md/.lg。
  */
 .center {
   max-height: 85vh;
   padding: 24px 24px 20px;
-  transition: transform 0.1s ease-out;
 }
 
 /*
@@ -80,13 +88,6 @@
  */
 .tall {
   max-height: 94vh;
-}
-
-/*
- * 拖拽进行中关过渡(跟手不拖影)。
- */
-.dragging {
-  transition: none;
 }
 
 /*
@@ -124,7 +125,26 @@
 }
 
 /*
- * 右上角窗口动作排(全屏/关闭/自定义钮)。
+ * 窗口形白卡(职位描述 / 公司 / 字段弹框;自 advisor 的 .panel 迁入):纵向列 + 正文内滚;
+ * 位置与尺寸是运行时像素(functions 的 frameStyleOf),position 固定在视口:浮层不随页面滚动。
+ */
+.win {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/*
+ * 窗口形的全屏态(窄屏强制走这一档):贴四边、去圆角。
+ */
+.full {
+  inset: 0;
+  border-radius: 0;
+}
+
+/*
+ * 普通弹框右上角的窗口动作排(关闭 / 自定义钮)。
  */
 .acts {
   position: absolute;
@@ -137,6 +157,15 @@
 }
 
 /*
+ * 窗口形标题栏里的窗口钮排(挤的时候不许被压扁)。
+ */
+.barActs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/*
  * 窗口图标钮(域内自用类;外部消费端还在用 constants 的 iconBtnS 过渡导出,
  * 值与它逐格相等 —— 各消费域类化后常量退役,这个类成唯一真相)。
  *
@@ -145,8 +174,11 @@
  * 而这枚钮上线以来吃的是浏览器给 <button> 的默认 400 / normal / 1px 6px。
  * 换装批只换钮不改渲染值,所以把旧值显式写死。这三格不破坏上面「与 iconBtnS 逐格相等」
  * 那条:走常量 spread 的消费端仍是裸 <button>,同样的三个值由浏览器给它,渲染一致。
+ * 2026-09-28 并壳:iconBtnS 已退役(零消费者),advisor 浮层壳的 .iconBtn(照这里逐格抄的那份)并回来,这个类是唯一真相;
+ * 类名加倍写抬权重(advisor 那份的写法):钮是 Button 的 ghost 档,基座 .btn 在另一个 css module 里,
+ * 两个模块单类互撞时谁赢看 chunk 先后,加倍才稳赢。
  */
-.iconBtn {
+.iconBtn.iconBtn {
   border: none;
   background: #f3f4f6;
   border-radius: 8px;
@@ -166,80 +198,257 @@
 }
 
 /*
- * 拖拽缩放把手(2026-09-04 edgeResize):透明、贴边 6px,光标按方向变。
+ * 窗口形标题栏 = 拖动手柄(所以给移动光标,并禁掉选字 —— 拖的时候不该把标题选中)。
+ * 2026-09-16 Frank「右边的按钮部分和左边的中文翻译放到一行」「工作内容和上面的整体就没有分割了」「公司的也对照改一下」:
+ * 译名行(.subRow)折到标题与窗口钮下方占满整宽,切换控件右端与正文右缘对齐;标题栏底下一条分隔线再进正文。
+ * (advisor 的紧凑档 .panelHeadTight 同日归基座后与基座同值,并壳时不再留档位。)
  */
-.hN,
-.hS,
-.hE,
-.hW,
-.hNE,
-.hNW,
-.hSE,
-.hSW {
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: move;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/*
+ * 全屏态的标题栏不给拖动光标 —— 全屏本来就拖不动。
+ */
+.barFull {
+  cursor: default;
+}
+
+/*
+ * 标题栏左块(标题过长时靠它把省略号交给子元素)。
+ */
+.headL {
+  min-width: 0;
+}
+
+/*
+ * 标题栏左块的主体(小标 + 大标题):标题栏会折行,基准宽归零,免得长标题把窗口钮挤到下一行。
+ */
+.headMain {
+  flex: 1 1 0;
+}
+
+/*
+ * 译名行:左译名、右切换控件(职位描述弹框是 jobs 桶 JdSwitches,公司弹框是中文对照开关);排在窗口钮之后、独占一整行。
+ */
+.subRow {
+  order: 1;
+  flex-basis: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  cursor: default;
+}
+
+/*
+ * 译名行右端的控件槽:没有译名时也贴右(margin-left auto),与正文右缘对齐。
+ */
+.subCtl {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * 页眉那行灰色小标(#174:「AI 顾问 · 移民 · 免费今日剩 N 次」两个「·」退役 ——
+ * 分组名与次数改空格灰注;靛色随 #108 杂色归一改灰)。
+ */
+.kicker {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/*
+ * 灰色小标里的副段(分组名 / 剩余次数)。
+ */
+.kickerSub {
+  color: #9ca3af;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+/*
+ * 弹框大标题(岗位名/公司名;名字不截断是全站规矩,这里是**单行浮层标题**的例外 ——
+ * 标题栏是固定高的一行,换行会把窗口钮挤下去,所以给省略号)。
+ */
+.title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 大标题下的界面语译名(#199 Frank「chiropractor 怎么没有翻译呢」)。
+ */
+.sub {
+  font-size: 12.5px;
+  color: #9ca3af;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 窗口形正文(可滚动的那一段)。
+ */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 20px 20px;
+
+  /*
+   * 竖向滚动条不画(2026-09-14 Frank「这个竖条也去掉」):照滚,只是不占宽不露轨。
+   */
+  scrollbar-width: none;
+}
+
+/*
+ * WebKit 一侧同样不画滚动条(Firefox 走上面的 scrollbar-width)。
+ */
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * 正文的 JD 档:整栏读正文。2026-07-25 用户「穿墙」—— 底部原 20px 内衬在 sticky
+ * 投递栏下方留缝,滚动到底 JD 从缝里透出卡片圆角外,所以底内衬归 0,底部留白改由
+ * 投递栏自带。Frank 走查#22:滚动容器改纵向弹性列,让投递栏在内容短时也贴底。
+ */
+.bodyJd {
+  padding: 14px 20px 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * 全屏态的读列(2026-09-19 Frank「这个即使是点了全屏,也不用这么宽吧」):标题栏与正文不跟着铺满整屏,
+ * 收进与详情页同宽的 860px 读列、居中;做法是把两侧内衬撑大(滚动条仍贴屏幕右缘)。窄屏算出来不足 20px 就回落 20px。
+ * (排在 .bar / .body 之后:后代选择器权重高,样式检查要求它殿后。)
+ */
+.full .bar,
+.full .body {
+  padding-left: max(20px, calc((100% - 860px) / 2));
+  padding-right: max(20px, calc((100% - 860px) / 2));
+}
+
+/*
+ * 右下角斜纹抓手 2026-09-14 退役(Frank「改成这种干净的」);边拉手柄在 ResizeHandles,不靠它。
+ * (2026-09-28 并壳时随 advisor 浮层壳的手柄样式迁来。)
+ */
+
+/*
+ * 八向拉伸把手的底座(透明,只吃指针事件;各向的边距与光标见下面八条)。
+ * 2026-09-28 并壳:几何取 advisor 浮层那份(14px),本域原 .hN… 那份(10 / 12px)退役。
+ */
+.handle {
   position: absolute;
   z-index: 2;
 }
 
-.hN {
+/*
+ * 上边条(左右各让开 14px 给角块)。
+ */
+.edgeN {
   top: 0;
-  left: 10px;
-  right: 10px;
+  left: 14px;
+  right: 14px;
   height: 6px;
   cursor: ns-resize;
 }
 
-.hS {
+/*
+ * 下边条。
+ */
+.edgeS {
   bottom: 0;
-  left: 10px;
-  right: 10px;
+  left: 14px;
+  right: 14px;
   height: 6px;
   cursor: ns-resize;
 }
 
-.hE {
-  right: 0;
-  top: 10px;
-  bottom: 10px;
+/*
+ * 左边条(上下各让开 14px 给角块)。
+ */
+.edgeW {
+  left: 0;
+  top: 14px;
+  bottom: 14px;
   width: 6px;
   cursor: ew-resize;
 }
 
-.hW {
-  left: 0;
-  top: 10px;
-  bottom: 10px;
+/*
+ * 右边条。
+ */
+.edgeE {
+  right: 0;
+  top: 14px;
+  bottom: 14px;
   width: 6px;
   cursor: ew-resize;
 }
 
-.hNE {
-  top: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nesw-resize;
-}
-
-.hSW {
-  bottom: 0;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nesw-resize;
-}
-
-.hNW {
+/*
+ * 左上角块。
+ */
+.edgeNw {
   top: 0;
   left: 0;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   cursor: nwse-resize;
 }
 
-.hSE {
+/*
+ * 右上角块。
+ */
+.edgeNe {
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/*
+ * 左下角块。
+ */
+.edgeSw {
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/*
+ * 右下角块。
+ */
+.edgeSe {
   bottom: 0;
   right: 0;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   cursor: nwse-resize;
 }

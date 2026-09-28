@@ -11,119 +11,14 @@
  * 按 Frank 拍板统一改叫 overlay。(2026-08-29 从 MODAL_SHADOW 与 CARD 之间的
  * 悬空块注释挪进文件头 —— 它解释的是一个已经不存在的声明,挂不上任何一格。)
  *
+ * 2026-09-28 弹框外壳并成一套(Frank「别并存啊」「你都重构了 还并存什么」):advisor 的浮层壳(FloatPanel)并进本域的 Modal,
+ * 拖动 / 拉伸 / 尺寸记忆 / 关闭钮各只剩一份。CARD / iconBtnS / MODAL_RADIUS / MODAL_SHADOW 四个过渡导出查实全站零消费者,
+ * 与 .card / .iconBtn 是同一份样式的第二份写法,随之退役;TRANSFORM_NONE / POS_ABSOLUTE / HALF / RESIZE_MAX_VW / RESIZE_MAX_VH
+ * 随旧拖动(transform 位移)与旧拉伸上限退役。
+ *
  * @author Frank
  * @time 2026-08-24 04:30:00
  */
-
-/**
- * 弹框圆角(规范值)。
- */
-export const MODAL_RADIUS = 14
-
-/**
- * 弹框投影(规范值)。
- */
-export const MODAL_SHADOW = '0 24px 60px rgba(0,0,0,.3)'
-
-/**
- * 白卡规范(圆角/投影/内滚动收敛)。镜像 .card 类。
- */
-export const CARD = {
-  /**
-   * 给卡内绝对定位的动作排当参照系。
-   */
-  position: 'relative',
-
-  /**
-   * 白底。
-   */
-  background: '#fff',
-
-  /**
-   * 规范圆角(值见 MODAL_RADIUS)。
-   */
-  borderRadius: MODAL_RADIUS,
-
-  /**
-   * 规范投影(值见 MODAL_SHADOW)。
-   */
-  boxShadow: MODAL_SHADOW,
-
-  /**
-   * 卡内滚到头不把滚动传给遮罩后面的页面。
-   */
-  overscrollBehavior: 'contain',
-} as const
-
-/**
- * 窗口图标钮规范(全屏/关闭/自定义动作三颗一样大才叫一排)。镜像 .iconBtn 类。
- */
-export const iconBtnS = {
-  /**
-   * 无描边。
-   */
-  border: 'none',
-
-  /**
-   * 浅灰底。
-   */
-  background: '#f3f4f6',
-
-  /**
-   * 小圆角。
-   */
-  borderRadius: 8,
-
-  /**
-   * 钮宽(三颗一样大)。
-   */
-  width: 30,
-
-  /**
-   * 钮高。
-   */
-  height: 30,
-
-  /**
-   * 钮内字号(× 号)。
-   */
-  fontSize: 16,
-
-  /**
-   * 图标灰。
-   */
-  color: '#6b7280',
-
-  /**
-   * 可点手型。
-   */
-  cursor: 'pointer',
-
-  /**
-   * 行高压到 1,× 号才竖直居中。
-   */
-  lineHeight: 1,
-
-  /**
-   * 动作排挤的时候钮不许被压扁。
-   */
-  flexShrink: 0,
-
-  /**
-   * 行内弹性盒:图标居中用。
-   */
-  display: 'inline-flex',
-
-  /**
-   * 图标竖直居中。
-   */
-  alignItems: 'center',
-
-  /**
-   * 图标水平居中。
-   */
-  justifyContent: 'center',
-} as const
 
 /**
  * 窄屏断点(E8-03 单一来源:≤640px 弹窗一律全屏)。
@@ -143,8 +38,16 @@ export const Z_MODAL = 50
 /**
  * 拖拽豁免目标(闭包选择器):按在这些交互件上不算抓 header ——
  * 否则点按钮/选字/选 occ 药丸都会把整框拖走。
+ * 2026-09-28 并壳:加 `[data-nodrag]` —— 标题栏里的窗口钮排与译名行整块不起拖动
+ * (原浮层壳靠 makeActsDown 逐块拦,两个弹框还拦得不一样,见 advisor 旧注「本来就不一致」;并壳后一律拦)。
  */
-export const DRAG_IGNORE_SEL = 'button, input, select, textarea, a, label, .occPill, .occSelectedChip'
+export const DRAG_IGNORE_SEL = 'button, input, select, textarea, a, label, .occPill, .occSelectedChip, [data-nodrag]'
+
+/**
+ * 白卡的记号选择器:拖动 / 拉伸起手时从按下的那块(标题栏、把手、白卡本身)往上找白卡量位置 ——
+ * 不挂 ref:机器交回的面板在渲染里要读,面板里混一个 ref 就整块读不得(react-hooks/refs)。
+ */
+export const FRAME_SEL = '[data-frame]'
 
 /**
  * 三档宽默认档。
@@ -173,11 +76,9 @@ export const EV_CHANGE = 'change'
 export const CLS_SEP = ' '
 
 /**
- * 还没拖动过时的 transform:空串。React 把空串写进 style 等于**把这条声明整个抹掉**,
- * 白卡就停在 .overlay 那层 flex 居中给它的位置上(居中不靠 transform 做,所以留空是安全的)。
- * 不写成 `'none'`:那是一个真的会生效的关键字,而这里要表达的是「这一格我没有值」。
+ * 空串(没有译名 / 没有记忆键这类「这一格没有值」)。
  */
-export const TRANSFORM_NONE = ''
+export const TEXT_NONE = ''
 
 /**
  * 窄屏媒体查询的前半段(后面接断点像素与右括号)。
@@ -199,24 +100,55 @@ export const MQ_MAX_WIDTH_TAIL = 'px)'
 export const PLAIN_BTN_KIND = 'ghost'
 
 /**
- * 拖拽缩放:最小宽(px)。
+ * 拖拽缩放:最小宽(px;普通弹框)。
  */
 export const RESIZE_MIN_W = 240
 
 /**
- * 拖拽缩放:最小高(px)。
+ * 拖拽缩放:最小高(px;普通弹框)。
  */
 export const RESIZE_MIN_H = 120
 
 /**
- * 拖拽缩放:最大宽占视口比。
+ * 拖拽缩放:最小宽(px;带标题栏的窗口形 —— 职位描述 / 公司 / 字段弹框,2026-09-28 自 advisor 的 PANEL_W_MIN 并入)。
  */
-export const RESIZE_MAX_VW = 0.92
+export const WIN_MIN_W = 360
 
 /**
- * 拖拽缩放:最大高占视口比。
+ * 拖拽缩放:最小高(px;窗口形,自 advisor 的 PANEL_H_MIN 并入)。
  */
-export const RESIZE_MAX_VH = 0.85
+export const WIN_MIN_H = 280
+
+/**
+ * 视口边缘留白(px):拉伸的上限是视口减去它、窗口形首帧居中也先扣掉它(2026-09-28 并壳:
+ * 普通弹框原上限 92vw × 85vh、浮层原先不设上限,并成一条「不许比屏幕大」)。
+ */
+export const VIEWPORT_GAP = 24
+
+/**
+ * 窗口形首帧居中后左上角的最小坐标(px):窗口比浮层还小时标题栏不许被顶出屏外,拖都拖不回来。
+ */
+export const POS_MIN = 12
+
+/**
+ * 服务端渲染时窗口形的横坐标初值(px;弹框只在浏览器里开,这一格只是兜底)。
+ */
+export const POS_X0 = 80
+
+/**
+ * 服务端渲染时窗口形的纵坐标初值(px)。
+ */
+export const POS_Y0 = 60
+
+/**
+ * 居中:剩余空间对半分。
+ */
+export const CENTER_DIV = 2
+
+/**
+ * 拖动 / 拉伸之后弹框的定位方式(钉在视口坐标上,不再随遮罩居中)。
+ */
+export const POS_FIXED = 'fixed'
 
 /**
  * 边码:北(上)。
@@ -259,6 +191,12 @@ export const EDGE_SE = 'se'
 export const EDGE_SW = 'sw'
 
 /**
+ * 八个把手的渲染顺序:四条边在前、四个角在后 —— 角块要盖在边条上,不然角上只能拉一个方向。
+ * 字面量窄化(as const)是为了让每一项都认作边码的联合类型。
+ */
+export const EDGES = [EDGE_N, EDGE_S, EDGE_W, EDGE_E, EDGE_NW, EDGE_NE, EDGE_SW, EDGE_SE] as const
+
+/**
  * 窗口级指针事件名:移动。
  */
 export const EV_POINTERMOVE = 'pointermove'
@@ -267,13 +205,3 @@ export const EV_POINTERMOVE = 'pointermove'
  * 窗口级指针事件名:松开。
  */
 export const EV_POINTERUP = 'pointerup'
-
-/**
- * 对半(缩放时位移补一半,对边钉住)。
- */
-export const HALF = 2
-
-/**
- * 拖拽缩放后卡片的定位方式(钉在起手位置,不再随遮罩居中)。
- */
-export const POS_ABSOLUTE = 'absolute'

@@ -1399,343 +1399,9 @@ export type DeadFlag = {
 export type LoadFn = (flag: DeadFlag) => void
 
 /**
- * 指针事件手柄(拖动起手 / 拉伸起手都是它)。
- */
-export type PointerHandlerFn = (e: React.PointerEvent) => void
-
-/**
- * 浮层的位置(左上角相对视口的像素)。
- */
-export type PanelPos = {
-  /**
-   * 左。
-   */
-  x: number
-
-  /**
-   * 上。
-   */
-  y: number
-}
-
-/**
- * 浮层的尺寸。
- */
-export type PanelSize = {
-  /**
-   * 宽。
-   */
-  w: number
-
-  /**
-   * 高。
-   */
-  h: number
-}
-
-/**
- * 存在 localStorage 里的浮层记忆(位置不记 —— 每次打开居中,免得窗口缩小后跑出屏外)。
- */
-export type PrefFact = {
-  /**
-   * 上次退出时是不是全屏态。
-   */
-  full: boolean
-
-  /**
-   * 上次的宽;null = 没记过。
-   */
-  w: number | null
-
-  /**
-   * 上次的高;null = 没记过。
-   */
-  h: number | null
-}
-
-/**
- * savePref 的入参。
- */
-export type SavePrefIn = {
-  /**
-   * 记忆键。
-   */
-  key: string
-
-  /**
-   * 这次要改的那几格(与已存的合并后写回;null 的格不动)。
-   */
-  patch: PrefPatch
-}
-
-/**
- * centerPosOf 的入参。
- */
-export type CenterPosIn = {
-  /**
-   * 浮层宽。
-   */
-  w: number
-
-  /**
-   * 浮层高。
-   */
-  h: number
-}
-
-/**
- * makeDragStart 的入参。
- */
-export type DragStartIn = {
-  /**
-   * 全屏态(全屏时不许拖)。
-   */
-  full: boolean
-
-  /**
-   * 当前位置。
-   */
-  pos: PanelPos
-
-  /**
-   * 位置落格。
-   */
-  setPos: (p: PanelPos) => void
-}
-
-/**
- * makeResizeStart 的入参。
- */
-export type ResizeStartIn = {
-  /**
-   * 全屏态(全屏时不许拉)。
-   */
-  full: boolean
-
-  /**
-   * 记忆键(松手时把尺寸写回去)。
-   */
-  prefKey: string
-
-  /**
-   * 当前尺寸。
-   */
-  size: PanelSize
-
-  /**
-   * 当前位置。
-   */
-  pos: PanelPos
-
-  /**
-   * 尺寸镜像(松手那一刻要拿到最后一帧的尺寸,state 在闭包里是旧的)。
-   */
-  sizeRef: SizeRef
-
-  /**
-   * 尺寸落格。
-   */
-  setSize: (s: PanelSize) => void
-
-  /**
-   * 位置落格(西/北向拉伸要同时挪左上角)。
-   */
-  setPos: (p: PanelPos) => void
-
-  /**
-   * 拉哪个方向。
-   */
-  dir: string
-}
-
-/**
- * resizeNextOf 的入参:一帧拉伸的算式。
- */
-export type ResizeNextIn = {
-  /**
-   * 拉哪个方向。
-   */
-  dir: string
-
-  /**
-   * 横向位移。
-   */
-  dx: number
-
-  /**
-   * 纵向位移。
-   */
-  dy: number
-
-  /**
-   * 起手时的尺寸。
-   */
-  size: PanelSize
-
-  /**
-   * 起手时的位置。
-   */
-  pos: PanelPos
-}
-
-/**
- * resizeNextOf 的出参:这一帧的尺寸与位置。
- */
-export type ResizeNextOut = {
-  /**
-   * 这一帧的尺寸。
-   */
-  size: PanelSize
-
-  /**
-   * 这一帧的位置。
-   */
-  pos: PanelPos
-}
-
-/**
- * useFloatPanel 的入参。
- */
-export type FloatPanelHookIn = {
-  /**
-   * 记忆键(两个框各记各的:常用尺寸不同)。
-   */
-  prefKey: string
-
-  /**
-   * 默认宽。
-   */
-  defW: number
-
-  /**
-   * 默认高。
-   */
-  defH: number
-}
-
-/**
- * 浮层首帧的三格(2026-09-21:首帧就按记忆算,不再先默认后跳)。
- */
-export type PanelInit = {
-  /**
-   * 记住的全屏。
-   */
-  full: boolean
-
-  /**
-   * 首帧尺寸(记住的,没有用默认)。
-   */
-  size: PanelSize
-
-  /**
-   * 首帧位置(按首帧尺寸居中;服务端给固定初值)。
-   */
-  pos: PanelPos
-}
-
-/**
- * useFloatPanel 交回的浮层机器面板。
- */
-export type FloatPanelOut = {
-  /**
-   * 窄屏(E8-03:强制全屏,禁拖拽/拉伸/全屏切换钮)。
-   */
-  narrow: boolean
-
-  /**
-   * 全屏态(记忆里的全屏 或 窄屏)。
-   */
-  full: boolean
-
-  /**
-   * 浮层的运行时几何(全屏时是空对象 —— 那一档的样式全在类里)。
-   */
-  panelStyle: React.CSSProperties
-
-  /**
-   * 标题栏按下 = 拖动起手。
-   */
-  onHeadDown: PointerHandlerFn
-
-  /**
-   * 某一向手柄按下 = 拉伸起手。
-   */
-  onEdgeDown: (dir: string) => PointerHandlerFn
-}
-
-/**
- * ResizeHandles 的 props。
- */
-export type ResizeHandlesIn = {
-  /**
-   * 按方向要手柄。
-   */
-  onEdgeDown: (dir: string) => PointerHandlerFn
-}
-
-/**
  * 刷新钮的点击。
  */
 export type RefreshFn = () => void
-
-/**
- * FloatPanel 的 props(浮层壳)。
- */
-export type FloatPanelIn = {
-  /**
-   * 浮层机器。
-   */
-  panel: FloatPanelOut
-
-  /**
-   * 页眉左块(灰色小标 + 大标题 + 副标)。
-   */
-  head: React.ReactNode
-
-  /**
-   * 关闭回调。
-   */
-  onClose: () => void
-
-  /**
-   * 取词函数(全屏钮的两态提示)。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 页眉紧凑档(职位描述弹框的页眉比顾问弹框矮 2px)。
-   */
-  tight: boolean
-
-  /**
-   * 正文走 JD 档(整栏读正文:字号大一档、底衬归零让投递栏贴底)。
-   */
-  jdBody: boolean
-
-  /**
-   * 窗口钮排要不要拦下拖动起手。⚠️ 两个弹框在这里**本来就不一致**:
-   * 职位描述弹框拦(点全屏钮不会顺带拖走整框),顾问弹框不拦。
-   * 换装批逐字保留这个差异,不顺手统一 —— 见桶里的行为疑点台账。
-   */
-  actsStopDrag: boolean
-
-  /**
-   * 正文。
-   */
-  children: React.ReactNode
-
-  /**
-   * 页眉右上角刷新钮的点击(管理员「重译」,2026-09-14);null = 不出这颗钮。
-   */
-  onRefresh: RefreshFn | null
-
-  /**
-   * 这一框的落地页(职位详情页 / 公司页;2026-09-21 Frank「这个改成 箭头,点击直接跳到落地页」):
-   * 有就出箭头钮换掉全屏钮,点了新标签页打开(同日 Frank「并且打开新页面」);'' = 没有落地页(移民 / 分类 / 地点这些字段组、
-   * 没有公司页的雇主),照旧出全屏钮。
-   */
-  pageHref: string
-}
 
 /**
  * AdvisorHead 的 props(顾问弹框的页眉左块)。
@@ -1775,6 +1441,26 @@ export type AdvisorHeadBlockIn = {
    * 译名行右端的切换控件(公司组的中文对照开关;2026-09-16 Frank「公司的也对照改一下」);别的组不挂。
    */
   ctl: React.ReactNode
+}
+
+/**
+ * WinActs 的 props(标题栏里的两颗窗口钮)。
+ */
+export type WinActsIn = {
+  /**
+   * 取词函数。
+   */
+  t: AdvisorTFn
+
+  /**
+   * 重新翻译;null = 这个框没有(不出钮)。
+   */
+  onRefresh: RefreshFn | null
+
+  /**
+   * 落地页地址;空串 = 没有落地页(不出钮)。
+   */
+  pageHref: string
 }
 
 /**
@@ -1832,9 +1518,10 @@ export type ActJdIn = {
   onClose: () => void
 
   /**
-   * 浮层机器(外层起,重译重挂时位置尺寸不丢)。
+   * 白卡机器(外层 ActModal 起,重译重挂时位置尺寸不丢;2026-09-28 并壳起是 modal 桶 useFrame 交回的面板 ——
+   * 本域不读它的任何一格,原样递回 Modal,所以这里不透明化)。
    */
-  panel: FloatPanelOut
+  frame: object
 
   /**
    * 标题译名;'' = 还没有。
@@ -2668,21 +2355,6 @@ export type OnClsIn = {
 }
 
 /**
- * headClsOf 的入参。
- */
-export type HeadClsIn = {
-  /**
-   * 全屏态(全屏时标题栏不给拖动光标)。
-   */
-  full: boolean
-
-  /**
-   * 紧凑档。
-   */
-  tight: boolean
-}
-
-/**
  * kvKeyClsOf 的入参。
  */
 export type NarrowClsIn = {
@@ -2703,26 +2375,6 @@ export type GapClsIn = {
 }
 
 /**
- * panelStyleOf 的入参。
- */
-export type PanelStyleIn = {
-  /**
-   * 全屏态(全屏那一档的样式全在类里,返回空对象)。
-   */
-  full: boolean
-
-  /**
-   * 当前位置。
-   */
-  pos: PanelPos
-
-  /**
-   * 当前尺寸。
-   */
-  size: PanelSize
-}
-
-/**
  * 装字符串的镜像格(每帧要读到最新值,state 在闭包里是旧的)。
  */
 export type TextRef = {
@@ -2730,16 +2382,6 @@ export type TextRef = {
    * 当前值。
    */
   current: string
-}
-
-/**
- * 装尺寸的镜像格。
- */
-export type SizeRef = {
-  /**
-   * 当前值。
-   */
-  current: PanelSize
 }
 
 /**
@@ -3029,36 +2671,6 @@ export type AllocRowIn = {
 }
 
 /**
- * panelBodyClsOf 的入参。
- */
-export type JdBodyClsIn = {
-  /**
-   * 走不走 JD 档。
-   */
-  jd: boolean
-}
-
-/**
- * 浮层记忆存进 localStorage 的原始形状(归一前:键可能不在,存的也可能不是这个形状)。
- */
-export type PrefJson = {
-  /**
-   * 上次是不是全屏态。
-   */
-  full?: boolean
-
-  /**
-   * 上次的宽。
-   */
-  w?: number
-
-  /**
-   * 上次的高。
-   */
-  h?: number
-}
-
-/**
  * 写记忆时的补丁:null = 这一格不动(只改这次真动过的那几格)。
  */
 export type PrefPatch = {
@@ -3317,26 +2929,6 @@ export type FieldPageIn = {
    * 这一岗的公司 slug(职位行的 companySlug;空 = 这家没有公司页)。
    */
   slug: string
-}
-
-/**
- * panelClsOf 的入参。
- */
-export type PanelClsIn = {
-  /**
-   * 全屏态。
-   */
-  full: boolean
-}
-
-/**
- * makeActsDown 的入参。
- */
-export type ActsDownIn = {
-  /**
-   * 要不要拦下拖动起手(见 FloatPanelIn 的 actsStopDrag:两个弹框在这里本来就不一致)。
-   */
-  stop: boolean
 }
 
 /**

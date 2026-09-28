@@ -23,11 +23,11 @@ import { track } from '@/lib/track'
 import {
   APPLY_AUTH, APPLY_EMAIL, APPLY_IDLE, APPLY_INTENT, APPLY_RESUME_KEY, APPLY_RESUME_SEP, APPLY_RESUME_TTL_MS,
   AUTH_LOGIN, AUTH_REGISTER, BOARD_FILTERS_KEY, CELL_PAD, COL_FLOOR, COMMA, CREDENTIALS_INCLUDE,
-  DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_KEY_DOWN, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
+  DIR_DESC, DISPOSITION_MAP, DISPOSITION_NONE, EMPTY_DIMS, EV_MOUSE_DOWN, EV_RESIZE, FIELD_GROUP, FK,
   HOME_GATE_OFF,
   FILTER_Q, FMT_FAIL, FMT_NOTEXT, FMT_QUOTA, FREE_PLAN, HDR_CONTENT_TYPE, HTTP_NO_CONTENT, HTTP_OK, HTTP_PAYMENT,
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
-  KEY_ESCAPE, LANG_EN, LIMIT_RE, METHOD_DELETE,
+  LANG_EN, LIMIT_RE, METHOD_DELETE,
   METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
   SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
@@ -60,7 +60,7 @@ import type {
   ApplyHowPanel, ApplyResumeIn, ApplyStage, AuthDoneIn, BlockedKeys, BoardColsHookIn, BoardColsOut, BoardColsPanel,
   BoardDataHookIn, BoardDataOut, BoardDataPanel, BoardFiltersHookIn, BoardFiltersHookOut, BoardPnpFacts, BoxRef,
   ClickFn, ColMeasure,
-  ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson, EscCloseIn,
+  ColsToggleIn, ColWidthSeed, ColWidthsIn, ColWidthsPanel, ColWidthsPanelIn, DimsJson,
   FieldRouterIn, FilterState, FmtLoad, FmtLoadIn, FmtWhy, FontsDoc, FrozenHookIn, FrozenPanel, HeadRowRef, HomeGate,
   HydrateIn,
   JobPeekPanel,
@@ -1002,6 +1002,8 @@ function dimsOf(props: JobsIn): JobDims {
  * 答题器,职位板只读答案做回显与筛选;自动弹窗(#237 的排队逻辑)随之删掉。Esc 关弹框。
  * 2026-09-21 Frank「点公司就弹公司的框?然后还能点回来」:职位描述弹框与公司弹框并进弹框栈(modal 域 useLayerStack),
  * 一层层叠、只关最上面一层,栈自己管 Esc;这里的 Esc 只剩「栈空了再关字段弹框」—— 原先 closeBoth 一按全关。
+ * 2026-09-28 并壳(Frank「别并存啊」):字段弹框也套 modal 桶的 Modal 了,Esc 由 Modal 按打开先后排号接(最上面那个关),
+ * 这里那份「栈空了再关字段弹框」的 Esc 随之撤 —— 栈里有层时最上面的是栈顶,栈空了最上面的就是字段弹框,排号天然如此。
  *
  * @param x 分层态。
  * @returns 弹框层面板与三个开口。
@@ -1023,7 +1025,6 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
   function closePopup(): void {
     setPopup(null)
   }
-  useEscClose({ open: popup != null && stack.layers.length === 0, onClose: closePopup })
   return {
     panel: {
       popup,
@@ -1059,32 +1060,6 @@ function useBoardModals(x: ModalsHookIn): ModalsHookOut {
 async function upsellDone(): Promise<void> {
   await saveQuizAnswers()
   window.location.reload()
-}
-
-/**
- * Esc 关弹框。
- *
- * @param x 开着没与关的动作。
- * @returns 无。
- */
-function useEscClose(x: EscCloseIn): void {
-  const onClose = x.onClose
-  const open = x.open
-  useEffect(function watchEsc() {
-    if (open === false) {
-      return
-    }
-    function onKey(e: KeyboardEvent): void {
-      if (e.key === KEY_ESCAPE) {
-        onClose()
-      }
-    }
-    window.addEventListener(EV_KEY_DOWN, onKey)
-    return function stopEscWatch() {
-      window.removeEventListener(EV_KEY_DOWN, onKey)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onClose 每渲一次都是新函数,只跟开合走
-  }, [open])
 }
 
 /**

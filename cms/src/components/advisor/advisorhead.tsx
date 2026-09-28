@@ -12,16 +12,16 @@
  * #185:公司弹框「打开完整页」移入正文顶部钮行(与职位弹框同款),页眉不再重复。
  * 2026-08-28 换装批自 Advisor.tsx 的页眉段提出成件。
  * 2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组的小标带上本岗的省(kickerOf)。
+ * 2026-09-28 并壳(Frank「别并存啊」):版式(左块 + 译名行)并进 modal 桶的 ModalHead,这里只剩「小标写什么」。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { cssOf } from '@/components/css'
 import { IconCompass } from '@/components/icons'
-import { AI_ADVISOR_ON, GROUP_IMMIGRATION, TEXT_NONE } from './constants'
-import { kickerOf, makeActsDown } from './functions'
+import { KickerNote, ModalHead } from '@/components/modal'
+import { AI_ADVISOR_ON, GROUP_IMMIGRATION } from './constants'
+import { kickerOf } from './functions'
 import type { AdvisorHeadBlockIn } from './types'
-import css from './advisor.module.css'
 
 /**
  * 渲染顾问弹框的页眉左块。
@@ -36,23 +36,15 @@ export function AdvisorHead({ t, group, province, title, sub, freeLeft, ctl }: A
   const withAi = group === GROUP_IMMIGRATION && AI_ADVISOR_ON
   const kicker = kickerOf({ t, group, province })
   return (
-    <>
-      <div className={`${cssOf(css.headL)} ${cssOf(css.headMain)}`}>
-        <div className={cssOf(css.kicker)}>
+    <ModalHead title={title} sub={sub} ctl={ctl}
+      kicker={(
+        <>
           {withAi === false && kicker}
           {withAi && <IconCompass />}
           {withAi && t('advisor.tag')}
-          {withAi && <span className={cssOf(css.kickerSub)}>{kicker}</span>}
-          {withAi && freeLeft != null && (
-            <span className={cssOf(css.kickerSub)}>{t('advisor.left', { n: freeLeft })}</span>
-          )}
-        </div>
-        <h3 className={cssOf(css.title)}>{title}</h3>
-      </div>
-      <div className={cssOf(css.subRow)} onPointerDown={makeActsDown({ stop: true })}>
-        {sub !== TEXT_NONE && <div className={cssOf(css.sub)}>{sub}</div>}
-        <span className={cssOf(css.subCtl)}>{ctl}</span>
-      </div>
-    </>
+          {withAi && <KickerNote text={kicker} />}
+          {withAi && freeLeft != null && <KickerNote text={t('advisor.left', { n: freeLeft })} />}
+        </>
+      )} />
   )
 }

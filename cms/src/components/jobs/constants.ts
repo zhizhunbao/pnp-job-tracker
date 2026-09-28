@@ -1889,19 +1889,9 @@ export const TARGET_MAX = 'max'
 export const EV_MOUSE_DOWN = 'mousedown'
 
 /**
- * Esc 关弹框用的按键事件名。
- */
-export const EV_KEY_DOWN = 'keydown'
-
-/**
  * 窗口尺寸变化事件名(固定列偏移要重量)。
  */
 export const EV_RESIZE = 'resize'
-
-/**
- * Esc 键名。
- */
-export const KEY_ESCAPE = 'Escape'
 
 /**
  * 回车键名(搜索框回车 = 当场把关键词写回地址栏,不等停手)。
