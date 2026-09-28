@@ -19,6 +19,7 @@ import 只有标准库(叶子律:形状本域自声明,零跨域)。
 先例 indexing.scheme / ats.scheme / gate.scheme,跑法 `python etl/mart/main.py --only test`;被测的 mart.functions 与
 mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部 import 会成环)。
 2026-09-27 同段加四组(薪资写法 / 投递邮箱 / ATS 工时雇佣期 / 运营统计补行);ATS 那组在系统临时目录现造公司档,不碰仓内文件。
+同日九省体检修复批再加 MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的排除表;真表金标只读仓里 raw/pnp 两张表)。
 """
 import json
 import re
@@ -411,6 +412,10 @@ class PnpJudgeIn:
 
     term: str
     """这岗的雇佣期(permanent / term / seasonal / casual;''= 同上)。2026-09-26 起 offer_fits 要看。"""
+
+    city: str
+    """这岗的城市(''= 没有,或职业 × 省级判定本就不看具体城市)。2026-09-27 起 pnp_eligible 要看:岗位在 AB 乡村振兴
+    指定社区的,资格只认该通道自己的排除表(is_community_hit)。"""
 
 
 @dataclass
@@ -3009,8 +3014,9 @@ class MartOfferTest(unittest.TestCase):
                          ee_by_noc={"21231": "STEM"})
 
     def judge(self, prov: str, noc: str, hours: str, term: str) -> PnpJudgeIn:
-        """造一份判定入参(TEER 取职业码第二位)。"""
-        return PnpJudgeIn(tables=self.tables(), noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term)
+        """造一份判定入参(TEER 取职业码第二位;城市给空串 —— 社区通道另有 MartRuralRenewalTest,2026-09-27)。"""
+        return PnpJudgeIn(tables=self.tables(), noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term,
+                          city="")
 
     def stream_in(self, prov: str, noc: str, hours: str, term: str) -> PnpStreamIn:
         """造一份通道名入参(城市给空串:社区通道不在本组用例里)。"""
@@ -3128,7 +3134,8 @@ class MartOfferTest(unittest.TestCase):
                 for hours in self.hours_values():
                     for term in self.term_values():
                         key = (prov, noc, hours, term)
-                        judge = PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term)
+                        judge = PnpJudgeIn(tables=tables, noc=noc, teer=int(noc[1]), prov=prov, hours=hours, term=term,
+                                           city="")
                         self.assertFalse(fn.pnp_eligible(judge), key)
                         self.assertIsNone(fn.pnp_stream(PnpStreamIn(tables=tables, noc=noc, prov=prov, teer=int(noc[1]),
                                                                     city="", hours=hours, term=term)), key)
@@ -3236,6 +3243,118 @@ class MartOfferTest(unittest.TestCase):
                   "Speech language pathologist 2 - supervisor", "Shift Supervisor", "Maintenance Supervisor",
                   "Department Supervisor"):
             self.assertNotEqual(fn.classify_title(t), "62020", t)
+
+
+class MartRuralRenewalTest(unittest.TestCase):
+    """AB 乡村振兴(RRS)社区岗的资格与通道名自测(2026-09-27 九省体检:社区分支先过 pnp_eligible,而它用 AOS 的 34 码表,
+    把 RRS 自己不排除的幼教 / 小学教师这批挡掉)。性质与金标用现造省表(形同 load_pnp_tables 的桶);真表金标读仓里
+    raw/pnp 的 ab-rural.json / aaip-ineligible.json(只读);变异探针改的是社区表(排除码 / 社区名单)。"""
+
+    RRS_TABLE1 = {"00010", "60040", "41100", "51111", "51122", "42200", "53121", "53122", "53124", "53200", "33100",
+                  "44100", "44101", "64321", "55109", "65229", "85101"}
+    """手写金标:官方 aaip-rural-renewal-stream-eligibility 页 Table 1「List of ineligible occupations」的 17 码
+    (2026-09-27 crawl 缓存 ab-aaip 原样;60040 / 42200 / 33100 带星号 = 该码只部分职业不合格,本站整码不收)。"""
+
+    AOS = {"42202", "41221", "00010", "44101", "65211"}
+    """现造的 AOS 排除码(真表 34 码里挑五个:幼教、小学教师、议员、居家护理、娱乐场所服务员)。"""
+
+    RRS = {"00010", "44101"}
+    """现造的 RRS 排除码(真表 17 码里挑两个,都同时在 AOS 里)。"""
+
+    PLACES = {"medicine hat", "rocky mountain house"}
+    """现造的指定社区(小写,同 load_community_tables 的形)。"""
+
+    def tables(self, excluded: set, places: set) -> PnpTables:
+        """现造省表:AB 排除式(排除 AOS 五码)+ 一条具名通道(汽修 72410)+ 乡村振兴社区表(名单与排除码由用例给)。"""
+        by_prov = {"AB": {"type": "ineligible", "nocs": set(self.AOS), "blocked": set(),
+                          "streams": [{"label": "AB 具名", "nocs": {"72410"}}]}}
+        comm = {"AB": {"label": "AB 乡村振兴", "places": set(places), "excluded": set(excluded)}}
+        return PnpTables(by_prov=by_prov, named_by_prov={"AB": {"72410"}}, community_by_prov=comm, ee_by_noc={})
+
+    def both(self, tables: PnpTables, row: tuple) -> tuple:
+        """一格 (城市, 职业码, 工时, 雇佣期) → (pnp_eligible, pnp_stream);职业码空串 = 没认出(TEER None)。"""
+        from mart import functions as fn
+        city, noc, hours, term = row
+        teer = None
+        if noc != "":
+            teer = int(noc[1])
+        judge = PnpJudgeIn(tables=tables, noc=noc, teer=teer, prov="AB", hours=hours, term=term, city=city)
+        stream = fn.pnp_stream(PnpStreamIn(tables=tables, noc=noc, prov="AB", teer=teer, city=city, hours=hours,
+                                           term=term))
+        return fn.pnp_eligible(judge), stream
+
+    def test_rrs_golden(self) -> None:
+        """手写金标:社区里 AOS 排除、RRS 不排除的码(幼教 42202、小学教师 41221)→ 可 + 乡村振兴;社区外照旧按 AOS 不可;
+        RRS 自己排除的码不可;具名通道优先;兼职 / casual 过不了 offer 门槛;城市大小写与首尾空白不影响;职业码没认出不判。"""
+        t = self.tables(self.RRS, self.PLACES)
+        cases = [
+            (("Medicine Hat", "42202", "full", "permanent"), (True, "AB 乡村振兴")),
+            (("Rocky Mountain House", "41221", "full", "permanent"), (True, "AB 乡村振兴")),
+            ((" medicine HAT ", "42202", "", ""), (True, "AB 乡村振兴")),
+            (("Medicine Hat", "42202", "full", "term"), (True, "AB 乡村振兴")),
+            (("Edmonton", "42202", "full", "permanent"), (False, None)),
+            (("", "41221", "full", "permanent"), (False, None)),
+            (("Medicine Hat", "00010", "full", "permanent"), (False, None)),
+            (("Medicine Hat", "44101", "full", "permanent"), (False, None)),
+            (("Medicine Hat", "72410", "full", "permanent"), (True, "AB 具名")),
+            (("Medicine Hat", "21231", "full", "permanent"), (True, "AB 乡村振兴")),
+            (("Edmonton", "21231", "full", "permanent"), (True, None)),
+            (("Medicine Hat", "42202", "part", "permanent"), (False, None)),
+            (("Medicine Hat", "42202", "full", "casual"), (False, None)),
+            (("Medicine Hat", "", "full", "permanent"), (False, None)),
+        ]
+        for row, want in cases:
+            with self.subTest(row=row):
+                self.assertEqual(self.both(t, row), want)
+
+    def test_rrs_property(self) -> None:
+        """性质(全职永久,穷举 AOS ∪ RRS ∪ 两个表外码 × 社区内 / 社区外 / 没城市):社区内可不可只看 RRS 表,社区外 / 没城市
+        只看 AOS 表(原判一格不变);社区内可的码,不在具名通道上就挂乡村振兴。"""
+        t = self.tables(self.RRS, self.PLACES)
+        for noc in sorted(self.AOS | self.RRS | {"21231", "72410"}):
+            got_in = self.both(t, ("Medicine Hat", noc, "full", "permanent"))
+            self.assertEqual(got_in[0], noc not in self.RRS, noc)
+            if got_in[0] and noc != "72410":
+                self.assertEqual(got_in[1], "AB 乡村振兴", noc)
+            for city in ("Calgary", ""):
+                self.assertEqual(self.both(t, (city, noc, "full", "permanent"))[0], noc not in self.AOS, (city, noc))
+
+    def test_rrs_real_tables(self) -> None:
+        """真表金标:仓里 ab-rural.json 的排除码 = 官方 Table 1 的 17 码,且都在 AOS 真表里(差集就是这次放行的码);
+        在招真岗(Job Bank 帖号 50284794 Medicine Hat 幼教 42202、50069779 Rocky Mountain House 小学教师 41221,
+        2026-09-27 mart 在招行原样)整行接线后可提名、挂乡村振兴;同一岗搬到 Edmonton 照旧不可。
+        官方改了 Table 1(pnp_ab 单元每小时重建 ab-rural.json),这条会红:核对官方页后改 RRS_TABLE1。"""
+        from mart import functions as fn
+        tables = fn.load_pnp_tables()
+        comm = tables.community_by_prov.get("AB")
+        if comm is None:
+            self.skipTest("仓里没有 AB 乡村振兴社区表(raw/pnp/ab-rural.json)")
+        self.assertEqual(comm["excluded"], self.RRS_TABLE1)
+        aos = tables.by_prov["AB"]["nocs"]
+        self.assertTrue(self.RRS_TABLE1 <= aos)
+        self.assertIn("42202", aos - self.RRS_TABLE1)
+        self.assertIn("41221", aos - self.RRS_TABLE1)
+        jobs = [("jb:50284794", "early childhood education worker", "42202", "Medicine Hat"),
+                ("jb:50069779", "elementary school teacher", "41221", "Rocky Mountain House")]
+        for ext, title, noc, city in jobs:
+            job = CollectedJob(ext=ext, title=title, agency=False, prov="AB", hint=noc, city=city, hours="full",
+                               term="permanent")
+            row = fn.to_scored_row(ScoredRowIn(tables=tables, job=job, labels={}))
+            self.assertEqual((row["pnpEligible"], row["pnpStream"]), (True, "AB 乡村振兴"), ext)
+            moved = CollectedJob(ext=ext, title=title, agency=False, prov="AB", hint=noc, city="Edmonton",
+                                 hours="full", term="permanent")
+            row = fn.to_scored_row(ScoredRowIn(tables=tables, job=moved, labels={}))
+            self.assertEqual((row["pnpEligible"], row["pnpStream"]), (False, None), ext)
+
+    def test_rrs_table_mutation_probe(self) -> None:
+        """变异探针:社区表的排除码换成 AOS 表(= 这次修掉的旧口径)、从 RRS 表里拿掉 00010、社区名单拿掉 Medicine Hat ——
+        金标格当场跟着变,证明判定读的是 RRS 自己那张表与社区名单。"""
+        ece = ("Medicine Hat", "42202", "full", "permanent")
+        mp = ("Medicine Hat", "00010", "full", "permanent")
+        self.assertEqual(self.both(self.tables(self.RRS, self.PLACES), ece), (True, "AB 乡村振兴"))
+        self.assertEqual(self.both(self.tables(self.AOS, self.PLACES), ece), (False, None))
+        self.assertEqual(self.both(self.tables(self.RRS - {"00010"}, self.PLACES), mp), (True, "AB 乡村振兴"))
+        self.assertEqual(self.both(self.tables(self.RRS, {"rocky mountain house"}), ece), (False, None))
 
 
 class MartSalaryTextTest(unittest.TestCase):

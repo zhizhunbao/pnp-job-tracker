@@ -221,6 +221,7 @@ from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
+from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -850,6 +851,11 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
       清单里才算;SK 的 TEER 4-5 仍可走,但只能走 Existing Work Permit 条件档(见 is_sk_ewp / pnp_direct)。
     · 2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」:这岗的工时 / 雇佣期过不了该省官方 offer 门槛(offer_fits)
       → 不可,先于清单判;没标注的格放行,保持原判。同日 Frank 拍 NU 同魁省一律不可(IRCC 年报原句见 NON_PNP_PROV)。
+    · 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):岗位落在该省按社区名单判的通道里(AB 乡村振兴,
+      is_community_hit)→ 可,职业只认该通道自己的排除表(官方 aaip-rural-renewal-stream-eligibility 页 Table 1 的 17 码),
+      不再过 AOS 的 34 码表 —— 原先 Medicine Hat 的幼教、Rocky Mountain House 的小学老师这类「AOS 排除、RRS 不排除」的岗
+      被判不可,通道名也跟着挂不上(pnp_stream 的社区分支先过本函数)。同页托育岗「须持 Level 2 / Level 3 ECE 证书」
+      这类持证条件,本批不判。
     """
     if not x.prov or x.prov in NON_PNP_PROV:
         return False
@@ -858,6 +864,8 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
     tbl = x.tables.by_prov.get(x.prov)
     if tbl and x.noc in tbl[K_BLOCKED]:
         return False
+    if is_community_hit(x):
+        return True
     if tbl and tbl[K_TYPE] == PNP_TYPE_INELIGIBLE:
         if x.teer is None or x.noc in tbl[K_NOCS]:
             return False
@@ -885,6 +893,16 @@ def prov_nocs_of(tbl: dict | None) -> set:
     if tbl:
         return tbl[K_NOCS]
     return set()
+
+
+def is_community_hit(x: PnpJudgeIn) -> bool:
+    """这岗落在该省按社区名单判的通道里(AB 乡村振兴):城市在指定社区名单、职业码认得出(TEER 非空)、且不在该通道
+    **自己**的排除表里(ab-rural.json 的 excluded = 官方 RRS 资格页 Table 1 的 17 码)—— 不看 AOS 那张 34 码表。
+    pnp_eligible 与 pnp_stream 的社区分支共用这一把尺子(2026-09-27 九省体检立)。"""
+    comm = x.tables.community_by_prov.get(x.prov)
+    if comm is None or x.teer is None:
+        return False
+    return x.city.strip().lower() in comm[K_PLACES] and x.noc not in comm[K_EXCLUDED]
 
 
 def is_sk_ewp(x: PnpJudgeIn) -> bool:
@@ -928,17 +946,19 @@ def pnp_stream(x: PnpStreamIn) -> str | None:
     同日第三批:具名清单之后先看社区通道(AB 乡村振兴:岗位城市在指定社区名单、职业不在它的 17 个排除码里)。
     2026-09-26 /fe Frank 勾:工时 / 雇佣期过不了该省官方 offer 门槛(offer_fits)的岗一律不挂通道名,先于清单判;
     不属 PNP 的省(NON_PNP_PROV:QC、NU)同样不挂 —— 两地本就没有省表,这一判让「一律」不靠数据碰巧缺席。
+    2026-09-27 九省体检:社区分支改走 is_community_hit(只认乡村振兴自己的 17 码排除表),pnp_eligible 同步放行 ——
+    原先这里先过 pnp_eligible,而它用 AOS 的 34 码表,把 RRS 不排除的幼教 42202、小学教师 41221 这批挡掉。
     """
-    judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov, hours=x.hours, term=x.term)
+    judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=x.prov, hours=x.hours, term=x.term,
+                       city=x.city)
     tbl = x.tables.by_prov.get(x.prov)
     if x.prov in NON_PNP_PROV or not tbl or not offer_fits(judge):
         return None
     for s in tbl[K_STREAMS]:
         if x.noc in s[K_NOCS] and s[K_LABEL]:
             return s[K_LABEL]
-    comm = x.tables.community_by_prov.get(x.prov)
-    if comm and x.city.strip().lower() in comm[K_PLACES] and x.noc not in comm[K_EXCLUDED] and pnp_eligible(judge):
-        return comm[K_LABEL]
+    if is_community_hit(judge) and pnp_eligible(judge):
+        return x.tables.community_by_prov[x.prov][K_LABEL]
     if is_sk_ewp(judge) and pnp_eligible(judge):
         return SK_EWP_LABEL
     return None
@@ -1167,7 +1187,8 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         noc = x.labels.get(x.job.ext, "")
     teer = teer_of_noc(noc)
     acc = accessibility(x.job.title)
-    judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov, hours=x.job.hours, term=x.job.term)
+    judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov, hours=x.job.hours, term=x.job.term,
+                       city=x.job.city)
     category = CATEGORY_UNCLASSIFIED
     if teer is not None:
         category = TEER_LABEL_TPL.format(teer=teer)
@@ -4931,10 +4952,11 @@ def prov_list_of(x: ProvListIn) -> str:
     E13-05:全国 occ 行的 pnpProvs **复用本域的 pnp_eligible / pnp_direct / any_pr_path**
     (禁复制判定逻辑)—— 全溶前它们住 08_score,统计件靠 importlib 按路径拉;批I 同域后直调。
     职业 × 省级的口径不看具体 offer:工时 / 雇佣期给空串(offer_fits 放行,2026-09-26)。
+    城市同样给空串(2026-09-27:乡村振兴按岗位城市判,职业 × 省级这一格不落到哪个社区,照旧按 AOS 表判)。
     """
     got = []
     for p in PNP_PROV_ORDER:
-        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p, hours="", term="")
+        judge = PnpJudgeIn(tables=x.tables, noc=x.noc, teer=x.teer, prov=p, hours="", term="", city="")
         if x.mode == PROV_MODE_DIRECT and pnp_direct(judge):
             got.append(p)
         elif x.mode == PROV_MODE_COND and pnp_eligible(judge) and not pnp_direct(judge):
@@ -6697,9 +6719,11 @@ def run_tests() -> None:
     """本域手动件 `--only test`:跑省提名 offer 门槛与 EE 省别自测(用例集住 scheme 的 MartOfferTest,先例 indexing / ats /
     gate.scheme);有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。
     2026-09-27 加四组:薪资写法(MartSalaryTextTest)/ 投递邮箱(MartApplyMailTest)/ ATS 工时雇佣期(MartAtsEmpTest)/
-    运营统计补行(MartOpsExtraTest),一个套件跑完。"""
+    运营统计补行(MartOpsExtraTest),一个套件跑完。
+    同日九省体检修复批再加一组:MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的 17 码排除表)。"""
     suite = unittest.TestSuite()
-    for case in (MartOfferTest, MartSalaryTextTest, MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest):
+    for case in (MartOfferTest, MartRuralRenewalTest, MartSalaryTextTest, MartApplyMailTest, MartAtsEmpTest,
+                 MartOpsExtraTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

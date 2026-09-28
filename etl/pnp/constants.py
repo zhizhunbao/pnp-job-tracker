@@ -1198,15 +1198,36 @@ Talent Pathway,除了 NOC 在清单内,还要**萨省雇主的长期全职 offer
 2026 起另有行业配额封顶(住宿餐饮 15%、零售 5%、卡车运输 5%)未建模。清单本身仍是 inclusion
 (type 不改,08_score 语义就是 inclusion/exclusion 二选一),条件写在这里作数据层事实。"""
 
+SK_AGRI_SECTOR_QUOTE = "Occupations that require the sponsoring employer to be under"
+"""农业通道页职业表下的星号脚注原句(agriculture-talent-pathway 页,2026-09-27 crawl 缓存原样;后接五行:NAICS 11 –
+Agriculture, forestry, fishing and hunting / 311 – Food manufacturing / 33311 – Agricultural implement manufacturing /
+411 – Farm product merchant wholesalers / 49313 – Farm product and warehousing)。
+2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):带星号的职业(当日页上 14401 / 75101 / 94140 / 94141 /
+94143 / 94204 / 95106 七个)要求担保雇主属上面五个行业之一,本站判不了雇主行业 —— 原先一律按码贴「SK 农业」,零售、
+建材、仓储雇主的搬运工、仓管员也挂上了。照 AB_TOURISM_GENERIC 的先例:带星号码不收进农业表,这些岗退回默认通道
+(TEER 4-5 落 mart 的 SK 现有工签档)。星号从官方页现读,不另抄一份码表(官方加减星号自动跟上);自校:这句不在
+(措辞变了)或在却一个星号码都没认出(版式变了)→ 保留旧表,不硬猜。"""
+
+SK_SECTOR_STAR = "*"
+"""职业名尾部的星号(= 这个职业挂着脚注里的雇主行业条件)。"""
+
+K_SECTOR_QUOTE = "sectorQuote"
+"""SK_STREAMS 配置键:星号脚注原句 —— 带这个键的页,带星号的职业码不收(只有农业通道带;医疗页的星号意思是「也可走
+Employment Offer / Existing Skilled Workers」,与雇主行业无关,不带这个键)。"""
+
 SK_STREAMS = [
     {"url": SK_BASE_URL + "health-talent-pathway", "out": "sk-health.json",
      "stream": "SINP Health Talent Pathway", "label": "SK 医疗"},
     {"url": SK_BASE_URL + "sinp-innovation-tech-talent-pathway", "out": "sk-tech.json",
      "stream": "SINP Innovation & Tech Talent Pathway", "label": "SK 科技"},
     {"url": SK_BASE_URL + "agriculture-talent-pathway", "out": "sk-agri.json",
-     "stream": "SINP Agriculture Talent Pathway", "label": "SK 农业"},
+     "stream": "SINP Agriculture Talent Pathway", "label": "SK 农业", "sectorQuote": SK_AGRI_SECTOR_QUOTE},
 ]
-"""每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签)。"""
+"""每条 = 一个 inclusion 具名通道(实时 URL / 输出文件 / 通道英文名 / 前端短标签)。
+2026-09-27 农业那条多一个 sectorQuote 键:带星号的职业码不收(依据见 SK_AGRI_SECTOR_QUOTE)。"""
+
+SK_PRINT_SECTOR_FAIL_TPL = "  ✗ {out}:星号脚注原句不在,或在却没认出带星号的职业码(改版?保留旧表,请人工复核)"
+"""农业表带星号码自校没过的报数(2026-09-27)。"""
 
 SK_NOC_PATTERNS = [
     re.compile(r"^[-*]\s*(\d{5})\s*[—–-]\s*(.+?)\s*$"),
@@ -2060,6 +2081,19 @@ MB_SCORE_RE = re.compile(r"score of (?:the )?lowest[\s-]*ranked candidate[^:]*:?
 
 MB_LAA_RE = re.compile(r"Letters? of Advice to Apply issued\s*:?\s*([\d,]+)", re.I)
 """MB 一段里发出的 LAA 数。"""
+
+MB_TOTAL_RE = re.compile(r"Of the\s+([\d,]+)\s+Letters? of Advice to Apply issued in this draw", re.I)
+"""MB 一期公告里的整期 LAA 总数句(「Of the 104 Letters of Advice to Apply issued in this draw, 15 were issued to …」)。
+2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):第 272 期(2026-06-04)官方页缺「Number of Letters of
+Advice to Apply issued」那一行,邀请数落空、MB 2026 全年少 104;页上有本期总数句 104,也有五项定向分项 40 / 6 / 17 / 2 / 39。
+取总数句,不取分项加总:总数句是官方写的数,加总是我们推的;分项的引导句只说「issued to candidates declaring receipt
+of an ITA under the strategic recruitment initiatives listed below」,是按定向渠道拆,不担保拆全(缓存里 33 期带分项的
+SW 段,加总恰好都等于 LAA 行 —— 眼下对得上,但那是巧合不是口径);50 期里既没有 LAA 行、又没有总数句的一期都没有,
+加总那条路零消费者,不写(没有总数句的照旧留空)。
+口径是整期(in this draw):缓存 50 期里凡有总数句的,都等于各段 LAA 之和(#280 1+417+16+40=474、#275 五段合计 2,146),
+所以它只顶老逻辑「一期一行」那一格(parse_mb_draws 的回退),不拿来顶多段公告里缺数的某一段。
+核对:月度页 monthly-data-2026 的 6 月 SW LAAs = 228 = #272 的 104 + #273 的 124;修后 1–8 月逐月与月度页对上,
+全年(含 9 月)6,883。"""
 
 MB_DRAW_DATE_RE = re.compile(r"[A-Z][a-z]+ \d{1,2}, \d{4}")
 """MB 公告正文里的抽选日。"""

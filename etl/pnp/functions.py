@@ -354,6 +354,10 @@ from pnp.constants import (  # 2026-09-27 萨省「持 offer 直接申请、不�
     FACTOR_EOI_DRAW, SKR_DIRECT_LABEL, SKR_DIRECT_RE, SKR_DIRECT_STREAM, SKR_DIRECT_URL, SKR_PROBLEM_DIRECT,
     SKR_SECTION_DIRECT,
 )
+from pnp.constants import (  # 2026-09-27 九省体检修复批新增(MB 整期总数句 / SK 农业带星号码)
+    K_SECTOR_QUOTE, MB_TOTAL_RE, SK_PRINT_SECTOR_FAIL_TPL, SK_SECTOR_STAR,
+)
+from pnp.scheme import DrawCoverIn, SkSectorIn  # 同上(并回历史挡残缺旧行 / 农业表去星号码)
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -964,7 +968,8 @@ def build_sk_excluded() -> None:
 
 
 def build_sk() -> None:
-    """SK 具名清单入口:三条 Talent Pathway(inclusion)+ 主线排除清单(exclusion)。"""
+    """SK 具名清单入口:三条 Talent Pathway(inclusion)+ 主线排除清单(exclusion)。
+    2026-09-27 九省体检:带 sectorQuote 键的页(农业通道)先去掉带星号的职业码(sk_sector_free),自校没过保留旧表。"""
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     for s in SK_STREAMS:
         try:
@@ -973,6 +978,13 @@ def build_sk() -> None:
             say(PRINT_KEEP_OLD_TPL.format(what=s[K_OUT], name=type(e).__name__, detail=e))
             continue
         occs = parse_noc_lines(NocLinesIn(md=md, patterns=SK_NOC_PATTERNS))
+        quote = s.get(K_SECTOR_QUOTE)
+        if quote is not None:
+            kept = sk_sector_free(SkSectorIn(md=md, occs=occs, quote=quote))
+            if kept is None:
+                say(SK_PRINT_SECTOR_FAIL_TPL.format(out=s[K_OUT]))
+                continue
+            occs = kept
         if not occs:
             say(PRINT_NO_NOC_TPL.format(out=s[K_OUT]))
             continue
@@ -987,6 +999,35 @@ def build_sk() -> None:
                                      line=PRINT_TABLE10_TPL.format(label=s[K_LABEL], n=len(occs),
                                                                    out=s[K_OUT], fetched=fetched)))
     build_sk_excluded()
+
+
+def sk_sector_free(x: SkSectorIn) -> list | None:
+    """农业通道表去掉带星号的职业码(星号 = 担保雇主须属脚注里那几个 NAICS 行业,本站判不了;照 AB_TOURISM_GENERIC
+    先例不收,依据见 constants.SK_AGRI_SECTOR_QUOTE)。自校没过 → None,调用方保留旧表:脚注原句不在(措辞变了),
+    或在却一个星号码都没认出(版式变了)。2026-09-27 九省体检立。"""
+    if x.quote.lower() not in fold_ws(x.md).lower():
+        return None
+    starred = sk_starred_nocs(x.md)
+    if len(starred) == 0:
+        return None
+    rows: list = []
+    for o in x.occs:
+        if o[K_NOC] not in starred:
+            rows.append(o)
+    return rows
+
+
+def sk_starred_nocs(md: str) -> set:
+    """md 里名字以星号结尾的职业行 → 职业码集合(行写法同 SK_NOC_PATTERNS,首个命中的模式为准;2026-09-27)。"""
+    out: set = set()
+    for ln in md.splitlines():
+        for p in SK_NOC_PATTERNS:
+            hit = p.match(ln)
+            if hit:
+                if hit.group(2).strip().endswith(SK_SECTOR_STAR):
+                    out.add(hit.group(1))
+                break
+    return out
 
 
 # =========================================================================
@@ -1716,7 +1757,9 @@ def mb_legacy_stream(body: str) -> str:
 def parse_mb_draws(html: str) -> list:
     """/draws/ 索引页 prose:每期一个 <article class=post>,标题 h2「…Draw #N」。
     能按 <ul> 配出「子标题 + 该段分数线 + 该段 LAA」时一段一行(mb_stream_blocks);
-    配不出来(老格式)才退回一期一行、多分不猜的合并行为。"""
+    配不出来(老格式)才退回一期一行、多分不猜的合并行为。
+    2026-09-27 九省体检:回退那一行的邀请数,正文里没有「LAA issued」行时改认官方的整期总数句(mb_total_of;
+    第 272 期官方页缺 LAA 行实撞,原先落空)。有 LAA 行的照旧取 LAA 行。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     draws: list = []
     for art in soup.find_all(TAG_ARTICLE):
@@ -1745,7 +1788,7 @@ def parse_mb_draws(html: str) -> list:
         score = None
         if len(scores) == 1:
             score = scores[0]
-        inv = None
+        inv = mb_total_of(body)
         if laas:
             inv = laas[0]
         draws.append({
@@ -1757,6 +1800,20 @@ def parse_mb_draws(html: str) -> list:
         })
     draws.sort(key=draw_date_of, reverse=True)
     return draws
+
+
+def mb_total_of(body: str) -> int | None:
+    """一期公告正文里官方写的整期 LAA 总数(「Of the N Letters of Advice to Apply issued in this draw」);
+    没有这句、或几句的数不一致 → None(不猜,也不拿分项加总顶 —— 理由见 constants.MB_TOTAL_RE)。
+    2026-09-27 九省体检立(第 272 期官方页缺 LAA 行,邀请数落空)。"""
+    totals: list = []
+    for x in MB_TOTAL_RE.findall(body):
+        n = int_of(x)
+        if n not in totals:
+            totals.append(n)
+    if len(totals) == 1:
+        return totals[0]
+    return None
 
 
 def mb_draw_of(x: MbDrawIn) -> dict:
@@ -2597,13 +2654,32 @@ def build_on_draws() -> None:
 
 
 def merge_draws(x: MergeDrawsIn) -> list:
-    """本轮解析结果并回历史(抽选是**只增不减的历史**,少了只可能是我们没解析到)。"""
+    """本轮解析结果并回历史(抽选是**只增不减的历史**,少了只可能是我们没解析到)。
+    2026-09-27 九省体检改判(Frank「问题太多了」「能用多 agent 修么」;ON 2026 年少一轮实撞):原先本轮行与旧行拼成一串、
+    按四格键(日期 / 通道 / 分 / 人数,draw_key_of)一起去重 —— 四格键本意是挡**跨轮重复**(上一轮已落盘的同一轮次,
+    这一轮又解析一次),却连本轮行彼此也去了:ON 2026-04-23 International Student 流 Southwestern 与 Central Ontario
+    (excluding GTA) 两个区域轮都是 84 分 173 份,四格全同,后一行被吃掉(官方 invitations 页 2026 表 55 行 13,278 份,
+    落盘 54 行 13,105)。改为三条:
+    ① 本轮行彼此、旧行彼此只去**逐格全同**的重复(draw_row_key_of;同一行被解析两次,如两页交叠);区域 / 注不同的是两轮;
+    ② 四格键只用来拿本轮行挡旧行(跨轮语义一字未改);
+    ③ 另挡「空格被本轮填上」的旧行(is_draw_covered):MB 第 272 期邀请数原先落空,解析修好后本轮给 104,旧行四格键里
+       人数是 None,与本轮对不上,不挡就在历史里留成两行。
+    修前修后对照(crawl 缓存各省抽选页当本轮 + 当前 draws-<省>.json 当历史):AB 80 / BC 45 / NB 49 / NL 29 / PE 9 行
+    逐行不变,MB 88 行不变(第 272 期那格由空变 104),ON 256 → 257(补回 Central Ontario 那一行)。"""
     prev = (x.old.get(x.prov) or {}).get(K_DRAWS) or []
     seen: set = set()
+    blocked: set = set()
     out: list = []
-    for d in list(x.new) + list(prev):
-        k = draw_key_of(d)
+    for d in x.new:
+        k = draw_row_key_of(d)
         if k in seen:
+            continue
+        seen.add(k)
+        blocked.add(draw_key_of(d))
+        out.append(d)
+    for d in prev:
+        k = draw_row_key_of(d)
+        if k in seen or draw_key_of(d) in blocked or is_draw_covered(DrawCoverIn(old=d, new=x.new)):
             continue
         seen.add(k)
         out.append(d)
@@ -2613,8 +2689,30 @@ def merge_draws(x: MergeDrawsIn) -> list:
     return out
 
 
+def draw_row_key_of(d: dict) -> str:
+    """抽选行的逐格全同键(全部键值按键名排序后序列化):只有同一行被解析了两次才相等。
+    2026-09-27 九省体检立:并回历史时本轮行彼此、旧行彼此只去这种重复(四格键会把同日同流同分同人数的两个区域轮当成一轮)。"""
+    return json.dumps(d, sort_keys=True)
+
+
+def is_draw_covered(x: DrawCoverIn) -> bool:
+    """旧行是不是本轮某一行的残缺版:旧行有值的每一格,本轮那一行都逐格相同(旧行空着的格本轮填上了)。
+    2026-09-27 九省体检立:MB 第 272 期邀请数原先落空,解析修好后本轮给 104 —— 四格键把人数算在里头,None 与 104
+    对不上,旧行不挡就在历史里留成两行。只看旧行有值的格:本轮多出来的格(后加的列)不妨碍认成同一行。"""
+    for d in x.new:
+        same = True
+        for k, v in x.old.items():
+            if v is not None and d.get(k) != v:
+                same = False
+                break
+        if same:
+            return True
+    return False
+
+
 def merged_draws_of(x: MergeDrawsIn) -> list:
-    """并回历史的分派(2026-09-26):官方会回头改数的省(DRAWS_REVISABLE_PROVS)走「日期 + stream」覆盖式,其余照旧四格去重。"""
+    """并回历史的分派(2026-09-26):官方会回头改数的省(DRAWS_REVISABLE_PROVS)走「日期 + stream」覆盖式,其余照旧四格去重。
+    2026-09-27 起「四格去重」只管拿本轮行挡旧行,本轮行彼此只去逐格全同的重复(改判缘由见 merge_draws)。"""
     if x.prov in DRAWS_REVISABLE_PROVS:
         return merge_revisable_draws(x)
     return merge_draws(x)
@@ -7622,16 +7720,22 @@ def owp_refreshed_of(x: OwpRefreshIn) -> str | None:
 # =========================================================================
 from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一块(同段35–39 先例)
 from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest  # noqa: E402 — 同上
+from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
 
 
 def run_tests() -> None:
     """test 步入口:跑本域自测(用例集住 scheme 的 OnWorkforceWatchTest,库垫片先例 indexing / gate);
     有失败 sys.exit(1) —— 门接住后记本步失败、返回码 1。门循环的自测 ChainKeepGoingTest 2026-09-26 随 run_steps
     搬去 door 叶(`python etl/door/main.py --only test`)。
-    2026-09-27 加 SkDirectApplyTest(萨省「持 offer 直接申请、不经 EOI 抽选」原句的认句与拒猜)。"""
+    2026-09-27 加 SkDirectApplyTest(萨省「持 offer 直接申请、不经 EOI 抽选」原句的认句与拒猜)。
+    同日九省体检修复批再加三组:MbDrawTotalTest(MB 缺 LAA 行认整期总数句)、DrawMergeTest(并回历史:本轮行彼此只去
+    逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkDirectApplyTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MbDrawTotalTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawMergeTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

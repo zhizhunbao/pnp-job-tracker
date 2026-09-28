@@ -12,6 +12,7 @@ import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍
 2026-09-26 起末段另住 ON 劳动力优先表守望的自测用例集(unittest 要求以 TestCase 子类交付用例 ——
 「不用 class」的外部库例外,先例 gate.scheme / indexing.scheme;跑法 `python etl/pnp/main.py --only test`);
 被测的 pnp.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
+2026-09-27 九省体检修复批再住三组:MbDrawTotalTest / DrawMergeTest / SkAgriStarTest(同一个 test 步跑)。
 """
 import json
 import re
@@ -24,6 +25,9 @@ from typing import Callable, Iterator, Protocol
 from pnp.constants import (
     FACTOR_EOI_DRAW, GQ_SKIP_TAGS, ON_WORKFORCE_URL, OP_NONE, OWP_TABLE, OWP_V_BLOCKED, OWP_V_NO_CACHE,
     OWP_V_NO_QUOTE, OWP_V_OK, SKR_DIRECT_STREAM, SKR_DIRECT_URL,
+)
+from pnp.constants import (  # 2026-09-27 九省体检修复批的三组自测用
+    DRAWS_ON_INV_URL, K_SECTOR_QUOTE, SK_AGRI_SECTOR_QUOTE, SK_NOC_PATTERNS, SK_STREAMS,
 )
 
 
@@ -340,6 +344,17 @@ class MergeDrawsIn:
 
     old: dict
     """上一轮的 provinces 块。"""
+
+
+@dataclass
+class DrawCoverIn:
+    """is_draw_covered() 入参:一条旧抽选行 + 本轮解析到的全部行(2026-09-27 九省体检:空格被本轮填上的旧行不留两行)。"""
+
+    old: dict
+    """上一轮落盘的一条抽选行。"""
+
+    new: list
+    """本轮解析到的抽选行。"""
 
 
 @dataclass
@@ -716,6 +731,20 @@ class NocLinesIn:
 
     patterns: list
     """按优先序排的职业行正则(首个命中为准)。"""
+
+
+@dataclass
+class SkSectorIn:
+    """sk_sector_free() 入参:农业通道页去掉带星号的职业码(2026-09-27 九省体检)。"""
+
+    md: str
+    """页面 md(同 parse_noc_lines 吃的那份)。"""
+
+    occs: list
+    """parse_noc_lines 解析出的职业行(星号已剥)。"""
+
+    quote: str
+    """星号脚注原句(SK_STREAMS 那条的 sectorQuote 键)。"""
 
 
 @dataclass
@@ -1941,4 +1970,257 @@ class SkDirectApplyTest(unittest.TestCase):
         got = fn.sk_direct_reqs(txt)
         self.assertEqual(got.problems, [])
         self.assertEqual(got.rows[0]["valueText"], self.QUOTE)
+
+
+class MbDrawTotalTest(unittest.TestCase):
+    """MB 抽选公告缺「LAA issued」行时认整期总数句自测(2026-09-27 九省体检:第 272 期邀请数落空,MB 全年少 104)。
+    纯函数用例照真页(抽选索引页)的切法现造,不联网不读仓;金标只读 crawl 缓存里的两期真页与月度页(本机没有缓存就跳过)。"""
+
+    HEAD = ('<article class="post"><h2 class="entry-title"><a href="#">Expression of Interest Draw #{num}</a></h2>'
+            '<div class="entry-meta"><span class="published">{date}</span></div><div class="ast-excerpt-container">'
+            '<h3 class="wp-block-heading"><strong>Skilled Worker Stream</strong></h3>'
+            '<p>Profiles submitted under the Skilled Worker in Manitoba pathway or the Skilled Worker Overseas pathway '
+            'that declared being directly invited by the MPNP under a strategic recruitment initiative.</p>')
+    """一期公告的开头(标题、日期、段标题、段说明;照 2026-06 两期真页原句)。"""
+
+    SPLIT = ('<p>The following numbers of Letters of Advice to Apply were issued to candidates declaring receipt of an '
+             'Invitation to Apply (ITA) under the strategic recruitment initiatives listed below:</p>'
+             '<ul class="wp-block-list"><li>Employer Services: <strong>{a}</strong></li>'
+             '<li>Ethnocultural Communities: <strong>{b}</strong></li>'
+             '<li>Francophone Community: <strong>{c}</strong></li>'
+             '<li>Regional Communities: <strong>{d}</strong></li>'
+             '<li>Temporary Public Policy to Facilitate Work Permits for Prospective Provincial Nominee Program '
+             'Candidates (TPP): <strong>{e}</strong></li></ul>')
+    """五项定向分项(引导句 + 列表)。"""
+
+    TOTAL = ('<p>Of the <strong>{n}</strong> Letters of Advice to Apply issued in this draw, <strong>{m}</strong> were '
+             'issued to candidates who declared a valid Express Entry profile number and job seeker validation code.</p>')
+    """整期总数句。"""
+
+    LAA = '<ul class="wp-block-list"><li>Number of Letters of Advice to Apply issued: <strong>{n}</strong></li></ul>'
+    """段内的 LAA 行(第 272 期缺的就是它)。"""
+
+    TAIL = "</div></article>"
+    """一期公告的收尾。"""
+
+    def page_of(self, body: str) -> str:
+        """把若干期公告包进一页索引页。"""
+        return "<html><body><main>" + body + "</main></body></html>"
+
+    def test_total_sentence_golden(self) -> None:
+        """金标(第 272 期真页的形:没有 LAA 行、有总数句 104、分项 40 / 6 / 17 / 2 / 39):恰好一行,邀请数 104,
+        通道 / 注 / 分数照老逻辑;同页第 273 期(LAA 行 124 + 总数句 124)照旧一段一行取 LAA 行,不因总数句多出一行。"""
+        from pnp import functions as fn
+        d272 = (self.HEAD.format(num=272, date="June 4, 2026") + self.SPLIT.format(a=40, b=6, c=17, d=2, e=39)
+                + self.TOTAL.format(n=104, m=15) + self.TAIL)
+        d273 = (self.HEAD.format(num=273, date="June 18, 2026") + self.LAA.format(n=124)
+                + self.SPLIT.format(a=49, b=9, c=15, d=19, e=32) + self.TOTAL.format(n=124, m=22) + self.TAIL)
+        got = fn.parse_mb_draws(self.page_of(d273 + d272))
+        want = [("2026-06-18", "Skilled Worker Stream", "Draw #273", None, 124),
+                ("2026-06-04", "Skilled Worker Stream", "Draw #272", None, 104)]
+        self.assertEqual([(r["date"], r["stream"], r["note"], r["score"], r["invitations"]) for r in got], want)
+        self.assertEqual(fn.mb_total_of("Of the\n1,874\nLetters of Advice to Apply issued in this draw,"), 1874)
+
+    def test_refuses_to_guess(self) -> None:
+        """没有 LAA 行也没有总数句 → 邀请数留空(不拿分项加总 40+6+17+2+39 顶);几句总数对不上 → 留空;空正文 → 留空。"""
+        from pnp import functions as fn
+        bare = self.HEAD.format(num=272, date="June 4, 2026") + self.SPLIT.format(a=40, b=6, c=17, d=2, e=39) + self.TAIL
+        self.assertIsNone(fn.parse_mb_draws(self.page_of(bare))[0]["invitations"])
+        two = (self.HEAD.format(num=272, date="June 4, 2026") + self.TOTAL.format(n=104, m=15)
+               + self.TOTAL.format(n=105, m=15) + self.TAIL)
+        self.assertIsNone(fn.parse_mb_draws(self.page_of(two))[0]["invitations"])
+        same = (self.HEAD.format(num=272, date="June 4, 2026") + self.TOTAL.format(n=104, m=15)
+                + self.TOTAL.format(n=104, m=15) + self.TAIL)
+        self.assertEqual(fn.parse_mb_draws(self.page_of(same))[0]["invitations"], 104)
+        self.assertIsNone(fn.mb_total_of(""))
+
+    def test_real_pages(self) -> None:
+        """金标:crawl 缓存里第 272 / 273 期的真页各解析出 104 / 124,两期之和等于官方月度页 6 月那格 SW LAAs(228)。"""
+        from pnp import functions as fn
+        tpl = "https://immigratemanitoba.com/2026/06/expression-of-interest-draw-{num}"
+        got = {}
+        for num in (272, 273):
+            hit = fn.get_cached_page(tpl.format(num=num))
+            if hit.html is None:
+                self.skipTest("crawl 缓存里没有 MB 第 272 / 273 期公告页(本机未跑 crawl)")
+            rows = fn.parse_mb_draws(hit.html)
+            self.assertEqual(len(rows), 1, num)
+            got[num] = rows[0]["invitations"]
+        self.assertEqual(got, {272: 104, 273: 124})
+        month = fn.get_cached_page("https://immigratemanitoba.com/resources/data/monthly-data-2026")
+        if month.html is None:
+            self.skipTest("crawl 缓存里没有 MB 2026 月度页")
+        june = None
+        for sec in fn.sectioned_tables(fn.mb_soup_of(month.html)):
+            grid = sec[1]
+            if grid and "SW LAAs" in grid[0]:
+                for row in grid[1:]:
+                    if row[0] == "June":
+                        june = fn.int_of(row[grid[0].index("SW LAAs")])
+        self.assertEqual(june, 228)
+        self.assertEqual(got[272] + got[273], june)
+
+
+class DrawMergeTest(unittest.TestCase):
+    """抽选并回历史自测(2026-09-27 九省体检:ON 同日同流同分同人数的两个区域轮被四格键吃掉一行;MB 第 272 期修好后
+    旧的空行不许留成第二行)。性质用例全程现造行,不联网不读仓;金标读 crawl 缓存里的 ON invitations 真页(没有就跳过)。"""
+
+    SW = {"date": "2026-04-23", "stream": "Employer Job Offer: International Student stream",
+          "note": "Targeted draw for Southwestern Ontario.", "score": 84, "invitations": 173}
+    """ON 2026-04-23 的 Southwestern 那一轮(注截短;四格与下一行全同)。"""
+
+    CEN = {"date": "2026-04-23", "stream": "Employer Job Offer: International Student stream",
+           "note": "Targeted draw for Central Ontario (excluding GTA).", "score": 84, "invitations": 173}
+    """同日同流同分同人数的 Central Ontario 那一轮(原先被吃掉的就是它)。"""
+
+    OLDER = {"date": "2025-11-06", "stream": "Employer Job Offer: Foreign Worker stream", "note": "", "score": 55,
+             "invitations": 400}
+    """页面已下架的旧轮(只在历史里)。"""
+
+    def merge(self, new: list, prev: list) -> list:
+        """跑一次被测的并回(省码 ON;旧块照 draws-<省>.json 的 provinces 形)。"""
+        from pnp import functions as fn
+        return fn.merge_draws(MergeDrawsIn(prov="ON", new=new, old={"ON": {"draws": prev}}))
+
+    def test_same_round_twins_kept(self) -> None:
+        """本轮两行四格全同、注不同 → 两行都收;历史里已有其中一行 → 不重复。"""
+        got = self.merge([self.SW, self.CEN], [])
+        self.assertEqual(len(got), 2)
+        got = self.merge([self.SW, self.CEN], [self.SW, self.OLDER])
+        self.assertEqual(sorted(r["note"] for r in got),
+                         sorted([self.SW["note"], self.CEN["note"], self.OLDER["note"]]))
+
+    def test_cross_round_duplicates_blocked(self) -> None:
+        """跨轮语义不变:历史与本轮同一行只留一行;本轮没有的旧轮照留;逐格全同的重复(本轮内、历史内)只留一行;
+        四格键相同的旧行照旧被本轮挡掉(本轮的注改了写法也不重复)。"""
+        self.assertEqual(self.merge([self.SW], [self.SW]), [self.SW])
+        self.assertEqual(len(self.merge([self.SW, self.SW], [self.OLDER, self.OLDER])), 2)
+        renamed = dict(self.SW)
+        renamed["note"] = "Targeted draw for Southwestern Ontario. Please refer to the OINP Program Updates page."
+        self.assertEqual(self.merge([renamed], [self.SW]), [renamed])
+
+    def test_history_twins_survive(self) -> None:
+        """历史里两行四格全同、注不同,本轮页面上都没了(下架) → 两行都留(不在历史里再吃一次)。"""
+        got = self.merge([self.OLDER], [self.SW, self.CEN])
+        self.assertEqual(len(got), 3)
+
+    def test_filled_cell_supersedes_old(self) -> None:
+        """旧行空着的格本轮填上了(MB 第 272 期:邀请数 None → 104)→ 只留本轮那行;旧行有值的格与本轮不同(注不同、
+        人数不同)→ 是另一轮,照留。"""
+        old: dict = {"date": "2026-06-04", "stream": "Skilled Worker Stream", "note": "Draw #272", "score": None,
+                     "invitations": None}
+        new: dict = dict(old)
+        new["invitations"] = 104
+        self.assertEqual(self.merge([new], [old]), [new])
+        other: dict = dict(old)
+        other["note"] = "Draw #271"
+        self.assertEqual(len(self.merge([new], [other])), 2)
+        counted: dict = dict(new)
+        counted["invitations"] = 96
+        self.assertEqual(len(self.merge([new], [counted])), 2)
+
+    def test_real_on_page(self) -> None:
+        """金标:crawl 缓存里的 ON invitations 真页,2026-01-01 至 2026-09-27(核对当日)共 55 行、合计 13,278 份(官方表
+        逐行加总);并回空历史后 55 行全在,其中 2026-04-23 International Student 流 84 分 173 份的有两行(Southwestern、
+        Central Ontario)。只数到核对当日:之后官方每发一轮,页上多一行,金标不跟着动;页上已不列那两行(归档)就跳过。"""
+        from pnp import functions as fn
+        hit = fn.get_cached_page(DRAWS_ON_INV_URL)
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有 ON invitations 页(本机未跑 crawl)")
+        rows = self.merge(fn.parse_on_draws(hit.html), [])
+        y2026 = []
+        for r in rows:
+            if "2026-01-01" <= r["date"] <= "2026-09-27":
+                y2026.append(r)
+        seen_twin_day = False
+        for r in y2026:
+            if r["date"] == self.SW["date"]:
+                seen_twin_day = True
+        if seen_twin_day is False:
+            self.skipTest("ON invitations 页上已不列 2026-04-23 那一轮(归档)")
+        self.assertEqual(len(y2026), 55)
+        total = 0
+        twins = 0
+        for r in y2026:
+            total += r["invitations"]
+            if (r["date"], r["stream"], r["score"], r["invitations"]) == (self.SW["date"], self.SW["stream"], 84, 173):
+                twins += 1
+        self.assertEqual(total, 13278)
+        self.assertEqual(twins, 2)
+
+
+class SkAgriStarTest(unittest.TestCase):
+    """SK 农业通道带星号职业码不收自测(2026-09-27 九省体检:星号 = 担保雇主须属 NAICS 11 / 311 / 33311 / 411 / 49313,
+    本站判不了,照 AB_TOURISM_GENERIC 先例不收)。纯函数用例现造 md(照真页 md 的表格行写法),金标读 crawl 缓存里的真页;
+    变异探针改的是官方页上的星号(本站的「表」就是星号本身)。"""
+
+    KEPT = {"84120", "85100", "85101", "85103"}
+    """手写金标:2026-09-27 真页上不带星号的四个码(畜牧 / 牲畜 / 收割 / 苗圃温室)。"""
+
+    STARRED = {"14401", "75101", "94140", "94141", "94143", "94204", "95106"}
+    """手写金标:同日真页上带星号的七个码(仓管、搬运、食品加工三码、机械装配、食品加工普工)。"""
+
+    MD = ("The following agricultural and related occupations are eligible through this stream:\n"
+          "| NOC | Description |\n| --- | --- |\n"
+          "| 14401 | Storekeepers and partspersons* |\n| 75101 | Material handlers* |\n"
+          "| 84120 | Specialized livestock workers and farm machinery operators |\n| 85100 | Livestock labourers |\n"
+          "| 95106 | Labourers in food and beverage processing* |\n"
+          "*Occupations that require the sponsoring employer to be under:\n"
+          "NAICS 11 – Agriculture, forestry, fishing and hunting\nNAICS 311 – Food manufacturing\n")
+    """照真页 md 写法现造的一段(表格行 + 星号脚注)。"""
+
+    def occs_of(self, md: str) -> list | None:
+        """同 build_sk 的前两步:按 SK 行写法解析 → 去星号码;返回留下的码(自校没过返回 None)。"""
+        from pnp import functions as fn
+        occs = fn.parse_noc_lines(NocLinesIn(md=md, patterns=SK_NOC_PATTERNS))
+        kept = fn.sk_sector_free(SkSectorIn(md=md, occs=occs, quote=SK_AGRI_SECTOR_QUOTE))
+        if kept is None:
+            return kept
+        out = []
+        for o in kept:
+            out.append(o["noc"])
+        return out
+
+    def test_synthetic_golden(self) -> None:
+        """带星号的三码不收、不带的两码照收;星号码认的是职业名尾巴上的星号(名字已剥掉星号的解析结果不受影响)。"""
+        self.assertEqual(self.occs_of(self.MD), ["84120", "85100"])
+
+    def test_refuses_to_guess(self) -> None:
+        """脚注原句不在(措辞变了)→ None;脚注在却一个星号码都没认出(版式变了)→ None;两种都保留旧表。"""
+        no_quote = self.MD.replace("*Occupations that require the sponsoring employer to be under:", "* Employer rules:")
+        self.assertIsNone(self.occs_of(no_quote))
+        no_star = self.MD.replace("* |", " |")
+        self.assertIsNone(self.occs_of(no_star))
+
+    def test_only_agri_carries_quote(self) -> None:
+        """只有农业那条带 sectorQuote 键:医疗页的星号意思不同(「也可走 Employment Offer」),不许被这条规则去码。"""
+        carried = []
+        for s in SK_STREAMS:
+            if K_SECTOR_QUOTE in s:
+                carried.append(s["out"])
+        self.assertEqual(carried, ["sk-agri.json"])
+
+    def test_real_page(self) -> None:
+        """金标:crawl 缓存里的农业通道真页 → 带星号七码全部不收,留下四码;另跑一遍变异探针 —— 把 75101 的星号去掉、
+        给 84120 加上星号,留下的码当场跟着变(金标对照能拦住官方改星号 / 解析漏星号)。官方真改了星号,这条会红:
+        核对官方页后改 KEPT / STARRED 两份金标(这正是它要拦的事)。"""
+        from pnp import functions as fn
+        url = SK_STREAMS[2]["url"]
+        hit = fn.get_cached_page(url)
+        if hit.html is None:
+            self.skipTest("crawl 缓存里没有 SK 农业通道页(本机未跑 crawl)")
+        md = fn.convert_md(fn.ConvertIn(html=hit.html, url=url, selector=None, removes=()))
+        self.assertEqual(fn.sk_starred_nocs(md), self.STARRED)
+        kept = self.occs_of(md)
+        if kept is None:
+            self.fail("真页自校没过(脚注原句或星号码认不出)")
+        self.assertEqual(set(kept), self.KEPT)
+        mutated = md.replace("| Material handlers* |", "| Material handlers |").replace(
+            "| Specialized livestock workers and farm machinery operators |",
+            "| Specialized livestock workers and farm machinery operators* |")
+        self.assertNotEqual(mutated, md)
+        kept = self.occs_of(mutated)
+        if kept is None:
+            self.fail("变异后的页自校没过(星号还在,不该判改版)")
+        self.assertEqual(set(kept), (self.KEPT - {"84120"}) | {"75101"})
 

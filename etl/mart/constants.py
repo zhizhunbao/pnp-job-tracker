@@ -648,7 +648,12 @@ PROV_OFFER_BLOCKED = {
 """雇主 offer 省提名对 offer 形态的官方门槛:省 → 过不了的工时 / 雇佣期取值(employmentHours 的 part;employmentTerm 的
 term / seasonal / casual —— 两格值域不相交,并在一张表)。只卡源写明的值:空串 = 没标注,放行(源没写 ≠ 兼职);
 QC、NU 不在表里:两地不属 PNP,pnp_eligible 按 NON_PNP_PROV 先判掉(依据见该常量)。逐省原句(crawl 缓存,2026-09-26 复核):
-ON「The job offer must be for a full-time and permanent position.」ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream
+ON「Your employer’s job offer must: be for a full-time and permanent position in Ontario」
+  ontario.ca/page/ontario-workforce-priority-stream(「Employer’s job offer requirements」小节的第一条,crawl 缓存 on-oinp
+  2026-09-27 原样)。2026-09-27 九省体检换出处(Frank「问题太多了」「能用多 agent 修么」):原引(下一行)那页已归档,页上写
+  「this stream was closed as of May 30, 2026, as part of the OINP redesign」,不能再当现行门槛的出处;新页同样是
+  全职 + 永久,ON 这一格卡的四个值不变。原引原文保留作沿革 ——
+  原引:「The job offer must be for a full-time and permanent position.」ontario.ca/page/oinp-employer-job-offer-foreign-worker-stream
   (International Student 页同句;2026 改制页 TEER 0-3、TEER 4-5 两条路都写「with a full-time and permanent job offer」)
 BC「Must have a full-time, indeterminate (no end date) job offer from an eligible B.C. employer」
   welcomebc.ca/immigrate-to-b-c/skills-immigration(Health Authority 同句)
