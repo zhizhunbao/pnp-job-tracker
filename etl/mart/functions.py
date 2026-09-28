@@ -239,8 +239,10 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
     FIELD_CITY, FIELD_HOURS, FIELD_NOC, FIELD_PROVINCE, FIELD_SALARY, FIELD_TERM, K_NOC_FROM, K_P_DATE, K_P_EMPLOYER,
     K_P_EXT, K_P_HAVE, K_P_MISSING, K_P_ORIGIN, K_P_STATED, K_P_TEXT, K_P_TITLE, K_P_URL, K_PENDING_JOBS, K_STATED_NONE,
     NOC_FROM_MODEL, NOC_FROM_RULE, NOC_FROM_SOURCE, OUT_PENDING_JOBS, PENDING_DONE_TPL,
+    HELD_DONE_TPL, HELD_GUARD_TPL, HELD_MAX_RATIO,
 )
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
+from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -4527,6 +4529,8 @@ def to_mart_tables() -> dict:
     seed 从此只读 mart 直接灌库,不再在加载器里东拼西凑(中介过滤/去重/评分关联都下沉到这)。
     2026-09-28 缺数据修复批:dict 里多一项 pending_jobs(待修清单,唯一不是表的一项),build_mart 落盘前摘走写进
     processed/repair/,不进 data/mart/;本批闸不接,jobs 照旧装全部岗。
+    同日晚接闸(Frank「确认,下线吧」):待修清单里的岗在派生维度 / 统计表之前就从 ctx.jobs 拿掉,jobs 只装齐全的;
+    多一张对账表 held_jobs(扣下名单),seed 照它关掉在架的。seen_ids 不动。
     """
     ctx = new_mart_ctx()
     collect_ats_rows(ctx)
@@ -4538,6 +4542,9 @@ def to_mart_tables() -> dict:
     fill_jd_bodies(ctx)
     fill_apply_emails(ctx)
     say_mart_tallies(ctx)
+    pending = pending_jobs_of(ctx)
+    split = held_split_of(HeldSplitIn(jobs=ctx.jobs, pending=pending))
+    ctx.jobs = split.kept
     noc_i18n = load_i18n(I18N_NOC_FILE)
     city_i18n = load_i18n(I18N_CITY_FILE)
     ee_draws = load_ee_draws()
@@ -4545,7 +4552,7 @@ def to_mart_tables() -> dict:
     universe = load_noc_universe()
     return {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
-        "pending_jobs": pending_jobs_of(ctx),
+        "pending_jobs": pending, "held_jobs": split.held,
         "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
         "provinces": build_provinces(prov_info()),
         "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n,
@@ -4673,6 +4680,29 @@ def have_fields_of(x: PendingRowIn) -> dict:
 def pending_order_of(row: dict) -> str:
     """待修行排序键:发布日 ISO 串(新的先修)。"""
     return row.get(K_P_DATE) or ""
+
+
+def held_split_of(x: HeldSplitIn) -> HeldSplitOut:
+    """接闸(2026-09-28 Frank「只要数据不全的都不上」「确认,下线吧」):待修清单里的岗扣下 —— 不进 jobs.json,
+    出一行 {externalId} 进扣下名单交 seed 关掉在架的;其余照旧上线。扣下超过在招的 HELD_MAX_RATIO,
+    当判「全」出错,抛错停轮(不落盘不上传,线上保持上一版)。"""
+    held_ext: set = set()
+    for p in x.pending:
+        held_ext.add(p[K_P_EXT])
+    total = len(x.jobs)
+    if total > 0 and len(held_ext) > total * HELD_MAX_RATIO:
+        raise RuntimeError(HELD_GUARD_TPL.format(held=len(held_ext), total=total, pct=len(held_ext) / total,
+                                                 cap=HELD_MAX_RATIO))
+    kept: list = []
+    for row in x.jobs:
+        if (row.get(K_EXTERNAL_ID) or "") not in held_ext:
+            kept.append(row)
+    held: list = []
+    for ext in sorted(held_ext):
+        held.append({K_EXTERNAL_ID: ext})
+    if total > 0:
+        say(HELD_DONE_TPL.format(held=len(held), pct=len(held) / total, kept=len(kept)))
+    return HeldSplitOut(kept=kept, held=held)
 
 
 def write_pending_jobs(rows: list) -> None:

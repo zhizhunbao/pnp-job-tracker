@@ -2936,7 +2936,8 @@ OUT_PENDING_JOBS = paths.PROCESSED_REPAIR / "pending_jobs.json"
 """待修清单(2026-09-28 Frank「jobs 信息齐全的一个 json 不全的另一个 json」「先做拆分」):六格不全的在招岗,每条带缺哪几格、
 算数的已有格与原帖正文,Opus 读它修(设计稿 docs/design/缺数据不上线与Opus修复-20260928.md)。写 processed/ 不写 mart/ ——
 mart 目录整个会被 upload 传去 cms,这份纯属 ETL 内部协作(同 OUT_MART_OPEN_IDS 的判法);每条带正文,大,不进 git。
-本批闸不接:jobs.json 照旧装全部岗,线上不变;接闸(不全的不进 jobs.json)是后面一批。"""
+本批闸不接:jobs.json 照旧装全部岗,线上不变;接闸(不全的不进 jobs.json)是后面一批。
+同日晚接闸(Frank「确认,下线吧」):清单里的岗不进 jobs.json,另出扣下名单 held_jobs 交 seed 关掉在架的(见 held_split_of)。"""
 
 K_PENDING_JOBS = "pending_jobs"
 """待修清单在 to_mart_tables 产出 dict 里的键 —— 唯一不是表的一项:build_mart 落盘前摘走写 OUT_PENDING_JOBS,不进 data/mart/。"""
@@ -2995,6 +2996,16 @@ K_P_TEXT = "text"
 
 PENDING_DONE_TPL = "  待修清单:不全 {n} 条(按来源 {by_origin};按格 {by_field})→ {out}"
 """待修清单落盘留痕。"""
+
+HELD_MAX_RATIO = 0.45
+"""扣下比例的保险丝(2026-09-28 Frank 确认下线时说好的):一轮算出要扣下的岗超过在招的这个比例,当判「全」的程序出了错,
+整轮停下不落盘(不上传、不灌库),防止一次清空职位板。接闸当天实测 35%(23,861 / 67,796)。"""
+
+HELD_GUARD_TPL = "扣下 {held} / {total} 条(占 {pct:.1%}),超过保险丝 {cap:.0%},当判「全」出错,整轮停下不落盘"
+"""保险丝熔断时抛出的话。"""
+
+HELD_DONE_TPL = "  扣下不全岗 {held} 条(占 {pct:.1%}),jobs.json 只装齐全的 {kept} 条;已在架的由 seed 照 held_jobs 关掉"
+"""扣下留痕。"""
 
 
 # =========================================================================

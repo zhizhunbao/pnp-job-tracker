@@ -2063,6 +2063,28 @@ class PendingRowIn:
     """雇主名(公司行的 name)。"""
 
 
+@dataclass
+class HeldSplitIn:
+    """held_split_of() 入参(2026-09-28 接闸)。"""
+
+    jobs: list
+    """装配好的全部岗位行。"""
+
+    pending: list
+    """待修清单(pending_jobs_of 算的)。"""
+
+
+@dataclass
+class HeldSplitOut:
+    """held_split_of() 的产出。"""
+
+    kept: list
+    """六格齐全、上线的岗位行(进 jobs.json)。"""
+
+    held: list
+    """扣下名单行 [{externalId}](进 held_jobs.json,seed 照它关掉在架的)。"""
+
+
 # =========================================================================
 # 15. 榜单(E5-02)
 # =========================================================================
@@ -4544,3 +4566,23 @@ class MartPendingTest(unittest.TestCase):
         self.assertEqual(out["stated_none"], {"salary": "À discuter"})
         self.assertEqual((out["title"], out["employer"]), ("Cook & Helper", "A & B Inc."))
         self.assertEqual(out["text"], self.full["description"])
+
+    def test_held_split(self) -> None:
+        """接闸:清单里的岗不进上线行、按 externalId 出扣下名单(排序、去重);上线行保持原序。"""
+        from mart import functions as fn
+        jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}, {"externalId": "e"}]
+        pending = [{"ext": "d"}, {"ext": "b"}, {"ext": "b"}]
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=pending))
+        self.assertEqual(out.kept, [{"externalId": "a"}, {"externalId": "c"}, {"externalId": "e"}])
+        self.assertEqual(out.held, [{"externalId": "b"}, {"externalId": "d"}])
+        empty = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[]))
+        self.assertEqual((empty.kept, empty.held), (jobs, []))
+
+    def test_held_guard(self) -> None:
+        """保险丝:扣下超过在招的 45% 抛错停轮(判「全」出错时不清空职位板);正好一半以下放行。"""
+        from mart import functions as fn
+        jobs = [{"externalId": "a"}, {"externalId": "b"}, {"externalId": "c"}, {"externalId": "d"}]
+        with self.assertRaises(RuntimeError):
+            fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}, {"ext": "b"}]))
+        out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}]))
+        self.assertEqual(len(out.kept), 3)
