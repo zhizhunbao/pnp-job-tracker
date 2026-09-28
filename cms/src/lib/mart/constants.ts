@@ -449,6 +449,11 @@ export const TBL_JOBS = 'jobs'
 export const TBL_DEAD_EXT = 'dead_ext'
 
 /**
+ * 扣下名单的事务内临时表(建表语句在 SQL.TEMP_HELD_EXT;2026-09-28 缺数据不上线)。
+ */
+export const TBL_HELD_EXT = 'held_ext'
+
+/**
  * mart 文件:本轮源数据里真实见到、未判死的全部 posting id(2026-08-04 数据销毁修:
  * 展示去重与下架对账解耦,09 另出这张名单)。
  */
@@ -475,6 +480,11 @@ export const COUNT_POOL_REFRESH = 'employerPoolOpenRefreshed'
  * /seed 响应里「截止日已过的板帖下架」那一格的键(2026-09-25 过期兜底;值 = 下架条数,取舍见 SQL.CLOSE_PAST_DEADLINE)。
  */
 export const COUNT_PAST_DEADLINE = 'closedPastDeadline'
+
+/**
+ * /seed 响应里「数据不全扣下」那一格的键(2026-09-28 缺数据不上线;值 = 这一轮关掉的在架岗数,取舍见 SQL.CLOSE_HELD_EXT)。
+ */
+export const COUNT_HELD = 'closedHeld'
 
 /**
  * /seed 响应里「本轮不在板仓的板帖下架」那一格的键(2026-09-26 /fe 清死帖;值 = 下架条数,取舍见 SQL.CLOSE_UNSEEN_BOARD)。
@@ -506,6 +516,13 @@ export const ISO_DATE_LEN = 10
  * mart 文件:verify_expired 逐帖 GET 实测判死的岗(2026-08-03,立即下架不等 30 天)。
  */
 export const MART_CLOSED_JOBS = 'closed_jobs'
+
+/**
+ * mart 文件:数据不全、扣下待修的岗(2026-09-28 Frank「只要数据不全的都不上。等本地我用 opus 修完才上」;
+ * 设计稿 docs/design/缺数据不上线与Opus修复-20260928.md 第三节)。只有 externalId;已在架的这一轮关掉,
+ * 没上过架的本来就不在 jobs.json 里。修好后回到 jobs.json,upsert 自己把它转回在招、清掉 closed_at。
+ */
+export const MART_HELD_JOBS = 'held_jobs'
 
 // =========================================================================
 // 4. 列白名单(snake_case,与库列逐字对齐;⚠️ 新列的 DDL 警告挂在各自 JSDoc)
@@ -796,3 +813,8 @@ export const COLS_JOBS_COALESCE = ['description', 'eligibility_flag', 'eligibili
  * dead_ext 临时表列(实测判死名单)。
  */
 export const COLS_DEAD_EXT = ['external_id', 'closed_at']
+
+/**
+ * held_ext 临时表列(扣下名单,只有 externalId;2026-09-28)。
+ */
+export const COLS_HELD_EXT = ['external_id']

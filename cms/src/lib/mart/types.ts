@@ -342,6 +342,21 @@ export type CloseDeadIn = {
 }
 
 /**
+ * `closeHeldJobs` 的入参(2026-09-28 缺数据不上线)。
+ */
+export type CloseHeldIn = {
+  /**
+   * 事务连接。
+   */
+  client: DbClient
+
+  /**
+   * 本轮时间戳(写进 closed_at 与 updated_at)。
+   */
+  now: string
+}
+
+/**
  * `closePastDeadlineJobs` 的入参。
  */
 export type ClosePastDeadlineIn = {

@@ -2222,6 +2222,13 @@ export const CLOSE_DEAD_EXT = `UPDATE jobs SET status='closed', closed_at=COALES
            FROM dead_ext d WHERE d.external_id = jobs.external_id AND jobs.status='open'`
 
 /**
+ * 把 held_ext 名单里还在架的岗关掉(2026-09-28 缺数据不上线:六格不全的岗扣下待修,修好回到 jobs.json 时
+ * upsert 自己转回在招、清掉 closed_at)。在架 = open 或 campus(HireAC 校内板帖同样不全不上);closed_at 不覆盖已有。$1=时刻。
+ */
+export const CLOSE_HELD_EXT = `UPDATE jobs SET status='closed', closed_at=COALESCE(jobs.closed_at, $1), updated_at=$1
+           FROM held_ext h WHERE h.external_id = jobs.external_id AND jobs.status IN ('open', 'campus')`
+
+/**
  * 截止日已过的板帖关掉(2026-09-25 /fe hireAC,Frank「过期兜底做吧」)。$1=时刻。
  * 板帖过期原本只靠板域出仓 + CLOSE_STALE,而 CLOSE_STALE 要「发布满 30 天」才关:板域停轮时过期帖一直挂着,
  * 板域正常剔了也要再挂近一个月(当天实查:jobboom 35 / gcjobs 37 / careerbeacon 6 / hireac 89 条过了截止日仍在招)。
@@ -2369,6 +2376,11 @@ export const SEEN_EXT_INSERT = `INSERT INTO seen_ext (external_id) SELECT unnest
 export const TEMP_DEAD_EXT = `CREATE TEMP TABLE dead_ext (external_id text PRIMARY KEY, closed_at timestamptz) ON COMMIT DROP`
 
 /**
+ * 数据不全、扣下待修的岗(2026-09-28);主键让关岗的连接走索引探测,同 dead_ext
+ */
+export const TEMP_HELD_EXT = `CREATE TEMP TABLE held_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
+
+/**
  * 本轮抓到的全部 external_id,用于「本次未见」反连接
  */
 export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMARY KEY) ON COMMIT DROP`
@@ -2397,6 +2409,11 @@ export const SEED_STATE_CREATE = `CREATE TABLE IF NOT EXISTS seed_state (name te
  * 判死临时表灌完后喂统计(临时表无自动统计,给规划器选反连接计划)。
  */
 export const ANALYZE_DEAD_EXT = `ANALYZE dead_ext`
+
+/**
+ * 扣下临时表灌完后喂统计(同上;2026-09-28)。
+ */
+export const ANALYZE_HELD_EXT = `ANALYZE held_ext`
 
 /**
  * 见过临时表灌完后喂统计(同上)。

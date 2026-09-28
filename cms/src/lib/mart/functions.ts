@@ -44,6 +44,7 @@ import {
   CITY_NEW7_DAYS, COUNT_CITY_REFRESH, COUNT_PAST_DEADLINE, COUNT_POOL_REFRESH, COUNT_UNSEEN_ATS, COUNT_UNSEEN_BOARD,
   ATS_UNSEEN_DAYS, BOARD_ORIGINS, BOARD_SEEN_MIN_RATIO, COUNT_HIDDEN_DUPS, COUNT_UNCHANGED, EXPIRE_DAYS, HDR_SEED_TOKEN, HEX, ISO_DATE_LEN, JSON_EXT, LOCAL_MART_REL,
   MART_CLOSED_JOBS, MART_DIR_NAME,
+  COLS_HELD_EXT, COUNT_HELD, MART_HELD_JOBS, TBL_HELD_EXT,
   MART_SEEN_IDS, MD5, META_SUFFIX, MID_ALL, PART_INFIX, PG_UNDEFINED_TABLE, PROGRAM_PNP, SHARD_SEP, STATUS_CAMPUS, STATUS_OPEN,
   SUFFIX_NONE, TEXT_EMPTY,
   TBL_CITIES, TBL_COMPANIES, TBL_DESIGNATED_EMPLOYERS, TBL_DISTRICTS, TBL_DLI, TBL_DEAD_EXT, TBL_EE_CATEGORIES,
@@ -55,7 +56,7 @@ import {
   UTF8,
 } from './constants'
 import type {
-  BoolOut, CaughtError, CloseDeadIn, ClosePastDeadlineIn, CloseStaleIn, CloseUnseenAtsIn, CloseUnseenBoardIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
+  BoolOut, CaughtError, CloseDeadIn, CloseHeldIn, ClosePastDeadlineIn, CloseStaleIn, CloseUnseenAtsIn, CloseUnseenBoardIn, CompanyIdsOut, CountOut, DimSpecs, DoneOut, InsertBatchIn,
   RefreshCityIn, RefreshPoolIn,
   MartCell, MartDirsOut, MartPathsOut, MartRow, MartRows, MartValue, MaybeCode, MaybeCounterpart, PgCoded,
   RunSeedIn, RunSeedOut, SeedCompaniesIn, SeedDimsIn, SeedHashes, SeedHashesOut, SeedJobsIn, SeedNewsIn,
@@ -983,7 +984,7 @@ export function dimSpecs(): DimSpecs {
 
 /**
  * seed 一轮:维度表全量重建 → stats_daily 追加 → news upsert →(reset 时清事实表)→
- * companies/jobs 批量 upsert → 实测判死下架 → 截止日已过的板帖下架 → 「本次未见 + 超 30 天」下架 →
+ * companies/jobs 批量 upsert → 实测判死下架 → 截止日已过的板帖下架 → 数据不全扣下(2026-09-28)→ 「本次未见 + 超 30 天」下架 →
  * 本轮不在板仓的板帖下架(2026-09-26)→ 重复标记 →
  * 「本轮见过但没进 mart」打 is_dup(2026-09-06)→ 心跳。
  * 全程单事务:任一步失败整体回滚,不再有半写状态(老逐行版没有原子性)。
@@ -1012,6 +1013,7 @@ export async function runSeed(x: RunSeedIn): RunSeedOut {
     if (x.reset === false) {
       closedDead = await closeDeadJobs({ client: client, now: now })
       counts[COUNT_PAST_DEADLINE] = await closePastDeadlineJobs({ client: client, now: now })
+      counts[COUNT_HELD] = await closeHeldJobs({ client: client, now: now })
     }
     const martCount = seen.ids.length
     unionSeenIds(seen)
@@ -1304,6 +1306,45 @@ async function closeDeadJobs(x: CloseDeadIn): CountOut {
   await insertBatch({ client: x.client, table: TBL_DEAD_EXT, cols: COLS_DEAD_EXT, rows: rows, suffix: SUFFIX_NONE })
   await x.client.query(SQL.ANALYZE_DEAD_EXT)
   const res = await x.client.query(SQL.CLOSE_DEAD_EXT, [x.now])
+  if (res.rowCount != null) {
+    return res.rowCount
+  }
+  return 0
+}
+
+/**
+ * 数据不全的岗扣下待修(2026-09-28 Frank「只要数据不全的都不上。等本地我用 opus 修完才上」):汇装把六格不全的岗
+ * 写进 held_jobs(只有 externalId),这里把其中还在架的关掉。没上过架的本来就不在 jobs.json、库里没有,名单里带着也无害;
+ * 修好的回到 jobs.json,upsert 自己把它转回在招。它们仍在 seen_ids 里,「本次未见」那几条下架规则不会误碰。
+ *
+ * @param x 连接与时刻。
+ * @returns 这一轮关掉的在架岗数。
+ */
+async function closeHeldJobs(x: CloseHeldIn): CountOut {
+  if (martPaths(MART_HELD_JOBS).length === 0) {
+    return 0
+  }
+  const seen = new Set<string>()
+  const rows: MartRow[] = []
+  const list: (MartRow | null)[] = martRows(MART_HELD_JOBS)
+  for (const r of list) {
+    if (r == null) {
+      continue
+    }
+    const ext = r.externalId
+    if (typeof ext !== 'string' || ext === '' || seen.has(ext)) {
+      continue
+    }
+    seen.add(ext)
+    rows.push({ external_id: ext })
+  }
+  if (rows.length === 0) {
+    return 0
+  }
+  await x.client.query(SQL.TEMP_HELD_EXT)
+  await insertBatch({ client: x.client, table: TBL_HELD_EXT, cols: COLS_HELD_EXT, rows: rows, suffix: SUFFIX_NONE })
+  await x.client.query(SQL.ANALYZE_HELD_EXT)
+  const res = await x.client.query(SQL.CLOSE_HELD_EXT, [x.now])
   if (res.rowCount != null) {
     return res.rowCount
   }
