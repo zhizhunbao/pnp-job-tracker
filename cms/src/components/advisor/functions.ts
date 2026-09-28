@@ -19,7 +19,7 @@ import { normName, STREAM_REFORM } from '@/components/pnp'
 import { blockedSrc, isDirect } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
 import { parseLoc } from '@/lib/location'
-import { catName, nocLocalTitle, pickName } from '@/lib/noc'
+import { catName, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
@@ -49,7 +49,7 @@ import type {
   FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn,
   HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
   LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
-  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, NocZhIn, OnClsIn, OpenCompanyFn,
+  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn, OpenCompanyFn,
   OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, ProvJson, ProvStreamsIn,
   RefreshFn, RunLongIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn, TypewriterIn, VolRowFact,
   VolRowsIn, ZhItemsIn, ZhLabelIn,
@@ -257,25 +257,6 @@ export function nocOf(x: NocFindIn): AdvisorNocDesc | null {
     }
   }
   return null
-}
-
-/**
- * 岗位名下挂的界面语译名(Frank 2026-07-26「所有弹框的 job 名称下面都应该有中文翻译,
- * 像点击 job 弹框一样」)。与英文标题相同则不重复挂一遍;公司弹框不挂
- * —— 公司名没有译名(2026-07-24 Frank「公司名下面的中文还是删掉」)。
- *
- * @param x 描述表、五位码、界面语言与岗位名。
- * @returns 译名;不该出时给空串。
- */
-export function nocZhOf(x: NocZhIn): string {
-  const zh = nocLocalTitle({ row: nocOf({ nocDesc: x.nocDesc, noc: x.noc }), lang: x.lang })
-  if (zh === TEXT_NONE) {
-    return TEXT_NONE
-  }
-  if (zh.toLowerCase() === x.title.toLowerCase()) {
-    return TEXT_NONE
-  }
-  return zh
 }
 
 /**
@@ -1670,15 +1651,33 @@ export function planClbOf(x: PlanClbIn): number | null {
 /**
  * 弹框大标题下的副标:岗位名的界面语译名。公司弹框不挂
  * (2026-07-24 Frank「公司名下面的中文还是删掉」;了解公司改靠知名/政府章)。
+ * 2026-07-26 Frank「所有弹框的 job 名称下面都应该有中文翻译,像点击 job 弹框一样」:与英文标题相同则不重复挂一遍
+ * (原 nocZhOf 的口径:NOC 官方职业名的界面语译名)。
+ * 2026-09-28 改走全站口径:职位描述弹框 09-23 起挂的是**标题译名**(Frank「统一成标题译名」「应该优先使用详情下的翻译
+ * 更准吧」,jobtitle 桶 useTitleTrans),那一批漏了字段弹框(盘点实查:省提名等字段弹框标题下仍是职业名)——
+ * 「像点击 job 弹框一样」这条今天才算兑现;nocZhOf 随之退役。
  *
- * @param x 分组、描述表、这一岗与界面语言。
+ * @param x 分组、按岗懒翻回来的标题译名与公司别名。
  * @returns 副标;不该出时给空串。
  */
 export function headSubOf(x: HeadSubIn): string {
   if (x.group === GROUP_COMPANY) {
     return x.companyAlias
   }
-  return nocZhOf({ nocDesc: x.nocDesc, noc: x.job.noc, lang: x.lang, title: x.job.title })
+  return x.trans
+}
+
+/**
+ * 按岗懒翻哪一个标题:公司组不翻(页眉副题是公司别名,不是岗名译名 —— 给空串 useTitleTrans 就不发请求)。
+ *
+ * @param x 分组与这一岗。
+ * @returns 要翻的岗名;公司组给空串。
+ */
+export function transTitleOf(x: TransTitleIn): string {
+  if (x.group === GROUP_COMPANY) {
+    return TEXT_NONE
+  }
+  return x.job.title
 }
 
 /**

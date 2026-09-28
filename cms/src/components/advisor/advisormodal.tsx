@@ -18,10 +18,12 @@
  * 正文读两表的组(PNP_DATA_GROUPS)等两表到齐再渲,等的时候出全站统一的加载行(Loading),取挂了出红色提醒框;
  * 别的组(公司、分类……)照旧当场出。
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs,Esc 由 Modal 按打开先后排号接。
+ * 同日标题下灰字改走全站口径(标题译名,与职位描述弹框同一台 useTitleTrans;09-23「统一成标题译名」那批漏了字段弹框)。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
+import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { Loading } from '@/components/loading'
 import { Modal } from '@/components/modal'
 import { Notice } from '@/components/notice'
@@ -33,7 +35,7 @@ import {
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
-import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf } from './functions'
+import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf, transTitleOf } from './functions'
 import { useAdvisorModal, usePnpData } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 import { WinActs } from './winacts'
@@ -62,6 +64,9 @@ export function AdvisorModal({
   const t = makeT(lang)
   const m = useAdvisorModal({ group, field, job, lang })
   const pnp = usePnpData({ group })
+  const trans = useTitleTrans({
+    title: transTitleOf({ group, job }), id: job.id, lang, cached: storedTitleOf({ row: job, lang }), gen: m.gen,
+  })
   const f: AdvisorFacts = {
     job,
     lang,
@@ -79,7 +84,7 @@ export function AdvisorModal({
   const head = (
     <AdvisorHead t={t} group={group} province={job.province}
       title={modalTitleOf({ group, job, title })}
-      sub={headSubOf({ group, nocDesc, job, lang, companyAlias: m.companyAlias })}
+      sub={headSubOf({ group, trans, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft}
       ctl={null} />
   )

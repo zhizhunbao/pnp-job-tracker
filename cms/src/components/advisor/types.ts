@@ -1925,31 +1925,6 @@ export type NocFindIn = {
 }
 
 /**
- * nocZhOf 的入参。
- */
-export type NocZhIn = {
-  /**
-   * NOC 官方职业描述表。
-   */
-  nocDesc: AdvisorNocDescs
-
-  /**
-   * 这一岗的五位码。
-   */
-  noc: string
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 岗位名(与译名相同就不重复挂一遍)。
-   */
-  title: string
-}
-
-/**
  * originTextOf 的入参。
  */
 export type OriginTextIn = {
@@ -3036,29 +3011,34 @@ export type PlanClbIn = {
  */
 export type HeadSubIn = {
   /**
-   * 铺的是哪一组(公司组的副题是别名,其余组是 NOC 译名;2026-09-14 前公司组不挂副题)。
+   * 铺的是哪一组(公司组的副题是别名,其余组是标题译名;2026-09-14 前公司组不挂副题)。
    */
   group: string
 
   /**
-   * NOC 官方职业描述表。
+   * 按岗懒翻回来的标题译名(jobtitle 桶 useTitleTrans;2026-09-28 起,原先是 NOC 译名);'' = 还没有。
    */
-  nocDesc: AdvisorNocDescs
-
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
+  trans: string
 
   /**
    * 公司别名(只 GROUP_COMPANY 用,2026-09-14 Frank「参考一下职位描述的弹框 css」:别名放页眉副题位)。
    */
   companyAlias: string
+}
+
+/**
+ * transTitleOf 的入参。
+ */
+export type TransTitleIn = {
+  /**
+   * 铺的是哪一组。
+   */
+  group: string
+
+  /**
+   * 这一岗。
+   */
+  job: AdvisorJob
 }
 
 /**
