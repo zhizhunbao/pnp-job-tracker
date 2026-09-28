@@ -26,6 +26,8 @@ export const JOB_SHARDS = 10
 
 /**
  * 公司分片的固定片数(片号 = 公司 id 对它取模;改判同 JOB_SHARDS)。当天有在架岗的公司 3.7 万家(每片约 4,600)。
+ * 2026-09-28 成员收窄到旗下有收录岗的公司(SQL.CO_SITEMAP_FROM),当天 18,465 家(每片约 2,300);片数与片号规则不变,
+ * GSC 已登记的 8 片网址照旧。
  */
 export const CO_SHARDS = 8
 

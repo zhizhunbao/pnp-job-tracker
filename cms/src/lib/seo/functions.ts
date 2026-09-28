@@ -119,6 +119,7 @@ export async function loadJobsNewPage(input: ShardRowsIn): ShardPageOut {
 /**
  * 公司分片一片(仅有在招岗的公司=有内容+可收录;无岗公司页 noindex 不进)。
  * 2026-09-26 片号改公司 id 取模(constants.CO_SHARDS),lastmod 改旗下在架岗最晚的上架时刻。
+ * 2026-09-28 成员再收窄到旗下有收录岗(有投递邮箱)的公司(SQL.CO_SITEMAP_FROM)。
  *
  * @param input 连接与片号。
  * @returns 这一片的 urlset。
@@ -286,7 +287,7 @@ async function refreshJobShardRows(input: ShardRowsIn): RefreshOut {
  * 公司分片清单全量(同职位侧一套律)。
  *
  * @param input 连接。
- * @returns 有在招岗的公司 id + slug + lastmod 全量(公司 id 升序;2026-09-26 前是 slug + last_seen)。
+ * @returns 旗下有收录岗的公司 id + slug + lastmod 全量(公司 id 升序;2026-09-26 前是 slug + last_seen,2026-09-28 前成员是有在招岗的公司)。
  */
 async function loadCompanyShardRows(input: ShardRowsIn): CoShardRowsOut {
   const slot = CACHE.companies
