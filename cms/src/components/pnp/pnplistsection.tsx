@@ -28,12 +28,15 @@
  * 抽选卡标题下多一行「全年已发邀请 / 已入选」(ops 递进 PnpDrawGroups)。
  * 同日 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:那一行并进配额卡当一列,ops 不再递进抽选卡。
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:通道卡与配额卡之间加「本岗通道的门槛」卡(PnpGateCard,版式照公司信息卡的「行名 - 值」)。
+ * 2026-09-28 通道表批二:本岗走哪条通道先认一次(pnpChannelOf,读懒取到的库表 pathways),抽选高亮、门槛流、配额键都取它那一行,
+ * 前端五张对照常量退役;页面一个字不变。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import {
-  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, quotaCardOf, shownStreamsOf, streamKeyOf,
+  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, genDrawOf, pnpChannelOf, quotaCardOf, quotaKeyOf,
+  shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
 import { PnpChannelCard } from './pnpchannelcard'
@@ -46,15 +49,18 @@ import type { PnpListSectionIn } from './types'
 /**
  * 渲染省提名事实区块。
  *
- * @param props 本岗、界面语言、清单、抽选、动态与两个显示开关(逐格注释见 PnpListSectionIn)。
+ * @param props 本岗、界面语言、清单、抽选、动态、两个显示开关与通道对照表(逐格注释见 PnpListSectionIn)。
  * @returns 一组卡片。
  */
-export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true }: PnpListSectionIn) {
-  const p = usePnpList({ job, lang, occ, nocDesc, showZh })
+export function PnpListSection({
+  job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways,
+}: PnpListSectionIn) {
+  const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
   const form = drawsFormOf({ province: job.province, draws })
-  const hitStreams = drawHitStreamsOf(job)
-  const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, pnpStream: job.pnpStream })
-  const gate = gateCardOf({ t: p.t, job, reqs })
+  const channel = pnpChannelOf({ job, pathways })
+  const hitStreams = drawHitStreamsOf(channel)
+  const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
+  const gate = gateCardOf({ t: p.t, job, reqs, channel })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)
@@ -76,7 +82,7 @@ export function PnpListSection({ job, lang, occ, draws, ops, reqs, nocDesc = [],
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawGroupsShownOf(form) && (
         <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams}
-          open={p.drawOpen} toggleOf={p.drawToggleOf} />
+          open={p.drawOpen} toggleOf={p.drawToggleOf} genDraw={genDrawOf({ province: job.province, pathways })} />
       )}
       {cards}
     </>

@@ -306,6 +306,11 @@ export type PnpShownIndex = {
    * 弹框出得了排除清单卡的职业,键 `省码|NOC`。
    */
   excluded: string[]
+
+  /**
+   * 有省默认通道的省码(通道对照表算的;格子与手机胶囊写不写省默认通道看它,2026-09-28 通道表批二)。
+   */
+  defaults: string[]
 }
 
 /**

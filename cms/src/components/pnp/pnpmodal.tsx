@@ -39,7 +39,7 @@ export function PnpModal({ job, lang, title, field, nocDesc, onClose }: PnpModal
       {p.data.failed && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
       {p.data.ready && (
         <PnpListSection job={job} lang={lang} occ={p.data.occ} draws={p.data.draws} ops={p.data.ops}
-          reqs={p.data.reqs} nocDesc={nocDesc} showZh={lang !== LANG_EN} />
+          reqs={p.data.reqs} nocDesc={nocDesc} showZh={lang !== LANG_EN} pathways={p.data.pathways} />
       )}
     </Modal>
   )

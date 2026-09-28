@@ -31,11 +31,11 @@ import css from './pnp.module.css'
 /**
  * 渲染本省抽选分组卡。
  *
- * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组与开合手柄工厂。
+ * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组、开合手柄工厂与本省省默认通道的抽选组。
  * @returns 抽选卡;本省没有抽选给 null。
  */
-export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf }: PnpDrawGroupsIn) {
-  const card = drawCardOf({ t, lang, province, draws, hitStreams })
+export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf, genDraw }: PnpDrawGroupsIn) {
+  const card = drawCardOf({ t, lang, province, draws, hitStreams, genDraw })
   if (card == null) {
     return null
   }

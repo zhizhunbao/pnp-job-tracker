@@ -475,6 +475,7 @@ export function boardDimsOf(dims: JobDims): JobDims {
     experienceLevels: dims.experienceLevels,
     pnpOccupations: [],
     pnpDraws: [],
+    pathways: [],
     eeCategories: dims.eeCategories,
     eeBroads: dims.eeBroads,
     designatedEmployers: dims.designatedEmployers,
@@ -498,7 +499,7 @@ export function boardPnpOf(dims: JobDims): BoardPnpFacts {
   return {
     pnpBlocked: Array.from(blocked.pnp),
     aipBlocked: Array.from(blocked.aip),
-    index: pnpFactsIndexOf({ occ: dims.pnpOccupations, draws: dims.pnpDraws }),
+    index: pnpFactsIndexOf({ occ: dims.pnpOccupations, draws: dims.pnpDraws, pathways: dims.pathways }),
   }
 }
 
@@ -940,7 +941,7 @@ function pnpCellOf(x: CellIn): CellView {
   if (x.j.province === PROV_QC) {
     return blankView({ text: x.cx.t('cell.pnpQc'), tone: TONE.purpleSm })
   }
-  const key = pnpChannelKeyOf(x.j)
+  const key = pnpChannelKeyOf({ job: x.j, defaults: x.cx.pnpIndex.defaults })
   if (key !== TEXT_NONE) {
     const view = blankView({ text: pnpNameOf({ key, t: x.cx.tEn }), tone: TONE.moneyMd })
     if (x.cx.lang !== LANG_EN) {
@@ -1167,7 +1168,7 @@ function pushTeerChip(a: ChipPushIn): void {
  */
 function pushPnpChip(a: ChipPushBlockIn): void {
   if (a.x.j.pnpEligible === true) {
-    const key = pnpChannelKeyOf(a.x.j)
+    const key = pnpChannelKeyOf({ job: a.x.j, defaults: a.x.pnpIndex.defaults })
     let text = a.x.t('cell.pnpSkilledProv', { p: a.x.j.province })
     if (key !== TEXT_NONE) {
       text = pnpNameOf({ key, t: a.x.t })

@@ -2723,6 +2723,11 @@ export const EMPTY_DIMS = {
   pnpDraws: [],
 
   /**
+   * 全国通道对照(2026-09-28 通道表批二;只在服务端门里压事实索引用)。
+   */
+  pathways: [],
+
+  /**
    * 联邦 EE 类别(算休眠要看最近抽选日)。
    */
   eeCategories: [],

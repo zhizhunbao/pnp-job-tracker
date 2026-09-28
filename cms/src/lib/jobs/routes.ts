@@ -221,9 +221,11 @@ export async function jobsDimsRoute(_req: Request): Promise<Response> {
  * 2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」:多带一张当年配额行 pnpOps(getPnpOps,同样 10 分钟单件缓存),
  * 给弹框的「{年} 年配额」卡与抽选卡「全年已邀请」那一行。
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:再带门槛行 pnpReqs(getPnpReqs,同样 10 分钟单件缓存),给「本岗通道的门槛」卡。
+ * 2026-09-28 通道表批二:再带全国通道对照 pathways(首屏维度里那份,三十来行)—— 弹框认本岗通道对应的抽选组 / 门槛流 / 配额行
+ * 都读它,前端五张对照常量退役。
  *
  * @param _req 请求(不读参数)。
- * @returns { pnpOccupations, pnpDraws, pnpOps, pnpReqs } 四张表。
+ * @returns { pnpOccupations, pnpDraws, pnpOps, pnpReqs, pathways } 五张表。
  */
 export async function jobsPnpRoute(_req: Request): Promise<Response> {
   const db = await getDb()
@@ -231,7 +233,7 @@ export async function jobsPnpRoute(_req: Request): Promise<Response> {
   const ops = await getPnpOps(db)
   const reqs = await getPnpReqs(db)
   return Response.json(
-    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs },
+    { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs, pathways: dims.pathways },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
 }

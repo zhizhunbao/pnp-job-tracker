@@ -621,7 +621,19 @@ PATHWAYS = [
     PW_AIP,
 ]
 """全表(顺序 = 产物 seq 序)。⚠ 顺序有意义:一组抽选覆盖几条通道时,通道名按这里的先后拼(PE 劳工通道在 PE 在需职业前;
-NS 两条在 AIP 前、NL 在 AIP 前 —— AIP 放最后)。省内一律省默认通道打头。"""
+NS 两条在 AIP 前、NL 在 AIP 前 —— AIP 放最后)。省内一律省默认通道打头。
+2026-09-28 通道表批二:前端 components/pnp 的六张对照常量退役、改读本表进库的那份,各张原注里的决策记录搬到这里(逐段的已并进上面各 PW_ 段):
+- GEN_CHANNEL_PROVS(有省默认通道的九省):2026-09-23 Frank「改 全改」—— PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),不再写
+  「{省} 可提名」;出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS。BC 原叫 Skills Immigration,2026-09-24 九省通道审计改名
+  BC Skilled Worker(Skills Immigration 是项目名,持 offer 的通道是它下面的 Skilled Worker stream)。2026-09-28 自 jobs 迁入 pnp 桶时,
+  原先职位板格子按这张表判、弹框通道卡按「英文词条查不查得到」判,两种判法同一个事实并成一张;批二起改读本表 isDefault 行。
+- GEN_DRAW_STREAM(省默认通道 → 抽选组,点进来那一组高亮、排最前):2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立;
+  当时其余省对不上一一对应不登记 = 不高亮(BC 整卡都是 Skills Immigration 的类别轮,MB / PE 组名与通道不同名,SK / NS 没有抽选,
+  ON 改制卡暂撤),之后 09-24 审计、第三批与 09-27 陆续补登 PE / NL / MB / BC / NS / ON(见各省默认通道那段)。
+- NAMED_DRAW_STREAMS(具名通道 → 抽选组):2026-09-24 Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」引出 —— 阿省医护专项清单
+  进库,同批把与抽选组一一对得上的具名清单登记进来;SK / MB / NS / PE 的具名清单当时对不上抽选组,不登记 = 不高亮(之后 PE 在需职业、
+  NS 建筑按「同一组覆盖本省全部通道」补登)。
+- QUOTA_STREAM_KEYS / NAMED_REQ_STREAMS / GEN_REQ_STREAMS:见阿省六段(2026-09-27 九省体检与门槛卡批一)。"""
 
 # =========================================================================
 # 3. 读 pnp 产物(自校只认 raw/pnp 的现值:pathways → pnp 产物单向依赖,不读 mart)

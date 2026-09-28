@@ -215,6 +215,72 @@ export type PnpDraw = {
 }
 
 /**
+ * 全国通道对照表的一行(库表 pathways,etl/pathways 人工核定 + 每轮对 raw/pnp 自校;2026-09-28 通道表批二起,
+ * 本岗走哪条通道、它对应哪几组抽选 / 哪几条门槛流 / 配额表哪一行,都读它,前端五张对照常量退役)。只声明本域真读的格。
+ */
+export type PnpPathway = {
+  /**
+   * 省码(联邦项目写 FED)。
+   */
+  province: string
+
+  /**
+   * 岗位上挂的通道名(= 数据层 pnp_stream 取值);省默认通道为 null。
+   */
+  boardLabel: string | null
+
+  /**
+   * 省默认通道:本省可提名但没挂具名通道的岗落它。
+   */
+  isDefault: boolean
+
+  /**
+   * 官方用来邀请它的抽选组(抽选行 stream 原值;没有给空列)。
+   */
+  drawStreams: string[]
+
+  /**
+   * 门槛表里的流(门槛行 stream 原值;门槛卡没接的省给空列)。
+   */
+  reqStreams: string[]
+
+  /**
+   * 配额行的通道键(与配额行 streamKey 同一个归一);没有通道级配额为 null。
+   */
+  quotaKey: string | null
+}
+
+/**
+ * pnpChannelOf 的入参。
+ */
+export type PnpChannelOfIn = {
+  /**
+   * 本岗(读具名通道、可提名与省码)。
+   */
+  job: PnpJob
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+}
+
+/**
+ * genDrawOf 的入参。
+ */
+export type GenDrawIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+}
+
+/**
  * 省提名/AIP 清单里的一条职业(扁平维度表,按 label 分组成通道)。
  */
 export type PnpOcc = {
@@ -1160,9 +1226,10 @@ export type QuotaCardOfIn = {
   hitStreams: string[]
 
   /**
-   * 本岗 PNP 格的具名通道(数据层 pnp_stream;'' = 省默认通道),配额行的通道键先查 QUOTA_STREAM_KEYS(2026-09-27)。
+   * 本岗通道在配额表里的通道键(通道对照表的 quotaKey;'' = 没有),先于抽选组名查(2026-09-27 起;原 QUOTA_STREAM_KEYS,
+   * 2026-09-28 通道表批二改读 pathways)。
    */
-  pnpStream: string
+  quotaKey: string
 }
 
 /**
@@ -1200,9 +1267,10 @@ export type QuotaStreamIn = {
   rows: PnpOps[]
 
   /**
-   * 本岗 PNP 格的具名通道(数据层 pnp_stream;'' = 省默认通道),先查 QUOTA_STREAM_KEYS(2026-09-27)。
+   * 本岗通道在配额表里的通道键(通道对照表的 quotaKey;'' = 没有),先查它(2026-09-27 起;原 QUOTA_STREAM_KEYS,
+   * 2026-09-28 通道表批二改读 pathways)。
    */
-  pnpStream: string
+  quotaKey: string
 
   /**
    * 本岗对应的抽选组(抽选行 stream 原值)。
@@ -1368,6 +1436,11 @@ export type GateCardOfIn = {
    * 门槛表(全国)。
    */
   reqs: PnpReq[]
+
+  /**
+   * 本岗走的那条通道(pnpChannelOf 给的;null = 没有):门槛表里认哪几条流看它的 reqStreams。
+   */
+  channel: PnpPathway | null
 }
 
 /**
@@ -1729,6 +1802,11 @@ export type PnpListSectionIn = {
    * 出不出界面语言译名;可省 = 出。
    */
   showZh?: boolean
+
+  /**
+   * 全国通道对照(整表;本岗走哪条通道、对应的抽选组 / 门槛流 / 配额行都读它,2026-09-28 通道表批二)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -2044,6 +2122,11 @@ export type PnpListHookIn = {
    * 出不出界面语言译名(「本岗能走的通道」那条的灰字也跟它走)。
    */
   showZh: boolean
+
+  /**
+   * 全国通道对照(整表;「本岗能走的通道」卡判本省有没有省默认通道看它)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -2403,6 +2486,12 @@ export type PnpFactsIndex = {
    * 2026-09-26 起只对不可提名的岗算数(见 pnpFactsShownOf 的 eligible)。
    */
   excluded: string[]
+
+  /**
+   * 有省默认通道的省码(通道对照表 isDefault 行的省;职位板格子与手机胶囊写不写省默认通道看它,原 GEN_CHANNEL_PROVS,
+   * 2026-09-28 通道表批二改读 pathways)。
+   */
+  defaults: string[]
 }
 
 /**
@@ -2418,6 +2507,11 @@ export type PnpFactsIndexIn = {
    * 全部抽选行(整表)。
    */
   draws: PnpDraw[]
+
+  /**
+   * 全国通道对照(整表;算有省默认通道的省码)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -3173,6 +3267,11 @@ export type PnpDrawGroupsOfIn = {
    * 本岗对应的组(抽选行 stream 原值);空列 = 不高亮。
    */
   hitStreams: string[]
+
+  /**
+   * 本省省默认通道的抽选组('' = 没有;安省改制那一组的组键用它,原 GEN_DRAW_STREAM,2026-09-28 通道表批二改读 pathways)。
+   */
+  genDraw: string
 }
 
 /**
@@ -3213,6 +3312,11 @@ export type PnpDrawGroupsIn = {
    * 组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
+
+  /**
+   * 本省省默认通道的抽选组('' = 没有;见 PnpDrawGroupsOfIn 同名格)。
+   */
+  genDraw: string
 }
 
 /**
@@ -3288,6 +3392,11 @@ export type DrawCardOfIn = {
    * 本岗对应的组(抽选行 stream 原值);空列 = 没有本岗那一组。
    */
   hitStreams: string[]
+
+  /**
+   * 本省省默认通道的抽选组('' = 没有;见 PnpDrawGroupsOfIn 同名格)。
+   */
+  genDraw: string
 }
 
 /**
@@ -3403,6 +3512,11 @@ export type ChannelsIn = {
    * 本岗。
    */
   job: PnpJob
+
+  /**
+   * 有省默认通道的省码(通道对照表算的,见 pnpDefaultProvsOf)。
+   */
+  defaults: string[]
 }
 
 /**
@@ -3593,6 +3707,11 @@ export type PnpData = {
    * 门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;老服务端没给 = 空列,门槛卡不出)。
    */
   reqs: PnpReq[]
+
+  /**
+   * 全国通道对照(2026-09-28 通道表批二;老服务端没给 = 空列)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -3618,6 +3737,11 @@ export type PnpDataJson = {
    * 门槛行(2026-09-27 门槛卡批一起;换版窗口里老服务端没给)。
    */
   pnpReqs?: PnpReq[]
+
+  /**
+   * 全国通道对照(2026-09-28 通道表批二起;换版窗口里老服务端没给)。
+   */
+  pathways?: PnpPathway[]
 } | null
 
 /**
@@ -3663,6 +3787,11 @@ export type PnpDataPanel = {
    * 门槛行(同上)。
    */
   reqs: PnpReq[]
+
+  /**
+   * 全国通道对照(同上)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -3828,6 +3957,21 @@ export type PnpCellJob = {
    * 数据层判的可提名。
    */
   pnpEligible: boolean
+}
+
+/**
+ * pnpChannelKeyOf 的入参。
+ */
+export type PnpChannelKeyIn = {
+  /**
+   * 这一岗(读具名通道、可提名与省码)。
+   */
+  job: PnpCellJob
+
+  /**
+   * 有省默认通道的省码(职位板从事实索引的 defaults 递、弹框从通道对照表现算,同一份来源)。
+   */
+  defaults: string[]
 }
 
 /**

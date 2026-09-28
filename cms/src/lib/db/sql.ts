@@ -1767,6 +1767,15 @@ export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", s
      FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 1000`
 
 /**
+ * 首屏维度表·全国通道对照(2026-09-28 通道表批二:职位板格子判「本省有没有省默认通道」、省提名弹框认本岗通道对应的抽选组 /
+ * 门槛流 / 配额行,都读这张表,前端五张对照常量退役;表由 etl/pathways 人工核定 + 每轮对 raw/pnp 自校)。
+ * 三十来行整表取;已关停的通道不挂岗位、也不是省默认,这里不读。三个清单格是 jsonb,pg 直接回数组。
+ */
+export const DIMS_PATHWAYS = `SELECT province, board_label AS "boardLabel", is_default AS "isDefault",
+       draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey"
+     FROM pathways WHERE status <> 'closed' ORDER BY seq`
+
+/**
  * 首屏维度表·EE 类别。
  */
 export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,

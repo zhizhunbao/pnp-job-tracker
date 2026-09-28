@@ -76,7 +76,8 @@ import type {
   MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchProfile, MatchReason, MatchResult, MaybeJobOgRow, MaybeLevel,
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
   NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
-  OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc,
+  OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeStrList,
+  PgFailure, PnpDraw, PnpOcc,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
   RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn,
@@ -963,13 +964,14 @@ export async function loadPnpReqs(db: Db): PnpReqsOut {
  * @returns 首屏维度包。
  */
 export async function loadSsrDims(db: Db): SsrDimsOut {
-  const [prov, noc, src, exp, pnp, draws, ee, eeBroads, fieldSrc, news] = await Promise.all([
+  const [prov, noc, src, exp, pnp, draws, pathways, ee, eeBroads, fieldSrc, news] = await Promise.all([
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PROVINCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_NOC_CATEGORIES, params: [], map: toNocCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_SOURCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EXPERIENCE_LEVELS, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: toPnpOcc }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toPnpDraw }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PATHWAYS, params: [], map: toPathway }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: toEeCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_BROADS, params: [], map: toEeBroad }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_FIELD_SOURCES, params: [], map: toFieldSource }),
@@ -996,6 +998,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     experienceLevels: experienceLevels,
     pnpOccupations: pnp,
     pnpDraws: draws,
+    pathways: pathways,
     eeCategories: ee,
     eeBroads: eeBroads,
     designatedEmployers: [],
@@ -3102,6 +3105,34 @@ export function toPnpDraw(r: Row): PnpDraw {
     invitations: numOrNull(r.invitations), note: text(r.note), label: text(r.label),
     url: text(r.url), fetched: text(r.fetched), selection: text(r.selection),
   }
+}
+
+/**
+ * DIMS_PATHWAYS 一行 → 通道对照行(2026-09-28 通道表批二)。清单格库里存的是 jsonb 数组,缺了当空列;
+ * 通道名与配额键保 null(省默认通道本来就没挂名、没有通道级配额的通道本来就没有键)。
+ *
+ * @param r 原始行。
+ * @returns 通道对照行。
+ */
+function toPathway(r: PathwayDbRow): Pathway {
+  return {
+    province: text(r.province), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
+    drawStreams: toStrList(r.drawStreams), reqStreams: toStrList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
+  }
+}
+
+/**
+ * jsonb 字符串数组格 → 字符串列(缺了给空列;库里存的是 etl/pathways 写的数组,不是 JSON 串也照收)。
+ *
+ * @param x 库回的清单格。
+ * @returns 字符串列。
+ */
+function toStrList(x: MaybeStrList): StrList {
+  const list = jsonOrNull<StrList>(x)
+  if (list == null) {
+    return []
+  }
+  return list
 }
 
 /**

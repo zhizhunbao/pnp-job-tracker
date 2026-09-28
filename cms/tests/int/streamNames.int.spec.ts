@@ -11,10 +11,30 @@
  * @time 2026-09-26 23:10:00
  */
 import { describe, expect, it } from 'vitest'
-import { GEN_DRAW_STREAM, NAMED_DRAW_STREAMS } from '@/components/pnp/constants'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import type { PnpPathway } from '@/components/pnp/types'
 import { makeT } from '@/lib/i18n'
 import { drawStreamNote } from '@/lib/jobs'
 import { STREAM_L10N } from '@/lib/jobs/constants'
+
+/**
+ * 通道对照(data/mart 真表;2026-09-28 通道表批二起,原 components/pnp 的 GEN_DRAW_STREAM / NAMED_DRAW_STREAMS 两张常量退役,
+ * 这里从表里还原同样两张对照再锁名字:省默认通道 → 第一组抽选,具名通道(岗位通道名)→ 它的抽选组)。
+ */
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const PATHWAYS: PnpPathway[] = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../data/mart/pathways.json'), 'utf8'))
+const GEN_DRAW_STREAM: Record<string, string> = {}
+const NAMED_DRAW_STREAMS: Record<string, string[]> = {}
+for (const p of PATHWAYS) {
+  if (p.isDefault && p.drawStreams[0] != null) {
+    GEN_DRAW_STREAM[p.province] = p.drawStreams[0]
+  }
+  if (p.boardLabel != null && p.drawStreams.length > 0) {
+    NAMED_DRAW_STREAMS[p.boardLabel] = p.drawStreams
+  }
+}
 
 /**
  * 具名通道里与抽选组不是同一个项目的(PE 那组覆盖 Occupations in Demand 与 Workforce 各流;

@@ -22,12 +22,12 @@ import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
   DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS,
-  NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
+  NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
   TAG_V_IMP, TAG_V_OK, TAG_V_WARN, AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS,
   CARET_CLOSED, CARET_OPEN, CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP,
-  EE_DORMANT_MONTHS, EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM,
-  NAMED_DRAW_STREAMS, KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
+  EE_DORMANT_MONTHS, EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR,
+  KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC, KEY_PROV_NAMED,
   KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK, KEY_WAGE_ABOVE,
   KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, FACTS_KEY_SEP, MATCH_LEVEL_HEAD, MONTH_DAYS, NOC_HEAD,
@@ -36,8 +36,8 @@ import {
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
-  GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
-  K_KICKER_PROV_AIP, GEN_CHANNEL_PROVS, EXCL_KEY_SEP,
+  VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
+  K_KICKER_PROV_AIP, EXCL_KEY_SEP,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -54,7 +54,7 @@ import type {
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
-  PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn,
+  PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -393,7 +393,24 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
       }
     }
   }
-  return { draws, lists, excluded }
+  return { draws, lists, excluded, defaults: pnpDefaultProvsOf(x.pathways) }
+}
+
+/**
+ * 有省默认通道的省码(通道对照表 isDefault 行的省;2026-09-28 通道表批二,原 GEN_CHANNEL_PROVS 九省常量)。
+ * 职位板格子与手机胶囊经事实索引的 defaults 读它,弹框通道卡从懒取到的通道表现算 —— 同一张表、同一个判据。
+ *
+ * @param pathways 全国通道对照(整表)。
+ * @returns 省码(不重复)。
+ */
+export function pnpDefaultProvsOf(pathways: PnpPathway[]): string[] {
+  const out: string[] = []
+  for (const p of pathways) {
+    if (p.isDefault && out.includes(p.province) === false) {
+      out.push(p.province)
+    }
+  }
+  return out
 }
 
 /**
@@ -605,6 +622,7 @@ export function drawGroupsShownOf(form: DrawsForm): boolean {
  * 名字走通用通道名(pnp.gen.<省>,与上面「本岗能走的通道」卡同一个);改制后没有抽选写「暂无邀请」、有了写那一轮的人数 / 分数;
  * 日期 = 改制后最近一轮,还没有就写最新公告日;悬停出公告原句;点开列改制后的轮次(没有就不能点)。
  * 本岗在本省可提名时(GEN_DRAW_STREAM 登记了该省)标命中。上面 ①② 两格与「最新公告」「已发邀请」两个标签随之撤。
+ * 2026-09-28 通道表批二:组键改读通道对照表里本省省默认通道的抽选组(x.genDraw,原 GEN_DRAW_STREAM 常量)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 这一组;不是改制省或改制后没有公告给 null。
@@ -632,9 +650,8 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
     sub = x.t(genKey)
   }
   let key = notice.label
-  const registered = GEN_DRAW_STREAM[x.province]
-  if (registered != null) {
-    key = registered
+  if (x.genDraw !== TEXT_NONE) {
+    key = x.genDraw
   }
   const head = rounds[0]
   let none = x.t('pnpdraws.noInvYet')
@@ -727,7 +744,7 @@ export function channelsOf(x: ChannelsIn): ChannelSpec[] {
   if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
     return []
   }
-  const key = pnpChannelKeyOf(x.job)
+  const key = pnpChannelKeyOf({ job: x.job, defaults: x.defaults })
   if (key === TEXT_NONE) {
     return []
   }
@@ -1067,26 +1084,74 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
  * 格子写的是具名清单通道或不可提名时不高亮(具名清单与抽选组的对照要等数据层把 rule_streams 对上号)。
  * 2026-09-24 改名 drawHitStreamsOf(原 genDrawStreamOf)、改回多组:具名清单通道按 NAMED_DRAW_STREAMS 对组
  * (Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」),对不上的照旧不高亮。
+ * 2026-09-28 通道表批二:对照搬进库表 pathways(本岗通道 = pnpChannelOf,组 = 它的 drawStreams),NAMED_DRAW_STREAMS /
+ * GEN_DRAW_STREAM 两张常量退役;判据一字没变 —— 具名通道看通道名对上的那一行,可提名而没挂名看本省省默认通道那一行。
  *
- * @param job 本岗。
+ * @param channel 本岗走的那条通道(pnpChannelOf 给的;null = 没有)。
  * @returns 抽选行 stream 原值的清单;空列 = 不高亮。
  */
-export function drawHitStreamsOf(job: PnpJob): string[] {
-  if (job.pnpStream !== TEXT_NONE) {
-    const named = NAMED_DRAW_STREAMS[job.pnpStream]
-    if (named == null) {
-      return []
+export function drawHitStreamsOf(channel: PnpPathway | null): string[] {
+  if (channel == null) {
+    return []
+  }
+  return channel.drawStreams
+}
+
+/**
+ * 本岗走哪条通道(通道对照表的一行):数据层给了具名通道(pnp_stream)就是通道名对上的那一行,对不上给 null(不拿省默认
+ * 通道冒充);没挂名而可提名就是本省省默认通道那一行;都不是给 null。与原先 NAMED_* / GEN_* 两套常量的分支一一对应
+ * (2026-09-28 通道表批二,那几张常量退役)。
+ *
+ * @param x 本岗与通道对照整表。
+ * @returns 那一行;没有给 null。
+ */
+export function pnpChannelOf(x: PnpChannelOfIn): PnpPathway | null {
+  if (x.job.pnpStream !== TEXT_NONE) {
+    for (const p of x.pathways) {
+      if (p.boardLabel === x.job.pnpStream) {
+        return p
+      }
     }
-    return named
+    return null
   }
-  if (job.pnpEligible === false) {
-    return []
+  if (x.job.pnpEligible === false) {
+    return null
   }
-  const s = GEN_DRAW_STREAM[job.province]
-  if (s == null) {
-    return []
+  for (const p of x.pathways) {
+    if (p.isDefault && p.province === x.job.province) {
+      return p
+    }
   }
-  return [s]
+  return null
+}
+
+/**
+ * 本岗通道在配额表里的通道键(通道对照表的 quotaKey;没有给 '')—— 配额卡「本岗通道」那一行先查它,再按抽选组名小写配。
+ *
+ * @param channel 本岗走的那条通道(null = 没有)。
+ * @returns 通道键;没有给 ''。
+ */
+export function quotaKeyOf(channel: PnpPathway | null): string {
+  if (channel == null || channel.quotaKey == null) {
+    return TEXT_NONE
+  }
+  return channel.quotaKey
+}
+
+/**
+ * 本省省默认通道的抽选组(安省改制那一组的组键;没有给 '',原 GEN_DRAW_STREAM 常量)。
+ *
+ * @param x 省码与通道对照整表。
+ * @returns 抽选组;没有给 ''。
+ */
+export function genDrawOf(x: GenDrawIn): string {
+  for (const p of x.pathways) {
+    const first = p.drawStreams[0]
+    if (p.isDefault && p.province === x.province && first != null) {
+      return first
+    }
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -1193,6 +1258,7 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     province: x.province,
     draws: x.draws,
     hitStreams: x.hitStreams,
+    genDraw: x.genDraw,
   }
   let groups: EeCmpGroup[] = []
   if (drawsFormOf({ province: x.province, draws: x.draws }) === DRAWS_FORM_STATUS) {
@@ -1277,7 +1343,7 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
     return null
   }
   const rows = [quotaRowOf({ rows: mine, streamKey: TEXT_NONE, cols, label: x.t('pnpquota.prov') })]
-  const streamKey = quotaStreamKeyOf({ rows: mine, hitStreams: x.hitStreams, pnpStream: x.pnpStream })
+  const streamKey = quotaStreamKeyOf({ rows: mine, hitStreams: x.hitStreams, quotaKey: x.quotaKey })
   if (streamKey !== TEXT_NONE) {
     rows.push(quotaRowOf({ rows: mine, streamKey, cols, label: x.t('pnpquota.stream') }))
   }
@@ -1362,15 +1428,16 @@ function quotaRowOf(x: QuotaRowIn): QuotaRowSpec {
  * 对不上给 '' —— 不拿近似名硬配(医护那组抽选名与配额名单复数不同,就不出通道那一行)。
  * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):先查人工对照表 QUOTA_STREAM_KEYS(本岗具名通道 → 配额行通道键;阿省医护 / 科技 /
  * 警务三条组名与配额名不同字),再按组名小写逐字相等配;仍不拿近似名硬配。
+ * 2026-09-28 通道表批二:人工对照搬进库表 pathways(本岗通道那一行的 quotaKey,由 mart 用配额行 streamKey 同一个归一算出),
+ * QUOTA_STREAM_KEYS 常量退役;先查它、再按组名小写配,顺序与结果不变。
  *
- * @param x 这一省的配额行与本岗对应的抽选组。
+ * @param x 这一省的配额行、本岗通道的配额键与本岗对应的抽选组。
  * @returns 通道键;对不上给 ''。
  */
 function quotaStreamKeyOf(x: QuotaStreamIn): string {
   const keys: string[] = []
-  const named = QUOTA_STREAM_KEYS[x.pnpStream]
-  if (named != null) {
-    keys.push(named)
+  if (x.quotaKey !== TEXT_NONE) {
+    keys.push(x.quotaKey)
   }
   for (const h of x.hitStreams) {
     keys.push(h.toLowerCase())
@@ -1444,12 +1511,13 @@ function yearOf(r: PnpOps): string {
  * 每行点开看官方原句。只陈列门槛,不判「你够不够」。本岗通道 → 门槛表里的流靠 NAMED_REQ_STREAMS / GEN_REQ_STREAMS 对照
  * (先上 AB,别的省没登记就不出卡)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:点开看原句撤了,值一项一行纯文字;原文 / 本岗对照要提以后单独开卡。
+ * 2026-09-28 通道表批二:本岗通道 → 门槛流的对照改读库表 pathways(本岗通道那一行的 reqStreams),两张常量退役;没登记的省照旧不出卡。
  *
- * @param x 取词函数、本岗与门槛表。
+ * @param x 取词函数、本岗、门槛表与本岗走的那条通道。
  * @returns 门槛卡;本岗通道没登记对照或没有门槛行给 null。
  */
 export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
-  const streams = gateStreamsOf(x.job)
+  const streams = gateStreamsOf(x.channel)
   if (streams.length === 0) {
     return null
   }
@@ -1479,26 +1547,16 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
 
 /**
  * 本岗通道在门槛表里对应哪几条流(口径同 drawHitStreamsOf:具名通道查 NAMED_REQ_STREAMS,落省默认通道查 GEN_REQ_STREAMS)。
+ * 2026-09-28 通道表批二:两张常量退役,读本岗通道那一行的 reqStreams(本岗通道同 drawHitStreamsOf,由 pnpChannelOf 给)。
  *
- * @param job 本岗。
+ * @param channel 本岗走的那条通道(null = 没有)。
  * @returns 流名;没登记给空数组。
  */
-function gateStreamsOf(job: PnpJob): string[] {
-  if (job.pnpStream !== TEXT_NONE) {
-    const named = NAMED_REQ_STREAMS[job.pnpStream]
-    if (named == null) {
-      return []
-    }
-    return named
-  }
-  if (job.pnpEligible === false) {
+function gateStreamsOf(channel: PnpPathway | null): string[] {
+  if (channel == null) {
     return []
   }
-  const s = GEN_REQ_STREAMS[job.province]
-  if (s == null) {
-    return []
-  }
-  return s
+  return channel.reqStreams
 }
 
 /**
@@ -3149,7 +3207,11 @@ function toPnpData(j: PnpDataJson): PnpData | null {
   if (j.pnpReqs != null) {
     reqs = j.pnpReqs
   }
-  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs }
+  let pathways: PnpPathway[] = []
+  if (j.pathways != null) {
+    pathways = j.pathways
+  }
+  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs, pathways }
 }
 
 /**
@@ -3160,7 +3222,7 @@ function toPnpData(j: PnpDataJson): PnpData | null {
  */
 export function pnpDataOf(data: PnpData | null): PnpData {
   if (data == null) {
-    return { occ: [], draws: [], ops: [], reqs: [] }
+    return { occ: [], draws: [], ops: [], reqs: [], pathways: [] }
   }
   return data
 }
@@ -3206,15 +3268,18 @@ export function pnpTitleOf(x: PnpTitleIn): string {
  * 2026-09-23 Frank「那这个是不是最好显示是哪个通道?」「改 全改」:可提名那一档写通用通道名,不再写「{省} 可提名」
  * (原 jobs 的 pnpGenericOf;格子与手机卡片共用)。
  * 2026-09-28 省提名弹框自立第 4 步:原先格子(jobs)与通道卡(本域)各判一遍,判法还不一样,并成这一处。
+ * 同日通道表批二:「本省有没有通用通道」改读通道对照表的省默认通道(x.defaults,原 GEN_CHANNEL_PROVS 九省常量)——
+ * 格子与手机胶囊从事实索引的 defaults 递、通道卡从懒取到的通道表现算,同一张表。
  *
- * @param job 这一岗(读具名通道、可提名与省码)。
+ * @param x 这一岗(读具名通道、可提名与省码)与有省默认通道的省码。
  * @returns 通道键;没有给空串。
  */
-export function pnpChannelKeyOf(job: PnpCellJob): string {
+export function pnpChannelKeyOf(x: PnpChannelKeyIn): string {
+  const job = x.job
   if (job.pnpStream !== TEXT_NONE) {
     return job.pnpStream
   }
-  if (job.pnpEligible !== true || GEN_CHANNEL_PROVS.has(job.province) === false) {
+  if (job.pnpEligible !== true || x.defaults.includes(job.province) === false) {
     return TEXT_NONE
   }
   return PNP_GEN_HEAD + job.province

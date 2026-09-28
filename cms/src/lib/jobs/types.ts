@@ -899,6 +899,77 @@ export type PnpDraw = {
 }
 
 /**
+ * 全国通道对照表一行的库原样(SQL.DIMS_PATHWAYS;三个清单格是 jsonb,pg 回数组;2026-09-28 通道表批二)。
+ */
+export type PathwayDbRow = {
+  /**
+   * 省码(联邦项目写 FED)。
+   */
+  province: string | null
+
+  /**
+   * 岗位上挂的通道名(= jobs.pnp_stream 取值);省默认通道为 null。
+   */
+  boardLabel: string | null
+
+  /**
+   * 省默认通道。
+   */
+  isDefault: boolean | null
+
+  /**
+   * 官方用来邀请它的抽选组。
+   */
+  drawStreams: string[] | null
+
+  /**
+   * 门槛表里的流。
+   */
+  reqStreams: string[] | null
+
+  /**
+   * 配额行的通道键。
+   */
+  quotaKey: string | null
+}
+
+/**
+ * 全国通道对照表一行(洗净;省提名格判「本省有没有省默认通道」、省提名弹框认本岗通道对应的抽选组 / 门槛流 / 配额行,
+ * 都读它 —— 表由 etl/pathways 人工核定 + 每轮对 raw/pnp 自校,2026-09-28 起前端五张对照常量退役)。
+ */
+export type Pathway = {
+  /**
+   * 省码(联邦项目写 FED)。
+   */
+  province: string
+
+  /**
+   * 岗位上挂的通道名(= 数据层 pnp_stream 取值);省默认通道为 null。
+   */
+  boardLabel: string | null
+
+  /**
+   * 省默认通道:本省可提名但没挂具名通道的岗落它。
+   */
+  isDefault: boolean
+
+  /**
+   * 官方用来邀请它的抽选组(抽选行 stream 原值;没有给空列)。
+   */
+  drawStreams: string[]
+
+  /**
+   * 门槛表里的流(门槛行 stream 原值;门槛卡没接的省给空列)。
+   */
+  reqStreams: string[]
+
+  /**
+   * 配额行的通道键(与配额行 streamKey 同一个归一);没有通道级配额为 null。
+   */
+  quotaKey: string | null
+}
+
+/**
  * 联邦 EE 类别清单一行。
  */
 export type EeOcc = {
@@ -1221,6 +1292,11 @@ export type Dims = {
    * 省抽选事实行。
    */
   pnpDraws: PnpDraw[]
+
+  /**
+   * 全国通道对照行(2026-09-28 通道表批二;服务端门拿它压省提名事实索引,不随首屏下发)。
+   */
+  pathways: Pathway[]
 
   /**
    * 联邦 EE 类别行。
@@ -3305,6 +3381,11 @@ export type StripTitleIn = {
  * 字符串清单(数组进签名要有自己的名字)。
  */
 export type StrList = string[]
+
+/**
+ * 字符串清单或没有(库里 jsonb 清单格可能是 NULL;2026-09-28 通道表批二)。
+ */
+export type MaybeStrList = StrList | null
 
 /**
  * 数或没有。

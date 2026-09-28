@@ -158,133 +158,6 @@ export const PROGRAM_PNP = 'PNP'
 export const DRAW_STREAM_AIP = 'AIP'
 
 /**
- * PNP 格写通用雇主担保通道时(jobs 的 PNP_GENERIC_PROVS),本省抽选卡里对应的那一组(抽选行 stream 原值,
- * etl/pnp 洗出的官方通道名):点进来琥珀高亮、排最前。2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立。
- * 其余省对不上一一对应,不登记 = 不高亮:BC 整卡都是 Skills Immigration 的类别轮,MB / PE 组名与通道不同名,
- * SK / NS 没有抽选,ON 改制卡暂撤。
- * 2026-09-24 九省通道审计改判 PE / NL:两省抽选卡只有一组、该组覆盖本省全部通道(PE「Labour & Express Entry」= Workforce
- * 各流 + PEI EE;NL「NLPNP + AIP (ITA batch)」= NLPNP 各类 + AIP 同一 EOI 池),点进来就高亮那一组;
- * MB 待 etl 把 Skilled Worker in Manitoba 那一层留作组名再登记(现组名是下层的选取方式);NS 官方只发月度总数、不分通道。
- * 同日第三批(Frank「能都改完吗」):etl 已把 MB 那一层留作组名 → 登记 MB;BC 普通岗登记 Innovate: High Economic Impact
- * (BC 现行抽选只剩定向类别轮与这一种不限职业的轮 —— 不在定向清单上的岗只能从这一轮进,门槛是薪资或分数)。
- * 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:NS 抽选卡改成同一种组头行(按月那一组),
- * 照 NL 口径登记 NS —— 官方只按月公布 EOI 池的总选取人数(liveinnovascotia.com/eoi-selection「Nova Scotia selected the following
- * number of candidates from the Expression of Interest (EOI) pool」),NSNP 各流与 AIP 同一个池,这一组覆盖本省全部通道。
- */
-export const GEN_DRAW_STREAM: Record<string, string> = {
-  /**
-   * 新不伦瑞克:NB 技术工人(官网 New Brunswick Skilled Worker stream)。
-   */
-  NB: 'NB Skilled Worker',
-
-  /**
-   * 阿尔伯塔:AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)。
-   */
-  AB: 'Alberta Opportunity Stream',
-
-  /**
-   * 爱德华王子岛:PE 劳工通道(Workforce 各流与 PEI EE 同一组抽选)。
-   */
-  PE: 'Labour & Express Entry',
-
-  /**
-   * BC 技术工人(不在定向清单上的岗只能从这一轮进)。
-   */
-  BC: 'Innovate: High Economic Impact',
-
-  /**
-   * 曼尼托巴:MB 技术工人(SWM,下面三种选取)。
-   */
-  MB: 'Skilled Worker in Manitoba',
-
-  /**
-   * 纽芬兰与拉布拉多:NL 技术工人(NLPNP 各类与 AIP 同一 EOI 池、同一组批次)。
-   */
-  NL: 'NLPNP + AIP (ITA batch)',
-
-  /**
-   * 新斯科舍:NS 技术工人(NSNP 各流与 AIP 同一个 EOI 池,官方只发月度总数;组名是 etl 给按月行起的名字,2026-09-27)。
-   */
-  NS: 'Monthly EOI selections',
-
-  /**
-   * 安大略:ON 劳动力优先(2026-06 改制后只剩 Ontario Workforce Priority Stream 一条,官方公告原句「portal now open to Ontario
-   * Workforce Priority Stream expressions of interest」;抽选卡那一行的组键,显示名走 pnp.gen.ON,同通道卡;
-   * 2026-09-27 Frank 勾「安省改一行组头」(看过效果图))。
-   */
-  ON: 'Ontario Workforce Priority Stream',
-}
-
-/**
- * PNP 格写具名清单通道时(jobs 的 pnpStream,数据层中文标签),本省抽选卡里对应的组(抽选行 stream 原值):
- * 点进来琥珀高亮、排最前。2026-09-24 Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」引出 —— 阿省医护专项清单进库,
- * 同批把与抽选组一一对得上的具名清单登记进来;SK / MB / NS / PE 的具名清单对不上抽选组,不登记 = 不高亮。
- */
-export const NAMED_DRAW_STREAMS: Record<string, string[]> = {
-  /**
-   * 阿省医护专项(Dedicated Health Care Pathway,EE 与非 EE 两版分开抽;另一组 Priority Sectors (Health Care)
-   * 是 EE 的医疗行业定向,范围比 9 个受监管职业宽,不算)。
-   */
-  'AB 医疗': ['Dedicated Health Care Pathway – Express Entry', 'Dedicated Health Care Pathway – non-Express Entry'],
-
-  /**
-   * 阿省加速科技通道。
-   */
-  'AB 科技': ['Alberta Express Entry Stream – Accelerated Tech Pathway'],
-
-  /**
-   * BC 医疗定向。
-   */
-  'BC 医疗': ['Care: Health'],
-
-  /**
-   * BC 幼教定向。
-   */
-  'BC 幼教': ['Care: Childcare'],
-
-  /**
-   * BC 兽医定向。
-   */
-  'BC 兽医': ['Care: Veterinary Care'],
-
-  /**
-   * BC 建筑技工定向。
-   */
-  'BC 建筑技工': ['Build: Construction Trades'],
-
-  /**
-   * BC 法语教师定向。
-   */
-  'BC 法语教师': ['Care: Education'],
-
-  /**
-   * PE 在需职业(Occupations in Demand 与 Workforce 各流同一组抽选,2026-09-24 九省通道审计登记)。
-   */
-  'PE 在需职业': ['Labour & Express Entry'],
-
-  /**
-   * 阿省警务专项(2026-09-24 第三批)。
-   */
-  'AB 警务': ['Alberta Express Entry Stream – Law Enforcement Pathway'],
-
-  /**
-   * 阿省旅游酒店通道。
-   */
-  'AB 旅游酒店': ['Tourism and Hospitality Stream'],
-
-  /**
-   * 阿省乡村振兴(按指定社区)。
-   */
-  'AB 乡村振兴': ['Rural Renewal Stream'],
-
-  /**
-   * NS 建筑(2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):官方 eoi-process 页 2025-11-28 条 NSNP 各流与 AIP 同一个 EOI 池,
-   * 建筑是 Skilled Worker 流下的子条件 —— 与通用岗同一组按月选取;原先没登记,点进来那一组不高亮)。
-   */
-  'NS 建筑': ['Monthly EOI selections'],
-}
-
-/**
  * 官方明说不按分数抽选的省(抽选卡标题下出一行灰字注明;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
  * NB 出处 gnb.ca 的 invitation-selection-rounds 页原句「Invitations and selections are based on provincial labour
  * market needs, available allocation and other priorities determined by the Government of New Brunswick.」
@@ -529,30 +402,6 @@ export const QUOTA_COLS: [string[], string][] = [
 ]
 
 /**
- * 本岗具名通道 → 配额行的通道键(2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):阿省医护 / 科技 / 警务三条的抽选组名与
- * 官方配额表的通道名不同字 —— 抽选「Dedicated Health Care Pathway – Express Entry」对配额「Dedicated Health Care Pathways」、
- * 抽选「Alberta Express Entry Stream – Accelerated Tech Pathway」对配额「Accelerated Tech Pathway」,按组名小写逐字相等配不上,
- * 配额卡缺「本岗通道」那一行。官方 aaip-processing-information 页 Table 6 / Table 7 就是这三行。键同 NAMED_DRAW_STREAMS
- * (岗位行 pnpStream 原值),值是配额行的通道键(小写官方通道名)。
- */
-export const QUOTA_STREAM_KEYS: Record<string, string> = {
-  /**
-   * 阿省医护专项(Table 6 Dedicated Health Care Pathways)。
-   */
-  'AB 医疗': 'dedicated health care pathways',
-
-  /**
-   * 阿省加速科技通道(Table 7 Accelerated Tech Pathway)。
-   */
-  'AB 科技': 'accelerated tech pathway',
-
-  /**
-   * 阿省警务专项(Table 7 Law Enforcement Pathway)。
-   */
-  'AB 警务': 'law enforcement pathway',
-}
-
-/**
  * 配额小表左上角那个空格的 React 列表键。
  */
 export const QUOTA_KEY_CORNER = 'corner'
@@ -571,49 +420,6 @@ export const QUOTA_KEY_LABEL = 'l'
  * 年份在统计期 / 截至日里的长度(`2026 Jan-Aug`、`2026Q2`、`2026-09-23` 的头 4 位)。
  */
 export const YEAR_LEN = 4
-
-/**
- * 「本岗通道的门槛」卡:本岗 PNP 格写的具名通道 → 门槛表(pnp_requirements.stream)里对应的官方流(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;
- * 先上 AB,没登记的通道不出卡)。键同 NAMED_DRAW_STREAMS(岗位行 pnpStream 原值);流名逐字照门槛表(含长破折号)。
- * 医疗专线有 EE / 非 EE 两版,登非 EE 版(持 offer 在阿省工作、没有 EE 档案也能走的那一版);警务专线是 EE 流的一支,
- * 官方资格页只写了 EE 流的最低要求。
- */
-export const NAMED_REQ_STREAMS: Record<string, string[]> = {
-  /**
-   * 阿省科技加速专线:EE 流最低要求 + 专线两条。
-   */
-  'AB 科技': ['AAIP Alberta Express Entry Stream', 'AAIP Alberta Express Entry Stream — Accelerated Tech Pathway'],
-
-  /**
-   * 阿省医护专项(非 EE 版)。
-   */
-  'AB 医疗': ['AAIP Dedicated Health Care Pathway — Non-Express Entry'],
-
-  /**
-   * 阿省乡村振兴流。
-   */
-  'AB 乡村振兴': ['AAIP Rural Renewal Stream'],
-
-  /**
-   * 阿省旅游酒店流(2026-09-27 同批从官方资格页补抓的五条)。
-   */
-  'AB 旅游酒店': ['AAIP Tourism and Hospitality Stream'],
-
-  /**
-   * 阿省警务专线(EE 流最低要求)。
-   */
-  'AB 警务': ['AAIP Alberta Express Entry Stream'],
-}
-
-/**
- * 同上,本岗 PNP 格没写具名通道、落省默认通道时:省码 → 门槛表里的流(口径同 GEN_DRAW_STREAM)。
- */
-export const GEN_REQ_STREAMS: Record<string, string[]> = {
-  /**
-   * 阿省默认通道 = Alberta Opportunity Stream。
-   */
-  AB: ['AAIP Alberta Opportunity Stream'],
-}
 
 /**
  * 门槛卡读的因素名(门槛表 factor 列原值)。
@@ -1265,17 +1071,6 @@ export const K_LOAD_FAILED = 'de.loadFailed'
  * 整表没取成时那句话的提醒框色:notice 域四色里的红。
  */
 export const NOTICE_ERR = 'err'
-
-/**
- * 有「通用雇主担保通道」名的九省(2026-09-23 Frank「改 全改」):PNP 格写这条通道的名字(词条 `pnp.gen.` + 省码),
- * 不再写「{省} 可提名」。出处逐省在 etl 的 PNP 资格表与 mart 常量 UNIVERSAL_*_PROVS:AB Alberta Opportunity Stream、
- * BC Skills Immigration(2026-09-24 九省通道审计改名 BC Skilled Worker:Skills Immigration 是项目名,持 offer 的通道是它下面的
- * Skilled Worker stream)、SK SINP Employment Offer、ON Ontario Workforce Priority、MB Skilled Worker in Manitoba、
- * NS / NB / NL Skilled Worker、PE PEI Workforce。九省之外(领地等)照旧「{省} 可提名」。
- * 2026-09-28 自 jobs 迁入(省提名弹框自立第 4 步):原先职位板格子按这张表判、弹框通道卡按「英文词条查不查得到」判,
- * 两种判法同一个事实 —— 并成这一张,格子、手机胶囊、通道卡都走 pnpChannelKeyOf。
- */
-export const GEN_CHANNEL_PROVS = new Set(['AB', 'BC', 'SK', 'ON', 'MB', 'NS', 'NB', 'PE', 'NL'])
 
 /**
  * 省码与 NOC 拼成排除清单键的分隔符(键形如 `ON|72310`;2026-09-28 随排除键自 jobs 迁入,拼键与查键都只在本域)。

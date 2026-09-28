@@ -1838,6 +1838,8 @@ export const PROV_PREFIX_TRIM_RE = /^[\s:：—–-]+/
  * 与本岗那组「Skilled Worker in Manitoba」名字几乎一样,灰字改「MB 定向招募」(三语),分开。
  * 同批撤掉组头灰字的机器译名兜底(照本段原话「表里没有的原样只显英文,不让模型现编译名」),体检点名译错 / 撞名的几组补人工名:
  * 阿省 EE 定向四组与机会通道定向组、曼省 GIP、NB 快速通道 / 法语专项 / AIP。
+ * 2026-09-28 通道表批二:上文说的 NAMED_DRAW_STREAMS / GEN_DRAW_STREAM 两张对照已搬进库表 pathways(etl/pathways/constants.py 人工核定);
+ * 本表的通道行(与本站通道同一个项目、或覆盖本站通道的组)批二第二步改从 pathways 的直白名出,先出效果图。
  */
 export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string; en?: string }> = {
   // AB(AAIP)

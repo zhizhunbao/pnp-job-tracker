@@ -21,7 +21,7 @@ import { DRAWS_ALL_KEY, LANG_EN, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD
 import {
   channelsOf, eeGroupOf, eeHitOf, makeToggleOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
-  makeLoadPnpData, pnpDataOf,
+  makeLoadPnpData, pnpDataOf, pnpDefaultProvsOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
@@ -39,7 +39,7 @@ import { CACHE } from './variables'
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:多交门槛卡的开合(默认全收,值一行就是摘要,点开看原句)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:门槛卡不再点开,开合随之不交。
  *
- * @param x 本岗、界面语言、扁平清单、职业名字典与译名开关。
+ * @param x 本岗、界面语言、扁平清单、职业名字典、译名开关与通道对照表。
  * @returns 取词函数、ref 盒、字典、命中结论、折叠状态与通道条目。
  */
 export function usePnpList(x: PnpListHookIn): PnpListPanel {
@@ -57,6 +57,10 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     return pnpMatchOf({ job: x.job, occ: x.occ })
   }, [x.job, x.occ])
 
+  const defaults = useMemo(function defaultsOf() {
+    return pnpDefaultProvsOf(x.pathways)
+  }, [x.pathways])
+
   useEffect(function scrollToHit() {
     scrollIntoHit({ ref: matchRef })
   }, [match.streams])
@@ -70,7 +74,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     toggleOf: makeToggleOf({ setKeys: setClosed }),
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
-    channels: channelsOf({ t, tEn, lang: x.lang, showZh: x.showZh, job: x.job }),
+    channels: channelsOf({ t, tEn, lang: x.lang, showZh: x.showZh, job: x.job, defaults }),
   }
 }
 
@@ -163,6 +167,7 @@ export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
     draws: got.draws,
     ops: got.ops,
     reqs: got.reqs,
+    pathways: got.pathways,
   }
 }
 
