@@ -235,6 +235,12 @@ from mart.constants import (
 )
 from mart.constants import APPLY_CONFIDENTIAL_RE, APPLY_VERB_BEFORE, APPLY_VERB_NEAR_RE
 from mart.scheme import ApplyTally, HowtoRecIn
+from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank「先做拆分」)
+    FIELD_CITY, FIELD_HOURS, FIELD_NOC, FIELD_PROVINCE, FIELD_SALARY, FIELD_TERM, K_NOC_FROM, K_P_DATE, K_P_EMPLOYER,
+    K_P_EXT, K_P_HAVE, K_P_MISSING, K_P_ORIGIN, K_P_STATED, K_P_TEXT, K_P_TITLE, K_P_URL, K_PENDING_JOBS, K_STATED_NONE,
+    NOC_FROM_MODEL, NOC_FROM_RULE, NOC_FROM_SOURCE, OUT_PENDING_JOBS, PENDING_DONE_TPL,
+)
+from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -1352,14 +1358,20 @@ def to_scored_row(x: ScoredRowIn) -> dict:
     2026-09-26 /fe Frank 勾:通道两格带上这岗的工时 / 雇佣期(offer_fits),EE 类别走 ee_label_of(魁省不挂)。
     2026-09-27 Frank 拍板「看得出才改判」:通道两格再带上雇主名 / 职位名 / 证书栏(带行业条件的清单与带星号码按它们判);
     分数照旧只看职业码、不看雇主(+12「省点名招」按 named_by_prov;同日 Frank 选「只上纯属改对的」,行级带条件的码不算进去,
-    分数与改前逐条相同,见 constants.K_NAMED)。"""
+    分数与改前逐条相同,见 constants.K_NAMED)。
+    2026-09-28 缺数据修复批:行里多记一格职业码来路(K_NOC_FROM:源带码 / 标题规则 / qwen 判),汇装判「全」时 qwen 判的不算。"""
     noc = x.job.hint
+    noc_from = NOC_FROM_SOURCE
     if (x.job.title.strip().lower(), noc) in SRC_NOC_BLOCKLIST:
         noc = ""
     if not noc:
         noc = classify_title(x.job.title)
+        noc_from = NOC_FROM_RULE
     if not noc:
         noc = x.labels.get(x.job.ext, "")
+        noc_from = NOC_FROM_MODEL
+    if not noc:
+        noc_from = ""
     teer = teer_of_noc(noc)
     acc = accessibility(x.job.title)
     judge = PnpJudgeIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov, hours=x.job.hours, term=x.job.term,
@@ -1376,6 +1388,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
                                             hours=x.job.hours, term=x.job.term, employer=x.job.employer,
                                             title=x.job.title, certs=x.job.certs)),
         "eeCategory": ee_label_of(EeLabelIn(tables=x.tables, noc=noc, prov=x.job.prov)),
+        K_NOC_FROM: noc_from,
     }
 
 
@@ -2084,6 +2097,7 @@ def add_job(x: AddJobIn) -> None:
     DB date 列灌入时被 Postgres 悄悄解析所以列表没炸,但榜单/统计拿它和 ISO 做字符串比较永真
     (weekly-top 全库入池、stats 7 天新增=在招总数),前端 slice(0,10) 还截出「June 26, 2」。
     单点断根:进 jobs 之前就归一。
+    2026-09-28 缺数据修复批:整理版(qwen)补空之前,先把原帖自带的工时 / 雇佣期记进 ctx.emp_src —— 判「全」只认它。
     """
     if x.external_id in x.ctx.expired:
         x.ctx.dropped_expired += 1
@@ -2098,6 +2112,8 @@ def add_job(x: AddJobIn) -> None:
     x.fields[K_PILOT_OCC] = pilot_occ_of(PilotOccIn(
         community=community, occ_set=x.ctx.pilot_occ_sets.get(community),
         noc=sc.get(K_NOC) or ""))
+    x.ctx.emp_src[x.external_id] = EmpOut(hours=x.fields.get(K_EMPLOYMENT_HOURS) or "",
+                                          term=x.fields.get(K_EMPLOYMENT_TERM) or "")
     fill_formatted(FillFormattedIn(fields=x.fields, rec=x.ctx.formatted.get(x.external_id)))
     w = wage_of(WageOfIn(wages=x.ctx.wages, noc=sc.get(K_NOC) or "",
                          province=x.fields.get(K_PROVINCE, "")))
@@ -2206,6 +2222,7 @@ def collect_board_rows(ctx: MartCtx) -> None:
     (先记「见过」再展示去重,顺序同样是硬的)。板帖不进验尸(过期由板域按 validThrough 出仓),
     externalId 带板名前缀不与 jb: 相撞。
     2026-09-25 过期兜底:读仓走 read_board_rows,过截止日的连「见过」集也不进;库里已在架的由 seed 按截止日收关。
+    2026-09-28 缺数据修复批:板仓行带的 stated_none(原帖明写不公布的格)记进 ctx,待修清单判「全」时这些格不算缺。
     """
     for path, origin in IN_BOARD_STORES:
         if not path.exists():
@@ -2225,6 +2242,8 @@ def collect_board_rows(ctx: MartCtx) -> None:
             add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
                                        extra=to_jb_company_extra(j)))
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
+            if j.get(K_STATED_NONE):
+                ctx.stated_none[ext] = j[K_STATED_NONE]
             add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=cslug,
                              fields=to_board_job_fields(BoardJobIn(job=j, origin=origin))))
 
@@ -4475,7 +4494,7 @@ def new_mart_ctx() -> MartCtx:
                    formatted=load_formatted(),
                    pilot_occ_sets=load_pilot_occ_sets(), expired=load_expired_ids(),
                    salary_guards=guards, companies={}, jobs=[], seen=set(),
-                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0)
+                   seen_ext=set(), seen_ids=set(), dropped_expired=0, late_salary=0, emp_src={}, stated_none={})
 
 
 def say_mart_tallies(ctx: MartCtx) -> None:
@@ -4506,6 +4525,8 @@ def to_mart_tables() -> dict:
       对账表  closed_jobs.json(实测判死名单)· seen_ids.json(本轮**真实见过**的全部 posting id,
               含被展示去重丢掉的 —— seed 的下架对账只认它,展示去重不许有下架副作用)
     seed 从此只读 mart 直接灌库,不再在加载器里东拼西凑(中介过滤/去重/评分关联都下沉到这)。
+    2026-09-28 缺数据修复批:dict 里多一项 pending_jobs(待修清单,唯一不是表的一项),build_mart 落盘前摘走写进
+    processed/repair/,不进 data/mart/;本批闸不接,jobs 照旧装全部岗。
     """
     ctx = new_mart_ctx()
     collect_ats_rows(ctx)
@@ -4524,6 +4545,7 @@ def to_mart_tables() -> dict:
     universe = load_noc_universe()
     return {
         "companies": list(ctx.companies.values()), "jobs": ctx.jobs,
+        "pending_jobs": pending_jobs_of(ctx),
         "closed_jobs": build_closed_jobs(), "seen_ids": sorted(ctx.seen_ids),
         "provinces": build_provinces(prov_info()),
         "cities": build_cities(CityBuildIn(jobs=ctx.jobs, i18n=city_i18n,
@@ -4578,12 +4600,103 @@ def write_open_ids(seen_ids: list) -> None:
                                        indent=INDENT_2, compact=True))
 
 
+def pending_jobs_of(ctx: MartCtx) -> list:
+    """待修清单(2026-09-28 Frank「先做拆分」):装配好的岗逐条判六格,不全的出一条待修行,按发布日新 → 旧;
+    齐全的不进。qwen 填的不算全 —— 职业码看评分行记的来路,工时 / 雇佣期看 add_job 在整理版补空之前记的原帖值。"""
+    out: list = []
+    for row in ctx.jobs:
+        ext = row.get(K_EXTERNAL_ID) or ""
+        noc_from = (ctx.scored.get(ext) or {}).get(K_NOC_FROM) or ""
+        emp = ctx.emp_src.get(ext)
+        if emp is None:
+            emp = EmpOut(hours="", term="")
+        stated = ctx.stated_none.get(ext) or {}
+        missing = missing_fields_of(MissingIn(row=row, noc_from=noc_from, emp=emp, stated=stated))
+        if len(missing) == 0:
+            continue
+        employer = (ctx.companies.get(row.get(K_COMPANY_SLUG)) or {}).get(K_NAME) or ""
+        out.append(to_pending_row(PendingRowIn(row=row, missing=missing, noc_from=noc_from, emp=emp, stated=stated,
+                                               employer=employer)))
+    out.sort(key=pending_order_of, reverse=True)
+    return out
+
+
+def missing_fields_of(x: MissingIn) -> list:
+    """一条岗缺哪几格(按六格顺序;全了给空清单):职业码空或是 qwen 判的、工时 / 雇佣期原帖没带、
+    薪资空且原帖没明写不公布、省空、城市空。"""
+    out: list = []
+    if (x.row.get(K_NOC) or "") == "" or x.noc_from == NOC_FROM_MODEL:
+        out.append(FIELD_NOC)
+    if x.emp.hours == "":
+        out.append(FIELD_HOURS)
+    if x.emp.term == "":
+        out.append(FIELD_TERM)
+    if (x.row.get(K_SALARY_TEXT) or "") == "" and FIELD_SALARY not in x.stated:
+        out.append(FIELD_SALARY)
+    if (x.row.get(K_PROVINCE) or "") == "":
+        out.append(FIELD_PROVINCE)
+    if (x.row.get(K_CITY) or "") == "":
+        out.append(FIELD_CITY)
+    return out
+
+
+def to_pending_row(x: PendingRowIn) -> dict:
+    """岗位行 → 待修行(给修的人读:缺哪几格、算数的已有格、原帖明写不公布的格、原帖正文)。
+    标题与雇主名先还原转义符(待修清单在 unescape_mart_names 之前算,同一把 plain_of_entities)。"""
+    return {
+        K_P_EXT: x.row.get(K_EXTERNAL_ID) or "", K_P_ORIGIN: x.row.get(K_ORIGIN) or "",
+        K_P_URL: x.row.get(K_APPLY_URL) or "", K_P_TITLE: plain_of_entities(x.row.get(K_TITLE) or ""),
+        K_P_EMPLOYER: plain_of_entities(x.employer),
+        K_P_DATE: x.row.get(K_DATE_POSTED) or "", K_P_MISSING: x.missing, K_P_HAVE: have_fields_of(x),
+        K_P_STATED: x.stated, K_P_TEXT: x.row.get(K_DESCRIPTION) or "",
+    }
+
+
+def have_fields_of(x: PendingRowIn) -> dict:
+    """算数的已有格 → 值(缺的格不在里面;职业码是 qwen 判的也不在里面 —— 不给修的人看错的提示)。"""
+    have: dict = {}
+    if FIELD_NOC not in x.missing:
+        have[FIELD_NOC] = x.row.get(K_NOC)
+    if FIELD_HOURS not in x.missing:
+        have[FIELD_HOURS] = x.emp.hours
+    if FIELD_TERM not in x.missing:
+        have[FIELD_TERM] = x.emp.term
+    if FIELD_SALARY not in x.missing and (x.row.get(K_SALARY_TEXT) or "") != "":
+        have[FIELD_SALARY] = x.row.get(K_SALARY_TEXT)
+    if FIELD_PROVINCE not in x.missing:
+        have[FIELD_PROVINCE] = x.row.get(K_PROVINCE)
+    if FIELD_CITY not in x.missing:
+        have[FIELD_CITY] = x.row.get(K_CITY)
+    return have
+
+
+def pending_order_of(row: dict) -> str:
+    """待修行排序键:发布日 ISO 串(新的先修)。"""
+    return row.get(K_P_DATE) or ""
+
+
+def write_pending_jobs(rows: list) -> None:
+    """待修清单落 processed/repair/(不进 data/mart/,不上传;紧凑写,每条带正文所以大),报按来源、按格的条数。"""
+    OUT_PENDING_JOBS.parent.mkdir(parents=True, exist_ok=True)
+    paths.write_json(paths.WriteJsonIn(path=OUT_PENDING_JOBS, payload=rows, indent=INDENT_2, compact=True))
+    by_origin: Counter = Counter()
+    by_field: Counter = Counter()
+    for r in rows:
+        by_origin[r[K_P_ORIGIN]] += 1
+        for f in r[K_P_MISSING]:
+            by_field[f] += 1
+    say(PENDING_DONE_TPL.format(n=len(rows), by_origin=dict(by_origin.most_common()),
+                                by_field=dict(by_field.most_common()), out=OUT_PENDING_JOBS))
+
+
 def build_mart() -> None:
-    """步骤②:跨源汇装 data/mart/(一文件 = 一张 DB 表;中介过滤/去重/评分关联全在这层落定)。"""
+    """步骤②:跨源汇装 data/mart/(一文件 = 一张 DB 表;中介过滤/去重/评分关联全在这层落定)。
+    2026-09-28 缺数据修复批:落盘前先摘走待修清单(不是表)写进 processed/repair/。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
     mart = to_mart_tables()
     unescape_mart_names(mart)
     write_open_ids(mart[K_SEEN_IDS])
+    write_pending_jobs(mart.pop(K_PENDING_JOBS))
     write_mart_table(TableWriteIn(tables=mart, out_dir=OUT_MART))
     say(MART_DONE_TPL.format(dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=mart, width=TABLE_NAME_WIDTH))
@@ -6926,10 +7039,11 @@ def run_tests() -> None:
     运营统计补行(MartOpsExtraTest),一个套件跑完。
     同日九省体检修复批再加一组:MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的 17 码排除表)。
     同日 Frank 拍板「看得出才改判」再加一组:MartEmployerSectorTest(雇主行业三态 + 五条改判规则的真数据金标 / 性质 / 变异探针;
-    同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。"""
+    同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。
+    2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest):
+                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

@@ -53,6 +53,8 @@ cms/dev.log
 # jdformat 域产物(局域网 qwen 逐帖预生成的整理版,只留在招岗;汇装并进 jobs.jd_formatted,库里有同一份;单文件 51MB 过 GitHub 50MB 警告线,
 # 2026-09-25 Frank「全提交一下」清点时发现从没入过库,照 sites 待遇不入 git)
 /data/processed/jdformat/
+# repair 域待修清单(mart 汇装每轮重写,每条带原帖正文,几十 MB;修复库 jobs.json / companies.json 照常入库留痕;2026-09-28)
+/data/processed/repair/pending_*.json
 /data/mart/
 # paths 域写权探针残留(不该入库)
 .write_probe

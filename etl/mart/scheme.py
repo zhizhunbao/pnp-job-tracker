@@ -774,6 +774,12 @@ class MartCtx:
     late_salary: int
     """本轮抢在 04d 之后落盘、由 09 现算现补的新帖数(报数用)。"""
 
+    emp_src: dict
+    """externalId → 原帖自带的工时 / 雇佣期(EmpOut;add_job 在整理版补空之前记。判「全」只认它,qwen 补的不算;2026-09-28)。"""
+
+    stated_none: dict
+    """externalId → 原帖明写不公布的格 → 原文(板仓行 stated_none,如 Jobillico 薪资栏「À discuter」;2026-09-28)。"""
+
 
 @dataclass
 class SiteCheckIn:
@@ -2015,6 +2021,46 @@ class NocOpeningIn:
 
     desc: dict
     """该 NOC 的官方名行(缺 = 空 dict)。"""
+
+
+@dataclass
+class MissingIn:
+    """missing_fields_of() 入参:一条装配好的岗 + 判「全」要的三样来路(2026-09-28 缺数据修复批)。"""
+
+    row: dict
+    """装配好的 jobs 行。"""
+
+    noc_from: str
+    """评分行记的职业码来路(source / rule / model;没码是空串)。"""
+
+    emp: EmpOut
+    """原帖自带的工时 / 雇佣期(整理版补空之前记的)。"""
+
+    stated: dict
+    """原帖明写不公布的格 → 原文。"""
+
+
+@dataclass
+class PendingRowIn:
+    """to_pending_row() 入参(2026-09-28)。"""
+
+    row: dict
+    """装配好的 jobs 行。"""
+
+    missing: list
+    """缺的格(missing_fields_of 算的)。"""
+
+    noc_from: str
+    """职业码来路(qwen 判的码不进已有格)。"""
+
+    emp: EmpOut
+    """原帖自带的工时 / 雇佣期。"""
+
+    stated: dict
+    """原帖明写不公布的格 → 原文。"""
+
+    employer: str
+    """雇主名(公司行的 name)。"""
 
 
 # =========================================================================
@@ -4431,3 +4477,70 @@ class MartOpsExtraTest(unittest.TestCase):
         self.assertEqual(fn.to_ops_base({"province": "SK", "quarter": "2026Q2"})["asOf"], "2026-06")
         ab = fn.to_ops_base({"province": "AB", "asOf": "2026-09-23", "quarter": "2026Q2"})
         self.assertEqual(ab["asOf"], "2026-09-23")
+
+
+class MartPendingTest(unittest.TestCase):
+    """待修清单判「全」自测(2026-09-28 Frank「先做拆分」;设计稿 docs/design/缺数据不上线与Opus修复-20260928.md 第二节)。
+
+    金标:一条齐全的 Job Bank 岗不进清单;六格逐格缺一格各报那一格;职业码是 qwen 判的算缺(标题规则 / 源带码的不算缺);
+    工时 / 雇佣期只看原帖带的(岗位行里 qwen 补上的值不算);薪资空但原帖明写「待议」的不算缺;六格全缺按六格顺序报。
+    待修行:已有格里不出现 qwen 的码,原帖正文与明写不公布的格原样带上,标题与雇主名还原转义符。只喂字典,不读仓内文件。"""
+
+    full = {"externalId": "jb:1", "origin": "jobbank", "noc": "65201", "employmentHours": "full",
+            "employmentTerm": "permanent", "salaryText": "$18.00 hourly", "province": "ON", "city": "Ottawa",
+            "title": "Cook &amp; Helper", "applyUrl": "https://example.test/1", "datePosted": "2026-09-28",
+            "description": "We are hiring a full-time permanent cook."}
+    """一条六格齐全的岗位行(标题带转义符,验还原)。"""
+
+    def row_without(self, key: str) -> dict:
+        """齐全行去掉一格。"""
+        out: dict = {}
+        for k, v in self.full.items():
+            if k != key:
+                out[k] = v
+        return out
+
+    def missing(self, row: dict, noc_from: str, hours: str, term: str, stated: dict) -> list:
+        """跑 missing_fields_of(原帖工时 / 雇佣期与明写不公布的格由参数给)。"""
+        from mart import functions as fn
+        return fn.missing_fields_of(MissingIn(row=row, noc_from=noc_from, emp=EmpOut(hours=hours, term=term),
+                                              stated=stated))
+
+    def test_full_row_not_pending(self) -> None:
+        """齐全行(源带码或标题规则)不缺格。"""
+        self.assertEqual(self.missing(self.full, "source", "full", "permanent", {}), [])
+        self.assertEqual(self.missing(self.full, "rule", "full", "permanent", {}), [])
+
+    def test_each_field(self) -> None:
+        """六格逐格缺一格,各报那一格;qwen 的码算缺;岗位行里有工时 / 雇佣期但原帖没带的算缺。"""
+        self.assertEqual(self.missing(self.row_without("noc"), "", "full", "permanent", {}), ["noc"])
+        self.assertEqual(self.missing(self.full, "model", "full", "permanent", {}), ["noc"])
+        self.assertEqual(self.missing(self.full, "source", "", "permanent", {}), ["hours"])
+        self.assertEqual(self.missing(self.full, "source", "full", "", {}), ["term"])
+        self.assertEqual(self.missing(self.row_without("salaryText"), "source", "full", "permanent", {}), ["salary"])
+        self.assertEqual(self.missing(self.row_without("province"), "source", "full", "permanent", {}), ["province"])
+        self.assertEqual(self.missing(self.row_without("city"), "source", "full", "permanent", {}), ["city"])
+
+    def test_stated_salary_not_missing(self) -> None:
+        """薪资空但原帖明写「待议」的不算缺;明写的是别的格,薪资照样算缺。"""
+        row = self.row_without("salaryText")
+        self.assertEqual(self.missing(row, "source", "full", "permanent", {"salary": "À discuter"}), [])
+        self.assertEqual(self.missing(row, "source", "full", "permanent", {"hours": "x"}), ["salary"])
+
+    def test_all_missing_order(self) -> None:
+        """六格全缺按六格顺序报。"""
+        row = {"externalId": "x:1"}
+        self.assertEqual(self.missing(row, "", "", "", {}), ["noc", "hours", "term", "salary", "province", "city"])
+
+    def test_pending_row(self) -> None:
+        """待修行:qwen 的码不进已有格、工时 / 雇佣期取原帖值、正文与明写格原样带、标题与雇主名还原转义符。"""
+        from mart import functions as fn
+        row = self.row_without("salaryText")
+        emp = EmpOut(hours="full", term="")
+        out = fn.to_pending_row(PendingRowIn(row=row, missing=["noc", "term"], noc_from="model", emp=emp,
+                                             stated={"salary": "À discuter"}, employer="A &amp; B Inc."))
+        self.assertEqual(out["missing"], ["noc", "term"])
+        self.assertEqual(out["have"], {"hours": "full", "province": "ON", "city": "Ottawa"})
+        self.assertEqual(out["stated_none"], {"salary": "À discuter"})
+        self.assertEqual((out["title"], out["employer"]), ("Cook & Helper", "A & B Inc."))
+        self.assertEqual(out["text"], self.full["description"])

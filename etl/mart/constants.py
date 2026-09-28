@@ -1224,6 +1224,19 @@ SCORE_DONE_TPL = "Scored {n} jobs → all-scored.json"
 SCORE_TEER_TPL = "TEER 分布: {dist}"
 """评分步的 TEER 分布留痕。"""
 
+K_NOC_FROM = "nocFrom"
+"""评分行:职业码的来路(2026-09-28 缺数据修复批立)。汇装判「全」时 qwen 判的码不算(Frank「qwen 不准」;
+设计稿 docs/design/缺数据不上线与Opus修复-20260928.md 第二节);只进 all-scored.json 中间产物,不进 jobs 表。"""
+
+NOC_FROM_SOURCE = "source"
+"""来路:源带码(Job Bank 官方码;修复库写回各仓的码也走这一路)。"""
+
+NOC_FROM_RULE = "rule"
+"""来路:本站标题规则(classify_title)。"""
+
+NOC_FROM_MODEL = "model"
+"""来路:classify 域 qwen 判的码(判「全」时不算)。"""
+
 
 # =========================================================================
 # 7. mart:公司装配(ATS/JB 公司行 + 官网富化 + LMIA 雇佣记录 + 四维档)
@@ -2918,6 +2931,70 @@ MART_DONE_TPL = "MART built → {dir}"
 
 K_SEEN_IDS = "seen_ids"
 """见过集在产出 dict 里的表名。"""
+
+OUT_PENDING_JOBS = paths.PROCESSED_REPAIR / "pending_jobs.json"
+"""待修清单(2026-09-28 Frank「jobs 信息齐全的一个 json 不全的另一个 json」「先做拆分」):六格不全的在招岗,每条带缺哪几格、
+算数的已有格与原帖正文,Opus 读它修(设计稿 docs/design/缺数据不上线与Opus修复-20260928.md)。写 processed/ 不写 mart/ ——
+mart 目录整个会被 upload 传去 cms,这份纯属 ETL 内部协作(同 OUT_MART_OPEN_IDS 的判法);每条带正文,大,不进 git。
+本批闸不接:jobs.json 照旧装全部岗,线上不变;接闸(不全的不进 jobs.json)是后面一批。"""
+
+K_PENDING_JOBS = "pending_jobs"
+"""待修清单在 to_mart_tables 产出 dict 里的键 —— 唯一不是表的一项:build_mart 落盘前摘走写 OUT_PENDING_JOBS,不进 data/mart/。"""
+
+FIELD_NOC = "noc"
+"""「全」的六格之一:职业分类(待修清单 missing / have 里的格名,与修复库同一套)。"""
+
+FIELD_HOURS = "hours"
+"""六格之一:工时。"""
+
+FIELD_TERM = "term"
+"""六格之一:雇佣期。"""
+
+FIELD_SALARY = "salary"
+"""六格之一:薪资(板仓行 stated_none 里的格名也是它)。"""
+
+FIELD_PROVINCE = "province"
+"""六格之一:省。"""
+
+FIELD_CITY = "city"
+"""六格之一:城市。"""
+
+K_STATED_NONE = "stated_none"
+"""板仓行:原帖明写不公布的格 → 原文(Jobillico 薪资栏「À discuter / To be discussed」;2026-09-28)。这一格算「原帖没写」,
+判「全」时不算缺。"""
+
+K_P_EXT = "ext"
+"""待修行:externalId。"""
+
+K_P_ORIGIN = "origin"
+"""待修行:渠道(jobbank / jobillico / careerbeacon …)。"""
+
+K_P_URL = "url"
+"""待修行:投递 / 原帖链接。"""
+
+K_P_TITLE = "title"
+"""待修行:标题。"""
+
+K_P_EMPLOYER = "employer"
+"""待修行:雇主名(公司行的 name)。"""
+
+K_P_DATE = "date_posted"
+"""待修行:发布日(排序键:新 → 旧)。"""
+
+K_P_MISSING = "missing"
+"""待修行:缺的格(六格名的子集,按六格顺序)。"""
+
+K_P_HAVE = "have"
+"""待修行:算数的已有格 → 值(qwen 填的不在里面)。"""
+
+K_P_STATED = "stated_none"
+"""待修行:原帖明写不公布的格 → 原文(给修的人看,这些格不算缺)。"""
+
+K_P_TEXT = "text"
+"""待修行:原帖正文(Opus 从这里摘原句)。"""
+
+PENDING_DONE_TPL = "  待修清单:不全 {n} 条(按来源 {by_origin};按格 {by_field})→ {out}"
+"""待修清单落盘留痕。"""
 
 
 # =========================================================================

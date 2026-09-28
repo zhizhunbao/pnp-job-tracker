@@ -171,6 +171,10 @@ PROCESSED_EXPLORE = PROCESSED / "explore"
 """explore 域产物(2026-09-20):seen.json = slug → 被用户看过的公司(列出次数 / 最近列出 / 最近点开),
 sites 与 company 两域的例行轮拿它排队(被看过的在前);队列本身在生产库 employer_explore 表。"""
 
+PROCESSED_REPAIR = PROCESSED / "repair"
+"""repair 域目录(2026-09-28 立,设计稿 docs/design/缺数据不上线与Opus修复-20260928.md):pending_jobs.json = mart 汇装每轮写的
+待修清单(不全的岗 + 缺哪几格 + 原帖正文,Opus 读它修;大,不进 git);修复库 jobs.json / companies.json 随批 2 修复工具落地。"""
+
 PROCESSED_CLASSIFY = PROCESSED / "classify"
 """classify 域产物(2026-09-15 立域):jobs.json = externalId → 分类记录(职业码 + 判法 + 候选 + 版本),
 companies.json = slug → 行业记录;mart 汇装照此填岗位 noc 与公司行业,自己不再猜。"""
