@@ -7,7 +7,7 @@ __init__ 无 META),全部步骤走 TOOLS 手动点名。
 🔴 命中件用 sys.exit(1) 表态,SystemExit 不被门的 except Exception 捕获,**穿门**
 直接成为进程退出码 —— pre-push 与 CI 靠它拦。
 一律从仓库根执行:
-    python etl/gate/main.py --only shape      # 形制十规自查(pre-push 这条)
+    python etl/gate/main.py --only shape      # 形制十一规自查(pre-push 这条)
     python etl/gate/main.py --only prune      # 修完存量后收紧基线(只紧不松)
     python etl/gate/main.py --only report     # 写法债报告 → reports/ruff-<时间戳>.md
     python etl/gate/main.py --only locktest   # build/jobbank 跨进程锁的真件自查
@@ -35,8 +35,8 @@ TOOLS = {
     "locktest": run_lock_tests,
 }
 """全部可 --only 点名的步(本域只有手动件):
-  shape     形制十规自查:域间 import / IN-OUT 常量 / 一域一门 / 裸 print /
-            functions 方言四查 / 域文件名白名单;硬红零容忍,②③ 走基线只紧不松
+  shape     形制十一规自查:域间 import / IN-OUT 常量 / 一域一门 / 裸 print /
+            functions 方言四查 / 域文件名白名单 / functions 行数上限;硬红零容忍,②③ 走基线只紧不松
   prune     修掉存量后收紧基线(拒绝在有新增违规时写盘)
   report    etl 写法债报告四段(闸视角 / 裸账统计 / 已溶区余账 / 存量区 top 30)
   locktest  Job Bank 仓锁与 build 汇装链的真件自查(6 例;原 etl/test_jobbank_lock.py)

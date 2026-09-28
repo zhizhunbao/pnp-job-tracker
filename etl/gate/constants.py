@@ -1,5 +1,5 @@
 """
-gate 域常量 —— 自查闸的词汇表(形制十规的名单与正则 / 基线路径 / 写法债报告的规则集
+gate 域常量 —— 自查闸的词汇表(形制十一规的名单与正则 / 基线路径 / 写法债报告的规则集
 与 md 骨架 / 锁自查档位;照 company 三件套样张,段横幅三行框 + N. 编号,与
 functions.py / scheme.py 同名同序镜像)。
 
@@ -13,7 +13,7 @@ import re
 import paths
 
 # =========================================================================
-# 1. 形制扫描(十规)
+# 1. 形制扫描(十一规)
 # =========================================================================
 
 REPO_ROOT = paths.ROOT
@@ -121,7 +121,23 @@ MAIN_NAME = "main.py"
 """域唯一入口的文件名(③号规:只有它许带 __main__)。"""
 
 FUNCTIONS_NAME = "functions.py"
-"""域内行为件的文件名(⑤⑥⑦⑧号规只查它)。"""
+"""域内行为件的文件名(⑤⑥⑦⑧⑪号规只查它)。"""
+
+FUNCTIONS_LINES_MAX = 1000
+"""⑪号规:functions.py 总行数上限(2026-09-28 Frank「先立闸吧,1000 行」)。
+数总行数,注释空行都算 —— 判据是「AI 一次读得完」:单次读文件上限 25000 token,etl 写法约合 1100 行
+(cms ts 约 1400~1800 行;实测 cms lib/employers/functions.ts 2402 行 = 40246 token,一次只读到第 1268 行),
+超了只能跳着读、漏看已有函数又写一份。业界默认 300~2000 不统一(Pylint 1000),不照搬。
+cms 同口径的闸 = eslint max-lines(cms/eslint.config.mjs)。"""
+
+OVERSIZE_KNOWN = ("ats/functions.py", "company/functions.py", "crawl/functions.py", "fcip/functions.py",
+                  "ircc/functions.py", "jobbank/functions.py", "mart/functions.py", "noc/functions.py",
+                  "pnp/functions.py", "pte/functions.py", "rcip/functions.py")
+"""⑪号规的存量名单:立闸当天超线的 11 件(同日 Frank「先不拆」—— 只立闸,一件不拆)。
+名单上的件放行;名单只记「超了」不记超多少,照样能长(登记时:pnp 7789 / mart 6910 / company 3175 /
+pte 3126 / jobbank 1953 / rcip 1939 / crawl 1624 / noc 1397 / ircc 1263 / ats 1165 / fcip 1035 行)。
+拆到线下的件不删名单也红(OVERSIZE_STALE_TPL)—— 只紧不松。不走 etl_shape_baseline.json:批O 起账本文件
+已退役,再建会撞⑩号规(域里只许五件套名字)。拆法(子域形制)还没有样张,首例先问 Frank。"""
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 """①号规:行首 import/from 的首段模块名。"""
@@ -197,6 +213,12 @@ BANNED_SYNTAX_TPL = "{rel}:{lineno} {label}(显式循环令/一参令,2026-08-30
 STRAY_FILE_TPL = ("{rel}: 域文件名不在五件套白名单"
                   "(2026-08-31 批K Frank:域=五件套,生而合规;野文件=乱的入口)")
 """⑩号规违规行(硬红,不进基线)。"""
+
+OVERSIZE_TPL = "{rel}: functions.py 超过 {max} 行(⑪号规;拆法还没有样张,先问 Frank)"
+"""⑪号规违规行(硬红;存量走 OVERSIZE_KNOWN)。"""
+
+OVERSIZE_STALE_TPL = "{rel}: 已降到 {max} 行以内,从 constants.OVERSIZE_KNOWN 删掉这一条(只紧不松)"
+"""⑪号规存量名单过期行(硬红:拆完当批收紧名单)。"""
 
 LBL_LAMBDA = "lambda"
 """⑧号规的说法:匿名函数。"""
@@ -320,7 +342,7 @@ MD_INTRO = "两个视角:闸视角守门(带 pyproject 豁免),裸账视角(--is
 """报告导语。"""
 
 MD_EXEMPT_NOTE = ("豁免清单 = pyproject.toml per-file-ignores,一文件一行只紧不松;"
-                  "形制闸另有自研十规(etl/gate/main.py --only shape)。")
+                  "形制闸另有自研十一规(etl/gate/main.py --only shape)。")
 """豁免与形制闸的指路行。"""
 
 MD_SEC1 = "## ① 闸视角"

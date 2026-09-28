@@ -16,7 +16,8 @@ Ruff 管不住的形制,这里当闸(判据见 docs/design/etl分域-20260829.md
   ④ 裸 print 禁(域内出口唯一 = log.functions.say/err);
   ⑤ functions 顶层下划线函数禁;⑥ functions 顶层常量禁(归 constants);
   ⑦ 零字符串令;⑧ 显式循环令(lambda/推导式/genexp 禁);⑨ 一参令(默认值参数禁)+
-  内嵌函数禁;⑩ 域文件名白名单(五件套 + variables,野文件硬红,无例外表)。
+  内嵌函数禁;⑩ 域文件名白名单(五件套 + variables,野文件硬红,无例外表);
+  ⑪ functions.py 行数上限 1000(2026-09-28 Frank,存量名单 constants.OVERSIZE_KNOWN,硬红)。
 ②③ 存量走基线 etl/gate/etl_shape_baseline.json:新增违规即红;修掉存量后跑
 `python etl/gate/main.py --only prune` 收紧基线 —— 只紧不松(同 cms suppressions 惯例)。
 """
@@ -36,11 +37,11 @@ from gate.constants import (
     ERRORS_REPLACE, ETL_DIR,
     ETL_PREFIX, EXEMPT_VALUES, EXTRA_MAIN_TPL, FENCE, FIXED_TPL, FRAG_LEN, FRESH_ROW_TPL,
     GIT_LSFILES, PY_SUFFIX,
-    FUNCTIONS_NAME, HARD_ROW_TPL, IMPORT_RE, INFRA, INOUT_RE, KEY_CALLS, LBL_DICTCOMP,
+    FUNCTIONS_LINES_MAX, FUNCTIONS_NAME, HARD_ROW_TPL, IMPORT_RE, INFRA, INOUT_RE, KEY_CALLS, LBL_DICTCOMP,
     LBL_GENEXP, LBL_LAMBDA, LBL_LISTCOMP, LBL_SETCOMP, LOCK_VERBOSITY, MAIN_NAME, MAIN_RE,
     MD_EXEMPT_NOTE, MD_INTRO, MD_ROW_TPL, MD_SEC1, MD_SEC2, MD_SEC3_TPL, MD_SEC4_TPL,
     MD_TABLE_HEAD, MD_TABLE_SEP, MD_TITLE_TPL, NESTED_FN_TPL, NEWLINE, NO_INOUT_TPL,
-    PASS_TPL, PRINT_RE, PRUNE_OK_TPL, PRUNE_REJECT_MSG, PRUNE_ROW_TPL, PYCACHE, PY_GLOB,
+    OVERSIZE_KNOWN, OVERSIZE_STALE_TPL, OVERSIZE_TPL, PASS_TPL, PRINT_RE, PRUNE_OK_TPL, PRUNE_REJECT_MSG, PRUNE_ROW_TPL, PYCACHE, PY_GLOB,
     REPORTS_DIR, REPORT_NAME_TPL, REPO_ROOT, RUFF_BARE_CMD, RUFF_GATE_CMD, SLASH, STAMP_FMT,
     STEP_PREFIX, STRAY_FILE_TPL, STRING_LIT_TPL, TOP_CONST_RE, TOP_CONST_TPL, TOP_N,
     TO_PREFIX, UNDERSCORE_FN_RE, UNDERSCORE_FN_TPL, VAL_CONCISE,
@@ -50,7 +51,7 @@ from gate.scheme import (CrossIn, DiffIn, ExemptIn, FileScanIn, HitsIn, JobbankS
 
 
 # =========================================================================
-# 1. 形制扫描(十规)
+# 1. 形制扫描(十一规)
 # =========================================================================
 
 
@@ -96,7 +97,7 @@ def stray_tracked_of() -> list[str]:
 
 
 def scan_file(x: FileScanIn) -> ScanOut:
-    """一个文件过十规:硬红当场红,②③两条软规进基线。"""
+    """一个文件过十一规:硬红当场红,②③两条软规进基线。"""
     rel = x.path.relative_to(ETL_DIR).as_posix()
     text = x.path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)
     hard: list[str] = []
@@ -113,6 +114,7 @@ def scan_file(x: FileScanIn) -> ScanOut:
         hard.extend(print_hits_of(HitsIn(rel=rel, text=text)))
     if x.path.name == FUNCTIONS_NAME:
         hard.extend(dialect_hits_of(HitsIn(rel=rel, text=text)))
+        hard.extend(oversize_of(HitsIn(rel=rel, text=text)))
     return ScanOut(hard=hard, soft=soft)
 
 
@@ -147,6 +149,19 @@ def dialect_hits_of(x: HitsIn) -> list[str]:
         hits.append(STRING_LIT_TPL.format(rel=x.rel, lineno=lineno, frag=frag))
     for lineno, label in banned_syntax(x.text):
         hits.append(BANNED_SYNTAX_TPL.format(rel=x.rel, lineno=lineno, label=label))
+    return hits
+
+
+def oversize_of(x: HitsIn) -> list[str]:
+    """⑪号规:functions.py 总行数(注释空行都算)超 FUNCTIONS_LINES_MAX 硬红;存量名单 OVERSIZE_KNOWN
+    上的件放行,但名单上的件降到线下也红 —— 拆完当批删条目(只紧不松,同 cms lint:prune)。"""
+    hits: list[str] = []
+    over = len(x.text.splitlines()) > FUNCTIONS_LINES_MAX
+    known = x.rel in OVERSIZE_KNOWN
+    if over and known is False:
+        hits.append(OVERSIZE_TPL.format(rel=x.rel, max=FUNCTIONS_LINES_MAX))
+    if over is False and known:
+        hits.append(OVERSIZE_STALE_TPL.format(rel=x.rel, max=FUNCTIONS_LINES_MAX))
     return hits
 
 
