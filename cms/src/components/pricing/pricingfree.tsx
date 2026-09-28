@@ -4,6 +4,7 @@
  * (2026-08-14 拍板「简化用户操作的才收费」:事实与结论一律免费展示,付费买的是代劳)。
  * 清单一行只说一件事(PNP / EE / AIP 拆三行是全站通用原则)。
  * 2026-08-28 换装批自 PricingModal.tsx 的第一张卡提出成文件。
+ * 2026-09-28 Frank「撤掉吧」:「AI 顾问(判断 + 追问)」那一行撤 —— 那个功能 07-25 起关着、当天前后端都已删。
  *
  * @author Frank
  * @time 2026-08-28 16:40:00
@@ -37,7 +38,6 @@ export function PricingFree({ t, loggedIn, pro, onRegister }: PricingFreeIn) {
         <PriceFeature>{t('price.fScoreTable')}</PriceFeature>
         <PriceFeature>{t('price.fWeekly')}</PriceFeature>
         <PriceFeature>{t('price.f3')}</PriceFeature>
-        <PriceFeature>{t('price.f4')}</PriceFeature>
         <PriceFeature>{t('price.f5')}</PriceFeature>
       </ul>
       <PricingFreeCta t={t} loggedIn={loggedIn} pro={pro} onRegister={onRegister} />

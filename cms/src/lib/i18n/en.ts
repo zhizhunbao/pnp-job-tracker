@@ -979,7 +979,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'price.free': 'Free', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30 days', 'price.per90': '90 days',
   'price.f1': 'Job list, filters, search (daily updates)', 'price.f2': 'PNP, EE category, AIP flags', 'price.f3': '"Match for me" + evidence chain',
-  'price.f4': 'AI advisor (assessment + follow-ups)', 'price.f5': 'Structured JD excerpts', 'price.f6': 'Median-wage comparison (vs median, median columns)', 'price.f7': 'Profile-aware AI advisor (analysis with your profile)',
+  'price.f5': 'Structured JD excerpts', 'price.f6': 'Median-wage comparison (vs median, median columns)', 'price.f7': 'Profile-aware AI advisor (analysis with your profile)',
   'price.f8': '5 saved-search slots (free: 2)', 'price.f9': 'Region stats: province comparison',
   'price.no': '—', 'price.unlimited': 'Unlimited', 'price.firstN': 'First {n} jobs / day', 'price.dayN': '{n} / day', 'price.fairN': '{n} / day (fair use)',
   'price.f2a': 'PNP nominee-stream flags', 'price.f2b': 'EE category flags', 'price.f2c': 'AIP Atlantic-employer flags',

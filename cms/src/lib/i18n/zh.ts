@@ -1063,7 +1063,7 @@ export const siteZh = {
   'price.free': '免费', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30 天', 'price.per90': '90 天',
   'price.f1': '职位列表、筛选、搜索(每日更新)', 'price.f2': 'PNP、EE 类别、AIP 标记', 'price.f3': '「与我的匹配」+ 依据链',
-  'price.f4': 'AI 顾问(判断 + 追问)', 'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位、中位列)', 'price.f7': 'AI 顾问档案感知(带上你的档案分析)',
+  'price.f5': 'JD 结构化摘录', 'price.f6': '工资中位对比(vs 中位、中位列)', 'price.f7': 'AI 顾问档案感知(带上你的档案分析)',
   'price.f8': '保存筛选 5 个位(免费 2 个)', 'price.f9': '地区统计跨省对比',
   'price.no': '—', 'price.unlimited': '不限', 'price.firstN': '每日前 {n} 岗', 'price.dayN': '每日 {n} 次', 'price.fairN': '每日 {n} 次(公平使用)',
   // #64 三卡版(f2 拆三行=一行只说一件事)

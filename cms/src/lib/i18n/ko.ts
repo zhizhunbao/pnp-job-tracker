@@ -962,7 +962,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'price.free': '무료', 'price.pro': 'Pro', 'price.freePrice': 'CA$0',
   'price.per30': '30일', 'price.per90': '90일',
   'price.f1': '채용 공고 목록, 필터, 검색(매일 업데이트)', 'price.f2': 'PNP, EE 카테고리, AIP 표시', 'price.f3': '"나에게 맞는 공고" + 근거 링크',
-  'price.f4': 'AI 상담사(판단 + 추가 질문)', 'price.f5': '채용 공고 구조화 발췌', 'price.f6': '중위 임금 비교(vs 중위값, 중위 열)', 'price.f7': '프로필 기반 AI 상담사(내 프로필 분석 포함)',
+  'price.f5': '채용 공고 구조화 발췌', 'price.f6': '중위 임금 비교(vs 중위값, 중위 열)', 'price.f7': '프로필 기반 AI 상담사(내 프로필 분석 포함)',
   'price.f8': '저장된 검색 조건 5개(무료 버전: 2개)', 'price.f9': '지역 통계 주 간 비교',
   'price.no': '—', 'price.unlimited': '무제한', 'price.firstN': '하루 상위 {n}개 공고', 'price.dayN': '하루 {n}회', 'price.fairN': '하루 {n}회(공정 사용)',
   'price.f2a': 'PNP 주정부 지명 표시', 'price.f2b': 'EE 카테고리 표시', 'price.f2c': 'AIP 대서양 고용주 표시',
