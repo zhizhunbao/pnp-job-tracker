@@ -16,40 +16,32 @@
  */
 import { cssOf } from '@/components/css'
 import { fetchJobText } from '@/components/jobs/functions'
-import { normName, STREAM_REFORM } from '@/components/pnp'
+import { normName } from '@/components/pnp'
 import { blockedSrc, isDirect } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
-import { parseLoc } from '@/lib/location'
 import { catName, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, AIP_ON, AREA_KEY_BROADS, AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW,
-  BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP, COUNTRY_CANADA,
-  CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DRAW_KIND_NOTICE,
-  FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
-  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE, FIELD_SALARY, FIELD_SCORE,
-  FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY, K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE,
-  HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD,
-  K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP,
-  METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE, OCC_TYPE_INELIGIBLE, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP,
-  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV,
-  ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
+  ACC_UNKNOWN, AIP_ON, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD,
+  CLS_DEPTH_NONE, CLS_SEP, CREDENTIALS_INCLUDE, DASH, FIELD_ACCESSIBILITY, FIELD_BROAD, FIELD_COMPANY, FIELD_NOC,
+  FIELD_NOC_CODE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
+  K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD,
+  K_COL_HEAD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_PROVINCE, LIST_SEP, METHOD_POST,
+  MIME_JSON, MONEY_HEAD, NEWLINE, PAREN_CLOSE, PAREN_OPEN, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
+  POOL_KEY_HEAD, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, STATUS_CLOSED, STATUS_OPEN,
   TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
-  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY,
-  URL_API_JOBS_RETRANSLATE, URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC,
-  VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
+  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
+  URL_API_NOC_TRANSLATE, URL_COMPANY_HEAD, URL_PAGE_FIRST, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  ActNoteIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipListIn,
-  AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CityJson, CompanyJobsJson,
-  CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, EsdcRowFact,
-  FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn,
-  HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
-  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
-  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn, OpenCompanyFn,
-  OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, ProvJson, ProvStreamsIn,
-  RefreshFn, TFnJobIn, ToggleIn, TransPillIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
+  AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipMatchIn,
+  AipMatchTextIn, AipPillIn, CardHeadIn, CatTextIn, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
+  EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HeadSubIn,
+  IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCompanyJobsIn, LoadFn,
+  LoadJobTextIn, LoadNocTransIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn,
+  OpenCompanyFn, OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, RefreshFn,
+  TFnJobIn, ToggleIn, TransPillIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import css from './advisor.module.css'
 
@@ -248,42 +240,6 @@ export function numOf(n: number): string {
 }
 
 /**
- * 同比小数折成百分比(正数补加号,负号数字自带)。
- *
- * @param v 同比小数。
- * @returns 「+12%」这样的文本。
- */
-export function pctOf(v: number): string {
-  let head = TEXT_NONE
-  if (v > 0) {
-    head = PLUS_HEAD
-  }
-  return head + String(Math.round(v * HUNDRED)) + PCT_TAIL
-}
-
-/**
- * 点哪一级地点字段就看到第几级(含上级路径,07-06 用户拍板)。
- *
- * @param field 点开的是哪一格。
- * @returns 层级;不是地点字段时按最深一级算(与原表同口径)。
- */
-export function locDepthOf(field: string): number {
-  if (field === FIELD_COUNTRY) {
-    return DEPTH_COUNTRY
-  }
-  if (field === FIELD_PROVINCE) {
-    return DEPTH_PROVINCE
-  }
-  if (field === FIELD_CITY) {
-    return DEPTH_CITY
-  }
-  if (field === FIELD_DISTRICT) {
-    return DEPTH_DISTRICT
-  }
-  return DEPTH_ADDRESS
-}
-
-/**
  * 点哪一级分类字段就看到第几级(07-06 用户点名:大分类弹窗不该混进中/小分类)。
  * 2026-09-23 职业分类改两级:中 / 小两级撤,只剩大类一级。
  *
@@ -295,50 +251,6 @@ export function clsDepthOf(field: string): number {
     return CLS_DEPTH_BROAD
   }
   return CLS_DEPTH_NONE
-}
-
-/**
- * 地图查询词:按所看层级拼(点省=省的地图,不带街址)。
- *
- * @param x 这一岗与看到第几级。
- * @returns 查询词;一级都拼不出时给空串(那时地图行整行不出)。
- */
-export function mapQueryOf(x: MapQueryIn): string {
-  const loc = parseLoc(x.job)
-  const parts: string[] = []
-  if (x.depth >= DEPTH_ADDRESS && x.job.address !== TEXT_NONE) {
-    parts.push(x.job.address)
-  }
-  if (x.depth >= DEPTH_DISTRICT && loc.district !== TEXT_NONE) {
-    parts.push(loc.district)
-  }
-  if (x.depth >= DEPTH_CITY && loc.city !== TEXT_NONE) {
-    parts.push(loc.city)
-  }
-  if (x.depth >= DEPTH_PROVINCE && loc.prov !== TEXT_NONE) {
-    parts.push(loc.prov)
-  }
-  return parts.join(MAP_SEP)
-}
-
-/**
- * 该省的具名通道数(用户拍板:每字段要有料 —— 点「省」要给移民视角的高价值内容,
- * 数据已有,复用)。排除清单不算通道,QC 走自己的体系不属 PNP。
- *
- * @param x 点开的是哪一格、这一岗与省提名职业清单。
- * @returns 通道数;不该算时给 0。
- */
-export function provStreamsOf(x: ProvStreamsIn): number {
-  if (x.field !== FIELD_PROVINCE || x.job.province === TEXT_NONE || x.job.province === PROV_QC) {
-    return 0
-  }
-  const labels = new Set<string>()
-  for (const o of x.pnpOcc) {
-    if (o.province === x.job.province && o.type !== OCC_TYPE_INELIGIBLE) {
-      labels.add(o.label)
-    }
-  }
-  return labels.size
 }
 
 /**
@@ -584,233 +496,6 @@ export function idRowsOf(x: IdRowsIn): IdRowFact[] {
 }
 
 /**
- * 地点卡的各行(与分类卡同款:点进来的那一格该行高亮)。有值行的值文字 = 地图链接,
- * 与表格格同一规则;国家那行不做链接。
- *
- * @param x 取词函数与这一岗。
- * @returns 地点行(值为空的那几行由渲染方筛掉)。
- */
-export function locRowsOf(x: TFnJobIn): LocRowFact[] {
-  const loc = parseLoc(x.job)
-  return [
-    { key: FIELD_COUNTRY, field: FIELD_COUNTRY, label: x.t('col.country'), value: loc.country, map: false },
-    { key: FIELD_PROVINCE, field: FIELD_PROVINCE, label: x.t('col.province'), value: loc.prov, map: true },
-    { key: FIELD_CITY, field: FIELD_CITY, label: x.t('col.city'), value: loc.city, map: true },
-    { key: FIELD_DISTRICT, field: FIELD_DISTRICT, label: x.t('col.district'), value: loc.district, map: true },
-    { key: FIELD_ADDRESS, field: FIELD_ADDRESS, label: x.t('col.address'), value: x.job.address, map: true },
-  ]
-}
-
-/**
- * 挑出某一个难度因子。
- *
- * @param x 逐因子与要哪一个。
- * @returns 那一个;没有给 null。
- */
-export function diffFactorOf(x: DiffFactorIn): DiffFactor | null {
-  if (x.factors == null) {
-    return null
-  }
-  for (const f of x.factors) {
-    if (f.key === x.key) {
-      return f
-    }
-  }
-  return null
-}
-
-/**
- * 近 180 天邀请那一格该挂哪条口径注。改制省(ON)近 180 天的抽选可能全在改制之前 ——
- * 不加注就与下方「旧 8 条流已关闭」自相矛盾。判定走同一份抽选记录:
- * 改制日之后一条真抽选都没有才加「旧流」注,新 EOI 一开抽注自动消失。
- *
- * @param x 省码与各省抽选记录。
- * @returns 口径注的文案键。
- */
-export function actNoteKeyOf(x: ActNoteIn): string {
-  const reform = STREAM_REFORM[x.province]
-  if (reform == null) {
-    return K_DIFF_ACT
-  }
-  for (const d of x.pnpDraws) {
-    if (d.province === x.province && d.kind !== DRAW_KIND_NOTICE && d.drawDate >= reform.since) {
-      return K_DIFF_ACT
-    }
-  }
-  return K_DIFF_ACT_OLD
-}
-
-/**
- * 移民难度卡的三列格(Frank 2026-07-26 走查:标签 | 值 | 注 跨行对齐,每列左对齐
- * —— 原来一行一整句,读不快也对不齐)。Frank 走查#3:「口径:竞争基数=…」整句删
- * (粗口径已在数字旁,长解释=废话)。
- *
- * @param x 取词函数、省码、逐因子与各省抽选记录。
- * @returns 有数的那几格。
- */
-export function diffCellsOf(x: DiffCellsIn): DiffCellFact[] {
-  const cells: DiffCellFact[] = []
-  const comp = diffFactorOf({ factors: x.factors, key: FAC_COMP })
-  if (comp != null) {
-    let asOf = TEXT_NONE
-    if (comp.asOf != null) {
-      asOf = comp.asOf
-    }
-    const note = x.t('diff.compNote', { pool: numOf(comp.pool), quota: numOf(comp.quota), y: comp.quotaYear, py: asOf })
-    cells.push({ key: FAC_COMP, label: x.t('diff.k.comp'), value: x.t('diff.v.comp', { v: comp.value }), note })
-  }
-  const trend = diffFactorOf({ factors: x.factors, key: FAC_QUOTA_TREND })
-  if (trend != null) {
-    cells.push({ key: FAC_QUOTA_TREND, label: x.t('diff.k.trend'), value: pctOf(trend.value), note: TEXT_NONE })
-  }
-  const act = diffFactorOf({ factors: x.factors, key: FAC_ACTIVITY })
-  if (act != null) {
-    const key = actNoteKeyOf({ province: x.province, pnpDraws: x.pnpDraws })
-    cells.push({
-      key: FAC_ACTIVITY,
-      label: x.t('diff.k.act'),
-      value: x.t('diff.v.act', { n: act.value }),
-      note: x.t(key, { m: numOf(act.invitations) }),
-    })
-  }
-  const score = diffFactorOf({ factors: x.factors, key: FAC_SCORE_LEVEL })
-  if (score != null) {
-    let scale = DASH
-    if (score.scale !== TEXT_NONE) {
-      scale = score.scale
-    }
-    cells.push({
-      key: FAC_SCORE_LEVEL,
-      label: x.t('diff.k.score'),
-      value: x.t('diff.v.score', { s: score.latestScore }),
-      note: x.t('diff.n.score', { p: score.value, sc: scale }),
-    })
-  }
-  return cells
-}
-
-/**
- * 省级体量卡的各行(人话名主文案 + 代码灰字小注:Frank「TFWP/IMP 用户都不知道是什么」)。
- * 配额与 PNP 落地两行只给非 QC —— 魁省走自己的体系,摆配额是答非所问。
- *
- * @param x 取词函数、体量事实与是不是魁北克。
- * @returns 有数的那几行。
- */
-export function volRowsOf(x: VolRowsIn): VolRowFact[] {
-  const rows: VolRowFact[] = []
-  const info = x.info
-  if (info == null) {
-    return rows
-  }
-  if (info.study != null) {
-    const note = x.t('loc.asOf', { y: info.study.year })
-    rows.push({ key: VOL_KEY_STUDY, label: x.t('loc.study'), code: TEXT_NONE, value: numOf(info.study.n), note })
-  }
-  if (info.tfwp != null) {
-    const note = x.t('loc.asOf', { y: info.tfwp.year })
-    rows.push({ key: VOL_KEY_TFWP, label: x.t('loc.tfwp'), code: CODE_TFWP, value: numOf(info.tfwp.n), note })
-  }
-  if (info.imp != null) {
-    const note = x.t('loc.asOf', { y: info.imp.year })
-    rows.push({ key: VOL_KEY_IMP, label: x.t('loc.imp'), code: x.t('loc.impNote'), value: numOf(info.imp.n), note })
-  }
-  if (x.isQc === false && info.alloc != null) {
-    const alloc = allocRowOf({ t: x.t, alloc: info.alloc })
-    if (alloc != null) {
-      rows.push(alloc)
-    }
-  }
-  if (x.isQc === false && info.pnpPr != null) {
-    const note = x.t('loc.prNote', { y: info.pnpPr.year })
-    rows.push({ key: VOL_KEY_PNP_PR, label: x.t('loc.pnpPr'), code: TEXT_NONE, value: numOf(info.pnpPr.n), note })
-  }
-  return rows
-}
-
-/**
- * 提名配额那一行:有 2026 就报 2026(两年都有时注里带上 2025 作对比),
- * 只有 2025 就报 2025 并在注里说清是哪一年 —— 年份说错等于报了个假配额。
- *
- * @param x 取词函数与两年的配额。
- * @returns 配额行;两年都没公布时给 null(整行不出)。
- */
-export function allocRowOf(x: AllocRowIn): VolRowFact | null {
-  const label = x.t('loc.alloc')
-  const a = x.alloc
-  if (a.y2026 != null) {
-    let note = x.t('loc.allocY26')
-    if (a.y2025 != null) {
-      note = x.t('loc.allocBoth', { b: numOf(a.y2025) })
-    }
-    return { key: VOL_KEY_ALLOC, label, code: TEXT_NONE, value: numOf(a.y2026), note }
-  }
-  if (a.y2025 != null) {
-    return { key: VOL_KEY_ALLOC, label, code: TEXT_NONE, value: numOf(a.y2025), note: x.t('loc.allocY25') }
-  }
-  return null
-}
-
-/**
- * 市/区体量卡的各行(本站口径,`/api/jobs/city` 现算)。中位薪资样本不够时那一行不出
- * —— 宁可留空也不拿几个样本冒充中位。
- *
- * @param x 取词函数与体量四格。
- * @returns 体量行。
- */
-export function areaRowsOf(x: AreaRowsIn): KvFact[] {
-  const rows: KvFact[] = [
-    { key: AREA_KEY_OPEN, label: x.t('loc.openJobs'), value: numOf(x.stats.openJobs) },
-    { key: AREA_KEY_NEW7D, label: x.t('loc.new7d'), value: numOf(x.stats.new7d) },
-  ]
-  if (x.stats.medSalary != null) {
-    rows.push({ key: AREA_KEY_MED, label: x.t('loc.medSal'), value: yearTextOf(x.stats.medSalary) })
-  }
-  if (x.stats.topBroads.length > 0) {
-    const parts: string[] = []
-    for (const b of x.stats.topBroads) {
-      parts.push(x.t(K_BROAD_HEAD + b.broad) + SPACE + numOf(b.n))
-    }
-    rows.push({ key: AREA_KEY_BROADS, label: x.t('loc.topBroads'), value: parts.join(LIST_SEP) })
-  }
-  return rows
-}
-
-/**
- * 本市的 AIP 指定雇主(Frank 走查#7:AIP 卡直接内联列出名单,不再「雇主名录 →」点过去)。
- * 客户端筛已加载的名录,口径对齐后端(province + location 含 city)。
- *
- * @param x 名录与这一岗。
- * @returns 本市的指定雇主。
- */
-export function aipListOf(x: AipListIn): AdvisorDesigEmps {
-  const city = x.job.city.toLowerCase()
-  const hits: AdvisorDesigEmps = []
-  for (const e of x.desigEmp) {
-    if (e.province === x.job.province && e.location.toLowerCase().includes(city)) {
-      hits.push(e)
-    }
-  }
-  return hits
-}
-
-/**
- * 地点面板看哪一级:入口语义=内容(Frank「点省看省,点市看市」+「点区看区」)。
- * 区列点开但该岗无区值 → 退回市级,不出空面板。
- *
- * @param x 点进来的那一格与这一岗的区名。
- * @returns 层级。
- */
-export function levelOf(x: LevelIn): LocationLevel {
-  if (x.srcField === FIELD_PROVINCE) {
-    return LEVEL_PROVINCE
-  }
-  if (x.srcField === FIELD_DISTRICT && x.district !== TEXT_NONE) {
-    return LEVEL_DISTRICT
-  }
-  return LEVEL_CITY
-}
-
-/**
  * 职责/要求逐条拆行(数据层存的是一段带换行的文本)。
  *
  * @param text 全文。
@@ -892,92 +577,6 @@ export function excerptHeadClsOf(x: GapClsIn): string {
     return cssOf(css.excerptHead) + CLS_SEP + cssOf(css.excerptGap)
   }
   return cssOf(css.excerptHead)
-}
-
-/**
- * 移民难度档的色档类名(与 /stats 的难度卡同源色阶)。
- *
- * @param tier 难度档。
- * @returns 类名;档位不认识时只给药丸底座。
- */
-export function diffToneClsOf(tier: string): string {
-  const map: Record<string, string> = {
-    easy: cssOf(css.diffEasy),
-    mid: cssOf(css.diffMid),
-    tight: cssOf(css.diffTight),
-  }
-  const hit = map[tier]
-  if (hit == null) {
-    return cssOf(css.diff)
-  }
-  return cssOf(css.diff) + CLS_SEP + hit
-}
-
-/**
- * 省级面板的取数。查不到/掉线一律不落格 —— 整块消失不留孤儿,不拿空壳假装查过。
- *
- * @param x 省码与落格。
- * @returns effect 里调用的取数函数(带取消标记)。
- */
-export function makeLoadProv(x: LoadProvIn): LoadFn {
-  return function loadProv(flag: DeadFlag): void {
-    function read(r: Response): Promise<ProvJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: ProvJson): void {
-      if (flag.dead || j == null || j.ok !== true) {
-        return
-      }
-      x.setProv({ info: j.info, difficulty: j.difficulty })
-    }
-    function fall(): void {
-      return
-    }
-    fetch(URL_API_PROVINCE + encodeURIComponent(x.province)).then(read).then(land).catch(fall)
-  }
-}
-
-/**
- * 市/区级面板的取数(区级才把区带上 —— 点区看区的信息)。
- *
- * @param x 市名、省码、区名、层级与落格。
- * @returns effect 里调用的取数函数(带取消标记)。
- */
-export function makeLoadCity(x: LoadCityIn): LoadFn {
-  return function loadCity(flag: DeadFlag): void {
-    function read(r: Response): Promise<CityJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: CityJson): void {
-      if (flag.dead || j == null || j.ok !== true) {
-        return
-      }
-      x.setCityInfo({
-        openJobs: j.openJobs,
-        new7d: j.new7d,
-        medSalary: j.medSalary,
-        topBroads: j.topBroads,
-        dli: j.dli,
-        district: j.district,
-      })
-    }
-    function fall(): void {
-      return
-    }
-    const q = new URLSearchParams()
-    q.set(P_CITY, x.city)
-    q.set(P_PROV, x.province)
-    if (x.level === LEVEL_DISTRICT && x.district !== TEXT_NONE) {
-      q.set(P_DISTRICT, x.district)
-    }
-    fetch(URL_API_CITY + q.toString()).then(read).then(land).catch(fall)
-  }
 }
 
 /**
@@ -1284,73 +883,6 @@ export function medianNoteOf(x: TFnJobIn): string {
     return x.t('fact.noMedian')
   }
   return TEXT_NONE
-}
-
-/**
- * 地点事实块的口径注(E8-04 诚实降级):缺地址/缺区时说清「源帖没给」——
- * 留空是**没写**不是**没有**,两件事在用户那里意思不同。有值时无注(值即事实)。
- *
- * @param x 取词函数、点开的是哪一格与这一岗。
- * @returns 口径注;不该出时给空串。
- */
-export function locNoteOf(x: LocNoteIn): string {
-  if (x.field === FIELD_ADDRESS && x.job.address === TEXT_NONE) {
-    return x.t('fact.noAddrNote')
-  }
-  if (x.field === FIELD_DISTRICT && parseLoc(x.job).district === TEXT_NONE) {
-    return x.t('fact.noDistrictNote')
-  }
-  return TEXT_NONE
-}
-
-/**
- * 国家那一格:本站只收加拿大的岗,数据层没写也按加拿大算。
- *
- * @param x 这一岗。
- * @returns 国家名。
- */
-export function locCountryOf(x: AdvisorJobIn): string {
-  const country = parseLoc(x.job).country
-  if (country !== TEXT_NONE) {
-    return country
-  }
-  return COUNTRY_CANADA
-}
-
-/**
- * 这个省有没有抽选记录可列(块自身无数据会返回 null,那时外层卡也不该渲 —— 不出空壳)。
- *
- * @param x 省码、抽选记录与是不是魁北克。
- * @returns 有没有。
- */
-export function hasDrawsOf(x: HasDrawsIn): boolean {
-  if (x.province === TEXT_NONE || x.isQc) {
-    return false
-  }
-  for (const d of x.pnpDraws) {
-    if (d.province === x.province) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
- * 这个省有没有官方新闻可列(同上,不出空壳)。
- *
- * @param x 省码与新闻。
- * @returns 有没有。
- */
-export function hasNewsOf(x: HasNewsIn): boolean {
-  if (x.province === TEXT_NONE) {
-    return false
-  }
-  for (const n of x.news) {
-    if (n.region === x.province) {
-      return true
-    }
-  }
-  return false
 }
 
 /**

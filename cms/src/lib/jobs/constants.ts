@@ -2103,11 +2103,6 @@ export const REL_OCC_PAGE_ROWS = 24
 export const REL_OCC_OFFSET_MAX = 5000
 
 /**
- * 省码参数名(/api/jobs/province)。
- */
-export const P_CODE = 'code'
-
-/**
  * 城市参数名(/api/jobs/city)。
  */
 export const P_CITY = 'city'
@@ -2146,11 +2141,6 @@ export const AH_DAILY_DEFAULT = 60
  * 投递方式限额键前缀。
  */
 export const AH_LIMIT_PREFIX = 'ah:'
-
-/**
- * /api/jobs/city 的 city 参数长度上限。
- */
-export const CITY_PARAM_LEN_MAX = 80
 
 /**
  * 两位省码形状。

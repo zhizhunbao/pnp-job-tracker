@@ -15,14 +15,14 @@ export {
   getTopNocs, getSsrDims, loadTotalAndProof, jobDescription, jobPostingJsonOf, loadJdSsrById,
 } from './functions'
 export {
-  loadCityCard, loadMatchDims, loadProvinceCard, pnpOnly, scrubPii, searchNocByTitle, splitQ,
+  loadMatchDims, pnpOnly, scrubPii, searchNocByTitle, splitQ,
 } from './functions'
 export { toEeCat, toPnpOcc } from './functions'
 export type { AlertHit, CompanyDetail, JobsFilters, RelatedJob, SimilarEmployer, SsrDims, TopNoc } from './types'
 
 export {
-  jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCityRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
-  jobsPnpRoute, jobsProvinceRoute, jobsRelatedRoute, jobsRelatedOccRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsTextRoute, jobsTitleRoute,
+  jobsIdMetaRoute, jobsJdformatRoute, jobsJdTranslateRoute, jobsApplyhowRoute, jobsCompanyRoute, jobsCompetitionRoute, jobsDimsRoute,
+  jobsPnpRoute, jobsRelatedRoute, jobsRelatedOccRoute, jobsRetranslateRoute, jobsRoute, jobsRowRoute, jobsTextRoute, jobsTitleRoute,
 } from './routes'
 export {
   loadApplyUrlById, loadJdFormatted, loadJdState, loadJobOg,

@@ -63,30 +63,28 @@ import {
 } from './prompts'
 import { CACHE } from './variables'
 import type {
-  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyMailOut, ApplyUrlIn, StoredApplyEmailIn, StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadCount, BroadNoc,
-  BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell, CheckedAtOut, CityAgg, CityCardIn, CityCardOut,
-  CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow, CompanyJsonIn, CompanyOut, CompanyWhereIn,
-  CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut, DistrictCard, DistrictDim,
-  DistrictEmployerRow, DliTop, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim,
-  EeBroad, EeDisplayIn, EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire, MaybeJobId,
-  JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact, JdTransIn, JdTransOut, JobByIdIn,
-  JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn, JobOgDbRow,
-  JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
+  AlertHit, AlertHitsIn, AlertHitsOut, ApplyEmailFact, ApplyMailOut, ApplyUrlIn, StoredApplyEmailIn,
+  StoredApplyEmailOut, BigDimsIn, BigDimsOut, BroadNoc, BroadNocsIn, BroadNocsOut, BuildWhereIn, CaughtError, Cell,
+  CheckedAtOut, CityDim, CompanyByJobIn, CompanyByPoolKeyIn, CompanyBySlugIn, CompanyDetail, CompanyJobRow,
+  CompanyJsonIn, CompanyOut, CompanyWhereIn, CountMap, CountOfIn, CoverageIn, DesigDim, DesignatedIn, DesignatedOut,
+  DistrictDim, DoneOut, DraftJdIn, DraftJdOut, DrawStreamNoteIn, DropProvPrefixIn, EeCatDim, EeBroad, EeDisplayIn,
+  EeKeyDisplayIn, EeOcc, ExpiredJobIn, FieldSource, GenerateJdIn, GenerateJdOut, HtmlOut, JdByIdIn, JdDraft, JobIdWire,
+  MaybeJobId, JdFormattedIn, JdIn, JdOut, JdSsr, JdSsrOut, JdStateOut, JdStateRow, JdTransCellIn, JdTransFact,
+  JdTransIn, JdTransOut, JobByIdIn, JobByIdOut, JobDbRow, JobMeta, JobMetaFact, JobMetaLoadIn, JobMetaOut, JobMetaOutIn,
+  JobOgDbRow, JobOgFact, JobOgLoadIn, JobOgOut, JobPostingIn, JobRow, JobRowsIn, JobRowsOut, JobsFilters, JobsPageIn,
   JobsPageOut, JobsWhere, JsonCell, JsonObj, JsonRow, LdPutIn, LmiaNocRow, LmiaNocsIn, LmiaNocsOut, MatchDims,
-  MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchProfile, MatchReason, MatchResult,
-  MaybeJobOgRow, MaybeLevel, MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption,
-  NewsSlim, NocCat, NocCountsIn, NocCountsOut, NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim,
-  NocSearchOut, OccCompetitionIn, OccCompetitionOut, OccCompetitionRows, OccDiffDbRow, OccDiffFact,
-  OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc, PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell,
-  ProfileJsonOrNull, ProofOut, ProvCount, ProvCounts, ProvListCoverage, ProvOption, ProvinceCardIn, ProvinceCardOut,
-  QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount, RatioMap, RatioOfIn, RelatedIn, RelatedJob,
-  RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn, RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
-  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SsrDimsOut,
-  TranslateJdIn, TransJdOut,
-  StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
-  TitleReq, JdTitleBody,
-  TitleTexts, TitleTransIn, TitlesOut,
-  ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut, TranslateTitlesIn, UrlHandle, WhereParam,
+  MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchProfile, MatchReason, MatchResult, MaybeJobOgRow, MaybeLevel,
+  MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
+  NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
+  OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, PgFailure, PnpDraw, PnpOcc,
+  PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
+  ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
+  RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn,
+  RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
+  SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SsrDimsOut, TranslateJdIn,
+  TransJdOut, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
+  TitleReq, JdTitleBody, TitleTexts, TitleTransIn, TitlesOut, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
+  TranslateTitlesIn, UrlHandle, WhereParam,
 } from './types'
 // =========================================================================
 // 1. 来源与 PII
@@ -2563,69 +2561,6 @@ export function dropProvPrefix(input: DropProvPrefixIn): string {
 }
 
 /**
- * 省情报卡(/api/jobs/province 的取数):provinces.info + stats 的 difficulty,零 AI 零额度。
- *
- * @param input 连接与省码。
- * @returns 两格透传;查无该省 null。
- */
-export async function loadProvinceCard(input: ProvinceCardIn): ProvinceCardOut {
-  const infoRows = await queryRows({ db: input.db, sql: SQL.PROVINCE_INFO_ONE, params: [input.code], map: toInfoCell })
-  const infoFirst = infoRows[0]
-  if (infoFirst == null) {
-    return null
-  }
-  const diffRows = await queryRows({ db: input.db, sql: SQL.PROV_DIFFICULTY_ONE, params: [input.code],
-    map: toDiffCell })
-  const difficulty: JsonCell = firstOr(diffRows, null)
-  return { info: infoFirst, difficulty: difficulty }
-}
-
-/**
- * 市/区情报卡(/api/jobs/city 的取数,E8-12b):全部现算自库内既有表 ——
- * jobs 聚合 + dli(PGWP 可申院校)+ designated_employers(AIP)。district 非空另附整套
- * 区级统计(「点区看区」,Frank 2026-07-23)。市级 2,346 城不预计算(懒化透镜)。
- *
- * @param input 连接、市、省与可空的区。
- * @returns 市情报卡(区级没数据时 district 落 null)。
- */
-export async function loadCityCard(input: CityCardIn): CityCardOut {
-  const [aggRows, broads, dliTop, aipRows, dliCountRows] = await Promise.all([
-    queryRows({ db: input.db, sql: SQL.cityTotals(SQL.OPEN_COND), params: [input.city, input.prov], map: toCityAgg }),
-    queryRows({ db: input.db, sql: SQL.cityByBroad(SQL.OPEN_COND), params: [input.city, input.prov],
-      map: toBroadCount }),
-    queryRows({ db: input.db, sql: SQL.CITY_DLI, params: [input.city, input.prov], map: toDliTop }),
-    queryRows({ db: input.db, sql: SQL.CITY_DESIGNATED_COUNT, params: [input.city, input.prov], map: toCountN }),
-    queryRows({ db: input.db, sql: SQL.CITY_DLI_COUNT, params: [input.city, input.prov], map: toCountN }),
-  ])
-  const base = firstOr(aggRows, { openJobs: 0, new7d: 0, medSalary: null })
-  const aipEmployers = firstOr(aipRows, 0)
-  const dliCount = firstOr(dliCountRows, 0)
-  let district: DistrictCard | null = null
-  if (input.district !== '') {
-    const [dAggRows, dBroads, dEmps] = await Promise.all([
-      queryRows({ db: input.db, sql: SQL.districtTotals(SQL.OPEN_COND), params: [input.city, input.prov,
-        input.district], map: toCityAgg }),
-      queryRows({ db: input.db, sql: SQL.districtByBroad(SQL.OPEN_COND), params: [input.city, input.prov,
-        input.district], map: toBroadCount }),
-      queryRows({ db: input.db, sql: SQL.districtEmployers(SQL.OPEN_COND), params: [input.city, input.prov,
-        input.district], map: toDistrictEmployer }),
-    ])
-    const dAggFirst = dAggRows[0]
-    if (dAggFirst != null) {
-      district = {
-        openJobs: dAggFirst.openJobs, new7d: dAggFirst.new7d, medSalary: dAggFirst.medSalary,
-        topBroads: dBroads, topEmployers: dEmps,
-      }
-    }
-  }
-  return {
-    openJobs: base.openJobs, new7d: base.new7d, medSalary: base.medSalary,
-    topBroads: broads, dli: { count: dliCount, top: dliTop }, aipEmployers: aipEmployers,
-    district: district,
-  }
-}
-
-/**
  * 大维度包(/api/jobs/dims 的取数,E10-01 P3):城市/区/AIP 雇主/NOC 描述四张维度表。
  * 上限沿原 payload.find 的 5000/2000(写死在 SQL 里)。
  * 2026-09-23 加第五张:职业维度(「职业」下拉的选项,noc_openings)。
@@ -3431,98 +3366,6 @@ function toCompRatio(d: MaybeOccDiff): MaybeNum {
     }
   }
   return null
-}
-
-/**
- * 一行市/区聚合(SQL.cityTotals / districtTotals)→ 三件套。
- *
- * @param r 库里的一行。
- * @returns 洗净的聚合。
- */
-export function toCityAgg(r: Row): CityAgg {
-  return { openJobs: count(r.open_jobs), new7d: count(r.new7d), medSalary: toRoundedNum(r.med_salary) }
-}
-
-/**
- * 词汇:数字格 → 取整;缺位 null(市/区帖面中位年薪的口径,并入前就是 Math.round)。
- *
- * @param x 库里的数字格。
- * @returns 取整后的数;缺位 null。
- */
-// eslint-disable-next-line local/no-undefined-type, local/typed-signature -- 消化点:行索引缺席就是 undefined,照实收(开灯批)
-function toRoundedNum(x: Cell | undefined): MaybeNum {
-  const n = numOrNull(x)
-  if (n == null) {
-    return null
-  }
-  return Math.round(n)
-}
-
-/**
- * 一行大类计数(SQL.cityByBroad / districtByBroad)。
- *
- * @param r 库里的一行。
- * @returns 大类 + 计数。
- */
-export function toBroadCount(r: Row): BroadCount {
-  return { broad: text(r.broad), n: count(r.n) }
-}
-
-/**
- * 一行院校(SQL.CITY_DLI)。
- *
- * @param r 库里的一行。
- * @returns 院校名 + 公立与否。
- */
-export function toDliTop(r: Row): DliTop {
-  return { name: text(r.name), isPublic: r.is_public === true }
-}
-
-/**
- * 一行计数(SQL.CITY_DLI_COUNT / CITY_DESIGNATED_COUNT 这类单数查询)。
- *
- * @param r 库里的一行。
- * @returns 计数(缺位 0)。
- */
-export function toCountN(r: Row): number {
-  return count(r.n)
-}
-
-/**
- * 一行区主要雇主(SQL.districtEmployers)。
- *
- * @param r 库里的一行。
- * @returns 雇主名 + slug + 在招数。
- */
-export function toDistrictEmployer(r: Row): DistrictEmployerRow {
-  return { name: text(r.name), slug: text(r.slug), n: count(r.n) }
-}
-
-/**
- * 单列 json 透传(SQL.PROVINCE_INFO_ONE 的 info 格):jsonb 驱动给对象、文本列绕行给
- * 字符串,消费端自己认 —— 与 stats 的 StatDifficulty 同一口径,这里只把缺位收成 null。
- *
- * @param r 库里的一行。
- * @returns 格值;缺位 null。
- */
-export function toInfoCell(r: JsonRow): JsonCell {
-  if (r.info == null) {
-    return null
-  }
-  return r.info
-}
-
-/**
- * 单列 json 透传(SQL.PROV_DIFFICULTY_ONE 的 difficulty 格;口径同上)。
- *
- * @param r 库里的一行。
- * @returns 格值;缺位 null。
- */
-export function toDiffCell(r: JsonRow): JsonCell {
-  if (r.difficulty == null) {
-    return null
-  }
-  return r.difficulty
 }
 
 /**

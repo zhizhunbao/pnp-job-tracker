@@ -128,14 +128,6 @@
 }
 
 /*
- * 名单类的紧凑行(校名/雇主名那种:没有标签列,基线对齐)。
- */
-.kvTight {
-  gap: 8px;
-  align-items: baseline;
-}
-
-/*
  * 标签列窄档(地点卡:标签都是一两个字)。
  */
 .w64 {
@@ -174,23 +166,6 @@
 }
 
 /*
- * 身份行里作为值的蓝链(地点卡的地图链接、区级雇主卡的公司页链接)。
- * 与全局 `.link`(main.css 第 5 段,走 --primary 变量)分开:这一处历来写死自己的蓝,
- * 迁类时值一个不改 —— 要并到变量上是配色批的活,不是换装批的。
- */
-.valueLink {
-  color: #2563eb;
-  text-decoration: none;
-}
-
-/*
- * 地图链接(比正文小一档 —— 它是行内的去处不是内容)。
- */
-.mapLink {
-  font-size: 12.5px;
-}
-
-/*
  * 未标注的灰字(J1 2026-07-19 Frank:未标注显灰字,不再让整行消失)。
  */
 .muted {
@@ -219,30 +194,6 @@
   margin-top: 4px;
   font-size: 12.5px;
   color: #9ca3af;
-}
-
-/*
- * 灰字小注(代码不裸奔:人话名做主文案,NOC 码/省码/TFWP 这类代码当灰字小注)。
- */
-.gnote {
-  color: #9ca3af;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-/*
- * 灰字小注的小一档(跟在体量卡人话名后面的代码)。
- */
-.gnoteS {
-  font-size: 11px;
-}
-
-/*
- * 灰字小注的卡标题档(跟在卡标题后面,要一段间距才不粘着)。
- */
-.gnoteM {
-  font-size: 11.5px;
-  margin-left: 8px;
 }
 
 /*
@@ -349,121 +300,6 @@
  */
 .modalNoteSm {
   font-size: 13px;
-}
-
-/*
- * 卡标题与右侧标签同行(移民难度卡:标题 + 难度档药丸)。
- */
-.cardHeadRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/*
- * 移民难度档的药丸(三档色阶由下面三个修饰类给的变量决定,与 /stats 难度卡同源)。
- */
-.diff {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--dbg);
-  color: var(--dfg);
-  border: 1px solid var(--dbd);
-}
-
-/*
- * 宽松档(绿)。
- */
-.diffEasy {
-  --dbg: #dcfce7;
-  --dfg: #166534;
-  --dbd: #bbf7d0;
-}
-
-/*
- * 中等档(琥珀)。
- */
-.diffMid {
-  --dbg: #fef3c7;
-  --dfg: #b45309;
-  --dbd: #fde68a;
-}
-
-/*
- * 紧档(靛)。⚠️ 紧不用红:难度紧不是坏消息,是「这条路要排队」,红会读成「你不行」。
- */
-.diffTight {
-  --dbg: #eef2ff;
-  --dfg: #3730a3;
-  --dbd: #e0e7ff;
-}
-
-/*
- * 体量卡的三列网格(Frank 走查#6:标签 | 数值 | 年份注,跨行对齐;
- * Frank 2026-07-26「每列都保证左对齐」—— 数值列原为右对齐,与其他卡不一致)。
- */
-.vol {
-  display: grid;
-  grid-template-columns: max-content max-content 1fr;
-  column-gap: 12px;
-  row-gap: 4px;
-  font-size: 13px;
-  align-items: baseline;
-}
-
-/*
- * 半粗的值(数值列与判词)。
- */
-.bold {
-  font-weight: 600;
-}
-
-/*
- * 魁北克独立体系说明(Frank 走查#4:非 QC 的来源注删,这一条是实义,保留)。
- */
-.qc {
-  font-size: 11.5px;
-  color: #9ca3af;
-  margin-top: 8px;
-  line-height: 1.6;
-}
-
-/*
- * 名单(AIP 指定雇主那种一行一条)。
- */
-.list {
-  display: grid;
-  row-gap: 2px;
-}
-
-/*
- * 名单的一行。
- */
-.listRow {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  font-size: 13px;
-  color: #374151;
-}
-
-/*
- * 名单里的名字(占满剩余宽,长名字不截断)。
- */
-.listName {
-  flex: 1;
-  min-width: 0;
-}
-
-/*
- * 名字后面的标(科技岗那种),不换行。
- */
-.listTag {
-  font-size: 11px;
-  color: #9ca3af;
-  white-space: nowrap;
 }
 
 /*

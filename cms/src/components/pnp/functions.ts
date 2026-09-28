@@ -20,55 +20,41 @@ import { nocLocalTitle } from '@/lib/noc'
 import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS,
-  DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN,
-  LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS, NUM_LOCALE,
-  OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
-  SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE,
-  TAG_V_GRAY, TAG_V_IMP, TAG_V_OK, TAG_V_WARN,
-  AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS, CARET_CLOSED, CARET_OPEN,
-  CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP, EE_DORMANT_MONTHS,
-  EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM, NAMED_DRAW_STREAMS,
-  KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
-  KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC,
-  KEY_PROV_NAMED, KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK,
-  KEY_WAGE_ABOVE, KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, FACTS_KEY_SEP, MATCH_LEVEL_HEAD,
-  MONTH_DAYS,
-  NEWS_LATEST_MAX, NOC_HEAD, PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK,
-  RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV, RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL,
-  SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM, TEER_HEAD, TEER_SHORT_HEAD,
-  TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
-  UNKNOWN_MARK, URL_JOBS_Q_HEAD, URL_NEWS_HEAD,
-  BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL, GATE_F,
-  GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB,
-  GATE_UNIT_MONTHS, GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP,
-  URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV, K_KICKER_PROV_AIP,
-  GEN_CHANNEL_PROVS, EXCL_KEY_SEP,
+  COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
+  DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS,
+  NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, QUOTA_STREAM_KEYS, ROUNDS_KEYS, YEAR_LEN,
+  SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
+  TAG_V_IMP, TAG_V_OK, TAG_V_WARN, AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS,
+  CARET_CLOSED, CARET_OPEN, CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP,
+  EE_DORMANT_MONTHS, EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR, GEN_DRAW_STREAM,
+  NAMED_DRAW_STREAMS, KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
+  KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC, KEY_PROV_NAMED,
+  KEY_PROV_NOTTARGET, KEY_PROV_QC, KEY_PROV_UNCOVERED, KEY_SEP, KEY_TEER_CHANNEL, KEY_TEER_OK, KEY_WAGE_ABOVE,
+  KEY_WAGE_BELOW, KEY_WAGE_NEAR, KIND_DRAW, KIND_NOTICE, FACTS_KEY_SEP, MATCH_LEVEL_HEAD, MONTH_DAYS, NOC_HEAD,
+  PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
+  RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
+  TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
+  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL,
+  GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
+  GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
+  K_KICKER_PROV_AIP, GEN_CHANNEL_PROVS, EXCL_KEY_SEP,
 } from './constants'
 import type {
-  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
-  LatestSinceIn, SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec,
-  QuotaStreamIn,
-  MonthRowsIn, RoundRowsIn,
-  AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawNoticeTextIn, DrawRowIn,
-  DrawRowSpec, DrawRowsIn, DrawsClsIn, DrawsTitleIn, EeDrawDateRow,
-  CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp, EeCmpGroup, EeCmpIn,
-  EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, DrawSubIn, AsOfLinesIn, ColAsOfIn,
-  SelectionLabelIn,
-  EeHitIn, FedLabelIn,
-  FoldLabelIn, HasProvDrawsIn,
-  HiddenCountIn, HitClsIn, HitRefFn, HitRefIn, LevelClsIn, LevelTextIn,
-  FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn, MmNocListCellIn, MmProvCellIn, MmProvListCellIn,
-  MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn, MmTeerCellIn, MmTone, NewsRowSpec, NewsRowsIn,
-  NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob, PnpMatchOut,
-  PnpFactsIndex, PnpFactsIndexIn, PnpFactsShownIn, PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform, PnpStream,
-  PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow,
-  ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn, SponsorLinesIn, SponsorShowIn, StreamRowSpec,
-  StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
-  BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
-  NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
-  DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn,
-  PnpBlocked, PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn,
+  AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
+  SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec, QuotaStreamIn,
+  MonthRowsIn, RoundRowsIn, AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawRowIn, DrawRowSpec, DrawRowsIn,
+  DrawsClsIn, EeDrawDateRow, CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp,
+  EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, DrawSubIn,
+  AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, FoldLabelIn, HasProvDrawsIn, HiddenCountIn, HitClsIn,
+  HitRefFn, HitRefIn, LevelClsIn, LevelTextIn, FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn,
+  MmNocListCellIn, MmProvCellIn, MmProvListCellIn, MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn,
+  MmTeerCellIn, MmTone, NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob,
+  PnpMatchOut, PnpFactsIndex, PnpFactsIndexIn, PnpFactsShownIn, PnpMatchResult, PnpNocDesc, PnpOcc, PnpReform,
+  PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
+  SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
+  BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
+  RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
+  PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -143,24 +129,6 @@ export function isNoticeRow(d: PnpDraw): boolean {
 }
 
 /**
- * 抽选卡的标题(Frank 走查#9:卡要正式 title,原先是小灰头)。改制省讲的是现行规则,
- * 标题随之换成「现行规则」那句。
- *
- * @param x 取词函数、改制登记与打头那一行。
- * @returns 卡标题。
- */
-export function drawsTitleOf(x: DrawsTitleIn): string {
-  if (x.reform != null) {
-    return x.t('pnpdraws.nowTitle')
-  }
-  let label = TEXT_NONE
-  if (x.first != null) {
-    label = x.first.label
-  }
-  return x.t('pnpdraws.title', { label })
-}
-
-/**
  * 洗一行抽选:压暗档、中文灰注、悬停提示与两个数值格的话术都在这里算完。
  * #280:zh 态英文流名 + 中文灰注(次行);streamZh 缺列/还没翻到 = 不出注,纯英文,不是报错。
  * 2026-09-26 晚:灰注改走 zhSubOf(人工定表优先、机器译名兜底,与组头同一个出口;名字与通道卡一致)。
@@ -192,40 +160,6 @@ export function toDrawRow(x: DrawRowIn): DrawRowSpec {
     score,
     inv,
   }
-}
-
-/**
- * 通告行的全文。#153:直接渲染抓到的官方通告原文(note),缺 note 才退回旧模板。
- *
- * @param x 取词函数与这一行通告。
- * @returns 通告全文。
- */
-export function drawNoticeTextOf(x: DrawNoticeTextIn): string {
-  if (x.draw.note !== TEXT_NONE) {
-    return `${x.draw.drawDate} ${x.draw.note}`
-  }
-  return x.t('pnpdraws.notice', { date: x.draw.drawDate })
-}
-
-/**
- * 本省最新公告(E12-06):最新 1-2 条官方新闻,链 /news/[slug]。
- * 只摆标题+日期(事实),不解读 —— 详情页自带四件套与原文链。
- *
- * @param x 省码与全部动态。
- * @returns 展示行;本省没有动态时给空列(整块不出)。
- */
-export function newsRowsOf(x: NewsRowsIn): NewsRowSpec[] {
-  const rows: NewsRowSpec[] = []
-  for (const n of x.news) {
-    if (n.region !== x.province) {
-      continue
-    }
-    if (rows.length >= NEWS_LATEST_MAX) {
-      break
-    }
-    rows.push({ key: n.slug, date: n.date, href: URL_NEWS_HEAD + n.slug, title: n.title })
-  }
-  return rows
 }
 
 /**

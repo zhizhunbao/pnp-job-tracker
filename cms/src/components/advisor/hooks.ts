@@ -12,15 +12,15 @@
 import { useEffect, useState } from 'react'
 import { track } from '@/lib/track'
 import {
-  GROUP_COMPANY, LANG_EN, LEVEL_PROVINCE, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD,
-  TRACK_P_KIND, TRANS_IDLE,
+  GROUP_COMPANY, LANG_EN, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND,
+  TRANS_IDLE,
 } from './constants'
 import {
-  makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans, makeLoadProv,
+  makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans,
 } from './functions'
 import type {
-  ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CityFact, CompanyModalPanel, DeadFlag, JobTextIn,
-  JobTextPanel, LocationDataIn, LocationDataPanel, NocTrans, NocTransIn, NocTransPanel, ProvFact, TransStatus,
+  ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CompanyModalPanel, DeadFlag, JobTextIn,
+  JobTextPanel, NocTrans, NocTransIn, NocTransPanel, TransStatus,
 } from './types'
 
 /**
@@ -75,53 +75,6 @@ export function useNocTrans(x: NocTransIn): NocTransPanel {
   }
 
   return { showTrans, status, trans, onToggle }
-}
-
-/**
- * 地点面板的取数机器:点省取省级事实,点市/区取市级事实(区级把区带上)。
- * 换层级时上一级那份当场作废 —— 别拿省的数字去配市的标题。
- *
- * @param x 这一岗、市区名与层级。
- * @returns 两级取数(各自 null = 不是这一级或还没回来)。
- */
-export function useLocationData(x: LocationDataIn): LocationDataPanel {
-  const [provState, setProv] = useState<ProvFact | null>(null)
-  const [cityState, setCityInfo] = useState<CityFact | null>(null)
-  const isProvLevel = x.level === LEVEL_PROVINCE
-  const province = x.job.province
-  const city = x.city
-  const district = x.district
-  const level = x.level
-
-  useEffect(function loadProv() {
-    const flag: DeadFlag = { dead: false }
-    if (isProvLevel && province !== TEXT_NONE) {
-      makeLoadProv({ province, setProv })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [isProvLevel, province])
-
-  useEffect(function loadCity() {
-    const flag: DeadFlag = { dead: false }
-    if (isProvLevel === false && city !== TEXT_NONE && province !== TEXT_NONE) {
-      makeLoadCity({ city, province, district, level, setCityInfo })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [isProvLevel, level, city, district, province])
-
-  let prov = provState
-  if (isProvLevel === false || province === TEXT_NONE) {
-    prov = null
-  }
-  let cityInfo = cityState
-  if (isProvLevel || city === TEXT_NONE || province === TEXT_NONE) {
-    cityInfo = null
-  }
-  return { prov, cityInfo }
 }
 
 /**

@@ -19,6 +19,7 @@
  * 2026-08-28 换装批自 Advisor.tsx 的 FieldFactsSection / FieldFactsInner 重写落位
  * (两件合成一件:外层原先只是包着一条注释的纯转发)。
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名那一格的分支撤 —— 职位板直开 pnp 桶的 PnpModal。
+ * 同日 Frank「地点弹框 删了吧」:地点那几格(国 / 省 / 市 / 区 / 地址)的分支撤 —— 分组表里早就没有哪一组铺它们了。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -26,14 +27,13 @@
 import { EeCategorySection } from '@/components/pnp'
 import {
   CLS_FIELDS, COL_TITLE, FIELD_ACCESSIBILITY, FIELD_AIP, FIELD_EE, FIELD_ELIGIBILITY, FIELD_LMIA, FIELD_PILOT,
-  LOC_FIELDS, SAL_FIELDS, SRC_FIELDS, TIME_FIELDS,
+  SAL_FIELDS, SRC_FIELDS, TIME_FIELDS,
 } from './constants'
 import { AccessFacts } from './accessfacts'
 import { AipFacts } from './aipfacts'
 import { ClassFacts } from './classfacts'
 import { EligFacts } from './eligfacts'
 import { LmiaFacts } from './lmiafacts'
-import { LocFacts } from './locfacts'
 import { PilotFacts } from './pilotfacts'
 import { SalaryFacts } from './salaryfacts'
 import { SourceFacts } from './sourcefacts'
@@ -68,9 +68,6 @@ export function FieldFacts({ field, f }: FieldFactsIn) {
   }
   if (field === FIELD_LMIA) {
     return <LmiaFacts f={f} />
-  }
-  if (LOC_FIELDS.includes(field)) {
-    return <LocFacts field={field} f={f} />
   }
   if (SAL_FIELDS.includes(field)) {
     return <SalaryFacts field={field} f={f} />

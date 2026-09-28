@@ -6,15 +6,15 @@
  * ⚠️ 公司面板点的是 components/companies 的**桶** —— 那一域反过来只点本桶的
  * jdadvisorsection 一个文件,不成环;jobs 那几条则必须点文件(职位板反过来要本桶两个弹框)。
  * 2026-08-28 换装批自 Advisor.tsx 的 AdvisorModal 正文分叉提出成件。
+ * 2026-09-28 Frank「地点弹框 删了吧」:地点组(五卡两列的 LocationPanel)整支删 —— 09-14 起省 / 市 / 区三格就不再开它了。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
 import { CompanyPanel } from '@/components/companies'
-import { GROUP_CATEGORY, GROUP_COMPANY, GROUP_LOCATION, TEXT_NONE } from './constants'
+import { GROUP_CATEGORY, GROUP_COMPANY, TEXT_NONE } from './constants'
 import { CategoryPanel } from './categorypanel'
 import { GroupFacts } from './groupfacts'
-import { LocationPanel } from './locationpanel'
 import type { AdvisorGroupBodyIn } from './types'
 
 /**
@@ -28,12 +28,6 @@ export function AdvisorBody({
 }: AdvisorGroupBodyIn) {
   if (group === GROUP_CATEGORY) {
     return <CategoryPanel job={f.job} lang={f.lang} nocDesc={f.nocDesc} srcField={field} />
-  }
-  if (group === GROUP_LOCATION) {
-    return (
-      <LocationPanel job={f.job} lang={f.lang} srcField={field}
-        pnpDraws={f.pnpDraws} news={f.news} desigEmp={f.desigEmp} />
-    )
   }
   if (group === GROUP_COMPANY) {
     return (

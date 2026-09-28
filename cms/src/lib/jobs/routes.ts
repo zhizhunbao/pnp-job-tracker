@@ -23,24 +23,18 @@ import {
 import { checkLimit, getUser, ipOf, isPro, isAdmin,
 } from '../quota/server'
 import {
-  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, CITY_PARAM_LEN_MAX,
-  COMPANY_SLUG_RE,
+  AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, COMPANY_SLUG_RE,
   DIMS_CACHE_CONTROL, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
-  JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE,
-  POOL_KEY_RE,
-  PROV2_RE, P_CITY, P_CODE, P_DIR, P_ID, P_DISTRICT, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, RADIX_DEC,
-  REL_OCC_OFFSET_MAX,
-  SORT_NONE, URL_CUT_RE, NL, TITLE_IP_DAILY, TITLE_LIMIT_PREFIX,
-  TITLE_MAX_LEN,
+  JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
+  P_ID, P_NOC, P_OFFSET, P_PAGE, P_SORT, P_URL, RADIX_DEC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
+  TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN,
 } from './constants'
 import {
-  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug, loadJobsPage,
-  loadOccCompetition,
-  loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims, hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut,
-  loadBigDims, loadCityCard,
-  loadJdFormatted, loadJdState, loadJobById, loadJobMeta, loadMatchDims, loadProvinceCard, loadRelatedAnchor,
-  loadRelatedJobs, loadRelatedOccPage, normalizeProfile,
-  translateTitles, emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
+  emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
+  loadJobsPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
+  hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
+  loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedOccPage, normalizeProfile, translateTitles,
+  emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle,
 } from './functions'
 import { CACHE } from './variables'
@@ -240,65 +234,6 @@ export async function jobsPnpRoute(_req: Request): Promise<Response> {
     { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
-}
-
-/**
- * GET /api/jobs/city?city=Ottawa&prov=ON[&district=Kanata]:市/区情报(E8-12b 懒查询,
- * 弹框打开才拉)。取数与拼装在 loadCityCard;这里只验参。
- *
- * @param req 请求。
- * @returns { ok: true, ...市卡 };参数非法 400。
- */
-export async function jobsCityRoute(req: Request): Promise<Response> {
-  const sp = new URL(req.url).searchParams
-  let city = PARAM_NONE
-  const cityParam = sp.get(P_CITY)
-  if (cityParam != null) {
-    city = cityParam.trim()
-  }
-  let prov = PARAM_NONE
-  const provParam = sp.get(P_PROV)
-  if (provParam != null) {
-    prov = provParam.toUpperCase()
-  }
-  let district = PARAM_NONE
-  const districtParam = sp.get(P_DISTRICT)
-  if (districtParam != null) {
-    district = districtParam.trim()
-  }
-  if (city === '' || city.length > CITY_PARAM_LEN_MAX || PROV2_RE.test(prov) === false) {
-    return Response.json({ ok: false }, { status: BAD_REQUEST })
-  }
-  const card = await loadCityCard({ db: await getDb(), city: city, prov: prov, district: district })
-  return Response.json({
-    ok: true,
-    openJobs: card.openJobs, new7d: card.new7d, medSalary: card.medSalary,
-    topBroads: card.topBroads, dli: card.dli, aipEmployers: card.aipEmployers, district: card.district,
-  })
-}
-
-/**
- * GET /api/jobs/province?code=ON:地点弹框省情报(E8-12 懒查询)。
- * info=provinces.info(IRCC 体量数,mart 挂列);difficulty=stats 表 broad='all' 行
- * (E12-07,与 /stats DifficultyCard 同源)。零 AI 零额度。
- *
- * @param req 请求(?code=两位省码)。
- * @returns { ok, info, difficulty };码非法 400、查无 404。
- */
-export async function jobsProvinceRoute(req: Request): Promise<Response> {
-  let code = PARAM_NONE
-  const codeParam = new URL(req.url).searchParams.get(P_CODE)
-  if (codeParam != null) {
-    code = codeParam.toUpperCase()
-  }
-  if (PROV2_RE.test(code) === false) {
-    return Response.json({ ok: false }, { status: BAD_REQUEST })
-  }
-  const card = await loadProvinceCard({ db: await getDb(), code: code })
-  if (card == null) {
-    return Response.json({ ok: false }, { status: NOT_FOUND })
-  }
-  return Response.json({ ok: true, info: card.info, difficulty: card.difficulty })
 }
 
 /**

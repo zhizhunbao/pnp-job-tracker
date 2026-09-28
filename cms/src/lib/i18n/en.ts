@@ -480,7 +480,6 @@ export const reportEn: Record<keyof typeof reportZh, string> = {
 export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n} jobs',
   'subtitle.hits': '{n} matches',
- 
   // 2026-09-26 晚 Frank「上下名字怎么对不上」「名字都用一个不行么」:有抽选组对应的十个通道,英文名改用省里官方原名(抽选页 / 通道页上的写法;原先是我们自起的 AB Tech / BC Construction trades 这类短名,与弹框抽选卡的组名对不上)。
   // 阿省 EE 定向那几个官方组名带上级前缀「Alberta Express Entry Stream –」,这里取后半截官方名,格子里一行放得下;中文 / 韩文名不动。
   'stream.abTech': 'Accelerated Tech Pathway', 'stream.abHealth': 'Dedicated Health Care Pathway', 'stream.skHealth': 'SK Health', 'stream.skTech': 'SK Tech', 'stream.skAgri': 'SK Agriculture', 'stream.nsCritical': 'NS Critical Vacancies', 'stream.nsGrad': 'NS Graduates', 'stream.abLaw': 'Law Enforcement Pathway', 'stream.abTourism': 'Tourism and Hospitality Stream', 'stream.abRural': 'Rural Renewal Stream', 'stream.nsConstr': 'NS Construction', 'stream.nbPriority': 'NB Priority Occupations', 'stream.aaipExcl': 'AAIP ineligible list',
@@ -554,9 +553,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'Skilled Worker in Manitoba', 'pnp.gen.NS': 'NS Skilled Worker',
   'pnp.gen.NB': 'NB Skilled Worker', 'pnp.gen.PE': 'PE Workforce', 'pnp.gen.NL': 'NL Skilled Worker', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
-  'pnplist.qc': 'Quebec uses its own selection (CSQ/Arrima), not PNP',
-  'pnpdraws.title': 'Recent draws {label}', 'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
-  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
+  'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
+  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
   'pnpdraws.head': 'Provincial draws',
   // 2026-09-27 monthly group (NS): the head counts months, not rounds
@@ -600,7 +598,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.empStaff': '≥ {n} full-time staff',
   'pnpgate.endorse': 'community endorsement letter', 'pnpgate.licensing': 'occupation licensing or registration',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
-  'pnpdraws.notice': 'OINP redesign ({date}): former streams closed, EOI invitations stopped; new Ontario Workforce Priority stream criteria pending',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
@@ -642,12 +639,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': 'Directory',
   'fact.medianSrc': 'ESDC open data · same NOC × this province', 'fact.noMedian': 'No ESDC median data for this NOC × province', 'fact.medianPro': 'Local median comparison is a Pro feature', 'fact.firstParty': 'First-party', 'fact.repost': 'Aggregated repost',
   'fact.daysUp': 'Days up', 'fact.daysUpVal': '{n} days',
-  'fact.provStreams': 'This occupation is on {n} of this province’s PNP stream lists — see the “PNP” tag on the job row for which one',
-  'fact.map': 'Map', 'fact.mapView': 'View on Google Maps',
   'fact.salYrNote': 'Annual = posted pay at 40 h/week × 52 weeks; midpoint for a range',
   'fact.accNote': 'Experience level extracted from the posting wording (title/years); "—" when not stated — never guessed',
-  'fact.noAddrNote': 'No street address in this posting (recorded only when the post includes a street number — never guessed); the map links to the finest level available',
-  'fact.noDistrictNote': 'District = large-city neighbourhoods (e.g. Kanata/Nepean in Ottawa); this posting has no neighbourhood name or high-confidence postal code, so it is left blank',
   'fact.aipTech': 'Tech',
   'fact.lmiaNote': 'A past record — not a sign they can or will sponsor now.', 'fact.lmiaStreams': 'By stream',
   'lmia.route': 'LMIA outlook for this job', 'lmia.official': 'Official freeze rules',
@@ -741,16 +734,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'match.r.lmia.na': 'No positive-LMIA record for this employer in the past two years (most employers never needed one; not a negative signal)',
   // 付费墙(E3-05)
   'grp.company': 'Company', 'grp.pnpProv': '{p} PNP', 'grp.pnpProvAip': '{p} PNP and AIP', 'grp.immigration': 'Immigration', 'grp.category': 'Occupation', 'grp.location': 'Location', 'grp.pnp': 'PNP', 'grp.ee': 'Express Entry', 'grp.aip': 'AIP employer', 'grp.pilot': 'Pilot community (RCIP/FCIP)', 'grp.salary': 'Pay vs median',
-  'loc.vol': 'Provincial immigration volume', 'loc.volTag': 'IRCC official data',
-  'loc.study': 'Study permit holders', 'loc.tfwp': 'Employer-specific work permits', 'loc.imp': 'Open & exempt work permits', 'loc.impNote': 'IMP, incl. PGWP',
-  'loc.asOf': '({y} year-end stock)', 'loc.alloc': 'PNP annual allocation', 'loc.allocBoth': '(2026; 2025: {b})', 'loc.allocY26': '(2026)', 'loc.allocY25': '(2025)',
-  'loc.pnpPr': 'PR landings (PNP)', 'loc.prNote': '({y}, incl. accompanying family)',
   'loc.src': 'Source: IRCC open data (year-end stock, rounded to the nearest 5).',
-  'loc.qc': 'Quebec runs its own selection system (not part of PNP) — allocations and draws do not apply.',
-  'loc.cityJobs': 'City job market', 'loc.openJobs': 'Open jobs', 'loc.new7d': 'Posted in last 7 days', 'loc.medSal': 'Median posted salary', 'loc.topBroads': 'Top fields',
-  'loc.distJobs': 'District job market', 'loc.distEmployers': 'Top employers in this district', 'loc.nJobs': '{n} open',
-  'loc.dli': 'PGWP-eligible schools', 'loc.dliN': '{n} schools', 'loc.dliPublic': 'Public',
-  'loc.aip': 'AIP designated employers', 'loc.aipN': '{n}', 'loc.dirLink': 'Employer directory',
+  'loc.dirLink': 'Employer directory',
   'cat.showZh': 'Show translation', 'cat.pair': 'Translation', 'cat.hideZh': 'Hide translation', 'cat.translating': 'Translating…', 'cat.transErr': 'Translation unavailable',
   'up.title': 'Upgrade to Pro to unlock',
   'up.advisor': "Today's free readings are used up — they reset tomorrow. Pro is unlimited: ask about any job, any field, anytime.",
@@ -774,7 +759,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ss.save': 'Save this search', 'ss.name': 'Name this search:', 'ss.saved': 'Saved — manage on your account page', 'ss.err': 'Save failed (limit may be reached)', 'ss.pro': 'Free saves 2 searches — Pro saves 5', 'ss.title': 'Saved searches', 'ss.none': 'No saved searches yet — set filters on the job board and hit Save this search', 'ss.del': 'Delete', 'ss.note': 'Manage saved searches here anytime; we email you when new jobs match',
   'fact.verdict': 'Verdict', 'act.channel': 'PR routes', 'eelist.listTitle': 'Category list',
   'ch.title': 'Routes this job can take', 'ch.pnpRow': 'PNP', 'ch.list': 'List',
-  'pnpdraws.nowTitle': 'Current rules in this province',
   'pnpdraws.on.k1': 'Stream', 'pnpdraws.on.v1': 'Ontario Workforce Priority (since 2026-06-25)',
   'pnpdraws.on.k2': 'Former 8 streams', 'pnpdraws.on.v2': 'All closed, no further invitations',
   'pnpdraws.on.k3': 'Coverage', 'pnpdraws.on.v3': 'A pathway for every TEER; self-employed physicians need no offer',
@@ -883,7 +867,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.col.provs': 'In-demand list provinces',
   'pulse.col.pnpProvs': 'Provinces that can nominate you',
   'pulse.col.teer': 'TEER',
-  'pulse.s4.prov': 'Province', 
+  'pulse.s4.prov': 'Province',
   'pulse.col.tier': 'Immigration pathway', 'pulse.tier.both': 'Prov + federal in-demand', 'pulse.tier.prov': 'Province in-demand list',
   'pulse.tier.fed': 'Federal in-demand list', 'pulse.tier.ee': 'EE open', 'pulse.tier.employer': 'Employer offer only',
   'pulse.col.range': 'Salary range',
@@ -921,7 +905,6 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'de.qPh': 'Search employers, places', 'de.entry': 'No experience needed', 'de.sep': ', ',
   'de.emptyFiltered': 'No employer matches these filters', 'de.loadFailed': 'Failed to load. Please refresh.', 'de.moreLocN': '{n} more',
   'de.notCollected': 'Employer not in our records',
- 
   'pro.unlock': 'Unlock Pro',
   'home.cta2.t': 'Canada-wide jobs, updated daily', 'home.cta2.s': 'Filter by province, occupation and PNP signals — free',
   'home.st.jobs': 'open jobs', 'home.st.aip': 'AIP employers', 'home.st.dli': 'DLIs',
@@ -962,7 +945,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'news.official': 'View official source',
   'news.toJobs': 'See jobs in this province', 'news.toJobsAll': 'See all jobs',
   'news.more': 'All updates',
-  'news.blockTitle': 'Immigration updates', 'news.latest': 'Latest provincial announcements',
+  'news.blockTitle': 'Immigration updates',
   'news.empty': 'No updates yet',
   'news.imp': 'Important', 'news.topTitle': 'Top updates', 'news.watch': 'Watch',
   'news.aiSum': 'AI summary', 'news.read': 'Read more', 'news.cmt.n': '{n} comments',
@@ -1011,7 +994,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'pulse.city.name': 'City', 'pulse.city.open': 'Jobs', 'pulse.city.wage': 'Median wage',
   'pulse.city.pop': 'Population', 'pulse.city.unemp': 'Unemployment', 'pulse.city.wageH': 'Median hourly',
   'pulse.city.comm': 'Community',
-  'pulse.city.dliN': 'DLI schools', 'city.facts': 'Overview', 'city.byInd': 'By industry', 'city.byIndCol': 'Industry', 'city.channel': 'Dedicated channels', 'city.school': 'School', 'city.schoolType': 'Type', 'city.pub': 'Public', 'city.priv': 'Private', 'city.kind.all': 'All', 'city.kind.university': 'University', 'city.kind.college': 'College', 'city.none': 'City not covered yet', 
+  'pulse.city.dliN': 'DLI schools', 'city.facts': 'Overview', 'city.byInd': 'By industry', 'city.byIndCol': 'Industry', 'city.channel': 'Dedicated channels', 'city.school': 'School', 'city.schoolType': 'Type', 'city.pub': 'Public', 'city.priv': 'Private', 'city.kind.all': 'All', 'city.kind.university': 'University', 'city.kind.college': 'College', 'city.none': 'City not covered yet',
   'pulse.top.open': 'Most jobs', 'pulse.top.wage': 'Highest wage',
   'pulse.ind.health': 'Healthcare', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': 'Trades',
   'pulse.ind.food': 'Food & retail', 'pulse.ind.transport': 'Transport & logistics', 'pulse.ind.manufacturing': 'Manufacturing & resources',
@@ -1034,7 +1017,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'mkt.search': 'Search occupation or city', 'mkt.more': 'More filters', 'mkt.chan': 'Stream', 'mkt.chan.all': 'All occupations', 'mkt.chan.pnp': 'On a PNP occupation list', 'mkt.chan.ee': 'Covered by an EE category', 'mkt.chan.occOnly': 'Stream filter applies when the x axis is Occupation', 'mkt.minJobs': 'Min open jobs', 'mkt.broad': 'Group', 'mkt.mid': 'Sub-group', 'mkt.fine': 'Category', 'mkt.cat.all': 'All', 'mkt.y2.off': 'Hide', 'mkt.medLink': 'Median by province', 'mkt.sort': 'Sort', 'mkt.sort.desc': 'High to low', 'mkt.sort.asc': 'Low to high',
   'mkt.fs': 'Fullscreen', 'mkt.fs.exit': 'Exit fullscreen',
   'mkt.note': 'From Canada’s official Job Bank. Open postings — not a measure of labour shortage',
-  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.minWageH': 'Statutory minimum', 'stats.wageLowH': 'Low hourly', 'stats.wageMedH': 'Median hourly', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile', 
+  'stats.title': '{prov} job statistics', 'stats.catTitle': '{prov} · {cat} job statistics', 'stats.openJobs': 'Open jobs', 'stats.new7d': 'Posted in last 7 days', 'stats.medWage': 'Median wage (ESDC)', 'stats.minWageH': 'Statutory minimum', 'stats.wageLowH': 'Low hourly', 'stats.wageMedH': 'Median hourly', 'stats.medSalary': 'Median posted salary', 'stats.named': 'In-demand list jobs', 'stats.topCities': 'Top cities', 'stats.streams': 'Streams hit', 'stats.byCat': 'By occupation group', 'stats.entry': 'Region stats', 'stats.toJobs': 'See these jobs', 'stats.caliber': 'Methodology', 'stats.noList.tip': 'This province currently publishes no PNP occupation list (e.g. OINP after its 2026-06 redesign) — eligibility runs on TEER and other conditions. Not missing data.', 'stats.naQc.tip': 'Quebec does not take part in the PNP — it runs its own selection system.', 'stats.provIndex': 'Choose a province', 'stats.compare': 'Compare provinces (Pro)', 'stats.pickProv': 'Pick 2–4 provinces', 'stats.myNoc': 'Highlight by my profile',
 }
 
 // =========================================================================

@@ -751,31 +751,6 @@ export type DrawRowSpec = {
 }
 
 /**
- * 洗好的一条公告行。
- */
-export type NewsRowSpec = {
-  /**
-   * React 列表键(=slug)。
-   */
-  key: string
-
-  /**
-   * 官方发布日期。
-   */
-  date: string
-
-  /**
-   * 详情页地址。
-   */
-  href: string
-
-  /**
-   * 官方原标题(也做悬停提示 —— 名字不截断,窄位才靠省略号收尾)。
-   */
-  title: string
-}
-
-/**
  * 洗好的一行省清单职业。
  */
 export type StreamRowSpec = {
@@ -1641,57 +1616,6 @@ export type MmRowSpec = {
 }
 
 /**
- * PnpDrawsBlock(本省最近抽选)的 props。
- */
-export type PnpDrawsBlockIn = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
-
-  /**
-   * 全部抽选行(本省那些在体内筛)。
-   */
-  draws: PnpDraw[]
-
-  /**
-   * 最多留几条(C2 走查拍板:省弹窗只留最近 1 条摘要,全量归 PNP 弹窗,消跨弹窗重复);
-   * 可省 = 不截断。
-   */
-  limit?: number
-}
-
-/**
- * ReformRules(改制省现行规则两列表)的 props。
- */
-export type ReformRulesIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本省的改制登记。
-   */
-  reform: PnpReform
-}
-
-/**
- * DrawNotice(通告行)的 props。
- */
-export type DrawNoticeIn = {
-  /**
-   * 通告全文(#153:有官方原文就是原文,缺了才是模板句)。
-   */
-  text: string
-}
-
-/**
  * StreamRow(省清单一行)的 props。
  */
 export type StreamRowIn = {
@@ -1714,16 +1638,6 @@ export type DrawRowViewIn = {
    * 洗好的这一行。
    */
   r: DrawRowSpec
-}
-
-/**
- * NewsRow(公告一行)的 props。
- */
-export type NewsRowViewIn = {
-  /**
-   * 洗好的这一行。
-   */
-  r: NewsRowSpec
 }
 
 /**
@@ -1754,26 +1668,6 @@ export type VerdictIconIn = {
    * 判定档。
    */
   tone: MmTone
-}
-
-/**
- * NewsLatestBlock(本省最新公告)的 props。
- */
-export type NewsLatestBlockIn = {
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
-
-  /**
-   * 全部动态(本省那些在体内筛)。
-   */
-  news: PnpNewsSlim[]
 }
 
 /**
@@ -2389,26 +2283,6 @@ export type DrawRowsIn = {
 }
 
 /**
- * drawsTitleOf 的入参。
- */
-export type DrawsTitleIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 本省的改制登记;null=没改制。
-   */
-  reform: PnpReform | null
-
-  /**
-   * 打头那一行抽选;null=一条都没有。
-   */
-  first: PnpDraw | null
-}
-
-/**
  * toDrawRow 的入参。
  */
 export type DrawRowIn = {
@@ -2436,21 +2310,6 @@ export type DrawRowIn = {
    * 本省的改制登记;null=没改制。
    */
   reform: PnpReform | null
-}
-
-/**
- * drawNoticeTextOf 的入参。
- */
-export type DrawNoticeTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 这一行通告。
-   */
-  draw: PnpDraw
 }
 
 /**

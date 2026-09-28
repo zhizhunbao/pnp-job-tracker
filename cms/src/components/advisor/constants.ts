@@ -84,16 +84,6 @@ export const URL_API_JOBS_RETRANSLATE = '/api/jobs/retranslate'
 export const URL_API_EMPLOYERS_RETRANSLATE = '/api/employers/retranslate'
 
 /**
- * 省级面板的取数接口头(拼上编码后的省码)。
- */
-export const URL_API_PROVINCE = '/api/jobs/province?code='
-
-/**
- * 市/区级面板的取数接口头(拼上 city / prov / district 三个查询参数)。
- */
-export const URL_API_CITY = '/api/jobs/city?'
-
-/**
  * 公司在榜岗清单的接口头:走职位板的全文搜索参数 q(2026-09-14 Frank「这个为什么只有第一个改成弹框了」:
  * 原写 `?company=`,接口没这个参数、整条被当无筛选,回来的是全站最新一页,只有恰好在那一页的岗才能解析成弹框,
  * 其余落成整页跳转)。
@@ -111,8 +101,9 @@ export const URL_PAGE_FIRST = '&page=0'
  * 地点组(省份卡读本省抽选)—— 与各组正文真读 pnpOcc / pnpDraws 的那几件逐一对过;
  * 新增读这两表的组要在这里登记,否则那组开框会拿到空表。
  * 2026-09-28 省提名组撤出(省提名弹框自立成 pnp 桶的 PnpModal,自己取);取数本身也迁进 pnp 桶(usePnpData)。
+ * 同日地点组撤出(Frank「地点弹框 删了吧」)。
  */
-export const PNP_DATA_GROUPS = new Set(['immigration', 'ee', 'aip', 'location'])
+export const PNP_DATA_GROUPS = new Set(['immigration', 'ee', 'aip'])
 
 /**
  * 两表懒取失败时那句话的提醒框色:notice 域四色里的红(2026-09-26;文案沿用雇主板同义的 de.loadFailed,不另起词条)。
@@ -205,11 +196,6 @@ export const ARROW_EXTERNAL = '↗'
 export const LIST_SEP = '、'
 
 /**
- * 地图查询词各级之间的分隔(街址, 区, 市, 省 —— Google 地图吃这一套)。
- */
-export const MAP_SEP = ', '
-
-/**
  * 拼 className 时各类之间的分隔符。HTML 的 class 属性按**空白**切词,
  * 写错不会报错,只会让两个类粘成一个匹配不上的长类名,那一块当场变成裸元素。
  */
@@ -246,16 +232,6 @@ export const THOUSAND = 1000
 export const HUNDRED = 100
 
 /**
- * 百分号尾巴。
- */
-export const PCT_TAIL = '%'
-
-/**
- * 正向偏离的加号(负号由数字自带)。
- */
-export const PLUS_HEAD = '+'
-
-/**
  * NOC 码前缀(五位码前面那三个字母)。
  */
 export const NOC_HEAD = 'NOC '
@@ -274,16 +250,6 @@ export const PAREN_OPEN = ' ('
  * TEER 档人话说明的右括号。
  */
 export const PAREN_CLOSE = ')'
-
-/**
- * 地图链接尾巴的查询词左括号(「在 Google 地图查看(渥太华, ON)↗」)。
- */
-export const MAP_PAREN_OPEN = '('
-
-/**
- * 地图链接尾巴的查询词右括号。
- */
-export const MAP_PAREN_CLOSE = ')'
 
 /**
  * JD 命中原句的左引号(可核验:原句照抄,不转述)。
@@ -333,31 +299,9 @@ export const STATUS_OPEN = 'open'
 export const CAT_NONE = '未分类'
 
 /**
- * 省提名职业清单里的「不受理」类型(算该省具名通道数时要把它剔掉)。
- */
-export const OCC_TYPE_INELIGIBLE = 'ineligible'
-
-/**
  * 抽选记录里的「公告」类型(只是通知不是真抽选,判「改制后抽没抽过」时不算数)。
  */
 export const DRAW_KIND_NOTICE = 'notice'
-
-/**
- * 近 180 天邀请那一格的常规口径注。
- */
-export const K_DIFF_ACT = 'diff.n.act'
-
-/**
- * 近 180 天邀请那一格的改制注:改制省(ON)近 180 天的抽选全在改制之前 ——
- * 不加注就与下方「旧 8 条流已关闭」自相矛盾。判定走同一份抽选记录:
- * 改制日之后一条都没有才加注,新 EOI 一开抽注自动消失。
- */
-export const K_DIFF_ACT_OLD = 'diff.n.actOld'
-
-/**
- * 临时外劳项目的英文缩写(人话名主文案 + 代码灰字小注:Frank「TFWP/IMP 用户都不知道是什么」)。
- */
-export const CODE_TFWP = 'TFWP'
 
 /**
  * JD 取数被防滥用闸挡下的档名(#201:429 = JD 宽松防滥用闸偶发,JD 已免费,非付费墙)。
@@ -370,16 +314,6 @@ export const JOB_TEXT_LIMITED = 'limited'
  * 地点面板的省级档。
  */
 export const LEVEL_PROVINCE = 'province'
-
-/**
- * 地点面板的市级档。
- */
-export const LEVEL_CITY = 'city'
-
-/**
- * 地点面板的区级档。
- */
-export const LEVEL_DISTRICT = 'district'
 
 /**
  * ESDC 工资表低档那一行的列表键。
@@ -424,51 +358,6 @@ export const ROW_KEY_BROAD = 'broad'
 export const ROW_KEY_OCC = 'occ'
 
 /**
- * 体量卡留学生那一行的列表键。
- */
-export const VOL_KEY_STUDY = 'study'
-
-/**
- * 体量卡临时外劳那一行的列表键。
- */
-export const VOL_KEY_TFWP = 'tfwp'
-
-/**
- * 体量卡国际流动项目那一行的列表键。
- */
-export const VOL_KEY_IMP = 'imp'
-
-/**
- * 体量卡提名配额那一行的列表键。
- */
-export const VOL_KEY_ALLOC = 'alloc'
-
-/**
- * 体量卡省提名落地那一行的列表键。
- */
-export const VOL_KEY_PNP_PR = 'pnpPr'
-
-/**
- * 市/区体量在招岗数那一行的列表键。
- */
-export const AREA_KEY_OPEN = 'openJobs'
-
-/**
- * 市/区体量近 7 天新增那一行的列表键。
- */
-export const AREA_KEY_NEW7D = 'new7d'
-
-/**
- * 市/区体量年薪中位那一行的列表键。
- */
-export const AREA_KEY_MED = 'medSalary'
-
-/**
- * 市/区体量大类分布那一行的列表键。
- */
-export const AREA_KEY_BROADS = 'topBroads'
-
-/**
  * AIP 直判的「命中」档(雇主在指定雇主名录里)。
  */
 export const AIP_ON = 'on'
@@ -509,61 +398,6 @@ export const TONE_NA = 'na'
 export const TONE_WARN = 'warn'
 
 /**
- * 难度因子:竞争比(在池人数 ÷ 当年配额)。
- */
-export const FAC_COMP = 'comp'
-
-/**
- * 难度因子:配额同比。
- */
-export const FAC_QUOTA_TREND = 'quotaTrend'
-
-/**
- * 难度因子:近 180 天邀请。
- */
-export const FAC_ACTIVITY = 'activity'
-
-/**
- * 难度因子:最近一次抽选的分数档。
- */
-export const FAC_SCORE_LEVEL = 'scoreLevel'
-
-/**
- * 省级卡里最近抽选只列一条(省弹框是一瞥,深看去统计页)。
- */
-export const DRAWS_LIMIT_ONE = 1
-
-/**
- * 省级卡组里最近抽选列三条(点省进来就是来看这个的)。
- */
-export const DRAWS_LIMIT_THREE = 3
-
-/**
- * 地点层级:国(点「国家」格只看到这一级)。
- */
-export const DEPTH_COUNTRY = 1
-
-/**
- * 地点层级:省。
- */
-export const DEPTH_PROVINCE = 2
-
-/**
- * 地点层级:市。
- */
-export const DEPTH_CITY = 3
-
-/**
- * 地点层级:区。
- */
-export const DEPTH_DISTRICT = 4
-
-/**
- * 地点层级:精确地址(点哪级只看哪级,含上级路径 —— 07-06 用户拍板)。
- */
-export const DEPTH_ADDRESS = 5
-
-/**
  * 分类层级:大类(点「大分类」格不混进中/小分类 —— 07-06 用户点名)。
  */
 export const CLS_DEPTH_BROAD = 1
@@ -572,11 +406,6 @@ export const CLS_DEPTH_BROAD = 1
  * 分类层级:NOC 全链(五位码职业级信息只在这一格里给)。
  */
 export const CLS_DEPTH_NONE = 0
-
-/**
- * 地点组的五个字段(点哪一格开哪一级)。
- */
-export const LOC_FIELDS = ['country', 'province', 'city', 'district', 'address']
 
 /**
  * 薪资组的五个字段(帖面 / 折算年薪 / ESDC 时薪中位 / ESDC 年薪中位 / 对比中位)。
@@ -675,31 +504,6 @@ export const FIELD_VS_MEDIAN = 'vsMedian'
 export const FIELD_WAGE_MED_HR = 'wageMedHr'
 
 /**
- * 国家字段。
- */
-export const FIELD_COUNTRY = 'country'
-
-/**
- * 省字段。
- */
-export const FIELD_PROVINCE = 'province'
-
-/**
- * 市字段。
- */
-export const FIELD_CITY = 'city'
-
-/**
- * 区字段。
- */
-export const FIELD_DISTRICT = 'district'
-
-/**
- * 精确地址字段。
- */
-export const FIELD_ADDRESS = 'address'
-
-/**
  * 来源板字段。
  */
 export const FIELD_SOURCE = 'source'
@@ -748,11 +552,6 @@ export const GROUP_IMMIGRATION = 'immigration'
  * 分类分组(#176「这职业是干嘛的」:三卡 + 中文对照 + AI 速读)。
  */
 export const GROUP_CATEGORY = 'category'
-
-/**
- * 地点分组(E8-12:五卡两列,走专用面板)。
- */
-export const GROUP_LOCATION = 'location'
 
 /**
  * 公司分组(2026-07-21:走专用 CompanyPanel 平级卡)。
@@ -805,10 +604,6 @@ export const GROUP_SECTIONS: Record<string, string[]> = {
    */
   company: [],
 
-  /**
-   * 地点组走专用 LocationPanel(五卡两列),不经本表(E8-12)。
-   */
-  location: [],
 }
 
 /**
@@ -861,11 +656,6 @@ export const K_ELIG_HEAD = 'cell.elig.'
  * AIP 直判三态的文案键前缀。
  */
 export const K_AIP_HEAD = 'ch.aip.'
-
-/**
- * 移民难度档名的文案键前缀。
- */
-export const K_DIFF_HEAD = 'diff.'
 
 /**
  * 埋点:四类弹框打开各记一事件(modal-immigration / company / category / location),
@@ -946,16 +736,6 @@ export const GRID_COLS_3 = 3
  * 网格里标签格的列表键后缀。
  */
 export const KEY_TAIL_K = 'k'
-
-/**
- * 网格里值格的列表键后缀。
- */
-export const KEY_TAIL_V = 'v'
-
-/**
- * 网格里注格的列表键后缀。
- */
-export const KEY_TAIL_N = 'n'
 
 /**
  * ESDC 表时薪格的列表键后缀。

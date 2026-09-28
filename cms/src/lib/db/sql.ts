@@ -1480,73 +1480,6 @@ export const EE_NOCS_DISTINCT = `SELECT DISTINCT noc FROM ee_categories WHERE no
  */
 export const OPEN_COND = `COALESCE(j.status,'open') = 'open'`
 
-/**
- * 城市页三数:在架/7 天新增/中位薪资。$1=城市,$2=省,a1=在架口径片段。
- *
- * @param a1 在架口径片段(OPEN_COND)。
- * @returns 城市三数 SELECT 语句。
- */
-export const cityTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
-              COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
-              percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
-       FROM jobs j WHERE j.city = $1 AND j.province = $2 AND ${a1}`
-
-/**
- * 城市页大类分布前 3。$1=城市,$2=省。
- *
- * @param a1 在架口径片段(OPEN_COND)。
- * @returns 大类分布 SELECT 语句。
- */
-export const cityByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
-       WHERE j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
-       GROUP BY j.broad ORDER BY n DESC LIMIT 3`
-
-/**
- * 城市的 DLI 院校前 4(公立优先)。$1=城市,$2=省。
- */
-export const CITY_DLI = `SELECT name, is_public FROM dli WHERE city = $1 AND province = $2 ORDER BY is_public DESC NULLS LAST, name LIMIT 4`
-
-/**
- * 城市的 AIP 指定雇主数(location 模糊匹配)。$1=城市,$2=省。
- */
-export const CITY_DESIGNATED_COUNT = `SELECT COUNT(*)::int AS n FROM designated_employers WHERE province = $2 AND location ILIKE '%' || $1 || '%'`
-
-/**
- * 社区页三数(区级)。$1=城市,$2=省,$3=区。
- *
- * @param a1 在架口径片段(OPEN_COND)。
- * @returns 社区三数 SELECT 语句。
- */
-export const districtTotals = (a1: string) => `SELECT COUNT(*)::int AS open_jobs,
-                COUNT(*) FILTER (WHERE j.date_posted >= NOW() - INTERVAL '7 day')::int AS new7d,
-                percentile_cont(0.5) WITHIN GROUP (ORDER BY j.salary_annual) AS med_salary
-         FROM jobs j WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1}`
-
-/**
- * 城市 DLI 总数。$1=城市,$2=省。
- */
-export const CITY_DLI_COUNT = `SELECT COUNT(*)::int AS n FROM dli WHERE city = $1 AND province = $2`
-
-/**
- * 社区页大类分布前 3。$1=城市,$2=省,$3=区。
- *
- * @param a1 在架口径片段(OPEN_COND)。
- * @returns 大类分布 SELECT 语句。
- */
-export const districtByBroad = (a1: string) => `SELECT j.broad, COUNT(*)::int AS n FROM jobs j
-         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND j.broad IS NOT NULL AND j.broad <> '未分类'
-         GROUP BY j.broad ORDER BY n DESC LIMIT 3`
-
-/**
- * 社区页在招雇主前 4。$1=城市,$2=省,$3=区。
- *
- * @param a1 在架口径片段(OPEN_COND)。
- * @returns 在招雇主 SELECT 语句。
- */
-export const districtEmployers = (a1: string) => `SELECT c.name, c.slug, COUNT(*)::int AS n FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
-         WHERE j.district = $3 AND j.city = $1 AND j.province = $2 AND ${a1} AND c.name IS NOT NULL
-         GROUP BY c.name, c.slug ORDER BY n DESC, c.name LIMIT 4`
-
 // =========================================================================
 // 16. 邮件提醒
 // =========================================================================
@@ -1896,9 +1829,13 @@ export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs W
 
 /**
  * 公司站点地图的 FROM/WHERE 骨架(有 slug 且有在架岗)。
+ * 2026-09-28 改判(Frank「改吧」,接 09-26「三处都只放邮箱岗」):成员再加一格 —— 旗下至少一条岗过收录口径
+ * (SEO_JOB_OK,与职位分片同一段);旗下没有能在本站投的岗的公司不进 sitemap,不跟邮箱岗抢 Google 的抓取额度,
+ * 页面照常可访问、可被收。当天生产 36,102 → 18,465 家。lastmod 照旧取旗下全部在架岗(公司页列的是全部在招岗)。
  */
 export const CO_SITEMAP_FROM = `FROM companies c JOIN jobs j ON j.company_id = c.id
-   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''`
+   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''
+     AND c.id IN (SELECT company_id FROM jobs WHERE ${SEO_JOB_OK})`
 
 /**
  * 公司站点地图计数。a1=FROM 骨架。
@@ -1937,6 +1874,8 @@ export const jobsSitemapAll = (a1: string) => `SELECT id, GREATEST(COALESCE(firs
  * 2026-09-26 改列(同职位侧):带公司 id(片号 = id 取模,进程内挑),lastmod 改旗下在架岗最晚的上架时刻
  * (新岗上架 = 公司页的在招列表真变了),不再用 max(last_seen)。成员口径不变。当天生产 EXPLAIN ANALYZE 四次 0.8–1.7 秒
  * (与改列前同一计划,出 3.7 万家)。
+ * 2026-09-28 成员收窄(见 CO_SITEMAP_FROM),本句不变;生产 EXPLAIN ANALYZE 三次 2.3–2.5 秒(多一趟收录口径扫描),
+ * 出 18,465 家,8 片每片 2,262–2,377 家。
  *
  * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
  * @returns 全量 SELECT 语句。
@@ -2070,11 +2009,6 @@ export const fineCounts = (a1: string | number) => `SELECT fine, count(*)::int A
      WHERE status = 'open' AND province = $1 AND broad = $2 AND mid = $3
        AND fine IS NOT NULL AND fine <> '' AND fine <> '未分类'
      GROUP BY fine ORDER BY n DESC LIMIT ${a1}`
-
-/**
- * 单省难度分。$1=省。
- */
-export const PROV_DIFFICULTY_ONE = `SELECT difficulty FROM stats WHERE province = $1 AND broad = 'all' AND (mid = 'all' OR mid IS NULL) AND difficulty IS NOT NULL LIMIT 1`
 
 /**
  * 职业的职责与要求原文(JD 对照用)。$1=NOC。
@@ -2595,11 +2529,6 @@ export const jobsUpsertSuffix = (x: SqlJobsUpsertIn) => {
   }
   return `ON CONFLICT (external_id) DO UPDATE SET ${sets.join(',')} WHERE ${changed.join(' OR ')}`
 }
-
-/**
- * 单省的 info 列(/api/jobs/province 地点弹框;info 是 mart 挂的 IRCC 体量数 jsonb)。
- */
-export const PROVINCE_INFO_ONE = `SELECT info FROM provinces WHERE code = $1 LIMIT 1`
 
 /**
  * 筛选下拉的城市维度(/api/jobs/dims;上限同原 payload.find 的 5000)。

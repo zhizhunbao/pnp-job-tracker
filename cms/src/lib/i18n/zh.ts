@@ -517,7 +517,6 @@ export const jobsZh = {
   'subtitle.count': '{n} 个职位',
   'subtitle.hits': '{n} 个命中',
   // #170:去「·」杂糅(站内硬规矩)——两条事实改全角空格分隔;「官方公开数据」是限定语不是事实,砍掉
- 
   'stream.abTech': 'AB 科技', 'stream.abHealth': 'AB 医疗', 'stream.skHealth': 'SK 医疗', 'stream.skTech': 'SK 科技', 'stream.skAgri': 'SK 农业', 'stream.nsCritical': 'NS 紧缺空缺', 'stream.nsGrad': 'NS 毕业生', 'stream.abLaw': 'AB 警务', 'stream.abTourism': 'AB 旅游酒店', 'stream.abRural': 'AB 乡村振兴', 'stream.nsConstr': 'NS 建筑', 'stream.nbPriority': 'NB 优先职业', 'stream.aaipExcl': 'AAIP 不符合清单',
   'stream.bcHealth': 'BC 医疗', 'stream.bcChildcare': 'BC 幼教', 'stream.bcEdu': 'BC 法语教师', 'stream.bcVet': 'BC 兽医', 'stream.bcConstr': 'BC 建筑技工',
   'stream.mbIndemand': 'MB 在需职业', 'stream.mbRural': 'MB 乡镇在需', 'stream.peIndemand': 'PE 在需职业', 'stream.nbExcl': 'NB 不符合清单', 'stream.nbExclFood': 'NB 餐饮住宿不符合',
@@ -598,9 +597,8 @@ export const jobsZh = {
   'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',
   'pnp.gen.NL': 'NL 技术工人', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
-  'pnplist.qc': '魁省走自己的甄选(CSQ/Arrima),不属省提名',
-  'pnpdraws.title': '本省最近抽选 {label}', 'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
-  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title
+  'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
+  // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
   'pnpdraws.head': '本省抽选',
   // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月公布的那一组(NS)组头计数写几个月,不写几轮
@@ -637,7 +635,6 @@ export const jobsZh = {
   'pnpgate.empYears': '在本省经营满 {n} 个财年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
-  'pnpdraws.notice': 'OINP {date} 改制:旧通道已关停、EOI 停发邀请;新 Ontario Workforce Priority 通道细则待公布',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
   // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
@@ -688,12 +685,8 @@ export const jobsZh = {
   'origin.jobbank': 'Job Bank', 'origin.ats': 'ATS', 'origin.directory': '社区名单',
   'fact.medianSrc': 'ESDC 开放数据 · 同 NOC × 本省', 'fact.noMedian': '该 NOC × 本省暂无 ESDC 中位数据', 'fact.medianPro': '当地中位工资对比为 Pro 功能', 'fact.firstParty': '第一方直投', 'fact.repost': '聚合转贴',
   'fact.daysUp': '已挂', 'fact.daysUpVal': '{n} 天',
-  'fact.provStreams': '本岗职业上了该省 {n} 条省提名通道的清单;具体是哪条,看职位行的「PNP」标签',
-  'fact.map': '地图', 'fact.mapView': '在 Google 地图查看',
   'fact.salYrNote': '年薪=帖面工资按每周 40 小时、一年 52 周折算;区间取中间值',
   'fact.accNote': '经验级别从帖内措辞(职级/年限)提取;帖内未写=「未知」,不猜',
-  'fact.noAddrNote': '该帖未提供街道地址(仅当帖内含街号才收录,不猜);地图按可得的最细层级定位',
-  'fact.noDistrictNote': '「区」按大城市社区划分(如渥太华 Kanata/Nepean);该帖无社区名或高置信邮编,留空不猜',
   'fact.aipTech': '科技类',
   'fact.lmiaNote': '历史事实,不代表现在能或愿意担保。', 'fact.lmiaStreams': '获批构成',
   'lmia.route': '本岗 LMIA 前瞻', 'lmia.official': '官方冻结口径',
@@ -797,18 +790,10 @@ export const jobsZh = {
   // 付费墙(E3-05)
   // E8-10:三个弹框的页眉分组名(收编后标题不再取被点单元格的值)
   'grp.company': '公司', 'grp.pnpProv': '{p}提名(PNP)', 'grp.pnpProvAip': '{p}提名(PNP)及 AIP', 'grp.immigration': '移民', 'grp.category': '职业分类', 'grp.location': '地点', 'grp.pnp': '省提名(PNP)', 'grp.ee': '联邦 EE', 'grp.aip': 'AIP 指定雇主', 'grp.pilot': '试点社区(RCIP/FCIP)', 'grp.salary': '薪资对照',
-  // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)
-  'loc.vol': '该省移民体量', 'loc.volTag': 'IRCC 官方数',
-  'loc.study': '学签持有人', 'loc.tfwp': '雇主担保类工签', 'loc.imp': '开放及豁免类工签', 'loc.impNote': 'IMP,含毕业工签',
-  'loc.asOf': '({y} 年末在库)', 'loc.alloc': '省提名年度配额', 'loc.allocBoth': '(2026 年;2025 年为 {b})', 'loc.allocY26': '(2026 年)', 'loc.allocY25': '(2025 年)',
-  'loc.pnpPr': '拿到 PR(省提名类)', 'loc.prNote': '({y} 年,含随行家属)',
+  // E8-12 地点弹框:该省移民体量卡(IRCC 官方数;人话名主文案+代码灰注)。2026-09-28 地点弹框删,这段只剩别处还在用的词条
   'loc.src': '来源:IRCC 开放数据(年末存量,官方数四舍五入到 5)。',
-  'loc.qc': '魁省走独立甄选体系(不参与省提名),配额与抽选不适用。',
-  // E8-12b 市级卡(点市看市):就业市场/PGWP 院校/AIP 雇主
-  'loc.cityJobs': '该市就业市场', 'loc.openJobs': '在招职位', 'loc.new7d': '近 7 日新增', 'loc.medSal': '帖面中位年薪', 'loc.topBroads': '热门方向',
-  'loc.distJobs': '该区就业市场', 'loc.distEmployers': '本区主要雇主', 'loc.nJobs': '{n} 个在招',
-  'loc.dli': '可申毕业工签的院校', 'loc.dliN': '共 {n} 所', 'loc.dliPublic': '公立',
-  'loc.aip': 'AIP 指定雇主', 'loc.aipN': '{n} 家', 'loc.dirLink': '雇主名录',
+  // E8-12b 市级卡(点市看市):就业市场/PGWP 院校/AIP 雇主。2026-09-28 随地点弹框删,这段只剩别处还在用的词条
+  'loc.dirLink': '雇主名录',
   // 分类弹框按钮(职责/要求实时翻 + AI 速读)
   'cat.showZh': '显示中文对照', 'cat.pair': '中文对照', 'cat.hideZh': '收起中文对照', 'cat.translating': '翻译中…', 'cat.transErr': '翻译暂不可用',
   'up.title': '升级 Pro 解锁',
@@ -837,7 +822,6 @@ export const jobsZh = {
   'fact.verdict': '判定', 'act.channel': '移民通道', 'eelist.listTitle': '类别清单',
   'ch.title': '这个岗能走哪条通道', 'ch.pnpRow': '省提名 PNP', 'ch.list': '清单',
   // Frank 2026-07-26「老的历史记录删了吧,改成最新的打分规则」:改制省不再铺旧通道抽选,改列现行规则四行
-  'pnpdraws.nowTitle': '本省现行规则',
   'pnpdraws.on.k1': '通道', 'pnpdraws.on.v1': 'Ontario Workforce Priority(2026-06-25 起)',
   'pnpdraws.on.k2': '旧 8 条流', 'pnpdraws.on.v2': '已全部关闭,不再发邀请',
   'pnpdraws.on.k3': '覆盖', 'pnpdraws.on.v3': '全部 TEER 均有路径,自雇医生可无 offer',
@@ -958,7 +942,7 @@ export const siteZh = {
   'pulse.col.provs': '紧缺清单省份',
   'pulse.col.pnpProvs': '可提名省份',
   'pulse.col.teer': 'TEER 档',
-  'pulse.s4.prov': '省份', 
+  'pulse.s4.prov': '省份',
   // 药丸措辞 08-08 Frank 拍板:「点名」(内部黑话)→ 对齐全站「紧缺清单」
   'pulse.col.tier': '移民通道', 'pulse.tier.both': '省+联邦紧缺清单', 'pulse.tier.prov': '省紧缺清单',
   'pulse.tier.fed': '联邦紧缺清单', 'pulse.tier.ee': '可走 EE', 'pulse.tier.employer': '仅雇主担保',
@@ -1000,7 +984,6 @@ export const siteZh = {
   'de.qPh': '搜索雇主、地点', 'de.entry': '无经验可投', 'de.sep': '、',
   'de.emptyFiltered': '当前筛选查无匹配', 'de.loadFailed': '加载失败,请刷新重试', 'de.moreLocN': '另 {n} 地',
   'de.notCollected': '本站未收录该雇主',
- 
   'pro.unlock': '解锁 Pro',
   'home.cta2.t': '每天更新的全加拿大职位', 'home.cta2.s': '按省份、职业、省提名信号筛选,免费',
   // Hero 胶囊(2026-08-04 合并:原「今日日更」节撤,三个数并进胶囊)——讲的都是「日更职位板」这一件事;
@@ -1046,7 +1029,7 @@ export const siteZh = {
   'news.official': '查看官方原文',
   'news.toJobs': '看该省岗位', 'news.toJobsAll': '看全部岗位',
   'news.more': '全部动态',
-  'news.blockTitle': '该省移民动态', 'news.latest': '本省最新公告',
+  'news.blockTitle': '该省移民动态',
   'news.empty': '暂无动态',
   'news.imp': '重要', 'news.topTitle': '重要动态', 'news.watch': '关注',
   'news.aiSum': 'AI 速读', 'news.read': '阅读全文', 'news.cmt.n': '{n} 条评论',
@@ -1098,7 +1081,7 @@ export const siteZh = {
   'pulse.city.name': '城市', 'pulse.city.open': '在招', 'pulse.city.wage': '中位年薪',
   'pulse.city.pop': '人口', 'pulse.city.unemp': '失业率', 'pulse.city.wageH': '中位时薪',
   'pulse.city.comm': '社区',
-  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.kind.all': '全部', 'city.kind.university': '大学', 'city.kind.college': '学院', 'city.none': '本站未收录该城市', 
+  'pulse.city.dliN': 'DLI 院校', 'city.facts': '概览', 'city.byInd': '行业分布', 'city.byIndCol': '行业', 'city.channel': '专属通道', 'city.school': '院校', 'city.schoolType': '类型', 'city.pub': '公立', 'city.priv': '私立', 'city.kind.all': '全部', 'city.kind.university': '大学', 'city.kind.college': '学院', 'city.none': '本站未收录该城市',
   'pulse.top.open': '最多岗位', 'pulse.top.wage': '最高工资',
   'pulse.ind.health': '医疗', 'pulse.ind.stem': 'STEM', 'pulse.ind.trades': '技工',
   'pulse.ind.food': '餐饮零售', 'pulse.ind.transport': '运输物流', 'pulse.ind.manufacturing': '制造农矿',
@@ -1122,7 +1105,7 @@ export const siteZh = {
   'mkt.search': '搜职业、城市', 'mkt.more': '更多筛选', 'mkt.chan': '通道', 'mkt.chan.all': '全部职业', 'mkt.chan.pnp': '省提名清单上的职业', 'mkt.chan.ee': 'EE 类别覆盖的职业', 'mkt.chan.occOnly': '通道筛选只在横轴=职业时生效', 'mkt.minJobs': '最低在招岗数', 'mkt.broad': '大类', 'mkt.mid': '中类', 'mkt.fine': '小类', 'mkt.cat.all': '全部', 'mkt.y2.off': '不显示', 'mkt.medLink': '各省中位', 'mkt.sort': '排序', 'mkt.sort.desc': '从高到低', 'mkt.sort.asc': '从低到高',
   'mkt.fs': '全屏看图', 'mkt.fs.exit': '退出全屏',
   'mkt.note': '数据来自官方 Job Bank;在招量=当前在招职位数,不等于「缺人」',
-  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.minWageH': '法定最低时薪', 'stats.wageLowH': '最低时薪', 'stats.wageMedH': '中位时薪', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮', 
+  'stats.title': '{prov} 地区职位统计', 'stats.catTitle': '{prov} · {cat} 职位统计', 'stats.openJobs': '在招职位', 'stats.new7d': '近 7 天发布', 'stats.medWage': '中位年薪(ESDC)', 'stats.minWageH': '法定最低时薪', 'stats.wageLowH': '最低时薪', 'stats.wageMedH': '中位时薪', 'stats.medSalary': '帖面中位年薪', 'stats.named': '紧缺清单岗', 'stats.topCities': '主要城市', 'stats.streams': '命中通道', 'stats.byCat': '按职业大类', 'stats.entry': '地区统计', 'stats.toJobs': '看这些职位', 'stats.caliber': '口径说明', 'stats.noList.tip': '该省当前不公布省提名职业清单(如 OINP 2026-06 改制后),按 TEER 等条件判定,不是数据缺失。', 'stats.naQc.tip': '魁省不参加省提名(PNP),走自己的甄选体系。', 'stats.provIndex': '选择省份', 'stats.compare': '跨省对比(Pro)', 'stats.pickProv': '选 2-4 个省对比', 'stats.myNoc': '按我的档案高亮',
 }
 
 // =========================================================================

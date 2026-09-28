@@ -33,8 +33,6 @@
  */
 export { EeCategorySection } from './eecategorysection'
 export { MeansForMe } from './meansforme'
-export { NewsLatestBlock } from './newslatestblock'
-export { PnpDrawsBlock } from './pnpdrawsblock'
 export { PnpListSection } from './pnplistsection'
 export { PnpModal } from './pnpmodal'
 export { SponsorLeadCard } from './sponsorleadcard'

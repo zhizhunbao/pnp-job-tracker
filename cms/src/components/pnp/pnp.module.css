@@ -69,36 +69,6 @@
 }
 
 /*
- * 改制省的现行规则块(项 | 内容 两列左对齐)。
- */
-.reform {
-  /*
-   * 与上下文的间距。
-   */
-  margin: 2px 0 6px;
-}
-
-/*
- * 规则的项格(自全局 .gridK 抄值:事实网格的标签格)。
- */
-.ruleK {
-  /*
-   * 标签灰。
-   */
-  color: var(--text3);
-}
-
-/*
- * 规则的内容格。
- */
-.ruleV {
-  /*
-   * 深灰正文(本族私有,不是全站色板成员)。
-   */
-  color: #374151;
-}
-
-/*
  * 抽选表:四列跨行对齐(日期 / 流名 / 最低分 / 份邀请),不是逐行 flex
  * (2026-07-25 Frank 走查#12:整块一个 grid,列宽跨行对齐)。
  */
@@ -759,36 +729,6 @@
 }
 
 /*
- * 通告行(如 ON 2026-06 改制):跨全部列的一条琥珀提示。
- */
-.notice {
-  /*
-   * 跨满四列。
-   */
-  grid-column: 1 / -1;
-
-  /*
-   * 行内衬。
-   */
-  padding: 5px 10px;
-
-  /*
-   * 小注字号。
-   */
-  font-size: 12.5px;
-
-  /*
-   * 警示琥珀。
-   */
-  color: var(--warn);
-
-  /*
-   * 浅琥珀底(本族私有)。
-   */
-  background: #fffbeb;
-}
-
-/*
  * 抽选行的外壳。桌面 display:contents 原样吃外层四列网格(逐行对齐效果不变);
  * ≤640px 改用 grid-template-areas 两行,见文件末尾那段(#268 的 375 走查)。
  */
@@ -1105,96 +1045,6 @@
    * 次级灰。
    */
   color: var(--text2);
-}
-
-/*
- * 本省最新公告的一行。
- */
-.newsRow {
-  /*
-   * 一行两格。
-   */
-  display: flex;
-
-  /*
-   * 基线对齐。
-   */
-  align-items: baseline;
-
-  /*
-   * 格间距。
-   */
-  gap: 8px;
-
-  /*
-   * 行内衬。
-   */
-  padding: 4px 10px;
-
-  /*
-   * 小注字号。
-   */
-  font-size: 12.5px;
-}
-
-/*
- * 公告日期。
- */
-.newsDate {
-  /*
-   * 等宽数字。
-   */
-  font-variant-numeric: tabular-nums;
-
-  /*
-   * 浅灰。
-   */
-  color: var(--text3);
-
-  /*
-   * 日期不折行。
-   */
-  white-space: nowrap;
-}
-
-/*
- * 公告标题链接(整行可点)。
- */
-.newsLink {
-  /*
-   * 吃掉剩余宽。
-   */
-  flex: 1;
-
-  /*
-   * 允许被压缩(省略号要靠它)。
-   */
-  min-width: 0;
-
-  /*
-   * 品牌蓝。
-   */
-  color: var(--primary);
-
-  /*
-   * 不出下划线。
-   */
-  text-decoration: none;
-
-  /*
-   * 溢出交给省略号。
-   */
-  overflow: hidden;
-
-  /*
-   * 省略号收尾(名字不截断,窄位才靠它)。
-   */
-  text-overflow: ellipsis;
-
-  /*
-   * 单行。
-   */
-  white-space: nowrap;
 }
 
 /*

@@ -963,11 +963,6 @@ export const SRC_BTN_KIND = 'secondary'
 export const ROWS_FALLBACK = 1
 
 /**
- * 现行规则表的列数(项 | 内容 两列左对齐)。
- */
-export const REFORM_COLS = 2
-
-/**
  * 依据链一格里几行起算「多行」:多行的格一行一块,单行的格就地铺开。
  */
 export const CELL_MULTI_MIN = 2
@@ -976,11 +971,6 @@ export const CELL_MULTI_MIN = 2
  * 细边框盒的留白档:不留(卡里紧贴标题的那层)。
  */
 export const BOX_GAP_NONE = 'none'
-
-/**
- * 本省最新公告最多摆几条(只摆标题与日期的事实行,不解读)。
- */
-export const NEWS_LATEST_MAX = 2
 
 /**
  * 判定档:能走(绿)。
