@@ -15,6 +15,8 @@ import type { LangCode, LegalDoc, LegalPage } from './types'
  * 2026-09-28 AI 顾问删(Frank「法律页也改了吧」):隐私 / 条款 / 免责三篇撤掉顾问条目;对话记录与 AI 处理两条改指站内向导
  * (09-05 起它接替对话:问题连同前几轮发 Anthropic,主动留邮箱时那一轮存邮箱);AI 生成内容改写成向导回答与 JD 摘录、翻译;
  * 三篇生效日期改 2026-09-28。
+ * 同日 Frank「不需要这么细节,简化就行。这部分可能会改」:对话记录、AI 处理、AI 生成内容三条改泛称(站内问答、大模型服务、
+ * 部分内容由模型生成),不写功能细节与服务商名。
  */
 export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
   privacy: {
@@ -32,8 +34,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '技术数据:为防滥用,API 按 IP 与账户做进程内当日计数(不落库、每日清零);简历对照的当日次数存在你的账户档案里(只有日期与次数),跨日归零。浏览器 localStorage/Cookie 存语言、列偏好与登录会话。',
             '访问统计:使用 umami(无 Cookie 的匿名统计)记录页面浏览与转化漏斗事件(注册、打开升级/定价弹窗、发起购买),不含个人身份,不跨站追踪。'
           + '同样的漏斗事件我们也在自己的数据库里按天计数(只有「哪天、哪个事件、多少次」,不含 IP、设备信息、账户或会话标识)。',
-            '对话记录:为改进问答质量,我们保存你向站内向导提的问题与它的回答(含你在提问里自己写下的信息),以及从问题里识别出的条件(如省份、职业)、提问所在的页面与耗时。'
-          + '不含 IP 或账户标识。只有你在向导里主动留下邮箱(「留个邮箱,上线通知我」)时,那一轮记录才会存下这个邮箱,仅用于上线时通知你。',
+            '对话记录:为改进问答质量,我们保存站内问答的提问与回答,不含 IP 或账户标识;你主动留下的邮箱只用于通知你。',
           ],
         },
         {
@@ -51,7 +52,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '4. AI 处理说明',
           body: [
-            '使用站内向导时,你输入的问题(连同同一段对话里之前的几轮)会发送给大模型服务商(Anthropic),用来理解问题并组织回答;对方按其商业条款不使用这些数据训练模型。',
+            '使用站内问答时,你输入的内容会发送给大模型服务处理,不用于训练模型。',
             '使用简历对照时,你的简历文本与该职位的描述文本会发送给本站使用的大模型服务做比对,不用于训练模型。服务端日志只记文本长度与耗时,不记内容。',
           ],
         },
@@ -89,8 +90,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             'Technical data: to prevent abuse, APIs keep in-process daily counters per IP and per account (not persisted, reset daily); the resume match daily count is stored on your account profile (date and count only) and resets each day. Browser localStorage/cookies store language, column preferences and the login session.',
             'Analytics: we use umami (cookie-less, anonymous) to record page views and conversion-funnel events (sign-up, opening the upgrade/pricing dialogs, checkout initiation); no personal identity, no cross-site tracking.'
           + ' The same funnel events are also counted per day in our own database — only "which day, which event, how many times", with no IP, device, account or session identifier.',
-            'Conversations: to improve answer quality we store the questions you ask the site guide and its replies (including whatever you write in your own question), along with the conditions recognised in the question (such as province or occupation), the page you asked from and how long it took.'
-          + ' No IP address or account identifier is stored. Only if you choose to leave your email in the guide ("Leave an email, get notified") is that email stored with that exchange, and it is used only to notify you when the feature goes live.',
+            'Conversations: to improve answer quality we store questions and answers from the on-site Q&A, without IP addresses or account identifiers; an email you choose to leave is used only to notify you.',
           ],
         },
         {
@@ -108,7 +108,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '4. AI processing',
           body: [
-            'When you use the site guide, your question (together with the earlier turns of the same conversation) is sent to our LLM provider (Anthropic) to understand it and compose the reply; under their commercial terms this data is not used to train models.',
+            'When you use the on-site Q&A, what you type is sent to an LLM service for processing and is not used to train models.',
             'When you run a resume match, your resume text and that job’s description are sent to the LLM service we use for the comparison, and are not used to train models. Server logs record only text length and duration, never the content.',
           ],
         },
@@ -146,8 +146,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
             '기술 데이터: 남용 방지를 위해 API는 IP·계정별 당일 카운터를 프로세스 내에서만 유지(저장 안 함, 매일 초기화)하며, 이력서 대조의 당일 횟수는 계정 프로필에 저장합니다(날짜와 횟수만, 매일 초기화). 브라우저 localStorage/쿠키에 언어·열 설정·로그인 세션을 저장합니다.',
             '방문 통계: umami(쿠키 없는 익명 통계)로 페이지 조회와 전환 퍼널 이벤트(가입, 업그레이드/요금제 창 열기, 결제 시작)를 기록합니다. 개인 식별 정보 없음, 사이트 간 추적 없음.'
           + ' 동일한 퍼널 이벤트는 자체 데이터베이스에도 일자별 횟수로만 집계합니다(날짜·이벤트·횟수만, IP·기기·계정·세션 식별자 없음).',
-            '대화 기록: 답변 품질 개선을 위해 사이트 안내에 하신 질문과 그 답변(질문에 직접 적으신 정보 포함), 질문에서 파악한 조건(주·직업 등), 질문한 페이지와 처리 시간을 저장합니다.'
-          + ' IP나 계정 식별자는 저장하지 않습니다. 사이트 안내에서 직접 이메일을 남기신 경우("이메일을 남기면 출시 때 알려 드립니다")에만 해당 대화 기록에 이메일이 저장되며, 출시 알림 용도로만 사용합니다.',
+            '대화 기록: 답변 품질 개선을 위해 사이트 내 질문·답변 내용을 저장하며, IP나 계정 식별자는 저장하지 않습니다. 직접 남기신 이메일은 알림 용도로만 사용합니다.',
           ],
         },
         {
@@ -165,7 +164,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '4. AI 처리',
           body: [
-            '사이트 안내를 사용하면 입력하신 질문(같은 대화의 이전 내용 포함)이 LLM 제공사(Anthropic)로 전송되어 질문을 이해하고 답변을 구성하는 데 사용됩니다. 상업 약관에 따라 이 데이터는 모델 학습에 사용되지 않습니다.',
+            '사이트 내 질문·답변을 이용하면 입력하신 내용이 LLM 서비스로 전송되어 처리되며, 모델 학습에는 사용되지 않습니다.',
             '이력서 대조를 실행하면 이력서 텍스트와 해당 공고의 설명 텍스트가 당사가 사용하는 LLM 서비스로 전송되어 비교되며, 모델 학습에는 사용되지 않습니다. 서버 로그에는 텍스트 길이와 처리 시간만 기록하고 내용은 기록하지 않습니다.',
           ],
         },
@@ -396,7 +395,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '5. AI 生成内容',
           body: [
-            '站内向导的回答、职位描述的结构化摘录与翻译等内容由大语言模型生成。虽然我们要求模型只依据本站核验过的数据或原帖原文生成,它仍可能出错或表述不准。AI 输出仅供参考,不构成任何建议。',
+            '本站部分内容由大语言模型生成,可能出错或表述不准,仅供参考,不构成任何建议。',
           ],
         },
         {
@@ -439,7 +438,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '5. AI-generated content',
           body: [
-            'Site-guide replies, structured job-description excerpts, translations and similar content are generated by large language models. Although we require the models to work only from data verified on this site or from the original posting, they can still be wrong or imprecise. AI output is for reference only.',
+            'Some content on this site is generated by large language models; it can be wrong or imprecise, is for reference only and does not constitute advice.',
           ],
         },
         {
@@ -482,7 +481,7 @@ export const legalDocs: Record<LegalPage, Record<LangCode, LegalDoc>> = {
         {
           h: '5. AI 생성 콘텐츠',
           body: [
-            '사이트 안내의 답변, 직무 설명 구조화 발췌와 번역 등은 대규모 언어 모델이 생성합니다. 본 사이트에서 검증된 데이터나 원 공고 원문만 사용하도록 요구하지만 여전히 오류나 부정확한 표현이 있을 수 있습니다. AI 출력은 참고용입니다.',
+            '본 사이트의 일부 콘텐츠는 대규모 언어 모델이 생성하며 오류나 부정확한 표현이 있을 수 있습니다. 참고용이며 어떠한 자문도 아닙니다.',
           ],
         },
         {
