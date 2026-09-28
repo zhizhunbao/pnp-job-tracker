@@ -12,7 +12,7 @@ import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState
 import { useRouter } from 'next/navigation'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { useLang } from '@/components/i18n'
-import { useIsNarrow, useLayerStack } from '@/components/modal'
+import { useLayerStack } from '@/components/modal'
 import { quizToProfile, readQuiz } from '@/components/quiz'
 import { makeT } from '@/lib/i18n'
 import { hasProfile, normalizeProfile } from '@/lib/jobs'
@@ -2059,6 +2059,8 @@ function useApplyHow(job: JobFact): ApplyHowPanel {
  * 整页窄屏投递栏跑偏(Frank 2026-08-05 实拍):sticky bottom 只在**父容器盒内**吸底,
  * 整页版的父级是白卡,卡下面还有 ~150px 页脚 —— 滚进页脚段栏就跟着卡边上滑;窄屏整页改
  * fixed 常驻视口底,占位补回文档流高度;桌面整页维持 sticky 原样。
+ * 2026-09-27 手机职位页水合报 React #418(本机器首帧用 useIsNarrow 读 matchMedia 判窄屏,服务端首帧没有窗口):
+ * 窄屏那一档改由 CSS 断点切(整页恒渲占位、恒挂 fixed 那一档的类,见 applybar 头注),本机器不再判窄屏、不再交 fixedBar。
  * dd24-#108:先落库再唤邮件 —— mailto 触发的导航态会掐死在途 fetch,「已投」记录曾竞态丢失。
  *
  * @param x 本岗、投递邮箱、查完没、取词函数、分层态与在不在整页里。
@@ -2070,7 +2072,6 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   const [authed, setAuthed] = useState(false)
   const [freshProfile, setFreshProfile] = useState<MatchProfileFact | null>(null)
   const [copied, setCopied] = useState(false)
-  const narrow = useIsNarrow()
   const router = useRouter()
   const job = x.job
   const email = x.email
@@ -2101,7 +2102,6 @@ export function useApplyBar(x: ApplyBarIn): ApplyBarPanel {
   useApplyResume({ job, plan, emailDone: x.emailDone, setStage, launch })
   return {
     stage,
-    fixedBar: x.onPage && narrow,
     matchJd,
     onMatch: makeOpenMatch({ job, setMatchJd }),
     onMatchClose: function closeMatch(): void {

@@ -3867,12 +3867,13 @@ export function copyLabelOf(x: CopyLabelIn): string {
 
 /**
  * 投递栏的类:整页窄屏那一档改 fixed 贴屏底。
+ * 2026-09-27 起整页恒挂 fixed 那一档的类,窄不窄由 CSS 断点切(首帧与服务端同一棵树,治手机职位页水合 #418)。
  *
- * @param fixedBar 是不是 fixed 那一档。
+ * @param onPage 在不在整页里。
  * @returns 类名。
  */
-export function barClsOf(fixedBar: boolean): string {
-  if (fixedBar) {
+export function barClsOf(onPage: boolean): string {
+  if (onPage) {
     return cssOf(css.bar) + SPACE + cssOf(css.barFixed)
   }
   return cssOf(css.bar)

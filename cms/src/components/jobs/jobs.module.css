@@ -1580,8 +1580,10 @@
 
 /*
  * fixed 抽离文档流后补回高度,免得来源行被压住。
+ * 整页恒渲、默认不出:只有窄屏那一档(本段末的断点块)才显形 —— CSS 双渲染,零水合差异(2026-09-27)。
  */
 .barPad {
+  display: none;
   height: 63px;
 }
 
@@ -1602,15 +1604,29 @@
 }
 
 /*
- * 窄屏整页:fixed 贴屏底(sticky 只在父容器盒内吸底,整页版父级是白卡)。
+ * 2026-09-27 手机职位页控制台报 React #418(水合不一致):占位与 fixed 原先由 JS 判窄屏(useIsNarrow 首帧读 matchMedia)才出,
+ * 服务端首帧没有窗口 → 客户端多渲一个占位、换了类。改成整页恒渲占位、恒挂 barFixed,窄不窄在这里按断点切
+ * (与 useIsNarrow 同一个 640)。必须写在 .bar 之后:同权重后者盖前者,挪进第 11 段断点块会被 .bar 的 sticky 盖回去。
  */
-.barFixed {
-  position: fixed;
-  left: 0;
-  right: 0;
-  margin-top: 0;
-  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
-  z-index: 40;
+@media (width <= 640px) {
+  /*
+   * 窄屏整页:占位显形,补回 fixed 抽走的高度。
+   */
+  .barPad {
+    display: block;
+  }
+
+  /*
+   * 窄屏整页:fixed 贴屏底(sticky 只在父容器盒内吸底,整页版父级是白卡)。
+   */
+  .barFixed {
+    position: fixed;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+    z-index: 40;
+  }
 }
 
 /*

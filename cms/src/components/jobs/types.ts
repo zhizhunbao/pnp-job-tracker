@@ -2411,11 +2411,6 @@ export type ApplyBarPanel = {
   stage: ApplyStage
 
   /**
-   * 窄屏整页版:投递栏改 fixed 贴屏底(sticky 只在父容器盒内吸底,整页版父级是白卡)。
-   */
-  fixedBar: boolean
-
-  /**
    * 简历对照要用的 JD 正文;null = 未开,'' = 拿不到全文。
    */
   matchJd: string | null

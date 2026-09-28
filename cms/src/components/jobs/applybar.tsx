@@ -10,6 +10,8 @@
  * 流程先留着不动(简历模块立域时整体搬走)。
  * 2026-09-14 Frank「点击前往投递应该先跳出来登录框啊,而不是注册框」「这个文字删了」:匿名点投递弹登录框(框内可切注册),
  * 「注册后帮你预填投递邮件,记录投递进度」那句 hero 不再传。
+ * 2026-09-27 手机职位页水合报 React #418:占位与 fixed 原先跟着 JS 判的窄屏出(首帧读 matchMedia,服务端首帧没有窗口),
+ * 两边一棵树对不上。改成整页恒渲占位、恒挂 fixed 那一档的类,窄不窄交给 CSS 断点(见 jobs.module.css 投递栏段);手机上的最终长相不变。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -43,8 +45,8 @@ export function ApplyBar({ job, email, emailDone, t, plan, onPage }: ApplyBarIn)
   }
   return (
     <>
-      {a.fixedBar && <div className={cssOf(css.barPad)} />}
-      <div className={barClsOf(a.fixedBar)}>
+      {onPage && <div className={cssOf(css.barPad)} />}
+      <div className={barClsOf(onPage)}>
         {job.status === STATUS_CLOSED && (
           <LinkButton href={job.applyUrl} target={TARGET_BLANK} className={cssOf(css.btnClosed)}>
             {t('act.seeOfficial')}
