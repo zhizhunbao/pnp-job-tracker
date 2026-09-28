@@ -179,17 +179,13 @@ export const URL_API_JOBS_COMPANY = '/api/jobs?q='
 export const URL_PAGE_FIRST = '&page=0'
 
 /**
- * 省提名清单与抽选两张整表的懒取接口(2026-09-26 /fe 首页 Frank:首页不再内联这两张表,字段弹框打开才取)。
- */
-export const URL_API_JOBS_PNP = '/api/jobs/pnp'
-
-/**
  * 正文要读省提名清单 / 抽选整表的分组(2026-09-26 起两表懒取:这几组开框先等两表到齐再渲正文,别的组照旧当场出)。
  * 移民组(依据链读清单)、省提名组(清单卡 + 本省抽选卡)、EE 组(分数线卡读联邦轮次)、AIP 组(不受理清单)、
  * 地点组(省份卡读本省抽选)—— 与各组正文真读 pnpOcc / pnpDraws 的那几件逐一对过;
  * 新增读这两表的组要在这里登记,否则那组开框会拿到空表。
+ * 2026-09-28 省提名组撤出(省提名弹框自立成 pnp 桶的 PnpModal,自己取);取数本身也迁进 pnp 桶(usePnpData)。
  */
-export const PNP_DATA_GROUPS = new Set(['immigration', 'pnp', 'ee', 'aip', 'location'])
+export const PNP_DATA_GROUPS = new Set(['immigration', 'ee', 'aip', 'location'])
 
 /**
  * 两表懒取失败时那句话的提醒框色:notice 域四色里的红(2026-09-26;文案沿用雇主板同义的 de.loadFailed,不另起词条)。
@@ -704,11 +700,6 @@ export const TIME_FIELDS = ['status', 'datePosted', 'lastSeen', 'closedAt']
 export const FIELD_SCORE = 'score'
 
 /**
- * 省提名字段。
- */
-export const FIELD_PNP = 'pnp'
-
-/**
  * 联邦快速通道字段。
  */
 export const FIELD_EE = 'ee'
@@ -864,25 +855,6 @@ export const GROUP_LOCATION = 'location'
 export const GROUP_COMPANY = 'company'
 
 /**
- * 省提名分组(页眉小标带本岗的省;2026-09-23)。
- */
-export const GROUP_PNP = 'pnp'
-
-/**
- * 省名词条的键头(`prov.` + 省码 → 界面语言省全名)。
- */
-export const K_PROV_HEAD = 'prov.'
-
-/**
- * 省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:
- * 两省官网把 AIP 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」
- * (2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
- * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP
- * 走同一个 EOI 池,官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。
- */
-export const AIP_DRAW_PROVS = new Set(['NB', 'NL', 'NS'])
-
-/**
  * 事实块按**分组**铺开的明表(E8-10 S6,2026-07-21)。
  * 收编前:点「通道」列只渲通道一条 —— 弹框标题写着「移民」,里面却只有一个字段,
  * 用户还得退出去再点 PNP、再点 EE、再点 AIP,每点一次烧一次额度。这正是 24 个弹框的病根。
@@ -897,11 +869,6 @@ export const GROUP_SECTIONS: Record<string, string[]> = {
    * 三列点开各有更具体的弹框,一条信息只出现一次)。
    */
   immigration: ['score'],
-
-  /**
-   * 省提名组。
-   */
-  pnp: ['pnp'],
 
   /**
    * 联邦快速通道组。

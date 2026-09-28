@@ -13,19 +13,19 @@ import { useEffect, useRef, useState } from 'react'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import {
-  ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON,
-  GROUP_COMPANY, GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, PNP_DATA_GROUPS, TEXT_NONE,
-  TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
+  ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON, GROUP_COMPANY,
+  GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD,
+  TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
 } from './constants'
 import {
-  advisorKeyOf, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans, makeLoadPnpData, makeLoadProv,
-  makeRunLongAdvisor, pnpDataOf, streamAdvisor, tickTypewriter,
+  advisorKeyOf, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans, makeLoadProv, makeRunLongAdvisor,
+  streamAdvisor, tickTypewriter,
 } from './functions'
 import type {
   ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
-  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorPnpData, AdvisorSectionIn, AdvisorStatus, CityFact,
-  CompanyModalPanel, DeadFlag, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel, NocTrans, NocTransIn,
-  NocTransPanel, PnpDataHookIn, PnpDataPanel, ProvFact, TransStatus,
+  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, CompanyModalPanel,
+  DeadFlag, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel, NocTrans, NocTransIn, NocTransPanel, ProvFact,
+  TransStatus,
 } from './types'
 import { CACHE } from './variables'
 
@@ -396,41 +396,6 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     onTransBusy: setTransBusy,
     gen,
     onRetranslated,
-  }
-}
-
-/**
- * 省提名两张整表的取数机器(2026-09-26 /fe 首页 Frank:首页不再内联清单与抽选两张整表,字段弹框打开才懒取):
- * 这一组的正文读两表(PNP_DATA_GROUPS)才取;取到一次记进 CACHE,再开弹框当场就有、不再出加载行;
- * 取挂了落 failed,不再重取(下次开框重来)。
- *
- * @param x 铺哪一组。
- * @returns 能不能渲、失败没与两张表。
- */
-export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
-  const [data, setData] = useState<AdvisorPnpData | null>(CACHE.pnpData)
-  const [failed, setFailed] = useState(false)
-  const needs = PNP_DATA_GROUPS.has(x.group)
-  const waiting = needs && data == null && failed === false
-
-  useEffect(function loadPnpData() {
-    const flag: DeadFlag = { dead: false }
-    if (waiting) {
-      makeLoadPnpData({ setData, setFailed })(flag)
-    }
-    return function stop(): void {
-      flag.dead = true
-    }
-  }, [waiting])
-
-  const got = pnpDataOf(data)
-  return {
-    ready: needs === false || data != null,
-    failed: needs && failed,
-    occ: got.occ,
-    draws: got.draws,
-    ops: got.ops,
-    reqs: got.reqs,
   }
 }
 

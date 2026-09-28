@@ -42,6 +42,7 @@ import {
   BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL, GATE_F,
   GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB,
   GATE_UNIT_MONTHS, GEN_REQ_STREAMS, NAMED_REQ_STREAMS, VALUE_CODE_SEP,
+  URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV, K_KICKER_PROV_AIP,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm,
@@ -65,7 +66,9 @@ import type {
   StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn,
   NocHitIn, PnpReq, RowOfFactorIn, TeerHitIn,
+  DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn,
 } from './types'
+import { CACHE } from './variables'
 import css from './pnp.module.css'
 
 /**
@@ -3160,4 +3163,110 @@ export function makeToggleOf(x: ToggleSetIn): ToggleOfFn {
       })
     }
   }
+}
+
+/**
+ * 省提名几张整表的懒取(2026-09-26 /fe 首页 Frank:首页每次内联约 380KB 的清单与抽选,弹框近 30 天真实用户
+ * 打开 0 次 —— 改成弹框打开才取)。取到一次记进 CACHE,整页复用;没取成落 failed —— 不拿空表冒充「官方没有」。
+ * 2026-09-28 自 advisor 迁入(Frank「pnp 弹框自己管自己」)。
+ *
+ * @param x 整表到齐与失败的落格。
+ * @returns 取数函数(收一只「弹框关了没」的旗子)。
+ */
+export function makeLoadPnpData(x: LoadPnpDataIn): LoadFn {
+  return function loadPnpData(flag: DeadFlag): void {
+    function read(r: Response): Promise<PnpDataJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function land(j: PnpDataJson): void {
+      if (flag.dead) {
+        return
+      }
+      const d = toPnpData(j)
+      if (d == null) {
+        x.setFailed(true)
+        return
+      }
+      CACHE.pnpData = d
+      x.setData(d)
+    }
+    function fall(): void {
+      if (flag.dead === false) {
+        x.setFailed(true)
+      }
+    }
+    fetch(URL_API_JOBS_PNP).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * `/api/jobs/pnp` 的响应 → 整表(行构造器:请求没成、或缺了清单 / 抽选,都当没取到 —— 缺表不是「那张表是空的」)。
+ *
+ * @param j 响应。
+ * @returns 整表;没取到给 null。
+ */
+function toPnpData(j: PnpDataJson): PnpData | null {
+  if (j == null || j.pnpOccupations == null || j.pnpDraws == null) {
+    return null
+  }
+  let ops: PnpOps[] = []
+  if (j.pnpOps != null) {
+    ops = j.pnpOps
+  }
+  let reqs: PnpReq[] = []
+  if (j.pnpReqs != null) {
+    reqs = j.pnpReqs
+  }
+  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs }
+}
+
+/**
+ * 喂给弹框正文的整表:还没到就给空表(那时 ready 为 false、正文不渲,空表不会被当成「官方没有」)。
+ *
+ * @param data 懒取到的整表;null = 还没到。
+ * @returns 整表。
+ */
+export function pnpDataOf(data: PnpData | null): PnpData {
+  if (data == null) {
+    return { occ: [], draws: [], ops: [], reqs: [] }
+  }
+  return data
+}
+
+/**
+ * 省提名弹框页眉的灰色小标。2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:带上本岗的省 ——
+ * 「新不伦瑞克省提名(PNP)」;没有省、魁省(不参加 PNP)照旧写分组名。
+ * 同日「这里面还包含了 AIP 哈 不光是 PNP」:抽选卡带 AIP 轮次的省(AIP_DRAW_PROVS)写「{省}提名(PNP)及 AIP」。
+ * 2026-09-28 随省提名弹框自 advisor 的 kickerOf(省提名组那一支)迁入。
+ *
+ * @param x 取词函数与本岗省码。
+ * @returns 小标文字。
+ */
+export function pnpKickerOf(x: PnpKickerIn): string {
+  if (x.province === TEXT_NONE || x.province === PROV_QC) {
+    return x.t(K_KICKER_GROUP)
+  }
+  if (AIP_DRAW_PROVS.has(x.province)) {
+    return x.t(K_KICKER_PROV_AIP, { p: x.t(PROV_KEY_HEAD + x.province) })
+  }
+  return x.t(K_KICKER_PROV, { p: x.t(PROV_KEY_HEAD + x.province) })
+}
+
+/**
+ * 省提名弹框的大标题:岗位名(E8-10 S6:页眉写分组名、大标题写岗位名);岗名空退调用方给的标题,再空退公司名,都空给「—」。
+ * 2026-09-28 随省提名弹框自 advisor 的 modalTitleOf(非公司组那一支)迁入。
+ *
+ * @param x 这一岗与调用方给的标题。
+ * @returns 大标题。
+ */
+export function pnpTitleOf(x: PnpTitleIn): string {
+  for (const s of [x.job.title, x.title, x.job.company]) {
+    if (s !== TEXT_NONE) {
+      return s
+    }
+  }
+  return DASH
 }

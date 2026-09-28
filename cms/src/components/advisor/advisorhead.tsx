@@ -13,6 +13,7 @@
  * 2026-08-28 换装批自 Advisor.tsx 的页眉段提出成件。
  * 2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组的小标带上本岗的省(kickerOf)。
  * 2026-09-28 并壳(Frank「别并存啊」):版式(左块 + 译名行)并进 modal 桶的 ModalHead,这里只剩「小标写什么」。
+ * 同日省提名弹框自立:「小标带本岗的省」那一支随它迁进 pnp 桶(pnpKickerOf),这里不再收省码。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -32,9 +33,9 @@ import type { AdvisorHeadBlockIn } from './types'
  * @param props 取词函数、分组、本岗省码、标题、副标、剩余次数与切换控件。
  * @returns 页眉左块 + 译名行。
  */
-export function AdvisorHead({ t, group, province, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
+export function AdvisorHead({ t, group, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
   const withAi = group === GROUP_IMMIGRATION && AI_ADVISOR_ON
-  const kicker = kickerOf({ t, group, province })
+  const kicker = kickerOf({ t, group })
   return (
     <ModalHead title={title} sub={sub} ctl={ctl}
       kicker={(

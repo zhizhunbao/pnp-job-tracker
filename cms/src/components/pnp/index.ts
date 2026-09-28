@@ -23,6 +23,8 @@
  * 2026-09-26 /fe 首页 Frank:桶门加两名(冻结的 13 名一个没动)—— pnpFactsIndexOf / pnpFactsShownOf。
  * 清单与抽选两张整表改成弹框打开才懒取,首屏只带事实索引;职位板格子「点不点得开」要照弹框出不出卡判,
  * 判据只在本域一份,职位板经桶取用。
+ * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):桶门再加两名 —— PnpModal(职位板直开,不再经 advisor 的字段弹框)
+ * 与 usePnpData(整表懒取自 advisor 迁入,advisor 别的组反过来从这里取)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -32,9 +34,11 @@ export { MeansForMe } from './meansforme'
 export { NewsLatestBlock } from './newslatestblock'
 export { PnpDrawsBlock } from './pnpdrawsblock'
 export { PnpListSection } from './pnplistsection'
+export { PnpModal } from './pnpmodal'
 export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
   aipBlockOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpFactsIndexOf, pnpFactsShownOf,
 } from './functions'
+export { usePnpData } from './hooks'

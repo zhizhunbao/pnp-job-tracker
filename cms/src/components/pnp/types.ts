@@ -3735,3 +3735,253 @@ export type ToggleSetIn = {
    */
   setKeys: React.Dispatch<React.SetStateAction<Set<string>>>
 }
+
+/**
+ * 卸下旗子(取数回来时弹框已经关了就不落格)。
+ */
+export type DeadFlag = {
+  /**
+   * 卸下了没有。
+   */
+  dead: boolean
+}
+
+/**
+ * effect 里调用的取数函数(带卸下旗子)。
+ */
+export type LoadFn = (flag: DeadFlag) => void
+
+/**
+ * 省提名几张整表(2026-09-26 起弹框打开才懒取,见 usePnpData;2026-09-28 自 advisor 迁入)。
+ */
+export type PnpData = {
+  /**
+   * 省提名职业清单。
+   */
+  occ: PnpOcc[]
+
+  /**
+   * 各省抽选记录。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;老服务端没给 = 空列,那张卡不出)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;老服务端没给 = 空列,门槛卡不出)。
+   */
+  reqs: PnpReq[]
+}
+
+/**
+ * `/api/jobs/pnp` 的响应(线格式:缺席 = 服务端没给那张表;null = 请求没成)。
+ */
+export type PnpDataJson = {
+  /**
+   * 省提名职业清单。
+   */
+  pnpOccupations?: PnpOcc[]
+
+  /**
+   * 各省抽选记录。
+   */
+  pnpDraws?: PnpDraw[]
+
+  /**
+   * 当年配额行(2026-09-27 起;换版窗口里老服务端没给)。
+   */
+  pnpOps?: PnpOps[]
+
+  /**
+   * 门槛行(2026-09-27 门槛卡批一起;换版窗口里老服务端没给)。
+   */
+  pnpReqs?: PnpReq[]
+} | null
+
+/**
+ * usePnpData 的入参。
+ */
+export type PnpDataHookIn = {
+  /**
+   * 要不要取(省提名弹框恒要;advisor 的别的组按它自己的分组表定)。
+   */
+  enabled: boolean
+}
+
+/**
+ * usePnpData 交回的面板。
+ */
+export type PnpDataPanel = {
+  /**
+   * 正文能渲了没(不取的恒为 true;要取的等整表到齐)。
+   */
+  ready: boolean
+
+  /**
+   * 懒取失败(弹框改出「加载失败」那句,不拿空表冒充「官方没有」)。
+   */
+  failed: boolean
+
+  /**
+   * 省提名职业清单(还没到给空列 —— 那时 ready 为 false,正文不渲)。
+   */
+  occ: PnpOcc[]
+
+  /**
+   * 各省抽选记录(同上)。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行(同上)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛行(同上)。
+   */
+  reqs: PnpReq[]
+}
+
+/**
+ * makeLoadPnpData 的入参。
+ */
+export type LoadPnpDataIn = {
+  /**
+   * 整表到齐的落格。
+   */
+  setData: (d: PnpData) => void
+
+  /**
+   * 懒取失败的落格。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * 省提名弹框的那一岗:清单块读的格 + 页眉要的岗名与库里存好的两语译名。
+ */
+export type PnpModalJob = PnpJob & {
+  /**
+   * 岗名(页眉大标题)。
+   */
+  title: string
+
+  /**
+   * 库里存好的中文岗名译名;'' = 没有。
+   */
+  titleZh: string
+
+  /**
+   * 库里存好的韩文岗名译名;'' = 没有。
+   */
+  titleKo: string
+}
+
+/**
+ * PnpModal 的 props。
+ */
+export type PnpModalIn = {
+  /**
+   * 这一岗。
+   */
+  job: PnpModalJob
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 调用方给的标题(岗名空时的候补)。
+   */
+  title: string
+
+  /**
+   * 从哪一格点进来的(只进打开埋点)。
+   */
+  field: string
+
+  /**
+   * 职业名字典(清单卡的职业译名灰注)。
+   */
+  nocDesc: PnpNocDesc[]
+
+  /**
+   * 关弹框。
+   */
+  onClose: ClickFn
+}
+
+/**
+ * usePnpModal 的入参。
+ */
+export type PnpModalHookIn = {
+  /**
+   * 这一岗。
+   */
+  job: PnpModalJob
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 从哪一格点进来的(只进打开埋点)。
+   */
+  field: string
+}
+
+/**
+ * usePnpModal 交回的面板。
+ */
+export type PnpModalPanel = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 整表(懒取)。
+   */
+  data: PnpDataPanel
+
+  /**
+   * 岗名下那行灰字(标题译名);'' = 还没有 / 英文界面。
+   */
+  sub: string
+}
+
+/**
+ * pnpKickerOf 的入参。
+ */
+export type PnpKickerIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+}
+
+/**
+ * pnpTitleOf 的入参。
+ */
+export type PnpTitleIn = {
+  /**
+   * 这一岗。
+   */
+  job: PnpModalJob
+
+  /**
+   * 调用方给的标题。
+   */
+  title: string
+}

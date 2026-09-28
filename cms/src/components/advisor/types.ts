@@ -15,8 +15,7 @@
  */
 // eslint-disable-next-line local/no-import-in-leaf -- 只 import type,理由见文件头(原样透传的外域整份行)
 import type {
-  ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, PnpDraw, PnpOcc, PnpOpsRow,
-  PnpReqRow, ProvInfo,
+  ColKey, DesigEmp, EeOcc, FieldGroup, FieldSource, JobRow, NewsSlim, NocDesc, Plan, ProvInfo,
 } from '@/lib/jobs'
 
 /**
@@ -300,134 +299,137 @@ export type AdvisorColKey = ColKey
 export type AdvisorGroup = FieldGroup
 
 /**
- * 省提名职业清单(外域整表,整份喂给 PnpListSection 与 MeansForMe)。
+ * 省提名清单里的一条职业(2026-09-28 本域自声明,照抄 pnp 桶的 PnpOcc 全格:整表由 pnp 桶懒取交过来,本域原样喂回 pnp 桶的
+ * MeansForMe / aipBlockOf —— 亲手递给外域引擎的形状全格照抄,少一格就是 tsc 红)。
  */
-export type AdvisorPnpOccs = PnpOcc[]
-
-/**
- * 各省抽选记录(外域整表,整份喂给 PnpDrawsBlock / PnpListSection / EeCategorySection)。
- */
-export type AdvisorPnpDraws = PnpDraw[]
-
-/**
- * 当年省提名配额行(外域整表,整份喂给 PnpListSection;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
- */
-export type AdvisorPnpOps = PnpOpsRow[]
-
-/**
- * 省提名门槛行(外域整表,整份喂给 PnpListSection;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
- */
-export type AdvisorPnpReqs = PnpReqRow[]
-
-/**
- * 省提名两张整表(2026-09-26 起弹框打开才懒取,见 usePnpData)。
- */
-export type AdvisorPnpData = {
+export type AdvisorPnpOcc = {
   /**
-   * 省提名职业清单。
+   * 省码。
    */
-  occ: AdvisorPnpOccs
+  province: string
 
   /**
-   * 各省抽选记录。
+   * 通道 slug。
    */
-  draws: AdvisorPnpDraws
+  stream: string
 
   /**
-   * 当年配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」;老服务端没给 = 空列,那张卡不出)。
+   * 通道人话名。
    */
-  ops: AdvisorPnpOps
+  label: string
 
   /**
-   * 门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」;老服务端没给 = 空列,门槛卡不出)。
+   * 清单类型(indemand/ineligible/…)。
    */
-  reqs: AdvisorPnpReqs
+  type: string
+
+  /**
+   * 项目归属:PNP / AIP(空档在映射时落 PNP)。
+   */
+  program: string
+
+  /**
+   * 职业码。
+   */
+  noc: string
+
+  /**
+   * 职业名。
+   */
+  name: string
+
+  /**
+   * GTA 限制(OINP 部分通道)。
+   */
+  gtaRestricted: boolean
+
+  /**
+   * 官方清单页。
+   */
+  url: string
+
+  /**
+   * 抓取时刻。
+   */
+  fetched: string
+
+  /**
+   * 清单管哪几条子类(官方原文;'' = 全项目)。SK 主线不合格表是「OID/EE」,不管带 offer 的岗(2026-09-27)。
+   */
+  appliesTo: string
 }
 
 /**
- * `/api/jobs/pnp` 的响应(线格式:缺席 = 服务端没给那张表;null = 请求没成)。
+ * 省提名职业清单(外域整表,整份喂给 MeansForMe;2026-09-28 起 PnpListSection 随省提名弹框自立,不再经本域)。
  */
-export type PnpDataJson = {
-  /**
-   * 省提名职业清单。
-   */
-  pnpOccupations?: AdvisorPnpOccs
-
-  /**
-   * 各省抽选记录。
-   */
-  pnpDraws?: AdvisorPnpDraws
-
-  /**
-   * 当年配额行(2026-09-27 起;换版窗口里老服务端没给)。
-   */
-  pnpOps?: AdvisorPnpOps
-
-  /**
-   * 门槛行(2026-09-27 门槛卡批一起;换版窗口里老服务端没给)。
-   */
-  pnpReqs?: AdvisorPnpReqs
-} | null
+export type AdvisorPnpOccs = AdvisorPnpOcc[]
 
 /**
- * usePnpData 的入参。
+ * 一次抽选(2026-09-28 本域自声明,照抄 pnp 桶的 PnpDraw 全格,理由同 AdvisorPnpOcc)。
  */
-export type PnpDataHookIn = {
+export type AdvisorPnpDraw = {
   /**
-   * 铺哪一组(只有正文读两表的组才懒取)。
+   * 省码;FED=联邦轮次。
    */
-  group: AdvisorGroup
+  province: string
+
+  /**
+   * 行类别:draw=抽选,notice=通告(如改制公告)。
+   */
+  kind: string
+
+  /**
+   * 抽选日期(`YYYY-MM-DD`)。
+   */
+  drawDate: string
+
+  /**
+   * 通道英文名。
+   */
+  stream: string
+
+  /**
+   * 通道中文名;''=还没翻到(不出灰注,不是报错)。
+   */
+  streamZh: string
+
+  /**
+   * 分数线(省自评分制 SIRS/WEOI/MPNP EOI,非 CRS);null=该轮未公布。
+   */
+  score: number | null
+
+  /**
+   * 邀请数;null=未公布。
+   */
+  invitations: number | null
+
+  /**
+   * 官方通告原文(#153:通告行优先直接渲染它,缺了才退回旧模板)。
+   */
+  note: string
+
+  /**
+   * 展示标签(省抽选=通道名;联邦行=类别键)。
+   */
+  label: string
+
+  /**
+   * 官方页(数据层抓这一行的那一页;2026-09-26 起事实卡底部的官方链接读它)。
+   * 同晚起三种抽选卡标题那一行右端的「来源」读它(每省一页:各通道的轮次都在同一页上)。
+   */
+  url: string
+
+  /**
+   * 同一组同一天几行各是哪一项选取(数据层短码 occ / top:N / franco / grad / wage:H:Y / points / path:a+b;
+   * 认不出空串;2026-09-27 Frank「照改,加这一列」)。
+   */
+  selection: string
 }
 
 /**
- * usePnpData 交回的面板。
+ * 各省抽选记录(外域整表,整份喂给 PnpDrawsBlock / EeCategorySection;2026-09-28 起 PnpListSection 随省提名弹框自立,不再经本域)。
  */
-export type PnpDataPanel = {
-  /**
-   * 正文能渲了没(不读两表的组恒为 true;读两表的组要等两表到齐)。
-   */
-  ready: boolean
-
-  /**
-   * 懒取失败(弹框改出「加载失败」那句,不拿空表冒充「官方没有」)。
-   */
-  failed: boolean
-
-  /**
-   * 省提名职业清单(还没到给空列 —— 那时 ready 为 false,正文不渲)。
-   */
-  occ: AdvisorPnpOccs
-
-  /**
-   * 各省抽选记录(同上)。
-   */
-  draws: AdvisorPnpDraws
-
-  /**
-   * 当年配额行(同上;2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
-   */
-  ops: AdvisorPnpOps
-
-  /**
-   * 门槛行(同上;2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
-   */
-  reqs: AdvisorPnpReqs
-}
-
-/**
- * makeLoadPnpData 的入参。
- */
-export type LoadPnpDataIn = {
-  /**
-   * 两表到齐的落格。
-   */
-  setData: (d: AdvisorPnpData) => void
-
-  /**
-   * 懒取失败的落格。
-   */
-  setFailed: (v: boolean) => void
-}
+export type AdvisorPnpDraws = AdvisorPnpDraw[]
 
 /**
  * 官方新闻(外域整表,整份喂给 NewsLatestBlock / PnpListSection)。
@@ -510,15 +512,7 @@ export type AdvisorFacts = {
    */
   pnpDraws: AdvisorPnpDraws
 
-  /**
-   * 当年省提名配额行(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
-   */
-  pnpOps: AdvisorPnpOps
 
-  /**
-   * 省提名门槛行(2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」)。
-   */
-  pnpReqs: AdvisorPnpReqs
 
   /**
    * 官方新闻。
@@ -1417,10 +1411,6 @@ export type AdvisorHeadBlockIn = {
    */
   group: string
 
-  /**
-   * 本岗省码(省提名组的小标带上它;公司弹框与没有省的岗给空串)。
-   */
-  province: string
 
   /**
    * 大标题。
@@ -2884,11 +2874,6 @@ export type KickerIn = {
    * 分组。
    */
   group: string
-
-  /**
-   * 本岗省码;''=没有。
-   */
-  province: string
 }
 
 /**

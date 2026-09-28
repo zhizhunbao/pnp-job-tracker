@@ -18,14 +18,15 @@
  * —— 于是这一层现在只剩事实块本身。
  * 2026-08-28 换装批自 Advisor.tsx 的 FieldFactsSection / FieldFactsInner 重写落位
  * (两件合成一件:外层原先只是包着一条注释的纯转发)。
+ * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名那一格的分支撤 —— 职位板直开 pnp 桶的 PnpModal。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { EeCategorySection, PnpListSection } from '@/components/pnp'
+import { EeCategorySection } from '@/components/pnp'
 import {
   CLS_FIELDS, COL_TITLE, FIELD_ACCESSIBILITY, FIELD_AIP, FIELD_EE, FIELD_ELIGIBILITY, FIELD_LMIA, FIELD_PILOT,
-  FIELD_PNP, LOC_FIELDS, SAL_FIELDS, SRC_FIELDS, TIME_FIELDS,
+  LOC_FIELDS, SAL_FIELDS, SRC_FIELDS, TIME_FIELDS,
 } from './constants'
 import { AccessFacts } from './accessfacts'
 import { AipFacts } from './aipfacts'
@@ -47,12 +48,6 @@ import type { FieldFactsIn } from './types'
  * @returns 那一块事实;这一格还没接内容时给 null(不留空壳)。
  */
 export function FieldFacts({ field, f }: FieldFactsIn) {
-  if (field === FIELD_PNP) {
-    return (
-      <PnpListSection job={f.job} lang={f.lang} occ={f.pnpOcc} draws={f.pnpDraws} ops={f.pnpOps} reqs={f.pnpReqs}
-        profileClb={f.profileClb} nocDesc={f.nocDesc} showZh={f.showZh} />
-    )
-  }
   if (field === FIELD_EE) {
     return (
       <EeCategorySection job={f.job} lang={f.lang} cats={f.eeOcc} draws={f.pnpDraws}

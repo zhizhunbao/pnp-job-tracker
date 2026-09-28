@@ -17,7 +17,7 @@ import { CompanyPanel } from '@/components/companies/companypanel'
 import { makeT } from '@/lib/i18n'
 import { AdvisorHead } from './advisorhead'
 import { Modal } from '@/components/modal'
-import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN, TEXT_NONE } from './constants'
+import { ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_COMPANY, LANG_EN } from './constants'
 import { companyPageOf } from './functions'
 import { useCompanyModal } from './hooks'
 import type { CompanyModalIn } from './types'
@@ -33,7 +33,7 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
   const t = makeT(lang)
   const m = useCompanyModal()
   const head = (
-    <AdvisorHead t={t} group={GROUP_COMPANY} province={TEXT_NONE}
+    <AdvisorHead t={t} group={GROUP_COMPANY}
       title={name}
       sub={m.alias}
       freeLeft={null}

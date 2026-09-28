@@ -1346,6 +1346,11 @@ export const PRO_MASK: Partial<Record<JobColKey, string>> = {
 }
 
 /**
+ * 省提名那一组的组名(2026-09-28 省提名弹框自立:这一组直开 pnp 桶的 PnpModal,别的组照旧开 advisor 的字段弹框)。
+ */
+export const GROUP_PNP = 'pnp'
+
+/**
  * 字段 → 点了开哪个弹框(三档:并 = 三个弹框之一、图 = 直连地图、无 = 不可点)。
  * 原设计还有一档「注 = 悬停小注」,2026-07-21 Frank 拍板不做 —— 它与「无」行为完全一致,
  * 留着只是个没兑现的意图,故合并(YAGNI)。

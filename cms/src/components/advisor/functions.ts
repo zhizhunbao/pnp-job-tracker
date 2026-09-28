@@ -29,30 +29,29 @@ import {
   DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DRAW_KIND_NOTICE, FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND,
   FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY, FIELD_COMPANY, FIELD_COUNTRY,
   FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN,
-  FIELD_WAGE_MED_HR, GROUP_COMPANY, AIP_DRAW_PROVS, GROUP_PNP, K_GROUP_HEAD, K_PROV_HEAD, GROUP_SECTIONS,
-  HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT, HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD,
-  K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB,
-  LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE,
-  OCC_TYPE_INELIGIBLE, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
-  PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE,
-  ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN, SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL,
-  TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS,
-  TYPE_RATE_DIV, URL_API_ADVISOR, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_PNP,
-  URL_API_JOBS_RETRANSLATE, URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC,
-  VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
+  FIELD_WAGE_MED_HR, GROUP_COMPANY, K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT,
+  HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT,
+  K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT,
+  LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE, OCC_TYPE_INELIGIBLE, PAREN_CLOSE,
+  PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC,
+  P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE,
+  STATUS_CLOSED, STATUS_OPEN, SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK,
+  TONE_WARN, TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV,
+  URL_API_ADVISOR, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
+  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR,
+  VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  ActNoteIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc, AdvisorPnpData,
-  AdvisorPnpOps, AdvisorPnpReqs, LoadPnpDataIn, PnpDataJson, AdvisorPillFact, AipBlockedNameIn, AipListIn, AipMatchIn,
-  AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CityJson, CompanyJobsJson, CompanyPeek,
-  CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, DrainStreamIn, EsdcRowFact,
-  FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn,
-  HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
-  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
-  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn, OpenCompanyFn,
-  OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, ProvJson, ProvStreamsIn,
-  RefreshFn, RunLongIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn, TypewriterIn, VolRowFact,
-  VolRowsIn, ZhItemsIn, ZhLabelIn,
+  ActNoteIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc, AdvisorPillFact,
+  AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn,
+  CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor,
+  DiffFactorIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn,
+  GroupFactsIn, HasDrawsIn, HasNewsIn, HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn,
+  LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn,
+  LocationLevel, LocNoteIn, LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn,
+  OnClsIn, OpenCompanyFn, OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn,
+  ProvJson, ProvStreamsIn, RefreshFn, RunLongIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn,
+  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './advisor.module.css'
@@ -210,17 +209,12 @@ export function firstTextOf(x: FirstTextIn): string {
  * 弹框页眉的灰色小标(分组名)。2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组带上本岗的省 ——
  * 「新不伦瑞克省提名(PNP)」;没有省、魁省(不参加 PNP)照旧写分组名。
  * 同日「这里面还包含了 AIP 哈 不光是 PNP」:抽选卡带 AIP 轮次的省(AIP_DRAW_PROVS)写「{省}提名(PNP)及 AIP」。
+ * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):上面两条那一支随它迁进 pnp 桶(pnpKickerOf),这里只剩分组名。
  *
- * @param x 取词函数、分组与本岗省码。
+ * @param x 取词函数与分组。
  * @returns 小标文字。
  */
 export function kickerOf(x: KickerIn): string {
-  if (x.group === GROUP_PNP && x.province !== TEXT_NONE && x.province !== PROV_QC) {
-    if (AIP_DRAW_PROVS.has(x.province)) {
-      return x.t('grp.pnpProvAip', { p: x.t(K_PROV_HEAD + x.province) })
-    }
-    return x.t('grp.pnpProv', { p: x.t(K_PROV_HEAD + x.province) })
-  }
   return x.t(K_GROUP_HEAD + x.group)
 }
 
@@ -1194,76 +1188,6 @@ export function makeLoadCompanyJobs(x: LoadCompanyJobsIn): LoadFn {
     const url = URL_API_JOBS_COMPANY + encodeURIComponent(x.company) + URL_PAGE_FIRST
     fetch(url, { credentials: CREDENTIALS_INCLUDE }).then(read).then(land).catch(fall)
   }
-}
-
-/**
- * 省提名清单与抽选两张整表的懒取(2026-09-26 /fe 首页 Frank:首页每次内联约 380KB 的这两张表,弹框近 30 天真实用户
- * 打开 0 次 —— 改成字段弹框打开才取)。取到一次记进 CACHE,整页复用;没取成落 failed —— 不拿空表冒充「官方没有」。
- *
- * @param x 两表到齐与失败的落格。
- * @returns 取数函数(收一只「弹框关了没」的旗子)。
- */
-export function makeLoadPnpData(x: LoadPnpDataIn): LoadFn {
-  return function loadPnpData(flag: DeadFlag): void {
-    function read(r: Response): Promise<PnpDataJson> {
-      if (r.ok) {
-        return r.json()
-      }
-      return Promise.resolve(null)
-    }
-    function land(j: PnpDataJson): void {
-      if (flag.dead) {
-        return
-      }
-      const d = toPnpData(j)
-      if (d == null) {
-        x.setFailed(true)
-        return
-      }
-      CACHE.pnpData = d
-      x.setData(d)
-    }
-    function fall(): void {
-      if (flag.dead === false) {
-        x.setFailed(true)
-      }
-    }
-    fetch(URL_API_JOBS_PNP).then(read).then(land).catch(fall)
-  }
-}
-
-/**
- * `/api/jobs/pnp` 的响应 → 两张整表(行构造器:请求没成、或缺了哪张表,都当没取到 —— 缺表不是「那张表是空的」)。
- *
- * @param j 响应。
- * @returns 两张整表;没取到给 null。
- */
-function toPnpData(j: PnpDataJson): AdvisorPnpData | null {
-  if (j == null || j.pnpOccupations == null || j.pnpDraws == null) {
-    return null
-  }
-  let ops: AdvisorPnpOps = []
-  if (j.pnpOps != null) {
-    ops = j.pnpOps
-  }
-  let reqs: AdvisorPnpReqs = []
-  if (j.pnpReqs != null) {
-    reqs = j.pnpReqs
-  }
-  return { occ: j.pnpOccupations, draws: j.pnpDraws, ops, reqs }
-}
-
-/**
- * 喂给弹框正文的两张表:还没到就给两张空表(那时读两表的组 ready 为 false、正文不渲,空表不会被当成「官方没有」)。
- *
- * @param data 懒取到的两张整表;null = 还没到。
- * @returns 两张表。
- */
-export function pnpDataOf(data: AdvisorPnpData | null): AdvisorPnpData {
-  if (data == null) {
-    return { occ: [], draws: [], ops: [], reqs: [] }
-  }
-  return data
 }
 
 /**

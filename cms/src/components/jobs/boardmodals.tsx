@@ -13,15 +13,18 @@
  * 升级弹框的由头只剩「保存筛选满额」一种。
  * 2026-09-26 /fe 首页 Frank:省提名清单与抽选两张整表不再随首屏内联,字段弹框打开时自己懒取(advisor 域 usePnpData),
  * 这里不再递这两格。
+ * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名那一组直开 pnp 桶的 PnpModal,不再经 advisor 的字段弹框;
+ * 别的组照旧 AdvisorModal。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { AdvisorModal, PeekStack } from '@/components/advisor'
 import { AuthModal } from '@/components/auth'
+import { PnpModal } from '@/components/pnp'
 import { UpgradeModal } from '@/components/pricing'
 import { OnboardingWizard } from '@/components/profile'
-import { AUTH_REGISTER } from './constants'
+import { AUTH_REGISTER, GROUP_PNP } from './constants'
 import { upsellReasonOf } from './functions'
 import type { BoardPanelIn } from './types'
 
@@ -35,7 +38,12 @@ export function BoardModals({ b }: BoardPanelIn) {
   const m = b.modals
   return (
     <>
-      {m.popup != null && (
+      {m.popup != null && m.popup.group === GROUP_PNP && (
+        <PnpModal job={m.popup.job} lang={b.lang} title={m.popup.title} field={m.popup.srcField}
+          nocDesc={b.data.dims.nocDescriptions}
+          onClose={m.onPopupClose} />
+      )}
+      {m.popup != null && m.popup.group !== GROUP_PNP && (
         <AdvisorModal group={m.popup.group} field={m.popup.srcField}
           job={m.popup.job}
           title={m.popup.title}

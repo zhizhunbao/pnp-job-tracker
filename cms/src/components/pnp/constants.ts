@@ -1203,3 +1203,80 @@ export const TAG_V_WARN = 'warn'
  * 判定「未过」= imp(红)。
  */
 export const TAG_V_IMP = 'imp'
+
+/**
+ * 省提名几张整表的懒取接口(2026-09-26 /fe 首页 Frank:首页不再内联这两张表,字段弹框打开才取)。
+ * 2026-09-28 自 advisor 迁入(Frank「pnp 弹框自己管自己」):取数跟着省提名弹框住本域,advisor 的别的组反过来从本桶取。
+ */
+export const URL_API_JOBS_PNP = '/api/jobs/pnp'
+
+/**
+ * 省提名弹框的尺寸记忆键(2026-09-28 省提名弹框自立:原先它是字段弹框的一组,与字段 / 公司弹框共用这一份记住的宽高,照旧共用 ——
+ * 值与 advisor 的 ADV_PREF 相同,各域自抄)。
+ */
+export const PNP_MODAL_PREF = 'adv_modal_pref'
+
+/**
+ * 省提名弹框没有记忆时的宽(px;照字段弹框)。
+ */
+export const PNP_MODAL_W = 900
+
+/**
+ * 省提名弹框没有记忆时的高(px;照字段弹框)。
+ */
+export const PNP_MODAL_H = 760
+
+/**
+ * 省提名弹框打开的埋点事件名(沿用字段弹框那一条:`modal-` + 分组名 pnp —— 弹框自立后事件名不变,漏斗不断档)。
+ */
+export const TRACK_MODAL_PNP = 'modal-pnp'
+
+/**
+ * 弹框打开埋点的参数名:从哪一格点进来的(沿用字段弹框那一条)。
+ */
+export const TRACK_P_FIELD = 'field'
+
+/**
+ * 标题译名的重译代数(省提名弹框没有重新翻译钮,恒为 0)。
+ */
+export const TITLE_TRANS_GEN = 0
+
+/**
+ * 省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:
+ * 两省官网把 AIP 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」
+ * (2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
+ * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP
+ * 走同一个 EOI 池,官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。
+ * 2026-09-28 随省提名弹框自 advisor 迁入。
+ */
+export const AIP_DRAW_PROVS = new Set(['NB', 'NL', 'NS'])
+
+/**
+ * 页眉小标词条:「{省}提名(PNP)」。
+ */
+export const K_KICKER_PROV = 'grp.pnpProv'
+
+/**
+ * 页眉小标词条:「{省}提名(PNP)及 AIP」。
+ */
+export const K_KICKER_PROV_AIP = 'grp.pnpProvAip'
+
+/**
+ * 页眉小标词条:没有省 / 魁省(不参加 PNP)照旧写分组名。
+ */
+export const K_KICKER_GROUP = 'grp.pnp'
+
+/**
+ * 整表还在路上时那一行的文案词条(全站统一的加载行)。
+ */
+export const K_LOADING = 'act.loadingText'
+
+/**
+ * 整表没取成时那一句的词条(沿用雇主板同义的 de.loadFailed,不另起词条)。
+ */
+export const K_LOAD_FAILED = 'de.loadFailed'
+
+/**
+ * 整表没取成时那句话的提醒框色:notice 域四色里的红。
+ */
+export const NOTICE_ERR = 'err'

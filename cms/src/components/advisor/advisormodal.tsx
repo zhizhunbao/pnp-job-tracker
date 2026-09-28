@@ -19,6 +19,8 @@
  * 别的组(公司、分类……)照旧当场出。
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs,Esc 由 Modal 按打开先后排号接。
  * 同日标题下灰字改走全站口径(标题译名,与职位描述弹框同一台 useTitleTrans;09-23「统一成标题译名」那批漏了字段弹框)。
+ * 同日省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名组不再经本框(职位板直开 pnp 桶的 PnpModal);
+ * 整表懒取随之迁进 pnp 桶(usePnpData),本框别的组照旧读清单 / 抽选两表,配额 / 门槛两表不再进取数包。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
@@ -27,16 +29,16 @@ import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { Loading } from '@/components/loading'
 import { Modal } from '@/components/modal'
 import { Notice } from '@/components/notice'
-import { MeansForMe } from '@/components/pnp'
+import { MeansForMe, usePnpData } from '@/components/pnp'
 import { makeT } from '@/lib/i18n'
 import {
-  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION, NOTICE_ERR,
+  ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION, NOTICE_ERR, PNP_DATA_GROUPS,
 } from './constants'
 import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf, transTitleOf } from './functions'
-import { useAdvisorModal, usePnpData } from './hooks'
+import { useAdvisorModal } from './hooks'
 import type { AdvisorFacts, AdvisorModalIn } from './types'
 import { WinActs } from './winacts'
 
@@ -63,7 +65,7 @@ export function AdvisorModal({
 }: AdvisorModalIn) {
   const t = makeT(lang)
   const m = useAdvisorModal({ group, field, job, lang })
-  const pnp = usePnpData({ group })
+  const pnp = usePnpData({ enabled: PNP_DATA_GROUPS.has(group) })
   const trans = useTitleTrans({
     title: transTitleOf({ group, job }), id: job.id, lang, cached: storedTitleOf({ row: job, lang }), gen: m.gen,
   })
@@ -72,8 +74,6 @@ export function AdvisorModal({
     lang,
     pnpOcc: pnp.occ,
     pnpDraws: pnp.draws,
-    pnpOps: pnp.ops,
-    pnpReqs: pnp.reqs,
     news,
     profileClb: planClbOf({ plan }),
     eeOcc,
@@ -82,7 +82,7 @@ export function AdvisorModal({
     showZh: m.showZh,
   }
   const head = (
-    <AdvisorHead t={t} group={group} province={job.province}
+    <AdvisorHead t={t} group={group}
       title={modalTitleOf({ group, job, title })}
       sub={headSubOf({ group, trans, companyAlias: m.companyAlias })}
       freeLeft={m.freeLeft}

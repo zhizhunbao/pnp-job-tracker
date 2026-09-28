@@ -8,18 +8,26 @@
  * 2026-08-28 换装批自 Pnp.tsx 的四个组件体收进来。
  * 2026-09-23 EE 判定卡、最近抽选卡、联邦抽选近况卡撤(Frank「这三个卡片都删掉」),联邦轮次卡那一台随之删,
  * EE 类别块只剩命中类别的清单折叠。
+ * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):多两台 —— 整表懒取(usePnpData,自 advisor 迁入)与弹框整机(usePnpModal)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
-import { DRAWS_ALL_KEY, LANG_EN } from './constants'
+import { track } from '@/lib/track'
+import { DRAWS_ALL_KEY, LANG_EN, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
 import {
   channelsOf, eeGroupOf, eeHitOf, makeToggleOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
+  makeLoadPnpData, pnpDataOf,
 } from './functions'
-import type { EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel } from './types'
+import type {
+  EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
+  PnpModalHookIn, PnpModalPanel,
+} from './types'
+import { CACHE } from './variables'
 
 /**
  * 省提名清单块整机:取词、职业名字典、命中计算、命中行滚进视野与每张清单的折叠。
@@ -121,4 +129,65 @@ export function useMeansForMe(x: MmHookIn): MmPanel {
   }, [x.job, x.plan, x.pnpOcc, x.eeOcc])
 
   return { t, result }
+}
+
+/**
+ * 省提名几张整表的取数机器(2026-09-26 /fe 首页 Frank:首页不再内联清单与抽选,弹框打开才懒取):
+ * 要取才取;取到一次记进 CACHE,再开弹框当场就有、不再出加载行;取挂了落 failed,不再重取(下次开框重来)。
+ * 2026-09-28 自 advisor 迁入(Frank「pnp 弹框自己管自己」):「哪几组要取」原是 advisor 的分组表,现在由调用方给 enabled。
+ *
+ * @param x 要不要取。
+ * @returns 能不能渲、失败没与整表。
+ */
+export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
+  const [data, setData] = useState<PnpData | null>(CACHE.pnpData)
+  const [failed, setFailed] = useState(false)
+  const needs = x.enabled
+  const waiting = needs && data == null && failed === false
+
+  useEffect(function loadPnpData() {
+    const flag: DeadFlag = { dead: false }
+    if (waiting) {
+      makeLoadPnpData({ setData, setFailed })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [waiting])
+
+  const got = pnpDataOf(data)
+  return {
+    ready: needs === false || data != null,
+    failed: needs && failed,
+    occ: got.occ,
+    draws: got.draws,
+    ops: got.ops,
+    reqs: got.reqs,
+  }
+}
+
+/**
+ * 省提名弹框整机(2026-09-28 自立,Frank「pnp 弹框自己管自己」):取词、整表懒取、岗名下那行灰字(标题译名,与职位描述弹框
+ * 同一台 useTitleTrans)与打开埋点(沿用字段弹框那一条 modal-pnp,漏斗不断档)。
+ *
+ * @param x 这一岗、界面语言与从哪一格点进来的。
+ * @returns 取词函数、整表与灰字。
+ */
+export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
+  const t = makeT(x.lang)
+  const data = usePnpData({ enabled: true })
+  const sub = useTitleTrans({
+    title: x.job.title,
+    id: x.job.id,
+    lang: x.lang,
+    cached: storedTitleOf({ row: x.job, lang: x.lang }),
+    gen: TITLE_TRANS_GEN,
+  })
+  const field = x.field
+
+  useEffect(function trackOpen() {
+    track(TRACK_MODAL_PNP, { [TRACK_P_FIELD]: field })
+  }, [field])
+
+  return { t, data, sub }
 }
