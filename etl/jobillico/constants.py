@@ -201,6 +201,25 @@ TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
 """连续空白折一个。"""
 
+INFO_FIELD_RE = re.compile(r"icon--information--(curve|clock|money)\"[^>]*>(.*?)</li>", re.S)
+"""详情页正文「岗位信息」栏(2026-09-28 实测:每栏一个图标类名 —— curve = 雇佣状态「Emploi Permanent / Permanent job」、
+clock = 工时「40.00 h - Temps plein」、money = 薪资「À discuter / To be discussed / 25.00 $ par heure」)。组 1 = 栏名,
+组 2 = 栏内 HTML。页头打印样式里同名类后面跟的是「+p」不是引号,本式只命中正文。ld+json 的 employmentType 只给
+FULL_TIME / PART_TIME,Permanent、Contrat、Occasionnel、Saisonnier 只在这一栏(Frank「CareerBeacon 来源的 jobs 经常数据不全」
+一路查到本板雇佣期 94% 是空的)。"""
+
+INFO_LABEL_RE = re.compile(r"<span class='job-infos-label-new[^']*'>.*?</span>", re.S)
+"""栏内隐藏的栏名小字(「Salary」「Quart de」),剥掉再取栏值。"""
+
+INFO_STATUS = "curve"
+"""雇佣状态栏的图标名。"""
+
+INFO_SCHEDULE = "clock"
+"""工时栏的图标名。"""
+
+INFO_SALARY = "money"
+"""薪资栏的图标名。"""
+
 PRINT_PARSE_DONE_TPL = "[OK] 解析 {parsed} 张(跳过已解析 {skipped},无 JobPosting {missing})→ {out}"
 """解析收尾。"""
 
@@ -333,6 +352,33 @@ HOURS_OF_TYPE = {
     "PART_TIME": "part",
 }
 """employmentType → Job Bank 工时词。"""
+
+TERM_OF_STATUS_RES = {
+    "permanent": re.compile(r"permanent", re.I),
+    "term": re.compile(r"contra[ct]|temporaire|temporary", re.I),
+    "casual": re.compile(r"occasionnel|casual", re.I),
+    "seasonal": re.compile(r"saisonni|seasonal", re.I),
+}
+"""雇佣状态栏 → Job Bank 期限词(2026-09-28 抽样 2,000 张在架页实测的写法:Emploi Permanent / Permanent job / Emploi Contrat /
+Contract job / Emploi Occasionnel / Casual job / Emploi Saisonnier / Seasonal job,几项用逗号并列)。Télétravail、Emploi étudiant、
+Stage rémunéré 不是期限,不认。一栏认出两种以上(「Emploi Permanent ,Saisonnier」)不替它挑,退回 ld+json 旧口径。"""
+
+HOURS_OF_SCHEDULE_RES = {
+    "full": re.compile(r"temps plein|full time", re.I),
+    "part": re.compile(r"temps partiel|part time", re.I),
+}
+"""工时栏 → Job Bank 工时词(「40.00 h - Temps plein」「Full time ,Part time」);两种都写、或只写钟点(「40.00 h」)
+都不替它挑,退回 ld+json 旧口径。"""
+
+SALARY_UNDISCLOSED_RE = re.compile(r"to be discussed|à discuter|a discuter|négociable|negotiable", re.I)
+"""薪资栏写的是「待议」(2026-09-28 抽样:薪资为空的在架帖,这一栏全是 To be discussed / À discuter)—— 雇主明写不公布,
+记进板仓行的 stated_none,修复与上线闸按「原帖没写」算,不用再交 Opus 看(设计稿 docs/design/缺数据不上线与Opus修复-20260928.md)。"""
+
+K_STATED_NONE = "stated_none"
+"""板仓行:原帖明写不公布的格 → 原文(如 {"salary": "À discuter"});没有就是空字典。"""
+
+FIELD_SALARY = "salary"
+"""stated_none 里的格名:薪资(与修复库的格名同一套)。"""
 
 UTC_Z = "Z"
 """ISO 串的 UTC 标记(Job Bank 仓 last_seen 同款「2026-09-06T21:24:06Z」)。"""

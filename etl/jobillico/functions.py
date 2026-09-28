@@ -47,11 +47,16 @@ from jobillico.constants import (
     IN_TITLES, LANG_FR, OUT_TITLES, PRINT_TITLES_DONE_TPL, PRINT_TITLES_HEAD_TPL, TITLES_PER_RUN,
 )
 from jobillico.constants import ERR_SITEMAP_EMPTY_TPL, ERR_SITEMAP_TPL, IN_POSTINGS, SHRINK_LABEL, TEST_VERBOSITY
+from jobillico.constants import (
+    FIELD_SALARY, HOURS_OF_SCHEDULE_RES, INFO_FIELD_RE, INFO_LABEL_RE, INFO_SALARY, INFO_SCHEDULE, INFO_STATUS,
+    K_STATED_NONE, SALARY_UNDISCLOSED_RE, TAG_RE, TERM_OF_STATUS_RES,
+)
 from noc.functions import translate_title_todo
 from jobillico.scheme import (
     ParseIn, DetailBatchIn, DetailBatchOut, HttpClientLike, JobFact, LdPostingIn, ParseTally, PostingRowIn,
     SalaryTextIn, SitemapIn, StoreTally,
     JobillicoEnumGuardTest,
+    JobillicoInfoTest, StatedNoneIn, WordIn,
 )
 
 
@@ -246,11 +251,13 @@ def parse_details(x: ParseIn) -> None:
         path = have.get(url)
         if path is None:
             continue
-        data = job_posting_of(path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE))
+        page = path.read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE)
+        data = job_posting_of(page)
         if data is None:
             tally.missing += 1
             continue
-        fact = to_job_fact(LdPostingIn(posting_id=pid, url=url, lang=lang_of(url), data=data))
+        fact = to_job_fact(LdPostingIn(posting_id=pid, url=url, lang=lang_of(url), data=data,
+                                       info=info_fields_of(page)))
         facts[pid] = asdict(fact)
         tally.parsed += 1
     OUT_JOBS.parent.mkdir(parents=True, exist_ok=True)
@@ -290,7 +297,19 @@ def to_job_fact(x: LdPostingIn) -> JobFact:
         employment_types=types_of(x.data.get(LD_EMPLOYMENT_TYPE)),
         industry=text_of(x.data.get(LD_INDUSTRY)),
         description=rich_text_of(text_of(x.data.get(LD_DESCRIPTION))),
+        status_text=x.info.get(INFO_STATUS, ""), schedule_text=x.info.get(INFO_SCHEDULE, ""),
+        salary_label=x.info.get(INFO_SALARY, ""),
     )
+
+
+def info_fields_of(page: str) -> dict:
+    """详情页正文「岗位信息」栏 → 栏图标名 → 栏值原文(剥隐藏栏名与标签、折空白;同名栏只认第一个;页上没有给空字典)。"""
+    out: dict = {}
+    for m in INFO_FIELD_RE.finditer(page):
+        if m.group(1) in out:
+            continue
+        out[m.group(1)] = WS_RE.sub(SPACE, TAG_RE.sub(SPACE, INFO_LABEL_RE.sub(SPACE, m.group(2)))).strip()
+    return out
 
 
 def dict_of(value: object) -> dict:
@@ -416,15 +435,17 @@ def to_posting_row(x: PostingRowIn) -> dict:
     if x.title_en != "":
         title = x.title_en
         title_orig = f.title
+    salary = salary_text_of(SalaryTextIn(lo=f.salary_lo, hi=f.salary_hi, unit=f.salary_unit))
     return {
         K_POSTING_ID: f.posting_id, K_TITLE: title, K_TITLE_ORIG: title_orig, K_EMPLOYER: f.employer,
         K_CITY: f.city, K_PROVINCE: f.province,
-        K_SALARY: salary_text_of(SalaryTextIn(lo=f.salary_lo, hi=f.salary_hi, unit=f.salary_unit)),
+        K_SALARY: salary,
         K_DATE: f.date_posted, K_SOURCE: SOURCE_LABEL, K_DIRECT: False, K_URL: f.url,
         K_ADDRESS: address_of(f), K_NOC: "", K_LAST_SEEN: x.seen_at,
-        K_EMPLOYMENT_TERM: term_of(f.employment_types), K_EMPLOYMENT_HOURS: hours_of(f.employment_types),
+        K_EMPLOYMENT_TERM: term_of(f), K_EMPLOYMENT_HOURS: hours_of(f),
         K_DESCRIPTION: f.description, K_VALID_THROUGH: f.valid_through, K_LANG: f.lang,
         K_INDUSTRY: f.industry, K_EMPLOYER_URL: f.employer_url,
+        K_STATED_NONE: stated_none_of(StatedNoneIn(label=f.salary_label, salary=salary)),
     }
 
 
@@ -460,22 +481,48 @@ def address_of(f: JobFact) -> str:
     return ADDRESS_SEP.join(parts)
 
 
-def term_of(types: list) -> str:
-    """雇佣形态清单里第一个能译成 Job Bank 期限词的;没有给空串。"""
-    for t in types:
-        word = TERM_OF_TYPE.get(t)
-        if word is not None:
-            return word
+def term_of(f: JobFact) -> str:
+    """雇佣期限:「雇佣状态」栏认出的词优先(Permanent / Contrat / Occasionnel / Saisonnier 只在这一栏;2026-09-28);
+    栏里没写或写了两种期限,退回 ld+json 雇佣形态清单里第一个能译成期限词的;都没有给空串。"""
+    word = word_of(WordIn(text=f.status_text, table=TERM_OF_STATUS_RES))
+    if word != "":
+        return word
+    for t in f.employment_types:
+        found = TERM_OF_TYPE.get(t)
+        if found is not None:
+            return found
     return ""
 
 
-def hours_of(types: list) -> str:
-    """雇佣形态清单里第一个能译成 Job Bank 工时词的;没有给空串。"""
-    for t in types:
-        word = HOURS_OF_TYPE.get(t)
-        if word is not None:
-            return word
+def hours_of(f: JobFact) -> str:
+    """工时:「工时」栏认出的词优先(2026-09-28);栏里没写、两种都写或只写钟点,退回 ld+json 雇佣形态清单里
+    第一个能译成工时词的;都没有给空串。"""
+    word = word_of(WordIn(text=f.schedule_text, table=HOURS_OF_SCHEDULE_RES))
+    if word != "":
+        return word
+    for t in f.employment_types:
+        found = HOURS_OF_TYPE.get(t)
+        if found is not None:
+            return found
     return ""
+
+
+def word_of(x: WordIn) -> str:
+    """一栏原文按表认词:认出恰好一种才给它;一种都没有,或两种以上(同栏写了两种期限)给空串 —— 不替它挑。"""
+    words: set = set()
+    for word, rx in x.table.items():
+        if rx.search(x.text):
+            words.add(word)
+    if len(words) != 1:
+        return ""
+    return words.pop()
+
+
+def stated_none_of(x: StatedNoneIn) -> dict:
+    """原帖明写不公布的格:薪资栏写「待议」、ld+json 也没给金额 → {薪资: 栏原文};否则空字典(2026-09-28)。"""
+    if x.salary == "" and SALARY_UNDISCLOSED_RE.search(x.label):
+        return {FIELD_SALARY: x.label}
+    return {}
 
 
 # =========================================================================
@@ -485,7 +532,11 @@ def hours_of(types: list) -> str:
 
 def run_tests() -> None:
     """本域手动件 `--only test`:跑「枚举失败 → 不出快照 / 不下架」自测(用例集住 scheme 的 JobillicoEnumGuardTest,
-    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。"""
-    suite = unittest.TestLoader().loadTestsFromTestCase(JobillicoEnumGuardTest)
+    先例 gcjobs / ats / door;2026-09-27 门迁 door 叶同批立);有失败 sys.exit(1),门接住报本步失败、返回码 1。
+    2026-09-28 加「岗位信息」三栏定雇佣期限 / 工时 / 薪资待议自测 JobillicoInfoTest,一起跑。"""
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for case in (JobillicoEnumGuardTest, JobillicoInfoTest):
+        suite.addTests(loader.loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

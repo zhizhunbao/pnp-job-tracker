@@ -156,10 +156,20 @@ class JobFact:
     description: str
     """描述纯文本。"""
 
+    status_text: str = ""
+    """详情页「雇佣状态」栏原文(Emploi Permanent / Permanent job …;2026-09-28 加,解析段从缓存原文抽)。
+    带默认值:加格前落盘的事实行没有这个键,建仓段 JobFact(**row) 照样构造;存量由一次性回填补齐。"""
+
+    schedule_text: str = ""
+    """详情页「工时」栏原文(40.00 h - Temps plein / Full time …;同上)。"""
+
+    salary_label: str = ""
+    """详情页「薪资」栏原文(À discuter / To be discussed / 25.00 $ par heure …;同上)。"""
+
 
 @dataclass
 class LdPostingIn:
-    """to_job_fact() 入参(一块 JobPosting 字典 + 它来自哪个 URL)。"""
+    """to_job_fact() 入参(一块 JobPosting 字典 + 它来自哪个 URL + 同页「岗位信息」三栏)。"""
 
     posting_id: str
     """帖号。"""
@@ -172,6 +182,9 @@ class LdPostingIn:
 
     data: dict
     """ld+json 解出的 JobPosting 字典。"""
+
+    info: dict
+    """同一张详情页「岗位信息」栏:栏图标名 → 原文(info_fields_of 抽;2026-09-28 加)。"""
 
 
 @dataclass
@@ -227,6 +240,28 @@ class SalaryTextIn:
 
     unit: str
     """schema.org 单位词。"""
+
+
+@dataclass
+class WordIn:
+    """word_of() 入参(一栏原文 + 按哪张表认词;2026-09-28 加)。"""
+
+    text: str
+    """栏原文(雇佣状态栏或工时栏)。"""
+
+    table: dict
+    """Job Bank 词 → 正则(TERM_OF_STATUS_RES 或 HOURS_OF_SCHEDULE_RES)。"""
+
+
+@dataclass
+class StatedNoneIn:
+    """stated_none_of() 入参(薪资栏原文 + 建仓算出的 Job Bank 写法薪资;2026-09-28 加)。"""
+
+    label: str
+    """详情页「薪资」栏原文。"""
+
+    salary: str
+    """ld+json 薪资拼成的 Job Bank 写法(空串 = ld+json 没给金额)。"""
 
 
 @dataclass
@@ -473,3 +508,120 @@ class JobillicoEnumGuardTest(unittest.TestCase):
             if pid != "2004":
                 want.append(pid)
         self.assertEqual(self.stored_ids_of(after["postings.json"]), sorted(want))
+
+
+class JobillicoInfoTest(unittest.TestCase):
+    """「岗位信息」三栏定雇佣期限 / 工时 / 薪资待议自测(2026-09-28 Frank 勾「抽源页已有字段」立)。
+
+    栏抽取喂真页形状的片段(英、法各一段,外加页头打印样式里的同名类不许误命中);期限、工时金标取自 2,000 张在架页
+    实测的写法:栏里认出恰好一种才用,认出两种或一种都没有退回 ld+json 旧口径;薪资栏写「待议」且 ld+json 没给金额的
+    记进 stated_none。只喂字符串,不联网、不读仓内文件。"""
+
+    page_en = (
+        '<li><span class="icon icon--information--money" title=" Salary "></span> '
+        "<span class='job-infos-label-new is-hidden job-infos-label-new is-hidden-salary'>Salary </span> "
+        '<span class="inline sm"> To be discussed </span> </li> '
+        '<li><span class="icon icon--information--clock" title=" Work schedule "></span> '
+        '<p class="inline sm">Full time </p> </li> '
+        '<li><span class="icon icon--information--curve" title=" Job status "></span> '
+        "<p class='inline sm'>Permanent job</p> </li>"
+    )
+    """英文页片段(2026-09-28 取自 RONA+ Head Cashier 帖)。"""
+
+    page_fr = (
+        '<style>html[lang=fr] .print .icon--information--money+p::before{content:"Salaire: "}</style>'
+        '<li><span class="icon icon--information--money" title=" Salaire "></span> '
+        "<span class='job-infos-label-new is-hidden job-infos-label-new is-hidden-salary'>Salaire </span> "
+        '<span class="inline sm"> À discuter </span> </li> '
+        '<li><span class="icon icon--information--clock" title=" Horaire de travail "></span> '
+        '<p class="inline sm">40.00 h - Temps plein </p> </li> '
+        '<li><span class="icon icon--information--curve" title=" Statut de l\'emploi "></span> '
+        "<p class='inline sm'>Emploi Permanent ,Télétravail</p> </li>"
+    )
+    """法文页片段(前面带页头打印样式里的同名类,验证不误命中)。"""
+
+    terms = [
+        ("Emploi Permanent", ["FULL_TIME"], "permanent"),
+        ("Permanent job", [], "permanent"),
+        ("Emploi Permanent ,Télétravail", [], "permanent"),
+        ("Emploi Permanent ,Emploi étudiant", [], "permanent"),
+        ("Emploi Contrat", [], "term"),
+        ("Contract job", ["FULL_TIME"], "term"),
+        ("Emploi Occasionnel", [], "casual"),
+        ("Casual job", [], "casual"),
+        ("Emploi Saisonnier", [], "seasonal"),
+        ("Emploi Permanent ,Saisonnier", ["TEMPORARY"], "term"),
+        ("Emploi Permanent ,Saisonnier", [], ""),
+        ("Télétravail", [], ""),
+        ("", ["TEMPORARY"], "term"),
+    ]
+    """(雇佣状态栏, ld+json 雇佣形态, 期望期限词) 金标:前九条栏里认出一种;第十、十一条同栏两种期限退回 ld+json
+    (有 TEMPORARY 给定期,没有留空);Télétravail 不是期限;老事实行没有这一栏照旧读 ld+json。"""
+
+    hours = [
+        ("40.00 h - Temps plein", [], "full"),
+        ("Full time", ["PART_TIME"], "full"),
+        ("Temps partiel", [], "part"),
+        ("Full time ,Part time", ["FULL_TIME"], "full"),
+        ("40.00 h", [], ""),
+        ("", ["PART_TIME"], "part"),
+    ]
+    """(工时栏, ld+json 雇佣形态, 期望工时词) 金标:栏里认出一种优先;两种都写或只写钟点退回 ld+json。"""
+
+    salaries = [
+        ("À discuter", "", {"salary": "À discuter"}),
+        ("Salary To be discussed", "", {"salary": "Salary To be discussed"}),
+        ("To be discussed", "$20.00 hourly", {}),
+        ("25.00 $ par heure", "", {}),
+        ("", "", {}),
+    ]
+    """(薪资栏, ld+json 拼出的薪资, 期望 stated_none) 金标:只有「待议」且 ld+json 没给金额才记;栏里写了金额、
+    或 ld+json 有金额的都不记。"""
+
+    def fact_of(self, status: str, types: list) -> JobFact:
+        """只填雇佣状态 / 工时栏与雇佣形态的事实行(其余格与本用例无关;工时栏同用 status 这一格的原文)。"""
+        return JobFact(
+            posting_id="1", url="", lang="fr", title="", employer="", employer_url="", city="", province="", postal="",
+            street="", country="", date_posted="", valid_through="", salary_lo="", salary_hi="", salary_unit="",
+            employment_types=types, industry="", description="", status_text=status, schedule_text=status,
+            salary_label="",
+        )
+
+    def test_info_fields_of_page(self) -> None:
+        """三栏抽取:英、法两段各抽出三栏原文(剥隐藏栏名、折空白);页头打印样式里的同名类不误命中。"""
+        from jobillico.functions import info_fields_of
+        self.assertEqual(info_fields_of(self.page_en),
+                         {"money": "To be discussed", "clock": "Full time", "curve": "Permanent job"})
+        self.assertEqual(info_fields_of(self.page_fr),
+                         {"money": "À discuter", "clock": "40.00 h - Temps plein", "curve": "Emploi Permanent ,Télétravail"})
+        self.assertEqual(info_fields_of("<html><body>nothing</body></html>"), {})
+
+    def test_term_golden(self) -> None:
+        """期限金标逐条过。"""
+        from jobillico.functions import term_of
+        for status, types, want in self.terms:
+            with self.subTest(status=status, types=types):
+                self.assertEqual(term_of(self.fact_of(status, types)), want)
+
+    def test_hours_golden(self) -> None:
+        """工时金标逐条过。"""
+        from jobillico.functions import hours_of
+        for schedule, types, want in self.hours:
+            with self.subTest(schedule=schedule, types=types):
+                self.assertEqual(hours_of(self.fact_of(schedule, types)), want)
+
+    def test_stated_none_golden(self) -> None:
+        """薪资待议金标逐条过。"""
+        from jobillico.functions import stated_none_of
+        for label, salary, want in self.salaries:
+            with self.subTest(label=label, salary=salary):
+                self.assertEqual(stated_none_of(StatedNoneIn(label=label, salary=salary)), want)
+
+    def test_old_fact_row_loads(self) -> None:
+        """加格前落盘的事实行(没有三栏的键)照样构造成事实,三栏按空串算。"""
+        row: dict = {}
+        for k, v in asdict(self.fact_of("", ["FULL_TIME"])).items():
+            if k not in ("status_text", "schedule_text", "salary_label"):
+                row[k] = v
+        fact = JobFact(**row)
+        self.assertEqual((fact.status_text, fact.schedule_text, fact.salary_label), ("", "", ""))
