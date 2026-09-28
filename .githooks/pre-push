@@ -63,14 +63,17 @@ echo "[pre-push] eslint $(echo $files | wc -w) 个改动文件…"
 # xargs 聚合退出码(任一块非零则非零),拦截语义不变。
 # 大批量档(2026-08-29 二撞:15 块 = 15 次 eslint 冷启动,比全量还慢):
 # 超过 200 个文件直接整 src 一次冷启动查完,拦截语义只紧不松(查得更多)。
+# 缓存(2026-09-28 Frank「那你为什么每次都跑这么慢」「不管任务大小」):类型感知规则让每次 eslint 启动都要把全站类型建一遍
+# (实测一个文件 29~36 秒,规则本身不到 1 秒)—— 推送前的这一遍与改完时手动那一遍查的是同一批文件,
+# 按内容缓存(--cache-strategy content,cms/.eslintcache,已 gitignore)后,查过且没再改的文件直接跳过。
 code=0
 n=$(echo $files | wc -w)
 if [ "$n" -gt 200 ]; then
   echo "[pre-push] 改动 $n 个文件,走全量档(单次冷启动)…"
-  npx eslint src --quiet --pass-on-unpruned-suppressions || code=$?
+  npx eslint src --quiet --pass-on-unpruned-suppressions --cache --cache-strategy content || code=$?
 else
   printf '%s
-' $files | xargs -n 50 npx eslint --quiet --pass-on-unpruned-suppressions || code=$?
+' $files | xargs -n 50 npx eslint --quiet --pass-on-unpruned-suppressions --cache --cache-strategy content || code=$?
 fi
 if [ $code -ne 0 ]; then
   echo "[pre-push] eslint 有 error,push 已拦 —— 修完再推(禁 --no-verify)。"
@@ -78,11 +81,46 @@ if [ $code -ne 0 ]; then
 fi
 echo "[pre-push] eslint 过闸。"
 
+# 构建分档(2026-09-28 Frank「那你为什么每次都跑这么慢」「不管任务大小」「我他妈分域 有什么用」):下面的裸构建实测近 3 分钟
+# (编译 68 秒 + 类型检查 41 秒 + 收集页面数据),只有动到「构建期会跑的代码」或模块边界时才值得跑;其余改跑 tsc 增量(十几秒)。
+# 不跑构建的三种:① 词条(lib/i18n)② 测试 / 脚本 / eslint 配置(都不进构建)③ 组件文件只改了函数体 —— 文件本身是
+# 'use client'、这次改动没碰任何引用行(from '…' / import)与 'use client' / 'use server' 指令(模块边界没变,打不进服务端依赖)。
+# 其余一律跑:app/**(路由、sitemap、og)、lib/**(服务端)、collections、配置、服务端组件、组件改了引用或指令。
+need_build=0
+for f in $changed; do
+  [ -f "../$f" ] || continue
+  case "$f" in
+    cms/src/lib/i18n/*|cms/tests/*|cms/scripts/*|cms/eslint.config.mjs) continue ;;
+    cms/src/components/*)
+      if head -n 1 "../$f" | grep -q "^'use client'" && \
+         ! git -C .. diff "$upstream"..HEAD -- "$f" | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' \
+           | grep -qE "from '|^[+-]import |'use (client|server)'"; then
+        continue
+      fi
+      need_build=1 ;;
+    *) need_build=1 ;;
+  esac
+  [ $need_build -eq 1 ] && break
+done
+if [ $need_build -eq 0 ]; then
+  echo "[pre-push] 只动了词条 / 测试 / 组件函数体,跳过裸构建,改跑类型检查(tsc 增量)…"
+  # .next/types 是 dev / build 生成的路由类型,删路由后会残留一拍(下次 build 自己重生),它报的错不算。
+  errs=$(npx tsc --noEmit 2>&1 | grep "error TS" | grep -v "^\.next/")
+  if [ -n "$errs" ]; then
+    echo "[pre-push] 类型检查有 error,push 已拦:"
+    echo "$errs" | head -20
+    exit 1
+  fi
+  echo "[pre-push] 类型检查过闸。"
+  exit 0
+fi
+
 # 裸构建闸(Frank 2026-08-23 拍板「加闸门,下次不要发烧」):复现 Render 构建容器 ——
 # 它不注入运行时密钥,而 Next 构建期会收集 generateSitemaps 等页面数据,凡是这条路上
 # 摸 Payload/库又没兜底的代码,本地带 .env 的 build 全绿、Render 当场红(seo 立域实撞,
 # 修复=分片壳 getDb 裹回兜底)。手法:空串环境变量压过 .env(dotenv 不覆盖已存在变量,
 # 空串也算存在),等价于构建容器没密钥;约 30-45s,只有真要 push 时才花。
+# (2026-09-28 实测已近 3 分钟 —— 所以上面加了构建分档,只在动到构建期代码或模块边界时才跑。)
 echo "[pre-push] 裸构建(无密钥,复现 Render 构建容器)…"
 PAYLOAD_SECRET= DATABASE_URI= npm run build >/tmp/prepush-bare-build.log 2>&1
 code=$?
