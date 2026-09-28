@@ -2796,6 +2796,17 @@ const eslintConfig = [
     },
   },
   {
+    // ── functions 文件行数上限 1000(2026-09-28 Frank「先立闸吧,1000 行」)─────────────
+    // 判据 =「AI 一次读得完」:单次读文件上限 25000 token,本项目 ts 写法约合 1400~1800 行
+    // (实测 lib/employers/functions.ts 2402 行 = 40246 token,一次只读到第 1268 行),超了只能
+    // 跳着读、漏看已有函数又写一份。数总行数,注释空行都算(读的时候注释也要读);业界默认
+    // 300~2000 不统一,不照搬。当天只立闸不拆(Frank「先不拆」):存量超线件走 --suppress-rule
+    // 记基线,拆到线下跑 lint:prune 收紧 —— 但基线只记「超了」不记超多少,存量件照样能长。
+    // 拆法(子域形制)还没有样张,首例先问 Frank。etl 同口径住 etl/gate ⑪号规。
+    files: ['src/lib/**/functions.ts', 'src/components/**/functions.{ts,tsx}'],
+    rules: { 'max-lines': ['error', { max: 1000 }] },
+  },
+  {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
   },
   // 🔴 豁免块一律排在**所有开闸块之后**:flat config 后块盖前块,

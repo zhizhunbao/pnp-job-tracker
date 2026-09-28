@@ -102,6 +102,11 @@
       "count": 2
     }
   },
+  "src/components/advisor/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/cases/Case.tsx": {
     "@stylistic/brace-style": {
       "count": 2
@@ -314,6 +319,11 @@
       "count": 3
     }
   },
+  "src/components/companies/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/employers/Compare.tsx": {
     "@stylistic/brace-style": {
       "count": 4
@@ -463,6 +473,11 @@
     },
     "react/forbid-elements": {
       "count": 3
+    }
+  },
+  "src/components/employers/functions.ts": {
+    "max-lines": {
+      "count": 1
     }
   },
   "src/components/funnel/Funnel.tsx": {
@@ -657,6 +672,11 @@
       "count": 1
     }
   },
+  "src/components/jobs/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/legal/Legal.tsx": {
     "@stylistic/max-len": {
       "count": 3
@@ -776,6 +796,11 @@
     },
     "react/no-multi-comp": {
       "count": 9
+    }
+  },
+  "src/components/news/functions.ts": {
+    "max-lines": {
+      "count": 1
     }
   },
   "src/components/occupations/Occupations.tsx": {
@@ -1103,6 +1128,16 @@
       "count": 1
     }
   },
+  "src/components/plan/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/pnp/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/pricing/Pricing.tsx": {
     "@stylistic/max-len": {
       "count": 3
@@ -1351,6 +1386,11 @@
       "count": 1
     }
   },
+  "src/components/pte/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/quiz/OccPicker.tsx": {
     "@stylistic/brace-style": {
       "count": 22
@@ -1467,6 +1507,11 @@
     },
     "react/forbid-elements": {
       "count": 2
+    }
+  },
+  "src/components/quiz/functions.ts": {
+    "max-lines": {
+      "count": 1
     }
   },
   "src/components/rankings/Ranking.tsx": {
@@ -1729,6 +1774,16 @@
       "count": 6
     }
   },
+  "src/components/start/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/stats/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/components/timeline/Timeline.tsx": {
     "@stylistic/brace-style": {
       "count": 14
@@ -1850,6 +1905,11 @@
       "count": 1
     }
   },
+  "src/components/verdict/functions.ts": {
+    "max-lines": {
+      "count": 1
+    }
+  },
   "src/lib/agent/constants.ts": {
     "local/no-import-in-leaf": {
       "count": 1
@@ -1868,6 +1928,9 @@
   "src/lib/employers/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 2
+    },
+    "max-lines": {
+      "count": 1
     }
   },
   "src/lib/i18n/server.ts": {
@@ -1883,6 +1946,9 @@
   "src/lib/jobs/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
+    },
+    "max-lines": {
+      "count": 1
     }
   },
   "src/lib/legal/constants.ts": {
@@ -1896,6 +1962,9 @@
   "src/lib/llm/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
+    },
+    "max-lines": {
+      "count": 1
     }
   },
   "src/lib/llm/types.ts": {
@@ -1903,6 +1972,11 @@
       "count": 1
     },
     "local/no-undefined-type": {
+      "count": 1
+    }
+  },
+  "src/lib/mart/functions.ts": {
+    "max-lines": {
       "count": 1
     }
   },
@@ -1933,10 +2007,18 @@
     },
     "local/no-bare-strings": {
       "count": 1
+    },
+    "max-lines": {
+      "count": 1
     }
   },
   "src/lib/points/types.ts": {
     "local/no-undefined-type": {
+      "count": 1
+    }
+  },
+  "src/lib/quiz/functions.ts": {
+    "max-lines": {
       "count": 1
     }
   },
@@ -1953,6 +2035,9 @@
   "src/lib/ruling/functions.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 3
+    },
+    "max-lines": {
+      "count": 1
     }
   },
   "src/lib/ruling/types.ts": {
