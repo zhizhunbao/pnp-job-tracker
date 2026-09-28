@@ -9,12 +9,13 @@
  * ❓ 协议)与 fetchJobText(JD 正文取数的三态口径)。**行为不许复制** —— 复制一份等于
  * 给「哪一行是建议问题」「429 算不算没正文」各开一个岔;走 jobs 桶会成环
  * (jobs 的职位板反过来要本桶的两个弹框),所以点文件,与本域既有的过渡边同一处置。
+ * 2026-09-28 AI 顾问卡删(Frank「AI 顾问卡删了吧」):用 extractSug 的长文打字机随之删,只剩 fetchJobText 这一条。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
 import { cssOf } from '@/components/css'
-import { extractSug, fetchJobText } from '@/components/jobs/functions'
+import { fetchJobText } from '@/components/jobs/functions'
 import { normName, STREAM_REFORM } from '@/components/pnp'
 import { blockedSrc, isDirect } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
@@ -23,102 +24,34 @@ import { catName, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_STREAMING, ADV_UPGRADE, AIP_ON, AREA_KEY_BROADS, AREA_KEY_MED,
-  AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CK_SEP,
-  CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP, COUNTRY_CANADA, CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS,
-  DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DRAW_KIND_NOTICE, FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND,
-  FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY, FIELD_COMPANY, FIELD_COUNTRY,
-  FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN,
-  FIELD_WAGE_MED_HR, GROUP_COMPANY, K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HDR_FREE_LEFT, HTTP_PAYMENT,
-  HTTP_TOO_MANY, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT,
-  K_DIFF_ACT_OLD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT,
-  LEVEL_PROVINCE, LIST_SEP, MAP_SEP, METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE, OCC_TYPE_INELIGIBLE, PAREN_CLOSE,
-  PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC,
-  P_CITY, P_DISTRICT, P_PROV, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE,
-  STATUS_CLOSED, STATUS_OPEN, SUG_MARK, TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK,
-  TONE_WARN, TRACK_CAT_TRANSLATE, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, TYPE_MIN_CHARS, TYPE_RATE_DIV,
-  URL_API_ADVISOR, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
-  URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC, VOL_KEY_IMP, VOL_KEY_PNP_PR,
-  VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
+  ACC_UNKNOWN, AIP_ON, AREA_KEY_BROADS, AREA_KEY_MED, AREA_KEY_NEW7D, AREA_KEY_OPEN, BAND_KEY_HIGH, BAND_KEY_LOW,
+  BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD, CLS_DEPTH_NONE, CLS_SEP, CODE_TFWP, COUNTRY_CANADA,
+  CREDENTIALS_INCLUDE, DASH, DEPTH_ADDRESS, DEPTH_CITY, DEPTH_COUNTRY, DEPTH_DISTRICT, DEPTH_PROVINCE, DRAW_KIND_NOTICE,
+  FAC_ACTIVITY, FAC_COMP, FAC_QUOTA_TREND, FAC_SCORE_LEVEL, FIELD_ACCESSIBILITY, FIELD_ADDRESS, FIELD_BROAD, FIELD_CITY,
+  FIELD_COMPANY, FIELD_COUNTRY, FIELD_DISTRICT, FIELD_NOC, FIELD_NOC_CODE, FIELD_PROVINCE, FIELD_SALARY, FIELD_SCORE,
+  FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY, K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE,
+  HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD, K_COL_HEAD, K_DIFF_ACT, K_DIFF_ACT_OLD, K_ELIG_HEAD,
+  K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_CITY, LEVEL_DISTRICT, LEVEL_PROVINCE, LIST_SEP, MAP_SEP,
+  METHOD_POST, MIME_JSON, MONEY_HEAD, NEWLINE, OCC_TYPE_INELIGIBLE, PAREN_CLOSE, PAREN_OPEN, PCT_TAIL, PEEK_KEY_SEP,
+  PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES, PLUS_HEAD, POOL_KEY_HEAD, PROV_QC, P_CITY, P_DISTRICT, P_PROV,
+  ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, SPACE, STATUS_CLOSED, STATUS_OPEN,
+  TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
+  TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_CITY, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY,
+  URL_API_JOBS_RETRANSLATE, URL_API_NOC_TRANSLATE, URL_API_PROVINCE, URL_COMPANY_HEAD, URL_PAGE_FIRST, VOL_KEY_ALLOC,
+  VOL_KEY_IMP, VOL_KEY_PNP_PR, VOL_KEY_STUDY, VOL_KEY_TFWP, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  ActNoteIn, AdvisorCtaIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorKeyIn, AdvisorNocDesc, AdvisorPillFact,
-  AipBlockedNameIn, AipListIn, AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn,
-  CityJson, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor,
-  DiffFactorIn, DrainStreamIn, EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn,
-  GroupFactsIn, HasDrawsIn, HasNewsIn, HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn,
-  LmiaFeasibleFact, LmiaFeasibleIn, LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn,
-  LocationLevel, LocNoteIn, LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn,
-  OnClsIn, OpenCompanyFn, OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn,
-  ProvJson, ProvStreamsIn, RefreshFn, RunLongIn, StreamAdvisorIn, StreamAdvisorOut, TFnJobIn, ToggleIn, TransPillIn,
-  TypewriterIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
+  ActNoteIn, AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipListIn,
+  AipMatchIn, AipMatchTextIn, AipPillIn, AllocRowIn, AreaRowsIn, CardHeadIn, CatTextIn, CityJson, CompanyJobsJson,
+  CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag, DiffCellFact, DiffCellsIn, DiffFactor, DiffFactorIn, EsdcRowFact,
+  FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HasDrawsIn, HasNewsIn,
+  HeadSubIn, IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, KvFact, LevelIn, LmiaFeasibleFact, LmiaFeasibleIn,
+  LoadCityIn, LoadCompanyJobsIn, LoadFn, LoadJobTextIn, LoadNocTransIn, LoadProvIn, LocationLevel, LocNoteIn,
+  LocRowFact, MapQueryIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn, OpenCompanyFn,
+  OpenJobFn, OriginTextIn, PairLabelIn, PeekKeyIn, PeekStackRef, PilotPillIn, PlanClbIn, ProvJson, ProvStreamsIn,
+  RefreshFn, TFnJobIn, ToggleIn, TransPillIn, VolRowFact, VolRowsIn, ZhItemsIn, ZhLabelIn,
 } from './types'
-import { CACHE } from './variables'
 import css from './advisor.module.css'
-
-/**
- * 缓存键:一岗一档各存一份。
- *
- * @param x 生成哪一种与这一岗的号。
- * @returns 缓存键。
- */
-export function advisorKeyOf(x: AdvisorKeyIn): string {
-  return x.field + CK_SEP + String(x.id)
-}
-
-/**
- * 流式取一段初判。额度闸照走:402 → 升级卡,429 → 打码 + 锁行说人话(#175:黄条退役),
- * 其它非 2xx 或读流出错 → 可重试的失败态。
- * 尾行建议问题不在内嵌区展示(追问在完整弹框),所以落定前先摘掉。
- *
- * @param x 这一岗、界面语言、档、中断信号与两个回传。
- * @returns 落定的状态与正文。
- */
-export async function streamAdvisor(x: StreamAdvisorIn): Promise<StreamAdvisorOut> {
-  const res = await fetch(URL_API_ADVISOR, {
-    method: METHOD_POST,
-    headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-    signal: x.signal,
-    body: JSON.stringify({ field: x.field, id: String(x.job.id), lang: x.lang }),
-  })
-  const left = res.headers.get(HDR_FREE_LEFT)
-  if (left != null) {
-    x.onFreeLeft(Number(left))
-  }
-  if (res.status === HTTP_PAYMENT) {
-    return { status: ADV_UPGRADE, body: TEXT_NONE }
-  }
-  if (res.status === HTTP_TOO_MANY) {
-    return { status: ADV_LIMITED, body: TEXT_NONE }
-  }
-  if (res.ok === false || res.body == null) {
-    return { status: ADV_ERROR, body: TEXT_NONE }
-  }
-  const acc = await drainStream({ body: res.body, onChunk: x.onChunk })
-  const got = extractSug(acc, x.job.company, x.lang)
-  CACHE.jdAdvisor.set(String(x.job.id), got.body)
-  return { status: ADV_DONE, body: got.body }
-}
-
-/**
- * 把流读干净,每读到一段就回一次(打字机)。
- *
- * @param x 响应体与逐段回调。
- * @returns 读完的全文。
- */
-async function drainStream(x: DrainStreamIn): Promise<string> {
-  const reader = x.body.getReader()
-  const dec = new TextDecoder()
-  let acc = TEXT_NONE
-  for (;;) {
-    const got = await reader.read()
-    if (got.done) {
-      return acc
-    }
-    acc = acc + dec.decode(got.value, { stream: true })
-    x.onChunk(acc)
-  }
-}
 
 /**
  * 这一格有没有事实可铺 —— 没有就整块跳过,**绝不留孤儿小标题**(既有规范 §2「空段规则」)。
@@ -878,20 +811,6 @@ export function levelOf(x: LevelIn): LocationLevel {
 }
 
 /**
- * 摘掉尾行建议问题之后的正文(建议问题不在这类速读区展示,追问在完整弹框里)。
- *
- * @param text 模型吐出来的全文。
- * @returns 正文。
- */
-export function cutSugOf(text: string): string {
-  const cut = text.indexOf(SUG_MARK)
-  if (cut < 0) {
-    return text
-  }
-  return text.slice(0, cut)
-}
-
-/**
  * 职责/要求逐条拆行(数据层存的是一段带换行的文本)。
  *
  * @param text 全文。
@@ -992,102 +911,6 @@ export function diffToneClsOf(tier: string): string {
     return cssOf(css.diff)
   }
   return cssOf(css.diff) + CLS_SEP + hit
-}
-
-/**
- * 移民组顾问长文的取数(唯一真在流式生成顾问内容的那一处)。网络块先进打字机队列
- * 不直接上屏 —— 用户拍板:AI 内容必须流式感,不许整段蹦出来。
- * 额度闸三态分明:402 = 免费试用用完(E3-05)→ 升级卡;429 = 匿名 IP 限/日上限
- * (第 9 轮 #25:说人话 + 给出路,不甩状态码);其它非 2xx = 取数失败。
- *
- * @param x 分组、这一岗、界面语言、中断信号、两句失败话术、三个落格与两个镜像格。
- * @returns 跑一次生成的函数。
- */
-export function makeRunLongAdvisor(x: RunLongIn): () => void {
-  async function pump(): Promise<void> {
-    const res = await fetch(URL_API_ADVISOR, {
-      method: METHOD_POST,
-      headers: { [HDR_CONTENT_TYPE]: MIME_JSON },
-      signal: x.signal,
-      body: JSON.stringify({ field: x.group, id: String(x.job.id), lang: x.lang }),
-    })
-    const left = res.headers.get(HDR_FREE_LEFT)
-    if (left != null) {
-      x.setFreeLeft(Number(left))
-    }
-    if (res.status === HTTP_PAYMENT) {
-      x.setStatus(ADV_UPGRADE)
-      return
-    }
-    if (res.status === HTTP_TOO_MANY) {
-      x.setStatus(ADV_LIMITED)
-      return
-    }
-    if (res.ok === false || res.body == null) {
-      x.setStatus(ADV_ERROR)
-      x.setText(x.unavailText)
-      return
-    }
-    x.setStatus(ADV_STREAMING)
-    const reader = res.body.getReader()
-    const dec = new TextDecoder()
-    for (;;) {
-      const got = await reader.read()
-      if (got.done) {
-        x.done.current = true
-        return
-      }
-      x.pending.current = x.pending.current + dec.decode(got.value, { stream: true })
-    }
-  }
-  function fail(): void {
-    if (x.signal.aborted) {
-      return
-    }
-    x.pending.current = TEXT_NONE
-    x.setStatus(ADV_ERROR)
-    x.setText(x.offlineText)
-  }
-  return function runLong(): void {
-    pump().catch(fail)
-  }
-}
-
-/**
- * 打字机走一帧。吐字速率与积压成正比(每帧 1/12),整段大文本几秒内追平,不会无限拖尾
- * —— 覆盖三种「整段到达」场景:公司初判 web_fetch 工具阶段后快速吐完、服务端缓存命中、
- * 代理缓冲。❓ 标记之后的内容截住不吐(建议行不进正文);流读完且积压吐尽时,
- * 对完整回复统一摘一次建议问题(含无标记兜底)。
- *
- * @param x 三个镜像格、三个落格与摘建议要的雇主名与界面语言。
- * @returns 无。
- */
-export function tickTypewriter(x: TypewriterIn): void {
-  const cut = x.pending.current.indexOf(SUG_MARK)
-  let avail = x.pending.current
-  if (cut >= 0) {
-    avail = x.pending.current.slice(0, cut)
-  }
-  if (avail !== TEXT_NONE) {
-    const n = Math.max(TYPE_MIN_CHARS, Math.ceil(avail.length / TYPE_RATE_DIV))
-    x.mirror.current = x.mirror.current + avail.slice(0, n)
-    x.pending.current = x.pending.current.slice(n)
-    x.setText(x.mirror.current)
-    return
-  }
-  if (x.done.current === false) {
-    return
-  }
-  x.done.current = false
-  const full = x.mirror.current + x.pending.current
-  x.pending.current = TEXT_NONE
-  const got = extractSug(full, x.company, x.lang)
-  x.mirror.current = got.body
-  x.setText(got.body)
-  if (got.sug !== TEXT_NONE) {
-    x.setSug(got.sug)
-  }
-  x.setStatus(ADV_DONE)
 }
 
 /**
@@ -1258,21 +1081,6 @@ export function makeLoadNocTrans(x: LoadNocTransIn): () => void {
     x.setStatus(TRANS_LOADING)
     pump().catch(fail)
   }
-}
-
-/**
- * 429 锁行上的引导:匿名才引导去注册(登录态额度更高,再喊一次注册没有意义)。
- * ⚠️ hooks.ts 里内嵌初判段那台机器有一个同款的私有 limitCtaOf ——
- * 两处是同一句判断,清剿批并成这一处。
- *
- * @param x 取词函数与登录态。
- * @returns 引导文案;已登录给空串(锁行组件把空串当没给,退回默认升级词)。
- */
-export function limitCtaTextOf(x: AdvisorCtaIn): string {
-  if (x.loggedIn) {
-    return TEXT_NONE
-  }
-  return x.t('advisor.limitCta')
 }
 
 /**

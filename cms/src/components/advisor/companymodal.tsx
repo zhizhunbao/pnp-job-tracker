@@ -36,7 +36,6 @@ export function CompanyModal({ slug, name, lang, onOpenJob, onOpenCompany, onClo
     <AdvisorHead t={t} group={GROUP_COMPANY}
       title={name}
       sub={m.alias}
-      freeLeft={null}
       ctl={null} />
   )
   return (

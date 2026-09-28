@@ -34,259 +34,14 @@ export type AdvisorJob = JobRow
 export type AdvisorPlan = Plan
 
 /**
- * 内嵌初判段的状态档。
- */
-export type AdvisorStatus = 'loading' | 'streaming' | 'done' | 'error' | 'upgrade' | 'limited'
-
-/**
  * 这一段生成的是哪一种:顾问初判(含移民路径)/ 纯 JD 速读 / 公司速读。
  */
 export type AdvisorField = 'title' | 'jdRead' | 'coRead'
 
 /**
- * streamAdvisor 的入参。
- */
-export type StreamAdvisorIn = {
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 生成哪一种。
-   */
-  field: AdvisorField
-
-  /**
-   * 中断信号(组件卸载时掐掉在途请求)。
-   */
-  signal: AbortSignal
-
-  /**
-   * 出一段字就回一次(打字机)。
-   */
-  onChunk: (acc: string) => void
-
-  /**
-   * 剩余免费次数回传。
-   */
-  onFreeLeft: (n: number) => void
-}
-
-/**
- * streamAdvisor 交回的结果。
- */
-export type StreamAdvisorOut = {
-  /**
-   * 落定的状态档。
-   */
-  status: AdvisorStatus
-
-  /**
-   * 摘掉尾行建议问题之后的正文(状态不是 done 时是空串)。
-   */
-  body: string
-}
-
-/**
- * useAdvisorSection 的入参。
- */
-export type AdvisorSectionIn = {
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 生成哪一种。
-   */
-  field: AdvisorField
-
-  /**
-   * 段标题;缺席 = 用「AI 顾问」。
-   */
-  title?: string
-
-  /**
-   * 分层态(429 锁行的引导按登录态分)。
-   */
-  plan: AdvisorPlan
-}
-
-/**
  * 取词函数(与 lib/i18n 的 TFn 同形 —— 宪法「types 自声明」)。
  */
 export type AdvisorTFn = (key: string, vars?: Record<string, string | number>) => string
-
-/**
- * 内嵌初判段交回的面板。
- */
-export type AdvisorPanel = {
-  /**
-   * 取词函数(锁行组件要它)。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 当前正文(流式期间是半截)。
-   */
-  text: string
-
-  /**
-   * 状态档。
-   */
-  status: AdvisorStatus
-
-  /**
-   * 段标题。
-   */
-  head: string
-
-  /**
-   * 剩余次数灰注;'' = 还没拿到。
-   */
-  leftText: string
-
-  /**
-   * 在途文案。
-   */
-  loadingText: string
-
-  /**
-   * 失败文案。
-   */
-  failText: string
-
-  /**
-   * 重试钮文案。
-   */
-  retryText: string
-
-  /**
-   * 429 锁行的正文。
-   */
-  limitMsg: string
-
-  /**
-   * 429 锁行的引导;'' = 不出(已登录)。
-   */
-  limitCta: string
-
-  /**
-   * 免费额度用完。
-   */
-  upgrade: boolean
-
-  /**
-   * 被防滥用闸挡下。
-   */
-  limited: boolean
-
-  /**
-   * 在途。
-   */
-  loading: boolean
-
-  /**
-   * 生成失败(可重试)。
-   */
-  failed: boolean
-
-  /**
-   * 有正文可渲(流式中或出完了)。
-   */
-  hasBody: boolean
-
-  /**
-   * 重试生成。
-   */
-  onRetry: () => void
-}
-
-/**
- * advisorKeyOf 的入参。
- */
-export type AdvisorKeyIn = {
-  /**
-   * 生成哪一种。
-   */
-  field: string
-
-  /**
-   * 这一岗的号。
-   */
-  id: string | number
-}
-
-/**
- * drainStream 的入参。
- */
-export type DrainStreamIn = {
-  /**
-   * 响应体。
-   */
-  body: ReadableStream<Uint8Array>
-
-  /**
-   * 每读到一段就回一次(打字机)。
-   */
-  onChunk: (acc: string) => void
-}
-
-/**
- * headOf 的入参。
- */
-export type AdvisorHeadIn = {
-  /**
-   * 调用方给的标题;缺席 = 用兜底。
-   */
-  title: string | undefined
-
-  /**
-   * 兜底标题(「AI 顾问」)。
-   */
-  fallback: string
-}
-
-/**
- * leftTextOf 的入参。
- */
-export type AdvisorLeftIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 剩余免费次数;null = 还没拿到。
-   */
-  freeLeft: number | null
-}
-
-/**
- * limitCtaOf 的入参。
- */
-export type AdvisorCtaIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 登录态。
-   */
-  loggedIn: boolean
-}
 
 /**
  * 列名键(外域形状,见文件头):点开弹框的那一格是哪一列。
@@ -1411,7 +1166,6 @@ export type AdvisorHeadBlockIn = {
    */
   group: string
 
-
   /**
    * 大标题。
    */
@@ -1421,11 +1175,6 @@ export type AdvisorHeadBlockIn = {
    * 标题下的界面语译名;空串 = 不出(与英文标题相同也算不出)。
    */
   sub: string
-
-  /**
-   * 剩余免费次数;null = 还没拿到(拿到才出灰注)。
-   */
-  freeLeft: number | null
 
   /**
    * 译名行右端的切换控件(公司组的中文对照开关;2026-09-16 Frank「公司的也对照改一下」);别的组不挂。
@@ -1535,36 +1284,6 @@ export type ActJdIn = {
 }
 
 /**
- * AdvisorAiCard 的 props(移民组的顾问长文卡)。
- */
-export type AdvisorAiCardIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 登录态。
-   */
-  loggedIn: boolean
-
-  /**
-   * 状态档。
-   */
-  status: AdvisorStatus
-
-  /**
-   * 正文(失败态里装的是失败话术)。
-   */
-  text: string
-
-  /**
-   * 重试生成(2026-07-25 用户:解析失败要能重试)。
-   */
-  onRetry: () => void
-}
-
-/**
  * AdvisorGroupBody 的 props(按分组分叉的正文)。
  */
 export type AdvisorGroupBodyIn = {
@@ -1645,34 +1364,9 @@ export type AdvisorModalHookIn = {
  */
 export type AdvisorModalPanel = {
   /**
-   * 顾问长文正文(流式期间是打字机吐到一半的那截)。
-   */
-  text: string
-
-  /**
-   * 状态档。
-   */
-  status: AdvisorStatus
-
-  /**
-   * 剩余免费次数;null = 还没拿到。
-   */
-  freeLeft: number | null
-
-  /**
-   * 这一组要不要渲 AI 长文卡(移民组 且 总开关开着)。
-   */
-  aiOn: boolean
-
-  /**
    * 清单译名开着没有。
    */
   showZh: boolean
-
-  /**
-   * 重试生成。
-   */
-  onRetry: () => void
 
   /**
    * 同公司在榜岗。
@@ -2340,26 +2034,6 @@ export type GapClsIn = {
 }
 
 /**
- * 装字符串的镜像格(每帧要读到最新值,state 在闭包里是旧的)。
- */
-export type TextRef = {
-  /**
-   * 当前值。
-   */
-  current: string
-}
-
-/**
- * 装开关的镜像格。
- */
-export type FlagRef = {
-  /**
-   * 当前值。
-   */
-  current: boolean
-}
-
-/**
  * makeLoadProv 的入参。
  */
 export type LoadProvIn = {
@@ -2477,112 +2151,6 @@ export type LoadNocTransIn = {
    * 状态落格。
    */
   setStatus: (s: TransStatus) => void
-}
-
-/**
- * makeRunLongAdvisor 的入参。
- */
-export type RunLongIn = {
-  /**
-   * 铺的是哪一组(后端按分组取提示词)。
-   */
-  group: string
-
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-
-  /**
-   * 中断信号。
-   */
-  signal: AbortSignal
-
-  /**
-   * 取数失败时写进正文的话术(取词函数会每渲一次换一只新函数,进不了 effect 依赖 ——
-   * 所以收的是已经取好的**词**,不是取词函数)。
-   */
-  unavailText: string
-
-  /**
-   * 掉线时写进正文的话术。
-   */
-  offlineText: string
-
-  /**
-   * 剩余次数落格。
-   */
-  setFreeLeft: (n: number) => void
-
-  /**
-   * 状态落格。
-   */
-  setStatus: (s: AdvisorStatus) => void
-
-  /**
-   * 正文落格(失败态直接写话术,不走打字机)。
-   */
-  setText: (s: string) => void
-
-  /**
-   * 打字机的待吐队列(网络块先进这里,不直接上屏)。
-   */
-  pending: TextRef
-
-  /**
-   * 流读完了的信号(吐完 pending 后打字机自己切 done)。
-   */
-  done: FlagRef
-}
-
-/**
- * tickTypewriter 的入参。
- */
-export type TypewriterIn = {
-  /**
-   * 待吐队列。
-   */
-  pending: TextRef
-
-  /**
-   * 流读完了的信号。
-   */
-  done: FlagRef
-
-  /**
-   * 已吐正文的镜像(完成时和 pending 拼回完整回复摘建议)。
-   */
-  mirror: TextRef
-
-  /**
-   * 正文落格。
-   */
-  setText: (s: string) => void
-
-  /**
-   * 状态落格。
-   */
-  setStatus: (s: AdvisorStatus) => void
-
-  /**
-   * 建议问题落格。
-   */
-  setSug: (s: string) => void
-
-  /**
-   * 雇主名(摘建议时换成指代词,见 extractSug)。
-   */
-  company: string
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
 }
 
 /**
@@ -2724,57 +2292,6 @@ export type CompanyJobsJson = {
    */
   rows?: AdvisorJob[]
 } | null
-
-/**
- * useAdvisorLong 的入参。
- */
-export type AdvisorLongIn = {
-  /**
-   * 铺的是哪一组(AI 长文只归移民组:分步方案。公司弹框撤 AI 段 = #167⑨,
-   * CompanyAiSection 结构化卡是唯一 AI 内容;分类弹框纯官方事实,零生成零额度 #176)。
-   */
-  group: string
-
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * 界面语言。
-   */
-  lang: AdvisorLang
-}
-
-/**
- * useAdvisorLong 交回的面板。
- */
-export type AdvisorLongPanel = {
-  /**
-   * 正文(流式期间是打字机吐到一半的那截)。
-   */
-  text: string
-
-  /**
-   * 状态档。
-   */
-  status: AdvisorStatus
-
-  /**
-   * 剩余免费次数;null = 还没拿到。
-   */
-  freeLeft: number | null
-
-  /**
-   * 这一组要不要渲 AI 长文卡(移民组 且 总开关开着)。
-   */
-  aiOn: boolean
-
-  /**
-   * 重试生成(2026-07-25 用户:解析失败要能重试)。
-   */
-  onRetry: () => void
-}
 
 /**
  * 直判药丸的色档(本域自抄一份三字面量 —— 与 pnp 域的 VerdictPill 同形)。

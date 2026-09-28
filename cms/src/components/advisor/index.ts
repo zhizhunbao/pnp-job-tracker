@@ -21,6 +21,10 @@
  * 一并改指本桶。
  * 对应 lib 域:lib/jobs、lib/pathways。
  *
+ * 2026-09-28 Frank「AI 顾问卡删了吧」:移民组 AI 长文卡(07-25 起总开关一直关着)与 09-14 AI 速读退役留下的内嵌初判段取数一并删;
+ * variables.ts 随之撤 —— 两格(省提名整表 pnpData 当天迁 pnp 桶、初判缓存 jdAdvisor 随初判段删)都走了,本域不再有可变状态。
+ * /api/advisor 与 lib/advisor 未动。
+ *
  * @author Frank
  * @time 2026-08-28 16:26:43
  */

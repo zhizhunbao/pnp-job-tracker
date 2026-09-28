@@ -1136,12 +1136,7 @@ export const siteZh = {
  */
 export const consultZh = {
   'advisor.left': '免费今日剩 {n} 次',
-  'advisor.unavail': 'AI 判断暂时不可用,请稍后再试——上方事实与官方链接不受影响。',
-  'advisor.limit429': '今日免费次数已用完', 'advisor.limitCta': '登录',
-  'advisor.tag': 'AI 顾问',
-  'advisor.loading': '⏳ 努力思考中…',
   'advisor.failed': '生成失败({code})',
-  'advisor.offline': '网络异常,AI 判断暂时不可用——上方事实与官方链接不受影响。',
   'advisor.footAI': '由 AI 生成 · 可能有误,仅供参考',
   'advisor.chatPlaceholder': '基于上方事实追问这个职位…', 'advisor.chatSend': '发送',
   'advisor.sug.title': '这个职位走「雇主 offer → 省提名」最大的坑是什么?', 'advisor.sug.company': '这家公司有雇外国人的历史吗?对求职者靠谱吗?', 'advisor.sug.generic': '这条信号对我拿省提名意味着什么?',

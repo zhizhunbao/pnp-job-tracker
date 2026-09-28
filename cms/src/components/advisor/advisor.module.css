@@ -46,13 +46,6 @@
 }
 
 /*
- * 流式打字机光标。
- */
-.caret {
-  color: #9ca3af;
-}
-
-/*
  * 重试(2026-07-25 用户:有时候 AI 解析会失败,需要有重试按钮)。
  */
 .retry {
@@ -352,43 +345,10 @@
 }
 
 /*
- * 弹框内的一行灰注(在途 / 失败)。
- */
-.modalNote {
-  margin: 0;
-  font-size: 14px;
-  color: #9ca3af;
-}
-
-/*
  * 卡内的那一档灰注小一号(分类/地点的 AI 速读卡)。
  */
 .modalNoteSm {
   font-size: 13px;
-}
-
-/*
- * 弹框内的 AI 正文。
- */
-.aiText {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #374151;
-}
-
-/*
- * 弹框内的重试钮(2026-07-25 用户:有时候 AI 解析会失败,需要有重试按钮)。
- * 加倍写抬权重,理由同 .pill。
- */
-.modalRetry.modalRetry {
-  border: none;
-  background: none;
-  padding: 0;
-  margin-left: 8px;
-  color: #2563eb;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
 }
 
 /*

@@ -1045,12 +1045,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
  */
 export const consultEn: Record<keyof typeof consultZh, string> = {
   'advisor.left': '{n} free uses left today',
-  'advisor.unavail': 'The AI read is temporarily unavailable — the facts and official links above are unaffected. Please try again later.',
-  'advisor.limit429': 'Free uses for today are used up', 'advisor.limitCta': 'Sign in',
-  'advisor.tag': 'AI Advisor',
-  'advisor.loading': '⏳ Thinking hard…',
   'advisor.failed': 'Failed ({code})',
-  'advisor.offline': 'Network issue — the AI read is temporarily unavailable. The facts and official links above are unaffected.',
   'advisor.footAI': 'AI-generated · may be inaccurate, for reference only',
   'advisor.chatPlaceholder': 'Ask about this job, grounded in the facts above…', 'advisor.chatSend': 'Send',
   'advisor.sug.title': 'What are the biggest pitfalls of this job for the employer-offer → PNP route?', 'advisor.sug.company': 'Has this company hired foreign workers before? How reliable is it for applicants?', 'advisor.sug.generic': 'What does this signal mean for my PNP chances?',

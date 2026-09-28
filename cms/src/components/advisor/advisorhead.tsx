@@ -14,13 +14,12 @@
  * 2026-09-23 Frank「这个地方应该是点那个省 就显示那个省」:省提名组的小标带上本岗的省(kickerOf)。
  * 2026-09-28 并壳(Frank「别并存啊」):版式(左块 + 译名行)并进 modal 桶的 ModalHead,这里只剩「小标写什么」。
  * 同日省提名弹框自立:「小标带本岗的省」那一支随它迁进 pnp 桶(pnpKickerOf),这里不再收省码。
+ * 同日 Frank「AI 顾问卡删了吧」:移民组「AI 顾问 + 剩余次数」那一支随 AI 卡删掉,小标只剩分组名。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { IconCompass } from '@/components/icons'
-import { KickerNote, ModalHead } from '@/components/modal'
-import { AI_ADVISOR_ON, GROUP_IMMIGRATION } from './constants'
+import { ModalHead } from '@/components/modal'
 import { kickerOf } from './functions'
 import type { AdvisorHeadBlockIn } from './types'
 
@@ -30,22 +29,9 @@ import type { AdvisorHeadBlockIn } from './types'
  * 2026-09-16 Frank「公司的也对照改一下」:照 ActHead 同形 —— 译名拆成独占一整行的译名行,右端挂切换控件(ctl 槽,
  * 公司组是中文对照开关),按下不起拖动。
  *
- * @param props 取词函数、分组、本岗省码、标题、副标、剩余次数与切换控件。
+ * @param props 取词函数、分组、标题、副标与切换控件。
  * @returns 页眉左块 + 译名行。
  */
-export function AdvisorHead({ t, group, title, sub, freeLeft, ctl }: AdvisorHeadBlockIn) {
-  const withAi = group === GROUP_IMMIGRATION && AI_ADVISOR_ON
-  const kicker = kickerOf({ t, group })
-  return (
-    <ModalHead title={title} sub={sub} ctl={ctl}
-      kicker={(
-        <>
-          {withAi === false && kicker}
-          {withAi && <IconCompass />}
-          {withAi && t('advisor.tag')}
-          {withAi && <KickerNote text={kicker} />}
-          {withAi && freeLeft != null && <KickerNote text={t('advisor.left', { n: freeLeft })} />}
-        </>
-      )} />
-  )
+export function AdvisorHead({ t, group, title, sub, ctl }: AdvisorHeadBlockIn) {
+  return <ModalHead title={title} sub={sub} ctl={ctl} kicker={kickerOf({ t, group })} />
 }

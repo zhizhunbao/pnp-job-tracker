@@ -19,6 +19,7 @@
  * 别的组(公司、分类……)照旧当场出。
  * 2026-09-28 并壳(Frank「别并存啊」):壳换成 modal 桶的 Modal(窗口形);窗口钮走本域 WinActs,Esc 由 Modal 按打开先后排号接。
  * 同日标题下灰字改走全站口径(标题译名,与职位描述弹框同一台 useTitleTrans;09-23「统一成标题译名」那批漏了字段弹框)。
+ * 同日 Frank「AI 顾问卡删了吧」:移民组那张 AI 长文卡(总开关 07-25 起一直关着)连同长文机器删掉。
  * 同日省提名弹框自立(Frank「pnp 弹框自己管自己」):省提名组不再经本框(职位板直开 pnp 桶的 PnpModal);
  * 整表懒取随之迁进 pnp 桶(usePnpData),本框别的组照旧读清单 / 抽选两表,配额 / 门槛两表不再进取数包。
  *
@@ -34,7 +35,6 @@ import { makeT } from '@/lib/i18n'
 import {
   ADV_PANEL_H, ADV_PANEL_W, ADV_PREF, GROUP_IMMIGRATION, NOTICE_ERR, PNP_DATA_GROUPS,
 } from './constants'
-import { AdvisorAiCard } from './advisoraicard'
 import { AdvisorBody } from './advisorbody'
 import { AdvisorHead } from './advisorhead'
 import { companyRefreshOf, fieldPageOf, headSubOf, modalTitleOf, planClbOf, transTitleOf } from './functions'
@@ -85,7 +85,6 @@ export function AdvisorModal({
     <AdvisorHead t={t} group={group}
       title={modalTitleOf({ group, job, title })}
       sub={headSubOf({ group, trans, companyAlias: m.companyAlias })}
-      freeLeft={m.freeLeft}
       ctl={null} />
   )
   return (
@@ -109,9 +108,6 @@ export function AdvisorModal({
           onCompanyTransBusy={m.onTransBusy}
           gen={m.gen}
           f={f} />
-      )}
-      {m.aiOn && (
-        <AdvisorAiCard t={t} loggedIn={plan.loggedIn} status={m.status} text={m.text} onRetry={m.onRetry} />
       )}
     </Modal>
   )

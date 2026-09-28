@@ -8,11 +8,6 @@
  */
 
 /**
- * 顾问初判/速读的流式接口。
- */
-export const URL_API_ADVISOR = '/api/advisor'
-
-/**
  * POST。
  */
 export const METHOD_POST = 'POST'
@@ -28,60 +23,10 @@ export const HDR_CONTENT_TYPE = 'Content-Type'
 export const MIME_JSON = 'application/json'
 
 /**
- * 剩余免费次数的响应头(额度可见化)。
- */
-export const HDR_FREE_LEFT = 'X-Free-Left'
-
-/**
- * 402:免费额度用完 → 升级卡。
- */
-export const HTTP_PAYMENT = 402
-
-/**
- * 429:匿名 IP 池用完 → 打码 + 锁行说人话。
- */
-export const HTTP_TOO_MANY = 429
-
-/**
  * 纯 JD 速读(职位弹框,2026-07-21 Frank「只速读这个 job 的内容即可,
  * 不需要过度解读移民信号」)。
  */
 export const FIELD_JD_READ = 'jdRead'
-
-/**
- * 在途:还没开始出字。
- */
-export const ADV_LOADING = 'loading'
-
-/**
- * 在途:正在出字(尾巴挂打字机光标)。
- */
-export const ADV_STREAMING = 'streaming'
-
-/**
- * 出完了。
- */
-export const ADV_DONE = 'done'
-
-/**
- * 生成失败(2026-07-25 用户:解析失败要能重试)。
- */
-export const ADV_ERROR = 'error'
-
-/**
- * 免费额度用完 → 升级卡。
- */
-export const ADV_UPGRADE = 'upgrade'
-
-/**
- * 防滥用闸挡下 → 打码 + 锁行(#175:429 黄条退役,失去感靠打码传达)。
- */
-export const ADV_LIMITED = 'limited'
-
-/**
- * 缓存键的两段分隔(`档:岗位号`)。
- */
-export const CK_SEP = ':'
 
 /**
  * 空串:没有文本 / 没有标题。
@@ -89,27 +34,9 @@ export const CK_SEP = ':'
 export const TEXT_NONE = ''
 
 /**
- * 流式打字机光标。
- */
-export const CARET_BAR = '▋'
-
-/**
  * 一个空格(图标与文字之间)。
  */
 export const SPACE = ' '
-
-/**
- * 定制样式钮统一走 ghost 变体 + 本域加倍类(样板 account 的 PLAIN_BTN_KIND)。
- */
-export const BTN_GHOST = 'ghost'
-
-/**
- * AI 顾问弹框正文长文的总开关。Frank 走查#15(2026-07-25):AI 顾问(移民弹框
- * 【移民信号/分步走/怎么准备】长文)整体可逆下架 ——「目前看着是废话,没什么实际价值;
- * 以后可能再用,看情况」。false = 不渲卡 + 不发请求(省额度 / 省朋友那台 qwen)+
- * 页眉不挂「AI 顾问」名;翻回 true 即复活(`/api/advisor`、etl 底子未删)。
- */
-export const AI_ADVISOR_ON = false
 
 /**
  * 顾问弹框的尺寸记忆键(记 `{full, w, h}`;位置每次打开居中,避免窗口缩小后跑出屏外)。
@@ -251,28 +178,6 @@ export const TRANS_ERROR = 'error'
  * 翻译还没点过。
  */
 export const TRANS_IDLE = 'idle'
-
-/**
- * 打字机的出字节拍(ms):约每秒 30 帧,肉眼看着是连续吐字。
- */
-export const TYPE_TICK_MS = 33
-
-/**
- * 打字机每帧吐掉积压的几分之一。与积压成正比 —— 整段大文本几秒内追平,不会无限拖尾。
- */
-export const TYPE_RATE_DIV = 12
-
-/**
- * 打字机每帧至少吐几个字(积压很短时也别一个字一个字磨)。
- */
-export const TYPE_MIN_CHARS = 2
-
-/**
- * 建议问题的分隔记号(❓ 协议):模型把「下一步该问什么」写在这个记号之后。
- * ⚠️ 与 components/jobs 的 extractSug 是**同一个协议**,值必须逐字相同 ——
- * 各域自己声明自己的常量(宪法「域之间不互相取常量」),改一处要两处一起改。
- */
-export const SUG_MARK = '❓'
 
 /**
  * 一格三态里的「没有值」占位(值真的缺时显示的破折号)。

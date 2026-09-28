@@ -9,154 +9,19 @@
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
-import { useEffect, useRef, useState } from 'react'
-import { makeT } from '@/lib/i18n'
+import { useEffect, useState } from 'react'
 import { track } from '@/lib/track'
 import {
-  ADV_DONE, ADV_ERROR, ADV_LIMITED, ADV_LOADING, ADV_STREAMING, ADV_UPGRADE, AI_ADVISOR_ON, GROUP_COMPANY,
-  GROUP_IMMIGRATION, LANG_EN, LEVEL_PROVINCE, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD,
-  TRACK_P_FIELD, TRACK_P_KIND, TRANS_IDLE, TYPE_TICK_MS,
+  GROUP_COMPANY, LANG_EN, LEVEL_PROVINCE, TEXT_NONE, TRACK_KIND_MODAL, TRACK_MODAL_HEAD, TRACK_MODAL_JD, TRACK_P_FIELD,
+  TRACK_P_KIND, TRANS_IDLE,
 } from './constants'
 import {
-  advisorKeyOf, makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans, makeLoadProv, makeRunLongAdvisor,
-  streamAdvisor, tickTypewriter,
+  makeLoadCity, makeLoadCompanyJobs, makeLoadJobText, makeLoadNocTrans, makeLoadProv,
 } from './functions'
 import type {
-  ActModalPanel, AdvisorCtaIn, AdvisorHeadIn, AdvisorJob, AdvisorLeftIn, AdvisorLongIn, AdvisorLongPanel,
-  AdvisorModalHookIn, AdvisorModalPanel, AdvisorPanel, AdvisorSectionIn, AdvisorStatus, CityFact, CompanyModalPanel,
-  DeadFlag, JobTextIn, JobTextPanel, LocationDataIn, LocationDataPanel, NocTrans, NocTransIn, NocTransPanel, ProvFact,
-  TransStatus,
+  ActModalPanel, AdvisorJob, AdvisorModalHookIn, AdvisorModalPanel, CityFact, CompanyModalPanel, DeadFlag, JobTextIn,
+  JobTextPanel, LocationDataIn, LocationDataPanel, NocTrans, NocTransIn, NocTransPanel, ProvFact, TransStatus,
 } from './types'
-import { CACHE } from './variables'
-
-/**
- * 内嵌初判段的整台:打开即自动流式生成,同岗会话内缓存(⚠️ 写读键不一致的老行为见
- * variables.ts 的注释),失败可重试(2026-07-25 用户:解析失败要能重试)。
- *
- * @param x 这一岗、界面语言、档、段标题与分层态。
- * @returns 段面板。
- */
-export function useAdvisorSection(x: AdvisorSectionIn): AdvisorPanel {
-  const t = makeT(x.lang)
-  const ck = advisorKeyOf({ field: x.field, id: x.job.id })
-  const [text, setText] = useState(cachedOf(ck))
-  const [status, setStatus] = useState<AdvisorStatus>(initialStatusOf(ck))
-  const [freeLeft, setFreeLeft] = useState<number | null>(null)
-  const [tick, setTick] = useState(0)
-  const job = x.job
-  const lang = x.lang
-  const field = x.field
-  useEffect(function loadAdvisor() {
-    if (CACHE.jdAdvisor.has(ck)) {
-      return
-    }
-    const ctrl = new AbortController()
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 这一发流式请求的开场:清正文、挂 loading,必须与开请求同一拍
-    setText(TEXT_NONE)
-    setStatus(ADV_LOADING)
-    streamAdvisor({ job, lang, field, signal: ctrl.signal, onChunk: setText, onFreeLeft: setFreeLeft })
-      .then(function onDone(got) {
-        setStatus(got.status)
-        if (got.status === ADV_DONE) {
-          setText(got.body)
-        }
-      })
-      .catch(function onFail() {
-        if (ctrl.signal.aborted === false) {
-          setStatus(ADV_ERROR)
-        }
-      })
-    return function stopAdvisor() {
-      ctrl.abort()
-    }
-  }, [ck, field, job, lang, tick])
-  return {
-    t,
-    text,
-    status,
-    head: headOf({ title: x.title, fallback: t('advisor.tag') }),
-    leftText: leftTextOf({ t, freeLeft }),
-    loadingText: t('advisor.loading'),
-    failText: t('advisor.unavail'),
-    retryText: t('ai.retry'),
-    limitMsg: t('advisor.limit429'),
-    limitCta: limitCtaOf({ t, loggedIn: x.plan.loggedIn }),
-    upgrade: status === ADV_UPGRADE,
-    limited: status === ADV_LIMITED,
-    loading: status === ADV_LOADING,
-    failed: status === ADV_ERROR,
-    hasBody: status === ADV_STREAMING || status === ADV_DONE,
-    onRetry: function retry(): void {
-      setTick(tick + 1)
-    },
-  }
-}
-
-/**
- * 缓存里已有的那份正文。
- *
- * @param ck 缓存键。
- * @returns 正文;没有给空串。
- */
-function cachedOf(ck: string): string {
-  const hit = CACHE.jdAdvisor.get(ck)
-  if (hit == null) {
-    return TEXT_NONE
-  }
-  return hit
-}
-
-/**
- * 首帧的状态:缓存里有就直接是「出完了」。
- *
- * @param ck 缓存键。
- * @returns 状态档。
- */
-function initialStatusOf(ck: string): AdvisorStatus {
-  if (CACHE.jdAdvisor.has(ck)) {
-    return ADV_DONE
-  }
-  return ADV_LOADING
-}
-
-/**
- * 段标题:调用方给了就用它(如「AI 速读」),没给用「AI 顾问」。
- *
- * @param x 调用方给的标题与兜底。
- * @returns 段标题。
- */
-function headOf(x: AdvisorHeadIn): string {
-  if (x.title == null || x.title === TEXT_NONE) {
-    return x.fallback
-  }
-  return x.title
-}
-
-/**
- * 剩余次数灰注(拿到才出)。
- *
- * @param x 取词函数与剩余次数。
- * @returns 灰注;还没拿到给空串。
- */
-function leftTextOf(x: AdvisorLeftIn): string {
-  if (x.freeLeft == null) {
-    return TEXT_NONE
-  }
-  return x.t('advisor.left', { n: x.freeLeft })
-}
-
-/**
- * 429 锁行上的引导:匿名才引导去注册(登录态额度更高)。
- *
- * @param x 取词函数与登录态。
- * @returns 引导文案;已登录给空串。
- */
-function limitCtaOf(x: AdvisorCtaIn): string {
-  if (x.loggedIn) {
-    return TEXT_NONE
-  }
-  return x.t('advisor.limitCta')
-}
 
 /**
  * 详情页 JD 正文的取数机器(打开职位弹框即取,换岗重取,拆卸时掐掉在途请求)。
@@ -260,78 +125,6 @@ export function useLocationData(x: LocationDataIn): LocationDataPanel {
 }
 
 /**
- * 顾问长文的机器:流式取数 + 打字机 + 额度可见化 + 重试。
- * 打字机是用户拍板的形态(AI 内容必须流式感,不许整段蹦出来):网络块先进待吐队列,
- * 固定节奏吐字,口径见 functions 的 tickTypewriter。
- * 总开关关着时(走查#15)不发请求 —— 不烧额度、不占朋友那台 qwen、不让用户干等;
- * 状态直接落「出完了」、正文空,调用方那张卡因此不渲,免得出一张空卡孤儿标题。
- * ⚠️ 建议问题(#36:初判结尾那句 → 传给对话框做首个 chip)现在落格但没有消费者,
- * 对话框接上之前先留着这一格,别把摘取那一步一起删了。
- *
- * @param x 分组、这一岗与界面语言。
- * @returns 长文面板。
- */
-export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
-  const t = makeT(x.lang)
-  const aiOn = x.group === GROUP_IMMIGRATION && AI_ADVISOR_ON
-  const [textState, setText] = useState(TEXT_NONE)
-  const [statusState, setStatus] = useState<AdvisorStatus>(ADV_LOADING)
-  const [freeLeft, setFreeLeft] = useState<number | null>(null)
-  const [tick, setTick] = useState(0)
-  const [, setSug] = useState(TEXT_NONE)
-  const pending = useRef(TEXT_NONE)
-  const mirror = useRef(TEXT_NONE)
-  const done = useRef(false)
-  const group = x.group
-  const job = x.job
-  const lang = x.lang
-  const company = x.job.company
-  const unavailText = t('advisor.unavail')
-  const offlineText = t('advisor.offline')
-
-  useEffect(function typewriter() {
-    const id = setInterval(function step(): void {
-      tickTypewriter({ pending, done, mirror, setText, setStatus, setSug, company, lang })
-    }, TYPE_TICK_MS)
-    return function stop(): void {
-      clearInterval(id)
-    }
-  }, [company, lang])
-
-  useEffect(function loadLong() {
-    if (aiOn === false) {
-      return
-    }
-    const ctrl = new AbortController()
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 这一发长文请求的开场:清三格、挂 loading,必须与开请求同一拍
-    setText(TEXT_NONE)
-    setStatus(ADV_LOADING)
-    setSug(TEXT_NONE)
-    pending.current = TEXT_NONE
-    mirror.current = TEXT_NONE
-    done.current = false
-    makeRunLongAdvisor({
-      group, job, lang, signal: ctrl.signal, unavailText, offlineText, setFreeLeft, setStatus, setText, pending, done,
-    })()
-    return function stop(): void {
-      ctrl.abort()
-    }
-  }, [aiOn, group, job, lang, tick, unavailText, offlineText])
-
-  function onRetry(): void {
-    setTick(tick + 1)
-  }
-
-  let text = textState
-  let status = statusState
-  if (aiOn === false) {
-    status = ADV_DONE
-    text = TEXT_NONE
-  }
-  return { text, status, freeLeft, aiOn, onRetry }
-}
-
-/**
  * 顾问弹框的整台:长文机器 + 打开埋点(#129 功能级埋点:四类弹框打开各记一事件,
  * field = 入口格)+ 同公司在榜岗 + 清单译名开关(2026-07-25 Frank「和上面的中文翻译
  * 按钮联动」;Frank 走查:中文对照默认关,点了才显/才翻 —— 原先中文界面一打开就是
@@ -348,7 +141,6 @@ export function useAdvisorLong(x: AdvisorLongIn): AdvisorLongPanel {
  * @returns 弹框整台面板。
  */
 export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
-  const long = useAdvisorLong({ group: x.group, job: x.job, lang: x.lang })
   const showZh = x.lang !== LANG_EN
   const [companyJobsState, setCompanyJobs] = useState<AdvisorJob[]>([])
   const [companyAlias, setCompanyAlias] = useState(TEXT_NONE)
@@ -383,12 +175,7 @@ export function useAdvisorModal(x: AdvisorModalHookIn): AdvisorModalPanel {
     companyJobs = []
   }
   return {
-    text: long.text,
-    status: long.status,
-    freeLeft: long.freeLeft,
-    aiOn: long.aiOn,
     showZh,
-    onRetry: long.onRetry,
     companyJobs,
     companyAlias,
     onCompanyAlias: setCompanyAlias,
