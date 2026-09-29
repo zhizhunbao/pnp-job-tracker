@@ -2595,6 +2595,24 @@ period 写死到月份,谁引用都得带上。"""
 K_MONTH = "month"
 """MB 库存快照的月份。"""
 
+K_EOI_POOL_QUARTERS = "eoiPoolQuarters"
+"""ns-stats.json 里 NS 候选池季末库存清单的键(新到旧,一季一行;2026-09-29 立。域间不互取常量,键名照 pnp 域各自声明)。"""
+
+K_ASSESSMENTS_YTD = "assessmentsYtd"
+"""ns-stats.json 里 NS 本年审批结果累计的键(批准 / 拒签 / 撤回各一行;2026-09-29 立)。"""
+
+K_RESULT = "result"
+"""NS 审批结果行的官方结果词键。"""
+
+NS_RESULT_METRICS = {"Approved": ("nominations_ytd", UNIT_NOMINATIONS),
+                     "Refused": ("refusals_ytd", UNIT_APPLICATIONS),
+                     "Withdrawn": ("withdrawals_ytd", UNIT_APPLICATIONS)}
+"""NS 官方结果词 → (指标名, 单位)(2026-09-29 立)。批准与 MB / SK 的年内已发提名同名 nominations_ytd —— 省提名弹框
+「{年} 年配额」卡的「已发提名」那列直接读;拒签与 MB 同名 refusals_ytd;撤回是新指标 withdrawals_ytd。"""
+
+NS_RESULT_SKIP_TPL = "  · pnp_ops_stats NS 审批结果词「{result}」不认识,不出行(官方加了新结果类别?核对 NS_RESULT_METRICS)"
+"""认不出的结果词留痕(不静默丢)。"""
+
 METRIC_PROC_COMMITMENT = "processing_commitment"
 """MB 年报的处理承诺指标名。"""
 

@@ -208,6 +208,7 @@ from mart.constants import (
     PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL, UNIT_INVITATIONS,
 )
 from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INVITATIONS
+from mart.constants import K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_RESULT, NS_RESULT_METRICS, NS_RESULT_SKIP_TPL
 from mart.constants import (
     OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
@@ -226,6 +227,7 @@ from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
+from mart.scheme import MartNsOpsTest
 from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
 from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业三态 + 带星号码)
     K_CERTIFICATES, K_COND, K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_NAMED, K_PARTIAL, PARTIAL_INSIDE_WORDS,
@@ -3512,6 +3514,28 @@ def fill_year_metric_ops(x: OpsProvIn) -> None:
                 period=str(e.get(K_YEAR) or "")))
 
 
+def fill_ns_ops(x: OpsProvIn) -> None:
+    """NS:逐年已发提名(fill_year_metric_ops,同 ON / PE / BC 一套)+ 省开放数据 7 月新开的两张季表(2026-09-29 立,
+    Frank「按你说的顺序开工」):候选池季末库存一季一行(新到旧;scope 空 = 省提名,AIP 不进)、本年审批结果一种一行
+    (批准 → nominations_ytd,省提名弹框配额卡「已发提名」那列直接读;拒签 / 撤回各一行)。每行挂自己那张表的出处与截至月;
+    认不出的结果词留痕不出行。"""
+    fill_year_metric_ops(x)
+    for e in x.data.get(K_EOI_POOL_QUARTERS, []):
+        add_ops_row(OpsRowIn(
+            ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of=e.get(K_AS_OF, ""))),
+            metric=METRIC_EOI_POOL_TOTAL, scope="", kind="", label=e.get(K_LABEL, ""), raw=e.get(K_VALUE),
+            unit=UNIT_PEOPLE, text="", section=e.get(K_SECTION, ""), period=e.get(K_PERIOD, "")))
+    for e in x.data.get(K_ASSESSMENTS_YTD, []):
+        spec = NS_RESULT_METRICS.get(e.get(K_RESULT, ""))
+        if spec is None:
+            say(NS_RESULT_SKIP_TPL.format(result=e.get(K_RESULT, "")))
+            continue
+        add_ops_row(OpsRowIn(
+            ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of=e.get(K_AS_OF, ""))),
+            metric=spec[0], scope="", kind="", label=e.get(K_LABEL, ""), raw=e.get(K_VALUE),
+            unit=spec[1], text="", section=e.get(K_SECTION, ""), period=e.get(K_PERIOD, "")))
+
+
 def warn_stream_key_clash(rows: list) -> None:
     """撞车检测:**同一个 (province, metric) 内**两个不同的官方通道名压出同一个 key = 归一切过头了
     (跨 metric 同键正是要的效果,不算撞)。撞了就报出来 —— 静默合并两条通道比漏配更毒。"""
@@ -3556,7 +3580,9 @@ def build_pnp_ops_stats(files: list) -> list:
             fill_mb_ops(arg)
         elif prov == PROV_ON:
             fill_on_ops(arg)
-        elif prov == PROV_NS or prov == PROV_PE:
+        elif prov == PROV_NS:
+            fill_ns_ops(arg)
+        elif prov == PROV_PE:
             fill_year_metric_ops(arg)
         if prov == PROV_BC:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
@@ -7176,10 +7202,11 @@ def run_tests() -> None:
     同日 Frank 拍板「看得出才改判」再加一组:MartEmployerSectorTest(雇主行业三态 + 五条改判规则的真数据金标 / 性质 / 变异探针;
     同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。
     2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。
-    2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。"""
+    2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。
+    同日再加一组:MartNsOpsTest(NS 两张季表出行:候选池逐季、审批结果三种、认不出的结果词不出行)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest):
+                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

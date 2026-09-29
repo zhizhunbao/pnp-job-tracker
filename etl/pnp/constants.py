@@ -7461,6 +7461,91 @@ NS_STATS_PRINT_OK_TPL = "  ✓ NS 已发提名 {n} 年({first}–{last}) · {las
 NS_STATS_PRINT_FAIL_TPL = "  ✗ NS 已发提名抓取失败: {name} {detail}(保留旧表)"
 """失败留痕(不拦役)。"""
 
+NS_POOL_URL = "https://data.novascotia.ca/resource/aezx-2h5c.json?$limit=50000"
+"""NS 候选池季末库存数据集的取数地址(2026-09-29 立,Frank「按你说的顺序开工」:省开放数据 2026-07-15 新建、按季更新,
+Socrata 官方目录检索「expression of interest」命中)。逐职业行上千条,超过接口默认的 1000 行上限 → 带 $limit 取全;
+原件先落 crawl 层(逐职业明细留着,日后职位页「同职业在池多少人」用得上),合计在本地做。"""
+
+NS_POOL_PAGE = "https://data.novascotia.ca/d/aezx-2h5c"
+"""同上数据集的页面(行内 url 挂它)。"""
+
+NS_POOL_TITLE = "Inventory of Immigration Expressions of Interest by Program and Occupational Code"
+"""同上数据集的官方标题(section 用它)。官方描述:「candidates whose expressions of interest are open (not approved or
+closed) at the end of a quarter」—— 是季末还没办完的库存(含已被选中、在审的),不是纯粹等抽选的人数。"""
+
+K_NS_EOI_COUNT = "eoi_count"
+"""候选池数据集的人数字段(逐职业一行)。"""
+
+NS_RESULTS_URL = "https://data.novascotia.ca/resource/evyn-w34t.json?$limit=50000"
+"""NS 审批结果数据集的取数地址(同日立、同一次检索命中;按月分行、按季发布:批准 / 拒签 / 撤回 × 项目 × 职业)。"""
+
+NS_RESULTS_PAGE = "https://data.novascotia.ca/d/evyn-w34t"
+"""同上数据集的页面。"""
+
+NS_RESULTS_TITLE = "Finalized Assessments of Immigration Expressions of Interest (EOI) by Occupational Code and Program"
+"""同上数据集的官方标题(section 用它)。NS 的 EOI 就是整份申请(官方原句「These submissions are treated as EOIs and
+entered into an EOI pool」,liveinnovascotia.com/eoi-process),批准即省里接受提名 —— 与配额「省里批准多少个」同口径。"""
+
+K_NS_RESULT = "result"
+"""审批结果数据集的结果字段(Approved / Refused / Withdrawn)。"""
+
+K_NS_RESULT_COUNT = "count"
+"""审批结果数据集的件数字段。"""
+
+K_NS_PROGRAM = "program"
+"""两张季表的项目字段(NSNP = 省提名;AIP 另列,不进省提名的数)。"""
+
+K_NS_QUARTER = "quarter"
+"""两张季表的季度字段(Q1–Q4)。"""
+
+NS_PROGRAM_NSNP = "NSNP"
+"""省提名项目在两张季表里的写法(大写;配额数据集写小写 nsnp,见 NS_ALLOC_PROG_NSNP)。"""
+
+NS_QUARTER_RE = re.compile(r"^Q([1-4])$")
+"""季度字段的写法(Q1–Q4)。"""
+
+NS_QUARTER_TPL = "Q{q}"
+"""季号 → 季度写法。"""
+
+NS_QUARTER_END_MONTH = {1: "03", 2: "06", 3: "09", 4: "12"}
+"""季号 → 季末月(截至月 asOf 用)。"""
+
+NS_SOCRATA_LIMIT = 50000
+"""取数上限(与上面两个地址里的 $limit 同值);取回行数碰到它 = 可能被截断,整份作废不写(宁可保留旧表)。"""
+
+K_EOI_POOL_QUARTERS = "eoiPoolQuarters"
+"""ns-stats.json 里候选池季末库存清单的键(新到旧;每季一行,只算省提名)。"""
+
+K_ASSESSMENTS_YTD = "assessmentsYtd"
+"""ns-stats.json 里本年审批结果累计的键(批准 / 拒签 / 撤回各一行,截至本年最新一季)。"""
+
+K_NS_RESULT_ROW = "result"
+"""ns-stats.json 审批结果行的结果键(官方结果词原样)。"""
+
+NS_POOL_LABEL_TPL = "Open expressions of interest at quarter end, {program}, {year} {quarter}"
+"""候选池一行的 label(数据集没有整句可引,照数据集描述「open … at the end of a quarter」的说法写,不编数)。"""
+
+NS_RESULTS_LABEL_TPL = "{result}, {program}, {year} Q1-{quarter}"
+"""审批结果一行的 label(结果词原样 + 项目 + 统计期)。"""
+
+NS_QUARTER_PERIOD_TPL = "{year}{quarter}"
+"""候选池一季的统计期写法(形同 SK 的「2026Q2」)。"""
+
+NS_YTD_PERIOD_TPL = "{year} Q1-{quarter}"
+"""审批结果累计的统计期写法(形同 MB 的「2026 Jan-Aug」)。"""
+
+NS_AS_OF_TPL = "{year}-{month}"
+"""季末截至月(YYYY-MM)。"""
+
+NS_QUARTERLY_BAD_TPL = "NS 季表异常:{title} 取回 {n} 行(空表、不是清单或碰到取数上限)—— 疑似数据集改版或被截断"
+"""季表取回异常的抛错文案(整份保留旧表)。"""
+
+NS_QUARTERLY_PRINT_OK_TPL = "  ✓ NS 候选池 {period}={pool:,} · 本年批准 {approved:,}(截至 {as_of})"
+"""收尾报数。"""
+
+NS_RESULT_APPROVED = "Approved"
+"""审批结果里「批准」的官方写法(收尾报数取它)。"""
+
 BC_ARCHIVES_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/archives"
 """BC PNP 历年 Statistical Report(PDF,2016 起一年一份)的入口页。"""
 

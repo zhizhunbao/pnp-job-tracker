@@ -1667,6 +1667,57 @@ class YearStatsIn:
     rows: list
     """逐年已发提名行(年降序)。"""
 
+    extra: dict
+    """并进同一份文件的其他清单(键 → 清单;2026-09-29 NS 两张季表立,BC 传空表)。"""
+
+
+@dataclass
+class NsQuarterlyIn:
+    """fetch_ns_quarterly() 入参:NS 一张季表(2026-09-29 立)。"""
+
+    url: str
+    """取数地址(带 $limit)。"""
+
+    title: str
+    """数据集官方标题(报错用)。"""
+
+
+@dataclass
+class NsPoolRowIn:
+    """to_ns_pool_row() 入参:候选池一季的合计。"""
+
+    year: int
+    """年。"""
+
+    q: int
+    """季号(1–4)。"""
+
+    value: int
+    """省提名(NSNP)季末库存合计。"""
+
+    fetched: str
+    """抓取日。"""
+
+
+@dataclass
+class NsYtdRowIn:
+    """to_ns_ytd_row() 入参:本年某一种审批结果的累计。"""
+
+    year: int
+    """年。"""
+
+    q: int
+    """累计到第几季(本年最新一季)。"""
+
+    result: str
+    """官方结果词(Approved / Refused / Withdrawn)。"""
+
+    value: int
+    """省提名(NSNP)累计件数。"""
+
+    fetched: str
+    """抓取日。"""
+
 
 @dataclass
 class BcReportOut:
@@ -2396,3 +2447,38 @@ class EmployerSectorTablesTest(unittest.TestCase):
             codes.append(o["noc"])
         self.assertEqual(codes, ["21231", "21232"])
 
+
+class NsQuarterlyTest(unittest.TestCase):
+    """NS 两张季表合计自测(2026-09-29 立):只算省提名(NSNP,AIP 不进)、年 / 季 / 数认不出的行跳过、候选池新到旧逐季一行、
+    审批结果只取最新一年且累计到该年最新一季、统计期与截至月写法。全程不联网、不读仓内文件。"""
+
+    def test_pool_quarters(self) -> None:
+        """候选池:逐职业行按季合计,新到旧;坏行跳过。"""
+        from pnp import functions as fn
+        rows = [{"program": "NSNP", "year": "2026", "quarter": "Q1", "eoi_count": "5"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q1", "eoi_count": "3"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q2", "eoi_count": "7"},
+                {"program": "AIP", "year": "2026", "quarter": "Q2", "eoi_count": "100"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q5", "eoi_count": "9"},
+                {"program": "NSNP", "year": "x", "quarter": "Q2", "eoi_count": "9"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q2", "eoi_count": "n/a"}]
+        got = fn.ns_pool_quarters(rows)
+        self.assertEqual([(r["period"], r["asOf"], r["value"]) for r in got],
+                         [("2026Q2", "2026-06", 7), ("2026Q1", "2026-03", 8)])
+        self.assertEqual(got[0]["label"], "Open expressions of interest at quarter end, NSNP, 2026 Q2")
+
+    def test_assessments_ytd(self) -> None:
+        """审批结果:只取最新一年,按结果词累计到该年最新一季;AIP 与坏行不进。"""
+        from pnp import functions as fn
+        rows = [{"program": "NSNP", "year": "2025", "quarter": "Q4", "result": "Approved", "count": "50"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q1", "result": "Approved", "count": "10"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q2", "result": "Approved", "count": "20"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q2", "result": "Refused", "count": "4"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q1", "result": "Withdrawn", "count": "3"},
+                {"program": "NSNP", "year": "2026", "quarter": "Q1", "result": "", "count": "3"},
+                {"program": "AIP", "year": "2026", "quarter": "Q2", "result": "Approved", "count": "99"}]
+        got = fn.ns_assessments_ytd(rows)
+        self.assertEqual([(r["result"], r["value"], r["period"], r["asOf"]) for r in got],
+                         [("Approved", 30, "2026 Q1-Q2", "2026-06"), ("Refused", 4, "2026 Q1-Q2", "2026-06"),
+                          ("Withdrawn", 3, "2026 Q1-Q2", "2026-06")])
+        self.assertEqual(fn.ns_assessments_ytd([]), [])

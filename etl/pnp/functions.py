@@ -7923,8 +7923,14 @@ from pnp.constants import (  # noqa: E402 — 段37 常量单列一块(同段35/
     BC_SITE_BASE,
     K_NS_CERTS, NS_STATS_API, NS_STATS_LABEL_TPL, NS_STATS_MIN_YEARS, NS_STATS_NOTE, NS_STATS_PAGE,
     NS_STATS_PRINT_FAIL_TPL, NS_STATS_PRINT_OK_TPL, NS_STATS_TITLE, OUT_BC_NOMINATIONS, OUT_NS_STATS,
+    K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_NS_EOI_COUNT, K_NS_PROGRAM, K_NS_QUARTER, K_NS_RESULT,
+    K_NS_RESULT_COUNT, K_NS_RESULT_ROW, NS_AS_OF_TPL, NS_POOL_LABEL_TPL, NS_POOL_PAGE, NS_POOL_TITLE, NS_POOL_URL,
+    NS_PROGRAM_NSNP, NS_QUARTER_END_MONTH, NS_QUARTER_PERIOD_TPL, NS_QUARTER_RE, NS_QUARTER_TPL, NS_QUARTERLY_BAD_TPL,
+    NS_QUARTERLY_PRINT_OK_TPL, NS_RESULT_APPROVED, NS_RESULTS_LABEL_TPL, NS_RESULTS_PAGE, NS_RESULTS_TITLE,
+    NS_RESULTS_URL, NS_SOCRATA_LIMIT, NS_YTD_PERIOD_TPL,
 )
 from pnp.scheme import BcReportOut, BcYearRowsIn, YearRowIn, YearStatsIn  # noqa: E402 — 同上
+from pnp.scheme import NsPoolRowIn, NsQuarterlyIn, NsYtdRowIn  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
 
 
 def to_year_row(x: YearRowIn) -> dict:
@@ -7934,16 +7940,19 @@ def to_year_row(x: YearRowIn) -> dict:
 
 
 def write_year_stats(x: YearStatsIn) -> None:
-    """一省运营统计文件(形同 on-stats.json;processing / allocation 留空 —— 配额另有人工核对表,不重复)。"""
+    """一省运营统计文件(形同 on-stats.json;processing / allocation 留空 —— 配额另有人工核对表,不重复)。
+    2026-09-29 起 extra 里的清单并进同一份文件(NS 两张季表;BC 传空表)。"""
     x.path.parent.mkdir(parents=True, exist_ok=True)
-    paths.write_json(paths.WriteJsonIn(path=x.path, payload={
+    payload = {
         K_PROVINCE: x.prov, K_PROGRAM: PROGRAM_PNP,
         K_SOURCE: x.source, K_URL: x.url, K_NOTE: x.note,
         K_AS_OF_LOWER: "", K_FETCHED: today_iso(),
         K_PROCESSING: [],
         K_ALLOCATION: [],
         K_NOMINATIONS_ISSUED: x.rows,
-    }, indent=INDENT_2))
+    }
+    payload.update(x.extra)
+    paths.write_json(paths.WriteJsonIn(path=x.path, payload=payload, indent=INDENT_2))
     say(PRINT_DONE_PATH_TPL.format(path=x.path))
 
 
@@ -7963,7 +7972,12 @@ def ns_issued_rows(rows: list) -> list:
 
 
 def scrape_ns_stats() -> None:
-    """NS 已发提名数入口:Socrata 直取 → raw/pnp/ns-stats.json。序列异常 / 网络错 → 保留旧表不拦役。"""
+    """NS 已发提名数入口:Socrata 直取 → raw/pnp/ns-stats.json。序列异常 / 网络错 → 保留旧表不拦役。
+
+    2026-09-29 加省开放数据 7 月新开的两张季表(Frank「按你说的顺序开工」):候选池季末库存(eoiPoolQuarters)与本年
+    审批结果累计(assessmentsYtd),原件先落 crawl 层再合计。三份一起取、一起写 —— 任一份失败整份保留旧表,
+    不拿缺一块的新表盖旧表。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_NS_STATS))
     try:
         r = httpx.get(NS_STATS_API, timeout=NS_ALLOC_TIMEOUT_S, headers={HDR_UA: NS_ALLOC_UA})
@@ -7971,13 +7985,109 @@ def scrape_ns_stats() -> None:
         rows = ns_issued_rows(r.json())
         if len(rows) < NS_STATS_MIN_YEARS:
             raise RuntimeError(NS_ALLOC_BAD_TPL.format(n=len(rows), latest=NS_ALLOC_NO_YEAR))
+        pool = ns_pool_quarters(fetch_ns_quarterly(NsQuarterlyIn(url=NS_POOL_URL, title=NS_POOL_TITLE)))
+        ytd = ns_assessments_ytd(fetch_ns_quarterly(NsQuarterlyIn(url=NS_RESULTS_URL, title=NS_RESULTS_TITLE)))
+        if len(pool) == 0 or len(ytd) == 0:
+            raise RuntimeError(NS_QUARTERLY_BAD_TPL.format(title=NS_POOL_TITLE, n=len(pool) + len(ytd)))
     except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_ns_allocations
         say(NS_STATS_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
         return
     write_year_stats(YearStatsIn(path=OUT_NS_STATS, prov=PROV_NS, source=NS_STATS_TITLE,
-                                 url=NS_STATS_PAGE, note=NS_STATS_NOTE, rows=rows))
+                                 url=NS_STATS_PAGE, note=NS_STATS_NOTE, rows=rows,
+                                 extra={K_EOI_POOL_QUARTERS: pool, K_ASSESSMENTS_YTD: ytd}))
     say(NS_STATS_PRINT_OK_TPL.format(n=len(rows), first=rows[-1][K_YEAR], last=rows[0][K_YEAR],
                                      value=rows[0][K_VALUE]))
+    approved = 0
+    for r2 in ytd:
+        if r2[K_NS_RESULT_ROW] == NS_RESULT_APPROVED:
+            approved = r2[K_VALUE]
+    say(NS_QUARTERLY_PRINT_OK_TPL.format(period=pool[0][K_PERIOD], pool=pool[0][K_VALUE], approved=approved,
+                                         as_of=ytd[0][K_AS_OF_LOWER]))
+
+
+def fetch_ns_quarterly(x: NsQuarterlyIn) -> list:
+    """NS 一张季表 → 全部逐职业行(走 fetch_bytes:原件先落 crawl 层再解析;2026-09-29)。
+    取回的不是清单、是空表、或行数碰到取数上限(可能被截断)→ 抛错,调用方整份保留旧表。"""
+    got = json.loads(fetch_bytes(FetchHtmlIn(url=x.url, timeout_s=NS_ALLOC_TIMEOUT_S)))
+    n = 0
+    if isinstance(got, list):
+        n = len(got)
+    if n == 0 or n >= NS_SOCRATA_LIMIT:
+        raise RuntimeError(NS_QUARTERLY_BAD_TPL.format(title=x.title, n=n))
+    return got
+
+
+def ns_pool_quarters(rows: list) -> list:
+    """候选池逐职业行 → 省提名(NSNP)逐季合计行,新到旧;项目不是 NSNP、年 / 季 / 人数认不出的行跳过(2026-09-29)。"""
+    sums: dict = {}
+    for row in rows:
+        key = ns_quarter_key_of(row)
+        n = str(row.get(K_NS_EOI_COUNT, "")).strip()
+        if key is None or row.get(K_NS_PROGRAM) != NS_PROGRAM_NSNP or n.isdigit() is False:
+            continue
+        sums[key] = sums.get(key, 0) + int(n)
+    today = today_iso()
+    out: list = []
+    for year, q in sorted(sums, reverse=True):
+        out.append(to_ns_pool_row(NsPoolRowIn(year=year, q=q, value=sums[(year, q)], fetched=today)))
+    return out
+
+
+def ns_quarter_key_of(row: dict) -> tuple | None:
+    """季表一行的(年, 季号);年不是四位数字或季度不是 Q1–Q4 → None(2026-09-29)。"""
+    year = str(row.get(K_ALLOC_YEAR, "")).strip()
+    m = NS_QUARTER_RE.match(str(row.get(K_NS_QUARTER, "")).strip())
+    if year.isdigit() is False or m is None:
+        return None
+    return (int(year), int(m.group(1)))
+
+
+def to_ns_pool_row(x: NsPoolRowIn) -> dict:
+    """候选池一季的行(形同逐年行,多统计期 period 与截至月 asOf 两格;mart 的 fill_ns_ops 读)。"""
+    quarter = NS_QUARTER_TPL.format(q=x.q)
+    return {K_YEAR: x.year, K_PERIOD: NS_QUARTER_PERIOD_TPL.format(year=x.year, quarter=quarter),
+            K_AS_OF_LOWER: NS_AS_OF_TPL.format(year=x.year, month=NS_QUARTER_END_MONTH[x.q]),
+            K_LABEL: NS_POOL_LABEL_TPL.format(program=NS_PROGRAM_NSNP, year=x.year, quarter=quarter),
+            K_VALUE: x.value, K_SECTION: NS_POOL_TITLE, K_URL: NS_POOL_PAGE, K_FETCHED: x.fetched}
+
+
+def ns_assessments_ytd(rows: list) -> list:
+    """审批结果逐职业逐月行 → 最新一年省提名(NSNP)的年内累计,一种结果一行、按结果词排序,累计到该年最新一季
+    (2026-09-29);项目不是 NSNP、年 / 季 / 件数 / 结果词认不出的行跳过,没有可用行给空清单。"""
+    good: list = []
+    for row in rows:
+        key = ns_quarter_key_of(row)
+        n = str(row.get(K_NS_RESULT_COUNT, "")).strip()
+        result = str(row.get(K_NS_RESULT, "")).strip()
+        if key is None or row.get(K_NS_PROGRAM) != NS_PROGRAM_NSNP or n.isdigit() is False or result == "":
+            continue
+        good.append((key, result, int(n)))
+    if len(good) == 0:
+        return []
+    year = 0
+    for g in good:
+        year = max(year, g[0][0])
+    sums: dict = {}
+    q = 0
+    for key, result, n in good:
+        if key[0] == year:
+            sums[result] = sums.get(result, 0) + n
+            q = max(q, key[1])
+    today = today_iso()
+    out: list = []
+    for result in sorted(sums):
+        out.append(to_ns_ytd_row(NsYtdRowIn(year=year, q=q, result=result, value=sums[result], fetched=today)))
+    return out
+
+
+def to_ns_ytd_row(x: NsYtdRowIn) -> dict:
+    """本年某一种审批结果累计的行(统计期「2026 Q1-Q2」、截至月取最新一季的季末月;mart 的 fill_ns_ops 读)。"""
+    quarter = NS_QUARTER_TPL.format(q=x.q)
+    return {K_YEAR: x.year, K_PERIOD: NS_YTD_PERIOD_TPL.format(year=x.year, quarter=quarter),
+            K_AS_OF_LOWER: NS_AS_OF_TPL.format(year=x.year, month=NS_QUARTER_END_MONTH[x.q]),
+            K_NS_RESULT_ROW: x.result,
+            K_LABEL: NS_RESULTS_LABEL_TPL.format(result=x.result, program=NS_PROGRAM_NSNP, year=x.year, quarter=quarter),
+            K_VALUE: x.value, K_SECTION: NS_RESULTS_TITLE, K_URL: NS_RESULTS_PAGE, K_FETCHED: x.fetched}
 
 
 def bc_reports_of(html: str) -> list:
@@ -8060,7 +8170,7 @@ def scrape_bc_nominations() -> None:
         return
     latest = reports[-1]
     write_year_stats(YearStatsIn(path=OUT_BC_NOMINATIONS, prov=PROV_BC, source=BC_NOM_TABLE_TITLE,
-                                 url=latest.url, note=BC_NOM_NOTE, rows=rows))
+                                 url=latest.url, note=BC_NOM_NOTE, rows=rows, extra={}))
     pairs: list = []
     for r in rows:
         pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
@@ -8329,6 +8439,7 @@ from pnp.constants import TEST_VERBOSITY  # noqa: E402 — 段40 常量单列一
 from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest  # noqa: E402 — 同上
 from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
 from pnp.scheme import EmployerSectorTablesTest  # noqa: E402 — 同上(2026-09-27 Frank 拍板「看得出才改判」)
+from pnp.scheme import NsQuarterlyTest  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
 
 
 def run_tests() -> None:
@@ -8339,7 +8450,8 @@ def run_tests() -> None:
     同日九省体检修复批再加三组:MbDrawTotalTest(MB 缺 LAA 行认整期总数句)、DrawMergeTest(并回历史:本轮行彼此只去
     逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。
     同日 Frank 拍板「看得出才改判」再加一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表;SkAgriStarTest 随之改为
-    「带星号码照收并标行业键」)。"""
+    「带星号码照收并标行业键」)。
+    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8348,5 +8460,6 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawMergeTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(EmployerSectorTablesTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NsQuarterlyTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

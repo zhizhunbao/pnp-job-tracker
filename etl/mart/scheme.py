@@ -4697,3 +4697,36 @@ class MartPendingTest(unittest.TestCase):
             fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}, {"ext": "b"}]))
         out = fn.held_split_of(HeldSplitIn(jobs=jobs, pending=[{"ext": "a"}]))
         self.assertEqual(len(out.kept), 3)
+
+
+class MartNsOpsTest(unittest.TestCase):
+    """NS 两张季表出行自测(2026-09-29 立):候选池逐季一行(期间、截至月、出处照行内)、批准 → nominations_ytd、拒签 →
+    refusals_ytd、撤回 → withdrawals_ytd、认不出的结果词不出行、逐年已发提名照旧出。数据在用例里现造,不读仓内文件。"""
+
+    def test_fill_ns_ops(self) -> None:
+        """一份现造的 ns-stats.json 走一遍 fill_ns_ops。"""
+        from mart import functions as fn
+        pool_url = "https://data.novascotia.ca/d/aezx-2h5c"
+        res_url = "https://data.novascotia.ca/d/evyn-w34t"
+        d = {"province": "NS", "asOf": "", "url": "https://data.novascotia.ca/x", "fetched": "2026-09-29",
+             "nominationsIssued": [{"year": 2025, "label": "Nomination Certificates Issued, 2025", "value": 3368,
+                                    "unit": "nominations", "section": "S", "url": "u", "fetched": "f"}],
+             "eoiPoolQuarters": [
+                 {"year": 2026, "period": "2026Q2", "asOf": "2026-06", "label": "L2", "value": 7942, "section": "P",
+                  "url": pool_url, "fetched": "2026-09-29"},
+                 {"year": 2026, "period": "2026Q1", "asOf": "2026-03", "label": "L1", "value": 7937, "section": "P",
+                  "url": pool_url, "fetched": "2026-09-29"}],
+             "assessmentsYtd": [
+                 {"year": 2026, "period": "2026 Q1-Q2", "asOf": "2026-06", "result": r, "label": r, "value": v,
+                  "section": "R", "url": res_url, "fetched": "2026-09-29"}
+                 for r, v in (("Approved", 819), ("Refused", 341), ("Withdrawn", 475), ("Pending", 1))]}
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_ns_ops(OpsProvIn(ctx=ctx, base=fn.to_ops_base(d), data=d))
+        got = [(r["metric"], r["period"], r["asOf"], r["value"], r["url"]) for r in ctx.rows]
+        self.assertEqual(got, [
+            ("nominations_issued", "2025", "", 3368, "u"),
+            ("eoi_pool_total", "2026Q2", "2026-06", 7942, pool_url),
+            ("eoi_pool_total", "2026Q1", "2026-03", 7937, pool_url),
+            ("nominations_ytd", "2026 Q1-Q2", "2026-06", 819, res_url),
+            ("refusals_ytd", "2026 Q1-Q2", "2026-06", 341, res_url),
+            ("withdrawals_ytd", "2026 Q1-Q2", "2026-06", 475, res_url)])
