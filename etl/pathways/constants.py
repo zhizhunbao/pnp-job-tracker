@@ -346,7 +346,9 @@ PW_SK_EMPLOYMENT_OFFER = {
     "officialName": "International Skilled Worker: Employment Offer",
     "boardLabel": None, "isDefault": True,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+                   "SINP International Skilled Worker: Employment Offer",
+                   "SINP International Skilled Worker (with an employment offer)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -357,7 +359,10 @@ PW_SK_EMPLOYMENT_OFFER = {
     "checked": "2026-09-28",
 }
 """萨省默认通道:持萨省雇主 offer 的高技能岗(排除式,不在 Job Offer 不合格清单上即可)。
-萨省这条不经 EOI 抽选(2026-09-27 bb38b884「持 offer 直接申请、不经 EOI」),没有抽选组;门槛卡没接。"""
+萨省这条不经 EOI 抽选(2026-09-27 bb38b884「持 offer 直接申请、不经 EOI」),没有抽选组;门槛卡没接。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条(pnp sk-req 的流名)—— 与 OID / EE 共用的那条(语言 CLB 4、
+近 10 年内 12 个月经验、打分表 ≥ 60 分)、Employment Offer 自己那条(执照条款)、持 offer 直接申请那条(不经 EOI 抽选,门槛卡暂不读)。
+走不了省提名而有原因的萨省岗(兼职、合同工……)也按这条出门槛卡(cms gateChannelOf)。"""
 
 PW_SK_HEALTH_TALENT = {
     "key": "sk-health-talent", "province": "SK", "program": "PNP",
@@ -365,7 +370,8 @@ PW_SK_HEALTH_TALENT = {
     "officialName": "Health Talent Pathway",
     "boardLabel": "SK 医疗", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP Health Talent Pathway — Non-Express Entry",
+                   "SINP International Skilled Worker (with an employment offer)"],
     "quotaScope": None,
     "occLabels": ["SK 医疗"],
     "status": "open",
@@ -374,7 +380,10 @@ PW_SK_HEALTH_TALENT = {
     "quote": "Health Talent Pathway: For physicians, nurses and other health workers.",
     "checked": "2026-09-28",
 }
-"""萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。"""
+"""萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
+在担保雇主处 6 个月的替代路径记 experienceAlt)+ 持 offer 直接申请那条。只登非 EE 版,照 AB 医疗专线的先例:EE 版要联邦 EE 档案、
+CLB 7,登进来门槛卡会把 EE 档案写成必备。"""
 
 PW_SK_TECH_TALENT = {
     "key": "sk-tech-talent", "province": "SK", "program": "PNP",
@@ -382,7 +391,8 @@ PW_SK_TECH_TALENT = {
     "officialName": "Innovation and Tech Talent Pathway",
     "boardLabel": "SK 科技", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP Innovation and Tech Talent Pathway — Non-Express Entry",
+                   "SINP International Skilled Worker (with an employment offer)"],
     "quotaScope": None,
     "occLabels": ["SK 科技"],
     "status": "open",
@@ -391,7 +401,9 @@ PW_SK_TECH_TALENT = {
     "quote": "Innovation and Tech Talent Pathway: For innovation and tech sector workers in 32 high-skilled occupations.",
     "checked": "2026-09-28",
 }
-"""萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。"""
+"""萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
+在担保雇主处 6 个月的替代路径记 experienceAlt)+ 持 offer 直接申请那条。只登非 EE 版(理由同医疗那条)。"""
 
 PW_SK_AGRICULTURE_TALENT = {
     "key": "sk-agriculture-talent", "province": "SK", "program": "PNP",
@@ -399,7 +411,8 @@ PW_SK_AGRICULTURE_TALENT = {
     "officialName": "Agriculture Talent Pathway",
     "boardLabel": "SK 农业", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP Agriculture Talent Pathway",
+                   "SINP International Skilled Worker (with an employment offer)"],
     "quotaScope": None,
     "occLabels": ["SK 农业"],
     "status": "open",
@@ -409,7 +422,9 @@ PW_SK_AGRICULTURE_TALENT = {
               "beverage processing occupations."),
     "checked": "2026-09-28",
 }
-"""萨省农业人才通道(清单 sk-agri.json;带星号的码要看得出雇主在农业食品行业才挂,2026-09-27「看得出才改判」)。"""
+"""萨省农业人才通道(清单 sk-agri.json;带星号的码要看得出雇主在农业食品行业才挂,2026-09-27「看得出才改判」)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道那条(语言 CLB 4、近 3 年内 12 个月经验;在担保雇主处
+6 个月的替代路径记 experienceAlt;资格清单没有执照条款)+ 持 offer 直接申请那条。"""
 
 PW_SK_EXISTING_WORK_PERMIT = {
     "key": "sk-existing-work-permit", "province": "SK", "program": "PNP",
@@ -429,7 +444,14 @@ PW_SK_EXISTING_WORK_PERMIT = {
 }
 """萨省现有工签通道:不靠清单,是 mart 的规则判(具名清单都没命中、可提名的 TEER 4-5 与卡车司机岗给它;2026-09-24 九省通道审计,
 Frank 批)。岗位通道名写在 mart 的 SK_EWP_LABEL,不在任何 raw/pnp 清单里 —— 自校靠 RULE_BOARD_LABELS 认它。
-officialName 照抄通道页标题(assess 页写作「Skilled-Worker with Existing Work Permit」,见 quote)。"""
+officialName 照抄通道页标题(assess 页写作「Skilled-Worker with Existing Work Permit」,见 quote)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):同批先挂过本通道自己那条门槛流(在担保雇主处全职满 6 个月、TEER 4 / 5 的
+CLB 4、执照),同日 lead 决定这批先不接,门槛流撤回、这格恢复为空(不出门槛卡)。官方原句(applicants-with-existing-work-permit
+页)「Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the
+employer that has supported you with the Employer Position Assessment, with a valid work permit.」—— cms 的门槛量尺与 TEER
+粗筛按全省读门槛行、不分通道,这几行入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成仅受理 4-5;
+待量尺与引擎按通道读行之后再接(pnp 的 OUT_SK_REQ 注同记)。持 offer 直接申请那条流本来就不挂:那句原句说的是
+International Skilled Worker 类,本通道属 Saskatchewan Experience 类。"""
 
 PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "key": "mb-skilled-worker-in-manitoba", "province": "MB", "program": "PNP",

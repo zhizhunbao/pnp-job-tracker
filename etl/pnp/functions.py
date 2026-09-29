@@ -363,6 +363,12 @@ from pnp.constants import (  # 2026-09-27 萨省「持 offer 直接申请、不�
     FACTOR_EOI_DRAW, SKR_DIRECT_LABEL, SKR_DIRECT_RE, SKR_DIRECT_STREAM, SKR_DIRECT_URL, SKR_PROBLEM_DIRECT,
     SKR_SECTION_DIRECT,
 )
+from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
+    K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
+    SKR_EO_STREAM, SKR_FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
+    SKR_PROBLEM_TALENT_ALT_TPL, SKR_PROBLEM_TALENT_CUT_TPL, SKR_PROBLEM_TALENT_EXP_TPL, SKR_SECTION_EO,
+    SKR_SECTION_POINTS, SKR_TALENTS, SKR_UNIT_POINTS,
+)
 from pnp.constants import (  # 2026-09-27 九省体检修复批新增(MB 整期总数句 / SK 农业带星号码)
     K_SECTOR_QUOTE, MB_TOTAL_RE, SK_PRINT_SECTOR_FAIL_TPL, SK_SECTOR_STAR,
 )
@@ -4340,7 +4346,9 @@ def sk_language_reqs(x: SkPagesIn) -> ReqsOut:
 
 
 def sk_experience_reqs(x: SkPagesIn) -> ReqsOut:
-    """经验:两页都是「近 10 年内 1 年本职业全职经验」。"""
+    """经验:两页都是「近 10 年内 1 年本职业全职经验」。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):近 10 年这个窗口落进 basis(windowYears=10,两页核对过同数),
+    门槛卡写「12 个月全职经验(近 10 年内)」;判定引擎只认 employerTenure 一个口径标记,这格不改判定。"""
     rows: list = []
     problems: list = []
     e = SKR_EXP_EO_RE.search(x.eo)
@@ -4355,7 +4363,8 @@ def sk_experience_reqs(x: SkPagesIn) -> ReqsOut:
     else:
         yrs = WORD_N[e.group(1).lower()]
         rows.append(to_sk_req(ReqIn(factor=FACTOR_EXPERIENCE, value=yrs * MBR_MONTHS_PER_YEAR,
-                                    unit=UNIT_MONTHS, section=SKR_SECTION_EXP,
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_WINDOW_TPL.format(n=e.group(2)),
+                                    section=SKR_SECTION_EXP,
                                     label=SKR_EXP_LABEL_TPL.format(word=e.group(1).title(),
                                                                    hours=o.group(2),
                                                                    window=e.group(2)))))
@@ -4397,10 +4406,106 @@ def sk_direct_reqs(txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def sk_points_reqs(x: SkPagesIn) -> ReqsOut:
+    """打分表最低分(pointsMin):EO / OID 两页都写 60 分,对不上就是读错了(同语言、经验两行的交叉核对,落共用流)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):省提名弹框「本岗通道的门槛」卡的「积分」行读它。
+
+    @param x EO / OID 两页正文。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    a = SKR_POINTS_RE.search(x.eo)
+    b = SKR_POINTS_RE.search(x.oid)
+    if not a or not b:
+        problems.append(SKR_PROBLEM_POINTS_TPL.format(eo=mark_of(a), oid=mark_of(b)))
+    elif a.group(1) != b.group(1):
+        problems.append(SKR_PROBLEM_POINTS_DIFF_TPL.format(eo=a.group(1), oid=b.group(1)))
+    else:
+        rows.append(to_sk_req(ReqIn(factor=SKR_FACTOR_POINTS_MIN, value=int(a.group(1)), unit=SKR_UNIT_POINTS,
+                                    section=SKR_SECTION_POINTS, label=fold_ws(a.group(0)).strip())))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def sk_eo_reqs(eo_txt: str) -> ReqsOut:
+    """Employment Offer 自己那条流(SKR_EO_STREAM)的门槛:执照条款一行(按规则清单取原句,rule_rows)。
+    与 OID / EE 共用的语言、经验、打分表三行在共用流 SKR_STREAM。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)。
+
+    @param eo_txt Employment Offer 页正文。
+    @returns 行与自校问题。
+    """
+    return rule_rows(RuleRowsIn(to_row=to_sk_req, txt=eo_txt, stream=SKR_EO_STREAM, url=SKR_EO_URL,
+                                section=SKR_SECTION_EO, rules=SKR_EO_RULES))
+
+
+def sk_talent_reqs(spec: dict) -> ReqsOut:
+    """一条 Talent Pathway(医疗 / 科技 / 农业,配置见 SKR_TALENTS)的门槛,落这条通道自己的流:
+    工作经验两条 —— 主档「近 N 年内本职业满 1 年」记 experience(basis=windowYears=N);官方写「或」的在担保雇主处全职
+    满 6 个月记 experienceAlt(basis=employerTenure:判定引擎不读 experienceAlt,替代路径混进 experience 会被逐条当必过门槛);
+    语言、执照按规则清单取原句(rule_rows)。读 crawl 缓存优先,没有才现抓。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)。
+
+    @param spec SKR_TALENTS 的一条。
+    @returns 行与自校问题。
+    """
+    txt = sk_talent_text(spec)
+    if txt is None:
+        return ReqsOut(rows=[], problems=[SKR_PROBLEM_TALENT_CUT_TPL.format(name=spec[K_NAME])])
+    rows: list = []
+    problems: list = []
+    exp = spec[K_EXP_RE].search(txt)
+    years = None
+    window = None
+    if exp:
+        years = word_or_digit(exp.group(1))
+        window = word_or_digit(exp.group(2))
+    if exp and years is not None and window is not None:
+        rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE, value=years * MBR_MONTHS_PER_YEAR,
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_WINDOW_TPL.format(n=window),
+                                    section=spec[K_SECTION], label=fold_ws(exp.group(0)).strip(), url=spec[K_URL])))
+    else:
+        problems.append(SKR_PROBLEM_TALENT_EXP_TPL.format(name=spec[K_NAME]))
+    alt = spec[K_ALT_RE].search(txt)
+    months = None
+    if alt:
+        months = word_or_digit(alt.group(1))
+    if alt and months is not None:
+        rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE_ALT, value=months,
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_EMPLOYER_TENURE, section=spec[K_SECTION],
+                                    label=fold_ws(alt.group(0)).strip(), url=spec[K_URL])))
+    else:
+        problems.append(SKR_PROBLEM_TALENT_ALT_TPL.format(name=spec[K_NAME]))
+    part = rule_rows(RuleRowsIn(to_row=to_sk_req, txt=txt, stream=spec[K_STREAM], url=spec[K_URL],
+                                section=spec[K_SECTION], rules=spec[K_TALENT_RULES]))
+    return ReqsOut(rows=rows + part.rows, problems=problems + part.problems)
+
+
+def sk_talent_text(spec: dict) -> str | None:
+    """Talent Pathway 页正文(读 crawl 缓存优先,没有才现抓;压成一行)。带 EE 分界标题的页(医疗、科技两页上半非 EE 资格、
+    下半 EE 资格)只留标题之前的非 EE 那一半 —— 两半的执照、在担保雇主处 6 个月等句子几乎同字,不切会把 EE 那半记进非 EE 流。
+
+    @param spec SKR_TALENTS 的一条。
+    @returns 正文;该切却找不到分界标题(页面改版)给 None,调用方报自校问题。
+    """
+    txt = fold_ws(page_text(PageTextIn(url=spec[K_URL], timeout_s=SKR_TIMEOUT_S, drop_junk=True, main_only=True,
+                                       cache_first=True)))
+    cut = spec[K_EE_CUT]
+    if cut is None:
+        return txt
+    at = txt.find(cut)
+    if at < 0:
+        return None
+    return txt[:at]
+
+
 def build_sk_req() -> None:
     """SK 门槛入口:EO / OID 两页交叉核对 + 雇主注册闸门页。
     2026-09-27 末尾加一页:Connecting Family Members 页的「持 offer 直接申请、不经 EOI 抽选」原句(读 crawl 缓存优先,
-    同 ON 三条 EJO 流关闭通告;原句没匹配到同样按自校失败收口)。新行排在最后,既有三行的 seq 不动。"""
+    同 ON 三条 EJO 流关闭通告;原句没匹配到同样按自校失败收口)。新行排在最后,既有三行的 seq 不动。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):再往后接打分表最低分(两页核对)、EO 执照、三条 Talent Pathway
+    (sk_talent_reqs 逐条)三段,既有四行的 seq 照旧不动;任一段没解析到同样按自校失败收口。
+    同日 lead 决定现有工签通道这批先不接:原先的第四段(在担保雇主处 6 个月、TEER 4 / 5 的 CLB 4、执照)连抽取函数一并撤掉
+    —— 门槛量尺与 TEER 粗筛按全省读行、不分通道,入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成
+    仅受理 4-5;官方原句与待接条件记在 OUT_SK_REQ 注。"""
     say(PRINT_OUT_TPL.format(path=OUT_SK_REQ))
     pages = SkPagesIn(eo=page_text(PageTextIn(url=SKR_EO_URL, timeout_s=SKR_TIMEOUT_S,
                                               drop_junk=False, main_only=True)),
@@ -4420,6 +4525,13 @@ def build_sk_req() -> None:
                                                          drop_junk=True, main_only=True, cache_first=True))))
     reqs += direct.rows
     problems += direct.problems
+    for part in (sk_points_reqs(pages), sk_eo_reqs(pages.eo)):
+        reqs += part.rows
+        problems += part.problems
+    for spec in SKR_TALENTS:
+        talent = sk_talent_reqs(spec)
+        reqs += talent.rows
+        problems += talent.problems
     if problems:
         fail_zh(problems)
     OUT_SK_REQ.parent.mkdir(parents=True, exist_ok=True)
