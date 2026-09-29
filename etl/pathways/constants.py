@@ -184,7 +184,7 @@ PW_BC_SKILLED_WORKER = {
     "officialName": "Skilled Worker stream",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["Innovate: High Economic Impact"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -198,7 +198,10 @@ PW_BC_SKILLED_WORKER = {
 (GEN_DRAW_STREAM 原注,2026-09-24 第三批 Frank「能都改完吗」)。官方原句(about-the-bc-provincial-nominee-program 页):
 「The BC PNP issues High Economic Impact invitations to apply to attract top talent across all sectors, including experienced
 entrepreneurs.」这一组不是本通道自己的名字(是 Innovate 类别的轮),所以抽选卡给它写通道名灰字、三语都出。
-门槛卡没接(2026-09-27 只先上 AB,其余八省逐省补原句;接之前这格空 = 不出卡,与现状一致)。"""
+门槛卡没接(2026-09-27 只先上 AB,其余八省逐省补原句;接之前这格空 = 不出卡,与现状一致)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条(pnp bc-req 的流名)= 指南 Part 3 通用要求「BC PNP Skills
+Immigration (all streams)」(语言、3.7 执业资格;雇主侧三条门槛卡按省取)+ 4.1 技术工人专条「BC PNP Skilled Worker stream」
+(近 10 年内 24 个月经验)。"""
 
 PW_BC_HEALTH_AUTHORITY = {
     "key": "bc-health-authority", "province": "BC", "program": "PNP",
@@ -206,7 +209,7 @@ PW_BC_HEALTH_AUTHORITY = {
     "officialName": "Health Authority stream",
     "boardLabel": "BC 卫生局", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Health Authority stream"],
     "quotaScope": None,
     "occLabels": ["BC 卫生局"],
     "status": "open",
@@ -215,7 +218,11 @@ PW_BC_HEALTH_AUTHORITY = {
               "public sector directly delivering healthcare services."),
     "checked": "2026-09-28",
 }
-"""卑诗卫生局通道(雇主须是省卫生局,清单 bc-health-authority.json)。抽选卡没有这条通道自己的组,不登记 = 不高亮(与现状一致)。"""
+"""卑诗卫生局通道(雇主须是省卫生局,清单 bc-health-authority.json)。抽选卡没有这条通道自己的组,不登记 = 不高亮(与现状一致)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条 = 指南 Part 3 通用要求「BC PNP Skills Immigration (all streams)」+
+4.2 卫生局流专条「BC PNP Health Authority stream」(4.2(f) 卫生局要求的执照)。不挂技术工人流:卫生局流没有 24 个月经验门槛
+(skills-immigration 页原句「Must meet the work experience required by the BC PNP and your B.C. health authority employer」),
+门槛卡这条通道不出经验一行。"""
 
 PW_BC_HEALTHCARE = {
     "key": "bc-healthcare", "province": "BC", "program": "PNP",
@@ -223,7 +230,7 @@ PW_BC_HEALTHCARE = {
     "officialName": "Care: Health",
     "boardLabel": "BC 医疗", "isDefault": False,
     "drawStreams": ["Care: Health"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": ["BC 医疗"],
     "status": "open",
@@ -233,7 +240,14 @@ PW_BC_HEALTHCARE = {
     "checked": "2026-09-28",
 }
 """卑诗医疗定向(2026 新政 Care 类的医疗组,清单 bc-health.json)。officialName 照抄邀请页的类别名(BC 的定向是类别轮,不是单独的 stream)。
-英文界面现显示官方原名(stream.bcHealth = Care: Health)。"""
+英文界面现显示官方原名(stream.bcHealth = Care: Health)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):定向邀请是 Skills Immigration 注册池里按职业挑人的抽选轮(指南 7.3(a)
+「Invitations may be targeted to support B.C. government priorities, such as supporting specific business sectors」;
+卫生局流不用注册、不进池),资格门槛就是技术工人那一套 —— 挂同一组门槛流,不复制行(Care / Build 另四条同判)。
+官方另写的定向邀请条件「To receive a targeted invitation to apply, individuals with a job offer that is classified under
+NOC 33102 must be registered with the BC Care Aide & Community Health Worker Registry.」
+(about-the-bc-provincial-nominee-program 页)没单起一行:指南 3.7 对 33102 本就写了这条,门槛卡「其他」行的
+「职业所需执照或注册」已涵盖。"""
 
 PW_BC_CHILDCARE = {
     "key": "bc-childcare", "province": "BC", "program": "PNP",
@@ -241,7 +255,7 @@ PW_BC_CHILDCARE = {
     "officialName": "Care: Childcare",
     "boardLabel": "BC 幼教", "isDefault": False,
     "drawStreams": ["Care: Childcare"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": ["BC 幼教"],
     "status": "open",
@@ -250,7 +264,11 @@ PW_BC_CHILDCARE = {
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
 }
-"""卑诗幼教定向(清单 bc-childcare.json)。英文界面现显示官方原名(stream.bcChildcare = Care: Childcare)。"""
+"""卑诗幼教定向(清单 bc-childcare.json)。英文界面现显示官方原名(stream.bcChildcare = Care: Childcare)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段)。官方另写的定向邀请条件
+「To receive a targeted invitation to apply, early childhood educators (ECEs) must have a one-year or five-year ECE
+certificate issued by the ECE Registry.」没单起一行:门槛卡「其他」行的「职业所需执照或注册」已涵盖;
+要写明「ECE 证书」得门槛卡加写法。"""
 
 PW_BC_VETERINARY = {
     "key": "bc-veterinary", "province": "BC", "program": "PNP",
@@ -258,7 +276,7 @@ PW_BC_VETERINARY = {
     "officialName": "Care: Veterinary Care",
     "boardLabel": "BC 兽医", "isDefault": False,
     "drawStreams": ["Care: Veterinary Care"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": ["BC 兽医"],
     "status": "open",
@@ -267,7 +285,10 @@ PW_BC_VETERINARY = {
               "veterinary technologists who are working toward Canadian certification will be prioritized."),
     "checked": "2026-09-28",
 }
-"""卑诗兽医定向(清单 bc-vet.json,2 个码)。英文界面现显示官方原名(stream.bcVet = Care: Veterinary Care)。"""
+"""卑诗兽医定向(清单 bc-vet.json,2 个码)。英文界面现显示官方原名(stream.bcVet = Care: Veterinary Care)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段)。官方另写的定向邀请条件(抽选页
+Veterinary Care 轮的选人条件「Animal health technologists and veterinary technicians (NOC 32104) with valid professional
+designation」)没单起一行:门槛卡「其他」行的「职业所需执照或注册」已涵盖。"""
 
 PW_BC_CONSTRUCTION_TRADES = {
     "key": "bc-construction-trades", "province": "BC", "program": "PNP",
@@ -275,7 +296,7 @@ PW_BC_CONSTRUCTION_TRADES = {
     "officialName": "Build: Construction Trades",
     "boardLabel": "BC 建筑技工", "isDefault": False,
     "drawStreams": ["Build: Construction Trades"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": ["BC 建筑技工"],
     "status": "open",
@@ -284,7 +305,12 @@ PW_BC_CONSTRUCTION_TRADES = {
               "selection of workers list."),
     "checked": "2026-09-28",
 }
-"""卑诗建筑技工定向(2026 新政 Build 类,清单 bc-construction.json)。英文界面现显示官方原名(stream.bcConstr = Build: Construction Trades)。"""
+"""卑诗建筑技工定向(2026 新政 Build 类,清单 bc-construction.json)。英文界面现显示官方原名(stream.bcConstr = Build: Construction Trades)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段;判定引擎 BC-build 早按同一套挑行,
+cms lib/pathways「Build 是 Skills Immigration 池里的定向抽选,资格门槛与 Skilled Worker 同一套」)。官方另写的定向邀请条件
+「To receive a targeted invitation to apply, workers in construction trades must have a valid trade certificate issued
+by, or have a trades apprenticeship registered with, SkilledTradesBC which corresponds with the job they have been
+offered.」没单起一行:门槛卡「其他」行的「职业所需执照或注册」已涵盖。"""
 
 PW_BC_FRENCH_TEACHERS = {
     "key": "bc-french-teachers", "province": "BC", "program": "PNP",
@@ -292,7 +318,7 @@ PW_BC_FRENCH_TEACHERS = {
     "officialName": "Care: Education",
     "boardLabel": "BC 法语教师", "isDefault": False,
     "drawStreams": ["Care: Education"],
-    "reqStreams": [],
+    "reqStreams": ["BC PNP Skills Immigration (all streams)", "BC PNP Skilled Worker stream"],
     "quotaScope": None,
     "occLabels": ["BC 法语教师"],
     "status": "open",
@@ -303,7 +329,12 @@ PW_BC_FRENCH_TEACHERS = {
 }
 """卑诗法语教师定向(Care 类的教育组只收讲法语的中小学教师,清单 bc-education.json)。清单码带雇主行业条件:看得出雇主是学校
 才挂这条通道名(2026-09-27 Frank 拍板「看得出才改判」),所以 09-28 板上暂时 0 岗 —— 通道照收,名字要在。
-英文界面现显示官方原名(stream.bcEdu = Care: Education)。"""
+英文界面现显示官方原名(stream.bcEdu = Care: Education)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛流同技术工人(判据见 bc-healthcare 段)。官方另写的定向邀请条件
+「To receive a targeted invitation to apply, French-speaking teachers (NOC 41220 or 41221) must be employed in B.C.’s
+public K-12 system and have a CLB 5 or higher in French.」没入表:法语 CLB 5 记成语言行,门槛卡会写成「英语或法语每项 CLB 5」
+(把法语专项说成英法任一);门槛量尺按省全量挑职业码点名的语言行,还会把 41220 / 41221(TEER 1)的判定从「注册时不要求
+语言成绩」改成 CLB 5 —— 写法待定。公立 K-12 雇主那半句由清单的雇主行业条件管(上一段)。"""
 
 PW_SK_EMPLOYMENT_OFFER = {
     "key": "sk-employment-offer", "province": "SK", "program": "PNP",
