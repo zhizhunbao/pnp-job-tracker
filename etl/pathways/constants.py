@@ -572,7 +572,9 @@ PW_PE_WORKFORCE = {
 抽选:PE 抽选卡只有一组「Labour & Express Entry」= Workforce 各流 + PEI EE(2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流四条(pnp pe-req 的流名)—— 全体流的语言、Skilled Worker(TEER 0-3,
 24 个月近 5 年内)、Critical Worker(TEER 4 / 5,与本省雇主在职 6 个月;门槛卡按本岗 TEER 挑其一)、雇主段(工资中位、执照;
-经营年限一行门槛卡按省取,不靠这里)。International Graduate / Intermediate Experience 两条替代路没有门槛卡认得的写法,没收。"""
+经营年限一行门槛卡按省取,不靠这里)。International Graduate / Intermediate Experience 两条替代路没有门槛卡认得的写法,没收。
+同日 lead 定 pe-req 里在职 6 个月与工资中位两行本批先不收(要和判定引擎改动一起排期 / 待 Frank 定):门槛卡 TEER 4 / 5 的岗暂无
+经验一行、暂无工资一行;Critical Worker 这条流照挂(现只有学历一行,卡片不取),在职行收回来即生效,这里不用再动。"""
 
 PW_PE_OCCUPATIONS_IN_DEMAND = {
     "key": "pe-occupations-in-demand", "province": "PE", "program": "PNP",
@@ -593,7 +595,7 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
 NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Workforce 类的原话)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条 —— 全体流的语言、本流自己那条(与在需职业表同名,现只有学历一行)、
 雇主段(工资中位、执照)。本流的 1 年相关经验没入门槛表(判定卡「个人关」按省全量挑经验行、不认职业码,会漏到非清单岗),
-门槛卡本流暂无经验一行。"""
+门槛卡本流暂无经验一行。同日 lead 定工资中位一行本批先不收(待 Frank 定),雇主段眼下只出执照与经营年限。"""
 
 PW_AIP = {
     "key": "aip", "province": "FED", "program": "AIP",

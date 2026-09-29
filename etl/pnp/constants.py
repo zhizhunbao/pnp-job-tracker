@@ -4628,7 +4628,11 @@ Employer Requirements 整段收进来了,不需要另外碰 WAF。
   ⑤ 学历三行(Skilled Worker 两年制以上大专 / Critical Worker 与 Occupations in Demand 高中)与年龄 18-59 一行
      (门槛卡与判定引擎都不读,给向导事实与资料库)。上面「没抓的:年龄、学历」是当时的判断,留作沿革。
   Occupations in Demand 的 1 年经验照旧只进 label:判定卡「个人关」按省全量挑经验行、不认 appliesNoc,
-  另开一行会漏进本省 TEER 4/5 非清单岗(显示成 12 个月门槛)。"""
+  另开一行会漏进本省 TEER 4/5 非清单岗(显示成 12 个月门槛)。
+  同日 lead 决定 ① 与 ③ 两行本批先不收(build_pe_req 不调 pe_critical_reqs / pe_wage_reqs,函数与常量留着):
+  ① 判定引擎 PE-sw 会读到它、改掉 TEER 4/5 的判法并让 pathVerdict 金标变红,要和判定引擎改动一起排期;
+  ③ 进汇装后按当日 mart 快照约 110 / 191 个可提名岗改判「工资低于中位」,待 Frank 定(2026-09-29)。
+  其余(②④⑤)照收;Critical Worker 流现只有学历一行。"""
 
 PER_STREAM = "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)"
 """四条 Workforce 通道的合称。"""
@@ -4641,7 +4645,8 @@ PER_EMP_STREAM = "PEI PNP Workforce — Employer Requirements (all streams)"
 
 PER_CRITICAL_STREAM = "PEI PNP Workforce — Critical Worker stream"
 """Critical Worker 通道名(TEER 4 / 5 的在职经验与学历两行挂它;2026-09-29 Frank「都接上,开工吧」(七省门槛卡))。
-名字带「PEI PNP Workforce」是有意的:判定引擎 PE-sw 按 /pei pnp workforce/i 挑行,在职 6 个月是官方必过项,要它读。"""
+名字带「PEI PNP Workforce」是有意的:判定引擎 PE-sw 按 /pei pnp workforce/i 挑行,在职 6 个月是官方必过项,要它读。
+同日 lead 定在职那行本批先不收(见 pe_critical_reqs),这条流眼下只有学历一行(判定引擎与门槛卡都不读学历)。"""
 
 PER_LANG_RE = re.compile(r"minimum score of CLB ?/ ?NCLC (\d)", re.I)
 """语言:官方指南里 PDF 用的是 U+2010 连字符(full‐time),别写死普通 '-' —— 用 . 兜一位。"""
@@ -4665,12 +4670,13 @@ PER_EXP_CRITICAL_RE = re.compile(r"have a minimum of (\w+) months full.time, con
 """Critical Worker(TEER 4 / 5)的在职经验,指南 Critical Worker Stream 一节原句「have a minimum of six months full‐time,
 continuous work experience with the PEI employer」(连字符是 U+2010,用 . 兜一位)。与支持申请的本省雇主在职 →
 basis=employerTenure,门槛卡出「在现雇主全职满 6 个月」。只在 Critical Worker 一节的切片里找(PER_CRITICAL_START / END)。
-2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补:先前 TEER 4 / 5 一行经验都没有,门槛卡与判定都缺这条必过项。"""
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补:先前 TEER 4 / 5 一行经验都没有,门槛卡与判定都缺这条必过项。
+同日 lead 定本批先不收(要和判定引擎改动一起排期,见 pe_critical_reqs)。"""
 
 PER_WAGE_RE = re.compile(r"Employment terms and conditions meet all applicable provincial and federal employment "
                          r"workplace standards and the comparable industry wage rate", re.I)
 """工资门槛,指南 Employer Requirements - All Streams 一节原句(对所有 Workforce 流)。口径看下一条的官方定义句。
-2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补;同日 lead 定本批先不收,待 Frank 定(影响数见 pe_wage_reqs)。"""
 
 PER_WAGE_MEDIAN_RE = re.compile(r"Compara\w* industry wage rate: The median wage, as determined by [^.]*?, based on the "
                                 r"NOC code for the position", re.I)
@@ -4827,7 +4833,8 @@ PER_SOURCE = "PEI Workforce Application Guide"
 """表级来源名。"""
 
 PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age")
-"""PE 门槛收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后因素多了四类,不再借 NS 那份 NSR_FACTOR_ORDER)。"""
+"""PE 门槛收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后因素多了四类,不再借 NS 那份 NSR_FACTOR_ORDER)。
+同日工资一行本批先不收(见 pe_wage_reqs),收尾报「wage 0 条」是预期,不是解析失败。"""
 
 
 # =========================================================================

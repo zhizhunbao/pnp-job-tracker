@@ -5028,7 +5028,7 @@ def pe_experience_reqs(txt: str) -> ReqsOut:
     """经验:Skilled Worker 通道 2 年,只挂 TEER 0-3(理由见段首)。
 
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡):这行记口径 windowYears(近 N 年内,门槛卡据此出「近 5 年内」;判定引擎
-    只认 employerTenure、不读窗口期,判定不变)。Critical Worker(TEER 4 / 5)在职那行见 pe_critical_reqs。
+    只认 employerTenure、不读窗口期,判定不变)。Critical Worker(TEER 4 / 5)在职那行见 pe_critical_reqs(同日 lead 定本批先不收)。
     """
     rows: list = []
     problems: list = []
@@ -5057,6 +5057,9 @@ def pe_critical_reqs(txt: str) -> ReqsOut:
 
     同节「2 年全职经验或相关学历」那一条有学历替代,照旧不挂(理由见段首)。
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补:先前 TEER 4 / 5 一行经验都没有。
+    同日 lead 决定本批先不收(build_pe_req 不调本函数):官方原句「have a minimum of six months full‐time, continuous work
+    experience with the PEI employer」这一行流名带 Workforce,判定引擎 PE-sw 会读到它,把 TEER 4 / 5 从「不在在需职业清单就判死」
+    改成判在职 6 个月,pathVerdict 金标「TEER 4/5 时清单仍然关死这条线」随之变红 —— 要和判定引擎改动一起排期,2026-09-29。
     """
     rows: list = []
     problems: list = []
@@ -5093,7 +5096,12 @@ def pe_employer_reqs(txt: str) -> ReqsOut:
 
 def pe_wage_reqs(txt: str) -> ReqsOut:
     """工资(Employer Requirements - All Streams 条文句 + 附录 D 口径定义句,两句都在才记 basis=occMedian;缺一句报自校问题)。
-    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。
+    同日 lead 决定本批先不收(build_pe_req 不调本函数):官方原句「Employment terms and conditions meet all applicable provincial
+    and federal employment workplace standards and the comparable industry wage rate」+ 附录 D「Comparative industry wage rate: The
+    median wage, as determined by Economic and Social Development Canada (ESDC), based on the NOC code for the position」。这一行进汇装后
+    wage_floors_of 会给 PE 全部 TEER 立中位工资线(PE 没有安省那种应届低位例外),按当日 mart 快照约 110 / 191 个可提名岗改判
+    「工资低于中位」—— 待 Frank 定,2026-09-29。"""
     rows: list = []
     problems: list = []
     req = PER_WAGE_RE.search(txt)
@@ -5164,13 +5172,15 @@ def pe_age_reqs(txt: str) -> ReqsOut:
 
 def build_pe_req() -> None:
     """PE 门槛入口:官方申请指南 PDF → 语言 + Skilled Worker 经验 + 雇主经营年限。
-    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 Critical Worker 在职经验、工资、执照、学历三行、年龄一行(见段首)。"""
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 Critical Worker 在职经验、工资、执照、学历三行、年龄一行(见段首)。
+    同日 lead 定:Critical Worker 在职经验(pe_critical_reqs)与工资(pe_wage_reqs)两行本批先不收、这里不调,
+    函数与常量留着,理由各见其 docstring;收回来 = 把两个调用放回下面的元组。"""
     say(PRINT_OUT_TPL.format(path=OUT_PE_REQ))
     txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S))))
     reqs: list = []
     problems: list = []
-    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_critical_reqs(txt), pe_employer_reqs(txt),
-                 pe_wage_reqs(txt), pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt)):
+    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt),
+                 pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt)):
         reqs += part.rows
         problems += part.problems
     eff = PER_EFFECTIVE_RE.search(txt)
