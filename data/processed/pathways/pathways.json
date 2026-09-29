@@ -15,7 +15,8 @@
         "Alberta Opportunity Stream"
       ],
       "reqStreams": [
-        "AAIP Alberta Opportunity Stream"
+        "AAIP Alberta Opportunity Stream",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Alberta Opportunity Stream",
       "occLabels": [],
@@ -40,7 +41,8 @@
       ],
       "reqStreams": [
         "AAIP Alberta Express Entry Stream",
-        "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway"
+        "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs in Alberta)",
       "occLabels": [
@@ -67,7 +69,8 @@
         "Dedicated Health Care Pathway – non-Express Entry"
       ],
       "reqStreams": [
-        "AAIP Dedicated Health Care Pathway — Non-Express Entry"
+        "AAIP Dedicated Health Care Pathway — Non-Express Entry",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Dedicated Health Care Pathways",
       "occLabels": [
@@ -93,7 +96,8 @@
         "Alberta Express Entry Stream – Law Enforcement Pathway"
       ],
       "reqStreams": [
-        "AAIP Alberta Express Entry Stream"
+        "AAIP Alberta Express Entry Stream",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Law Enforcement Pathway",
       "occLabels": [
@@ -119,7 +123,8 @@
         "Tourism and Hospitality Stream"
       ],
       "reqStreams": [
-        "AAIP Tourism and Hospitality Stream"
+        "AAIP Tourism and Hospitality Stream",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Tourism and Hospitality Stream",
       "occLabels": [
@@ -145,7 +150,8 @@
         "Rural Renewal Stream"
       ],
       "reqStreams": [
-        "AAIP Rural Renewal Stream"
+        "AAIP Rural Renewal Stream",
+        "AAIP (job offer & employer requirements, all streams)"
       ],
       "quotaScope": "Rural Renewal Stream",
       "occLabels": [

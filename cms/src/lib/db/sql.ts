@@ -578,7 +578,7 @@ export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, valu
        COALESCE(url, '') AS url, seq
      FROM pnp_requirements q
      WHERE program = 'PNP' AND factor IN ('offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage',
-       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin')
+       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence')
      ORDER BY province, stream, seq`
 
 // =========================================================================

@@ -578,7 +578,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.exp': '풀타임 경력 {n}개월', 'pnpgate.expWin': '최근 {w}개월 내 풀타임 경력 {n}개월',
   'pnpgate.expTenure': '현 고용주에서 풀타임 {n}개월', 'pnpgate.expLocal': '또는 최근 {w}개월 내 {prov}에서 {n}개월',
   'pnpgate.eeProfile': 'Express Entry 프로필', 'pnpgate.eeProgram': 'CEC, FSW 또는 FST 충족', 'pnpgate.crs': 'CRS ≥ {n}',
-  'pnpgate.empYears': '{prov}에서 {n}회계연도 이상 운영', 'pnpgate.empRevenue': '연매출 ≥ ${n}',
+  'pnpgate.empYears': '{prov}에서 {n}년 이상 운영', 'pnpgate.empRevenue': '연매출 ≥ ${n}',
   'pnpgate.empStaff': '풀타임 직원 ≥ {n}명',
   'pnpgate.endorse': '지정 커뮤니티 추천서', 'pnpgate.licensing': '직종 면허 또는 등록',
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
@@ -586,6 +586,9 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.wageLowGrad': '또는 {prov} 최근 졸업생은 하위 임금 이상',
   'pnpgate.k.points': '점수', 'pnpgate.pointsMin': '주 점수표 {n}점 이상', 'pnpgate.empMonths': '{prov}에서 {n}개월 이상 운영',
   'pnpgate.expWinYears': '최근 {w}년 내 풀타임 경력 {n}개월',
+  'pnpgate.empFiscalYears': '{prov}에서 {n}회계연도 이상 운영', 'pnpgate.k.residence': '거주',
+  'pnpgate.residence': '최근 {n}개월 {prov} 거주', 'pnpgate.expGradOther': '타 주 졸업자는 {n}개월',
+  'pnpgate.expAltTenure': '또는 현 고용주에서 풀타임 {n}개월', 'pnpgate.expAltProvGrad': '또는 {prov} 교육기관 졸업',
   'pnpgate.langExempt': '최근 {n}년 내 {prov}에서 졸업하면 시험 면제',
   'pnpgate.expGrad': '또는 {prov} 최근 졸업생은 {n}개월', 'pnpgate.expSameNoc': '또는 최근 {w}년 내 같은 직업 누적 {n}년',
   'pnpgate.expLicence': '또는 이 직무에 필요한 면허 보유',

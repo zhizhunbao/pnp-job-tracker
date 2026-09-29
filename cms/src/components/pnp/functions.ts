@@ -37,6 +37,7 @@ import {
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
   BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
+  GATE_COND_OTHER_PROV, BASIS_PROV_GRADUATE, BASIS_FISCAL, GATE_EMP_FISCAL_KEY,
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS,
@@ -1567,18 +1568,36 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
       chan.push(r)
     }
   }
-  if (chan.length === 0) {
+  if (applicantRowsOf(chan) === 0) {
     return null
   }
   const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
-  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), wageRowOf(one), pointsRowOf(one), eeRowOf(one),
-    empRowOf(one), otherRowOf(one)]) {
+  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), residenceRowOf(one), wageRowOf(one),
+    pointsRowOf(one),
+    eeRowOf(one), empRowOf(one), otherRowOf(one)]) {
     if (row != null) {
       rows.push(row)
     }
   }
-  return { title: x.t('pnpgate.title'), source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan }) }), rows }
+  return { title: x.t('pnpgate.title'), source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan, streams }) }), rows }
+}
+
+/**
+ * 本岗通道那几条流里申请人侧的门槛有几行(雇主侧不算):一行都没有就不出卡 —— 只剩全省的 offer 形态与雇主几行会读成门槛只有这些
+ * (2026-09-29 七省合并:雇主门槛所在的「all streams」流挂进各通道 reqStreams 后,原先「本岗通道没有门槛行」的判据得改数申请人侧)。
+ *
+ * @param chan 本岗通道那几条流的门槛行。
+ * @returns 申请人侧行数。
+ */
+function applicantRowsOf(chan: PnpReq[]): number {
+  let n = 0
+  for (const r of chan) {
+    if (r.subject !== GATE_SUBJECT_EMPLOYER) {
+      n += 1
+    }
+  }
+  return n
 }
 
 /**
@@ -1597,14 +1616,17 @@ function gateStreamsOf(channel: PnpPathway | null): string[] {
 
 /**
  * 标题右端来源的出处页:本岗通道第一条带网址的门槛行。
+ * 2026-09-29 七省接入(曼省子代理回报):改按通道登记流名的先后取 —— 原先按库表流名排序取第一条,曼省会落到语言政策页而不是 SWM 资格页。
  *
  * @param x 本岗通道的门槛行。
  * @returns 网址;都没有给 ''。
  */
 function gateUrlOf(x: GateUrlIn): string {
-  for (const r of x.chan) {
-    if (r.url !== TEXT_NONE) {
-      return r.url
+  for (const s of x.streams) {
+    for (const r of x.chan) {
+      if (r.stream === s && r.url !== TEXT_NONE) {
+        return r.url
+      }
     }
   }
   return TEXT_NONE
@@ -1760,6 +1782,7 @@ function reqAppliesOf(x: ReqAppliesIn): boolean {
  * 「工作经验」行:通用那条(近 N 个月内 / 同雇主在职)一行,阿省境内替代款「或……」另起一行。
  * 2026-09-29 Frank「照这个做」(安省门槛卡):只挑管本岗的行(reqAppliesOf)—— 安省 TEER 0-3 与 4 / 5 各一档;
  * 安省应届毕业生款与两条替代路径(同职业累计、持执照,expAltLinesOf)各起一行「或……」。
+ * 同日七省接入:曼省外省毕业款(grad-other-province,比通用档严,不是「或」)另起一行「外省毕业的须满 N 个月」。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本岗通道没有按月计的经验门槛给 null。
@@ -1768,6 +1791,7 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   let main: PnpReq | null = null
   let local: PnpReq | null = null
   let grad: PnpReq | null = null
+  let otherProv: PnpReq | null = null
   for (const r of x.chan) {
     if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
       continue
@@ -1784,6 +1808,9 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
     if (r.appliesCondition === GATE_COND_GRAD && grad == null) {
       grad = r
     }
+    if (r.appliesCondition === GATE_COND_OTHER_PROV && otherProv == null) {
+      otherProv = r
+    }
   }
   if (main == null || main.value == null) {
     return null
@@ -1798,6 +1825,9 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   }
   if (grad != null && grad.value != null) {
     lines.push(x.t('pnpgate.expGrad', { n: grad.value, prov }))
+  }
+  if (otherProv != null && otherProv.value != null) {
+    lines.push(x.t('pnpgate.expGradOther', { n: otherProv.value, prov }))
   }
   for (const line of expAltLinesOf(x)) {
     lines.push(line)
@@ -1829,6 +1859,7 @@ function expLineOf(x: ExpLineIn): string {
 /**
  * 工作经验的替代路径各一行「或……」(门槛表 experienceAlt:同职业累计 N 年(近 M 年内)、持有这份工作要求的执照;
  * 2026-09-29 安省门槛卡)。只挑管本岗的行;认不出口径的不出(宁缺不乱写)。
+ * 同日七省接入加两种:在担保雇主处全职满 N 个月(萨省三条定向通道,employerTenure)、本省院校毕业(NB Graduates,provGraduate)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 文案;没有给空列。
@@ -1845,6 +1876,10 @@ function expAltLinesOf(x: GateRowOfIn): string[] {
       lines.push(x.t('pnpgate.expSameNoc', { n: r.value, w }))
     } else if (basisHasOf({ basis: r.basis, key: BASIS_LICENCE })) {
       lines.push(x.t('pnpgate.expLicence'))
+    } else if (basisHasOf({ basis: r.basis, key: BASIS_TENURE }) && r.unit === GATE_UNIT_MONTHS && r.value != null) {
+      lines.push(x.t('pnpgate.expAltTenure', { n: r.value }))
+    } else if (basisHasOf({ basis: r.basis, key: BASIS_PROV_GRADUATE })) {
+      lines.push(x.t('pnpgate.expAltProvGrad'))
     }
   }
   return lines
@@ -1882,6 +1917,23 @@ function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
     lines.push(x.t('pnpgate.wageLowGrad', { prov: x.t(PROV_KEY_HEAD + x.job.province) }))
   }
   return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines }
+}
+
+/**
+ * 「居住」行(2026-09-29 七省接入:NB「have lived in New Brunswick for the past six months」这类按月的居住门槛)。
+ * 只认按月写的;别的写法认不出不出(宁缺不乱写)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有居住门槛给 null。
+ */
+function residenceRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const res = rowOfFactor({ rows: x.chan, factor: GATE_F.residence })
+  if (res == null || res.value == null || res.unit !== GATE_UNIT_MONTHS) {
+    return null
+  }
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const line = capFirstOf(x.t('pnpgate.residence', { n: res.value, prov }))
+  return { key: GATE_ROW.residence, label: x.t('pnpgate.k.residence'), lines: [line] }
 }
 
 /**
@@ -1932,6 +1984,8 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
  * 「雇主」行:本省雇主侧三项(经营年限 / 年收入 / 全职员工),只取不分区的全省那档(分区的省后面批次再接)。
  * 2026-09-29 Frank「照这个做」(安省门槛卡):分区的省接上 —— 年收入 / 全职员工按区各一行「≥ N(区名)」,全部列出:
  * 官方「指定地区」名单本站没抓全,判不了本岗落哪一区,不猜(zonedLinesOf)。
+ * 同日七省接入(曼省子代理回报):雇主行改读本通道登记的流(原先读全省 —— 曼省唯一的雇主行属雇主直招项目 EDI,会串到 SWM 卡上);
+ * 各省雇主门槛所在的「all streams」流随之挂进各通道的 reqStreams。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本省没有雇主侧门槛给 null。
@@ -1939,7 +1993,7 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
 function empRowOf(x: GateRowOfIn): GateRowSpec | null {
   const emp: PnpReq[] = []
   const zoned: PnpReq[] = []
-  for (const r of x.mine) {
+  for (const r of x.chan) {
     if (r.subject !== GATE_SUBJECT_EMPLOYER || r.value == null) {
       continue
     }
@@ -1982,6 +2036,7 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
 /**
  * 经营年限那一行用哪条文案:官方按月写的(萨省「no less than 24 consecutive months」)写「个月」,其余写「个财年」
  * (2026-09-29 七省接入前补:原先一律「个财年」,萨省会读成 24 个财年)。
+ * 同日七省回报:官方写 fiscal years 的只有阿省(口径标记 fiscal),其余省写 years —— 默认改「年」。
  *
  * @param r 经营年限那一行。
  * @returns 文案键。
@@ -1989,6 +2044,9 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
 function empYearsKeyOf(r: PnpReq): string {
   if (r.unit === GATE_UNIT_MONTHS) {
     return GATE_EMP_MONTHS_KEY
+  }
+  if (basisHasOf({ basis: r.basis, key: BASIS_FISCAL })) {
+    return GATE_EMP_FISCAL_KEY
   }
   return GATE_EMP_YEARS_KEY
 }

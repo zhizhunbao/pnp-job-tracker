@@ -587,7 +587,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     req({ value: 7, appliesNoc: '33102' }),
     req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30' }),
     req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18' }),
-    req({ stream: EMP, subject: 'employer', factor: 'empYears', value: 2, unit: 'years', url: EMP_URL }),
+    req({ stream: EMP, subject: 'employer', factor: 'empYears', value: 2, unit: 'years', basis: 'fiscal', url: EMP_URL }),
     req({ stream: EMP, subject: 'employer', factor: 'empRevenue', value: 400000, unit: 'CAD/yr', url: EMP_URL }),
     req({ stream: EMP, subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', url: EMP_URL }),
     req({ stream: 'Job offer (all streams)', subject: 'offer', factor: 'offerForm', op: 'notIn', value: null, unit: '',
@@ -679,7 +679,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     officialName: ONW }
   const onGate = (noc: string, teer: number | null, t = zh) =>
     gateOf(gateCardOf({ t, job: job({ province: 'ON', noc, teer }), reqs: onReqs, channel: onChan }))
-  const ON_EMP = ['在本省经营满 3 个财年', '年收入 ≥ $1,000,000(大多伦多)', '年收入 ≥ $500,000(指定地区)', '年收入 ≥ $250,000(其他地区)',
+  const ON_EMP = ['在本省经营满 3 年', '年收入 ≥ $1,000,000(大多伦多)', '年收入 ≥ $500,000(指定地区)', '年收入 ≥ $250,000(其他地区)',
     '全职员工 ≥ 5 人(大多伦多)', '全职员工 ≥ 3 人(大多伦多以外)']
 
   it('门槛卡·安省:技工 TEER 2 出 CLB 5 + 免考、经验四条(6 个月 / 应届 / 同职业累计 / 执照)、工资、雇主分区各档全列', () => {
@@ -695,7 +695,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
         'or 2 years in the same occupation (within the last 5 years)', 'or hold the licence this job requires']],
       ['Wage', ['At or above the median wage for this occupation in the region',
         'or at or above the low wage if you are a recent graduate in Ontario']],
-      ['Employer', ['Operating in Ontario for 3+ fiscal years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
+      ['Employer', ['Operating in Ontario for 3+ years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
         'Revenue ≥ $250,000 (other areas)', '≥ 5 full-time staff (GTA)', '≥ 3 full-time staff (outside the GTA)']],
     ])
   })
@@ -745,7 +745,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       skReq({ factor: 'pointsMin', value: 60, unit: 'points' }),
       skReq({ stream: 'SK EMP', subject: 'employer', factor: 'empYears', value: 24, unit: 'months' }),
     ]
-    const skChan: PnpPathway = { province: 'SK', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: ['SK X'], quotaKey: null,
+    const skChan: PnpPathway = { province: 'SK', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: ['SK X', 'SK EMP'], quotaKey: null,
       officialName: 'X' }
     expect(gateOf(gateCardOf({ t: zh, job: job({ province: 'SK', noc: '21231', teer: 1 }), reqs: skReqs, channel: skChan }))).toEqual([
       ['语言', ['英语或法语每项 CLB 4']],
@@ -753,6 +753,38 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       ['积分', ['本省打分表 ≥ 60 分']],
       ['雇主', ['在本省经营满 24 个月']],
     ])
+  })
+
+  // 2026-09-29 七省合并(Frank「都接上,开工吧」):子代理回报汇总出的卡片写法
+  it('门槛卡七省写法:居住、在担保雇主满 N 个月、外省毕业须满 N 个月、本省院校毕业;雇主行只读登记的流;来源按登记顺序', () => {
+    const nbReq = (p: Partial<PnpReq>): PnpReq => req({ province: 'NB', stream: 'NB A', url: 'https://nb.example/a', ...p })
+    const rows = [
+      nbReq({ value: 4 }),
+      nbReq({ factor: 'experience', value: 6, unit: 'months', basis: 'employerTenure' }),
+      nbReq({ factor: 'experience', value: 12, unit: 'months', basis: 'employerTenure', appliesCondition: 'grad-other-province' }),
+      nbReq({ stream: 'NB B', url: 'https://nb.example/b', factor: 'experienceAlt', op: 'none', value: 6, unit: 'months',
+        basis: 'employerTenure' }),
+      nbReq({ stream: 'NB B', url: 'https://nb.example/b', factor: 'experienceAlt', op: 'none', value: null, unit: '',
+        basis: 'provGraduate' }),
+      nbReq({ factor: 'residence', value: 6, unit: 'months' }),
+      nbReq({ stream: 'NB EDI', subject: 'employer', factor: 'empYears', value: 3, unit: 'years' }),
+    ]
+    const chan: PnpPathway = { province: 'NB', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: ['NB B', 'NB A'],
+      quotaKey: null, officialName: 'NB' }
+    const card = gateCardOf({ t: zh, job: job({ province: 'NB', noc: '21231', teer: 1 }), reqs: rows, channel: chan })
+    expect(gateOf(card)).toEqual([
+      ['语言', ['英语或法语每项 CLB 4']],
+      ['工作经验', ['在现雇主全职满 6 个月', '外省毕业的须满 12 个月', '或在现雇主全职满 6 个月', '或本省院校毕业']],
+      ['居住', ['近 6 个月住在本省']],
+    ])
+    // 雇主行只读本通道登记的流:没登记的 EDI 那行不上卡(曼省实撞);来源按登记先后取 —— NB B 先登记
+    expect(card?.source?.href).toBe('https://nb.example/b')
+    const withEmp = { ...chan, reqStreams: ['NB A', 'NB EDI'] }
+    const card2 = gateCardOf({ t: zh, job: job({ province: 'NB', noc: '21231', teer: 1 }), reqs: rows, channel: withEmp })
+    expect(card2?.rows.map((r) => r.label)).toContain('雇主')
+    expect(card2?.source?.href).toBe('https://nb.example/a')
+    expect(gateOf(gateCardOf({ t: en, job: job({ province: 'NB', noc: '21231', teer: 1 }), reqs: rows, channel: chan }))?.[2])
+      .toEqual(['Residence', ['Lived in New Brunswick for the last 6 months']])
   })
 
   it('分区雇主门槛:数据里出现的区码三语都有区名(zonedLinesOf 查不到词条那区不出,这里先红)', () => {

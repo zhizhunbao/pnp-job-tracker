@@ -36,7 +36,8 @@ from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
 from crawl.functions import convert_md, get_cached_page, put_cached_page
 from crawl.scheme import CachePutIn, ConvertIn
 from pnp.constants import (
-    ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL, ABR_EMP_REVENUE_RE,
+    ABR_BASIS_FISCAL, ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL,
+    ABR_EMP_REVENUE_RE,
     ABR_EMP_STAFF_LABEL_TPL, ABR_EMP_STAFF_RE, ABR_EMP_STREAM, ABR_EMP_YEARS_LABEL_TPL, ABR_EMP_YEARS_RE,
     ABR_EXP_AB_RE, ABR_EXP_ANY_RE, ABR_EXP_LABEL_TPL, ABR_FACTOR_ORDER, ABR_LANG_NOC_LABEL_TPL, ABR_LANG_NOC_RE,
     ABR_LANG_TIERS, ABR_LANG_TIER_LABEL_TPL, ABR_LANG_TIER_RE, ABR_PROBLEM_EMPLOYER_TPL, ABR_PROBLEM_EXP,
@@ -4066,7 +4067,8 @@ def ab_employer_reqs(emp_txt: str) -> ReqsOut:
     if m_years and m_rev and m_staff:
         rows.append(to_ab_req(ReqIn(stream=ABR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
                                     factor=FACTOR_EMP_YEARS, value=int(m_years.group(1)),
-                                    unit=UNIT_YEARS, url=ABR_EMPLOYER_URL, section=ABR_SECTION_EMPLOYER,
+                                    unit=UNIT_YEARS, basis=ABR_BASIS_FISCAL, url=ABR_EMPLOYER_URL,
+                                    section=ABR_SECTION_EMPLOYER,
                                     label=ABR_EMP_YEARS_LABEL_TPL.format(years=m_years.group(1)))))
         rows.append(to_ab_req(ReqIn(stream=ABR_EMP_STREAM, subject=REQ_SUBJECT_EMPLOYER,
                                     factor=FACTOR_EMP_REVENUE,

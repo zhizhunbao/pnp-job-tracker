@@ -3552,6 +3552,10 @@ ABR_EMP_YEARS_RE = re.compile(
     r"have been in continuous and active operation in Alberta for a minimum of (\d+) complete fiscal years", re.I)
 """雇主经营年限。"""
 
+ABR_BASIS_FISCAL = "fiscal"
+"""经营年限那行的口径标记:阿省原句是「complete fiscal years」(完整财年)—— 省提名弹框门槛卡据此写「个财年」;
+其余省官方写 years / months,卡片默认写「年」(2026-09-29 七省门槛卡合并时拆开,Frank「都接上,开工吧」)。"""
+
 ABR_EMP_REVENUE_RE = re.compile(
     r"have a minimum total gross annual revenue of \$([\d,]+) for the most recent fiscal year", re.I)
 """雇主营业额。"""

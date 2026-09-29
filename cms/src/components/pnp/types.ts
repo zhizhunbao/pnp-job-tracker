@@ -1491,6 +1491,11 @@ export type GateUrlIn = {
    * 本岗通道那几条流的门槛行。
    */
   chan: PnpReq[]
+
+  /**
+   * 本岗通道登记的流名(按登记先后取出处;2026-09-29)。
+   */
+  streams: string[]
 }
 
 /**

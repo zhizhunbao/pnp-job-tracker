@@ -630,7 +630,7 @@ export const jobsZh = {
   'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
   'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省 {n} 个月(近 {w} 个月内)',
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
-  'pnpgate.empYears': '在本省经营满 {n} 个财年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
+  'pnpgate.empYears': '在本省经营满 {n} 年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': '工资', 'pnpgate.wageMedian': '不低于本职业在本地区的中位工资',
@@ -638,6 +638,10 @@ export const jobsZh = {
   // 2026-09-29 七省接入前补:积分行、经营年限按月、经验近 N 年
   'pnpgate.k.points': '积分', 'pnpgate.pointsMin': '本省打分表 ≥ {n} 分', 'pnpgate.empMonths': '在本省经营满 {n} 个月',
   'pnpgate.expWinYears': '{n} 个月全职经验(近 {w} 年内)',
+  // 2026-09-29 七省合并:经营年限默认写「年」(只有阿省官方写 fiscal years,另用财年键);居住行;经验三种新写法
+  'pnpgate.empFiscalYears': '在本省经营满 {n} 个财年', 'pnpgate.k.residence': '居住',
+  'pnpgate.residence': '近 {n} 个月住在本省', 'pnpgate.expGradOther': '外省毕业的须满 {n} 个月',
+  'pnpgate.expAltTenure': '或在现雇主全职满 {n} 个月', 'pnpgate.expAltProvGrad': '或本省院校毕业',
   'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
   'pnpgate.expGrad': '或本省应届毕业生满 {n} 个月', 'pnpgate.expSameNoc': '或同职业累计满 {n} 年(近 {w} 年内)',
   'pnpgate.expLicence': '或持有这份工作要求的执照',

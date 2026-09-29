@@ -477,6 +477,11 @@ export const GATE_F = {
   pointsMin: 'pointsMin',
 
   /**
+   * 居住时长(NB「have lived in New Brunswick for the past six months」这类;2026-09-29 七省接入)。
+   */
+  residence: 'residence',
+
+  /**
    * 联邦 EE 档案。
    */
   eeProfile: 'eeProfile',
@@ -547,6 +552,11 @@ export const GATE_ROW = {
   points: 'points',
 
   /**
+   * 居住(2026-09-29 七省接入加的行)。
+   */
+  residence: 'residence',
+
+  /**
    * EE。
    */
   ee: 'ee',
@@ -598,6 +608,11 @@ export const GATE_COND_LOCAL = 'ab-local-experience'
 export const GATE_COND_GRAD = 'recent-on-graduate'
 
 /**
+ * 外省毕业生款的条件标记(曼省 SWM:外省读书毕业的须在本省满 12 个月,比通用档严;门槛表 appliesCondition 原值;2026-09-29)。
+ */
+export const GATE_COND_OTHER_PROV = 'grad-other-province'
+
+/**
  * 分区雇主门槛区名的词条键头(拼门槛表 appliesArea 原值:gta / on-listed-cd / on-other / outside-gta;2026-09-29)。
  */
 export const GATE_AREA_HEAD = 'pnpgate.area.'
@@ -616,6 +631,11 @@ export const GATE_STAFF_AREA_KEY = 'pnpgate.empStaffArea'
  * 经营年限按年写的文案键(「在本省经营满 {n} 个财年」)。
  */
 export const GATE_EMP_YEARS_KEY = 'pnpgate.empYears'
+
+/**
+ * 经营年限按财年写的文案键(阿省「2 complete fiscal years」;2026-09-29 其余省改写「年」时拆出)。
+ */
+export const GATE_EMP_FISCAL_KEY = 'pnpgate.empFiscalYears'
 
 /**
  * 经营年限按月写的文案键(萨省官方按月写;2026-09-29 七省接入前补)。
@@ -666,6 +686,16 @@ export const BASIS_OCC_MEDIAN = 'occMedian'
  * 口径包的「本职业本地区低位工资」标记(安省应届毕业生 + TEER 0-3 那一行;2026-09-29)。
  */
 export const BASIS_OCC_LOW = 'occLow'
+
+/**
+ * 口径包的「本省院校毕业」标记(NB Graduates 路径:本省院校毕业替代工作经验;2026-09-29 七省接入)。
+ */
+export const BASIS_PROV_GRADUATE = 'provGraduate'
+
+/**
+ * 口径包的「财年」标记(经营年限官方写 fiscal years 的,只有阿省;其余省写 years / months;2026-09-29)。
+ */
+export const BASIS_FISCAL = 'fiscal'
 
 /**
  * 口径包的编码值键(offer 形态行:过不了的工时 / 雇佣期取值)。

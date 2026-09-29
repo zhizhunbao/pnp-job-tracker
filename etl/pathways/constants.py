@@ -64,7 +64,7 @@ PW_AB_OPPORTUNITY = {
     "officialName": "Alberta Opportunity Stream",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["Alberta Opportunity Stream"],
-    "reqStreams": ["AAIP Alberta Opportunity Stream"],
+    "reqStreams": ["AAIP Alberta Opportunity Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Alberta Opportunity Stream",
     "occLabels": [],
     "status": "open",
@@ -79,13 +79,17 @@ PW_AB_OPPORTUNITY = {
 页的通道行(抽选组名小写与配额键逐字相等,前端原先靠这条隐式规则配上;这里写明,不再靠碰巧同名)。
 英文界面现显示官方原名(pnp.gen.AB = Alberta Opportunity Stream),plainEn 是批二要换上的直白名。"""
 
+# 2026-09-29 七省门槛卡合并(Frank「都接上,开工吧」):阿省六条通道的 reqStreams 都在末尾挂上雇主门槛所在的
+# 「AAIP (job offer & employer requirements, all streams)」—— 门槛卡雇主行改读本通道登记的流(原读全省,曼省唯一的雇主行属
+# 雇主直招 EDI、会串到 SWM 卡上);挂在末尾,来源钮按登记顺序取出处,仍指向通道自己的资格页。
 PW_AB_ACCELERATED_TECH = {
     "key": "ab-accelerated-tech", "province": "AB", "program": "PNP",
     "plainZh": "AB 科技", "plainEn": "AB Tech", "plainKo": "AB 테크",
     "officialName": "Accelerated Tech Pathway",
     "boardLabel": "AB 科技", "isDefault": False,
     "drawStreams": ["Alberta Express Entry Stream – Accelerated Tech Pathway"],
-    "reqStreams": ["AAIP Alberta Express Entry Stream", "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway"],
+    "reqStreams": ["AAIP Alberta Express Entry Stream", "AAIP Alberta Express Entry Stream — Accelerated Tech Pathway",
+                   "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Accelerated Tech Pathway (eligible list of occupations includes jobs that support data centre needs in Alberta)",
     "occLabels": ["AB 科技"],
     "status": "open",
@@ -106,7 +110,7 @@ PW_AB_DEDICATED_HEALTH_CARE = {
     "officialName": "Dedicated Health Care Pathway",
     "boardLabel": "AB 医疗", "isDefault": False,
     "drawStreams": ["Dedicated Health Care Pathway – Express Entry", "Dedicated Health Care Pathway – non-Express Entry"],
-    "reqStreams": ["AAIP Dedicated Health Care Pathway — Non-Express Entry"],
+    "reqStreams": ["AAIP Dedicated Health Care Pathway — Non-Express Entry", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Dedicated Health Care Pathways",
     "occLabels": ["AB 医疗"],
     "status": "open",
@@ -128,7 +132,7 @@ PW_AB_LAW_ENFORCEMENT = {
     "officialName": "Law Enforcement Pathway",
     "boardLabel": "AB 警务", "isDefault": False,
     "drawStreams": ["Alberta Express Entry Stream – Law Enforcement Pathway"],
-    "reqStreams": ["AAIP Alberta Express Entry Stream"],
+    "reqStreams": ["AAIP Alberta Express Entry Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Law Enforcement Pathway",
     "occLabels": ["AB 警务"],
     "status": "open",
@@ -147,7 +151,7 @@ PW_AB_TOURISM_HOSPITALITY = {
     "officialName": "Tourism and Hospitality Stream",
     "boardLabel": "AB 旅游酒店", "isDefault": False,
     "drawStreams": ["Tourism and Hospitality Stream"],
-    "reqStreams": ["AAIP Tourism and Hospitality Stream"],
+    "reqStreams": ["AAIP Tourism and Hospitality Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Tourism and Hospitality Stream",
     "occLabels": ["AB 旅游酒店"],
     "status": "open",
@@ -166,7 +170,7 @@ PW_AB_RURAL_RENEWAL = {
     "officialName": "Rural Renewal Stream",
     "boardLabel": "AB 乡村振兴", "isDefault": False,
     "drawStreams": ["Rural Renewal Stream"],
-    "reqStreams": ["AAIP Rural Renewal Stream"],
+    "reqStreams": ["AAIP Rural Renewal Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Rural Renewal Stream",
     "occLabels": ["AB 乡村振兴"],
     "status": "open",
