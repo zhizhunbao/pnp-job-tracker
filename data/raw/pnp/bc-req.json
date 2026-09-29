@@ -5,7 +5,7 @@
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf",
   "pageUrl": "https://www.welcomebc.ca/immigrate-to-b-c/for-workers",
   "guideEffective": "2026-06-10",
-  "fetched": "2026-09-25",
+  "fetched": "2026-09-29",
   "requirements": [
     {
       "stream": "BC PNP Skills Immigration (all streams)",
@@ -265,10 +265,40 @@
       "appliesTeer": [],
       "appliesArea": "",
       "familySize": null,
-      "basis": "",
+      "basis": "windowYears=10",
       "label": "Two years of full-time skilled work experience (NOC TEER 0, 1, 2, or 3) within the last ten years",
       "section": "4.1(c)",
       "factor": "experience"
+    },
+    {
+      "stream": "BC PNP Skills Immigration (all streams)",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "If the job offered to you requires mandatory certification, licensing or registration, you must provide documentation at the time of application to the BC PNP showing that you meet these requirements, or you must outline the steps you have taken to show that these requirements will shortly be met.",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Mandatory certification, licensing or registration required for the job offered (proof at application, or steps showing it will shortly be met)",
+      "section": "3.7",
+      "factor": "licensing"
+    },
+    {
+      "stream": "BC PNP Health Authority stream",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "You must meet the qualifications criteria in section 3.7, and meet the education, training, experience, qualifications, and licensing required by the public health authority.",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Education, training, experience, qualifications and licensing required by the public health authority",
+      "section": "4.2(f)",
+      "factor": "licensing"
     },
     {
       "stream": "BC PNP Skills Immigration (all streams)",

@@ -54,14 +54,17 @@ from pnp.constants import (
     AB_PRINT_HEALTH_TPL, AB_PRINT_NO_HEALTH,
     AB_PRINT_NO_TECH, AB_PRINT_TECH_TPL, AB_TABLE_HEAD_KW, AB_TECH_LABEL, AB_TECH_PDF_URL, AB_TECH_STREAM,
     AB_TECH_TIMEOUT_S, AREA_GTA, AREA_METRO, AREA_ON_LISTED, AREA_ON_OTHER, AREA_OUTSIDE_GTA, AREA_REST_BC,
-    AREA_REST_NL, AREA_ST_JOHNS, ATTR_COLSPAN, ATTR_HREF, ATTR_ROWSPAN, BCR_ALL_STREAMS, BCR_EMP_STAFF_LABEL_TPL,
-    BCR_EMP_STAFF_RE, BCR_EMP_STAFF_ROWS, BCR_EMP_YEARS_LABEL_TPL, BCR_EMP_YEARS_RE, BCR_EXP_LABEL_TPL, BCR_EXP_RE,
-    BCR_FACTOR_ORDER, BCR_FOOTER_DATE_RE, BCR_FURNITURE, BCR_INCOME_7PLUS_PREFIX, BCR_INCOME_LABEL_TPL,
+    AREA_REST_NL, AREA_ST_JOHNS, ATTR_COLSPAN, ATTR_HREF, ATTR_ROWSPAN, BCR_ALL_STREAMS, BCR_BASIS_WINDOW_TPL,
+    BCR_EMP_STAFF_LABEL_TPL, BCR_EMP_STAFF_RE, BCR_EMP_STAFF_ROWS, BCR_EMP_YEARS_LABEL_TPL, BCR_EMP_YEARS_RE,
+    BCR_EXP_LABEL_TPL, BCR_EXP_RE, BCR_EXP_WINDOW_RE, BCR_FACTOR_ORDER, BCR_FOOTER_DATE_RE, BCR_FURNITURE,
+    BCR_HA_LICENSING_LABEL, BCR_HA_LICENSING_RE, BCR_HEALTH_AUTHORITY, BCR_INCOME_7PLUS_PREFIX, BCR_INCOME_LABEL_TPL,
     BCR_INCOME_RE, BCR_INCOME_ROWS, BCR_INSIDE_WORD, BCR_LANG_CLB_RE, BCR_LANG_LABEL_TPL, BCR_LANG_NONE_LABEL_TPL,
-    BCR_LANG_NONE_RE, BCR_METRO_WORDS, BCR_OUTSIDE_WORD, BCR_PRINT_DONE_TPL, BCR_PROBLEM_EMP_STAFF_TPL,
-    BCR_PROBLEM_EMP_YEARS, BCR_PROBLEM_EXP, BCR_PROBLEM_INCOME_ORDER, BCR_PROBLEM_INCOME_SWAP,
-    BCR_PROBLEM_INCOME_TPL, BCR_PROBLEM_LANG, BCR_PROBLEM_LANG_NONE, BCR_REST_WORDS, BCR_SECTION_EMP_STAFF,
-    BCR_SECTION_EMP_YEARS, BCR_SECTION_EXP, BCR_SECTION_INCOME, BCR_SECTION_LANG, BCR_SKILLED_WORKER,
+    BCR_LANG_NONE_RE, BCR_LICENSING_LABEL, BCR_LICENSING_RE, BCR_METRO_WORDS, BCR_OUTSIDE_WORD, BCR_PRINT_DONE_TPL,
+    BCR_PROBLEM_EMP_STAFF_TPL, BCR_PROBLEM_EMP_YEARS, BCR_PROBLEM_EXP, BCR_PROBLEM_EXP_WINDOW,
+    BCR_PROBLEM_HA_LICENSING, BCR_PROBLEM_INCOME_ORDER, BCR_PROBLEM_INCOME_SWAP, BCR_PROBLEM_INCOME_TPL,
+    BCR_PROBLEM_LANG, BCR_PROBLEM_LANG_NONE, BCR_PROBLEM_LICENSING, BCR_REST_WORDS, BCR_SECTION_EMP_STAFF,
+    BCR_SECTION_EMP_YEARS, BCR_SECTION_EXP, BCR_SECTION_HA_LICENSING, BCR_SECTION_INCOME, BCR_SECTION_LANG,
+    BCR_SECTION_LICENSING, BCR_SKILLED_WORKER,
     BCR_TIMEOUT_S, BCR_UNIT_CAD_YR, BCR_WITHIN_WORD, BCS_ASOF_RE, BCS_DUR_RE, BCS_MIN_POOL, BCS_MIN_STAGES,
     BCS_NOTE, BCS_PCTL_RE, BCS_POOL_HEAD_KW, BCS_POOL_SANE, BCS_PRINT_DONE_TPL, BCS_PRINT_POOL_TPL,
     BCS_PRINT_PROC_ONLY_TPL, BCS_PRINT_PROC_ROW_TPL, BCS_PRINT_STAGE_TPL, BCS_PROBLEM_NO_ASOF,
@@ -85,7 +88,8 @@ from pnp.constants import (
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
     FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_ALT,
     FACTOR_EXPERIENCE_EXCLUDED,
-    FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
+    FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_LICENSING, FACTOR_RESIDENCE, FACTOR_WAGE,
+    FILETYPE_PDF,
     HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH_DIR, IN_NEWS_FILE,
     IN_NL_HTML_CACHE, IN_NL_MANIFEST, K_ALLOCATION, K_ALLOC_PROGRAM, K_ALLOC_VALUE, K_ALLOC_YEAR, K_ANNUAL, K_ANY,
     K_ANY_TRADE, K_API, K_APPLIES_AREA, K_APPLIES_CONDITION, K_APPLIES_NOC, K_APPLIES_TEER, K_APPLIES_TO,
@@ -3014,19 +3018,62 @@ def bc_income_reqs(txt: str) -> ReqsOut:
 
 
 def bc_experience_reqs(txt: str) -> ReqsOut:
-    """4.1(c) 技术工人通道的工作经验(近十年内 ≥2 年 TEER 0-3)。"""
+    """4.1(c) 技术工人通道的工作经验(近十年内 ≥2 年 TEER 0-3)。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):窗口期照官方原句抽出(bc_exp_window)写进 basis(windowYears=N),
+    门槛卡据此出「近 10 年内」;label 里的年数同改读原句(原模板写死 ten,落盘 label 逐字不变)。
+    """
     rows: list = []
     problems: list = []
     m = BCR_EXP_RE.search(txt)
-    if m and m.group(1).lower() in WORD_N:
-        yrs = WORD_N[m.group(1).lower()]
+    yrs = None
+    if m:
+        yrs = WORD_N.get(m.group(1).lower())
+    window = bc_exp_window(txt)
+    if m and yrs is not None and window != "":
         rows.append(to_bc_req(ReqIn(stream=BCR_SKILLED_WORKER, factor=FACTOR_EXPERIENCE, op=OP_GE,
                                     value=yrs * MBR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                    basis=BCR_BASIS_WINDOW_TPL.format(n=WORD_N[window.lower()]),
                                     section=BCR_SECTION_EXP,
-                                    label=BCR_EXP_LABEL_TPL.format(word=m.group(1).title(),
-                                                                   band=m.group(2)))))
-    else:
+                                    label=BCR_EXP_LABEL_TPL.format(word=m.group(1).title(), band=m.group(2),
+                                                                   window=window))))
+    if yrs is None:
         problems.append(BCR_PROBLEM_EXP)
+    if window == "":
+        problems.append(BCR_PROBLEM_EXP_WINDOW)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def bc_exp_window(txt: str) -> str:
+    """4.1(c) 经验窗口期的官方数词(「within the last ten years」里的 ten);没解析到、或不是认得的数词给空串,
+    由调用方报自校问题。"""
+    m = BCR_EXP_WINDOW_RE.search(txt)
+    if not m or m.group(1).lower() not in WORD_N:
+        return ""
+    return m.group(1)
+
+
+def bc_licensing_reqs(txt: str) -> ReqsOut:
+    """执业资格两条(条文型 op=rule,官方整句进 valueText):3.7 全部通道一条 + 4.2(f) 卫生局流一条。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛卡「其他」行据此出「职业所需执照或注册」;判定引擎与门槛量尺
+    都不读 licensing,判定不变。
+    """
+    rows: list = []
+    problems: list = []
+    general = BCR_LICENSING_RE.search(txt)
+    if general:
+        rows.append(to_bc_req(ReqIn(factor=FACTOR_LICENSING, op=OP_RULE, value_text=fold_ws(general.group(0)).strip(),
+                                    section=BCR_SECTION_LICENSING, label=BCR_LICENSING_LABEL)))
+    else:
+        problems.append(BCR_PROBLEM_LICENSING)
+    ha = BCR_HA_LICENSING_RE.search(txt)
+    if ha:
+        rows.append(to_bc_req(ReqIn(stream=BCR_HEALTH_AUTHORITY, factor=FACTOR_LICENSING, op=OP_RULE,
+                                    value_text=fold_ws(ha.group(0)).strip(), section=BCR_SECTION_HA_LICENSING,
+                                    label=BCR_HA_LICENSING_LABEL)))
+    else:
+        problems.append(BCR_PROBLEM_HA_LICENSING)
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -3061,14 +3108,15 @@ def bc_employer_reqs(txt: str) -> ReqsOut:
 
 
 def build_bc_req() -> None:
-    """BC 门槛入口:指南 PDF → 四组门槛;任何一组没解析到就保留旧表 exit 1。"""
+    """BC 门槛入口:指南 PDF → 四组门槛;任何一组没解析到就保留旧表 exit 1。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加执业资格一组(bc_licensing_reqs),共五组。"""
     raw = pdf_text(fetch_bytes(FetchHtmlIn(url=BC_GUIDE_URL, timeout_s=BCR_TIMEOUT_S)))
     eff = bc_guide_effective(raw)
     txt = bc_flatten(raw)
     reqs: list = []
     problems: list = []
     for part in (bc_language_reqs(txt), bc_income_reqs(txt),
-                 bc_experience_reqs(txt), bc_employer_reqs(txt)):
+                 bc_experience_reqs(txt), bc_licensing_reqs(txt), bc_employer_reqs(txt)):
         reqs += part.rows
         problems += part.problems
     if not eff:

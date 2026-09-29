@@ -2642,7 +2642,12 @@ OUT_BC_REQ = paths.PNP / "bc-req.json"
   6.7/6.8 **雇主侧**门槛(subject='employer'):在 BC 经营满 1 年;大温 ≥5 名全职雇员、大温外 ≥3 名
          —— 这几项本站没有雇主事实,报告里一律 unknown 说「要雇主出材料」,不猜不编
 自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。门槛错一位比没有更危险 ——
-用户会照着它决定考不考雅思、跳不跳槽。"""
+用户会照着它决定考不考雅思、跳不跳槽。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补三处,省提名弹框「本岗通道的门槛」卡读它们:
+  4.1(c) 经验那行 basis 补窗口期 windowYears=10(原句「must have been obtained within the last ten years」,原先只在 label 里)
+  3.7    执业资格(licensing,条文型 op=rule,全部通道):岗位要求执照 / 注册 / 认证的,申请时须交证明或说明即将满足
+  4.2(f) 卫生局流执业资格(流名 BCR_HEALTH_AUTHORITY):须满足卫生局要求的学历 / 培训 / 经验 / 资质 / 执照
+三处判定引擎与门槛量尺都不读(windowYears、licensing 都不在它们认的因素 / 口径里),判定不变。"""
 
 BCR_TIMEOUT_S = 60
 """指南 PDF 抓取超时。"""
@@ -2652,6 +2657,11 @@ BCR_ALL_STREAMS = "BC PNP Skills Immigration (all streams)"
 
 BCR_SKILLED_WORKER = "BC PNP Skilled Worker stream"
 """4.1 专属通道名。"""
+
+BCR_HEALTH_AUTHORITY = "BC PNP Health Authority stream"
+"""4.2 专属通道名(卫生局流)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡):4.2(f) 执业资格那一行落这条流,
+通道对照表 bc-health-authority 的门槛流挂它。🔴 名字里不许带「Skill」:判定引擎 BC-sw / BC-build 按 /bc pnp skill/i
+挑门槛行(cms lib/pathways),带上就把卫生局流的行算进技术工人通道。"""
 
 AREA_METRO = "metro-vancouver"
 """区域键:大温哥华地区。"""
@@ -2690,6 +2700,28 @@ BCR_EXP_RE = re.compile(
     r"in any skilled occupation \(NOC TEER ([\d, ]*or \d)\)", re.I)
 """4.1(c) 技术工人通道的工作经验。"""
 
+BCR_EXP_WINDOW_RE = re.compile(
+    r"work performed within Canada or abroad and must have been obtained within the last (\w+) years", re.I)
+"""4.1(c) 工作经验的窗口期(官方原句「This experience may be from work performed within Canada or abroad and must have
+been obtained within the last ten years.」)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡):原先只写进 label(模板里写死
+ten),现照原句抽出写进 basis(BCR_BASIS_WINDOW_TPL)—— 门槛卡据此出「近 10 年内」;判定引擎与门槛量尺都不读 windowYears
+(只认 employerTenure),判定不变。锚在「within Canada or abroad」上:8.1 打分段另有一句「within the last 10 years」,别抽错。"""
+
+BCR_LICENSING_RE = re.compile(
+    r"If the job offered to you requires mandatory certification, licensing or registration, you must provide "
+    r"documentation[^.]*\.", re.I)
+"""3.7 执业资格(全部 Skills Immigration 通道):岗位要求执照 / 注册 / 认证的,申请时须交证明,或说明已在办、即将满足
+(整句进 valueText)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛卡「其他」行据此出「职业所需执照或注册」;
+判定引擎与门槛量尺都不读 licensing,判定不变。"""
+
+BCR_HA_LICENSING_RE = re.compile(
+    r"You must meet the qualifications criteria in section 3\.7, and meet the education, training, experience, "
+    r"qualifications, and licensing required by the public health authority\.", re.I)
+"""4.2(f) 卫生局流的执业资格:3.7 之外还须满足卫生局要求的学历 / 培训 / 经验 / 资质 / 执照(整句进 valueText;句中「3.7」
+带点,不能拿 [^.]* 截句,故整句写死)。2026-09-29 同批:卫生局流的专条只有这一句落得成门槛行 —— 经验官方不给月数
+(skills-immigration 页原句「Must meet the work experience required by the BC PNP and your B.C. health authority
+employer」),4.2(b) 卫生局点头支持、4.2(c) 须是卫生局直属雇员属雇主身份条件,门槛卡没有对应的行。"""
+
 BCR_EMP_YEARS_RE = re.compile(r"Your employer must have operated in B\.C\. for at least (\w+) year", re.I)
 """6.7 雇主经营年限。"""
 
@@ -2722,6 +2754,12 @@ BCR_SECTION_EMP_YEARS = "6.7"
 BCR_SECTION_EMP_STAFF = "6.8"
 """雇主雇员数的节号。"""
 
+BCR_SECTION_LICENSING = "3.7"
+"""执业资格(全部通道)的节号。"""
+
+BCR_SECTION_HA_LICENSING = "4.2(f)"
+"""卫生局流执业资格的节号。"""
+
 BCR_METRO_WORDS = "Metro Vancouver Regional District"
 """收入表 label 里的大温措辞。"""
 
@@ -2751,8 +2789,20 @@ BCR_INCOME_LABEL_TPL = "Minimum family income {size} person(s), {where}: ${val} 
 """3.10 最低家庭收入的 label。"""
 
 BCR_EXP_LABEL_TPL = ("{word} years of full-time skilled work experience "
-                     "(NOC TEER {band}) within the last ten years")
-"""4.1(c) 工作经验的 label。"""
+                     "(NOC TEER {band}) within the last {window} years")
+"""4.1(c) 工作经验的 label。
+2026-09-29:窗口期年数改读官方原句(BCR_EXP_WINDOW_RE 抽出的数词,现为 ten),原模板写死「ten」—— 落盘 label 逐字不变。"""
+
+BCR_BASIS_WINDOW_TPL = "windowYears={n}"
+"""4.1(c) 经验行的窗口期口径包(近 N 年内;门槛卡读,判定引擎与门槛量尺不读)。"""
+
+BCR_LICENSING_LABEL = ("Mandatory certification, licensing or registration required for the job offered "
+                       "(proof at application, or steps showing it will shortly be met)")
+"""3.7 执业资格的 label(原句整条在 valueText)。"""
+
+BCR_HA_LICENSING_LABEL = ("Education, training, experience, qualifications and licensing required by the public "
+                          "health authority")
+"""4.2(f) 卫生局流执业资格的 label(原句整条在 valueText)。"""
 
 BCR_EMP_YEARS_LABEL_TPL = "Employer must have operated in B.C. for at least {word} year{plural}"
 """6.7 雇主经营年限的 label。"""
@@ -2782,6 +2832,15 @@ BCR_PROBLEM_INCOME_SWAP = "3.10 大温某档不高于 BC 其余(两列读反了)
 BCR_PROBLEM_EXP = "4.1(c) 工作经验门槛没解析到"
 """自校问题:工作经验。"""
 
+BCR_PROBLEM_EXP_WINDOW = "4.1(c) 工作经验的窗口期(近 N 年内)没解析到"
+"""自校问题:经验窗口期(进硬闸:缺了它门槛卡就少说「近 10 年内」,宁可保留旧表)。"""
+
+BCR_PROBLEM_LICENSING = "3.7 执业资格条文没解析到"
+"""自校问题:执业资格(全部通道)。"""
+
+BCR_PROBLEM_HA_LICENSING = "4.2(f) 卫生局流执业资格条文没解析到"
+"""自校问题:卫生局流执业资格(卫生局流的门槛只有这一行,缺了它通道对照表 bc-health-authority 挂的门槛流就落空)。"""
+
 BCR_PROBLEM_EMP_YEARS = "6.7 雇主经营年限没解析到"
 """自校问题:雇主经营年限。"""
 
@@ -2794,8 +2853,8 @@ PROBLEM_NO_EFFECTIVE = "没解析到指南生效日期"
 BCR_PRINT_DONE_TPL = "✓ {path}  指南生效 {eff},共 {n} 条门槛"
 """BC 门槛收尾报数。"""
 
-BCR_FACTOR_ORDER = ("language", "income", "experience", "empYears", "empStaff")
-"""收尾按因素报条数的顺序。"""
+BCR_FACTOR_ORDER = ("language", "income", "experience", "licensing", "empYears", "empStaff")
+"""收尾按因素报条数的顺序(2026-09-29 加 licensing)。"""
 
 
 # =========================================================================
