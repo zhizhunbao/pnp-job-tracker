@@ -86,7 +86,7 @@ from pnp.constants import (
     DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
     DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
-    FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_ALT,
+    FACTOR_EDUCATION, FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_ALT,
     FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_LICENSING, FACTOR_RESIDENCE, FACTOR_WAGE,
     FILETYPE_PDF,
@@ -185,13 +185,17 @@ from pnp.constants import (
     NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, K_PNP_INVITATIONS, NL_NOTE_AIP_RE, NL_NOTE_PNP_RE, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
     NL_MD_LINK_SUB, NL_PRINT_DONE_TPL, NL_PRINT_FAIL_TPL, NL_PRINT_NO_POSITION, NL_PRINT_SECTOR_TPL,
     NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP_AIP, NL_SECTOR_RE,
-    NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_EFFECTIVE_RE, NSR_EMP_LABEL_TPL, NSR_EMP_YEARS_RE,
-    NSR_EXP_LABEL_TPL, NSR_EXP_RE, NSR_FACTOR_ORDER, NSR_FURNITURE_RE, NSR_HOST, NSR_HTTP_PREFIX,
-    NSR_LANG_HI_LABEL_TPL, NSR_LANG_HI_RE, NSR_LANG_LO_LABEL_TPL, NSR_LANG_LO_RE, NSR_PDF_KW_LANG, NSR_PDF_KW_SKIP,
-    NSR_PDF_KW_STREAM, NSR_PDF_SUFFIX, NSR_PDF_TIMEOUT_S, NSR_PRINT_DONE_TPL, NSR_PRINT_GUIDE_TPL,
-    NSR_PRINT_NO_GUIDE, NSR_PROBLEM_LANG_HI, NSR_PROBLEM_LANG_LO, NSR_PROBLEM_LANG_ORDER_TPL,
-    NSR_PROBLEM_NO_VERSION, NSR_SECTION_EMPLOYER, NSR_SECTION_EXP, NSR_SECTION_LANG_HI, NSR_SECTION_LANG_LO,
-    NSR_SOURCE, NSR_STREAM, NSR_TIMEOUT_S, NS_ALLOC_API, NS_ALLOC_BAD_TPL, NS_ALLOC_MIN_LATEST_YEAR,
+    NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_BASIS_WINDOW_TPL, NSR_CCW_LANG_RE, NSR_EDU_CCW_LABEL_TPL,
+    NSR_EDU_CCW_RE, NSR_EDU_SW_RE, NSR_EFFECTIVE_RE, NSR_EMP_LABEL_TPL, NSR_EMP_YEARS_RE, NSR_EXP_LABEL_TPL,
+    NSR_EXP_RE, NSR_FACTOR_ORDER, NSR_FACTOR_ORDER_FULL, NSR_FURNITURE_RE, NSR_HOST, NSR_HTTP_PREFIX,
+    NSR_LANG_HI_LABEL_TPL, NSR_LANG_HI_RE, NSR_LANG_LO_LABEL_TPL, NSR_LANG_LO_RE, NSR_LICENCE_RE, NSR_PDF_KW_LANG,
+    NSR_PDF_KW_SKIP, NSR_PDF_KW_STREAM, NSR_PDF_SUFFIX, NSR_PDF_TIMEOUT_S, NSR_PRINT_DONE_TPL, NSR_PRINT_GUIDE_TPL,
+    NSR_PRINT_NO_GUIDE, NSR_PROBLEM_CCW_EXP, NSR_PROBLEM_CCW_EXP_DIFF_TPL, NSR_PROBLEM_CCW_LANG,
+    NSR_PROBLEM_CCW_LANG_DIFF_TPL, NSR_PROBLEM_EDU_CCW, NSR_PROBLEM_EDU_SW, NSR_PROBLEM_LANG_HI, NSR_PROBLEM_LANG_LO,
+    NSR_PROBLEM_LANG_ORDER_TPL, NSR_PROBLEM_LICENCE, NSR_PROBLEM_NO_VERSION, NSR_PROBLEM_SEC_CCW, NSR_PROBLEM_SEC_SW,
+    NSR_SECTION_CCW, NSR_SECTION_EMPLOYER, NSR_SECTION_EXP, NSR_SECTION_LANG_HI, NSR_SECTION_LANG_LO,
+    NSR_SECTION_LICENCE, NSR_SECTION_SW, NSR_SEC_CCW_RE, NSR_SEC_SW_RE, NSR_SOURCE, NSR_STREAM, NSR_STREAM_CCW,
+    NSR_STREAM_SW, NSR_TIMEOUT_S, NS_ALLOC_API, NS_ALLOC_BAD_TPL, NS_ALLOC_MIN_LATEST_YEAR,
     NS_ALLOC_MIN_YEARS, NS_ALLOC_NOTE, NS_ALLOC_NO_YEAR, NS_ALLOC_PAGE, NS_ALLOC_PRINT_FAIL_TPL,
     NS_ALLOC_PRINT_OK_TPL, NS_ALLOC_PRINT_OUT_TPL, NS_ALLOC_PROG_AIP, NS_ALLOC_PROG_NSNP, NS_ALLOC_TIMEOUT_S,
     NS_ALLOC_UA, NS_ASOF_RE, NS_FACT_NO_MAIN_LIST, NS_FACT_NO_MAIN_LIST_KEY, NS_FACT_OID_EMPTY, NS_FACT_OID_KEY,
@@ -4941,12 +4945,24 @@ def ns_language_reqs(txt: str) -> ReqsOut:
 
 
 def ns_experience_reqs(txt: str) -> ReqsOut:
-    """经验:近 5 年内 12 个整月且 ≥1,560 小时,须与所获 offer 相关的带薪工作。"""
+    """经验:近 5 年内 12 个整月且 ≥1,560 小时,须与所获 offer 相关的带薪工作。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):12 个月那行把「近 5 年」写进 basis(windowYears=5),门槛卡出
+    「(近 5 年内)」,判定不变。
+    同日抽过又撤(lead 拍「这批先不收两行」):TEER 4 / 5 在给 offer 的本省雇主带薪满 6 个月 —— 指南 A 段原句「If your job
+    offer falls under the NOC TEER category 4 or 5, you have 6 months’ paid work experience with the Nova Scotia employer who
+    is offering you the job」。它与 12 个月那行是「且」,判定引擎却在经验行里取最低月数、再拿那一行的尺子量全部经验行,会把
+    「且」判成「或」(住在本省、本省经验 6-11 个月加海外够 12 个月的,会被误判不够 12 个月)。待引擎把在职行与普通经验行
+    分开量之后再加:记 experience、basis=employerTenure、appliesTeer 4,5;住全流不住 A 类流(判定引擎按流汇总 appliesTeer,
+    单放 A 类流会被读成「A 类只收 TEER 4-5」;D 段也自称核心要求「Exception to Core Requirement」);B 段(建筑)不要求它,
+    卡片出并列经验行时得排除建筑通道。
+    """
     rows: list = []
     problems: list = []
     e = NSR_EXP_RE.search(txt)
     if e:
         rows.append(to_ns_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(e.group(1)), unit=UNIT_MONTHS,
+                                    basis=NSR_BASIS_WINDOW_TPL.format(n=e.group(2)),
                                     section=NSR_SECTION_EXP,
                                     label=NSR_EXP_LABEL_TPL.format(months=e.group(1), years=e.group(2),
                                                                    hours=e.group(3)))))
@@ -4969,8 +4985,87 @@ def ns_employer_reqs(txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def ns_licence_reqs(txt: str) -> ReqsOut:
+    """执照 / 证书:这份工作要执照或证书的,递 EOI 前就得有(整条流;门槛卡「其他」行)。2026-09-29 七省门槛卡补。"""
+    rows: list = []
+    problems: list = []
+    m = NSR_LICENCE_RE.search(txt)
+    if m:
+        rows.append(to_ns_req(ReqIn(factor=FACTOR_LICENSING, op=OP_RULE, section=NSR_SECTION_LICENCE,
+                                    label=fold_ws(m.group(0)).strip())))
+    else:
+        problems.append(NSR_PROBLEM_LICENCE)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ns_sw_category_reqs(txt: str) -> ReqsOut:
+    """A 类(Skilled Worker)独有的一行:高中文凭(流名 NSR_STREAM_SW;只在指南 A 段里找)。2026-09-29 七省门槛卡补。"""
+    sec = NSR_SEC_SW_RE.search(txt)
+    if not sec:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_SEC_SW])
+    edu = NSR_EDU_SW_RE.search(sec.group(1))
+    if not edu:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EDU_SW])
+    return ReqsOut(rows=[to_ns_req(ReqIn(stream=NSR_STREAM_SW, factor=FACTOR_EDUCATION, op=OP_RULE,
+                                         section=NSR_SECTION_SW, label=fold_ws(edu.group(0)).strip()))],
+                   problems=[])
+
+
+def ns_ccw_category_reqs(txt: str) -> ReqsOut:
+    """B 类(Critical Construction Worker)独有的一行:高中文凭或建筑业培训(流名 NSR_STREAM_CCW)。2026-09-29 七省门槛卡补。"""
+    body = ns_ccw_body(txt)
+    if body == "":
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_SEC_CCW])
+    edu = NSR_EDU_CCW_RE.search(body)
+    if not edu:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EDU_CCW])
+    label = NSR_EDU_CCW_LABEL_TPL.format(diploma=edu.group(1), training=edu.group(2))
+    return ReqsOut(rows=[to_ns_req(ReqIn(stream=NSR_STREAM_CCW, factor=FACTOR_EDUCATION, op=OP_RULE,
+                                         section=NSR_SECTION_CCW, label=label))],
+                   problems=[])
+
+
+def ns_ccw_body(txt: str) -> str:
+    """指南 B 段(Critical Construction Workers)正文;没找到给空串(段缺由 ns_ccw_category_reqs 报自校问题)。"""
+    sec = NSR_SEC_CCW_RE.search(txt)
+    if not sec:
+        return ""
+    return sec.group(1)
+
+
+def ns_ccw_drift_reqs(txt: str) -> ReqsOut:
+    """B 段自己写的语言两档与经验,逐项对校全流那几行(取自全文首现):建筑通道的门槛卡读全流那几行,B 段哪天改了数、
+    全流没跟着改,卡就会说错 —— 对不上报自校问题,不静默沿用。只报问题,不出行。2026-09-29 七省门槛卡补。"""
+    problems: list = []
+    body = ns_ccw_body(txt)
+    if body == "":
+        return ReqsOut(rows=[], problems=problems)
+    lang = NSR_CCW_LANG_RE.search(body)
+    hi = NSR_LANG_HI_RE.search(txt)
+    lo = NSR_LANG_LO_RE.search(txt)
+    if not lang:
+        problems.append(NSR_PROBLEM_CCW_LANG)
+    elif hi and lo:
+        ccw_key = (int(lang.group(1)), teers(lang.group(2)), int(lang.group(3)), teers(lang.group(4)))
+        base_key = (int(hi.group(2)), teers(hi.group(1)), int(lo.group(2)), teers(lo.group(1)))
+        if ccw_key != base_key:
+            problems.append(NSR_PROBLEM_CCW_LANG_DIFF_TPL.format(ccw=lang.group(0), hi_band=hi.group(1),
+                                                                 hi=hi.group(2), lo_band=lo.group(1), lo=lo.group(2)))
+    exp = NSR_EXP_RE.search(body)
+    base = NSR_EXP_RE.search(txt)
+    if not exp:
+        problems.append(NSR_PROBLEM_CCW_EXP)
+    elif base and exp.groups() != base.groups():
+        problems.append(NSR_PROBLEM_CCW_EXP_DIFF_TPL.format(ccw=exp.group(0), base=base.group(0)))
+    return ReqsOut(rows=[], problems=problems)
+
+
 def build_ns_req() -> None:
-    """NS 门槛入口:通道页现取指南 PDF → 语言两档 + 经验 + 雇主经营年限。"""
+    """NS 门槛入口:通道页现取指南 PDF → 语言两档 + 经验 + 雇主经营年限。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补抓:全流再加执照一行,A / B 两类各一行学历;B 段语言与经验对校
+    全流那几行(建筑通道的卡读它们)。TEER 4 / 5 在职 6 个月、工资区间两行同日抽过又撤(原句与理由见 OUT_NS_REQ「没抓的」)。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_NS_REQ))
     url = ns_guide_url()
     if not url:
@@ -4982,7 +5077,8 @@ def build_ns_req() -> None:
     txt = fold_ws(NSR_FURNITURE_RE.sub(TEXT_JOIN_SEP, fold_ws(raw))).strip()
     reqs: list = []
     problems: list = []
-    for part in (ns_language_reqs(txt), ns_experience_reqs(txt), ns_employer_reqs(txt)):
+    for part in (ns_language_reqs(txt), ns_experience_reqs(txt), ns_employer_reqs(txt), ns_licence_reqs(txt),
+                 ns_sw_category_reqs(txt), ns_ccw_category_reqs(txt), ns_ccw_drift_reqs(txt)):
         reqs += part.rows
         problems += part.problems
     if not eff_m:
@@ -5000,7 +5096,7 @@ def build_ns_req() -> None:
     }, indent=INDENT_2))
     # pyrefly: ignore[missing-attribute] — 同上,走到这 eff_m 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_NS_REQ, version=eff_m.group(1), n=len(reqs)))
-    say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER_FULL, tpl=PRINT_FACTOR_TPL))
 
 
 # =========================================================================

@@ -4616,7 +4616,21 @@ OUT_NS_REQ = paths.PNP / "ns-req.json"
     那是联邦口径不是省门槛,且报告的 income 判定要和「该职业该省中位年薪」比 —— 拿家庭 LICO 去比
     个人职业中位是两个不可比的数(08-02 已因此撤过一次并排展示)。留白比硬凑强。
   · TEER 4/5 的「与 NS 雇主 6 个月带薪经验」:口径是**在职时长**,与本站问的同职业总经验对不上。
-自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。"""
+    2026-09-29 七省门槛卡抽过又撤,照旧不抓(判定引擎会把它与 12 个月那行的「且」判成「或」;原句与再加的条件见
+    ns_experience_reqs 的 docstring)。
+  · 工资「You must be paid a salary that meets provincial employment standards and the provincial wage range for your
+    specific occupation」(核心要求,各类都管;口径是 Job Bank 工资报告里本职业在本省的区间,不是中位 —— 指南第 19 页
+    「whether the wage you are being offered is within Nova Scotia’s wage range for that job」)。2026-09-29 七省门槛卡抽过
+    又撤(lead 拍「这批先不收两行」):门槛量尺 wageResult 取本省第一条工资行、不看口径,会给 NS 判定卡多一行空门槛;
+    门槛卡只认中位,这行上卡也出不来。BC、NL 两省同样没入表。
+自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补抓,两条 NS 通道(技术工人 / 建筑)的门槛卡从此有料:
+  流分两层 —— 全流 NSR_STREAM(Skilled Worker stream:A 技术工人 / B 建筑 / D 在需三类共用的行)+ 类别流
+  NSR_STREAM_SW(A 类)/ NSR_STREAM_CCW(B 类)只装本类独有的行;通道对照表技术工人挂「全流 + A 类」,建筑挂「全流 + B 类」。
+  全流新增:经验那行把「近 5 年」写进 basis(windowYears=5);这份工作要执照 / 证书的得先有(licensing)。
+  TEER 4/5 在本雇主 6 个月、工资区间两行同日抽过又撤(lead 拍「这批先不收两行」),见上面「没抓的」末两条。
+  类别流:A 类高中文凭;B 类高中文凭或建筑业培训。年龄 21-55、安家资金两条照旧不抓(理由同上)。
+  B 段自己又写了一遍语言两档与经验,逐项对校全流那几行(建筑通道的卡读的是全流那几行),对不上报自校问题。"""
 
 NSR_TIMEOUT_S = 45
 """通道页抓取超时。"""
@@ -4626,6 +4640,14 @@ NSR_PDF_TIMEOUT_S = 60
 
 NSR_STREAM = "Nova Scotia Nominee Program — Skilled Worker stream"
 """通道名。"""
+
+NSR_STREAM_SW = "Nova Scotia Nominee Program — Skilled Worker stream — Skilled Worker category"
+"""A 类(Skilled Worker)独有行的通道名(2026-09-29 七省门槛卡:指南把这条流分成 A 技术工人 / B 建筑 / C 医生 / D 在需
+四类 ——「Eligibility criteria vary depending on the applicant’s situation」;全流 NSR_STREAM 装三类共用的行,本流只装
+A 类自己的)。通道对照表的技术工人通道挂「全流 + 本流」。"""
+
+NSR_STREAM_CCW = "Nova Scotia Nominee Program — Skilled Worker stream — Critical Construction Worker category"
+"""B 类(Critical Construction Worker)独有行的通道名(同上;建筑通道挂「全流 + 本流」)。"""
 
 NSR_HOST = "https://liveinnovascotia.com"
 """相对链接的主机名前缀。"""
@@ -4670,6 +4692,30 @@ NSR_EXP_RE = re.compile(
 NSR_EMP_YEARS_RE = re.compile(r"The employer must have operated in Nova Scotia for at least (\d+) years", re.I)
 """雇主经营年限。"""
 
+NSR_LICENCE_RE = re.compile(r"Before you submit an EOI to the Skilled Worker stream, find out if you need a licen[cs]e or "
+                            r"certificate to do the job you have been offered", re.I)
+"""执照 / 证书:整条流的要求(「You may need a licence or certificate for the job you have been offered」一节;A / B / D 三类的
+材料清单都列「copies of the licences or certificates required for the job you have been offered, if needed」)→ licensing,
+门槛卡「其他」行出「职业所需执照或注册」(2026-09-29 七省门槛卡)。"""
+
+NSR_SEC_SW_RE = re.compile(r"A\) Skilled Workers? See APPENDIX A(.+?)B\) Critical Construction Workers? See APPENDIX B")
+"""指南 A 段(Skilled Workers)正文:A 类学历只在本段里找(B 段也有「You have a high school diploma」,后面跟着「OR」)。"""
+
+NSR_SEC_CCW_RE = re.compile(r"B\) Critical Construction Workers? See APPENDIX B(.+?)C\) Physicians? See APPENDIX C")
+"""指南 B 段(Critical Construction Workers)正文:B 类学历与对校用的语言、经验都在本段里找。"""
+
+NSR_EDU_SW_RE = re.compile(r"You have a high school diploma[^.;]*", re.I)
+"""A 类学历:高中文凭(A 段原句「You have a high school diploma.」)。"""
+
+NSR_EDU_CCW_RE = re.compile(r"(You have a high school diploma);? OR (?:o )?(proof you have completed a construction "
+                            r"specific industry training program)", re.I)
+"""B 类学历:高中文凭或建筑业培训结业证明(B 段「Education Requirements - CCW」两条是「或」,中间夹着列表符 o)。"""
+
+NSR_CCW_LANG_RE = re.compile(r"CLB (\d+) if your job is in TEER ([\d, ]*(?:or|and) \d),? (?:o )?CLB (\d+) if your job is "
+                             r"(?:NOC )?TEER (\d(?:,? (?:or|and) \d)*)", re.I)
+"""B 段自己写的语言两档(「CLB 5 if your job is in TEER 0, 1, 2, or 3, o CLB 4 if your job is NOC TEER 4 or 5」)——
+只拿来对校全流那两行,不另起行(建筑通道的卡读全流那两行)。"""
+
 NSR_SECTION_LANG_HI = "Language — NOC TEER 0, 1, 2 and 3"
 """语言(TEER 0-3)的出处节名。"""
 
@@ -4681,6 +4727,19 @@ NSR_SECTION_EXP = "Skilled Workers — work experience"
 
 NSR_SECTION_EMPLOYER = "Core Requirements — employer"
 """雇主侧的出处节名。"""
+
+NSR_SECTION_LICENCE = "You may need a licence or certificate for the job you have been offered"
+"""执照 / 证书的出处节名(指南原节标题)。"""
+
+NSR_SECTION_SW = "A) Skilled Workers"
+"""A 类学历的出处节名。"""
+
+NSR_SECTION_CCW = "B) Critical Construction Workers — Education Requirements - CCW"
+"""B 类学历的出处节名。"""
+
+NSR_BASIS_WINDOW_TPL = "windowYears={n}"
+"""经验那行把窗口期写进 basis(2026-09-29 七省门槛卡:官方原句「within the last 5 years」,原先只写进 label)——
+门槛卡按它出「(近 5 年内)」;判定引擎与门槛量尺都不读 windowYears(只认 employerTenure),判定不变(同 ABR_BASIS_WINDOW_TPL)。"""
 
 NSR_LANG_HI_LABEL_TPL = ("Canadian Language Benchmarks (CLB) or NCLC Level {clb} or higher for jobs "
                          "in NOC TEER {band} (Skilled Worker, Critical Construction Worker and "
@@ -4699,6 +4758,9 @@ NSR_EXP_LABEL_TPL = ("{months} complete calendar months of paid work within the 
 NSR_EMP_LABEL_TPL = "The employer must have operated in Nova Scotia for at least {years} years"
 """雇主经营年限的 label。"""
 
+NSR_EDU_CCW_LABEL_TPL = "{diploma} OR {training}"
+"""B 类学历的 label(两条原句用 OR 接回一句,去掉列表符 o)。"""
+
 NSR_PRINT_NO_GUIDE = "  ✗ 通道页上没找到 Skilled Worker 申请指南 PDF(改版?保留旧表,请人工复核)"
 """指南链接找不到的报数。"""
 
@@ -4713,6 +4775,34 @@ NSR_PROBLEM_LANG_LO = "语言(TEER 4/5)没解析到"
 
 NSR_PROBLEM_LANG_ORDER_TPL = "语言两档读反了(TEER 0-3 {hi} 应高于 TEER 4/5 {lo})"
 """自校问题:语言两档读反。"""
+
+NSR_PROBLEM_LICENCE = "执照 / 证书条文没解析到"
+"""自校问题:执照 / 证书。"""
+
+NSR_PROBLEM_SEC_SW = "指南里没找到 A) Skilled Workers 段(改版?)"
+"""自校问题:A 段(找不到就抽不了 A 类学历)。"""
+
+NSR_PROBLEM_EDU_SW = "学历(A 类高中文凭)没解析到"
+"""自校问题:A 类学历。"""
+
+NSR_PROBLEM_SEC_CCW = "指南里没找到 B) Critical Construction Workers 段(改版?)"
+"""自校问题:B 段(找不到就抽不了 B 类学历,也对校不了建筑通道读的全流行)。"""
+
+NSR_PROBLEM_EDU_CCW = "学历(B 类高中文凭或建筑业培训)没解析到"
+"""自校问题:B 类学历。"""
+
+NSR_PROBLEM_CCW_LANG = "B 段语言两档没解析到(对校不了建筑通道读的全流语言行)"
+"""自校问题:B 段语言。"""
+
+NSR_PROBLEM_CCW_LANG_DIFF_TPL = ("B 段语言两档与全流那两行对不上:B 段「{ccw}」,全流 TEER {hi_band} CLB {hi} / TEER {lo_band} "
+                                 "CLB {lo}(建筑通道的卡读全流那两行,会说错)")
+"""自校问题:B 段语言与全流不一致(那时 B 类得另起语言行、建筑通道改挂)。"""
+
+NSR_PROBLEM_CCW_EXP = "B 段工作经验没解析到(对校不了建筑通道读的全流经验行)"
+"""自校问题:B 段经验。"""
+
+NSR_PROBLEM_CCW_EXP_DIFF_TPL = "B 段工作经验与全流那行对不上:B 段「{ccw}」,全流「{base}」(建筑通道的卡读全流那行,会说错)"
+"""自校问题:B 段经验与全流不一致(同上)。"""
 
 PROBLEM_EXP_MISSING = "工作经验门槛没解析到"
 """自校问题:经验(NS 与 BC 同句,单一来源)。"""
@@ -4731,6 +4821,10 @@ NSR_PRINT_DONE_TPL = "✓ {path}  指南版本 {version},共 {n} 条门槛"
 
 NSR_FACTOR_ORDER = ("language", "experience", "empYears")
 """收尾按因素报条数的顺序。"""
+
+NSR_FACTOR_ORDER_FULL = ("language", "experience", "licensing", "education", "empYears")
+"""NS 收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后多了执照 / 学历两类;工资行同日撤下)。NSR_FACTOR_ORDER 原样
+留着 —— PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报两行 0。"""
 
 
 # =========================================================================
