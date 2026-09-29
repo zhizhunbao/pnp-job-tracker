@@ -4616,7 +4616,19 @@ PE PNP **没有**发布雇主侧的最低雇员数或最低营业额门槛,这�
 不走 HTML 的原因同上:princeedwardisland.ca 的雇主专页(如有)大概率也在 Radware 后面
 (data/crawl/pe-imm 缓存里种子页之外的每一页都是验证壳),但这份指南 PDF 本身不挡,而且已经把
 Employer Requirements 整段收进来了,不需要另外碰 WAF。
-自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。"""
+自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补抓,同一份指南 PDF、全部按官方原句正则取:
+  ① Critical Worker(TEER 4/5)「与本省雇主连续全职满 6 个月」一行(experience,basis=employerTenure)——
+     上面「不挂 TEER 4/5」说的是「2 年经验**或**相关学历」那一条(有学历替代,照旧不挂);在职 6 个月是同节另一条
+     必过项,当时没抓,这次补上(判定引擎 PE-sw 从此认得 TEER 4/5 这条路,不再拿在需职业清单判死)。
+  ② Skilled Worker 24 个月那行补口径 windowYears=5(近 5 年内;判定引擎只认 employerTenure,不读窗口期);
+  ③ 工资:雇主段「the comparable industry wage rate」+ 附录定义「The median wage, as determined by ESDC,
+     based on the NOC code」→ basis=occMedian(两句缺一句都报自校问题:定义换了口径就不是中位);
+  ④ 执照:雇主段「Employment requiring provincial licensing or accreditation …」(卡片「其他」行);
+  ⑤ 学历三行(Skilled Worker 两年制以上大专 / Critical Worker 与 Occupations in Demand 高中)与年龄 18-59 一行
+     (门槛卡与判定引擎都不读,给向导事实与资料库)。上面「没抓的:年龄、学历」是当时的判断,留作沿革。
+  Occupations in Demand 的 1 年经验照旧只进 label:判定卡「个人关」按省全量挑经验行、不认 appliesNoc,
+  另开一行会漏进本省 TEER 4/5 非清单岗(显示成 12 个月门槛)。"""
 
 PER_STREAM = "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)"
 """四条 Workforce 通道的合称。"""
@@ -4626,6 +4638,10 @@ PER_SKILLED_STREAM = "PEI PNP Workforce — Skilled Worker stream"
 
 PER_EMP_STREAM = "PEI PNP Workforce — Employer Requirements (all streams)"
 """雇主侧的通道名。"""
+
+PER_CRITICAL_STREAM = "PEI PNP Workforce — Critical Worker stream"
+"""Critical Worker 通道名(TEER 4 / 5 的在职经验与学历两行挂它;2026-09-29 Frank「都接上,开工吧」(七省门槛卡))。
+名字带「PEI PNP Workforce」是有意的:判定引擎 PE-sw 按 /pei pnp workforce/i 挑行,在职 6 个月是官方必过项,要它读。"""
 
 PER_LANG_RE = re.compile(r"minimum score of CLB ?/ ?NCLC (\d)", re.I)
 """语言:官方指南里 PDF 用的是 U+2010 连字符(full‐time),别写死普通 '-' —— 用 . 兜一位。"""
@@ -4644,6 +4660,81 @@ PER_EMP_YEARS_RE = re.compile(
     r"in Prince Edward Island for a minimum of (\w+) years", re.I)
 """雇主侧:「Employer Requirements - All Streams」段。"""
 
+PER_EXP_CRITICAL_RE = re.compile(r"have a minimum of (\w+) months full.time, continuous work experience with the PEI "
+                                 r"employer", re.I)
+"""Critical Worker(TEER 4 / 5)的在职经验,指南 Critical Worker Stream 一节原句「have a minimum of six months full‐time,
+continuous work experience with the PEI employer」(连字符是 U+2010,用 . 兜一位)。与支持申请的本省雇主在职 →
+basis=employerTenure,门槛卡出「在现雇主全职满 6 个月」。只在 Critical Worker 一节的切片里找(PER_CRITICAL_START / END)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补:先前 TEER 4 / 5 一行经验都没有,门槛卡与判定都缺这条必过项。"""
+
+PER_WAGE_RE = re.compile(r"Employment terms and conditions meet all applicable provincial and federal employment "
+                         r"workplace standards and the comparable industry wage rate", re.I)
+"""工资门槛,指南 Employer Requirements - All Streams 一节原句(对所有 Workforce 流)。口径看下一条的官方定义句。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+
+PER_WAGE_MEDIAN_RE = re.compile(r"Compara\w* industry wage rate: The median wage, as determined by [^.]*?, based on the "
+                                r"NOC code for the position", re.I)
+"""工资口径的官方定义,指南附录 D(Definitions)原句「Comparative industry wage rate: The median wage, as determined by Economic
+and Social Development Canada (ESDC), based on the NOC code for the position.」—— 条文写 comparable、定义写 Comparative,
+同一个词两种写法,正则两种都认。有这句才记 basis=occMedian(门槛卡出「不低于本职业在本地区的中位工资」;汇装段 wage_floors_of
+按它给本省岗位定「工资低于中位」那条线)。定义句解析不到就报自校问题,不拿条文句单独猜口径。"""
+
+PER_EMP_RULES = (
+    (re.compile(r"Employment requiring provincial licensing or accreditation has been verified to ensure the applicant "
+                r"has the necessary credentials to be eligible to work in the occupation in Prince Edward Island", re.I),
+     FACTOR_LICENSING, "", "Where the occupation requires provincial licensing or accreditation, the applicant must "
+     "hold the necessary credentials (verified by the employer)", "执照一行(Employment requiring provincial licensing …)没解析到"),
+)
+"""Employer Requirements - All Streams 一节里给申请人定的条文行(rule_rows 五元组):要省级执照 / 认证的职业,申请人须持有、
+雇主核实过 —— 门槛卡「其他」行出「职业所需执照或注册」。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+
+PER_SKILLED_RULES = (
+    (re.compile(r"have successfully completed a post.secondary degree or diploma \(minimum two.year program\)", re.I),
+     FACTOR_EDUCATION, "", "A post-secondary degree or diploma (minimum two-year program)",
+     "Skilled Worker 学历(两年制以上大专 / 大学)没解析到"),
+)
+"""Skilled Worker 一节的条文行(学历;post‐secondary 的连字符是 U+2010,用 . 兜)。门槛卡与判定引擎都不读学历,给向导事实与
+资料库。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补(段首「没抓的:学历」是当时的判断)。"""
+
+PER_EDU_SECONDARY_RE = re.compile(r"have successfully completed \(at minimum\) a secondary school diploma "
+                                  r"\(high school\)", re.I)
+"""学历:至少高中毕业。Critical Worker / Intermediate Experience / Occupations in Demand 三节是同一句 —— 所以各节只在自己的
+切片里找,免得别节的句子替它过自校。"""
+
+PER_EDU_SECONDARY_LABEL = "At minimum a secondary school diploma (high school)"
+"""高中学历那两行的 label(条文行的官方原句进 valueText)。"""
+
+PER_CRITICAL_RULES = (
+    (PER_EDU_SECONDARY_RE, FACTOR_EDUCATION, "", PER_EDU_SECONDARY_LABEL, "Critical Worker 学历(高中)没解析到"),
+)
+"""Critical Worker 一节的条文行(学历)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+
+PER_OID_RULES = (
+    (PER_EDU_SECONDARY_RE, FACTOR_EDUCATION, "", PER_EDU_SECONDARY_LABEL, "Occupations in Demand 学历(高中)没解析到"),
+)
+"""Occupations in Demand 一节的条文行(学历)。流名用 PE_OID_STREAM(与在需职业表同名,不带「Workforce」:判定引擎 PE-sw
+按 /pei pnp workforce/i 挑行,本节的行不该混进 Skilled Worker 的判定)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+
+PER_AGE_RES = (re.compile(r"between the ages of\s*(\d+) and (\d+)", re.I), re.compile(r"be (\d+) to (\d+) years old", re.I))
+"""年龄区间的两种写法:「be between the ages of 18 and 59」(Skilled Worker 一节 PDF 抽出来是「ages of18」少个空格,\\s* 兜)、
+「be 18 to 59 years old」(Occupations in Demand 一节)。各节写到的区间必须同一个,出现两个说明官方分了流,要人工看。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补(段首「没抓的:年龄 18-59」是当时的判断)。"""
+
+PER_SKILLED_START = "Skilled Worker Stream To be eligible"
+"""Skilled Worker 一节的起锚(正文折成一行后的节首;止锚是下一节 Critical Worker 的节首)。"""
+
+PER_CRITICAL_START = "Critical Worker Stream To be eligible"
+"""Critical Worker 一节的起锚(正文折成一行后的节首;封面目录只有「Critical Worker |」,不会误中)。"""
+
+PER_CRITICAL_END = "International Graduate Stream To be eligible"
+"""Critical Worker 一节的止锚(下一节的节首)。"""
+
+PER_OID_START = "Occupations in Demand To be eligible"
+"""Occupations in Demand 一节的起锚。"""
+
+PER_OID_END = "Prince Edward Island – Express Entry"
+"""Occupations in Demand 一节的止锚:下一节的标题(中间是 en dash U+2013,照 PDF 原样;全文只出现一次)。"""
+
 PER_SECTION_LANG = "Step 1: Assess Your Eligibility"
 """语言的出处节名。"""
 
@@ -4653,8 +4744,26 @@ PER_SECTION_EXP = "Skilled Worker Stream"
 PER_SECTION_EMPLOYER = "Employer Requirements - All Streams"
 """雇主侧的出处节名。"""
 
+PER_SECTION_CRITICAL = "Critical Worker Stream"
+"""Critical Worker 两行(在职经验、学历)的出处节名。"""
+
+PER_SECTION_OID = "Occupations in Demand"
+"""Occupations in Demand 学历那行的出处节名。"""
+
 PER_TEER_03 = [0, 1, 2, 3]
 """经验那行只挂 TEER 0-3(理由见段首)。"""
+
+PER_TEER_45 = [4, 5]
+"""Critical Worker 两行挂 TEER 4 / 5(官方原句「TEER category 4 or 5」)。"""
+
+PER_BASIS_WINDOW_YEARS_TPL = "windowYears={n}"
+"""Skilled Worker 24 个月那行的口径包(近 N 年内;门槛卡据此出「近 5 年内」,判定引擎不读窗口期)。"""
+
+PER_BASIS_EMPLOYER_TENURE = "employerTenure"
+"""Critical Worker 在职 6 个月那行的口径标记(同雇主在职;判定引擎按整串相等认它,不能与别的口径并写)。"""
+
+PER_BASIS_OCC_MEDIAN = "occMedian"
+"""工资那行的口径标记(本职业的中位工资,官方定义见 PER_WAGE_MEDIAN_RE)。"""
 
 PER_LANG_LABEL_TPL = ("A valid language test from an IRCC-approved institution with a minimum score of "
                       "CLB/NCLC {clb} (test valid for 2 years); required by all PEI Workforce streams")
@@ -4671,6 +4780,12 @@ PER_EMP_LABEL_TPL = ("[Employer] The company has been in active and continuous o
                      "years with identified labour gaps (no published minimum staff count or minimum "
                      "annual revenue in this section)")
 """雇主侧的 label。"""
+
+PER_WAGE_LABEL_TPL = "{req} ({defn})"
+"""工资那行的 label:条文原句 + 括号里附录的口径定义原句(两句都是逐字原文)。"""
+
+PER_AGE_LABEL_TPL = "Be between the ages of {lo} and {hi} (every PEI Workforce stream)"
+"""年龄那行的 label(区间数取自各节原句,各节一致才出)。"""
 
 PER_PROBLEM_LANG = "语言门槛没解析到"
 """自校问题:语言。"""
@@ -4690,8 +4805,29 @@ PER_PROBLEM_EMPLOYER = "雇主侧经营年限没解析到(Employer Requirements 
 PER_PROBLEM_NO_VERSION = "没解析到指南版本(页脚「月份 年份 – page N」)"
 """自校问题:指南版本。"""
 
+PER_PROBLEM_SECTION_TPL = "指南里没切出「{start}」那一节(节首或下一节的节首改了?)"
+"""自校问题:按节首切片失败(那一节的几行都没法取,整表不覆盖)。"""
+
+PER_PROBLEM_EXP_CRITICAL = "Critical Worker 在职经验(与本省雇主连续全职 6 个月)没解析到"
+"""自校问题:Critical Worker 在职经验。"""
+
+PER_PROBLEM_WAGE = "工资门槛(comparable industry wage rate)没解析到"
+"""自校问题:工资条文句。"""
+
+PER_PROBLEM_WAGE_MEDIAN = "工资口径定义(The median wage, as determined by ESDC)没解析到 —— 口径换了就不是中位,需人工核对"
+"""自校问题:工资口径定义句(解析不到不猜 occMedian)。"""
+
+PER_PROBLEM_AGE = "年龄区间没解析到"
+"""自校问题:年龄。"""
+
+PER_PROBLEM_AGE_MULTI_TPL = "指南里出现多个年龄区间 {ages} —— 官方可能已分流,需人工核对"
+"""自校问题:各节年龄区间不一致。"""
+
 PER_SOURCE = "PEI Workforce Application Guide"
 """表级来源名。"""
+
+PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age")
+"""PE 门槛收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后因素多了四类,不再借 NS 那份 NSR_FACTOR_ORDER)。"""
 
 
 # =========================================================================

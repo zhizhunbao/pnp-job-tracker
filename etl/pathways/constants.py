@@ -557,7 +557,9 @@ PW_PE_WORKFORCE = {
     "officialName": "Workforce Category",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["Labour & Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+                   "PEI PNP Workforce — Skilled Worker stream", "PEI PNP Workforce — Critical Worker stream",
+                   "PEI PNP Workforce — Employer Requirements (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -567,7 +569,10 @@ PW_PE_WORKFORCE = {
     "checked": "2026-09-28",
 }
 """爱德华王子岛默认通道(Workforce 类:Skilled Worker / Critical Worker / International Graduate / Occupations in Demand 各流)。
-抽选:PE 抽选卡只有一组「Labour & Express Entry」= Workforce 各流 + PEI EE(2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。"""
+抽选:PE 抽选卡只有一组「Labour & Express Entry」= Workforce 各流 + PEI EE(2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流四条(pnp pe-req 的流名)—— 全体流的语言、Skilled Worker(TEER 0-3,
+24 个月近 5 年内)、Critical Worker(TEER 4 / 5,与本省雇主在职 6 个月;门槛卡按本岗 TEER 挑其一)、雇主段(工资中位、执照;
+经营年限一行门槛卡按省取,不靠这里)。International Graduate / Intermediate Experience 两条替代路没有门槛卡认得的写法,没收。"""
 
 PW_PE_OCCUPATIONS_IN_DEMAND = {
     "key": "pe-occupations-in-demand", "province": "PE", "program": "PNP",
@@ -575,7 +580,8 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
     "officialName": "Occupations in Demand Stream",
     "boardLabel": "PE 在需职业", "isDefault": False,
     "drawStreams": ["Labour & Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+                   "PEI PNP — Occupations in Demand", "PEI PNP Workforce — Employer Requirements (all streams)"],
     "quotaScope": None,
     "occLabels": ["PE 在需职业"],
     "status": "open",
@@ -584,7 +590,10 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
     "checked": "2026-09-28",
 }
 """爱德华王子岛在需职业(Workforce 类的一条流,清单 pe-oid.json)。与 Workforce 各流同一组抽选(2026-09-24 九省通道审计登记,
-NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Workforce 类的原话)。"""
+NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Workforce 类的原话)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条 —— 全体流的语言、本流自己那条(与在需职业表同名,现只有学历一行)、
+雇主段(工资中位、执照)。本流的 1 年相关经验没入门槛表(判定卡「个人关」按省全量挑经验行、不认职业码,会漏到非清单岗),
+门槛卡本流暂无经验一行。"""
 
 PW_AIP = {
     "key": "aip", "province": "FED", "program": "AIP",
