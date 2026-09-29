@@ -6259,6 +6259,12 @@ def build_bc_stats_processing() -> None:
 # =========================================================================
 # 27. ON 运营统计(逐年更新页摘已发提名数 + 年度配额 + 官方重定向复核)
 # =========================================================================
+from pnp.constants import (  # noqa: E402 — 段27 2026-09-29 补省审计长附录的常量单列一块(同段10、35–39 先例)
+    ONS_AUDIT_DIFF_TPL, ONS_AUDIT_LABEL_TPL, ONS_AUDIT_NOTE, ONS_AUDIT_PRINT_TPL, ONS_AUDIT_QUOTE_RE, ONS_AUDIT_SECTION,
+    ONS_AUDIT_TABLE_RE, ONS_AUDIT_TIMEOUT_S, ONS_AUDIT_TOTAL_RE, ONS_AUDIT_URL, ONS_PROBLEM_AUDIT_FETCH_TPL,
+    ONS_PROBLEM_AUDIT_TABLE,
+)
+from pnp.scheme import OnAuditGapIn, OnAuditOut  # noqa: E402 — 同上
 
 
 def num_strict(s: str) -> int:
@@ -6371,7 +6377,12 @@ def say_year_values(x: YearValuesIn) -> None:
 
 
 def build_on_stats() -> None:
-    """ON 运营统计入口:逐年更新页摘配额与已发提名数;审理时长是举证过的空。"""
+    """ON 运营统计入口:逐年更新页摘配额与已发提名数;审理时长是举证过的空。
+
+    2026-09-29 起已发提名另读省审计长 2024 年报附录 1(fetch_on_audit):逐年页没有的年份由它补,逐年页有的年份拿它对账
+    (对不上留痕,以逐年页为准)。审计长 PDF 取不到 / 读不成进自校问题,整份保留旧表 —— 不拿缺年份的新表盖旧表;
+    「两块都空」那道闸只看逐年页,补行不算数。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_ON_STATS))
     problems: list = []
     redirect = check_on_redirect()
@@ -6394,12 +6405,15 @@ def build_on_stats() -> None:
         say(ONS_PRINT_SKIPPED_TPL.format(years=sorted(skipped_years, reverse=True)))
     if not allocation and not nominations_issued:
         problems.append(ONS_PROBLEM_EMPTY)
+    audit = fetch_on_audit()
+    problems += audit.problems
     if problems:
         fail_zh(problems)
+    nominations_issued += on_audit_gap_rows(OnAuditGapIn(rows=nominations_issued, audit=audit))
     OUT_ON_STATS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_ON_STATS, payload={
         K_PROVINCE: PROV_ON, K_PROGRAM: PROGRAM_PNP,
-        K_SOURCE: ONS_SOURCE, K_URL: ONS_SEED_URL, K_NOTE: ONS_NOTE,
+        K_SOURCE: ONS_SOURCE, K_URL: ONS_SEED_URL, K_NOTE: ONS_NOTE + ONS_AUDIT_NOTE,
         K_AS_OF_LOWER: "", K_FETCHED: today_iso(),
         K_PAGE_REDIRECT: redirect,
         K_PROCESSING: [],
@@ -6411,6 +6425,74 @@ def build_on_stats() -> None:
     say_year_values(YearValuesIn(head=ONS_PRINT_ISSUED_TPL.format(n=len(nominations_issued)),
                                  rows=sorted(nominations_issued, key=neg_year_of)))
     say(ONS_PRINT_NO_PROCESSING)
+
+
+def fetch_on_audit() -> OnAuditOut:
+    """省审计长 2024 年报 PDF → 附录 1 的逐年实发提名(走 fetch_bytes:原件先落 crawl 层再解析;2026-09-29)。
+    取不到、打不开(不是 PDF)或表认不出 → problems 带一条,build_on_stats 并进自校、整份保留旧表。"""
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=ONS_AUDIT_URL, timeout_s=ONS_AUDIT_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001 — 网络错与 pymupdf 打不开同一种后果:进自校问题留痕,保留旧表
+        return OnAuditOut(by_year={}, quote="", table="",
+                          problems=[ONS_PROBLEM_AUDIT_FETCH_TPL.format(name=type(e).__name__, detail=e)])
+    got = on_audit_of(text)
+    if len(got.by_year) == 0:
+        got.problems.append(ONS_PROBLEM_AUDIT_TABLE)
+    return got
+
+
+def on_audit_of(text: str) -> OnAuditOut:
+    """审计长报告全文 → 附录 1「Actual Nominations」合计行的逐年数 + label 用的官方原句与表名(2026-09-29)。
+    原句 / 表头 / 合计行认不出,或各年之和对不上表里的五年合计列(列没对齐的铁证)→ by_year 给空表,不猜。"""
+    flat = fold_ws(text)
+    empty = OnAuditOut(by_year={}, quote="", table="", problems=[])
+    quote = ONS_AUDIT_QUOTE_RE.search(flat)
+    head = ONS_AUDIT_TABLE_RE.search(flat)
+    if quote is None or head is None:
+        return empty
+    total = ONS_AUDIT_TOTAL_RE.search(flat, head.end())
+    if total is None:
+        return empty
+    years = head.group(2).split()
+    nums = total.group(1).split()
+    if len(nums) <= len(years):
+        return empty
+    by_year: dict = {}
+    s = 0
+    for year, n in zip(years, nums):
+        value = num_strict(n)
+        by_year[int(year)] = value
+        s += value
+    if s != num_strict(nums[len(years)]):
+        return empty
+    return OnAuditOut(by_year=by_year, quote=quote.group(0), table=head.group(1), problems=[])
+
+
+def on_audit_gap_rows(x: OnAuditGapIn) -> list:
+    """审计长逐年数 → 逐年页没有的年份各补一行(形同逐年页的行,url 挂审计长 PDF);逐年页已有的年份只对账,对不上一年一行
+    留痕、以逐年页为准;收尾一行报补了 / 对上 / 对不上哪几年(2026-09-29)。"""
+    have: dict = {}
+    for r in x.rows:
+        have[r[K_YEAR]] = r[K_VALUE]
+    today = today_iso()
+    out: list = []
+    filled: list = []
+    same: list = []
+    diff: list = []
+    for year in sorted(x.audit.by_year):
+        value = x.audit.by_year[year]
+        if year not in have:
+            out.append(to_year_row(YearRowIn(
+                year=year, label=ONS_AUDIT_LABEL_TPL.format(quote=x.audit.quote, table=x.audit.table, year=year),
+                value=value, section=ONS_AUDIT_SECTION, url=ONS_AUDIT_URL, fetched=today)))
+            filled.append(year)
+        elif have[year] == value:
+            same.append(year)
+        else:
+            say(ONS_AUDIT_DIFF_TPL.format(year=year, page=have[year], audit=value))
+            diff.append(year)
+    say(ONS_AUDIT_PRINT_TPL.format(filled=filled, same=same, diff=diff))
+    return out
 
 
 # =========================================================================
@@ -7928,9 +8010,12 @@ from pnp.constants import (  # noqa: E402 — 段37 常量单列一块(同段35/
     NS_PROGRAM_NSNP, NS_QUARTER_END_MONTH, NS_QUARTER_PERIOD_TPL, NS_QUARTER_RE, NS_QUARTER_TPL, NS_QUARTERLY_BAD_TPL,
     NS_QUARTERLY_PRINT_OK_TPL, NS_RESULT_APPROVED, NS_RESULTS_LABEL_TPL, NS_RESULTS_PAGE, NS_RESULTS_TITLE,
     NS_RESULTS_URL, NS_SOCRATA_LIMIT, NS_YTD_PERIOD_TPL,
+    BC_FUNNEL_LATEST_KEYS, BC_FUNNEL_MISSING_TPL, BC_FUNNEL_NOTE, BC_FUNNEL_PRINT_TPL, BC_FUNNEL_SECTION_TPL,
+    BC_FUNNEL_SPECS,
 )
 from pnp.scheme import BcReportOut, BcYearRowsIn, YearRowIn, YearStatsIn  # noqa: E402 — 同上
 from pnp.scheme import NsPoolRowIn, NsQuarterlyIn, NsYtdRowIn  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
+from pnp.scheme import BcFunnelIn, BcFunnelSayIn  # noqa: E402 — 同上(2026-09-29 BC 年报四组逐年数)
 
 
 def to_year_row(x: YearRowIn) -> dict:
@@ -8150,18 +8235,28 @@ def bc_year_rows(x: BcYearRowsIn) -> list:
 
 def scrape_bc_nominations() -> None:
     """BC 已发提名数入口:入口页找最新报告 → PDF 文本 → 「Total BC PNP Nominations」表 → raw/pnp/bc-nominations.json。
-    入口页 / 报告改版或网络错 → 保留旧表不拦役。"""
+    入口页 / 报告改版或网络错 → 保留旧表不拦役。
+
+    2026-09-29 起同一批年报多抽四组 SI 逐年数(bc_funnel_of:审理决定 / 全年邀请 / 邀请转成申请 / 收件),各成一份清单
+    并进同一份文件(键见 BC_FUNNEL_SPECS);最新一份年报缺组留痕(say_bc_funnel),多半是官方改了措辞。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_BC_NOMINATIONS))
     rows: list = []
+    funnel: dict = {}
+    last: dict = {}
     try:
         reports = bc_reports_of(fetch_html(FetchHtmlIn(url=BC_ARCHIVES_URL, timeout_s=BC_NOM_TIMEOUT_S)))
         if len(reports) == 0:
             raise RuntimeError(BC_NOM_NO_REPORT)
         by_year_rows: dict = {}
         for report in reports:
-            by_year = bc_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=report.url, timeout_s=BC_NOM_TIMEOUT_S))))
+            text = pdf_text(fetch_bytes(FetchHtmlIn(url=report.url, timeout_s=BC_NOM_TIMEOUT_S)))
+            by_year = bc_nominations_of(text)
             for r in bc_year_rows(BcYearRowsIn(by_year=by_year, report=report)):
                 by_year_rows[r[K_YEAR]] = r
+            last = bc_funnel_of(BcFunnelIn(text=text, report=report))
+            for key, row in last.items():
+                funnel.setdefault(key, []).append(row)
         if len(by_year_rows) == 0:
             raise RuntimeError(BC_NOM_NO_TABLE)
         rows = sorted(by_year_rows.values(), key=neg_year_of)
@@ -8169,12 +8264,53 @@ def scrape_bc_nominations() -> None:
         say(BC_NOM_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
         return
     latest = reports[-1]
+    extra = bc_funnel_lists_of(funnel)
     write_year_stats(YearStatsIn(path=OUT_BC_NOMINATIONS, prov=PROV_BC, source=BC_NOM_TABLE_TITLE,
-                                 url=latest.url, note=BC_NOM_NOTE, rows=rows, extra={}))
+                                 url=latest.url, note=BC_NOM_NOTE + BC_FUNNEL_NOTE, rows=rows, extra=extra))
     pairs: list = []
     for r in rows:
         pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
     say(BC_NOM_PRINT_OK_TPL.format(report=latest.year, pairs=SEMI_JOIN_SEP.join(pairs)))
+    say_bc_funnel(BcFunnelSayIn(extra=extra, last=last, report=latest.year))
+
+
+def bc_funnel_of(x: BcFunnelIn) -> dict:
+    """一份年报全文 → {清单键: 报告自己那一年的一行}(2026-09-29):四组 SI 逐年数各按自己的句式找(BC_FUNNEL_SPECS),
+    只认年份等于报告年的那一句 —— 年报里也写上一年的对照数,不收;哪组没认出就不出键(不出行、不填 0)。
+    行形同已发提名那一行,单位改成本组的单位;label = 命中的官方原文片段。"""
+    flat = fold_ws(x.text)
+    today = today_iso()
+    out: dict = {}
+    for key, patterns, unit, heading in BC_FUNNEL_SPECS:
+        for rx in patterns:
+            for m in rx.finditer(flat):
+                if int(m.group(1)) != x.report.year or key in out:
+                    continue
+                row = to_year_row(YearRowIn(
+                    year=x.report.year, label=m.group(0), value=num_strict(m.group(2)),
+                    section=BC_FUNNEL_SECTION_TPL.format(report=x.report.year, heading=heading),
+                    url=x.report.url, fetched=today))
+                row[K_UNIT] = unit
+                out[key] = row
+    return out
+
+
+def bc_funnel_lists_of(funnel: dict) -> dict:
+    """{清单键: 各份年报的行} → 并进文件的四份清单(按 BC_FUNNEL_SPECS 的序,年降序);一行都没有的组给空清单,
+    文件形状不随年份变(2026-09-29)。"""
+    out: dict = {}
+    for spec in BC_FUNNEL_SPECS:
+        out[spec[0]] = sorted(funnel.get(spec[0], []), key=neg_year_of)
+    return out
+
+
+def say_bc_funnel(x: BcFunnelSayIn) -> None:
+    """四组逐年数的收尾报数(一组一行);最新一份年报理应有、却没认出的组(BC_FUNNEL_LATEST_KEYS)各留痕一行(2026-09-29)。"""
+    for key, rows in x.extra.items():
+        say_year_values(YearValuesIn(head=BC_FUNNEL_PRINT_TPL.format(key=key, n=len(rows)), rows=rows))
+    for key in BC_FUNNEL_LATEST_KEYS:
+        if key not in x.last:
+            say(BC_FUNNEL_MISSING_TPL.format(report=x.report, key=key))
 
 
 # =========================================================================
@@ -8440,6 +8576,7 @@ from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest 
 from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
 from pnp.scheme import EmployerSectorTablesTest  # noqa: E402 — 同上(2026-09-27 Frank 拍板「看得出才改判」)
 from pnp.scheme import NsQuarterlyTest  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
+from pnp.scheme import BcFunnelTest, OnAuditTest  # noqa: E402 — 同上(2026-09-29 ON 审计长附录、BC 年报四组逐年数)
 
 
 def run_tests() -> None:
@@ -8451,7 +8588,9 @@ def run_tests() -> None:
     逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。
     同日 Frank 拍板「看得出才改判」再加一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表;SkAgriStarTest 随之改为
     「带星号码照收并标行业键」)。
-    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。"""
+    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。
+    同日再加两组:OnAuditTest(ON 省审计长附录 1:取合计行不取配额行、列没对齐整份不用、只补逐年页缺的年份、对不上留痕)、
+    BcFunnelTest(BC 年报四组 SI 逐年数:每份只认自己那一年、三种收件写法、2022 那份的链接形)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8461,5 +8600,7 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(EmployerSectorTablesTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NsQuarterlyTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnAuditTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(BcFunnelTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

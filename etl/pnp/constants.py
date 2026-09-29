@@ -6055,6 +6055,57 @@ ONS_PRINT_YEAR_VALUE_TPL = "{year}={value:,}"
 ONS_PRINT_NO_PROCESSING = "  审理时长 0 条(官方已下线该页,全站没有替代来源 —— 见 note)"
 """审理时长留空的报数(举证过的空)。"""
 
+ONS_AUDIT_URL = "https://www.auditor.on.ca/en/content/annualreports/arreports/en24/pa_ONimmigrant_en24.pdf"
+"""省审计长 2024 年报「Ontario Immigrant Nominee Program」绩效审计 PDF(2026-09-29 立:逐年 Program Updates 页抽不到的已发提名
+年份由它补,站上缺的是 2021、2023)。附录 1「Ontario Nominee Allocations and Nominations, by Stream, 2019–2023」按年列实发
+提名,表头写明「Source of data: Ministry of Labour, Immigration, Training and Skills Development」。一次性报告、不按年续出;
+原件经 fetch_bytes 先落 crawl 层再解析。"""
+
+ONS_AUDIT_TIMEOUT_S = 120
+"""审计长 PDF(约 5 MB)的下载超时(与 BC_NOM_TIMEOUT_S 同一档)。"""
+
+ONS_AUDIT_QUOTE_RE = re.compile(
+    r"Appendix 1 shows the actual nominations issued by streams/intake system in each year from \d{4} to \d{4}\.")
+"""正文里指向附录 1 的官方原句(报告第 12 页;补行 label 的前半句,quote-anchored)。认不出 = 取回的不是这份报告或已改版。"""
+
+ONS_AUDIT_TABLE_RE = re.compile(
+    r"Appendix 1: \W*(Ontario Nominee Allocations and Nominations, by Stream, \d{4}–\d{4}) Source of data: \D*?"
+    r"((?:\d{4} )+)Total ")
+"""附录 1 的表头(压平空白后):表名 → 数据来源行 → 列头年份 → 合计列「Total」。第 1 组 = 表名(不带「Appendix 1: 」),
+第 2 组 = 列头年份。PDF 文本里表名前夹着一个控制字符(BEL),冒号后的非字母字符一并吞掉;目录页同名一行后面接点线页码、
+不接「Source of data」,不会误中。"""
+
+ONS_AUDIT_TOTAL_RE = re.compile(r"Actual Nominations .*? Total\d? ((?:[\d,]+ )+)")
+"""「Actual Nominations」段的合计行(行名带脚注号,PDF 里写「Total2」),其后一串数 = 各列头年份 + 五年合计 + 占比。
+上面「Ontario Allocated Nomination Limits1」那一行是配额,不取;从表头之后开始找,正文里别处的 Total 碰不到。"""
+
+ONS_AUDIT_SECTION = "Office of the Auditor General of Ontario, Annual Report 2024: Ontario Immigrant Nominee Program"
+"""审计长补行的出处节名(年报 + 章名,即 PDF 页眉两行)。"""
+
+ONS_AUDIT_LABEL_TPL = "{quote} Appendix 1: {table} — Actual Nominations, Total, {year}"
+"""审计长补行的 label:官方原句 + 表名 + 行列名(表格没有整句可引,行列名照表里原词)。"""
+
+ONS_AUDIT_NOTE = ("2026-09-29 起:逐年页抽不到的年份由省审计长 2024 年报(OINP 绩效审计)附录 1「Ontario Nominee Allocations "
+                  "and Nominations, by Stream, 2019–2023」的 Actual Nominations 合计行补(行内 url 挂该 PDF);逐年页有的年份"
+                  "以逐年页为准,审计数只对账。两边对不上时审计长脚注 2 原句:「IRCC allows small variances in the number of "
+                  "annual nominations compared to the allocation. In 2019 and 2020, OINP participated in a federal pilot "
+                  "program that allowed additional nominations to be issued. In 2023, more individuals were nominated due "
+                  "to technical issues in the Ministry’s information system, which have been corrected.」")
+"""on-stats.json 口径注的续句(接在 ONS_NOTE 后;2026-09-29 立)。"""
+
+ONS_PROBLEM_AUDIT_FETCH_TPL = "省审计长 2024 年报 PDF 取不到或打不开:{name} {detail}"
+"""自校问题:审计长 PDF 取回失败(整份保留旧表 —— 不拿缺年份的新表盖旧表;2026-09-29)。"""
+
+ONS_PROBLEM_AUDIT_TABLE = ("省审计长 2024 年报附录 1 认不出(原句、表头或合计行变了,或各年之和对不上表里的五年合计)"
+                           "—— 疑似报告撤下或改版")
+"""自校问题:PDF 取回了但读不出逐年数(同上,整份保留旧表)。"""
+
+ONS_AUDIT_DIFF_TPL = "  ⚠ ON {year} 已发提名:逐年页 {page:,} ≠ 审计长附录 1 {audit:,}(以逐年页为准)"
+"""对账不一致的留痕(一年一行;2026-09-29 立时 2019、2020 两年对不上,缘由见 ONS_AUDIT_NOTE 引的脚注 2)。"""
+
+ONS_AUDIT_PRINT_TPL = "  审计长附录 1:补 {filled} · 对上 {same} · 对不上 {diff}"
+"""审计长对账的收尾报数(三份年份清单)。"""
+
 # =========================================================================
 # 28. MB 运营统计(月度数据页 + 年报 §9/§10;纯读 crawl 缓存,不发请求)
 # =========================================================================
@@ -7549,8 +7600,11 @@ NS_RESULT_APPROVED = "Approved"
 BC_ARCHIVES_URL = "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/archives"
 """BC PNP 历年 Statistical Report(PDF,2016 起一年一份)的入口页。"""
 
-BC_REPORT_HREF_RE = re.compile(r'href="(/immigrate-to-b-c/bc-pnp-statistical-report-(\d{4})-pdf)"')
-"""入口页里报告链接的形(相对路径 + 报告年)。"""
+BC_REPORT_HREF_RE = re.compile(r'href="(/immigrate-to-b-c/(?=[^"]*statistical-report)[^"\d]*(\d{4})[^"]*)"')
+"""入口页里报告链接的形(相对路径 + 报告年)。
+2026-09-29 放宽(抽年报四组数时核出):2022 那份的链接写成「/immigrate-to-b-c/2022-bc-pnp-statistical-report」(年在前、
+没有 -pdf 尾),旧形「bc-pnp-statistical-report-(年)-pdf」认不出,那一份一直没读到。现认路径里带 statistical-report 的链接,
+取路径里第一个四位数作报告年(两种写法都是这一个数)。"""
 
 BC_SITE_BASE = "https://www.welcomebc.ca"
 """报告相对路径的站根。"""
@@ -7604,6 +7658,90 @@ BC_NOM_NO_REPORT = "入口页没找到 Statistical Report 链接"
 
 BC_NOM_NO_TABLE = "报告里没找到「Total BC PNP Nominations」表"
 """报告改版的报错文案。"""
+
+K_SI_DECISIONS = "siDecisions"
+"""bc-nominations.json 里 SI 审理决定数清单的键(逐年一行,年降序;2026-09-29 立,同一批年报多抽的四组之一)。"""
+
+K_SI_ITAS_ISSUED = "siItasIssued"
+"""同上文件里 SI 全年发出邀请数清单的键。"""
+
+K_SI_ITA_APPLICATIONS = "siItaApplications"
+"""同上文件里「当年发出的邀请后来转成申请」数清单的键。"""
+
+K_SI_APPLICATIONS_RECEIVED = "siApplicationsReceived"
+"""同上文件里 SI 收件数清单的键(只到 2021,见 BC_FUNNEL_NOTE)。"""
+
+BC_DECISIONS_RE = re.compile(r"In (\d{4}), the BC PNP made ([\d,]+) decisions on applications to the SI streams")
+"""「Skills Immigration Decisions」节的决定数句(2022 版起每份一句,如「In 2025, the BC PNP made 6,553 decisions on
+applications to the SI streams」;第 1 组年、第 2 组数)。同段下一句「… from 2021, when the BC PNP made 7,623 decisions」是
+上一年对照,不以「In」起句,不会命中。口径 = 当年审完的件数(官方括注 the number of files processed),不是收件数。"""
+
+BC_ITAS_RE = re.compile(r"(\d{4}) ITAs Issued: ([\d,]+)")
+"""「The Registration Pool and Invitations to Apply (ITAs)」节信息框的全年发出邀请数(2020 版起,如「2025 ITAs Issued: 978」;
+2020 版数字不带千分位「9386」)。2025 版框下脚注原句:All the numbers above refer exclusively to ITAs that were issued during
+the 2025 calendar year and to applications that resulted from them。"""
+
+BC_ITA_APPS_RE = re.compile(r"(\d{4}) ITAs that led to applications: ([\d,]+)")
+"""同一信息框的第二格:当年发出的邀请里后来转成申请的件数(如「2025 ITAs that led to applications: 748*」,星号是脚注号不取)。
+脚注原句:Note that not all SI applications require a registration …, so the number of applications that result from ITAs is
+always smaller than the number of total applications in any given time period —— 比全部收件少,两个数不能互换。"""
+
+BC_RECEIVED_RES = (
+    re.compile(r"In (\d{4}), ([\d,]+) candidates responded to invitations to apply through the SI stream"),
+    re.compile(r"In (\d{4}), [\d,]+ candidates responded to invitations to apply to the BC PNP: ([\d,]+) were SI "
+               r"applications"),
+    re.compile(r"In (\d{4}), the BC (?:Provincial Nominee Program \(BC PNP\)|PNP) received [\d,]+ applications: "
+               r"([\d,]+) (?:Skills Immigration \(SI\)|SI) applications"),
+)
+"""「Application Intake」节的 SI 收件数句,历年三种写法(第 1 组年、第 2 组 SI 那一份的数):2020–2021 版「In 2021, 7,976
+candidates responded to invitations to apply through the SI stream」;2019 版先报全部再拆「… to the BC PNP: 8,024 were SI
+applications」;2016–2018 版「… received 7,507 applications: 7,412 SI applications」。全部(含 EI)的那个数不取 —— 与决定数、
+邀请数同为 SI 口径。2022 版起官方不再公布收件数(原句见 BC_FUNNEL_NOTE),之后各年不出行、不编数。"""
+
+BC_UNIT_APPLICATIONS = "applications"
+"""决定数 / 转成申请数 / 收件数的单位(一件 = 一份申请;与 mart 的 UNIT_APPLICATIONS 同词,域间不互取常量,各自声明)。"""
+
+BC_UNIT_INVITATIONS = "invitations"
+"""全年发出邀请数的单位(与 mart 的 UNIT_INVITATIONS 同词)。"""
+
+BC_HEAD_DECISIONS = "Skills Immigration Decisions"
+"""决定数句所在的年报节名。"""
+
+BC_HEAD_ITAS = "The Registration Pool and Invitations to Apply (ITAs)"
+"""邀请信息框所在的年报节名。"""
+
+BC_HEAD_INTAKE = "Application Intake"
+"""收件数句所在的年报节名。"""
+
+BC_FUNNEL_SPECS = (
+    (K_SI_DECISIONS, (BC_DECISIONS_RE,), BC_UNIT_APPLICATIONS, BC_HEAD_DECISIONS),
+    (K_SI_ITAS_ISSUED, (BC_ITAS_RE,), BC_UNIT_INVITATIONS, BC_HEAD_ITAS),
+    (K_SI_ITA_APPLICATIONS, (BC_ITA_APPS_RE,), BC_UNIT_APPLICATIONS, BC_HEAD_ITAS),
+    (K_SI_APPLICATIONS_RECEIVED, BC_RECEIVED_RES, BC_UNIT_APPLICATIONS, BC_HEAD_INTAKE),
+)
+"""同一批年报里多抽的四组 SI(Skills Immigration)逐年数:(清单键, 句式, 单位, 所在节名)。2026-09-29 立(省提名漏斗补数:
+邀请 → 转成申请 → 收件 → 审理决定 → 提名,提名那一段原有)。每份年报只认它自己那一年的句子 —— 年报里也写上一年的对照数,
+不收,上一年以上一年的报告为准;认不出的组不出行、不填 0。"""
+
+BC_FUNNEL_LATEST_KEYS = (K_SI_DECISIONS, K_SI_ITAS_ISSUED, K_SI_ITA_APPLICATIONS)
+"""最新一份年报理应认得出的三组(收件数 2022 版起官方已停发,不在内);缺哪组留痕 —— 多半是官方改了措辞。"""
+
+BC_FUNNEL_SECTION_TPL = "BC PNP Statistical Report {report}: {heading}"
+"""四组逐年数一行的 section(哪年的报告、哪一节;形同 BC_NOM_SECTION_TPL)。"""
+
+BC_FUNNEL_NOTE = ("2026-09-29 起同一批年报另抽四组 SI 逐年数,每份年报只取它自己那一年:siDecisions 审理决定数(2022 版起)、"
+                  "siItasIssued 全年发出邀请与 siItaApplications 当年邀请转成申请(2020 版起)、siApplicationsReceived 收件数"
+                  "(2021 版止)。收件数停在 2021:2022 年报原句「This year’s report also replaces statistics on applications "
+                  "received with figures for decisions (the number of files processed), as they are a more accurate "
+                  "reflection of program’s operational activities during 2022.」"
+                  "(https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report),此后各年不出收件行、不编数。")
+"""bc-nominations.json 口径注的续句(接在 BC_NOM_NOTE 后;2026-09-29 立)。"""
+
+BC_FUNNEL_PRINT_TPL = "  ✓ BC 年报 {key} {n} 年:"
+"""四组逐年数的收尾报数抬头(逐年数走 say_year_values)。"""
+
+BC_FUNNEL_MISSING_TPL = "  ⚠ BC 年报 {report} 没认出 {key}(官方改了措辞?核对 BC_FUNNEL_SPECS 的句式)"
+"""最新一份年报缺组的留痕。"""
 
 
 # =========================================================================
