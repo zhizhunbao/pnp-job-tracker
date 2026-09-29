@@ -86,7 +86,8 @@ from pnp.constants import (
     DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
     DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
-    FACTOR_EDUCATION, FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_ALT,
+    FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE,
+    FACTOR_EXPERIENCE_ALT,
     FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_LICENSING, FACTOR_RESIDENCE, FACTOR_WAGE,
     FILETYPE_PDF,
@@ -238,11 +239,17 @@ from pnp.constants import (
     OUT_NS_POLICY_FILE, OUT_NS_REQ, OUT_ON_POINTS, OUT_ON_REQ, OUT_ON_STATS, OUT_PE_AIP_FILE, OUT_PE_OID,
     OUT_PE_OID_FILE,
     OUT_PE_REQ, OUT_PNP_DIR, OUT_SK_EXCLUDED_FILE, OUT_SK_JOBOFFER_FILE, OUT_SK_POINTS, OUT_SK_REQ, OUT_SK_STATS,
-    PARSER_LXML, PER_EFFECTIVE_RE, PER_EMP_LABEL_TPL, PER_EMP_STREAM, PER_EMP_YEARS_RE, PER_EXP_LABEL_TPL,
-    PER_EXP_OID_RE, PER_EXP_RE, PER_LANG_LABEL_TPL, PER_LANG_RE, PER_PROBLEM_EMPLOYER, PER_PROBLEM_EXP,
-    PER_PROBLEM_EXP_OID, PER_PROBLEM_LANG, PER_PROBLEM_LANG_MULTI_TPL, PER_PROBLEM_NO_VERSION,
-    PER_SECTION_EMPLOYER, PER_SECTION_EXP, PER_SECTION_LANG, PER_SKILLED_STREAM, PER_SOURCE, PER_STREAM,
-    PER_TEER_03, PE_AIP_LABEL, PE_AIP_NOTE, PE_AIP_NOT_ACCEPTED_RE, PE_AIP_PRINT_NONE, PE_AIP_PRINT_NO_CACHE,
+    PARSER_LXML, PER_AGE_LABEL_TPL, PER_AGE_RES, PER_BASIS_EMPLOYER_TENURE, PER_BASIS_OCC_MEDIAN,
+    PER_BASIS_WINDOW_YEARS_TPL, PER_CRITICAL_END, PER_CRITICAL_RULES, PER_CRITICAL_START, PER_CRITICAL_STREAM,
+    PER_EFFECTIVE_RE, PER_EMP_LABEL_TPL, PER_EMP_RULES, PER_EMP_STREAM, PER_EMP_YEARS_RE, PER_EXP_CRITICAL_RE,
+    PER_EXP_LABEL_TPL, PER_EXP_OID_RE, PER_EXP_RE, PER_FACTOR_ORDER, PER_LANG_LABEL_TPL, PER_LANG_RE, PER_OID_END,
+    PER_OID_RULES, PER_OID_START, PER_PROBLEM_AGE, PER_PROBLEM_AGE_MULTI_TPL, PER_PROBLEM_EMPLOYER, PER_PROBLEM_EXP,
+    PER_PROBLEM_EXP_CRITICAL, PER_PROBLEM_EXP_OID, PER_PROBLEM_LANG, PER_PROBLEM_LANG_MULTI_TPL,
+    PER_PROBLEM_NO_VERSION, PER_PROBLEM_SECTION_TPL, PER_PROBLEM_WAGE, PER_PROBLEM_WAGE_MEDIAN,
+    PER_SECTION_CRITICAL, PER_SECTION_EMPLOYER, PER_SECTION_EXP, PER_SECTION_LANG, PER_SECTION_OID,
+    PER_SKILLED_RULES, PER_SKILLED_START, PER_SKILLED_STREAM, PER_SOURCE, PER_STREAM,
+    PER_TEER_03, PER_TEER_45, PER_WAGE_LABEL_TPL, PER_WAGE_MEDIAN_RE, PER_WAGE_RE,
+    PE_AIP_LABEL, PE_AIP_NOTE, PE_AIP_NOT_ACCEPTED_RE, PE_AIP_PRINT_NONE, PE_AIP_PRINT_NO_CACHE,
     PE_AIP_PRINT_TPL, PE_AIP_STREAM, PE_AIP_URL,
     PE_GUIDE_TIMEOUT_S, PE_GUIDE_URL, PE_MIN_EXPECTED, PE_NAME_CLIP, PE_NOC_LINE_RE, PE_OID_LABEL,
     PE_OID_NOTE, PE_OID_STREAM, PE_PAGE_URL, PE_PRINT_DONE_TPL, PE_PRINT_FAIL_TPL, PE_PRINT_NO_SECTION,
@@ -5380,7 +5387,11 @@ def pe_language_reqs(txt: str) -> ReqsOut:
 
 
 def pe_experience_reqs(txt: str) -> ReqsOut:
-    """经验:Skilled Worker 通道 2 年,只挂 TEER 0-3(理由见段首)。"""
+    """经验:Skilled Worker 通道 2 年,只挂 TEER 0-3(理由见段首)。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):这行记口径 windowYears(近 N 年内,门槛卡据此出「近 5 年内」;判定引擎
+    只认 employerTenure、不读窗口期,判定不变)。Critical Worker(TEER 4 / 5)在职那行见 pe_critical_reqs(同日 lead 定本批先不收)。
+    """
     rows: list = []
     problems: list = []
     e = PER_EXP_RE.search(txt)
@@ -5394,11 +5405,39 @@ def pe_experience_reqs(txt: str) -> ReqsOut:
         window = WORD_N[e.group(2).lower()]
         rows.append(to_pe_req(ReqIn(stream=PER_SKILLED_STREAM, factor=FACTOR_EXPERIENCE,
                                     value=yrs * MBR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
-                                    applies_teer=PER_TEER_03, section=PER_SECTION_EXP,
+                                    applies_teer=PER_TEER_03, basis=PER_BASIS_WINDOW_YEARS_TPL.format(n=window),
+                                    section=PER_SECTION_EXP,
                                     label=PER_EXP_LABEL_TPL.format(
                                         years_word=e.group(1), months=yrs * MBR_MONTHS_PER_YEAR,
                                         window_word=e.group(2), window=window,
                                         oid_months=WORD_N[o.group(1).lower()] * MBR_MONTHS_PER_YEAR))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def pe_critical_reqs(txt: str) -> ReqsOut:
+    """Critical Worker(TEER 4 / 5):与本省雇主连续全职满 N 个月(experience,basis=employerTenure),只在本节切片里找。
+
+    同节「2 年全职经验或相关学历」那一条有学历替代,照旧不挂(理由见段首)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补:先前 TEER 4 / 5 一行经验都没有。
+    同日 lead 决定本批先不收(build_pe_req 不调本函数):官方原句「have a minimum of six months full‐time, continuous work
+    experience with the PEI employer」这一行流名带 Workforce,判定引擎 PE-sw 会读到它,把 TEER 4 / 5 从「不在在需职业清单就判死」
+    改成判在职 6 个月,pathVerdict 金标「TEER 4/5 时清单仍然关死这条线」随之变红 —— 要和判定引擎改动一起排期,2026-09-29。
+    """
+    rows: list = []
+    problems: list = []
+    sec = slice_between(SliceIn(text=txt, start=PER_CRITICAL_START, end=PER_CRITICAL_END))
+    m = PER_EXP_CRITICAL_RE.search(sec)
+    months = None
+    if m:
+        months = word_n_of(m.group(1))
+    if sec == "":
+        problems.append(PER_PROBLEM_SECTION_TPL.format(start=PER_CRITICAL_START))
+    elif m and months is not None:
+        rows.append(to_pe_req(ReqIn(stream=PER_CRITICAL_STREAM, factor=FACTOR_EXPERIENCE, value=months,
+                                    unit=UNIT_MONTHS, applies_teer=PER_TEER_45, basis=PER_BASIS_EMPLOYER_TENURE,
+                                    section=PER_SECTION_CRITICAL, label=fold_ws(m.group(0)).strip())))
+    else:
+        problems.append(PER_PROBLEM_EXP_CRITICAL)
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -5417,13 +5456,93 @@ def pe_employer_reqs(txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def pe_wage_reqs(txt: str) -> ReqsOut:
+    """工资(Employer Requirements - All Streams 条文句 + 附录 D 口径定义句,两句都在才记 basis=occMedian;缺一句报自校问题)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。
+    同日 lead 决定本批先不收(build_pe_req 不调本函数):官方原句「Employment terms and conditions meet all applicable provincial
+    and federal employment workplace standards and the comparable industry wage rate」+ 附录 D「Comparative industry wage rate: The
+    median wage, as determined by Economic and Social Development Canada (ESDC), based on the NOC code for the position」。这一行进汇装后
+    wage_floors_of 会给 PE 全部 TEER 立中位工资线(PE 没有安省那种应届低位例外),按当日 mart 快照约 110 / 191 个可提名岗改判
+    「工资低于中位」—— 待 Frank 定,2026-09-29。"""
+    rows: list = []
+    problems: list = []
+    req = PER_WAGE_RE.search(txt)
+    defn = PER_WAGE_MEDIAN_RE.search(txt)
+    if not req:
+        problems.append(PER_PROBLEM_WAGE)
+    if not defn:
+        problems.append(PER_PROBLEM_WAGE_MEDIAN)
+    if req and defn:
+        rows.append(to_pe_req(ReqIn(stream=PER_EMP_STREAM, factor=FACTOR_WAGE, basis=PER_BASIS_OCC_MEDIAN,
+                                    unit=UNIT_CAD_YR, section=PER_SECTION_EMPLOYER,
+                                    label=PER_WAGE_LABEL_TPL.format(req=fold_ws(req.group(0)).strip(),
+                                                                    defn=fold_ws(defn.group(0)).strip()))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def pe_licence_reqs(txt: str) -> ReqsOut:
+    """执照(Employer Requirements - All Streams 一节里给申请人定的条文行,门槛卡「其他」行读它)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+    return rule_rows(RuleRowsIn(to_row=to_pe_req, txt=txt, stream=PER_EMP_STREAM, url=PE_GUIDE_URL,
+                                section=PER_SECTION_EMPLOYER, rules=PER_EMP_RULES))
+
+
+def pe_education_reqs(txt: str) -> ReqsOut:
+    """学历三行(条文行;门槛卡与判定引擎都不读,给向导事实与资料库):Skilled Worker 两年制以上大专 / 大学(TEER 0-3)、
+    Critical Worker 高中(TEER 4 / 5)、Occupations in Demand 高中。每行只在自己那一节的切片里找(高中那句三节同句)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+    rows: list = []
+    problems: list = []
+    specs = ((PER_SKILLED_START, PER_CRITICAL_START, PER_SKILLED_STREAM, PER_SECTION_EXP, PER_SKILLED_RULES,
+              PER_TEER_03),
+             (PER_CRITICAL_START, PER_CRITICAL_END, PER_CRITICAL_STREAM, PER_SECTION_CRITICAL, PER_CRITICAL_RULES,
+              PER_TEER_45),
+             (PER_OID_START, PER_OID_END, PE_OID_STREAM, PER_SECTION_OID, PER_OID_RULES, []))
+    for start, end, stream, section, rules, band in specs:
+        sec = slice_between(SliceIn(text=txt, start=start, end=end))
+        if sec == "":
+            problems.append(PER_PROBLEM_SECTION_TPL.format(start=start))
+            continue
+        part = rule_rows(RuleRowsIn(to_row=to_pe_req, txt=sec, stream=stream, url=PE_GUIDE_URL,
+                                    section=section, rules=rules))
+        for r in part.rows:
+            r[K_APPLIES_TEER] = band
+        rows += part.rows
+        problems += part.problems
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def pe_age_reqs(txt: str) -> ReqsOut:
+    """年龄区间:各节写到的区间(两种写法)必须同一个,出一行条文行挂全体 Workforce 流;出现两个说明官方分了流,得人工看。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
+    rows: list = []
+    problems: list = []
+    ages: set = set()
+    for age_re in PER_AGE_RES:
+        for m in age_re.finditer(txt):
+            ages.add((int(m.group(1)), int(m.group(2))))
+    if not ages:
+        problems.append(PER_PROBLEM_AGE)
+    elif len(ages) > 1:
+        problems.append(PER_PROBLEM_AGE_MULTI_TPL.format(ages=sorted(ages)))
+    else:
+        lo, hi = next(iter(ages))
+        rows.append(to_pe_req(ReqIn(factor=FACTOR_AGE, op=OP_RULE, section=PER_SECTION_LANG,
+                                    label=PER_AGE_LABEL_TPL.format(lo=lo, hi=hi))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def build_pe_req() -> None:
-    """PE 门槛入口:官方申请指南 PDF → 语言 + Skilled Worker 经验 + 雇主经营年限。"""
+    """PE 门槛入口:官方申请指南 PDF → 语言 + Skilled Worker 经验 + 雇主经营年限。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 Critical Worker 在职经验、工资、执照、学历三行、年龄一行(见段首)。
+    同日 lead 定:Critical Worker 在职经验(pe_critical_reqs)与工资(pe_wage_reqs)两行本批先不收、这里不调,
+    函数与常量留着,理由各见其 docstring;收回来 = 把两个调用放回下面的元组。"""
     say(PRINT_OUT_TPL.format(path=OUT_PE_REQ))
     txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S))))
     reqs: list = []
     problems: list = []
-    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt)):
+    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt),
+                 pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt)):
         reqs += part.rows
         problems += part.problems
     eff = PER_EFFECTIVE_RE.search(txt)
@@ -5442,7 +5561,7 @@ def build_pe_req() -> None:
     }, indent=INDENT_2))
     # pyrefly: ignore[missing-attribute] — 同上,走到这 eff 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_PE_REQ, version=eff.group(1), n=len(reqs)))
-    say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=PER_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
 
 
 # =========================================================================
