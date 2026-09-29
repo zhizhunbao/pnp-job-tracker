@@ -266,10 +266,10 @@ from pnp.constants import (
     SIRS_PROBLEM_EMPTY_TPL, SIRS_PROBLEM_MAX_TPL, SIRS_SECTION_AREA, SIRS_SECTION_EDUCATION, SIRS_SECTION_LANGUAGE,
     SIRS_SECTION_ORDER, SIRS_SECTION_WAGE, SIRS_SECTION_WORK, SIRS_SKIP_ROW_RE, SIRS_SYSTEM, SIRS_WAGE_CAP,
     SIRS_WAGE_FLOOR, SIRS_WAGE_MAX, SIRS_WAGE_RULE, SIRS_WORK_MAX, SIRS_WORK_ROW_RE, SIRS_XOR_TAIL_RE,
-    SKJ_APPLIES_TO, SKJ_CODE_RE, SKJ_CRAWL_DIR, SKJ_DL_TPL, SKJ_HEAD_BYTES, SKJ_JOBOFFER_PDF, SKJ_LABEL, SKJ_NOTE,
+    SKJ_APPLIES_TO, SKJ_CRAWL_DIR, SKJ_DL_TPL, SKJ_HEAD_BYTES, SKJ_JOBOFFER_PDF, SKJ_LABEL, SKJ_NOTE,
     SKJ_PDFS, SKJ_PDF_MAGIC, SKJ_PRINT_DL_FAIL_TPL, SKJ_PRINT_DL_TPL, SKJ_PRINT_DONE_TPL, SKJ_PRINT_NO_NOC,
-    SKJ_PRINT_NO_PDF, SKJ_PRINT_PROBE_HIT_TPL, SKJ_PRINT_PROBE_MISS, SKJ_PROBE_NOC, SKJ_ROW_RE, SKJ_STAR,
-    SKJ_STAR_PREFIX_RE, SKJ_STREAM, SKJ_TIMEOUT_S, SKP_ADDITIVE, SKP_DETAIL_TPL, SKP_GROUP_I, SKP_GROUP_II,
+    SKJ_PRINT_NO_PDF, SKJ_PRINT_PROBE_HIT_TPL, SKJ_PRINT_PROBE_MISS, SKJ_PROBE_NOC,
+    SKJ_STREAM, SKJ_TIMEOUT_S, SKP_ADDITIVE, SKP_DETAIL_TPL, SKP_GROUP_I, SKP_GROUP_II,
     SKP_INT_CELL_RE, SKP_KIND_GROUP, SKP_MAX_ROW_RE, SKP_PAGE_URL, SKP_PASS_RE, SKP_PRINT_DONE_TPL,
     SKP_PRINT_FACTOR_TPL, SKP_PROBLEM_EMPTY_TPL, SKP_PROBLEM_GROUP_II_TPL, SKP_PROBLEM_GROUP_I_TPL,
     SKP_PROBLEM_NO_GROUP_TPL, SKP_PROBLEM_NO_PASS, SKP_PROBLEM_NO_TOTAL, SKP_PROBLEM_SUM_TPL, SKP_SECTIONS,
@@ -287,7 +287,7 @@ from pnp.constants import (
     SKS_QUARTER_RE, SKS_QUARTER_TPL, SKS_REVIEW_KW, SKS_SOURCE, SKS_TIMEOUT_S, SKS_TOTAL_ROW, SKS_URL,
     SKS_WEEKS_RE, SK_API_TIMEOUT_S, SK_EFFECTIVE_TPL, SK_EXCL_API, SK_EXCL_APPLIES_TO, SK_EXCL_APPLIES_TO_QUOTE,
     SK_EXCL_CODE_RE, SK_EXCL_DL_TPL, SK_EXCL_LABEL, SK_EXCL_LOOKAHEAD, SK_EXCL_NOTE, SK_EXCL_PAGE, SK_EXCL_PRODUCT,
-    SK_EXCL_ROW_RE, SK_EXCL_SHORT_LABEL, SK_EXCL_STREAM, SK_EXCL_UPDATED_RE, SK_NOC_PATTERNS, SK_NOTE,
+    SK_EXCL_ROW_RE, SK_EXCL_SHORT_LABEL, SK_EXCL_STAR, SK_EXCL_STAR_PREFIX_RE, SK_EXCL_STREAM, SK_EXCL_UPDATED_RE, SK_NOC_PATTERNS, SK_NOTE,
     SK_PDF_TIMEOUT_S, SK_PRINT_EXCL_FAIL_TPL, SK_PRINT_EXCL_TPL, SK_PRINT_NO_EXCL, SK_PRINT_NO_FORMAT, SK_STREAMS,
     STRIP_DOT_COMMA, STRIP_DOT_SPACE, STRIP_STAR_DOT, TAG_A, TAG_ARTICLE, TAG_B, TAG_BR, TAG_DD, TAG_DL, TAG_DT,
     TAG_H1, TAG_H3, TAG_LI, TAG_MAIN, TAG_P, TAG_STRONG, TAG_TABLE, TAG_TD, TAG_TH, TAG_TR, TAG_UL, TEXT_JOIN_SEP,
@@ -973,6 +973,8 @@ def sk_excluded_occupations(text: str) -> dict:
 
     PDF 是两列表格,pymupdf 把 NOC 与职业名拆成相邻两行(「11100」\\n「Financial auditors…」);
     少数导出会并成一行,两种都认。
+    2026-09-29 去重:OID/EE 排除表与 Job Offer 排除表(§32)共用本函数(原 parse_joboffer_pdf 同算法抄本并入);
+    Job Offer 表个别行带脚注星号前缀,名称起始认星号、落表前剥掉(两份缓存 PDF 新旧解析逐条一致)。
     """
     lines = []
     for ln in text.splitlines():
@@ -988,12 +990,12 @@ def sk_excluded_occupations(text: str) -> dict:
                 if cand:
                     nxt = cand
                     break
-            if not nxt or not nxt[0].isalpha():
+            if not nxt or not (nxt[0].isalpha() or nxt[0] == SK_EXCL_STAR):
                 continue
             noc, name = ln.strip(), nxt
         else:
             continue
-        name = fold_ws(name).strip(STRIP_DOT_SPACE)
+        name = fold_ws(SK_EXCL_STAR_PREFIX_RE.sub(EMPTY_JOIN, name)).strip(STRIP_DOT_SPACE)
         if is_header_row(name):
             continue
         occ.setdefault(noc, name)
@@ -7583,34 +7585,6 @@ def download_sk_pdfs() -> dict:
     return content
 
 
-def parse_joboffer_pdf(pdf_bytes: bytes) -> list:
-    """解析 Job Offer 排除清单 PDF → [{noc, name}]。"""
-    lines: list = []
-    for ln in pdf_text(pdf_bytes).splitlines():
-        lines.append(ln.strip())
-    occ: dict = {}
-    for i, ln in enumerate(lines):
-        m = SKJ_ROW_RE.match(ln)
-        if m:
-            noc, name = m.group(1), m.group(2)
-        elif SKJ_CODE_RE.match(ln):
-            nxt = ""
-            for cand in lines[i + 1:i + SK_EXCL_LOOKAHEAD]:
-                if cand:
-                    nxt = cand
-                    break
-            if not nxt or not (nxt[0].isalpha() or nxt[0] == SKJ_STAR):
-                continue
-            noc, name = ln.strip(), nxt
-        else:
-            continue
-        name = fold_ws(SKJ_STAR_PREFIX_RE.sub(EMPTY_JOIN, name)).strip(STRIP_DOT_SPACE)
-        if is_header_row(name):
-            continue
-        occ.setdefault(noc, name)
-    return occ_rows_of(occ)
-
-
 def occ_by_noc(x: OccProbeIn) -> dict | None:
     """清单里某个 NOC 那一行(收尾探针用)。"""
     for o in x.occupations:
@@ -7626,7 +7600,7 @@ def build_sk_joboffer() -> None:
     if not joboffer_pdf:
         say(SKJ_PRINT_NO_PDF)
         return
-    occs = parse_joboffer_pdf(joboffer_pdf)
+    occs = occ_rows_of(sk_excluded_occupations(pdf_text(joboffer_pdf)))
     if not occs:
         say(SKJ_PRINT_NO_NOC)
         return

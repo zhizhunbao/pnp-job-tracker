@@ -1323,8 +1323,10 @@ SK_EXCL_APPLIES_TO_QUOTE = (
 )
 """适用范围的官方原句(quote-anchored,禁转述)。"""
 
-SK_EXCL_ROW_RE = re.compile(r"^\s*(\d{5})\s+([A-Za-z].*?)\s*$")
-"""PDF 两列表格并成一行的写法。"""
+SK_EXCL_ROW_RE = re.compile(r"^\s*(\d{5})\s+(\*?[A-Za-z].*?)\s*$")
+"""PDF 两列表格并成一行的写法。
+2026-09-29 去重:与 §32 Job Offer 排除表共用(原 SKJ_ROW_RE 并入);那张表个别行带脚注星号前缀
+(如「*Massage therapist…」),名称起始允许 * 或字母。"""
 
 SK_EXCL_CODE_RE = re.compile(r"^\s*(\d{5})\s*$")
 """PDF 两列表格拆成相邻两行时的 NOC 行(pymupdf 常这么拆:「11100」\\n「Financial auditors…」)。"""
@@ -1334,6 +1336,12 @@ SK_EXCL_UPDATED_RE = re.compile(r"Updated:\s*([A-Z][a-z]+)\s+(\d{1,2}),\s*(\d{4}
 
 SK_EXCL_LOOKAHEAD = 3
 """NOC 行之后往下看几行找职业名(取紧邻的下一行非空)。"""
+
+SK_EXCL_STAR_PREFIX_RE = re.compile(r"^\*+\s*")
+"""脚注星号前缀非职业名一部分,去掉(2026-09-29 去重:原 §32 SKJ_STAR_PREFIX_RE 移来)。"""
+
+SK_EXCL_STAR = "*"
+"""下一行以星号开头也算职业名(2026-09-29 去重:原 §32 SKJ_STAR 移来)。"""
 
 SK_API_TIMEOUT_S = 40
 """产品 API 超时。"""
@@ -7038,19 +7046,6 @@ OUT_SK_JOBOFFER_FILE = "sk-joboffer-excluded.json"
 
 SKJ_APPLIES_TO = "Employment Offer"
 """本表管的子类别。"""
-
-SKJ_ROW_RE = re.compile(r"^\s*(\d{5})\s+(\*?[A-Za-z].*?)\s*$")
-"""两列表格并成一行的写法;本表个别行带脚注星号前缀(如「*Massage therapist…」),
-名称起始允许 * 或字母。"""
-
-SKJ_CODE_RE = re.compile(r"^\s*(\d{5})\s*$")
-"""拆成相邻两行时的 NOC 行(同 §4 的口径)。"""
-
-SKJ_STAR_PREFIX_RE = re.compile(r"^\*+\s*")
-"""脚注星号前缀非职业名一部分,去掉。"""
-
-SKJ_STAR = "*"
-"""下一行以星号开头也算职业名。"""
 
 SKJ_PDF_MAGIC = b"%PDF-"
 """PDF 魔数(下载后确认)。"""
