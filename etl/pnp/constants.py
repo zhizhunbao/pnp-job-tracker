@@ -4345,6 +4345,11 @@ MBR_EDI_URL = "https://immigratemanitoba.com/employer-services/edi/"
 「owned and actively operated the business for at least three consecutive years」。
 MPNP SWM 主线本身不设雇主年限数字(SWM 的 6 个月是申请人在职时长),EDI 是雇主端的申请通道。"""
 
+MBR_LANG_URL = "https://immigratemanitoba.com/mpnp/policies/language-proficiency"
+"""MPNP 语言政策页(Policies and Guidelines → Language Proficiency;mb-mpnp / mb-root 两份 crawl 缓存都有)。
+全项目各流通用:TEER 4 / 5 的语言下限写在这页的 Note 里(SWO 资格页另写了同一数值,那一行归 SWO)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):SWM 的语言下限从这页取,不借 SWO 那一行。"""
+
 OUT_MB_REQ = paths.PNP / "mb-req.json"
 """MB 门槛表落盘处。曼省这份最值钱的地方:**语言门槛是逐职业发布的**。
 两个官方源:
@@ -4368,16 +4373,29 @@ OUT_MB_REQ = paths.PNP / "mb-req.json"
   · SWO 的经验只进分值表(不满 1 年 = 0 分),不是资格线
   · 60/100 入池分(分值表的事,B4-4)
   · 结算资金 / 最低家庭收入(MB **不设**收入表 —— 全国只有 BC 发布了;这是结论不是缺口)
-自校是硬闸:两个源任一没解析到、或逐职业条数异常就**保留旧表不覆盖**并 exit 1。"""
+自校是硬闸:两个源任一没解析到、或逐职业条数异常就**保留旧表不覆盖**并 exit 1。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补两行,省提名弹框「本岗通道的门槛」卡给 SWM 出卡用:
+  · 全项目语言政策页的 TEER 4 / 5 下限 CLB 4(MBR_LANG_45_RE;流名 MBR_LANG_STREAM,各流通用,排在 SWO 那行之后 ——
+    判定引擎按省全量挑语言行时同样具体的行取先出现的,SWO 那行仍先到,判定结果与出处一字不变);
+  · SWM「Conditions of employment」里的职业资质一句(any required licence or certification,MBR_SWM_LICENCE_RE)→ licensing。
+  在需清单逐职业那些行不动,由通道对照表把它的流名挂进 SWM 的门槛流(官方 IDOL 页原句见 MBR_IDOL_STREAM)。"""
 
 MBR_TIMEOUT_S = 45
 """MB 各页抓取超时。"""
 
 MBR_IDOL_STREAM = "MPNP In-Demand Occupations List"
-"""逐职业 CLB 行的通道名(与 §6 MB_BUCKETS["main"]["stream"] 同字面,分属两张表故各写一份)。"""
+"""逐职业 CLB 行的通道名(与 §6 MB_BUCKETS["main"]["stream"] 同字面,分属两张表故各写一份)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):这些逐职业行对 SWM 也算 —— 官方 IDOL 页「Minimum Canadian Language Benchmark (CLB)
+levels」一节原句「The CLB levels listed in the In-Demand Occupations List are the minimum levels across all Skilled Worker
+pathways」;通道对照表(pathways 域)把本流名挂进 SWM 的门槛流,不另抄一份行。"""
 
 MBR_SWO_STREAM = "MPNP Skilled Worker Overseas"
 """SWO 语言下限那行的通道名。"""
+
+MBR_LANG_STREAM = "MPNP (language proficiency, all streams)"
+"""全项目语言政策那行的通道名(照 AB / BC / NL「… (…, all streams)」的全流通用写法;2026-09-29 七省门槛卡)。
+不用 SWM 流名:这条对各流都算,不是 SWM 独有;也不以 MBR_SWM_STREAM 打头 —— 只重算 SWM 那一步按流名前缀剔旧行,
+碰不到它。判定引擎的 MB-swm 通道按流名正则(skilled worker in manitoba)挑行,也挑不到它,判定口径不变。"""
 
 MBR_IES_PATHWAYS = (
     ("MPNP International Education Stream — Career Employment Pathway (CEP)",
@@ -4441,6 +4459,9 @@ MBR_SWM_GRAD_STREAM_TPL = "{stream} (graduated in another Canadian province/terr
 MBR_SWM_SECTION = "Eligibility — Skilled Worker in Manitoba: ongoing Manitoba employment"
 """SWM 那几行的出处节名。"""
 
+MBR_SWM_COND_SECTION = "Eligibility — Skilled Worker in Manitoba: conditions of employment"
+"""SWM 职业资质那行的出处节名(资格页「Conditions of employment」小节;2026-09-29 七省门槛卡)。"""
+
 MBR_EDI_STREAM = "MPNP Employer Direct Initiative (EDI)"
 """EDI 雇主年限那行的通道名。"""
 
@@ -4453,6 +4474,9 @@ MBR_IDOL_SECTION = "In-Demand Occupations List — Minimum CLB"
 MBR_SWO_SECTION = "Skilled Worker Overseas — Factor 1: Language Proficiency"
 """SWO 的出处节名。"""
 
+MBR_LANG_SECTION = "Language Proficiency — Note: semi-skilled and lower-skilled occupations (TEER 4 and 5)"
+"""全项目语言政策那行的出处节名(语言政策页正文下的 Note;2026-09-29 七省门槛卡)。"""
+
 MBR_MIN_OCC = 100
 """在需清单实见 150+ 行;低于此数视为改版/解析异常。"""
 
@@ -4462,6 +4486,14 @@ MBR_IDOL_ROW_RE = re.compile(r"^\|\s*(\d{5})\s*\|\s*(\d)\s*\|\s*([^|]+?)\s*\|\s*
 MBR_SWO_FLOOR_RE = re.compile(r"occupation is classified at TEER ([\d ]*or \d).{0,140}?"
                               r"have at least CLB/NCLC (\d)", re.I)
 """「Applicants whose occupation is classified at TEER 4 or 5 … must … have at least CLB/NCLC 4」。"""
+
+MBR_LANG_45_RE = re.compile(r"(Applicants for semi-skilled and lower-skilled occupations \(TEER ([\d ,]*and \d)[^)]*\) "
+                            r"must achieve a minimum of CLB (\d+) in English or NCLC \d+ in French[^.]*\.)", re.I)
+"""全项目语言政策页 Note 的 TEER 4 / 5 下限(整句捕获 = label;group(2) = TEER 档、group(3) = CLB)。官方原句:
+「Applicants for semi-skilled and lower-skilled occupations (TEER 4 and 5; previously NOC C and D) must achieve a minimum of
+CLB 4 in English or NCLC 4 in French and submit their test results with their MPNP application.」
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):SWM 门槛卡的语言行 —— 职业在在需清单上取该职业那一档,不在清单上的 TEER 4 / 5
+落这一档(CLB 4);TEER 0-3 不在清单上的官方没有数字下限,卡上不出语言行(不猜)。"""
 
 MBR_EDI_YEARS_RE = re.compile(r"owned and actively operated the business for at least (\w+) consecutive years", re.I)
 """EDI:「owned and actively operated the business for at least three consecutive years」(B2-4)。"""
@@ -4483,6 +4515,12 @@ MBR_SWM_EXCL_RE = re.compile(
     r"you were engaged in full-time study.{0,80}?will not be included when calculating the period "
     r"of qualifying work experience in Manitoba\.)", re.I)
 """不计入的时段(自雇 / 无授权工作 / 全日制在读期间的 co-op)——「1 年」怎么算全看这一句。"""
+
+MBR_SWM_LICENCE_RE = re.compile(r"(You must have all qualifications for the position, including training/education and "
+                                r"any required licen[cs]e or certification\.)", re.I)
+"""SWM 资格页「Conditions of employment」小节的职业资质一句(整句捕获 = label)。官方原句:
+「You must have all qualifications for the position, including training/education and any required licence or certification.」
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):记 licensing(op=rule),门槛卡「其他」行出「职业所需执照或注册」;判定引擎不读这一类。"""
 
 MBR_MONTHS_PER_MONTH = 1
 """官方写「月」时的折算倍数。"""
@@ -4520,8 +4558,14 @@ MBR_PROBLEM_SWM_GRAD = "SWM 外省毕业生的在职时长(一年)没解析到"
 MBR_PROBLEM_SWM_EXCL = "SWM 不计入时段那一句(self-employment / co-op)没解析到"
 """自校问题:SWM 不计入时段。"""
 
+MBR_PROBLEM_SWM_LICENCE = "SWM 职业资质那一句(any required licence or certification)没解析到"
+"""自校问题:SWM 职业资质(解析不到时门槛卡少「其他」一行;2026-09-29 七省门槛卡)。"""
+
 MBR_PROBLEM_SWO = "SWO 的 TEER 4/5 语言下限没解析到"
 """自校问题:SWO 下限。"""
+
+MBR_PROBLEM_LANG_45 = "语言政策页的 TEER 4/5 语言下限(CLB 4)没解析到"
+"""自校问题:全项目语言政策的 TEER 4 / 5 下限(解析不到时 SWM 门槛卡上不在清单上的 TEER 4 / 5 岗没有语言行;2026-09-29 七省门槛卡)。"""
 
 MBR_PROBLEM_IDOL_TPL = "在需清单只解析到 {n} 个职业(<{min_n},疑似改版)"
 """自校问题:在需清单条数。"""
@@ -4535,8 +4579,9 @@ MBR_PROBLEM_EDI_WORD_TPL = "EDI 年限词认不出:{word!r}"
 MBR_SOURCE = "MPNP — Skilled Worker in Manitoba eligibility & In-Demand Occupations List & Skilled Worker Overseas eligibility"
 """表级来源名。"""
 
-MBR_PRINT_DONE_TPL = "✓ {path}  共 {n} 条门槛(逐职业 {occ} 个 + TEER 4/5 下限 1 条 + SWM {swm} 条 + EDI)"
-"""MB 门槛收尾报数。"""
+MBR_PRINT_DONE_TPL = "✓ {path}  共 {n} 条门槛(逐职业 {occ} 个 + TEER 4/5 下限 {floor} 条 + SWM {swm} 条 + EDI)"
+"""MB 门槛收尾报数。2026-09-29 七省门槛卡:TEER 4/5 下限原写死「1 条」(只有 SWO 那行),加了全项目语言政策那行后改占位 {floor};
+SWM 条数连职业资质那行一起数。"""
 
 MBR_PRINT_CONFLICT_TPL = "  ⚠ {n} 个职业在两张清单里的 Minimum CLB 不一致,已取高档(请人工抽查)"
 """同一职业在主清单/乡镇清单给了不同档 → 取高的(说高了只会让人多考一次,说低了会让他以为

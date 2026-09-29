@@ -122,10 +122,14 @@ from pnp.constants import (
     MBP_RISK_KEY, MBP_RISK_RULE, MBP_SIMPLE_FACTORS, MBP_SOURCE, MBP_STRAIGHT_QUOTE, MBP_SYSTEM, MBP_TIMEOUT_S,
     MBP_WORK_KEY, MBR_BASIS_TENURE, MBR_COND_GRAD, MBR_DASH, MBR_EDI_LABEL_TPL, MBR_EDI_SECTION, MBR_EDI_STREAM,
     MBR_EDI_URL, MBR_EDI_YEARS_RE, MBR_IDOL_LABEL_TPL, MBR_IDOL_ROW_RE, MBR_IDOL_SECTION, MBR_IDOL_STREAM,
+    MBR_LANG_45_RE, MBR_LANG_SECTION, MBR_LANG_STREAM, MBR_LANG_URL,
     MBR_MIN_OCC, MBR_MONTHS_PER_MONTH, MBR_MONTHS_PER_YEAR, MBR_PRINT_CONFLICT_TPL, MBR_PRINT_DONE_TPL,
     MBR_PRINT_SWM_ONLY_TPL, MBR_PRINT_SWM_ROW_TPL, MBR_PROBLEM_EDI, MBR_PROBLEM_EDI_WORD_TPL, MBR_PROBLEM_IDOL_TPL,
-    MBR_PROBLEM_SWM_BASE, MBR_PROBLEM_SWM_EXCL, MBR_PROBLEM_SWM_GRAD, MBR_PROBLEM_SWO, MBR_PROBLEM_TENURE_WORD_TPL,
-    MBR_SOURCE, MBR_SWM_BASE_RE, MBR_SWM_EXCL_RE, MBR_SWM_GRAD_RE, MBR_SWM_GRAD_STREAM_TPL, MBR_SWM_SECTION,
+    MBR_PROBLEM_LANG_45,
+    MBR_PROBLEM_SWM_BASE, MBR_PROBLEM_SWM_EXCL, MBR_PROBLEM_SWM_GRAD, MBR_PROBLEM_SWM_LICENCE, MBR_PROBLEM_SWO,
+    MBR_PROBLEM_TENURE_WORD_TPL,
+    MBR_SOURCE, MBR_SWM_BASE_RE, MBR_SWM_COND_SECTION, MBR_SWM_EXCL_RE, MBR_SWM_GRAD_RE, MBR_SWM_GRAD_STREAM_TPL,
+    MBR_SWM_LICENCE_RE, MBR_SWM_SECTION,
     MBR_SWM_STREAM, MBR_SWM_URL, MBR_SWO_FLOOR_RE, MBR_SWO_LABEL_TPL, MBR_SWO_SECTION, MBR_SWO_STREAM, MBR_SWO_URL,
     MBR_TIMEOUT_S, MBS_ACTIVE_RE, MBS_ALLOC_RE, MBS_ANNUAL_SECTION_TPL, MBS_ANNUAL_URL_TPL, MBS_ANNUAL_YEARS_BACK,
     MBS_COL_APPROVED, MBS_COL_IN_ASSESSMENT, MBS_COL_OVERALL, MBS_COL_PENDING, MBS_COL_REFUSED, MBS_COL_TOTAL,
@@ -4644,6 +4648,24 @@ def build_mb_swm() -> SwmOut:
     return SwmOut(rows=rows, problems=problems)
 
 
+def mb_swm_licence_reqs() -> ReqsOut:
+    """SWM 资格页「Conditions of employment」的职业资质一句 → licensing 一行(读 crawl 缓存,缓存没有才直连)。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):门槛卡「其他」行出「职业所需执照或注册」,判定引擎不读这一类。
+    流名同 SWM 在职时长那几行:只重算 SWM 的 build_mb_req_swm 按流名前缀剔旧行时会剔到它,那一步也调本函数重算。
+    """
+    rows: list = []
+    problems: list = []
+    m = MBR_SWM_LICENCE_RE.search(page_text(PageTextIn(url=MBR_SWM_URL, timeout_s=MBR_TIMEOUT_S,
+                                                       drop_junk=True, main_only=False, cache_first=True)))
+    if m:
+        rows.append(to_mb_req(ReqIn(stream=MBR_SWM_STREAM, url=MBR_SWM_URL, factor=FACTOR_LICENSING, op=OP_RULE,
+                                    section=MBR_SWM_COND_SECTION, label=fold_ws(m.group(1)).strip())))
+    else:
+        problems.append(MBR_PROBLEM_SWM_LICENCE)
+    return ReqsOut(rows=rows, problems=problems)
+
+
 def mb_idol_occupations(md: str) -> MbIdolOut:
     """IDOL 表 → {noc: (teer, minCLB, title)};同一职业两张清单给了不同档 → 取高的并计数。"""
     occ: dict = {}
@@ -4676,6 +4698,25 @@ def mb_swo_reqs() -> ReqsOut:
                                     label=MBR_SWO_LABEL_TPL.format(band=m.group(1), clb=m.group(2)))))
     else:
         problems.append(MBR_PROBLEM_SWO)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def mb_lang_policy_reqs() -> ReqsOut:
+    """全项目语言政策页:TEER 4 / 5 的语言下限 → language 一行(流名 MBR_LANG_STREAM,各流通用;读 crawl 缓存,没有才直连)。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):SWM 门槛卡上不在在需清单的 TEER 4 / 5 岗落这一档(官方原句见 MBR_LANG_45_RE)。
+    由 build_mb_req 排在 SWO 那行之后:判定引擎按省全量挑语言行时同样具体的行取先出现的,SWO 那行仍先到,判定结果与出处不变。
+    """
+    rows: list = []
+    problems: list = []
+    m = MBR_LANG_45_RE.search(page_text(PageTextIn(url=MBR_LANG_URL, timeout_s=MBR_TIMEOUT_S,
+                                                   drop_junk=True, main_only=False, cache_first=True)))
+    if m:
+        rows.append(to_mb_req(ReqIn(stream=MBR_LANG_STREAM, url=MBR_LANG_URL, factor=FACTOR_LANGUAGE,
+                                    value=int(m.group(3)), unit=UNIT_CLB, applies_teer=teers(m.group(2)),
+                                    section=MBR_LANG_SECTION, label=fold_ws(m.group(1)).strip())))
+    else:
+        problems.append(MBR_PROBLEM_LANG_45)
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -4745,16 +4786,26 @@ def mb_ies_table(x: MbIesTableIn) -> ReqsOut:
 
 
 def build_mb_req() -> None:
-    """MB 门槛入口:SWM 在职时长 + SWO 语言下限 + 逐职业 Minimum CLB + EDI 雇主年限 + 国际教育流三路径。"""
+    """MB 门槛入口:SWM 在职时长 + SWO 语言下限 + 逐职业 Minimum CLB + EDI 雇主年限 + 国际教育流三路径。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):SWM 那几行之后加职业资质一行(mb_swm_licence_reqs),SWO 那行之后加全项目
+    语言政策的 TEER 4 / 5 下限一行(mb_lang_policy_reqs);原有各行的相对次序不动。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_MB_REQ))
     reqs: list = []
     problems: list = []
     swm = build_mb_swm()
     reqs += swm.rows
     problems += swm.problems
+    lic = mb_swm_licence_reqs()
+    reqs += lic.rows
+    problems += lic.problems
     swo = mb_swo_reqs()
     reqs += swo.rows
     problems += swo.problems
+    policy = mb_lang_policy_reqs()
+    reqs += policy.rows
+    problems += policy.problems
     html = fetch_html(FetchHtmlIn(url=MB_IDOL_URL, timeout_s=MBR_TIMEOUT_S))
     idol = mb_idol_occupations(convert_md(ConvertIn(html=html, url=MB_IDOL_URL, selector=None, removes=())))
     if len(idol.occ) < MBR_MIN_OCC:
@@ -4782,7 +4833,8 @@ def build_mb_req() -> None:
         K_FETCHED: today_iso(),
         K_REQUIREMENTS: reqs,
     }, indent=INDENT_2))
-    say(MBR_PRINT_DONE_TPL.format(path=OUT_MB_REQ, n=len(reqs), occ=len(idol.occ), swm=len(swm.rows)))
+    say(MBR_PRINT_DONE_TPL.format(path=OUT_MB_REQ, n=len(reqs), occ=len(idol.occ),
+                                  floor=len(swo.rows) + len(policy.rows), swm=len(swm.rows) + len(lic.rows)))
     if idol.conflicts:
         say(MBR_PRINT_CONFLICT_TPL.format(n=idol.conflicts))
 
@@ -4791,20 +4843,24 @@ def build_mb_req_swm() -> None:
     """只重算 SWM 在职时长(读 crawl 缓存,不联网);其余门槛原样保留。
 
     原 `--swm-only` 命令行开关(2026-08-30 批B 随一参令退役)→ 门的 TOOLS 里点名这一步。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):SWM 流下多了职业资质一行(mb_swm_licence_reqs),按流名前缀剔旧行时它也被剔,
+    故一并重算 —— 不然跑这一步会把它弄丢。
     """
     say(PRINT_OUT_TPL.format(path=OUT_MB_REQ))
     swm = build_mb_swm()
-    if swm.problems:
-        fail_zh(swm.problems)
+    lic = mb_swm_licence_reqs()
+    fresh = swm.rows + lic.rows
+    if swm.problems or lic.problems:
+        fail_zh(swm.problems + lic.problems)
     table = json.loads(OUT_MB_REQ.read_text(encoding=ENC_UTF8))
     kept: list = []
     for r in table.get(K_REQUIREMENTS, []):
         if not str(r.get(K_STREAM, "")).startswith(MBR_SWM_STREAM):
             kept.append(r)
-    table[K_REQUIREMENTS] = kept + swm.rows
+    table[K_REQUIREMENTS] = kept + fresh
     paths.write_json(paths.WriteJsonIn(path=OUT_MB_REQ, payload=table, indent=INDENT_2))
-    say(MBR_PRINT_SWM_ONLY_TPL.format(path=OUT_MB_REQ, swm=len(swm.rows), kept=len(kept)))
-    for r in swm.rows:
+    say(MBR_PRINT_SWM_ONLY_TPL.format(path=OUT_MB_REQ, swm=len(fresh), kept=len(kept)))
+    for r in fresh:
         say(MBR_PRINT_SWM_ROW_TPL.format(factor=r[K_FACTOR], op=r[K_OP], value=r[K_VALUE],
                                          unit=r[K_UNIT], cond=r[K_APPLIES_CONDITION] or MBR_DASH))
 
