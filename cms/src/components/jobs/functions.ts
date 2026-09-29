@@ -46,7 +46,7 @@ import {
   JD_KIND, JD_LABEL_LINE_RE, JD_LEAD_BULLET_RE, JD_LOC_PROV_KEY, JD_MONEY_RE, JD_SECS, JD_SEC_APPLY, JD_SEC_LOC,
   JD_SEC_PAY, JD_SEC_ROLE, JD_SEC_SPLIT_RE, JD_SEC_STEP, JD_SENTENCE_RE, JD_SPACES_RE, JD_STAR_ITEM_RE, JD_STAR_RE,
   JD_SUB_HEADS, JD_TOP_HEADS, JD_TPL_SLOT, JD_DONE, JD_EMPTY, JD_LIMITED, KIND, K_ACC, K_COL, K_DIVISOR, K_ELIG, K_EMP,
-  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_EN, LANG_KO,
+  K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO,
   LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO,
   MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
   MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
@@ -933,6 +933,8 @@ function signalCellOf(x: CellIn): CellView | null {
  * 「这种胶囊样式都去掉吧。都改成一致的」:琥珀徽章撤,两格同一绿字色档。九省之外(领地等)照旧一行「{省} 可提名」。
  * 2026-09-28 写哪条通道、叫什么名字收进 pnp 桶(pnpChannelKeyOf / pnpNameOf,与手机胶囊、弹框通道卡同一处判);
  * 原 pnpNamedCellOf / pnpGenericCellOf / pnpGenericOf 三件并掉,这里只剩色档与拼格。
+ * 同日 Frank「这个要不要把灰字去掉」「先弄安省的」:两行改一行 —— 只写界面语言直白名(与手机胶囊同一个),英文行撤;
+ * 官方原名进弹框「本岗能走的通道」卡的灰字。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
@@ -943,11 +945,7 @@ function pnpCellOf(x: CellIn): CellView {
   }
   const key = pnpChannelKeyOf({ job: x.j, defaults: x.cx.pnpIndex.defaults })
   if (key !== TEXT_NONE) {
-    const view = blankView({ text: pnpNameOf({ key, t: x.cx.tEn }), tone: TONE.moneyMd })
-    if (x.cx.lang !== LANG_EN) {
-      view.sub = pnpNameOf({ key, t: x.cx.t })
-    }
-    return view
+    return blankView({ text: pnpNameOf({ key, t: x.cx.t }), tone: TONE.moneyMd })
   }
   if (x.j.pnpEligible === true) {
     return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.j.province }), tone: TONE.moneyMd })

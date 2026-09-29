@@ -3118,6 +3118,7 @@ function toPathway(r: PathwayDbRow): Pathway {
   return {
     province: text(r.province), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
     drawStreams: toStrList(r.drawStreams), reqStreams: toStrList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
+    officialName: text(r.officialName),
   }
 }
 

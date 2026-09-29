@@ -931,6 +931,11 @@ export type PathwayDbRow = {
    * 配额行的通道键。
    */
   quotaKey: string | null
+
+  /**
+   * 官方英文原名(照抄这条通道自己那一页)。
+   */
+  officialName: string | null
 }
 
 /**
@@ -967,6 +972,11 @@ export type Pathway = {
    * 配额行的通道键(与配额行 streamKey 同一个归一);没有通道级配额为 null。
    */
   quotaKey: string | null
+
+  /**
+   * 官方英文原名(照抄这条通道自己那一页;省提名弹框「本岗能走的通道」卡的灰字读它;库里缺了给空串)。
+   */
+  officialName: string
 }
 
 /**

@@ -248,6 +248,11 @@ export type PnpPathway = {
    * 配额行的通道键(与配额行 streamKey 同一个归一);没有通道级配额为 null。
    */
   quotaKey: string | null
+
+  /**
+   * 官方英文原名(「本岗能走的通道」卡的灰字;库里缺了是空串)。
+   */
+  officialName: string
 }
 
 /**
@@ -992,12 +997,12 @@ export type ChannelSpec = {
   key: string
 
   /**
-   * 英文官方名(主文案)。
+   * 界面语言直白名(主文案;2026-09-28 前是英文官方名)。
    */
   name: string
 
   /**
-   * 界面语言译名灰字;''=不出(英文界面、关了译名、或与英文同字)。
+   * 官方英文原名灰字(2026-09-28 前是界面语言译名);''=不出(英文界面、关了译名、库里没有、或与主文案同字)。
    */
   sub: string
 }
@@ -3489,14 +3494,9 @@ export type LatestSinceIn = {
  */
 export type ChannelsIn = {
   /**
-   * 界面语取词函数(译名灰字)。
+   * 界面语取词函数(主文案直白名;2026-09-28 前取的是译名灰字)。
    */
   t: TFn
-
-  /**
-   * 英文取词函数(主文案一律英文官方名)。
-   */
-  tEn: TFn
 
   /**
    * 界面语言。
@@ -3504,7 +3504,7 @@ export type ChannelsIn = {
   lang: PnpLang
 
   /**
-   * 出不出界面语言译名。
+   * 出不出灰字(非英文界面才出官方原名)。
    */
   showZh: boolean
 
@@ -3517,6 +3517,11 @@ export type ChannelsIn = {
    * 有省默认通道的省码(通道对照表算的,见 pnpDefaultProvsOf)。
    */
   defaults: string[]
+
+  /**
+   * 全国通道对照(整表;灰字的官方原名从本岗那一行取)。
+   */
+  pathways: PnpPathway[]
 }
 
 /**
@@ -3539,14 +3544,14 @@ export type ChannelOfIn = {
   key: string
 
   /**
-   * 英文名。
-   */
-  en: string
-
-  /**
    * 界面语言名。
    */
   local: string
+
+  /**
+   * 官方英文原名('' = 库里没有)。
+   */
+  official: string
 }
 
 /**

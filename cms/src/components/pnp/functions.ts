@@ -13,7 +13,6 @@
  */
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
-import { makeT } from '@/lib/i18n'
 import { drawStreamNote, eeDisplay, eeKeyDisplay, isOfferList, match as matchJob, streamDisplay } from '@/lib/jobs'
 import { PROV_NAMES } from '@/lib/location'
 import { nocLocalTitle } from '@/lib/noc'
@@ -623,6 +622,8 @@ export function drawGroupsShownOf(form: DrawsForm): boolean {
  * 日期 = 改制后最近一轮,还没有就写最新公告日;悬停出公告原句;点开列改制后的轮次(没有就不能点)。
  * 本岗在本省可提名时(GEN_DRAW_STREAM 登记了该省)标命中。上面 ①② 两格与「最新公告」「已发邀请」两个标签随之撤。
  * 2026-09-28 通道表批二:组键改读通道对照表里本省省默认通道的抽选组(x.genDraw,原 GEN_DRAW_STREAM 常量)。
+ * 同日 Frank「这个要不要把灰字去掉」「先弄安省的」:组名改界面语言直白名一行,灰字撤 —— 原先英文名 + 界面语言译名是同一个名字
+ * 两种语言;上面通道卡已写同一条通道,官方原名在那张卡的灰字。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 这一组;不是改制省或改制后没有公告给 null。
@@ -644,11 +645,6 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   }
   rounds.sort(byDrawDateDesc)
   const genKey = PNP_GEN_HEAD + x.province
-  const en = makeT(LANG_EN)(genKey)
-  let sub = TEXT_NONE
-  if (x.lang !== LANG_EN && x.t(genKey) !== en) {
-    sub = x.t(genKey)
-  }
   let key = notice.label
   if (x.genDraw !== TEXT_NONE) {
     key = x.genDraw
@@ -665,10 +661,10 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   return cmpGroupOf({
     t: x.t,
     none,
-    sub,
+    sub: TEXT_NONE,
     lang: x.lang,
     key,
-    name: en,
+    name: x.t(genKey),
     tip: notice.note,
     date,
     score,
@@ -734,10 +730,12 @@ export function shownStreamsOf(x: ShownStreamsIn): PnpStream[] {
  * 本岗能走的通道(弹框顶上那张卡;2026-09-26 /fe 首页 Frank「止血 + 补完整」,效果图点头):
  * 口径与职位板 PNP 格一致(jobs 域 pnpCellOf)—— 数据层有具名通道标签(pnp_stream)就列它,没有而可提名就列该省的通用通道名
  * (`pnp.gen.{省}` 词条;查不到词条的省不列,格子那边写「{省} 可提名」,那不是通道名);主文案英文官方名、界面语言译名作灰字。
+ * 2026-09-28 Frank「这个要不要把灰字去掉」「先弄安省的」:照同日「界面显示直白名,官方原名放灰字」翻过来 —— 主文案改界面语言
+ * 直白名,灰字改官方英文原名(通道对照表 officialName;原先两行是同一个名字两种语言)。官方原名全站只在这张卡出一次(去官网搜的就是它)。
  * 现在一岗只有一个值,出参留成清单:「一岗列出全部通道」立项后这里直接加条目,卡不用改。
  * 魁省不属省提名、缺省码的岗无从说起,都不列。
  *
- * @param x 两个取词函数、界面语言、译名开关与本岗。
+ * @param x 取词函数、界面语言、灰字开关、本岗与通道对照表。
  * @returns 通道条目;不列给空列。
  */
 export function channelsOf(x: ChannelsIn): ChannelSpec[] {
@@ -748,23 +746,28 @@ export function channelsOf(x: ChannelsIn): ChannelSpec[] {
   if (key === TEXT_NONE) {
     return []
   }
-  const en = pnpNameOf({ key, t: x.tEn })
   const local = pnpNameOf({ key, t: x.t })
-  return [channelOf({ lang: x.lang, showZh: x.showZh, key, en, local })]
+  const channel = pnpChannelOf({ job: x.job, pathways: x.pathways })
+  let official = TEXT_NONE
+  if (channel != null) {
+    official = channel.officialName
+  }
+  return [channelOf({ lang: x.lang, showZh: x.showZh, key, local, official })]
 }
 
 /**
- * 一条通道条目(英文名作主文案;非英文界面且开着译名、译名又与英文不同字才出灰字)。
+ * 一条通道条目(界面语言直白名作主文案;非英文界面且开着灰字、官方原名又与主文案不同字才出灰字)。
+ * 2026-09-28 前是英文名作主文案、界面语言译名作灰字(见 channelsOf)。
  *
- * @param x 界面语言、译名开关、列表键、英文名与界面语言名。
+ * @param x 界面语言、灰字开关、列表键、界面语言名与官方原名。
  * @returns 通道条目。
  */
 function channelOf(x: ChannelOfIn): ChannelSpec {
   let sub = TEXT_NONE
-  if (x.lang !== LANG_EN && x.showZh && x.local !== x.en) {
-    sub = x.local
+  if (x.lang !== LANG_EN && x.showZh && x.official !== x.local) {
+    sub = x.official
   }
-  return { key: x.key, name: x.en, sub }
+  return { key: x.key, name: x.local, sub }
 }
 
 /**

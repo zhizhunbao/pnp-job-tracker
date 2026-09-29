@@ -237,11 +237,6 @@ export type CellCtx = {
   t: TFn
 
   /**
-   * 英文取词函数(PNP 通道格上行写英文官方名,界面语言不是英文也要)。
-   */
-  tEn: TFn
-
-  /**
    * 分层态(Pro 列打码看它)。
    */
   plan: JobPlan

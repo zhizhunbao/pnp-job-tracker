@@ -1162,7 +1162,6 @@ export function useJobsBoard(props: JobsIn): JobsBoardOut {
     blocked,
     cellCtx: {
       t,
-      tEn: makeT(LANG_EN),
       plan,
       blocked,
       pnpIndex: props.pnpFacts.index,
