@@ -8440,6 +8440,7 @@ from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest 
 from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
 from pnp.scheme import EmployerSectorTablesTest  # noqa: E402 — 同上(2026-09-27 Frank 拍板「看得出才改判」)
 from pnp.scheme import NsQuarterlyTest  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
+from pnp.scheme import NbNlStatsTest  # noqa: E402 — 同上(2026-09-29 NB / NL 往年提名)
 
 
 def run_tests() -> None:
@@ -8451,7 +8452,8 @@ def run_tests() -> None:
     逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。
     同日 Frank 拍板「看得出才改判」再加一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表;SkAgriStarTest 随之改为
     「带星号码照收并标行业键」)。
-    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。"""
+    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。
+    同日再加 NbNlStatsTest(NB 年报 KPI 表读自然年 PNP 行、NL 两种措辞的提名人数原句;真页原文金标 + 变异探针)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8461,5 +8463,157 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(EmployerSectorTablesTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NsQuarterlyTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NbNlStatsTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
+
+
+# =========================================================================
+# 41. NB / NL 往年提名(省年报 PDF:NB 已发提名、NL 提名人数;2026-09-29)
+# =========================================================================
+from pnp.constants import (  # noqa: E402 — 段41 常量单列一块(同段35–40 先例)
+    K_NOMINATED_INDIVIDUALS, NBS_KPI_PNP_ROW, NBS_KPI_ROW_SCAN, NBS_KPI_TITLE, NBS_LABEL_TPL, NBS_NO_TABLE_TPL,
+    NBS_NOTE, NBS_PRINT_FAIL_TPL, NBS_PRINT_OK_TPL, NBS_REPORTS, NBS_SECTION_TPL, NBS_SOURCE, NBS_TIMEOUT_S,
+    NLS_NO_QUOTE_TPL, NLS_NOMINATED_RES, NLS_NOTE, NLS_PRINT_FAIL_TPL, NLS_PRINT_OK_TPL, NLS_REPORTS, NLS_SECTION_TPL,
+    NLS_SOURCE, NLS_TIMEOUT_S, NLS_UNIT_PEOPLE, OUT_NB_STATS, OUT_NL_STATS,
+)
+from pnp.scheme import NbYearRowsIn, NlReportIn  # noqa: E402 — 同上
+
+
+def scrape_nb_stats() -> None:
+    """NB 往年已发提名入口:逐份 PETL 年报 PDF 的 KPI 表 → raw/pnp/nb-stats.json(nominationsIssued,自然年)。
+
+    2026-09-29 立(lead 派工「NB 往年已发提名」:gnb.ca 移民版块只发逐轮邀请数,年度已发提名数在部门年报的 KPI 表里),
+    形照 scrape_bc_nominations / scrape_pe_iidi:PDF 走 fetch_bytes(原件先落 crawl 层再解析),同一年被多份年报覆盖时
+    以更新的为准。清单里的年报都是人工核实过的,任一份取不到或表对不上都算异常 → 抛错留痕、整份保留旧表
+    (不拿缺一份的新表盖旧表,同 scrape_ns_stats)。
+    """
+    say(PRINT_OUT_TPL.format(path=OUT_NB_STATS))
+    by_year_rows: dict = {}
+    last_url = ""
+    last_fy = ""
+    try:
+        for url, fy in NBS_REPORTS:
+            by_year = nb_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NBS_TIMEOUT_S))))
+            if len(by_year) == 0:
+                raise RuntimeError(NBS_NO_TABLE_TPL.format(url=url))
+            for r in nb_year_rows(NbYearRowsIn(by_year=by_year, url=url, fy=fy)):
+                by_year_rows[r[K_YEAR]] = r
+            last_url = url
+            last_fy = fy
+    except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_pe_iidi
+        say(NBS_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    rows = sorted(by_year_rows.values(), key=neg_year_of)
+    write_year_stats(YearStatsIn(path=OUT_NB_STATS, prov=PROV_NB, source=NBS_SOURCE, url=last_url,
+                                 note=NBS_NOTE, rows=rows, extra={}))
+    pairs: list = []
+    for r in rows:
+        pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
+    say(NBS_PRINT_OK_TPL.format(fy=last_fy, pairs=SEMI_JOIN_SEP.join(pairs)))
+
+
+def nb_nominations_of(text: str) -> dict:
+    """PETL 年报全文 → {自然年: 省提名(PNP)已发提名数}(KPI 表「Provincial Nominations」;2026-09-29 立)。
+
+    表在文本里的形(2024-2025 版第 25 页实测):表头首格「Provincial Nominations」→ 连续的年份列头(2024 / 2023 / 2022)
+    → 「Provincial Nominee Program (PNP)」→ 与年份同样多个千分位数,下面是 AIP 行(不读)。空行先剔掉(PDF 抽文本的
+    版本差异会在格间插空行)。找不到表头 / 年份 / 紧跟列头的 PNP 行,或 PNP 行后的数不够、不是数字 → 空表(报错由调用方)。
+
+    @param text PDF 全文。
+    @returns 自然年 → 数;表对不上给空 dict。
+    """
+    lines: list = []
+    for raw in text.splitlines():
+        if raw.strip() != "":
+            lines.append(raw.strip())
+    if NBS_KPI_TITLE not in lines:
+        return {}
+    k = lines.index(NBS_KPI_TITLE) + 1
+    years: list = []
+    while k < len(lines) and BC_NOM_YEAR_RE.match(lines[k]) is not None:
+        years.append(int(lines[k]))
+        k += 1
+    window = lines[k:k + NBS_KPI_ROW_SCAN]
+    if len(years) == 0 or NBS_KPI_PNP_ROW not in window:
+        return {}
+    start = k + window.index(NBS_KPI_PNP_ROW) + 1
+    values = lines[start:start + len(years)]
+    if len(values) < len(years):
+        return {}
+    out: dict = {}
+    for year, value in zip(years, values):
+        if BC_NOM_NUM_RE.match(value) is None:
+            return {}
+        out[year] = num_strict(value)
+    return out
+
+
+def nb_year_rows(x: NbYearRowsIn) -> list:
+    """KPI 表的年 → 数 → 逐年已发提名行(年降序;section 记出自哪份年报;形同 bc_year_rows,2026-09-29 立)。
+
+    @param x 年 → 数与年报出处。
+    @returns 逐年行(单位 nominations,mart 的 fill_year_metric_ops 出 nominations_issued)。
+    """
+    out: list = []
+    today = today_iso()
+    for year, value in x.by_year.items():
+        out.append(to_year_row(YearRowIn(
+            year=year, label=NBS_LABEL_TPL.format(year=year), value=value,
+            section=NBS_SECTION_TPL.format(fy=x.fy), url=x.url, fetched=today)))
+    return sorted(out, key=neg_year_of)
+
+
+def scrape_nl_stats() -> None:
+    """NL 往年提名人数入口:逐份 IPGS 年报 PDF 的原句 → raw/pnp/nl-stats.json 的 nominatedIndividuals(自然年,单位人)。
+
+    2026-09-29 立(lead 派工「NL 往年提名人数」),形照 scrape_pe_iidi:PDF 走 fetch_bytes(原件先落 crawl 层再解析),
+    同一年被多份年报覆盖时以更新的为准。官方数的是人(含随行家属),不是提名证书 → 不进 nominationsIssued(留空),
+    另起清单(mart 出 nominated_individuals)。清单里的年报都是人工核实过的,任一份取不到或原句对不上都算异常 →
+    抛错留痕、整份保留旧表(同 scrape_ns_stats)。
+    """
+    say(PRINT_OUT_TPL.format(path=OUT_NL_STATS))
+    by_year: dict = {}
+    last_url = ""
+    last_fy = ""
+    try:
+        for url, fy in NLS_REPORTS:
+            text = pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NLS_TIMEOUT_S)))
+            row = nl_nominated_row_of(NlReportIn(text=text, url=url, fy=fy))
+            if row is None:
+                raise RuntimeError(NLS_NO_QUOTE_TPL.format(url=url))
+            by_year[row[K_YEAR]] = row
+            last_url = url
+            last_fy = fy
+    except Exception as e:  # noqa: BLE001 — 失败留痕(say)后保留旧表,同 scrape_pe_iidi
+        say(NLS_PRINT_FAIL_TPL.format(name=type(e).__name__, detail=e))
+        return
+    rows = sorted(by_year.values(), key=neg_year_of)
+    write_year_stats(YearStatsIn(path=OUT_NL_STATS, prov=PROV_NL, source=NLS_SOURCE, url=last_url,
+                                 note=NLS_NOTE, rows=[], extra={K_NOMINATED_INDIVIDUALS: rows}))
+    pairs: list = []
+    for r in rows:
+        pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
+    say(NLS_PRINT_OK_TPL.format(fy=last_fy, pairs=SEMI_JOIN_SEP.join(pairs)))
+
+
+def nl_nominated_row_of(x: NlReportIn) -> dict | None:
+    """一份 IPGS 年报全文 → 该年的提名人数行(2026-09-29 立):文本先折空白,再按 NLS_NOMINATED_RES 两种措辞逐条找原句。
+
+    行形同 to_year_row(键序一致,mart 的 fill_year_metric_ops 同一套读法),只把单位换成人(同 PE 已发行改 asOf 的先例);
+    label = 官方整句原句,year = 原句所在段写明的自然年。两种措辞都对不上 → None(报错由调用方)。
+
+    @param x 年报全文与出处。
+    @returns 提名人数行;找不到原句给 None。
+    """
+    text = fold_ws(x.text)
+    for rx in NLS_NOMINATED_RES:
+        m = rx.search(text)
+        if m is None:
+            continue
+        row = to_year_row(YearRowIn(
+            year=int(m.group(1)), label=m.group(2), value=num_strict(m.group(3)),
+            section=NLS_SECTION_TPL.format(fy=x.fy), url=x.url, fetched=today_iso()))
+        row[K_UNIT] = NLS_UNIT_PEOPLE
+        return row
+    return None

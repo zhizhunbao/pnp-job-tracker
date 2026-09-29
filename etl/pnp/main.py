@@ -42,6 +42,7 @@ from pnp.functions import (
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
     watch_on_workforce, watch_prov_allocations,
+    scrape_nb_stats, scrape_nl_stats,
 )
 
 UNITS = {
@@ -54,9 +55,9 @@ UNITS = {
                ("mb_stats", build_mb_stats)],
     "pnp_ns": [("ns", build_ns), ("ns_req", build_ns_req), ("ns_stats", scrape_ns_stats),
                ("ns_allocations", scrape_ns_allocations)],
-    "pnp_nb": [("nb", build_nb), ("nb_req", build_nb_req)],
+    "pnp_nb": [("nb", build_nb), ("nb_req", build_nb_req), ("nb_stats", scrape_nb_stats)],
     "pnp_nl": [("nl", build_nl), ("nl_req", build_nl_req), ("nl_points", build_nl_points),
-               ("nl_employers", build_nl_employers)],
+               ("nl_employers", build_nl_employers), ("nl_stats", scrape_nl_stats)],
     "pnp_pe": [("pe", build_pe), ("pe_aip", build_pe_aip), ("pe_req", build_pe_req), ("pe_iidi", scrape_pe_iidi)],
     "pnp_on": [("on_workforce", watch_on_workforce), ("on_req", build_on_req), ("on_points", build_on_points),
                ("on_stats", build_on_stats)],
@@ -159,6 +160,8 @@ SCHEDULED = list(chain.from_iterable(UNITS.values()))
   scrape_ns_stats        NS 已发提名数(省开放数据 Socrata,与 ns_allocations 同平台;2026-09-08 把脉页缺行)
   scrape_bc_nominations  BC 已发提名数(官方年度 Statistical Report PDF 的 Total 行;同日同因)
   scrape_pe_iidi         PE 配额(自然年)与已发提名(财年)—— 省 IIDI 年报 PDF(2026-09-09,PE 官网在墙后但 PDF 直链不在)
+  scrape_nb_stats        NB 往年已发提名(自然年)—— PETL 年报 PDF 的 KPI 表(2026-09-29,pnp_nb 单元末尾;AIP 分列不并入)
+  scrape_nl_stats        NL 往年提名人数(自然年,单位人)—— IPGS 年报 PDF 原句(2026-09-29,pnp_nl 单元末尾;不进按证书的已发提名)
   watch_allocations      名额公告哨兵(只提醒不写表;自身失败不拦役 —— 函数体内自 catch)
   check_freshness        曾钉本链最末(B3-1 哨兵);2026-08-31 批O 迁 sched 的 ping 门口
                          (全域保鲜闸,source_manifest 退役、契约进各域 META),本链不再带它
@@ -206,6 +209,8 @@ TOOLS = {
     "ns_stats": scrape_ns_stats,
     "bc_nominations": scrape_bc_nominations,
     "pe_iidi": scrape_pe_iidi,
+    "nb_stats": scrape_nb_stats,
+    "nl_stats": scrape_nl_stats,
     "bc_stats_processing": build_bc_stats_processing,
     "on_stats": build_on_stats,
     "mb_stats": build_mb_stats,

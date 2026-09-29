@@ -209,6 +209,7 @@ from mart.constants import (
 )
 from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INVITATIONS
 from mart.constants import K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_RESULT, NS_RESULT_METRICS, NS_RESULT_SKIP_TPL
+from mart.constants import PROV_NB  # 2026-09-29 NB / NL 往年提名(省年报 PDF)接进运营统计
 from mart.constants import (
     OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
@@ -228,6 +229,7 @@ from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
 from mart.scheme import MartNsOpsTest
+from mart.scheme import MartNbNlOpsTest  # 2026-09-29 NB / NL 往年提名
 from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
 from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业三态 + 带星号码)
     K_CERTIFICATES, K_COND, K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_NAMED, K_PARTIAL, PARTIAL_INSIDE_WORDS,
@@ -3504,7 +3506,9 @@ def fill_on_ops(x: OpsProvIn) -> None:
 def fill_year_metric_ops(x: OpsProvIn) -> None:
     """逐年指标通用填法(allocation / nominationsIssued 两个清单 → 一年一行):ON 原有的读法,
     2026-09-08 NS(ns-stats.json)与 BC(bc-nominations.json)接入后三省同一套,不各抄一份。
-    每条自带出处页,用自己的 url/fetched。"""
+    每条自带出处页,用自己的 url/fetched。
+    2026-09-29 NB(nb-stats.json 的 nominationsIssued,PETL 年报)与 NL(nl-stats.json 的 nominatedIndividuals,IPGS 年报,
+    单位 people 行自带)也走这一套 —— 清单与指标名的对照全在 ON_YEAR_METRICS,不另写专属填法。"""
     for m, key in ON_YEAR_METRICS:
         for e in x.data.get(key, []):
             add_ops_row(OpsRowIn(
@@ -3562,6 +3566,7 @@ def build_pnp_ops_stats(files: list) -> list:
     3 个月内」)。metric 名带单位后缀,消费端一眼看得出官方到底给的是什么。
     2026-09-27 Frank 勾「2026 名额小表」(省提名弹框「2026 年配额」卡读本表):各省表出完后再补两类行,列与既有行同形 ——
     本年没有 allocation 行的省从人工核对表补配额(fill_alloc_gap_ops),各省本年抽选人数合计(fill_draw_ytd_ops)。
+    2026-09-29 NB / NL 两份年报统计(nb-stats.json / nl-stats.json)与 PE 一样只有逐年清单 → 同走 fill_year_metric_ops。
     """
     ctx = OpsCtx(rows=[], seqs={})
     for src in files:
@@ -3582,7 +3587,7 @@ def build_pnp_ops_stats(files: list) -> list:
             fill_on_ops(arg)
         elif prov == PROV_NS:
             fill_ns_ops(arg)
-        elif prov == PROV_PE:
+        elif prov == PROV_PE or prov == PROV_NB or prov == PROV_NL:
             fill_year_metric_ops(arg)
         if prov == PROV_BC:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
@@ -7203,10 +7208,11 @@ def run_tests() -> None:
     同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。
     2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。
     2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。
-    同日再加一组:MartNsOpsTest(NS 两张季表出行:候选池逐季、审批结果三种、认不出的结果词不出行)。"""
+    同日再加一组:MartNsOpsTest(NS 两张季表出行:候选池逐季、审批结果三种、认不出的结果词不出行)。
+    同日再加一组:MartNbNlOpsTest(NB / NL 两份年报统计经分派出行:NB 已发提名按自然年、NL 提名人数单位人另立指标)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest):
+                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
