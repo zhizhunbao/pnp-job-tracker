@@ -621,7 +621,7 @@ PW_NL_SKILLED_WORKER = {
     "officialName": "NLPNP Skilled Worker Category",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["NLPNP + AIP (ITA batch)"],
-    "reqStreams": [],
+    "reqStreams": ["NLPNP Skilled Worker Category"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -631,7 +631,10 @@ PW_NL_SKILLED_WORKER = {
     "checked": "2026-09-28",
 }
 """纽芬兰与拉布拉多默认通道。抽选:NL 抽选卡只有一组、该组覆盖本省全部通道(NLPNP 各类与 AIP 同一 EOI 池、同一组批次;
-2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。"""
+2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流(pnp nl-req 的 Skilled Worker 流名:语言两档、资格 / 执照条文);
+雇主侧三条在「NLPNP (employer criteria, all streams)」流,门槛卡按全省取,不必登记(同阿省);International Graduate 是另一类别
+(持 PGWP 者只能走它或 EE 类别),不挂这里。"""
 
 PW_PE_WORKFORCE = {
     "key": "pe-workforce", "province": "PE", "program": "PNP",
