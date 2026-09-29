@@ -462,7 +462,9 @@
       "drawStreams": [
         "Ontario Workforce Priority Stream"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Ontario Workforce Priority stream"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",

@@ -424,7 +424,7 @@ PW_ON_WORKFORCE_PRIORITY = {
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["Ontario Workforce Priority Stream"],
     "drawsPending": True,
-    "reqStreams": [],
+    "reqStreams": ["Ontario Workforce Priority stream"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -437,7 +437,9 @@ PW_ON_WORKFORCE_PRIORITY = {
 """安省默认通道(2026-06 改制后只剩这一条,生效日按官方原句定为 2026-06-25)。
 抽选组键照 GEN_DRAW_STREAM 的 ON 行(抽选卡那一行的组键;2026-09-27 Frank 勾「安省改一行组头」)。官方 08-04 公告
 「portal now open to Ontario Workforce Priority Stream expressions of interest」之后还没抽过 —— drawsPending:自校不要求它已出现在
-抽选表里,出现了就提示摘掉这一格。"""
+抽选表里,出现了就提示摘掉这一格。
+2026-09-29 Frank「照这个做」(安省门槛卡):挂门槛流(pnp on-req 的流名,小写 stream;与抽选组名大小写不同是两页各自的写法)。
+前端按本岗挑档的门槛卡先换版(58f6d187)再挂,免得线上先出一张照阿省挑档的半成品卡。"""
 
 PW_ON_EMPLOYER_JOB_OFFER_FOREIGN_WORKER = {
     "key": "on-employer-job-offer-foreign-worker", "province": "ON", "program": "PNP",
