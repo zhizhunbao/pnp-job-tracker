@@ -760,7 +760,7 @@ class MartCtx:
     """岗位行(装配中)。"""
 
     seen: set
-    """company-slug|title 展示去重集。"""
+    """company-slug|title 展示去重集(2026-09-28 起键里加城市:company-slug|title|city,见 constants.DEDUP_CITY_KEY_TPL)。"""
 
     seen_ext: set
     """externalId 去重集。"""

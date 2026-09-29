@@ -243,6 +243,7 @@ from mart.constants import (  # 2026-09-28 缺数据修复批:待修清单(Frank
 )
 from mart.scheme import MartPendingTest, MissingIn, PendingRowIn  # 同上
 from mart.scheme import HeldSplitIn, HeldSplitOut  # 同日晚接闸(Frank「确认,下线吧」)
+from mart.constants import DEDUP_CITY_KEY_TPL  # 同日晚展示去重加城市(Frank 勾「检查,不全的下线」)
 from mart.scheme import (
     AddJobIn, ApplyLocIn, ApplySalaryIn, AtsExtIn, AtsJobIn, AvgDaysIn, BasisIn, CareersHostIn, CatI18nIn,
     ChannelTierIn, CityBuildIn, CityRowIn, CityStatsIn, CityStatsRowIn, ClosedDaysIn, ClosedJobIn,
@@ -2180,9 +2181,11 @@ def collect_ats_rows(ctx: MartCtx) -> None:
             ext = j.get(K_URL) or key
             if ext not in ctx.expired:
                 ctx.seen_ids.add(ext)
-            if key in ctx.seen:
+            show = DEDUP_CITY_KEY_TPL.format(slug=slug, title=norm_title(j.get(K_TITLE, "")),
+                                             city=norm_title(j.get(K_CITY, "")))
+            if show in ctx.seen:
                 continue
-            ctx.seen.add(key)
+            ctx.seen.add(show)
             fill_salary(FillSalaryIn(ctx=ctx, job=j))
             add_job(AddJobIn(ctx=ctx, external_id=ext, company_slug=slug,
                              fields=to_ats_job_fields(AtsJobIn(job=j, ats=ats,
@@ -2207,9 +2210,11 @@ def collect_jobbank_rows(ctx: MartCtx) -> None:
         ext = mart_jb_ext_of(JbExtIn(job=j, key=key))
         if ext not in ctx.expired:
             ctx.seen_ids.add(ext)
-        if key in ctx.seen:
+        show = DEDUP_CITY_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")),
+                                         city=norm_title(j.get(K_CITY, "")))
+        if show in ctx.seen:
             continue
-        ctx.seen.add(key)
+        ctx.seen.add(show)
         add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
                                    extra=to_jb_company_extra(j)))
         fill_salary(FillSalaryIn(ctx=ctx, job=j))
@@ -2235,12 +2240,13 @@ def collect_board_rows(ctx: MartCtx) -> None:
             if AGENCY_NOTE in (j.get(K_TITLE) or "").lower():
                 continue
             cslug = slugify(j.get(K_EMPLOYER) or SLUG_UNKNOWN)
-            key = DEDUP_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")))
             ext = board_ext_of(BoardJobIn(job=j, origin=origin))
             ctx.seen_ids.add(ext)
-            if key in ctx.seen:
+            show = DEDUP_CITY_KEY_TPL.format(slug=cslug, title=norm_title(j.get(K_TITLE, "")),
+                                             city=norm_title(j.get(K_CITY, "")))
+            if show in ctx.seen:
                 continue
-            ctx.seen.add(key)
+            ctx.seen.add(show)
             add_company(CompanyExtraIn(ctx=ctx, name=j.get(K_EMPLOYER) or EM_DASH, slug=cslug,
                                        extra=to_jb_company_extra(j)))
             fill_salary(FillSalaryIn(ctx=ctx, job=j))

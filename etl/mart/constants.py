@@ -1774,7 +1774,15 @@ UTC_Z = "Z"
 
 DEDUP_KEY_TPL = "{slug}|{title}"
 """展示去重键(**只服务展示**:前端不该出现一堆同公司同岗名)。
-⚠ 与「本轮见过」是两件事:见过集不受这把尺子影响(2026-08-04 数据销毁修)。"""
+⚠ 与「本轮见过」是两件事:见过集不受这把尺子影响(2026-08-04 数据销毁修)。
+2026-09-28 起展示去重改用 DEDUP_CITY_KEY_TPL(加城市);本键只剩「没帖号也没网址的岗」拿它当 externalId 兜底的旧形,
+不改,免得这些岗换身份。"""
+
+DEDUP_CITY_KEY_TPL = "{slug}|{title}|{city}"
+"""展示去重键(2026-09-28 起;Frank 勾「检查,不全的下线」):公司 + 标题 + 城市,与库里 MARK_DUPS 的展示口径
+(company_id × lower(title) × city)同一把尺子。原先只按公司 + 标题去重,连锁在几个城市招同一岗只有一条进 mart,
+其余城市的那几条留在库里照常显示、却从不经过「全不全」的检查,数据也停在入库那一刻(接闸当晚实查 5,716 条,
+至少 1,766 条缺数据)。城市与标题同一个归一(norm_title:只留小写字母数字)。"""
 
 IN_JB_JD_INDEX = paths.PROCESSED_JOBBANK / "details" / "index.json"
 """Job Bank 详情索引(url → {pid, file, mtime, experience};jobbank 写侧维护,2026-09-13 汇装提速批 2(设计稿 docs/design/汇装提速-20260912.md §5;Frank「批2」))。"""
