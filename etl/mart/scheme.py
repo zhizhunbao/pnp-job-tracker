@@ -397,6 +397,37 @@ class PnpTables:
 
 
 @dataclass
+class WageShortIn:
+    """wage_short_of 的入参(2026-09-29 工资分档)。"""
+
+    floors: dict
+    """各省工资线口径 {省: {TEER: 口径}}(wage_floors_of 给)。"""
+
+    prov: str
+    """省码。"""
+
+    teer: int | None
+    """职业 TEER;没分类 None(不判)。"""
+
+    salary: float | None
+    """帖面年薪;没有 None(不判)。"""
+
+    wage: dict
+    """该职业该省的 ESDC 工资格(wage_of 给;中位 annual、低位 lowAnnual)。"""
+
+
+@dataclass
+class WageBlockIn:
+    """with_wage_block 的入参。"""
+
+    scored: dict
+    """评分行(不改它,要改判就拷一份)。"""
+
+    short: bool
+    """工资够不够「谁都得过」那条线(wage_short_of 给)。"""
+
+
+@dataclass
 class PnpJudgeIn:
     """pnp_eligible() / pnp_direct() / any_pr_path() 三个判定的共同入参。"""
 
@@ -709,6 +740,9 @@ class MartCtx:
 
     scored: dict
     """externalId → 08 评分行。"""
+
+    wage_floors: dict
+    """各省岗位工资「谁都得过」那条线按 TEER 取哪一档(wage_floors_of 由门槛表推出;2026-09-29 工资分档)。"""
 
     wages: dict
     """NOC → 省码 → ESDC 工资格。"""
@@ -3419,6 +3453,79 @@ class MartOfferTest(unittest.TestCase):
                   "Speech language pathologist 2 - supervisor", "Shift Supervisor", "Maintenance Supervisor",
                   "Department Supervisor"):
             self.assertNotEqual(fn.classify_title(t), "62020", t)
+
+
+class MartBlockTest(unittest.TestCase):
+    """省提名「走不了的原因码」自测(2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」;工资选「分档判」):
+    pnp_block_of 与 pnp_eligible 同一把尺子(穷举 省 × 工时 × 雇佣期 × 职业:可提名 ⇔ 省提名省且原因码为空)/ 工作性质的码就是
+    卡住的那个取值 / 手写金标(兼职、合同工、排除清单、BC TEER 5 职业不收)/ 工资线由门槛表推出(中位行管全档、应届低位行把
+    TEER 0-3 降成低位;变异探针)/ 工资改判只动可提名岗、原评分行不改。全程不读不写仓内文件(省表借 MartOfferTest 现造)。"""
+
+    def base(self) -> "MartOfferTest":
+        """借 MartOfferTest 的现造省表与判定入参(同一套省表,两组用例口径不分叉)。"""
+        return MartOfferTest()
+
+    def test_block_matches_eligible(self) -> None:
+        """穷举:可提名 ⇔ 省提名省且原因码为空;工作性质卡住时码就是卡住的那个取值;非省提名省原因码一律空。"""
+        from mart import functions as fn
+        base = self.base()
+        for prov in base.provs():
+            for hours in base.hours_values():
+                for term in base.term_values():
+                    for noc in ("21231", "72410", "65201", "73300", "65100"):
+                        x = base.judge(prov, noc, hours, term)
+                        block = fn.pnp_block_of(x)
+                        pnp_prov = prov not in ("QC", "NU", "")
+                        self.assertEqual(fn.pnp_eligible(x), pnp_prov and block == "", (prov, noc, hours, term))
+                        if not pnp_prov:
+                            self.assertEqual(block, "", (prov, noc))
+                        elif not fn.offer_fits(x):
+                            self.assertIn(block, (hours, term), (prov, noc, hours, term))
+
+    def test_block_golden(self) -> None:
+        """手写金标:工时先于雇佣期;工作性质先于清单;排除清单 list;BC TEER 5 不在清单 occ;全职长期的技术岗空。"""
+        from mart import functions as fn
+        cases = [
+            ("ON", "21231", "part", "permanent", "part"), ("ON", "21231", "full", "term", "term"),
+            ("ON", "21231", "part", "seasonal", "part"), ("ON", "21231", "full", "casual", "casual"),
+            ("AB", "65201", "full", "permanent", "list"), ("AB", "65201", "part", "permanent", "part"),
+            ("BC", "65100", "full", "permanent", "occ"), ("ON", "21231", "full", "permanent", ""),
+            ("QC", "21231", "part", "", ""),
+        ]
+        for prov, noc, hours, term, want in cases:
+            self.assertEqual(fn.pnp_block_of(self.base().judge(prov, noc, hours, term)), want, (prov, noc, hours, term))
+
+    def test_wage_floors(self) -> None:
+        """工资线:中位行(无条件、appliesTeer 空)管 0-5;应届低位行把 TEER 0-3 降成低位;变异探针:去掉应届行全档中位,
+        去掉中位行不成线;别的因素不进来。"""
+        from mart import functions as fn
+        median = {"province": "ON", "factor": "wage", "basis": "occMedian", "appliesTeer": "", "appliesCondition": ""}
+        low = {"province": "ON", "factor": "wage", "basis": "occLow", "appliesTeer": "0,1,2,3",
+               "appliesCondition": "recent-on-graduate"}
+        other = {"province": "AB", "factor": "language", "basis": "", "appliesTeer": "", "appliesCondition": ""}
+        self.assertEqual(fn.wage_floors_of([median, low, other]),
+                         {"ON": {0: "occLow", 1: "occLow", 2: "occLow", 3: "occLow", 4: "occMedian", 5: "occMedian"}})
+        self.assertEqual(fn.wage_floors_of([median])["ON"][2], "occMedian")
+        self.assertEqual(fn.wage_floors_of([low, other]), {})
+
+    def test_wage_short_and_block(self) -> None:
+        """谁都过不了才算不够:TEER 5 低于中位不够、等于中位够;TEER 3 介于低位与中位够(应届生能用)、低于低位不够;
+        缺 TEER / 缺薪资 / 本省没线不判。改判只动可提名岗:可提名 + 不够 → 否、通道名清空、码 wage;原评分行不改。"""
+        from mart import functions as fn
+        floors = {"ON": {3: "occLow", 5: "occMedian"}}
+        wage = {"annual": 50000, "lowAnnual": 35000}
+        cases = [(5, 49000.0, "ON", True), (5, 50000.0, "ON", False), (3, 40000.0, "ON", False), (3, 34000.0, "ON", True),
+                 (None, 1000.0, "ON", False), (5, None, "ON", False), (5, 1000.0, "AB", False)]
+        for teer, salary, prov, want in cases:
+            got = fn.wage_short_of(WageShortIn(floors=floors, prov=prov, teer=teer, salary=salary, wage=wage))
+            self.assertEqual(got, want, (teer, salary, prov))
+        sc = {"pnpEligible": True, "pnpStream": "ON 具名", "pnpBlock": ""}
+        out = fn.with_wage_block(WageBlockIn(scored=sc, short=True))
+        self.assertEqual((out["pnpEligible"], out["pnpStream"], out["pnpBlock"]), (False, "", "wage"))
+        self.assertEqual(sc["pnpEligible"], True)
+        blocked = {"pnpEligible": False, "pnpStream": "", "pnpBlock": "part"}
+        self.assertIs(fn.with_wage_block(WageBlockIn(scored=blocked, short=True)), blocked)
+        self.assertIs(fn.with_wage_block(WageBlockIn(scored=sc, short=False)), sc)
 
 
 class MartRuralRenewalTest(unittest.TestCase):

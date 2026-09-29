@@ -217,6 +217,11 @@ from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, OpsExtraBaseIn, SalaryHitIn, YtdLabelIn,
 )
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
+from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_WAGE, K_LOW_ANNUAL, K_PNP_BLOCK, TEER_ALL
+from mart.constants import (
+    REQ_BASIS_LOW, REQ_BASIS_MEDIAN, REQ_COND_RECENT_GRAD, REQ_FACTOR_WAGE, REQ_K_BASIS, REQ_K_COND, REQ_K_FACTOR, REQ_K_TEER,
+)
+from mart.scheme import MartBlockTest, WageBlockIn, WageShortIn
 from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn, SalaryTextIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
@@ -935,25 +940,42 @@ def pnp_eligible(x: PnpJudgeIn) -> bool:
          看得出这岗不属官方点名的那一小类才不排除;
       ③ 具名清单带行业条件的码(BC TEER 4-5 与纳入式省的清单命中)走 is_listed:看得出雇主在该行业才算落在清单上。
       职业 × 省级的判定(prov_list_of)雇主 / 职位名 / 证书栏给空串 = 看不出,三处都照原判。
+    · 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」:以上分支逐条搬进 pnp_block_of(同一把尺子
+      顺带给出走不了的原因码),本函数 = 省提名省且没有原因码,结论逐格不变(MartBlockTest 穷举锁住)。
     """
     if not x.prov or x.prov in NON_PNP_PROV:
         return False
-    if not offer_fits(x):
-        return False
+    return pnp_block_of(x) == ""
+
+
+def pnp_block_of(x: PnpJudgeIn) -> str:
+    """这岗走不了省提名的原因码(空串 = 走得了;2026-09-29 自 pnp_eligible 逐条搬来,分支与原判相同):
+    工作性质卡在该省 offer 门槛(卡住的那个取值 part / term / seasonal / casual)→ 叠加式不受理 / 排除清单(list)→
+    职业不在本省收的职业里(occ)。非省提名省(QC / NU)与缺省码给空串 —— 那不是「门槛没过」,格子另有写法,判定由 pnp_eligible 先挡。
+    工资那条在汇装段(with_wage_block):这里手里没有薪资。"""
+    if not x.prov or x.prov in NON_PNP_PROV:
+        return ""
+    offer = offer_block_of(x)
+    if offer:
+        return offer
     tbl = x.tables.by_prov.get(x.prov)
     if is_blocked(x):
-        return False
+        return BLOCK_LIST
     if is_community_hit(x):
-        return True
+        return ""
     if tbl and tbl[K_TYPE] == PNP_TYPE_INELIGIBLE:
-        if x.teer is None or is_excluded(x):
-            return False
-        if x.prov in EXCL_TEER03_PROVS and x.teer not in TEER_SKILLED:
-            return is_listed(x)
-        return True
+        if x.teer is None:
+            return BLOCK_OCC
+        if is_excluded(x):
+            return BLOCK_LIST
+        if x.prov in EXCL_TEER03_PROVS and x.teer not in TEER_SKILLED and not is_listed(x):
+            return BLOCK_OCC
+        return ""
     if x.teer in TEER_SKILLED or is_listed(x):
-        return True
-    return x.teer is not None and x.prov in UNIVERSAL_PROVS
+        return ""
+    if x.teer is not None and x.prov in UNIVERSAL_PROVS:
+        return ""
+    return BLOCK_OCC
 
 
 def is_blocked(x: PnpJudgeIn) -> bool:
@@ -1053,8 +1075,18 @@ def offer_fits(x: PnpJudgeIn) -> bool:
     只卡源写明的值:空串(源没写、整理版也没抽到)放行 —— 没标注 ≠ 兼职;表外的省(QC、NU 不属 PNP,pnp_eligible /
     pnp_stream 先判掉)这里放行。职业 × 省级的判定(prov_list_of)两格给空串,天然不受影响。
     """
+    return offer_block_of(x) == ""
+
+
+def offer_block_of(x: PnpJudgeIn) -> str:
+    """这岗的工时 / 雇佣期卡在该省 offer 门槛上的那个取值(工时先看:part;再看雇佣期:term / seasonal / casual);过得去给空串。
+    2026-09-29 自 offer_fits 拆出(Frank「就直接说 兼职」:原因码直接用卡住的那个取值),offer_fits = 本函数给空串,口径不变。"""
     blocked = PROV_OFFER_BLOCKED.get(x.prov, ())
-    return x.hours not in blocked and x.term not in blocked
+    if x.hours in blocked:
+        return x.hours
+    if x.term in blocked:
+        return x.term
+    return ""
 
 
 def is_community_hit(x: PnpJudgeIn) -> bool:
@@ -1387,6 +1419,7 @@ def to_scored_row(x: ScoredRowIn) -> dict:
         "score": score(ScoreIn(tables=x.tables, noc=noc, teer=teer, prov=x.job.prov,
                                acc=acc, agency=x.job.agency)),
         "pnpEligible": pnp_eligible(judge),
+        K_PNP_BLOCK: pnp_block_of(judge),
         "pnpStream": pnp_stream(PnpStreamIn(tables=x.tables, noc=noc, prov=x.job.prov, teer=teer, city=x.job.city,
                                             hours=x.job.hours, term=x.job.term, employer=x.job.employer,
                                             title=x.job.title, certs=x.job.certs)),
@@ -2120,6 +2153,9 @@ def add_job(x: AddJobIn) -> None:
     fill_formatted(FillFormattedIn(fields=x.fields, rec=x.ctx.formatted.get(x.external_id)))
     w = wage_of(WageOfIn(wages=x.ctx.wages, noc=sc.get(K_NOC) or "",
                          province=x.fields.get(K_PROVINCE, "")))
+    sc = with_wage_block(WageBlockIn(scored=sc, short=wage_short_of(WageShortIn(
+        floors=x.ctx.wage_floors, prov=x.fields.get(K_PROVINCE, ""), teer=cls[K_TEER],
+        salary=x.fields.get(K_SALARY_ANNUAL), wage=w))))
     grades = job_grades(JobGradesIn(
         noc=sc.get(K_NOC) or "", teer=cls[K_TEER], pnp_stream=sc.get(K_PNP_STREAM),
         pnp_eligible=bool(sc.get(K_PNP_ELIGIBLE)),
@@ -2133,6 +2169,67 @@ def add_job(x: AddJobIn) -> None:
         score=mv_score_of(MvScoreIn(base=sc.get(K_SCORE),
                                     salary_annual=x.fields.get(K_SALARY_ANNUAL),
                                     wage_med_annual=w.get(K_ANNUAL))))))
+
+
+def wage_short_of(x: WageShortIn) -> bool:
+    """这岗的帖面年薪够不够该省工资门槛「谁都得过」那条线(2026-09-29 Frank 选「分档判」;线由 wage_floors_of 从门槛表推出):
+    中位口径取 ESDC 中位年薪、低位口径取低位年薪(本站工资格是省级中位,官方看地区中位 —— 粗筛,前端只写「工资低于中位」)。
+    缺薪资、缺那条线、本省没有工资门槛或职业没分类 → 不判,给 False(宁可不标)。"""
+    basis = x.floors.get(x.prov, {}).get(x.teer)
+    if basis is None or x.salary is None:
+        return False
+    line = x.wage.get(K_ANNUAL)
+    if basis == REQ_BASIS_LOW:
+        line = x.wage.get(K_LOW_ANNUAL)
+    if not line:
+        return False
+    return x.salary < line
+
+
+def with_wage_block(x: WageBlockIn) -> dict:
+    """工资不够的可提名岗改判(2026-09-29 Frank「都按你推荐的」):评分行拷一份 —— 可提名改否、通道名清空、原因码记 wage;
+    评分段手里没有薪资,工资这条只能在汇装段判,通道档(job_grades)与岗位行都读改判后的这一份,口径一致。
+    本来就走不了的岗不动(原因码留评分段那个,格子只写一个原因);原评分行不改。"""
+    if not x.short or not x.scored.get(K_PNP_ELIGIBLE):
+        return x.scored
+    out = dict(x.scored)
+    out[K_PNP_ELIGIBLE] = False
+    out[K_PNP_STREAM] = ""
+    out[K_PNP_BLOCK] = BLOCK_WAGE
+    return out
+
+
+def wage_floors_of(rows: list) -> dict:
+    """各省岗位工资「谁都得过」那条线按 TEER 取哪一档:{省: {TEER: 口径}}(门槛表工资行推出,2026-09-29 Frank 选「分档判」)。
+    不带条件的中位行管它 appliesTeer 列的档(空 = 0-5 全管);应届款低位行(occLow + recent-on-graduate)把它那几档降成低位 ——
+    应届生按低位能用,低位都不到才是谁都过不了。没有中位行的省不成线(应届行单独不算)。现在只有安省。"""
+    floors: dict = {}
+    for r in rows:
+        if r.get(REQ_K_FACTOR) != REQ_FACTOR_WAGE or r.get(REQ_K_BASIS) != REQ_BASIS_MEDIAN or r.get(REQ_K_COND):
+            continue
+        by_teer = floors.setdefault(r.get(K_PROVINCE, ""), {})
+        for teer in teers_of(r.get(REQ_K_TEER) or ""):
+            by_teer[teer] = REQ_BASIS_MEDIAN
+    for r in rows:
+        if r.get(REQ_K_FACTOR) != REQ_FACTOR_WAGE or r.get(REQ_K_BASIS) != REQ_BASIS_LOW:
+            continue
+        prov = r.get(K_PROVINCE, "")
+        if r.get(REQ_K_COND) != REQ_COND_RECENT_GRAD or prov not in floors:
+            continue
+        for teer in teers_of(r.get(REQ_K_TEER) or ""):
+            floors[prov][teer] = REQ_BASIS_LOW
+    return floors
+
+
+def teers_of(raw: str) -> tuple:
+    """门槛行 appliesTeer 串("0,1,2,3";空 = 0-5 全管)→ TEER 元组。"""
+    if not raw:
+        return TEER_ALL
+    out: list = []
+    for t in raw.split(COMMA):
+        if t.strip().isdigit():
+            out.append(int(t))
+    return tuple(out)
 
 
 def fill_formatted(x: FillFormattedIn) -> None:
@@ -2482,6 +2579,7 @@ def to_job_row(x: JobRowIn) -> dict:
         "gradeChannel": x.grades.channel, "scoreDetail": x.grades.detail,
         "pnpEligible": bool(x.scored.get("pnpEligible")),
         "pnpStream": x.scored.get("pnpStream") or None,
+        K_PNP_BLOCK: x.scored.get(K_PNP_BLOCK) or "",
         "eeCategory": x.scored.get("eeCategory") or None,
         "status": status_of_origin(x.fields.get(K_ORIGIN, "")),
     })
@@ -4496,7 +4594,8 @@ def new_mart_ctx() -> MartCtx:
     if IN_WAGES.exists():
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
-    return MartCtx(scored=scored, wages=wages, enrich=load_enrich(), places=load_places(), careers=load_careers(),
+    return MartCtx(scored=scored, wage_floors=wage_floors_of(build_pnp_requirements(IN_REQ_TABLES)), wages=wages,
+                   enrich=load_enrich(), places=load_places(), careers=load_careers(),
                    briefs=load_briefs(), dead_sites=load_dead_sites(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
                    search_hq=load_search_hq(),
                    formatted=load_formatted(),
@@ -7076,10 +7175,11 @@ def run_tests() -> None:
     同日九省体检修复批再加一组:MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的 17 码排除表)。
     同日 Frank 拍板「看得出才改判」再加一组:MartEmployerSectorTest(雇主行业三态 + 五条改判规则的真数据金标 / 性质 / 变异探针;
     同日 Frank 选「只上纯属改对的」后 NS 建筑、AB 科技两条改为现状金标)。
-    2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。"""
+    2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。
+    2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest):
+                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

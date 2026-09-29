@@ -2913,6 +2913,12 @@ ONR_WAGE_RE = re.compile(r"must meet or exceed the wage level assigned to the sp
                          r"employee will be working and be at or above either: the median wage level", re.I)
 """工资档(设计 §2 的 basis=occMedian —— 阈值不是绝对数,而是该职业该地区的中位)。"""
 
+ONR_WAGE_LOW_GRAD_RE = re.compile(r"the low wage level, if the employee is a recent Ontario graduate and the job offer is "
+                                  r"in a TEER 0[-–]3 category occupation", re.I)
+"""工资档应届款:安省应届毕业生且 TEER 0-3 可按低位工资(雇主指南「be at or above either: the median wage level / the low wage
+level, if the employee is a recent Ontario graduate and the job offer is in a TEER 0-3 category occupation」)。2026-09-29 Frank 选
+「分档判」:职位板判「工资低于中位」时 TEER 0-3 只卡低位(应届生按低位能用),门槛卡工资行多一句「或本省应届毕业生不低于低位工资」。"""
+
 ONR_EXP_BASE_RE = re.compile(r"At least (\w+) months? of consecutive, paid full-time work experience in the job "
                              r"offer employment position, within the (\w+) months? before the date you made your "
                              r"application", re.I)
@@ -3028,6 +3034,9 @@ ONR_BASIS_OCC_MEDIAN = "occMedian"
 ONR_BASIS_EMPLOYER_TENURE = "employerTenure"
 """在职时长的口径隔离标记(rules.ts 认它,只摆门槛不判定)。"""
 
+ONR_BASIS_OCC_LOW = "occLow"
+"""工资档应届款的口径标记(该职业该地区的低位工资)。"""
+
 ONR_BASIS_ALT_CUM_TPL = "sameNoc;windowYears={n}"
 """同职业累计那条替代路径的口径包(同职业、近 N 年内;只有门槛卡读,判定引擎不读 experienceAlt)。"""
 
@@ -3057,6 +3066,9 @@ ONR_PROBLEM_EXP_BASE = "工作经验(一般 6 个月)没解析到"
 
 ONR_PROBLEM_EXP_GRAD = "工作经验(安省应届毕业生 3 个月)没解析到"
 """自校问题:应届毕业生经验。"""
+
+ONR_PROBLEM_WAGE_LOW_GRAD = "工资档(应届毕业生可按低位)没解析到"
+"""自校问题:工资应届款(解析不到时职位板会把应届生能用的 TEER 0-3 岗按中位判成不满足)。"""
 
 ONR_PROBLEM_EXP_45 = "工作经验(TEER 4/5 累计 9 个月)没解析到"
 """自校问题:TEER 4 / 5 经验。"""

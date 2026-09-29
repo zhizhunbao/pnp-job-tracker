@@ -1740,6 +1740,50 @@ K_PNP_STREAM = "pnpStream"
 K_PNP_ELIGIBLE = "pnpEligible"
 """省提名粗筛位列。"""
 
+K_PNP_BLOCK = "pnpBlock"
+"""评分行 / 岗位行:走不了省提名的原因码(2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」;
+空串 = 走得了;列 jobs.pnp_block,docs/sql/jobs-pnp-block-20260929.sql)。工作性质那四个码直接用卡住的工时 / 雇佣期取值
+(part / term / seasonal / casual,与 PROV_OFFER_BLOCKED 同一套词),其余见 BLOCK_*。"""
+
+BLOCK_LIST = "list"
+"""原因码:落在本省排除清单(排除式省的排除表 / NB 叠加式不受理);前端照旧走「不符合清单」那条路。"""
+
+BLOCK_OCC = "occ"
+"""原因码:职业不在本省收的职业里(TEER 4-5 没进清单,或职业没分类);前端写「职业不收」。"""
+
+BLOCK_WAGE = "wage"
+"""原因码:工资不够 —— 汇装段判(评分段手里没有薪资),见 wage_short_of;前端写「工资低于中位」。"""
+
+REQ_K_FACTOR = "factor"
+"""门槛行(pnp_requirements)的因素键 —— wage_floors_of 读工资行用。"""
+
+REQ_K_BASIS = "basis"
+"""门槛行的口径键。"""
+
+REQ_K_TEER = "appliesTeer"
+"""门槛行的适用 TEER 键("0,1,2,3";空 = 0-5 全管)。"""
+
+REQ_K_COND = "appliesCondition"
+"""门槛行的适用条件键。"""
+
+REQ_FACTOR_WAGE = "wage"
+"""门槛行的工资因素值。"""
+
+REQ_BASIS_MEDIAN = "occMedian"
+"""工资门槛口径:该职业该地区中位(安省)。"""
+
+REQ_BASIS_LOW = "occLow"
+"""工资门槛口径:该职业该地区低位(安省应届毕业生且 TEER 0-3;pnp on-req 的应届款那行)。"""
+
+REQ_COND_RECENT_GRAD = "recent-on-graduate"
+"""门槛行条件:安省应届毕业生。"""
+
+TEER_ALL = (0, 1, 2, 3, 4, 5)
+"""全部 TEER 档(门槛行 appliesTeer 为空 = 全管)。"""
+
+K_LOW_ANNUAL = "lowAnnual"
+"""工资格里的低位年薪(wage_of 那份 ESDC 工资的键)。"""
+
 K_ACCESSIBILITY = "accessibility"
 """可及性档列。"""
 
