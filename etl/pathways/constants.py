@@ -598,7 +598,9 @@ PW_NB_SKILLED_WORKER = {
     "officialName": "New Brunswick Skilled Worker stream",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["NB Skilled Worker"],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+                   "New Brunswick Skilled Worker stream — New Brunswick Experience pathway",
+                   "New Brunswick Skilled Worker stream — New Brunswick Graduates pathway"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -608,7 +610,10 @@ PW_NB_SKILLED_WORKER = {
     "checked": "2026-09-28",
 }
 """新不伦瑞克默认通道。抽选组:2026-09-23 Frank「所以这个 NB 技术工人点进去应该哪个高亮」立(GEN_DRAW_STREAM 原注);
-NB 抽选页按官方四个 stream 分组(09-23 59a808ec 跟上官网 08-31 改版)。NB 优先职业表只作信号(只认省政府招聘团直接招来的 offer)。"""
+NB 抽选页按官方四个 stream 分组(09-23 59a808ec 跟上官网 08-31 改版)。NB 优先职业表只作信号(只认省政府招聘团直接招来的 offer)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条(pnp nb-req 的流名)= 三条路径共同的资格(语言 / 年龄 / 雇主经营 /
+职业要求)+ Experience 路径(同雇主在职 6 个月,门槛卡工作经验行的主档)+ Graduates 路径(本省院校毕业不要求经验,经验替代行)。
+Priority Occupations 路径不挂:offer 必须出自省政府招聘团,职位板上的岗走不到这条(同 NB 优先职业表只作信号的判法)。"""
 
 PW_NL_SKILLED_WORKER = {
     "key": "nl-skilled-worker", "province": "NL", "program": "PNP",
