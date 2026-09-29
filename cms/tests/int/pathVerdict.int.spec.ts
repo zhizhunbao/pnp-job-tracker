@@ -130,7 +130,8 @@ describe('mart 实况', () => {
     // 2026-09-29 Frank「照这个做」(安省门槛卡):ON 工作经验补抓三条 —— TEER 4/5 累计 9 个月(experience)、
     // 同职业累计 2 年与持执照两条替代路径(factor=experienceAlt,判定引擎不读)→ 439
     // 2026-09-29 Frank 选「分档判」:ON 工资档补应届款一行(occLow,安省应届毕业生且 TEER 0-3 可按低位;判定引擎不读工资行)→ 440
-    expect(data.requirements).toHaveLength(440)
+    // 2026-09-29 七省接入前:ON 雇主 offer 形态一行(汇装 offer_form_rows,PROV_OFFER_QUOTE 补 ON;subject=offer,判定引擎不读)→ 441
+    expect(data.requirements).toHaveLength(441)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。

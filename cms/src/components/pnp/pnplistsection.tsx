@@ -35,7 +35,8 @@
  * @time 2026-08-28 17:59:16
  */
 import {
-  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, genDrawOf, pnpChannelOf, quotaCardOf, quotaKeyOf,
+  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, gateChannelOf, genDrawOf, pnpChannelOf, quotaCardOf,
+  quotaKeyOf,
   shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
@@ -61,7 +62,7 @@ export function PnpListSection({
   const channel = pnpChannelOf({ job, pathways })
   const hitStreams = drawHitStreamsOf(channel)
   const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
-  const gate = gateCardOf({ t: p.t, job, reqs, channel })
+  const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)

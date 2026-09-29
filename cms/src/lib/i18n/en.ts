@@ -597,6 +597,9 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': 'Wage', 'pnpgate.wageMedian': 'at or above the median wage for this occupation in the region',
   'pnpgate.wageLowGrad': 'or at or above the low wage if you are a recent graduate in {prov}',
+  'pnpgate.k.points': 'Points', 'pnpgate.pointsMin': 'provincial points grid ≥ {n}',
+  'pnpgate.empMonths': 'operating in {prov} for {n}+ months',
+  'pnpgate.expWinYears': '{n} months of full-time experience (within the last {w} years)',
   'pnpgate.langExempt': 'No test if you graduated in {prov} within the last {n} years',
   'pnpgate.expGrad': 'or {n} months if you are a recent graduate in {prov}',
   'pnpgate.expSameNoc': 'or {n} years in the same occupation (within the last {w} years)',

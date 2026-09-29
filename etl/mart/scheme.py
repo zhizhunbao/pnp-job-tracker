@@ -3167,7 +3167,10 @@ class MartOfferTest(unittest.TestCase):
         (评分与展示读同一份,变异探针:改门槛表行跟着变);主体不是 applicant / employer(不进判定);行键与各省门槛文件出的行同名同序。"""
         from mart import functions as fn
         rows = fn.offer_form_rows()
-        self.assertEqual([r["province"] for r in rows], ["AB"])
+        self.assertEqual([r["province"] for r in rows], ["AB", "ON"])
+        on = rows[1]
+        self.assertEqual(on["basis"], "valueCode=part,term,seasonal,casual")
+        self.assertIn("full-time and permanent position in Ontario", on["valueText"])
         ab = rows[0]
         self.assertEqual(ab["basis"], "valueCode=part,seasonal,casual")
         self.assertIsNone(ab["value"])

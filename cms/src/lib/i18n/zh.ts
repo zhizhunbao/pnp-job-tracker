@@ -635,6 +635,9 @@ export const jobsZh = {
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': '工资', 'pnpgate.wageMedian': '不低于本职业在本地区的中位工资',
   'pnpgate.wageLowGrad': '或本省应届毕业生不低于低位工资',
+  // 2026-09-29 七省接入前补:积分行、经营年限按月、经验近 N 年
+  'pnpgate.k.points': '积分', 'pnpgate.pointsMin': '本省打分表 ≥ {n} 分', 'pnpgate.empMonths': '在本省经营满 {n} 个月',
+  'pnpgate.expWinYears': '{n} 个月全职经验(近 {w} 年内)',
   'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
   'pnpgate.expGrad': '或本省应届毕业生满 {n} 个月', 'pnpgate.expSameNoc': '或同职业累计满 {n} 年(近 {w} 年内)',
   'pnpgate.expLicence': '或持有这份工作要求的执照',

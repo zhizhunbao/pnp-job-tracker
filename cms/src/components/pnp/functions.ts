@@ -37,7 +37,7 @@ import {
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
   BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
-  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD,
+  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
@@ -1107,6 +1107,30 @@ export function drawHitStreamsOf(channel: PnpPathway | null): string[] {
 }
 
 /**
+ * 门槛卡按哪条通道出:本岗走得了就是本岗那条(pnpChannelOf);走不了且有要显示的原因(兼职、工资低于中位……,
+ * pnpBlockOf 那几个码)就出本省省默认通道的门槛 —— 「本岗不满足的门槛」卡写原因,门槛卡紧接着列这条路要什么,原因与门槛对得上
+ * (2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」)。清单排除与没有原因的岗照旧不出。
+ *
+ * @param x 本岗与通道对照整表。
+ * @returns 那一行;没有给 null。
+ */
+export function gateChannelOf(x: PnpChannelOfIn): PnpPathway | null {
+  const own = pnpChannelOf(x)
+  if (own != null) {
+    return own
+  }
+  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock) === false) {
+    return null
+  }
+  for (const p of x.pathways) {
+    if (p.isDefault && p.province === x.job.province) {
+      return p
+    }
+  }
+  return null
+}
+
+/**
  * 本岗走哪条通道(通道对照表的一行):数据层给了具名通道(pnp_stream)就是通道名对上的那一行,对不上给 null(不拿省默认
  * 通道冒充);没挂名而可提名就是本省省默认通道那一行;都不是给 null。与原先 NAMED_* / GEN_* 两套常量的分支一一对应
  * (2026-09-28 通道表批二,那几张常量退役)。
@@ -1548,8 +1572,8 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   }
   const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
-  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), wageRowOf(one), eeRowOf(one), empRowOf(one),
-    otherRowOf(one)]) {
+  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), wageRowOf(one), pointsRowOf(one), eeRowOf(one),
+    empRowOf(one), otherRowOf(one)]) {
     if (row != null) {
       rows.push(row)
     }
@@ -1795,6 +1819,10 @@ function expLineOf(x: ExpLineIn): string {
   if (w !== TEXT_NONE) {
     return x.t('pnpgate.expWin', { n: x.n, w })
   }
+  const wy = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW_YEARS })
+  if (wy !== TEXT_NONE) {
+    return x.t('pnpgate.expWinYears', { n: x.n, w: wy })
+  }
   return x.t('pnpgate.exp', { n: x.n })
 }
 
@@ -1857,6 +1885,20 @@ function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
 }
 
 /**
+ * 「积分」行(2026-09-29 七省接入:萨省 SINP 这类「本省打分表至少 N 分」的门槛,因素 pointsMin)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有打分门槛给 null。
+ */
+function pointsRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const pts = rowOfFactor({ rows: x.chan, factor: GATE_F.pointsMin })
+  if (pts == null || pts.value == null) {
+    return null
+  }
+  return { key: GATE_ROW.points, label: x.t('pnpgate.k.points'), lines: [x.t('pnpgate.pointsMin', { n: pts.value })] }
+}
+
+/**
  * 「EE」行(科技、警务这类 EE 流):联邦 EE 档案、符合 CEC / FSW / FST、CRS 线,有哪条列哪条。
  *
  * @param x 各行构造器的共同入参。
@@ -1911,7 +1953,7 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
   const parts: string[] = []
   const years = rowOfFactor({ rows: emp, factor: GATE_F.empYears })
   if (years != null && years.value != null) {
-    parts.push(x.t('pnpgate.empYears', { n: years.value, prov }))
+    parts.push(x.t(empYearsKeyOf(years), { n: years.value, prov }))
   }
   const revenue = rowOfFactor({ rows: emp, factor: GATE_F.empRevenue })
   if (revenue != null && revenue.value != null) {
@@ -1935,6 +1977,20 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
     label: x.t('pnpgate.k.emp'),
     lines: parts.map(capFirstOf),
   }
+}
+
+/**
+ * 经营年限那一行用哪条文案:官方按月写的(萨省「no less than 24 consecutive months」)写「个月」,其余写「个财年」
+ * (2026-09-29 七省接入前补:原先一律「个财年」,萨省会读成 24 个财年)。
+ *
+ * @param r 经营年限那一行。
+ * @returns 文案键。
+ */
+function empYearsKeyOf(r: PnpReq): string {
+  if (r.unit === GATE_UNIT_MONTHS) {
+    return GATE_EMP_MONTHS_KEY
+  }
+  return GATE_EMP_YEARS_KEY
 }
 
 /**

@@ -28,7 +28,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpCellActiveOf,
+  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
 } from '@/components/pnp/functions'
@@ -730,6 +730,29 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS })
     expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(true)
     expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(false)
+  })
+
+  // 2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」:七省接入前的通用件
+  it('门槛卡通用件:走不了的岗按本省省默认通道出;经营年限按月写「个月」;经验近 N 年;积分行', () => {
+    const blocked = job({ province: 'ON', noc: '65100', teer: 5, pnpEligible: false, pnpBlock: 'part' })
+    expect(gateChannelOf({ job: blocked, pathways: PATHWAYS })?.isDefault).toBe(true)
+    expect(gateChannelOf({ job: { ...blocked, pnpBlock: 'list' }, pathways: PATHWAYS })).toBeNull()
+    expect(gateChannelOf({ job: { ...blocked, pnpBlock: '' }, pathways: PATHWAYS })).toBeNull()
+    const skReq = (p: Partial<PnpReq>): PnpReq => req({ province: 'SK', stream: 'SK X', url: 'https://www.saskatchewan.ca/x', ...p })
+    const skReqs = [
+      skReq({ value: 4 }),
+      skReq({ factor: 'experience', value: 12, unit: 'months', basis: 'windowYears=10' }),
+      skReq({ factor: 'pointsMin', value: 60, unit: 'points' }),
+      skReq({ stream: 'SK EMP', subject: 'employer', factor: 'empYears', value: 24, unit: 'months' }),
+    ]
+    const skChan: PnpPathway = { province: 'SK', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: ['SK X'], quotaKey: null,
+      officialName: 'X' }
+    expect(gateOf(gateCardOf({ t: zh, job: job({ province: 'SK', noc: '21231', teer: 1 }), reqs: skReqs, channel: skChan }))).toEqual([
+      ['语言', ['英语或法语每项 CLB 4']],
+      ['工作经验', ['12 个月全职经验(近 10 年内)']],
+      ['积分', ['本省打分表 ≥ 60 分']],
+      ['雇主', ['在本省经营满 24 个月']],
+    ])
   })
 
   it('分区雇主门槛:数据里出现的区码三语都有区名(zonedLinesOf 查不到词条那区不出,这里先红)', () => {

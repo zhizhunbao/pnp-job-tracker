@@ -584,6 +584,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': '임금', 'pnpgate.wageMedian': '해당 지역 이 직업의 중위 임금 이상',
   'pnpgate.wageLowGrad': '또는 {prov} 최근 졸업생은 하위 임금 이상',
+  'pnpgate.k.points': '점수', 'pnpgate.pointsMin': '주 점수표 {n}점 이상', 'pnpgate.empMonths': '{prov}에서 {n}개월 이상 운영',
+  'pnpgate.expWinYears': '최근 {w}년 내 풀타임 경력 {n}개월',
   'pnpgate.langExempt': '최근 {n}년 내 {prov}에서 졸업하면 시험 면제',
   'pnpgate.expGrad': '또는 {prov} 최근 졸업생은 {n}개월', 'pnpgate.expSameNoc': '또는 최근 {w}년 내 같은 직업 누적 {n}년',
   'pnpgate.expLicence': '또는 이 직무에 필요한 면허 보유',

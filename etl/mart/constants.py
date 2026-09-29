@@ -694,11 +694,16 @@ PROV_OFFER_QUOTE = {
          "Stream, even if they have a job offer to work 30 hours a week or more in a 12-month period: part-time, "
          "casual or seasonal employees, regardless of their working hours"),
     ),
+    "ON": (
+        "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+        "Your employer’s job offer must: be for a full-time and permanent position in Ontario",
+    ),
 }
 """省 → offer 形态门槛的出处页与官方原句(出处页, 原句…)(2026-09-27 Frank 勾「门槛卡」:省提名弹框「本岗通道的门槛」卡的
 「雇主 offer」行读它)。过不了的取值照旧只写在 PROV_OFFER_BLOCKED 一处,offer_form_rows 按省把两张表拼成 pnp_requirements 行
 —— 评分段 offer_fits 与展示读同一份取值。原句逐字取自 crawl 缓存里的官方页(ab-aaip 缓存,2026-09-27 核);先上 AB,
-其余省随门槛卡分批逐省核网址与原句再补(PROV_OFFER_BLOCKED 注释里的旧路径不拿来拼网址)。"""
+其余省随门槛卡分批逐省核网址与原句再补(PROV_OFFER_BLOCKED 注释里的旧路径不拿来拼网址)。
+2026-09-29 补 ON(劳动力优先通道页「Employer’s job offer requirements」一节原句,on-oinp 缓存核过;Frank「都接上,开工吧」)。"""
 
 OFFER_FORM_STREAM = "Job offer (all streams)"
 """offer 形态门槛行的通道名:本省凡要雇主 offer 的流都成立。名字里不带任何流名 —— 判定引擎按通道名正则挑行

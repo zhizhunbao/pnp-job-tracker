@@ -472,6 +472,11 @@ export const GATE_F = {
   wage: 'wage',
 
   /**
+   * 本省打分表的最低分(萨省 SINP 60 分这类;2026-09-29 七省接入)。
+   */
+  pointsMin: 'pointsMin',
+
+  /**
    * 联邦 EE 档案。
    */
   eeProfile: 'eeProfile',
@@ -535,6 +540,11 @@ export const GATE_ROW = {
    * 工资(2026-09-29 安省门槛卡加的行)。
    */
   wage: 'wage',
+
+  /**
+   * 积分(本省打分表最低分;2026-09-29 七省接入加的行)。
+   */
+  points: 'points',
 
   /**
    * EE。
@@ -601,6 +611,16 @@ export const GATE_REVENUE_AREA_KEY = 'pnpgate.empRevenueArea'
  * 分区全职员工那一行的文案键(带 {n} 与 {area};2026-09-29 安省门槛卡)。
  */
 export const GATE_STAFF_AREA_KEY = 'pnpgate.empStaffArea'
+
+/**
+ * 经营年限按年写的文案键(「在本省经营满 {n} 个财年」)。
+ */
+export const GATE_EMP_YEARS_KEY = 'pnpgate.empYears'
+
+/**
+ * 经营年限按月写的文案键(萨省官方按月写;2026-09-29 七省接入前补)。
+ */
+export const GATE_EMP_MONTHS_KEY = 'pnpgate.empMonths'
 
 /**
  * 口径包的分隔符(`k=v;k=v`)。
