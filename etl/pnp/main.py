@@ -142,6 +142,10 @@ SCHEDULED = list(chain.from_iterable(UNITS.values()))
   build_pe_req           PEI Workforce:指南 PDF,CLB 4 + TEER 0-3 经验 24 个月
   build_nl_req           NLPNP:TEER 4/5 要 CLB 4、TEER 0-3 免考(档位算出来的)
 
+  2026-09-29 九省门槛卡接齐后注(Frank「都接上,开工吧」):上面这些 *_req 行(连同 E13 的 BC / ON 两行)只记起步时的
+  范围,之后各步陆续补抓(执照、学历、打分表最低分、工资……),现状以各 build_*_req 的 docstring 为准,
+  实际抽到哪些因素看 data/mart/pnp_requirements.json 的 factor 列 —— 不在这里再抄一份。
+
 ↓ 官方运营统计(2026-08-03,Frank「官方没有数据么」问出来的;此前误断言「分母没有省公布」):
   「等多久 / 还剩多少名额 / 被捞概率」的官方答案。同为硬闸自校,失败保留旧表。
 

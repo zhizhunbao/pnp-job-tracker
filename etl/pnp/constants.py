@@ -4819,12 +4819,10 @@ NSR_SOURCE = "Nova Scotia Nominee Program — Skilled Worker Application Guide"
 NSR_PRINT_DONE_TPL = "✓ {path}  指南版本 {version},共 {n} 条门槛"
 """NS/PE 门槛收尾报数(两处同形)。"""
 
-NSR_FACTOR_ORDER = ("language", "experience", "empYears")
-"""收尾按因素报条数的顺序。"""
-
 NSR_FACTOR_ORDER_FULL = ("language", "experience", "licensing", "education", "empYears")
 """NS 收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后多了执照 / 学历两类;工资行同日撤下)。NSR_FACTOR_ORDER 原样
-留着 —— PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报两行 0。"""
+留着 —— PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报两行 0。
+同日七省合并后 PE 改用自己的 PER_FACTOR_ORDER(见 PE 门槛段),NSR_FACTOR_ORDER 再无人用,删。"""
 
 
 # =========================================================================
