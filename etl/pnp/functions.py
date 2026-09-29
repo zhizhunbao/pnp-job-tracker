@@ -138,7 +138,7 @@ from pnp.constants import (
     MBS_MIN_PROCESSING, MBS_MONTHLY_SECTION_TPL, MBS_MONTHLY_URL_TPL, MBS_MONTHLY_YEARS_BACK, MBS_MONTH_STRIP_STAR,
     MBS_MONTH_TPL, MBS_NOTE, MBS_PLAN, MBS_PRINT_ANNUAL_TPL, MBS_PRINT_MONTHLY_TPL, MBS_PRINT_POOL_TPL,
     MBS_PRINT_PROC_TPL, MBS_PROBLEM_NO_ALLOC, MBS_PROBLEM_NO_ANNUAL, MBS_PROBLEM_NO_COL_TPL, MBS_PROBLEM_NO_COMMIT,
-    MBS_PROBLEM_NO_ENHANCED, MBS_PROBLEM_NO_INVENTORY, MBS_PROBLEM_NO_MONTHLY, MBS_PROBLEM_NO_POOL,
+    MBS_PROBLEM_NO_ENHANCED, MBS_PROBLEM_NO_INVENTORY, MBS_PROBLEM_NO_MONTHLY, MBS_PROBLEM_NO_POOL_TPL,
     MBS_PROBLEM_NO_TOTAL_TPL, MBS_PROBLEM_PROCESSING_TPL, MBS_PROC_HEAD_KW, MBS_SECTION_TAGS, MBS_SOURCE_TPL,
     MBS_TOTAL_ROW_PREFIX, MBS_UNKNOWN_MONTH, MB_BLOCK_NAME_CLIP, MB_BLOCK_NAME_STRIP, MB_BLOCK_NAME_TPL,
     MB_BLOCK_TAGS, MB_BUCKETS, MB_BUCKET_MAIN, MB_BUCKET_RURAL, MB_DEFAULT_STREAM, MB_DRAW_DATE_RE,
@@ -395,6 +395,12 @@ from pnp.scheme import DrawCoverIn, SkSectorIn  # 同上(并回历史挡残缺�
 from pnp.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业条件与带星号码如实记进表,判归 mart)
     K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_PARTIAL,
 )
+from pnp.constants import (  # 2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额
+    ABS_FEDERAL_MIN_COLS, ABS_FEDERAL_NOTE_RE, ABS_HEAD_FEDERAL, ABS_PRINT_FEDERAL_TPL, ABS_PRINT_NO_FEDERAL_TPL,
+    K_ADDITIONAL_FEDERAL, K_EOI_POOL_YEARS, MBS_POOL_FIRST_YEAR, MBS_POOL_HEAD_TAGS, MBS_POOL_SCAN_TAGS,
+    MBS_POOL_SECTION_TPL, MBS_PROBLEM_POOL_GAP_TPL,
+)
+from pnp.scheme import AbFederalIn, MbPoolOut, MbPoolPageIn, MbPoolRowIn  # 同上
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -6027,8 +6033,17 @@ def collect_ab_streams(x: AbSectionIn) -> None:
         x.acc.streams.append(ab_stream_row(AbStreamRowIn(stream=stream, vals=vals)))
 
 
+def collect_ab_federal(x: AbSectionIn) -> None:
+    """额外联邦名额表逐类入堆(2026-09-29 立):类别名照官方原样(Physicians / Francophones),数字格同其余各表 ——
+    文字格原样留着不硬转。"""
+    for r in x.rows[1:]:
+        if len(r) >= ABS_FEDERAL_MIN_COLS and r[0].strip() != "":
+            x.acc.federal.append({K_CATEGORY: r[0].strip(), K_ISSUED: num_or_text(r[1])})
+
+
 def collect_ab_table(x: AbTableIn) -> None:
-    """一张表按表头归到 draws / eoiPool / summary / streams 四堆之一。"""
+    """一张表按表头归到 draws / eoiPool / summary / streams 四堆之一。
+    2026-09-29 加第五堆:表头「Additional federal space type」的额外联邦名额表 → federal(以前落不进任何一堆,整表被跳过)。"""
     rows = table_rows_of(x.table)
     if len(rows) < 2 or not rows[0]:
         return
@@ -6041,6 +6056,8 @@ def collect_ab_table(x: AbTableIn) -> None:
         collect_ab_draws(part)
     elif head[0].startswith(ABS_HEAD_STREAM):
         collect_ab_pool(part)
+    elif head[0].startswith(ABS_HEAD_FEDERAL):
+        collect_ab_federal(part)
     elif ABS_HEAD_ALLOCATION in head[0] and ABS_SUMMARY_KW in section.lower():
         collect_ab_summary(part)
     elif ABS_HEAD_ALLOCATION in TEXT_JOIN_SEP.join(head):
@@ -6082,8 +6099,30 @@ def ab_aos_pool(eoi_pool: list) -> dict | None:
     return None
 
 
+def ab_federal_rows(x: AbFederalIn) -> list:
+    """额外联邦名额表 → 一类一行(类别 / 已发提名 / label),label 挂官方那句「… will not count toward Alberta’s N
+    nomination allocation.」原样(2026-09-29 立)。表与那句缺一样就不出行、打「!」留痕 —— 不进硬闸:这是配额之外的
+    附带事实,缺了不该拦 AB 其余统计;也不拿表题之类的别的话顶 label。
+
+    @param x 表里收到的逐类行与整页压平文本。
+    @returns 带 label 的逐类行;缺表或缺那句给空清单。
+    """
+    m = ABS_FEDERAL_NOTE_RE.search(x.text)
+    if len(x.rows) == 0 or m is None:
+        notes = 0
+        if m is not None:
+            notes = 1
+        say(ABS_PRINT_NO_FEDERAL_TPL.format(rows=len(x.rows), notes=notes))
+        return []
+    out: list = []
+    for r in x.rows:
+        out.append({K_CATEGORY: r[K_CATEGORY], K_ISSUED: r[K_ISSUED], K_LABEL: m.group(1).strip()})
+    return out
+
+
 def build_ab_stats() -> None:
-    """AB 运营统计入口:一页四堆(总表 / 逐 stream / EOI 池 / 抽选史)+ 硬闸自校。"""
+    """AB 运营统计入口:一页四堆(总表 / 逐 stream / EOI 池 / 抽选史)+ 硬闸自校。
+    2026-09-29 加额外联邦名额(医生 / 法语者,不占本省配额;见 ab_federal_rows):落 additionalFederal,不进硬闸。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_STATS))
     html = fetch_html(FetchHtmlIn(url=DRAWS_AB_URL, timeout_s=ABS_TIMEOUT_S))
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
@@ -6091,12 +6130,13 @@ def build_ab_stats() -> None:
     as_of = ab_as_of(soup)
     if not as_of:
         problems.append(ABS_PROBLEM_NO_ASOF)
-    acc = AbStatsAcc(summary={}, streams=[], eoi_pool=[], draws=[])
+    acc = AbStatsAcc(summary={}, streams=[], eoi_pool=[], draws=[], federal=[])
     for tbl in soup.find_all(TAG_TABLE):
         collect_ab_table(AbTableIn(table=tbl, acc=acc))
     problems += ab_stats_problems(AbCheckIn(acc=acc))
     if problems:
         fail_zh(problems)
+    federal = ab_federal_rows(AbFederalIn(rows=acc.federal, text=fold_ws(soup.get_text(TEXT_JOIN_SEP, strip=True))))
     OUT_AB_STATS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_AB_STATS, payload={
         K_PROVINCE: PROV_AB, K_PROGRAM: PROGRAM_PNP,
@@ -6104,6 +6144,7 @@ def build_ab_stats() -> None:
         K_AS_OF_LOWER: as_of, K_FETCHED: today_iso(),
         K_SUMMARY: acc.summary, K_STREAMS: acc.streams,
         K_EOI_POOL: acc.eoi_pool, K_DRAWS: acc.draws,
+        K_ADDITIONAL_FEDERAL: federal,
     }, indent=INDENT_2))
     aos = ab_aos_pool(acc.eoi_pool)
     say(ABS_PRINT_DONE_TPL.format(path=OUT_AB_STATS, as_of=as_of,
@@ -6111,6 +6152,8 @@ def build_ab_stats() -> None:
                                   remaining=acc.summary[K_REMAINING], streams=len(acc.streams),
                                   # pyrefly: ignore[unsupported-operation] — ab_stats_problems 已闸住空池/无 AOS 行,problems 非空即 fail_zh 退出
                                   pool=len(acc.eoi_pool), aos=aos[K_COUNT], draws=len(acc.draws)))
+    for r in federal:
+        say(ABS_PRINT_FEDERAL_TPL.format(category=r[K_CATEGORY], issued=r[K_ISSUED]))
 
 
 # =========================================================================
@@ -6595,7 +6638,8 @@ def mb_monthly_block(x: MbMonthlyIn) -> MbMonthlyOut:
 
 
 def mb_annual_block(src: LatestOut) -> MbAnnualOut:
-    """年报 §9 处理时长 + §10 EOI 池 + 服务承诺句。"""
+    """年报 §9 处理时长 + §10 EOI 池 + 服务承诺句。
+    2026-09-29 起 §10 EOI 池移出(改由 mb_pool_years 读全部年报出历年序列),这里只剩处理时长与服务承诺句。"""
     problems: list = []
     # pyrefly: ignore[bad-argument-type] — 调用方 build_mb_stats 已 `if not annual_src.html` 记问题并 fail_zh 退出
     asoup = mb_soup_of(src.html)
@@ -6603,13 +6647,6 @@ def mb_annual_block(src: LatestOut) -> MbAnnualOut:
     proc = mb_processing_rows(asoup)
     if len(proc) < MBS_MIN_PROCESSING:
         problems.append(MBS_PROBLEM_PROCESSING_TPL.format(n=len(proc)))
-    eoi_pool: dict = {}
-    ma_act = MBS_ACTIVE_RE.search(atext)
-    if ma_act:
-        eoi_pool = {K_VALUE: num_or_none(ma_act.group(1)), K_LABEL_YEAR: ma_act.group(2),
-                    K_LABEL: fold_ws(ma_act.group(0)).strip()}
-    else:
-        problems.append(MBS_PROBLEM_NO_POOL)
     mc = MBS_COMMIT_RE.search(atext)
     commitment = None
     commitment_label = ""
@@ -6621,12 +6658,80 @@ def mb_annual_block(src: LatestOut) -> MbAnnualOut:
     block = {K_URL: src.url, K_FETCHED: src.fetched, K_YEAR: src.year,
              K_SECTION: MBS_ANNUAL_SECTION_TPL.format(year=src.year),
              K_COMMITMENT_MONTHS: commitment, K_COMMITMENT_LABEL: commitment_label,
-             K_PROCESSING: proc, K_EOI_POOL: eoi_pool}
+             K_PROCESSING: proc}
     return MbAnnualOut(block=block, problems=problems)
 
 
+def mb_pool_years(latest: int) -> MbPoolOut:
+    """年报池子人数历年序列(2026-09-29 立,Frank 拍板「从只取最新一份改成历年序列」):从最新一份年报往回读到
+    MBS_POOL_FIRST_YEAR,每份从 crawl 缓存取原文(纯读缓存,不发请求),交 mb_pool_series_of 逐份认那句。
+
+    @param latest 最新一份年报的年(latest_cached_year 找到的那份)。
+    @returns 历年清单(新到旧)与自校问题。
+    """
+    pages: list = []
+    for year in range(latest, MBS_POOL_FIRST_YEAR - 1, -1):
+        url = MBS_ANNUAL_URL_TPL.format(year=year)
+        hit = get_cached_page(url)
+        pages.append(MbPoolPageIn(year=year, url=url, html=hit.html, fetched=hit.fetched))
+    return mb_pool_series_of(pages)
+
+
+def mb_pool_series_of(pages: list) -> MbPoolOut:
+    """若干份年报 → 池子人数一年一行(照 pages 的顺序,调用方给新到旧)。缓存里缺一份、或一份认不出那句,都记一条
+    自校问题 —— 调用方据此整份保留旧表:缺一年的半份序列盖掉整份旧表比不写更糟(2026-09-29 立)。
+
+    @param pages 年报清单(MbPoolPageIn)。
+    @returns 历年清单与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    for p in pages:
+        row = mb_pool_row_of(p)
+        if row is not None:
+            rows.append(row)
+        elif p.html is None:
+            problems.append(MBS_PROBLEM_POOL_GAP_TPL.format(year=p.year))
+        else:
+            problems.append(MBS_PROBLEM_NO_POOL_TPL.format(year=p.year))
+    return MbPoolOut(rows=rows, problems=problems)
+
+
+def mb_pool_row_of(x: MbPoolPageIn) -> dict | None:
+    """一份年报 → 池子那一年的行(2026-09-29 立):按文档序走标题与正文块,正文块里认「N Active EOI profiles at the end
+    of YYYY」那句(MBS_ACTIVE_RE,原句原样进 label),连同它所在节的官方小标题(节号逐年不同,见 MBS_POOL_HEAD_TAGS)。
+    原文缺席、认不出那句、或那句前面没有节标题 → None(调用方记自校问题,不猜)。
+
+    @param x 一份年报。
+    @returns 池子那一年的行,或 None。
+    """
+    html = x.html
+    if html is None:
+        return None
+    head = ""
+    for el in mb_soup_of(html).find_all(MBS_POOL_SCAN_TAGS):
+        text = fold_ws(el.get_text(TEXT_JOIN_SEP, strip=True))
+        if el.name in MBS_POOL_HEAD_TAGS:
+            head = text
+            continue
+        m = MBS_ACTIVE_RE.search(text)
+        if m is not None and head != "":
+            return to_mb_pool_row(MbPoolRowIn(page=x, label=m.group(0).strip(), label_year=m.group(2),
+                                              value=num_or_none(m.group(1)), head=head))
+    return None
+
+
+def to_mb_pool_row(x: MbPoolRowIn) -> dict:
+    """池子一年的行(年报年、官方原句、原句里写的年、人数、出处节名、年报网址、抓取日;mart 的 fill_mb_annual_ops 读)。
+    period / asOf / 句尾 [sic] 不在这里定 —— 本域只存官方原样,改判在汇装(2026-09-29)。"""
+    return {K_YEAR: x.page.year, K_LABEL: x.label, K_LABEL_YEAR: x.label_year, K_VALUE: x.value,
+            K_SECTION: MBS_POOL_SECTION_TPL.format(year=x.page.year, head=x.head),
+            K_URL: x.page.url, K_FETCHED: x.page.fetched}
+
+
 def say_mb_stats(x: MbSayIn) -> None:
-    """MB 运营统计的收尾报数(月度 / 年报 / 池子 / 逐通道处理天数)。"""
+    """MB 运营统计的收尾报数(月度 / 年报 / 池子 / 逐通道处理天数)。
+    2026-09-29 起池子逐年一行(历年序列)。"""
     inv = x.monthly.get(K_INVENTORY, {})
     say(PRINT_DONE_PATH_TPL.format(path=OUT_MB_STATS))
     say(MBS_PRINT_MONTHLY_TPL.format(year=x.monthly[K_YEAR],
@@ -6638,15 +6743,16 @@ def say_mb_stats(x: MbSayIn) -> None:
                                      in_assessment=inv.get(K_IN_ASSESSMENT), pending=inv.get(K_PENDING)))
     say(MBS_PRINT_ANNUAL_TPL.format(year=x.annual[K_YEAR], commit=x.annual[K_COMMITMENT_MONTHS],
                                     n=len(x.annual[K_PROCESSING])))
-    say(MBS_PRINT_POOL_TPL.format(year=x.annual[K_YEAR], value=x.annual[K_EOI_POOL].get(K_VALUE),
-                                  label=x.annual[K_EOI_POOL].get(K_LABEL)))
+    for pool in x.pools:
+        say(MBS_PRINT_POOL_TPL.format(year=pool[K_YEAR], value=pool[K_VALUE], label=pool[K_LABEL]))
     for p in x.annual[K_PROCESSING]:
         say(MBS_PRINT_PROC_TPL.format(stream=p[K_STREAM], approved=p[K_APPROVED_DAYS],
                                       refused=p[K_REFUSED_DAYS], overall=p[K_OVERALL_DAYS]))
 
 
 def build_mb_stats() -> None:
-    """MB 运营统计入口:月度页(配额/提名/库存)+ 年报(处理天数/服务承诺/EOI 池)。"""
+    """MB 运营统计入口:月度页(配额/提名/库存)+ 年报(处理天数/服务承诺/EOI 池)。
+    2026-09-29 起 EOI 池改读全部年报出历年序列(eoiPoolYears,见 mb_pool_years);处理天数 / 服务承诺照旧只取最新一份。"""
     say(PRINT_OUT_TPL.format(path=OUT_MB_STATS))
     this_year = date.today().year
     problems: list = []
@@ -6676,6 +6782,9 @@ def build_mb_stats() -> None:
     problems += block.problems
     annual = mb_annual_block(annual_src)
     problems += annual.problems
+    # pyrefly: ignore[bad-argument-type] — latest_cached_year 找不到时 year 为 None,上方 fail_zh 已拦住
+    pools = mb_pool_years(annual_src.year)
+    problems += pools.problems
     if problems:
         fail_zh(problems)
     monthly = block.monthly
@@ -6693,8 +6802,9 @@ def build_mb_stats() -> None:
         K_FETCHED: monthly_src.fetched,
         K_MONTHLY: monthly,
         K_ANNUAL: annual.block,
+        K_EOI_POOL_YEARS: pools.rows,
     }, indent=INDENT_2))
-    say_mb_stats(MbSayIn(monthly=monthly, annual=annual.block, through_month=block.through_month))
+    say_mb_stats(MbSayIn(monthly=monthly, annual=annual.block, pools=pools.rows, through_month=block.through_month))
 
 
 # =========================================================================
@@ -8440,6 +8550,7 @@ from pnp.scheme import NlDrawSplitTest, OnWorkforceWatchTest, SkDirectApplyTest 
 from pnp.scheme import DrawMergeTest, MbDrawTotalTest, SkAgriStarTest  # noqa: E402 — 同上(2026-09-27 九省体检修复批)
 from pnp.scheme import EmployerSectorTablesTest  # noqa: E402 — 同上(2026-09-27 Frank 拍板「看得出才改判」)
 from pnp.scheme import NsQuarterlyTest  # noqa: E402 — 同上(2026-09-29 NS 两张季表)
+from pnp.scheme import AbFederalTest, MbPoolYearsTest  # noqa: E402 — 同上(2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额)
 
 
 def run_tests() -> None:
@@ -8451,7 +8562,9 @@ def run_tests() -> None:
     逐格全同的重复、空格被填上的旧行不留两行)、SkAgriStarTest(SK 农业通道带星号码不收)。
     同日 Frank 拍板「看得出才改判」再加一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表;SkAgriStarTest 随之改为
     「带星号码照收并标行业键」)。
-    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。"""
+    2026-09-29 加 NsQuarterlyTest(NS 两张季表的合计:只算省提名、坏行跳过、统计期与截至月)。
+    同日再加两组:MbPoolYearsTest(MB 年报池子历年序列:原句与原句里的年照录、节标题逐年照取、缺年报 / 认不出各记一条)、
+    AbFederalTest(AB 额外联邦名额表归自己一堆、label 挂官方原句、缺表或缺那句不出行)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8461,5 +8574,7 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(SkAgriStarTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(EmployerSectorTablesTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NsQuarterlyTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MbPoolYearsTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(AbFederalTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

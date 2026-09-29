@@ -1641,6 +1641,10 @@ class MbAnnualIn:
     section: str
     """年报节名。"""
 
+    pools: list
+    """年报池子人数历年清单(mb-stats.json 顶层 eoiPoolYears;一年一行,每行自带年报网址 / 抓取日 / 出处节名;
+    2026-09-29 立)。"""
+
 @dataclass
 class OpsRowOut:
     """to_ops_row() 入参(名字带 Out 是因为它装的是 add_ops_row 算完的结果:
@@ -4730,3 +4734,85 @@ class MartNsOpsTest(unittest.TestCase):
             ("nominations_ytd", "2026 Q1-Q2", "2026-06", 819, res_url),
             ("refusals_ytd", "2026 Q1-Q2", "2026-06", 341, res_url),
             ("withdrawals_ytd", "2026 Q1-Q2", "2026-06", 475, res_url)])
+
+
+class MartMbPoolTest(unittest.TestCase):
+    """MB 年报池子历年序列出行自测(2026-09-29 立,Frank 拍板):一年一行、新到旧(raw 顺序乱也照排,最新一年 seq 0)、
+    period 记年报年、asOf 记该年 12 月、每行挂自己那份年报的网址与节名;2024 年报原句写「end of 2023」→ period 仍记 2024、
+    label 句尾加「 [sic]」,其余年份 label 原样;处理承诺照旧一行。数字照 2017 / 2023 / 2024 三份年报原句,数据在用例里
+    现造,不读仓内文件。"""
+
+    URL = "https://immigratemanitoba.com/resources/data/annual-report-{year}"
+    """年报网址形。"""
+
+    def test_fill_mb_pool(self) -> None:
+        """一份现造的 mb-stats.json(年报池子三年,故意乱序)走一遍 fill_mb_ops。
+        案例页 PNP_OPS_STATS 按 COALESCE(as_of, period) 取每省最新一行,而 as_of 落库是空串不是 NULL(COALESCE 退不到
+        period)—— 所以断言 asOf 各行互不相同、最大的是 2024 年那行。"""
+        from mart import functions as fn
+        pools = [{"year": 2023, "label": "20,392 Active EOI profiles at the end of 2023", "labelYear": "2023",
+                  "value": 20392, "section": "MPNP Annual Report 2023 — 10. Expression of Interest Pool",
+                  "url": self.URL.format(year=2023), "fetched": "2026-09-29"},
+                 {"year": 2017, "label": "15,957 active EOI profiles at the end of 2017", "labelYear": "2017",
+                  "value": 15957, "section": "MPNP Annual Report 2017 — 9. Expression of Interest Pool",
+                  "url": self.URL.format(year=2017), "fetched": "2026-09-29"},
+                 {"year": 2024, "label": "26,678 Active EOI profiles at the end of 2023", "labelYear": "2023",
+                  "value": 26678, "section": "MPNP Annual Report 2024 — 10. Expression of Interest Pool",
+                  "url": self.URL.format(year=2024), "fetched": "2026-09-29"}]
+        d = {"province": "MB", "asOf": "", "url": "https://immigratemanitoba.com/resources/data/monthly-data-2026",
+             "fetched": "2026-09-29", "monthly": {},
+             "annual": {"url": self.URL.format(year=2024), "fetched": "2026-09-29", "year": 2024,
+                        "section": "MPNP Annual Report 2024 — 9. Processing Times", "commitmentMonths": 6,
+                        "commitmentLabel": "C", "processing": []},
+             "eoiPoolYears": pools}
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_mb_ops(OpsProvIn(ctx=ctx, base=fn.to_ops_base(d), data=d))
+        pool = [r for r in ctx.rows if r["metric"] == "eoi_pool_total"]
+        self.assertEqual([(r["period"], r["asOf"], r["value"], r["seq"], r["url"]) for r in pool], [
+            ("2024", "2024-12", 26678, 0, self.URL.format(year=2024)),
+            ("2023", "2023-12", 20392, 1, self.URL.format(year=2023)),
+            ("2017", "2017-12", 15957, 2, self.URL.format(year=2017))])
+        self.assertEqual([r["label"] for r in pool], ["26,678 Active EOI profiles at the end of 2023 [sic]",
+                                                      "20,392 Active EOI profiles at the end of 2023",
+                                                      "15,957 active EOI profiles at the end of 2017"])
+        self.assertEqual(pool[2]["section"], "MPNP Annual Report 2017 — 9. Expression of Interest Pool")
+        keys = [r["asOf"] for r in pool]
+        self.assertEqual(len(set(keys)), len(keys))
+        self.assertEqual(max(keys), "2024-12")
+        commit = [(r["value"], r["period"]) for r in ctx.rows if r["metric"] == "processing_commitment"]
+        self.assertEqual(commit, [(6, "2024")])
+
+
+class MartAbFederalTest(unittest.TestCase):
+    """AB 额外联邦名额出行自测(2026-09-29 立):一类一行、指标 nominations_additional_federal、scope = 官方类别名
+    (scopeKind=category,不算 streamKey)、label 原样、口径日同页;issued / allocation / remaining 三个既有指标的省级行
+    一个数不变(不并入);旧 ab-stats.json 没有这一键就一行不出。数据在用例里现造,不读仓内文件。"""
+
+    LABEL = ("Any AAIP nomination issued in 2026 for a physician or Francophone who meets the federal criteria for this "
+             "initiative will not count toward Alberta’s 6,603 nomination allocation.")
+    """官方原句(弯撇号照页面原样)。"""
+
+    def test_fill_ab_federal(self) -> None:
+        """一份现造的 ab-stats.json 走一遍 fill_ab_ops;再删掉这一键重跑一遍。"""
+        from mart import functions as fn
+        d = {"province": "AB", "asOf": "2026-09-23", "url": "https://www.alberta.ca/aaip-processing-information",
+             "fetched": "2026-09-29",
+             "summary": {"allocation": 6603, "issued": 5221, "remaining": 1382, "toProcess": 1092},
+             "streams": [], "eoiPool": [],
+             "additionalFederal": [{"category": "Physicians", "issued": 50, "label": self.LABEL},
+                                   {"category": "Francophones", "issued": 12, "label": self.LABEL}]}
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_ab_ops(OpsProvIn(ctx=ctx, base=fn.to_ops_base(d), data=d))
+        fed = [(r["scope"], r["scopeKind"], r["streamKey"], r["value"], r["unit"], r["label"], r["asOf"])
+               for r in ctx.rows if r["metric"] == "nominations_additional_federal"]
+        self.assertEqual(fed, [("Physicians", "category", "", 50, "nominations", self.LABEL, "2026-09-23"),
+                               ("Francophones", "category", "", 12, "nominations", self.LABEL, "2026-09-23")])
+        prov = {}
+        for r in ctx.rows:
+            if r["scope"] == "" and r["metric"] in ("allocation", "issued", "remaining"):
+                prov[r["metric"]] = r["value"]
+        self.assertEqual(prov, {"allocation": 6603, "issued": 5221, "remaining": 1382})
+        del d["additionalFederal"]
+        ctx2 = OpsCtx(rows=[], seqs={})
+        fn.fill_ab_ops(OpsProvIn(ctx=ctx2, base=fn.to_ops_base(d), data=d))
+        self.assertEqual([r for r in ctx2.rows if r["metric"] == "nominations_additional_federal"], [])
