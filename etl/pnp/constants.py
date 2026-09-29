@@ -4738,7 +4738,16 @@ NL 这份的看点是**分档方式跟别省相反**:官方明说 Skilled Worker
     每个 NOC 不同,不是省门槛)。硬塞一个数是编的。
   · 年龄 21-59、结算资金(官方只写「足够」不发数额)、雇主 JVA(引擎无对应因素)。
   · 最低收入:NL **不设**收入表(全国只有 BC 发布;这是结论不是缺口)。
-自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。"""
+自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):Skilled Worker 政策页补资格 / 执照条文一行(licensing,见 NLR_LICENCE_RE)。
+经验照旧不抓(上面那条理由不变;政策页通篇没有 experience 一词);积分线(Annex A 67 分)属 Express Entry Skilled Worker 类别
+(4-express-entry-skilled-worker-category-eligibility-criteria 页「Score a minimum of 67 points on the NLPNP Point Assessment
+Grid」),不属本类别,不进这张表。
+工资档**有但暂不入表**:政策页原句「That meets regional prevailing wage rates, or if regional data is not currently available,
+that meets provincial or national prevailing wage rates, as assessed by OIM.」。记 occMedian 会让汇装工资线(wage_floors_of)按
+**省级**中位判 NL 岗「工资低于中位」,而官方 JVA 资格页把 prevailing wage 定义为地区(sub-provincial)中位与同岗现有员工工资取高、
+缺地区数据时按省级中位上下 10%,JVA 安家支持页又写明低于本省中位工资的岗位可以做(雇主须加安家支持)—— 省级一刀切会误判乡村岗;
+另记一种口径则门槛量尺(cms lib/gauge 的工资项,取本省第一条工资行)会给这条无数值的行出一句空门槛。怎么出归 lead 定。"""
 
 NLR_TIMEOUT_S = 45
 """NL 各页抓取超时。"""
@@ -4767,6 +4776,13 @@ NLR_TEST_TEERS_RE = re.compile(r"Applicants with TEER ([\d ]*or \d) job offers m
 
 NLR_CLB_RE = re.compile(r"Minimum scores \(CLB (\d) equivalent\)", re.I)
 """「Minimum scores (CLB 4 equivalent)」—— 逐个考试重复,取唯一值。"""
+
+NLR_LICENCE_RE = re.compile(r"Have the qualifications, training, skills, and/or accreditation required for the job\. "
+                            r"Applicants must demonstrate they meet the NOC code employment requirements", re.I)
+"""资格 / 执照条文:政策页第 2 条「Have the qualifications, training, skills, and/or accreditation required for the job. Applicants
+must demonstrate they meet the NOC code employment requirements;」。记 factor=licensing(条文型),同 NB「meet your New Brunswick job
+requirements, according to the National Occupational Classification」的先例(NBR_PAGE_RULES);门槛卡「其他」行据此出
+「职业所需执照或注册」。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
 
 NLR_EMP_YEARS_RE = re.compile(r"Operated under current management for at least (\d+) years?", re.I)
 """「Operated under current management for at least 2 years (or 1 year in special cases)」。"""
@@ -4811,6 +4827,9 @@ NLR_IG_TEER4 = [4]
 NLR_SECTION_LANG = "Skilled Worker Category Eligibility Criteria — language"
 """Skilled Worker 语言的出处节名。"""
 
+NLR_SECTION_QUALIFICATIONS = "Skilled Worker Category Eligibility Criteria — qualifications"
+"""Skilled Worker 资格 / 执照条文的出处节名(2026-09-29)。"""
+
 NLR_SECTION_EMP_YEARS = "Employer Criteria — established in NL"
 """雇主经营年限的出处节名。"""
 
@@ -4831,6 +4850,10 @@ NLR_LANG_NONE_LABEL_TPL = ("No language test is required for NOC TEER "
                            "{exempt} job offers; the category accepts job offers "
                            "in TEER {band} occupations")
 """Skilled Worker 语言(免考)的 label。"""
+
+NLR_LICENCE_LABEL = ("Have the qualifications, training, skills and/or accreditation required for the job and meet the NOC "
+                     "code employment requirements")
+"""Skilled Worker 资格 / 执照条文的 label(原句整条进 valueText,见 NLR_LICENCE_RE)。"""
 
 NLR_EMP_YEARS_LABEL_TPL = ("Employer must be permanently based in NL, registered with Service NL, and operated "
                            "under current management for at least {years} years (1 year in special cases)")
@@ -4873,6 +4896,15 @@ NLR_PROBLEM_MULTI_CLB_TPL = "页面里出现多个语言档 {clbs} —— 官方
 
 NLR_PROBLEM_TEER_MATH_TPL = "档位算不出来:全档 {whole},要考的 {need}"
 """自校问题:免考档算不出来。"""
+
+NLR_PROBLEM_LICENCE = "资格 / 执照条文(NOC code employment requirements)没解析到"
+"""自校问题:Skilled Worker 资格 / 执照条文(2026-09-29)。"""
+
+NLR_POLICY_RULES = (
+    (NLR_LICENCE_RE, FACTOR_LICENSING, "", NLR_LICENCE_LABEL, NLR_PROBLEM_LICENCE),
+)
+"""Skilled Worker 政策页的条文型门槛(rule_rows 五元组:原句正则, factor, 单位, 标签, 问题句;单位空 = 条文行,原句整条进
+valueText)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)立,先收资格 / 执照一条。"""
 
 NLR_PROBLEM_EMPLOYER_TPL = "雇主侧「{what}」没解析到(雇主资格页可能改版)"
 """自校问题:雇主侧某一条。"""

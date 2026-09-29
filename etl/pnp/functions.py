@@ -165,11 +165,13 @@ from pnp.constants import (
     NLR_EMP_YEARS_RE, NLR_IG_AGE_RE, NLR_IG_EXPERIENCE_RE, NLR_IG_EXP_LABEL_TPL, NLR_IG_HOURS_RE,
     NLR_IG_LANG_CLB_RE, NLR_IG_LANG_DISCRETION_RE, NLR_IG_LANG_LABEL_TPL, NLR_IG_LANG_NONE_LABEL_TPL,
     NLR_IG_LANG_TEER4_RE, NLR_IG_LANG_URL, NLR_IG_MONTHS_RE, NLR_IG_PGWP_RE, NLR_IG_STREAM, NLR_IG_TEER4,
-    NLR_IG_TEER_RE, NLR_IG_URL, NLR_LANG_LABEL_TPL, NLR_LANG_NONE_LABEL_TPL, NLR_PAGE_URL, NLR_POLICY_URL,
+    NLR_IG_TEER_RE, NLR_IG_URL, NLR_LANG_LABEL_TPL, NLR_LANG_NONE_LABEL_TPL, NLR_PAGE_URL, NLR_POLICY_RULES,
+    NLR_POLICY_URL,
     NLR_PRINT_ROW_TPL, NLR_PROBLEM_EMPLOYER_TPL, NLR_PROBLEM_IG_CLB_TPL, NLR_PROBLEM_IG_EXPERIENCE,
     NLR_PROBLEM_IG_TPL, NLR_PROBLEM_MULTI_CLB_TPL, NLR_PROBLEM_NO_ALL_TEERS, NLR_PROBLEM_NO_CLB,
     NLR_PROBLEM_NO_TEST_TEERS, NLR_PROBLEM_TEER_MATH_TPL, NLR_SECTION_EMP_STAFF, NLR_SECTION_EMP_YEARS,
-    NLR_SECTION_IG, NLR_SECTION_IG_LANG, NLR_SECTION_LANG, NLR_SOURCE, NLR_STAFF_OUT_LABEL_TPL, NLR_STAFF_OUT_RE,
+    NLR_SECTION_IG, NLR_SECTION_IG_LANG, NLR_SECTION_LANG, NLR_SECTION_QUALIFICATIONS, NLR_SOURCE,
+    NLR_STAFF_OUT_LABEL_TPL, NLR_STAFF_OUT_RE,
     NLR_STAFF_SJ_LABEL_TPL, NLR_STAFF_SJ_RE, NLR_STREAM, NLR_TEST_TEERS_RE, NLR_TIMEOUT_S, NLR_WHAT_EMP_YEARS,
     NLR_WHAT_IG_AGE, NLR_WHAT_IG_DISCRETION, NLR_WHAT_IG_HOURS, NLR_WHAT_IG_MONTHS, NLR_WHAT_IG_PGWP,
     NLR_WHAT_IG_TEER, NLR_WHAT_IG_TEER4, NLR_WHAT_STAFF_OUT, NLR_WHAT_STAFF_SJ, NL_DETAIL_SPLIT_RE,
@@ -5238,7 +5240,11 @@ def nl_ig_reqs(x: NlIgIn) -> ReqsOut:
 
 
 def build_nl_req() -> None:
-    """NL 门槛入口:Skilled Worker 语言两档 + 雇主侧三条 + International Graduate 通道。"""
+    """NL 门槛入口:Skilled Worker 语言两档 + 雇主侧三条 + International Graduate 通道。
+
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):Skilled Worker 政策页再按 NLR_POLICY_RULES 取条文行(资格 / 执照一条,
+    rule_rows)。
+    """
     say(PRINT_OUT_TPL.format(path=OUT_NL_REQ))
     txt = page_text(PageTextIn(url=NLR_POLICY_URL, timeout_s=NLR_TIMEOUT_S,
                                drop_junk=True, main_only=True))
@@ -5247,6 +5253,10 @@ def build_nl_req() -> None:
     language = nl_language_reqs(txt)
     reqs += language.rows
     problems += language.problems
+    rules = rule_rows(RuleRowsIn(to_row=to_nl_req, txt=txt, stream=NLR_STREAM, url=NLR_POLICY_URL,
+                                 section=NLR_SECTION_QUALIFICATIONS, rules=NLR_POLICY_RULES))
+    reqs += rules.rows
+    problems += rules.problems
     emp_txt = page_text(PageTextIn(url=NLR_EMPLOYER_URL, timeout_s=NLR_TIMEOUT_S,
                                    drop_junk=True, main_only=True))
     employer = nl_employer_reqs(emp_txt)
