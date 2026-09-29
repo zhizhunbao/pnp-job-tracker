@@ -9,10 +9,10 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:纯函数直接点文件(桶只走门的规矩不管测试)
 import {
-  coreSitemapOf, coShardEntriesOf, indexXmlOf, jobsNewEntriesOf, jobShardEntriesOf, shardModsOf, shardOf, urlsetXmlOf,
+  coreSitemapOf, indexXmlOf, jobsNewEntriesOf, jobShardEntriesOf, shardModsOf, shardOf, urlsetXmlOf,
 } from '@/lib/seo/functions'
-import { CO_SHARDS, JOB_SHARDS, SITE } from '@/lib/seo/constants'
-import type { CoShardFact, JobShardFact, Sitemap } from '@/lib/seo/types'
+import { JOB_SHARDS, SITE } from '@/lib/seo/constants'
+import type { JobShardFact, Sitemap } from '@/lib/seo/types'
 import { jobPostingJsonOf, toJobRow } from '@/lib/jobs/functions'
 import type { JobDbRow } from '@/lib/jobs/types'
 
@@ -22,10 +22,6 @@ const SM = `${SITE}/api/sitemaps/`
 
 function job(id: number, mod: number | null, fresh = false): JobShardFact {
   return { id, mod, fresh }
-}
-
-function co(id: number, slug: string, mod: number | null): CoShardFact {
-  return { id, slug, mod }
 }
 
 function jobUrl(id: number): string {
@@ -74,13 +70,10 @@ function shardMapOf(rows: JobShardFact[]): Map<string, number> {
 }
 
 describe('片号:只看自己的 id', () => {
-  it('金标:id 对固定片数取模(职位 10 片、公司 8 片)', () => {
+  it('金标:id 对固定片数取模(职位 10 片)', () => {
     expect(JOB_SHARDS).toBe(10)
-    expect(CO_SHARDS).toBe(8)
     expect(shardOf({ id: 68811356, shards: JOB_SHARDS })).toBe(6)
     expect(shardOf({ id: 10, shards: JOB_SHARDS })).toBe(0)
-    expect(shardOf({ id: 7, shards: CO_SHARDS })).toBe(7)
-    expect(shardOf({ id: 16, shards: CO_SHARDS })).toBe(0)
   })
 
   it('全量划分:每个岗恰好落在一片,各片并起来就是全量', () => {
@@ -109,12 +102,6 @@ describe('片号:只看自己的 id', () => {
     const rows = [job(3, T0), job(13, T0), job(23, T0), job(4, T0)]
     expect(urlsOf(jobShardEntriesOf({ rows, shard: 3 }))).toEqual([jobUrl(3), jobUrl(13), jobUrl(23)])
     expect(jobShardEntriesOf({ rows, shard: JOB_SHARDS })).toEqual([])
-  })
-
-  it('公司按公司 id 对 8 取模,网址用 slug', () => {
-    const rows = [co(8, 'acme', T0), co(9, 'bolt', T0), co(16, 'crane', null)]
-    expect(urlsOf(coShardEntriesOf({ rows, shard: 0 }))).toEqual([`${SITE}/companies/acme`, `${SITE}/companies/crane`])
-    expect(urlsOf(coShardEntriesOf({ rows, shard: 1 }))).toEqual([`${SITE}/companies/bolt`])
   })
 })
 
@@ -168,14 +155,14 @@ describe('近 7 天新岗册', () => {
 })
 
 describe('索引:片数固定,落款取片内最晚', () => {
+  // 2026-09-29 公司 8 片撤出站点地图(公司核实标记落地前公司页不报给 Google),索引 = 核心册 + 新岗册 + 职位 10 片
   const allFiles = [
     'core.xml', 'jobs-new.xml',
     ...Array.from({ length: 10 }, (_, i) => `jobs-${i}.xml`),
-    ...Array.from({ length: 8 }, (_, i) => `companies-${i}.xml`),
   ]
 
-  it('清单是空表(库抖且没旧表)也照列满 20 张,一个落款都不给 —— 绝不 0 片', () => {
-    const pairs = indexPairs(indexXmlOf({ jobs: [], companies: [] }))
+  it('清单是空表(库抖且没旧表)也照列满 12 张,一个落款都不给 —— 绝不 0 片', () => {
+    const pairs = indexPairs(indexXmlOf({ jobs: [] }))
     expect(pairs.map(([loc]) => loc)).toEqual(allFiles.map((f) => SM + f))
     expect(pairs.every(([, mod]) => mod == null)).toBe(true)
   })
@@ -188,16 +175,13 @@ describe('索引:片数固定,落款取片内最晚', () => {
       job(41, T0 + 9 * HOUR, false),
       job(51, null, true),
     ]
-    const companies = [co(8, 'acme', T0 + 4 * HOUR), co(16, 'bolt', T0 + 6 * HOUR), co(3, 'crane', null)]
-    const mods = new Map(indexPairs(indexXmlOf({ jobs, companies })))
+    const mods = new Map(indexPairs(indexXmlOf({ jobs })))
     expect(mods.get(SM + 'core.xml')).toBeNull()
     expect(mods.get(SM + 'jobs-new.xml')).toBe('2026-09-20T01:00:00.000Z')
     expect(mods.get(SM + 'jobs-0.xml')).toBe('2026-09-20T02:00:00.000Z')
     expect(mods.get(SM + 'jobs-1.xml')).toBe('2026-09-20T09:00:00.000Z')
     expect(mods.get(SM + 'jobs-2.xml')).toBeNull()
-    expect(mods.get(SM + 'companies-0.xml')).toBe('2026-09-20T06:00:00.000Z')
-    expect(mods.get(SM + 'companies-3.xml')).toBeNull()
-    expect(mods.size).toBe(20)
+    expect(mods.size).toBe(12)
   })
 
   it('shardModsOf 逐片一格、片号升序,空片 null', () => {

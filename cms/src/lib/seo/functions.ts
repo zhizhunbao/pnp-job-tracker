@@ -13,7 +13,7 @@ import { queryRows, SQL } from '../db'
 import { fill } from '../template'
 import { log, SEO_LOG } from '../log'
 import {
-  CACHE_1H, CO_PAGE_PREFIX, CO_PRIORITY, CO_SHARD_PATH, CO_SHARDS, CORE_PAGES, CT_XML, FREQ_WEEKLY,
+  CACHE_1H, CORE_PAGES, CT_XML, FREQ_WEEKLY,
   HDR_CACHE_CONTROL, HDR_CONTENT_TYPE, INDEX_ITEM_NOMOD_TPL, INDEX_ITEM_TPL, INDEX_XML_HEAD, INDEX_XML_TAIL,
   JOB_NEW_PATH, JOB_PAGE_PREFIX, JOB_PRIORITY, JOB_SHARD_PATH, JOB_SHARDS, NL, ROBOTS_ALLOW, ROBOTS_DISALLOW, ROBOTS_UA,
   URLSET_ITEM_NOMOD_TPL, URLSET_ITEM_TPL, URLSET_XML_HEAD, URLSET_XML_TAIL,
@@ -21,7 +21,7 @@ import {
 } from './constants'
 import { CACHE } from './variables'
 import type {
-  CoShardDbRow, CoShardEntriesIn, CoShardFact, CoShardRowsOut, EntryIn, Freq, IndexItemIn, IndexRowsOut, IndexXmlIn,
+  EntryIn, Freq, IndexItemIn, IndexRowsOut, IndexXmlIn,
   JobShardDbRow, JobShardEntriesIn, JobShardFact, JobShardFacts, JobShardRowsOut, MaybeMs, MaybeShardNo, ModRows, PgTime,
   RefreshOut, Robots, ShardMods, ShardModsIn, ShardNoIn, ShardOfIn, ShardPageIn, ShardPageOut, ShardRowsIn, Sitemap,
   SitemapEntry,
@@ -117,32 +117,17 @@ export async function loadJobsNewPage(input: ShardRowsIn): ShardPageOut {
 }
 
 /**
- * 公司分片一片(仅有在招岗的公司=有内容+可收录;无岗公司页 noindex 不进)。
- * 2026-09-26 片号改公司 id 取模(constants.CO_SHARDS),lastmod 改旗下在架岗最晚的上架时刻。
- * 2026-09-28 成员再收窄到旗下有收录岗(有投递邮箱)的公司(SQL.CO_SITEMAP_FROM)。
- *
- * @param input 连接与片号。
- * @returns 这一片的 urlset。
- */
-export async function loadCompanyShardPage(input: ShardPageIn): ShardPageOut {
-  if (Number.isFinite(input.shard) === false) {
-    return []
-  }
-  const rows = await loadCompanyShardRows({ db: input.db })
-  return coShardEntriesOf({ rows: rows, shard: input.shard })
-}
-
-/**
  * sitemapindex 要的两侧清单(2026-09-26 起片数固定,索引只拿清单算每片最晚的 lastmod;
  * 取代原 loadJobShardCount / loadCompanyShardCount 两个计数 —— 原判「列表与计数同一套条件,否则片数和内容对不上」
  * 由同一份缓存清单天然成立)。
+ * 2026-09-29 公司分片撤出(Frank「撤吧」,公司核实标记落地前公司页不报给 Google),只剩职位一侧。
  *
  * @param input 连接。
- * @returns 两侧全量清单(各自缓存槽里的,或空表)。
+ * @returns 职位全量清单(缓存槽里的,或空表)。
  */
 export async function loadIndexRows(input: ShardRowsIn): IndexRowsOut {
-  const [jobs, companies] = await Promise.all([loadJobShardRows(input), loadCompanyShardRows(input)])
-  return { jobs, companies }
+  const jobs = await loadJobShardRows(input)
+  return { jobs }
 }
 
 /**
@@ -171,22 +156,6 @@ export function jobsNewEntriesOf(rows: JobShardFacts): Sitemap {
   const out: SitemapEntry[] = []
   for (const r of freshJobsOf(rows).sort(byModDesc)) {
     out.push(jobEntryOf(r))
-  }
-  return out
-}
-
-/**
- * 公司一片的条目(同职位侧:按公司 id 取模)。
- *
- * @param x 清单与片号。
- * @returns 这一片的 urlset(清单原序 = 公司 id 升序)。
- */
-export function coShardEntriesOf(x: CoShardEntriesIn): Sitemap {
-  const out: SitemapEntry[] = []
-  for (const r of x.rows) {
-    if (shardOf({ id: r.id, shards: CO_SHARDS }) === x.shard) {
-      out.push(entryOf({ url: `${SITE}${CO_PAGE_PREFIX}${r.slug}`, priority: CO_PRIORITY, mod: r.mod }))
-    }
   }
   return out
 }
@@ -283,46 +252,6 @@ async function refreshJobShardRows(input: ShardRowsIn): RefreshOut {
   }
 }
 
-/**
- * 公司分片清单全量(同职位侧一套律)。
- *
- * @param input 连接。
- * @returns 旗下有收录岗的公司 id + slug + lastmod 全量(公司 id 升序;2026-09-26 前是 slug + last_seen,2026-09-28 前成员是有在招岗的公司)。
- */
-async function loadCompanyShardRows(input: ShardRowsIn): CoShardRowsOut {
-  const slot = CACHE.companies
-  if (slot != null) {
-    if (Date.now() - slot.ts >= SEO_TTL_MS && CACHE.companiesBusy === false) {
-      void refreshCompanyShardRows(input)
-    }
-    return slot.rows
-  }
-  await refreshCompanyShardRows(input)
-  const fresh = CACHE.companies
-  if (fresh == null) {
-    return []
-  }
-  return fresh.rows
-}
-
-/**
- * 公司清单现查一次落槽(同职位侧)。
- *
- * @param input 连接。
- * @returns 无。
- */
-async function refreshCompanyShardRows(input: ShardRowsIn): RefreshOut {
-  CACHE.companiesBusy = true
-  try {
-    const rows = await queryRows({ db: input.db, sql: SQL.coSitemapAll(SQL.CO_SITEMAP_FROM), params: [], map: toCoShardFact })
-    CACHE.companies = { rows, ts: Date.now() }
-  } catch (e) {
-    log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-  } finally {
-    CACHE.companiesBusy = false
-  }
-}
-
 // =========================================================================
 // 3. sitemapindex(#156:GSC 手动提交只认一个 URL,索引一次覆盖全部分片)
 // =========================================================================
@@ -334,8 +263,9 @@ async function refreshCompanyShardRows(input: ShardRowsIn): RefreshOut {
  * (原先整张索引填请求时刻,等于每次都说「全改了」);核心册不给落款(它的条目本身就没有 lastmod);
  * 近 7 天新岗册紧跟核心册。原兜底「库不可达回落 1 片、绝不 0 片(0 片 = 整个 sitemap 消失)」由固定片数天然成立:
  * 清单是空表时照列满全部分片,只是都不给落款。
+ * 2026-09-29 公司 8 片撤出,索引 = 核心册 + 新岗册 + 职位 10 片。
  *
- * @param input 两侧清单(空表 = 库抖且没有旧表)。
+ * @param input 职位清单(空表 = 库抖且没有旧表)。
  * @returns 完整 XML 文本。
  */
 export function indexXmlOf(input: IndexXmlIn): string {
@@ -344,9 +274,6 @@ export function indexXmlOf(input: IndexXmlIn): string {
   lines.push(indexItemOf({ loc: `${SITE}${JOB_NEW_PATH}`, mod: newestOf(freshJobsOf(input.jobs)) }))
   for (const s of shardModsOf({ rows: input.jobs, shards: JOB_SHARDS })) {
     lines.push(indexItemOf({ loc: SITE + fill({ tpl: JOB_SHARD_PATH, params: { n: s.n } }), mod: s.mod }))
-  }
-  for (const s of shardModsOf({ rows: input.companies, shards: CO_SHARDS })) {
-    lines.push(indexItemOf({ loc: SITE + fill({ tpl: CO_SHARD_PATH, params: { n: s.n } }), mod: s.mod }))
   }
   lines.push(INDEX_XML_TAIL)
   return lines.join(NL)
@@ -454,17 +381,6 @@ export function indexHeadersOf(): Record<string, string> {
  */
 function toJobShardFact(r: JobShardDbRow): JobShardFact {
   return { id: r.id, mod: msOf(r.mod), fresh: r.fresh === true }
-}
-
-/**
- * 公司分片原始行 → 本域形状。
- * 2026-09-26 前是 slug + last_seen 原样交回(toCoShardRow)。
- *
- * @param r 原始行。
- * @returns 公司 id + slug + lastmod。
- */
-function toCoShardFact(r: CoShardDbRow): CoShardFact {
-  return { id: r.id, slug: r.slug, mod: msOf(r.mod) }
 }
 
 /**

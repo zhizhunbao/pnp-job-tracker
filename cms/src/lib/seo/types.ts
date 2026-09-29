@@ -59,21 +59,17 @@ export type ShardPageOut = Promise<Sitemap>
 
 /**
  * sitemapindex XML 拼装的入参(2026-09-26 由「两侧片数 + 落款时刻」改成两侧清单:片数固定,落款取片内最晚)。
+ * 2026-09-29 公司分片撤出站点地图,只剩职位清单。
  */
 export type IndexXmlIn = {
   /**
    * 职位清单全量(空表 = 库抖且没有旧表;索引照列满全部分片,只是不给 lastmod)。
    */
   jobs: JobShardFacts
-
-  /**
-   * 公司清单全量(同上)。
-   */
-  companies: CoShardFacts
 }
 
 /**
- * `loadIndexRows` 的返回(两侧清单,即 sitemapindex 拼装的入参)。
+ * `loadIndexRows` 的返回(两侧清单,即 sitemapindex 拼装的入参;2026-09-29 起只剩职位清单)。
  */
 export type IndexRowsOut = Promise<IndexXmlIn>
 
@@ -123,51 +119,6 @@ export type JobShardFact = {
 export type JobShardFacts = JobShardFact[]
 
 /**
- * 分片查库行:公司(id + slug + 旗下在架岗最晚的上架时刻;2026-09-26 前是 slug + 旗下岗最近可见)。
- */
-export type CoShardDbRow = {
-  /**
-   * 公司主键。
-   */
-  id: number
-
-  /**
-   * 公司 slug。
-   */
-  slug: string
-
-  /**
-   * 旗下在架岗最晚的 first_seen;可空。
-   */
-  mod: PgTime
-}
-
-/**
- * 公司清单一行(行构造器洗净)。
- */
-export type CoShardFact = {
-  /**
-   * 公司主键(片号 = 它对 CO_SHARDS 取模)。
-   */
-  id: number
-
-  /**
-   * 公司 slug。
-   */
-  slug: string
-
-  /**
-   * lastmod(毫秒);null = 旗下在架岗都没有上架时刻,出口整格不出。
-   */
-  mod: MaybeMs
-}
-
-/**
- * 公司清单(公司 id 升序)。
- */
-export type CoShardFacts = CoShardFact[]
-
-/**
  * pg 交回的时刻格(timestamptz 驱动解析成 Date;库里 NULL 是 null)。
  */
 export type PgTime = Date | null
@@ -207,7 +158,7 @@ export type ShardOfIn = {
   id: number
 
   /**
-   * 固定片数(JOB_SHARDS / CO_SHARDS)。
+   * 固定片数(JOB_SHARDS / CO_SHARDS;公司的 CO_SHARDS 2026-09-29 随公司分片撤掉)。
    */
   shards: number
 }
@@ -220,21 +171,6 @@ export type JobShardEntriesIn = {
    * 职位清单全量。
    */
   rows: JobShardFacts
-
-  /**
-   * 要的片号。
-   */
-  shard: number
-}
-
-/**
- * `coShardEntriesOf` 的入参。
- */
-export type CoShardEntriesIn = {
-  /**
-   * 公司清单全量。
-   */
-  rows: CoShardFacts
 
   /**
    * 要的片号。
@@ -349,29 +285,9 @@ export type JobShardSlot = {
 }
 
 /**
- * 公司分片清单的缓存槽。
- */
-export type CoShardSlot = {
-  /**
-   * 有在招岗的公司全量(按公司 id 升序)。
-   */
-  rows: CoShardFacts
-
-  /**
-   * 落槽时刻(毫秒)。
-   */
-  ts: number
-}
-
-/**
  * 职位分片清单全量的返回(缓存槽里的行,或空表)。
  */
 export type JobShardRowsOut = Promise<JobShardFacts>
-
-/**
- * 公司分片清单全量的返回。
- */
-export type CoShardRowsOut = Promise<CoShardFacts>
 
 /**
  * 后台刷新一次的返回(只落槽,不回值)。
@@ -388,17 +304,7 @@ export type SeoCache = {
   jobs: JobShardSlot | null
 
   /**
-   * 公司分片清单;没拉过 null。
-   */
-  companies: CoShardSlot | null
-
-  /**
    * 职位清单正在后台刷新(防过期瞬间多请求同时打库)。
    */
   jobsBusy: boolean
-
-  /**
-   * 公司清单正在后台刷新。
-   */
-  companiesBusy: boolean
 }

@@ -25,13 +25,6 @@ export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://offer2pr.com')
 export const JOB_SHARDS = 10
 
 /**
- * 公司分片的固定片数(片号 = 公司 id 对它取模;改判同 JOB_SHARDS)。当天有在架岗的公司 3.7 万家(每片约 4,600)。
- * 2026-09-28 成员收窄到旗下有收录岗的公司(SQL.CO_SITEMAP_FROM),当天 18,465 家(每片约 2,300);片数与片号规则不变,
- * GSC 已登记的 8 片网址照旧。
- */
-export const CO_SHARDS = 8
-
-/**
  * 核心页清单(E7-03 + E5-04 §2;path/priority/freq 三格一行)。
  * 决策记录:/pathways 与 /plan/{job,province,career} 已 301 进决策页只留 /plan/pr;
  * /stats 全家 E13-03 退役(08-06 Frank「完整统计与首页重复」)只留 /start。
@@ -138,11 +131,6 @@ export const CORE_PAGES = [
 export const JOB_PRIORITY = 0.6
 
 /**
- * 公司详情页在 sitemap 里的优先级。
- */
-export const CO_PRIORITY = 0.5
-
-/**
  * 详情页的更新频率标注。
  */
 export const FREQ_WEEKLY = 'weekly'
@@ -190,19 +178,9 @@ export const JOB_SHARD_PATH = '/api/sitemaps/jobs-{n}.xml'
 export const JOB_NEW_PATH = '/api/sitemaps/jobs-new.xml'
 
 /**
- * 公司分片路径模板。
- */
-export const CO_SHARD_PATH = '/api/sitemaps/companies-{n}.xml'
-
-/**
  * 职位详情页路径前缀(后接 id)。
  */
 export const JOB_PAGE_PREFIX = '/jobs/'
-
-/**
- * 公司详情页路径前缀(后接 slug)。
- */
-export const CO_PAGE_PREFIX = '/companies/'
 
 /**
  * sitemapindex XML 头(sitemaps.org 0.9 标准,主流爬虫都认)。
@@ -278,11 +256,6 @@ export const SM_FILE_JOBS_NEW = 'jobs-new.xml'
  * 职位分册件名形(捕获组 = 片号)。
  */
 export const SM_JOBS_FILE_RE = /^jobs-(?<n>\d+)\.xml$/
-
-/**
- * 公司分册件名形(捕获组 = 片号)。
- */
-export const SM_CO_FILE_RE = /^companies-(?<n>\d+)\.xml$/
 
 /**
  * urlset XML 头(sitemaps.org 0.9;此前核心/分片册由 Next Metadata 框架序列化,

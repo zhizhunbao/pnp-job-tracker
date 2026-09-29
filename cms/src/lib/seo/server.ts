@@ -6,6 +6,5 @@
  */
 export { sitemapFileRoute } from './routes'
 export {
-  loadCompanyShardPage,
   loadJobShardPage,
 } from './functions'

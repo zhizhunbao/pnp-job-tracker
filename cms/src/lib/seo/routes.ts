@@ -11,6 +11,8 @@
  * 整个 sitemap 消失),分册取不到回空册。日志留痕不静默。
  * 2026-09-26 /fe SEO 批改判:片数固定(职位 10 片 + 公司 8 片 + 近 7 天新岗册 jobs-new.xml + 核心册 = 20 张),
  * 索引取不到清单就照列满这 20 张、只是不给 lastmod —— 「绝不 0 片」由固定片数天然成立;分册取不到照旧回空册。
+ * 2026-09-29 公司 8 片撤出(Frank「撤吧」:缺数据稿批 4 的公司核实标记落地前,公司页不报给 Google),现 12 张;
+ * companies-N.xml 走不合形的 404 支。放回的做法见 `docs/design/缺数据不上线与Opus修复-20260928.md` 批 4。
  *
  * @author Frank
  * @time 2026-08-23 23:30:00
@@ -19,10 +21,10 @@ import { NOT_FOUND } from '../http'
 import { getDb } from '../db/server'
 import { log, SEO_LOG } from '../log'
 import {
-  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadCompanyShardPage, loadIndexRows,
+  coreSitemapOf, fileOf, indexHeadersOf, indexXmlOf, loadIndexRows,
   loadJobShardPage, loadJobsNewPage, shardNoOf, urlsetXmlOf,
 } from './functions'
-import { SM_CO_FILE_RE, SM_FILE_CORE, SM_FILE_INDEX, SM_FILE_JOBS_NEW, SM_JOBS_FILE_RE } from './constants'
+import { SM_FILE_CORE, SM_FILE_INDEX, SM_FILE_JOBS_NEW, SM_JOBS_FILE_RE } from './constants'
 import type { IndexXmlIn, Sitemap } from './types'
 
 /**
@@ -33,6 +35,7 @@ import type { IndexXmlIn, Sitemap } from './types'
  * 件名不合形 404;片号越界给空册(无害,索引不会列出越界号)。
  * 2026-09-26:index.xml 改取两侧清单算每片最晚的 lastmod(片数固定,不再计数);新增 jobs-new.xml 近 7 天新岗册,
  * 兜底同分册。
+ * 2026-09-29:公司分册撤,index.xml 只取职位一侧清单,companies-N.xml 不再认,落 404。
  *
  * @param req 触发请求(读路径末段当件名)。
  * @returns XML 响应(一小时缓存);不认识的件名 404。
@@ -40,7 +43,7 @@ import type { IndexXmlIn, Sitemap } from './types'
 export async function sitemapFileRoute(req: Request): Promise<Response> {
   const file = fileOf(req.url)
   if (file === SM_FILE_INDEX) {
-    let rows: IndexXmlIn = { jobs: [], companies: [] }
+    let rows: IndexXmlIn = { jobs: [] }
     try {
       rows = await loadIndexRows({ db: await getDb() })
     } catch (e) {
@@ -65,16 +68,6 @@ export async function sitemapFileRoute(req: Request): Promise<Response> {
     let rows: Sitemap = []
     try {
       rows = await loadJobShardPage({ db: await getDb(), shard: jobNo })
-    } catch (e) {
-      log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
-    }
-    return new Response(urlsetXmlOf(rows), { headers: indexHeadersOf() })
-  }
-  const coNo = shardNoOf({ re: SM_CO_FILE_RE, file: file })
-  if (coNo != null) {
-    let rows: Sitemap = []
-    try {
-      rows = await loadCompanyShardPage({ db: await getDb(), shard: coNo })
     } catch (e) {
       log({ tag: SEO_LOG.tag, text: SEO_LOG.pageFail + String(e) })
     }

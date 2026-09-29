@@ -1840,16 +1840,6 @@ export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs W
        ORDER BY id ASC LIMIT $1 OFFSET $2`
 
 /**
- * 公司站点地图的 FROM/WHERE 骨架(有 slug 且有在架岗)。
- * 2026-09-28 改判(Frank「改吧」,接 09-26「三处都只放邮箱岗」):成员再加一格 —— 旗下至少一条岗过收录口径
- * (SEO_JOB_OK,与职位分片同一段);旗下没有能在本站投的岗的公司不进 sitemap,不跟邮箱岗抢 Google 的抓取额度,
- * 页面照常可访问、可被收。当天生产 36,102 → 18,465 家。lastmod 照旧取旗下全部在架岗(公司页列的是全部在招岗)。
- */
-export const CO_SITEMAP_FROM = `FROM companies c JOIN jobs j ON j.company_id = c.id
-   WHERE COALESCE(j.status,'open') <> 'closed' AND c.slug IS NOT NULL AND c.slug <> ''
-     AND c.id IN (SELECT company_id FROM jobs WHERE ${SEO_JOB_OK})`
-
-/**
  * 公司站点地图计数。a1=FROM 骨架。
  *
  * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
@@ -1880,21 +1870,6 @@ export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS
 export const jobsSitemapAll = (a1: string) => `SELECT id, GREATEST(COALESCE(first_seen, date_posted), jd_formatted_at) AS mod,
        date_posted >= now() - interval '7 days' AS fresh
        FROM jobs WHERE ${a1} ORDER BY id ASC`
-
-/**
- * 公司站点地图全量(同上,一次拉齐进程内切片)。a1=FROM 骨架。
- * 2026-09-26 改列(同职位侧):带公司 id(片号 = id 取模,进程内挑),lastmod 改旗下在架岗最晚的上架时刻
- * (新岗上架 = 公司页的在招列表真变了),不再用 max(last_seen)。成员口径不变。当天生产 EXPLAIN ANALYZE 四次 0.8–1.7 秒
- * (与改列前同一计划,出 3.7 万家)。
- * 2026-09-28 成员收窄(见 CO_SITEMAP_FROM),本句不变;生产 EXPLAIN ANALYZE 三次 2.3–2.5 秒(多一趟收录口径扫描),
- * 出 18,465 家,8 片每片 2,262–2,377 家。
- *
- * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
- * @returns 全量 SELECT 语句。
- */
-export const coSitemapAll = (a1: string) => `SELECT c.id, c.slug, max(j.first_seen) AS mod ${a1}
-       GROUP BY c.id, c.slug
-       ORDER BY c.id ASC`
 
 // =========================================================================
 // 21. 漏斗看板(/funnel)

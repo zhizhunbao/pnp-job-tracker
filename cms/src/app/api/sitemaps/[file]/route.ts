@@ -2,6 +2,7 @@
  * GET /api/sitemaps/[file] — 20 张站点地图的壳(2026-08-30 三族进 api 批,自顶层
  * /sitemaps 迁入;GSC 同日二次割接指新址)。芯 sitemapFileRoute 在 lib/seo。
  * robots 为本前缀开了 Allow 洞 —— 地图唯一读者是爬虫。
+ * 2026-09-29 公司 8 片撤出,现 12 张(核心册 + 新岗册 + 职位 10 片)。
  *
  * @author Frank
  * @time 2026-08-30 02:00:00
