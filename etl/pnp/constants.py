@@ -688,6 +688,11 @@ FACTOR_EXPERIENCE = "experience"
 FACTOR_EXPERIENCE_EXCLUDED = "experienceExcluded"
 """门槛因素:不计入的时段(算法说明,不是阈值)。"""
 
+FACTOR_EXPERIENCE_ALT = "experienceAlt"
+"""门槛因素:工作经验的替代路径(官方写「以下任一」时主档之外的几条路,如安省同职业累计 2 年、持执照)。
+判定引擎不读 —— 它把经验行逐条当必过门槛,替代路径混进 experience 会判成「还差 24 个月」;
+只给省提名弹框「本岗通道的门槛」卡列「或……」(2026-09-29 Frank「照这个做」:安省门槛卡补全)。"""
+
 FACTOR_RESIDENCE = "residence"
 """门槛因素:居住时长。"""
 
@@ -2918,6 +2923,27 @@ ONR_EXP_GRAD_RE = re.compile(r"If you are a recent Ontario graduate, at least (\
                              r"months? before the date you made your application", re.I)
 """工作经验:安省应届毕业生 3 个月。"""
 
+ONR_EXP_CUM_RE = re.compile(r"At least (\w+) years? of cumulative, paid, full-time work experience in the same NOC "
+                            r"occupation as the job offer employment position[^.]*?within (\w+) years? before the "
+                            r"date you made your application", re.I)
+"""工作经验替代路径之一:同职业累计 2 年(近 5 年内,兼职可折算)—— TEER 0-3「以下任一」里 6 个月 / 应届 3 个月之外的一条
+(2026-09-29 补:先前只抽了前两条,门槛卡会漏说这条路)。"""
+
+ONR_EXP_LICENCE_RE = re.compile(r"Licen[cs]e or other authorization required under Ontario or federal law to work in "
+                                r"the job offer employment position", re.I)
+"""工作经验替代路径之二:持有这份工作要求的执照 / 授权(同上「以下任一」)。"""
+
+ONR_EXP_45_RE = re.compile(r"TEER category 4 or 5 employment position, you must have:? at least (\w+) months? of "
+                           r"cumulative, paid, full-time work experience in the employment position[^.]*?within (\w+) "
+                           r"years? before the date you submitted your application", re.I)
+"""工作经验:TEER 4 / 5 在这份工作累计 9 个月(近 2 年内)。同雇主同岗位 → basis=employerTenure,同 6 个月那行
+(近 N 年不进口径包:判定引擎认 employerTenure 是整串相等)。2026-09-29 补:先前没抽,TEER 4 / 5 的岗门槛卡会没有经验一行。"""
+
+ONR_EXP_DRIVERS_RE = re.compile(r"If your job offer is for a NOC (\d{5})\s*[–—-][^.]*? or NOC (\d{5})\s*[–—-][^.]*?"
+                                r"even if you are licensed or a recent Ontario graduate", re.I)
+"""卡车 / 公交司机例外(73300 / 73301):必须满足 6 个月那条,应届 3 个月与持执照两条替代不适用 ——
+抽出的两个 NOC 挂在那两行的 excludesNoc(2026-09-29)。"""
+
 ONR_TRADE_LINE_RE = re.compile(r"(?:Major|Minor|Unit) Group (\d{2,5})\s*[-–—]\s*(.*?)(?=(?:Major|Minor|Unit) Group |$)", re.I)
 """技工白名单:官方逐条列「Major/Minor/Unit Group NN」。"""
 
@@ -3002,6 +3028,12 @@ ONR_BASIS_OCC_MEDIAN = "occMedian"
 ONR_BASIS_EMPLOYER_TENURE = "employerTenure"
 """在职时长的口径隔离标记(rules.ts 认它,只摆门槛不判定)。"""
 
+ONR_BASIS_ALT_CUM_TPL = "sameNoc;windowYears={n}"
+"""同职业累计那条替代路径的口径包(同职业、近 N 年内;只有门槛卡读,判定引擎不读 experienceAlt)。"""
+
+ONR_BASIS_LICENCE = "licence"
+"""持执照那条替代路径的口径标记(门槛卡据此出「或持有这份工作要求的执照」)。"""
+
 ONR_COND_RECENT_GRAD = "recent-on-graduate"
 """安省应届毕业生的条件行标记。"""
 
@@ -3026,6 +3058,18 @@ ONR_PROBLEM_EXP_BASE = "工作经验(一般 6 个月)没解析到"
 ONR_PROBLEM_EXP_GRAD = "工作经验(安省应届毕业生 3 个月)没解析到"
 """自校问题:应届毕业生经验。"""
 
+ONR_PROBLEM_EXP_45 = "工作经验(TEER 4/5 累计 9 个月)没解析到"
+"""自校问题:TEER 4 / 5 经验。"""
+
+ONR_PROBLEM_EXP_CUM = "工作经验(替代路径:同职业累计 2 年)没解析到"
+"""自校问题:同职业累计替代路径。"""
+
+ONR_PROBLEM_EXP_LICENCE = "工作经验(替代路径:持执照)没解析到"
+"""自校问题:持执照替代路径。"""
+
+ONR_PROBLEM_EXP_DRIVERS = "工作经验(卡车 / 公交司机例外)没解析到"
+"""自校问题:司机例外(解析不到时应届与执照两行少挂排除,会把这两条路说宽)。"""
+
 ONR_PROBLEM_EMP_YEARS = "雇主经营年限没解析到"
 """自校问题:雇主经营年限(ON 档措辞)。"""
 
@@ -3047,7 +3091,8 @@ ONR_SOURCE = "OINP — Ontario Workforce Priority stream & employer guide"
 ONR_PRINT_DONE_TPL = "✓ {path}  共 {n} 条门槛"
 """ON 门槛收尾报数(其余六省门槛表同形,单一来源)。"""
 
-ONR_FACTOR_ORDER = ("language", "languageExempt", "wage", "experience", "empYears", "empRevenue", "empStaff")
+ONR_FACTOR_ORDER = ("language", "languageExempt", "wage", "experience", "experienceAlt", "empYears", "empRevenue",
+                    "empStaff")
 """收尾按因素报条数的顺序。"""
 
 ONR_REV_ROWS = 3

@@ -82,7 +82,8 @@ from pnp.constants import (
     DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
     DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
     DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
-    FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_EXCLUDED,
+    FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE, FACTOR_EXPERIENCE_ALT,
+    FACTOR_EXPERIENCE_EXCLUDED,
     FACTOR_INCOME, FACTOR_LANGUAGE, FACTOR_LANGUAGE_EXEMPT, FACTOR_RESIDENCE, FACTOR_WAGE, FILETYPE_PDF,
     HEADER_WORDS, INDENT_1, INDENT_2, IN_ALLOC_TABLE, IN_CRAWL_DIR, IN_DRAWS_FOR_ZH_DIR, IN_NEWS_FILE,
     IN_NL_HTML_CACHE, IN_NL_MANIFEST, K_ALLOCATION, K_ALLOC_PROGRAM, K_ALLOC_VALUE, K_ALLOC_YEAR, K_ANNUAL, K_ANY,
@@ -192,12 +193,14 @@ from pnp.constants import (
     ONP_OINP_URL, ONP_POINTS_RE, ONP_POINTS_SANE_MAX, ONP_PRINT_DONE_TPL, ONP_PRINT_FACTOR_TPL,
     ONP_PRINT_NO_SECTION, ONP_PROBLEM_BIG_TPL, ONP_PROBLEM_EMPTY_TPL, ONP_PROBLEM_MISSING_PREFIX,
     ONP_PROBLEM_ORDER_TPL, ONP_SCORING_ANCHOR, ONP_SECTIONS, ONP_SENTENCE_RE, ONP_SOURCE, ONP_SYSTEM,
-    ONR_BASIS_EMPLOYER_TENURE, ONR_BASIS_OCC_MEDIAN, ONR_COND_RECENT_GRAD, ONR_EMPLOYER_URL,
-    ONR_EMP_REVENUE_LABEL_TPL, ONR_EMP_STAFF_LABEL_TPL, ONR_EMP_YEARS_LABEL_TPL, ONR_EMP_YEARS_RE, ONR_EXP_BASE_RE,
-    ONR_EXP_GRAD_RE, ONR_FACTOR_ORDER, ONR_LANG_45_LABEL_TPL, ONR_LANG_45_RE, ONR_LANG_EXEMPT_LABEL_TPL,
+    ONR_BASIS_ALT_CUM_TPL, ONR_BASIS_EMPLOYER_TENURE, ONR_BASIS_LICENCE, ONR_BASIS_OCC_MEDIAN, ONR_COND_RECENT_GRAD,
+    ONR_EMPLOYER_URL,
+    ONR_EMP_REVENUE_LABEL_TPL, ONR_EMP_STAFF_LABEL_TPL, ONR_EMP_YEARS_LABEL_TPL, ONR_EMP_YEARS_RE, ONR_EXP_45_RE,
+    ONR_EXP_BASE_RE, ONR_EXP_CUM_RE, ONR_EXP_DRIVERS_RE, ONR_EXP_GRAD_RE, ONR_EXP_LICENCE_RE, ONR_FACTOR_ORDER, ONR_LANG_45_LABEL_TPL, ONR_LANG_45_RE, ONR_LANG_EXEMPT_LABEL_TPL,
     ONR_LANG_EXEMPT_RE, ONR_LANG_GENERAL_LABEL_TPL, ONR_LANG_GENERAL_RE, ONR_LANG_TRADES_EXCL_TPL,
-    ONR_LANG_TRADES_LABEL_TPL, ONR_LANG_TRADES_RE, ONR_PRINT_DONE_TPL, ONR_PROBLEM_EMP_YEARS, ONR_PROBLEM_EXP_BASE,
-    ONR_PROBLEM_EXP_GRAD, ONR_PROBLEM_LANG_45, ONR_PROBLEM_LANG_EXEMPT, ONR_PROBLEM_LANG_GENERAL,
+    ONR_LANG_TRADES_LABEL_TPL, ONR_LANG_TRADES_RE, ONR_PRINT_DONE_TPL, ONR_PROBLEM_EMP_YEARS, ONR_PROBLEM_EXP_45,
+    ONR_PROBLEM_EXP_BASE, ONR_PROBLEM_EXP_CUM, ONR_PROBLEM_EXP_DRIVERS, ONR_PROBLEM_EXP_GRAD,
+    ONR_PROBLEM_EXP_LICENCE, ONR_PROBLEM_LANG_45, ONR_PROBLEM_LANG_EXEMPT, ONR_PROBLEM_LANG_GENERAL,
     ONR_PROBLEM_LANG_TRADES, ONR_PROBLEM_REV_ORDER_TPL, ONR_PROBLEM_REV_TPL, ONR_PROBLEM_STAFF_ORDER_TPL,
     ONR_PROBLEM_STAFF_TPL, ONR_PROBLEM_WAGE, ONR_REV_GTA_RE, ONR_REV_GTA_WHERE, ONR_REV_LISTED_RE,
     ONR_REV_LISTED_WHERE, ONR_REV_OTHER_RE, ONR_REV_OTHER_WHERE, ONR_REV_ROWS, ONR_SECTION_EMP_GENERAL,
@@ -3203,7 +3206,11 @@ def on_wage_reqs(emp_txt: str) -> ReqsOut:
 
 
 def on_experience_reqs(stream_txt: str) -> ReqsOut:
-    """申请人工作经验(TEER 0-3,两档并行,同雇主同岗位在职时长)。"""
+    """申请人工作经验(TEER 0-3,两档并行,同雇主同岗位在职时长)。
+
+    2026-09-29 补:TEER 4 / 5 累计 9 个月一档(先前没抽,门槛卡会没有经验一行);应届 3 个月那行挂卡车 / 公交司机
+    例外(excludesNoc,官方写这两个职业应届也得满 6 个月)。TEER 0-3 另两条替代路径见 on_experience_alt_reqs。
+    """
     rows: list = []
     problems: list = []
     base = ONR_EXP_BASE_RE.search(stream_txt)
@@ -3216,6 +3223,9 @@ def on_experience_reqs(stream_txt: str) -> ReqsOut:
                                     section=ONR_SECTION_EXP, label=fold_ws(base.group(0)).strip())))
     else:
         problems.append(ONR_PROBLEM_EXP_BASE)
+    drivers = on_driver_nocs(stream_txt)
+    if drivers == "":
+        problems.append(ONR_PROBLEM_EXP_DRIVERS)
     grad = ONR_EXP_GRAD_RE.search(stream_txt)
     grad_v = None
     if grad:
@@ -3223,11 +3233,58 @@ def on_experience_reqs(stream_txt: str) -> ReqsOut:
     if grad and grad_v is not None:
         rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE, value=grad_v, unit=UNIT_MONTHS,
                                     basis=ONR_BASIS_EMPLOYER_TENURE, applies_teer=ONR_TEER_03,
-                                    applies_condition=ONR_COND_RECENT_GRAD,
+                                    applies_condition=ONR_COND_RECENT_GRAD, excludes_noc=drivers,
                                     section=ONR_SECTION_EXP, label=fold_ws(grad.group(0)).strip())))
     else:
         problems.append(ONR_PROBLEM_EXP_GRAD)
+    t45 = ONR_EXP_45_RE.search(stream_txt)
+    t45_v = None
+    if t45:
+        t45_v = word_or_digit(t45.group(1))
+    if t45 and t45_v is not None:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE, value=t45_v, unit=UNIT_MONTHS,
+                                    basis=ONR_BASIS_EMPLOYER_TENURE, applies_teer=ONR_TEER_45,
+                                    section=ONR_SECTION_EXP, label=fold_ws(t45.group(0)).strip())))
+    else:
+        problems.append(ONR_PROBLEM_EXP_45)
     return ReqsOut(rows=rows, problems=problems)
+
+
+def on_experience_alt_reqs(stream_txt: str) -> ReqsOut:
+    """工作经验的替代路径(TEER 0-3「以下任一」里 6 个月 / 应届 3 个月之外的两条:同职业累计 2 年、持执照)。
+
+    记成 experienceAlt(判定引擎不读,只给门槛卡列「或……」);持执照那条挂卡车 / 公交司机例外(2026-09-29)。
+    """
+    rows: list = []
+    problems: list = []
+    cum = ONR_EXP_CUM_RE.search(stream_txt)
+    years = None
+    window = None
+    if cum:
+        years = word_or_digit(cum.group(1))
+        window = word_or_digit(cum.group(2))
+    if cum and years is not None and window is not None:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE_ALT, value=years, unit=UNIT_YEARS,
+                                    basis=ONR_BASIS_ALT_CUM_TPL.format(n=window), applies_teer=ONR_TEER_03,
+                                    section=ONR_SECTION_EXP, label=fold_ws(cum.group(0)).strip())))
+    else:
+        problems.append(ONR_PROBLEM_EXP_CUM)
+    licence = ONR_EXP_LICENCE_RE.search(stream_txt)
+    if licence:
+        rows.append(to_on_req(ReqIn(factor=FACTOR_EXPERIENCE_ALT, op=OP_NONE, basis=ONR_BASIS_LICENCE,
+                                    applies_teer=ONR_TEER_03, excludes_noc=on_driver_nocs(stream_txt),
+                                    section=ONR_SECTION_EXP, label=fold_ws(licence.group(0)).strip())))
+    else:
+        problems.append(ONR_PROBLEM_EXP_LICENCE)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def on_driver_nocs(stream_txt: str) -> str:
+    """卡车 / 公交司机例外里点名的两个 NOC(逗号连;没解析到给空串,由调用方报自校问题)。"""
+    m = ONR_EXP_DRIVERS_RE.search(stream_txt)
+    if not m:
+        return ""
+    return COMMA.join((m.group(1), m.group(2)))
 
 
 def on_employer_reqs(emp_txt: str) -> ReqsOut:
@@ -3317,7 +3374,8 @@ def build_on_req() -> None:
     reqs: list = []
     problems: list = []
     for part in (on_language_reqs(stream_txt), on_wage_reqs(emp_txt),
-                 on_experience_reqs(stream_txt), on_employer_reqs(emp_txt), on_closed_reqs()):
+                 on_experience_reqs(stream_txt), on_experience_alt_reqs(stream_txt), on_employer_reqs(emp_txt),
+                 on_closed_reqs()):
         reqs += part.rows
         problems += part.problems
     problems += on_tier_problems(reqs)
