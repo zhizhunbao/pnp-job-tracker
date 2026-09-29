@@ -497,7 +497,8 @@ number of candidates from the Expression of Interest (EOI) pool」),NSNP 各流�
 组名「Monthly EOI selections」是 etl 给按月行起的名字、不是官方原名(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」,
 GEN_DRAW_STREAM 原注)。NS 紧缺空缺 / 毕业生两张表只作信号、不当通道(2026-09-24 九省通道审计)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条 = pnp ns-req 的全流(A 技术工人 / B 建筑 / D 在需三类共用的行:
-语言两档、近 5 年 12 个月经验、TEER 4-5 在本雇主 6 个月、工资区间、执照、雇主经营 2 年)+ A 类流(高中文凭);流名照抄 ns-req。"""
+语言两档、近 5 年 12 个月经验、执照、雇主经营 2 年)+ A 类流(高中文凭);流名照抄 ns-req。TEER 4-5 在本雇主 6 个月、工资区间
+两行同日抽过又撤,这批没入表(原句与理由见 pnp OUT_NS_REQ「没抓的」)。"""
 
 PW_NS_CONSTRUCTION = {
     "key": "ns-construction", "province": "NS", "program": "PNP",
@@ -519,8 +520,8 @@ PW_NS_CONSTRUCTION = {
 (2026-09-27 九省体检:官方 eoi-process 页 2025-11-28 条 NSNP 各流与 AIP 同一个 EOI 池,NAMED_DRAW_STREAMS 原注)。
 officialName 取官方原句里的子条件名(Construction Worker sub-criteria)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流两条 = pnp ns-req 的全流 + B 类流(Critical Construction Worker
-category:高中文凭或建筑业培训)。指南 B 段的语言两档与经验和全流同值(ns-req 每轮逐项对校,对不上报自校问题);全流那行
-「TEER 4-5 在本雇主 6 个月」B 段不要求 —— 今天的卡只出第一条经验主档(12 个月),不会写上它,卡片要出并列经验行时得排除建筑通道。"""
+category:高中文凭或建筑业培训)。指南 B 段的语言两档与经验和全流同值(ns-req 每轮逐项对校,对不上报自校问题)。
+A 类的「TEER 4-5 在本雇主 6 个月」B 段不要求 —— 这批没入表;以后加回全流时,卡片出并列经验行得排除建筑通道。"""
 
 PW_NB_SKILLED_WORKER = {
     "key": "nb-skilled-worker", "province": "NB", "program": "PNP",

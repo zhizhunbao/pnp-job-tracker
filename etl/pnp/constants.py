@@ -4279,13 +4279,19 @@ OUT_NS_REQ = paths.PNP / "ns-req.json"
     那是联邦口径不是省门槛,且报告的 income 判定要和「该职业该省中位年薪」比 —— 拿家庭 LICO 去比
     个人职业中位是两个不可比的数(08-02 已因此撤过一次并排展示)。留白比硬凑强。
   · TEER 4/5 的「与 NS 雇主 6 个月带薪经验」:口径是**在职时长**,与本站问的同职业总经验对不上。
+    2026-09-29 七省门槛卡抽过又撤,照旧不抓(判定引擎会把它与 12 个月那行的「且」判成「或」;原句与再加的条件见
+    ns_experience_reqs 的 docstring)。
+  · 工资「You must be paid a salary that meets provincial employment standards and the provincial wage range for your
+    specific occupation」(核心要求,各类都管;口径是 Job Bank 工资报告里本职业在本省的区间,不是中位 —— 指南第 19 页
+    「whether the wage you are being offered is within Nova Scotia’s wage range for that job」)。2026-09-29 七省门槛卡抽过
+    又撤(lead 拍「这批先不收两行」):门槛量尺 wageResult 取本省第一条工资行、不看口径,会给 NS 判定卡多一行空门槛;
+    门槛卡只认中位,这行上卡也出不来。BC、NL 两省同样没入表。
 自校是硬闸:任何一组没解析到就**保留旧表不覆盖**并 exit 1。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补抓,两条 NS 通道(技术工人 / 建筑)的门槛卡从此有料:
   流分两层 —— 全流 NSR_STREAM(Skilled Worker stream:A 技术工人 / B 建筑 / D 在需三类共用的行)+ 类别流
   NSR_STREAM_SW(A 类)/ NSR_STREAM_CCW(B 类)只装本类独有的行;通道对照表技术工人挂「全流 + A 类」,建筑挂「全流 + B 类」。
-  全流新增:经验那行把「近 5 年」写进 basis(windowYears=5);工资「本职业本省工资区间」(basis=occRange);这份工作
-  要执照 / 证书的得先有(licensing);上面「没抓的」第三条(TEER 4/5 与 NS 雇主 6 个月)改抓 —— basis=employerTenure
-  口径隔离(MB SWM / NB / ON 先例),住全流的缘故见 NSR_EXP_TENURE_RE。
+  全流新增:经验那行把「近 5 年」写进 basis(windowYears=5);这份工作要执照 / 证书的得先有(licensing)。
+  TEER 4/5 在本雇主 6 个月、工资区间两行同日抽过又撤(lead 拍「这批先不收两行」),见上面「没抓的」末两条。
   类别流:A 类高中文凭;B 类高中文凭或建筑业培训。年龄 21-55、安家资金两条照旧不抓(理由同上)。
   B 段自己又写了一遍语言两档与经验,逐项对校全流那几行(建筑通道的卡读的是全流那几行),对不上报自校问题。"""
 
@@ -4349,24 +4355,6 @@ NSR_EXP_RE = re.compile(
 NSR_EMP_YEARS_RE = re.compile(r"The employer must have operated in Nova Scotia for at least (\d+) years", re.I)
 """雇主经营年限。"""
 
-NSR_EXP_TENURE_RE = re.compile(
-    r"If your job offer falls under the NOC TEER category (\d(?:,? (?:or|and) \d)*), you have (\w+) months?[’']? "
-    r"paid work experience with the Nova Scotia employer who is offering you the job", re.I)
-"""工作经验:TEER 4 / 5 在给 offer 的这家本省雇主带薪满 6 个月(A 段原句;通道页同义句「Workers in TEER 4 or 5 of the National
-Occupational Classification must already have six months’ experience with the employer」)。量的是在职时长 →
-basis=employerTenure,判定引擎只摆门槛不判定(MB SWM / NB / ON 先例)。与 12 个月那行是「且」不是「或」,照记 experience
-(替代路径才记 experienceAlt)。
-住全流(NSR_STREAM)不住 A 类流:D 段自己管它叫核心要求(「Exception to Core Requirement … does NOT apply under this
-category」);判定引擎的 teerScopes 又按流聚合 appliesTeer,单放进 A 类流会被读成「A 类只收 TEER 4-5」。B 段(建筑)不要求它
-—— 建筑通道的门槛卡今天只出第一条经验主档(12 个月那行),写不上它;卡片以后要把并列的经验行都出时,得按通道排除这一行
-(2026-09-29 七省门槛卡,Frank「都接上,开工吧」)。"""
-
-NSR_WAGE_RE = re.compile(r"You must be paid a salary that meets provincial employment standards and the provincial wage "
-                         r"range for your specific occupation", re.I)
-"""工资:核心要求(各类都管)「本职业本省工资区间」—— 口径不是中位,是 Job Bank 工资报告里本职业在本省的区间(指南第 19 页
-「whether the wage you are being offered is within Nova Scotia’s wage range for that job」)→ basis=occRange。门槛卡只认
-occMedian,这行只入表不出卡;汇装的工资线(wage_floors_of)只读 occMedian / occLow,也不读它(2026-09-29 七省门槛卡)。"""
-
 NSR_LICENCE_RE = re.compile(r"Before you submit an EOI to the Skilled Worker stream, find out if you need a licen[cs]e or "
                             r"certificate to do the job you have been offered", re.I)
 """执照 / 证书:整条流的要求(「You may need a licence or certificate for the job you have been offered」一节;A / B / D 三类的
@@ -4403,12 +4391,6 @@ NSR_SECTION_EXP = "Skilled Workers — work experience"
 NSR_SECTION_EMPLOYER = "Core Requirements — employer"
 """雇主侧的出处节名。"""
 
-NSR_SECTION_TENURE = "A) Skilled Workers — NOC TEER 4 or 5"
-"""TEER 4 / 5 在职 6 个月那行的出处节名。"""
-
-NSR_SECTION_WAGE = "Core Requirements — wage"
-"""工资的出处节名。"""
-
 NSR_SECTION_LICENCE = "You may need a licence or certificate for the job you have been offered"
 """执照 / 证书的出处节名(指南原节标题)。"""
 
@@ -4421,12 +4403,6 @@ NSR_SECTION_CCW = "B) Critical Construction Workers — Education Requirements -
 NSR_BASIS_WINDOW_TPL = "windowYears={n}"
 """经验那行把窗口期写进 basis(2026-09-29 七省门槛卡:官方原句「within the last 5 years」,原先只写进 label)——
 门槛卡按它出「(近 5 年内)」;判定引擎与门槛量尺都不读 windowYears(只认 employerTenure),判定不变(同 ABR_BASIS_WINDOW_TPL)。"""
-
-NSR_BASIS_EMPLOYER_TENURE = "employerTenure"
-"""在职时长的口径隔离标记(判定引擎认它,只摆门槛不判定)。"""
-
-NSR_BASIS_OCC_RANGE = "occRange"
-"""工资的口径标记:本职业本省工资区间(不是中位;门槛卡与汇装工资线只认 occMedian / occLow,这个口径只入表)。"""
 
 NSR_LANG_HI_LABEL_TPL = ("Canadian Language Benchmarks (CLB) or NCLC Level {clb} or higher for jobs "
                          "in NOC TEER {band} (Skilled Worker, Critical Construction Worker and "
@@ -4462,12 +4438,6 @@ NSR_PROBLEM_LANG_LO = "语言(TEER 4/5)没解析到"
 
 NSR_PROBLEM_LANG_ORDER_TPL = "语言两档读反了(TEER 0-3 {hi} 应高于 TEER 4/5 {lo})"
 """自校问题:语言两档读反。"""
-
-NSR_PROBLEM_EXP_TENURE = "工作经验(TEER 4/5 在本雇主带薪满 6 个月)没解析到"
-"""自校问题:TEER 4 / 5 在职时长。"""
-
-NSR_PROBLEM_WAGE = "工资(本职业本省工资区间)没解析到"
-"""自校问题:工资。"""
 
 NSR_PROBLEM_LICENCE = "执照 / 证书条文没解析到"
 """自校问题:执照 / 证书。"""
@@ -4515,9 +4485,9 @@ NSR_PRINT_DONE_TPL = "✓ {path}  指南版本 {version},共 {n} 条门槛"
 NSR_FACTOR_ORDER = ("language", "experience", "empYears")
 """收尾按因素报条数的顺序。"""
 
-NSR_FACTOR_ORDER_FULL = ("language", "experience", "wage", "licensing", "education", "empYears")
-"""NS 收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后多了工资 / 执照 / 学历三类)。NSR_FACTOR_ORDER 原样留着 ——
-PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报三行 0。"""
+NSR_FACTOR_ORDER_FULL = ("language", "experience", "licensing", "education", "empYears")
+"""NS 收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后多了执照 / 学历两类;工资行同日撤下)。NSR_FACTOR_ORDER 原样
+留着 —— PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报两行 0。"""
 
 
 # =========================================================================
