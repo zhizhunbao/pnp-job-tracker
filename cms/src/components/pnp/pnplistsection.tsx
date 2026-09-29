@@ -39,6 +39,7 @@ import {
   shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
+import { PnpBlockCard } from './pnpblockcard'
 import { PnpChannelCard } from './pnpchannelcard'
 import { PnpDrawGroups } from './pnpdrawgroups'
 import { PnpGateCard } from './pnpgatecard'
@@ -77,6 +78,7 @@ export function PnpListSection({
   }
   return (
     <>
+      <PnpBlockCard t={p.t} text={p.block} />
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {gate != null && <PnpGateCard spec={gate} />}
       {quota != null && <PnpQuotaCard spec={quota} />}

@@ -583,6 +583,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.endorse': '지정 커뮤니티 추천서', 'pnpgate.licensing': '직종 면허 또는 등록',
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': '임금', 'pnpgate.wageMedian': '해당 지역 이 직업의 중위 임금 이상',
+  'pnpgate.wageLowGrad': '또는 {prov} 최근 졸업생은 하위 임금 이상',
   'pnpgate.langExempt': '최근 {n}년 내 {prov}에서 졸업하면 시험 면제',
   'pnpgate.expGrad': '또는 {prov} 최근 졸업생은 {n}개월', 'pnpgate.expSameNoc': '또는 최근 {w}년 내 같은 직업 누적 {n}년',
   'pnpgate.expLicence': '또는 이 직무에 필요한 면허 보유',
@@ -595,6 +596,10 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',
+  // 2026-09-29 PNP 모달: 주정부 이민에 해당하지 않는 이유 (셀, 칩, 카드가 같은 문구)
+  'pnpblock.title': '충족하지 못한 요건',
+  'pnp.block.part': '파트타임', 'pnp.block.term': '계약직', 'pnp.block.seasonal': '계절직', 'pnp.block.casual': '임시직',
+  'pnp.block.wage': '중위 임금 미만', 'pnp.block.occ': '대상 직종 아님',
   'pnpfacts.selected': '선정',
   'pnpfacts.selPeople': '{n}명 선정',
   'pnpfacts.allGroups': '주 전체 {n}개 스트림 보기 ▾',

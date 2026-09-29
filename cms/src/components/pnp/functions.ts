@@ -34,9 +34,10 @@ import {
   PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
   RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
-  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP, BASIS_TENURE,
+  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
+  BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
-  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY,
+  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
@@ -56,7 +57,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
-  ReqAppliesIn, ZonedLinesIn,
+  ReqAppliesIn, ZonedLinesIn, PnpBlockIn,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
 } from './types'
@@ -1824,16 +1825,35 @@ function expAltLinesOf(x: GateRowOfIn): string[] {
 /**
  * 「工资」行(2026-09-29 Frank「照这个做」:安省门槛卡加这一行):门槛是本职业在本地区的中位工资(口径 occMedian)。
  * 只认中位口径;别的写法(绝对数、按档)还没有省接进门槛卡,认不出不出(宁缺不乱写)。
+ * 同日 Frank 选「分档判」:官方原句「the low wage level, if the employee is a recent Ontario graduate and the job offer is in a
+ * TEER 0-3 category occupation」—— 管得着本岗(TEER 0-3)时下面加一行「或本省应届毕业生不低于低位工资」(口径 occLow)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本岗通道没有中位工资门槛给 null。
  */
 function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
-  const wage = rowOfFactor({ rows: x.chan, factor: GATE_F.wage })
-  if (wage == null || basisHasOf({ basis: wage.basis, key: BASIS_OCC_MEDIAN }) === false) {
+  let median: PnpReq | null = null
+  let low: PnpReq | null = null
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.wage) {
+      continue
+    }
+    if (median == null && r.appliesCondition === TEXT_NONE && basisHasOf({ basis: r.basis, key: BASIS_OCC_MEDIAN })) {
+      median = r
+    }
+    const grad = r.appliesCondition === GATE_COND_GRAD && basisHasOf({ basis: r.basis, key: BASIS_OCC_LOW })
+    if (low == null && grad && reqAppliesOf({ r, job: x.job })) {
+      low = r
+    }
+  }
+  if (median == null) {
     return null
   }
-  return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines: [capFirstOf(x.t('pnpgate.wageMedian'))] }
+  const lines = [capFirstOf(x.t('pnpgate.wageMedian'))]
+  if (low != null) {
+    lines.push(x.t('pnpgate.wageLowGrad', { prov: x.t(PROV_KEY_HEAD + x.job.province) }))
+  }
+  return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines }
 }
 
 /**
@@ -3439,6 +3459,21 @@ export function pnpNameOf(x: PnpNameIn): string {
 }
 
 /**
+ * 本岗走不了省提名的原因词(数据层 pnpBlock 原因码 → 界面词;2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」
+ * 「直接精简 一些原因可以吗」「就直接说 兼职」):职位板格子、手机胶囊与弹框「本岗不满足的门槛」卡同一处取。
+ * 清单排除(list)不在显示码里 —— 照旧走 pnpExcludedOf 那条路。
+ *
+ * @param x 本岗与取词函数。
+ * @returns 原因词;走得了或码不在显示表里给 ''。
+ */
+export function pnpBlockOf(x: PnpBlockIn): string {
+  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock) === false) {
+    return TEXT_NONE
+  }
+  return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
+}
+
+/**
  * 省提名这一格可不可点(表格格子与手机卡胶囊同一个判据)。先得有信号:可提名,或被官方具名清单排除
  * (批A「走不了的就别给点了」、07-26「恢复可点」两拍照旧);
  * 2026-09-26 /fe 首页 Frank(止血):再得弹框里真有卡可出 —— 本省抽选卡或清单卡(pnpFactsShownOf,
@@ -3452,6 +3487,9 @@ export function pnpNameOf(x: PnpNameIn): string {
  * @returns 可点 = true。
  */
 export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
+  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock)) {
+    return true
+  }
   const excluded = pnpExcludedOf({ job: x.job, blocked: x.blocked })
   if (x.job.pnpEligible !== true && excluded === false) {
     return false

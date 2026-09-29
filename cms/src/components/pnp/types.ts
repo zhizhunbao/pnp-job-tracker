@@ -112,6 +112,11 @@ export type PnpJob = {
   pnpStream: string
 
   /**
+   * 走不了省提名的原因码(数据层判;'' = 走得了;2026-09-29「本岗不满足的门槛」卡读它)。
+   */
+  pnpBlock: string
+
+  /**
    * EE 类别命中。
    */
   eeCategory: string
@@ -2227,6 +2232,11 @@ export type PnpListPanel = {
    * 本岗能走的通道(弹框顶上那张卡;2026-09-26)。
    */
   channels: ChannelSpec[]
+
+  /**
+   * 走不了省提名的原因词(弹框顶上「本岗不满足的门槛」卡;'' = 走得了;2026-09-29)。
+   */
+  block: string
 }
 
 /**
@@ -3370,6 +3380,46 @@ export type PnpDrawGroupsIn = {
 }
 
 /**
+ * PnpBlockCard(本岗不满足的门槛)的 props。
+ */
+export type PnpBlockCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 原因词('' = 走得了,卡不出)。
+   */
+  text: string
+}
+
+/**
+ * pnpBlockOf 读的岗位格(职位板的行与弹框的岗都带它)。
+ */
+export type PnpBlockJob = {
+  /**
+   * 数据层给的原因码;'' = 走得了。
+   */
+  pnpBlock: string
+}
+
+/**
+ * pnpBlockOf 的入参。
+ */
+export type PnpBlockIn = {
+  /**
+   * 本岗。
+   */
+  job: PnpBlockJob
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
  * PnpChannelCard(本岗能走的通道)的 props。
  */
 export type PnpChannelCardIn = {
@@ -4002,6 +4052,11 @@ export type PnpCellJob = {
    * 数据层给的具名通道标签;'' = 没有。
    */
   pnpStream: string
+
+  /**
+   * 走不了省提名的原因码;'' = 走得了(有原因的格子也可点,弹框讲原因;2026-09-29)。
+   */
+  pnpBlock: string
 
   /**
    * 数据层判的可提名。

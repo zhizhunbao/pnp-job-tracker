@@ -40,6 +40,6 @@ export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
   aipBlockOf, aipExcludedOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpBlockedKeysOf, pnpCellActiveOf,
-  pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf,
+  pnpBlockOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf,
 } from './functions'
 export { usePnpData } from './hooks'

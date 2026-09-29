@@ -28,7 +28,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  quotaCardOf, gateCardOf, drawOpenInitOf,
+  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpCellActiveOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
 } from '@/components/pnp/functions'
@@ -62,7 +62,8 @@ function hitsOf(j: PnpJob): string[] {
 
 function job(p: Partial<PnpJob>): PnpJob {
   return {
-    id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', eeCategory: '', company: '', aip: false,
+    id: 1, province: '', noc: '', teer: 1, pnpEligible: true, pnpStream: '', pnpBlock: '', eeCategory: '', company: '',
+    aip: false,
     salaryAnnual: null, wageMedAnnual: null, lmiaPositions: null, lmiaPositionsSkilled: null, lmiaLastQuarter: '',
     ...p,
   }
@@ -659,6 +660,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     onReq({ value: 5, appliesTeer: '0,1,2,3', appliesNoc: '72,73,82,83,93,6320,62200', excludesNoc: '726,932' }),
     onReq({ factor: 'languageExempt', op: 'none', value: 3, unit: 'years', appliesTeer: '0,1,2,3' }),
     onReq({ factor: 'wage', value: null, unit: 'CAD/yr', basis: 'occMedian' }),
+    onReq({ factor: 'wage', value: null, unit: 'CAD/yr', basis: 'occLow', appliesTeer: '0,1,2,3', appliesCondition: 'recent-on-graduate' }),
     onReq({ factor: 'experience', value: 6, unit: 'months', appliesTeer: '0,1,2,3', basis: 'employerTenure' }),
     onReq({ factor: 'experience', value: 3, unit: 'months', appliesTeer: '0,1,2,3', excludesNoc: '73300,73301',
       appliesCondition: 'recent-on-graduate', basis: 'employerTenure' }),
@@ -684,20 +686,22 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(onGate('72410', 2)).toEqual([
       ['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']],
       ['工作经验', ['在现雇主全职满 6 个月', '或本省应届毕业生满 3 个月', '或同职业累计满 2 年(近 5 年内)', '或持有这份工作要求的执照']],
-      ['工资', ['不低于本职业在本地区的中位工资']],
+      ['工资', ['不低于本职业在本地区的中位工资', '或本省应届毕业生不低于低位工资']],
       ['雇主', ON_EMP],
     ])
     expect(onGate('72410', 2, en)).toEqual([
       ['Language', ['CLB 5 in each English or French skill', 'No test if you graduated in Ontario within the last 3 years']],
       ['Experience', ['6 months full-time with your current employer', 'or 3 months if you are a recent graduate in Ontario',
         'or 2 years in the same occupation (within the last 5 years)', 'or hold the licence this job requires']],
-      ['Wage', ['At or above the median wage for this occupation in the region']],
+      ['Wage', ['At or above the median wage for this occupation in the region',
+        'or at or above the low wage if you are a recent graduate in Ontario']],
       ['Employer', ['Operating in Ontario for 3+ fiscal years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
         'Revenue ≥ $250,000 (other areas)', '≥ 5 full-time staff (GTA)', '≥ 3 full-time staff (outside the GTA)']],
     ])
   })
 
   it('门槛卡·安省按本岗挑档:TEER 5 只剩 CLB 4 与 9 个月;技工档排除的 726 退回 CLB 6;卡车司机不适用应届与执照;没分类不出经验行', () => {
+    // 应届低位那行只管 TEER 0-3:TEER 5 的工资行只剩中位一句
     expect(onGate('65100', 5)).toEqual([
       ['语言', ['英语或法语每项 CLB 4']],
       ['工作经验', ['在现雇主全职满 9 个月']],
@@ -711,6 +715,21 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(onGate('13110', 3)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
     expect(onGate('', null)?.map((r) => r[0])).toEqual(['工资', '雇主'])
     // 阿省那张卡不受影响(上面阿省金标原样过):阿省门槛行不标 TEER 档与排除职业
+  })
+
+  // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」
+  it('本岗不满足:原因码 → 原因词(三语),清单排除不走这条;有原因的格子可点', () => {
+    const words = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ'].map((c) => pnpBlockOf({ job: { pnpBlock: c }, t: zh }))
+    expect(words).toEqual(['兼职', '合同工', '季节工', '临时工', '工资低于中位', '职业不收'])
+    expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: en })).toBe('Part-time')
+    expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('파트타임')
+    for (const c of ['', 'list', 'zzz']) {
+      expect(pnpBlockOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    }
+    const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlock: 'part' }
+    const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS })
+    expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(true)
+    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(false)
   })
 
   it('分区雇主门槛:数据里出现的区码三语都有区名(zonedLinesOf 查不到词条那区不出,这里先红)', () => {

@@ -665,6 +665,10 @@ export interface Job {
    */
   pnpStream?: string | null;
   /**
+   * 走不了省提名的原因码(part/term/seasonal/casual 工作性质、wage 工资、occ 职业、list 清单;空=走得了),数据层算
+   */
+  pnpBlock?: string | null;
+  /**
    * 联邦 Express Entry 类别抽选所属类别(医疗社服/STEM/技工…),数据层 08_score 算;与 PNP 是两条路,独立信号
    */
   eeCategory?: string | null;
@@ -3083,6 +3087,7 @@ export interface JobsSelect<T extends boolean = true> {
   scoreDetail?: T;
   pnpEligible?: T;
   pnpStream?: T;
+  pnpBlock?: T;
   eeCategory?: T;
   aip?: T;
   pilot?: T;

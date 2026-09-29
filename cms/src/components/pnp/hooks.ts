@@ -19,7 +19,7 @@ import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
 import { TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
 import {
-  channelsOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf,
+  channelsOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, pnpDataOf, pnpDefaultProvsOf,
 } from './functions'
@@ -75,6 +75,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
     channels: channelsOf({ t, lang: x.lang, showZh: x.showZh, job: x.job, defaults, pathways: x.pathways }),
+    block: pnpBlockOf({ job: x.job, t }),
   }
 }
 

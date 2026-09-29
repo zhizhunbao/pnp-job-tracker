@@ -243,6 +243,11 @@ export type JobDbRow = {
   pnp_stream: string | null
 
   /**
+   * 走不了省提名的原因码(2026-09-29;空 = 走得了)。
+   */
+  pnp_block: string | null
+
+  /**
    * EE 类别命中。
    */
   ee_category: string | null
@@ -590,6 +595,11 @@ export type JobRow = {
    * 具名省清单命中标签。
    */
   pnpStream: string
+
+  /**
+   * 走不了省提名的原因码(part / term / seasonal / casual / wage / occ / list;'' = 走得了;2026-09-29)。
+   */
+  pnpBlock: string
 
   /**
    * EE 类别命中。

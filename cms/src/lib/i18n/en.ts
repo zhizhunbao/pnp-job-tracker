@@ -596,6 +596,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.endorse': 'community endorsement letter', 'pnpgate.licensing': 'occupation licensing or registration',
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': 'Wage', 'pnpgate.wageMedian': 'at or above the median wage for this occupation in the region',
+  'pnpgate.wageLowGrad': 'or at or above the low wage if you are a recent graduate in {prov}',
   'pnpgate.langExempt': 'No test if you graduated in {prov} within the last {n} years',
   'pnpgate.expGrad': 'or {n} months if you are a recent graduate in {prov}',
   'pnpgate.expSameNoc': 'or {n} years in the same occupation (within the last {w} years)',
@@ -609,6 +610,10 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
+  // 2026-09-29 PNP modal: why this job cannot use the provincial nominee program (cell, chip and the card share one word)
+  'pnpblock.title': 'Requirements not met',
+  'pnp.block.part': 'Part-time', 'pnp.block.term': 'Fixed-term', 'pnp.block.seasonal': 'Seasonal', 'pnp.block.casual': 'Casual',
+  'pnp.block.wage': 'Below median wage', 'pnp.block.occ': 'Occupation not eligible',
   'pnpfacts.selected': 'Selected',
   'pnpfacts.selPeople': '{n} selected',
   'pnpfacts.allGroups': 'All {n} {label} streams ▾',

@@ -2973,6 +2973,7 @@ export function toJobRow(input: ToJobRowIn): JobRow {
     sponsorGrade: numOrNull(j.sponsor_grade),
     pnpEligible: j.pnp_eligible === true,
     pnpStream: text(j.pnp_stream),
+    pnpBlock: text(j.pnp_block),
     eeCategory: text(j.ee_category),
     aip: j.aip === true,
     pilot: text(j.pilot), pilotCommunity: text(j.pilot_community),

@@ -19,7 +19,8 @@
  * @time 2026-08-28 19:15:06
  */
 import {
-  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpCellActiveOf, pnpChannelKeyOf,
+  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpBlockOf, pnpCellActiveOf,
+  pnpChannelKeyOf,
   pnpExcludedOf, pnpNameOf,
 } from '@/components/pnp'
 import { cssOf } from '@/components/css'
@@ -935,6 +936,8 @@ function signalCellOf(x: CellIn): CellView | null {
  * 原 pnpNamedCellOf / pnpGenericCellOf / pnpGenericOf 三件并掉,这里只剩色档与拼格。
  * 同日 Frank「这个要不要把灰字去掉」「先弄安省的」:两行改一行 —— 只写界面语言直白名(与手机胶囊同一个),英文行撤;
  * 官方原名进弹框「本岗能走的通道」卡的灰字。
+ * 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」:走不了的岗红字直接写原因(兼职、合同工、季节工、
+ * 临时工、工资低于中位、职业不收;数据层 pnpBlock,pnp 桶 pnpBlockOf 取词),可点开看「本岗不满足的门槛」卡;原先是灰「—」点不开。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
@@ -946,6 +949,10 @@ function pnpCellOf(x: CellIn): CellView {
   const key = pnpChannelKeyOf({ job: x.j, defaults: x.cx.pnpIndex.defaults })
   if (key !== TEXT_NONE) {
     return blankView({ text: pnpNameOf({ key, t: x.cx.t }), tone: TONE.moneyMd })
+  }
+  const block = pnpBlockOf({ job: x.j, t: x.cx.t })
+  if (block !== TEXT_NONE) {
+    return blankView({ text: block, tone: TONE.redSm })
   }
   if (x.j.pnpEligible === true) {
     return blankView({ text: x.cx.t('cell.pnpSkilledProv', { p: x.j.province }), tone: TONE.moneyMd })
@@ -1160,6 +1167,7 @@ function pushTeerChip(a: ChipPushIn): void {
  * Frank 2026-07-26「不符合清单 职业不受理 需要两个胶囊吗」:两条都命中排除时,
  * 这一枚就写「本省不受理」,AIP 那枚不再出。
  * 2026-09-28 写哪条通道、叫什么名字走 pnp 桶(pnpChannelKeyOf / pnpNameOf),与表格格子、弹框通道卡同一处判。
+ * 2026-09-29 走不了的岗红胶囊直接写原因(pnpBlockOf,与表格格子同一个词);清单排除照旧走下面那条(与 AIP 合并的写法不动)。
  *
  * @param a 收集器、入参与两条排除判定。
  * @returns 无。
@@ -1172,6 +1180,11 @@ function pushPnpChip(a: ChipPushBlockIn): void {
       text = pnpNameOf({ key, t: a.x.t })
     }
     a.out.push(pnpChipOf({ x: a.x, tone: CHIP.amber, text }))
+    return
+  }
+  const block = pnpBlockOf({ job: a.x.j, t: a.x.t })
+  if (block !== TEXT_NONE) {
+    a.out.push(pnpChipOf({ x: a.x, tone: CHIP.red, text: block }))
     return
   }
   if (a.pnpExcl === false) {

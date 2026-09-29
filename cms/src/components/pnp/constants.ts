@@ -349,6 +349,17 @@ export const COUNT_ROW_KEY: Record<'aip' | 'sel' | 'inv', string> = {
 export const PNP_GEN_HEAD = 'pnp.gen.'
 
 /**
+ * 走不了省提名的原因码里要显示的那几个(数据层 etl/mart 的 BLOCK_* 同一套码;2026-09-29 Frank「就直接说 兼职」)。
+ * 清单排除 list 不在此列:格子「不符合清单」与弹框排除清单卡照旧走 pnpExcludedOf(手机上与 AIP 合并胶囊的写法绑着)。
+ */
+export const PNP_BLOCK_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
+
+/**
+ * 原因码词条的键头(拼码取界面词)。
+ */
+export const PNP_BLOCK_HEAD = 'pnp.block.'
+
+/**
  * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
  */
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i
@@ -630,6 +641,11 @@ export const BASIS_LICENCE = 'licence'
  * 口径包的「本职业本地区中位工资」标记(工资行)。
  */
 export const BASIS_OCC_MEDIAN = 'occMedian'
+
+/**
+ * 口径包的「本职业本地区低位工资」标记(安省应届毕业生 + TEER 0-3 那一行;2026-09-29)。
+ */
+export const BASIS_OCC_LOW = 'occLow'
 
 /**
  * 口径包的编码值键(offer 形态行:过不了的工时 / 雇佣期取值)。

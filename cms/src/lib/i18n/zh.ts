@@ -634,6 +634,7 @@ export const jobsZh = {
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
   // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
   'pnpgate.k.wage': '工资', 'pnpgate.wageMedian': '不低于本职业在本地区的中位工资',
+  'pnpgate.wageLowGrad': '或本省应届毕业生不低于低位工资',
   'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
   'pnpgate.expGrad': '或本省应届毕业生满 {n} 个月', 'pnpgate.expSameNoc': '或同职业累计满 {n} 年(近 {w} 年内)',
   'pnpgate.expLicence': '或持有这份工作要求的执照',
@@ -648,6 +649,10 @@ export const jobsZh = {
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
   // 2026-09-26 晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改走与其余组同一种组头行,三格与灰字统计撤,latest / people / apps / rounds90 与三条合计随之删
   'pnpfacts.streams': '本岗能走的通道',
+  // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」:原因词(格子 / 胶囊 / 弹框卡同一套)
+  'pnpblock.title': '本岗不满足的门槛',
+  'pnp.block.part': '兼职', 'pnp.block.term': '合同工', 'pnp.block.seasonal': '季节工', 'pnp.block.casual': '临时工',
+  'pnp.block.wage': '工资低于中位', 'pnp.block.occ': '职业不收',
   'pnpfacts.selected': '入选',
   'pnpfacts.selPeople': '{n} 人入选',
   'pnpfacts.allGroups': '查看全省 {n} 组 ▾',
