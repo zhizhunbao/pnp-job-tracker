@@ -2482,3 +2482,127 @@ class NsQuarterlyTest(unittest.TestCase):
                          [("Approved", 30, "2026 Q1-Q2", "2026-06"), ("Refused", 4, "2026 Q1-Q2", "2026-06"),
                           ("Withdrawn", 3, "2026 Q1-Q2", "2026-06")])
         self.assertEqual(fn.ns_assessments_ytd([]), [])
+
+
+# =========================================================================
+# 41. NB / NL 往年提名(2026-09-29)
+# =========================================================================
+
+
+@dataclass
+class NbYearRowsIn:
+    """nb_year_rows() 入参:一份 PETL 年报 KPI 表读出的年 → 数,与它出自哪份年报(2026-09-29 立)。"""
+
+    by_year: dict
+    """自然年 → 省提名(PNP)行的数。"""
+
+    url: str
+    """年报 PDF 地址(进每行出处)。"""
+
+    fy: str
+    """年报财年(section 用,如「2024-2025」)。"""
+
+
+@dataclass
+class NlReportIn:
+    """nl_nominated_row_of() 入参:一份 IPGS 年报全文与它的出处(2026-09-29 立)。"""
+
+    text: str
+    """PDF 全文(原样,空白在函数里折)。"""
+
+    url: str
+    """年报 PDF 地址(进该行出处)。"""
+
+    fy: str
+    """年报财年(section 用,如「2024-25」)。"""
+
+
+class NbNlStatsTest(unittest.TestCase):
+    """NB / NL 往年提名自测(2026-09-29 立):NB 年报 KPI 表(真页行序原样)读出三个自然年、AIP 行的数不混进来、表形不对给空表;
+    NL 两种措辞的原句(真页原句,PDF 换行落在句中)读出自然年与人数、label 是整句原句、单位是人,年对不上 / 只剩 AIP 的数 /
+    没有原句都不出行。全程不联网、不读仓内文件。"""
+
+    def nb_lines(self) -> list[str]:
+        """NB 2024-2025 年报第 25 页 KPI 表一带的文本行(pymupdf 抽出来的原样,行尾带空格)。"""
+        return ["concerns and provides internal divisional administrative support. ", "Key Performance Indicators* ",
+                "Provincial Nominations ", "2024 ", "2023 ", "2022 ", "Provincial Nominee Program (PNP) ", "3,000 ",
+                "3,167 ", "2,584 ", "Atlantic Immigration Program (AIP) ", "2,500 ", "2,228 ", "489 ",
+                "Certificates issued to International Graduates ", "3,425 ", "2,547 ", "1,233 ", " ", " "]
+
+    def test_nb_table_golden(self) -> None:
+        """金标:三个自然年的 PNP 行照读,AIP 行(2,500 / 2,228 / 489)不进;空行夹在格间也照读。"""
+        from pnp import functions as fn
+        self.assertEqual(fn.nb_nominations_of("\n".join(self.nb_lines())), {2024: 3000, 2023: 3167, 2022: 2584})
+        spaced = []
+        for line in self.nb_lines():
+            spaced += [line, " "]
+        self.assertEqual(fn.nb_nominations_of("\n".join(spaced)), {2024: 3000, 2023: 3167, 2022: 2584})
+
+    def test_nb_table_probes(self) -> None:
+        """变异探针:没表头 / 没 PNP 行 / PNP 行的数不够 / 数不是数字 / AIP 行排到 PNP 前面(看远了会读错表)→ 一律空表。"""
+        from pnp import functions as fn
+        lines = self.nb_lines()
+        no_title = [s for s in lines if s.strip() != "Provincial Nominations"]
+        no_pnp = [s for s in lines if s.strip() != "Provincial Nominee Program (PNP)"]
+        short = lines[:9] + lines[10:]
+        bad_num = lines[:8] + ["n/a "] + lines[9:]
+        aip_first = lines[:6] + lines[10:14] + lines[6:10] + lines[14:]
+        for case in (no_title, no_pnp, short, bad_num, aip_first):
+            self.assertEqual(fn.nb_nominations_of("\n".join(case)), {})
+        self.assertEqual(fn.nb_nominations_of(""), {})
+
+    def test_nb_year_rows(self) -> None:
+        """行形:年降序;单位 nominations;label 表头 + 行名 + 年;section 带年报财年;出处照入参。"""
+        from pnp import functions as fn
+        rows = fn.nb_year_rows(NbYearRowsIn(by_year={2023: 3167, 2024: 3000}, url="u", fy="2024-2025"))
+        self.assertEqual([(r["year"], r["value"], r["unit"], r["url"]) for r in rows],
+                         [(2024, 3000, "nominations", "u"), (2023, 3167, "nominations", "u")])
+        self.assertEqual(rows[0]["label"], "Provincial Nominations, Provincial Nominee Program (PNP), 2024")
+        self.assertEqual(rows[0]["section"],
+                         "PETL Annual Report 2024-2025: Key Performance Indicators, Provincial Nominations")
+
+    def nl_2024(self) -> str:
+        """NL 2024-25 年报第 11 页原文(pymupdf 抽出来的换行原样)。"""
+        return ("In the 2024 calendar year, the province welcomed approximately 5,755 new permanent \n"
+                "residents, exceeding the original goal of welcoming 4,500 in 2024.  \n"
+                "• The AIP endorsed 2,491 individuals for permanent residency, and the PNP nominated \n"
+                "5,065 individuals. These 7,556 people are on the path to becoming permanent residents. \n")
+
+    def nl_2023(self) -> str:
+        """NL 2023-24 年报第 9 页原文(同上)。"""
+        return ("In 2023, the province welcomed 5,485 new permanent residents, exceeding the original \n"
+                "goal of welcoming 3,950 in 2023.  \n"
+                "• The two main immigration pathways offered by IPGS are the Atlantic Immigration \n"
+                "Program (AIP), under which 1,628 individuals were endorsed for permanent residency \n"
+                "in 2023, and the Newfoundland and Labrador Provincial Nominee Program (NLPNP), \n"
+                "under which 4,838 newcomers were nominated for permanent residency in 2023. \n"
+                "These 6,466 individuals are on a pathway to becoming permanent residents in six \n")
+
+    def test_nl_quotes_golden(self) -> None:
+        """金标:两种措辞各读出(自然年, 人数);单位是人;label 是折过空白的整句原句;section 带年报财年。"""
+        from pnp import functions as fn
+        new = fn.nl_nominated_row_of(NlReportIn(text=self.nl_2024(), url="u24", fy="2024-25"))
+        old = fn.nl_nominated_row_of(NlReportIn(text=self.nl_2023(), url="u23", fy="2023-24"))
+        assert new is not None and old is not None
+        self.assertEqual((new["year"], new["value"], new["unit"], new["url"]), (2024, 5065, "people", "u24"))
+        self.assertEqual((old["year"], old["value"], old["unit"], old["url"]), (2023, 4838, "people", "u23"))
+        self.assertEqual(new["label"], "The AIP endorsed 2,491 individuals for permanent residency, "
+                                       "and the PNP nominated 5,065 individuals.")
+        self.assertTrue(old["label"].startswith("The two main immigration pathways offered by IPGS are "))
+        self.assertTrue(old["label"].endswith("(NLPNP), under which 4,838 newcomers were nominated "
+                                              "for permanent residency in 2023."))
+        self.assertEqual(new["section"], "IPGS Annual Report 2024-25: Report on Performance")
+
+    def test_nl_quote_probes(self) -> None:
+        """变异探针:句尾年与段首年对不上 / 删掉 NLPNP 那半句(只剩 AIP 的 1,628)/ 删掉 PNP 那半句 / 空文 → 不出行。"""
+        from pnp import functions as fn
+        year_off = self.nl_2023().replace("permanent residency in 2023. \n", "permanent residency in 2022. \n")
+        nlpnp_half = (", and the Newfoundland and Labrador Provincial Nominee Program (NLPNP), \n"
+                      "under which 4,838 newcomers were nominated for permanent residency in 2023")
+        aip_only = self.nl_2023().replace(nlpnp_half, "")
+        no_pnp = self.nl_2024().replace(", and the PNP nominated \n5,065 individuals", "")
+        for text in (year_off, aip_only):
+            self.assertNotEqual(text, self.nl_2023())
+        self.assertNotEqual(no_pnp, self.nl_2024())
+        for text in (year_off, aip_only, no_pnp, ""):
+            self.assertIsNone(fn.nl_nominated_row_of(NlReportIn(text=text, url="u", fy="x")))

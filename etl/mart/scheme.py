@@ -4730,3 +4730,60 @@ class MartNsOpsTest(unittest.TestCase):
             ("nominations_ytd", "2026 Q1-Q2", "2026-06", 819, res_url),
             ("refusals_ytd", "2026 Q1-Q2", "2026-06", 341, res_url),
             ("withdrawals_ytd", "2026 Q1-Q2", "2026-06", 475, res_url)])
+
+
+class MartNbNlOpsTest(unittest.TestCase):
+    """NB / NL 往年提名出行自测(2026-09-29 立):两份现造的年报统计文件经 build_pnp_ops_stats 按省分派出行 ——
+    NB 逐年已发提名 → nominations_issued(单位 nominations,统计期 = 自然年,asOf 空)、NL 逐年提名人数 → nominated_individuals
+    (单位 people,不混进 nominations_issued);两份文件都登记进 IN_PNP_STATS(漏登记 = 行静默不出)。
+    配额核对表与抽选文件打桩成空,数据在用例里现造,不读仓内文件。"""
+
+    def nb_stats(self) -> dict:
+        """现造 nb-stats.json(形同 pnp 域 write_year_stats 的产出:只有逐年 nominationsIssued)。"""
+        url = "https://nb.example/petl-2024-2025.pdf"
+        rows = []
+        for year, value in ((2024, 3000), (2023, 3167)):
+            label = "Provincial Nominations, Provincial Nominee Program (PNP), " + str(year)
+            rows.append({"year": year, "label": label, "value": value, "unit": "nominations", "section": "S",
+                         "url": url, "fetched": "2026-09-29"})
+        return {"province": "NB", "program": "PNP", "source": "PETL Annual Report", "url": url, "note": "",
+                "asOf": "", "fetched": "2026-09-29", "processing": [], "allocation": [], "nominationsIssued": rows}
+
+    def nl_stats(self) -> dict:
+        """现造 nl-stats.json(nominationsIssued 空,提名人数在 nominatedIndividuals,单位 people 行自带)。"""
+        rows = []
+        for year, value in ((2024, 5065), (2023, 4838)):
+            rows.append({"year": year, "label": "L" + str(year), "value": value, "unit": "people", "section": "S",
+                         "url": "https://nl.example/" + str(year) + ".pdf", "fetched": "2026-09-29"})
+        return {"province": "NL", "program": "PNP", "source": "IPGS Annual Report",
+                "url": "https://nl.example/2024.pdf", "note": "", "asOf": "", "fetched": "2026-09-29", "processing": [],
+                "allocation": [], "nominationsIssued": [], "nominatedIndividuals": rows}
+
+    def test_dispatch_rows(self) -> None:
+        """两份文件落临时目录走一遍 build_pnp_ops_stats:省 / 指标名 / 统计期 / asOf / 值 / 单位 / 出处金标,label 原样带过去。"""
+        from mart import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            files = []
+            for name, d in (("nb-stats.json", self.nb_stats()), ("nl-stats.json", self.nl_stats())):
+                p = Path(tmp) / name
+                p.write_text(json.dumps(d), encoding="utf-8")
+                files.append(p)
+            with mock.patch.object(fn, "load_alloc_table", return_value={}), \
+                    mock.patch.object(fn, "load_draw_tables", return_value=[]):
+                rows = fn.build_pnp_ops_stats(files)
+        got = [(r["province"], r["metric"], r["period"], r["asOf"], r["value"], r["unit"], r["url"]) for r in rows]
+        nb_url = "https://nb.example/petl-2024-2025.pdf"
+        self.assertEqual(got, [
+            ("NB", "nominations_issued", "2024", "", 3000, "nominations", nb_url),
+            ("NB", "nominations_issued", "2023", "", 3167, "nominations", nb_url),
+            ("NL", "nominated_individuals", "2024", "", 5065, "people", "https://nl.example/2024.pdf"),
+            ("NL", "nominated_individuals", "2023", "", 4838, "people", "https://nl.example/2023.pdf")])
+        self.assertEqual(rows[0]["label"], "Provincial Nominations, Provincial Nominee Program (PNP), 2024")
+        self.assertEqual(rows[2]["label"], "L2024")
+
+    def test_registered(self) -> None:
+        """两份文件都在 IN_PNP_STATS 里(汇装只读这张清单上的文件)。"""
+        from mart import constants as mc
+        names = [p.name for p in mc.IN_PNP_STATS]
+        self.assertIn("nb-stats.json", names)
+        self.assertIn("nl-stats.json", names)

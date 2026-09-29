@@ -7766,3 +7766,116 @@ OWP_PRINT_CRASH_TPL = "  ✗ ON 劳动力优先表守望失败: {name} {detail}(
 
 TEST_VERBOSITY = 2
 """unittest 运行档:逐条打用例名与结果(同 indexing / gate 自查)。"""
+
+
+# =========================================================================
+# 41. NB / NL 往年提名(省年报 PDF:NB 已发提名、NL 提名人数;2026-09-29)
+# =========================================================================
+
+NBS_REPORTS = (
+    ("https://www.legnb.ca/content/house_business/61/2/tabled_documents/2025-11-20%20Department%20of%20"
+     "Post-Secondary%20Education,%20Training%20and%20Labour%202024-2025.pdf", "2024-2025"),
+)
+"""已核实的 NB 后期教育培训劳工厅(PETL)年报 PDF,一份一对(网址, 年报财年),升序(2026-09-29 立,lead 派工「NB 往年已发提名」:
+gnb.ca 移民版块只发逐轮邀请数,年度数在部门年报里)。出处是省议会 legnb.ca 的提交文件(WebSearch 命中,2024-2025 版 2025-11-20 提交,
+第 25 页 Immigration Division 的 KPI 表);文件名带提交日期与议会届次,推不出下一份叫什么 → 不探不猜,
+2025-2026 版(预计 2026 年 11 月前后提交)出来后人工核实再加一对。同一年被多份年报覆盖时后面的(更新的)为准。"""
+
+NBS_TIMEOUT_S = 120
+"""PDF 下载超时(同 PE_IIDI_TIMEOUT_S)。"""
+
+OUT_NB_STATS = paths.PNP / "nb-stats.json"
+"""NB 运营统计落盘处(形同 bc-nominations.json:processing / allocation 留空,只有逐年 nominationsIssued;
+配额在人工核对表 pnp_allocations.json,不重复)。"""
+
+NBS_SOURCE = "PETL Annual Report"
+"""来源名(Department of Post-Secondary Education, Training and Labour 年报;省提名由它的 Immigration Division 办)。"""
+
+NBS_NOTE = ("NB 已发提名数 = 省后期教育培训劳工厅(PETL)年报 Immigration Division 一节「Key Performance Indicators」表"
+            "「Provincial Nominations」的 Provincial Nominee Program (PNP) 行,AIP 那行另列不并入。列头「2024 / 2023 / 2022」是"
+            "自然年:同一份年报另外 8 张 KPI 表的统计期全写成「2024-2025」两年形,唯独这张写单年;2024 列 PNP 3,000 + AIP 2,500"
+            " = 5,500,正是当年的证书总数。表头带星号,全文找不到对应脚注。年报每年秋季提交省议会,当年数要等下一份年报。")
+"""NB 口径注(2026-09-29 核表头:年份是自然年,照实记进 nominationsIssued;若是财年本该另起 nominationsIssuedFiscal,
+照 PE 先例 —— 核过不是)。"""
+
+NBS_KPI_TITLE = "Provincial Nominations"
+"""KPI 表的表头首格(整行等于它才算表开始;2024-2025 版全文只出现一次,2026-09-29 核)。"""
+
+NBS_KPI_PNP_ROW = "Provincial Nominee Program (PNP)"
+"""表里省提名那一行的行名(下一行「Atlantic Immigration Program (AIP)」是 AIP,不读)。"""
+
+NBS_KPI_ROW_SCAN = 3
+"""年份列头之后最多再看几行找省提名行(实测紧跟在列头后;看远了会读到别的表)。"""
+
+NBS_SECTION_TPL = "PETL Annual Report {fy}: Key Performance Indicators, Provincial Nominations"
+"""一行的 section(哪一份年报、哪张表)。"""
+
+NBS_LABEL_TPL = "Provincial Nominations, Provincial Nominee Program (PNP), {year}"
+"""一行的 label(表头 + 行名 + 年;表格没有整句可引,照 BC_NOM_LABEL_TPL 的写法)。"""
+
+NBS_NO_TABLE_TPL = "{url} 里没找到「Provincial Nominations」表的省提名行(或数与年份列对不上)—— 疑似年报改版"
+"""解析失败的抛错文案(整份保留旧表)。"""
+
+NBS_PRINT_OK_TPL = "  ✓ NB 已发提名(自然年)年报 {fy}:{pairs}"
+"""收尾报数。"""
+
+NBS_PRINT_FAIL_TPL = "  ✗ NB 已发提名抓取失败: {name} {detail}(保留旧表)"
+"""失败留痕(不拦役)。"""
+
+NLS_REPORTS = (
+    ("https://www.assembly.nl.ca/business/electronicdocuments/IPGSAnnualReport2023-2024.pdf", "2023-24"),
+    ("https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf", "2024-25"),
+)
+"""已核实的 NL 移民厅(IPGS,2025-05 起改名 Department of Jobs, Immigration and Growth)年报 PDF,一份一对(网址, 年报财年),
+升序(2026-09-29 立,lead 派工「NL 往年提名人数」)。出处:gov.nl.ca/ipgs/publications/ 跳转 gov.nl.ca/jgrd/ → Publications
+→ Annual Reports(只挂 2024-2025 一份),2023-2024 版在省议会 assembly.nl.ca。2025-2026 版截至 2026-09-29 未挂出,
+出来后人工核实原句再加一对(新措辞要在 NLS_NOMINATED_RES 加一条)。"""
+
+NLS_TIMEOUT_S = 120
+"""PDF 下载超时(同 PE_IIDI_TIMEOUT_S)。"""
+
+OUT_NL_STATS = paths.PNP / "nl-stats.json"
+"""NL 运营统计落盘处:processing / allocation / nominationsIssued 留空(官方没发按证书计的提名数),
+提名人数另起一张清单 nominatedIndividuals(K_NOMINATED_INDIVIDUALS)。"""
+
+NLS_SOURCE = "IPGS Annual Report"
+"""来源名(Department of Immigration, Population Growth and Skills 年报)。"""
+
+NLS_NOTE = ("NL 提名人数 = 省移民厅(IPGS)年报 Report on Performance 一节的原句:官方数的是人(individuals / newcomers,"
+            "应含随行家属),不是提名证书数 —— 与别省按申请 / 证书计的已发提名不同口径,也不能与配额相比,所以另起清单 "
+            "nominatedIndividuals、不进 nominationsIssued。年报按财年出,数字是自然年(原句所在段写明「In the 2024 "
+            "calendar year」「In 2023」);AIP 背书人数同句另列,不并入。当年数要等下一份年报。")
+"""NL 口径注(2026-09-29 核:两份年报的数都是自然年)。"""
+
+K_NOMINATED_INDIVIDUALS = "nominatedIndividuals"
+"""nl-stats.json 里按人头的提名人数清单键(与按证书的 nominationsIssued 分开;mart 按它出 nominated_individuals 行)。"""
+
+NLS_UNIT_PEOPLE = "people"
+"""提名人数的单位(人;与 mart 的 UNIT_PEOPLE 同值,域间不互取常量,各自声明)。"""
+
+NLS_NOMINATED_RES = (
+    re.compile(r"In the (\d{4}) calendar year, the province welcomed [^.•]*\.\s*•\s*"
+               r"(The AIP endorsed [\d,]+ individuals for permanent residency, and the PNP nominated ([\d,]+) "
+               r"individuals\.)"),
+    re.compile(r"In (\d{4}), the province welcomed [^.•]*\.\s*•\s*"
+               r"(The two main immigration pathways offered by IPGS are [^.•]*Provincial Nominee Program \(NLPNP\), "
+               r"under which ([\d,]+) newcomers were nominated for permanent residency in \1\.)"),
+)
+"""提名人数原句(官方原句 quote-anchored,2026-09-29 立;两份年报两种措辞各一条,新的在前):三组一律是(自然年, 整句原句, 人数)。
+① 2024-25 版:段首「In the 2024 calendar year, the province welcomed …」下第一条「The AIP endorsed 2,491 individuals for
+permanent residency, and the PNP nominated 5,065 individuals.」—— 句里没写年,年取段首那句;
+② 2023-24 版:段首「In 2023, the province welcomed …」下第一条「… Provincial Nominee Program (NLPNP), under which 4,838
+newcomers were nominated for permanent residency in 2023.」—— 句尾的年用反向引用卡死,必须与段首同年。
+PDF 换行落在句中,文本先折空白再匹配;新一份年报换了措辞 = 抛错保留旧表,核实原句后在这里加一条。"""
+
+NLS_SECTION_TPL = "IPGS Annual Report {fy}: Report on Performance"
+"""一行的 section(哪一份年报、哪一节;原句都在 Issue 1「Attracting newcomers to the province」下)。"""
+
+NLS_NO_QUOTE_TPL = "{url} 里没找到省提名人数原句(两种措辞都对不上)—— 疑似年报改版或换了说法"
+"""解析失败的抛错文案(整份保留旧表)。"""
+
+NLS_PRINT_OK_TPL = "  ✓ NL 提名人数(自然年,单位人)年报 {fy}:{pairs}"
+"""收尾报数。"""
+
+NLS_PRINT_FAIL_TPL = "  ✗ NL 提名人数抓取失败: {name} {detail}(保留旧表)"
+"""失败留痕(不拦役)。"""

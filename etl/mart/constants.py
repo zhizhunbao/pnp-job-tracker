@@ -2030,6 +2030,9 @@ PROV_BC = "BC"
 PROV_NS = "NS"
 """NS 省码(ops 统计分发用;2026-09-08 ns-stats.json 接入)。"""
 
+PROV_NB = "NB"
+"""NB 省码(ops 统计分发用;2026-09-29 nb-stats.json 接入:PETL 年报的往年已发提名,走逐年通用填法)。"""
+
 PROV_MB = "MB"
 """曼尼托巴(同上)。"""
 
@@ -2358,9 +2361,11 @@ OP_GTE = ">="
 IN_PNP_STATS = [paths.PNP / "ab-stats.json", paths.PNP / "sk-stats.json",
                 paths.PNP / "bc-stats.json", paths.PNP / "mb-stats.json",
                 paths.PNP / "on-stats.json", paths.PNP / "ns-stats.json",
-                paths.PNP / "bc-nominations.json", paths.PNP / "pe-stats.json"]
+                paths.PNP / "bc-nominations.json", paths.PNP / "pe-stats.json",
+                paths.PNP / "nb-stats.json", paths.PNP / "nl-stats.json"]
 """G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
-一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派。"""
+一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派。
+2026-09-29 加 NB / NL 两份(省年报 PDF:NB 往年已发提名、NL 往年提名人数;pnp 域 nb_stats / nl_stats 两步产出)。"""
 
 PAREN_RE = re.compile(r"\s*\([^()]*\)")
 """通道名归一第一刀:去括号补充说明(可能不止一处)。
@@ -2640,9 +2645,13 @@ MB_PROC_LABEL_TPL = "{stream} — {kind}: {days} days"
 """MB 年报处理天数的 label 形。"""
 
 ON_YEAR_METRICS = (("allocation", "allocation"), ("nominations_issued", "nominationsIssued"),
-                   ("nominations_issued_fy", "nominationsIssuedFiscal"))
+                   ("nominations_issued_fy", "nominationsIssuedFiscal"),
+                   ("nominated_individuals", "nominatedIndividuals"))
 """逐年清单的(指标名, 源键):ON 两个;第三个是 PE 按**财年**的已发提名(pe-stats.json,2026-09-09),
-指标名另立 —— 消费端拿自然年配额算用尽率时不能混进财年数。"""
+指标名另立 —— 消费端拿自然年配额算用尽率时不能混进财年数。
+第四个是 NL 按**人头**的提名人数(nl-stats.json,2026-09-29):官方年报数的是人(individuals / newcomers,含随行家属),
+不是提名证书 —— 与别省按证书 / 申请计的已发提名不同口径,指标名另立 nominated_individuals,单位 people 由行自带
+(fill_year_metric_ops 读行里的 unit),消费端不能拿它与配额相除,也不能并进已发提名。"""
 
 ON_PROCESSING_NOTE = (
     "ON(C4-W5):官方「审理时长与提名数」专页 2026 改制后已 302 下线(raw 的 pageRedirect 存了"
