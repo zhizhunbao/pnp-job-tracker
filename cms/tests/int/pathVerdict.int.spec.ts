@@ -131,7 +131,9 @@ describe('mart 实况', () => {
     // 同职业累计 2 年与持执照两条替代路径(factor=experienceAlt,判定引擎不读)→ 439
     // 2026-09-29 Frank 选「分档判」:ON 工资档补应届款一行(occLow,安省应届毕业生且 TEER 0-3 可按低位;判定引擎不读工资行)→ 440
     // 2026-09-29 七省接入前:ON 雇主 offer 形态一行(汇装 offer_form_rows,PROV_OFFER_QUOTE 补 ON;subject=offer,判定引擎不读)→ 441
-    expect(data.requirements).toHaveLength(441)
+    // 2026-09-29 七省门槛卡合并(Frank「都接上,开工吧」):BC 20→23、SK 4→18、MB 181→184、NS 4→8、NB 15→18、NL 8→10、PE 3→9
+    //(各省补抓 + 汇装 offer 形态行各一;SK 现有工签、NS / PE 的工资与在职行按判定引擎影响暂不收)→ 476
+    expect(data.requirements).toHaveLength(476)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
