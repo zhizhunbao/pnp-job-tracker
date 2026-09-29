@@ -417,6 +417,11 @@ export const QUOTA_KEY_HEAD = 'h'
 export const QUOTA_KEY_LABEL = 'l'
 
 /**
+ * 配额小表最右「截至 {日期}」那一列格子的 React 列表键(前缀;2026-09-28 Frank「放到一行吧」:日期挪进「全省」那一行)。
+ */
+export const QUOTA_KEY_ASOF = 'asof'
+
+/**
  * 年份在统计期 / 截至日里的长度(`2026 Jan-Aug`、`2026Q2`、`2026-09-23` 的头 4 位)。
  */
 export const YEAR_LEN = 4

@@ -338,9 +338,9 @@
  */
 .quotaCols1 {
   /*
-   * 行名 + 1 列。
+   * 行名 + 1 列 + 截至日期列(2026-09-28 Frank「放到一行吧」:日期占最右一列,吃掉余宽、靠右)。
    */
-  grid-template-columns: max-content max-content;
+  grid-template-columns: max-content max-content 1fr;
 }
 
 /*
@@ -348,9 +348,9 @@
  */
 .quotaCols2 {
   /*
-   * 行名 + 2 列。
+   * 行名 + 2 列 + 截至日期列(同上)。
    */
-  grid-template-columns: max-content repeat(2, max-content);
+  grid-template-columns: max-content repeat(2, max-content) 1fr;
 }
 
 /*
@@ -358,9 +358,9 @@
  */
 .quotaCols3 {
   /*
-   * 行名 + 3 列。
+   * 行名 + 3 列 + 截至日期列(同上)。
    */
-  grid-template-columns: max-content repeat(3, max-content);
+  grid-template-columns: max-content repeat(3, max-content) 1fr;
 }
 
 /*
@@ -408,9 +408,9 @@
   font-size: 15px;
 
   /*
-   * 加粗。
+   * 常规字重(原为加粗;2026-09-28 Frank「这个 title 加粗,数字不用加粗吧」)。
    */
-  font-weight: 700;
+  font-weight: 400;
 
   /*
    * 主文字色。
@@ -428,12 +428,9 @@
  */
 .quotaAsOf {
   /*
-   * 与表的间距。
-   */
-  margin-top: 4px;
-
-  /*
    * 右下角(2026-09-27 Frank「这个截止日期放到右下角呢」;几列日期不一致时逐列一行)。
+   * 2026-09-28 Frank「日期和全省放到一样吧」「放到一行吧」:改成表最右一列、放在「全省」那一行,靠右;原先表下另起一行的
+   * 4px 上距随之撤掉。手机上这一格窄,「截至」与日期在格内自然折成两行,仍在「全省」那一行。
    */
   text-align: right;
 
@@ -446,6 +443,18 @@
    * 三级灰。
    */
   color: var(--text3);
+}
+
+/*
+ * 手机:配额小表列间距收窄(2026-09-28 日期挪进「全省」那一行后,375 宽要放下行名 + 三列数 + 日期一格)。
+ */
+@media (width <= 640px) {
+  .quotaGrid {
+    /*
+     * 列间距 28px → 16px。
+     */
+    column-gap: 16px;
+  }
 }
 
 /*
