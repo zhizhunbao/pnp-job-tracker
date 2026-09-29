@@ -17,7 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
-import { TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
+import { LANG_EN, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
 import {
   channelsOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
@@ -45,6 +45,7 @@ import { CACHE } from './variables'
  */
 export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const t = makeT(x.lang)
+  const tEn = makeT(LANG_EN)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
   const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf(x.job))
@@ -74,7 +75,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     toggleOf: makeToggleOf({ setKeys: setClosed }),
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
-    channels: channelsOf({ t, lang: x.lang, showZh: x.showZh, job: x.job, defaults, pathways: x.pathways }),
+    channels: channelsOf({ t, tEn, lang: x.lang, showZh: x.showZh, job: x.job, defaults, pathways: x.pathways }),
     block: pnpBlockOf({ job: x.job, t }),
   }
 }

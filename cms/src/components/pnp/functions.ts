@@ -11,6 +11,7 @@
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
+import { makeT } from '@/lib/i18n'
 import { cssOf } from '@/components/css'
 import { tagClsOf as baseTagClsOf } from '@/components/tag'
 import { drawStreamNote, eeDisplay, eeKeyDisplay, isOfferList, match as matchJob, streamDisplay } from '@/lib/jobs'
@@ -399,7 +400,7 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
       }
     }
   }
-  return { draws, lists, excluded, defaults: pnpDefaultProvsOf(x.pathways) }
+  return { draws, lists, excluded, defaults: pnpDefaultProvsOf(x.pathways), gated: gatedKeysOf(x.pathways) }
 }
 
 /**
@@ -414,6 +415,28 @@ export function pnpDefaultProvsOf(pathways: PnpPathway[]): string[] {
   for (const p of pathways) {
     if (p.isDefault && out.includes(p.province) === false) {
       out.push(p.province)
+    }
+  }
+  return out
+}
+
+/**
+ * 登记了门槛的通道键(通道对照表 reqStreams 非空的行;键形同 pnpChannelKeyOf —— 具名通道用岗位通道名,省默认通道用
+ * `pnp.gen.` + 省码)。2026-09-29 七省门槛卡:格子「能不能点」把门槛卡算进去用。
+ *
+ * @param pathways 通道对照整表。
+ * @returns 通道键。
+ */
+function gatedKeysOf(pathways: PnpPathway[]): string[] {
+  const out: string[] = []
+  for (const p of pathways) {
+    if (p.reqStreams.length === 0) {
+      continue
+    }
+    if (p.boardLabel != null) {
+      out.push(p.boardLabel)
+    } else if (p.isDefault) {
+      out.push(PNP_GEN_HEAD + p.province)
     }
   }
   return out
@@ -631,6 +654,9 @@ export function drawGroupsShownOf(form: DrawsForm): boolean {
  * 2026-09-28 通道表批二:组键改读通道对照表里本省省默认通道的抽选组(x.genDraw,原 GEN_DRAW_STREAM 常量)。
  * 同日 Frank「这个要不要把灰字去掉」「先弄安省的」:组名改界面语言直白名一行,灰字撤 —— 原先英文名 + 界面语言译名是同一个名字
  * 两种语言;上面通道卡已写同一条通道,官方原名在那张卡的灰字。
+ * 2026-09-29 下午 Frank「这种上下对不上的?应该是默认显示英文,灰字中文」:翻回英文官方名作主文案、界面语言名作灰字 ——
+ * 与下面职业清单行(英文职业名 + 中文灰字)同一排法;推翻同日凌晨按 09-28「界面显示直白名」做的那次翻转。
+ * 现行:组名 = 官方抽选组名(通道对照表本省省默认通道的抽选组;没有退英文词条名),灰字 = 界面语言通道名。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 这一组;不是改制省或改制后没有公告给 null。
@@ -652,6 +678,14 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   }
   rounds.sort(byDrawDateDesc)
   const genKey = PNP_GEN_HEAD + x.province
+  let name = makeT(LANG_EN)(genKey)
+  if (x.genDraw !== TEXT_NONE) {
+    name = x.genDraw
+  }
+  let sub = TEXT_NONE
+  if (x.lang !== LANG_EN && x.t(genKey) !== name) {
+    sub = x.t(genKey)
+  }
   let key = notice.label
   if (x.genDraw !== TEXT_NONE) {
     key = x.genDraw
@@ -668,10 +702,10 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   return cmpGroupOf({
     t: x.t,
     none,
-    sub: TEXT_NONE,
+    sub,
     lang: x.lang,
     key,
-    name: x.t(genKey),
+    name,
     tip: notice.note,
     date,
     score,
@@ -739,6 +773,8 @@ export function shownStreamsOf(x: ShownStreamsIn): PnpStream[] {
  * (`pnp.gen.{省}` 词条;查不到词条的省不列,格子那边写「{省} 可提名」,那不是通道名);主文案英文官方名、界面语言译名作灰字。
  * 2026-09-28 Frank「这个要不要把灰字去掉」「先弄安省的」:照同日「界面显示直白名,官方原名放灰字」翻过来 —— 主文案改界面语言
  * 直白名,灰字改官方英文原名(通道对照表 officialName;原先两行是同一个名字两种语言)。官方原名全站只在这张卡出一次(去官网搜的就是它)。
+ * 2026-09-29 下午 Frank「这种上下对不上的?应该是默认显示英文,灰字中文」:翻回英文官方名作主文案、界面语言名作灰字 ——
+ * 与下面职业清单行(英文职业名 + 中文灰字)同一排法;推翻同日凌晨按 09-28「界面显示直白名」做的那次翻转。
  * 现在一岗只有一个值,出参留成清单:「一岗列出全部通道」立项后这里直接加条目,卡不用改。
  * 魁省不属省提名、缺省码的岗无从说起,都不列。
  *
@@ -754,27 +790,35 @@ export function channelsOf(x: ChannelsIn): ChannelSpec[] {
     return []
   }
   const local = pnpNameOf({ key, t: x.t })
+  const en = pnpNameOf({ key, t: x.tEn })
   const channel = pnpChannelOf({ job: x.job, pathways: x.pathways })
   let official = TEXT_NONE
   if (channel != null) {
     official = channel.officialName
   }
-  return [channelOf({ lang: x.lang, showZh: x.showZh, key, local, official })]
+  return [channelOf({ lang: x.lang, showZh: x.showZh, key, local, en, official })]
 }
 
 /**
  * 一条通道条目(界面语言直白名作主文案;非英文界面且开着灰字、官方原名又与主文案不同字才出灰字)。
  * 2026-09-28 前是英文名作主文案、界面语言译名作灰字(见 channelsOf)。
+ * 2026-09-29 下午 Frank「这种上下对不上的?应该是默认显示英文,灰字中文」:翻回英文官方名作主文案、界面语言名作灰字 ——
+ * 与下面职业清单行(英文职业名 + 中文灰字)同一排法;推翻同日凌晨按 09-28「界面显示直白名」做的那次翻转。
+ * 现行:官方英文原名作主文案(通道对照表没有这条时退英文词条名),非英文界面且开着灰字、界面语言名与主文案不同字才出灰字。
  *
  * @param x 界面语言、灰字开关、列表键、界面语言名与官方原名。
  * @returns 通道条目。
  */
 function channelOf(x: ChannelOfIn): ChannelSpec {
-  let sub = TEXT_NONE
-  if (x.lang !== LANG_EN && x.showZh && x.official !== x.local) {
-    sub = x.official
+  let name = x.official
+  if (name === TEXT_NONE) {
+    name = x.en
   }
-  return { key: x.key, name: x.local, sub }
+  let sub = TEXT_NONE
+  if (x.lang !== LANG_EN && x.showZh && x.local !== name) {
+    sub = x.local
+  }
+  return { key: x.key, name, sub }
 }
 
 /**
@@ -3596,6 +3640,8 @@ export function pnpBlockOf(x: PnpBlockIn): string {
  * 判据写的是「弹框有没有内容」而不是省份,每省事实卡上线后这些格子自然恢复可点。
  * 同日「补完整」:pnp 域判「有卡」多吃一格可提名与否(可提名的岗弹框不出排除清单卡,排除键对它不算数)。
  * 2026-09-28 自 jobs 迁入(省提名弹框自立第 4 步):「格子能不能点」与「弹框出什么卡」住同一个域,加卡时回头改判据不用跨域找。
+ * 2026-09-29 七省门槛卡(Frank「现在就 AB 省 pnp 弹框是全的吧。其他都不全」):本岗通道登记了门槛也算有卡(弹框必出门槛卡)——
+ * 萨省普通岗没抽选没清单,原先点开只有通道卡、被设成不可点;走不了但有原因的岗同理(出「本岗不满足的门槛」卡)。
  *
  * @param x 这一岗、两套排除键与弹框事实索引。
  * @returns 可点 = true。
@@ -3603,6 +3649,12 @@ export function pnpBlockOf(x: PnpBlockIn): string {
 export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
   if (PNP_BLOCK_CODES.includes(x.job.pnpBlock)) {
     return true
+  }
+  if (x.job.pnpEligible === true) {
+    const key = pnpChannelKeyOf({ job: x.job, defaults: x.index.defaults })
+    if (key !== TEXT_NONE && x.index.gated.includes(key)) {
+      return true
+    }
   }
   const excluded = pnpExcludedOf({ job: x.job, blocked: x.blocked })
   if (x.job.pnpEligible !== true && excluded === false) {

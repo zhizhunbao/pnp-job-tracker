@@ -423,9 +423,9 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(card?.source).toEqual({ text: '来源 ↗', href: url })
     expect(card?.others).toEqual([])
     expect(card?.hits.map((g) => [g.name, g.sub, g.score, g.date, g.rounds, g.expandable, g.tip]))
-      .toEqual([['ON 劳动力优先', '', '暂无邀请', '2026-08-04', '', false, note]])
+      .toEqual([['Ontario Workforce Priority Stream', 'ON 劳动力优先', '暂无邀请', '2026-08-04', '', false, note]])
     const enCard = drawCardOf({ t: en, lang: 'en', province: 'ON', draws: on, hitStreams: hitOn, genDraw: genDrawOf({ province: 'ON', pathways: PATHWAYS }) })
-    expect(enCard?.hits.map((g) => [g.name, g.sub, g.score])).toEqual([['ON Workforce Priority', '', 'No invitations yet']])
+    expect(enCard?.hits.map((g) => [g.name, g.sub, g.score])).toEqual([['Ontario Workforce Priority Stream', '', 'No invitations yet']])
     expect(drawCardOf({ t: ko, lang: 'ko', province: 'ON', draws: on, hitStreams: hitOn, genDraw: genDrawOf({ province: 'ON', pathways: PATHWAYS }) })?.hits[0]?.score).toBe('아직 초청 없음')
     // 改制前的旧通道轮次不出;改制后有了抽选就写那一轮
     const after = [...on, draw({ province: 'ON', label: 'OINP', drawDate: '2026-10-01', stream: 'Ontario Workforce Priority' })]
@@ -730,6 +730,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS })
     expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(true)
     expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(false)
+    // 2026-09-29 七省门槛卡:本岗通道登记了门槛也算有卡 —— 萨省普通岗(无抽选无清单)原先不可点
+    const sk = { province: 'SK', noc: '21231', pnpEligible: true, pnpStream: '', pnpBlock: '' }
+    const gated = { ...index, gated: ['pnp.gen.SK'] }
+    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set(), aip: new Set() }, index: gated })).toBe(true)
+    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set(), aip: new Set() }, index: { ...index, gated: [] } })).toBe(false)
   })
 
   // 2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」:七省接入前的通用件
@@ -842,16 +847,17 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   })
 
   // 2026-09-28 Frank「这个要不要把灰字去掉」「先弄安省的」:主文案改界面语言直白名,灰字改官方英文原名(非英文界面才出)
-  it('通道卡:具名先、可提名退通用名;领地、魁省、不可提名不列;界面语言直白名主文案 + 官方原名灰字', () => {
+  // 2026-09-29 下午 Frank「这种上下对不上的?应该是默认显示英文,灰字中文」:翻回官方英文原名主文案 + 界面语言名灰字
+  it('通道卡:具名先、可提名退通用名;领地、魁省、不可提名不列;官方英文原名主文案 + 界面语言灰字', () => {
     const at = (j: PnpJob, lang: 'zh' | 'en' | 'ko', showZh = true) =>
-      channelsOf({ t: makeT(lang), lang, showZh, job: j, defaults: DEFAULTS, pathways: PATHWAYS })
-    expect(at(job({ province: 'ON' }), 'zh')).toEqual([{ key: 'pnp.gen.ON', name: 'ON 劳动力优先', sub: 'Ontario Workforce Priority stream' }])
-    expect(at(job({ province: 'ON' }), 'en')).toEqual([{ key: 'pnp.gen.ON', name: 'ON Workforce Priority', sub: '' }])
-    expect(at(job({ province: 'AB' }), 'zh')).toEqual([{ key: 'pnp.gen.AB', name: 'AB 机会通道', sub: 'Alberta Opportunity Stream' }])
+      channelsOf({ t: makeT(lang), tEn: en, lang, showZh, job: j, defaults: DEFAULTS, pathways: PATHWAYS })
+    expect(at(job({ province: 'ON' }), 'zh')).toEqual([{ key: 'pnp.gen.ON', name: 'Ontario Workforce Priority stream', sub: 'ON 劳动力优先' }])
+    expect(at(job({ province: 'ON' }), 'en')).toEqual([{ key: 'pnp.gen.ON', name: 'Ontario Workforce Priority stream', sub: '' }])
+    expect(at(job({ province: 'AB' }), 'zh')).toEqual([{ key: 'pnp.gen.AB', name: 'Alberta Opportunity Stream', sub: 'AB 机会通道' }])
     expect(at(job({ province: 'AB' }), 'en')).toEqual([{ key: 'pnp.gen.AB', name: 'Alberta Opportunity Stream', sub: '' }])
     expect(at(job({ province: 'AB' }), 'zh', false)[0]?.sub).toBe('')
-    expect(at(job({ province: 'AB', pnpStream: 'AB 医疗' }), 'zh')).toEqual([{ key: 'AB 医疗', name: 'AB 医疗', sub: 'Dedicated Health Care Pathway' }])
-    expect(at(job({ province: 'SK', pnpStream: 'SK 现有工签' }), 'zh')[0]?.name).toBe('SK 现有工签')
+    expect(at(job({ province: 'AB', pnpStream: 'AB 医疗' }), 'zh')).toEqual([{ key: 'AB 医疗', name: 'Dedicated Health Care Pathway', sub: 'AB 医疗' }])
+    expect(at(job({ province: 'SK', pnpStream: 'SK 现有工签' }), 'zh')[0]?.name).toBe('Skilled Worker With Existing Work Permit')
     expect(at(job({ province: 'NT' }), 'zh')).toEqual([])
     expect(at(job({ province: 'QC', pnpStream: 'X' }), 'zh')).toEqual([])
     expect(at(job({ province: 'AB', pnpEligible: false }), 'zh')).toEqual([])
@@ -871,7 +877,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       (province, pnpEligible, pnpStream) => {
         const j = job({ province, pnpEligible, pnpStream })
         const key = pnpChannelKeyOf({ job: j, defaults: DEFAULTS })
-        const card = channelsOf({ t: makeT('zh'), lang: 'zh', showZh: true, job: j, defaults: DEFAULTS, pathways: PATHWAYS })
+        const card = channelsOf({ t: makeT('zh'), tEn: en, lang: 'zh', showZh: true, job: j, defaults: DEFAULTS, pathways: PATHWAYS })
         if (province === 'QC' || province === '' || key === '') {
           expect(card).toEqual([])
         } else {
