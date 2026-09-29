@@ -454,8 +454,36 @@
   .quotaGrid {
     /*
      * 列间距 28px → 16px。
+     * 2026-09-29 再收到 12px:英文列名「Invited to apply」一格约 90px,曼省三列在 375 下已超出 8px(实测);
+     * 列名改成可折行后,这里只是列与列之间的最小间距。
      */
-    column-gap: 16px;
+    column-gap: 12px;
+
+    /*
+     * 列宽随内容,余宽均分到列与列之间,表撑满卡宽;截至行跨满全宽,靠右正好落在卡片右下角(2026-09-29)。
+     */
+    justify-content: space-between;
+  }
+
+  .quotaCols1 {
+    /*
+     * 窄屏去掉尾部占位的截至列(截至行另起一整行,见下方 .quotaAsOf);auto 列宽让列名可折行(2026-09-29)。
+     */
+    grid-template-columns: repeat(2, auto);
+  }
+
+  .quotaCols2 {
+    /*
+     * 同上:行名 + 2 列。
+     */
+    grid-template-columns: repeat(3, auto);
+  }
+
+  .quotaCols3 {
+    /*
+     * 同上:行名 + 3 列。
+     */
+    grid-template-columns: repeat(4, auto);
   }
 
   .quotaAsOf {
