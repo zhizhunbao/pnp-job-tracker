@@ -347,6 +347,8 @@ from pnp.constants import (
     NBR_PRIO_EXP_LABEL_TPL, NBR_PRIO_EXP_RE, NBR_PRIO_RULES, NBR_PRIORITY_STREAM, NBR_PROBLEM_PRIO_EXP,
     NBR_PROBLEM_SEG_TPL, NBR_SECTION_PAGE, NBR_SECTION_PAGE_EXP, NBR_SECTION_PAGE_GRAD, NBR_SECTION_PAGE_PRIO,
     NBR_SEG_EXP_RE, NBR_SEG_GENERAL_RE, NBR_SEG_GRAD_RE, NBR_SEG_PRIO_RE,
+    NBR_BASIS_PROV_GRAD, NBR_GRAD_ALT_LABEL, NBR_GRAD_PGWP_RE, NBR_GRAD_RES_LABEL_TPL, NBR_GRAD_RES_RE,
+    NBR_PROBLEM_GRAD_ALT, NBR_PROBLEM_GRAD_EXP_WORD, NBR_PROBLEM_GRAD_RES, NBR_WORK_EXP_RE,
 )
 """2026-09-13「抓」批(ON 三条 EJO 流关闭通告 / AB Express Entry 流与乡村振兴流 / MB 国际教育流三路径)
 的常量单列一块 —— 同上一块的理由:主块按字母序排满,批量插名易错行;ruff 未启 isort,多块合法。"""
@@ -4865,7 +4867,8 @@ def nb_read_guides(urls: dict) -> NbGuidesOut:
 
 def nb_page_reqs() -> ReqsOut:
     """通道页四段(总体 / Experience / Graduates / Priority Occupations)各按规则清单取原句
-    (读 crawl 缓存;2026-09-13 Frank「按那个 抽选 table 来 补数据」)。"""
+    (读 crawl 缓存;2026-09-13 Frank「按那个 抽选 table 来 补数据」)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):Graduates 段另取居住时长与经验替代路径两行(nb_grad_res_rows / nb_grad_alt_rows)。"""
     txt = fold_ws(page_text(PageTextIn(url=NBR_PAGE_URL, timeout_s=NBR_TIMEOUT_S,
                                        drop_junk=True, main_only=True, cache_first=True)))
     rows: list = []
@@ -4887,6 +4890,10 @@ def nb_page_reqs() -> ReqsOut:
             prio = nb_prio_exp_rows(seg.group(1))
             rows += prio.rows
             problems += prio.problems
+        if stream == NBR_GRADUATES_STREAM:
+            for grad in (nb_grad_res_rows(seg.group(1)), nb_grad_alt_rows(seg.group(1))):
+                rows += grad.rows
+                problems += grad.problems
     for r in rows:
         if r[K_FACTOR] == FACTOR_EMP_YEARS:
             r[K_SUBJECT] = REQ_SUBJECT_EMPLOYER
@@ -4908,6 +4915,44 @@ def nb_prio_exp_rows(seg: str) -> ReqsOut:
                                     label=NBR_PRIO_EXP_LABEL_TPL.format(n=months), url=NBR_PAGE_URL)))
     else:
         problems.append(NBR_PROBLEM_PRIO_EXP)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_grad_res_rows(seg: str) -> ReqsOut:
+    """Graduates 路径的居住时长:官方写英文数词(six months)→ 月数(rule_rows 只认阿拉伯数字,同 nb_prio_exp_rows 单列)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡):通道页 Graduates 段现列三条,先前只抽了学历与在职两条。"""
+    rows: list = []
+    problems: list = []
+    m = NBR_GRAD_RES_RE.search(seg)
+    months = None
+    if m:
+        months = word_n_of(m.group(1))
+    if m and months is not None:
+        rows.append(to_nb_req(ReqIn(stream=NBR_GRADUATES_STREAM, factor=FACTOR_RESIDENCE, value=months, unit=UNIT_MONTHS,
+                                    value_text=m.group(0), section=NBR_SECTION_PAGE_GRAD,
+                                    label=NBR_GRAD_RES_LABEL_TPL.format(n=months), url=NBR_PAGE_URL)))
+    else:
+        problems.append(NBR_PROBLEM_GRAD_RES)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_grad_alt_rows(seg: str) -> ReqsOut:
+    """工作经验的替代路径:本省院校毕业走 Graduates 路径,不必先在现雇主干满 6 个月(Experience 路径那条主档)。
+    记 experienceAlt(basis=provGraduate,原句 = 本省院校毕业那一句),判定引擎不读,只给门槛卡列「或……」;
+    段里出现工作经验字样 = 这条路可能已改成要经验,报自校问题、不出行(宁缺不错)。
+    2026-09-29 Frank「都接上,开工吧」(七省门槛卡)。"""
+    rows: list = []
+    problems: list = []
+    if NBR_WORK_EXP_RE.search(seg):
+        problems.append(NBR_PROBLEM_GRAD_EXP_WORD)
+        return ReqsOut(rows=rows, problems=problems)
+    m = NBR_GRAD_PGWP_RE.search(seg)
+    if m:
+        rows.append(to_nb_req(ReqIn(stream=NBR_GRADUATES_STREAM, factor=FACTOR_EXPERIENCE_ALT, op=OP_NONE,
+                                    basis=NBR_BASIS_PROV_GRAD, value_text=m.group(0), section=NBR_SECTION_PAGE_GRAD,
+                                    label=NBR_GRAD_ALT_LABEL, url=NBR_PAGE_URL)))
+    else:
+        problems.append(NBR_PROBLEM_GRAD_ALT)
     return ReqsOut(rows=rows, problems=problems)
 
 

@@ -5,7 +5,7 @@
   "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "guideEffective": "2026-06",
-  "fetched": "2026-09-25",
+  "fetched": "2026-09-29",
   "requirements": [
     {
       "stream": "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
@@ -186,6 +186,42 @@
       "section": "Skilled Worker stream page — New Brunswick Graduates",
       "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
       "factor": "jobOffer"
+    },
+    {
+      "stream": "New Brunswick Skilled Worker stream — New Brunswick Graduates pathway",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "have lived in New Brunswick for the past six months",
+      "unit": "months",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Lived in New Brunswick for the past 6 months",
+      "section": "Skilled Worker stream page — New Brunswick Graduates",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
+      "factor": "residence"
+    },
+    {
+      "stream": "New Brunswick Skilled Worker stream — New Brunswick Graduates pathway",
+      "subject": "applicant",
+      "op": "none",
+      "value": null,
+      "valueText": "have completed a program of study that is eligible for a post-graduation work permit at a designated learning institution located in New Brunswick",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "provGraduate",
+      "label": "New Brunswick graduates (PGWP-eligible program at a New Brunswick designated learning institution): no work experience requirement under the Graduates pathway",
+      "section": "Skilled Worker stream page — New Brunswick Graduates",
+      "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
+      "factor": "experienceAlt"
     },
     {
       "stream": "New Brunswick Skilled Worker stream — New Brunswick Priority Occupations pathway",

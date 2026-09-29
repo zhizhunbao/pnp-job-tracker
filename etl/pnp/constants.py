@@ -4428,7 +4428,17 @@ OUT_NB_REQ = paths.PNP / "nb-req.json"
   不会被挑到走 Graduates/Priority Occupations 的人身上(stream 字段虽然引擎当前不按它筛选,
   但 basis='employerTenure' 的行本身就只摆门槛不判定,不存在「误判某条路的人」的风险)。
 同理没抓:年龄 ≥19、高中学历 + ECA(引擎无对应因素);最低收入(NB **不设**收入表)。
-自校是硬闸:三份指南任一没解析到、或 CLB 数对不上就**保留旧表不覆盖**并 exit 1。"""
+自校是硬闸:三份指南任一没解析到、或 CLB 数对不上就**保留旧表不覆盖**并 exit 1。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补两行,都出自通道页 Graduates 段:
+  · 上面「Graduates 不设经验门槛,留后续核实」核过了 —— 通道页 Graduates 段三条(本省院校毕业 / 在职或已接 offer /
+    近 6 个月住在本省)里没有工作经验一项,Graduates 指南「NB employment」一节也只写「or have accepted an offer for such a
+    job」;记成经验替代行(experienceAlt,basis=provGraduate,判定引擎不读),段里出现工作经验字样就报自校问题不出行;
+  · Graduates 的居住 6 个月(residence,先前只挂 Experience 一条;判定引擎取第一条居住行,仍是 Experience 那条,同为 6 个月)。
+  没补的两条(门槛卡还没有写法;且判定引擎按省读 wage / languageExempt 行,没有数值的行会在判定卡上多出一句空门槛):
+  工资 —— 三份指南「Competitive base wage」同句「within the range of wages earned by workers in the same occupation in the
+  specified region, according to Job Bank’s labour market information」(区间内,不是中位);Graduates 语言免考 ——
+  Graduates 指南「Your New Brunswick employment falls under TEER category 0, 1, 2, or 3 of the NOC」且「The program of study
+  that you successfully completed at the New Brunswick DLI was conducted in English or French」两条都满足可不交语言成绩。"""
 
 NBR_TIMEOUT_S = 45
 """通道页抓取超时。"""
@@ -4501,13 +4511,47 @@ NBR_EXP_PAGE_RULES = (
 )
 """Experience 路径(在职时长 / 居住时长两条由指南 PDF 那两行覆盖,不重复)。"""
 
+NBR_GRAD_PGWP_RE = re.compile(r"have completed a program of study that is eligible for a post-graduation work permit at "
+                              r"a designated learning institution located in New Brunswick")
+"""Graduates 路径的本省院校毕业条文(学历行与经验替代行共用这一句;2026-09-29 抽成常量,原先内联在 NBR_GRAD_RULES 第一条)。"""
+
 NBR_GRAD_RULES = (
-    (re.compile(r"have completed a program of study that is eligible for a post-graduation work permit at a designated learning institution located in New Brunswick"),
+    (NBR_GRAD_PGWP_RE,
      FACTOR_EDUCATION, "", "Completed a PGWP-eligible program at a New Brunswick designated learning institution", "Graduates 学历条文没解析到"),
     (re.compile(r"be working in, or have accepted, a full time non-seasonal position for the employer who is supporting your application"),
      FACTOR_JOB_OFFER, "", "Working in or accepted a full-time non-seasonal position with the supporting employer", "Graduates 在职条文没解析到"),
 )
 """Graduates 路径两条。"""
+
+NBR_GRAD_RES_RE = re.compile(r"have lived in New Brunswick for the past (\w+) months?")
+"""Graduates 路径的居住时长(官方写英文数词 six,rule_rows 只认阿拉伯数字,另走数词解析)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):通道页 Graduates 段现列三条(学历 / 在职或已接 offer / 近 6 个月住在本省),
+先前只抽了前两条。"""
+
+NBR_GRAD_RES_LABEL_TPL = "Lived in New Brunswick for the past {n} months"
+"""Graduates 居住行标签。"""
+
+NBR_PROBLEM_GRAD_RES = "Graduates 居住时长条文没解析到"
+"""硬闸:Graduates 居住句没匹配。"""
+
+NBR_WORK_EXP_RE = re.compile(r"work experience", re.I)
+"""守卫:Graduates 段里出现工作经验字样(经验替代行的前提是这条路不设经验门槛)。"""
+
+NBR_BASIS_PROV_GRAD = "provGraduate"
+"""经验替代路径的口径标记:本省院校毕业(Graduates 路径,可申 PGWP 的课程读完即可,不要求先在现雇主干满 6 个月)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):NB 技术工人三条路径是「任选其一」(PNP 总览页「Your answers to the questionnaire
+will determine your eligibility under all applicable pathways of a stream」)—— 主档是 Experience 路径的同雇主在职 6 个月,
+Graduates 路径条文里没有工作经验一项(在职或已接 offer 即可),记 experienceAlt 给门槛卡列「或……」;判定引擎不读 experienceAlt。"""
+
+NBR_GRAD_ALT_LABEL = ("New Brunswick graduates (PGWP-eligible program at a New Brunswick designated learning institution): "
+                      "no work experience requirement under the Graduates pathway")
+"""经验替代行标签(原句在 valueText)。"""
+
+NBR_PROBLEM_GRAD_ALT = "Graduates 本省院校毕业条文没解析到(经验替代路径)"
+"""硬闸:经验替代行的出处句没匹配。"""
+
+NBR_PROBLEM_GRAD_EXP_WORD = "Graduates 段出现工作经验条文(「本省院校毕业不要求经验」那条替代路径可能已不成立,请人工复核)"
+"""硬闸:守卫命中 —— 不出替代行,宁缺不错。"""
 
 NBR_PRIO_RULES = (
     (re.compile(r"have accepted a full-time, non-seasonal job offer from the employer who is supporting your application"),
