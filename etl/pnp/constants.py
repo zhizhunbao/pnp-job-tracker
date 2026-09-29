@@ -298,6 +298,13 @@ K_CL_KEY = "checklistKey"
 """行键:门槛清单键(2026-09-23 NB 抽选 stream 改 stream 级名后,门槛清单仍按「通道 (pathway)」对 ——
 draw_checklists 的键就是这个拼法;mart 有它先用它,没有用 stream)。"""
 
+K_SELECTION = "selection"
+"""行键:这一行是这期 / 这天抽选里的「哪一项」(结构化短码,前端按码翻三语、只照着显示;认不出 = 空串)。
+2026-09-27 Frank「照改,加这一列」(省提名弹框抽选卡「这个数据怎么回事」:同一组同一天好几行 —— MB 一期下几项选取、
+BC 同一天工资档与分数档、NB 按路径分 —— 行上看不出是哪一项):库表 pnp_draws 加 selection 列,由本域按官方原文
+(各省解析器照原文拼的 note 格)给每行判码,mart 原样带上。码的格式与三省认法见 §10 的 MB_SEL_* / BC_SEL_* / NB_SEL_*;
+落盘门统一打码(functions.mark_and_merge_draws),别省一律空串。"""
+
 K_SCALE = "scale"
 """表键:省自评分制名(前端展示必须声明「省自评分制,非 CRS」)。"""
 
@@ -2559,6 +2566,119 @@ DRAWS_PRINT_MERGE_TPL = "  [merge] {prov} 本轮解析 {new} 条,并回历史后
 DRAWS_PRINT_DONE_TPL = "✓ {path}  ({n} 条抽选)"
 """抽选表收尾报数。
 2026-09-26 晚按省拆后一份只装一省,原句尾巴「/ {provs} 省」去掉。"""
+
+MB_SEL_NOTE_RE = re.compile(r"Draw #\d+: (.+)")
+"""MB 抽选行 note 冒号后那段 = 本行是这期里的哪一项(子选取名;mb_draw_of 按 MB_DRAW_SUB_NOTE_TPL 拼;fullmatch 用)。
+只有「Draw #N」、没有冒号段的行(整段就是一个通道,如 Skilled Worker Stream)不对下面两张表,selection 给空串。
+2026-09-27 Frank「照改,加这一列」:pnp_draws 加 selection 列(缘由见 §1 K_SELECTION),本段 MB_SEL_* / BC_SEL_* /
+NB_SEL_* 是三省的认法 —— 只认官方原文原样(表内逐字全等,或下面的原句正则),认不出一律空串,不拿关键词凑近似项。"""
+
+MB_SEL_CODES = {
+    "Occupation-specific selections": "occ",
+    "Occupation-specific selection": "occ",
+    "Francophone selection": "franco",
+    "Completed post-secondary study in Manitoba": "grad",
+}
+"""MB 子选取名(官方公告里整段加粗的子标题原文,逐字全等才认)→ selection 码(2026-09-27 Frank「照改,加这一列」)。
+出处:crawl 役 mb-root 每小时缓存的逐期公告页(manifest `data/crawl/mb-root/manifest.json`;索引页
+https://immigratemanitoba.com/draws 同一份原文),逐键:
+  · 「Occupation-specific selections」→ occ:Draw #280(https://immigratemanitoba.com/2026/09/expression-of-interest-draw-280,
+    2026-09-24)「Skilled Worker in Manitoba」下的加粗子标题原文,其下原句「Profiles declaring current employment in
+    Manitoba in the unit group listed below were considered.」;#279 / #278 / #276 同写法。
+  · 「Occupation-specific selection」→ occ:单数写法,Draw #275(https://immigratemanitoba.com/2026/07/expression-of-interest-draw-275,
+    2026-07-16)子标题原文,其下原句「Profiles declaring current employment in Manitoba in the unit groups listed below were
+    considered.」;#270 / #269 / #261 / #255 同写法(同一种选取,官方单复数写法不一)。
+  · 「Francophone selection」→ franco:Draw #280 子标题原文,其下原句「Profiles declaring their language of communication
+    with the MPNP to be French, and a valid French language test result were considered in this draw.」
+  · 「Completed post-secondary study in Manitoba」→ grad:Draw #279(https://immigratemanitoba.com/2026/09/expression-of-interest-draw-279,
+    2026-09-10)子标题原文,其下原句「Top Scoring profiles declaring that the applicant or their spouse have completed
+    post-secondary education in Manitoba were considered.」
+表外的子选取名(老公告认不出子标题时的兜底名「Expression of Interest」、「Region-specific selection (Winkler)」、
+「Close relative in Manitoba selection」等)一律空串。"""
+
+MB_SEL_TOP_RE = re.compile(r"Occupation-specific selections? – (?i:Top scoring profiles declaring current employment in "
+                           r"Manitoba in (?:Broad Occupational Category|major group)) (\d+)\s*–")
+"""MB「职业定向选取」子标题下的第 2 个数据块(mb_block_name 拼成「子标题 – 该块前最近一段正文」)按大类 / 主组取高分者
+→ top:N(N 照原文数字;match 用,开头对齐,尾巴是被 MB_BLOCK_NAME_CLIP 截断的正文)。子标题那半截同 MB_SEL_CODES 逐字认,
+只有官方正文那半句不计大小写(实见大小写不一,见下)。官方原句(mb-root 缓存):
+  · Draw #280(2026-09-24):「Top scoring profiles declaring current employment in Manitoba in Broad Occupational
+    Category 2 – Natural and applied sciences and related occupations, were considered.」→ top:2
+  · Draw #278(https://immigratemanitoba.com/2026/08/expression-of-interest-draw-278,2026-08-27):「Top scoring profiles
+    declaring current employment in Manitoba in major group 72 – Technical trades and transportation officers and
+    controllers, were considered.」→ top:72
+  · Draw #276(https://immigratemanitoba.com/2026/07/expression-of-interest-draw-276,2026-07-30):「Top scoring profiles
+    declaring current employment in Manitoba in broad occupational category 9 – Occupations in manufacturing and
+    utilities, were considered.」→ top:9(官方这一期写小写,所以不计大小写)
+数字后必须紧跟破折号(三句原文都是「数字 – 类别名」):块名有截断,数字后没了破折号就可能截在两位数中间,不认;
+开头不是「Top scoring profiles」的块(如不限高分的「All profiles declaring …」)也不认。
+2026-09-27 Frank「照改,加这一列」。"""
+
+MB_SEL_TOP_TPL = "top:{n}"
+"""MB 按大类 / 主组取高分者的码(N = 官方原文里的数字,不补零不改写;2026-09-27 Frank「照改,加这一列」)。"""
+
+BC_SEL_WAGE_RE = re.compile(r"(?:A m|M)inimum wage of \$(\d+(?:,\d{3})*)/hour and \$(\d+(?:,\d{3})*)/year\b")
+"""BC 工资档(同一天另有分数档)→ wage:时薪:年薪(match 用,开头对齐;两个数都去千分位)。官方原文(crawl 役 bc-immigrate
+缓存的 https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/invitations-to-apply,manifest
+`data/crawl/bc-immigrate/manifest.json`):
+  · 表格轮(表头「Date / ITA type / Selection factors / Minimum score / Number of invitations」,note = Selection factors 格):
+    2026-09-24 那行「Minimum wage of $52/hour and $105,000/year, and NOC 0, 1, 2, or 3」→ wage:52:105000
+  · 散文轮(同页 h3 日期段):「On April 22, 2026, the BC PNP issued invitations to apply to 484 candidates who will create
+    high economic impact in B.C. Invitations were issued to candidates with:」其下列项「A minimum wage of $62/hour and
+    $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3 (252 candidates), or」→ wage:62:125000
+  · 2025 存档 PDF(DRAWS_BC_ARCHIVE_URL_TPL,落 `data/crawl/bc-draws-archive/si-2025.pdf`)同散文写法,如 2025-12-10 那轮
+    「A minimum wage of $84/hour and $170,000/year, and a job offer in NOC TEER 0, 1, 2 or 3 (96 candidates)」。
+只写了时薪、没写年薪的档(存档 PDF 2025-05-08 那轮「Minimum wage of $105/hour, currently working full-time in B.C. for
+the supporting employer, and the job offer is NOC TEER 0 or 1」)对不上 wage:时薪:年薪 的形,不认、不补半截码。
+2026-09-27 Frank「照改,加这一列」。"""
+
+BC_SEL_WAGE_TPL = "wage:{hour}:{year}"
+"""BC 工资档的码(数字照原文、去千分位,如 wage:52:105000;2026-09-27 Frank「照改,加这一列」)。"""
+
+BC_SEL_POINTS_RE = re.compile(r"Points|A minimum score of \d+ points")
+"""BC 分数档 → points(fullmatch 用;分数本身在 score 列)。官方原文(同上两处出处):
+  · 表格轮 Selection factors 格整格就是「Points」:2026-09-24「Innovate: High Economic Impact / Points / 131 / 288」、
+    2026-09-17「Temporary Rural/Remote Health Support Initiative / Points / 60 / 33」;
+  · 散文轮与存档 PDF 的列项「A minimum score of 138 points (232 candidates).」(括注人数与句末标点解析时已剥,
+    见 BC_PROSE_ITEM_RE / BC_PDF_ITEM_RE)。
+2026-09-27 Frank「照改,加这一列」。"""
+
+BC_SEL_POINTS = "points"
+"""BC 分数档的码(2026-09-27 Frank「照改,加这一列」)。"""
+
+NB_SEL_PATHS_RE = re.compile(r"Pathways: (.+?)(?:\. Categories: .*)?")
+"""NB 抽选行 note 的路径段(nb_draw_of 按 NB_NOTE_PATHS_TPL + NB_NOTE_SEP + NB_CATEGORIES_TPL 拼:
+「Pathways: A + B. Categories: …」;fullmatch 用,取第一个「. Categories: 」之前那段)。没有路径段的行(AIP 只有
+「Categories: …」)不对下面的表,selection 给空串。2026-09-27 Frank「照改,加这一列」。"""
+
+NB_SEL_CODES = {
+    "NB Experience": "exp",
+    "NB Graduates": "grad",
+    "NB Priorities": "prio",
+    "Francophone Workers in New Brunswick": "frwork",
+    "NB Francophone Priorities": "frprio",
+}
+"""NB 路径名(note 里的写法:官方名经 NB_PATHWAY_NAMES 认成规范写法、「New Brunswick」缩成「NB」)→ 路径短码;
+一行几条路径照 note 先后(= NB_PATHWAY_NAMES 规范序,nb_draw_of 已排好)用 NB_SEL_CODE_SEP 连,前面加「path:」。
+有一条不在表里 = 整行空串(不出半截码)。出处:crawl 役 nb-imm 缓存的
+https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html
+(manifest `data/crawl/nb-imm/manifest.json`)Pathways 格原文,逐键:
+  · 「NB Experience」← New Brunswick Experience、「NB Graduates」← New Brunswick Graduates:当期块「New Brunswick Skilled
+    Worker stream」(Date of draw「September 15 to 18, 2026」)Pathways 格「New Brunswick Graduates / New Brunswick
+    Experience」(两行 <br> 分隔)→ path:exp+grad
+  · 「NB Priorities」← New Brunswick Priorities:2026 历史表「July 16 to 18, 2026 / New Brunswick Skilled Worker stream」
+    那行 Pathways 格「New Brunswick Experience / New Brunswick Priorities」→ path:exp+prio
+  · 「Francophone Workers in New Brunswick」、「NB Francophone Priorities」← New Brunswick Francophone Priorities:
+    当期块「Strategic Initiative」(「September 11, 2026」)Pathways 格「Francophone Workers in New Brunswick / New Brunswick
+    Francophone Priorities」→ path:frwork+frprio
+表外的路径名一律空串:同页「New Brunswick Express Entry stream」的「Employment in New Brunswick」、2025 历史表
+「June 17, 2025」那行的「New Brunswick Priority Occupations」(与 2026 的「New Brunswick Priorities」写法不同,
+不按字面相近归并)。2026-09-27 Frank「照改,加这一列」。"""
+
+NB_SEL_TPL = "path:{codes}"
+"""NB 路径组合的码(2026-09-27 Frank「照改,加这一列」)。"""
+
+NB_SEL_CODE_SEP = "+"
+"""NB 多条路径短码之间的连接符(path:exp+grad;2026-09-27 Frank「照改,加这一列」)。"""
 
 
 # =========================================================================

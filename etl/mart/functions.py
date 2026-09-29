@@ -242,6 +242,7 @@ from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(
     SECTOR_UNKNOWN_TPL,
 )
 from mart.scheme import CodeExclIn, MartEmployerSectorTest, SectorIn, SectorWarnIn, StreamHitIn, WordsIn  # 同上
+from mart.scheme import MartDrawSelectionTest  # 2026-09-27 Frank「照改,加这一列」(pnp_draws 带 selection 格)
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -3845,31 +3846,36 @@ def to_pnp_draw_row(x: DrawRowIn) -> dict:
 
     门槛清单按 checklistKey 对(2026-09-23 NB 抽选 stream 改 stream 级名后,清单仍按「通道 (pathway)」挂键);
     没有这一格的省照旧按 stream 对。
+    2026-09-27 Frank「照改,加这一列」:selection 格原样带上 pnp 域落盘时按官方原文判好的码(这一行是这期 / 这天里的哪一项,
+    前端按码翻三语、只照着显示);pnp 抽选单元还没按新代码重跑过的旧文件没这一格 → 空串(同「认不出」,前端不显示)。
     """
     row = dict(x.base)
     stream = x.draw.get("stream", "")
     row.update({"kind": DRAW_KIND_DRAW, "drawDate": x.draw.get("date"), "stream": stream,
                 "streamZh": x.stream_zh.get(stream), "score": x.draw.get("score"),
                 "invitations": x.draw.get("invitations"), "note": x.draw.get("note", ""),
+                "selection": x.draw.get("selection", ""),
                 "checklist": x.checklist.get(x.draw.get("checklistKey") or stream)})
     return row
 
 
 def to_pnp_notice_row(x: NoticeRowIn) -> dict:
-    """pnp_draws 表的一行改制通告。"""
+    """pnp_draws 表的一行改制通告。
+    2026-09-27 Frank「照改,加这一列」:selection 格给空串(通告不是某次抽选里的一项;表里每行都有这一格)。"""
     row = dict(x.base)
     row.update({"kind": DRAW_KIND_NOTICE, "drawDate": x.notice.get("date"), "stream": "",
                 "streamZh": None, "score": None, "invitations": None,
-                "note": x.notice.get("note", "")})
+                "note": x.notice.get("note", ""), "selection": ""})
     return row
 
 
 def to_ee_draw_row(x: EeDrawIn) -> dict:
-    """联邦 EE 历次抽选并进 pnp_draws(province='FED';#135 时间线页读这里的 FED 行)。"""
+    """联邦 EE 历次抽选并进 pnp_draws(province='FED';#135 时间线页读这里的 FED 行)。
+    2026-09-27 Frank「照改,加这一列」:selection 格给空串(联邦一轮一个类别,本批只判 MB / BC / NB 三省)。"""
     return {"province": PROV_FED, "label": x.category, "scale": SCALE_CRS,
             "url": EE_ROUNDS_URL, "fetched": x.fetched, "kind": DRAW_KIND_DRAW,
             "drawDate": x.draw.get("date"), "stream": x.draw.get("drawName", ""),
-            "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": "",
+            "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": "", "selection": "",
             "checklist": x.checklist.get(x.draw.get("drawName", ""))}
 
 
@@ -7263,11 +7269,13 @@ def run_tests() -> None:
     同日再加一组:MartNbNlOpsTest(NB / NL 两份年报统计经分派出行:NB 已发提名按自然年、NL 提名人数单位人另立指标)。
     同日再加一组:MartBcFunnelOpsTest(BC 年报四组 SI 逐年数出行:指标名、统计期、单位与出处照行,bc-stats 形的表不多出行)。
     同日再加两组:MartMbPoolTest(MB 年报池子历年序列:一年一行新到旧、period 记年报年、asOf 记年末月、2024 那行句尾 [sic])、
-    MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。"""
+    MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。
+    同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
-                 MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest):
+                 MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
+                 MartDrawSelectionTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

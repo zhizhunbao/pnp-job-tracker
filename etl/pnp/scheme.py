@@ -14,11 +14,13 @@ import 两个洞:标准库 + 本域 constants(叶子律的域内松绑,跨域仍
 被测的 pnp.functions 在用例体内现取 —— functions 反过来 import 本文件,顶部 import 会成环。
 2026-09-27 九省体检修复批再住三组:MbDrawTotalTest / DrawMergeTest / SkAgriStarTest(同一个 test 步跑)。
 同日 Frank 拍板「看得出才改判」再住一组:EmployerSectorTablesTest(雇主行业条件与带星号码如实记进表)。
+同日 Frank「照改,加这一列」再住一组 DrawSelectionTest(抽选行 selection 码的三省认法 + 落盘门并回口径 + 真文件金标)。
 """
 import json
 import re
 import tempfile
 import unittest
+from collections import Counter
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -33,6 +35,7 @@ from pnp.constants import (  # 2026-09-27 九省体检修复批的三组自测�
     DRAWS_ON_INV_URL, K_SECTOR_QUOTE, SK_AGRI_SECTOR_QUOTE, SK_NOC_PATTERNS, SK_STREAMS,
 )
 from pnp.constants import SK_AGRI_SECTOR  # 2026-09-27 Frank 拍板「看得出才改判」(SK 农业带星号码标行业键)
+from pnp.constants import OUT_DRAWS_FILE_TPL, OUT_PNP_DIR  # 2026-09-27 抽选行 selection 码自测读真文件用
 
 
 class SoupNodeLike(Protocol):
@@ -359,6 +362,28 @@ class DrawCoverIn:
 
     new: list
     """本轮解析到的抽选行。"""
+
+
+@dataclass
+class DrawSelectionsIn:
+    """mark_draw_selections() 入参:一省的一串抽选行(2026-09-27 Frank「照改,加这一列」:每行原地补 selection 码)。"""
+
+    prov: str
+    """省码(按省分派认法;MB / BC / NB 之外一律空串)。"""
+
+    draws: list
+    """抽选行(本轮解析到的,或上一轮落盘的旧行);原地写 selection 格。"""
+
+
+@dataclass
+class DrawSelectionIn:
+    """draw_selection_of() 入参:一行抽选的省码与 note 原文(2026-09-27 Frank「照改,加这一列」)。"""
+
+    prov: str
+    """省码。"""
+
+    note: str
+    """该行 note(各省解析器照官方原文拼的那格;缺格按空串)。"""
 
 
 @dataclass
@@ -2925,6 +2950,283 @@ class BcFunnelTest(unittest.TestCase):
         self.assertEqual(list(got), ["siDecisions", "siItasIssued", "siItaApplications", "siApplicationsReceived"])
         self.assertEqual([r["year"] for r in got["siItasIssued"]], [2025, 2020])
         self.assertEqual(got["siDecisions"], [])
+
+
+class DrawSelectionTest(unittest.TestCase):
+    """抽选行 selection 码自测(2026-09-27 Frank「照改,加这一列」):MB / BC / NB 各一组手写金标(真行 note 原样)+ 拒猜 +
+    变异探针;落盘门的并回口径(本轮行与旧行都先打码,旧行不因多一格留成两行);另读仓里的真抽选文件(draws-mb / bc / nb.json)
+    逐行判,只数到核对当日 CAP,各码行数与认不出的原文种类对金标 —— 之后官方每发一轮文件多几行,金标不跟着动;官方或解析器
+    改了已有行的 note,这条会红:核对后改金标(这正是它要拦的事)。纯函数用例不联网不读仓;真文件读不到就跳过。"""
+
+    CAP = "2026-09-27"
+    """真文件金标只数到这一天(核对当日)。"""
+
+    MB_TOP2 = ("Draw #280: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba "
+               "in Broad Occupational Category 2 – Natural an")
+    """MB 第 280 期按大类取高分者那一行的 note(draws-mb.json 原样;块名截在 MB_BLOCK_NAME_CLIP)。"""
+
+    MB_TOP72 = ("Draw #278: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba "
+                "in major group 72 – Technical trades and tran")
+    """MB 第 278 期按主组取高分者那一行的 note(原样)。"""
+
+    MB_TOP9 = ("Draw #276: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba "
+               "in broad occupational category 9 – Occupation")
+    """MB 第 276 期那一行的 note(原样;官方这一期写小写)。"""
+
+    BC_WAGE = "Minimum wage of $52/hour and $105,000/year, and NOC 0, 1, 2, or 3"
+    """BC 2026-09-24 工资档那一行的 note(表格轮 Selection factors 格原样)。"""
+
+    NB_EXP_GRAD = ("Pathways: NB Experience + NB Graduates. Categories: Construction, Education, social and community "
+                   "services, Manufacturing, Other trades, Professional and IT, Sa")
+    """NB 2026-09-18 那一行的 note(原样;note 截在 DRAWS_NOTE_CLIP)。"""
+
+    GOLD = {
+        "MB": {"": 67, "occ": 9, "franco": 5, "grad": 4, "top:2": 1, "top:72": 1, "top:9": 1},
+        "BC": {"": 22, "points": 13, "wage:62:125000": 3, "wage:52:105000": 1, "wage:55:110000": 1,
+               "wage:58:115000": 1, "wage:59:120000": 1, "wage:70:145000": 1, "wage:84:170000": 1,
+               "wage:90:175000": 1},
+        "NB": {"": 22, "path:exp+grad": 8, "path:exp": 5, "path:frwork+frprio": 5, "path:grad": 5, "path:frprio": 2,
+               "path:exp+prio": 1, "path:frwork": 1},
+    }
+    """手写金标:核对当日三份真文件(截至 CAP)每种码各几行(MB 88 行认出 21、BC 45 行认出 23、NB 49 行认出 27)。"""
+
+    MISS = {
+        "MB": {"": 40, "Expression of Interest": 24, "Region-specific selection (Winkler)": 1,
+               "2. Profiles declaring current employment in Manitoba in the unit group listed below were considered.": 1,
+               "Close relative in Manitoba selection": 1},
+        "BC": {"All priority health care occupations *": 5, "All priority veterinary care occupations": 5,
+               "All priority construction occupations *": 4, "Early childhood educators only *": 3,
+               "All priority education occupations *": 1, "Early childhood educators *": 1,
+               "Early childhood educators only (NOC 42202) *": 1,
+               "All priority construction occupations (including workers who have apprenticeships registered with "
+               "SkilledTradesBC) *": 1,
+               "Minimum wage of $105/hour, currently working full-time in B.C. for the supporting employer, and the "
+               "job offer is NOC TEER 0 or 1": 1},
+        "NB": {"Employment in New Brunswick": 14, "": 7, "NB Priority Occupations": 1},
+    }
+    """手写金标:同一批行里认不出(空串)的原文种类与行数。种类的取法见 kind_of:MB 取「Draw #N: 」之后那段
+    (空串 = 只有期号、整段就是一个通道)、BC 取整条 note、NB 取路径段(空串 = AIP 行没有路径段)。"""
+
+    def sel(self, prov: str, note: str) -> str:
+        """跑一次被测的判码(一行)。"""
+        from pnp import functions as fn
+        return fn.draw_selection_of(DrawSelectionIn(prov=prov, note=note))
+
+    def kind_of(self, prov: str, note: str) -> str:
+        """认不出的行归哪一种原文(只给金标分组用,不是被测逻辑)。"""
+        if prov == "MB":
+            m = re.fullmatch(r"Draw #\d+(?:: (.+))?", note)
+            if m is None:
+                return note
+            return m.group(1) or ""
+        if prov == "NB":
+            m = re.match(r"Pathways: (.+?)(?:\. Categories: |$)", note)
+            if m is None:
+                return ""
+            return m.group(1)
+        return note
+
+    def real_rows(self, prov: str) -> list:
+        """仓里的真抽选文件里、截至 CAP 的行(读不到就跳过本用例)。"""
+        path = Path(OUT_PNP_DIR) / OUT_DRAWS_FILE_TPL.format(prov=prov.lower())
+        if path.exists() is False:
+            self.skipTest("仓里没有 " + path.name)
+        rows = []
+        for r in json.loads(path.read_text(encoding="utf-8"))["provinces"][prov]["draws"]:
+            if r["date"] <= self.CAP:
+                rows.append(r)
+        return rows
+
+    def codes_of(self, prov: str, rows: list) -> Counter:
+        """一串行按 note 判码后的计数。"""
+        out: Counter = Counter()
+        for r in rows:
+            out[self.sel(prov, r.get("note") or "")] += 1
+        return out
+
+    def test_mb_golden(self) -> None:
+        """MB 金标:子选取名逐字全等 → occ(单复数两种官方写法)/ franco / grad;按大类 / 主组取高分者 → top:N(数字照原文,
+        大类、主组、官方小写那一期都认)。"""
+        cases = [("Draw #280: Occupation-specific selections", "occ"), ("Draw #275: Occupation-specific selection", "occ"),
+                 (self.MB_TOP2, "top:2"), (self.MB_TOP72, "top:72"), (self.MB_TOP9, "top:9"),
+                 ("Draw #280: Francophone selection", "franco"),
+                 ("Draw #279: Completed post-secondary study in Manitoba", "grad")]
+        for note, want in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("MB", note), want)
+
+    def test_mb_refuses_to_guess(self) -> None:
+        """MB 拒猜:只有期号(整段一个通道)、老公告兜底名、表外选取名、不限高分的「All profiles」、数字后没有破折号(可能截在
+        两位数中间)、截在数字前、子标题换了大小写或单复数写错、不是 MB note 的形、空串 → 一律空串。"""
+        top = "Draw #280: Occupation-specific selections – Top scoring profiles declaring current employment in Manitoba in "
+        cases = ["Draw #280", "Draw #247: Expression of Interest", "Draw #236: Region-specific selection (Winkler)",
+                 "Draw #233: Close relative in Manitoba selection",
+                 "Draw #235: 2. Profiles declaring current employment in Manitoba in the unit group listed below were "
+                 "considered.",
+                 "Draw #279: Occupation-specific selections – All profiles declaring current employment in Manitoba in "
+                 "Broad Occupational Category 3 – Health occupations",
+                 top + "Broad Occupational Category 1", top + "Broad Occupational Category",
+                 self.MB_TOP2.replace("Occupation-specific", "occupation-specific"),
+                 "Draw #280: occupation-specific selections", "Draw #280: Francophone selections",
+                 "Occupation-specific selections", "Draw #280 Francophone selection", ""]
+        for note in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("MB", note), "")
+
+    def test_bc_golden(self) -> None:
+        """BC 金标:工资档两种官方写法(表格轮 / 散文轮与存档 PDF)→ wage:时薪:年薪(去千分位);分数档两种写法 → points。"""
+        cases = [(self.BC_WAGE, "wage:52:105000"),
+                 ("A minimum wage of $62/hour and $125,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+                  "wage:62:125000"),
+                 ("A minimum wage of $90/hour and $175,000/year, and a job offer in NOC TEER 0, 1, 2 or 3",
+                  "wage:90:175000"),
+                 ("Points", "points"), ("A minimum score of 138 points", "points")]
+        for note, want in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("BC", note), want)
+
+    def test_bc_refuses_to_guess(self) -> None:
+        """BC 拒猜:只写时薪没写年薪(存档 2025-05-08 那轮)、Care / Build 的职业类别行、小数时薪、年薪单位写法不同、整格小写、
+        分数没写数、分数档后面还跟别的条件、空串 → 一律空串(不出半截码)。"""
+        cases = ["Minimum wage of $105/hour, currently working full-time in B.C. for the supporting employer, and the job "
+                 "offer is NOC TEER 0 or 1",
+                 "Early childhood educators only *", "All priority health care occupations *",
+                 self.BC_WAGE.replace("$52/hour", "$52.50/hour"), self.BC_WAGE.replace("/year", "/yr"),
+                 "points", "A minimum score of points", "A minimum score of 138 points and a job offer", ""]
+        for note in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("BC", note), "")
+
+    def test_nb_golden(self) -> None:
+        """NB 金标:路径段逐条换短码、照 note 先后用 + 连;类别段截断、没有类别段、类别段里带官方备注都不影响。"""
+        cases = [(self.NB_EXP_GRAD, "path:exp+grad"),
+                 ("Pathways: NB Experience + NB Priorities. Categories: Construction trades, Health care", "path:exp+prio"),
+                 ("Pathways: Francophone Workers in New Brunswick + NB Francophone Priorities. Categories: All sectors",
+                  "path:frwork+frprio"),
+                 ("Pathways: NB Francophone Priorities. Categories: All sectors", "path:frprio"),
+                 ("Pathways: NB Graduates. Categories: All sectors, Note: The June 16 & 17 draw was limited to candidates "
+                  "with work permits expiring in 2025", "path:grad"),
+                 ("Pathways: NB Experience", "path:exp")]
+        for note, want in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("NB", note), want)
+
+    def test_nb_refuses_to_guess(self) -> None:
+        """NB 拒猜:表外路径(Employment in New Brunswick)、与 NB Priorities 写法不同的「NB Priority Occupations」、两条里有一条
+        认不出(整行空串,不出 path:exp 半截码)、AIP 行没有路径段、截在「. Categories」标记中间、官方全名没缩写(不是 note 的形)、
+        路径段是空的、空串 → 一律空串。"""
+        cases = ["Pathways: Employment in New Brunswick. Categories: All sectors",
+                 "Pathways: NB Priority Occupations. Categories: Health care",
+                 "Pathways: NB Experience + Employment in New Brunswick. Categories: All sectors",
+                 "Categories: Transportation, Manufacturing", "Pathways: NB Experience. Categ",
+                 "Pathways: New Brunswick Experience. Categories: All sectors", "Pathways: . Categories: All sectors",
+                 "Pathways: NB Experience, NB Graduates. Categories: All sectors", ""]
+        for note in cases:
+            with self.subTest(note=note):
+                self.assertEqual(self.sel("NB", note), "")
+
+    def test_other_provinces_empty(self) -> None:
+        """三省之外一律空串(ON 区域轮、NL 批次注、AB 空注);认法按省分派,MB 的注拿到 BC 判、BC 的注拿到 NB 判都不认。"""
+        cases = [("ON", "Targeted draw for Southwestern Ontario."), ("NL", "NLPNP – 61, AIP – 01"), ("AB", ""),
+                 ("QC", "Minimum score by invitation profile: 782, 741"), ("BC", "Draw #280: Francophone selection"),
+                 ("NB", self.BC_WAGE), ("MB", "Pathways: NB Experience. Categories: All sectors")]
+        for prov, note in cases:
+            with self.subTest(prov=prov, note=note):
+                self.assertEqual(self.sel(prov, note), "")
+
+    def test_text_mutation_probe(self) -> None:
+        """变异探针(原文):码跟着原文里的数字 / 次序走 —— 改大类号、主组号、时薪年薪,码当场跟着变;千分位有无同码;
+        NB 两条路径倒过来写,码照 note 先后倒过来(不替原文重排)。"""
+        self.assertEqual(self.sel("MB", self.MB_TOP2.replace("Category 2 ", "Category 7 ")), "top:7")
+        self.assertEqual(self.sel("MB", self.MB_TOP72.replace("group 72 ", "group 73 ")), "top:73")
+        self.assertEqual(self.sel("BC", self.BC_WAGE.replace("$52/hour and $105,000", "$53/hour and $106,000")),
+                         "wage:53:106000")
+        self.assertEqual(self.sel("BC", self.BC_WAGE.replace("$105,000", "$105000")), "wage:52:105000")
+        self.assertEqual(self.sel("NB", self.NB_EXP_GRAD.replace("NB Experience + NB Graduates",
+                                                                 "NB Graduates + NB Experience")), "path:grad+exp")
+
+    def test_rule_tables_probe(self) -> None:
+        """变异探针(规则表):把 MB 子选取表清空,occ / franco / grad 当场认不出(top 不走表照认);NB 路径表拿掉 NB Priorities,
+        「NB Experience + NB Priorities」整行空串(不出 path:exp 半截码);BC 分数档正则只剩「Points」,散文写法当场认不出 ——
+        证明判码读的就是 constants 那几张表。"""
+        from pnp import functions as fn
+        with mock.patch.object(fn, "MB_SEL_CODES", {}):
+            self.assertEqual(self.sel("MB", "Draw #280: Francophone selection"), "")
+            self.assertEqual(self.sel("MB", "Draw #280: Occupation-specific selections"), "")
+            self.assertEqual(self.sel("MB", self.MB_TOP2), "top:2")
+        nb = dict(fn.NB_SEL_CODES)
+        del nb["NB Priorities"]
+        with mock.patch.object(fn, "NB_SEL_CODES", nb):
+            self.assertEqual(self.sel("NB", "Pathways: NB Experience + NB Priorities. Categories: Health care"), "")
+            self.assertEqual(self.sel("NB", self.NB_EXP_GRAD), "path:exp+grad")
+        with mock.patch.object(fn, "BC_SEL_POINTS_RE", re.compile(r"Points")):
+            self.assertEqual(self.sel("BC", "A minimum score of 138 points"), "")
+            self.assertEqual(self.sel("BC", "Points"), "points")
+
+    def test_mark_and_merge(self) -> None:
+        """落盘门的并回口径:本轮行与旧行都先按现行规则打码 —— ① 新代码上线后第一轮,旧文件里没这一格的同一行不留两行;
+        ② 旧行已带码、空着的格本轮填上了(MB 第 272 期人数 None → 104)照旧只留本轮那行;③ 旧行带着按旧规则判的码,重判后
+        与本轮一致、不留两行;④ 只在历史里的旧行也补上码(认得出的给码,认不出的给空串)。
+        变异探针:同样的输入跳过打码直接并回(merged_draws_of),② 那行就留成两行 —— 证明「先打码再并回」这一步不能省。"""
+        from pnp import functions as fn
+        fr = {"date": "2026-09-24", "stream": "Skilled Worker in Manitoba", "checklistKey": "Francophone selection",
+              "note": "Draw #280: Francophone selection", "score": None, "invitations": 16}
+        sws = {"date": "2026-06-04", "stream": "Skilled Worker Stream", "note": "Draw #272", "score": None,
+               "invitations": 104}
+        old_sws = dict(sws)
+        old_sws["invitations"] = None
+        old_sws["selection"] = ""
+        stale = dict(fr)
+        stale["selection"] = "francophone"
+        grad = {"date": "2025-03-21", "stream": "Skilled Worker in Manitoba",
+                "checklistKey": "Completed post-secondary study in Manitoba",
+                "note": "Draw #241: Completed post-secondary study in Manitoba", "score": 844, "invitations": 101}
+        winkler = {"date": "2025-01-09", "stream": "Skilled Worker Overseas",
+                   "checklistKey": "Region-specific selection (Winkler)",
+                   "note": "Draw #236: Region-specific selection (Winkler)", "score": 615, "invitations": 52}
+        first = [dict(fr), dict(old_sws), dict(grad), dict(winkler)]
+        restale = [dict(stale), dict(old_sws), dict(grad), dict(winkler)]
+        for old in (first, restale):
+            label = old[0].get("selection")
+            got = fn.mark_and_merge_draws(MergeDrawsIn(prov="MB", new=[dict(fr), dict(sws)], old={"MB": {"draws": old}}))
+            with self.subTest(old=label):
+                self.assertEqual([(r["note"], r["invitations"], r["selection"]) for r in got],
+                                 [("Draw #280: Francophone selection", 16, "franco"), ("Draw #272", 104, ""),
+                                  ("Draw #241: Completed post-secondary study in Manitoba", 101, "grad"),
+                                  ("Draw #236: Region-specific selection (Winkler)", 52, "")])
+        bare = fn.merged_draws_of(MergeDrawsIn(prov="MB", new=[dict(sws)], old={"MB": {"draws": [dict(old_sws)]}}))
+        self.assertEqual(len(bare), 2)
+        got = fn.mark_and_merge_draws(MergeDrawsIn(prov="MB", new=[dict(sws)], old={"MB": {"draws": [dict(old_sws)]}}))
+        self.assertEqual(len(got), 1)
+
+    def test_real_files(self) -> None:
+        """金标:仓里三份真抽选文件截至 CAP 的行,各码行数对 GOLD、认不出的原文种类与行数对 MISS(报告里的计数表即此)。"""
+        for prov in ("MB", "BC", "NB"):
+            with self.subTest(prov=prov):
+                rows = self.real_rows(prov)
+                self.assertEqual(dict(self.codes_of(prov, rows)), self.GOLD[prov])
+                miss: Counter = Counter()
+                for r in rows:
+                    if self.sel(prov, r.get("note") or "") == "":
+                        miss[self.kind_of(prov, r.get("note") or "")] += 1
+                self.assertEqual(dict(miss), self.MISS[prov])
+
+    def test_real_files_mutation_probe(self) -> None:
+        """变异探针(真文件):把真行原文改掉一处 —— MB「Occupation-specific」去掉连字符,occ 与 top 共 12 行全成空串、franco / grad
+        不动;BC「/year」改「/yr」,10 行工资档全成空串、points 不动;NB「NB Graduates」少个 s,带 grad 的 13 行全成空串 ——
+        证明金标数是判码读原文读出来的,不是碰巧。"""
+        cases = [("MB", "Occupation-specific", "Occupation specific", {"": 79, "franco": 5, "grad": 4}),
+                 ("BC", "/year", "/yr", {"": 32, "points": 13}),
+                 ("NB", "NB Graduates", "NB Graduate", {"": 35, "path:exp": 5, "path:frwork+frprio": 5,
+                                                        "path:frprio": 2, "path:exp+prio": 1, "path:frwork": 1})]
+        for prov, old, new, want in cases:
+            with self.subTest(prov=prov):
+                rows = []
+                for r in self.real_rows(prov):
+                    m = dict(r)
+                    m["note"] = str(r.get("note") or "").replace(old, new)
+                    rows.append(m)
+                self.assertEqual(dict(self.codes_of(prov, rows)), want)
 
 
 # =========================================================================

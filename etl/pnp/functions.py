@@ -1592,6 +1592,11 @@ from pnp.constants import (  # noqa: E402 — 段10 2026-09-26 补 NS / QC 两�
     QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
 )
 from pnp.scheme import BcProseIn, CachedDrawsIn, PutDrawsIn, QcDrawIn  # noqa: E402 — 同上
+from pnp.constants import (  # noqa: E402 — 段10 2026-09-27 抽选行 selection 码(Frank「照改,加这一列」)的常量单列一块(同上)
+    BC_SEL_POINTS, BC_SEL_POINTS_RE, BC_SEL_WAGE_RE, BC_SEL_WAGE_TPL, K_SELECTION, MB_SEL_CODES, MB_SEL_NOTE_RE,
+    MB_SEL_TOP_RE, MB_SEL_TOP_TPL, NB_SEL_CODE_SEP, NB_SEL_CODES, NB_SEL_PATHS_RE, NB_SEL_TPL,
+)
+from pnp.scheme import DrawSelectionIn, DrawSelectionsIn  # noqa: E402 — 同上
 
 
 def fetch_draws_page(url: str) -> str:
@@ -2868,17 +2873,86 @@ def put_prov_draws(x: PutDrawsIn) -> None:
     (PE 2026-09-10 接入,是唯一不发请求的一省 —— 官网在 Radware 墙后,原文只能从 crawl 层取。)
     2026-09-26 再接两份只读缓存的:NS 月度选取人数、QC PSTQ 邀请记录(QC 不属 PNP,只收邀请事实);
     这两省官方会回头改数,并回历史走覆盖式(merged_draws_of 分派)。」
-    当年的问题:九省写一份文件,单省失败只打一行「保留旧数据」、整步照样算成功,文件日期照样前移,告警一直是绿的。"""
+    当年的问题:九省写一份文件,单省失败只打一行「保留旧数据」、整步照样算成功,文件日期照样前移,告警一直是绿的。
+    2026-09-27 Frank「照改,加这一列」:并回历史前先给本轮行与旧行都打上 selection 码(mark_and_merge_draws;原直调
+    merged_draws_of),落盘的每一行都带这一格。"""
     path = OUT_PNP_DIR / OUT_DRAWS_FILE_TPL.format(prov=x.prov.lower())
     say(PRINT_OUT_TPL.format(path=path))
     block = x.block
-    block[K_DRAWS] = merged_draws_of(MergeDrawsIn(prov=x.prov, new=block[K_DRAWS], old=old_provinces(path)))
+    block[K_DRAWS] = mark_and_merge_draws(MergeDrawsIn(prov=x.prov, new=block[K_DRAWS], old=old_provinces(path)))
     paths.write_json(paths.WriteJsonIn(path=path, payload={
         K_SOURCE: DRAWS_SOURCE,
         K_FETCHED: today_iso(),
         K_PROVINCES: {x.prov: block},
     }, indent=INDENT_2))
     say(DRAWS_PRINT_DONE_TPL.format(path=path, n=len(block[K_DRAWS])))
+
+
+def mark_and_merge_draws(x: MergeDrawsIn) -> list:
+    """本轮行与上一轮旧行先各自打上 selection 码(mark_draw_selections),再交 merged_draws_of 并回历史。
+    2026-09-27 Frank「照改,加这一列」:码只看 note、按现行规则现判,所以并回时新旧行口径一致 —— 旧行没这一格或按旧规则判的,
+    不会因为多一格 / 码不同被当成另一轮留两行(is_draw_covered「旧行有值的格逐格相同」照常成立);页面已下架、只在历史里的
+    旧行也补上这一格,不留「有的行有码、有的行没这格」。"""
+    mark_draw_selections(DrawSelectionsIn(prov=x.prov, draws=x.new))
+    mark_draw_selections(DrawSelectionsIn(prov=x.prov, draws=(x.old.get(x.prov) or {}).get(K_DRAWS) or []))
+    return merged_draws_of(x)
+
+
+def mark_draw_selections(x: DrawSelectionsIn) -> None:
+    """一串抽选行逐行按 note 判 selection 码,原地写进 K_SELECTION 格(认不出给空串,不猜;2026-09-27 Frank「照改,加这一列」)。"""
+    for d in x.draws:
+        d[K_SELECTION] = draw_selection_of(DrawSelectionIn(prov=x.prov, note=str(d.get(K_NOTE) or EMPTY_JOIN)))
+
+
+def draw_selection_of(x: DrawSelectionIn) -> str:
+    """一行抽选是这期 / 这天里的哪一项:按省分派认法(本批 Frank 点名 MB / BC / NB 三省,别省一律空串)。
+    码的格式与官方出处见 constants 的 MB_SEL_* / BC_SEL_* / NB_SEL_*(2026-09-27 Frank「照改,加这一列」)。"""
+    if x.prov == PROV_MB:
+        return mb_selection_of(x.note)
+    if x.prov == PROV_BC:
+        return bc_selection_of(x.note)
+    if x.prov == PROV_NB:
+        return nb_selection_of(x.note)
+    return EMPTY_JOIN
+
+
+def mb_selection_of(note: str) -> str:
+    """MB:note「Draw #N: 子选取名」冒号后那段 → occ / top:N / franco / grad;没有冒号段、认不出 → 空串(2026-09-27)。"""
+    m = MB_SEL_NOTE_RE.fullmatch(note)
+    if m is None:
+        return EMPTY_JOIN
+    sub = m.group(1)
+    if sub in MB_SEL_CODES:
+        return MB_SEL_CODES[sub]
+    top = MB_SEL_TOP_RE.match(sub)
+    if top is None:
+        return EMPTY_JOIN
+    return MB_SEL_TOP_TPL.format(n=top.group(1))
+
+
+def bc_selection_of(note: str) -> str:
+    """BC:工资档 → wage:时薪:年薪(去千分位);分数档 → points;认不出 → 空串(2026-09-27)。"""
+    m = BC_SEL_WAGE_RE.match(note)
+    if m is not None:
+        return BC_SEL_WAGE_TPL.format(hour=DRAWS_NUM_STRIP_RE.sub(EMPTY_JOIN, m.group(1)),
+                                      year=DRAWS_NUM_STRIP_RE.sub(EMPTY_JOIN, m.group(2)))
+    if BC_SEL_POINTS_RE.fullmatch(note) is not None:
+        return BC_SEL_POINTS
+    return EMPTY_JOIN
+
+
+def nb_selection_of(note: str) -> str:
+    """NB:note 路径段「Pathways: A + B」逐条换短码、照 note 先后用 + 连 → path:…;没有路径段、有一条认不出 → 空串
+    (不出半截码;2026-09-27)。"""
+    m = NB_SEL_PATHS_RE.fullmatch(note)
+    if m is None:
+        return EMPTY_JOIN
+    codes: list = []
+    for name in m.group(1).split(PLUS_JOIN_SEP):
+        if name not in NB_SEL_CODES:
+            return EMPTY_JOIN
+        codes.append(NB_SEL_CODES[name])
+    return NB_SEL_TPL.format(codes=NB_SEL_CODE_SEP.join(codes))
 
 
 # =========================================================================
@@ -8724,6 +8798,7 @@ from pnp.scheme import NsQuarterlyTest  # noqa: E402 — 同上(2026-09-29 NS �
 from pnp.scheme import NbNlStatsTest  # noqa: E402 — 同上(2026-09-29 NB / NL 往年提名)
 from pnp.scheme import BcFunnelTest, OnAuditTest  # noqa: E402 — 同上(2026-09-29 ON 审计长附录、BC 年报四组逐年数)
 from pnp.scheme import AbFederalTest, MbPoolYearsTest  # noqa: E402 — 同上(2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额)
+from pnp.scheme import DrawSelectionTest  # noqa: E402 — 同上(2026-09-27 Frank「照改,加这一列」)
 
 
 def run_tests() -> None:
@@ -8740,7 +8815,8 @@ def run_tests() -> None:
     同日再加两组:OnAuditTest(ON 省审计长附录 1:取合计行不取配额行、列没对齐整份不用、只补逐年页缺的年份、对不上留痕)、
     BcFunnelTest(BC 年报四组 SI 逐年数:每份只认自己那一年、三种收件写法、2022 那份的链接形)。
     同日再加两组:MbPoolYearsTest(MB 年报池子历年序列:原句与原句里的年照录、节标题逐年照取、缺年报 / 认不出各记一条)、
-    AbFederalTest(AB 额外联邦名额表归自己一堆、label 挂官方原句、缺表或缺那句不出行)。"""
+    AbFederalTest(AB 额外联邦名额表归自己一堆、label 挂官方原句、缺表或缺那句不出行)。
+    同日 Frank「照改,加这一列」再加 DrawSelectionTest(抽选行 selection 码:三省认法的金标 / 拒猜 / 变异探针 + 落盘并回口径)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8755,6 +8831,7 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(BcFunnelTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MbPoolYearsTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(AbFederalTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawSelectionTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
 

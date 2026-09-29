@@ -22,6 +22,7 @@ mart.constants 在用例体内现取(functions 反过来 import 本文件,顶部
 同日九省体检修复批再加 MartRuralRenewalTest(AB 乡村振兴社区岗只认 RRS 自己的排除表;真表金标只读仓里 raw/pnp 两张表)。
 同日 Frank 拍板「看得出才改判」再加 MartEmployerSectorTest(雇主行业三态 + 五条改判规则;现造 raw/pnp 小表落系统临时目录走真装载器,
 真表金标只读仓里 raw/pnp)。同日 Frank 选「只上纯属改对的」:其中 NS 建筑、AB 科技两条改为现状金标,实际改判的是四条。
+同日 Frank「照改,加这一列」再加 MartDrawSelectionTest(pnp_draws 行原样带上 selection 格;抽选文件在系统临时目录现造)。
 """
 import json
 import re
@@ -4908,3 +4909,63 @@ class MartAbFederalTest(unittest.TestCase):
         ctx2 = OpsCtx(rows=[], seqs={})
         fn.fill_ab_ops(OpsProvIn(ctx=ctx2, base=fn.to_ops_base(d), data=d))
         self.assertEqual([r for r in ctx2.rows if r["metric"] == "nominations_additional_federal"], [])
+
+
+class MartDrawSelectionTest(unittest.TestCase):
+    """pnp_draws 行带 selection 格自测(2026-09-27 Frank「照改,加这一列」):省抽选行原样带上 pnp 域落盘时判好的码,
+    pnp 单元还没按新代码重跑过的旧文件没这一格 → 空串;改制通告行与联邦 EE 行一律空串;经 build_pnp_draws 汇装出来的
+    每一行都有这一格、码不改一字。抽选文件在系统临时目录现造,不读仓内文件。"""
+
+    def draw_file(self, prov: str, draws: list, notice: dict | None) -> dict:
+        """现造一份抽选文件(形同 draws-*.json:一份一省)。"""
+        block: dict = {"label": prov + " PNP", "scale": None, "url": "https://" + prov.lower() + ".example/draws",
+                       "draws": draws}
+        if notice is not None:
+            block["notice"] = notice
+        return {"source": "test", "fetched": "2026-09-27", "provinces": {prov: block}}
+
+    def test_row_constructors(self) -> None:
+        """三种行构造器:抽选行照带(top:2 / wage:52:105000 / path:exp+grad / 空串原样),旧行没这一格给空串;
+        改制通告行、联邦 EE 行给空串;码不翻译、不改写。"""
+        from mart import functions as fn
+        base = fn.to_draw_base(DrawBaseIn(province="MB", table={"label": "MPNP", "url": "u"}, fetched="2026-09-27"))
+        for code in ("top:2", "wage:52:105000", "path:exp+grad", ""):
+            with self.subTest(code=code):
+                row = fn.to_pnp_draw_row(DrawRowIn(base=base, draw={"date": "2026-09-24", "stream": "S", "note": "n",
+                                                                    "selection": code}, stream_zh={}, checklist={}))
+                self.assertEqual(row["selection"], code)
+        old = fn.to_pnp_draw_row(DrawRowIn(base=base, draw={"date": "2026-09-24", "stream": "S", "note": "n"},
+                                           stream_zh={}, checklist={}))
+        self.assertEqual(old["selection"], "")
+        notice = fn.to_pnp_notice_row(NoticeRowIn(base=base, notice={"date": "2026-06-26", "note": "Stream update"}))
+        self.assertEqual(notice["selection"], "")
+        ee = fn.to_ee_draw_row(EeDrawIn(category="cec", draw={"date": "2026-09-24", "drawName": "CEC", "crs": 534,
+                                                               "size": 3000}, fetched="2026-09-27", checklist={}))
+        self.assertEqual(ee["selection"], "")
+
+    def test_build_carries_codes(self) -> None:
+        """汇装金标:临时目录里现造 MB(新代码落盘、每行带码)与 ON(旧文件、没这一格,另有一条改制通告)两份抽选文件,
+        build_pnp_draws 出来的行逐行照带 / 给空串,每一行都有 selection 格。"""
+        from mart import functions as fn
+        today = date.today().isoformat()
+        mb = [{"date": today, "stream": "Skilled Worker in Manitoba", "note": "Draw #280: Francophone selection",
+               "score": None, "invitations": 16, "selection": "franco"},
+              {"date": today, "stream": "Skilled Worker in Manitoba", "note": "Draw #280: Occupation-specific selections",
+               "score": None, "invitations": 1, "selection": "occ"},
+              {"date": today, "stream": "Skilled Worker Stream", "note": "Draw #280", "score": None, "invitations": 40,
+               "selection": ""}]
+        on = [{"date": today, "stream": "Employer Job Offer: Foreign Worker stream", "note": "", "score": 55,
+               "invitations": 400}]
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            (d / "draws-mb.json").write_text(json.dumps(self.draw_file("MB", mb, None)), encoding="utf-8")
+            (d / "draws-on.json").write_text(json.dumps(self.draw_file("ON", on, {"date": today, "note": "Update"})),
+                                             encoding="utf-8")
+            with mock.patch.object(fn, "IN_PNP_DRAWS_DIR", d):
+                rows = fn.build_pnp_draws(DrawsBuildIn(stream_zh={}, checklist={}, ee_history={}, ee_fetched=""))
+        got = []
+        for r in rows:
+            got.append((r["province"], r["kind"], r["note"], r["selection"]))
+        self.assertEqual(got, [("MB", "draw", "Draw #280: Francophone selection", "franco"),
+                               ("MB", "draw", "Draw #280: Occupation-specific selections", "occ"),
+                               ("MB", "draw", "Draw #280", ""), ("ON", "draw", "", ""), ("ON", "notice", "Update", "")])
