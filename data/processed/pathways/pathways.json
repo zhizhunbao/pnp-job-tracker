@@ -176,7 +176,10 @@
       "drawStreams": [
         "Innovate: High Economic Impact"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -196,7 +199,10 @@
       "boardLabel": "BC 卫生局",
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Health Authority stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 卫生局"
@@ -220,7 +226,10 @@
       "drawStreams": [
         "Care: Health"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 医疗"
@@ -244,7 +253,10 @@
       "drawStreams": [
         "Care: Childcare"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 幼教"
@@ -268,7 +280,10 @@
       "drawStreams": [
         "Care: Veterinary Care"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 兽医"
@@ -292,7 +307,10 @@
       "drawStreams": [
         "Build: Construction Trades"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 建筑技工"
@@ -316,7 +334,10 @@
       "drawStreams": [
         "Care: Education"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "BC PNP Skills Immigration (all streams)",
+        "BC PNP Skilled Worker stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "BC 法语教师"
@@ -338,7 +359,12 @@
       "boardLabel": null,
       "isDefault": true,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+        "SINP International Skilled Worker: Employment Offer",
+        "SINP International Skilled Worker (with an employment offer)",
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -358,7 +384,11 @@
       "boardLabel": "SK 医疗",
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP Health Talent Pathway — Non-Express Entry",
+        "SINP International Skilled Worker (with an employment offer)",
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [
         "SK 医疗"
@@ -380,7 +410,11 @@
       "boardLabel": "SK 科技",
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP Innovation and Tech Talent Pathway — Non-Express Entry",
+        "SINP International Skilled Worker (with an employment offer)",
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [
         "SK 科技"
@@ -402,7 +436,11 @@
       "boardLabel": "SK 农业",
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP Agriculture Talent Pathway",
+        "SINP International Skilled Worker (with an employment offer)",
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [
         "SK 农业"
@@ -446,7 +484,12 @@
       "drawStreams": [
         "Skilled Worker in Manitoba"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+        "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway (graduated in another Canadian province/territory)",
+        "MPNP In-Demand Occupations List",
+        "MPNP (language proficiency, all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -536,7 +579,10 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Nova Scotia Nominee Program — Skilled Worker stream",
+        "Nova Scotia Nominee Program — Skilled Worker stream — Skilled Worker category"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -558,7 +604,10 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Nova Scotia Nominee Program — Skilled Worker stream",
+        "Nova Scotia Nominee Program — Skilled Worker stream — Critical Construction Worker category"
+      ],
       "quotaScope": null,
       "occLabels": [
         "NS 建筑"
@@ -582,7 +631,11 @@
       "drawStreams": [
         "NB Skilled Worker"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
+        "New Brunswick Skilled Worker stream — New Brunswick Experience pathway",
+        "New Brunswick Skilled Worker stream — New Brunswick Graduates pathway"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -604,7 +657,10 @@
       "drawStreams": [
         "NLPNP + AIP (ITA batch)"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "NLPNP Skilled Worker Category",
+        "NLPNP (employer criteria, all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -626,7 +682,12 @@
       "drawStreams": [
         "Labour & Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+        "PEI PNP Workforce — Skilled Worker stream",
+        "PEI PNP Workforce — Critical Worker stream",
+        "PEI PNP Workforce — Employer Requirements (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -648,7 +709,11 @@
       "drawStreams": [
         "Labour & Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+        "PEI PNP — Occupations in Demand",
+        "PEI PNP Workforce — Employer Requirements (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [
         "PE 在需职业"

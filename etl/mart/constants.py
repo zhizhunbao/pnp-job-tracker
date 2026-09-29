@@ -643,10 +643,12 @@ PROV_OFFER_BLOCKED = {
     "MB": ("part", "seasonal", "casual"),
     "NB": ("part", "seasonal"),
     "NL": ("part", "seasonal"),
-    "PE": ("part", "seasonal"),
+    "PE": ("part", "seasonal", "casual"),
 }
 """雇主 offer 省提名对 offer 形态的官方门槛:省 → 过不了的工时 / 雇佣期取值(employmentHours 的 part;employmentTerm 的
-term / seasonal / casual —— 两格值域不相交,并在一张表)。只卡源写明的值:空串 = 没标注,放行(源没写 ≠ 兼职);
+term / seasonal / casual —— 两格值域不相交,并在一张表)。
+2026-09-29 PE 补 casual(七省门槛卡合并,PE 子代理核):官方申请指南「You may not eligible to apply if you … have been offered a
+seasonal, part-time or casual job in Prince Edward Island」(pei_workforce_application_guide.pdf;当时 PE 只 3 个 casual 岗,且本就不可提名,改判 0)。只卡源写明的值:空串 = 没标注,放行(源没写 ≠ 兼职);
 QC、NU 不在表里:两地不属 PNP,pnp_eligible 按 NON_PNP_PROV 先判掉(依据见该常量)。逐省原句(crawl 缓存,2026-09-26 复核):
 ON「Your employer’s job offer must: be for a full-time and permanent position in Ontario」
   ontario.ca/page/ontario-workforce-priority-stream(「Employer’s job offer requirements」小节的第一条,crawl 缓存 on-oinp
@@ -698,12 +700,49 @@ PROV_OFFER_QUOTE = {
         "https://www.ontario.ca/page/ontario-workforce-priority-stream",
         "Your employer’s job offer must: be for a full-time and permanent position in Ontario",
     ),
+    "BC": (
+        "https://www.welcomebc.ca/immigrate-to-b-c/skills-immigration",
+        "Must have a full-time, indeterminate (no end date) job offer from an eligible B.C. employer",
+    ),
+    "SK": (
+        ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+         "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/"
+         "international-skilled-worker-with-employment-offer"),
+        "Have an offer for an eligible permanent, full-time job in Saskatchewan.",
+    ),
+    "MB": (
+        "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility",
+        ("Ongoing Manitoba employment means that you possess a valid work permit and a Manitoba company has offered you a "
+         "full-time, long-term job after you have completed six months or more of continuous full-time employment with "
+         "that company"),
+    ),
+    "NS": (
+        "https://liveinnovascotia.com/skilled-worker",
+        "To submit an expression of interest (EOI) you must: have a full-time permanent job offer from a Nova Scotia employer",
+    ),
+    "NB": (
+        "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
+        "A pathway for foreign workers with a full-time, non-seasonal job or job offer in New Brunswick.",
+    ),
+    "NL": (
+        ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/"
+         "employers/employer-criteria"),
+        "Full-time, at least 2 years, located in NL",
+        "Not seasonal, part-time, or short-term (under 12 months)",
+    ),
+    "PE": (
+        "https://www.princeedwardisland.ca/sites/default/files/publications/pei_workforce_application_guide.pdf",
+        "Employment is full‐time, non-seasonal with a contract for a permanent position or a minimum length of two years",
+        "have been offered a seasonal, part-time or casual job in Prince Edward Island",
+    ),
 }
 """省 → offer 形态门槛的出处页与官方原句(出处页, 原句…)(2026-09-27 Frank 勾「门槛卡」:省提名弹框「本岗通道的门槛」卡的
 「雇主 offer」行读它)。过不了的取值照旧只写在 PROV_OFFER_BLOCKED 一处,offer_form_rows 按省把两张表拼成 pnp_requirements 行
 —— 评分段 offer_fits 与展示读同一份取值。原句逐字取自 crawl 缓存里的官方页(ab-aaip 缓存,2026-09-27 核);先上 AB,
 其余省随门槛卡分批逐省核网址与原句再补(PROV_OFFER_BLOCKED 注释里的旧路径不拿来拼网址)。
-2026-09-29 补 ON(劳动力优先通道页「Employer’s job offer requirements」一节原句,on-oinp 缓存核过;Frank「都接上,开工吧」)。"""
+2026-09-29 补 ON(劳动力优先通道页「Employer’s job offer requirements」一节原句,on-oinp 缓存核过;Frank「都接上,开工吧」)。
+同日七省门槛卡合并补 BC / SK / MB / NS / NB / NL / PE(各省子代理对缓存或官方指南逐字核过;NL 雇主页写「at least 2 years」、
+技术工人政策页写 12 个月,两页不一,照录雇主页原句 —— 卡片只用 PROV_OFFER_BLOCKED 的取值,不读这句的年限)。"""
 
 OFFER_FORM_STREAM = "Job offer (all streams)"
 """offer 形态门槛行的通道名:本省凡要雇主 offer 的流都成立。名字里不带任何流名 —— 判定引擎按通道名正则挑行

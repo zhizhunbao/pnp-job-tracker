@@ -340,6 +340,8 @@ public K-12 system and have a CLB 5 or higher in French.」没入表:法语 CLB 
 (把法语专项说成英法任一);门槛量尺按省全量挑职业码点名的语言行,还会把 41220 / 41221(TEER 1)的判定从「注册时不要求
 语言成绩」改成 CLB 5 —— 写法待定。公立 K-12 雇主那半句由清单的雇主行业条件管(上一段)。"""
 
+# 2026-09-29 七省门槛卡合并:萨省四条通道(EO 与三条定向)、NL 技术工人在 reqStreams 末尾挂上本省雇主门槛所在的「all streams」流 ——
+# 门槛卡雇主行改读本通道登记的流(原读全省;曼省唯一的雇主行属 EDI,不挂),挂在末尾,来源钮仍按登记顺序指向通道自己的页。
 PW_SK_EMPLOYMENT_OFFER = {
     "key": "sk-employment-offer", "province": "SK", "program": "PNP",
     "plainZh": "SK 雇主 offer", "plainEn": "SK Employment Offer", "plainKo": "SK 고용 오퍼",
@@ -348,7 +350,7 @@ PW_SK_EMPLOYMENT_OFFER = {
     "drawStreams": [],
     "reqStreams": ["SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
                    "SINP International Skilled Worker: Employment Offer",
-                   "SINP International Skilled Worker (with an employment offer)"],
+                   "SINP International Skilled Worker (with an employment offer)", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -371,7 +373,7 @@ PW_SK_HEALTH_TALENT = {
     "boardLabel": "SK 医疗", "isDefault": False,
     "drawStreams": [],
     "reqStreams": ["SINP Health Talent Pathway — Non-Express Entry",
-                   "SINP International Skilled Worker (with an employment offer)"],
+                   "SINP International Skilled Worker (with an employment offer)", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": ["SK 医疗"],
     "status": "open",
@@ -392,7 +394,7 @@ PW_SK_TECH_TALENT = {
     "boardLabel": "SK 科技", "isDefault": False,
     "drawStreams": [],
     "reqStreams": ["SINP Innovation and Tech Talent Pathway — Non-Express Entry",
-                   "SINP International Skilled Worker (with an employment offer)"],
+                   "SINP International Skilled Worker (with an employment offer)", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": ["SK 科技"],
     "status": "open",
@@ -412,7 +414,7 @@ PW_SK_AGRICULTURE_TALENT = {
     "boardLabel": "SK 农业", "isDefault": False,
     "drawStreams": [],
     "reqStreams": ["SINP Agriculture Talent Pathway",
-                   "SINP International Skilled Worker (with an employment offer)"],
+                   "SINP International Skilled Worker (with an employment offer)", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": ["SK 农业"],
     "status": "open",
@@ -621,7 +623,7 @@ PW_NL_SKILLED_WORKER = {
     "officialName": "NLPNP Skilled Worker Category",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["NLPNP + AIP (ITA batch)"],
-    "reqStreams": ["NLPNP Skilled Worker Category"],
+    "reqStreams": ["NLPNP Skilled Worker Category", "NLPNP (employer criteria, all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",

@@ -3167,7 +3167,7 @@ class MartOfferTest(unittest.TestCase):
         (评分与展示读同一份,变异探针:改门槛表行跟着变);主体不是 applicant / employer(不进判定);行键与各省门槛文件出的行同名同序。"""
         from mart import functions as fn
         rows = fn.offer_form_rows()
-        self.assertEqual([r["province"] for r in rows], ["AB", "ON"])
+        self.assertEqual([r["province"] for r in rows], ["AB", "ON", "BC", "SK", "MB", "NS", "NB", "NL", "PE"])
         on = rows[1]
         self.assertEqual(on["basis"], "valueCode=part,term,seasonal,casual")
         self.assertIn("full-time and permanent position in Ontario", on["valueText"])
@@ -3191,11 +3191,12 @@ class MartOfferTest(unittest.TestCase):
         """手写金标:各省官方原句逐字读成「卡哪几个值」(与 constants.PROV_OFFER_BLOCKED 各写一份、互相对照;原句见该常量)。
         full-time + permanent / indeterminate 的省四值全卡;AB 原句点名 part-time、casual、seasonal 三种;MB 的 long-term
         卡兼职、季节、casual,合同工照毕业生通道「minimum 1-year contract」放行(2026-09-26 Frank「不卡」);只写
-        non-seasonal / not seasonal 的 NB、NL、PE 卡兼职与季节两值。"""
+        non-seasonal / not seasonal 的 NB、NL、PE 卡兼职与季节两值。
+        2026-09-29 PE 补 casual(官方指南「offered a seasonal, part-time or casual job」不可申请)。"""
         four = {"part", "term", "seasonal", "casual"}
         return {"ON": four, "BC": four, "SK": four, "NS": four, "YT": four, "NT": four,
                 "AB": {"part", "seasonal", "casual"}, "MB": {"part", "seasonal", "casual"},
-                "NB": {"part", "seasonal"}, "NL": {"part", "seasonal"}, "PE": {"part", "seasonal"}}
+                "NB": {"part", "seasonal"}, "NL": {"part", "seasonal"}, "PE": {"part", "seasonal", "casual"}}
 
     def provs(self) -> list[str]:
         """穷举用的省码:十一个有 PNP 口径的省与领地 + QC、NU(不属 PNP)+ 空串(没有省)+ 一个不存在的码。"""
