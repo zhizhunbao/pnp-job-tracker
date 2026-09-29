@@ -4787,3 +4787,38 @@ class MartNbNlOpsTest(unittest.TestCase):
         names = [p.name for p in mc.IN_PNP_STATS]
         self.assertIn("nb-stats.json", names)
         self.assertIn("nl-stats.json", names)
+
+
+class MartBcFunnelOpsTest(unittest.TestCase):
+    """BC 年报四组 SI 逐年数出行自测(2026-09-29 立):bc-nominations.json 的 siDecisions / siItasIssued / siItaApplications /
+    siApplicationsReceived 各出自己的指标(统计期 = 年、单位照行、出处照行内那份年报),已发提名照旧出;bc-stats.json 形状的
+    表(没有这四个键)一行不多出。数据在用例里现造,不读仓内文件。"""
+
+    def test_bc_funnel_rows(self) -> None:
+        """一份现造的 bc-nominations.json 走 fill_year_metric_ops(build_pnp_ops_stats 对 BC 两份文件都调它)。"""
+        from mart import functions as fn
+        r25 = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf"
+        r21 = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf"
+        d: dict = {"province": "BC", "asOf": "", "url": r25, "fetched": "2026-09-29"}
+        for key, year, value, unit, url in (("nominationsIssued", 2025, 6214, "nominations", r25),
+                                            ("siDecisions", 2025, 6553, "applications", r25),
+                                            ("siItasIssued", 2025, 978, "invitations", r25),
+                                            ("siItasIssued", 2021, 11582, "invitations", r21),
+                                            ("siItaApplications", 2025, 748, "applications", r25),
+                                            ("siApplicationsReceived", 2021, 7976, "applications", r21)):
+            d.setdefault(key, []).append({"year": year, "label": "L", "value": value, "unit": unit, "section": "S",
+                                          "url": url, "fetched": "2026-09-29"})
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_year_metric_ops(OpsProvIn(ctx=ctx, base=fn.to_ops_base(d), data=d))
+        got = [(r["metric"], r["period"], r["value"], r["unit"], r["url"], r["scope"]) for r in ctx.rows]
+        self.assertEqual(got, [
+            ("nominations_issued", "2025", 6214, "nominations", r25, ""),
+            ("si_decisions", "2025", 6553, "applications", r25, ""),
+            ("si_itas_issued", "2025", 978, "invitations", r25, ""),
+            ("si_itas_issued", "2021", 11582, "invitations", r21, ""),
+            ("si_ita_applications", "2025", 748, "applications", r25, ""),
+            ("si_applications_received", "2021", 7976, "applications", r21, "")])
+        ctx = OpsCtx(rows=[], seqs={})
+        stats = {"province": "BC", "asOf": "2026-09-01", "url": "u", "fetched": "f", "pool": [], "processing": {}}
+        fn.fill_year_metric_ops(OpsProvIn(ctx=ctx, base=fn.to_ops_base(stats), data=stats))
+        self.assertEqual(ctx.rows, [])

@@ -1269,6 +1269,34 @@ class YearValuesIn:
 
 
 @dataclass
+class OnAuditOut:
+    """on_audit_of() / fetch_on_audit() 出参:省审计长 2024 年报附录 1 读出来的东西(2026-09-29 立)。"""
+
+    by_year: dict
+    """年 → Actual Nominations 合计行的实发提名数(读不成给空表)。"""
+
+    quote: str
+    """正文里指向附录 1 的官方原句(补行 label 的前半句)。"""
+
+    table: str
+    """附录 1 的表名(不带「Appendix 1: 」)。"""
+
+    problems: list
+    """取不到 / 读不成时的自校问题(并进 build_on_stats 的 problems)。"""
+
+
+@dataclass
+class OnAuditGapIn:
+    """on_audit_gap_rows() 入参:逐年页已抽到的行 + 审计长逐年数(2026-09-29 立)。"""
+
+    rows: list
+    """逐年页抽到的已发提名行(对账与判缺年份用)。"""
+
+    audit: OnAuditOut
+    """审计长附录 1 读出来的东西。"""
+
+
+@dataclass
 class MbPlanIn:
     """mb_plan_block() 入参:月度页一张表要取哪几列。"""
 
@@ -1739,6 +1767,31 @@ class BcYearRowsIn:
 
     report: BcReportOut
     """报告(section 与 url 用)。"""
+
+
+@dataclass
+class BcFunnelIn:
+    """bc_funnel_of() 入参:一份年报的全文 + 出自哪份报告(2026-09-29 立)。"""
+
+    text: str
+    """PDF 全文(pdf_text 出参)。"""
+
+    report: BcReportOut
+    """报告(只认这一年的句子;section 与 url 用)。"""
+
+
+@dataclass
+class BcFunnelSayIn:
+    """say_bc_funnel() 入参:四组逐年数的收尾报数(2026-09-29 立)。"""
+
+    extra: dict
+    """并进文件的四份清单(清单键 → 年降序的行)。"""
+
+    last: dict
+    """最新一份年报认出的组(清单键 → 行;缺组留痕用)。"""
+
+    report: int
+    """最新一份年报的报告年。"""
 
 
 # =========================================================================
@@ -2482,6 +2535,155 @@ class NsQuarterlyTest(unittest.TestCase):
                          [("Approved", 30, "2026 Q1-Q2", "2026-06"), ("Refused", 4, "2026 Q1-Q2", "2026-06"),
                           ("Withdrawn", 3, "2026 Q1-Q2", "2026-06")])
         self.assertEqual(fn.ns_assessments_ytd([]), [])
+
+
+class OnAuditTest(unittest.TestCase):
+    """ON 省审计长附录 1 自测(2026-09-29 立):取合计行不取配额行、各年之和对不上五年合计就整份不用、只补逐年页没有的年份、
+    对不上的年份留痕并以逐年页为准。全程不联网、不读仓内文件(原文片段见 LINES)。"""
+
+    LINES = (
+        "Appendix 1: \x07Ontario Nominee Allocations and Nominations, by Stream, ",
+        "2019–2023............................................................................................81",
+        "Ontario reached its nomination limit in each of at least the last five years, 2019–2023. Appendix 1 ",
+        "shows the actual nominations issued by streams/intake system in each year from 2019 to 2023.",
+        "12",
+        "Appendix 1: \x07Ontario Nominee Allocations and ",
+        "Nominations, by Stream, 2019–2023",
+        "Source of data: Ministry of Labour, Immigration, Training and Skills Development",
+        "2019", "2020", "2021", "2022", "2023", "Total", "% of ", "Total", "5-Year ", "Change ", "(%)",
+        "Ontario Allocated Nomination Limits1",
+        "7,350", "8,050", "9,000", "9,750", "16,500", "50,650", "–", "124",
+        "Actual Nominations", " ", " ",
+        "Expression of Interest", " ",
+        "Masters Graduate", "805", "405", "1,202", "1,480", "5,407", "9,299", "18", "572",
+        "Subtotal", "3,641", "4,555", "4,900", "3,601", "8,253", "24,950", "49", "127",
+        "Express Entry Human Capital Priorities", "2,710", "1,996", "3,513", "2,370", "4,985 15,574", "31", "84",
+        "Subtotal", "3,750", "3,499", "4,100", "6,149", "8,253", "25,751", "51", "120",
+        "Total2", "7,391", "8,054", "9,000", "9,750", "16,506", "50,701", "100", " ",
+        "1.\t Includes additional in-year allocations approved by IRCC for a federal pilot project intended to expand ")
+    """省审计长 2024 年报 PDF(pa_ONimmigrant_en24.pdf)经 pymupdf 抽出的原文片段(2026-09-29 取自真件):目录页同名一行、正文
+    第 12 页指向附录 1 的原句、第 84 页附录 1 表头 + 配额行 + 实发提名几行 + 合计行。表名前的控制字符(BEL)与「4,985 15,574」
+    两格粘在一行都是真件原样。"""
+
+    def test_table(self) -> None:
+        """真件片段:五年实发提名(不是配额那行)+ 原句 + 表名。"""
+        from pnp import functions as fn
+        got = fn.on_audit_of("\n".join(self.LINES))
+        self.assertEqual(got.by_year, {2019: 7391, 2020: 8054, 2021: 9000, 2022: 9750, 2023: 16506})
+        self.assertEqual(got.quote, "Appendix 1 shows the actual nominations issued by streams/intake system in each year "
+                                    "from 2019 to 2023.")
+        self.assertEqual(got.table, "Ontario Nominee Allocations and Nominations, by Stream, 2019–2023")
+        self.assertEqual(got.problems, [])
+
+    def test_unreadable(self) -> None:
+        """变异探针:合计行错一个数(各年之和对不上五年合计)、原句没了、只剩目录页 —— 一律空表。"""
+        from pnp import functions as fn
+        lines = list(self.LINES)
+        lines[lines.index("16,506")] = "16,560"
+        self.assertEqual(fn.on_audit_of("\n".join(lines)).by_year, {})
+        self.assertEqual(fn.on_audit_of("\n".join(self.LINES[:2] + self.LINES[5:])).by_year, {})
+        self.assertEqual(fn.on_audit_of("\n".join(self.LINES[:5])).by_year, {})
+
+    def test_gap_rows(self) -> None:
+        """逐年页有 2019 / 2020 / 2022 / 2024 / 2025:只补 2021、2023 两行(url 挂审计长 PDF);2019、2020 对不上各留痕一行。"""
+        from pnp import functions as fn
+        from pnp.constants import ONS_AUDIT_URL
+        audit = fn.on_audit_of("\n".join(self.LINES))
+        page = []
+        for year, value in ((2025, 10750), (2024, 21500), (2022, 9750), (2020, 8050), (2019, 7350)):
+            page.append({"year": year, "value": value})
+        with mock.patch.object(fn, "say") as said:
+            got = fn.on_audit_gap_rows(OnAuditGapIn(rows=page, audit=audit))
+        self.assertEqual([(r["year"], r["value"], r["unit"], r["url"]) for r in got],
+                         [(2021, 9000, "nominations", ONS_AUDIT_URL), (2023, 16506, "nominations", ONS_AUDIT_URL)])
+        self.assertTrue(got[0]["label"].startswith(audit.quote + " Appendix 1: Ontario Nominee Allocations"))
+        self.assertTrue(got[0]["label"].endswith("Actual Nominations, Total, 2021"))
+        lines = []
+        for c in said.call_args_list:
+            lines.append(c.args[0])
+        self.assertEqual(len(lines), 3)
+        self.assertIn("2019", lines[0])
+        self.assertIn("7,391", lines[0])
+        self.assertIn("2020", lines[1])
+        self.assertIn("[2021, 2023]", lines[2])
+
+
+class BcFunnelTest(unittest.TestCase):
+    """BC 年报四组 SI 逐年数自测(2026-09-29 立):每份年报只认自己那一年、三种历年收件写法、邀请框数字不带千分位、
+    2022 那份年报的链接形、清单按年降序且缺组给空清单。原文片段取自真件(pymupdf 抽文,行断照原样),全程不联网。"""
+
+    def test_2025_report(self) -> None:
+        """2025 版:决定数 + 邀请框两格出行,单位与节名各自对;收件数(2022 版起停发)不出键。"""
+        from pnp import functions as fn
+        text = "\n".join([
+            "In 2025, the BC PNP made 6,553 decisions on applications to the SI streams. This is a 25.4% ",
+            "decrease from the 8,784 decisions made on SI applications in 2024. 6,195 out of the 6,553 ",
+            "2025 ITAs Issued: ", "978 ", "2025 ITAs that led ", "to applications: ", "748* ", "2025 ITA ",
+            "conversion rate: ", "76.5% "])
+        url = "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2025-pdf"
+        got = fn.bc_funnel_of(BcFunnelIn(text=text, report=BcReportOut(year=2025, url=url)))
+        self.assertEqual(sorted(got), ["siDecisions", "siItaApplications", "siItasIssued"])
+        self.assertEqual((got["siDecisions"]["value"], got["siDecisions"]["unit"], got["siDecisions"]["section"]),
+                         (6553, "applications", "BC PNP Statistical Report 2025: Skills Immigration Decisions"))
+        self.assertEqual(got["siDecisions"]["label"],
+                         "In 2025, the BC PNP made 6,553 decisions on applications to the SI streams")
+        self.assertEqual((got["siItasIssued"]["value"], got["siItasIssued"]["unit"]), (978, "invitations"))
+        self.assertEqual((got["siItaApplications"]["value"], got["siItaApplications"]["unit"]), (748, "applications"))
+        self.assertEqual((got["siItaApplications"]["year"], got["siItaApplications"]["url"]), (2025, url))
+
+    def test_own_year_only(self) -> None:
+        """上一年的对照数不收:2022 版里「from 2021, when … 7,623 decisions」不出 2021 行;报告年对不上的邀请框不出键。"""
+        from pnp import functions as fn
+        text = "\n".join([
+            "In 2022, the BC PNP made 7,868 decisions on applications to the SI streams. This is a 3.2% ",
+            "increase from 2021, when the BC PNP made 7,623 decisions on SI applications. 6,966 out of the "])
+        got = fn.bc_funnel_of(BcFunnelIn(text=text, report=BcReportOut(year=2022, url="u")))
+        self.assertEqual((list(got), got["siDecisions"]["year"], got["siDecisions"]["value"]),
+                         (["siDecisions"], 2022, 7868))
+        got = fn.bc_funnel_of(BcFunnelIn(text="2022 ITAs Issued: \n8,840 ", report=BcReportOut(year=2023, url="u")))
+        self.assertEqual(got, {})
+
+    def test_received_forms(self) -> None:
+        """收件数三种历年写法都取 SI 那一份(不取含 EI 的全部);2020 版邀请框数字不带千分位。"""
+        from pnp import functions as fn
+        cases = (
+            (2021, "In 2021, 7,976 candidates responded to invitations to apply through the SI stream. This is a 2.1 ",
+             7976),
+            (2019, "In 2019, 8,292 candidates responded to invitations to apply to the BC PNP: 8,024 were SI \n"
+                   "applications (96.8 per cent) and 268 were EI applications (3.2 per cent). This is a 10.2 per cent ",
+             8024),
+            (2018, "In 2018, the BC PNP received 7,507 applications: 7,412 SI applications (98.7 per cent) and 95 EI ",
+             7412),
+            (2016, "In 2016, the BC Provincial Nominee \nProgram (BC PNP) received 5,363 \napplications: 5,282 Skills "
+                   "Immigration (SI) \napplications (98.5 per cent) and 81 ", 5282))
+        for year, text, value in cases:
+            got = fn.bc_funnel_of(BcFunnelIn(text=text, report=BcReportOut(year=year, url="u")))
+            self.assertEqual((list(got), got["siApplicationsReceived"]["value"]), (["siApplicationsReceived"], value))
+            self.assertEqual(got["siApplicationsReceived"]["section"], f"BC PNP Statistical Report {year}: Application Intake")
+        got = fn.bc_funnel_of(BcFunnelIn(text="2020 ITAs Issued: \n9386 \n2020 ITAs that led \nto applications: \n6988* ",
+                                         report=BcReportOut(year=2020, url="u")))
+        self.assertEqual((got["siItasIssued"]["value"], got["siItaApplications"]["value"]), (9386, 6988))
+
+    def test_report_links(self) -> None:
+        """入口页:两种报告链接形都认(2022 那份年在前、没有 -pdf 尾),别的链接不认。"""
+        from pnp import functions as fn
+        html = ('<a href="/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf">Statistical Report 2023</a>'
+                '<a href="/immigrate-to-b-c/2022-bc-pnp-statistical-report">Statistical Report 2022</a>'
+                '<a href="/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf">Statistical Report 2021</a>'
+                '<a href="/immigrate-to-b-c/skills-immigration-program-guide-2025">Program Guide</a>')
+        got = fn.bc_reports_of(html)
+        self.assertEqual([(r.year, r.url) for r in got],
+                         [(2021, "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2021-pdf"),
+                          (2022, "https://www.welcomebc.ca/immigrate-to-b-c/2022-bc-pnp-statistical-report"),
+                          (2023, "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-statistical-report-2023-pdf")])
+
+    def test_lists_of(self) -> None:
+        """并进文件的四份清单:按 BC_FUNNEL_SPECS 的序、年降序,一行都没有的组给空清单。"""
+        from pnp import functions as fn
+        got = fn.bc_funnel_lists_of({"siItasIssued": [{"year": 2020, "value": 1}, {"year": 2025, "value": 2}]})
+        self.assertEqual(list(got), ["siDecisions", "siItasIssued", "siItaApplications", "siApplicationsReceived"])
+        self.assertEqual([r["year"] for r in got["siItasIssued"]], [2025, 2020])
+        self.assertEqual(got["siDecisions"], [])
 
 
 # =========================================================================

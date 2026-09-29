@@ -2646,12 +2646,19 @@ MB_PROC_LABEL_TPL = "{stream} — {kind}: {days} days"
 
 ON_YEAR_METRICS = (("allocation", "allocation"), ("nominations_issued", "nominationsIssued"),
                    ("nominations_issued_fy", "nominationsIssuedFiscal"),
-                   ("nominated_individuals", "nominatedIndividuals"))
+                   ("nominated_individuals", "nominatedIndividuals"),
+                   ("si_decisions", "siDecisions"), ("si_itas_issued", "siItasIssued"),
+                   ("si_ita_applications", "siItaApplications"), ("si_applications_received", "siApplicationsReceived"))
 """逐年清单的(指标名, 源键):ON 两个;第三个是 PE 按**财年**的已发提名(pe-stats.json,2026-09-09),
 指标名另立 —— 消费端拿自然年配额算用尽率时不能混进财年数。
 第四个是 NL 按**人头**的提名人数(nl-stats.json,2026-09-29):官方年报数的是人(individuals / newcomers,含随行家属),
 不是提名证书 —— 与别省按证书 / 申请计的已发提名不同口径,指标名另立 nominated_individuals,单位 people 由行自带
-(fill_year_metric_ops 读行里的 unit),消费端不能拿它与配额相除,也不能并进已发提名。"""
+(fill_year_metric_ops 读行里的 unit),消费端不能拿它与配额相除,也不能并进已发提名。
+2026-09-29 加后四个:BC 统计年报(bc-nominations.json)同一批 PDF 多抽的四组 SI(Skills Immigration)逐年数 —— 审理决定数
+si_decisions(当年审完的件数,不是收件)、全年发出邀请 si_itas_issued、当年邀请转成申请 si_ita_applications(比全部收件少,
+不经注册的通道不在内)、收件数 si_applications_received(年报 2021 版止,2022 版起官方改发决定数)。名字带 si_ 前缀与口径,
+不与 MB 月度的 applications_received_ytd、抽选加总的 invitations_ytd 这些年内累计指标混;单位随行(pnp 域写
+applications / invitations,fill_year_metric_ops 照行上的 unit 落)。别的省文件没有这四个键,这一步对它们空转。"""
 
 ON_PROCESSING_NOTE = (
     "ON(C4-W5):官方「审理时长与提名数」专页 2026 改制后已 302 下线(raw 的 pageRedirect 存了"

@@ -228,7 +228,7 @@ from mart.scheme import BoardJobIn, BoardPilotIn, BoardSalaryIn, FillFormattedIn
 from mart.constants import K_SRC_EMPLOYMENT_HOURS, K_SRC_EMPLOYMENT_TERM, NON_EE_PROV, PROV_OFFER_BLOCKED, TEST_VERBOSITY
 from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
-from mart.scheme import MartNsOpsTest
+from mart.scheme import MartBcFunnelOpsTest, MartNsOpsTest
 from mart.scheme import MartNbNlOpsTest  # 2026-09-29 NB / NL 往年提名
 from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
 from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业三态 + 带星号码)
@@ -3508,7 +3508,9 @@ def fill_year_metric_ops(x: OpsProvIn) -> None:
     2026-09-08 NS(ns-stats.json)与 BC(bc-nominations.json)接入后三省同一套,不各抄一份。
     每条自带出处页,用自己的 url/fetched。
     2026-09-29 NB(nb-stats.json 的 nominationsIssued,PETL 年报)与 NL(nl-stats.json 的 nominatedIndividuals,IPGS 年报,
-    单位 people 行自带)也走这一套 —— 清单与指标名的对照全在 ON_YEAR_METRICS,不另写专属填法。"""
+    单位 people 行自带)也走这一套 —— 清单与指标名的对照全在 ON_YEAR_METRICS,不另写专属填法。
+    2026-09-29 起 BC 年报多抽的四组 SI 逐年数(siDecisions 等)也走这一套(清单键 → 指标名见 ON_YEAR_METRICS),
+    行形与已发提名同,单位照行上写的落;ON 省审计长附录补的年份本就在 nominationsIssued 里,照旧出 nominations_issued。"""
     for m, key in ON_YEAR_METRICS:
         for e in x.data.get(key, []):
             add_ops_row(OpsRowIn(
@@ -3592,6 +3594,7 @@ def build_pnp_ops_stats(files: list) -> list:
         if prov == PROV_BC:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
             # 后者没有这些键 → 这一步对它是空转,不重复出行
+            # 2026-09-29 起前者另有年报四组 SI 逐年数(siDecisions 等),同在这一步出行;后者照旧空转
             fill_year_metric_ops(arg)
     year = str(date.today().year)
     fill_alloc_gap_ops(AllocGapIn(ctx=ctx, table=load_alloc_table(), year=year))
@@ -7209,10 +7212,12 @@ def run_tests() -> None:
     2026-09-28 缺数据修复批再加一组:MartPendingTest(待修清单判「全」:qwen 的码与补空不算、原帖明写「待议」不算缺)。
     2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。
     同日再加一组:MartNsOpsTest(NS 两张季表出行:候选池逐季、审批结果三种、认不出的结果词不出行)。
-    同日再加一组:MartNbNlOpsTest(NB / NL 两份年报统计经分派出行:NB 已发提名按自然年、NL 提名人数单位人另立指标)。"""
+    同日再加一组:MartNbNlOpsTest(NB / NL 两份年报统计经分派出行:NB 已发提名按自然年、NL 提名人数单位人另立指标)。
+    同日再加一组:MartBcFunnelOpsTest(BC 年报四组 SI 逐年数出行:指标名、统计期、单位与出处照行,bc-stats 形的表不多出行)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
-                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest):
+                 MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
+                 MartBcFunnelOpsTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
