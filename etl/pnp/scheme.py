@@ -1584,7 +1584,24 @@ class MbPoolOut:
     """池子人数历年清单(新到旧,一年一行)。"""
 
     problems: list
-    """自校问题(缺年报 / 认不出那句,一年一条)。"""
+    """自校问题(缺年报 / 认不出那句,一年一条)。2026-09-29 同日改判:只收最新一份年报的问题。"""
+
+    gaps: list
+    """旧年份缺口(不是最新一份的年报缺席或认不出;调用方沿用上一版,见 mb_pool_carry_over;2026-09-29 立)。"""
+
+
+@dataclass
+class MbCarryIn:
+    """mb_pool_carry_over() 入参(2026-09-29 立)。"""
+
+    rows: list
+    """本轮认出的池子行(新到旧)。"""
+
+    gaps: list
+    """旧年份缺口的年份。"""
+
+    path: Path
+    """上一版 mb-stats.json(不在 = 没有可沿用的)。"""
 
 
 @dataclass
@@ -2607,7 +2624,9 @@ class MbPoolYearsTest(unittest.TestCase):
     """MB 年报池子人数历年序列自测(2026-09-29 立):逐份认「N Active EOI profiles at the end of YYYY」,官方原句与原句里的年
     原样照录(2024 年报写「end of 2023」本域也不改,改判在汇装)、所在节的官方小标题逐年照取(2017–2020 是「9.」、2021 起
     「10.」)、缺一份缓存或一份认不出那句各记一条自校问题、那句前面没有节标题不猜。年报原文照 crawl 缓存里 2024 / 2023 /
-    2017 三份真页的池子节现造,全程不联网、不读仓内文件。"""
+    2017 三份真页的池子节现造,全程不联网、不读仓内文件。
+    2026-09-29 同日 lead 收口改判:只有最新一份年报的问题算自校问题,旧年份缺口记进 gaps、沿用上一版(用例随之改,另加
+    最新一份算硬闸与沿用上一版两例;沿用那例写临时文件)。"""
 
     URL = "https://immigratemanitoba.com/resources/data/annual-report-{year}"
     """年报网址形。"""
@@ -2663,9 +2682,32 @@ class MbPoolYearsTest(unittest.TestCase):
                           "MPNP Annual Report 2023 — 10. Expression of Interest Pool",
                           "MPNP Annual Report 2017 — 9. Expression of Interest Pool"])
         self.assertEqual((got.rows[0]["url"], got.rows[0]["fetched"]), (self.URL.format(year=2024), "2026-09-29"))
-        self.assertEqual(len(got.problems), 2)
-        self.assertIn("2019", got.problems[0])
-        self.assertIn("2018", got.problems[1])
+        self.assertEqual(got.problems, [])
+        self.assertEqual(got.gaps, [2019, 2018])
+
+    def test_latest_is_hard(self) -> None:
+        """最新一份(清单第一份)认不出那句 → 自校问题(整份保留旧表);它后面的旧年份缺口照旧只进 gaps。"""
+        from pnp import functions as fn
+        gap = MbPoolPageIn(year=2017, url=self.URL.format(year=2017), html=None, fetched="")
+        got = fn.mb_pool_series_of([self.page_of(2018), gap])
+        self.assertEqual(len(got.problems), 1)
+        self.assertIn("2018", got.problems[0])
+        self.assertEqual(got.gaps, [2017])
+
+    def test_carry_over(self) -> None:
+        """旧年份缺口沿用上一版那一年的行,新到旧排好;上一版也没有的年份本轮缺它;没有上一版文件就原样。"""
+        import json
+        import tempfile
+        from pnp import functions as fn
+        rows = [{"year": 2024, "value": 26678}, {"year": 2017, "value": 15957}]
+        with tempfile.TemporaryDirectory() as tmp:
+            prev = Path(tmp) / "mb-stats.json"
+            prev.write_text(json.dumps({"eoiPoolYears": [{"year": 2019, "value": 25814}, {"year": 2020, "value": 21859}]}),
+                            encoding="utf-8")
+            got = fn.mb_pool_carry_over(MbCarryIn(rows=rows, gaps=[2019, 2018], path=prev))
+            self.assertEqual([(r["year"], r["value"]) for r in got], [(2024, 26678), (2019, 25814), (2017, 15957)])
+            gone = fn.mb_pool_carry_over(MbCarryIn(rows=rows, gaps=[2019], path=Path(tmp) / "none.json"))
+            self.assertEqual([r["year"] for r in gone], [2024, 2017])
 
     def test_refuses_to_guess(self) -> None:
         """那句前面没有节标题 → 不出行(出处节名不编);原文缺席 → 不出行。"""

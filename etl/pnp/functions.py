@@ -398,9 +398,10 @@ from pnp.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(�
 from pnp.constants import (  # 2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额
     ABS_FEDERAL_MIN_COLS, ABS_FEDERAL_NOTE_RE, ABS_HEAD_FEDERAL, ABS_PRINT_FEDERAL_TPL, ABS_PRINT_NO_FEDERAL_TPL,
     K_ADDITIONAL_FEDERAL, K_EOI_POOL_YEARS, MBS_POOL_FIRST_YEAR, MBS_POOL_HEAD_TAGS, MBS_POOL_SCAN_TAGS,
-    MBS_POOL_SECTION_TPL, MBS_PROBLEM_POOL_GAP_TPL,
+    MBS_POOL_SECTION_TPL, MBS_PROBLEM_POOL_GAP_TPL, MBS_POOL_CARRY_TPL, MBS_POOL_DROP_TPL,
 )
 from pnp.scheme import AbFederalIn, MbPoolOut, MbPoolPageIn, MbPoolRowIn  # 同上
+from pnp.scheme import MbCarryIn  # 同上(2026-09-29 旧年份缺口沿用上一版)
 
 # =========================================================================
 # 1. 共享词汇(≥2 段消费:取页 / 抽文 / 解析 / 落盘 / 自校的公共件)
@@ -6762,21 +6763,47 @@ def mb_pool_years(latest: int) -> MbPoolOut:
 def mb_pool_series_of(pages: list) -> MbPoolOut:
     """若干份年报 → 池子人数一年一行(照 pages 的顺序,调用方给新到旧)。缓存里缺一份、或一份认不出那句,都记一条
     自校问题 —— 调用方据此整份保留旧表:缺一年的半份序列盖掉整份旧表比不写更糟(2026-09-29 立)。
+    同日 lead 收口改判:只有第一份(最新年报)的问题记自校问题;旧年份的缺口记进 gaps,调用方沿用上一版(mb_pool_carry_over)。
 
     @param pages 年报清单(MbPoolPageIn)。
     @returns 历年清单与自校问题。
     """
     rows: list = []
     problems: list = []
-    for p in pages:
+    gaps: list = []
+    for i, p in enumerate(pages):
         row = mb_pool_row_of(p)
         if row is not None:
             rows.append(row)
+        elif i > 0:
+            gaps.append(p.year)
         elif p.html is None:
             problems.append(MBS_PROBLEM_POOL_GAP_TPL.format(year=p.year))
         else:
             problems.append(MBS_PROBLEM_NO_POOL_TPL.format(year=p.year))
-    return MbPoolOut(rows=rows, problems=problems)
+    return MbPoolOut(rows=rows, problems=problems, gaps=gaps)
+
+
+def mb_pool_carry_over(x: MbCarryIn) -> list:
+    """旧年份缺口沿用上一版 mb-stats.json 里那一年的行(2026-09-29 lead 收口改判:只有最新一份年报算硬闸 —— 旧年报从
+    crawl 缓存里掉了,不该拖停同一文件里月度数据的更新)。每个缺口都留痕;上一版也没有这一年就本轮序列缺它。
+
+    @param x 本轮认出的行、缺口年份与上一版文件路径。
+    @returns 合并后的清单(新到旧)。
+    """
+    old: dict = {}
+    if len(x.gaps) > 0 and x.path.exists():
+        for r in json.loads(x.path.read_text(encoding=ENC_UTF8)).get(K_EOI_POOL_YEARS) or []:
+            old[r.get(K_YEAR)] = r
+    rows = list(x.rows)
+    for year in x.gaps:
+        r = old.get(year)
+        if r is None:
+            say(MBS_POOL_DROP_TPL.format(year=year))
+            continue
+        say(MBS_POOL_CARRY_TPL.format(year=year, value=r.get(K_VALUE)))
+        rows.append(r)
+    return sorted(rows, key=neg_year_of)
 
 
 def mb_pool_row_of(x: MbPoolPageIn) -> dict | None:
@@ -6869,6 +6896,7 @@ def build_mb_stats() -> None:
     problems += pools.problems
     if problems:
         fail_zh(problems)
+    pool_rows = mb_pool_carry_over(MbCarryIn(rows=pools.rows, gaps=pools.gaps, path=OUT_MB_STATS))
     monthly = block.monthly
     monthly[K_URL] = monthly_src.url
     monthly[K_FETCHED] = monthly_src.fetched
@@ -6884,9 +6912,9 @@ def build_mb_stats() -> None:
         K_FETCHED: monthly_src.fetched,
         K_MONTHLY: monthly,
         K_ANNUAL: annual.block,
-        K_EOI_POOL_YEARS: pools.rows,
+        K_EOI_POOL_YEARS: pool_rows,
     }, indent=INDENT_2))
-    say_mb_stats(MbSayIn(monthly=monthly, annual=annual.block, pools=pools.rows, through_month=block.through_month))
+    say_mb_stats(MbSayIn(monthly=monthly, annual=annual.block, pools=pool_rows, through_month=block.through_month))
 
 
 # =========================================================================
