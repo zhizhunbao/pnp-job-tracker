@@ -1618,6 +1618,8 @@ export const MACRO_CA_ONLY_ROWS = ['eeInvites', 'pnpTarget']
  *   Table 1 拆出 PNP 单列(2021–2024,证伪此前「PE 只发合并名额」的记录),2025 / 2026 年报未出 → 格上「未发布」。
  * - NB issued / remaining:gnb.ca 移民版块只发逐轮「Invitations issued」
  *   (invitation-selection-rounds 页表头 Date of draw / Pathways / Invitations issued),无年度已发提名数(2026-09-08 逐页核)。
+ *   2026-09-29 更正:省后期教育培训劳工厅(PETL)部门年报的 KPI 表有逐年省提名数(2022–2024,pnp 域 nb_stats 已接),
+ *   issued 撤出本表;remaining / useRate 仍在 —— NB 省提名单列配额官方至今未公布(CIC News 2026-05-06 原句)。
  * - NL issued / remaining:gov.nl.ca/immigration 只发逐轮「Number of ITAs Issued」(invitations-to-apply-updates 页),
  *   2026-01-26 的 NLPNP 独立审计报告原句「post-nomination outcomes … are not systematically monitored」(2026-09-08 核)。
  */
@@ -1629,8 +1631,9 @@ export const MACRO_UNPUBLISHED: Record<string, string[]> = {
 
   /**
    * 新不伦瑞克:只发逐轮邀请数。
+   * 2026-09-29 起 issued 撤出(部门年报有逐年提名数);单列配额仍未公布,剩余与用尽率照旧。
    */
-  NB: ['issued', 'remaining', 'useRate'],
+  NB: ['remaining', 'useRate'],
 
   /**
    * 纽芬兰:只发逐轮邀请数。
