@@ -40,3 +40,15 @@ class WriteTextIn:
 
     newline: str | None = None
     """换行转换(None = 平台默认;csv/TSV 落盘传 "" 关转换)。"""
+
+
+@dataclass
+class WriteBytesIn:
+    """write_bytes() 入参(2026-09-29 立:官方 PDF 先落 crawl 层再解析 —— 二进制原件也走「原子 + 重试」那一把伞;
+    write_text 编码后同样交这里,这把伞只留一份)。"""
+
+    path: Path
+    """落盘路径。"""
+
+    data: bytes
+    """待写字节(下载回来的原样,不做转换)。"""

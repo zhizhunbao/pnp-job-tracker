@@ -282,6 +282,29 @@ HTML_SUFFIX = ".html"
 STATUS_OK = 200
 """cache 只认的 HTTP 状态。"""
 
+FILE_CACHE_DIR = "file_cache"
+"""二进制原件(官方 PDF 等)的缓存子目录(data/crawl/<slug>/file_cache/;2026-09-29 立,与网页的 html_cache 分开)。"""
+
+K_FILE = "file"
+"""页行键:file_cache 文件名(md5(url) + 后缀;2026-09-29 立)。与 K_HTML 分开 —— 网页读门只认 K_HTML 行,
+原件行不会被当网页读。"""
+
+FILES_SLUG_PREFIX = "files-"
+"""二进制原件按来源主机分目录的 slug 前缀(files-www.welcomebc.ca;2026-09-29 立):BFS 各种子的 manifest 每轮
+整份覆写,原件行住不得;按主机分开 = 各省单元各写各的 manifest,并行跑不抢同一份。"""
+
+PDF_MAGIC = b"%PDF"
+"""PDF 文件头(原件后缀判定:BC 统计年报这类网址没有 .pdf 后缀,看字节头认)。"""
+
+PDF_SUFFIX = ".pdf"
+"""PDF 原件的缓存文件后缀。"""
+
+BIN_SUFFIX = ".bin"
+"""认不出是 PDF、网址也没后缀的原件用的缓存文件后缀。"""
+
+NO_HOST_TPL = "原件网址认不出主机,不进缓存:{url}"
+"""原件网址没有主机名时 put_cached_file 抛错的文案。"""
+
 SKIP_EXTENSIONS = (
     ".png",
     ".jpg",

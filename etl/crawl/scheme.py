@@ -22,8 +22,9 @@ from unittest import mock
 from pydantic import BaseModel, ConfigDict
 
 from crawl.constants import (
-    ENC_UTF8, ERRORS_REPLACE, HTML_CACHE_DIR, K_CRAWLED_AT, K_HTML, K_PAGES, K_STATUS, K_URL, MANIFEST_FILE,
-    MANIFEST_GLOB, STATUS_OK,
+    BIN_SUFFIX, ENC_UTF8, ERRORS_REPLACE, FILE_CACHE_DIR, FILES_SLUG_PREFIX, HTML_CACHE_DIR, K_CRAWLED_AT,
+    K_FILE, K_HTML, K_PAGES, K_STATUS, K_URL, MANIFEST_FILE, MANIFEST_GLOB, PDF_MAGIC, PDF_SUFFIX,
+    STATUS_OK,
 )
 
 MODEL_CFG = ConfigDict(extra="ignore", populate_by_name=True, use_attribute_docstrings=True)
@@ -344,6 +345,32 @@ class CachePutManyIn:
 
     pages: list
     """CachePage 清单(同 url 后者覆盖前者)。"""
+
+
+@dataclass
+class CacheFilePutIn:
+    """put_cached_file() 入参(一份二进制原件 → file_cache 落盘 + manifest 登记;2026-09-29 立:官方 PDF 先落
+    crawl 层再解析,Frank「页面我都缓存下来了吗」核出 pnp 各步 PDF 下完即解析、一份没落盘)。"""
+
+    url: str
+    """原件地址(缓存文件名 = md5(url) + 后缀;目录按它的主机名分)。"""
+
+    data: bytes
+    """原件字节(下载回来的原样)。"""
+
+
+@dataclass
+class ManifestRowIn:
+    """upsert_manifest_row() 入参(manifest 按 url 增改一行;2026-09-29 自 put_cached_page 抽出,原件写门共用)。"""
+
+    path: Path
+    """manifest.json 路径(不在即建)。"""
+
+    slug: str
+    """站点 slug(新建 manifest 时记进 slug 键)。"""
+
+    row: dict
+    """页行(url 键必有;同 url 的旧行被它替换)。"""
 
 
 @dataclass
@@ -729,3 +756,37 @@ class CacheIndexTest(unittest.TestCase):
             else:
                 out[u] = (best[u][1].read_text(encoding=ENC_UTF8, errors=ERRORS_REPLACE), best[u][0][:10])
         return out
+
+
+class FileCacheTest(unittest.TestCase):
+    """原件写门自测(2026-09-29 立):临时 data/crawl 上验 ① PDF 字节认 .pdf 后缀、网址后缀次之、都没有给 .bin;
+    ② 目录按主机分(files-<主机>),manifest 行记 K_FILE 不记 K_HTML;③ 同 url 再写只剩一行、文件换成新字节;
+    ④ 网页读门不把原件当网页;⑤ 网页写门改用公用增改后,页行形状与读回照旧。不联网,只写临时目录。"""
+
+    def test_put_file(self) -> None:
+        """五条性质一次写全。"""
+        from crawl import functions as fn
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(fn.paths, "CRAWL", root):
+                u1 = "https://www.example.test/docs/report-2025-pdf"
+                u2 = "https://www.example.test/a/table.xlsx"
+                u3 = "https://files.example.test/raw"
+                p1 = fn.put_cached_file(CacheFilePutIn(url=u1, data=PDF_MAGIC + b"-1.7 v1"))
+                p2 = fn.put_cached_file(CacheFilePutIn(url=u2, data=b"PK" + bytes([3, 4])))
+                p3 = fn.put_cached_file(CacheFilePutIn(url=u3, data=bytes([0, 1])))
+                self.assertEqual((p1.suffix, p2.suffix, p3.suffix), (PDF_SUFFIX, ".xlsx", BIN_SUFFIX))
+                self.assertEqual(p1.parent, root / (FILES_SLUG_PREFIX + "www.example.test") / FILE_CACHE_DIR)
+                self.assertEqual(p3.parent.parent.name, FILES_SLUG_PREFIX + "files.example.test")
+                fn.put_cached_file(CacheFilePutIn(url=u1, data=PDF_MAGIC + b"-1.7 v2"))
+                self.assertEqual(p1.read_bytes(), PDF_MAGIC + b"-1.7 v2")
+                rows = json.loads((p1.parent.parent / MANIFEST_FILE).read_text(encoding=ENC_UTF8))[K_PAGES]
+                self.assertEqual(len(rows), 2)
+                for r in rows:
+                    self.assertIn(K_FILE, r)
+                    self.assertNotIn(K_HTML, r)
+                self.assertIsNone(fn.get_cached_page(u1).html)
+                fn.put_cached_page(CachePutIn(slug="s1", url="https://x.test/p", html="<html>p</html>", title="t"))
+                page = json.loads((root / "s1" / MANIFEST_FILE).read_text(encoding=ENC_UTF8))[K_PAGES][0]
+                self.assertEqual(sorted(page), sorted([K_URL, "title", "depth", K_STATUS, K_HTML]))
+                self.assertEqual(fn.get_cached_page("https://x.test/p").html, "<html>p</html>")

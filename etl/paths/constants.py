@@ -218,6 +218,13 @@ RETRY_BACKOFF = 2
 JSON_COMPACT_SEPS = (",", ":")
 """紧凑落盘分隔符(compact=True 档)。"""
 
+NEWLINE_LF = "\n"
+"""文本里的换行符(write_text 按 newline 档位把它换成目标换行;2026-09-29 换行与编码挪到 write_text 自己做,
+字节交 write_bytes 落盘)。"""
+
+NEWLINE_OFF = ""
+"""newline 档位:空串 = 不转换(csv/TSV 落盘传它;与 Python 文本写同义)。"""
+
 JOBBANK_STORE_LOCK = PROCESSED_JOBBANK / ".postings.lock"
 """Job Bank 可变仓(postings.json)的跨进程锁文件(2026-08-31 批F 自 sources/_jobbank_lock
 收编 —— sources 役册清仓,锁属 data 访问基建,住 paths 叶)。生产者(jobbank 域解析步)与

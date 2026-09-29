@@ -33,8 +33,8 @@ from bs4 import BeautifulSoup
 import paths
 from log.functions import err, say
 from fetch.constants import BROWSER_UA, HDR_UA, PARSER_HTML, POLITE_UA, WS_RE
-from crawl.functions import convert_md, get_cached_page, put_cached_page
-from crawl.scheme import CachePutIn, ConvertIn
+from crawl.functions import convert_md, get_cached_page, put_cached_file, put_cached_page
+from crawl.scheme import CacheFilePutIn, CachePutIn, ConvertIn
 from pnp.constants import (
     ABR_BASIS_FISCAL, ABR_BASIS_WINDOW_TPL, ABR_COND_LOCAL, ABR_EMPLOYER_URL, ABR_EMP_REVENUE_LABEL_TPL,
     ABR_EMP_REVENUE_RE,
@@ -85,7 +85,7 @@ from pnp.constants import (
     DRAWS_PRINT_MERGE_TPL, DRAWS_PRINT_NB_FAIL_TPL, DRAWS_PRINT_NB_OK_TPL, DRAWS_PRINT_NB_PARTIAL_TPL,
     DRAWS_PRINT_OK_TPL, DRAWS_PRINT_ON_FAIL_TPL, DRAWS_PRINT_ON_INV_FAIL_TPL, DRAWS_PRINT_ON_NO_ENTRY,
     DRAWS_PRINT_ON_OK_TPL, DRAWS_PRINT_PE_NO_CACHE_TPL, DRAWS_PRINT_PE_OK_TPL,
-    DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE,
+    DRAWS_SOURCE, DRAWS_STREAM_CLIP, DRAWS_TIMEOUT_S, DROP_TAGS, EMPTY_JOIN, ENC_UTF8, ERRORS_REPLACE, FETCH_HTTP_OK,
     FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EMP_REVENUE, FACTOR_EMP_STAFF, FACTOR_EMP_YEARS, FACTOR_EXPERIENCE,
     FACTOR_EXPERIENCE_ALT,
     FACTOR_EXPERIENCE_EXCLUDED,
@@ -412,8 +412,15 @@ def fetch_html(x: FetchHtmlIn) -> str:
 
 
 def fetch_bytes(x: FetchHtmlIn) -> bytes:
-    """取一份二进制(PDF 下载共用;参数与 fetch_html 同形)。"""
-    return httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s).content
+    """取一份二进制(PDF 下载共用;参数与 fetch_html 同形)。
+
+    2026-09-29 起先落 crawl 层再交回(Frank「页面我都缓存下来了吗」→ 核出各步 PDF 下完即解析、一份没落盘):
+    HTTP 200 的原件走 crawl 原件写门(files-<主机>/file_cache/),错误页不进缓存;交回的字节不变,调用方一处不用改。
+    """
+    r = httpx.get(x.url, headers={HDR_UA: BROWSER_UA}, follow_redirects=True, timeout=x.timeout_s)
+    if r.status_code == FETCH_HTTP_OK:
+        put_cached_file(CacheFilePutIn(url=x.url, data=r.content))
+    return r.content
 
 
 def drop_junk_tags(soup: SoupNodeLike) -> None:

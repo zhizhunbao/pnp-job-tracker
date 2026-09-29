@@ -16,9 +16,9 @@ from pathlib import Path
 from typing import IO, Iterator
 
 from paths.constants import (JSON_COMPACT_SEPS, LOCK_OPEN_MODE, LOCK_POLL_S,
-                             LOCK_SEED, OS_WINDOWS, RETRY_BACKOFF, RETRY_DELAY_S,
-                             RETRY_MAX, TMP_SUFFIX)
-from paths.scheme import WriteJsonIn, WriteTextIn
+                             LOCK_SEED, NEWLINE_LF, NEWLINE_OFF, OS_WINDOWS, RETRY_BACKOFF,
+                             RETRY_DELAY_S, RETRY_MAX, TMP_SUFFIX)
+from paths.scheme import WriteBytesIn, WriteJsonIn, WriteTextIn
 
 
 def dumped_of(x: WriteJsonIn) -> str:
@@ -42,12 +42,31 @@ def write_text(x: WriteTextIn) -> None:
 
     2026-09-02 自 write_json 抽出:etl 44 处裸 Path.write_text 零重试,宿主侧(VS Code git
     刷新等)持锁风暴一撞即死整轮中止 —— 全部收编到这。重试过程静默,第 RETRY_MAX 次照抛。
+    2026-09-29 换行与编码在这里做完,字节交 write_bytes 落盘(官方 PDF 先落 crawl 层那批立了二进制写门,
+    「临时文件 + os.replace + 重试」这一把只留一份);落盘字节与原先 Path.write_text 逐档位对拍一致。
     """
+    write_bytes(WriteBytesIn(path=x.path, data=lined_text_of(x).encode(x.encoding)))
+
+
+def lined_text_of(x: WriteTextIn) -> str:
+    """按 newline 档位转换换行,照 Python 文本写的规则:None = 平台换行(os.linesep);空串与换行符本身不转;
+    其余把换行符换成它(2026-09-29 随 write_text 改交 write_bytes 立)。"""
+    sep = x.newline
+    if sep is None:
+        sep = os.linesep
+    if sep == NEWLINE_OFF or sep == NEWLINE_LF:
+        return x.text
+    return x.text.replace(NEWLINE_LF, sep)
+
+
+def write_bytes(x: WriteBytesIn) -> None:
+    """原子写字节:临时文件 + os.replace,OSError 重试 RETRY_MAX 次退避(RETRY_DELAY_S 起翻倍);重试过程静默,
+    第 RETRY_MAX 次照抛。2026-09-29 立(官方 PDF 先落 crawl 层再解析),write_text 编码后也交这里。"""
     tmp = x.path.with_suffix(x.path.suffix + TMP_SUFFIX)
     delay = RETRY_DELAY_S
     for attempt in range(RETRY_MAX):
         try:
-            tmp.write_text(x.text, encoding=x.encoding, newline=x.newline)
+            tmp.write_bytes(x.data)
             os.replace(tmp, x.path)
             return
         except OSError:

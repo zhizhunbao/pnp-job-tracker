@@ -23,6 +23,9 @@ ENC_UTF8 = "utf-8"
 ERRORS_REPLACE = "replace"
 """读外来文本的容错模式:坏字节替换不炸。"""
 
+FETCH_HTTP_OK = 200
+"""取二进制原件时只把这个 HTTP 状态的响应落 crawl 层(错误页不进缓存;2026-09-29 官方 PDF 先落缓存再解析)。"""
+
 PARSER_LXML = "lxml"
 """bs4 的 lxml 解析器 —— **只有 NL 抽选表用**(2026-08-03 接入时那张表没有 <th>,
 html.parser 拆出来的行矩阵对不上;其余各处一律 fetch.constants.PARSER_HTML)。"""

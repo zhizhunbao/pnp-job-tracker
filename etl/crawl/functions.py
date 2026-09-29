@@ -38,6 +38,7 @@ from crawl import BROWSER_CHANNEL, BROWSER_COOKIES, BROWSER_UNATTENDED
 from crawl.constants import (
     BLOCKED_KEEP_RATIO, BLOCKED_MIN_PREV_OK, PRINT_SEED_ATTENDED_SKIP_TPL, PRINT_SEED_BLOCKED_TPL,
     COOKIE_JAR_EMPTY,
+    BIN_SUFFIX, FILE_CACHE_DIR, FILES_SLUG_PREFIX, K_FILE, NO_HOST_TPL, PDF_MAGIC, PDF_SUFFIX,
     ACCEPT_HTML,
     ACCEPT_LANGUAGE,
     ADMONITION_TITLE_CLASS,
@@ -243,6 +244,7 @@ from crawl.scheme import (
     CachedNamesIn,
     CachePutIn,
     CachePutManyIn,
+    CacheFilePutIn,
     ConvertIn,
     CrawlCtx,
     DiscoverIn,
@@ -263,7 +265,9 @@ from crawl.scheme import (
     ClearIn,
     ManifestEntry,
     ManifestSig,
+    ManifestRowIn,
     CacheIndexTest,
+    FileCacheTest,
 )
 from crawl.variables import CACHE, MANIFESTS
 from fetch.constants import ATTR_HREF, TAG_BR, TAG_LI, TAG_TITLE
@@ -413,25 +417,32 @@ def put_cached_page(x: CachePutIn) -> Path:
     html_dir.mkdir(parents=True, exist_ok=True)
     html_name = hashlib.md5(x.url.encode()).hexdigest() + HTML_SUFFIX
     paths.write_text(paths.WriteTextIn(path=html_dir / html_name, text=x.html))
-    manifest_path = out_dir / MANIFEST_FILE
-    manifest: dict = {K_SEED_URL: x.url, K_SLUG: x.slug, K_TOTAL_URLS: 0, K_MAX_DEPTH: 0, K_CRAWLED_AT: "", K_PAGES: []}
-    if manifest_path.exists():
-        loaded = json.loads(manifest_path.read_text(encoding=ENC_UTF8))
+    upsert_manifest_row(ManifestRowIn(path=out_dir / MANIFEST_FILE, slug=x.slug, row={
+        K_URL: x.url, K_TITLE: x.title, K_DEPTH: 0, K_STATUS: STATUS_OK, K_HTML: html_name}))
+    return html_dir / html_name
+
+
+def upsert_manifest_row(x: ManifestRowIn) -> None:
+    """manifest 按 url 增改一行:同 url 的旧行换成新行、排到末尾;manifest 不在即建(seed_url = 本行 url、深度 0);
+    crawled_at 刷成本次写盘时刻(读门取最新份的比较键)。2026-09-29 自 put_cached_page 抽出(逐行照旧),原件写门
+    put_cached_file 共用 —— 增改 manifest 的做法只留一份。"""
+    url = x.row[K_URL]
+    manifest: dict = {K_SEED_URL: url, K_SLUG: x.slug, K_TOTAL_URLS: 0, K_MAX_DEPTH: 0, K_CRAWLED_AT: "", K_PAGES: []}
+    if x.path.exists():
+        loaded = json.loads(x.path.read_text(encoding=ENC_UTF8))
         if isinstance(loaded, dict):
             manifest = loaded
-    row = {K_URL: x.url, K_TITLE: x.title, K_DEPTH: 0, K_STATUS: STATUS_OK, K_HTML: html_name}
     pages = []
     old = manifest.get(K_PAGES)
     if isinstance(old, list):
         for p in old:
-            if isinstance(p, dict) and p.get(K_URL) != x.url:
+            if isinstance(p, dict) and p.get(K_URL) != url:
                 pages.append(p)
-    pages.append(row)
+    pages.append(x.row)
     manifest[K_PAGES] = pages
     manifest[K_TOTAL_URLS] = len(pages)
     manifest[K_CRAWLED_AT] = datetime.now().isoformat()
-    paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
-    return html_dir / html_name
+    paths.write_text(paths.WriteTextIn(path=x.path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
 
 
 def load_cache_index(slug: str) -> dict:
@@ -492,6 +503,38 @@ def put_cached_pages(x: CachePutManyIn) -> int:
     manifest[K_CRAWLED_AT] = datetime.now().isoformat()
     paths.write_text(paths.WriteTextIn(path=manifest_path, text=json.dumps(manifest, ensure_ascii=False, indent=2)))
     return len(x.pages)
+
+
+def put_cached_file(x: CacheFilePutIn) -> Path:
+    """一份二进制原件(官方 PDF 等)进 crawl 层 → 原件路径:file_cache/md5(url)+后缀 原子落盘 + manifest 按 url 增改一行。
+
+    2026-09-29 立(Frank「页面我都缓存下来了吗」→ 核出 pnp 各步的 PDF 下完即解析、一份没落盘,不合 09-02 拍板的
+    crawl → raw 链「原文先落 crawl 再抽」):slug = files-<来源主机> —— BFS 各种子的 manifest 每轮整份覆写,原件行
+    住不得;按主机分目录,各省单元各写各的 manifest,并行跑不抢同一份。行里用 K_FILE 记文件名,网页读门只认 K_HTML 行,
+    不会把原件当网页读。"""
+    host = urlparse(x.url).hostname
+    if host is None:
+        raise ValueError(NO_HOST_TPL.format(url=x.url))
+    slug = FILES_SLUG_PREFIX + host
+    out_dir = paths.CRAWL / slug
+    file_dir = out_dir / FILE_CACHE_DIR
+    file_dir.mkdir(parents=True, exist_ok=True)
+    name = hashlib.md5(x.url.encode()).hexdigest() + file_suffix_of(x)
+    paths.write_bytes(paths.WriteBytesIn(path=file_dir / name, data=x.data))
+    upsert_manifest_row(ManifestRowIn(path=out_dir / MANIFEST_FILE, slug=slug, row={
+        K_URL: x.url, K_TITLE: "", K_DEPTH: 0, K_STATUS: STATUS_OK, K_FILE: name}))
+    return file_dir / name
+
+
+def file_suffix_of(x: CacheFilePutIn) -> str:
+    """原件的缓存文件后缀:字节以 %PDF 打头给 .pdf(BC 统计年报这类网址没有 .pdf 后缀);否则取网址路径的后缀;
+    都没有给 .bin。"""
+    if x.data.startswith(PDF_MAGIC):
+        return PDF_SUFFIX
+    suffix = Path(urlparse(x.url).path).suffix
+    if suffix == "":
+        return BIN_SUFFIX
+    return suffix
 
 
 # =========================================================================
@@ -1618,7 +1661,8 @@ def bare_host_of(url: str) -> str:
 
 def run_tests() -> None:
     """test 步入口:跑读门对照自测(新读门 vs 旧实现金标,临时树 + 真 data/crawl 抽样;库垫片先例 indexing / gate);
-    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。"""
+    有失败 sys.exit(1) 穿门(SystemExit 不被门的 except Exception 捕获)。2026-09-29 加原件写门自测 FileCacheTest。"""
     suite = unittest.TestLoader().loadTestsFromTestCase(CacheIndexTest)
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(FileCacheTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

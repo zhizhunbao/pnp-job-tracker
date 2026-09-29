@@ -57,8 +57,8 @@ from paths.constants import (
     STATCAN,
     WAGES,
 )
-from paths.functions import jobbank_store_lock, write_json, write_text
-from paths.scheme import WriteJsonIn, WriteTextIn
+from paths.functions import jobbank_store_lock, write_bytes, write_json, write_text
+from paths.scheme import WriteBytesIn, WriteJsonIn, WriteTextIn
 
 BUCKET = (
     AIP,
@@ -109,9 +109,11 @@ BUCKET = (
     MINWAGE,
     STATCAN,
     WAGES,
+    WriteBytesIn,
     WriteJsonIn,
     WriteTextIn,
     jobbank_store_lock,
+    write_bytes,
     write_json,
     write_text,
 )
