@@ -720,7 +720,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」
   it('本岗不满足:原因码 → 原因词(三语),清单排除不走这条;有原因的格子可点', () => {
     const words = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ'].map((c) => pnpBlockOf({ job: { pnpBlock: c }, t: zh }))
-    expect(words).toEqual(['兼职', '合同工', '季节工', '临时工', '工资低于中位', '职业不收'])
+    expect(words).toEqual(['兼职', '定期合同', '季节工', '临时工', '工资低于中位', '职业不收'])
     expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: en })).toBe('Part-time')
     expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('파트타임')
     for (const c of ['', 'list', 'zzz']) {

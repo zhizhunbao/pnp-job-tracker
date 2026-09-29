@@ -575,7 +575,8 @@ export const jobsZh = {
   'filter.geo': '地理', 'filter.src': '来源', 'filter.statusexp': '状态/经验', 'filter.status': '状态', 'filter.exp': '经验', 'filter.drawer': '筛选',
   // 职位类型(E6-06)+ 入职要求(E6-07A)
   'emp.full': '全职', 'emp.part': '兼职',
-  'term.permanent': '长期', 'term.term': '合同', 'term.casual': '临时', 'term.seasonal': '季节',
+  // 2026-09-29 Frank「改成定期合同吧」:term 指有固定结束日期的岗(fixed-term),「合同 / 合同工」会读成「签了劳动合同」,三处统一改「定期合同」
+  'term.permanent': '长期', 'term.term': '定期合同', 'term.casual': '临时', 'term.seasonal': '季节',
   'who.citizens_pr': '只招公民和永久居民', 'who.temporary_ok': '接受工签', 'who.anyone': '接受境外申请',
   'fact.edu': '学历要求', 'fact.cert': '证书/执照',
   'all.prov': '全部省', 'all.city': '全部市', 'all.district': '全部区',
@@ -625,7 +626,7 @@ export const jobsZh = {
   'pnpgate.k.offer': '雇主 offer', 'pnpgate.k.lang': '语言', 'pnpgate.k.exp': '工作经验', 'pnpgate.k.ee': 'EE',
   'pnpgate.k.emp': '雇主', 'pnpgate.k.other': '其他',
   'pnpgate.offerFull': '全职', 'pnpgate.offerNot': '不收{list}', 'pnpgate.no.part': '兼职', 'pnpgate.no.casual': '临时工',
-  'pnpgate.no.seasonal': '季节工', 'pnpgate.no.term': '合同工',
+  'pnpgate.no.seasonal': '季节工', 'pnpgate.no.term': '定期合同',
   'pnpgate.lang': '英语或法语每项 CLB {n}',
   'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
   'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省 {n} 个月(近 {w} 个月内)',
@@ -658,7 +659,7 @@ export const jobsZh = {
   'pnpfacts.streams': '本岗能走的通道',
   // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」:原因词(格子 / 胶囊 / 弹框卡同一套)
   'pnpblock.title': '本岗不满足的门槛',
-  'pnp.block.part': '兼职', 'pnp.block.term': '合同工', 'pnp.block.seasonal': '季节工', 'pnp.block.casual': '临时工',
+  'pnp.block.part': '兼职', 'pnp.block.term': '定期合同', 'pnp.block.seasonal': '季节工', 'pnp.block.casual': '临时工',
   'pnp.block.wage': '工资低于中位', 'pnp.block.occ': '职业不收',
   'pnpfacts.selected': '入选',
   'pnpfacts.selPeople': '{n} 人入选',
