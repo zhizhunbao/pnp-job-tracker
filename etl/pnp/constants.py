@@ -3926,11 +3926,18 @@ consecutive months in Saskatchewan」。**不收雇员数/营业额** —— 官
 2026-09-27 加一条(lead 派工「萨省『直接申请不抽选』事实没入库」):**持 offer 直接申请、不经 EOI 抽选**
 (factor=eoiDraw、op=none,原句见 SKR_DIRECT_RE)—— 照 ON 三条 EJO 流关闭通告那一行的形(通道级进件事实,
 官方原句进 valueText);原句没匹配到同样算自校失败(官方改了措辞,这条断言得有人重读)。只入库,展示另议。
-2026-09-29 Frank「都接上,开工吧」(七省门槛卡):萨省五条通道各有门槛流,新行一律排在既有四行之后(seq 不动)——
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):萨省通道各有门槛流,新行一律排在既有四行之后(seq 不动)——
 共用流加打分表最低分一行(上面「没抓的」第一条的前提变了:门槛卡「积分」行消费它)、经验行 basis 补近 10 年窗口;
 Employment Offer 自己的流收执照条款;医疗 / 科技(只收非 EE 版)/ 农业三条 Talent Pathway 各收语言、经验主档 + 在担保雇主处
-6 个月的替代路径(experienceAlt)、执照(农业资格清单没有);现有工签通道收在担保雇主处 6 个月(主档)、TEER 4 / 5 的 CLB 4、
-执照。每条都按官方原句正则取,没取到同样算自校失败、保留旧表。"""
+6 个月的替代路径(experienceAlt)、执照(农业资格清单没有)。每条都按官方原句正则取,没取到同样算自校失败、保留旧表。
+2026-09-29 同日 lead 决定:**现有工签通道(Skilled Worker With Existing Work Permit)这批先不入表**(同批先抽过三行
+—— 在担保雇主处 6 个月、TEER 4 / 5 的 CLB 4、执照 —— 连同抽取函数与自校一并撤掉)。官方原句(applicants-with-existing-work-permit
+页):「Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the
+employer that has supported you with the Employer Position Assessment, with a valid work permit.」「Have at least a score of
+Canadian Language Benchmark (CLB) 4 if your job offer is in a TEER "4" or "5" occupation.」执照条款与 EO 页同一句(SKR_LICENSING_RE)。
+没入表的理由:cms 的门槛量尺(tenureResult)与判定引擎的 TEER 粗筛按全省读门槛行、不分通道 —— 在担保雇主处 6 个月那行
+(experience + employerTenure)会给每个萨省岗多一行「在职时长 6 个月 · 判不了」,TEER 4 / 5 那档语言行会把本省 TEER 0-3 的岗
+说成仅受理 TEER 4-5。待量尺与引擎按通道读行之后再接。"""
 
 SKR_TIMEOUT_S = 45
 """SK 三页抓取超时。2026-09-27 起第四页(持 offer 直接申请原句页,缓存没有时现抓)同用这一档。"""
@@ -4056,7 +4063,8 @@ SKR_BASIS_WINDOW_TPL = "windowYears={n}"
 
 SKR_BASIS_EMPLOYER_TENURE = "employerTenure"
 """在担保雇主处在职时长的口径标记(同 ON / MB / AB 旅游酒店的 employerTenure;门槛卡据此写「在现雇主全职满 N 个月」)。
-单独成串、不与别的口径并写:判定引擎认它是整串相等。"""
+单独成串、不与别的口径并写:判定引擎认它是整串相等。
+2026-09-29 现有工签那批撤掉后,本段只剩三条 Talent Pathway 的替代路径行(experienceAlt)用它(撤的理由见 OUT_SK_REQ 注)。"""
 
 SKR_POINTS_RE = re.compile(r"Score (?:at least|a minimum of) (\d+) points (?:out of \d+ )?on the "
                            r"(?:Saskatchewan Immigrant Nominee Program \(SINP\)|SINP) point assessment grid", re.I)
@@ -4088,11 +4096,12 @@ SKR_LICENSING_RE = re.compile(r"Be eligible for Saskatchewan licensing if your i
                               r"occupation in Saskatchewan", re.I)
 """执照条款(EO 页与现有工签页同一句):「Be eligible for Saskatchewan licensing if your intended occupation is a
 compulsory apprenticeship trade or a credential is legally required for you to work in that occupation in Saskatchewan」。
-记 licensing / op=rule、原句进 valueText(同 AB 乡村振兴、医疗专线执照行的形);门槛卡「其他」行写「职业所需执照或注册」。"""
+记 licensing / op=rule、原句进 valueText(同 AB 乡村振兴、医疗专线执照行的形);门槛卡「其他」行写「职业所需执照或注册」。
+2026-09-29 现有工签那批撤掉后只剩 EO 用它(撤的理由见 OUT_SK_REQ 注)。"""
 
 SKR_LICENSING_LABEL = ("Eligible for Saskatchewan licensing if the occupation is a compulsory apprenticeship trade or "
                        "legally requires a credential")
-"""EO / 现有工签执照行的 label。"""
+"""EO 执照行的 label(2026-09-29 立时也给现有工签执照行用,那批当日撤掉,见 OUT_SK_REQ 注)。"""
 
 SKR_PROBLEM_EO_LICENSING = ("Employment Offer 执照条款没解析到(international-skilled-worker-with-employment-offer 页"
                             "可能改版)")
@@ -4256,47 +4265,6 @@ SKR_TALENTS = (
 """三条 Talent Pathway 的门槛配置(一条 = 一页一条流;照 SK_STREAMS 一条一 dict 的形,sk_talent_reqs 逐条跑)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):通道对照表给这三条通道各登自己的流,省提名弹框出门槛卡。
 农业页资格清单里没有执照条款(只在「Required Documents — Credentials (if applicable)」提交材料里出现),不收。"""
-
-SKR_EWP_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
-               "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/"
-               "applicants-with-existing-work-permit")
-"""现有工签通道页(Saskatchewan Experience 类,不在 SK_BASE_URL 那条 International Skilled Worker 路径下;
-crawl sk-sinp manifest 里的原网址,已缓存)。"""
-
-SKR_EWP_STREAM = "SINP Skilled Worker With Existing Work Permit"
-"""现有工签通道的门槛流(官方页题名;名字不含「International Skilled Worker」,判定引擎 SK-offer 不读)。"""
-
-SKR_SECTION_EWP = "Skilled Worker With Existing Work Permit — Eligibility"
-"""现有工签通道的出处节名。"""
-
-SKR_EWP_EXP_RE = re.compile(r"Have worked for at least (\w+)[- ]months \([\d,]+ hours\) of full-time \(30\+ hours per "
-                            r"week\) work experience in the job with the employer that has supported you with the "
-                            r"Employer Position Assessment, with a valid work permit", re.I)
-"""现有工签通道经验:「Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience
-in the job with the employer that has supported you with the Employer Position Assessment, with a valid work permit. The
-work experience must be consecutive work experience.」—— 这条通道唯一的经验门槛(主档,不是替代)→ experience,
-basis=employerTenure。"""
-
-SKR_EWP_LANG_RE = re.compile(r"Have at least a score of Canadian Language Benchmark \(CLB\) (\d+) if your job offer "
-                             r"is in a TEER [\"“]?(\d)[\"”]? or [\"“]?(\d)[\"”]? occupation", re.I)
-"""现有工签通道语言:「Have at least a score of Canadian Language Benchmark (CLB) 4 if your job offer is in a TEER "4" or
-"5" occupation.」—— 只管 TEER 4 / 5(appliesTeer 照原句两档取,不写死);TEER 0-3 这条通道不设语言门槛,门槛卡不出语言行。"""
-
-SKR_PROBLEM_EWP_EXP = ("现有工签通道工作经验(在担保雇主处全职满 6 个月)没解析到"
-                       "(applicants-with-existing-work-permit 页可能改版)")
-"""自校问题:现有工签通道经验。"""
-
-SKR_PROBLEM_EWP_LANG = ("现有工签通道语言门槛(TEER 4 / 5 的 CLB)没解析到"
-                        "(applicants-with-existing-work-permit 页可能改版)")
-"""自校问题:现有工签通道语言。"""
-
-SKR_PROBLEM_EWP_LICENSING = "现有工签通道执照条款没解析到(applicants-with-existing-work-permit 页可能改版)"
-"""自校问题:现有工签通道执照条款。"""
-
-SKR_EWP_RULES = (
-    (SKR_LICENSING_RE, FACTOR_LICENSING, "", SKR_LICENSING_LABEL, SKR_PROBLEM_EWP_LICENSING),
-)
-"""现有工签通道的规则清单(执照条款与 EO 页同一句,正则共用 SKR_LICENSING_RE)。"""
 
 
 # =========================================================================

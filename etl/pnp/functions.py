@@ -358,12 +358,11 @@ from pnp.constants import (  # 2026-09-27 萨省「持 offer 直接申请、不�
     FACTOR_EOI_DRAW, SKR_DIRECT_LABEL, SKR_DIRECT_RE, SKR_DIRECT_STREAM, SKR_DIRECT_URL, SKR_PROBLEM_DIRECT,
     SKR_SECTION_DIRECT,
 )
-from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:五条通道各自的门槛流)新增
+from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
     K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
-    SKR_EO_STREAM, SKR_EWP_EXP_RE, SKR_EWP_LANG_RE, SKR_EWP_RULES, SKR_EWP_STREAM, SKR_EWP_URL, SKR_FACTOR_POINTS_MIN,
-    SKR_POINTS_RE, SKR_PROBLEM_EWP_EXP, SKR_PROBLEM_EWP_LANG, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
+    SKR_EO_STREAM, SKR_FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
     SKR_PROBLEM_TALENT_ALT_TPL, SKR_PROBLEM_TALENT_CUT_TPL, SKR_PROBLEM_TALENT_EXP_TPL, SKR_SECTION_EO,
-    SKR_SECTION_EWP, SKR_SECTION_POINTS, SKR_TALENTS, SKR_UNIT_POINTS,
+    SKR_SECTION_POINTS, SKR_TALENTS, SKR_UNIT_POINTS,
 )
 from pnp.constants import (  # 2026-09-27 九省体检修复批新增(MB 整期总数句 / SK 农业带星号码)
     K_SECTOR_QUOTE, MB_TOTAL_RE, SK_PRINT_SECTOR_FAIL_TPL, SK_SECTOR_STAR,
@@ -4448,44 +4447,15 @@ def sk_talent_text(spec: dict) -> str | None:
     return txt[:at]
 
 
-def sk_ewp_reqs(txt: str) -> ReqsOut:
-    """现有工签通道(Skilled Worker With Existing Work Permit)的门槛,落 SKR_EWP_STREAM:在担保雇主处全职满 6 个月
-    (experience,basis=employerTenure —— 这条通道唯一的经验门槛,是主档不是替代)、TEER 4 / 5 的岗 CLB 4(appliesTeer 照原句
-    取两档)、执照条款(rule_rows)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)。
-
-    @param txt 现有工签通道页正文(已压平空白)。
-    @returns 行与自校问题。
-    """
-    rows: list = []
-    problems: list = []
-    exp = SKR_EWP_EXP_RE.search(txt)
-    months = None
-    if exp:
-        months = word_or_digit(exp.group(1))
-    if exp and months is not None:
-        rows.append(to_sk_req(ReqIn(stream=SKR_EWP_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
-                                    basis=SKR_BASIS_EMPLOYER_TENURE, section=SKR_SECTION_EWP,
-                                    label=fold_ws(exp.group(0)).strip(), url=SKR_EWP_URL)))
-    else:
-        problems.append(SKR_PROBLEM_EWP_EXP)
-    lang = SKR_EWP_LANG_RE.search(txt)
-    if lang:
-        rows.append(to_sk_req(ReqIn(stream=SKR_EWP_STREAM, factor=FACTOR_LANGUAGE, value=int(lang.group(1)),
-                                    unit=UNIT_CLB, applies_teer=[int(lang.group(2)), int(lang.group(3))],
-                                    section=SKR_SECTION_EWP, label=fold_ws(lang.group(0)).strip(), url=SKR_EWP_URL)))
-    else:
-        problems.append(SKR_PROBLEM_EWP_LANG)
-    part = rule_rows(RuleRowsIn(to_row=to_sk_req, txt=txt, stream=SKR_EWP_STREAM, url=SKR_EWP_URL,
-                                section=SKR_SECTION_EWP, rules=SKR_EWP_RULES))
-    return ReqsOut(rows=rows + part.rows, problems=problems + part.problems)
-
-
 def build_sk_req() -> None:
     """SK 门槛入口:EO / OID 两页交叉核对 + 雇主注册闸门页。
     2026-09-27 末尾加一页:Connecting Family Members 页的「持 offer 直接申请、不经 EOI 抽选」原句(读 crawl 缓存优先,
     同 ON 三条 EJO 流关闭通告;原句没匹配到同样按自校失败收口)。新行排在最后,既有三行的 seq 不动。
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡):再往后接打分表最低分(两页核对)、EO 执照、三条 Talent Pathway
-    (sk_talent_reqs 逐条)、现有工签通道四段,既有四行的 seq 照旧不动;任一段没解析到同样按自校失败收口。"""
+    (sk_talent_reqs 逐条)三段,既有四行的 seq 照旧不动;任一段没解析到同样按自校失败收口。
+    同日 lead 决定现有工签通道这批先不接:原先的第四段(在担保雇主处 6 个月、TEER 4 / 5 的 CLB 4、执照)连抽取函数一并撤掉
+    —— 门槛量尺与 TEER 粗筛按全省读行、不分通道,入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成
+    仅受理 4-5;官方原句与待接条件记在 OUT_SK_REQ 注。"""
     say(PRINT_OUT_TPL.format(path=OUT_SK_REQ))
     pages = SkPagesIn(eo=page_text(PageTextIn(url=SKR_EO_URL, timeout_s=SKR_TIMEOUT_S,
                                               drop_junk=False, main_only=True)),
@@ -4512,10 +4482,6 @@ def build_sk_req() -> None:
         talent = sk_talent_reqs(spec)
         reqs += talent.rows
         problems += talent.problems
-    ewp = sk_ewp_reqs(fold_ws(page_text(PageTextIn(url=SKR_EWP_URL, timeout_s=SKR_TIMEOUT_S,
-                                                   drop_junk=True, main_only=True, cache_first=True))))
-    reqs += ewp.rows
-    problems += ewp.problems
     if problems:
         fail_zh(problems)
     OUT_SK_REQ.parent.mkdir(parents=True, exist_ok=True)

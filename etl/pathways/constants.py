@@ -397,7 +397,7 @@ PW_SK_EXISTING_WORK_PERMIT = {
     "officialName": "Skilled Worker With Existing Work Permit",
     "boardLabel": "SK 现有工签", "isDefault": False,
     "drawStreams": [],
-    "reqStreams": ["SINP Skilled Worker With Existing Work Permit"],
+    "reqStreams": [],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -410,8 +410,13 @@ PW_SK_EXISTING_WORK_PERMIT = {
 """萨省现有工签通道:不靠清单,是 mart 的规则判(具名清单都没命中、可提名的 TEER 4-5 与卡车司机岗给它;2026-09-24 九省通道审计,
 Frank 批)。岗位通道名写在 mart 的 SK_EWP_LABEL,不在任何 raw/pnp 清单里 —— 自校靠 RULE_BOARD_LABELS 认它。
 officialName 照抄通道页标题(assess 页写作「Skilled-Worker with Existing Work Permit」,见 quote)。
-2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道那条(在担保雇主处全职满 6 个月、TEER 4 / 5 的 CLB 4、
-执照)。不挂持 offer 直接申请那条:那句原句说的是 International Skilled Worker 类,本通道属 Saskatchewan Experience 类。"""
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):同批先挂过本通道自己那条门槛流(在担保雇主处全职满 6 个月、TEER 4 / 5 的
+CLB 4、执照),同日 lead 决定这批先不接,门槛流撤回、这格恢复为空(不出门槛卡)。官方原句(applicants-with-existing-work-permit
+页)「Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the
+employer that has supported you with the Employer Position Assessment, with a valid work permit.」—— cms 的门槛量尺与 TEER
+粗筛按全省读门槛行、不分通道,这几行入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成仅受理 4-5;
+待量尺与引擎按通道读行之后再接(pnp 的 OUT_SK_REQ 注同记)。持 offer 直接申请那条流本来就不挂:那句原句说的是
+International Skilled Worker 类,本通道属 Saskatchewan Experience 类。"""
 
 PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "key": "mb-skilled-worker-in-manitoba", "province": "MB", "program": "PNP",

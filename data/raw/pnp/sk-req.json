@@ -312,63 +312,6 @@
       "section": "Agriculture Talent Pathway — Eligibility",
       "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/agriculture-talent-pathway",
       "factor": "language"
-    },
-    {
-      "stream": "SINP Skilled Worker With Existing Work Permit",
-      "subject": "applicant",
-      "op": ">=",
-      "value": 6,
-      "valueText": "",
-      "unit": "months",
-      "appliesTeer": [],
-      "appliesNoc": "",
-      "excludesNoc": "",
-      "appliesArea": "",
-      "familySize": null,
-      "basis": "employerTenure",
-      "label": "Have worked for at least six-months (780 hours) of full-time (30+ hours per week) work experience in the job with the employer that has supported you with the Employer Position Assessment, with a valid work permit",
-      "section": "Skilled Worker With Existing Work Permit — Eligibility",
-      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit",
-      "factor": "experience"
-    },
-    {
-      "stream": "SINP Skilled Worker With Existing Work Permit",
-      "subject": "applicant",
-      "op": ">=",
-      "value": 4,
-      "valueText": "",
-      "unit": "CLB",
-      "appliesTeer": [
-        4,
-        5
-      ],
-      "appliesNoc": "",
-      "excludesNoc": "",
-      "appliesArea": "",
-      "familySize": null,
-      "basis": "",
-      "label": "Have at least a score of Canadian Language Benchmark (CLB) 4 if your job offer is in a TEER \"4\" or \"5\" occupation",
-      "section": "Skilled Worker With Existing Work Permit — Eligibility",
-      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit",
-      "factor": "language"
-    },
-    {
-      "stream": "SINP Skilled Worker With Existing Work Permit",
-      "subject": "applicant",
-      "op": "rule",
-      "value": null,
-      "valueText": "Be eligible for Saskatchewan licensing if your intended occupation is a compulsory apprenticeship trade or a credential is legally required for you to work in that occupation in Saskatchewan",
-      "unit": "",
-      "appliesTeer": [],
-      "appliesNoc": "",
-      "excludesNoc": "",
-      "appliesArea": "",
-      "familySize": null,
-      "basis": "",
-      "label": "Eligible for Saskatchewan licensing if the occupation is a compulsory apprenticeship trade or legally requires a credential",
-      "section": "Skilled Worker With Existing Work Permit — Eligibility",
-      "url": "https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/applicants-with-existing-work-permit",
-      "factor": "licensing"
     }
   ]
 }
