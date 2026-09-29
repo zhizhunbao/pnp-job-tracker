@@ -5828,6 +5828,29 @@ ABS_PRINT_DONE_TPL = ("✓ {path}  asOf {as_of}:配额 {alloc:,} 已发 {issued:
                       "(AOS {aos:,} 人);抽选史 {draws} 轮")
 """AB 运营统计收尾报数。"""
 
+ABS_HEAD_FEDERAL = "additional federal space type"
+"""额外联邦名额表的表头前缀(2026-09-29 立:医生 / 法语者走联邦额外名额的已发提名接进运营统计,不并入已发提名与配额)。
+官方表「Nominations issued through additional federal spaces in 2026」两列:Additional federal space type | 2026
+nominations issued(2026-09 实见 Physicians 50 / Francophones 12)。此前这张表落不进四堆任何一堆,整表被跳过。"""
+
+ABS_FEDERAL_MIN_COLS = 2
+"""额外联邦名额表一行至少几格(类别 + 已发提名)。"""
+
+ABS_FEDERAL_NOTE_RE = re.compile(r"(Any AAIP nomination issued in \d{4}[^.]*?not count toward[^.]*?allocation\.)")
+"""额外联邦名额那节的官方原句(label 原样用它):「Any AAIP nomination issued in 2026 for a physician or Francophone who
+meets the federal criteria for this initiative will not count toward Alberta’s 6,603 nomination allocation.」——
+这几份提名不占本省配额,凭的就是这一句;年份与配额数逐年变,正则不写死(2026-09-29 立)。"""
+
+K_ADDITIONAL_FEDERAL = "additionalFederal"
+"""ab-stats.json 里额外联邦名额的键(一类一行:category / issued / label;2026-09-29 立)。"""
+
+ABS_PRINT_FEDERAL_TPL = "  额外联邦名额(不占本省配额){category}:{issued}"
+"""额外联邦名额逐类报数。"""
+
+ABS_PRINT_NO_FEDERAL_TPL = "  ! AB 额外联邦名额:表认出 {rows} 行、官方那句认出 {notes} 句 —— 缺一样本轮不写这几行(官方撤表或改版?)"
+"""额外联邦名额缺表或缺原句的留痕(2026-09-29 立)。不进硬闸:这是配额之外的附带事实,缺了不该拦 AB 其余统计;
+行首「!」让 auto_update 升 ERROR 级,不静默。"""
+
 
 # =========================================================================
 # 26. BC 运营统计(注册池 SIRS 分数分布 + 官方处理时长)
@@ -6176,6 +6199,25 @@ MBS_MONTHLY_YEARS_BACK = 3
 MBS_ANNUAL_YEARS_BACK = 4
 """年报往前探几年。"""
 
+MBS_POOL_FIRST_YEAR = 2017
+"""年报池子人数历年序列从哪一年起(2026-09-29 立,Frank 拍板「从只取最新一份改成历年序列」):mb-root crawl 缓存与
+resources/data 目录里最早一份年报是 annual-report-2017(2017–2024 共八份,每份都有「N Active EOI profiles at the end
+of YYYY」那句)。从最新一份往回读到这一年,一年一行。"""
+
+MBS_POOL_SCAN_TAGS = ["h2", "h3", "h4", "li", "p"]
+"""年报里找池子那句时按文档序走一遍的标签:标题记下当前节名,正文块(列表项 / 段落)里认那句(2026-09-29 立)。"""
+
+MBS_POOL_HEAD_TAGS = ("h2", "h3", "h4")
+"""上面走到的标签里算「节标题」的几个 —— 池子那句所在节的官方小标题原样取它(2026-09-29 立):2017–2020 年报是
+「9. Expression of Interest Pool」、2021 起是「10. Expression of Interest Pool」,节号逐年不同,不写死。"""
+
+MBS_POOL_SECTION_TPL = "MPNP Annual Report {year} — {head}"
+"""池子一行的出处节名(年报名 + 那句所在节的官方小标题原文;2026-09-29 立)。"""
+
+K_EOI_POOL_YEARS = "eoiPoolYears"
+"""mb-stats.json 里年报池子人数历年清单的键(新到旧,一年一行:year / label / labelYear / value / section / url /
+fetched;2026-09-29 立)。处理承诺、处理天数照旧只取最新一份年报,留在 annual 块。"""
+
 MBS_SECTION_TAGS = ["h1", "h2", "h3", "h4", "table"]
 """按官方小标题定位表格时要走一遍的标签(表头本身认不出表 ——「Month|SW|BIS|Total」refusals 与
 applications received 一模一样,只有**上方的官方小标题**能唯一定位)。"""
@@ -6272,11 +6314,18 @@ MBS_PROBLEM_NO_INVENTORY = "库存表(in assessment / pending)一行月份都没
 MBS_PROBLEM_PROCESSING_TPL = "年报处理时长表只解析到 {n} 条通道(期望 ≥3)"
 """自校问题:处理时长条数。"""
 
-MBS_PROBLEM_NO_POOL = "年报 §10 的「N Active EOI profiles at the end of YYYY」没解析到"
+MBS_PROBLEM_NO_POOL_TPL = "年报 {year} 的「N Active EOI profiles at the end of YYYY」(连同它所在节的标题)没解析到"
 """自校问题:EOI 池。
 ⚠️ **官方文档自相矛盾,不许静默替他改**:2024 年报把这个数标成「at the end of 2023」,
 而 2023 年报对同一年份给的是 20,392。几乎肯定是 2024 年报的标签笔误,但我们只做两件事 ——
-取**最新一份年报**、把官方那句话原样存进 label。年份取**官方标签里写的那个**,不按报告年推。"""
+取**最新一份年报**、把官方那句话原样存进 label。年份取**官方标签里写的那个**,不按报告年推。
+2026-09-29 Frank 拍板改判(上面「取最新一份年报」「年份取官方标签里写的那个」两句就此作废,原文留作沿革):
+mb_stats 读 2017 起每一份年报出历年序列(eoiPoolYears,见 mb_pool_years);本域照旧只存官方原句原样与原句里写的年
+(labelYear),period 记年报年、句尾加「 [sic]」在汇装定(mart 域 fill_mb_annual_ops,依据写在那里)。
+本条随之改成逐年模板(名字加 _TPL):哪一份年报认不出那句就报哪一年。"""
+
+MBS_PROBLEM_POOL_GAP_TPL = "crawl 缓存里没有 MPNP Annual Report {year}(池子历年序列缺这一年)"
+"""自校问题:池子历年序列中间缺一份年报(2026-09-29 立)。硬闸 —— 缺一年的半份序列盖掉整份旧表比不写更糟。"""
 
 MBS_PROBLEM_NO_COMMIT = "年报的服务承诺句(commitment … within N months)没解析到"
 """自校问题:服务承诺句。"""
@@ -6289,8 +6338,8 @@ MBS_PRINT_MONTHLY_TPL = ("    月度 {year}(至 {month}):配额 {alloc:,} · "
 MBS_PRINT_ANNUAL_TPL = "    年报 {year}:承诺 {commit} 个月;逐通道平均处理天数 {n} 条"
 """年报块报数。"""
 
-MBS_PRINT_POOL_TPL = "    年报 {year} §10 池子:{value:,} 人 —— 官方原句「{label}」"
-"""EOI 池报数。"""
+MBS_PRINT_POOL_TPL = "    年报 {year} 池子:{value:,} 人 —— 官方原句「{label}」"
+"""EOI 池报数(2026-09-29 起逐年一行;节号逐年不同 —— 2017–2020 年报是 §9 —— 报数不再写死 §10)。"""
 
 MBS_PRINT_PROC_TPL = "      {stream:<32} 批准 {approved} / 拒 {refused} / 总体 {overall} 天"
 """逐通道处理时长报数。"""

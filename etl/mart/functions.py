@@ -142,7 +142,7 @@ from mart.constants import (
     LANG_POINTS_TOTAL, LANG_POINTS_WORD, LANG_TOTAL_WORD, LMIA_HEADER_WORD, LMIA_HIT_TPL,
     LMIA_MIN_COLS, LMIA_SOURCE_NOTE, LMIA_STREAM_SEP, LMIA_STREAM_TOP, LMIA_STREAM_TPL,
     LMIA_XLSX_GLOB, LMIA_XLSX_TPL, MART_AGENCY_RE, MART_DONE_TPL, MART_EXPIRED_TPL,
-    MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS, MB_EOI_SECTION_TPL,
+    MART_LATE_SALARY_TPL, MART_SEEN_TPL, MB_ANNUAL_PROC_METRICS,
     MB_GROUP_LABEL_TPL, MB_INVENTORY_METRICS, MB_PROC_LABEL_TPL, MB_SECTION_TPL, MB_YTD_GROUPS,
     MB_YTD_TPL, METRIC_ALLOCATION, METRIC_ASSESSING, METRIC_EOI_POOL, METRIC_EOI_POOL_TOTAL,
     METRIC_NOM_ENHANCED_YTD, METRIC_PRIORITY_SECTOR, METRIC_PROCESSING_WEEKS,
@@ -211,6 +211,10 @@ from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INV
 from mart.constants import K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_RESULT, NS_RESULT_METRICS, NS_RESULT_SKIP_TPL
 from mart.constants import PROV_NB  # 2026-09-29 NB / NL 往年提名(省年报 PDF)接进运营统计
 from mart.constants import (
+    K_ADDITIONAL_FEDERAL, K_EOI_POOL_YEARS, K_ISSUED, MB_POOL_AS_OF_TPL, MB_POOL_SIC_TPL, METRIC_NOM_ADDITIONAL_FEDERAL,
+    PRINT_MB_POOL_SIC_TPL,
+)
+from mart.constants import (
     OFFER_FORM_FACTOR, OFFER_FORM_FETCHED, OFFER_FORM_LABEL_SEP, OFFER_FORM_LABEL_TPL, OFFER_FORM_OP, OFFER_FORM_SECTION,
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
 )
@@ -230,6 +234,7 @@ from mart.scheme import EeLabelIn, EmpOfIn, EmpOut, MartOfferTest
 from mart.scheme import MartApplyMailTest, MartAtsEmpTest, MartOpsExtraTest, MartSalaryTextTest
 from mart.scheme import MartBcFunnelOpsTest, MartNsOpsTest
 from mart.scheme import MartNbNlOpsTest  # 2026-09-29 NB / NL 往年提名
+from mart.scheme import MartAbFederalTest, MartMbPoolTest
 from mart.scheme import MartRuralRenewalTest  # 2026-09-27 九省体检修复批(AB 乡村振兴只认自己的排除表)
 from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(雇主行业三态 + 带星号码)
     K_CERTIFICATES, K_COND, K_EMPLOYER_SECTOR, K_EXCLUDED_PARTIAL, K_NAMED, K_PARTIAL, PARTIAL_INSIDE_WORDS,
@@ -3299,7 +3304,10 @@ def add_ops_row(x: OpsRowIn) -> None:
 
 
 def fill_ab_ops(x: OpsProvIn) -> None:
-    """AB:省级汇总 + 逐通道的配额/已发/剩余/待处理,积压游标(自由文本永远 value=None),EOI 池。"""
+    """AB:省级汇总 + 逐通道的配额/已发/剩余/待处理,积压游标(自由文本永远 value=None),EOI 池。
+    2026-09-29 加额外联邦名额(医生 / 法语者):一类一行,指标 nominations_additional_federal,scope = 官方类别名
+    (scopeKind=category),label = 官方原句「… will not count toward Alberta’s N nomination allocation.」原样 ——
+    不并进 issued、不碰配额(官方明说不占本省配额)。"""
     for m, key in AB_SUMMARY_METRICS:
         unit = UNIT_PEOPLE
         if m in AB_SPOT_METRICS:
@@ -3329,6 +3337,10 @@ def fill_ab_ops(x: OpsProvIn) -> None:
         add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=metric, scope=scope, kind=kind,
                              label=st, raw=e.get(K_COUNT), unit=UNIT_PEOPLE, text="",
                              section="", period=None))
+    for e in x.data.get(K_ADDITIONAL_FEDERAL, []):
+        add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_NOM_ADDITIONAL_FEDERAL,
+                             scope=e.get(K_CATEGORY, ""), kind=SCOPE_CATEGORY, label=e.get(K_LABEL, ""),
+                             raw=e.get(K_ISSUED), unit=UNIT_NOMINATIONS, text="", section="", period=None))
 
 
 def fill_sk_ops(x: OpsProvIn) -> None:
@@ -3438,16 +3450,25 @@ def fill_mb_annual_ops(x: MbAnnualIn) -> None:
     2024 年报把 EOI 池标成「end of 2023」而 2023 年报同年份给 20,392,官方自相矛盾;
     我们只做两件事:取最新一份年报、把官方原句原样放进 label。谁要纠这个错去找 MPNP。
     口径是**年度快照**,与 AB 的实时池不可混用(显示层分别标注)。
+
+    2026-09-29 Frank 拍板改判(上面「取最新一份年报」「period 取官方标签里写的那一年」两条就此作废,原文留作沿革):
+    池子人数改出历年序列 —— pnp 域 mb_stats 读 2017 起每一份年报(eoiPoolYears,每行自带年报网址 / 抓取日 / 出处节名),
+    这里一年一行、新到旧(最新一年 seq 0)。period 一律记年报年,asOf 记该年 12 月(MB_POOL_AS_OF_TPL:原句都是年末快照;
+    也让案例页按 COALESCE(as_of, period) 取到最新一年)。依据:2024 年报同一节上一句是「8,162 Letters of Advice to Apply
+    (LAAs) issued in 2024」,其余七份年报都报本年年末,2023 年报对 2023 年末给的是 20,392 —— 2024 年报的「end of 2023」
+    判为官方笔误,26,678 记 2024 年;label 仍存官方原句原样,句尾加「 [sic]」(原句里的年 ≠ 年报年就加,见 mb_pool_label_of)。
+    处理承诺、逐通道处理天数照旧只取最新一份年报。
     """
     add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_PROC_COMMITMENT, scope="",
                          kind="", label=x.annual.get(K_COMMITMENT_LABEL, ""),
                          raw=x.annual.get(K_COMMITMENT_MONTHS), unit=UNIT_MONTHS, text="",
                          section=x.section, period=x.year))
-    ep = x.annual.get(K_EOI_POOL) or {}
-    add_ops_row(OpsRowIn(ctx=x.ctx, base=x.base, metric=METRIC_EOI_POOL_TOTAL, scope="", kind="",
-                         label=ep.get(K_LABEL, ""), raw=ep.get(K_VALUE), unit=UNIT_PEOPLE,
-                         text="", section=MB_EOI_SECTION_TPL.format(year=x.year),
-                         period=str(ep.get(K_LABEL_YEAR) or "")))
+    for e in sorted(x.pools, key=mb_pool_year_of, reverse=True):
+        year = mb_pool_year_of(e)
+        add_ops_row(OpsRowIn(
+            ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of=MB_POOL_AS_OF_TPL.format(year=year))),
+            metric=METRIC_EOI_POOL_TOTAL, scope="", kind="", label=mb_pool_label_of(e), raw=e.get(K_VALUE),
+            unit=UNIT_PEOPLE, text="", section=e.get(K_SECTION, ""), period=str(year)))
     for p in x.annual.get(K_PROCESSING, []):
         st = p.get(K_STREAM, "")
         for metric, key, lab in MB_ANNUAL_PROC_METRICS:
@@ -3459,11 +3480,37 @@ def fill_mb_annual_ops(x: MbAnnualIn) -> None:
                                  period=x.year))
 
 
+def mb_pool_year_of(row: dict) -> int:
+    """年报池子一行的年报年(排序键与 period / asOf 的来源;2026-09-29)。pnp 域每行必写这一格,缺了是上游的 bug,
+    当场炸,不拿默认值顶。
+
+    @param row 年报池子清单的一行。
+    @returns 年报年。
+    """
+    return int(row[K_YEAR])
+
+
+def mb_pool_label_of(row: dict) -> str:
+    """年报池子一行的 label:官方原句原样;原句里写的年 ≠ 年报年(2024 年报「… at the end of 2023」)→ 句尾加「 [sic]」
+    并留痕(2026-09-29 Frank 拍板,依据见 fill_mb_annual_ops)。
+
+    @param row 年报池子清单的一行。
+    @returns label。
+    """
+    label = row.get(K_LABEL, "")
+    year = mb_pool_year_of(row)
+    if str(row.get(K_LABEL_YEAR, "")) == str(year):
+        return label
+    say(PRINT_MB_POOL_SIC_TPL.format(year=year, label_year=row.get(K_LABEL_YEAR, "")))
+    return MB_POOL_SIC_TPL.format(label=label)
+
+
 def fill_mb_ops(x: OpsProvIn) -> None:
     """MB 有**两个**官方源(月度数据页 + 年报),各自的 url/fetched/统计期都不一样 ——
     一行的出处必须指向那个数字真正的来源页,别拿月度页给年报的处理天数背书。
     2026-09-27 Frank 勾「2026 名额小表」:月度块的行带上截至月 asOf(`YYYY-MM`,见 mb_as_of_of)—— 省提名弹框
-    「2026 年配额」卡的「截至」行读它;统计期 period 照旧写「2026 Jan-Aug」。"""
+    「2026 年配额」卡的「截至」行读它;统计期 period 照旧写「2026 Jan-Aug」。
+    2026-09-29 起年报池子人数历年清单(eoiPoolYears)随年报块一起交给 fill_mb_annual_ops,每行用自己那份年报的出处。"""
     m = x.data.get(K_MONTHLY) or {}
     year = str(m.get(K_YEAR) or "")
     thru = str(m.get(K_THROUGH_MONTH) or "")
@@ -3476,7 +3523,8 @@ def fill_mb_ops(x: OpsProvIn) -> None:
     an = x.data.get(K_ANNUAL) or {}
     fill_mb_annual_ops(MbAnnualIn(
         ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=an, as_of="")),
-        annual=an, year=str(an.get(K_YEAR) or ""), section=an.get(K_SECTION, "")))
+        annual=an, year=str(an.get(K_YEAR) or ""), section=an.get(K_SECTION, ""),
+        pools=x.data.get(K_EOI_POOL_YEARS, [])))
 
 
 def mb_as_of_of(m: dict) -> str:
@@ -7213,11 +7261,13 @@ def run_tests() -> None:
     2026-09-29 再加一组:MartBlockTest(走不了省提名的原因码与判可提名同一把尺子;工资分档线与改判)。
     同日再加一组:MartNsOpsTest(NS 两张季表出行:候选池逐季、审批结果三种、认不出的结果词不出行)。
     同日再加一组:MartNbNlOpsTest(NB / NL 两份年报统计经分派出行:NB 已发提名按自然年、NL 提名人数单位人另立指标)。
-    同日再加一组:MartBcFunnelOpsTest(BC 年报四组 SI 逐年数出行:指标名、统计期、单位与出处照行,bc-stats 形的表不多出行)。"""
+    同日再加一组:MartBcFunnelOpsTest(BC 年报四组 SI 逐年数出行:指标名、统计期、单位与出处照行,bc-stats 形的表不多出行)。
+    同日再加两组:MartMbPoolTest(MB 年报池子历年序列:一年一行新到旧、period 记年报年、asOf 记年末月、2024 那行句尾 [sic])、
+    MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
-                 MartBcFunnelOpsTest):
+                 MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

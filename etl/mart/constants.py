@@ -2472,6 +2472,18 @@ METRIC_EOI_POOL_TOTAL = "eoi_pool_total"
 AB_DRAWS_NOTE = "AB 的 draws[] 忽略:抽选史 canonical 归 pnp 域 build_draws(本表不重复)。"
 """为什么 AB 运营统计不出抽选行。"""
 
+K_ADDITIONAL_FEDERAL = "additionalFederal"
+"""ab-stats.json 里额外联邦名额的键(一类一行:category / issued / label;2026-09-29 立。域间不互取常量,键名照 pnp 域
+各自声明)。"""
+
+K_ISSUED = "issued"
+"""额外联邦名额一行的已发提名数。"""
+
+METRIC_NOM_ADDITIONAL_FEDERAL = "nominations_additional_federal"
+"""AB 额外联邦名额的已发提名(医生 / 法语者一类一行,scope = 官方类别名;2026-09-29 立)。官方原句「… will not count
+toward Alberta’s 6,603 nomination allocation.」—— 不占本省配额,所以单立指标名:不并进 issued、不碰 allocation /
+remaining(省提名弹框配额卡与把脉页「已发提名」读 issued,并进去 = 把配额外的提名算成占了配额)。"""
+
 METRIC_PROCESSING_WEEKS = "processing_weeks"
 """SK 的处理时长(周)。"""
 
@@ -2631,10 +2643,25 @@ K_LABEL_YEAR = "labelYear"
 """EOI 池在册人数的官方标签年。**period 取官方标签里写的那一年,不按报告年推** ——
 2024 年报把它标成「end of 2023」而 2023 年报同年份给 20,392,官方自相矛盾;我们只做两件事:
 取最新一份年报、把官方原句原样放进 label。谁要纠这个错去找 MPNP。口径是**年度快照**,
-与 AB 的实时池不可混用(显示层分别标注,见 caseFacts 的注释)。"""
+与 AB 的实时池不可混用(显示层分别标注,见 caseFacts 的注释)。
+2026-09-29 Frank 拍板改判(见 fill_mb_annual_ops):period 改记年报年;本格只剩一个用处 —— 认「原句里写的年 ≠ 年报年」,
+认出来就在 label 句尾加「 [sic]」。"""
 
-MB_EOI_SECTION_TPL = "MPNP Annual Report {year} — 10. Expression of Interest Pool"
-"""MB 年报 EOI 池的节名形。"""
+K_EOI_POOL_YEARS = "eoiPoolYears"
+"""mb-stats.json 里年报池子人数历年清单的键(一年一行,每行自带年报网址 / 抓取日 / 出处节名;2026-09-29 立。
+域间不互取常量,键名照 pnp 域各自声明)。"""
+
+MB_POOL_AS_OF_TPL = "{year}-12"
+"""MB 年报池子一行的截至月(2026-09-29 立):年报原句都是「N Active EOI profiles at the end of <年>」= 年末快照 → 该年
+12 月(只到月,不编日子;同 NS 季表记季末月的口径)。历年多行后案例页 PNP_OPS_STATS 按 COALESCE(as_of, period) 取每省
+最新一行 —— asOf 全是空串时八行并列,取哪行看运气;记上年末月,最新一年稳居第一。"""
+
+MB_POOL_SIC_TPL = "{label} [sic]"
+"""原句里写的年 ≠ 年报年时的 label:官方原句原样 + 句尾「 [sic]」(2026-09-29 Frank 拍板)—— 标明原文如此、不是我们抄错,
+也不静默替官方改。"""
+
+PRINT_MB_POOL_SIC_TPL = "  · pnp_ops_stats MB 年报 {year} 池子句写的是 end of {label_year} ≠ 年报年 → period 记 {year}、label 句尾加 [sic]"
+"""上面那种改判的留痕(每轮打一行,不静默)。"""
 
 MB_ANNUAL_PROC_METRICS = (("processing_days", "overallDays", "Overall Average"),
                           ("processing_days_approved", "approvedDays", "Approved Applications"),

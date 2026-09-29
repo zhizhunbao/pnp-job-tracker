@@ -1190,7 +1190,8 @@ class HasGroupIn:
 
 @dataclass
 class AbStatsAcc:
-    """AB 运营统计一页四堆的累加器(逐表归堆的显式上下文)。"""
+    """AB 运营统计一页四堆的累加器(逐表归堆的显式上下文)。
+    2026-09-29 加第五堆 federal(额外联邦名额表)。"""
 
     summary: dict
     """总表(2026 summary)。"""
@@ -1203,6 +1204,9 @@ class AbStatsAcc:
 
     draws: list
     """抽选史(canonical 仍归 §10,本表原样留档)。"""
+
+    federal: list
+    """额外联邦名额表逐类行(医生 / 法语者,不占本省配额;2026-09-29 立)。"""
 
 
 @dataclass
@@ -1233,6 +1237,17 @@ class AbCheckIn:
 
     acc: AbStatsAcc
     """四堆累加器。"""
+
+
+@dataclass
+class AbFederalIn:
+    """ab_federal_rows() 入参(2026-09-29 立)。"""
+
+    rows: list
+    """额外联邦名额表逐类行(collect_ab_federal 收的)。"""
+
+    text: str
+    """整页压平文本(找「… will not count toward … allocation.」那句用)。"""
 
 
 @dataclass
@@ -1518,10 +1533,58 @@ class MbAnnualOut:
     """mb_annual_block() 出参。"""
 
     block: dict
-    """年报块(处理天数 / 服务承诺 / EOI 池)。"""
+    """年报块(处理天数 / 服务承诺 / EOI 池)。2026-09-29 起 EOI 池移出,改由 MbPoolOut 出历年序列。"""
 
     problems: list
     """自校问题。"""
+
+
+@dataclass
+class MbPoolPageIn:
+    """一份年报(mb_pool_series_of 的一项 / mb_pool_row_of 入参;2026-09-29 立)。"""
+
+    year: int
+    """年报年(网址里的年)。"""
+
+    url: str
+    """年报网址。"""
+
+    html: str | None
+    """年报原文(crawl 缓存里没有 = None,序列缺这一年)。"""
+
+    fetched: str
+    """缓存那轮的抓取日。"""
+
+
+@dataclass
+class MbPoolRowIn:
+    """to_mb_pool_row() 入参:一份年报里认出的池子那句(2026-09-29 立)。"""
+
+    page: MbPoolPageIn
+    """那份年报。"""
+
+    label: str
+    """官方原句原样。"""
+
+    label_year: str
+    """原句里写的年(「at the end of 2023」的 2023;与年报年不同 = 官方笔误,汇装据此在句尾加 [sic])。"""
+
+    value: int | None
+    """在册人数。"""
+
+    head: str
+    """那句所在节的官方小标题(「10. Expression of Interest Pool」)。"""
+
+
+@dataclass
+class MbPoolOut:
+    """mb_pool_years() / mb_pool_series_of() 出参(2026-09-29 立)。"""
+
+    rows: list
+    """池子人数历年清单(新到旧,一年一行)。"""
+
+    problems: list
+    """自校问题(缺年报 / 认不出那句,一年一条)。"""
 
 
 @dataclass
@@ -1533,6 +1596,9 @@ class MbSayIn:
 
     annual: dict
     """年报块。"""
+
+    pools: list
+    """年报池子人数历年清单(2026-09-29 立,逐年一行报数)。"""
 
     through_month: str
     """统计到哪个月(月名)。"""
@@ -2535,6 +2601,132 @@ class NsQuarterlyTest(unittest.TestCase):
                          [("Approved", 30, "2026 Q1-Q2", "2026-06"), ("Refused", 4, "2026 Q1-Q2", "2026-06"),
                           ("Withdrawn", 3, "2026 Q1-Q2", "2026-06")])
         self.assertEqual(fn.ns_assessments_ytd([]), [])
+
+
+class MbPoolYearsTest(unittest.TestCase):
+    """MB 年报池子人数历年序列自测(2026-09-29 立):逐份认「N Active EOI profiles at the end of YYYY」,官方原句与原句里的年
+    原样照录(2024 年报写「end of 2023」本域也不改,改判在汇装)、所在节的官方小标题逐年照取(2017–2020 是「9.」、2021 起
+    「10.」)、缺一份缓存或一份认不出那句各记一条自校问题、那句前面没有节标题不猜。年报原文照 crawl 缓存里 2024 / 2023 /
+    2017 三份真页的池子节现造,全程不联网、不读仓内文件。"""
+
+    URL = "https://immigratemanitoba.com/resources/data/annual-report-{year}"
+    """年报网址形。"""
+
+    PAGE = ('<html><body><main><h3 class="wp-block-heading">{proc}</h3><p>Processing times are calculated based on date '
+            'of submission to decision.</p><h3 class="wp-block-heading">{head}</h3><ul class="wp-block-list">{items}</ul>'
+            '</main></body></html>')
+    """年报里处理时长节之后接池子节的骨架(照真页的 h3 + ul 形)。"""
+
+    ITEMS_2024 = ('<li><strong>33,746</strong>\xa0Skilled Worker Expression of Interest (EOI) profiles submitted in 2024</li>'
+                  '<li><strong>8,162</strong>\xa0Letters of Advice to Apply (LAAs) issued in 2024</li>'
+                  '<li><strong>26,678</strong>\xa0Active EOI profiles at the end of 2023</li>')
+    """2024 年报池子节三条(第三条就是官方笔误的那句)。"""
+
+    ITEMS_2023 = ('<li><strong></strong><strong>33,524</strong>\xa0Skilled Worker Expression of Interest (EOI) profiles '
+                  'submitted in 2023</li><li><strong></strong><strong>16,381</strong>\xa0Letters of Advice to Apply '
+                  '(LAAs) issued in 2023</li><li><strong></strong><strong>20,392</strong>\xa0Active EOI profiles at the '
+                  'end of 2023</li>')
+    """2023 年报池子节三条(真页每条前面多一个空 strong)。"""
+
+    ITEMS_2017 = ('<li><strong>19,774</strong> Skilled Worker EOI profiles submitted in 2017</li>'
+                  '<li><strong>4,044</strong> Letters of Advice to Apply issued in 2017</li>'
+                  '<li><strong>15,957</strong> active EOI profiles at the end of 2017</li>')
+    """2017 年报池子节三条(小写 active)。"""
+
+    ITEMS_NO_POOL = ('<li><strong>26,443</strong> Skilled Worker EOI profiles submitted in 2018</li>'
+                     '<li><strong>7,950</strong> Letters of Advice to Apply issued in 2018</li>')
+    """认不出那句的一份(照 2018 年报的前两条,故意删掉第三条)。"""
+
+    def page_of(self, year: int) -> MbPoolPageIn:
+        """按年份拼一份年报:2021 起新节号(10.)、之前旧节号(9.);2018 用 ITEMS_NO_POOL。"""
+        items = {2024: self.ITEMS_2024, 2023: self.ITEMS_2023, 2018: self.ITEMS_NO_POOL, 2017: self.ITEMS_2017}[year]
+        proc = "9. Processing Times"
+        head = "10. Expression of Interest Pool"
+        if year < 2021:
+            proc = "8. Processing Times"
+            head = "9. Expression of Interest Pool"
+        return MbPoolPageIn(year=year, url=self.URL.format(year=year), fetched="2026-09-29",
+                            html=self.PAGE.format(proc=proc, head=head, items=items))
+
+    def test_series(self) -> None:
+        """2024 / 2023 / 2017 三份出三行(照给的新到旧顺序);2019 缓存缺席、2018 认不出那句各记一条自校问题。"""
+        from pnp import functions as fn
+        gap = MbPoolPageIn(year=2019, url=self.URL.format(year=2019), html=None, fetched="")
+        got = fn.mb_pool_series_of([self.page_of(2024), self.page_of(2023), gap, self.page_of(2018), self.page_of(2017)])
+        self.assertEqual([(r["year"], r["labelYear"], r["value"]) for r in got.rows],
+                         [(2024, "2023", 26678), (2023, "2023", 20392), (2017, "2017", 15957)])
+        self.assertEqual([r["label"] for r in got.rows],
+                         ["26,678 Active EOI profiles at the end of 2023", "20,392 Active EOI profiles at the end of 2023",
+                          "15,957 active EOI profiles at the end of 2017"])
+        self.assertEqual([r["section"] for r in got.rows],
+                         ["MPNP Annual Report 2024 — 10. Expression of Interest Pool",
+                          "MPNP Annual Report 2023 — 10. Expression of Interest Pool",
+                          "MPNP Annual Report 2017 — 9. Expression of Interest Pool"])
+        self.assertEqual((got.rows[0]["url"], got.rows[0]["fetched"]), (self.URL.format(year=2024), "2026-09-29"))
+        self.assertEqual(len(got.problems), 2)
+        self.assertIn("2019", got.problems[0])
+        self.assertIn("2018", got.problems[1])
+
+    def test_refuses_to_guess(self) -> None:
+        """那句前面没有节标题 → 不出行(出处节名不编);原文缺席 → 不出行。"""
+        from pnp import functions as fn
+        bare = "<html><body><ul><li><strong>26,678</strong> Active EOI profiles at the end of 2023</li></ul></body></html>"
+        self.assertIsNone(fn.mb_pool_row_of(MbPoolPageIn(year=2024, url="u", html=bare, fetched="f")))
+        self.assertIsNone(fn.mb_pool_row_of(MbPoolPageIn(year=2024, url="u", html=None, fetched="")))
+
+
+class AbFederalTest(unittest.TestCase):
+    """AB 额外联邦名额自测(2026-09-29 立):表头「Additional federal space type」那张表归进 federal 一堆,不混进总表与逐
+    stream;一类一行,label 挂官方那句原样;缺表或缺那句不出行(不拿表题顶 label)。页面照 AB 处理页真页的 Table 1 /
+    Table 2 两段现造(造 soup 借 mb_soup_of:只拆噪音标签,对这几张表与 AB 入口的直解析没差),不联网不读仓。"""
+
+    SUMMARY = ('<h2>Processing summary totals</h2><h3>2026 summary</h3><p><strong>Table 1.</strong> Process summary '
+               'totals for 2026</p><div class="goa-table"><table class="table"><thead><tr><th>2026 nomination allocation'
+               '</th><th>2026 nominations issued</th><th>2026 nomination spaces remaining</th><th>Applications to be '
+               'processed</th></tr></thead><tbody><tr><td class="goa-table-number">6,603</td><td class="goa-table-number">'
+               '5,221</td><td class="goa-table-number">1,382</td><td class="goa-table-number">1,092</td></tr></tbody>'
+               '</table></div>')
+    """Table 1 总表。"""
+
+    NOTE = ('<h2>Additional federal spaces</h2><h3>Additional federal immigration spaces for physicians or Francophones'
+            '</h3><p>Up to 10,000 federal immigration spaces are available across all provincial nominee programs for '
+            'provinces and territories to nominate practice‑ready physicians or Francophones (in Canada or abroad).</p>'
+            '<p>Any AAIP nomination issued in 2026 for a physician or Francophone who meets the federal criteria for this '
+            'initiative will not count toward Alberta’s 6,603 nomination allocation.</p>')
+    """额外联邦名额那节的两段原文(第二段就是 label 要的那句)。"""
+
+    TABLE = ('<h3>Eligibility</h3><p><strong>Table 2.</strong> Nominations issued through additional federal spaces in '
+             '2026</p><div class="goa-table"><table class="table"><thead><tr><th>Additional federal space type</th>'
+             '<th>2026 nominations issued</th></tr></thead><tbody><tr><td>Physicians</td><td class="goa-table-number">50'
+             '</td></tr><tr><td>Francophones</td><td class="goa-table-number">12</td></tr></tbody></table></div>')
+    """Table 2 额外联邦名额表。"""
+
+    LABEL = ("Any AAIP nomination issued in 2026 for a physician or Francophone who meets the federal criteria for this "
+             "initiative will not count toward Alberta’s 6,603 nomination allocation.")
+    """官方原句(弯撇号照页面原样)。"""
+
+    def rows_of(self, body: str) -> tuple:
+        """一页 → (累加器, ab_federal_rows 出的逐类行)。"""
+        from pnp import functions as fn
+        soup = fn.mb_soup_of("<html><body><main>" + body + "</main></body></html>")
+        acc = AbStatsAcc(summary={}, streams=[], eoi_pool=[], draws=[], federal=[])
+        for t in soup.find_all("table"):
+            fn.collect_ab_table(AbTableIn(table=t, acc=acc))
+        got = fn.ab_federal_rows(AbFederalIn(rows=acc.federal, text=fn.fold_ws(soup.get_text(" ", strip=True))))
+        return (acc, got)
+
+    def test_federal_rows(self) -> None:
+        """医生 50、法语者 12 各一行,label 是官方原句;总表照旧(已发 5,221 不含这 62),逐 stream 一行没多。"""
+        acc, got = self.rows_of(self.SUMMARY + self.NOTE + self.TABLE)
+        self.assertEqual([(r["category"], r["issued"], r["label"]) for r in got],
+                         [("Physicians", 50, self.LABEL), ("Francophones", 12, self.LABEL)])
+        self.assertEqual(acc.summary, {"allocation": 6603, "issued": 5221, "remaining": 1382, "toProcess": 1092})
+        self.assertEqual(acc.streams, [])
+
+    def test_missing(self) -> None:
+        """缺那句 → 不出行;缺表 → 不出行。"""
+        self.assertEqual(self.rows_of(self.SUMMARY + self.TABLE)[1], [])
+        self.assertEqual(self.rows_of(self.SUMMARY + self.NOTE)[1], [])
 
 
 class OnAuditTest(unittest.TestCase):
