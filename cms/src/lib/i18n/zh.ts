@@ -611,7 +611,9 @@ export const jobsZh = {
   // 2026-09-27 九省体检:NS 的已入选是 EOI 池合计(NSNP 与 AIP 同一个池),旁边的总数只算 NSNP,列名注明含 AIP,免得读成超发
   // 2026-09-27 Frank「已发 提名 和 已发邀请是什么意思」:邀请是请你递交申请、不是提名,列名改「已邀请申请」;
   // 同日「这个截止日期放到右下角呢」:几列截至日不一致时逐列写(pnpquota.asOfCol)
-  'pnpquota.inv': '已邀请申请', 'pnpquota.sel': '已入选(含 AIP)', 'pnpquota.asOfCol': '{col}截至 {date}',
+  // 2026-09-29 Frank「已邀请申请改成已发邀请吧」(当天先问「已邀请申请是什么意思」,讲清邀请 / 递申请 / 提名三步之后拍的):
+  // 改回「已发邀请」,与抽选卡底「共 N 份邀请」一个说法
+  'pnpquota.inv': '已发邀请', 'pnpquota.sel': '已入选(含 AIP)', 'pnpquota.asOfCol': '{col}截至 {date}',
   // 2026-09-27 Frank「这个数据怎么回事」「照改,加这一列」:抽选卡展开行写是哪一项选取(数据层 selection 短码 → 界面词)
   'pnpdraws.sep': '、',
   'pnpsel.occ': '定向职业', 'pnpsel.top': '高分者({cat}类)', 'pnpsel.topAny': '高分者', 'pnpsel.franco': '法语', 'pnpsel.grad': '曼省毕业',

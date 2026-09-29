@@ -494,8 +494,9 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     ]
     const on = quotaCardOf({ t: zh, province: 'ON', ops, hitStreams: [], quotaKey: '' })
     // 2026-09-27 Frank「已发 提名 和 已发邀请是什么意思」:列名改「已邀请申请」
+    // 2026-09-29 Frank「已邀请申请改成已发邀请吧」:改回「已发邀请」
     expect([on?.title, on?.heads, on?.rows.map((r) => r.cells), on?.asOfLines]).toEqual([
-      '2026 年配额', ['总数', '已邀请申请'], [['14,119', '13,105']], ['截至 2026-04-30'],
+      '2026 年配额', ['总数', '已发邀请'], [['14,119', '13,105']], ['截至 2026-04-30'],
     ])
     // 来源照旧跟第一列(总数那一页);邀请合计的出处是下面抽选卡那个来源
     expect(on?.source?.href).toBe('https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-allocation')
@@ -507,7 +508,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // NB 没有配额只有合计:卡照出,只这一列,来源是抽选页
     const nb = quotaCardOf({ t: zh, province: 'NB', ops, hitStreams: [], quotaKey: '' })
     expect([nb?.title, nb?.heads, nb?.rows[0]?.cells, nb?.asOfLines, nb?.source?.href]).toEqual([
-      '2026 年配额', ['已邀请申请'], ['3,538'], ['截至 2026-09-18'], nbUrl,
+      '2026 年配额', ['已发邀请'], ['3,538'], ['截至 2026-09-18'], nbUrl,
     ])
   })
 
@@ -522,7 +523,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       m({ metric: 'invitations_ytd', value: 6883, asOf: '2026-09-24' })]
     const zhCard = quotaCardOf({ t: zh, province: 'MB', ops, hitStreams: [], quotaKey: '' })
     expect([zhCard?.heads, zhCard?.rows[0]?.cells, zhCard?.asOfLines]).toEqual([
-      ['总数', '已发提名', '已邀请申请'], ['8,000', '3,777', '6,883'], ['已发提名截至 2026-08', '已邀请申请截至 2026-09-24'],
+      ['总数', '已发提名', '已发邀请'], ['8,000', '3,777', '6,883'], ['已发提名截至 2026-08', '已发邀请截至 2026-09-24'],
     ])
     expect(quotaCardOf({ t: en, province: 'MB', ops, hitStreams: [], quotaKey: '' })?.asOfLines)
       .toEqual(['Nominated as of 2026-08', 'Invited to apply as of 2026-09-24'])
