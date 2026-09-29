@@ -1823,41 +1823,6 @@ export const SEO_JOB_OK = `COALESCE(status,'open') <> 'closed' AND is_dup IS NOT
   AND (valid_through IS NULL OR (valid_through AT TIME ZONE 'UTC')::date >= (now() AT TIME ZONE 'America/Toronto')::date)`
 
 /**
- * 职位站点地图分片计数。a1=在架口径片段。
- *
- * @param a1 在架口径片段(SITEMAP_ACTIVE)。
- * @returns 计数 SELECT 语句。
- */
-export const jobsSitemapCount = (a1: string) => `SELECT count(*)::int AS n FROM jobs WHERE ${a1}`
-
-/**
- * 职位站点地图一片。a1=口径片段,$1=页大小,$2=偏移。
- *
- * @param a1 在架口径片段(SITEMAP_ACTIVE)。
- * @returns 分片 SELECT 语句。
- */
-export const jobsSitemapPage = (a1: string) => `SELECT id, last_seen FROM jobs WHERE ${a1}
-       ORDER BY id ASC LIMIT $1 OFFSET $2`
-
-/**
- * 公司站点地图计数。a1=FROM 骨架。
- *
- * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
- * @returns 计数 SELECT 语句。
- */
-export const coSitemapCount = (a1: string) => `SELECT count(DISTINCT c.id)::int AS n ${a1}`
-
-/**
- * 公司站点地图一片。a1=FROM 骨架,$1=页大小,$2=偏移。
- *
- * @param a1 FROM/WHERE 骨架(CO_SITEMAP_FROM)。
- * @returns 分片 SELECT 语句。
- */
-export const coSitemapPage = (a1: string) => `SELECT c.slug, max(j.last_seen) AS last_seen ${a1}
-       GROUP BY c.id, c.slug
-       ORDER BY c.id ASC LIMIT $1 OFFSET $2`
-
-/**
  * 职位站点地图全量(一次拉齐,进程内切片;2026-09-03 GSC 实查:逐片 OFFSET 现查 10–24 秒、
  * 索引两个 count 63 秒,Google 读索引后子表逐个超时 → 「发现 0 页」,新岗一个没进索引)。a1=口径片段。
  * 2026-09-26 改列(/fe SEO「给 Google 新鲜信号」):last_seen 退役 —— 它是每轮抓取都刷的「最近还看见」,拿它当 lastmod
