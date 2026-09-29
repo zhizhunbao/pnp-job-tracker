@@ -1301,11 +1301,12 @@ class OnAuditOut:
 
 
 @dataclass
-class OnAuditGapIn:
-    """on_audit_gap_rows() 入参:逐年页已抽到的行 + 审计长逐年数(2026-09-29 立)。"""
+class OnAuditMergeIn:
+    """on_audit_merge_rows() 入参:逐年页已抽到的行 + 审计长逐年数(2026-09-29 立;同日 Frank「用审计长的数」改判后由
+    OnAuditGapIn 改名 —— 不再只补缺年)。"""
 
     rows: list
-    """逐年页抽到的已发提名行(对账与判缺年份用)。"""
+    """逐年页抽到的已发提名行(附录没覆盖的年份照用;覆盖的年份对账后换成审计长行)。"""
 
     audit: OnAuditOut
     """审计长附录 1 读出来的东西。"""
@@ -2818,20 +2819,24 @@ class OnAuditTest(unittest.TestCase):
         self.assertEqual(fn.on_audit_of("\n".join(self.LINES[:2] + self.LINES[5:])).by_year, {})
         self.assertEqual(fn.on_audit_of("\n".join(self.LINES[:5])).by_year, {})
 
-    def test_gap_rows(self) -> None:
-        """逐年页有 2019 / 2020 / 2022 / 2024 / 2025:只补 2021、2023 两行(url 挂审计长 PDF);2019、2020 对不上各留痕一行。"""
+    def test_merge_rows(self) -> None:
+        """逐年页有 2019 / 2020 / 2022 / 2024 / 2025:附录覆盖的 2019–2023 五年一律换成审计长行(url 挂审计长 PDF,2021、2023
+        是补的,2019、2020 对不上各留痕一行);2024、2025 照用逐年页;年降序(2026-09-29 Frank「用审计长的数」改判)。"""
         from pnp import functions as fn
         from pnp.constants import ONS_AUDIT_URL
         audit = fn.on_audit_of("\n".join(self.LINES))
         page = []
         for year, value in ((2025, 10750), (2024, 21500), (2022, 9750), (2020, 8050), (2019, 7350)):
-            page.append({"year": year, "value": value})
+            page.append({"year": year, "value": value, "url": "page"})
         with mock.patch.object(fn, "say") as said:
-            got = fn.on_audit_gap_rows(OnAuditGapIn(rows=page, audit=audit))
-        self.assertEqual([(r["year"], r["value"], r["unit"], r["url"]) for r in got],
-                         [(2021, 9000, "nominations", ONS_AUDIT_URL), (2023, 16506, "nominations", ONS_AUDIT_URL)])
-        self.assertTrue(got[0]["label"].startswith(audit.quote + " Appendix 1: Ontario Nominee Allocations"))
-        self.assertTrue(got[0]["label"].endswith("Actual Nominations, Total, 2021"))
+            got = fn.on_audit_merge_rows(OnAuditMergeIn(rows=page, audit=audit))
+        self.assertEqual([(r["year"], r["value"], r["url"]) for r in got],
+                         [(2025, 10750, "page"), (2024, 21500, "page"), (2023, 16506, ONS_AUDIT_URL),
+                          (2022, 9750, ONS_AUDIT_URL), (2021, 9000, ONS_AUDIT_URL), (2020, 8054, ONS_AUDIT_URL),
+                          (2019, 7391, ONS_AUDIT_URL)])
+        self.assertEqual(got[4]["unit"], "nominations")
+        self.assertTrue(got[4]["label"].startswith(audit.quote + " Appendix 1: Ontario Nominee Allocations"))
+        self.assertTrue(got[4]["label"].endswith("Actual Nominations, Total, 2021"))
         lines = []
         for c in said.call_args_list:
             lines.append(c.args[0])
@@ -2839,7 +2844,9 @@ class OnAuditTest(unittest.TestCase):
         self.assertIn("2019", lines[0])
         self.assertIn("7,391", lines[0])
         self.assertIn("2020", lines[1])
+        self.assertIn("以审计长附录为准", lines[0])
         self.assertIn("[2021, 2023]", lines[2])
+        self.assertIn("换用审计长 [2019, 2020]", lines[2])
 
 
 class BcFunnelTest(unittest.TestCase):

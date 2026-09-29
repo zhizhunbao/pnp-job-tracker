@@ -6106,15 +6106,18 @@ ONS_AUDIT_SECTION = "Office of the Auditor General of Ontario, Annual Report 202
 """审计长补行的出处节名(年报 + 章名,即 PDF 页眉两行)。"""
 
 ONS_AUDIT_LABEL_TPL = "{quote} Appendix 1: {table} — Actual Nominations, Total, {year}"
-"""审计长补行的 label:官方原句 + 表名 + 行列名(表格没有整句可引,行列名照表里原词)。"""
+"""审计长补行的 label:官方原句 + 表名 + 行列名(表格没有整句可引,行列名照表里原词)。
+2026-09-29 同日 Frank「用审计长的数」起,附录覆盖的年份都是审计长行,不只补缺年。"""
 
-ONS_AUDIT_NOTE = ("2026-09-29 起:逐年页抽不到的年份由省审计长 2024 年报(OINP 绩效审计)附录 1「Ontario Nominee Allocations "
-                  "and Nominations, by Stream, 2019–2023」的 Actual Nominations 合计行补(行内 url 挂该 PDF);逐年页有的年份"
-                  "以逐年页为准,审计数只对账。两边对不上时审计长脚注 2 原句:「IRCC allows small variances in the number of "
+ONS_AUDIT_NOTE = ("2026-09-29 起:附录覆盖的 2019–2023 年一律用省审计长 2024 年报(OINP 绩效审计)附录 1「Ontario Nominee "
+                  "Allocations and Nominations, by Stream, 2019–2023」的 Actual Nominations 合计行(行内 url 挂该 PDF;逐年页 "
+                  "2019 / 2020 写的 7,350 / 8,050 恰好等于附录的配额上限行,附录合计行是逐通道加总的实发数);附录没覆盖的年份"
+                  "用逐年页。两边对不上时审计长脚注 2 原句:「IRCC allows small variances in the number of "
                   "annual nominations compared to the allocation. In 2019 and 2020, OINP participated in a federal pilot "
                   "program that allowed additional nominations to be issued. In 2023, more individuals were nominated due "
                   "to technical issues in the Ministry’s information system, which have been corrected.」")
-"""on-stats.json 口径注的续句(接在 ONS_NOTE 后;2026-09-29 立)。"""
+"""on-stats.json 口径注的续句(接在 ONS_NOTE 后;2026-09-29 立)。同日 Frank「用审计长的数」改判:立时写的是「逐年页有的
+年份以逐年页为准、审计数只对账」,改成附录覆盖的年份一律用审计长的数。"""
 
 ONS_PROBLEM_AUDIT_FETCH_TPL = "省审计长 2024 年报 PDF 取不到或打不开:{name} {detail}"
 """自校问题:审计长 PDF 取回失败(整份保留旧表 —— 不拿缺年份的新表盖旧表;2026-09-29)。"""
@@ -6123,11 +6126,12 @@ ONS_PROBLEM_AUDIT_TABLE = ("省审计长 2024 年报附录 1 认不出(原句、
                            "—— 疑似报告撤下或改版")
 """自校问题:PDF 取回了但读不出逐年数(同上,整份保留旧表)。"""
 
-ONS_AUDIT_DIFF_TPL = "  ⚠ ON {year} 已发提名:逐年页 {page:,} ≠ 审计长附录 1 {audit:,}(以逐年页为准)"
-"""对账不一致的留痕(一年一行;2026-09-29 立时 2019、2020 两年对不上,缘由见 ONS_AUDIT_NOTE 引的脚注 2)。"""
+ONS_AUDIT_DIFF_TPL = "  ⚠ ON {year} 已发提名:逐年页 {page:,} ≠ 审计长附录 1 {audit:,}(以审计长附录为准)"
+"""对账不一致的留痕(一年一行;2026-09-29 立时 2019、2020 两年对不上,缘由见 ONS_AUDIT_NOTE 引的脚注 2)。
+同日 Frank「用审计长的数」:括注由「以逐年页为准」改成「以审计长附录为准」。"""
 
-ONS_AUDIT_PRINT_TPL = "  审计长附录 1:补 {filled} · 对上 {same} · 对不上 {diff}"
-"""审计长对账的收尾报数(三份年份清单)。"""
+ONS_AUDIT_PRINT_TPL = "  审计长附录 1:补 {filled} · 对上 {same} · 换用审计长 {diff}"
+"""审计长对账的收尾报数(三份年份清单)。同日改判后第三份是「逐年页有数但对不上、换成审计长数」的年份。"""
 
 # =========================================================================
 # 28. MB 运营统计(月度数据页 + 年报 §9/§10;纯读 crawl 缓存,不发请求)

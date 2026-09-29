@@ -6308,7 +6308,7 @@ from pnp.constants import (  # noqa: E402 — 段27 2026-09-29 补省审计长�
     ONS_AUDIT_TABLE_RE, ONS_AUDIT_TIMEOUT_S, ONS_AUDIT_TOTAL_RE, ONS_AUDIT_URL, ONS_PROBLEM_AUDIT_FETCH_TPL,
     ONS_PROBLEM_AUDIT_TABLE,
 )
-from pnp.scheme import OnAuditGapIn, OnAuditOut  # noqa: E402 — 同上
+from pnp.scheme import OnAuditMergeIn, OnAuditOut  # noqa: E402 — 同上
 
 
 def num_strict(s: str) -> int:
@@ -6426,6 +6426,8 @@ def build_on_stats() -> None:
     2026-09-29 起已发提名另读省审计长 2024 年报附录 1(fetch_on_audit):逐年页没有的年份由它补,逐年页有的年份拿它对账
     (对不上留痕,以逐年页为准)。审计长 PDF 取不到 / 读不成进自校问题,整份保留旧表 —— 不拿缺年份的新表盖旧表;
     「两块都空」那道闸只看逐年页,补行不算数。
+    同日 Frank「用审计长的数」改判:附录覆盖的 2019–2023 年一律用审计长的实发数(逐年页 2019 / 2020 的 7,350 / 8,050 恰好
+    等于附录的配额上限行),附录没覆盖的年份照用逐年页(on_audit_merge_rows)。
     """
     say(PRINT_OUT_TPL.format(path=OUT_ON_STATS))
     problems: list = []
@@ -6453,7 +6455,7 @@ def build_on_stats() -> None:
     problems += audit.problems
     if problems:
         fail_zh(problems)
-    nominations_issued += on_audit_gap_rows(OnAuditGapIn(rows=nominations_issued, audit=audit))
+    nominations_issued = on_audit_merge_rows(OnAuditMergeIn(rows=nominations_issued, audit=audit))
     OUT_ON_STATS.parent.mkdir(parents=True, exist_ok=True)
     paths.write_json(paths.WriteJsonIn(path=OUT_ON_STATS, payload={
         K_PROVINCE: PROV_ON, K_PROGRAM: PROGRAM_PNP,
@@ -6512,12 +6514,14 @@ def on_audit_of(text: str) -> OnAuditOut:
     return OnAuditOut(by_year=by_year, quote=quote.group(0), table=head.group(1), problems=[])
 
 
-def on_audit_gap_rows(x: OnAuditGapIn) -> list:
+def on_audit_merge_rows(x: OnAuditMergeIn) -> list:
     """审计长逐年数 → 逐年页没有的年份各补一行(形同逐年页的行,url 挂审计长 PDF);逐年页已有的年份只对账,对不上一年一行
-    留痕、以逐年页为准;收尾一行报补了 / 对上 / 对不上哪几年(2026-09-29)。"""
+    留痕、以逐年页为准;收尾一行报补了 / 对上 / 对不上哪几年(2026-09-29)。
+    同日 Frank「用审计长的数」改判(由 on_audit_gap_rows 改名):附录覆盖的年份一律出审计长行、逐年页那一行换掉,对不上的
+    照旧一年一行留痕(括注改「以审计长附录为准」);附录没覆盖的年份照用逐年页;交回合并后的整份清单(年降序)。"""
     have: dict = {}
     for r in x.rows:
-        have[r[K_YEAR]] = r[K_VALUE]
+        have[r[K_YEAR]] = r
     today = today_iso()
     out: list = []
     filled: list = []
@@ -6525,18 +6529,21 @@ def on_audit_gap_rows(x: OnAuditGapIn) -> list:
     diff: list = []
     for year in sorted(x.audit.by_year):
         value = x.audit.by_year[year]
-        if year not in have:
-            out.append(to_year_row(YearRowIn(
-                year=year, label=ONS_AUDIT_LABEL_TPL.format(quote=x.audit.quote, table=x.audit.table, year=year),
-                value=value, section=ONS_AUDIT_SECTION, url=ONS_AUDIT_URL, fetched=today)))
+        page = have.pop(year, None)
+        if page is None:
             filled.append(year)
-        elif have[year] == value:
+        elif page[K_VALUE] == value:
             same.append(year)
         else:
-            say(ONS_AUDIT_DIFF_TPL.format(year=year, page=have[year], audit=value))
+            say(ONS_AUDIT_DIFF_TPL.format(year=year, page=page[K_VALUE], audit=value))
             diff.append(year)
+        out.append(to_year_row(YearRowIn(
+            year=year, label=ONS_AUDIT_LABEL_TPL.format(quote=x.audit.quote, table=x.audit.table, year=year),
+            value=value, section=ONS_AUDIT_SECTION, url=ONS_AUDIT_URL, fetched=today)))
+    for r in have.values():
+        out.append(r)
     say(ONS_AUDIT_PRINT_TPL.format(filled=filled, same=same, diff=diff))
-    return out
+    return sorted(out, key=neg_year_of)
 
 
 # =========================================================================
