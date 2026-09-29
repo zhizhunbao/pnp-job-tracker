@@ -20,7 +20,8 @@ import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
-  DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX, MONTHS_KEYS,
+  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  MONTHS_KEYS,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
   TAG_V_IMP, TAG_V_OK, TAG_V_WARN, AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS,
@@ -3252,6 +3253,20 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
     return
   }
   el.scrollIntoView({ block: SCROLL_BLOCK })
+}
+
+/**
+ * 本省抽选卡开合的初值:可提名的岗默认展开全省各组;不可提名(不符合清单)的岗没有「本岗那一组」,默认折叠,
+ * 只露「查看全省 N 组」(2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」)。
+ *
+ * @param job 本岗。
+ * @returns 开着的键集合。
+ */
+export function drawOpenInitOf(job: PnpJob): Set<string> {
+  if (job.pnpEligible === true) {
+    return new Set([DRAWS_ALL_KEY])
+  }
+  return new Set()
 }
 
 /**

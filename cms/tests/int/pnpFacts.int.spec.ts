@@ -28,7 +28,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  quotaCardOf, gateCardOf,
+  quotaCardOf, gateCardOf, drawOpenInitOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
 } from '@/components/pnp/functions'
@@ -727,6 +727,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
         expect(t('pnpgate.area.' + a), lang + ':' + a).not.toBe('pnpgate.area.' + a)
       }
     }
+  })
+
+  // 2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」:可提名照旧全展开(09-26「默认也别合并啊」),不可提名默认折叠
+  it('本省抽选卡开合初值:可提名展开全省各组,不可提名折叠', () => {
+    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: true }))]).toEqual(['__all'])
+    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: false }))]).toEqual([])
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
