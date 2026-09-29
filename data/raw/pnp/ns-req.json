@@ -5,7 +5,7 @@
   "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-Skilled-Worker-English.pdf",
   "pageUrl": "https://liveinnovascotia.com/skilled-worker",
   "guideEffective": "September 2026",
-  "fetched": "2026-09-25",
+  "fetched": "2026-09-29",
   "requirements": [
     {
       "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
@@ -61,9 +61,29 @@
       "excludesNoc": "",
       "appliesArea": "",
       "familySize": null,
-      "basis": "",
+      "basis": "windowYears=5",
       "label": "12 complete calendar months of paid work within the last 5 years and a minimum of 1,560 hours, related to the job being offered (volunteer work and unpaid internships do not count)",
       "section": "Skilled Workers — work experience",
+      "factor": "experience"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 6,
+      "valueText": "",
+      "unit": "months",
+      "appliesTeer": [
+        4,
+        5
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "employerTenure",
+      "label": "If your job offer falls under the NOC TEER category 4 or 5, you have 6 months’ paid work experience with the Nova Scotia employer who is offering you the job",
+      "section": "A) Skilled Workers — NOC TEER 4 or 5",
       "factor": "experience"
     },
     {
@@ -82,6 +102,74 @@
       "label": "The employer must have operated in Nova Scotia for at least 2 years",
       "section": "Core Requirements — employer",
       "factor": "empYears"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": ">=",
+      "value": null,
+      "valueText": "",
+      "unit": "CAD/yr",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "occRange",
+      "label": "You must be paid a salary that meets provincial employment standards and the provincial wage range for your specific occupation",
+      "section": "Core Requirements — wage",
+      "factor": "wage"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Before you submit an EOI to the Skilled Worker stream, find out if you need a licence or certificate to do the job you have been offered",
+      "section": "You may need a licence or certificate for the job you have been offered",
+      "factor": "licensing"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream — Skilled Worker category",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "You have a high school diploma",
+      "section": "A) Skilled Workers",
+      "factor": "education"
+    },
+    {
+      "stream": "Nova Scotia Nominee Program — Skilled Worker stream — Critical Construction Worker category",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "You have a high school diploma OR proof you have completed a construction specific industry training program",
+      "section": "B) Critical Construction Workers — Education Requirements - CCW",
+      "factor": "education"
     }
   ]
 }
