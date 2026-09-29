@@ -402,7 +402,13 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "officialName": "Skilled Worker in Manitoba",
     "boardLabel": None, "isDefault": True,
     "drawStreams": ["Skilled Worker in Manitoba"],
-    "reqStreams": [],
+    "reqStreams": [
+        "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+        ("MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway "
+         "(graduated in another Canadian province/territory)"),
+        "MPNP In-Demand Occupations List",
+        "MPNP (language proficiency, all streams)",
+    ],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -415,7 +421,13 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
 """曼省默认通道(SWM,下面三种选取)。抽选组:etl 已把 Skilled Worker in Manitoba 那一层留作组名(2026-09-24 第三批,GEN_DRAW_STREAM 原注)。
 曼省在需职业两张表只作信号、不当通道(2026-09-24 九省通道审计),不挂这里。配额:曼省只按大流(Skilled Worker)公布,
 通道级只有处理天数,没有配额卡用的指标 —— 不登配额行(前端原先按组名小写配到处理天数行,卡上也不出数,效果相同)。
-英文界面现显示官方原名(pnp.gen.MB = Skilled Worker in Manitoba)。"""
+英文界面现显示官方原名(pnp.gen.MB = Skilled Worker in Manitoba)。
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流四条(pnp mb-req 的流名)—— SWM 本流(同雇主在职 6 个月、不计入时段、
+职业资质)与外省毕业生款(12 个月);在需职业表逐职业的最低 CLB(官方 IDOL 页原句「The CLB levels listed in the In-Demand
+Occupations List are the minimum levels across all Skilled Worker pathways」—— 挂的是它的语言门槛行,在需表仍不当通道、不挂 occLabels);
+全项目语言政策的 TEER 4 / 5 下限 CLB 4(语言政策页,各流通用)。SWO、国际教育流、EDI 的行不挂:别的通道或雇主项目的门槛。
+登记顺序本通道自己的流在前;⚠ 门槛卡标题右端的出处页现取「库表按流名排序后第一条带网址的行」,那样取到的是语言政策页或在需表那页
+(看库的排序规则),不是 SWM 资格页 —— 要出 SWM 页得前端改按这里的登记顺序取,另议。"""
 
 PW_ON_WORKFORCE_PRIORITY = {
     "key": "on-workforce-priority", "province": "ON", "program": "PNP",

@@ -5,7 +5,7 @@
   "url": "https://immigratemanitoba.com/mpnp/idol/",
   "pageUrl": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/",
   "guideEffective": "",
-  "fetched": "2026-09-25",
+  "fetched": "2026-09-29",
   "requirements": [
     {
       "stream": "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
@@ -65,6 +65,25 @@
       "factor": "experienceExcluded"
     },
     {
+      "stream": "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "",
+      "label": "You must have all qualifications for the position, including training/education and any required licence or certification.",
+      "section": "Eligibility — Skilled Worker in Manitoba: conditions of employment",
+      "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swm/eligibility",
+      "factor": "licensing"
+    },
+    {
       "stream": "MPNP Skilled Worker Overseas",
       "subject": "applicant",
       "op": ">=",
@@ -84,6 +103,28 @@
       "label": "Applicants whose occupation is classified at NOC TEER 4 or 5 must have at least CLB/NCLC 4 to be eligible to apply",
       "section": "Skilled Worker Overseas — Factor 1: Language Proficiency",
       "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility/",
+      "factor": "language"
+    },
+    {
+      "stream": "MPNP (language proficiency, all streams)",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 4,
+      "valueText": "",
+      "unit": "CLB",
+      "appliesTeer": [
+        4,
+        5
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "appliesCondition": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Applicants for semi-skilled and lower-skilled occupations (TEER 4 and 5; previously NOC C and D) must achieve a minimum of CLB 4 in English or NCLC 4 in French and submit their test results with their MPNP application.",
+      "section": "Language Proficiency — Note: semi-skilled and lower-skilled occupations (TEER 4 and 5)",
+      "url": "https://immigratemanitoba.com/mpnp/policies/language-proficiency",
       "factor": "language"
     },
     {
