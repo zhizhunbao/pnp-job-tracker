@@ -4895,6 +4895,11 @@ export type PnpReqRow = {
   appliesNoc: string
 
   /**
+   * 这几个职业码前缀不适用(逗号串);'' = 不排除。
+   */
+  excludesNoc: string
+
+  /**
    * 只对这个区域生效;'' = 全省。
    */
   appliesArea: string

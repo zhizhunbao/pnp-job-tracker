@@ -441,9 +441,24 @@ export const GATE_F = {
   language: 'language',
 
   /**
+   * 语言免考条款(安省:近 N 年在本省毕业;2026-09-29)。
+   */
+  languageExempt: 'languageExempt',
+
+  /**
    * 工作经验。
    */
   experience: 'experience',
+
+  /**
+   * 工作经验的替代路径(安省:同职业累计 N 年、持执照;判定引擎不读,只给门槛卡列「或……」;2026-09-29)。
+   */
+  experienceAlt: 'experienceAlt',
+
+  /**
+   * 工资(安省:本职业在本地区的中位工资;2026-09-29)。
+   */
+  wage: 'wage',
 
   /**
    * 联邦 EE 档案。
@@ -506,6 +521,11 @@ export const GATE_ROW = {
   exp: 'exp',
 
   /**
+   * 工资(2026-09-29 安省门槛卡加的行)。
+   */
+  wage: 'wage',
+
+  /**
    * EE。
    */
   ee: 'ee',
@@ -542,9 +562,34 @@ export const GATE_UNIT_CLB = 'CLB'
 export const GATE_UNIT_MONTHS = 'months'
 
 /**
+ * 按年计的门槛单位(安省同职业累计那条替代路径;2026-09-29)。
+ */
+export const GATE_UNIT_YEARS = 'years'
+
+/**
  * 阿省境内经验替代行的条件标记(门槛表 appliesCondition 原值)。
  */
 export const GATE_COND_LOCAL = 'ab-local-experience'
+
+/**
+ * 安省应届毕业生款的条件标记(门槛表 appliesCondition 原值;2026-09-29 安省门槛卡)。
+ */
+export const GATE_COND_GRAD = 'recent-on-graduate'
+
+/**
+ * 分区雇主门槛区名的词条键头(拼门槛表 appliesArea 原值:gta / on-listed-cd / on-other / outside-gta;2026-09-29)。
+ */
+export const GATE_AREA_HEAD = 'pnpgate.area.'
+
+/**
+ * 分区年收入那一行的文案键(带 {n} 与 {area};2026-09-29 安省门槛卡)。
+ */
+export const GATE_REVENUE_AREA_KEY = 'pnpgate.empRevenueArea'
+
+/**
+ * 分区全职员工那一行的文案键(带 {n} 与 {area};2026-09-29 安省门槛卡)。
+ */
+export const GATE_STAFF_AREA_KEY = 'pnpgate.empStaffArea'
 
 /**
  * 口径包的分隔符(`k=v;k=v`)。
@@ -565,6 +610,26 @@ export const BASIS_WINDOW = 'windowMonths'
  * 口径包的「同雇主在职」标记。
  */
 export const BASIS_TENURE = 'employerTenure'
+
+/**
+ * 口径包的窗口期键(近 N 年内;安省同职业累计那条替代路径,2026-09-29)。
+ */
+export const BASIS_WINDOW_YEARS = 'windowYears'
+
+/**
+ * 口径包的「同职业」标记(经验替代路径:同职业累计)。
+ */
+export const BASIS_SAME_NOC = 'sameNoc'
+
+/**
+ * 口径包的「持执照」标记(经验替代路径:持有这份工作要求的执照)。
+ */
+export const BASIS_LICENCE = 'licence'
+
+/**
+ * 口径包的「本职业本地区中位工资」标记(工资行)。
+ */
+export const BASIS_OCC_MEDIAN = 'occMedian'
 
 /**
  * 口径包的编码值键(offer 形态行:过不了的工时 / 雇佣期取值)。

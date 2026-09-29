@@ -594,6 +594,17 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.empYears': 'operating in {prov} for {n}+ fiscal years', 'pnpgate.empRevenue': 'revenue ≥ ${n}',
   'pnpgate.empStaff': '≥ {n} full-time staff',
   'pnpgate.endorse': 'community endorsement letter', 'pnpgate.licensing': 'occupation licensing or registration',
+  // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
+  'pnpgate.k.wage': 'Wage', 'pnpgate.wageMedian': 'at or above the median wage for this occupation in the region',
+  'pnpgate.langExempt': 'No test if you graduated in {prov} within the last {n} years',
+  'pnpgate.expGrad': 'or {n} months if you are a recent graduate in {prov}',
+  'pnpgate.expSameNoc': 'or {n} years in the same occupation (within the last {w} years)',
+  'pnpgate.expLicence': 'or hold the licence this job requires',
+  'pnpgate.empRevenueArea': 'revenue ≥ ${n} ({area})', 'pnpgate.empStaffArea': '≥ {n} full-time staff ({area})',
+  'pnpgate.area.gta': 'GTA', 'pnpgate.area.on-listed-cd': 'listed regions', 'pnpgate.area.on-other': 'other areas',
+  'pnpgate.area.outside-gta': 'outside the GTA',
+  'pnpgate.area.metro-vancouver': 'Metro Vancouver', 'pnpgate.area.rest-of-bc': 'outside Metro Vancouver',
+  'pnpgate.area.st-johns': 'St. John’s', 'pnpgate.area.rest-of-nl': 'outside St. John’s',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed

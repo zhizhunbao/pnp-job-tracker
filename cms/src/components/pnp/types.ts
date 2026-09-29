@@ -1363,6 +1363,11 @@ export type PnpReq = {
   appliesNoc: string
 
   /**
+   * 这几个职业码前缀不适用(逗号串;安省技工档排除 726 / 932、卡车 / 公交司机不适用应届与执照两条);'' = 不排除。
+   */
+  excludesNoc: string
+
+  /**
    * 只对这个区域生效;'' = 全省。
    */
   appliesArea: string
@@ -1496,6 +1501,46 @@ export type RowOfFactorIn = {
    * 因素名。
    */
   factor: string
+}
+
+/**
+ * reqAppliesOf 的入参。
+ */
+export type ReqAppliesIn = {
+  /**
+   * 一行门槛。
+   */
+  r: PnpReq
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+}
+
+/**
+ * zonedLinesOf 的入参。
+ */
+export type ZonedLinesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 分区的雇主门槛行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 要哪一项(年收入 / 全职员工)。
+   */
+  factor: string
+
+  /**
+   * 这一项的文案键(带 {n} 与 {area})。
+   */
+  key: string
 }
 
 /**

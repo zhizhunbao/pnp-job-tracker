@@ -3159,8 +3159,8 @@ export function toPnpReqRow(r: Row): PnpReqRow {
   return {
     province: text(r.province), stream: text(r.stream), subject: text(r.subject), factor: text(r.factor),
     op: text(r.op), value: numOrNull(r.value), unit: text(r.unit), appliesTeer: text(r.applies_teer),
-    appliesNoc: text(r.applies_noc), appliesArea: text(r.applies_area), appliesCondition: text(r.applies_condition),
-    basis: text(r.basis), url: text(r.url), seq: count(r.seq),
+    appliesNoc: text(r.applies_noc), excludesNoc: text(r.excludes_noc), appliesArea: text(r.applies_area),
+    appliesCondition: text(r.applies_condition), basis: text(r.basis), url: text(r.url), seq: count(r.seq),
   }
 }
 

@@ -33,8 +33,11 @@ import {
   PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
   RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
-  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_SEP, BASIS_TENURE, BASIS_VALUE_CODE, BASIS_WINDOW, GATE_COND_LOCAL,
+  UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP, BASIS_TENURE,
+  BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
+  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
+  GATE_UNIT_YEARS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
 } from './constants'
@@ -52,6 +55,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
+  ReqAppliesIn, ZonedLinesIn,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
 } from './types'
@@ -1515,6 +1519,8 @@ function yearOf(r: PnpOps): string {
  * (先上 AB,别的省没登记就不出卡)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:点开看原句撤了,值一项一行纯文字;原文 / 本岗对照要提以后单独开卡。
  * 2026-09-28 通道表批二:本岗通道 → 门槛流的对照改读库表 pathways(本岗通道那一行的 reqStreams),两张常量退役;没登记的省照旧不出卡。
+ * 2026-09-29 Frank「照这个做」(安省门槛卡,看过文字效果图):工作经验之后加「工资」一行;语言 / 经验按本岗 TEER 与排除职业挑档,
+ * 经验列应届款与替代路径「或……」;雇主分区各档全部列出。
  *
  * @param x 取词函数、本岗、门槛表与本岗走的那条通道。
  * @returns 门槛卡;本岗通道没登记对照或没有门槛行给 null。
@@ -1540,7 +1546,8 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   }
   const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
-  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), eeRowOf(one), empRowOf(one), otherRowOf(one)]) {
+  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), wageRowOf(one), eeRowOf(one), empRowOf(one),
+    otherRowOf(one)]) {
     if (row != null) {
       rows.push(row)
     }
@@ -1610,6 +1617,7 @@ function offerRowOf(x: GateRowOfIn): GateRowSpec | null {
 
 /**
  * 「语言」行:本岗通道的 CLB 门槛挑一档(职业码点名的 → 本岗 TEER 那档 → 不限档)。
+ * 2026-09-29 Frank「照这个做」(安省门槛卡):免考条款(近 N 年在本省毕业)另起一行,只对管得着本岗的出(reqAppliesOf)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;挑不出给 null。
@@ -1625,15 +1633,21 @@ function langRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (row == null || row.value == null) {
     return null
   }
+  const lines = [x.t('pnpgate.lang', { n: row.value })]
+  const exempt = rowOfFactor({ rows: x.chan, factor: GATE_F.languageExempt })
+  if (exempt != null && exempt.value != null && reqAppliesOf({ r: exempt, job: x.job })) {
+    lines.push(x.t('pnpgate.langExempt', { n: exempt.value, prov: x.t(PROV_KEY_HEAD + x.job.province) }))
+  }
   return {
     key: GATE_ROW.lang,
     label: x.t('pnpgate.k.lang'),
-    lines: [x.t('pnpgate.lang', { n: row.value })],
+    lines,
   }
 }
 
 /**
  * 在语言行里挑本岗那一档:职业码前缀点名的最具体,其次本岗 TEER 所在的档,最后不限 TEER 也不限职业的那行。
+ * 2026-09-29:点名行自带的排除前缀(安省技工档排除 726 / 932)落在里头的不算点名,退回 TEER 那档。
  *
  * @param x 语言行与本岗。
  * @returns 那一行;都不适用给 null。
@@ -1643,7 +1657,8 @@ function langPickOf(x: LangPickIn): PnpReq | null {
   let general: PnpReq | null = null
   for (const r of x.rows) {
     if (r.appliesNoc !== TEXT_NONE) {
-      if (nocHitOf({ noc: x.job.noc, applies: r.appliesNoc })) {
+      const named = nocHitOf({ noc: x.job.noc, applies: r.appliesNoc })
+      if (named && nocHitOf({ noc: x.job.noc, applies: r.excludesNoc }) === false) {
         return r
       }
       continue
@@ -1702,7 +1717,23 @@ function teerHitOf(x: TeerHitIn): boolean {
 }
 
 /**
+ * 这一行门槛管不管本岗:标了 TEER 档的要落在档里,标了排除职业的不能落在排除里(2026-09-29 安省门槛卡:
+ * TEER 4 / 5 只有 9 个月那档;卡车 / 公交司机不适用应届与执照两条)。本岗未分类时标了 TEER 档的行一律不管(挑不了档,不猜)。
+ *
+ * @param x 门槛行与本岗。
+ * @returns 管给 true。
+ */
+function reqAppliesOf(x: ReqAppliesIn): boolean {
+  if (x.r.appliesTeer !== TEXT_NONE && teerHitOf({ teer: x.job.teer, applies: x.r.appliesTeer }) === false) {
+    return false
+  }
+  return nocHitOf({ noc: x.job.noc, applies: x.r.excludesNoc }) === false
+}
+
+/**
  * 「工作经验」行:通用那条(近 N 个月内 / 同雇主在职)一行,阿省境内替代款「或……」另起一行。
+ * 2026-09-29 Frank「照这个做」(安省门槛卡):只挑管本岗的行(reqAppliesOf)—— 安省 TEER 0-3 与 4 / 5 各一档;
+ * 安省应届毕业生款与两条替代路径(同职业累计、持执照,expAltLinesOf)各起一行「或……」。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本岗通道没有按月计的经验门槛给 null。
@@ -1710,8 +1741,12 @@ function teerHitOf(x: TeerHitIn): boolean {
 function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   let main: PnpReq | null = null
   let local: PnpReq | null = null
+  let grad: PnpReq | null = null
   for (const r of x.chan) {
     if (r.factor !== GATE_F.experience || r.unit !== GATE_UNIT_MONTHS || r.value == null) {
+      continue
+    }
+    if (reqAppliesOf({ r, job: x.job }) === false) {
       continue
     }
     if (r.appliesCondition === TEXT_NONE && main == null) {
@@ -1720,16 +1755,26 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
     if (r.appliesCondition === GATE_COND_LOCAL && local == null) {
       local = r
     }
+    if (r.appliesCondition === GATE_COND_GRAD && grad == null) {
+      grad = r
+    }
   }
   if (main == null || main.value == null) {
     return null
   }
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
   if (local != null && local.value != null) {
     const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
     if (w !== TEXT_NONE) {
-      lines.push(x.t('pnpgate.expLocal', { n: local.value, w, prov: x.t(PROV_KEY_HEAD + x.job.province) }))
+      lines.push(x.t('pnpgate.expLocal', { n: local.value, w, prov }))
     }
+  }
+  if (grad != null && grad.value != null) {
+    lines.push(x.t('pnpgate.expGrad', { n: grad.value, prov }))
+  }
+  for (const line of expAltLinesOf(x)) {
+    lines.push(line)
   }
   return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines }
 }
@@ -1749,6 +1794,45 @@ function expLineOf(x: ExpLineIn): string {
     return x.t('pnpgate.expWin', { n: x.n, w })
   }
   return x.t('pnpgate.exp', { n: x.n })
+}
+
+/**
+ * 工作经验的替代路径各一行「或……」(门槛表 experienceAlt:同职业累计 N 年(近 M 年内)、持有这份工作要求的执照;
+ * 2026-09-29 安省门槛卡)。只挑管本岗的行;认不出口径的不出(宁缺不乱写)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 文案;没有给空列。
+ */
+function expAltLinesOf(x: GateRowOfIn): string[] {
+  const lines: string[] = []
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.experienceAlt || reqAppliesOf({ r, job: x.job }) === false) {
+      continue
+    }
+    const w = basisValueOf({ basis: r.basis, key: BASIS_WINDOW_YEARS })
+    const sameNoc = basisHasOf({ basis: r.basis, key: BASIS_SAME_NOC })
+    if (sameNoc && r.unit === GATE_UNIT_YEARS && r.value != null && w !== TEXT_NONE) {
+      lines.push(x.t('pnpgate.expSameNoc', { n: r.value, w }))
+    } else if (basisHasOf({ basis: r.basis, key: BASIS_LICENCE })) {
+      lines.push(x.t('pnpgate.expLicence'))
+    }
+  }
+  return lines
+}
+
+/**
+ * 「工资」行(2026-09-29 Frank「照这个做」:安省门槛卡加这一行):门槛是本职业在本地区的中位工资(口径 occMedian)。
+ * 只认中位口径;别的写法(绝对数、按档)还没有省接进门槛卡,认不出不出(宁缺不乱写)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;本岗通道没有中位工资门槛给 null。
+ */
+function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const wage = rowOfFactor({ rows: x.chan, factor: GATE_F.wage })
+  if (wage == null || basisHasOf({ basis: wage.basis, key: BASIS_OCC_MEDIAN }) === false) {
+    return null
+  }
+  return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines: [capFirstOf(x.t('pnpgate.wageMedian'))] }
 }
 
 /**
@@ -1783,15 +1867,23 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
 
 /**
  * 「雇主」行:本省雇主侧三项(经营年限 / 年收入 / 全职员工),只取不分区的全省那档(分区的省后面批次再接)。
+ * 2026-09-29 Frank「照这个做」(安省门槛卡):分区的省接上 —— 年收入 / 全职员工按区各一行「≥ N(区名)」,全部列出:
+ * 官方「指定地区」名单本站没抓全,判不了本岗落哪一区,不猜(zonedLinesOf)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本省没有雇主侧门槛给 null。
  */
 function empRowOf(x: GateRowOfIn): GateRowSpec | null {
   const emp: PnpReq[] = []
+  const zoned: PnpReq[] = []
   for (const r of x.mine) {
-    if (r.subject === GATE_SUBJECT_EMPLOYER && r.appliesArea === TEXT_NONE && r.value != null) {
+    if (r.subject !== GATE_SUBJECT_EMPLOYER || r.value == null) {
+      continue
+    }
+    if (r.appliesArea === TEXT_NONE) {
       emp.push(r)
+    } else {
+      zoned.push(r)
     }
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
@@ -1804,9 +1896,15 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (revenue != null && revenue.value != null) {
     parts.push(x.t('pnpgate.empRevenue', { n: revenue.value.toLocaleString(NUM_LOCALE) }))
   }
+  for (const line of zonedLinesOf({ t: x.t, rows: zoned, factor: GATE_F.empRevenue, key: GATE_REVENUE_AREA_KEY })) {
+    parts.push(line)
+  }
   const staff = rowOfFactor({ rows: emp, factor: GATE_F.empStaff })
   if (staff != null && staff.value != null) {
     parts.push(x.t('pnpgate.empStaff', { n: staff.value }))
+  }
+  for (const line of zonedLinesOf({ t: x.t, rows: zoned, factor: GATE_F.empStaff, key: GATE_STAFF_AREA_KEY })) {
+    parts.push(line)
   }
   if (parts.length === 0) {
     return null
@@ -1816,6 +1914,29 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
     label: x.t('pnpgate.k.emp'),
     lines: parts.map(capFirstOf),
   }
+}
+
+/**
+ * 分区的雇主门槛各一行「≥ N(区名)」(年收入 / 全职员工;2026-09-29 安省门槛卡),按门槛表原序。
+ * 区名走词条 `pnpgate.area.` + 区码;查不到词条的那区不出(不把区码原样露给用户;pnpFacts 测试锁住数据里的区码都有词条)。
+ *
+ * @param x 取词函数、分区的雇主行、要哪一项与它的文案键。
+ * @returns 文案;没有给空列。
+ */
+function zonedLinesOf(x: ZonedLinesIn): string[] {
+  const lines: string[] = []
+  for (const r of x.rows) {
+    if (r.factor !== x.factor || r.value == null) {
+      continue
+    }
+    const areaKey = GATE_AREA_HEAD + r.appliesArea
+    const area = x.t(areaKey)
+    if (area === areaKey) {
+      continue
+    }
+    lines.push(x.t(x.key, { n: r.value.toLocaleString(NUM_LOCALE), area }))
+  }
+  return lines
 }
 
 /**

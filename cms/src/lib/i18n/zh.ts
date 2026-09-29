@@ -632,6 +632,16 @@ export const jobsZh = {
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
   'pnpgate.empYears': '在本省经营满 {n} 个财年', 'pnpgate.empRevenue': '年收入 ≥ ${n}', 'pnpgate.empStaff': '全职员工 ≥ {n} 人',
   'pnpgate.endorse': '指定社区推荐信', 'pnpgate.licensing': '职业所需执照或注册',
+  // 2026-09-29 Frank「照这个做」(安省门槛卡):工资一行、语言免考、应届 / 同职业累计 / 持执照三条「或……」、雇主分区各档
+  'pnpgate.k.wage': '工资', 'pnpgate.wageMedian': '不低于本职业在本地区的中位工资',
+  'pnpgate.langExempt': '近 {n} 年在本省毕业免考',
+  'pnpgate.expGrad': '或本省应届毕业生满 {n} 个月', 'pnpgate.expSameNoc': '或同职业累计满 {n} 年(近 {w} 年内)',
+  'pnpgate.expLicence': '或持有这份工作要求的执照',
+  'pnpgate.empRevenueArea': '年收入 ≥ ${n}({area})', 'pnpgate.empStaffArea': '全职员工 ≥ {n} 人({area})',
+  'pnpgate.area.gta': '大多伦多', 'pnpgate.area.on-listed-cd': '指定地区', 'pnpgate.area.on-other': '其他地区',
+  'pnpgate.area.outside-gta': '大多伦多以外',
+  'pnpgate.area.metro-vancouver': '大温哥华', 'pnpgate.area.rest-of-bc': '大温哥华以外',
+  'pnpgate.area.st-johns': '圣约翰斯', 'pnpgate.area.rest-of-nl': '圣约翰斯以外',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
   // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)

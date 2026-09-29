@@ -573,7 +573,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   const EMP_URL = 'https://www.alberta.ca/job-offer-and-employer-requirements'
   const req = (p: Partial<PnpReq>): PnpReq => ({
     province: 'AB', stream: 'AAIP Alberta Opportunity Stream', subject: 'applicant', factor: 'language', op: '>=',
-    value: 5, unit: 'CLB', appliesTeer: '', appliesNoc: '', appliesArea: '', appliesCondition: '', basis: '', url: AOS_URL,
+    value: 5, unit: 'CLB', appliesTeer: '', appliesNoc: '', excludesNoc: '', appliesArea: '', appliesCondition: '', basis: '',
+    url: AOS_URL,
     ...p,
   })
   const EMP = 'AAIP (job offer & employer requirements, all streams)'
@@ -646,6 +647,86 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 登记了对照但门槛表里还没有这条流(换版窗口 / 抓挂了):只剩全省两行会读成门槛只有这些 —— 整卡不出
     expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 医疗' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'AB 医疗' })) })).toBeNull()
     expect(gateCardOf({ t: zh, job: abJob, reqs: [], channel: chanOf(abJob) })).toBeNull()
+  })
+
+  // 2026-09-29 Frank「照这个做」(安省门槛卡,看过文字效果图):手写金标 = 当天 ON 门槛表实数(pnp on-req.json,补抓后 19 条)。
+  // 通道对照表里安省还没挂门槛流(先上前端再挂),这里直接给本岗通道那一行。
+  const ONW = 'Ontario Workforce Priority stream'
+  const onReq = (p: Partial<PnpReq>): PnpReq => req({ province: 'ON', stream: ONW, url: 'https://www.ontario.ca/page/ontario-workforce-priority-stream', ...p })
+  const onReqs: PnpReq[] = [
+    onReq({ value: 6, appliesTeer: '0,1,2,3' }),
+    onReq({ value: 4, appliesTeer: '4,5' }),
+    onReq({ value: 5, appliesTeer: '0,1,2,3', appliesNoc: '72,73,82,83,93,6320,62200', excludesNoc: '726,932' }),
+    onReq({ factor: 'languageExempt', op: 'none', value: 3, unit: 'years', appliesTeer: '0,1,2,3' }),
+    onReq({ factor: 'wage', value: null, unit: 'CAD/yr', basis: 'occMedian' }),
+    onReq({ factor: 'experience', value: 6, unit: 'months', appliesTeer: '0,1,2,3', basis: 'employerTenure' }),
+    onReq({ factor: 'experience', value: 3, unit: 'months', appliesTeer: '0,1,2,3', excludesNoc: '73300,73301',
+      appliesCondition: 'recent-on-graduate', basis: 'employerTenure' }),
+    onReq({ factor: 'experience', value: 9, unit: 'months', appliesTeer: '4,5', basis: 'employerTenure' }),
+    onReq({ factor: 'experienceAlt', value: 2, unit: 'years', appliesTeer: '0,1,2,3', basis: 'sameNoc;windowYears=5' }),
+    onReq({ factor: 'experienceAlt', op: 'none', value: null, unit: '', appliesTeer: '0,1,2,3', excludesNoc: '73300,73301',
+      basis: 'licence' }),
+    onReq({ subject: 'employer', factor: 'empYears', value: 3, unit: 'years' }),
+    onReq({ subject: 'employer', factor: 'empRevenue', value: 1000000, unit: 'CAD/yr', appliesArea: 'gta' }),
+    onReq({ subject: 'employer', factor: 'empRevenue', value: 500000, unit: 'CAD/yr', appliesArea: 'on-listed-cd' }),
+    onReq({ subject: 'employer', factor: 'empRevenue', value: 250000, unit: 'CAD/yr', appliesArea: 'on-other' }),
+    onReq({ subject: 'employer', factor: 'empStaff', value: 5, unit: 'employees', appliesArea: 'gta' }),
+    onReq({ subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', appliesArea: 'outside-gta' }),
+  ]
+  const onChan: PnpPathway = { province: 'ON', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: [ONW], quotaKey: null,
+    officialName: ONW }
+  const onGate = (noc: string, teer: number | null, t = zh) =>
+    gateOf(gateCardOf({ t, job: job({ province: 'ON', noc, teer }), reqs: onReqs, channel: onChan }))
+  const ON_EMP = ['在本省经营满 3 个财年', '年收入 ≥ $1,000,000(大多伦多)', '年收入 ≥ $500,000(指定地区)', '年收入 ≥ $250,000(其他地区)',
+    '全职员工 ≥ 5 人(大多伦多)', '全职员工 ≥ 3 人(大多伦多以外)']
+
+  it('门槛卡·安省:技工 TEER 2 出 CLB 5 + 免考、经验四条(6 个月 / 应届 / 同职业累计 / 执照)、工资、雇主分区各档全列', () => {
+    expect(onGate('72410', 2)).toEqual([
+      ['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']],
+      ['工作经验', ['在现雇主全职满 6 个月', '或本省应届毕业生满 3 个月', '或同职业累计满 2 年(近 5 年内)', '或持有这份工作要求的执照']],
+      ['工资', ['不低于本职业在本地区的中位工资']],
+      ['雇主', ON_EMP],
+    ])
+    expect(onGate('72410', 2, en)).toEqual([
+      ['Language', ['CLB 5 in each English or French skill', 'No test if you graduated in Ontario within the last 3 years']],
+      ['Experience', ['6 months full-time with your current employer', 'or 3 months if you are a recent graduate in Ontario',
+        'or 2 years in the same occupation (within the last 5 years)', 'or hold the licence this job requires']],
+      ['Wage', ['At or above the median wage for this occupation in the region']],
+      ['Employer', ['Operating in Ontario for 3+ fiscal years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
+        'Revenue ≥ $250,000 (other areas)', '≥ 5 full-time staff (GTA)', '≥ 3 full-time staff (outside the GTA)']],
+    ])
+  })
+
+  it('门槛卡·安省按本岗挑档:TEER 5 只剩 CLB 4 与 9 个月;技工档排除的 726 退回 CLB 6;卡车司机不适用应届与执照;没分类不出经验行', () => {
+    expect(onGate('65100', 5)).toEqual([
+      ['语言', ['英语或法语每项 CLB 4']],
+      ['工作经验', ['在现雇主全职满 9 个月']],
+      ['工资', ['不低于本职业在本地区的中位工资']],
+      ['雇主', ON_EMP],
+    ])
+    expect(onGate('72600', 2)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
+    expect(onGate('73300', 3)?.[1]).toEqual(['工作经验', ['在现雇主全职满 6 个月', '或同职业累计满 2 年(近 5 年内)']])
+    // 官方技工名单含 6320(厨师 / 屠宰 / 面包师)与 62200(主厨):厨师走 CLB 5;非技工的 TEER 3(行政助理)走 CLB 6
+    expect(onGate('63200', 3)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']])
+    expect(onGate('13110', 3)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
+    expect(onGate('', null)?.map((r) => r[0])).toEqual(['工资', '雇主'])
+    // 阿省那张卡不受影响(上面阿省金标原样过):阿省门槛行不标 TEER 档与排除职业
+  })
+
+  it('分区雇主门槛:数据里出现的区码三语都有区名(zonedLinesOf 查不到词条那区不出,这里先红)', () => {
+    const areas = new Set<string>()
+    for (const r of mart<PnpReq>('pnp_requirements')) {
+      if (r.subject === 'employer' && (r.factor === 'empRevenue' || r.factor === 'empStaff') && r.appliesArea) {
+        areas.add(r.appliesArea)
+      }
+    }
+    expect(areas.size).toBeGreaterThan(0)
+    for (const lang of ['zh', 'en', 'ko'] as const) {
+      const t = makeT(lang)
+      for (const a of areas) {
+        expect(t('pnpgate.area.' + a), lang + ':' + a).not.toBe('pnpgate.area.' + a)
+      }
+    }
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
