@@ -101,6 +101,19 @@ SEED_QC_PSTQ = {
 改立这颗窄种子只圈邀请页一支(路径前缀限域,深度 1 = 总页 + 逐年子页),新年份子页挂出来即自动进地图。
 读的人是 pnp 域抽选段(QC 行,项目名 PSTQ —— QC 自成体系,不属 PNP)。"""
 
+SEED_QC_PEQ = {
+    "slug": "qc-peq",
+    "seed": "https://www.quebec.ca/immigration/permanente/travailleurs-qualifies/programme-experience-quebecoise",
+    "depth": 2,
+    "max_pages": 20,
+    "concurrency": 1,
+}
+"""QC PEQ 一支(2026-09-29,Frank「魁省数据也要抓一下吧」;pnp/qc 子域门槛段读):PEQ 只有法文页,英文版技术工人
+总页的 PEQ 卡片直接链到 /immigration/permanente/…(qc-imm 从 /en/immigration 起爬、限在英文前缀下,够不着)。
+URL 不是猜的:取自英文总页 /en/immigration/permanent/skilled-workers 的 PEQ 卡片链接。路径前缀限域、深度 2
+= 总页(2026-07-02 临时重开两年的公告)+ 四个子页(à propos / conditions de sélection / présenter une demande /
+après le CSQ)+ 甄选条件下的两个分支细则页(travailleurs temporaires / diplômés du Québec)与过渡措施页。"""
+
 SEED_NT_IMM = {"slug": "nt-imm", "seed": "https://www.immigratenwt.ca/", "depth": 2, "max_pages": 300}
 """NT(偏远地区,2026-08-03 Frank:「偏远地区也加上」)。"""
 
@@ -195,6 +208,7 @@ SEEDS = [
     SEED_PE_IMM,
     SEED_QC_IMM,
     SEED_QC_PSTQ,
+    SEED_QC_PEQ,
     SEED_NT_IMM,
     SEED_YT_IMM,
     SEED_NU_IMM,
@@ -205,7 +219,8 @@ SEEDS = [
     SEED_FED_EE,
 ]
 """种子册全序(九省 + QC + 三地区 + 联邦五案;PE/NU 已知盲区留种子每轮试)。
-QC 两颗:整站 qc-imm + PSTQ 邀请一支 qc-pstq(2026-09-26 加,理由见 SEED_QC_PSTQ)。"""
+QC 两颗:整站 qc-imm + PSTQ 邀请一支 qc-pstq(2026-09-26 加,理由见 SEED_QC_PSTQ)。
+2026-09-29 QC 第三颗:PEQ 法文一支 qc-peq(理由见 SEED_QC_PEQ)。"""
 
 K_SLUG = "slug"
 """种子/manifest 键:slug。"""
