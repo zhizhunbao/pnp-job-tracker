@@ -1759,6 +1759,26 @@ class DrawYtdIn:
 
 
 @dataclass
+class StreamYtdIn:
+    """add_stream_ytd_rows() 入参:一省各抽选组的本年合计(2026-09-29 Frank「每一个通道也需要一个总数吧」)。"""
+
+    ctx: OpsCtx
+    """行累加器。"""
+
+    prov: str
+    """省码。"""
+
+    block: dict
+    """该省抽选块(url / draws[])。"""
+
+    fetched: str
+    """该省抽选文件的抓取日。"""
+
+    year: str
+    """本年。"""
+
+
+@dataclass
 class DrawYtdRowIn:
     """add_draw_ytd_row() 入参:一省一份合计(2026-09-29 抽选卡重排:省提名、AIP 各一份)。"""
 
@@ -4575,7 +4595,20 @@ class MartOpsExtraTest(unittest.TestCase):
         fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=tables, year="2026"))
         out = {}
         for r in ctx.rows:
+            if r["scopeKind"] == "drawStream":
+                continue
             out[(r["province"], r["scope"])] = r
+        return out
+
+    def streams_of(self, tables: list) -> dict:
+        """跑一遍全年合计,只收抽选组那几行(2026-09-29 Frank「每一个通道也需要一个总数吧」),按(省, 组名)收。"""
+        from mart import functions as fn
+        ctx = OpsCtx(rows=[], seqs={})
+        fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=tables, year="2026"))
+        out = {}
+        for r in ctx.rows:
+            if r["scopeKind"] == "drawStream":
+                out[(r["province"], r["scope"])] = r
         return out
 
     def ytd(self) -> dict:
@@ -4643,6 +4676,36 @@ class MartOpsExtraTest(unittest.TestCase):
                     {"date": "2026-03-06", "stream": "NLPNP + AIP (ITA batch)", "invitations": 445}):
             got = self.ytd_of([self.draw_file("NL", rows + [bad])])
             self.assertEqual(got, {})
+
+    def test_ytd_stream_rows(self) -> None:
+        """抽选组本年合计(2026-09-29 Frank「每一个通道也需要一个总数吧」):一组一行、scopeKind = drawStream、scope = 组名;
+        口径同整份 —— 有一轮人数没公布(NB 的 AIP、AB 警务)、日期认不出(BC Care)的组不出,去年的轮次不算;
+        可加的省各组相加 = 整份合计(ON 886 + 277 = 1,163);NS 按月那一组出 selections_ytd。"""
+        got = self.streams_of(self.draw_tables())
+        brief = {}
+        for k, r in got.items():
+            brief[k] = (r["metric"], r["value"], r["unit"])
+        self.assertEqual(brief, {
+            ("ON", "FW"): ("invitations_ytd", 886, "invitations"), ("ON", "IS"): ("invitations_ytd", 277, "invitations"),
+            ("AB", "Tech"): ("invitations_ytd", 100, "invitations"),
+            ("NB", "NB Skilled Worker"): ("invitations_ytd", 197, "invitations"),
+            ("NB", "NB Express Entry"): ("invitations_ytd", 115, "invitations"),
+            ("NS", "Monthly EOI selections"): ("selections_ytd", 1202, "people"),
+            ("BC", "Tech"): ("invitations_ytd", 426, "invitations"),
+        })
+        self.assertEqual(got[("ON", "FW")]["label"], "Sum of 2 rounds in 2026")
+        self.assertEqual(got[("ON", "FW")]["value"] + got[("ON", "IS")]["value"], self.ytd()[("ON", "")]["value"])
+
+    def test_ytd_stream_below(self) -> None:
+        """抽选组有只写上限的轮次 → invitations_ytd_min(已知的加总);一组全是只写上限的 → 不出(「至少 0」不是数)。"""
+        law = self.inv("2026-09-21", "Law", None)
+        law["invitationsBelow"] = 10
+        agri = self.inv("2026-09-15", "Agri", None)
+        agri["invitationsBelow"] = 10
+        rows = [law, agri, self.inv("2026-08-01", "Agri", 198)]
+        got = self.streams_of([self.draw_file("AB", rows)])
+        self.assertEqual(set(got), {("AB", "Agri")})
+        self.assertEqual((got[("AB", "Agri")]["metric"], got[("AB", "Agri")]["value"]), ("invitations_ytd_min", 198))
 
     def test_ytd_below(self) -> None:
         """人数上限轮(2026-09-29 抽选卡重排):AB 两轮官方只写「Less than 10」→ 按 0 计、指标 invitations_ytd_min、label 写几轮

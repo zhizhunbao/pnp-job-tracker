@@ -2441,6 +2441,14 @@ SCOPE_STAGE = "stage"
 SCOPE_PROGRAM = "program"
 """scopeKind:项目(2026-09-29 抽选卡重排:全年合计 AIP 那一份,scope = AIP)。"""
 
+SCOPE_DRAW_STREAM = "drawStream"
+"""scopeKind:抽选组(scope = 抽选行 stream 原值;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」:省提名弹框
+各组组头第三行读它)。不用 SCOPE_STREAM —— 那一种是配额表的通道级行(按 stream_key 归一、配额卡「本岗通道」那一行按它挑),
+抽选组名与配额通道名写法不同,混在一起会让配额卡挑到抽选合计。"""
+
+PRINT_STREAM_YTD_SKIP_TPL = "  · pnp_ops_stats {prov}「{stream}」不出本年合计:{year} 年有 {n} 轮人数没公布、日期认不出或项目认不出"
+"""抽选组本年合计不出的留痕(一组一行;2026-09-29)。"""
+
 PRINT_YTD_MIXED_TPL = "  · pnp_ops_stats {prov} {share} 不出本年合计:{year} 年计入的各轮人数口径不一(见抽选行 unit 格)"
 """一份合计里各行 unit 格不一的留痕(2026-09-29;邀请与选取人数加在一起是假数)。"""
 

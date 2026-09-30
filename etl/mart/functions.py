@@ -208,6 +208,7 @@ from mart.constants import (
 from mart.constants import (  # 2026-09-29 抽选卡重排:全年合计按抽选行的项目 / 人数口径两格分两份,人数上限轮出下限
     DRAW_CARD_PROGRAMS, DRAW_KNOWN_PROGRAMS, DRAW_UNIT_INVITATION, DRAW_UNIT_METRIC, DRAW_YTD_BELOW_TPL,
     K_INVITATIONS_BELOW, METRIC_MIN_SUFFIX, PRINT_YTD_MIXED_TPL, PROGRAM_EE, SCOPE_PROGRAM,
+    PRINT_STREAM_YTD_SKIP_TPL, SCOPE_DRAW_STREAM,
 )
 from mart.constants import K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_RESULT, NS_RESULT_METRICS, NS_RESULT_SKIP_TPL
 from mart.constants import PROV_NB  # 2026-09-29 NB / NL 往年提名(省年报 PDF)接进运营统计
@@ -222,6 +223,7 @@ from mart.constants import (
 from mart.scheme import OfferFormIn
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, DrawYtdRowIn, OpsExtraBaseIn, SalaryHitIn,
+    StreamYtdIn,
     YtdLabelIn,
 )
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
@@ -3747,6 +3749,8 @@ def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
     (2026-09-27 Frank 勾「2026 名额小表」)。本年有人数没公布的轮次 = 该省不出行,留痕一行。
     2026-09-29 抽选卡重排:一省分两份(DRAW_CARD_PROGRAMS:省提名、AIP),各按抽选行的 unit 格出指标(DRAW_UNIT_METRIC),
     逐份交 add_draw_ytd_row。
+    同日 Frank「每一个通道也需要一个总数吧」:再按抽选组(stream)各出一行(add_stream_ytd_rows),同一个 draw_ytd_of 算,
+    各组相加 = 这一份的合计。
 
     @param x 行累加器、各省抽选文件与本年。
     """
@@ -3757,6 +3761,36 @@ def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
             for scope in DRAW_CARD_PROGRAMS:
                 add_draw_ytd_row(DrawYtdRowIn(ctx=x.ctx, prov=prov, block=v, fetched=pd.get(K_FETCHED, ""),
                                               year=x.year, scope=scope))
+            add_stream_ytd_rows(StreamYtdIn(ctx=x.ctx, prov=prov, block=v, fetched=pd.get(K_FETCHED, ""), year=x.year))
+
+
+def add_stream_ytd_rows(x: StreamYtdIn) -> None:
+    """一省各抽选组(stream)的本年合计 → 一组一行(scopeKind = SCOPE_DRAW_STREAM、scope = stream 原值;2026-09-29 Frank
+    「每一个通道也需要一个总数吧」,选「单独一行靠右」:省提名弹框各组组头第三行读它)。口径与整份合计同一个 draw_ytd_of:
+    有真缺(人数空、日期 / 项目认不出)→ 这组不出、留痕;各行人数口径不一 → 不出;有只写上限的轮次 → 指标名加 METRIC_MIN_SUFFIX;
+    本年一个确数都没有(全是只写上限的轮次,如阿省警务五轮都是「Less than 10」)→ 不出(「至少 0」不是数,前端改写上限那一句)。
+
+    @param x 行累加器、省码、抽选块、抓取日与本年。
+    """
+    by_stream: dict = {}
+    for dr in x.block.get(K_DRAWS, []):
+        by_stream.setdefault(str(dr.get(K_STREAM) or ""), []).append(dr)
+    for stream, rows in by_stream.items():
+        got = draw_ytd_of(DrawYtdOfIn(draws=rows, year=x.year, programs=DRAW_KNOWN_PROGRAMS))
+        if got.unknown > 0:
+            say(PRINT_STREAM_YTD_SKIP_TPL.format(prov=x.prov, stream=stream, year=x.year, n=got.unknown))
+            continue
+        spec = DRAW_UNIT_METRIC.get(got.unit)
+        if got.rounds == 0 or spec is None or (got.total == 0 and got.below > 0):
+            continue
+        metric, unit, tpl = spec
+        if got.below > 0:
+            metric = metric + METRIC_MIN_SUFFIX
+        base = to_ops_extra_base(OpsExtraBaseIn(province=x.prov, as_of=got.latest, period=x.year,
+                                                url=x.block.get(K_URL, ""), fetched=x.fetched))
+        add_ops_row(OpsRowIn(ctx=x.ctx, base=base, metric=metric, scope=stream, kind=SCOPE_DRAW_STREAM,
+                             label=ytd_label_of(YtdLabelIn(tpl=tpl, got=got, year=x.year)),
+                             raw=got.total, unit=unit, text="", section="", period=x.year))
 
 
 def add_draw_ytd_row(x: DrawYtdRowIn) -> None:
