@@ -23,10 +23,10 @@ import {
   opsPointsOf, prGeosOf,
   cityPilotTablesOf, dliKindChipsOf, toCityDliRows, toCityMainRows,
   trackSecView, makeNavWatch,
-  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows,
+  makeSponsorLoad, nocInfoOf, numCardsOf, pilotSecsOf, occSecsOf, provRowsOf, toJobsRows, toDrawCellRows,
 } from './functions'
 import type {
-  MaybeDrawCellRow, RulesPanel,
+  MaybeDrawCellRow, RulesPanel, DrawCellRow, DrawCellRowsIn,
   CardPageIn, CityData, CityPanel, CityPanelIn, CityPilotTable,
   EmpExtra, EmpSecsHookIn, EmpSecsPanel, FoldOut, MacroData, NocCatMap, OccBoardPanel,
   NavSubIn, PulseIn, PulsePanel, SponsorBoards, TFn,
@@ -201,6 +201,7 @@ export function useEnglishT(): TFn {
  * 手机卡片列表的页态(桌面表格的页态在 Table 里,俩视图同刻只显示一个,各翻各的)。
  * 换了一榜(行的身份变了)就回第一页 —— 比对的是**原始行数组的身份**,不是洗过的展示行
  * (那份每次渲染都是新数组,拿它比会每帧回第一页)。
+ * 2026-09-30 抽选表实撞:DrawsSection 递进来的正是现洗的展示行,滚动一重渲染就回第一页;展示行改走 useDrawRows 记住。
  *
  * @param x 本榜的原始行与每页几行。
  * @returns 当前页、总页数与翻页手柄。
@@ -340,4 +341,20 @@ export function useRulesModal(): RulesPanel {
   }
 
   return { row, open: setRow, close }
+}
+
+/**
+ * 近期抽选表的展示行,内容没变就是同一份(2026-09-30 Frank 选「现在修」:把脉页翻页一滚动就跳回第 1 页)。
+ * 原先 DrawsSection 每次渲染现洗一份新数组,递给卡片页态(useCardPage)与桌面表格(Table 的 useRows),两边都拿行数组的身份判
+ * 「换了一榜」;滚动时导航跟随重渲染整页,两边就回第一页(实测翻到 3 / 6 滚三下回 1 / 6,补在第 6 页的 NS / ON 两行手机上
+ * 几乎看不到;职业榜与雇主表的行本来就记住了,不受影响)。按原始行、两套取词函数、界面语言与弹框手柄记住;弹框手柄是
+ * useState 的 setter,身份不变。
+ *
+ * @param x 抽选行、两套取词函数、界面语言与开门槛弹框的手柄。
+ * @returns 展示行。
+ */
+export function useDrawRows(x: DrawCellRowsIn): DrawCellRow[] {
+  return useMemo(function pickDrawRows() {
+    return toDrawCellRows({ rows: x.rows, t: x.t, tEn: x.tEn, lang: x.lang, onRules: x.onRules })
+  }, [x.rows, x.t, x.tEn, x.lang, x.onRules])
 }
