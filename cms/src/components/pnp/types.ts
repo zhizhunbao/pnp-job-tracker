@@ -3982,11 +3982,6 @@ export type AllGroupsLabelIn = {
   t: TFn
 
   /**
-   * 其余组展开了没有。
-   */
-  open: boolean
-
-  /**
    * 全省一共几组。
    */
   total: number

@@ -19,6 +19,8 @@
 // 组头「最低 58 分 / 2026-09-23 / 5 轮」、开关收起也在;没公布分的 AIP 那组组头写「40 份申请入选」;来源三语一条。
 // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:NS 按月那一形改走分组卡的组头行(官方只发月度总数,
 // 一组;组头 = 最近一个月「671 人入选」、计数写「2 个月」不写「2 轮」、点开逐月一行),本岗在 NS 可提名时标命中;事实卡只剩安省。
+// 2026-09-30 Frank「右边这部分看着还是 有点乱」→ 选「按这版改」:组头分数格不再顶那一轮的人数(本年合计在旁边),上面「40 份申请入选」
+// 「671 人入选」这类组头金标改空串,人数改在展开行里断言;同日选「可提名的岗去掉收起」:开关字只剩「查看全省 N 组」。
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -360,10 +362,9 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(drawCardOf({ t: ko, lang: 'ko', province: 'AB', draws: ab, hitStreams: [AOS], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })?.source?.text).toBe('출처 ↗')
   })
 
-  it('开关文案:收着「查看全省 N 组」,开着「收起」;对不上本岗那一组时没有命中行,来源照旧', () => {
-    expect(allGroupsLabelOf({ t: zh, open: false, total: 13, label: 'AAIP' })).toBe('查看全省 13 组 ▾')
-    expect(allGroupsLabelOf({ t: en, open: false, total: 13, label: 'AAIP' })).toBe('All 13 AAIP streams ▾')
-    expect(allGroupsLabelOf({ t: zh, open: true, total: 13, label: 'AAIP' })).toBe('收起 ▴')
+  it('开关文案:收着「查看全省 N 组」(2026-09-30 起展开后开关不出,没有「收起」);对不上本岗那一组时没有命中行,来源照旧', () => {
+    expect(allGroupsLabelOf({ t: zh, total: 13, label: 'AAIP' })).toBe('查看全省 13 组 ▾')
+    expect(allGroupsLabelOf({ t: en, total: 13, label: 'AAIP' })).toBe('All 13 AAIP streams ▾')
     const none = drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, hitStreams: [], genDraw: genDrawOf({ province: 'AB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(none?.hits).toEqual([])
     expect(none?.others.length).toBe(2)
@@ -371,17 +372,19 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   })
 
   // 2026-09-29 抽选卡重排:AIP 的轮次分去「AIP 抽选」卡(数据层 program = AIP),人数口径读 unit 格(application = 份申请入选)
-  it('没公布分的本岗那组:组头写那一轮的人数(AIP 写份申请入选),标命中;认不出站名不出来源', () => {
+  it('没公布分的本岗那组:组头分数格空着(2026-09-30 起不再顶那一轮的人数,人数在展开行),标命中;认不出站名不出来源', () => {
     const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 40, program: 'AIP', unit: 'application' })]
     // 本岗通道对得上 AIP 那组时照样标命中(AIP 卡不折叠,命中只管着色)
     const dx = { hitStreams: ['AIP'], genDraw: genDrawOf({ province: 'NB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' }
     const aipZh = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, ...dx })
     expect(aipZh?.title).toBe('AIP 抽选')
-    expect(aipZh?.hits.map(headOf)).toEqual([['AIP', true, '40 份申请入选', '2026-09-10', '1 轮']])
+    expect(aipZh?.hits.map(headOf)).toEqual([['AIP', true, '', '2026-09-10', '1 轮']])
+    expect(aipZh?.hits[0]?.rows.map((r) => r.inv)).toEqual(['40 份申请入选'])
     expect(aipZh?.hits[0]?.noScore).toBe(true)
     expect(aipZh?.source).toBeNull()
     const aipEn = aipCardOf({ t: en, lang: 'en', province: 'NB', draws: one, ...dx })
-    expect(aipEn?.hits.map(headOf)).toEqual([['AIP', true, '40 selected', '2026-09-10', '1 round']])
+    expect(aipEn?.hits.map(headOf)).toEqual([['AIP', true, '', '2026-09-10', '1 round']])
+    expect(aipEn?.hits[0]?.rows.map((r) => r.inv)).toEqual(['40 selected'])
     // 本省抽选卡不列 AIP 的轮次:NB 只有这一轮 AIP,往年也没有省提名的轮次 → 不出卡
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, ...dx })).toBeNull()
   })
@@ -402,11 +405,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: hitNs, genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(card?.title).toBe('本省抽选')
     expect(card?.hits.map((g) => [g.key, g.hit, g.score, g.date, g.rounds, g.rows.length]))
-      .toEqual([['Monthly EOI selections', true, '671 人入选', '2026-07', '2 个月', 2]])
+      .toEqual([['Monthly EOI selections', true, '', '2026-07', '2 个月', 2]])
+    expect(card?.hits[0]?.rows.map((r) => r.inv)).toEqual(['671 人入选', '531 人入选'])
     expect(card?.others).toEqual([])
     expect(card?.source).toEqual({ text: '来源 ↗', href: src })
     const en1 = drawCardOf({ t: en, lang: 'en', province: 'NS', draws: [ns[1]!], hitStreams: hitNs, genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
-    expect(en1?.hits.map((g) => [g.score, g.rounds])).toEqual([['671 selected', '1 month']])
+    expect(en1?.hits.map((g) => [g.score, g.rounds])).toEqual([['', '1 month']])
     // 不可提名的 NS 岗:同一组照出,不标命中
     const cold = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [], genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
     expect(cold?.hits).toEqual([])
@@ -936,17 +940,18 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const ops = [ytd({ province: 'NL', value: 102 }), ytd({ province: 'NL', value: 1, scopeKind: 'program', asOf: '2026-09-18' })]
     const dx = { hitStreams: ['NLPNP (ITA batch)'], genDraw: genDrawOf({ province: 'NL', pathways: PATHWAYS }), ops, reqs: [], year: '2026' }
     const pnp = drawCardOf({ t: zh, lang: 'zh', province: 'NL', draws: nl, ...dx })
-    expect(pnp?.hits.map((g) => [g.key, g.score, g.rounds])).toEqual([['NLPNP (ITA batch)', '41 份邀请', '2 轮']])
+    expect(pnp?.hits.map((g) => [g.key, g.score, g.rounds])).toEqual([['NLPNP (ITA batch)', '', '2 轮']])
     expect(pnp?.others).toEqual([])
     expect(pnp?.foot).toEqual(['2026 年 2 轮,共 102 份邀请'])
     const aip = aipCardOf({ t: zh, lang: 'zh', province: 'NL', draws: nl, ...dx })
     expect([aip?.title, aip?.lines, aip?.others]).toEqual(['AIP 抽选', [], []])
     // AIP 卡不设开关:组全摊开(不是本岗那一组,不着色)
-    expect(aip?.hits.map((g) => [g.key, g.hit, g.sub, g.score, g.rounds])).toEqual([['AIP (ITA batch)', false, 'AIP 大西洋移民计划', '1 份邀请', '1 轮']])
+    expect(aip?.hits.map((g) => [g.key, g.hit, g.sub, g.score, g.rounds])).toEqual([['AIP (ITA batch)', false, 'AIP 大西洋移民计划', '', '1 轮']])
     expect(aip?.foot).toEqual(['2026 年 1 轮,共 1 份邀请'])
-    // 英文单数:恰好 1 份写「1 invitation」
+    // 英文单数:恰好 1 份写「1 invitation」(2026-09-30 起组头分数格空着,单数改在展开行与卡底断言)
     const aipEn = aipCardOf({ t: en, lang: 'en', province: 'NL', draws: nl, ...dx })
-    expect([aipEn?.hits[0]?.score, aipEn?.foot]).toEqual(['1 invitation', ['2026: 1 round, 1 invitation']])
+    expect([aipEn?.hits[0]?.score, aipEn?.hits[0]?.rows[0]?.inv, aipEn?.foot])
+      .toEqual(['', '1 invitation', ['2026: 1 round, 1 invitation']])
     // 探针:卡片认的是数据里的 program 格,不是省名 —— 那一行标成 PNP 就回到本省抽选,AIP 卡随之没东西可说
     const flipped = nl.map((d) => draw({ ...d, program: 'PNP' }))
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NL', draws: flipped, ...dx })?.others.map((g) => g.key)).toEqual(['AIP (ITA batch)'])

@@ -733,6 +733,7 @@
 
 /*
  * 分数格写的不是分数(没公布分写邀请数、EE 从没抽过写「暂无抽选」):常规字重次级灰,不跟真分数抢眼。
+ * 2026-09-30 起省提名抽选卡组头不再写邀请数(Frank 选「按这版改」),这里只剩「还没发邀请」与 EE 的「暂无抽选」。
  */
 .cmpScore.cmpNoScore {
   /*
@@ -915,8 +916,10 @@
     /*
      * 列宽:名字吃余宽,分数 / 合计 / 轮数定宽 —— 合计格按最长的合计定(中文「共 10,000 份申请入选」117px,含五位数余量;
      * 英文、韩文见下两条),各组分数照旧上下对齐。
+     * 同日 Frank「间距要不要调整」(选「按这版改」):轮数格按本语言两位数的字宽收窄 —— 中韩 30px(「11 轮」29.6px;原 56px
+     * 按英文定,中文合计与轮数之间空出 38–45px),按月那一组(「7 个月」)宽过就撑开只动它自己,同手机那条。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 118px 56px 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 118px minmax(30px, max-content) 10px;
 
     /*
      * 两行格位:合计在原日期那一格,日期落第二行(跨分数 / 合计 / 轮数三格靠右,右边与轮数齐)。
@@ -928,16 +931,16 @@
 
   .cmpHead.cmpHead.cmpDateBelow:lang(en) {
     /*
-     * 英文合计格:「at least 10,000 invitations」146px。
+     * 英文合计格:「at least 10,000 invitations」146px;轮数格「11 rounds」57.7px → 58px。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 146px 56px 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 146px minmax(58px, max-content) 10px;
   }
 
   .cmpHead.cmpHead.cmpDateBelow:lang(ko) {
     /*
-     * 韩文合计格:「최소 10,000개 초청」106px。
+     * 韩文合计格:「최소 10,000개 초청」106px;轮数格「11회」26.1px,同中文 30px。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 106px 56px 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 106px minmax(30px, max-content) 10px;
   }
 }
 
@@ -964,6 +967,17 @@
      */
     grid-template-columns: minmax(0, 1fr) minmax(95px, max-content) minmax(34px, max-content) 12px;
   }
+}
+
+/*
+ * 省提名抽选卡组头落最下一行的日期:与合计、轮数同一个 12px 小字(2026-09-30 Frank「间距要不要调整」,选「按这版改」——
+ * 原先日期是正文字号,比上一行的合计、轮数还大,次要信息反倒更显眼)。
+ */
+.cmpDateBelow .cmpDate {
+  /*
+   * 小一号(同合计、轮数)。
+   */
+  font-size: 12px;
 }
 
 /*

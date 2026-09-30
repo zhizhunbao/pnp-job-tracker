@@ -679,6 +679,7 @@ function latestSinceOf(x: LatestSinceIn): PnpDraw | null {
  * 2026-09-29 下午 Frank「这种上下对不上的?应该是默认显示英文,灰字中文」:翻回英文官方名作主文案、界面语言名作灰字 ——
  * 与下面职业清单行(英文职业名 + 中文灰字)同一排法;推翻同日凌晨按 09-28「界面显示直白名」做的那次翻转。
  * 现行:组名 = 官方抽选组名(通道对照表本省省默认通道的抽选组;没有退英文词条名),灰字 = 界面语言通道名。
+ * 2026-09-30 Frank 选「按这版改」:有轮次时分数格不再顶那一轮的人数(本年合计在旁边,两个「份邀请」挨着分不清);还没发邀请照旧写。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 这一组;不是改制省或改制后没有公告给 null。
@@ -717,7 +718,7 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   let date = notice.drawDate
   let score: number | null = null
   if (head != null) {
-    none = invTextOf({ t: x.t, draw: head })
+    none = TEXT_NONE
     date = head.drawDate
     score = head.score
   }
@@ -1269,6 +1270,8 @@ export function genDrawOf(x: GenDrawIn): string {
  * 「这个没有分数需要显示横线吧」→ 没公布分的组头改写那一轮发了多少份邀请,邀请数也没有就空着。
  * 同日「所以这个 NB 技术工人点进去应该哪个高亮」:本岗 PNP 格写的通道对应的组(drawHitStreamsOf)琥珀高亮、排最前。
  * 2026-09-26 晚 Frank「全站高亮要不要都改成蓝色」:本岗高亮改浅蓝(样式见 pnp.module.css 的 .cmpHit;琥珀全站另有提示 / 付费的意思)。
+ * 2026-09-30 Frank「右边这部分看着还是 有点乱」,选「按这版改」:没公布分的组头不再写那一轮的人数(组头第二格已是本年合计,
+ * 两个「份邀请」挨着分不清;各轮人数点开看),分数格空着。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的那一组。
  * @returns 各组(没有抽选给空列)。
@@ -1283,14 +1286,12 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       continue
     }
     let score = head.score
-    let none = invTextOf({ t: x.t, draw: head })
     if (isMixedSelectionOf(arr) && head.selection !== SEL_POINTS) {
       score = null
-      none = TEXT_NONE
     }
     groups.push(cmpGroupOf({
       t: x.t,
-      none,
+      none: TEXT_NONE,
       sub: drawSubOf({ lang: x.lang, draw: head }),
       lang: x.lang,
       key,
@@ -1314,6 +1315,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
  * 官方只按月公布 EOI 池的总选取人数、不分通道,原先一月一格横排在琥珀 / 浅蓝底块里;改成与其余省同一种组头行 ——
  * 组头 = 最近一个月(人数写「人入选」,计数写「N 个月」不写「N 轮」),点开逐月一行;官方写的职业重点(抽选行 note)挂组头悬停。
  * 本岗在本省可提名时(GEN_DRAW_STREAM 登记了 NS)这一组就是本岗通道的抽选,标命中。
+ * 2026-09-30 Frank 选「按这版改」:组头不再写最近一个月的人数(本年合计在旁边),逐月人数点开看。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
  * @returns 这一组;本省没有按月的行给 null。
@@ -1326,7 +1328,7 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
   }
   return cmpGroupOf({
     t: x.t,
-    none: invTextOf({ t: x.t, draw: head }),
+    none: TEXT_NONE,
     sub: drawSubOf({ lang: x.lang, draw: head }),
     lang: x.lang,
     key: head.stream,
@@ -2716,14 +2718,12 @@ function basisHasOf(x: BasisKeyIn): boolean {
 
 /**
  * 「查看全省 N 组」那个开关的字(展开后改「收起」,同清单卡末尾的开关)。
+ * 2026-09-30 Frank「收起那个按钮是不是不要放在外面」,选「可提名的岗去掉收起」:展开后开关不再出(PnpDrawGroups),「收起」那一支撤。
  *
- * @param x 取词函数、展开态、全省组数与轮次标签。
+ * @param x 取词函数、全省组数与轮次标签。
  * @returns 开关的字。
  */
 export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
-  if (x.open) {
-    return x.t('pnplist.foldOther')
-  }
   return x.t('pnpfacts.allGroups', { n: x.total, label: x.label })
 }
 
@@ -2736,6 +2736,7 @@ export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
  * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):人数加千分位(原「1874 份邀请」,配额卡与标题行都有千分位,这里没有)。
  * 2026-09-29 抽选卡重排:官方只写了上限的轮次(AB「Less than 10」、BC「<5」;数据层 invitationsBelow)写「少于 N 份邀请」,
  * 原先这种轮次人数一格是空的。
+ * 2026-09-30 起省提名抽选卡组头不再用它顶分数格(Frank 选「按这版改」:本年合计在旁边,两个「份邀请」挨着分不清),只剩抽选行用。
  *
  * @param x 取词函数与这一轮。
  * @returns 文字;''=没公布。
@@ -3976,6 +3977,8 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
  * 只露「查看全省 N 组」(2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」)。
  * 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡一律展开 —— AIP 与省提名是两条路,本岗不可提名
  * 不等于走不了 AIP。同日线上验收改:AIP 卡干脆不设开关(groupsCardOf 的 fold = false),它那把键随之撤。
+ * 2026-09-30 Frank「收起那个按钮是不是不要放在外面。默认是不是都展开」,选「可提名的岗去掉收起」:展开后开关不再出 ——
+ * 可提名的岗初值就展开,全省各组常显、没有开关;不可提名的岗照旧折着,只露「查看全省 N 组」,点开后不给收起。
  *
  * @param job 本岗。
  * @returns 开着的键集合。

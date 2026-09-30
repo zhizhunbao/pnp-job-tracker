@@ -20,6 +20,7 @@
  * DRAW_NO_SCORE_PROVS 判,挪进 drawCardOf)、各组、开关(每张卡一把键)、卡底合计行。
  * 2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」(看过效果图选「互换」):组头传 dateBelow —— 本年合计换到
  * 原日期那一格、日期落最下一行(没合计的组同样排,各组分数照旧对齐);EE 分数线卡不传。
+ * 同日 Frank「收起那个按钮是不是不要放在外面」,选「可提名的岗去掉收起」:开关只在折着时出(「查看全省 N 组」),展开后不给收起。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
@@ -65,9 +66,9 @@ export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
       {lines}
       {hits}
       {others}
-      {card.others.length > 0 && (
+      {card.others.length > 0 && allOpen === false && (
         <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(card.allKey)}>
-          {allGroupsLabelOf({ t, open: allOpen, total: card.total, label: card.label })}
+          {allGroupsLabelOf({ t, total: card.total, label: card.label })}
         </Button>
       )}
       {foot}
