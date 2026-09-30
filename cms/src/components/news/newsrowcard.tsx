@@ -4,12 +4,13 @@
  * 评论数 + 阅读全文)。行定高 128(Frank「卡片的宽度和高度也应该是固定的」)。
  * 2026-09-30 摘要位改同头条大卡:中 / 韩界面有 AI 速读就显示速读(带「AI 速读」小标),没有退官方摘要(Frank「这个下面也显示 AI 速读」)。
  * 2026-08-27 换装批自 News.tsx 提出成文件。
+ * 2026-09-30 Frank「新开一个选项卡,不要在当前的选项卡」:点开新闻详情一律新选项卡(LinkButton 带 target 自动补 rel)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { LinkButton } from '@/components/button'
-import { CMT_PREFIX, COMMENTS_ON, REGION_QC, TEXT_NONE } from './constants'
+import { CMT_PREFIX, COMMENTS_ON, REGION_QC, TARGET_BLANK, TEXT_NONE } from './constants'
 import { heroAiSummaryOf, heroSummaryOf, newsHrefOf, rowClsOf } from './functions'
 import { ImpBadge } from './impbadge'
 import { ListTile } from './listtile'
@@ -27,7 +28,7 @@ export function NewsRowCard({ t, lang, item, comments }: NewsRowCardIn) {
   const summary = heroSummaryOf({ lang, hero: item })
   const ai = heroAiSummaryOf({ lang, hero: item })
   return (
-    <LinkButton href={newsHrefOf({ slug: item.slug })} className={rowClsOf()}>
+    <LinkButton href={newsHrefOf({ slug: item.slug })} target={TARGET_BLANK} className={rowClsOf()}>
       <ListTile region={item.region} />
       <div className={css.rowBody}>
         <div className={css.rowMeta}>

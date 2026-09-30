@@ -2,11 +2,13 @@
 /**
  * 域内小件:头条右列的小卡清单(恒显其余 4 条)。第二条起在上方加一道分隔线。
  * 2026-08-27 换装批自 News.tsx 的 FeaturedGrid 拆出成文件。
+ * 2026-09-30 Frank「新开一个选项卡,不要在当前的选项卡」:点开新闻详情一律新选项卡(LinkButton 带 target 自动补 rel)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { LinkButton } from '@/components/button'
+import { TARGET_BLANK } from './constants'
 import { newsHrefOf, shortDateOf, sideItemClsOf } from './functions'
 import { ImpBadge } from './impbadge'
 import { RegionTag } from './regiontag'
@@ -25,7 +27,10 @@ export function HeroSideList({ t, lang, items }: HeroSideListIn) {
     const s = items[i]
     if (s != null) {
       rows.push(
-        <LinkButton key={s.slug} href={newsHrefOf({ slug: s.slug })} className={sideItemClsOf({ first: i === 0 })}>
+        <LinkButton key={s.slug}
+          href={newsHrefOf({ slug: s.slug })}
+          target={TARGET_BLANK}
+          className={sideItemClsOf({ first: i === 0 })}>
           <div className={css.sideTitle}>{s.title}</div>
           <div className={css.sideMeta}>
             <ImpBadge t={t} lang={lang} importance={s.importance} note={s.importanceNote} />

@@ -7,13 +7,14 @@
  * ImpBadge,理由与口径挂 title。
  * 2026-08-27 换装批自 News.tsx 的 FeaturedGrid 拆出成文件;轮播的箭头与圆点同批挪到
  * 卡外(见 herocontrols),原因写在 news.module.css 的 .bigWrap 上。
+ * 2026-09-30 Frank「新开一个选项卡,不要在当前的选项卡」:点开新闻详情一律新选项卡(LinkButton 带 target 自动补 rel)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
 import { LinkButton } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { TEXT_NONE } from './constants'
+import { TARGET_BLANK, TEXT_NONE } from './constants'
 import { heroAiSummaryOf, heroSummaryOf, newsHrefOf } from './functions'
 import { HeroImage } from './heroimage'
 import { ImpBadge } from './impbadge'
@@ -31,7 +32,7 @@ export function HeroBig({ t, lang, hero }: HeroBigIn) {
   const summary = heroSummaryOf({ lang, hero })
   const ai = heroAiSummaryOf({ lang, hero })
   return (
-    <LinkButton className={cssOf(css.big)} href={newsHrefOf({ slug: hero.slug })}>
+    <LinkButton className={cssOf(css.big)} href={newsHrefOf({ slug: hero.slug })} target={TARGET_BLANK}>
       <div className={css.bigImg}>
         <HeroImage key={hero.slug} region={hero.region} />
       </div>
