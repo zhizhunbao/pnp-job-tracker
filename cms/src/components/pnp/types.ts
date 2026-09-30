@@ -3577,6 +3577,26 @@ export type SourceLinkIn = {
 }
 
 /**
+ * aipEmployerCardOf 的入参(2026-09-30 AIP 卡加雇主那一行)。
+ */
+export type AipEmployerCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗(读省码与 AIP 指定雇主位)。
+   */
+  job: PnpJob
+
+  /**
+   * 算好的 AIP 卡;null = 这一岗不出 AIP 卡。
+   */
+  card: DrawCard | null
+}
+
+/**
  * drawCardOf 的入参。
  */
 export type DrawCardOfIn = {

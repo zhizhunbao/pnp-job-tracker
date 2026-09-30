@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  aipCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
+  aipCardOf, aipEmployerCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
@@ -387,6 +387,23 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(aipEn?.hits[0]?.rows.map((r) => r.inv)).toEqual(['40 selected'])
     // 本省抽选卡不列 AIP 的轮次:NB 只有这一轮 AIP,往年也没有省提名的轮次 → 不出卡
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, ...dx })).toBeNull()
+  })
+
+  // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上写本岗雇主在不在本省 AIP 指定雇主名单
+  it('AIP 卡顶上一行:指定雇主写「是」,不是写「办不了 AIP」(三语);其余各格原样;没有卡照旧没有、非大西洋省原样', () => {
+    const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 60, program: 'AIP', unit: 'application' })]
+    const card = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, hitStreams: [], genDraw: '', ops: [], reqs: [], year: '2026' })
+    const on = aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card })
+    expect(on?.lines).toEqual(['本岗雇主是本省 AIP 指定雇主'])
+    expect([on?.title, on?.hits, on?.foot, on?.source]).toEqual([card?.title, card?.hits, card?.foot, card?.source])
+    const miss = aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: false }), card })
+    expect(miss?.lines).toEqual(['本岗雇主不是本省 AIP 指定雇主,办不了 AIP'])
+    expect(aipEmployerCardOf({ t: en, job: job({ province: 'NB', aip: false }), card })?.lines[0])
+      .toBe('This employer is not an AIP designated employer, so it can\'t use AIP')
+    expect(aipEmployerCardOf({ t: ko, job: job({ province: 'NB', aip: true }), card })?.lines[0]).toBe('이 고용주는 AIP 지정 고용주입니다')
+    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card: null })).toBeNull()
+    // 探针:非大西洋省判定是「不适用」,卡原样返回(那种岗本来也不出 AIP 卡)
+    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'AB', aip: false }), card })).toBe(card)
   })
 
   it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进按轮分组,自成按月一组(计数写「个月」)', () => {

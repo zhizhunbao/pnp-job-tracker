@@ -36,13 +36,14 @@
  * null(原按 drawsFormOf 的形判 drawGroupsShownOf,随之退役;SK 没有抽选也出卡写「不经抽选」)。
  * 2026-09-30 魁省门槛弹框(Frank「先不要解读,只要门槛」,看过效果图第三版「可以」;设计 docs/design/魁省门槛弹框-20260929.md):
  * 魁省岗最前面是这个职业能走的每个通道一张门槛卡(qcGateCardsOf);其余各卡对魁省本来就不出(各自有魁省挡板)。
+ * 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上加一行本岗雇主在不在本省 AIP 指定雇主名单(aipEmployerCardOf)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import {
   aipCardOf, cardYearOf, drawCardOf, gateCardOf, gateChannelOf, genDrawOf, hitStreamsOf, pnpChannelOf,
-  preReformCardOf, quotaCardOf,
+  aipEmployerCardOf, preReformCardOf, quotaCardOf,
   quotaKeyOf,
   qcGateCardsOf, shownStreamsOf, streamKeyOf,
 } from './functions'
@@ -81,7 +82,7 @@ export function PnpListSection({
   }
   const drawCard = drawCardOf(dx)
   const reformCard = preReformCardOf(dx)
-  const aipCard = aipCardOf(dx)
+  const aipCard = aipEmployerCardOf({ t: p.t, job, card: aipCardOf(dx) })
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const qcCards = []
   for (const c of qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })) {

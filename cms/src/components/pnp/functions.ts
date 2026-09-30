@@ -69,7 +69,7 @@ import type {
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
-  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
+  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
@@ -1568,6 +1568,43 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
     })
   }
   return null
+}
+
+/**
+ * 「AIP 抽选」卡顶上加一行:本岗雇主在不在本省 AIP 指定雇主名单(2026-09-30 Frank「这个是一般雇主是不给你办的吧」,选「加」)。
+ * AIP 只能由省里指定的雇主办(雇主先申请指定,再为候选人递背书申请);判定同职位板 AIP 列(aipVerdictOf:雇主名比对省里的
+ * 指定雇主名单)。不在名单就明说办不了。其余各格原样搬(不许对象展开,字段写全)。
+ *
+ * @param x 取词函数、本岗与算好的 AIP 卡。
+ * @returns 顶上加了那一行的卡;卡是 null 照旧 null,非大西洋省(不适用)原样返回。
+ */
+export function aipEmployerCardOf(x: AipEmployerCardIn): DrawCard | null {
+  if (x.card == null) {
+    return null
+  }
+  const verdict = aipVerdictOf(x.job)
+  if (verdict === AIP_NA) {
+    return x.card
+  }
+  let line = x.t('pnpaip.employerMiss')
+  if (verdict === AIP_ON) {
+    line = x.t('pnpaip.employerOn')
+  }
+  const lines = [line]
+  for (const l of x.card.lines) {
+    lines.push(l)
+  }
+  return {
+    title: x.card.title,
+    label: x.card.label,
+    hits: x.card.hits,
+    others: x.card.others,
+    total: x.card.total,
+    source: x.card.source,
+    lines,
+    foot: x.card.foot,
+    allKey: x.card.allKey,
+  }
 }
 
 /**
