@@ -273,6 +273,21 @@ class ReqIn:
 
 
 @dataclass
+class StdReqIn:
+    """to_std_req() 入参:标准形门槛行(base 十五格 + factor)+ 本省的两个缺省(2026-09-29 去重立:
+    SK / NB / PE / NL 四份 to_*_req 逐格同形,只差缺省 stream 与 url,并成一个;QC 子域同形直接用)。"""
+
+    req: ReqIn
+    """本行入参(空串 / None = 本行没表态,由下面两个缺省或标准缺省兜)。"""
+
+    stream: str
+    """本省缺省通道名。"""
+
+    url: str
+    """本省缺省出处页。"""
+
+
+@dataclass
 class SelfCheckIn:
     """count_factor() 入参:按 factor 数门槛条数(收尾报数用)。"""
 

@@ -327,7 +327,7 @@ from pnp.scheme import (
     NlEmployerStatsIn, NlIgIn, NlpCheckIn, NocLinesIn, NoticeOfIn, OccProbeIn, OnChunkIn, OnColIn, OnDrawsOut,
     OnEntryIn, OnYearIn, PageTextIn, PeDrawRowsIn, PointRow, ProcessingOut, ProvinceDrawsIn, ReqIn, ReqsOut,
     RowsByLabelsIn, ScanIn, SectionTableIn, SeenEntryIn, SelfCheckIn, SirsCollectIn, SirsProblemsIn,
-    SirsSectionIn, SkAllocCheckIn,
+    SirsSectionIn, SkAllocCheckIn, StdReqIn,
     SkAllocOut, SkGroupIn, SkGroupNameIn, SkHeadIn, SkMathIn, SkPagesIn, SkPointsOut, SkProcOut, SliceIn, SwmOut,
     OnWaybackIn, TenureIn, TenureOut, TextOfHtmlIn, TranslateIn, WindowProvIn, YearPageOut, YearValuesIn,
 )
@@ -4336,27 +4336,37 @@ def build_ab_req() -> None:
 
 
 def to_sk_req(x: ReqIn) -> dict:
-    """SK 门槛一行(base 十五格 + factor)。"""
-    teer = x.applies_teer
+    """SK 门槛一行(base 十五格 + factor)。
+    2026-09-29 去重:逐格同形的四省(SK / NB / PE / NL)并进 to_std_req,本函数只绑本省两个缺省。"""
+    return to_std_req(StdReqIn(req=x, stream=SKR_STREAM, url=SKR_EO_URL))
+
+
+def to_std_req(x: StdReqIn) -> dict:
+    """标准形门槛一行(base 十五格 + factor 收尾;键序即文件契约)。2026-09-29 去重立:SK / NB / PE / NL 四份
+    to_*_req 逐格同形、只差缺省 stream 与 url,并成本函数;QC 子域同形直接用。键集不同的五省(BC 无 noc / url、
+    ON teer 是字符串且带 condition、MB 带 condition、AB 条件行才带 condition、NS 无 url)各留本省构造器,
+    键集不齐是各省文件的既有契约(ReqIn 注释),不擅自补齐。"""
+    r = x.req
+    teer = r.applies_teer
     if teer is None:
         teer = []
     return {
-        K_STREAM: x.stream or SKR_STREAM,
-        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
-        K_OP: x.op or OP_GE,
-        K_VALUE: x.value,
-        K_VALUE_TEXT: x.value_text,
-        K_UNIT: x.unit,
+        K_STREAM: r.stream or x.stream,
+        K_SUBJECT: r.subject or REQ_SUBJECT_APPLICANT,
+        K_OP: r.op or OP_GE,
+        K_VALUE: r.value,
+        K_VALUE_TEXT: r.value_text,
+        K_UNIT: r.unit,
         K_APPLIES_TEER: teer,
-        K_APPLIES_NOC: x.applies_noc,
-        K_EXCLUDES_NOC: x.excludes_noc,
-        K_APPLIES_AREA: x.applies_area,
-        K_FAMILY_SIZE: x.family_size,
-        K_BASIS: x.basis,
-        K_LABEL: x.label,
-        K_SECTION: x.section,
-        K_URL: x.url or SKR_EO_URL,
-        K_FACTOR: x.factor,
+        K_APPLIES_NOC: r.applies_noc,
+        K_EXCLUDES_NOC: r.excludes_noc,
+        K_APPLIES_AREA: r.applies_area,
+        K_FAMILY_SIZE: r.family_size,
+        K_BASIS: r.basis,
+        K_LABEL: r.label,
+        K_SECTION: r.section,
+        K_URL: r.url or x.url,
+        K_FACTOR: r.factor,
     }
 
 
@@ -5136,28 +5146,9 @@ def build_ns_req() -> None:
 
 
 def to_nb_req(x: ReqIn) -> dict:
-    """NB 门槛一行(base 十五格 + factor)。"""
-    teer = x.applies_teer
-    if teer is None:
-        teer = []
-    return {
-        K_STREAM: x.stream or NBR_STREAM,
-        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
-        K_OP: x.op or OP_GE,
-        K_VALUE: x.value,
-        K_VALUE_TEXT: x.value_text,
-        K_UNIT: x.unit,
-        K_APPLIES_TEER: teer,
-        K_APPLIES_NOC: x.applies_noc,
-        K_EXCLUDES_NOC: x.excludes_noc,
-        K_APPLIES_AREA: x.applies_area,
-        K_FAMILY_SIZE: x.family_size,
-        K_BASIS: x.basis,
-        K_LABEL: x.label,
-        K_SECTION: x.section,
-        K_URL: x.url or NBR_PAGE_URL,
-        K_FACTOR: x.factor,
-    }
+    """NB 门槛一行(base 十五格 + factor)。
+    2026-09-29 去重:逐格同形的四省(SK / NB / PE / NL)并进 to_std_req,本函数只绑本省两个缺省。"""
+    return to_std_req(StdReqIn(req=x, stream=NBR_STREAM, url=NBR_PAGE_URL))
 
 
 def nb_guide_urls() -> dict:
@@ -5363,28 +5354,9 @@ def build_nb_req() -> None:
 
 
 def to_pe_req(x: ReqIn) -> dict:
-    """PE 门槛一行(base 十五格 + factor)。"""
-    teer = x.applies_teer
-    if teer is None:
-        teer = []
-    return {
-        K_STREAM: x.stream or PER_STREAM,
-        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
-        K_OP: x.op or OP_GE,
-        K_VALUE: x.value,
-        K_VALUE_TEXT: x.value_text,
-        K_UNIT: x.unit,
-        K_APPLIES_TEER: teer,
-        K_APPLIES_NOC: x.applies_noc,
-        K_EXCLUDES_NOC: x.excludes_noc,
-        K_APPLIES_AREA: x.applies_area,
-        K_FAMILY_SIZE: x.family_size,
-        K_BASIS: x.basis,
-        K_LABEL: x.label,
-        K_SECTION: x.section,
-        K_URL: x.url or PE_GUIDE_URL,
-        K_FACTOR: x.factor,
-    }
+    """PE 门槛一行(base 十五格 + factor)。
+    2026-09-29 去重:逐格同形的四省(SK / NB / PE / NL)并进 to_std_req,本函数只绑本省两个缺省。"""
+    return to_std_req(StdReqIn(req=x, stream=PER_STREAM, url=PE_GUIDE_URL))
 
 
 def pe_language_reqs(txt: str) -> ReqsOut:
@@ -5590,28 +5562,9 @@ def build_pe_req() -> None:
 
 
 def to_nl_req(x: ReqIn) -> dict:
-    """NL 门槛一行(base 十五格 + factor)。"""
-    teer = x.applies_teer
-    if teer is None:
-        teer = []
-    return {
-        K_STREAM: x.stream or NLR_STREAM,
-        K_SUBJECT: x.subject or REQ_SUBJECT_APPLICANT,
-        K_OP: x.op or OP_GE,
-        K_VALUE: x.value,
-        K_VALUE_TEXT: x.value_text,
-        K_UNIT: x.unit,
-        K_APPLIES_TEER: teer,
-        K_APPLIES_NOC: x.applies_noc,
-        K_EXCLUDES_NOC: x.excludes_noc,
-        K_APPLIES_AREA: x.applies_area,
-        K_FAMILY_SIZE: x.family_size,
-        K_BASIS: x.basis,
-        K_LABEL: x.label,
-        K_SECTION: x.section,
-        K_URL: x.url or NLR_POLICY_URL,
-        K_FACTOR: x.factor,
-    }
+    """NL 门槛一行(base 十五格 + factor)。
+    2026-09-29 去重:逐格同形的四省(SK / NB / PE / NL)并进 to_std_req,本函数只绑本省两个缺省。"""
+    return to_std_req(StdReqIn(req=x, stream=NLR_STREAM, url=NLR_POLICY_URL))
 
 
 def teer_text(band: list) -> str:
