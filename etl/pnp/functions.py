@@ -8760,6 +8760,7 @@ from pnp.scheme import BcFunnelTest, OnAuditTest  # noqa: E402 — 同上(2026-0
 from pnp.scheme import AbFederalTest, MbPoolYearsTest  # noqa: E402 — 同上(2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额)
 from pnp.scheme import DrawSelectionTest  # noqa: E402 — 同上(2026-09-27 Frank「照改,加这一列」)
 from pnp.scheme import DrawProgramTest  # noqa: E402 — 同上(2026-09-29 抽选卡重排:项目 / 人数口径两格与人数上限)
+from pnp.scheme import ReportDirTest  # noqa: E402 — 同上(2026-09-29 Frank「只抓取然后取数」:年报目录页发现新一期)
 
 
 def run_tests() -> None:
@@ -8777,7 +8778,9 @@ def run_tests() -> None:
     BcFunnelTest(BC 年报四组 SI 逐年数:每份只认自己那一年、三种收件写法、2022 那份的链接形)。
     同日再加两组:MbPoolYearsTest(MB 年报池子历年序列:原句与原句里的年照录、节标题逐年照取、缺年报 / 认不出各记一条)、
     AbFederalTest(AB 额外联邦名额表归自己一堆、label 挂官方原句、缺表或缺那句不出行)。
-    同日 Frank「照改,加这一列」再加 DrawSelectionTest(抽选行 selection 码:三省认法的金标 / 拒猜 / 变异探针 + 落盘并回口径)。"""
+    同日 Frank「照改,加这一列」再加 DrawSelectionTest(抽选行 selection 码:三省认法的金标 / 拒猜 / 变异探针 + 落盘并回口径)。
+    同日 Frank「只抓取然后取数」再加 ReportDirTest(NB / NL 年报目录页:两省真页链接的金标、改名 / 挪目录的变异探针、新一期只收
+    晚于已核实清单的、目录页取不到 / 认不出照已核实清单跑、旧表里有清单外年报才算会丢期)。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(OnWorkforceWatchTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(NlDrawSplitTest))
@@ -8794,6 +8797,7 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(AbFederalTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawSelectionTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawProgramTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(ReportDirTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
 
@@ -8807,7 +8811,13 @@ from pnp.constants import (  # noqa: E402 — 段41 常量单列一块(同段35�
     NLS_NO_QUOTE_TPL, NLS_NOMINATED_RES, NLS_NOTE, NLS_PRINT_FAIL_TPL, NLS_PRINT_OK_TPL, NLS_REPORTS, NLS_SECTION_TPL,
     NLS_SOURCE, NLS_TIMEOUT_S, NLS_UNIT_PEOPLE, OUT_NB_STATS, OUT_NL_STATS,
 )
+from pnp.constants import (  # noqa: E402 — 同上(2026-09-29 年报目录页发现新一期)
+    NBS_FY_TPL, NBS_INDEX_URLS, NBS_REPORT_HREF_RE, NBS_SITE_BASE, NLS_FY_TPL, NLS_INDEX_URLS, NLS_REPORT_HREF_RE,
+    NLS_SITE_BASE, REPORT_DIR_EMPTY_TPL, REPORT_DIR_FAIL_TPL, REPORT_DIR_KEEP_TPL, REPORT_DIR_NEW_TPL,
+    REPORT_FY_BAD_TPL, REPORT_FY_RE,
+)
 from pnp.scheme import NbYearRowsIn, NlReportIn  # noqa: E402 — 同上
+from pnp.scheme import LostUrlsIn, NewReportsIn, ReportDirIn, ReportLinksIn, ReportListOut  # noqa: E402 — 同上(目录页)
 
 
 def scrape_nb_stats() -> None:
@@ -8817,13 +8827,25 @@ def scrape_nb_stats() -> None:
     形照 scrape_bc_nominations / scrape_pe_iidi:PDF 走 fetch_bytes(原件先落 crawl 层再解析),同一年被多份年报覆盖时
     以更新的为准。清单里的年报都是人工核实过的,任一份取不到或表对不上都算异常 → 抛错留痕、整份保留旧表
     (不拿缺一份的新表盖旧表,同 scrape_ns_stats)。
+
+    2026-09-29 同日改判(Frank「只抓取然后取数」):要读的年报 = 已核实清单 NBS_REPORTS ∪ 部门目录页认出的新一期
+    (report_list_of,形照 scrape_bc_nominations 读入口页);目录页取不到 / 认不出打 ✗、照已核实清单跑,不拦役 —— 只有一种
+    例外:旧表里已有目录页先前发现、还没补进清单的新一期,照清单跑会把那几年抹掉 → 留痕保留旧表(lost_urls_of)。
+    新一期同样过上面的口径:取不到或表对不上就抛错保留旧表,不猜。
     """
     say(PRINT_OUT_TPL.format(path=OUT_NB_STATS))
     by_year_rows: dict = {}
     last_url = ""
     last_fy = ""
     try:
-        for url, fy in NBS_REPORTS:
+        todo = report_list_of(ReportDirIn(prov=PROV_NB, index_urls=NBS_INDEX_URLS, href_re=NBS_REPORT_HREF_RE,
+                                          site_base=NBS_SITE_BASE, fy_tpl=NBS_FY_TPL, known=NBS_REPORTS,
+                                          timeout_s=NBS_TIMEOUT_S))
+        lost = lost_urls_of(LostUrlsIn(todo=todo, path=OUT_NB_STATS, key=K_NOMINATIONS_ISSUED))
+        if len(lost) > 0:
+            say(REPORT_DIR_KEEP_TPL.format(prov=PROV_NB, urls=lost))
+            return
+        for url, fy in todo.reports:
             by_year = nb_nominations_of(pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NBS_TIMEOUT_S))))
             if len(by_year) == 0:
                 raise RuntimeError(NBS_NO_TABLE_TPL.format(url=url))
@@ -8841,6 +8863,108 @@ def scrape_nb_stats() -> None:
     for r in rows:
         pairs.append(BC_NOM_PAIR_TPL.format(year=r[K_YEAR], value=r[K_VALUE]))
     say(NBS_PRINT_OK_TPL.format(fy=last_fy, pairs=SEMI_JOIN_SEP.join(pairs)))
+
+
+def report_list_of(x: ReportDirIn) -> ReportListOut:
+    """已核实清单 ∪ 目录页认出的新一期 → 本轮要读的年报(2026-09-29 立,Frank「只抓取然后取数」;NB / NL 共用,
+    读目录页认链接的形照 bc_reports_of)。
+
+    目录页按序逐页取(fetch_html,同 BC 入口页),每页过本省链接形(report_links_of):任一页取不到打 ✗、任一页一份都认不出
+    (平时每页至少认得出一份,认不出 = 页面或命名变了)打 ✗,两种都只交回已核实清单(dir_ok=False,不拦役)。认出的年报只收
+    财年晚于已核实清单最新一份的(新一期),一份打一行留痕;目录页上更早的往年年报没核过格式,不读。
+
+    @param x 省码、目录页、本省链接形与已核实清单。
+    @returns 年报清单(财年升序)与目录页可不可用。
+    """
+    found: list = []
+    for url in x.index_urls:
+        try:
+            html = fetch_html(FetchHtmlIn(url=url, timeout_s=x.timeout_s))
+        except httpx.HTTPError as e:
+            say(REPORT_DIR_FAIL_TPL.format(prov=x.prov, url=url, name=type(e).__name__, detail=e))
+            return ReportListOut(reports=list(x.known), dir_ok=False)
+        got = report_links_of(ReportLinksIn(html=html, href_re=x.href_re, site_base=x.site_base, fy_tpl=x.fy_tpl))
+        if len(got) == 0:
+            say(REPORT_DIR_EMPTY_TPL.format(prov=x.prov, url=url))
+            return ReportListOut(reports=list(x.known), dir_ok=False)
+        found += got
+    new = new_reports_of(NewReportsIn(known=x.known, found=found))
+    for link, fy in new:
+        say(REPORT_DIR_NEW_TPL.format(prov=x.prov, fy=fy, url=link))
+    return ReportListOut(reports=list(x.known) + new, dir_ok=True)
+
+
+def report_links_of(x: ReportLinksIn) -> list:
+    """一张年报目录页原文 → 认出的年报 [(网址, 财年)],财年升序;同一财年只留后认出的那份,没链接给空清单
+    (2026-09-29 立,NB / NL 共用一份认法,形照 bc_reports_of)。链接形由调用方给(NBS_ / NLS_REPORT_HREF_RE:第 1 组路径、
+    第 2 组起始年、第 3 组结束年);财年按本省写法造(y1 起始年、y2 结束年原样、y2s 结束年末两位,模板用哪个取哪个)。
+
+    @param x 页面原文与本省的链接形。
+    @returns 年报清单。
+    """
+    seen: dict = {}
+    for m in x.href_re.finditer(x.html):
+        fy = x.fy_tpl.format(y1=m.group(2), y2=m.group(3), y2s=m.group(3)[-2:])
+        seen[int(m.group(2))] = (x.site_base + m.group(1), fy)
+    out: list = []
+    for y1 in sorted(seen):
+        out.append(seen[y1])
+    return out
+
+
+def new_reports_of(x: NewReportsIn) -> list:
+    """目录页认出的年报 → 新一期:财年起始年晚于已核实清单最新一份的;同一财年认出两份只留后认出的那份;财年升序
+    (2026-09-29 立)。已核实清单里有的财年(哪怕目录页给的是另一个网址,如 NL 2023-24 在议会站、目录页链部门站那份)
+    与更早的往年年报都不收。
+
+    @param x 已核实清单与目录页认出的全部年报。
+    @returns 新一期 [(网址, 财年)];没有给空清单。
+    """
+    newest = 0
+    for pair in x.known:
+        newest = max(newest, fy_start_of(pair[1]))
+    picked: dict = {}
+    for url, fy in x.found:
+        y1 = fy_start_of(fy)
+        if y1 > newest:
+            picked[y1] = (url, fy)
+    out: list = []
+    for y1 in sorted(picked):
+        out.append(picked[y1])
+    return out
+
+
+def fy_start_of(fy: str) -> int:
+    """年报财年写法(「2024-2025」「2024-25」)→ 起始年(2026-09-29 立)。认不出抛错 —— 两省认法造出来的都认得出,
+    认不出只能是有人把已核实清单写错了,调用方整份保留旧表。
+
+    @param fy 财年写法。
+    @returns 起始年。
+    """
+    m = REPORT_FY_RE.match(fy)
+    if m is None:
+        raise ValueError(REPORT_FY_BAD_TPL.format(fy=fy))
+    return int(m.group(1))
+
+
+def lost_urls_of(x: LostUrlsIn) -> list:
+    """目录页不可用时,照已核实清单跑会从旧表抹掉哪几份年报 → 那几份的网址(去重、排序;2026-09-29 立)。
+    旧表每行记着出自哪份年报(url 格),出处不在本轮清单里的就是目录页先前发现、还没补进已核实清单的新一期。
+    目录页可用(本轮清单就是目录页的全貌)或旧表不在 → 空清单。旧表读坏了照常抛错,调用方整份保留旧表。
+
+    @param x 本轮要读的年报与上一版落盘。
+    @returns 会被抹掉的年报网址;不会丢就是空清单。
+    """
+    if x.todo.dir_ok or x.path.exists() is False:
+        return []
+    keep: set = set()
+    for pair in x.todo.reports:
+        keep.add(pair[0])
+    lost: set = set()
+    for row in json.loads(x.path.read_text(encoding=ENC_UTF8)).get(x.key) or []:
+        if row[K_URL] not in keep:
+            lost.add(row[K_URL])
+    return sorted(lost)
 
 
 def nb_nominations_of(text: str) -> dict:
@@ -8901,13 +9025,24 @@ def scrape_nl_stats() -> None:
     同一年被多份年报覆盖时以更新的为准。官方数的是人(含随行家属),不是提名证书 → 不进 nominationsIssued(留空),
     另起清单(mart 出 nominated_individuals)。清单里的年报都是人工核实过的,任一份取不到或原句对不上都算异常 →
     抛错留痕、整份保留旧表(同 scrape_ns_stats)。
+
+    2026-09-29 同日改判(Frank「只抓取然后取数」):要读的年报 = 已核实清单 NLS_REPORTS ∪ 目录页(当前年报页 + 往年页)认出的
+    新一期(report_list_of,同 scrape_nb_stats);目录页取不到 / 认不出打 ✗、照已核实清单跑,旧表里已有还没补进清单的新一期时
+    保留旧表(lost_urls_of)。新一期换了措辞照上面的口径抛错保留旧表,不猜。
     """
     say(PRINT_OUT_TPL.format(path=OUT_NL_STATS))
     by_year: dict = {}
     last_url = ""
     last_fy = ""
     try:
-        for url, fy in NLS_REPORTS:
+        todo = report_list_of(ReportDirIn(prov=PROV_NL, index_urls=NLS_INDEX_URLS, href_re=NLS_REPORT_HREF_RE,
+                                          site_base=NLS_SITE_BASE, fy_tpl=NLS_FY_TPL, known=NLS_REPORTS,
+                                          timeout_s=NLS_TIMEOUT_S))
+        lost = lost_urls_of(LostUrlsIn(todo=todo, path=OUT_NL_STATS, key=K_NOMINATED_INDIVIDUALS))
+        if len(lost) > 0:
+            say(REPORT_DIR_KEEP_TPL.format(prov=PROV_NL, urls=lost))
+            return
+        for url, fy in todo.reports:
             text = pdf_text(fetch_bytes(FetchHtmlIn(url=url, timeout_s=NLS_TIMEOUT_S)))
             row = nl_nominated_row_of(NlReportIn(text=text, url=url, fy=fy))
             if row is None:
