@@ -222,9 +222,9 @@ from mart.constants import (
 )
 from mart.scheme import OfferFormIn
 from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_noc_streams;设计 docs/design/魁省门槛弹框-20260929.md)
-    IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, QC_FACTOR_OCC, QC_KIND_ALL,
-    QC_NOC_MISSING_TPL, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL,
-    QC_TEER_DIGIT,
+    IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, QC_FACTOR_OCC, QC_KEY_PEQ_TFW,
+    QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
+    QC_SCOPE_RE, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL, QC_TEER_DIGIT, QC_TITLE_PEQ_TPL, QC_TITLE_PSTQ_TPL,
 )
 from mart.scheme import QcNocRowIn, QcPeqOut
 from mart.scheme import (
@@ -4630,13 +4630,24 @@ def to_qc_noc_row(x: QcNocRowIn) -> dict:
         name = x.names.get(s.get(K_STREAM))
         if name is None:
             continue
-        channels.append({K_PROGRAM: QC_PROGRAM_PSTQ, K_STREAM: name, K_CODE: s.get(K_CODE), K_KIND: s.get(K_KIND),
-                         K_LABEL: s.get(K_LABEL), K_REGULATED: s.get(K_REGULATED)})
+        channels.append({K_KEY: QC_KEY_PSTQ_TPL.format(n=s.get(K_STREAM)), K_PROGRAM: QC_PROGRAM_PSTQ, K_STREAM: name,
+                         K_TITLE: QC_TITLE_PSTQ_TPL.format(stream=name), K_CODE: s.get(K_CODE), K_KIND: s.get(K_KIND),
+                         K_LABEL: s.get(K_LABEL), K_SCOPE: qc_scope_of(str(s.get(K_LABEL) or "")),
+                         K_REGULATED: s.get(K_REGULATED)})
     noc = str(x.row.get(K_NOC) or "")
     if x.peq.stream and len(noc) == 5 and int(noc[QC_TEER_DIGIT]) in x.peq.teer:
-        channels.append({K_PROGRAM: QC_PROGRAM_PEQ, K_STREAM: x.peq.stream, K_CODE: "", K_KIND: QC_KIND_ALL,
-                         K_LABEL: "", K_REGULATED: None})
+        channels.append({K_KEY: QC_KEY_PEQ_TFW, K_PROGRAM: QC_PROGRAM_PEQ, K_STREAM: x.peq.stream,
+                         K_TITLE: QC_TITLE_PEQ_TPL.format(branch=x.peq.stream.split(QC_PEQ_NAME_SEP, 1)[-1]), K_CODE: "",
+                         K_KIND: QC_KIND_ALL, K_LABEL: "", K_SCOPE: "", K_REGULATED: None})
     return {K_NOC: noc, K_NAME: x.row.get(K_NAME), K_CHANNELS: channels}
+
+
+def qc_scope_of(label: str) -> str:
+    """官方说明 → 末尾括号里的适用范围原文;没有括号 → 空串(官方说明里「Stream 3: Regulated professions」没括号 = 整类)。"""
+    m = QC_SCOPE_RE.search(label)
+    if m is None:
+        return ""
+    return m.group(1)
 
 
 def build_noc_descriptions(x: NocDescIn) -> list:

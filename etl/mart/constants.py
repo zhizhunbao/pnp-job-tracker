@@ -3144,6 +3144,24 @@ K_KIND = "kind"
 K_REGULATED = "regulated"
 """受监管明细 [{jobs, authorities}](法文原文);非受监管通道为 None。"""
 
+QC_KEY_PSTQ_TPL = "pstq-{n}"
+"""PSTQ 通道稳定键。"""
+
+QC_KEY_PEQ_TFW = "peq-tfw"
+"""PEQ 临时工分支稳定键。"""
+
+QC_TITLE_PSTQ_TPL = "Skilled Worker Selection Program (PSTQ) – {stream}"
+"""PSTQ 通道卡标题(官方项目英文名 + 门槛流名原文)。"""
+
+QC_TITLE_PEQ_TPL = "Programme de l'expérience québécoise (PEQ) – {branch}"
+"""PEQ 通道卡标题(官方项目法文名 + 分支名;PEQ 只有法文页)。"""
+
+QC_PEQ_NAME_SEP = " – "
+"""PEQ 门槛流名「PEQ – Travailleurs étrangers temporaires」里项目名与分支名的分隔。"""
+
+QC_SCOPE_RE = re.compile(r"\(\s*(.+?)\s*\)\s*$")
+"""官方说明末尾括号里的适用范围(「Stream 3: Regulated professions (only …)」)。"""
+
 K_OPEN = "open"
 """在招计数格(职业在招量桶 / rankings 聚合桶)。"""
 
