@@ -2959,6 +2959,11 @@ export type PulseDraw = {
    * 这一类别的门槛清单;null = 没写(弹框出「本站未收录」)。
    */
   checklist: MaybeChecklist
+
+  /**
+   * 人数数的是什么(invitation / selection / application;没这一格给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:selection 写「入选」)。
+   */
+  unit: string
 }
 
 /**
@@ -3066,6 +3071,11 @@ export type DrawDbRow = {
    * 选择参数 / 期号(官方公告里这一路的附注;库里可空)。
    */
   note: string | null
+
+  /**
+   * 人数口径(pnp_draws.unit,2026-09-29 的列;DDL 没跑的库上这一格压根不存在)。
+   */
+  unit?: string | null
 
   /**
    * 门槛清单 JSON 串({url, items:[{zh,en,ko}]}) —— 2026-09-13 的列,DDL 没跑的库上这一格压根不存在;NULL = 未收录。

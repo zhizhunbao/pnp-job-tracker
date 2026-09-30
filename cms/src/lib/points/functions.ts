@@ -2545,7 +2545,10 @@ function overviewOf(facts: DrawFacts): OverviewDraws {
       continue
     }
     seen.add(f.province)
-    out.push({ province: f.province, drawDate: f.drawDate, stream: f.stream, score: f.score, invitations: f.invitations })
+    out.push({
+      province: f.province, drawDate: f.drawDate, stream: f.stream, score: f.score, invitations: f.invitations,
+      unit: f.unit,
+    })
   }
   return out
 }
@@ -2641,7 +2644,7 @@ export function toDrawFact(r: Row): DrawFact {
   return {
     province: text(r.province), kind: text(r.kind), drawDate: text(r.drawDate),
     stream: text(r.stream), streamZh: text(r.streamZh),
-    score: numOrNull(r.score), invitations: numOrNull(r.invitations),
+    score: numOrNull(r.score), invitations: numOrNull(r.invitations), unit: text(r.unit),
   }
 }
 

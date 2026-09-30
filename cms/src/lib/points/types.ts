@@ -2035,6 +2035,11 @@ export type DrawFact = {
    * 邀请数;没公布保 null。
    */
   invitations: number | null
+
+  /**
+   * 人数口径(DIMS_PNP_DRAWS 的 unit:invitation / selection / application;2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   */
+  unit: string
 }
 
 /**
@@ -2070,6 +2075,11 @@ export type OverviewDraw = {
    * 邀请数;没公布保 null。
    */
   invitations: number | null
+
+  /**
+   * 人数口径(selection = 从 EOI 池选中的人,计划页写「入选」;2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   */
+  unit: string
 }
 
 /**

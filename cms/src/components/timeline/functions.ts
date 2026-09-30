@@ -8,7 +8,7 @@
  */
 import { cssOf } from '@/components/css'
 import {
-  CLS_SEP, DRAW_SELECT_PROVS, EVENTS_ANCHOR_ID, IMP_MIN, KIND_DRAW, KIND_NOTICE, KIND_POLICY, PROV_FED, PROV_KEY_HEAD,
+  CLS_SEP, UNIT_SELECTION, EVENTS_ANCHOR_ID, IMP_MIN, KIND_DRAW, KIND_NOTICE, KIND_POLICY, PROV_FED, PROV_KEY_HEAD,
   SCALE_CRS, SCROLL_SMOOTH, TEXT_NONE, URL_NEWS_HEAD,
 } from './constants'
 import type {
@@ -185,6 +185,7 @@ export function eventTitleOf(x: EventTitleIn): string {
 /**
  * 抽选那一行的人数(2026-09-26 lead 定):官方口径是从 EOI 池选取的省(DRAW_SELECT_PROVS,NS)写「人入选」,
  * 其余照旧「邀请 N 人」;词条复用省提名弹框的 pnpfacts.selPeople,不另起同义词条。
+ * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:改认这一条的 unit 格(selection),不再按省名判。
  *
  * @param x 取词函数与这一条事件。
  * @returns 人数话术;官方没公布给空串(不出那一格)。
@@ -193,7 +194,7 @@ export function invTextOf(x: InvTextIn): string {
   if (x.row.invitations == null) {
     return TEXT_NONE
   }
-  if (DRAW_SELECT_PROVS.has(x.row.prov)) {
+  if (x.row.unit === UNIT_SELECTION) {
     return x.t('pnpfacts.selPeople', { n: x.row.invitations })
   }
   return x.t('tl.inv', { n: x.row.invitations })

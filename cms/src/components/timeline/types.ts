@@ -74,6 +74,11 @@ export type EventRow = {
    * 政策公告在站内的 slug(拼成 /news/[slug] 的详情页地址)。
    */
   slug: string
+
+  /**
+   * 抽选的人数口径(selection = 从 EOI 池选中的人,写「人入选」;新闻给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   */
+  unit: string
 }
 
 /**

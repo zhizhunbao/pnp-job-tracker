@@ -87,11 +87,14 @@ export const KIND_NOTICE = 'notice'
 export const SCALE_CRS = 'CRS'
 
 /**
- * 官方口径是「从 EOI 池里选取」而不是「发邀请」的省:这些省的抽选人数写「入选」(2026-09-26 lead 定)。
+ * 抽选行 unit 格:从 EOI 池选中的人(etl/pnp 落盘门按官方原句逐行判好;这种行的人数写「入选」)。
+ * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:原为 DRAW_SELECT_PROVS = new Set(['NS'])(按省名认),改认数据层的 unit 格,与省提名弹框
+ *(components/pnp 的 UNIT_SELECTION,2026-09-29)同一个判法。
+ * 原注:「官方口径是「从 EOI 池里选取」而不是「发邀请」的省:这些省的抽选人数写「入选」(2026-09-26 lead 定)。
  * NS 出处 liveinnovascotia.com/eoi-selection 原句「Nova Scotia selected the following number of candidates from the
- * Expression of Interest (EOI) pool during the months noted below」。与 components/pnp 的 DRAW_SELECT_PROVS 同值(各域一份)。
+ * Expression of Interest (EOI) pool during the months noted below」。与 components/pnp 的 DRAW_SELECT_PROVS 同值(各域一份)。」
  */
-export const DRAW_SELECT_PROVS = new Set(['NS'])
+export const UNIT_SELECTION = 'selection'
 
 /**
  * EE 节奏卡的联邦标文字(类别名本身已经是人话名,标上只留项目缩写)。

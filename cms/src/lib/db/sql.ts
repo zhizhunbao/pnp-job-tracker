@@ -1122,8 +1122,10 @@ export const PILOT_QUOTA_COMMUNITIES = `SELECT community, province, type, first_
  * 2026-09-26 起不读魁省行:数据层今起把魁省 PSTQ 邀请记录写进同一张表,魁省不属省提名,
  * PSTQ 放哪 Frank 还没定 —— 读 pnp_draws 的四条查询(本条、DIMS_PNP_DRAWS、PNP_DRAWS_RECENT、PNP_DRAWS_FULL)一律先挡掉,
  * 定了位置另起专用查询。
+ * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:多取 unit(人数口径;时间线 selection 那种写「人入选」)。
  */
-export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url FROM pnp_draws
+export const PNP_DRAWS_ALL = `SELECT province, kind, draw_date, stream, score, scale, invitations, note, label, url,
+       COALESCE(unit, '') AS unit FROM pnp_draws
      WHERE COALESCE(province, '') <> 'QC'`
 
 /**

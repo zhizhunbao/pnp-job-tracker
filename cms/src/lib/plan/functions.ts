@@ -726,7 +726,7 @@ export function toDrawEvent(r: Row): TlEvent {
     date: day(r.draw_date), prov: prov, kind: kind,
     title: title, score: numOrNull(r.score), scale: text(r.scale),
     invitations: numOrNull(r.invitations), note: text(r.note),
-    importance: null, url: text(r.url), slug: '',
+    importance: null, url: text(r.url), slug: '', unit: text(r.unit),
   }
 }
 
@@ -744,7 +744,7 @@ export function toNewsEvent(r: Row): TlEvent {
   return {
     date: day(r.date), prov: region, kind: 'policy',
     title: text(r.title), score: null, scale: '', invitations: null, note: '',
-    importance: numOrNull(r.importance), url: '', slug: text(r.slug),
+    importance: numOrNull(r.importance), url: '', slug: text(r.slug), unit: '',
   }
 }
 

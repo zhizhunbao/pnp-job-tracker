@@ -91,6 +91,11 @@ export type OverviewDraw = {
    * 邀请数;null = 官方没公布。
    */
   invitations: number | null
+
+  /**
+   * 人数口径(selection = 从 EOI 池选中的人,写「入选」;2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   */
+  unit: string
 }
 
 /**

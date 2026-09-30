@@ -50,7 +50,7 @@ URL_HOME_CITY_HEAD,
   URL_CITY_API,
 WAGE_K,
   WAGE_K_MARK, WAGE_RANGE_SEP, WAGE_SIGN,
-TAG_FED, PROV_FED, DRAW_SELECT_PROVS, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
+TAG_FED, PROV_FED, UNIT_SELECTION, COL_DATE, COL_PROG, COL_STREAM, COL_SCORE, COL_INV, W_DATE,
   W_PROG, W_STREAM, W_SCORE, W_INV,
   COL_ACT, COL_HIRING_OCC, COL_LMIA_2Q, COL_VERDICT,
   HIRING_OCC_MAX, KEY_VERDICT_FACTOR_HEAD, KEY_VERDICT_HEAD,
@@ -3187,6 +3187,10 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
   if (x.r.stream_zh != null) {
     streamZh = x.r.stream_zh
   }
+  let unit = TEXT_NONE
+  if (x.r.unit != null) {
+    unit = x.r.unit
+  }
   return {
     date: String(x.r.draw_date),
     province: textOf(x.r.province),
@@ -3198,6 +3202,7 @@ function toPulseDraw(x: PulseDrawIn): PulseDraw {
     url: textOf(x.r.url),
     note: textOf(x.r.note),
     checklist: checklistOf(x.r.checklist),
+    unit,
   }
 }
 
@@ -3281,6 +3286,7 @@ export function toDrawCellRows(x: DrawCellRowsIn): DrawCellRow[] {
  * 洗一期抽选:官方英文名主文案 + 界面语言译名灰注(与旧版同口径)。
  * 2026-09-26 lead 定:官方口径是从 EOI 池选取的省(DRAW_SELECT_PROVS,NS)人数写「入选」—— 桌面表那一格写「N 人入选」,
  * 手机卡与门槛弹框的标换成「入选」(invLabel);词条复用省提名弹框的 pnpfacts.selPeople / pnpfacts.selected。
+ * 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:改认这一期的 unit 格(selection),不再按省名判。
  * NS 的日期官方只到月,ymd 只裁不补,照原样出(`2026-07`)。
  *
  * @param x 这一期与洗行要的上下文。
@@ -3294,7 +3300,7 @@ export function toDrawCellRow(x: DrawCellRowIn): DrawCellRow {
   const invitations = numTextOf(x.r.invitations)
   let invCell = invitations
   let invLabel = x.t('home.dr.inv')
-  if (DRAW_SELECT_PROVS.has(x.r.province)) {
+  if (x.r.unit === UNIT_SELECTION) {
     invLabel = x.t('pnpfacts.selected')
     if (x.r.invitations != null) {
       invCell = x.t('pnpfacts.selPeople', { n: x.r.invitations })

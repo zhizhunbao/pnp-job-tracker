@@ -1032,6 +1032,11 @@ export type TlEvent = {
    * policy:站内 /news/[slug]。
    */
   slug: string
+
+  /**
+   * 抽选的人数口径(pnp_draws.unit:invitation / selection / application;新闻给 '';2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」)。
+   */
+  unit: string
 }
 
 /**
