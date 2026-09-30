@@ -536,10 +536,10 @@ export const PROVINCES_INFO = `SELECT code, info FROM provinces`
  * (表格取年末值 + 进行年最新月,历史年其余月份消费端从未读过)。
  * 2026-09-11 pnpShare 键回归(Frank「应该知道省提名的比例才是有意义的」:省 PR 小表的占比行;
  * 09-10 曾随依赖度表撤而排除)。数据已走 /api/stats/macro 不进 HTML,行数敏感度降了一档。
+ * 2026-09-30 Frank「把脉页也加上魁省吧」:魁省行放回(省份段各指标表、PR 段魁省小表;省提名那几行照 MACRO_NA_ROWS 写不适用)。
  */
 export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS value, as_of FROM macro_series
-     WHERE geo <> 'QC'
-       AND NOT (key = 'unemp' AND freq = 'M'
+     WHERE NOT (key = 'unemp' AND freq = 'M'
             AND substring(period from 6 for 2) <> '12'
             AND substring(period from 1 for 4) < to_char(now(), 'YYYY'))`
 
@@ -1927,10 +1927,10 @@ export const NOC_ALL_TITLES = `SELECT noc, title, COALESCE(title_zh, '') AS titl
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL;把脉页只取前 50 行,魁省行还会挤掉省提名轮次)。
  * 2026-09-30 起前 50 行之外,没挤进去的省各补最近一轮(toPulseDraws;Frank「可以,补上吧」),
  * 补行也从这 1000 行里找(当天 ON 最近一轮排第 198)。
+ * 2026-09-30 Frank「把脉页也加上魁省吧」:魁省 PSTQ 轮次放回(每省至少一轮的补行同样照顾到魁省)。
  */
 export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''
-        AND COALESCE(province, '') <> 'QC'
       ORDER BY draw_date DESC LIMIT 1000`
 
 /**

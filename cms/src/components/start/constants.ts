@@ -1569,8 +1569,9 @@ export const REC_HALF = 0.5
 /**
  * 指标表的地区行序:全国 + 九省。魁北克撤出(Frank 2026-09-09「魁北克如果是专项的话,可以把其他 table 的魁北克行去掉」:
  * 它自成体系,另立专项;数据仍在库里)。
+ * 2026-09-30 Frank「把脉页也加上魁省吧」:放回,位置同 MACRO_GEO_ORDER(在招量第二);省提名那几行照 MACRO_NA_ROWS 写不适用。
  */
-export const IND_GEO_ORDER = ['CA', 'ON', 'BC', 'AB', 'SK', 'NS', 'MB', 'NB', 'NL', 'PE']
+export const IND_GEO_ORDER = ['CA', 'ON', 'QC', 'BC', 'AB', 'SK', 'NS', 'MB', 'NB', 'NL', 'PE']
 
 /**
  * 指标表的推荐列键。

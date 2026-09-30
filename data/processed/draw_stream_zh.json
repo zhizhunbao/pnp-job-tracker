@@ -187,5 +187,93 @@
  "Tourism and Hospitality Stream": {
   "zh": "旅游酒店业通道",
   "translatedAt": "2026-09-24T17:12:13.938844+00:00"
+ },
+ "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)": {
+  "zh": "阿省建筑技工优先通道",
+  "translatedAt": "2026-09-26T18:27:04.375056+00:00"
+ },
+ "International Education Stream (IES) – Graduate Internship Pathway (GIP)": {
+  "zh": "留加毕业生实习通道",
+  "translatedAt": "2026-09-26T18:28:56.686955+00:00"
+ },
+ "Stream 1: Highly qualified and specialized skills": {
+  "zh": "高技能专才通道",
+  "translatedAt": "2026-09-26T18:31:39.923882+00:00"
+ },
+ "Stream 2: Intermediate and manual skills": {
+  "zh": "中低技能通道",
+  "translatedAt": "2026-09-26T18:32:17.656700+00:00"
+ },
+ "Stream 3: Regulated professions": {
+  "zh": "受监管职业通道",
+  "translatedAt": "2026-09-26T18:33:13.090984+00:00"
+ },
+ "Stream 4: Exceptional talent": {
+  "zh": "杰出人才通道",
+  "translatedAt": "2026-09-26T18:33:52.533434+00:00"
+ },
+ "Labour & Express Entry": {
+  "zh": "面向联邦快通在职技工",
+  "translatedAt": "2026-09-26T21:03:11.466892+00:00"
+ },
+ "Alberta Opportunity Stream – Priority Sectors": {
+  "zh": "阿省优先行业通道",
+  "translatedAt": "2026-09-26T22:14:34.901200+00:00"
+ },
+ "Citizens of Ukraine Selection": {
+  "zh": "乌克兰公民专抽通道",
+  "translatedAt": "2026-09-26T22:17:11.389424+00:00"
+ },
+ "Graduate Internship Pathway (GIP)": {
+  "zh": "留学生实习移民通道",
+  "translatedAt": "2026-09-26T22:17:56.309676+00:00"
+ },
+ "Skilled Worker Overseas": {
+  "zh": "海外技术工人通道",
+  "translatedAt": "2026-09-26T22:19:21.175527+00:00"
+ },
+ "Masters Graduate stream": {
+  "zh": "硕士毕业生通道",
+  "translatedAt": "2026-09-26T22:20:07.428935+00:00"
+ },
+ "PhD Graduate stream": {
+  "zh": "博士毕业生通道",
+  "translatedAt": "2026-09-26T22:20:45.734650+00:00"
+ },
+ "Entrepreneur stream": {
+  "zh": "创业移民通道",
+  "translatedAt": "2026-09-26T22:21:18.576353+00:00"
+ },
+ "Employer job offer: International Student stream": {
+  "zh": "留学生雇主担保通道",
+  "translatedAt": "2026-09-26T22:22:15.220654+00:00"
+ },
+ "Employer job offer: In-Demand Skills stream": {
+  "zh": "紧缺职业雇主通道",
+  "translatedAt": "2026-09-26T22:22:40.254263+00:00"
+ },
+ "Skilled Worker in Manitoba": {
+  "zh": "曼省本地在职技工",
+  "translatedAt": "2026-09-26T23:49:11.847177+00:00"
+ },
+ "International Education Stream": {
+  "zh": "留学生毕业通道",
+  "translatedAt": "2026-09-26T23:50:11.279307+00:00"
+ },
+ "Close relative in Manitoba selection": {
+  "zh": "曼省近亲抽选通道",
+  "translatedAt": "2026-09-26T23:51:22.244933+00:00"
+ },
+ "Monthly EOI selections": {
+  "zh": "每月候选人抽选",
+  "translatedAt": "2026-09-26T23:52:22.550015+00:00"
+ },
+ "NLPNP (ITA batch)": {
+  "zh": "纽省提名邀请批次",
+  "translatedAt": "2026-09-30T00:40:20.399176+00:00"
+ },
+ "AIP (ITA batch)": {
+  "zh": "大西洋项目邀请批次",
+  "translatedAt": "2026-09-30T00:41:06.409768+00:00"
  }
 }
