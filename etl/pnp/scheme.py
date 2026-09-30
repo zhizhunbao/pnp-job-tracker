@@ -412,20 +412,6 @@ class BcProseIn:
 
 
 @dataclass
-class QcDrawIn:
-    """qc_draw_of() 入参:QC 一轮一个 stream 的折叠块 → 一行抽选(2026-09-26)。"""
-
-    date: str
-    """ISO 邀请日(两天一轮取后一天)。"""
-
-    stream: str
-    """所在 stream 段的标题原文(「Stream 1: Highly qualified and specialized skills」)。"""
-
-    body: str
-    """折叠块正文(已折空白;不换行空格的千分位已折成普通空格)。"""
-
-
-@dataclass
 class CachedDrawsIn:
     """cached_draws_of() 入参:只读 crawl 缓存的一省抽选(NS / QC,2026-09-26)。"""
 

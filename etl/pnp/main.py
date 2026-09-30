@@ -37,13 +37,14 @@ from pnp.functions import (
     build_mb_req, build_mb_req_swm, build_mb_stats, build_nb, build_nb_draws, build_nb_req, build_nl, build_nl_draws,
     build_nl_employers, build_nl_points, build_nl_req, build_ns, build_ns_draws, build_ns_req, build_on_draws,
     build_on_points, build_on_req, build_on_stats, build_pe, build_pe_aip, build_pe_draws, build_pe_req,
-    build_qc_draws, build_sk, build_sk_joboffer, fetch_mb_draw_pages,
+    build_sk, build_sk_joboffer, fetch_mb_draw_pages,
     fetch_bc_draw_archive,
     build_sk_points, build_sk_req, build_sk_stats, gate_quotes, run_tests,
     scrape_bc_nominations, scrape_ns_allocations, scrape_ns_stats, scrape_pe_iidi, translate_draw_streams,
     watch_on_workforce, watch_prov_allocations,
     scrape_nb_stats, scrape_nl_stats,
 )
+from pnp.qc.functions import build_qc_draws  # 2026-09-29 魁省拆成 pnp/qc 子域(按省拆首例),本门从子域取步骤
 
 UNITS = {
     "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats)],
