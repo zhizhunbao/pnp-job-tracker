@@ -13,8 +13,20 @@
 --   → ④ 本地跑 etl/pathways 与汇装、上传 mart、seed → ⑤ 抽查:
 --   SELECT key, job_linked, tags, teers, nocs, employers FROM pathways ORDER BY seq;
 
-ALTER TABLE pathways ADD COLUMN IF NOT EXISTS job_linked boolean DEFAULT true;  -- 要本省 offer 或本省工作经验 = true(通道卡上段);不看工作 = false(下段)
-ALTER TABLE pathways ADD COLUMN IF NOT EXISTS tags jsonb;                       -- 条件标签键 string[]:["ee"]、["localGrad"]、["pgwp"]、["noPgwp"]…(三语文案在 cms i18n)
-ALTER TABLE pathways ADD COLUMN IF NOT EXISTS teers jsonb;                      -- 本岗 TEER 在内才列上段 number[];空 = 不限
-ALTER TABLE pathways ADD COLUMN IF NOT EXISTS nocs jsonb;                       -- 本岗职业码在内才列上段 string[];空 = 不限(有职业清单的照旧用 occ_labels)
-ALTER TABLE pathways ADD COLUMN IF NOT EXISTS employers jsonb;                  -- 雇主名(归一后)命中才列上段 string[];空 = 不限
+-- 2026-09-30 Frank 批「执行」后已在生产跑过(29 行,job_linked 全为 true)。首跑时行尾注释里的分号被逐条执行脚本当成语句分隔,
+-- 只加上了第一列,其余四列去掉注释补跑;注释因此挪到各语句上方独占一行、不带分号,文件本身可原样重跑(IF NOT EXISTS)。
+
+-- job_linked:要本省 offer 或本省工作经验 = true(通道卡上段),不看工作 = false(下段)
+ALTER TABLE pathways ADD COLUMN IF NOT EXISTS job_linked boolean DEFAULT true;
+
+-- tags:条件标签键 string[],如 ee、localGrad、pgwp、noPgwp(三语文案在 cms i18n)
+ALTER TABLE pathways ADD COLUMN IF NOT EXISTS tags jsonb;
+
+-- teers:本岗 TEER 在内才列上段 number[],空 = 不限
+ALTER TABLE pathways ADD COLUMN IF NOT EXISTS teers jsonb;
+
+-- nocs:本岗职业码在内才列上段 string[],空 = 不限(有职业清单的照旧用 occ_labels)
+ALTER TABLE pathways ADD COLUMN IF NOT EXISTS nocs jsonb;
+
+-- employers:雇主名(归一后)命中才列上段 string[],空 = 不限
+ALTER TABLE pathways ADD COLUMN IF NOT EXISTS employers jsonb;
