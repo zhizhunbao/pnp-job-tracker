@@ -558,7 +558,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-27 추첨 카드의 연간 누계 줄을 배정 카드의 한 열로 이동; pnpdraws.ytdInv / ytdSel 삭제
   // 2026-09-27 NS 선정 수는 EOI 풀 전체(NSNP와 AIP가 같은 풀), 옆의 총수는 NSNP만
   // 2026-09-27 초청은 신청 초청(지명이 아님);날짜가 다른 열은 열마다 기준일 표시
-  'pnpquota.inv': '신청 초청', 'pnpquota.sel': '선정 완료(AIP 포함)', 'pnpquota.asOfCol': '{col} {date} 기준',
+  // 2026-09-29 추첨 카드 개편: 노바스코샤 선정(AIP 포함) 열 삭제(합계는 주 추첨 카드로), pnpquota.sel 폐기
+  'pnpquota.inv': '신청 초청', 'pnpquota.asOfCol': '{col} {date} 기준',
   // 2026-09-27 추첨 카드 펼친 행: 어떤 선정 항목인지(데이터 계층 selection 코드 → 화면 문구)
   'pnpdraws.sep': ', ',
   'pnpsel.occ': '직종 지정', 'pnpsel.top': '고득점자({cat})', 'pnpsel.topAny': '고득점자', 'pnpsel.franco': '불어권',
@@ -598,6 +599,19 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.metro-vancouver': '메트로 밴쿠버', 'pnpgate.area.rest-of-bc': '메트로 밴쿠버 외',
   'pnpgate.area.st-johns': '세인트존스', 'pnpgate.area.rest-of-nl': '세인트존스 외',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
+  // 2026-09-29 추첨 카드 개편: 상한 인원, 동일 풀 / 추첨 없음 / 올해 없음 안내, 카드 합계, 개편 전과 AIP 카드
+  'pnpdraws.below': '{n}개 미만 초청',
+  'pnpdraws.pool': '주정부 추천과 AIP를 같은 풀에서 선발, 인원에 AIP 포함',
+  'pnpdraws.direct': '고용주 오퍼가 있으면 추첨 없이 바로 신청',
+  'pnpdraws.none': '{year}년 아직 추첨 없음',
+  'pnpdraws.foot': '{year}년 {rounds}, 총 {count}',
+  'pnpdraws.footMin': '{year}년 {rounds}, 최소 {count}',
+  'pnpdraws.footRounds': '{year}년 {rounds}',
+  'pnpdraws.footBelow': '이 중 {rounds}는 공식 발표가 “{n} 미만”뿐',
+  'pnpreform.head': '개편 전 추첨',
+  'pnpaip.head': 'AIP 추첨',
+  'pnpaip.pool': '주정부 추천과 같은 풀에서 선발, 인원은 주 추첨에 포함',
+  'pnpaip.direct': '지정 고용주가 바로 추천 신청, 추첨 없음',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',

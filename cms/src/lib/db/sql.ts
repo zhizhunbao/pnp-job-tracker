@@ -554,13 +554,16 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
  * 省提名弹框「{年} 年配额」卡与抽选卡「全年已邀请」那一行的原料(2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
  * 当年(统计期或截至日以今年开头)的配额 / 已发提名 / 剩余,全省口径加通道级(scope_kind = 'stream',阿省到通道;
  * 萨省的行业档 sector 不取),另带汇装按抽选行加总的全年已邀请 / 已入选(invitations_ytd / selections_ytd,缺一轮不出)。
+ * 2026-09-29 抽选卡重排:再带下限行 invitations_ytd_min(AB / BC 有轮次官方只写上限)、AIP 申请入选 applications_ytd,
+ * 与 AIP 那一份(scope_kind = 'program',「AIP 抽选」卡底读)。
  */
 export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') AS scope_kind,
        COALESCE(stream_key, '') AS stream_key, value, COALESCE(as_of, '') AS as_of, COALESCE(period, '') AS period,
        COALESCE(url, '') AS url
      FROM pnp_ops_stats
-     WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'selections_ytd')
-       AND COALESCE(scope_kind, '') IN ('', 'stream') AND value IS NOT NULL
+     WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'invitations_ytd_min',
+       'selections_ytd', 'applications_ytd')
+       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program') AND value IS NOT NULL
        AND (COALESCE(period, '') LIKE to_char(now(), 'YYYY') || '%' OR COALESCE(as_of, '') LIKE to_char(now(), 'YYYY') || '%')
      ORDER BY province, metric, seq`
 
@@ -570,15 +573,18 @@ export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') 
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:点开看原句撤了,offer 条文与原句两列不再取。
  * 不按省筛:全国几百行一份,走 10 分钟单件缓存;卡只在登记了通道对照的省出(先上 AB)。applies_condition 同全量那条走 to_jsonb 防缺列。
  * 2026-09-29 Frank「照这个做」(安省门槛卡):多取语言免考 / 工资 / 经验替代路径三类与排除职业码(excludes_noc)。
+ * 同日抽选卡重排:再带「不经抽选」行(factor = 'eoiDraw':SK 持 offer 直接申请、PE 的 AIP 由指定雇主直接递背书申请)与 program 列
+ * —— 抽选卡按它写「不经抽选」、AIP 卡按 program = 'AIP' 那行写;门槛卡按因素点名取行,不读这一类。
  */
 export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, value, unit, COALESCE(applies_teer, '') AS applies_teer,
        COALESCE(applies_noc, '') AS applies_noc, COALESCE(excludes_noc, '') AS excludes_noc,
        COALESCE(applies_area, '') AS applies_area,
        COALESCE(to_jsonb(q) ->> 'applies_condition', '') AS applies_condition, COALESCE(basis, '') AS basis,
-       COALESCE(url, '') AS url, seq
+       COALESCE(url, '') AS url, seq, COALESCE(program, '') AS program
      FROM pnp_requirements q
-     WHERE program = 'PNP' AND factor IN ('offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage',
-       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence')
+     WHERE (program = 'PNP' AND factor IN ('offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage',
+       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence'))
+       OR (factor = 'eoiDraw' AND op = 'none')
      ORDER BY province, stream, seq`
 
 // =========================================================================
@@ -1763,9 +1769,11 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL)。
  * 2026-09-26 400 → 1000:mart 抽选改成保留最近 12 个月全部轮次(各省补全后非魁省约 380 行),400 只剩约 20 行余量。
  * 2026-09-27 多取 selection(同一组同一天几行各是哪一项选取;列 2026-09-28 按 docs/sql/pnp-draws-selection-20260928.sql 加)。
+ * 2026-09-29 抽选卡重排多取 program / unit / invitations_below(列按 docs/sql/pnp-draws-program-unit-20260929.sql 加)。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
-       score, scale, invitations, note, label, url, fetched, COALESCE(selection, '') AS selection
+       score, scale, invitations, note, label, url, fetched, COALESCE(selection, '') AS selection,
+       COALESCE(program, '') AS program, COALESCE(unit, '') AS unit, invitations_below AS "invitationsBelow"
      FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 1000`
 
 /**

@@ -906,6 +906,21 @@ export type PnpDraw = {
    * path:a+b;认不出空串;2026-09-27 Frank「照改,加这一列」)。
    */
   selection: string
+
+  /**
+   * 这一轮的人数属于哪个项目(PNP / AIP / PNP+AIP / PSTQ / EE;认不出空串;2026-09-29 抽选卡重排)。
+   */
+  program: string
+
+  /**
+   * 人数数的是什么(invitation / selection / application;认不出空串;2026-09-29 抽选卡重排)。
+   */
+  unit: string
+
+  /**
+   * 官方人数只写上限时的上限(「Less than 10」→ 10);确数行为 null(2026-09-29 抽选卡重排)。
+   */
+  invitationsBelow: number | null
 }
 
 /**
@@ -4933,6 +4948,11 @@ export type PnpReqRow = {
    * 表内序号。
    */
   seq: number
+
+  /**
+   * 项目(PNP / AIP;2026-09-29 抽选卡重排起「不经抽选」那类行也取,AIP 卡按它挑行)。
+   */
+  program: string
 }
 
 /**

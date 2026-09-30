@@ -629,8 +629,9 @@ export const COLS_PNP_OCCUPATIONS = ['province', 'stream', 'label', 'type', 'pro
  * pnp_draws 列。⚠️ stream_zh 是 #280 新列:必须先在生产跑 docs/sql/pnp-draws-stream-zh.sql,
  * 否则这一段撞 42703 → 整个 seed 事务回滚(表现为 /seed 500、无 body)。
  * 2026-09-27 加 selection(同一组同一天几行各是哪一项;生产列 2026-09-28 已按 docs/sql/pnp-draws-selection-20260928.sql 加好)。
+ * 2026-09-29 加 program / unit / invitations_below(抽选卡重排;生产列须先按 docs/sql/pnp-draws-program-unit-20260929.sql 加)。
  */
-export const COLS_PNP_DRAWS = ['province', 'kind', 'draw_date', 'stream', 'stream_zh', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched', 'checklist', 'selection']
+export const COLS_PNP_DRAWS = ['province', 'kind', 'draw_date', 'stream', 'stream_zh', 'score', 'scale', 'invitations', 'note', 'label', 'url', 'fetched', 'checklist', 'selection', 'program', 'unit', 'invitations_below']
 
 /**
  * pnp_score_factors 列。

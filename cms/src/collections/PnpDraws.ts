@@ -19,6 +19,12 @@ export const PnpDraws: CollectionConfig = {
     // 2026-09-27 Frank「照改,加这一列」:同一组同一天几行各是哪一项选取(etl/pnp 按官方原句判的短码;认不出空串)。
     // ⚠️ 新列,生产库已按 docs/sql/pnp-draws-selection-20260928.sql 加好(2026-09-28 执行),部署本改动后清 seed_state 再灌。
     { name: 'selection', type: 'text', admin: { description: '选取项短码 occ / top:N / franco / grad / wage:H:Y / points / path:a+b' } },
+    // 2026-09-29 抽选卡重排(Frank「按你建议」「如果改一个地方,是不是所有省份都得改一遍」):这一轮属于哪个项目、人数数的是什么、
+    // 官方只写上限时的上限(etl/pnp 落盘门逐行判好,消费端只认这三格,不再按省名写死)。
+    // ⚠️ 新列,生产库必须先手动跑 docs/sql/pnp-draws-program-unit-20260929.sql,再部署本改动 + 清 seed_state 再灌。
+    { name: 'program', type: 'text', admin: { description: '项目 PNP / AIP / PNP+AIP(同池)/ PSTQ / EE;认不出空串' } },
+    { name: 'unit', type: 'text', admin: { description: '人数口径 invitation 邀请 / selection 入选的人 / application 入选的申请' } },
+    { name: 'invitationsBelow', type: 'number', admin: { description: '官方人数只写上限时的上限(AB「Less than 10」、BC「<5」);确数行为空' } },
     { name: 'score', type: 'number', admin: { description: '最低邀请分 — 省自评分制,非 CRS!展示必须带 scale' } },
     { name: 'scale', type: 'text', admin: { description: '分制名(SIRS/WEOI/MPNP EOI)' } },
     { name: 'invitations', type: 'number' },

@@ -21,12 +21,12 @@ import { DAY_MS } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
   COUNT_AIP, COUNT_INV, COUNT_ROW_KEY, COUNT_SEL, DRAWS_FORM_GROUPS, DRAWS_FORM_MONTHLY, DRAWS_FORM_NONE,
-  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, DRAW_SELECT_PROVS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
+  DRAWS_ALL_KEY, DRAWS_FORM_STATUS, HOST_RE, LANG_EN, LINK_ARROW, MONTH_DATE_LEN, MONTHLY_ROWS_MAX,
   MONTHS_KEYS,
   NUM_LOCALE, OPS_ALLOCATION, OPS_SCOPE_STREAM, PNP_GEN_HEAD, QUOTA_COLS, ROUNDS_KEYS, YEAR_LEN,
   SEL_CAT_HEAD, SEL_CODE_RE, SEL_KEYS, SEL_PATH, SEL_PATH_HEAD, SEL_PATH_SEP, SEL_POINTS, SEL_TOP, SEL_WAGE, TAG_V_GRAY,
   TAG_V_IMP, TAG_V_OK, TAG_V_WARN, AIP_ALIAS_RE, AIP_DROP_RE, AIP_MISS, AIP_NA, AIP_ON, AIP_SUFFIX_RE, ATLANTIC_PROVS,
-  CARET_CLOSED, CARET_OPEN, CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX, DRAW_STREAM_AIP,
+  CARET_CLOSED, CARET_OPEN, CAT_JOIN, CLS_SEP, COLOR_CAT, COLOR_FED_OTHER, DASH, DAY_START_SUFFIX,
   EE_DORMANT_MONTHS, EV_EMPLOYER_CLICK, FED_CAT_KEY, FED_CEC, FED_FRENCH, FED_TYPE_COLOR,
   KEY_EE_ABOVE, KEY_EE_NOCRS, KEY_EE_NODRAW, KEY_EE_NONE, KEY_LMIA_LOWONLY, KEY_LMIA_NA,
   KEY_NOC_EXACT, KEY_NOC_MINOR, KEY_NOC_NOPROFILE, KEY_NOC_UNCAT, KEY_PROV_EXCLUDED, KEY_PROV_GENERIC, KEY_PROV_NAMED,
@@ -42,8 +42,10 @@ import {
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS,
-  VALUE_CODE_SEP, URL_API_JOBS_PNP, AIP_DRAW_PROVS, K_KICKER_GROUP, K_KICKER_PROV,
+  VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
+  DRAW_NO_SCORE_PROVS, DRAWS_AIP_ALL_KEY, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
+  PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -62,6 +64,8 @@ import type {
   ReqAppliesIn, ZonedLinesIn, PnpBlockIn,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
+  BelowLineIn, CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
+  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -622,17 +626,6 @@ function latestSinceOf(x: LatestSinceIn): PnpDraw | null {
     }
   }
   return best
-}
-
-/**
- * 抽选卡走不走分组形(PnpDrawGroups):带日期的轮次分组,或按月公布的那一组(2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」)。
- * 同日 Frank 勾「安省改一行组头」(看过效果图):改制现状(安省)也改走分组卡的一行组头(statusGroupOf),三种形都走这一张卡,出卡即走分组卡。
- *
- * @param form 抽选卡的形。
- * @returns 走分组卡 = true。
- */
-export function drawGroupsShownOf(form: DrawsForm): boolean {
-  return form !== DRAWS_FORM_NONE
 }
 
 /**
@@ -1326,24 +1319,40 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  * 2026-09-27 按月公布的省(NS)也走这张卡:按月那一组(monthlyGroupOf)排在带日期的各组之后(NS 只有这一组)。
  * 同日改制省(安省)也走这张卡:只出改制后那一组(statusGroupOf),改制前的旧通道分组不出(旧通道已全部废止)。
  *
- * @param x 取词函数、界面语言、省码、全部抽选行与本岗对应的组。
- * @returns 抽选卡;本省分不出组给 null。
+ * 2026-09-29 抽选卡重排(Frank「按你建议」;设计稿 docs/design/省提名抽选卡重排-20260929.md):只列这一年(年份与配额卡标题同一个来源,
+ * cardYearOf)、只列不属 AIP 的轮次(AIP 分去 aipCardOf;认数据层逐行打好的 program 格,不再按省名判);标题下灰字(NB 不按分数、
+ * NS 同池含 AIP)由这里给(原在组件里按 DRAW_NO_SCORE_PROVS 写死);卡底合计行(footLinesOf);这一年一组都分不出来时交
+ * emptyPnpCardOf(SK 写不经抽选、往年有轮次写今年还没有抽选)。安省改制前的轮次分去 preReformCardOf,这里只剩改制后那一组。
+ * 魁省不出(不参加 PNP,同 drawsFormOf 的口径)。
+ *
+ * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组、省默认通道的抽选组、当年配额行、门槛行与卡只列的那一年。
+ * @returns 抽选卡;本省没有可说的给 null。
  */
 export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
+  if (x.province === PROV_QC || x.province === TEXT_NONE) {
+    return null
+  }
+  const draws = yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false })
   const gx: PnpDrawGroupsOfIn = {
     t: x.t,
     lang: x.lang,
     province: x.province,
-    draws: x.draws,
+    draws,
     hitStreams: x.hitStreams,
     genDraw: x.genDraw,
   }
+  const reform = reformOf({ province: x.province })
   let groups: EeCmpGroup[] = []
-  if (drawsFormOf({ province: x.province, draws: x.draws }) === DRAWS_FORM_STATUS) {
+  let rows = roundsOf(draws)
+  let total = true
+  if (reform != null) {
     const status = statusGroupOf(gx)
     if (status != null) {
       groups.push(status)
     }
+    const split = reformSplitOf({ rows, since: reform.since })
+    rows = split.after
+    total = split.before.length === 0
   } else {
     groups = pnpDrawGroupsOf(gx)
     const monthly = monthlyGroupOf(gx)
@@ -1351,17 +1360,9 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
       groups.push(monthly)
     }
   }
+  const lines = drawLinesOf({ t: x.t, province: x.province, rows })
   if (groups.length === 0) {
-    return null
-  }
-  const hits: EeCmpGroup[] = []
-  const others: EeCmpGroup[] = []
-  for (const g of groups) {
-    if (g.hit) {
-      hits.push(g)
-    } else {
-      others.push(g)
-    }
+    return emptyPnpCardOf({ t: x.t, province: x.province, draws: x.draws, reqs: x.reqs, year: x.year, lines })
   }
   const first = firstDrawOf(drawRowsOf({ province: x.province, draws: x.draws, reform: null, limit: null }))
   let label = TEXT_NONE
@@ -1370,14 +1371,454 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     label = first.label
     source = sourceLinkOf({ t: x.t, url: first.url })
   }
-  return {
+  return groupsCardOf({
     title: x.t('pnpdraws.head'),
     label,
+    groups,
+    source,
+    lines,
+    foot: footLinesOf({ t: x.t, province: x.province, year: x.year, rows, ops: x.ops, scopeKind: TEXT_NONE, total }),
+    allKey: DRAWS_ALL_KEY,
+  })
+}
+
+/**
+ * 「改制前的抽选」卡(2026-09-29 抽选卡重排,Frank「ON 可以单独设计一个卡,列出历史的」「按你建议」):改制省(安省)这一年改制生效日之前的
+ * 轮次,按官方通道分组(旧通道已全部废止,组名下灰字写直白名);卡底合计:这一年改制后还没有轮次时,汇装的全年合计恰好就是这些轮次,
+ * 写轮数与份数;改制后有了轮次,份数分不开,只写轮数。
+ *
+ * @param x 同 drawCardOf。
+ * @returns 这张卡;不是改制省或这一年改制前没有轮次给 null。
+ */
+export function preReformCardOf(x: DrawCardOfIn): DrawCard | null {
+  const reform = reformOf({ province: x.province })
+  if (reform == null) {
+    return null
+  }
+  const draws = yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false })
+  const split = reformSplitOf({ rows: roundsOf(draws), since: reform.since })
+  const first = split.before[0]
+  if (first == null) {
+    return null
+  }
+  const groups = pnpDrawGroupsOf({
+    t: x.t,
+    lang: x.lang,
+    province: x.province,
+    draws: split.before,
+    hitStreams: x.hitStreams,
+    genDraw: x.genDraw,
+  })
+  return groupsCardOf({
+    title: x.t('pnpreform.head'),
+    label: first.label,
+    groups,
+    source: sourceLinkOf({ t: x.t, url: first.url }),
+    lines: [],
+    foot: footLinesOf({
+      t: x.t,
+      province: x.province,
+      year: x.year,
+      rows: split.before,
+      ops: x.ops,
+      scopeKind: TEXT_NONE,
+      total: split.after.length === 0,
+    }),
+    allKey: DRAWS_REFORM_ALL_KEY,
+  })
+}
+
+/**
+ * 「AIP 抽选」卡(2026-09-29 抽选卡重排,Frank「AIP 是不是应该单独的卡」「按你建议」):大西洋四省(AIP 的适用范围)各出一张 ——
+ * 这一年有 AIP 的轮次(NB 的 AIP 组、NL 每批拆出来的 AIP 份数)就按组列、卡底写合计(汇装 AIP 那一份);没有轮次交 aipLineCardOf
+ * 写一行说明(同池 / 不经抽选 / 今年还没有)。
+ *
+ * @param x 同 drawCardOf。
+ * @returns 这张卡;不在大西洋四省、或什么都说不出给 null。
+ */
+export function aipCardOf(x: DrawCardOfIn): DrawCard | null {
+  if (ATLANTIC_PROVS.includes(x.province) === false) {
+    return null
+  }
+  const rows = roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: true }))
+  const first = rows[0]
+  if (first == null) {
+    return aipLineCardOf(x)
+  }
+  const groups = pnpDrawGroupsOf({
+    t: x.t,
+    lang: x.lang,
+    province: x.province,
+    draws: rows,
+    hitStreams: x.hitStreams,
+    genDraw: x.genDraw,
+  })
+  return groupsCardOf({
+    title: x.t('pnpaip.head'),
+    label: PROGRAM_AIP,
+    groups,
+    source: sourceLinkOf({ t: x.t, url: first.url }),
+    lines: [],
+    foot: footLinesOf({
+      t: x.t,
+      province: x.province,
+      year: x.year,
+      rows,
+      ops: x.ops,
+      scopeKind: OPS_SCOPE_PROGRAM,
+      total: true,
+    }),
+    allKey: DRAWS_AIP_ALL_KEY,
+  })
+}
+
+/**
+ * 「AIP 抽选」卡这一年没有 AIP 轮次时写的那一行(2026-09-29 抽选卡重排):本省抽选的轮次是省提名与 AIP 同池(NS)→ 指回本省抽选;
+ * 门槛表有 AIP 的「不经抽选」行(PE:由指定雇主直接递背书申请)→ 写它、挂出处;往年有 AIP 轮次 → 今年还没有;都没有不出卡。
+ *
+ * @param x 同 drawCardOf。
+ * @returns 只有一行说明的卡;说不出给 null。
+ */
+function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
+  const title = x.t('pnpaip.head')
+  const pnp = roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false }))
+  if (hasPoolOf(pnp)) {
+    return lineCardOf({ title, lines: [x.t('pnpaip.pool')], source: null, allKey: DRAWS_AIP_ALL_KEY })
+  }
+  const direct = noDrawReqOf({ reqs: x.reqs, province: x.province, program: PROGRAM_AIP })
+  if (direct != null) {
+    return lineCardOf({
+      title,
+      lines: [x.t('pnpaip.direct')],
+      source: sourceLinkOf({ t: x.t, url: direct.url }),
+      allKey: DRAWS_AIP_ALL_KEY,
+    })
+  }
+  if (roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: TEXT_NONE, aip: true })).length > 0) {
+    return lineCardOf({
+      title,
+      lines: [x.t('pnpdraws.none', { year: x.year })],
+      source: null,
+      allKey: DRAWS_AIP_ALL_KEY,
+    })
+  }
+  return null
+}
+
+/**
+ * 本省抽选卡这一年一组都分不出来时(2026-09-29 抽选卡重排,Frank「没有抽选卡 要标上 没有抽选卡啊」「sk 怎么这么特别」):门槛表有
+ * 省提名的「不经抽选」行(SK:持雇主 offer 直接递申请)→ 写它、挂出处;本省往年有轮次 → 今年还没有抽选;都没有才不出卡。
+ *
+ * @param x 取词函数、省码、全部抽选行、门槛行、那一年与已有的灰字说明。
+ * @returns 只有说明行的卡;说不出给 null。
+ */
+function emptyPnpCardOf(x: EmptyCardIn): DrawCard | null {
+  const title = x.t('pnpdraws.head')
+  const direct = noDrawReqOf({ reqs: x.reqs, province: x.province, program: PROGRAM_PNP })
+  if (direct != null) {
+    return lineCardOf({
+      title,
+      lines: x.lines.concat([x.t('pnpdraws.direct')]),
+      source: sourceLinkOf({ t: x.t, url: direct.url }),
+      allKey: DRAWS_ALL_KEY,
+    })
+  }
+  if (roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: TEXT_NONE, aip: false })).length > 0) {
+    return lineCardOf({
+      title,
+      lines: x.lines.concat([x.t('pnpdraws.none', { year: x.year })]),
+      source: null,
+      allKey: DRAWS_ALL_KEY,
+    })
+  }
+  return null
+}
+
+/**
+ * 本省某一年的抽选行(2026-09-29 抽选卡重排):只留本省;抽选行再只留日期落在这一年的('' = 不筛年)、项目合这张卡的
+ * (aip = true 只要 AIP 的,false 只要不属 AIP 的 —— 省提名、同池与认不出的);通告行照旧跟着(安省改制那一组要读它)。
+ *
+ * @param x 省码、全部抽选行、那一年与要不要 AIP 的。
+ * @returns 筛过的行(保持来稿序)。
+ */
+function yearDrawsOf(x: YearDrawsIn): PnpDraw[] {
+  const rows: PnpDraw[] = []
+  for (const d of x.draws) {
+    if (d.province !== x.province) {
+      continue
+    }
+    if (d.kind === KIND_DRAW && (d.drawDate.startsWith(x.year) === false || (d.program === PROGRAM_AIP) !== x.aip)) {
+      continue
+    }
+    rows.push(d)
+  }
+  return rows
+}
+
+/**
+ * 只留抽选行(通告行不算一轮;2026-09-29 抽选卡重排)。
+ *
+ * @param draws 抽选行与通告行。
+ * @returns 抽选行。
+ */
+function roundsOf(draws: PnpDraw[]): PnpDraw[] {
+  const rows: PnpDraw[] = []
+  for (const d of draws) {
+    if (d.kind === KIND_DRAW) {
+      rows.push(d)
+    }
+  }
+  return rows
+}
+
+/**
+ * 这一年的轮次按改制生效日一分为二(2026-09-29 抽选卡重排)。
+ *
+ * @param x 轮次与改制生效日。
+ * @returns 改制前、改制后两份。
+ */
+function reformSplitOf(x: ReformSplitIn): ReformSplitOut {
+  const before: PnpDraw[] = []
+  const after: PnpDraw[] = []
+  for (const d of x.rows) {
+    if (d.drawDate < x.since) {
+      before.push(d)
+    } else {
+      after.push(d)
+    }
+  }
+  return { before, after }
+}
+
+/**
+ * 本省抽选卡标题下的灰字(2026-09-29 抽选卡重排):官方明说不按分数抽选的省(DRAW_NO_SCORE_PROVS,原在组件里判)、
+ * 这一年的轮次是省提名与 AIP 同池(program = PNP+AIP,NS)注明人数含 AIP(Frank「本省抽选的和 等于 年度配额的 已邀请吗」)。
+ *
+ * @param x 取词函数、省码与卡里列的轮次。
+ * @returns 灰字(一行一条)。
+ */
+function drawLinesOf(x: DrawLinesIn): string[] {
+  const lines: string[] = []
+  if (DRAW_NO_SCORE_PROVS.has(x.province)) {
+    lines.push(x.t('pnpdraws.noScore'))
+  }
+  if (hasPoolOf(x.rows)) {
+    lines.push(x.t('pnpdraws.pool'))
+  }
+  return lines
+}
+
+/**
+ * 这些轮次里有没有省提名与 AIP 同池、官方只发合计的(program = PNP+AIP;2026-09-29 抽选卡重排)。
+ *
+ * @param rows 轮次。
+ * @returns 有 = true。
+ */
+function hasPoolOf(rows: PnpDraw[]): boolean {
+  for (const d of rows) {
+    if (d.program === PROGRAM_POOL) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 门槛表里本省某项目的「不经抽选」那一行(factor = eoiDraw、op = none;2026-09-29 抽选卡重排)。
+ *
+ * @param x 门槛行、省码与项目。
+ * @returns 那一行;没有给 null。
+ */
+function noDrawReqOf(x: NoDrawReqIn): PnpReq | null {
+  for (const r of x.reqs) {
+    if (r.province === x.province && r.factor === FACTOR_EOI_DRAW && r.program === x.program) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 有轮次可列的抽选卡:本岗那几组(浅蓝组头行,开关收起时也留着)与其余组分开(2026-09-29 自 drawCardOf 体内提出,三张卡共用)。
+ *
+ * @param x 标题、轮次标签、各组、来源、灰字、卡底合计与开关键。
+ * @returns 抽选卡。
+ */
+function groupsCardOf(x: GroupsCardIn): DrawCard {
+  const hits: EeCmpGroup[] = []
+  const others: EeCmpGroup[] = []
+  for (const g of x.groups) {
+    if (g.hit) {
+      hits.push(g)
+    } else {
+      others.push(g)
+    }
+  }
+  return {
+    title: x.title,
+    label: x.label,
     hits,
     others,
-    total: groups.length,
-    source,
+    total: x.groups.length,
+    source: x.source,
+    lines: x.lines,
+    foot: x.foot,
+    allKey: x.allKey,
   }
+}
+
+/**
+ * 没有轮次可列、只写说明行的抽选卡(2026-09-29 抽选卡重排:「没有就标上」,不静默缺卡)。
+ *
+ * @param x 标题、说明行、来源与开关键。
+ * @returns 抽选卡(没有组)。
+ */
+function lineCardOf(x: LineCardIn): DrawCard {
+  return {
+    title: x.title,
+    label: TEXT_NONE,
+    hits: [],
+    others: [],
+    total: 0,
+    source: x.source,
+    lines: x.lines,
+    foot: [],
+    allKey: x.allKey,
+  }
+}
+
+/**
+ * 卡底合计行(2026-09-29 抽选卡重排,Frank「本省抽选的和 等于 年度配额的 已邀请吗」「按你建议」):「{年} 年 N 轮,共 X 份邀请」——
+ * 轮数数卡里列的(同一组同一天几行算一轮,与组头「N 轮」同一数法;按月那一组数月份),份数读汇装的全年合计(不在前端加,与配额卡
+ * 「已发邀请」同一个数);下限指标写「至少」;汇装那一份没出(有一轮没公布)或份数分不开(安省改制前后两张卡)只写轮数;
+ * 有轮次官方只写了上限再补一行(belowLineOf)。
+ *
+ * @param x 取词函数、省码、那一年、卡里列的轮次、配额行、口径层级与份数能不能写。
+ * @returns 合计行(一行一条;没有轮次给空列)。
+ */
+function footLinesOf(x: FootLinesIn): string[] {
+  const keys = new Set<string>()
+  for (const d of x.rows) {
+    keys.add(d.stream + KEY_SEP + d.drawDate)
+  }
+  if (keys.size === 0) {
+    return []
+  }
+  const rounds = roundsTextOf({ t: x.t, rows: x.rows, n: keys.size })
+  const row = ytdPickOf({ ops: x.ops, province: x.province, scopeKind: x.scopeKind })
+  const count = ytdCountTextOf({ t: x.t, row })
+  const lines: string[] = []
+  if (row == null || count === TEXT_NONE || x.total === false) {
+    lines.push(x.t('pnpdraws.footRounds', { year: x.year, rounds }))
+  } else if (row.metric === OPS_INV_YTD_MIN) {
+    lines.push(x.t('pnpdraws.footMin', { year: x.year, rounds, count }))
+  } else {
+    lines.push(x.t('pnpdraws.foot', { year: x.year, rounds, count }))
+  }
+  const below = belowLineOf({ t: x.t, rows: x.rows })
+  if (below !== TEXT_NONE) {
+    lines.push(below)
+  }
+  return lines
+}
+
+/**
+ * 本省一份全年合计(汇装按抽选行加总的那几个指标;口径层级 '' = 省提名那一份,program = AIP 那一份;2026-09-29 抽选卡重排)。
+ *
+ * @param x 配额行、省码与口径层级。
+ * @returns 那一行;没有给 null。
+ */
+function ytdPickOf(x: YtdPickIn): PnpOps | null {
+  for (const r of x.ops) {
+    if (r.province === x.province && r.scopeKind === x.scopeKind && YTD_COUNT_KIND[r.metric] != null) {
+      return r
+    }
+  }
+  return null
+}
+
+/**
+ * 合计份数那几个字(「13,083 份邀请」「3,242 人入选」「632 份申请入选」;口径按指标名,YTD_COUNT_KIND;2026-09-29 抽选卡重排)。
+ *
+ * @param x 取词函数与挑到的合计行。
+ * @returns 文字;没有合计行或指标名认不出给 ''。
+ */
+function ytdCountTextOf(x: YtdCountIn): string {
+  if (x.row == null) {
+    return TEXT_NONE
+  }
+  const kind = YTD_COUNT_KIND[x.row.metric]
+  if (kind == null) {
+    return TEXT_NONE
+  }
+  return x.t(COUNT_ROW_KEY[kind], { n: x.row.value.toLocaleString(NUM_LOCALE) })
+}
+
+/**
+ * 「N 轮」/「N 个月」(卡里列的是按月那一组就数月份;英文单复数走 one / many 两个词条;2026-09-29 抽选卡重排)。
+ *
+ * @param x 取词函数、卡里列的轮次与个数。
+ * @returns 文字。
+ */
+function roundsTextOf(x: RoundsTextIn): string {
+  let keys = ROUNDS_KEYS
+  const first = x.rows[0]
+  if (first != null && isMonthOnly(first.drawDate)) {
+    keys = MONTHS_KEYS
+  }
+  if (x.n === 1) {
+    return x.t(keys.one, { n: x.n })
+  }
+  return x.t(keys.many, { n: x.n })
+}
+
+/**
+ * 「其中 N 轮官方只写「少于 X」」(官方人数格只写了上限的轮次,合计里按 0 计;2026-09-29 抽选卡重排,Frank「按你建议」)。
+ * 轮数同卡底合计的数法(同一组同一天几行算一轮);几种上限用界面语言的顿号连。
+ *
+ * @param x 取词函数与卡里列的轮次。
+ * @returns 那一行;没有这种轮次给 ''。
+ */
+function belowLineOf(x: BelowLineIn): string {
+  const keys = new Set<string>()
+  const bounds: string[] = []
+  for (const d of x.rows) {
+    if (d.invitations != null || d.invitationsBelow == null) {
+      continue
+    }
+    keys.add(d.stream + KEY_SEP + d.drawDate)
+    const b = d.invitationsBelow.toLocaleString(NUM_LOCALE)
+    if (bounds.includes(b) === false) {
+      bounds.push(b)
+    }
+  }
+  if (keys.size === 0) {
+    return TEXT_NONE
+  }
+  return x.t('pnpdraws.footBelow', {
+    rounds: roundsTextOf({ t: x.t, rows: x.rows, n: keys.size }),
+    n: bounds.join(x.t('pnpdraws.sep')),
+  })
+}
+
+/**
+ * 抽选卡只列哪一年(2026-09-29 抽选卡重排:「年份跟配额卡标题同一个来源,不另判」):有配额卡用它标题的年份;没有取本省最近一轮的年份;
+ * 本省一轮都没有给 ''(不筛)。
+ *
+ * @param x 配额卡、省码与全部抽选行。
+ * @returns 年份(`YYYY`)。
+ */
+export function cardYearOf(x: CardYearIn): string {
+  if (x.quota != null) {
+    return x.quota.year
+  }
+  let latest = TEXT_NONE
+  for (const d of x.draws) {
+    if (d.province === x.province && d.kind === KIND_DRAW && d.drawDate > latest) {
+      latest = d.drawDate
+    }
+  }
+  return latest.slice(0, YEAR_LEN)
 }
 
 /**
@@ -1431,6 +1872,7 @@ export function quotaCardOf(x: QuotaCardOfIn): QuotaCardSpec | null {
     heads,
     rows,
     asOfLines: asOfLinesOf({ t: x.t, heads, dates }),
+    year: yearOf(first),
   }
 }
 
@@ -1495,10 +1937,25 @@ function quotaRowOf(x: QuotaRowIn): QuotaRowSpec {
     if (r == null) {
       cells.push(DASH)
     } else {
-      cells.push(r.value.toLocaleString(NUM_LOCALE))
+      cells.push(quotaCellOf(r))
     }
   }
   return { key: x.label, label: x.label, cells }
+}
+
+/**
+ * 配额卡一格的数:千分位;下限指标(AB / BC 有轮次官方只写上限,那几轮按 0 计)前面加「≥ 」(2026-09-29 抽选卡重排,
+ * Frank「按你建议」:AB、BC 的已邀请写「至少 X」)。
+ *
+ * @param r 挑到的那一行。
+ * @returns 格里的字。
+ */
+function quotaCellOf(r: PnpOps): string {
+  const n = r.value.toLocaleString(NUM_LOCALE)
+  if (r.metric === OPS_INV_YTD_MIN) {
+    return QUOTA_MIN_PREFIX + n
+  }
+  return n
 }
 
 /**
@@ -1555,12 +2012,13 @@ function opsPickOf(x: OpsPickIn): PnpOps | null {
  * 配额小表的网格类:列数随这一省官方有几项变(1–3 列值 + 1 列行名),一个列数一个类,不写内联样式。
  * 2026-09-27 并入已发邀请 / 已入选后 QUOTA_COLS 五项,但当天各省最多三项(阿省总数 / 已发提名 / 剩余,阿省汇装不出全年已发邀请);
  * 哪天一省凑出四项,这里加一档并先验 375 宽。
+ * 2026-09-29 抽选卡重排:阿省汇装出了全年已发邀请的下限(「≥ 13,083」),凑出四项,加 quotaCols4(375 宽另验)。
  *
  * @param n 值的列数。
  * @returns 类名。
  */
 export function quotaGridClsOf(n: number): string {
-  const byCount = [cssOf(css.quotaCols1), cssOf(css.quotaCols2), cssOf(css.quotaCols3)]
+  const byCount = [cssOf(css.quotaCols1), cssOf(css.quotaCols2), cssOf(css.quotaCols3), cssOf(css.quotaCols4)]
   let cols = byCount[byCount.length - 1]
   const pick = byCount[n - 1]
   if (pick != null) {
@@ -2225,12 +2683,17 @@ export function allGroupsLabelOf(x: AllGroupsLabelIn): string {
  * 2026-09-26 /fe 首页 Frank「止血 + 补完整」:NS 的数字是每月从 EOI 池选取的人数,写「人入选」(DRAW_SELECT_PROVS);
  * 三种口径的词条收进 COUNT_ROW_KEY 一张表(countKindOf 判口径)。
  * 2026-09-27 九省体检(Frank「问题太多了」「能用多 agent 修么」):人数加千分位(原「1874 份邀请」,配额卡与标题行都有千分位,这里没有)。
+ * 2026-09-29 抽选卡重排:官方只写了上限的轮次(AB「Less than 10」、BC「<5」;数据层 invitationsBelow)写「少于 N 份邀请」,
+ * 原先这种轮次人数一格是空的。
  *
  * @param x 取词函数与这一轮。
  * @returns 文字;''=没公布。
  */
 function invTextOf(x: InvTextIn): string {
   if (x.draw.invitations == null) {
+    if (x.draw.invitationsBelow != null) {
+      return x.t('pnpdraws.below', { n: x.draw.invitationsBelow.toLocaleString(NUM_LOCALE) })
+    }
     return TEXT_NONE
   }
   return x.t(COUNT_ROW_KEY[countKindOf(x.draw)], { n: x.draw.invitations.toLocaleString(NUM_LOCALE) })
@@ -2238,15 +2701,17 @@ function invTextOf(x: InvTextIn): string {
 
 /**
  * 这一轮的人数是什么口径:AIP 那组 = 选中进入审理的申请;官方写「选取」的省 = 从 EOI 池选取的人;其余 = 发出的邀请。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」):改认数据层逐行打好的 unit 格 —— 原按组名
+ * (DRAW_STREAM_AIP = 'AIP')与省名(DRAW_SELECT_PROVS = NS)判,两常量退役(原注并进 constants 的 UNIT_APPLICATION / UNIT_SELECTION)。
  *
  * @param draw 这一轮。
  * @returns 人数口径。
  */
 function countKindOf(draw: PnpDraw): CountKind {
-  if (draw.stream === DRAW_STREAM_AIP) {
+  if (draw.unit === UNIT_APPLICATION) {
     return COUNT_AIP
   }
-  if (DRAW_SELECT_PROVS.has(draw.province)) {
+  if (draw.unit === UNIT_SELECTION) {
     return COUNT_SEL
   }
   return COUNT_INV
@@ -3436,15 +3901,17 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
 /**
  * 本省抽选卡开合的初值:可提名的岗默认展开全省各组;不可提名(不符合清单)的岗没有「本岗那一组」,默认折叠,
  * 只露「查看全省 N 组」(2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」)。
+ * 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡一律展开 —— AIP 与省提名是两条路,本岗不可提名
+ * 不等于走不了 AIP。
  *
  * @param job 本岗。
  * @returns 开着的键集合。
  */
 export function drawOpenInitOf(job: PnpJob): Set<string> {
   if (job.pnpEligible === true) {
-    return new Set([DRAWS_ALL_KEY])
+    return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY, DRAWS_AIP_ALL_KEY])
   }
-  return new Set()
+  return new Set([DRAWS_AIP_ALL_KEY])
 }
 
 /**
@@ -3549,6 +4016,12 @@ export function pnpDataOf(data: PnpData | null): PnpData {
  * 「新不伦瑞克省提名(PNP)」;没有省、魁省(不参加 PNP)照旧写分组名。
  * 同日「这里面还包含了 AIP 哈 不光是 PNP」:抽选卡带 AIP 轮次的省(AIP_DRAW_PROVS)写「{省}提名(PNP)及 AIP」。
  * 2026-09-28 随省提名弹框自 advisor 的 kickerOf(省提名组那一支)迁入。
+ * 2026-09-29 抽选卡重排(Frank「AIP 是不是应该单独的卡」「如果改一个地方,是不是所有省份都得改一遍」):大西洋四省都有「AIP 抽选」卡
+ * (AIP 的轮次、同池说明或不经抽选),改按 AIP 的适用范围 ATLANTIC_PROVS 判,PE 也带「及 AIP」;AIP_DRAW_PROVS 退役,原注:
+ * 「省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:两省官网把 AIP
+ * 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」(2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
+ * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP 走同一个 EOI 池,
+ * 官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。2026-09-28 随省提名弹框自 advisor 迁入。」
  *
  * @param x 取词函数与本岗省码。
  * @returns 小标文字。
@@ -3557,7 +4030,7 @@ export function pnpKickerOf(x: PnpKickerIn): string {
   if (x.province === TEXT_NONE || x.province === PROV_QC) {
     return x.t(K_KICKER_GROUP)
   }
-  if (AIP_DRAW_PROVS.has(x.province)) {
+  if (ATLANTIC_PROVS.includes(x.province)) {
     return x.t(K_KICKER_PROV_AIP, { p: x.t(PROV_KEY_HEAD + x.province) })
   }
   return x.t(K_KICKER_PROV, { p: x.t(PROV_KEY_HEAD + x.province) })

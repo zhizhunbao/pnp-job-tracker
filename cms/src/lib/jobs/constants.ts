@@ -1876,10 +1876,17 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string; en?: str
   'AIP': { zh: 'AIP 大西洋移民计划', ko: 'AIP 대서양 이민 프로그램' },
   'Labour & Express Entry': { zh: 'PE 劳工通道、PE 在需职业', ko: 'PE 인력 스트림, PE 수요 직종', en: 'PE Workforce, PE in-demand' },
   'NLPNP + AIP (ITA batch)': { zh: 'NL 技术工人、AIP', ko: 'NL 숙련 노동자, AIP', en: 'NL Skilled Worker, AIP' },
+  // 2026-09-29 抽选卡重排:etl/pnp 把 NL 每批 ITA 拆成省提名、AIP 两行(拆不开的整批仍叫上面那个名)
+  'NLPNP (ITA batch)': { zh: 'NL 技术工人', ko: 'NL 숙련 노동자', en: 'NL Skilled Worker' },
+  'AIP (ITA batch)': { zh: 'AIP 大西洋移民计划', ko: 'AIP 대서양 이민 프로그램' },
   'Monthly EOI selections': { zh: 'NS 技术工人、NS 建筑、AIP', ko: 'NS 숙련 노동자, NS 건설, AIP',
     en: 'NS Skilled Worker, NS Construction, AIP' },
   'Employer Job Offer: Foreign Worker stream': { zh: '雇主 offer:海外工人(已关停)', ko: '고용주 오퍼: 해외 근로자(폐지)' },
   'Employer Job Offer: International Student stream': { zh: '雇主 offer:国际学生(已关停)', ko: '고용주 오퍼: 유학생(폐지)' },
+  // 2026-09-29 抽选卡重排(Frank「ON 可以单独设计一个卡,列出历史的」):「改制前的抽选」卡另三条旧通道的组名灰字,照上面两条的写法
+  'Employer Job Offer: In-Demand Skills stream': { zh: '雇主 offer:在需技能(已关停)', ko: '고용주 오퍼: 수요 기술(폐지)' },
+  'Masters Graduate stream': { zh: '硕士毕业生(已关停)', ko: '석사 졸업생(폐지)' },
+  'PhD Graduate stream': { zh: '博士毕业生(已关停)', ko: '박사 졸업생(폐지)' },
 }
 /**
  * 具名通道 chip 的 label(数据层的中文,有限小集合)→ 三语 key,未知值原样回退

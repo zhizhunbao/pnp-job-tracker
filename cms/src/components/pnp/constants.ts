@@ -131,6 +131,8 @@ export const SPACE = ' '
 
 /**
  * 大西洋四省(AIP 的适用范围;不在其中的省 AIP 一律不适用)。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」):省提名弹框页眉「{省}提名(PNP)及 AIP」与「AIP 抽选」卡也按它出(AIP 的适用范围,
+ * 不是按省写死的展示分支);原 AIP_DRAW_PROVS(NB / NL / NS 三省)退役,沿革见 functions 的 pnpKickerOf。
  */
 export const ATLANTIC_PROVS = ['NL', 'NB', 'NS', 'PE']
 
@@ -151,11 +153,13 @@ export const PROGRAM_AIP = 'AIP'
 export const PROGRAM_PNP = 'PNP'
 
 /**
- * 本省抽选卡里 AIP 那一组的通道名(抽选行 stream 原值;NB 官网把 AIP 选取与省提名邀请发在同一张抽选页)。
+ * 抽选行 unit 格:选中进入审理的申请(etl/pnp 落盘门按官方原句逐行判好;人数写「份申请入选」,文案走 pnpdraws.sel)。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」):原为 DRAW_STREAM_AIP = 'AIP'(按组名认 NB 的 AIP 组),改认数据层的 unit 格。原注:
+ * 「本省抽选卡里 AIP 那一组的通道名(抽选行 stream 原值;NB 官网把 AIP 选取与省提名邀请发在同一张抽选页)。
  * AIP 轮次的数字是选中进入审理的申请、不是邀请(官网原句「Atlantic Immigration Program figures show applications
- * selected for processing; all other streams show invitations issued」),文案走 pnpdraws.sel(2026-09-23)。
+ * selected for processing; all other streams show invitations issued」),文案走 pnpdraws.sel(2026-09-23)。」
  */
-export const DRAW_STREAM_AIP = 'AIP'
+export const UNIT_APPLICATION = 'application'
 
 /**
  * 官方明说不按分数抽选的省(抽选卡标题下出一行灰字注明;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
@@ -166,12 +170,20 @@ export const DRAW_STREAM_AIP = 'AIP'
 export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
 
 /**
- * 官方口径是「从 EOI 池里选取」而不是「发邀请」的省(抽选行的人数写「入选」;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
+ * 抽选行 unit 格:从 EOI 池选中的人(人数写「人入选」)。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」):原为 DRAW_SELECT_PROVS = new Set(['NS'])(按省名认),改认数据层的 unit 格。原注:
+ * 「官方口径是「从 EOI 池里选取」而不是「发邀请」的省(抽选行的人数写「入选」;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
  * NS 出处 liveinnovascotia.com/eoi-selection 原句「Nova Scotia selected the following number of candidates from the
  * Expression of Interest (EOI) pool during the months noted below」(crawl ns-root 缓存,Last Updated: August 17, 2026)。
- * 只收有官方原句的省。
+ * 只收有官方原句的省。」
  */
-export const DRAW_SELECT_PROVS = new Set(['NS'])
+export const UNIT_SELECTION = 'selection'
+
+/**
+ * 抽选行 program 格:省提名与 AIP 同池、官方只发一个合计(NS;本省抽选卡头一行注明「人数含 AIP」,AIP 卡指回本省抽选)。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const PROGRAM_POOL = 'PNP+AIP'
 
 /**
  * 抽选行 selection 短码的拆法:种类 + 最多两个参数(数据层写成「种类:参数:参数」,如 wage:52:105000、top:2、path:exp+prio、occ)。
@@ -401,15 +413,78 @@ export const OPS_SEL_YTD = 'selections_ytd'
 export const OPS_SCOPE_STREAM = 'stream'
 
 /**
+ * 全年已发邀请的下限指标名(本年有轮次官方人数只写上限:AB「Less than 10」、BC「<5」,那几轮按 0 计;配额卡写「≥ N」、
+ * 抽选卡底写「至少 N 份邀请」)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const OPS_INV_YTD_MIN = 'invitations_ytd_min'
+
+/**
+ * 全年选中进入审理的申请合计的指标名(NB 的 AIP 组;出在 AIP 那一份,「AIP 抽选」卡底读)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const OPS_APP_YTD = 'applications_ytd'
+
+/**
+ * 运营统计里项目那一层的口径名(scope_kind;全年合计 AIP 那一份,scope = AIP)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const OPS_SCOPE_PROGRAM = 'program'
+
+/**
+ * 卡底合计行认的指标名 → 人数口径(COUNT_ROW_KEY 的键;数同一个汇装合计,不在前端加)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const YTD_COUNT_KIND: Record<string, 'aip' | 'sel' | 'inv'> = {
+  /**
+   * 全年已发邀请。
+   */
+  'invitations_ytd': 'inv',
+
+  /**
+   * 全年已发邀请(下限)。
+   */
+  'invitations_ytd_min': 'inv',
+
+  /**
+   * 全年从 EOI 池选中的人(NS)。
+   */
+  'selections_ytd': 'sel',
+
+  /**
+   * 全年选中进入审理的申请(NB 的 AIP 组)。
+   */
+  'applications_ytd': 'aip',
+}
+
+/**
+ * 下限数的前缀(配额卡「已发邀请」一格写「≥ 13,083」)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const QUOTA_MIN_PREFIX = '≥ '
+
+/**
+ * 门槛表里「不经抽选」那类行的因素名(SK 持 offer 直接申请、PE 的 AIP 由指定雇主直接递背书申请;op = none)。
+ * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const FACTOR_EOI_DRAW = 'eoiDraw'
+
+/**
+ * 「改制前的抽选」卡「查看全省 N 组」开关的键(与本省抽选卡的 DRAWS_ALL_KEY 分开开合)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const DRAWS_REFORM_ALL_KEY = '__allReform'
+
+/**
+ * 「AIP 抽选」卡「查看全省 N 组」开关的键(与本省抽选卡的 DRAWS_ALL_KEY 分开开合)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ */
+export const DRAWS_AIP_ALL_KEY = '__allAip'
+
+/**
  * 「{年} 年配额」卡的列:每列认哪几个指标名 · 列名的词条键(顺序即列序;只列这个省官方有的项,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
  * 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进来,排在剩余之后(已发邀请;NS 叫已入选)。
+ * 2026-09-29 抽选卡重排(Frank「按你建议」):NS「已入选(含 AIP)」一列撤(那个数含 AIP,与只算省提名的总数并排像超发;改由本省抽选卡底写
+ * 「7 个月,共 3,242 人入选」);已发邀请一列也认下限指标(AB / BC 有轮次官方只写上限,格里写「≥ N」)。
  */
 export const QUOTA_COLS: [string[], string][] = [
   [[OPS_ALLOCATION], 'pnpquota.total'],
   [OPS_ISSUED_METRICS, 'pnpquota.issued'],
   [[OPS_REMAINING], 'pnpquota.remaining'],
-  [[OPS_INV_YTD], 'pnpquota.inv'],
-  [[OPS_SEL_YTD], 'pnpquota.sel'],
+  [[OPS_INV_YTD, OPS_INV_YTD_MIN], 'pnpquota.inv'],
 ]
 
 /**
@@ -1168,16 +1243,6 @@ export const TRACK_P_FIELD = 'field'
  * 标题译名的重译代数(省提名弹框没有重新翻译钮,恒为 0)。
  */
 export const TITLE_TRANS_GEN = 0
-
-/**
- * 省提名弹框里本省抽选卡带 AIP 轮次的省(etl/pnp 的 DRAWS_NB_LABEL「NBPNP + AIP」、DRAWS_NL_LABEL「NLPNP + AIP」:
- * 两省官网把 AIP 选取与省提名邀请发在同一张抽选页):小标写「{省}提名(PNP)及 AIP」
- * (2026-09-23 Frank「这里面还包含了 AIP 哈 不光是 PNP」)。
- * 2026-09-26 加 NS:数据层今起接入 NS 月度选取人数(etl/pnp 的 DRAWS_NS_LABEL「NSNP + AIP」—— NSNP 各通道与 AIP
- * 走同一个 EOI 池,官方按月只发一个总数),抽选卡标题带 AIP,小标同口径。
- * 2026-09-28 随省提名弹框自 advisor 迁入。
- */
-export const AIP_DRAW_PROVS = new Set(['NB', 'NL', 'NS'])
 
 /**
  * 页眉小标词条:「{省}提名(PNP)」。

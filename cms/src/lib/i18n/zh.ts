@@ -613,7 +613,8 @@ export const jobsZh = {
   // 同日「这个截止日期放到右下角呢」:几列截至日不一致时逐列写(pnpquota.asOfCol)
   // 2026-09-29 Frank「已邀请申请改成已发邀请吧」(当天先问「已邀请申请是什么意思」,讲清邀请 / 递申请 / 提名三步之后拍的):
   // 改回「已发邀请」,与抽选卡底「共 N 份邀请」一个说法
-  'pnpquota.inv': '已发邀请', 'pnpquota.sel': '已入选(含 AIP)', 'pnpquota.asOfCol': '{col}截至 {date}',
+  // 2026-09-29 抽选卡重排:NS「已入选(含 AIP)」一列撤(3,242 改由本省抽选卡底写),pnpquota.sel 随之退役
+  'pnpquota.inv': '已发邀请', 'pnpquota.asOfCol': '{col}截至 {date}',
   // 2026-09-27 Frank「这个数据怎么回事」「照改,加这一列」:抽选卡展开行写是哪一项选取(数据层 selection 短码 → 界面词)
   'pnpdraws.sep': '、',
   'pnpsel.occ': '定向职业', 'pnpsel.top': '高分者({cat}类)', 'pnpsel.topAny': '高分者', 'pnpsel.franco': '法语', 'pnpsel.grad': '曼省毕业',
@@ -654,6 +655,19 @@ export const jobsZh = {
   'pnpgate.area.metro-vancouver': '大温哥华', 'pnpgate.area.rest-of-bc': '大温哥华以外',
   'pnpgate.area.st-johns': '圣约翰斯', 'pnpgate.area.rest-of-nl': '圣约翰斯以外',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
+  // 2026-09-29 抽选卡重排(Frank「按你建议」):行上「少于 N」、同池 / 不经抽选 / 今年还没有三种说明、卡底合计行(轮数与份数两段拼)、改制前与 AIP 两张新卡
+  'pnpdraws.below': '少于 {n} 份邀请',
+  'pnpdraws.pool': '省提名与 AIP 同池选取,人数含 AIP',
+  'pnpdraws.direct': '持雇主 offer 直接递申请,不经抽选',
+  'pnpdraws.none': '{year} 年还没有抽选',
+  'pnpdraws.foot': '{year} 年 {rounds},共 {count}',
+  'pnpdraws.footMin': '{year} 年 {rounds},至少 {count}',
+  'pnpdraws.footRounds': '{year} 年 {rounds}',
+  'pnpdraws.footBelow': '其中 {rounds}官方只写「少于 {n}」',
+  'pnpreform.head': '改制前的抽选',
+  'pnpaip.head': 'AIP 抽选',
+  'pnpaip.pool': '与省提名同池选取,人数见本省抽选',
+  'pnpaip.direct': '由指定雇主直接为候选人递背书申请,不经抽选',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
   // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected

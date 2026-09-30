@@ -217,6 +217,21 @@ export type PnpDraw = {
    * 认不出空串;2026-09-27 Frank「照改,加这一列」)。
    */
   selection: string
+
+  /**
+   * 这一轮的人数属于哪个项目(PNP / AIP / PNP+AIP 同池;认不出空串;2026-09-29 抽选卡重排:本省抽选、AIP 抽选两张卡按它分)。
+   */
+  program: string
+
+  /**
+   * 人数数的是什么(invitation / selection / application;2026-09-29 抽选卡重排:「份邀请 / 人入选 / 份申请入选」按它写)。
+   */
+  unit: string
+
+  /**
+   * 官方人数只写上限时的上限(AB「Less than 10」→ 10);确数行为 null(2026-09-29 抽选卡重排:行上写「少于 N 份邀请」)。
+   */
+  invitationsBelow: number | null
 }
 
 /**
@@ -1061,6 +1076,21 @@ export type DrawCard = {
    * 标题右端的官方来源(本省抽选页);认不出站名给 null(不出)。
    */
   source: SourceLink | null
+
+  /**
+   * 标题下的灰字说明(一行一条:NB 不按分数、NS 同池含 AIP、SK 不经抽选、AIP 卡指回本省抽选;2026-09-29 抽选卡重排)。
+   */
+  lines: string[]
+
+  /**
+   * 卡底合计行(「2026 年 80 轮,至少 13,083 份邀请」+「其中 6 轮官方只写少于 10」;轮数数卡里列的,份数读汇装合计;2026-09-29)。
+   */
+  foot: string[]
+
+  /**
+   * 「查看全省 N 组」开关的键(三张抽选卡各一把,分开开合;2026-09-29)。
+   */
+  allKey: string
 }
 
 /**
@@ -1159,6 +1189,11 @@ export type QuotaCardSpec = {
    * 同日 Frank「这个截止日期放到右下角呢」)。官方都没写截至日给空列。
    */
   asOfLines: string[]
+
+  /**
+   * 卡标题的年份(抽选卡只列这一年,与标题同一个来源;2026-09-29 抽选卡重排)。
+   */
+  year: string
 }
 
 /**
@@ -1391,6 +1426,11 @@ export type PnpReq = {
    * 出处页。
    */
   url: string
+
+  /**
+   * 项目(PNP / AIP;2026-09-29 抽选卡重排起「不经抽选」那类行也取回,AIP 卡按 AIP 那行写)。
+   */
+  program: string
 }
 
 /**
@@ -3355,27 +3395,12 @@ export type PnpDrawGroupsIn = {
   t: TFn
 
   /**
-   * 界面语言。
+   * 这张抽选卡(本省抽选 / 改制前的抽选 / AIP 抽选三张同一个形,2026-09-29 抽选卡重排起卡在 PnpListSection 里算好递进来)。
    */
-  lang: PnpLang
+  card: DrawCard
 
   /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 全部抽选行。
-   */
-  draws: PnpDraw[]
-
-  /**
-   * 本岗对应的组(抽选行 stream 原值);空列 = 不高亮。
-   */
-  hitStreams: string[]
-
-  /**
-   * 展开着的组(通道名;「查看全省 N 组」那个开关的键是 DRAWS_ALL_KEY)。
+   * 展开着的组(通道名;「查看全省 N 组」那个开关的键是卡上的 allKey)。
    */
   open: Set<string>
 
@@ -3383,11 +3408,6 @@ export type PnpDrawGroupsIn = {
    * 组的开合手柄工厂。
    */
   toggleOf: ToggleOfFn
-
-  /**
-   * 本省省默认通道的抽选组('' = 没有;见 PnpDrawGroupsOfIn 同名格)。
-   */
-  genDraw: string
 }
 
 /**
@@ -3508,6 +3528,346 @@ export type DrawCardOfIn = {
    * 本省省默认通道的抽选组('' = 没有;见 PnpDrawGroupsOfIn 同名格)。
    */
   genDraw: string
+
+  /**
+   * 当年配额行(卡底合计读汇装的全年合计;2026-09-29 抽选卡重排)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛行(「不经抽选」那类行:SK 持 offer 直接申请、PE 的 AIP 由指定雇主递背书申请;2026-09-29)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 卡只列这一年的轮次(与配额卡标题同一个来源,见 cardYearOf;'' = 不筛)。
+   */
+  year: string
+}
+
+/**
+ * yearDrawsOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type YearDrawsIn = {
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 只列这一年('' = 不筛)。
+   */
+  year: string
+
+  /**
+   * true = 只要 AIP 的轮次(AIP 卡);false = 只要不属 AIP 的(本省抽选卡:省提名、同池与认不出的)。
+   */
+  aip: boolean
+}
+
+/**
+ * reformSplitOf 的出参:这一年的抽选轮次按改制生效日一分为二(2026-09-29 抽选卡重排)。
+ */
+export type ReformSplitOut = {
+  /**
+   * 改制前的轮次(「改制前的抽选」卡列它们)。
+   */
+  before: PnpDraw[]
+
+  /**
+   * 改制后的轮次(本省抽选卡那一组列它们)。
+   */
+  after: PnpDraw[]
+}
+
+/**
+ * reformSplitOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type ReformSplitIn = {
+  /**
+   * 这一年本省的抽选行(yearDrawsOf 筛过的)。
+   */
+  rows: PnpDraw[]
+
+  /**
+   * 改制生效日(`YYYY-MM-DD`)。
+   */
+  since: string
+}
+
+/**
+ * footLinesOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type FootLinesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 省码(配额行是全国一份,按它挑本省那一行)。
+   */
+  province: string
+
+  /**
+   * 卡只列的那一年。
+   */
+  year: string
+
+  /**
+   * 卡里列出的轮次(轮数数它们;按月那一组数月份)。
+   */
+  rows: PnpDraw[]
+
+  /**
+   * 本省当年配额行(合计份数读其中汇装的全年合计)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 合计那一行的口径层级('' = 省提名那一份,program = AIP 那一份)。
+   */
+  scopeKind: string
+
+  /**
+   * 合计份数能不能写:汇装那一份恰好就是卡里列的这些轮次才写(安省改制前后分两张卡时,另一张有轮次就只写轮数)。
+   */
+  total: boolean
+}
+
+/**
+ * belowLineOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type BelowLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 卡里列出的轮次。
+   */
+  rows: PnpDraw[]
+}
+
+/**
+ * ytdPickOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type YtdPickIn = {
+  /**
+   * 当年配额行(全国一份)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 口径层级('' = 省提名那一份,program = AIP 那一份)。
+   */
+  scopeKind: string
+}
+
+/**
+ * noDrawReqOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type NoDrawReqIn = {
+  /**
+   * 门槛行。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 项目(PNP = SK 持 offer 直接申请;AIP = PE 由指定雇主递背书申请)。
+   */
+  program: string
+}
+
+/**
+ * lineCardOf 的入参:没有轮次可列、只写一行说明的抽选卡(2026-09-29 抽选卡重排)。
+ */
+export type LineCardIn = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 说明行。
+   */
+  lines: string[]
+
+  /**
+   * 标题右端的官方来源;没有给 null。
+   */
+  source: SourceLink | null
+
+  /**
+   * 「查看全省 N 组」开关的键(这种卡没有组,只为形状齐全)。
+   */
+  allKey: string
+}
+
+/**
+ * groupsCardOf 的入参:有轮次可列的抽选卡(本岗那组排前,其余收在开关后;2026-09-29 抽选卡重排)。
+ */
+export type GroupsCardIn = {
+  /**
+   * 卡标题。
+   */
+  title: string
+
+  /**
+   * 轮次标签(「查看全省 N 组」英文文案要它)。
+   */
+  label: string
+
+  /**
+   * 各组。
+   */
+  groups: EeCmpGroup[]
+
+  /**
+   * 标题右端的官方来源;没有给 null。
+   */
+  source: SourceLink | null
+
+  /**
+   * 标题下的灰字说明。
+   */
+  lines: string[]
+
+  /**
+   * 卡底合计行。
+   */
+  foot: string[]
+
+  /**
+   * 「查看全省 N 组」开关的键。
+   */
+  allKey: string
+}
+
+/**
+ * emptyPnpCardOf 的入参:本省抽选卡这一年一组都分不出来时(2026-09-29 抽选卡重排)。
+ */
+export type EmptyCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行(往年有没有轮次)。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 门槛行(「不经抽选」那一行)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 卡只列的那一年。
+   */
+  year: string
+
+  /**
+   * 已有的灰字说明(drawLinesOf)。
+   */
+  lines: string[]
+}
+
+/**
+ * drawLinesOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type DrawLinesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 卡里列的轮次。
+   */
+  rows: PnpDraw[]
+}
+
+/**
+ * ytdCountTextOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type YtdCountIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 挑到的合计行;没有给 null。
+   */
+  row: PnpOps | null
+}
+
+/**
+ * roundsTextOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type RoundsTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 卡里列的轮次(按月那一组写「N 个月」)。
+   */
+  rows: PnpDraw[]
+
+  /**
+   * 轮数。
+   */
+  n: number
+}
+
+/**
+ * cardYearOf 的入参(2026-09-29 抽选卡重排)。
+ */
+export type CardYearIn = {
+  /**
+   * 配额卡(有就用它标题的年份)。
+   */
+  quota: QuotaCardSpec | null
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全部抽选行(没有配额卡时取本省最近一轮的年份)。
+   */
+  draws: PnpDraw[]
 }
 
 /**

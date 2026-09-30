@@ -847,6 +847,18 @@ export interface PnpDraw {
    */
   selection?: string | null;
   /**
+   * 项目 PNP / AIP / PNP+AIP(同池)/ PSTQ / EE;认不出空串
+   */
+  program?: string | null;
+  /**
+   * 人数口径 invitation 邀请 / selection 入选的人 / application 入选的申请
+   */
+  unit?: string | null;
+  /**
+   * 官方人数只写上限时的上限(AB「Less than 10」、BC「<5」);确数行为空
+   */
+  invitationsBelow?: number | null;
+  /**
    * 最低邀请分 — 省自评分制,非 CRS!展示必须带 scale
    */
   score?: number | null;
@@ -3143,6 +3155,9 @@ export interface PnpDrawsSelect<T extends boolean = true> {
   streamZh?: T;
   checklist?: T;
   selection?: T;
+  program?: T;
+  unit?: T;
+  invitationsBelow?: T;
   score?: T;
   scale?: T;
   invitations?: T;

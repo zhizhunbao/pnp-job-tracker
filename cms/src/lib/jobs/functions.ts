@@ -3104,7 +3104,8 @@ export function toPnpDraw(r: Row): PnpDraw {
     province: text(r.province), kind: text(r.kind), drawDate: text(r.drawDate), stream: text(r.stream),
     streamZh: text(r.streamZh), score: numOrNull(r.score), scale: text(r.scale),
     invitations: numOrNull(r.invitations), note: text(r.note), label: text(r.label),
-    url: text(r.url), fetched: text(r.fetched), selection: text(r.selection),
+    url: text(r.url), fetched: text(r.fetched), selection: text(r.selection), program: text(r.program),
+    unit: text(r.unit), invitationsBelow: numOrNull(r.invitationsBelow),
   }
 }
 
@@ -3162,6 +3163,7 @@ export function toPnpReqRow(r: Row): PnpReqRow {
     op: text(r.op), value: numOrNull(r.value), unit: text(r.unit), appliesTeer: text(r.applies_teer),
     appliesNoc: text(r.applies_noc), excludesNoc: text(r.excludes_noc), appliesArea: text(r.applies_area),
     appliesCondition: text(r.applies_condition), basis: text(r.basis), url: text(r.url), seq: count(r.seq),
+    program: text(r.program),
   }
 }
 

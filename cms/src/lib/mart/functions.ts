@@ -513,7 +513,8 @@ function toPnpDraw(r: MartRow): MartRow {
     province: cellOf(r.province), kind: cellOf(r.kind), draw_date: cellOf(r.drawDate), stream: cellOf(r.stream),
     stream_zh: cellOf(r.streamZh), score: cellOf(r.score), scale: cellOf(r.scale), invitations: cellOf(r.invitations),
     note: cellOf(r.note), label: cellOf(r.label), url: cellOf(r.url), fetched: cellOf(r.fetched),
-    checklist: cellOf(r.checklist), selection: cellOf(r.selection),
+    checklist: cellOf(r.checklist), selection: cellOf(r.selection), program: cellOf(r.program), unit: cellOf(r.unit),
+    invitations_below: cellOf(r.invitationsBelow),
   }
 }
 

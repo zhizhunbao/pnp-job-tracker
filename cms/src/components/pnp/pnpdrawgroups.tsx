@@ -15,35 +15,42 @@
  * Frank 选「标题那一行右端」,问「每个通道 link 不一样吧」—— 抽选数据每省只来自一个官方页,各通道同一个链接)。
  * 2026-09-27 Frank 勾「全年已邀请合计」:标题下一行灰字「{年} 年已发 N 份邀请」(NS 写「已入选 N 人」),汇装加总、缺一轮不出。
  * 同日 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:那一行并进「{年} 年配额」卡当一列(quotaCardOf),这里撤。
+ * 2026-09-29 抽选卡重排(Frank「按你建议」「如果改一个地方,是不是所有省份都得改一遍」):本省抽选 / 改制前的抽选 / AIP 抽选三张卡同一个形,
+ * 卡由 PnpListSection 算好递进来(drawCardOf / preReformCardOf / aipCardOf),这里只渲染:标题下灰字(原 NB 不按分数那行在这里按
+ * DRAW_NO_SCORE_PROVS 判,挪进 drawCardOf)、各组、开关(每张卡一把键)、卡底合计行。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { DRAWS_ALL_KEY, DRAW_NO_SCORE_PROVS, PLAIN_BTN_KIND } from './constants'
+import { PLAIN_BTN_KIND } from './constants'
 import { DrawsHead } from './drawshead'
 import { EeCmpGroupView } from './eecmpgroupview'
-import { allGroupsLabelOf, drawCardOf } from './functions'
+import { allGroupsLabelOf } from './functions'
 import type { PnpDrawGroupsIn } from './types'
 import css from './pnp.module.css'
 
 /**
- * 渲染本省抽选分组卡。
+ * 渲染一张抽选分组卡。
  *
- * @param props 取词函数、界面语言、省码、全部抽选行、本岗对应的那一组、展开着的组、开合手柄工厂与本省省默认通道的抽选组。
- * @returns 抽选卡;本省没有抽选给 null。
+ * @param props 取词函数、这张卡、展开着的组与开合手柄工厂。
+ * @returns 抽选卡。
  */
-export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, toggleOf, genDraw }: PnpDrawGroupsIn) {
-  const card = drawCardOf({ t, lang, province, draws, hitStreams, genDraw })
-  if (card == null) {
-    return null
+export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
+  const lines = []
+  for (const line of card.lines) {
+    lines.push(<div key={line} className={css.drawsBasis}>{line}</div>)
+  }
+  const foot = []
+  for (const line of card.foot) {
+    foot.push(<div key={line} className={css.drawsFoot}>{line}</div>)
   }
   const hits = []
   for (const g of card.hits) {
     hits.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
   }
-  const allOpen = open.has(DRAWS_ALL_KEY)
+  const allOpen = open.has(card.allKey)
   const others = []
   if (allOpen) {
     for (const g of card.others) {
@@ -53,14 +60,15 @@ export function PnpDrawGroups({ t, lang, province, draws, hitStreams, open, togg
   return (
     <div className={css.card}>
       <DrawsHead title={card.title} source={card.source} />
-      {DRAW_NO_SCORE_PROVS.has(province) && <div className={css.drawsBasis}>{t('pnpdraws.noScore')}</div>}
+      {lines}
       {hits}
       {others}
       {card.others.length > 0 && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(DRAWS_ALL_KEY)}>
+        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={toggleOf(card.allKey)}>
           {allGroupsLabelOf({ t, open: allOpen, total: card.total, label: card.label })}
         </Button>
       )}
+      {foot}
     </div>
   )
 }

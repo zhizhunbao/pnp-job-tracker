@@ -565,7 +565,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-27 the draws card's year-to-date line moves into the allocation card as a column; pnpdraws.ytdInv / ytdSel retire
   // 2026-09-27 NS selections count the whole EOI pool (NSNP and AIP share it) while the total next to it is NSNP only
   // 2026-09-27 invitations are invitations to apply, not nominations; per-column as-of when the dates differ
-  'pnpquota.inv': 'Invited to apply', 'pnpquota.sel': 'Selected (incl. AIP)', 'pnpquota.asOfCol': '{col} as of {date}',
+  // 2026-09-29 draw cards rework: Nova Scotia's selected-incl.-AIP column removed (total moved to the draws card), pnpquota.sel retired
+  'pnpquota.inv': 'Invited to apply', 'pnpquota.asOfCol': '{col} as of {date}',
   // 2026-09-27 draws card: which selection each expanded row is (data-layer selection code → UI words)
   'pnpdraws.sep': ', ',
   'pnpsel.occ': 'Occupation-specific', 'pnpsel.top': 'Top scorers ({cat})', 'pnpsel.topAny': 'Top scorers',
@@ -615,6 +616,19 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.metro-vancouver': 'Metro Vancouver', 'pnpgate.area.rest-of-bc': 'outside Metro Vancouver',
   'pnpgate.area.st-johns': 'St. John’s', 'pnpgate.area.rest-of-nl': 'outside St. John’s',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
+  // 2026-09-29 draw cards rework: upper-bound counts, pool / direct / none notes, card totals, pre-reform and AIP cards
+  'pnpdraws.below': 'Fewer than {n} invitations',
+  'pnpdraws.pool': 'Selected from one pool shared with AIP; counts include AIP',
+  'pnpdraws.direct': 'Apply directly with an employer job offer; no draws',
+  'pnpdraws.none': 'No draws yet in {year}',
+  'pnpdraws.foot': '{year}: {rounds}, {count}',
+  'pnpdraws.footMin': '{year}: {rounds}, at least {count}',
+  'pnpdraws.footRounds': '{year}: {rounds}',
+  'pnpdraws.footBelow': 'Published only as “fewer than {n}”: {rounds}',
+  'pnpreform.head': 'Draws before the reform',
+  'pnpaip.head': 'AIP draws',
+  'pnpaip.pool': 'Selected from the same pool as provincial nominees; counts are under provincial draws',
+  'pnpaip.direct': 'The designated employer applies for endorsement directly; no draws',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',

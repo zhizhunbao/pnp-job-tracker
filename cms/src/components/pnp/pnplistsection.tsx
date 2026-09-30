@@ -30,12 +30,17 @@
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:通道卡与配额卡之间加「本岗通道的门槛」卡(PnpGateCard,版式照公司信息卡的「行名 - 值」)。
  * 2026-09-28 通道表批二:本岗走哪条通道先认一次(pnpChannelOf,读懒取到的库表 pathways),抽选高亮、门槛流、配额键都取它那一行,
  * 前端五张对照常量退役;页面一个字不变。
+ * 2026-09-29 抽选卡重排(Frank「很多省都糊里糊涂的 感觉」「AIP 是不是应该单独的卡」「ON 可以单独设计一个卡,列出历史的」,看过效果图
+ * 「按你建议」;设计稿 docs/design/省提名抽选卡重排-20260929.md):抽选卡在这里算好递进去,配额卡之后依次三张 —— 本省抽选(只列配额卡
+ * 那一年、不含 AIP;卡底合计与配额卡「已发邀请」同一个数)、改制前的抽选(安省)、AIP 抽选(大西洋四省)。出不出卡看卡函数给不给
+ * null(原按 drawsFormOf 的形判 drawGroupsShownOf,随之退役;SK 没有抽选也出卡写「不经抽选」)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import {
-  drawGroupsShownOf, drawHitStreamsOf, drawsFormOf, gateCardOf, gateChannelOf, genDrawOf, pnpChannelOf, quotaCardOf,
+  aipCardOf, cardYearOf, drawCardOf, drawHitStreamsOf, gateCardOf, gateChannelOf, genDrawOf, pnpChannelOf,
+  preReformCardOf, quotaCardOf,
   quotaKeyOf,
   shownStreamsOf, streamKeyOf,
 } from './functions'
@@ -58,10 +63,23 @@ export function PnpListSection({
   job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways,
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
-  const form = drawsFormOf({ province: job.province, draws })
   const channel = pnpChannelOf({ job, pathways })
   const hitStreams = drawHitStreamsOf(channel)
   const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
+  const dx = {
+    t: p.t,
+    lang,
+    province: job.province,
+    draws,
+    hitStreams,
+    genDraw: genDrawOf({ province: job.province, pathways }),
+    ops,
+    reqs,
+    year: cardYearOf({ quota, province: job.province, draws }),
+  }
+  const drawCard = drawCardOf(dx)
+  const reformCard = preReformCardOf(dx)
+  const aipCard = aipCardOf(dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
@@ -83,10 +101,9 @@ export function PnpListSection({
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {gate != null && <PnpGateCard spec={gate} />}
       {quota != null && <PnpQuotaCard spec={quota} />}
-      {drawGroupsShownOf(form) && (
-        <PnpDrawGroups t={p.t} lang={lang} province={job.province} draws={draws} hitStreams={hitStreams}
-          open={p.drawOpen} toggleOf={p.drawToggleOf} genDraw={genDrawOf({ province: job.province, pathways })} />
-      )}
+      {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
+      {reformCard != null && <PnpDrawGroups t={p.t} card={reformCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
+      {aipCard != null && <PnpDrawGroups t={p.t} card={aipCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
       {cards}
     </>
   )
