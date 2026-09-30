@@ -498,7 +498,7 @@
       "isDefault": true,
       "drawStreams": [],
       "reqStreams": [
-        "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+        "SINP International Skilled Worker (Employment Offer / Occupations In-Demand)",
         "SINP International Skilled Worker: Employment Offer",
         "SINP International Skilled Worker (with an employment offer)",
         "SINP — Employer Certificate of Registration (all streams)"
@@ -645,7 +645,10 @@
       "boardLabel": null,
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP Saskatchewan Experience — Students",
+        "SINP — Employer Certificate of Registration (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -673,7 +676,7 @@
       "isDefault": false,
       "drawStreams": [],
       "reqStreams": [
-        "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)"
+        "SINP International Skilled Worker (Employment Offer / Occupations In-Demand)"
       ],
       "quotaScope": null,
       "occLabels": [],
@@ -701,7 +704,9 @@
       "boardLabel": null,
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "SINP Saskatchewan Express Entry"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1033,7 +1038,9 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Nova Scotia Graduate stream"
+      ],
       "quotaScope": null,
       "occLabels": [
         "NS 毕业生"
@@ -1064,7 +1071,9 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "NSNP Skilled Worker stream — Physician sub-criteria"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1100,7 +1109,9 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1135,7 +1146,9 @@
       "drawStreams": [
         "Monthly EOI selections"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "Nova Scotia: Express Entry — Physicians"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1204,7 +1217,10 @@
       "drawStreams": [
         "NB Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Express Entry stream — Employment in New Brunswick pathway",
+        "New Brunswick Express Entry stream (Employment in New Brunswick / New Brunswick Interest)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1238,7 +1254,10 @@
       "drawStreams": [
         "NB Strategic Initiative"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Strategic Initiative — Francophone Workers in New Brunswick pathway",
+        "New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / Francophones Working Remotely)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1385,7 +1404,9 @@
       "boardLabel": null,
       "isDefault": false,
       "drawStreams": [],
-      "reqStreams": [],
+      "reqStreams": [
+        "New Brunswick Private Career College Graduate Pilot Program"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1586,7 +1607,11 @@
       "drawStreams": [
         "Labour & Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "PEI PNP — International Graduate stream",
+        "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)",
+        "PEI PNP Workforce — Employer Requirements (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1616,7 +1641,10 @@
       "drawStreams": [
         "Labour & Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "PEI PNP — Intermediate Experience stream",
+        "PEI PNP Workforce — Employer Requirements (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",
@@ -1647,7 +1675,10 @@
       "drawStreams": [
         "Labour & Express Entry"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "PEI PNP — PEI Express Entry",
+        "PEI PNP Workforce — Employer Requirements (all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",

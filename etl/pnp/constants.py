@@ -4146,13 +4146,21 @@ employer that has supported you with the Employer Position Assessment, with a va
 Canadian Language Benchmark (CLB) 4 if your job offer is in a TEER "4" or "5" occupation.」执照条款与 EO 页同一句(SKR_LICENSING_RE)。
 没入表的理由:cms 的门槛量尺(tenureResult)与判定引擎的 TEER 粗筛按全省读门槛行、不分通道 —— 在担保雇主处 6 个月那行
 (experience + employerTenure)会给每个萨省岗多一行「在职时长 6 个月 · 判不了」,TEER 4 / 5 那档语言行会把本省 TEER 0-3 的岗
-说成仅受理 TEER 4-5。待量尺与引擎按通道读行之后再接。"""
+说成仅受理 TEER 4-5。待量尺与引擎按通道读行之后再接。
+2026-09-30 通道补全批一 1b:共用流改名去掉 Express Entry(见 SKR_STREAM);新行一律排在既有各行之后(seq 不动)—— 学生子类(在萨省
+带薪工作 6 个月、萨省指定院校毕业)、Saskatchewan Express Entry 子类(EE 池、打分表 60 分)、医疗 / 科技两条 Talent Pathway 的 EE 版
+(只入表不挂通道,见 SKR_HEALTH_EE_STREAM)。现有工签通道复查:门槛量尺与 TEER 粗筛仍按全省读行,上面那条待接条件没变,照旧不接;
+学生子类 TEER 4 / 5 指定工种的 CLB 4 同一个理由不收(见 SKR_STUDENTS_RULES)。"""
 
 SKR_TIMEOUT_S = 45
 """SK 三页抓取超时。2026-09-27 起第四页(持 offer 直接申请原句页,缓存没有时现抓)同用这一档。"""
 
-SKR_STREAM = "SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)"
-"""申请人侧的通道名。"""
+SKR_STREAM = "SINP International Skilled Worker (Employment Offer / Occupations In-Demand)"
+"""申请人侧的通道名。
+2026-09-30 通道补全批一 1b(立项稿第四节第 3 条「三合一组名里的『CLB 4、近 10 年 1 年经验』不是 SK 快速通道的口径」):原名
+「… (Employment Offer / Occupations In-Demand / Express Entry)」去掉 Express Entry —— 这一流的语言、经验、打分表三行是 EO / OID
+两页交叉核对出来的,Saskatchewan Express Entry 子类页写的是联邦 EE 语言标准与按职业类型分三档的经验,另立 SKR_EE_STREAM。
+改名后仍含「SINP International Skilled Worker」,判定引擎 SK-offer 照旧读这三行(判定不变);通道对照表雇主 offer、紧缺职业两行同步改名。"""
 
 SKR_EMP_STREAM = "SINP — Employer Certificate of Registration (all streams)"
 """雇主侧的通道名。"""
@@ -4254,10 +4262,13 @@ SKR_PROBLEM_DIRECT = ("持 offer 直接申请的官方原句没匹配到(connect
 SKR_SOURCE = "SINP — International Skilled Worker (Employment Offer & Occupations In-Demand)"
 """表级来源名。"""
 
-SKR_FACTOR_ORDER = ("language", "experience", "experienceAlt", "pointsMin", "licensing", "empYears", "eoiDraw")
+SKR_FACTOR_ORDER = ("language", "experience", "experienceAlt", "pointsMin", "licensing", "empYears", "eoiDraw",
+                    "education", "eeProfile")
 """收尾按因素报条数的顺序(NS/PE 门槛同序,各自单列免得改一处动三省)。
 2026-09-27 末尾加 eoiDraw(持 offer 直接申请那一行,见 SKR_DIRECT_RE)。
-2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 experienceAlt / pointsMin / licensing 三类(见下面 2026-09-29 那一组常量)。"""
+2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 experienceAlt / pointsMin / licensing 三类(见下面 2026-09-29 那一组常量)。
+2026-09-30 通道补全批一 1b:末尾加 education / eeProfile 两类(学生子类的本省院校毕业、Saskatchewan Express Entry 与两条 Talent
+Pathway EE 版的 EE 池)。"""
 
 SKR_BASIS_WINDOW_TPL = "windowYears={n}"
 """经验行的口径包:近 N 年内(门槛卡写「N 个月全职经验(近 N 年内)」;判定引擎只认 employerTenure 一个口径标记,这格不改判定)。"""
@@ -4466,6 +4477,127 @@ SKR_TALENTS = (
 """三条 Talent Pathway 的门槛配置(一条 = 一页一条流;照 SK_STREAMS 一条一 dict 的形,sk_talent_reqs 逐条跑)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):通道对照表给这三条通道各登自己的流,省提名弹框出门槛卡。
 农业页资格清单里没有执照条款(只在「Required Documents — Credentials (if applicable)」提交材料里出现),不收。"""
+
+SKR_STUDENTS_URL = ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/"
+                    "saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students")
+"""Saskatchewan Experience 类学生子类页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 data/crawl/sk-sinp 原样,与通道对照表
+PW_SK_STUDENTS 的 url 同址)。读缓存优先。"""
+
+SKR_EE_URL = SK_BASE_URL + "international-skilled-worker-saskatchewan-express-entry"
+"""International Skilled Worker: Saskatchewan Express Entry 子类页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 sk-sinp)。读缓存优先。"""
+
+SKR_STUDENTS_STREAM = "SINP Saskatchewan Experience — Students"
+"""学生子类的门槛流(2026-09-30 通道补全批一 1b)。🔴 本段新流的名字都不许含「International Skilled Worker」:cms 判定引擎 SK-offer
+按 /sinp international skilled worker/i 挑行(见 SKR_EO_STREAM 注),别的子类的经验 / 语言行混进去会改雇主 offer 那条的判定。"""
+
+SKR_EE_STREAM = "SINP Saskatchewan Express Entry"
+"""Saskatchewan Express Entry 子类的门槛流(2026-09-30 通道补全批一 1b)。官方全名「International Skilled Worker: Saskatchewan Express
+Entry」,去掉「International Skilled Worker」的理由见 SKR_STUDENTS_STREAM。"""
+
+SKR_HEALTH_EE_STREAM = "SINP Health Talent Pathway — Express Entry"
+"""医疗人才通道 EE 版的门槛流(2026-09-30 通道补全批一 1b;立项稿第四节第 3 条「医疗、科技两条的快速通道选项门槛没收」)。
+只入表、不挂通道对照表:同一条通道的非 EE 版 / EE 版共用一张门槛卡,挂上会把 EE 档案写成必备、语言挑成 CLB 7(同阿省医疗专线 EE 版
+那 8 行的处理:行在库里、通道没挂,等门槛卡按版本分张再挂)。"""
+
+SKR_TECH_EE_STREAM = "SINP Innovation and Tech Talent Pathway — Express Entry"
+"""创新与科技人才通道 EE 版的门槛流(同上)。"""
+
+SKR_SECTION_STUDENTS = "Students — Eligibility"
+"""学生子类几行的出处节名。"""
+
+SKR_SECTION_EE = "International Skilled Worker: Saskatchewan Express Entry — Eligibility"
+"""Saskatchewan Express Entry 子类几行的出处节名。"""
+
+SKR_SECTION_HEALTH_EE = "Health Talent Pathway — Eligibility (Express Entry)"
+"""医疗人才通道 EE 版几行的出处节名。"""
+
+SKR_SECTION_TECH_EE = "Innovation and Tech Talent Pathway — Eligibility (Express Entry)"
+"""创新与科技人才通道 EE 版几行的出处节名。"""
+
+SKR_STUDENTS_EXP_RE = re.compile(r"You have worked for a minimum of (\w+) months \(([\d,]+) hours\) of paid employment in "
+                                 r"Saskatchewan related to your field of study", re.I)
+"""学生子类的经验:「You have worked for a minimum of six months (780 hours) of paid employment in Saskatchewan related to your field
+of study.」→ experience 6 个月(英文数词 → 数字)。不是在担保雇主处的在职时长(官方列的可计经验有校内、校外、co-op、PGWP 期间),
+不记 employerTenure。cms 门槛量尺按省挑经验行取第一条(萨省共用流那条 12 个月排在最前),这行不会被别的萨省岗挑中。"""
+
+SKR_STUDENTS_EXP_LABEL_TPL = ("At least {n} months ({hours} hours) of paid employment in Saskatchewan related to the field of "
+                              "study")
+"""学生子类经验行的 label。"""
+
+SKR_PROBLEM_STUDENTS_EXP = "学生子类工作经验(You have worked for a minimum of N months …)没解析到(students 页可能改版)"
+"""自校问题:学生子类经验(2026-09-30)。"""
+
+SKR_STUDENTS_RULES = (
+    (re.compile(r"You have graduated from a Designated Learning Institute \(DLI\) in Saskatchewan", re.I), FACTOR_EDUCATION, "",
+     "Graduated from a designated learning institution (DLI) in Saskatchewan (certificate, diploma or degree)",
+     "学生子类本省院校毕业条文没解析到(students 页可能改版)"),
+)
+"""学生子类的条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b):在萨省指定院校毕业。
+**不收的**:「You have a minimum language score of Canadian Language Benchmark (CLB) 4 if your job offer is in a designated trade
+occupation NOC TEER level "4" or "5".」—— 要挂 appliesTeer 4、5 才对,而 cms 判定卡「职业关」按省汇总各流的 appliesTeer(萨省眼下
+一行都没有):这行进表,萨省 TEER 0-3 的岗会多一句「学生子类仅受理 TEER 4-5」,全体萨省岗的「本站未收录按 TEER 分档的门槛」也随之
+消失 —— 与 2026-09-29 现有工签那批撤掉的语言行同一个坑(OUT_SK_REQ 注),待判定卡按通道读行之后再收。持 PGWP / 学签 / CUAET 工签
+(身份条件,门槛卡没有这一行)、offer 形态(汇装统一出)也不收。"""
+
+SKR_EE_RULES = (
+    (re.compile(r"To be eligible, you must be accepted into IRCC.s Express Entry pool", re.I), FACTOR_EE_PROFILE, "",
+     "Must be accepted into the federal Express Entry pool", "Saskatchewan Express Entry 的 EE 池条文没解析到(页面可能改版)"),
+    (SKR_POINTS_RE, FACTOR_POINTS_MIN, UNIT_POINTS, "Score at least {n} points on the SINP point assessment grid",
+     "Saskatchewan Express Entry 的打分表最低分没解析到(页面可能改版)"),
+)
+"""Saskatchewan Express Entry 子类的门槛(rule_rows 五元组;2026-09-30 通道补全批一 1b,立项稿第四节第 3 条「三合一组名里的『CLB 4、
+近 10 年 1 年经验』不是 SK 快速通道的口径」):须在联邦 EE 池、SINP 打分表至少 60 分(子类页「Score a minimum of 60 points on the SINP
+point assessment grid」,与 SKR_POINTS_RE 同一把尺子)。
+**不收的**:语言 —— 官方写「Have a language test result that meets the federal Express Entry language requirements」,没有本省数
+(同 NL 快速通道技术工人的处理);工作经验 —— 官方按三种人分三档(「For skilled professionals (not tradespeople): one year work
+experience in the past 10 years. For skilled tradespeople: two years work experience in a skilled trade in the past five years. For
+Canadian Experience Class: One year work experience in Canada in the past three years」),门槛卡只出一条主档,挑哪档都会把另两种人
+说错,不收;学历 / ECA、安家资金(门槛卡没有这两行)。"""
+
+SKR_TALENT_EE_EXP_RE = re.compile(r"If applying from inside or outside of Canada: (\w+) year of high-skilled related work "
+                                  r"experience in the past (\w+) years in your intended eligible occupation", re.I)
+"""医疗、科技两页 EE 那一半同一句:「If applying from inside or outside of Canada: One year of high-skilled related work experience in
+the past five years in your intended eligible occupation.」→ experience 12 个月,basis=windowYears=5(2026-09-30)。"""
+
+SKR_TECH_EE_ALT_RE = re.compile(r"If applying from in Saskatchewan: Currently working in Saskatchewan and have worked (\w+)[- ]"
+                                r"months \([\d,]+ hours\) of full-time \(30\+ hours per week\) work experience in the job with an "
+                                r"employer that is supporting you with an Employer Position Assessment", re.I)
+"""科技页 EE 那一半的在萨省替代路径:「If applying from in Saskatchewan: Currently working in Saskatchewan and have worked six months
+(780 hours) of full-time (30+ hours per week) work experience in the job with an employer that is supporting you with an Employer
+Position Assessment.」(非 EE 那半写的是「the employer that has supported you」,两句不同字)→ experienceAlt 6 个月、
+basis=employerTenure(口径同 SKR_TALENT_ALT_RE)。医疗页 EE 那半没有这条替代路径。"""
+
+SKR_TALENTS_EE = (
+    {"name": "医疗通道(EE 版)", "url": SKR_HEALTH_URL, "stream": SKR_HEALTH_EE_STREAM, "section": SKR_SECTION_HEALTH_EE,
+     "eeCut": SKR_EE_CUT, "expRe": SKR_TALENT_EE_EXP_RE, "altRe": None,
+     "talentRules": ((re.compile(r"Only those accepted into IRCC.s Express Entry pool are eligible through this stream", re.I),
+                      FACTOR_EE_PROFILE, "", "Only candidates accepted into the federal Express Entry pool are eligible",
+                      "医疗通道(EE 版)EE 池条文没解析到"),
+                     (re.compile(r"Have an English and/or French language score of Canadian Language Benchmark \(CLB\) (\d+) or "
+                                 r"higher", re.I), FACTOR_LANGUAGE, UNIT_CLB,
+                      "English and/or French language score of CLB {n} or higher (Express Entry)", "医疗通道(EE 版)语言门槛没解析到"),
+                     (SKR_HEALTH_LICENSING_RE, FACTOR_LICENSING, "", SKR_TALENT_LICENSING_LABEL, "医疗通道(EE 版)执照条款没解析到"))},
+    {"name": "科技通道(EE 版)", "url": SKR_TECH_URL, "stream": SKR_TECH_EE_STREAM, "section": SKR_SECTION_TECH_EE,
+     "eeCut": SKR_EE_CUT, "expRe": SKR_TALENT_EE_EXP_RE, "altRe": SKR_TECH_EE_ALT_RE,
+     "talentRules": ((re.compile(r"Those accepted into Immigration, Refugees and Citizenship Canada.s \(IRCC\) Express Entry "
+                                 r"pool may also be eligible through this stream", re.I),
+                      FACTOR_EE_PROFILE, "", "Candidates accepted into the federal Express Entry pool may apply (Express Entry "
+                      "version)", "科技通道(EE 版)EE 池条文没解析到"),
+                     (SKR_TECH_LICENSING_RE, FACTOR_LICENSING, "", SKR_TALENT_LICENSING_LABEL, "科技通道(EE 版)执照条款没解析到"))},
+)
+"""医疗、科技两条 Talent Pathway 的 EE 版门槛(2026-09-30 通道补全批一 1b;照 SKR_TALENTS 一条一 dict 的形,sk_talent_ee_reqs 逐条跑):
+取 EE 资格小节标题(SKR_EE_CUT)**之后**那一半(非 EE 那半归 SKR_TALENTS)。医疗 EE 版:EE 池、语言 CLB 7、近 5 年 1 年经验、执照;
+科技 EE 版:EE 池、近 5 年 1 年经验 + 在萨省担保雇主处 6 个月的替代路径、执照 —— 语言写的是「Have a language test result that meets
+the federal Express Entry language requirements」,没有本省数,不收。只入表不挂通道(理由见 SKR_HEALTH_EE_STREAM)。"""
+
+SKR_PROBLEM_TALENT_EE_CUT_TPL = "{name}页没找到 EE 资格小节标题「Eligibility (Express Entry)」(页面改版?EE 那一半取不出)"
+"""自校问题:EE 版取不到页面后半(2026-09-30)。"""
+
+SKR_PROBLEM_TALENT_EE_EXP_TPL = "{name}工作经验(近 N 年内 1 年)没解析到"
+"""自校问题:EE 版经验主档(2026-09-30)。"""
+
+SKR_PROBLEM_TALENT_EE_ALT_TPL = "{name}工作经验替代路径(在萨省担保雇主处全职满 6 个月)没解析到"
+"""自校问题:EE 版经验替代路径(2026-09-30)。"""
 
 
 # =========================================================================
@@ -4768,7 +4900,11 @@ OUT_NS_REQ = paths.PNP / "ns-req.json"
   全流新增:经验那行把「近 5 年」写进 basis(windowYears=5);这份工作要执照 / 证书的得先有(licensing)。
   TEER 4/5 在本雇主 6 个月、工资区间两行同日抽过又撤(lead 拍「这批先不收两行」),见上面「没抓的」末两条。
   类别流:A 类高中文凭;B 类高中文凭或建筑业培训。年龄 21-55、安家资金两条照旧不抓(理由同上)。
-  B 段自己又写了一遍语言两档与经验,逐项对校全流那几行(建筑通道的卡读的是全流那几行),对不上报自校问题。"""
+  B 段自己又写了一遍语言两档与经验,逐项对校全流那几行(建筑通道的卡读的是全流那几行),对不上报自校问题。
+2026-09-30 通道补全批一 1b(立项稿第三节 NS 四行):新行排在既有各行之后 —— 指南 C 段医生子条件三条(NSR_PHYS_STREAM)、
+  Nova Scotia Graduate 页三条(NSR_GRAD_STREAM,语言行带页上开放职业的 appliesNoc)、Nova Scotia: Express Entry 页两个 tab
+  (本省经验:经验 / 语言两档 / EE 档案;医生:批准职位 / 服务协议 / 意向信 / 联邦项目经验)。新读的两页先查 crawl 缓存;
+  四条新流都不带「Nova Scotia Nominee」(判定引擎 NS-sw 不读);要改判定卡的一处见 NSR_EE_TEER_03。"""
 
 NSR_TIMEOUT_S = 45
 """通道页抓取超时。"""
@@ -4957,10 +5093,195 @@ NSR_SOURCE = "Nova Scotia Nominee Program — Skilled Worker Application Guide"
 NSR_PRINT_DONE_TPL = "✓ {path}  指南版本 {version},共 {n} 条门槛"
 """NS/PE 门槛收尾报数(两处同形)。"""
 
-NSR_FACTOR_ORDER_FULL = ("language", "experience", "licensing", "education", "empYears")
+NSR_FACTOR_ORDER_FULL = ("language", "experience", "licensing", "education", "empYears", "jobOffer", "intent", "eeProfile",
+                         "eeProgram")
 """NS 收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后多了执照 / 学历两类;工资行同日撤下)。NSR_FACTOR_ORDER 原样
 留着 —— PE 门槛步(build_pe_req)借用那一份,扩它会让 PE 收尾多报两行 0。
-同日七省合并后 PE 改用自己的 PER_FACTOR_ORDER(见 PE 门槛段),NSR_FACTOR_ORDER 再无人用,删。"""
+同日七省合并后 PE 改用自己的 PER_FACTOR_ORDER(见 PE 门槛段),NSR_FACTOR_ORDER 再无人用,删。
+2026-09-30 通道补全批一 1b:末尾加 jobOffer / intent / eeProfile / eeProgram 四类(医生子条件与快速通道两类的条文行)。"""
+
+NSR_GRAD_URL = "https://liveinnovascotia.com/nova-scotia-graduate"
+"""Nova Scotia Graduate 通道页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 data/crawl/ns-root 原样,与 §5 NS_STREAMS 毕业生
+那条同址)。读缓存优先(page_text cache_first)。本类各行的出处与人可读页都指它 —— NS 表的行构造器不带 url 格(to_ns_req),
+整表的 url 是 Skilled Worker 指南 PDF,本类几行事后逐行补 url 与 pageUrl(照 NL 样张逐行补 pageUrl 的做法)。"""
+
+NSR_EE_URL = "https://liveinnovascotia.com/express-entry"
+"""Nova Scotia: Express Entry 通道页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 ns-root)。页上两个 tab:Skilled Work Experience
+in Nova Scotia / Physicians,两条通道各取各的段(NSR_EE_SEG_EXP_RE / NSR_EE_SEG_PHYS_RE),url 与 pageUrl 同上逐行补。"""
+
+NSR_GRAD_STREAM = "Nova Scotia Graduate stream"
+"""Nova Scotia Graduate 通道的门槛流(2026-09-30 通道补全批一 1b;与 §5 毕业生清单同一个官方名)。
+🔴 本段四条新流的名字都不许含「Nova Scotia Nominee」:cms 判定引擎 NS-sw 按 /nova scotia nominee/i 挑行(cms/src/lib/pathways
+的 NS_SW.reqStream),别的通道的行混进去会改技术工人的判定。"""
+
+NSR_PHYS_STREAM = "NSNP Skilled Worker stream — Physician sub-criteria"
+"""Skilled Worker 流下医生子条件(指南 C 类)的门槛流(2026-09-30 通道补全批一 1b)。只装 C 段自己的行:全流 NSR_STREAM 的语言
+两档与 12 个月经验,指南写明只管 A / B / D 三类(「For Skilled Worker (A), Critical Construction Worker (B), and Occupations in
+Demand (D) Categories」;经验句也只在 A / B / D 三段出现),医生通道不挂全流。"""
+
+NSR_EE_EXP_STREAM = "Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia"
+"""快速通道(本省经验)的门槛流(与通道对照表 officialName 同字;2026-09-30 通道补全批一 1b)。"""
+
+NSR_EE_PHYS_STREAM = "Nova Scotia: Express Entry — Physicians"
+"""快速通道(医生)的门槛流(同上)。"""
+
+NSR_GRAD_NOCS_RE = re.compile(r"This stream is currently open to workers in these job categories:(.+?)ELIGIBILITY")
+"""Graduate 页开放职业那一段(「This stream is currently open to workers in these job categories: NOC 32102: … NOC 42202: …
+ELIGIBILITY」;2026-09-30 通道补全批一 1b)。段里的码记进本类语言行的 appliesNoc:cms 门槛量尺(判定卡「个人关」)按省全量挑
+语言行、按职业码挑最具体的一行,不带 appliesNoc 的通用行会被 TEER 不明的新斯科舍岗挑中(那些岗没有 TEER 行可挑),
+把本类 CLB 5 说到与本类无关的岗上;带上页面列出的四个码,只有这四个职业的岗会挑到它(值同为 CLB 5)。"""
+
+NSR_NOC_RE = re.compile(r"NOC (\d{5})")
+"""开放职业段里逐个取五位职业码(页面写法「NOC 32102: Paramedical occupations」)。"""
+
+NSR_NOC_SEP = ","
+"""appliesNoc 的分隔符(与 ON 技工档「72,73,82…」同一写法;cms 门槛卡与量尺都按逗号切)。"""
+
+NSR_GRAD_LANG_RE = re.compile(r"prove language ability equal to Canadian Language Benchmark \(CLB\) Level (\d+)")
+"""Graduate 语言:「prove language ability equal to Canadian Language Benchmark (CLB) Level 5」(只在 Graduate 页里找 ——
+Skilled Worker 页同一句后面还跟着按 TEER 分档的半句,两页别混)。"""
+
+NSR_GRAD_LANG_LABEL_TPL = "Canadian Language Benchmark (CLB) Level {n} (Nova Scotia Graduate stream)"
+"""Graduate 语言行的 label。"""
+
+NSR_SECTION_GRAD = "Nova Scotia Graduate — Eligibility"
+"""Graduate 几行的出处节名(页面「ELIGIBILITY」一节;2026-09-30)。"""
+
+NSR_PROBLEM_GRAD_NOCS = "Graduate 页开放职业段(This stream is currently open to workers in these job categories)没解析到或一个码都没有"
+"""自校问题:Graduate 开放职业段(2026-09-30)。"""
+
+NSR_PROBLEM_GRAD_LANG = "Graduate 语言(Canadian Language Benchmark (CLB) Level N)没解析到"
+"""自校问题:Graduate 语言(2026-09-30)。"""
+
+NSR_GRAD_RULES = (
+    (NSR_GRAD_LANG_RE, FACTOR_LANGUAGE, UNIT_CLB, NSR_GRAD_LANG_LABEL_TPL, NSR_PROBLEM_GRAD_LANG),
+    (re.compile(r"have certifications issued by NS regulatory bodies required for the job"), FACTOR_LICENSING, "",
+     "Certifications issued by Nova Scotia regulatory bodies required for the job", "Graduate 执照条文没解析到"),
+    (re.compile(r"have met requirements for completing a program of study at an eligible Nova Scotia designated learning "
+                r"institution within three years of your application"), FACTOR_EDUCATION, "",
+     "Completed a program of study at an eligible Nova Scotia designated learning institution within three years of applying",
+     "Graduate 本省院校毕业条文没解析到"),
+)
+"""Nova Scotia Graduate 通道的门槛(rule_rows 五元组;2026-09-30 通道补全批一 1b,Graduate 页「ELIGIBILITY To submit an expression of
+interest (EOI) you must:」一节逐条读):语言 CLB 5、本省监管机构颁发的执照 / 证书、近 3 年内读完本省指定院校课程。
+**不收的**:年龄 19-55、高中文凭、安家资金(门槛卡没有这几行,照 NL 样张不收);offer 形态归汇装;工作经验 —— 清单里没有这一项,
+但「不设经验门槛」是要举证的断言(NL 国际毕业生那行拿反向正则作证),门槛卡也不出 op=none 的经验行,本批不下这个断言。"""
+
+NSR_SEC_PHYS_RE = re.compile(r"C\) Physicians? See APPENDIX C(.+?)D\) Occupations In-Demand See APPENDIX D")
+"""指南 C 段(Physicians)正文(2026-09-30 通道补全批一 1b):医生子条件的几行只在本段里找。"""
+
+NSR_PROBLEM_SEC_PHYS = "指南里没找到 C) Physicians 段(改版?)"
+"""自校问题:C 段(找不到就抽不了医生子条件那几行)。"""
+
+NSR_SECTION_PHYS = "C) Physicians"
+"""医生子条件几行的出处节名(指南原节标题)。"""
+
+NSR_PHYS_RULES = (
+    (re.compile(r"You have received an approved job offer from the NSH or IWK in one of these National Occupational "
+                r"Classifications \(NOC\)"), FACTOR_JOB_OFFER, "",
+     "Approved job offer from Nova Scotia Health (NSH) or the IWK in NOC 31100, 31101 or 31102", "医生子条件 offer 条文没解析到"),
+    (re.compile(r"You commit to live and work in Nova Scotia for at least 2 years"), FACTOR_INTENT, "",
+     "Commit to live and work in Nova Scotia for at least 2 years", "医生子条件定居承诺条文没解析到"),
+    (re.compile(r"You have a valid Education credential assessment from the Medical Council of Canada OR proof that you meet "
+                r"all the criteria required to obtain a licence to practise medicine in Nova Scotia from the College of "
+                r"Physicians and Surgeons of Nova Scotia"), FACTOR_LICENSING, "",
+     "Education credential assessment from the Medical Council of Canada, or proof of meeting the College of Physicians and "
+     "Surgeons of Nova Scotia licensing criteria", "医生子条件执照条文没解析到"),
+)
+"""Skilled Worker 流医生子条件(指南 C 段「you must meet all of the core requirements, in addition to the following」)自己的三条
+(rule_rows 五元组;2026-09-30 通道补全批一 1b):NSH / IWK 批准的 offer、在本省居住工作满 2 年的承诺、MCC 学历认证或省医师学会执照
+资格(门槛卡「其他」行出「职业所需执照或注册」)。年数写进正则:官方改数就判没匹配到、须人工重读,不拿 \\d 放宽。
+**不收的**:核心要求里的雇主经营 2 年(全流 NSR_STREAM 那行)—— 全流与 A / B / D 三类的语言、经验行同装一流,医生通道挂上会把
+CLB 5 与 12 个月说成医生的门槛;NSH / IWK 是省卫生局与儿童医院,经营年限这条对它们没有信息量。核心要求的语言只写「language
+competency in English or French」(TEER 4 / 5 才要考),医生是 TEER 1,没有数值行可收。"""
+
+NSR_EE_SEG_EXP_RE = re.compile(r"SKILLED WORK EXPERIENCE IN NOVA SCOTIA ELIGIBILITY To submit an expression of interest \(EOI\) "
+                               r"you must:(.+?)HOW TO SUBMIT AN EXPRESSION OF INTEREST")
+"""快速通道页 Skilled Work Experience in Nova Scotia 那一 tab 的资格段(2026-09-30 通道补全批一 1b)。"""
+
+NSR_EE_SEG_PHYS_RE = re.compile(r"PHYSICIANS The Nova Scotia Express Entry sub-criteria for physicians(.+?)"
+                                r"HOW TO SUBMIT AN EXPRESSION OF INTEREST")
+"""快速通道页 Physicians 那一 tab(说明 + 资格段;2026-09-30)。"""
+
+NSR_PROBLEM_EE_SEG_TPL = "快速通道页没找到「{name}」那一段(改版?)"
+"""自校问题:快速通道页某一 tab 没切出来(2026-09-30)。"""
+
+NSR_SECTION_EE_EXP = "Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia — Eligibility"
+"""快速通道(本省经验)几行的出处节名。"""
+
+NSR_SECTION_EE_PHYS = "Nova Scotia: Express Entry — Physicians — Eligibility"
+"""快速通道(医生)几行的出处节名。"""
+
+NSR_EE_EXP_RE = re.compile(r"have at least (\w+) year of experience working in Nova Scotia in an occupation at TEER 0, 1, 2, "
+                           r"or 3 of the National Occupational Classification")
+"""快速通道(本省经验)的经验:「have at least one year of experience working in Nova Scotia in an occupation at TEER 0, 1, 2, or 3
+of the National Occupational Classification」(英文数词 → 月数)。记 experience,appliesTeer 0-3(NSR_EE_TEER_03)。"""
+
+NSR_EE_TEER_03 = [0, 1, 2, 3]
+"""快速通道(本省经验)经验行的 appliesTeer:官方点名在本省做的是 TEER 0-3 的工作;通道对照表同样只把本通道列给 TEER 0-3 的岗
+(teers 格),岗位 TEER 正是在攒的那段经验的档。
+⚠ cms 判定卡「职业关」按省汇总各流的 appliesTeer(teerScopes):本流 0-3 + 下面语言两档 0/1、2/3 → 新斯科舍 TEER 4 / 5 的岗
+从此多一句「Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia 仅受理 TEER 0-3」(官方就是这样,属实);经验行
+排在语言两行之前,那句话引的原句是这条经验句(每条流取覆盖档位最多、最先出现的一行作出处)。"""
+
+NSR_EE_EXP_LABEL_TPL = ("At least {months} months ({word} year) of work experience in Nova Scotia in a NOC TEER 0, 1, 2 or 3 "
+                        "occupation")
+"""快速通道(本省经验)经验行的 label。"""
+
+NSR_EE_LANG_HI_RE = re.compile(r"You need CLB (\d+) for skilled work in the National Occupational Classification \(NOC\) TEER "
+                               r"(\d(?:,? (?:and|or) \d)*)")
+"""快速通道(本省经验)语言高档:「You need CLB 7 for skilled work in the National Occupational Classification (NOC) TEER 0 and 1.」"""
+
+NSR_EE_LANG_LO_RE = re.compile(r"You need CLB (\d+) for NOC TEER (\d(?:,? (?:and|or) \d)*) positions")
+"""快速通道(本省经验)语言低档:「You need CLB 5 for NOC TEER 2 and 3 positions」。两档按 TEER 各挂一行(门槛卡按本岗 TEER 挑档)。"""
+
+NSR_EE_LANG_LABEL_TPL = "CLB {clb} for NOC TEER {band} (Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia)"
+"""快速通道(本省经验)语言两行的 label。"""
+
+NSR_PROBLEM_EE_EXP = "快速通道(本省经验)的工作经验(have at least one year of experience working in Nova Scotia …)没解析到"
+"""自校问题:快速通道经验句(2026-09-30)。"""
+
+NSR_PROBLEM_EE_LANG = "快速通道(本省经验)的语言两档(You need CLB N for … TEER …)没解析到"
+"""自校问题:快速通道语言两档(2026-09-30)。"""
+
+NSR_PROBLEM_EE_LANG_ORDER_TPL = "快速通道语言两档读反了(TEER {hi_band} CLB {hi} 应高于 TEER {lo_band} CLB {lo})"
+"""自校问题:快速通道语言两档读反(读反会把门槛说低;2026-09-30)。"""
+
+NSR_EE_EXP_RULES = (
+    (re.compile(r"have a profile registered in Immigration, Refugees and Citizenship Canada.s Express Entry system"),
+     FACTOR_EE_PROFILE, "", "A profile registered in the federal Express Entry system", "快速通道(本省经验)EE 档案条文没解析到"),
+)
+"""快速通道(本省经验)的条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b):须在联邦 EE 系统里建档(弯撇号用 . 认)。
+**不收的**:年龄 21-55、加拿大高中文凭(门槛卡没有这两行);「Applicants who are claiming work experience that was gained on a Post
+Graduate Work permit must have graduated from an educational institution located in Nova Scotia.」—— 只管用 PGWP 期间经验申请的人,
+门槛卡与判定引擎都没有这种条件的写法,不收。"""
+
+NSR_EE_PHYS_RULES = (
+    (re.compile(r"have an approved opportunity from the NSHA or IWK as either a general practitioner and family physician "
+                r"\(NOC 31102\) or a specialist physician \(NOC 31100 and NOC 31101\)"), FACTOR_JOB_OFFER, "",
+     "Approved opportunity from the NSHA or IWK as a general practitioner / family physician (NOC 31102) or specialist "
+     "physician (NOC 31100, 31101)", "快速通道(医生)offer 条文没解析到"),
+    (re.compile(r"provide a copy of a signed Return for Service Agreement with the Nova Scotia Department of Health and Wellness "
+                r"indicating commitment to live and work in Nova Scotia for a minimum period of two years"), FACTOR_INTENT, "",
+     "Signed Return for Service Agreement: live and work in Nova Scotia for at least two years", "快速通道(医生)服务协议条文没解析到"),
+    (re.compile(r"receive a Letter of Interest from the Nova Scotia Nominee Program within the Express Entry system"),
+     FACTOR_EE_PROFILE, "", "Receive a Letter of Interest from the NSNP within the federal Express Entry system",
+     "快速通道(医生)意向信条文没解析到"),
+    (re.compile(r"meet the minimum work experience requirements of the Express Entry stream for which you have qualified"),
+     FACTOR_EE_PROGRAM, "", "Meet the minimum work experience requirements of the federal Express Entry program you qualified under",
+     "快速通道(医生)联邦项目经验条文没解析到"),
+)
+"""快速通道(医生)的条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b,Physicians tab「ELIGIBILITY To submit an expression of
+interest (EOI) you must:」逐条读):NSHA / IWK 批准的职位、签省卫生厅服务协议(本省住满两年)、在联邦 EE 系统里收到省意向信
+(意向信发在 EE 档案上 → 记 eeProfile,门槛卡 EE 行出「须有联邦 EE 档案」)、满足所走联邦 EE 项目的最低经验(记 eeProgram,
+门槛卡出「须符合 CEC / FSW / FST 之一」)。年数写进正则(同医生子条件那几行)。
+**不收的**:30 天内递 EOI、安家资金、在居住国合法身份(门槛卡没有这几行)。"""
+
+NSR_EE_TAB_EXP = "Skilled Work Experience in Nova Scotia"
+"""快速通道页本省经验那一 tab 的名字(NSR_PROBLEM_EE_SEG_TPL 报是哪一段没切出来;2026-09-30)。"""
+
+NSR_EE_TAB_PHYS = "Physicians"
+"""快速通道页医生那一 tab 的名字(同上)。"""
 
 
 # =========================================================================
@@ -5005,7 +5326,13 @@ OUT_NB_REQ = paths.PNP / "nb-req.json"
   工资 —— 三份指南「Competitive base wage」同句「within the range of wages earned by workers in the same occupation in the
   specified region, according to Job Bank’s labour market information」(区间内,不是中位);Graduates 语言免考 ——
   Graduates 指南「Your New Brunswick employment falls under TEER category 0, 1, 2, or 3 of the NOC」且「The program of study
-  that you successfully completed at the New Brunswick DLI was conducted in English or French」两条都满足可不交语言成绩。"""
+  that you successfully completed at the New Brunswick DLI was conducted in English or French」两条都满足可不交语言成绩。
+2026-09-30 通道补全批一 1b(立项稿第三节 NB 两行 + 存疑两条):新行排在既有各行之后,三页都读 crawl 缓存优先 —— 快速通道页(总体:
+  EE 池、CLB 7、近 10 年 1 年经验、打分表 67 分;本省就业路径:雇主经营 24 个月、岗位要求、近 12 个月居住并全职工作)、法语战略倡议页
+  (总体:近 5 年 1 年经验 + 本省院校毕业免经验、打分表 65 分;法语工人路径:岗位要求、近 6 个月住在本省)、私立学院毕业生试点页
+  (CLB 5、试点课程、雇主经营 24 个月)。关键工人试点页只有流程与参与雇主,资格写在指南 PDF 里(不在 crawl 缓存),不收。五条新流都
+  不带「New Brunswick Skilled Worker」(判定引擎 NB-sw 不读);法语 NCLC 5、法语工人的雇主经营 12 个月没入表(理由见 NBR_SI_RULES /
+  NBR_SI_WORKERS_RULES)。"""
 
 NBR_TIMEOUT_S = 45
 """通道页抓取超时。"""
@@ -5200,6 +5527,183 @@ NBR_SOURCE = "New Brunswick Skilled Worker stream — pathway application guides
 NBR_PRINT_DONE_TPL = "✓ {path}  指南版本 {version},共 {n} 条门槛"
 """NB 门槛收尾报数。"""
 
+NBR_EE_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/"
+              "provincial-nominee-program/express-entry-stream.html")
+"""New Brunswick Express Entry stream 通道页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 data/crawl/nb-imm 原样,与通道对照表
+PW_NB_EXPRESS_ENTRY_EMPLOYMENT 的 url 同址)。读缓存优先;本流各行 url 即此页(表级 url 是技术工人页,逐行覆盖)。"""
+
+NBR_SI_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/"
+              "provincial-nominee-program/strategic-initiative.html")
+"""New Brunswick Strategic Initiative 通道页(同上;法语工人等三条路径同一页)。"""
+
+NBR_PCCG_URL = ("https://www.gnb.ca/en/topic/family-home-community/immigration/"
+                "provincial-nominee-program/pccg-pilot-program.html")
+"""Private Career College Graduate Pilot Program 页(同上)。"""
+
+NBR_EE_STREAM = "New Brunswick Express Entry stream (Employment in New Brunswick / New Brunswick Interest)"
+"""NB 快速通道两条路径共同的资格(通道页「To be eligible, you must:」段;2026-09-30 通道补全批一 1b)。
+🔴 本段五条新流的名字都不许含「New Brunswick Skilled Worker」:cms 判定引擎 NB-sw 按 /new brunswick skilled worker/i 挑行
+(cms/src/lib/pathways 的 NB_SW.reqStream),别的通道的居住 / 经验行混进去会改技术工人的判定。"""
+
+NBR_EE_EMP_STREAM = "New Brunswick Express Entry stream — Employment in New Brunswick pathway"
+"""NB 快速通道「本省就业」路径自己的几行(2026-09-30)。"""
+
+NBR_SI_STREAM = ("New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / "
+                 "Francophones Working Remotely)")
+"""NB 法语战略倡议三条路径共同的资格(通道页「To be eligible, you must:」段;2026-09-30)。"""
+
+NBR_SI_WORKERS_STREAM = "New Brunswick Strategic Initiative — Francophone Workers in New Brunswick pathway"
+"""法语工人路径自己的几行(2026-09-30)。"""
+
+NBR_PCCG_STREAM = "New Brunswick Private Career College Graduate Pilot Program"
+"""私立职业学院毕业生试点的门槛流(2026-09-30)。"""
+
+NBR_SEG_EE_EMP_RE = re.compile(r"Employment in New Brunswick To be eligible under this pathway, you must also: (.+?) Read the")
+"""快速通道页「本省就业」路径段(2026-09-30)。总体资格段与技术工人页同一个写法,共用 NBR_SEG_GENERAL_RE。"""
+
+NBR_SEG_SI_WORKERS_RE = re.compile(r"Francophone Workers in New Brunswick To be eligible under this pathway, you must: (.+?) "
+                                   r"Read the")
+"""战略倡议页法语工人路径段(2026-09-30)。"""
+
+NBR_SEG_PCCG_RE = re.compile(r"To be eligible, you must: (.+?) Before proceeding to the next step")
+"""试点页资格段(2026-09-30)。"""
+
+NBR_SECTION_EE = "Express Entry stream page — Eligibility"
+"""快速通道总体资格几行的出处节名。"""
+
+NBR_SECTION_EE_EMP = "Express Entry stream page — Employment in New Brunswick"
+"""快速通道本省就业路径几行的出处节名。"""
+
+NBR_SECTION_SI = "Strategic Initiative page — Eligibility"
+"""战略倡议总体资格几行的出处节名。"""
+
+NBR_SECTION_SI_WORKERS = "Strategic Initiative page — Francophone Workers in New Brunswick"
+"""法语工人路径几行的出处节名。"""
+
+NBR_SECTION_PCCG = "Private Career College Graduate Pilot Program page — Eligibility"
+"""私立学院毕业生试点几行的出处节名。"""
+
+NBR_JOB_REQ_RE = re.compile(r"meet your New Brunswick job requirements, according to the National Occupational Classification "
+                            r"and other applicable laws and regulations")
+"""岗位要求条文(快速通道本省就业、法语工人两条路径同句;技术工人页总体段也是这一句,那边内联在 NBR_PAGE_RULES 里)→ licensing,
+门槛卡「其他」行出「职业所需执照或注册」(2026-09-30)。"""
+
+NBR_JOB_REQ_LABEL = "Meet the job requirements under the NOC and applicable laws"
+"""岗位要求条文行的 label(与技术工人那行同字)。"""
+
+NBR_BASIS_WINDOW_TPL = "windowYears={n}"
+"""经验行的口径包:近 N 年内(门槛卡据此出「近 N 年内」;判定引擎只认 employerTenure,不读窗口期;2026-09-30,同 SKR / NSR 各自那份)。"""
+
+NBR_POINTS_LABEL_TPL = "Score at least {n}/100 points on the New Brunswick selection factor grid"
+"""打分表最低分行的 label(快速通道 67、战略倡议 65;2026-09-30)。"""
+
+NBR_POINTS_RE = re.compile(r"score at least (\d+)/100 points based on the selection factor grid")
+"""打分表最低分:「score at least 67/100 points based on the selection factor grid」(快速通道)/「… 65/100 …」(战略倡议)。
+页上的打分表链接在「selection factor grid」上,正文折空白后与前文同一行。"""
+
+NBR_EE_RULES = (
+    (re.compile(r"have a valid profile in the federal Express Entry pool"), FACTOR_EE_PROFILE, "",
+     "A valid profile in the federal Express Entry pool", "快速通道 EE 池条文没解析到"),
+    (re.compile(r"have at least a level (\d+) in all four language skills according to the Canadian Language Benchmarks \(CLB\)"),
+     FACTOR_LANGUAGE, UNIT_CLB, "At least CLB {n} in all four language skills", "快速通道语言门槛没解析到"),
+    (NBR_POINTS_RE, FACTOR_POINTS_MIN, UNIT_POINTS, NBR_POINTS_LABEL_TPL, "快速通道打分表最低分没解析到"),
+)
+"""NB 快速通道总体资格的数值 / 条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b):须在联邦 EE 池、四项语言 CLB 7、打分表至少 67 分。
+经验一行官方写英文数词,另走 NBR_EE_EXP_RE。**不收的**:年龄 19-55、高中文凭(门槛卡没有这两行)。
+cms 门槛量尺按省挑语言行取第一条不限 TEER 的(NB 三份指南互校的 CLB 4 那行排在最前),这行 CLB 7 不会被别的 NB 岗挑中。"""
+
+NBR_EE_EXP_RE = re.compile(r"have at least (\w+) year of continuous work experience from within the past (\d+) years in one NOC "
+                           r"code in a TEER category 0, 1, 2 or 3")
+"""快速通道总体资格的经验:「have at least one year of continuous work experience from within the past 10 years in one NOC code in a
+TEER category 0, 1, 2 or 3」→ experience 12 个月,basis=windowYears=10(英文数词 → 月数;2026-09-30)。TEER 0-3 说的是这段经验的
+职业档,不挂 appliesTeer(通道对照表 teers 格已只把本通道列给 TEER 0-3 的岗;挂了会让 cms 判定卡「职业关」给全体 NB 岗改一句话)。"""
+
+NBR_EE_EXP_LABEL_TPL = ("At least {months} months ({word} year) of continuous work experience within the past {window} years in "
+                        "one NOC code in TEER 0, 1, 2 or 3")
+"""快速通道经验行的 label。"""
+
+NBR_PROBLEM_EE_EXP = "快速通道工作经验(have at least one year of continuous work experience …)没解析到"
+"""自校问题:快速通道经验(2026-09-30)。"""
+
+NBR_EE_EMP_RULES = (
+    (re.compile(r"for an eligible employer who has been actively operating in New Brunswick for the past (\d+) months"),
+     FACTOR_EMP_YEARS, UNIT_MONTHS, "Supporting employer actively operating in New Brunswick for the past {n} months",
+     "快速通道本省就业路径的雇主经营时长没解析到"),
+    (NBR_JOB_REQ_RE, FACTOR_LICENSING, "", NBR_JOB_REQ_LABEL, "快速通道本省就业路径的岗位要求条文没解析到"),
+    (re.compile(r"have been living and working full time in New Brunswick for the past (\d+) months"), FACTOR_RESIDENCE,
+     UNIT_MONTHS, "Living and working full time in New Brunswick for the past {n} months (TEER 0-3, one or more NB employers)",
+     "快速通道本省就业路径的居住 / 在职时长没解析到"),
+)
+"""NB 快速通道「本省就业」路径自己的三条(rule_rows 五元组;2026-09-30 通道补全批一 1b):雇主在本省经营满 24 个月(雇主侧,落表后改
+subject=employer,同 nb_page_reqs;与技术工人那行同为 24 个月 —— cms 雇主板取本省第一条经营年限行、查询不排序,同值才不会因取到哪行
+而改判)、岗位要求条文、近 12 个月在本省居住并全职工作(记 residence:门槛卡出「近 12 个月住在本省」;「并全职工作」在原句里,
+门槛卡没有「本省在职」的写法,判定引擎 NB-sw 只读技术工人几条流,读不到它)。"""
+
+NBR_SI_EXP_RE = re.compile(r"have at least (\w+) year of qualifying work experience from within the past (\w+) years")
+"""战略倡议总体资格的经验:「have at least one year of qualifying work experience from within the past five years」→ experience 12 个月,
+basis=windowYears=5(英文数词 → 数字;2026-09-30)。"""
+
+NBR_SI_EXP_LABEL_TPL = "At least {months} months ({word} year) of qualifying work experience within the past {window} years"
+"""战略倡议经验行的 label。"""
+
+NBR_SI_ALT_RE = re.compile(r"not required if you graduated from a New Brunswick post-secondary institution")
+"""战略倡议经验的例外:「- not required if you graduated from a New Brunswick post-secondary institution」→ experienceAlt、op=none、
+basis=provGraduate(同技术工人 Graduates 路径那行的口径;门槛卡出「或本省院校毕业」;2026-09-30)。"""
+
+NBR_SI_ALT_LABEL = "New Brunswick post-secondary graduates: the work experience requirement does not apply"
+"""战略倡议经验例外行的 label(原句进 valueText)。"""
+
+NBR_PROBLEM_SI_EXP = "战略倡议工作经验(have at least one year of qualifying work experience …)没解析到"
+"""自校问题:战略倡议经验(2026-09-30)。"""
+
+NBR_PROBLEM_SI_ALT = "战略倡议经验的本省院校毕业例外(not required if you graduated from a New Brunswick post-secondary institution)没解析到"
+"""自校问题:战略倡议经验例外(2026-09-30)。"""
+
+NBR_SI_RULES = (
+    (NBR_POINTS_RE, FACTOR_POINTS_MIN, UNIT_POINTS, NBR_POINTS_LABEL_TPL, "战略倡议打分表最低分没解析到"),
+)
+"""NB 战略倡议总体资格的数值行(rule_rows 五元组;2026-09-30 通道补全批一 1b):打分表至少 65 分。
+**不收的**:「have at least a level 5 in all four French language skills according to the Niveaux de compétence linguistique
+canadiens (NCLC)」—— 门槛卡语言行写的是「英语或法语每项 CLB N」,只要法语的门槛上卡会说成英法任一(同 BC 法语教师 CLB 5 没入表的
+理由);通道对照表已给本通道挂标签「需说法语(NCLC 5)」。年龄 19 以上、高中文凭、安家资金(门槛卡没有这几行)也不收。"""
+
+NBR_SI_WORKERS_RULES = (
+    (NBR_JOB_REQ_RE, FACTOR_LICENSING, "", NBR_JOB_REQ_LABEL, "法语工人路径的岗位要求条文没解析到"),
+)
+"""法语工人路径的条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b):岗位要求条文。
+**不收的**:雇主在本省经营满 12 个月(「for an eligible employer who has been actively operating in New Brunswick for the past 12
+months」)—— cms 雇主板按省取第一条经营年限行、查询不排序(PNP_REQ_EMPLOYER 无 ORDER BY),NB 同时有 24 与 12 两个数时,
+取到哪行由库里物理行序定,NB 雇主的经营年限判定会随之漂;待雇主板按通道读行再收。"""
+
+NBR_SI_RES_RE = re.compile(r"have been living in New Brunswick for at least (\w+) months [-–—] not required if you were offered "
+                           r"a job through a recruitment mission led by the Government of New Brunswick")
+"""法语工人路径的居住:「have been living in New Brunswick for at least six months - not required if you were offered a job through
+a recruitment mission led by the Government of New Brunswick」→ residence 6 个月(英文数词;原句连例外半句整条进 valueText;
+2026-09-30)。门槛卡出「近 6 个月住在本省」,省招聘团 offer 的例外只在原句里。"""
+
+NBR_SI_RES_LABEL_TPL = ("Lived in New Brunswick for at least {n} months (not required for a job offered through a Government of "
+                        "New Brunswick recruitment mission)")
+"""法语工人路径居住行的 label。"""
+
+NBR_PROBLEM_SI_RES = "法语工人路径的居住时长(have been living in New Brunswick for at least N months …)没解析到"
+"""自校问题:法语工人居住(2026-09-30)。"""
+
+NBR_PCCG_RULES = (
+    (re.compile(r"have a level (\d+) in all four language skills according to the Canadian Language Benchmarks \(CLB\)"),
+     FACTOR_LANGUAGE, UNIT_CLB, "CLB {n} in all four language skills", "私立学院毕业生试点语言门槛没解析到"),
+    (re.compile(r"have successfully completed an eligible program of study at a participating private career college located in "
+                r"New Brunswick"), FACTOR_EDUCATION, "",
+     "Completed an eligible program of study at a participating private career college in New Brunswick",
+     "私立学院毕业生试点学历条文没解析到"),
+    (re.compile(r"has been actively operating in New Brunswick for the past (\d+) months under the same ownership"),
+     FACTOR_EMP_YEARS, UNIT_MONTHS, "Supporting employer actively operating in New Brunswick for the past {n} months under the same "
+     "ownership", "私立学院毕业生试点雇主经营时长没解析到"),
+)
+"""私立学院毕业生试点的门槛(rule_rows 五元组;2026-09-30 通道补全批一 1b,试点页「Eligibility To be eligible, you must:」逐条读):
+四项语言 CLB 5、读完本省参与试点的私立职业学院的指定课程、支持雇主在本省同一所有权下经营满 24 个月(雇主侧,落表后改
+subject=employer;与技术工人那行同为 24 个月,雇主板不漂)。**不收的**:年龄 19 以上(门槛卡没有这一行)、结业 90 天内办完提名并
+申请封闭工签(时限条件,门槛卡没有写法)、offer 形态(汇装统一出)。"""
+
 
 # =========================================================================
 # 22. PE 门槛(与 §9 同一份官方申请指南 PDF)
@@ -5243,10 +5747,15 @@ Employer Requirements 整段收进来了,不需要另外碰 WAF。
   同日 lead 决定 ① 与 ③ 两行本批先不收(build_pe_req 不调 pe_critical_reqs / pe_wage_reqs,函数与常量留着):
   ① 判定引擎 PE-sw 会读到它、改掉 TEER 4/5 的判法并让 pathVerdict 金标变红,要和判定引擎改动一起排期;
   ③ 进汇装后按当日 mart 快照约 110 / 191 个可提名岗改判「工资低于中位」,待 Frank 定(2026-09-29)。
-  其余(②④⑤)照收;Critical Worker 流现只有学历一行。"""
+  其余(②④⑤)照收;Critical Worker 流现只有学历一行。
+2026-09-30 通道补全批一 1b(立项稿第四节第 4 条 + 第三节 PE 三行):上面「语言 CLB/NCLC 4(四条 Workforce 通道口径一致 → 不分 TEER
+  陈述)」那一行撤掉 —— 指南 Skilled Worker 一节写的是考试**或**雇主在 PEIW-02 上确认二选一、International Graduate 的 TEER 0-3 只要
+  雇主确认;改按各节原句逐流落语言行(PER_LANG_ROWS,排在既有各行之后)。另接三条新流:International Graduate(本省公立院校毕业、
+  语言两档)、Intermediate Experience(高中、CLB 4;经验两条不收)、PEI Express Entry(联邦项目、EE 档案;读网页缓存)。"""
 
 PER_STREAM = "PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / Occupations in Demand)"
-"""四条 Workforce 通道的合称。"""
+"""四条 Workforce 通道的合称。
+2026-09-30 通道补全批一 1b:本流原先那行语言(「四条都要考 CLB 4」)撤掉、按流落行(见 PER_LANG_ROWS),眼下只剩年龄一行。"""
 
 PER_SKILLED_STREAM = "PEI PNP Workforce — Skilled Worker stream"
 """Skilled Worker 通道名(经验那行只挂它)。"""
@@ -5383,8 +5892,10 @@ PER_BASIS_OCC_MEDIAN = "occMedian"
 """工资那行的口径标记(本职业的中位工资,官方定义见 PER_WAGE_MEDIAN_RE)。"""
 
 PER_LANG_LABEL_TPL = ("A valid language test from an IRCC-approved institution with a minimum score of "
-                      "CLB/NCLC {clb} (test valid for 2 years); required by all PEI Workforce streams")
-"""语言的 label。"""
+                      "CLB/NCLC {clb} (test valid for 2 years)")
+"""语言的 label。
+2026-09-30 通道补全批一 1b:去掉末尾「; required by all PEI Workforce streams」—— 不是四条都要考(见 PER_LANG_ROWS);本模板改给
+「要考」的那几行(Critical Worker / Occupations in Demand / Intermediate Experience)用。"""
 
 PER_EXP_LABEL_TPL = ("At least {years_word} years ({months} months) of full-time work experience in the "
                      "past {window_word} ({window}) years, with a full-time non-seasonal job offer in NOC "
@@ -5443,10 +5954,12 @@ PER_PROBLEM_AGE_MULTI_TPL = "指南里出现多个年龄区间 {ages} —— 官
 PER_SOURCE = "PEI Workforce Application Guide"
 """表级来源名。"""
 
-PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age", "eoiDraw")
+PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age", "eoiDraw", "eeProgram",
+                    "eeProfile")
 """PE 门槛收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后因素多了四类,不再借 NS 那份 NSR_FACTOR_ORDER)。
 同日工资一行本批先不收(见 pe_wage_reqs),收尾报「wage 0 条」是预期,不是解析失败。
-同日抽选卡重排末尾加 eoiDraw(AIP 由指定雇主直接递背书申请那一行,见 PER_AIP_DIRECT_RE)。"""
+同日抽选卡重排末尾加 eoiDraw(AIP 由指定雇主直接递背书申请那一行,见 PER_AIP_DIRECT_RE)。
+2026-09-30 通道补全批一 1b:末尾加 eeProgram / eeProfile 两类(PEI Express Entry 两行)。"""
 
 PER_AIP_URL = "https://www.princeedwardisland.ca/en/service/atlantic-immigration-program-endorsement-application"
 """PE 的 AIP 背书申请页(2026-09-29 抽选卡重排,Frank「AIP 是不是应该单独的卡」「按你建议」)。官网在 Radware 墙后,只读 crawl 役
@@ -5474,6 +5987,158 @@ PER_AIP_LABEL = ("The designated employer submits the AIP Endorsement Applicatio
 PER_PROBLEM_AIP = ("AIP 背书申请的官方原句没匹配到(atlantic-immigration-program-endorsement-application 页缓存缺失、撞墙或改了措辞,"
                    "「AIP 由指定雇主直接递背书申请、不经抽选」这条须人工重读)")
 """自校问题:AIP 背书申请那句原句(2026-09-29)。"""
+
+PER_IG_STREAM = "PEI PNP — International Graduate stream"
+"""International Graduate 流的门槛流(2026-09-30 通道补全批一 1b)。🔴 本段三条新流的名字都不许含「PEI PNP Workforce」:cms 判定
+引擎 PE-sw 按 /pei pnp workforce/i 挑行(cms/src/lib/pathways 的 PE_SW.reqStream),别的流的语言 / 经验行混进去会改技术工人那条
+的判定(同 PE_OID_STREAM 不带「Workforce」的理由)。"""
+
+PER_IE_STREAM = "PEI PNP — Intermediate Experience stream"
+"""Intermediate Experience 流的门槛流(2026-09-30;命名理由同上)。"""
+
+PER_EE_STREAM = "PEI PNP — PEI Express Entry"
+"""PEI Express Entry 的门槛流(2026-09-30;命名理由同上)。"""
+
+PER_IG_PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates"
+"""International Graduate 流的人可读页(本流各行的 pageUrl;网址照 crawl 清单 data/crawl/pe-imm 原样,与通道对照表同址;2026-09-30)。
+本流的行取自申请指南 PDF(同一段原文,指南实时可取、网页在 Radware 后面),url 仍是指南。"""
+
+PER_IE_PAGE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"
+"""Intermediate Experience 流的人可读页(同上)。"""
+
+PER_EE_URL = "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry"
+"""PEI Express Entry 页(2026-09-30;网址照 crawl 清单 pe-imm)。官网在 Radware 墙后,只读 crawl 缓存(cached_text_of,同 PER_AIP_URL
+的读法,不发请求);本流两行的 url 与 pageUrl 都指它 —— 指南 PDF 的 EE 一节只写「you may be eligible for nomination … in one of the
+federal programs」,「须满足联邦项目之一」这句只在网页上。"""
+
+PER_IG_START = PER_CRITICAL_END
+"""International Graduate 一节的起锚(= Critical Worker 一节的止锚「International Graduate Stream To be eligible」;2026-09-30)。"""
+
+PER_IE_START = "Intermediate Experience Stream To be eligible"
+"""Intermediate Experience 一节的起锚,同时是 International Graduate 一节的止锚(2026-09-30)。"""
+
+PER_IE_END = PER_OID_START
+"""Intermediate Experience 一节的止锚(= Occupations in Demand 一节的起锚;2026-09-30)。"""
+
+PER_SECTION_IG = "International Graduate Stream"
+"""International Graduate 几行的出处节名(指南原节标题)。"""
+
+PER_SECTION_IE = "Intermediate Experience Stream"
+"""Intermediate Experience 几行的出处节名(指南原节标题)。"""
+
+PER_SECTION_EE = "PEI Express Entry — Am I eligible to apply?"
+"""PEI Express Entry 两行的出处节名(网页小节名)。"""
+
+PER_SW_LANG_RE = re.compile(r"Language ability can be verified by one of the following: o Providing a valid language test result "
+                            r"from an IRCC.approved testing institution, with a minimum score of CLB ?/ ?NCLC \d\. Language tests "
+                            r"are valid for 2 years after the date of the test result; or o Providing a completed PEIW.02: "
+                            r"Workforce Job Offer Form, indicating the employer is comfortable with the employee.s proficiency in "
+                            r"English and/or French to perform tasks associated with the job position being offered", re.I)
+"""Skilled Worker(TEER 0-3)的语言:考 CLB/NCLC 4 **或**雇主在 PEIW-02 上确认语言够用,二选一(指南 Skilled Worker 一节「have
+sufficient English and/or French language ability to perform the job offered. Language ability can be verified by one of the
+following: o Providing a valid language test result … minimum score of CLB/NCLC 4 …; or o Providing a completed PEIW-02: Workforce
+Job Offer Form, indicating the employer is comfortable with the employee's proficiency …」;列表符 o 与 U+2010 连字符照 PDF 原样,
+连字符与撇号用 . 兜)。→ language、op=none(不强制考试,同 NL 技术工人 TEER 0-3 那行的写法)、appliesTeer 0-3。2026-09-30 通道补全
+批一 1b(立项稿第四节第 4 条)。"""
+
+PER_TEST_RE = re.compile(r"provide a valid language test result from an IRCC.approved testing institution,? with a minimum score of "
+                         r"CLB ?/ ?NCLC (\d)", re.I)
+"""「要考」的写法:「provide a valid language test result from an IRCC-approved testing institution, with a minimum score of CLB/NCLC 4」
+(Critical Worker / Intermediate Experience / Occupations in Demand 三节同句;International Graduate 的 TEER 4-5 半句少一个逗号,
+`,?` 兜)。各节只在自己的切片里找(2026-09-30)。"""
+
+PER_IG_LANG_HI_RE = re.compile(r"if in a high skilled occupation defined by the Training, Education, Experience, and Responsibility "
+                               r"classification system as TEER category 0, 1, 2, or 3, possess sufficient English and/or French "
+                               r"language ability to perform the job by providing a completed PEIW.02: Workforce Job Offer Form", re.I)
+"""International Graduate 的 TEER 0-3 语言:只要雇主在 PEIW-02 上确认(指南 International Graduate 一节原句,本半句没有考试选项)→
+language、op=none、appliesTeer 0-3(2026-09-30)。"""
+
+PER_IG_LANG_LO_RE = re.compile(r"if in an intermediate.skilled position defined by the Training, Education, Experience, and "
+                               r"Responsibility classification system as TEER category 4 or 5, to provide a valid language test "
+                               r"result from an IRCC.approved testing institution,? with a minimum score of CLB ?/ ?NCLC (\d)", re.I)
+"""International Graduate 的 TEER 4 / 5 语言:要考 CLB/NCLC 4(同节原句)→ language ≥ 4、appliesTeer 4 / 5(2026-09-30)。"""
+
+PER_SW_LANG_LABEL = ("Language: a CLB/NCLC 4 test or the employer's confirmation on the PEIW-02 Workforce Job Offer Form "
+                     "(no test required when the employer confirms)")
+"""Skilled Worker 语言行(op=none)的 label(原句进 valueText;2026-09-30)。"""
+
+PER_IG_LANG_HI_LABEL = ("TEER 0-3: no language test; the employer confirms English/French ability on the PEIW-02 Workforce Job "
+                        "Offer Form")
+"""International Graduate TEER 0-3 语言行(op=none)的 label(2026-09-30)。"""
+
+PER_IG_LANG_LO_LABEL_TPL = "TEER 4-5: a valid language test with a minimum score of CLB/NCLC {clb} (test valid for 2 years)"
+"""International Graduate TEER 4 / 5 语言行的 label(2026-09-30)。"""
+
+PER_PROBLEM_LANG_ROW_TPL = "「{section}」一节的语言原句没解析到(指南可能改版,语言分档须人工重读)"
+"""自校问题:某一节的语言原句没匹配到(2026-09-30)。"""
+
+PER_LANG_ROWS = (
+    (PER_SKILLED_START, PER_CRITICAL_START, PER_SKILLED_STREAM, PER_SECTION_EXP, PER_SW_LANG_RE, OP_NONE, PER_TEER_03,
+     PER_SW_LANG_LABEL),
+    (PER_CRITICAL_START, PER_CRITICAL_END, PER_CRITICAL_STREAM, PER_SECTION_CRITICAL, PER_TEST_RE, OP_GE, PER_TEER_45,
+     PER_LANG_LABEL_TPL),
+    (PER_OID_START, PER_OID_END, PE_OID_STREAM, PER_SECTION_OID, PER_TEST_RE, OP_GE, [], PER_LANG_LABEL_TPL),
+)
+"""Workforce 三条既有流的语言行(2026-09-30 通道补全批一 1b,立项稿第四节第 4 条「PE 语言行过严」):原先一行「四条 Workforce 流
+都要考 CLB 4」(流名 PER_STREAM)撤掉,按指南各节原句逐流落行 —— Skilled Worker(TEER 0-3)考试或雇主确认二选一(op=none)、
+Critical Worker(TEER 4 / 5)要考 CLB 4、Occupations in Demand 要考 CLB 4(清单里有 TEER 3 的 33102 / 73300,不挂 TEER)。
+每条 = (起锚, 止锚, 流名, 节名, 原句正则, 比较符, appliesTeer, label);op=none 的 label 原样用,要考的 label 是模板({clb})。
+International Graduate / Intermediate Experience 两条新流的语言行在 PER_IG_LANG_ROWS / PER_IE_LANG_ROWS(同形)。
+⚠ 判定引擎 PE-sw 读 Workforce 几条流(/pei pnp workforce/i):TEER 0-3 从「要 CLB 4」变成「不要语言成绩」,TEER 4 / 5 照旧 CLB 4
+(出处换成 Critical Worker 那句);没答职业、不知道 TEER 的档案挑不到语言行(分档的省 NS / NL 本来就这样)。
+⚠ 新行排在既有各行之后(build_pe_req 里语言步挪到末尾):cms 判定卡「职业关」每条流取覆盖档位最多、最先出现的一行作
+「仅受理 TEER …」的出处,Skilled Worker 仍取 24 个月经验那行、Critical Worker 仍取学历那行,原句不变。"""
+
+PER_IG_LANG_ROWS = (
+    (PER_IG_START, PER_IE_START, PER_IG_STREAM, PER_SECTION_IG, PER_IG_LANG_HI_RE, OP_NONE, PER_TEER_03, PER_IG_LANG_HI_LABEL),
+    (PER_IG_START, PER_IE_START, PER_IG_STREAM, PER_SECTION_IG, PER_IG_LANG_LO_RE, OP_GE, PER_TEER_45,
+     PER_IG_LANG_LO_LABEL_TPL),
+)
+"""International Graduate 的语言两档(形同 PER_LANG_ROWS;2026-09-30):TEER 0-3 雇主在 PEIW-02 上确认、TEER 4 / 5 要考 CLB 4。"""
+
+PER_IE_LANG_ROWS = (
+    (PER_IE_START, PER_IE_END, PER_IE_STREAM, PER_SECTION_IE, PER_TEST_RE, OP_GE, [], PER_LANG_LABEL_TPL),
+)
+"""Intermediate Experience 的语言(形同 PER_LANG_ROWS;2026-09-30):要考 CLB 4(本流只收 TEER 4,原句不带 TEER,不挂 appliesTeer)。"""
+
+PER_IG_RULES = (
+    (re.compile(r"you must have graduated from a publicly.funded Prince Edward Island post.secondary institution", re.I),
+     FACTOR_EDUCATION, "", "Graduated from a publicly funded Prince Edward Island post-secondary institution",
+     "International Graduate 本省公立院校毕业条文没解析到"),
+)
+"""International Graduate 的条文行(rule_rows 五元组;2026-09-30 通道补全批一 1b):本省公立院校毕业(U+2010 连字符用 . 兜)。
+**不收的**:持 PGWP 与在加合法身份(身份条件,门槛卡没有这一行;通道对照表已挂「需持 PGWP」标签)、可能要面谈、年龄 18-59、安家资金、
+定居意向(门槛卡没有这几行;年龄已在四流合称那行)。雇主侧照挂「Employer Requirements - All Streams」那条流。"""
+
+PER_IE_RULES = (
+    (PER_EDU_SECONDARY_RE, FACTOR_EDUCATION, "", PER_EDU_SECONDARY_LABEL, "Intermediate Experience 学历(高中)没解析到"),
+)
+"""Intermediate Experience 的条文行(rule_rows 五元组;2026-09-30):至少高中毕业(与 Critical Worker / Occupations in Demand 同句,
+只在本节切片里找)。
+**不收的**:工作经验两条 ——「have a minimum of six months full‐time Canadian work experience that was gained while on a Labour Market
+Impact Assessment (LMIA) based work permit, and be relevant to the current position」与「have a minimum two years of full‐time work
+experience or relevant education in the past five years」。cms 门槛量尺(判定卡「个人关」)按省挑经验行、取第一条套 TEER 的:
+PE 现只有 Skilled Worker 24 个月那行(TEER 0-3),这两行任一进表,全体 PE TEER 4 岗的判定卡都会多出本流的经验门槛(Critical Worker、
+在需职业的岗也算在内)—— 与 2026-09-29 Critical Worker 在职 6 个月、在需职业 1 年两行不收同一个理由,待量尺按通道读行再收。
+年龄、合法身份、安家资金、定居意向不收(门槛卡没有这几行)。"""
+
+PER_EE_RULES = (
+    (re.compile(r"meet the requirements of at least one of the Federal Economic Immigration programs: Federal Skilled Worker "
+                r"Program; Federal Skilled Trades Program; or Canadian Experience Class", re.I), FACTOR_EE_PROGRAM, "",
+     "Meet the requirements of at least one federal program: Federal Skilled Worker, Federal Skilled Trades or Canadian "
+     "Experience Class", "PEI Express Entry 联邦项目条文没解析到(pei-express-entry 页缓存缺失、撞墙或改版)"),
+    (re.compile(r"create a Federal Express Entry Profile and be placed in the pool of candidates", re.I), FACTOR_EE_PROFILE, "",
+     "Create a federal Express Entry profile and be placed in the pool of candidates",
+     "PEI Express Entry 的 EE 档案条文没解析到(pei-express-entry 页缓存缺失、撞墙或改版)"),
+)
+"""PEI Express Entry 的门槛(rule_rows 五元组;2026-09-30 通道补全批一 1b,网页「To be eligible for nomination through PEI Express Entry,
+you must:」两条):满足联邦三项目之一、在联邦 EE 池建档。
+**不收的**:「You are required to show 9 months of continuous full-time work experience with the PEI employer supporting you for
+immigration AND have at least 4 months remaining on your work permit … IF: you hold a PGWP and graduated from an institution outside of
+PEI; you have a spousal open work permit …」—— 同雇主在职时长(employerTenure)的条件行;cms 门槛量尺按省收全部在职行、不看条件,
+这行进表全体 PE 岗的判定卡都会多一行「在职时长 9 个月 · 判不了」(2026-09-29 萨省现有工签那批撤掉的同一个坑)。
+雇主侧:网页「Your employer must complete the following form: PEIW-02」,指南「Employer Requirements - All Streams」写明雇主填 PEIW-02
+即确认那几条 —— 通道对照表照挂雇主段那条流。"""
 
 
 # =========================================================================

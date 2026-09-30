@@ -1188,6 +1188,43 @@ class NlIgIn:
 
 
 @dataclass
+class NbExpIn:
+    """nb_exp_rows() 入参:一条「近 N 年内 M 年经验」原句的取法(2026-09-30 通道补全批一 1b;NB 快速通道与法语战略倡议两处共用)。"""
+
+    txt: str
+    """正文段(已压平空白)。"""
+
+    rule_re: re.Pattern
+    """原句正则(第一组年数、第二组窗口年数;英文数词或数字都认)。"""
+
+    stream: str
+    """落到哪条流。"""
+
+    url: str
+    """出处页。"""
+
+    section: str
+    """出处节名。"""
+
+    label_tpl: str
+    """label 模板({months} 月数 / {word} 原句年数 / {window} 窗口年数)。"""
+
+    problem: str
+    """没匹配到或数词认不出时报的自校问题。"""
+
+
+@dataclass
+class PeLangRowsIn:
+    """pe_lang_rows() 入参:指南全文 + 语言行规格清单(PER_LANG_ROWS 一族;2026-09-30 通道补全批一 1b)。"""
+
+    txt: str
+    """指南全文(已压平空白)。"""
+
+    specs: tuple
+    """(起锚, 止锚, 流名, 节名, 原句正则, 比较符, appliesTeer, label) 八元组清单。"""
+
+
+@dataclass
 class SkGroupNameIn:
     """sk_processing_group() 入参:一行处理时长归哪一组。"""
 

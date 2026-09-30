@@ -350,7 +350,7 @@ PW_SK_EMPLOYMENT_OFFER = {
     "officialName": "International Skilled Worker: Employment Offer",
     "boardLabel": None, "isDefault": True,
     "drawStreams": [],
-    "reqStreams": ["SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express Entry)",
+    "reqStreams": ["SINP International Skilled Worker (Employment Offer / Occupations In-Demand)",
                    "SINP International Skilled Worker: Employment Offer",
                    "SINP International Skilled Worker (with an employment offer)", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
@@ -366,7 +366,9 @@ PW_SK_EMPLOYMENT_OFFER = {
 萨省这条不经 EOI 抽选(2026-09-27 bb38b884「持 offer 直接申请、不经 EOI」),没有抽选组;门槛卡没接。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条(pnp sk-req 的流名)—— 与 OID / EE 共用的那条(语言 CLB 4、
 近 10 年内 12 个月经验、打分表 ≥ 60 分)、Employment Offer 自己那条(执照条款)、持 offer 直接申请那条(不经 EOI 抽选,门槛卡暂不读)。
-走不了省提名而有原因的萨省岗(兼职、合同工……)也按这条出门槛卡(cms gateChannelOf)。"""
+走不了省提名而有原因的萨省岗(兼职、合同工……)也按这条出门槛卡(cms gateChannelOf)。
+2026-09-30 通道补全批一 1b:共用流改名「SINP International Skilled Worker (Employment Offer / Occupations In-Demand)」(去掉 Express
+Entry;立项稿第四节第 3 条,pnp SKR_STREAM 注),三行照旧(EO / OID 两页交叉核对)。"""
 
 PW_SK_HEALTH_TALENT = {
     "key": "sk-health-talent", "province": "SK", "program": "PNP",
@@ -387,7 +389,9 @@ PW_SK_HEALTH_TALENT = {
 """萨省医疗人才通道(清单 sk-health.json)。萨省 Talent Pathway 不公布抽选,没有抽选组。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
 在担保雇主处 6 个月的替代路径记 experienceAlt)+ 持 offer 直接申请那条。只登非 EE 版,照 AB 医疗专线的先例:EE 版要联邦 EE 档案、
-CLB 7,登进来门槛卡会把 EE 档案写成必备。"""
+CLB 7,登进来门槛卡会把 EE 档案写成必备。
+2026-09-30 通道补全批一 1b:EE 版门槛入表(pnp sk-req 流「SINP Health Talent Pathway — Express Entry」:EE 池、CLB 7、近 5 年 1 年
+经验、执照;立项稿第四节第 3 条「快速通道选项门槛没收」),本行照旧不挂 —— 理由即上句,等门槛卡按版本分张再挂。"""
 
 PW_SK_TECH_TALENT = {
     "key": "sk-tech-talent", "province": "SK", "program": "PNP",
@@ -407,7 +411,9 @@ PW_SK_TECH_TALENT = {
 }
 """萨省创新与科技人才通道(清单 sk-tech.json,32 个职业)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流 —— 本通道非 EE 版那条(语言 CLB 5、近 5 年内 12 个月经验、执照;
-在担保雇主处 6 个月的替代路径记 experienceAlt)+ 持 offer 直接申请那条。只登非 EE 版(理由同医疗那条)。"""
+在担保雇主处 6 个月的替代路径记 experienceAlt)+ 持 offer 直接申请那条。只登非 EE 版(理由同医疗那条)。
+2026-09-30 通道补全批一 1b:EE 版门槛入表(流「SINP Innovation and Tech Talent Pathway — Express Entry」:EE 池、近 5 年 1 年经验 +
+在萨省担保雇主处 6 个月的替代路径、执照;语言写的是联邦 EE 标准、没有本省数,不收),本行照旧不挂(理由同医疗那条)。"""
 
 PW_SK_AGRICULTURE_TALENT = {
     "key": "sk-agriculture-talent", "province": "SK", "program": "PNP",
@@ -455,7 +461,9 @@ CLB 4、执照),同日 lead 决定这批先不接,门槛流撤回、这格恢复
 employer that has supported you with the Employer Position Assessment, with a valid work permit.」—— cms 的门槛量尺与 TEER
 粗筛按全省读门槛行、不分通道,这几行入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成仅受理 4-5;
 待量尺与引擎按通道读行之后再接(pnp 的 OUT_SK_REQ 注同记)。持 offer 直接申请那条流本来就不挂:那句原句说的是
-International Skilled Worker 类,本通道属 Saskatchewan Experience 类。"""
+International Skilled Worker 类,本通道属 Saskatchewan Experience 类。
+2026-09-30 通道补全批一 1b 复查(立项稿第四节第 3 条「现有工签类一行门槛都没有」):cms 判定卡「个人关」的门槛量尺(tenureResult)
+与「职业关」的 TEER 粗筛(teerScopes)仍按全省读门槛行,上面「待量尺与引擎按通道读行之后再接」的前提没变,本批照旧不接,报 lead。"""
 
 PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "key": "mb-skilled-worker-in-manitoba", "province": "MB", "program": "PNP",
@@ -670,7 +678,9 @@ PW_PE_WORKFORCE = {
 24 个月近 5 年内)、Critical Worker(TEER 4 / 5,与本省雇主在职 6 个月;门槛卡按本岗 TEER 挑其一)、雇主段(工资中位、执照;
 经营年限一行门槛卡按省取,不靠这里)。International Graduate / Intermediate Experience 两条替代路没有门槛卡认得的写法,没收。
 同日 lead 定 pe-req 里在职 6 个月与工资中位两行本批先不收(要和判定引擎改动一起排期 / 待 Frank 定):门槛卡 TEER 4 / 5 的岗暂无
-经验一行、暂无工资一行;Critical Worker 这条流照挂(现只有学历一行,卡片不取),在职行收回来即生效,这里不用再动。"""
+经验一行、暂无工资一行;Critical Worker 这条流照挂(现只有学历一行,卡片不取),在职行收回来即生效,这里不用再动。
+2026-09-30 通道补全批一 1b(立项稿第四节第 4 条):门槛流登记不变;语言行改按流落 —— Skilled Worker 流 TEER 0-3 考试或雇主在 PEIW-02
+上确认二选一(op=none,门槛卡不出语言行)、Critical Worker 流 TEER 4 / 5 要考 CLB 4;原先挂在四流合称那条流上的「都要考 CLB 4」撤掉。"""
 
 PW_PE_OCCUPATIONS_IN_DEMAND = {
     "key": "pe-occupations-in-demand", "province": "PE", "program": "PNP",
@@ -691,7 +701,9 @@ PW_PE_OCCUPATIONS_IN_DEMAND = {
 NAMED_DRAW_STREAMS 原注)。quote 是官方页的副标题(这条流属于 Workforce 类的原话)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流三条 —— 全体流的语言、本流自己那条(与在需职业表同名,现只有学历一行)、
 雇主段(工资中位、执照)。本流的 1 年相关经验没入门槛表(判定卡「个人关」按省全量挑经验行、不认职业码,会漏到非清单岗),
-门槛卡本流暂无经验一行。同日 lead 定工资中位一行本批先不收(待 Frank 定),雇主段眼下只出执照与经营年限。"""
+门槛卡本流暂无经验一行。同日 lead 定工资中位一行本批先不收(待 Frank 定),雇主段眼下只出执照与经营年限。
+2026-09-30 通道补全批一 1b:门槛流登记不变;语言行改落本流(CLB 4,官方各职业都要考 —— 清单里的 33102 / 73300 是 TEER 3,不按 TEER
+挂),四流合称那条流不再有语言行。"""
 
 PW_AIP = {
     "key": "aip", "province": "FED", "program": "AIP",
@@ -780,7 +792,7 @@ PW_SK_STUDENTS = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP Saskatchewan Experience — Students", "SINP — Employer Certificate of Registration (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -795,7 +807,10 @@ PW_SK_STUDENTS = {
     "employers": [],
 }
 """Saskatchewan Experience 类的学生子类:本省专上毕业、专业对口的 SK offer(2026 年给优先行业的本省毕业生留 750 个名额)。不抽选。原句末尾页面里嵌了链接,
-抽出的正文句号前多一个空格,quote 截到句号前。"""
+抽出的正文句号前多一个空格,quote 截到句号前。
+2026-09-30 批一 1b:挂门槛流两条 —— pnp sk-req 的学生子类流(在萨省带薪工作 6 个月、萨省指定院校毕业)+ 雇主注册那条(「all streams」,
+官方要 approved Saskatchewan employer 与 EPA)。TEER 4 / 5 指定工种的 CLB 4 没入表(判定卡按省汇总 TEER 档,理由见 pnp
+SKR_STUDENTS_RULES),门槛卡暂无语言一行。"""
 
 PW_SK_OCCUPATION_IN_DEMAND = {
     "key": "sk-occupation-in-demand", "province": "SK", "program": "PNP",
@@ -804,8 +819,7 @@ PW_SK_OCCUPATION_IN_DEMAND = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [("SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express "
-                    "Entry)")],
+    "reqStreams": ["SINP International Skilled Worker (Employment Offer / Occupations In-Demand)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -819,7 +833,9 @@ PW_SK_OCCUPATION_IN_DEMAND = {
     "employers": [],
 }
 """不要 offer 的 EOI 子类;EOI 页写「There are no scheduled EOI draws at this time.」→ 标「目前没有抽选排期」。不看工作(Frank 
-09-30「不看工作的也收」,通道卡下段)。三合一门槛组的 60 分、CLB 4、近 10 年 1 年经验正是本子类口径,挂上。"""
+09-30「不看工作的也收」,通道卡下段)。三合一门槛组的 60 分、CLB 4、近 10 年 1 年经验正是本子类口径,挂上。
+2026-09-30 批一 1b:那组改名去掉 Express Entry(三行出自 EO / OID 两页交叉核对,OID 页原句「Score a minimum of 60 points out of 110」
+「CLB 4」「a minimum of one year … over the past 10 years」),本行跟着改名,门槛照旧。"""
 
 PW_SK_EXPRESS_ENTRY = {
     "key": "sk-express-entry", "province": "SK", "program": "PNP",
@@ -828,7 +844,7 @@ PW_SK_EXPRESS_ENTRY = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["SINP Saskatchewan Express Entry"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -842,7 +858,9 @@ PW_SK_EXPRESS_ENTRY = {
     "employers": [],
 }
 """不要 offer 的 EOI 子类(须在联邦 EE 池);同样没有抽选排期。三合一门槛组的 CLB 4 / 近 10 年 1 年经验不是本子类口径(它按联邦 EE 语言标准),不挂,门槛待批一 
-1b 拆出。quote 截到句号前(同 SK 学生那条的理由)。"""
+1b 拆出。quote 截到句号前(同 SK 学生那条的理由)。
+2026-09-30 批一 1b:拆出本子类自己的流「SINP Saskatchewan Express Entry」(EE 池、SINP 打分表 60 分);语言(联邦 EE 标准)与按三种人
+分三档的经验门槛卡写不对,没收(原句见 pnp SKR_EE_RULES)。"""
 
 PW_MB_SKILLED_WORKER_OVERSEAS = {
     "key": "mb-skilled-worker-overseas", "province": "MB", "program": "PNP",
@@ -945,7 +963,7 @@ PW_NS_GRADUATE = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Monthly EOI selections"],
-    "reqStreams": [],
+    "reqStreams": ["Nova Scotia Graduate stream"],
     "quotaScope": None,
     "occLabels": ["NS 毕业生"],
     "status": "open",
@@ -960,7 +978,9 @@ PW_NS_GRADUATE = {
     "employers": [],
 }
 """2026-02-18 十流并四流后的独立 stream(旧 International Graduates in Demand 并入),限 4 个职业(站上「NS 毕业生」清单同 4 码)。09-24 
-审计当它是参考信号 —— 官方它就是现行通道(「This stream is currently open to workers in these job categories」)。"""
+审计当它是参考信号 —— 官方它就是现行通道(「This stream is currently open to workers in these job categories」)。
+2026-09-30 批一 1b:挂门槛流「Nova Scotia Graduate stream」(pnp ns-req:CLB 5、本省监管机构执照 / 证书、近 3 年内读完本省指定院校课程;
+语言行带页上四个职业码的 appliesNoc)。"""
 
 PW_NS_PHYSICIANS = {
     "key": "ns-physicians", "province": "NS", "program": "PNP",
@@ -969,7 +989,7 @@ PW_NS_PHYSICIANS = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Monthly EOI selections"],
-    "reqStreams": [],
+    "reqStreams": ["NSNP Skilled Worker stream — Physician sub-criteria"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -985,7 +1005,9 @@ PW_NS_PHYSICIANS = {
     "employers": ["nova scotia health", "iwk health"],
 }
 """Skilled Worker 下的医生子类:只认 NS Health / IWK 两家的 approved opportunity。09-24 审计因判不了雇主身份没做 —— 现按雇主名命中(归一后比对,
-同 AIP 指定雇主)。"""
+同 AIP 指定雇主)。
+2026-09-30 批一 1b:挂门槛流「NSNP Skilled Worker stream — Physician sub-criteria」(pnp ns-req,指南 C 段:NSH / IWK 批准的 offer、
+在本省住满 2 年的承诺、MCC 学历认证或省医师学会执照资格)。不挂全流:全流的语言两档与 12 个月经验只管 A / B / D 三类。"""
 
 PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "key": "ns-express-entry-experience", "province": "NS", "program": "PNP",
@@ -994,7 +1016,7 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Monthly EOI selections"],
-    "reqStreams": [],
+    "reqStreams": ["Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1009,7 +1031,9 @@ PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
     "employers": [],
 }
 """不要 offer,但要本省 TEER 0–3 满 1 年经验 + EE 档案 → 看工作(这岗攒的就是它要的经验),标「需先有 EE 档案」「需本省工作满 1 年」。旧 Nova Scotia 
-Experience: Express Entry 与 Labour Market Priorities 并入。"""
+Experience: Express Entry 与 Labour Market Priorities 并入。
+2026-09-30 批一 1b:挂门槛流(同 officialName;pnp ns-req:本省 TEER 0-3 经验满 1 年、语言 TEER 0 / 1 CLB 7 与 TEER 2 / 3 CLB 5、
+EE 档案)。"""
 
 PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "key": "ns-express-entry-physicians", "province": "NS", "program": "PNP",
@@ -1018,7 +1042,7 @@ PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Monthly EOI selections"],
-    "reqStreams": [],
+    "reqStreams": ["Nova Scotia: Express Entry — Physicians"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1034,7 +1058,8 @@ PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
     "employers": ["nova scotia health", "iwk health"],
 }
 """快速通道下的医生子类:NS Health / IWK 的 approved offer + 省方意向信 + EE 档案(旧 Labour Market Priorities for Physicians)
-。"""
+。
+2026-09-30 批一 1b:挂门槛流(同 officialName;pnp ns-req:批准职位、服务协议、EE 系统内的省意向信、所走联邦项目的最低经验)。"""
 
 PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "key": "nb-express-entry-employment", "province": "NB", "program": "PNP",
@@ -1043,7 +1068,8 @@ PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["NB Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Express Entry stream — Employment in New Brunswick pathway",
+                   "New Brunswick Express Entry stream (Employment in New Brunswick / New Brunswick Interest)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1057,7 +1083,9 @@ PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
     "employers": [],
 }
 """NB Express Entry stream 下的本省就业路径:已在 NB 全职在职(TEER 0–3)+ EE 档案 + 67 分。抽选组「NB Express Entry」原先无人认领(2025–2026 
-共 11 轮)。"""
+共 11 轮)。
+2026-09-30 批一 1b:挂门槛流两条(pnp nb-req)—— 本路径自己的(雇主经营 24 个月、岗位要求、近 12 个月在本省居住并全职工作)在前,
+两条路径共同的(EE 池、CLB 7、近 10 年 1 年经验、打分表 67 分)在后。"""
 
 PW_NB_FRANCOPHONE_WORKERS = {
     "key": "nb-francophone-workers", "province": "NB", "program": "PNP",
@@ -1066,7 +1094,9 @@ PW_NB_FRANCOPHONE_WORKERS = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["NB Strategic Initiative"],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Strategic Initiative — Francophone Workers in New Brunswick pathway",
+                   ("New Brunswick Strategic Initiative (Francophone Workers / Francophone Priorities / "
+                    "Francophones Working Remotely)")],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1080,7 +1110,10 @@ PW_NB_FRANCOPHONE_WORKERS = {
     "employers": [],
 }
 """Strategic Initiative 下的法语工人路径:本省 offer 或在职 + NCLC 5。抽选组「NB Strategic Initiative」原先无人认领(2026 年 8 
-轮,与法语优先合抽)。"""
+轮,与法语优先合抽)。
+2026-09-30 批一 1b:挂门槛流两条(pnp nb-req)—— 本路径自己的(岗位要求、近 6 个月住在本省)在前,三条路径共同的(近 5 年 1 年经验、
+本省院校毕业免经验、打分表 65 分)在后。法语 NCLC 5 没入表(门槛卡语言行写「英语或法语」,会说成英法任一;本行标签已写),雇主经营
+12 个月没入表(雇主板按省取第一条经营年限行、查询不排序,NB 会同时有 24 与 12 两个数)。"""
 
 PW_NB_EXPRESS_ENTRY_INTEREST = {
     "key": "nb-express-entry-interest", "province": "NB", "program": "PNP",
@@ -1176,7 +1209,9 @@ PW_NB_CRITICAL_WORKER_PILOT = {
 }
 """五年期试点,只走 6 家参与雇主(Cooke Aquaculture、J.D. Irving、Groupe Savoie、Groupe Westco、Imperial Manufacturing 
 Group、McCain Foods),个人不能直接申请 → 按雇主名命中才列(Frank 09-30「都收,标状态」)。页面走旧版路径,现行总览页仍链到它;该页缓存在但不在 crawl manifest 
-里。"""
+里。
+2026-09-30 批一 1b:门槛不收 —— 该页(现已在 crawl 清单 nb-imm 里)只有流程、参与雇主与「The program does not accept direct
+applications from interested candidates.」,资格条文写在「New Brunswick Critical Worker Pilot Guide」PDF 里,指南不在 crawl 缓存,不猜。"""
 
 PW_NB_PRIVATE_COLLEGE_PILOT = {
     "key": "nb-private-college-pilot", "province": "NB", "program": "PNP",
@@ -1185,7 +1220,7 @@ PW_NB_PRIVATE_COLLEGE_PILOT = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": [],
-    "reqStreams": [],
+    "reqStreams": ["New Brunswick Private Career College Graduate Pilot Program"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1199,7 +1234,8 @@ PW_NB_PRIVATE_COLLEGE_PILOT = {
     "nocs": [],
     "employers": [],
 }
-"""本省参与项目的私立职业学院读指定专业、拿不到 PGWP 的学生,要对口的全职 offer;有限开放至 2027 年底(Frank 09-30「都收,标状态」)。"""
+"""本省参与项目的私立职业学院读指定专业、拿不到 PGWP 的学生,要对口的全职 offer;有限开放至 2027 年底(Frank 09-30「都收,标状态」)。
+2026-09-30 批一 1b:挂门槛流(pnp nb-req,试点页资格段:CLB 5、本省参与试点的私立学院课程、雇主经营 24 个月)。"""
 
 PW_PE_INTERNATIONAL_GRADUATE = {
     "key": "pe-international-graduate", "province": "PE", "program": "PNP",
@@ -1208,7 +1244,10 @@ PW_PE_INTERNATIONAL_GRADUATE = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Labour & Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["PEI PNP — International Graduate stream",
+                   ("PEI PNP Workforce streams (Skilled Worker / Critical Worker / International Graduate / "
+                    "Occupations in Demand)"),
+                   "PEI PNP Workforce — Employer Requirements (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1222,7 +1261,9 @@ PW_PE_INTERNATIONAL_GRADUATE = {
     "employers": [],
 }
 """Workforce 类的国际毕业生流:本省公立院校毕业 + PGWP + PEI offer。共用门槛组的语言行写「全体 Workforce 流都要考 CLB 4」,对本流 TEER 0–3 
-不对(官方由雇主在 PEIW-02 上确认),批一 1b 改对之前不挂。"""
+不对(官方由雇主在 PEIW-02 上确认),批一 1b 改对之前不挂。
+2026-09-30 批一 1b:语言行已按流改对(pnp PER_LANG_ROWS),挂门槛流三条 —— 本流自己的(本省公立院校毕业、TEER 0-3 雇主在 PEIW-02 上确认 /
+TEER 4-5 要考 CLB 4)、四流合称那条(眼下只剩年龄)、雇主段(执照、经营年限)。"""
 
 PW_PE_INTERMEDIATE_EXPERIENCE = {
     "key": "pe-intermediate-experience", "province": "PE", "program": "PNP",
@@ -1231,7 +1272,7 @@ PW_PE_INTERMEDIATE_EXPERIENCE = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Labour & Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["PEI PNP — Intermediate Experience stream", "PEI PNP Workforce — Employer Requirements (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1244,7 +1285,9 @@ PW_PE_INTERMEDIATE_EXPERIENCE = {
     "nocs": [],
     "employers": [],
 }
-"""Workforce 类的中级经验流:TEER 4 的 PEI offer + 持 LMIA 工签在加满 6 个月、与现职相关。"""
+"""Workforce 类的中级经验流:TEER 4 的 PEI offer + 持 LMIA 工签在加满 6 个月、与现职相关。
+2026-09-30 批一 1b:挂门槛流两条 —— 本流自己的(高中、CLB 4)与雇主段。经验两条(LMIA 工签期间 6 个月、近 5 年 2 年经验或相关学历)
+没入表:门槛量尺按省挑经验行,会漏到全体 PE TEER 4 岗上(理由见 pnp PER_IE_RULES),门槛卡本流暂无经验一行。"""
 
 PW_PE_EXPRESS_ENTRY = {
     "key": "pe-express-entry", "province": "PE", "program": "PNP",
@@ -1253,7 +1296,7 @@ PW_PE_EXPRESS_ENTRY = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["Labour & Express Entry"],
-    "reqStreams": [],
+    "reqStreams": ["PEI PNP — PEI Express Entry", "PEI PNP Workforce — Employer Requirements (all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1267,7 +1310,10 @@ PW_PE_EXPRESS_ENTRY = {
     "nocs": [],
     "employers": [],
 }
-"""要不要 offer 官方前后矛盾(资格条文不要求,表格段又要雇主填 PEIW-02);优先在本省为合格雇主工作的人 → 看工作,标「需先有 EE 档案」。"""
+"""要不要 offer 官方前后矛盾(资格条文不要求,表格段又要雇主填 PEIW-02);优先在本省为合格雇主工作的人 → 看工作,标「需先有 EE 档案」。
+2026-09-30 批一 1b:挂门槛流两条 —— 本流自己的(满足联邦三项目之一、在联邦 EE 池建档;网页原句)与雇主段(网页「Your employer must
+complete the following form: PEIW-02」,指南雇主段写明雇主填 PEIW-02 即确认那几条)。外省毕业持 PGWP 者须同雇主在职 9 个月那条没入表
+(同雇主在职行会被门槛量尺挂到全体 PE 岗上,理由见 pnp PER_EE_RULES)。"""
 
 PW_NL_INTERNATIONAL_GRADUATE = {
     "key": "nl-international-graduate", "province": "NL", "program": "PNP",

@@ -242,7 +242,7 @@ from pnp.constants import (
     PARSER_LXML, PER_AGE_LABEL_TPL, PER_AGE_RES, PER_BASIS_EMPLOYER_TENURE, PER_BASIS_OCC_MEDIAN,
     PER_BASIS_WINDOW_YEARS_TPL, PER_CRITICAL_END, PER_CRITICAL_RULES, PER_CRITICAL_START, PER_CRITICAL_STREAM,
     PER_EFFECTIVE_RE, PER_EMP_LABEL_TPL, PER_EMP_RULES, PER_EMP_STREAM, PER_EMP_YEARS_RE, PER_EXP_CRITICAL_RE,
-    PER_EXP_LABEL_TPL, PER_EXP_OID_RE, PER_EXP_RE, PER_FACTOR_ORDER, PER_LANG_LABEL_TPL, PER_LANG_RE, PER_OID_END,
+    PER_EXP_LABEL_TPL, PER_EXP_OID_RE, PER_EXP_RE, PER_FACTOR_ORDER, PER_LANG_RE, PER_OID_END,
     PER_OID_RULES, PER_OID_START, PER_PROBLEM_AGE, PER_PROBLEM_AGE_MULTI_TPL, PER_PROBLEM_EMPLOYER, PER_PROBLEM_EXP,
     PER_PROBLEM_EXP_CRITICAL, PER_PROBLEM_EXP_OID, PER_PROBLEM_LANG, PER_PROBLEM_LANG_MULTI_TPL,
     PER_PROBLEM_NO_VERSION, PER_PROBLEM_SECTION_TPL, PER_PROBLEM_WAGE, PER_PROBLEM_WAGE_MEDIAN,
@@ -387,6 +387,35 @@ from pnp.constants import (  # 2026-09-30 通道补全批一 1b(NL 样张:国际
     NLR_IG_OUT_PROV_MONTHS, NLR_IG_OUT_PROV_RE, NLR_IG_PAGE_URL, NLR_PROBLEM_IG_OUT_PROV, NLR_SECTION_EE,
     NLR_SECTION_IG_OUT_PROV,
 )
+from pnp.constants import (  # 2026-09-30 通道补全批一 1b(NS:本省毕业生 / 医生 / 快速通道两类)
+    NSR_EE_EXP_LABEL_TPL, NSR_EE_EXP_RE, NSR_EE_EXP_RULES, NSR_EE_EXP_STREAM, NSR_EE_LANG_HI_RE, NSR_EE_LANG_LABEL_TPL,
+    NSR_EE_LANG_LO_RE, NSR_EE_PHYS_RULES, NSR_EE_PHYS_STREAM, NSR_EE_SEG_EXP_RE, NSR_EE_SEG_PHYS_RE, NSR_EE_TAB_EXP,
+    NSR_EE_TAB_PHYS, NSR_EE_TEER_03, NSR_EE_URL, NSR_GRAD_NOCS_RE, NSR_GRAD_RULES, NSR_GRAD_STREAM, NSR_GRAD_URL,
+    NSR_NOC_RE, NSR_NOC_SEP, NSR_PHYS_RULES, NSR_PHYS_STREAM, NSR_PROBLEM_EE_EXP, NSR_PROBLEM_EE_LANG,
+    NSR_PROBLEM_EE_LANG_ORDER_TPL, NSR_PROBLEM_EE_SEG_TPL, NSR_PROBLEM_GRAD_NOCS, NSR_PROBLEM_SEC_PHYS, NSR_SEC_PHYS_RE,
+    NSR_SECTION_EE_EXP, NSR_SECTION_EE_PHYS, NSR_SECTION_GRAD, NSR_SECTION_PHYS,
+)
+from pnp.constants import (  # 2026-09-30 通道补全批一 1b(SK:学生子类 / 快速通道子类 / 两条 Talent Pathway 的 EE 版)
+    SKR_EE_RULES, SKR_EE_STREAM, SKR_EE_URL, SKR_PROBLEM_STUDENTS_EXP, SKR_PROBLEM_TALENT_EE_ALT_TPL,
+    SKR_PROBLEM_TALENT_EE_CUT_TPL, SKR_PROBLEM_TALENT_EE_EXP_TPL, SKR_SECTION_EE, SKR_SECTION_STUDENTS,
+    SKR_STUDENTS_EXP_LABEL_TPL, SKR_STUDENTS_EXP_RE, SKR_STUDENTS_RULES, SKR_STUDENTS_STREAM, SKR_STUDENTS_URL,
+    SKR_TALENTS_EE,
+)
+from pnp.constants import (  # 2026-09-30 通道补全批一 1b(NB:快速通道本省就业 / 法语工人 / 私立学院毕业生试点)
+    NBR_BASIS_WINDOW_TPL, NBR_EE_EMP_RULES, NBR_EE_EMP_STREAM, NBR_EE_EXP_LABEL_TPL, NBR_EE_EXP_RE, NBR_EE_RULES,
+    NBR_EE_STREAM, NBR_EE_URL, NBR_PCCG_RULES, NBR_PCCG_STREAM, NBR_PCCG_URL, NBR_PROBLEM_EE_EXP, NBR_PROBLEM_SI_ALT,
+    NBR_PROBLEM_SI_EXP, NBR_PROBLEM_SI_RES, NBR_SECTION_EE, NBR_SECTION_EE_EMP, NBR_SECTION_PCCG, NBR_SECTION_SI,
+    NBR_SECTION_SI_WORKERS, NBR_SEG_EE_EMP_RE, NBR_SEG_PCCG_RE, NBR_SEG_SI_WORKERS_RE, NBR_SI_ALT_LABEL, NBR_SI_ALT_RE,
+    NBR_SI_EXP_LABEL_TPL, NBR_SI_EXP_RE, NBR_SI_RES_LABEL_TPL, NBR_SI_RES_RE, NBR_SI_RULES, NBR_SI_STREAM, NBR_SI_URL,
+    NBR_SI_WORKERS_RULES, NBR_SI_WORKERS_STREAM,
+)
+from pnp.scheme import NbExpIn  # 同上(NB 英文数词经验行的入参)
+from pnp.constants import (  # 2026-09-30 通道补全批一 1b(PE:语言分档 / 国际毕业生 / 中级经验 / 快速通道)
+    PER_EE_RULES, PER_EE_STREAM, PER_EE_URL, PER_IE_END, PER_IE_LANG_ROWS, PER_IE_PAGE_URL, PER_IE_RULES, PER_IE_START,
+    PER_IE_STREAM, PER_IG_LANG_ROWS, PER_IG_PAGE_URL, PER_IG_RULES, PER_IG_START, PER_IG_STREAM, PER_LANG_ROWS,
+    PER_PROBLEM_LANG_ROW_TPL, PER_SECTION_EE, PER_SECTION_IE, PER_SECTION_IG,
+)
+from pnp.scheme import PeLangRowsIn  # 同上(PE 按节取语言行的入参)
 from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
     K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
     SKR_EO_STREAM, FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
@@ -4665,7 +4694,9 @@ def build_sk_req() -> None:
     (sk_talent_reqs 逐条)三段,既有四行的 seq 照旧不动;任一段没解析到同样按自校失败收口。
     同日 lead 决定现有工签通道这批先不接:原先的第四段(在担保雇主处 6 个月、TEER 4 / 5 的 CLB 4、执照)连抽取函数一并撤掉
     —— 门槛量尺与 TEER 粗筛按全省读行、不分通道,入表会给每个萨省岗多一行「在职时长 6 个月 · 判不了」、把 TEER 0-3 说成
-    仅受理 4-5;官方原句与待接条件记在 OUT_SK_REQ 注。"""
+    仅受理 4-5;官方原句与待接条件记在 OUT_SK_REQ 注。
+    2026-09-30 通道补全批一 1b:再往后接学生子类、Saskatchewan Express Entry 子类(sk_students_reqs / sk_ee_reqs)与两条 Talent Pathway
+    的 EE 版(sk_talent_ee_reqs 逐条),新读的页先查 crawl 缓存,既有各行 seq 不动;共用流改名去掉 Express Entry(见 SKR_STREAM)。"""
     say(PRINT_OUT_TPL.format(path=OUT_SK_REQ))
     pages = SkPagesIn(eo=page_text(PageTextIn(url=SKR_EO_URL, timeout_s=SKR_TIMEOUT_S,
                                               drop_junk=False, main_only=True)),
@@ -4692,6 +4723,16 @@ def build_sk_req() -> None:
         talent = sk_talent_reqs(spec)
         reqs += talent.rows
         problems += talent.problems
+    for part in (sk_students_reqs(fold_ws(page_text(PageTextIn(url=SKR_STUDENTS_URL, timeout_s=SKR_TIMEOUT_S,
+                                                               drop_junk=True, main_only=True, cache_first=True)))),
+                 sk_ee_reqs(fold_ws(page_text(PageTextIn(url=SKR_EE_URL, timeout_s=SKR_TIMEOUT_S, drop_junk=True,
+                                                         main_only=True, cache_first=True))))):
+        reqs += part.rows
+        problems += part.problems
+    for spec in SKR_TALENTS_EE:
+        talent_ee = sk_talent_ee_reqs(spec)
+        reqs += talent_ee.rows
+        problems += talent_ee.problems
     if problems:
         fail_zh(problems)
     OUT_SK_REQ.parent.mkdir(parents=True, exist_ok=True)
@@ -4705,6 +4746,112 @@ def build_sk_req() -> None:
     }, indent=INDENT_2))
     say(ONR_PRINT_DONE_TPL.format(path=OUT_SK_REQ, n=len(reqs)))
     say_factor_counts(FactorCountsIn(reqs=reqs, order=SKR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+def sk_students_reqs(txt: str) -> ReqsOut:
+    """学生子类(Saskatchewan Experience 类;2026-09-30 通道补全批一 1b):在萨省带薪工作满 N 个月(英文数词 → 数字,不记在职时长
+    口径,理由见 SKR_STUDENTS_EXP_RE)+ 本省院校毕业(rule_rows,SKR_STUDENTS_RULES)。各行 pageUrl 指学生子类页(整表的 pageUrl
+    是 OID 页)。TEER 4 / 5 指定工种的 CLB 4 不收(理由见 SKR_STUDENTS_RULES)。
+
+    @param txt 学生子类页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    m = SKR_STUDENTS_EXP_RE.search(txt)
+    months = None
+    if m:
+        months = word_n_of(m.group(1))
+    if m and months is not None:
+        rows.append(to_sk_req(ReqIn(stream=SKR_STUDENTS_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
+                                    value_text=m.group(0), section=SKR_SECTION_STUDENTS,
+                                    label=SKR_STUDENTS_EXP_LABEL_TPL.format(n=months, hours=m.group(2)),
+                                    url=SKR_STUDENTS_URL)))
+    else:
+        problems.append(SKR_PROBLEM_STUDENTS_EXP)
+    part = rule_rows(RuleRowsIn(to_row=to_sk_req, txt=txt, stream=SKR_STUDENTS_STREAM, url=SKR_STUDENTS_URL,
+                                section=SKR_SECTION_STUDENTS, rules=SKR_STUDENTS_RULES))
+    rows += part.rows
+    problems += part.problems
+    for r in rows:
+        r[K_PAGE_URL] = SKR_STUDENTS_URL
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def sk_ee_reqs(txt: str) -> ReqsOut:
+    """Saskatchewan Express Entry 子类(2026-09-30 通道补全批一 1b,立项稿第四节第 3 条):EE 池、打分表最低分两条(rule_rows,
+    SKR_EE_RULES)落本子类自己的流,不再借「三合一」共用流的 CLB 4 与近 10 年 1 年经验(那两条不是本子类的口径)。
+    各行 pageUrl 指本子类页。
+
+    @param txt 子类页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    part = rule_rows(RuleRowsIn(to_row=to_sk_req, txt=txt, stream=SKR_EE_STREAM, url=SKR_EE_URL,
+                                section=SKR_SECTION_EE, rules=SKR_EE_RULES))
+    for r in part.rows:
+        r[K_PAGE_URL] = SKR_EE_URL
+    return part
+
+
+def sk_talent_ee_reqs(spec: dict) -> ReqsOut:
+    """一条 Talent Pathway 的 EE 版门槛(医疗 / 科技,配置见 SKR_TALENTS_EE;2026-09-30 通道补全批一 1b,立项稿第四节第 3 条
+    「医疗、科技两条的快速通道选项门槛没收」):只取页面 EE 资格小节标题之后那一半 —— 经验主档「近 N 年内 1 年」记 experience
+    (basis=windowYears=N)、有替代路径的(科技)记 experienceAlt(basis=employerTenure,同非 EE 版)、EE 池 / 语言 / 执照按规则
+    清单取原句(rule_rows)。各行 pageUrl 指这条通道的页。只入表,通道对照表不挂(理由见 SKR_HEALTH_EE_STREAM)。
+
+    @param spec SKR_TALENTS_EE 的一条。
+    @returns 行与自校问题。
+    """
+    txt = sk_talent_ee_text(spec)
+    if txt is None:
+        return ReqsOut(rows=[], problems=[SKR_PROBLEM_TALENT_EE_CUT_TPL.format(name=spec[K_NAME])])
+    rows: list = []
+    problems: list = []
+    exp = spec[K_EXP_RE].search(txt)
+    years = None
+    window = None
+    if exp:
+        years = word_n_of(exp.group(1))
+        window = word_n_of(exp.group(2))
+    if exp and years is not None and window is not None:
+        rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE, value=years * MBR_MONTHS_PER_YEAR,
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_WINDOW_TPL.format(n=window),
+                                    section=spec[K_SECTION], label=fold_ws(exp.group(0)).strip(), url=spec[K_URL])))
+    else:
+        problems.append(SKR_PROBLEM_TALENT_EE_EXP_TPL.format(name=spec[K_NAME]))
+    if spec[K_ALT_RE] is not None:
+        alt = spec[K_ALT_RE].search(txt)
+        months = None
+        if alt:
+            months = word_n_of(alt.group(1))
+        if alt and months is not None:
+            rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE_ALT, value=months,
+                                        unit=UNIT_MONTHS, basis=SKR_BASIS_EMPLOYER_TENURE, section=spec[K_SECTION],
+                                        label=fold_ws(alt.group(0)).strip(), url=spec[K_URL])))
+        else:
+            problems.append(SKR_PROBLEM_TALENT_EE_ALT_TPL.format(name=spec[K_NAME]))
+    part = rule_rows(RuleRowsIn(to_row=to_sk_req, txt=txt, stream=spec[K_STREAM], url=spec[K_URL],
+                                section=spec[K_SECTION], rules=spec[K_TALENT_RULES]))
+    rows += part.rows
+    problems += part.problems
+    for r in rows:
+        r[K_PAGE_URL] = spec[K_URL]
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def sk_talent_ee_text(spec: dict) -> str | None:
+    """Talent Pathway 页 EE 资格小节标题**之后**那一半(读 crawl 缓存优先,没有才现抓;压成一行)。非 EE 那一半归 sk_talent_text;
+    两半的执照、在担保雇主处 6 个月等句子几乎同字,不切会把非 EE 那半的句子记进 EE 版。2026-09-30 通道补全批一 1b。
+
+    @param spec SKR_TALENTS_EE 的一条。
+    @returns EE 那一半正文;找不到分界标题(页面改版)给 None,调用方报自校问题。
+    """
+    txt = fold_ws(page_text(PageTextIn(url=spec[K_URL], timeout_s=SKR_TIMEOUT_S, drop_junk=True, main_only=True,
+                                       cache_first=True)))
+    at = txt.find(spec[K_EE_CUT])
+    if at < 0:
+        return None
+    return txt[at:]
 
 
 # =========================================================================
@@ -5217,6 +5364,8 @@ def build_ns_req() -> None:
 
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补抓:全流再加执照一行,A / B 两类各一行学历;B 段语言与经验对校
     全流那几行(建筑通道的卡读它们)。TEER 4 / 5 在职 6 个月、工资区间两行同日抽过又撤(原句与理由见 OUT_NS_REQ「没抓的」)。
+    2026-09-30 通道补全批一 1b:再接医生子条件(指南 C 段)、Nova Scotia Graduate 页、Nova Scotia: Express Entry 页两个 tab
+    (ns_phys_reqs / ns_grad_reqs / ns_ee_exp_reqs / ns_ee_phys_reqs);新读的两页先查 crawl 缓存,新行排在既有各行之后。
     """
     say(PRINT_OUT_TPL.format(path=OUT_NS_REQ))
     url = ns_guide_url()
@@ -5231,6 +5380,13 @@ def build_ns_req() -> None:
     problems: list = []
     for part in (ns_language_reqs(txt), ns_experience_reqs(txt), ns_employer_reqs(txt), ns_licence_reqs(txt),
                  ns_sw_category_reqs(txt), ns_ccw_category_reqs(txt), ns_ccw_drift_reqs(txt)):
+        reqs += part.rows
+        problems += part.problems
+    grad_txt = fold_ws(page_text(PageTextIn(url=NSR_GRAD_URL, timeout_s=NSR_TIMEOUT_S, drop_junk=True, main_only=True,
+                                            cache_first=True)))
+    ee_txt = fold_ws(page_text(PageTextIn(url=NSR_EE_URL, timeout_s=NSR_TIMEOUT_S, drop_junk=True, main_only=True,
+                                          cache_first=True)))
+    for part in (ns_phys_reqs(txt), ns_grad_reqs(grad_txt), ns_ee_exp_reqs(ee_txt), ns_ee_phys_reqs(ee_txt)):
         reqs += part.rows
         problems += part.problems
     if not eff_m:
@@ -5249,6 +5405,121 @@ def build_ns_req() -> None:
     # pyrefly: ignore[missing-attribute] — 同上,走到这 eff_m 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_NS_REQ, version=eff_m.group(1), n=len(reqs)))
     say_factor_counts(FactorCountsIn(reqs=reqs, order=NSR_FACTOR_ORDER_FULL, tpl=PRINT_FACTOR_TPL))
+
+
+def ns_phys_reqs(txt: str) -> ReqsOut:
+    """Skilled Worker 流医生子条件(指南 C 段;2026-09-30 通道补全批一 1b):NSH / IWK 批准的 offer、定居承诺、执照三条
+    (rule_rows,NSR_PHYS_RULES),只在 C 段里找。行出自指南,url / pageUrl 照表级(指南 PDF / Skilled Worker 通道页),不另补;
+    入参 url 给空串 —— NS 行构造器不认这一格。
+
+    @param txt 指南全文(已剥页眉页脚、压平空白)。
+    @returns 行与自校问题。
+    """
+    sec = NSR_SEC_PHYS_RE.search(txt)
+    if not sec:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_SEC_PHYS])
+    return rule_rows(RuleRowsIn(to_row=to_ns_req, txt=sec.group(1), stream=NSR_PHYS_STREAM, url="",
+                                section=NSR_SECTION_PHYS, rules=NSR_PHYS_RULES))
+
+
+def ns_grad_reqs(txt: str) -> ReqsOut:
+    """Nova Scotia Graduate 通道(2026-09-30 通道补全批一 1b):语言 CLB 5、执照、近 3 年内读完本省指定院校课程三条(rule_rows,
+    NSR_GRAD_RULES);语言行挂 appliesNoc = 页上开放职业段的码(理由见 NSR_GRAD_NOCS_RE),段里一个码都没有就报自校问题、不出行。
+    NS 行构造器不带 url 格,本类各行事后补 url 与 pageUrl(都指 Graduate 页)。
+
+    @param txt Graduate 页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    seg = NSR_GRAD_NOCS_RE.search(txt)
+    nocs: list = []
+    if seg:
+        nocs = NSR_NOC_RE.findall(seg.group(1))
+    if len(nocs) == 0:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_GRAD_NOCS])
+    part = rule_rows(RuleRowsIn(to_row=to_ns_req, txt=txt, stream=NSR_GRAD_STREAM, url=NSR_GRAD_URL,
+                                section=NSR_SECTION_GRAD, rules=NSR_GRAD_RULES))
+    for r in part.rows:
+        r[K_URL] = NSR_GRAD_URL
+        r[K_PAGE_URL] = NSR_GRAD_URL
+        if r[K_FACTOR] == FACTOR_LANGUAGE:
+            r[K_APPLIES_NOC] = NSR_NOC_SEP.join(nocs)
+    return part
+
+
+def ns_ee_exp_reqs(txt: str) -> ReqsOut:
+    """快速通道(本省经验;2026-09-30 通道补全批一 1b):只在 Skilled Work Experience in Nova Scotia 那一 tab 里找 —— 本省 TEER 0-3
+    经验满 1 年(英文数词 → 月数,appliesTeer 0-3,见 NSR_EE_TEER_03)、语言两档(ns_ee_language_reqs)、须在联邦 EE 系统建档
+    (rule_rows)。经验行排在语言两行之前(理由见 NSR_EE_TEER_03);各行事后补 url 与 pageUrl(都指快速通道页)。
+
+    @param txt 快速通道页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    seg = NSR_EE_SEG_EXP_RE.search(txt)
+    if not seg:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EE_SEG_TPL.format(name=NSR_EE_TAB_EXP)])
+    body = seg.group(1)
+    rows: list = []
+    problems: list = []
+    exp = NSR_EE_EXP_RE.search(body)
+    years = None
+    if exp:
+        years = word_n_of(exp.group(1))
+    if exp and years is not None:
+        months = years * MBR_MONTHS_PER_YEAR
+        rows.append(to_ns_req(ReqIn(stream=NSR_EE_EXP_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
+                                    value_text=exp.group(0), applies_teer=NSR_EE_TEER_03, section=NSR_SECTION_EE_EXP,
+                                    label=NSR_EE_EXP_LABEL_TPL.format(months=months, word=exp.group(1)))))
+    else:
+        problems.append(NSR_PROBLEM_EE_EXP)
+    for part in (ns_ee_language_reqs(body),
+                 rule_rows(RuleRowsIn(to_row=to_ns_req, txt=body, stream=NSR_EE_EXP_STREAM, url=NSR_EE_URL,
+                                      section=NSR_SECTION_EE_EXP, rules=NSR_EE_EXP_RULES))):
+        rows += part.rows
+        problems += part.problems
+    for r in rows:
+        r[K_URL] = NSR_EE_URL
+        r[K_PAGE_URL] = NSR_EE_URL
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ns_ee_language_reqs(body: str) -> ReqsOut:
+    """快速通道(本省经验)的语言两档:TEER 0 / 1 → CLB 7、TEER 2 / 3 → CLB 5(按 TEER 各一行;两句缺一句、或高档不高于低档
+    都报自校问题、不出行 —— 读反会把门槛说低)。2026-09-30 通道补全批一 1b。
+
+    @param body Skilled Work Experience in Nova Scotia 那一 tab 的资格段。
+    @returns 行与自校问题。
+    """
+    hi = NSR_EE_LANG_HI_RE.search(body)
+    lo = NSR_EE_LANG_LO_RE.search(body)
+    if not hi or not lo:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EE_LANG])
+    if not int(hi.group(1)) > int(lo.group(1)):
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EE_LANG_ORDER_TPL.format(hi_band=hi.group(2), hi=hi.group(1),
+                                                                               lo_band=lo.group(2), lo=lo.group(1))])
+    rows: list = []
+    for m in (hi, lo):
+        rows.append(to_ns_req(ReqIn(stream=NSR_EE_EXP_STREAM, factor=FACTOR_LANGUAGE, value=int(m.group(1)), unit=UNIT_CLB,
+                                    value_text=m.group(0), applies_teer=teers(m.group(2)), section=NSR_SECTION_EE_EXP,
+                                    label=NSR_EE_LANG_LABEL_TPL.format(clb=m.group(1), band=m.group(2)))))
+    return ReqsOut(rows=rows, problems=[])
+
+
+def ns_ee_phys_reqs(txt: str) -> ReqsOut:
+    """快速通道(医生;2026-09-30 通道补全批一 1b):只在 Physicians 那一 tab 里找四条条文(rule_rows,NSR_EE_PHYS_RULES:批准职位、
+    服务协议、EE 系统内的省意向信、所走联邦项目的最低经验);各行事后补 url 与 pageUrl(都指快速通道页)。
+
+    @param txt 快速通道页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    seg = NSR_EE_SEG_PHYS_RE.search(txt)
+    if not seg:
+        return ReqsOut(rows=[], problems=[NSR_PROBLEM_EE_SEG_TPL.format(name=NSR_EE_TAB_PHYS)])
+    part = rule_rows(RuleRowsIn(to_row=to_ns_req, txt=seg.group(1), stream=NSR_EE_PHYS_STREAM, url=NSR_EE_URL,
+                                section=NSR_SECTION_EE_PHYS, rules=NSR_EE_PHYS_RULES))
+    for r in part.rows:
+        r[K_URL] = NSR_EE_URL
+        r[K_PAGE_URL] = NSR_EE_URL
+    return part
 
 
 # =========================================================================
@@ -5402,7 +5673,9 @@ def nb_grad_alt_rows(seg: str) -> ReqsOut:
 
 
 def build_nb_req() -> None:
-    """NB 门槛入口:三份指南互校语言 + Experience pathway 的在职时长与居住时长 + 通道页四段条文。"""
+    """NB 门槛入口:三份指南互校语言 + Experience pathway 的在职时长与居住时长 + 通道页四段条文。
+    2026-09-30 通道补全批一 1b:再接快速通道、法语战略倡议、私立学院毕业生试点三页(nb_new_channel_reqs,读 crawl 缓存优先),
+    新行排在既有各行之后。"""
     say(PRINT_OUT_TPL.format(path=OUT_NB_REQ))
     urls = nb_guide_urls()
     missing: list = []
@@ -5445,6 +5718,9 @@ def build_nb_req() -> None:
     page = nb_page_reqs()
     reqs += page.rows
     problems += page.problems
+    channels = nb_new_channel_reqs()
+    reqs += channels.rows
+    problems += channels.problems
     if problems:
         fail_zh(problems)
     version = sorted(guides.versions)[-1]
@@ -5459,6 +5735,175 @@ def build_nb_req() -> None:
     say(NBR_PRINT_DONE_TPL.format(path=OUT_NB_REQ, version=version, n=len(reqs)))
 
 
+def nb_new_channel_reqs() -> ReqsOut:
+    """通道补全批一 1b 新接的三页(快速通道 / 法语战略倡议 / 私立学院毕业生试点;2026-09-30):逐页取门槛;雇主经营年限行改
+    subject=employer(rule_rows 不带主体,同 nb_page_reqs 收尾);各行 pageUrl 与 url 同为所在页(整表的 pageUrl 是技术工人页)。
+
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    for part in (nb_ee_reqs(nb_page_txt(NBR_EE_URL)), nb_si_reqs(nb_page_txt(NBR_SI_URL)),
+                 nb_pccg_reqs(nb_page_txt(NBR_PCCG_URL))):
+        for r in part.rows:
+            r[K_PAGE_URL] = r[K_URL]
+            if r[K_FACTOR] == FACTOR_EMP_YEARS:
+                r[K_SUBJECT] = REQ_SUBJECT_EMPLOYER
+        rows += part.rows
+        problems += part.problems
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_ee_reqs(txt: str) -> ReqsOut:
+    """NB 快速通道(2026-09-30 通道补全批一 1b):总体资格段 → EE 池、语言 CLB 7、打分表 67 分(rule_rows,NBR_EE_RULES)与近 10 年
+    1 年经验(nb_exp_rows),落 NBR_EE_STREAM;「本省就业」路径段 → 雇主经营 24 个月、岗位要求、近 12 个月在本省居住并全职工作
+    (rule_rows,NBR_EE_EMP_RULES),落 NBR_EE_EMP_STREAM。段没切出来报自校问题。
+
+    @param txt 快速通道页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    gen = NBR_SEG_GENERAL_RE.search(txt)
+    if gen:
+        for part in (rule_rows(RuleRowsIn(to_row=to_nb_req, txt=gen.group(1), stream=NBR_EE_STREAM, url=NBR_EE_URL,
+                                          section=NBR_SECTION_EE, rules=NBR_EE_RULES)),
+                     nb_exp_rows(NbExpIn(txt=gen.group(1), rule_re=NBR_EE_EXP_RE, stream=NBR_EE_STREAM, url=NBR_EE_URL,
+                                         section=NBR_SECTION_EE, label_tpl=NBR_EE_EXP_LABEL_TPL,
+                                         problem=NBR_PROBLEM_EE_EXP))):
+            rows += part.rows
+            problems += part.problems
+    else:
+        problems.append(NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_EE))
+    emp = NBR_SEG_EE_EMP_RE.search(txt)
+    if emp:
+        part = rule_rows(RuleRowsIn(to_row=to_nb_req, txt=emp.group(1), stream=NBR_EE_EMP_STREAM, url=NBR_EE_URL,
+                                    section=NBR_SECTION_EE_EMP, rules=NBR_EE_EMP_RULES))
+        rows += part.rows
+        problems += part.problems
+    else:
+        problems.append(NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_EE_EMP))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_exp_rows(x: NbExpIn) -> ReqsOut:
+    """一条「近 N 年内 M 年经验」原句 → 一行 experience(英文数词或数字 → 月数;窗口期写进 basis=windowYears=N,门槛卡据此出
+    「近 N 年内」,判定引擎不读窗口期)。没匹配到或数词认不出报 x.problem、不出行。2026-09-30 通道补全批一 1b(快速通道、
+    战略倡议两处共用)。
+
+    @param x 正文、原句正则(第一组年数、第二组窗口年数)、流名、出处与 label 模板。
+    @returns 行与自校问题。
+    """
+    m = x.rule_re.search(x.txt)
+    years = None
+    window = None
+    if m:
+        years = word_n_of(m.group(1))
+        window = word_n_of(m.group(2))
+    if m is None or years is None or window is None:
+        return ReqsOut(rows=[], problems=[x.problem])
+    months = years * MBR_MONTHS_PER_YEAR
+    return ReqsOut(rows=[to_nb_req(ReqIn(stream=x.stream, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
+                                         value_text=m.group(0), basis=NBR_BASIS_WINDOW_TPL.format(n=window),
+                                         section=x.section, url=x.url,
+                                         label=x.label_tpl.format(months=months, word=m.group(1), window=window)))],
+                   problems=[])
+
+
+def nb_si_reqs(txt: str) -> ReqsOut:
+    """NB 法语战略倡议(2026-09-30 通道补全批一 1b):总体资格段 → 近 5 年 1 年经验(nb_exp_rows)+ 本省院校毕业免经验的替代行
+    (experienceAlt、op=none、basis=provGraduate)+ 打分表 65 分(rule_rows),落 NBR_SI_STREAM;法语工人路径段 → 岗位要求
+    (rule_rows)+ 近 6 个月住在本省(英文数词,nb_si_res_rows),落 NBR_SI_WORKERS_STREAM。法语 NCLC 5 与雇主经营 12 个月不收
+    (理由见 NBR_SI_RULES / NBR_SI_WORKERS_RULES)。
+
+    @param txt 战略倡议页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    gen = NBR_SEG_GENERAL_RE.search(txt)
+    if gen:
+        for part in (nb_exp_rows(NbExpIn(txt=gen.group(1), rule_re=NBR_SI_EXP_RE, stream=NBR_SI_STREAM, url=NBR_SI_URL,
+                                         section=NBR_SECTION_SI, label_tpl=NBR_SI_EXP_LABEL_TPL,
+                                         problem=NBR_PROBLEM_SI_EXP)),
+                     nb_si_alt_rows(gen.group(1)),
+                     rule_rows(RuleRowsIn(to_row=to_nb_req, txt=gen.group(1), stream=NBR_SI_STREAM, url=NBR_SI_URL,
+                                          section=NBR_SECTION_SI, rules=NBR_SI_RULES))):
+            rows += part.rows
+            problems += part.problems
+    else:
+        problems.append(NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_SI))
+    workers = NBR_SEG_SI_WORKERS_RE.search(txt)
+    if workers:
+        for part in (rule_rows(RuleRowsIn(to_row=to_nb_req, txt=workers.group(1), stream=NBR_SI_WORKERS_STREAM,
+                                          url=NBR_SI_URL, section=NBR_SECTION_SI_WORKERS, rules=NBR_SI_WORKERS_RULES)),
+                     nb_si_res_rows(workers.group(1))):
+            rows += part.rows
+            problems += part.problems
+    else:
+        problems.append(NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_SI_WORKERS))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def nb_si_alt_rows(seg: str) -> ReqsOut:
+    """战略倡议经验的例外:本省院校毕业不要求工作经验 → experienceAlt、op=none、basis=provGraduate(原句进 valueText;门槛卡出
+    「或本省院校毕业」,判定引擎不读 experienceAlt)。没匹配到报自校问题、不出行。2026-09-30 通道补全批一 1b。
+
+    @param seg 战略倡议总体资格段。
+    @returns 行与自校问题。
+    """
+    m = NBR_SI_ALT_RE.search(seg)
+    if m is None:
+        return ReqsOut(rows=[], problems=[NBR_PROBLEM_SI_ALT])
+    return ReqsOut(rows=[to_nb_req(ReqIn(stream=NBR_SI_STREAM, factor=FACTOR_EXPERIENCE_ALT, op=OP_NONE,
+                                         basis=NBR_BASIS_PROV_GRAD, value_text=m.group(0), section=NBR_SECTION_SI,
+                                         label=NBR_SI_ALT_LABEL, url=NBR_SI_URL))],
+                   problems=[])
+
+
+def nb_si_res_rows(seg: str) -> ReqsOut:
+    """法语工人路径的居住时长:官方写英文数词(six months)→ 月数,原句连「省招聘团 offer 不要求」的例外半句整条进 valueText
+    (rule_rows 只认阿拉伯数字,同 nb_grad_res_rows 单列)。2026-09-30 通道补全批一 1b。
+
+    @param seg 法语工人路径段。
+    @returns 行与自校问题。
+    """
+    m = NBR_SI_RES_RE.search(seg)
+    months = None
+    if m:
+        months = word_n_of(m.group(1))
+    if m is None or months is None:
+        return ReqsOut(rows=[], problems=[NBR_PROBLEM_SI_RES])
+    return ReqsOut(rows=[to_nb_req(ReqIn(stream=NBR_SI_WORKERS_STREAM, factor=FACTOR_RESIDENCE, value=months,
+                                         unit=UNIT_MONTHS, value_text=m.group(0), section=NBR_SECTION_SI_WORKERS,
+                                         label=NBR_SI_RES_LABEL_TPL.format(n=months), url=NBR_SI_URL))],
+                   problems=[])
+
+
+def nb_pccg_reqs(txt: str) -> ReqsOut:
+    """NB 私立学院毕业生试点(2026-09-30 通道补全批一 1b):资格段 → 语言 CLB 5、本省参与试点的私立学院课程、雇主经营 24 个月
+    (rule_rows,NBR_PCCG_RULES)。段没切出来报自校问题。
+
+    @param txt 试点页正文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    seg = NBR_SEG_PCCG_RE.search(txt)
+    if not seg:
+        return ReqsOut(rows=[], problems=[NBR_PROBLEM_SEG_TPL.format(name=NBR_SECTION_PCCG)])
+    return rule_rows(RuleRowsIn(to_row=to_nb_req, txt=seg.group(1), stream=NBR_PCCG_STREAM, url=NBR_PCCG_URL,
+                                section=NBR_SECTION_PCCG, rules=NBR_PCCG_RULES))
+
+
+def nb_page_txt(url: str) -> str:
+    """一页正文(读 crawl 缓存优先,没有才现抓;剥页头页脚、只取正文、压成一行)。2026-09-30 通道补全批一 1b。
+
+    @param url 页面地址。
+    @returns 正文。
+    """
+    return fold_ws(page_text(PageTextIn(url=url, timeout_s=NBR_TIMEOUT_S, drop_junk=True, main_only=True,
+                                        cache_first=True)))
+
+
 # =========================================================================
 # 22. PE 门槛(与 §9 同一份官方申请指南 PDF)
 # =========================================================================
@@ -5471,21 +5916,49 @@ def to_pe_req(x: ReqIn) -> dict:
 
 
 def pe_language_reqs(txt: str) -> ReqsOut:
-    """语言:四条通道同一个数,取全篇出现的**唯一**值;出现两个不同值说明官方分了档,得人工看。"""
-    rows: list = []
-    problems: list = []
+    """语言:四条通道同一个数,取全篇出现的**唯一**值;出现两个不同值说明官方分了档,得人工看。
+
+    2026-09-30 通道补全批一 1b(立项稿第四节第 4 条「PE 语言行过严」):上面那句降成守卫 —— 全篇「minimum score of CLB/NCLC N」仍须
+    只有一个数,否则报问题、不出行;原先落的那一行「四条 Workforce 流都要考 CLB 4」(流名 PER_STREAM)撤掉,改按指南各节原句逐流落行
+    (pe_lang_rows / PER_LANG_ROWS):Skilled Worker TEER 0-3 考试或雇主在 PEIW-02 上确认二选一(op=none)、Critical Worker TEER 4 / 5
+    与 Occupations in Demand 要考 CLB 4。build_pe_req 里本步挪到既有各步之后(理由见 PER_LANG_ROWS)。
+    """
     langs: set = set()
     for x in PER_LANG_RE.findall(txt):
         langs.add(int(x))
     if not langs:
-        problems.append(PER_PROBLEM_LANG)
-    elif len(langs) > 1:
-        problems.append(PER_PROBLEM_LANG_MULTI_TPL.format(langs=sorted(langs)))
-    else:
-        clb = next(iter(langs))
-        rows.append(to_pe_req(ReqIn(factor=FACTOR_LANGUAGE, value=clb, unit=UNIT_CLB,
-                                    section=PER_SECTION_LANG,
-                                    label=PER_LANG_LABEL_TPL.format(clb=clb))))
+        return ReqsOut(rows=[], problems=[PER_PROBLEM_LANG])
+    if len(langs) > 1:
+        return ReqsOut(rows=[], problems=[PER_PROBLEM_LANG_MULTI_TPL.format(langs=sorted(langs))])
+    return pe_lang_rows(PeLangRowsIn(txt=txt, specs=PER_LANG_ROWS))
+
+
+def pe_lang_rows(x: PeLangRowsIn) -> ReqsOut:
+    """按语言行规格逐节取原句(PER_LANG_ROWS 一族;2026-09-30 通道补全批一 1b):每条规格先按起止锚切出那一节,节里原句匹配到才出行
+    —— op=none 的(考试与雇主确认二选一 / 只要雇主确认)值留空、label 原样;要考的记 CLB 数、label 按模板填数。节切不出、原句没匹配到
+    都报自校问题(整表保留旧表),不拿别节的句子顶。
+
+    @param x 指南全文与规格清单。
+    @returns 行与自校问题。
+    """
+    rows: list = []
+    problems: list = []
+    for start, end, stream, section, rule_re, op, band, label in x.specs:
+        sec = slice_between(SliceIn(text=x.txt, start=start, end=end))
+        if sec == "":
+            problems.append(PER_PROBLEM_SECTION_TPL.format(start=start))
+            continue
+        m = rule_re.search(sec)
+        if m is None:
+            problems.append(PER_PROBLEM_LANG_ROW_TPL.format(section=section))
+            continue
+        if op == OP_NONE:
+            rows.append(to_pe_req(ReqIn(stream=stream, factor=FACTOR_LANGUAGE, op=OP_NONE, value_text=m.group(0),
+                                        applies_teer=band, section=section, label=label)))
+        else:
+            rows.append(to_pe_req(ReqIn(stream=stream, factor=FACTOR_LANGUAGE, value=int(m.group(1)), unit=UNIT_CLB,
+                                        value_text=m.group(0), applies_teer=band, section=section,
+                                        label=label.format(clb=m.group(1)))))
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -5668,14 +6141,18 @@ def build_pe_req() -> None:
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 Critical Worker 在职经验、工资、执照、学历三行、年龄一行(见段首)。
     同日 lead 定:Critical Worker 在职经验(pe_critical_reqs)与工资(pe_wage_reqs)两行本批先不收、这里不调,
     函数与常量留着,理由各见其 docstring;收回来 = 把两个调用放回下面的元组。
-    同日抽选卡重排再加一行:AIP 由指定雇主直接递背书申请、不经抽选(pe_aip_direct_reqs;原文读 crawl 缓存的背书申请页)。"""
+    同日抽选卡重排再加一行:AIP 由指定雇主直接递背书申请、不经抽选(pe_aip_direct_reqs;原文读 crawl 缓存的背书申请页)。
+    2026-09-30 通道补全批一 1b:语言步改逐流落行、挪到既有各步之后(理由见 PER_LANG_ROWS);再接 International Graduate / Intermediate
+    Experience(pe_ig_reqs / pe_ie_reqs,同一份指南)与 PEI Express Entry(pe_ee_reqs,读网页缓存)三条新流。"""
     say(PRINT_OUT_TPL.format(path=OUT_PE_REQ))
     txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S))))
     aip = cached_text_of(PER_AIP_URL)
+    ee = cached_text_of(PER_EE_URL)
     reqs: list = []
     problems: list = []
-    for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt),
-                 pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt), pe_aip_direct_reqs(aip)):
+    for part in (pe_experience_reqs(txt), pe_employer_reqs(txt), pe_licence_reqs(txt), pe_education_reqs(txt),
+                 pe_age_reqs(txt), pe_aip_direct_reqs(aip), pe_language_reqs(txt), pe_ig_reqs(txt), pe_ie_reqs(txt),
+                 pe_ee_reqs(ee)):
         reqs += part.rows
         problems += part.problems
     eff = PER_EFFECTIVE_RE.search(txt)
@@ -5695,6 +6172,59 @@ def build_pe_req() -> None:
     # pyrefly: ignore[missing-attribute] — 同上,走到这 eff 恒非 None
     say(NSR_PRINT_DONE_TPL.format(path=OUT_PE_REQ, version=eff.group(1), n=len(reqs)))
     say_factor_counts(FactorCountsIn(reqs=reqs, order=PER_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+def pe_ig_reqs(txt: str) -> ReqsOut:
+    """International Graduate 流(2026-09-30 通道补全批一 1b):本省公立院校毕业(rule_rows,只在本节切片里找)+ 语言两档
+    (PER_IG_LANG_ROWS:TEER 0-3 雇主在 PEIW-02 上确认、TEER 4 / 5 要考 CLB 4)。行出自申请指南(url 照表级),各行 pageUrl 指本流网页。
+
+    @param txt 指南全文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    sec = slice_between(SliceIn(text=txt, start=PER_IG_START, end=PER_IE_START))
+    if sec == "":
+        return ReqsOut(rows=[], problems=[PER_PROBLEM_SECTION_TPL.format(start=PER_IG_START)])
+    edu = rule_rows(RuleRowsIn(to_row=to_pe_req, txt=sec, stream=PER_IG_STREAM, url=PE_GUIDE_URL,
+                               section=PER_SECTION_IG, rules=PER_IG_RULES))
+    lang = pe_lang_rows(PeLangRowsIn(txt=txt, specs=PER_IG_LANG_ROWS))
+    rows = edu.rows + lang.rows
+    for r in rows:
+        r[K_PAGE_URL] = PER_IG_PAGE_URL
+    return ReqsOut(rows=rows, problems=edu.problems + lang.problems)
+
+
+def pe_ie_reqs(txt: str) -> ReqsOut:
+    """Intermediate Experience 流(2026-09-30 通道补全批一 1b):至少高中毕业(rule_rows,只在本节切片里找)+ 要考 CLB 4
+    (PER_IE_LANG_ROWS)。工作经验两条不收(理由见 PER_IE_RULES)。行出自申请指南,各行 pageUrl 指本流网页。
+
+    @param txt 指南全文(已压平空白)。
+    @returns 行与自校问题。
+    """
+    sec = slice_between(SliceIn(text=txt, start=PER_IE_START, end=PER_IE_END))
+    if sec == "":
+        return ReqsOut(rows=[], problems=[PER_PROBLEM_SECTION_TPL.format(start=PER_IE_START)])
+    edu = rule_rows(RuleRowsIn(to_row=to_pe_req, txt=sec, stream=PER_IE_STREAM, url=PE_GUIDE_URL,
+                               section=PER_SECTION_IE, rules=PER_IE_RULES))
+    lang = pe_lang_rows(PeLangRowsIn(txt=txt, specs=PER_IE_LANG_ROWS))
+    rows = edu.rows + lang.rows
+    for r in rows:
+        r[K_PAGE_URL] = PER_IE_PAGE_URL
+    return ReqsOut(rows=rows, problems=edu.problems + lang.problems)
+
+
+def pe_ee_reqs(txt: str) -> ReqsOut:
+    """PEI Express Entry(2026-09-30 通道补全批一 1b):满足联邦三项目之一、在联邦 EE 池建档两条(rule_rows,PER_EE_RULES);
+    9 个月同雇主在职的条件行不收(理由见 PER_EE_RULES)。原文读 crawl 缓存的网页(官网在 Radware 墙后,缓存缺失时是空串 →
+    两条都报自校问题、整表保留旧表),各行 pageUrl 指本页。
+
+    @param txt 网页正文(cached_text_of;已压平空白)。
+    @returns 行与自校问题。
+    """
+    part = rule_rows(RuleRowsIn(to_row=to_pe_req, txt=txt, stream=PER_EE_STREAM, url=PER_EE_URL,
+                                section=PER_SECTION_EE, rules=PER_EE_RULES))
+    for r in part.rows:
+        r[K_PAGE_URL] = PER_EE_URL
+    return part
 
 
 # =========================================================================
