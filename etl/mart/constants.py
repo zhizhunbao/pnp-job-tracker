@@ -2438,6 +2438,12 @@ SCOPE_SCORE_RANGE = "scoreRange"
 SCOPE_STAGE = "stage"
 """scopeKind:处理阶段。"""
 
+SCOPE_PROGRAM = "program"
+"""scopeKind:项目(2026-09-29 抽选卡重排:全年合计 AIP 那一份,scope = AIP)。"""
+
+PRINT_YTD_MIXED_TPL = "  · pnp_ops_stats {prov} {share} 不出本年合计:{year} 年计入的各轮人数口径不一(见抽选行 unit 格)"
+"""一份合计里各行 unit 格不一的留痕(2026-09-29;邀请与选取人数加在一起是假数)。"""
+
 TOTAL_WORD = "total"
 """哨兵行判据(AB「Total:」→ 省级 eoi_pool_total;SK「Total」行 → 省级配额)。"""
 
@@ -2719,17 +2725,38 @@ METRIC_INVITATIONS_YTD = "invitations_ytd"
 ⚠ NL 的 ITA 批次是 NLPNP 与 AIP 同批发的邀请(每轮 note 里分列),按上面四条照计入,label 不另拆。
 2026-09-27 同日改判(Frank 勾「补抓缺的省 2026 配额」补进 NL 配额 2,379 = NLPNP 单列):合计旁边就是只算省提名的配额,
 带 AIP 的合计(2,695)看着像超发 —— NL 改为只加省提名那一份(DRAW_PNP_PART_PROVS,读 pnp 域拆好的 K_PNP_INVITATIONS),
-与 ② NB 剔 AIP 同口径:「全年已邀请」一律只算省提名。"""
+与 ② NB 剔 AIP 同口径:「全年已邀请」一律只算省提名。
+2026-09-29 抽选卡重排改判(Frank「按你建议」「如果改一个地方,是不是所有省份都得改一遍」):② 与 NL 那条不再按省名写死,改读
+pnp 域逐行打好的 program / unit 两格(DRAW_CARD_PROGRAMS、DRAW_UNIT_METRIC);AIP 那一份另出 scope=AIP 的行(省提名弹框
+「AIP 抽选」卡底读);官方人数格只写上限的轮次(AB「Less than 10」、BC「<5」)不再让整省不出 —— 按 0 计、指标名加 _min
+(见 METRIC_MIN_SUFFIX),① 只对真缺(人数空、日期认不出、项目认不出)保留。"""
 
-K_PNP_INVITATIONS = "pnpInvitations"
-"""抽选行键:这一批里省提名那一份的邀请数(pnp 域从 NL 的 Notes 拆;2026-09-27)。域间不互取常量,键名照 pnp 域各自声明。"""
+K_INVITATIONS_BELOW = "invitationsBelow"
+"""抽选行键:官方人数格只写了上限时的那个上限(pnp 域 K_INVITATIONS_BELOW;2026-09-29)。域间不互取常量,键名照 pnp 域各自声明。
+沿革:2026-09-27 起这里还有一个 K_PNP_INVITATIONS = "pnpInvitations"(NL 一批里省提名那一份,pnp 域从 Notes 拆),09-29 pnp 域
+改为把一批拆成省提名、AIP 两行,这一格退役。"""
 
-DRAW_PNP_PART_PROVS = ("NL",)
-"""ITA 批次里夹着 AIP 的省(2026-09-27):「全年已邀请」只加每行的 K_PNP_INVITATIONS;哪一行缺这一格(pnp 域认不出 Notes、
-或该行是拆格上线前落的历史行)= 该轮不知道 → 按口径 ① 整省不出。"""
+PROGRAM_AIP = "AIP"
+"""抽选行 program 格:人数只属 AIP(pnp 域 PROGRAM_AIP;2026-09-29)。"""
 
-DRAW_YTD_PNP_ONLY_TPL = "{label}, provincial nominee invitations only (AIP issued in the same batches excluded)"
-"""只加省提名那一份时 label 补的一句(NL)。"""
+PROGRAM_POOL = "PNP+AIP"
+"""抽选行 program 格:省提名与 AIP 同池、官方只发一个合计(NS;pnp 域 PROGRAM_POOL;2026-09-29)。"""
+
+DRAW_CARD_PROGRAMS = {"": (PROGRAM_PNP, PROGRAM_POOL), PROGRAM_AIP: (PROGRAM_AIP,)}
+"""全年合计分两份:scope → 算进这一份的 program(2026-09-29 抽选卡重排)。scope 空串 = 省提名那一份(配额卡「已发邀请」、
+「本省抽选」卡底读;NS 的同池选取也算这一份,label 与单位写明含 AIP);scope「AIP」= AIP 那一份(「AIP 抽选」卡底读,
+scopeKind = SCOPE_PROGRAM)。program 空串或缺格(pnp 域认不出项目、或还没按新代码重跑的旧文件)的行两份都记 unknown。
+沿革:2026-09-27 起两张按省写死的表 —— DRAW_NOT_INVITE_STREAMS {"NB": ("AIP",)}(不算邀请的 stream 不进合计,NB 抽选页原句
+「Atlantic Immigration Program figures show applications selected for processing; all other streams show invitations issued.」)
+与 DRAW_PNP_PART_PROVS ("NL",)(ITA 批次里夹着 AIP 的省只加 K_PNP_INVITATIONS 那一份,缺这一格整省不出);09-29 两表撤,
+改读 pnp 域逐行打好的 program / unit 两格 —— NB 的 AIP 组、NL 拆出来的 AIP 行都是 program=AIP,进 AIP 那一份。"""
+
+DRAW_KNOWN_PROGRAMS = (PROGRAM_PNP, PROGRAM_POOL, PROGRAM_AIP)
+"""认得的 program 值(2026-09-29);不在这里的(空串 / 缺格)= 项目认不出,记 unknown。"""
+
+METRIC_MIN_SUFFIX = "_min"
+"""下限指标的后缀(2026-09-29 抽选卡重排,Frank「按你建议」:AB、BC 的已邀请写「至少 X」):本年有轮次官方人数格只写上限
+(K_INVITATIONS_BELOW)时,那几轮按 0 计,合计是下限,指标名 = 原指标名 + 本后缀(invitations_ytd_min);label 写明几轮、上限几。"""
 
 METRIC_SELECTIONS_YTD = "selections_ytd"
 """省级「全年已选取」:NS 按月公布从 EOI 池选中的人数(官方原句「Nova Scotia selected the following number of candidates from
@@ -2738,14 +2765,8 @@ the Expression of Interest (EOI) pool during the months noted below」,liveinnov
 UNIT_INVITATIONS = "invitations"
 """单位:邀请数(与 MB 月度页 laa_ytd 同一个单位词)。"""
 
-DRAW_SELECT_PROVS = ("NS",)
-"""按「选取」而不是「邀请」公布的省:出 METRIC_SELECTIONS_YTD,单位 people(官方原句数的是 candidates)。"""
-
-DRAW_NOT_INVITE_STREAMS = {"NB": ("AIP",)}
-"""省 → 这些 stream 的人数不是邀请,不进「全年已邀请」合计(2026-09-27)。NB 抽选页原句「Atlantic Immigration Program figures show
-applications selected for processing; all other streams show invitations issued.」
-(gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html,crawl nb-imm 缓存)。
-stream 名照 pnp 域写进 draws-nb.json 的 AIP 行(域间不互取常量,各自声明)。"""
+METRIC_APPLICATIONS_YTD = "applications_ytd"
+"""「全年选中进入审理的申请」(2026-09-29 抽选卡重排):NB 的 AIP 组(pnp 域 unit=application),出在 AIP 那一份。"""
 
 DRAW_YTD_INVITE_LABEL_TPL = "Sum of {n} rounds in {year}"
 """「全年已邀请」行的 label(N = 计入的抽选行数,一行 = 一条通道的一轮)。本表 label 列装英文(DDL 注「官方原文(英文)」),
@@ -2754,10 +2775,36 @@ DRAW_YTD_INVITE_LABEL_TPL = "Sum of {n} rounds in {year}"
 DRAW_YTD_SELECT_LABEL_TPL = "Sum of {n} monthly selections in {year}"
 """「全年已选取」行的 label(NS:一行 = 一个月的选取人数)。"""
 
-DRAW_YTD_DROP_TPL = "{label}, excluding {n} {streams} rows (applications selected for processing, not invitations)"
-"""本年有行被剔出合计时 label 补的一句(NB 的 AIP 组)。"""
+DRAW_YTD_APPLICATION_LABEL_TPL = "Sum of {n} rounds in {year} (applications selected for processing)"
+"""「全年选中进入审理的申请」行的 label(NB 的 AIP 组;2026-09-29)。
+沿革:2026-09-27 起 NB 省提名那一份的 label 补一句 DRAW_YTD_DROP_TPL「{label}, excluding {n} {streams} rows (applications selected
+for processing, not invitations)」(剔出合计的 AIP 行);09-29 AIP 行另出一份,这一句随之撤。"""
 
-PRINT_YTD_SKIP_TPL = "  · pnp_ops_stats {prov} 不出 {metric}:{year} 年有 {n} 轮人数没公布或日期认不出(少算一轮的合计是假数)"
+DRAW_YTD_BELOW_TPL = "{label}, at least: {n} of them published only as fewer than {bounds}, counted as 0"
+"""下限行 label 补的一句(2026-09-29;见 METRIC_MIN_SUFFIX):几轮只写了上限、上限几(几种上限用 / 连)。"""
+
+DRAW_UNIT_INVITATION = "invitation"
+"""抽选行 unit 格:发出的邀请(pnp 域 UNIT_INVITATION;2026-09-29)。"""
+
+DRAW_UNIT_SELECTION = "selection"
+"""抽选行 unit 格:从 EOI 池选中的人(pnp 域 UNIT_SELECTION;2026-09-29)。"""
+
+DRAW_UNIT_APPLICATION = "application"
+"""抽选行 unit 格:选中进入审理的申请(pnp 域 UNIT_APPLICATION;2026-09-29)。"""
+
+PROGRAM_EE = "EE"
+"""抽选行 program 格:联邦快速通道(本表 province=FED 的行;2026-09-29)。"""
+
+DRAW_UNIT_METRIC = {
+    DRAW_UNIT_INVITATION: (METRIC_INVITATIONS_YTD, UNIT_INVITATIONS, DRAW_YTD_INVITE_LABEL_TPL),
+    DRAW_UNIT_SELECTION: (METRIC_SELECTIONS_YTD, UNIT_PEOPLE, DRAW_YTD_SELECT_LABEL_TPL),
+    DRAW_UNIT_APPLICATION: (METRIC_APPLICATIONS_YTD, UNIT_APPLICATIONS, DRAW_YTD_APPLICATION_LABEL_TPL),
+}
+"""抽选行 unit 格(pnp 域 UNIT_*)→(指标, 单位, label 模板)(2026-09-29)。一份合计里各行 unit 不一 = 不出(留痕)。
+沿革:2026-09-27 起按省名判 —— DRAW_SELECT_PROVS ("NS",)「按「选取」而不是「邀请」公布的省:出 METRIC_SELECTIONS_YTD,单位 people
+(官方原句数的是 candidates)」;09-29 改读 unit 格。"""
+
+PRINT_YTD_SKIP_TPL = "  · pnp_ops_stats {prov} {share} 不出本年合计:{year} 年有 {n} 轮人数没公布、日期认不出或项目认不出(少算一轮的合计是假数)"
 """省级全年合计因缺数不出行时的留痕。"""
 
 

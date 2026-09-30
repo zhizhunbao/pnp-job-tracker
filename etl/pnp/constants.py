@@ -190,7 +190,9 @@ K_PROVINCE = "province"
 """表键:省码。"""
 
 K_PROGRAM = "program"
-"""表键:项目(PNP / AIP / PNP+AIP)。"""
+"""表键:项目(PNP / AIP / PNP+AIP)。
+2026-09-29 抽选行也用这一格:这一行的人数属于哪个项目(PROGRAM_PNP / PROGRAM_AIP / PROGRAM_POOL / PROGRAM_PSTQ;认不出 = 空串)。
+2026-09-29 Frank「如果改一个地方,是不是所有省份都得改一遍」(抽选卡重排同批):原先消费端按省名写死 —— 汇装 NB 的 AIP 组剔出合计、NL 只加省提名那一份、NS 出「已入选」;前端 NS 写「人入选」、NB / NL / NS 卡名带「及 AIP」;改为本域落盘时逐行判好,消费端只认这一格。判法见 §10 的 DRAW_POOL_PROVS / DRAW_AIP_STREAMS,落盘门统一打(functions.mark_draw_programs)。"""
 
 K_TYPE = "type"
 """表键:清单口径(indemand / ineligible / policy / priority)。"""
@@ -305,6 +307,11 @@ BC 同一天工资档与分数档、NB 按路径分 —— 行上看不出是哪
 (各省解析器照原文拼的 note 格)给每行判码,mart 原样带上。码的格式与三省认法见 §10 的 MB_SEL_* / BC_SEL_* / NB_SEL_*;
 落盘门统一打码(functions.mark_and_merge_draws),别省一律空串。"""
 
+K_INVITATIONS_BELOW = "invitationsBelow"
+"""行键:官方人数格只写了上限(AB「Less than 10」、BC「<5」)时的那个上限(不含);人数格是确数、或行里没有这一格 = 没有上限。
+invitations 格照旧只装确数(这种行 invitations 是 None)。2026-09-29 Frank「按你建议」(抽选卡重排:AB、BC 的已邀请写「至少 X」,
+卡底注「其中 N 轮官方只写少于 X」)—— 原先这种格喂 int_of 认成 None,上限这个事实丢了。"""
+
 K_SCALE = "scale"
 """表键:省自评分制名(前端展示必须声明「省自评分制,非 CRS」)。"""
 
@@ -336,7 +343,9 @@ K_VALUE_TEXT = "valueText"
 """行键:阈值的文字形(数值表达不了时用)。"""
 
 K_UNIT = "unit"
-"""行键:单位。"""
+"""行键:单位。
+2026-09-29 抽选行也用这一格:这一行的人数数的是什么(UNIT_INVITATION / UNIT_SELECTION / UNIT_APPLICATION;与 K_PROGRAM 同批立,
+判法见 §10 的 DRAW_SELECT_UNIT_PROVS / DRAW_APPLICATION_STREAMS)。"""
 
 K_APPLIES_TEER = "appliesTeer"
 """行键:适用 TEER。"""
@@ -810,6 +819,14 @@ PROGRAM_PNP = "PNP"
 
 PROGRAM_AIP = "AIP"
 """项目:大西洋移民计划(与省提名是两条路)。"""
+
+PROGRAM_POOL = "PNP+AIP"
+"""项目:省提名与 AIP 同一个池、官方只发一个合计(抽选行 K_PROGRAM 用;2026-09-29)。NS 原句「Nova Scotia selected the following
+number of candidates from the Expression of Interest (EOI) pool during the months noted below」(liveinnovascotia.com/eoi-selection),
+NSNP 各通道与 AIP 走同一个 EOI 池,月度人数不分项目。"""
+
+PROGRAM_PSTQ = "PSTQ"
+"""项目:魁北克技术工人甄选计划(QC 抽选行 K_PROGRAM 用;QC 不属省提名,2026-09-29)。"""
 
 PROV_AB = "AB"
 """省码:阿尔伯塔。"""
@@ -2048,6 +2065,11 @@ BC_PROSE_SCORE_RE = re.compile(r"minimum score of (\d+) points", re.I)
 DRAWS_AB_MIN_COLS = 4
 """AB 一行至少几格才当数据行。"""
 
+DRAWS_BELOW_RE = re.compile(r"(?:Less than|<)\s*(\d+)", re.I)
+"""人数格只写上限的写法(fullmatch 用;2026-09-29 抽选卡重排,见 K_INVITATIONS_BELOW):AB「Less than 10」
+(alberta.ca/aaip-processing-information「Number of invitations」列)、BC「<5」(welcomebc.ca invitations-to-apply
+「Number of invitations」列)。"""
+
 DRAWS_PE_MIN_COLS = 5
 """PE 一行至少几格才当数据行(日期 + 企业家邀请数 + 企业家分数线 + 劳工/EE 邀请数 + 年度小计)。"""
 
@@ -2276,16 +2298,23 @@ NL_DRAW_ITA_KW = "ita"
 NL_DRAW_STREAM = "NLPNP + AIP (ITA batch)"
 """NL 抽选行的通道名(官方按批次发,不分通道)。"""
 
-K_PNP_INVITATIONS = "pnpInvitations"
-"""NL 抽选行键:这一批 ITA 里省提名(NLPNP)那一份的邀请数(2026-09-27 Frank 勾「全年已邀请合计」「2026 名额小表」:
-NL 每批 NLPNP 与 AIP 同批发、Notes 列分列;省提名弹框的配额是 NLPNP 单列,汇装的「全年已邀请」只加这一份才对得上,
-与 NB 剔 AIP 同口径)。Notes 认不出或两项加起来对不上本批总数 = None(不猜)。invitations 格照旧是本批合计。"""
+NL_PNP_STREAM = "NLPNP (ITA batch)"
+"""NL 一批 ITA 拆出来的省提名那一行的通道名(2026-09-29 抽选卡重排,Frank「AIP 是不是应该单独的卡」「按你建议」)。
+沿革:2026-09-27 起每行多一格 pnpInvitations(键名 K_PNP_INVITATIONS,原注「NL 每批 NLPNP 与 AIP 同批发、Notes 列分列;
+省提名弹框的配额是 NLPNP 单列,汇装的「全年已邀请」只加这一份才对得上,与 NB 剔 AIP 同口径」),整批仍是一行;
+09-29 改为落盘门把一批拆成省提名、AIP 各一行(functions.nl_rows_of),省提名那行进「本省抽选」卡、AIP 那行进「AIP 抽选」卡,
+pnpInvitations 这一格随之退役。"""
+
+NL_AIP_STREAM = "AIP (ITA batch)"
+"""NL 一批 ITA 拆出来的 AIP 那一行的通道名(2026-09-29 同上)。与 NB 的「AIP」组不同名:NB 那组数的是选中进入审理的申请,
+NL 这行是发出的邀请(K_UNIT 两样)。"""
 
 NL_NOTE_PNP_RE = re.compile(r"NLPNP\s*[–—-]\s*(\d+)")
 """Notes 列里的省提名份数(「NLPNP – 61, AIP – 01」;官方用 EN dash,em dash 与连字符也认)。"""
 
 NL_NOTE_AIP_RE = re.compile(r"AIP\s*[–—-]\s*(\d+)")
-"""Notes 列里的 AIP 份数(只用来核对两项加起来等于本批总数)。"""
+"""Notes 列里的 AIP 份数(只用来核对两项加起来等于本批总数)。
+2026-09-29 起也是拆出来那行 AIP 的份数(functions.nl_split_of)。"""
 
 NS_DRAW_MONTH_RE = re.compile(r"^([A-Z][a-z]+)\s+(\d{4})$")
 """NS 月度表的月份格(「January 2026」);人数格认不出(TBD)= 该月未公布,不落行。"""
@@ -2640,6 +2669,29 @@ NB_SEL_TPL = "path:{codes}"
 
 NB_SEL_CODE_SEP = "+"
 """NB 多条路径短码之间的连接符(path:exp+grad;2026-09-27 Frank「照改,加这一列」)。"""
+
+UNIT_INVITATION = "invitation"
+"""人数口径:发出的邀请(ITA;抽选行 K_UNIT 用,2026-09-29)。"""
+
+UNIT_SELECTION = "selection"
+"""人数口径:从 EOI 池选中的人(NS;原句见 PROGRAM_POOL)。"""
+
+UNIT_APPLICATION = "application"
+"""人数口径:选中进入审理的申请(NB 的 AIP 组;原句见 DRAW_APPLICATION_STREAMS)。"""
+
+DRAW_POOL_PROVS = (PROV_NS,)
+"""省提名与 AIP 同池、只发一个合计的省:这些省的抽选行一律 PROGRAM_POOL(2026-09-29;原句见 PROGRAM_POOL)。"""
+
+DRAW_AIP_STREAMS = (NB_AIP_SHORT, NL_AIP_STREAM)
+"""人数只属 AIP 的抽选组(2026-09-29):NB 抽选页的「AIP」组、NL 每批拆出来的 AIP 那一行。"""
+
+DRAW_SELECT_UNIT_PROVS = (PROV_NS,)
+"""人数数的是「选中的人」的省:这些省的抽选行一律 UNIT_SELECTION(2026-09-29;原句见 PROGRAM_POOL)。"""
+
+DRAW_APPLICATION_STREAMS = {PROV_NB: (NB_AIP_SHORT,)}
+"""省 → 人数数的是「选中进入审理的申请」的组(UNIT_APPLICATION;2026-09-29)。NB 抽选页原句「Atlantic Immigration Program
+figures show applications selected for processing; all other streams show invitations issued.」
+(gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html,crawl nb-imm 缓存)。"""
 
 
 # =========================================================================

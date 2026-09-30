@@ -185,7 +185,7 @@ from pnp.constants import (
     NLR_STAFF_SJ_LABEL_TPL, NLR_STAFF_SJ_RE, NLR_STREAM, NLR_TEST_TEERS_RE, NLR_TIMEOUT_S, NLR_WHAT_EMP_YEARS,
     NLR_WHAT_IG_AGE, NLR_WHAT_IG_DISCRETION, NLR_WHAT_IG_HOURS, NLR_WHAT_IG_MONTHS, NLR_WHAT_IG_PGWP,
     NLR_WHAT_IG_TEER, NLR_WHAT_IG_TEER4, NLR_WHAT_STAFF_OUT, NLR_WHAT_STAFF_SJ, NL_DETAIL_SPLIT_RE,
-    NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, K_PNP_INVITATIONS, NL_NOTE_AIP_RE, NL_NOTE_PNP_RE, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
+    NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, NL_NOTE_AIP_RE, NL_NOTE_PNP_RE, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
     NL_MD_LINK_SUB, NL_PRINT_DONE_TPL, NL_PRINT_FAIL_TPL, NL_PRINT_NO_POSITION, NL_PRINT_SECTOR_TPL,
     NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP_AIP, NL_SECTOR_RE,
     NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_BASIS_WINDOW_TPL, NSR_CCW_LANG_RE, NSR_EDU_CCW_LABEL_TPL,
@@ -1598,6 +1598,12 @@ from pnp.constants import (  # noqa: E402 — 段10 2026-09-27 抽选行 selecti
     MB_SEL_TOP_RE, MB_SEL_TOP_TPL, NB_SEL_CODE_SEP, NB_SEL_CODES, NB_SEL_PATHS_RE, NB_SEL_TPL,
 )
 from pnp.scheme import DrawSelectionIn, DrawSelectionsIn  # noqa: E402 — 同上
+from pnp.constants import (  # noqa: E402 — 段10 2026-09-29 抽选行项目 / 人数口径两格 + NL 拆行 + 人数上限(抽选卡重排)单列一块
+    DRAW_AIP_STREAMS, DRAW_APPLICATION_STREAMS, DRAW_POOL_PROVS, DRAW_SELECT_UNIT_PROVS, DRAWS_BELOW_RE,
+    K_INVITATIONS_BELOW, NL_AIP_STREAM, NL_PNP_STREAM, PROGRAM_POOL, PROGRAM_PSTQ, PROV_QC, UNIT_APPLICATION,
+    UNIT_INVITATION, UNIT_SELECTION,
+)
+from pnp.scheme import DrawKindIn, DrawRowsIn  # noqa: E402 — 同上
 
 
 def fetch_draws_page(url: str) -> str:
@@ -1613,6 +1619,14 @@ def int_of(s: str | None) -> int | None:
         return int(DRAWS_NUM_STRIP_RE.sub(EMPTY_JOIN, s or ""))
     except (ValueError, TypeError):
         return None
+
+
+def below_of(s: str | None) -> int | None:
+    """人数格只写上限时的那个上限(「Less than 10」→ 10、「<5」→ 5);确数或认不出给 None(2026-09-29 抽选卡重排)。"""
+    m = DRAWS_BELOW_RE.fullmatch((s or "").strip())
+    if m is None:
+        return None
+    return int(m.group(1))
 
 
 def iso_of(s: str) -> str | None:
@@ -1676,7 +1690,10 @@ def expand_table(table: SoupNodeLike) -> list:
 
 
 def parse_bc_draws(html: str) -> list:
-    """Skills Immigration ITA 表(表头含「ITA type」;Entrepreneur/池分布表不取)。"""
+    """Skills Immigration ITA 表(表头含「ITA type」;Entrepreneur/池分布表不取)。
+    2026-09-29 抽选卡重排:人数格「<5」记上限(K_INVITATIONS_BELOW);表内去重键加上 Selection factors 格 —— 同一天同组同分、
+    人数都写「<5」的两个子轮(2026-09-10 Care: Veterinary Care 的「All priority veterinary care occupations」与「Animal health
+    technologists ... (NOC 32104)」,07-09 同样两行)原先键里只有日期 / 组 / 分 / 人数,后一行被当成重复去掉,官方 5 行只落 3 行。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         grid = expand_table(table)
@@ -1690,12 +1707,12 @@ def parse_bc_draws(html: str) -> list:
             d = iso_of(row[0])
             if not d:
                 continue
-            key = (d, row[1], int_of(row[3]), int_of(row[4]))
+            key = (d, row[1], row[2], int_of(row[3]), int_of(row[4]))
             if key in seen:
                 continue
             seen.add(key)
             draws.append({K_DATE: d, K_STREAM: row[1], K_NOTE: row[2][:DRAWS_NOTE_CLIP],
-                          K_SCORE: int_of(row[3]), K_INVITATIONS: int_of(row[4])})
+                          K_SCORE: int_of(row[3]), K_INVITATIONS: int_of(row[4]), K_INVITATIONS_BELOW: below_of(row[4])})
         for r in bc_prose_draws(soup):
             key = (r[K_DATE], r[K_STREAM], r[K_SCORE], r[K_INVITATIONS])
             if key in seen:
@@ -1746,7 +1763,8 @@ def bc_prose_items(x: BcProseIn) -> list:
 
 
 def parse_ab_draws(html: str) -> list:
-    """「Draw information」表:Draw date / 流+参数 / 最低分 / 邀请数(线性,无 rowspan)。"""
+    """「Draw information」表:Draw date / 流+参数 / 最低分 / 邀请数(线性,无 rowspan)。
+    2026-09-29 抽选卡重排:人数格「Less than 10」记上限(K_INVITATIONS_BELOW),invitations 照旧 None。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_HTML))
     for table in soup.find_all(TAG_TABLE):
         head = table.find(TAG_TR)
@@ -1761,7 +1779,7 @@ def parse_ab_draws(html: str) -> list:
             if not d:
                 continue
             draws.append({K_DATE: d, K_STREAM: c[1], K_NOTE: "",
-                          K_SCORE: int_of(c[2]), K_INVITATIONS: int_of(c[3])})
+                          K_SCORE: int_of(c[2]), K_INVITATIONS: int_of(c[3]), K_INVITATIONS_BELOW: below_of(c[3])})
         return draws
     return []
 
@@ -2071,7 +2089,9 @@ def parse_on_draws(html: str) -> list:
 
 def parse_nl_draws(html: str) -> list:
     """NL ITA 批次表:| Date Issued | Number of ITAs Issued | Notes |。无分数线(官方不发)。
-    2026-09-27 每行多一格 pnpInvitations(省提名那一份,见 nl_pnp_invitations_of);invitations 照旧是本批合计。"""
+    2026-09-27 每行多一格 pnpInvitations(省提名那一份,见 nl_pnp_invitations_of);invitations 照旧是本批合计。
+    2026-09-29 抽选卡重排:这里照旧一批一行(本批合计 + Notes 原文),pnpInvitations 这格撤;拆成省提名、AIP 两行改在落盘门做
+    (split_draw_rows → nl_rows_of),本轮行与历史旧行同一处拆,旧行不会因为还是整批那一行而与拆好的行并存。"""
     soup = cast(SoupNodeLike, BeautifulSoup(html, PARSER_LXML))
     draws: list = []
     for table in soup.find_all(TAG_TABLE):
@@ -2090,19 +2110,19 @@ def parse_nl_draws(html: str) -> list:
             note = ""
             if len(row) > 2:
                 note = fold_ws(row[2])[:DRAWS_NOTE_CLIP]
-            dr = {K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note, K_SCORE: None, K_INVITATIONS: int_of(row[1])}
-            dr[K_PNP_INVITATIONS] = nl_pnp_invitations_of(dr)
-            draws.append(dr)
+            draws.append({K_DATE: d, K_STREAM: NL_DRAW_STREAM, K_NOTE: note, K_SCORE: None,
+                          K_INVITATIONS: int_of(row[1])})
     draws.sort(key=draw_date_of, reverse=True)
     return draws
 
 
-def nl_pnp_invitations_of(draw: dict) -> int | None:
+def nl_split_of(draw: dict) -> tuple | None:
     """NL 一批 ITA 里省提名(NLPNP)那一份(2026-09-27):Notes 列「NLPNP – 61, AIP – 01」拆出 NLPNP 的数,两项加起来
     必须等于本批总数才认;只写了 AIP 一项且等于总数 = 这批 NLPNP 0 份。认不出或对不上给 None —— 不猜,汇装见 None 整省不出合计。
+    2026-09-29 抽选卡重排:由 nl_pnp_invitations_of 改名,两份都交回(省提名份数, AIP 份数),落盘门据此把一批拆成两行。
 
     @param draw 一行 NL 抽选(note / invitations 两格已填)。
-    @returns 省提名份数;认不出给 None。
+    @returns (省提名份数, AIP 份数);认不出给 None。
     """
     total = draw.get(K_INVITATIONS)
     if isinstance(total, int) is False:
@@ -2120,7 +2140,28 @@ def nl_pnp_invitations_of(draw: dict) -> int | None:
         n_aip = int(aip.group(1))
     if n_pnp + n_aip != total:
         return None
-    return n_pnp
+    return (n_pnp, n_aip)
+
+
+def nl_rows_of(draw: dict) -> list:
+    """NL 一批 ITA → 行(2026-09-29 抽选卡重排):Notes 拆得开 → 省提名一行(NL_PNP_STREAM)、AIP 一行(NL_AIP_STREAM),
+    份数为 0 的那项不出行(两项都是 0 留省提名那行);拆不开 → 整批原样一行(NL_DRAW_STREAM,项目认不出,不猜)。
+    两行的日期、Notes 原文、分(无)都照整批;已经拆好的行(stream 不是 NL_DRAW_STREAM)原样交回。
+
+    @param draw 一行 NL 抽选。
+    @returns 拆好的行。
+    """
+    if draw.get(K_STREAM) != NL_DRAW_STREAM:
+        return [draw]
+    split = nl_split_of(draw)
+    if split is None:
+        return [draw]
+    out: list = []
+    for stream, n in ((NL_PNP_STREAM, split[0]), (NL_AIP_STREAM, split[1])):
+        if n > 0 or (stream == NL_PNP_STREAM and split[1] == 0):
+            out.append({K_DATE: draw.get(K_DATE), K_STREAM: stream, K_NOTE: draw.get(K_NOTE), K_SCORE: None,
+                        K_INVITATIONS: n})
+    return out
 
 
 def iso_nb_of(s: str) -> str | None:
@@ -2824,10 +2865,72 @@ def mark_and_merge_draws(x: MergeDrawsIn) -> list:
     """本轮行与上一轮旧行先各自打上 selection 码(mark_draw_selections),再交 merged_draws_of 并回历史。
     2026-09-27 Frank「照改,加这一列」:码只看 note、按现行规则现判,所以并回时新旧行口径一致 —— 旧行没这一格或按旧规则判的,
     不会因为多一格 / 码不同被当成另一轮留两行(is_draw_covered「旧行有值的格逐格相同」照常成立);页面已下架、只在历史里的
-    旧行也补上这一格,不留「有的行有码、有的行没这格」。"""
-    mark_draw_selections(DrawSelectionsIn(prov=x.prov, draws=x.new))
-    mark_draw_selections(DrawSelectionsIn(prov=x.prov, draws=(x.old.get(x.prov) or {}).get(K_DRAWS) or []))
-    return merged_draws_of(x)
+    旧行也补上这一格,不留「有的行有码、有的行没这格」。
+    2026-09-29 抽选卡重排同理再加两步:先按现行规则拆行(split_draw_rows:NL 一批拆省提名、AIP 两行),再打项目 / 人数口径
+    两格(mark_draw_programs);新旧行同一处拆、同一处打,历史里整批那一行拆完与本轮拆好的行逐格相同,照常并掉不留两份。"""
+    old = split_draw_rows(DrawRowsIn(prov=x.prov, draws=(x.old.get(x.prov) or {}).get(K_DRAWS) or []))
+    new = split_draw_rows(DrawRowsIn(prov=x.prov, draws=x.new))
+    for rows in (new, old):
+        mark_draw_selections(DrawSelectionsIn(prov=x.prov, draws=rows))
+        mark_draw_programs(DrawRowsIn(prov=x.prov, draws=rows))
+    return merged_draws_of(MergeDrawsIn(prov=x.prov, new=new, old={x.prov: {K_DRAWS: old}}))
+
+
+def split_draw_rows(x: DrawRowsIn) -> list:
+    """一串抽选行按现行规则拆行(2026-09-29 抽选卡重排):NL 一批 ITA 拆成省提名、AIP 两行(nl_rows_of),别省原样。
+
+    @param x 省码与抽选行。
+    @returns 拆好的行(新列表;不拆的行是原对象)。
+    """
+    if x.prov != PROV_NL:
+        return list(x.draws)
+    out: list = []
+    for d in x.draws:
+        out += nl_rows_of(d)
+    return out
+
+
+def mark_draw_programs(x: DrawRowsIn) -> None:
+    """一串抽选行逐行判项目与人数口径,原地写进 K_PROGRAM / K_UNIT 两格(2026-09-29 抽选卡重排;消费端只认这两格)。
+
+    @param x 省码与抽选行。
+    """
+    for d in x.draws:
+        kind = DrawKindIn(prov=x.prov, stream=str(d.get(K_STREAM) or EMPTY_JOIN))
+        d[K_PROGRAM] = draw_program_of(kind)
+        d[K_UNIT] = draw_unit_of(kind)
+
+
+def draw_program_of(x: DrawKindIn) -> str:
+    """一行抽选的人数属于哪个项目:同池省 → PROGRAM_POOL;QC → PROGRAM_PSTQ;AIP 组 → PROGRAM_AIP;NL 拆不开的整批 → 空串
+    (认不出,不猜);其余 → PROGRAM_PNP(2026-09-29 抽选卡重排)。
+
+    @param x 省码与 stream。
+    @returns 项目码。
+    """
+    if x.prov in DRAW_POOL_PROVS:
+        return PROGRAM_POOL
+    if x.prov == PROV_QC:
+        return PROGRAM_PSTQ
+    if x.stream in DRAW_AIP_STREAMS:
+        return PROGRAM_AIP
+    if x.stream == NL_DRAW_STREAM:
+        return EMPTY_JOIN
+    return PROGRAM_PNP
+
+
+def draw_unit_of(x: DrawKindIn) -> str:
+    """一行抽选的人数数的是什么:选取省 → UNIT_SELECTION;NB 的 AIP 组 → UNIT_APPLICATION;其余 → UNIT_INVITATION
+    (2026-09-29 抽选卡重排)。
+
+    @param x 省码与 stream。
+    @returns 人数口径码。
+    """
+    if x.prov in DRAW_SELECT_UNIT_PROVS:
+        return UNIT_SELECTION
+    if x.stream in DRAW_APPLICATION_STREAMS.get(x.prov, ()):
+        return UNIT_APPLICATION
+    return UNIT_INVITATION
 
 
 def mark_draw_selections(x: DrawSelectionsIn) -> None:
@@ -8656,6 +8759,7 @@ from pnp.scheme import NbNlStatsTest  # noqa: E402 — 同上(2026-09-29 NB / NL
 from pnp.scheme import BcFunnelTest, OnAuditTest  # noqa: E402 — 同上(2026-09-29 ON 审计长附录、BC 年报四组逐年数)
 from pnp.scheme import AbFederalTest, MbPoolYearsTest  # noqa: E402 — 同上(2026-09-29 MB 年报池子历年序列 / AB 额外联邦名额)
 from pnp.scheme import DrawSelectionTest  # noqa: E402 — 同上(2026-09-27 Frank「照改,加这一列」)
+from pnp.scheme import DrawProgramTest  # noqa: E402 — 同上(2026-09-29 抽选卡重排:项目 / 人数口径两格与人数上限)
 
 
 def run_tests() -> None:
@@ -8689,6 +8793,7 @@ def run_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MbPoolYearsTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(AbFederalTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawSelectionTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DrawProgramTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
 

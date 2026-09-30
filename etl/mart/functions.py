@@ -203,11 +203,12 @@ from mart.constants import (
     SAL_TXT_PERIOD_AHEAD_RE, SAL_TXT_TAILS, SAL_TXT_THOUSANDS_RE, SAL_TXT_TOKEN_RE,
 )
 from mart.constants import (
-    ALLOC_NUM_TPL, ALLOC_QUOTE_RE, DATASET_ID_RE, DRAW_NOT_INVITE_STREAMS, DRAW_SELECT_PROVS, DRAW_YTD_DROP_TPL,
-    DRAW_YTD_INVITE_LABEL_TPL, DRAW_YTD_SELECT_LABEL_TPL, K_ALLOC_NOTE, METRIC_INVITATIONS_YTD, METRIC_SELECTIONS_YTD,
-    PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL, UNIT_INVITATIONS,
+    ALLOC_NUM_TPL, ALLOC_QUOTE_RE, DATASET_ID_RE, K_ALLOC_NOTE, PRINT_ALLOC_GAP_TPL, PRINT_YTD_SKIP_TPL,
 )
-from mart.constants import DRAW_PNP_PART_PROVS, DRAW_YTD_PNP_ONLY_TPL, K_PNP_INVITATIONS
+from mart.constants import (  # 2026-09-29 抽选卡重排:全年合计按抽选行的项目 / 人数口径两格分两份,人数上限轮出下限
+    DRAW_CARD_PROGRAMS, DRAW_KNOWN_PROGRAMS, DRAW_UNIT_INVITATION, DRAW_UNIT_METRIC, DRAW_YTD_BELOW_TPL,
+    K_INVITATIONS_BELOW, METRIC_MIN_SUFFIX, PRINT_YTD_MIXED_TPL, PROGRAM_EE, SCOPE_PROGRAM,
+)
 from mart.constants import K_ASSESSMENTS_YTD, K_EOI_POOL_QUARTERS, K_RESULT, NS_RESULT_METRICS, NS_RESULT_SKIP_TPL
 from mart.constants import PROV_NB  # 2026-09-29 NB / NL 往年提名(省年报 PDF)接进运营统计
 from mart.constants import (
@@ -220,7 +221,8 @@ from mart.constants import (
 )
 from mart.scheme import OfferFormIn
 from mart.scheme import (
-    AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, OpsExtraBaseIn, SalaryHitIn, YtdLabelIn,
+    AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, DrawYtdRowIn, OpsExtraBaseIn, SalaryHitIn,
+    YtdLabelIn,
 )
 from mart.constants import BRANCH_CITY_MIN, BRANCH_DROP_TPL
 from mart.constants import BLOCK_LIST, BLOCK_OCC, BLOCK_WAGE, K_LOW_ANNUAL, K_PNP_BLOCK, TEER_ALL
@@ -3743,6 +3745,8 @@ def dataset_name_of(url: str) -> str:
 def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
     """各省本年抽选人数合计 → 一省一行 invitations_ytd(NS 是 selections_ytd);口径四条见 constants.METRIC_INVITATIONS_YTD
     (2026-09-27 Frank 勾「2026 名额小表」)。本年有人数没公布的轮次 = 该省不出行,留痕一行。
+    2026-09-29 抽选卡重排:一省分两份(DRAW_CARD_PROGRAMS:省提名、AIP),各按抽选行的 unit 格出指标(DRAW_UNIT_METRIC),
+    逐份交 add_draw_ytd_row。
 
     @param x 行累加器、各省抽选文件与本年。
     """
@@ -3750,74 +3754,124 @@ def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
         for prov, v in pd.get(K_PROVINCES, {}).items():
             if prov in NON_PNP_PROV or prov == PROV_FED:
                 continue
-            got = draw_ytd_of(DrawYtdOfIn(prov=prov, draws=v.get(K_DRAWS, []), year=x.year))
-            if got.rounds + got.unknown == 0:
-                continue
-            metric = METRIC_INVITATIONS_YTD
-            unit = UNIT_INVITATIONS
-            tpl = DRAW_YTD_INVITE_LABEL_TPL
-            if prov in DRAW_SELECT_PROVS:
-                metric = METRIC_SELECTIONS_YTD
-                unit = UNIT_PEOPLE
-                tpl = DRAW_YTD_SELECT_LABEL_TPL
-            if got.unknown > 0:
-                say(PRINT_YTD_SKIP_TPL.format(prov=prov, metric=metric, year=x.year, n=got.unknown))
-                continue
-            base = to_ops_extra_base(OpsExtraBaseIn(province=prov, as_of=got.latest, period=x.year,
-                                                    url=v.get(K_URL, ""), fetched=pd.get(K_FETCHED, "")))
-            add_ops_row(OpsRowIn(ctx=x.ctx, base=base, metric=metric, scope="", kind="",
-                                 label=ytd_label_of(YtdLabelIn(tpl=tpl, got=got, year=x.year, prov=prov)),
-                                 raw=got.total, unit=unit, text="", section="", period=x.year))
+            for scope in DRAW_CARD_PROGRAMS:
+                add_draw_ytd_row(DrawYtdRowIn(ctx=x.ctx, prov=prov, block=v, fetched=pd.get(K_FETCHED, ""),
+                                              year=x.year, scope=scope))
+
+
+def add_draw_ytd_row(x: DrawYtdRowIn) -> None:
+    """一省一份本年合计 → 一行(2026-09-29 抽选卡重排):这一份本年没有行 → 不出;有真缺(人数空、日期 / 项目认不出)或各行
+    人数口径不一 → 不出、留痕一行;有只写上限的轮次 → 指标名加 METRIC_MIN_SUFFIX(下限)。AIP 那一份 scopeKind = SCOPE_PROGRAM。
+
+    @param x 行累加器、省码、抽选块、抓取日、本年与这一份的 scope。
+    """
+    got = draw_ytd_of(DrawYtdOfIn(draws=x.block.get(K_DRAWS, []), year=x.year, programs=DRAW_CARD_PROGRAMS[x.scope]))
+    if got.rounds + got.unknown == 0:
+        return
+    share = x.scope
+    if share == "":
+        share = PROGRAM_PNP
+    if got.unknown > 0:
+        say(PRINT_YTD_SKIP_TPL.format(prov=x.prov, share=share, year=x.year, n=got.unknown))
+        return
+    spec = DRAW_UNIT_METRIC.get(got.unit)
+    if spec is None:
+        say(PRINT_YTD_MIXED_TPL.format(prov=x.prov, share=share, year=x.year))
+        return
+    metric, unit, tpl = spec
+    if got.below > 0:
+        metric = metric + METRIC_MIN_SUFFIX
+    kind = ""
+    if x.scope != "":
+        kind = SCOPE_PROGRAM
+    base = to_ops_extra_base(OpsExtraBaseIn(province=x.prov, as_of=got.latest, period=x.year,
+                                            url=x.block.get(K_URL, ""), fetched=x.fetched))
+    add_ops_row(OpsRowIn(ctx=x.ctx, base=base, metric=metric, scope=x.scope, kind=kind,
+                         label=ytd_label_of(YtdLabelIn(tpl=tpl, got=got, year=x.year)),
+                         raw=got.total, unit=unit, text="", section="", period=x.year))
 
 
 def draw_ytd_of(x: DrawYtdOfIn) -> DrawYtdOut:
     """一省本年带日期的抽选行 → 合计与三个计数。不算邀请的 stream(DRAW_NOT_INVITE_STREAMS)记 dropped 不进合计;
     人数不是整数(没公布)或日期认不出(不知道是不是今年的)记 unknown —— 调用方见 unknown 就整省不出。
     2026-09-27 NL 这类批次里夹着 AIP 的省(DRAW_PNP_PART_PROVS)改读省提名那一份(K_PNP_INVITATIONS),缺这一格同样记 unknown。
+    2026-09-29 抽选卡重排改判:只算 program 在 x.programs 里的行(另一份的行跳过,不再记 dropped);program 认不出(空串 / 缺格)
+    的行两份都记 unknown;人数空但有上限(K_INVITATIONS_BELOW)的行按 0 计入、记 below 与上限;各行 unit 一致时交回那一个。
 
-    @param x 省码、该省 draws[] 与本年。
-    @returns 合计、计入行数、未知行数、剔出行数、最近日期。
+    @param x 该省 draws[]、本年与这一份算哪几个 program。
+    @returns 合计、计入行数、未知行数、上限行数与上限、人数口径、最近日期。
     """
-    out = DrawYtdOut(total=0, rounds=0, unknown=0, dropped=0, latest="")
-    skip = DRAW_NOT_INVITE_STREAMS.get(x.prov, ())
+    out = DrawYtdOut(total=0, rounds=0, unknown=0, below=0, bounds=[], unit="", latest="")
+    units: list = []
     for dr in x.draws:
         day = str(dr.get(K_DATE) or "")
-        if day == "":
+        program = dr.get(K_PROGRAM)
+        if day == "" or (program in DRAW_KNOWN_PROGRAMS and program not in x.programs):
             continue
         if ISO_PREFIX_RE.match(day) is None and DRAW_MONTH_RE.fullmatch(day) is None:
             out.unknown += 1
             continue
         if day[:YEAR_LEN] != x.year:
             continue
-        if dr.get(K_STREAM, "") in skip:
-            out.dropped += 1
-            continue
-        n = dr.get(K_INVITATIONS)
-        if x.prov in DRAW_PNP_PART_PROVS:
-            n = dr.get(K_PNP_INVITATIONS)
-        if isinstance(n, int) is False or isinstance(n, bool):
+        if program not in DRAW_KNOWN_PROGRAMS:
             out.unknown += 1
             continue
+        n = dr.get(K_INVITATIONS)
+        if is_count(n) is False:
+            below = dr.get(K_INVITATIONS_BELOW)
+            if is_count(below) is False:
+                out.unknown += 1
+                continue
+            n = 0
+            out.below += 1
+            if below not in out.bounds:
+                out.bounds.append(below)
+        unit = dr.get(K_UNIT)
+        if unit not in units:
+            units.append(unit)
         out.total += n
         out.rounds += 1
         if draw_day_of(day) > draw_day_of(out.latest):
             out.latest = day
+    out.unit = only_unit_of(units)
     return out
+
+
+def only_unit_of(units: list) -> str:
+    """计入行的人数口径:只有一种时交回它,零种或几种不一给空串(2026-09-29 抽选卡重排)。
+
+    @param units 计入行里出现过的 unit 格(去重)。
+    @returns 那一种;不止一种或没有给空串。
+    """
+    if len(units) != 1:
+        return ""
+    return str(units[0] or "")
+
+
+def is_count(v: object) -> bool:
+    """这一格是不是人数(整数且不是布尔;2026-09-29 抽选卡重排,draw_ytd_of 判确数与上限两格共用)。
+
+    @param v 抽选行的一格。
+    @returns 是人数给 True。
+    """
+    return isinstance(v, int) and isinstance(v, bool) is False
 
 
 def ytd_label_of(x: YtdLabelIn) -> str:
     """全年合计行的 label(英文,三语界面原样显示):「Sum of N rounds in 2026」;有被剔出合计的行时补一句剔了几行、为什么。
+    2026-09-29 抽选卡重排:剔出那句撤(AIP 另出一份),NL 只算省提名那句撤(拆行后省提名那一份本来就只有省提名);
+    有只写上限的轮次时补一句几轮、上限几(DRAW_YTD_BELOW_TPL)。
 
-    @param x 模板、合计、本年与省码。
+    @param x 模板、合计与本年。
     @returns label。
     """
     label = x.tpl.format(n=x.got.rounds, year=x.year)
-    if x.prov in DRAW_PNP_PART_PROVS:
-        label = DRAW_YTD_PNP_ONLY_TPL.format(label=label)
-    if x.got.dropped == 0:
+    if x.got.below == 0:
         return label
-    return DRAW_YTD_DROP_TPL.format(label=label, n=x.got.dropped,
-                                    streams=SLASH.join(DRAW_NOT_INVITE_STREAMS.get(x.prov, ())))
+    bounds: list = []
+    for b in x.got.bounds:
+        bounds.append(str(b))
+    return DRAW_YTD_BELOW_TPL.format(label=label, n=x.got.below, bounds=SLASH.join(bounds))
 
 
 def to_pnp_occupation_row(x: PnpOccIn) -> dict:
@@ -3848,6 +3902,8 @@ def to_pnp_draw_row(x: DrawRowIn) -> dict:
     没有这一格的省照旧按 stream 对。
     2026-09-27 Frank「照改,加这一列」:selection 格原样带上 pnp 域落盘时按官方原文判好的码(这一行是这期 / 这天里的哪一项,
     前端按码翻三语、只照着显示);pnp 抽选单元还没按新代码重跑过的旧文件没这一格 → 空串(同「认不出」,前端不显示)。
+    2026-09-29 抽选卡重排:program / unit / invitationsBelow 三格同理原样带上(省提名弹框按 program 分卡、按 unit 写「份邀请 /
+    人入选 / 份申请入选」、按上限写「少于 N」);旧文件没这几格 → 空串 / 空串 / None(项目认不出,合计那边记 unknown)。
     """
     row = dict(x.base)
     stream = x.draw.get("stream", "")
@@ -3855,28 +3911,33 @@ def to_pnp_draw_row(x: DrawRowIn) -> dict:
                 "streamZh": x.stream_zh.get(stream), "score": x.draw.get("score"),
                 "invitations": x.draw.get("invitations"), "note": x.draw.get("note", ""),
                 "selection": x.draw.get("selection", ""),
-                "checklist": x.checklist.get(x.draw.get("checklistKey") or stream)})
+                "checklist": x.checklist.get(x.draw.get("checklistKey") or stream),
+                "program": x.draw.get(K_PROGRAM, ""), "unit": x.draw.get(K_UNIT, ""),
+                "invitationsBelow": x.draw.get(K_INVITATIONS_BELOW)})
     return row
 
 
 def to_pnp_notice_row(x: NoticeRowIn) -> dict:
     """pnp_draws 表的一行改制通告。
-    2026-09-27 Frank「照改,加这一列」:selection 格给空串(通告不是某次抽选里的一项;表里每行都有这一格)。"""
+    2026-09-27 Frank「照改,加这一列」:selection 格给空串(通告不是某次抽选里的一项;表里每行都有这一格)。
+    2026-09-29 抽选卡重排:program / unit 给空串、invitationsBelow 给 None(通告不是一轮抽选)。"""
     row = dict(x.base)
     row.update({"kind": DRAW_KIND_NOTICE, "drawDate": x.notice.get("date"), "stream": "",
                 "streamZh": None, "score": None, "invitations": None,
-                "note": x.notice.get("note", ""), "selection": ""})
+                "note": x.notice.get("note", ""), "selection": "", "program": "", "unit": "", "invitationsBelow": None})
     return row
 
 
 def to_ee_draw_row(x: EeDrawIn) -> dict:
     """联邦 EE 历次抽选并进 pnp_draws(province='FED';#135 时间线页读这里的 FED 行)。
-    2026-09-27 Frank「照改,加这一列」:selection 格给空串(联邦一轮一个类别,本批只判 MB / BC / NB 三省)。"""
+    2026-09-27 Frank「照改,加这一列」:selection 格给空串(联邦一轮一个类别,本批只判 MB / BC / NB 三省)。
+    2026-09-29 抽选卡重排:program = EE、unit = invitation(联邦每轮发的是 ITA)、invitationsBelow 给 None(联邦人数都是确数)。"""
     return {"province": PROV_FED, "label": x.category, "scale": SCALE_CRS,
             "url": EE_ROUNDS_URL, "fetched": x.fetched, "kind": DRAW_KIND_DRAW,
             "drawDate": x.draw.get("date"), "stream": x.draw.get("drawName", ""),
             "score": x.draw.get("crs"), "invitations": x.draw.get("size"), "note": "", "selection": "",
-            "checklist": x.checklist.get(x.draw.get("drawName", ""))}
+            "checklist": x.checklist.get(x.draw.get("drawName", "")),
+            "program": PROGRAM_EE, "unit": DRAW_UNIT_INVITATION, "invitationsBelow": None}
 
 
 def to_applies_rule(nocs: dict) -> dict:

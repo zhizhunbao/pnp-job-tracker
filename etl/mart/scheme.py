@@ -1759,17 +1759,41 @@ class DrawYtdIn:
 
 
 @dataclass
-class DrawYtdOfIn:
-    """draw_ytd_of() 入参:一省的抽选行 + 本年。"""
+class DrawYtdRowIn:
+    """add_draw_ytd_row() 入参:一省一份合计(2026-09-29 抽选卡重排:省提名、AIP 各一份)。"""
+
+    ctx: OpsCtx
+    """行累加器。"""
 
     prov: str
-    """省码(挑不算邀请的 stream 用)。"""
+    """省码。"""
+
+    block: dict
+    """该省抽选块(url / draws[])。"""
+
+    fetched: str
+    """该省抽选文件的抓取日。"""
+
+    year: str
+    """本年。"""
+
+    scope: str
+    """这一份的 scope(DRAW_CARD_PROGRAMS 的键:空串 = 省提名,AIP = AIP)。"""
+
+
+@dataclass
+class DrawYtdOfIn:
+    """draw_ytd_of() 入参:一省的抽选行 + 本年。
+    2026-09-29 抽选卡重排:省码撤(原用来挑不算邀请的 stream),改收这一份算哪几个 program。"""
 
     draws: list
     """该省抽选块的 draws[]。"""
 
     year: str
     """本年。"""
+
+    programs: tuple
+    """算进这一份的 program 值(DRAW_CARD_PROGRAMS 的值)。"""
 
 
 @dataclass
@@ -1783,10 +1807,17 @@ class DrawYtdOut:
     """计入的行数(一行 = 一条通道的一轮)。"""
 
     unknown: int
-    """人数没公布或日期认不出的行数(> 0 = 该省不出合计)。"""
+    """人数没公布、日期认不出或项目认不出的行数(> 0 = 该省这一份不出合计)。"""
 
-    dropped: int
-    """本年里因「不是邀请」被剔出合计的行数(NB 的 AIP 组)。"""
+    below: int
+    """计入的行里官方只写了上限的行数(按 0 计;> 0 = 合计是下限,2026-09-29)。
+    沿革:原有 dropped(本年里因「不是邀请」被剔出合计的行数,NB 的 AIP 组),09-29 AIP 另出一份后撤。"""
+
+    bounds: list
+    """那几行的上限(去重,照出现先后)。"""
+
+    unit: str
+    """计入行的人数口径(各行一致时就是那一个;不一致或没有计入行 = 空串)。"""
 
     latest: str
     """计入行里最近的日期(原样:ISO 日或只到月的 YYYY-MM)。"""
@@ -1804,9 +1835,6 @@ class YtdLabelIn:
 
     year: str
     """本年。"""
-
-    prov: str
-    """省码(剔出行的 stream 名按它取)。"""
 
 
 # =========================================================================
@@ -4512,94 +4540,126 @@ class MartOpsExtraTest(unittest.TestCase):
                                                               "draws": draws}}}
 
     def draw_tables(self) -> list[dict]:
-        """现造各省抽选文件。"""
+        """现造各省抽选文件(2026-09-29 起每行带 pnp 域打好的 program / unit 两格)。"""
         one = self.draw_file
+        inv = self.inv
         return [
-            one("ON", [{"date": "2026-04-30", "stream": "FW", "invitations": 786},
-                       {"date": "2026-04-30", "stream": "IS", "invitations": 277},
-                       {"date": "2026-02-02", "stream": "FW", "invitations": 100},
-                       {"date": "2025-12-10", "stream": "FW", "invitations": None},
-                       {"date": "", "stream": "FW", "invitations": 5}]),
-            one("AB", [{"date": "2026-09-21", "stream": "Law", "invitations": None},
-                       {"date": "2026-09-22", "stream": "Tech", "invitations": 100}]),
-            one("NB", [{"date": "2026-09-18", "stream": "NB Skilled Worker", "invitations": 197},
-                       {"date": "2026-09-10", "stream": "AIP", "invitations": 60},
-                       {"date": "2026-08-20", "stream": "AIP", "invitations": None},
-                       {"date": "2026-07-16", "stream": "NB Express Entry", "invitations": 115}]),
-            one("NS", [{"date": "2026-07", "stream": "Monthly EOI selections", "invitations": 671},
-                       {"date": "2026-06", "stream": "Monthly EOI selections", "invitations": 531},
-                       {"date": "2025-12", "stream": "Monthly EOI selections", "invitations": 400}]),
-            one("QC", [{"date": "2026-09-24", "stream": "Stream 1", "invitations": 86}]),
-            one("FED", [{"date": "2026-09-24", "stream": "CEC", "invitations": 3000}]),
-            one("BC", [{"date": "June 4, 2026", "stream": "Care", "invitations": 10},
-                       {"date": "2026-09-24", "stream": "Tech", "invitations": 426}]),
-            one("PE", [{"date": "2025-09-17", "stream": "Labour", "invitations": 195}]),
+            one("ON", [inv("2026-04-30", "FW", 786), inv("2026-04-30", "IS", 277), inv("2026-02-02", "FW", 100),
+                       inv("2025-12-10", "FW", None), inv("", "FW", 5)]),
+            one("AB", [inv("2026-09-21", "Law", None), inv("2026-09-22", "Tech", 100)]),
+            one("NB", [inv("2026-09-18", "NB Skilled Worker", 197),
+                       {"date": "2026-09-10", "stream": "AIP", "invitations": 60, "program": "AIP", "unit": "application"},
+                       {"date": "2026-08-20", "stream": "AIP", "invitations": None, "program": "AIP", "unit": "application"},
+                       inv("2026-07-16", "NB Express Entry", 115)]),
+            one("NS", [self.pool("2026-07", 671), self.pool("2026-06", 531), self.pool("2025-12", 400)]),
+            one("QC", [{"date": "2026-09-24", "stream": "Stream 1", "invitations": 86, "program": "PSTQ",
+                        "unit": "invitation"}]),
+            one("FED", [inv("2026-09-24", "CEC", 3000)]),
+            one("BC", [inv("June 4, 2026", "Care", 10), inv("2026-09-24", "Tech", 426)]),
+            one("PE", [inv("2025-09-17", "Labour", 195)]),
         ]
 
-    def ytd(self) -> dict:
-        """跑一遍全年合计,按省收行。"""
+    def inv(self, day: str, stream: str, n: int | None) -> dict:
+        """一行省提名邀请(program=PNP、unit=invitation)。"""
+        return {"date": day, "stream": stream, "invitations": n, "program": "PNP", "unit": "invitation"}
+
+    def pool(self, month: str, n: int) -> dict:
+        """一行 NS 月度同池选取(program=PNP+AIP、unit=selection)。"""
+        return {"date": month, "stream": "Monthly EOI selections", "invitations": n, "program": "PNP+AIP",
+                "unit": "selection"}
+
+    def ytd_of(self, tables: list) -> dict:
+        """跑一遍全年合计,按(省, scope)收行(2026-09-29 起一省可出省提名、AIP 两份)。"""
         from mart import functions as fn
         ctx = OpsCtx(rows=[], seqs={})
-        fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=self.draw_tables(), year="2026"))
+        fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=tables, year="2026"))
         out = {}
         for r in ctx.rows:
-            out[r["province"]] = r
+            out[(r["province"], r["scope"])] = r
         return out
 
+    def ytd(self) -> dict:
+        """跑一遍全年合计(现造的各省文件)。"""
+        return self.ytd_of(self.draw_tables())
+
     def test_ytd_four_rules(self) -> None:
-        """四条口径:① AB 本年有一轮人数没公布、BC 有一行日期认不出 → 两省不出(ON 去年那轮 null 不影响今年);② NB 的 AIP 两行
-        (含一行 null)不并入;③ NS 出 selections_ytd、单位 people;④ QC、FED 不出。PE 本年没有抽选 → 不出。"""
+        """四条口径:① AB 本年有一轮人数没公布(也没写上限)、BC 有一行日期认不出 → 两省不出(ON 去年那轮 null 不影响今年);
+        ② NB 的 AIP 两行不并入省提名那一份,AIP 那一份因那行 null 不出;③ NS 出 selections_ytd、单位 people;④ QC、FED 不出。
+        PE 本年没有抽选 → 不出。2026-09-29 抽选卡重排起 ② ③ 读抽选行的 program / unit 两格,不按省名。"""
         got = self.ytd()
-        self.assertEqual(set(got), {"ON", "NB", "NS"})
-        self.assertEqual((got["NB"]["metric"], got["NB"]["value"], got["NB"]["unit"]), ("invitations_ytd", 312, "invitations"))
-        self.assertIn("excluding 2 AIP rows", got["NB"]["label"])
-        self.assertEqual((got["NS"]["metric"], got["NS"]["value"], got["NS"]["unit"]), ("selections_ytd", 1202, "people"))
+        self.assertEqual(set(got), {("ON", ""), ("NB", ""), ("NS", "")})
+        nb = got[("NB", "")]
+        self.assertEqual((nb["metric"], nb["value"], nb["unit"], nb["label"]),
+                         ("invitations_ytd", 312, "invitations", "Sum of 2 rounds in 2026"))
+        ns = got[("NS", "")]
+        self.assertEqual((ns["metric"], ns["value"], ns["unit"]), ("selections_ytd", 1202, "people"))
 
     def test_ytd_golden_row(self) -> None:
         """金标:ON 本年三行 786 + 277 + 100 = 1,163,asOf = 最近一轮 2026-04-30,url = 该省抽选页,period = 本年,label 写三轮;
         NS 的 asOf 只到月(不编具体哪天);行与 to_ops_base 出的行键同名同序。"""
         from mart import functions as fn
         got = self.ytd()
-        on = got["ON"]
-        self.assertEqual((on["value"], on["asOf"], on["url"], on["period"], on["label"]),
-                         (1163, "2026-04-30", "https://on.example/draws", "2026", "Sum of 3 rounds in 2026"))
-        self.assertEqual(got["NS"]["asOf"], "2026-07")
+        on = got[("ON", "")]
+        self.assertEqual((on["value"], on["asOf"], on["url"], on["period"], on["label"], on["scopeKind"]),
+                         (1163, "2026-04-30", "https://on.example/draws", "2026", "Sum of 3 rounds in 2026", ""))
+        self.assertEqual(got[("NS", "")]["asOf"], "2026-07")
         ref = OpsCtx(rows=[], seqs={})
         fn.add_ops_row(OpsRowIn(ctx=ref, base=fn.to_ops_base({"province": "ON"}), metric="allocation", scope="",
                                 kind="", label="", raw=1, unit="spots", text="", section="", period="2026"))
         self.assertEqual(list(on.keys()), list(ref.rows[0].keys()))
 
-    def test_ytd_rule_tables_probe(self) -> None:
-        """变异探针:把「不算邀请的 stream」表清空,NB 的合计当场变(且那行 null 让 NB 整省不出);把「按选取公布的省」表清空,
-        NS 就被当成邀请 —— 证明 ② ③ 两条读的是那两张表。"""
+    def test_ytd_program_probe(self) -> None:
+        """变异探针:把 AIP 并进省提名那一份,NB 那行 null 当场让 NB 整省不出;把 selection 口径映射成邀请,NS 就被当成邀请
+        —— 证明 ② ③ 两条读的是 DRAW_CARD_PROGRAMS / DRAW_UNIT_METRIC 两张表。"""
         from mart import functions as fn
-        with mock.patch.object(fn, "DRAW_NOT_INVITE_STREAMS", {}):
-            self.assertNotIn("NB", self.ytd())
-        with mock.patch.object(fn, "DRAW_SELECT_PROVS", ()):
-            self.assertEqual(self.ytd()["NS"]["metric"], "invitations_ytd")
+        with mock.patch.object(fn, "DRAW_CARD_PROGRAMS", {"": ("PNP", "PNP+AIP", "AIP")}):
+            self.assertNotIn(("NB", ""), self.ytd())
+        wrong = dict(fn.DRAW_UNIT_METRIC)
+        wrong["selection"] = wrong["invitation"]
+        with mock.patch.object(fn, "DRAW_UNIT_METRIC", wrong):
+            self.assertEqual(self.ytd()[("NS", "")]["metric"], "invitations_ytd")
 
-    def test_ytd_pnp_part_only(self) -> None:
-        """NL(2026-09-27):批次合计里夹着 AIP,只加省提名那一份 —— 2026 两行 61 + 41 = 102(不是合计 62 + 41 = 103),去年那行不算;
-        有一行缺省提名那一格(拆格前的历史行 / Notes 认不出)→ NL 整省不出;label 写明只算省提名。"""
-        from mart import functions as fn
+    def test_ytd_aip_share(self) -> None:
+        """AIP 那一份(2026-09-29 抽选卡重排):NL 拆好的行 —— 省提名 41 + 61 = 102(去年那行不算),AIP 1,scope = AIP、
+        scopeKind = program;NB 的 AIP 行都公布了 → 出 applications_ytd、单位 applications。项目认不出的行(拆不开的整批 program
+        空串、旧文件缺格)本年有一行 → 两份都不出。"""
+        rows = [self.inv("2026-09-25", "NLPNP (ITA batch)", 41), self.inv("2026-09-18", "NLPNP (ITA batch)", 61),
+                {"date": "2026-09-18", "stream": "AIP (ITA batch)", "invitations": 1, "program": "AIP", "unit": "invitation"},
+                self.inv("2025-11-12", "NLPNP (ITA batch)", 300)]
+        got = self.ytd_of([self.draw_file("NL", rows)])
+        pnp = got[("NL", "")]
+        aip = got[("NL", "AIP")]
+        self.assertEqual((pnp["metric"], pnp["value"], pnp["asOf"], pnp["scopeKind"]),
+                         ("invitations_ytd", 102, "2026-09-25", ""))
+        self.assertEqual((aip["metric"], aip["value"], aip["asOf"], aip["scopeKind"], aip["label"]),
+                         ("invitations_ytd", 1, "2026-09-18", "program", "Sum of 1 rounds in 2026"))
+        nb = [self.inv("2026-09-18", "NB Skilled Worker", 197),
+              {"date": "2026-09-10", "stream": "AIP", "invitations": 60, "program": "AIP", "unit": "application"}]
+        got = self.ytd_of([self.draw_file("NB", nb)])
+        self.assertEqual((got[("NB", "AIP")]["metric"], got[("NB", "AIP")]["value"], got[("NB", "AIP")]["unit"]),
+                         ("applications_ytd", 60, "applications"))
+        for bad in ({"date": "2026-03-06", "stream": "NLPNP + AIP (ITA batch)", "invitations": 445, "program": "",
+                     "unit": "invitation"},
+                    {"date": "2026-03-06", "stream": "NLPNP + AIP (ITA batch)", "invitations": 445}):
+            got = self.ytd_of([self.draw_file("NL", rows + [bad])])
+            self.assertEqual(got, {})
 
-        def nl(draws: list) -> dict:
-            ctx = OpsCtx(rows=[], seqs={})
-            table = {"fetched": "2026-09-27", "provinces": {"NL": {"url": "https://nl.example/ita", "draws": draws}}}
-            fn.fill_draw_ytd_ops(DrawYtdIn(ctx=ctx, tables=[table], year="2026"))
-            return {r["province"]: r for r in ctx.rows}
-
-        rows = [{"date": "2026-09-25", "stream": "NLPNP + AIP (ITA batch)", "invitations": 41, "pnpInvitations": 41},
-                {"date": "2026-09-18", "stream": "NLPNP + AIP (ITA batch)", "invitations": 62, "pnpInvitations": 61},
-                {"date": "2025-11-12", "stream": "NLPNP + AIP (ITA batch)", "invitations": 330}]
-        got = nl(rows)["NL"]
-        self.assertEqual((got["metric"], got["value"], got["asOf"]), ("invitations_ytd", 102, "2026-09-25"))
-        self.assertIn("provincial nominee invitations only", got["label"])
-        gap = [{"date": "2026-09-25", "stream": "NLPNP + AIP (ITA batch)", "invitations": 41, "pnpInvitations": 41},
-               {"date": "2026-03-06", "stream": "NLPNP + AIP (ITA batch)", "invitations": 445}]
-        self.assertNotIn("NL", nl(gap))
-        with mock.patch.object(fn, "DRAW_PNP_PART_PROVS", ()):
-            self.assertEqual(nl(rows)["NL"]["value"], 103)
+    def test_ytd_below(self) -> None:
+        """人数上限轮(2026-09-29 抽选卡重排):AB 两轮官方只写「Less than 10」→ 按 0 计、指标 invitations_ytd_min、label 写几轮
+        与上限;没写上限的空人数照旧整省不出;一份里人数口径不一 → 不出。"""
+        law = self.inv("2026-09-21", "Law", None)
+        law["invitationsBelow"] = 10
+        law2 = self.inv("2026-02-06", "Law", None)
+        law2["invitationsBelow"] = 10
+        rows = [law, self.inv("2026-09-22", "Tech", 100), law2]
+        ab = self.ytd_of([self.draw_file("AB", rows)])[("AB", "")]
+        self.assertEqual((ab["metric"], ab["value"], ab["asOf"]), ("invitations_ytd_min", 100, "2026-09-22"))
+        self.assertEqual(ab["label"], "Sum of 3 rounds in 2026, at least: 2 of them published only as fewer than 10, "
+                                      "counted as 0")
+        self.assertEqual(self.ytd_of([self.draw_file("AB", rows + [self.inv("2026-01-09", "Law", None)])]), {})
+        mixed = rows + [self.pool("2026-07", 5)]
+        mixed[3]["program"] = "PNP"
+        self.assertEqual(self.ytd_of([self.draw_file("AB", mixed)]), {})
 
     def test_as_of_month_from_period(self) -> None:
         """截至月(2026-09-27 省提名弹框「2026 年配额」卡的「截至」行):MB 月度块 throughMonth 英文月名 → `YYYY-MM`、

@@ -391,6 +391,28 @@ class DrawSelectionsIn:
 
 
 @dataclass
+class DrawRowsIn:
+    """split_draw_rows() / mark_draw_programs() 入参:一省的一串抽选行(2026-09-29 抽选卡重排)。"""
+
+    prov: str
+    """省码(按省分派拆法与判法)。"""
+
+    draws: list
+    """抽选行(本轮解析到的,或上一轮落盘的旧行)。"""
+
+
+@dataclass
+class DrawKindIn:
+    """draw_program_of() / draw_unit_of() 入参:一行抽选的省码与 stream(2026-09-29 抽选卡重排)。"""
+
+    prov: str
+    """省码。"""
+
+    stream: str
+    """该行 stream(各省解析器写的通道 / 批次名;缺格按空串)。"""
+
+
+@dataclass
 class DrawSelectionIn:
     """draw_selection_of() 入参:一行抽选的省码与 note 原文(2026-09-27 Frank「照改,加这一列」)。"""
 
@@ -2025,33 +2047,135 @@ class OwpRefreshIn:
 
 class NlDrawSplitTest(unittest.TestCase):
     """NL 抽选行拆省提名份数自测(2026-09-27 Frank 勾「全年已邀请合计」):Notes 两项 / 只有一项 / 对不上 / 认不出 + 解析金标。
-    全程不联网、不读仓内文件。"""
+    全程不联网、不读仓内文件。
+    2026-09-29 抽选卡重排:拆法交回(省提名, AIP)两份(nl_split_of,原 nl_pnp_invitations_of);解析照旧一批一行,
+    拆成两行在落盘门(nl_rows_of / mark_and_merge_draws),本类加拆行与落盘门两组。"""
 
     def test_split_golden(self) -> None:
-        """金标:官方 Notes 的几种写法(真页 2026 年各批原样);两项加起来等于本批总数才认,只有 AIP 一项且等于总数 = 0。"""
+        """金标:官方 Notes 的几种写法(真页 2026 年各批原样);两项加起来等于本批总数才认,只有 AIP 一项且等于总数 = 省提名 0。"""
         from pnp import functions as fn
-        cases = [("NLPNP – 61, AIP – 01", 62, 61), ("NLPNP – 41", 41, 41), ("NLPNP – 94, AIP – 46", 140, 94),
-                 ("AIP – 40", 40, 0), ("NLPNP - 36", 36, 36), ("NLPNP — 17, AIP — 40", 57, 17)]
+        cases = [("NLPNP – 61, AIP – 01", 62, (61, 1)), ("NLPNP – 41", 41, (41, 0)),
+                 ("NLPNP – 94, AIP – 46", 140, (94, 46)), ("AIP – 40", 40, (0, 40)), ("NLPNP - 36", 36, (36, 0)),
+                 ("NLPNP — 17, AIP — 40", 57, (17, 40))]
         for note, total, want in cases:
-            self.assertEqual(fn.nl_pnp_invitations_of({"note": note, "invitations": total}), want, note)
+            self.assertEqual(fn.nl_split_of({"note": note, "invitations": total}), want, note)
 
     def test_split_refuses_to_guess(self) -> None:
-        """对不上总数、一项都认不出、总数没公布 → None(汇装见 None 整省不出合计,不拿本批合计顶)。"""
+        """对不上总数、一项都认不出、总数没公布 → None(整批留一行、项目认不出;汇装见它整省不出合计,不拿本批合计顶)。"""
         from pnp import functions as fn
-        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 94, AIP – 46", "invitations": 141}))
-        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 36", "invitations": 40}))
-        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "", "invitations": 10}))
-        self.assertIsNone(fn.nl_pnp_invitations_of({"note": "NLPNP – 36", "invitations": None}))
+        self.assertIsNone(fn.nl_split_of({"note": "NLPNP – 94, AIP – 46", "invitations": 141}))
+        self.assertIsNone(fn.nl_split_of({"note": "NLPNP – 36", "invitations": 40}))
+        self.assertIsNone(fn.nl_split_of({"note": "", "invitations": 10}))
+        self.assertIsNone(fn.nl_split_of({"note": "NLPNP – 36", "invitations": None}))
 
     def test_parse_table_golden(self) -> None:
-        """解析金标:照真页的表形(无 <th>,首行 <td> 是表头)造两行,invitations 仍是本批合计、pnpInvitations 是省提名那一份。"""
+        """解析金标:照真页的表形(无 <th>,首行 <td> 是表头)造两行,仍是一批一行(本批合计 + Notes 原文),不再带 pnpInvitations。"""
         from pnp import functions as fn
+        from pnp.constants import NL_DRAW_STREAM
         html = ("<table><tr><td>Date Issued</td><td>Number of ITAs Issued</td><td>Notes</td></tr>"
                 "<tr><td>September 18, 2026</td><td>62</td><td>NLPNP – 61, AIP – 01</td></tr>"
                 "<tr><td>September 25, 2026</td><td>41</td><td>NLPNP – 41</td></tr></table>")
         got = fn.parse_nl_draws(html)
-        self.assertEqual([(d["date"], d["invitations"], d["pnpInvitations"]) for d in got],
-                         [("2026-09-25", 41, 41), ("2026-09-18", 62, 61)])
+        self.assertEqual([(d["date"], d["stream"], d["invitations"], d["note"]) for d in got],
+                         [("2026-09-25", NL_DRAW_STREAM, 41, "NLPNP – 41"),
+                          ("2026-09-18", NL_DRAW_STREAM, 62, "NLPNP – 61, AIP – 01")])
+        self.assertNotIn("pnpInvitations", got[0])
+
+    def test_rows_of(self) -> None:
+        """拆行:两项各一行;只有一项只出那一行;两项都是 0 留省提名那行;拆不开整批原样;已拆好的行原样。"""
+        from pnp import functions as fn
+        from pnp.constants import NL_AIP_STREAM, NL_DRAW_STREAM, NL_PNP_STREAM
+        cases = [("NLPNP – 61, AIP – 01", 62, [(NL_PNP_STREAM, 61), (NL_AIP_STREAM, 1)]),
+                 ("NLPNP – 41", 41, [(NL_PNP_STREAM, 41)]), ("AIP – 40", 40, [(NL_AIP_STREAM, 40)]),
+                 ("NLPNP – 0", 0, [(NL_PNP_STREAM, 0)]), ("NLPNP – 94, AIP – 46", 141, [(NL_DRAW_STREAM, 141)])]
+        for note, total, want in cases:
+            row = {"date": "2026-09-18", "stream": NL_DRAW_STREAM, "score": None, "note": note, "invitations": total}
+            got = fn.nl_rows_of(row)
+            self.assertEqual([(r["stream"], r["invitations"]) for r in got], want, note)
+            for r in got:
+                self.assertEqual((r["date"], r["note"], r["score"]), ("2026-09-18", note, None), note)
+        done = {"date": "2026-09-18", "stream": NL_PNP_STREAM, "note": "NLPNP – 41", "score": None, "invitations": 41}
+        self.assertEqual(fn.nl_rows_of(done), [done])
+
+    def test_gate_splits_history(self) -> None:
+        """落盘门:本轮整批行与历史里整批那一行(还带 09-27 的 pnpInvitations 格)同一处拆,并回后每批只剩拆好的行、各带项目 /
+        人数口径两格,不留整批行、不重复。变异探针:历史行不拆直接并回(旧行为),整批行留在历史里 = 与拆好的行重复计数。"""
+        from pnp import functions as fn
+        from pnp.constants import NL_AIP_STREAM, NL_DRAW_STREAM, NL_PNP_STREAM
+        new = [{"date": "2026-09-25", "stream": NL_DRAW_STREAM, "note": "NLPNP – 41", "score": None, "invitations": 41},
+               {"date": "2026-09-18", "stream": NL_DRAW_STREAM, "note": "NLPNP – 61, AIP – 01", "score": None,
+                "invitations": 62}]
+        old = [{"date": "2026-09-18", "stream": NL_DRAW_STREAM, "note": "NLPNP – 61, AIP – 01", "score": None,
+                "invitations": 62, "pnpInvitations": 61, "selection": ""},
+               {"date": "2025-11-12", "stream": NL_DRAW_STREAM, "note": "NLPNP – 300, AIP – 30", "score": None,
+                "invitations": 330, "pnpInvitations": 300, "selection": ""}]
+        got = fn.mark_and_merge_draws(MergeDrawsIn(prov="NL", new=[dict(r) for r in new],
+                                                   old={"NL": {"draws": [dict(r) for r in old]}}))
+        self.assertEqual([(r["date"], r["stream"], r["invitations"], r["program"], r["unit"]) for r in got],
+                         [("2026-09-25", NL_PNP_STREAM, 41, "PNP", "invitation"),
+                          ("2026-09-18", NL_PNP_STREAM, 61, "PNP", "invitation"),
+                          ("2026-09-18", NL_AIP_STREAM, 1, "AIP", "invitation"),
+                          ("2025-11-12", NL_PNP_STREAM, 300, "PNP", "invitation"),
+                          ("2025-11-12", NL_AIP_STREAM, 30, "AIP", "invitation")])
+        for r in got:
+            self.assertNotIn("pnpInvitations", r)
+        split_new = fn.split_draw_rows(DrawRowsIn(prov="NL", draws=[dict(r) for r in new]))
+        bare = fn.merged_draws_of(MergeDrawsIn(prov="NL", new=split_new, old={"NL": {"draws": [dict(r) for r in old]}}))
+        self.assertIn(NL_DRAW_STREAM, [r["stream"] for r in bare])
+
+
+class DrawProgramTest(unittest.TestCase):
+    """抽选行项目 / 人数口径两格与人数上限自测(2026-09-29 抽选卡重排,Frank「如果改一个地方,是不是所有省份都得改一遍」):
+    判法逐省逐组穷举 + 人数格上限写法金标 / 拒猜 + AB、BC 解析金标(BC 同日同组同分两条「<5」子轮都留)。全程不联网、不读仓内文件。"""
+
+    def test_program_unit(self) -> None:
+        """各省各组的判法:NS 同池选取;NB 的 AIP 组是 AIP 的申请入选;NL 拆出来的两行、拆不开的整批;QC 是 PSTQ;其余省提名邀请。"""
+        from pnp import functions as fn
+        from pnp.constants import NL_AIP_STREAM, NL_DRAW_STREAM, NL_PNP_STREAM
+        cases = [("NS", "Monthly EOI selections", "PNP+AIP", "selection"), ("NB", "AIP", "AIP", "application"),
+                 ("NB", "NB Express Entry", "PNP", "invitation"), ("NL", NL_PNP_STREAM, "PNP", "invitation"),
+                 ("NL", NL_AIP_STREAM, "AIP", "invitation"), ("NL", NL_DRAW_STREAM, "", "invitation"),
+                 ("QC", "Stream 1: Highly qualified and specialized skills", "PSTQ", "invitation"),
+                 ("AB", "Alberta Opportunity Stream", "PNP", "invitation"), ("BC", "Care: Health", "PNP", "invitation"),
+                 ("MB", "Skilled Worker in Manitoba", "PNP", "invitation"), ("ON", "Masters Graduate", "PNP", "invitation"),
+                 ("PE", "Labour & Express Entry", "PNP", "invitation"), ("SK", "", "PNP", "invitation")]
+        for prov, stream, program, unit in cases:
+            kind = DrawKindIn(prov=prov, stream=stream)
+            self.assertEqual((fn.draw_program_of(kind), fn.draw_unit_of(kind)), (program, unit), (prov, stream))
+
+    def test_below_of(self) -> None:
+        """人数格上限:两省官方写法认成上限;确数、空、范围、拼成英文字的一律 None(不猜)。"""
+        from pnp import functions as fn
+        for text, want in (("Less than 10", 10), ("<5", 5), (" < 5 ", 5), ("less than 10", 10), ("10", None),
+                           ("", None), (None, None), ("Less than ten", None), ("From 10 to 15", None), ("<5*", None)):
+            self.assertEqual(fn.below_of(text), want, text)
+
+    def test_parse_ab_below(self) -> None:
+        """AB 解析金标(真页表头与两种人数格):「Less than 10」那行 invitations 仍 None、上限 10;确数行上限 None。"""
+        from pnp import functions as fn
+        html = ("<table><tr><th>Draw date</th><th>Worker stream, pathway, initiative or other focus and selection parameters</th>"
+                "<th>Minimum score of invited candidates</th><th>Number of invitations</th></tr>"
+                "<tr><td>September 21, 2026</td><td>Alberta Express Entry Stream – Law Enforcement Pathway</td><td>49</td>"
+                "<td>Less than 10</td></tr>"
+                "<tr><td>September 18, 2026</td><td>Alberta Opportunity Stream</td><td>60</td><td>1,021</td></tr></table>")
+        got = fn.parse_ab_draws(html)
+        self.assertEqual([(d["date"], d["invitations"], d["invitationsBelow"]) for d in got],
+                         [("2026-09-21", None, 10), ("2026-09-18", 1021, None)])
+
+    def test_parse_bc_below(self) -> None:
+        """BC 解析金标(真页 2026-09-10 那两行):同日同组同分、人数都写「<5」、选取条件不同的两个子轮都留,上限各 5。
+        变异探针:去重键不带选取条件(旧键)时两行会并成一行 —— 这里断言两行,旧键过不了。"""
+        from pnp import functions as fn
+        html = ("<table><tr><th>Date</th><th>ITA type</th><th>Selection factors</th><th>Minimum score</th>"
+                "<th>Number of invitations</th></tr>"
+                "<tr><td rowspan='2'>September 10, 2026</td><td rowspan='2'>Care: Veterinary Care</td>"
+                "<td>All priority veterinary care occupations</td><td rowspan='2'>90</td><td>&lt;5</td></tr>"
+                "<tr><td>Animal health technologists and veterinary technicians (NOC 32104) with valid professional "
+                "designation</td><td>&lt;5</td></tr></table>")
+        got = fn.parse_bc_draws(html)
+        self.assertEqual([(d["date"], d["score"], d["invitations"], d["invitationsBelow"]) for d in got],
+                         [("2026-09-10", 90, None, 5), ("2026-09-10", 90, None, 5)])
+        self.assertEqual(len({d["note"] for d in got}), 2)
 
 
 class OnWorkforceWatchTest(unittest.TestCase):
