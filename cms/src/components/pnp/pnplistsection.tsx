@@ -34,6 +34,8 @@
  * 「按你建议」;设计稿 docs/design/省提名抽选卡重排-20260929.md):抽选卡在这里算好递进去,配额卡之后依次三张 —— 本省抽选(只列配额卡
  * 那一年、不含 AIP;卡底合计与配额卡「已发邀请」同一个数)、改制前的抽选(安省)、AIP 抽选(大西洋四省)。出不出卡看卡函数给不给
  * null(原按 drawsFormOf 的形判 drawGroupsShownOf,随之退役;SK 没有抽选也出卡写「不经抽选」)。
+ * 2026-09-30 魁省门槛弹框(Frank「先不要解读,只要门槛」,看过效果图第三版「可以」;设计 docs/design/魁省门槛弹框-20260929.md):
+ * 魁省岗最前面是这个职业能走的每个通道一张门槛卡(qcGateCardsOf);其余各卡对魁省本来就不出(各自有魁省挡板)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -42,7 +44,7 @@ import {
   aipCardOf, cardYearOf, drawCardOf, drawHitStreamsOf, gateCardOf, gateChannelOf, genDrawOf, pnpChannelOf,
   preReformCardOf, quotaCardOf,
   quotaKeyOf,
-  shownStreamsOf, streamKeyOf,
+  qcGateCardsOf, shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
 import { PnpBlockCard } from './pnpblockcard'
@@ -60,7 +62,7 @@ import type { PnpListSectionIn } from './types'
  * @returns 一组卡片。
  */
 export function PnpListSection({
-  job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways,
+  job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels,
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
   const channel = pnpChannelOf({ job, pathways })
@@ -81,6 +83,10 @@ export function PnpListSection({
   const reformCard = preReformCardOf(dx)
   const aipCard = aipCardOf(dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
+  const qcCards = []
+  for (const c of qcGateCardsOf({ t: p.t, job, reqs, channels: qcChannels })) {
+    qcCards.push(<PnpGateCard key={c.title} spec={c} />)
+  }
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)
@@ -97,6 +103,7 @@ export function PnpListSection({
   }
   return (
     <>
+      {qcCards}
       <PnpBlockCard t={p.t} text={p.block} />
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {gate != null && <PnpGateCard spec={gate} />}

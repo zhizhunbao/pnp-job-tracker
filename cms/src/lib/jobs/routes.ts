@@ -31,7 +31,7 @@ import {
 } from './constants'
 import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
-  loadJobsPage, loadOccCompetition, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
+  loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
   loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedOccPage, normalizeProfile, translateTitles,
   emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
@@ -236,6 +236,26 @@ export async function jobsPnpRoute(_req: Request): Promise<Response> {
     { pnpOccupations: dims.pnpOccupations, pnpDraws: dims.pnpDraws, pnpOps: ops, pnpReqs: reqs, pathways: dims.pathways },
     { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } },
   )
+}
+
+/**
+ * GET /api/jobs/qc?noc=72106:魁省一个职业能走的全部通道(2026-09-30 魁省门槛弹框;设计 docs/design/魁省门槛弹框-20260929.md)。
+ * 弹框每个通道出一张门槛卡(门槛行照旧走 /api/jobs/pnp 的 pnpReqs);整表 516 行原文 30 万字符,只按职业码取这一行。
+ *
+ * @param req 请求(?noc=五位码)。
+ * @returns { noc, channels };noc 非法 400。
+ */
+export async function jobsQcRoute(req: Request): Promise<Response> {
+  let noc = PARAM_NONE
+  const nocParam = new URL(req.url).searchParams.get(P_NOC)
+  if (nocParam != null) {
+    noc = nocParam.trim()
+  }
+  if (NOC5_RE.test(noc) === false) {
+    return Response.json({ error: E_NOC_REQUIRED }, { status: BAD_REQUEST })
+  }
+  const channels = await loadQcChannels({ db: await getDb(), noc })
+  return Response.json({ noc, channels }, { headers: { [HDR_CACHE_CONTROL]: DIMS_CACHE_CONTROL } })
 }
 
 /**

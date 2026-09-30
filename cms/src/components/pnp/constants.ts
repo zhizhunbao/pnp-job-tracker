@@ -1286,3 +1286,309 @@ export const NOTICE_ERR = 'err'
  * 省码与 NOC 拼成排除清单键的分隔符(键形如 `ON|72310`;2026-09-28 随排除键自 jobs 迁入,拼键与查键都只在本域)。
  */
 export const EXCL_KEY_SEP = '|'
+
+/**
+ * 魁省一个职业的通道接口(2026-09-30 魁省门槛弹框,Frank 看过效果图第三版「可以」;设计 docs/design/魁省门槛弹框-20260929.md。
+ * 弹框打开才按职业码取;后接五位码)。
+ */
+export const URL_API_JOBS_QC = '/api/jobs/qc?noc='
+
+/**
+ * 魁省门槛行的两个项目(门槛表 program;魁省不属省提名)。
+ */
+export const QC_PROGRAMS = ['PSTQ', 'PEQ']
+
+/**
+ * PSTQ 的项目名(一般条件行只挂到 PSTQ 各通道卡上)。
+ */
+export const QC_PROGRAM_PSTQ = 'PSTQ'
+
+/**
+ * PSTQ 一般条件那几行的流名(四个通道都适用:年龄、自给合同)。
+ */
+export const QC_GENERAL_STREAM = 'PSTQ (all streams)'
+
+/**
+ * 魁省门槛行的因素名(etl/pnp/qc 写的,照抄;门槛卡按它点名取行)。
+ */
+export const QC_F = {
+  /**
+   * 职业档(TEER)。
+   */
+  teer: 'occupationPathway',
+
+  /**
+   * 法语(申请人 / 配偶按 subject 分)。
+   */
+  language: 'language',
+
+  /**
+   * 工作经验(口径包带 windowYears / windowMonths / inQuebec / asOf)。
+   */
+  experience: 'experience',
+
+  /**
+   * 学历。
+   */
+  education: 'education',
+
+  /**
+   * 年龄。
+   */
+  age: 'age',
+
+  /**
+   * 自给合同。
+   */
+  funds: 'fundsMinimum',
+
+  /**
+   * 受监管职业(执业许可或学历等同认定)。
+   */
+  licensing: 'licensing',
+
+  /**
+   * PEQ 本轮收件期。
+   */
+  intake: 'intakeWindow',
+}
+
+/**
+ * 魁省门槛行的主体:随行配偶(魁省对配偶有口语门槛)。
+ */
+export const QC_SUBJECT_SPOUSE = 'spouse'
+
+/**
+ * 魁省门槛卡的行键(React key;顺序即卡里的行序)。
+ */
+export const QC_ROW = {
+  /**
+   * 适用(部分受监管 / 要公民身份这类通道才有)。
+   */
+  scope: 'scope',
+
+  /**
+   * 执照。
+   */
+  licence: 'licence',
+
+  /**
+   * 职业档。
+   */
+  teer: 'teer',
+
+  /**
+   * 法语。
+   */
+  french: 'french',
+
+  /**
+   * 工作经验。
+   */
+  exp: 'exp',
+
+  /**
+   * 收件条件(PEQ 截点日前满足)。
+   */
+  recept: 'recept',
+
+  /**
+   * 收件期(PEQ)。
+   */
+  intake: 'intake',
+
+  /**
+   * 学历。
+   */
+  edu: 'edu',
+
+  /**
+   * 年龄。
+   */
+  age: 'age',
+
+  /**
+   * 自给合同。
+   */
+  funds: 'funds',
+
+  /**
+   * 配偶。
+   */
+  spouse: 'spouse',
+}
+
+/**
+ * 魁省门槛行口径包的键(etl/pnp/qc 写的,照抄)。
+ */
+export const QC_BASIS = {
+  /**
+   * 法语口语。
+   */
+  oral: 'oral',
+
+  /**
+   * 法语书面。
+   */
+  written: 'written',
+
+  /**
+   * TEF 理解那一档下限。
+   */
+  tefComp: 'tefComp',
+
+  /**
+   * TEF 表达那一档下限。
+   */
+  tefExpr: 'tefExpr',
+
+  /**
+   * TCF 理解那一档下限(699 分制)。
+   */
+  tcfComp: 'tcfComp',
+
+  /**
+   * TCF 表达那一档下限(20 分制)。
+   */
+  tcfExpr: 'tcfExpr',
+
+  /**
+   * 近 N 年内。
+   */
+  windowYears: 'windowYears',
+
+  /**
+   * 近 N 个月内。
+   */
+  windowMonths: 'windowMonths',
+
+  /**
+   * 这段经验要在魁省。
+   */
+  inQuebec: 'inQuebec',
+
+  /**
+   * 全职口径(每周至少 N 小时)。
+   */
+  fullTime: 'fullTimeHoursPerWeek',
+
+  /**
+   * 收件条件的截点日。
+   */
+  asOf: 'asOf',
+
+  /**
+   * 收件起日。
+   */
+  opens: 'opens',
+
+  /**
+   * 收件止日。
+   */
+  closes: 'closes',
+}
+
+/**
+ * 通道细分类里要出「适用」行的那几类 → 词条(部分受监管的另写官方原文,见 QC_KIND_PARTLY)。
+ */
+export const QC_KIND_SCOPE: Record<string, string> = {
+  /**
+   * 要加拿大公民身份才能做(官方不发邀请)。
+   */
+  citizenOnly: 'qcgate.scope.citizenOnly',
+
+  /**
+   * 要永久居民身份才能做(官方不发邀请)。
+   */
+  residentOnly: 'qcgate.scope.residentOnly',
+
+  /**
+   * 整类受监管且要魁省学历。
+   */
+  regulatedQcDiploma: 'qcgate.scope.qcDiploma',
+}
+
+/**
+ * 部分受监管的细分类:「适用」行写官方原文(只有其中几种工作受监管)。
+ */
+export const QC_KIND_PARTLY = 'partlyRegulated'
+
+/**
+ * 格子文案词条头(后接通道稳定键:pnp.qc.cell.pstq-1)。
+ */
+export const QC_CELL_HEAD = 'pnp.qc.cell.'
+
+/**
+ * 卡标题下界面语言名的词条头(后接通道稳定键)。
+ */
+export const QC_NAME_HEAD = 'pnp.qc.name.'
+
+/**
+ * 学历行的词条头(后接通道稳定键;学历门槛官方是条文、不是数,按通道各写一句)。
+ */
+export const QC_EDU_HEAD = 'qcgate.edu.'
+
+/**
+ * 魁省弹框页眉小标的词条。
+ */
+export const K_KICKER_QC = 'pnp.qc.kicker'
+
+/**
+ * 格子文案:这个职业不在官方对照表里(照旧写「魁省」,不可点)。
+ */
+export const K_CELL_QC = 'cell.pnpQc'
+
+/**
+ * TEER 档连号时的连接号(「0–2」)。
+ */
+export const QC_TEER_DASH = '–'
+
+/**
+ * 考试名:TEF(法语主写它;TEF / TEFAQ / TEF Canada 在魁省对照表里同一套分数线)。
+ */
+export const QC_TEST_TEF = 'TEF'
+
+/**
+ * 考试名:TCF(灰字注)。
+ */
+export const QC_TEST_TCF = 'TCF'
+
+/**
+ * TEER 档不连号时的分隔(「0, 1, 3」)。
+ */
+export const QC_TEER_LIST_SEP = ', '
+
+/**
+ * 法语分数线一段的词条(口语 / 书面同分写一个数;不同分听说读写分开写)。
+ */
+export const QC_FR_KEY = {
+  /**
+   * 口语两项同分(「口语 400」)。
+   */
+  oral: 'qcgate.fr.oral',
+
+  /**
+   * 书面两项同分(「书面 300」)。
+   */
+  written: 'qcgate.fr.written',
+
+  /**
+   * 听(口语理解)。
+   */
+  listen: 'qcgate.fr.listen',
+
+  /**
+   * 说(口语表达)。
+   */
+  speak: 'qcgate.fr.speak',
+
+  /**
+   * 读(书面理解)。
+   */
+  read: 'qcgate.fr.read',
+
+  /**
+   * 写(书面表达)。
+   */
+  write: 'qcgate.fr.write',
+}

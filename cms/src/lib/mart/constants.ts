@@ -354,6 +354,11 @@ export const TBL_PNP_OPS_STATS = 'pnp_ops_stats'
 export const TBL_PATHWAYS = 'pathways'
 
 /**
+ * 魁省职业 → 通道对照表(2026-09-30 魁省门槛弹框;一行 = 一个 NOC,etl/pnp/qc 官方对照 + mart 汇装)。
+ */
+export const TBL_QC_NOC_STREAMS = 'qc_noc_streams'
+
+/**
  * 联邦 EE 类别表。
  */
 export const TBL_EE_CATEGORIES = 'ee_categories'
@@ -657,6 +662,12 @@ export const COLS_PNP_OPS_STATS = ['province', 'program', 'metric', 'scope', 'sc
  * 建了表却漏了 payload_locked_documents_rels.pathways_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
  */
 export const COLS_PATHWAYS = ['key', 'seq', 'province', 'program', 'plain_zh', 'plain_en', 'plain_ko', 'official_name', 'board_label', 'is_default', 'draw_streams', 'req_streams', 'quota_scope', 'quota_key', 'occ_labels', 'status', 'url', 'quote', 'checked']
+
+/**
+ * qc_noc_streams 列(channels 是 jsonb)。⚠️ 新表,建表走 docs/sql/qc-noc-streams-20260930.sql:表还没建时 seed 按 tableExists 跳过;
+ * 建了表却漏了 payload_locked_documents_rels.qc_noc_streams_id 就撞 42703 → 整个 seed 事务回滚(两件在同一个文件里,一起跑)。
+ */
+export const COLS_QC_NOC_STREAMS = ['noc', 'name', 'channels']
 
 /**
  * ee_categories 列。

@@ -47,6 +47,9 @@ import {
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
   PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
   OPS_SCOPE_DRAW_STREAM,
+  K_CELL_QC, K_KICKER_QC, QC_BASIS, QC_CELL_HEAD, QC_EDU_HEAD, QC_F, QC_FR_KEY, QC_GENERAL_STREAM, QC_KIND_PARTLY,
+  QC_KIND_SCOPE, QC_NAME_HEAD, QC_PROGRAM_PSTQ, QC_PROGRAMS, QC_ROW, QC_SUBJECT_SPOUSE, QC_TEER_DASH, QC_TEER_LIST_SEP,
+  QC_TEST_TCF, QC_TEST_TEF, URL_API_JOBS_QC,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -67,6 +70,8 @@ import type {
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   BelowLineIn, CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
+  LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
+  QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -405,7 +410,30 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
       }
     }
   }
-  return { draws, lists, excluded, defaults: pnpDefaultProvsOf(x.pathways), gated: gatedKeysOf(x.pathways) }
+  return {
+    draws,
+    lists,
+    excluded,
+    defaults: pnpDefaultProvsOf(x.pathways),
+    gated: gatedKeysOf(x.pathways),
+    qc: qcCellMapOf(x.qcCells),
+  }
+}
+
+/**
+ * 魁省职业码 → 第一个通道键(2026-09-30 魁省门槛弹框;首屏整表 516 行压成查表,格子文案与能不能点读它)。
+ *
+ * @param rows 首屏维度 qcCells。
+ * @returns 查表。
+ */
+function qcCellMapOf(rows: QcCellRow[]): QcCellMap {
+  const out: QcCellMap = {}
+  for (const r of rows) {
+    if (r.noc !== TEXT_NONE && r.key !== TEXT_NONE) {
+      out[r.noc] = r.key
+    }
+  }
+  return out
 }
 
 /**
@@ -2144,7 +2172,12 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
       rows.push(row)
     }
   }
-  return { title: x.t('pnpgate.title'), source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan, streams }) }), rows }
+  return {
+    title: x.t('pnpgate.title'),
+    sub: TEXT_NONE,
+    source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan, streams }) }),
+    rows,
+  }
 }
 
 /**
@@ -2224,6 +2257,7 @@ function offerRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.offer,
     label: x.t('pnpgate.k.offer'),
     lines: [x.t('pnpgate.offerFull'), capFirstOf(x.t('pnpgate.offerNot', { list: names.join(x.t('pnpgate.sep')) }))],
+    notes: [],
   }
 }
 
@@ -2254,6 +2288,7 @@ function langRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.lang,
     label: x.t('pnpgate.k.lang'),
     lines,
+    notes: [],
   }
 }
 
@@ -2396,7 +2431,7 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   for (const line of expAltLinesOf(x)) {
     lines.push(line)
   }
-  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines }
+  return { key: GATE_ROW.exp, label: x.t('pnpgate.k.exp'), lines, notes: [] }
 }
 
 /**
@@ -2480,7 +2515,7 @@ function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (low != null) {
     lines.push(x.t('pnpgate.wageLowGrad', { prov: x.t(PROV_KEY_HEAD + x.job.province) }))
   }
-  return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines }
+  return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines, notes: [] }
 }
 
 /**
@@ -2497,7 +2532,7 @@ function residenceRowOf(x: GateRowOfIn): GateRowSpec | null {
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const line = capFirstOf(x.t('pnpgate.residence', { n: res.value, prov }))
-  return { key: GATE_ROW.residence, label: x.t('pnpgate.k.residence'), lines: [line] }
+  return { key: GATE_ROW.residence, label: x.t('pnpgate.k.residence'), lines: [line], notes: [] }
 }
 
 /**
@@ -2511,7 +2546,12 @@ function pointsRowOf(x: GateRowOfIn): GateRowSpec | null {
   if (pts == null || pts.value == null) {
     return null
   }
-  return { key: GATE_ROW.points, label: x.t('pnpgate.k.points'), lines: [x.t('pnpgate.pointsMin', { n: pts.value })] }
+  return {
+    key: GATE_ROW.points,
+    label: x.t('pnpgate.k.points'),
+    lines: [x.t('pnpgate.pointsMin', { n: pts.value })],
+    notes: [],
+  }
 }
 
 /**
@@ -2541,6 +2581,7 @@ function eeRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.ee,
     label: x.t('pnpgate.k.ee'),
     lines: parts.map(capFirstOf),
+    notes: [],
   }
 }
 
@@ -2594,6 +2635,7 @@ function empRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.emp,
     label: x.t('pnpgate.k.emp'),
     lines: parts.map(capFirstOf),
+    notes: [],
   }
 }
 
@@ -2661,6 +2703,7 @@ function otherRowOf(x: GateRowOfIn): GateRowSpec | null {
     key: GATE_ROW.other,
     label: x.t('pnpgate.k.other'),
     lines: parts.map(capFirstOf),
+    notes: [],
   }
 }
 
@@ -4109,7 +4152,10 @@ export function pnpDataOf(data: PnpData | null): PnpData {
  * @returns 小标文字。
  */
 export function pnpKickerOf(x: PnpKickerIn): string {
-  if (x.province === TEXT_NONE || x.province === PROV_QC) {
+  if (x.province === PROV_QC) {
+    return x.t(K_KICKER_QC)
+  }
+  if (x.province === TEXT_NONE) {
     return x.t(K_KICKER_GROUP)
   }
   if (ATLANTIC_PROVS.includes(x.province)) {
@@ -4202,6 +4248,9 @@ export function pnpBlockOf(x: PnpBlockIn): string {
  * @returns 可点 = true。
  */
 export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
+  if (x.job.province === PROV_QC) {
+    return x.index.qc[x.job.noc] != null
+  }
   if (PNP_BLOCK_CODES.includes(x.job.pnpBlock)) {
     return true
   }
@@ -4264,4 +4313,510 @@ export function pnpExcludedOf(x: PnpExclIn): boolean {
  */
 export function aipExcludedOf(x: PnpExclIn): boolean {
   return x.blocked.aip.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
+}
+
+/**
+ * 魁省门槛卡(2026-09-30 Frank 看过效果图第三版「可以」「先不要解读,只要门槛」;设计 docs/design/魁省门槛弹框-20260929.md):
+ * 本岗职业能走几个通道就出几张(通道来自官方「职业 → 通道」对照,数据层汇装成 qc_noc_streams),标题官方原名、灰字界面语言名、
+ * 右上来源;行只陈列官方门槛,不判「你够不够」。魁省不属省提名,这几张卡与九省的门槛卡同一个组件(PnpGateCard)。
+ *
+ * @param x 取词函数、本岗、门槛表与本岗职业的通道。
+ * @returns 卡片(通道顺序);一张门槛行都挑不到的通道不出卡。
+ */
+export function qcGateCardsOf(x: QcGateCardsIn): GateCardSpec[] {
+  const out: GateCardSpec[] = []
+  for (const chan of x.channels) {
+    const card = qcCardOf({ t: x.t, job: x.job, reqs: x.reqs, chan })
+    if (card != null) {
+      out.push(card)
+    }
+  }
+  return out
+}
+
+/**
+ * 一个通道的门槛卡:门槛表里挑魁省这个通道的行(本通道流;PSTQ 各通道另挂一般条件),标了 TEER 档的只留管得着本岗的那档
+ * (受监管通道的法语按 TEER 分两档),再按效果图的行序拼。
+ *
+ * @param x 取词函数、本岗、门槛表与这个通道。
+ * @returns 卡;挑不到行给 null。
+ */
+function qcCardOf(x: QcCardOfIn): GateCardSpec | null {
+  const rows: PnpReq[] = []
+  for (const r of x.reqs) {
+    if (qcReqMineOf({ r, chan: x.chan }) === false) {
+      continue
+    }
+    if (r.appliesTeer !== TEXT_NONE && teerHitOf({ teer: x.job.teer, applies: r.appliesTeer }) === false) {
+      continue
+    }
+    rows.push(r)
+  }
+  if (qcOwnRowsOf({ rows, chan: x.chan }) === 0) {
+    return null
+  }
+  const one: QcRowOfIn = { t: x.t, chan: x.chan, rows }
+  const out: GateRowSpec[] = []
+  for (const row of [qcScopeRowOf(one), qcLicenceRowOf(one), qcTeerRowOf(one), qcFrenchRowOf(one), qcExpRowOf(one),
+    qcReceptRowOf(one), qcIntakeRowOf(one), qcEduRowOf(one), qcAgeRowOf(one), qcFundsRowOf(one), qcSpouseRowOf(one)]) {
+    if (row != null) {
+      out.push(row)
+    }
+  }
+  return {
+    title: x.chan.title,
+    sub: x.t(QC_NAME_HEAD + x.chan.key),
+    source: sourceLinkOf({ t: x.t, url: qcUrlOf(one) }),
+    rows: out,
+  }
+}
+
+/**
+ * 本通道自己那条流有几行(一般条件不算):一行都没有就不出卡 —— 只剩年龄 / 自给两行会读成这个通道的门槛只有这些
+ * (同九省门槛卡的 applicantRowsOf 那道;测试用例实撞)。
+ *
+ * @param x 这张卡挑到的行与通道。
+ * @returns 本通道流的行数。
+ */
+function qcOwnRowsOf(x: QcOwnRowsIn): number {
+  let n = 0
+  for (const r of x.rows) {
+    if (r.stream === x.chan.stream) {
+      n += 1
+    }
+  }
+  return n
+}
+
+/**
+ * 这一行门槛属不属于这个通道:魁省、项目对得上,流名是本通道的,或 PSTQ 一般条件(四个通道都适用)。
+ *
+ * @param x 一行门槛与通道。
+ * @returns 属于给 true。
+ */
+function qcReqMineOf(x: QcReqMineIn): boolean {
+  if (x.r.province !== PROV_QC || QC_PROGRAMS.includes(x.r.program) === false) {
+    return false
+  }
+  if (x.r.stream === x.chan.stream) {
+    return true
+  }
+  return x.chan.program === QC_PROGRAM_PSTQ && x.r.stream === QC_GENERAL_STREAM
+}
+
+/**
+ * 卡右上的来源:本通道流里第一条带网址的行(一般条件行的出处页同是 PSTQ 门槛页,落不到它也一样)。
+ *
+ * @param x 这张卡的行。
+ * @returns 网址;都没有给 ''。
+ */
+function qcUrlOf(x: QcRowOfIn): string {
+  for (const r of x.rows) {
+    if (r.stream === x.chan.stream && r.url !== TEXT_NONE) {
+      return r.url
+    }
+  }
+  for (const r of x.rows) {
+    if (r.url !== TEXT_NONE) {
+      return r.url
+    }
+  }
+  return TEXT_NONE
+}
+
+/**
+ * 这张卡的行里申请人侧某个因素的全部行(按门槛表原序)。
+ *
+ * @param x 这张卡的行与因素。
+ * @returns 那些行。
+ */
+function qcApplicantRowsOf(x: QcFactorIn): PnpReq[] {
+  const out: PnpReq[] = []
+  for (const r of x.rows) {
+    if (r.factor === x.factor && r.subject !== QC_SUBJECT_SPOUSE) {
+      out.push(r)
+    }
+  }
+  return out
+}
+
+/**
+ * 「适用」行:要公民 / 永居身份、要魁省学历的通道写一句;部分受监管的写官方原文(只有其中几种工作受监管,
+ * 如焊工「in the construction sector only, welders …」);整类都走这个通道的不出。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;不需要给 null。
+ */
+function qcScopeRowOf(x: QcRowOfIn): GateRowSpec | null {
+  let line = TEXT_NONE
+  const key = QC_KIND_SCOPE[x.chan.kind]
+  if (key != null) {
+    line = x.t(key)
+  } else if (x.chan.kind === QC_KIND_PARTLY) {
+    line = x.chan.scope
+  }
+  if (line === TEXT_NONE) {
+    return null
+  }
+  return { key: QC_ROW.scope, label: x.t('qcgate.k.scope'), lines: [line], notes: [] }
+}
+
+/**
+ * 「执照」行(受监管职业通道):监管机构发的执业许可或学历等同认定;灰字列这个职业的监管机构(法文原名)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;不是受监管通道给 null。
+ */
+function qcLicenceRowOf(x: QcRowOfIn): GateRowSpec | null {
+  if (qcApplicantRowsOf({ rows: x.rows, factor: QC_F.licensing }).length === 0) {
+    return null
+  }
+  const notes: string[] = []
+  if (x.chan.authorities.length > 0) {
+    notes.push(x.chan.authorities.join(x.t('pnpgate.sep')))
+  }
+  return { key: QC_ROW.licence, label: x.t('qcgate.k.licence'), lines: [x.t('qcgate.licence')], notes }
+}
+
+/**
+ * 「职业档」行:本通道收哪几档 TEER。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;通道不看 TEER 给 null。
+ */
+function qcTeerRowOf(x: QcRowOfIn): GateRowSpec | null {
+  const rows = qcApplicantRowsOf({ rows: x.rows, factor: QC_F.teer })
+  const first = rows[0]
+  if (first == null || first.appliesTeer === TEXT_NONE) {
+    return null
+  }
+  return {
+    key: QC_ROW.teer,
+    label: x.t('qcgate.k.teer'),
+    lines: [x.t('qcgate.teer', { list: qcTeerRangeOf(first.appliesTeer) })],
+    notes: [],
+  }
+}
+
+/**
+ * TEER 档逗号串 → 显示:连号写「0–2」,不连号照列「0, 1, 3」。
+ *
+ * @param applies 逗号串(门槛表 applies_teer)。
+ * @returns 显示串。
+ */
+function qcTeerRangeOf(applies: string): string {
+  const nums: number[] = []
+  for (const p of applies.split(VALUE_CODE_SEP)) {
+    nums.push(Number(p.trim()))
+  }
+  const first = nums[0]
+  const last = nums[nums.length - 1]
+  if (first == null || last == null) {
+    return applies
+  }
+  if (nums.length > 1 && last - first === nums.length - 1) {
+    return String(first) + QC_TEER_DASH + String(last)
+  }
+  return nums.join(QC_TEER_LIST_SEP)
+}
+
+/**
+ * 「法语」行(2026-09-30 Frank「要不都用 TEF 呢?」):主写 TEF 分数线(魁省只认法语,TEF / TEFAQ / TEF Canada 同一套线),
+ * 灰字两行:魁省等级、TCF 分数线(理解按 699 分制、表达按 20 分制,听说读写分开写)。分数线由数据层按魁省对照表算好挂在口径包里。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有申请人法语门槛给 null。
+ */
+function qcFrenchRowOf(x: QcRowOfIn): GateRowSpec | null {
+  let oral: PnpReq | null = null
+  let written: PnpReq | null = null
+  for (const r of qcApplicantRowsOf({ rows: x.rows, factor: QC_F.language })) {
+    if (r.value == null) {
+      continue
+    }
+    if (basisHasOf({ basis: r.basis, key: QC_BASIS.oral }) && oral == null) {
+      oral = r
+    } else if (basisHasOf({ basis: r.basis, key: QC_BASIS.written }) && written == null) {
+      written = r
+    }
+  }
+  if (oral == null && written == null) {
+    return null
+  }
+  const levels: string[] = []
+  if (oral != null) {
+    levels.push(x.t('qcgate.fr.oralLv', { n: String(oral.value) }))
+  }
+  if (written != null) {
+    levels.push(x.t('qcgate.fr.writtenLv', { n: String(written.value) }))
+  }
+  const tef = qcTestLineOf({ t: x.t, test: QC_TEST_TEF, oral, written, comp: QC_BASIS.tefComp, expr: QC_BASIS.tefExpr })
+  const tcf = qcTestLineOf({ t: x.t, test: QC_TEST_TCF, oral, written, comp: QC_BASIS.tcfComp, expr: QC_BASIS.tcfExpr })
+  return {
+    key: QC_ROW.french,
+    label: x.t('qcgate.k.french'),
+    lines: [tef],
+    notes: [x.t('qcgate.fr.levels', { parts: levels.join(x.t('pnpgate.sep')) }), tcf],
+  }
+}
+
+/**
+ * 一个考试的分数线一句:口语 / 书面各一段;理解与表达同分写一个数(TEF「口语 400」),不同分分开写(TCF「听 400、说 10」)。
+ *
+ * @param x 取词函数、考试名、两行与两格键。
+ * @returns 一句(「TEF 口语 400、书面 300 分起」)。
+ */
+function qcTestLineOf(x: QcTestLineIn): string {
+  const parts: string[] = []
+  if (x.oral != null) {
+    parts.push(qcSkillPartOf({
+      t: x.t,
+      row: x.oral,
+      comp: x.comp,
+      expr: x.expr,
+      same: QC_FR_KEY.oral,
+      compKey: QC_FR_KEY.listen,
+      exprKey: QC_FR_KEY.speak,
+    }))
+  }
+  if (x.written != null) {
+    parts.push(qcSkillPartOf({
+      t: x.t,
+      row: x.written,
+      comp: x.comp,
+      expr: x.expr,
+      same: QC_FR_KEY.written,
+      compKey: QC_FR_KEY.read,
+      exprKey: QC_FR_KEY.write,
+    }))
+  }
+  return x.t('qcgate.fr.test', { test: x.test, parts: parts.join(x.t('pnpgate.sep')) })
+}
+
+/**
+ * 一段技能的分数线:理解与表达同分 → 「口语 400」;不同分 → 「听 400、说 10」。
+ *
+ * @param x 取词函数、那一行、两格键与三个词条。
+ * @returns 一段。
+ */
+function qcSkillPartOf(x: QcSkillPartIn): string {
+  const comp = basisValueOf({ basis: x.row.basis, key: x.comp })
+  const expr = basisValueOf({ basis: x.row.basis, key: x.expr })
+  if (comp === expr) {
+    return x.t(x.same, { n: comp })
+  }
+  return x.t(x.compKey, { n: comp }) + x.t('pnpgate.sep') + x.t(x.exprKey, { n: expr })
+}
+
+/**
+ * 「工作经验」行:近 N 年 / N 个月内至少几个月;「其中至少几个月在魁省」另起一行;PEQ 的全职口径进灰字。
+ * 带截点日的那条(PEQ 收件条件)不在这里,见 qcReceptRowOf。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有经验门槛给 null。
+ */
+function qcExpRowOf(x: QcRowOfIn): GateRowSpec | null {
+  const lines: string[] = []
+  const notes: string[] = []
+  for (const r of qcApplicantRowsOf({ rows: x.rows, factor: QC_F.experience })) {
+    if (r.value == null || basisHasOf({ basis: r.basis, key: QC_BASIS.asOf })) {
+      continue
+    }
+    const years = basisValueOf({ basis: r.basis, key: QC_BASIS.windowYears })
+    const months = basisValueOf({ basis: r.basis, key: QC_BASIS.windowMonths })
+    const inQc = basisHasOf({ basis: r.basis, key: QC_BASIS.inQuebec })
+    if (years !== TEXT_NONE && inQc) {
+      lines.push(x.t('qcgate.expInQc', { m: String(r.value) }))
+    } else if (years !== TEXT_NONE) {
+      lines.push(x.t('qcgate.expWin', { y: years, m: String(r.value) }))
+    } else if (months !== TEXT_NONE) {
+      lines.push(x.t('qcgate.expWinMonths', { w: months, m: String(r.value) }))
+    }
+    const hours = basisValueOf({ basis: r.basis, key: QC_BASIS.fullTime })
+    if (hours !== TEXT_NONE) {
+      notes.push(x.t('qcgate.fullTimeQc', { h: hours }))
+    }
+  }
+  if (lines.length === 0) {
+    return null
+  }
+  return { key: QC_ROW.exp, label: x.t('qcgate.k.exp'), lines, notes }
+}
+
+/**
+ * 「收件条件」行(PEQ 本轮):截点日前在魁省做满几个月、哪几档 TEER 的工作。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function qcReceptRowOf(x: QcRowOfIn): GateRowSpec | null {
+  for (const r of qcApplicantRowsOf({ rows: x.rows, factor: QC_F.experience })) {
+    const date = basisValueOf({ basis: r.basis, key: QC_BASIS.asOf })
+    if (date === TEXT_NONE || r.value == null) {
+      continue
+    }
+    const line = x.t('qcgate.recept', { date, m: String(r.value), list: qcTeerRangeOf(r.appliesTeer) })
+    return { key: QC_ROW.recept, label: x.t('qcgate.k.recept'), lines: [line], notes: [] }
+  }
+  return null
+}
+
+/**
+ * 「收件期」行(PEQ 本轮收件起止)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function qcIntakeRowOf(x: QcRowOfIn): GateRowSpec | null {
+  const r = rowOfFactor({ rows: x.rows, factor: QC_F.intake })
+  if (r == null) {
+    return null
+  }
+  const opens = basisValueOf({ basis: r.basis, key: QC_BASIS.opens })
+  const closes = basisValueOf({ basis: r.basis, key: QC_BASIS.closes })
+  if (opens === TEXT_NONE || closes === TEXT_NONE) {
+    return null
+  }
+  return {
+    key: QC_ROW.intake,
+    label: x.t('qcgate.k.intake'),
+    lines: [x.t('qcgate.intake', { opens, closes })],
+    notes: [],
+  }
+}
+
+/**
+ * 「学历」行:官方学历门槛是条文不是数,按通道各写一句(词条 qcgate.edu.<通道键>)。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;通道没有学历门槛给 null。
+ */
+function qcEduRowOf(x: QcRowOfIn): GateRowSpec | null {
+  if (qcApplicantRowsOf({ rows: x.rows, factor: QC_F.education }).length === 0) {
+    return null
+  }
+  return { key: QC_ROW.edu, label: x.t('qcgate.k.edu'), lines: [x.t(QC_EDU_HEAD + x.chan.key)], notes: [] }
+}
+
+/**
+ * 「年龄」行。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function qcAgeRowOf(x: QcRowOfIn): GateRowSpec | null {
+  const r = rowOfFactor({ rows: x.rows, factor: QC_F.age })
+  if (r == null || r.value == null) {
+    return null
+  }
+  return { key: QC_ROW.age, label: x.t('qcgate.k.age'), lines: [x.t('qcgate.age', { n: String(r.value) })], notes: [] }
+}
+
+/**
+ * 「自给」行:签自给合同,成为永久居民后头几个月自己负担。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function qcFundsRowOf(x: QcRowOfIn): GateRowSpec | null {
+  const r = rowOfFactor({ rows: x.rows, factor: QC_F.funds })
+  if (r == null || r.value == null) {
+    return null
+  }
+  return {
+    key: QC_ROW.funds,
+    label: x.t('qcgate.k.funds'),
+    lines: [x.t('qcgate.funds', { n: String(r.value) })],
+    notes: [],
+  }
+}
+
+/**
+ * 「配偶」行:随行配偶的法语口语门槛;灰字 TEF 分数线。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function qcSpouseRowOf(x: QcRowOfIn): GateRowSpec | null {
+  for (const r of x.rows) {
+    if (r.factor !== QC_F.language || r.subject !== QC_SUBJECT_SPOUSE || r.value == null) {
+      continue
+    }
+    const tef = qcTestLineOf({
+      t: x.t,
+      test: QC_TEST_TEF,
+      oral: r,
+      written: null,
+      comp: QC_BASIS.tefComp,
+      expr: QC_BASIS.tefExpr,
+    })
+    return {
+      key: QC_ROW.spouse,
+      label: x.t('qcgate.k.spouse'),
+      lines: [x.t('qcgate.spouse', { n: String(r.value) })],
+      notes: [tef],
+    }
+  }
+  return null
+}
+
+/**
+ * 职位板魁省岗那一格的文案(2026-09-30 Frank 勾「PSTQ + 通道名」):按职业码查首屏事实索引里的第一个通道键 →「PSTQ 高技能」这类;
+ * 职业不在官方对照表里照旧写「魁省」。
+ *
+ * @param x 取词函数、职业码与事实索引。
+ * @returns 格子文案。
+ */
+export function qcCellNameOf(x: QcCellNameIn): string {
+  const key = x.index.qc[x.noc]
+  if (key == null) {
+    return x.t(K_CELL_QC)
+  }
+  return x.t(QC_CELL_HEAD + key)
+}
+
+/**
+ * 魁省一个职业的通道取数机器(2026-09-30 魁省门槛弹框;照 makeLoadPnpData 的形):取挂了落 failed,不重取(下次开框重来)。
+ *
+ * @param x 职业码与两个落格。
+ * @returns 取数函数(收卸下标记)。
+ */
+export function makeLoadQcChannels(x: LoadQcChannelsIn): LoadFn {
+  return function loadQcChannels(flag: DeadFlag): void {
+    function read(r: Response): Promise<QcChannelsJson> {
+      if (r.ok) {
+        return r.json()
+      }
+      return Promise.resolve(null)
+    }
+    function land(j: QcChannelsJson): void {
+      if (flag.dead) {
+        return
+      }
+      if (j == null || j.channels == null) {
+        x.setFailed(true)
+        return
+      }
+      x.setChannels(j.channels)
+    }
+    function fall(): void {
+      if (flag.dead === false) {
+        x.setFailed(true)
+      }
+    }
+    fetch(URL_API_JOBS_QC + x.noc).then(read).then(land).catch(fall)
+  }
+}
+
+/**
+ * 喂给弹框的通道列:还没到给空列(那时 ready 为 false、正文不渲)。
+ *
+ * @param channels 懒取到的通道;null = 还没到。
+ * @returns 通道列。
+ */
+export function qcChannelsOf(channels: QcChannel[] | null): QcChannel[] {
+  if (channels == null) {
+    return []
+  }
+  return channels
 }

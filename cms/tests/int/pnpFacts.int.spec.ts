@@ -95,7 +95,7 @@ function modalHasCards(j: PnpJob, o: PnpOcc[], d: PnpDraw[]): boolean {
 
 /** 格子凭首屏事实索引判(职位板 pnpActiveOf 里的第二道);索引可预先算好传进来 */
 function cellSaysCards(j: PnpJob, o: PnpOcc[], d: PnpDraw[], pre?: PnpFactsIndex): boolean {
-  const index = pre ?? pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS })
+  const index = pre ?? pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS, qcCells: [] })
   return pnpFactsShownOf({ province: j.province, noc: j.noc, stream: j.pnpStream, eligible: j.pnpEligible, index })
 }
 
@@ -150,7 +150,7 @@ describe('索引判「有卡」⇔ 弹框整表判「有卡」', () => {
     const d = mart<PnpDraw>('pnp_draws')
     expect(o.length).toBeGreaterThan(100)
     expect(d.length).toBeGreaterThan(50)
-    const index = pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS })
+    const index = pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS, qcCells: [] })
     // 数据口径:真数据里「按清单行算的排除键」(格子红字)与「按弹框分组算的排除键」(弹框排除清单卡)一个不差 ——
     // 哪天出了同名清单混两种类型的行,这一条先红。
     expect(new Set(index.excluded)).toEqual(pnpBlockedKeysOf(o).pnp)
@@ -181,25 +181,27 @@ describe('索引判「有卡」⇔ 弹框整表判「有卡」', () => {
 describe('服务端压的键与整表现算一致', () => {
   it('排除键装回集合 = pnpBlockedKeysOf 现算', () => {
     fc.assert(fc.property(fc.array(occArb, { maxLength: 40 }), fc.array(drawArb, { maxLength: 10 }), (o, d) => {
-      const dims = { pnpOccupations: o, pnpDraws: d, pathways: PATHWAYS } as unknown as JobDims
+      const dims = { pnpOccupations: o, pnpDraws: d, pathways: PATHWAYS, qcCells: [] } as unknown as JobDims
       const got = blockedSetsOf(boardPnpOf(dims))
       const want = pnpBlockedKeysOf(o)
       expect([...got.pnp].sort()).toEqual([...want.pnp].sort())
       expect([...got.aip].sort()).toEqual([...want.aip].sort())
-      expect(boardPnpOf(dims).index).toEqual(pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS }))
+      expect(boardPnpOf(dims).index).toEqual(pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS, qcCells: [] }))
     }), { numRuns: 500 })
   })
 
-  it('boardDimsOf 只把三张整表换成空表(清单、抽选,2026-09-28 起加通道对照),其余逐格同一引用', () => {
+  // 2026-09-30 魁省门槛弹框:首屏维度多一格 qcCells(魁省职业 → 第一个通道键),同样只在服务端压索引用、下发前清空
+  it('boardDimsOf 只把四张整表换成空表(清单、抽选,2026-09-28 起加通道对照,2026-09-30 起加魁省通道),其余逐格同一引用', () => {
     const full = {
       provinces: [{}], cities: [{}], districts: [{}], nocCategories: [{}], sources: [{}], experienceLevels: [{}],
-      pnpOccupations: [occ({ province: 'SK' })], pnpDraws: [draw({ province: 'BC' })], pathways: PATHWAYS, eeCategories: [{}], eeBroads: [{}],
+      pnpOccupations: [occ({ province: 'SK' })], pnpDraws: [draw({ province: 'BC' })], pathways: PATHWAYS,
+      qcCells: [{ noc: '72106', key: 'pstq-1' }], eeCategories: [{}], eeBroads: [{}],
       designatedEmployers: [{}], nocDescriptions: [{}], occupations: [{}], fieldSources: [{}], news: [{}],
     } as unknown as JobDims
     const slim = boardDimsOf(full)
     expect(Object.keys(slim).sort()).toEqual(Object.keys(full).sort())
     for (const k of Object.keys(full) as (keyof JobDims)[]) {
-      if (k === 'pnpOccupations' || k === 'pnpDraws' || k === 'pathways') {
+      if (k === 'pnpOccupations' || k === 'pnpDraws' || k === 'pathways' || k === 'qcCells') {
         expect(slim[k]).toEqual([])
       } else {
         expect(slim[k]).toBe(full[k])
@@ -745,7 +747,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       expect(pnpBlockOf({ job: { pnpBlock: c }, t: zh })).toBe('')
     }
     const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlock: 'part' }
-    const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS })
+    const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS, qcCells: [] })
     expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(true)
     expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(false)
     // 2026-09-29 七省门槛卡:本岗通道登记了门槛也算有卡 —— 萨省普通岗(无抽选无清单)原先不可点

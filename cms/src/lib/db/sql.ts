@@ -577,6 +577,8 @@ export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') 
  * 2026-09-29 Frank「照这个做」(安省门槛卡):多取语言免考 / 工资 / 经验替代路径三类与排除职业码(excludes_noc)。
  * 同日抽选卡重排:再带「不经抽选」行(factor = 'eoiDraw':SK 持 offer 直接申请、PE 的 AIP 由指定雇主直接递背书申请)与 program 列
  * —— 抽选卡按它写「不经抽选」、AIP 卡按 program = 'AIP' 那行写;门槛卡按因素点名取行,不读这一类。
+ * 2026-09-30 魁省门槛弹框(Frank 看过效果图「可以」;设计 docs/design/魁省门槛弹框-20260929.md):魁省行整批放行
+ * (province = 'QC' 且 program 为 PSTQ / PEQ;魁省不属省提名,因素也多出职业档 / 学历 / 年龄 / 自给 / 收件期几类,不走上面那张白名单)。
  */
 export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, value, unit, COALESCE(applies_teer, '') AS applies_teer,
        COALESCE(applies_noc, '') AS applies_noc, COALESCE(excludes_noc, '') AS excludes_noc,
@@ -587,6 +589,7 @@ export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, valu
      WHERE (program = 'PNP' AND factor IN ('offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage',
        'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence'))
        OR (factor = 'eoiDraw' AND op = 'none')
+       OR (province = 'QC' AND program IN ('PSTQ', 'PEQ'))
      ORDER BY province, stream, seq`
 
 // =========================================================================
@@ -1789,6 +1792,19 @@ export const DIMS_PATHWAYS = `SELECT province, board_label AS "boardLabel", is_d
      FROM pathways WHERE status <> 'closed' ORDER BY seq`
 
 /**
+ * 首屏维度表·魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框;设计 docs/design/魁省门槛弹框-20260929.md):
+ * 职位板魁省岗的格子写「PSTQ 高技能」这类、判能不能点,只要这一格;通道明细弹框打开才按职业码取(QC_NOC_CHANNELS)。
+ * 表由 etl/pnp/qc(官方对照 xlsx + 受监管职业清单)→ mart 汇装灌入,516 行;没有通道的职业不取。
+ */
+export const DIMS_QC_CELLS = `SELECT noc, channels -> 0 ->> 'key' AS "key"
+     FROM qc_noc_streams WHERE jsonb_array_length(COALESCE(channels, '[]'::jsonb)) > 0`
+
+/**
+ * 魁省一个职业能走的全部通道(2026-09-30 魁省门槛弹框):弹框每个通道一张门槛卡;$1 = NOC 五位码。
+ */
+export const QC_NOC_CHANNELS = `SELECT channels FROM qc_noc_streams WHERE noc = $1`
+
+/**
  * 首屏维度表·EE 类别。
  */
 export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,
@@ -2099,12 +2115,14 @@ export const EE_POINTS_GRID = `SELECT grid, section, section_label, kind, table_
 
 /**
  * 门槛条文全量(consult 的 lookup_thresholds 与 ruling 判定底表;applies_condition 走 to_jsonb 防缺列)。
+ * 2026-09-30 排除魁省两个项目(PSTQ / PEQ;设计 docs/design/魁省门槛弹框-20260929.md):魁省门槛行进了同一张表,
+ * 判定引擎(一键三合一卡按「本岗所在省」取行)与官方规则页(按省分组)会悄悄读到 —— 魁省判定没拍板,先挡住,拍了再放。
  */
 export const PNP_REQUIREMENTS_ALL = `SELECT province, program, stream, subject, factor, op, value, value_text, unit,
                    applies_teer, applies_noc, excludes_noc, applies_area,
                    to_jsonb(q) ->> 'applies_condition' AS applies_condition,
                    applies_family_size, basis, label, section, seq, effective, url, page_url, fetched
-            FROM pnp_requirements q ORDER BY province, seq`
+            FROM pnp_requirements q WHERE COALESCE(program, '') NOT IN ('PSTQ', 'PEQ') ORDER BY province, seq`
 
 
 /**

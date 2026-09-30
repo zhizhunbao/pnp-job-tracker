@@ -1462,6 +1462,11 @@ export type GateRowSpec = {
    * 值,一行一条(经验的「或」款另起一行)。
    */
   lines: string[]
+
+  /**
+   * 值格下的灰字注,一行一条(2026-09-30 魁省门槛卡:法语行挂考试分数线、执照行挂监管机构);九省各行为空。
+   */
+  notes: string[]
 }
 
 /**
@@ -1472,6 +1477,11 @@ export type GateCardSpec = {
    * 卡标题。
    */
   title: string
+
+  /**
+   * 标题下一行灰字(2026-09-30 魁省门槛卡:官方原名作标题,这里写界面语言名);'' = 不出(九省门槛卡)。
+   */
+  sub: string
 
   /**
    * 标题右端的官方来源;认不出站名给 null。
@@ -1918,6 +1928,11 @@ export type PnpListSectionIn = {
    * 全国通道对照(整表;本岗走哪条通道、对应的抽选组 / 门槛流 / 配额行都读它,2026-09-28 通道表批二)。
    */
   pathways: PnpPathway[]
+
+  /**
+   * 魁省岗这个职业的通道(2026-09-30 魁省门槛弹框;魁省岗每个通道一张门槛卡,其余卡不出)。
+   */
+  qcChannels: QcChannel[]
 }
 
 /**
@@ -2614,6 +2629,11 @@ export type PnpFactsIndex = {
    * 格子算「有卡可点」(2026-09-29 七省门槛卡:萨省普通岗原先点开只有通道卡,被设成不可点)。
    */
   gated: string[]
+
+  /**
+   * 魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框):格子写「PSTQ 高技能」这类、有键就可点(弹框必出门槛卡)。
+   */
+  qc: QcCellMap
 }
 
 /**
@@ -2634,6 +2654,11 @@ export type PnpFactsIndexIn = {
    * 全国通道对照(整表;算有省默认通道的省码)。
    */
   pathways: PnpPathway[]
+
+  /**
+   * 魁省职业 → 第一个通道键(整表,516 行)。
+   */
+  qcCells: QcCellRow[]
 }
 
 /**
@@ -4457,6 +4482,11 @@ export type PnpModalPanel = {
   data: PnpDataPanel
 
   /**
+   * 魁省岗这个职业的通道(懒取;非魁省岗恒就绪、空列)。
+   */
+  qc: QcChannelsPanel
+
+  /**
    * 岗名下那行灰字(标题译名);'' = 还没有 / 英文界面。
    */
   sub: string
@@ -4600,4 +4630,339 @@ export type PnpCellActiveIn = {
    * 省提名弹框的事实索引(首屏随板下发)。
    */
   index: PnpFactsIndex
+}
+
+/**
+ * 魁省职业 → 第一个通道键的一行(首屏维度 qcCells;2026-09-30 魁省门槛弹框)。
+ */
+export type QcCellRow = {
+  /**
+   * NOC 五位码。
+   */
+  noc: string
+
+  /**
+   * 第一个通道的稳定键(pstq-1 … / peq-tfw)。
+   */
+  key: string
+}
+
+/**
+ * 魁省职业码 → 第一个通道键(事实索引里的查表;随首屏下发)。
+ */
+export type QcCellMap = Record<string, string>
+
+/**
+ * 魁省一个通道(/api/jobs/qc 回的一项;弹框一张门槛卡)。
+ */
+export type QcChannel = {
+  /**
+   * 稳定键(pstq-1 … / peq-tfw;三语格子文案与界面语言名按它取词)。
+   */
+  key: string
+
+  /**
+   * 项目(PSTQ / PEQ)。
+   */
+  program: string
+
+  /**
+   * 门槛流名(从门槛表挑行用)。
+   */
+  stream: string
+
+  /**
+   * 官方全名(卡标题)。
+   */
+  title: string
+
+  /**
+   * 细分类(all / citizenOnly / residentOnly / regulated / regulatedQcDiploma / partlyRegulated)。
+   */
+  kind: string
+
+  /**
+   * 适用范围官方原文;整类为 ''。
+   */
+  scope: string
+
+  /**
+   * 监管机构(法文原文);非受监管通道为空。
+   */
+  authorities: string[]
+}
+
+/**
+ * /api/jobs/qc 的响应(线格式:缺席 = 没取到;请求失败 read 给 null)。
+ */
+export type QcChannelsJson = {
+  /**
+   * 通道列。
+   */
+  channels?: QcChannel[]
+} | null
+
+/**
+ * useQcChannels 的入参。
+ */
+export type QcChannelsHookIn = {
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 要不要取(魁省岗才取)。
+   */
+  enabled: boolean
+}
+
+/**
+ * useQcChannels 交回的面板。
+ */
+export type QcChannelsPanel = {
+  /**
+   * 能渲了没(不取的恒为 true)。
+   */
+  ready: boolean
+
+  /**
+   * 取挂了没。
+   */
+  failed: boolean
+
+  /**
+   * 通道列(还没到给空列)。
+   */
+  channels: QcChannel[]
+}
+
+/**
+ * makeLoadQcChannels 的入参。
+ */
+export type LoadQcChannelsIn = {
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 通道到齐的落格。
+   */
+  setChannels: (c: QcChannel[]) => void
+
+  /**
+   * 懒取失败的落格。
+   */
+  setFailed: (v: boolean) => void
+}
+
+/**
+ * qcGateCardsOf 的入参(2026-09-30 魁省门槛弹框)。
+ */
+export type QcGateCardsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 门槛表(全国;魁省行 province = QC、program = PSTQ / PEQ)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 本岗职业能走的通道(卡片顺序)。
+   */
+  channels: QcChannel[]
+}
+
+/**
+ * 魁省门槛卡各行构造器的共同入参。
+ */
+export type QcRowOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 这一张卡的通道。
+   */
+  chan: QcChannel
+
+  /**
+   * 这个通道管得着本岗的门槛行(本通道流 + PSTQ 一般条件;标了 TEER 档的按本岗 TEER 筛过)。
+   */
+  rows: PnpReq[]
+}
+
+/**
+ * qcCardOf 的入参。
+ */
+export type QcCardOfIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 门槛表(全国)。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 这一张卡的通道。
+   */
+  chan: QcChannel
+}
+
+/**
+ * qcTestLineOf 的入参:一个考试的理解 / 表达两格下限拼一句。
+ */
+export type QcTestLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 考试名(TEF / TCF)。
+   */
+  test: string
+
+  /**
+   * 口语行(null = 这个通道没有口语门槛)。
+   */
+  oral: PnpReq | null
+
+  /**
+   * 书面行(null = 没有书面门槛)。
+   */
+  written: PnpReq | null
+
+  /**
+   * 理解那一格在口径包里的键(tefComp / tcfComp)。
+   */
+  comp: string
+
+  /**
+   * 表达那一格的键(tefExpr / tcfExpr)。
+   */
+  expr: string
+}
+
+/**
+ * qcReqMineOf 的入参。
+ */
+export type QcReqMineIn = {
+  /**
+   * 一行门槛。
+   */
+  r: PnpReq
+
+  /**
+   * 这张卡的通道。
+   */
+  chan: QcChannel
+}
+
+/**
+ * qcApplicantRowsOf 的入参。
+ */
+export type QcFactorIn = {
+  /**
+   * 这张卡的行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 因素名(见 QC_F)。
+   */
+  factor: string
+}
+
+/**
+ * qcSkillPartOf 的入参:一段技能(口语 / 书面)的分数线。
+ */
+export type QcSkillPartIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 那一行法语门槛。
+   */
+  row: PnpReq
+
+  /**
+   * 理解那一格的键。
+   */
+  comp: string
+
+  /**
+   * 表达那一格的键。
+   */
+  expr: string
+
+  /**
+   * 两格同分时的词条(「口语 {n}」)。
+   */
+  same: string
+
+  /**
+   * 理解那一格的词条(「听 {n}」)。
+   */
+  compKey: string
+
+  /**
+   * 表达那一格的词条(「说 {n}」)。
+   */
+  exprKey: string
+}
+
+/**
+ * qcCellNameOf 的入参。
+ */
+export type QcCellNameIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 首屏事实索引。
+   */
+  index: PnpFactsIndex
+}
+
+/**
+ * qcOwnRowsOf 的入参。
+ */
+export type QcOwnRowsIn = {
+  /**
+   * 这张卡挑到的行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 这张卡的通道。
+   */
+  chan: QcChannel
 }

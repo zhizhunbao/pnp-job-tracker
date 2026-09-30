@@ -77,6 +77,7 @@ import type {
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
   NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
   OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeStrList,
+  LoadQcChannelsIn, QcCell, QcCellDbRow, QcChannel, QcChannelDbRow, QcChannelList, QcChannelsDbRow, QcChannelsOut,
   PgFailure, PnpDraw, PnpOcc,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
@@ -964,7 +965,7 @@ export async function loadPnpReqs(db: Db): PnpReqsOut {
  * @returns 首屏维度包。
  */
 export async function loadSsrDims(db: Db): SsrDimsOut {
-  const [prov, noc, src, exp, pnp, draws, pathways, ee, eeBroads, fieldSrc, news] = await Promise.all([
+  const [prov, noc, src, exp, pnp, draws, pathways, qcCells, ee, eeBroads, fieldSrc, news] = await Promise.all([
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PROVINCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_NOC_CATEGORIES, params: [], map: toNocCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_SOURCES, params: [], map: passRow }),
@@ -972,6 +973,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: toPnpOcc }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toPnpDraw }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PATHWAYS, params: [], map: toPathway }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_QC_CELLS, params: [], map: toQcCell }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: toEeCat }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_BROADS, params: [], map: toEeBroad }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_FIELD_SOURCES, params: [], map: toFieldSource }),
@@ -999,6 +1001,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     pnpOccupations: pnp,
     pnpDraws: draws,
     pathways: pathways,
+    qcCells: qcCells,
     eeCategories: ee,
     eeBroads: eeBroads,
     designatedEmployers: [],
@@ -3121,6 +3124,75 @@ function toPathway(r: PathwayDbRow): Pathway {
     province: text(r.province), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
     drawStreams: toStrList(r.drawStreams), reqStreams: toStrList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
     officialName: text(r.officialName),
+  }
+}
+
+/**
+ * DIMS_QC_CELLS 一行 → 魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框)。
+ *
+ * @param r 原始行。
+ * @returns 洗净的一格。
+ */
+function toQcCell(r: QcCellDbRow): QcCell {
+  return { noc: text(r.noc), key: text(r.key) }
+}
+
+/**
+ * 魁省一个职业能走的全部通道现查(2026-09-30 魁省门槛弹框,弹框打开才按职业码取;SQL.QC_NOC_CHANNELS)。
+ * 查挂或没有这个职业 → 空列(弹框照旧写「魁省」不出卡,宁可不出)。
+ *
+ * @param x 连接与职业码。
+ * @returns 通道(卡片顺序)。
+ */
+export async function loadQcChannels(x: LoadQcChannelsIn): QcChannelsOut {
+  const rows = await queryRowsOrEmpty({ db: x.db, sql: SQL.QC_NOC_CHANNELS, params: [x.noc], map: toQcChannels })
+  const first = rows[0]
+  if (first == null) {
+    return []
+  }
+  return first
+}
+
+/**
+ * QC_NOC_CHANNELS 一行 → 通道列(jsonb 数组缺了当空列)。
+ *
+ * @param r 原始行。
+ * @returns 洗净的通道列。
+ */
+function toQcChannels(r: QcChannelsDbRow): QcChannelList {
+  const out: QcChannelList = []
+  if (r.channels == null) {
+    return out
+  }
+  for (const c of r.channels) {
+    out.push(toQcChannel(c))
+  }
+  return out
+}
+
+/**
+ * 通道一项 → 洗净(受监管明细只留监管机构,各组去重保序;门槛卡「执照」行灰字读它)。
+ *
+ * @param c 库原样的一项。
+ * @returns 洗净的通道。
+ */
+function toQcChannel(c: QcChannelDbRow): QcChannel {
+  const authorities: string[] = []
+  if (c.regulated != null) {
+    for (const g of c.regulated) {
+      if (g.authorities == null) {
+        continue
+      }
+      for (const a of g.authorities) {
+        if (authorities.includes(a) === false) {
+          authorities.push(a)
+        }
+      }
+    }
+  }
+  return {
+    key: text(c.key), program: text(c.program), stream: text(c.stream), title: text(c.title), kind: text(c.kind),
+    scope: text(c.scope), authorities,
   }
 }
 

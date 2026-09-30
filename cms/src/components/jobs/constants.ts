@@ -2728,6 +2728,11 @@ export const EMPTY_DIMS = {
   pathways: [],
 
   /**
+   * 魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框;只在服务端门里压事实索引用)。
+   */
+  qcCells: [],
+
+  /**
    * 联邦 EE 类别(算休眠要看最近抽选日)。
    */
   eeCategories: [],

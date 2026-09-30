@@ -6,6 +6,7 @@
  * 原先它是 advisor 字段弹框的一组 —— 取数、页眉小标、分组路由在 advisor,卡片在本域,一件事分在两个域里改一处漏一处
  * (盘点实查:09-23「统一成标题译名」漏了这里的页眉灰字)。现在改省提名弹框只动本域。
  * 正文的口径照旧:红线在这儿落地 —— **粗筛信号,不是资格认定**(见 PnpListSection 头注)。
+ * 2026-09-30 魁省门槛弹框(Frank 看过效果图「可以」):魁省岗另懒取这个职业的通道(useQcChannels),两份都到齐才渲正文。
  *
  * @author Frank
  * @time 2026-09-28 05:30:00
@@ -35,11 +36,14 @@ export function PnpModal({ job, lang, title, field, nocDesc, onClose }: PnpModal
   )
   return (
     <Modal onClose={onClose} win={{ head, memo: PNP_MODAL_PREF, w: PNP_MODAL_W, h: PNP_MODAL_H, jd: false }}>
-      {p.data.ready === false && p.data.failed === false && <Loading text={p.t(K_LOADING)} />}
-      {p.data.failed && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
-      {p.data.ready && (
+      {(p.data.ready === false || p.qc.ready === false) && p.data.failed === false && p.qc.failed === false && (
+        <Loading text={p.t(K_LOADING)} />
+      )}
+      {(p.data.failed || p.qc.failed) && <Notice kind={NOTICE_ERR}>{p.t(K_LOAD_FAILED)}</Notice>}
+      {p.data.ready && p.qc.ready && (
         <PnpListSection job={job} lang={lang} occ={p.data.occ} draws={p.data.draws} ops={p.data.ops}
-          reqs={p.data.reqs} nocDesc={nocDesc} showZh={lang !== LANG_EN} pathways={p.data.pathways} />
+          reqs={p.data.reqs} nocDesc={nocDesc} showZh={lang !== LANG_EN} pathways={p.data.pathways}
+          qcChannels={p.qc.channels} />
       )}
     </Modal>
   )

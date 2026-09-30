@@ -17,15 +17,15 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
-import { LANG_EN, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
+import { LANG_EN, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
 import {
   channelsOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
-  makeLoadPnpData, pnpDataOf, pnpDefaultProvsOf,
+  makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, qcChannelsOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
-  PnpModalHookIn, PnpModalPanel,
+  PnpModalHookIn, PnpModalPanel, QcChannel, QcChannelsHookIn, QcChannelsPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -174,15 +174,43 @@ export function usePnpData(x: PnpDataHookIn): PnpDataPanel {
 }
 
 /**
+ * 魁省一个职业的通道取数机器(2026-09-30 魁省门槛弹框;照 usePnpData 的形):要取才取(魁省岗),取到落格;
+ * 取挂了落 failed,不重取(下次开框重来)。一个职业一小段,不进 CACHE。
+ *
+ * @param x 职业码与要不要取。
+ * @returns 能不能渲、失败没与通道列。
+ */
+export function useQcChannels(x: QcChannelsHookIn): QcChannelsPanel {
+  const [channels, setChannels] = useState<QcChannel[] | null>(null)
+  const [failed, setFailed] = useState(false)
+  const needs = x.enabled
+  const waiting = needs && channels == null && failed === false
+  const noc = x.noc
+
+  useEffect(function loadQcChannels() {
+    const flag: DeadFlag = { dead: false }
+    if (waiting) {
+      makeLoadQcChannels({ noc, setChannels, setFailed })(flag)
+    }
+    return function stop(): void {
+      flag.dead = true
+    }
+  }, [waiting, noc])
+
+  return { ready: needs === false || channels != null, failed: needs && failed, channels: qcChannelsOf(channels) }
+}
+
+/**
  * 省提名弹框整机(2026-09-28 自立,Frank「pnp 弹框自己管自己」):取词、整表懒取、岗名下那行灰字(标题译名,与职位描述弹框
  * 同一台 useTitleTrans)与打开埋点(沿用字段弹框那一条 modal-pnp,漏斗不断档)。
  *
  * @param x 这一岗、界面语言与从哪一格点进来的。
- * @returns 取词函数、整表与灰字。
+ * @returns 取词函数、整表、魁省通道(2026-09-30;魁省岗才取)与灰字。
  */
 export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
   const t = makeT(x.lang)
   const data = usePnpData({ enabled: true })
+  const qc = useQcChannels({ noc: x.job.noc, enabled: x.job.province === PROV_QC })
   const sub = useTitleTrans({
     title: x.job.title,
     id: x.job.id,
@@ -196,5 +224,5 @@ export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
     track(TRACK_MODAL_PNP, { [TRACK_P_FIELD]: field })
   }, [field])
 
-  return { t, data, sub }
+  return { t, data, qc, sub }
 }

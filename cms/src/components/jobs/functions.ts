@@ -19,7 +19,7 @@
  * @time 2026-08-28 19:15:06
  */
 import {
-  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpBlockOf, pnpCellActiveOf,
+  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpBlockOf, pnpCellActiveOf, qcCellNameOf,
   pnpChannelKeyOf,
   pnpExcludedOf, pnpNameOf,
 } from '@/components/pnp'
@@ -477,6 +477,7 @@ export function boardDimsOf(dims: JobDims): JobDims {
     pnpOccupations: [],
     pnpDraws: [],
     pathways: [],
+    qcCells: [],
     eeCategories: dims.eeCategories,
     eeBroads: dims.eeBroads,
     designatedEmployers: dims.designatedEmployers,
@@ -500,7 +501,9 @@ export function boardPnpOf(dims: JobDims): BoardPnpFacts {
   return {
     pnpBlocked: Array.from(blocked.pnp),
     aipBlocked: Array.from(blocked.aip),
-    index: pnpFactsIndexOf({ occ: dims.pnpOccupations, draws: dims.pnpDraws, pathways: dims.pathways }),
+    index: pnpFactsIndexOf({
+      occ: dims.pnpOccupations, draws: dims.pnpDraws, pathways: dims.pathways, qcCells: dims.qcCells,
+    }),
   }
 }
 
@@ -938,13 +941,15 @@ function signalCellOf(x: CellIn): CellView | null {
  * 官方原名进弹框「本岗能走的通道」卡的灰字。
  * 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」:走不了的岗红字直接写原因(兼职、合同工、季节工、
  * 临时工、工资低于中位、职业不收;数据层 pnpBlock,pnp 桶 pnpBlockOf 取词),可点开看「本岗不满足的门槛」卡;原先是灰「—」点不开。
+ * 2026-09-30 魁省门槛弹框(Frank 勾「PSTQ + 通道名」):魁省岗写这个职业第一个通道(「PSTQ 高技能」这类,pnp 桶 qcCellNameOf),
+ * 可点开看每个通道的门槛卡;不在官方对照表里的职业照旧紫字「魁省」。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
  */
 function pnpCellOf(x: CellIn): CellView {
   if (x.j.province === PROV_QC) {
-    return blankView({ text: x.cx.t('cell.pnpQc'), tone: TONE.purpleSm })
+    return blankView({ text: qcCellNameOf({ t: x.cx.t, noc: x.j.noc, index: x.cx.pnpIndex }), tone: TONE.purpleSm })
   }
   const key = pnpChannelKeyOf({ job: x.j, defaults: x.cx.pnpIndex.defaults })
   if (key !== TEXT_NONE) {
@@ -1250,6 +1255,8 @@ function pushAipChip(a: ChipPushBlockIn): void {
 
 /**
  * 试点社区胶囊(E6-11:值 = 类型缩写,社区名/口径进弹框)与魁省胶囊。
+ * 2026-09-30 魁省门槛弹框:魁省胶囊从省码「QC」改成与表格那一格同一个字(「PSTQ 高技能」这类),点开省提名弹框看门槛卡
+ * (可点判据同表格,pnpChipOf);紫色照旧。
  *
  * @param a 收集器、入参与魁省判定。
  * @returns 无。
@@ -1259,7 +1266,8 @@ function pushPilotChip(a: ChipPushQcIn): void {
     a.out.push(chipOf({ tone: CHIP.sky, text: a.x.j.pilot, k: COL.pilot, tip: TEXT_NONE }))
   }
   if (a.isQc) {
-    a.out.push(chipOf({ tone: CHIP.purple, text: PROV_QC, k: COL.province, tip: TEXT_NONE }))
+    const text = qcCellNameOf({ t: a.x.t, noc: a.x.j.noc, index: a.x.pnpIndex })
+    a.out.push(pnpChipOf({ x: a.x, tone: CHIP.purple, text }))
   }
 }
 

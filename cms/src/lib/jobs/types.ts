@@ -1005,6 +1005,166 @@ export type Pathway = {
 }
 
 /**
+ * 魁省职业 → 第一个通道键的库原样(SQL.DIMS_QC_CELLS;2026-09-30 魁省门槛弹框)。
+ */
+export type QcCellDbRow = {
+  /**
+   * NOC 五位码。
+   */
+  noc: string | null
+
+  /**
+   * 第一个通道的稳定键(pstq-1 … / peq-tfw)。
+   */
+  key: string | null
+}
+
+/**
+ * 魁省职业 → 第一个通道键(洗净;职位板魁省岗的格子文案与能不能点读它)。
+ */
+export type QcCell = {
+  /**
+   * NOC 五位码。
+   */
+  noc: string
+
+  /**
+   * 第一个通道的稳定键。
+   */
+  key: string
+}
+
+/**
+ * 魁省一个通道的受监管明细一组(qc_noc_streams.channels[].regulated 的库原样:法文原文)。
+ */
+export type QcRegulatedDbRow = {
+  /**
+   * 受监管的工作。
+   */
+  jobs: string[] | null
+
+  /**
+   * 监管机构。
+   */
+  authorities: string[] | null
+}
+
+/**
+ * 魁省一个通道的库原样(qc_noc_streams.channels 数组的一项;jsonb,pg 回对象)。
+ */
+export type QcChannelDbRow = {
+  /**
+   * 稳定键(pstq-1 … / peq-tfw)。
+   */
+  key: string | null
+
+  /**
+   * 项目(PSTQ / PEQ)。
+   */
+  program: string | null
+
+  /**
+   * 门槛流名(= pnp_requirements.stream)。
+   */
+  stream: string | null
+
+  /**
+   * 官方全名(卡标题)。
+   */
+  title: string | null
+
+  /**
+   * 细分类(all / citizenOnly / residentOnly / regulated / regulatedQcDiploma / partlyRegulated)。
+   */
+  kind: string | null
+
+  /**
+   * 适用范围原文(官方说明括号里那段)。
+   */
+  scope: string | null
+
+  /**
+   * 受监管明细;非受监管通道为 null。
+   */
+  regulated: QcRegulatedDbRow[] | null
+}
+
+/**
+ * 魁省一个职业的通道行库原样(SQL.QC_NOC_CHANNELS)。
+ */
+export type QcChannelsDbRow = {
+  /**
+   * 通道数组(jsonb)。
+   */
+  channels: QcChannelDbRow[] | null
+}
+
+/**
+ * 魁省一个通道(洗净;弹框一张门槛卡)。
+ */
+export type QcChannel = {
+  /**
+   * 稳定键。
+   */
+  key: string
+
+  /**
+   * 项目(PSTQ / PEQ)。
+   */
+  program: string
+
+  /**
+   * 门槛流名(弹框按它从门槛表挑行)。
+   */
+  stream: string
+
+  /**
+   * 官方全名(卡标题)。
+   */
+  title: string
+
+  /**
+   * 细分类。
+   */
+  kind: string
+
+  /**
+   * 适用范围原文;整类为 ''。
+   */
+  scope: string
+
+  /**
+   * 监管机构(各组去重、保序;非受监管通道为空)。
+   */
+  authorities: string[]
+}
+
+/**
+ * 魁省一个职业的通道列(toQcChannels 的返回;卡片顺序)。
+ */
+export type QcChannelList = QcChannel[]
+
+/**
+ * loadQcChannels 的入参。
+ */
+export type LoadQcChannelsIn = {
+  /**
+   * 数据库连接。
+   */
+  db: Db
+
+  /**
+   * NOC 五位码。
+   */
+  noc: string
+}
+
+/**
+ * loadQcChannels 的返回。
+ */
+export type QcChannelsOut = Promise<QcChannelList>
+
+/**
  * 联邦 EE 类别清单一行。
  */
 export type EeOcc = {
@@ -1332,6 +1492,11 @@ export type Dims = {
    * 全国通道对照行(2026-09-28 通道表批二;服务端门拿它压省提名事实索引,不随首屏下发)。
    */
   pathways: Pathway[]
+
+  /**
+   * 魁省职业 → 第一个通道键(2026-09-30 魁省门槛弹框;服务端门拿它压省提名事实索引,不随首屏下发)。
+   */
+  qcCells: QcCell[]
 
   /**
    * 联邦 EE 类别行。

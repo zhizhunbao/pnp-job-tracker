@@ -77,6 +77,7 @@ export interface Config {
     'pnp-requirements': PnpRequirement;
     'pnp-ops-stats': PnpOpsStat;
     pathways: Pathway;
+    'qc-noc-streams': QcNocStream;
     dli: Dli;
     'ee-categories': EeCategory;
     'ee-points-grid': EePointsGrid;
@@ -127,6 +128,7 @@ export interface Config {
     'pnp-requirements': PnpRequirementsSelect<false> | PnpRequirementsSelect<true>;
     'pnp-ops-stats': PnpOpsStatsSelect<false> | PnpOpsStatsSelect<true>;
     pathways: PathwaysSelect<false> | PathwaysSelect<true>;
+    'qc-noc-streams': QcNocStreamsSelect<false> | QcNocStreamsSelect<true>;
     dli: DliSelect<false> | DliSelect<true>;
     'ee-categories': EeCategoriesSelect<false> | EeCategoriesSelect<true>;
     'ee-points-grid': EePointsGridSelect<false> | EePointsGridSelect<true>;
@@ -1198,6 +1200,35 @@ export interface Pathway {
    * 人工核对日(ISO)
    */
   checked?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "qc-noc-streams".
+ */
+export interface QcNocStream {
+  id: number;
+  /**
+   * NOC 2021 五位码
+   */
+  noc?: string | null;
+  /**
+   * 职业名(官方对照表英文原名)
+   */
+  name?: string | null;
+  /**
+   * 能走的通道 [{key, program, stream, title, code, kind, label, scope, regulated}](卡片顺序)
+   */
+  channels?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2763,6 +2794,10 @@ export interface PayloadLockedDocument {
         value: number | Pathway;
       } | null)
     | ({
+        relationTo: 'qc-noc-streams';
+        value: number | QcNocStream;
+      } | null)
+    | ({
         relationTo: 'dli';
         value: number | Dli;
       } | null)
@@ -3272,6 +3307,17 @@ export interface PathwaysSelect<T extends boolean = true> {
   url?: T;
   quote?: T;
   checked?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "qc-noc-streams_select".
+ */
+export interface QcNocStreamsSelect<T extends boolean = true> {
+  noc?: T;
+  name?: T;
+  channels?: T;
   updatedAt?: T;
   createdAt?: T;
 }
