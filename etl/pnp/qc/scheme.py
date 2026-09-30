@@ -424,6 +424,34 @@ class QcnKindIn:
     kinds: tuple
     """要数的类。"""
 
+
+@dataclass
+class QcnAttachIn:
+    """qcn_attach_regulated() 入参:对照表逐 NOC 行 + 清单全文。"""
+
+    nocs: list
+    """对照表逐 NOC 行(通道 3 那一项就地挂 regulated)。"""
+
+    pdf: str
+    """《受监管职业清单》全文。"""
+
+    problems: list
+    """问题行(就地追加)。"""
+
+
+@dataclass
+class QcnTailIn:
+    """qcn_add_tail() 入参:工作 / 机构区里的一行普通文字。"""
+
+    group: dict
+    """当前这组 {jobs, authorities}(就地追加)。"""
+
+    mode: str
+    """当前在工作区还是机构区。"""
+
+    line: str
+    """这一行(已剥脚注号)。"""
+
 # =========================================================================
 # 6. 魁省法语等级对照(2026-09-29 立)
 # =========================================================================
@@ -689,8 +717,36 @@ class QcNocTest(unittest.TestCase):
     """细分码说明页(前三行是标题 / 表头,照官方排版)。"""
 
     PDF = ("(version du 28 août 2026) Cette liste comprend 2 professions de la CNP … • 1 professions CNP « entièrement "
-           "réglementées », soit … • 1 professions CNP « non entièrement réglementées », soit …")
-    """受监管职业清单开头三句(数字改成与用例行对得上)。"""
+           "réglementées », soit … • 1 professions CNP « non entièrement réglementées », soit …\n"
+           "31111 — Optométristes, tous les emplois associés sont réglementés (举例行,不是条目)\n"
+           "Le tableau suivant présente la Liste …\n"
+           "72106 - Soudeurs/soudeuses et\nopérateurs/opératrices\n• Soudeur/soudeuse dans l’industrie de la\nconstruction\n"
+           "Commission de la construction du Québec\n \n3\nProfessions CNP\nEmplois réglementés au Québec associés aux\n"
+           "• Soudeur/soudeuse de pipelines\n"
+           "31301 — Infirmiers autorisés\nTous les emplois\nOrdre des infirmières et infirmiers du\nQuébec1\n"
+           "1 Diplôme du Québec obligatoire.\n")
+    """受监管职业清单:开头三句(数字改成与用例行对得上)+ 真排版的表格段 —— 说明段里的举例行、折行(「de la」+「construction」、
+    「du」+「Québec」)、跨页续上的工作(第 3 页顶上重印表头、页码,「pipelines」那条没有机构)、行尾脚注号「Québec1」、脚注行。"""
+
+    def test_regulated_gold(self) -> None:
+        """金标:焊工一组(跨页续上的工作并回)、机构 CCQ;护士整类、机构名折行拼齐并剥脚注号;说明段举例行不当条目。"""
+        from pnp.qc.functions import qcn_entries_of
+        e = qcn_entries_of(self.PDF)
+        self.assertEqual(sorted(e), ["31301", "72106"])
+        self.assertEqual(e["72106"], [{"jobs": ["Soudeur/soudeuse dans l’industrie de la construction",
+                                                "Soudeur/soudeuse de pipelines"],
+                                       "authorities": ["Commission de la construction du Québec"]}])
+        self.assertEqual(e["31301"], [{"jobs": ["Tous les emplois"],
+                                       "authorities": ["Ordre des infirmières et infirmiers du Québec"]}])
+
+    def test_regulated_set_mismatch(self) -> None:
+        """变异探针:清单里删掉护士那条 → 与对照表通道 3 的 NOC 集合对不上,记问题。"""
+        from pnp.qc.functions import qcn_attach_regulated
+        nocs = [{"noc": "72106", "streams": [{"stream": 3}]}, {"noc": "31301", "streams": [{"stream": 3}]}]
+        problems: list = []
+        cut = self.PDF[:self.PDF.index("31301 — Infirmiers autorisés\n")]
+        qcn_attach_regulated(QcnAttachIn(nocs=nocs, pdf=cut, problems=problems))
+        self.assertEqual(len(problems), 1)
 
     def rows_of(self) -> list:
         """逐 NOC 页:前四行标题,后三行 NOC(补齐到 516 行由用例自己控制)。"""

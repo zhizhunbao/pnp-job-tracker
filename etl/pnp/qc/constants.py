@@ -598,7 +598,8 @@ occupation and the corresponding stream」页里查询组件的配置 xlsRelativ
 
 QCN_REGULATED_PDF_URL = "https://cdn-contenu.quebec.ca/cdn-contenu/immigration/formulaires/fr/PSTQ/LIS_PSTQ_PTA_Professions_reglementees.pdf"
 """《受监管职业清单》(Liste des professions réglementées,每年 1 月 31 日更新、年中可调)。URL 取自 PSTQ 门槛页通道 3 段的链接。
-本步只读它开头的三个总数(共几个 NOC、整类受监管几个、部分受监管几个),与对照表通道 3 的码数交叉核对。"""
+读两样:开头的三个总数(共几个 NOC、整类受监管几个、部分受监管几个),与对照表通道 3 的码数交叉核对;
+2026-09-29 同日加读逐条目表格(Frank「读」:门槛卡「执照」行要写哪家机构管、哪几种工作受监管),挂到对照表通道 3 那一项。"""
 
 OUT_QC_NOC_STREAMS = paths.PNP / "qc-noc-streams.json"
 """职业 → 通道对照落盘处(暂不进 mart;岗位对通道、门槛卡选哪几张,等展示拍板再接)。
@@ -646,6 +647,67 @@ QCN_FULL_KINDS = ("regulated", "regulatedQcDiploma")
 
 QCN_PARTIAL_KINDS = ("partlyRegulated",)
 """部分受监管的类(与清单开头「non entièrement réglementées」的数核对)。"""
+
+QCN_TABLE_START = "Le tableau suivant présente"
+"""《受监管职业清单》表格从这句之后开始(之前的说明段里也有「31111 — Optométristes」这种举例行,不能当条目读)。"""
+
+QCN_HEAD_LINES = ("Professions CNP", "Emplois réglementés au Québec associés aux", "professions CNP",
+                  "Autorités de réglementation encadrant les emplois", "réglementés au Québec")
+"""每页顶上重印的三列表头(pymupdf 拆成五行),逐行跳过。"""
+
+QCN_ENTRY_RE = re.compile(r"^(\d{5}) [—–-] (.+)$")
+"""条目行:NOC + 分隔 + 职业名(官方三种分隔都有:长破折号、短破折号、连字符)。"""
+
+QCN_FOOTNOTE_RE = re.compile(r"^\d{1,2} [A-ZÉÀ]")
+"""脚注行(「1 Diplôme du Québec obligatoire pour …」),跳过。"""
+
+QCN_FOOTMARK_RE = re.compile(r"(?<=[^\d\s])\d$")
+"""行尾脚注号(「Régie du bâtiment du Québec1」的 1),剥掉。"""
+
+QCN_BULLET = "•"
+"""受监管工作的列项符(「• Soudeur/soudeuse dans l’industrie de la construction」)。"""
+
+QCN_BULLET_STRIP = "• "
+"""剥列项符时去掉的字符。"""
+
+QCN_ALL_JOBS = "Tous les emplois"
+"""整类受监管的写法(也有「Tous les emplois dans l’industrie de la construction」「… hors de l’industrie …」按行业分组)。"""
+
+QCN_CONNECT = ("de", "du", "des", "en", "et", "la", "le", "les", "dans", "à", "aux", "ou", "sur", "pour", "par")
+"""行尾是这些虚词 = 这一行没写完,下一行接着拼(「Ordre des comptables professionnels agréés du」+「Québec」)。"""
+
+QCN_WRAP_TAILS = ("’", "'", "-", "/")
+"""行尾是这些字符同样没写完(「d’」「arpenteuses-」)。"""
+
+QCN_JOIN_SEP = " "
+"""折行拼接符。"""
+
+K_REGULATED = "regulated"
+"""通道 3 那一项的受监管明细:[{jobs, authorities}](按行业分组时多组,如 73402 建筑业内归 CCQ、业外归就业部)。"""
+
+K_JOBS = "jobs"
+"""受监管的工作(法文原文;「Tous les emplois」= 整类)。"""
+
+K_AUTHORITIES = "authorities"
+"""监管机构(法文原文)。"""
+
+K_GROUPS = "groups"
+"""条目解析的中间键:一组组「工作 + 机构」。"""
+
+QCN_WHAT_SET_TPL = "受监管职业清单与对照表通道 3 的 NOC 不一致:{diff}"
+"""问题行条目:两份官方文件的 NOC 集合对不上。"""
+
+QCN_WHAT_EMPTY_TPL = "受监管职业清单 {noc} 解析不出「工作 + 机构」"
+"""问题行条目:某条目没有完整的一组。"""
+
+QCN_MODE_NAME = "name"
+"""条目状态机:在职业名(可能折行)里。"""
+
+QCN_MODE_JOBS = "jobs"
+"""条目状态机:在受监管工作区。"""
+
+QCN_MODE_AUTH = "auth"
+"""条目状态机:在监管机构区。"""
 
 QCN_TOTALS_RE = re.compile(r"Cette liste comprend (\d+) professions")
 """《受监管职业清单》开头:共几个 NOC。"""

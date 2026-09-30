@@ -34,20 +34,23 @@ from pnp.functions import (
 )
 from pnp.qc.constants import (
     DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, FR_MONTHS, FR_WORD_N, ISO_DATE_TPL,
-    K_ADMISSIONS, K_BANDS, K_CEFR, K_CODE, K_ELIGIBLE_AS_OF, K_EXERCISES, K_FULL, K_INTAKE, K_INTAKE_CLOSES,
-    K_INTAKE_OPENS, K_INVITATIONS_TEXT, K_IN_QUEBEC, K_KIND, K_LEVEL_MAX, K_LEVEL_MIN, K_OUTSIDE_MONTREAL, K_PLAN_YEAR,
-    K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE, K_REGULATED_LIST, K_SCORE_MAX, K_SCORE_MIN,
-    K_SELECTIONS, K_SKILL, K_TEST, K_TESTS, K_VALUE_MAX, K_VERSION, OUT_QC_FRENCH_LEVELS, OUT_QC_NOC_STREAMS,
-    OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCF_BANDS, QCF_BODY_HEAD, QCF_CEFR_HEAD, QCF_DECIMAL_COMMA,
-    QCF_DECIMAL_POINT, QCF_LEVELS_HEAD, QCF_LEVEL_RE, QCF_MIN_TESTS, QCF_PDF_URL, QCF_PRINT_DONE_TPL,
-    QCF_PROBLEM_FETCH_TPL, QCF_PROBLEM_TPL, QCF_SCORE_RE, QCF_SKILL_RE, QCF_VERSION_RE, QCF_WHAT_BODY, QCF_WHAT_CEFR,
-    QCF_WHAT_LEVELS, QCF_WHAT_ORPHAN_TPL, QCF_WHAT_RISING_TPL, QCF_WHAT_SKILL_TPL, QCF_WHAT_TESTS_TPL, QCF_WHAT_VERSION,
-    QCN_CODES_SKIP, QCN_CODE_SEP, QCN_FULL_KINDS, QCN_FULL_RE, QCN_KINDS, QCN_KIND_BASE, QCN_NOC_COUNT, QCN_NOC_RE,
+    K_ADMISSIONS, K_AUTHORITIES, K_BANDS, K_CEFR, K_CODE, K_ELIGIBLE_AS_OF, K_EXERCISES, K_FULL, K_INTAKE,
+    K_INTAKE_CLOSES, K_INTAKE_OPENS, K_INVITATIONS_TEXT, K_IN_QUEBEC, K_JOBS, K_KIND, K_LEVEL_MAX, K_LEVEL_MIN,
+    K_OUTSIDE_MONTREAL, K_PLAN_YEAR, K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE, K_REGULATED,
+    K_REGULATED_LIST, K_SCORE_MAX, K_SCORE_MIN, K_SELECTIONS, K_SKILL, K_TEST, K_TESTS, K_VALUE_MAX, K_VERSION,
+    OUT_QC_FRENCH_LEVELS, OUT_QC_NOC_STREAMS, OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCF_BANDS, QCF_BODY_HEAD,
+    QCF_CEFR_HEAD, QCF_DECIMAL_COMMA, QCF_DECIMAL_POINT, QCF_LEVELS_HEAD, QCF_LEVEL_RE, QCF_MIN_TESTS, QCF_PDF_URL,
+    QCF_PRINT_DONE_TPL, QCF_PROBLEM_FETCH_TPL, QCF_PROBLEM_TPL, QCF_SCORE_RE, QCF_SKILL_RE, QCF_VERSION_RE,
+    QCF_WHAT_BODY, QCF_WHAT_CEFR, QCF_WHAT_LEVELS, QCF_WHAT_ORPHAN_TPL, QCF_WHAT_RISING_TPL, QCF_WHAT_SKILL_TPL,
+    QCF_WHAT_TESTS_TPL, QCF_WHAT_VERSION, QCN_ALL_JOBS, QCN_BULLET, QCN_BULLET_STRIP, QCN_CODES_SKIP, QCN_CODE_SEP,
+    QCN_CONNECT, QCN_ENTRY_RE, QCN_FOOTMARK_RE, QCN_FOOTNOTE_RE, QCN_FULL_KINDS, QCN_FULL_RE, QCN_HEAD_LINES,
+    QCN_JOIN_SEP, QCN_KINDS, QCN_KIND_BASE, QCN_MODE_AUTH, QCN_MODE_JOBS, QCN_MODE_NAME, QCN_NOC_COUNT, QCN_NOC_RE,
     QCN_PARTIAL_KINDS, QCN_PARTIAL_RE, QCN_PNER_KEY, QCN_PNER_RE, QCN_PRINT_DONE_TPL, QCN_PROBLEM_CROSS_TPL,
     QCN_PROBLEM_FETCH_TPL, QCN_PROBLEM_TPL, QCN_REGULATED_PDF_URL, QCN_ROWS_SKIP, QCN_SHEET_CODES, QCN_SHEET_ROWS,
-    QCN_STREAM_SEP, QCN_TIMEOUT_S, QCN_TOTALS_RE, QCN_VERSION_RE, QCN_WHAT_CODE_TPL, QCN_WHAT_FULL, QCN_WHAT_KIND_TPL,
-    QCN_WHAT_PARTIAL, QCN_WHAT_ROWS, QCN_WHAT_TOTAL, QCN_WHAT_TOTALS, QCN_XLSX_URL, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL,
-    QCP_BASIS_EXP_TPL, QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE, QCP_EXP_RE, QCP_FULLTIME_RE, QCP_GRAD_URL,
+    QCN_STREAM3, QCN_STREAM_SEP, QCN_TABLE_START, QCN_TIMEOUT_S, QCN_TOTALS_RE, QCN_VERSION_RE, QCN_WHAT_CODE_TPL,
+    QCN_WHAT_EMPTY_TPL, QCN_WHAT_FULL, QCN_WHAT_KIND_TPL, QCN_WHAT_PARTIAL, QCN_WHAT_ROWS, QCN_WHAT_SET_TPL,
+    QCN_WHAT_TOTAL, QCN_WHAT_TOTALS, QCN_WRAP_TAILS, QCN_XLSX_URL, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL, QCP_BASIS_EXP_TPL,
+    QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE, QCP_EXP_RE, QCP_FULLTIME_RE, QCP_GRAD_URL,
     QCP_GRAD_WINDOW_RE, QCP_INTAKE_RE, QCP_ORAL_RE, QCP_PAGE_GRAD, QCP_PAGE_TFW, QCP_PRINT_DONE_TPL,
     QCP_PROBLEM_NO_PAGE_TPL, QCP_PROBLEM_TPL, QCP_PROGRAM, QCP_RECEPT_GRAD_RE, QCP_RECEPT_TFW_RE, QCP_SPOUSE_RE,
     QCP_STREAM_GRAD, QCP_STREAM_TFW, QCP_TEER_RE, QCP_TFW_URL, QCP_UNIT_HOURS, QCP_UPDATED_RE, QCP_URL, QCP_WHAT_CUTOFF,
@@ -71,9 +74,9 @@ from pnp.qc.constants import (
 )
 from pnp.qc.scheme import (
     QcBookLike, QcDrawIn, QcExerciseTest, QcfBandsIn, QcfBodyIn, QcfHeadIn, QcFindIn, QcfOut, QcFrDateIn, QcFrenchTest,
-    QcFrPartsIn, QcnKindIn, QcnMapIn, QcnMapOut, QcNocTest, QcnRegIn, QcnRowIn, QcpIntakeIn, QcPlanTest, QcpPageIn,
-    QcpPageOut, QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn, QcrUpdatedIn,
-    QcsCrossIn, QcSheetLike, QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
+    QcFrPartsIn, QcnAttachIn, QcnKindIn, QcnMapIn, QcnMapOut, QcNocTest, QcnRegIn, QcnRowIn, QcnTailIn, QcpIntakeIn,
+    QcPlanTest, QcpPageIn, QcpPageOut, QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn,
+    QcrUpdatedIn, QcsCrossIn, QcSheetLike, QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
 )
 from pnp.scheme import CachedDrawsIn, FactorCountsIn, FetchHtmlIn, PutDrawsIn, ReqIn, ReqsOut, SoupNodeLike, StdReqIn
 
@@ -821,6 +824,7 @@ def qcn_map_of(x: QcnMapIn) -> QcnMapOut:
     if len(nocs) != QCN_NOC_COUNT:
         problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_ROWS))
     reg = qcn_reg_of(QcnRegIn(pdf=x.pdf, problems=problems))
+    qcn_attach_regulated(QcnAttachIn(nocs=nocs, pdf=x.pdf, problems=problems))
     if len(problems) == 0:
         full = qcn_count_kind(QcnKindIn(nocs=nocs, kinds=QCN_FULL_KINDS))
         partial = qcn_count_kind(QcnKindIn(nocs=nocs, kinds=QCN_PARTIAL_KINDS))
@@ -911,6 +915,115 @@ def qcn_stream_counts(nocs: list) -> dict:
                 counts[s[K_STREAM]] += 1
                 seen.append(s[K_STREAM])
     return counts
+
+
+def qcn_attach_regulated(x: QcnAttachIn) -> None:
+    """清单逐条目解析 → 挂到对照表每个 NOC 通道 3 那一项的 regulated 格;两份官方文件的 NOC 集合必须相同、
+    每条目至少一组完整的「工作 + 机构」,否则记问题(整份保留旧表)。"""
+    entries = qcn_entries_of(x.pdf)
+    s3: list = []
+    for row in x.nocs:
+        for s in row[K_STREAMS]:
+            if s[K_STREAM] == QCN_STREAM3 and row[K_NOC] not in s3:
+                s3.append(row[K_NOC])
+    diff = sorted(set(s3) ^ set(entries))
+    if len(diff) > 0:
+        x.problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_SET_TPL.format(diff=diff)))
+        return
+    for noc, groups in entries.items():
+        if qcn_groups_ok(groups) is False:
+            x.problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_EMPTY_TPL.format(noc=noc)))
+    for row in x.nocs:
+        for s in row[K_STREAMS]:
+            if s[K_STREAM] == QCN_STREAM3:
+                s[K_REGULATED] = entries[row[K_NOC]]
+
+
+def qcn_entries_of(pdf: str) -> dict:
+    """清单全文 → {NOC: [{jobs, authorities}]}。逐行状态机:条目行起一条;列项 / 「Tous les emplois」起工作(机构之后再遇到
+    就起新一组);其余行按上下文判折行续拼还是新机构。跨页时机构印在前一页那截工作旁边,后一页续上的工作没有机构 ——
+    这种组并回上一组(qcn_merge_orphans;21311 / 73113 首跑实撞)。"""
+    lines: list = []
+    for raw in pdf.splitlines():
+        lines.append(raw.strip())
+    start = 0
+    for i, line in enumerate(lines):
+        if line.startswith(QCN_TABLE_START):
+            start = i + 1
+            break
+    entries: dict = {}
+    groups: list = []
+    mode = EMPTY_JOIN
+    for raw in lines[start:]:
+        if qcn_is_noise(raw):
+            continue
+        line = QCN_FOOTMARK_RE.sub(EMPTY_JOIN, raw)
+        m = QCN_ENTRY_RE.match(line)
+        if m is not None:
+            groups = []
+            entries[m.group(1)] = groups
+            mode = QCN_MODE_NAME
+            continue
+        if line.startswith(QCN_BULLET) or line.startswith(QCN_ALL_JOBS):
+            if mode != QCN_MODE_JOBS:
+                groups.append({K_JOBS: [], K_AUTHORITIES: []})
+            groups[-1][K_JOBS].append(line.lstrip(QCN_BULLET_STRIP).strip())
+            mode = QCN_MODE_JOBS
+            continue
+        if mode == QCN_MODE_JOBS or mode == QCN_MODE_AUTH:
+            mode = qcn_add_tail(QcnTailIn(group=groups[-1], mode=mode, line=line))
+    for groups in entries.values():
+        qcn_merge_orphans(groups)
+    return entries
+
+
+def qcn_is_noise(line: str) -> bool:
+    """空行、每页重印的表头、页码、脚注行 —— 都不是条目内容。"""
+    return (line == EMPTY_JOIN or line in QCN_HEAD_LINES or line.isdigit()
+            or QCN_FOOTNOTE_RE.match(line) is not None)
+
+
+def qcn_add_tail(x: QcnTailIn) -> str:
+    """工作 / 机构区里的一行普通文字:上一行没写完(小写开头、上一行以虚词或连字符收尾)→ 续拼到上一行;
+    否则在工作区里是第一个机构(转入机构区),在机构区里是下一个机构。交回拼完后的区。"""
+    key = K_JOBS
+    if x.mode == QCN_MODE_AUTH:
+        key = K_AUTHORITIES
+    items = x.group[key]
+    if len(items) > 0 and (x.line[0].islower() or qcn_dangling(items[-1])):
+        items[-1] = items[-1] + QCN_JOIN_SEP + x.line
+        return x.mode
+    x.group[K_AUTHORITIES].append(x.line)
+    return QCN_MODE_AUTH
+
+
+def qcn_dangling(s: str) -> bool:
+    """这一行没写完:末词是虚词,或以撇号 / 连字符 / 斜杠收尾。"""
+    words = s.split()
+    if len(words) == 0:
+        return False
+    return words[-1].lower() in QCN_CONNECT or s.endswith(QCN_WRAP_TAILS)
+
+
+def qcn_merge_orphans(groups: list) -> None:
+    """只有工作、没有机构的组并回上一组(跨页续上的工作);第一组就没机构的留着,由 qcn_groups_ok 报问题。"""
+    i = 1
+    while i < len(groups):
+        if len(groups[i][K_AUTHORITIES]) == 0:
+            groups[i - 1][K_JOBS].extend(groups[i][K_JOBS])
+            del groups[i]
+            continue
+        i += 1
+
+
+def qcn_groups_ok(groups: list) -> bool:
+    """至少一组,且每组都有工作也有机构。"""
+    if len(groups) == 0:
+        return False
+    for g in groups:
+        if len(g[K_JOBS]) == 0 or len(g[K_AUTHORITIES]) == 0:
+            return False
+    return True
 
 
 # =========================================================================
