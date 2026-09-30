@@ -622,7 +622,7 @@ PW_NL_SKILLED_WORKER = {
     "plainZh": "NL 技术工人", "plainEn": "NL Skilled Worker", "plainKo": "NL 숙련 노동자",
     "officialName": "NLPNP Skilled Worker Category",
     "boardLabel": None, "isDefault": True,
-    "drawStreams": ["NLPNP + AIP (ITA batch)"],
+    "drawStreams": ["NLPNP (ITA batch)"],
     "reqStreams": ["NLPNP Skilled Worker Category", "NLPNP (employer criteria, all streams)"],
     "quotaScope": None,
     "occLabels": [],
@@ -636,7 +636,9 @@ PW_NL_SKILLED_WORKER = {
 2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):挂门槛流(pnp nl-req 的 Skilled Worker 流名:语言两档、资格 / 执照条文);
 雇主侧三条在「NLPNP (employer criteria, all streams)」流,门槛卡按全省取,不必登记(同阿省);International Graduate 是另一类别
-(持 PGWP 者只能走它或 EE 类别),不挂这里。"""
+(持 PGWP 者只能走它或 EE 类别),不挂这里。
+2026-09-29 抽选卡重排(Frank「AIP 是不是应该单独的卡」「按你建议」):pnp 域把每批 ITA 按 Notes 拆成省提名、AIP 两行,抽选组由
+「NLPNP + AIP (ITA batch)」改成「NLPNP (ITA batch)」(只剩省提名);AIP 那行归 AIP 段。"""
 
 PW_PE_WORKFORCE = {
     "key": "pe-workforce", "province": "PE", "program": "PNP",
@@ -689,7 +691,7 @@ PW_AIP = {
     "plainZh": "AIP", "plainEn": "AIP", "plainKo": "AIP",
     "officialName": "Atlantic Immigration Program",
     "boardLabel": None, "isDefault": False,
-    "drawStreams": ["AIP", "NLPNP + AIP (ITA batch)", "Monthly EOI selections"],
+    "drawStreams": ["AIP", "AIP (ITA batch)", "Monthly EOI selections"],
     "reqStreams": [],
     "quotaScope": None,
     "occLabels": [],
@@ -704,7 +706,9 @@ PW_AIP = {
 抽选:NB 把 AIP 选取与省提名邀请发在同一张抽选页(组名「AIP」,数字是选中进入审理的申请、不是邀请);NL 批次与 NS 按月那一组
 都与省提名同一个池(见 NL / NS 两段)。
 ⚠ 名字:抽选卡现把 NB 那组叫「AIP 大西洋移民计划」,而 NL / NS 两组的灰字里写「AIP」—— 同一个项目两个写法;表里取「AIP」
-(与职位板 AIP 列同名),统一归批二效果图。"""
+(与职位板 AIP 列同名),统一归批二效果图。
+2026-09-29 抽选卡重排:NL 每批拆出来的 AIP 那行组名「AIP (ITA batch)」(发出的邀请,与 NB「AIP」组数申请不同),替掉原来的
+整批组「NLPNP + AIP (ITA batch)」;NS 按月那一组照旧同池、仍挂这里。"""
 
 PATHWAYS = [
     PW_AB_OPPORTUNITY, PW_AB_ACCELERATED_TECH, PW_AB_DEDICATED_HEALTH_CARE, PW_AB_LAW_ENFORCEMENT,
