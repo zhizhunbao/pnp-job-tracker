@@ -7931,7 +7931,18 @@ PE_IIDI_REPORT_URLS = (
     "https://www.princeedwardisland.ca/sites/default/files/publications/2023-2024_iidi_annual_report.pdf",
 )
 """已核实存在的 IIDI(Island Investment Development Inc.)年报 PDF(2026-09-09 逐个 GET 200)。省站的出版物搜索是
-Drupal 全文检索且在 Radware 后面,列不出这批;新一年的报告用下面两种已见过的命名式样探(HEAD),探到就并入。"""
+Drupal 全文检索且在 Radware 后面,列不出这批;新一年的报告用下面两种已见过的命名式样探(HEAD),探到就并入。
+2026-09-29 复查(Frank「只抓取然后取数」:想照 BC 改成读目录页自动发现新一期)—— 找不到能进 crawl 层的目录页,照旧用本清单 + 探:
+① 移民办 About 页(/en/department/office-of-immigration/about,pe-imm 缓存里有)的「Reports, Publications & Statistics」链到
+按部门筛的站内搜索 /en/search?f%5B0%5D=content_type%3Apublication&f%5B1%5D=departments_and_agencies%3A1709。IIDI 年报挂在
+移民办名下(09-09 落进 pe-imm 缓存的一张站内搜索结果页:第一页 10 条里 8 条是 IIDI 年报,部门分面只有移民办 24 条、另两个部门
+各 1 条)。但它带查询串,crawl 的 BFS 规范化网址时把查询串去掉(normalize_url),当种子只会抓回不带条件的搜索页;pe-imm 种子页
+本身(/en/information/office-of-immigration)如今也落到全文搜「office of immigration」的结果页,第一页没有 IIDI 年报。
+② 站点地图 /en/sitemap.xml(不在 Radware 后面,httpx 直取 200,共 192 分页)逐期列出版物页 /en/publication/<财年>-iidi-annual-report,
+2024-2025 那页 lastmod 2026-05-08;但出版物页在墙后,PDF 又放在 Drupal 随机子目录里,路径推不出来。
+③ 2024-2025 版已挂出:https://www.princeedwardisland.ca/sites/default/files/6f4e/IIDI%20Annual%20Report%202024-25FINAL_ENG.pdf
+(①里那张搜索结果页的卡片,发布日 2026-05-08;GET 200、1.6 MB)。文件名不合下面两种命名式样 → 探不到;现有解析器认得出它的
+配额表(2024 = 1,600、2025 = 800)与 FY 2024-25 已发(Total 1,224 − Atlantic 315 = 909)。要不要并进本清单,待 Frank 拍板。"""
 
 PE_IIDI_NAME_TPLS = (
     "https://www.princeedwardisland.ca/sites/default/files/publications/{y1}-{y2}_iidi_annual_report.pdf",
@@ -8093,7 +8104,28 @@ NBS_REPORTS = (
 """已核实的 NB 后期教育培训劳工厅(PETL)年报 PDF,一份一对(网址, 年报财年),升序(2026-09-29 立,lead 派工「NB 往年已发提名」:
 gnb.ca 移民版块只发逐轮邀请数,年度数在部门年报里)。出处是省议会 legnb.ca 的提交文件(WebSearch 命中,2024-2025 版 2025-11-20 提交,
 第 25 页 Immigration Division 的 KPI 表);文件名带提交日期与议会届次,推不出下一份叫什么 → 不探不猜,
-2025-2026 版(预计 2026 年 11 月前后提交)出来后人工核实再加一对。同一年被多份年报覆盖时后面的(更新的)为准。"""
+2025-2026 版(预计 2026 年 11 月前后提交)出来后人工核实再加一对。同一年被多份年报覆盖时后面的(更新的)为准。
+2026-09-29 同日改判(Frank「只抓取然后取数」):部门自己的「Publications and reports」页(NBS_INDEX_URLS)逐年挂着全部年报,
+新一期不再等人工加对 —— 目录页认出、财年晚于本清单最新一份的自动并进来读(report_list_of);本清单留作已核实的底,不删,
+目录页取不到或认不出时照本清单跑。人工核实过新一期后照旧补进本清单(目录页哪天失灵,底也不缺那一期)。"""
+
+NBS_INDEX_URLS = ("https://www.gnb.ca/en/org/post-secondary-training-labour/petl-publications.html",)
+"""NB 年报目录页(2026-09-29 立,Frank「只抓取然后取数」):PETL 部门页 https://www.gnb.ca/en/org/post-secondary-training-labour.html
+的「Publications and reports」链接进来(先是 WebSearch 命中这一页,再回部门页核实链接在),Annual reports 一节逐年挂
+2019-2020 到 2024-2025 六份年报 PDF,httpx 直取 200。只一页,也写成清单(与 NLS_INDEX_URLS 同形,report_list_of 逐页读)。
+议会 legnb.ca 的提交文件页(/en/house-business/tabled-documents)也列这份年报,但按会期分页、默认只列当前会期,换了会期
+那一期就翻到往届页去了,不如部门页全 —— 不用。"""
+
+NBS_REPORT_HREF_RE = re.compile(r'href="(/content/dam/GNB3/org/petl-epft/doc/annual-report-(\d{4})-(\d{4})\.pdf)"')
+"""目录页里年报链接的形(站内相对路径 + 财年两段四位年;2026-09-29 实页:「annual-report-2024-2025.pdf」,链接文字
+「Annual Report 2024-2025 (PDF 812 KB)」)。同页别的 PDF(无障碍咨询委员会会议纪要 meeting-summary-…)不是这个形,不认。
+部门改名 / 站点改版 = 路径变 = 一份都认不出 → 打 ✗ 照已核实清单跑,不猜新路径。"""
+
+NBS_SITE_BASE = "https://www.gnb.ca"
+"""目录页相对路径的站根。"""
+
+NBS_FY_TPL = "{y1}-{y2}"
+"""财年写法(与 NBS_REPORTS 同形「2024-2025」;y1 / y2 取链接里的两段年)。"""
 
 NBS_TIMEOUT_S = 120
 """PDF 下载超时(同 PE_IIDI_TIMEOUT_S)。"""
@@ -8143,7 +8175,31 @@ NLS_REPORTS = (
 """已核实的 NL 移民厅(IPGS,2025-05 起改名 Department of Jobs, Immigration and Growth)年报 PDF,一份一对(网址, 年报财年),
 升序(2026-09-29 立,lead 派工「NL 往年提名人数」)。出处:gov.nl.ca/ipgs/publications/ 跳转 gov.nl.ca/jgrd/ → Publications
 → Annual Reports(只挂 2024-2025 一份),2023-2024 版在省议会 assembly.nl.ca。2025-2026 版截至 2026-09-29 未挂出,
-出来后人工核实原句再加一对(新措辞要在 NLS_NOMINATED_RES 加一条)。"""
+出来后人工核实原句再加一对(新措辞要在 NLS_NOMINATED_RES 加一条)。
+2026-09-29 同日改判(Frank「只抓取然后取数」):新一期不再等人工加对 —— Annual Reports 页与它链出的 Archived Annual Reports 页
+(NLS_INDEX_URLS)认出、财年晚于本清单最新一份的自动并进来读(report_list_of);本清单留作已核实的底,不删,目录页取不到或
+认不出时照本清单跑。新一期换了措辞照旧抛错保留旧表(NLS_NO_QUOTE_TPL),核实原句后在 NLS_NOMINATED_RES 加一条、在这里补一对。"""
+
+NLS_INDEX_URLS = ("https://www.gov.nl.ca/jgrd/publications/annual/",
+                  "https://www.gov.nl.ca/jgrd/publications/annual/archive-annual-reports/")
+"""NL 年报目录页,按序读(2026-09-29 立,Frank「只抓取然后取数」;httpx 直取两页都 200):
+① 当前页 Annual Reports —— gov.nl.ca/ipgs/publications/ 跳 gov.nl.ca/jgrd/ → 页头「Publications」→「Annual Reports」,
+   只挂部门最新一份(2024-2025,链接文字是部门名「Immigration, Population Growth and Skills」、年只在文件名里);
+② 当前页链出的「Archived Annual Reports」—— 部门往年年报一节(IPGS 2023-2024、2022-2023、2021-22、2020-21 在 gov.nl.ca;
+   2019-20 往前是改名前的部门 ISL / AESL…,文件在 assembly.nl.ca 或用旧文件名),同页还有学徒委员会等别的机构的年报。
+新一期挂出来时上一期挪进 ②,两页都读,认过的那期不会因为挪页而掉。① 一份都认不出 = 当前那份的命名变了(部门 2025 年
+改过名,网站如今叫 Jobs, Growth and Rural Development,下一份很可能不叫 IPGS…)→ 打 ✗ 照已核实清单跑,不猜新名字。"""
+
+NLS_REPORT_HREF_RE = re.compile(r'href="(https://www\.gov\.nl\.ca/jgrd/files/IPGSAnnualReport(\d{4})-(\d{2}|\d{4})\.pdf)"')
+"""目录页里部门年报链接的形(2026-09-29 两页实见:「IPGSAnnualReport2024-2025.pdf」「IPGSAnnualReport2021-22.pdf」,
+结束年四位两位都有)。只认 IPGS 这个前缀:② 页上别的机构的年报(「PACBAnnualReport2023-24.pdf」学徒委员会等)与改名前的
+部门年报(ISL / AES,在 assembly.nl.ca 或旧文件名)都不是这个形 —— 前者不是本部门,后者比已核实清单早,本来也不读。"""
+
+NLS_SITE_BASE = ""
+"""目录页链接的站根:两页的年报链接都是完整网址,不用补(NB 的是站内相对路径,见 NBS_SITE_BASE)。"""
+
+NLS_FY_TPL = "{y1}-{y2s}"
+"""财年写法(与 NLS_REPORTS 同形「2024-25」:y2s 取链接里结束年的末两位,写四位的也折成两位)。"""
 
 NLS_TIMEOUT_S = 120
 """PDF 下载超时(同 PE_IIDI_TIMEOUT_S)。"""
@@ -8193,3 +8249,23 @@ NLS_PRINT_OK_TPL = "  ✓ NL 提名人数(自然年,单位人)年报 {fy}:{pairs
 
 NLS_PRINT_FAIL_TPL = "  ✗ NL 提名人数抓取失败: {name} {detail}(保留旧表)"
 """失败留痕(不拦役)。"""
+
+REPORT_FY_RE = re.compile(r"^(\d{4})-(?:\d{2}|\d{4})$")
+"""年报财年的两种写法(NB「2024-2025」、NL「2024-25」;第 1 组 = 起始年)。已核实清单与两省认法造出来的都是这两种形,
+新一期按起始年比先后(2026-09-29 立)。"""
+
+REPORT_FY_BAD_TPL = "年报财年写法认不出:{fy}(已核实清单写错了?)"
+"""财年写法认不出时的抛错文案(调用方整份保留旧表)。"""
+
+REPORT_DIR_NEW_TPL = "  ! {prov} 年报目录页发现新一期 {fy}(不在已核实清单,照读;核实后补进清单):{url}"
+"""新一期的留痕,一份一行(2026-09-29 立,lead 派工「新发现年报时打一行留痕,写明是哪一份」)。"""
+
+REPORT_DIR_FAIL_TPL = "  ✗ {prov} 年报目录页取不到: {url} {name} {detail}(照已核实清单跑)"
+"""目录页网络错的留痕(不拦役)。"""
+
+REPORT_DIR_EMPTY_TPL = "  ✗ {prov} 年报目录页一份年报都没认出: {url}(疑似改版或改名,核对认法;照已核实清单跑)"
+"""目录页取到了、却一份年报链接都认不出的留痕(不拦役;几张目录页平时都认得出至少一份,认不出 = 页面或命名变了)。"""
+
+REPORT_DIR_KEEP_TPL = "  ✗ {prov} 年报目录页不可用,旧表里有已核实清单以外的年报 {urls} —— 照清单跑会抹掉那几期,保留旧表"
+"""目录页不可用、旧表里又有目录页先前发现的新一期时的留痕(2026-09-29 立):那一期还没补进已核实清单,照清单跑写出来的表
+就少那几年 —— 不拿少一期的新表盖旧表(同 scrape_ns_stats 的整份保留旧表口径)。"""

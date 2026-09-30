@@ -36,6 +36,9 @@ from pnp.constants import (  # 2026-09-27 九省体检修复批的三组自测�
 )
 from pnp.constants import SK_AGRI_SECTOR  # 2026-09-27 Frank 拍板「看得出才改判」(SK 农业带星号码标行业键)
 from pnp.constants import OUT_DRAWS_FILE_TPL, OUT_PNP_DIR  # 2026-09-27 抽选行 selection 码自测读真文件用
+from pnp.constants import (  # 2026-09-29 年报目录页发现新一期的自测用(两省链接形)
+    NBS_FY_TPL, NBS_REPORT_HREF_RE, NBS_SITE_BASE, NLS_FY_TPL, NLS_REPORT_HREF_RE, NLS_SITE_BASE,
+)
 
 
 class SoupNodeLike(Protocol):
@@ -3262,6 +3265,85 @@ class NlReportIn:
     """年报财年(section 用,如「2024-25」)。"""
 
 
+@dataclass
+class ReportDirIn:
+    """report_list_of() 入参:一省的年报目录页、链接形与已核实清单(2026-09-29 立,Frank「只抓取然后取数」)。"""
+
+    prov: str
+    """省码(留痕用)。"""
+
+    index_urls: tuple
+    """目录页,按序读(NL 两页:当前页 + 往年页;NB 一页)。"""
+
+    href_re: re.Pattern
+    """本省年报链接的形(第 1 组路径、第 2 组起始年、第 3 组结束年)。"""
+
+    site_base: str
+    """链接路径前面补的站根(完整网址的补空串)。"""
+
+    fy_tpl: str
+    """本省财年写法的模板(与已核实清单同形)。"""
+
+    known: tuple
+    """已核实清单((网址, 财年) 对,财年升序)。"""
+
+    timeout_s: int
+    """目录页每次请求的超时。"""
+
+
+@dataclass
+class ReportLinksIn:
+    """report_links_of() 入参:一张目录页原文与本省链接形(2026-09-29 立;链接形三格同 ReportDirIn)。"""
+
+    html: str
+    """目录页原文。"""
+
+    href_re: re.Pattern
+    """本省年报链接的形。"""
+
+    site_base: str
+    """链接路径前面补的站根。"""
+
+    fy_tpl: str
+    """本省财年写法的模板。"""
+
+
+@dataclass
+class ReportListOut:
+    """report_list_of() 出参:本轮要读的年报与目录页可不可用。"""
+
+    reports: list
+    """(网址, 财年) 对,财年升序:已核实清单在前,新一期接在后面。"""
+
+    dir_ok: bool
+    """目录页取到且每页都认出了年报;False = 只剩已核实清单(调用方据此查旧表会不会丢期)。"""
+
+
+@dataclass
+class NewReportsIn:
+    """new_reports_of() 入参(2026-09-29 立)。"""
+
+    known: tuple
+    """已核实清单。"""
+
+    found: list
+    """目录页认出的全部年报(几页并在一起,可能有同一财年的两份)。"""
+
+
+@dataclass
+class LostUrlsIn:
+    """lost_urls_of() 入参:本轮要读的年报与上一版落盘(2026-09-29 立)。"""
+
+    todo: ReportListOut
+    """本轮要读的年报。"""
+
+    path: Path
+    """上一版落盘处(nb-stats.json / nl-stats.json)。"""
+
+    key: str
+    """逐年行所在的清单键(NB nominationsIssued、NL nominatedIndividuals)。"""
+
+
 class NbNlStatsTest(unittest.TestCase):
     """NB / NL 往年提名自测(2026-09-29 立):NB 年报 KPI 表(真页行序原样)读出三个自然年、AIP 行的数不混进来、表形不对给空表;
     NL 两种措辞的原句(真页原句,PDF 换行落在句中)读出自然年与人数、label 是整句原句、单位是人,年对不上 / 只剩 AIP 的数 /
@@ -3351,3 +3433,146 @@ class NbNlStatsTest(unittest.TestCase):
         self.assertNotEqual(no_pnp, self.nl_2024())
         for text in (year_off, aip_only, no_pnp, ""):
             self.assertIsNone(fn.nl_nominated_row_of(NlReportIn(text=text, url="u", fy="x")))
+
+
+class ReportDirTest(unittest.TestCase):
+    """年报目录页发现新一期自测(2026-09-29 立,Frank「只抓取然后取数」):两省目录页真页原文(httpx 取回的 HTML 行原样)认出
+    年报链接与财年、别的 PDF / 别的机构 / 改名前的部门不认;新一期只收财年晚于已核实清单的、同一财年留后认出的;目录页取不到 /
+    认不出只交回已核实清单并留痕;旧表里有已核实清单以外的年报才算会丢期。全程不联网(fetch_html 换成桩)。"""
+
+    def nb_page(self) -> str:
+        """NB 部门「Publications and reports」页(petl-publications.html)Annual reports 一节的两条 + 同页会议纪要一条(原样)。"""
+        return "\n".join([
+            '            <a class="cmp-list__item-link" href="/content/dam/GNB3/org/petl-epft/doc/annual-report-2024-2025'
+            '.pdf">Annual Report 2024-2025 (PDF 812 KB)',
+            '            <a class="cmp-list__item-link" href="/content/dam/GNB3/org/petl-epft/doc/annual-report-2023-2024'
+            '.pdf">Annual Report 2023-2024 (PDF 777 KB)',
+            '            <a class="cmp-list__item-link" href="/content/dam/GNB3/org/petl-epft/doc/meeting-summary-accessibi'
+            'lity-advisory-board-meeting-2.pdf">Summary Meeting 2 - January 17, 2025 (PDF 158 KB)'])
+
+    def nl_current(self) -> str:
+        """NL Annual Reports 当前页那一条(原样:链接文字是部门名,年只在文件名里)。"""
+        return ('<li><a href="https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf" target="_blank" '
+                'rel="attachment noopener wp-att-49271">Immigration, Population Growth and Skills</a></li>')
+
+    def nl_archive(self) -> str:
+        """NL Archived Annual Reports 页:部门一节前五条 + 学徒委员会一条(原样)。"""
+        return "\n".join([
+            '<li><a href="https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2023-2024.pdf" target="_blank" rel="noopener">'
+            '2023-2024 Immigration, Population Growth and Skills Annual Report</a></li>',
+            '<li><a href="https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2022-2023.pdf" target="_blank" rel="noopener">'
+            '2022-2023 Immigration, Population Growth and Skills Annual Report</a> (2.61MB)</li>',
+            '<li><a href="https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2021-22.pdf" target="_blank" rel="noopener">'
+            '2021-2022 Immigration, Population Growth and Skills Annual Report</a> (3.0 MB)</li>',
+            '<li><a href="https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2020-21.pdf" target="_blank" rel="attachment '
+            'noopener wp-att-47183">2020-2021 Immigration, Population Growth and Skills Annual Report</a> (1.2 MB)</li>',
+            '<li><a href="https://www.assembly.nl.ca/business/electronicdocuments/ISLAnnualReport2019-20.pdf">2019-2020 '
+            'Immigration, Skills and Labour Annual Report</a> (1.9 MB)</li>',
+            '<li><a href="https://www.gov.nl.ca/jgrd/files/PACBAnnualReport2023-24.pdf" target="_blank" rel="noopener">'
+            'Provincial Apprenticeship and Certification Board Annual Report 2023-24</a></li>'])
+
+    def nb_dir(self, known: tuple) -> ReportDirIn:
+        """NB 目录页入参(桩页地址随便给,fetch_html 换成桩)。"""
+        return ReportDirIn(prov="NB", index_urls=("nb-index",), href_re=NBS_REPORT_HREF_RE, site_base=NBS_SITE_BASE,
+                           fy_tpl=NBS_FY_TPL, known=known, timeout_s=1)
+
+    def nl_dir(self, known: tuple) -> ReportDirIn:
+        """NL 目录页入参(当前页 + 往年页两张桩页)。"""
+        return ReportDirIn(prov="NL", index_urls=("nl-current", "nl-archive"), href_re=NLS_REPORT_HREF_RE,
+                           site_base=NLS_SITE_BASE, fy_tpl=NLS_FY_TPL, known=known, timeout_s=1)
+
+    def test_nb_links_golden(self) -> None:
+        """金标:NB 两份年报补站根、财年照链接写「2024-2025」形、按财年升序;会议纪要 PDF 不认。"""
+        from pnp import functions as fn
+        got = fn.report_links_of(ReportLinksIn(html=self.nb_page(), href_re=NBS_REPORT_HREF_RE,
+                                               site_base=NBS_SITE_BASE, fy_tpl=NBS_FY_TPL))
+        base = "https://www.gnb.ca/content/dam/GNB3/org/petl-epft/doc/annual-report-"
+        self.assertEqual(got, [(base + "2023-2024.pdf", "2023-2024"), (base + "2024-2025.pdf", "2024-2025")])
+
+    def test_nl_links_golden(self) -> None:
+        """金标:NL 两页的 IPGS 年报五份,财年一律折成「2024-25」形(四位、两位结束年都有);改名前的 ISL(议会站)与
+        学徒委员会 PACB 的年报不认。"""
+        from pnp import functions as fn
+        html = self.nl_current() + "\n" + self.nl_archive()
+        got = fn.report_links_of(ReportLinksIn(html=html, href_re=NLS_REPORT_HREF_RE, site_base=NLS_SITE_BASE,
+                                               fy_tpl=NLS_FY_TPL))
+        self.assertEqual([fy for _, fy in got], ["2020-21", "2021-22", "2022-23", "2023-24", "2024-25"])
+        self.assertEqual(got[-1][0], "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2024-2025.pdf")
+        self.assertEqual(got[1][0], "https://www.gov.nl.ca/jgrd/files/IPGSAnnualReport2021-22.pdf")
+
+    def test_links_probes(self) -> None:
+        """变异探针:部门改名换了文件名前缀(IPGS → JGRD)/ NB 路径换了部门目录 / 链接不是 .pdf → 一份都不认。"""
+        from pnp import functions as fn
+        renamed = self.nl_current().replace("IPGSAnnualReport", "JGRDAnnualReport")
+        moved = self.nb_page().replace("/petl-epft/", "/jgr-emc/")
+        not_pdf = self.nb_page().replace(".pdf", ".html")
+        for html, rx, base, tpl in ((renamed, NLS_REPORT_HREF_RE, NLS_SITE_BASE, NLS_FY_TPL),
+                                    (moved, NBS_REPORT_HREF_RE, NBS_SITE_BASE, NBS_FY_TPL),
+                                    (not_pdf, NBS_REPORT_HREF_RE, NBS_SITE_BASE, NBS_FY_TPL)):
+            self.assertEqual(fn.report_links_of(ReportLinksIn(html=html, href_re=rx, site_base=base, fy_tpl=tpl)), [])
+
+    def test_new_reports(self) -> None:
+        """新一期:只收财年晚于已核实清单最新一份的;已核实的财年(目录页给的是另一个网址)与更早的不收;同一财年留后认出的;
+        升序。已核实清单财年写坏 → 抛错(调用方整份保留旧表)。"""
+        from pnp import functions as fn
+        known = (("assembly-2023", "2023-24"), ("gov-2024", "2024-25"))
+        found = [("a", "2020-21"), ("gov-2023", "2023-24"), ("x", "2024-25"), ("c", "2026-27"), ("b1", "2025-26"),
+                 ("b2", "2025-26")]
+        got = fn.new_reports_of(NewReportsIn(known=known, found=found))
+        self.assertEqual(got, [("b2", "2025-26"), ("c", "2026-27")])
+        self.assertEqual(fn.new_reports_of(NewReportsIn(known=known, found=found[:3])), [])
+        with self.assertRaises(ValueError):
+            fn.new_reports_of(NewReportsIn(known=(("u", "FY2024"),), found=[]))
+
+    def test_list_new_edition(self) -> None:
+        """目录页认出新一期:接在已核实清单后面、dir_ok,留痕一行写明财年与网址;NL 往年页里的 2020-21 等旧年报不进清单。"""
+        from pnp import functions as fn
+        new_line = self.nb_page().replace("2024-2025", "2025-2026").replace("812 KB", "800 KB")
+        known = (("legnb-2024", "2024-2025"),)
+        with (mock.patch.object(fn, "fetch_html", return_value=self.nb_page() + "\n" + new_line),
+              mock.patch.object(fn, "say") as said):
+            got = fn.report_list_of(self.nb_dir(known))
+        url = "https://www.gnb.ca/content/dam/GNB3/org/petl-epft/doc/annual-report-2025-2026.pdf"
+        self.assertEqual((got.reports, got.dir_ok), ([("legnb-2024", "2024-2025"), (url, "2025-2026")], True))
+        self.assertEqual(said.call_count, 1)
+        self.assertIn("2025-2026", said.call_args[0][0])
+        self.assertIn(url, said.call_args[0][0])
+        with (mock.patch.object(fn, "fetch_html", side_effect=[self.nl_current(), self.nl_archive()]) as fetched,
+              mock.patch.object(fn, "say") as said):
+            got = fn.report_list_of(self.nl_dir((("assembly-2023", "2023-24"), ("gov-2024", "2024-25"))))
+        self.assertEqual((got.reports, got.dir_ok), ([("assembly-2023", "2023-24"), ("gov-2024", "2024-25")], True))
+        self.assertEqual([c[0][0].url for c in fetched.call_args_list], ["nl-current", "nl-archive"])
+        self.assertEqual(said.call_count, 0)
+
+    def test_list_fallbacks(self) -> None:
+        """目录页取不到(第二页网络错)/ 当前页认不出(改名)/ 往年页认不出 → 只交回已核实清单、dir_ok=False,各留痕一行。"""
+        from pnp import functions as fn
+        known = (("gov-2024", "2024-25"),)
+        renamed = self.nl_current().replace("IPGSAnnualReport", "JGRDAnnualReport")
+        cases = (([self.nl_current(), fn.httpx.ConnectError("offline")], "取不到"),
+                 ([renamed, self.nl_archive()], "没认出"),
+                 ([self.nl_current(), "<html></html>"], "没认出"))
+        for pages, word in cases:
+            with (mock.patch.object(fn, "fetch_html", side_effect=pages),
+                  mock.patch.object(fn, "say") as said):
+                got = fn.report_list_of(self.nl_dir(known))
+            self.assertEqual((got.reports, got.dir_ok), ([("gov-2024", "2024-25")], False))
+            self.assertEqual(said.call_count, 1)
+            self.assertIn(word, said.call_args[0][0])
+
+    def test_lost_urls(self) -> None:
+        """会不会丢期:目录页不可用、旧表里有已核实清单以外的出处 → 交回那些网址;目录页可用 / 旧表全在清单里 / 旧表不在 → 空。"""
+        from pnp import functions as fn
+        known = [("u23", "2023-24"), ("u24", "2024-25")]
+        rows = [{"year": 2025, "url": "gov-2025"}, {"year": 2024, "url": "u24"}, {"year": 2023, "url": "u23"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "nl-stats.json"
+            path.write_text(json.dumps({"nominatedIndividuals": rows, "nominationsIssued": []}), encoding="utf-8")
+            down = ReportListOut(reports=known, dir_ok=False)
+            self.assertEqual(fn.lost_urls_of(LostUrlsIn(todo=down, path=path, key="nominatedIndividuals")),
+                             ["gov-2025"])
+            self.assertEqual(fn.lost_urls_of(LostUrlsIn(todo=down, path=path, key="nominationsIssued")), [])
+            up = ReportListOut(reports=known, dir_ok=True)
+            self.assertEqual(fn.lost_urls_of(LostUrlsIn(todo=up, path=path, key="nominatedIndividuals")), [])
+            gone = Path(tmp) / "missing.json"
+            self.assertEqual(fn.lost_urls_of(LostUrlsIn(todo=down, path=gone, key="nominatedIndividuals")), [])
