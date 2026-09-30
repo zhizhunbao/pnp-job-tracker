@@ -44,7 +44,7 @@ from pnp.functions import (
     watch_on_workforce, watch_prov_allocations,
     scrape_nb_stats, scrape_nl_stats,
 )
-from pnp.qc.functions import build_qc_draws  # 2026-09-29 魁省拆成 pnp/qc 子域(按省拆首例),本门从子域取步骤
+from pnp.qc.functions import build_qc_draws, run_qc_tests  # 2026-09-29 魁省拆成 pnp/qc 子域(按省拆首例),本门从子域取步骤
 
 UNITS = {
     "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats)],
@@ -224,6 +224,7 @@ TOOLS = {
     "c01_gold": audit_c01_gold,
     "gate_quotes": gate_quotes,
     "test": run_tests,
+    "test_qc": run_qc_tests,
 }
 """全部可 --only 点名的步(默认链 28 步 + 不进链的手动件)。
 2026-09-26 晚按省拆:原 draws 一步(九省一份 draws.json)拆成 draws_ab … draws_qc 九步,各属一个抽选单元;
@@ -249,6 +250,7 @@ TOOLS = {
   bc_draw_archive      BC 逐年存档 PDF(2025)进 crawl 层(同日;过去年份不变,不进定时链)
   test                 本域自测(2026-09-26;unittest,不联网不写仓):ON 劳动力优先表守望判定
                        (门循环的自测随 run_steps 搬去 door 叶)
+  test_qc              魁省子域自测(2026-09-29;PSTQ 逐档解析的金标 / 拒猜 / 变异探针;`--only test` 连同本域一起跑)
 """
 
 

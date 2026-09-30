@@ -11,7 +11,7 @@ functions 直接从 pnp.constants 取(依赖单向:子域 → pnp 共用段)。
 import re
 
 # =========================================================================
-# 1. PSTQ 邀请轮次(2026-09-29 自 pnp/constants.py 段10 原样搬来,一字未改)
+# 1. PSTQ 邀请轮次(2026-09-29 自 pnp/constants.py 段10 原样搬来;同日加逐档解析)
 # =========================================================================
 
 DRAWS_QC_URL_TPL = ("https://www.quebec.ca/en/immigration/permanent/skilled-workers/"
@@ -60,3 +60,49 @@ QC_DRAW_SCORE_RE = re.compile(r"score\s*(?:\(PDF[^)]*\))?\s*"
 
 QC_DRAW_NOTE_TPL = "Minimum score by invitation profile: {scores}"
 """QC 行的 note:本轮各邀请档的最低分按页面顺序列出(score 列取其中最小 = 本轮被邀请者的最低分;只一档不写)。"""
+
+QC_EXERCISE_SPLIT_RE = re.compile(r"(?=\bExercise \d+ )|(?=\bThese invitations were (?:also )?(?:issued|addressed|sent)\b)")
+"""一轮正文切成邀请档(2026-09-29 立,Frank「魁省要先抓数据分析」:官方逐档点名职业、分数线、在魁 / 魁省学历条件,
+原先只取了各档最低分)。两种写法:2026-02 起「Exercise N <人数> of these invitations …」,更早「These invitations were
+(also) issued / addressed …」。⚠ **区分大小写**:「37 of these invitations were sent」里的小写 these 不是切点
+(忽略大小写时人数会被切进上一段,原型实撞)。"""
+
+QC_CRITERIA_RE = re.compile(r"following criteri", re.I)
+"""切出来的段里带「following criteria / criterion」的才是邀请档(段首的总数与提取时刻那段不是)。"""
+
+QC_EXERCISE_COUNT_RE = re.compile(r"^Exercise \d+ (.+?) of these invitations")
+"""邀请档人数原文(「37」「From 10 to 15」「Less than 5」);旧写法不分档报数 → 空串。"""
+
+QC_NOC_RE = re.compile(r"\b(\d{5})\s+[A-Z]")
+"""点名职业:官方逐行「21211 Data scientists」(NOC 2021 五位码 + 职业名);只收码,名以 NOC 表为准。"""
+
+QC_IN_QC_RE = re.compile(r"\b(?:staying|living|residing|resided) in Qu[eé]bec", re.I)
+"""邀请档要求人在魁省(官方四种写法:were staying / living / residing in Québec、resided in Québec outside …)。"""
+
+QC_OUTSIDE_CMM_RE = re.compile(r"outside (?:the )?(?:Communaut[eé] m[eé]tropolitaine de Montr[eé]al|"
+                               r"Montr[eé]al Metropolitan)", re.I)
+"""邀请档要求人在大蒙特利尔以外(「resided in Québec outside the Communauté métropolitaine de Montréal」)。"""
+
+QC_QC_DIPLOMA_RE = re.compile(r"obtained one of the following diplomas in Qu[eé]bec|"
+                              r"(?:had|hold|held) a Qu[eé]bec (?:university|college|secondary|vocational)", re.I)
+"""邀请档要求魁省学历(「obtained one of the following diplomas in Québec」「had / hold a Québec university, college …」)。
+⚠ 通道 2 的「schooling equivalent to a high school diploma in Québec」是学历对等、不是魁省学历,本式不认它。"""
+
+QC_EXERCISE_SUM_TPL = ("PSTQ {date} {stream}:各档人数加总 {total} ≠ 本轮总数 {inv}(官方页改了写法或切档切错,"
+                       "整份保留旧数据)")
+"""自校:各档人数全是整数时,加总必须等于本轮总数;有「From 10 to 15」「Less than 5」这类范围写法的档,不参与加总。"""
+
+K_EXERCISES = "exercises"
+"""抽选行里的邀请档清单(按页面顺序)。"""
+
+K_INVITATIONS_TEXT = "invitationsText"
+"""邀请档人数的官方原文(范围写法照录;确数时与 invitations 同值)。"""
+
+K_IN_QUEBEC = "inQuebec"
+"""邀请档要求人在魁省。"""
+
+K_OUTSIDE_MONTREAL = "outsideMontreal"
+"""邀请档要求人在大蒙特利尔以外。"""
+
+K_QUEBEC_DIPLOMA = "quebecDiploma"
+"""邀请档要求魁省学历。"""

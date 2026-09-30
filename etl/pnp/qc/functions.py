@@ -7,6 +7,8 @@ pnp 共用段不 import 本文件。入口函数由 pnp/main.py 登记进调度�
 @author Frank
 @time 2026-09-29 20:01:04
 """
+import sys
+import unittest
 from datetime import date
 from typing import cast
 
@@ -15,19 +17,21 @@ from bs4 import BeautifulSoup
 from crawl.functions import get_cached_page
 from fetch.constants import PARSER_HTML
 from pnp.constants import (
-    DRAWS_NOTE_CLIP, EMPTY_JOIN, K_DATE, K_INVITATIONS, K_NOTE, K_SCORE, K_STREAM, LIST_JOIN_SEP, PROV_QC,
-    TEXT_JOIN_SEP,
+    DRAWS_NOTE_CLIP, EMPTY_JOIN, K_DATE, K_INVITATIONS, K_NOCS, K_NOTE, K_SCORE, K_STREAM, LIST_JOIN_SEP, PROV_QC,
+    TEST_VERBOSITY, TEXT_JOIN_SEP,
 )
 from pnp.functions import cached_draws_of, draw_date_of, fold_ws, int_of, iso_nb_of, put_prov_draws
 from pnp.qc.constants import (
-    DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, QC_BODY_CLASS, QC_BODY_TAG,
-    QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_HEAD_TAG, QC_STREAM_PREFIX,
+    DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, K_EXERCISES, K_IN_QUEBEC,
+    K_INVITATIONS_TEXT, K_OUTSIDE_MONTREAL, K_QUEBEC_DIPLOMA, QC_BODY_CLASS, QC_BODY_TAG, QC_CRITERIA_RE,
+    QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_EXERCISE_COUNT_RE, QC_EXERCISE_SPLIT_RE,
+    QC_EXERCISE_SUM_TPL, QC_HEAD_TAG, QC_IN_QC_RE, QC_NOC_RE, QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
 )
-from pnp.qc.scheme import QcDrawIn
+from pnp.qc.scheme import QcDrawIn, QcExerciseTest, QcSumIn
 from pnp.scheme import CachedDrawsIn, PutDrawsIn, SoupNodeLike
 
 # =========================================================================
-# 1. PSTQ 邀请轮次(2026-09-29 自 pnp/functions.py 段10 原样搬来,一字未改)
+# 1. PSTQ 邀请轮次(2026-09-29 自 pnp/functions.py 段10 原样搬来;同日加逐档解析)
 # =========================================================================
 
 
@@ -78,7 +82,9 @@ def qc_stream_of(head: str) -> str:
 
 def qc_draw_of(x: QcDrawIn) -> dict:
     """QC 一轮一个 stream → 一行:invitations = 本轮该 stream 的邀请总数(官方占位 XXX → None,不拿各档人数去凑);
-    score = 各邀请档最低分里最小的那个(= 本轮被邀请者的最低分;Stream 4 不计分 → None);两档以上时各档分数进 note。"""
+    score = 各邀请档最低分里最小的那个(= 本轮被邀请者的最低分;Stream 4 不计分 → None);两档以上时各档分数进 note。
+    2026-09-29 加 exercises(逐档:人数、分数线、点名职业、在魁 / 魁省学历 / 大蒙以外三条件),键殿后;mart 按显式字段
+    构造 pnp_draws 行,这一格暂不进库,等魁省展示与岗位判定拍板再接。各档人数对不上总数 → 抛错,整份保留旧数据。"""
     inv = None
     m = QC_DRAW_INV_RE.search(x.body)
     if m is not None:
@@ -97,4 +103,70 @@ def qc_draw_of(x: QcDrawIn) -> dict:
         for n in scores:
             parts.append(str(n))
         note = QC_DRAW_NOTE_TPL.format(scores=LIST_JOIN_SEP.join(parts))[:DRAWS_NOTE_CLIP]
-    return {K_DATE: x.date, K_STREAM: x.stream, K_NOTE: note, K_SCORE: score, K_INVITATIONS: inv}
+    exercises = qc_exercises_of(x.body)
+    check_qc_exercise_sum(QcSumIn(date=x.date, stream=x.stream, inv=inv, exercises=exercises))
+    return {K_DATE: x.date, K_STREAM: x.stream, K_NOTE: note, K_SCORE: score, K_INVITATIONS: inv,
+            K_EXERCISES: exercises}
+
+
+def qc_exercises_of(body: str) -> list:
+    """一轮正文 → 各邀请档(页面顺序);段首的总数 / 提取时刻那段不是档,跳过。"""
+    out: list = []
+    for seg in QC_EXERCISE_SPLIT_RE.split(body):
+        if QC_CRITERIA_RE.search(seg) is None:
+            continue
+        out.append(qc_exercise_of(seg))
+    return out
+
+
+def qc_exercise_of(seg: str) -> dict:
+    """一个邀请档 → 一行:人数(确数才进 invitations,范围写法只进原文格)、分数线(杰出人才档不计分 → None;
+    官方个别档不写分数线 → None,不猜)、点名职业(五位码去重保序,没点名 → 空表)、三个条件标记。"""
+    text = EMPTY_JOIN
+    m = QC_EXERCISE_COUNT_RE.match(seg)
+    if m is not None:
+        text = m.group(1)
+    score = None
+    sm = QC_DRAW_SCORE_RE.search(seg)
+    if sm is not None:
+        score = int_of(sm.group(1))
+    return {K_INVITATIONS: int_of(text), K_INVITATIONS_TEXT: text, K_SCORE: score, K_NOCS: qc_nocs_of(seg),
+            K_IN_QUEBEC: QC_IN_QC_RE.search(seg) is not None,
+            K_OUTSIDE_MONTREAL: QC_OUTSIDE_CMM_RE.search(seg) is not None,
+            K_QUEBEC_DIPLOMA: QC_QC_DIPLOMA_RE.search(seg) is not None}
+
+
+def qc_nocs_of(seg: str) -> list:
+    """邀请档点名的 NOC 五位码(页面顺序,去重)。"""
+    nocs: list = []
+    for m in QC_NOC_RE.finditer(seg):
+        if m.group(1) not in nocs:
+            nocs.append(m.group(1))
+    return nocs
+
+
+def check_qc_exercise_sum(x: QcSumIn) -> None:
+    """自校:总数是确数、且各档人数全是确数时,加总必须等于总数;对不上抛错(cached_draws_of 接住后整份保留旧数据)。"""
+    if x.inv is None or len(x.exercises) == 0:
+        return
+    total = 0
+    for e in x.exercises:
+        if e[K_INVITATIONS] is None:
+            return
+        total += e[K_INVITATIONS]
+    if total != x.inv:
+        raise RuntimeError(QC_EXERCISE_SUM_TPL.format(date=x.date, stream=x.stream, total=total, inv=x.inv))
+
+
+# =========================================================================
+# 9. 自测入口
+# =========================================================================
+
+
+def run_qc_tests() -> None:
+    """test_qc 步入口:跑本子域自测(用例集住 pnp/qc/scheme.py);有失败 sys.exit(1),门接住后记本步失败。
+    pnp 共用段的 run_tests 不认识子域(共用段不 import 子域),所以子域自带入口,由 pnp/main 登记成 test_qc 步。"""
+    suite = unittest.TestSuite()
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcExerciseTest))
+    if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
+        sys.exit(1)
