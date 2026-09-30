@@ -135,7 +135,9 @@ describe('mart 实况', () => {
     //(各省补抓 + 汇装 offer 形态行各一;SK 现有工签、NS / PE 的工资与在职行按判定引擎影响暂不收)→ 476
     // 2026-09-29 抽选卡重排:PE「AIP 由指定雇主直接递背书申请、不经抽选」官方原句入门槛表一行(factor=eoiDraw、program=AIP,
     // 同 SK 那行,判定引擎不读)→ 477
-    expect(data.requirements).toHaveLength(477)
+    // 2026-09-30 魁省门槛弹框第三步(Frank「可以,按四步执行」,553fb0de):qc-req.json(PSTQ 21 行)与 qc-peq-req.json
+    //(PEQ 14 行)进 IN_REQ_TABLES,province='QC';判定引擎读全表的 SQL 排除 PSTQ / PEQ → 512
+    expect(data.requirements).toHaveLength(512)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。

@@ -65,10 +65,10 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
-  ReqAppliesIn, ZonedLinesIn, PnpBlockIn,
+  ReqAppliesIn, ZonedLinesIn, PnpBlockIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
-  BelowLineIn, CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
+  CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -735,7 +735,7 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
     dim: false,
     hit: x.hitStreams.includes(key),
     perMonth: false,
-    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key, rows: rounds }),
+    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key }),
   })
 }
 
@@ -1302,7 +1302,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       dim: false,
       hit: x.hitStreams.includes(key),
       perMonth: false,
-      total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key, rows: arr }),
+      total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key }),
     }))
   }
   groups.sort(byGroupHitDateDesc)
@@ -1338,7 +1338,7 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
     dim: false,
     hit: x.hitStreams.includes(head.stream),
     perMonth: true,
-    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: head.stream, rows: months }),
+    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: head.stream }),
   })
 }
 
@@ -1734,6 +1734,7 @@ function lineCardOf(x: LineCardIn): DrawCard {
  * 轮数数卡里列的(同一组同一天几行算一轮,与组头「N 轮」同一数法;按月那一组数月份),份数读汇装的全年合计(不在前端加,与配额卡
  * 「已发邀请」同一个数);下限指标写「至少」;汇装那一份没出(有一轮没公布)或份数分不开(安省改制前后两张卡)只写轮数;
  * 有轮次官方只写了上限再补一行(belowLineOf)。
+ * 2026-09-30 下午 Frank「这种补充信息都删掉」(配图「其中 3 轮官方只写「少于 5」」):补的那一行撤,只剩合计一行。
  *
  * @param x 取词函数、省码、那一年、卡里列的轮次、配额行、口径层级与份数能不能写。
  * @returns 合计行(一行一条;没有轮次给空列)。
@@ -1757,10 +1758,6 @@ function footLinesOf(x: FootLinesIn): string[] {
   } else {
     lines.push(x.t('pnpdraws.foot', { year: x.year, rounds, count }))
   }
-  const below = belowLineOf({ t: x.t, rows: x.rows })
-  if (below !== TEXT_NONE) {
-    lines.push(below)
-  }
   return lines
 }
 
@@ -1783,8 +1780,9 @@ function ytdPickOf(x: YtdPickIn): PnpOps | null {
  * 一组组头第三行(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」):读汇装的这一组本年合计(scopeKind = drawStream、scope = 组键)
  * ——「共 7,465 份邀请」,下限指标写「至少 198 份邀请」;汇装没出(有一轮没公布,或本年一个确数都没有)时,这一组全是只写上限的
  * 轮次就写上限那一句(阿省警务五轮都是「Less than 10」),否则不出这一行。份数不在前端加:各组相加与卡底合计是同一套口径算的。
+ * 2026-09-30 下午 Frank「这种补充信息都删掉」:上限那一句撤,汇装没出就不出这一行。
  *
- * @param x 取词函数、配额行、省码、组键与这一组的轮次。
+ * @param x 取词函数、配额行、省码与组键。
  * @returns 那一行;不出给 ''。
  */
 function groupTotalOf(x: GroupTotalIn): string {
@@ -1801,30 +1799,7 @@ function groupTotalOf(x: GroupTotalIn): string {
     }
     return x.t('pnpdraws.groupTotal', { count })
   }
-  return groupBelowOf({ t: x.t, rows: x.rows })
-}
-
-/**
- * 一组的轮次全是官方只写上限的(「Less than 10」;数据层 invitationsBelow)时写「各轮官方只写「少于 10」」(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
- *
- * @param x 取词函数与这一组的轮次。
- * @returns 那一句;有一轮不是这种给 ''。
- */
-function groupBelowOf(x: BelowLineIn): string {
-  const bounds: string[] = []
-  for (const d of x.rows) {
-    if (d.invitations != null || d.invitationsBelow == null) {
-      return TEXT_NONE
-    }
-    const b = d.invitationsBelow.toLocaleString(NUM_LOCALE)
-    if (bounds.includes(b) === false) {
-      bounds.push(b)
-    }
-  }
-  if (bounds.length === 0) {
-    return TEXT_NONE
-  }
-  return x.t('pnpdraws.groupBelow', { n: bounds.join(x.t('pnpdraws.sep')) })
+  return TEXT_NONE
 }
 
 /**
@@ -1860,35 +1835,6 @@ function roundsTextOf(x: RoundsTextIn): string {
     return x.t(keys.one, { n: x.n })
   }
   return x.t(keys.many, { n: x.n })
-}
-
-/**
- * 「其中 N 轮官方只写「少于 X」」(官方人数格只写了上限的轮次,合计里按 0 计;2026-09-29 抽选卡重排,Frank「按你建议」)。
- * 轮数同卡底合计的数法(同一组同一天几行算一轮);几种上限用界面语言的顿号连。
- *
- * @param x 取词函数与卡里列的轮次。
- * @returns 那一行;没有这种轮次给 ''。
- */
-function belowLineOf(x: BelowLineIn): string {
-  const keys = new Set<string>()
-  const bounds: string[] = []
-  for (const d of x.rows) {
-    if (d.invitations != null || d.invitationsBelow == null) {
-      continue
-    }
-    keys.add(d.stream + KEY_SEP + d.drawDate)
-    const b = d.invitationsBelow.toLocaleString(NUM_LOCALE)
-    if (bounds.includes(b) === false) {
-      bounds.push(b)
-    }
-  }
-  if (keys.size === 0) {
-    return TEXT_NONE
-  }
-  return x.t('pnpdraws.footBelow', {
-    rounds: roundsTextOf({ t: x.t, rows: x.rows, n: keys.size }),
-    n: bounds.join(x.t('pnpdraws.sep')),
-  })
 }
 
 /**
@@ -4326,7 +4272,7 @@ export function aipExcludedOf(x: PnpExclIn): boolean {
 export function qcGateCardsOf(x: QcGateCardsIn): GateCardSpec[] {
   const out: GateCardSpec[] = []
   for (const chan of x.channels) {
-    const card = qcCardOf({ t: x.t, job: x.job, reqs: x.reqs, chan })
+    const card = qcCardOf({ t: x.t, lang: x.lang, job: x.job, reqs: x.reqs, chan })
     if (card != null) {
       out.push(card)
     }
@@ -4355,7 +4301,7 @@ function qcCardOf(x: QcCardOfIn): GateCardSpec | null {
   if (qcOwnRowsOf({ rows, chan: x.chan }) === 0) {
     return null
   }
-  const one: QcRowOfIn = { t: x.t, chan: x.chan, rows }
+  const one: QcRowOfIn = { t: x.t, lang: x.lang, chan: x.chan, rows }
   const out: GateRowSpec[] = []
   for (const row of [qcScopeRowOf(one), qcLicenceRowOf(one), qcTeerRowOf(one), qcFrenchRowOf(one), qcExpRowOf(one),
     qcReceptRowOf(one), qcIntakeRowOf(one), qcEduRowOf(one), qcAgeRowOf(one), qcFundsRowOf(one), qcSpouseRowOf(one)]) {
@@ -4441,8 +4387,9 @@ function qcApplicantRowsOf(x: QcFactorIn): PnpReq[] {
 }
 
 /**
- * 「适用」行:要公民 / 永居身份、要魁省学历的通道写一句;部分受监管的写官方原文(只有其中几种工作受监管,
- * 如焊工「in the construction sector only, welders …」);整类都走这个通道的不出。
+ * 「适用」行:要公民 / 永居身份、要魁省学历的通道写一句;部分受监管的写适用范围(只有其中几种工作受监管,
+ * 如焊工「in the construction sector only, welders …」;2026-09-30 起中韩界面写 mart 手译的那一语,英文界面照录官方原文);
+ * 整类都走这个通道的不出。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;不需要给 null。
@@ -4453,7 +4400,8 @@ function qcScopeRowOf(x: QcRowOfIn): GateRowSpec | null {
   if (key != null) {
     line = x.t(key)
   } else if (x.chan.kind === QC_KIND_PARTLY) {
-    line = x.chan.scope
+    const byLang: Record<PnpLang, string> = { zh: x.chan.scopeZh, en: x.chan.scope, ko: x.chan.scopeKo }
+    line = byLang[x.lang]
   }
   if (line === TEXT_NONE) {
     return null

@@ -63,19 +63,21 @@ const WELDER: QcChannel[] = [
   {
     key: 'pstq-1', program: 'PSTQ', stream: 'Stream 1: Highly qualified and specialized skills',
     title: 'Skilled Worker Selection Program (PSTQ) – Stream 1: Highly qualified and specialized skills',
-    kind: 'all', scope: '', authorities: [],
+    kind: 'all', scope: '', scopeZh: '', scopeKo: '', authorities: [],
   },
   {
     key: 'pstq-3', program: 'PSTQ', stream: 'Stream 3: Regulated professions',
     title: 'Skilled Worker Selection Program (PSTQ) – Stream 3: Regulated professions',
     kind: 'partlyRegulated',
     scope: 'in the construction sector only, welders and pressure vessel welders, and, outside construction, pressure vessel welders and welders performing regulated tasks',
+    scopeZh: '建筑业仅限焊工与压力容器焊工;建筑业以外仅限压力容器焊工与从事受监管作业的焊工',
+    scopeKo: '건설업은 용접공과 압력용기 용접공만, 건설업 외는 압력용기 용접공과 규제 작업 용접공만 해당',
     authorities: ['Commission de la construction du Québec', 'CWB (Bureau canadien de soudage)'],
   },
   {
     key: 'peq-tfw', program: 'PEQ', stream: 'PEQ – Travailleurs étrangers temporaires',
     title: "Programme de l'expérience québécoise (PEQ) – Travailleurs étrangers temporaires",
-    kind: 'all', scope: '', authorities: [],
+    kind: 'all', scope: '', scopeZh: '', scopeKo: '', authorities: [],
   },
 ]
 
@@ -95,7 +97,7 @@ function indexOf(qc: Record<string, string>): PnpFactsIndex {
 const t = makeT('zh')
 
 describe('魁省门槛卡:焊工金标', () => {
-  const cards = qcGateCardsOf({ t, job: jobOf('72106', 2), reqs: REQS, channels: WELDER })
+  const cards = qcGateCardsOf({ t, lang: 'zh', job: jobOf('72106', 2), reqs: REQS, channels: WELDER })
 
   it('三个通道三张卡,卡序 = 通道序,标题官方原名、灰字界面语言名', () => {
     expect(cards.map(c => c.title)).toEqual(WELDER.map(c => c.title))
@@ -114,10 +116,10 @@ describe('魁省门槛卡:焊工金标', () => {
     expect(at(c.rows, 6).notes).toEqual(['TEF 口语 260 分起'])
   })
 
-  it('通道 3:适用写官方原文、执照灰字列监管机构;不挂经验与学历', () => {
+  it('通道 3:适用写中文译文、执照灰字列监管机构;不挂经验与学历', () => {
     const c = at(cards, 1)
     expect(c.rows.map(r => r.label)).toEqual(['适用', '执照', '法语', '年龄', '自给', '配偶'])
-    expect(at(c.rows, 0).lines).toEqual([at(WELDER, 1).scope])
+    expect(at(c.rows, 0).lines).toEqual([at(WELDER, 1).scopeZh])
     expect(at(c.rows, 1).notes).toEqual(['Commission de la construction du Québec、CWB (Bureau canadien de soudage)'])
     expect(at(c.rows, 2).lines).toEqual(['TEF 口语 400、书面 300 分起'])
   })
@@ -137,21 +139,28 @@ describe('魁省门槛卡:焊工金标', () => {
 describe('魁省门槛卡:挑行与分档', () => {
   it('探针:别省同名流的行不串进来', () => {
     const foreign: PnpReq = { ...at(REQS, 0), province: 'ON', program: 'PNP', stream: at(WELDER, 0).stream, factor: 'age', value: 99 }
-    const cards = qcGateCardsOf({ t, job: jobOf('72106', 2), reqs: [...REQS, foreign], channels: [at(WELDER, 0)] })
+    const cards = qcGateCardsOf({ t, lang: 'zh', job: jobOf('72106', 2), reqs: [...REQS, foreign], channels: [at(WELDER, 0)] })
     const age = at(cards, 0).rows.find(r => r.label === '年龄')
     expect(age?.lines).toEqual(['18 岁以上'])
   })
 
   it('TEER 4 的岗落受监管通道:法语只剩口语低档(TEF 300)', () => {
-    const cards = qcGateCardsOf({ t, job: jobOf('33102', 4), reqs: REQS, channels: [at(WELDER, 1)] })
+    const cards = qcGateCardsOf({ t, lang: 'zh', job: jobOf('33102', 4), reqs: REQS, channels: [at(WELDER, 1)] })
     const fr = at(cards, 0).rows.find(r => r.label === '法语')
     expect(fr?.lines).toEqual(['TEF 口语 300 分起'])
     expect(fr?.notes).toEqual(['魁省口语 5 级', 'TCF 听 300、说 6 分起'])
   })
 
+  it('适用行跟界面语言:英文照录官方原文、韩文写韩文译文', () => {
+    const en = qcGateCardsOf({ t: makeT('en'), lang: 'en', job: jobOf('72106', 2), reqs: REQS, channels: [at(WELDER, 1)] })
+    const ko = qcGateCardsOf({ t: makeT('ko'), lang: 'ko', job: jobOf('72106', 2), reqs: REQS, channels: [at(WELDER, 1)] })
+    expect(at(at(en, 0).rows, 0).lines).toEqual([at(WELDER, 1).scope])
+    expect(at(at(ko, 0).rows, 0).lines).toEqual([at(WELDER, 1).scopeKo])
+  })
+
   it('一行门槛都挑不到的通道不出卡', () => {
     const ghost: QcChannel = { ...at(WELDER, 0), stream: 'Stream 9: nothing' }
-    expect(qcGateCardsOf({ t, job: jobOf('72106', 2), reqs: REQS, channels: [ghost] })).toHaveLength(0)
+    expect(qcGateCardsOf({ t, lang: 'zh', job: jobOf('72106', 2), reqs: REQS, channels: [ghost] })).toHaveLength(0)
   })
 })
 

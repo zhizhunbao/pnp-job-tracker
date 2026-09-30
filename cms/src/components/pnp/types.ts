@@ -3454,11 +3454,6 @@ export type GroupTotalIn = {
    * 组键(抽选行 stream 原值)。
    */
   stream: string
-
-  /**
-   * 这一组的轮次(全是只写上限的轮次时写上限那一句)。
-   */
-  rows: PnpDraw[]
 }
 
 /**
@@ -3714,21 +3709,6 @@ export type FootLinesIn = {
    * 合计份数能不能写:汇装那一份恰好就是卡里列的这些轮次才写(安省改制前后分两张卡时,另一张有轮次就只写轮数)。
    */
   total: boolean
-}
-
-/**
- * belowLineOf 的入参(2026-09-29 抽选卡重排)。
- */
-export type BelowLineIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 卡里列出的轮次。
-   */
-  rows: PnpDraw[]
 }
 
 /**
@@ -4687,6 +4667,16 @@ export type QcChannel = {
   scope: string
 
   /**
+   * 适用范围中文(2026-09-30 Frank「适用行也翻成中文吧」);只有部分受监管那类有,其余为 ''。
+   */
+  scopeZh: string
+
+  /**
+   * 适用范围韩文;同上。
+   */
+  scopeKo: string
+
+  /**
    * 监管机构(法文原文);非受监管通道为空。
    */
   authorities: string[]
@@ -4767,6 +4757,11 @@ export type QcGateCardsIn = {
   t: TFn
 
   /**
+   * 界面语言(「适用」行挑哪一语的范围)。
+   */
+  lang: PnpLang
+
+  /**
    * 本岗。
    */
   job: PnpJob
@@ -4792,6 +4787,11 @@ export type QcRowOfIn = {
   t: TFn
 
   /**
+   * 界面语言(「适用」行挑哪一语的范围)。
+   */
+  lang: PnpLang
+
+  /**
    * 这一张卡的通道。
    */
   chan: QcChannel
@@ -4810,6 +4810,11 @@ export type QcCardOfIn = {
    * 取词函数。
    */
   t: TFn
+
+  /**
+   * 界面语言(「适用」行挑哪一语的范围)。
+   */
+  lang: PnpLang
 
   /**
    * 本岗。

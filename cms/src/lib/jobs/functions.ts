@@ -3192,7 +3192,7 @@ function toQcChannel(c: QcChannelDbRow): QcChannel {
   }
   return {
     key: text(c.key), program: text(c.program), stream: text(c.stream), title: text(c.title), kind: text(c.kind),
-    scope: text(c.scope), authorities,
+    scope: text(c.scope), scopeZh: text(c.scopeZh), scopeKo: text(c.scopeKo), authorities,
   }
 }
 

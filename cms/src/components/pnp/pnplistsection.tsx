@@ -84,7 +84,7 @@ export function PnpListSection({
   const aipCard = aipCardOf(dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const qcCards = []
-  for (const c of qcGateCardsOf({ t: p.t, job, reqs, channels: qcChannels })) {
+  for (const c of qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })) {
     qcCards.push(<PnpGateCard key={c.title} spec={c} />)
   }
   const cards = []

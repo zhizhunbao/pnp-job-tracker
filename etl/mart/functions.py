@@ -222,9 +222,9 @@ from mart.constants import (
 )
 from mart.scheme import OfferFormIn
 from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_noc_streams;设计 docs/design/魁省门槛弹框-20260929.md)
-    IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, QC_FACTOR_OCC, QC_KEY_PEQ_TFW,
-    QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
-    QC_SCOPE_RE, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL, QC_TEER_DIGIT, QC_TITLE_PEQ_TPL, QC_TITLE_PSTQ_TPL,
+    IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, K_SCOPE_KO, K_SCOPE_ZH, QC_FACTOR_OCC, QC_KEY_PEQ_TFW,
+    QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_KIND_PARTLY, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
+    QC_SCOPE_KO, QC_SCOPE_MISS_TPL, QC_SCOPE_RE, QC_SCOPE_ZH, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL, QC_TEER_DIGIT, QC_TITLE_PEQ_TPL, QC_TITLE_PSTQ_TPL,
 )
 from mart.scheme import QcNocRowIn, QcPeqOut
 from mart.scheme import (
@@ -4630,16 +4630,35 @@ def to_qc_noc_row(x: QcNocRowIn) -> dict:
         name = x.names.get(s.get(K_STREAM))
         if name is None:
             continue
+        sc = qc_scopes_of(s)
         channels.append({K_KEY: QC_KEY_PSTQ_TPL.format(n=s.get(K_STREAM)), K_PROGRAM: QC_PROGRAM_PSTQ, K_STREAM: name,
                          K_TITLE: QC_TITLE_PSTQ_TPL.format(stream=name), K_CODE: s.get(K_CODE), K_KIND: s.get(K_KIND),
-                         K_LABEL: s.get(K_LABEL), K_SCOPE: qc_scope_of(str(s.get(K_LABEL) or "")),
-                         K_REGULATED: s.get(K_REGULATED)})
+                         K_LABEL: s.get(K_LABEL), K_SCOPE: sc[K_SCOPE], K_SCOPE_ZH: sc[K_SCOPE_ZH],
+                         K_SCOPE_KO: sc[K_SCOPE_KO], K_REGULATED: s.get(K_REGULATED)})
     noc = str(x.row.get(K_NOC) or "")
     if x.peq.stream and len(noc) == 5 and int(noc[QC_TEER_DIGIT]) in x.peq.teer:
         channels.append({K_KEY: QC_KEY_PEQ_TFW, K_PROGRAM: QC_PROGRAM_PEQ, K_STREAM: x.peq.stream,
                          K_TITLE: QC_TITLE_PEQ_TPL.format(branch=x.peq.stream.split(QC_PEQ_NAME_SEP, 1)[-1]), K_CODE: "",
-                         K_KIND: QC_KIND_ALL, K_LABEL: "", K_SCOPE: "", K_REGULATED: None})
+                         K_KIND: QC_KIND_ALL, K_LABEL: "", K_SCOPE: "", K_SCOPE_ZH: "", K_SCOPE_KO: "",
+                         K_REGULATED: None})
     return {K_NOC: noc, K_NAME: x.row.get(K_NAME), K_CHANNELS: channels}
+
+
+def qc_scopes_of(stream: dict) -> dict:
+    """对照表一个通道 → 适用范围三语 {scope, scopeZh, scopeKo}(2026-09-30 Frank「适用行也翻成中文吧」):英文照录官方括号原文;
+    中韩只给部分受监管那类(括号原文逐码不同),按官方细分码查手译表,其余几类中韩留空(定句,界面词条管)。
+    部分受监管查不到译文 → 喊一声,中韩先放原文(不留空,留空门槛卡就少一行)。"""
+    scope = qc_scope_of(str(stream.get(K_LABEL) or ""))
+    if stream.get(K_KIND) != QC_KIND_PARTLY or scope == "":
+        return {K_SCOPE: scope, K_SCOPE_ZH: "", K_SCOPE_KO: ""}
+    code = str(stream.get(K_CODE) or "")
+    zh = QC_SCOPE_ZH.get(code, "")
+    ko = QC_SCOPE_KO.get(code, "")
+    if zh == "" or ko == "":
+        say(QC_SCOPE_MISS_TPL.format(code=code, scope=scope))
+        zh = zh or scope
+        ko = ko or scope
+    return {K_SCOPE: scope, K_SCOPE_ZH: zh, K_SCOPE_KO: ko}
 
 
 def qc_scope_of(label: str) -> str:

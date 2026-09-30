@@ -1084,6 +1084,16 @@ export type QcChannelDbRow = {
   scope: string | null
 
   /**
+   * 适用范围中文(只有部分受监管那类有;mart 按官方细分码查手译表)。
+   */
+  scopeZh: string | null
+
+  /**
+   * 适用范围韩文(同上)。
+   */
+  scopeKo: string | null
+
+  /**
    * 受监管明细;非受监管通道为 null。
    */
   regulated: QcRegulatedDbRow[] | null
@@ -1132,6 +1142,16 @@ export type QcChannel = {
    * 适用范围原文;整类为 ''。
    */
   scope: string
+
+  /**
+   * 适用范围中文;只有部分受监管那类有,其余为 ''。
+   */
+  scopeZh: string
+
+  /**
+   * 适用范围韩文;同上。
+   */
+  scopeKo: string
 
   /**
    * 监管机构(各组去重、保序;非受监管通道为空)。
