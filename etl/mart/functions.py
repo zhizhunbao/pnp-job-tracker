@@ -40,9 +40,12 @@ import unittest
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
+
+from bs4 import BeautifulSoup
 
 import paths
+from crawl.functions import get_cached_page
 from log.functions import err, say
 from richtext.functions import md_head_of
 from names.functions import norm_name, sector_of
@@ -256,6 +259,11 @@ from mart.constants import (  # 2026-09-27 Frank 拍板「看得出才改判」(
 )
 from mart.scheme import CodeExclIn, MartEmployerSectorTest, SectorIn, SectorWarnIn, StreamHitIn, WordsIn  # 同上
 from mart.scheme import MartDrawSelectionTest  # 2026-09-27 Frank「照改,加这一列」(pnp_draws 带 selection 格)
+from mart.constants import (  # 2026-09-30 来源定位 ③-1(抽选行出处页挂文字片段 + 抽选表单表件)
+    DAY_DATE_RE, DAY_TEXT_TPL, DROP_TAGS, FRAG_DASH, FRAG_DASH_ENC, FRAG_HASH, FRAG_SAFE, FRAG_SUFFIX_SEP, FRAG_TEXT,
+    HTML_PARSER, K_DRAW_DATE, MONTH_DATE_RE, MONTH_NAMES, MONTH_TEXT_TPL, TABLE_PNP_DRAWS,
+)
+from mart.scheme import FragmentUrlIn, MartDrawAnchorTest, TextFragmentIn  # 同上
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -4595,6 +4603,24 @@ def build_pnp_req_table() -> None:
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
 
+def build_pnp_draws_table() -> None:
+    """单表增量:只重建 data/mart/pnp_draws.json(2026-09-30 来源定位 ③-1 立 —— 抽选行挂文字片段后单表重跑核对,不陪跑约 9 分钟的
+    跨源汇装;照 build_pathways_table 的形,之后 load --only upload + seed)。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_PNP_DRAWS: pnp_draws_of(load_ee_draws())}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def pnp_draws_of(ee_draws: EeDrawsOut) -> list:
+    """pnp_draws 整表:抽选事实(build_pnp_draws)+ 出处页挂文字片段(anchor_draw_rows)。汇装与单表件共用这一份拼法
+    (2026-09-30 来源定位 ③-1 自 to_mart_tables 的字典项提出,入参一字未改)。"""
+    rows = build_pnp_draws(DrawsBuildIn(stream_zh=load_draw_stream_zh(), checklist=load_draw_checklists(),
+                                        ee_history=ee_draws.history, ee_fetched=ee_draws.fetched))
+    anchor_draw_rows(rows)
+    return rows
+
+
 def build_field_sources() -> list:
     """字段级来源维度(E4-04):citations 域已抓取验证,这里直通(缺文件→空表,宁可留空)。"""
     if not IN_FIELD_SOURCES.exists():
@@ -4992,10 +5018,7 @@ def to_mart_tables() -> dict:
         "experience_levels": build_name_rows(field_values_of(
             FieldValuesIn(jobs=ctx.jobs, key=K_ACCESSIBILITY))),
         "pnp_occupations": build_pnp_occupations(),
-        "pnp_draws": build_pnp_draws(DrawsBuildIn(stream_zh=load_draw_stream_zh(),
-                                                  checklist=load_draw_checklists(),
-                                                  ee_history=ee_draws.history,
-                                                  ee_fetched=ee_draws.fetched)),
+        "pnp_draws": pnp_draws_of(ee_draws),
         "pnp_score_factors": build_pnp_score_factors(universe),
         "pnp_requirements": build_pnp_requirements(IN_REQ_TABLES),
         "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
@@ -7501,12 +7524,98 @@ def run_tests() -> None:
     同日再加一组:MartBcFunnelOpsTest(BC 年报四组 SI 逐年数出行:指标名、统计期、单位与出处照行,bc-stats 形的表不多出行)。
     同日再加两组:MartMbPoolTest(MB 年报池子历年序列:一年一行新到旧、period 记年报年、asOf 记年末月、2024 那行句尾 [sic])、
     MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。
-    同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。"""
+    同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。
+    2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
                  MartBcFunnelOpsTest, MartMbPoolTest, MartAbFederalTest,
-                 MartDrawSelectionTest):
+                 MartDrawSelectionTest, MartDrawAnchorTest):
         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(case))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
+
+
+# =========================================================================
+# 24. 跨源清洗:来源定位(出处页挂文字片段;2026-09-30)
+# =========================================================================
+
+
+def anchor_draw_rows(rows: list) -> None:
+    """来源定位 ③-1(2026-09-30,Frank「来源现在都能定位到对应的页面的具体部分吗」选「现在做,分四批」:抽选卡 → 配额卡 → 门槛卡 →
+    清单卡):抽选行的出处页 url 挂上文字片段,点「来源」直接滚到这一轮 —— 片段 = 这一轮的日期在页上的写法(date_text_of),
+    页上「日期 + 空格 + 通道名」也逐字找得到就带通道名作后缀(阿省页头「Last updated」与表格同一个日期,无头 Chromium 实测带后缀
+    才跳到表格那一行)。**只在 crawl 缓存那页的正文里逐字找得到才挂**;找不到(缓存没有、官方写法不同、日期不在页上)url 原样
+    不动 = 打开页面顶部,同原先。原表不动,只改汇装出来的行(判定引擎的「依据」链接、把脉页抽选表各行读同一格,一并受益)。
+    同一页只读一次缓存。"""
+    pages: dict = {}
+    for r in rows:
+        url = r.get(K_URL) or ""
+        if not url:
+            continue
+        if url not in pages:
+            pages[url] = cached_text_of(url)
+        frag = text_fragment_of(TextFragmentIn(text=pages[url], start=date_text_of(str(r.get(K_DRAW_DATE) or "")),
+                                               suffix=r.get(K_STREAM) or ""))
+        r[K_URL] = with_fragment(FragmentUrlIn(url=url, frag=frag))
+
+
+def cached_text_of(url: str) -> str:
+    """crawl 缓存里这一页的可见正文(剥 script / style / noscript,空白折成一个空格);没缓存给空串 —— 汇装不上网。"""
+    hit = get_cached_page(url)
+    if not hit.html:
+        return ""
+    soup = BeautifulSoup(hit.html, HTML_PARSER)
+    for tag in soup(DROP_TAGS):
+        tag.decompose()
+    return WS_RE.sub(SPACE, soup.get_text(SPACE)).strip()
+
+
+def date_text_of(iso: str) -> str:
+    """抽选日期(ISO 到日 / 到月)→ 官方页上的写法「September 3, 2026」(日不补零)/「July 2026」;认不出给空串。"""
+    day = DAY_DATE_RE.match(iso)
+    if day:
+        month = month_name_of(int(day.group(2)))
+        if month:
+            return DAY_TEXT_TPL.format(month=month, day=int(day.group(3)), year=day.group(1))
+        return ""
+    ym = MONTH_DATE_RE.match(iso)
+    if ym:
+        month = month_name_of(int(ym.group(2)))
+        if month:
+            return MONTH_TEXT_TPL.format(month=month, year=ym.group(1))
+    return ""
+
+
+def month_name_of(n: int) -> str:
+    """月份数 → 英文全名;1–12 以外给空串。"""
+    if n < 1 or n > len(MONTH_NAMES):
+        return ""
+    return MONTH_NAMES[n - 1]
+
+
+def text_fragment_of(x: TextFragmentIn) -> str:
+    """文字片段指令(`:~:text=…`):起始原句不在正文里给空串;「起始原句 + 空格 + 后缀」也在就带后缀(`,-后缀`),否则只写起始
+    原句。比对不分大小写(浏览器匹配也不分)。"""
+    if not x.start:
+        return ""
+    low = x.text.lower()
+    if x.start.lower() not in low:
+        return ""
+    if x.suffix and (x.start + SPACE + x.suffix).lower() in low:
+        return FRAG_TEXT + fragment_enc(x.start) + FRAG_SUFFIX_SEP + fragment_enc(x.suffix)
+    return FRAG_TEXT + fragment_enc(x.start)
+
+
+def fragment_enc(s: str) -> str:
+    """片段文字编码:保留字全部百分号编码(逗号、& 是指令语法),连字符另转 %2D(quote 不转它,它在片段里是前后缀记号)。"""
+    return quote(s, safe=FRAG_SAFE).replace(FRAG_DASH, FRAG_DASH_ENC)
+
+
+def with_fragment(x: FragmentUrlIn) -> str:
+    """网址挂片段:片段空串原样回;网址已有 # 就接在后面(`#top:~:text=…`),否则补一个 #。"""
+    if not x.frag:
+        return x.url
+    if FRAG_HASH in x.url:
+        return x.url + x.frag
+    return x.url + FRAG_HASH + x.frag

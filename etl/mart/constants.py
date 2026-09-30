@@ -3124,6 +3124,9 @@ TABLE_DLI = "dli"
 TABLE_PATHWAYS = "pathways"
 """pathways 表名(单表增量件 build_pathways_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一立)。"""
 
+TABLE_PNP_DRAWS = "pnp_draws"
+"""pnp_draws 表名(单表增量件 build_pnp_draws_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 来源定位 ③-1 立)。"""
+
 TABLE_PNP_REQUIREMENTS = "pnp_requirements"
 """pnp_requirements 表名(单表增量件 build_pnp_req_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一 1b 立 ——
 各省补门槛行逐省重跑,不陪跑约 9 分钟的跨源汇装)。"""
@@ -4912,3 +4915,53 @@ PRINT_APPLY_TPL = ("投递邮箱:Job Bank 投递区 {jb} 条 · 正文抽取 {te
 
 TEST_VERBOSITY = 2
 """unittest 运行档:逐条打用例名与结果(同 indexing / ats / gate 自查;2026-09-26 /fe Frank 勾「省提名标签吃工时与雇佣期」批立)。"""
+
+
+# =========================================================================
+# 24. 跨源清洗:来源定位(出处页挂文字片段;2026-09-30)
+# =========================================================================
+
+K_DRAW_DATE = "drawDate"
+"""pnp_draws 行的日期格(ISO 到日;按月出人数的省到月)。"""
+
+MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December")
+"""英文月份全名(抽选页的日期写法;2026-09-30 逐页核过 crawl 缓存:九省抽选页都写「September 23, 2026」,按月的 NS 写
+「July 2026」)。"""
+
+DAY_DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
+"""到日的 ISO 日期。"""
+
+MONTH_DATE_RE = re.compile(r"^(\d{4})-(\d{2})$")
+"""到月的 ISO 日期(NS 按月出选取人数)。"""
+
+DAY_TEXT_TPL = "{month} {day}, {year}"
+"""到日的页面写法(日不补零)。"""
+
+MONTH_TEXT_TPL = "{month} {year}"
+"""到月的页面写法。"""
+
+FRAG_HASH = "#"
+"""网址片段起始符。"""
+
+FRAG_TEXT = ":~:text="
+"""文字片段指令头(URL Fragment Text Directives:Chrome / Edge / Safari 与新版 Firefox 认,点过去滚到那句并高亮;
+不认的浏览器照常打开页面顶部,不报错)。"""
+
+FRAG_SUFFIX_SEP = ",-"
+"""文字片段的后缀记号(`text=起始,-后缀`):后缀须紧跟起始原句,只拿来挑中同页的第几处。"""
+
+FRAG_DASH = "-"
+"""连字符:在片段里是前后缀记号,原句里的连字符必须转义。"""
+
+FRAG_DASH_ENC = "%2D"
+"""连字符的百分号编码。"""
+
+FRAG_SAFE = ""
+"""百分号编码时一个字符都不留(逗号、& 在片段里是语法)。"""
+
+HTML_PARSER = "lxml"
+"""缓存页的解析器。"""
+
+DROP_TAGS = ("script", "style", "noscript")
+"""取可见正文前剥掉的标签(浏览器匹配文字片段只认渲染出来的字)。"""

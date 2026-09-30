@@ -5117,3 +5117,76 @@ class MartDrawSelectionTest(unittest.TestCase):
         self.assertEqual(got, [("MB", "draw", "Draw #280: Francophone selection", "franco"),
                                ("MB", "draw", "Draw #280: Occupation-specific selections", "occ"),
                                ("MB", "draw", "Draw #280", ""), ("ON", "draw", "", ""), ("ON", "notice", "Update", "")])
+
+
+class MartDrawAnchorTest(unittest.TestCase):
+    """来源定位 ③-1 自测(2026-09-30,Frank「来源现在都能定位到对应的页面的具体部分吗」选「现在做,分四批」):抽选日期在页上的
+    写法、文字片段编码(逗号、连字符必须转义)、同页日期不止一处时带后缀、找不到不挂、网址原有 # 时接在后面。纯函数,不读仓内文件。"""
+
+    def test_date_text(self) -> None:
+        """日期写法:到日「September 3, 2026」(日不补零)、到月「July 2026」;认不出给空串。"""
+        from mart import functions as fn
+        self.assertEqual(fn.date_text_of("2026-09-03"), "September 3, 2026")
+        self.assertEqual(fn.date_text_of("2026-09-23"), "September 23, 2026")
+        self.assertEqual(fn.date_text_of("2026-07"), "July 2026")
+        for bad in ("", "2026", "2026-13-01", "2026-00", "Sept 3"):
+            with self.subTest(bad=bad):
+                self.assertEqual(fn.date_text_of(bad), "")
+
+    def test_fragment(self) -> None:
+        """片段:页上有「日期 + 空格 + 通道名」→ 带后缀(阿省页头「Last updated」同一个日期,实测带后缀才跳到表格那一行);
+        只有日期 → 不带;日期不在页上、起始空串 → 空串;大小写不计(浏览器匹配也不分);逗号转 %2C、连字符转 %2D。"""
+        from mart import functions as fn
+        page = "Last updated: September 23, 2026 Table 1 September 23, 2026 Alberta Opportunity Stream 58 113"
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=page, start="September 23, 2026",
+                                                            suffix="Alberta Opportunity Stream")),
+                         ":~:text=September%2023%2C%202026,-Alberta%20Opportunity%20Stream")
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=page, start="September 23, 2026",
+                                                            suffix="Rural Renewal Stream")),
+                         ":~:text=September%2023%2C%202026")
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=page, start="September 24, 2026", suffix="")), "")
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=page, start="", suffix="Table 1")), "")
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text="x SEPTEMBER 23, 2026 y", start="September 23, 2026",
+                                                            suffix="")),
+                         ":~:text=September%2023%2C%202026")
+        self.assertEqual(fn.fragment_enc("Stream – Priority Sectors - A"),
+                         "Stream%20%E2%80%93%20Priority%20Sectors%20%2D%20A")
+
+    def test_with_fragment(self) -> None:
+        """挂片段:没有 # 补一个;原有 # 接在后面(`#top:~:text=`);片段空串原样回。"""
+        from mart import functions as fn
+        self.assertEqual(fn.with_fragment(FragmentUrlIn(url="https://a.example/d", frag=":~:text=x")),
+                         "https://a.example/d#:~:text=x")
+        self.assertEqual(fn.with_fragment(FragmentUrlIn(url="https://a.example/d#top", frag=":~:text=x")),
+                         "https://a.example/d#top:~:text=x")
+        self.assertEqual(fn.with_fragment(FragmentUrlIn(url="https://a.example/d", frag="")), "https://a.example/d")
+
+
+# =========================================================================
+# 24. 跨源清洗:来源定位
+# =========================================================================
+
+
+@dataclass
+class TextFragmentIn:
+    """text_fragment_of() 入参(2026-09-30 来源定位 ③-1)。"""
+
+    text: str
+    """出处页可见正文(空白已折)。"""
+
+    start: str
+    """片段起始原句(抽选行 = 这一轮日期在页上的写法);空串 = 不挂。"""
+
+    suffix: str
+    """紧跟起始原句的后缀(抽选行 = 通道名);空串 = 不带。"""
+
+
+@dataclass
+class FragmentUrlIn:
+    """with_fragment() 入参(2026-09-30 来源定位 ③-1)。"""
+
+    url: str
+    """出处页网址。"""
+
+    frag: str
+    """片段指令(`:~:text=…`);空串 = 原样回。"""
