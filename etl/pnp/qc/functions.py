@@ -7,6 +7,7 @@ pnp 共用段不 import 本文件。入口函数由 pnp/main.py 登记进调度�
 @author Frank
 @time 2026-09-29 20:01:04
 """
+import re
 import sys
 import unittest
 from datetime import date
@@ -14,21 +15,54 @@ from typing import cast
 
 from bs4 import BeautifulSoup
 
+import paths
 from crawl.functions import get_cached_page
 from fetch.constants import PARSER_HTML
+from log.functions import say
 from pnp.constants import (
-    DRAWS_NOTE_CLIP, EMPTY_JOIN, K_DATE, K_INVITATIONS, K_NOCS, K_NOTE, K_SCORE, K_STREAM, LIST_JOIN_SEP, PROV_QC,
-    TEST_VERBOSITY, TEXT_JOIN_SEP,
+    DRAWS_NOTE_CLIP, EMPTY_JOIN, FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EXPERIENCE, FACTOR_FUNDS, FACTOR_LANGUAGE,
+    FACTOR_LICENSING, FACTOR_OCC_PATHWAY, INDENT_2, K_AS_OF_LOWER, K_DATE, K_FETCHED, K_GUIDE_EFFECTIVE, K_INVITATIONS,
+    K_LABEL, K_NOCS, K_NOTE, K_PAGE_URL, K_PROGRAM, K_PROVINCE, K_REQUIREMENTS, K_SCORE, K_SECTION, K_SOURCE, K_STREAM,
+    K_UNIT, K_URL, K_VALUE, K_YEAR, LIST_JOIN_SEP, OP_RULE, PRINT_FACTOR_TPL, PRINT_OUT_TPL, PROV_QC, TEST_VERBOSITY,
+    TEXT_JOIN_SEP, UNIT_MONTHS, UNIT_YEARS, WORD_N,
 )
-from pnp.functions import cached_draws_of, draw_date_of, fold_ws, int_of, iso_nb_of, put_prov_draws
+from pnp.functions import (
+    cached_draws_of, draw_date_of, fail_zh, fetch_bytes, fold_ws, int_of, iso_nb_of, iso_of, pdf_text, put_prov_draws,
+    say_factor_counts, today_iso, to_std_req,
+)
 from pnp.qc.constants import (
-    DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, K_EXERCISES, K_IN_QUEBEC,
-    K_INVITATIONS_TEXT, K_OUTSIDE_MONTREAL, K_QUEBEC_DIPLOMA, QC_BODY_CLASS, QC_BODY_TAG, QC_CRITERIA_RE,
-    QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE, QC_EXERCISE_COUNT_RE, QC_EXERCISE_SPLIT_RE,
-    QC_EXERCISE_SUM_TPL, QC_HEAD_TAG, QC_IN_QC_RE, QC_NOC_RE, QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
+    DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, FR_MONTHS, FR_WORD_N, ISO_DATE_TPL,
+    K_ADMISSIONS, K_ELIGIBLE_AS_OF, K_EXERCISES, K_INTAKE, K_INTAKE_CLOSES, K_INTAKE_OPENS, K_INVITATIONS_TEXT,
+    K_IN_QUEBEC, K_KIND, K_OUTSIDE_MONTREAL, K_PLAN_YEAR, K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE,
+    K_SELECTIONS, K_VALUE_MAX, OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL,
+    QCP_BASIS_EXP_TPL, QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE, QCP_EXP_RE, QCP_FULLTIME_RE, QCP_GRAD_URL,
+    QCP_GRAD_WINDOW_RE, QCP_INTAKE_RE, QCP_ORAL_RE, QCP_PAGE_GRAD, QCP_PAGE_TFW, QCP_PRINT_DONE_TPL,
+    QCP_PROBLEM_NO_PAGE_TPL, QCP_PROBLEM_TPL, QCP_PROGRAM, QCP_RECEPT_GRAD_RE, QCP_RECEPT_TFW_RE, QCP_SPOUSE_RE,
+    QCP_STREAM_GRAD, QCP_STREAM_TFW, QCP_TEER_RE, QCP_TFW_URL, QCP_UNIT_HOURS, QCP_UPDATED_RE, QCP_URL, QCP_WHAT_CUTOFF,
+    QCP_WHAT_DATE, QCP_WHAT_DEP, QCP_WHAT_FULLTIME, QCP_WHAT_INTAKE, QCP_WHAT_RECEPT, QCP_WHAT_WINDOW, QCP_WINDOW_RE,
+    QCP_WRITTEN_RE, QCR_AGE_RE, QCR_ALL_STREAMS, QCR_BASIS_IN_QC_TPL, QCR_BASIS_ORAL, QCR_BASIS_WINDOW_TPL,
+    QCR_BASIS_WRITTEN, QCR_DIGIT_RE, QCR_EDU_S1_RE, QCR_EDU_S2_RE, QCR_EXCEPTIONAL_RE, QCR_EXP_S1_RE, QCR_EXP_S2_RE,
+    QCR_EXP_S4_RE, QCR_FACTOR_EXCEPTIONAL, QCR_FACTOR_ORDER, QCR_FUNDS_RE, QCR_H2_MARK, QCR_H2_OPEN_RE, QCR_H2_SUB,
+    QCR_LANG_HIGH_RE, QCR_LANG_S2_RE, QCR_LANG_S3_LOW_RE, QCR_LICENSING_RE, QCR_MONTHS_PER_YEAR, QCR_PRINT_DONE_TPL,
+    QCR_PROBLEM_NO_PAGE, QCR_PROBLEM_NO_SECTION_TPL, QCR_PROBLEM_TPL, QCR_PROGRAM, QCR_SECTION_GENERAL,
+    QCR_SECTION_NAMES, QCR_SOURCE, QCR_SPOUSE_RE, QCR_STREAM_1, QCR_STREAM_2, QCR_STREAM_3, QCR_STREAM_4,
+    QCR_SUBJECT_SPOUSE, QCR_TAIL_KEY, QCR_TEER_HIGH, QCR_TEER_LOW, QCR_TEER_RE, QCR_UNIT_FR, QCR_UPDATED_RE, QCR_URL,
+    QCR_WHAT_AGE, QCR_WHAT_EDU, QCR_WHAT_EXCEPTIONAL, QCR_WHAT_EXP, QCR_WHAT_FUNDS, QCR_WHAT_LANG, QCR_WHAT_LICENSING,
+    QCR_WHAT_SPOUSE, QCR_WHAT_TEER, QCR_WHAT_UPDATED, QCS_ADM_RE, QCS_CATEGORY, QCS_KIND_ACTUAL, QCS_KIND_FORECAST,
+    QCS_KIND_PLAN, QCS_LABEL_TPL, QCS_LETTER_RE, QCS_NOTE, QCS_NUM_RE, QCS_PLAN_URL, QCS_PRINT_DONE_TPL,
+    QCS_PROBLEM_CROSS_TPL, QCS_PROBLEM_FETCH_TPL, QCS_PROBLEM_TPL, QCS_ROW_RE, QCS_SECTION_T3, QCS_SECTION_T4,
+    QCS_SEL_RE, QCS_SOURCE, QCS_T3_HEAD_RE, QCS_T3_NUMS, QCS_T3_YEARS_RE, QCS_T4_HEAD_RE, QCS_T4_NUMS, QCS_T4_YEARS_RE,
+    QCS_TIMEOUT_S, QCS_TITLE_RE, QCS_UNIT_PEOPLE, QCS_WHAT_ADM, QCS_WHAT_SEL, QCS_WHAT_T3, QCS_WHAT_T4, QCS_WHAT_TITLE,
+    QC_BODY_CLASS, QC_BODY_TAG, QC_CRITERIA_RE, QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE,
+    QC_EXERCISE_COUNT_RE, QC_EXERCISE_SPLIT_RE, QC_EXERCISE_SUM_TPL, QC_HEAD_TAG, QC_IN_QC_RE, QC_NOC_RE,
+    QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
 )
-from pnp.qc.scheme import QcDrawIn, QcExerciseTest, QcSumIn
-from pnp.scheme import CachedDrawsIn, PutDrawsIn, SoupNodeLike
+from pnp.qc.scheme import (
+    QcDrawIn, QcExerciseTest, QcFindIn, QcFrDateIn, QcFrPartsIn, QcpIntakeIn, QcPlanTest, QcpPageIn, QcpPageOut,
+    QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn, QcrUpdatedIn, QcsCrossIn,
+    QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
+)
+from pnp.scheme import CachedDrawsIn, FactorCountsIn, FetchHtmlIn, PutDrawsIn, ReqIn, ReqsOut, SoupNodeLike, StdReqIn
 
 # =========================================================================
 # 1. PSTQ 邀请轮次(2026-09-29 自 pnp/functions.py 段10 原样搬来;同日加逐档解析)
@@ -159,7 +193,570 @@ def check_qc_exercise_sum(x: QcSumIn) -> None:
 
 
 # =========================================================================
-# 9. 自测入口
+# 2. PSTQ 门槛(2026-09-29 立,Frank「魁省数据也要抓一下吧」「不属于省提名 也算是省的吧」)
+# =========================================================================
+
+
+def build_qc_req() -> None:
+    """PSTQ 门槛入口:只读 crawl 缓存里的门槛页 → 一般条件 + 四个通道 → raw/pnp/qc-req.json(形同九省门槛表)。
+    每一条都锚在官方原句上(label 即原句);任一条认不出 → 自校未过,整份保留旧表。暂不进 mart(见 OUT_QC_REQ)。"""
+    say(PRINT_OUT_TPL.format(path=OUT_QC_REQ))
+    html = get_cached_page(QCR_URL).html
+    if html is None:
+        fail_zh([QCR_PROBLEM_NO_PAGE])
+        return
+    secs = qc_sections_of(html)
+    reqs: list = []
+    problems: list = []
+    for part in (qcr_general_reqs(qcr_section_of(QcrSectionIn(secs=secs, name=QCR_SECTION_GENERAL,
+                                                                problems=problems))),
+                 qcr_s1_reqs(qcr_section_of(QcrSectionIn(secs=secs, name=QCR_STREAM_1, problems=problems))),
+                 qcr_s2_reqs(qcr_section_of(QcrSectionIn(secs=secs, name=QCR_STREAM_2, problems=problems))),
+                 qcr_s3_reqs(qcr_section_of(QcrSectionIn(secs=secs, name=QCR_STREAM_3, problems=problems))),
+                 qcr_s4_reqs(qcr_section_of(QcrSectionIn(secs=secs, name=QCR_STREAM_4, problems=problems)))):
+        reqs += part.rows
+        problems += part.problems
+    version = qcr_updated_of(QcrUpdatedIn(tail=secs[QCR_TAIL_KEY], problems=problems))
+    if len(problems) > 0:
+        fail_zh(problems)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_QC_REQ, payload={
+        K_PROVINCE: PROV_QC, K_PROGRAM: QCR_PROGRAM, K_SOURCE: QCR_SOURCE, K_URL: QCR_URL, K_PAGE_URL: QCR_URL,
+        K_GUIDE_EFFECTIVE: version, K_FETCHED: today_iso(), K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(QCR_PRINT_DONE_TPL.format(path=OUT_QC_REQ, version=version, n=len(reqs)))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=QCR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+def qc_sections_of(html: str) -> dict:
+    """整页按 h2 切段 → {段标题: 段文(已折空白)};只收认得的段(一般条件、四个通道),另把最后一段(页尾,
+    含「Last update」)记在 QCR_TAIL_KEY 下。做法:原文每个 <h2 前插切段标记,取全文后按标记切。"""
+    marked = QCR_H2_OPEN_RE.sub(QCR_H2_SUB, html)
+    text = fold_ws(BeautifulSoup(marked, PARSER_HTML).get_text(TEXT_JOIN_SEP, strip=True))
+    secs: dict = {QCR_TAIL_KEY: EMPTY_JOIN}
+    for part in text.split(QCR_H2_MARK):
+        body = part.strip()
+        for name in QCR_SECTION_NAMES:
+            if body.startswith(name):
+                secs[name] = body
+        if QCR_UPDATED_RE.search(body) is not None:
+            secs[QCR_TAIL_KEY] = body
+    return secs
+
+
+def qcr_section_of(x: QcrSectionIn) -> QcrTextIn:
+    """取一段;页上没有这一段 → 记一条问题、交回空段(后面每条认不出还会各记一条,自校照样拦住)。
+    段名就是 h2 原文;四个通道段的 h2 原文即通道名(与邀请页 stream 段标题逐字相同),门槛行的 stream 直接写它。"""
+    if x.name not in x.secs:
+        x.problems.append(QCR_PROBLEM_NO_SECTION_TPL.format(section=x.name))
+        return QcrTextIn(section=x.name, text=EMPTY_JOIN)
+    return QcrTextIn(section=x.name, text=x.secs[x.name])
+
+
+def qcr_updated_of(x: QcrUpdatedIn) -> str:
+    """页尾「Last update: June 25, 2026」→ ISO;认不出记一条问题、交回空串。"""
+    m = QCR_UPDATED_RE.search(x.tail)
+    if m is not None:
+        iso = iso_of(m.group(1))
+        if iso is not None:
+            return iso
+    x.problems.append(QCR_PROBLEM_TPL.format(section=QCR_TAIL_KEY, what=QCR_WHAT_UPDATED))
+    return EMPTY_JOIN
+
+
+def qc_find(x: QcFindIn) -> re.Match | None:
+    """在一段里找一句官方原句;找不到 → 记一条问题,交回 None。"""
+    m = x.rx.search(x.text)
+    if m is None:
+        x.problems.append(x.problem)
+    return m
+
+
+def qc_n_of(word: str) -> int | None:
+    """官方数字:阿拉伯数字(去千分位空格)/ 英文数词 / 法文数词 → 整数;认不出 → None(不猜)。"""
+    n = int_of(word)
+    if n is not None:
+        return n
+    low = word.lower()
+    if low in WORD_N:
+        return WORD_N[low]
+    if low in FR_WORD_N:
+        return FR_WORD_N[low]
+    return None
+
+
+def qc_teer_of(listing: str) -> list:
+    """TEER 列举原文(「0,1 or 2」「0, 1, 2 ou 3」)→ [0, 1, 2]。"""
+    out: list = []
+    for m in QCR_DIGIT_RE.finditer(listing):
+        out.append(int(m.group(0)))
+    return out
+
+
+def to_qc_req(x: ReqIn) -> dict:
+    """PSTQ 门槛一行(标准形,走共用 to_std_req;缺省通道 = 四个通道都适用、缺省出处 = 门槛页)。"""
+    return to_std_req(StdReqIn(req=x, stream=QCR_ALL_STREAMS, url=QCR_URL))
+
+
+def qcr_general_reqs(x: QcrTextIn) -> ReqsOut:
+    """一般条件:年龄、自给合同(入籍后头几个月自己养活自己与随行家属)。"""
+    rows: list = []
+    problems: list = []
+    age = qc_find(QcFindIn(text=x.text, rx=QCR_AGE_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_AGE)))
+    funds = qc_find(QcFindIn(text=x.text, rx=QCR_FUNDS_RE, problems=problems,
+                             problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_FUNDS)))
+    if age is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_AGE, value=int(age.group(1)), unit=UNIT_YEARS,
+                                    section=x.section, label=age.group(0))))
+    if funds is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_FUNDS, op=OP_RULE, value=qc_n_of(funds.group(1)),
+                                    unit=UNIT_MONTHS, section=x.section, label=funds.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcr_s1_reqs(x: QcrTextIn) -> ReqsOut:
+    """通道 1(高技能专才):TEER 0-2、近 N 年至少 M 年经验、口语 / 书面法语、配偶口语、一年以上全日制文凭。"""
+    rows: list = []
+    problems: list = []
+    teer = qcr_teer_rows(QcrTeerIn(sec=x, rows=rows, problems=problems))
+    exp = qc_find(QcFindIn(text=x.text, rx=QCR_EXP_S1_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXP)))
+    if exp is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=x.section,
+                                    value=int(exp.group(1)) * QCR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                    applies_teer=teer, basis=QCR_BASIS_WINDOW_TPL.format(n=exp.group(2)),
+                                    section=x.section, label=exp.group(0))))
+    qcr_lang_high_rows(QcrLangIn(sec=x, teer=teer, rows=rows, problems=problems))
+    qcr_spouse_rows(QcrTeerIn(sec=x, rows=rows, problems=problems))
+    edu = qc_find(QcFindIn(text=x.text, rx=QCR_EDU_S1_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EDU)))
+    if edu is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_EDUCATION, stream=x.section, op=OP_RULE,
+                                    value=qc_n_of(edu.group(1)), unit=UNIT_YEARS, applies_teer=teer,
+                                    section=x.section, label=edu.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcr_s2_reqs(x: QcrTextIn) -> ReqsOut:
+    """通道 2(中低技能):TEER 3-5、近 N 年至少 M 年经验且其中 K 年在魁省、口语法语、配偶口语、高中及以上。"""
+    rows: list = []
+    problems: list = []
+    teer = qcr_teer_rows(QcrTeerIn(sec=x, rows=rows, problems=problems))
+    exp = qc_find(QcFindIn(text=x.text, rx=QCR_EXP_S2_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXP)))
+    if exp is not None:
+        total = qc_n_of(exp.group(1))
+        in_qc = qc_n_of(exp.group(2))
+        window = qc_n_of(exp.group(3))
+        if total is None or in_qc is None or window is None:
+            problems.append(QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXP))
+        else:
+            rows.append(to_qc_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=x.section,
+                                        value=total * QCR_MONTHS_PER_YEAR, unit=UNIT_MONTHS, applies_teer=teer,
+                                        basis=QCR_BASIS_WINDOW_TPL.format(n=window), section=x.section,
+                                        label=exp.group(0))))
+            rows.append(to_qc_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=x.section,
+                                        value=in_qc * QCR_MONTHS_PER_YEAR, unit=UNIT_MONTHS, applies_teer=teer,
+                                        basis=QCR_BASIS_IN_QC_TPL.format(n=window), section=x.section,
+                                        label=exp.group(0))))
+    lang = qc_find(QcFindIn(text=x.text, rx=QCR_LANG_S2_RE, problems=problems,
+                            problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_LANG)))
+    if lang is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.section, value=int(lang.group(1)),
+                                    unit=QCR_UNIT_FR, applies_teer=teer, basis=QCR_BASIS_ORAL,
+                                    section=x.section, label=lang.group(0))))
+    qcr_spouse_rows(QcrTeerIn(sec=x, rows=rows, problems=problems))
+    edu = qc_find(QcFindIn(text=x.text, rx=QCR_EDU_S2_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EDU)))
+    if edu is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_EDUCATION, stream=x.section, op=OP_RULE, applies_teer=teer,
+                                    section=x.section, label=edu.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcr_s3_reqs(x: QcrTextIn) -> ReqsOut:
+    """通道 3(受监管职业):职业在受监管清单上、法语按 TEER 分两档、配偶口语。"""
+    rows: list = []
+    problems: list = []
+    lic = qc_find(QcFindIn(text=x.text, rx=QCR_LICENSING_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_LICENSING)))
+    if lic is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_LICENSING, stream=x.section, op=OP_RULE, section=x.section,
+                                    label=lic.group(0))))
+    qcr_lang_high_rows(QcrLangIn(sec=x, teer=QCR_TEER_HIGH, rows=rows, problems=problems))
+    low = qc_find(QcFindIn(text=x.text, rx=QCR_LANG_S3_LOW_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_LANG)))
+    if low is not None:
+        rows.append(to_qc_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.section, value=int(low.group(1)),
+                                    unit=QCR_UNIT_FR, applies_teer=QCR_TEER_LOW, basis=QCR_BASIS_ORAL,
+                                    section=x.section, label=low.group(0))))
+    qcr_spouse_rows(QcrTeerIn(sec=x, rows=rows, problems=problems))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcr_s4_reqs(x: QcrTextIn) -> ReqsOut:
+    """通道 4(杰出人才):近 N 年主职业至少 M 年、杰出专长(部定成就清单或合作机构意见)。不看 TEER、不看法语。"""
+    rows: list = []
+    problems: list = []
+    exp = qc_find(QcFindIn(text=x.text, rx=QCR_EXP_S4_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXP)))
+    if exp is not None:
+        years = qc_n_of(exp.group(1))
+        window = qc_n_of(exp.group(2))
+        if years is None or window is None:
+            problems.append(QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXP))
+        else:
+            rows.append(to_qc_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=x.section,
+                                        value=years * QCR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                        basis=QCR_BASIS_WINDOW_TPL.format(n=window), section=x.section,
+                                        label=exp.group(0))))
+    exc = qc_find(QcFindIn(text=x.text, rx=QCR_EXCEPTIONAL_RE, problems=problems,
+                           problem=QCR_PROBLEM_TPL.format(section=x.section, what=QCR_WHAT_EXCEPTIONAL)))
+    if exc is not None:
+        rows.append(to_qc_req(ReqIn(factor=QCR_FACTOR_EXCEPTIONAL, stream=x.section, op=OP_RULE,
+                                    section=x.section, label=exc.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcr_teer_rows(x: QcrTeerIn) -> list:
+    """通道 1 / 2 的职业档一行(occupationPathway,rule);交回 TEER 列表供本段其余行挂 appliesTeer(认不出 → 空表)。"""
+    m = qc_find(QcFindIn(text=x.sec.text, rx=QCR_TEER_RE, problems=x.problems,
+                         problem=QCR_PROBLEM_TPL.format(section=x.sec.section, what=QCR_WHAT_TEER)))
+    if m is None:
+        return []
+    teer = qc_teer_of(m.group(1))
+    x.rows.append(to_qc_req(ReqIn(factor=FACTOR_OCC_PATHWAY, stream=x.sec.section, op=OP_RULE, applies_teer=teer,
+                                  section=x.sec.section, label=m.group(0))))
+    return teer
+
+
+def qcr_lang_high_rows(x: QcrLangIn) -> None:
+    """TEER 0-2 那档的法语两行:口语 ≥ M、书面 ≥ K(通道 1、通道 3 高档同句)。"""
+    m = qc_find(QcFindIn(text=x.sec.text, rx=QCR_LANG_HIGH_RE, problems=x.problems,
+                         problem=QCR_PROBLEM_TPL.format(section=x.sec.section, what=QCR_WHAT_LANG)))
+    if m is None:
+        return
+    x.rows.append(to_qc_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.sec.section, value=int(m.group(1)),
+                                  unit=QCR_UNIT_FR, applies_teer=x.teer, basis=QCR_BASIS_ORAL,
+                                  section=x.sec.section, label=m.group(0))))
+    x.rows.append(to_qc_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.sec.section, value=int(m.group(2)),
+                                  unit=QCR_UNIT_FR, applies_teer=x.teer, basis=QCR_BASIS_WRITTEN,
+                                  section=x.sec.section, label=m.group(0))))
+
+
+def qcr_spouse_rows(x: QcrTeerIn) -> None:
+    """随行配偶的口语一行(subject = spouse;通道 1-3 各写一遍)。"""
+    m = qc_find(QcFindIn(text=x.sec.text, rx=QCR_SPOUSE_RE, problems=x.problems,
+                         problem=QCR_PROBLEM_TPL.format(section=x.sec.section, what=QCR_WHAT_SPOUSE)))
+    if m is None:
+        return
+    x.rows.append(to_qc_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.sec.section, subject=QCR_SUBJECT_SPOUSE,
+                                  value=int(m.group(1)), unit=QCR_UNIT_FR, basis=QCR_BASIS_ORAL,
+                                  section=x.sec.section, label=m.group(0))))
+
+
+# =========================================================================
+# 3. PEQ 门槛(2026-09-29 立;PEQ 2026-07-02 起临时重开两年,只有法文页)
+# =========================================================================
+
+
+def build_qc_peq_req() -> None:
+    """PEQ 门槛入口:只读 crawl 缓存(qc-peq 种子)的两个分支甄选条件页 → raw/pnp/qc-peq-req.json。
+    除门槛行外另带 intake 块:重开期、本轮收件窗口、收件资格截点日(官方原句照录)。任一条认不出 → 整份保留旧表。"""
+    say(PRINT_OUT_TPL.format(path=OUT_QC_PEQ_REQ))
+    problems: list = []
+    tfw = qcp_page_of(QcpPageIn(url=QCP_TFW_URL, page=QCP_PAGE_TFW, problems=problems))
+    grad = qcp_page_of(QcpPageIn(url=QCP_GRAD_URL, page=QCP_PAGE_GRAD, problems=problems))
+    intake = qcp_intake_of(QcpIntakeIn(page=tfw, problems=problems))
+    reqs: list = []
+    for part in (qcp_tfw_reqs(QcpReqsIn(page=tfw, as_of=intake[K_ELIGIBLE_AS_OF])),
+                 qcp_grad_reqs(QcpReqsIn(page=grad, as_of=intake[K_ELIGIBLE_AS_OF]))):
+        reqs += part.rows
+        problems += part.problems
+    version = qc_fr_date_of(QcFrDateIn(m=QCP_UPDATED_RE.search(tfw.text), what=QCP_WHAT_DATE,
+                                       page=tfw.page, problems=problems))
+    if len(problems) > 0:
+        fail_zh(problems)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_QC_PEQ_REQ, payload={
+        K_PROVINCE: PROV_QC, K_PROGRAM: QCP_PROGRAM, K_SOURCE: QCR_SOURCE, K_URL: QCP_URL, K_PAGE_URL: QCP_URL,
+        K_GUIDE_EFFECTIVE: version, K_FETCHED: today_iso(), K_INTAKE: intake, K_REQUIREMENTS: reqs,
+    }, indent=INDENT_2))
+    say(QCP_PRINT_DONE_TPL.format(path=OUT_QC_PEQ_REQ, version=version, n=len(reqs),
+                                  opens=intake[K_INTAKE_OPENS], closes=intake[K_INTAKE_CLOSES],
+                                  asof=intake[K_ELIGIBLE_AS_OF]))
+    say_factor_counts(FactorCountsIn(reqs=reqs, order=QCR_FACTOR_ORDER, tpl=PRINT_FACTOR_TPL))
+
+
+def qcp_page_of(x: QcpPageIn) -> QcpPageOut:
+    """取一个 PEQ 分支页的全文(折空白);缓存没有 → 记一条问题、交回空文。"""
+    html = get_cached_page(x.url).html
+    if html is None:
+        x.problems.append(QCP_PROBLEM_NO_PAGE_TPL.format(url=x.url))
+        return QcpPageOut(page=x.page, url=x.url, text=EMPTY_JOIN)
+    text = fold_ws(BeautifulSoup(html, PARSER_HTML).get_text(TEXT_JOIN_SEP, strip=True))
+    return QcpPageOut(page=x.page, url=x.url, text=text)
+
+
+def qc_fr_date_of(x: QcFrDateIn) -> str:
+    """法文日期三格(日 / 月名 / 年)→ ISO;原句没找到或月名认不出 → 记一条问题、交回空串。"""
+    if x.m is not None:
+        month = FR_MONTHS.get(x.m.group(2).lower())
+        if month is not None:
+            return ISO_DATE_TPL.format(y=int(x.m.group(3)), m=month, d=int(x.m.group(1)))
+    x.problems.append(QCP_PROBLEM_TPL.format(page=x.page, what=x.what))
+    return EMPTY_JOIN
+
+
+def qcp_intake_of(x: QcpIntakeIn) -> dict:
+    """收件窗口块(取自临时工分支页的重开公告;两个分支页同一段公告):重开期起止、本轮收件起止、资格截点日 + 原句。"""
+    win = qc_find(QcFindIn(text=x.page.text, rx=QCP_WINDOW_RE, problems=x.problems,
+                           problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_WINDOW)))
+    intake = qc_find(QcFindIn(text=x.page.text, rx=QCP_INTAKE_RE, problems=x.problems,
+                              problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_INTAKE)))
+    cutoff = qc_fr_date_of(QcFrDateIn(m=QCP_CUTOFF_RE.search(x.page.text), what=QCP_WHAT_CUTOFF, page=x.page.page,
+                                      problems=x.problems))
+    out = {K_PROGRAM_OPENS: EMPTY_JOIN, K_PROGRAM_CLOSES: EMPTY_JOIN, K_INTAKE_OPENS: EMPTY_JOIN,
+           K_INTAKE_CLOSES: EMPTY_JOIN, K_ELIGIBLE_AS_OF: cutoff, K_QUOTE: EMPTY_JOIN}
+    if win is not None:
+        out[K_PROGRAM_OPENS] = qc_fr_iso_of(QcFrPartsIn(day=win.group(2), month=win.group(3), year=win.group(4),
+                                                        page=x.page.page, problems=x.problems))
+        out[K_PROGRAM_CLOSES] = qc_fr_iso_of(QcFrPartsIn(day=win.group(5), month=win.group(6), year=win.group(7),
+                                                         page=x.page.page, problems=x.problems))
+    if intake is not None:
+        out[K_INTAKE_OPENS] = qc_fr_iso_of(QcFrPartsIn(day=intake.group(1), month=intake.group(2),
+                                                       year=intake.group(5), page=x.page.page, problems=x.problems))
+        out[K_INTAKE_CLOSES] = qc_fr_iso_of(QcFrPartsIn(day=intake.group(3), month=intake.group(4),
+                                                        year=intake.group(5), page=x.page.page, problems=x.problems))
+        out[K_QUOTE] = intake.group(0)
+    return out
+
+
+def qc_fr_iso_of(x: QcFrPartsIn) -> str:
+    """法文日期拆好的三格 → ISO;月名认不出 → 记一条问题、交回空串。"""
+    month = FR_MONTHS.get(x.month.lower())
+    if month is None:
+        x.problems.append(QCP_PROBLEM_TPL.format(page=x.page, what=QCP_WHAT_DATE))
+        return EMPTY_JOIN
+    return ISO_DATE_TPL.format(y=int(x.year), m=month, d=int(x.day))
+
+
+def to_qc_peq_req(x: ReqIn) -> dict:
+    """PEQ 门槛一行(标准形,走共用 to_std_req;缺省通道 = 临时工分支、缺省出处 = 临时工分支页)。"""
+    return to_std_req(StdReqIn(req=x, stream=QCP_STREAM_TFW, url=QCP_TFW_URL))
+
+
+def qcp_common_rows(x: QcpRowsIn) -> None:
+    """两个分支共有的三行:年龄、申请人口语、配偶口语(各分支页各写一遍,逐页取)。"""
+    age = qc_find(QcFindIn(text=x.page.text, rx=QCP_AGE_RE, problems=x.problems,
+                           problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_AGE)))
+    oral = qc_find(QcFindIn(text=x.page.text, rx=QCP_ORAL_RE, problems=x.problems,
+                            problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_LANG)))
+    spouse = qc_find(QcFindIn(text=x.page.text, rx=QCP_SPOUSE_RE, problems=x.problems,
+                              problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_SPOUSE)))
+    if age is not None:
+        x.rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_AGE, stream=x.stream, value=int(age.group(1)),
+                                          unit=UNIT_YEARS, url=x.page.url, label=age.group(0))))
+    if oral is not None:
+        x.rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.stream, value=int(oral.group(1)),
+                                          unit=QCR_UNIT_FR, basis=QCR_BASIS_ORAL, url=x.page.url,
+                                          label=oral.group(0))))
+    if spouse is not None:
+        x.rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_LANGUAGE, stream=x.stream, subject=QCR_SUBJECT_SPOUSE,
+                                          value=int(spouse.group(1)), unit=QCR_UNIT_FR, basis=QCR_BASIS_ORAL,
+                                          url=x.page.url, label=spouse.group(0))))
+
+
+def qcp_tfw_reqs(x: QcpReqsIn) -> ReqsOut:
+    """临时工分支:共有三行 + TEER 0-3 + 近 36 个月至少 24 个月全职(魁省)+ 本轮收件条件(截点日前满 N 年)。"""
+    rows: list = []
+    problems: list = []
+    qcp_common_rows(QcpRowsIn(page=x.page, stream=QCP_STREAM_TFW, rows=rows, problems=problems))
+    teer = qc_find(QcFindIn(text=x.page.text, rx=QCP_TEER_RE, problems=problems,
+                            problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_TEER)))
+    exp = qc_find(QcFindIn(text=x.page.text, rx=QCP_EXP_RE, problems=problems,
+                           problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_EXP)))
+    full = qc_find(QcFindIn(text=x.page.text, rx=QCP_FULLTIME_RE, problems=problems,
+                            problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_FULLTIME)))
+    recept = qc_find(QcFindIn(text=x.page.text, rx=QCP_RECEPT_TFW_RE, problems=problems,
+                              problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_RECEPT)))
+    if teer is None or exp is None or full is None or recept is None:
+        return ReqsOut(rows=rows, problems=problems)
+    levels = qc_teer_of(teer.group(1))
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_OCC_PATHWAY, stream=QCP_STREAM_TFW, op=OP_RULE,
+                                    applies_teer=levels, url=x.page.url, label=teer.group(0))))
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=QCP_STREAM_TFW, value=int(exp.group(1)),
+                                    unit=UNIT_MONTHS, applies_teer=levels,
+                                    basis=QCP_BASIS_EXP_TPL.format(n=exp.group(2), h=full.group(1)),
+                                    url=x.page.url, label=exp.group(0))))
+    years = qc_n_of(recept.group(2))
+    if years is None:
+        problems.append(QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_RECEPT))
+        return ReqsOut(rows=rows, problems=problems)
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_EXPERIENCE, stream=QCP_STREAM_TFW,
+                                    value=years * QCR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
+                                    applies_teer=qc_teer_of(recept.group(1)),
+                                    basis=QCP_BASIS_CUTOFF_TPL.format(date=x.as_of), url=x.page.url,
+                                    label=recept.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def qcp_grad_reqs(x: QcpReqsIn) -> ReqsOut:
+    """毕业生分支:共有三行 + 书面法语 + 申请前 N 个月内毕业 + DEP 最低学时 + 本轮收件条件(截点日前已拿到合格学历)。"""
+    rows: list = []
+    problems: list = []
+    qcp_common_rows(QcpRowsIn(page=x.page, stream=QCP_STREAM_GRAD, rows=rows, problems=problems))
+    written = qc_find(QcFindIn(text=x.page.text, rx=QCP_WRITTEN_RE, problems=problems,
+                               problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_LANG)))
+    window = qc_find(QcFindIn(text=x.page.text, rx=QCP_GRAD_WINDOW_RE, problems=problems,
+                              problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCR_WHAT_EDU)))
+    dep = qc_find(QcFindIn(text=x.page.text, rx=QCP_DEP_HOURS_RE, problems=problems,
+                           problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_DEP)))
+    recept = qc_find(QcFindIn(text=x.page.text, rx=QCP_RECEPT_GRAD_RE, problems=problems,
+                              problem=QCP_PROBLEM_TPL.format(page=x.page.page, what=QCP_WHAT_RECEPT)))
+    if written is None or window is None or dep is None or recept is None:
+        return ReqsOut(rows=rows, problems=problems)
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_LANGUAGE, stream=QCP_STREAM_GRAD, value=int(written.group(1)),
+                                    unit=QCR_UNIT_FR, basis=QCR_BASIS_WRITTEN, url=x.page.url,
+                                    label=written.group(0))))
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_EDUCATION, stream=QCP_STREAM_GRAD, op=OP_RULE,
+                                    basis=QCP_BASIS_WINDOW_TPL.format(n=window.group(1)), url=x.page.url,
+                                    label=window.group(0))))
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_EDUCATION, stream=QCP_STREAM_GRAD, value=int_of(dep.group(1)),
+                                    unit=QCP_UNIT_HOURS, url=x.page.url, label=dep.group(0))))
+    rows.append(to_qc_peq_req(ReqIn(factor=FACTOR_EDUCATION, stream=QCP_STREAM_GRAD, op=OP_RULE,
+                                    value=int_of(recept.group(1)), unit=QCP_UNIT_HOURS,
+                                    basis=QCP_BASIS_CUTOFF_TPL.format(date=x.as_of), url=x.page.url,
+                                    label=recept.group(0))))
+    return ReqsOut(rows=rows, problems=problems)
+
+
+# =========================================================================
+# 4. 年度移民计划(2026-09-29 立:技术工人的甄选数与入境数,实际 / 预测 / 计划)
+# =========================================================================
+
+
+def build_qc_stats() -> None:
+    """魁省年度统计入口:年度移民计划 PDF(原件先落 crawl 层)→ 表 3 甄选数 + 表 4 入境数的「技术工人」行 →
+    raw/pnp/qc-stats.json。本年计划区间与正文要点句交叉核对;任一条认不出或对不上 → 整份保留旧表。"""
+    say(PRINT_OUT_TPL.format(path=OUT_QC_STATS))
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=QCS_PLAN_URL, timeout_s=QCS_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001 — 下载 / 解 PDF 失败:留痕后按自校失败收口(文件不动)
+        fail_zh([QCS_PROBLEM_FETCH_TPL.format(name=type(e).__name__, detail=e)])
+        return
+    plan = qcs_plan_of(text)
+    if len(plan.problems) > 0:
+        fail_zh(plan.problems)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_QC_STATS, payload={
+        K_PROVINCE: PROV_QC, K_PROGRAM: QCS_CATEGORY, K_SOURCE: QCS_SOURCE, K_URL: QCS_PLAN_URL, K_NOTE: QCS_NOTE,
+        K_AS_OF_LOWER: EMPTY_JOIN, K_FETCHED: today_iso(), K_PLAN_YEAR: plan.year,
+        K_SELECTIONS: plan.selections, K_ADMISSIONS: plan.admissions,
+    }, indent=INDENT_2))
+    sel = plan.selections[-1]
+    adm = plan.admissions[-1]
+    say(QCS_PRINT_DONE_TPL.format(path=OUT_QC_STATS, year=plan.year, sel=len(plan.selections),
+                                  adm=len(plan.admissions), smin=sel[K_VALUE], smax=sel[K_VALUE_MAX],
+                                  amin=adm[K_VALUE], amax=adm[K_VALUE_MAX]))
+
+
+def qcs_plan_of(text: str) -> QcsPlanOut:
+    """计划 PDF 全文 → 计划年 + 甄选数行 + 入境数行 + 问题(纯函数,自测直接喂文本)。
+    表 3 列序:实际 × 2、预测、本年计划 min / max;表 4 列序:实际 × 2、上年计划 min / max、上年预测 min / max、
+    本年计划 min / max。本年计划两列必须与正文 5.2.1 / 5.2.2 要点句逐数相同,表 4 的本年计划年必须等于封面计划年。"""
+    problems: list = []
+    title = qc_find(QcFindIn(text=text, rx=QCS_TITLE_RE, problems=problems,
+                             problem=QCS_PROBLEM_TPL.format(what=QCS_WHAT_TITLE)))
+    t3 = qcs_table_of(QcsTableIn(text=text, head=QCS_T3_HEAD_RE, years=QCS_T3_YEARS_RE, n=QCS_T3_NUMS,
+                                 what=QCS_WHAT_T3, problems=problems))
+    t4 = qcs_table_of(QcsTableIn(text=text, head=QCS_T4_HEAD_RE, years=QCS_T4_YEARS_RE, n=QCS_T4_NUMS,
+                                 what=QCS_WHAT_T4, problems=problems))
+    sel = qc_find(QcFindIn(text=text, rx=QCS_SEL_RE, problems=problems,
+                           problem=QCS_PROBLEM_TPL.format(what=QCS_WHAT_SEL)))
+    adm = qc_find(QcFindIn(text=text, rx=QCS_ADM_RE, problems=problems,
+                           problem=QCS_PROBLEM_TPL.format(what=QCS_WHAT_ADM)))
+    if title is None or sel is None or adm is None or len(problems) > 0:
+        return QcsPlanOut(year=0, selections=[], admissions=[], problems=problems)
+    year = int(title.group(1))
+    qcs_cross_check(QcsCrossIn(what=QCS_WHAT_SEL, table=t3.nums[3:], text=[int_of(sel.group(1)), int_of(sel.group(2))],
+                               problems=problems))
+    qcs_cross_check(QcsCrossIn(what=QCS_WHAT_ADM, table=t4.nums[6:], text=[int_of(adm.group(1)), int_of(adm.group(2))],
+                               problems=problems))
+    qcs_cross_check(QcsCrossIn(what=QCS_WHAT_TITLE, table=[t4.years[2]], text=[year], problems=problems))
+    if len(problems) > 0:
+        return QcsPlanOut(year=0, selections=[], admissions=[], problems=problems)
+    y3 = t3.years
+    n3 = t3.nums
+    selections = [
+        qcs_row_of(QcsRowIn(year=y3[0], kind=QCS_KIND_ACTUAL, value=n3[0], value_max=None, section=QCS_SECTION_T3)),
+        qcs_row_of(QcsRowIn(year=y3[1], kind=QCS_KIND_ACTUAL, value=n3[1], value_max=None, section=QCS_SECTION_T3)),
+        qcs_row_of(QcsRowIn(year=y3[2], kind=QCS_KIND_FORECAST, value=n3[2], value_max=None, section=QCS_SECTION_T3)),
+        qcs_row_of(QcsRowIn(year=year, kind=QCS_KIND_PLAN, value=n3[3], value_max=n3[4], section=QCS_SECTION_T3)),
+    ]
+    y4 = t4.years
+    n4 = t4.nums
+    admissions = [
+        qcs_row_of(QcsRowIn(year=y4[3], kind=QCS_KIND_ACTUAL, value=n4[0], value_max=None, section=QCS_SECTION_T4)),
+        qcs_row_of(QcsRowIn(year=y4[4], kind=QCS_KIND_ACTUAL, value=n4[1], value_max=None, section=QCS_SECTION_T4)),
+        qcs_row_of(QcsRowIn(year=y4[0], kind=QCS_KIND_PLAN, value=n4[2], value_max=n4[3], section=QCS_SECTION_T4)),
+        qcs_row_of(QcsRowIn(year=y4[1], kind=QCS_KIND_FORECAST, value=n4[4], value_max=n4[5], section=QCS_SECTION_T4)),
+        qcs_row_of(QcsRowIn(year=y4[2], kind=QCS_KIND_PLAN, value=n4[6], value_max=n4[7], section=QCS_SECTION_T4)),
+    ]
+    return QcsPlanOut(year=year, selections=selections, admissions=admissions, problems=problems)
+
+
+def qcs_table_of(x: QcsTableIn) -> QcsTableOut:
+    """一张表的表头年份 + 「技术工人」行的数(只在表标题之后找);标题 / 表头 / 行名认不出或数的个数不对 → 记一条问题,
+    交回占位(年份与数都补零到应有个数,调用方见问题即不用)。"""
+    empty = QcsTableOut(years=[0, 0, 0, 0, 0], nums=[0] * x.n)
+    h = x.head.search(x.text)
+    if h is None:
+        x.problems.append(QCS_PROBLEM_TPL.format(what=x.what))
+        return empty
+    part = x.text[h.end():]
+    y = x.years.search(part)
+    row = QCS_ROW_RE.search(part)
+    if y is None or row is None:
+        x.problems.append(QCS_PROBLEM_TPL.format(what=x.what))
+        return empty
+    nums = qcs_row_nums_of(part[row.end():])
+    if len(nums) != x.n:
+        x.problems.append(QCS_PROBLEM_TPL.format(what=x.what))
+        return empty
+    years: list = []
+    for g in y.groups():
+        years.append(int(g))
+    return QcsTableOut(years=years, nums=nums)
+
+
+def qcs_row_nums_of(rest: str) -> list:
+    """行名之后逐行取数,碰到带字母的行(下一行名)为止;一行两个数(区间)各取。"""
+    nums: list = []
+    for line in rest.splitlines():
+        if QCS_LETTER_RE.search(line) is not None:
+            break
+        for m in QCS_NUM_RE.finditer(line):
+            nums.append(int_of(m.group(0)))
+    return nums
+
+
+def qcs_cross_check(x: QcsCrossIn) -> None:
+    """交叉核对:表里的数与正文要点句逐数相同,不同 → 记一条问题。"""
+    if x.table != x.text:
+        x.problems.append(QCS_PROBLEM_CROSS_TPL.format(what=x.what, table=x.table, text=x.text))
+
+
+def qcs_row_of(x: QcsRowIn) -> dict:
+    """一行统计(形同九省 *-stats.json 的逐年行,多 kind / valueMax 两格)。"""
+    return {K_YEAR: x.year, K_KIND: x.kind, K_VALUE: x.value, K_VALUE_MAX: x.value_max, K_UNIT: QCS_UNIT_PEOPLE,
+            K_LABEL: QCS_LABEL_TPL.format(table=x.section, row=QCS_CATEGORY, year=x.year, kind=x.kind),
+            K_SECTION: x.section, K_URL: QCS_PLAN_URL, K_FETCHED: today_iso()}
+
+
+# =========================================================================
+# 5. 自测入口
 # =========================================================================
 
 
@@ -168,5 +765,7 @@ def run_qc_tests() -> None:
     pnp 共用段的 run_tests 不认识子域(共用段不 import 子域),所以子域自带入口,由 pnp/main 登记成 test_qc 步。"""
     suite = unittest.TestSuite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcExerciseTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcPlanTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcReqTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

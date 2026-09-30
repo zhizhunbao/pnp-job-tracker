@@ -52,6 +52,8 @@ METAS = [
      "ping": True},
     {"name": "pnp_on", "role": "pnp_on", "only": "pnp_on", "method": "httpx", "interval": 3600, "seed": False,
      "ping": True},
+    {"name": "pnp_qc", "role": "pnp_qc", "only": "pnp_qc", "method": "httpx", "interval": 3600, "seed": False,
+     "ping": True},
     {"name": "pnp_draws_ab", "role": "pnp_draws_ab", "only": "pnp_draws_ab", "method": "httpx", "interval": 3600,
      "seed": False, "ping": True},
     {"name": "pnp_draws_bc", "role": "pnp_draws_bc", "only": "pnp_draws_bc", "method": "httpx", "interval": 3600,
@@ -79,6 +81,8 @@ METAS = [
 ]
 """本域二十役(2026-09-26 晚拆,见文件头):
   pnp_ab … pnp_on     九省各一:该省清单 / 门槛 / 分值 / 统计(同一官方来源,步骤见 main.UNITS)
+  pnp_qc              魁省:PSTQ / PEQ 门槛 + 年度移民计划(2026-09-29 立,Frank「不属于省提名 也算是省的吧」;
+                      代码住 pnp/qc 子域,按省拆首例;加它之后本域二十一役)
   pnp_draws_ab … _qc  九省抽选各一(一省一份 raw/pnp/draws-<省>.json;任一页失败本单元失败、文件不动)
   pnp_drawzh          抽选流名中文灰注(本地 Ollama):消费者,盯九个抽选单元的轮次标记,兜底一小时;有流名没翻成即失败
   pnp_watch           名额公告哨兵(只读配额表 / crawl 缓存 / news,不发请求)

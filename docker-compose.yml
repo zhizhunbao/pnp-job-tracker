@@ -142,6 +142,14 @@ services:
       HEALTHCHECK_PING_PNP_ON: ${HEALTHCHECK_PING_PNP_ON:-}
       TZ: EST5EDT
 
+  pnp_qc:                          # 魁省 PSTQ / PEQ 门槛 + 年度移民计划(quebec.ca;QC 不属 PNP,按省对待)
+    <<: *etl
+    environment:
+      <<: *hc
+      SOURCE: pnp_qc
+      HEALTHCHECK_PING_PNP_QC: ${HEALTHCHECK_PING_PNP_QC:-}
+      TZ: EST5EDT
+
   pnp_draws_ab:                    # 阿省抽选(一省一份 raw/pnp/draws-ab.json;任一页失败本单元红、文件不动)
     <<: *etl
     environment:
