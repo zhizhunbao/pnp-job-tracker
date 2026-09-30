@@ -685,7 +685,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
-  'pnpchan.noOffer': 'Streams without a job offer',
   'pnpchan.tag.ee': 'Express Entry profile required',
   'pnpchan.tag.localGrad': 'Local graduates only',
   'pnpchan.tag.pgwp': 'PGWP holders only',

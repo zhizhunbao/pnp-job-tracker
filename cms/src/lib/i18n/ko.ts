@@ -668,7 +668,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',
-  'pnpchan.noOffer': '잡 오퍼 없이 가능한 스트림',
   'pnpchan.tag.ee': 'EE 프로필 필요',
   'pnpchan.tag.localGrad': '주내 졸업생만',
   'pnpchan.tag.pgwp': 'PGWP 소지자만',

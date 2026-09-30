@@ -71,7 +71,7 @@ import type {
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
-  ChannelListIn, ChannelOffIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
+  ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
   LocalNameIn, PathwayChannelIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -851,6 +851,7 @@ function channelOf(x: ChannelOfIn): ChannelSpec {
 }
 
 /**
+ * 同日晚 Frank「不要 offer 这个也删了,只列本岗能走的通道」:下段撤,本函数给的就是整张卡。
  * 通道卡上段的全部条目(2026-09-30 通道补全批二;立项稿 docs/design/通道补全-20260930.md 第五节):本岗自己的通道(channelsOf ——
  * 数据层挂的具名通道或本省默认通道)在前,其余跟工作有关的通道(extraChannelsOf)按表序接后。
  *
@@ -973,26 +974,6 @@ function isEmployerOf(x: EmployerHitIn): boolean {
     }
   }
   return false
-}
-
-/**
- * 通道卡下段「不要 offer 的通道」(2026-09-30 通道补全批二,Frank「不看工作的也收」):本省不看工作的通道全列,不按岗位筛,
- * 条件写成标签。魁省与没省码的岗不出(同上段)。
- *
- * @param x 取词函数、界面语言、灰字开关、本岗与通道对照表。
- * @returns 条目;没有给空列。
- */
-export function offChannelsOf(x: ChannelOffIn): ChannelSpec[] {
-  const out: ChannelSpec[] = []
-  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
-    return out
-  }
-  for (const p of x.pathways) {
-    if (p.province === x.job.province && p.jobLinked === false) {
-      out.push(pathwayChannelOf({ t: x.t, lang: x.lang, showZh: x.showZh, p }))
-    }
-  }
-  return out
 }
 
 /**

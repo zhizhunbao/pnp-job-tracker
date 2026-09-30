@@ -29,7 +29,7 @@ import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
-  allGroupsLabelOf, channelListOf, channelsOf, offChannelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
+  allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   aipCardOf, aipEmployerCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
@@ -1109,8 +1109,6 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const LIVE = PATHWAYS.filter((p) => (p as PnpPathway & { status: string }).status !== 'closed')
     const up = (j: PnpJob, o: PnpOcc[] = [], lang: 'zh' | 'en' | 'ko' = 'zh') =>
       channelListOf({ t: makeT(lang), tEn: en, lang, showZh: true, job: j, defaults: DEFAULTS, pathways: LIVE, occ: o })
-    const down = (j: PnpJob, lang: 'zh' | 'en' | 'ko' = 'zh') =>
-      offChannelsOf({ t: makeT(lang), lang, showZh: true, job: j, pathways: LIVE })
     const keys = (cs: { key: string }[]) => cs.map((c) => c.key)
     const texts = (cs: { tags: { text: string }[] }[], i: number) => cs[i]!.tags.map((g) => g.text)
 
@@ -1125,7 +1123,6 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       const enCard = up(job({ province: 'NL', teer: 2 }), [], 'en')
       expect(enCard[2]).toMatchObject({ name: 'NLPNP Express Entry Skilled Worker Category', sub: '' })
       expect(texts(enCard, 2)).toEqual(['Express Entry profile required'])
-      expect(down(job({ province: 'NL' }))).toEqual([])
     })
 
     it('NS 医生:职业码 + 雇主名(归一后比对)都对上才列;本省毕业生看职业清单', () => {
@@ -1142,21 +1139,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       for (const pnpBlock of ['part', 'term', 'seasonal', 'casual']) {
         expect(up(job({ province: 'NL', teer: 2, pnpEligible: false, pnpBlock }))).toEqual([])
       }
-      expect(keys(up(job({ province: 'BC', noc: '64410', teer: 4, pnpEligible: false, pnpBlock: 'occ' })))).toEqual(['bc-rural-remote-health'])
+      // 2026-09-30 BC 偏远医疗撤出对照表(要在同一卫生局已干满 9 个月、10-07 截止,看岗位的人走不了),例子换成 NS 医生
+      expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: 'Nova Scotia Health Authority', pnpEligible: false,
+        pnpBlock: 'occ' })))).toContain('ns-physicians')
       expect(up(job({ province: 'QC', teer: 1 }))).toEqual([])
       expect(up(job({ province: '', teer: 1 }))).toEqual([])
-      expect(down(job({ province: 'QC' }))).toEqual([])
     })
 
-    it('下段按省列不看工作的通道,不按岗位筛', () => {
-      expect(keys(down(job({ province: 'NB', teer: 5, pnpEligible: false, pnpBlock: 'part' }))))
-        .toEqual(['nb-express-entry-interest', 'nb-francophone-priorities', 'nb-francophones-remote'])
-      expect(texts(down(job({ province: 'NB' })), 0)).toEqual(['需先有 EE 档案', '需收到省兴趣信'])
-      expect(keys(down(job({ province: 'MB' })))).toEqual(['mb-skilled-worker-overseas', 'mb-graduate-internship'])
-      expect(down(job({ province: 'MB' }), 'ko')[0]!.sub).toBe('MB 해외 숙련 노동자')
-    })
-
-    // 2026-09-30 Frank「这个部分只显示能走的通道。能走 AIP 就列,不能走就不列」
     it('AIP:本岗雇主是指定雇主、TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工才列在上段末尾;名字取对照表 AIP 那一行', () => {
       const nb = job({ province: 'NB', teer: 2, aip: true })
       const card = up(nb)
@@ -1179,11 +1168,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
             expect(t('pnpchan.tag.' + tag) !== 'pnpchan.tag.' + tag, lang + ':' + tag).toBe(true)
           }
         }
-        expect(t('pnpchan.noOffer') !== 'pnpchan.noOffer', lang).toBe(true)
       }
     })
 
-    it('性质:上段开头就是 channelsOf 那一条;其余同省、看工作、非默认、没挂名、TEER 在内;下段同省、不看工作', () => {
+    it('性质:上段开头就是 channelsOf 那一条;其余同省、看工作、非默认、没挂名、TEER 在内', () => {
       const byKey = new Map(LIVE.map((p) => [p.key, p]))
       fc.assert(fc.property(
         fc.constantFrom('AB', 'BC', 'SK', 'MB', 'ON', 'NS', 'NB', 'PE', 'NL', 'QC', 'YT', ''), fc.boolean(),
@@ -1204,11 +1192,6 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
           }
           if (['part', 'term'].includes(pnpBlock)) {
             expect(all.length).toBe(own.length)
-          }
-          for (const c of down(j)) {
-            const p = byKey.get(c.key)!
-            expect(p.province).toBe(province)
-            expect(p.jobLinked).toBe(false)
           }
         }), { numRuns: 500 })
     })

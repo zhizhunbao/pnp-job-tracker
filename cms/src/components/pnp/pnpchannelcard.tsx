@@ -8,6 +8,7 @@
  * 与下面抽选卡本岗那一组同名。
  * 2026-09-30 通道补全批二(Frank「nl 之前不说有个毕业生通道吗?」「列进来,标需先有 EE 档案」「不看工作的也收」):一岗列出全部通道 ——
  * 上段本岗通道 + 其余跟工作有关的(按岗位筛),下段「不要 offer 的通道」(本省不看工作的);每条带条件标签。条目拆成 ChannelRow。
+ * 同日晚 Frank「不要 offer 这个也删了,只列本岗能走的通道」:下段撤,卡里只剩本岗能走的通道。
  *
  * @author Frank
  * @time 2026-09-26 16:10:00
@@ -19,24 +20,18 @@ import css from './pnp.module.css'
 /**
  * 渲染「本岗能走的通道」卡。
  *
- * @param props 取词函数、上段条目与下段条目。
+ * @param props 取词函数与通道条目。
  * @returns 通道卡。
  */
-export function PnpChannelCard({ t, channels, others }: PnpChannelCardIn) {
+export function PnpChannelCard({ t, channels }: PnpChannelCardIn) {
   const items = []
   for (const c of channels) {
     items.push(<ChannelRow key={c.key} c={c} />)
-  }
-  const offs = []
-  for (const c of others) {
-    offs.push(<ChannelRow key={c.key} c={c} />)
   }
   return (
     <div className={css.card}>
       <div className={css.cardHead}>{t('pnpfacts.streams')}</div>
       {items}
-      {offs.length > 0 && <div className={css.chanSubHead}>{t('pnpchan.noOffer')}</div>}
-      {offs}
     </div>
   )
 }

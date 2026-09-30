@@ -2385,11 +2385,6 @@ export type PnpListPanel = {
   channels: ChannelSpec[]
 
   /**
-   * 本省不看工作的通道(通道卡下段「不要 offer 的通道」;2026-09-30)。
-   */
-  offChannels: ChannelSpec[]
-
-  /**
    * 走不了省提名的原因词(弹框顶上「本岗不满足的门槛」卡;'' = 走得了;2026-09-29)。
    */
   block: string
@@ -3619,11 +3614,6 @@ export type PnpChannelCardIn = {
    * 通道条目(现在单值,结构可放多条)。2026-09-30 起 = 本岗通道 + 上段其余几条(channelListOf)。
    */
   channels: ChannelSpec[]
-
-  /**
-   * 下段「不要 offer 的通道」(本省不看工作的通道;没有给空列;2026-09-30)。
-   */
-  others: ChannelSpec[]
 }
 
 /**
@@ -4190,36 +4180,6 @@ export type ChannelListIn = {
    * 职业清单行(判本岗职业码在不在通道的清单里)。
    */
   occ: PnpOcc[]
-}
-
-/**
- * offChannelsOf 的入参(2026-09-30 通道补全批二)。
- */
-export type ChannelOffIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 界面语言。
-   */
-  lang: PnpLang
-
-  /**
-   * 出不出灰字。
-   */
-  showZh: boolean
-
-  /**
-   * 本岗(取省码)。
-   */
-  job: PnpJob
-
-  /**
-   * 全国通道对照(整表)。
-   */
-  pathways: PnpPathway[]
 }
 
 /**

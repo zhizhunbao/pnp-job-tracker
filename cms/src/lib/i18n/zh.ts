@@ -729,7 +729,6 @@ export const jobsZh = {
   // 2026-09-26 晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改走与其余组同一种组头行,三格与灰字统计撤,latest / people / apps / rounds90 与三条合计随之删
   'pnpfacts.streams': '本岗能走的通道',
   // 2026-09-30 通道补全批二:通道卡下段标题与条件标签(标签键 = etl/pathways 的 TAG_KEYS)
-  'pnpchan.noOffer': '不要 offer 的通道',
   'pnpchan.tag.ee': '需先有 EE 档案',
   'pnpchan.tag.localGrad': '需本省毕业',
   'pnpchan.tag.pgwp': '需持 PGWP',
