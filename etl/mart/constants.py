@@ -3116,6 +3116,9 @@ K_RANK_DISPLAY = "rankDisplay"
 TABLE_DLI = "dli"
 """dli 表名(单表增量件 build_dli_table 落盘用;与 to_mart_tables 字典键同字)。"""
 
+TABLE_PATHWAYS = "pathways"
+"""pathways 表名(单表增量件 build_pathways_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一立)。"""
+
 IN_FIELD_SOURCES = paths.RAW / "sources" / "field-sources.json"
 """字段级来源注册表(citations 域 verify_field_source_pages 产,E4-04;汇装层直通)。"""
 
