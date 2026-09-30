@@ -1875,9 +1875,15 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string; en?: str
   'NB Strategic Initiative': { zh: 'NB 法语专项', ko: 'NB 불어권 특별' },
   'AIP': { zh: 'AIP 大西洋移民计划', ko: 'AIP 대서양 이민 프로그램' },
   'Labour & Express Entry': { zh: 'PE 劳工通道、PE 在需职业', ko: 'PE 인력 스트림, PE 수요 직종', en: 'PE Workforce, PE in-demand' },
-  'NLPNP + AIP (ITA batch)': { zh: 'NL 技术工人、AIP', ko: 'NL 숙련 노동자, AIP', en: 'NL Skilled Worker, AIP' },
+  'NLPNP + AIP (ITA batch)': { zh: 'NL 技术工人、NL 国际毕业生、NL 快速通道技术工人、AIP',
+    ko: 'NL 숙련 노동자, NL 국제 졸업생, NL 익스프레스 엔트리 숙련 노동자, AIP',
+    en: 'NL Skilled Worker, NL International Graduate, NL Express Entry Skilled Worker, AIP' },
   // 2026-09-29 抽选卡重排:etl/pnp 把 NL 每批 ITA 拆成省提名、AIP 两行(拆不开的整批仍叫上面那个名)
-  'NLPNP (ITA batch)': { zh: 'NL 技术工人', ko: 'NL 숙련 노동자', en: 'NL Skilled Worker' },
+  // 2026-09-30 通道补全批一 1b(立项稿第四节第 6 条):官方每批 ITA 是全部 NLPNP 类别的合计,原名「NL 技术工人」叫窄了 ——
+  // 照本表「覆盖本站通道的组写通道名」的口径列本站三条 NL 通道(技术工人、国际毕业生、快速通道技术工人)
+  'NLPNP (ITA batch)': { zh: 'NL 技术工人、NL 国际毕业生、NL 快速通道技术工人',
+    ko: 'NL 숙련 노동자, NL 국제 졸업생, NL 익스프레스 엔트리 숙련 노동자',
+    en: 'NL Skilled Worker, NL International Graduate, NL Express Entry Skilled Worker' },
   'AIP (ITA batch)': { zh: 'AIP 大西洋移民计划', ko: 'AIP 대서양 이민 프로그램' },
   'Monthly EOI selections': { zh: 'NS 技术工人、NS 建筑、AIP', ko: 'NS 숙련 노동자, NS 건설, AIP',
     en: 'NS Skilled Worker, NS Construction, AIP' },
