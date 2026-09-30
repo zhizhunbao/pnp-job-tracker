@@ -290,8 +290,50 @@ QCR_PRINT_DONE_TPL = "✓ {path}  更新日 {version}  {n} 条门槛"
 """落盘报数。"""
 
 QCR_FACTOR_ORDER = ("age", "fundsMinimum", "occupationPathway", "experience", "language", "education", "licensing",
-                    "exceptionalAchievement")
-"""收尾按因素报条数的顺序。"""
+                    "exceptionalAchievement", "intakeWindow")
+"""收尾按因素报条数的顺序(2026-09-29 加 intakeWindow:PEQ 收件期行)。"""
+
+K_TEF_COMP = "tefComp"
+"""法语行 basis 键:TEF 理解(听 / 读)那一档下限。"""
+
+K_TEF_EXPR = "tefExpr"
+"""法语行 basis 键:TEF 表达(说 / 写)那一档下限。"""
+
+K_TCF_COMP = "tcfComp"
+"""法语行 basis 键:TCF 理解那一档下限(699 分制)。"""
+
+K_TCF_EXPR = "tcfExpr"
+"""法语行 basis 键:TCF 表达那一档下限(20 分制)。"""
+
+QCR_FR_TESTS = {
+    "oral": (("TEF-Canada (à partir du 11 décembre 2023)", "Compréhension orale et écrite", K_TEF_COMP),
+             ("TEF-Canada (à partir du 11 décembre 2023)", "Expression orale", K_TEF_EXPR),
+             ("TCF-Canada", "Compréhension orale", K_TCF_COMP),
+             ("TCF-Canada", "Expression orale et écrite", K_TCF_EXPR)),
+    "written": (("TEF-Canada (à partir du 11 décembre 2023)", "Compréhension orale et écrite", K_TEF_COMP),
+                ("TEF-Canada (à partir du 11 décembre 2023)", "Expression écrite", K_TEF_EXPR),
+                ("TCF-Canada", "Compréhension écrite", K_TCF_COMP),
+                ("TCF-Canada", "Expression orale et écrite", K_TCF_EXPR)),
+}
+"""法语门槛行挂考试分数线(2026-09-29 Frank「要不都用 TEF 呢?」):口径(oral / written)→ 四个 (考试, 技能, 键)。
+魁省级数门槛的「口语 N 级」= 听、说两项都到 N 级,「书面 N 级」= 读、写两项都到 N 级,所以每个考试取理解 + 表达两格。
+TEF 取现行 TEF Canada(2023-12-11 起那版);魁省对照表里 TEF / TEFAQ / TEF Canada 三版在 4 / 5 / 7 级的分数线逐格相同(当日核过)。
+TCF 取 TCF Canada:理解按 699 分制、表达按 20 分制,所以「口语 7 级」在 TCF 是听 400、说 10,不能只写一个数。"""
+
+QCR_FR_BASIS_TPL = "{basis};tefComp={tefComp};tefExpr={tefExpr};tcfComp={tcfComp};tcfExpr={tcfExpr}"
+"""法语门槛行的 basis:原口径(oral / written)后接四个分数线(各考试该级那一档的下限;前端按它出「TEF 400 分起」)。"""
+
+QCR_FR_PROBLEM_TPL = "法语分数线挂不上:{what}"
+"""自校问题行(对照表缺考试 / 技能 / 这一级 → 整份保留旧表)。"""
+
+QCR_FR_WHAT_FILE = "qc-french-levels.json 不在(qc_french_levels 步要排在门槛步之前)"
+"""问题行条目:对照表产物缺。"""
+
+QCR_FR_WHAT_BAND_TPL = "{test} / {skill} 找不到魁省 {level} 级那一档"
+"""问题行条目:对照表里没有这一档。"""
+
+QCR_FR_WHAT_BASIS_TPL = "法语行口径「{basis}」认不出"
+"""问题行条目:basis 不是 oral / written。"""
 
 # =========================================================================
 # 3. PEQ 门槛(2026-09-29 立;PEQ 2026-07-02 起临时重开两年,只有法文页)
@@ -380,6 +422,15 @@ QCP_BASIS_EXP_TPL = "inQuebec;windowMonths={n};fullTimeHoursPerWeek={h}"
 
 QCP_BASIS_CUTOFF_TPL = "asOf={date}"
 """收件条件的截点日口径(PEQ 本轮只收截点日前已满足条件的人)。"""
+
+QCP_FACTOR_INTAKE = "intakeWindow"
+"""PEQ 收件期行的因素名(2026-09-29 立:门槛卡「收件期」行读它;九省没有这一因素)。"""
+
+QCP_INTAKE_TEXT_TPL = "{opens}..{closes}"
+"""收件期行的 valueText(ISO 起止)。"""
+
+QCP_INTAKE_BASIS_TPL = "opens={opens};closes={closes};programCloses={pclose}"
+"""收件期行的 basis:本轮收件起止 + 重开期止日(前端按它出「2026-07-02 至 2026-10-31」)。"""
 
 QCP_UNIT_HOURS = "hours"
 """学时单位(DEP 至少 1 800 小时)。"""

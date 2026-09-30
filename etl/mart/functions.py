@@ -221,6 +221,12 @@ from mart.constants import (
     OFFER_FORM_STREAM, OFFER_FORM_SUBJECT, OFFER_FORM_VALUE_SEP, OFFER_QUOTE_SEP, PROV_OFFER_QUOTE,
 )
 from mart.scheme import OfferFormIn
+from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_noc_streams;设计 docs/design/魁省门槛弹框-20260929.md)
+    IN_QC_NOC_STREAMS, IN_QC_PEQ_REQ, IN_QC_REQ, K_CHANNELS, K_CODE, K_KIND, K_REGULATED, QC_FACTOR_OCC, QC_KIND_ALL,
+    QC_NOC_MISSING_TPL, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL,
+    QC_TEER_DIGIT,
+)
+from mart.scheme import QcNocRowIn, QcPeqOut
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, DrawYtdRowIn, OpsExtraBaseIn, SalaryHitIn,
     StreamYtdIn,
@@ -4577,6 +4583,62 @@ def to_pathway_row(r: dict) -> dict:
     return out
 
 
+def build_qc_noc_streams() -> list:
+    """魁省职业 → 通道对照表(2026-09-29 立;设计 docs/design/魁省门槛弹框-20260929.md):516 个 NOC,每个一行
+    {noc, name, channels}。channels = 对照表的 PSTQ 通道(通道号配上 qc-req.json 的门槛流名,细分码、官方说明、受监管明细照带)
+    + PEQ 临时工分支(按 qc-peq-req.json「职业档」那行的 TEER 档挂)。跨源汇装在这里做,前端按 NOC 查表出格子与门槛卡。"""
+    if not IN_QC_NOC_STREAMS.exists():
+        say(QC_NOC_MISSING_TPL.format(path=IN_QC_NOC_STREAMS))
+        return []
+    names = qc_pstq_names_of(read_table_soft(IN_QC_REQ))
+    peq = qc_peq_of(read_table_soft(IN_QC_PEQ_REQ))
+    rows: list = []
+    for r in read_table_soft(IN_QC_NOC_STREAMS).get(K_NOCS, []):
+        rows.append(to_qc_noc_row(QcNocRowIn(row=r, names=names, peq=peq)))
+    return rows
+
+
+def qc_pstq_names_of(req: dict) -> dict:
+    """PSTQ 门槛表 → {通道号: 门槛流名}(流名以「Stream N:」开头的才算;一般条件行不算);配不上的通道号喊一声。"""
+    names: dict = {}
+    streams: list = []
+    for r in req.get(K_REQUIREMENTS, []):
+        if r.get(K_STREAM) not in streams:
+            streams.append(r.get(K_STREAM))
+    for n in (1, 2, 3, 4):
+        for s in streams:
+            if s and s.startswith(QC_STREAM_PREFIX_TPL.format(n=n)):
+                names[n] = s
+                break
+        if n not in names:
+            say(QC_STREAM_MISS_TPL.format(n=n))
+    return names
+
+
+def qc_peq_of(req: dict) -> QcPeqOut:
+    """PEQ 门槛表 → 临时工分支的通道名与 TEER 档(「职业档」那一行);表缺或没有这一行 → 空名、空档(PEQ 不挂)。"""
+    for r in req.get(K_REQUIREMENTS, []):
+        if r.get(REQ_K_FACTOR) == QC_FACTOR_OCC and str(r.get(K_STREAM) or "").startswith(QC_PEQ_TFW_PREFIX):
+            return QcPeqOut(stream=r[K_STREAM], teer=list(r.get(REQ_K_TEER) or []))
+    return QcPeqOut(stream="", teer=[])
+
+
+def to_qc_noc_row(x: QcNocRowIn) -> dict:
+    """一个 NOC → {noc, name, channels}:PSTQ 各通道(按对照表顺序)在前,PEQ 临时工分支殿后。"""
+    channels: list = []
+    for s in x.row.get(K_STREAMS, []):
+        name = x.names.get(s.get(K_STREAM))
+        if name is None:
+            continue
+        channels.append({K_PROGRAM: QC_PROGRAM_PSTQ, K_STREAM: name, K_CODE: s.get(K_CODE), K_KIND: s.get(K_KIND),
+                         K_LABEL: s.get(K_LABEL), K_REGULATED: s.get(K_REGULATED)})
+    noc = str(x.row.get(K_NOC) or "")
+    if x.peq.stream and len(noc) == 5 and int(noc[QC_TEER_DIGIT]) in x.peq.teer:
+        channels.append({K_PROGRAM: QC_PROGRAM_PEQ, K_STREAM: x.peq.stream, K_CODE: "", K_KIND: QC_KIND_ALL,
+                         K_LABEL: "", K_REGULATED: None})
+    return {K_NOC: noc, K_NAME: x.row.get(K_NAME), K_CHANNELS: channels}
+
+
 def build_noc_descriptions(x: NocDescIn) -> list:
     """NOC 官方名+主要职责维度(只收数据集出现过的 NOC,控制前端 payload;
     duties/requirements 存换行拼接文本)。"""
@@ -4865,6 +4927,7 @@ def to_mart_tables() -> dict:
         "pnp_requirements": build_pnp_requirements(IN_REQ_TABLES),
         "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
         "pathways": build_pathways(),
+        "qc_noc_streams": build_qc_noc_streams(),
         "ee_categories": build_ee_categories(ee_draws.by_category),
         "ee_points_grid": build_ee_points_grid(EePointsIn(crs_src=IN_EE_CRS,
                                                           elig_src=IN_EE_ELIG)),

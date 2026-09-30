@@ -137,6 +137,38 @@ class QcrLangIn:
     """问题行(就地追加)。"""
 
 
+
+@dataclass
+class QcFrBasisIn:
+    """qc_fr_basis_of() 入参:一行法语门槛 + 法语对照表。"""
+
+    tests: list
+    """qc-french-levels.json 的 tests(逐「考试 × 技能」七档)。"""
+
+    row: dict
+    """法语门槛行(unit = EQFR;value = 魁省级数;basis = oral / written)。"""
+
+    problems: list
+    """挂不上时往这里记一条问题。"""
+
+
+@dataclass
+class QcFrMinIn:
+    """qc_fr_min_of() 入参:对照表里找一个考试一项技能、魁省某级那一档。"""
+
+    tests: list
+    """对照表逐「考试 × 技能」行。"""
+
+    test: str
+    """考试名(对照表原文)。"""
+
+    skill: str
+    """技能名(对照表原文)。"""
+
+    level: int
+    """魁省级数。"""
+
+
 # =========================================================================
 # 3. PEQ 门槛(2026-09-29 立)
 # =========================================================================
@@ -845,3 +877,38 @@ class QcFrenchTest(unittest.TestCase):
             if "没解析出一行分数" in pr:
                 orphan.append(pr)
         self.assertEqual(len(orphan), 1)
+
+
+class QcFrBasisTest(unittest.TestCase):
+    """法语门槛行挂考试分数线(2026-09-29):金标(口语 7 级 → TEF 理解 / 表达 400、TCF 理解 400 / 表达 10)+ 拒猜
+    (口径不是 oral / written、对照表缺这一档 → 记问题、basis 原样)。纯函数用例。"""
+
+    def band(self, lo: int, hi: int, smin: int) -> dict:
+        """一档(只填用得到的格)。"""
+        return {"levelMin": lo, "levelMax": hi, "scoreMin": smin}
+
+    def tests_of(self) -> list:
+        """魁省对照表里 TEF Canada 新版与 TCF Canada 口语相关的四行(7-8 级那一档,照真表数)。"""
+        tef = "TEF-Canada (à partir du 11 décembre 2023)"
+        return [{"test": tef, "skill": "Compréhension orale et écrite", "bands": [self.band(7, 8, 400)]},
+                {"test": tef, "skill": "Expression orale", "bands": [self.band(7, 8, 400)]},
+                {"test": "TCF-Canada", "skill": "Compréhension orale", "bands": [self.band(7, 8, 400)]},
+                {"test": "TCF-Canada", "skill": "Expression orale et écrite", "bands": [self.band(7, 8, 10)]}]
+
+    def test_gold(self) -> None:
+        """口语 7 级 → oral;tefComp=400;tefExpr=400;tcfComp=400;tcfExpr=10。"""
+        from pnp.qc.functions import qc_fr_basis_of
+        problems: list = []
+        out = qc_fr_basis_of(QcFrBasisIn(tests=self.tests_of(), row={"basis": "oral", "value": 7}, problems=problems))
+        self.assertEqual(out, "oral;tefComp=400;tefExpr=400;tcfComp=400;tcfExpr=10")
+        self.assertEqual(problems, [])
+
+    def test_refuse(self) -> None:
+        """口径写错 / 对照表没有 9 级那一档 → 各记一条问题,basis 原样交回。"""
+        from pnp.qc.functions import qc_fr_basis_of
+        problems: list = []
+        self.assertEqual(qc_fr_basis_of(QcFrBasisIn(tests=self.tests_of(), row={"basis": "speaking", "value": 7},
+                                                    problems=problems)), "speaking")
+        self.assertEqual(qc_fr_basis_of(QcFrBasisIn(tests=self.tests_of(), row={"basis": "oral", "value": 9},
+                                                    problems=problems)), "oral")
+        self.assertEqual(len(problems), 2)

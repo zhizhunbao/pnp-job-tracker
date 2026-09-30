@@ -2045,6 +2045,31 @@ class DliRowIn:
     """该校命中的 QS 榜行(按 dliName 对上;榜外 None,qsRank 留空不瞎猜)。"""
 
 @dataclass
+class QcPeqOut:
+    """qc_peq_of() 产出:PEQ 临时工分支的通道名与 TEER 档(2026-09-29)。"""
+
+    stream: str
+    """通道名(qc-peq-req.json 原文);表缺 → 空串(PEQ 不挂)。"""
+
+    teer: list
+    """可挂的 TEER 档([0, 1, 2, 3])。"""
+
+
+@dataclass
+class QcNocRowIn:
+    """to_qc_noc_row() 入参:对照表一行 + 通道号配流名 + PEQ(2026-09-29)。"""
+
+    row: dict
+    """qc-noc-streams.json 的一行 {noc, name, streams}。"""
+
+    names: dict
+    """{PSTQ 通道号: 门槛流名}。"""
+
+    peq: QcPeqOut
+    """PEQ 临时工分支。"""
+
+
+@dataclass
 class NocDescIn:
     """build_noc_descriptions() 入参。"""
 

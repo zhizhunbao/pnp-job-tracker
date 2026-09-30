@@ -2328,7 +2328,11 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
       表级只有 province —— 按行覆盖 program,零新表;
   G-AIP 联邦大西洋移民计划(AIP)申请人门槛(province='FED' program='AIP',aip 域产,
       quote-anchored)—— #287 一键三合一判定的硬前置(设计
-      docs/design/一键三合一判定-20260809.md §4:此前 AIP 申请人侧生产 0 行)。"""
+      docs/design/一键三合一判定-20260809.md §4:此前 AIP 申请人侧生产 0 行)。
+  魁省两份(pnp/qc 子域产 qc-req.json / qc-peq-req.json,province='QC',program 'PSTQ' / 'PEQ')**暂不加**
+      (2026-09-29;设计 docs/design/魁省门槛弹框-20260929.md 批 C):判定引擎 / 官方规则页那条读全表的 SQL 先上排除挡板、
+      门槛卡的读取 SQL 先放行 province='QC',cms 换版之后再把两份加进来 —— 先加这里,build 容器下一轮就把魁省行灌进生产库,
+      挡板没上线的那几个页面会先读到。"""
 
 K_REQUIREMENTS = "requirements"
 """门槛表的行清单键。"""
@@ -3091,6 +3095,54 @@ IN_PATHWAYS = paths.PROCESSED / "pathways" / "pathways.json"
 
 PATHWAYS_MISSING_TPL = "✗ 通道对照表不在:{path} —— 先跑 python etl/pathways/main.py(本轮 pathways 表出空表)"
 """通道对照表缺文件(仓库里跟踪着这份产物,缺了就是出事了,喊出来)。"""
+
+IN_QC_NOC_STREAMS = paths.PNP / "qc-noc-streams.json"
+"""魁省职业 → PSTQ 通道官方对照(pnp/qc 子域产,2026-09-29;设计 docs/design/魁省门槛弹框-20260929.md)。"""
+
+IN_QC_REQ = paths.PNP / "qc-req.json"
+"""魁省 PSTQ 门槛表(取四个通道的官方名,给对照表的通道号配上门槛行的 stream)。"""
+
+IN_QC_PEQ_REQ = paths.PNP / "qc-peq-req.json"
+"""魁省 PEQ 门槛表(取临时工分支的通道名与 TEER 档,给对照表每个 NOC 判要不要挂 PEQ)。"""
+
+QC_NOC_MISSING_TPL = "✗ 魁省职业对照不在:{path} —— 先跑 python etl/pnp/main.py --only pnp_qc(本轮 qc_noc_streams 表出空表)"
+"""魁省对照缺文件(同 pathways,喊出来)。"""
+
+QC_STREAM_MISS_TPL = "  ⚠ 魁省通道 {n} 在 qc-req.json 里找不到「Stream {n}:」开头的门槛流 —— 这个通道不挂到岗位上"
+"""对照表的通道号配不上门槛行的 stream(官网改了通道名的写法)。"""
+
+QC_STREAM_PREFIX_TPL = "Stream {n}:"
+"""PSTQ 门槛流名的通道号前缀(qc-req.json 的 stream 原文「Stream 1: Highly qualified …」)。"""
+
+QC_PROGRAM_PSTQ = "PSTQ"
+"""魁省技术工人甄选项目。"""
+
+QC_PROGRAM_PEQ = "PEQ"
+"""魁省经验类项目。"""
+
+QC_FACTOR_OCC = "occupationPathway"
+"""PEQ 门槛表里「职业档」那一行的因素名(它的 appliesTeer 决定 PEQ 挂到哪些岗)。"""
+
+QC_PEQ_TFW_PREFIX = "PEQ – Travailleurs"
+"""PEQ 临时工分支的通道名前缀(毕业生分支只看学历、不看岗位,不挂到岗位上)。"""
+
+QC_TEER_DIGIT = 1
+"""NOC 五位码里 TEER 那一位的下标(第二位)。"""
+
+QC_KIND_ALL = "all"
+"""通道细分类:该职业的工作都进这个通道(PEQ 挂上来的一律是它)。"""
+
+K_CHANNELS = "channels"
+"""qc_noc_streams 表一行的通道清单(卡片顺序:PSTQ 1 → 2 → 3 → PEQ)。"""
+
+K_CODE = "code"
+"""官方细分码(「3-PNER16」;PEQ 为空串)。"""
+
+K_KIND = "kind"
+"""细分码的类(all / citizenOnly / residentOnly / regulated / regulatedQcDiploma / partlyRegulated)。"""
+
+K_REGULATED = "regulated"
+"""受监管明细 [{jobs, authorities}](法文原文);非受监管通道为 None。"""
 
 K_OPEN = "open"
 """在招计数格(职业在招量桶 / rankings 聚合桶)。"""

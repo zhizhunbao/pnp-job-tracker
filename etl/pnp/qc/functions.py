@@ -7,6 +7,7 @@ pnp 共用段不 import 本文件。入口函数由 pnp/main.py 登记进调度�
 @author Frank
 @time 2026-09-29 20:01:04
 """
+import json
 import re
 import sys
 import unittest
@@ -22,11 +23,12 @@ from crawl.functions import get_cached_page
 from fetch.constants import PARSER_HTML
 from log.functions import say
 from pnp.constants import (
-    DRAWS_NOTE_CLIP, EMPTY_JOIN, FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EXPERIENCE, FACTOR_FUNDS, FACTOR_LANGUAGE,
-    FACTOR_LICENSING, FACTOR_OCC_PATHWAY, INDENT_2, K_AS_OF_LOWER, K_DATE, K_FETCHED, K_GUIDE_EFFECTIVE, K_INVITATIONS,
-    K_LABEL, K_NAME, K_NOC, K_NOCS, K_NOTE, K_PAGE_URL, K_PARTIAL, K_PROGRAM, K_PROVINCE, K_REQUIREMENTS, K_SCORE,
-    K_SECTION, K_SOURCE, K_STREAM, K_STREAMS, K_TOTAL, K_UNIT, K_URL, K_VALUE, K_YEAR, LIST_JOIN_SEP, OP_RULE,
-    PRINT_FACTOR_TPL, PRINT_OUT_TPL, PROV_QC, TEST_VERBOSITY, TEXT_JOIN_SEP, UNIT_MONTHS, UNIT_YEARS, WORD_N,
+    DRAWS_NOTE_CLIP, EMPTY_JOIN, ENC_UTF8, FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EXPERIENCE, FACTOR_FUNDS,
+    FACTOR_LANGUAGE, FACTOR_LICENSING, FACTOR_OCC_PATHWAY, INDENT_2, K_AS_OF_LOWER, K_BASIS, K_DATE, K_FETCHED,
+    K_GUIDE_EFFECTIVE, K_INVITATIONS, K_LABEL, K_NAME, K_NOC, K_NOCS, K_NOTE, K_PAGE_URL, K_PARTIAL, K_PROGRAM,
+    K_PROVINCE, K_REQUIREMENTS, K_SCORE, K_SECTION, K_SOURCE, K_STREAM, K_STREAMS, K_TOTAL, K_UNIT, K_URL, K_VALUE,
+    K_YEAR, LIST_JOIN_SEP, OP_RULE, PRINT_FACTOR_TPL, PRINT_OUT_TPL, PROV_QC, TEST_VERBOSITY, TEXT_JOIN_SEP,
+    UNIT_MONTHS, UNIT_YEARS, WORD_N,
 )
 from pnp.functions import (
     cached_draws_of, draw_date_of, fail_zh, fetch_bytes, fold_ws, int_of, iso_nb_of, iso_of, pdf_text, put_prov_draws,
@@ -37,46 +39,49 @@ from pnp.qc.constants import (
     K_ADMISSIONS, K_AUTHORITIES, K_BANDS, K_CEFR, K_CODE, K_ELIGIBLE_AS_OF, K_EXERCISES, K_FULL, K_INTAKE,
     K_INTAKE_CLOSES, K_INTAKE_OPENS, K_INVITATIONS_TEXT, K_IN_QUEBEC, K_JOBS, K_KIND, K_LEVEL_MAX, K_LEVEL_MIN,
     K_OUTSIDE_MONTREAL, K_PLAN_YEAR, K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE, K_REGULATED,
-    K_REGULATED_LIST, K_SCORE_MAX, K_SCORE_MIN, K_SELECTIONS, K_SKILL, K_TEST, K_TESTS, K_VALUE_MAX, K_VERSION,
-    OUT_QC_FRENCH_LEVELS, OUT_QC_NOC_STREAMS, OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCF_BANDS, QCF_BODY_HEAD,
-    QCF_CEFR_HEAD, QCF_DECIMAL_COMMA, QCF_DECIMAL_POINT, QCF_LEVELS_HEAD, QCF_LEVEL_RE, QCF_MIN_TESTS, QCF_PDF_URL,
-    QCF_PRINT_DONE_TPL, QCF_PROBLEM_FETCH_TPL, QCF_PROBLEM_TPL, QCF_SCORE_RE, QCF_SKILL_RE, QCF_VERSION_RE,
-    QCF_WHAT_BODY, QCF_WHAT_CEFR, QCF_WHAT_LEVELS, QCF_WHAT_ORPHAN_TPL, QCF_WHAT_RISING_TPL, QCF_WHAT_SKILL_TPL,
-    QCF_WHAT_TESTS_TPL, QCF_WHAT_VERSION, QCN_ALL_JOBS, QCN_BULLET, QCN_BULLET_STRIP, QCN_CODES_SKIP, QCN_CODE_SEP,
-    QCN_CONNECT, QCN_ENTRY_RE, QCN_FOOTMARK_RE, QCN_FOOTNOTE_RE, QCN_FULL_KINDS, QCN_FULL_RE, QCN_HEAD_LINES,
-    QCN_JOIN_SEP, QCN_KINDS, QCN_KIND_BASE, QCN_MODE_AUTH, QCN_MODE_JOBS, QCN_MODE_NAME, QCN_NOC_COUNT, QCN_NOC_RE,
-    QCN_PARTIAL_KINDS, QCN_PARTIAL_RE, QCN_PNER_KEY, QCN_PNER_RE, QCN_PRINT_DONE_TPL, QCN_PROBLEM_CROSS_TPL,
-    QCN_PROBLEM_FETCH_TPL, QCN_PROBLEM_TPL, QCN_REGULATED_PDF_URL, QCN_ROWS_SKIP, QCN_SHEET_CODES, QCN_SHEET_ROWS,
-    QCN_STREAM3, QCN_STREAM_SEP, QCN_TABLE_START, QCN_TIMEOUT_S, QCN_TOTALS_RE, QCN_VERSION_RE, QCN_WHAT_CODE_TPL,
-    QCN_WHAT_EMPTY_TPL, QCN_WHAT_FULL, QCN_WHAT_KIND_TPL, QCN_WHAT_PARTIAL, QCN_WHAT_ROWS, QCN_WHAT_SET_TPL,
-    QCN_WHAT_TOTAL, QCN_WHAT_TOTALS, QCN_WRAP_TAILS, QCN_XLSX_URL, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL, QCP_BASIS_EXP_TPL,
-    QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE, QCP_EXP_RE, QCP_FULLTIME_RE, QCP_GRAD_URL,
-    QCP_GRAD_WINDOW_RE, QCP_INTAKE_RE, QCP_ORAL_RE, QCP_PAGE_GRAD, QCP_PAGE_TFW, QCP_PRINT_DONE_TPL,
+    K_REGULATED_LIST, K_SCORE_MAX, K_SCORE_MIN, K_SELECTIONS, K_SKILL, K_TCF_COMP, K_TCF_EXPR, K_TEF_COMP, K_TEF_EXPR,
+    K_TEST, K_TESTS, K_VALUE_MAX, K_VERSION, OUT_QC_FRENCH_LEVELS, OUT_QC_NOC_STREAMS, OUT_QC_PEQ_REQ, OUT_QC_REQ,
+    OUT_QC_STATS, QCF_BANDS, QCF_BODY_HEAD, QCF_CEFR_HEAD, QCF_DECIMAL_COMMA, QCF_DECIMAL_POINT, QCF_LEVELS_HEAD,
+    QCF_LEVEL_RE, QCF_MIN_TESTS, QCF_PDF_URL, QCF_PRINT_DONE_TPL, QCF_PROBLEM_FETCH_TPL, QCF_PROBLEM_TPL, QCF_SCORE_RE,
+    QCF_SKILL_RE, QCF_VERSION_RE, QCF_WHAT_BODY, QCF_WHAT_CEFR, QCF_WHAT_LEVELS, QCF_WHAT_ORPHAN_TPL,
+    QCF_WHAT_RISING_TPL, QCF_WHAT_SKILL_TPL, QCF_WHAT_TESTS_TPL, QCF_WHAT_VERSION, QCN_ALL_JOBS, QCN_BULLET,
+    QCN_BULLET_STRIP, QCN_CODES_SKIP, QCN_CODE_SEP, QCN_CONNECT, QCN_ENTRY_RE, QCN_FOOTMARK_RE, QCN_FOOTNOTE_RE,
+    QCN_FULL_KINDS, QCN_FULL_RE, QCN_HEAD_LINES, QCN_JOIN_SEP, QCN_KINDS, QCN_KIND_BASE, QCN_MODE_AUTH, QCN_MODE_JOBS,
+    QCN_MODE_NAME, QCN_NOC_COUNT, QCN_NOC_RE, QCN_PARTIAL_KINDS, QCN_PARTIAL_RE, QCN_PNER_KEY, QCN_PNER_RE,
+    QCN_PRINT_DONE_TPL, QCN_PROBLEM_CROSS_TPL, QCN_PROBLEM_FETCH_TPL, QCN_PROBLEM_TPL, QCN_REGULATED_PDF_URL,
+    QCN_ROWS_SKIP, QCN_SHEET_CODES, QCN_SHEET_ROWS, QCN_STREAM3, QCN_STREAM_SEP, QCN_TABLE_START, QCN_TIMEOUT_S,
+    QCN_TOTALS_RE, QCN_VERSION_RE, QCN_WHAT_CODE_TPL, QCN_WHAT_EMPTY_TPL, QCN_WHAT_FULL, QCN_WHAT_KIND_TPL,
+    QCN_WHAT_PARTIAL, QCN_WHAT_ROWS, QCN_WHAT_SET_TPL, QCN_WHAT_TOTAL, QCN_WHAT_TOTALS, QCN_WRAP_TAILS, QCN_XLSX_URL,
+    QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL, QCP_BASIS_EXP_TPL, QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE,
+    QCP_EXP_RE, QCP_FACTOR_INTAKE, QCP_FULLTIME_RE, QCP_GRAD_URL, QCP_GRAD_WINDOW_RE, QCP_INTAKE_BASIS_TPL,
+    QCP_INTAKE_RE, QCP_INTAKE_TEXT_TPL, QCP_ORAL_RE, QCP_PAGE_GRAD, QCP_PAGE_TFW, QCP_PRINT_DONE_TPL,
     QCP_PROBLEM_NO_PAGE_TPL, QCP_PROBLEM_TPL, QCP_PROGRAM, QCP_RECEPT_GRAD_RE, QCP_RECEPT_TFW_RE, QCP_SPOUSE_RE,
     QCP_STREAM_GRAD, QCP_STREAM_TFW, QCP_TEER_RE, QCP_TFW_URL, QCP_UNIT_HOURS, QCP_UPDATED_RE, QCP_URL, QCP_WHAT_CUTOFF,
     QCP_WHAT_DATE, QCP_WHAT_DEP, QCP_WHAT_FULLTIME, QCP_WHAT_INTAKE, QCP_WHAT_RECEPT, QCP_WHAT_WINDOW, QCP_WINDOW_RE,
     QCP_WRITTEN_RE, QCR_AGE_RE, QCR_ALL_STREAMS, QCR_BASIS_IN_QC_TPL, QCR_BASIS_ORAL, QCR_BASIS_WINDOW_TPL,
     QCR_BASIS_WRITTEN, QCR_DIGIT_RE, QCR_EDU_S1_RE, QCR_EDU_S2_RE, QCR_EXCEPTIONAL_RE, QCR_EXP_S1_RE, QCR_EXP_S2_RE,
-    QCR_EXP_S4_RE, QCR_FACTOR_EXCEPTIONAL, QCR_FACTOR_ORDER, QCR_FUNDS_RE, QCR_H2_MARK, QCR_H2_OPEN_RE, QCR_H2_SUB,
-    QCR_LANG_HIGH_RE, QCR_LANG_S2_RE, QCR_LANG_S3_LOW_RE, QCR_LICENSING_RE, QCR_MONTHS_PER_YEAR, QCR_PRINT_DONE_TPL,
-    QCR_PROBLEM_NO_PAGE, QCR_PROBLEM_NO_SECTION_TPL, QCR_PROBLEM_TPL, QCR_PROGRAM, QCR_SECTION_GENERAL,
-    QCR_SECTION_NAMES, QCR_SOURCE, QCR_SPOUSE_RE, QCR_STREAM_1, QCR_STREAM_2, QCR_STREAM_3, QCR_STREAM_4,
-    QCR_SUBJECT_SPOUSE, QCR_TAIL_KEY, QCR_TEER_HIGH, QCR_TEER_LOW, QCR_TEER_RE, QCR_UNIT_FR, QCR_UPDATED_RE, QCR_URL,
-    QCR_WHAT_AGE, QCR_WHAT_EDU, QCR_WHAT_EXCEPTIONAL, QCR_WHAT_EXP, QCR_WHAT_FUNDS, QCR_WHAT_LANG, QCR_WHAT_LICENSING,
-    QCR_WHAT_SPOUSE, QCR_WHAT_TEER, QCR_WHAT_UPDATED, QCS_ADM_RE, QCS_CATEGORY, QCS_KIND_ACTUAL, QCS_KIND_FORECAST,
-    QCS_KIND_PLAN, QCS_LABEL_TPL, QCS_LETTER_RE, QCS_NOTE, QCS_NUM_RE, QCS_PLAN_URL, QCS_PRINT_DONE_TPL,
-    QCS_PROBLEM_CROSS_TPL, QCS_PROBLEM_FETCH_TPL, QCS_PROBLEM_TPL, QCS_ROW_RE, QCS_SECTION_T3, QCS_SECTION_T4,
-    QCS_SEL_RE, QCS_SOURCE, QCS_T3_HEAD_RE, QCS_T3_NUMS, QCS_T3_YEARS_RE, QCS_T4_HEAD_RE, QCS_T4_NUMS, QCS_T4_YEARS_RE,
-    QCS_TIMEOUT_S, QCS_TITLE_RE, QCS_UNIT_PEOPLE, QCS_WHAT_ADM, QCS_WHAT_SEL, QCS_WHAT_T3, QCS_WHAT_T4, QCS_WHAT_TITLE,
-    QC_BODY_CLASS, QC_BODY_TAG, QC_CRITERIA_RE, QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL, QC_DRAW_SCORE_RE,
-    QC_EXERCISE_COUNT_RE, QC_EXERCISE_SPLIT_RE, QC_EXERCISE_SUM_TPL, QC_HEAD_TAG, QC_IN_QC_RE, QC_NOC_RE,
-    QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
+    QCR_EXP_S4_RE, QCR_FACTOR_EXCEPTIONAL, QCR_FACTOR_ORDER, QCR_FR_BASIS_TPL, QCR_FR_PROBLEM_TPL, QCR_FR_TESTS,
+    QCR_FR_WHAT_BAND_TPL, QCR_FR_WHAT_BASIS_TPL, QCR_FR_WHAT_FILE, QCR_FUNDS_RE, QCR_H2_MARK, QCR_H2_OPEN_RE,
+    QCR_H2_SUB, QCR_LANG_HIGH_RE, QCR_LANG_S2_RE, QCR_LANG_S3_LOW_RE, QCR_LICENSING_RE, QCR_MONTHS_PER_YEAR,
+    QCR_PRINT_DONE_TPL, QCR_PROBLEM_NO_PAGE, QCR_PROBLEM_NO_SECTION_TPL, QCR_PROBLEM_TPL, QCR_PROGRAM,
+    QCR_SECTION_GENERAL, QCR_SECTION_NAMES, QCR_SOURCE, QCR_SPOUSE_RE, QCR_STREAM_1, QCR_STREAM_2, QCR_STREAM_3,
+    QCR_STREAM_4, QCR_SUBJECT_SPOUSE, QCR_TAIL_KEY, QCR_TEER_HIGH, QCR_TEER_LOW, QCR_TEER_RE, QCR_UNIT_FR,
+    QCR_UPDATED_RE, QCR_URL, QCR_WHAT_AGE, QCR_WHAT_EDU, QCR_WHAT_EXCEPTIONAL, QCR_WHAT_EXP, QCR_WHAT_FUNDS,
+    QCR_WHAT_LANG, QCR_WHAT_LICENSING, QCR_WHAT_SPOUSE, QCR_WHAT_TEER, QCR_WHAT_UPDATED, QCS_ADM_RE, QCS_CATEGORY,
+    QCS_KIND_ACTUAL, QCS_KIND_FORECAST, QCS_KIND_PLAN, QCS_LABEL_TPL, QCS_LETTER_RE, QCS_NOTE, QCS_NUM_RE, QCS_PLAN_URL,
+    QCS_PRINT_DONE_TPL, QCS_PROBLEM_CROSS_TPL, QCS_PROBLEM_FETCH_TPL, QCS_PROBLEM_TPL, QCS_ROW_RE, QCS_SECTION_T3,
+    QCS_SECTION_T4, QCS_SEL_RE, QCS_SOURCE, QCS_T3_HEAD_RE, QCS_T3_NUMS, QCS_T3_YEARS_RE, QCS_T4_HEAD_RE, QCS_T4_NUMS,
+    QCS_T4_YEARS_RE, QCS_TIMEOUT_S, QCS_TITLE_RE, QCS_UNIT_PEOPLE, QCS_WHAT_ADM, QCS_WHAT_SEL, QCS_WHAT_T3, QCS_WHAT_T4,
+    QCS_WHAT_TITLE, QC_BODY_CLASS, QC_BODY_TAG, QC_CRITERIA_RE, QC_DRAW_HEAD_RE, QC_DRAW_INV_RE, QC_DRAW_NOTE_TPL,
+    QC_DRAW_SCORE_RE, QC_EXERCISE_COUNT_RE, QC_EXERCISE_SPLIT_RE, QC_EXERCISE_SUM_TPL, QC_HEAD_TAG, QC_IN_QC_RE,
+    QC_NOC_RE, QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
 )
 from pnp.qc.scheme import (
-    QcBookLike, QcDrawIn, QcExerciseTest, QcfBandsIn, QcfBodyIn, QcfHeadIn, QcFindIn, QcfOut, QcFrDateIn, QcFrenchTest,
-    QcFrPartsIn, QcnAttachIn, QcnKindIn, QcnMapIn, QcnMapOut, QcNocTest, QcnRegIn, QcnRowIn, QcnTailIn, QcpIntakeIn,
-    QcPlanTest, QcpPageIn, QcpPageOut, QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn,
-    QcrUpdatedIn, QcsCrossIn, QcSheetLike, QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
+    QcBookLike, QcDrawIn, QcExerciseTest, QcfBandsIn, QcfBodyIn, QcfHeadIn, QcFindIn, QcfOut, QcFrBasisIn,
+    QcFrBasisTest, QcFrDateIn, QcFrenchTest, QcFrMinIn, QcFrPartsIn, QcnAttachIn, QcnKindIn, QcnMapIn, QcnMapOut,
+    QcNocTest, QcnRegIn, QcnRowIn, QcnTailIn, QcpIntakeIn, QcPlanTest, QcpPageIn, QcpPageOut, QcpReqsIn, QcpRowsIn,
+    QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn, QcrUpdatedIn, QcsCrossIn, QcSheetLike, QcsPlanOut,
+    QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
 )
 from pnp.scheme import CachedDrawsIn, FactorCountsIn, FetchHtmlIn, PutDrawsIn, ReqIn, ReqsOut, SoupNodeLike, StdReqIn
 
@@ -233,6 +238,7 @@ def build_qc_req() -> None:
         reqs += part.rows
         problems += part.problems
     version = qcr_updated_of(QcrUpdatedIn(tail=secs[QCR_TAIL_KEY], problems=problems))
+    problems += qc_add_fr_basis(reqs)
     if len(problems) > 0:
         fail_zh(problems)
         return
@@ -472,6 +478,50 @@ def qcr_spouse_rows(x: QcrTeerIn) -> None:
                                   section=x.sec.section, label=m.group(0))))
 
 
+def qc_add_fr_basis(reqs: list) -> list:
+    """法语门槛行挂考试分数线(2026-09-29 Frank「要不都用 TEF 呢?」):读 qc_french_levels 步的产物,每行 unit = EQFR 的
+    basis 后接 TEF / TCF 理解与表达两格下限(见 QCR_FR_TESTS);交回问题行(对照表缺 → 整份保留旧表)。
+    放在数据层:前端只照 basis 显示「TEF 400 分起」,不在展示层换算分数。"""
+    problems: list = []
+    if OUT_QC_FRENCH_LEVELS.exists() is False:
+        problems.append(QCR_FR_PROBLEM_TPL.format(what=QCR_FR_WHAT_FILE))
+        return problems
+    tests = json.loads(OUT_QC_FRENCH_LEVELS.read_text(encoding=ENC_UTF8)).get(K_TESTS) or []
+    for r in reqs:
+        if r[K_UNIT] == QCR_UNIT_FR:
+            r[K_BASIS] = qc_fr_basis_of(QcFrBasisIn(tests=tests, row=r, problems=problems))
+    return problems
+
+
+def qc_fr_basis_of(x: QcFrBasisIn) -> str:
+    """一行法语门槛 → 新 basis(原口径 + 四个分数线);口径认不出或对照表缺那一档 → 记问题、basis 原样交回。"""
+    basis = x.row[K_BASIS]
+    if basis not in QCR_FR_TESTS:
+        x.problems.append(QCR_FR_PROBLEM_TPL.format(what=QCR_FR_WHAT_BASIS_TPL.format(basis=basis)))
+        return basis
+    mins: dict = {}
+    for test, skill, key in QCR_FR_TESTS[basis]:
+        n = qc_fr_min_of(QcFrMinIn(tests=x.tests, test=test, skill=skill, level=x.row[K_VALUE]))
+        if n is None:
+            x.problems.append(QCR_FR_PROBLEM_TPL.format(
+                what=QCR_FR_WHAT_BAND_TPL.format(test=test, skill=skill, level=x.row[K_VALUE])))
+            return basis
+        mins[key] = n
+    return QCR_FR_BASIS_TPL.format(basis=basis, tefComp=mins[K_TEF_COMP], tefExpr=mins[K_TEF_EXPR],
+                                   tcfComp=mins[K_TCF_COMP], tcfExpr=mins[K_TCF_EXPR])
+
+
+def qc_fr_min_of(x: QcFrMinIn) -> int | float | None:
+    """对照表里某考试某技能、魁省级数落在哪一档 → 那一档的分数下限;没有 → None。"""
+    for t in x.tests:
+        if t[K_TEST] != x.test or t[K_SKILL] != x.skill:
+            continue
+        for b in t[K_BANDS]:
+            if b[K_LEVEL_MIN] is not None and b[K_LEVEL_MIN] <= x.level <= b[K_LEVEL_MAX]:
+                return b[K_SCORE_MIN]
+    return None
+
+
 # =========================================================================
 # 3. PEQ 门槛(2026-09-29 立;PEQ 2026-07-02 起临时重开两年,只有法文页)
 # =========================================================================
@@ -492,6 +542,8 @@ def build_qc_peq_req() -> None:
         problems += part.problems
     version = qc_fr_date_of(QcFrDateIn(m=QCP_UPDATED_RE.search(tfw.text), what=QCP_WHAT_DATE,
                                        page=tfw.page, problems=problems))
+    problems += qc_add_fr_basis(reqs)
+    reqs.append(qcp_intake_row_of(intake))
     if len(problems) > 0:
         fail_zh(problems)
         return
@@ -547,6 +599,18 @@ def qcp_intake_of(x: QcpIntakeIn) -> dict:
                                                         year=intake.group(5), page=x.page.page, problems=x.problems))
         out[K_QUOTE] = intake.group(0)
     return out
+
+
+def qcp_intake_row_of(intake: dict) -> dict:
+    """PEQ 收件期写成一行门槛(factor intakeWindow;门槛卡「收件期」行读它):valueText = ISO 起止,basis 带起止与重开期止日,
+    label = 官方原句。两个分支同一个收件期,通道记临时工分支(岗位对得上的只有这一支)。"""
+    return to_qc_peq_req(ReqIn(factor=QCP_FACTOR_INTAKE, stream=QCP_STREAM_TFW, op=OP_RULE,
+                               value_text=QCP_INTAKE_TEXT_TPL.format(opens=intake[K_INTAKE_OPENS],
+                                                                     closes=intake[K_INTAKE_CLOSES]),
+                               basis=QCP_INTAKE_BASIS_TPL.format(opens=intake[K_INTAKE_OPENS],
+                                                                 closes=intake[K_INTAKE_CLOSES],
+                                                                 pclose=intake[K_PROGRAM_CLOSES]),
+                               url=QCP_URL, label=intake[K_QUOTE]))
 
 
 def qc_fr_iso_of(x: QcFrPartsIn) -> str:
@@ -1202,5 +1266,6 @@ def run_qc_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcReqTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcNocTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcFrenchTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcFrBasisTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)
