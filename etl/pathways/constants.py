@@ -631,6 +631,7 @@ PW_NL_SKILLED_WORKER = {
     "quote": ("The NLPNP Skilled Worker Category is a permanent residence pathway for international workers and prospective "
               "immigrants who have skills that are beneficial to the Newfoundland and Labrador labour market."),
     "checked": "2026-09-28",
+    "tags": ["noPgwp"],
 }
 """纽芬兰与拉布拉多默认通道。抽选:NL 抽选卡只有一组、该组覆盖本省全部通道(NLPNP 各类与 AIP 同一 EOI 池、同一组批次;
 2026-09-24 九省通道审计改判,GEN_DRAW_STREAM 原注)。
@@ -638,7 +639,9 @@ PW_NL_SKILLED_WORKER = {
 雇主侧三条在「NLPNP (employer criteria, all streams)」流,门槛卡按全省取,不必登记(同阿省);International Graduate 是另一类别
 (持 PGWP 者只能走它或 EE 类别),不挂这里。
 2026-09-29 抽选卡重排(Frank「AIP 是不是应该单独的卡」「按你建议」):pnp 域把每批 ITA 按 Notes 拆成省提名、AIP 两行,抽选组由
-「NLPNP + AIP (ITA batch)」改成「NLPNP (ITA batch)」(只剩省提名);AIP 那行归 AIP 段。"""
+「NLPNP + AIP (ITA batch)」改成「NLPNP (ITA batch)」(只剩省提名);AIP 那行归 AIP 段。
+2026-09-30 通道补全批一:加标签「不收持 PGWP 的人」—— 申请人页原句「Cannot hold a Post-Graduation Work Permit.」(09-25 更新);
+持 PGWP 的人在 NL 走国际毕业生(PW_NL_INTERNATIONAL_GRADUATE)或快速通道技术工人。"""
 
 PW_PE_WORKFORCE = {
     "key": "pe-workforce", "province": "PE", "program": "PNP",
@@ -710,18 +713,620 @@ PW_AIP = {
 2026-09-29 抽选卡重排:NL 每批拆出来的 AIP 那行组名「AIP (ITA batch)」(发出的邀请,与 NB「AIP」组数申请不同),替掉原来的
 整批组「NLPNP + AIP (ITA batch)」;NS 按月那一组照旧同池、仍挂这里。"""
 
+PW_AB_EXPRESS_ENTRY_PRIORITY_SECTORS = {
+    "key": "ab-express-entry-priority-sectors", "province": "AB", "program": "PNP",
+    "plainZh": "AB 快速通道(定向行业)", "plainEn": "AB Express Entry (priority sectors)", "plainKo": "AB 익스프레스 엔트리(우선 산업)",
+    "officialName": "Alberta Express Entry Stream",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Alberta Express Entry Stream – Priority Sectors (Agriculture)",
+                    "Alberta Express Entry Stream – Priority Sectors (Aviation and skilled trade)",
+                    "Alberta Express Entry Stream – Priority Sectors (Construction and skilled trade)",
+                    "Alberta Express Entry Stream – Priority Sectors (Construction)",
+                    "Alberta Express Entry Stream – Priority Sectors (Health Care)",
+                    "Alberta Express Entry Stream – Priority Sectors (Manufacturing)"],
+    "reqStreams": ["AAIP Alberta Express Entry Stream",
+                   "AAIP Alberta Express Entry Stream — Priority Sectors",
+                   "AAIP (job offer & employer requirements, all streams)"],
+    "quotaScope": ("Priority sector draws and other initiatives (construction, manufacturing, agriculture, "
+                   "aviation, and including skilled trades linked to each sector, etc.)"),
+    "occLabels": [],
+    "status": "open",
+    "url": "https://www.alberta.ca/aaip-alberta-express-entry-stream-eligibility",
+    "quote": ("if you are invited based on having an Alberta job offer, your job offer occupation must be "
+              "an eligible construction, agriculture or aviation occupation"),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""阿省快速通道不经三条专门 pathway 的通用抽选(官方抽选表写作 Priority Sectors,按行业分六个组名,2026 年 23 轮)。要联邦 EE 档案(CRS ≥ 300),
+持 AB offer 的按行业邀请 → 看工作、标「需先有 EE 档案」(Frank 09-30「列进来,标需先有 EE 档案」)。资格页只写建筑 / 农业 / 航空,2026 抽选另有制造、
+医疗,官方口径不一,不按职业码筛。"""
+
+PW_BC_RURAL_REMOTE_HEALTH = {
+    "key": "bc-rural-remote-health", "province": "BC", "program": "PNP",
+    "plainZh": "BC 偏远地区医疗支持", "plainEn": "BC rural/remote health support", "plainKo": "BC 외딴 지역 보건 지원",
+    "officialName": "Temporary Rural/Remote Health Support Initiative",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Temporary Rural/Remote Health Support Initiative"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news",
+    "quote": "Registrations for this initiative will now be accepted until 11:59 pm on October 7, 2026.",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["employers", "timeLimited"],
+    "teers": [],
+    "nocs": ["64410", "65310", "65312"],
+    "employers": [],
+}
+"""BC 限时通道:只收偏远地区卫生局在职的保洁、保安(NOC 64410 / 65310 / 65312),登记到 2026-10-07,上限 250 人(Frank 09-30 「收,标限时」
+)。🔴 10-07 之后改 closed。雇主是不是卫生局本站判不了,不设雇主名筛,标签写「限指定雇主」。"""
+
+PW_SK_STUDENTS = {
+    "key": "sk-students", "province": "SK", "program": "PNP",
+    "plainZh": "SK 本省毕业生", "plainEn": "SK graduates", "plainKo": "SK 주내 졸업생",
+    "officialName": "Students",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-with-saskatchewan-experience/students"),
+    "quote": ("You have a permanent, full-time job offer in your field of study from an approved "
+              "Saskatchewan employer"),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["localGrad"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""Saskatchewan Experience 类的学生子类:本省专上毕业、专业对口的 SK offer(2026 年给优先行业的本省毕业生留 750 个名额)。不抽选。原句末尾页面里嵌了链接,
+抽出的正文句号前多一个空格,quote 截到句号前。"""
+
+PW_SK_OCCUPATION_IN_DEMAND = {
+    "key": "sk-occupation-in-demand", "province": "SK", "program": "PNP",
+    "plainZh": "SK 紧缺职业(无 offer)", "plainEn": "SK in-demand occupation (no offer)", "plainKo": "SK 수요 직종(오퍼 없음)",
+    "officialName": "International Skilled Worker: Occupation In-Demand",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [("SINP International Skilled Worker (Employment Offer / Occupations In-Demand / Express "
+                    "Entry)")],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-occupations-in-demand"),
+    "quote": "Don't have a job offer in Saskatchewan but are highly skilled in an in-demand occupation.",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["noDraws"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""不要 offer 的 EOI 子类;EOI 页写「There are no scheduled EOI draws at this time.」→ 标「目前没有抽选排期」。不看工作(Frank 
+09-30「不看工作的也收」,通道卡下段)。三合一门槛组的 60 分、CLB 4、近 10 年 1 年经验正是本子类口径,挂上。"""
+
+PW_SK_EXPRESS_ENTRY = {
+    "key": "sk-express-entry", "province": "SK", "program": "PNP",
+    "plainZh": "SK 快速通道", "plainEn": "SK Express Entry", "plainKo": "SK 익스프레스 엔트리",
+    "officialName": "International Skilled Worker: Saskatchewan Express Entry",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.saskatchewan.ca/residents/moving-to-saskatchewan/live-in-saskatchewan/by-immigrating/saskatchewan-immigrant-nominee-program/browse-sinp-programs/applicants-international-skilled-workers/international-skilled-worker-saskatchewan-express-entry"),
+    "quote": "Have a language test result that meets the federal Express Entry language requirements",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["ee", "noDraws"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""不要 offer 的 EOI 子类(须在联邦 EE 池);同样没有抽选排期。三合一门槛组的 CLB 4 / 近 10 年 1 年经验不是本子类口径(它按联邦 EE 语言标准),不挂,门槛待批一 
+1b 拆出。quote 截到句号前(同 SK 学生那条的理由)。"""
+
+PW_MB_SKILLED_WORKER_OVERSEAS = {
+    "key": "mb-skilled-worker-overseas", "province": "MB", "program": "PNP",
+    "plainZh": "MB 海外技工", "plainEn": "MB Skilled Worker Overseas", "plainKo": "MB 해외 숙련 노동자",
+    "officialName": "Skilled Worker Overseas (SWO) Pathway",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Skilled Worker Stream"],
+    "reqStreams": ["MPNP Skilled Worker Overseas"],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://immigratemanitoba.com/mpnp/skilled-worker/swo/eligibility",
+    "quote": ("If you do not have a connection to Manitoba, you are not eligible to apply under SWO, "
+              "regardless of your points total."),
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["connection"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""不要 offer,要与本省有联系(亲友 / 本省旧学历或经历 / 省方直接邀请);2026 年各轮只抽持省方邀请的 → 抽选组挂省方直接邀请那组「Skilled Worker Stream」
+(官方:SWM 或 SWO 里持邀请的档案;SWM 那行认领这组归批二,会动高亮)。不看工作,通道卡下段。"""
+
+PW_MB_CAREER_EMPLOYMENT = {
+    "key": "mb-career-employment", "province": "MB", "program": "PNP",
+    "plainZh": "MB 毕业生就业", "plainEn": "MB Career Employment", "plainKo": "MB 졸업생 취업",
+    "officialName": "Career Employment Pathway (CEP)",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": ["MPNP International Education Stream — Career Employment Pathway (CEP)"],
+    "quotaScope": None,
+    "occLabels": ["MB 在需职业"],
+    "status": "open",
+    "url": "https://immigratemanitoba.com/mpnp/ies/cep/eligibility",
+    "quote": ("You must have a full-time job offer from an eligible Manitoba employer with a minimum "
+              "1-year contract in an occupation on Manitoba’s In-Demand Occupations List that is "
+              "consistent with your completed program of studies in Manitoba."),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["localGrad", "drawsStopped"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""本省毕业 + offer 职业在在需职业表(IDOL)上且与所学对口。状态存疑:2026-06-11 官方请在池 CEP 档案转 SWM,之后抽选里再没出现,页面还在、没有关闭原句 → Frank 
+09-30「都收,标状态」:status 照页面写 open,标签「6 月起没再抽选」。"""
+
+PW_MB_GRADUATE_INTERNSHIP = {
+    "key": "mb-graduate-internship", "province": "MB", "program": "PNP",
+    "plainZh": "MB 研究生实习", "plainEn": "MB Graduate Internship", "plainKo": "MB 대학원 인턴십",
+    "officialName": "Graduate Internship Pathway (GIP)",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["International Education Stream (IES) – Graduate Internship Pathway (GIP)"],
+    "reqStreams": ["MPNP International Education Stream — Graduate Internship Pathway (GIP)"],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://immigratemanitoba.com/mpnp/ies/gip/eligibility",
+    "quote": "You are not required to have a job offer at the time of application.",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["localGrad", "mitacs"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""本省硕博毕业、做过 Mitacs 实习,不要 offer;2026-07-16 还抽过一轮(78 份)。不看工作,通道卡下段。"""
+
+PW_ON_SELF_EMPLOYED_PHYSICIANS = {
+    "key": "on-self-employed-physicians", "province": "ON", "program": "PNP",
+    "plainZh": "ON 自雇医生", "plainEn": "ON self-employed physicians", "plainKo": "ON 자영업 의사",
+    "officialName": "Ontario Workforce Priority stream (self-employed physicians)",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Ontario Workforce Priority Stream"],
+    "drawsPending": True,
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://www.ontario.ca/page/ontario-workforce-priority-stream",
+    "quote": "If you are a self-employed physician, you may apply without having a job offer.",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["physician"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""安省唯一现行 stream 里给自雇医生的那条 pathway(CPSO 会员、有 OHIP 计费号),不要 offer。与 OWP 同一组抽选、同样还没抽过。"""
+
+PW_NS_GRADUATE = {
+    "key": "ns-graduate", "province": "NS", "program": "PNP",
+    "plainZh": "NS 本省毕业生", "plainEn": "NS graduates", "plainKo": "NS 주내 졸업생",
+    "officialName": "Nova Scotia Graduate",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Monthly EOI selections"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": ["NS 毕业生"],
+    "status": "open",
+    "url": "https://liveinnovascotia.com/nova-scotia-graduate",
+    "quote": ("have a full-time permanent job offer from a Nova Scotia employer in a job category listed "
+              "above that corresponds with your recent field of study;"),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["localGrad"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""2026-02-18 十流并四流后的独立 stream(旧 International Graduates in Demand 并入),限 4 个职业(站上「NS 毕业生」清单同 4 码)。09-24 
+审计当它是参考信号 —— 官方它就是现行通道(「This stream is currently open to workers in these job categories」)。"""
+
+PW_NS_PHYSICIANS = {
+    "key": "ns-physicians", "province": "NS", "program": "PNP",
+    "plainZh": "NS 医生", "plainEn": "NS physicians", "plainKo": "NS 의사",
+    "officialName": "Physician (Skilled Worker stream)",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Monthly EOI selections"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://liveinnovascotia.com/skilled-worker",
+    "quote": ("The Physician sub-criteria is only open to general practitioners and family physicians (NOC "
+              "31102) and specialist physicians (NOC 31100 and NOC 31101) with signed approved "
+              "opportunities with the Nova Scotia Health Authority or the IWK Health Centre."),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["employers"],
+    "teers": [],
+    "nocs": ["31100", "31101", "31102"],
+    "employers": ["nova scotia health", "iwk health"],
+}
+"""Skilled Worker 下的医生子类:只认 NS Health / IWK 两家的 approved opportunity。09-24 审计因判不了雇主身份没做 —— 现按雇主名命中(归一后比对,
+同 AIP 指定雇主)。"""
+
+PW_NS_EXPRESS_ENTRY_EXPERIENCE = {
+    "key": "ns-express-entry-experience", "province": "NS", "program": "PNP",
+    "plainZh": "NS 快速通道(本省经验)", "plainEn": "NS Express Entry (NS experience)", "plainKo": "NS 익스프레스 엔트리(주내 경력)",
+    "officialName": "Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Monthly EOI selections"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://liveinnovascotia.com/express-entry",
+    "quote": ("have at least one year of experience working in Nova Scotia in an occupation at TEER 0, 1, "
+              "2, or 3 of the National Occupational Classification;"),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee", "localExperience"],
+    "teers": [0, 1, 2, 3],
+    "nocs": [],
+    "employers": [],
+}
+"""不要 offer,但要本省 TEER 0–3 满 1 年经验 + EE 档案 → 看工作(这岗攒的就是它要的经验),标「需先有 EE 档案」「需本省工作满 1 年」。旧 Nova Scotia 
+Experience: Express Entry 与 Labour Market Priorities 并入。"""
+
+PW_NS_EXPRESS_ENTRY_PHYSICIANS = {
+    "key": "ns-express-entry-physicians", "province": "NS", "program": "PNP",
+    "plainZh": "NS 快速通道(医生)", "plainEn": "NS Express Entry (physicians)", "plainKo": "NS 익스프레스 엔트리(의사)",
+    "officialName": "Nova Scotia: Express Entry — Physicians",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Monthly EOI selections"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://liveinnovascotia.com/express-entry",
+    "quote": ("Only candidates with an approved offer from the Nova Scotia Health Authority or the IWK "
+              "Health Centre who receive a Letter of Interest from Labour, Skills and Immigration (LSI) "
+              "may apply."),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee", "employers", "letter"],
+    "teers": [],
+    "nocs": ["31100", "31101", "31102"],
+    "employers": ["nova scotia health", "iwk health"],
+}
+"""快速通道下的医生子类:NS Health / IWK 的 approved offer + 省方意向信 + EE 档案(旧 Labour Market Priorities for Physicians)
+。"""
+
+PW_NB_EXPRESS_ENTRY_EMPLOYMENT = {
+    "key": "nb-express-entry-employment", "province": "NB", "program": "PNP",
+    "plainZh": "NB 快速通道(本省就业)", "plainEn": "NB Express Entry (employment)", "plainKo": "NB 익스프레스 엔트리(주내 취업)",
+    "officialName": "Employment in New Brunswick",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["NB Express Entry"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"),
+    "quote": "score at least 67/100 points based on the selection factor grid",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee"],
+    "teers": [0, 1, 2, 3],
+    "nocs": [],
+    "employers": [],
+}
+"""NB Express Entry stream 下的本省就业路径:已在 NB 全职在职(TEER 0–3)+ EE 档案 + 67 分。抽选组「NB Express Entry」原先无人认领(2025–2026 
+共 11 轮)。"""
+
+PW_NB_FRANCOPHONE_WORKERS = {
+    "key": "nb-francophone-workers", "province": "NB", "program": "PNP",
+    "plainZh": "NB 法语工人", "plainEn": "NB Francophone Workers", "plainKo": "NB 프랑스어 사용 노동자",
+    "officialName": "Francophone Workers in New Brunswick",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["NB Strategic Initiative"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"),
+    "quote": "have at least a level 5 in all four French language skills",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["french"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""Strategic Initiative 下的法语工人路径:本省 offer 或在职 + NCLC 5。抽选组「NB Strategic Initiative」原先无人认领(2026 年 8 
+轮,与法语优先合抽)。"""
+
+PW_NB_EXPRESS_ENTRY_INTEREST = {
+    "key": "nb-express-entry-interest", "province": "NB", "program": "PNP",
+    "plainZh": "NB 快速通道(兴趣信)", "plainEn": "NB Express Entry (interest)", "plainKo": "NB 익스프레스 엔트리(관심 서한)",
+    "officialName": "New Brunswick Interest",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html"),
+    "quote": "have received a letter of interest in your federal Express Entry profile",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["ee", "letter"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""NB Express Entry stream 下的兴趣信路径:不要本省 offer,要省方发到 EE 档案的兴趣信。页面在列,2025–2026 抽选页没出现过。"""
+
+PW_NB_FRANCOPHONE_PRIORITIES = {
+    "key": "nb-francophone-priorities", "province": "NB", "program": "PNP",
+    "plainZh": "NB 法语优先", "plainEn": "NB Francophone Priorities", "plainKo": "NB 프랑스어 우선",
+    "officialName": "New Brunswick Francophone Priorities",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["NB Strategic Initiative"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"),
+    "quote": "You must have received a letter of interest from Immigration New Brunswick",
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["french", "letter"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""Strategic Initiative 下的法语优先路径:不要 offer;本省法语院校毕业或收到省兴趣信(二选一,标签写兴趣信那一支)。在抽选。"""
+
+PW_NB_FRANCOPHONES_REMOTE = {
+    "key": "nb-francophones-remote", "province": "NB", "program": "PNP",
+    "plainZh": "NB 远程法语工作者", "plainEn": "NB Francophones working remotely", "plainKo": "NB 원격 근무 프랑스어 사용자",
+    "officialName": "Francophones Working Remotely in New Brunswick",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/strategic-initiative.html"),
+    "quote": ("have been working remotely for a Canadian employer located outside of Quebec during this "
+              "entire period"),
+    "checked": "2026-09-30",
+    "jobLinked": False,
+    "tags": ["french", "remoteWork"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""Strategic Initiative 下的远程法语路径:在 NB 住满 12 个月、给魁省外的加拿大雇主远程工作,不要本省 offer。页面在列,2025–2026 抽选页没出现过。"""
+
+PW_NB_CRITICAL_WORKER_PILOT = {
+    "key": "nb-critical-worker-pilot", "province": "NB", "program": "PNP",
+    "plainZh": "NB 关键工人试点", "plainEn": "NB Critical Worker Pilot", "plainKo": "NB 핵심 인력 시범",
+    "officialName": "New Brunswick Critical Worker Pilot",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/content/gnb/en/corporate/promo/immigration/immigrating-to-nb/nb-immigration-program-streams/nb-critical-workers-pilot.html"),
+    "quote": "The program does not accept direct applications from interested candidates.",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["employers"],
+    "teers": [],
+    "nocs": [],
+    "employers": ["cooke aquaculture",
+                  "j d irving",
+                  "groupe savoie",
+                  "groupe westco",
+                  "imperial manufacturing",
+                  "mccain foods"],
+}
+"""五年期试点,只走 6 家参与雇主(Cooke Aquaculture、J.D. Irving、Groupe Savoie、Groupe Westco、Imperial Manufacturing 
+Group、McCain Foods),个人不能直接申请 → 按雇主名命中才列(Frank 09-30「都收,标状态」)。页面走旧版路径,现行总览页仍链到它;该页缓存在但不在 crawl manifest 
+里。"""
+
+PW_NB_PRIVATE_COLLEGE_PILOT = {
+    "key": "nb-private-college-pilot", "province": "NB", "program": "PNP",
+    "plainZh": "NB 私立学院毕业生试点", "plainEn": "NB Private Career College Graduate Pilot", "plainKo": "NB 사립 직업학교 졸업생 시범",
+    "officialName": "Private Career College Graduate Pilot Program",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": [],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/pccg-pilot-program.html"),
+    "quote": ("This program is for students that are not eligible for the federal post-graduation work "
+              "permit (PGWP) program."),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["privateCollege"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""本省参与项目的私立职业学院读指定专业、拿不到 PGWP 的学生,要对口的全职 offer;有限开放至 2027 年底(Frank 09-30「都收,标状态」)。"""
+
+PW_PE_INTERNATIONAL_GRADUATE = {
+    "key": "pe-international-graduate", "province": "PE", "program": "PNP",
+    "plainZh": "PE 国际毕业生", "plainEn": "PE International Graduate", "plainKo": "PE 국제 졸업생",
+    "officialName": "International Graduate Stream",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Labour & Express Entry"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/international-graduates",
+    "quote": "have graduated from a publicly-funded Prince Edward Island institution;",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["localGrad", "pgwp"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""Workforce 类的国际毕业生流:本省公立院校毕业 + PGWP + PEI offer。共用门槛组的语言行写「全体 Workforce 流都要考 CLB 4」,对本流 TEER 0–3 
+不对(官方由雇主在 PEIW-02 上确认),批一 1b 改对之前不挂。"""
+
+PW_PE_INTERMEDIATE_EXPERIENCE = {
+    "key": "pe-intermediate-experience", "province": "PE", "program": "PNP",
+    "plainZh": "PE 中级经验", "plainEn": "PE Intermediate Experience", "plainKo": "PE 중급 경력",
+    "officialName": "Intermediate Experience Stream",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Labour & Express Entry"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.princeedwardisland.ca/en/information/office-of-immigration/intermediate-experience-stream"),
+    "quote": "gained while on a Labour Market Impact Assessment (LMIA) based work permit",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["lmiaPermit"],
+    "teers": [4],
+    "nocs": [],
+    "employers": [],
+}
+"""Workforce 类的中级经验流:TEER 4 的 PEI offer + 持 LMIA 工签在加满 6 个月、与现职相关。"""
+
+PW_PE_EXPRESS_ENTRY = {
+    "key": "pe-express-entry", "province": "PE", "program": "PNP",
+    "plainZh": "PE 快速通道", "plainEn": "PE Express Entry", "plainKo": "PE 익스프레스 엔트리",
+    "officialName": "PEI Express Entry",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["Labour & Express Entry"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": "https://www.princeedwardisland.ca/en/information/office-of-immigration/pei-express-entry",
+    "quote": ("Prince Edward Island prioritizes invitations issued through Express Entry for applicants "
+              "working and living in the province with an eligible PEI employer."),
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee"],
+    "teers": [],
+    "nocs": [],
+    "employers": [],
+}
+"""要不要 offer 官方前后矛盾(资格条文不要求,表格段又要雇主填 PEIW-02);优先在本省为合格雇主工作的人 → 看工作,标「需先有 EE 档案」。"""
+
+PW_NL_INTERNATIONAL_GRADUATE = {
+    "key": "nl-international-graduate", "province": "NL", "program": "PNP",
+    "plainZh": "NL 国际毕业生", "plainEn": "NL International Graduate", "plainKo": "NL 국제 졸업생",
+    "officialName": "NLPNP International Graduate Category",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["NLPNP (ITA batch)"],
+    "reqStreams": ["NLPNP International Graduate Category", "NLPNP (employer criteria, all streams)"],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate/"),
+    "quote": "Must hold a valid post-graduation work permit (PGWP).",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["pgwp"],
+    "teers": [0, 1, 2, 3, 4],
+    "nocs": [],
+    "employers": [],
+}
+"""NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」
+立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。"""
+
+PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
+    "key": "nl-express-entry-skilled-worker", "province": "NL", "program": "PNP",
+    "plainZh": "NL 快速通道技术工人", "plainEn": "NL Express Entry Skilled Worker", "plainKo": "NL 익스프레스 엔트리 숙련 노동자",
+    "officialName": "NLPNP Express Entry Skilled Worker Category",
+    "boardLabel": None,
+    "isDefault": False,
+    "drawStreams": ["NLPNP (ITA batch)"],
+    "reqStreams": [],
+    "quotaScope": None,
+    "occLabels": [],
+    "status": "open",
+    "url": ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker/"),
+    "quote": "Accepted into IRCC’s Express Entry pool.",
+    "checked": "2026-09-30",
+    "jobLinked": True,
+    "tags": ["ee"],
+    "teers": [0, 1, 2, 3],
+    "nocs": [],
+    "employers": [],
+}
+"""TEER 0–3 的 NL offer + 联邦 EE 池 + NLPNP 打分 ≥ 67;PGWP 持有人可以走。门槛(67 分那条原句在 nl-req 注里,本类门槛未入表)待批一 1b。"""
+
 PATHWAYS = [
     PW_AB_OPPORTUNITY, PW_AB_ACCELERATED_TECH, PW_AB_DEDICATED_HEALTH_CARE, PW_AB_LAW_ENFORCEMENT,
-    PW_AB_TOURISM_HOSPITALITY, PW_AB_RURAL_RENEWAL,
+    PW_AB_TOURISM_HOSPITALITY, PW_AB_RURAL_RENEWAL, PW_AB_EXPRESS_ENTRY_PRIORITY_SECTORS,
     PW_BC_SKILLED_WORKER, PW_BC_HEALTH_AUTHORITY, PW_BC_HEALTHCARE, PW_BC_CHILDCARE, PW_BC_VETERINARY,
-    PW_BC_CONSTRUCTION_TRADES, PW_BC_FRENCH_TEACHERS,
+    PW_BC_CONSTRUCTION_TRADES, PW_BC_FRENCH_TEACHERS, PW_BC_RURAL_REMOTE_HEALTH,
     PW_SK_EMPLOYMENT_OFFER, PW_SK_HEALTH_TALENT, PW_SK_TECH_TALENT, PW_SK_AGRICULTURE_TALENT, PW_SK_EXISTING_WORK_PERMIT,
-    PW_MB_SKILLED_WORKER_IN_MANITOBA,
+    PW_SK_STUDENTS, PW_SK_OCCUPATION_IN_DEMAND, PW_SK_EXPRESS_ENTRY,
+    PW_MB_SKILLED_WORKER_IN_MANITOBA, PW_MB_SKILLED_WORKER_OVERSEAS, PW_MB_CAREER_EMPLOYMENT, PW_MB_GRADUATE_INTERNSHIP,
     PW_ON_WORKFORCE_PRIORITY, PW_ON_EMPLOYER_JOB_OFFER_FOREIGN_WORKER, PW_ON_EMPLOYER_JOB_OFFER_INTERNATIONAL_STUDENT,
-    PW_NS_SKILLED_WORKER, PW_NS_CONSTRUCTION,
-    PW_NB_SKILLED_WORKER,
-    PW_NL_SKILLED_WORKER,
-    PW_PE_WORKFORCE, PW_PE_OCCUPATIONS_IN_DEMAND,
+    PW_ON_SELF_EMPLOYED_PHYSICIANS,
+    PW_NS_SKILLED_WORKER, PW_NS_CONSTRUCTION, PW_NS_GRADUATE, PW_NS_PHYSICIANS, PW_NS_EXPRESS_ENTRY_EXPERIENCE,
+    PW_NS_EXPRESS_ENTRY_PHYSICIANS,
+    PW_NB_SKILLED_WORKER, PW_NB_EXPRESS_ENTRY_EMPLOYMENT, PW_NB_FRANCOPHONE_WORKERS, PW_NB_EXPRESS_ENTRY_INTEREST,
+    PW_NB_FRANCOPHONE_PRIORITIES, PW_NB_FRANCOPHONES_REMOTE, PW_NB_CRITICAL_WORKER_PILOT, PW_NB_PRIVATE_COLLEGE_PILOT,
+    PW_NL_SKILLED_WORKER, PW_NL_INTERNATIONAL_GRADUATE, PW_NL_EXPRESS_ENTRY_SKILLED_WORKER,
+    PW_PE_WORKFORCE, PW_PE_OCCUPATIONS_IN_DEMAND, PW_PE_INTERNATIONAL_GRADUATE, PW_PE_INTERMEDIATE_EXPERIENCE,
+    PW_PE_EXPRESS_ENTRY,
     PW_AIP,
 ]
 """全表(顺序 = 产物 seq 序)。⚠ 顺序有意义:一组抽选覆盖几条通道时,通道名按这里的先后拼(PE 劳工通道在 PE 在需职业前;
@@ -737,7 +1342,12 @@ NS 两条在 AIP 前、NL 在 AIP 前 —— AIP 放最后)。省内一律省默
 - NAMED_DRAW_STREAMS(具名通道 → 抽选组):2026-09-24 Frank「AB 医疗也走机会通道?」「点进去应该哪个高亮」引出 —— 阿省医护专项清单
   进库,同批把与抽选组一一对得上的具名清单登记进来;SK / MB / NS / PE 的具名清单当时对不上抽选组,不登记 = 不高亮(之后 PE 在需职业、
   NS 建筑按「同一组覆盖本省全部通道」补登)。
-- QUOTA_STREAM_KEYS / NAMED_REQ_STREAMS / GEN_REQ_STREAMS:见阿省六段(2026-09-27 九省体检与门槛卡批一)。"""
+- QUOTA_STREAM_KEYS / NAMED_REQ_STREAMS / GEN_REQ_STREAMS:见阿省六段(2026-09-27 九省体检与门槛卡批一)。
+2026-09-30 通道补全批一(Frank「nl 之前不说有个毕业生通道吗?」「所以我漏通道了吗?」;立项稿 docs/design/通道补全-20260930.md):
+九省清点后补 25 行,各省接在原有行之后、AIP 仍最后。新行都不是省默认、不挂岗位通道名 —— 前端现在只认省默认行与挂岗位通道名的行
+(pnpChannelOf / genDrawOf / pnpDefaultProvsOf / gatedKeysOf),加行页面一个字不变,弹框读新行归批二。旧行里会动页面的三处(阿省
+机会通道认领「Alberta Opportunity Stream – Priority Sectors」、曼省默认认领省方邀请组「Skilled Worker Stream」、阿省医疗专项挂
+快速通道版门槛)也归批二。"""
 
 # =========================================================================
 # 3. 读 pnp 产物(自校只认 raw/pnp 的现值:pathways → pnp 产物单向依赖,不读 mart)
@@ -853,6 +1463,52 @@ K_OCC_LABELS = "occLabels"
 
 K_STATUS = "status"
 """对照表键:open / paused / closed。"""
+
+K_JOB_LINKED = "jobLinked"
+"""对照表键(2026-09-30 通道补全批一):这个岗跟这条通道有没有关系 —— 要本省 offer 或本省工作经验 = True(弹框通道卡上段,按岗位筛);
+不看工作 = False(下段「不要 offer 的通道」,按省列;Frank 09-30「不看工作的也收」)。旧行不写按 True。"""
+
+K_TAGS = "tags"
+"""对照表键:条件标签键(TAG_KEYS 词表;三语文案在 cms i18n)。旧行不写按 []。"""
+
+K_TEERS = "teers"
+"""对照表键:本岗 TEER 在内才列通道卡上段;[] = 不限。"""
+
+K_NOCS = "nocs"
+"""对照表键:本岗职业码在内才列通道卡上段;[] = 不限(有现成职业清单的照旧用 occLabels)。"""
+
+K_EMPLOYERS = "employers"
+"""对照表键:雇主名(归一后小写)命中才列通道卡上段;[] = 不限(NS 医生限 NS Health / IWK、NB 关键工人试点限 6 家)。"""
+
+JOB_LINKED_DEFAULT = True
+"""jobLinked 没写时按看工作算(09-30 前的 29 行全是看工作的通道)。"""
+
+TAG_KEYS = ["ee", "localGrad", "pgwp", "noPgwp", "french", "employers", "timeLimited", "lmiaPermit", "noDraws",
+            "drawsStopped", "letter", "connection", "mitacs", "localExperience", "privateCollege", "remoteWork", "physician"]
+"""条件标签词表(2026-09-30 通道补全批一;人的条件与通道状态,不拿来挡着不列,弹框写成标签):需先有 EE 档案 / 需本省毕业 / 需持 PGWP /
+不收持 PGWP 的人 / 需说法语 / 限指定雇主 / 限时 / 需持 LMIA 工签 / 目前没有抽选排期 / 近期没再抽选 / 需收到省兴趣信 / 需与本省有联系 /
+需做过 Mitacs 实习 / 需本省工作满 1 年 / 限本省私立学院指定专业 / 需远程为魁省外雇主工作 / 限执业医生。"""
+
+TEER_VALUES = [0, 1, 2, 3, 4, 5]
+"""teers 只许这六档。"""
+
+NOC_RE = re.compile(r"^\d{5}$")
+"""nocs 只许五位职业码(NOC 2021)。"""
+
+BAD_TAG_TPL = "{key} 的标签「{tag}」不在词表里(TAG_KEYS)"
+"""自校:标签写错。"""
+
+BAD_TEER_TPL = "{key} 的 teers 里有「{teer}」(只许 0–5)"
+"""自校:TEER 写错。"""
+
+BAD_NOC_TPL = "{key} 的 nocs 里有「{noc}」(只许五位职业码)"
+"""自校:职业码写错。"""
+
+BAD_EMPLOYER_TPL = "{key} 的 employers 里有「{name}」(只许归一后的小写名,不许空)"
+"""自校:雇主名没归一。"""
+
+UNLINKED_BOARD_TPL = "{key} 不看工作(jobLinked = False),却挂着岗位通道名或是省默认"
+"""自校:岗位不会落到不看工作的通道上。"""
 
 MISSING_FIELD_TPL = "第 {seq} 条({key})缺「{field}」"
 """自校:必填格空着。"""

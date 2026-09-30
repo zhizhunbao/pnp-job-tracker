@@ -18,6 +18,8 @@ from pathlib import Path
 import paths
 from log.functions import say
 from pathways.constants import (
+    BAD_EMPLOYER_TPL, BAD_NOC_TPL, BAD_TAG_TPL, BAD_TEER_TPL, JOB_LINKED_DEFAULT, K_EMPLOYERS, K_JOB_LINKED, K_NOCS, K_TAGS,
+    K_TEERS, NOC_RE, TAG_KEYS, TEER_VALUES, UNLINKED_BOARD_TPL,
     BAD_KEY_TPL, BAD_STATUS_TPL, BOARD_MISSING_TPL, BOARD_UNMAPPED_TPL, CHECK_FAIL_TPL, CHECK_ROW_TPL, CLOSED_BOARD_TPL,
     DONE_TPL, DRAW_MISSING_TPL, DRAWS_GLOB, DUP_BOARD_TPL, DUP_KEY_TPL, ENC_UTF8, IN_PNP_DIR, IN_TPL, K_BOARD_LABEL,
     K_COMMUNITIES, K_DRAW_STREAMS, K_DRAWS, K_DRAWS_PENDING, K_IS_DEFAULT, K_KEY, K_LABEL, K_OCC_LABELS, K_OCCUPATIONS,
@@ -172,6 +174,7 @@ def problems_of(x: CheckIn) -> list[str]:
     out.extend(key_problems_of(x.table))
     out.extend(board_problems_of(x))
     out.extend(default_problems_of(x.table))
+    out.extend(condition_problems_of(x.table))
     for entry in x.table:
         out.extend(entry_problems_of(EntryIn(entry=entry, facts=x.facts)))
     return out
@@ -241,6 +244,29 @@ def default_problems_of(table: list) -> list[str]:
     return out
 
 
+def condition_problems_of(table: list) -> list[str]:
+    """2026-09-30 通道补全批一的五个新格:标签在词表里、TEER 只许 0–5、职业码五位、雇主名归一小写;不看工作的通道不挂岗位通道名、
+    不当省默认(岗位不会落到它上面)。"""
+    out: list[str] = []
+    for entry in table:
+        key = entry[K_KEY]
+        for tag in entry.get(K_TAGS, []):
+            if tag not in TAG_KEYS:
+                out.append(BAD_TAG_TPL.format(key=key, tag=tag))
+        for teer in entry.get(K_TEERS, []):
+            if teer not in TEER_VALUES:
+                out.append(BAD_TEER_TPL.format(key=key, teer=teer))
+        for noc in entry.get(K_NOCS, []):
+            if NOC_RE.match(noc) is None:
+                out.append(BAD_NOC_TPL.format(key=key, noc=noc))
+        for name in entry.get(K_EMPLOYERS, []):
+            if len(name) == 0 or name != name.lower():
+                out.append(BAD_EMPLOYER_TPL.format(key=key, name=name))
+        if entry.get(K_JOB_LINKED, JOB_LINKED_DEFAULT) is False and (entry[K_BOARD_LABEL] is not None or entry[K_IS_DEFAULT]):
+            out.append(UNLINKED_BOARD_TPL.format(key=key))
+    return out
+
+
 def entry_problems_of(x: EntryIn) -> list[str]:
     """一条通道的官方写法逐格对 pnp 现值:抽选组(等开抽的除外)、门槛流、配额行、清单名。"""
     out: list[str] = []
@@ -279,7 +305,8 @@ def pending_notes_of(x: CheckIn) -> list[str]:
 
 
 def to_pathway_row(x: RowIn) -> dict:
-    """对照表一段 → 产物一行(camelCase 键 = 库表 snake_case 列;行序 = 列序)。"""
+    """对照表一段 → 产物一行(camelCase 键 = 库表 snake_case 列;行序 = 列序)。2026-09-30 通道补全批一加五格(旧行没写的按默认:
+    看工作、无标签、不筛)。"""
     e = x.entry
     return {
         "key": e["key"], "seq": x.seq, "province": e["province"], "program": e["program"],
@@ -287,4 +314,6 @@ def to_pathway_row(x: RowIn) -> dict:
         "boardLabel": e["boardLabel"], "isDefault": e["isDefault"],
         "drawStreams": e["drawStreams"], "reqStreams": e["reqStreams"], "quotaScope": e["quotaScope"],
         "occLabels": e["occLabels"], "status": e["status"], "url": e["url"], "quote": e["quote"], "checked": e["checked"],
+        "jobLinked": e.get(K_JOB_LINKED, JOB_LINKED_DEFAULT), "tags": e.get(K_TAGS, []), "teers": e.get(K_TEERS, []),
+        "nocs": e.get(K_NOCS, []), "employers": e.get(K_EMPLOYERS, []),
     }
