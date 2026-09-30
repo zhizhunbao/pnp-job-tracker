@@ -669,7 +669,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   // 2026-09-29 per-stream totals on draw group heads (third line)
   'pnpdraws.groupTotal': '{count}',
   'pnpdraws.groupTotalMin': 'at least {count}',
-  'pnpdraws.groupBelow': 'Each round published only as “fewer than {n}”',
   'pnpdraws.invOne': '{n} invitation',
   'pnpdraws.below': 'Fewer than {n} invitations',
   'pnpdraws.pool': 'Selected from one pool shared with AIP; counts include AIP',
@@ -678,7 +677,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.foot': '{year}: {rounds}, {count}',
   'pnpdraws.footMin': '{year}: {rounds}, at least {count}',
   'pnpdraws.footRounds': '{year}: {rounds}',
-  'pnpdraws.footBelow': 'Published only as “fewer than {n}”: {rounds}',
   'pnpreform.head': 'Draws before the reform',
   'pnpaip.head': 'AIP draws',
   'pnpaip.pool': 'Selected from the same pool as provincial nominees; counts are under provincial draws',

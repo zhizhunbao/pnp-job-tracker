@@ -838,7 +838,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」:各组组头第三行 = 汇装的这一组本年合计(scopeKind = drawStream、
   // scope = 组名);下限写「至少」;组里全是只写上限的轮次写上限那一句;没有合计不出这一行。手写金标 = 当天线上阿省 / NB / NS 实数。
-  it('每组组头第三行写这一组的本年合计:共 / 至少 / 只写上限;人数口径跟指标走;没有合计不出', () => {
+  // 2026-09-30 下午 Frank「这种补充信息都删掉」:只写上限那一句撤,这种组(Law)也不出这一行。
+  it('每组组头第三行写这一组的本年合计:共 / 至少;只写上限的组与没有合计的组不出;人数口径跟指标走', () => {
     const ab = [
       draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-09-23', score: 58, invitations: 700 }),
       draw({ province: 'AB', label: 'AAIP', stream: 'Agri', drawDate: '2026-09-15', score: 60, invitations: null, invitationsBelow: 10 }),
@@ -862,11 +863,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       return out
     }
     expect(totals(zh, 'zh')).toEqual({
-      [AOS]: '共 7,465 份邀请', Agri: '至少 198 份邀请', Law: '各轮官方只写「少于 10」', Tourism: '',
+      [AOS]: '共 7,465 份邀请', Agri: '至少 198 份邀请', Law: '', Tourism: '',
     })
     expect(totals(en, 'en')).toEqual({
-      [AOS]: '7,465 invitations', Agri: 'at least 198 invitations', Law: 'Each round published only as “fewer than 10”',
-      Tourism: '',
+      [AOS]: '7,465 invitations', Agri: 'at least 198 invitations', Law: '', Tourism: '',
     })
     expect(totals(ko, 'ko')[AOS]).toBe('총 7,465개 초청')
     // 人数口径跟指标走:NB 的 AIP 组是申请入选、NS 按月那一组是人入选;恰好 1 份用单数
@@ -900,12 +900,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(card?.hits.map((g) => [g.key, g.rounds])).toEqual([[AOS, '1 轮']])
     expect(card?.others.map((g) => [g.key, g.rounds, g.score])).toEqual([['Law Enforcement Pathway', '2 轮', '最低 49 分']])
     expect(card?.others[0]?.rows.map((r) => r.inv)).toEqual(['少于 10 份邀请', '少于 10 份邀请'])
-    expect(card?.foot).toEqual(['2026 年 3 轮,至少 1,100 份邀请', '其中 2 轮官方只写「少于 10」'])
+    // 2026-09-30 下午 Frank「这种补充信息都删掉」:卡底「其中 N 轮官方只写…」那行撤,只剩合计一行
+    expect(card?.foot).toEqual(['2026 年 3 轮,至少 1,100 份邀请'])
     const e = drawCardOf({ t: en, lang: 'en', province: 'AB', draws: ab, ...dx })
-    expect(e?.foot).toEqual(['2026: 3 rounds, at least 1,100 invitations', 'Published only as “fewer than 10”: 2 rounds'])
+    expect(e?.foot).toEqual(['2026: 3 rounds, at least 1,100 invitations'])
     // 汇装那一份没出(本年有一轮人数没公布)→ 只写轮数,不拿前端加出来的数顶
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'AB', draws: ab, ...dx, ops: [] })?.foot)
-      .toEqual(['2026 年 3 轮', '其中 2 轮官方只写「少于 10」'])
+      .toEqual(['2026 年 3 轮'])
     // 配额卡「已发邀请」是同一个数:格里写「≥」;卡只列的那一年跟配额卡标题同一个来源
     const q = quotaCardOf({ t: zh, province: 'AB', ops: [ytd({ metric: 'allocation', value: 6403, asOf: '' }), ...ops], hitStreams: [], quotaKey: '' })
     expect([q?.heads, q?.rows[0]?.cells, q?.year]).toEqual([['总数', '已发邀请'], ['6,403', '≥\u00a01,100'], '2026'])

@@ -652,7 +652,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   // 2026-09-29 추첨 그룹 헤더 셋째 줄: 스트림별 올해 합계
   'pnpdraws.groupTotal': '총 {count}',
   'pnpdraws.groupTotalMin': '최소 {count}',
-  'pnpdraws.groupBelow': '매회 공식 발표가 “{n} 미만”뿐',
   'pnpdraws.invOne': '{n}개 초청',
   'pnpdraws.below': '{n}개 미만 초청',
   'pnpdraws.pool': '주정부 추천과 AIP를 같은 풀에서 선발, 인원에 AIP 포함',
@@ -661,7 +660,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.foot': '{year}년 {rounds}, 총 {count}',
   'pnpdraws.footMin': '{year}년 {rounds}, 최소 {count}',
   'pnpdraws.footRounds': '{year}년 {rounds}',
-  'pnpdraws.footBelow': '이 중 {rounds}는 공식 발표가 “{n} 미만”뿐',
   'pnpreform.head': '개편 전 추첨',
   'pnpaip.head': 'AIP 추첨',
   'pnpaip.pool': '주정부 추천과 같은 풀에서 선발, 인원은 주 추첨에 포함',
