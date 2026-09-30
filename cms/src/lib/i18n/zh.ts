@@ -730,6 +730,8 @@ export const jobsZh = {
   'pnpblock.title': '本岗不满足的门槛',
   'pnp.block.part': '兼职', 'pnp.block.term': '定期合同', 'pnp.block.seasonal': '季节工', 'pnp.block.casual': '临时工',
   'pnp.block.wage': '工资低于中位', 'pnp.block.occ': '职业不收',
+  // 2026-09-30 Frank「兼职 这种都改成不符合 可以吗」(选「五个都改」):职位板格子与手机胶囊上工作性质四个与工资那个写这一条,弹框卡照旧写具体原因
+  'pnp.block.unfit': '不符合',
   'pnpfacts.selected': '入选',
   'pnpfacts.selPeople': '{n} 人入选',
   'pnpfacts.allGroups': '查看全省 {n} 组 ▾',

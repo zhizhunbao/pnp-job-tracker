@@ -41,7 +41,7 @@ import {
   GATE_COND_OTHER_PROV, BASIS_PROV_GRADUATE, BASIS_FISCAL, GATE_EMP_FISCAL_KEY,
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
-  GATE_UNIT_YEARS,
+  GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -3745,8 +3745,10 @@ export function streamClsOf(x: DimClsIn): string {
 /**
  * 分数线卡组头的类名(可点的加按钮手型,休眠 / 从没抽过的压暗)。
  * 2026-09-29 Frank「每一个通道也需要一个总数吧」:有本年合计的组头加 cmpHasTotal(多一行放合计)。
+ * 2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」(看过效果图选「互换」):省提名抽选卡的组头一律加
+ * cmpDateBelow(合计换到原日期那一格、日期落最下一行,没合计的组同样排),cmpHasTotal 撤;EE 分数线卡不加,照旧一行。
  *
- * @param x 压不压暗、本岗那组、可不可点、有没有合计。
+ * @param x 压不压暗、本岗那组、可不可点、是不是省提名抽选卡的组头。
  * @returns 类名。
  */
 export function cmpHeadClsOf(x: CmpHeadClsIn): string {
@@ -3754,8 +3756,8 @@ export function cmpHeadClsOf(x: CmpHeadClsIn): string {
   if (x.button) {
     cls.push(cssOf(css.cmpBtn))
   }
-  if (x.total) {
-    cls.push(cssOf(css.cmpHasTotal))
+  if (x.dateBelow) {
+    cls.push(cssOf(css.cmpDateBelow))
   }
   if (x.dim) {
     cls.push(cssOf(css.dim))
@@ -4164,9 +4166,24 @@ export function pnpNameOf(x: PnpNameIn): string {
 }
 
 /**
+ * 职位板格子与手机胶囊上的原因词(2026-09-30 Frank「兼职 这种都改成不符合 可以吗」,选「五个都改」):工作性质四个与工资那个
+ * 统一写「不符合」(PNP_BLOCK_UNFIT_CODES;职位板别的列已经写着),其余照 pnpBlockOf 写具体原因。弹框「本岗不满足的门槛」卡不走这里。
+ *
+ * @param x 本岗与取词函数。
+ * @returns 格子上的词;走得了或码不在显示表里给 ''。
+ */
+export function pnpBlockCellOf(x: PnpBlockIn): string {
+  if (PNP_BLOCK_UNFIT_CODES.includes(x.job.pnpBlock)) {
+    return x.t(PNP_BLOCK_UNFIT_KEY)
+  }
+  return pnpBlockOf(x)
+}
+
+/**
  * 本岗走不了省提名的原因词(数据层 pnpBlock 原因码 → 界面词;2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」
  * 「直接精简 一些原因可以吗」「就直接说 兼职」):职位板格子、手机胶囊与弹框「本岗不满足的门槛」卡同一处取。
  * 清单排除(list)不在显示码里 —— 照旧走 pnpExcludedOf 那条路。
+ * 2026-09-30 起职位板格子与手机胶囊改走 pnpBlockCellOf(五个码写「不符合」),这里的具体原因词留给弹框卡与职业不收。
  *
  * @param x 本岗与取词函数。
  * @returns 原因词;走得了或码不在显示表里给 ''。

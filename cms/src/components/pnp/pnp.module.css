@@ -782,31 +782,6 @@
 }
 
 /*
- * 带本年合计的组头(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」):加一行放合计,跨分数 / 日期 / 轮数三格
- * 靠右,名字格跨两行。只挂在有合计的组头上(cmpHeadClsOf 的 total)—— 没合计的组与 EE 分数线卡的组照旧一行,排布一格不变。
- */
-.cmpHead.cmpHead.cmpHasTotal {
-  /*
-   * 两行格位。
-   */
-  grid-template-areas:
-    "name score date rounds caret"
-    "name total total total caret";
-}
-
-@media (width <= 640px) {
-  .cmpHead.cmpHead.cmpHasTotal {
-    /*
-     * 手机三行格位:名字与记号、分数 / 日期 / 轮数、合计(列宽照上面窄屏那条,英文那条只改列宽不改格位)。
-     */
-    grid-template-areas:
-      "name name name caret"
-      "score date rounds rounds"
-      "total total total total";
-  }
-}
-
-/*
  * 组头的本年合计格(「共 7,465 份邀请」;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
  */
 .cmpTotal {
@@ -817,6 +792,7 @@
 
   /*
    * 格位(桌面在统计三格下面那一行,手机是组头第三行)。
+   * 2026-09-30 起在原日期那一格(cmpDateBelow,Frank 选「互换」)。
    */
   grid-area: total;
 
@@ -832,6 +808,7 @@
 
   /*
    * 靠右,与轮数格右边齐。
+   * 2026-09-30 起在轮数格左边一格,靠右贴着轮数。
    */
   text-align: right;
 
@@ -924,6 +901,68 @@
      * 英文「11 rounds」57.7px:轮数列 34px(34 + 12 + 12 = 58px;理由同上,2026-09-29)。
      */
     grid-template-columns: minmax(0, 1fr) max-content minmax(34px, max-content) 12px;
+  }
+}
+
+/*
+ * 省提名抽选卡的组头(2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」,看过效果图选「互换」):本年合计换到
+ * 原日期那一格、日期落最下一行靠右;没合计的组那一格空着,日期同样落最下一行,各组排法一个样。只挂在省提名抽选卡的组头上
+ *(cmpHeadClsOf 的 dateBelow)—— EE 分数线卡照旧一行。原 cmpHasTotal(09-29「单独一行靠右」,带本年合计的组头多一行放合计,
+ * 跨分数 / 日期 / 轮数三格靠右)随之撤。
+ */
+@media (width > 640px) {
+  .cmpHead.cmpHead.cmpDateBelow {
+    /*
+     * 列宽:名字吃余宽,分数 / 合计 / 轮数定宽 —— 合计格按最长的合计定(中文「共 10,000 份申请入选」117px,含五位数余量;
+     * 英文、韩文见下两条),各组分数照旧上下对齐。
+     */
+    grid-template-columns: minmax(0, 1fr) 104px 118px 56px 10px;
+
+    /*
+     * 两行格位:合计在原日期那一格,日期落第二行(跨分数 / 合计 / 轮数三格靠右,右边与轮数齐)。
+     */
+    grid-template-areas:
+      "name score total rounds caret"
+      "name date date date caret";
+  }
+
+  .cmpHead.cmpHead.cmpDateBelow:lang(en) {
+    /*
+     * 英文合计格:「at least 10,000 invitations」146px。
+     */
+    grid-template-columns: minmax(0, 1fr) 104px 146px 56px 10px;
+  }
+
+  .cmpHead.cmpHead.cmpDateBelow:lang(ko) {
+    /*
+     * 韩文合计格:「최소 10,000개 초청」106px。
+     */
+    grid-template-columns: minmax(0, 1fr) 104px 106px 56px 10px;
+  }
+}
+
+@media (width <= 640px) {
+  .cmpHead.cmpHead.cmpDateBelow {
+    /*
+     * 手机列宽:合计格最小 = 四位数合计的字宽(「共 7,465 份邀请」86px、「至少 198 份邀请」88px),更长的(「共 1,764 份申请入选」)
+     * 撑开只动它自己那一组 —— 同轮数格按月那一组的做法;定成最长的宽,英文分数格只剩六十来 px,「426 invitations」这类没分数的组会折行。
+     */
+    grid-template-columns: minmax(0, 1fr) minmax(89px, max-content) minmax(6px, max-content) 12px;
+
+    /*
+     * 手机三行格位:名字与记号、分数 / 合计 / 轮数、日期(靠右,右边与轮数齐)。
+     */
+    grid-template-areas:
+      "name name name caret"
+      "score total rounds rounds"
+      "date date date date";
+  }
+
+  .cmpHead.cmpHead.cmpDateBelow:lang(en) {
+    /*
+     * 英文:合计格最小「7,465 invitations」95px;轮数列 34px(同上面窄屏英文那条)。
+     */
+    grid-template-columns: minmax(0, 1fr) minmax(95px, max-content) minmax(34px, max-content) 12px;
   }
 }
 

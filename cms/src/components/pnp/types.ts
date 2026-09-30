@@ -2063,6 +2063,11 @@ export type EeCmpGroupIn = {
    * 开合手柄。
    */
   onToggle: ClickFn
+
+  /**
+   * 组头排法:省提名抽选卡传 true(合计在原日期格、日期落最下一行;2026-09-30 Frank 选「互换」),EE 分数线卡传 false。
+   */
+  dateBelow: boolean
 }
 
 /**
@@ -4127,9 +4132,10 @@ export type CmpHeadClsIn = {
   button: boolean
 
   /**
-   * 有没有本年合计(有就多一行放它;2026-09-29 Frank「每一个通道也需要一个总数吧」)。
+   * 省提名抽选卡的组头:合计在原日期那一格、日期落最下一行(2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」,
+   * 看过效果图选「互换」;原「有没有本年合计」一格随 cmpHasTotal 撤)。
    */
-  total: boolean
+  dateBelow: boolean
 }
 
 /**

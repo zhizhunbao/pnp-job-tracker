@@ -688,6 +688,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpblock.title': 'Requirements not met',
   'pnp.block.part': 'Part-time', 'pnp.block.term': 'Fixed-term', 'pnp.block.seasonal': 'Seasonal', 'pnp.block.casual': 'Casual',
   'pnp.block.wage': 'Below median wage', 'pnp.block.occ': 'Occupation not eligible',
+  'pnp.block.unfit': 'Not eligible',
   'pnpfacts.selected': 'Selected',
   'pnpfacts.selPeople': '{n} selected',
   'pnpfacts.allGroups': 'All {n} {label} streams ▾',

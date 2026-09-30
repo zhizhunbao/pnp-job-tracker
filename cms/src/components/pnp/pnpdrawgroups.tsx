@@ -18,6 +18,8 @@
  * 2026-09-29 抽选卡重排(Frank「按你建议」「如果改一个地方,是不是所有省份都得改一遍」):本省抽选 / 改制前的抽选 / AIP 抽选三张卡同一个形,
  * 卡由 PnpListSection 算好递进来(drawCardOf / preReformCardOf / aipCardOf),这里只渲染:标题下灰字(原 NB 不按分数那行在这里按
  * DRAW_NO_SCORE_PROVS 判,挪进 drawCardOf)、各组、开关(每张卡一把键)、卡底合计行。
+ * 2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」(看过效果图选「互换」):组头传 dateBelow —— 本年合计换到
+ * 原日期那一格、日期落最下一行(没合计的组同样排,各组分数照旧对齐);EE 分数线卡不传。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
@@ -48,13 +50,13 @@ export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
   }
   const hits = []
   for (const g of card.hits) {
-    hits.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
+    hits.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} dateBelow />)
   }
   const allOpen = open.has(card.allKey)
   const others = []
   if (allOpen) {
     for (const g of card.others) {
-      others.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
+      others.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} dateBelow />)
     }
   }
   return (

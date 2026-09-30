@@ -27,6 +27,8 @@
  * 与 usePnpData(整表懒取自 advisor 迁入,advisor 别的组反过来从这里取)。
  * 同日第 4 步:职位板省提名格「写什么 / 能不能点」与官方具名排除键收进本域 —— pnpChannelKeyOf / pnpNameOf(格子、手机胶囊、
  * 通道卡同一个名字)、pnpCellActiveOf(格子能不能点 = 弹框有没有卡)、pnpBlockedKeysOf / pnpExcludedOf / aipExcludedOf(拼键查键一处)。
+ * 2026-09-30 Frank「兼职 这种都改成不符合」:职位板格子 / 胶囊的原因词改经 pnpBlockCellOf(五个码写「不符合」),pnpBlockOf 退回域内
+ *(弹框卡用),桶门换名不加名。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -40,6 +42,6 @@ export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
   aipBlockOf, aipExcludedOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpBlockedKeysOf, pnpCellActiveOf,
-  pnpBlockOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
+  pnpBlockCellOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
 } from './functions'
 export { usePnpData } from './hooks'

@@ -378,6 +378,18 @@ export const PNP_BLOCK_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'o
 export const PNP_BLOCK_HEAD = 'pnp.block.'
 
 /**
+ * 职位板格子与手机胶囊上不写具体原因、统一写「不符合」的原因码(2026-09-30 Frank「兼职 这种都改成不符合 可以吗」,选「五个都改」):
+ * 工作性质四个与工资那个 —— 职位板「类型」「期限」「vs 中位」三列已经写着;职业不收(occ)别的列看不出来,照写原因。
+ * 弹框「本岗不满足的门槛」卡照旧写具体原因(pnpBlockOf)。
+ */
+export const PNP_BLOCK_UNFIT_CODES = ['part', 'term', 'seasonal', 'casual', 'wage']
+
+/**
+ * 那几个码在格子与胶囊上的词条键(「不符合」)。
+ */
+export const PNP_BLOCK_UNFIT_KEY = 'pnp.block.unfit'
+
+/**
  * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
  */
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i

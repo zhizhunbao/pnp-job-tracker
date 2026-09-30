@@ -29,7 +29,7 @@ import { describe, expect, it } from 'vitest'
 import {
   allGroupsLabelOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   aipCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
-  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpCellActiveOf, gateChannelOf,
+  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
 } from '@/components/pnp/functions'
@@ -745,6 +745,17 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(pnpBlockOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('파트타임')
     for (const c of ['', 'list', 'zzz']) {
       expect(pnpBlockOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    }
+    // 2026-09-30 Frank「兼职 这种都改成不符合 可以吗」(选「五个都改」):格子与胶囊上工作性质四个与工资那个写「不符合」,职业不收照写;
+    // 弹框卡(pnpBlockOf)照旧写具体原因(上面几条不变)
+    const codes = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
+    const cells = codes.map((c) => pnpBlockCellOf({ job: { pnpBlock: c }, t: zh }))
+    expect(cells).toEqual(['不符合', '不符合', '不符合', '不符合', '不符合', '职业不收'])
+    expect(pnpBlockCellOf({ job: { pnpBlock: 'wage' }, t: en })).toBe('Not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlock: 'occ' }, t: en })).toBe('Occupation not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('요건 미충족')
+    for (const c of ['', 'list', 'zzz']) {
+      expect(pnpBlockCellOf({ job: { pnpBlock: c }, t: zh })).toBe('')
     }
     const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlock: 'part' }
     const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS, qcCells: [] })

@@ -671,6 +671,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpblock.title': '충족하지 못한 요건',
   'pnp.block.part': '파트타임', 'pnp.block.term': '계약직', 'pnp.block.seasonal': '계절직', 'pnp.block.casual': '임시직',
   'pnp.block.wage': '중위 임금 미만', 'pnp.block.occ': '대상 직종 아님',
+  'pnp.block.unfit': '요건 미충족',
   'pnpfacts.selected': '선정',
   'pnpfacts.selPeople': '{n}명 선정',
   'pnpfacts.allGroups': '주 전체 {n}개 스트림 보기 ▾',

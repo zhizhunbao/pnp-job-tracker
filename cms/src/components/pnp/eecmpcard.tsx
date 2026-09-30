@@ -23,7 +23,11 @@ import css from './pnp.module.css'
 export function EeCmpCard({ t, cmp, open, toggleOf }: EeCmpCardIn) {
   const groups = []
   for (const g of cmp.groups) {
-    groups.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} />)
+    groups.push(<EeCmpGroupView key={g.key}
+      g={g}
+      open={open.has(g.key)}
+      onToggle={toggleOf(g.key)}
+      dateBelow={false} />)
   }
   const lines = []
   for (const l of cmp.lines) {
