@@ -1183,6 +1183,9 @@ class NlIgIn:
     ig_lang_txt: str
     """语言测试页正文。"""
 
+    ig_page_txt: str
+    """申请人页正文(外省院校毕业须先在 NL 工作满一年那句只在这页;2026-09-30 通道补全批一 1b)。"""
+
 
 @dataclass
 class SkGroupNameIn:

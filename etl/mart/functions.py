@@ -85,7 +85,7 @@ from mart.constants import (
     GRADE_4, GRADE_5, GRID_CRS, GRID_FSW67, HYPHEN, I18N_BLANK, I18N_CITY_FILE, I18N_NOC_FILE,
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
-    K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI, TABLE_PATHWAYS,
+    K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DLI, TABLE_PATHWAYS, TABLE_PNP_REQUIREMENTS,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_PATHWAYS, PATHWAYS_MISSING_TPL, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
     K_MW_EFFECTIVE, K_MW_FETCHED, K_MW_FROM, K_MW_NEXT, K_MW_PROVINCE, K_MW_RATE, K_MW_ROWS, K_MW_SINCE,
@@ -4582,6 +4582,15 @@ def build_pathways_table() -> None:
     直通表改动不陪跑跨源汇装;之后 load --only upload + seed,seed 端按表哈希只灌这一张)。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
     tables = {TABLE_PATHWAYS: build_pathways()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def build_pnp_req_table() -> None:
+    """单表增量:只重建 data/mart/pnp_requirements.json(2026-09-30 通道补全批一 1b —— 各省补门槛行逐省重跑,照 build_pathways_table
+    的形;之后 load --only upload + seed)。⚠ 工资行变了要跑全链:评分读 wage_floors_of(同一批门槛行)给岗位打「工资低于中位」。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_PNP_REQUIREMENTS: build_pnp_requirements(IN_REQ_TABLES)}
     write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 

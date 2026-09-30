@@ -5,7 +5,7 @@
   "url": "https://www.gov.nl.ca/immigration/4-skilled-worker-category-eligibility-criteria/",
   "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/skilled-worker/",
   "guideEffective": "",
-  "fetched": "2026-09-29",
+  "fetched": "2026-09-30",
   "requirements": [
     {
       "stream": "NLPNP Skilled Worker Category",
@@ -141,7 +141,8 @@
       "label": "An offer in a TEER 4 (in-demand) occupation must come with a language test at CLB/NCLC 4 in each of the four abilities",
       "section": "International Graduate — Language Testing",
       "url": "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate",
-      "factor": "language"
+      "factor": "language",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate"
     },
     {
       "stream": "NLPNP International Graduate Category",
@@ -164,7 +165,8 @@
       "label": "No language test is required up front for an offer in TEER 0, 1, 2, 3; the officer may still request one at their discretion regardless of the TEER level",
       "section": "International Graduate — Language Testing",
       "url": "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate",
-      "factor": "language"
+      "factor": "language",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate"
     },
     {
       "stream": "NLPNP International Graduate Category",
@@ -185,10 +187,94 @@
       "appliesArea": "",
       "familySize": null,
       "basis": "",
-      "label": "This category sets no minimum work-experience requirement: the published criteria are a PGWP with at least 4 months validity left plus a job offer of at least 12 months at 30+ hours a week, applicant aged 21-59",
+      "label": "This category sets no minimum work-experience requirement: the published criteria are a PGWP with at least 4 months validity left plus a job offer of at least 12 months at 30+ hours a week, applicant aged 21-59; graduates of public institutions outside NL must first work in NL for one year",
       "section": "International Graduate Category Eligibility Criteria",
       "url": "https://www.gov.nl.ca/immigration/4-international-graduate-category-eligibility-criteria",
-      "factor": "experience"
+      "factor": "experience",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate"
+    },
+    {
+      "stream": "NLPNP International Graduate Category",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 12,
+      "valueText": "Graduates from recognized public institutions outside NL must have a job or offer directly related to their field and work in NL for at least one year before applying to the NLPNP.",
+      "unit": "months",
+      "appliesTeer": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Graduates of recognized public institutions outside NL must work in NL for at least one year (12 months) before applying",
+      "section": "NLPNP International Graduate Category — Out-of-province graduates",
+      "url": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate",
+      "factor": "experience",
+      "appliesCondition": "grad-other-province",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/international-graduate"
+    },
+    {
+      "stream": "NLPNP Express Entry Skilled Worker Category",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "Be accepted into IRCC’s Express Entry pool of qualified candidates",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Must be accepted into the federal Express Entry pool",
+      "section": "Express Entry – Skilled Worker Category Eligibility Criteria",
+      "url": "https://www.gov.nl.ca/immigration/4-express-entry-skilled-worker-category-eligibility-criteria",
+      "factor": "eeProfile",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker"
+    },
+    {
+      "stream": "NLPNP Express Entry Skilled Worker Category",
+      "subject": "applicant",
+      "op": ">=",
+      "value": 67,
+      "valueText": "Score a minimum of 67 points on the NLPNP Point Assessment Grid",
+      "unit": "points",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Score at least 67 points on the NLPNP Point Assessment Grid",
+      "section": "Express Entry – Skilled Worker Category Eligibility Criteria",
+      "url": "https://www.gov.nl.ca/immigration/4-express-entry-skilled-worker-category-eligibility-criteria",
+      "factor": "pointsMin",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker"
+    },
+    {
+      "stream": "NLPNP Express Entry Skilled Worker Category",
+      "subject": "applicant",
+      "op": "rule",
+      "value": null,
+      "valueText": "Have the qualifications, training, skills, and/or accreditation required for the job. Applicants must demonstrate they meet the NOC code employment requirements",
+      "unit": "",
+      "appliesTeer": [],
+      "appliesNoc": "",
+      "excludesNoc": "",
+      "appliesArea": "",
+      "familySize": null,
+      "basis": "",
+      "label": "Have the qualifications, training, skills and/or accreditation required for the job and meet the NOC code employment requirements",
+      "section": "Express Entry – Skilled Worker Category Eligibility Criteria",
+      "url": "https://www.gov.nl.ca/immigration/4-express-entry-skilled-worker-category-eligibility-criteria",
+      "factor": "licensing",
+      "pageUrl": "https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/provincial-nominee-program/applicants/express-entry-skilled-worker"
     }
   ]
 }

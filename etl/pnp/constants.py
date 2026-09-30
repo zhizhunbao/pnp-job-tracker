@@ -784,6 +784,12 @@ FACTOR_AGE = "age"
 FACTOR_LICENSING = "licensing"
 """门槛因素:执业资格 / 行业证照。"""
 
+FACTOR_POINTS_MIN = "pointsMin"
+"""门槛因素:本省打分表的最低分(SINP 打分表至少 60 分才能申请;是资格线,不是抽选线)。省提名弹框「本岗通道的门槛」卡的
+「积分」行读它(因素名与 cms 门槛卡 GATE_F.pointsMin 同一个串)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)立,
+首用者 SK:按派工「只改 SK 自己的段」立在本段,不进通用段的 FACTOR_ 一族 —— 别省也要这一类时再并过去。
+2026-09-30 通道补全批一 1b:NL 快速通道技术工人(NLPNP 打分表 67 分)也要,照上句并进通用段(原名 SKR_FACTOR_POINTS_MIN)。"""
+
 UNIT_CRS = "CRS"
 """单位:联邦 CRS 分。"""
 
@@ -792,6 +798,10 @@ UNIT_CLB = "CLB"
 
 UNIT_MONTHS = "months"
 """单位:月。"""
+
+UNIT_POINTS = "points"
+"""单位:本省打分表的分(SINP 打分表满分 110)。同上,立在本段(2026-09-29)。
+2026-09-30 随 FACTOR_POINTS_MIN 并进通用段(原名 SKR_UNIT_POINTS;NL 打分表同单位)。"""
 
 UNIT_YEARS = "years"
 """单位:年。"""
@@ -4249,14 +4259,6 @@ SKR_FACTOR_ORDER = ("language", "experience", "experienceAlt", "pointsMin", "lic
 2026-09-27 末尾加 eoiDraw(持 offer 直接申请那一行,见 SKR_DIRECT_RE)。
 2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 experienceAlt / pointsMin / licensing 三类(见下面 2026-09-29 那一组常量)。"""
 
-SKR_FACTOR_POINTS_MIN = "pointsMin"
-"""门槛因素:本省打分表的最低分(SINP 打分表至少 60 分才能申请;是资格线,不是抽选线)。省提名弹框「本岗通道的门槛」卡的
-「积分」行读它(因素名与 cms 门槛卡 GATE_F.pointsMin 同一个串)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)立,
-首用者 SK:按派工「只改 SK 自己的段」立在本段,不进通用段的 FACTOR_ 一族 —— 别省也要这一类时再并过去。"""
-
-SKR_UNIT_POINTS = "points"
-"""单位:本省打分表的分(SINP 打分表满分 110)。同上,立在本段(2026-09-29)。"""
-
 SKR_BASIS_WINDOW_TPL = "windowYears={n}"
 """经验行的口径包:近 N 年内(门槛卡写「N 个月全职经验(近 N 年内)」;判定引擎只认 employerTenure 一个口径标记,这格不改判定)。"""
 
@@ -5503,6 +5505,18 @@ URL 不是猜的(CLAUDE.md 铁律):#4 那页当时不在 crawl 里,href 是从�
 NLR_IG_LANG_URL = "https://www.gov.nl.ca/immigration/11-language-testing-international-graduate"
 """IG 通道的语言测试页。"""
 
+NLR_IG_PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
+                   "provincial-nominee-program/applicants/international-graduate")
+"""IG 通道的人可读页(2026-09-30 通道补全批一 1b):本类各行的 pageUrl(整张 NL 表的 pageUrl 是技术工人页,IG 三行的「官网」原先
+落错页),外省院校毕业那一行的出处 —— 那句只在这页,#4 资格政策页没写。网址照 crawl 清单(data/crawl/nl-imm)原样,不带尾斜杠。"""
+
+NLR_EE_URL = "https://www.gov.nl.ca/immigration/4-express-entry-skilled-worker-category-eligibility-criteria"
+"""Express Entry – Skilled Worker 类别资格政策页(2026-09-30 通道补全批一 1b;网址照 crawl 清单 nl-imm)。"""
+
+NLR_EE_PAGE_URL = ("https://www.gov.nl.ca/immigration/immigrating-to-newfoundland-and-labrador/"
+                   "provincial-nominee-program/applicants/express-entry-skilled-worker")
+"""Express Entry – Skilled Worker 类别的人可读页(本类各行的 pageUrl;同上)。"""
+
 OUT_NL_REQ = paths.PNP / "nl-req.json"
 """NL 门槛表落盘处。
 NL 这份的看点是**分档方式跟别省相反**:官方明说 Skilled Worker 收 TEER 0-5 全档,
@@ -5537,6 +5551,9 @@ NLR_STREAM = "NLPNP Skilled Worker Category"
 
 NLR_IG_STREAM = "NLPNP International Graduate Category"
 """International Graduate 通道名。"""
+
+NLR_EE_STREAM = "NLPNP Express Entry Skilled Worker Category"
+"""Express Entry – Skilled Worker 通道名(与通道对照表 officialName 同字;2026-09-30 通道补全批一 1b)。"""
 
 NLR_EMP_STREAM = "NLPNP (employer criteria, all streams)"
 """雇主侧的通道名。"""
@@ -5592,6 +5609,17 @@ NLR_IG_EXPERIENCE_RE = re.compile(r"(?:work|employment) experience|(?:months|yea
 """🔴 op='none' 是**断言没有这条门槛**,不是「我们没查到」。所以拿这个反向正则自证:
 官方清单里但凡出现「工作经验」字样,就说明它其实有要求 → 不发这一行,并报问题。"""
 
+NLR_IG_OUT_PROV_RE = re.compile(r"Graduates from recognized public institutions outside NL must have a job or offer directly "
+                                r"related to their field and work in NL for at least one year before applying to the NLPNP\.", re.I)
+"""IG:外省院校毕业的须先在 NL 工作满一年(申请人页「Out-of-province graduates:」那句;2026-09-30 通道补全批一 1b 补 ——
+原先经验行只写「不设经验门槛」,对外省毕业的是错的)。"""
+
+NLR_IG_OUT_PROV_MONTHS = 12
+"""外省毕业那条的月数:官方写「at least one year」,记 12 个月(门槛卡与判定引擎都按月比)。"""
+
+NLR_COND_GRAD_OTHER = MBR_COND_GRAD
+"""条件行键:外省院校毕业(与曼省 SWM 同一个键 grad-other-province,判定引擎 conditionHolds 认它;成立时盖过通用那行)。"""
+
 NLR_IG_LANG_CLB_RE = re.compile(r"Canadian Language Benchmark \(CLB\) (\d) in each", re.I)
 """IG:语言等值档。"""
 
@@ -5621,6 +5649,12 @@ NLR_SECTION_IG_LANG = "International Graduate — Language Testing"
 
 NLR_SECTION_IG = "International Graduate Category Eligibility Criteria"
 """IG 经验那行的出处节名。"""
+
+NLR_SECTION_IG_OUT_PROV = "NLPNP International Graduate Category — Out-of-province graduates"
+"""IG 外省毕业那行的出处节名(申请人页的小标题;2026-09-30)。"""
+
+NLR_SECTION_EE = "Express Entry – Skilled Worker Category Eligibility Criteria"
+"""Express Entry – Skilled Worker 各行的出处节名(2026-09-30)。"""
 
 NLR_LANG_LABEL_TPL = ("Applicants with NOC TEER {band} job offers must submit a valid "
                       "language test at CLB/NCLC {clb} equivalent, valid throughout processing")
@@ -5657,10 +5691,17 @@ NLR_IG_LANG_NONE_LABEL_TPL = ("No language test is required up front for an offe
 NLR_IG_EXP_LABEL_TPL = ("This category sets no minimum work-experience requirement: the published "
                         "criteria are a PGWP with at least {pgwp} months validity left plus a "
                         "job offer of at least {months} months at "
-                        "{hours}+ hours a week, applicant aged {age_from}-{age_to}")
+                        "{hours}+ hours a week, applicant aged {age_from}-{age_to}; graduates of public "
+                        "institutions outside NL must first work in NL for one year")
 """IG 经验(op='none')的 label —— 🔴 **本站唯一一条「不设工作经验门槛」的省提名通道**,
 这是它的全部价值所在。官方那份「Applicants must:」是穷举清单,通篇没有经验这一项;
-上面的反向正则替这句话作证。"""
+上面的反向正则替这句话作证。
+2026-09-30 通道补全批一 1b:「不设」只对本省院校毕业的成立 —— 申请人页写明外省院校毕业的须先在 NL 工作满一年
+(NLR_IG_OUT_PROV_RE),label 末尾点明,另起一条外省毕业的条件行(判定引擎按「最具体优先」让它盖过本行)。"""
+
+NLR_IG_OUT_PROV_LABEL = ("Graduates of recognized public institutions outside NL must work in NL for at least one year "
+                         "(12 months) before applying")
+"""IG 外省毕业那行的 label(2026-09-30;原句整条进 valueText)。"""
 
 NLR_PROBLEM_NO_ALL_TEERS = "通道收的 TEER 档位没解析到"
 """自校问题:全档。"""
@@ -5685,6 +5726,20 @@ NLR_POLICY_RULES = (
 )
 """Skilled Worker 政策页的条文型门槛(rule_rows 五元组:原句正则, factor, 单位, 标签, 问题句;单位空 = 条文行,原句整条进
 valueText)。2026-09-29 Frank「都接上,开工吧」(七省门槛卡)立,先收资格 / 执照一条。"""
+
+NLR_EE_PROFILE_RE = re.compile(r"Be accepted into IRCC.s Express Entry pool of qualified candidates", re.I)
+"""EE 技术工人类:须在联邦 EE 池(资格页第 1 条「Be accepted into IRCC’s Express Entry pool of qualified candidates;」;
+弯撇号用 . 认)。"""
+
+NLR_EE_POINTS_RE = re.compile(r"Score a minimum of (\d+) points on the NLPNP Point Assessment Grid", re.I)
+"""EE 技术工人类:NLPNP 打分表最低分(「Score a minimum of 67 points on the NLPNP Point Assessment Grid」;打分表名在页面上是
+链接,正文折空白后与前文同一行)。"""
+
+NLR_EE_PROFILE_LABEL = "Must be accepted into the federal Express Entry pool"
+"""EE 池那行的 label(原句整条进 valueText)。"""
+
+NLR_EE_POINTS_LABEL_TPL = "Score at least {n} points on the NLPNP Point Assessment Grid"
+"""打分表最低分那行的 label。"""
 
 NLR_PROBLEM_EMPLOYER_TPL = "雇主侧「{what}」没解析到(雇主资格页可能改版)"
 """自校问题:雇主侧某一条。"""
@@ -5727,6 +5782,27 @@ NLR_PROBLEM_IG_CLB_TPL = "IG 语言档解析到 {clbs} 个 —— 需人工核�
 
 NLR_PROBLEM_IG_EXPERIENCE = "IG 资格页出现了「工作经验」字样 —— 「不设经验门槛」这条断言不再成立,须人工重读"
 """自校问题:IG 出现经验字样(断言不成立)。"""
+
+NLR_PROBLEM_IG_OUT_PROV = "IG 申请人页「外省院校毕业须先在 NL 工作满一年」那句没解析到(页面可能改版)"
+"""自校问题:IG 外省毕业那句(2026-09-30)。"""
+
+NLR_PROBLEM_EE_PROFILE = "EE 技术工人类「须在联邦 EE 池」那句没解析到(资格页可能改版)"
+"""自校问题:EE 池(2026-09-30)。"""
+
+NLR_PROBLEM_EE_POINTS = "EE 技术工人类「NLPNP 打分表至少 N 分」那句没解析到(资格页可能改版)"
+"""自校问题:打分表最低分(2026-09-30)。"""
+
+NLR_PROBLEM_EE_LICENCE = "EE 技术工人类资格 / 执照条文(NOC code employment requirements)没解析到"
+"""自校问题:资格 / 执照条文(2026-09-30)。"""
+
+NLR_EE_RULES = (
+    (NLR_EE_PROFILE_RE, FACTOR_EE_PROFILE, "", NLR_EE_PROFILE_LABEL, NLR_PROBLEM_EE_PROFILE),
+    (NLR_EE_POINTS_RE, FACTOR_POINTS_MIN, UNIT_POINTS, NLR_EE_POINTS_LABEL_TPL, NLR_PROBLEM_EE_POINTS),
+    (NLR_LICENCE_RE, FACTOR_LICENSING, "", NLR_LICENCE_LABEL, NLR_PROBLEM_EE_LICENCE),
+)
+"""Express Entry – Skilled Worker 类别的门槛(rule_rows 五元组;2026-09-30 通道补全批一 1b)。只收门槛卡读得出的三条:EE 池、
+打分表最低分、资格 / 执照条文(与技术工人类同一句,共用 NLR_LICENCE_RE)。**不收的**:语言(官方写「按联邦 EE 所走项目定」,
+没有本省数)、学历 / ECA、年龄、安家资金(门槛卡没有这几行);offer 形态与雇主侧照全省那两组(通道对照表 reqStreams 挂雇主流)。"""
 
 NLR_SOURCE = "NLPNP — Skilled Worker Category Eligibility Criteria Policy"
 """表级来源名。"""

@@ -462,7 +462,7 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "plainZh": "MB 技术工人", "plainEn": "MB Skilled Worker", "plainKo": "MB 숙련 노동자",
     "officialName": "Skilled Worker in Manitoba",
     "boardLabel": None, "isDefault": True,
-    "drawStreams": ["Skilled Worker in Manitoba"],
+    "drawStreams": ["Skilled Worker in Manitoba", "Skilled Worker Stream"],
     "reqStreams": [
         "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
         ("MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway "
@@ -488,7 +488,9 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
 Occupations List are the minimum levels across all Skilled Worker pathways」—— 挂的是它的语言门槛行,在需表仍不当通道、不挂 occLabels);
 全项目语言政策的 TEER 4 / 5 下限 CLB 4(语言政策页,各流通用)。SWO、国际教育流、EDI 的行不挂:别的通道或雇主项目的门槛。
 登记顺序本通道自己的流在前;⚠ 门槛卡标题右端的出处页现取「库表按流名排序后第一条带网址的行」,那样取到的是语言政策页或在需表那页
-(看库的排序规则),不是 SWM 资格页 —— 要出 SWM 页得前端改按这里的登记顺序取,另议。"""
+(看库的排序规则),不是 SWM 资格页 —— 要出 SWM 页得前端改按这里的登记顺序取,另议。
+2026-09-30 通道补全批二(立项稿第三节「只认领抽选、不加通道」):抽选组加认领省方直接邀请组「Skilled Worker Stream」—— 官方那组是
+SWM 或 SWO 里持省方邀请的档案,海外技工行批一已认领,本行同认(一组两行都认,本岗高亮随之多这一组)。"""
 
 PW_ON_WORKFORCE_PRIORITY = {
     "key": "on-workforce-priority", "province": "ON", "program": "PNP",
@@ -1288,7 +1290,8 @@ PW_NL_INTERNATIONAL_GRADUATE = {
     "employers": [],
 }
 """NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」
-立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。"""
+立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。
+2026-09-30 批一 1b:门槛表补上外省毕业那条(条件行 grad-other-province,12 个月),本类各行 pageUrl 改指本类申请人页。"""
 
 PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "key": "nl-express-entry-skilled-worker", "province": "NL", "program": "PNP",
@@ -1297,7 +1300,7 @@ PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "boardLabel": None,
     "isDefault": False,
     "drawStreams": ["NLPNP (ITA batch)"],
-    "reqStreams": [],
+    "reqStreams": ["NLPNP Express Entry Skilled Worker Category", "NLPNP (employer criteria, all streams)"],
     "quotaScope": None,
     "occLabels": [],
     "status": "open",
@@ -1310,7 +1313,8 @@ PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "nocs": [],
     "employers": [],
 }
-"""TEER 0–3 的 NL offer + 联邦 EE 池 + NLPNP 打分 ≥ 67;PGWP 持有人可以走。门槛(67 分那条原句在 nl-req 注里,本类门槛未入表)待批一 1b。"""
+"""TEER 0–3 的 NL offer + 联邦 EE 池 + NLPNP 打分 ≥ 67;PGWP 持有人可以走。门槛(67 分那条原句在 nl-req 注里,本类门槛未入表)待批一 1b。
+2026-09-30 批一 1b:门槛入表(etl/pnp NLR_EE_RULES:EE 池、打分表 67 分、资格 / 执照条文三条),挂上本类流与 NL 雇主流。"""
 
 PATHWAYS = [
     PW_AB_OPPORTUNITY, PW_AB_ACCELERATED_TECH, PW_AB_DEDICATED_HEALTH_CARE, PW_AB_LAW_ENFORCEMENT,

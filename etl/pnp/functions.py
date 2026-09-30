@@ -382,11 +382,16 @@ from pnp.constants import (  # 2026-09-27 萨省「持 offer 直接申请、不�
     FACTOR_EOI_DRAW, SKR_DIRECT_LABEL, SKR_DIRECT_RE, SKR_DIRECT_STREAM, SKR_DIRECT_URL, SKR_PROBLEM_DIRECT,
     SKR_SECTION_DIRECT,
 )
+from pnp.constants import (  # 2026-09-30 通道补全批一 1b(NL 样张:国际毕业生外省毕业行 / 快速通道技术工人 / 逐行官网页)
+    NLR_COND_GRAD_OTHER, NLR_EE_PAGE_URL, NLR_EE_RULES, NLR_EE_STREAM, NLR_EE_URL, NLR_IG_OUT_PROV_LABEL,
+    NLR_IG_OUT_PROV_MONTHS, NLR_IG_OUT_PROV_RE, NLR_IG_PAGE_URL, NLR_PROBLEM_IG_OUT_PROV, NLR_SECTION_EE,
+    NLR_SECTION_IG_OUT_PROV,
+)
 from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
     K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
-    SKR_EO_STREAM, SKR_FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
+    SKR_EO_STREAM, FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
     SKR_PROBLEM_TALENT_ALT_TPL, SKR_PROBLEM_TALENT_CUT_TPL, SKR_PROBLEM_TALENT_EXP_TPL, SKR_SECTION_EO,
-    SKR_SECTION_POINTS, SKR_TALENTS, SKR_UNIT_POINTS,
+    SKR_SECTION_POINTS, SKR_TALENTS, UNIT_POINTS,
 )
 from pnp.constants import (  # 2026-09-27 九省体检修复批新增(MB 整期总数句 / SK 农业带星号码)
     K_SECTOR_QUOTE, MB_TOTAL_RE, SK_PRINT_SECTOR_FAIL_TPL, SK_SECTOR_STAR,
@@ -4577,7 +4582,7 @@ def sk_points_reqs(x: SkPagesIn) -> ReqsOut:
     elif a.group(1) != b.group(1):
         problems.append(SKR_PROBLEM_POINTS_DIFF_TPL.format(eo=a.group(1), oid=b.group(1)))
     else:
-        rows.append(to_sk_req(ReqIn(factor=SKR_FACTOR_POINTS_MIN, value=int(a.group(1)), unit=SKR_UNIT_POINTS,
+        rows.append(to_sk_req(ReqIn(factor=FACTOR_POINTS_MIN, value=int(a.group(1)), unit=UNIT_POINTS,
                                     section=SKR_SECTION_POINTS, label=fold_ws(a.group(0)).strip())))
     return ReqsOut(rows=rows, problems=problems)
 
@@ -5780,7 +5785,11 @@ def nl_employer_reqs(emp_txt: str) -> ReqsOut:
 
 
 def nl_ig_reqs(x: NlIgIn) -> ReqsOut:
-    """International Graduate 通道:语言两条 + **本站唯一一条「不设工作经验门槛」的省提名通道**。"""
+    """International Graduate 通道:语言两条 + **本站唯一一条「不设工作经验门槛」的省提名通道**。
+
+    2026-09-30 通道补全批一 1b:「不设」只对本省院校毕业的成立 —— 再从申请人页取「外省院校毕业须先在 NL 工作满一年」一条
+    条件行(grad-other-province);本类各行 pageUrl 改指本类申请人页(整表的是技术工人页)。
+    """
     rows: list = []
     problems: list = []
     m_pgwp = NLR_IG_PGWP_RE.search(x.ig_txt)
@@ -5823,7 +5832,28 @@ def nl_ig_reqs(x: NlIgIn) -> ReqsOut:
                                     pgwp=m_pgwp.group(2), months=m_months.group(1),
                                     hours=m_hours.group(1), age_from=m_age.group(1),
                                     age_to=m_age.group(2)))))
+    out_prov = NLR_IG_OUT_PROV_RE.search(x.ig_page_txt)
+    if not out_prov:
+        problems.append(NLR_PROBLEM_IG_OUT_PROV)
+        return ReqsOut(rows=rows, problems=problems)
+    cond = to_nl_req(ReqIn(stream=NLR_IG_STREAM, factor=FACTOR_EXPERIENCE, value=NLR_IG_OUT_PROV_MONTHS, unit=UNIT_MONTHS,
+                           value_text=out_prov.group(0), applies_teer=all_teers, url=NLR_IG_PAGE_URL,
+                           section=NLR_SECTION_IG_OUT_PROV, label=NLR_IG_OUT_PROV_LABEL))
+    cond[K_APPLIES_CONDITION] = NLR_COND_GRAD_OTHER
+    rows.append(cond)
+    for r in rows:
+        r[K_PAGE_URL] = NLR_IG_PAGE_URL
     return ReqsOut(rows=rows, problems=problems)
+
+
+def nl_ee_reqs(txt: str) -> ReqsOut:
+    """Express Entry – Skilled Worker 通道(2026-09-30 通道补全批一 1b):EE 池、NLPNP 打分表最低分、资格 / 执照条文三条
+    (rule_rows);各行 pageUrl 指本类申请人页(同一张 NL 表装三条通道,表级 pageUrl 是技术工人页)。"""
+    part = rule_rows(RuleRowsIn(to_row=to_nl_req, txt=txt, stream=NLR_EE_STREAM, url=NLR_EE_URL,
+                                section=NLR_SECTION_EE, rules=NLR_EE_RULES))
+    for r in part.rows:
+        r[K_PAGE_URL] = NLR_EE_PAGE_URL
+    return part
 
 
 def build_nl_req() -> None:
@@ -5831,6 +5861,8 @@ def build_nl_req() -> None:
 
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡):Skilled Worker 政策页再按 NLR_POLICY_RULES 取条文行(资格 / 执照一条,
     rule_rows)。
+    2026-09-30 通道补全批一 1b:IG 多读申请人页(外省毕业那句);加 Express Entry – Skilled Worker 类别(nl_ee_reqs)。
+    新读的两页先查 crawl 缓存(cache_first)。
     """
     say(PRINT_OUT_TPL.format(path=OUT_NL_REQ))
     txt = page_text(PageTextIn(url=NLR_POLICY_URL, timeout_s=NLR_TIMEOUT_S,
@@ -5853,9 +5885,15 @@ def build_nl_req() -> None:
         ig_txt=page_text(PageTextIn(url=NLR_IG_URL, timeout_s=NLR_TIMEOUT_S,
                                     drop_junk=True, main_only=True)),
         ig_lang_txt=page_text(PageTextIn(url=NLR_IG_LANG_URL, timeout_s=NLR_TIMEOUT_S,
-                                         drop_junk=True, main_only=True))))
+                                         drop_junk=True, main_only=True)),
+        ig_page_txt=fold_ws(page_text(PageTextIn(url=NLR_IG_PAGE_URL, timeout_s=NLR_TIMEOUT_S,
+                                                 drop_junk=True, main_only=True, cache_first=True)))))
     reqs += ig.rows
     problems += ig.problems
+    ee = nl_ee_reqs(fold_ws(page_text(PageTextIn(url=NLR_EE_URL, timeout_s=NLR_TIMEOUT_S,
+                                                 drop_junk=True, main_only=True, cache_first=True))))
+    reqs += ee.rows
+    problems += ee.problems
     if problems:
         fail_zh(problems)
     OUT_NL_REQ.parent.mkdir(parents=True, exist_ok=True)

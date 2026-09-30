@@ -729,7 +729,8 @@
       "boardLabel": null,
       "isDefault": true,
       "drawStreams": [
-        "Skilled Worker in Manitoba"
+        "Skilled Worker in Manitoba",
+        "Skilled Worker Stream"
       ],
       "reqStreams": [
         "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
@@ -1483,7 +1484,10 @@
       "drawStreams": [
         "NLPNP (ITA batch)"
       ],
-      "reqStreams": [],
+      "reqStreams": [
+        "NLPNP Express Entry Skilled Worker Category",
+        "NLPNP (employer criteria, all streams)"
+      ],
       "quotaScope": null,
       "occLabels": [],
       "status": "open",

@@ -2346,8 +2346,10 @@ REQ_NO_PROVINCE_TPL = "  ⚠ {name} 缺表级 province → {n} 条门槛会落�
 """源表没写 province = 引擎按省挑行永远挑不到这几条,而且一声不吭(G9 实撞:
 fed-eligibility.json 起初没有表级 province)。宁可吵一句,别静默丢门槛。"""
 
-REQ_ROW_OVERRIDES = ("url", "program", "fetched")
+REQ_ROW_OVERRIDES = ("url", "program", "fetched", "pageUrl")
 """一条门槛可以自带的三格出处/项目(没写才回退表级)。
+2026-09-30 通道补全批一 1b 加第四格 pageUrl:一张省表装几条通道时(NL 技术工人 / 国际毕业生 / 快速通道技术工人)各通道的人可读页
+不同,判定引擎按行读它当「官网」链接 —— 原先 NL 国际毕业生三行都落在技术工人页。
 url:ON 的申请人侧在通道页、雇主侧在雇主指南;
 program:联邦 EE 一个文件装 CEC/FSW/FST 三个项目(G9),三者的门槛互不通用 —— 落成同一个
 program 会让引擎拿 FST 的工时去卡 CEC 申请人。逐行覆盖,表级 program 仍是默认。"""
@@ -3121,6 +3123,10 @@ TABLE_DLI = "dli"
 
 TABLE_PATHWAYS = "pathways"
 """pathways 表名(单表增量件 build_pathways_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一立)。"""
+
+TABLE_PNP_REQUIREMENTS = "pnp_requirements"
+"""pnp_requirements 表名(单表增量件 build_pnp_req_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一 1b 立 ——
+各省补门槛行逐省重跑,不陪跑约 9 分钟的跨源汇装)。"""
 
 IN_FIELD_SOURCES = paths.RAW / "sources" / "field-sources.json"
 """字段级来源注册表(citations 域 verify_field_source_pages 产,E4-04;汇装层直通)。"""
