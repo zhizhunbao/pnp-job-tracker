@@ -1155,6 +1155,16 @@ export type DayGroupsOfIn = {
 }
 
 /**
+ * headLevelOf / unmarkOf 的入参。
+ */
+export type ParaTextIn = {
+  /**
+   * 一段正文(可能带小标题标记)。
+   */
+  text: string
+}
+
+/**
  * parasOf 的入参。
  */
 export type ParasOfIn = {

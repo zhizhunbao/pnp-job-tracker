@@ -797,3 +797,35 @@ PRINT_TITLE_BAD_LEN = 60
 
 WHERE_TITLE_TPL = "translate_titles {url}"
 """错误留痕定位:单条标题翻译失败。"""
+
+
+# =========================================================================
+# 19. 线上补速读(2026-09-30 Frank「默认所有的新闻都加一个 AI 速读」)
+# =========================================================================
+
+PATH_SUMMARY_MISSING = "/api/news/summarize/missing"
+"""cms 批量补速读接口(带 x-seed-token;服务端查库里缺中文 / 韩文速读的新闻,调线上模型补上写回)。"""
+
+SUMMARY_CALLS_MAX = 10
+"""一轮最多叫几次(服务端一次补 4 件,一轮最多 40 件;存量回填分几轮摊平)。"""
+
+SUMMARY_HTTP_TIMEOUT_S = 300
+"""一次叫的超时(服务端一件十来秒、一次 4 件,留足余量)。"""
+
+K_DONE = "done"
+"""接口回包:这次补上几件。"""
+
+K_FAILED = "failed"
+"""接口回包:生成失败几件(模型没给 / 太短,下轮重试)。"""
+
+K_LEFT = "left"
+"""接口回包:还缺几件。"""
+
+PRINT_SUMMARY_SKIP = "summarize: 没配 SEED_URL / SEED_TOKEN,跳过"
+"""没配 cms 钥匙时的跳过行。"""
+
+PRINT_SUMMARY_TPL = "summarize: 补上 {done} 件,失败 {failed} 件,还缺 {left} 件"
+"""每叫一次的播报行。"""
+
+ERR_SUMMARY_STUCK_TPL = "summarize: 一件都没补上(失败 {failed} 件,还缺 {left} 件)—— 线上模型可能挂了"
+"""一次叫下来零进展的失败理由(整步抛错,容器 ping 报失败)。"""

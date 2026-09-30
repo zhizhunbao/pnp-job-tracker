@@ -61,6 +61,12 @@ export const NSUM_IP_DAILY = 60
 export const NSUM_LIMIT_PREFIX = 'nsum:'
 
 /**
+ * 批量补速读(/api/news/summarize/missing)一次最多补几件(一语算一件;qwen 一件十来秒,
+ * 一次请求控制在一分钟上下)。
+ */
+export const NSUM_BATCH_LIMIT = 4
+
+/**
  * 错误体：段落对位失败（整篇拒收红线）。
  */
 export const E_PARA_ALIGN = 'paragraph alignment failed'

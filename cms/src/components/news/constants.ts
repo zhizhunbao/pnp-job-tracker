@@ -200,6 +200,27 @@ export const PARA_SEP_RE = /\n{2,}/
 export const LINE_SEP = '\n'
 
 /**
+ * 正文小标题的段首标记(2026-09-30 Frank「是不是应该抽出来一些 title」:数据层抽正文时给 h2 挂「## 」、
+ * h3 / h4 挂「### 」);捕获组的井号个数 = 标题级别。译文段也可能把标记原样带回来,一并剥。
+ */
+export const HEAD_MARK_RE = /^(?<hashes>#{2,3})\s+/
+
+/**
+ * 不是标题的段的级别。
+ */
+export const HEAD_NONE = 0
+
+/**
+ * 一级小标题(原页 h2)。
+ */
+export const HEAD_H2 = 2
+
+/**
+ * 二级小标题(原页 h3 / h4)。
+ */
+export const HEAD_H3 = 3
+
+/**
  * 「没有」的空文本(取不到译名/摘要时的返回值)。与 companies/account 域同名同义,各家一份。
  */
 export const TEXT_NONE = ''

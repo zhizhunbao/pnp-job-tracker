@@ -7,4 +7,4 @@
  */
 
 export { loadNewsForSummary, loadNewsForTranslate, saveNewsSummary, saveNewsTranslation } from './functions'
-export { newsSummarizeRoute, newsTranslateRoute } from './routes'
+export { newsSummarizeMissingRoute, newsSummarizeRoute, newsTranslateRoute } from './routes'

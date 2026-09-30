@@ -20,17 +20,20 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 from log.functions import say
 from door.functions import run_steps
 from news.functions import (
-    score_missing, scrape_immigration_news, translate_missing, translate_titles_missing,
+    score_missing, scrape_immigration_news, summarize_missing, translate_missing, translate_titles_missing,
 )
 
 SCHEDULED = [("scrape", scrape_immigration_news), ("score", score_missing),
-             ("translate", translate_missing), ("titles", translate_titles_missing)]
+             ("translate", translate_missing), ("titles", translate_titles_missing),
+             ("summarize", summarize_missing)]
 """默认链(调度真相):按序执行,一步抛错即中止本轮(_steps 同款语义)。
 
 score 是轻量必跑(新条目才有徽标/上 banner);translate 预翻已停(budget 0),
 恢复 = 调 NEWS_TRANSLATE_BUDGET;titles 独立预算默认开(NEWS_TITLE_TRANSLATE_BUDGET)。
 2026-09-26 门循环改走 door 叶 run_steps(Frank「推广」):一步失败不再中止本轮 —— 失败的步留痕,其余步照跑,有失败仍返回 1(告警照常)。
 同日晚改判回一步失败即中止(Frank「其中一个失败,其余照跑?那我怎么知道这个失败」):门叶改回 fail-fast,本门一字不改;互不相干的步拆成各自的调度单元(各自容器、各自 ping)。
+2026-09-30 加 summarize(Frank「默认所有的新闻都加一个 AI 速读」):排最后 —— 它叫 cms 接口补库里缺的速读,
+线上模型挂了只卡它自己,前四步照常落盘。
 """
 
 TOOLS = {
@@ -38,6 +41,7 @@ TOOLS = {
     "score": score_missing,
     "translate": translate_missing,
     "titles": translate_titles_missing,
+    "summarize": summarize_missing,
 }
 """全部可 --only 点名的步。"""
 

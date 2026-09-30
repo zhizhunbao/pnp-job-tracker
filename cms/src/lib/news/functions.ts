@@ -6,9 +6,12 @@
  * @time 2026-08-23 12:40:00
  */
 
-import { firstOf, queryRows, SQL, text, textOrNull } from '../db'
+import { count, firstOf, queryRows, SQL, text, textOrNull } from '../db'
 import { NEWS_BODY_COL, NEWS_SUMMARY_COL } from './constants'
-import type { NewsSummaryOut, NewsSummaryRow, NewsSummarySaveIn, NewsTransIn, NewsTransOut, NewsTransRow, NewsTransSaveIn, Row, SavedOut } from './types'
+import type {
+  NewsCountOut, NewsDbIn, NewsSummaryOut, NewsSummaryRow, NewsSummarySaveIn, NewsSummaryTodo, NewsSummaryTodoIn, NewsSummaryTodoOut,
+  NewsTransIn, NewsTransOut, NewsTransRow, NewsTransSaveIn, Row, SavedOut,
+} from './types'
 
 /**
  * 新闻译文源（英文正文 + 该语种已有译文；列名映射 NEWS_BODY_COL）。
@@ -72,6 +75,33 @@ export async function saveNewsSummary(input: NewsSummarySaveIn): SavedOut {
   await input.db.query(SQL.newsSetSummary(col), [input.summary, input.slug])
 }
 
+
+/**
+ * 缺速读的待办(有英文正文、中文或韩文速读还空着;一语一件,新的在前)。
+ *
+ * @param input 连接与件数。
+ * @returns 待办清单。
+ */
+export async function loadNewsSummaryTodo(input: NewsSummaryTodoIn): NewsSummaryTodoOut {
+  return queryRows({ db: input.db, sql: SQL.NEWS_SUMMARY_TODO, params: [input.limit], map: toNewsSummaryTodo })
+}
+
+
+/**
+ * 缺速读的还剩几件(口径同 loadNewsSummaryTodo)。
+ *
+ * @param input 连接。
+ * @returns 件数。
+ */
+export async function loadNewsSummaryLeft(input: NewsDbIn): NewsCountOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.NEWS_SUMMARY_TODO_COUNT, params: [], map: toCount })
+  const n = firstOf(rows)
+  if (n == null) {
+    return 0
+  }
+  return n
+}
+
 // =========================================================================
 // 行构造器（rows 抽屉 2026-08-23 撤编后的固定尾段：db 词汇只许 to* 体内）
 // =========================================================================
@@ -95,4 +125,26 @@ export function toNewsTransRow(r: Row): NewsTransRow {
  */
 export function toNewsSummaryRow(r: Row): NewsSummaryRow {
   return { title: text(r.title), en: textOrNull(r.en), cached: textOrNull(r.cached) }
+}
+
+
+/**
+ * 一件缺速读的待办(SQL.NEWS_SUMMARY_TODO)。
+ *
+ * @param r 库里的一行。
+ * @returns slug、标题、英文正文与要补的语种。
+ */
+export function toNewsSummaryTodo(r: Row): NewsSummaryTodo {
+  return { slug: text(r.slug), title: text(r.title), en: text(r.en), lang: text(r.lang) }
+}
+
+
+/**
+ * 计数行(SQL.NEWS_SUMMARY_TODO_COUNT)。
+ *
+ * @param r 库里的一行。
+ * @returns 件数。
+ */
+export function toCount(r: Row): number {
+  return count(r.n)
 }

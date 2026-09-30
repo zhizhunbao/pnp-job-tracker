@@ -7,7 +7,7 @@
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { tailTransOf, transAtOf, transTailClsOf } from './functions'
+import { tailTransOf, transAtOf, transTailClsOf, unmarkOf } from './functions'
 import { LineBreaks } from './linebreaks'
 import { NewsPara } from './newspara'
 import type { NewsBodyIn } from './types'
@@ -32,7 +32,7 @@ export function NewsBody({ paras, transParas, on }: NewsBodyIn) {
   for (let j = 0; j < extra.length; j += 1) {
     const p = extra[j]
     if (p != null) {
-      tails.push(<p key={j} className={transTailClsOf()}><LineBreaks text={p} /></p>)
+      tails.push(<p key={j} className={transTailClsOf()}><LineBreaks text={unmarkOf({ text: p })} /></p>)
     }
   }
   return (

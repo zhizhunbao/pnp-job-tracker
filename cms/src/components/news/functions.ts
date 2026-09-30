@@ -20,7 +20,8 @@ import { cssOf } from '@/components/css'
 import {
   API_COMMENTS, API_NEWS_SUMMARIZE, API_NEWS_TRANSLATE, ARIA_SLIDE_HEAD, AVATAR_FALLBACK, BOLT_PREFIX,
   CHIPS_SCOPE_CLS, CLS_CARD_HOVER, CLS_ROW_HOVER, CLS_SEP, CLS_TAP_PAD, CRED_INCLUDE, DATE_MMDD_FROM,
-  HDR_CONTENT_TYPE, IMP_MIN, LANG_KO, LANG_ZH, METHOD_POST, MIME_JSON, NEWS_REGIONS, PARA_SEP_RE,
+  HDR_CONTENT_TYPE, HEAD_MARK_RE, HEAD_NONE, IMP_MIN, LANG_KO, LANG_ZH, METHOD_POST, MIME_JSON, NEWS_REGIONS,
+  PARA_SEP_RE,
   PUBLISHER_FEDERAL, PUBLISHER_PROV_HEAD, PUBLISHER_QC, REGION_FEDERAL, REGION_IMG_CODES, REGION_IMG_HEAD,
   REGION_IMG_TAIL, REGION_QC, REPLIES_OPEN_MAX, SIDE_MAX, SLIDE_MS, STATE_BUSY, STATE_ERR, STATE_IDLE,
   STATE_SENT, SUMMARY_EN_COL, SUMMARY_NULL_COL, TEXT_CANADA, TEXT_IRCC, TEXT_NONE, TIP_SEP, URL_NEWS_HEAD,
@@ -28,7 +29,8 @@ import {
 import type {
   ClickFn, CommentCountIn, CommentSubmitIn, CommentsOfIn, DateIn, DayGroupsOfIn, DeadIn, ExpandLabelIn,
   ExpandToggleIn, FirstIn, GenBody, GenTextIn, HeroSummaryOfIn, ImgClsIn, ImpTipOfIn, ImportanceIn, InitialOfIn,
-  LangCache, LangCacheAtIn, NewsComment, NewsDayGroup, NewsHero, NextIn, OfficialIn, OnIn, ParasOfIn, PauseIn,
+  LangCache, LangCacheAtIn, NewsComment, NewsDayGroup, NewsHero, NextIn, OfficialIn, OnIn, ParasOfIn, ParaTextIn,
+  PauseIn,
   PickFn, PinnedIn, PostCommentIn, PresentRegionsOfIn, PutLangCacheIn, RegionIn, RegionLabelOfIn, RegionPickIn,
   RepliesAtIn, ReplySubmitIn, ReplyToggleIn, SendDisabledIn, ShownItemsOfIn, SlideAriaIn, SlidePickIn,
   NewsCard, SlideTimerIn, SlidesAtIn, SlugIn, SmallIn, StepIn, SumClickIn, SumLabelIn, TextChangeFn,
@@ -652,6 +654,30 @@ export function transAtOf(x: TransAtOfIn): string | null {
     return null
   }
   return hit
+}
+
+/**
+ * 这一段是不是小标题、第几级(数据层挂的段首标记,井号个数 = 级别)。
+ *
+ * @param x 一段原文。
+ * @returns 2 / 3 是标题级别;不是标题给 HEAD_NONE。
+ */
+export function headLevelOf(x: ParaTextIn): number {
+  const m = HEAD_MARK_RE.exec(x.text)
+  if (m == null || m.groups == null || m.groups.hashes == null) {
+    return HEAD_NONE
+  }
+  return m.groups.hashes.length
+}
+
+/**
+ * 剥掉段首的小标题标记(原文与译文都过一遍 —— 译文可能把标记原样带回来)。
+ *
+ * @param x 一段正文。
+ * @returns 去掉标记的正文。
+ */
+export function unmarkOf(x: ParaTextIn): string {
+  return x.text.replace(HEAD_MARK_RE, TEXT_NONE)
 }
 
 /**

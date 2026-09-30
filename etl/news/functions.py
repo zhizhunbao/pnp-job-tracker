@@ -37,7 +37,7 @@ from bs4 import BeautifulSoup
 
 import paths
 from log.functions import err, say
-from fetch.functions import (extract_detail, fetch, iso_date, make_client, page_og_image,
+from fetch.functions import (cms_config, extract_detail, fetch, iso_date, make_client, page_og_image,
                              parse_feed, section_body, slugify)
 from fetch.scheme import DetailIn, FetchIn, HttpClientLike, SectionIn
 from news.scheme import (CallLlmIn, CallTitleIn, LlmClientLike, LlmConfig, MakeLlmClientIn, NbBoxLike,
@@ -49,10 +49,12 @@ from news.constants import (AB_HEAD_SEL, AB_HEAD_SEP, AB_LIST_URL, AB_STOP_TAGS,
                             COUNT_PAIR_TPL, DATE_ISO_FMT, DATE_ISO_TPL, DETAIL_SLEEP_S, ELLIPSIS,
                             ENC_UTF8, ENV_API_KEY, ENV_LLM_BASE, ENV_LLM_MODEL, ENV_ON,
                             ENV_REBODY, ENV_SCORE_BUDGET, ENV_TITLE_BUDGET,
-                            ENV_TRANSLATE_BUDGET, ERR_ALIGN_TPL, ERR_SENTINEL, FEED_KINDS,
+                            ENV_TRANSLATE_BUDGET, ERR_ALIGN_TPL, ERR_SENTINEL, ERR_SUMMARY_STUCK_TPL, FEED_KINDS,
                             GUARD_FEW_TPL, GUARD_SHRINK_TPL, HDR_ANTHROPIC_VERSION, HDR_API_KEY,
                             HREF_ATTR, HTML_PARSER, IMP_RE, IRCC_CITATION, IRCC_LIST_URL,
-                            K_BODY_EN, K_BODY_KO, K_BODY_SELECTOR, K_BODY_ZH, K_CITATION, K_DATE,
+                            K_BODY_EN, K_BODY_KO, K_BODY_SELECTOR, K_BODY_ZH, K_CITATION, K_DATE, K_DONE,
+                            K_FAILED, K_LEFT, PATH_SUMMARY_MISSING, PRINT_SUMMARY_SKIP, PRINT_SUMMARY_TPL,
+                            SUMMARY_CALLS_MAX, SUMMARY_HTTP_TIMEOUT_S,
                             K_FETCHED, K_FETCHED_AT, K_IMPORTANCE, K_IMPORTANCE_NOTE, K_ITEMS,
                             K_KIND, K_LIST_URL, K_OG_IMAGE, K_PARSE, K_POST_DATA, K_REGION,
                             K_SUMMARY_KO, K_SUMMARY_ZH, K_TITLE, K_TITLE_ZH, K_URL, KIND_ATOM,
@@ -744,3 +746,28 @@ def title_ok(x: TitleCheckIn) -> bool:
     if CJK_RE.search(x.out) is None:
         return False
     return len(x.out) <= len(x.source) + TITLE_LEN_SLACK
+
+
+# =========================================================================
+# 14. 线上补速读(叫 cms 接口;生成与缓存都在服务端,与详情页点「AI 速读」同一套)
+# =========================================================================
+
+
+def summarize_missing() -> None:
+    """速读步(2026-09-30 Frank「默认所有的新闻都加一个 AI 速读」):叫 cms 批量补速读接口,服务端自己查库里
+    缺中文 / 韩文速读的新闻、调线上模型补上写回。补完或叫满 SUMMARY_CALLS_MAX 次就收;一次零进展 = 模型挂了,抛错。
+    没配 cms 钥匙整步跳过。"""
+    cms = cms_config()
+    if cms.base == "":
+        say(PRINT_SUMMARY_SKIP)
+        return
+    with make_client(timeout=SUMMARY_HTTP_TIMEOUT_S) as client:
+        for _ in range(SUMMARY_CALLS_MAX):
+            r = client.post(cms.base + PATH_SUMMARY_MISSING, headers=cms.headers)
+            r.raise_for_status()
+            out = r.json()
+            say(PRINT_SUMMARY_TPL.format(done=out[K_DONE], failed=out[K_FAILED], left=out[K_LEFT]))
+            if out[K_LEFT] == 0:
+                return
+            if out[K_DONE] == 0:
+                raise RuntimeError(ERR_SUMMARY_STUCK_TPL.format(failed=out[K_FAILED], left=out[K_LEFT]))

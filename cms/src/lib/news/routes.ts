@@ -9,16 +9,18 @@
  * @time 2026-08-23 12:40:00
  */
 import { getDb } from '../db/server'
-import { BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, TOO_MANY, UNAVAILABLE } from '../http'
+import { BAD_GATEWAY, BAD_REQUEST, HDR_SEED_TOKEN, NOT_FOUND, TEXT_UNAUTHORIZED, TOO_MANY, UNAUTHORIZED, UNAVAILABLE } from '../http'
 import {
   E_BAD_REQUEST, E_COL_NOT_READY, E_NOT_CONFIGURED, E_NOT_FOUND, E_RATE_LIMITED, E_TRANSLATE_NOT_CONFIGURED,
   SUM_LANGS, summarizeNews, TRANS_LANGS, TRANSLATE_ROUTE_TIMEOUT_MS, translateParasStrict, translateReady,
 } from '../llm'
 import { checkLimit, ipOf } from '../quota/server'
 import {
-  BODY_MISSING, E_EMPTY_SUMMARY, E_PARA_ALIGN, NSUM_IP_DAILY, NSUM_LIMIT_PREFIX, NTR_IP_DAILY, NTR_LIMIT_PREFIX,
+  BODY_MISSING, E_EMPTY_SUMMARY, E_PARA_ALIGN, NSUM_BATCH_LIMIT, NSUM_IP_DAILY, NSUM_LIMIT_PREFIX, NTR_IP_DAILY, NTR_LIMIT_PREFIX,
 } from './constants'
-import { loadNewsForSummary, loadNewsForTranslate, saveNewsSummary, saveNewsTranslation } from './functions'
+import {
+  loadNewsForSummary, loadNewsForTranslate, loadNewsSummaryLeft, loadNewsSummaryTodo, saveNewsSummary, saveNewsTranslation,
+} from './functions'
 import type { NewsSummaryRow, NewsTransBody } from './types'
 
 /**
@@ -71,6 +73,38 @@ export async function newsSummarizeRoute(req: Request): Promise<Response> {
   }
   await saveNewsSummary({ db: db, slug: slug, lang: lang, summary: summary })
   return Response.json({ ok: true, summary: summary, cached: false })
+}
+
+/**
+ * POST /api/news/summarize/missing:批量补速读(2026-09-30 Frank「默认所有的新闻都加一个 AI 速读」)。
+ * 带 x-seed-token(与上传 / 灌库同一把钥匙),不走 IP 日限;每次补最多 NSUM_BATCH_LIMIT 件(一条新闻的一种语言算一件),
+ * 行为与单条速读同一个 summarizeNews、同一列缓存。数据层 news 域每轮调到补完为止。
+ *
+ * @param req 请求(无体)。
+ * @returns { ok, done, failed, left }:这次补上几件、生成失败几件、还缺几件。
+ */
+export async function newsSummarizeMissingRoute(req: Request): Promise<Response> {
+  if (process.env.SEED_TOKEN == null || process.env.SEED_TOKEN === '' || req.headers.get(HDR_SEED_TOKEN) !== process.env.SEED_TOKEN) {
+    return new Response(TEXT_UNAUTHORIZED, { status: UNAUTHORIZED })
+  }
+  if (translateReady() === false) {
+    return Response.json({ ok: false, error: E_NOT_CONFIGURED }, { status: UNAVAILABLE })
+  }
+  const db = await getDb()
+  const todo = await loadNewsSummaryTodo({ db: db, limit: NSUM_BATCH_LIMIT })
+  let done = 0
+  let failed = 0
+  for (const it of todo) {
+    const summary = await summarizeNews({ title: it.title, en: it.en, lang: it.lang })
+    if (summary == null) {
+      failed += 1
+    } else {
+      await saveNewsSummary({ db: db, slug: it.slug, lang: it.lang, summary: summary })
+      done += 1
+    }
+  }
+  const left = await loadNewsSummaryLeft({ db: db })
+  return Response.json({ ok: true, done: done, failed: failed, left: left })
 }
 
 /**

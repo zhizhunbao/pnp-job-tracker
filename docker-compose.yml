@@ -431,6 +431,9 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}
       NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
+      # 2026-09-30 summarize 步(Frank「默认所有的新闻都加一个 AI 速读」):叫 cms 批量补速读接口,生成在服务端走线上模型
+      SEED_URL: ${SEED_URL:-https://offer2pr.com/api/seed}       # 只用它反推站点根
+      SEED_TOKEN: ${SEED_TOKEN:-}                 # 接口钥匙(与上传 mart 同一把);空=本步跳过
       TZ: EST5EDT
 
   # enrich 批量爬虫 2026-07-20 退役(#110 Frank「不要提前跑,公司详情全懒」),2026-09-05 亮回

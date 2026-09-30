@@ -1974,6 +1974,23 @@ export const newsForSummary = (a1: string) => `SELECT title, body_en AS en, ${a1
  */
 export const newsSetSummary = (a1: string) => `UPDATE news SET ${a1} = $1 WHERE slug = $2`
 
+/**
+ * 缺速读的待办(2026-09-30 Frank「默认所有的新闻都加一个 AI 速读」):有英文正文、中文或韩文速读还空着的,
+ * 一语一行,新的在前。$1=取几行。
+ */
+export const NEWS_SUMMARY_TODO = `SELECT slug, title, body_en AS en, lang FROM (
+         SELECT slug, title, body_en, date, 'zh' AS lang FROM news WHERE COALESCE(body_en, '') <> '' AND COALESCE(summary_zh, '') = ''
+         UNION ALL
+         SELECT slug, title, body_en, date, 'ko' AS lang FROM news WHERE COALESCE(body_en, '') <> '' AND COALESCE(summary_ko, '') = ''
+       ) t ORDER BY date DESC, slug, lang LIMIT $1`
+
+/**
+ * 缺速读的还剩几件(同上口径,一语算一件)。
+ */
+export const NEWS_SUMMARY_TODO_COUNT = `SELECT
+         (SELECT count(*) FROM news WHERE COALESCE(body_en, '') <> '' AND COALESCE(summary_zh, '') = '')
+       + (SELECT count(*) FROM news WHERE COALESCE(body_en, '') <> '' AND COALESCE(summary_ko, '') = '') AS n`
+
 // =========================================================================
 // 24. 埋点与零散查询
 // =========================================================================

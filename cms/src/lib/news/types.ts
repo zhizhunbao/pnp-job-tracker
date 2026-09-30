@@ -130,6 +130,66 @@ export type NewsSummarySaveIn = {
 }
 
 /**
+ * 一件缺速读的待办(一条新闻的一种语言)。
+ */
+export type NewsSummaryTodo = {
+  /**
+   * 新闻 slug。
+   */
+  slug: string
+
+  /**
+   * 标题。
+   */
+  title: string
+
+  /**
+   * 英文正文(待办只收有正文的)。
+   */
+  en: string
+
+  /**
+   * 要补的语种(zh / ko)。
+   */
+  lang: string
+}
+
+/**
+ * `loadNewsSummaryTodo` 的入参。
+ */
+export type NewsSummaryTodoIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+
+  /**
+   * 取几件。
+   */
+  limit: number
+}
+
+/**
+ * `loadNewsSummaryTodo` 的返回(新的在前)。
+ */
+export type NewsSummaryTodoOut = Promise<NewsSummaryTodo[]>
+
+/**
+ * `loadNewsSummaryLeft` 的入参。
+ */
+export type NewsDbIn = {
+  /**
+   * 能查的连接。
+   */
+  db: Db
+}
+
+/**
+ * `loadNewsSummaryLeft` 的返回(还缺几件)。
+ */
+export type NewsCountOut = Promise<number>
+
+/**
  * 库标量格（本域窄行只读文本列）。
  */
 export type Cell = string | number | boolean | null
