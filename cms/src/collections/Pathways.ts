@@ -5,6 +5,8 @@ import type { CollectionConfig } from 'payload'
 // 两套名字:plain*(我们的直白名,三语界面主文案)与 officialName / drawStreams / reqStreams / quotaScope / occLabels(官方各页写法,原样照抄,
 // 程序拿它们去对抽选 / 门槛 / 配额 / 清单四张表)。批一只建表,前端还读 components/pnp 与 lib/jobs 的旧对照(批二再切过来)。
 // ⚠️ 新表,生产库必须先手动跑 docs/sql/pathways-20260928.sql(含 payload_locked_documents_rels.pathways_id),再部署本改动。
+// 2026-09-30 通道补全批一(docs/design/通道补全-20260930.md 第八节):加五列 jobLinked / tags / teers / nocs / employers,
+// 生产已跑 docs/sql/pathways-conditions-20260930.sql(Frank 批「执行」);弹框读它们归批二。
 export const Pathways: CollectionConfig = {
   slug: 'pathways',
   admin: { useAsTitle: 'key', defaultColumns: ['key', 'province', 'plainZh', 'officialName', 'status'], group: 'Data (ETL)' },
@@ -28,5 +30,10 @@ export const Pathways: CollectionConfig = {
     { name: 'url', type: 'text', admin: { description: '出处页' } },
     { name: 'quote', type: 'textarea', admin: { description: '出处页官方原句(英文,照抄)' } },
     { name: 'checked', type: 'text', admin: { description: '人工核对日(ISO)' } },
+    { name: 'jobLinked', type: 'checkbox', defaultValue: true, admin: { description: '跟这个岗有关系:要本省 offer 或本省工作经验(通道卡上段);不看工作为否(下段「不要 offer 的通道」)' } },
+    { name: 'tags', type: 'json', admin: { description: '条件标签键 string[](ee / localGrad / pgwp / noPgwp …;词表在 etl/pathways 的 TAG_KEYS,三语文案在 i18n)' } },
+    { name: 'teers', type: 'json', admin: { description: '本岗 TEER 在内才列通道卡上段 number[];空 = 不限' } },
+    { name: 'nocs', type: 'json', admin: { description: '本岗职业码在内才列通道卡上段 string[];空 = 不限' } },
+    { name: 'employers', type: 'json', admin: { description: '雇主名(归一后小写)命中才列通道卡上段 string[];空 = 不限' } },
   ],
 }

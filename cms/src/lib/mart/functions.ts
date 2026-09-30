@@ -571,6 +571,7 @@ function toPnpOpsStat(r: MartRow): MartRow {
 /**
  * pathways 行(2026-09-28 通道表批一)。三个清单格序列化成 JSON 串喂 jsonb(空清单照写 []:「没有」是事实,不折 null);
  * board_label / quota_scope / quota_key 保 null(省默认通道、没有通道级配额的通道本来就没有)。
+ * 2026-09-30 通道补全批一加五格:job_linked 布尔(mart 行里 etl 已按默认补齐,不在这里猜),tags / teers / nocs / employers 同样照写 []。
  *
  * @param r mart 行。
  * @returns 库行。
@@ -582,7 +583,8 @@ function toPathway(r: MartRow): MartRow {
     board_label: cellOf(r.boardLabel), is_default: truthyOf(r.isDefault), draw_streams: jsonTextOf(r.drawStreams),
     req_streams: jsonTextOf(r.reqStreams), quota_scope: cellOf(r.quotaScope), quota_key: cellOf(r.quotaKey),
     occ_labels: jsonTextOf(r.occLabels), status: cellOf(r.status), url: cellOf(r.url), quote: cellOf(r.quote),
-    checked: cellOf(r.checked),
+    checked: cellOf(r.checked), job_linked: truthyOf(r.jobLinked), tags: jsonTextOf(r.tags), teers: jsonTextOf(r.teers),
+    nocs: jsonTextOf(r.nocs), employers: jsonTextOf(r.employers),
   }
 }
 

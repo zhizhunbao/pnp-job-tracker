@@ -1200,6 +1200,58 @@ export interface Pathway {
    * 人工核对日(ISO)
    */
   checked?: string | null;
+  /**
+   * 跟这个岗有关系:要本省 offer 或本省工作经验(通道卡上段);不看工作为否(下段「不要 offer 的通道」)
+   */
+  jobLinked?: boolean | null;
+  /**
+   * 条件标签键 string[](ee / localGrad / pgwp / noPgwp …;词表在 etl/pathways 的 TAG_KEYS,三语文案在 i18n)
+   */
+  tags?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 本岗 TEER 在内才列通道卡上段 number[];空 = 不限
+   */
+  teers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 本岗职业码在内才列通道卡上段 string[];空 = 不限
+   */
+  nocs?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * 雇主名(归一后小写)命中才列通道卡上段 string[];空 = 不限
+   */
+  employers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3307,6 +3359,11 @@ export interface PathwaysSelect<T extends boolean = true> {
   url?: T;
   quote?: T;
   checked?: T;
+  jobLinked?: T;
+  tags?: T;
+  teers?: T;
+  nocs?: T;
+  employers?: T;
   updatedAt?: T;
   createdAt?: T;
 }
