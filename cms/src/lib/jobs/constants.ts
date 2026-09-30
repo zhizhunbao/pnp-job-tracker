@@ -1931,6 +1931,11 @@ export const REQ_STREAM_L10N: Record<string, { zh: string; ko: string; en: strin
   'nova scotia nominee program - skilled worker stream': { zh: 'NS 技术工人通道', ko: 'NS 기술인력 통로', en: 'NSNP Skilled Worker' },
   'ontario workforce priority stream': { zh: 'ON 劳动力优先通道', ko: 'ON 우선 직군 통로', en: 'Ontario Workforce Priority' },
   'pei pnp workforce - skilled worker stream': { zh: 'PEI 技术工人通道', ko: 'PEI 기술인력 통로', en: 'PEI Skilled Worker' },
+  // 2026-09-30 通道补全批一 1b:NS 快速通道(本省经验)门槛行挂了 TEER 0–3,本省 TEER 4 / 5 岗的判定卡会出「…仅受理 TEER 0-3」,
+  // 名字照通道对照表的直白名
+  'nova scotia: express entry - skilled work experience in nova scotia': {
+    zh: 'NS 快速通道(本省经验)', ko: 'NS 익스프레스 엔트리(주내 경력)', en: 'NS Express Entry (NS experience)',
+  },
 }
 /**
  * EE 类别 label 三语映射(第 11 轮 #28,同 #24 性质;数据层 label 是有限集,

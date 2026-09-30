@@ -139,7 +139,9 @@ describe('mart 实况', () => {
     //(PEQ 14 行)进 IN_REQ_TABLES,province='QC';判定引擎读全表的 SQL 排除 PSTQ / PEQ → 512
     // 2026-09-30 通道补全批一 1b(NL 样张):NL 国际毕业生补外省院校毕业一行(experience 12 个月、grad-other-province)、
     // 快速通道技术工人入表三行(eeProfile / pointsMin 67 / licensing)→ 516
-    expect(data.requirements).toHaveLength(516)
+    // 2026-09-30 通道补全批一 1b 四省:NS 7→21(本省毕业生 / 医生 / 两条快速通道)、SK 17→29(学生、快速通道,医疗 / 科技 EE 版)、
+    // NB 17→32(快速通道本省就业、法语工人、私立学院试点)、PE 9→18(撤「四流都考 CLB 4」一行,按流分档 + 三条新通道)→ 566
+    expect(data.requirements).toHaveLength(566)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
