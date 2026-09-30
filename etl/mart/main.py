@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log.functions import err, say
 from mart.functions import (
     build_city_names, build_dli_table, build_mart, build_mart_rankings, build_mart_stats, build_pathways_table,
-    build_pnp_draws_table, build_pnp_req_table,
+    build_pnp_draws_table, build_pnp_occ_table, build_pnp_ops_table, build_pnp_req_table,
     clean_job_locations, clean_job_salary, flag_job_pilot, run_tests, score_mart_jobs,
 )
 
@@ -53,6 +53,8 @@ TOOLS = {
     "pathways_table": build_pathways_table,
     "pnp_req_table": build_pnp_req_table,
     "pnp_draws_table": build_pnp_draws_table,
+    "pnp_ops_table": build_pnp_ops_table,
+    "pnp_occ_table": build_pnp_occ_table,
     "test": run_tests,
 }
 """全部可 --only 点名的步 = 默认链四步 + 三个跨源清洗步 + 两个手动件:
@@ -76,6 +78,8 @@ TOOLS = {
               与既有十一个键逐对核过互不含;⚠ 工资行变了要跑全链,评分读同一批门槛行的工资线)
   pnp_draws_table  单表增量:只重建 mart/pnp_draws.json(2026-09-30 来源定位 ③-1:抽选行出处页挂文字片段,照 pathways_table 的形;
               手动件,不进任何链。与既有十二个键逐对核过互不含;`--only pnp` 会同时命中它与 pnp_req_table)
+  pnp_ops_table / pnp_occ_table  单表增量:只重建 mart/pnp_ops_stats.json / pnp_occupations.json(2026-09-30 来源定位 ③-2 / ③-4,
+              同上的形;与既有键逐对核过互不含。`--only pnp` 会一次命中这四个 pnp_* 单表件)
 
 ⚠ --only 是子串匹配(门形样张同款):`--only mart` 只命中 mart 本身,`--only s` 会同时
 命中 score / stats / salary —— 要单点请写全名。批J 三个新键与既有四键互不误命中

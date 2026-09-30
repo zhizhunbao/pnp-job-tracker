@@ -28,6 +28,7 @@ import json
 import re
 import tempfile
 import unittest
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -5151,6 +5152,39 @@ class MartDrawAnchorTest(unittest.TestCase):
                          ":~:text=September%2023%2C%202026")
         self.assertEqual(fn.fragment_enc("Stream – Priority Sectors - A"),
                          "Stream%20%E2%80%93%20Priority%20Sectors%20%2D%20A")
+        cells = "Family size\n3\n$16,080\n4\n$19,000"
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=cells, start="3 $16,080", suffix="")), "")
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=cells, start="$16,080", suffix="")),
+                         ":~:text=%2416%2C080")
+        table = "Last updated: September 23, 2026\nSeptember 23, 2026\nAlberta Opportunity Stream\n58"
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=table, start="September 23, 2026",
+                                                            suffix="Alberta Opportunity Stream")),
+                         ":~:text=September%2023%2C%202026,-Alberta%20Opportunity%20Stream")
+
+    def test_range(self) -> None:
+        """长原句(超过 80 字)用区间写法:开头五个词起步、页上不唯一就往后加词,结尾取五个词;词太少退回整句。"""
+        from mart import functions as fn
+        long = ("you must be working full-time in Alberta under an employment contract or have a bona fide job offer "
+                "signed by you and your employer")
+        page = "Intro you must be working here. " + long + " Next"
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=page, start=long, suffix="")),
+                         ":~:text=you%20must%20be%20working%20full%2Dtime,by%20you%20and%20your%20employer")
+        short_words = "Supercalifragilisticexpialidocious-words-without-spaces-that-run-longer-than-eighty-characters-x"
+        self.assertEqual(fn.text_fragment_of(TextFragmentIn(text=short_words, start=short_words, suffix="")),
+                         ":~:text=" + fn.fragment_enc(short_words))
+
+    def test_picks(self) -> None:
+        """各表候选原句:配额行 原句 → label(够长)→ 千分位数 → 裸数(三位数起);门槛行 原句 → label;清单行 职业名 → 职业码。"""
+        from mart import functions as fn
+        self.assertEqual(fn.ops_picks_of({"valueText": "", "label": "For 2026, Manitoba was allocated 8,000 nominations",
+                                          "value": 8000}),
+                         [("For 2026, Manitoba was allocated 8,000 nominations", ""), ("8,000", ""), ("8000", "")])
+        self.assertEqual(fn.ops_picks_of({"valueText": "", "label": "Total", "value": 7}), [])
+        self.assertEqual(fn.ops_picks_of({"valueText": "", "label": "Rural Renewal Stream", "value": 1092}),
+                         [("1,092", ""), ("1092", "")])
+        self.assertEqual(fn.req_picks_of({"valueText": "Score a minimum of 67 points", "label": "x"}),
+                         [("Score a minimum of 67 points", "")])
+        self.assertEqual(fn.occ_picks_of({"name": "Cooks", "noc": "63200"}), [("Cooks", ""), ("63200", "")])
 
     def test_with_fragment(self) -> None:
         """挂片段:没有 # 补一个;原有 # 接在后面(`#top:~:text=`);片段空串原样回。"""
@@ -5179,6 +5213,28 @@ class TextFragmentIn:
 
     suffix: str
     """紧跟起始原句的后缀(抽选行 = 通道名);空串 = 不带。"""
+
+
+@dataclass
+class AnchorRowsIn:
+    """anchor_rows() 入参(2026-09-30 来源定位 ③-2 起,四张表共用)。"""
+
+    rows: list
+    """汇装出来的行(就地改 url 格)。"""
+
+    picks_of: Callable[[dict], list]
+    """一行 → 候选 (起始原句, 后缀) 清单,按先后试,第一条逐字找得到的就用。"""
+
+
+@dataclass
+class RangeIn:
+    """range_fragment_of() 入参。"""
+
+    text: str
+    """出处页可见正文(已小写,空白已折)。"""
+
+    start: str
+    """长原句(原样大小写)。"""
 
 
 @dataclass

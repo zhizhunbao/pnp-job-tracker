@@ -3124,6 +3124,12 @@ TABLE_DLI = "dli"
 TABLE_PATHWAYS = "pathways"
 """pathways 表名(单表增量件 build_pathways_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 通道补全批一立)。"""
 
+TABLE_PNP_OPS = "pnp_ops_stats"
+"""pnp_ops_stats 表名(单表增量件 build_pnp_ops_table 落盘用;2026-09-30 来源定位 ③-2 立)。"""
+
+TABLE_PNP_OCCUPATIONS = "pnp_occupations"
+"""pnp_occupations 表名(单表增量件 build_pnp_occ_table 落盘用;2026-09-30 来源定位 ③-4 立)。"""
+
 TABLE_PNP_DRAWS = "pnp_draws"
 """pnp_draws 表名(单表增量件 build_pnp_draws_table 落盘用;与 to_mart_tables 字典键同字;2026-09-30 来源定位 ③-1 立)。"""
 
@@ -4965,3 +4971,35 @@ HTML_PARSER = "lxml"
 
 DROP_TAGS = ("script", "style", "noscript")
 """取可见正文前剥掉的标签(浏览器匹配文字片段只认渲染出来的字)。"""
+
+BLOCK_TAGS = ("address", "article", "aside", "blockquote", "br", "caption", "dd", "details", "div", "dl", "dt",
+              "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr",
+              "li", "main", "nav", "ol", "p", "pre", "section", "summary", "table", "tbody", "td", "tfoot", "th", "thead",
+              "tr", "ul")
+"""块级标签:取正文时前后各断一行(2026-09-30 抽样实测:浏览器的单句匹配跨不了块级元素 —— 表格里「3」「$16,080」两格
+拼成「3 $16,080」,逐字比对算找到、浏览器却匹配不上;区间与后缀写法可以跨块,见 text_fragment_of)。"""
+
+ANCHOR_LINE_SEP = "\n"
+"""块与块之间的分隔(正文按块分行)。"""
+
+FRAG_RANGE_SEP = ","
+"""区间写法的分隔(`text=开头几个词,结尾几个词`)。"""
+
+FRAG_RANGE_MIN_LEN = 80
+"""原句超过这个长度改用区间写法(2026-09-30 ③-3:门槛原句常跨列表项,浏览器的单句匹配跨不了块级元素,区间可以)。"""
+
+FRAG_RANGE_WORDS = 5
+"""区间两头各取几个词起步(开头不唯一就往后加词,直到页上只出现一次;结尾固定取这么多)。"""
+
+ANCHOR_LABEL_MIN_LEN = 12
+"""label 拿来当锚点的最短长度(短标签在页上容易撞到别处;label 多是我们自己的英文转述,逐字对不上本来就不挂)。"""
+
+ANCHOR_NUM_MIN = 100
+"""数值拿来当锚点的下限(三位数起;个位数、两位数在页上到处都是)。"""
+
+NUM_GROUP_TPL = "{:,}"
+"""带千分位的数值写法(官方页「6,603」)。"""
+
+K_VALUE_TEXT = "valueText"
+"""原句格(pnp_ops_stats / pnp_requirements)。"""
+

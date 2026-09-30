@@ -264,6 +264,11 @@ from mart.constants import (  # 2026-09-30 来源定位 ③-1(抽选行出处页
     HTML_PARSER, K_DRAW_DATE, MONTH_DATE_RE, MONTH_NAMES, MONTH_TEXT_TPL, TABLE_PNP_DRAWS,
 )
 from mart.scheme import FragmentUrlIn, MartDrawAnchorTest, TextFragmentIn  # 同上
+from mart.constants import (  # 2026-09-30 来源定位 ③-2 / ③-3 / ③-4(配额行 / 门槛行 / 清单行 + 区间写法)
+    ANCHOR_LABEL_MIN_LEN, ANCHOR_LINE_SEP, ANCHOR_NUM_MIN, BLOCK_TAGS, FRAG_RANGE_MIN_LEN, FRAG_RANGE_SEP,
+    FRAG_RANGE_WORDS, K_VALUE_TEXT, NUM_GROUP_TPL, TABLE_PNP_OCCUPATIONS, TABLE_PNP_OPS,
+)
+from mart.scheme import AnchorRowsIn, RangeIn  # 同上
 from mart.constants import (
     APPLY_CTX_AFTER, APPLY_CTX_BEFORE, APPLY_CTX_RE, APPLY_MAIL_AT, APPLY_MAIL_RE, APPLY_MAIL_TRIM,
     APPLY_NOREPLY_RE, APPLY_SKIP_CTX_RE, APPLY_SKIP_HOSTS, HOWTO_GONE, HOWTO_OK, IN_HOWTO, K_APPLY_EMAIL,
@@ -4598,7 +4603,7 @@ def build_pnp_req_table() -> None:
     """单表增量:只重建 data/mart/pnp_requirements.json(2026-09-30 通道补全批一 1b —— 各省补门槛行逐省重跑,照 build_pathways_table
     的形;之后 load --only upload + seed)。⚠ 工资行变了要跑全链:评分读 wage_floors_of(同一批门槛行)给岗位打「工资低于中位」。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
-    tables = {TABLE_PNP_REQUIREMENTS: build_pnp_requirements(IN_REQ_TABLES)}
+    tables = {TABLE_PNP_REQUIREMENTS: pnp_requirements_of()}
     write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 
@@ -4617,7 +4622,45 @@ def pnp_draws_of(ee_draws: EeDrawsOut) -> list:
     (2026-09-30 来源定位 ③-1 自 to_mart_tables 的字典项提出,入参一字未改)。"""
     rows = build_pnp_draws(DrawsBuildIn(stream_zh=load_draw_stream_zh(), checklist=load_draw_checklists(),
                                         ee_history=ee_draws.history, ee_fetched=ee_draws.fetched))
-    anchor_draw_rows(rows)
+    anchor_rows(AnchorRowsIn(rows=rows, picks_of=draw_picks_of))
+    return rows
+
+
+def build_pnp_ops_table() -> None:
+    """单表增量:只重建 data/mart/pnp_ops_stats.json(2026-09-30 来源定位 ③-2 立,照 build_pathways_table 的形)。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_PNP_OPS: pnp_ops_of()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def pnp_ops_of() -> list:
+    """pnp_ops_stats 整表:运营统计(build_pnp_ops_stats)+ 出处页挂文字片段(③-2)。汇装与单表件共用。"""
+    rows = build_pnp_ops_stats(IN_PNP_STATS)
+    anchor_rows(AnchorRowsIn(rows=rows, picks_of=ops_picks_of))
+    return rows
+
+
+def pnp_requirements_of() -> list:
+    """pnp_requirements 整表:门槛行(build_pnp_requirements)+ 出处页挂文字片段(③-3)。汇装与单表件共用;评分读的工资线
+    (wage_floors_of)照旧直读 build_pnp_requirements,不经这里(网址与工资线无关)。"""
+    rows = build_pnp_requirements(IN_REQ_TABLES)
+    anchor_rows(AnchorRowsIn(rows=rows, picks_of=req_picks_of))
+    return rows
+
+
+def build_pnp_occ_table() -> None:
+    """单表增量:只重建 data/mart/pnp_occupations.json(2026-09-30 来源定位 ③-4 立,照 build_pathways_table 的形)。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_PNP_OCCUPATIONS: pnp_occupations_of()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def pnp_occupations_of() -> list:
+    """pnp_occupations 整表:职业清单(build_pnp_occupations)+ 出处页挂文字片段(③-4)。汇装与单表件共用。"""
+    rows = build_pnp_occupations()
+    anchor_rows(AnchorRowsIn(rows=rows, picks_of=occ_picks_of))
     return rows
 
 
@@ -5017,11 +5060,11 @@ def to_mart_tables() -> dict:
                                                                  key=K_SOURCE_LABEL))),
         "experience_levels": build_name_rows(field_values_of(
             FieldValuesIn(jobs=ctx.jobs, key=K_ACCESSIBILITY))),
-        "pnp_occupations": build_pnp_occupations(),
+        "pnp_occupations": pnp_occupations_of(),
         "pnp_draws": pnp_draws_of(ee_draws),
         "pnp_score_factors": build_pnp_score_factors(universe),
-        "pnp_requirements": build_pnp_requirements(IN_REQ_TABLES),
-        "pnp_ops_stats": build_pnp_ops_stats(IN_PNP_STATS),
+        "pnp_requirements": pnp_requirements_of(),
+        "pnp_ops_stats": pnp_ops_of(),
         "pathways": build_pathways(),
         "qc_noc_streams": build_qc_noc_streams(),
         "ee_categories": build_ee_categories(ee_draws.by_category),
@@ -7525,7 +7568,7 @@ def run_tests() -> None:
     同日再加两组:MartMbPoolTest(MB 年报池子历年序列:一年一行新到旧、period 记年报年、asOf 记年末月、2024 那行句尾 [sic])、
     MartAbFederalTest(AB 额外联邦名额单立指标、不并入 issued / 配额)。
     同日 Frank「照改,加这一列」再加一组:MartDrawSelectionTest(pnp_draws 行原样带上 selection 格)。
-    2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段)。"""
+    2026-09-30 来源定位 ③-1 再加一组:MartDrawAnchorTest(抽选日期写法、文字片段编码与后缀、挂片段;③-2 起加区间写法与各表候选)。"""
     suite = unittest.TestSuite()
     for case in (MartOfferTest, MartRuralRenewalTest, MartEmployerSectorTest, MartSalaryTextTest, MartApplyMailTest,
                  MartAtsEmpTest, MartOpsExtraTest, MartPendingTest, MartBlockTest, MartNsOpsTest, MartNbNlOpsTest,
@@ -7541,34 +7584,99 @@ def run_tests() -> None:
 # =========================================================================
 
 
-def anchor_draw_rows(rows: list) -> None:
-    """来源定位 ③-1(2026-09-30,Frank「来源现在都能定位到对应的页面的具体部分吗」选「现在做,分四批」:抽选卡 → 配额卡 → 门槛卡 →
-    清单卡):抽选行的出处页 url 挂上文字片段,点「来源」直接滚到这一轮 —— 片段 = 这一轮的日期在页上的写法(date_text_of),
-    页上「日期 + 空格 + 通道名」也逐字找得到就带通道名作后缀(阿省页头「Last updated」与表格同一个日期,无头 Chromium 实测带后缀
-    才跳到表格那一行)。**只在 crawl 缓存那页的正文里逐字找得到才挂**;找不到(缓存没有、官方写法不同、日期不在页上)url 原样
-    不动 = 打开页面顶部,同原先。原表不动,只改汇装出来的行(判定引擎的「依据」链接、把脉页抽选表各行读同一格,一并受益)。
-    同一页只读一次缓存。"""
+def anchor_rows(x: AnchorRowsIn) -> None:
+    """来源定位(2026-09-30,Frank「来源现在都能定位到对应的页面的具体部分吗」选「现在做,分四批」:抽选卡 → 配额卡 → 门槛卡 →
+    清单卡):行的出处页 url 挂上文字片段,点「来源」直接滚到那一句。候选原句由各表给(x.picks_of,按先后试),**只在 crawl 缓存
+    那页的正文里逐字找得到才挂**;都找不到(缓存没有 —— PDF、开放数据平台、没爬到的页 —— 官方写法不同、已滚出页面)url 原样不动
+    = 打开页面顶部,同原先。汇装不上网;原表不动,只改汇装出来的行(卡片来源、把脉页各行、判定引擎「依据」链接读同一格,一并受益)。
+    同一页只读一次缓存。③-1 抽选行起步时叫 anchor_draw_rows,③-2 起抽成本件、各表只给候选。"""
     pages: dict = {}
-    for r in rows:
+    for r in x.rows:
         url = r.get(K_URL) or ""
         if not url:
             continue
         if url not in pages:
             pages[url] = cached_text_of(url)
-        frag = text_fragment_of(TextFragmentIn(text=pages[url], start=date_text_of(str(r.get(K_DRAW_DATE) or "")),
-                                               suffix=r.get(K_STREAM) or ""))
+        frag = ""
+        for start, suffix in x.picks_of(r):
+            frag = text_fragment_of(TextFragmentIn(text=pages[url], start=start, suffix=suffix))
+            if frag:
+                break
         r[K_URL] = with_fragment(FragmentUrlIn(url=url, frag=frag))
 
 
+def draw_picks_of(r: dict) -> list:
+    """抽选行的候选:这一轮日期在页上的写法(date_text_of;九省抽选页 09-30 逐页核过缓存都是「September 23, 2026」,按月的 NS
+    是「July 2026」),带通道名作后缀 —— 阿省页头「Last updated」与表格同一个日期,无头 Chromium 实测带后缀才跳到表格那一行;
+    页上日期后面不紧跟通道名时 text_fragment_of 自己退回只写日期。"""
+    return [(date_text_of(str(r.get(K_DRAW_DATE) or "")), r.get(K_STREAM) or "")]
+
+
+def ops_picks_of(r: dict) -> list:
+    """配额 / 运营统计行的候选(③-2):原句格 → 原句型 label(句子里含本行的数才算,MB「For 2026, Manitoba was allocated 8,000
+    nominations」这类;「Rural Renewal Stream」这种表格行名在页上导航里先出现,抽样实测跳偏,不收)→ 带千分位的数(「6,603」)→
+    裸数;数值三位数起(个位、两位数在页上到处都是)。"""
+    out: list = []
+    v = r.get(K_VALUE)
+    nums: list = []
+    if isinstance(v, int) and v >= ANCHOR_NUM_MIN:
+        nums = [NUM_GROUP_TPL.format(v), str(v)]
+    text = r.get(K_VALUE_TEXT) or ""
+    if text:
+        out.append((text, ""))
+    label = label_pick_of(r.get(K_LABEL) or "")
+    for num in nums:
+        if label and num in label:
+            out.append((label, ""))
+            break
+    for num in nums:
+        out.append((num, ""))
+    return out
+
+
+def req_picks_of(r: dict) -> list:
+    """门槛行的候选(③-3):原句格(rule_rows 取的官方原句)→ label(够长才算;多是我们的英文转述,逐字对不上就不挂)。"""
+    out: list = []
+    for s in (r.get(K_VALUE_TEXT) or "", label_pick_of(r.get(K_LABEL) or "")):
+        if s:
+            out.append((s, ""))
+    return out
+
+
+def occ_picks_of(r: dict) -> list:
+    """清单行的候选(③-4):职业名 → 职业码(判定引擎的「依据」链接逐个职业引用,跳到官方清单上那一行)。"""
+    out: list = []
+    for s in (r.get(K_NAME) or "", r.get(K_NOC) or ""):
+        if s:
+            out.append((s, ""))
+    return out
+
+
+def label_pick_of(label: str) -> str:
+    """label 够长才拿来当候选(ANCHOR_LABEL_MIN_LEN),否则空串。"""
+    if len(label) < ANCHOR_LABEL_MIN_LEN:
+        return ""
+    return label
+
+
 def cached_text_of(url: str) -> str:
-    """crawl 缓存里这一页的可见正文(剥 script / style / noscript,空白折成一个空格);没缓存给空串 —— 汇装不上网。"""
+    """crawl 缓存里这一页的可见正文:剥 script / style / noscript,块级元素前后断行(BLOCK_TAGS),块内空白折成一个空格、行内元素
+    照渲染直接相连;没缓存给空串 —— 汇装不上网。2026-09-30 抽样实测后由「整页折成一行」改成按块分行(单句写法跨块浏览器匹配不上)。"""
     hit = get_cached_page(url)
     if not hit.html:
         return ""
     soup = BeautifulSoup(hit.html, HTML_PARSER)
     for tag in soup(DROP_TAGS):
         tag.decompose()
-    return WS_RE.sub(SPACE, soup.get_text(SPACE)).strip()
+    for tag in soup.find_all(BLOCK_TAGS):
+        tag.insert_before(ANCHOR_LINE_SEP)
+        tag.insert_after(ANCHOR_LINE_SEP)
+    lines: list = []
+    for ln in soup.get_text().split(ANCHOR_LINE_SEP):
+        folded = WS_RE.sub(SPACE, ln).strip()
+        if folded:
+            lines.append(folded)
+    return ANCHOR_LINE_SEP.join(lines)
 
 
 def date_text_of(iso: str) -> str:
@@ -7595,16 +7703,45 @@ def month_name_of(n: int) -> str:
 
 
 def text_fragment_of(x: TextFragmentIn) -> str:
-    """文字片段指令(`:~:text=…`):起始原句不在正文里给空串;「起始原句 + 空格 + 后缀」也在就带后缀(`,-后缀`),否则只写起始
-    原句。比对不分大小写(浏览器匹配也不分)。"""
+    """文字片段指令(`:~:text=…`):起始原句不在正文里给空串;长原句先试区间写法(range_fragment_of,可跨块);单句写法要求原句
+    落在同一块里(浏览器单句匹配跨不了块级元素);「起始原句 + 空格 + 后缀」也在就带后缀(`,-后缀`;后缀可跨块,阿省表格实测),
+    否则只写起始原句。比对不分大小写(浏览器匹配也不分)。"""
     if not x.start:
         return ""
     low = x.text.lower()
-    if x.start.lower() not in low:
+    flat = low.replace(ANCHOR_LINE_SEP, SPACE)
+    start = x.start.lower()
+    if start not in flat:
         return ""
-    if x.suffix and (x.start + SPACE + x.suffix).lower() in low:
+    if len(x.start) > FRAG_RANGE_MIN_LEN:
+        ranged = range_fragment_of(RangeIn(text=low, start=x.start))
+        if ranged:
+            return ranged
+    if start not in low:
+        return ""
+    if x.suffix and (start + SPACE + x.suffix.lower()) in flat:
         return FRAG_TEXT + fragment_enc(x.start) + FRAG_SUFFIX_SEP + fragment_enc(x.suffix)
     return FRAG_TEXT + fragment_enc(x.start)
+
+
+def range_fragment_of(x: RangeIn) -> str:
+    """长原句的区间写法(`text=开头几个词,结尾几个词`;2026-09-30 ③-3 —— 门槛原句常跨列表项,浏览器单句匹配跨不了块级元素,
+    区间可以):开头从 FRAG_RANGE_WORDS 个词起步,页上不唯一就往后加词,直到只出现一次;结尾取 FRAG_RANGE_WORDS 个词。
+    开头、结尾各自须落在同一块里(浏览器逐段匹配);词太少(两头会重叠)、结尾跨块或开头加到头仍不唯一,给空串(退回整句写法)。"""
+    words = x.start.split(SPACE)
+    if len(words) <= FRAG_RANGE_WORDS * 2:
+        return ""
+    tail = SPACE.join(words[len(words) - FRAG_RANGE_WORDS:])
+    if tail.lower() not in x.text:
+        return ""
+    flat = x.text.replace(ANCHOR_LINE_SEP, SPACE)
+    n = FRAG_RANGE_WORDS
+    while n <= len(words) - FRAG_RANGE_WORDS:
+        head = SPACE.join(words[:n])
+        if head.lower() in x.text and flat.count(head.lower()) == 1:
+            return FRAG_TEXT + fragment_enc(head) + FRAG_RANGE_SEP + fragment_enc(tail)
+        n += 1
+    return ""
 
 
 def fragment_enc(s: str) -> str:
