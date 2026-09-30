@@ -2315,7 +2315,8 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
                  paths.PNP / "nb-req.json", paths.PNP / "pe-req.json", paths.PNP / "nl-req.json",
                  paths.IRCC / "pgwp_rules.json", paths.IRCC / "fees.json",
                  paths.EE / "fed-eligibility.json", paths.EE / "category-rules.json", paths.IRCC / "aip_rules.json",
-                 paths.IRCC / "rcip_rules.json", paths.IRCC / "fcip_rules.json"]
+                 paths.IRCC / "rcip_rules.json", paths.IRCC / "fcip_rules.json",
+                 paths.PNP / "qc-req.json", paths.PNP / "qc-peq-req.json"]
 """省提名官方**门槛**(规则引擎第一刀)—— 打分表管「能打几分」,这张管「打分之前先要满足什么」。
 一省一个文件,加省=往这个 list 里加一个(pnp 域 build_<省>_req 产,列同一套)。后四份是联邦段:
   B1-4 PGWP 规则库(province='FED' program='PGWP',ircc 域产,quote-anchored)——
@@ -2332,7 +2333,8 @@ IN_REQ_TABLES = [paths.PNP / "bc-req.json", paths.PNP / "on-req.json", paths.PNP
   魁省两份(pnp/qc 子域产 qc-req.json / qc-peq-req.json,province='QC',program 'PSTQ' / 'PEQ')**暂不加**
       (2026-09-29;设计 docs/design/魁省门槛弹框-20260929.md 批 C):判定引擎 / 官方规则页那条读全表的 SQL 先上排除挡板、
       门槛卡的读取 SQL 先放行 province='QC',cms 换版之后再把两份加进来 —— 先加这里,build 容器下一轮就把魁省行灌进生产库,
-      挡板没上线的那几个页面会先读到。"""
+      挡板没上线的那几个页面会先读到。
+      2026-09-30 cms 换版到 443d78b6(挡板与放行都已上线)后加进来(Frank「可以,按四步执行」第三步)。"""
 
 K_REQUIREMENTS = "requirements"
 """门槛表的行清单键。"""
