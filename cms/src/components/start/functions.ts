@@ -3164,14 +3164,29 @@ export function emptyQueryResult(): EmptyQueryResult {
 /**
  * 抽选表的前 N 期。冷解读三标量(当期分数线 vs 近 12 期同通道区间)2026-09-12 Frank「这个解读 解读了个寂寞」
  * 撤:库里每条通道只有两期有分,永远够不到 4 期门槛,整列空着;分组 / 回看 / 门槛机关随列退役。
+ * 2026-09-30 Frank「可以,补上吧」(前一问「每个省至少保留最近一轮吧 是什么意思」):前 N 期之外,没挤进去的省
+ * 各补它最近的一期,排在表尾 —— 当天前 50 期全在 08-26 ~ 09-29,NS(官方按月公布,最新 7 月)排第 123、
+ * ON(官网邀请页 2026 年最新一轮 04-30)排第 198,两省一行都不露。行已按日期降序,某省在剩下的行里头一次出现
+ * 就是它最近的一期,补在表尾日期序不乱。
  *
  * @param x 抽选原始行与下发条数上限。
- * @returns 前 N 期。
+ * @returns 前 N 期,加上没挤进去的省各自最近一期。
  */
 export function toPulseDraws(x: DrawsIn): PulseDraw[] {
   const out: PulseDraw[] = []
+  const provs = new Set<string>()
   for (const r of x.rows.slice(0, x.limit)) {
-    out.push(toPulseDraw({ r }))
+    const draw = toPulseDraw({ r })
+    out.push(draw)
+    provs.add(draw.province)
+  }
+  for (const r of x.rows.slice(x.limit)) {
+    const draw = toPulseDraw({ r })
+    if (provs.has(draw.province)) {
+      continue
+    }
+    out.push(draw)
+    provs.add(draw.province)
   }
   return out
 }

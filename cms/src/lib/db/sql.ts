@@ -1922,6 +1922,8 @@ export const NOC_ALL_TITLES = `SELECT noc, title, COALESCE(title_zh, '') AS titl
 /**
  * 起步页的近 1000 轮抽选(有分或有邀请数的;2026-09-26 400 → 1000,理由同 DIMS_PNP_DRAWS)。
  * 2026-09-26 起不读魁省行(PSTQ 不属省提名,理由见 PNP_DRAWS_ALL;把脉页只取前 50 行,魁省行还会挤掉省提名轮次)。
+ * 2026-09-30 起前 50 行之外,没挤进去的省各补最近一轮(toPulseDraws;Frank「可以,补上吧」),
+ * 补行也从这 1000 行里找(当天 ON 最近一轮排第 198)。
  */
 export const PNP_DRAWS_RECENT = `SELECT * FROM pnp_draws
       WHERE (score IS NOT NULL OR invitations IS NOT NULL) AND COALESCE(draw_date,'') <> ''

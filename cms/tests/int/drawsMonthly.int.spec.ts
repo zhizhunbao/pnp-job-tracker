@@ -3,6 +3,8 @@
 // ① /timeline 节奏统计只收日期齐到日的抽选 —— 到月的行不算「距今 N 天 / 平均间隔 / 拖长了」,照旧进事件流、日期原样到月;
 // ② 时间线事件、/plan/pr「各省最近抽选」、/start 近期抽选:NS 的人数写「入选」(复用 pnpfacts.selPeople / selected),别的省照旧「邀请」。
 // 2026-09-30 Frank「把脉页那几处 NS 也改成读数据吧」:三处改认抽选行的 unit 格(selection = 入选),不再按省码判;夹具照真数据带 unit。
+// ③ /start 近期抽选只列按日期的前 N 轮,没挤进去的省各补最近一轮、排在表尾(2026-09-30 Frank「可以,补上吧」:
+// 当天前 50 轮全在 08-26 ~ 09-29,NS 排第 123、ON 排第 198,一行都不露)。
 // 金标手写:NS 取官网 liveinnovascotia.com/eoi-selection 2026 年 5-7 月三个月的选取人数,阿省取机会通道 09-01、09-23 两轮。
 // 探针:同样的 NS 行换成带日的日期,就进节奏统计 —— 分界是日期形,不是省码;把 unit 换成 invitation,人数就写回「邀请」
 // (2026-09-30 起分界是 unit 格,也不是省码:阿省的行标成 selection 照样写「入选」)。
@@ -16,7 +18,7 @@ import { fetchTimeline } from '@/lib/plan/functions'
 import { invTextOf } from '@/components/timeline/functions'
 import type { EventRow } from '@/components/timeline/types'
 import { toDrawCellRow as toPlanDrawRow } from '@/components/plan/functions'
-import { toDrawCellRow as toStartDrawRow } from '@/components/start/functions'
+import { toDrawCellRow as toStartDrawRow, toPulseDraws } from '@/components/start/functions'
 import type { PulseDraw } from '@/components/start/types'
 
 /** 假库:抽选那条查询给定的行,别的查询给空 */
@@ -107,5 +109,46 @@ describe('② NS 的人数写「入选」,别的省照旧「邀请」', () => {
     expect(toStartDrawRow({ r: { ...base, unit: 'invitation' }, i: 0, t: zh, tEn: en, lang: 'zh', onRules })).toMatchObject({
       invCell: '671', invLabel: '邀请',
     })
+  })
+})
+
+describe('③ /start 近期抽选:前 N 轮之外,没挤进去的省各补最近一轮', () => {
+  // 金标手写:NS 取官网 7、6 月选取人数;ON 取 ontario.ca 邀请页外国劳工通道 04-30(57 分 786 份)、04-23(63 分 318 份)两轮。
+  const on = (date: string, score: number, n: number) => ({
+    province: 'ON', kind: 'draw', draw_date: date, stream: 'Employer Job Offer: Foreign Worker stream', score, scale: null,
+    invitations: n, note: '', label: 'OINP', url: '', unit: 'invitation',
+  })
+  // 已按日期降序(同 PNP_DRAWS_RECENT)
+  const rows = [
+    ab('2026-09-23'), ab('2026-09-01'), ns('2026-07', 671), ns('2026-06', 531), on('2026-04-30', 57, 786),
+    on('2026-04-23', 63, 318), ab('2026-03-05'),
+  ]
+  const pick = (limit: number) => toPulseDraws({ rows, limit }).map((d) => `${d.province} ${d.date} ${d.invitations}`)
+
+  it('前 N 轮原样在前;NS、ON 各补一行,取的是它们最近那轮,排在表尾', () => {
+    expect(pick(2)).toEqual(['AB 2026-09-23 113', 'AB 2026-09-01 113', 'NS 2026-07 671', 'ON 2026-04-30 786'])
+  })
+
+  it('性质(N 从 0 到全表):前 N 轮原样;缺席的省各补一行且是剩下行里最近那轮;条数 = N + 缺席省数;日期整体降序', () => {
+    for (let limit = 0; limit <= rows.length; limit += 1) {
+      const out = toPulseDraws({ rows, limit })
+      expect(out.slice(0, limit).map((d) => `${d.province} ${d.date}`))
+        .toEqual(rows.slice(0, limit).map((r) => `${r.province} ${r.draw_date}`))
+      const head = new Set(rows.slice(0, limit).map((r) => r.province))
+      const missing = [...new Set(rows.map((r) => r.province))].filter((p) => !head.has(p))
+      const tail = out.slice(limit)
+      expect(tail.map((d) => d.province)).toEqual(missing)
+      for (const d of tail) {
+        expect(d.date).toBe(rows.slice(limit).find((r) => r.province === d.province)?.draw_date)
+      }
+      const dates = out.map((d) => d.date)
+      expect(dates).toEqual([...dates].sort().reverse())
+    }
+  })
+
+  it('探针:N 盖住 NS 那行就不再补 NS;N = 0 每省一行;N 盖住全表原样不重复', () => {
+    expect(pick(3)).toEqual(['AB 2026-09-23 113', 'AB 2026-09-01 113', 'NS 2026-07 671', 'ON 2026-04-30 786'])
+    expect(pick(0)).toEqual(['AB 2026-09-23 113', 'NS 2026-07 671', 'ON 2026-04-30 786'])
+    expect(pick(rows.length)).toHaveLength(rows.length)
   })
 })

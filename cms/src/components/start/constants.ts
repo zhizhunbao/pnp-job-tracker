@@ -839,6 +839,8 @@ export const SERIES_LINE_TYPE = 'line'
 /**
  * 抽选表下发条数上限(前端 Top N 下拉再切;冷解读要按通道回看 12 期,
  * 多取的那批只在服务端用完即丢,不进 HTML)。
+ * 2026-09-30 起是「按日期取的前 N 期」:没挤进去的省另补各自最近一期(toPulseDraws;Frank「可以,补上吧」),
+ * 实发 N + 缺席省数。
  */
 export const DRAWS_LIMIT = 50
 
