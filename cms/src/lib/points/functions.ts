@@ -2452,7 +2452,7 @@ export async function getScoreTables(db: Db): ScoreTablesOut {
  */
 async function loadScoreTables(db: Db): ScoreTablesOut {
   const [facts, factors, diffRows, infoRows] = await Promise.all([
-    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toDrawFact }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [false], map: toDrawFact }),
     queryRowsOrEmpty({ db: db, sql: SQL.PNP_SCORE_FACTORS, params: [], map: toScoreFactor }),
     queryRowsOrEmpty({ db: db, sql: SQL.PROV_DIFFICULTY_FETCHED, params: [], map: toDifficultyFact }),
     queryRowsOrEmpty({ db: db, sql: SQL.PROVINCES_INFO, params: [], map: toProvInfoFact }),

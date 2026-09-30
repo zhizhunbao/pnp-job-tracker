@@ -1887,6 +1887,11 @@ export const DRAW_STREAM_L10N: Record<string, { zh: string; ko: string; en?: str
   'Employer Job Offer: In-Demand Skills stream': { zh: '雇主 offer:在需技能(已关停)', ko: '고용주 오퍼: 수요 기술(폐지)' },
   'Masters Graduate stream': { zh: '硕士毕业生(已关停)', ko: '석사 졸업생(폐지)' },
   'PhD Graduate stream': { zh: '博士毕业生(已关停)', ko: '박사 졸업생(폐지)' },
+  // 2026-09-30 Frank「和其他省保持一致吧」:魁省 PSTQ 四个通道(抽选卡组名灰字),与门槛卡灰字 i18n pnp.qc.name.pstq-* 同名
+  'Stream 1: Highly qualified and specialized skills': { zh: 'PSTQ 高技能专才通道', ko: 'PSTQ 고숙련 전문 스트림' },
+  'Stream 2: Intermediate and manual skills': { zh: 'PSTQ 中低技能通道', ko: 'PSTQ 중간·기능 스트림' },
+  'Stream 3: Regulated professions': { zh: 'PSTQ 受监管职业通道', ko: 'PSTQ 규제 직업 스트림' },
+  'Stream 4: Exceptional talent': { zh: 'PSTQ 杰出人才通道', ko: 'PSTQ 탁월한 인재 스트림' },
 }
 /**
  * 具名通道 chip 的 label(数据层的中文,有限小集合)→ 三语 key,未知值原样回退

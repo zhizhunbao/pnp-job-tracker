@@ -2039,6 +2039,9 @@ PROV_MB = "MB"
 PROV_FED = "FED"
 """联邦(pnp_draws 里 EE 历次抽选的 province 值;省块按 province 过滤天然不串味)。"""
 
+PROV_QC = "QC"
+"""魁省省码(ops 统计分发用;2026-09-30 qc-stats.json 接入:年度移民计划的技术工人甄选计划区间当配额)。"""
+
 IN_IRCC_TR = paths.IRCC / "temp_residents.json"
 """E8-12 省弹框体量卡:学签/工签年末存量。"""
 
@@ -2368,7 +2371,8 @@ IN_PNP_STATS = [paths.PNP / "ab-stats.json", paths.PNP / "sk-stats.json",
                 paths.PNP / "bc-stats.json", paths.PNP / "mb-stats.json",
                 paths.PNP / "on-stats.json", paths.PNP / "ns-stats.json",
                 paths.PNP / "bc-nominations.json", paths.PNP / "pe-stats.json",
-                paths.PNP / "nb-stats.json", paths.PNP / "nl-stats.json"]
+                paths.PNP / "nb-stats.json", paths.PNP / "nl-stats.json",
+                paths.PNP / "qc-stats.json"]
 """G5 省级官方运营统计(配额/已发/剩余、积压游标、EOI 池、处理时长、SIRS 池分布)——
 一省一个文件,加省=往这个 list 里加一个;各省字段形状不同,按 province 分派。
 2026-09-29 加 NB / NL 两份(省年报 PDF:NB 往年已发提名、NL 往年提名人数;pnp 域 nb_stats / nl_stats 两步产出)。"""
@@ -2691,6 +2695,22 @@ MB_ANNUAL_PROC_METRICS = (("processing_days", "overallDays", "Overall Average"),
 MB_PROC_LABEL_TPL = "{stream} — {kind}: {days} days"
 """MB 年报处理天数的 label 形。"""
 
+K_SELECTIONS = "selections"
+"""qc-stats.json 里年度计划表 3(甄选数)的键:一年一种口径一行 {year, kind, value, valueMax, unit, label, section, url}
+(2026-09-30 立。域间不互取常量,键名照 pnp 域各自声明)。"""
+
+K_PLAN_YEAR = "planYear"
+"""qc-stats.json 的计划年键(这份计划是哪一年的)。"""
+
+K_VALUE_MAX = "valueMax"
+"""qc-stats.json 一行的区间上限(计划数是区间;实际数 / 预测数为 None)。"""
+
+QC_KIND_PLAN = "plan"
+"""qc-stats.json 一行的口径:计划数(另有 actual 实际数、forecast 预测数)。"""
+
+QC_RANGE_TPL = "{lo:,}–{hi:,}"
+"""魁省甄选计划区间的写法(千分位 + 连接号;官方表写最少 / 最多两格,这里原数照写,不取中不取一头)。"""
+
 ON_YEAR_METRICS = (("allocation", "allocation"), ("nominations_issued", "nominationsIssued"),
                    ("nominations_issued_fy", "nominationsIssuedFiscal"),
                    ("nominated_individuals", "nominatedIndividuals"),
@@ -2756,17 +2776,24 @@ PROGRAM_AIP = "AIP"
 PROGRAM_POOL = "PNP+AIP"
 """抽选行 program 格:省提名与 AIP 同池、官方只发一个合计(NS;pnp 域 PROGRAM_POOL;2026-09-29)。"""
 
-DRAW_CARD_PROGRAMS = {"": (PROGRAM_PNP, PROGRAM_POOL), PROGRAM_AIP: (PROGRAM_AIP,)}
+PROGRAM_PSTQ = "PSTQ"
+"""抽选行 program 格:魁省技术工人甄选(PSTQ 邀请轮次;2026-09-30 Frank「和其他省保持一致吧」,魁省抽选卡 / 配额卡照九省接上)。"""
+
+DRAW_CARD_PROGRAMS = {"": (PROGRAM_PNP, PROGRAM_POOL, PROGRAM_PSTQ), PROGRAM_AIP: (PROGRAM_AIP,)}
 """全年合计分两份:scope → 算进这一份的 program(2026-09-29 抽选卡重排)。scope 空串 = 省提名那一份(配额卡「已发邀请」、
 「本省抽选」卡底读;NS 的同池选取也算这一份,label 与单位写明含 AIP);scope「AIP」= AIP 那一份(「AIP 抽选」卡底读,
 scopeKind = SCOPE_PROGRAM)。program 空串或缺格(pnp 域认不出项目、或还没按新代码重跑的旧文件)的行两份都记 unknown。
 沿革:2026-09-27 起两张按省写死的表 —— DRAW_NOT_INVITE_STREAMS {"NB": ("AIP",)}(不算邀请的 stream 不进合计,NB 抽选页原句
 「Atlantic Immigration Program figures show applications selected for processing; all other streams show invitations issued.」)
 与 DRAW_PNP_PART_PROVS ("NL",)(ITA 批次里夹着 AIP 的省只加 K_PNP_INVITATIONS 那一份,缺这一格整省不出);09-29 两表撤,
-改读 pnp 域逐行打好的 program / unit 两格 —— NB 的 AIP 组、NL 拆出来的 AIP 行都是 program=AIP,进 AIP 那一份。"""
+改读 pnp 域逐行打好的 program / unit 两格 —— NB 的 AIP 组、NL 拆出来的 AIP 行都是 program=AIP,进 AIP 那一份。
+2026-09-30 魁省 PSTQ 轮次进 scope 空串那一份(魁省没有省提名,这一份就是它本省的主项目;配额卡「已发邀请」与抽选卡卡底读)。"""
 
-DRAW_KNOWN_PROGRAMS = (PROGRAM_PNP, PROGRAM_POOL, PROGRAM_AIP)
-"""认得的 program 值(2026-09-29);不在这里的(空串 / 缺格)= 项目认不出,记 unknown。"""
+DRAW_KNOWN_PROGRAMS = (PROGRAM_PNP, PROGRAM_POOL, PROGRAM_AIP, PROGRAM_PSTQ)
+"""认得的 program 值(2026-09-29;09-30 加 PSTQ);不在这里的(空串 / 缺格)= 项目认不出,记 unknown。"""
+
+DRAW_YTD_SKIP_PROV = {"NU"}
+"""不出全年抽选合计的省(2026-09-30 自 NON_PNP_PROV 拆出:魁省 PSTQ 轮次要合计,配额卡与抽选卡卡底照九省读;NU 没有抽选)。"""
 
 METRIC_MIN_SUFFIX = "_min"
 """下限指标的后缀(2026-09-29 抽选卡重排,Frank「按你建议」:AB、BC 的已邀请写「至少 X」):本年有轮次官方人数格只写上限
@@ -3116,7 +3143,7 @@ QC_STREAM_MISS_TPL = "  ⚠ 魁省通道 {n} 在 qc-req.json 里找不到「Stre
 QC_STREAM_PREFIX_TPL = "Stream {n}:"
 """PSTQ 门槛流名的通道号前缀(qc-req.json 的 stream 原文「Stream 1: Highly qualified …」)。"""
 
-QC_PROGRAM_PSTQ = "PSTQ"
+QC_PROGRAM_PSTQ = PROGRAM_PSTQ
 """魁省技术工人甄选项目。"""
 
 QC_PROGRAM_PEQ = "PEQ"

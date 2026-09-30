@@ -547,7 +547,7 @@ export const MACRO_SERIES = `SELECT geo, key, period, freq, value::float8 AS val
  * 各省省级运营指标(配额 / 已发提名 / 剩余名额;scope 空 = 全省口径,不取通道级行)—— 宏观表「已发 / 剩余」两行。
  */
 export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM pnp_ops_stats
-     WHERE (scope_kind = '' OR scope_kind IS NULL)
+     WHERE (scope_kind = '' OR scope_kind IS NULL) AND province <> 'QC'
        AND metric IN ('allocation','issued','nominations_issued','nominations_ytd','nominations_issued_fy','remaining')`
 
 /**
@@ -560,12 +560,13 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
  * 多取 scope 一列。
  */
 export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') AS scope_kind,
-       COALESCE(stream_key, '') AS stream_key, COALESCE(scope, '') AS scope, value, COALESCE(as_of, '') AS as_of,
-       COALESCE(period, '') AS period, COALESCE(url, '') AS url
+       COALESCE(stream_key, '') AS stream_key, COALESCE(scope, '') AS scope, value, COALESCE(value_text, '') AS value_text,
+       COALESCE(as_of, '') AS as_of, COALESCE(period, '') AS period, COALESCE(url, '') AS url
      FROM pnp_ops_stats
      WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'invitations_ytd_min',
        'selections_ytd', 'applications_ytd')
-       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program', 'drawStream') AND value IS NOT NULL
+       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program', 'drawStream')
+       AND (value IS NOT NULL OR (metric = 'allocation' AND COALESCE(value_text, '') <> ''))
        AND (COALESCE(period, '') LIKE to_char(now(), 'YYYY') || '%' OR COALESCE(as_of, '') LIKE to_char(now(), 'YYYY') || '%')
      ORDER BY province, metric, seq`
 
@@ -1203,7 +1204,7 @@ export const CASE_PROV_COUNTS = `SELECT province, count(*)::int n, count(*) FILT
 export const PNP_OPS_STATS = `SELECT DISTINCT ON (province, metric) province, metric, value, period, as_of, url
      FROM pnp_ops_stats
      WHERE metric IN ('allocation','nominations_ytd','refusals_ytd','laa_ytd','applications_received_ytd','eoi_pool_total')
-       AND (scope IS NULL OR scope = '' OR scope = 'Skilled Worker')
+       AND (scope IS NULL OR scope = '' OR scope = 'Skilled Worker') AND province <> 'QC'
      ORDER BY province, metric, COALESCE(as_of, period) DESC`
 
 // =========================================================================
@@ -1777,11 +1778,13 @@ export const DIMS_PNP_OCCUPATIONS = `SELECT province, stream, label, type, progr
  * 2026-09-26 400 → 1000:mart 抽选改成保留最近 12 个月全部轮次(各省补全后非魁省约 380 行),400 只剩约 20 行余量。
  * 2026-09-27 多取 selection(同一组同一天几行各是哪一项选取;列 2026-09-28 按 docs/sql/pnp-draws-selection-20260928.sql 加)。
  * 2026-09-29 抽选卡重排多取 program / unit / invitations_below(列按 docs/sql/pnp-draws-program-unit-20260929.sql 加)。
+ * 2026-09-30 Frank「和其他省保持一致吧」:$1 = 要不要魁省行。职位板首屏维度(省提名弹框的魁省抽选卡)传 true;
+ * 计划页各省最近抽选(lib/points)传 false,照旧不读 —— 那一处放不放魁省没拍。
  */
 export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", stream, stream_zh AS "streamZh",
        score, scale, invitations, note, label, url, fetched, COALESCE(selection, '') AS selection,
        COALESCE(program, '') AS program, COALESCE(unit, '') AS unit, invitations_below AS "invitationsBelow"
-     FROM pnp_draws WHERE COALESCE(province, '') <> 'QC' ORDER BY draw_date DESC, id LIMIT 1000`
+     FROM pnp_draws WHERE ($1::boolean OR COALESCE(province, '') <> 'QC') ORDER BY draw_date DESC, id LIMIT 1000`
 
 /**
  * 首屏维度表·全国通道对照(2026-09-28 通道表批二:职位板格子判「本省有没有省默认通道」、省提名弹框认本岗通道对应的抽选组 /

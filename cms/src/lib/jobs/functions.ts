@@ -971,7 +971,7 @@ export async function loadSsrDims(db: Db): SsrDimsOut {
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_SOURCES, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EXPERIENCE_LEVELS, params: [], map: passRow }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_OCCUPATIONS, params: [], map: toPnpOcc }),
-    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [], map: toPnpDraw }),
+    queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PNP_DRAWS, params: [true], map: toPnpDraw }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_PATHWAYS, params: [], map: toPathway }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_QC_CELLS, params: [], map: toQcCell }),
     queryRowsOrEmpty({ db: db, sql: SQL.DIMS_EE_CATEGORIES, params: [], map: toEeCat }),
@@ -3219,7 +3219,8 @@ function toStrList(x: MaybeStrList): StrList {
 export function toPnpOpsRow(r: Row): PnpOpsRow {
   return {
     province: text(r.province), metric: text(r.metric), scopeKind: text(r.scope_kind), streamKey: text(r.stream_key),
-    value: count(r.value), asOf: text(r.as_of), period: text(r.period), url: text(r.url), scope: text(r.scope),
+    value: numOrNull(r.value), valueText: text(r.value_text), asOf: text(r.as_of), period: text(r.period), url: text(r.url),
+    scope: text(r.scope),
   }
 }
 

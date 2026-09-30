@@ -71,7 +71,7 @@ import type {
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
-  QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
+  HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -1179,6 +1179,27 @@ export function drawHitStreamsOf(channel: PnpPathway | null): string[] {
 }
 
 /**
+ * 省提名弹框里本岗高亮哪几组抽选(2026-09-30 Frank「和其他省保持一致吧」):九省按本岗通道(drawHitStreamsOf);
+ * 魁省按本岗职业能走的 PSTQ 通道 —— 抽选行的 stream 与门槛流名同是官方英文原名(「Stream 1: Highly qualified …」),逐字相等才算;
+ * PEQ 不抽选,不算。
+ *
+ * @param x 本岗走的那条通道与魁省通道(非魁省岗为空列)。
+ * @returns 抽选行 stream 原值的清单;空列 = 不高亮。
+ */
+export function hitStreamsOf(x: HitStreamsIn): string[] {
+  const out: string[] = []
+  for (const s of drawHitStreamsOf(x.channel)) {
+    out.push(s)
+  }
+  for (const c of x.qcChannels) {
+    if (c.program === QC_PROGRAM_PSTQ && out.includes(c.stream) === false) {
+      out.push(c.stream)
+    }
+  }
+  return out
+}
+
+/**
  * 门槛卡按哪条通道出:本岗走得了就是本岗那条(pnpChannelOf);走不了且有要显示的原因(兼职、工资低于中位……,
  * pnpBlockOf 那几个码)就出本省省默认通道的门槛 —— 「本岗不满足的门槛」卡写原因,门槛卡紧接着列这条路要什么,原因与门槛对得上
  * (2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」)。清单排除与没有原因的岗照旧不出。
@@ -1361,12 +1382,13 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  * NS 同池含 AIP)由这里给(原在组件里按 DRAW_NO_SCORE_PROVS 写死);卡底合计行(footLinesOf);这一年一组都分不出来时交
  * emptyPnpCardOf(SK 写不经抽选、往年有轮次写今年还没有抽选)。安省改制前的轮次分去 preReformCardOf,这里只剩改制后那一组。
  * 魁省不出(不参加 PNP,同 drawsFormOf 的口径)。
+ * 2026-09-30 Frank「和其他省保持一致吧」:魁省也出(PSTQ 邀请轮次按官方四个通道分组,本岗能走的通道高亮,hitStreamsOf)。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组、省默认通道的抽选组、当年配额行、门槛行与卡只列的那一年。
  * @returns 抽选卡;本省没有可说的给 null。
  */
 export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
-  if (x.province === PROV_QC || x.province === TEXT_NONE) {
+  if (x.province === TEXT_NONE) {
     return null
   }
   const draws = yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false })
@@ -1811,7 +1833,7 @@ function groupTotalOf(x: GroupTotalIn): string {
  * @returns 文字;没有合计行或指标名认不出给 ''。
  */
 function ytdCountTextOf(x: YtdCountIn): string {
-  if (x.row == null) {
+  if (x.row == null || x.row.value == null) {
     return TEXT_NONE
   }
   const kind = YTD_COUNT_KIND[x.row.metric]
@@ -1984,11 +2006,18 @@ function quotaRowOf(x: QuotaRowIn): QuotaRowSpec {
 /**
  * 配额卡一格的数:千分位;下限指标(AB / BC 有轮次官方只写上限,那几轮按 0 计)前面加「≥ 」(2026-09-29 抽选卡重排,
  * Frank「按你建议」:AB、BC 的已邀请写「至少 X」)。
+ * 2026-09-30 魁省配额是区间(甄选计划 32,600–35,600):没有数值的行写官方原文(数据层按千分位写好);原文也没有写长横。
  *
  * @param r 挑到的那一行。
  * @returns 格里的字。
  */
 function quotaCellOf(r: PnpOps): string {
+  if (r.value == null) {
+    if (r.valueText === TEXT_NONE) {
+      return DASH
+    }
+    return r.valueText
+  }
   const n = r.value.toLocaleString(NUM_LOCALE)
   if (r.metric === OPS_INV_YTD_MIN) {
     return QUOTA_MIN_PREFIX + n

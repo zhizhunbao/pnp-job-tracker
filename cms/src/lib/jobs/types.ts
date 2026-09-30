@@ -5015,9 +5015,14 @@ export type PnpOpsRow = {
   streamKey: string
 
   /**
-   * 数值。
+   * 数值;官方只给了区间或文字时为 null(2026-09-30 魁省甄选计划 32,600–35,600,折成一个数 = 替官方编数)。
    */
-  value: number
+  value: number | null
+
+  /**
+   * value 为 null 时的官方原文(区间等);有数值的行为 ''。
+   */
+  valueText: string
 
   /**
    * 截至日(`YYYY-MM-DD`);官方没写给 ''。

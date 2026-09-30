@@ -10,8 +10,10 @@ import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
-import { pnpCellActiveOf, qcCellNameOf, qcGateCardsOf } from '@/components/pnp/functions'
-import type { PnpFactsIndex, PnpJob, PnpReq, QcChannel } from '@/components/pnp/types'
+import {
+  drawCardOf, hitStreamsOf, pnpCellActiveOf, qcCellNameOf, qcGateCardsOf, quotaCardOf,
+} from '@/components/pnp/functions'
+import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOps, PnpReq, QcChannel } from '@/components/pnp/types'
 import { makeT } from '@/lib/i18n'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -182,5 +184,53 @@ describe('魁省格子', () => {
   it('三语格子文案都有(英 / 韩不回落成键名)', () => {
     expect(qcCellNameOf({ t: makeT('en'), noc: '72106', index })).toBe('PSTQ Highly skilled')
     expect(qcCellNameOf({ t: makeT('ko'), noc: '72106', index })).toBe('PSTQ 고숙련')
+  })
+})
+
+// 2026-09-30 Frank「和其他省保持一致吧」:魁省抽选卡 / 配额卡照九省。金标手写自当天 data/mart/pnp_draws.json 魁省 09-24 那一轮
+// 与 qc-stats.json 的 2026 甄选计划(官方计划数是区间,原数照写)。
+describe('魁省抽选卡与配额卡', () => {
+  const QC_SRC = 'https://www.quebec.ca/en/immigration/permanent/skilled-workers/skilled-worker-selection-program/invitation/2026'
+
+  /** 魁省一行抽选(只填卡读的格) */
+  function qcDraw(stream: string, streamZh: string, score: number | null, invitations: number): PnpDraw {
+    return {
+      province: 'QC', kind: 'draw', drawDate: '2026-09-24', stream, streamZh, score, invitations, note: '', label: 'PSTQ',
+      url: QC_SRC, selection: '', program: 'PSTQ', unit: 'invitation', invitationsBelow: null,
+    }
+  }
+
+  const draws: PnpDraw[] = [
+    qcDraw('Stream 1: Highly qualified and specialized skills', '高技能专才通道', 634, 86),
+    qcDraw('Stream 2: Intermediate and manual skills', '中低技能通道', 611, 316),
+    qcDraw('Stream 3: Regulated professions', '受监管职业通道', 380, 110),
+  ]
+  const hits = hitStreamsOf({ channel: null, qcChannels: WELDER })
+
+  it('高亮的组 = 本岗能走的 PSTQ 通道;PEQ 不抽选不算', () => {
+    expect(hits).toEqual(['Stream 1: Highly qualified and specialized skills', 'Stream 3: Regulated professions'])
+    expect(hitStreamsOf({ channel: null, qcChannels: [at(WELDER, 2)] })).toEqual([])
+  })
+
+  it('抽选卡:按官方通道分组,焊工两组高亮排前、灰字与门槛卡同名,中低技能收进其余;轮次标签 PSTQ', () => {
+    const card = drawCardOf({ t, lang: 'zh', province: 'QC', draws, hitStreams: hits, genDraw: '', ops: [], reqs: [], year: '2026' })
+    expect(card?.label).toBe('PSTQ')
+    expect(card?.hits.map(g => [g.key, g.sub, g.score])).toEqual([
+      ['Stream 1: Highly qualified and specialized skills', 'PSTQ 高技能专才通道', '最低 634 分'],
+      ['Stream 3: Regulated professions', 'PSTQ 受监管职业通道', '最低 380 分'],
+    ])
+    expect(card?.others.map(g => g.key)).toEqual(['Stream 2: Intermediate and manual skills'])
+    expect(card?.source?.href).toBe(QC_SRC)
+  })
+
+  it('配额卡:总数写甄选计划区间原文,不折成一个数;没有全年合计就只这一列', () => {
+    const plan: PnpOps = {
+      province: 'QC', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: null, valueText: '32,600–35,600',
+      asOf: '', period: '2026', url: 'https://cdn-contenu.quebec.ca/x.pdf',
+    }
+    const card = quotaCardOf({ t, province: 'QC', ops: [plan], hitStreams: hits, quotaKey: '' })
+    expect(card?.title).toBe('2026 年配额')
+    expect(card?.heads).toEqual(['总数'])
+    expect(card?.rows.map(r => r.cells)).toEqual([['32,600–35,600']])
   })
 })

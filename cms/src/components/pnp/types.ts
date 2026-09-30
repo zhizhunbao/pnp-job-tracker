@@ -1124,9 +1124,14 @@ export type PnpOps = {
   streamKey: string
 
   /**
-   * 数值。
+   * 数值;官方只给了区间或文字时为 null(2026-09-30 魁省甄选计划 32,600–35,600,折成一个数 = 替官方编数)。
    */
-  value: number
+  value: number | null
+
+  /**
+   * value 为 null 时的官方原文(区间等);有数值的行为 ''。
+   */
+  valueText: string
 
   /**
    * 截至日(`YYYY-MM-DD`);官方没写给 ''。
@@ -4746,6 +4751,21 @@ export type LoadQcChannelsIn = {
    * 懒取失败的落格。
    */
   setFailed: (v: boolean) => void
+}
+
+/**
+ * hitStreamsOf 的入参(2026-09-30 魁省抽选卡)。
+ */
+export type HitStreamsIn = {
+  /**
+   * 本岗走的那条通道(pnpChannelOf 给的;null = 没有,魁省岗恒为 null)。
+   */
+  channel: PnpPathway | null
+
+  /**
+   * 本岗职业能走的魁省通道(非魁省岗为空列)。
+   */
+  qcChannels: QcChannel[]
 }
 
 /**

@@ -226,6 +226,9 @@ from mart.constants import (  # 2026-09-29 魁省职业 → 通道对照表(qc_n
     QC_KEY_PSTQ_TPL, QC_KIND_ALL, QC_KIND_PARTLY, QC_NOC_MISSING_TPL, QC_PEQ_NAME_SEP, QC_PEQ_TFW_PREFIX, QC_PROGRAM_PEQ, QC_PROGRAM_PSTQ,
     QC_SCOPE_KO, QC_SCOPE_MISS_TPL, QC_SCOPE_RE, QC_SCOPE_ZH, QC_STREAM_MISS_TPL, QC_STREAM_PREFIX_TPL, QC_TEER_DIGIT, QC_TITLE_PEQ_TPL, QC_TITLE_PSTQ_TPL,
 )
+from mart.constants import (  # 2026-09-30 魁省抽选合计 / 配额行(Frank「和其他省保持一致吧」)
+    DRAW_YTD_SKIP_PROV, K_PLAN_YEAR, K_SELECTIONS, K_VALUE_MAX, PROV_QC, QC_KIND_PLAN, QC_RANGE_TPL,
+)
 from mart.scheme import QcNocRowIn, QcPeqOut
 from mart.scheme import (
     AllocGapIn, AllocLabelIn, AllocProvsIn, DrawYtdIn, DrawYtdOfIn, DrawYtdOut, DrawYtdRowIn, OpsExtraBaseIn, SalaryHitIn,
@@ -3579,6 +3582,25 @@ def fill_year_metric_ops(x: OpsProvIn) -> None:
                 period=str(e.get(K_YEAR) or "")))
 
 
+def fill_qc_ops(x: OpsProvIn) -> None:
+    """QC:年度移民计划表 3「技术工人」行里计划年那一行(甄选数计划区间)→ allocation 一行(2026-09-30 Frank「和其他省保持一致吧」:
+    魁省配额卡照九省;官方口径含 PEQ、PRTQ 与试点项目,PSTQ 单独的数没有公布)。计划数是区间 → value 留空、valueText 写区间原数
+    (折成一个数 = 替官方编数);实际数、预测数与入境数不进(配额卡只读本年配额,往年各省表另有来源,魁省这批不接)。"""
+    year = x.data.get(K_PLAN_YEAR)
+    for e in x.data.get(K_SELECTIONS, []):
+        if e.get(K_YEAR) != year or e.get(K_KIND) != QC_KIND_PLAN:
+            continue
+        lo = e.get(K_VALUE)
+        hi = e.get(K_VALUE_MAX)
+        text = ""
+        if is_count(lo) and is_count(hi):
+            text = QC_RANGE_TPL.format(lo=lo, hi=hi)
+        add_ops_row(OpsRowIn(
+            ctx=x.ctx, base=to_ops_sub_base(SubBaseIn(base=x.base, block=e, as_of=e.get(K_AS_OF, ""))),
+            metric=METRIC_ALLOCATION, scope="", kind="", label=e.get(K_LABEL, ""), raw=None,
+            unit=e.get(K_UNIT, UNIT_PEOPLE), text=text, section=e.get(K_SECTION, ""), period=str(year)))
+
+
 def fill_ns_ops(x: OpsProvIn) -> None:
     """NS:逐年已发提名(fill_year_metric_ops,同 ON / PE / BC 一套)+ 省开放数据 7 月新开的两张季表(2026-09-29 立,
     Frank「按你说的顺序开工」):候选池季末库存一季一行(新到旧;scope 空 = 省提名,AIP 不进)、本年审批结果一种一行
@@ -3650,6 +3672,8 @@ def build_pnp_ops_stats(files: list) -> list:
             fill_ns_ops(arg)
         elif prov == PROV_PE or prov == PROV_NB or prov == PROV_NL:
             fill_year_metric_ops(arg)
+        elif prov == PROV_QC:
+            fill_qc_ops(arg)
         if prov == PROV_BC:
             # bc-nominations.json(2026-09-08)与 bc-stats.json 同省两文件:前者只有逐年 nominationsIssued,
             # 后者没有这些键 → 这一步对它是空转,不重复出行
@@ -3762,7 +3786,7 @@ def fill_draw_ytd_ops(x: DrawYtdIn) -> None:
     """
     for pd in x.tables:
         for prov, v in pd.get(K_PROVINCES, {}).items():
-            if prov in NON_PNP_PROV or prov == PROV_FED:
+            if prov in DRAW_YTD_SKIP_PROV or prov == PROV_FED:
                 continue
             for scope in DRAW_CARD_PROGRAMS:
                 add_draw_ytd_row(DrawYtdRowIn(ctx=x.ctx, prov=prov, block=v, fetched=pd.get(K_FETCHED, ""),

@@ -41,7 +41,7 @@
  * @time 2026-08-28 17:59:16
  */
 import {
-  aipCardOf, cardYearOf, drawCardOf, drawHitStreamsOf, gateCardOf, gateChannelOf, genDrawOf, pnpChannelOf,
+  aipCardOf, cardYearOf, drawCardOf, gateCardOf, gateChannelOf, genDrawOf, hitStreamsOf, pnpChannelOf,
   preReformCardOf, quotaCardOf,
   quotaKeyOf,
   qcGateCardsOf, shownStreamsOf, streamKeyOf,
@@ -66,7 +66,7 @@ export function PnpListSection({
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
   const channel = pnpChannelOf({ job, pathways })
-  const hitStreams = drawHitStreamsOf(channel)
+  const hitStreams = hitStreamsOf({ channel, qcChannels })
   const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
   const dx = {
     t: p.t,

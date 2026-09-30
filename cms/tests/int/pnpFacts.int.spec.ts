@@ -461,7 +461,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('「年配额」卡:只列官方有的项;阿省到通道;官方原数不自己减;截至日照写;对不上通道 / 没数据就不出', () => {
     const url = 'https://www.alberta.ca/aaip-processing-information'
     const op = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'AB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '2026-09-23', period: '', url, ...p,
+      province: 'AB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', valueText: '', value: 0, asOf: '2026-09-23', period: '', url, ...p,
     })
     const aos = 'alberta opportunity stream'
     const ops = [
@@ -505,7 +505,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列;金标 = 当天线上 pnp_ops_stats 实数
   it('「年配额」卡并入全年已发邀请 / 已入选:排在已有项之后;截至日跟会动的那一项;只有合计的省只一列', () => {
     const q = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'ON', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '', period: '2026',
+      province: 'ON', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', valueText: '', value: 0, asOf: '', period: '2026',
       url: 'https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-allocation', ...p,
     })
     const nbUrl = 'https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html'
@@ -539,7 +539,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 总数是全年定数,它那一格的截至日不写。金标 = 当天线上 pnp_ops_stats 实数
   it('「年配额」卡截至行:各列一致写一行;分叉逐列写「{列名}截至」;总数那一列不算', () => {
     const m = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'MB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 8000, asOf: '2026-08', period: '2026',
+      province: 'MB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', valueText: '', value: 8000, asOf: '2026-08', period: '2026',
       url: 'https://immigratemanitoba.com/resources/data/monthly-data-2026', ...p,
     })
     const ops = [m({}), m({ metric: 'nominations_ytd', value: 3777, period: '2026 Jan-Aug' }),
@@ -847,7 +847,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 一张卡只讲一件事、卡里列的加起来 = 卡上写的合计、没有就标上;卡片只认数据里的 program / unit 格,不认省名。手写金标。
   const YTD_URL = 'https://example.org/draws'
   const ytd = (p: Partial<PnpOps>): PnpOps => ({
-    province: 'AB', metric: 'invitations_ytd', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '2026-09-23', period: '2026',
+    province: 'AB', metric: 'invitations_ytd', scopeKind: '', streamKey: '', scope: '', valueText: '', value: 0, asOf: '2026-09-23', period: '2026',
     url: YTD_URL, ...p,
   })
 
@@ -1007,10 +1007,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: false }))]).toEqual([])
   })
 
-  it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {
+  // 2026-09-30 Frank「和其他省保持一致吧」:省提名弹框的魁省抽选卡改出(金标见 qcGate.int.spec.ts);地点弹框那一形(drawsFormOf)照旧不出
+  it('魁省 PSTQ:地点弹框那一形不出、省提名弹框抽选卡照九省出;格子不凭抽选可点', () => {
     const qc = [draw({ province: 'QC', label: 'PSTQ', stream: 'Stream 1', drawDate: '2026-09-24', score: 634, invitations: 86 })]
     expect(drawsFormOf({ province: 'QC', draws: qc })).toBe('none')
-    expect(drawCardOf({ t: zh, lang: 'zh', province: 'QC', draws: qc, hitStreams: [], genDraw: '', ops: [], reqs: [], year: '' })).toBeNull()
+    expect(drawCardOf({ t: zh, lang: 'zh', province: 'QC', draws: qc, hitStreams: [], genDraw: '', ops: [], reqs: [], year: '' })?.total).toBe(1)
     expect(cellSaysCards(job({ province: 'QC', noc: '21231' }), [], qc)).toBe(false)
   })
 
