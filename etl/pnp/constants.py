@@ -5441,9 +5441,37 @@ PER_PROBLEM_AGE_MULTI_TPL = "指南里出现多个年龄区间 {ages} —— 官
 PER_SOURCE = "PEI Workforce Application Guide"
 """表级来源名。"""
 
-PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age")
+PER_FACTOR_ORDER = ("language", "experience", "wage", "empYears", "licensing", "education", "age", "eoiDraw")
 """PE 门槛收尾按因素报条数的顺序(2026-09-29 七省门槛卡补抓后因素多了四类,不再借 NS 那份 NSR_FACTOR_ORDER)。
-同日工资一行本批先不收(见 pe_wage_reqs),收尾报「wage 0 条」是预期,不是解析失败。"""
+同日工资一行本批先不收(见 pe_wage_reqs),收尾报「wage 0 条」是预期,不是解析失败。
+同日抽选卡重排末尾加 eoiDraw(AIP 由指定雇主直接递背书申请那一行,见 PER_AIP_DIRECT_RE)。"""
+
+PER_AIP_URL = "https://www.princeedwardisland.ca/en/service/atlantic-immigration-program-endorsement-application"
+"""PE 的 AIP 背书申请页(2026-09-29 抽选卡重排,Frank「AIP 是不是应该单独的卡」「按你建议」)。官网在 Radware 墙后,只读 crawl 役
+pe-imm 缓存(manifest `data/crawl/pe-imm/manifest.json` 有此页),不发请求。页上没有任何 AIP 选取 / 邀请人数(同 manifest 里
+AIP 总页、指定雇主申请页也没有),省提名弹框「AIP 抽选」卡照这一行写「由指定雇主直接递背书申请,不经抽选」。"""
+
+PER_AIP_DIRECT_RE = re.compile(r"A Designated Employer should complete the online AIP Endorsement Application by clicking "
+                               r"[\"“]Apply Now[\"”] at the bottom of this page for each of your qualified Candidates\.")
+"""AIP 由指定雇主直接为候选人递背书申请的官方原句(PER_AIP_URL 页「How do I apply?」小节;2026-09-29):「A Designated Employer
+should complete the online AIP Endorsement Application by clicking "Apply Now" at the bottom of this page for each of your
+qualified Candidates.」整句锚定,官方改一个词就判没匹配到(自校失败,须人工重读)。「不经抽选」的旁证(不另出行):同页
+「Eligible candidates in other sectors are encouraged to submit an Expression of Interest profile for consideration under
+the Provincial Nominee Program.」—— EOI 是省提名那条路的,AIP 走雇主背书申请。"""
+
+PER_AIP_STREAM = "Atlantic Immigration Program (PE) — endorsement application"
+"""AIP 背书申请那一行的通道名(照 PE_AIP_STREAM 的写法;2026-09-29)。"""
+
+PER_SECTION_AIP = "Atlantic Immigration Program – Endorsement Application — How do I apply?"
+"""AIP 背书申请那一行的出处节名(页名 + 小节名,照官方原文;2026-09-29)。"""
+
+PER_AIP_LABEL = ("The designated employer submits the AIP Endorsement Application for each qualified candidate "
+                 "(no Expression of Interest draw)")
+"""AIP 背书申请那一行的 label(2026-09-29)。"""
+
+PER_PROBLEM_AIP = ("AIP 背书申请的官方原句没匹配到(atlantic-immigration-program-endorsement-application 页缓存缺失、撞墙或改了措辞,"
+                   "「AIP 由指定雇主直接递背书申请、不经抽选」这条须人工重读)")
+"""自校问题:AIP 背书申请那句原句(2026-09-29)。"""
 
 
 # =========================================================================

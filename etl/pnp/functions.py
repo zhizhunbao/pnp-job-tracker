@@ -1604,6 +1604,9 @@ from pnp.constants import (  # noqa: E402 — 段10 2026-09-29 抽选行项目 /
     UNIT_INVITATION, UNIT_SELECTION,
 )
 from pnp.scheme import DrawKindIn, DrawRowsIn  # noqa: E402 — 同上
+from pnp.constants import (  # noqa: E402 — 段22 2026-09-29 PE 的 AIP 背书申请那一行(抽选卡重排)
+    PER_AIP_DIRECT_RE, PER_AIP_LABEL, PER_AIP_STREAM, PER_AIP_URL, PER_PROBLEM_AIP, PER_SECTION_AIP,
+)
 
 
 def fetch_draws_page(url: str) -> str:
@@ -5607,6 +5610,34 @@ def pe_education_reqs(txt: str) -> ReqsOut:
     return ReqsOut(rows=rows, problems=problems)
 
 
+def cached_text_of(url: str) -> str:
+    """crawl 缓存里一页的正文(剥标签、压平空白);缓存缺失给空串 —— 调用方的原句匹配落空、记自校问题(2026-09-29)。
+
+    @param url 页面地址。
+    @returns 正文。
+    """
+    html = get_cached_page(url).html
+    if html is None:
+        return EMPTY_JOIN
+    return fold_ws(BeautifulSoup(html, PARSER_HTML).get_text(TEXT_JOIN_SEP))
+
+
+def pe_aip_direct_reqs(txt: str) -> ReqsOut:
+    """AIP 由指定雇主直接为候选人递背书申请、不经抽选(2026-09-29 抽选卡重排):官方原句整句匹配到 → 一行 eoiDraw / op=none、
+    program=AIP(原句进 valueText;表级 program 是 PNP,这一行逐行覆盖);没匹配到 → 记一条自校问题、不出行。照 sk_direct_reqs 的形。
+
+    @param txt 背书申请页的正文(已压平空白;缓存缺失时是空串)。
+    @returns 行与自校问题。
+    """
+    m = PER_AIP_DIRECT_RE.search(txt)
+    if m is None:
+        return ReqsOut(rows=[], problems=[PER_PROBLEM_AIP])
+    row = to_pe_req(ReqIn(stream=PER_AIP_STREAM, factor=FACTOR_EOI_DRAW, op=OP_NONE, value_text=m.group(0),
+                          section=PER_SECTION_AIP, label=PER_AIP_LABEL, url=PER_AIP_URL))
+    row[K_PROGRAM] = PROGRAM_AIP
+    return ReqsOut(rows=[row], problems=[])
+
+
 def pe_age_reqs(txt: str) -> ReqsOut:
     """年龄区间:各节写到的区间(两种写法)必须同一个,出一行条文行挂全体 Workforce 流;出现两个说明官方分了流,得人工看。
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡)补。"""
@@ -5631,13 +5662,15 @@ def build_pe_req() -> None:
     """PE 门槛入口:官方申请指南 PDF → 语言 + Skilled Worker 经验 + 雇主经营年限。
     2026-09-29 Frank「都接上,开工吧」(七省门槛卡):加 Critical Worker 在职经验、工资、执照、学历三行、年龄一行(见段首)。
     同日 lead 定:Critical Worker 在职经验(pe_critical_reqs)与工资(pe_wage_reqs)两行本批先不收、这里不调,
-    函数与常量留着,理由各见其 docstring;收回来 = 把两个调用放回下面的元组。"""
+    函数与常量留着,理由各见其 docstring;收回来 = 把两个调用放回下面的元组。
+    同日抽选卡重排再加一行:AIP 由指定雇主直接递背书申请、不经抽选(pe_aip_direct_reqs;原文读 crawl 缓存的背书申请页)。"""
     say(PRINT_OUT_TPL.format(path=OUT_PE_REQ))
     txt = fold_ws(pdf_text(fetch_bytes(FetchHtmlIn(url=PE_GUIDE_URL, timeout_s=PE_GUIDE_TIMEOUT_S))))
+    aip = cached_text_of(PER_AIP_URL)
     reqs: list = []
     problems: list = []
     for part in (pe_language_reqs(txt), pe_experience_reqs(txt), pe_employer_reqs(txt),
-                 pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt)):
+                 pe_licence_reqs(txt), pe_education_reqs(txt), pe_age_reqs(txt), pe_aip_direct_reqs(aip)):
         reqs += part.rows
         problems += part.problems
     eff = PER_EFFECTIVE_RE.search(txt)

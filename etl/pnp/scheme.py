@@ -2180,6 +2180,23 @@ class DrawProgramTest(unittest.TestCase):
                          [("2026-09-10", 90, None, 5), ("2026-09-10", 90, None, 5)])
         self.assertEqual(len({d["note"] for d in got}), 2)
 
+    def test_pe_aip_direct(self) -> None:
+        """PE 的 AIP 背书申请那一行:官方原句(直引号、弯引号两种写法)整句认出 → 一行 eoiDraw / op=none、program=AIP、
+        原句进 valueText;改一个词(Candidates → candidate)或缓存缺失(空串)→ 不出行、记一条自校问题(不拿关键词凑)。"""
+        from pnp import functions as fn
+        from pnp.constants import PER_PROBLEM_AIP
+        body = ("How do I apply? To be eligible to endorse a foreign national, you must first be a PEI Designated Employer. "
+                "A Designated Employer should complete the online AIP Endorsement Application by clicking {q}Apply Now{r} "
+                "at the bottom of this page for each of your qualified Candidates. You will receive a secure link.")
+        for q, r in (('"', '"'), ("“", "”")):
+            got = fn.pe_aip_direct_reqs(body.format(q=q, r=r))
+            self.assertEqual(got.problems, [])
+            self.assertEqual([(x["factor"], x["op"], x["program"]) for x in got.rows], [("eoiDraw", "none", "AIP")])
+            self.assertTrue(got.rows[0]["valueText"].startswith("A Designated Employer should complete"))
+        for bad in (body.format(q='"', r='"').replace("Candidates.", "candidate."), ""):
+            got = fn.pe_aip_direct_reqs(bad)
+            self.assertEqual((got.rows, got.problems), ([], [PER_PROBLEM_AIP]))
+
 
 class OnWorkforceWatchTest(unittest.TestCase):
     """ON 劳动力优先表守望自测(2026-09-26 Frank 定守望同批):判定四态(原句在 / 原句不在 / 缓存缺失 / 拦截页)
