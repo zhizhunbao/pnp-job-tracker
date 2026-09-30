@@ -3758,6 +3758,12 @@ export type GroupsCardIn = {
    * 「查看全省 N 组」开关的键。
    */
   allKey: string
+
+  /**
+   * 本岗那几组之外的收进开关(本省抽选、改制前两张卡);false = 全部摊开、不设开关(AIP 卡:组少,也没有「本岗那一组」;
+   * 2026-09-29 线上验收:NL / NB 的 AIP 卡只有一组还带「收起」)。
+   */
+  fold: boolean
 }
 
 /**
@@ -3813,6 +3819,21 @@ export type DrawLinesIn = {
    * 卡里列的轮次。
    */
   rows: PnpDraw[]
+}
+
+/**
+ * countKeyOf 的入参(2026-09-29 抽选卡重排线上验收)。
+ */
+export type CountKeyIn = {
+  /**
+   * 人数口径。
+   */
+  kind: CountKind
+
+  /**
+   * 人数。
+   */
+  n: number
 }
 
 /**

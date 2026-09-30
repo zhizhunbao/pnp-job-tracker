@@ -133,12 +133,15 @@ describe('mart 实况', () => {
     // 2026-09-29 七省接入前:ON 雇主 offer 形态一行(汇装 offer_form_rows,PROV_OFFER_QUOTE 补 ON;subject=offer,判定引擎不读)→ 441
     // 2026-09-29 七省门槛卡合并(Frank「都接上,开工吧」):BC 20→23、SK 4→18、MB 181→184、NS 4→8、NB 15→18、NL 8→10、PE 3→9
     //(各省补抓 + 汇装 offer 形态行各一;SK 现有工签、NS / PE 的工资与在职行按判定引擎影响暂不收)→ 476
-    expect(data.requirements).toHaveLength(476)
+    // 2026-09-29 抽选卡重排:PE「AIP 由指定雇主直接递背书申请、不经抽选」官方原句入门槛表一行(factor=eoiDraw、program=AIP,
+    // 同 SK 那行,判定引擎不读)→ 477
+    expect(data.requirements).toHaveLength(477)
     expect(data.requirements.filter((r) => r.appliesCondition === 'ab-local-experience')).toHaveLength(1)
     // 2026-09-11 FCIP 3 → 25:eligibility 域立域后两试点各自全量抄门槛(offer 三态 / 工时 /
     // 语言 / 学历等整套),同门槛跨试点重复行随 2a8dcf07 退役 —— 25 行全为 FCIP 自己的。
     expect(data.requirements.filter((r) => r.program === 'FCIP')).toHaveLength(25)
-    expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(36)
+    // 2026-09-29 抽选卡重排:PE 的 AIP「不经抽选」一行(eoiDraw)→ 37(同下方「库里 AIP 门槛」那例)
+    expect(data.requirements.filter((r) => r.program === 'AIP')).toHaveLength(37)
     expect(data.requirements.filter((r) => r.program === 'RCIP' && r.factor === 'language')).toHaveLength(3)
     // 2026-09-11 630 → 634:省清单周更净增 4(mart 不进 git 无旧快照可逐行对;当日分布
     // SK 257 / MB 158 / AB 78 / BC 72 / NB 43 / NS 18 / PE 8,下次漂移按省对这里)。
@@ -519,10 +522,11 @@ describe('金标 ③:AIP 门槛已入库,判得了', () => {
     expect(aip.reasons.some((r) => /52|30 小时/.test(r.text)), '不许出现按工时反推的月数').toBe(false)
   })
 
-  it('库里 AIP 门槛 36 行(断言的是数据在位,不再是缺口)', () => {
+  it('库里 AIP 门槛 37 行(断言的是数据在位,不再是缺口)', () => {
     // 2026-08-09 批B AIP 36 行入库后更新(原断言:toHaveLength(0))
+    // 2026-09-29 抽选卡重排:PE 的 AIP「由指定雇主直接递背书申请、不经抽选」一行(eoiDraw,判定引擎不读)→ 37
     const aipRows = data.requirements.filter((r) => r.program === 'AIP')
-    expect(aipRows).toHaveLength(36)
+    expect(aipRows).toHaveLength(37)
     expect(aipRows.every((r) => !!(r.valueText || r.label)), '每行都得有官方原句').toBe(true)
     expect(aipRows.every((r) => !!r.url), '每行都得有出处').toBe(true)
   })

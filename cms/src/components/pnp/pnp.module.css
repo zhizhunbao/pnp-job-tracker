@@ -528,9 +528,27 @@
 
   .quotaCols4 {
     /*
-     * 同上:行名 + 4 列(2026-09-29 阿省四项;375 宽列名折行后放得下,另验)。
+     * 同上:行名 + 4 列(2026-09-29 阿省四项)。
      */
     grid-template-columns: repeat(5, auto);
+
+    /*
+     * 2026-09-29 线上 375 实测:英文列名「Nominated」「Remaining」是断不开的单词,四列按 12px 列距超出卡宽 10px;
+     * 列距 8px + 数字 13px + 列名 11px(见下条)刚好放下,中文照样放得下。
+     */
+    column-gap: 8px;
+
+    /*
+     * 数字小一号(同上)。
+     */
+    font-size: 13px;
+  }
+
+  .quotaCols4 .quotaHead {
+    /*
+     * 四列档的列名再小一号(同上)。
+     */
+    font-size: 11px;
   }
 
   .quotaAsOf {

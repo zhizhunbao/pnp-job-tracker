@@ -44,8 +44,8 @@ import {
   GATE_UNIT_YEARS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
-  DRAW_NO_SCORE_PROVS, DRAWS_AIP_ALL_KEY, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
-  PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND,
+  DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
+  PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -65,7 +65,7 @@ import type {
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   BelowLineIn, CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
-  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn,
+  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -1379,6 +1379,7 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     lines,
     foot: footLinesOf({ t: x.t, province: x.province, year: x.year, rows, ops: x.ops, scopeKind: TEXT_NONE, total }),
     allKey: DRAWS_ALL_KEY,
+    fold: true,
   })
 }
 
@@ -1425,6 +1426,7 @@ export function preReformCardOf(x: DrawCardOfIn): DrawCard | null {
       total: split.after.length === 0,
     }),
     allKey: DRAWS_REFORM_ALL_KEY,
+    fold: true,
   })
 }
 
@@ -1468,7 +1470,8 @@ export function aipCardOf(x: DrawCardOfIn): DrawCard | null {
       scopeKind: OPS_SCOPE_PROGRAM,
       total: true,
     }),
-    allKey: DRAWS_AIP_ALL_KEY,
+    allKey: DRAWS_ALL_KEY,
+    fold: false,
   })
 }
 
@@ -1483,7 +1486,7 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
   const title = x.t('pnpaip.head')
   const pnp = roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false }))
   if (hasPoolOf(pnp)) {
-    return lineCardOf({ title, lines: [x.t('pnpaip.pool')], source: null, allKey: DRAWS_AIP_ALL_KEY })
+    return lineCardOf({ title, lines: [x.t('pnpaip.pool')], source: null, allKey: DRAWS_ALL_KEY })
   }
   const direct = noDrawReqOf({ reqs: x.reqs, province: x.province, program: PROGRAM_AIP })
   if (direct != null) {
@@ -1491,7 +1494,7 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
       title,
       lines: [x.t('pnpaip.direct')],
       source: sourceLinkOf({ t: x.t, url: direct.url }),
-      allKey: DRAWS_AIP_ALL_KEY,
+      allKey: DRAWS_ALL_KEY,
     })
   }
   if (roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: TEXT_NONE, aip: true })).length > 0) {
@@ -1499,7 +1502,7 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
       title,
       lines: [x.t('pnpdraws.none', { year: x.year })],
       source: null,
-      allKey: DRAWS_AIP_ALL_KEY,
+      allKey: DRAWS_ALL_KEY,
     })
   }
   return null
@@ -1640,15 +1643,16 @@ function noDrawReqOf(x: NoDrawReqIn): PnpReq | null {
 
 /**
  * 有轮次可列的抽选卡:本岗那几组(浅蓝组头行,开关收起时也留着)与其余组分开(2026-09-29 自 drawCardOf 体内提出,三张卡共用)。
+ * 不折叠的卡(fold = false,AIP 卡)各组全放进常显的那一列,不设开关;组头照旧只按 hit 着色。
  *
- * @param x 标题、轮次标签、各组、来源、灰字、卡底合计与开关键。
+ * @param x 标题、轮次标签、各组、来源、灰字、卡底合计、开关键与折不折叠。
  * @returns 抽选卡。
  */
 function groupsCardOf(x: GroupsCardIn): DrawCard {
   const hits: EeCmpGroup[] = []
   const others: EeCmpGroup[] = []
   for (const g of x.groups) {
-    if (g.hit) {
+    if (g.hit || x.fold === false) {
       hits.push(g)
     } else {
       others.push(g)
@@ -1751,7 +1755,7 @@ function ytdCountTextOf(x: YtdCountIn): string {
   if (kind == null) {
     return TEXT_NONE
   }
-  return x.t(COUNT_ROW_KEY[kind], { n: x.row.value.toLocaleString(NUM_LOCALE) })
+  return x.t(countKeyOf({ kind, n: x.row.value }), { n: x.row.value.toLocaleString(NUM_LOCALE) })
 }
 
 /**
@@ -2696,7 +2700,22 @@ function invTextOf(x: InvTextIn): string {
     }
     return TEXT_NONE
   }
-  return x.t(COUNT_ROW_KEY[countKindOf(x.draw)], { n: x.draw.invitations.toLocaleString(NUM_LOCALE) })
+  return x.t(countKeyOf({ kind: countKindOf(x.draw), n: x.draw.invitations }), {
+    n: x.draw.invitations.toLocaleString(NUM_LOCALE),
+  })
+}
+
+/**
+ * 人数那几个字的词条:按口径取 COUNT_ROW_KEY;邀请恰好 1 份取单数那条(英文「1 invitation」;2026-09-29 抽选卡重排线上验收)。
+ *
+ * @param x 人数口径与人数。
+ * @returns 词条键。
+ */
+function countKeyOf(x: CountKeyIn): string {
+  if (x.kind === COUNT_INV && x.n === 1) {
+    return COUNT_INV_ONE_KEY
+  }
+  return COUNT_ROW_KEY[x.kind]
 }
 
 /**
@@ -3902,16 +3921,16 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
  * 本省抽选卡开合的初值:可提名的岗默认展开全省各组;不可提名(不符合清单)的岗没有「本岗那一组」,默认折叠,
  * 只露「查看全省 N 组」(2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」)。
  * 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡一律展开 —— AIP 与省提名是两条路,本岗不可提名
- * 不等于走不了 AIP。
+ * 不等于走不了 AIP。同日线上验收改:AIP 卡干脆不设开关(groupsCardOf 的 fold = false),它那把键随之撤。
  *
  * @param job 本岗。
  * @returns 开着的键集合。
  */
 export function drawOpenInitOf(job: PnpJob): Set<string> {
   if (job.pnpEligible === true) {
-    return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY, DRAWS_AIP_ALL_KEY])
+    return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY])
   }
-  return new Set([DRAWS_AIP_ALL_KEY])
+  return new Set()
 }
 
 /**

@@ -600,6 +600,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.st-johns': '세인트존스', 'pnpgate.area.rest-of-nl': '세인트존스 외',
   'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   // 2026-09-29 추첨 카드 개편: 상한 인원, 동일 풀 / 추첨 없음 / 올해 없음 안내, 카드 합계, 개편 전과 AIP 카드
+  'pnpdraws.invOne': '{n}개 초청',
   'pnpdraws.below': '{n}개 미만 초청',
   'pnpdraws.pool': '주정부 추천과 AIP를 같은 풀에서 선발, 인원에 AIP 포함',
   'pnpdraws.direct': '고용주 오퍼가 있으면 추첨 없이 바로 신청',

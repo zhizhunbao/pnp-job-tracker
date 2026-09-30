@@ -371,6 +371,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 2026-09-29 抽选卡重排:AIP 的轮次分去「AIP 抽选」卡(数据层 program = AIP),人数口径读 unit 格(application = 份申请入选)
   it('没公布分的本岗那组:组头写那一轮的人数(AIP 写份申请入选),标命中;认不出站名不出来源', () => {
     const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 40, program: 'AIP', unit: 'application' })]
+    // 本岗通道对得上 AIP 那组时照样标命中(AIP 卡不折叠,命中只管着色)
     const dx = { hitStreams: ['AIP'], genDraw: genDrawOf({ province: 'NB', pathways: PATHWAYS }), ops: [], reqs: [], year: '' }
     const aipZh = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, ...dx })
     expect(aipZh?.title).toBe('AIP 抽选')
@@ -858,7 +859,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       .toEqual(['2026 年 3 轮', '其中 2 轮官方只写「少于 10」'])
     // 配额卡「已发邀请」是同一个数:格里写「≥」;卡只列的那一年跟配额卡标题同一个来源
     const q = quotaCardOf({ t: zh, province: 'AB', ops: [ytd({ metric: 'allocation', value: 6403, asOf: '' }), ...ops], hitStreams: [], quotaKey: '' })
-    expect([q?.heads, q?.rows[0]?.cells, q?.year]).toEqual([['总数', '已发邀请'], ['6,403', '≥ 1,100'], '2026'])
+    expect([q?.heads, q?.rows[0]?.cells, q?.year]).toEqual([['总数', '已发邀请'], ['6,403', '≥\u00a01,100'], '2026'])
     expect(cardYearOf({ quota: q, province: 'AB', draws: ab })).toBe('2026')
     expect(cardYearOf({ quota: null, province: 'AB', draws: ab })).toBe('2026')
     expect(cardYearOf({ quota: null, province: 'MB', draws: ab })).toBe('')
@@ -878,9 +879,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(pnp?.others).toEqual([])
     expect(pnp?.foot).toEqual(['2026 年 2 轮,共 102 份邀请'])
     const aip = aipCardOf({ t: zh, lang: 'zh', province: 'NL', draws: nl, ...dx })
-    expect([aip?.title, aip?.lines]).toEqual(['AIP 抽选', []])
-    expect(aip?.others.map((g) => [g.key, g.sub, g.score, g.rounds])).toEqual([['AIP (ITA batch)', 'AIP 大西洋移民计划', '1 份邀请', '1 轮']])
+    expect([aip?.title, aip?.lines, aip?.others]).toEqual(['AIP 抽选', [], []])
+    // AIP 卡不设开关:组全摊开(不是本岗那一组,不着色)
+    expect(aip?.hits.map((g) => [g.key, g.hit, g.sub, g.score, g.rounds])).toEqual([['AIP (ITA batch)', false, 'AIP 大西洋移民计划', '1 份邀请', '1 轮']])
     expect(aip?.foot).toEqual(['2026 年 1 轮,共 1 份邀请'])
+    // 英文单数:恰好 1 份写「1 invitation」
+    const aipEn = aipCardOf({ t: en, lang: 'en', province: 'NL', draws: nl, ...dx })
+    expect([aipEn?.hits[0]?.score, aipEn?.foot]).toEqual(['1 invitation', ['2026: 1 round, 1 invitation']])
     // 探针:卡片认的是数据里的 program 格,不是省名 —— 那一行标成 PNP 就回到本省抽选,AIP 卡随之没东西可说
     const flipped = nl.map((d) => draw({ ...d, program: 'PNP' }))
     expect(drawCardOf({ t: zh, lang: 'zh', province: 'NL', draws: flipped, ...dx })?.others.map((g) => g.key)).toEqual(['AIP (ITA batch)'])
@@ -930,10 +935,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   })
 
   // 2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」:可提名照旧全展开(09-26「默认也别合并啊」),不可提名默认折叠
-  // 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡一律展开(本岗不可提名不等于走不了 AIP)
+  // 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡不设开关(组全摊开),不占键
   it('本省抽选卡开合初值:可提名展开全省各组,不可提名折叠', () => {
-    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: true }))]).toEqual(['__all', '__allReform', '__allAip'])
-    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: false }))]).toEqual(['__allAip'])
+    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: true }))]).toEqual(['__all', '__allReform'])
+    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: false }))]).toEqual([])
   })
 
   it('魁省 PSTQ:抽选卡哪一形都不出,格子不可点', () => {

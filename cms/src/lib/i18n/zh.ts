@@ -656,6 +656,7 @@ export const jobsZh = {
   'pnpgate.area.st-johns': '圣约翰斯', 'pnpgate.area.rest-of-nl': '圣约翰斯以外',
   'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   // 2026-09-29 抽选卡重排(Frank「按你建议」):行上「少于 N」、同池 / 不经抽选 / 今年还没有三种说明、卡底合计行(轮数与份数两段拼)、改制前与 AIP 两张新卡
+  'pnpdraws.invOne': '{n} 份邀请',
   'pnpdraws.below': '少于 {n} 份邀请',
   'pnpdraws.pool': '省提名与 AIP 同池选取,人数含 AIP',
   'pnpdraws.direct': '持雇主 offer 直接递申请,不经抽选',

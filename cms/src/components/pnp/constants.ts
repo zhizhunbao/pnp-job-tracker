@@ -170,6 +170,12 @@ export const UNIT_APPLICATION = 'application'
 export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
 
 /**
+ * 「{n} 份邀请」恰好 1 份时的词条(英文单数「1 invitation」;中韩同形)。2026-09-29 抽选卡重排线上验收:NL 的 AIP 那组最近一轮
+ * 1 份,英文写成了「1 invitations」。
+ */
+export const COUNT_INV_ONE_KEY = 'pnpdraws.invOne'
+
+/**
  * 抽选行 unit 格:从 EOI 池选中的人(人数写「人入选」)。
  * 2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」):原为 DRAW_SELECT_PROVS = new Set(['NS'])(按省名认),改认数据层的 unit 格。原注:
  * 「官方口径是「从 EOI 池里选取」而不是「发邀请」的省(抽选行的人数写「入选」;2026-09-26 /fe 首页 Frank「止血 + 补完整」)。
@@ -455,8 +461,9 @@ export const YTD_COUNT_KIND: Record<string, 'aip' | 'sel' | 'inv'> = {
 
 /**
  * 下限数的前缀(配额卡「已发邀请」一格写「≥ 13,083」)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
+ * 同日线上 375 实测:普通空格让「≥」与数字在窄屏折成两行(英文阿省四列),改不断行空格。
  */
-export const QUOTA_MIN_PREFIX = '≥ '
+export const QUOTA_MIN_PREFIX = '≥\u00a0'
 
 /**
  * 门槛表里「不经抽选」那类行的因素名(SK 持 offer 直接申请、PE 的 AIP 由指定雇主直接递背书申请;op = none)。
@@ -469,10 +476,6 @@ export const FACTOR_EOI_DRAW = 'eoiDraw'
  */
 export const DRAWS_REFORM_ALL_KEY = '__allReform'
 
-/**
- * 「AIP 抽选」卡「查看全省 N 组」开关的键(与本省抽选卡的 DRAWS_ALL_KEY 分开开合)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
- */
-export const DRAWS_AIP_ALL_KEY = '__allAip'
 
 /**
  * 「{年} 年配额」卡的列:每列认哪几个指标名 · 列名的词条键(顺序即列序;只列这个省官方有的项,2026-09-27 Frank 勾「2026 名额小表」「全年名额部分也单独弄个框」)。
