@@ -1791,9 +1791,13 @@ export const DIMS_PNP_DRAWS = `SELECT province, kind, draw_date AS "drawDate", s
  * 门槛流 / 配额行,都读这张表,前端五张对照常量退役;表由 etl/pathways 人工核定 + 每轮对 raw/pnp 自校)。
  * 三十来行整表取;已关停的通道不挂岗位、也不是省默认,这里不读。三个清单格是 jsonb,pg 直接回数组。
  * 2026-09-28 Frank「这个要不要把灰字去掉」:多取官方英文原名(省提名弹框「本岗能走的通道」卡的灰字,全站只在那一处出)。
+ * 2026-09-30 通道补全批二:多取编号、中韩直白名、看不看工作、条件标签、三种筛法(TEER / 职业码 / 雇主名)与清单名 —— 弹框通道卡
+ * 一岗列出全部通道(上段按岗位筛、下段「不要 offer 的通道」按省列)。表 54 行,整表取。
  */
-export const DIMS_PATHWAYS = `SELECT province, board_label AS "boardLabel", is_default AS "isDefault",
-       draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey", official_name AS "officialName"
+export const DIMS_PATHWAYS = `SELECT key, province, board_label AS "boardLabel", is_default AS "isDefault",
+       draw_streams AS "drawStreams", req_streams AS "reqStreams", quota_key AS "quotaKey", official_name AS "officialName",
+       plain_zh AS "plainZh", plain_ko AS "plainKo", job_linked AS "jobLinked", tags, teers, nocs, employers,
+       occ_labels AS "occLabels"
      FROM pathways WHERE status <> 'closed' ORDER BY seq`
 
 /**

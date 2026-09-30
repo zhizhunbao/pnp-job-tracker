@@ -273,6 +273,51 @@ export type PnpPathway = {
    * 官方英文原名(「本岗能走的通道」卡的灰字;库里缺了是空串)。
    */
   officialName: string
+
+  /**
+   * 我们的编号(通道条目的列表键;2026-09-30 通道补全批二)。
+   */
+  key: string
+
+  /**
+   * 我们的中文直白名(中文界面灰字)。
+   */
+  plainZh: string
+
+  /**
+   * 我们的韩文直白名(韩文界面灰字)。
+   */
+  plainKo: string
+
+  /**
+   * 跟这个岗有没有关系:要本省 offer 或本省工作经验 = true(通道卡上段);不看工作 = false(下段)。
+   */
+  jobLinked: boolean
+
+  /**
+   * 条件标签键(etl/pathways 的 TAG_KEYS 词表)。
+   */
+  tags: string[]
+
+  /**
+   * 本岗 TEER 在内才列上段;空 = 不限。
+   */
+  teers: number[]
+
+  /**
+   * 本岗职业码在内才列上段;空 = 不限。
+   */
+  nocs: string[]
+
+  /**
+   * 雇主名(归一后小写)命中才列上段;空 = 不限。
+   */
+  employers: string[]
+
+  /**
+   * 职业清单名(本岗职业码在其中任一张才列上段);空 = 不限。
+   */
+  occLabels: string[]
 }
 
 /**
@@ -1031,6 +1076,31 @@ export type ChannelSpec = {
    * 界面语言名灰字;''=不出(英文界面、关了译名、或与主文案同字)。
    */
   sub: string
+
+  /**
+   * 条件标签(2026-09-30 通道补全批二;没有给空列)。
+   */
+  tags: ChannelTag[]
+}
+
+/**
+ * 通道条目上的一枚条件标签(2026-09-30 通道补全批二)。
+ */
+export type ChannelTag = {
+  /**
+   * React 列表键(标签键)。
+   */
+  key: string
+
+  /**
+   * 标签文字(界面语言)。
+   */
+  text: string
+
+  /**
+   * 胶囊类名(通用 tag 桶:状态类 warn、其余 gray)。
+   */
+  cls: string
 }
 
 /**
@@ -2315,6 +2385,11 @@ export type PnpListPanel = {
   channels: ChannelSpec[]
 
   /**
+   * 本省不看工作的通道(通道卡下段「不要 offer 的通道」;2026-09-30)。
+   */
+  offChannels: ChannelSpec[]
+
+  /**
    * 走不了省提名的原因词(弹框顶上「本岗不满足的门槛」卡;'' = 走得了;2026-09-29)。
    */
   block: string
@@ -3541,9 +3616,24 @@ export type PnpChannelCardIn = {
   t: TFn
 
   /**
-   * 通道条目(现在单值,结构可放多条)。
+   * 通道条目(现在单值,结构可放多条)。2026-09-30 起 = 本岗通道 + 上段其余几条(channelListOf)。
    */
   channels: ChannelSpec[]
+
+  /**
+   * 下段「不要 offer 的通道」(本省不看工作的通道;没有给空列;2026-09-30)。
+   */
+  others: ChannelSpec[]
+}
+
+/**
+ * ChannelRow(通道卡里的一条)的 props。
+ */
+export type ChannelRowIn = {
+  /**
+   * 这一条。
+   */
+  c: ChannelSpec
 }
 
 /**
@@ -4058,6 +4148,191 @@ export type LatestSinceIn = {
 }
 
 /**
+ * channelListOf / extraChannelsOf 的入参(2026-09-30 通道补全批二:channelsOf 的入参 + 职业清单)。
+ */
+export type ChannelListIn = {
+  /**
+   * 界面语取词函数。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出灰字。
+   */
+  showZh: boolean
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 有省默认通道的省码。
+   */
+  defaults: string[]
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+
+  /**
+   * 职业清单行(判本岗职业码在不在通道的清单里)。
+   */
+  occ: PnpOcc[]
+}
+
+/**
+ * offChannelsOf 的入参(2026-09-30 通道补全批二)。
+ */
+export type ChannelOffIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出灰字。
+   */
+  showZh: boolean
+
+  /**
+   * 本岗(取省码)。
+   */
+  job: PnpJob
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+}
+
+/**
+ * isExtraChannelOf 的入参(2026-09-30 通道补全批二)。
+ */
+export type ExtraFitsIn = {
+  /**
+   * 这条通道。
+   */
+  p: PnpPathway
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 职业清单行。
+   */
+  occ: PnpOcc[]
+}
+
+/**
+ * isListedOf 的入参。
+ */
+export type ListedIn = {
+  /**
+   * 清单名。
+   */
+  labels: string[]
+
+  /**
+   * 本岗职业码。
+   */
+  noc: string
+
+  /**
+   * 职业清单行。
+   */
+  occ: PnpOcc[]
+}
+
+/**
+ * isEmployerOf 的入参。
+ */
+export type EmployerHitIn = {
+  /**
+   * 雇主名单(归一后小写)。
+   */
+  names: string[]
+
+  /**
+   * 本岗公司名(原样)。
+   */
+  company: string
+}
+
+/**
+ * pathwayChannelOf 的入参。
+ */
+export type PathwayChannelIn = {
+  /**
+   * 取词函数(标签文字)。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(挑哪一语的直白名作灰字)。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出灰字。
+   */
+  showZh: boolean
+
+  /**
+   * 这条通道。
+   */
+  p: PnpPathway
+}
+
+/**
+ * localNameOf 的入参。
+ */
+export type LocalNameIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 这条通道。
+   */
+  p: PnpPathway
+}
+
+/**
+ * channelTagsOf 的入参。
+ */
+export type ChannelTagsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 标签键。
+   */
+  tags: string[]
+}
+
+/**
  * channelsOf 的入参。
  */
 export type ChannelsIn = {
@@ -4130,6 +4405,11 @@ export type ChannelOfIn = {
    * 官方英文原名('' = 库里没有)。
    */
   official: string
+
+  /**
+   * 条件标签(本岗那条通道的;2026-09-30 通道补全批二)。
+   */
+  tags: ChannelTag[]
 }
 
 /**

@@ -41,7 +41,7 @@ import {
   GATE_COND_OTHER_PROV, BASIS_PROV_GRADUATE, BASIS_FISCAL, GATE_EMP_FISCAL_KEY,
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
-  GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY,
+  GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -70,6 +70,8 @@ import type {
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
+  ChannelListIn, ChannelOffIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
+  LocalNameIn, PathwayChannelIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
@@ -817,10 +819,12 @@ export function channelsOf(x: ChannelsIn): ChannelSpec[] {
   const en = pnpNameOf({ key, t: x.tEn })
   const channel = pnpChannelOf({ job: x.job, pathways: x.pathways })
   let official = TEXT_NONE
+  let tags: ChannelTag[] = []
   if (channel != null) {
     official = channel.officialName
+    tags = channelTagsOf({ t: x.t, tags: channel.tags })
   }
-  return [channelOf({ lang: x.lang, showZh: x.showZh, key, local, en, official })]
+  return [channelOf({ lang: x.lang, showZh: x.showZh, key, local, en, official, tags })]
 }
 
 /**
@@ -842,7 +846,167 @@ function channelOf(x: ChannelOfIn): ChannelSpec {
   if (x.lang !== LANG_EN && x.showZh && x.local !== name) {
     sub = x.local
   }
-  return { key: x.key, name, sub }
+  return { key: x.key, name, sub, tags: x.tags }
+}
+
+/**
+ * 通道卡上段的全部条目(2026-09-30 通道补全批二;立项稿 docs/design/通道补全-20260930.md 第五节):本岗自己的通道(channelsOf ——
+ * 数据层挂的具名通道或本省默认通道)在前,其余跟工作有关的通道(extraChannelsOf)按表序接后。
+ *
+ * @param x 取词函数、界面语言、灰字开关、本岗、省默认省码、通道对照表与职业清单。
+ * @returns 条目;不列给空列。
+ */
+export function channelListOf(x: ChannelListIn): ChannelSpec[] {
+  const out = channelsOf({
+    t: x.t, tEn: x.tEn, lang: x.lang, showZh: x.showZh, job: x.job, defaults: x.defaults, pathways: x.pathways,
+  })
+  for (const c of extraChannelsOf(x)) {
+    out.push(c)
+  }
+  return out
+}
+
+/**
+ * 上段本岗通道之外的条目(2026-09-30 通道补全批二):本省跟工作有关、但数据层不会分给岗位的通道(不是省默认、没挂岗位通道名 ——
+ * 补通道这批新加的那些),按岗位能判的条件筛(isExtraChannelOf)。工作性质卡住的岗(兼职 / 定期合同 / 季节工 / 临时工)一条不列:
+ * 各省工人类通道都要全职、非季节、够长的 offer。人的条件(EE 档案、本省毕业、PGWP …)不筛,写成标签。
+ *
+ * @param x 取词函数、界面语言、灰字开关、本岗、通道对照表与职业清单。
+ * @returns 条目;没有给空列。
+ */
+export function extraChannelsOf(x: ChannelListIn): ChannelSpec[] {
+  const out: ChannelSpec[] = []
+  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE || JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
+    return out
+  }
+  for (const p of x.pathways) {
+    if (isExtraChannelOf({ p, job: x.job, occ: x.occ })) {
+      out.push(pathwayChannelOf({ t: x.t, lang: x.lang, showZh: x.showZh, p }))
+    }
+  }
+  return out
+}
+
+/**
+ * 这条通道要不要列在本岗上段:同省、跟工作有关、不是省默认也没挂岗位通道名(那两种由数据层分派,见 channelsOf),再过按岗位能判的
+ * 四种条件 —— TEER(teers)、职业码(nocs)、职业清单(occLabels)、雇主名(employers);哪格空着就不限。
+ *
+ * @param x 这条通道、本岗与职业清单。
+ * @returns 列 = true。
+ */
+function isExtraChannelOf(x: ExtraFitsIn): boolean {
+  const p = x.p
+  if (p.province !== x.job.province || p.jobLinked === false || p.isDefault || p.boardLabel != null) {
+    return false
+  }
+  if (p.teers.length > 0 && (x.job.teer == null || p.teers.includes(x.job.teer) === false)) {
+    return false
+  }
+  if (p.nocs.length > 0 && p.nocs.includes(x.job.noc) === false) {
+    return false
+  }
+  if (p.occLabels.length > 0 && isListedOf({ labels: p.occLabels, noc: x.job.noc, occ: x.occ }) === false) {
+    return false
+  }
+  return p.employers.length === 0 || isEmployerOf({ names: p.employers, company: x.job.company })
+}
+
+/**
+ * 本岗职业码在不在这几张清单里(pnp_occupations 同 label 的行)。
+ *
+ * @param x 清单名、本岗职业码与全部清单行。
+ * @returns 在 = true。
+ */
+function isListedOf(x: ListedIn): boolean {
+  for (const o of x.occ) {
+    if (o.noc === x.noc && x.labels.includes(o.label)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 本岗雇主是不是名单上的一家(公司名同 AIP 指定雇主一样归一,名单上的名字被包含即算;名单在 etl 已按同一把尺子归一,自校管着)。
+ *
+ * @param x 名单与本岗公司名。
+ * @returns 是 = true。
+ */
+function isEmployerOf(x: EmployerHitIn): boolean {
+  const name = normName(x.company)
+  if (name === TEXT_NONE) {
+    return false
+  }
+  for (const n of x.names) {
+    if (name.includes(n)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * 通道卡下段「不要 offer 的通道」(2026-09-30 通道补全批二,Frank「不看工作的也收」):本省不看工作的通道全列,不按岗位筛,
+ * 条件写成标签。魁省与没省码的岗不出(同上段)。
+ *
+ * @param x 取词函数、界面语言、灰字开关、本岗与通道对照表。
+ * @returns 条目;没有给空列。
+ */
+export function offChannelsOf(x: ChannelOffIn): ChannelSpec[] {
+  const out: ChannelSpec[] = []
+  if (x.job.province === PROV_QC || x.job.province === TEXT_NONE) {
+    return out
+  }
+  for (const p of x.pathways) {
+    if (p.province === x.job.province && p.jobLinked === false) {
+      out.push(pathwayChannelOf({ t: x.t, lang: x.lang, showZh: x.showZh, p }))
+    }
+  }
+  return out
+}
+
+/**
+ * 通道对照表一行 → 通道条目(官方英文原名主文案;中韩界面开着灰字、直白名与主文案不同字才出灰字;标签照表)。
+ *
+ * @param x 取词函数、界面语言、灰字开关与这条通道。
+ * @returns 通道条目。
+ */
+function pathwayChannelOf(x: PathwayChannelIn): ChannelSpec {
+  let sub = TEXT_NONE
+  const local = localNameOf({ lang: x.lang, p: x.p })
+  if (x.showZh && local !== TEXT_NONE && local !== x.p.officialName) {
+    sub = local
+  }
+  return { key: x.p.key, name: x.p.officialName, sub, tags: channelTagsOf({ t: x.t, tags: x.p.tags }) }
+}
+
+/**
+ * 一条通道的界面语言直白名(中文 plainZh、韩文 plainKo;英文界面不出灰字给 '')。
+ *
+ * @param x 界面语言与这条通道。
+ * @returns 名字;'' = 不出。
+ */
+function localNameOf(x: LocalNameIn): string {
+  const byLang: Record<PnpLang, string> = { zh: x.p.plainZh, en: TEXT_NONE, ko: x.p.plainKo }
+  return byLang[x.lang]
+}
+
+/**
+ * 通道的条件标签键 → 标签条目(文字走 i18n `pnpchan.tag.` + 键;胶囊类名取通用 tag 桶:状态类 warn、其余 gray)。
+ *
+ * @param x 取词函数与标签键。
+ * @returns 标签条目。
+ */
+function channelTagsOf(x: ChannelTagsIn): ChannelTag[] {
+  const out: ChannelTag[] = []
+  for (const key of x.tags) {
+    let cls = baseTagClsOf(TAG_V_GRAY)
+    if (CHAN_TAG_WARN.includes(key)) {
+      cls = baseTagClsOf(TAG_V_WARN)
+    }
+    out.push({ key, text: x.t(CHAN_TAG_HEAD + key), cls })
+  }
+  return out
 }
 
 /**

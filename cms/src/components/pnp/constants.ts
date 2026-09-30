@@ -390,6 +390,22 @@ export const PNP_BLOCK_UNFIT_CODES = ['part', 'term', 'seasonal', 'casual', 'wag
 export const PNP_BLOCK_UNFIT_KEY = 'pnp.block.unfit'
 
 /**
+ * 工作性质卡住的原因码(兼职 / 定期合同 / 季节工 / 临时工):通道卡上段不再列其余通道 —— 各省工人类通道都要全职、非季节、
+ * 够长的 offer(2026-09-30 通道补全批二)。
+ */
+export const JOB_NATURE_BLOCKS = ['part', 'term', 'seasonal', 'casual']
+
+/**
+ * 通道条件标签的词条键头(拼标签键取界面词;标签键 = etl/pathways 的 TAG_KEYS)。
+ */
+export const CHAN_TAG_HEAD = 'pnpchan.tag.'
+
+/**
+ * 写 warn 色档(黄)的状态类标签(目前没有抽选排期 / 近期没再抽选 / 限时);其余条件类写 gray(灰)。
+ */
+export const CHAN_TAG_WARN = ['noDraws', 'drawsStopped', 'timeLimited']
+
+/**
  * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
  */
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i

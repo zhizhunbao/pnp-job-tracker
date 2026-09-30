@@ -729,6 +729,25 @@ export const jobsZh = {
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
   // 2026-09-26 晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改走与其余组同一种组头行,三格与灰字统计撤,latest / people / apps / rounds90 与三条合计随之删
   'pnpfacts.streams': '本岗能走的通道',
+  // 2026-09-30 通道补全批二:通道卡下段标题与条件标签(标签键 = etl/pathways 的 TAG_KEYS)
+  'pnpchan.noOffer': '不要 offer 的通道',
+  'pnpchan.tag.ee': '需先有 EE 档案',
+  'pnpchan.tag.localGrad': '需本省毕业',
+  'pnpchan.tag.pgwp': '需持 PGWP',
+  'pnpchan.tag.noPgwp': '不收持 PGWP 的人',
+  'pnpchan.tag.french': '需说法语',
+  'pnpchan.tag.employers': '限指定雇主',
+  'pnpchan.tag.timeLimited': '限时',
+  'pnpchan.tag.lmiaPermit': '需持 LMIA 工签',
+  'pnpchan.tag.noDraws': '目前没有抽选排期',
+  'pnpchan.tag.drawsStopped': '近期没再抽选',
+  'pnpchan.tag.letter': '需收到省兴趣信',
+  'pnpchan.tag.connection': '需与本省有联系',
+  'pnpchan.tag.mitacs': '需做过 Mitacs 实习',
+  'pnpchan.tag.localExperience': '需本省工作满 1 年',
+  'pnpchan.tag.privateCollege': '限本省私立学院指定专业',
+  'pnpchan.tag.remoteWork': '需远程为魁省外雇主工作',
+  'pnpchan.tag.physician': '限执业医生',
   // 2026-09-29 Frank「有些职位不满足门槛 也要弹框 并说明」「就直接说 兼职」「单独开一个 框 说不满足」:原因词(格子 / 胶囊 / 弹框卡同一套)
   'pnpblock.title': '本岗不满足的门槛',
   'pnp.block.part': '兼职', 'pnp.block.term': '定期合同', 'pnp.block.seasonal': '季节工', 'pnp.block.casual': '临时工',

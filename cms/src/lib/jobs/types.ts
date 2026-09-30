@@ -961,6 +961,51 @@ export type PathwayDbRow = {
    * 官方英文原名(照抄这条通道自己那一页)。
    */
   officialName: string | null
+
+  /**
+   * 我们的编号(2026-09-30 通道补全批二起取)。
+   */
+  key: string | null
+
+  /**
+   * 我们的中文直白名。
+   */
+  plainZh: string | null
+
+  /**
+   * 我们的韩文直白名。
+   */
+  plainKo: string | null
+
+  /**
+   * 跟这个岗有没有关系(NULL = 加列前灌的旧行,按有关系算)。
+   */
+  jobLinked: boolean | null
+
+  /**
+   * 条件标签键。
+   */
+  tags: string[] | null
+
+  /**
+   * 本岗 TEER 在内才列通道卡上段。
+   */
+  teers: number[] | null
+
+  /**
+   * 本岗职业码在内才列通道卡上段。
+   */
+  nocs: string[] | null
+
+  /**
+   * 雇主名(归一后小写)命中才列通道卡上段。
+   */
+  employers: string[] | null
+
+  /**
+   * 职业清单名(本岗职业码在其中任一张才列通道卡上段)。
+   */
+  occLabels: string[] | null
 }
 
 /**
@@ -1002,6 +1047,51 @@ export type Pathway = {
    * 官方英文原名(照抄这条通道自己那一页;省提名弹框「本岗能走的通道」卡的灰字读它;库里缺了给空串)。
    */
   officialName: string
+
+  /**
+   * 我们的编号(2026-09-30 通道补全批二;弹框通道条目的列表键)。
+   */
+  key: string
+
+  /**
+   * 我们的中文直白名(中文界面灰字)。
+   */
+  plainZh: string
+
+  /**
+   * 我们的韩文直白名(韩文界面灰字)。
+   */
+  plainKo: string
+
+  /**
+   * 跟这个岗有没有关系:要本省 offer 或本省工作经验 = true(通道卡上段);不看工作 = false(下段)。
+   */
+  jobLinked: boolean
+
+  /**
+   * 条件标签键(etl/pathways 的 TAG_KEYS 词表)。
+   */
+  tags: string[]
+
+  /**
+   * 本岗 TEER 在内才列通道卡上段;空 = 不限。
+   */
+  teers: number[]
+
+  /**
+   * 本岗职业码在内才列通道卡上段;空 = 不限。
+   */
+  nocs: string[]
+
+  /**
+   * 雇主名(归一后小写)命中才列通道卡上段;空 = 不限。
+   */
+  employers: string[]
+
+  /**
+   * 职业清单名(本岗职业码在其中任一张才列通道卡上段);空 = 不限。
+   */
+  occLabels: string[]
 }
 
 /**
@@ -3603,9 +3693,15 @@ export type StripTitleIn = {
 export type StrList = string[]
 
 /**
- * 字符串清单或没有(库里 jsonb 清单格可能是 NULL;2026-09-28 通道表批二)。
+ * 任意元素的清单(数组进签名要有自己的名字;2026-09-30 通道补全批二,toList 的出参)。
  */
-export type MaybeStrList = StrList | null
+export type List<R> = R[]
+
+/**
+ * 字符串清单或没有(库里 jsonb 清单格可能是 NULL;2026-09-28 通道表批二)。
+ * 2026-09-30 通道补全批二:放宽成泛型(数字清单 teers 同走 toList),原名 MaybeStrList。
+ */
+export type MaybeList<R> = List<R> | null
 
 /**
  * 数或没有。

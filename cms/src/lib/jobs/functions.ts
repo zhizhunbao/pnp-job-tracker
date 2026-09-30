@@ -76,9 +76,9 @@ import type {
   MatchDimsOut, MatchIn, MatchJob, MatchLevel, MatchProfile, MatchReason, MatchResult, MaybeJobOgRow, MaybeLevel,
   MaybeNum, MaybeOccDiff, MaybeProfile, MaybeStr, MaybeStrOut, NameOption, NewsSlim, NocCat, NocCountsIn, NocCountsOut,
   NocDescDim, NocHit, NocOpenCount, NocRuleOut, NocSearchIn, OccDim, NocSearchOut, OccCompetitionIn, OccCompetitionOut,
-  OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeStrList,
+  OccCompetitionRows, OccDiffDbRow, OccDiffFact, OccDiffFacts, OccOpen, OrderByIn, Pathway, PathwayDbRow, MaybeList,
   LoadQcChannelsIn, QcCell, QcCellDbRow, QcChannel, QcChannelDbRow, QcChannelList, QcChannelsDbRow, QcChannelsOut,
-  PgFailure, PnpDraw, PnpOcc,
+  PgFailure, PnpDraw, PnpOcc, List,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
   RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn,
@@ -3115,6 +3115,8 @@ export function toPnpDraw(r: Row): PnpDraw {
 /**
  * DIMS_PATHWAYS 一行 → 通道对照行(2026-09-28 通道表批二)。清单格库里存的是 jsonb 数组,缺了当空列;
  * 通道名与配额键保 null(省默认通道本来就没挂名、没有通道级配额的通道本来就没有键)。
+ * 2026-09-30 通道补全批二加九格(编号、中韩直白名、看不看工作、条件标签、三种筛法、清单名);jobLinked 为 NULL 的是加列前灌的旧行,
+ * 按有关系算(列默认值同此)。
  *
  * @param r 原始行。
  * @returns 通道对照行。
@@ -3122,8 +3124,10 @@ export function toPnpDraw(r: Row): PnpDraw {
 function toPathway(r: PathwayDbRow): Pathway {
   return {
     province: text(r.province), boardLabel: textOrNull(r.boardLabel), isDefault: r.isDefault === true,
-    drawStreams: toStrList(r.drawStreams), reqStreams: toStrList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
-    officialName: text(r.officialName),
+    drawStreams: toList(r.drawStreams), reqStreams: toList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
+    officialName: text(r.officialName), key: text(r.key), plainZh: text(r.plainZh), plainKo: text(r.plainKo),
+    jobLinked: r.jobLinked !== false, tags: toList(r.tags), teers: toList(r.teers), nocs: toList(r.nocs),
+    employers: toList(r.employers), occLabels: toList(r.occLabels),
   }
 }
 
@@ -3198,12 +3202,13 @@ function toQcChannel(c: QcChannelDbRow): QcChannel {
 
 /**
  * jsonb 字符串数组格 → 字符串列(缺了给空列;库里存的是 etl/pathways 写的数组,不是 JSON 串也照收)。
+ * 2026-09-30 通道补全批二:放宽成泛型(数字清单 teers 同走这一个;原名 toStrList)。
  *
  * @param x 库回的清单格。
- * @returns 字符串列。
+ * @returns 清单。
  */
-function toStrList(x: MaybeStrList): StrList {
-  const list = jsonOrNull<StrList>(x)
+function toList<R>(x: MaybeList<R>): List<R> {
+  const list = jsonOrNull<List<R>>(x)
   if (list == null) {
     return []
   }

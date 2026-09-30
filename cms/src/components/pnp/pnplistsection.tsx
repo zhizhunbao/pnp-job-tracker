@@ -36,6 +36,7 @@
  * null(原按 drawsFormOf 的形判 drawGroupsShownOf,随之退役;SK 没有抽选也出卡写「不经抽选」)。
  * 2026-09-30 魁省门槛弹框(Frank「先不要解读,只要门槛」,看过效果图第三版「可以」;设计 docs/design/魁省门槛弹框-20260929.md):
  * 魁省岗最前面是这个职业能走的每个通道一张门槛卡(qcGateCardsOf);其余各卡对魁省本来就不出(各自有魁省挡板)。
+ * 2026-09-30 通道补全批二:通道卡带下段「不要 offer 的通道」(p.offChannels);上段没有、下段有也出卡。
  * 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上加一行本岗雇主在不在本省 AIP 指定雇主名单(aipEmployerCardOf)。
  *
  * @author Frank
@@ -66,6 +67,7 @@ export function PnpListSection({
   job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels,
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
+  const chanShown = p.channels.length > 0 || p.offChannels.length > 0
   const channel = pnpChannelOf({ job, pathways })
   const hitStreams = hitStreamsOf({ channel, qcChannels })
   const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
@@ -106,7 +108,7 @@ export function PnpListSection({
     <>
       {qcCards}
       <PnpBlockCard t={p.t} text={p.block} />
-      {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
+      {chanShown && <PnpChannelCard t={p.t} channels={p.channels} others={p.offChannels} />}
       {gate != null && <PnpGateCard spec={gate} />}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
