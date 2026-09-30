@@ -11,8 +11,10 @@ import re
 import sys
 import unittest
 from datetime import date
+from io import BytesIO
 from typing import cast
 
+import openpyxl
 from bs4 import BeautifulSoup
 
 import paths
@@ -22,9 +24,9 @@ from log.functions import say
 from pnp.constants import (
     DRAWS_NOTE_CLIP, EMPTY_JOIN, FACTOR_AGE, FACTOR_EDUCATION, FACTOR_EXPERIENCE, FACTOR_FUNDS, FACTOR_LANGUAGE,
     FACTOR_LICENSING, FACTOR_OCC_PATHWAY, INDENT_2, K_AS_OF_LOWER, K_DATE, K_FETCHED, K_GUIDE_EFFECTIVE, K_INVITATIONS,
-    K_LABEL, K_NOCS, K_NOTE, K_PAGE_URL, K_PROGRAM, K_PROVINCE, K_REQUIREMENTS, K_SCORE, K_SECTION, K_SOURCE, K_STREAM,
-    K_UNIT, K_URL, K_VALUE, K_YEAR, LIST_JOIN_SEP, OP_RULE, PRINT_FACTOR_TPL, PRINT_OUT_TPL, PROV_QC, TEST_VERBOSITY,
-    TEXT_JOIN_SEP, UNIT_MONTHS, UNIT_YEARS, WORD_N,
+    K_LABEL, K_NAME, K_NOC, K_NOCS, K_NOTE, K_PAGE_URL, K_PARTIAL, K_PROGRAM, K_PROVINCE, K_REQUIREMENTS, K_SCORE,
+    K_SECTION, K_SOURCE, K_STREAM, K_STREAMS, K_TOTAL, K_UNIT, K_URL, K_VALUE, K_YEAR, LIST_JOIN_SEP, OP_RULE,
+    PRINT_FACTOR_TPL, PRINT_OUT_TPL, PROV_QC, TEST_VERBOSITY, TEXT_JOIN_SEP, UNIT_MONTHS, UNIT_YEARS, WORD_N,
 )
 from pnp.functions import (
     cached_draws_of, draw_date_of, fail_zh, fetch_bytes, fold_ws, int_of, iso_nb_of, iso_of, pdf_text, put_prov_draws,
@@ -32,9 +34,19 @@ from pnp.functions import (
 )
 from pnp.qc.constants import (
     DRAWS_QC_LABEL, DRAWS_QC_SCALE, DRAWS_QC_URL_TPL, DRAWS_QC_YEARS_BACK, FR_MONTHS, FR_WORD_N, ISO_DATE_TPL,
-    K_ADMISSIONS, K_ELIGIBLE_AS_OF, K_EXERCISES, K_INTAKE, K_INTAKE_CLOSES, K_INTAKE_OPENS, K_INVITATIONS_TEXT,
-    K_IN_QUEBEC, K_KIND, K_OUTSIDE_MONTREAL, K_PLAN_YEAR, K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE,
-    K_SELECTIONS, K_VALUE_MAX, OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL,
+    K_ADMISSIONS, K_BANDS, K_CEFR, K_CODE, K_ELIGIBLE_AS_OF, K_EXERCISES, K_FULL, K_INTAKE, K_INTAKE_CLOSES,
+    K_INTAKE_OPENS, K_INVITATIONS_TEXT, K_IN_QUEBEC, K_KIND, K_LEVEL_MAX, K_LEVEL_MIN, K_OUTSIDE_MONTREAL, K_PLAN_YEAR,
+    K_PROGRAM_CLOSES, K_PROGRAM_OPENS, K_QUEBEC_DIPLOMA, K_QUOTE, K_REGULATED_LIST, K_SCORE_MAX, K_SCORE_MIN,
+    K_SELECTIONS, K_SKILL, K_TEST, K_TESTS, K_VALUE_MAX, K_VERSION, OUT_QC_FRENCH_LEVELS, OUT_QC_NOC_STREAMS,
+    OUT_QC_PEQ_REQ, OUT_QC_REQ, OUT_QC_STATS, QCF_BANDS, QCF_BODY_HEAD, QCF_CEFR_HEAD, QCF_DECIMAL_COMMA,
+    QCF_DECIMAL_POINT, QCF_LEVELS_HEAD, QCF_LEVEL_RE, QCF_MIN_TESTS, QCF_PDF_URL, QCF_PRINT_DONE_TPL,
+    QCF_PROBLEM_FETCH_TPL, QCF_PROBLEM_TPL, QCF_SCORE_RE, QCF_SKILL_RE, QCF_VERSION_RE, QCF_WHAT_BODY, QCF_WHAT_CEFR,
+    QCF_WHAT_LEVELS, QCF_WHAT_ORPHAN_TPL, QCF_WHAT_RISING_TPL, QCF_WHAT_SKILL_TPL, QCF_WHAT_TESTS_TPL, QCF_WHAT_VERSION,
+    QCN_CODES_SKIP, QCN_CODE_SEP, QCN_FULL_KINDS, QCN_FULL_RE, QCN_KINDS, QCN_KIND_BASE, QCN_NOC_COUNT, QCN_NOC_RE,
+    QCN_PARTIAL_KINDS, QCN_PARTIAL_RE, QCN_PNER_KEY, QCN_PNER_RE, QCN_PRINT_DONE_TPL, QCN_PROBLEM_CROSS_TPL,
+    QCN_PROBLEM_FETCH_TPL, QCN_PROBLEM_TPL, QCN_REGULATED_PDF_URL, QCN_ROWS_SKIP, QCN_SHEET_CODES, QCN_SHEET_ROWS,
+    QCN_STREAM_SEP, QCN_TIMEOUT_S, QCN_TOTALS_RE, QCN_VERSION_RE, QCN_WHAT_CODE_TPL, QCN_WHAT_FULL, QCN_WHAT_KIND_TPL,
+    QCN_WHAT_PARTIAL, QCN_WHAT_ROWS, QCN_WHAT_TOTAL, QCN_WHAT_TOTALS, QCN_XLSX_URL, QCP_AGE_RE, QCP_BASIS_CUTOFF_TPL,
     QCP_BASIS_EXP_TPL, QCP_BASIS_WINDOW_TPL, QCP_CUTOFF_RE, QCP_DEP_HOURS_RE, QCP_EXP_RE, QCP_FULLTIME_RE, QCP_GRAD_URL,
     QCP_GRAD_WINDOW_RE, QCP_INTAKE_RE, QCP_ORAL_RE, QCP_PAGE_GRAD, QCP_PAGE_TFW, QCP_PRINT_DONE_TPL,
     QCP_PROBLEM_NO_PAGE_TPL, QCP_PROBLEM_TPL, QCP_PROGRAM, QCP_RECEPT_GRAD_RE, QCP_RECEPT_TFW_RE, QCP_SPOUSE_RE,
@@ -58,9 +70,10 @@ from pnp.qc.constants import (
     QC_OUTSIDE_CMM_RE, QC_QC_DIPLOMA_RE, QC_STREAM_PREFIX,
 )
 from pnp.qc.scheme import (
-    QcDrawIn, QcExerciseTest, QcFindIn, QcFrDateIn, QcFrPartsIn, QcpIntakeIn, QcPlanTest, QcpPageIn, QcpPageOut,
-    QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn, QcrUpdatedIn, QcsCrossIn,
-    QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
+    QcBookLike, QcDrawIn, QcExerciseTest, QcfBandsIn, QcfBodyIn, QcfHeadIn, QcFindIn, QcfOut, QcFrDateIn, QcFrenchTest,
+    QcFrPartsIn, QcnKindIn, QcnMapIn, QcnMapOut, QcNocTest, QcnRegIn, QcnRowIn, QcpIntakeIn, QcPlanTest, QcpPageIn,
+    QcpPageOut, QcpReqsIn, QcpRowsIn, QcReqTest, QcrLangIn, QcrSectionIn, QcrTeerIn, QcrTextIn, QcrUpdatedIn,
+    QcsCrossIn, QcSheetLike, QcsPlanOut, QcsRowIn, QcsTableIn, QcsTableOut, QcSumIn,
 )
 from pnp.scheme import CachedDrawsIn, FactorCountsIn, FetchHtmlIn, PutDrawsIn, ReqIn, ReqsOut, SoupNodeLike, StdReqIn
 
@@ -756,7 +769,314 @@ def qcs_row_of(x: QcsRowIn) -> dict:
 
 
 # =========================================================================
-# 5. 自测入口
+# 5. PSTQ 职业 → 通道对照(2026-09-29 立,Frank「开工」:焊工能走几个通道要按官方对照,不按 TEER 推)
+# =========================================================================
+
+
+def build_qc_noc_streams() -> None:
+    """职业 → 通道对照入口:官方查询工具的数据表(xlsx)+《受监管职业清单》PDF(原件都先落 crawl 层)→
+    raw/pnp/qc-noc-streams.json。516 个 NOC 逐个写明可进的通道与细分码;通道 3 的码数与清单开头的三个总数交叉核对。
+    任一条认不出或对不上 → 整份保留旧表。"""
+    say(PRINT_OUT_TPL.format(path=OUT_QC_NOC_STREAMS))
+    try:
+        book = cast(QcBookLike, openpyxl.load_workbook(
+            BytesIO(fetch_bytes(FetchHtmlIn(url=QCN_XLSX_URL, timeout_s=QCN_TIMEOUT_S))), read_only=True))
+        rows = qc_sheet_rows(book[QCN_SHEET_ROWS])
+        codes = qc_sheet_rows(book[QCN_SHEET_CODES])
+        pdf = pdf_text(fetch_bytes(FetchHtmlIn(url=QCN_REGULATED_PDF_URL, timeout_s=QCN_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001 — 下载 / 解析 / 缺页:留痕后按自校失败收口(文件不动)
+        fail_zh([QCN_PROBLEM_FETCH_TPL.format(name=type(e).__name__, detail=e)])
+        return
+    out = qcn_map_of(QcnMapIn(rows=rows, codes=codes, pdf=pdf))
+    if len(out.problems) > 0:
+        fail_zh(out.problems)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_QC_NOC_STREAMS, payload={
+        K_PROVINCE: PROV_QC, K_PROGRAM: QCR_PROGRAM, K_SOURCE: QCR_SOURCE, K_URL: QCN_XLSX_URL,
+        K_FETCHED: today_iso(), K_REGULATED_LIST: out.reg, K_NOCS: out.nocs,
+    }, indent=INDENT_2))
+    counts = qcn_stream_counts(out.nocs)
+    say(QCN_PRINT_DONE_TPL.format(path=OUT_QC_NOC_STREAMS, n=len(out.nocs), s1=counts[1], s2=counts[2], s3=counts[3],
+                                  ver=out.reg[K_VERSION], total=out.reg[K_TOTAL], full=out.reg[K_FULL],
+                                  partial=out.reg[K_PARTIAL]))
+
+
+def qc_sheet_rows(ws: QcSheetLike) -> list:
+    """工作表 → 行清单(值元组)。"""
+    rows: list = []
+    for r in ws.iter_rows(values_only=True):
+        rows.append(r)
+    return rows
+
+
+def qcn_map_of(x: QcnMapIn) -> QcnMapOut:
+    """对照表两页 + 清单全文 → 逐 NOC 行 + 清单总数 + 问题(纯函数,自测直接喂行)。"""
+    problems: list = []
+    labels = qcn_labels_of(x.codes)
+    nocs: list = []
+    for r in x.rows[QCN_ROWS_SKIP:]:
+        if len(r) < 3 or QCN_NOC_RE.match(str(r[0]).strip()) is None:
+            continue
+        nocs.append(qcn_row_of(QcnRowIn(row=r, labels=labels, problems=problems)))
+    if len(nocs) != QCN_NOC_COUNT:
+        problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_ROWS))
+    reg = qcn_reg_of(QcnRegIn(pdf=x.pdf, problems=problems))
+    if len(problems) == 0:
+        full = qcn_count_kind(QcnKindIn(nocs=nocs, kinds=QCN_FULL_KINDS))
+        partial = qcn_count_kind(QcnKindIn(nocs=nocs, kinds=QCN_PARTIAL_KINDS))
+        qcn_cross_check(QcsCrossIn(what=QCN_WHAT_TOTAL, table=[full + partial], text=[reg[K_TOTAL]], problems=problems))
+        qcn_cross_check(QcsCrossIn(what=QCN_WHAT_FULL, table=[full], text=[reg[K_FULL]], problems=problems))
+        qcn_cross_check(QcsCrossIn(what=QCN_WHAT_PARTIAL, table=[partial], text=[reg[K_PARTIAL]], problems=problems))
+    return QcnMapOut(nocs=nocs, reg=reg, problems=problems)
+
+
+def qcn_labels_of(codes: list) -> dict:
+    """细分码说明页 → {码: 官方说明}(码格有空的行跳过;数字码 1 / 2 也转成字符串键)。"""
+    labels: dict = {}
+    for r in codes[QCN_CODES_SKIP:]:
+        if len(r) < 2 or r[0] is None:
+            continue
+        labels[str(r[0]).strip()] = fold_ws(str(r[1] or EMPTY_JOIN))
+    return labels
+
+
+def qcn_row_of(x: QcnRowIn) -> dict:
+    """一个 NOC → {noc, name, streams};细分码查不到说明或认不出类 → 记一条问题、这个码不落。"""
+    noc = str(x.row[0]).strip()
+    streams: list = []
+    for part in str(x.row[2]).split(QCN_CODE_SEP):
+        code = part.strip()
+        if code not in x.labels:
+            x.problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_CODE_TPL.format(code=code, noc=noc)))
+            continue
+        kind = qcn_kind_of(code)
+        stream = int_of(code.split(QCN_STREAM_SEP, 1)[0])
+        if kind is None or stream is None:
+            x.problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_KIND_TPL.format(code=code, noc=noc)))
+            continue
+        streams.append({K_STREAM: stream, K_CODE: code, K_KIND: kind, K_LABEL: x.labels[code]})
+    return {K_NOC: noc, K_NAME: fold_ws(str(x.row[1] or EMPTY_JOIN)), K_STREAMS: streams}
+
+
+def qcn_kind_of(code: str) -> str | None:
+    """细分码 → 类:只有通道号 → all;后缀在 QCN_KINDS 里照表;PNER + 编号 → 部分受监管;其余认不出 → None。"""
+    if QCN_STREAM_SEP not in code:
+        return QCN_KIND_BASE
+    suffix = code.split(QCN_STREAM_SEP, 1)[1]
+    if suffix in QCN_KINDS:
+        return QCN_KINDS[suffix]
+    if QCN_PNER_RE.match(suffix) is not None:
+        return QCN_KINDS[QCN_PNER_KEY]
+    return None
+
+
+def qcn_reg_of(x: QcnRegIn) -> dict:
+    """《受监管职业清单》开头的三个总数 + 版本日;认不出 → 记一条问题,数记 0。"""
+    total = QCN_TOTALS_RE.search(x.pdf)
+    full = QCN_FULL_RE.search(x.pdf)
+    partial = QCN_PARTIAL_RE.search(x.pdf)
+    version = QCN_VERSION_RE.search(x.pdf)
+    if total is None or full is None or partial is None or version is None:
+        x.problems.append(QCN_PROBLEM_TPL.format(what=QCN_WHAT_TOTALS))
+        return {K_TOTAL: 0, K_FULL: 0, K_PARTIAL: 0, K_VERSION: EMPTY_JOIN}
+    iso = qc_fr_iso_of(QcFrPartsIn(day=version.group(1), month=version.group(2), year=version.group(3),
+                                   page=QCN_WHAT_TOTALS, problems=x.problems))
+    return {K_TOTAL: int(total.group(1)), K_FULL: int(full.group(1)), K_PARTIAL: int(partial.group(1)), K_VERSION: iso}
+
+
+def qcn_count_kind(x: QcnKindIn) -> int:
+    """数有几个 NOC 带某几类细分码(通道 3 的交叉核对:整类受监管 / 部分受监管)。"""
+    n = 0
+    for row in x.nocs:
+        for s in row[K_STREAMS]:
+            if s[K_KIND] in x.kinds:
+                n += 1
+                break
+    return n
+
+
+def qcn_cross_check(x: QcsCrossIn) -> None:
+    """交叉核对:对照表里数出来的数与清单开头写的数逐数相同,不同 → 记一条问题。"""
+    if x.table != x.text:
+        x.problems.append(QCN_PROBLEM_CROSS_TPL.format(what=x.what, table=x.table, pdf=x.text))
+
+
+def qcn_stream_counts(nocs: list) -> dict:
+    """落盘报数用:每个通道有几个 NOC。"""
+    counts: dict = {1: 0, 2: 0, 3: 0}
+    for row in nocs:
+        seen: list = []
+        for s in row[K_STREAMS]:
+            if s[K_STREAM] in counts and s[K_STREAM] not in seen:
+                counts[s[K_STREAM]] += 1
+                seen.append(s[K_STREAM])
+    return counts
+
+
+# =========================================================================
+# 6. 魁省法语等级对照(2026-09-29 立,Frank「语言等级是不是统一用 CLB」:核下来统一不了,照录魁省官方对照表)
+# =========================================================================
+
+
+def build_qc_french_levels() -> None:
+    """法语等级对照入口:《考试分数 ↔ 魁省法语等级对照表》PDF(原件先落 crawl 层)→ raw/pnp/qc-french-levels.json。
+    逐「考试 × 技能」七档照录(魁省等级档、欧框级、分数上下限);任一条认不出 → 整份保留旧表。"""
+    say(PRINT_OUT_TPL.format(path=OUT_QC_FRENCH_LEVELS))
+    try:
+        text = pdf_text(fetch_bytes(FetchHtmlIn(url=QCF_PDF_URL, timeout_s=QCN_TIMEOUT_S)))
+    except Exception as e:  # noqa: BLE001 — 下载 / 解 PDF 失败:留痕后按自校失败收口(文件不动)
+        fail_zh([QCF_PROBLEM_FETCH_TPL.format(name=type(e).__name__, detail=e)])
+        return
+    out = qcf_levels_of(text)
+    if len(out.problems) > 0:
+        fail_zh(out.problems)
+        return
+    paths.write_json(paths.WriteJsonIn(path=OUT_QC_FRENCH_LEVELS, payload={
+        K_PROVINCE: PROV_QC, K_SOURCE: QCR_SOURCE, K_URL: QCF_PDF_URL, K_VERSION: out.version,
+        K_FETCHED: today_iso(), K_TESTS: out.tests,
+    }, indent=INDENT_2))
+    say(QCF_PRINT_DONE_TPL.format(path=OUT_QC_FRENCH_LEVELS, ver=out.version, tests=len(qcf_test_names(out.tests)),
+                                  rows=len(out.tests)))
+
+
+def qcf_levels_of(text: str) -> QcfOut:
+    """对照表全文 → 版本日 + 逐「考试 × 技能」七档 + 问题(纯函数,自测直接喂文本)。"""
+    problems: list = []
+    lines: list = []
+    for raw in text.splitlines():
+        if raw.strip() != EMPTY_JOIN:
+            lines.append(raw.strip())
+    version = qc_fr_date_of(QcFrDateIn(m=QCF_VERSION_RE.search(text), what=QCF_WHAT_VERSION, page=QCF_WHAT_BODY,
+                                       problems=problems))
+    levels = qcf_head_of(QcfHeadIn(lines=lines, head=QCF_LEVELS_HEAD, what=QCF_WHAT_LEVELS, problems=problems))
+    cefr = qcf_head_of(QcfHeadIn(lines=lines, head=QCF_CEFR_HEAD, what=QCF_WHAT_CEFR, problems=problems))
+    if QCF_BODY_HEAD not in lines or len(problems) > 0:
+        problems.append(QCF_PROBLEM_TPL.format(what=QCF_WHAT_BODY))
+        return QcfOut(version=version, tests=[], problems=problems)
+    body = lines[lines.index(QCF_BODY_HEAD) + 1:]
+    tests = qcf_rows_of(QcfBodyIn(lines=body, levels=levels, cefr=cefr, problems=problems))
+    n = len(qcf_test_names(tests))
+    if n < QCF_MIN_TESTS:
+        problems.append(QCF_PROBLEM_TPL.format(what=QCF_WHAT_TESTS_TPL.format(n=n)))
+    return QcfOut(version=version, tests=tests, problems=problems)
+
+
+def qcf_head_of(x: QcfHeadIn) -> list:
+    """找以行名开头的那一行,取其后七格;找不到或不足七格 → 记一条问题、交回空表。"""
+    for i, line in enumerate(x.lines):
+        if line.startswith(x.head):
+            cells = x.lines[i + 1:i + 1 + QCF_BANDS]
+            if len(cells) == QCF_BANDS:
+                return cells
+            break
+    x.problems.append(QCF_PROBLEM_TPL.format(what=x.what))
+    return []
+
+
+def qcf_rows_of(x: QcfBodyIn) -> list:
+    """正文逐行:非技能非分数的行拼成考试名(紧跟在分数格后面的第一行起一个新考试),技能行起一组,其后七格分数 →
+    一行。某项技能不足七格就遇到下一行文字 → 记一条问题。第 2 页顶上重印的表头到「Pointages obtenus aux tests」为止,
+    遇到这一行就把攒着的考试名清空(否则表头会拼进 DELF A1 的名字,首跑实撞)。"""
+    rows: list = []
+    name: list = []
+    after_scores = True
+    skill = EMPTY_JOIN
+    scores: list = []
+    for line in x.lines:
+        if line == QCF_BODY_HEAD:
+            name = []
+            after_scores = True
+            continue
+        if QCF_SKILL_RE.match(line) is not None:
+            skill = line
+            scores = []
+            continue
+        if skill != EMPTY_JOIN and QCF_SCORE_RE.match(line) is not None:
+            scores.append(line)
+            if len(scores) == QCF_BANDS:
+                bands = qcf_bands_of(QcfBandsIn(scores=scores, levels=x.levels, cefr=x.cefr))
+                if qcf_rising(bands) is False:
+                    x.problems.append(QCF_PROBLEM_TPL.format(what=QCF_WHAT_RISING_TPL.format(
+                        test=TEXT_JOIN_SEP.join(name), skill=skill)))
+                rows.append({K_TEST: TEXT_JOIN_SEP.join(name), K_SKILL: skill, K_BANDS: bands})
+                skill = EMPTY_JOIN
+                after_scores = True
+            continue
+        if skill != EMPTY_JOIN:
+            x.problems.append(QCF_PROBLEM_TPL.format(what=QCF_WHAT_SKILL_TPL.format(test=TEXT_JOIN_SEP.join(name),
+                                                                                    skill=skill)))
+            skill = EMPTY_JOIN
+        if after_scores:
+            name = []
+            after_scores = False
+        name.append(line)
+    if after_scores is False and len(name) > 0:
+        x.problems.append(QCF_PROBLEM_TPL.format(what=QCF_WHAT_ORPHAN_TPL.format(test=TEXT_JOIN_SEP.join(name))))
+    return rows
+
+
+def qcf_bands_of(x: QcfBandsIn) -> list:
+    """一项技能的七格 → 七档 {levelMin, levelMax, cefr, scoreMin, scoreMax}(只写一个数的格上下限相同)。"""
+    bands: list = []
+    for i in range(QCF_BANDS):
+        lv = QCF_LEVEL_RE.match(x.levels[i])
+        sc = QCF_SCORE_RE.match(x.scores[i])
+        bands.append({K_LEVEL_MIN: qcf_num_of(qcf_low_of(lv)), K_LEVEL_MAX: qcf_num_of(qcf_high_of(lv)),
+                      K_CEFR: x.cefr[i], K_SCORE_MIN: qcf_num_of(qcf_low_of(sc)),
+                      K_SCORE_MAX: qcf_num_of(qcf_high_of(sc))})
+    return bands
+
+
+def qcf_rising(bands: list) -> bool:
+    """七档里有数的格必须逐档递增(下一档下限 > 上一档上限);不递增 = 少了一格、把别处的数(如下一页页码「2」)吞成了
+    分数格 —— 变异探针实撞:TEF 一组少一格时页码被当第七格,格数自校拦不住。"""
+    prev = None
+    for b in bands:
+        if b[K_SCORE_MIN] is None:
+            continue
+        if prev is not None and b[K_SCORE_MIN] <= prev:
+            return False
+        prev = b[K_SCORE_MAX]
+    return True
+
+
+def qcf_low_of(m: re.Match | None) -> str | None:
+    """「7-8」「400-499」「1」「12,5-25」的下限原文;认不出或「-」(不适用)→ None。"""
+    if m is None:
+        return None
+    return m.group(1)
+
+
+def qcf_high_of(m: re.Match | None) -> str | None:
+    """上限原文(只写一个数时同下限);认不出或「-」→ None。"""
+    if m is None or m.group(1) is None:
+        return None
+    if m.group(2) is None:
+        return m.group(1)
+    return m.group(2)
+
+
+def qcf_num_of(s: str | None) -> int | float | None:
+    """格子原文 → 数:整数给 int,「12,5」给 12.5;None 照给 None。"""
+    if s is None:
+        return None
+    n = float(s.replace(QCF_DECIMAL_COMMA, QCF_DECIMAL_POINT))
+    if n.is_integer():
+        return int(n)
+    return n
+
+
+def qcf_test_names(tests: list) -> list:
+    """考试名去重(报数与自校用)。"""
+    names: list = []
+    for t in tests:
+        if t[K_TEST] not in names:
+            names.append(t[K_TEST])
+    return names
+
+
+# =========================================================================
+# 7. 自测入口
 # =========================================================================
 
 
@@ -767,5 +1087,7 @@ def run_qc_tests() -> None:
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcExerciseTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcPlanTest))
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcReqTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcNocTest))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(QcFrenchTest))
     if unittest.TextTestRunner(verbosity=TEST_VERBOSITY).run(suite).wasSuccessful() is False:
         sys.exit(1)

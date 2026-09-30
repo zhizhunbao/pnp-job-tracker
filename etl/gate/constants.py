@@ -132,12 +132,14 @@ cms 同口径的闸 = eslint max-lines(cms/eslint.config.mjs)。"""
 
 OVERSIZE_KNOWN = ("ats/functions.py", "company/functions.py", "crawl/functions.py", "fcip/functions.py",
                   "ircc/functions.py", "jobbank/functions.py", "mart/functions.py", "noc/functions.py",
-                  "pnp/functions.py", "pte/functions.py", "rcip/functions.py")
+                  "pnp/functions.py", "pnp/qc/functions.py", "pte/functions.py", "rcip/functions.py")
 """⑪号规的存量名单:立闸当天超线的 11 件(同日 Frank「先不拆」—— 只立闸,一件不拆)。
 名单上的件放行;名单只记「超了」不记超多少,照样能长(登记时:pnp 7789 / mart 6910 / company 3175 /
 pte 3126 / jobbank 1953 / rcip 1939 / crawl 1624 / noc 1397 / ircc 1263 / ats 1165 / fcip 1035 行)。
 拆到线下的件不删名单也红(OVERSIZE_STALE_TPL)—— 只紧不松。不走 etl_shape_baseline.json:批O 起账本文件
-已退役,再建会撞⑩号规(域里只许五件套名字)。拆法(子域形制)还没有样张,首例先问 Frank。"""
+已退役,再建会撞⑩号规(域里只许五件套名字)。拆法(子域形制)还没有样张,首例先问 Frank。
+2026-09-29 加 pnp/qc/functions.py(1093 行):按省拆的首例子域,补齐魁省门槛 / 计划 / 职业对照 / 法语对照后超线;
+问过拆法(参考表另立同级子域 或 按项目拆 pstq / peq),Frank「不拆先」—— 登记放行,拆到线下时删这一条。"""
 
 IMPORT_RE = re.compile(r"^(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 """①号规:行首 import/from 的首段模块名。"""

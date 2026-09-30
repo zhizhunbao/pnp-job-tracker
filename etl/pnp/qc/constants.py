@@ -584,3 +584,240 @@ QCS_WHAT_ADM = "5.2.2 计划入境数"
 
 QCS_PRINT_DONE_TPL = "✓ {path}  计划年 {year}  甄选 {sel} 行  入境 {adm} 行(本年计划甄选 {smin}–{smax},入境 {amin}–{amax})"
 """落盘报数。"""
+
+# =========================================================================
+# 5. PSTQ 职业 → 通道对照(2026-09-29 立,Frank「开工」:焊工能走几个通道要按官方对照,不按 TEER 推)
+# =========================================================================
+
+QCN_XLSX_URL = "https://cdn-contenu.quebec.ca/cdn-contenu/immigration/progTQ/anglais/Outil_ProgTQ_WebCNP_MIFI_version_anglais.xlsx"
+"""官方「按 NOC 查 PSTQ 通道」工具的数据表(英文版)。URL 不是猜的:取自 quebec.ca「Find the NOC code for your primary
+occupation and the corresponding stream」页里查询组件的配置 xlsRelativePath(页上工具就读这份)。原件经 fetch_bytes
+先落 crawl 层。全部 516 个 NOC 逐个写明可进哪个通道(1 / 2 / 3,带「只限某些工作」「要公民 / 永居身份」「要魁省学历」
+等细分码),比按 TEER 推准:受监管职业、部分受监管职业只有这份表说得清。
+⚠ 表的首页是联系人信息(官方标「内部工作文档」),只读对照两页,联系人一格不收。"""
+
+QCN_REGULATED_PDF_URL = "https://cdn-contenu.quebec.ca/cdn-contenu/immigration/formulaires/fr/PSTQ/LIS_PSTQ_PTA_Professions_reglementees.pdf"
+"""《受监管职业清单》(Liste des professions réglementées,每年 1 月 31 日更新、年中可调)。URL 取自 PSTQ 门槛页通道 3 段的链接。
+本步只读它开头的三个总数(共几个 NOC、整类受监管几个、部分受监管几个),与对照表通道 3 的码数交叉核对。"""
+
+OUT_QC_NOC_STREAMS = paths.PNP / "qc-noc-streams.json"
+"""职业 → 通道对照落盘处(暂不进 mart;岗位对通道、门槛卡选哪几张,等展示拍板再接)。
+⚠ 顶层不许有 occupations 键 —— mart 评分段目录驱动扫 raw/pnp/*.json,带这个键会被当成清单表读(pnp 常量
+OUT_DRAWS_FILE_TPL 的同款提醒),本表用 nocs。"""
+
+QCN_SHEET_ROWS = "3Contenu"
+"""对照表里逐 NOC 那一页。"""
+
+QCN_SHEET_CODES = "4Configuration"
+"""对照表里「通道细分码 → 官方说明」那一页。"""
+
+QCN_ROWS_SKIP = 4
+"""逐 NOC 那一页前几行是标题 / 表头(官方排版:标题、空行、列名、Streams 小标)。"""
+
+QCN_CODES_SKIP = 3
+"""细分码那一页前几行是标题 / 表头。"""
+
+QCN_CODE_SEP = ","
+"""一格里多个细分码的分隔(「1, 3-PNER16」)。"""
+
+QCN_STREAM_SEP = "-"
+"""细分码的通道号在第一个「-」之前(「3-PNER16」→ 3)。"""
+
+QCN_NOC_RE = re.compile(r"^\d{5}$")
+"""NOC 五位码。"""
+
+QCN_KIND_BASE = "all"
+"""细分码的类:该职业的工作都进这个通道(码只有通道号,如「1」)。"""
+
+QCN_KINDS = {"CC": "citizenOnly", "RP": "residentOnly", "PER": "regulated", "PER-DQ": "regulatedQcDiploma",
+             "PNER": "partlyRegulated"}
+"""细分码后缀 → 类:CC 要加拿大公民才能做(不发邀请)、RP 要永久居民才能做(不发邀请)、PER 整类受监管、
+PER-DQ 整类受监管且要魁省学历、PNER 部分受监管(只有码说明里点名的工作受监管;码后带编号,取前缀判类)。
+官方原文在细分码那一页的说明列,落盘时照录 label。"""
+
+QCN_PNER_RE = re.compile(r"^PNER\d+(?:-DQ)?$")
+"""部分受监管码(PNER + 编号;PNER5-DQ 那条另带魁省学历要求,类仍按部分受监管,说明照录)。"""
+
+QCN_PNER_KEY = "PNER"
+"""QCN_KINDS 里部分受监管那一类的键(PNER + 编号的码统一按它判类)。"""
+
+QCN_FULL_KINDS = ("regulated", "regulatedQcDiploma")
+"""整类受监管的两类(与清单开头「entièrement réglementées」的数核对)。"""
+
+QCN_PARTIAL_KINDS = ("partlyRegulated",)
+"""部分受监管的类(与清单开头「non entièrement réglementées」的数核对)。"""
+
+QCN_TOTALS_RE = re.compile(r"Cette liste comprend (\d+) professions")
+"""《受监管职业清单》开头:共几个 NOC。"""
+
+QCN_FULL_RE = re.compile(r"(\d+) professions CNP « entièrement réglementées »")
+"""《受监管职业清单》开头:整类受监管几个。"""
+
+QCN_PARTIAL_RE = re.compile(r"(\d+) professions CNP « non entièrement réglementées »")
+"""《受监管职业清单》开头:部分受监管几个。"""
+
+QCN_VERSION_RE = re.compile(r"version du (\d{1,2}) (\w+) (\d{4})")
+"""《受监管职业清单》版本日(「version du 28 août 2026」)。"""
+
+QCN_TIMEOUT_S = 60
+"""两份原件的下载超时。"""
+
+K_CODE = "code"
+"""官方细分码原文(「3-PNER16」)。"""
+
+K_REGULATED_LIST = "regulatedList"
+"""《受监管职业清单》的三个总数与版本日(交叉核对用,照录)。"""
+
+K_FULL = "full"
+"""整类受监管几个。"""
+
+K_VERSION = "version"
+"""版本日(ISO)。"""
+
+QCN_STREAM3 = 3
+"""受监管职业通道号(交叉核对只数这个通道)。"""
+
+QCN_PROBLEM_TPL = "PSTQ 职业对照认不出:{what}"
+"""自校问题行(任一条认不出或对不上 → 整份保留旧表)。"""
+
+QCN_PROBLEM_FETCH_TPL = "PSTQ 职业对照原件取不到:{name} {detail}"
+"""下载 / 解析失败。"""
+
+QCN_PROBLEM_CROSS_TPL = "PSTQ 职业对照:对照表通道 3 {what} {table} ≠ 受监管职业清单 {pdf}(两份官方文件没同步或解析错,整份保留旧表)"
+"""交叉核对不一致。"""
+
+QCN_WHAT_CODE_TPL = "细分码「{code}」不在说明页(NOC {noc})"
+"""问题行条目:码查不到说明。"""
+
+QCN_WHAT_KIND_TPL = "细分码「{code}」认不出类(NOC {noc})"
+"""问题行条目:码后缀认不出。"""
+
+QCN_WHAT_ROWS = "逐 NOC 页行数"
+"""问题行条目:行数不对。"""
+
+QCN_WHAT_TOTALS = "受监管职业清单开头的总数句"
+"""问题行条目:清单总数句。"""
+
+QCN_WHAT_TOTAL = "受监管 NOC 总数"
+"""交叉核对条目。"""
+
+QCN_WHAT_FULL = "整类受监管数"
+"""交叉核对条目。"""
+
+QCN_WHAT_PARTIAL = "部分受监管数"
+"""交叉核对条目。"""
+
+QCN_NOC_COUNT = 516
+"""NOC 2021 的职业总数(对照页原句「In total, it list 516 occupations」);逐 NOC 页行数必须等于它。"""
+
+QCN_PRINT_DONE_TPL = "✓ {path}  {n} 个 NOC(通道 1 {s1} / 2 {s2} / 3 {s3};受监管清单 {ver} 版 {total} = {full} + {partial})"
+"""落盘报数。"""
+
+# =========================================================================
+# 6. 魁省法语等级对照(2026-09-29 立,Frank「语言等级是不是统一用 CLB」:核下来统一不了,照录魁省官方对照表)
+# =========================================================================
+
+QCF_PDF_URL = "https://cdn-contenu.quebec.ca/cdn-contenu/immigration/formulaires/fr/PSTQ/TAB_PSTQ_Correspondance_niveaux_francais.pdf"
+"""《考试分数 ↔ 魁省法语等级对照表》(Tableaux de correspondance)。URL 取自 PSTQ「Demonstrate your knowledge of French」页的
+「result correspondence tables」链接。原件经 fetch_bytes 先落 crawl 层。
+为什么不折成 CLB / NCLC:魁省按考试分数粗分档(7、8 级共用一档),同一档在联邦 NCLC 表里跨好几级、且因考试而异 ——
+TEF Canada 口语表达 400 分起算魁省 7 级,联邦表里 400 分是 NCLC 5(387–421),NCLC 7 要 456 分;TCF Canada 口语 10 分起
+算魁省 7 级,联邦表里 10–11 分正是 NCLC 7(联邦表见 canada.ca PGWP「language-results」页,2026-09-29 核)。
+所以门槛照录魁省级数,显示时灰字挂各考试的分数线,不写成 CLB。"""
+
+OUT_QC_FRENCH_LEVELS = paths.PNP / "qc-french-levels.json"
+"""法语等级对照落盘处(暂不进 mart)。"""
+
+QCF_VERSION_RE = re.compile(r"\(Version du (\d{1,2}) (\w+) (\d{4})\)")
+"""对照表版本日(「(Version du 29 novembre 2024)」)。"""
+
+QCF_LEVELS_HEAD = "Niveaux de l’Échelle québécoise"
+"""魁省等级那一行的行名(其后 7 格是等级档:1-2 / 3 / 4 / 5-6 / 7-8 / 9-10 / 11-12)。"""
+
+QCF_CEFR_HEAD = "Niveaux du Cadre européen commun de référence pour les langues"
+"""欧框那一行的行名(其后 7 格是欧框级:A1 / A2 / A2 / B1 / B2 / C1 / C2)。"""
+
+QCF_BODY_HEAD = "Pointages obtenus aux tests"
+"""分数表正文从这一行之后开始。"""
+
+QCF_BANDS = 7
+"""等级档数(每个考试每项技能 7 格分数)。"""
+
+QCF_SKILL_RE = re.compile(r"^(?:Compréhension|Expression|Épreuve) ")
+"""技能行(「Compréhension orale et écrite」「Expression orale」…;DALF C2 写「Épreuve synthèse orale / écrite」,
+首跑漏认、整组静默丢,补上并加「有考试名没出行」的自校)。"""
+
+QCF_WHAT_RISING_TPL = "「{test}」{skill} 的七格分数不是逐档递增(少了一格、吞了别处的数?)"
+"""问题行条目:分数不递增。"""
+
+QCF_WHAT_ORPHAN_TPL = "「{test}」读到了考试名却没解析出一行分数(技能行写法变了?)"
+"""问题行条目:考试名后面没有任何技能组。"""
+
+QCF_SCORE_RE = re.compile(r"^(?:-|(\d{1,3}(?:,\d)?)(?:-(\d{1,3}(?:,\d)?))?)$")
+"""分数格:「400-499」;TCF 表达只写一个数「1」;第 2 页 DELF / DALF 表带小数逗号「12,5-25」,不适用的档写「-」(上下限都记空)。"""
+
+QCF_DECIMAL_COMMA = ","
+"""法文小数逗号(「12,5」)。"""
+
+QCF_DECIMAL_POINT = "."
+"""换成小数点再转数。"""
+
+QCF_LEVEL_RE = re.compile(r"^(\d{1,2})(?:-(\d{1,2}))?$")
+"""等级档(「7-8」「3」)。"""
+
+QCF_MIN_TESTS = 5
+"""至少认出几个考试(对照表现有 TEF / TEFAQ、TEF Canada 两版、TCF / TCF-Québec、TCF Canada 五组)。"""
+
+K_TESTS = "tests"
+"""考试清单。"""
+
+K_TEST = "test"
+"""考试名(原文,含「avant / à partir du 11 décembre 2023」版本注)。"""
+
+K_SKILL = "skill"
+"""技能名(原文)。"""
+
+K_BANDS = "bands"
+"""七档:{levelMin, levelMax, cefr, scoreMin, scoreMax}。"""
+
+K_LEVEL_MIN = "levelMin"
+"""这一档的魁省等级下限。"""
+
+K_LEVEL_MAX = "levelMax"
+"""这一档的魁省等级上限。"""
+
+K_CEFR = "cefr"
+"""这一档的欧框级。"""
+
+K_SCORE_MIN = "scoreMin"
+"""这一档的分数下限。"""
+
+K_SCORE_MAX = "scoreMax"
+"""这一档的分数上限(只写一个数的档,上下限相同)。"""
+
+QCF_PROBLEM_TPL = "魁省法语对照表认不出:{what}"
+"""自校问题行(任一条认不出 → 整份保留旧表)。"""
+
+QCF_PROBLEM_FETCH_TPL = "魁省法语对照表取不到:{name} {detail}"
+"""下载 / 解析失败。"""
+
+QCF_WHAT_VERSION = "版本日"
+"""问题行条目。"""
+
+QCF_WHAT_LEVELS = "魁省等级行"
+"""问题行条目。"""
+
+QCF_WHAT_CEFR = "欧框行"
+"""问题行条目。"""
+
+QCF_WHAT_BODY = "分数表正文"
+"""问题行条目。"""
+
+QCF_WHAT_SKILL_TPL = "「{test}」{skill} 的分数格不是 7 格"
+"""问题行条目。"""
+
+QCF_WHAT_TESTS_TPL = "只认出 {n} 个考试"
+"""问题行条目。"""
+
+QCF_PRINT_DONE_TPL = "✓ {path}  {ver} 版  {tests} 个考试 {rows} 行"
+"""落盘报数。"""

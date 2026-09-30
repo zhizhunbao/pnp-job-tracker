@@ -45,7 +45,10 @@ from pnp.functions import (
     scrape_nb_stats, scrape_nl_stats,
 )
 # 2026-09-29 魁省拆成 pnp/qc 子域(按省拆首例),本门从子域取步骤
-from pnp.qc.functions import build_qc_draws, build_qc_peq_req, build_qc_req, build_qc_stats, run_qc_tests
+from pnp.qc.functions import (
+    build_qc_draws, build_qc_french_levels, build_qc_noc_streams, build_qc_peq_req, build_qc_req, build_qc_stats,
+    run_qc_tests,
+)
 
 UNITS = {
     "pnp_ab": [("ab", build_ab), ("ab_req", build_ab_req), ("ab_stats", build_ab_stats)],
@@ -63,7 +66,8 @@ UNITS = {
     "pnp_pe": [("pe", build_pe), ("pe_aip", build_pe_aip), ("pe_req", build_pe_req), ("pe_iidi", scrape_pe_iidi)],
     "pnp_on": [("on_workforce", watch_on_workforce), ("on_req", build_on_req), ("on_points", build_on_points),
                ("on_stats", build_on_stats)],
-    "pnp_qc": [("qc_req", build_qc_req), ("qc_peq_req", build_qc_peq_req), ("qc_stats", build_qc_stats)],
+    "pnp_qc": [("qc_req", build_qc_req), ("qc_peq_req", build_qc_peq_req), ("qc_stats", build_qc_stats),
+               ("qc_noc_streams", build_qc_noc_streams), ("qc_french_levels", build_qc_french_levels)],
     "pnp_draws_ab": [("draws_ab", build_ab_draws)],
     "pnp_draws_bc": [("draws_bc", build_bc_draws)],
     "pnp_draws_mb": [("draws_mb", build_mb_draws)],
@@ -193,6 +197,8 @@ TOOLS = {
     "qc_req": build_qc_req,
     "qc_peq_req": build_qc_peq_req,
     "qc_stats": build_qc_stats,
+    "qc_noc_streams": build_qc_noc_streams,
+    "qc_french_levels": build_qc_french_levels,
     "mb_draw_pages": fetch_mb_draw_pages,
     "bc_draw_archive": fetch_bc_draw_archive,
     "ns_allocations": scrape_ns_allocations,

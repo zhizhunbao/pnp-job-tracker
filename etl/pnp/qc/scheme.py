@@ -8,7 +8,9 @@ pnp/qc 子域行形状(一参令 XxxIn / 单返回值 XxxOut;同 pnp/scheme.py �
 """
 import re
 import unittest
+from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import Protocol
 
 # =========================================================================
 # 1. PSTQ 邀请轮次(2026-09-29 自 pnp/scheme.py 原样搬来;同日加逐档解析)
@@ -338,7 +340,159 @@ class QcsRowIn:
 
 
 # =========================================================================
-# 5. 自测(unittest 要求以 TestCase 子类交付用例 —— 「不用 class」的外部库例外,同 pnp/scheme.py;
+# 5. PSTQ 职业 → 通道对照(2026-09-29 立)
+# =========================================================================
+
+
+class QcSheetLike(Protocol):
+    """openpyxl 工作表形 —— Protocol 自声明只真用的格(ircc/scheme.py SheetLike 先例;scheme 不 import openpyxl,装配点 cast)。"""
+
+    def iter_rows(self, *, values_only: bool) -> Iterator[tuple]:
+        """逐行,每行是各格的值元组。"""
+        ...
+
+
+class QcBookLike(Protocol):
+    """openpyxl 工作簿形:只用按页名取页。"""
+
+    def __getitem__(self, name: str) -> QcSheetLike:
+        """按页名取一页;页名不在即官方改版,KeyError 在入口接住按自校失败收口。"""
+        ...
+
+
+@dataclass
+class QcnMapIn:
+    """qcn_map_of() 入参:对照表两页的行 + 受监管职业清单全文。"""
+
+    rows: list
+    """逐 NOC 那一页的行(值元组)。"""
+
+    codes: list
+    """细分码说明那一页的行。"""
+
+    pdf: str
+    """《受监管职业清单》PDF 全文。"""
+
+
+@dataclass
+class QcnMapOut:
+    """qcn_map_of() 产出:逐 NOC 行 + 受监管清单总数 + 问题(有问题时两者照给,调用方见问题即不落盘)。"""
+
+    nocs: list
+    """逐 NOC 行:{noc, name, streams: [{stream, code, kind, label}]}。"""
+
+    reg: dict
+    """受监管职业清单的三个总数与版本日。"""
+
+    problems: list
+    """自校问题行。"""
+
+
+@dataclass
+class QcnRowIn:
+    """qcn_row_of() 入参:一个 NOC 的对照行。"""
+
+    row: tuple
+    """逐 NOC 页的一行(NOC、职业名、细分码格)。"""
+
+    labels: dict
+    """细分码 → 官方说明。"""
+
+    problems: list
+    """问题行(就地追加)。"""
+
+
+
+@dataclass
+class QcnRegIn:
+    """qcn_reg_of() 入参:受监管职业清单全文。"""
+
+    pdf: str
+    """PDF 全文。"""
+
+    problems: list
+    """认不出时往这里记一条问题。"""
+
+
+@dataclass
+class QcnKindIn:
+    """qcn_count_kind() 入参:数带某几类细分码的 NOC。"""
+
+    nocs: list
+    """逐 NOC 行。"""
+
+    kinds: tuple
+    """要数的类。"""
+
+# =========================================================================
+# 6. 魁省法语等级对照(2026-09-29 立)
+# =========================================================================
+
+
+@dataclass
+class QcfOut:
+    """qcf_levels_of() 产出:版本日 + 考试行 + 问题。"""
+
+    version: str
+    """对照表版本日(ISO;认不出为空串)。"""
+
+    tests: list
+    """逐「考试 × 技能」一行:{test, skill, bands: 七档}。"""
+
+    problems: list
+    """自校问题行。"""
+
+
+@dataclass
+class QcfHeadIn:
+    """qcf_head_of() 入参:在行清单里找一个行名,取其后七格。"""
+
+    lines: list
+    """PDF 全文按行切、去空行后的清单。"""
+
+    head: str
+    """行名(前缀匹配)。"""
+
+    what: str
+    """条目名(问题行里用)。"""
+
+    problems: list
+    """找不到或不足七格时往这里记一条问题。"""
+
+
+@dataclass
+class QcfBodyIn:
+    """qcf_rows_of() 入参:分数表正文逐行 + 表头两行(魁省等级档、欧框级)。"""
+
+    lines: list
+    """正文行(QCF_BODY_HEAD 之后)。"""
+
+    levels: list
+    """七个魁省等级档原文。"""
+
+    cefr: list
+    """七个欧框级原文。"""
+
+    problems: list
+    """问题行(就地追加)。"""
+
+
+@dataclass
+class QcfBandsIn:
+    """qcf_bands_of() 入参:一项技能的七格分数 + 表头两行。"""
+
+    scores: list
+    """七格分数原文。"""
+
+    levels: list
+    """七个魁省等级档原文。"""
+
+    cefr: list
+    """七个欧框级原文。"""
+
+
+# =========================================================================
+# 7. 自测(unittest 要求以 TestCase 子类交付用例 —— 「不用 class」的外部库例外,同 pnp/scheme.py;
 #    跑法 `python etl/pnp/main.py --only test_qc`,`--only test` 连 pnp 共用段一起跑)
 # =========================================================================
 
@@ -522,3 +676,116 @@ class QcReqTest(unittest.TestCase):
         self.assertEqual(qc_fr_iso_of(QcFrPartsIn(day="19", month="brumaire", year="2025", page="p",
                                                   problems=problems)), "")
         self.assertEqual(len(problems), 1)
+
+
+class QcNocTest(unittest.TestCase):
+    """职业 → 通道对照(2026-09-29):细分码判类金标(官方码原样)+ 交叉核对变异探针(清单总数改一个即拦)+ 查不到说明的码记问题。"""
+
+    CODES = [("t",), (None,), ("id", "libelle"), (1, "Stream 1: High qualification and specialized skills "),
+             (2, "Stream 2: Intermediate and manual skills "),
+             ("2-CC", "Stream 2 (no invitation because Canadian citizenship is required to access jobs)"),
+             ("3-PER", "Stream 3: Regulated professions "),
+             ("3-PNER16", "Stream 3: Regulated professions (in the construction sector only, welders …)")]
+    """细分码说明页(前三行是标题 / 表头,照官方排版)。"""
+
+    PDF = ("(version du 28 août 2026) Cette liste comprend 2 professions de la CNP … • 1 professions CNP « entièrement "
+           "réglementées », soit … • 1 professions CNP « non entièrement réglementées », soit …")
+    """受监管职业清单开头三句(数字改成与用例行对得上)。"""
+
+    def rows_of(self) -> list:
+        """逐 NOC 页:前四行标题,后三行 NOC(补齐到 516 行由用例自己控制)。"""
+        return [("t",), (None,), ("NOC Code",), (None,), ("72106", "Welders", "1, 3-PNER16"),
+                ("31301", "Registered Nurses", "3-PER"), ("14101", "Receptionists", 2)]
+
+    def test_kinds(self) -> None:
+        """判类:只有通道号 → all;PER → regulated;PNER16 → partlyRegulated;CC → citizenOnly;认不出 → None。"""
+        from pnp.qc.functions import qcn_kind_of
+        self.assertEqual(qcn_kind_of("1"), "all")
+        self.assertEqual(qcn_kind_of("3-PER"), "regulated")
+        self.assertEqual(qcn_kind_of("3-PER-DQ"), "regulatedQcDiploma")
+        self.assertEqual(qcn_kind_of("3-PNER16"), "partlyRegulated")
+        self.assertEqual(qcn_kind_of("3-PNER5-DQ"), "partlyRegulated")
+        self.assertEqual(qcn_kind_of("2-CC"), "citizenOnly")
+        self.assertIsNone(qcn_kind_of("3-XYZ"))
+
+    def test_welder_row(self) -> None:
+        """金标:焊工两条通道(1 全部 / 3 部分受监管),说明照录;行数不足 516 记一条问题。"""
+        from pnp.qc.functions import qcn_map_of
+        out = qcn_map_of(QcnMapIn(rows=self.rows_of(), codes=self.CODES, pdf=self.PDF))
+        welder = out.nocs[0]
+        self.assertEqual([(s["stream"], s["kind"]) for s in welder["streams"]], [(1, "all"), (3, "partlyRegulated")])
+        self.assertEqual(out.nocs[2]["streams"][0]["stream"], 2)
+        self.assertEqual(len(out.problems), 1)
+
+    def test_cross_check(self) -> None:
+        """变异探针:行数够时,清单写的整类受监管数改一个 → 交叉核对拦下。"""
+        from pnp.qc.functions import qcn_map_of
+        rows = self.rows_of()
+        for i in range(513):
+            rows.append((f"{90000 + i}", "Filler", 2))
+        ok = qcn_map_of(QcnMapIn(rows=rows, codes=self.CODES, pdf=self.PDF))
+        self.assertEqual(ok.problems, [])
+        bad = qcn_map_of(QcnMapIn(rows=rows, codes=self.CODES, pdf=self.PDF.replace("• 1 professions CNP « entièrement",
+                                                                                    "• 2 professions CNP « entièrement")))
+        self.assertEqual(len(bad.problems), 1)
+
+    def test_unknown_code(self) -> None:
+        """细分码在说明页查不到 → 记一条问题,这个码不落。"""
+        from pnp.qc.functions import qcn_row_of
+        problems: list = []
+        row = qcn_row_of(QcnRowIn(row=("99999", "X", "1, 3-PNER99"), labels={"1": "Stream 1"}, problems=problems))
+        self.assertEqual(len(row["streams"]), 1)
+        self.assertEqual(len(problems), 1)
+
+
+class QcFrenchTest(unittest.TestCase):
+    """法语等级对照(2026-09-29):真排版金标(TEF 一组 + 第 2 页重印表头 + DELF 带「-」与小数逗号 + DALF C2「Épreuve」
+    技能名)+ 变异探针(少一格 → 记问题;技能名改写认不出 → 「有考试名没出行」拦下)。纯函数用例。"""
+
+    HEAD = ("(Version du 29 novembre 2024)\nNiveaux du Cadre européen commun de référence pour les langues\nA1\nA2\nA2\nB1\n"
+            "B2\nC1\nC2\nNiveaux de l’Échelle québécoise\n1-2\n3\n4\n5-6\n7-8\n9-10\n11-12\nTest standardisé/Épreuve\n"
+            "Pointages obtenus aux tests\n")
+    """第 1 页表头(照 PDF 排版一格一行)。"""
+
+    TEF = "TEF-Canada\n(à partir du 11 décembre 2023)\nExpression orale\n100-199\n200-259\n260-299\n300-399\n400-499\n500-599\n600-699\n"
+    """TEF Canada 新版口语表达一组。"""
+
+    PAGE2 = ("2\nNiveaux de l’Échelle québécoise\n1-2\n3\n4\n5 - 6\n7 - 8\n9 - 10\n11 - 12\nTest standardisé/Épreuve\n"
+             "Pointages obtenus aux tests\nDELF B2\nCompréhension et production orales\n-\n-\n-\n-\n12,5-25\n-\n-\n")
+    """第 2 页:重印表头 + DELF B2 一组(不适用写「-」、小数逗号)。"""
+
+    DALF = "DALF C2\nÉpreuve synthèse orale\n-\n-\n-\n-\n-\n-\n25-50\n"
+    """DALF C2(技能名写「Épreuve」)。"""
+
+    def test_gold(self) -> None:
+        """金标:TEF 7-8 级档 400–499;DELF B2 7-8 级档 12.5–25、其余档空;DALF C2 11-12 级档 25–50;考试名不混进表头。
+        用例只放三个考试,「至少认出 5 个考试」那道自校照样记一条(这正是它该拦的),其余无问题。"""
+        from pnp.qc.functions import qcf_levels_of
+        out = qcf_levels_of(self.HEAD + self.TEF + self.PAGE2 + self.DALF)
+        self.assertEqual(len(out.problems), 1)
+        self.assertIn("只认出 3 个考试", out.problems[0])
+        self.assertEqual(out.version, "2024-11-29")
+        names = [t["test"] for t in out.tests]
+        self.assertEqual(names, ["TEF-Canada (à partir du 11 décembre 2023)", "DELF B2", "DALF C2"])
+        tef = out.tests[0]["bands"][4]
+        self.assertEqual((tef["levelMin"], tef["levelMax"], tef["scoreMin"], tef["scoreMax"], tef["cefr"]), (7, 8, 400, 499, "B2"))
+        delf = out.tests[1]["bands"]
+        self.assertEqual((delf[4]["scoreMin"], delf[4]["scoreMax"]), (12.5, 25))
+        self.assertIsNone(delf[0]["scoreMin"])
+        self.assertEqual(out.tests[2]["bands"][6]["scoreMax"], 50)
+
+    def test_short_skill(self) -> None:
+        """变异探针:TEF 那组少一格 → 记问题。"""
+        from pnp.qc.functions import qcf_levels_of
+        out = qcf_levels_of(self.HEAD + self.TEF.replace("600-699\n", "") + self.PAGE2 + self.DALF)
+        self.assertGreater(len(out.problems), 1)
+
+    def test_orphan_name(self) -> None:
+        """变异探针:DALF C2 的技能名换成认不出的写法 → 「有考试名没出行」拦下,不静默丢。"""
+        from pnp.qc.functions import qcf_levels_of
+        out = qcf_levels_of(self.HEAD + self.TEF + self.PAGE2 + self.DALF.replace("Épreuve synthèse orale", "Synthèse orale"))
+        orphan = []
+        for pr in out.problems:
+            if "没解析出一行分数" in pr:
+                orphan.append(pr)
+        self.assertEqual(len(orphan), 1)
