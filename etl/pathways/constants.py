@@ -63,7 +63,7 @@ PW_AB_OPPORTUNITY = {
     "plainZh": "AB 机会通道", "plainEn": "AB Opportunity", "plainKo": "AB 오퍼튜니티 스트림",
     "officialName": "Alberta Opportunity Stream",
     "boardLabel": None, "isDefault": True,
-    "drawStreams": ["Alberta Opportunity Stream"],
+    "drawStreams": ["Alberta Opportunity Stream", "Alberta Opportunity Stream – Priority Sectors"],
     "reqStreams": ["AAIP Alberta Opportunity Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Alberta Opportunity Stream",
     "occLabels": [],
@@ -77,7 +77,9 @@ PW_AB_OPPORTUNITY = {
 抽选组同名(components/pnp GEN_DRAW_STREAM 原注「AB 机会通道(官网 Alberta Opportunity Stream,抽选组同名)」);
 门槛流照 GEN_REQ_STREAMS 的 AB 行(2026-09-27 门槛卡批一,Frank「用本岗通道的门槛,开工」);配额行 = aaip-processing-information
 页的通道行(抽选组名小写与配额键逐字相等,前端原先靠这条隐式规则配上;这里写明,不再靠碰巧同名)。
-英文界面现显示官方原名(pnp.gen.AB = Alberta Opportunity Stream),plainEn 是批二要换上的直白名。"""
+英文界面现显示官方原名(pnp.gen.AB = Alberta Opportunity Stream),plainEn 是批二要换上的直白名。
+2026-09-30 通道补全批二:抽选组加认领「Alberta Opportunity Stream – Priority Sectors」(轮次名写明属机会通道,批一清点时是无主组;
+阿省默认岗的抽选卡本岗高亮随之多这一组)。"""
 
 # 2026-09-29 七省门槛卡合并(Frank「都接上,开工吧」):阿省六条通道的 reqStreams 都在末尾挂上雇主门槛所在的
 # 「AAIP (job offer & employer requirements, all streams)」—— 门槛卡雇主行改读本通道登记的流(原读全省,曼省唯一的雇主行属

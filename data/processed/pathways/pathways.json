@@ -12,7 +12,8 @@
       "boardLabel": null,
       "isDefault": true,
       "drawStreams": [
-        "Alberta Opportunity Stream"
+        "Alberta Opportunity Stream",
+        "Alberta Opportunity Stream – Priority Sectors"
       ],
       "reqStreams": [
         "AAIP Alberta Opportunity Stream",

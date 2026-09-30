@@ -5,7 +5,7 @@ pathways 域函数 —— 全部行为住这(照 citations / indexing 样张,方
 有一处对不上就逐条报红、sys.exit(1)(门叶接住转成本轮失败、扣 ping),上一版产物原样留给 mart。
 **零字符串令**(字面量全住 constants;to_* 行构造器体内的行键豁免)/ **显式循环令**(禁推导 / genexp / lambda)/
 **内嵌禁令** / **一参令**(多入参收 scheme 的 XxxIn dataclass)。
-依赖单边:本文件 → constants / scheme + 基础设施叶(paths / log);只读 raw/pnp 的文件,不 import pnp 域。
+依赖单边:本文件 → constants / scheme + 基础设施叶(paths / log / names);只读 raw/pnp 的文件,不 import pnp 域。
 
 @author Frank
 @time 2026-09-28 14:52:58
@@ -17,6 +17,7 @@ from pathlib import Path
 
 import paths
 from log.functions import say
+from names.functions import norm_name
 from pathways.constants import (
     BAD_EMPLOYER_TPL, BAD_NOC_TPL, BAD_TAG_TPL, BAD_TEER_TPL, JOB_LINKED_DEFAULT, K_EMPLOYERS, K_JOB_LINKED, K_NOCS, K_TAGS,
     K_TEERS, NOC_RE, TAG_KEYS, TEER_VALUES, UNLINKED_BOARD_TPL,
@@ -246,7 +247,8 @@ def default_problems_of(table: list) -> list[str]:
 
 def condition_problems_of(table: list) -> list[str]:
     """2026-09-30 通道补全批一的五个新格:标签在词表里、TEER 只许 0–5、职业码五位、雇主名归一小写;不看工作的通道不挂岗位通道名、
-    不当省默认(岗位不会落到它上面)。"""
+    不当省默认(岗位不会落到它上面)。批二起雇主名必须等于 norm_name 的结果(同 AIP 指定雇主那把尺子;前端拿岗位公司名归一后
+    直接比对,名单不再归一)。"""
     out: list[str] = []
     for entry in table:
         key = entry[K_KEY]
@@ -260,7 +262,7 @@ def condition_problems_of(table: list) -> list[str]:
             if NOC_RE.match(noc) is None:
                 out.append(BAD_NOC_TPL.format(key=key, noc=noc))
         for name in entry.get(K_EMPLOYERS, []):
-            if len(name) == 0 or name != name.lower():
+            if len(name) == 0 or name != norm_name(name):
                 out.append(BAD_EMPLOYER_TPL.format(key=key, name=name))
         if entry.get(K_JOB_LINKED, JOB_LINKED_DEFAULT) is False and (entry[K_BOARD_LABEL] is not None or entry[K_IS_DEFAULT]):
             out.append(UNLINKED_BOARD_TPL.format(key=key))
