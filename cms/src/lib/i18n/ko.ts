@@ -685,7 +685,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpchan.tag.mitacs': 'Mitacs 인턴십 필요',
   'pnpchan.tag.localExperience': '주내 1년 근무 필요',
   'pnpchan.tag.privateCollege': '지정 사립 직업학교 과정만',
-  'pnpchan.tag.remoteWork': '퀘벡 외 캐나다 고용주 원격 근무',
+  'pnpchan.tag.remoteWork': '퀘벡 외 고용주 원격 근무',
   'pnpchan.tag.physician': '면허 의사만',
   // 2026-09-29 PNP 모달: 주정부 이민에 해당하지 않는 이유 (셀, 칩, 카드가 같은 문구)
   'pnpblock.title': '충족하지 못한 요건',

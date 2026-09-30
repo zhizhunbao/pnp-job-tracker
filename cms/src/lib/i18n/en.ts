@@ -702,7 +702,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpchan.tag.mitacs': 'Mitacs internship required',
   'pnpchan.tag.localExperience': '1 year of work in the province',
   'pnpchan.tag.privateCollege': 'Designated private college programs only',
-  'pnpchan.tag.remoteWork': 'Remote work for a Canadian employer outside Quebec',
+  'pnpchan.tag.remoteWork': 'Remote work for an employer outside Quebec',
   'pnpchan.tag.physician': 'Licensed physicians only',
   // 2026-09-29 PNP modal: why this job cannot use the provincial nominee program (cell, chip and the card share one word)
   'pnpblock.title': 'Requirements not met',
