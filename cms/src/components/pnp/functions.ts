@@ -46,6 +46,7 @@ import {
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
   PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
+  OPS_SCOPE_DRAW_STREAM,
 } from './constants'
 import type {
   AllGroupsLabelIn, ChannelOfIn, ChannelSpec, ChannelsIn, CountKind, DrawCard, DrawCardOfIn, DrawsForm, LatestSinceIn,
@@ -65,7 +66,7 @@ import type {
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   BelowLineIn, CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
-  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn,
+  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './pnp.module.css'
@@ -706,6 +707,7 @@ function statusGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
     dim: false,
     hit: x.hitStreams.includes(key),
     perMonth: false,
+    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key, rows: rounds }),
   })
 }
 
@@ -1084,6 +1086,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       dim,
       hit: true,
       perMonth: false,
+      total: TEXT_NONE,
     }))
     if (dim === false && c.drawCrs != null) {
       lines.push(cmpLineOf({ t: x.t, key: c.key, cat: name, cec: cecName, diff: c.drawCrs - cecScore }))
@@ -1103,6 +1106,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
     dim: false,
     hit: false,
     perMonth: false,
+    total: TEXT_NONE,
   }))
   const fr = histAtOf({ hist, key: FED_FRENCH })
   const frLast = fr[0]
@@ -1121,6 +1125,7 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
       dim: false,
       hit: false,
       perMonth: false,
+      total: TEXT_NONE,
     }))
   }
   return { groups, lines }
@@ -1269,6 +1274,7 @@ export function pnpDrawGroupsOf(x: PnpDrawGroupsOfIn): EeCmpGroup[] {
       dim: false,
       hit: x.hitStreams.includes(key),
       perMonth: false,
+      total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: key, rows: arr }),
     }))
   }
   groups.sort(byGroupHitDateDesc)
@@ -1304,6 +1310,7 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
     dim: false,
     hit: x.hitStreams.includes(head.stream),
     perMonth: true,
+    total: groupTotalOf({ t: x.t, ops: x.ops, province: x.province, stream: head.stream, rows: months }),
   })
 }
 
@@ -1340,6 +1347,7 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
     draws,
     hitStreams: x.hitStreams,
     genDraw: x.genDraw,
+    ops: x.ops,
   }
   const reform = reformOf({ province: x.province })
   let groups: EeCmpGroup[] = []
@@ -1409,6 +1417,7 @@ export function preReformCardOf(x: DrawCardOfIn): DrawCard | null {
     draws: split.before,
     hitStreams: x.hitStreams,
     genDraw: x.genDraw,
+    ops: x.ops,
   })
   return groupsCardOf({
     title: x.t('pnpreform.head'),
@@ -1454,6 +1463,7 @@ export function aipCardOf(x: DrawCardOfIn): DrawCard | null {
     draws: rows,
     hitStreams: x.hitStreams,
     genDraw: x.genDraw,
+    ops: x.ops,
   })
   return groupsCardOf({
     title: x.t('pnpaip.head'),
@@ -1739,6 +1749,54 @@ function ytdPickOf(x: YtdPickIn): PnpOps | null {
     }
   }
   return null
+}
+
+/**
+ * 一组组头第三行(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」):读汇装的这一组本年合计(scopeKind = drawStream、scope = 组键)
+ * ——「共 7,465 份邀请」,下限指标写「至少 198 份邀请」;汇装没出(有一轮没公布,或本年一个确数都没有)时,这一组全是只写上限的
+ * 轮次就写上限那一句(阿省警务五轮都是「Less than 10」),否则不出这一行。份数不在前端加:各组相加与卡底合计是同一套口径算的。
+ *
+ * @param x 取词函数、配额行、省码、组键与这一组的轮次。
+ * @returns 那一行;不出给 ''。
+ */
+function groupTotalOf(x: GroupTotalIn): string {
+  for (const r of x.ops) {
+    if (r.province !== x.province || r.scopeKind !== OPS_SCOPE_DRAW_STREAM || r.scope !== x.stream) {
+      continue
+    }
+    const count = ytdCountTextOf({ t: x.t, row: r })
+    if (count === TEXT_NONE) {
+      continue
+    }
+    if (r.metric === OPS_INV_YTD_MIN) {
+      return x.t('pnpdraws.groupTotalMin', { count })
+    }
+    return x.t('pnpdraws.groupTotal', { count })
+  }
+  return groupBelowOf({ t: x.t, rows: x.rows })
+}
+
+/**
+ * 一组的轮次全是官方只写上限的(「Less than 10」;数据层 invitationsBelow)时写「各轮官方只写「少于 10」」(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+ *
+ * @param x 取词函数与这一组的轮次。
+ * @returns 那一句;有一轮不是这种给 ''。
+ */
+function groupBelowOf(x: BelowLineIn): string {
+  const bounds: string[] = []
+  for (const d of x.rows) {
+    if (d.invitations != null || d.invitationsBelow == null) {
+      return TEXT_NONE
+    }
+    const b = d.invitationsBelow.toLocaleString(NUM_LOCALE)
+    if (bounds.includes(b) === false) {
+      bounds.push(b)
+    }
+  }
+  if (bounds.length === 0) {
+    return TEXT_NONE
+  }
+  return x.t('pnpdraws.groupBelow', { n: bounds.join(x.t('pnpdraws.sep')) })
 }
 
 /**
@@ -2872,6 +2930,7 @@ function cmpGroupOf(x: CmpGroupIn): EeCmpGroup {
     expandable: rows.length > 0,
     noScore: x.score == null,
     hit: x.hit,
+    total: x.total,
   }
 }
 
@@ -3696,14 +3755,18 @@ export function streamClsOf(x: DimClsIn): string {
 
 /**
  * 分数线卡组头的类名(可点的加按钮手型,休眠 / 从没抽过的压暗)。
+ * 2026-09-29 Frank「每一个通道也需要一个总数吧」:有本年合计的组头加 cmpHasTotal(多一行放合计)。
  *
- * @param x 压不压暗、可不可点。
+ * @param x 压不压暗、本岗那组、可不可点、有没有合计。
  * @returns 类名。
  */
 export function cmpHeadClsOf(x: CmpHeadClsIn): string {
   const cls = [cssOf(css.cmpHead)]
   if (x.button) {
     cls.push(cssOf(css.cmpBtn))
+  }
+  if (x.total) {
+    cls.push(cssOf(css.cmpHasTotal))
   }
   if (x.dim) {
     cls.push(cssOf(css.dim))

@@ -784,6 +784,66 @@
 }
 
 /*
+ * 带本年合计的组头(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」):加一行放合计,跨分数 / 日期 / 轮数三格
+ * 靠右,名字格跨两行。只挂在有合计的组头上(cmpHeadClsOf 的 total)—— 没合计的组与 EE 分数线卡的组照旧一行,排布一格不变。
+ */
+.cmpHead.cmpHead.cmpHasTotal {
+  /*
+   * 两行格位。
+   */
+  grid-template-areas:
+    "name score date rounds caret"
+    "name total total total caret";
+}
+
+@media (width <= 640px) {
+  .cmpHead.cmpHead.cmpHasTotal {
+    /*
+     * 手机三行格位:名字与记号、分数 / 日期 / 轮数、合计(列宽照上面窄屏那条,英文那条只改列宽不改格位)。
+     */
+    grid-template-areas:
+      "name name name caret"
+      "score date rounds rounds"
+      "total total total total";
+  }
+}
+
+/*
+ * 组头的本年合计格(「共 7,465 份邀请」;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+ */
+.cmpTotal {
+  /*
+   * 常规字重(组头套在通用按钮里,按钮自带 600 会继承 —— 同 .cmpDate / .cmpRounds 写明)。
+   */
+  font-weight: 400;
+
+  /*
+   * 格位(桌面在统计三格下面那一行,手机是组头第三行)。
+   */
+  grid-area: total;
+
+  /*
+   * 次级灰(与卡底合计行同色)。
+   */
+  color: var(--text2);
+
+  /*
+   * 小一号(同轮数格)。
+   */
+  font-size: 12px;
+
+  /*
+   * 靠右,与轮数格右边齐。
+   */
+  text-align: right;
+
+  /*
+   * 不折行(英文「at least 13,083 invitations」一行放得下)。
+   */
+  white-space: nowrap;
+}
+
+/*
  * 组头的折叠记号格。
  */
 .cmpCaret {

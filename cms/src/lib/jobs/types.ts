@@ -4848,6 +4848,11 @@ export type PnpOpsRow = {
    * 官方页。
    */
   url: string
+
+  /**
+   * 口径层级的原名(抽选组合计那一种 = 抽选行 stream 原值;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+   */
+  scope: string
 }
 
 /**

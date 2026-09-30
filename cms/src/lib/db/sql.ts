@@ -556,14 +556,16 @@ export const PNP_OPS_PROV = `SELECT province, metric, value, as_of, period FROM 
  * 萨省的行业档 sector 不取),另带汇装按抽选行加总的全年已邀请 / 已入选(invitations_ytd / selections_ytd,缺一轮不出)。
  * 2026-09-29 抽选卡重排:再带下限行 invitations_ytd_min(AB / BC 有轮次官方只写上限)、AIP 申请入选 applications_ytd,
  * 与 AIP 那一份(scope_kind = 'program',「AIP 抽选」卡底读)。
+ * 同日 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」:再带各抽选组的本年合计(scope_kind = 'drawStream',scope = 抽选行 stream 原值;组头第三行读),
+ * 多取 scope 一列。
  */
 export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') AS scope_kind,
-       COALESCE(stream_key, '') AS stream_key, value, COALESCE(as_of, '') AS as_of, COALESCE(period, '') AS period,
-       COALESCE(url, '') AS url
+       COALESCE(stream_key, '') AS stream_key, COALESCE(scope, '') AS scope, value, COALESCE(as_of, '') AS as_of,
+       COALESCE(period, '') AS period, COALESCE(url, '') AS url
      FROM pnp_ops_stats
      WHERE metric IN ('allocation', 'issued', 'nominations_ytd', 'remaining', 'invitations_ytd', 'invitations_ytd_min',
        'selections_ytd', 'applications_ytd')
-       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program') AND value IS NOT NULL
+       AND COALESCE(scope_kind, '') IN ('', 'stream', 'program', 'drawStream') AND value IS NOT NULL
        AND (COALESCE(period, '') LIKE to_char(now(), 'YYYY') || '%' OR COALESCE(as_of, '') LIKE to_char(now(), 'YYYY') || '%')
      ORDER BY province, metric, seq`
 

@@ -430,6 +430,11 @@ export const OPS_INV_YTD_MIN = 'invitations_ytd_min'
 export const OPS_APP_YTD = 'applications_ytd'
 
 /**
+ * 运营统计里抽选组那一层的口径名(scope_kind;scope = 抽选行 stream 原值;组头第三行读这一组的本年合计)。2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」。
+ */
+export const OPS_SCOPE_DRAW_STREAM = 'drawStream'
+
+/**
  * 运营统计里项目那一层的口径名(scope_kind;全年合计 AIP 那一份,scope = AIP)。2026-09-29 抽选卡重排(Frank「如果改一个地方,是不是所有省份都得改一遍」)。
  */
 export const OPS_SCOPE_PROGRAM = 'program'

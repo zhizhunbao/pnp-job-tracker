@@ -10,7 +10,7 @@
  * @time 2026-09-23 23:10:00
  */
 import { Button } from '@/components/button'
-import { PLAIN_BTN_KIND } from './constants'
+import { PLAIN_BTN_KIND, TEXT_NONE } from './constants'
 import { DrawRow } from './drawrow'
 import { EeCmpHead } from './eecmphead'
 import { cmpHeadClsOf, drawsClsOf } from './functions'
@@ -31,13 +31,15 @@ export function EeCmpGroupView({ g, open, onToggle }: EeCmpGroupIn) {
   return (
     <div className={css.cmpGroup}>
       {g.expandable && (
-        <Button kind={PLAIN_BTN_KIND} className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: true })}
+        <Button kind={PLAIN_BTN_KIND}
+          className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: true, total: g.total !== TEXT_NONE })}
           onClick={onToggle} title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </Button>
       )}
       {g.expandable === false && (
-        <div className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: false })} title={g.tip}>
+        <div className={cmpHeadClsOf({ dim: g.dim, hit: g.hit, button: false, total: g.total !== TEXT_NONE })}
+          title={g.tip}>
           <EeCmpHead g={g} open={open} />
         </div>
       )}

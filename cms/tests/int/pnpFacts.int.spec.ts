@@ -299,7 +299,7 @@ describe('英文轮数单复数(eecmp.roundsOne)', () => {
     const one = [draw({ province: 'BC', stream: 'A', drawDate: '2026-09-01' })]
     const two = [draw({ province: 'BC', stream: 'A', drawDate: '2026-09-01' }), draw({ province: 'BC', stream: 'A', drawDate: '2026-08-01' })]
     const rounds = (lang: 'en' | 'zh' | 'ko', draws: PnpDraw[]) =>
-      pnpDrawGroupsOf({ t: makeT(lang), lang, province: 'BC', draws, hitStreams: [], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }) }).map((g) => g.rounds)
+      pnpDrawGroupsOf({ t: makeT(lang), lang, province: 'BC', draws, hitStreams: [], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }), ops: [] }).map((g) => g.rounds)
     expect(rounds('en', one)).toEqual(['1 round'])
     expect(rounds('en', two)).toEqual(['2 rounds'])
     expect(rounds('zh', one)).toEqual(['1 轮'])
@@ -314,10 +314,10 @@ describe('英文轮数单复数(eecmp.roundsOne)', () => {
       draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: 760, invitations: 417 }),
       draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: null, invitations: 1 }),
       draw({ province: 'MB', stream: sw, drawDate: '2026-09-10', score: null, invitations: 1874 })]
-    const g = pnpDrawGroupsOf({ t: makeT('zh'), lang: 'zh', province: 'MB', draws: d, hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }) })
+    const g = pnpDrawGroupsOf({ t: makeT('zh'), lang: 'zh', province: 'MB', draws: d, hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }), ops: [] })
     expect(g.map((x) => x.rounds)).toEqual(['2 轮'])
     expect(g[0]?.rows.map((r) => r.inv).sort()).toEqual(['1 份邀请', '1,874 份邀请', '16 份邀请', '417 份邀请'])
-    const en = pnpDrawGroupsOf({ t: makeT('en'), lang: 'en', province: 'MB', draws: d.slice(0, 3), hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }) })
+    const en = pnpDrawGroupsOf({ t: makeT('en'), lang: 'en', province: 'MB', draws: d.slice(0, 3), hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }), ops: [] })
     expect(en.map((x) => x.rounds)).toEqual(['1 round'])
   })
 })
@@ -394,7 +394,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const ns = [month('2026-06', 531), month('2026-07', 671), month('2026-08', null)]
     expect(drawsFormOf({ province: 'NS', draws: ns })).toBe('monthly')
     expect(monthRowsOf({ province: 'NS', draws: ns }).map((d) => d.drawDate)).toEqual(['2026-07', '2026-06'])
-    expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [], genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }) })).toEqual([])
+    expect(pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: [], genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [] })).toEqual([])
     const hitNs = hitsOf(job({ province: 'NS', noc: '72310', pnpEligible: true }))
     expect(hitNs).toEqual(['Monthly EOI selections'])
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, hitStreams: hitNs, genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops: [], reqs: [], year: '' })
@@ -455,7 +455,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('「年配额」卡:只列官方有的项;阿省到通道;官方原数不自己减;截至日照写;对不上通道 / 没数据就不出', () => {
     const url = 'https://www.alberta.ca/aaip-processing-information'
     const op = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'AB', metric: 'allocation', scopeKind: '', streamKey: '', value: 0, asOf: '2026-09-23', period: '', url, ...p,
+      province: 'AB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '2026-09-23', period: '', url, ...p,
     })
     const aos = 'alberta opportunity stream'
     const ops = [
@@ -499,7 +499,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 2026-09-27 Frank「已发和总数放到一个卡片里可以吗」「你帮我弄」:抽选卡标题下那行全年合计并进配额卡当一列;金标 = 当天线上 pnp_ops_stats 实数
   it('「年配额」卡并入全年已发邀请 / 已入选:排在已有项之后;截至日跟会动的那一项;只有合计的省只一列', () => {
     const q = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'ON', metric: 'allocation', scopeKind: '', streamKey: '', value: 0, asOf: '', period: '2026',
+      province: 'ON', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '', period: '2026',
       url: 'https://www.ontario.ca/page/2026-ontario-immigrant-nominee-program-allocation', ...p,
     })
     const nbUrl = 'https://www.gnb.ca/en/topic/family-home-community/immigration/invitation-selection-rounds.html'
@@ -533,7 +533,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 总数是全年定数,它那一格的截至日不写。金标 = 当天线上 pnp_ops_stats 实数
   it('「年配额」卡截至行:各列一致写一行;分叉逐列写「{列名}截至」;总数那一列不算', () => {
     const m = (p: Partial<PnpOps>): PnpOps => ({
-      province: 'MB', metric: 'allocation', scopeKind: '', streamKey: '', value: 8000, asOf: '2026-08', period: '2026',
+      province: 'MB', metric: 'allocation', scopeKind: '', streamKey: '', scope: '', value: 8000, asOf: '2026-08', period: '2026',
       url: 'https://immigratemanitoba.com/resources/data/monthly-data-2026', ...p,
     })
     const ops = [m({}), m({ metric: 'nominations_ytd', value: 3777, period: '2026 Jan-Aug' }),
@@ -558,31 +558,31 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       draw({ province: 'MB', stream: sw, drawDate: '2026-09-24', score: null, invitations: 16, selection: 'franco' }),
       draw({ province: 'MB', stream: sw, drawDate: '2026-09-10', score: 825, invitations: 508, selection: 'grad' }),
       draw({ province: 'MB', stream: sw, drawDate: '2026-08-27', score: 731, invitations: 600, selection: 'top:72' })]
-    const g = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'MB', draws: mb, hitStreams: [sw], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }) })[0]
+    const g = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'MB', draws: mb, hitStreams: [sw], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }), ops: [] })[0]
     expect(g?.score).toBe('')
     expect(g?.rows.map((r) => r.stream).sort()).toEqual(['定向职业', '曼省毕业', '法语', '高分者(技工类)', '高分者(理工类)'].sort())
     const inv = 'Innovate: High Economic Impact'
     const bc = [draw({ province: 'BC', stream: inv, drawDate: '2026-09-24', score: null, invitations: 426, selection: 'wage:52:105000' }),
       draw({ province: 'BC', stream: inv, drawDate: '2026-09-24', score: 131, invitations: 288, selection: 'points' })]
-    const b = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'BC', draws: bc, hitStreams: [inv], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }) })[0]
+    const b = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'BC', draws: bc, hitStreams: [inv], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }), ops: [] })[0]
     expect(b?.score).toBe('最低 131 分')
     expect(b?.rows.map((r) => r.stream).sort()).toEqual(['按分数', '时薪 ≥ $52 且年薪 ≥ $105,000'].sort())
-    const bEn = pnpDrawGroupsOf({ t: en, lang: 'en', province: 'BC', draws: bc, hitStreams: [inv], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }) })[0]
+    const bEn = pnpDrawGroupsOf({ t: en, lang: 'en', province: 'BC', draws: bc, hitStreams: [inv], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }), ops: [] })[0]
     expect(bEn?.rows.map((r) => r.stream).sort()).toEqual(['By score', 'Wage ≥ $52/hr and $105,000/yr'].sort())
     const nbw = 'NB Skilled Worker'
     const nb = [draw({ province: 'NB', stream: nbw, drawDate: '2026-09-18', score: null, invitations: 120, selection: 'path:exp+prio' }),
       draw({ province: 'NB', stream: nbw, drawDate: '2026-09-18', score: null, invitations: 77, selection: 'path:grad' })]
-    const n = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NB', draws: nb, hitStreams: [], genDraw: genDrawOf({ province: 'NB', pathways: PATHWAYS }) })[0]
+    const n = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'NB', draws: nb, hitStreams: [], genDraw: genDrawOf({ province: 'NB', pathways: PATHWAYS }), ops: [] })[0]
     expect(n?.rows.map((r) => r.stream).sort()).toEqual(['NB 工作经验、NB 优先', 'NB 毕业生'].sort())
     // 只有一种选取(BC 医疗定向那种每轮都是分数档):不写,组头分数照出
     const care = [draw({ province: 'BC', stream: 'Care: Health', drawDate: '2026-09-10', score: 76, invitations: 50, selection: 'points' }),
       draw({ province: 'BC', stream: 'Care: Health', drawDate: '2026-08-20', score: 80, invitations: 40, selection: 'points' })]
-    const c = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'BC', draws: care, hitStreams: [], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }) })[0]
+    const c = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'BC', draws: care, hitStreams: [], genDraw: genDrawOf({ province: 'BC', pathways: PATHWAYS }), ops: [] })[0]
     expect([c?.score, c?.rows.map((r) => r.stream)]).toEqual(['最低 76 分', ['', '']])
     // 认不出的短码不猜:写空;大类名词条里没有的只写「高分者」
     const odd = [draw({ province: 'MB', stream: sw, drawDate: '2026-07-01', score: null, invitations: 3, selection: 'zzz' }),
       draw({ province: 'MB', stream: sw, drawDate: '2026-07-01', score: 700, invitations: 9, selection: 'top:99' })]
-    const o = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'MB', draws: odd, hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }) })[0]
+    const o = pnpDrawGroupsOf({ t: zh, lang: 'zh', province: 'MB', draws: odd, hitStreams: [], genDraw: genDrawOf({ province: 'MB', pathways: PATHWAYS }), ops: [] })[0]
     expect(o?.rows.map((r) => r.stream).sort()).toEqual(['', '高分者'].sort())
   })
 
@@ -830,8 +830,55 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   // 一张卡只讲一件事、卡里列的加起来 = 卡上写的合计、没有就标上;卡片只认数据里的 program / unit 格,不认省名。手写金标。
   const YTD_URL = 'https://example.org/draws'
   const ytd = (p: Partial<PnpOps>): PnpOps => ({
-    province: 'AB', metric: 'invitations_ytd', scopeKind: '', streamKey: '', value: 0, asOf: '2026-09-23', period: '2026',
+    province: 'AB', metric: 'invitations_ytd', scopeKind: '', streamKey: '', scope: '', value: 0, asOf: '2026-09-23', period: '2026',
     url: YTD_URL, ...p,
+  })
+
+  // 2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」:各组组头第三行 = 汇装的这一组本年合计(scopeKind = drawStream、
+  // scope = 组名);下限写「至少」;组里全是只写上限的轮次写上限那一句;没有合计不出这一行。手写金标 = 当天线上阿省 / NB / NS 实数。
+  it('每组组头第三行写这一组的本年合计:共 / 至少 / 只写上限;人数口径跟指标走;没有合计不出', () => {
+    const ab = [
+      draw({ province: 'AB', label: 'AAIP', stream: AOS, drawDate: '2026-09-23', score: 58, invitations: 700 }),
+      draw({ province: 'AB', label: 'AAIP', stream: 'Agri', drawDate: '2026-09-15', score: 60, invitations: null, invitationsBelow: 10 }),
+      draw({ province: 'AB', label: 'AAIP', stream: 'Agri', drawDate: '2026-08-01', score: 61, invitations: 198 }),
+      draw({ province: 'AB', label: 'AAIP', stream: 'Law', drawDate: '2026-09-21', score: 49, invitations: null, invitationsBelow: 10 }),
+      draw({ province: 'AB', label: 'AAIP', stream: 'Law', drawDate: '2026-07-10', score: 52, invitations: null, invitationsBelow: 10 }),
+      draw({ province: 'AB', label: 'AAIP', stream: 'Tourism', drawDate: '2026-06-18', score: 71, invitations: null }),
+    ]
+    const ops = [
+      ytd({ metric: 'invitations_ytd', value: 7465, scopeKind: 'drawStream', scope: AOS }),
+      ytd({ metric: 'invitations_ytd_min', value: 198, scopeKind: 'drawStream', scope: 'Agri' }),
+      // 别省同名组、配额表通道级那一种都不能被挑中
+      ytd({ province: 'BC', metric: 'invitations_ytd', value: 1, scopeKind: 'drawStream', scope: 'Law' }),
+      ytd({ metric: 'invitations_ytd', value: 2, scopeKind: 'stream', scope: 'Tourism' }),
+    ]
+    const dx = { hitStreams: [], genDraw: '', ops, reqs: [], year: '2026' }
+    const totals = (t: typeof zh, lang: 'zh' | 'en' | 'ko') => {
+      const card = drawCardOf({ t, lang, province: 'AB', draws: ab, ...dx })
+      const out: Record<string, string> = {}
+      for (const g of card?.others ?? []) out[g.key] = g.total
+      return out
+    }
+    expect(totals(zh, 'zh')).toEqual({
+      [AOS]: '共 7,465 份邀请', Agri: '至少 198 份邀请', Law: '各轮官方只写「少于 10」', Tourism: '',
+    })
+    expect(totals(en, 'en')).toEqual({
+      [AOS]: '7,465 invitations', Agri: 'at least 198 invitations', Law: 'Each round published only as “fewer than 10”',
+      Tourism: '',
+    })
+    expect(totals(ko, 'ko')[AOS]).toBe('총 7,465개 초청')
+    // 人数口径跟指标走:NB 的 AIP 组是申请入选、NS 按月那一组是人入选;恰好 1 份用单数
+    const nbAip = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 60, program: 'AIP', unit: 'application' })]
+    const aip = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: nbAip, ...dx,
+      ops: [ytd({ province: 'NB', metric: 'applications_ytd', value: 632, scopeKind: 'drawStream', scope: 'AIP' })] })
+    expect(aip?.hits[0]?.total).toBe('共 632 份申请入选')
+    const ns = [draw({ province: 'NS', stream: 'Monthly EOI selections', drawDate: '2026-07', score: null, invitations: 671, program: 'PNP+AIP', unit: 'selection' })]
+    const nsCard = drawCardOf({ t: en, lang: 'en', province: 'NS', draws: ns, ...dx,
+      ops: [ytd({ province: 'NS', metric: 'selections_ytd', value: 3242, scopeKind: 'drawStream', scope: 'Monthly EOI selections' })] })
+    expect(nsCard?.others[0]?.total).toBe('3,242 selected')
+    const one = drawCardOf({ t: en, lang: 'en', province: 'AB', draws: ab.slice(0, 1), ...dx,
+      ops: [ytd({ metric: 'invitations_ytd', value: 1, scopeKind: 'drawStream', scope: AOS })] })
+    expect(one?.others[0]?.total).toBe('1 invitation')
   })
 
   it('本省抽选卡只列配额卡那一年、卡底合计读汇装的数;官方只写上限的轮次写「少于 N」、合计写「至少」(AB)', () => {
@@ -965,7 +1012,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       }
     }), { numRuns: 2000 })
     fc.assert(fc.property(fc.array(drawArb, { maxLength: 20 }), fc.constantFrom(...PROVS), (d, province) => {
-      for (const g of pnpDrawGroupsOf({ t: zh, lang: 'zh', province, draws: d, hitStreams: [], genDraw: genDrawOf({ province, pathways: PATHWAYS }) })) {
+      for (const g of pnpDrawGroupsOf({ t: zh, lang: 'zh', province, draws: d, hitStreams: [], genDraw: genDrawOf({ province, pathways: PATHWAYS }), ops: [] })) {
         for (const r of g.rows) {
           expect(r.date.length).toBe(10)
         }

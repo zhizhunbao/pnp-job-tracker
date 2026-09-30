@@ -3147,7 +3147,7 @@ function toStrList(x: MaybeStrList): StrList {
 export function toPnpOpsRow(r: Row): PnpOpsRow {
   return {
     province: text(r.province), metric: text(r.metric), scopeKind: text(r.scope_kind), streamKey: text(r.stream_key),
-    value: count(r.value), asOf: text(r.as_of), period: text(r.period), url: text(r.url),
+    value: count(r.value), asOf: text(r.as_of), period: text(r.period), url: text(r.url), scope: text(r.scope),
   }
 }
 

@@ -964,6 +964,12 @@ export type EeCmpGroup = {
    * 本岗对应这一组(点进来的那个格子写的就是它):琥珀高亮;省抽选卡里还排最前。
    */
   hit: boolean
+
+  /**
+   * 组头第三行:这一组的本年合计(「共 7,465 份邀请」「至少 198 份邀请」;全是只写上限的轮次写上限那一句;'' = 不出这一行;
+   * EE 分数线卡的组恒为 '';2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+   */
+  total: string
 }
 
 /**
@@ -1136,6 +1142,11 @@ export type PnpOps = {
    * 官方页。
    */
   url: string
+
+  /**
+   * 口径层级的原名(抽选组合计那一种 = 抽选行 stream 原值,对组键用;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+   */
+  scope: string
 }
 
 /**
@@ -3318,6 +3329,11 @@ export type CmpGroupIn = {
    * 按月公布的那一组(NS;组头计数写「N 个月」不写「N 轮」,2026-09-27)。
    */
   perMonth: boolean
+
+  /**
+   * 组头第三行的本年合计('' = 不出;见 EeCmpGroup 同名格)。
+   */
+  total: string
 }
 
 /**
@@ -3383,6 +3399,41 @@ export type PnpDrawGroupsOfIn = {
    * 本省省默认通道的抽选组('' = 没有;安省改制那一组的组键用它,原 GEN_DRAW_STREAM,2026-09-28 通道表批二改读 pathways)。
    */
   genDraw: string
+
+  /**
+   * 当年配额行(各组的本年合计读其中抽选组那一种;2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+   */
+  ops: PnpOps[]
+}
+
+/**
+ * groupTotalOf 的入参(2026-09-29 Frank「每一个通道也需要一个总数吧」,选「单独一行靠右」)。
+ */
+export type GroupTotalIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 当年配额行(全国一份)。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 组键(抽选行 stream 原值)。
+   */
+  stream: string
+
+  /**
+   * 这一组的轮次(全是只写上限的轮次时写上限那一句)。
+   */
+  rows: PnpDraw[]
 }
 
 /**
@@ -4069,6 +4120,11 @@ export type CmpHeadClsIn = {
    * 可不可点(有轮次才可展开)。
    */
   button: boolean
+
+  /**
+   * 有没有本年合计(有就多一行放它;2026-09-29 Frank「每一个通道也需要一个总数吧」)。
+   */
+  total: boolean
 }
 
 /**

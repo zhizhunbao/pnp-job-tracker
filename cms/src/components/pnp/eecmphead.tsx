@@ -28,6 +28,7 @@ export function EeCmpHead({ g, open }: EeCmpHeadIn) {
       <span className={cmpScoreClsOf({ noScore: g.noScore })}>{g.score}</span>
       <span className={css.cmpDate}>{g.date}</span>
       <span className={css.cmpRounds}>{g.rounds}</span>
+      {g.total !== TEXT_NONE && <span className={css.cmpTotal}>{g.total}</span>}
       <span className={css.cmpCaret}>{g.expandable && caretOf(open)}</span>
     </>
   )

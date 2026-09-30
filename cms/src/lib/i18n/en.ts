@@ -617,6 +617,10 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.st-johns': 'St. John’s', 'pnpgate.area.rest-of-nl': 'outside St. John’s',
   'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   // 2026-09-29 draw cards rework: upper-bound counts, pool / direct / none notes, card totals, pre-reform and AIP cards
+  // 2026-09-29 per-stream totals on draw group heads (third line)
+  'pnpdraws.groupTotal': '{count}',
+  'pnpdraws.groupTotalMin': 'at least {count}',
+  'pnpdraws.groupBelow': 'Each round published only as “fewer than {n}”',
   'pnpdraws.invOne': '{n} invitation',
   'pnpdraws.below': 'Fewer than {n} invitations',
   'pnpdraws.pool': 'Selected from one pool shared with AIP; counts include AIP',
