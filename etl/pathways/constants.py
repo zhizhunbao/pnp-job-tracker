@@ -792,7 +792,12 @@ PW_BC_RURAL_REMOTE_HEALTH = {
     "employers": [],
 }
 """BC 限时通道:只收偏远地区卫生局在职的保洁、保安(NOC 64410 / 65310 / 65312),登记到 2026-10-07,上限 250 人(Frank 09-30 「收,标限时」
-)。🔴 10-07 之后改 closed。雇主是不是卫生局本站判不了,不设雇主名筛,标签写「限指定雇主」。"""
+)。🔴 10-07 之后改 closed。雇主是不是卫生局本站判不了,不设雇主名筛,标签写「限指定雇主」。
+2026-09-30 撤出对照表(Frank「只列能走的」):BC 技术移民指南 4.3(e)「Immediately prior to registering with the BC PNP, you must
+have been working full-time, year-round, for at least nine (9) consecutive months, in an eligible occupation with the same health
+authority employer」,登记 10 月 7 日截止 —— 看岗位的人(新招的岗)来不及走,不进 PATHWAYS。指南 4.3(b)(c)(d) 另点名八家公立
+卫生局、只收直接雇员、大温 / 首府区(几个外岛除外)/ 中奥卡纳根区不算偏远,记在这里备查。常量留着记收与撤的理由;它认领的抽选组
+随之无主,照旧作为 BC 一组列在抽选卡里。"""
 
 PW_SK_STUDENTS = {
     "key": "sk-students", "province": "SK", "program": "PNP",
@@ -1375,7 +1380,7 @@ PATHWAYS = [
     PW_AB_OPPORTUNITY, PW_AB_ACCELERATED_TECH, PW_AB_DEDICATED_HEALTH_CARE, PW_AB_LAW_ENFORCEMENT,
     PW_AB_TOURISM_HOSPITALITY, PW_AB_RURAL_RENEWAL,
     PW_BC_SKILLED_WORKER, PW_BC_HEALTH_AUTHORITY, PW_BC_HEALTHCARE, PW_BC_CHILDCARE, PW_BC_VETERINARY,
-    PW_BC_CONSTRUCTION_TRADES, PW_BC_FRENCH_TEACHERS, PW_BC_RURAL_REMOTE_HEALTH,
+    PW_BC_CONSTRUCTION_TRADES, PW_BC_FRENCH_TEACHERS,
     PW_SK_EMPLOYMENT_OFFER, PW_SK_HEALTH_TALENT, PW_SK_TECH_TALENT, PW_SK_AGRICULTURE_TALENT, PW_SK_EXISTING_WORK_PERMIT,
     PW_SK_STUDENTS, PW_SK_OCCUPATION_IN_DEMAND, PW_SK_EXPRESS_ENTRY,
     PW_MB_SKILLED_WORKER_IN_MANITOBA, PW_MB_SKILLED_WORKER_OVERSEAS, PW_MB_CAREER_EMPLOYMENT, PW_MB_GRADUATE_INTERNSHIP,

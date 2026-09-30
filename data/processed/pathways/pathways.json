@@ -413,42 +413,8 @@
       "employers": []
     },
     {
-      "key": "bc-rural-remote-health",
-      "seq": 14,
-      "province": "BC",
-      "program": "PNP",
-      "plainZh": "BC 偏远地区医疗支持",
-      "plainEn": "BC rural/remote health support",
-      "plainKo": "BC 외딴 지역 보건 지원",
-      "officialName": "Temporary Rural/Remote Health Support Initiative",
-      "boardLabel": null,
-      "isDefault": false,
-      "drawStreams": [
-        "Temporary Rural/Remote Health Support Initiative"
-      ],
-      "reqStreams": [],
-      "quotaScope": null,
-      "occLabels": [],
-      "status": "open",
-      "url": "https://www.welcomebc.ca/immigrate-to-b-c/about-the-bc-provincial-nominee-program/news",
-      "quote": "Registrations for this initiative will now be accepted until 11:59 pm on October 7, 2026.",
-      "checked": "2026-09-30",
-      "jobLinked": true,
-      "tags": [
-        "employers",
-        "timeLimited"
-      ],
-      "teers": [],
-      "nocs": [
-        "64410",
-        "65310",
-        "65312"
-      ],
-      "employers": []
-    },
-    {
       "key": "sk-employment-offer",
-      "seq": 15,
+      "seq": 14,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 雇主 offer",
@@ -478,7 +444,7 @@
     },
     {
       "key": "sk-health-talent",
-      "seq": 16,
+      "seq": 15,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 医疗",
@@ -509,7 +475,7 @@
     },
     {
       "key": "sk-tech-talent",
-      "seq": 17,
+      "seq": 16,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 科技",
@@ -540,7 +506,7 @@
     },
     {
       "key": "sk-agriculture-talent",
-      "seq": 18,
+      "seq": 17,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 农业",
@@ -571,7 +537,7 @@
     },
     {
       "key": "sk-existing-work-permit",
-      "seq": 19,
+      "seq": 18,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 现有工签",
@@ -596,7 +562,7 @@
     },
     {
       "key": "sk-students",
-      "seq": 20,
+      "seq": 19,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 本省毕业生",
@@ -626,7 +592,7 @@
     },
     {
       "key": "sk-occupation-in-demand",
-      "seq": 21,
+      "seq": 20,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 紧缺职业(无 offer)",
@@ -655,7 +621,7 @@
     },
     {
       "key": "sk-express-entry",
-      "seq": 22,
+      "seq": 21,
       "province": "SK",
       "program": "PNP",
       "plainZh": "SK 快速通道",
@@ -685,7 +651,7 @@
     },
     {
       "key": "mb-skilled-worker-in-manitoba",
-      "seq": 23,
+      "seq": 22,
       "province": "MB",
       "program": "PNP",
       "plainZh": "MB 技术工人",
@@ -718,7 +684,7 @@
     },
     {
       "key": "mb-skilled-worker-overseas",
-      "seq": 24,
+      "seq": 23,
       "province": "MB",
       "program": "PNP",
       "plainZh": "MB 海外技工",
@@ -749,7 +715,7 @@
     },
     {
       "key": "mb-career-employment",
-      "seq": 25,
+      "seq": 24,
       "province": "MB",
       "program": "PNP",
       "plainZh": "MB 毕业生就业",
@@ -781,7 +747,7 @@
     },
     {
       "key": "mb-graduate-internship",
-      "seq": 26,
+      "seq": 25,
       "province": "MB",
       "program": "PNP",
       "plainZh": "MB 研究生实习",
@@ -813,7 +779,7 @@
     },
     {
       "key": "on-workforce-priority",
-      "seq": 27,
+      "seq": 26,
       "province": "ON",
       "program": "PNP",
       "plainZh": "ON 劳动力优先",
@@ -842,7 +808,7 @@
     },
     {
       "key": "on-employer-job-offer-foreign-worker",
-      "seq": 28,
+      "seq": 27,
       "province": "ON",
       "program": "PNP",
       "plainZh": "雇主 offer:海外工人",
@@ -869,7 +835,7 @@
     },
     {
       "key": "on-employer-job-offer-international-student",
-      "seq": 29,
+      "seq": 28,
       "province": "ON",
       "program": "PNP",
       "plainZh": "雇主 offer:国际学生",
@@ -896,7 +862,7 @@
     },
     {
       "key": "on-self-employed-physicians",
-      "seq": 30,
+      "seq": 29,
       "province": "ON",
       "program": "PNP",
       "plainZh": "ON 自雇医生",
@@ -925,7 +891,7 @@
     },
     {
       "key": "ns-skilled-worker",
-      "seq": 31,
+      "seq": 30,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 技术工人",
@@ -955,7 +921,7 @@
     },
     {
       "key": "ns-construction",
-      "seq": 32,
+      "seq": 31,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 建筑",
@@ -987,7 +953,7 @@
     },
     {
       "key": "ns-graduate",
-      "seq": 33,
+      "seq": 32,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 本省毕业生",
@@ -1020,7 +986,7 @@
     },
     {
       "key": "ns-physicians",
-      "seq": 34,
+      "seq": 33,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 医生",
@@ -1058,7 +1024,7 @@
     },
     {
       "key": "ns-express-entry-experience",
-      "seq": 35,
+      "seq": 34,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 快速通道(本省经验)",
@@ -1095,7 +1061,7 @@
     },
     {
       "key": "ns-express-entry-physicians",
-      "seq": 36,
+      "seq": 35,
       "province": "NS",
       "program": "PNP",
       "plainZh": "NS 快速通道(医生)",
@@ -1135,7 +1101,7 @@
     },
     {
       "key": "nb-skilled-worker",
-      "seq": 37,
+      "seq": 36,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 技术工人",
@@ -1166,7 +1132,7 @@
     },
     {
       "key": "nb-express-entry-employment",
-      "seq": 38,
+      "seq": 37,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 快速通道(本省就业)",
@@ -1203,7 +1169,7 @@
     },
     {
       "key": "nb-francophone-workers",
-      "seq": 39,
+      "seq": 38,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 法语工人",
@@ -1235,7 +1201,7 @@
     },
     {
       "key": "nb-express-entry-interest",
-      "seq": 40,
+      "seq": 39,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 快速通道(兴趣信)",
@@ -1263,7 +1229,7 @@
     },
     {
       "key": "nb-francophone-priorities",
-      "seq": 41,
+      "seq": 40,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 法语优先",
@@ -1293,7 +1259,7 @@
     },
     {
       "key": "nb-francophones-remote",
-      "seq": 42,
+      "seq": 41,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 远程法语工作者",
@@ -1321,7 +1287,7 @@
     },
     {
       "key": "nb-critical-worker-pilot",
-      "seq": 43,
+      "seq": 42,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 关键工人试点",
@@ -1355,7 +1321,7 @@
     },
     {
       "key": "nb-private-college-pilot",
-      "seq": 44,
+      "seq": 43,
       "province": "NB",
       "program": "PNP",
       "plainZh": "NB 私立学院毕业生试点",
@@ -1384,7 +1350,7 @@
     },
     {
       "key": "nl-skilled-worker",
-      "seq": 45,
+      "seq": 44,
       "province": "NL",
       "program": "PNP",
       "plainZh": "NL 技术工人",
@@ -1416,7 +1382,7 @@
     },
     {
       "key": "nl-international-graduate",
-      "seq": 46,
+      "seq": 45,
       "province": "NL",
       "program": "PNP",
       "plainZh": "NL 国际毕业生",
@@ -1454,7 +1420,7 @@
     },
     {
       "key": "nl-express-entry-skilled-worker",
-      "seq": 47,
+      "seq": 46,
       "province": "NL",
       "program": "PNP",
       "plainZh": "NL 快速通道技术工人",
@@ -1491,7 +1457,7 @@
     },
     {
       "key": "pe-workforce",
-      "seq": 48,
+      "seq": 47,
       "province": "PE",
       "program": "PNP",
       "plainZh": "PE 劳工通道",
@@ -1523,7 +1489,7 @@
     },
     {
       "key": "pe-occupations-in-demand",
-      "seq": 49,
+      "seq": 48,
       "province": "PE",
       "program": "PNP",
       "plainZh": "PE 在需职业",
@@ -1556,7 +1522,7 @@
     },
     {
       "key": "pe-international-graduate",
-      "seq": 50,
+      "seq": 49,
       "province": "PE",
       "program": "PNP",
       "plainZh": "PE 国际毕业生",
@@ -1590,7 +1556,7 @@
     },
     {
       "key": "pe-intermediate-experience",
-      "seq": 51,
+      "seq": 50,
       "province": "PE",
       "program": "PNP",
       "plainZh": "PE 中级经验",
@@ -1624,7 +1590,7 @@
     },
     {
       "key": "pe-express-entry",
-      "seq": 52,
+      "seq": 51,
       "province": "PE",
       "program": "PNP",
       "plainZh": "PE 快速通道",
@@ -1656,7 +1622,7 @@
     },
     {
       "key": "aip",
-      "seq": 53,
+      "seq": 52,
       "province": "FED",
       "program": "AIP",
       "plainZh": "AIP",
