@@ -4672,11 +4672,13 @@ MBR_IES_PATHWAYS = (
      "https://immigratemanitoba.com/mpnp/ies/cep/eligibility"),
     ("MPNP International Education Stream — Graduate Internship Pathway (GIP)",
      "https://immigratemanitoba.com/mpnp/ies/gip/eligibility"),
-    ("MPNP International Education Stream — International Student Entrepreneur Pathway (ISEP)",
+    ("MPNP International Education Stream — International Student Entrepreneur Pilot (ISEP)",
      "https://immigratemanitoba.com/mpnp/ies/isep/eligibility"),
 )
 """国际教育流三条路径的资格页(2026-09-13 Frank「真要给曼省毕业生看门槛,国际教育流那三条路得补」「抓」)。
-三页同形:「Criterion | Minimum Requirement」两列表,一行一条门槛,原句整条即 label。在 mb-mpnp crawl 缓存里。"""
+三页同形:「Criterion | Minimum Requirement」两列表,一行一条门槛,原句整条即 label。在 mb-mpnp crawl 缓存里。
+2026-09-30 通道补全批一 1b(立项稿第四节第 8 条):ISEP 流名由 Pathway 改 Pilot —— 官方全站写「International Student Entrepreneur
+Pilot (ISEP)」(资格页标题与正文、IES 总页都是 Pilot,crawl 缓存逐页核过)。"""
 
 MBR_IES_ROW_RE = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$")
 """md 表格行:标准 | 最低要求。"""

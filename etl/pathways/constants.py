@@ -63,7 +63,7 @@ PW_AB_OPPORTUNITY = {
     "plainZh": "AB 机会通道", "plainEn": "AB Opportunity", "plainKo": "AB 오퍼튜니티 스트림",
     "officialName": "Alberta Opportunity Stream",
     "boardLabel": None, "isDefault": True,
-    "drawStreams": ["Alberta Opportunity Stream", "Alberta Opportunity Stream – Priority Sectors"],
+    "drawStreams": ["Alberta Opportunity Stream"],
     "reqStreams": ["AAIP Alberta Opportunity Stream", "AAIP (job offer & employer requirements, all streams)"],
     "quotaScope": "Alberta Opportunity Stream",
     "occLabels": [],
@@ -79,7 +79,9 @@ PW_AB_OPPORTUNITY = {
 页的通道行(抽选组名小写与配额键逐字相等,前端原先靠这条隐式规则配上;这里写明,不再靠碰巧同名)。
 英文界面现显示官方原名(pnp.gen.AB = Alberta Opportunity Stream),plainEn 是批二要换上的直白名。
 2026-09-30 通道补全批二:抽选组加认领「Alberta Opportunity Stream – Priority Sectors」(轮次名写明属机会通道,批一清点时是无主组;
-阿省默认岗的抽选卡本岗高亮随之多这一组)。"""
+阿省默认岗的抽选卡本岗高亮随之多这一组)。
+同日撤回(Frank「这种基本属于没有通道啊」):那组今年只在 2 月 20 日抽过一轮,标成本岗那组等于说这是一条现行的路;不再认领,
+它照旧作为本省一组列在抽选卡里。"""
 
 # 2026-09-29 七省门槛卡合并(Frank「都接上,开工吧」):阿省六条通道的 reqStreams 都在末尾挂上雇主门槛所在的
 # 「AAIP (job offer & employer requirements, all streams)」—— 门槛卡雇主行改读本通道登记的流(原读全省,曼省唯一的雇主行属
@@ -518,6 +520,8 @@ PW_ON_WORKFORCE_PRIORITY = {
     "checked": "2026-09-28",
 }
 """安省默认通道(2026-06 改制后只剩这一条,生效日按官方原句定为 2026-06-25)。
+2026-09-30 注:旧三条 Employer Job Offer 流是 2026-05-30 关的(各自页面关闭通告原句「closed as of May 30, 2026」),与本条生效日
+不是同一天(立项稿第四节第 9 条)。
 抽选组键照 GEN_DRAW_STREAM 的 ON 行(抽选卡那一行的组键;2026-09-27 Frank 勾「安省改一行组头」)。官方 08-04 公告
 「portal now open to Ontario Workforce Priority Stream expressions of interest」之后还没抽过 —— drawsPending:自校不要求它已出现在
 抽选表里,出现了就提示摘掉这一格。
@@ -540,6 +544,8 @@ PW_ON_EMPLOYER_JOB_OFFER_FOREIGN_WORKER = {
     "checked": "2026-09-28",
 }
 """安省旧通道(已关停:官网此页标题前缀「Archived -」,2026-06-25 改制并入 Ontario Workforce Priority)。
+2026-09-30 更正日期口径(立项稿第四节第 9 条):本页关闭通告原句是「closed as of May 30, 2026」(门槛表 ONR_CLOSED_RE 取的就是它),
+6 月 25 日是新通道 Ontario Workforce Priority 的生效日 —— 旧通道 5 月 30 日关、新通道 6 月 25 日开,是两件事。
 抽选表里还有它的历史轮次;抽选卡现把组名显示成「雇主 offer:海外工人(已关停)」—— 名字存不带「(已关停)」,状态另一格管。"""
 
 PW_ON_EMPLOYER_JOB_OFFER_INTERNATIONAL_STUDENT = {
@@ -760,7 +766,10 @@ PW_AB_EXPRESS_ENTRY_PRIORITY_SECTORS = {
 }
 """阿省快速通道不经三条专门 pathway 的通用抽选(官方抽选表写作 Priority Sectors,按行业分六个组名,2026 年 23 轮)。要联邦 EE 档案(CRS ≥ 300),
 持 AB offer 的按行业邀请 → 看工作、标「需先有 EE 档案」(Frank 09-30「列进来,标需先有 EE 档案」)。资格页只写建筑 / 农业 / 航空,2026 抽选另有制造、
-医疗,官方口径不一,不按职业码筛。"""
+医疗,官方口径不一,不按职业码筛。
+2026-09-30 撤出对照表(Frank「这种基本属于没有通道啊」「这个部分只显示能走的通道」「这种也删了」):定向行业按 EE 档案里的主职业邀请,
+官网没列哪些职业算建筑 / 农业 / 航空(页上只有警务专线的三个职业码),判不了本岗能不能走 —— 通道卡只列能走的,本条不进 PATHWAYS。
+常量留着记当初为什么收、为什么撤;官方出了职业清单,挂 nocs 再收。它认领的六个定向行业抽选组随之无主,照旧作为本省各组列在抽选卡里。"""
 
 PW_BC_RURAL_REMOTE_HEALTH = {
     "key": "bc-rural-remote-health", "province": "BC", "program": "PNP",
@@ -1364,7 +1373,7 @@ PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
 
 PATHWAYS = [
     PW_AB_OPPORTUNITY, PW_AB_ACCELERATED_TECH, PW_AB_DEDICATED_HEALTH_CARE, PW_AB_LAW_ENFORCEMENT,
-    PW_AB_TOURISM_HOSPITALITY, PW_AB_RURAL_RENEWAL, PW_AB_EXPRESS_ENTRY_PRIORITY_SECTORS,
+    PW_AB_TOURISM_HOSPITALITY, PW_AB_RURAL_RENEWAL,
     PW_BC_SKILLED_WORKER, PW_BC_HEALTH_AUTHORITY, PW_BC_HEALTHCARE, PW_BC_CHILDCARE, PW_BC_VETERINARY,
     PW_BC_CONSTRUCTION_TRADES, PW_BC_FRENCH_TEACHERS, PW_BC_RURAL_REMOTE_HEALTH,
     PW_SK_EMPLOYMENT_OFFER, PW_SK_HEALTH_TALENT, PW_SK_TECH_TALENT, PW_SK_AGRICULTURE_TALENT, PW_SK_EXISTING_WORK_PERMIT,
