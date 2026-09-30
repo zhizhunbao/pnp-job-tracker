@@ -1134,7 +1134,7 @@ export const siteZh = {
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',
   'news.qcNote': '魁省走自己的移民体系(非 PNP)',
-  'news.copy': '© {who} · 非官方转载版本,以官方原文为准',
+  'news.copy': '© {who}',
   'news.published': '官方发布 {d}',
   'news.official': '查看官方原文',
   'news.toJobs': '看该省岗位', 'news.toJobsAll': '看全部岗位',

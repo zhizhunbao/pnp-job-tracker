@@ -137,9 +137,10 @@ export const SLIDE_MS = 5000
 export const SLIDE_MIN = 2
 
 /**
- * 右列并排显示的其余头条条数(v4 BBC/Reuters 式 1 大 + 4 小)。
+ * 右列并排显示的其余头条条数(v4 BBC/Reuters 式 1 大 + 4 小;2026-09-30 Frank「右边这部分空白太多了吧」:4 → 6,
+ * 填满大卡的高度,要闻区 SQL 随之取 7 条)。
  */
-export const SIDE_MAX = 4
+export const SIDE_MAX = 6
 
 /**
  * 上一张(轮播左箭头一次退一格)。
@@ -209,6 +210,17 @@ export const HEAD_MARK_RE = /^(?<hashes>#{2,3})\s+/
  * 不是标题的段的级别。
  */
 export const HEAD_NONE = 0
+
+/**
+ * 正文加粗段(2026-09-30 Frank「他这个有原文有很多加粗的地方吧」:数据层抽正文时把原页 strong / b 包成「**…**」);
+ * 具名组 inner 是加粗的字。译文段带回来的同样渲粗体。
+ */
+export const BOLD_RE = /\*\*(?<inner>.+?)\*\*/g
+
+/**
+ * 加粗标记两头合计的字数(「**」×2),推下一段的起点用。
+ */
+export const BOLD_WRAP_LEN = 4
 
 /**
  * 一级小标题(原页 h2)。

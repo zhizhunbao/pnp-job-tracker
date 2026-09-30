@@ -4,11 +4,13 @@
  * 机器翻译声明 + 官方英文原文(带逐段对照)。
  * 2026-08-27 换装批自 News.tsx 的 NewsDetail 拆出成文件;原先包在 useMemo 里的分段
  * 改成 functions 的 parasOf 逐次求值(纯字符串切分,与本桶其余派生同一形)。
+ * 2026-09-30 返回钮住卡内右上角(Frank「返回 按钮放到 文章右上角」;照职位详情页 cardBack)。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { REGION_QC } from './constants'
+import { BackButton } from '@/components/button'
+import { REGION_QC, URL_NEWS } from './constants'
 import { parasOf } from './functions'
 import { ImpBadge } from './impbadge'
 import { NewsBody } from './newsbody'
@@ -38,6 +40,9 @@ export function NewsArticle({
 }: NewsArticleIn) {
   return (
     <article className={css.article}>
+      <div className={css.cardBack}>
+        <BackButton fallback={URL_NEWS} label={t('detail.back')} />
+      </div>
       <div className={css.detMeta}>
         <RegionTag t={t} region={row.region} />
         <ImpBadge t={t} lang={lang} importance={row.importance} note={row.importanceNote} />

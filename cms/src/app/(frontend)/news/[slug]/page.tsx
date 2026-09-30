@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const who = row.region === 'federal' ? 'IRCC' : `${regionNameOf({ region: row.region })} PNP`
   return {
     title: `${row.title} — ${who} ${row.date} | Offer2PR`,
-    description: `${(row.bodyEn || '').replace(/^#{2,3}\s+/gm, '').replace(/\s+/g, ' ').slice(0, META_DESC_LEN_MAX)}…`,
+    description: `${(row.bodyEn || '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*/g, '').replace(/\s+/g, ' ').slice(0, META_DESC_LEN_MAX)}…`,
   }
 }
 

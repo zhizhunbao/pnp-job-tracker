@@ -1044,7 +1044,7 @@ export const siteEn: Record<keyof typeof siteZh, string> = {
   'news.sub': 'Official releases from IRCC and 7 provinces, aggregated · refreshed every 12 hours · official sources only',
   'news.federal': 'Federal IRCC',
   'news.qcNote': 'Quebec runs its own immigration system (not PNP)',
-  'news.copy': '© {who} · Unofficial reproduction — refer to the official source',
+  'news.copy': '© {who}',
   'news.published': 'Published {d}',
   'news.official': 'View official source',
   'news.toJobs': 'See jobs in this province', 'news.toJobsAll': 'See all jobs',

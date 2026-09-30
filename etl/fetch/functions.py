@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup, Tag
 from fetch.scheme import CmsCfg, DetailIn, DetailOut, FetchIn, SectionIn
 from fetch.constants import (ATTR_CONTENT, ATTR_HREF, BODY_TAGS, BROWSER_UA, BULLET, CMS_NONE, DATE_LONG_FMT,
                              DATE_LONG_TPL, DATE_RE, ENV_SEED_TOKEN, ENV_SEED_URL, FEED_DATE_TAGS, FEED_ENTRY_TAGS, HDR_UA,
-                             HEAD_MARK, HEAD_MARK_CHARS,
+                             BOLD_MARK, BOLD_TAGS, HEAD_MARK, HEAD_MARK_CHARS,
                              HDR_SEED_TOKEN, ISO_DATE_RE, JUNK_TAGS, K_DATE, K_TITLE, K_URL, LINE_SEP,
                              OG_META_PATTERNS, OG_PROP, PARA_SEP, PARSER_HTML, PARSER_XML,
                              POLITE_UA, PORT_SEP, RETRIES, SCHEME_SEP, SECTION_TAKE_TAGS, SLUG_DASH, SLUG_MAXLEN,
@@ -178,14 +178,26 @@ def el_text_of(el: Tag) -> str:
 def clip_tail(paras: list[str]) -> list[str]:
     """剥页尾样板:从第一个噪音标题(TAIL_NOISE)起全部丢弃。"""
     for i, p in enumerate(paras):
-        if p.strip().lstrip(HEAD_MARK_CHARS).lower().rstrip(TRAIL_COLON) in TAIL_NOISE:
+        if p.strip(HEAD_MARK_CHARS).lower().rstrip(TRAIL_COLON) in TAIL_NOISE:
             return paras[:i]
     return paras
 
 
+def mark_bold(b: Tag) -> None:
+    """加粗元素就地换成「**文字**」(空白挪到标记外,文字内的空白折成单空格,免得标记跨行配不上对)。
+    标题里的加粗不包(标题整段已是粗体);空的、含 <br> 的不包(换行比粗体要紧,联系人块那类)。"""
+    raw = b.get_text()
+    core = WS_RE.sub(SPACE_SEP, raw).strip()
+    if core == "" or b.find(TAG_BR) is not None or b.find_parent(list(HEAD_MARK)) is not None:
+        return
+    lead = raw[:len(raw) - len(raw.lstrip())]
+    trail = raw[len(raw.rstrip()):]
+    b.replace_with(lead + BOLD_MARK + core + BOLD_MARK + trail)
+
+
 def extract_detail(x: DetailIn) -> DetailOut:
     """详情页 → DetailOut(og:image, 正文纯文本)。正文取 main/article 容器的段落/列表/小标题,
-    段落间 \\n\\n、段内 <br> 保留为 \\n;小标题段首挂 HEAD_MARK(前端渲成标题);
+    段落间 \\n\\n、段内 <br> 保留为 \\n;小标题段首挂 HEAD_MARK、加粗包 BOLD_MARK(前端渲成标题 / 粗体);
     抽不到正文返回空串(只卡片不出详情,不硬造)。
     嵌套列表只在最外层收一次(scope 外的布局 li 不算);og:image 属性经 str() 收窄
     (bs4 可能给 AttributeValueList,company 同例)。"""
@@ -199,6 +211,8 @@ def extract_detail(x: DetailIn) -> DetailOut:
         return DetailOut(og_image=og_image, body="")
     for junk in scope.find_all(JUNK_TAGS):
         junk.decompose()
+    for b in scope.find_all(BOLD_TAGS):
+        mark_bold(b)
     paras = []
     for el in scope.find_all(BODY_TAGS):
         li = el.find_parent(TAG_LI)

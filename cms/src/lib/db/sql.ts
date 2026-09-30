@@ -1677,18 +1677,18 @@ export const JD_STATE_BY_ID = `SELECT id, jd_formatted FROM jobs WHERE id = $1 L
 // =========================================================================
 
 /**
- * 新闻列表页 60 条。
+ * 新闻列表页 60 条(2026-09-30 带上中 / 韩速读:列表卡也显示 AI 速读)。
  */
 export const NEWS_LIST = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
-                   importance, importance_note AS "importanceNote"
+                   importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
             FROM news ORDER BY date DESC, id ASC LIMIT 60`
 
 /**
- * 要闻区:带重要度与三语摘要的前 5。
+ * 要闻区:带重要度与三语摘要的前 7(2026-09-30 由 5 调 7:右列 4 → 6 条填满大卡高度)。
  */
 export const NEWS_LIST_REGION = `SELECT region, title, date, slug, og_image AS "ogImage", excerpt,
                    importance, importance_note AS "importanceNote", summary_zh AS "summaryZh", summary_ko AS "summaryKo"
-            FROM news WHERE importance IS NOT NULL ORDER BY importance DESC, date DESC LIMIT 5`
+            FROM news WHERE importance IS NOT NULL ORDER BY importance DESC, date DESC LIMIT 7`
 
 /**
  * 每条新闻的过审评论数。

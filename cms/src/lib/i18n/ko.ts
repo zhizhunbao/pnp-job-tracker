@@ -1023,7 +1023,7 @@ export const siteKo: Record<keyof typeof siteZh, string> = {
   'news.sub': '연방 IRCC 및 7개 주 공식 발표 · 12시간마다 갱신 · 공식 출처만',
   'news.federal': '연방 IRCC',
   'news.qcNote': '퀘벡은 자체 이민 체계를 운영합니다 (PNP 아님)',
-  'news.copy': '© {who} · 비공식 번역본 — 공식 원문을 기준으로 하세요',
+  'news.copy': '© {who}',
   'news.published': '게시일 {d}',
   'news.official': '공식 원문 보기',
   'news.toJobs': '해당 주 채용 보기', 'news.toJobsAll': '전체 채용 보기',

@@ -20,6 +20,7 @@ import { cssOf } from '@/components/css'
 import {
   API_COMMENTS, API_NEWS_SUMMARIZE, API_NEWS_TRANSLATE, ARIA_SLIDE_HEAD, AVATAR_FALLBACK, BOLT_PREFIX,
   CHIPS_SCOPE_CLS, CLS_CARD_HOVER, CLS_ROW_HOVER, CLS_SEP, CLS_TAP_PAD, CRED_INCLUDE, DATE_MMDD_FROM,
+  BOLD_RE, BOLD_WRAP_LEN,
   HDR_CONTENT_TYPE, HEAD_MARK_RE, HEAD_NONE, IMP_MIN, LANG_KO, LANG_ZH, METHOD_POST, MIME_JSON, NEWS_REGIONS,
   PARA_SEP_RE,
   PUBLISHER_FEDERAL, PUBLISHER_PROV_HEAD, PUBLISHER_QC, REGION_FEDERAL, REGION_IMG_CODES, REGION_IMG_HEAD,
@@ -30,6 +31,7 @@ import type {
   ClickFn, CommentCountIn, CommentSubmitIn, CommentsOfIn, DateIn, DayGroupsOfIn, DeadIn, ExpandLabelIn,
   ExpandToggleIn, FirstIn, GenBody, GenTextIn, HeroSummaryOfIn, ImgClsIn, ImpTipOfIn, ImportanceIn, InitialOfIn,
   LangCache, LangCacheAtIn, NewsComment, NewsDayGroup, NewsHero, NextIn, OfficialIn, OnIn, ParasOfIn, ParaTextIn,
+  BoldSeg,
   PauseIn,
   PickFn, PinnedIn, PostCommentIn, PresentRegionsOfIn, PutLangCacheIn, RegionIn, RegionLabelOfIn, RegionPickIn,
   RepliesAtIn, ReplySubmitIn, ReplyToggleIn, SendDisabledIn, ShownItemsOfIn, SlideAriaIn, SlidePickIn,
@@ -681,6 +683,30 @@ export function unmarkOf(x: ParaTextIn): string {
 }
 
 /**
+ * 一行字按加粗标记切成几截(没有标记就是一整截不加粗;落单的「**」原样当字)。
+ *
+ * @param x 一行正文。
+ * @returns 加粗与不加粗交替的几截。
+ */
+export function boldSegsOf(x: ParaTextIn): BoldSeg[] {
+  const out: BoldSeg[] = []
+  let at = 0
+  for (const m of x.text.matchAll(BOLD_RE)) {
+    if (m.groups != null && m.groups.inner != null) {
+      if (m.index > at) {
+        out.push({ text: x.text.slice(at, m.index), bold: false })
+      }
+      out.push({ text: m.groups.inner, bold: true })
+      at = m.index + m.groups.inner.length + BOLD_WRAP_LEN
+    }
+  }
+  if (at < x.text.length) {
+    out.push({ text: x.text.slice(at), bold: false })
+  }
+  return out
+}
+
+/**
  * 译文比原文多出来的尾段(不吞)。
  *
  * @param x 译文段、原文段数与对照开关。
@@ -1311,6 +1337,8 @@ function toNewsCard(x: NewsCardRowIn): NewsCard {
     excerpt: x.row.excerpt,
     importance,
     importanceNote: x.row.importanceNote,
+    summaryZh: x.row.summaryZh,
+    summaryKo: x.row.summaryKo,
   }
 }
 

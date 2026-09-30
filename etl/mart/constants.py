@@ -3087,6 +3087,9 @@ NEWS_FROM_PREFIX = "from:"
 NEWS_HEAD_PREFIX = "#"
 """excerpt 要跳过的小标题段前缀(2026-09-30 起 news 正文小标题段首挂「## / ###」,标题不当摘要)。"""
 
+NEWS_BOLD_MARK = "**"
+"""excerpt 要剥掉的加粗标记(同日起 news 正文加粗包「**」;卡片摘要是纯文本)。"""
+
 NEWS_EXCERPT_MAX = 240
 """excerpt 截断。"""
 

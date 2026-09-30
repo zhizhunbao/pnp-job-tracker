@@ -80,12 +80,7 @@ export type NewsCard = {
    * 重要度理由(数据层生成的**中文**);没评过是 null。
    */
   importanceNote: string | null
-}
 
-/**
- * 头条区的库行(`NEWS_LIST_REGION`):列表卡再加两门 AI 速读。
- */
-export type NewsHero = NewsCard & {
   /**
    * 中文速读;没生成过是 null。
    */
@@ -96,6 +91,12 @@ export type NewsHero = NewsCard & {
    */
   summaryKo: string | null
 }
+
+/**
+ * 头条区的库行(`NEWS_LIST_REGION`):列表卡再加两门 AI 速读。
+ * 2026-09-30 列表卡也带上两门速读(Frank「这个下面也显示 AI 速读」),两门格并进 NewsCard,头条行与列表卡同形。
+ */
+export type NewsHero = NewsCard
 
 /**
  * 详情页的库行(`newsBySlug` 那条 SQL 的原始行)。
@@ -1155,7 +1156,22 @@ export type DayGroupsOfIn = {
 }
 
 /**
- * headLevelOf / unmarkOf 的入参。
+ * 一段文字里的一截(boldSegsOf 的产出):加粗的与不加粗的交替。
+ */
+export type BoldSeg = {
+  /**
+   * 这一截的字(已去掉加粗标记)。
+   */
+  text: string
+
+  /**
+   * 这一截要不要渲粗体。
+   */
+  bold: boolean
+}
+
+/**
+ * headLevelOf / unmarkOf / boldSegsOf 的入参。
  */
 export type ParaTextIn = {
   /**

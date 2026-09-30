@@ -151,7 +151,7 @@ from mart.constants import (
     METRIC_NOM_ENHANCED_YTD, METRIC_PRIORITY_SECTOR, METRIC_PROCESSING_WEEKS,
     METRIC_PROC_COMMITMENT, METRIC_SIRS_POOL, MOM_MIN_PREV, MONTHS_PER_QUARTER,
     MONTH_ABBR_LEN, MONTH_LEN, MV_ADJ_MAX, MV_ADJ_MIN, MV_ADJ_SCALE, NEWS_EXCERPT_MAX,
-    NEWS_FROM_PREFIX, NEWS_HEAD_PREFIX, NEWS_MAX, NEWS_NOISE, NEWS_SLUG_N_TPL, NEWS_SLUG_TPL, NL, NOC_LEN,
+    NEWS_BOLD_MARK, NEWS_FROM_PREFIX, NEWS_HEAD_PREFIX, NEWS_MAX, NEWS_NOISE, NEWS_SLUG_N_TPL, NEWS_SLUG_TPL, NL, NOC_LEN,
     NOC_MAJOR_LEN, NOC_RE, NOC_RULES, NON_CITY_PREFIXES, NON_PNP_PROV, NON_WORD_RE, NORM_RE,
     NUM_EXACT_RE, NUM_MIN_RE, NUM_RANGE_MIN_RE, NUM_RANGE_RE, OCC_ROWS_TPL, ON_RE, ON_YEAR_METRICS,
     OP_GTE, ORIGIN_ATS, ORIGIN_HIREAC, ORIGIN_JOBBANK, OTTAWA_CITY, OTTAWA_CITY_LOWER, OTTAWA_CITY_NAMES,
@@ -4500,7 +4500,7 @@ def news_excerpt(x: NewsExcerptIn) -> str:
     """P1c①:excerpt 在汇装层清洗(剥「From:/Media advisory/News release/标题复读」样板行,前端只显)。"""
     tnorm = NON_WORD_RE.sub("", x.title).lower()
     for para in x.body.split(PARA_SEP):
-        p = SPACE.join(para.split())
+        p = SPACE.join(para.replace(NEWS_BOLD_MARK, "").split())
         low = p.lower()
         if not p or low.startswith(NEWS_FROM_PREFIX) or p.startswith(NEWS_HEAD_PREFIX) \
                 or low.rstrip(COLON) in NEWS_NOISE:

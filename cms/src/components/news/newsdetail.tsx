@@ -8,13 +8,13 @@
  * hooks.ts 的 useNewsDetail。
  * 2026-09-03 Frank「详情页返回按钮都在右上,样式位置固定统一」:返回改递 Shell 的 back 槽
  * (button 桶 BackButton,goBackOr 落 /news),不再在正文卡上方左侧自摆一行。
+ * 2026-09-30 Frank「返回 按钮放到 文章右上角」:钮挪进正文白卡右上角(照职位详情页 cardBack 的形),Shell 的 back 槽不再用。
  *
  * @author Frank
  * @time 2026-08-27 23:30:00
  */
-import { BackButton } from '@/components/button'
 import { Shell } from '@/components/shell'
-import { COMMENTS_ON, SHELL_TOP_DETAIL, URL_NEWS } from './constants'
+import { COMMENTS_ON, SHELL_TOP_DETAIL } from './constants'
 import { CommentsSection } from './commentssection'
 import { useNewsDetail } from './hooks'
 import { NewsArticle } from './newsarticle'
@@ -30,7 +30,7 @@ import css from './news.module.css'
 export function NewsDetail({ row, comments, loggedIn }: NewsDetailIn) {
   const d = useNewsDetail({ row })
   return (
-    <Shell top={SHELL_TOP_DETAIL} back={<BackButton fallback={URL_NEWS} label={d.t('detail.back')} />}>
+    <Shell top={SHELL_TOP_DETAIL}>
       <div className={css.track}>
         <NewsArticle t={d.t}
           lang={d.lang}
