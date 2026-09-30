@@ -943,29 +943,30 @@
      * 英文、韩文见下两条),各组分数照旧上下对齐。
      * 同日 Frank「间距要不要调整」(选「按这版改」):轮数格按本语言两位数的字宽收窄 —— 中韩 30px(「11 轮」29.6px;原 56px
      * 按英文定,中文合计与轮数之间空出 38–45px),按月那一组(「7 个月」)宽过就撑开只动它自己,同手机那条。
+     * 同日晚 Frank「这 5 个放到一行呢？」:桌面日期回到同一行,接在轮数后面、折叠记号前面(合计仍在原日期那一格,顺序同上一版);
+     * 日期格定宽 72px(12px 小字「2026-04-30」约 66px),各组日期上下对齐。手机照旧三行(375 放不下五格)。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 118px minmax(30px, max-content) 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 118px minmax(30px, max-content) 72px 10px;
 
     /*
      * 两行格位:合计在原日期那一格,日期落第二行(跨分数 / 合计 / 轮数三格靠右,右边与轮数齐)。
+     * 同日晚改一行:名字、分数、合计、轮数、日期、折叠记号。
      */
-    grid-template-areas:
-      "name score total rounds caret"
-      "name date date date caret";
+    grid-template-areas: "name score total rounds date caret";
   }
 
   .cmpHead.cmpHead.cmpDateBelow:lang(en) {
     /*
-     * 英文合计格:「at least 10,000 invitations」146px;轮数格「11 rounds」57.7px → 58px。
+     * 英文合计格:「at least 10,000 invitations」146px;轮数格「11 rounds」57.7px → 58px。同日晚加日期格 72px(同上)。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 146px minmax(58px, max-content) 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 146px minmax(58px, max-content) 72px 10px;
   }
 
   .cmpHead.cmpHead.cmpDateBelow:lang(ko) {
     /*
-     * 韩文合计格:「최소 10,000개 초청」106px;轮数格「11회」26.1px,同中文 30px。
+     * 韩文合计格:「최소 10,000개 초청」106px;轮数格「11회」26.1px,同中文 30px。同日晚加日期格 72px(同上)。
      */
-    grid-template-columns: minmax(0, 1fr) 104px 106px minmax(30px, max-content) 10px;
+    grid-template-columns: minmax(0, 1fr) 104px 106px minmax(30px, max-content) 72px 10px;
   }
 }
 
