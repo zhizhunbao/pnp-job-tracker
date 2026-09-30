@@ -42,6 +42,7 @@ import {
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
+  AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -863,7 +864,36 @@ export function channelListOf(x: ChannelListIn): ChannelSpec[] {
   for (const c of extraChannelsOf(x)) {
     out.push(c)
   }
+  for (const c of aipChannelsOf(x)) {
+    out.push(c)
+  }
   return out
+}
+
+/**
+ * 上段末尾的 AIP(2026-09-30 Frank「这个部分只显示能走的通道。能走 AIP 就列,不能走就不列」):大西洋四省、本岗雇主是本省 AIP
+ * 指定雇主(aipVerdictOf,同职位板 AIP 列)、职业 TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工(AIP 要全职非季节的 offer,TEER 4 要长期,
+ * 定期合同判不了长短就不列)才列;名字取通道对照表 AIP 那一行。
+ *
+ * @param x 取词函数、界面语言、灰字开关、本岗与通道对照表。
+ * @returns 能走给一条,否则空列。
+ */
+function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
+  if (aipVerdictOf(x.job) !== AIP_ON || ATLANTIC_PROVS.includes(x.job.province) === false) {
+    return []
+  }
+  if (x.job.teer == null || AIP_CHANNEL_TEERS.includes(x.job.teer) === false) {
+    return []
+  }
+  if (JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
+    return []
+  }
+  for (const p of x.pathways) {
+    if (p.key === AIP_PATHWAY_KEY) {
+      return [pathwayChannelOf({ t: x.t, lang: x.lang, showZh: x.showZh, p })]
+    }
+  }
+  return []
 }
 
 /**
@@ -1738,23 +1768,20 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
  * 「AIP 抽选」卡顶上加一行:本岗雇主在不在本省 AIP 指定雇主名单(2026-09-30 Frank「这个是一般雇主是不给你办的吧」,选「加」)。
  * AIP 只能由省里指定的雇主办(雇主先申请指定,再为候选人递背书申请);判定同职位板 AIP 列(aipVerdictOf:雇主名比对省里的
  * 指定雇主名单)。不在名单就明说办不了。其余各格原样搬(不许对象展开,字段写全)。
+ * 同日 Frank「本岗雇主不是本省 AIP 指定雇主,办不了 AIP 废话删了」:不在名单那句删,卡原样返回;在名单才加「是指定雇主」那句
+ * (能走 AIP 时通道卡上段另列 AIP,见 aipChannelsOf)。
  *
  * @param x 取词函数、本岗与算好的 AIP 卡。
- * @returns 顶上加了那一行的卡;卡是 null 照旧 null,非大西洋省(不适用)原样返回。
+ * @returns 指定雇主的岗顶上加了那一行的卡;卡是 null 照旧 null,其余原样返回。
  */
 export function aipEmployerCardOf(x: AipEmployerCardIn): DrawCard | null {
   if (x.card == null) {
     return null
   }
-  const verdict = aipVerdictOf(x.job)
-  if (verdict === AIP_NA) {
+  if (aipVerdictOf(x.job) !== AIP_ON) {
     return x.card
   }
-  let line = x.t('pnpaip.employerMiss')
-  if (verdict === AIP_ON) {
-    line = x.t('pnpaip.employerOn')
-  }
-  const lines = [line]
+  const lines = [x.t('pnpaip.employerOn')]
   for (const l of x.card.lines) {
     lines.push(l)
   }

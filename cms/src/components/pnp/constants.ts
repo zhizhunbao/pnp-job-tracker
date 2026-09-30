@@ -406,6 +406,16 @@ export const CHAN_TAG_HEAD = 'pnpchan.tag.'
 export const CHAN_TAG_WARN = ['noDraws', 'drawsStopped', 'timeLimited']
 
 /**
+ * 通道对照表里 AIP 那一行的编号(通道卡上段在本岗能走 AIP 时列它;2026-09-30 Frank「能走 AIP 就列,不能走就不列」)。
+ */
+export const AIP_PATHWAY_KEY = 'aip'
+
+/**
+ * AIP 收的 TEER(官方:TEER 0–3 的 offer 至少一年,TEER 4 要长期;见 etl/mart AIP_TEERS 的原句)。
+ */
+export const AIP_CHANNEL_TEERS = [0, 1, 2, 3, 4]
+
+/**
  * 官方链接显示成站名时取主机名的正则(去协议与 www.;取不到就不出链接)。组名 `host` = 站名,取值走 `m.groups.host`。
  */
 export const HOST_RE = /^https?:\/\/(?:www\.)?(?<host>[^/?#:]+)/i

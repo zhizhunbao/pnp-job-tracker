@@ -682,7 +682,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpaip.pool': 'Selected from the same pool as provincial nominees; counts are under provincial draws',
   'pnpaip.direct': 'The designated employer applies for endorsement directly; no draws',
   'pnpaip.employerOn': 'This employer is an AIP designated employer',
-  'pnpaip.employerMiss': 'This employer is not an AIP designated employer, so it can\'t use AIP',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',

@@ -398,16 +398,14 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   })
 
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上写本岗雇主在不在本省 AIP 指定雇主名单
-  it('AIP 卡顶上一行:指定雇主写「是」,不是写「办不了 AIP」(三语);其余各格原样;没有卡照旧没有、非大西洋省原样', () => {
+  // 2026-09-30 Frank「本岗雇主不是本省 AIP 指定雇主,办不了 AIP 废话删了」:不是指定雇主那句撤,卡原样
+  it('AIP 卡顶上一行:指定雇主写「是」(三语),不是指定雇主卡原样;其余各格原样;没有卡照旧没有、非大西洋省原样', () => {
     const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 60, program: 'AIP', unit: 'application' })]
     const card = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, hitStreams: [], genDraw: '', ops: [], reqs: [], year: '2026' })
     const on = aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card })
     expect(on?.lines).toEqual(['本岗雇主是本省 AIP 指定雇主'])
     expect([on?.title, on?.hits, on?.foot, on?.source]).toEqual([card?.title, card?.hits, card?.foot, card?.source])
-    const miss = aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: false }), card })
-    expect(miss?.lines).toEqual(['本岗雇主不是本省 AIP 指定雇主,办不了 AIP'])
-    expect(aipEmployerCardOf({ t: en, job: job({ province: 'NB', aip: false }), card })?.lines[0])
-      .toBe('This employer is not an AIP designated employer, so it can\'t use AIP')
+    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: false }), card })).toBe(card)
     expect(aipEmployerCardOf({ t: ko, job: job({ province: 'NB', aip: true }), card })?.lines[0]).toBe('이 고용주는 AIP 지정 고용주입니다')
     expect(aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card: null })).toBeNull()
     // 探针:非大西洋省判定是「不适用」,卡原样返回(那种岗本来也不出 AIP 卡)
@@ -1158,6 +1156,21 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       expect(down(job({ province: 'MB' }), 'ko')[0]!.sub).toBe('MB 해외 숙련 노동자')
     })
 
+    // 2026-09-30 Frank「这个部分只显示能走的通道。能走 AIP 就列,不能走就不列」
+    it('AIP:本岗雇主是指定雇主、TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工才列在上段末尾;名字取对照表 AIP 那一行', () => {
+      const nb = job({ province: 'NB', teer: 2, aip: true })
+      const card = up(nb)
+      expect(card[card.length - 1]).toMatchObject({ key: 'aip', name: 'Atlantic Immigration Program' })
+      expect(keys(up(job({ province: 'NB', teer: 2, aip: false })))).not.toContain('aip')
+      expect(keys(up(job({ province: 'NB', teer: 5, aip: true })))).not.toContain('aip')
+      expect(keys(up(job({ province: 'NB', teer: 4, aip: true })))).toContain('aip')
+      for (const pnpBlock of ['part', 'term', 'seasonal', 'casual']) {
+        expect(keys(up(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock })))).toEqual([])
+      }
+      expect(keys(up(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock: 'occ' })))).toContain('aip')
+      expect(keys(up(job({ province: 'AB', teer: 2, aip: true })))).not.toContain('aip')
+    })
+
     it('标签键三语都有词条(漏配 = 界面露出键名)', () => {
       for (const lang of ['zh', 'en', 'ko'] as const) {
         const t = makeT(lang)
@@ -1181,6 +1194,9 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
           const all = up(j)
           expect(all.slice(0, own.length)).toEqual(own)
           for (const c of all.slice(own.length)) {
+            if (c.key === 'aip') {
+              continue
+            }
             const p = byKey.get(c.key)!
             expect(p.province).toBe(province)
             expect(p.jobLinked && p.isDefault === false && p.boardLabel == null).toBe(true)

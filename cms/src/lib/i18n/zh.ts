@@ -723,7 +723,6 @@ export const jobsZh = {
   'pnpaip.direct': '由指定雇主直接为候选人递背书申请,不经抽选',
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上一行,本岗雇主在不在本省 AIP 指定雇主名单(判定同职位板 AIP 列)
   'pnpaip.employerOn': '本岗雇主是本省 AIP 指定雇主',
-  'pnpaip.employerMiss': '本岗雇主不是本省 AIP 指定雇主,办不了 AIP',
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
   // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
