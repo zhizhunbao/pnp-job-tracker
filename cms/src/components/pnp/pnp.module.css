@@ -839,8 +839,14 @@
   .cmpHead.cmpHead {
     /*
      * 两行排布。
+     * 2026-09-29 Frank「最后一行是不是右对齐 间距保持一致」(配图:阿省机会通道那一组的次行):次行原为分数靠左、日期紧跟、轮数贴右,
+     * 各组按自己的字宽排 —— 375 实测日期与轮数之间空 94–175px,各组日期上下对不齐,没分数的组日期前还空一格。改成与桌面同一个
+     * 排法,三格都靠右:分数格吃余宽靠右(原 .cmpScore 次行左对齐那条撤)、日期格按字宽、轮数格定宽(下一格),各组日期落同一列,
+     * 格与格之间 12px。轮数格跨轮数列 + 记号列(中间一道 12px 列距),总宽 = 本语言两位数的字宽:中文 / 韩文 6 + 12 + 12 = 30px
+     *(「11 轮」29.6px、「11회」26.1px),英文见下条;一位数的轮次少一位,离日期多一位数的宽(同表格里数字靠右);按月那一组
+     *(NS「7 个月」)宽过这一格就撑开,只动它自己。
      */
-    grid-template-columns: max-content max-content minmax(0, 1fr) 12px;
+    grid-template-columns: minmax(0, 1fr) max-content minmax(6px, max-content) 12px;
 
     /*
      * 格位。
@@ -855,11 +861,11 @@
     row-gap: 2px;
   }
 
-  .cmpScore {
+  .cmpHead.cmpHead:lang(en) {
     /*
-     * 次行左对齐。
+     * 英文「11 rounds」57.7px:轮数列 34px(34 + 12 + 12 = 58px;理由同上,2026-09-29)。
      */
-    text-align: left;
+    grid-template-columns: minmax(0, 1fr) max-content minmax(34px, max-content) 12px;
   }
 }
 
