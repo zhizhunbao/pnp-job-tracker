@@ -3082,6 +3082,9 @@ NEWS_NOISE = {"media advisory", "news release", "statement", "backgrounder",
 NEWS_FROM_PREFIX = "from:"
 """excerpt 要跳过的发文机关行前缀。"""
 
+NEWS_HEAD_PREFIX = "#"
+"""excerpt 要跳过的小标题段前缀(2026-09-30 起 news 正文小标题段首挂「## / ###」,标题不当摘要)。"""
+
 NEWS_EXCERPT_MAX = 240
 """excerpt 截断。"""
 
