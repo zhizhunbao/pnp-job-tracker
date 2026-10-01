@@ -34,7 +34,7 @@ from names.functions import norm_name
 from noc.functions import teer_of
 from aip.constants import (
     AIP_TEER_MAX, ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, DASH_SPLIT, FLAG_DONE_TPL, FLAG_IN_LIST_TPL, LEGAL_HINT_RE,
-    PAREN_TAIL_RE,
+    PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE,
     FLAG_IN_OUT_TPL, FLAG_NAMES_TPL, IN_AIP_LIST, IN_OUT_COMPANIES_DIR, IN_OUT_POSTINGS, INDENT_2,
     K_AIP, K_JOBS,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
@@ -402,9 +402,9 @@ def aip_name_forms(raw: str) -> list:
         m = PAREN_TAIL_RE.match(form)
         if m is None:
             continue
-        forms.append(m.group("head"))
-        if LEGAL_HINT_RE.search(m.group("inner")):
-            forms.append(m.group("inner"))
+        forms.append(m.group(PAREN_HEAD))
+        if LEGAL_HINT_RE.search(m.group(PAREN_INNER)):
+            forms.append(m.group(PAREN_INNER))
     return forms
 
 

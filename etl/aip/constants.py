@@ -350,6 +350,12 @@ PAREN_TAIL_RE = re.compile(r"^(?P<head>.+?)\s*\((?P<inner>[^()]+)\)\s*$")
 """NB 名录「经营名 (法定名或地点)」写法(如「Subway (605342 NB Ltée)」「Kent Building Supplies (Head Office)」):去掉末尾括号的
 那段收进来(2026-10-01)。"""
 
+PAREN_HEAD = "head"
+"""PAREN_TAIL_RE 的组名:括号前那段。"""
+
+PAREN_INNER = "inner"
+"""PAREN_TAIL_RE 的组名:括号里那段。"""
+
 LEGAL_HINT_RE = re.compile(r"\b(?:inc|ltd|lt[ée]e|limited|corp|corporation|holdings?|enterprises?|company|group)\b|\d", re.I)
 """括号里那段像法定名(带公司后缀,或编号公司的数字)才单收;括号里是地点(Saint John、Head Office)的不收,免得「saint john」被当成
 雇主名(2026-10-01)。"""
