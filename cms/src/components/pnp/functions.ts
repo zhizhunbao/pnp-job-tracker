@@ -2444,6 +2444,7 @@ function statusRowOf(x: GateRowOfIn): GateRowSpec | null {
 /**
  * 一条身份行的文案:where=inProvince →「申请时须在本省工作」;permits=… → 认哪几类工签(逐个查词条,顿号连);noImplied →
  * 「申请期间维持身份的不算」。认不出的编码不出(宁缺不乱写)。
+ * 同日 375 实拍工签那句折成三行、断在词中间:改「须持以下工签之一:」一行 + 每种工签各一行(文案「一行一条」)。
  *
  * @param x 取词函数、身份行与本省界面名。
  * @returns 文案;没有给空列。
@@ -2455,11 +2456,10 @@ function statusLinesOf(x: StatusLinesIn): string[] {
   }
   const permits = basisValueOf({ basis: x.r.basis, key: BASIS_PERMITS })
   if (permits !== TEXT_NONE) {
-    const names: string[] = []
+    out.push(x.t('pnpgate.statusPermitsHead'))
     for (const p of permits.split(BASIS_PERMIT_SEP)) {
-      names.push(x.t(GATE_PERMIT_HEAD + p))
+      out.push(capFirstOf(x.t(GATE_PERMIT_HEAD + p)))
     }
-    out.push(x.t('pnpgate.statusPermits', { list: names.join(x.t('pnpgate.sep')) }))
   }
   if (basisHasOf({ basis: x.r.basis, key: BASIS_NO_IMPLIED })) {
     out.push(x.t('pnpgate.statusNoImplied'))
@@ -2654,6 +2654,9 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
+  if (basisValueOf({ basis: main.basis, key: BASIS_WHERE }) === BASIS_WHERE_ANYWHERE) {
+    lines.push(x.t('pnpgate.expAnywhere'))
+  }
   if (local != null && local.value != null) {
     const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
     if (w !== TEXT_NONE) {
@@ -2674,7 +2677,8 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
 
 /**
  * 通用经验那一条的写法:同雇主在职 / 近 N 个月内 / 只写月数。
- * 2026-09-30 通道与门槛批 1(Frank「24 个月全职经验。不需要本省?国外呢?」):口径包写了 where=anywhere 的,写明「加拿大境内外都算」。
+ * 2026-09-30 通道与门槛批 1(Frank「24 个月全职经验。不需要本省?国外呢?」):口径包写了 where=anywhere 的,写明「加拿大境内外都算」
+ *(同日 375 实拍折在词中间,改由 expRowOf 在下面另起一行「加拿大境内外的经验都算」,本函数不再管)。
  *
  * @param x 取词函数、经验行与月数。
  * @returns 文案。
@@ -2685,9 +2689,6 @@ function expLineOf(x: ExpLineIn): string {
   }
   const w = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW })
   if (w !== TEXT_NONE) {
-    if (basisValueOf({ basis: x.r.basis, key: BASIS_WHERE }) === BASIS_WHERE_ANYWHERE) {
-      return x.t('pnpgate.expWinAnywhere', { n: x.n, w })
-    }
     return x.t('pnpgate.expWin', { n: x.n, w })
   }
   const wy = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW_YEARS })
@@ -2726,6 +2727,7 @@ function expAltLinesOf(x: GateRowOfIn): string[] {
     } else if (basisHasOf({ basis: r.basis, key: BASIS_PGWP }) && r.unit === GATE_UNIT_MONTHS && r.value != null) {
       const wm = basisValueOf({ basis: r.basis, key: BASIS_WINDOW })
       if (wm !== TEXT_NONE) {
+        lines.push(x.t('pnpgate.expPgwpHead'))
         lines.push(x.t('pnpgate.expPgwp', { n: r.value, w: wm, prov }))
       }
     }
