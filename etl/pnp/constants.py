@@ -2945,8 +2945,12 @@ BCR_EXP_LABEL_TPL = ("{word} years of full-time skilled work experience "
 """4.1(c) 工作经验的 label。
 2026-09-29:窗口期年数改读官方原句(BCR_EXP_WINDOW_RE 抽出的数词,现为 ten),原模板写死「ten」—— 落盘 label 逐字不变。"""
 
-BCR_BASIS_WINDOW_TPL = "windowYears={n}"
-"""4.1(c) 经验行的窗口期口径包(近 N 年内;门槛卡读,判定引擎与门槛量尺不读)。"""
+BCR_BASIS_WINDOW_TPL = "windowYears={n};where=anywhere;expTeer={teers};anyNoc"
+"""4.1(c) 经验行的窗口期口径包(近 N 年内;门槛卡读,判定引擎与门槛量尺不读)。
+2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:补三格 —— where=anywhere(BCR_EXP_WINDOW_RE 锚的原句「This experience may be from work performed within Canada or
+abroad」)、expTeer=原句的 TEER 档(BCR_EXP_RE「in any skilled occupation (NOC TEER 0, 1, 2 or 3)」)、anyNoc(同句「any」:哪个技术
+类职业都算,不必与 offer 同职业)。门槛卡据此写「加拿大境内外的经验都算」「任何 TEER 0–3 职业的经验都算」,说清楚这 24 个月与发
+offer 的雇主无关。"""
 
 BCR_LICENSING_LABEL = ("Mandatory certification, licensing or registration required for the job offered "
                        "(proof at application, or steps showing it will shortly be met)")
@@ -3846,9 +3850,10 @@ ABR_PROBLEM_LANG_NOC = "33102 的单独语言档没解析到"
 ABR_PROBLEM_EXP = "工作经验门槛没解析到(境内外 24 个月 / 阿省 12 个月两条须同时在)"
 """自校问题:经验两行。"""
 
-ABR_BASIS_ANY_TPL = "windowMonths={n};where=anywhere"
+ABR_BASIS_ANY_TPL = "windowMonths={n};where=anywhere;sameNoc"
 """通用 24 个月那行的口径包(2026-09-30 通道与门槛批 1):窗口期 + 在哪攒的算 —— 官方原句「in Canada or abroad」,门槛卡写「加拿大
-境内外都算」(Frank「24 个月全职经验。不需要本省?国外呢?」)。判定引擎只认 employerTenure,这格不改判定。"""
+境内外都算」(Frank「24 个月全职经验。不需要本省?国外呢?」)。判定引擎只认 employerTenure,这格不改判定。
+2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:补 sameNoc —— ABR_EXP_ANY_RE 原句「in your current occupation」(须是现在这个职业的经验),门槛卡写「须是这个职业的经验」。"""
 
 ABR_EXP_PGWP_RE = re.compile(
     r"Post-Graduation Work Permit holders require a minimum of (\d+) months full-time work experience in your current "
@@ -4335,6 +4340,12 @@ Pathway EE 版的 EE 池)。"""
 SKR_BASIS_WINDOW_TPL = "windowYears={n}"
 """经验行的口径包:近 N 年内(门槛卡写「N 个月全职经验(近 N 年内)」;判定引擎只认 employerTenure 一个口径标记,这格不改判定)。"""
 
+SKR_BASIS_OCC_WINDOW_TPL = "windowYears={n};sameNoc"
+"""医疗 / 科技 / 农业三条(非 EE 与 EE 两半)经验行的口径包:近 N 年内 + 须是这个职业的经验(2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」)。
+三条正则都抓到了原句里的职业限定 —— SKR_TALENT_EXP_RE「in your occupation」、SKR_AGRI_EXP_RE「(in your intended occupation)」、
+SKR_TALENT_EE_EXP_RE「in your intended eligible occupation」。雇主 offer / 在需职业合用的那行(SKR_EXP_EO_RE)不加:在需职业页原句是
+「in a skilled occupation」,不限同职业,加了会把那条通道写错。"""
+
 SKR_BASIS_EMPLOYER_TENURE = "employerTenure"
 """在担保雇主处在职时长的口径标记(同 ON / MB / AB 旅游酒店的 employerTenure;门槛卡据此写「在现雇主全职满 N 个月」)。
 单独成串、不与别的口径并写:判定引擎认它是整串相等。
@@ -4585,6 +4596,11 @@ of study.」→ experience 6 个月(英文数词 → 数字)。不是在担保�
 SKR_STUDENTS_EXP_LABEL_TPL = ("At least {n} months ({hours} hours) of paid employment in Saskatchewan related to the field of "
                               "study")
 """学生子类经验行的 label。"""
+
+SKR_STUDENTS_EXP_BASIS = "where=inProvince;field;paid"
+"""学生子类经验行的口径包(2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」):SKR_STUDENTS_EXP_RE 原句「paid employment in Saskatchewan related to your field of
+study」—— 在本省(where=inProvince)、与所学专业相关(field)、有薪工作不写全职(paid;门槛卡写「N 个月有薪工作经验」,原先套通用写法
+「N 个月全职经验」写错了)。"""
 
 SKR_PROBLEM_STUDENTS_EXP = "学生子类工作经验(You have worked for a minimum of N months …)没解析到(students 页可能改版)"
 """自校问题:学生子类经验(2026-09-30)。"""
@@ -5024,8 +5040,10 @@ NSR_LANG_LO_RE = re.compile(
 
 NSR_EXP_RE = re.compile(
     r"You have worked (\d+) complete calendar months within the last (\d+) years "
-    r"and a minimum of ([\d,]+) hours", re.I)
-"""工作经验。"""
+    r"and a minimum of ([\d,]+) hours\. This work must be related to the job you are (?:being )?offered", re.I)
+"""工作经验。
+2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:连下一句一起抓 —— 指南 A / B / D 三段同写「This work must be related to the job you are (being) offered」,
+口径包据此加 related(NSR_BASIS_WINDOW_TPL),门槛卡写「须与这份工作相关」。"""
 
 NSR_EMP_YEARS_RE = re.compile(r"The employer must have operated in Nova Scotia for at least (\d+) years", re.I)
 """雇主经营年限。"""
@@ -5075,9 +5093,10 @@ NSR_SECTION_SW = "A) Skilled Workers"
 NSR_SECTION_CCW = "B) Critical Construction Workers — Education Requirements - CCW"
 """B 类学历的出处节名。"""
 
-NSR_BASIS_WINDOW_TPL = "windowYears={n}"
+NSR_BASIS_WINDOW_TPL = "windowYears={n};related"
 """经验那行把窗口期写进 basis(2026-09-29 七省门槛卡:官方原句「within the last 5 years」,原先只写进 label)——
-门槛卡按它出「(近 5 年内)」;判定引擎与门槛量尺都不读 windowYears(只认 employerTenure),判定不变(同 ABR_BASIS_WINDOW_TPL)。"""
+门槛卡按它出「(近 5 年内)」;判定引擎与门槛量尺都不读 windowYears(只认 employerTenure),判定不变(同 ABR_BASIS_WINDOW_TPL)。
+2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:加 related(NSR_EXP_RE 连抓的「This work must be related to the job you are being offered」)。"""
 
 NSR_LANG_HI_LABEL_TPL = ("Canadian Language Benchmarks (CLB) or NCLC Level {clb} or higher for jobs "
                          "in NOC TEER {band} (Skilled Worker, Critical Construction Worker and "
@@ -5275,6 +5294,10 @@ NSR_SECTION_EE_EXP = "Nova Scotia: Express Entry — Skilled Work Experience in 
 
 NSR_SECTION_EE_PHYS = "Nova Scotia: Express Entry — Physicians — Eligibility"
 """快速通道(医生)几行的出处节名。"""
+
+NSR_EE_EXP_BASIS = "where=inProvince"
+"""快速通道(本省经验)经验行的口径包(2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」):NSR_EE_EXP_RE 原句「experience working in Nova Scotia」—— 须是在本省的
+工作经验,门槛卡据此写一行(原先只有「12 个月全职经验」,看不出要在本省)。"""
 
 NSR_EE_EXP_RE = re.compile(r"have at least (\w+) year of experience working in Nova Scotia in an occupation at TEER 0, 1, 2, "
                            r"or 3 of the National Occupational Classification")
@@ -5657,6 +5680,11 @@ NBR_JOB_REQ_LABEL = "Meet the job requirements under the NOC and applicable laws
 
 NBR_BASIS_WINDOW_TPL = "windowYears={n}"
 """经验行的口径包:近 N 年内(门槛卡据此出「近 N 年内」;判定引擎只认 employerTenure,不读窗口期;2026-09-30,同 SKR / NSR 各自那份)。"""
+
+NBR_EE_EXP_BASIS_TPL = "windowYears={n};oneNoc;expTeer=0,1,2,3"
+"""快速通道经验行的口径包(2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」):NBR_EE_EXP_RE 原句「continuous work experience … in one NOC code in a TEER category 0,
+1, 2 or 3」—— 同一个职业连续(oneNoc)、TEER 0–3 职业(expTeer;档位照原句字面,正则是字面匹配)。法语战略倡议那条原句只写「qualifying
+work experience」,照旧用 NBR_BASIS_WINDOW_TPL。"""
 
 NBR_POINTS_LABEL_TPL = "Score at least {n}/100 points on the New Brunswick selection factor grid"
 """打分表最低分行的 label(快速通道 67、战略倡议 65;2026-09-30)。"""

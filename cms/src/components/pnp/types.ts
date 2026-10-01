@@ -4410,6 +4410,26 @@ export type ChannelOfIn = {
 }
 
 /**
+ * expScopeLinesOf 的入参(2026-10-01 工作经验说清楚)。
+ */
+export type ExpScopeIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 经验主行。
+   */
+  r: PnpReq
+
+  /**
+   * 本省界面名(「须是在新斯科舍省的工作经验」)。
+   */
+  prov: string
+}
+
+/**
  * statusLinesOf 的入参(2026-09-30 通道与门槛批 1)。
  */
 export type StatusLinesIn = {

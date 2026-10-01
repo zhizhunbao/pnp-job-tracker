@@ -5,7 +5,7 @@
   "url": "https://www.welcomebc.ca/immigrate-to-b-c/bc-pnp-si-program-guide-pdf",
   "pageUrl": "https://www.welcomebc.ca/immigrate-to-b-c/for-workers",
   "guideEffective": "2026-06-10",
-  "fetched": "2026-09-29",
+  "fetched": "2026-10-01",
   "requirements": [
     {
       "stream": "BC PNP Skills Immigration (all streams)",
@@ -265,7 +265,7 @@
       "appliesTeer": [],
       "appliesArea": "",
       "familySize": null,
-      "basis": "windowYears=10",
+      "basis": "windowYears=10;where=anywhere;expTeer=0,1,2,3;anyNoc",
       "label": "Two years of full-time skilled work experience (NOC TEER 0, 1, 2, or 3) within the last ten years",
       "section": "4.1(c)",
       "factor": "experience"

@@ -46,7 +46,7 @@ import {
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, AIP_APOS_RE, AIP_OA_TAIL_RE,
-  AIP_HIT_MIN_LEN,
+  AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -78,7 +78,7 @@ import type {
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
-  AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn,
+  AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -2355,6 +2355,9 @@ function yearOf(r: PnpOps): string {
  * 2026-09-28 通道表批二:本岗通道 → 门槛流的对照改读库表 pathways(本岗通道那一行的 reqStreams),两张常量退役;没登记的省照旧不出卡。
  * 2026-09-29 Frank「照这个做」(安省门槛卡,看过文字效果图):工作经验之后加「工资」一行;语言 / 经验按本岗 TEER 与排除职业挑档,
  * 经验列应届款与替代路径「或……」;雇主分区各档全部列出。
+ * 2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:
+ * Frank 把「雇主」行读成了对攒经验那个雇主的要求 —— 它说的是发 offer 的雇主。挪到「雇主 offer」正下面、行名改「雇主条件」
+ *(资讯页门槛卡同)。
  *
  * @param x 取词函数、本岗、门槛表与本岗走的那条通道。
  * @returns 门槛卡;本岗通道没登记对照或没有门槛行给 null。
@@ -2380,9 +2383,8 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   }
   const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
-  for (const row of [statusRowOf(one), offerRowOf(one), langRowOf(one), expRowOf(one), residenceRowOf(one),
-    wageRowOf(one), pointsRowOf(one),
-    eeRowOf(one), empRowOf(one), otherRowOf(one)]) {
+  for (const row of [statusRowOf(one), offerRowOf(one), empRowOf(one), langRowOf(one), expRowOf(one),
+    residenceRowOf(one), wageRowOf(one), pointsRowOf(one), eeRowOf(one), otherRowOf(one)]) {
     if (row != null) {
       rows.push(row)
     }
@@ -2683,8 +2685,8 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
   }
   const prov = x.t(PROV_KEY_HEAD + x.job.province)
   const lines = [expLineOf({ t: x.t, r: main, n: main.value })]
-  if (basisValueOf({ basis: main.basis, key: BASIS_WHERE }) === BASIS_WHERE_ANYWHERE) {
-    lines.push(x.t('pnpgate.expAnywhere'))
+  for (const line of expScopeLinesOf({ t: x.t, r: main, prov })) {
+    lines.push(line)
   }
   if (local != null && local.value != null) {
     const w = basisValueOf({ basis: local.basis, key: BASIS_WINDOW })
@@ -2705,14 +2707,59 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
 }
 
 /**
+ * 经验主行下面「说清楚」的几行(2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」):
+ * 在哪攒的算(加拿大境内外都算 / 须在本省)、哪类职业(任何 TEER 0–3 职业都算 / 须是 TEER 0–3 职业)、要不要同职业(须是这个职业 /
+ * 须在同一职业连续)、要不要相关(与这份工作相关 / 与所学专业相关)—— 全由经验行口径包编码出,数据层只在官方原句写了时才打标。
+ * 原先只有「加拿大境内外都算」一种,写在 expRowOf 里,同批并进这里。
+ *
+ * @param x 取词函数、经验主行与本省界面名。
+ * @returns 文案;口径包没写给空列。
+ */
+function expScopeLinesOf(x: ExpScopeIn): string[] {
+  const out: string[] = []
+  const where = basisValueOf({ basis: x.r.basis, key: BASIS_WHERE })
+  if (where === BASIS_WHERE_ANYWHERE) {
+    out.push(x.t('pnpgate.expAnywhere'))
+  }
+  if (where === BASIS_WHERE_IN_PROV) {
+    out.push(x.t('pnpgate.expInProv', { prov: x.prov }))
+  }
+  const teer = basisValueOf({ basis: x.r.basis, key: BASIS_EXP_TEER })
+  if (teer !== TEXT_NONE) {
+    if (basisHasOf({ basis: x.r.basis, key: BASIS_ANY_NOC })) {
+      out.push(x.t('pnpgate.expAnyTeer', { teers: qcTeerRangeOf(teer) }))
+    } else {
+      out.push(x.t('pnpgate.expTeer', { teers: qcTeerRangeOf(teer) }))
+    }
+  }
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_SAME_NOC })) {
+    out.push(x.t('pnpgate.expSameOcc'))
+  }
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_ONE_NOC })) {
+    out.push(x.t('pnpgate.expOneNoc'))
+  }
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_RELATED })) {
+    out.push(x.t('pnpgate.expRelated'))
+  }
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_FIELD })) {
+    out.push(x.t('pnpgate.expField'))
+  }
+  return out
+}
+
+/**
  * 通用经验那一条的写法:同雇主在职 / 近 N 个月内 / 只写月数。
  * 2026-09-30 通道与门槛批 1(Frank「24 个月全职经验。不需要本省?国外呢?」):口径包写了 where=anywhere 的,写明「加拿大境内外都算」
  *(同日 375 实拍折在词中间,改由 expRowOf 在下面另起一行「加拿大境内外的经验都算」,本函数不再管)。
+ * 2026-10-01:口径包带 paid 的(萨省本省毕业生「paid employment」)写「N 个月有薪工作经验」,不套「全职」。
  *
  * @param x 取词函数、经验行与月数。
  * @returns 文案。
  */
 function expLineOf(x: ExpLineIn): string {
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_PAID })) {
+    return x.t('pnpgate.expPaid', { n: x.n })
+  }
   if (basisHasOf({ basis: x.r.basis, key: BASIS_TENURE })) {
     return x.t('pnpgate.expTenure', { n: x.n })
   }
@@ -3129,10 +3176,10 @@ function provStreamRowsOf(x: ProvStreamRowsIn): GateRowSpec[] {
   if (x.p.jobLinked) {
     offer = offerRowOf(x.one)
   }
-  for (const row of [statusRowOf(x.one), offer, langAllRowOf(x.one),
+  for (const row of [statusRowOf(x.one), offer, empRowOf(x.one), langAllRowOf(x.one),
     bandRowOf({ one: x.one, factors: GATE_EXP_FACTORS, build: expRowOf }), residenceRowOf(x.one),
     bandRowOf({ one: x.one, factors: GATE_WAGE_FACTORS, build: wageRowOf }), pointsRowOf(x.one), eeRowOf(x.one),
-    empRowOf(x.one), otherRowOf(x.one)]) {
+    otherRowOf(x.one)]) {
     if (row != null) {
       rows.push(row)
     }

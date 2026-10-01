@@ -5,7 +5,7 @@
   "url": "https://liveinnovascotia.com/sites/default/files/2026-02/Guide-NSNP-Skilled-Worker-English.pdf",
   "pageUrl": "https://liveinnovascotia.com/skilled-worker",
   "guideEffective": "September 2026",
-  "fetched": "2026-09-30",
+  "fetched": "2026-10-01",
   "requirements": [
     {
       "stream": "Nova Scotia Nominee Program — Skilled Worker stream",
@@ -61,7 +61,7 @@
       "excludesNoc": "",
       "appliesArea": "",
       "familySize": null,
-      "basis": "windowYears=5",
+      "basis": "windowYears=5;related",
       "label": "12 complete calendar months of paid work within the last 5 years and a minimum of 1,560 hours, related to the job being offered (volunteer work and unpaid internships do not count)",
       "section": "Skilled Workers — work experience",
       "factor": "experience"
@@ -259,7 +259,7 @@
       "excludesNoc": "",
       "appliesArea": "",
       "familySize": null,
-      "basis": "",
+      "basis": "where=inProvince",
       "label": "At least 12 months (one year) of work experience in Nova Scotia in a NOC TEER 0, 1, 2 or 3 occupation",
       "section": "Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia — Eligibility",
       "factor": "experience",

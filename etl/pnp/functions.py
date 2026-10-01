@@ -421,6 +421,9 @@ from pnp.constants import (  # 2026-09-30 通道与门槛批 1(阿省机会通�
     ABR_PROBLEM_STATUS_PERMIT, ABR_PROBLEM_STATUS_WHERE, ABR_SECTION_STATUS, ABR_STATUS_PERMIT_BASIS, ABR_STATUS_PERMIT_LABEL,
     ABR_STATUS_PERMIT_RE, ABR_STATUS_WHERE_BASIS, ABR_STATUS_WHERE_LABEL, ABR_STATUS_WHERE_RE, FACTOR_STATUS,
 )
+from pnp.constants import (  # 2026-10-01 工作经验说清楚(经验行口径包补在哪攒的、哪类职业、同职业、相关)
+    NBR_EE_EXP_BASIS_TPL, NSR_EE_EXP_BASIS, SKR_BASIS_OCC_WINDOW_TPL, SKR_STUDENTS_EXP_BASIS,
+)
 from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
     K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
     SKR_EO_STREAM, FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
@@ -518,6 +521,14 @@ def pdf_text(data: bytes) -> str:
 def fold_ws(s: str) -> str:
     """连续空白折一个空格(全域最常用的一步清洗)。"""
     return WS_RE.sub(TEXT_JOIN_SEP, s)
+
+
+def teer_csv(s: str) -> str:
+    """'0, 1, 2 or 3' → '0,1,2,3'(经验行口径包 expTeer 的值:这段经验在哪几档 TEER 的职业里攒的;2026-10-01)。"""
+    out: list = []
+    for t in teers(s):
+        out.append(str(t))
+    return COMMA.join(out)
 
 
 def teers(s: str) -> list:
@@ -3223,7 +3234,8 @@ def bc_experience_reqs(txt: str) -> ReqsOut:
     if m and yrs is not None and window != "":
         rows.append(to_bc_req(ReqIn(stream=BCR_SKILLED_WORKER, factor=FACTOR_EXPERIENCE, op=OP_GE,
                                     value=yrs * MBR_MONTHS_PER_YEAR, unit=UNIT_MONTHS,
-                                    basis=BCR_BASIS_WINDOW_TPL.format(n=WORD_N[window.lower()]),
+                                    basis=BCR_BASIS_WINDOW_TPL.format(n=WORD_N[window.lower()],
+                                                                      teers=teer_csv(m.group(2))),
                                     section=BCR_SECTION_EXP,
                                     label=BCR_EXP_LABEL_TPL.format(word=m.group(1).title(), band=m.group(2),
                                                                    window=window))))
@@ -4683,7 +4695,7 @@ def sk_talent_reqs(spec: dict) -> ReqsOut:
         window = word_or_digit(exp.group(2))
     if exp and years is not None and window is not None:
         rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE, value=years * MBR_MONTHS_PER_YEAR,
-                                    unit=UNIT_MONTHS, basis=SKR_BASIS_WINDOW_TPL.format(n=window),
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_OCC_WINDOW_TPL.format(n=window),
                                     section=spec[K_SECTION], label=fold_ws(exp.group(0)).strip(), url=spec[K_URL])))
     else:
         problems.append(SKR_PROBLEM_TALENT_EXP_TPL.format(name=spec[K_NAME]))
@@ -4798,7 +4810,7 @@ def sk_students_reqs(txt: str) -> ReqsOut:
         months = word_n_of(m.group(1))
     if m and months is not None:
         rows.append(to_sk_req(ReqIn(stream=SKR_STUDENTS_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
-                                    value_text=m.group(0), section=SKR_SECTION_STUDENTS,
+                                    value_text=m.group(0), basis=SKR_STUDENTS_EXP_BASIS, section=SKR_SECTION_STUDENTS,
                                     label=SKR_STUDENTS_EXP_LABEL_TPL.format(n=months, hours=m.group(2)),
                                     url=SKR_STUDENTS_URL)))
     else:
@@ -4849,7 +4861,7 @@ def sk_talent_ee_reqs(spec: dict) -> ReqsOut:
         window = word_n_of(exp.group(2))
     if exp and years is not None and window is not None:
         rows.append(to_sk_req(ReqIn(stream=spec[K_STREAM], factor=FACTOR_EXPERIENCE, value=years * MBR_MONTHS_PER_YEAR,
-                                    unit=UNIT_MONTHS, basis=SKR_BASIS_WINDOW_TPL.format(n=window),
+                                    unit=UNIT_MONTHS, basis=SKR_BASIS_OCC_WINDOW_TPL.format(n=window),
                                     section=spec[K_SECTION], label=fold_ws(exp.group(0)).strip(), url=spec[K_URL])))
     else:
         problems.append(SKR_PROBLEM_TALENT_EE_EXP_TPL.format(name=spec[K_NAME]))
@@ -5501,7 +5513,8 @@ def ns_ee_exp_reqs(txt: str) -> ReqsOut:
     if exp and years is not None:
         months = years * MBR_MONTHS_PER_YEAR
         rows.append(to_ns_req(ReqIn(stream=NSR_EE_EXP_STREAM, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
-                                    value_text=exp.group(0), applies_teer=NSR_EE_TEER_03, section=NSR_SECTION_EE_EXP,
+                                    value_text=exp.group(0), applies_teer=NSR_EE_TEER_03, basis=NSR_EE_EXP_BASIS,
+                                    section=NSR_SECTION_EE_EXP,
                                     label=NSR_EE_EXP_LABEL_TPL.format(months=months, word=exp.group(1)))))
     else:
         problems.append(NSR_PROBLEM_EE_EXP)
@@ -5804,7 +5817,7 @@ def nb_ee_reqs(txt: str) -> ReqsOut:
                                           section=NBR_SECTION_EE, rules=NBR_EE_RULES)),
                      nb_exp_rows(NbExpIn(txt=gen.group(1), rule_re=NBR_EE_EXP_RE, stream=NBR_EE_STREAM, url=NBR_EE_URL,
                                          section=NBR_SECTION_EE, label_tpl=NBR_EE_EXP_LABEL_TPL,
-                                         problem=NBR_PROBLEM_EE_EXP))):
+                                         problem=NBR_PROBLEM_EE_EXP, basis_tpl=NBR_EE_EXP_BASIS_TPL))):
             rows += part.rows
             problems += part.problems
     else:
@@ -5838,7 +5851,7 @@ def nb_exp_rows(x: NbExpIn) -> ReqsOut:
         return ReqsOut(rows=[], problems=[x.problem])
     months = years * MBR_MONTHS_PER_YEAR
     return ReqsOut(rows=[to_nb_req(ReqIn(stream=x.stream, factor=FACTOR_EXPERIENCE, value=months, unit=UNIT_MONTHS,
-                                         value_text=m.group(0), basis=NBR_BASIS_WINDOW_TPL.format(n=window),
+                                         value_text=m.group(0), basis=x.basis_tpl.format(n=window),
                                          section=x.section, url=x.url,
                                          label=x.label_tpl.format(months=months, word=m.group(1), window=window)))],
                    problems=[])
@@ -5859,7 +5872,7 @@ def nb_si_reqs(txt: str) -> ReqsOut:
     if gen:
         for part in (nb_exp_rows(NbExpIn(txt=gen.group(1), rule_re=NBR_SI_EXP_RE, stream=NBR_SI_STREAM, url=NBR_SI_URL,
                                          section=NBR_SECTION_SI, label_tpl=NBR_SI_EXP_LABEL_TPL,
-                                         problem=NBR_PROBLEM_SI_EXP)),
+                                         problem=NBR_PROBLEM_SI_EXP, basis_tpl=NBR_BASIS_WINDOW_TPL)),
                      nb_si_alt_rows(gen.group(1)),
                      rule_rows(RuleRowsIn(to_row=to_nb_req, txt=gen.group(1), stream=NBR_SI_STREAM, url=NBR_SI_URL,
                                           section=NBR_SECTION_SI, rules=NBR_SI_RULES))):

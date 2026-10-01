@@ -852,8 +852,41 @@ export const BASIS_WINDOW_YEARS = 'windowYears'
 
 /**
  * 口径包的「同职业」标记(经验替代路径:同职业累计)。
+ * 2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:也挂在经验主行上 —— 须是这个职业的经验(阿省「in your current occupation」、萨省「in your (intended)
+ * occupation」),门槛卡另起一行「须是这个职业的经验」。
  */
 export const BASIS_SAME_NOC = 'sameNoc'
+
+/**
+ * 经验行口径包:这段经验在哪几档 TEER 的职业里攒的(值是档位逗号串;卑诗「in any skilled occupation (NOC TEER 0, 1, 2 or 3)」、
+ * NB 快速通道「in a TEER category 0, 1, 2 or 3」;2026-10-01)。
+ */
+export const BASIS_EXP_TEER = 'expTeer'
+
+/**
+ * 经验行口径标记:哪个职业都算、不必与 offer 同职业(卑诗原句「any skilled occupation」;与 expTeer 连用写「任何 TEER 0–3 职业的经验都算」)。
+ */
+export const BASIS_ANY_NOC = 'anyNoc'
+
+/**
+ * 经验行口径标记:须在同一个职业连续工作(NB 快速通道「continuous work experience … in one NOC code」)。
+ */
+export const BASIS_ONE_NOC = 'oneNoc'
+
+/**
+ * 经验行口径标记:须与这份工作相关(NS 技术工人「This work must be related to the job you are being offered」)。
+ */
+export const BASIS_RELATED = 'related'
+
+/**
+ * 经验行口径标记:须与所学专业相关(萨省本省毕业生「related to your field of study」)。
+ */
+export const BASIS_FIELD = 'field'
+
+/**
+ * 经验行口径标记:有薪工作、官方没写要全职(萨省本省毕业生「paid employment」;主句写「N 个月有薪工作经验」,不套「全职」)。
+ */
+export const BASIS_PAID = 'paid'
 
 /**
  * 口径包的「持执照」标记(经验替代路径:持有这份工作要求的执照)。

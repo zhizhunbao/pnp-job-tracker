@@ -5,7 +5,7 @@
   "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "pageUrl": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/skilled-worker-stream.html",
   "guideEffective": "2026-06",
-  "fetched": "2026-09-30",
+  "fetched": "2026-10-01",
   "requirements": [
     {
       "stream": "New Brunswick Skilled Worker stream (Experience / Graduates / Priority Occupations)",
@@ -382,7 +382,7 @@
       "excludesNoc": "",
       "appliesArea": "",
       "familySize": null,
-      "basis": "windowYears=10",
+      "basis": "windowYears=10;oneNoc;expTeer=0,1,2,3",
       "label": "At least 12 months (one year) of continuous work experience within the past 10 years in one NOC code in TEER 0, 1, 2 or 3",
       "section": "Express Entry stream page — Eligibility",
       "url": "https://www.gnb.ca/en/topic/family-home-community/immigration/provincial-nominee-program/express-entry-stream.html",

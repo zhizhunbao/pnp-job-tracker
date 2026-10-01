@@ -1212,6 +1212,9 @@ class NbExpIn:
     problem: str
     """没匹配到或数词认不出时报的自校问题。"""
 
+    basis_tpl: str
+    """口径包模板({n} 窗口年数;2026-10-01 起两处各给各的:快速通道多「同一职业连续、TEER 0–3」)。"""
+
 
 @dataclass
 class PeLangRowsIn:

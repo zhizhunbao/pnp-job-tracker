@@ -639,7 +639,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 2026-09-30 通道与门槛批 1:照 ab-req 实数补身份两行、24 个月那行口径(加拿大境内外都算)、持 PGWP 一档
     req({ factor: 'status', op: 'rule', value: null, unit: '', basis: 'where=inProvince' }),
     req({ factor: 'status', op: 'rule', value: null, unit: '', basis: 'permits=lmia+lmiaExempt+pgwpLocal+openSpecific;noImplied' }),
-    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30;where=anywhere' }),
+    // 2026-10-01 工作经验说清楚:照 ab-req 实数补 sameNoc(原句「in your current occupation」)
+    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30;where=anywhere;sameNoc' }),
     req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18' }),
     req({ factor: 'experienceAlt', value: 6, unit: 'months', basis: 'windowMonths=18;pgwp' }),
     req({ stream: EMP, subject: 'employer', factor: 'empYears', value: 2, unit: 'years', basis: 'fiscal', url: EMP_URL }),
@@ -668,27 +669,27 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       ['身份', ['申请时须在阿尔伯塔省工作', '须持以下工签之一:', 'LMIA 工签', '部分免 LMIA 工签', '本省公立院校毕业的 PGWP',
         '几类开放工签', '申请期间维持身份的不算']],
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
+      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
       ['语言', ['英语或法语每项 CLB 5']],
-      ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '或在本省 12 个月(近 18 个月内)',
-        '持 PGWP 的:', '本省 6 个月(近 18 个月内)']],
-      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
+      ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '须是这个职业的经验',
+        '或在本省 12 个月(近 18 个月内)', '持 PGWP 的:', '本省 6 个月(近 18 个月内)']],
     ])
     // 语言档:TEER 4 → CLB 4;职业码点名的 33102 → CLB 7(最具体,压过它的 TEER 3 档)
-    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '72310', teer: 4 })) })?.rows[2]?.lines)
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '72310', teer: 4 })) })?.rows[3]?.lines)
       .toEqual(['英语或法语每项 CLB 4'])
-    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '33102', teer: 3 })) })?.rows[2]?.lines)
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '33102', teer: 3 })) })?.rows[3]?.lines)
       .toEqual(['英语或法语每项 CLB 7'])
     const enCard = gateCardOf({ t: en, job: abJob, reqs: abReqs, channel: chanOf(abJob) })
     expect([enCard?.title, enCard?.rows.map((r) => r.label)]).toEqual(
-      ['Stream requirements', ['Status', 'Job offer', 'Language', 'Experience', 'Employer']])
+      ['Stream requirements', ['Status', 'Job offer', 'Employer', 'Language', 'Experience']])
     expect(enCard?.rows[0]?.lines).toEqual(['Must be working in Alberta when applying', 'One of these work permits:',
       'LMIA-based permits', 'Certain LMIA-exempt permits', 'PGWP from a public institution in the province', 'Certain open work permits',
       'Maintained or restored status doesn\'t count'])
     expect(enCard?.rows[1]?.lines).toEqual(['Full-time', 'Not part-time, casual, seasonal'])
-    expect(enCard?.rows[3]?.lines).toEqual(['24 months of full-time experience (within the last 30 months)',
-      'Experience in Canada or abroad counts', 'or 12 months in Alberta (within the last 18 months)', 'PGWP holders:',
-      '6 months in Alberta (within the last 18 months)'])
-    expect(enCard?.rows[4]?.lines).toEqual(['Operating in Alberta for 2+ fiscal years', 'Revenue ≥ $400,000', '≥ 3 full-time staff'])
+    expect(enCard?.rows[4]?.lines).toEqual(['24 months of full-time experience (within the last 30 months)',
+      'Experience in Canada or abroad counts', 'Must be in this occupation', 'or 12 months in Alberta (within the last 18 months)',
+      'PGWP holders:', '6 months in Alberta (within the last 18 months)'])
+    expect(enCard?.rows[2]?.lines).toEqual(['Operating in Alberta for 2+ fiscal years', 'Revenue ≥ $400,000', '≥ 3 full-time staff'])
     expect(gateCardOf({ t: ko, job: abJob, reqs: abReqs, channel: chanOf(abJob) })?.title).toBe('이 스트림의 요건')
   })
 
@@ -696,16 +697,16 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const tech = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 科技' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'AB 科技' })) })
     expect(gateOf(tech)).toEqual([
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
+      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
       ['EE', ['联邦 EE 档案', '符合 CEC、FSW 或 FST', 'CRS ≥ 300']],
-      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
     ])
     const rural = gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'AB 乡村振兴' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'AB 乡村振兴' })) })
-    expect(rural?.rows.map((r) => r.key)).toEqual(['offer', 'lang', 'exp', 'emp', 'other'])
-    expect(rural?.rows[2]?.lines).toEqual(['12 个月全职经验(近 18 个月内)'])
+    expect(rural?.rows.map((r) => r.key)).toEqual(['offer', 'emp', 'lang', 'exp', 'other'])
+    expect(rural?.rows[3]?.lines).toEqual(['12 个月全职经验(近 18 个月内)'])
     expect(rural?.rows[4]?.lines).toEqual(['指定社区推荐信'])
     const tourism = gateCardOf({ t: zh, job: job({ ...abJob, teer: 5, pnpStream: 'AB 旅游酒店' }), reqs: abReqs, channel: chanOf(job({ ...abJob, teer: 5, pnpStream: 'AB 旅游酒店' })) })
-    expect(tourism?.rows[1]?.lines).toEqual(['英语或法语每项 CLB 4'])
-    expect(tourism?.rows[2]?.lines).toEqual(['在现雇主全职满 6 个月'])
+    expect(tourism?.rows[2]?.lines).toEqual(['英语或法语每项 CLB 4'])
+    expect(tourism?.rows[3]?.lines).toEqual(['在现雇主全职满 6 个月'])
     expect(gateCardOf({ t: zh, job: job({ province: 'BC', noc: '72310', teer: 2 }), reqs: abReqs, channel: chanOf(job({ province: 'BC', noc: '72310', teer: 2 })) })).toBeNull()
     expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpEligible: false }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpEligible: false })) })).toBeNull()
     expect(gateCardOf({ t: zh, job: job({ ...abJob, pnpStream: 'BC 医疗' }), reqs: abReqs, channel: chanOf(job({ ...abJob, pnpStream: 'BC 医疗' })) })).toBeNull()
@@ -748,36 +749,36 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   it('门槛卡·安省:技工 TEER 2 出 CLB 5 + 免考、经验四条(6 个月 / 应届 / 同职业累计 / 执照)、工资、雇主分区各档全列', () => {
     expect(onGate('72410', 2)).toEqual([
+      ['雇主条件', ON_EMP],
       ['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']],
       ['工作经验', ['在现雇主全职满 6 个月', '或本省应届毕业生满 3 个月', '或同职业累计满 2 年(近 5 年内)', '或持有这份工作要求的执照']],
       ['工资', ['不低于本职业在本地区的中位工资', '或本省应届毕业生不低于低位工资']],
-      ['雇主', ON_EMP],
     ])
     expect(onGate('72410', 2, en)).toEqual([
+      ['Employer', ['Operating in Ontario for 3+ years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
+        'Revenue ≥ $250,000 (other areas)', '≥ 5 full-time staff (GTA)', '≥ 3 full-time staff (outside the GTA)']],
       ['Language', ['CLB 5 in each English or French skill', 'No test if you graduated in Ontario within the last 3 years']],
       ['Experience', ['6 months full-time with your current employer', 'or 3 months if you are a recent graduate in Ontario',
         'or 2 years in the same occupation (within the last 5 years)', 'or hold the licence this job requires']],
       ['Wage', ['At or above the median wage for this occupation in the region',
         'or at or above the low wage if you are a recent graduate in Ontario']],
-      ['Employer', ['Operating in Ontario for 3+ years', 'Revenue ≥ $1,000,000 (GTA)', 'Revenue ≥ $500,000 (listed regions)',
-        'Revenue ≥ $250,000 (other areas)', '≥ 5 full-time staff (GTA)', '≥ 3 full-time staff (outside the GTA)']],
     ])
   })
 
   it('门槛卡·安省按本岗挑档:TEER 5 只剩 CLB 4 与 9 个月;技工档排除的 726 退回 CLB 6;卡车司机不适用应届与执照;没分类不出经验行', () => {
     // 应届低位那行只管 TEER 0-3:TEER 5 的工资行只剩中位一句
     expect(onGate('65100', 5)).toEqual([
+      ['雇主条件', ON_EMP],
       ['语言', ['英语或法语每项 CLB 4']],
       ['工作经验', ['在现雇主全职满 9 个月']],
       ['工资', ['不低于本职业在本地区的中位工资']],
-      ['雇主', ON_EMP],
     ])
-    expect(onGate('72600', 2)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
-    expect(onGate('73300', 3)?.[1]).toEqual(['工作经验', ['在现雇主全职满 6 个月', '或同职业累计满 2 年(近 5 年内)']])
+    expect(onGate('72600', 2)?.[1]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
+    expect(onGate('73300', 3)?.[2]).toEqual(['工作经验', ['在现雇主全职满 6 个月', '或同职业累计满 2 年(近 5 年内)']])
     // 官方技工名单含 6320(厨师 / 屠宰 / 面包师)与 62200(主厨):厨师走 CLB 5;非技工的 TEER 3(行政助理)走 CLB 6
-    expect(onGate('63200', 3)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']])
-    expect(onGate('13110', 3)?.[0]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
-    expect(onGate('', null)?.map((r) => r[0])).toEqual(['工资', '雇主'])
+    expect(onGate('63200', 3)?.[1]).toEqual(['语言', ['英语或法语每项 CLB 5', '近 3 年在本省毕业免考']])
+    expect(onGate('13110', 3)?.[1]).toEqual(['语言', ['英语或法语每项 CLB 6', '近 3 年在本省毕业免考']])
+    expect(onGate('', null)?.map((r) => r[0])).toEqual(['雇主条件', '工资'])
     // 阿省那张卡不受影响(上面阿省金标原样过):阿省门槛行不标 TEER 档与排除职业
   })
 
@@ -832,10 +833,10 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const skChan = pathway({ province: 'SK', boardLabel: null, isDefault: true, drawStreams: [], reqStreams: ['SK X', 'SK EMP'], quotaKey: null,
       officialName: 'X' })
     expect(gateOf(gateCardOf({ t: zh, job: job({ province: 'SK', noc: '21231', teer: 1 }), reqs: skReqs, channel: skChan }))).toEqual([
+      ['雇主条件', ['在本省经营满 24 个月']],
       ['语言', ['英语或法语每项 CLB 4']],
       ['工作经验', ['12 个月全职经验(近 10 年内)']],
       ['积分', ['本省打分表 ≥ 60 分']],
-      ['雇主', ['在本省经营满 24 个月']],
     ])
   })
 
@@ -865,7 +866,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(card?.source?.href).toBe('https://nb.example/b')
     const withEmp = { ...chan, reqStreams: ['NB A', 'NB EDI'] }
     const card2 = gateCardOf({ t: zh, job: job({ province: 'NB', noc: '21231', teer: 1 }), reqs: rows, channel: withEmp })
-    expect(card2?.rows.map((r) => r.label)).toContain('雇主')
+    expect(card2?.rows.map((r) => r.label)).toContain('雇主条件')
     expect(card2?.source?.href).toBe('https://nb.example/a')
     expect(gateOf(gateCardOf({ t: en, job: job({ province: 'NB', noc: '21231', teer: 1 }), reqs: rows, channel: chan }))?.[2])
       .toEqual(['Residence', ['Lived in New Brunswick for the last 6 months']])
@@ -1239,13 +1240,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       ['身份', ['申请时须在阿尔伯塔省工作', '须持以下工签之一:', 'LMIA 工签', '部分免 LMIA 工签', '本省公立院校毕业的 PGWP',
         '几类开放工签', '申请期间维持身份的不算'], []],
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], []],
+      ['雇主条件', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], []],
       ['语言', ['TEER 0–3:每项 CLB 5', 'TEER 4–5:每项 CLB 4', '指定职业:每项 CLB 7'], ['NOC 33102']],
-      ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '或在本省 12 个月(近 18 个月内)',
-        '持 PGWP 的:', '本省 6 个月(近 18 个月内)'], []],
-      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], []],
+      ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '须是这个职业的经验',
+        '或在本省 12 个月(近 18 个月内)', '持 PGWP 的:', '本省 6 个月(近 18 个月内)'], []],
     ])
     const [enCard] = provCards({ t: en, lang: 'en', province: 'AB', pathways: [AOS_PATH], reqs: abReqs })
-    expect([enCard?.sub, enCard?.rows[2]?.lines, enCard?.rows[2]?.notes]).toEqual(['',
+    expect([enCard?.sub, enCard?.rows[3]?.lines, enCard?.rows[3]?.notes]).toEqual(['',
       ['TEER 0–3: CLB 5 in each skill', 'TEER 4–5: CLB 4 in each skill', 'Listed occupations: CLB 7 in each skill'], ['NOC 33102']])
     expect(provCards({ t: ko, lang: 'ko', province: 'AB', pathways: [AOS_PATH], reqs: abReqs })[0]?.sub).toBe('앨버타 기회 스트림')
     const modal = gateCardOf({ t: zh, job: abJob, reqs: abReqs, channel: chanOf(abJob) })
@@ -1255,23 +1256,23 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('资讯页门槛卡·安省:经验两档各挂「TEER x:」小标;工资各档都适用的那条在前,只管 TEER 0–3 的应届低位工资挂小标下', () => {
     const [card] = provCards({ province: 'ON', pathways: [onChan], reqs: onReqs })
     expect(rowsOf(card)).toEqual([
+      ['雇主条件', ON_EMP, []],
       ['语言', ['TEER 0–3:每项 CLB 6', 'TEER 4–5:每项 CLB 4', 'TEER 0–3:近 3 年在本省毕业免考', '指定职业:每项 CLB 5'],
         ['NOC 72、73、82、83、93、6320、62200(726、932 除外)']],
       ['工作经验', ['TEER 0–3:', '在现雇主全职满 6 个月', '或本省应届毕业生满 3 个月', '或同职业累计满 2 年(近 5 年内)',
         '或持有这份工作要求的执照', 'TEER 4–5:', '在现雇主全职满 9 个月'], []],
       ['工资', ['不低于本职业在本地区的中位工资', 'TEER 0–3:', '或本省应届毕业生不低于低位工资'], []],
-      ['雇主', ON_EMP, []],
     ])
     // 探针:去掉 TEER 4–5 那条 9 个月,TEER 4–5 小标随之不出(小标只挂在真有条目的档上);
     // 把应届低位工资改成不分档,它就并进各档都适用的那几条、TEER 0–3 小标不出 —— 金标分得开「分档」与「不分档」
     const no45 = onReqs.filter((r) => !(r.factor === 'experience' && r.appliesTeer === '4,5'))
-    expect(provCards({ province: 'ON', pathways: [onChan], reqs: no45 })[0]?.rows[1]?.lines).not.toContain('TEER 4–5:')
+    expect(provCards({ province: 'ON', pathways: [onChan], reqs: no45 })[0]?.rows[2]?.lines).not.toContain('TEER 4–5:')
     const flat = onReqs.map((r) => (r.factor === 'wage' ? { ...r, appliesTeer: '' } : r))
-    expect(provCards({ province: 'ON', pathways: [onChan], reqs: flat })[0]?.rows[2]?.lines)
+    expect(provCards({ province: 'ON', pathways: [onChan], reqs: flat })[0]?.rows[3]?.lines)
       .toEqual(['不低于本职业在本地区的中位工资', '或本省应届毕业生不低于低位工资'])
     const enRows = provCards({ t: en, lang: 'en', province: 'ON', pathways: [onChan], reqs: onReqs })[0]?.rows
-    expect(enRows?.[0]?.notes).toEqual(['NOC 72, 73, 82, 83, 93, 6320, 62200 (except 726, 932)'])
-    expect(enRows?.[1]?.lines.slice(0, 2)).toEqual(['TEER 0–3:', '6 months full-time with your current employer'])
+    expect(enRows?.[1]?.notes).toEqual(['NOC 72, 73, 82, 83, 93, 6320, 62200 (except 726, 932)'])
+    expect(enRows?.[2]?.lines.slice(0, 2)).toEqual(['TEER 0–3:', '6 months full-time with your current employer'])
   })
 
   it('资讯页门槛卡:省默认在前、只出本省;没收录写「本站未收录门槛」、来源退到通道页;不看工作的不出 offer 行;语言三种写法', () => {
@@ -1286,7 +1287,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       .toEqual([[], '本站未收录门槛', 'https://www.alberta.ca/x-stream', ['需先有 EE 档案']])
     // 只有雇主侧行的通道也当没收录(只剩全省几行会读成门槛只有这些,同弹框)
     expect([cards[2]?.rows, cards[2]?.empty]).toEqual([[], '本站未收录门槛'])
-    expect(cards[3]?.rows.map((r) => r.key)).toEqual(['status', 'lang', 'exp', 'emp'])
+    expect(cards[3]?.rows.map((r) => r.key)).toEqual(['status', 'emp', 'lang', 'exp'])
     const L = 'Lang Stream'
     const lang = (p: Partial<PnpReq>) => req({ province: 'BC', stream: L, ...p })
     const lp = pathway({ province: 'BC', key: 'bc-l', isDefault: true, reqStreams: [L], officialName: L })
@@ -1328,6 +1329,36 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 曼省技术工人:TEER 4–5 那档全省一条,在需职业 158 个逐个定分合成一行
     const mb = provCards({ province: 'MB', pathways: live, reqs })[0]
     expect(mb?.rows.find((r) => r.key === 'lang')?.lines).toEqual(['TEER 4–5:每项 CLB 4', '按职业定:CLB 5–7'])
+  })
+
+  // 2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:经验行说清楚在哪攒的、
+  // 哪类职业、要不要同职业 / 相关(数据层照官方原句打标的口径包);雇主行挪到「雇主 offer」正下面、叫「雇主条件」(发 offer 的雇主)。
+  it('data/mart 真数据:各省经验行说清楚;雇主条件紧跟雇主 offer', () => {
+    const FACTORS = ['offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage', 'eeProfile', 'eeProgram', 'crs',
+      'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence', 'status']
+    const live = PATHWAYS.filter((p) => (p as PnpPathway & { status: string }).status !== 'closed')
+    const reqs = mart<PnpReq>('pnp_requirements').filter((r) => r.program === 'PNP' && FACTORS.includes(r.factor))
+    const expOf = (prov: string, title: string) => provCards({ province: prov, pathways: live, reqs })
+      .find((c) => c.title === title)?.rows.find((r) => r.key === 'exp')?.lines
+    expect(expOf('BC', 'Skilled Worker stream')).toEqual(['24 个月全职经验(近 10 年内)', '加拿大境内外的经验都算',
+      '任何 TEER 0–3 职业的经验都算'])
+    expect(expOf('AB', 'Alberta Opportunity Stream')?.slice(0, 3)).toEqual(['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算',
+      '须是这个职业的经验'])
+    expect(expOf('SK', 'Students')).toEqual(['6 个月有薪工作经验', '须是在萨斯喀彻温省的工作经验', '须与所学专业相关'])
+    expect(expOf('SK', 'Health Talent Pathway')).toEqual(['12 个月全职经验(近 5 年内)', '须是这个职业的经验', '或在现雇主全职满 6 个月'])
+    expect(expOf('NS', 'Skilled Worker stream')).toEqual(['12 个月全职经验(近 5 年内)', '须与这份工作相关'])
+    expect(expOf('NS', 'Nova Scotia: Express Entry — Skilled Work Experience in Nova Scotia')).toEqual(['TEER 0–3:', '12 个月全职经验',
+      '须是在新斯科舍省的工作经验'])
+    expect(expOf('NB', 'Employment in New Brunswick')).toEqual(['12 个月全职经验(近 10 年内)', '须是 TEER 0–3 职业的经验',
+      '须在同一职业连续工作'])
+    for (const prov of ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL']) {
+      for (const c of provCards({ province: prov, pathways: live, reqs })) {
+        const keys = c.rows.map((r) => r.key)
+        if (keys.includes('emp') && keys.includes('offer')) {
+          expect(keys.indexOf('emp'), prov + ' ' + c.title).toBe(keys.indexOf('offer') + 1)
+        }
+      }
+    }
   })
 
   it('data/mart 真数据:魁省不出卡,NS 按月,安省现状,阿省分组', () => {
