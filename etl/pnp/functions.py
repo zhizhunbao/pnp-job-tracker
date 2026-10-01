@@ -416,6 +416,11 @@ from pnp.constants import (  # 2026-09-30 通道补全批一 1b(PE:语言分档 
     PER_PROBLEM_LANG_ROW_TPL, PER_SECTION_EE, PER_SECTION_IE, PER_SECTION_IG,
 )
 from pnp.scheme import PeLangRowsIn  # 同上(PE 按节取语言行的入参)
+from pnp.constants import (  # 2026-09-30 通道与门槛批 1(阿省机会通道样张:身份、经验口径、PGWP 档)
+    ABR_BASIS_ANY_TPL, ABR_EXP_PGWP_BASIS_TPL, ABR_EXP_PGWP_LABEL_TPL, ABR_EXP_PGWP_RE, ABR_PROBLEM_EXP_PGWP,
+    ABR_PROBLEM_STATUS_PERMIT, ABR_PROBLEM_STATUS_WHERE, ABR_SECTION_STATUS, ABR_STATUS_PERMIT_BASIS, ABR_STATUS_PERMIT_LABEL,
+    ABR_STATUS_PERMIT_RE, ABR_STATUS_WHERE_BASIS, ABR_STATUS_WHERE_LABEL, ABR_STATUS_WHERE_RE, FACTOR_STATUS,
+)
 from pnp.constants import (  # 2026-09-29 萨省门槛卡(七省门槛卡:省默认通道与三条 Talent Pathway 的门槛流)新增
     K_ALT_RE, K_EE_CUT, K_EXP_RE, K_TALENT_RULES, SKR_BASIS_EMPLOYER_TENURE, SKR_BASIS_WINDOW_TPL, SKR_EO_RULES,
     SKR_EO_STREAM, FACTOR_POINTS_MIN, SKR_POINTS_RE, SKR_PROBLEM_POINTS_DIFF_TPL, SKR_PROBLEM_POINTS_TPL,
@@ -4266,7 +4271,9 @@ def ab_language_reqs(txt: str) -> ReqsOut:
 
 def ab_experience_reqs(txt: str) -> ReqsOut:
     """经验:两条「或」款各落一行(#320)——通用 24 个月 + 阿省境内 12 个月的条件行。
-    2026-09-27 Frank 勾「门槛卡」:通用行也把窗口期写进 basis(见 ABR_BASIS_WINDOW_TPL)。"""
+    2026-09-27 Frank 勾「门槛卡」:通用行也把窗口期写进 basis(见 ABR_BASIS_WINDOW_TPL)。
+    2026-09-30 通道与门槛批 1:通用行口径包加「加拿大境内外都算」(ABR_BASIS_ANY_TPL);另收持 PGWP 的 6 个月一档(experienceAlt,
+    判定引擎不读)。"""
     rows: list = []
     problems: list = []
     any_m = ABR_EXP_ANY_RE.search(txt)
@@ -4275,7 +4282,7 @@ def ab_experience_reqs(txt: str) -> ReqsOut:
         label = ABR_EXP_LABEL_TPL.format(months=any_m.group(1), window=any_m.group(2),
                                          ab_months=ab_m.group(1), ab_window=ab_m.group(2))
         rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(any_m.group(1)), unit=UNIT_MONTHS,
-                                    basis=ABR_BASIS_WINDOW_TPL.format(n=any_m.group(2)),
+                                    basis=ABR_BASIS_ANY_TPL.format(n=any_m.group(2)),
                                     section=ABR_SECTION_EXP, label=label)))
         rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE, value=int(ab_m.group(1)), unit=UNIT_MONTHS,
                                     applies_condition=ABR_COND_LOCAL,
@@ -4283,6 +4290,32 @@ def ab_experience_reqs(txt: str) -> ReqsOut:
                                     section=ABR_SECTION_EXP, label=label)))
     else:
         problems.append(ABR_PROBLEM_EXP)
+    pgwp_m = ABR_EXP_PGWP_RE.search(txt)
+    if pgwp_m:
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_EXPERIENCE_ALT, value=int(pgwp_m.group(1)), unit=UNIT_MONTHS,
+                                    value_text=fold_ws(pgwp_m.group(0)),
+                                    basis=ABR_EXP_PGWP_BASIS_TPL.format(n=pgwp_m.group(2)), section=ABR_SECTION_EXP,
+                                    label=ABR_EXP_PGWP_LABEL_TPL.format(months=pgwp_m.group(1), window=pgwp_m.group(2)))))
+    else:
+        problems.append(ABR_PROBLEM_EXP_PGWP)
+    return ReqsOut(rows=rows, problems=problems)
+
+
+def ab_status_reqs(txt: str) -> ReqsOut:
+    """身份两行(2026-09-30 通道与门槛批 1,Frank「那不是在国内有工作经验的可以直接申请了吗?」「对啊。门槛要说清楚」):
+    须在阿省做着符合条件的工作(where=inProvince)、须持认可的工签且维持身份不算(permits=…;noImplied),原句整条进 valueText。"""
+    rows: list = []
+    problems: list = []
+    for rule_re, basis, label, problem in ((ABR_STATUS_WHERE_RE, ABR_STATUS_WHERE_BASIS, ABR_STATUS_WHERE_LABEL,
+                                            ABR_PROBLEM_STATUS_WHERE),
+                                           (ABR_STATUS_PERMIT_RE, ABR_STATUS_PERMIT_BASIS, ABR_STATUS_PERMIT_LABEL,
+                                            ABR_PROBLEM_STATUS_PERMIT)):
+        m = rule_re.search(txt)
+        if not m:
+            problems.append(problem)
+            continue
+        rows.append(to_ab_req(ReqIn(factor=FACTOR_STATUS, op=OP_RULE, value_text=fold_ws(m.group(0)), basis=basis,
+                                    section=ABR_SECTION_STATUS, label=label)))
     return ReqsOut(rows=rows, problems=problems)
 
 
@@ -4438,13 +4471,14 @@ def ab_dhcp_reqs() -> ReqsOut:
 
 def build_ab_req() -> None:
     """AB 门槛入口:AOS 资格页(申请人侧)+ job-offer-and-employer 页(雇主侧)+ EE 流 + 乡村振兴流 + 医疗专线。
-    2026-09-27 Frank 勾「门槛卡」:加旅游酒店流(ab_tourism_reqs)。"""
+    2026-09-27 Frank 勾「门槛卡」:加旅游酒店流(ab_tourism_reqs)。
+    2026-09-30 通道与门槛批 1:AOS 申请人侧先出身份两行(ab_status_reqs)。"""
     say(PRINT_OUT_TPL.format(path=OUT_AB_REQ))
     txt = page_text(PageTextIn(url=AB_AOS_URL, timeout_s=ABR_TIMEOUT_S,
                                drop_junk=False, main_only=True))
     reqs: list = []
     problems: list = []
-    for part in (ab_language_reqs(txt), ab_experience_reqs(txt)):
+    for part in (ab_status_reqs(txt), ab_language_reqs(txt), ab_experience_reqs(txt)):
         reqs += part.rows
         problems += part.problems
     emp_txt = page_text(PageTextIn(url=ABR_EMPLOYER_URL, timeout_s=ABR_TIMEOUT_S,

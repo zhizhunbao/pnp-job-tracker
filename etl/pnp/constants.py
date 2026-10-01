@@ -707,6 +707,12 @@ FACTOR_EXPERIENCE = "experience"
 FACTOR_EXPERIENCE_EXCLUDED = "experienceExcluded"
 """门槛因素:不计入的时段(算法说明,不是阈值)。"""
 
+FACTOR_STATUS = "status"
+"""门槛因素:申请时人得在哪、拿什么身份或工签(条文行,原句整条进 valueText;机器可读部分进 basis:where=inProvince 须已在本省工作,
+permits=lmia+lmiaExempt+pgwpLocal+openSpecific 认哪几类工签,noImplied 申请期间维持身份的不算)。省提名弹框门槛卡「身份」行与资讯
+「通道与门槛」页按编码出三语文案;判定引擎不读。2026-09-30 立(立项稿 docs/design/通道与门槛-20260930.md;Frank「那不是在国内有工作
+经验的可以直接申请了吗?」「对啊。门槛要说清楚」),首用者阿省机会通道,其余省照样张补。"""
+
 FACTOR_EXPERIENCE_ALT = "experienceAlt"
 """门槛因素:工作经验的替代路径(官方写「以下任一」时主档之外的几条路,如安省同职业累计 2 年、持执照)。
 判定引擎不读 —— 它把经验行逐条当必过门槛,替代路径混进 experience 会判成「还差 24 个月」;
@@ -3840,6 +3846,62 @@ ABR_PROBLEM_LANG_NOC = "33102 的单独语言档没解析到"
 ABR_PROBLEM_EXP = "工作经验门槛没解析到(境内外 24 个月 / 阿省 12 个月两条须同时在)"
 """自校问题:经验两行。"""
 
+ABR_BASIS_ANY_TPL = "windowMonths={n};where=anywhere"
+"""通用 24 个月那行的口径包(2026-09-30 通道与门槛批 1):窗口期 + 在哪攒的算 —— 官方原句「in Canada or abroad」,门槛卡写「加拿大
+境内外都算」(Frank「24 个月全职经验。不需要本省?国外呢?」)。判定引擎只认 employerTenure,这格不改判定。"""
+
+ABR_EXP_PGWP_RE = re.compile(
+    r"Post-Graduation Work Permit holders require a minimum of (\d+) months full-time work experience in your current "
+    r"occupation in Alberta within the last (\d+) months", re.I)
+"""持 PGWP 的一档:「Post-Graduation Work Permit holders require a minimum of 6 months full-time work experience in your current
+occupation in Alberta within the last 18 months.」(2026-09-30 通道与门槛批 1 补;原先门槛表没收这一档)。"""
+
+ABR_EXP_PGWP_BASIS_TPL = "windowMonths={n};pgwp"
+"""持 PGWP 那档的口径包:窗口期 + pgwp 标记(门槛卡出「持 PGWP 的:近 N 个月在本省满 M 个月」)。记 experienceAlt —— 判定引擎不读,
+不改判定(引擎按条件行挑档,PGWP 这个条件档案里没有)。"""
+
+ABR_EXP_PGWP_LABEL_TPL = "Post-Graduation Work Permit holders: {months} months in Alberta within the last {window} months"
+"""持 PGWP 那档的 label(原句整条进 valueText)。"""
+
+ABR_PROBLEM_EXP_PGWP = "持 PGWP 的经验档(6 个月 / 近 18 个月)没解析到(资格页可能改版)"
+"""自校问题:PGWP 档。"""
+
+ABR_STATUS_WHERE_RE = re.compile(
+    r"At the time your application is submitted, and at the time AAIP assesses your application, you must work in an "
+    r"eligible occupation in Alberta\.", re.I)
+"""身份(人在哪):「At the time your application is submitted, and at the time AAIP assesses your application, you must work in an
+eligible occupation in Alberta.」—— 递申请时与审理时都得在阿省做着符合条件的工作(资格页 Occupation requirements 节)。"""
+
+ABR_STATUS_PERMIT_RE = re.compile(
+    r"At the time your application is submitted, and at the time AAIP assesses your application, you must have a valid work "
+    r"permit . not status maintained during processing \(formerly implied status\) or restoration status\.", re.I)
+"""身份(工签):「…you must have a valid work permit – not status maintained during processing (formerly implied status) or
+restoration status.」(破折号用 . 认)。认哪几类工签见下面名单段(LMIA、免 LMIA 五种、受虐劳工开放工签、阿省公立院校毕业的 PGWP、
+IRCC 临时公共政策开放工签)——「If your work permit type is not included in the list above, you are not eligible to apply.」"""
+
+ABR_STATUS_WHERE_BASIS = "where=inProvince"
+"""身份(人在哪)的编码:须已在本省工作。"""
+
+ABR_STATUS_PERMIT_BASIS = "permits=lmia+lmiaExempt+pgwpLocal+openSpecific;noImplied"
+"""身份(工签)的编码:LMIA 工签、部分免 LMIA 工签、本省公立院校毕业的 PGWP、几类开放工签(受虐劳工与 IRCC 临时公共政策两种);
+申请期间维持身份的不算。"""
+
+ABR_STATUS_WHERE_LABEL = "Must be working in an eligible occupation in Alberta when applying and when assessed"
+"""身份(人在哪)的 label。"""
+
+ABR_STATUS_PERMIT_LABEL = ("Valid work permit of an eligible type (LMIA-based, certain LMIA-exempt, PGWP from an Alberta public "
+                           "institution, certain open permits); maintained or restoration status not accepted")
+"""身份(工签)的 label。"""
+
+ABR_SECTION_STATUS = "Alberta Opportunity Stream — Eligible applicants"
+"""身份两行的出处节名。"""
+
+ABR_PROBLEM_STATUS_WHERE = "身份「须在阿省做符合条件的工作」那句没解析到(资格页可能改版)"
+"""自校问题:身份(人在哪)。"""
+
+ABR_PROBLEM_STATUS_PERMIT = "身份「须持有效工签、维持身份不算」那句没解析到(资格页可能改版)"
+"""自校问题:身份(工签)。"""
+
 ABR_PROBLEM_EMPLOYER_TPL = "雇主侧「{what}」没解析到(job-offer-and-employer-requirements 页可能改版)"
 """自校问题:雇主侧某一条。"""
 
@@ -4085,8 +4147,8 @@ ABR_DHCP_NON_EE_RULES = (
 ABR_SOURCE = "AAIP — Alberta Opportunity Stream eligibility"
 """表级来源名。"""
 
-ABR_FACTOR_ORDER = ("language", "experience", "empYears", "empRevenue", "empStaff")
-"""收尾按因素报条数的顺序。"""
+ABR_FACTOR_ORDER = ("status", "language", "experience", "experienceAlt", "empYears", "empRevenue", "empStaff")
+"""收尾按因素报条数的顺序。2026-09-30 通道与门槛批 1 加 status / experienceAlt(身份两行、持 PGWP 一档)。"""
 
 
 # =========================================================================
