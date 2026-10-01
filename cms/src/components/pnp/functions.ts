@@ -42,6 +42,8 @@ import {
   GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
+  BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
+  GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
@@ -72,7 +74,7 @@ import type {
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
-  LocalNameIn, PathwayChannelIn,
+  LocalNameIn, PathwayChannelIn, StatusLinesIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
@@ -2351,8 +2353,8 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   }
   const one: GateRowOfIn = { t: x.t, job: x.job, mine, chan }
   const rows: GateRowSpec[] = []
-  for (const row of [offerRowOf(one), langRowOf(one), expRowOf(one), residenceRowOf(one), wageRowOf(one),
-    pointsRowOf(one),
+  for (const row of [statusRowOf(one), offerRowOf(one), langRowOf(one), expRowOf(one), residenceRowOf(one),
+    wageRowOf(one), pointsRowOf(one),
     eeRowOf(one), empRowOf(one), otherRowOf(one)]) {
     if (row != null) {
       rows.push(row)
@@ -2413,6 +2415,56 @@ function gateUrlOf(x: GateUrlIn): string {
     }
   }
   return TEXT_NONE
+}
+
+/**
+ * 「身份」行(2026-09-30 通道与门槛批 1,Frank「那不是在国内有工作经验的可以直接申请了吗?」「对啊。门槛要说清楚」):申请时人得在哪、
+ * 认哪几类工签、维持身份算不算 —— 全由身份行的 basis 编码出(statusLinesOf),排卡上第一行。本岗通道没登记身份行就不出。
+ *
+ * @param x 各行构造器的共同入参。
+ * @returns 这一行;没有给 null。
+ */
+function statusRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
+  const lines: string[] = []
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.status || reqAppliesOf({ r, job: x.job }) === false) {
+      continue
+    }
+    for (const line of statusLinesOf({ t: x.t, r, prov })) {
+      lines.push(line)
+    }
+  }
+  if (lines.length === 0) {
+    return null
+  }
+  return { key: GATE_ROW.status, label: x.t('pnpgate.k.status'), lines, notes: [] }
+}
+
+/**
+ * 一条身份行的文案:where=inProvince →「申请时须在本省工作」;permits=… → 认哪几类工签(逐个查词条,顿号连);noImplied →
+ * 「申请期间维持身份的不算」。认不出的编码不出(宁缺不乱写)。
+ *
+ * @param x 取词函数、身份行与本省界面名。
+ * @returns 文案;没有给空列。
+ */
+function statusLinesOf(x: StatusLinesIn): string[] {
+  const out: string[] = []
+  if (basisValueOf({ basis: x.r.basis, key: BASIS_WHERE }) === BASIS_WHERE_IN_PROV) {
+    out.push(x.t('pnpgate.statusInProv', { prov: x.prov }))
+  }
+  const permits = basisValueOf({ basis: x.r.basis, key: BASIS_PERMITS })
+  if (permits !== TEXT_NONE) {
+    const names: string[] = []
+    for (const p of permits.split(BASIS_PERMIT_SEP)) {
+      names.push(x.t(GATE_PERMIT_HEAD + p))
+    }
+    out.push(x.t('pnpgate.statusPermits', { list: names.join(x.t('pnpgate.sep')) }))
+  }
+  if (basisHasOf({ basis: x.r.basis, key: BASIS_NO_IMPLIED })) {
+    out.push(x.t('pnpgate.statusNoImplied'))
+  }
+  return out
 }
 
 /**
@@ -2622,6 +2674,7 @@ function expRowOf(x: GateRowOfIn): GateRowSpec | null {
 
 /**
  * 通用经验那一条的写法:同雇主在职 / 近 N 个月内 / 只写月数。
+ * 2026-09-30 通道与门槛批 1(Frank「24 个月全职经验。不需要本省?国外呢?」):口径包写了 where=anywhere 的,写明「加拿大境内外都算」。
  *
  * @param x 取词函数、经验行与月数。
  * @returns 文案。
@@ -2632,6 +2685,9 @@ function expLineOf(x: ExpLineIn): string {
   }
   const w = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW })
   if (w !== TEXT_NONE) {
+    if (basisValueOf({ basis: x.r.basis, key: BASIS_WHERE }) === BASIS_WHERE_ANYWHERE) {
+      return x.t('pnpgate.expWinAnywhere', { n: x.n, w })
+    }
     return x.t('pnpgate.expWin', { n: x.n, w })
   }
   const wy = basisValueOf({ basis: x.r.basis, key: BASIS_WINDOW_YEARS })
@@ -2645,12 +2701,14 @@ function expLineOf(x: ExpLineIn): string {
  * 工作经验的替代路径各一行「或……」(门槛表 experienceAlt:同职业累计 N 年(近 M 年内)、持有这份工作要求的执照;
  * 2026-09-29 安省门槛卡)。只挑管本岗的行;认不出口径的不出(宁缺不乱写)。
  * 同日七省接入加两种:在担保雇主处全职满 N 个月(萨省三条定向通道,employerTenure)、本省院校毕业(NB Graduates,provGraduate)。
+ * 2026-09-30 通道与门槛批 1 加一种:持 PGWP 的那一档(阿省机会通道「近 18 个月在本省满 6 个月」,pgwp + windowMonths)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 文案;没有给空列。
  */
 function expAltLinesOf(x: GateRowOfIn): string[] {
   const lines: string[] = []
+  const prov = x.t(PROV_KEY_HEAD + x.job.province)
   for (const r of x.chan) {
     if (r.factor !== GATE_F.experienceAlt || reqAppliesOf({ r, job: x.job }) === false) {
       continue
@@ -2665,6 +2723,11 @@ function expAltLinesOf(x: GateRowOfIn): string[] {
       lines.push(x.t('pnpgate.expAltTenure', { n: r.value }))
     } else if (basisHasOf({ basis: r.basis, key: BASIS_PROV_GRADUATE })) {
       lines.push(x.t('pnpgate.expAltProvGrad'))
+    } else if (basisHasOf({ basis: r.basis, key: BASIS_PGWP }) && r.unit === GATE_UNIT_MONTHS && r.value != null) {
+      const wm = basisValueOf({ basis: r.basis, key: BASIS_WINDOW })
+      if (wm !== TEXT_NONE) {
+        lines.push(x.t('pnpgate.expPgwp', { n: r.value, w: wm, prov }))
+      }
     }
   }
   return lines

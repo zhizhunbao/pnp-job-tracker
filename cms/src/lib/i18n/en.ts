@@ -586,6 +586,13 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.no.casual': 'casual',
   'pnpgate.no.seasonal': 'seasonal', 'pnpgate.no.term': 'fixed-term',
   'pnpgate.lang': 'CLB {n} in each English or French skill',
+  // 2026-09-30 gate card: status row, experience scope (in Canada or abroad), PGWP tier
+  'pnpgate.k.status': 'Status', 'pnpgate.statusInProv': 'Must be working in {prov} when applying',
+  'pnpgate.statusPermits': 'Eligible permits: {list}', 'pnpgate.statusNoImplied': 'Maintained or restored status doesn\'t count',
+  'pnpgate.permit.lmia': 'LMIA-based permits', 'pnpgate.permit.lmiaExempt': 'certain LMIA-exempt permits',
+  'pnpgate.permit.pgwpLocal': 'PGWP from a public institution in the province', 'pnpgate.permit.openSpecific': 'certain open work permits',
+  'pnpgate.expWinAnywhere': '{n} months of full-time experience (last {w} months, in Canada or abroad)',
+  'pnpgate.expPgwp': 'PGWP holders: {n} months in {prov} within the last {w} months',
   'pnpgate.exp': '{n} months of full-time experience',
   'pnpgate.expWin': '{n} months of full-time experience (within the last {w} months)',
   'pnpgate.expTenure': '{n} months full-time with your current employer',

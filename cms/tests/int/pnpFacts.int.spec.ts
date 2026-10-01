@@ -632,8 +632,12 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     req({ value: 5, appliesTeer: '0,1,2,3' }),
     req({ value: 4, appliesTeer: '4,5' }),
     req({ value: 7, appliesNoc: '33102' }),
-    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30' }),
+    // 2026-09-30 通道与门槛批 1:照 ab-req 实数补身份两行、24 个月那行口径(加拿大境内外都算)、持 PGWP 一档
+    req({ factor: 'status', op: 'rule', value: null, unit: '', basis: 'where=inProvince' }),
+    req({ factor: 'status', op: 'rule', value: null, unit: '', basis: 'permits=lmia+lmiaExempt+pgwpLocal+openSpecific;noImplied' }),
+    req({ factor: 'experience', value: 24, unit: 'months', basis: 'windowMonths=30;where=anywhere' }),
     req({ factor: 'experience', value: 12, unit: 'months', appliesCondition: 'ab-local-experience', basis: 'windowMonths=18' }),
+    req({ factor: 'experienceAlt', value: 6, unit: 'months', basis: 'windowMonths=18;pgwp' }),
     req({ stream: EMP, subject: 'employer', factor: 'empYears', value: 2, unit: 'years', basis: 'fiscal', url: EMP_URL }),
     req({ stream: EMP, subject: 'employer', factor: 'empRevenue', value: 400000, unit: 'CAD/yr', url: EMP_URL }),
     req({ stream: EMP, subject: 'employer', factor: 'empStaff', value: 3, unit: 'employees', url: EMP_URL }),
@@ -657,21 +661,29 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(card?.title).toBe('本岗通道的门槛')
     expect(card?.source).toEqual({ text: '来源 ↗', href: AOS_URL })
     expect(gateOf(card)).toEqual([
+      ['身份', ['申请时须在阿尔伯塔省工作', '工签只认:LMIA 工签、部分免 LMIA 工签、本省公立院校毕业的 PGWP、几类开放工签',
+        '申请期间维持身份的不算']],
       ['雇主 offer', ['全职', '不收兼职、临时工、季节工']],
       ['语言', ['英语或法语每项 CLB 5']],
-      ['工作经验', ['24 个月全职经验(近 30 个月内)', '或在本省 12 个月(近 18 个月内)']],
+      ['工作经验', ['24 个月全职经验(近 30 个月内,加拿大境内外都算)', '或在本省 12 个月(近 18 个月内)',
+        '持 PGWP 的:近 18 个月在本省满 6 个月']],
       ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人']],
     ])
     // 语言档:TEER 4 → CLB 4;职业码点名的 33102 → CLB 7(最具体,压过它的 TEER 3 档)
-    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '72310', teer: 4 })) })?.rows[1]?.lines)
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '72310', teer: 4 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '72310', teer: 4 })) })?.rows[2]?.lines)
       .toEqual(['英语或法语每项 CLB 4'])
-    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '33102', teer: 3 })) })?.rows[1]?.lines)
+    expect(gateCardOf({ t: zh, job: job({ province: 'AB', noc: '33102', teer: 3 }), reqs: abReqs, channel: chanOf(job({ province: 'AB', noc: '33102', teer: 3 })) })?.rows[2]?.lines)
       .toEqual(['英语或法语每项 CLB 7'])
     const enCard = gateCardOf({ t: en, job: abJob, reqs: abReqs, channel: chanOf(abJob) })
     expect([enCard?.title, enCard?.rows.map((r) => r.label)]).toEqual(
-      ['Stream requirements', ['Job offer', 'Language', 'Experience', 'Employer']])
-    expect(enCard?.rows[0]?.lines).toEqual(['Full-time', 'Not part-time, casual, seasonal'])
-    expect(enCard?.rows[3]?.lines).toEqual(['Operating in Alberta for 2+ fiscal years', 'Revenue ≥ $400,000', '≥ 3 full-time staff'])
+      ['Stream requirements', ['Status', 'Job offer', 'Language', 'Experience', 'Employer']])
+    expect(enCard?.rows[0]?.lines).toEqual(['Must be working in Alberta when applying',
+      'Eligible permits: LMIA-based permits, certain LMIA-exempt permits, PGWP from a public institution in the province, certain open work permits',
+      'Maintained or restored status doesn\'t count'])
+    expect(enCard?.rows[1]?.lines).toEqual(['Full-time', 'Not part-time, casual, seasonal'])
+    expect(enCard?.rows[3]?.lines).toEqual(['24 months of full-time experience (last 30 months, in Canada or abroad)',
+      'or 12 months in Alberta (within the last 18 months)', 'PGWP holders: 6 months in Alberta within the last 18 months'])
+    expect(enCard?.rows[4]?.lines).toEqual(['Operating in Alberta for 2+ fiscal years', 'Revenue ≥ $400,000', '≥ 3 full-time staff'])
     expect(gateCardOf({ t: ko, job: abJob, reqs: abReqs, channel: chanOf(abJob) })?.title).toBe('이 스트림의 요건')
   })
 

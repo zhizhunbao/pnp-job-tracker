@@ -580,6 +580,7 @@ export const PNP_OPS_QUOTA = `SELECT province, metric, COALESCE(scope_kind, '') 
  * —— 抽选卡按它写「不经抽选」、AIP 卡按 program = 'AIP' 那行写;门槛卡按因素点名取行,不读这一类。
  * 2026-09-30 魁省门槛弹框(Frank 看过效果图「可以」;设计 docs/design/魁省门槛弹框-20260929.md):魁省行整批放行
  * (province = 'QC' 且 program 为 PSTQ / PEQ;魁省不属省提名,因素也多出职业档 / 学历 / 年龄 / 自给 / 收件期几类,不走上面那张白名单)。
+ * 2026-09-30 通道与门槛批 1:因素名单加 status(身份:申请时人得在哪、认哪几类工签;门槛卡「身份」行读它,判定引擎不读)。
  */
 export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, value, unit, COALESCE(applies_teer, '') AS applies_teer,
        COALESCE(applies_noc, '') AS applies_noc, COALESCE(excludes_noc, '') AS excludes_noc,
@@ -588,7 +589,8 @@ export const PNP_GATE_REQS = `SELECT province, stream, subject, factor, op, valu
        COALESCE(url, '') AS url, seq, COALESCE(program, '') AS program
      FROM pnp_requirements q
      WHERE (program = 'PNP' AND factor IN ('offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage',
-       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence'))
+       'eeProfile', 'eeProgram', 'crs', 'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence',
+       'status'))
        OR (factor = 'eoiDraw' AND op = 'none')
        OR (province = 'QC' AND program IN ('PSTQ', 'PEQ'))
      ORDER BY province, stream, seq`

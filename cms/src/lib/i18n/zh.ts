@@ -631,6 +631,13 @@ export const jobsZh = {
   'pnpgate.offerFull': '全职', 'pnpgate.offerNot': '不收{list}', 'pnpgate.no.part': '兼职', 'pnpgate.no.casual': '临时工',
   'pnpgate.no.seasonal': '季节工', 'pnpgate.no.term': '定期合同',
   'pnpgate.lang': '英语或法语每项 CLB {n}',
+  // 2026-09-30 通道与门槛批 1:门槛卡「身份」行、经验口径「加拿大境内外都算」、持 PGWP 一档
+  'pnpgate.k.status': '身份', 'pnpgate.statusInProv': '申请时须在{prov}工作',
+  'pnpgate.statusPermits': '工签只认:{list}', 'pnpgate.statusNoImplied': '申请期间维持身份的不算',
+  'pnpgate.permit.lmia': 'LMIA 工签', 'pnpgate.permit.lmiaExempt': '部分免 LMIA 工签',
+  'pnpgate.permit.pgwpLocal': '本省公立院校毕业的 PGWP', 'pnpgate.permit.openSpecific': '几类开放工签',
+  'pnpgate.expWinAnywhere': '{n} 个月全职经验(近 {w} 个月内,加拿大境内外都算)',
+  'pnpgate.expPgwp': '持 PGWP 的:近 {w} 个月在本省满 {n} 个月',
   'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
   'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省 {n} 个月(近 {w} 个月内)',
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',

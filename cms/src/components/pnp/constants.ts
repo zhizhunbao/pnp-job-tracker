@@ -563,6 +563,12 @@ export const YEAR_LEN = 4
  */
 export const GATE_F = {
   /**
+   * 身份(条文行;basis 编码:where=inProvince 须已在本省工作、permits=a+b 认哪几类工签、noImplied 维持身份不算;2026-09-30
+   * 通道与门槛批 1,Frank「那不是在国内有工作经验的可以直接申请了吗?」「对啊。门槛要说清楚」)。
+   */
+  status: 'status',
+
+  /**
    * offer 形态(全职 / 不收哪几种;汇装从 PROV_OFFER_BLOCKED 出的行)。
    */
   offerForm: 'offerForm',
@@ -647,6 +653,11 @@ export const GATE_F = {
  * 门槛卡的行键(React 列表键,也是开合状态的键)。
  */
 export const GATE_ROW = {
+  /**
+   * 身份(申请时人得在哪、认哪几类工签;2026-09-30 通道与门槛批 1,排第一行)。
+   */
+  status: 'status',
+
   /**
    * 雇主 offer。
    */
@@ -822,6 +833,46 @@ export const BASIS_FISCAL = 'fiscal'
  * 口径包的编码值键(offer 形态行:过不了的工时 / 雇佣期取值)。
  */
 export const BASIS_VALUE_CODE = 'valueCode'
+
+/**
+ * 口径键:在哪(身份行 = 人得在哪;经验行 = 经验在哪攒的算;2026-09-30 通道与门槛批 1)。
+ */
+export const BASIS_WHERE = 'where'
+
+/**
+ * where 的取值:须已在本省工作(身份行)。
+ */
+export const BASIS_WHERE_IN_PROV = 'inProvince'
+
+/**
+ * where 的取值:加拿大境内外都算(经验行;阿省原句「in Canada or abroad」)。
+ */
+export const BASIS_WHERE_ANYWHERE = 'anywhere'
+
+/**
+ * 口径键:认哪几类工签(取值用 BASIS_PERMIT_SEP 连,逐个查 GATE_PERMIT_HEAD 词条)。
+ */
+export const BASIS_PERMITS = 'permits'
+
+/**
+ * 工签种类之间的连接符。
+ */
+export const BASIS_PERMIT_SEP = '+'
+
+/**
+ * 口径标记:申请期间维持身份(implied status)/ 恢复身份的不算。
+ */
+export const BASIS_NO_IMPLIED = 'noImplied'
+
+/**
+ * 口径标记:持 PGWP 的那一档经验(experienceAlt 行;门槛卡写「持 PGWP 的:近 N 个月在本省满 M 个月」)。
+ */
+export const BASIS_PGWP = 'pgwp'
+
+/**
+ * 工签种类的词条键头(拼种类键取界面词:lmia / lmiaExempt / pgwpLocal / openSpecific)。
+ */
+export const GATE_PERMIT_HEAD = 'pnpgate.permit.'
 
 /**
  * 编码值里取值之间的分隔符。

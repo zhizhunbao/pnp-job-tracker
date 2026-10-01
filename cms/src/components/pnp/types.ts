@@ -4373,6 +4373,26 @@ export type ChannelOfIn = {
 }
 
 /**
+ * statusLinesOf 的入参(2026-09-30 通道与门槛批 1)。
+ */
+export type StatusLinesIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 一条身份行。
+   */
+  r: PnpReq
+
+  /**
+   * 本省界面名(「申请时须在阿尔伯塔省工作」)。
+   */
+  prov: string
+}
+
+/**
  * cmpHeadClsOf 的入参。
  */
 export type CmpHeadClsIn = {
