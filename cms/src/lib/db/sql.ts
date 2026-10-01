@@ -2570,8 +2570,12 @@ export const DIMS_DISTRICTS = `SELECT name, city, province FROM districts ORDER 
 
 /**
  * 筛选下拉的 AIP 指定雇主维度。
+ * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:AIP 弹框改列本省名单、高亮本岗雇主 —— 只取 AIP 那份
+ * (表里还混着 RCIP / FCIP 试点社区名单,读这一维的只有 AIP 弹框),按省、名字排好;原先 LIMIT 5000 不排序,6,751 行每次随机丢
+ * 一千多家,撤(AIP 四省约 3,900 行)。
  */
-export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM designated_employers LIMIT 5000`
+export const DIMS_DESIGNATED = `SELECT name, province, location, is_tech FROM designated_employers WHERE source = 'AIP'
+     ORDER BY province, name`
 
 /**
  * 筛选下拉/弹窗的 NOC 描述维度(上限同原 payload.find 的 2000)。

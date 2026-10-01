@@ -10,6 +10,7 @@
  * EE 类别块只剩命中类别的清单折叠。
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):多两台 —— 整表懒取(usePnpData,自 advisor 迁入)与弹框整机(usePnpModal)。
  * 2026-09-30 资讯页「通道与门槛」:多一台 —— 一省的门槛卡(usePnpProvStreams,整表懒取同弹框)。
+ * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:多一台 —— AIP 指定雇主清单卡(useAipEmpCard)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -18,16 +19,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { storedTitleOf, useTitleTrans } from '@/components/jobtitle'
 import { makeT } from '@/lib/i18n'
 import { track } from '@/lib/track'
-import { LANG_EN, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
+import { AIP_EMP_OPEN_KEY, LANG_EN, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } from './constants'
 import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
+  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
-  QcChannelsPanel,
+  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -247,5 +249,37 @@ export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel 
     ready: data.ready,
     failed: data.failed,
     cards: provGateCardsOf({ t, lang: x.lang, province: x.province, pathways: data.pathways, reqs: data.reqs }),
+  }
+}
+
+/**
+ * AIP 指定雇主清单卡整机(2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」):本省清单(名单换了才重算归一名)、开合(默认只露本岗雇主那一行,
+ * 末尾开关展开其余各家)与高亮行就近滚进视野(形照省提名清单块 usePnpList)。
+ *
+ * @param x 本岗与指定雇主名单。
+ * @returns ref 盒、展开态、开关、展示行、折起来的家数与本省总家数。
+ */
+export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
+  const matchRef = useRef<HTMLDivElement | null>(null)
+  const [openKeys, setOpenKeys] = useState<Set<string>>(new Set())
+  const province = x.job.province
+  const company = x.job.company
+
+  const list = useMemo(function listOf() {
+    return aipEmpListOf({ employers: x.employers, province })
+  }, [x.employers, province])
+
+  useEffect(function scrollToHit() {
+    scrollIntoHit({ ref: matchRef })
+  }, [list])
+
+  const open = openKeys.has(AIP_EMP_OPEN_KEY)
+  return {
+    matchRef,
+    open,
+    onToggle: makeToggleOf({ setKeys: setOpenKeys })(AIP_EMP_OPEN_KEY),
+    rows: aipEmpRowsOf({ list, company, open }),
+    hidden: aipEmpHiddenOf({ list, company }),
+    total: list.length,
   }
 }

@@ -32,10 +32,13 @@
  * 同日资讯页「通道与门槛」(Frank「各省门槛 我觉得 应该放到资讯下面」):桶门加一名 PnpProvStreams —— 一省全部现行通道的门槛卡,
  * 与弹框「本岗通道的门槛」同一个卡件、同一份懒取整表;页面外壳(页签、省份胶囊)住 components/streams。
  * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:AIP 格只看指定雇主,桶门撤 aipExcludedOf(唯一消费者是职位板 AIP 格)。
+ * 同日 Frank「这个弹框需要列表,然后高亮雇主」:桶门加一名 AipEmpCard(AIP 弹框的指定雇主清单卡,本岗雇主高亮);
+ * normName 撤出桶门(唯一外部消费者 advisor 的按名字完全相等命中行随之删,域内照用)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
+export { AipEmpCard } from './aipempcard'
 export { EeCategorySection } from './eecategorysection'
 export { MeansForMe } from './meansforme'
 export { PnpListSection } from './pnplistsection'
@@ -45,7 +48,7 @@ export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
-  aipBlockOf, aipVerdictOf, eeIsDormant, eeLastDraw, normName, pnpBlockedKeysOf, pnpCellActiveOf,
+  aipBlockOf, aipVerdictOf, eeIsDormant, eeLastDraw, pnpBlockedKeysOf, pnpCellActiveOf,
   pnpBlockCellOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
 } from './functions'
 export { usePnpData } from './hooks'

@@ -120,6 +120,22 @@ export const AIP_ALIAS_RE = /\bo\/a\b|\bdba\b|\bd\/b\/a\b/
 export const AIP_DROP_RE = /[^a-z0-9& ]/g
 
 /**
+ * 公司名里的撇号,归一前先删(同数据层 names 域 norm_name 的 APOSTROPHE_RE)。2026-10-01 AIP 清单卡高亮前补:原先被 AIP_DROP_RE
+ * 抹成空格,「Tim Horton's」归一成 tim horton s,对不上数据层的 tim hortons。
+ */
+export const AIP_APOS_RE = /['’]/g
+
+/**
+ * 名单行里「o/a」后面的经营名(数据层 aip 域打标同时认法定名与 o/a 经营名,etl aip 的 ALIAS_RE;AIP 清单卡高亮按同一口径)。
+ */
+export const AIP_OA_TAIL_RE = /\bo\/a\b(?<tail>.+)/i
+
+/**
+ * AIP 指定雇主清单卡开合的键(只有一把:展开其余各家;2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」)。
+ */
+export const AIP_EMP_OPEN_KEY = 'aipEmpOpen'
+
+/**
  * 连续空白(归一时压成单个空格)。
  */
 export const SPACE_RUN_RE = /\s+/g

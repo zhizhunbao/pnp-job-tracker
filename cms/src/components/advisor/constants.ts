@@ -160,11 +160,6 @@ export const CARET_DOWN = '▾'
 export const CARET_RIGHT = '▸'
 
 /**
- * 枚举多值时的顿号(全站禁「·」「/」杂糅,枚举一律顿号)。
- */
-export const LIST_SEP = '、'
-
-/**
  * 拼 className 时各类之间的分隔符。HTML 的 class 属性按**空白**切词,
  * 写错不会报错,只会让两个类粘成一个匹配不上的长类名,那一块当场变成裸元素。
  */

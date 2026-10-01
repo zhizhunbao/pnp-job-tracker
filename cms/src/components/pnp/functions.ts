@@ -45,7 +45,7 @@ import {
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
-  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS,
+  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, AIP_APOS_RE, AIP_OA_TAIL_RE,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -77,6 +77,7 @@ import type {
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
+  AipEmpEntry, AipEmpHiddenIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -3839,16 +3840,104 @@ export function fedRowColorOf(key: string): string {
 /**
  * 公司名归一(镜像 etl/clean/05c_flag_aip.py 的 norm_name)—— 用于把岗位公司名匹配回
  * AIP 指定雇主记录:取「经营名」分隔前那一段,抹掉组织形式后缀与标点,压平空白。
+ * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」(AIP 清单卡高亮):撇号先删(同数据层 norm_name),不再抹成空格。
  *
  * @param name 公司名。
  * @returns 归一后的名字。
  */
 export function normName(name: string): string {
-  const head = name.toLowerCase().split(AIP_ALIAS_RE)[0]
+  const head = name.toLowerCase().replace(AIP_APOS_RE, TEXT_NONE).split(AIP_ALIAS_RE)[0]
   if (head == null) {
     return TEXT_NONE
   }
   return head.replace(AIP_SUFFIX_RE, SPACE).replace(AIP_DROP_RE, SPACE).replace(SPACE_RUN_RE, SPACE).trim()
+}
+
+/**
+ * 一省的 AIP 指定雇主清单(弹框清单卡用;2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」):只取本岗所在省的(名单已按省、名字排好),
+ * 每家先算好能对上的归一名 —— 法定名与「o/a」后的经营名,数据层 aip 域打标同时认这两种(etl aip load_aip_names)。
+ *
+ * @param x 名单(只有 AIP 那份)与省码。
+ * @returns 这一省的清单行。
+ */
+export function aipEmpListOf(x: AipEmpListIn): AipEmpEntry[] {
+  const out: AipEmpEntry[] = []
+  for (const e of x.employers) {
+    if (e.province === x.province) {
+      out.push({ name: e.name, location: e.location, keys: aipEmpKeysOf(e.name) })
+    }
+  }
+  return out
+}
+
+/**
+ * 名单上一家能对上的归一名:法定名一个,带「o/a」的再加经营名一个;归一后是空串的不要。
+ *
+ * @param name 名单上的原名。
+ * @returns 归一名。
+ */
+function aipEmpKeysOf(name: string): string[] {
+  const keys: string[] = []
+  const head = normName(name)
+  if (head !== TEXT_NONE) {
+    keys.push(head)
+  }
+  const m = AIP_OA_TAIL_RE.exec(name)
+  if (m != null && m.groups != null && m.groups.tail != null) {
+    const tail = normName(m.groups.tail)
+    if (tail !== TEXT_NONE && keys.includes(tail) === false) {
+      keys.push(tail)
+    }
+  }
+  return keys
+}
+
+/**
+ * 清单卡这一刻要露的行:本岗雇主那几行在前(高亮),展开才列其余;一行都没对上时露头几行(同职业清单卡 streamRowsOf)。
+ *
+ * @param x 这一省的清单、本岗公司名与展开态。
+ * @returns 展示行。
+ */
+export function aipEmpRowsOf(x: AipEmpRowsIn): AipEmpRowSpec[] {
+  const me = normName(x.company)
+  const hits: AipEmpEntry[] = []
+  const others: AipEmpEntry[] = []
+  for (const e of x.list) {
+    if (me !== TEXT_NONE && e.keys.includes(me)) {
+      hits.push(e)
+    } else {
+      others.push(e)
+    }
+  }
+  let picked = hits
+  if (x.open) {
+    picked = hits.concat(others)
+  }
+  if (picked.length === 0) {
+    picked = others.slice(0, ROWS_FALLBACK)
+  }
+  const rows: AipEmpRowSpec[] = []
+  for (const e of picked) {
+    rows.push({ key: e.name + e.location, hit: hits.includes(e), name: e.name, location: e.location })
+  }
+  return rows
+}
+
+/**
+ * 折起来的家数(本岗雇主之外的都算)。
+ *
+ * @param x 这一省的清单与本岗公司名。
+ * @returns 家数。
+ */
+export function aipEmpHiddenOf(x: AipEmpHiddenIn): number {
+  const me = normName(x.company)
+  let n = 0
+  for (const e of x.list) {
+    if (me === TEXT_NONE || e.keys.includes(me) === false) {
+      n += 1
+    }
+  }
+  return n
 }
 
 /**

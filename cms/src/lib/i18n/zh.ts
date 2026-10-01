@@ -808,7 +808,7 @@ export const jobsZh = {
   'fact.daysUp': '已挂', 'fact.daysUpVal': '{n} 天',
   'fact.salYrNote': '年薪=帖面工资按每周 40 小时、一年 52 周折算;区间取中间值',
   'fact.accNote': '经验级别从帖内措辞(职级/年限)提取;帖内未写=「未知」,不猜',
-  'fact.aipTech': '科技类',
+  'aipemp.title': '{prov} AIP 指定雇主', 'aipemp.count': '{n} 家',
   'fact.lmiaNote': '历史事实,不代表现在能或愿意担保。', 'fact.lmiaStreams': '获批构成',
   'lmia.route': '本岗 LMIA 前瞻', 'lmia.official': '官方冻结口径',
   'lmia.high': '高薪类:不受 2024 低薪冻结影响,LMIA 路径完整', 'lmia.exempt': '低薪但属豁免行业(农业/建筑/食品/医疗/看护):仍可受理',

@@ -1314,21 +1314,6 @@ export type OriginTextIn = {
 }
 
 /**
- * aipMatchesOf 的入参。
- */
-export type AipMatchIn = {
-  /**
-   * 这一岗。
-   */
-  job: AdvisorJob
-
-  /**
-   * AIP 指定雇主名录。
-   */
-  desigEmp: AdvisorDesigEmps
-}
-
-/**
  * 省里点名不受理的一个职业(只声明本域真读的两格)。
  */
 export type AipOccFact = {
@@ -1616,26 +1601,6 @@ export type LoadNocTransIn = {
    * 状态落格。
    */
   setStatus: (s: TransStatus) => void
-}
-
-/**
- * AIP 指定雇主名录的一行(外域形状,见文件头)。
- */
-export type AdvisorDesigEmp = DesigEmp
-
-/**
- * aipMatchTextOf 的入参。
- */
-export type AipMatchTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 名录里的一行。
-   */
-  emp: AdvisorDesigEmp
 }
 
 /**

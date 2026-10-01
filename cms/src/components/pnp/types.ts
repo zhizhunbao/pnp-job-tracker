@@ -4861,6 +4861,206 @@ export type PnpProvStreamsPanel = {
 }
 
 /**
+ * AIP 指定雇主名单的一行(2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」;本域只声明真读的格)。
+ */
+export type AipEmp = {
+  /**
+   * 雇主名(官方名单原样,可能带「o/a 经营名」)。
+   */
+  name: string
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 所在地;'' = 名单没写。
+   */
+  location: string
+}
+
+/**
+ * 一省清单里的一家(算好了能对上的归一名)。
+ */
+export type AipEmpEntry = {
+  /**
+   * 雇主名(名单原样)。
+   */
+  name: string
+
+  /**
+   * 所在地;'' = 名单没写。
+   */
+  location: string
+
+  /**
+   * 能对上的归一名(法定名、o/a 经营名)。
+   */
+  keys: string[]
+}
+
+/**
+ * aipEmpListOf 的入参。
+ */
+export type AipEmpListIn = {
+  /**
+   * 名单(只有 AIP 那份)。
+   */
+  employers: AipEmp[]
+
+  /**
+   * 本岗省码。
+   */
+  province: string
+}
+
+/**
+ * aipEmpRowsOf 的入参。
+ */
+export type AipEmpRowsIn = {
+  /**
+   * 这一省的清单。
+   */
+  list: AipEmpEntry[]
+
+  /**
+   * 本岗公司名。
+   */
+  company: string
+
+  /**
+   * 展开着没。
+   */
+  open: boolean
+}
+
+/**
+ * aipEmpHiddenOf 的入参。
+ */
+export type AipEmpHiddenIn = {
+  /**
+   * 这一省的清单。
+   */
+  list: AipEmpEntry[]
+
+  /**
+   * 本岗公司名。
+   */
+  company: string
+}
+
+/**
+ * 清单卡的一行(洗好)。
+ */
+export type AipEmpRowSpec = {
+  /**
+   * React 列表键。
+   */
+  key: string
+
+  /**
+   * 是本岗雇主(高亮)。
+   */
+  hit: boolean
+
+  /**
+   * 雇主名。
+   */
+  name: string
+
+  /**
+   * 所在地灰字;'' = 不出。
+   */
+  location: string
+}
+
+/**
+ * AipEmpCard 的 props。
+ */
+export type AipEmpCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗(读省码与公司名)。
+   */
+  job: PnpJob
+
+  /**
+   * AIP 指定雇主名单(大西洋四省全量;后台还在取时是空列)。
+   */
+  employers: AipEmp[]
+}
+
+/**
+ * AipEmpRow 的 props。
+ */
+export type AipEmpRowIn = {
+  /**
+   * 洗好的这一行。
+   */
+  r: AipEmpRowSpec
+
+  /**
+   * 命中行的 ref 盒(非命中行不登记)。
+   */
+  matchRef: HitRef
+}
+
+/**
+ * useAipEmpCard 的入参。
+ */
+export type AipEmpCardHookIn = {
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * AIP 指定雇主名单。
+   */
+  employers: AipEmp[]
+}
+
+/**
+ * useAipEmpCard 交回的面板。
+ */
+export type AipEmpCardPanel = {
+  /**
+   * 命中行的 ref 盒。
+   */
+  matchRef: HitRef
+
+  /**
+   * 展开着没。
+   */
+  open: boolean
+
+  /**
+   * 末尾开关。
+   */
+  onToggle: ClickFn
+
+  /**
+   * 这一刻要露的行。
+   */
+  rows: AipEmpRowSpec[]
+
+  /**
+   * 折起来的家数。
+   */
+  hidden: number
+
+  /**
+   * 本省总家数(0 = 不出卡)。
+   */
+  total: number
+}
+
+/**
  * usePnpData 的入参。
  */
 export type PnpDataHookIn = {

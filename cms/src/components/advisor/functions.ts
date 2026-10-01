@@ -16,7 +16,6 @@
  */
 import { cssOf } from '@/components/css'
 import { fetchJobText } from '@/components/jobs/functions'
-import { normName } from '@/components/pnp'
 import { blockedSrc, isDirect } from '@/lib/jobs'
 import { isExemptSector, lmiaWageClass } from '@/lib/lmia'
 import { catName, pickName } from '@/lib/noc'
@@ -27,7 +26,7 @@ import {
   CLS_DEPTH_NONE, CLS_SEP, CREDENTIALS_INCLUDE, DASH, FIELD_ACCESSIBILITY, FIELD_BROAD, FIELD_COMPANY, FIELD_NOC,
   FIELD_NOC_CODE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
   K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD,
-  K_COL_HEAD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_PROVINCE, LIST_SEP, METHOD_POST,
+  K_COL_HEAD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_PROVINCE, METHOD_POST,
   MIME_JSON, MONEY_HEAD, NEWLINE, PAREN_CLOSE, PAREN_OPEN, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
   POOL_KEY_HEAD, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, STATUS_CLOSED, STATUS_OPEN,
   TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
@@ -35,8 +34,8 @@ import {
   URL_API_NOC_TRANSLATE, URL_COMPANY_HEAD, URL_PAGE_FIRST, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  AdvisorDesigEmps, AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipMatchIn,
-  AipMatchTextIn, AipPillIn, CardHeadIn, CatTextIn, CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
+  AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipPillIn, CardHeadIn, CatTextIn,
+  CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HeadSubIn,
   IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCompanyJobsIn, LoadFn,
   LoadJobTextIn, LoadNocTransIn, ModalTitleIn, NarrowClsIn, NocFindIn, NocTransJson, TransTitleIn, OnClsIn,
@@ -241,47 +240,6 @@ export function clsDepthOf(field: string): number {
     return CLS_DEPTH_BROAD
   }
   return CLS_DEPTH_NONE
-}
-
-/**
- * 同名雇主在 AIP 指定雇主名录里的命中行。命中清单**放开跨省**(原限本省):
- * 同雇主在其他大西洋省上榜 = 更强信号,一并列出。
- *
- * @param x 这一岗与名录。
- * @returns 命中行;这一岗不是 AIP 或没有公司名时给空清单。
- */
-export function aipMatchesOf(x: AipMatchIn): AdvisorDesigEmps {
-  const cn = normName(x.job.company)
-  if (x.job.aip === false || cn === TEXT_NONE) {
-    return []
-  }
-  const hits: AdvisorDesigEmps = []
-  for (const e of x.desigEmp) {
-    if (normName(e.name) === cn) {
-      hits.push(e)
-    }
-  }
-  return hits
-}
-
-/**
- * 命中雇主那一行的说明(所在地、省、科技岗标)。
- *
- * @param x 取词函数与名录里的一行。
- * @returns 顿号连起来的说明(全站禁「·」「/」杂糅,枚举一律顿号)。
- */
-export function aipMatchTextOf(x: AipMatchTextIn): string {
-  const parts: string[] = []
-  if (x.emp.location !== TEXT_NONE) {
-    parts.push(x.emp.location)
-  }
-  if (x.emp.province !== TEXT_NONE) {
-    parts.push(x.emp.province)
-  }
-  if (x.emp.isTech) {
-    parts.push(x.t('fact.aipTech'))
-  }
-  return parts.join(LIST_SEP)
 }
 
 /**

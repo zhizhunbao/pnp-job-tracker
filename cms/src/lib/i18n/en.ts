@@ -757,7 +757,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fact.daysUp': 'Days up', 'fact.daysUpVal': '{n} days',
   'fact.salYrNote': 'Annual = posted pay at 40 h/week × 52 weeks; midpoint for a range',
   'fact.accNote': 'Experience level extracted from the posting wording (title/years); "—" when not stated — never guessed',
-  'fact.aipTech': 'Tech',
+  'aipemp.title': 'AIP designated employers in {prov}', 'aipemp.count': '{n} employers',
   'fact.lmiaNote': 'A past record — not a sign they can or will sponsor now.', 'fact.lmiaStreams': 'By stream',
   'lmia.route': 'LMIA outlook for this job', 'lmia.official': 'Official freeze rules',
   'lmia.high': 'High-wage: not affected by the 2024 low-wage freeze; LMIA route open', 'lmia.exempt': 'Low-wage but exempt sector (agriculture/construction/food/healthcare/caregiving): still processed',
