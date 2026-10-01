@@ -136,6 +136,11 @@ export const AIP_OA_TAIL_RE = /\bo\/a\b(?<tail>.+)/i
 export const AIP_EMP_OPEN_KEY = 'aipEmpOpen'
 
 /**
+ * AIP 清单卡高亮时本岗雇主归一名最短几个字(再短不认,免得一两个字母整词包含对上一片;2026-10-01 改整词包含时立)。
+ */
+export const AIP_HIT_MIN_LEN = 3
+
+/**
  * 连续空白(归一时压成单个空格)。
  */
 export const SPACE_RUN_RE = /\s+/g

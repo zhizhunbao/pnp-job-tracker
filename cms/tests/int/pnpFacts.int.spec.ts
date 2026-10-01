@@ -1369,6 +1369,23 @@ describe('AIP 指定雇主清单卡', () => {
     expect(aipEmpHiddenOf({ list: nb, company: '' })).toBe(3)
   })
 
+  it('名单写法「法定名 - 品牌 分店」「品牌 地名 (法定名)」:岗位只写品牌也整词对得上;太短的名字不认', () => {
+    const fmt = aipEmpListOf({ employers: [
+      emp('J.D. Irving, Limited - Kent Building Supplies (Head Office)'),
+      emp('FMI National Inc. - Pizza Hut Dieppe'),
+      emp('Subway Moncton (709028 NB Inc)'),
+      emp('Subway (605342 NB Ltée)'),
+      emp('Kent Line Limited'),
+    ], province: 'NB' })
+    const hitsOf = (company: string) => aipEmpRowsOf({ list: fmt, company, open: false }).filter((r) => r.hit).map((r) => r.name)
+    expect(hitsOf('Kent Building Supplies')).toEqual(['J.D. Irving, Limited - Kent Building Supplies (Head Office)'])
+    expect(hitsOf('Pizza Hut')).toEqual(['FMI National Inc. - Pizza Hut Dieppe'])
+    expect(hitsOf('Subway')).toEqual(['Subway Moncton (709028 NB Inc)', 'Subway (605342 NB Ltée)'])
+    // 探针:整词才算 —— 「Kent Building」不会让「Kent Line」也亮;两个字母的名字不认
+    expect(hitsOf('Kent Building')).toEqual(['J.D. Irving, Limited - Kent Building Supplies (Head Office)'])
+    expect(hitsOf('KB')).toEqual([])
+  })
+
   it('一家都对不上(或没有公司名):露头几行、都不高亮(同职业清单卡)', () => {
     for (const company of ['Nobody Here', '']) {
       const rows = aipEmpRowsOf({ list: nb, company, open: false })

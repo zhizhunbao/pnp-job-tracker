@@ -4936,6 +4936,21 @@ export type AipEmpRowsIn = {
 }
 
 /**
+ * isAipEmpHitOf 的入参。
+ */
+export type AipEmpHitIn = {
+  /**
+   * 名单上这一家的归一名。
+   */
+  keys: string[]
+
+  /**
+   * 本岗雇主的归一名。
+   */
+  me: string
+}
+
+/**
  * aipEmpHiddenOf 的入参。
  */
 export type AipEmpHiddenIn = {

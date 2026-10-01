@@ -46,6 +46,7 @@ import {
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, AIP_APOS_RE, AIP_OA_TAIL_RE,
+  AIP_HIT_MIN_LEN,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -77,7 +78,7 @@ import type {
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
-  AipEmpEntry, AipEmpHiddenIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn,
+  AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -3893,6 +3894,31 @@ function aipEmpKeysOf(name: string): string[] {
 }
 
 /**
+ * 名单上这一家算不算本岗雇主:本岗归一名整词出现在这家任一归一名里。名单写法五花八门 —— 「X o/a 品牌」「法定名 - 品牌 分店」
+ * 「品牌 地名 (法定名)」,岗位上多半只写品牌,只认相等对不上(线上实测:NB 的 Subway、Kent Building Supplies 都对不上
+ * 「Subway Moncton (709028 NB Inc)」「J.D. Irving, Limited - Kent Building Supplies (Head Office)」);品牌连锁会高亮本省各家加盟店。
+ * 相等一律算(「CG Group Ltd」归一只剩 cg);整词包含要本岗归一名不短于 AIP_HIT_MIN_LEN。
+ *
+ * @param x 这一家的归一名与本岗雇主归一名。
+ * @returns 对上 = true。
+ */
+function isAipEmpHitOf(x: AipEmpHitIn): boolean {
+  if (x.me !== TEXT_NONE && x.keys.includes(x.me)) {
+    return true
+  }
+  if (x.me.length < AIP_HIT_MIN_LEN) {
+    return false
+  }
+  const needle = SPACE + x.me + SPACE
+  for (const k of x.keys) {
+    if ((SPACE + k + SPACE).includes(needle)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * 清单卡这一刻要露的行:本岗雇主那几行在前(高亮),展开才列其余;一行都没对上时露头几行(同职业清单卡 streamRowsOf)。
  *
  * @param x 这一省的清单、本岗公司名与展开态。
@@ -3903,7 +3929,7 @@ export function aipEmpRowsOf(x: AipEmpRowsIn): AipEmpRowSpec[] {
   const hits: AipEmpEntry[] = []
   const others: AipEmpEntry[] = []
   for (const e of x.list) {
-    if (me !== TEXT_NONE && e.keys.includes(me)) {
+    if (isAipEmpHitOf({ keys: e.keys, me })) {
       hits.push(e)
     } else {
       others.push(e)
@@ -3933,7 +3959,7 @@ export function aipEmpHiddenOf(x: AipEmpHiddenIn): number {
   const me = normName(x.company)
   let n = 0
   for (const e of x.list) {
-    if (me === TEXT_NONE || e.keys.includes(me) === false) {
+    if (isAipEmpHitOf({ keys: e.keys, me }) === false) {
       n += 1
     }
   }
