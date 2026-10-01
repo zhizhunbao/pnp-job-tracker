@@ -104,8 +104,8 @@ class AipHitIn:
     job: dict
     """岗位行(只读 province / employer / noc 三格;noc 2026-09-05 起用于 TEER 门)。"""
 
-    names: set
-    """归一化后的官方指定雇主名集合。"""
+    names: dict
+    """归一化后的官方指定雇主名:省码 → 名字集合(2026-10-01 起按省分开,只认岗位所在省)。"""
 
 
 @dataclass

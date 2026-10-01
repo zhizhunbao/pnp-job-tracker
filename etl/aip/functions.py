@@ -33,7 +33,8 @@ from fetch.constants import BROWSER_UA, HDR_UA, LINE_SEP, SPACE_SEP, WS_RE
 from names.functions import norm_name
 from noc.functions import teer_of
 from aip.constants import (
-    AIP_TEER_MAX, ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, FLAG_DONE_TPL, FLAG_IN_LIST_TPL,
+    AIP_TEER_MAX, ALIAS_RE, ATLANTIC, ATS_JOBS_GLOB, DASH_SPLIT, FLAG_DONE_TPL, FLAG_IN_LIST_TPL, LEGAL_HINT_RE,
+    PAREN_TAIL_RE,
     FLAG_IN_OUT_TPL, FLAG_NAMES_TPL, IN_AIP_LIST, IN_OUT_COMPANIES_DIR, IN_OUT_POSTINGS, INDENT_2,
     K_AIP, K_JOBS,
     BULLET, CDX_PARAMS, CDX_TIMEOUT_S, CDX_URL, EMP_OUT_TPL, EMP_PROV_TPL, EMP_TABLE_HEAD,
@@ -363,26 +364,59 @@ def flag_aip_jobs() -> None:
     say(FLAG_IN_LIST_TPL.format(path=IN_AIP_LIST))
     say(FLAG_IN_OUT_TPL.format(path=IN_OUT_POSTINGS))
     names = load_aip_names()
-    say(FLAG_NAMES_TPL.format(n=len(names)))
+    say(FLAG_NAMES_TPL.format(n=name_count(names)))
     got = flag_jobbank(names)
     total = got.total + flag_ats_jobs()
     say(FLAG_DONE_TPL.format(flagged=got.flagged, total=total))
 
 
-def load_aip_names() -> set:
-    """官方名单 → 归一化雇主名集合(同时收 legal 名和 o/a 别名两种写法)。"""
-    names: set = set()
+def load_aip_names() -> dict:
+    """官方名单 → 省码 → 归一化雇主名集合(同时收 legal 名和 o/a 别名两种写法)。
+
+    2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」后线上实测:NB 的 Popeyes 岗只因 NS 名录上有「WP Holdings Limited o/a Popeyes Louisiana Kitchen」被标成指定雇主 —— AIP 指定按省,别省名录不算。
+    同日补 NB 名录的两种写法(aip_name_forms):「法定名 - 经营名」「经营名 (法定名)」—— 原先只认 o/a,NB 的 Subway、Kent 只能靠别省名录
+    碰上。
+    """
+    by_prov: dict = {}
     for row in json.loads(IN_AIP_LIST.read_text(encoding=ENC_UTF8)):
-        raw = row.get(K_EMPLOYER, "")
-        names.add(norm_name(raw))
-        alias = ALIAS_RE.search(raw)
-        if alias:
-            names.add(norm_name(alias.group(1)))
-    names.discard("")
-    return names
+        names = by_prov.setdefault(row.get(K_PROVINCE, ""), set())
+        for form in aip_name_forms(row.get(K_EMPLOYER, "")):
+            names.add(norm_name(form))
+    for names in by_prov.values():
+        names.discard("")
+    return by_prov
 
 
-def flag_jobbank(names: set) -> FlagOut:
+def aip_name_forms(raw: str) -> list:
+    """名录一行的几种写法 → 待归一的名字:原样、o/a 后的经营名、「 - 」两边、去掉末尾括号的那段、括号里像法定名的那段
+    (2026-10-01;括号里是地点的不收,见 LEGAL_HINT_RE)。"""
+    forms = [raw]
+    alias = ALIAS_RE.search(raw)
+    if alias:
+        forms.append(alias.group(1))
+    parts = raw.split(DASH_SPLIT)
+    if len(parts) > 1:
+        for part in parts:
+            forms.append(part)
+    for form in list(forms):
+        m = PAREN_TAIL_RE.match(form)
+        if m is None:
+            continue
+        forms.append(m.group("head"))
+        if LEGAL_HINT_RE.search(m.group("inner")):
+            forms.append(m.group("inner"))
+    return forms
+
+
+def name_count(by_prov: dict) -> int:
+    """各省归一名合计(段4 报名录规模用)。"""
+    n = 0
+    for names in by_prov.values():
+        n += len(names)
+    return n
+
+
+def flag_jobbank(names: dict) -> FlagOut:
     """Job Bank 全国岗位表逐行打 aip → 原子写回(表不存在 = 本轮没抓岗,零命中零过件)。"""
     if IN_OUT_POSTINGS.exists() is False:
         return FlagOut(flagged=0, total=0)
@@ -401,13 +435,15 @@ def flag_jobbank(names: set) -> FlagOut:
 
 def aip_hit(x: AipHitIn) -> bool:
     """一岗是否命中:省在大西洋四省 **且** 归一化雇主名在官方名单里 **且** 岗位 TEER 0-4
-    (AIP_TEER_MAX;TEER 5 岗官方不认,2026-09-05 加门;NOC 缺失/非法 = 不算)。"""
-    if x.job.get(K_PROVINCE) not in ATLANTIC:
+    (AIP_TEER_MAX;TEER 5 岗官方不认,2026-09-05 加门;NOC 缺失/非法 = 不算)。
+    2026-10-01 名单改按省查:只认岗位所在省的名录(别省名录上的同名雇主不算本省指定雇主)。"""
+    prov = x.job.get(K_PROVINCE)
+    if prov not in ATLANTIC:
         return False
     teer = teer_of(x.job.get(K_NOC))
     if teer is None or teer > AIP_TEER_MAX:
         return False
-    return norm_name(x.job.get(K_EMPLOYER, "")) in x.names
+    return norm_name(x.job.get(K_EMPLOYER, "")) in x.names.get(prov, set())
 
 
 def flag_ats_jobs() -> int:
