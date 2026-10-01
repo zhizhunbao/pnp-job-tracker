@@ -4925,25 +4925,20 @@ export function pnpCellActiveOf(x: PnpCellActiveIn): boolean {
  * E6-09(2026-07-26 Frank「恢复可点」):命中官方具名排除清单的岗,格子要说结论、
  * 要能点开看依据 —— 与「TEER 不够」这种泛判定不同。只收管带 offer 的岗的清单(isOfferList,与弹框清单卡同一把尺子)。
  * 2026-09-28 自 jobs 的 blockedKeysOf 迁入(省提名弹框自立第 4 步):拼键与查键都在本域,项目归属走本域 programOf。
+ * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:AIP 格 / 胶囊只看指定雇主,AIP 那套键没人读了,只收省提名的。
  *
  * @param rows 省提名与 AIP 的扁平清单(整表)。
- * @returns 两套键集。
+ * @returns 省提名的键集。
  */
 export function pnpBlockedKeysOf(rows: PnpOcc[]): PnpBlocked {
   const pnp = new Set<string>()
-  const aip = new Set<string>()
   for (const r of rows) {
-    if (r.type !== TYPE_INELIGIBLE || isOfferList(r.appliesTo) === false) {
+    if (r.type !== TYPE_INELIGIBLE || isOfferList(r.appliesTo) === false || programOf(r) === PROGRAM_AIP) {
       continue
     }
-    const key = r.province + EXCL_KEY_SEP + r.noc
-    if (programOf(r) === PROGRAM_AIP) {
-      aip.add(key)
-    } else {
-      pnp.add(key)
-    }
+    pnp.add(r.province + EXCL_KEY_SEP + r.noc)
   }
-  return { pnp, aip }
+  return { pnp }
 }
 
 /**
@@ -4954,16 +4949,6 @@ export function pnpBlockedKeysOf(rows: PnpOcc[]): PnpBlocked {
  */
 export function pnpExcludedOf(x: PnpExclIn): boolean {
   return x.blocked.pnp.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
-}
-
-/**
- * 这一岗在不在大西洋试点官方具名不受理清单上。
- *
- * @param x 这一岗与两套键集。
- * @returns 在 = true。
- */
-export function aipExcludedOf(x: PnpExclIn): boolean {
-  return x.blocked.aip.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
 }
 
 /**

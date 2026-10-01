@@ -268,18 +268,13 @@ export type CellCtx = {
 }
 
 /**
- * 官方具名排除清单的两套键集(整表算一次,逐行 O(1) 查)。
+ * 官方具名排除清单的键集(整表算一次,逐行 O(1) 查;2026-10-01 AIP 那套随 AIP 格只看指定雇主撤掉)。
  */
 export type BlockedKeys = {
   /**
    * 省提名不受理的 `省码|NOC` 集。
    */
   pnp: Set<string>
-
-  /**
-   * 大西洋试点不受理的 `省码|NOC` 集。
-   */
-  aip: Set<string>
 }
 
 /**
@@ -326,11 +321,6 @@ export type BoardPnpFacts = {
    * 省提名官方具名排除的 `省码|NOC`(格子红字、手机胶囊、弹框排除清单卡都看它)。
    */
   pnpBlocked: string[]
-
-  /**
-   * 大西洋试点不受理的 `省码|NOC`。
-   */
-  aipBlocked: string[]
 
   /**
    * 省提名弹框的事实索引。
@@ -2804,11 +2794,6 @@ export type AnyRouteIn = {
    * 命中省提名排除清单。
    */
   pnpExcl: boolean
-
-  /**
-   * 命中大西洋试点排除清单。
-   */
-  aipBlocked: boolean
 }
 
 /**
@@ -2827,7 +2812,7 @@ export type ChipPushIn = {
 }
 
 /**
- * 带两条排除判定的胶囊收集器入参。
+ * 带省提名排除判定的胶囊收集器入参(2026-10-01 AIP 那条判定随 AIP 胶囊只写指定雇主撤掉)。
  */
 export type ChipPushBlockIn = {
   /**
@@ -2844,11 +2829,6 @@ export type ChipPushBlockIn = {
    * 命中省提名排除清单。
    */
   pnpExcl: boolean
-
-  /**
-   * 命中大西洋试点排除清单。
-   */
-  aipBlocked: boolean
 }
 
 /**

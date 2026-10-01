@@ -542,8 +542,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fields': 'Columns ({n})', 'fields.main': 'Main', 'fields.all': 'All', 'fields.invert': 'Invert', 'fields.fixed': ' (fixed)', 'cols.hidden': '{n} hidden (no room)',
   'th.tip': 'Click to sort',
   'cell.uncat': 'Uncategorized', 'cell.first': 'Direct', 'cell.repost': 'Repost', 'cell.today': 'today',
-  'cell.blockedBoth': 'Not accepted here',
-  'cell.pnpExcl': 'Not eligible', 'cell.aipBlocked': 'Not accepted',
+  'cell.pnpExcl': 'Not eligible',
   'cell.pnpSkilled': 'Eligible', 'cell.pnpSkilledProv': '{p} eligible',
   // 2026-09-26 晚 Frank「名字都用一个不行么」:与抽选组同一个项目的通用通道,英文改用官方原名(AB / MB;NB 原本就同名)
   'pnp.gen.AB': 'Alberta Opportunity Stream', 'pnp.gen.BC': 'BC Skilled Worker', 'pnp.gen.SK': 'SK Employment Offer',

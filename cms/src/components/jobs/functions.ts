@@ -19,7 +19,7 @@
  * @time 2026-08-28 19:15:06
  */
 import {
-  eeIsDormant, eeLastDraw, pnpFactsIndexOf, aipExcludedOf, pnpBlockedKeysOf, pnpCellActiveOf, qcCellNameOf,
+  eeIsDormant, eeLastDraw, pnpFactsIndexOf, pnpBlockedKeysOf, pnpCellActiveOf, qcCellNameOf,
   pnpBlockCellOf, pnpChannelKeyOf,
   pnpExcludedOf, pnpNameOf,
 } from '@/components/pnp'
@@ -500,7 +500,6 @@ export function boardPnpOf(dims: JobDims): BoardPnpFacts {
   const blocked = pnpBlockedKeysOf(dims.pnpOccupations)
   return {
     pnpBlocked: Array.from(blocked.pnp),
-    aipBlocked: Array.from(blocked.aip),
     index: pnpFactsIndexOf({
       occ: dims.pnpOccupations, draws: dims.pnpDraws, pathways: dims.pathways, qcCells: dims.qcCells,
     }),
@@ -514,7 +513,7 @@ export function boardPnpOf(dims: JobDims): BoardPnpFacts {
  * @returns 两套键集。
  */
 export function blockedSetsOf(facts: BoardPnpFacts): BlockedKeys {
-  return { pnp: new Set(facts.pnpBlocked), aip: new Set(facts.aipBlocked) }
+  return { pnp: new Set(facts.pnpBlocked) }
 }
 
 /**
@@ -540,6 +539,7 @@ export function cellActionable(k: JobColKey): boolean {
  * (泛判定的「—」仍不可点)。
  * 2026-09-26 /fe 首页 Frank(止血):省提名格再加一道「弹框里真有卡可出」,见 pnpActiveOf。
  * 2026-09-28 省提名格与 AIP 格的判据收进 pnp 桶(pnpCellActiveOf / aipExcludedOf;pnpActiveOf 随之迁走)。
+ * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:AIP 格只看指定雇主,可点 = 是指定雇主(aipExcludedOf 随之删)。
  *
  * @param x 列键、库行、上下文。
  * @returns 可点 = true。
@@ -555,7 +555,7 @@ export function cellActive(x: CellIn): boolean {
     return hasText(x.j.eeCategory)
   }
   if (x.k === COL.aip) {
-    return x.j.aip === true || aipExcludedOf({ job: x.j, blocked: x.cx.blocked })
+    return x.j.aip === true
   }
   if (x.k === COL.pilot) {
     return hasText(x.j.pilot)
@@ -1014,14 +1014,12 @@ function monthOf(iso: string): string {
 /**
  * 大西洋试点格。E6-09:省里逐条点名「这些职业不受理背书」→ 结论压过「雇主在指定名单」
  * (官方一律不受理)。
+ * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:只写是不是指定雇主,「职业不受理」那支撤(是写「指定雇主」,不是写长横)。
  *
  * @param x 列键、库行、上下文。
  * @returns 展示行。
  */
 function aipCellOf(x: CellIn): CellView {
-  if (aipExcludedOf({ job: x.j, blocked: x.cx.blocked })) {
-    return blankView({ text: x.cx.t('cell.aipBlocked'), tone: TONE.redSm })
-  }
   if (x.j.aip === true) {
     return blankView({ text: x.cx.t('cell.aipYes'), tone: TONE.amberSm })
   }
@@ -1112,12 +1110,11 @@ export function chipSpecsOf(x: ChipSpecsIn): ChipSpec[] {
   const out: ChipSpec[] = []
   const isQc = x.j.province === PROV_QC
   const pnpExcl = pnpExcludedOf({ job: x.j, blocked: x.blocked })
-  const aipBlocked = aipExcludedOf({ job: x.j, blocked: x.blocked })
-  if (anyRouteOf({ j: x.j, isQc, pnpExcl, aipBlocked })) {
+  if (anyRouteOf({ j: x.j, isQc, pnpExcl })) {
     pushTeerChip({ out, x })
-    pushPnpChip({ out, x, pnpExcl, aipBlocked })
+    pushPnpChip({ out, x, pnpExcl })
     pushEeChip({ out, x })
-    pushAipChip({ out, x, pnpExcl, aipBlocked })
+    pushAipChip({ out, x })
     pushPilotChip({ out, x, isQc })
   }
   pushSponsorChip({ out, x })
@@ -1137,7 +1134,7 @@ function anyRouteOf(x: AnyRouteIn): boolean {
   if (x.j.pnpEligible === true || hasText(x.j.eeCategory) || x.j.aip === true || hasText(x.j.pilot)) {
     return true
   }
-  if (x.isQc || x.pnpExcl || x.aipBlocked) {
+  if (x.isQc || x.pnpExcl) {
     return true
   }
   return x.j.teer != null && x.j.teer <= TEER_ROUTE_MAX
@@ -1176,8 +1173,9 @@ function pushTeerChip(a: ChipPushIn): void {
  * 2026-09-28 写哪条通道、叫什么名字走 pnp 桶(pnpChannelKeyOf / pnpNameOf),与表格格子、弹框通道卡同一处判。
  * 2026-09-29 走不了的岗红胶囊直接写原因(pnpBlockOf,与表格格子同一个词);清单排除照旧走下面那条(与 AIP 合并的写法不动)。
  * 2026-09-30 改走 pnpBlockCellOf(与表格格子同一个词:五个码写「不符合」,职业不收照写)。
+ * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:AIP 胶囊只写指定雇主,两条合写「本省不受理」那支撤 —— 这一枚只说省提名(「不符合」)。
  *
- * @param a 收集器、入参与两条排除判定。
+ * @param a 收集器、入参与省提名排除判定。
  * @returns 无。
  */
 function pushPnpChip(a: ChipPushBlockIn): void {
@@ -1198,11 +1196,7 @@ function pushPnpChip(a: ChipPushBlockIn): void {
   if (a.pnpExcl === false) {
     return
   }
-  let text = a.x.t('cell.pnpExcl')
-  if (a.aipBlocked) {
-    text = a.x.t('cell.blockedBoth')
-  }
-  a.out.push(pnpChipOf({ x: a.x, tone: CHIP.red, text }))
+  a.out.push(pnpChipOf({ x: a.x, tone: CHIP.red, text: a.x.t('cell.pnpExcl') }))
 }
 
 /**
@@ -1242,16 +1236,13 @@ function pushEeChip(a: ChipPushIn): void {
 
 /**
  * 大西洋试点胶囊。两条都命中排除时不出(那一枚已经由省提名胶囊说了「本省不受理」)。
+ * 2026-10-01 Frank「这个地方不应该显示职业不受理,应该只显示是否是指定雇主」:只出「指定雇主」一种(与表格格子同),「职业不受理」红胶囊撤。
  *
- * @param a 收集器、入参与两条排除判定。
+ * @param a 收集器与入参。
  * @returns 无。
  */
-function pushAipChip(a: ChipPushBlockIn): void {
-  if (a.aipBlocked && a.pnpExcl === false) {
-    a.out.push(chipOf({ tone: CHIP.red, text: a.x.t('cell.aipBlocked'), k: COL.aip, tip: TEXT_NONE }))
-    return
-  }
-  if (a.aipBlocked === false && a.x.j.aip === true) {
+function pushAipChip(a: ChipPushIn): void {
+  if (a.x.j.aip === true) {
     a.out.push(chipOf({ tone: CHIP.orange, text: a.x.t('cell.aipYes'), k: COL.aip, tip: TEXT_NONE }))
   }
 }

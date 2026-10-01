@@ -5123,11 +5123,6 @@ export type PnpBlocked = {
    * 省提名不受理。
    */
   pnp: Set<string>
-
-  /**
-   * 大西洋试点不受理。
-   */
-  aip: Set<string>
 }
 
 /**

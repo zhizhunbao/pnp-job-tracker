@@ -199,7 +199,6 @@ describe('服务端压的键与整表现算一致', () => {
       const got = blockedSetsOf(boardPnpOf(dims))
       const want = pnpBlockedKeysOf(o)
       expect([...got.pnp].sort()).toEqual([...want.pnp].sort())
-      expect([...got.aip].sort()).toEqual([...want.aip].sort())
       expect(boardPnpOf(dims).index).toEqual(pnpFactsIndexOf({ occ: o, draws: d, pathways: PATHWAYS, qcCells: [] }))
     }), { numRuns: 500 })
   })
@@ -807,13 +806,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     }
     const blocked = { province: 'ON', noc: '65100', pnpEligible: false, pnpStream: '', pnpBlock: 'part' }
     const index = pnpFactsIndexOf({ occ: [], draws: [], pathways: PATHWAYS, qcCells: [] })
-    expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(true)
-    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set(), aip: new Set() }, index })).toBe(false)
+    expect(pnpCellActiveOf({ job: blocked, blocked: { pnp: new Set() }, index })).toBe(true)
+    expect(pnpCellActiveOf({ job: { ...blocked, pnpBlock: '' }, blocked: { pnp: new Set() }, index })).toBe(false)
     // 2026-09-29 七省门槛卡:本岗通道登记了门槛也算有卡 —— 萨省普通岗(无抽选无清单)原先不可点
     const sk = { province: 'SK', noc: '21231', pnpEligible: true, pnpStream: '', pnpBlock: '' }
     const gated = { ...index, gated: ['pnp.gen.SK'] }
-    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set(), aip: new Set() }, index: gated })).toBe(true)
-    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set(), aip: new Set() }, index: { ...index, gated: [] } })).toBe(false)
+    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set() }, index: gated })).toBe(true)
+    expect(pnpCellActiveOf({ job: sk, blocked: { pnp: new Set() }, index: { ...index, gated: [] } })).toBe(false)
   })
 
   // 2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」:七省接入前的通用件
