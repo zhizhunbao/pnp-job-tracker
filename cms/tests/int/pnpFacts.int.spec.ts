@@ -38,6 +38,7 @@ import {
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
 } from '@/components/pnp/types'
+import { CHAN_JOB_TAGS } from '@/components/pnp/constants'
 import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
@@ -1128,27 +1129,28 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const keys = (cs: { key: string }[]) => cs.map((c) => c.key)
     const texts = (cs: { tags: { text: string }[] }[], i: number) => cs[i]!.tags.map((g) => g.text)
 
-    it('NL:本岗技术工人在前,国际毕业生按 TEER 0–4、快速通道技术工人按 TEER 0–3 接后;标签照表', () => {
-      expect(keys(up(job({ province: 'NL', teer: 2 })))).toEqual(['pnp.gen.NL', 'nl-international-graduate', 'nl-express-entry-skilled-worker'])
-      expect(keys(up(job({ province: 'NL', teer: 4 })))).toEqual(['pnp.gen.NL', 'nl-international-graduate'])
+    // 2026-10-01 Frank「所有省,只列这个职位能走的通道」:国际毕业生(要 PGWP)、快速通道技术工人(要 EE 档案)是人的条件,不再列
+    it('NL:只列本岗的技术工人;国际毕业生、快速通道技术工人要人的条件,不列;本岗那条的标签照表', () => {
+      expect(keys(up(job({ province: 'NL', teer: 2 })))).toEqual(['pnp.gen.NL'])
+      expect(keys(up(job({ province: 'NL', teer: 4 })))).toEqual(['pnp.gen.NL'])
       expect(keys(up(job({ province: 'NL', teer: 5, pnpEligible: false })))).toEqual([])
       const zhCard = up(job({ province: 'NL', teer: 2 }))
       expect(texts(zhCard, 0)).toEqual(['不收持 PGWP 的人'])
-      expect(texts(zhCard, 1)).toEqual(['需持 PGWP'])
-      expect(zhCard[1]).toMatchObject({ name: 'NLPNP International Graduate Category', sub: 'NL 国际毕业生' })
       const enCard = up(job({ province: 'NL', teer: 2 }), [], 'en')
-      expect(enCard[2]).toMatchObject({ name: 'NLPNP Express Entry Skilled Worker Category', sub: '' })
-      expect(texts(enCard, 2)).toEqual(['Express Entry profile required'])
+      expect(enCard[0]).toMatchObject({ name: 'NLPNP Skilled Worker Category', sub: '' })
     })
 
-    it('NS 医生:职业码 + 雇主名(归一后比对)都对上才列;本省毕业生看职业清单', () => {
+    it('NS 医生:职业码 + 雇主名(归一后比对)都对上才列;本省毕业生(要本省毕业)、两条快速通道(要 EE 档案)不列', () => {
       const doc = job({ province: 'NS', noc: '31102', teer: 1, company: 'Nova Scotia Health Authority' })
-      expect(keys(up(doc))).toEqual(['pnp.gen.NS', 'ns-physicians', 'ns-express-entry-experience', 'ns-express-entry-physicians'])
+      expect(keys(up(doc))).toEqual(['pnp.gen.NS', 'ns-physicians'])
       expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: 'IWK Health Centre' })))).toContain('ns-physicians')
-      expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: 'Halifax Family Clinic' })))).toEqual(['pnp.gen.NS', 'ns-express-entry-experience'])
+      expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: 'Halifax Family Clinic' })))).toEqual(['pnp.gen.NS'])
       expect(keys(up(job({ province: 'NS', noc: '31102', teer: 1, company: '' })))).not.toContain('ns-physicians')
-      expect(keys(up(doc, [occ({ province: 'NS', label: 'NS 毕业生', noc: '31102' })]))).toContain('ns-graduate')
-      expect(keys(up(doc, [occ({ province: 'NS', label: 'NS 毕业生', noc: '21231' })]))).not.toContain('ns-graduate')
+      expect(keys(up(doc, [occ({ province: 'NS', label: 'NS 毕业生', noc: '31102' })]))).not.toContain('ns-graduate')
+      // 探针:同一条通道去掉人的条件标签,就按岗位条件(TEER 0–3)列回来 —— 判据是标签,不是通道名
+      const bare = LIVE.map((p) => (p.key === 'ns-express-entry-experience' ? { ...p, tags: [] } : p))
+      expect(keys(channelListOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: doc, defaults: DEFAULTS, pathways: bare, occ: [] })))
+        .toContain('ns-express-entry-experience')
     })
 
     it('工作性质卡住(兼职 / 定期合同 / 季节工 / 临时工)不列其余;职业不收照样按条件列;魁省、没省码不出', () => {
@@ -1187,7 +1189,7 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       }
     })
 
-    it('性质:上段开头就是 channelsOf 那一条;其余同省、看工作、非默认、没挂名、TEER 在内', () => {
+    it('性质:上段开头就是 channelsOf 那一条;其余同省、看工作、非默认、没挂名、TEER 在内、条件全由岗位定', () => {
       const byKey = new Map(LIVE.map((p) => [p.key, p]))
       fc.assert(fc.property(
         fc.constantFrom('AB', 'BC', 'SK', 'MB', 'ON', 'NS', 'NB', 'PE', 'NL', 'QC', 'YT', ''), fc.boolean(),
@@ -1205,6 +1207,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
             expect(p.province).toBe(province)
             expect(p.jobLinked && p.isDefault === false && p.boardLabel == null).toBe(true)
             expect(p.teers.length === 0 || p.teers.includes(teer)).toBe(true)
+            // 2026-10-01:只列条件全由岗位定的(标签只有限指定雇主与状态类)
+            expect(p.tags.every((g) => CHAN_JOB_TAGS.includes(g)), c.key).toBe(true)
           }
           if (['part', 'term'].includes(pnpBlock)) {
             expect(all.length).toBe(own.length)

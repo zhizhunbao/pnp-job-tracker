@@ -45,7 +45,7 @@ import {
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
-  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX,
+  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -906,6 +906,8 @@ function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
  * 上段本岗通道之外的条目(2026-09-30 通道补全批二):本省跟工作有关、但数据层不会分给岗位的通道(不是省默认、没挂岗位通道名 ——
  * 补通道这批新加的那些),按岗位能判的条件筛(isExtraChannelOf)。工作性质卡住的岗(兼职 / 定期合同 / 季节工 / 临时工)一条不列:
  * 各省工人类通道都要全职、非季节、够长的 offer。人的条件(EE 档案、本省毕业、PGWP …)不筛,写成标签。
+ * 2026-10-01 Frank「所有省,只列这个职位能走的通道」(配图 PE 卡列着国际毕业生、快速通道):带人的条件的通道不再列,只剩条件全由
+ * 岗位定的(isJobDecidedOf;眼下是 NS 医生、NB 关键工人试点 —— 都看雇主)。
  *
  * @param x 取词函数、界面语言、灰字开关、本岗、通道对照表与职业清单。
  * @returns 条目;没有给空列。
@@ -926,6 +928,7 @@ export function extraChannelsOf(x: ChannelListIn): ChannelSpec[] {
 /**
  * 这条通道要不要列在本岗上段:同省、跟工作有关、不是省默认也没挂岗位通道名(那两种由数据层分派,见 channelsOf),再过按岗位能判的
  * 四种条件 —— TEER(teers)、职业码(nocs)、职业清单(occLabels)、雇主名(employers);哪格空着就不限。
+ * 2026-10-01:标签里带人的条件的不列(isJobDecidedOf)。
  *
  * @param x 这条通道、本岗与职业清单。
  * @returns 列 = true。
@@ -933,6 +936,9 @@ export function extraChannelsOf(x: ChannelListIn): ChannelSpec[] {
 function isExtraChannelOf(x: ExtraFitsIn): boolean {
   const p = x.p
   if (p.province !== x.job.province || p.jobLinked === false || p.isDefault || p.boardLabel != null) {
+    return false
+  }
+  if (isJobDecidedOf(p.tags) === false) {
     return false
   }
   if (p.teers.length > 0 && (x.job.teer == null || p.teers.includes(x.job.teer) === false)) {
@@ -945,6 +951,22 @@ function isExtraChannelOf(x: ExtraFitsIn): boolean {
     return false
   }
   return p.employers.length === 0 || isEmployerOf({ names: p.employers, company: x.job.company })
+}
+
+/**
+ * 这条通道能不能走全由岗位定:标签只有 CHAN_JOB_TAGS 那几种(限指定雇主 + 三种状态)。带一个人的条件标签就不算
+ * (2026-10-01 Frank「所有省,只列这个职位能走的通道」)。
+ *
+ * @param tags 这条通道的条件标签键。
+ * @returns 全由岗位定 = true。
+ */
+function isJobDecidedOf(tags: string[]): boolean {
+  for (const tag of tags) {
+    if (CHAN_JOB_TAGS.includes(tag) === false) {
+      return false
+    }
+  }
+  return true
 }
 
 /**

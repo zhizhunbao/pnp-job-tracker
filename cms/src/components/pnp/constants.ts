@@ -406,6 +406,13 @@ export const CHAN_TAG_HEAD = 'pnpchan.tag.'
 export const CHAN_TAG_WARN = ['noDraws', 'drawsStopped', 'timeLimited']
 
 /**
+ * 本省其余通道列不列在本岗通道卡上,看标签:只带这几种的才列 —— 限指定雇主(看本岗雇主)与三种状态(没有抽选排期 / 近期没再抽选 /
+ * 限时,不是条件)。带人的条件的(需先有 EE 档案、需本省毕业、需持 PGWP、需说法语、需持 LMIA 工签 …)不列:能不能走看申请人,
+ * 不是这个职位能走的通道(2026-10-01 Frank「所有省,只列这个职位能走的通道」)。新加的标签默认算人的条件(不列),要列得进这张表。
+ */
+export const CHAN_JOB_TAGS = ['employers', 'noDraws', 'drawsStopped', 'timeLimited']
+
+/**
  * 通道对照表里 AIP 那一行的编号(通道卡上段在本岗能走 AIP 时列它;2026-09-30 Frank「能走 AIP 就列,不能走就不列」)。
  */
 export const AIP_PATHWAY_KEY = 'aip'
