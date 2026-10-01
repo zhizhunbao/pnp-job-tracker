@@ -318,6 +318,11 @@ export type PnpPathway = {
    * 职业清单名(本岗职业码在其中任一张才列上段);空 = 不限。
    */
   occLabels: string[]
+
+  /**
+   * 通道自己那一页(2026-09-30 资讯页「通道与门槛」:门槛表一行没收录的通道,卡上来源退到它)。
+   */
+  url: string
 }
 
 /**
@@ -1555,8 +1560,14 @@ export type GateCardSpec = {
 
   /**
    * 标题下一行灰字(2026-09-30 魁省门槛卡:官方原名作标题,这里写界面语言名);'' = 不出(九省门槛卡)。
+   * 同日资讯页「通道与门槛」:九省的卡也写(通道的界面语言直白名;英文界面、与原名同字不出)。
    */
   sub: string
+
+  /**
+   * 条件标签(2026-09-30 资讯页「通道与门槛」:灰字下一行,同通道卡的标签;弹框两种门槛卡给空列)。
+   */
+  tags: ChannelTag[]
 
   /**
    * 标题右端的官方来源;认不出站名给 null。
@@ -1567,6 +1578,32 @@ export type GateCardSpec = {
    * 行。
    */
   rows: GateRowSpec[]
+
+  /**
+   * 一行门槛都没有时卡上那句(资讯页「本站未收录门槛」,2026-09-30);'' = 有行(弹框两种门槛卡恒为 '')。
+   */
+  empty: string
+}
+
+/**
+ * 门槛卡挑档看的那三格(2026-09-30 通道与门槛批 2:职位弹框传本岗,资讯页传「某省、不看职业、某档 TEER」的探针;
+ * 门槛卡各行构造器只读这三格)。
+ */
+export type GateWho = {
+  /**
+   * 省码(行里「本省」写它的界面名)。
+   */
+  province: string
+
+  /**
+   * 职业码;'' = 不看职业(资讯页)。
+   */
+  noc: string
+
+  /**
+   * 技能层级;null = 不看档(只挑不分档的门槛行)。
+   */
+  teer: number | null
 }
 
 /**
@@ -1604,9 +1641,9 @@ export type GateRowOfIn = {
   t: TFn
 
   /**
-   * 本岗。
+   * 本岗(只读省、职业码、TEER 三格;资讯页是探针,见 GateWho)。
    */
-  job: PnpJob
+  job: GateWho
 
   /**
    * 本省全部门槛行(offer 形态与雇主三项是全省一份)。
@@ -1659,9 +1696,9 @@ export type ReqAppliesIn = {
   r: PnpReq
 
   /**
-   * 本岗。
+   * 本岗(资讯页是探针)。
    */
-  job: PnpJob
+  job: GateWho
 }
 
 /**
@@ -1701,7 +1738,7 @@ export type LangPickIn = {
   /**
    * 本岗。
    */
-  job: PnpJob
+  job: GateWho
 }
 
 /**
@@ -4393,6 +4430,181 @@ export type StatusLinesIn = {
 }
 
 /**
+ * provGateCardsOf 的入参(2026-09-30 资讯页「通道与门槛」)。
+ */
+export type ProvGateCardsIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言(卡头灰字的直白名挑哪一语)。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+
+  /**
+   * 全国通道对照(库表 pathways,停办的不在里面)。
+   */
+  pathways: PnpPathway[]
+
+  /**
+   * 门槛表(全国)。
+   */
+  reqs: PnpReq[]
+}
+
+/**
+ * provStreamCardOf 的入参。
+ */
+export type ProvStreamCardIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 这条通道。
+   */
+  p: PnpPathway
+
+  /**
+   * 本省全部门槛行(offer 形态是全省一份)。
+   */
+  mine: PnpReq[]
+}
+
+/**
+ * provStreamRowsOf 的入参。
+ */
+export type ProvStreamRowsIn = {
+  /**
+   * 这条通道(读它看不看工作)。
+   */
+  p: PnpPathway
+
+  /**
+   * 各行构造器的共同入参(探针不看档)。
+   */
+  one: GateRowOfIn
+}
+
+/**
+ * 门槛卡一行的构造器(资讯页按 TEER 档逐档调它;2026-09-30)。
+ */
+export type GateRowFn = (x: GateRowOfIn) => GateRowSpec | null
+
+/**
+ * bandRowOf 的入参。
+ */
+export type BandRowIn = {
+  /**
+   * 各行构造器的共同入参(探针不看档)。
+   */
+  one: GateRowOfIn
+
+  /**
+   * 这一行读哪几个因素(按它们的 TEER 档分档)。
+   */
+  factors: string[]
+
+  /**
+   * 这一行的构造器。
+   */
+  build: GateRowFn
+}
+
+/**
+ * teerBandsOf 的入参。
+ */
+export type TeerBandsIn = {
+  /**
+   * 门槛行。
+   */
+  rows: PnpReq[]
+
+  /**
+   * 只看这几个因素的行。
+   */
+  factors: string[]
+}
+
+/**
+ * langTierLineOf 的入参。
+ */
+export type LangTierLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 一条不点名职业的语言行。
+   */
+  r: PnpReq
+}
+
+/**
+ * tierLineOf 的入参。
+ */
+export type TierLineIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * TEER 档逗号串(门槛表 applies_teer 原值);'' = 不分档。
+   */
+  applies: string
+
+  /**
+   * 文案。
+   */
+  line: string
+}
+
+/**
+ * namedLangOf 的入参。
+ */
+export type NamedLangIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 点名职业的语言行(都带分数)。
+   */
+  rows: PnpReq[]
+}
+
+/**
+ * namedLangOf 的出参。
+ */
+export type NamedLangOut = {
+  /**
+   * 那一行;'' = 拼不出。
+   */
+  line: string
+
+  /**
+   * 灰字(职业码;列不下给空列)。
+   */
+  notes: string[]
+}
+
+/**
  * cmpHeadClsOf 的入参。
  */
 export type CmpHeadClsIn = {
@@ -4592,6 +4804,61 @@ export type PnpDataJson = {
    */
   pathways?: PnpPathway[]
 } | null
+
+/**
+ * PnpProvStreams 的 props(2026-09-30 资讯页「通道与门槛」)。
+ */
+export type PnpProvStreamsIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * usePnpProvStreams 的入参。
+ */
+export type PnpProvStreamsHookIn = {
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 省码。
+   */
+  province: string
+}
+
+/**
+ * usePnpProvStreams 交回的面板。
+ */
+export type PnpProvStreamsPanel = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 整表到了没。
+   */
+  ready: boolean
+
+  /**
+   * 懒取失败(改出「加载失败」那句,不拿空表冒充「官方没有」)。
+   */
+  failed: boolean
+
+  /**
+   * 这一省的门槛卡(整表还没到给空列)。
+   */
+  cards: GateCardSpec[]
+}
 
 /**
  * usePnpData 的入参。

@@ -638,6 +638,9 @@ export const jobsZh = {
   'pnpgate.permit.pgwpLocal': '本省公立院校毕业的 PGWP', 'pnpgate.permit.openSpecific': '几类开放工签',
   'pnpgate.expAnywhere': '加拿大境内外的经验都算',
   'pnpgate.expPgwpHead': '持 PGWP 的:', 'pnpgate.expPgwp': '本省 {n} 个月(近 {w} 个月内)',
+  'pnpgate.tier': 'TEER {teers}:{line}', 'pnpgate.tierHead': 'TEER {teers}:', 'pnpgate.langEach': '每项 CLB {n}',
+  'pnpgate.langNone': '不要求语言考试', 'pnpgate.langNoc': '指定职业:每项 CLB {n}', 'pnpgate.langByOcc': '按职业定:CLB {min}–{max}',
+  'pnpgate.nocList': 'NOC {list}', 'pnpgate.nocExcept': 'NOC {list}({except} 除外)', 'pnpgate.noReqs': '本站未收录门槛',
   'pnpgate.exp': '{n} 个月全职经验', 'pnpgate.expWin': '{n} 个月全职经验(近 {w} 个月内)',
   'pnpgate.expTenure': '在现雇主全职满 {n} 个月', 'pnpgate.expLocal': '或在本省 {n} 个月(近 {w} 个月内)',
   'pnpgate.eeProfile': '联邦 EE 档案', 'pnpgate.eeProgram': '符合 CEC、FSW 或 FST', 'pnpgate.crs': 'CRS ≥ {n}',
@@ -1128,7 +1131,7 @@ export const siteZh = {
   'loading': '更新中…',
   'origin.hireac': 'HireAC', 'origin.gcjobs': 'GC Jobs',
   'origin.jobillico': 'Jobillico', 'origin.jobboom': 'Jobboom', 'origin.careerbeacon': 'CareerBeacon',
-  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告',
+  'nav.library': '资料库', 'nav.employers': '雇主', 'nav.jobs': '职位', 'nav.pte': 'PTE 刷题', 'tl.tabNews': '最新公告', 'tl.tabStreams': '通道与门槛',
   'rank.bnSub': '按移民价值评分排序', 'rank.bnRows': '{n} 本榜岗位',
   // #54 登录改版(careerbeacon 骨架)
   'acct.hero.login': '欢迎回来', 'acct.hero.reg': '免费注册,看每份工作对你的匹配度',
@@ -1136,6 +1139,7 @@ export const siteZh = {
   // 移民动态(E12-06):官方新闻转载——姿势四件套(©/非官方声明/原文链/日期);只摆事实不解读
   'news.entry': '移民动态',
   'news.title': '移民政策动态', 'news.bnSub': '联邦与各省移民公告',
+  'streams.title': '各省通道与门槛', 'streams.bnSub': '各省现行通道与官方门槛',
   'news.sub': '联邦 IRCC 与 7 省官方发布聚合 · 每 12 小时刷新 · 只收官方源',
   'news.federal': '联邦 IRCC',
   'news.qcNote': '魁省走自己的移民体系(非 PNP)',

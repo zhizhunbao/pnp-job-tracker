@@ -9,6 +9,7 @@
  * 2026-09-23 EE 判定卡、最近抽选卡、联邦抽选近况卡撤(Frank「这三个卡片都删掉」),联邦轮次卡那一台随之删,
  * EE 类别块只剩命中类别的清单折叠。
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):多两台 —— 整表懒取(usePnpData,自 advisor 迁入)与弹框整机(usePnpModal)。
+ * 2026-09-30 资讯页「通道与门槛」:多一台 —— 一省的门槛卡(usePnpProvStreams,整表懒取同弹框)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -21,11 +22,12 @@ import { LANG_EN, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD } fro
 import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
-  makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, qcChannelsOf,
+  makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
-  PnpModalHookIn, PnpModalPanel, QcChannel, QcChannelsHookIn, QcChannelsPanel,
+  PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
+  QcChannelsPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -227,4 +229,22 @@ export function usePnpModal(x: PnpModalHookIn): PnpModalPanel {
   }, [field])
 
   return { t, data, qc, sub }
+}
+
+/**
+ * 资讯页「通道与门槛」整机(2026-09-30 通道与门槛批 2):整表懒取同省提名弹框(usePnpData;取到一次进 CACHE,两处谁先开谁取,
+ * 另一处当场就有),一省的门槛卡随省与界面语言现算(一省十张以内,不记忆)。
+ *
+ * @param x 界面语言与省码。
+ * @returns 取词函数、能不能渲、失败没与卡片。
+ */
+export function usePnpProvStreams(x: PnpProvStreamsHookIn): PnpProvStreamsPanel {
+  const t = makeT(x.lang)
+  const data = usePnpData({ enabled: true })
+  return {
+    t,
+    ready: data.ready,
+    failed: data.failed,
+    cards: provGateCardsOf({ t, lang: x.lang, province: x.province, pathways: data.pathways, reqs: data.reqs }),
+  }
 }

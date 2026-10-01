@@ -86,6 +86,11 @@ export const URL_NEWS = '/news'
 export const URL_TIMELINE = '/timeline'
 
 /**
+ * 二级 tab 条里「通道与门槛」的去处(2026-09-30 通道与门槛批 2:资讯第三个页签)。
+ */
+export const URL_STREAMS = '/streams'
+
+/**
  * 未登录时评论区那条引导的去处(首页带 `login=1` 自动弹登录框 ——
  * 全站登录入口只有那一个)。
  */

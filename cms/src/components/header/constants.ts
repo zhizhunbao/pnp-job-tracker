@@ -159,6 +159,7 @@ export const PATH_ACTIVE = [
   ['/cases', 'library'],
   ['/news', 'news'],
   ['/timeline', 'news'],
+  ['/streams', 'news'],
   ['/account', 'account'],
   ['/jobs', 'jobs'],
   ['/', 'jobs'],

@@ -45,6 +45,7 @@ import {
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
+  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
   DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
@@ -75,6 +76,8 @@ import type {
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
+  BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
+  TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
 } from './types'
@@ -2363,8 +2366,10 @@ export function gateCardOf(x: GateCardOfIn): GateCardSpec | null {
   return {
     title: x.t('pnpgate.title'),
     sub: TEXT_NONE,
+    tags: [],
     source: sourceLinkOf({ t: x.t, url: gateUrlOf({ chan, streams }) }),
     rows,
+    empty: TEXT_NONE,
   }
 }
 
@@ -2703,6 +2708,7 @@ function expLineOf(x: ExpLineIn): string {
  * 2026-09-29 安省门槛卡)。只挑管本岗的行;认不出口径的不出(宁缺不乱写)。
  * 同日七省接入加两种:在担保雇主处全职满 N 个月(萨省三条定向通道,employerTenure)、本省院校毕业(NB Graduates,provGraduate)。
  * 2026-09-30 通道与门槛批 1 加一种:持 PGWP 的那一档(阿省机会通道「近 18 个月在本省满 6 个月」,pgwp + windowMonths)。
+ * 同日批 2 资讯页真数据性质测试抓到:本省院校毕业那条英文 / 韩文词条带 {prov},原先没传省名,英文界面露出「{prov}」—— 补传。
  *
  * @param x 各行构造器的共同入参。
  * @returns 文案;没有给空列。
@@ -2723,7 +2729,7 @@ function expAltLinesOf(x: GateRowOfIn): string[] {
     } else if (basisHasOf({ basis: r.basis, key: BASIS_TENURE }) && r.unit === GATE_UNIT_MONTHS && r.value != null) {
       lines.push(x.t('pnpgate.expAltTenure', { n: r.value }))
     } else if (basisHasOf({ basis: r.basis, key: BASIS_PROV_GRADUATE })) {
-      lines.push(x.t('pnpgate.expAltProvGrad'))
+      lines.push(x.t('pnpgate.expAltProvGrad', { prov }))
     } else if (basisHasOf({ basis: r.basis, key: BASIS_PGWP }) && r.unit === GATE_UNIT_MONTHS && r.value != null) {
       const wm = basisValueOf({ basis: r.basis, key: BASIS_WINDOW })
       if (wm !== TEXT_NONE) {
@@ -2788,6 +2794,7 @@ function residenceRowOf(x: GateRowOfIn): GateRowSpec | null {
 
 /**
  * 「积分」行(2026-09-29 七省接入:萨省 SINP 这类「本省打分表至少 N 分」的门槛,因素 pointsMin)。
+ * 2026-09-30 资讯页走查:英文词条小写起头(同其余各项),行首补大写(原先英文界面写成「provincial points grid ≥ 60」)。
  *
  * @param x 各行构造器的共同入参。
  * @returns 这一行;本岗通道没有打分门槛给 null。
@@ -2800,7 +2807,7 @@ function pointsRowOf(x: GateRowOfIn): GateRowSpec | null {
   return {
     key: GATE_ROW.points,
     label: x.t('pnpgate.k.points'),
-    lines: [x.t('pnpgate.pointsMin', { n: pts.value })],
+    lines: [capFirstOf(x.t('pnpgate.pointsMin', { n: pts.value }))],
     notes: [],
   }
 }
@@ -3016,6 +3023,361 @@ function basisHasOf(x: BasisKeyIn): boolean {
     }
   }
   return false
+}
+
+/**
+ * 资讯页「通道与门槛」一省的门槛卡(2026-09-30 通道与门槛批 2;Frank「各省门槛 我觉得 应该放到资讯下面」「盘点各种通道,各种门槛」
+ * 「对啊。门槛要说清楚」;设计 docs/design/通道与门槛-20260930.md):本省现行通道每条一张卡,省默认在前,其余照通道表顺序。
+ * 卡与职位弹框「本岗通道的门槛」同一个组件、同一套行构造器;不同的是不挑本岗那档 —— 语言全档列、经验与工资按 TEER 分档列。
+ * 只陈列官方门槛,不判「你够不够」。
+ *
+ * @param x 取词函数、界面语言、省码、通道对照表与门槛表。
+ * @returns 卡片;本省没有通道给空列。
+ */
+export function provGateCardsOf(x: ProvGateCardsIn): GateCardSpec[] {
+  const mine: PnpReq[] = []
+  for (const r of x.reqs) {
+    if (r.province === x.province) {
+      mine.push(r)
+    }
+  }
+  const out: GateCardSpec[] = []
+  for (const p of x.pathways) {
+    if (p.province === x.province && p.isDefault) {
+      out.push(provStreamCardOf({ t: x.t, lang: x.lang, p, mine }))
+    }
+  }
+  for (const p of x.pathways) {
+    if (p.province === x.province && p.isDefault === false) {
+      out.push(provStreamCardOf({ t: x.t, lang: x.lang, p, mine }))
+    }
+  }
+  return out
+}
+
+/**
+ * 一条通道的门槛卡:卡头官方英文原名 + 界面语言直白名灰字 + 条件标签(同通道卡);一行门槛都没收录的写「本站未收录门槛」,
+ * 来源退到这条通道自己那一页(门槛行有出处的取门槛行的,同弹框)。
+ *
+ * @param x 取词函数、界面语言、这条通道与本省全部门槛行。
+ * @returns 卡。
+ */
+function provStreamCardOf(x: ProvStreamCardIn): GateCardSpec {
+  const chan: PnpReq[] = []
+  for (const r of x.mine) {
+    if (x.p.reqStreams.includes(r.stream)) {
+      chan.push(r)
+    }
+  }
+  const one: GateRowOfIn = { t: x.t, job: { province: x.p.province, noc: TEXT_NONE, teer: null }, mine: x.mine, chan }
+  const rows = provStreamRowsOf({ p: x.p, one })
+  let empty = TEXT_NONE
+  if (rows.length === 0) {
+    empty = x.t('pnpgate.noReqs')
+  }
+  let url = gateUrlOf({ chan, streams: x.p.reqStreams })
+  if (url === TEXT_NONE) {
+    url = x.p.url
+  }
+  return {
+    title: x.p.officialName,
+    sub: pathwaySubOf({ lang: x.lang, p: x.p }),
+    tags: channelTagsOf({ t: x.t, tags: x.p.tags }),
+    source: sourceLinkOf({ t: x.t, url }),
+    rows,
+    empty,
+  }
+}
+
+/**
+ * 一条通道卡上的行(行序同弹框门槛卡):申请人侧一行都没收录的给空列 —— 只剩全省的 offer 形态与雇主几行会读成门槛只有这些
+ * (同弹框 applicantRowsOf 那道);不看工作的通道(jobLinked = false)不出「雇主 offer」行。
+ *
+ * @param x 这条通道与各行构造器的共同入参。
+ * @returns 行;没收录给空列。
+ */
+function provStreamRowsOf(x: ProvStreamRowsIn): GateRowSpec[] {
+  const rows: GateRowSpec[] = []
+  if (applicantRowsOf(x.one.chan) === 0) {
+    return rows
+  }
+  let offer: GateRowSpec | null = null
+  if (x.p.jobLinked) {
+    offer = offerRowOf(x.one)
+  }
+  for (const row of [statusRowOf(x.one), offer, langAllRowOf(x.one),
+    bandRowOf({ one: x.one, factors: GATE_EXP_FACTORS, build: expRowOf }), residenceRowOf(x.one),
+    bandRowOf({ one: x.one, factors: GATE_WAGE_FACTORS, build: wageRowOf }), pointsRowOf(x.one), eeRowOf(x.one),
+    empRowOf(x.one), otherRowOf(x.one)]) {
+    if (row != null) {
+      rows.push(row)
+    }
+  }
+  return rows
+}
+
+/**
+ * 通道卡头的灰字:界面语言直白名(英文界面不出;与官方原名同字不出)。
+ *
+ * @param x 界面语言与这条通道。
+ * @returns 灰字;'' = 不出。
+ */
+function pathwaySubOf(x: LocalNameIn): string {
+  const local = localNameOf(x)
+  if (local === x.p.officialName) {
+    return TEXT_NONE
+  }
+  return local
+}
+
+/**
+ * 资讯页「语言」行(弹框只挑本岗那档,这里全档列):分 TEER 的一档一行「TEER 0–3:每项 CLB 5」,不要求考试的档写
+ * 「不要求语言考试」(卑诗 TEER 0 / 1、纽省与爱德华王子岛 TEER 0–3);本省毕业免考那条照弹框写法、分档的带档;点名职业的
+ * 那档合一行放最后(namedLangOf)。不分档的在前,分档的按 TEER 从低到高(数据原序卑诗、纽省是高档在前)。
+ *
+ * @param x 各行构造器的共同入参(探针不看档)。
+ * @returns 这一行;本通道没有语言行给 null。
+ */
+function langAllRowOf(x: GateRowOfIn): GateRowSpec | null {
+  const plain: PnpReq[] = []
+  const tiered: PnpReq[] = []
+  const named: PnpReq[] = []
+  for (const r of x.chan) {
+    if (r.factor !== GATE_F.language) {
+      continue
+    }
+    if (r.appliesNoc !== TEXT_NONE) {
+      if (r.op === GATE_OP_GE && r.unit === GATE_UNIT_CLB && r.value != null) {
+        named.push(r)
+      }
+    } else if (r.appliesTeer === TEXT_NONE) {
+      plain.push(r)
+    } else {
+      tiered.push(r)
+    }
+  }
+  tiered.sort(byTeerAsc)
+  const lines: string[] = []
+  for (const r of plain.concat(tiered)) {
+    const line = langTierLineOf({ t: x.t, r })
+    if (line !== TEXT_NONE) {
+      lines.push(line)
+    }
+  }
+  const exempt = rowOfFactor({ rows: x.chan, factor: GATE_F.languageExempt })
+  if (exempt != null && exempt.value != null) {
+    const line = x.t('pnpgate.langExempt', { n: exempt.value, prov: x.t(PROV_KEY_HEAD + x.job.province) })
+    lines.push(tierLineOf({ t: x.t, applies: exempt.appliesTeer, line }))
+  }
+  const notes: string[] = []
+  if (named.length > 0) {
+    const n = namedLangOf({ t: x.t, rows: named })
+    if (n.line !== TEXT_NONE) {
+      lines.push(n.line)
+    }
+    for (const note of n.notes) {
+      notes.push(note)
+    }
+  }
+  if (lines.length === 0) {
+    return null
+  }
+  return { key: GATE_ROW.lang, label: x.t('pnpgate.k.lang'), lines, notes }
+}
+
+/**
+ * 分档的门槛行按 TEER 从低到高(各行档串的第一档比)。
+ *
+ * @param a 前一行。
+ * @param b 后一行。
+ * @returns 排序位次。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byTeerAsc(a: PnpReq, b: PnpReq): number {
+  return bandTeerOf(a.appliesTeer) - bandTeerOf(b.appliesTeer)
+}
+
+/**
+ * 一条不点名职业的语言行怎么写:不要求考试的写「不要求语言考试」,要分数的写 CLB;分 TEER 的带档(tierLineOf)。
+ * 不分档的要分数那行照弹框写法「英语或法语每项 CLB 4」;分档的省掉「英语或法语」,窄屏一档一行放得下。
+ *
+ * @param x 取词函数与一条语言行。
+ * @returns 文案;认不出给 ''。
+ */
+function langTierLineOf(x: LangTierLineIn): string {
+  if (x.r.op === GATE_OP_NONE) {
+    return tierLineOf({ t: x.t, applies: x.r.appliesTeer, line: x.t('pnpgate.langNone') })
+  }
+  if (x.r.op !== GATE_OP_GE || x.r.unit !== GATE_UNIT_CLB || x.r.value == null) {
+    return TEXT_NONE
+  }
+  if (x.r.appliesTeer === TEXT_NONE) {
+    return x.t('pnpgate.lang', { n: x.r.value })
+  }
+  return tierLineOf({ t: x.t, applies: x.r.appliesTeer, line: x.t('pnpgate.langEach', { n: x.r.value }) })
+}
+
+/**
+ * 一行文案前面带上 TEER 档(「TEER 0–3:每项 CLB 5」);不分档的原样返回。
+ *
+ * @param x 取词函数、TEER 档逗号串与文案。
+ * @returns 带档的文案。
+ */
+function tierLineOf(x: TierLineIn): string {
+  if (x.applies === TEXT_NONE) {
+    return x.line
+  }
+  return x.t('pnpgate.tier', { teers: qcTeerRangeOf(x.applies), line: x.line })
+}
+
+/**
+ * 点名职业那档合一行:分数只有一种写「指定职业:每项 CLB 7」、灰字列职业码(带排除的写「…除外」;多于 LANG_NOC_NOTE_MAX 个
+ * 不列);几种分数写「按职业定:CLB 4–7」(曼省 158 个职业逐个定分)。
+ *
+ * @param x 取词函数与点名职业的语言行。
+ * @returns 那一行与灰字。
+ */
+function namedLangOf(x: NamedLangIn): NamedLangOut {
+  const values: number[] = []
+  const nocs: string[] = []
+  const excl: string[] = []
+  for (const r of x.rows) {
+    if (r.value != null && values.includes(r.value) === false) {
+      values.push(r.value)
+    }
+    nocs.push(r.appliesNoc)
+    excl.push(r.excludesNoc)
+  }
+  if (values.length === 0) {
+    return { line: TEXT_NONE, notes: [] }
+  }
+  let min = Number.POSITIVE_INFINITY
+  let max = Number.NEGATIVE_INFINITY
+  for (const v of values) {
+    min = Math.min(min, v)
+    max = Math.max(max, v)
+  }
+  if (values.length > 1) {
+    return { line: x.t('pnpgate.langByOcc', { min, max }), notes: [] }
+  }
+  const line = x.t('pnpgate.langNoc', { n: min })
+  const codes = codesOf(nocs)
+  if (codes.length > LANG_NOC_NOTE_MAX) {
+    return { line, notes: [] }
+  }
+  const sep = x.t('pnpgate.sep')
+  const except = codesOf(excl)
+  if (except.length === 0) {
+    return { line, notes: [x.t('pnpgate.nocList', { list: codes.join(sep) })] }
+  }
+  return { line, notes: [x.t('pnpgate.nocExcept', { list: codes.join(sep), except: except.join(sep) })] }
+}
+
+/**
+ * 几串逗号分隔的职业码 → 去重的码(按出现先后;空段不要)。
+ *
+ * @param csvs 逗号串(门槛表 applies_noc / excludes_noc 原值)。
+ * @returns 码。
+ */
+function codesOf(csvs: string[]): string[] {
+  const out: string[] = []
+  for (const csv of csvs) {
+    for (const p of csv.split(VALUE_CODE_SEP)) {
+      const code = p.trim()
+      if (code !== TEXT_NONE && out.includes(code) === false) {
+        out.push(code)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * 资讯页按 TEER 分档的一行(工作经验、工资;弹框只挑本岗那档,这里各档都列):先用不看档的探针拼一遍(各档都适用的那几条),
+ * 再逐档拼、只把多出来的条目挂在「TEER 0–3:」小标下面 —— 安省经验 TEER 0–3 与 4–5 各一档、应届毕业生的低位工资只管 TEER 0–3。
+ * 本行的因素都不分档就只拼一遍。
+ *
+ * @param x 各行构造器的共同入参、这一行读的因素与它的构造器。
+ * @returns 这一行;各档都拼不出给 null。
+ */
+function bandRowOf(x: BandRowIn): GateRowSpec | null {
+  const base = x.build(x.one)
+  const bands = teerBandsOf({ rows: x.one.chan, factors: x.factors })
+  if (bands.length === 0) {
+    return base
+  }
+  let row = base
+  const baseLines: string[] = []
+  if (base != null) {
+    for (const l of base.lines) {
+      baseLines.push(l)
+    }
+  }
+  const lines = baseLines.slice()
+  for (const band of bands) {
+    const who: GateWho = { province: x.one.job.province, noc: TEXT_NONE, teer: bandTeerOf(band) }
+    const got = x.build({ t: x.one.t, job: who, mine: x.one.mine, chan: x.one.chan })
+    if (got == null) {
+      continue
+    }
+    row = got
+    const extra: string[] = []
+    for (const l of got.lines) {
+      if (baseLines.includes(l) === false) {
+        extra.push(l)
+      }
+    }
+    if (extra.length === 0) {
+      continue
+    }
+    lines.push(x.one.t('pnpgate.tierHead', { teers: qcTeerRangeOf(band) }))
+    for (const l of extra) {
+      lines.push(l)
+    }
+  }
+  if (row == null || lines.length === 0) {
+    return null
+  }
+  return { key: row.key, label: row.label, lines, notes: [] }
+}
+
+/**
+ * 一行要读的因素里出现过哪几种 TEER 档(门槛表 applies_teer 原串,去重后按 TEER 从低到高;不分档的不算)。
+ *
+ * @param x 门槛行与因素。
+ * @returns 档。
+ */
+function teerBandsOf(x: TeerBandsIn): string[] {
+  const out: string[] = []
+  for (const r of x.rows) {
+    if (x.factors.includes(r.factor) && r.appliesTeer !== TEXT_NONE && out.includes(r.appliesTeer) === false) {
+      out.push(r.appliesTeer)
+    }
+  }
+  out.sort(byBandAsc)
+  return out
+}
+
+/**
+ * TEER 档串按第一档从低到高。
+ *
+ * @param a 前一档。
+ * @param b 后一档。
+ * @returns 排序位次。
+ */
+// eslint-disable-next-line local/one-parameter -- 比较器的两参一返由 Array.prototype.sort 定死
+function byBandAsc(a: string, b: string): number {
+  return bandTeerOf(a) - bandTeerOf(b)
+}
+
+/**
+ * 一档 TEER 的探针取哪一档(逗号串的第一档;同一行门槛对档内各档一样,取哪个都行)。
+ *
+ * @param band TEER 档逗号串。
+ * @returns TEER。
+ */
+function bandTeerOf(band: string): number {
+  return Number(band.split(VALUE_CODE_SEP)[0])
 }
 
 
@@ -4635,8 +4997,10 @@ function qcCardOf(x: QcCardOfIn): GateCardSpec | null {
   return {
     title: x.chan.title,
     sub: x.t(QC_NAME_HEAD + x.chan.key),
+    tags: [],
     source: sourceLinkOf({ t: x.t, url: qcUrlOf(one) }),
     rows: out,
+    empty: TEXT_NONE,
   }
 }
 

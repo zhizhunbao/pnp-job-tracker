@@ -29,6 +29,8 @@
  * 通道卡同一个名字)、pnpCellActiveOf(格子能不能点 = 弹框有没有卡)、pnpBlockedKeysOf / pnpExcludedOf / aipExcludedOf(拼键查键一处)。
  * 2026-09-30 Frank「兼职 这种都改成不符合」:职位板格子 / 胶囊的原因词改经 pnpBlockCellOf(五个码写「不符合」),pnpBlockOf 退回域内
  *(弹框卡用),桶门换名不加名。
+ * 同日资讯页「通道与门槛」(Frank「各省门槛 我觉得 应该放到资讯下面」):桶门加一名 PnpProvStreams —— 一省全部现行通道的门槛卡,
+ * 与弹框「本岗通道的门槛」同一个卡件、同一份懒取整表;页面外壳(页签、省份胶囊)住 components/streams。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -37,6 +39,7 @@ export { EeCategorySection } from './eecategorysection'
 export { MeansForMe } from './meansforme'
 export { PnpListSection } from './pnplistsection'
 export { PnpModal } from './pnpmodal'
+export { PnpProvStreams } from './pnpprovstreams'
 export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'

@@ -11,6 +11,7 @@
  * 状态收进 hooks.ts、内联样式逐格迁 timeline.module.css。
  * 2026-09-03 Frank「所有的 table 和可以更新数据的地方,右上角都应该有一个更新时间」:
  * 两个数据区各挂一枚 —— 节奏格在它的标题下单起一行,事件列表挂进筛选药丸行的右端。
+ * 2026-09-30 通道与门槛批 2:二级导航加第三个页签「通道与门槛」(/streams)。
  *
  * @author Frank
  * @time 2026-08-28 12:43:06
@@ -21,7 +22,7 @@ import { Shell } from '@/components/shell'
 import { SectionTabs } from '@/components/tabs'
 import { Updated } from '@/components/time'
 import { Title } from '@/components/title'
-import { BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_TIMELINE } from './constants'
+import { BANNER_MODULE, EVENTS_ANCHOR_ID, SHELL_TOP, TABS_TONE, URL_NEWS, URL_STREAMS, URL_TIMELINE } from './constants'
 import { CadenceGrid } from './cadencegrid'
 import { EventList } from './eventlist'
 import { FilterChips } from './filterchips'
@@ -50,6 +51,7 @@ export function Timeline({ events, cadence, eeCadence, updatedAt }: TimelineIn) 
         tabs={[
           { href: URL_NEWS, label: p.t('tl.tabNews') },
           { href: URL_TIMELINE, label: p.t('tl.title'), active: true },
+          { href: URL_STREAMS, label: p.t('tl.tabStreams') },
         ]} />
       <Title>{p.t('tl.cadence')}</Title>
       <Updated iso={updatedAt} t={p.t} />

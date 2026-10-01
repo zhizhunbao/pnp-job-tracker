@@ -715,6 +715,12 @@ export const GATE_SUBJECT_EMPLOYER = 'employer'
 export const GATE_OP_GE = '>='
 
 /**
+ * 门槛表「不要求」算子(语言行:这几档 TEER 不要求语言考试 —— 卑诗 TEER 0 / 1、纽省与爱德华王子岛 TEER 0–3;
+ * 2026-09-30 资讯页「通道与门槛」写成「不要求语言考试」,弹框照旧只挑带分数的档)。
+ */
+export const GATE_OP_NONE = 'none'
+
+/**
  * 语言门槛的单位。
  */
 export const GATE_UNIT_CLB = 'CLB'
@@ -728,6 +734,21 @@ export const GATE_UNIT_MONTHS = 'months'
  * 按年计的门槛单位(安省同职业累计那条替代路径;2026-09-29)。
  */
 export const GATE_UNIT_YEARS = 'years'
+
+/**
+ * 资讯页「工作经验」行按 TEER 分档时看的因素(经验与它的替代路径同一档里列;2026-09-30 通道与门槛批 2)。
+ */
+export const GATE_EXP_FACTORS = [GATE_F.experience, GATE_F.experienceAlt]
+
+/**
+ * 资讯页「工资」行按 TEER 分档时看的因素(安省应届毕业生的低位工资只管 TEER 0–3)。
+ */
+export const GATE_WAGE_FACTORS = [GATE_F.wage]
+
+/**
+ * 资讯页「语言」行点名职业的那档,灰字里最多列几个职业码(再多不列 —— 曼省 158 个职业逐个定分,那档只写分数区间;2026-09-30)。
+ */
+export const LANG_NOC_NOTE_MAX = 10
 
 /**
  * 阿省境内经验替代行的条件标记(门槛表 appliesCondition 原值)。

@@ -3116,7 +3116,7 @@ export function toPnpDraw(r: Row): PnpDraw {
  * DIMS_PATHWAYS 一行 → 通道对照行(2026-09-28 通道表批二)。清单格库里存的是 jsonb 数组,缺了当空列;
  * 通道名与配额键保 null(省默认通道本来就没挂名、没有通道级配额的通道本来就没有键)。
  * 2026-09-30 通道补全批二加九格(编号、中韩直白名、看不看工作、条件标签、三种筛法、清单名);jobLinked 为 NULL 的是加列前灌的旧行,
- * 按有关系算(列默认值同此)。
+ * 按有关系算(列默认值同此)。同日资讯页「通道与门槛」加出处页一格。
  *
  * @param r 原始行。
  * @returns 通道对照行。
@@ -3127,7 +3127,7 @@ function toPathway(r: PathwayDbRow): Pathway {
     drawStreams: toList(r.drawStreams), reqStreams: toList(r.reqStreams), quotaKey: textOrNull(r.quotaKey),
     officialName: text(r.officialName), key: text(r.key), plainZh: text(r.plainZh), plainKo: text(r.plainKo),
     jobLinked: r.jobLinked !== false, tags: toList(r.tags), teers: toList(r.teers), nocs: toList(r.nocs),
-    employers: toList(r.employers), occLabels: toList(r.occLabels),
+    employers: toList(r.employers), occLabels: toList(r.occLabels), url: text(r.url),
   }
 }
 

@@ -33,9 +33,11 @@ import {
   aipCardOf, aipEmployerCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
-  pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf,
+  pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
 } from '@/components/pnp/functions'
-import type { PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream } from '@/components/pnp/types'
+import type {
+  GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
+} from '@/components/pnp/types'
 import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
@@ -76,7 +78,8 @@ function job(p: Partial<PnpJob>): PnpJob {
 function pathway(p: Partial<PnpPathway>): PnpPathway {
   return {
     province: '', boardLabel: null, isDefault: false, drawStreams: [], reqStreams: [], quotaKey: null, officialName: '',
-    key: '', plainZh: '', plainKo: '', jobLinked: true, tags: [], teers: [], nocs: [], employers: [], occLabels: [], ...p,
+    key: '', plainZh: '', plainKo: '', jobLinked: true, tags: [], teers: [], nocs: [], employers: [], occLabels: [], url: '',
+    ...p,
   }
 }
 
@@ -1208,6 +1211,115 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
           }
         }), { numRuns: 500 })
     })
+  })
+
+  // 2026-09-30 通道与门槛批 2(Frank「各省门槛 我觉得 应该放到资讯下面」「盘点各种通道,各种门槛」「对啊。门槛要说清楚」):
+  // 资讯页一省一组门槛卡(provGateCardsOf),与弹框门槛卡同一套行构造器,只是不挑本岗那档 —— 语言全档、经验与工资按 TEER 分档。
+  // 手写金标 = 上面两份夹具(AB 机会通道、ON 劳动力优先通道)照实数手推;探针见各条注。
+  const AOS_PATH = pathway({ province: 'AB', key: 'ab-opportunity', isDefault: true, reqStreams: ['AAIP Alberta Opportunity Stream', EMP],
+    officialName: 'Alberta Opportunity Stream', plainZh: '阿尔伯塔机会通道', plainKo: '앨버타 기회 스트림',
+    url: 'https://www.alberta.ca/aaip-alberta-opportunity-stream' })
+  const provCards = (p: { t?: typeof zh, lang?: 'zh' | 'en' | 'ko', province: string, pathways: PnpPathway[], reqs: PnpReq[] }) =>
+    provGateCardsOf({ t: p.t ?? zh, lang: p.lang ?? 'zh', province: p.province, pathways: p.pathways, reqs: p.reqs })
+  const rowsOf = (c: GateCardSpec | undefined) => c?.rows.map((r) => [r.label, r.lines, r.notes])
+
+  it('资讯页门槛卡·阿省机会通道:语言全档 + 点名职业灰字码、经验照弹框写法;卡头原名 / 直白名 / 来源;弹框卡不带标签与空态', () => {
+    const [card] = provCards({ province: 'AB', pathways: [AOS_PATH], reqs: abReqs })
+    expect([card?.title, card?.sub, card?.tags, card?.source, card?.empty]).toEqual(
+      ['Alberta Opportunity Stream', '阿尔伯塔机会通道', [], { text: '来源 ↗', href: AOS_URL }, ''])
+    expect(rowsOf(card)).toEqual([
+      ['身份', ['申请时须在阿尔伯塔省工作', '须持以下工签之一:', 'LMIA 工签', '部分免 LMIA 工签', '本省公立院校毕业的 PGWP',
+        '几类开放工签', '申请期间维持身份的不算'], []],
+      ['雇主 offer', ['全职', '不收兼职、临时工、季节工'], []],
+      ['语言', ['TEER 0–3:每项 CLB 5', 'TEER 4–5:每项 CLB 4', '指定职业:每项 CLB 7'], ['NOC 33102']],
+      ['工作经验', ['24 个月全职经验(近 30 个月内)', '加拿大境内外的经验都算', '或在本省 12 个月(近 18 个月内)',
+        '持 PGWP 的:', '本省 6 个月(近 18 个月内)'], []],
+      ['雇主', ['在本省经营满 2 个财年', '年收入 ≥ $400,000', '全职员工 ≥ 3 人'], []],
+    ])
+    const [enCard] = provCards({ t: en, lang: 'en', province: 'AB', pathways: [AOS_PATH], reqs: abReqs })
+    expect([enCard?.sub, enCard?.rows[2]?.lines, enCard?.rows[2]?.notes]).toEqual(['',
+      ['TEER 0–3: CLB 5 in each skill', 'TEER 4–5: CLB 4 in each skill', 'Listed occupations: CLB 7 in each skill'], ['NOC 33102']])
+    expect(provCards({ t: ko, lang: 'ko', province: 'AB', pathways: [AOS_PATH], reqs: abReqs })[0]?.sub).toBe('앨버타 기회 스트림')
+    const modal = gateCardOf({ t: zh, job: abJob, reqs: abReqs, channel: chanOf(abJob) })
+    expect([modal?.tags, modal?.empty]).toEqual([[], ''])
+  })
+
+  it('资讯页门槛卡·安省:经验两档各挂「TEER x:」小标;工资各档都适用的那条在前,只管 TEER 0–3 的应届低位工资挂小标下', () => {
+    const [card] = provCards({ province: 'ON', pathways: [onChan], reqs: onReqs })
+    expect(rowsOf(card)).toEqual([
+      ['语言', ['TEER 0–3:每项 CLB 6', 'TEER 4–5:每项 CLB 4', 'TEER 0–3:近 3 年在本省毕业免考', '指定职业:每项 CLB 5'],
+        ['NOC 72、73、82、83、93、6320、62200(726、932 除外)']],
+      ['工作经验', ['TEER 0–3:', '在现雇主全职满 6 个月', '或本省应届毕业生满 3 个月', '或同职业累计满 2 年(近 5 年内)',
+        '或持有这份工作要求的执照', 'TEER 4–5:', '在现雇主全职满 9 个月'], []],
+      ['工资', ['不低于本职业在本地区的中位工资', 'TEER 0–3:', '或本省应届毕业生不低于低位工资'], []],
+      ['雇主', ON_EMP, []],
+    ])
+    // 探针:去掉 TEER 4–5 那条 9 个月,TEER 4–5 小标随之不出(小标只挂在真有条目的档上);
+    // 把应届低位工资改成不分档,它就并进各档都适用的那几条、TEER 0–3 小标不出 —— 金标分得开「分档」与「不分档」
+    const no45 = onReqs.filter((r) => !(r.factor === 'experience' && r.appliesTeer === '4,5'))
+    expect(provCards({ province: 'ON', pathways: [onChan], reqs: no45 })[0]?.rows[1]?.lines).not.toContain('TEER 4–5:')
+    const flat = onReqs.map((r) => (r.factor === 'wage' ? { ...r, appliesTeer: '' } : r))
+    expect(provCards({ province: 'ON', pathways: [onChan], reqs: flat })[0]?.rows[2]?.lines)
+      .toEqual(['不低于本职业在本地区的中位工资', '或本省应届毕业生不低于低位工资'])
+    const enRows = provCards({ t: en, lang: 'en', province: 'ON', pathways: [onChan], reqs: onReqs })[0]?.rows
+    expect(enRows?.[0]?.notes).toEqual(['NOC 72, 73, 82, 83, 93, 6320, 62200 (except 726, 932)'])
+    expect(enRows?.[1]?.lines.slice(0, 2)).toEqual(['TEER 0–3:', '6 months full-time with your current employer'])
+  })
+
+  it('资讯页门槛卡:省默认在前、只出本省;没收录写「本站未收录门槛」、来源退到通道页;不看工作的不出 offer 行;语言三种写法', () => {
+    const other = pathway({ province: 'AB', key: 'ab-x', reqStreams: ['AAIP Nothing Here'], officialName: 'X Stream',
+      url: 'https://www.alberta.ca/x-stream', tags: ['ee'] })
+    const empOnly = pathway({ province: 'AB', key: 'ab-y', reqStreams: [EMP], officialName: 'Y Stream', url: 'https://www.alberta.ca/y' })
+    const noJob = pathway({ ...AOS_PATH, key: 'ab-z', isDefault: false, jobLinked: false, officialName: 'Z Stream' })
+    const bc = pathway({ province: 'BC', key: 'bc-x', isDefault: true, reqStreams: ['BC PNP Skills Immigration'], officialName: 'BC Stream' })
+    const cards = provCards({ province: 'AB', pathways: [other, empOnly, AOS_PATH, noJob, bc], reqs: abReqs })
+    expect(cards.map((c) => c.title)).toEqual(['Alberta Opportunity Stream', 'X Stream', 'Y Stream', 'Z Stream'])
+    expect([cards[1]?.rows, cards[1]?.empty, cards[1]?.source?.href, cards[1]?.tags.map((g) => g.text)])
+      .toEqual([[], '本站未收录门槛', 'https://www.alberta.ca/x-stream', ['需先有 EE 档案']])
+    // 只有雇主侧行的通道也当没收录(只剩全省几行会读成门槛只有这些,同弹框)
+    expect([cards[2]?.rows, cards[2]?.empty]).toEqual([[], '本站未收录门槛'])
+    expect(cards[3]?.rows.map((r) => r.key)).toEqual(['status', 'lang', 'exp', 'emp'])
+    const L = 'Lang Stream'
+    const lang = (p: Partial<PnpReq>) => req({ province: 'BC', stream: L, ...p })
+    const lp = pathway({ province: 'BC', key: 'bc-l', isDefault: true, reqStreams: [L], officialName: L })
+    const langOf = (rows: PnpReq[]) => provCards({ province: 'BC', pathways: [lp], reqs: rows })[0]?.rows[0]
+    // 档按 TEER 从低到高(数据原序卑诗是高档在前);探针:原序给进来照样排好
+    expect(langOf([lang({ value: 4, appliesTeer: '2,3,4,5' }), lang({ op: 'none', value: null, unit: '', appliesTeer: '0,1' })])?.lines)
+      .toEqual(['TEER 0–1:不要求语言考试', 'TEER 2–5:每项 CLB 4'])
+    expect(langOf([lang({ value: 6, appliesTeer: '4' }), lang({ value: 5 })])?.lines).toEqual(['英语或法语每项 CLB 5', 'TEER 4:每项 CLB 6'])
+    expect(langOf([lang({ value: 4, appliesNoc: '10010' }), lang({ value: 7, appliesNoc: '10011' }), lang({ value: 5, appliesNoc: '10012' })]))
+      .toEqual({ key: 'lang', label: '语言', lines: ['按职业定:CLB 4–7'], notes: [] })
+    const many = Array.from({ length: 11 }, (_, i) => lang({ value: 5, appliesNoc: String(10010 + i) }))
+    expect(langOf(many)).toEqual({ key: 'lang', label: '语言', lines: ['指定职业:每项 CLB 5'], notes: [] })
+    expect(langOf(many.slice(0, 2))?.notes).toEqual(['NOC 10010、10011'])
+  })
+
+  it('data/mart 真数据:九省每条现行通道一张卡(省默认在前),每张要么有行、要么写「本站未收录门槛」,三语没有漏词条', () => {
+    const FACTORS = ['offerForm', 'language', 'languageExempt', 'experience', 'experienceAlt', 'wage', 'eeProfile', 'eeProgram', 'crs',
+      'empYears', 'empRevenue', 'empStaff', 'communityEndorsement', 'licensing', 'pointsMin', 'residence', 'status']
+    const live = PATHWAYS.filter((p) => (p as PnpPathway & { status: string }).status !== 'closed')
+    const reqs = mart<PnpReq>('pnp_requirements').filter((r) => r.program === 'PNP' && FACTORS.includes(r.factor))
+    for (const prov of ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'NS', 'PE', 'NL']) {
+      const mine = live.filter((p) => p.province === prov)
+      for (const lang of ['zh', 'en', 'ko'] as const) {
+        const cards = provCards({ t: makeT(lang), lang, province: prov, pathways: live, reqs })
+        expect(cards.length, prov).toBe(mine.length)
+        expect(cards[0]?.title, prov).toBe(mine.find((p) => p.isDefault)?.officialName)
+        for (const c of cards) {
+          expect(c.rows.length > 0, prov + ' ' + c.title).toBe(c.empty === '')
+          expect(c.source, prov + ' ' + c.title).not.toBeNull()
+          for (const r of c.rows) {
+            expect(r.lines.length, prov + ' ' + c.title + ' ' + r.key).toBeGreaterThan(0)
+            for (const l of r.lines.concat(r.notes)) {
+              expect(/[{}]|pnpgate\./.test(l), prov + ' ' + c.title + ' ' + l).toBe(false)
+            }
+          }
+        }
+      }
+    }
+    // 曼省技术工人:TEER 4–5 那档全省一条,在需职业 158 个逐个定分合成一行
+    const mb = provCards({ province: 'MB', pathways: live, reqs })[0]
+    expect(mb?.rows.find((r) => r.key === 'lang')?.lines).toEqual(['TEER 4–5:每项 CLB 4', '按职业定:CLB 5–7'])
   })
 
   it('data/mart 真数据:魁省不出卡,NS 按月,安省现状,阿省分组', () => {
