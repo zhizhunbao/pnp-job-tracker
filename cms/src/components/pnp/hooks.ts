@@ -38,6 +38,7 @@ import { CACHE } from './variables'
  * (弹框打开那一刻取一次此刻,往前 90 天;重渲不变)。
  * 同日晚 Frank「默认也别合并啊」:抽选卡的开合初值带上 DRAWS_ALL_KEY —— 其余组一打开就展开,末尾「收起」照旧可收。
  * 2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」:初值改由 drawOpenInitOf 按本岗给 —— 可提名照旧全展开,不可提名默认折叠。
+ * 2026-10-01 Frank「本省抽选默认不要折叠」:drawOpenInitOf 不再看本岗,一律展开。
  * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改成组头行、灰字统计撤,统计窗口起点(此刻 − 90 天)随之不再交。
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:多交门槛卡的开合(默认全收,值一行就是摘要,点开看原句)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:门槛卡不再点开,开合随之不交。
@@ -50,7 +51,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const tEn = makeT(LANG_EN)
   const matchRef = useRef<HTMLDivElement | null>(null)
   const [closed, setClosed] = useState<Set<string>>(new Set())
-  const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf(x.job))
+  const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf())
 
   const nocRows = useMemo(function dictOf() {
     return nocRowsOf(x.nocDesc)

@@ -793,10 +793,14 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     // 2026-09-30 Frank「兼职 这种都改成不符合 可以吗」(选「五个都改」):格子与胶囊上工作性质四个与工资那个写「不符合」,职业不收照写;
     // 弹框卡(pnpBlockOf)照旧写具体原因(上面几条不变)
     const codes = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
+    // 2026-10-01 Frank「职业不收 也改成 不符合」「不符合清单 都改成 不符合」:六个码格子上都写「不符合」,清单排除的格子词同词
     const cells = codes.map((c) => pnpBlockCellOf({ job: { pnpBlock: c }, t: zh }))
-    expect(cells).toEqual(['不符合', '不符合', '不符合', '不符合', '不符合', '职业不收'])
+    expect(cells).toEqual(['不符合', '不符合', '不符合', '不符合', '不符合', '不符合'])
     expect(pnpBlockCellOf({ job: { pnpBlock: 'wage' }, t: en })).toBe('Not eligible')
-    expect(pnpBlockCellOf({ job: { pnpBlock: 'occ' }, t: en })).toBe('Occupation not eligible')
+    expect(pnpBlockCellOf({ job: { pnpBlock: 'occ' }, t: en })).toBe('Not eligible')
+    for (const t of [zh, en, ko]) {
+      expect(t('cell.pnpExcl')).toBe(t('pnp.block.unfit'))
+    }
     expect(pnpBlockCellOf({ job: { pnpBlock: 'part' }, t: ko })).toBe('요건 미충족')
     for (const c of ['', 'list', 'zzz']) {
       expect(pnpBlockCellOf({ job: { pnpBlock: c }, t: zh })).toBe('')
@@ -1042,9 +1046,9 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-28 Frank「如果是不符合清单的。本省抽选默认折叠」:可提名照旧全展开(09-26「默认也别合并啊」),不可提名默认折叠
   // 2026-09-29 抽选卡重排:「改制前的抽选」卡同本省抽选卡一个规矩;「AIP 抽选」卡不设开关(组全摊开),不占键
-  it('本省抽选卡开合初值:可提名展开全省各组,不可提名折叠', () => {
-    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: true }))]).toEqual(['__all', '__allReform'])
-    expect([...drawOpenInitOf(job({ province: 'AB', pnpEligible: false }))]).toEqual([])
+  // 2026-10-01 Frank「本省抽选默认不要折叠」:不分可不可提名,一律展开
+  it('本省抽选卡开合初值:一律展开全省各组', () => {
+    expect([...drawOpenInitOf()]).toEqual(['__all', '__allReform'])
   })
 
   // 2026-09-30 Frank「和其他省保持一致吧」:省提名弹框的魁省抽选卡改出(金标见 qcGate.int.spec.ts);地点弹框那一形(drawsFormOf)照旧不出

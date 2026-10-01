@@ -538,7 +538,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'th.tip': '클릭하여 정렬',
   'cell.uncat': '미분류', 'cell.first': '직접', 'cell.repost': '재게시', 'cell.today': '오늘',
   'cell.blockedBoth': '본 주 접수 제외',
-  'cell.pnpExcl': '제외 목록', 'cell.aipBlocked': '직종 접수 제외',
+  'cell.pnpExcl': '요건 미충족', 'cell.aipBlocked': '직종 접수 제외',
   'cell.pnpSkilled': '지명 가능', 'cell.pnpSkilledProv': '{p} 지명 가능',
   'pnp.gen.AB': 'AB 오퍼튜니티 스트림', 'pnp.gen.BC': 'BC 숙련 노동자', 'pnp.gen.SK': 'SK 고용 오퍼', 'pnp.gen.ON': 'ON 인력 우선',
   'pnp.gen.MB': 'MB 숙련 노동자', 'pnp.gen.NS': 'NS 숙련 노동자', 'pnp.gen.NB': 'NB 숙련 노동자', 'pnp.gen.PE': 'PE 인력 스트림',

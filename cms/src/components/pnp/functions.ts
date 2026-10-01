@@ -4666,15 +4666,12 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
  * 不等于走不了 AIP。同日线上验收改:AIP 卡干脆不设开关(groupsCardOf 的 fold = false),它那把键随之撤。
  * 2026-09-30 Frank「收起那个按钮是不是不要放在外面。默认是不是都展开」,选「可提名的岗去掉收起」:展开后开关不再出 ——
  * 可提名的岗初值就展开,全省各组常显、没有开关;不可提名的岗照旧折着,只露「查看全省 N 组」,点开后不给收起。
+ * 2026-10-01 Frank「本省抽选默认不要折叠」:不分可不可提名,初值一律展开(全省各组常显、没有开关),不再看本岗。
  *
- * @param job 本岗。
  * @returns 开着的键集合。
  */
-export function drawOpenInitOf(job: PnpJob): Set<string> {
-  if (job.pnpEligible === true) {
-    return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY])
-  }
-  return new Set()
+export function drawOpenInitOf(): Set<string> {
+  return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY])
 }
 
 /**
@@ -4858,6 +4855,7 @@ export function pnpNameOf(x: PnpNameIn): string {
 /**
  * 职位板格子与手机胶囊上的原因词(2026-09-30 Frank「兼职 这种都改成不符合 可以吗」,选「五个都改」):工作性质四个与工资那个
  * 统一写「不符合」(PNP_BLOCK_UNFIT_CODES;职位板别的列已经写着),其余照 pnpBlockOf 写具体原因。弹框「本岗不满足的门槛」卡不走这里。
+ * 2026-10-01 Frank「职业不收 也改成 不符合」:职业不收也写「不符合」(码表加 occ)。
  *
  * @param x 本岗与取词函数。
  * @returns 格子上的词;走得了或码不在显示表里给 ''。

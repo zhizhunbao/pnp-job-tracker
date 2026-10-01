@@ -590,7 +590,7 @@ export const jobsZh = {
   'th.tip': '点击表头排序',
   'cell.uncat': '未分类', 'cell.first': '第一方', 'cell.repost': '转贴', 'cell.today': '今天',
   'cell.blockedBoth': '本省不受理',
-  'cell.pnpExcl': '不符合清单', 'cell.aipBlocked': '职业不受理',
+  'cell.pnpExcl': '不符合', 'cell.aipBlocked': '职业不受理',
   'cell.pnpSkilled': '可提名', 'cell.pnpSkilledProv': '{p} 可提名',
   'pnp.gen.AB': 'AB 机会通道', 'pnp.gen.BC': 'BC 技术工人', 'pnp.gen.SK': 'SK 雇主 offer', 'pnp.gen.ON': 'ON 劳动力优先',
   'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',

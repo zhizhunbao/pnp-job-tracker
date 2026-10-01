@@ -369,6 +369,7 @@ export const PNP_GEN_HEAD = 'pnp.gen.'
 /**
  * 走不了省提名的原因码里要显示的那几个(数据层 etl/mart 的 BLOCK_* 同一套码;2026-09-29 Frank「就直接说 兼职」)。
  * 清单排除 list 不在此列:格子「不符合清单」与弹框排除清单卡照旧走 pnpExcludedOf(手机上与 AIP 合并胶囊的写法绑着)。
+ * 2026-10-01 Frank「不符合清单 都改成 不符合」:那个格子词(cell.pnpExcl)改成与这几个码同一个「不符合」,路子不变。
  */
 export const PNP_BLOCK_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
 
@@ -381,8 +382,9 @@ export const PNP_BLOCK_HEAD = 'pnp.block.'
  * 职位板格子与手机胶囊上不写具体原因、统一写「不符合」的原因码(2026-09-30 Frank「兼职 这种都改成不符合 可以吗」,选「五个都改」):
  * 工作性质四个与工资那个 —— 职位板「类型」「期限」「vs 中位」三列已经写着;职业不收(occ)别的列看不出来,照写原因。
  * 弹框「本岗不满足的门槛」卡照旧写具体原因(pnpBlockOf)。
+ * 2026-10-01 Frank「职业不收 也改成 不符合」:occ 也进来,六个码格子上都写「不符合」;弹框卡照旧写「职业不收」。
  */
-export const PNP_BLOCK_UNFIT_CODES = ['part', 'term', 'seasonal', 'casual', 'wage']
+export const PNP_BLOCK_UNFIT_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
 
 /**
  * 那几个码在格子与胶囊上的词条键(「不符合」)。
