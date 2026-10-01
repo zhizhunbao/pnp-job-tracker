@@ -852,8 +852,9 @@ export const BASIS_WINDOW_YEARS = 'windowYears'
 
 /**
  * 口径包的「同职业」标记(经验替代路径:同职业累计)。
- * 2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:也挂在经验主行上 —— 须是这个职业的经验(阿省「in your current occupation」、萨省「in your (intended)
- * occupation」),门槛卡另起一行「须是这个职业的经验」。
+ * 2026-10-01 Frank「检查一下所有的这个工作经验。如果是 过去十年 24 个月工作经验。为什么还对雇主有要求。」:
+ * 也挂在经验主行上 —— 须是这个职业的经验(阿省「in your current occupation」、萨省「in your (intended) occupation」),
+ * 门槛卡另起一行「须是这个职业的经验」。
  */
 export const BASIS_SAME_NOC = 'sameNoc'
 
