@@ -28,7 +28,7 @@ import urllib.request
 from operator import itemgetter
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import cast
 from urllib.parse import parse_qs, quote_plus, unquote, urljoin, urlparse
@@ -98,7 +98,7 @@ from company.constants import (
     URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WD_API_URL, WD_LANGUAGES, WD_PROPS,
     WD_SEARCH_LIMIT, WD_SLEEP_S, WD_TIMEOUT_S, WD_UA, WIKI_CHECKED_MARK, WIKI_SPACE,
     WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
-    ENV_PLACES_KEY, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
+    ENV_PLACES_KEY, ENV_PLACES_SLUGS, PLACES_SLUGS_SEP, PRINT_PLACES_PICKED_TPL, PT_OFFSETS_H, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
     OUT_PLACES, PLACES_LANG, PLACES_LIMIT, PLACES_PAGE_SIZE,
     PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
     PLACES_URL, PRINT_PLACES_DONE_TPL, PRINT_PLACES_IN_TPL, PRINT_PLACES_ROW_TPL,
@@ -1446,7 +1446,7 @@ def lookup_company_places() -> None:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
+    cands = pick_named_places(places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug())))
     used = month_usage_of(cache)
     pro_budget = max(0, PLACES_MONTH_FREE_PRO - PLACES_MONTH_RESERVE - used.pro)
     ent_budget = max(0, PLACES_MONTH_FREE_ENT - PLACES_MONTH_RESERVE - used.ent)
@@ -1485,18 +1485,52 @@ def write_places_cache(cache: dict[str, PlaceRecord]) -> None:
     paths.write_json(paths.WriteJsonIn(path=OUT_PLACES, payload=out, indent=2))
 
 
+def pick_named_places(cands: list[PlaceTarget]) -> list[PlaceTarget]:
+    """PLACES_SLUGS 设了就只留点名的那几家(按点名顺序;不在在招雇主里的报出来不查),没设原样返回队列。"""
+    raw = os.environ.get(ENV_PLACES_SLUGS, "").strip()
+    if raw == "":
+        return cands
+    by_slug: dict[str, PlaceTarget] = {}
+    for c in cands:
+        by_slug[c.slug] = c
+    asked: list[str] = []
+    for part in raw.split(PLACES_SLUGS_SEP):
+        if part.strip() != "":
+            asked.append(part.strip())
+    picked: list[PlaceTarget] = []
+    missing: list[str] = []
+    for sl in asked:
+        hit = by_slug.get(sl)
+        if hit is None:
+            missing.append(sl)
+        else:
+            picked.append(hit)
+    say(PRINT_PLACES_PICKED_TPL.format(asked=len(asked), found=len(picked), missing=PLACES_SLUGS_SEP.join(missing)))
+    return picked
+
+
 def month_usage_of(cache: dict[str, PlaceRecord]) -> MonthUsage:
-    """当月两档已发出的请求数(按记录 fetched 的年-月计;fail 也计 —— Google 照样收费)。"""
-    month = now_iso()[:MONTH_LEN]
+    """当月两档已发出的请求数(fail 也计 —— Google 照样收费)。
+    「当月」= Google 计费月(太平洋时间):记录与此刻各按 PT_OFFSETS_H 两种偏移取月,沾上就算(月界前后宁可多算)。
+    原口径按记录 fetched 的 UTC 年-月计,2026-10-01 月界实撞超额,见 PT_OFFSETS_H。"""
+    months = pacific_months_of(datetime.now(timezone.utc))
     used = MonthUsage(pro=0, ent=0)
     for rec in cache.values():
-        if rec.fetched[:MONTH_LEN] != month:
+        if len(pacific_months_of(datetime.fromisoformat(rec.fetched)) & months) == 0:
             continue
         if rec.tier == TIER_ENT:
             used.ent += 1
         elif rec.tier == TIER_PRO:
             used.pro += 1
     return used
+
+
+def pacific_months_of(t: datetime) -> set[str]:
+    """UTC 时刻(带时区)按 PDT / PST 两种偏移各取年-月(平日两者相同只有一个,月界前后那一小时是两个)。"""
+    out: set[str] = set()
+    for h in PT_OFFSETS_H:
+        out.add((t + timedelta(hours=h)).isoformat()[:MONTH_LEN])
+    return out
 
 
 def tier_of(t: PlaceTarget) -> str:

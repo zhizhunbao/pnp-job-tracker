@@ -456,14 +456,16 @@ services:
   #     GOOGLE_CSE_CX: ${GOOGLE_CSE_CX:-}           # 根 .env;Programmable Search 引擎 ID
   #     NEWS_LLM_BASE: ${NEWS_LLM_BASE:-}           # 局域网 Ollama(与 news 同一台盒子同一个变量);空=brief 步跳过
   #     NEWS_LLM_MODEL: ${NEWS_LLM_MODEL:-qwen3.6:latest}
-  co_enrich_places:                   # 雇主 Google Places 地址(company 域 places 步;Google 免费额内,轻镜像)
-    <<: *etl
-    environment:
-      <<: *hc
-      SOURCE: enrich_places
-      HEALTHCHECK_PING_ENRICH_PLACES: ${HEALTHCHECK_PING_ENRICH_PLACES:-}
-      GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
-      TZ: EST5EDT
+  # 2026-10-01 co_enrich_places 撤编(Frank「google 那个后台自动查询 删了吧」;月界按 UTC 判当月致 9 月超额 CA$87.39,
+  # places 改本地 Opus 手动点名查,见 etl/company/__init__.py METAS 留档)。原 service 逐字留档:
+  #   co_enrich_places:                   # 雇主 Google Places 地址(company 域 places 步;Google 免费额内,轻镜像)
+  #     <<: *etl
+  #     environment:
+  #       <<: *hc
+  #       SOURCE: enrich_places
+  #       HEALTHCHECK_PING_ENRICH_PLACES: ${HEALTHCHECK_PING_ENRICH_PLACES:-}
+  #       GOOGLE_PLACES_KEY: ${GOOGLE_PLACES_KEY:-}   # 根 .env;空=places 步跳过
+  #       TZ: EST5EDT
 
   co_enrich_sites:                    # 雇主官网 + 维基总部(company 域 sites + wikihq 两步,同打 Wikidata;搜索兜底走 DDG,轻镜像)
     <<: *etl

@@ -982,6 +982,14 @@ TEER_SKILLED = ["0", "1", "2", "3"]
 ENV_PLACES_KEY = "GOOGLE_PLACES_KEY"
 """密钥环境变量名(仓库根 .env;Frank 亲手抄,代码与日志不落值)。"""
 
+ENV_PLACES_SLUGS = "PLACES_SLUGS"
+"""点名查的公司 slug 清单(逗号分隔)的环境变量名;设了就只查这几家(仍受当月免费额封顶),空 = 按队列查。
+2026-10-01 Frank「补公司信息用本地 Opus 做,让 Opus 判断是否调用 google places 免费额度」:定时 Places 容器撤编,
+Opus 先走免费路子(官网 / 帖内线索 / 维基),还缺的才点名查。"""
+
+PLACES_SLUGS_SEP = ","
+"""PLACES_SLUGS 的分隔符。"""
+
 PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
 """Places API (New) 文本搜索端点(POST JSON)。"""
 
@@ -1020,6 +1028,13 @@ PLACES_MONTH_RESERVE = 60
 
 MONTH_LEN = 7
 """ISO 时刻取前 7 位 = 年-月(当月用量按此计)。"""
+
+PT_OFFSETS_H = (-7, -8)
+"""太平洋时间相对 UTC 的两种偏移(夏令 PDT / 冬令 PST)。Google 免费额度按太平洋时间的月重置,当月用量必须按它算。
+2026-10-01 实撞:原先按 UTC 取月,UTC 10-01 00:00–06:59(= 太平洋 9 月 30 日)那轮以为额度已重置,又打了 940 次
+Enterprise + 843 次 Pro,全记进 Google 的 9 月 → 9 月账单 CA$77.34 + HST = CA$87.39。两种偏移都算(一条记录或此刻
+落在哪个月,两种偏移各给一个),只要沾上就计入当月:月界前后一小时宁可多算,不靠夏令时规则表,也不用 zoneinfo
+(Windows venv 没带 tzdata,indexing 域同款取舍)。"""
 
 K_LOCALITY = "locality"
 """addressComponents 里市的类型码。"""
@@ -1091,7 +1106,10 @@ PRINT_PLACES_TARGETS_TPL = "在招雇主 {cands} 家 · 已查 {cached} · 本�
 """places 步报候选与本轮量。
 2026-09-15 母集扩到全部在招雇主(Frank「1 推荐」),原句「在招担保雇主 {cands} 家 · 已查 …」。"""
 
-PRINT_PLACES_ROW_TPL = "  {status:4} {tier:10} {name} → {site} | {address} | {ptype}"
+PRINT_PLACES_PICKED_TPL = "点名 {asked} 家 · 在招雇主里认出 {found} 家 · 没认出:{missing}"
+"""PLACES_SLUGS 点名时报认出几家(不在在招雇主里的 slug 原样列出,不查)。"""
+
+PRINT_PLACES_ROW_TPL ="  {status:4} {tier:10} {name} → {site} | {address} | {ptype}"
 """每查一家报一行(试跑期人眼复核用)。"""
 
 PRINT_PLACES_DONE_TPL = "本轮 ✓ {hit} 命中 · ○ {miss} 查无 · ✗ {fail} 失败 → {out}"

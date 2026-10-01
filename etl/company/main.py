@@ -6,7 +6,7 @@ company 域唯一入口(一域一门;步骤 2026-08-30 全溶进 functions.py,�
 批J 自 clean/_enrich_company_facts.py 归户)是休眠引导/手动工具,不进默认链 ——
 语义与旧役册完全一致。
 一律从仓库根执行:
-    python etl/company/main.py                 # 默认链(places → sites → wikihq → about → brief)
+    python etl/company/main.py                 # 默认链(places → sites → wikihq → about → brief;2026-10-01 places 撤出,只剩后四步)
     python etl/company/main.py --only kanata   # 手动件:kanata / folders / careers / facts
     BROWSER_CHANNEL=chrome python etl/company/main.py --only unblock   # 本机搜总部放行台(http://127.0.0.1:8787)
 
@@ -32,7 +32,8 @@ from company.functions import (
 )
 
 UNITS = {
-    "enrich_places": [("places", lookup_company_places)],
+    # 2026-10-01 enrich_places 单元撤编(原行 `"enrich_places": [("places", lookup_company_places)],`):
+    # Places 改由本地 Opus 判断后手动点名查(`PLACES_SLUGS=a,b --only places`),见 __init__ METAS 的留档注释。
     "enrich_sites": [("sites", lookup_sponsor_websites), ("wikihq", lookup_wiki_hq)],
     "enrich_about": [("about", crawl_company_about), ("brief", build_company_briefs)],
 }
@@ -87,6 +88,8 @@ TOOLS = {
   places 雇主官网/地址/业务类型查询(2026-09-04 Frank「帮我开」Google Places):在招担保
          雇主限量查,每家约 3.5 美分,密钥读 GOOGLE_PLACES_KEY;**不进默认链**(公司级数据
          懒查询禁批量预抓),放量改 constants.PLACES_LIMIT。
+         2026-10-01 起只手动跑:`PLACES_SLUGS=slug1,slug2 python etl/company/main.py --only places`
+         点名查(本地 Opus 先走免费路子,还缺的才点名;仍受当月免费额封顶,开跑先报本月用量)。
 
   sites  在招担保雇主补官网(2026-09-04 Frank「走 DuckDuckGo 跑起来」):复用 enrich 的
          D2 阶梯(JD 线索 → Wikidata 官网属性 → 搜索),免费,命中记 found 进 company_enrich.json

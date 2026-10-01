@@ -16,15 +16,14 @@ method "httpx" / interval 21600 / seed False / ping True 三役照抄;原条目�
 逐字留在 enrich_about 的对应键上(6h 那条讲的 brief 400 家 ≈ 4.5h 正是这一役)。findsite 役原样不动。
 """
 METAS = [
-    {
-        "name": "enrich_places",
-        "role": "enrich_places",
-        "method": "httpx",
-        "interval": 21600,        # 6h(照抄原 company 役,理由见 enrich_about 的同键)
-        "seed": False,
-        "ping": True,   # 本角色的 healthchecks 心跳由本域发(照抄原 company 役)
-        "only": "enrich_places",
-    },
+    # 2026-10-01 enrich_places 役撤编(Frank「补公司信息用本地 Opus 做,让 Opus 判断是否调用 google places 免费额度」
+    # 「google 那个后台自动查询 删了吧」):定时容器月界按 UTC 判当月,9 月超额 CA$87.39(见 constants.PT_OFFSETS_H)。
+    # places 步留作手动件(main.TOOLS,`PLACES_SLUGS=a,b --only places` 点名查)。原条目逐字留档:
+    #   {"name": "enrich_places", "role": "enrich_places", "method": "httpx",
+    #    "interval": 21600,        # 6h(照抄原 company 役,理由见 enrich_about 的同键)
+    #    "seed": False,
+    #    "ping": True,   # 本角色的 healthchecks 心跳由本域发(照抄原 company 役)
+    #    "only": "enrich_places"},
     {
         "name": "enrich_sites",
         "role": "enrich_sites",
@@ -58,6 +57,7 @@ METAS = [
 ]
 """本域四役(2026-09-26 晚把原 company 役拆成三个 enrich_*,见文件头):
   enrich_places  places:Google Places 查官网 / 地址 / 业务类型(预算由当月免费额度封顶;步骤见 main.UNITS)
+                 —— 2026-10-01 撤编,places 改手动点名(见 METAS 上的留档注释)
   enrich_sites   sites → wikihq:补官网 + 维基总部兜底(两步同打 Wikidata,同一单元串行 = 错开不叠)
   enrich_about   about → brief:官网正文进 crawl 层,brief 读它出五节简介
   findsite       点开优先的查找官网(2026-09-20 立,原样不动;走 TOOLS 单件 --only findsite,不进 UNITS)
