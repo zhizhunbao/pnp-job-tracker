@@ -472,7 +472,7 @@ PW_MB_SKILLED_WORKER_IN_MANITOBA = {
     "plainZh": "MB 技术工人", "plainEn": "MB Skilled Worker", "plainKo": "MB 숙련 노동자",
     "officialName": "Skilled Worker in Manitoba",
     "boardLabel": None, "isDefault": True,
-    "drawStreams": ["Skilled Worker in Manitoba", "Skilled Worker Stream"],
+    "drawStreams": ["Skilled Worker in Manitoba"],
     "reqStreams": [
         "MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway",
         ("MPNP Skilled Worker Stream — Skilled Worker in Manitoba (SWM) Pathway "
@@ -500,7 +500,13 @@ Occupations List are the minimum levels across all Skilled Worker pathways」—
 登记顺序本通道自己的流在前;⚠ 门槛卡标题右端的出处页现取「库表按流名排序后第一条带网址的行」,那样取到的是语言政策页或在需表那页
 (看库的排序规则),不是 SWM 资格页 —— 要出 SWM 页得前端改按这里的登记顺序取,另议。
 2026-09-30 通道补全批二(立项稿第三节「只认领抽选、不加通道」):抽选组加认领省方直接邀请组「Skilled Worker Stream」—— 官方那组是
-SWM 或 SWO 里持省方邀请的档案,海外技工行批一已认领,本行同认(一组两行都认,本岗高亮随之多这一组)。"""
+SWM 或 SWO 里持省方邀请的档案,海外技工行批一已认领,本行同认(一组两行都认,本岗高亮随之多这一组)。
+2026-10-02 撤回这一组(Frank「这个为什么有两个高亮」「逻辑应该是什么样的」「改吧,其他省也按这个过一遍」):判据 = 本岗高亮只给
+「凭本通道自己的条件就能进被选池」的组。官方抽选页那组原句「Profiles submitted under the Skilled Worker in Manitoba pathway or the
+Skilled Worker Overseas pathway that declared being directly invited by the MPNP under a strategic recruitment initiative.」——
+要先收到省方定向招募的直接邀请;SWM 资格里没有这一条(一份曼省 offer 给不了),是额外前提,不算本通道的组。SWO 那行照留:
+SWO 的资格本身就列了这一种联系(「an Invitation to Apply received directly from the MPNP as part of a Strategic Recruitment Initiative」)。
+同批九省过了一遍,其余各行认领的组都只用本通道条件(工资 / 分数 / 职业 / 语言 / 快速通道档案)选人,不动;阿省机会通道(定向行业)那组 09-30 已拍不认领。"""
 
 PW_ON_WORKFORCE_PRIORITY = {
     "key": "on-workforce-priority", "province": "ON", "program": "PNP",
@@ -900,7 +906,8 @@ PW_MB_SKILLED_WORKER_OVERSEAS = {
     "employers": [],
 }
 """不要 offer,要与本省有联系(亲友 / 本省旧学历或经历 / 省方直接邀请);2026 年各轮只抽持省方邀请的 → 抽选组挂省方直接邀请那组「Skilled Worker Stream」
-(官方:SWM 或 SWO 里持邀请的档案;SWM 那行认领这组归批二,会动高亮)。不看工作,通道卡下段。"""
+(官方:SWM 或 SWO 里持邀请的档案;SWM 那行认领这组归批二,会动高亮)。不看工作,通道卡下段。
+2026-10-02 SWM 那行撤回这一组(要先收到直接邀请,是 SWM 资格外的前提);本行照留 —— 直接邀请是 SWO 资格自己列的三种联系之一。"""
 
 PW_MB_CAREER_EMPLOYMENT = {
     "key": "mb-career-employment", "province": "MB", "program": "PNP",
