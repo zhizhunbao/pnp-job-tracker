@@ -676,14 +676,14 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpaip.head': 'AIP 추첨',
   'pnpaip.pool': '주정부 추천과 같은 풀에서 선발, 인원은 주 추첨에 포함',
   'pnpaip.direct': '지정 고용주가 바로 추천 신청, 추첨 없음',
-  'pnpaip.employerOn': '이 고용주는 AIP 지정 고용주입니다',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',
   'pnpchan.tag.ee': 'EE 프로필 필요',
   'pnpchan.tag.localGrad': '주내 졸업생만',
   'pnpchan.tag.pgwp': 'PGWP 소지자만',
-  'pnpchan.tag.noPgwp': 'PGWP 소지자 불가',
+  'pnpchan.tag.noPgwp': '배우자 오픈 워크퍼밋, LMIA 워크퍼밋 등',
+  'pnpchan.tag.fieldOfStudy': '전공과 관련된 직무여야 함',
   'pnpchan.tag.french': '프랑스어 필요',
   'pnpchan.tag.employers': '지정 고용주만',
   'pnpchan.tag.timeLimited': '기간 한정',

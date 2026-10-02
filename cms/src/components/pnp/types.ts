@@ -3694,23 +3694,133 @@ export type SourceLinkIn = {
 }
 
 /**
- * aipEmployerCardOf 的入参(2026-09-30 AIP 卡加雇主那一行)。
+ * aipSectionOf 的入参(2026-10-01 AIP 搬家)。
  */
-export type AipEmployerCardIn = {
+export type AipSectionOfIn = {
+  /**
+   * 界面语取词函数。
+   */
+  t: TFn
+
+  /**
+   * 英文取词函数。
+   */
+  tEn: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出灰字。
+   */
+  showZh: boolean
+
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 职业清单行。
+   */
+  occ: PnpOcc[]
+
+  /**
+   * 全部抽选行。
+   */
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛行。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+}
+
+/**
+ * aipSectionOf 的出参。
+ */
+export type AipSectionSpec = {
+  /**
+   * AIP 那条通道(本岗能走才有一条)。
+   */
+  channels: ChannelSpec[]
+
+  /**
+   * AIP 抽选卡;null = 不出。
+   */
+  card: DrawCard | null
+}
+
+/**
+ * drawCtxOf 的入参(2026-10-01 自 PnpListSection 收进来)。
+ */
+export type DrawCtxIn = {
   /**
    * 取词函数。
    */
   t: TFn
 
   /**
-   * 本岗(读省码与 AIP 指定雇主位)。
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 本岗。
    */
   job: PnpJob
 
   /**
-   * 算好的 AIP 卡;null = 这一岗不出 AIP 卡。
+   * 全部抽选行。
    */
-  card: DrawCard | null
+  draws: PnpDraw[]
+
+  /**
+   * 当年配额行。
+   */
+  ops: PnpOps[]
+
+  /**
+   * 门槛行。
+   */
+  reqs: PnpReq[]
+
+  /**
+   * 全国通道对照(整表)。
+   */
+  pathways: PnpPathway[]
+
+  /**
+   * 魁省岗这个职业的通道(AIP 弹框给空列)。
+   */
+  qcChannels: QcChannel[]
+}
+
+/**
+ * drawCtxOf 的出参。
+ */
+export type DrawCtx = {
+  /**
+   * 「{年} 年配额」卡;null = 不出。
+   */
+  quota: QuotaCardSpec | null
+
+  /**
+   * 三张抽选卡的公共入参。
+   */
+  dx: DrawCardOfIn
 }
 
 /**
@@ -4237,6 +4347,26 @@ export type ExtraFitsIn = {
    * 职业清单行。
    */
   occ: PnpOcc[]
+
+  /**
+   * 本岗自己那条通道的标签(没有那条给空列;判互补的人的条件,2026-10-01)。
+   */
+  ownTags: string[]
+}
+
+/**
+ * isJobDecidedOf 的入参(2026-10-01 加本岗那条的标签,判互补的人的条件)。
+ */
+export type JobDecidedIn = {
+  /**
+   * 这条通道的条件标签键。
+   */
+  tags: string[]
+
+  /**
+   * 本岗自己那条通道的标签。
+   */
+  ownTags: string[]
 }
 
 /**
@@ -5028,6 +5158,71 @@ export type AipEmpCardIn = {
    * AIP 指定雇主名单(大西洋四省全量;后台还在取时是空列)。
    */
   employers: AipEmp[]
+}
+
+/**
+ * AipSection(AIP 弹框里的通道卡与抽选卡)的 props。
+ */
+export type AipSectionIn = {
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+}
+
+/**
+ * useAipSection 的入参。
+ */
+export type AipSectionHookIn = {
+  /**
+   * 本岗。
+   */
+  job: PnpJob
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+}
+
+/**
+ * useAipSection 交给组件的东西。
+ */
+export type AipSectionPanel = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 整表到了没。
+   */
+  ready: boolean
+
+  /**
+   * 懒取失败。
+   */
+  failed: boolean
+
+  /**
+   * AIP 那条通道与 AIP 抽选卡(整表没到给空列与 null)。
+   */
+  section: AipSectionSpec
+
+  /**
+   * 抽选卡展开着的组。
+   */
+  drawOpen: Set<string>
+
+  /**
+   * 抽选卡组的开合手柄工厂。
+   */
+  drawToggleOf: ToggleOfFn
 }
 
 /**

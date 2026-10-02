@@ -695,14 +695,14 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpaip.head': 'AIP draws',
   'pnpaip.pool': 'Selected from the same pool as provincial nominees; counts are under provincial draws',
   'pnpaip.direct': 'The designated employer applies for endorsement directly; no draws',
-  'pnpaip.employerOn': 'This employer is an AIP designated employer',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
   'pnpchan.tag.ee': 'Express Entry profile required',
   'pnpchan.tag.localGrad': 'Local graduates only',
   'pnpchan.tag.pgwp': 'PGWP holders only',
-  'pnpchan.tag.noPgwp': 'Not for PGWP holders',
+  'pnpchan.tag.noPgwp': 'Spousal open or LMIA work permit, etc.',
+  'pnpchan.tag.fieldOfStudy': 'Job must match field of study',
   'pnpchan.tag.french': 'French required',
   'pnpchan.tag.employers': 'Designated employers only',
   'pnpchan.tag.timeLimited': 'Time-limited',

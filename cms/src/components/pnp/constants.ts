@@ -436,6 +436,24 @@ export const CHAN_TAG_WARN = ['noDraws', 'drawsStopped', 'timeLimited']
 export const CHAN_JOB_TAGS = ['employers', 'noDraws', 'drawsStopped', 'timeLimited']
 
 /**
+ * 把所有人一分为二的人的条件:键是其余通道的标签,值是本岗自己那条通道上与它互补的标签。本岗那条带着值、其余某条带着键 ——
+ * 每个人必落一边,两条合起来仍是「这个职位能走的通道」,那一条照列(2026-10-01 Frank「同一个工作 有 pgwp 的走一条通道,没有 pgwp
+ * 走另一个通道吗」「都做吧」;眼下只有 NL:技术工人明文不收持 PGWP 的人,持 PGWP 的走国际毕业生)。
+ */
+export const CHAN_TAG_COMPLEMENT: Record<string, string> = {
+  /**
+   * 需持 PGWP ↔ 不收持 PGWP 的人。
+   */
+  pgwp: 'noPgwp',
+}
+
+/**
+ * 只写成标签、不挡列出的人的条件:走这条路的人都得满足的门槛(同技术工人的「学历技能与工作对口」),不决定一个人该走哪条
+ * (2026-10-01 Frank「都做吧」:NL 国际毕业生加「工作需与所学专业对口」;按 CHAN_JOB_TAGS 那条规矩它会把整条筛掉,与同日 PGWP 互补照列相冲)。
+ */
+export const CHAN_NOTE_TAGS = ['fieldOfStudy']
+
+/**
  * 通道对照表里 AIP 那一行的编号(通道卡上段在本岗能走 AIP 时列它;2026-09-30 Frank「能走 AIP 就列,不能走就不列」)。
  */
 export const AIP_PATHWAY_KEY = 'aip'

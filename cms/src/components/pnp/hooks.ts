@@ -11,6 +11,7 @@
  * 2026-09-28 省提名弹框自立(Frank「pnp 弹框自己管自己」):多两台 —— 整表懒取(usePnpData,自 advisor 迁入)与弹框整机(usePnpModal)。
  * 2026-09-30 资讯页「通道与门槛」:多一台 —— 一省的门槛卡(usePnpProvStreams,整表懒取同弹框)。
  * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:多一台 —— AIP 指定雇主清单卡(useAipEmpCard)。
+ * 同日 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:多一台 —— AIP 弹框的通道卡与抽选卡(useAipSection)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -24,12 +25,12 @@ import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf,
+  aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, aipSectionOf,
 } from './functions'
 import type {
   EeHookIn, EePanel, MmHookIn, MmPanel, PnpListHookIn, PnpListPanel, DeadFlag, PnpData, PnpDataHookIn, PnpDataPanel,
   PnpModalHookIn, PnpModalPanel, PnpProvStreamsHookIn, PnpProvStreamsPanel, QcChannel, QcChannelsHookIn,
-  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel,
+  QcChannelsPanel, AipEmpCardHookIn, AipEmpCardPanel, AipSectionHookIn, AipSectionPanel,
 } from './types'
 import { CACHE } from './variables'
 
@@ -281,5 +282,38 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
     rows: aipEmpRowsOf({ list, company, open }),
     hidden: aipEmpHiddenOf({ list, company }),
     total: list.length,
+  }
+}
+
+/**
+ * AIP 弹框里通道卡与抽选卡的整机(2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」「都做吧」):整表懒取同省提名弹框
+ * (usePnpData;取到一次进 CACHE,两边谁先开谁取),抽选卡开合初值同省提名弹框(drawOpenInitOf)。
+ *
+ * @param x 本岗与界面语言。
+ * @returns 取词函数、能不能渲、失败没、AIP 那条通道与抽选卡、抽选卡的开合。
+ */
+export function useAipSection(x: AipSectionHookIn): AipSectionPanel {
+  const t = makeT(x.lang)
+  const tEn = makeT(LANG_EN)
+  const data = usePnpData({ enabled: true })
+  const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf())
+  return {
+    t,
+    ready: data.ready,
+    failed: data.failed,
+    section: aipSectionOf({
+      t,
+      tEn,
+      lang: x.lang,
+      showZh: x.lang !== LANG_EN,
+      job: x.job,
+      occ: data.occ,
+      draws: data.draws,
+      ops: data.ops,
+      reqs: data.reqs,
+      pathways: data.pathways,
+    }),
+    drawOpen,
+    drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
   }
 }

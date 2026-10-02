@@ -7,11 +7,13 @@
  * 2026-08-28 换装批自 Advisor.tsx 重写落位。
  * 2026-10-01 Frank「这个弹框需要列表,然后高亮雇主」:命中雇主那几行(按名字完全相等对,o/a 经营名对不上就一行不出)撤,
  * 下面改挂 pnp 桶的 AipEmpCard —— 列本省全部 AIP 指定雇主,本岗雇主高亮置顶。
+ * 同日 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框吗?」「都做吧」:清单卡下面接 pnp 桶的 AipSection —— 本岗能走的 AIP 通道与
+ * AIP 抽选卡,原在省提名弹框,原样搬来。
  *
  * @author Frank
  * @time 2026-08-28 22:40:00
  */
-import { AipEmpCard, aipBlockOf, aipVerdictOf, VerdictPill } from '@/components/pnp'
+import { AipEmpCard, AipSection, aipBlockOf, aipVerdictOf, VerdictPill } from '@/components/pnp'
 import { Row } from '@/components/row'
 import { makeT } from '@/lib/i18n'
 import { streamDisplay } from '@/lib/jobs'
@@ -23,7 +25,7 @@ import type { AdvisorFactsIn } from './types'
  * 渲染 AIP 事实块。
  *
  * @param props 取数包。
- * @returns 直判行 + 省里点名行,下面是本省 AIP 指定雇主清单卡。
+ * @returns 直判行 + 省里点名行,下面是本省 AIP 指定雇主清单卡、AIP 通道卡与 AIP 抽选卡。
  */
 export function AipFacts({ f }: AdvisorFactsIn) {
   const t = makeT(f.lang)
@@ -43,6 +45,7 @@ export function AipFacts({ f }: AdvisorFactsIn) {
         )}
       </FactsBox>
       <AipEmpCard t={t} job={f.job} employers={f.desigEmp} />
+      <AipSection job={f.job} lang={f.lang} />
     </>
   )
 }

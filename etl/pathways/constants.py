@@ -659,7 +659,9 @@ PW_NL_SKILLED_WORKER = {
 2026-09-29 抽选卡重排(Frank「AIP 是不是应该单独的卡」「按你建议」):pnp 域把每批 ITA 按 Notes 拆成省提名、AIP 两行,抽选组由
 「NLPNP + AIP (ITA batch)」改成「NLPNP (ITA batch)」(只剩省提名);AIP 那行归 AIP 段。
 2026-09-30 通道补全批一:加标签「不收持 PGWP 的人」—— 申请人页原句「Cannot hold a Post-Graduation Work Permit.」(09-25 更新);
-持 PGWP 的人在 NL 走国际毕业生(PW_NL_INTERNATIONAL_GRADUATE)或快速通道技术工人。"""
+持 PGWP 的人在 NL 走国际毕业生(PW_NL_INTERNATIONAL_GRADUATE)或快速通道技术工人。
+2026-10-01 Frank「别写不收 PGWP 要写需要什么」「持配偶开放工签、持 LMIA 工签等 不行吗」:标签键不变,三语文案改正面举例
+「持配偶开放工签、LMIA 工签等」;不带「需」—— 同页 JVA 一节写明没有工签的(人在海外)也能走。"""
 
 PW_PE_WORKFORCE = {
     "key": "pe-workforce", "province": "PE", "program": "PNP",
@@ -1344,14 +1346,19 @@ PW_NL_INTERNATIONAL_GRADUATE = {
     "quote": "Must hold a valid post-graduation work permit (PGWP).",
     "checked": "2026-09-30",
     "jobLinked": True,
-    "tags": ["pgwp"],
-    "teers": [0, 1, 2, 3, 4],
+    "tags": ["pgwp", "fieldOfStudy"],
+    "teers": [0, 1, 2, 3],
     "nocs": [],
     "employers": [],
 }
 """NL 持 PGWP 的人只能走本类或 EE 类(技术工人类明文「Cannot hold a Post-Graduation Work Permit.」)—— Frank「nl 之前不说有个毕业生通道吗?」
 立的这一批就从它起。TEER 0–3,TEER 4 限在需职业;外省院校毕业的须先在 NL 工作满 1 年(门槛行漏了这一条,批一 1b 改)。ITA 批次不分类别,与技术工人同一组。
-2026-09-30 批一 1b:门槛表补上外省毕业那条(条件行 grad-other-province,12 个月),本类各行 pageUrl 改指本类申请人页。"""
+2026-09-30 批一 1b:门槛表补上外省毕业那条(条件行 grad-other-province,12 个月),本类各行 pageUrl 改指本类申请人页。
+2026-10-01 Frank「都做吧」(TEER 4 多列、专业对口两条):① teers 由 0–4 收成 0–3 —— 官方 TEER 4 只收「in-demand」职业(资格页原句
+「or a TEER 4 (in-demand) occupation, as established by OIM」),政策第 30 条把这份名单链到 excluded-positions(= pnp 域抓的 nl-priority);
+35 个职位名逐个对 StatCan NOC 2021 例名(data/raw/noc/noc-elements.csv)没有一个落在 TEER 4(水产技术工 22110 TEER 2、管理 TEER 0、
+Personal Care Attendant 可对 33102 / 44101,而第 30 条明写 44101 不在名单上),所以 TEER 4 实际一个都不收。名单日后加了 TEER 4 职位要回来重判。
+② 加标签「工作需与所学专业对口」(fieldOfStudy):申请人页原句「Job related to field of study (with some exceptions for local graduates).」。"""
 
 PW_NL_EXPRESS_ENTRY_SKILLED_WORKER = {
     "key": "nl-express-entry-skilled-worker", "province": "NL", "program": "PNP",
@@ -1550,10 +1557,12 @@ JOB_LINKED_DEFAULT = True
 """jobLinked 没写时按看工作算(09-30 前的 29 行全是看工作的通道)。"""
 
 TAG_KEYS = ["ee", "localGrad", "pgwp", "noPgwp", "french", "employers", "timeLimited", "lmiaPermit", "noDraws",
-            "drawsStopped", "letter", "connection", "mitacs", "localExperience", "privateCollege", "remoteWork", "physician"]
+            "drawsStopped", "letter", "connection", "mitacs", "localExperience", "privateCollege", "remoteWork",
+            "physician", "fieldOfStudy"]
 """条件标签词表(2026-09-30 通道补全批一;人的条件与通道状态,不拿来挡着不列,弹框写成标签):需先有 EE 档案 / 需本省毕业 / 需持 PGWP /
 不收持 PGWP 的人 / 需说法语 / 限指定雇主 / 限时 / 需持 LMIA 工签 / 目前没有抽选排期 / 近期没再抽选 / 需收到省兴趣信 / 需与本省有联系 /
-需做过 Mitacs 实习 / 需本省工作满 1 年 / 限本省私立学院指定专业 / 需远程为魁省外雇主工作 / 限执业医生。"""
+需做过 Mitacs 实习 / 需本省工作满 1 年 / 限本省私立学院指定专业 / 需远程为魁省外雇主工作 / 限执业医生 /
+工作需与所学专业对口(2026-10-01 加,NL 国际毕业生)。"""
 
 TEER_VALUES = [0, 1, 2, 3, 4, 5]
 """teers 只许这六档。"""

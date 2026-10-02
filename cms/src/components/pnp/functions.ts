@@ -45,7 +45,8 @@ import {
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
   GATE_PERMIT_HEAD,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS,
-  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, AIP_APOS_RE, AIP_OA_TAIL_RE,
+  GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
+  AIP_OA_TAIL_RE, CHAN_NOTE_TAGS,
   AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   K_KICKER_PROV_AIP, EXCL_KEY_SEP,
@@ -74,8 +75,9 @@ import type {
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
-  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn, AipEmployerCardIn,
-  ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, ListedIn,
+  ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
+  ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, JobDecidedIn, ListedIn,
+  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
@@ -861,6 +863,7 @@ function channelOf(x: ChannelOfIn): ChannelSpec {
  * 同日晚 Frank「不要 offer 这个也删了,只列本岗能走的通道」:下段撤,本函数给的就是整张卡。
  * 通道卡上段的全部条目(2026-09-30 通道补全批二;立项稿 docs/design/通道补全-20260930.md 第五节):本岗自己的通道(channelsOf ——
  * 数据层挂的具名通道或本省默认通道)在前,其余跟工作有关的通道(extraChannelsOf)按表序接后。
+ * 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」「都做吧」:末尾的 AIP 那条搬去 AIP 弹框(aipSectionOf),这里只剩省提名。
  *
  * @param x 取词函数、界面语言、灰字开关、本岗、省默认省码、通道对照表与职业清单。
  * @returns 条目;不列给空列。
@@ -872,9 +875,6 @@ export function channelListOf(x: ChannelListIn): ChannelSpec[] {
   for (const c of extraChannelsOf(x)) {
     out.push(c)
   }
-  for (const c of aipChannelsOf(x)) {
-    out.push(c)
-  }
   return out
 }
 
@@ -882,11 +882,12 @@ export function channelListOf(x: ChannelListIn): ChannelSpec[] {
  * 上段末尾的 AIP(2026-09-30 Frank「这个部分只显示能走的通道。能走 AIP 就列,不能走就不列」):大西洋四省、本岗雇主是本省 AIP
  * 指定雇主(aipVerdictOf,同职位板 AIP 列)、职业 TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工(AIP 要全职非季节的 offer,TEER 4 要长期,
  * 定期合同判不了长短就不列)才列;名字取通道对照表 AIP 那一行。
+ * 2026-10-01 搬去 AIP 弹框(aipSectionOf 调它;省提名弹框的通道卡不再列 AIP)。
  *
  * @param x 取词函数、界面语言、灰字开关、本岗与通道对照表。
  * @returns 能走给一条,否则空列。
  */
-function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
+export function aipChannelsOf(x: ChannelListIn): ChannelSpec[] {
   if (aipVerdictOf(x.job) !== AIP_ON || ATLANTIC_PROVS.includes(x.job.province) === false) {
     return []
   }
@@ -919,8 +920,13 @@ export function extraChannelsOf(x: ChannelListIn): ChannelSpec[] {
   if (x.job.province === PROV_QC || x.job.province === TEXT_NONE || JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
     return out
   }
+  const own = pnpChannelOf({ job: x.job, pathways: x.pathways })
+  let ownTags: string[] = []
+  if (own != null) {
+    ownTags = own.tags
+  }
   for (const p of x.pathways) {
-    if (isExtraChannelOf({ p, job: x.job, occ: x.occ })) {
+    if (isExtraChannelOf({ p, job: x.job, occ: x.occ, ownTags })) {
       out.push(pathwayChannelOf({ t: x.t, lang: x.lang, showZh: x.showZh, p }))
     }
   }
@@ -940,7 +946,7 @@ function isExtraChannelOf(x: ExtraFitsIn): boolean {
   if (p.province !== x.job.province || p.jobLinked === false || p.isDefault || p.boardLabel != null) {
     return false
   }
-  if (isJobDecidedOf(p.tags) === false) {
+  if (isJobDecidedOf({ tags: p.tags, ownTags: x.ownTags }) === false) {
     return false
   }
   if (p.teers.length > 0 && (x.job.teer == null || p.teers.includes(x.job.teer) === false)) {
@@ -958,13 +964,19 @@ function isExtraChannelOf(x: ExtraFitsIn): boolean {
 /**
  * 这条通道能不能走全由岗位定:标签只有 CHAN_JOB_TAGS 那几种(限指定雇主 + 三种状态)。带一个人的条件标签就不算
  * (2026-10-01 Frank「所有省,只列这个职位能走的通道」)。
+ * 同日 Frank「同一个工作 有 pgwp 的走一条通道,没有 pgwp 走另一个通道吗」「都做吧」:把所有人一分为二的人的条件(CHAN_TAG_COMPLEMENT)
+ * 在本岗那条带着互补标签时也算 —— 每个人必落一边,两条合起来仍是这个职位能走的。只写成标签的门槛(CHAN_NOTE_TAGS)不挡。
  *
- * @param tags 这条通道的条件标签键。
+ * @param x 这条通道的条件标签键与本岗那条的标签。
  * @returns 全由岗位定 = true。
  */
-function isJobDecidedOf(tags: string[]): boolean {
-  for (const tag of tags) {
-    if (CHAN_JOB_TAGS.includes(tag) === false) {
+function isJobDecidedOf(x: JobDecidedIn): boolean {
+  for (const tag of x.tags) {
+    if (CHAN_JOB_TAGS.includes(tag) || CHAN_NOTE_TAGS.includes(tag)) {
+      continue
+    }
+    const pair = CHAN_TAG_COMPLEMENT[tag]
+    if (pair == null || x.ownTags.includes(pair) === false) {
       return false
     }
   }
@@ -1775,36 +1787,57 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
 }
 
 /**
- * 「AIP 抽选」卡顶上加一行:本岗雇主在不在本省 AIP 指定雇主名单(2026-09-30 Frank「这个是一般雇主是不给你办的吧」,选「加」)。
- * AIP 只能由省里指定的雇主办(雇主先申请指定,再为候选人递背书申请);判定同职位板 AIP 列(aipVerdictOf:雇主名比对省里的
- * 指定雇主名单)。不在名单就明说办不了。其余各格原样搬(不许对象展开,字段写全)。
- * 同日 Frank「本岗雇主不是本省 AIP 指定雇主,办不了 AIP 废话删了」:不在名单那句删,卡原样返回;在名单才加「是指定雇主」那句
- * (能走 AIP 时通道卡上段另列 AIP,见 aipChannelsOf)。
+ * AIP 弹框的通道卡与抽选卡(2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框吗?」「都做吧」):原在省提名弹框的
+ * 两块原样搬来 —— 通道卡上段末尾的 AIP 那条(aipChannelsOf)与「AIP 抽选」卡(aipCardOf,年份 / 本岗那组 / 卡底合计与省提名弹框同一套
+ * 抽选卡入参,drawCtxOf)。原卡顶上「本岗雇主是本省 AIP 指定雇主」那一行(09-30 aipEmployerCardOf)不搬:AIP 弹框的判定行与指定雇主清单卡
+ * 已经说了。
  *
- * @param x 取词函数、本岗与算好的 AIP 卡。
- * @returns 指定雇主的岗顶上加了那一行的卡;卡是 null 照旧 null,其余原样返回。
+ * @param x 取词函数、界面语言、灰字开关、本岗与几张整表。
+ * @returns AIP 那条通道(能走才有)与 AIP 抽选卡(不出给 null)。
  */
-export function aipEmployerCardOf(x: AipEmployerCardIn): DrawCard | null {
-  if (x.card == null) {
-    return null
-  }
-  if (aipVerdictOf(x.job) !== AIP_ON) {
-    return x.card
-  }
-  const lines = [x.t('pnpaip.employerOn')]
-  for (const l of x.card.lines) {
-    lines.push(l)
-  }
+export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
+  const ctx = drawCtxOf({
+    t: x.t, lang: x.lang, job: x.job, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways, qcChannels: [],
+  })
   return {
-    title: x.card.title,
-    label: x.card.label,
-    hits: x.card.hits,
-    others: x.card.others,
-    total: x.card.total,
-    source: x.card.source,
-    lines,
-    foot: x.card.foot,
-    allKey: x.card.allKey,
+    channels: aipChannelsOf({
+      t: x.t,
+      tEn: x.tEn,
+      lang: x.lang,
+      showZh: x.showZh,
+      job: x.job,
+      defaults: pnpDefaultProvsOf(x.pathways),
+      pathways: x.pathways,
+      occ: x.occ,
+    }),
+    card: aipCardOf(ctx.dx),
+  }
+}
+
+/**
+ * 抽选卡的公共入参与配额卡(2026-10-01 AIP 搬家时自 PnpListSection 收进来,省提名弹框与 AIP 弹框同用一份,年份与本岗那组不岔):
+ * 本岗那条通道 → 对应的抽选组 → 配额卡 → 抽选卡写哪一年(有配额卡用它的年份)。
+ *
+ * @param x 取词函数、界面语言、本岗、几张整表与魁省通道。
+ * @returns 配额卡与抽选卡入参。
+ */
+export function drawCtxOf(x: DrawCtxIn): DrawCtx {
+  const channel = pnpChannelOf({ job: x.job, pathways: x.pathways })
+  const hitStreams = hitStreamsOf({ channel, qcChannels: x.qcChannels })
+  const quota = quotaCardOf({ t: x.t, province: x.job.province, ops: x.ops, hitStreams, quotaKey: quotaKeyOf(channel) })
+  return {
+    quota,
+    dx: {
+      t: x.t,
+      lang: x.lang,
+      province: x.job.province,
+      draws: x.draws,
+      hitStreams,
+      genDraw: genDrawOf({ province: x.job.province, pathways: x.pathways }),
+      ops: x.ops,
+      reqs: x.reqs,
+      year: cardYearOf({ quota, province: x.job.province, draws: x.draws }),
+    },
   }
 }
 

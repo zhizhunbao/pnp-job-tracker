@@ -30,7 +30,7 @@ import { describe, expect, it } from 'vitest'
 // 测试例外:域内函数直接点文件(桶只走门的规矩不管测试)
 import {
   allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
-  aipCardOf, aipEmployerCardOf, cardYearOf, pnpKickerOf, preReformCardOf,
+  aipCardOf, aipChannelsOf, aipSectionOf, drawCtxOf, cardYearOf, pnpKickerOf, preReformCardOf,
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
@@ -39,7 +39,7 @@ import {
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
 } from '@/components/pnp/types'
-import { CHAN_JOB_TAGS } from '@/components/pnp/constants'
+import { CHAN_JOB_TAGS, CHAN_NOTE_TAGS, CHAN_TAG_COMPLEMENT } from '@/components/pnp/constants'
 import { blockedSetsOf, boardDimsOf, boardPnpOf } from '@/components/jobs/functions'
 import type { JobDims } from '@/components/jobs/types'
 import { makeT } from '@/lib/i18n'
@@ -403,17 +403,20 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上写本岗雇主在不在本省 AIP 指定雇主名单
   // 2026-09-30 Frank「本岗雇主不是本省 AIP 指定雇主,办不了 AIP 废话删了」:不是指定雇主那句撤,卡原样
-  it('AIP 卡顶上一行:指定雇主写「是」(三语),不是指定雇主卡原样;其余各格原样;没有卡照旧没有、非大西洋省原样', () => {
+  // 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」「都做吧」:AIP 卡与 AIP 那条通道搬去 AIP 弹框(aipSectionOf),
+  // 雇主那一行不搬(AIP 弹框的判定行与指定雇主清单卡已经说了)
+  it('AIP 弹框:抽选卡与省提名弹框同一套入参算出(drawCtxOf),没有雇主那一行;能走才有 AIP 那条通道;非大西洋省两样都没有', () => {
     const one = [draw({ province: 'NB', stream: 'AIP', drawDate: '2026-09-10', score: null, invitations: 60, program: 'AIP', unit: 'application' })]
-    const card = aipCardOf({ t: zh, lang: 'zh', province: 'NB', draws: one, hitStreams: [], genDraw: '', ops: [], reqs: [], year: '2026' })
-    const on = aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card })
-    expect(on?.lines).toEqual(['本岗雇主是本省 AIP 指定雇主'])
-    expect([on?.title, on?.hits, on?.foot, on?.source]).toEqual([card?.title, card?.hits, card?.foot, card?.source])
-    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: false }), card })).toBe(card)
-    expect(aipEmployerCardOf({ t: ko, job: job({ province: 'NB', aip: true }), card })?.lines[0]).toBe('이 고용주는 AIP 지정 고용주입니다')
-    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'NB', aip: true }), card: null })).toBeNull()
-    // 探针:非大西洋省判定是「不适用」,卡原样返回(那种岗本来也不出 AIP 卡)
-    expect(aipEmployerCardOf({ t: zh, job: job({ province: 'AB', aip: false }), card })).toBe(card)
+    const sec = (j: PnpJob) => aipSectionOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: j, occ: [], draws: one, ops: [], reqs: [],
+      pathways: PATHWAYS })
+    const on = job({ province: 'NB', teer: 2, aip: true })
+    const ctx = drawCtxOf({ t: zh, lang: 'zh', job: on, draws: one, ops: [], reqs: [], pathways: PATHWAYS, qcChannels: [] })
+    expect(sec(on).card).toEqual(aipCardOf(ctx.dx))
+    expect(sec(on).card?.lines).not.toContain('本岗雇主是本省 AIP 指定雇主')
+    expect(sec(on).channels.map((c) => c.key)).toEqual(['aip'])
+    expect(sec(job({ province: 'NB', teer: 2, aip: false })).channels).toEqual([])
+    expect(sec(job({ province: 'NB', teer: 2, aip: false })).card).toEqual(sec(on).card)
+    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ channels: [], card: null })
   })
 
   it('NS 按月选取人数:日期到月、写「入选」、人数没公布的月不列;不进按轮分组,自成按月一组(计数写「个月」)', () => {
@@ -1135,12 +1138,19 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const texts = (cs: { tags: { text: string }[] }[], i: number) => cs[i]!.tags.map((g) => g.text)
 
     // 2026-10-01 Frank「所有省,只列这个职位能走的通道」:国际毕业生(要 PGWP)、快速通道技术工人(要 EE 档案)是人的条件,不再列
-    it('NL:只列本岗的技术工人;国际毕业生、快速通道技术工人要人的条件,不列;本岗那条的标签照表', () => {
-      expect(keys(up(job({ province: 'NL', teer: 2 })))).toEqual(['pnp.gen.NL'])
+    // 同日 Frank「同一个工作 有 pgwp 的走一条通道,没有 pgwp 走另一个通道吗」「都做吧」:持 / 不持 PGWP 把人一分为二,国际毕业生照列
+    // 同日 Frank「都做吧」:国际毕业生 TEER 收成 0–3(TEER 4 只收紧缺职业,名单上一个 TEER 4 都没有),加「工作需与所学专业对口」(只写标签不挡)
+    it('NL:技术工人在前、国际毕业生接后(PGWP 互补,TEER 0–3);快速通道技术工人要 EE 档案不列;两条标签照表', () => {
+      expect(keys(up(job({ province: 'NL', teer: 2 })))).toEqual(['pnp.gen.NL', 'nl-international-graduate'])
       expect(keys(up(job({ province: 'NL', teer: 4 })))).toEqual(['pnp.gen.NL'])
       expect(keys(up(job({ province: 'NL', teer: 5, pnpEligible: false })))).toEqual([])
       const zhCard = up(job({ province: 'NL', teer: 2 }))
-      expect(texts(zhCard, 0)).toEqual(['不收持 PGWP 的人'])
+      expect(texts(zhCard, 0)).toEqual(['持配偶开放工签、LMIA 工签等'])
+      expect(texts(zhCard, 1)).toEqual(['需持 PGWP', '工作需与所学专业对口'])
+      // 探针:本岗那条摘掉「不收持 PGWP」,国际毕业生就不列 —— 判据是互补标签,不是通道名
+      const solo = LIVE.map((p) => (p.key === 'nl-skilled-worker' ? { ...p, tags: [] } : p))
+      expect(keys(channelListOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: job({ province: 'NL', teer: 2 }),
+        defaults: DEFAULTS, pathways: solo, occ: [] }))).toEqual(['pnp.gen.NL'])
       const enCard = up(job({ province: 'NL', teer: 2 }), [], 'en')
       expect(enCard[0]).toMatchObject({ name: 'NLPNP Skilled Worker Category', sub: '' })
     })
@@ -1169,18 +1179,22 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
       expect(up(job({ province: '', teer: 1 }))).toEqual([])
     })
 
-    it('AIP:本岗雇主是指定雇主、TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工才列在上段末尾;名字取对照表 AIP 那一行', () => {
+    // 2026-10-01 AIP 那条搬去 AIP 弹框:省提名弹框的通道卡不再列,判法原样(aipChannelsOf)
+    it('AIP:本岗雇主是指定雇主、TEER 0–4、不是兼职 / 定期合同 / 季节工 / 临时工才列;名字取对照表 AIP 那一行;省提名通道卡不列', () => {
+      const aipUp = (j: PnpJob) => keys(aipChannelsOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: j, defaults: DEFAULTS,
+        pathways: LIVE, occ: [] }))
       const nb = job({ province: 'NB', teer: 2, aip: true })
-      const card = up(nb)
-      expect(card[card.length - 1]).toMatchObject({ key: 'aip', name: 'Atlantic Immigration Program' })
-      expect(keys(up(job({ province: 'NB', teer: 2, aip: false })))).not.toContain('aip')
-      expect(keys(up(job({ province: 'NB', teer: 5, aip: true })))).not.toContain('aip')
-      expect(keys(up(job({ province: 'NB', teer: 4, aip: true })))).toContain('aip')
+      expect(aipChannelsOf({ t: zh, tEn: en, lang: 'zh', showZh: true, job: nb, defaults: DEFAULTS, pathways: LIVE, occ: [] }))
+        .toMatchObject([{ key: 'aip', name: 'Atlantic Immigration Program' }])
+      expect(keys(up(nb))).not.toContain('aip')
+      expect(aipUp(job({ province: 'NB', teer: 2, aip: false }))).toEqual([])
+      expect(aipUp(job({ province: 'NB', teer: 5, aip: true }))).toEqual([])
+      expect(aipUp(job({ province: 'NB', teer: 4, aip: true }))).toEqual(['aip'])
       for (const pnpBlock of ['part', 'term', 'seasonal', 'casual']) {
-        expect(keys(up(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock })))).toEqual([])
+        expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock }))).toEqual([])
       }
-      expect(keys(up(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock: 'occ' })))).toContain('aip')
-      expect(keys(up(job({ province: 'AB', teer: 2, aip: true })))).not.toContain('aip')
+      expect(aipUp(job({ province: 'NB', teer: 2, aip: true, pnpEligible: false, pnpBlock: 'occ' }))).toEqual(['aip'])
+      expect(aipUp(job({ province: 'AB', teer: 2, aip: true }))).toEqual([])
     })
 
     it('标签键三语都有词条(漏配 = 界面露出键名)', () => {
@@ -1205,15 +1219,14 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
           const all = up(j)
           expect(all.slice(0, own.length)).toEqual(own)
           for (const c of all.slice(own.length)) {
-            if (c.key === 'aip') {
-              continue
-            }
             const p = byKey.get(c.key)!
             expect(p.province).toBe(province)
             expect(p.jobLinked && p.isDefault === false && p.boardLabel == null).toBe(true)
             expect(p.teers.length === 0 || p.teers.includes(teer)).toBe(true)
-            // 2026-10-01:只列条件全由岗位定的(标签只有限指定雇主与状态类)
-            expect(p.tags.every((g) => CHAN_JOB_TAGS.includes(g)), c.key).toBe(true)
+            // 2026-10-01:只列条件全由岗位定的(标签只有限指定雇主与状态类),或与本岗那条互补的人的条件(PGWP 一分为二)
+            const ownTags = pnpChannelOf({ job: j, pathways: LIVE })?.tags ?? []
+            expect(p.tags.every((g) => CHAN_JOB_TAGS.includes(g) || CHAN_NOTE_TAGS.includes(g)
+              || ownTags.includes(CHAN_TAG_COMPLEMENT[g] ?? '')), c.key).toBe(true)
           }
           if (['part', 'term'].includes(pnpBlock)) {
             expect(all.length).toBe(own.length)

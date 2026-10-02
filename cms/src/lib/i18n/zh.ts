@@ -735,7 +735,7 @@ export const jobsZh = {
   'pnpaip.pool': '与省提名同池选取,人数见本省抽选',
   'pnpaip.direct': '由指定雇主直接为候选人递背书申请,不经抽选',
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上一行,本岗雇主在不在本省 AIP 指定雇主名单(判定同职位板 AIP 列)
-  'pnpaip.employerOn': '本岗雇主是本省 AIP 指定雇主',
+  // 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:AIP 卡搬去 AIP 弹框,这一行不搬(判定行与指定雇主清单卡已说),词条 pnpaip.employerOn 撤
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
   // 安省改制现状与 NS 按月选取人数两张事实卡(分数线 / 邀请两格标签复用 rpt.s.d.score / rpt.s.d.inv,收起复用 pnplist.foldOther)
   // 同日 lead 定:安省现状卡那一行用通用的「最新公告」(复用 tl.tabNews);时间线、各省最近抽选、把脉页的 NS 行也用 selPeople / selected
@@ -745,7 +745,8 @@ export const jobsZh = {
   'pnpchan.tag.ee': '需先有 EE 档案',
   'pnpchan.tag.localGrad': '需本省毕业',
   'pnpchan.tag.pgwp': '需持 PGWP',
-  'pnpchan.tag.noPgwp': '不收持 PGWP 的人',
+  'pnpchan.tag.noPgwp': '持配偶开放工签、LMIA 工签等',
+  'pnpchan.tag.fieldOfStudy': '工作需与所学专业对口',
   'pnpchan.tag.french': '需说法语',
   'pnpchan.tag.employers': '限指定雇主',
   'pnpchan.tag.timeLimited': '限时',

@@ -39,14 +39,14 @@
  * 2026-09-30 通道补全批二:通道卡带下段「不要 offer 的通道」(p.offChannels);上段没有、下段有也出卡。
  * 同日晚 Frank「不要 offer 这个也删了,只列本岗能走的通道」:下段撤,本岗一条都走不了就不出卡。
  * 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上加一行本岗雇主在不在本省 AIP 指定雇主名单(aipEmployerCardOf)。
+ * 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框吗?」「都做吧」:AIP 抽选卡与通道卡末尾的 AIP 那条搬去 AIP 弹框(AipSection),
+ * 这里只讲省提名;抽选卡的公共入参与配额卡收进 drawCtxOf(两个弹框同用,年份与本岗那组不岔),上面那行雇主句随之撤(aipEmployerCardOf 删)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import {
-  aipCardOf, cardYearOf, drawCardOf, gateCardOf, gateChannelOf, genDrawOf, hitStreamsOf, pnpChannelOf,
-  aipEmployerCardOf, preReformCardOf, quotaCardOf,
-  quotaKeyOf,
+  drawCardOf, drawCtxOf, gateCardOf, gateChannelOf, preReformCardOf,
   qcGateCardsOf, shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
@@ -68,23 +68,10 @@ export function PnpListSection({
   job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels,
 }: PnpListSectionIn) {
   const p = usePnpList({ job, lang, occ, nocDesc, showZh, pathways })
-  const channel = pnpChannelOf({ job, pathways })
-  const hitStreams = hitStreamsOf({ channel, qcChannels })
-  const quota = quotaCardOf({ t: p.t, province: job.province, ops, hitStreams, quotaKey: quotaKeyOf(channel) })
-  const dx = {
-    t: p.t,
-    lang,
-    province: job.province,
-    draws,
-    hitStreams,
-    genDraw: genDrawOf({ province: job.province, pathways }),
-    ops,
-    reqs,
-    year: cardYearOf({ quota, province: job.province, draws }),
-  }
-  const drawCard = drawCardOf(dx)
-  const reformCard = preReformCardOf(dx)
-  const aipCard = aipEmployerCardOf({ t: p.t, job, card: aipCardOf(dx) })
+  const ctx = drawCtxOf({ t: p.t, lang, job, draws, ops, reqs, pathways, qcChannels })
+  const quota = ctx.quota
+  const drawCard = drawCardOf(ctx.dx)
+  const reformCard = preReformCardOf(ctx.dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
   const qcCards = []
   for (const c of qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })) {
@@ -113,7 +100,6 @@ export function PnpListSection({
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
       {reformCard != null && <PnpDrawGroups t={p.t} card={reformCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
-      {aipCard != null && <PnpDrawGroups t={p.t} card={aipCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
       {cards}
     </>
   )
