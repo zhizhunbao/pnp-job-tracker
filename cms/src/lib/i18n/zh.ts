@@ -599,7 +599,8 @@ export const jobsZh = {
   'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
-  'pnpdraws.head': '本省抽选',
+  // 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):卡标题统一 —— 门槛卡「申请门槛」,省提名 / AIP / EE 三张抽选卡都叫「抽选」;不经抽选只写「不经抽选」,「不设分数线…」那句删
+  'pnpdraws.head': '抽选',
   // 2026-09-27 Frank「NS 这个省 弹框怎么都是汇总数据」「还是横着排的」:按月公布的那一组(NS)组头计数写几个月,不写几轮
   'pnpdraws.months': '{n} 个月', 'pnpdraws.monthsOne': '{n} 个月',
   // 2026-09-27 Frank 勾「安省改一行组头」:改制省那一行没抽选时写这一句;原现状卡「已发邀请 / 暂无」两条随卡退役
@@ -625,7 +626,7 @@ export const jobsZh = {
   'pnpsel.path.exp': 'NB 工作经验', 'pnpsel.path.grad': 'NB 毕业生', 'pnpsel.path.prio': 'NB 优先', 'pnpsel.path.frwork': 'NB 法语工人',
   'pnpsel.path.frprio': 'NB 法语优先',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
-  'pnpgate.title': '本岗通道的门槛', 'pnpgate.sep': '、',
+  'pnpgate.title': '申请门槛', 'pnpgate.sep': '、',
   'pnpgate.k.offer': '雇主 offer', 'pnpgate.k.lang': '语言', 'pnpgate.k.exp': '工作经验', 'pnpgate.k.ee': 'EE',
   'pnpgate.k.emp': '雇主条件', 'pnpgate.k.other': '其他',
   'pnpgate.offerFull': '全职', 'pnpgate.offerNot': '不收{list}', 'pnpgate.no.part': '兼职', 'pnpgate.no.casual': '临时工',
@@ -729,7 +730,6 @@ export const jobsZh = {
   'pnpgate.area.outside-gta': '大多伦多以外',
   'pnpgate.area.metro-vancouver': '大温哥华', 'pnpgate.area.rest-of-bc': '大温哥华以外',
   'pnpgate.area.st-johns': '圣约翰斯', 'pnpgate.area.rest-of-nl': '圣约翰斯以外',
-  'pnpdraws.noScore': '不设分数线,按本省劳动力需求与名额选取',
   // 2026-09-29 抽选卡重排(Frank「按你建议」):行上「少于 N」、同池 / 不经抽选 / 今年还没有三种说明、卡底合计行(轮数与份数两段拼)、改制前与 AIP 两张新卡
   // 2026-09-30 下午 Frank「这种补充信息都删掉」(配图「其中 3 轮官方只写「少于 5」」):卡底「其中 N 轮官方只写…」与组头「各轮官方只写…」两条撤(footBelow / groupBelow)
   // 2026-09-29 Frank「每一个通道也需要一个总数吧」:抽选组组头第三行的本年合计
@@ -737,14 +737,14 @@ export const jobsZh = {
   'pnpdraws.groupTotalMin': '至少 {count}',
   'pnpdraws.invOne': '{n} 份邀请',
   'pnpdraws.below': '少于 {n} 份邀请',
-  'pnpdraws.direct': '持雇主 offer 直接递申请,不经抽选',
+  'pnpdraws.direct': '不经抽选',
   'pnpdraws.none': '{year} 年还没有抽选',
   'pnpdraws.foot': '{year} 年 {rounds},共 {count}',
   'pnpdraws.footMin': '{year} 年 {rounds},至少 {count}',
   'pnpdraws.footRounds': '{year} 年 {rounds}',
   'pnpreform.head': '改制前的抽选',
-  'pnpaip.head': 'AIP 抽选',
-  'pnpaip.direct': '由指定雇主直接为候选人递背书申请,不经抽选',
+  'pnpaip.head': '抽选',
+  'pnpaip.direct': '不经抽选',
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上一行,本岗雇主在不在本省 AIP 指定雇主名单(判定同职位板 AIP 列)
   // 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:AIP 卡搬去 AIP 弹框,这一行不搬(判定行与指定雇主清单卡已说),词条 pnpaip.employerOn 撤
   // 2026-09-26 /fe 首页 Frank「止血 + 补完整」:省提名弹框顶上「本岗能走的通道」卡、抽选卡本岗那一组(三格 + 灰字统计 + 查看全省)、
@@ -792,7 +792,7 @@ export const jobsZh = {
   'cell.elig.no_sponsorship': '🚫 明确不担保', 'cell.elig.pr_required': '🚫 须 PR/公民',
   'fact.elig': '身份预筛', 'fact.eligQuote': 'JD 原句', 'fact.eligNote': '数据层按 JD 原文检测(精确优先宁可漏);「—」= 未检出此类表述,不代表雇主提供担保',
   'eelist.source': '来源:Express Entry 类别抽选', 'eelist.loading': '加载 EE 清单…', 'eelist.count': '{n} 个职业',
-  'eecmp.title': '最近分数线', 'eecmp.none': '暂无抽选', 'eecmp.lower': '{cat}比 {cec}低 {n} 分',
+  'eecmp.title': '抽选', 'eecmp.none': '暂无抽选', 'eecmp.lower': '{cat}比 {cec}低 {n} 分',
   'eecmp.higher': '{cat}比 {cec}高 {n} 分', 'eecmp.same': '{cat}与 {cec}同分',
   'eecmp.rounds': '{n} 轮', 'eecmp.roundsOne': '{n} 轮', 'eecmp.frenchTip': '法语轮次按语言能力抽,与职业无关',
   // #135 历次抽选时间线(展开)

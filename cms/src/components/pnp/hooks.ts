@@ -49,6 +49,7 @@ import { CACHE } from './variables'
  * 同晚 Frank「上面这个高亮是不是格式改成和下面的一样的」:本岗那一组改成组头行、灰字统计撤,统计窗口起点(此刻 − 90 天)随之不再交。
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:多交门槛卡的开合(默认全收,值一行就是摘要,点开看原句)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:门槛卡不再点开,开合随之不交。
+ * 2026-10-01 三弹框统一(效果图「可以,做吧」):通道职业清单挪到配额 / 抽选之前,改默认收起(只露本岗那一行),折叠态改记展开的(opened)。
  *
  * @param x 本岗、界面语言、扁平清单、职业名字典、译名开关与通道对照表。
  * @returns 取词函数、ref 盒、字典、命中结论、折叠状态与通道条目。
@@ -57,7 +58,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const t = makeT(x.lang)
   const tEn = makeT(LANG_EN)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [closed, setClosed] = useState<Set<string>>(new Set())
+  const [opened, setOpened] = useState<Set<string>>(new Set())
   const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf())
 
   const nocRows = useMemo(function dictOf() {
@@ -81,8 +82,8 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     matchRef,
     nocRows,
     match,
-    closed,
-    toggleOf: makeToggleOf({ setKeys: setClosed }),
+    opened,
+    toggleOf: makeToggleOf({ setKeys: setOpened }),
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
     channels: channelListOf({
@@ -96,6 +97,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
  * 联邦 EE 类别块整机:分组、历史轮次、命中与全景取舍,外加三处折叠
  * (类别历史单开一个、职业清单一律默认展开、全类别全景默认收起)。
  * 2026-09-23 判定卡与最近抽选卡撤:历史轮次、全景开关、类别历史折叠随之撤,展示的就是命中类别。
+ * 2026-10-01 三弹框统一:职业清单改默认收起(只露本岗那一行,「展开其他 N 个」才全量),折叠态改记展开的(opened)。
  *
  * @param x 本岗、界面语言、扁平类别与职业名字典。
  * @returns 取词函数、ref 盒、字典、命中类别与职业清单的折叠状态。
@@ -103,7 +105,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
 export function useEeCategory(x: EeHookIn): EePanel {
   const t = makeT(x.lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [closed, setClosed] = useState<Set<string>>(new Set())
+  const [opened, setOpened] = useState<Set<string>>(new Set())
   const [cmpOpen, setCmpOpen] = useState<Set<string>>(new Set())
 
   const nocRows = useMemo(function dictOf() {
@@ -126,8 +128,8 @@ export function useEeCategory(x: EeHookIn): EePanel {
     grouped,
     hit,
     shown: hit,
-    closed,
-    listToggleOf: makeToggleOf({ setKeys: setClosed }),
+    opened,
+    listToggleOf: makeToggleOf({ setKeys: setOpened }),
     cmpOpen,
     cmpToggleOf: makeToggleOf({ setKeys: setCmpOpen }),
   }

@@ -52,7 +52,7 @@ import {
   AIP_HIT_MIN_LEN, BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
-  DRAW_NO_SCORE_PROVS, DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
+  DRAWS_REFORM_ALL_KEY, FACTOR_EOI_DRAW, OPS_INV_YTD_MIN, OPS_SCOPE_PROGRAM,
   PROGRAM_POOL, QUOTA_MIN_PREFIX, UNIT_APPLICATION, UNIT_SELECTION, YTD_COUNT_KIND, COUNT_INV_ONE_KEY,
   OPS_SCOPE_DRAW_STREAM,
   K_CELL_QC, K_KICKER_QC, QC_BASIS, QC_CELL_HEAD, QC_EDU_HEAD, QC_F, QC_FR_KEY, QC_GENERAL_STREAM, QC_KIND_PARTLY,
@@ -77,7 +77,7 @@ import type {
   ReqAppliesIn, ZonedLinesIn, PnpBlockIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
-  CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
+  CardYearIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, JobDecidedIn, ListedIn,
   AipSectionOfIn, AipSectionSpec, AipBlockTextIn, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn,
@@ -1627,6 +1627,7 @@ function monthlyGroupOf(x: PnpDrawGroupsOfIn): EeCmpGroup | null {
  * emptyPnpCardOf(SK 写不经抽选、往年有轮次写今年还没有抽选)。安省改制前的轮次分去 preReformCardOf,这里只剩改制后那一组。
  * 魁省不出(不参加 PNP,同 drawsFormOf 的口径)。
  * 2026-09-30 Frank「和其他省保持一致吧」:魁省也出(PSTQ 邀请轮次按官方四个通道分组,本岗能走的通道高亮,hitStreamsOf)。
+ * 2026-10-01 三弹框统一(Frank「这个废话也删了」,效果图「可以,做吧」):标题下灰字两条都撤(NS 同池、NB 不按分数),lines 恒为空列。
  *
  * @param x 取词函数、界面语言、省码、全部抽选行、本岗对应的组、省默认通道的抽选组、当年配额行、门槛行与卡只列的那一年。
  * @returns 抽选卡;本省没有可说的给 null。
@@ -1664,7 +1665,7 @@ export function drawCardOf(x: DrawCardOfIn): DrawCard | null {
       groups.push(monthly)
     }
   }
-  const lines = drawLinesOf({ t: x.t, province: x.province, rows })
+  const lines: string[] = []
   if (groups.length === 0) {
     return emptyPnpCardOf({ t: x.t, province: x.province, draws: x.draws, reqs: x.reqs, year: x.year, lines })
   }
@@ -2233,21 +2234,6 @@ function reformSplitOf(x: ReformSplitIn): ReformSplitOut {
     }
   }
   return { before, after }
-}
-
-/**
- * 本省抽选卡标题下的灰字(2026-09-29 抽选卡重排):官方明说不按分数抽选的省(DRAW_NO_SCORE_PROVS,原在组件里判)。
- * 原还有一行同池注明(NS「省提名与 AIP 同池选取,人数含 AIP」),2026-10-01 Frank「这个废话也删了」撤 —— 组里的通道名已列出 AIP。
- *
- * @param x 取词函数、省码与卡里列的轮次。
- * @returns 灰字(一行一条)。
- */
-function drawLinesOf(x: DrawLinesIn): string[] {
-  const lines: string[] = []
-  if (DRAW_NO_SCORE_PROVS.has(x.province)) {
-    lines.push(x.t('pnpdraws.noScore'))
-  }
-  return lines
 }
 
 /**
@@ -5525,6 +5511,21 @@ export function pnpBlockedKeysOf(rows: PnpOcc[]): PnpBlocked {
  */
 export function pnpExcludedOf(x: PnpExclIn): boolean {
   return x.blocked.pnp.has(x.job.province + EXCL_KEY_SEP + x.job.noc)
+}
+
+/**
+ * 魁省弹框结论卡「本岗能走的通道」的条目(2026-10-01 三弹框统一,Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「各个省都检查一下」):
+ * 本岗能走的每个通道一条,取自这些通道洗好的门槛卡(qcGateCardsOf)—— 主文案官方原名、灰字界面语言名,与门槛卡标题同字。
+ *
+ * @param cards 各通道洗好的门槛卡。
+ * @returns 条目;没有给空列。
+ */
+export function qcChannelSpecsOf(cards: GateCardSpec[]): ChannelSpec[] {
+  const out: ChannelSpec[] = []
+  for (const c of cards) {
+    out.push({ key: c.title, name: c.title, sub: c.sub, tags: [] })
+  }
+  return out
 }
 
 /**

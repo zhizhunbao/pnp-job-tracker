@@ -183,14 +183,6 @@ export const PROGRAM_PNP = 'PNP'
 export const UNIT_APPLICATION = 'application'
 
 /**
- * 官方明说不按分数抽选的省(抽选卡标题下出一行灰字注明;2026-09-23 Frank「NB 省不需要分数,在哪标注一下」)。
- * NB 出处 gnb.ca 的 invitation-selection-rounds 页原句「Invitations and selections are based on provincial labour
- * market needs, available allocation and other priorities determined by the Government of New Brunswick.」
- * 只收有官方原句的省:别省只是没公布分数线,不等于不按分数。
- */
-export const DRAW_NO_SCORE_PROVS = new Set(['NB'])
-
-/**
  * 「{n} 份邀请」恰好 1 份时的词条(英文单数「1 invitation」;中韩同形)。2026-09-29 抽选卡重排线上验收:NL 的 AIP 那组最近一轮
  * 1 份,英文写成了「1 invitations」。
  */
@@ -1631,6 +1623,11 @@ export const K_KICKER_PROV = 'grp.pnpProv'
  * 页眉小标词条:没有省 / 魁省(不参加 PNP)照旧写分组名。
  */
 export const K_KICKER_GROUP = 'grp.pnp'
+
+/**
+ * 门槛卡标题词条(「申请门槛」;2026-10-01 三弹框统一起魁省合并门槛卡也用它)。
+ */
+export const K_GATE_TITLE = 'pnpgate.title'
 
 /**
  * 整表还在路上时那一行的文案词条(全站统一的加载行)。

@@ -44,19 +44,23 @@
  * 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「各个省都检查一下」,看过效果图「可以,做吧」;
  * 效果图 docs/design/移民弹框统一效果图-20261001.html):省提名 / AIP / EE 同一骨架 ① 结论 → ② 门槛 → ③ 名单 → ④ 配额 → ⑤ 抽选。
  * 这里通道职业清单从最后挪到门槛卡之后(③),配额与抽选殿后。
+ * 同批第 2 步:魁省改走同一骨架 —— 通道进「本岗能走的通道」卡(qcChannelSpecsOf),各通道门槛合成一张「申请门槛」卡
+ * (PnpGateGroupCard,一通道一小节),原先一通道一张门槛卡排最前的形撤。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
+import { K_GATE_TITLE } from './constants'
 import {
   drawCardOf, drawCtxOf, gateCardOf, gateChannelOf, preReformCardOf,
-  qcGateCardsOf, shownStreamsOf, streamKeyOf,
+  qcChannelSpecsOf, qcGateCardsOf, shownStreamsOf, streamKeyOf,
 } from './functions'
 import { usePnpList } from './hooks'
 import { PnpBlockCard } from './pnpblockcard'
 import { PnpChannelCard } from './pnpchannelcard'
 import { PnpDrawGroups } from './pnpdrawgroups'
 import { PnpGateCard } from './pnpgatecard'
+import { PnpGateGroupCard } from './pnpgategroupcard'
 import { PnpQuotaCard } from './pnpquotacard'
 import { StreamCard } from './streamcard'
 import type { PnpListSectionIn } from './types'
@@ -76,10 +80,8 @@ export function PnpListSection({
   const drawCard = drawCardOf(ctx.dx)
   const reformCard = preReformCardOf(ctx.dx)
   const gate = gateCardOf({ t: p.t, job, reqs, channel: gateChannelOf({ job, pathways }) })
-  const qcCards = []
-  for (const c of qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })) {
-    qcCards.push(<PnpGateCard key={c.title} spec={c} />)
-  }
+  const qcSpecs = qcGateCardsOf({ t: p.t, lang, job, reqs, channels: qcChannels })
+  const qcChannelSpecs = qcChannelSpecsOf(qcSpecs)
   const cards = []
   for (const s of shownStreamsOf({ match: p.match, noc: job.noc, eligible: job.pnpEligible })) {
     const key = streamKeyOf(s)
@@ -90,16 +92,17 @@ export function PnpListSection({
       stream={s}
       noc={job.noc}
       nocRows={p.nocRows}
-      open={p.closed.has(key) === false}
+      open={p.opened.has(key)}
       onToggle={p.toggleOf(key)}
       matchRef={p.matchRef} />)
   }
   return (
     <>
-      {qcCards}
       <PnpBlockCard t={p.t} text={p.block} />
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
+      {qcChannelSpecs.length > 0 && <PnpChannelCard t={p.t} channels={qcChannelSpecs} />}
       {gate != null && <PnpGateCard spec={gate} />}
+      <PnpGateGroupCard title={p.t(K_GATE_TITLE)} specs={qcSpecs} />
       {cards}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}

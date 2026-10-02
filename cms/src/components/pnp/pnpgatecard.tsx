@@ -9,13 +9,15 @@
  * 执照的监管机构;row.notes);九省门槛卡这两格为空,样子不变。
  * 同日资讯页「通道与门槛」(通道与门槛批 2):灰字下可有一行条件标签(spec.tags,同通道卡)、没收录门槛的卡写一句(spec.empty);
  * 弹框两种门槛卡这两格为空。值格各项的列表键改按位置(资讯页按 TEER 分档列,不同档可有同字的条目)。
+
+ * 2026-10-01 三弹框统一:行拆去 PnpGateRows(与魁省合并门槛卡共用);标题词条改「申请门槛」。
  *
  * @author Frank
  * @time 2026-09-27 12:40:00
  */
-import { Row } from '@/components/row'
 import { TEXT_NONE } from './constants'
 import { DrawsHead } from './drawshead'
+import { PnpGateRows } from './pnpgaterows'
 import type { PnpGateCardIn } from './types'
 import css from './pnp.module.css'
 
@@ -26,17 +28,6 @@ import css from './pnp.module.css'
  * @returns 门槛卡。
  */
 export function PnpGateCard({ spec }: PnpGateCardIn) {
-  const rows = []
-  for (const r of spec.rows) {
-    const lines = []
-    for (const l of r.lines) {
-      lines.push(<span key={lines.length} className={css.gateLine}>{l}</span>)
-    }
-    for (const n of r.notes) {
-      lines.push(<span key={lines.length} className={css.gateNote}>{n}</span>)
-    }
-    rows.push(<Row key={r.key} k={r.label}>{lines}</Row>)
-  }
   const tags = []
   for (const g of spec.tags) {
     tags.push(<span key={g.key} className={g.cls}>{g.text}</span>)
@@ -47,7 +38,7 @@ export function PnpGateCard({ spec }: PnpGateCardIn) {
       {spec.sub !== TEXT_NONE && <div className={css.drawsBasis}>{spec.sub}</div>}
       {tags.length > 0 && <div className={css.gateTags}>{tags}</div>}
       {spec.empty !== TEXT_NONE && <span className={css.gateNote}>{spec.empty}</span>}
-      {rows}
+      <PnpGateRows rows={spec.rows} />
     </div>
   )
 }

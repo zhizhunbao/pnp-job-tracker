@@ -43,7 +43,7 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
       cat={c}
       noc={job.noc}
       nocRows={p.nocRows}
-      open={p.closed.has(c.key) === false}
+      open={p.opened.has(c.key)}
       onToggle={p.listToggleOf(c.key)}
       matchRef={p.matchRef} />)
   }

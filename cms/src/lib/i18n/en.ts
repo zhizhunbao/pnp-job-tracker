@@ -553,7 +553,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
-  'pnpdraws.head': 'Provincial draws',
+  // 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):卡标题统一 —— 门槛卡「申请门槛」,省提名 / AIP / EE 三张抽选卡都叫「抽选」;不经抽选只写「不经抽选」,「不设分数线…」那句删
+  'pnpdraws.head': 'Draws',
   // 2026-09-27 monthly group (NS): the head counts months, not rounds
   'pnpdraws.months': '{n} months', 'pnpdraws.monthsOne': '{n} month',
   // 2026-09-27 reform-province row (ON) with no rounds yet; the status card's two labels retire
@@ -579,7 +580,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpsel.path.exp': 'NB Experience', 'pnpsel.path.grad': 'NB Graduates', 'pnpsel.path.prio': 'NB Priorities',
   'pnpsel.path.frwork': 'Francophone Workers in NB', 'pnpsel.path.frprio': 'NB Francophone Priorities',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
-  'pnpgate.title': 'Stream requirements', 'pnpgate.sep': ', ',
+  'pnpgate.title': 'Requirements', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': 'Job offer', 'pnpgate.k.lang': 'Language', 'pnpgate.k.exp': 'Experience', 'pnpgate.k.ee': 'EE',
   'pnpgate.k.emp': 'Employer', 'pnpgate.k.other': 'Other',
   'pnpgate.offerFull': 'Full-time', 'pnpgate.offerNot': 'not {list}', 'pnpgate.no.part': 'part-time',
@@ -693,21 +694,20 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.outside-gta': 'outside the GTA',
   'pnpgate.area.metro-vancouver': 'Metro Vancouver', 'pnpgate.area.rest-of-bc': 'outside Metro Vancouver',
   'pnpgate.area.st-johns': 'St. John’s', 'pnpgate.area.rest-of-nl': 'outside St. John’s',
-  'pnpdraws.noScore': 'No score cutoff: selected by labour market needs and allocation',
   // 2026-09-29 draw cards rework: upper-bound counts, pool / direct / none notes, card totals, pre-reform and AIP cards
   // 2026-09-29 per-stream totals on draw group heads (third line)
   'pnpdraws.groupTotal': '{count}',
   'pnpdraws.groupTotalMin': 'at least {count}',
   'pnpdraws.invOne': '{n} invitation',
   'pnpdraws.below': 'Fewer than {n} invitations',
-  'pnpdraws.direct': 'Apply directly with an employer job offer; no draws',
+  'pnpdraws.direct': 'No draws',
   'pnpdraws.none': 'No draws yet in {year}',
   'pnpdraws.foot': '{year}: {rounds}, {count}',
   'pnpdraws.footMin': '{year}: {rounds}, at least {count}',
   'pnpdraws.footRounds': '{year}: {rounds}',
   'pnpreform.head': 'Draws before the reform',
-  'pnpaip.head': 'AIP draws',
-  'pnpaip.direct': 'The designated employer applies for endorsement directly; no draws',
+  'pnpaip.head': 'Draws',
+  'pnpaip.direct': 'No draws',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
   'pnpfacts.streams': 'Streams for this job',
@@ -747,7 +747,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'cell.elig.no_sponsorship': '🚫 No sponsorship', 'cell.elig.pr_required': '🚫 PR/citizen only',
   'fact.elig': 'Visa flag', 'fact.eligQuote': 'JD quote', 'fact.eligNote': 'Detected from the JD text (precision-first); "—" means no such wording was found — not that the employer sponsors',
   'eelist.source': 'Source: Express Entry category-based selection', 'eelist.loading': 'Loading EE list…', 'eelist.count': '{n} occupations',
-  'eecmp.title': 'Latest cutoffs', 'eecmp.none': 'No draws yet', 'eecmp.lower': '{cat} is {n} points below {cec}',
+  'eecmp.title': 'Draws', 'eecmp.none': 'No draws yet', 'eecmp.lower': '{cat} is {n} points below {cec}',
   'eecmp.higher': '{cat} is {n} points above {cec}', 'eecmp.same': '{cat} matches {cec}',
   'eecmp.rounds': '{n} rounds', 'eecmp.roundsOne': '{n} round', 'eecmp.frenchTip': 'French rounds select on language ability, not occupation',
   'eelist.occTitle': 'Occupations included',

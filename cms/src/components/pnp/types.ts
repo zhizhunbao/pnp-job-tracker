@@ -1817,6 +1817,31 @@ export type PnpGateCardIn = {
 }
 
 /**
+ * PnpGateRows(门槛卡的行)的 props(2026-10-01 三弹框统一)。
+ */
+export type PnpGateRowsIn = {
+  /**
+   * 洗好的行。
+   */
+  rows: GateRowSpec[]
+}
+
+/**
+ * PnpGateGroupCard(魁省合并门槛卡)的 props(2026-10-01 三弹框统一)。
+ */
+export type PnpGateGroupCardIn = {
+  /**
+   * 卡标题(「申请门槛」)。
+   */
+  title: string
+
+  /**
+   * 各通道洗好的门槛卡(一卡一小节)。
+   */
+  specs: GateCardSpec[]
+}
+
+/**
  * 依据链一格的一行(主文案 + 灰注 + 行尾灰注)。
  */
 export type MmLine = {
@@ -2397,9 +2422,10 @@ export type PnpListPanel = {
   match: PnpMatchOut
 
   /**
-   * 收起了的清单键(2026-09-23 Frank「这个默认展开吧」:清单默认全展开,记的是收起的那些;此前记展开的)。
+   * 展开了的清单键(2026-09-23 Frank「这个默认展开吧」起一度记收起的那些;2026-10-01 三弹框统一(效果图「可以,做吧」):清单挪到
+   * 配额 / 抽选之前,默认收起 —— 只露本岗那一行,「展开其他 N 个」才全量(同 AIP 指定雇主清单),这里又改回记展开的)。
    */
-  closed: Set<string>
+  opened: Set<string>
 
   /**
    * 折叠开关工厂。
@@ -2513,9 +2539,9 @@ export type EePanel = {
   shown: PnpEeCat[]
 
   /**
-   * 收起了清单的类别键(清单一律默认展开,这里记的是被收起来的)。
+   * 展开了清单的类别键(2026-10-01 三弹框统一起清单默认收起,只露本岗那一行;这里记的是被展开的)。
    */
-  closed: Set<string>
+  opened: Set<string>
 
   /**
    * 分数线卡展开着的组(默认全收:组头一行就是最近一轮,三组一眼可比)。
@@ -4274,29 +4300,9 @@ export type EmptyCardIn = {
   year: string
 
   /**
-   * 已有的灰字说明(drawLinesOf)。
+   * 已有的灰字说明(原 drawLinesOf;2026-10-01 三弹框统一起本省抽选卡不再写说明,恒为空列)。
    */
   lines: string[]
-}
-
-/**
- * drawLinesOf 的入参(2026-09-29 抽选卡重排)。
- */
-export type DrawLinesIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 省码。
-   */
-  province: string
-
-  /**
-   * 卡里列的轮次。
-   */
-  rows: PnpDraw[]
 }
 
 /**

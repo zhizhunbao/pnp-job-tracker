@@ -547,7 +547,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청', 'pnpdraws.sel': '{n}건 선정',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
-  'pnpdraws.head': '주 추첨',
+  // 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):卡标题统一 —— 门槛卡「申请门槛」,省提名 / AIP / EE 三张抽选卡都叫「抽选」;不经抽选只写「不经抽选」,「不设分数线…」那句删
+  'pnpdraws.head': '추첨',
   // 2026-09-27 월별 공개 그룹(NS): 회차가 아니라 개월 수로 표시
   'pnpdraws.months': '{n}개월', 'pnpdraws.monthsOne': '{n}개월',
   // 2026-09-27 개편 주(ON) 행: 추첨이 아직 없을 때; 현황 카드의 두 라벨은 카드와 함께 삭제
@@ -570,7 +571,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpsel.path.exp': 'NB 경력', 'pnpsel.path.grad': 'NB 졸업생', 'pnpsel.path.prio': 'NB 우선', 'pnpsel.path.frwork': 'NB 불어권 근로자',
   'pnpsel.path.frprio': 'NB 불어권 우선',
   // 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:省提名弹框「本岗通道的门槛」卡(行名 / 值模板 / 不收清单 / 本岗对照)
-  'pnpgate.title': '이 스트림의 요건', 'pnpgate.sep': ', ',
+  'pnpgate.title': '신청 요건', 'pnpgate.sep': ', ',
   'pnpgate.k.offer': '고용주 오퍼', 'pnpgate.k.lang': '언어', 'pnpgate.k.exp': '경력', 'pnpgate.k.ee': 'EE',
   'pnpgate.k.emp': '고용주 요건', 'pnpgate.k.other': '기타',
   'pnpgate.offerFull': '풀타임', 'pnpgate.offerNot': '{list} 제외', 'pnpgate.no.part': '파트타임', 'pnpgate.no.casual': '임시직',
@@ -671,21 +672,20 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpgate.area.outside-gta': '광역 토론토 외',
   'pnpgate.area.metro-vancouver': '메트로 밴쿠버', 'pnpgate.area.rest-of-bc': '메트로 밴쿠버 외',
   'pnpgate.area.st-johns': '세인트존스', 'pnpgate.area.rest-of-nl': '세인트존스 외',
-  'pnpdraws.noScore': '점수 기준 없음: 노동시장 수요와 배정 인원에 따라 선발',
   // 2026-09-29 추첨 카드 개편: 상한 인원, 동일 풀 / 추첨 없음 / 올해 없음 안내, 카드 합계, 개편 전과 AIP 카드
   // 2026-09-29 추첨 그룹 헤더 셋째 줄: 스트림별 올해 합계
   'pnpdraws.groupTotal': '총 {count}',
   'pnpdraws.groupTotalMin': '최소 {count}',
   'pnpdraws.invOne': '{n}개 초청',
   'pnpdraws.below': '{n}개 미만 초청',
-  'pnpdraws.direct': '고용주 오퍼가 있으면 추첨 없이 바로 신청',
+  'pnpdraws.direct': '추첨 없음',
   'pnpdraws.none': '{year}년 아직 추첨 없음',
   'pnpdraws.foot': '{year}년 {rounds}, 총 {count}',
   'pnpdraws.footMin': '{year}년 {rounds}, 최소 {count}',
   'pnpdraws.footRounds': '{year}년 {rounds}',
   'pnpreform.head': '개편 전 추첨',
-  'pnpaip.head': 'AIP 추첨',
-  'pnpaip.direct': '지정 고용주가 바로 추천 신청, 추첨 없음',
+  'pnpaip.head': '추첨',
+  'pnpaip.direct': '추첨 없음',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
   'pnpfacts.streams': '이 일자리의 스트림',
@@ -725,7 +725,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'cell.elig.no_sponsorship': '🚫 스폰서 불가 명시', 'cell.elig.pr_required': '🚫 시민권/PR 한정',
   'fact.elig': '비자 플래그', 'fact.eligQuote': 'JD 원문', 'fact.eligNote': 'JD 원문 기반 검출(정밀도 우선); 「—」= 해당 표현 미검출, 스폰서 제공을 의미하지 않음',
   'eelist.source': '출처: Express Entry 카테고리 기반 선발', 'eelist.loading': 'EE 목록 로딩 중…', 'eelist.count': '{n}개 직업',
-  'eecmp.title': '최근 커트라인', 'eecmp.none': '추첨 없음', 'eecmp.lower': '{cat}: {cec}보다 {n}점 낮음',
+  'eecmp.title': '추첨', 'eecmp.none': '추첨 없음', 'eecmp.lower': '{cat}: {cec}보다 {n}점 낮음',
   'eecmp.higher': '{cat}: {cec}보다 {n}점 높음', 'eecmp.same': '{cat}: {cec}와 동점',
   'eecmp.rounds': '{n}회', 'eecmp.roundsOne': '{n}회', 'eecmp.frenchTip': '프랑스어 추첨은 직업이 아니라 언어 능력으로 선발합니다',
   'eelist.occTitle': '포함 직업',
