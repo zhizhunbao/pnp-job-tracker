@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isBlockedBot } from '@/lib/traffic'
 
 // 旧域 pnp-cms.onrender.com → 正式域 offer2pr.com 的 301(2026-07-05 域名切换,SEO 权重随 301 转移)。
 // 排除(见 matcher):/api(Stripe webhook 端点在旧域,POST 不跟 301 会丢单)、/seed(auto_update 的 curl 同理)、
@@ -9,6 +10,9 @@ const CANONICAL = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
 const fpBuckets = new Map<string, { h: string; n: number }>()
 
 export function middleware(req: NextRequest) {
+  // 2026-10-01 挡非搜索类爬虫(Frank「他瞎爬跑我的流量」,拍「拦非搜索类」):AI 训练与 SEO 工具自报身份的一律 403,
+  // 搜索引擎照放;名单住 lib/traffic。只罩 matcher 内的页面(/api、/_next 不进来)。
+  if (isBlockedBot(req.headers.get('user-agent') || '')) return new NextResponse(null, { status: 403 })
   if (req.nextUrl.pathname === '/api/users/forgot-password' && req.method === 'POST') {
     const ip = ((req.headers.get('x-forwarded-for') || '').split(',')[0] || '').trim() || 'local'
     const h = new Date().toISOString().slice(0, 13)  // 小时粒度

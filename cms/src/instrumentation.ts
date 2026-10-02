@@ -3,6 +3,9 @@
 // 起服 5 秒后自热这三层,真人几乎不再撞冷。失败不拦启动(纯优化,壮死无声)。
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
+  // 2026-10-01 出站流量记账(9 月 130 GB 查不出是谁):每小时在日志里出一组 [traffic] 账
+  const { installTrafficTap } = await import('@/lib/traffic/server')
+  installTrafficTap()
   setTimeout(async () => {
     try {
       const { getDb } = await import('@/lib/db/server')
