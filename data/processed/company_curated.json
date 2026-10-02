@@ -50,5 +50,31 @@
     },
     "note": "律所(Saint John / Halifax 等大西洋十处办公室);官网不标总部(「ten offices across Atlantic Canada」),总部不核定;Bing 曾错配 cox.com(Cox Communications)。",
     "curated_at": "2026-10-02T03:49:21.724402Z"
+  },
+  "gemtec-consulting-engineers-and-scientists-limited": {
+    "name": "GEMTEC Consulting Engineers and Scientists Limited",
+    "website": "https://www.gemtec.ca/",
+    "hq_address": "124 Greenview Drive",
+    "hq_city": "Hanwell",
+    "hq_province": "NB",
+    "hq_quote": "Fredericton (Head Office) Fredericton Office General Inquiries 506.453.1025 124 Greenview Drive, Hanwell, NB",
+    "hq_source": "https://www.gemtec.ca/contact.html",
+    "hq_parent": false,
+    "brief": "[WHAT] Employee-owned multidisciplinary engineering and scientific consulting firm (geotechnical, materials testing, environmental) with CCIL-certified laboratories.\n[BASE] Fredericton (Hanwell), NB; offices in Ontario, Quebec and across Atlantic Canada\n[SIZE] Over 400 engineers, scientists, technicians and corporate staff; 12 offices\n[FOUNDED] 1986",
+    "brief_zh": "[WHAT] 员工持股的多学科工程与科学咨询公司(岩土工程、材料检测、环境工程),设有 CCIL 认证实验室。\n[BASE] 新不伦瑞克省弗雷德里克顿(Hanwell);在安大略省、魁北克省和大西洋各省设有办公室\n[SIZE] 400 多名工程师、科学家、技术人员和职能人员;12 个办公室\n[FOUNDED] 1986 年",
+    "brief_ko": "[WHAT] 직원 소유의 다분야 엔지니어링·과학 컨설팅 회사(지반공학, 재료 시험, 환경 엔지니어링)로 CCIL 인증 실험실을 운영합니다.\n[BASE] 뉴브런즈윅주 프레더릭턴(Hanwell); 온타리오주, 퀘벡주 및 대서양 연안 각 주에 사무소\n[SIZE] 엔지니어·과학자·기술자·지원 인력 400명 이상, 사무소 12곳\n[FOUNDED] 1986년",
+    "brief_sources": [
+      "https://www.gemtec.ca/about-company.html",
+      "https://www.gemtec.ca/contact.html",
+      "https://www.gemtec.ca/careers.html"
+    ],
+    "brief_quotes": {
+      "WHAT": "Since 1986, GEMTEC has grown from a small New Brunswick geotechnical engineering, materials testing, and environmental engineering firm into a leading multidisciplinary company with offices and CCIL-certified laboratories in Ontario, Quebec, and across Atlantic Canada. Employee-owned",
+      "BASE": "Fredericton (Head Office) Fredericton Office General Inquiries 506.453.1025 124 Greenview Drive, Hanwell, NB",
+      "SIZE": "Founded in 1986, GEMTEC is a proudly employee-owned firm of over 400 consulting engineers, scientists, technicians, and corporate service professionals ... With 12 offices",
+      "FOUNDED": "Founded in 1986, GEMTEC is a proudly employee-owned firm"
+    },
+    "note": "2026-10-02 Frank「都修了」:公司卡总部省份原为 AB、地址是渥太华分部 32 Steacie Dr;官网联系页写明 Fredericton 为 Head Office。",
+    "curated_at": "2026-10-02T22:22:55.320936Z"
   }
 }

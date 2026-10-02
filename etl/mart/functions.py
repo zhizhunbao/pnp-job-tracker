@@ -1732,8 +1732,15 @@ def fill_careers(x: CompanyExtraIn) -> None:
     招聘页发现清单里混着相对路径、`mailto:`、`javascript:`(5,819 条里 29 条),过同一把官网闸 website_of ——
     不是完整 http(s) 网址的不落(相对路径不去拼官网:拼出来的多半也不是招聘页,Deloitte 那条是 Workday 合作介绍页)。"""
     url = website_of(x.ctx.careers.get(x.slug))
-    if url is not None:
+    if url is not None and is_ats_vendor_site(url) is False:
         x.extra[K_CAREERS_URL] = url
+
+
+def is_ats_vendor_site(url: str) -> bool:
+    """网址是不是 ATS 厂商自家的站(主机去 www. 后正好等于 PORTAL_ATS_DOMAINS 里的整域名,没有客户子域)。
+    2026-10-02 Frank「都修了」(GEMTEC 公司卡「招聘页」是 www.bamboohr.com/privacy.php):招聘页发现清单把 BambooHR 招聘站页脚的
+    隐私政策当成了招聘页(5 家);客户自己的招聘站都带子域(gemtec.bamboohr.com),厂商官网上的页不是谁的招聘页。"""
+    return site_host_of(url) in PORTAL_ATS_DOMAINS
 
 
 def move_portal_site(x: CompanyExtraIn) -> None:
@@ -1878,7 +1885,9 @@ def fill_hq(x: CompanyExtraIn) -> None:
 def fill_curated(x: CompanyExtraIn) -> None:
     """人工核定的官网 / 总部最后落、盖掉前面所有来路(2026-10-01 Frank「opus 修的优先级最高」);核定表里空着的格不动。
     官网来路记 curated(cms 点开探索见它就不再探索);核定了总部的整组盖(含母公司标记归位),省码照 fill_hq 盖 region。
-    核定了简介的(2026-10-01 Frank「简介也要核对啊」)英 / 中 / 韩三格连出处、产出时刻整组盖 —— 灌库那几列 COALESCE 清不掉旧译文,只能拿新译文盖。"""
+    核定了简介的(2026-10-01 Frank「简介也要核对啊」)英 / 中 / 韩三格连出处、产出时刻整组盖 —— 灌库那几列 COALESCE 清不掉旧译文,只能拿新译文盖。
+    2026-10-02 Frank「都修了」(GEMTEC 卡上「地址」是渥太华分部 32 Steacie Dr,总部在 NB):核定了总部的,来源侧地址格清掉 ——
+    来源侧地址多是分店 / 分部,与核定总部并排像公司地址;address 是灌库的直写列,清掉库里就空。"""
     cur = x.ctx.curated.get(x.slug)
     if cur is None:
         return
@@ -1902,6 +1911,7 @@ def fill_curated(x: CompanyExtraIn) -> None:
     x.extra[K_HQ_PROVINCE] = province
     x.extra[K_HQ_QUOTE] = cur.get(K_SRC_HQ_QUOTE) or ""
     x.extra[K_HQ_SOURCE] = cur.get(K_SRC_HQ_SOURCE) or ""
+    x.extra.pop(K_ADDRESS, None)
     x.extra.pop(K_HQ_PARENT, None)
     if cur.get(K_SRC_HQ_PARENT) is True:
         x.extra[K_HQ_PARENT] = True
