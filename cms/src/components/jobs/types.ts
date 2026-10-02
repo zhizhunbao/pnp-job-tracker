@@ -298,6 +298,11 @@ export type PnpShownIndex = {
   excluded: string[]
 
   /**
+   * 弹框出得了优待清单卡的职业,键 `省码|NOC`(2026-10-02 起)。
+   */
+  priority: string[]
+
+  /**
    * 有省默认通道的省码(通道对照表算的;格子与手机胶囊写不写省默认通道看它,2026-09-28 通道表批二)。
    */
   defaults: string[]

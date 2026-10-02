@@ -1189,6 +1189,11 @@ export const FED_FRENCH = 'french'
 export const TYPE_INELIGIBLE = 'ineligible'
 
 /**
+ * 优待清单的类型名(NL 优先处理职位:名单上的职业免招聘测试、优先处理,不是资格条件;2026-10-02 Frank「做吧,按你说的来」)。
+ */
+export const TYPE_PRIORITY = 'priority'
+
+/**
  * 技能岗的 TEER 上限(0-3 算技能岗)。
  */
 export const TEER_SKILLED_MAX = 3

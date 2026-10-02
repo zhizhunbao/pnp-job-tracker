@@ -93,7 +93,7 @@ function jobOf(noc: string, teer: number): PnpJob {
 
 /** 事实索引(只填魁省那一格) */
 function indexOf(qc: Record<string, string>): PnpFactsIndex {
-  return { draws: [], lists: [], excluded: [], defaults: [], gated: [], qc }
+  return { draws: [], lists: [], excluded: [], priority: [], defaults: [], gated: [], qc }
 }
 
 const t = makeT('zh')

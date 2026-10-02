@@ -2772,6 +2772,11 @@ export type PnpFactsIndex = {
   excluded: string[]
 
   /**
+   * 弹框出得了优待清单卡的职业,键 `省码|NOC`(pnpStreamsOf 分出来的优待清单里点名的职业;2026-10-02 NL 优先处理职位起)。
+   */
+  priority: string[]
+
+  /**
    * 有省默认通道的省码(通道对照表 isDefault 行的省;职位板格子与手机胶囊写不写省默认通道看它,原 GEN_CHANNEL_PROVS,
    * 2026-09-28 通道表批二改读 pathways)。
    */

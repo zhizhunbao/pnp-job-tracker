@@ -133,7 +133,8 @@ const NOCS = ['11111', '22222', '33333', '44444']
 const occArb = fc.record({
   province: fc.constantFrom(...PROVS),
   label: fc.constantFrom(...LABELS),
-  type: fc.constantFrom('indemand', 'ineligible'),
+  // 2026-10-02 加优待清单(NL 优先处理职位):本岗职业在上面就出卡,格子也得认
+  type: fc.constantFrom('indemand', 'ineligible', 'priority'),
   program: fc.constantFrom('PNP', 'AIP', ''),
   noc: fc.constantFrom(...NOCS),
   appliesTo: fc.constantFrom('', 'OID/EE', 'Employment Offer'),
@@ -1558,5 +1559,24 @@ describe('省提名职业清单卡的展开个数', () => {
     expect(hiddenCountOf({ stream, noc: '99999' })).toBe(24)
     expect(rows('99999', 20)).toHaveLength(21)
     expect(rows('99999', 24)).toHaveLength(25)
+  })
+})
+
+// 2026-10-02 Frank「做吧,按你说的来」:NL 优先处理职位(免招聘测试、优先处理)挂上能一一对上的码进清单表;金标 = 当天 data/mart 实数
+describe('优待清单(NL 优先处理职位)', () => {
+  it('本岗职业在名单上就出卡,不看可不可提名;不在名单上、别省同码都不出;格子同样认', () => {
+    const o = mart<PnpOcc>('pnp_occupations')
+    const nl = o.filter((r) => r.province === 'NL' && r.type === 'priority')
+    expect(nl.map((r) => r.noc)).toContain('21232')
+    expect(nl).toHaveLength(15)
+    const cardsOf = (j: PnpJob) => shownStreamsOf({ match: pnpMatchOf({ job: j, occ: o }), noc: j.noc, eligible: j.pnpEligible })
+    const dev = job({ province: 'NL', noc: '21232', pnpEligible: true })
+    expect(cardsOf(dev).map((s) => s.label)).toEqual(['NL 优先处理职位'])
+    expect(cardsOf({ ...dev, pnpEligible: false }).map((s) => s.label)).toEqual(['NL 优先处理职位'])
+    expect(cardsOf({ ...dev, noc: '62020' })).toEqual([])
+    expect(cardsOf({ ...dev, province: 'NS' }).map((s) => s.label)).not.toContain('NL 优先处理职位')
+    const index = pnpFactsIndexOf({ occ: o, draws: [], pathways: PATHWAYS, qcCells: [] })
+    expect(cellSaysCards(dev, o, [], index)).toBe(true)
+    expect(cellSaysCards({ ...dev, noc: '62020' }, o, [], index)).toBe(false)
   })
 })

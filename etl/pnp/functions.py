@@ -187,7 +187,8 @@ from pnp.constants import (
     NLR_WHAT_IG_TEER, NLR_WHAT_IG_TEER4, NLR_WHAT_STAFF_OUT, NLR_WHAT_STAFF_SJ, NL_DETAIL_SPLIT_RE,
     NL_DRAW_DATE_KW, NL_DRAW_ITA_KW, NL_DRAW_STREAM, NL_NOTE_AIP_RE, NL_NOTE_PNP_RE, NL_GROUP_RE, NL_HEADING_PREFIX, NL_ITEM_RE, NL_MD_LINK_RE,
     NL_MD_LINK_SUB, NL_PRINT_DONE_TPL, NL_PRINT_FAIL_TPL, NL_PRINT_NO_POSITION, NL_PRINT_SECTOR_TPL,
-    NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP_AIP, NL_SECTOR_RE,
+    NL_PRIORITY_LABEL, NL_PRIORITY_NOTE, NL_PRIORITY_STREAM, NL_PRIORITY_URL, NL_PROGRAM_PNP, NL_SECTOR_RE,
+    NL_NAME_SEP, NL_PHYSICIAN_NAME_TPL, NL_PHYSICIAN_NOC, NL_PHYSICIAN_SEP, NL_PHYSICIAN_TITLE, NL_POSITION_NOC,
     NL_TITLE_RSTRIP_DOT, NL_TITLE_STRIP_STAR, NOT_MARKED, NSR_BASIS_WINDOW_TPL, NSR_CCW_LANG_RE, NSR_EDU_CCW_LABEL_TPL,
     NSR_EDU_CCW_RE, NSR_EDU_SW_RE, NSR_EFFECTIVE_RE, NSR_EMP_LABEL_TPL, NSR_EMP_YEARS_RE, NSR_EXP_LABEL_TPL,
     NSR_EXP_RE, NSR_FACTOR_ORDER_FULL, NSR_FURNITURE_RE, NSR_HOST, NSR_HTTP_PREFIX,
@@ -1528,7 +1529,9 @@ def count_by_key(x: CountIn) -> int:
 
 
 def build_nl() -> None:
-    """NL 优先处理职位入口:原样存 positions,**不硬映射 NOC**(官方给的是职位名文本)。"""
+    """NL 优先处理职位入口:原样存 positions,**不硬映射 NOC**(官方给的是职位名文本)。
+    2026-10-02 Frank「做吧,按你说的来」:另出 occupations —— 只收能和 NOC 例名一一对上的职位(nl_occupations_of),对不上的留在
+    positions 里不挂码;表标参考信号(K_SIGNAL:免招聘测试、优先处理,不是资格条件,不进评分),项目归属落 PNP(NL_PROGRAM_PNP 注)。"""
     say(PRINT_OUT_TPL.format(path=OUT_NL_PRIORITY))
     OUT_PNP_DIR.mkdir(parents=True, exist_ok=True)
     try:
@@ -1543,11 +1546,12 @@ def build_nl() -> None:
     fetched = today_iso()
     table = {
         K_STREAM: NL_PRIORITY_STREAM,
-        K_LABEL: NL_PRIORITY_LABEL, K_PROVINCE: PROV_NL, K_PROGRAM: NL_PROGRAM_PNP_AIP,
+        K_LABEL: NL_PRIORITY_LABEL, K_PROVINCE: PROV_NL, K_PROGRAM: NL_PROGRAM_PNP,
         K_TYPE: TYPE_PRIORITY,
-        K_CODELESS: True,
+        K_SIGNAL: True,
         K_NOTE: NL_PRIORITY_NOTE, K_URL: NL_PRIORITY_URL, K_FETCHED: fetched,
         K_POSITIONS: positions,
+        K_OCCUPATIONS: nl_occupations_of(positions),
     }
     sectors: set = set()
     for p in positions:
@@ -1559,6 +1563,35 @@ def build_nl() -> None:
     for s in sorted(sectors):
         say(NL_PRINT_SECTOR_TPL.format(sector=s,
                                        n=count_by_key(CountIn(rows=positions, key=K_SECTOR, value=s))))
+
+
+def nl_occupations_of(positions: list) -> list:
+    """NL 优先处理职位 → 清单的职业行(2026-10-02):职位名查 NL_POSITION_NOC,Physician 按 detail 里的专科逐个查 NL_PHYSICIAN_NOC;
+    查不到的不挂码。同一码挂了几个职位就并成一行,职业名用官方原文以 NL_NAME_SEP 连起来;同一码的几个专科写成一条
+    「Physician: 专科; 专科」;行序按码第一次出现的顺序。
+
+    @param positions parse_nl_positions 解析出的职位行。
+    @returns 职业行(noc + name)。
+    """
+    names: dict = {}
+    for p in positions:
+        title = p[K_TITLE]
+        noc = NL_POSITION_NOC.get(title)
+        if noc is not None:
+            names.setdefault(noc, []).append(title)
+        if title != NL_PHYSICIAN_TITLE:
+            continue
+        specialties: dict = {}
+        for specialty in p.get(K_DETAIL, "").split(NL_PHYSICIAN_SEP):
+            code = NL_PHYSICIAN_NOC.get(specialty.strip())
+            if code is not None:
+                specialties.setdefault(code, []).append(specialty.strip())
+        for code, ss in specialties.items():
+            names.setdefault(code, []).append(NL_PHYSICIAN_NAME_TPL.format(title=title, specialty=NL_PHYSICIAN_SEP.join(ss)))
+    out: list = []
+    for noc, ns in names.items():
+        out.append({K_NOC: noc, K_NAME: NL_NAME_SEP.join(ns)})
+    return out
 
 
 # =========================================================================

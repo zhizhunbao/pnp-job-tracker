@@ -1700,6 +1700,11 @@ export const VD = {
 export const TYPE_INELIGIBLE = 'ineligible'
 
 /**
+ * 清单行的优待类型值(NL 优先处理职位:免招聘测试、优先处理,不是资格条件 —— 不算具名清单、不算省清单覆盖;2026-10-02)。
+ */
+export const TYPE_PRIORITY = 'priority'
+
+/**
  * 省码列(短词搜索附加分支用)。
  */
 export const COL_PROVINCE = 'j.province'
@@ -1906,7 +1911,7 @@ export const STREAM_L10N: Record<string, string> = {
   'AB 科技': 'stream.abTech', 'AB 医疗': 'stream.abHealth', 'SK 医疗': 'stream.skHealth', 'SK 科技': 'stream.skTech',
   'SK 农业': 'stream.skAgri', 'NS 紧缺空缺': 'stream.nsCritical', 'NS 毕业生': 'stream.nsGrad',
   'AB 警务': 'stream.abLaw', 'AB 旅游酒店': 'stream.abTourism', 'AB 乡村振兴': 'stream.abRural', 'NS 建筑': 'stream.nsConstr',
-  'NB 优先职业': 'stream.nbPriority',
+  'NB 优先职业': 'stream.nbPriority', 'NL 优先处理职位': 'stream.nlPriority',
   'AAIP 不符合清单': 'stream.aaipExcl',
   'BC 医疗': 'stream.bcHealth', 'BC 幼教': 'stream.bcChildcare', 'BC 法语教师': 'stream.bcEdu',
   'BC 兽医': 'stream.bcVet', 'BC 建筑技工': 'stream.bcConstr',

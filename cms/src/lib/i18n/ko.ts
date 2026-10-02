@@ -474,7 +474,7 @@ export const reportKo: Record<keyof typeof reportZh, string> = {
 export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'subtitle.count': '{n}개 공고',
   'subtitle.hits': '{n}건 일치',
-  'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.abLaw': 'AB 경찰', 'stream.abTourism': 'AB 관광 숙박', 'stream.abRural': 'AB 농촌 재생', 'stream.nsConstr': 'NS 건설', 'stream.nbPriority': 'NB 우선 직업', 'stream.aaipExcl': 'AAIP 제외 목록',
+  'stream.abTech': 'AB 테크', 'stream.abHealth': 'AB 보건', 'stream.skHealth': 'SK 보건', 'stream.skTech': 'SK 테크', 'stream.skAgri': 'SK 농업', 'stream.nsCritical': 'NS 필수 인력', 'stream.nsGrad': 'NS 졸업생', 'stream.abLaw': 'AB 경찰', 'stream.abTourism': 'AB 관광 숙박', 'stream.abRural': 'AB 농촌 재생', 'stream.nsConstr': 'NS 건설', 'stream.nbPriority': 'NB 우선 직업', 'stream.nlPriority': 'NL 우선 처리 직업(노동시장 테스트 면제)', 'stream.aaipExcl': 'AAIP 제외 목록',
   'stream.bcHealth': 'BC 보건', 'stream.bcChildcare': 'BC 보육', 'stream.bcEdu': 'BC 프랑스어 교사', 'stream.bcVet': 'BC 수의', 'stream.bcConstr': 'BC 건설 기능직',
   'stream.mbIndemand': 'MB 수요 직종', 'stream.mbRural': 'MB 농촌 수요 직종', 'stream.peIndemand': 'PE 수요 직종', 'stream.nbExcl': 'NB 제외 목록', 'stream.nbExclFood': 'NB 숙박 음식업 제외',
   'stream.nbAipExcl': 'NB AIP 접수 제외', 'stream.bcHa': 'BC 보건 당국', 'stream.skEwp': 'SK 기존 취업허가', 'stream.peAipExcl': 'PE AIP 접수 제외', 'stream.nbAipExclFood': 'NB AIP 숙박 음식업 제외',

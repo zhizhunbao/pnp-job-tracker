@@ -56,7 +56,7 @@ import {
   JD_HEAD_MARK_RE, JD_ROLE_SECTION_RE, TITLE_AMBIGUOUS, TITLE_BATCH_MAX, TITLE_CTX_CLEAN_RE, TITLE_CTX_MAX_LEN, TITLE_CTX_PREFIX,
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
-  TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
+  TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, TYPE_PRIORITY, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
   JD_TRANS_MARKS_RE, REL_OCC_PAGE_ROWS,
 } from './constants'
 import {
@@ -450,6 +450,7 @@ function eeRule(input: RuleIn): RuleScoreOut {
  * 「被清单挡」只认管带 offer 岗的清单(isOfferList:SK 主线不合格表只管 OID / EE),且数据层判了可提名的岗不再判被挡 ——
  * 条件式清单(NB 餐饮住宿 13 码只挡餐饮住宿业雇主、AB 带星号码只挡官方点名的那一小类)数据层已按雇主放行,这里再按职业码
  * 一刀切会与职位板打架。
+ * 2026-10-02 优待清单(NL 优先处理职位,TYPE_PRIORITY)不算命中具名清单:它讲免招聘测试、优先处理,不是资格条件。
  *
  * @param input 档案、岗位与维度。
  * @returns 该规则的加分与理由。
@@ -473,7 +474,7 @@ function provRule(input: RuleIn): RuleScoreOut {
   let named: RuleIn['dims']['pnpOccupations'][number] | null = null
   let excluded: RuleIn['dims']['pnpOccupations'][number] | null = null
   for (const r of input.dims.pnpOccupations) {
-    if (r.province !== prov || r.noc !== job.noc) {
+    if (r.province !== prov || r.noc !== job.noc || r.type === TYPE_PRIORITY) {
       continue
     }
     if (r.type !== TYPE_INELIGIBLE && named == null) {
@@ -524,6 +525,7 @@ function provRule(input: RuleIn): RuleScoreOut {
 
 /**
  * 省清单覆盖判定(单一来源;没核对过的省一律保守:有清单数据也只算 partial,绝不冒充「查全了」)。
+ * 2026-10-02 优待清单(TYPE_PRIORITY)不算覆盖:NL 原先一行清单都没有判 uncovered,挂上优先处理职位后不该因此变 partial。
  *
  * @param input 省码与维度包。
  * @returns 覆盖档。
@@ -536,7 +538,7 @@ export function provListCoverage(input: CoverageIn): ProvListCoverage {
   const rows: number[] = []
   let hasNamed = false
   for (const r of input.dims.pnpOccupations) {
-    if (r.province === input.prov) {
+    if (r.province === input.prov && r.type !== TYPE_PRIORITY) {
       rows.push(1)
       if (r.type !== TYPE_INELIGIBLE) {
         hasNamed = true

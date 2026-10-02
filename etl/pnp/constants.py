@@ -252,10 +252,11 @@ Classification (NOC) code consists of both eligible occupations and ineligible o
 那一小类。原先解析时星号一剥了之、整码按不符合(AB_NOC_STAR 旧注);2026-09-27 Frank 拍板「看得出才改判」起如实记下,判归 mart。"""
 
 SIGNAL_OUTS = {"mb-indemand.json", "mb-indemand-rural.json", "ns-critical.json", "ns-grad.json", "sk-excluded.json",
-               "nb-priority.json"}
+               "nb-priority.json", "nl-priority.json"}
 """只作参考信号的表(产出文件名):写表时带 K_SIGNAL。依据在 MB_BUCKETS / NS_STREAMS 的说明里(2026-09-24 Frank 批)。
 同日第三批(Frank「能都改完吗」)再加三张:NS 毕业生(只对本省应届毕业生成立,照 MB 在需职业先例);SK 主线排除表
-(适用 OID / EE,不管持 offer 的 Employment Offer —— 原靠文件名序碰巧被 14 码那张盖掉);NB 优先职业(只认省政府招聘团)。"""
+(适用 OID / EE,不管持 offer 的 Employment Offer —— 原靠文件名序碰巧被 14 码那张盖掉);NB 优先职业(只认省政府招聘团)。
+2026-10-02 加 NL 优先处理职位(Frank「做吧,按你说的来」:免招聘测试、优先处理,不是资格条件;挂上能一一对上的码之后进清单表)。"""
 
 K_APPLIES_TO = "appliesTo"
 """表/行键:适用范围(SK 两张排除表分管的子类别 / BC SIRS 那行加分的适用职业)。"""
@@ -1734,7 +1735,9 @@ NL_PRIORITY_URL = "https://www.gov.nl.ca/immigration/excluded-positions/"
   · 表里是**职位名称文本**(Software Developer / Cage Site Technician…),**不是 NOC 码**,
     官方没给映射。按项目铁律「宁可留空不瞎猜」:原样存 `positions`,**不硬映射 NOC**。
   · 因此本表**不带 `occupations` 键** —— 08_score 目录驱动扫 raw/pnp/*.json 时天然跳过,
-    不会被误当成具名通道清单参与打分(与 draws.json 同一手法)。"""
+    不会被误当成具名通道清单参与打分(与 draws.json 同一手法)。
+2026-10-02 改判(Frank「做吧,按你说的来」):能和 NOC 例名一一对上的职位挂码进 occupations(NL_POSITION_NOC),表标参考信号 ——
+mart 评分段见 signal 照样跳过,只进 pnp_occupations 给弹框显示;对不上的照旧只在 positions 里。"""
 
 OUT_NL_PRIORITY = paths.PNP / "nl-priority.json"
 """NL 优先处理职位落盘处(开工报路径用)。"""
@@ -1743,8 +1746,9 @@ OUT_NL_PRIORITY_FILE = "nl-priority.json"
 """NL 优先处理职位的产出文件名。"""
 
 NL_PRIORITY_NOTE = ("NL 优先处理职位:免省级劳动力市场测试(Job Vacancy Assessment / AIP 招工测试)并优先处理。"
-                    "**不在表上不等于不能申请**,只是没有这份加速。官方给的是职位名称文本、不是 NOC 码,故本站不做 NOC 映射。")
-"""NL 优先处理职位的口径说明。"""
+                    "**不在表上不等于不能申请**,只是没有这份加速。官方给的是职位名称文本、不是 NOC 码;"
+                    "能和 NOC 2021 例名一一对上的才挂码(NL_POSITION_NOC),其余留空。")
+"""NL 优先处理职位的口径说明(2026-10-02 起挂上能一一对上的码,后半句随之改)。"""
 
 NL_SECTOR_RE = re.compile(r"^In-demand\s+(.+?)\s+(?:sector\s+)?occupations?\b.*:\s*$", re.I)
 """行业小标题(开一段)。"""
@@ -1783,6 +1787,82 @@ NL_PRIORITY_LABEL = "NL 优先处理职位"
 
 NL_PROGRAM_PNP_AIP = "PNP+AIP"
 """本表同时覆盖省提名与大西洋项目。"""
+
+NL_PROGRAM_PNP = "PNP"
+"""本表落库的项目归属(2026-10-02 起):省提名弹框按 program = PNP 取清单,写 PNP+AIP 就一行都出不来;
+AIP 那一份(免 AIP 招工测试)官方同一页同一句,AIP 弹框要用时再按这张表另接。原值 NL_PROGRAM_PNP_AIP 留着记口径。"""
+
+NL_POSITION_NOC = {
+    # NOC 2021 例名「nurse practitioner」→ 31302 Nurse practitioners
+    "Nurse Practitioner (NP)": "31302",
+    # 例名「licensed practical nurse (L.P.N.)」→ 32101 Licensed practical nurses
+    "Licensed Practical Nurse (LPN)": "32101",
+    # 例名「clinical psychologist」→ 31200 Psychologists
+    "Clinical Psychologist": "31200",
+    # 例名「medical physicist」→ 21100 Physicists and astronomers
+    "Medical Physicist": "21100",
+    # 例名「radiation therapist」→ 32121 Medical radiation technologists
+    "Radiation Therapist": "32121",
+    # 例名「dosimetrist」→ 32121 Medical radiation technologists
+    "Dosimetrist": "32121",
+    # 例名「software developer」→ 21232 Software developers and programmers
+    "Software Developer": "21232",
+    # 例名「biomedical engineer」→ 21399 Other professional engineers
+    "Biomedical Engineer": "21399",
+    # 例名「electrical engineer」→ 21310 Electrical and electronics engineers
+    "Electrical Engineer": "21310",
+    # 例名「mechanical engineer」→ 21301 Mechanical engineers
+    "Mechanical Engineer": "21301",
+    # 例名「web developer」→ 21234 Web developers and programmers
+    "Web Developer": "21234",
+    # 例名「bioinformatician」→ 21110 Biologists and related scientists
+    "Bioinformatician": "21110",
+    # 例名「technical writer」→ 51112 Technical writers
+    "Technical Writer": "51112",
+}
+"""NL 优先处理职位 → NOC 2021 职业码(2026-10-02 Frank「做吧,按你说的来」:只给能一一对上的职位挂码,对不准的留空不硬猜;
+推翻 08-03 接入时「整表不做 NOC 映射」那句,NL_PRIORITY_URL 注里的口径其余照旧)。
+判据:职位名与 StatCan NOC 2021 例名(data/raw/noc/noc-elements.csv 的 Illustrative / All examples)逐字相等(不分大小写)且只落
+一个码,再人工看一眼上下文。逐字相等也不收的:「Captain (FM4 certification required)」撞到 40042 加拿大军队军官,原文是水产养殖
+船长(FM4 = 渔船船长四级证,可能是 83120 但职位名对不上例名)。对不上 / 一名多码不收的:Personal Care Attendant(例名分 33102 医疗款
+与 44101 居家款)、UI/UX / AI / Python / .NET Developer、Infrastructure Engineer、Security / Cloud Specialist、Computer Network
+Support(22220 / 21311 都有 network support)、Research Associate、Data Analytics、Offshore Technician、ROV Operator、Ocean
+Mapping Specialist,水产养殖段其余六个职位。Physician 按专科另表(NL_PHYSICIAN_NOC)。名单改了要回来重对。"""
+
+NL_PHYSICIAN_TITLE = "Physician"
+"""官方把各科医生并成一条「Physician」,专科写在 detail 里(分号分隔),按专科逐个对码。"""
+
+NL_PHYSICIAN_NOC = {
+    # 例名「family physician」→ 31102 General practitioners and family physicians
+    "Family Medicine": "31102",
+    # 例名「psychiatrist」→ 31100 Specialists in clinical and laboratory medicine
+    "Psychiatry": "31100",
+    # 例名「pathologist - medical」→ 31100
+    "Pathology": "31100",
+    # 例名「internist」→ 31100
+    "General Internal Medicine": "31100",
+    # 例名「radiologist」→ 31100
+    "Radiology": "31100",
+    # 例名「obstetrician-gynecologist」→ 31101 Specialists in surgery
+    "Obstetrics and Gynecology": "31101",
+    # 例名「anesthesiologist」→ 31100
+    "Anesthesia": "31100",
+    # 例名「neonatologist」→ 31100
+    "Neonatologists (NICU)": "31100",
+    # 例名「hematopathologist」→ 31100
+    "Pathology (Hemopathology)": "31100",
+}
+"""NL Physician 各专科 → NOC 2021 职业码(判据同 NL_POSITION_NOC,每个专科都有 NOC 例名对得上)。
+「Pediatric Intensivists (PICU)」不收:NOC 例名里没有 paediatric intensivist。"""
+
+NL_PHYSICIAN_SEP = "; "
+"""Physician 专科明细的分隔。"""
+
+NL_PHYSICIAN_NAME_TPL = "{title}: {specialty}"
+"""Physician 专科行的职业名(官方原文拼:「Physician: Family Medicine」;同一码几个专科以 NL_PHYSICIAN_SEP 连在冒号后)。"""
+
+NL_NAME_SEP = "; "
+"""同一码挂了几个职位时职业名的连接符(32121:Radiation Therapist; Dosimetrist)。"""
 
 NL_PRINT_FAIL_TPL = "  ✗ NL 优先职位抓取失败: {name} {detail}(保留旧表)"
 """抓取失败的报数。"""

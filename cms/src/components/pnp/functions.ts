@@ -35,6 +35,7 @@ import {
   PROGRAM_AIP, PROGRAM_PNP, PROV_FED, PROV_KEY_HEAD, PROV_QC, ROWS_FALLBACK, RULE_EE, RULE_LMIA, RULE_NOC, RULE_PROV,
   RULE_TEER, RULE_WAGE, SALARY_DIV, SALARY_HEAD, SALARY_TAIL, SCROLL_BLOCK, SPACE, SPACE_RUN_RE, SRC_PNP, STREAM_REFORM,
   TEER_HEAD, TEER_SHORT_HEAD, TEXT_NONE, TIP_MARK, TONE_FAIL, TONE_NA, TONE_PASS, TONE_WARN, TYPE_INELIGIBLE,
+  TYPE_PRIORITY,
   UNKNOWN_MARK, URL_JOBS_Q_HEAD, BASIS_KV, BASIS_LICENCE, BASIS_OCC_LOW, BASIS_OCC_MEDIAN, BASIS_SAME_NOC, BASIS_SEP,
   BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
@@ -402,6 +403,7 @@ export function numTextOf(v: number | null): string | number {
  * pnpStreamsOf 分出来的纳入型清单与排除清单点名的职业:与弹框自己出卡(PnpListSection)同一套判据,不另写一份
  * (排除那串不借职位板的排除键:那份按清单行算,这份按弹框分组算,判「弹框出不出卡」只认弹框自己的分组)。
  * 2026-09-26 同日「补完整」:hasProvDraws 收进了抽选卡的三种形(见 drawsFormOf),抽选那串随之多出 NS、ON,形状不变。
+ * 2026-10-02 加第四串:优待清单(NL 优先处理职位)点名的职业 —— 弹框见本岗职业在上面就出卡(shownStreamsOf),格子同样凭它判可点。
  *
  * @param x 两张整表。
  * @returns 出得了抽选卡的省码、认得出的纳入型清单键与排除清单点名的职业键。
@@ -415,8 +417,15 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
   }
   const lists: string[] = []
   const excluded: string[] = []
+  const priority: string[] = []
   for (const province of distinctProvsOf(x.occ)) {
     for (const s of pnpStreamsOf({ province, occ: x.occ })) {
+      if (s.type === TYPE_PRIORITY) {
+        for (const o of s.occupations) {
+          priority.push(factKeyOf({ province, tail: o.noc }))
+        }
+        continue
+      }
       if (s.type !== TYPE_INELIGIBLE) {
         lists.push(factKeyOf({ province, tail: s.label }))
         continue
@@ -430,6 +439,7 @@ export function pnpFactsIndexOf(x: PnpFactsIndexIn): PnpFactsIndex {
     draws,
     lists,
     excluded,
+    priority,
     defaults: pnpDefaultProvsOf(x.pathways),
     gated: gatedKeysOf(x.pathways),
     qc: qcCellMapOf(x.qcCells),
@@ -501,6 +511,7 @@ function gatedKeysOf(pathways: PnpPathway[]): string[] {
  * 排除那串只对不可提名的岗算数(与弹框 shownStreamsOf 同一道)—— SK 主线不合格表是参考信号表,数据层不拿它判资格,
  * 可提名的岗弹框不再出那张排除卡,这里也不再凭它判「有卡」。弹框顶上的「本岗能走的通道」卡只是抬头,不单独算「有卡」:
  * 只有它一张的弹框,内容与格子一字不差,等于点开只有标题。
+ * 2026-10-02 优待清单(NL 优先处理职位)点名本岗职业也算有卡,不看可不可提名(与 shownStreamsOf 同一道)。
  *
  * @param x 本岗省码、职业码、数据层通道标签、可提名与否与事实索引。
  * @returns 有卡可出 = true。
@@ -514,6 +525,9 @@ export function pnpFactsShownOf(x: PnpFactsShownIn): boolean {
   }
   const exclKey = factKeyOf({ province: x.province, tail: x.noc })
   if (x.eligible === false && x.index.excluded.includes(exclKey)) {
+    return true
+  }
+  if (x.index.priority.includes(exclKey)) {
     return true
   }
   if (x.stream === TEXT_NONE) {
@@ -784,6 +798,8 @@ function sourceLinkOf(x: SourceLinkIn): SourceLink | null {
  * 2026-09-26 /fe 首页 Frank「止血 + 补完整」(顺手修):排除清单卡只给数据层判不可提名的岗。SK 主线不合格表只管
  * OID / EE 两个子类(数据层标了参考信号,不拿它判资格),持 offer 的 SK 岗照样可提名 —— 原先按职业码一碰就出排除卡,
  * 格子写「可提名」、弹框出「排除」,数百条自相矛盾。
+ * 2026-10-02 Frank「做吧,按你说的来」:优待清单(NL 优先处理职位)本岗职业在上面就出,与命中 / 排除无关 —— 它不是资格条件,
+ * 讲的是免招聘测试、优先处理。
  *
  * @param x 命中结论、本岗职业码与可提名与否。
  * @returns 要展开的清单。
@@ -792,6 +808,12 @@ export function shownStreamsOf(x: ShownStreamsIn): PnpStream[] {
   const out: PnpStream[] = []
   for (const s of x.match.streams) {
     if (s.occupations.length === 0) {
+      continue
+    }
+    if (s.type === TYPE_PRIORITY) {
+      if (hasNocOf(s, x.noc)) {
+        out.push(s)
+      }
       continue
     }
     if (x.match.matched != null) {
