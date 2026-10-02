@@ -30,7 +30,7 @@ export { Jobs } from './jobs'
 export { JobsHeader } from './jobsheader'
 export {
   boardDimsOf, boardPnpOf, colsFromCookie, filterSig, parseColWidthSeed, parseJobFilters, toCatLabelList,
-  toJobPlan, toNocDescList, toSearchParams,
+  toJobPlan, toNocDescList, toSearchParams, jobImmDimsOf,
 } from './functions'
 export type {
   ColWidthSeed, JobFact, JobFilters, JobPageDims, JobsIn, NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser,

@@ -21,6 +21,7 @@
  *
  * 2026-10-02 Frank「可以」(Google 收录:公司信息卡开页后才取、robots 挡 `/api/`,爬虫拿到的职位页里一个字公司信息都没有):
  * 公司详情在门里 SSR 取好递给正文,公司卡直出进 HTML。
+ * 同日移民相关卡:省提名格事实、两个弹框的维度(首屏维度那层 10 分钟缓存)与低位门槛(门槛表同样走缓存)在门里 SSR 取好递给正文。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -33,14 +34,16 @@ import config from '@/payload.config'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import {
-  EMPTY_MATCH_DIMS, Job, toCatLabelList, toJobPlan, toNocDescList,
+  boardPnpOf, EMPTY_MATCH_DIMS, Job, jobImmDimsOf, toCatLabelList, toJobPlan, toNocDescList,
 } from '@/components/jobs'
+import { wageLowAppliesOf } from '@/components/pnp'
 import { Frame } from '@/components/shell'
 import { JsonLd } from '@/components/jsonld'
 import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
 import {
-  checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadCompanyByJobId, loadJdSsrById, loadJobById, loadRelatedJobs,
+  checkedAt, getPnpReqs, getSsrDims, jobPostingJsonOf, jobsIdMetaRoute, loadCompanyByJobId, loadJdSsrById, loadJobById,
+  loadRelatedJobs,
 } from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/components/jobs'
@@ -122,6 +125,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   const jd = await loadJdSsrById({ db, id })
   const company = await loadCompanyByJobId({ db, jobId: id })
+  const ssrDims = await getSsrDims(db)
+  const pnpReqs = await getPnpReqs(db)
 
   return (
     <>
@@ -130,7 +135,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
-          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} company={company} />
+          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} company={company}
+          imm={{ pnp: boardPnpOf(ssrDims), dims: jobImmDimsOf(ssrDims), wageLow: wageLowAppliesOf({ job, reqs: pnpReqs }) }} />
         <Footer />
       </Frame>
     </>

@@ -1950,3 +1950,13 @@
   font-size: 13px;
   color: #6b7280;
 }
+
+/*
+ * 职位页移民相关卡的灰字小注(2026-10-02;形照公司信息卡别名灰字 .simAlias:一项一行)。
+ */
+.immSub {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+}

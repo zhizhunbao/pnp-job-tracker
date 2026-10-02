@@ -1692,6 +1692,21 @@ export type RowOfFactorIn = {
 }
 
 /**
+ * wageLowAppliesOf 的入参(2026-10-02 职位页移民相关卡)。
+ */
+export type WageLowIn = {
+  /**
+   * 本岗(只读省、职业码、TEER 三格)。
+   */
+  job: GateWho
+
+  /**
+   * 全国门槛行。
+   */
+  reqs: PnpReq[]
+}
+
+/**
  * reqAppliesOf 的入参。
  */
 export type ReqAppliesIn = {

@@ -492,6 +492,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'ob.valueApply': 'A few taps now — similar jobs will land in your inbox', 'ob.finishApply': 'Save and continue applying',
   // E8-07 job detail page
   'detail.openFull': 'Open full page', 'detail.back': 'Back', 'detail.related': 'Related jobs',
+  'imm.head': 'Immigration', 'imm.median': '{p} median {v}', 'imm.low': '{p} low {v}',
+  'imm.lowNote': 'Low wage: recent provincial grads',
   'detail.relatedNoneOcc': 'Browse similar open jobs in this province', 'detail.relatedNoneProv': 'Browse open jobs in {p}',
   'detail.sameCo': 'same employer', 'detail.sameOcc': 'same occupation in province', 'detail.closedNote': 'Posting closed, shown for reference only',
   'detail.pnpSec': 'PNP streams', 'detail.pnpSecNote': 'rough signal, not an eligibility decision', 'detail.eeSec': 'Federal EE categories', 'detail.crumbHome': 'Job board',

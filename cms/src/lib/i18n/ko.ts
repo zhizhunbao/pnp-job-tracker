@@ -487,6 +487,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'ob.valueApply': '몇 번만 선택하면 비슷한 공고가 이메일로 도착합니다', 'ob.finishApply': '저장하고 지원 계속',
   // E8-07 채용 상세 페이지
   'detail.openFull': '전체 페이지 열기', 'detail.back': '뒤로', 'detail.related': '관련 공고',
+  'imm.head': '이민 관련', 'imm.median': '{p} 중위 {v}', 'imm.low': '{p} 하위 {v}',
+  'imm.lowNote': '하위 임금은 이 주 최근 졸업생 기준',
   'detail.relatedNoneOcc': '이 주의 유사 채용 중 공고 보기', 'detail.relatedNoneProv': '{p}의 채용 중 공고 보기',
   'detail.sameCo': '같은 회사', 'detail.sameOcc': '같은 주 같은 직종', 'detail.closedNote': '마감된 공고입니다. 참고용으로만 확인하세요',
   'detail.pnpSec': '주정부 지명(PNP) 통로', 'detail.pnpSecNote': '대략적 신호이며 자격 판정이 아닙니다', 'detail.eeSec': '연방 EE 카테고리', 'detail.crumbHome': '채용 보드',

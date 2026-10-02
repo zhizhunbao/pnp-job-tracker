@@ -530,6 +530,8 @@ export const jobsZh = {
   'ob.valueApply': '顺手选几下,以后有相似的岗自动进你邮箱', 'ob.finishApply': '保存,继续投递',
   // E8-07 职位详情页
   'detail.openFull': '打开完整页', 'detail.back': '返回', 'detail.related': '相关职位',
+  'imm.head': '移民相关', 'imm.median': '{p}中位 {v}', 'imm.low': '{p}低位 {v}',
+  'imm.lowNote': '低位是本省应届毕业生的门槛',
   'detail.relatedNoneOcc': '查看本省的相似在招职位', 'detail.relatedNoneProv': '查看{p}的在招职位',
   'detail.sameCo': '同公司', 'detail.sameOcc': '同省同职业', 'detail.closedNote': '该岗位已下架,信息仅供参考',
   'detail.pnpSec': '省提名通道', 'detail.pnpSecNote': '粗筛信号,非资格认定', 'detail.eeSec': '联邦 EE 类别', 'detail.crumbHome': '职位板',

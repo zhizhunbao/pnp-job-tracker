@@ -52,5 +52,6 @@ export { VerdictPill } from './verdictpill'
 export {
   eeIsDormant, eeLastDraw, pnpBlockedKeysOf, pnpCellActiveOf,
   pnpBlockCellOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
+  wageLowAppliesOf,
 } from './functions'
 export { usePnpData } from './hooks'

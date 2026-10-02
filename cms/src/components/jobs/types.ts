@@ -1625,6 +1625,11 @@ export type JobIn = {
    * null = 没挂公司,公司卡照旧客户端取。
    */
   company: CompanySeedFact | null
+
+  /**
+   * 移民相关卡的服务端事实(2026-10-02 职位页直出移民信号:省提名格事实、两个弹框的维度、低位门槛)。
+   */
+  imm: JobImmFacts
 }
 
 /**
@@ -6378,4 +6383,249 @@ export type RelatedJson = {
    * 同省同职业总家数(缺键当行数)。
    */
   sameOccTotal?: number
+}
+
+/**
+ * 职位页移民相关卡要的服务端事实(2026-10-02 Frank「可以」:卡直出进 HTML,行与职位板三列同一判据)。
+ */
+export type JobImmFacts = {
+  /**
+   * 省提名格的事实(与职位板随首屏下发的同一份,boardPnpOf)。
+   */
+  pnp: BoardPnpFacts
+
+  /**
+   * 两个字段弹框要的维度(只有 EE 类别、新闻、字段出处三张,jobImmDimsOf 压好)。
+   */
+  dims: JobDims
+
+  /**
+   * 本岗有没有「本省应届毕业生不低于低位工资」这道门槛(pnp 桶 wageLowAppliesOf)。
+   */
+  wageLow: boolean
+}
+
+/**
+ * 移民相关卡的一行。
+ */
+export type ImmRow = {
+  /**
+   * React 键(列键)。
+   */
+  key: string
+
+  /**
+   * 行名(职位板列名)。
+   */
+  label: string
+
+  /**
+   * 主文案(信号三行是英文名,薪资行是薪资原文)。
+   */
+  main: string
+
+  /**
+   * 灰字小注,一项一行(界面语言译名、中位、低位)。
+   */
+  subs: string[]
+
+  /**
+   * 点开哪一列的弹框;null = 不可点。
+   */
+  col: JobColKey | null
+}
+
+/**
+ * immRowsOf 的入参。
+ */
+export type ImmRowsIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 服务端事实。
+   */
+  imm: JobImmFacts
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 分层态(格子上下文要)。
+   */
+  plan: JobPlan
+}
+
+/**
+ * immSignalRowOf 的入参。
+ */
+export type ImmSignalIn = {
+  /**
+   * 列键。
+   */
+  k: JobColKey
+
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 界面语言的格子上下文。
+   */
+  cx: CellCtx
+
+  /**
+   * 英文的格子上下文(主文案一律英文)。
+   */
+  cxEn: CellCtx
+}
+
+/**
+ * immCellCtxOf 的入参。
+ */
+export type ImmCtxIn = {
+  /**
+   * 服务端事实。
+   */
+  imm: JobImmFacts
+
+  /**
+   * 这一份上下文的语言。
+   */
+  lang: Lang
+
+  /**
+   * 分层态。
+   */
+  plan: JobPlan
+}
+
+/**
+ * immWageRowOf 的入参。
+ */
+export type ImmWageIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 有没有低位门槛。
+   */
+  wageLow: boolean
+
+  /**
+   * 取词函数。
+   */
+  t: TFn
+}
+
+/**
+ * 中位 / 低位一个数的显示入参。
+ */
+export type ImmMoneyIn = {
+  /**
+   * 本岗(看薪资原文是时薪还是年薪)。
+   */
+  job: JobFact
+
+  /**
+   * 时薪口径的数。
+   */
+  hourly: number | null
+
+  /**
+   * 年薪口径的数。
+   */
+  annual: number | null
+}
+
+/**
+ * 打开移民相关卡某一列弹框的写口。
+ */
+export type ImmOpenFn = (k: JobColKey) => void
+
+/**
+ * makeOpenImm 的入参。
+ */
+export type OpenImmIn = {
+  /**
+   * 弹框状态的写口。
+   */
+  open: ImmOpenFn
+
+  /**
+   * 点的是哪一列。
+   */
+  col: JobColKey
+}
+
+/**
+ * 移民相关卡的弹框状态。
+ */
+export type ImmPopupPanel = {
+  /**
+   * 开着的那一列;null = 没开。
+   */
+  col: JobColKey | null
+
+  /**
+   * 打开某一列的弹框。
+   */
+  open: ImmOpenFn
+
+  /**
+   * 关弹框。
+   */
+  close: () => void
+}
+
+/**
+ * JobImmCard 的 props。
+ */
+export type JobImmCardIn = {
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 服务端事实。
+   */
+  imm: JobImmFacts
+
+  /**
+   * 界面语言。
+   */
+  lang: Lang
+
+  /**
+   * 分层态。
+   */
+  plan: JobPlan
+
+  /**
+   * 本岗职业的官方描述(弹框里职业名要它)。
+   */
+  nocDesc: NocDesc[]
+}
+
+/**
+ * JobImmRow 的 props。
+ */
+export type JobImmRowIn = {
+  /**
+   * 这一行。
+   */
+  row: ImmRow
+
+  /**
+   * 打开某一列的弹框。
+   */
+  open: ImmOpenFn
 }

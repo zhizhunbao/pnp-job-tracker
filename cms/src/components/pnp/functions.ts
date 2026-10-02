@@ -76,7 +76,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
-  ReqAppliesIn, ZonedLinesIn, PnpBlockIn, PnpLang,
+  ReqAppliesIn, WageLowIn, ZonedLinesIn, PnpBlockIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
@@ -3160,6 +3160,25 @@ function wageRowOf(x: GateRowOfIn): GateRowSpec | null {
     lines.push(x.t('pnpgate.wageLowGrad', { prov: x.t(PROV_KEY_HEAD + x.job.province) }))
   }
   return { key: GATE_ROW.wage, label: x.t('pnpgate.k.wage'), lines, notes: [] }
+}
+
+/**
+ * 本岗有没有「本省应届毕业生不低于低位工资」这道门槛(2026-10-02 职位页移民相关卡:Frank「低位工资要显示吗」→ 有通道拿它当门槛才出低位):
+ * 判据同门槛卡工资行的低位那一行(wageRowOf)—— 本省门槛表里有应届毕业生款、口径 occLow、管得着本岗(reqAppliesOf)的工资行。
+ *
+ * @param x 本岗与全国门槛行。
+ * @returns 有这道门槛给 true。
+ */
+export function wageLowAppliesOf(x: WageLowIn): boolean {
+  for (const r of x.reqs) {
+    if (r.province !== x.job.province || r.factor !== GATE_F.wage || r.appliesCondition !== GATE_COND_GRAD) {
+      continue
+    }
+    if (basisHasOf({ basis: r.basis, key: BASIS_OCC_LOW }) && reqAppliesOf({ r, job: x.job })) {
+      return true
+    }
+  }
+  return false
 }
 
 /**

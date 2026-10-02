@@ -30,6 +30,7 @@ import { BROAD_SLUGS } from '@/lib/stats'
 import { eeDisplay, isDirect, isExpiredJob, isJdNone, sourceLabel } from '@/lib/jobs'
 import { PROV_NAMES, homeGateJsOf, homeProvinceOf, mapQuery, mapsUrl, parseLoc, provName } from '@/lib/location'
 import { catName, colorOf, nocLocalTitle, pickName } from '@/lib/noc'
+import { makeT } from '@/lib/i18n'
 import { fmtLocal, fmtLocalSec, ymd } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
@@ -63,6 +64,7 @@ import {
   URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD, URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
   URL_LEVEL_AMP, URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
   YEAR_MONTH_LEN, ZEBRA_MOD, DATE_CELL, P_REL_GROUP, P_REL_ID, URL_API_JOB_RELATED_PAGE,
+  IMM_COLS, LANG_EN, DISPOSITION_MAP, GROUP_PNP,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
@@ -86,6 +88,7 @@ import type {
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn,
+  CellCtx, ImmCtxIn, ImmMoneyIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -5233,4 +5236,168 @@ export function adminOf(u: SessionUser | null): boolean {
   return u.role === ROLE_ADMIN
 }
 
+/**
+ * 职位页移民相关卡两个字段弹框要的维度(2026-10-02):只留 EE 类别、新闻、字段出处三张,其余给空表 ——
+ * 职位页不需要职位板那一整包,别把城市 / 职业描述整表塞进页面。
+ *
+ * @param dims 首屏维度全包。
+ * @returns 只填三张的维度包。
+ */
+export function jobImmDimsOf(dims: JobDims): JobDims {
+  return {
+    provinces: [],
+    cities: [],
+    districts: [],
+    nocCategories: [],
+    sources: [],
+    experienceLevels: [],
+    pnpOccupations: [],
+    pnpDraws: [],
+    pathways: [],
+    qcCells: [],
+    eeCategories: dims.eeCategories,
+    eeBroads: [],
+    nocDescriptions: [],
+    occupations: [],
+    fieldSources: dims.fieldSources,
+    news: dims.news,
+  }
+}
 
+/**
+ * 职位页移民相关卡的各行(2026-10-02 Frank「这两个应该可以点击弹框吧」「应该包含 EE PNP AIP 吧」「缺灰字啊」):
+ * 薪资一行 + EE / PNP / AIP 三行。三行的值、可点与否都走职位板同一套格子函数(cellViewOf / cellActive),职位板上是长横的这里整行不出;
+ * 主文案英文、界面语言译名做灰字(Frank「应该是英文黑字,中文灰字吧」「以后所有都这么弄」)。
+ *
+ * @param x 本岗、服务端事实、界面语言与分层态。
+ * @returns 各行;一行都没有给空表。
+ */
+export function immRowsOf(x: ImmRowsIn): ImmRow[] {
+  const cx = immCellCtxOf({ imm: x.imm, lang: x.lang, plan: x.plan })
+  const cxEn = immCellCtxOf({ imm: x.imm, lang: LANG_EN, plan: x.plan })
+  const rows: ImmRow[] = []
+  const wage = immWageRowOf({ job: x.job, wageLow: x.imm.wageLow, t: cx.t })
+  if (wage != null) {
+    rows.push(wage)
+  }
+  for (const k of IMM_COLS) {
+    const one = immSignalRowOf({ k, job: x.job, cx, cxEn })
+    if (one != null) {
+      rows.push(one)
+    }
+  }
+  return rows
+}
+
+/**
+ * 移民相关卡的格子上下文(与职位板同形;职业名用不着,给空查表)。
+ *
+ * @param x 服务端事实、语言与分层态。
+ * @returns 格子上下文。
+ */
+function immCellCtxOf(x: ImmCtxIn): CellCtx {
+  return {
+    t: makeT(x.lang),
+    plan: x.plan,
+    blocked: blockedSetsOf(x.imm.pnp),
+    pnpIndex: x.imm.pnp.index,
+    eeCats: x.imm.dims.eeCategories,
+    occName: makeOccName({ rows: [], lang: x.lang }),
+    lang: x.lang,
+  }
+}
+
+/**
+ * 薪资一行:主文案薪资原文;灰字中位(有就出),有低位门槛时再出低位与一句说明(2026-10-02 Frank「低位工资要显示吗」)。
+ *
+ * @param x 本岗、低位门槛与取词函数。
+ * @returns 这一行;没有薪资给 null。
+ */
+function immWageRowOf(x: ImmWageIn): ImmRow | null {
+  if (hasText(x.job.salaryText) === false) {
+    return null
+  }
+  const p = provName({ t: x.t, code: x.job.province, localeOnly: true })
+  const subs: string[] = []
+  const median = immMoneyOf({ job: x.job, hourly: x.job.wageMedHourly, annual: x.job.wageMedAnnual })
+  if (median !== TEXT_NONE) {
+    subs.push(x.t('imm.median', { p, v: median }))
+  }
+  const low = immMoneyOf({ job: x.job, hourly: x.job.wageLowHourly, annual: x.job.wageLowAnnual })
+  if (x.wageLow && low !== TEXT_NONE) {
+    subs.push(x.t('imm.low', { p, v: low }))
+    subs.push(x.t('imm.lowNote'))
+  }
+  return { key: COL.salary, label: x.t('col.salary'), main: x.job.salaryText, subs, col: null }
+}
+
+/**
+ * 中位 / 低位的一个数:薪资原文是时薪就写时薪,否则写年薪(与职位板中位两列同一写法)。
+ *
+ * @param x 本岗与两种口径的数。
+ * @returns 显示文本;没有给空串。
+ */
+function immMoneyOf(x: ImmMoneyIn): string {
+  if (x.job.salaryText.endsWith(UNIT_HOUR)) {
+    if (x.hourly == null) {
+      return TEXT_NONE
+    }
+    return SIGN_DOLLAR + String(x.hourly) + UNIT_HOUR
+  }
+  if (x.annual == null) {
+    return TEXT_NONE
+  }
+  return SIGN_DOLLAR + String(Math.round(x.annual / K_DIVISOR)) + UNIT_K_YEAR
+}
+
+/**
+ * EE / PNP / AIP 的一行:值照职位板那一格(英文做主文案,界面语言的字不同才做灰字);格子是长横整行不出。
+ *
+ * @param x 列键、本岗与两份格子上下文。
+ * @returns 这一行;职位板上是长横给 null。
+ */
+function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
+  const en = cellViewOf({ k: x.k, j: x.job, cx: x.cxEn }).text
+  if (en === TEXT_NONE || en === DASH) {
+    return null
+  }
+  const local = cellViewOf({ k: x.k, j: x.job, cx: x.cx }).text
+  const subs: string[] = []
+  if (local !== en) {
+    subs.push(local)
+  }
+  let col: JobColKey | null = null
+  if (cellActive({ k: x.k, j: x.job, cx: x.cx })) {
+    col = x.k
+  }
+  return { key: x.k, label: x.cx.t(K_COL + x.k), main: en, subs, col }
+}
+
+/**
+ * 移民相关卡一行的点击:打开这一列的弹框。
+ *
+ * @param x 弹框写口与列键。
+ * @returns 点击回调。
+ */
+export function makeOpenImm(x: OpenImmIn): () => void {
+  return function openImm(): void {
+    x.open(x.col)
+  }
+}
+
+/**
+ * 移民相关卡开着的那一列 → 字段弹框的分组(查 FIELD_GROUP,与职位板 makeFieldRouter 同一张表);省提名另走 PnpModal,这里给 null。
+ *
+ * @param col 开着的列;null = 没开。
+ * @returns 字段弹框分组;不走字段弹框给 null。
+ */
+export function immGroupOf(col: JobColKey | null): PopupState['group'] | null {
+  if (col == null) {
+    return null
+  }
+  const d = FIELD_GROUP[col]
+  if (d == null || d === DISPOSITION_NONE || d === DISPOSITION_MAP || d === GROUP_PNP) {
+    return null
+  }
+  return d
+}

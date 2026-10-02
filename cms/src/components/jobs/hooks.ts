@@ -75,6 +75,7 @@ import type {
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
+  ImmPopupPanel,
 } from './types'
 
 /**
@@ -2490,4 +2491,20 @@ function proofOf(props: JobsIn): ProofCount {
     return { named: 0, lmia: 0 }
   }
   return props.proof
+}
+
+/**
+ * 职位页移民相关卡的弹框状态(2026-10-02:三行点开职位板同一个弹框;一次只开一个)。
+ *
+ * @returns 开着的列与开 / 关两个口。
+ */
+export function useImmPopup(): ImmPopupPanel {
+  const [col, setCol] = useState<JobColKey | null>(null)
+  function open(k: JobColKey): void {
+    setCol(k)
+  }
+  function close(): void {
+    setCol(null)
+  }
+  return { col, open, close }
 }

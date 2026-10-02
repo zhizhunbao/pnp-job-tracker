@@ -3121,3 +3121,18 @@ export const LAYER_JOB = 'job'
  * 弹框栈的公司层(PeekCoLayer.kind 的字面量)。
  */
 export const LAYER_CO = 'company'
+
+/**
+ * 卡标题行的全局类(main.css 的 mcardHead;职位页移民相关卡,与公司信息卡同一个卡头;2026-10-02)。
+ */
+export const CARD_HEAD_CLS = 'mcardHead'
+
+/**
+ * 移民相关卡里三行信号的列键(行序 = 职位板列序 EE › PNP › AIP;行名、值、可点判据都照职位板这三列;2026-10-02)。
+ */
+export const IMM_COLS: JobColKey[] = ['ee', 'pnp', 'aip']
+
+/**
+ * 站内蓝链的全局类(main.css 的 link;移民相关卡可点的那几行字;2026-10-02)。
+ */
+export const LINK_CLS = 'link'

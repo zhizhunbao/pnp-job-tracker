@@ -32,6 +32,7 @@
  * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期挪进译名行贴右、排在「查看原帖」前
  * (.titleMeta);手机宽度放不下时整块换到下一行仍贴右。
  * 2026-10-02 Frank「可以」(Google 收录):公司信息卡吃页面门 SSR 取好的公司详情(company 原样透传,本域一格不读),卡直出进 HTML。
+ * 同日 Frank 看效果图点头:JD 白卡与公司信息卡之间加移民相关卡(JobImmCard:薪资 + EE / PNP / AIP,点开职位板同一个弹框),事实由页面门 SSR 递来。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -48,6 +49,7 @@ import { JdOrigLink } from './jdoriglink'
 import { JobBody } from './jobbody'
 import { JobCrumbs } from './jobcrumbs'
 import { JobDates } from './jobdates'
+import { JobImmCard } from './jobimmcard'
 import { JobRelated } from './jobrelated'
 import type { JobIn } from './types'
 import css from './jobs.module.css'
@@ -58,8 +60,8 @@ import css from './jobs.module.css'
  * @param props 本岗、分层态、页面维度、相似职位与数据更新时刻。
  * @returns 正文轨里的窄读列。
  */
-export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company }: JobIn) {
-  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company })
+export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company, imm }: JobIn) {
+  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company, imm })
   const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted })
   const peek = useJobPeek()
   return (
@@ -79,6 +81,7 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
+        <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany}
           seed={company} />
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
