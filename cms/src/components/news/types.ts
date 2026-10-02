@@ -620,19 +620,9 @@ export type CommentThreadIn = {
   replying: boolean
 
   /**
-   * 楼内回复是展开态(≤3 条恒展开)。
-   */
-  open: boolean
-
-  /**
    * 点楼主那条的「回复」。
    */
   onReply: ClickFn
-
-  /**
-   * 点「展开 N 条回复」/「收起」。
-   */
-  onToggle: ClickFn
 
   /**
    * 回复框现值。
@@ -978,16 +968,6 @@ export type CommentsPanel = {
    * 开/关某座楼的回复框。
    */
   replyToggleOf: PickFn
-
-  /**
-   * 展开/收起某座楼的楼内回复。
-   */
-  expandToggleOf: PickFn
-
-  /**
-   * 楼内回复是展开态的楼 id。
-   */
-  expanded: Set<number>
 }
 
 /**
@@ -1446,23 +1426,23 @@ export type RepliesAtIn = {
 }
 
 /**
- * isThreadOpen 的入参。
+ * shownRepliesOf 的入参。
  */
-export type ThreadOpenIn = {
+export type ShownRepliesIn = {
   /**
-   * 这座楼的回复条数。
+   * 楼内回复(时间正序)。
    */
-  count: number
+  replies: NewsComment[]
 
   /**
-   * 这座楼的 id。
+   * 折起来的条数(replyHiddenOf 给)。
    */
-  id: number
+  hidden: number
 
   /**
-   * 用户点开过的楼。
+   * 已展开了几条折起来的(useFold 给)。
    */
-  expanded: Set<number>
+  extra: number
 }
 
 /**
@@ -1503,26 +1483,6 @@ export type SendDisabledIn = {
    * 提交状态。
    */
   state: PostState
-}
-
-/**
- * expandLabelOf 的入参。
- */
-export type ExpandLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 楼内回复展开着没。
-   */
-  open: boolean
-
-  /**
-   * 楼内回复条数。
-   */
-  count: number
 }
 
 /**
@@ -1768,16 +1728,6 @@ export type ReplyToggleIn = {
    * 回复框正文落格。
    */
   setReplyBody: (v: string) => void
-}
-
-/**
- * makeExpandToggleOf 的入参。
- */
-export type ExpandToggleIn = {
-  /**
-   * 展开集合落格(函数式,拿得到最新值)。
-   */
-  setExpanded: (f: (s: Set<number>) => Set<number>) => void
 }
 
 /**

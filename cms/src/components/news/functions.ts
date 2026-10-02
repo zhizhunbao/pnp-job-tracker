@@ -28,15 +28,15 @@ import {
   STATE_SENT, SUMMARY_EN_COL, SUMMARY_NULL_COL, TEXT_CANADA, TEXT_IRCC, TEXT_NONE, TIP_SEP, URL_NEWS_HEAD,
 } from './constants'
 import type {
-  ClickFn, CommentCountIn, CommentSubmitIn, CommentsOfIn, DateIn, DayGroupsOfIn, DeadIn, ExpandLabelIn,
-  ExpandToggleIn, FirstIn, GenBody, GenTextIn, HeroSummaryOfIn, ImgClsIn, ImpTipOfIn, ImportanceIn, InitialOfIn,
+  ClickFn, CommentCountIn, CommentSubmitIn, CommentsOfIn, DateIn, DayGroupsOfIn, DeadIn,
+  FirstIn, GenBody, GenTextIn, HeroSummaryOfIn, ImgClsIn, ImpTipOfIn, ImportanceIn, InitialOfIn,
   LangCache, LangCacheAtIn, NewsComment, NewsDayGroup, NewsHero, NextIn, OfficialIn, OnIn, ParasOfIn, ParaTextIn,
   BoldSeg,
   PauseIn,
   PickFn, PinnedIn, PostCommentIn, PresentRegionsOfIn, PutLangCacheIn, RegionIn, RegionLabelOfIn, RegionPickIn,
-  RepliesAtIn, ReplySubmitIn, ReplyToggleIn, SendDisabledIn, ShownItemsOfIn, SlideAriaIn, SlidePickIn,
+  RepliesAtIn, ReplySubmitIn, ReplyToggleIn, SendDisabledIn, ShownItemsOfIn, ShownRepliesIn, SlideAriaIn, SlidePickIn,
   NewsCard, SlideTimerIn, SlidesAtIn, SlugIn, SmallIn, StepIn, SumClickIn, SumLabelIn, TextChangeFn,
-  TextChangeIn, ThreadOpenIn, TransAtOfIn, TransClickIn, TransLabelIn,
+  TextChangeIn, TransAtOfIn, TransClickIn, TransLabelIn,
   NewsCardRowIn, NewsCmtCountDbRow, NewsCmtCounts, NewsCommentsAtIn, NewsDbRow, NewsFirstRowIn, NewsHeroRowIn,
   NewsListIn, NewsSlugIn,
 } from './types'
@@ -808,16 +808,27 @@ export function repliesAtOf(x: RepliesAtIn): NewsComment[] {
 }
 
 /**
- * 楼内回复是不是展开态:≤3 条恒展开,更多的看用户点没点「展开」。
+ * 楼内回复折起来几条:≤3 条恒展开(折 0 条),更多的整楼折起(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」
+ * 「展开 20, 再展开 20, 再开其余, 收起」:折起来的交给 pager 桶 FoldLine 一次展开 20 条;原「展开 N 条回复 / 收起回复」开关撤)。
  *
- * @param x 回复条数、楼 id 与展开集合。
- * @returns 展开着没。
+ * @param count 这座楼的回复条数。
+ * @returns 折起来的条数。
  */
-export function isThreadOpen(x: ThreadOpenIn): boolean {
-  if (x.count <= REPLIES_OPEN_MAX) {
-    return true
+export function replyHiddenOf(count: number): number {
+  if (count <= REPLIES_OPEN_MAX) {
+    return 0
   }
-  return x.expanded.has(x.id)
+  return count
+}
+
+/**
+ * 楼内这一刻露出来的回复:恒露的几条 + 已展开的前 extra 条折起来的(时间正序不变)。
+ *
+ * @param x 楼内回复、折起来几条与已展开几条。
+ * @returns 露出来的回复。
+ */
+export function shownRepliesOf(x: ShownRepliesIn): NewsComment[] {
+  return x.replies.slice(0, x.replies.length - x.hidden + x.extra)
 }
 
 /**
@@ -1109,28 +1120,6 @@ export function makeReplyToggleOf(x: ReplyToggleIn): PickFn {
 }
 
 /**
- * 造「展开 N 条回复 / 收起」手柄的工厂。
- *
- * @param x 展开集合落格。
- * @returns 逐楼的手柄工厂。
- */
-export function makeExpandToggleOf(x: ExpandToggleIn): PickFn {
-  return function toggleOf(id: number): ClickFn {
-    return function toggle(): void {
-      x.setExpanded(function flip(s: Set<number>): Set<number> {
-        const next = new Set(s)
-        if (next.has(id)) {
-          next.delete(id)
-        } else {
-          next.add(id)
-        }
-        return next
-      })
-    }
-  }
-}
-
-/**
  * 造 AI 速读的点击手柄(按需生成 → 写库 → 落进本地缓存)。
  *
  * @param x slug、界面语言、状态现值与两个落格。
@@ -1249,19 +1238,6 @@ export function pinnedTagClsOf(): string {
  */
 export function transTailClsOf(): string {
   return [cssOf(css.trans), cssOf(css.transTail)].join(CLS_SEP)
-}
-
-/**
- * 「展开 N 条回复」/「收起」的钮面。
- *
- * @param x 取词函数、展开态与回复条数。
- * @returns 钮面文字。
- */
-export function expandLabelOf(x: ExpandLabelIn): string {
-  if (x.open) {
-    return x.t('news.cmt.collapse')
-  }
-  return x.t('news.cmt.expand', { n: x.count })
 }
 
 /**

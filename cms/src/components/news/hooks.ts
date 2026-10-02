@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { useLang } from '@/components/i18n'
 import { SLIDE_MIN, STATE_IDLE, STEP_NEXT, STEP_PREV, TEXT_NONE } from './constants'
 import {
-  langCacheAt, makeCommentSubmit, makeDead, makeExpandToggleOf, makePause, makeRegionAll, makeRegionPickOf,
+  langCacheAt, makeCommentSubmit, makeDead, makePause, makeRegionAll, makeRegionPickOf,
   makeReplySubmit, makeReplyToggleOf, makeSlidePickOf, makeSlideTimer, makeStep, makeSumClick, makeTextChange,
   makeTransClick,
 } from './functions'
@@ -87,6 +87,7 @@ export function useNewsFilter(): NewsFilterPanel {
 /**
  * 评论区整机:顶层表单 + 楼中楼回复框 + 折叠展开。发出去的每一条都落成 pending,
  * 人工审核过了才公开(信任边界:不学匿名直发)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:楼内回复的折叠展开搬去 CommentThread 一楼一台 pager 桶 useFold,本机不再管。
  *
  * @param x 这条动态的 slug。
  * @returns 表单状态与手柄。
@@ -96,14 +97,12 @@ export function useComments(x: CommentsHookIn): CommentsPanel {
   const [state, setState] = useState<PostState>(STATE_IDLE)
   const [replyTo, setReplyTo] = useState<number | null>(null)
   const [replyBody, setReplyBody] = useState(TEXT_NONE)
-  const [expanded, setExpanded] = useState<Set<number>>(new Set())
 
   return {
     body,
     state,
     replyTo,
     replyBody,
-    expanded,
     onChange: makeTextChange({ setBody, state, setState }),
     onSubmit: makeCommentSubmit({ slug: x.slug, body, state, setState, setBody }),
     onReplyChange: makeTextChange({ setBody: setReplyBody, state, setState }),
@@ -117,7 +116,6 @@ export function useComments(x: CommentsHookIn): CommentsPanel {
       setReplyTo,
     }),
     replyToggleOf: makeReplyToggleOf({ replyTo, setReplyTo, setReplyBody }),
-    expandToggleOf: makeExpandToggleOf({ setExpanded }),
   }
 }
 

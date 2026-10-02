@@ -280,8 +280,14 @@ export const REPLY_ROWS = 2
 
 /**
  * 楼内回复直接展开的条数上限:超过这个数才折叠成「展开 N 条回复」。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:折起来的走 pager 桶 FoldLine(一次展开 20 条)。
  */
 export const REPLIES_OPEN_MAX = 3
+
+/**
+ * 楼内回复展开钮的量词词条(「条回复」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:钮走 pager 桶 FoldLine)。
+ */
+export const K_REPLY_UNIT = 'fold.u.reply'
 
 /**
  * 评论区的锚点 id(详情页可用 `#comments` 直达)。

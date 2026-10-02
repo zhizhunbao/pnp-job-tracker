@@ -17,7 +17,7 @@ import { cssOf } from '@/components/css'
 import { ANCHOR_COMMENTS, URL_LOGIN } from './constants'
 import { CommentForm } from './commentform'
 import { CommentThread } from './commentthread'
-import { isThreadOpen, repliesAtOf, repliesOf, topCommentsOf } from './functions'
+import { repliesAtOf, repliesOf, topCommentsOf } from './functions'
 import { useComments } from './hooks'
 import type { CommentsSectionIn } from './types'
 import css from './news.module.css'
@@ -41,9 +41,7 @@ export function CommentsSection({ t, slug, comments, loggedIn }: CommentsSection
         replies={rs}
         loggedIn={loggedIn}
         replying={panel.replyTo === top.id}
-        open={isThreadOpen({ count: rs.length, id: top.id, expanded: panel.expanded })}
         onReply={panel.replyToggleOf(top.id)}
-        onToggle={panel.expandToggleOf(top.id)}
         replyBody={panel.replyBody}
         state={panel.state}
         onReplyChange={panel.onReplyChange}

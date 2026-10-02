@@ -107,6 +107,12 @@ export const EV_TO_QUIZ = 'case-to-quiz'
 export const HEAD_N = 5
 
 /**
+ * 其余路径 / 走不通的两处展开钮的量词词条(「条」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:
+ * 原 details「展开其余 N 条」换成 pager 桶 FoldLine,一次展开 20 条)。
+ */
+export const K_CASE_UNIT = 'fold.u.entry'
+
+/**
  * 每条路径最多摆几条判定理由(多了淹没主干;官方原文收在 details 里不占行)。
  */
 export const REASONS_MAX = 4
