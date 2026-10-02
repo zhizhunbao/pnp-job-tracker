@@ -34,8 +34,8 @@ import {
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
   URL_API_APPLY_HOW, URL_API_APPLY_HOW_ID, URL_API_JD_FORMAT, URL_API_JD_TRANSLATE,
-  URL_API_JOB_RELATED, URL_API_JOB_RELATED_OCC,
-  URL_API_JOBS, URL_API_JOBS_DIMS, Q_REL_OFFSET, REL_NO_PAGING,
+  URL_API_JOB_RELATED,
+  URL_API_JOBS, URL_API_JOBS_DIMS,
   URL_API_SAVED_JOBS,
   URL_API_SAVED_JOBS_LIST, URL_API_SAVED_JOB_BY_JOB, URL_API_SAVED_JOB_BY_JOB_TAIL, URL_API_SAVED_SEARCHES,
   URL_API_USERS_ME, URL_BOARD, URL_TO_FILTER, VAL_ON, WIDTH_FULL,
@@ -51,7 +51,7 @@ import {
   makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  toRelatedJobs, toRelatedPage, relMoreTextOf, relStepOf, chipNocOf, occGroupsOf, occSlotOf,
+  toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf,
 } from './functions'
@@ -71,7 +71,7 @@ import type {
   MatchProfileFact, MeJson, ModalsHookIn, ModalsHookOut, NeedIntentIn,
   OpenApplyIn, OpenMatchIn, OutsideCloseIn, PeekLayer, PopupState, ProfileJsonFact, ProofCount, QKeyEvent, QKeyFn,
   RelatedJobs,
-  RelatedJobFact, RelatedJson, RelatedOfHookIn, RelatedPagesIn, RelatedPagesPanel, SavedAddIn, SavedEditIn,
+  RelatedJson, RelatedOfHookIn, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
   TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
@@ -1577,19 +1577,6 @@ function readRelated(r: Response): Promise<RelatedJson | null> {
 }
 
 /**
- * 「同省同职业」按页续取的响应 → 这一页的瘦行(2026-09-23)。
- *
- * @param r 响应。
- * @returns 这一页;非 2xx 或解不开给 null(留原样,可再点)。
- */
-function readRelatedPage(r: Response): Promise<RelatedJobFact[] | null> {
-  if (r.ok === false) {
-    return Promise.resolve(null)
-  }
-  return r.json().then(toRelatedPage).catch(nullOf)
-}
-
-/**
  * 2xx 才解投递方式。
  *
  * @param r 响应。
@@ -2490,77 +2477,6 @@ export function useRelatedOf(x: RelatedOfHookIn): RelatedJobs | null {
     }
   }, [id])
   return related
-}
-
-/**
- * 相关职位一组的展开 / 收起与按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」):
- * 同公司组照 09-22 的形,「展开其余 N 个」一次露完已取的行;同省同职业组「再展开 N 个」先露已取的,露完了按页向
- * /api/jobs/related/occ 取下一页接在后面(取回 0 行 = 到底了,钮不再出;取失败留原样,可再点)。「收起」回到首屏那几行,
- * 续取到的行留着,再展开不重取。换了岗位(弹框里叠开另一条)从头来。
- *
- * @param x 续取岗号、首屏的行、总数、收起首屏条数与取词函数。
- * @returns 露出来的行、展开钮钮面、在途、收起钮开关与两个手柄。
- */
-export function useRelatedPages(x: RelatedPagesIn): RelatedPagesPanel {
-  const [n, setN] = useState(x.firstN)
-  const [extra, setExtra] = useState<RelatedJobFact[]>([])
-  const [busy, setBusy] = useState(false)
-  const [done, setDone] = useState(false)
-  const [prevJob, setPrevJob] = useState(x.jobId)
-  if (prevJob !== x.jobId) {
-    setPrevJob(x.jobId)
-    setN(x.firstN)
-    setExtra([])
-    setDone(false)
-  }
-  const all = x.rows.concat(extra)
-  const jobId = x.jobId
-  const firstN = x.firstN
-  function onMore(): void {
-    if (jobId === REL_NO_PAGING) {
-      setN(all.length)
-      return
-    }
-    if (all.length > n) {
-      setN(n + relStepOf({ n, loaded: all.length, total: x.total }))
-      return
-    }
-    if (busy) {
-      return
-    }
-    setBusy(true)
-    fetch(URL_API_JOB_RELATED_OCC + String(jobId) + Q_REL_OFFSET + String(all.length))
-      .then(readRelatedPage)
-      .then(function onPage(got: RelatedJobFact[] | null) {
-        if (got == null) {
-          return
-        }
-        setExtra(function append(prev: RelatedJobFact[]): RelatedJobFact[] {
-          return prev.concat(got)
-        })
-        setN(function bump(prev: number): number {
-          return prev + got.length
-        })
-        if (got.length === 0) {
-          setDone(true)
-        }
-      })
-      .catch(swallow)
-      .finally(function idle() {
-        setBusy(false)
-      })
-  }
-  function onCollapse(): void {
-    setN(firstN)
-  }
-  return {
-    shown: all.slice(0, n),
-    moreText: relMoreTextOf({ t: x.t, jobId, n, loaded: all.length, total: x.total, done }),
-    busy,
-    canCollapse: n > firstN,
-    onMore,
-    onCollapse,
-  }
 }
 
 /**

@@ -62,7 +62,7 @@ import {
   TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_SS,
   URL_API_JOB_TEXT, URL_API_JOB_TEXT_ID, URL_BOARD_BROAD, URL_BOARD_NOC, URL_BOARD_PROV, URL_JOB, URL_JOBS_QUERY,
   URL_LEVEL_AMP, URL_TO_FILTER, VAL_ON, WIDTH_MAX_CONTENT, WIDTH_MIN_CONTENT, WIDTH_SLACK, WIDTH_ZERO, WRAP_COLS,
-  YEAR_MONTH_LEN, ZEBRA_MOD, REL_NO_PAGING, REL_OCC_STEP_N, DATE_CELL,
+  YEAR_MONTH_LEN, ZEBRA_MOD, DATE_CELL, P_REL_GROUP, P_REL_ID, URL_API_JOB_RELATED_PAGE,
 } from './constants'
 import type {
   AgeTextFn, AgeTextIn, AiNoteTextIn, AliasOfIn, Alloc, AllocateIn, AnyRouteIn, ApplyFiltersIn, ApplyLabelIn,
@@ -80,8 +80,8 @@ import type {
   MeasureOut, MeasurePassIn, MeasureWordIn, MoreLabelIn, NcByEeIn, NextSortIn, NoTextIn, NocCatRow, OrigLinkLabelIn,
   NocCategoryDoc, NocDescDoc, NocDescFact, NocHeadIn, NocLabelIn, NocNameIn, NocRowIn, NumOrIn, OccCellIn, OccNameIn,
   OccOptsIn, OccSlotIn, PageSigIn, PayFallbackForIn, PayFallbackZhIn, PayPairsZhIn, PeekStackRef, PickedShownIn,
-  PlanProfileIn, PopupToCoIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelMoreTextIn, RelStepIn,
-  RelatedJobFact, RelatedPageJson, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
+  PlanProfileIn, PopupToCoIn, PrefixLabelIn, ProvFullIn, ProvWordIn, RankOfIn, RelJsonTotalIn, RelPageUrlIn,
+  RelatedJobFact, RelatedJobJson, RelatedJobs, RelatedJson, RoundIn, SaveLabelIn, SaveToggleIn,
   SavedEntry, SavedListJson, SeedFilterIn, SeedJson, SeedValueIn, SessionUser, ShowFallbackIn, ShowFormattedIn,
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
@@ -3866,53 +3866,16 @@ function relJsonTotalOf(x: RelJsonTotalIn): number {
 }
 
 /**
- * 相关职位组展开钮的钮面。沿革:2026-09-22 Frank「需要一个展开的按钮吧」是一枚展开 / 收起两用钮(relShownOf 收起给前几行、
- * 展开全给,makeRelExpand 来回切),同省同职业组只在首屏取到的 24 行里展开;2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」
- * 选「展开时分页加载」,两枚钮拆开(照公司弹框在招职位卡「再展开 / 收起」的形),状态收进 useRelatedPages:
- * 同公司组照旧「展开其余 N 个」一次露完已取的行;同省同职业组「再展开 N 个」,N = 这一下会多出的行数。
+ * 相关职位一组按页续取的接口地址(跳过几条由 pager 桶 usePagedFold 续在后面;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  *
- * @param x 取词函数、续取岗号、露了几行、取到几行、总数与是否取到底。
- * @returns 钮面;'' = 没得展开,钮不出。
+ * @param x 本岗号与哪一组。
+ * @returns 地址。
  */
-export function relMoreTextOf(x: RelMoreTextIn): string {
-  if (x.jobId === REL_NO_PAGING) {
-    if (x.loaded <= x.n) {
-      return TEXT_NONE
-    }
-    return x.t('act.showAll', { n: x.loaded - x.n })
-  }
-  const k = relStepOf(x)
-  if (x.done || k <= 0) {
-    return TEXT_NONE
-  }
-  return x.t('act.showMore', { n: k })
-}
-
-/**
- * 同省同职业组这一下多露几行:已取的还没露完就露已取的,露完了按一页算(不超过总数)。
- *
- * @param x 露了几行、手里取到几行与总数。
- * @returns 行数;≤ 0 = 没得展开。
- */
-export function relStepOf(x: RelStepIn): number {
-  if (x.loaded > x.n) {
-    return Math.min(REL_OCC_STEP_N, x.loaded - x.n)
-  }
-  return Math.min(REL_OCC_STEP_N, x.total - x.n)
-}
-
-/**
- * /api/jobs/related/occ 的响应 → 这一页的瘦行(2026-09-23 按页续取)。
- *
- * @param j 接口响应。
- * @returns 这一页;缺键给空(当取到底)。
- */
-export function toRelatedPage(j: RelatedPageJson): RelatedJobFact[] {
-  const rows = j.sameOcc
-  if (rows == null) {
-    return []
-  }
-  return rows.map(toRelatedJob)
+export function relPageUrlOf(x: RelPageUrlIn): string {
+  const q = new URLSearchParams()
+  q.set(P_REL_ID, String(x.jobId))
+  q.set(P_REL_GROUP, x.group)
+  return URL_API_JOB_RELATED_PAGE + q.toString()
 }
 
 /**

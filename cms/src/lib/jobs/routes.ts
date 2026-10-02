@@ -26,7 +26,7 @@ import {
   AH_DAILY_DEFAULT, AH_LIMIT_PREFIX, APPLY_CACHE_MAX, APPLY_FAIL_MAX, APPLY_NEG_TTL_MS, COMPANY_SLUG_RE,
   AIP_KEY_MAX_LEN, AIP_OFFSET_MAX, DIMS_CACHE_CONTROL, E_AIP_PARAMS, E_NOC_REQUIRED, JB_POSTING_RE, JDTR_IP_DAILY, JDTR_LIMIT_PREFIX, JD_DAILY_DEFAULT,
   JD_LIMIT_PREFIX, JOBS_FILTER_KEYS, JOBS_PAGE_SIZE, MAIL_NONE, NOC5_RE, PAGE_N_MAX, PARAM_NONE, POOL_KEY_RE, P_DIR,
-  P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
+  P_GROUP, P_ID, P_KEY, P_NOC, P_OFFSET, P_PAGE, P_PROV, P_SORT, P_URL, PROV_CODE_RE, RADIX_DEC, REL_GROUP_CO, REL_GROUP_OCC, REL_OCC_OFFSET_MAX, SORT_NONE, URL_CUT_RE, NL,
   TITLE_IP_DAILY, TITLE_LIMIT_PREFIX, TITLE_MAX_LEN, E_SIMILAR_PARAMS, SIMILAR_OFFSET_MAX,
 } from './constants'
 import {
@@ -34,7 +34,7 @@ import {
   emptySimilar, loadApplyEmail, loadStoredApplyEmail, loadCompanyByJobId, loadCompanyByPoolKey, loadCompanyBySlug,
   loadAipEmployers, loadAipEmployersRest, loadJobsPage, loadOccCompetition, loadQcChannels, loadSimilarEmployers, generateJdFormatted, getPnpOps, getPnpReqs, getSsrDims,
   hasProfile, jdAllEmptyOf, jobDescription, jobMetaOut, loadBigDims, loadJdFormatted, loadJdState, loadJobById,
-  loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedOccPage, normalizeProfile, translateTitles,
+  loadJobMeta, loadMatchDims, loadRelatedAnchor, loadRelatedJobs, loadRelatedPage, normalizeProfile, translateTitles,
   emptyTexts, toJobId, toTitleReq, withTitleCtx, stripTitleCtx, loadJdTrans, jdTransCellOf, loadTitleTrans,
   saveTitleTrans, resetJdTrans, translateJdFormatted, translateTitleInContext, emptyTitle, isAmbiguousTitle,
 } from './functions'
@@ -679,19 +679,24 @@ export async function jobsRelatedRoute(req: Request): Promise<Response> {
 }
 
 /**
- * GET /api/jobs/related/occ?id=&offset=:「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」
- * 选「展开时分页加载」):组标题的计数是剔同雇主后的总家数,首屏只取第一页,展开到头由卡片按页来取。
+ * GET /api/jobs/related/page?id=&group=&offset=:相关职位按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」
+ * 选「展开时分页加载」时立,原 /api/jobs/related/occ 只管同省同职业组;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:同公司组也按页取,
+ * 两组并成这一个接口,回 { rows } 喂 pager 桶 usePagedFold):组标题的计数是总数,首屏只取露出来的那几条,展开由卡片按页来取。
  * 锚点格同 /api/jobs/related,先按岗位号取本岗。
  *
- * @param req 请求(?id=岗位号&offset=已取到几家)。
- * @returns `{ sameOcc }` 这一页;id / offset 不合法 400、查无 404。
+ * @param req 请求(?id=岗位号&group=co|occ&offset=已取到几条)。
+ * @returns `{ rows }` 这一页;id / group / offset 不合法 400、查无 404。
  */
-export async function jobsRelatedOccRoute(req: Request): Promise<Response> {
+export async function jobsRelatedPageRoute(req: Request): Promise<Response> {
   const url = new URL(req.url)
   const id = Number(url.searchParams.get(P_ID))
+  const group = url.searchParams.get(P_GROUP)
   const offset = Number(url.searchParams.get(P_OFFSET))
   if (Number.isInteger(id) === false || id <= 0 || Number.isInteger(offset) === false || offset < 0
     || offset > REL_OCC_OFFSET_MAX) {
+    return new Response(null, { status: BAD_REQUEST })
+  }
+  if (group !== REL_GROUP_CO && group !== REL_GROUP_OCC) {
     return new Response(null, { status: BAD_REQUEST })
   }
   const db = await getDb()
@@ -699,8 +704,8 @@ export async function jobsRelatedOccRoute(req: Request): Promise<Response> {
   if (job == null) {
     return new Response(null, { status: NOT_FOUND })
   }
-  const sameOcc = await loadRelatedOccPage({ db: db, job: job, offset: offset })
-  return Response.json({ sameOcc })
+  const rows = await loadRelatedPage({ db: db, job: job, group: group, offset: offset })
+  return Response.json({ rows })
 }
 
 /**

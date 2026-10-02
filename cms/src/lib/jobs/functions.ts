@@ -57,7 +57,7 @@ import {
   TITLE_CTX_STRIP_RE, TITLE_DOMAIN_RE, TITLE_ENT_PAIRS, TITLE_JUNK_RE,
   TITLE_MAX_LEN, TITLE_NONE, TITLE_RE, TITLE_SEG_MIN, TITLE_SPLIT_RE, TITLE_TAIL_RE, TOP_NOCS_MAX, TOP_NOCS_TTL_MS,
   TOP_NOCS_WITH_MED, TYPE_INELIGIBLE, TYPE_PRIORITY, UNCAT, VD, W, WAGE_NEAR_PCT_MIN,
-  JD_TRANS_MARKS_RE, REL_OCC_PAGE_ROWS,
+  JD_TRANS_MARKS_RE, REL_CO_FIRST_ROWS, REL_GROUP_CO, REL_OCC_FIRST_ROWS, REL_PAGE_ROWS,
 } from './constants'
 import {
   JD_FORMAT_PROMPT_HEAD, JD_FORMAT_RETRY_TAIL, TITLE_IN_CTX_PROMPT, TITLE_LANG_KO, TITLE_LANG_ZH,
@@ -83,8 +83,8 @@ import type {
   PgFailure, PnpDraw, PnpOcc, List,
   PnpOccDim, PnpOccs, PnpOpsOut, PnpOpsRow, PnpReqRow, PnpReqsOut, ProfileJsonCell, ProfileJsonOrNull, ProofOut,
   ProvCount, ProvCounts, ProvListCoverage, ProvOption, QuizFactsIn, QuizFactsOut, QuizProvCount, QuizStreamCount,
-  RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedOccPageIn,
-  RelatedOccPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
+  RatioMap, RatioOfIn, RelatedIn, RelatedJob, RelatedOut, RelatedAnchorIn, RelatedAnchorOut, RelatedPageIn,
+  RelatedPageOut, ReqStreamDisplayIn, ResetJdTransIn, ResolveQIn, ResolveQOut, Row, RowMatchIn, RuleIn, RuleScoreOut,
   SaveJdTransIn, SaveTitleTransIn, SimilarEmployer, SimilarIn, SimilarList, SimilarOut, SimilarPageIn, SsrDimsOut, TranslateJdIn,
   TransJdOut, StrList, StreamDisplayIn, StripTitleIn, TimeLike, TitleCtxFact, TitleInCtxIn, TitleInCtxOut, TitleList,
   TitleReq, JdTitleBody, TitleTexts, TitleTransIn, TitlesOut, ToJobRowIn, TopNoc, TopNocsIn, TopNocsOut,
@@ -1265,6 +1265,7 @@ export async function loadJobById(input: JobByIdIn): JobByIdOut {
  * 2026-08-11:两组都空时兜底探测三级分类「本省该级有没有在招岗」(EXISTS 命中即停),
  * 返回能筛出东西的最细一级 —— 下架页不能是死路。
  * 2026-09-23 职业分类改两级:只探大类(中 / 小类退役;职业那一级已由「同省同职业」组承担,组空了再探职业也是空)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组首屏只取露出来的那几条(同公司 3、同省同职业 6),其余由卡上「展开 20 个」走 loadRelatedPage 按页取。
  *
  * @param input 连接与本岗。
  * @returns 两组瘦行与兜底级。
@@ -1273,13 +1274,13 @@ export async function loadRelatedJobs(input: RelatedIn): RelatedOut {
   const job = input.job
   let coRows: Row[] = []
   if (job.company !== '') {
-    coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id],
-      map: passRow })
+    coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id,
+      REL_CO_FIRST_ROWS, 0], map: passRow })
   }
   let occRows: Row[] = []
   if (job.noc !== '' && job.province !== '') {
     occRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-      job.company, job.city, REL_OCC_PAGE_ROWS, 0], map: passRow })
+      job.company, job.city, REL_OCC_FIRST_ROWS, 0], map: passRow })
   }
   const sameCompany = coRows.map(toRelated)
   const sameOcc = occRows.map(toRelated)
@@ -1337,19 +1338,28 @@ function toRelTotal(r: Row): number {
 }
 
 /**
- * 「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」):
- * 口径与排序同 loadRelatedJobs 的同职业组(同一条 RELATED_SAME_OCC),只是从第 offset 家往后取一页。
+ * 相关职位按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」时立,原名 loadRelatedOccPage、
+ * 只管同省同职业组;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:同公司组也按页取,一页 20 条):口径与排序同 loadRelatedJobs 的那一组(同一条 SQL),
+ * 只是从第 offset 条往后取一页。
  *
- * @param input 连接、锚点格与跳过几家。
- * @returns 这一页的瘦行;本岗没职业码或没省给空。
+ * @param input 连接、锚点格、哪一组与跳过几条。
+ * @returns 这一页的瘦行;同公司组本岗没公司名、同职业组本岗没职业码或没省给空。
  */
-export async function loadRelatedOccPage(input: RelatedOccPageIn): RelatedOccPageOut {
+export async function loadRelatedPage(input: RelatedPageIn): RelatedPageOut {
   const job = input.job
+  if (input.group === REL_GROUP_CO) {
+    if (job.company === '') {
+      return []
+    }
+    const coRows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_COMPANY, params: [job.company, job.id,
+      REL_PAGE_ROWS, input.offset], map: passRow })
+    return coRows.map(toRelated)
+  }
   if (job.noc === '' || job.province === '') {
     return []
   }
   const rows = await queryRows({ db: input.db, sql: SQL.RELATED_SAME_OCC, params: [job.province, job.noc, job.id,
-    job.company, job.city, REL_OCC_PAGE_ROWS, input.offset], map: passRow })
+    job.company, job.city, REL_PAGE_ROWS, input.offset], map: passRow })
   return rows.map(toRelated)
 }
 

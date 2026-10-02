@@ -1767,133 +1767,18 @@ export type RelJsonTotalIn = {
 }
 
 /**
- * useRelatedPages 的入参。
+ * relPageUrlOf 的入参(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  */
-export type RelatedPagesIn = {
+export type RelPageUrlIn = {
   /**
-   * 按页续取用的本岗号;REL_NO_PAGING = 不续取(同公司组)。
+   * 本岗号。
    */
   jobId: number
 
   /**
-   * 首屏取到的行。
+   * 哪一组(REL_GROUP_CO / REL_GROUP_OCC)。
    */
-  rows: RelatedJob[]
-
-  /**
-   * 这一组的总数(组标题计数)。
-   */
-  total: number
-
-  /**
-   * 收起时先出几行。
-   */
-  firstN: number
-
-  /**
-   * 取词函数(展开钮钮面)。
-   */
-  t: TFn
-}
-
-/**
- * useRelatedPages 的出参。
- */
-export type RelatedPagesPanel = {
-  /**
-   * 露出来的行。
-   */
-  shown: RelatedJob[]
-
-  /**
-   * 展开钮钮面;'' = 没得展开,钮不出。
-   */
-  moreText: string
-
-  /**
-   * 下一页在途(钮先压住,免得连点重复取)。
-   */
-  busy: boolean
-
-  /**
-   * 出不出「收起」钮。
-   */
-  canCollapse: boolean
-
-  /**
-   * 点展开钮。
-   */
-  onMore: ClickFn
-
-  /**
-   * 点收起钮。
-   */
-  onCollapse: ClickFn
-}
-
-/**
- * `relMoreTextOf` 的入参。
- */
-export type RelMoreTextIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 按页续取用的本岗号;REL_NO_PAGING = 不续取。
-   */
-  jobId: number
-
-  /**
-   * 露了几行。
-   */
-  n: number
-
-  /**
-   * 手里取到几行(首屏的 + 续取的)。
-   */
-  loaded: number
-
-  /**
-   * 这一组的总数。
-   */
-  total: number
-
-  /**
-   * 续取到底了(上一页取回 0 行)。
-   */
-  done: boolean
-}
-
-/**
- * `relStepOf` 的入参。
- */
-export type RelStepIn = {
-  /**
-   * 露了几行。
-   */
-  n: number
-
-  /**
-   * 手里取到几行。
-   */
-  loaded: number
-
-  /**
-   * 这一组的总数。
-   */
-  total: number
-}
-
-/**
- * /api/jobs/related/occ 的响应体(线格式;2026-09-23 按页续取)。
- */
-export type RelatedPageJson = {
-  /**
-   * 这一页的行;缺席 = 没取到。
-   */
-  sameOcc?: RelatedJobJson[]
+  group: string
 }
 
 /**
@@ -1916,15 +1801,10 @@ export type RelatedGroupIn = {
   total: number
 
   /**
-   * 收起时先出几行(2026-09-22「需要一个展开的按钮吧」;同公司 3、同省同职业 6)。
+   * 取一页的接口地址(不含跳过几条;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组都按页取 —— 原「收起时先出几行」firstN 与「续取用的本岗号」pageJobId 撤,
+   * 首屏露的就是服务端带来的那几条)。
    */
-  firstN: number
-
-  /**
-   * 按页续取用的本岗号(2026-09-23:同省同职业组给本岗号,露完已取的行后「再展开」向接口取下一页);
-   * REL_NO_PAGING = 不续取(同公司组,「展开其余 N 个」一次露完已取的行)。
-   */
-  pageJobId: number
+  url: string
 
   /**
    * 取词函数(展开 / 收起钮文案)。

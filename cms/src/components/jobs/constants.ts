@@ -703,14 +703,35 @@ export const URL_API_JOB_TEXT = '/api/jobs/text?url='
 export const URL_API_JOB_RELATED = '/api/jobs/related?id='
 
 /**
- * 「同省同职业」按页续取(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」;接岗位号)。
+ * 相关职位按页续取的接口(2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」时立,原 /api/jobs/related/occ;
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:两组并成一个接口,后面接查询串,跳过几条由 pager 桶 usePagedFold 续上)。
  */
-export const URL_API_JOB_RELATED_OCC = '/api/jobs/related/occ?id='
+export const URL_API_JOB_RELATED_PAGE = '/api/jobs/related/page?'
 
 /**
- * 按页续取的跳过条数参数(接在岗位号后面)。
+ * 相关职位续取接口的岗位号参数名。
  */
-export const Q_REL_OFFSET = '&offset='
+export const P_REL_ID = 'id'
+
+/**
+ * 相关职位续取接口的组参数名。
+ */
+export const P_REL_GROUP = 'group'
+
+/**
+ * 组参数值:同公司组。
+ */
+export const REL_GROUP_CO = 'co'
+
+/**
+ * 组参数值:同省同职业组。
+ */
+export const REL_GROUP_OCC = 'occ'
+
+/**
+ * 相关职位组展开钮的量词词条(「个」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:组底钮走 pager 桶 FoldLine)。
+ */
+export const K_REL_UNIT = 'fold.u.item'
 
 /**
  * 正文接口的岗位号参数(接在链接后;2026-09-20 服务端按岗位号找行,链接只用来去原站懒抓)。
@@ -2045,26 +2066,6 @@ export const TRACK_MODE_WEB = 'web'
  * 4000 → 15000,与 lib/jobs 服务端正文封顶同值 —— 原文轨的定位是原帖原样,不该被「读不完」剪。
  */
 export const JD_MAX_LEN = 15000
-
-/**
- * 相似职位·同公司组收起时先出几行(2026-09-22 Frank「需要一个展开的按钮吧」;与旧 LIMIT 3 的密度一致)。
- */
-export const REL_CO_FIRST_N = 3
-
-/**
- * 相似职位·同省同职业组收起时先出几行(与旧 LIMIT 6 的密度一致,展开看其余)。
- */
-export const REL_OCC_FIRST_N = 6
-
-/**
- * 相似职位·同省同职业组每点一次「再展开」最多多露几行(2026-09-23;与服务端一页的家数一致 —— 先露已取的,露完了向接口取下一页)。
- */
-export const REL_OCC_STEP_N = 24
-
-/**
- * 相似职位组不按页续取的记号(同公司组):「展开其余 N 个」一次露完已取的行,同 09-22 的形。
- */
-export const REL_NO_PAGING = 0
 
 /**
  * 大节头白名单(Job Bank 固定小节)。白名单外一律当内容行 ——「English」这类单词值

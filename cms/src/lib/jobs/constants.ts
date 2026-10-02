@@ -2117,17 +2117,44 @@ export const P_URL = 'url'
 export const P_ID = 'id'
 
 /**
- * 跳过条数参数名(/api/jobs/related/occ,2026-09-23「同省同职业」按页续取)。
+ * 跳过条数参数名(/api/jobs/related/occ,2026-09-23「同省同职业」按页续取;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:接口并成 /api/jobs/related/page)。
  */
 export const P_OFFSET = 'offset'
 
 /**
- * 「同省同职业」一页几家(首屏那一页与展开后续取的每一页同一个数;2026-09-22 由 6 放到 24)。
+ * 相关职位按页续取的组参数名(/api/jobs/related/page;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  */
-export const REL_OCC_PAGE_ROWS = 24
+export const P_GROUP = 'group'
 
 /**
- * 「同省同职业」续取时跳过条数的上限(最大的省 × 职业也就几百家;超了当坏请求)。
+ * 组参数值:同公司组。
+ */
+export const REL_GROUP_CO = 'co'
+
+/**
+ * 组参数值:同省同职业组。
+ */
+export const REL_GROUP_OCC = 'occ'
+
+/**
+ * 相关职位同公司组首屏取几条(2026-09-22 Frank「需要一个展开的按钮吧」卡上先出 3 条;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:
+ * 首屏只取露出来的这几条,其余由卡上「展开 20 个」按页取)。
+ */
+export const REL_CO_FIRST_ROWS = 3
+
+/**
+ * 相关职位同省同职业组首屏取几家(原「一页几家」REL_OCC_PAGE_ROWS:首屏那一页与续取的每一页同一个数,2026-09-22 由 6 放到 24;
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:首屏只取露出来的 6 家,续取一页改 REL_PAGE_ROWS)。
+ */
+export const REL_OCC_FIRST_ROWS = 6
+
+/**
+ * 相关职位「展开」一页几条(两组同一个数;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:与 pager 桶 FOLD_STEP 同数 —— 钮上写「展开 20 个」,一页就得是 20 个)。
+ */
+export const REL_PAGE_ROWS = 20
+
+/**
+ * 相关职位续取时跳过条数的上限(原「同省同职业」那条;最大的公司在招几百个、省 × 职业也就几百家;超了当坏请求)。
  */
 export const REL_OCC_OFFSET_MAX = 5000
 

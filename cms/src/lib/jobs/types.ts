@@ -2872,9 +2872,9 @@ export type RelatedAnchorIn = {
 export type RelatedAnchorOut = Promise<RelatedIn['job'] | null>
 
 /**
- * `loadRelatedOccPage` 的入参(2026-09-23「同省同职业」按页续取)。
+ * `loadRelatedPage` 的入参(2026-09-23「同省同职业」按页续取时立,原名 RelatedOccPageIn;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:同公司组同一个,多一格组)。
  */
-export type RelatedOccPageIn = {
+export type RelatedPageIn = {
   /**
    * 数据库连接(池由调用方注进来)。
    */
@@ -2886,15 +2886,20 @@ export type RelatedOccPageIn = {
   job: RelatedIn['job']
 
   /**
+   * 哪一组(REL_GROUP_CO 同公司 / REL_GROUP_OCC 同省同职业)。
+   */
+  group: string
+
+  /**
    * 跳过前几家(卡上已经有的条数)。
    */
   offset: number
 }
 
 /**
- * `loadRelatedOccPage` 的返回:这一页的瘦行。
+ * `loadRelatedPage` 的返回:这一页的瘦行。
  */
-export type RelatedOccPageOut = Promise<RelatedJob[]>
+export type RelatedPageOut = Promise<RelatedJob[]>
 
 /**
  * `loadTotalAndProof` 的返回:头条总数 + 证言数字。

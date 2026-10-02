@@ -202,10 +202,12 @@ export const APPLY_EMAIL_BY_ID = `SELECT apply_email FROM jobs WHERE id = $1 AND
  * 同职业那组本来就剔,公司弹框的在招职位(COMPANY_OPEN_JOBS)也剔。
  * 2026-09-22 Frank「需要一个展开的按钮吧」「要显示职位数量吧」:取 3 → 12(卡上先出 3,展开看其余),
  * total = 剔重后的总条数(组标题计数用,窗口函数在 LIMIT 前算)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:条数与跳过条数改占位符($3=一页几条,$4=跳过几条)—— 首屏取 3 条,卡上「展开 20 个」由
+ * /api/jobs/related/page 按页续取(同省同职业组同一个接口);上面「取 3 → 12」是历史。
  */
 export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS}, count(*) OVER()::int AS total ${JOB_FROM}
        WHERE c.name = $1 AND j.id <> $2 AND COALESCE(j.status,'open') <> 'closed' AND COALESCE(j.is_dup, false) = false
-       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT 12`
+       ORDER BY j.date_posted DESC NULLS LAST, j.first_seen DESC NULLS LAST, j.id DESC LIMIT $3 OFFSET $4`
 
 /**
  * 相关职位·同省同 4 位职业前缀 6 条(排除同公司)。$1=省,$2=NOC,$3=当前岗 id,$4=排除公司名,$5=本岗城市。
@@ -223,6 +225,7 @@ export const RELATED_SAME_COMPANY = `SELECT ${REL_COLS}, count(*) OVER()::int AS
  * total = 剔同雇主后的总家数(窗口函数在 LIMIT 前、rn=1 之后算)。
  * 2026-09-23 Frank「这个显示 387 但是只能展示 18 个?」选「展开时分页加载」:条数与跳过条数改占位符
  * ($6=一页几家,$7=跳过几家),首屏取第一页,展开到头由 /api/jobs/related/occ 按页续取(lib/jobs 的 loadRelatedOccPage)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:首屏只取 6 家,卡上「展开 20 个」一页 20 家,接口并成 /api/jobs/related/page(loadRelatedPage,同公司组同一个)。
  */
 export const RELATED_SAME_OCC = `SELECT id, title, company_name, city, province, salary, salary_text, title_zh, title_ko,
          job_trans_v, count(*) OVER()::int AS total FROM (
