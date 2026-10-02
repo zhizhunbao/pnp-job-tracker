@@ -3185,6 +3185,9 @@ K_RANK_DISPLAY = "rankDisplay"
 TABLE_DESIGNATED = "designated_employers"
 """指定雇主表名(2026-10-02 单表件 designated_table 用)。"""
 
+TABLE_EE_CATEGORIES = "ee_categories"
+"""EE 类别表名(2026-10-02 单表件 ee_cat_table 用:加官方英文名 nameEn 一格)。"""
+
 TABLE_DLI = "dli"
 """dli 表名(单表增量件 build_dli_table 落盘用;与 to_mart_tables 字典键同字)。"""
 

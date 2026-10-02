@@ -574,8 +574,10 @@ export const COLS_DESIGNATED_EMPLOYERS = [
  * 2026-09-20 加 loc_provs(在招省码 jsonb;省筛选按它匹配;DDL docs/sql/employer-pool-locs-20260920.sql,先跑 DDL 再换版)。
  * 2026-09-18 同日加 broads(在招大类 jsonb;Frank「授权,加列」;DDL docs/sql/employer-pool-broads-20260918.sql 已在生产跑过)。
  * 2026-09-18 同日加 district(主区;Frank「授权,加区字段」;DDL docs/sql/employer-pool-district-20260918.sql 已在生产跑过)。
+ * 2026-10-02 加 designated_names(吃进的指定雇主名单原名 jsonb;AIP 弹框名单按它回找雇主池;Frank「可以」;
+ * DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql 已在生产跑过)。
  */
-export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'locations', 'loc_provs', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'sector', 'district', 'broads', 'ees', 'designated_places', 'category', 'fetched']
+export const COLS_EMPLOYER_POOL = ['key', 'slug', 'name', 'industry', 'province', 'city', 'locations', 'loc_provs', 'designated', 'designated_programs', 'designated_provinces', 'open_jobs_total', 'hist_jobs', 'provinces_active', 'cities_active', 'website_known', 'lmia_skilled_total', 'lmia_last_quarter', 'sector', 'district', 'broads', 'ees', 'designated_places', 'designated_names', 'category', 'fetched']
 
 /**
  * employer_pool_buckets 列。⚠️ 同上,建表走 docs/sql/employer-pool.sql。
@@ -676,8 +678,9 @@ export const COLS_QC_NOC_STREAMS = ['noc', 'name', 'channels']
 
 /**
  * ee_categories 列。
+ * 2026-10-02 加 name_en(官方英文类别名;Frank「可以」;DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql 已在生产跑过)。
  */
-export const COLS_EE_CATEGORIES = ['category', 'label', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size']
+export const COLS_EE_CATEGORIES = ['category', 'label', 'name_en', 'noc', 'teer', 'title', 'url', 'fetched', 'draw_crs', 'draw_date', 'draw_size']
 
 /**
  * ee_points_grid 列(CRS 排名分 + FSW 67 分选择因素同表,grid 列分)。

@@ -90,6 +90,7 @@ from mart.constants import (
     INDEMAND2, INDENT_2, IN_AIP, IN_ATS_COMPANIES, IN_COMPANY_FACTS, IN_DIFFICULTY,
     IN_DLI, IN_DRAW_CHECKLISTS, IN_DRAW_STREAM_ZH, IN_EE_CATEGORIES, IN_EE_CRS, IN_EE_DRAWS, IN_EE_ELIG, IN_EE_LANG, IN_QS,
     K_DLI_NAME, K_QS_RANK, K_QS_RANK_DISPLAY, K_RANK, K_RANK_DISPLAY, TABLE_DESIGNATED, TABLE_DLI, TABLE_PATHWAYS,
+    TABLE_EE_CATEGORIES,
     TABLE_PNP_REQUIREMENTS,
     IN_ENRICH, IN_EXPIRED, IN_FIELD_SOURCES, IN_PATHWAYS, PATHWAYS_MISSING_TPL, IN_FSA_TABLE, IN_IRCC_ALLOC, IN_IRCC_FLOW, IN_IRCC_PR,
     IN_IRCC_TR, IN_ATS_JD_INDEX, IN_JB_JD_BODIES, IN_JB_JD_INDEX, IN_JOBBANK, IN_MINWAGE, K_MIN_WAGE,
@@ -4816,6 +4817,15 @@ def build_designated_table() -> None:
     照 build_dli_table 的形;之后 load --only upload + seed)。"""
     OUT_MART.mkdir(parents=True, exist_ok=True)
     tables = {TABLE_DESIGNATED: build_designated()}
+    write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
+    say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
+
+
+def build_ee_categories_table() -> None:
+    """单表增量:只重建 data/mart/ee_categories.json(2026-10-02 Frank「可以」:加官方英文名 nameEn 一格,职位页移民相关卡 EE 行要它;
+    照 build_designated_table 的形,最近一次抽选同全量汇装那条路(load_ee_draws);之后 load --only upload + seed)。"""
+    OUT_MART.mkdir(parents=True, exist_ok=True)
+    tables = {TABLE_EE_CATEGORIES: build_ee_categories(load_ee_draws().by_category)}
     write_mart_table(TableWriteIn(tables=tables, out_dir=OUT_MART))
     say_table_counts(SayCountsIn(tables=tables, width=TABLE_NAME_WIDTH))
 

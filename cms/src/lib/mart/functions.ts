@@ -356,7 +356,8 @@ function toEmployerPool(r: MartRow): MartRow {
     provinces_active: cellOf(r.provincesActive), cities_active: cellOf(r.citiesActive),
     website_known: truthyOf(r.websiteKnown), lmia_skilled_total: cellOf(r.lmiaSkilledTotal),
     lmia_last_quarter: cellOf(r.lmiaLastQuarter), sector: cellOf(r.sector), district: cellOf(r.district), broads: jsonTextOf(r.broads),
-    ees: jsonTextOf(r.ees), designated_places: jsonTextOf(r.designatedPlaces), category: cellOf(r.category),
+    ees: jsonTextOf(r.ees), designated_places: jsonTextOf(r.designatedPlaces),
+    designated_names: jsonTextOf(r.designatedNames), category: cellOf(r.category),
     fetched: textOf(r.fetched),
   }
 }
@@ -608,8 +609,8 @@ function toQcNocStream(r: MartRow): MartRow {
  */
 function toEeCategory(r: MartRow): MartRow {
   return {
-    category: cellOf(r.category), label: cellOf(r.label), noc: cellOf(r.noc), teer: cellOf(r.teer),
-    title: cellOf(r.title), url: cellOf(r.url), fetched: cellOf(r.fetched), draw_crs: cellOf(r.drawCrs),
+    category: cellOf(r.category), label: cellOf(r.label), name_en: cellOf(r.nameEn), noc: cellOf(r.noc),
+    teer: cellOf(r.teer), title: cellOf(r.title), url: cellOf(r.url), fetched: cellOf(r.fetched), draw_crs: cellOf(r.drawCrs),
     draw_date: cellOf(r.drawDate), draw_size: cellOf(r.drawSize),
   }
 }
