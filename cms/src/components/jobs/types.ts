@@ -4528,6 +4528,21 @@ export type AppendRowsIn = {
 }
 
 /**
+ * unseenRowsOf 的入参。
+ */
+export type UnseenRowsIn = {
+  /**
+   * 表上已有的行。
+   */
+  prev: JobFact[]
+
+  /**
+   * 这一页取回的行。
+   */
+  got: JobFact[]
+}
+
+/**
  * makeFieldRouter 的入参。
  */
 export type FieldRouterIn = {

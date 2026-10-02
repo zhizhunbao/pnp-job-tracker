@@ -73,7 +73,7 @@ import type {
   RelatedJobs,
   RelatedJobFact, RelatedJson, RelatedOfHookIn, RelatedPagesIn, RelatedPagesPanel, SavedAddIn, SavedEditIn,
   SavedEntry, SavedHookIn, SavedListJson, SavedPanel, SavedPostJson, SaveSearchIn, SeedCookieIn, SortState,
-  TableWidthIn, TransJson, TranslateIn, TransStatus, UpsellKind, UrlSettleIn, WrapWidthIn,
+  TableWidthIn, TransJson, TranslateIn, TransStatus, UnseenRowsIn, UpsellKind, UrlSettleIn, WrapWidthIn,
   JobDateCell, JobDatesIn,
 } from './types'
 
@@ -938,8 +938,31 @@ function appendedRows(x: AppendRowsIn): JobFact[] | ((prev: JobFact[]) => JobFac
     return got
   }
   return function append(prev: JobFact[]): JobFact[] {
-    return prev.concat(got)
+    return prev.concat(unseenRowsOf({ prev, got }))
   }
+}
+
+/**
+ * 这一页里表上还没有的行(2026-10-02 Frank 截图 dev 报「Encountered two children with the same key, 77504377」):
+ * 按偏移翻页,首屏与后几页不是同一刻取的 —— 中间小时更新插进新岗,整体往后挪,下一页开头就是已露过的行。
+ * 按岗位号去重(比字符串 —— 键就是它的字符串形),先露的那条留着。
+ *
+ * @param x 表上已有的行与这一页的行。
+ * @returns 这一页里没露过的行(保持原序)。
+ */
+function unseenRowsOf(x: UnseenRowsIn): JobFact[] {
+  const seen = new Set<string>()
+  for (const r of x.prev) {
+    seen.add(String(r.id))
+  }
+  const out: JobFact[] = []
+  for (const r of x.got) {
+    if (seen.has(String(r.id)) === false) {
+      seen.add(String(r.id))
+      out.push(r)
+    }
+  }
+  return out
 }
 
 /**
