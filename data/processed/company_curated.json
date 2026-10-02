@@ -10,5 +10,17 @@
     "hq_parent": true,
     "note": "品牌级雇主(Job Bank 名 HARVEY'S,横跨多城);官网取品牌首页,不用 Places 给的 Nepean 门店页;总部取母公司 Recipe Unlimited Corporation(harveys.ca 页面 parentOrganization 写明)。",
     "curated_at": "2026-10-02T01:44:04.264249Z"
+  },
+  "cox-palmer": {
+    "name": "Cox & Palmer",
+    "website": "https://coxandpalmerlaw.com/",
+    "hq_address": "",
+    "hq_city": "",
+    "hq_province": "",
+    "hq_quote": "",
+    "hq_source": "",
+    "hq_parent": false,
+    "note": "律所(Saint John / Halifax 等大西洋十处办公室);官网不标总部(「ten offices across Atlantic Canada」),总部不核定;Bing 曾错配 cox.com(Cox Communications)。",
+    "curated_at": "2026-10-02T03:00:10.988521Z"
   }
 }
