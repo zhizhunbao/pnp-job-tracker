@@ -5331,7 +5331,9 @@ def pending_jobs_of(ctx: MartCtx) -> list:
 
 def missing_fields_of(x: MissingIn) -> list:
     """一条岗缺哪几格(按六格顺序;全了给空清单):职业码空或是 qwen 判的、工时 / 雇佣期原帖没带、
-    薪资空且原帖没明写不公布、省空、城市空。"""
+    薪资空、省空、城市空。
+    2026-10-02 改判(Frank「下架」「不提薪资的岗位,没有诚意」):原帖明写不公布薪资(Jobillico「À discuter」待议)
+    原先不算缺,现在照样算缺、整条扣下(当天在架约 2,599 条);stated 仍随待修行带给修的人看。"""
     out: list = []
     if (x.row.get(K_NOC) or "") == "" or x.noc_from == NOC_FROM_MODEL:
         out.append(FIELD_NOC)
@@ -5339,7 +5341,7 @@ def missing_fields_of(x: MissingIn) -> list:
         out.append(FIELD_HOURS)
     if x.emp.term == "":
         out.append(FIELD_TERM)
-    if (x.row.get(K_SALARY_TEXT) or "") == "" and FIELD_SALARY not in x.stated:
+    if (x.row.get(K_SALARY_TEXT) or "") == "":
         out.append(FIELD_SALARY)
     if (x.row.get(K_PROVINCE) or "") == "":
         out.append(FIELD_PROVINCE)

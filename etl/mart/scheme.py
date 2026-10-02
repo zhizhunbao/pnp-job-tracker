@@ -2242,7 +2242,7 @@ class MissingIn:
     """原帖自带的工时 / 雇佣期(整理版补空之前记的)。"""
 
     stated: dict
-    """原帖明写不公布的格 → 原文。"""
+    """原帖明写不公布的格 → 原文(2026-10-02 起判「全」不再豁免任何格,薪资写「待议」也算缺)。"""
 
 
 @dataclass
@@ -4903,10 +4903,10 @@ class MartPendingTest(unittest.TestCase):
         self.assertEqual(self.missing(self.row_without("province"), "source", "full", "permanent", {}), ["province"])
         self.assertEqual(self.missing(self.row_without("city"), "source", "full", "permanent", {}), ["city"])
 
-    def test_stated_salary_not_missing(self) -> None:
-        """薪资空但原帖明写「待议」的不算缺;明写的是别的格,薪资照样算缺。"""
+    def test_stated_salary_still_missing(self) -> None:
+        """薪资空、原帖明写「待议」也算缺(2026-10-02 Frank「不提薪资的岗位,没有诚意」);明写的是别的格,薪资照样算缺。"""
         row = self.row_without("salaryText")
-        self.assertEqual(self.missing(row, "source", "full", "permanent", {"salary": "À discuter"}), [])
+        self.assertEqual(self.missing(row, "source", "full", "permanent", {"salary": "À discuter"}), ["salary"])
         self.assertEqual(self.missing(row, "source", "full", "permanent", {"hours": "x"}), ["salary"])
 
     def test_all_missing_order(self) -> None:
