@@ -100,6 +100,7 @@ from company.constants import (
     WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
     CURATED_BRIEF_CORE, CURATED_BRIEF_LINE_RE, CURATED_ERR_BRIEF_TPL, CURATED_NOT_STATED, CURATED_WHY_BAD_LINE_TPL,
     CURATED_WHY_BAD_URL_TPL, CURATED_WHY_NO_CORE_TPL, CURATED_WHY_NO_QUOTE_TPL, CURATED_WHY_NO_SOURCE, CURATED_WHY_NO_TEXT,
+    OPUS_MISS_ERR_TPL, OPUS_MISS_ITEMS, OUT_OPUS_MISS,
     CURATED_ERR_EMPTY_TPL, CURATED_ERR_HQ_TPL, CURATED_ERR_URL_TPL, CURATED_URL_PREFIXES, ENV_PLACES_KEY, ENV_PLACES_SLUGS, PLACES_SLUGS_SEP, PRINT_PLACES_PICKED_TPL, PT_OFFSETS_H, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
     OUT_PLACES, PLACES_LANG, PLACES_LIMIT, PLACES_PAGE_SIZE,
     PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
@@ -136,7 +137,7 @@ from company.scheme import (
     CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn, TitleHitsIn,
     ClaimIn, HqPlace, PickWikiHqIn, WikiHqQuery, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
-    CuratedRecord, CuratedWriteIn, EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
+    CuratedRecord, CuratedWriteIn, EnrichRecord, OpusMissRecord, OpusMissWriteIn, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
     MartJob, PickPlacesIn, PlaceCompany, PlaceRecord, PlacesCandsIn, PlacesEnvelope, PlacesSearchIn,
     PlaceTarget, PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, SkipPlacesIn,
@@ -1218,6 +1219,33 @@ def write_curated(x: CuratedWriteIn) -> None:
     for sl, rec in table.items():
         out[sl] = rec.model_dump()
     paths.write_json(paths.WriteJsonIn(path=OUT_CURATED, payload=out, indent=2))
+
+
+def read_opus_miss() -> dict[str, OpusMissRecord]:
+    """读 Opus 补不上标记表(缺文件 = 空表);Opus 挑活前先看它,表里的跳过。"""
+    out: dict[str, OpusMissRecord] = {}
+    if OUT_OPUS_MISS.exists():
+        for sl, d in json.loads(OUT_OPUS_MISS.read_text(encoding=TEXT_ENCODING)).items():
+            out[sl] = OpusMissRecord.model_validate(d)
+    return out
+
+
+def write_opus_miss(x: OpusMissWriteIn) -> None:
+    """Opus 补不上标记表唯一写门(2026-10-02 Frank「opus 查 我的浏览器 google 补 还是补不上,要标记一下」):
+    闸:缺哪样至少一样、只许 website / hq / brief,查过什么必须写(下次想重查的人先看它)。不合格抛错,不写;盖标记时刻。"""
+    r = x.rec
+    if len(r.missing) == 0 or r.tried.strip() == "":
+        raise ValueError(OPUS_MISS_ERR_TPL.format(slug=x.slug))
+    for item in r.missing:
+        if item not in OPUS_MISS_ITEMS:
+            raise ValueError(OPUS_MISS_ERR_TPL.format(slug=x.slug))
+    table = read_opus_miss()
+    r.checked_at = now_iso()
+    table[x.slug] = r
+    out: dict[str, dict] = {}
+    for sl, rec in table.items():
+        out[sl] = rec.model_dump()
+    paths.write_json(paths.WriteJsonIn(path=OUT_OPUS_MISS, payload=out, indent=2))
 
 
 def curated_brief_flaw_of(r: CuratedRecord) -> str:

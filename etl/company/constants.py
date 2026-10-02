@@ -721,6 +721,12 @@ OUT_CURATED = paths.PROCESSED / "company_curated.json"
 本域各条自动排队(places / sites 搜官网 / about / 维基总部)都跳过表里的公司。
 同日 Frank「简介也要核对啊」:简介(连中 / 韩译文、出处、逐节原句)一并核定,mart 同样最后生效。"""
 
+OUT_OPUS_MISS = paths.PROCESSED / "company_opus_miss.json"
+"""Opus 补不上的标记表(slug → OpusMissRecord;2026-10-02 Frank「opus 查 我的浏览器 google 补 还是补不上,要标记一下」):
+程序通道补不上才轮到 Opus 用 Frank 的 Chrome 查 Google,再补不上记这里。只经 write_opus_miss 写;
+只管「Opus 别重查」—— 自动程序照常试,页面不显示(Frank 选「只防 Opus 重查」)。
+同日 Frank「opus 开我浏览器查不到,那就以后不用再查了 除非我要求再查」:表里的公司 Opus 永不主动重查,Frank 点名才查。"""
+
 OUT_ENRICH_CACHE = paths.PROCESSED / "company_enrich.json"
 """段5 输出:增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
 
@@ -1029,6 +1035,12 @@ CURATED_WHY_NO_QUOTE_TPL = "[{mark}] 缺出处原句"
 
 CURATED_WHY_NO_CORE_TPL = "缺 [{mark}] 节"
 """核定简介毛病:四个核心节缺了一节。"""
+
+OPUS_MISS_ITEMS = ("website", "hq", "brief")
+"""Opus 补不上标记里「缺哪样」的取值(官网 / 总部 / 简介)。"""
+
+OPUS_MISS_ERR_TPL = "{slug}: 补不上标记不合格:missing 至少一样且只许 website / hq / brief,tried 要写查过什么"
+"""write_opus_miss 拒写:缺哪样没写对,或没写查过什么。"""
 
 ENV_PLACES_SLUGS = "PLACES_SLUGS"
 """点名查的公司 slug 清单(逗号分隔)的环境变量名;设了就只查这几家(仍受当月免费额封顶),空 = 按队列查。

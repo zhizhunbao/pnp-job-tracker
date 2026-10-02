@@ -402,6 +402,26 @@ class CuratedRecord(BaseModel):
     """核定时刻(ISO,UTC;write_curated 盖)。"""
 
 
+class OpusMissRecord(BaseModel):
+    """Opus 补不上的标记一行(company_opus_miss.json 的值;2026-10-02 Frank「如果某个公司已经 opus 查 我的浏览器 google 补
+    还是补不上,要标记一下」→ 选「只防 Opus 重查」:Opus 挑活跳过表里的公司;自动程序照常试,页面不显示)。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str
+    """公司名(人眼对照用)。"""
+
+    missing: list[str] = Field(default_factory=list)
+    """补不上的几样(website / hq / brief,至少一样)。"""
+
+    tried: str = ""
+    """查过什么(搜索词、看过的页、为什么都不算数),下次有人想重查先看这一格。"""
+
+    checked_at: str = ""
+    """标记时刻(ISO,UTC;write_opus_miss 盖)。"""
+
+
 class EnrichRecord(BaseModel):
     """官网富化缓存一行(company_enrich.json 的值;对外文件契约,09 汇装直读)。
 
@@ -1184,6 +1204,17 @@ class CuratedWriteIn:
 
     rec: CuratedRecord
     """这家的核定值(curated_at 由写门盖)。"""
+
+
+@dataclass
+class OpusMissWriteIn:
+    """write_opus_miss 的入参。"""
+
+    slug: str
+    """公司 slug。"""
+
+    rec: OpusMissRecord
+    """这家补不上的记录(checked_at 由写门盖)。"""
 
 
 @dataclass
