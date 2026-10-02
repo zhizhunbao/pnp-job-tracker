@@ -1233,9 +1233,10 @@ export const K_UNCAT = 'cell.uncat'
  * 布局:表格永远满宽不横向滚动,列按内容自适应,内容多行换行(不省略)。
  * 2026-09-14 Frank「在大类前面也需要加一个 EE 的类别吧」:EE 类别列进默认集,排大分类之前(字段面板同序)。
  * 2026-09-21 Frank「默认显示这些列」(截图定版):EE 类别列出默认集(字段面板仍可调回),渠道列进默认集。
+ * 2026-10-02 Frank「这个默认列 改成 职业」:默认集里大分类换成职业(同位,大分类回字段面板可勾);上面「大分类」是历史。
  */
 export const DEFAULT_COLS: JobColKey[] = [
-  'datePosted', 'broad', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'origin', 'actions',
+  'datePosted', 'noc', 'company', 'title', 'province', 'city', 'salary', 'salaryYr', 'vsMedian', 'origin', 'actions',
 ]
 
 /**
@@ -1337,8 +1338,9 @@ export const WRAP_COLS = new Set<JobColKey>(['pilot', 'lmia', 'eligibility'])
  * 固定左列(发布时间/大分类/公司/职位):只有**真的横滚**时才需要
  * (默认总宽 = 容器宽,压根不滚)。顺带收掉一个副作用:border-collapse 的表里
  * sticky 单元格的右边框 Chromium 不画 —— Frank「查询之后列竖线没了,点一下竖线才恢复」就是它。
+ * 2026-10-02 默认集大分类换职业:固定左列跟着换成职业(与 DEFAULT_COLS 左四列一致)。
  */
-export const FROZEN_COLS = new Set<JobColKey>(['datePosted', 'broad', 'company', 'title'])
+export const FROZEN_COLS = new Set<JobColKey>(['datePosted', 'noc', 'company', 'title'])
 
 /**
  * Pro 专属列(免费用户列位打码,真值本就没进浏览器)。**单一来源就是这一格** ——
@@ -1830,12 +1832,13 @@ export const SPONSOR_GRADE_AIP_ONLY = 3
  * 对不上会被列宽机器直接忽略(退回今天的行为),所以改列集这里忘了改也不会出错。
  * 2026-09-14 EE 类别列插进默认集:比例手分(EE 7,公司 / 职位 / 操作让出),非实测。
  * 2026-09-21 EE 换渠道:EE 的 7 原额转给渠道列(GC Jobs / Job Bank 一类短词,够用),其余不动。
+ * 2026-10-02 大分类换职业:职业接大分类的 9 原额(职业短名中文最长 8 字,与大分类同量级),非实测。
  */
 export const DEFAULT_COLW_SEED = {
   /**
    * 这份比例对应的列集(逗号分隔,顺序即列序)。
    */
-  keys: 'datePosted,broad,company,title,province,city,salary,salaryYr,vsMedian,origin,actions',
+  keys: 'datePosted,noc,company,title,province,city,salary,salaryYr,vsMedian,origin,actions',
 
   /**
    * 各列占容器宽的百分比(和 = 100)。
@@ -1898,16 +1901,6 @@ export const EV_RESIZE = 'resize'
  * 回车键名(搜索框回车 = 当场把关键词写回地址栏,不等停手)。
  */
 export const KEY_ENTER = 'Enter'
-
-/**
- * 量宽时整表临时加的类(不折行 + 按内容撑开,量完立刻摘)。
- */
-export const MEASURE_CLS = 'jtMeasure'
-
-/**
- * 表格外层容器的全局类名 —— 量宽要靠它拿可分宽度(`closest` 选择器)。
- */
-export const TABLE_WRAP_SEL = '.jtTableWrap'
 
 /**
  * 表格元素选择器(量宽从表头往上找到它)。

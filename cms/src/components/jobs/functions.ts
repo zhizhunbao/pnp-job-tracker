@@ -50,13 +50,13 @@ import {
   K_LOCK_TIP, K_ORIGIN, K_PROV, K_SPONSOR_GRADE, K_TEER, K_TERM, K_UNCAT, K_WHO, LANG_KO,
   LANG_ZH, LAYER_CO, LAYER_JOB, LAYOUT_AUTO, LEVEL_BROAD, LEVEL_FINE, LEVEL_MID, LMIA_PREFIX, LOC_SEP, MAILTO,
   MAILTO_BODY, MAILTO_SUBJECT, MAIL_ATTACH, MAIL_BLANK, MAIL_BODY_AT, MAIL_BODY_DOT, MAIL_BODY_HEAD, MAIL_BODY_IN,
-  MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD, MEASURE_CLS,
+  MAIL_BODY_QUOTE, MAIL_CRLF, MAIL_HELLO, MAIL_POSTING, MAIL_REGARDS, MAIL_SUBJECT_AT, MAIL_SUBJECT_HEAD,
   MEASURE_ROWS, NEWLINE, NOWRAP_COLS, P90, PAREN_L, PAREN_R, PCT_DECIMALS, PCT_MULTIPLIER, PREF_KEY, PROV_PICK_COOKIE,
   PROV_PICK_MAX_AGE_S, PROV_QC, PRO_COLS, PRO_MASK, P_DIR, P_LOGIN, P_PAGE, P_RESET, P_SIGNUP, P_SORT, QS_HEAD,
   RE_FLAG_G, ROLE_ADMIN, ROW_BG, ROW_BG_ALT, ROW_LINE, SAVED_STATUS_WISH, SEC_MODE, SEP_EN,
   SEP_ZH, SIGN_DOLLAR, SIGN_PCT, SIGN_PLUS, SIG_EQ, SIG_SEP, SORT_MARK_ASC, SORT_MARK_DESC, SORT_MARK_IDLE, SPACE,
   SPONSOR_GRADE_AIP_ONLY, STAR_OFF, STAR_ON, STATUS_CLOSED,
-  TABLE_SEL, TABLE_WRAP_SEL,
+  TABLE_SEL,
   TARGET_MAX, TARGET_P90, TBODY_ROW_SEL, TEER_PREFIX, TEER_ROUTE_MAX, TEXT_NONE, TEXT_STATUS, TONE, TRACK_FROM_CLOSED,
   TRACK_FROM_CLOSED_NONE, TRACK_FROM_OPEN, TRACK_FROM_OPEN_NONE, TRACK_KEY_FROM, TRACK_REL_JOB,
   TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UNCAT, UNIT_HOUR, UNIT_HR_RE, UNIT_K_YEAR, UNIT_YR_RE, UPSELL_SS,
@@ -2053,6 +2053,9 @@ export function provFullOf(x: ProvFullIn): string {
  * ⚠️ 手机端容器 display:none → 量不了,返回 null 让调用方下一帧再试。
  * 历史教训(别再走回头路):量宽的 key 在**量之前**就标记为「已量」,首帧 tbody 还没行 →
  * 量空了也不会重来,线上于是所有列一律 120px 均分(2026-08-03 实测 prod)。现在只有**量到了**才记 key。
+ * 2026-10-02(Frank「这个默认列 改成 职业」实拍职业名被截):08-29 样式迁进 jobs.module.css 后,外框类 `jtTableWrap` 与量宽类 `jtMeasure`
+ * 都没人挂了 —— 外框永远找不到、这里永远给 null,线上列宽一个多月停在首屏比例种子(大分类能折行看不出,换成不折行的职业列才露馅)。
+ * 外框改认表格的父元素(tableWrapOf),量宽类改挂模块类 `css.measure`。
  *
  * @param x 列集、表头行与格内边距。
  * @returns 量宽结果;这一帧量不了给 null。
@@ -2066,25 +2069,40 @@ export function measureColWidths(x: MeasureIn): MeasureOut | null {
   if (table == null || table.querySelector(TBODY_ROW_SEL) == null) {
     return null
   }
-  const wrap = table.closest(TABLE_WRAP_SEL) as HTMLElement | null
+  const wrap = tableWrapOf(head)
   if (wrap == null || wrap.clientWidth === 0) {
     return null
   }
   const prevLayout = table.style.tableLayout
   const prevWidth = table.style.width
   const prevMin = table.style.minWidth
-  table.classList.add(MEASURE_CLS)
+  table.classList.add(cssOf(css.measure))
   table.style.tableLayout = LAYOUT_AUTO
   table.style.width = WIDTH_MAX_CONTENT
   table.style.minWidth = WIDTH_ZERO
   const measured = contentPass({ keys: x.keys, head, table, pad: x.pad })
-  table.classList.remove(MEASURE_CLS)
+  table.classList.remove(cssOf(css.measure))
   table.style.width = WIDTH_MIN_CONTENT
   wordPass({ keys: x.keys, table, pad: x.pad, measured })
   table.style.tableLayout = prevLayout
   table.style.width = prevWidth
   table.style.minWidth = prevMin
   return { measured, wrapW: wrap.clientWidth }
+}
+
+/**
+ * 表格外框 = 表格的父元素(BoardTable 里 div 直接包 table;可分宽度读它的 clientWidth)。
+ * 2026-10-02 换掉全局类选择器 `.jtTableWrap`(样式迁模块后没人挂它,外框永远找不到,见 measureColWidths)。
+ *
+ * @param head 表头行。
+ * @returns 外框;表头不在表里给 null。
+ */
+export function tableWrapOf(head: HTMLElement): HTMLElement | null {
+  const table = head.closest(TABLE_SEL)
+  if (table == null) {
+    return null
+  }
+  return table.parentElement
 }
 
 /**

@@ -29,7 +29,7 @@ import {
   HOLD_MAX_MS, HTTP_NOT_FOUND, HTTP_TOO_MANY, JD_DONE, JD_EMPTY, JD_LIMITED, JD_LOADING, KEY_ENTER,
   LANG_EN, LIMIT_RE, METHOD_DELETE,
   METHOD_PATCH, METHOD_POST, MIME_JSON, P_BACK, QS_HEAD, Q_URL_SETTLE_MS, SAVED_STATUS_APPLIED, SAVED_STATUS_WISH,
-  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TABLE_WRAP_SEL, TARGET_BLANK, TEXT_NONE,
+  SAVE_ERR, SAVE_LIMIT, SAVE_OK, SLASH, SORT_DEFAULT, TARGET_BLANK, TEXT_NONE,
   TEXT_STATUS, TRACK_APPLY, TRACK_JD_MATCH_OPEN, TRACK_JD_OPEN, TRACK_JD_TRANSLATE, TRACK_KEY_KIND,
   TRACK_KEY_MODE, TRACK_KIND_PAGE, TRACK_MODE_EMAIL, TRACK_MODE_WEB,
   TRACK_SAVE_JOB, TRACK_SAVE_SEARCH, TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, UPSELL_LOCK, UPSELL_SS,
@@ -51,7 +51,7 @@ import {
   makePushCoLayer, makePushJobLayer, markObSeen,
   measureColWidths, nextSortOf, nocLabelOf, obSeen, pageSigOf, pickedShownOf, readColsPref, replaceQuery, savedMapOf,
   saveFiltersOf, seedFilter, setterOf, shownColsOf, slotOf, stickyOffsetsOf, strOf, strOrNull, togglableColsOf,
-  toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf,
+  toRelatedJobs, chipNocOf, occGroupsOf, occSlotOf, tableWrapOf,
   widthsKeyOf, writeColsCookie, writeColsPref, writeColWidthCookie,
   jobDatesOf,
 } from './functions'
@@ -195,7 +195,7 @@ function useWrapWidth(headRowRef: HeadRowRef, x: WrapWidthIn): void {
     if (head == null || typeof ResizeObserver === 'undefined') {
       return
     }
-    const wrap = head.closest(TABLE_WRAP_SEL) as HTMLElement | null
+    const wrap = tableWrapOf(head)
     if (wrap == null) {
       return
     }
