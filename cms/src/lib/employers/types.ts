@@ -3832,6 +3832,26 @@ export type BrandCellIn = {
 }
 
 /**
+ * `briefNamedOf` 的入参。
+ */
+export type BriefNamedIn = {
+  /**
+   * 简介原文(英文五节)。
+   */
+  brief: string
+
+  /**
+   * 公司英文名(简介里原样出现的那个)。
+   */
+  name: string
+
+  /**
+   * 目标语种的译名;'' = 没有。
+   */
+  alias: string
+}
+
+/**
  * companies 官网简介单格(pg 原始行)。
  */
 export type CompanyDescDbRow = {

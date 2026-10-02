@@ -166,6 +166,31 @@ export type SqlBriefKeepBaseIn = {
 }
 
 /**
+ * `sql.ts` 里「换简介逐节合并」片段的入参(2026-10-02)。
+ */
+export type SqlBriefMergeIn = {
+  /**
+   * 将要写进去的新简介(SQL 表达式,如 `$8`)。
+   */
+  next: string
+
+  /**
+   * 库里现有的旧简介(SQL 表达式,如 `c.ai_brief`)。
+   */
+  prev: string
+
+  /**
+   * 旧简介的出处 JSON 数组串(SQL 表达式,如 `c.ai_sources`)。
+   */
+  sources: string
+
+  /**
+   * 这家现在官网的主机名(SQL 表达式;空串 / NULL = 不合并)。
+   */
+  host: string
+}
+
+/**
  * `sql.jobsUpsertSuffix` 的入参。
  */
 export type SqlJobsUpsertIn = {

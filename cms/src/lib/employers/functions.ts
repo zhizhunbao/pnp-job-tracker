@@ -58,7 +58,7 @@ import type {
   SaveSiteDoneIn, SiteByNameIn, SiteDone, SiteDoneJson, SiteOpenDbRow, SiteOpenOut, SiteOpenRow, SiteSavedOut,
   SiteStageDbRow, SiteStageOut, SiteStageRow,
   SiteTodo, SiteTodoDbRow, SiteTodosIn, SiteTodosOut,
-  CrawlerHeadersIn, BrandCellIn, MaybeBrandAlias, ExploreNameDbRow, ExploreNameFact, ExploreNamesIn, ExploreNamesOut,
+  CrawlerHeadersIn, BrandCellIn, BriefNamedIn, MaybeBrandAlias, ExploreNameDbRow, ExploreNameFact, ExploreNamesIn, ExploreNamesOut,
 } from './types'
 import { HDR_USER_AGENT, isBotUa } from '../http'
 // =========================================================================
@@ -1516,6 +1516,20 @@ export function brandCellOf(x: BrandCellIn): string {
     return brand.ko
   }
   return brand.zh
+}
+
+/**
+ * 送翻前把简介里的英文公司名换成库里的译名(2026-10-02 Frank「一起修」:Johnson Enterprises 卡上中文名是
+ * 「约翰逊企业有限公司」,懒翻出来的主营译文开头还是英文名,同一张卡两种叫法)。名字原样出现才换;没有译名原文照送。
+ *
+ * @param x 简介、公司名与译名。
+ * @returns 送翻的原文。
+ */
+export function briefNamedOf(x: BriefNamedIn): string {
+  if (x.alias === ALIAS_NONE || x.name === '') {
+    return x.brief
+  }
+  return x.brief.split(x.name).join(x.alias)
 }
 
 /**

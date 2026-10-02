@@ -18,7 +18,7 @@
  * @time 2026-08-17 19:25:36
  */
 
-import type { SqlBriefKeepBaseIn, SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
+import type { SqlBriefKeepBaseIn, SqlBriefMergeIn, SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
 
 // =========================================================================
 // 1. 片段 —— 多条语句共用的列清单与条件,单独命名以免各处再抄一遍
@@ -59,6 +59,32 @@ function briefKeepBaseOf(x: SqlBriefKeepBaseIn): string {
   const old = `substring(${x.prev} from '\\[BASE\\] ([^\\n]+)')`
   return `CASE WHEN position('[BASE] (not stated)' in ${x.next}) > 0 AND ${old} IS NOT NULL AND ${old} <> '(not stated)'
     THEN replace(${x.next}, '[BASE] (not stated)', '[BASE] ' || ${old}) ELSE ${x.next} END`
+}
+
+/**
+ * 换简介时逐节合并(2026-10-02 Frank 选「逐节合并」;Johnson Enterprises 实撞:点开探索判优换上官网版简介,
+ * 多了成立年份 1985,旧简介的「其他要点」整节(创始人、ISO、CWB 焊接认证)被整段冲掉;下一轮灌库又拿 mart 那份整段换回去,1985 也没了)。
+ * 只在旧简介是五节新版、且出处里有这家现在的官网主机名时合并(同一个官网整理出来的才可信,照别家站 / 联网检索写的不留);
+ * 合并 = 新简介写了的节用新的,新简介没写 / 没有这一节、旧简介写了的节留旧的(新简介的节序在前,只有旧简介有的节接在后面);
+ * 不合并时照旧只保所在地一行(briefKeepBaseOf)。点开探索的回写与灌库的 ai_brief 两处共用。
+ *
+ * @param x 新简介、旧简介、旧简介出处与现在官网主机名四个 SQL 表达式。
+ * @returns 最终写进 ai_brief 的 SQL 表达式。
+ */
+function briefMergeOf(x: SqlBriefMergeIn): string {
+  const bodyRe = `'^\\[[A-Z]+\\] (.*)$'`
+  const merged = `(SELECT string_agg(t.line, chr(10) ORDER BY t.ord) FROM (
+      SELECT n.ord, CASE WHEN substring(n.line from ${bodyRe}) = '(not stated)' AND o.body IS NOT NULL AND o.body <> '(not stated)'
+        THEN substring(n.line from '^(\\[[A-Z]+\\] )') || o.body ELSE n.line END AS line
+        FROM regexp_split_to_table(${x.next}, chr(10)) WITH ORDINALITY AS n(line, ord)
+        LEFT JOIN (SELECT substring(p.line from '^\\[([A-Z]+)\\]') AS mark, substring(p.line from ${bodyRe}) AS body
+          FROM regexp_split_to_table(${x.prev}, chr(10)) AS p(line)) o ON o.mark = substring(n.line from '^\\[([A-Z]+)\\]')
+      UNION ALL
+      SELECT 100000 + p.ord, p.line FROM regexp_split_to_table(${x.prev}, chr(10)) WITH ORDINALITY AS p(line, ord)
+        WHERE substring(p.line from ${bodyRe}) <> '(not stated)'
+          AND position(substring(p.line from '^(\\[[A-Z]+\\])') in ${x.next}) = 0) t)`
+  return `CASE WHEN ${x.host} <> '' AND position('[FOUNDED]' in ${x.prev}) > 0 AND position(${x.host} in ${x.sources}) > 0
+    THEN ${merged} ELSE ${briefKeepBaseOf({ next: x.next, prev: x.prev })} END`
 }
 
 /**
@@ -770,9 +796,9 @@ export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = 
       site_host = COALESCE(NULLIF($4, ''), site_host) WHERE key = $1`
 
 /**
- * 点开探索回写那条语句的新旧简介表达式(briefKeepBaseOf 的入参;2026-10-01)。
+ * 点开探索回写那条语句的新旧简介表达式(briefKeepBaseOf 的入参;2026-10-01;2026-10-02 改喂 briefMergeOf)。
  */
-const EXPLORE_BRIEF_KEEP_BASE: SqlBriefKeepBaseIn = {
+const EXPLORE_BRIEF_KEEP_BASE: SqlBriefMergeIn = {
   /**
    * 新简介:工人交来的那份($8)。
    */
@@ -782,6 +808,16 @@ const EXPLORE_BRIEF_KEEP_BASE: SqlBriefKeepBaseIn = {
    * 旧简介:库里现有的那一格。
    */
   prev: 'c.ai_brief',
+
+  /**
+   * 旧简介的出处:库里现有的那一格(2026-10-02 逐节合并)。
+   */
+  sources: 'c.ai_sources',
+
+  /**
+   * 现在官网的主机名:这一轮抓的($11;空串 = 不合并,只保所在地)。
+   */
+  host: '$11',
 }
 
 /**
@@ -796,6 +832,7 @@ const EXPLORE_BRIEF_KEEP_BASE: SqlBriefKeepBaseIn = {
  * 新简介硬事实更多才带旗交活 —— 旗真 = 绕过上面那串让位条件整段替换;KEEP 的那次工人根本不带简介来)。
  * 2026-10-01 两处(Frank「两件都做」):换简介时新简介没写所在地、旧的写了,保住旧那一行(briefKeepBaseOf);
  * 人工核定过的公司(website_source = 'curated')整行不写 —— 定了就不再探索。
+ * 2026-10-02 换简介改逐节合并(briefMergeOf;Frank 选「逐节合并」):同一个官网的旧简介里写了、新简介没写的节留着,不再整段冲掉。
  */
 export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       website = COALESCE(NULLIF($2, ''), c.website),
@@ -806,7 +843,7 @@ export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
       hq_parent = CASE WHEN $3 <> '' OR $4 <> '' THEN $12::boolean ELSE c.hq_parent END,
       site_checked_at = now(),
-      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN ${briefKeepBaseOf(EXPLORE_BRIEF_KEEP_BASE)} ELSE c.ai_brief END,
+      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN ${briefMergeOf(EXPLORE_BRIEF_KEEP_BASE)} ELSE c.ai_brief END,
       ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN $9 ELSE c.ai_sources END,
       ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_website END,
       ai_fetched = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN now() ELSE c.ai_fetched END,
@@ -1953,12 +1990,12 @@ export const SEO_JOB_OK = `COALESCE(status,'open') <> 'closed' AND is_dup IS NOT
  * 2026-09-26 改列(/fe SEO「给 Google 新鲜信号」):last_seen 退役 —— 它是每轮抓取都刷的「最近还看见」,拿它当 lastmod
  * 等于天天告诉 Google 全站都改了;mod = 上架时刻与整理版生成时刻取晚(两个都是页面真变了的事件),
  * fresh = 近 7 天发布(jobs-new 册的成员,进程内按它挑)。当天生产 EXPLAIN ANALYZE 四次 0.5–1.0 秒(顺扫,出 2.4 万行)。
+ * 2026-10-02 撤 fresh 列:站点地图合成一张 jobs.xml,新岗册随之撤(Frank「合成一个不行吗」)。
  *
  * @param a1 收录口径片段(SEO_JOB_OK)。
  * @returns 全量 SELECT 语句。
  */
-export const jobsSitemapAll = (a1: string) => `SELECT id, GREATEST(COALESCE(first_seen, date_posted), jd_formatted_at) AS mod,
-       date_posted >= now() - interval '7 days' AS fresh
+export const jobsSitemapAll = (a1: string) => `SELECT id, GREATEST(COALESCE(first_seen, date_posted), jd_formatted_at) AS mod
        FROM jobs WHERE ${a1} ORDER BY id ASC`
 
 // =========================================================================
@@ -2480,6 +2517,13 @@ export const TEMP_SEEN_EXT = `CREATE TEMP TABLE seen_ext (external_id text PRIMA
 export const TX_BEGIN = `BEGIN`
 
 /**
+ * 灌库排队锁(事务级咨询锁,提交 / 回滚自动放;2026-10-02 实撞:06:02 与 06:03 两轮 seed 并发,
+ * 后一轮的 DELETE 看不见前一轮未提交的新行,cities 整表翻倍,职位板 join 出每岗两行、React 报重复 key)。
+ * 拿锁在读 seed_state 之前:后到的那轮等前一轮提交后再读哈希,没变的表照常跳过。键是随手定的常数,全库只此一处用。
+ */
+export const SEED_LOCK = `SELECT pg_advisory_xact_lock(20261002)`
+
+/**
  * 提交事务。
  */
 export const TX_COMMIT = `COMMIT`
@@ -2615,6 +2659,7 @@ export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
 /**
  * companies 灌库时一列 COALESCE 列的终值表达式(SET 与「真变了才写」比较共用):mart 给了用 mart 的、没给保库里的;
  * ai_brief 再过一道 briefKeepBaseOf(2026-10-01:mart 的官网版简介没写所在地、库里旧简介写了的,保住旧那一行)。
+ * 2026-10-02 改过 briefMergeOf:库里旧简介出自这家现在官网的,逐节合并(点开探索整理出的成立年份等不再被下一轮灌库冲掉)。
  *
  * @param col 列名。
  * @returns 终值 SQL 表达式。
@@ -2624,7 +2669,10 @@ function companiesCoalesceOf(col: string): string {
   if (col !== 'ai_brief') {
     return kept
   }
-  return briefKeepBaseOf({ next: kept, prev: `companies.${col}` })
+  return briefMergeOf({
+    next: kept, prev: `companies.${col}`, sources: 'companies.ai_sources',
+    host: `substring(COALESCE(NULLIF(EXCLUDED.website, ''), companies.website) from '^https?://(?:www\\.)?([^/:?#]+)')`,
+  })
 }
 
 /**

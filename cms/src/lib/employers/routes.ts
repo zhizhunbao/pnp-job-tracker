@@ -36,7 +36,7 @@ import {
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
-  aliasCellOf, brandCellOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
+  aliasCellOf, brandCellOf, briefNamedOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
   loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone, isCrawlerHeaders,
 } from './functions'
@@ -443,6 +443,7 @@ function paramOf(sp: URLSearchParams, key: string): string {
  * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):body 带 storedOnly 只查缓存与库,没存回 404 不翻。
  * 2026-09-17 Frank「清库 + 加检查」:译文过 translationOk 写入闸(不等于原文、真有目标语种文字)才回给前端、才缓存落库;
  * 过不了回 404,页面只是少一行对照。库里存量的坏译文另由 docs/sql/company-brief-bad-translation-cleanup.sql 清。
+ * 2026-10-02 Frank「一起修」:送翻前简介里的英文公司名换成库里的译名(briefNamedOf),译文与卡上中文名同一叫法。
  *
  * @param req 请求(body 是 { name, lang, storedOnly? })。
  * @returns { ok, text, cached };未配置 503、参数非法 400、查无 404、超限 429、翻挂 502。
@@ -492,12 +493,17 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
   }
+  let src = brief
+  const alias = await loadCompanyAlias({ db: db, name: name })
+  if (alias != null) {
+    src = briefNamedOf({ brief: brief, name: name, alias: aliasCellOf({ fact: alias, lang: lang }) })
+  }
   try {
     const r = await translateSectioned({
-      text: brief, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
+      text: src, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
       marks: CO_MARKS_RE, bullets: false,
     })
-    if (translationOk({ src: brief, out: r.text, lang: lang }) === false) {
+    if (translationOk({ src: src, out: r.text, lang: lang }) === false) {
       return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
     }
     if (r.full) {
