@@ -21,6 +21,7 @@
  * 2026-09-30 Frank「我觉得这个 日期 和 总数 互换一下位置是不是好一些」(看过效果图选「互换」):组头传 dateBelow —— 本年合计换到
  * 原日期那一格、日期落最下一行(没合计的组同样排,各组分数照旧对齐);EE 分数线卡不传。
  * 同日 Frank「收起那个按钮是不是不要放在外面」,选「可提名的岗去掉收起」:开关只在折着时出(「查看全省 N 组」),展开后不给收起。
+ * 2026-10-02 Frank「一会把所有的这个抽选都展开吧」「这种多个的不用展开」:整张卡只有一组的(NS 按月那种)默认展开,多组的照旧折着(drawGroupOpenOf)。
  *
  * @author Frank
  * @time 2026-09-23 23:50:00
@@ -30,7 +31,7 @@ import { cssOf } from '@/components/css'
 import { PLAIN_BTN_KIND } from './constants'
 import { DrawsHead } from './drawshead'
 import { EeCmpGroupView } from './eecmpgroupview'
-import { allGroupsLabelOf } from './functions'
+import { allGroupsLabelOf, drawGroupOpenOf } from './functions'
 import type { PnpDrawGroupsIn } from './types'
 import css from './pnp.module.css'
 
@@ -49,15 +50,18 @@ export function PnpDrawGroups({ t, card, open, toggleOf }: PnpDrawGroupsIn) {
   for (const line of card.foot) {
     foot.push(<div key={line} className={css.drawsFoot}>{line}</div>)
   }
+  const single = card.hits.length + card.others.length === 1
   const hits = []
   for (const g of card.hits) {
-    hits.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} dateBelow />)
+    hits.push(<EeCmpGroupView key={g.key} g={g} open={drawGroupOpenOf({ open, key: g.key, single })}
+      onToggle={toggleOf(g.key)} dateBelow />)
   }
   const allOpen = open.has(card.allKey)
   const others = []
   if (allOpen) {
     for (const g of card.others) {
-      others.push(<EeCmpGroupView key={g.key} g={g} open={open.has(g.key)} onToggle={toggleOf(g.key)} dateBelow />)
+      others.push(<EeCmpGroupView key={g.key} g={g} open={drawGroupOpenOf({ open, key: g.key, single })}
+        onToggle={toggleOf(g.key)} dateBelow />)
     }
   }
   return (

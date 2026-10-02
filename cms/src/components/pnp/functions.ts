@@ -76,7 +76,7 @@ import type {
   PnpStream, PnpStreamsIn, PnpTone, ProvDrawHistIn, ProvRow, ReasonParams, ReformOfIn, ScrollIntoHitIn, ShownStreamsIn,
   SponsorLinesIn, SponsorShowIn, StreamRowSpec, StreamRowsIn, TagClsIn, ToggleOfFn, ToggleSetIn, TrackClickIn,
   BasisKeyIn, ExpLineIn, GateCardOfIn, GateCardSpec, GateRowOfIn, GateRowSpec, GateUrlIn, LangPickIn, NocHitIn, PnpReq,
-  ReqAppliesIn, WageLowIn, ZonedLinesIn, PnpBlockIn, PnpLang,
+  ReqAppliesIn, WageLowIn, DrawGroupOpenIn, ZonedLinesIn, PnpBlockIn, PnpLang,
   RowOfFactorIn, TeerHitIn, DeadFlag, LoadFn, LoadPnpDataIn, PnpData, PnpDataJson, PnpKickerIn, PnpTitleIn, PnpBlocked,
   PnpCellActiveIn, PnpCellJob, PnpExclIn, PnpNameIn, GenDrawIn, PnpChannelKeyIn, PnpChannelOfIn, PnpPathway,
   CardYearIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
@@ -5219,6 +5219,21 @@ export function scrollIntoHit(x: ScrollIntoHitIn): void {
  */
 export function drawOpenInitOf(): Set<string> {
   return new Set([DRAWS_ALL_KEY, DRAWS_REFORM_ALL_KEY])
+}
+
+/**
+ * 抽选卡一组展开没(2026-10-02 Frank「一会把所有的这个抽选都展开吧」「这种多个的不用展开」):整张卡只有一组的默认展开,
+ * 键集合里记的就成了「收起的」;多组的照旧默认折着,键集合里记的是「展开的」。卡是数据到了才有的,初值集合定不了组数,所以在这里按卡判。
+ *
+ * @param x 开合键集合、这一组的键与整张卡是不是只有一组。
+ * @returns 展开着给 true。
+ */
+export function drawGroupOpenOf(x: DrawGroupOpenIn): boolean {
+  const flipped = x.open.has(x.key)
+  if (x.single) {
+    return flipped === false
+  }
+  return flipped
 }
 
 /**

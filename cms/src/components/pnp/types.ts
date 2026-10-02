@@ -1692,6 +1692,26 @@ export type RowOfFactorIn = {
 }
 
 /**
+ * drawGroupOpenOf 的入参(2026-10-02)。
+ */
+export type DrawGroupOpenIn = {
+  /**
+   * 抽选卡开合的键集合。
+   */
+  open: Set<string>
+
+  /**
+   * 这一组的键。
+   */
+  key: string
+
+  /**
+   * 整张卡是不是只有这一组。
+   */
+  single: boolean
+}
+
+/**
  * wageLowAppliesOf 的入参(2026-10-02 职位页移民相关卡)。
  */
 export type WageLowIn = {
