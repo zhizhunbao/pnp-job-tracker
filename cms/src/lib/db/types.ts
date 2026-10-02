@@ -151,6 +151,21 @@ export type SqlCompaniesUpsertIn = {
 }
 
 /**
+ * `sql.ts` 里「换简介保住旧总部行」片段的入参(2026-10-01)。
+ */
+export type SqlBriefKeepBaseIn = {
+  /**
+   * 将要写进去的新简介(SQL 表达式,如 `$8`)。
+   */
+  next: string
+
+  /**
+   * 库里现有的旧简介(SQL 表达式,如 `c.ai_brief`)。
+   */
+  prev: string
+}
+
+/**
  * `sql.jobsUpsertSuffix` 的入参。
  */
 export type SqlJobsUpsertIn = {

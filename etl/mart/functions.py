@@ -134,7 +134,7 @@ from mart.constants import (
     IN_SEARCH_HQ,
     K_HQ_PARENT, K_HQ_PROVINCE, K_HQ_QUOTE, K_HQ_SOURCE, K_SITE_AT, K_SITE_NAME_OK, K_SITE_CHECKED_AT, K_SITE_QUOTES, K_SRC_HQ_ADDRESS, K_SRC_HQ_CITY,
     K_SRC_HQ_PARENT, K_SRC_HQ_PROVINCE, K_SRC_HQ_QUOTE, K_SRC_HQ_SOURCE, PROV_CODE_LEN, SITE_BRIEF_SECS, SITE_FACTS_OK, SITE_SEC_HQ, SITE_SEC_LINE_TPL,
-    BRIEF_OK, FOUND_PLACES, IN_BRIEF, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
+    BRIEF_OK, FOUND_CURATED, FOUND_PLACES, IN_BRIEF, IN_CURATED, IN_PLACES, K_AI_BRIEF, K_AI_BRIEF_KO, K_AI_BRIEF_ZH, K_AI_FETCHED,
     CLASSIFY_OK, FORMAT_OK, IN_CLASSIFY, IN_JDFORMAT, K_FORMAT_AT, K_FORMAT_HRS, K_FORMAT_TERM, K_FORMAT_TEXT,
     K_JD_FORMATTED, K_JD_FORMATTED_AT,
     SAL_TXT_BACK, SAL_TXT_HR_MAX, SAL_TXT_HR_MIN, SAL_TXT_HR_RE, SAL_TXT_HR_TAIL, SAL_TXT_K_MULT, SAL_TXT_K_SUFFIX,
@@ -1502,6 +1502,13 @@ def load_enrich() -> dict:
     return out
 
 
+def load_curated() -> dict:
+    """人工核定表:slug → 记录(缺文件 = 空表,还没核定过任何公司)。"""
+    if not IN_CURATED.exists():
+        return {}
+    return read_table(IN_CURATED)
+
+
 def load_places() -> dict:
     """Google Places 命中行:slug → 记录(官网/地址;缺文件 = 空表,历史轮次没这份也照常汇装)。"""
     out: dict = {}
@@ -1669,6 +1676,7 @@ def add_company(x: CompanyExtraIn) -> None:
     fill_brief(x)
     fill_site_secs(x)
     fill_hq(x)
+    fill_curated(x)
     x.extra[K_SECTOR] = sector_of(x.name)
     x.ctx.companies[x.slug] = to_company_row(CompanyRowIn(name=x.name, slug=x.slug, extra=x.extra))
 
@@ -1853,6 +1861,32 @@ def fill_hq(x: CompanyExtraIn) -> None:
     x.extra[K_HQ_PROVINCE] = province
     x.extra[K_HQ_SOURCE] = hq.get(K_SRC_HQ_SOURCE) or first_of(hq.get(K_SOURCES, []))
     if hq.get(K_SRC_HQ_PARENT) is True:
+        x.extra[K_HQ_PARENT] = True
+    if province in HQ_CA_PROVS:
+        x.extra[K_REGION] = province
+
+
+def fill_curated(x: CompanyExtraIn) -> None:
+    """人工核定的官网 / 总部最后落、盖掉前面所有来路(2026-10-01 Frank「opus 修的优先级最高」);核定表里空着的格不动。
+    官网来路记 curated(cms 点开探索见它就不再探索);核定了总部的整组盖(含母公司标记归位),省码照 fill_hq 盖 region。"""
+    cur = x.ctx.curated.get(x.slug)
+    if cur is None:
+        return
+    site = website_of(cur.get(K_WEBSITE))
+    if site is not None:
+        x.extra[K_WEBSITE] = site
+        x.extra[K_WEBSITE_SOURCE] = FOUND_CURATED
+    city = (cur.get(K_SRC_HQ_CITY) or "").strip()
+    if city == "":
+        return
+    province = hq_province_of(cur.get(K_SRC_HQ_PROVINCE) or "")
+    x.extra[K_HQ_ADDRESS] = hq_street_of(HqStreetIn(address=cur.get(K_SRC_HQ_ADDRESS) or "", city=city))
+    x.extra[K_HQ_CITY] = city
+    x.extra[K_HQ_PROVINCE] = province
+    x.extra[K_HQ_QUOTE] = cur.get(K_SRC_HQ_QUOTE) or ""
+    x.extra[K_HQ_SOURCE] = cur.get(K_SRC_HQ_SOURCE) or ""
+    x.extra.pop(K_HQ_PARENT, None)
+    if cur.get(K_SRC_HQ_PARENT) is True:
         x.extra[K_HQ_PARENT] = True
     if province in HQ_CA_PROVS:
         x.extra[K_REGION] = province
@@ -4982,7 +5016,7 @@ def new_mart_ctx() -> MartCtx:
         wages = read_table(IN_WAGES)
     guards = SalaryGuards(absurd=0, ratio=0, cap=0, gig=0, hifold=0)
     return MartCtx(scored=scored, wage_floors=wage_floors_of(build_pnp_requirements(IN_REQ_TABLES)), wages=wages,
-                   enrich=load_enrich(), places=load_places(), careers=load_careers(),
+                   enrich=load_enrich(), places=load_places(), curated=load_curated(), careers=load_careers(),
                    briefs=load_briefs(), dead_sites=load_dead_sites(), site_facts=load_site_facts(), wiki_hq=load_wiki_hq(),
                    search_hq=load_search_hq(),
                    formatted=load_formatted(),

@@ -18,7 +18,7 @@
  * @time 2026-08-17 19:25:36
  */
 
-import type { SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
+import type { SqlBriefKeepBaseIn, SqlCompaniesUpsertIn, SqlInsertRowsIn, SqlJobsUpsertIn, SqlNewsUpsertIn } from './types'
 
 // =========================================================================
 // 1. 片段 —— 多条语句共用的列清单与条件,单独命名以免各处再抄一遍
@@ -46,6 +46,20 @@ export const JOB_COLUMNS = `j.id, j.title, c.name AS company_name, c.slug AS com
   j.title_zh, j.title_ko, j.trans_v AS job_trans_v,
   nd.title AS occ_title, nd.title_zh AS occ_title_zh, nd.title_ko AS occ_title_ko,
   nd.title_zh_short AS occ_zh_short, nd.title_ko_short AS occ_ko_short, nd.title_en_short AS occ_en_short`
+
+/**
+ * 换简介时保住旧简介里的「所在地」行(2026-10-01 Frank「探索完怎么把我总部给修没了」→「两件都做」):
+ * Harvey's 实撞 —— 卡片总部取自旧简介的 [BASE] 行,点开探索拿官网版简介整段顶替,官网没写总部,新简介 [BASE] 是 (not stated),总部就没了。
+ * 新简介 [BASE] 没写、旧简介 [BASE] 写了的,把旧那一行的字填进新简介;其余原样用新简介。点开探索的回写与灌库的 ai_brief 两处共用。
+ *
+ * @param x 新简介与旧简介两个 SQL 表达式。
+ * @returns 最终写进 ai_brief 的 SQL 表达式。
+ */
+function briefKeepBaseOf(x: SqlBriefKeepBaseIn): string {
+  const old = `substring(${x.prev} from '\\[BASE\\] ([^\\n]+)')`
+  return `CASE WHEN position('[BASE] (not stated)' in ${x.next}) > 0 AND ${old} IS NOT NULL AND ${old} <> '(not stated)'
+    THEN replace(${x.next}, '[BASE] (not stated)', '[BASE] ' || ${old}) ELSE ${x.next} END`
+}
 
 /**
  * 职位板的 FROM/JOIN 骨架:jobs 左连 companies;2026-09-14 再左连 cities 带回人工核定的市译名 city_zh / city_ko
@@ -681,18 +695,23 @@ export const EMPLOYER_EXPLORE_NAMES = `SELECT key, name FROM employer_explore WH
  * (只认池里真有的);新的进队,已在队里的记点开时刻与次数 —— 24 小时内走过一轮的(成败都算)不重置 stage,直接用上次结果。$1=公司名。
  * 2026-09-22 Frank「没有自动触发探索啊」(JBLR 实拍:找不到官网 stage=none,24 小时内再点开一动不动):
  * 缺官网或缺总部的公司,点开重探的冷却降到 1 小时 —— 资料全了才守 24 小时;正在办的(queued/find/fetch/facts)照旧不动。
+ * 2026-10-01 Frank「如果 opus 定了,这个没问题了。就不要再重新探索了」:官网来路是人工核定(website_source = 'curated')的,
+ * 点开直接记 done、不进队(新进队的插入值就是 done;已在队里的见 EXCLUDED.stage = 'done' 一律改 done)。
  */
 export const EMPLOYER_EXPLORE_OPEN = `INSERT INTO employer_explore (key, name, opened_at, open_count, stage, stage_at)
-     SELECT p.key, p.name, now(), 1, 'queued', now() FROM companies c JOIN employer_pool p ON p.slug = c.slug
+     SELECT p.key, p.name, now(), 1, CASE WHEN c.website_source = 'curated' THEN 'done' ELSE 'queued' END, now()
+       FROM companies c JOIN employer_pool p ON p.slug = c.slug
       WHERE lower(c.name) = lower($1) LIMIT 1
      ON CONFLICT (key) DO UPDATE SET opened_at = now(), open_count = employer_explore.open_count + 1,
-       stage = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+       stage = CASE WHEN EXCLUDED.stage = 'done' THEN 'done'
+                    WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
                     OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
                         AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
                                      WHERE p2.key = employer_explore.key
                                        AND (COALESCE(c2.website, '') = '' OR COALESCE(c2.hq_city, '') = '')))
                     THEN 'queued' ELSE employer_explore.stage END,
-       stage_at = CASE WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
+       stage_at = CASE WHEN EXCLUDED.stage = 'done' THEN now()
+                    WHEN employer_explore.stage_at IS NULL OR employer_explore.stage_at < now() - interval '24 hours'
                     OR (employer_explore.stage IN ('done', 'none') AND employer_explore.stage_at < now() - interval '1 hour'
                         AND EXISTS (SELECT 1 FROM employer_pool p2 JOIN companies c2 ON c2.slug = p2.slug
                                      WHERE p2.key = employer_explore.key
@@ -717,19 +736,22 @@ export const EMPLOYER_EXPLORE_STAGE = `SELECT x.stage, c.website, c.hq_address, 
  * 找官网工人取活:被点开过、没官网的(排队中),或抓页那头判了死站转过来的(find)。$1=条数。
  * 2026-09-22 Frank「为什么会插队」:原「最近点开的在前」(LIFO)改成**先到先得**(FIFO)——
  * 卡上显示位次倒数后,后点开插队会让数字不降反升,自相矛盾;先点先办,位次才是真倒数。
+ * 2026-10-01 人工核定过的(website_source = 'curated')不取 —— 定了就不再探索(入队那头已记 done,这里兜住核定前就在队里的)。
  */
 export const EMPLOYER_EXPLORE_SITE_TODO_FIND = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
-    WHERE x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = '')
+    WHERE (x.stage = 'find' OR (x.stage = 'queued' AND COALESCE(c.website, '') = ''))
+      AND COALESCE(c.website_source, '') <> 'curated'
     ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
 
 /**
  * 抓官网工人取活:被点开过、有官网的(排队中),或上一轮做到一半的(fetch / facts)。$1=条数。
- * 先到先得(2026-09-22,同 FIND;来由见那边)。
+ * 先到先得(2026-09-22,同 FIND;来由见那边)。人工核定过的不取(2026-10-01,同 FIND)。
  */
 export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c.website, p.province, x.stage, c.ai_brief FROM employer_explore x
      JOIN employer_pool p ON p.key = x.key LEFT JOIN companies c ON c.slug = p.slug
-    WHERE x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> '')
+    WHERE (x.stage IN ('fetch', 'facts') OR (x.stage = 'queued' AND COALESCE(c.website, '') <> ''))
+      AND COALESCE(c.website_source, '') <> 'curated'
     ORDER BY x.opened_at ASC NULLS LAST LIMIT $1`
 
 /**
@@ -737,6 +759,21 @@ export const EMPLOYER_EXPLORE_SITE_TODO_VISIT = `SELECT x.key, p.slug, x.name, c
  */
 export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = $2, stage_at = now(), stage_note = NULLIF($3, ''),
       site_host = COALESCE(NULLIF($4, ''), site_host) WHERE key = $1`
+
+/**
+ * 点开探索回写那条语句的新旧简介表达式(briefKeepBaseOf 的入参;2026-10-01)。
+ */
+const EXPLORE_BRIEF_KEEP_BASE: SqlBriefKeepBaseIn = {
+  /**
+   * 新简介:工人交来的那份($8)。
+   */
+  next: '$8',
+
+  /**
+   * 旧简介:库里现有的那一格。
+   */
+  prev: 'c.ai_brief',
+}
 
 /**
  * 工人交回来的官网 / 总部 / 简介直接写公司表(几分钟内上页面,不等下一轮汇装灌库;工人同时照常写 processed,下一轮 mart 出来的值与此一致)。
@@ -748,6 +785,8 @@ export const EMPLOYER_EXPLORE_SITE_STAGE = `UPDATE employer_explore SET stage = 
  * 只随总部组一起写 —— 官网总部盖上来时它是 false,恰好把维基母公司标记归位),
  * $13=简介判优旗(2026-09-22 Frank「主营业务这部分,由 AI 判断值不值得替换」:旧新都是正经简介时工人问盒子,
  * 新简介硬事实更多才带旗交活 —— 旗真 = 绕过上面那串让位条件整段替换;KEEP 的那次工人根本不带简介来)。
+ * 2026-10-01 两处(Frank「两件都做」):换简介时新简介没写所在地、旧的写了,保住旧那一行(briefKeepBaseOf);
+ * 人工核定过的公司(website_source = 'curated')整行不写 —— 定了就不再探索。
  */
 export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       website = COALESCE(NULLIF($2, ''), c.website),
@@ -758,13 +797,13 @@ export const EMPLOYER_EXPLORE_SITE_TO_COMPANIES = `UPDATE companies c SET
       hq_source = CASE WHEN $3 <> '' OR $4 <> '' THEN NULLIF($7, '') ELSE c.hq_source END,
       hq_parent = CASE WHEN $3 <> '' OR $4 <> '' THEN $12::boolean ELSE c.hq_parent END,
       site_checked_at = now(),
-      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN $8 ELSE c.ai_brief END,
+      ai_brief = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN ${briefKeepBaseOf(EXPLORE_BRIEF_KEEP_BASE)} ELSE c.ai_brief END,
       ai_sources = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN $9 ELSE c.ai_sources END,
       ai_website = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_website END,
       ai_fetched = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN now() ELSE c.ai_fetched END,
       ai_brief_zh = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_brief_zh END,
       ai_brief_ko = CASE WHEN $8 <> '' AND (COALESCE(c.ai_brief, '') = '' OR position('[FOUNDED]' in c.ai_brief) = 0 OR COALESCE(c.ai_sources, '') IN ('', '[]') OR $10::boolean OR ($11 <> '' AND position($11 in c.ai_sources) = 0) OR $13::boolean) THEN NULL ELSE c.ai_brief_ko END
-     FROM employer_pool p WHERE p.key = $1 AND c.slug = p.slug`
+     FROM employer_pool p WHERE p.key = $1 AND c.slug = p.slug AND COALESCE(c.website_source, '') <> 'curated'`
 
 /**
  * 被用户看过的公司清单(数据层例行轮拿它排队:sites 抓官网、company 找官网 / 维基总部,被看过的在前;2026-09-20)。
@@ -2510,7 +2549,7 @@ export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
     sets.push(`${c}=CASE WHEN ${COMPANIES_SITE_FRESH} THEN companies.${c} ELSE EXCLUDED.${c} END`)
   }
   for (const c of x.coalesce) {
-    sets.push(`${c}=COALESCE(EXCLUDED.${c}, companies.${c})`)
+    sets.push(`${c}=${companiesCoalesceOf(c)}`)
   }
   const changed: string[] = []
   for (const c of x.plain) {
@@ -2520,9 +2559,24 @@ export const companiesUpsertSuffix = (x: SqlCompaniesUpsertIn) => {
     changed.push(`(NOT COALESCE(${COMPANIES_SITE_FRESH}, false) AND companies.${c} IS DISTINCT FROM EXCLUDED.${c})`)
   }
   for (const c of x.coalesce) {
-    changed.push(`companies.${c} IS DISTINCT FROM COALESCE(EXCLUDED.${c}, companies.${c})`)
+    changed.push(`companies.${c} IS DISTINCT FROM ${companiesCoalesceOf(c)}`)
   }
   return `ON CONFLICT (slug) DO UPDATE SET ${sets.join(',')} WHERE ${changed.join(' OR ')}`
+}
+
+/**
+ * companies 灌库时一列 COALESCE 列的终值表达式(SET 与「真变了才写」比较共用):mart 给了用 mart 的、没给保库里的;
+ * ai_brief 再过一道 briefKeepBaseOf(2026-10-01:mart 的官网版简介没写所在地、库里旧简介写了的,保住旧那一行)。
+ *
+ * @param col 列名。
+ * @returns 终值 SQL 表达式。
+ */
+function companiesCoalesceOf(col: string): string {
+  const kept = `COALESCE(EXCLUDED.${col}, companies.${col})`
+  if (col !== 'ai_brief') {
+    return kept
+  }
+  return briefKeepBaseOf({ next: kept, prev: `companies.${col}` })
 }
 
 /**

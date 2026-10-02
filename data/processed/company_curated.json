@@ -1,0 +1,14 @@
+{
+  "harveys": {
+    "name": "Harvey's",
+    "website": "https://www.harveys.ca/",
+    "hq_address": "199 Four Valley Drive",
+    "hq_city": "Vaughan",
+    "hq_province": "ON",
+    "hq_quote": "Corporate Office 199 Four Valley Drive. Vaughan, ON L4K 0B8",
+    "hq_source": "https://www.recipeunlimited.com/en/contact.html",
+    "hq_parent": true,
+    "note": "品牌级雇主(Job Bank 名 HARVEY'S,横跨多城);官网取品牌首页,不用 Places 给的 Nepean 门店页;总部取母公司 Recipe Unlimited Corporation(harveys.ca 页面 parentOrganization 写明)。",
+    "curated_at": "2026-10-02T01:44:04.264249Z"
+  }
+}

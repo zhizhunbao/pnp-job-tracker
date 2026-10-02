@@ -755,6 +755,9 @@ class MartCtx:
     places: dict
     """slug → Google Places 命中行(官网/地址;2026-09-05)。"""
 
+    curated: dict
+    """slug → 人工核定行(官网 / 总部;2026-10-01,最后生效)。"""
+
     careers: dict
     """slug → 公司官方招聘页链接(只含探测回 200 且不与官网同址的;2026-09-16)。"""
 

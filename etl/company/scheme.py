@@ -348,6 +348,44 @@ class NositeLead(BaseModel):
     """在招指定雇主岗数(AIP / RCIP / FCIP;> 0 的在被看过的之后、名次之前先搜,2026-10-01;老 enrich 步恒 0)。"""
 
 
+class CuratedRecord(BaseModel):
+    """人工核定表一行(company_curated.json 的值;对外文件契约,mart 汇装直读;2026-10-01)。
+    空串 = 这一格没核定(不动自动来源的值);官网与总部至少核定一样,总部要带原句与出处页。"""
+
+    model_config = MODEL_CFG
+    """统一边界配置。"""
+
+    name: str
+    """公司名(人眼对照用)。"""
+
+    website: str = ""
+    """核定的官网首页(空 = 官网不核定)。"""
+
+    hq_address: str = ""
+    """核定的总部街址(可空:只核到市)。"""
+
+    hq_city: str = ""
+    """核定的总部所在市(空 = 总部不核定)。"""
+
+    hq_province: str = ""
+    """核定的总部所在省(加拿大省码;境外写国家 / 州名)。"""
+
+    hq_quote: str = ""
+    """总部出处页上的原句(举证)。"""
+
+    hq_source: str = ""
+    """总部出处页网址。"""
+
+    hq_parent: bool = False
+    """核定的总部是母公司的(品牌级雇主取母公司总部;与维基 hq_parent 同义,2026-09-22 Frank「显,但注明是母公司」)。"""
+
+    note: str = ""
+    """核定说明(为什么这么定,如「品牌级雇主,总部取母公司」)。"""
+
+    curated_at: str = ""
+    """核定时刻(ISO,UTC;write_curated 盖)。"""
+
+
 class EnrichRecord(BaseModel):
     """官网富化缓存一行(company_enrich.json 的值;对外文件契约,09 汇装直读)。
 
@@ -1122,6 +1160,17 @@ class JobCounts:
 
 
 @dataclass
+class CuratedWriteIn:
+    """write_curated 的入参。"""
+
+    slug: str
+    """公司 slug。"""
+
+    rec: CuratedRecord
+    """这家的核定值(curated_at 由写门盖)。"""
+
+
+@dataclass
 class PlacesCandsIn:
     """places_candidates 的入参。"""
 
@@ -1130,6 +1179,9 @@ class PlacesCandsIn:
 
     counts: JobCounts
     """在招 / 在招 TEER 0-3 两张计数。"""
+
+    skip: frozenset = frozenset()
+    """不进候选表的 slug(人工核定过的公司,2026-10-01:定了就不再探索)。"""
 
 
 @dataclass

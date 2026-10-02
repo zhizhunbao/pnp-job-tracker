@@ -715,6 +715,11 @@ IN_ENRICH_JD_DETAILS = paths.PROCESSED / "jobbank" / "details"
 IN_ENRICH_ATS = paths.PROCESSED_ATS
 """段5 输入:ATS 公司已自带 profile,跳过不富化。"""
 
+OUT_CURATED = paths.PROCESSED / "company_curated.json"
+"""人工核定表(slug → CuratedRecord;2026-10-01 Frank「opus 修的优先级最高」「如果 opus 定了,这个没问题了。就不要再重新探索了」):
+本地 Opus 会话核实过、带出处的官网 / 总部。只经 write_curated 写;mart 汇装时最后生效(压过官网整理 / 维基 / 搜索 / Places),
+本域各条自动排队(places / sites 搜官网 / about / 维基总部)都跳过表里的公司。"""
+
 OUT_ENRICH_CACHE = paths.PROCESSED / "company_enrich.json"
 """段5 输出:增量缓存(slug → EnrichRecord);09 汇装直读合并进 companies 行。"""
 
@@ -981,6 +986,18 @@ TEER_SKILLED = ["0", "1", "2", "3"]
 
 ENV_PLACES_KEY = "GOOGLE_PLACES_KEY"
 """密钥环境变量名(仓库根 .env;Frank 亲手抄,代码与日志不落值)。"""
+
+CURATED_URL_PREFIXES = ("https://", "http://")
+"""核定表里官网 / 出处链接必须是完整网址(write_curated 的闸)。"""
+
+CURATED_ERR_EMPTY_TPL = "{slug}: 官网与总部至少核定一样"
+"""write_curated 拒写:两样都没核定。"""
+
+CURATED_ERR_URL_TPL = "{slug}: 官网不是完整网址:{url}"
+"""write_curated 拒写:官网不是 http(s) 开头。"""
+
+CURATED_ERR_HQ_TPL = "{slug}: 核定总部要带原句与出处页网址"
+"""write_curated 拒写:总部缺举证。"""
 
 ENV_PLACES_SLUGS = "PLACES_SLUGS"
 """点名查的公司 slug 清单(逗号分隔)的环境变量名;设了就只查这几家(仍受当月免费额封顶),空 = 按队列查。

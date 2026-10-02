@@ -1507,6 +1507,13 @@ PLACES_HIT = "hit"
 FOUND_PLACES = "places"
 """官网发现路径:Google Places(与 jd/searched 并列,前端小字标注)。"""
 
+IN_CURATED = paths.PROCESSED / "company_curated.json"
+"""人工核定表(company 域 write_curated 写,2026-10-01 Frank「opus 修的优先级最高」):官网 / 总部最后生效,
+压过来源侧、富化、Places、官网整理、维基、搜总部;空格不动自动来源的值。"""
+
+FOUND_CURATED = "curated"
+"""官网来路:人工核定(websiteSource;cms 点开探索见它就不再探索这家)。"""
+
 IN_BRIEF = paths.PROCESSED / "company_brief.json"
 """官网正文 → qwen 五节简介(company 域 brief 步产,2026-09-05):进 companies 的 aiBrief 四列。
 mart 有就覆盖库里懒检索版(官网原文比网页搜索可靠);mart 没有的公司列缺键,seed 侧 COALESCE 保旧值。"""

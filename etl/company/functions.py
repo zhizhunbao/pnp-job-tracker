@@ -84,7 +84,7 @@ from company.constants import (
     K_LMIA_POSITIONS_SKILLED, K_NAME, K_SEARCH, K_SITELINKS, K_SLUG, K_STATUS, K_TITLE, K_VALUE,
     K_WIKI, K_WIKI_CHECKED, K_ZH, LANG_EN, LANG_KO, LANG_ZH, LINK_TAG, LIST_JOIN_SEP, MD_GLOB,
     META_DESC_PATTERNS, META_KEYWORDS_PATTERNS, NAME_STOP, NAME_TOKEN_RE, NONALNUM_RE,
-    NOT_OFFICIAL, NOTE_HTTP_TPL, NOTE_NO_CAREERS, NOTE_NO_META, OUT_ENRICH_CACHE, OUT_FACTS,
+    NOT_OFFICIAL, NOTE_HTTP_TPL, NOTE_NO_CAREERS, NOTE_NO_META, OUT_CURATED, OUT_ENRICH_CACHE, OUT_FACTS,
     OUT_FOLDERS_ROOT, OUT_KANATA_DIR, PRINT_FACTS_CANDS_TPL, PRINT_FACTS_DONE_TPL,
     PRINT_FACTS_INDUSTRY_TPL, PRINT_FACTS_IN_TPL, PRINT_FACTS_TICK_TPL, P_ACTION, P_FORMAT, P_IDS,
     P_LANGUAGE, P_LANGUAGES, P_LIMIT, P_PAGED, P_PAGE_SIZE, P_PROPS, P_QUERY, P_SEARCH, P_TAG_RE,
@@ -98,7 +98,7 @@ from company.constants import (
     URL_DEFAULT_SCHEME, URL_DOMAIN_RE, URL_ROOT_TPL, WD_API_URL, WD_LANGUAGES, WD_PROPS,
     WD_SEARCH_LIMIT, WD_SLEEP_S, WD_TIMEOUT_S, WD_UA, WIKI_CHECKED_MARK, WIKI_SPACE,
     WIKI_UNDERSCORE, WIKI_URL_PREFIX, WS_FOLD_RE, WWW_PREFIX,
-    ENV_PLACES_KEY, ENV_PLACES_SLUGS, PLACES_SLUGS_SEP, PRINT_PLACES_PICKED_TPL, PT_OFFSETS_H, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
+    CURATED_ERR_EMPTY_TPL, CURATED_ERR_HQ_TPL, CURATED_ERR_URL_TPL, CURATED_URL_PREFIXES, ENV_PLACES_KEY, ENV_PLACES_SLUGS, PLACES_SLUGS_SEP, PRINT_PLACES_PICKED_TPL, PT_OFFSETS_H, HDR_API_KEY, HDR_FIELD_MASK, IN_PLACES_COMPANIES, IN_PLACES_JOBS, NOTE_NO_KEY,
     OUT_PLACES, PLACES_LANG, PLACES_LIMIT, PLACES_PAGE_SIZE,
     PLACES_QUERY_TPL, PLACES_REFRESH_DAYS, PLACES_REGION, PLACES_SLEEP_S, PLACES_TIMEOUT_S,
     PLACES_URL, PRINT_PLACES_DONE_TPL, PRINT_PLACES_IN_TPL, PRINT_PLACES_ROW_TPL,
@@ -134,7 +134,7 @@ from company.scheme import (
     CmsCallIn, EngineIn, FindOneIn, FindTodo, HotSiteOut, OtherLinksIn, TitleHitsIn,
     ClaimIn, HqPlace, PickWikiHqIn, WikiHqQuery, WikiHqOut, WikiHqRecord, WikiHqTarget,
     CandsIn, CardColIn, CareerEntryRow, CareerScanRow, EntryPageIn, CareersFileRow, CareersProbe, CompanyRow, DdgFindIn,
-    EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
+    CuratedRecord, CuratedWriteIn, EnrichRecord, EntityIn, FactsIndustryOut, FetchProfileIn, FetchTextIn, FindWebsitesIn,
     GuardMatchIn, HttpClientLike, IndexRow, MetaOut, MetaScanIn, NositeLead, PickTodoIn,
     MartJob, PickPlacesIn, PlaceCompany, PlaceRecord, PlacesCandsIn, PlacesEnvelope, PlacesSearchIn,
     PlaceTarget, PostingLead, ProbeIn, ProfileRow, SaveFactsIn, SiteLead, SkipFindIn, SkipPlacesIn,
@@ -1186,6 +1186,34 @@ def read_enrich_cache() -> dict[str, EnrichRecord]:
     return cache
 
 
+def read_curated() -> dict[str, CuratedRecord]:
+    """读人工核定表(缺文件 = 空表:还没核定过任何公司)。"""
+    out: dict[str, CuratedRecord] = {}
+    if OUT_CURATED.exists():
+        for sl, d in json.loads(OUT_CURATED.read_text(encoding=TEXT_ENCODING)).items():
+            out[sl] = CuratedRecord.model_validate(d)
+    return out
+
+
+def write_curated(x: CuratedWriteIn) -> None:
+    """人工核定表唯一写门(2026-10-01;本地 Opus 会话核实后调用):过举证闸再写,盖核定时刻。
+    闸:官网与总部至少核定一样;官网要完整网址;核定总部必须带原句与出处页网址(「官方不公布」同款举证令)。不合格抛错,不写。"""
+    r = x.rec
+    if r.website == "" and r.hq_city == "":
+        raise ValueError(CURATED_ERR_EMPTY_TPL.format(slug=x.slug))
+    if r.website != "" and not r.website.startswith(CURATED_URL_PREFIXES):
+        raise ValueError(CURATED_ERR_URL_TPL.format(slug=x.slug, url=r.website))
+    if r.hq_city != "" and (r.hq_quote == "" or not r.hq_source.startswith(CURATED_URL_PREFIXES)):
+        raise ValueError(CURATED_ERR_HQ_TPL.format(slug=x.slug))
+    table = read_curated()
+    r.curated_at = now_iso()
+    table[x.slug] = r
+    out: dict[str, dict] = {}
+    for sl, rec in table.items():
+        out[sl] = rec.model_dump()
+    paths.write_json(paths.WriteJsonIn(path=OUT_CURATED, payload=out, indent=2))
+
+
 def write_enrich_cache(cache: dict[str, EnrichRecord]) -> int:
     """缓存落盘 OUT_ENRICH_CACHE,返回累计 ok 家数(enrich 与 sites 两步共用的尾巴,
     2026-09-04 随 sites 步抽出 —— 行为复制不许)。
@@ -1448,7 +1476,8 @@ def lookup_company_places() -> None:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = pick_named_places(places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug())))
+    cands = pick_named_places(places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug(),
+                                                              skip=frozenset(read_curated()))))
     used = month_usage_of(cache)
     pro_budget = max(0, PLACES_MONTH_FREE_PRO - PLACES_MONTH_RESERVE - used.pro)
     ent_budget = max(0, PLACES_MONTH_FREE_ENT - PLACES_MONTH_RESERVE - used.ent)
@@ -1558,7 +1587,8 @@ def lookup_sponsor_websites() -> None:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
+    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug(),
+                                            skip=frozenset(read_curated())))
     nosite = sponsor_nosite_of(cands)
     cse = cse_config()
     if cse is None:
@@ -1644,12 +1674,13 @@ def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
     (rank_tail):搜官网按序轮得到,about 步的浏览器兜底仍只认前 PULSE_RANK_MAX 名,不放量烧浏览器。
     2026-10-01 Frank 拍「AIP、RCIP、FCIP 的指定雇主最先补」(国内用户能走的主要是这两条,「可以,先改排队顺序」):
     上面两段排好后,有指定雇主岗的公司整体挪到最前(designated_first),段内次序不变;名次不动(浏览器兜底特权照旧)。
+    同日 Frank「如果 opus 定了……就不要再重新探索了」:人工核定过的公司(x.skip)不进候选表。
     """
     out: list[PlaceTarget] = []
     tail: list[PlaceTarget] = []
     for c in x.companies:
         open_n = x.counts.open.get(c.slug, 0)
-        if open_n <= 0:
+        if open_n <= 0 or c.slug in x.skip:
             continue
         target = PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
                              open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug)),
@@ -1905,7 +1936,8 @@ def about_targets() -> list[AboutTarget]:
     companies: list[PlaceCompany] = []
     for d in json.loads(IN_PLACES_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         companies.append(PlaceCompany.model_validate(d))
-    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug()))
+    cands = places_candidates(PlacesCandsIn(companies=companies, counts=job_counts_by_slug(),
+                                            skip=frozenset(read_curated())))
     out: list[AboutTarget] = []
     for t in cands:
         site = t.website
@@ -2353,9 +2385,10 @@ def wikihq_targets() -> list:
             open_jobs[slug] = open_jobs.get(slug, 0) + 1
     facts = read_json_or_empty(IN_WIKIHQ_FACTS)
     pages = read_json_or_empty(IN_WIKIHQ_PAGES)
+    curated = read_curated()
     for c in json.loads(IN_FACTS_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         slug = c.get(K_SLUG)
-        if not slug or not c.get(K_NAME):
+        if not slug or not c.get(K_NAME) or slug in curated:
             continue
         rec = facts.get(slug) or {}
         no_hq = rec.get(K_STATUS) == ST_OK and (FACTS_SEC_HQ not in rec.get(K_FACTS_QUOTES, {})
