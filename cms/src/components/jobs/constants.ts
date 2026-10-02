@@ -1229,11 +1229,14 @@ export const DEFAULT_COLS: JobColKey[] = [
  * 紧跟职业,默认不显示,与改前一样由字段面板勾选。
  * 同日 Frank「pnp 这里一列放到 EE 类别后面如何」:PNP 列从 AIP 前挪到 EE 类别后(两个移民信号挨着)。
  * 2026-09-26 晚 Frank「发布时间 改成 发布日期」:第一列 label 随 i18n col.datePosted 改名。
+ * 2026-10-01 Frank「AIP 弹框放到 PNP 列后面吗」「都做吧」:AIP 列从「发布」后挪到 PNP 后(EE › PNP › AIP 三个移民信号挨着,
+ * 同 09-23 PNP 挪列的理由)。
  */
 export const COLUMNS: ColSpec[] = [
   { key: 'datePosted', label: '发布日期' },
   { key: 'ee', label: 'EE 类别' },
   { key: 'pnp', label: 'PNP' },
+  { key: 'aip', label: 'AIP' },
   { key: 'broad', label: '大分类' },
   { key: 'noc', label: '职业' },
   { key: 'nocCode', label: 'NOC' },
@@ -1257,7 +1260,6 @@ export const COLUMNS: ColSpec[] = [
   { key: 'source', label: '来源' },
   { key: 'origin', label: '渠道' },
   { key: 'direct', label: '发布' },
-  { key: 'aip', label: 'AIP' },
   { key: 'pilot', label: 'RCIP/FCIP' },
   { key: 'lmia', label: '外劳记录' },
   { key: 'eligibility', label: '身份预筛' },
