@@ -48,3 +48,74 @@ export const MORE_BUSY = '…'
  * 不加类(「显示更多」钮平时不带附加类)。
  */
 export const CLS_NONE = ''
+
+/**
+ * 清单「展开」一次加几个(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」):全站清单卡同一个数 —— 展开 20 → 再展开 20 →
+ * 展开其余 N → 收起。
+ */
+export const FOLD_STEP = 20
+
+/**
+ * 「展开 N {量词} ▾」词条(收着、其余超过一步时)。
+ */
+export const K_FOLD_FIRST = 'fold.first'
+
+/**
+ * 「再展开 N {量词} ▾」词条(展开着、其余还超过一步时)。
+ */
+export const K_FOLD_NEXT = 'fold.next'
+
+/**
+ * 「展开其余 N {量词} ▾」词条(其余不到一步时;收着、展开着都用它)。
+ */
+export const K_FOLD_REST = 'fold.rest'
+
+/**
+ * 「收起 ▴」词条(展开着才出)。
+ */
+export const K_FOLD_UP = 'fold.up'
+
+/**
+ * 取数中钮面的词条(同全站加载行)。
+ */
+export const K_FOLD_BUSY = 'act.loadingText'
+
+/**
+ * 「展开」钮的档:收着 / 再展开 / 展开其余 / 不出钮。
+ */
+export const FOLD_MORE_FIRST = 'first'
+
+/**
+ * 同上:再展开。
+ */
+export const FOLD_MORE_NEXT = 'next'
+
+/**
+ * 同上:展开其余。
+ */
+export const FOLD_MORE_REST = 'rest'
+
+/**
+ * 同上:不出钮(都展开完了)。
+ */
+export const FOLD_MORE_NONE = ''
+
+/**
+ * 「展开」钮三档 → 词条。
+ */
+export const FOLD_KEYS: Record<string, string> = {
+  /**
+   * 收着、其余超过一步:「展开 N」。
+   */
+  first: 'fold.first',
+
+  /**
+   * 展开着、其余还超过一步:「再展开 N」。
+   */
+  next: 'fold.next',
+
+  /**
+   * 其余不到一步:「展开其余 N」。
+   */
+  rest: 'fold.rest',
+}

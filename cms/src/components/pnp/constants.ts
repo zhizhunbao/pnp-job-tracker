@@ -1672,24 +1672,14 @@ export const K_AIP_EMP_COUNT = 'aipemp.count'
 export const K_AIP_EMP_BRAND = 'aipemp.brand'
 
 /**
- * 指定雇主卡「展开其他 N 家 ▾」词条(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。
- */
-export const K_AIP_EMP_MORE = 'aipemp.more'
-
-/**
- * 指定雇主卡展开后还有剩时「再展开 N 家 ▾」词条。
- */
-export const K_AIP_EMP_NEXT = 'aipemp.next'
-
-/**
- * 指定雇主卡「收起 ▴」词条(同职业清单卡那一条)。
- */
-export const K_AIP_EMP_FOLD = 'pnplist.foldOther'
-
-/**
  * 指定雇主表的表头词条:招牌 / 门店 / 法人(同序)。
  */
 export const K_AIP_EMP_COLS = ['aipemp.colTrade', 'aipemp.colStore', 'aipemp.colLegal']
+
+/**
+ * 指定雇主卡展开钮的量词词条(「家」;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:钮走 pager 桶 FoldLine)。
+ */
+export const K_AIP_EMP_UNIT = 'fold.u.employer'
 
 /**
  * 指定雇主卡「展开其他 N 家」一次取几家(与 SQL.AIP_EMP_REST 的 LIMIT 同一个数)。

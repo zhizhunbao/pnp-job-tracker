@@ -596,6 +596,9 @@ export const jobsZh = {
   'pnp.gen.MB': 'MB 技术工人', 'pnp.gen.NS': 'NS 技术工人', 'pnp.gen.NB': 'NB 技术工人', 'pnp.gen.PE': 'PE 劳工通道',
   'pnp.gen.NL': 'NL 技术工人', 'cell.pnpIndemand': '紧缺', 'cell.pnpQc': '魁省', 'cell.aipYes': '指定雇主', 'cell.lmiaYes': '✓ {n} 职位　{q}', 'cell.closed': '已下架', 'cell.open': '在招',
   'pnplist.title': '省提名职业清单', 'pnplist.source': '来源', 'pnplist.gta': '大多区域外', 'pnplist.loading': '加载清单…', 'pnplist.showOther': '展开其他 {n} 个 ▾', 'pnplist.foldOther': '收起 ▴',
+  // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
+  'fold.first': '展开 {n} {u} ▾', 'fold.next': '再展开 {n} {u} ▾', 'fold.rest': '展开其余 {n} {u} ▾', 'fold.up': '收起 ▴',
+  'fold.u.item': '个', 'fold.u.employer': '家', 'fold.u.group': '组', 'fold.u.entry': '条', 'fold.u.question': '题', 'fold.u.reply': '条回复',
   'pnpdraws.min': '最低 {score} 分', 'pnpdraws.inv': '{n} 份邀请', 'pnpdraws.sel': '{n} 份申请入选',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
@@ -828,7 +831,7 @@ export const jobsZh = {
   'fact.accNote': '经验级别从帖内措辞(职级/年限)提取;帖内未写=「未知」,不猜',
   'aipemp.title': '{prov} AIP 指定雇主', 'aipemp.count': '{n} 家',
   // 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):指定雇主卡只列本岗雇主与同招牌几家,卡底一行同招牌家数、一条跳雇主板的链接
-  'aipemp.brand': '同招牌 {n} 家都是指定雇主', 'aipemp.more': '展开其他 {n} 家 ▾', 'aipemp.next': '再展开 {n} 家 ▾',
+  'aipemp.brand': '同招牌 {n} 家都是指定雇主',
   'aipemp.colTrade': '招牌', 'aipemp.colStore': '门店', 'aipemp.colLegal': '法人',
   'fact.lmiaNote': '历史事实,不代表现在能或愿意担保。', 'fact.lmiaStreams': '获批构成',
   'lmia.route': '本岗 LMIA 前瞻', 'lmia.official': '官方冻结口径',

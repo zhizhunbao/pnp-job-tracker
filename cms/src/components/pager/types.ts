@@ -120,3 +120,154 @@ export type MoreLabelIn = {
    */
   label: string
 }
+
+/**
+ * 界面语取词函数(与 lib/i18n 的 TFn 同形:键 + 可选插值;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」 随
+ * FoldLine 立)。
+ */
+export type FoldT = (key: string, vars?: Record<string, string | number>) => string
+
+/**
+ * FoldLine(清单末尾的展开 / 收起两只钮)的 props。
+ */
+export type FoldLineIn = {
+  /**
+   * 取词函数(文案词条住本域常量,取词由调用方给 —— 本域不携词)。
+   */
+  t: FoldT
+
+  /**
+   * 量词(界面语言已取好的词,如「家」「个」「组」;英文界面给 '')。
+   */
+  unit: string
+
+  /**
+   * 折起来的总数(默认露的那几行之外还有几个)。
+   */
+  hidden: number
+
+  /**
+   * 已展开了几个(0 = 收着)。
+   */
+  extra: number
+
+  /**
+   * 取数中(服务器分页的清单;钮面换加载中、点了不响应)。
+   */
+  busy: boolean
+
+  /**
+   * 「展开」钮的手柄。
+   */
+  onMore: () => void
+
+  /**
+   * 「收起」钮的手柄。
+   */
+  onFold: () => void
+}
+
+/**
+ * foldViewOf 的入参。
+ */
+export type FoldViewIn = {
+  /**
+   * 折起来的总数。
+   */
+  hidden: number
+
+  /**
+   * 已展开了几个。
+   */
+  extra: number
+}
+
+/**
+ * foldViewOf 的出参:「展开」钮出哪一档、写几个,「收起」钮出不出。
+ */
+export type FoldView = {
+  /**
+   * 「展开」钮的档(FOLD_MORE_*;'' = 不出)。
+   */
+  more: string
+
+  /**
+   * 「展开」钮上写的个数。
+   */
+  n: number
+
+  /**
+   * 「收起」钮出不出(展开着才出)。
+   */
+  up: boolean
+}
+
+/**
+ * foldMoreLabelOf 的入参。
+ */
+export type FoldLabelIn = {
+  /**
+   * 取词函数。
+   */
+  t: FoldT
+
+  /**
+   * 量词。
+   */
+  unit: string
+
+  /**
+   * 这一刻的展开态。
+   */
+  view: FoldView
+
+  /**
+   * 取数中。
+   */
+  busy: boolean
+}
+
+/**
+ * useFold(浏览器端已有全量的清单)的入参。
+ */
+export type FoldHookIn = {
+  /**
+   * 折起来的总数。
+   */
+  hidden: number
+}
+
+/**
+ * useFold 交回的面板。
+ */
+export type FoldPanel = {
+  /**
+   * 已展开了几个(调用方按它切片:默认露的行 + 前 extra 个折起来的)。
+   */
+  extra: number
+
+  /**
+   * 「展开」手柄(一次加 FOLD_STEP 个,封顶 hidden)。
+   */
+  onMore: () => void
+
+  /**
+   * 「收起」手柄(归零)。
+   */
+  onFold: () => void
+}
+
+/**
+ * makeFoldMore 的入参。
+ */
+export type FoldMoreIn = {
+  /**
+   * 折起来的总数。
+   */
+  hidden: number
+
+  /**
+   * 已展开个数的写口(React setState 的更新函数形)。
+   */
+  setExtra: (f: (prev: number) => number) => void
+}

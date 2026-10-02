@@ -5540,33 +5540,18 @@ export type AipMoreIn = {
 }
 
 /**
- * aipMoreLabelOf 的入参。
+ * aipExtraOf 的入参(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
  */
-export type AipMoreLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
+export type AipExtraIn = {
   /**
    * 展开着没。
    */
   open: boolean
 
   /**
-   * 其余总家数(本省总家数减去本岗雇主与同招牌那几家)。
-   */
-  restTotal: number
-
-  /**
    * 已取到的其余家数。
    */
   loaded: number
-
-  /**
-   * 取数中。
-   */
-  busy: boolean
 }
 
 /**
@@ -5624,19 +5609,24 @@ export type AipEmpCardPanel = {
   total: number
 
   /**
-   * 卡底「展开其他 N 家 / 再展开 N 家」钮的字;'' = 不出钮(2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」)。
+   * 折起来的家数(本省总家数减去本岗雇主与同招牌那几家;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底两只钮走 pager 桶 FoldLine)。
    */
-  moreLabel: string
+  hidden: number
+
+  /**
+   * 已展开的家数(收着为 0;收起后再展开直接用已取到的)。
+   */
+  extra: number
+
+  /**
+   * 下一页取数中。
+   */
+  busy: boolean
 
   /**
    * 那只钮的手柄。
    */
   onMore: ClickFn
-
-  /**
-   * 「收起」钮的字;'' = 不出(收着时)。
-   */
-  foldLabel: string
 
   /**
    * 「收起」的手柄。

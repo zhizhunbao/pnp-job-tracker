@@ -544,6 +544,9 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnp.gen.MB': 'MB 숙련 노동자', 'pnp.gen.NS': 'NS 숙련 노동자', 'pnp.gen.NB': 'NB 숙련 노동자', 'pnp.gen.PE': 'PE 인력 스트림',
   'pnp.gen.NL': 'NL 숙련 노동자', 'cell.pnpIndemand': '부족직종', 'cell.pnpQc': '퀘벡', 'cell.aipYes': '지정 고용주', 'cell.lmiaYes': '✓ {n} 포지션　{q}', 'cell.closed': '마감', 'cell.open': '채용중',
   'pnplist.title': 'PNP 직업 목록', 'pnplist.source': '출처', 'pnplist.gta': 'GTA 외', 'pnplist.loading': '목록 불러오는 중…', 'pnplist.showOther': '다른 {n}개 보기 ▾', 'pnplist.foldOther': '접기 ▴',
+  // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
+  'fold.first': '{n}{u} 펼치기 ▾', 'fold.next': '{n}{u} 더 보기 ▾', 'fold.rest': '나머지 {n}{u} 보기 ▾', 'fold.up': '접기 ▴',
+  'fold.u.item': '개', 'fold.u.employer': '곳', 'fold.u.group': '개', 'fold.u.entry': '건', 'fold.u.question': '문제', 'fold.u.reply': '개 답글',
   'pnpdraws.min': '최저 {score}점', 'pnpdraws.inv': '{n}개 초청', 'pnpdraws.sel': '{n}건 선정',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
@@ -756,7 +759,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'fact.accNote': '경력 수준은 공고 문구(직급/연차)에서 추출; 미기재 시 「—」, 추측하지 않음',
   'aipemp.title': '{prov} AIP 지정 고용주', 'aipemp.count': '{n}곳',
   // 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):指定雇主卡只列本岗雇主与同招牌几家,卡底一行同招牌家数、一条跳雇主板的链接
-  'aipemp.brand': '같은 상호 {n}곳 모두 지정 고용주', 'aipemp.more': '다른 {n}곳 보기 ▾', 'aipemp.next': '{n}곳 더 보기 ▾',
+  'aipemp.brand': '같은 상호 {n}곳 모두 지정 고용주',
   'aipemp.colTrade': '상호', 'aipemp.colStore': '지점', 'aipemp.colLegal': '법인',
   'fact.lmiaNote': '과거 기록일 뿐, 지금 스폰서 가능 여부와는 다릅니다.', 'fact.lmiaStreams': '스트림별',
   'lmia.route': '이 채용의 LMIA 전망', 'lmia.official': '공식 동결 기준',

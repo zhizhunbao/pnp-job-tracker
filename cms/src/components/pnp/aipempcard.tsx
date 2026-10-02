@@ -12,18 +12,18 @@
  * 同日 Frank「这个加载中 怎么跑中间去了」:取数中 / 取挂了也先出卡框与标题,加载行与失败框住卡里(加载区必占位),不再光秃秃夹在两张卡中间。
  * 2026-10-02 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到效果图的三列表(招牌 / 门店 / 法人,带表头);卡底跳雇主板的链接撤,
  * 改原地「展开其他 N 家 ▾」,
- * 一次取 20 家往后接,展开后可收起。 *
+ * 一次取 20 家往后接,展开后可收起。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:卡底两只钮换成 pager 桶 FoldLine(展开 20 家 → 再展开 20 家 → 展开其余 N 家 → 收起),全站一套。 *
  * @author Frank
  * @time 2026-10-01 14:13:21
  */
-import { Button } from '@/components/button'
-import { cssOf } from '@/components/css'
 import { Loading } from '@/components/loading'
 import { Notice } from '@/components/notice'
+import { FoldLine } from '@/components/pager'
 import { AipEmpRow } from './aipemprow'
 import {
-  BOX_GAP_NONE, K_AIP_EMP_BRAND, K_AIP_EMP_COLS, K_AIP_EMP_COUNT, K_AIP_EMP_TITLE, K_LOAD_FAILED, K_LOADING, NOTICE_ERR,
-  PLAIN_BTN_KIND, PROV_KEY_HEAD, TEXT_NONE,
+  BOX_GAP_NONE, K_AIP_EMP_BRAND, K_AIP_EMP_COLS, K_AIP_EMP_COUNT, K_AIP_EMP_TITLE, K_AIP_EMP_UNIT, K_LOAD_FAILED,
+  K_LOADING, NOTICE_ERR, PROV_KEY_HEAD,
 } from './constants'
 import { boxClsOf } from './functions'
 import { useAipEmpCard } from './hooks'
@@ -76,12 +76,13 @@ export function AipEmpCard({ t, job }: AipEmpCardIn) {
         </div>
       )}
       {p.brandN > 1 && <div className={css.drawsFoot}>{t(K_AIP_EMP_BRAND, { n: p.brandN })}</div>}
-      {p.moreLabel !== TEXT_NONE && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={p.onMore}>{p.moreLabel}</Button>
-      )}
-      {p.foldLabel !== TEXT_NONE && (
-        <Button kind={PLAIN_BTN_KIND} className={cssOf(css.foldMore)} onClick={p.onFold}>{p.foldLabel}</Button>
-      )}
+      <FoldLine t={t}
+        unit={t(K_AIP_EMP_UNIT)}
+        hidden={p.hidden}
+        extra={p.extra}
+        busy={p.busy}
+        onMore={p.onMore}
+        onFold={p.onFold} />
     </div>
   )
 }

@@ -550,6 +550,9 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnp.gen.ON': 'ON Workforce Priority', 'pnp.gen.MB': 'Skilled Worker in Manitoba', 'pnp.gen.NS': 'NS Skilled Worker',
   'pnp.gen.NB': 'NB Skilled Worker', 'pnp.gen.PE': 'PE Workforce', 'pnp.gen.NL': 'NL Skilled Worker', 'cell.pnpIndemand': 'In-demand', 'cell.pnpQc': 'Quebec', 'cell.aipYes': 'Designated', 'cell.lmiaYes': '✓ {n} positions　{q}', 'cell.closed': 'Closed', 'cell.open': 'Open',
   'pnplist.title': 'PNP occupation list', 'pnplist.source': 'Source', 'pnplist.gta': 'Outside GTA', 'pnplist.loading': 'Loading list…', 'pnplist.showOther': 'Show other {n} ▾', 'pnplist.foldOther': 'Collapse ▴',
+  // 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」:清单展开 / 收起全站一套(pager 桶 FoldLine);量词由调用方取(fold.u.*)
+  'fold.first': 'Show {n} ▾', 'fold.next': 'Show {n} more ▾', 'fold.rest': 'Show the remaining {n} ▾', 'fold.up': 'Collapse ▴',
+  'fold.u.item': '', 'fold.u.employer': '', 'fold.u.group': '', 'fold.u.entry': '', 'fold.u.question': '', 'fold.u.reply': '',
   'pnpdraws.min': 'min {score}', 'pnpdraws.inv': '{n} invitations', 'pnpdraws.sel': '{n} selected',
   // 2026-09-26 晚 Frank「这部分怎么改的这么乱了」:职位弹框的抽选卡标题只留这一句,轮次标签({label})降成下一行灰字;地点弹框省份卡仍用 pnpdraws.title(2026-09-28 地点弹框删,pnpdraws.title 随之删)
   // 2026-09-27 Frank「我觉得这种应该拆成两个卡片」→ 选「不拆,去重复」:标题去掉「最近」(卡里点开是全年各轮)
@@ -778,7 +781,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'fact.accNote': 'Experience level extracted from the posting wording (title/years); "—" when not stated — never guessed',
   'aipemp.title': 'AIP designated employers in {prov}', 'aipemp.count': '{n} employers',
   // 2026-10-02 三弹框统一第 3 步(Frank「不需要一次查询 1574 家吧」):指定雇主卡只列本岗雇主与同招牌几家,卡底一行同招牌家数、一条跳雇主板的链接
-  'aipemp.brand': '{n} designated employers share this brand', 'aipemp.more': 'Show other {n} ▾', 'aipemp.next': 'Show {n} more ▾',
+  'aipemp.brand': '{n} designated employers share this brand',
   'aipemp.colTrade': 'Brand', 'aipemp.colStore': 'Location', 'aipemp.colLegal': 'Legal name',
   'fact.lmiaNote': 'A past record — not a sign they can or will sponsor now.', 'fact.lmiaStreams': 'By stream',
   'lmia.route': 'LMIA outlook for this job', 'lmia.official': 'Official freeze rules',

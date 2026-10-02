@@ -6,8 +6,13 @@
  * @time 2026-08-26 16:00:00
  */
 import { cssOf } from '@/components/css'
-import { CLS_NONE, MORE_BUSY } from './constants'
-import type { MoreLabelIn, PagerHandlesIn, PagerHandlesOut } from './types'
+import {
+  CLS_NONE, FOLD_KEYS, FOLD_MORE_FIRST, FOLD_MORE_NEXT, FOLD_MORE_NONE, FOLD_MORE_REST, FOLD_STEP, K_FOLD_BUSY,
+  K_FOLD_UP, MORE_BUSY,
+} from './constants'
+import type {
+  FoldLabelIn, FoldMoreIn, FoldT, FoldView, FoldViewIn, MoreLabelIn, PagerHandlesIn, PagerHandlesOut,
+} from './types'
 import css from './pager.module.css'
 
 /**
@@ -53,4 +58,83 @@ export function moreLabelOf(x: MoreLabelIn): string {
     return MORE_BUSY
   }
   return x.label
+}
+
+/**
+ * 清单末尾两只钮这一刻怎么出(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」):其余还剩 > 一步 —— 收着写「展开 20」
+ * 、展开着写「再展开 20」;
+ * 剩 ≤ 一步写「展开其余 N」;都展开完不出「展开」钮;展开着才出「收起」。
+ *
+ * @param x 折起来的总数与已展开个数。
+ * @returns 「展开」钮的档与个数、「收起」出不出。
+ */
+export function foldViewOf(x: FoldViewIn): FoldView {
+  const remain = x.hidden - x.extra
+  const up = x.extra > 0
+  if (remain <= 0) {
+    return { more: FOLD_MORE_NONE, n: 0, up }
+  }
+  if (remain <= FOLD_STEP) {
+    return { more: FOLD_MORE_REST, n: remain, up }
+  }
+  if (x.extra === 0) {
+    return { more: FOLD_MORE_FIRST, n: FOLD_STEP, up }
+  }
+  return { more: FOLD_MORE_NEXT, n: FOLD_STEP, up }
+}
+
+/**
+ * 「展开」钮的字(取数中写加载中;不出钮给 '')。
+ *
+ * @param x 取词函数、量词、展开态与取数中。
+ * @returns 钮面文案。
+ */
+export function foldMoreLabelOf(x: FoldLabelIn): string {
+  if (x.view.more === FOLD_MORE_NONE) {
+    return CLS_NONE
+  }
+  if (x.busy) {
+    return x.t(K_FOLD_BUSY)
+  }
+  const key = FOLD_KEYS[x.view.more]
+  if (key == null) {
+    return CLS_NONE
+  }
+  return x.t(key, { n: x.view.n, u: x.unit })
+}
+
+/**
+ * 「收起」钮的字。
+ *
+ * @param t 取词函数。
+ * @returns 钮面文案。
+ */
+export function foldUpLabelOf(t: FoldT): string {
+  return t(K_FOLD_UP)
+}
+
+/**
+ * 浏览器端清单的「展开」手柄:一次加一步,封顶折起来的总数。
+ *
+ * @param x 折起来的总数与已展开个数的写口。
+ * @returns 点击手柄。
+ */
+export function makeFoldMore(x: FoldMoreIn): () => void {
+  return function more(): void {
+    x.setExtra(function step(prev: number): number {
+      return Math.min(x.hidden, prev + FOLD_STEP)
+    })
+  }
+}
+
+/**
+ * 「收起」手柄:已展开个数归零。
+ *
+ * @param setExtra 已展开个数的写口。
+ * @returns 点击手柄。
+ */
+export function makeFoldUp(setExtra: (v: number) => void): () => void {
+  return function up(): void {
+    setExtra(0)
+  }
 }

@@ -227,3 +227,68 @@
     min-height: 40px;
   }
 }
+
+/*
+ * 清单末尾的展开 / 收起钮行(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」「展开 20, 再展开 20, 再开其余, 收起」;样式自 pnp 桶清单卡的 .foldMore 抄值,全站清单卡同一个)。
+ */
+.fold {
+  /*
+   * 两只钮一行,靠左。
+   */
+  display: flex;
+
+  /*
+   * 两钮之间留白。
+   */
+  gap: 16px;
+
+  /*
+   * 与清单的间距。
+   */
+  margin-top: 6px;
+}
+
+/*
+ * 展开 / 收起钮(文字链样:无底无框、品牌蓝小字)。加倍类压过 Button 底座。
+ */
+.foldBtn.foldBtn {
+  /*
+   * 无描边。
+   */
+  border: none;
+
+  /*
+   * 无底。
+   */
+  background: none;
+
+  /*
+   * 零内衬。
+   */
+  padding: 0;
+
+  /*
+   * 可点手型。
+   */
+  cursor: pointer;
+
+  /*
+   * 点它不选中文字。
+   */
+  user-select: none;
+
+  /*
+   * 小注字号。
+   */
+  font-size: 12.5px;
+
+  /*
+   * 品牌蓝。
+   */
+  color: var(--primary);
+
+  /*
+   * 常规字重。
+   */
+  font-weight: 400;
+}

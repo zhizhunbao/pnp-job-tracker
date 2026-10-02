@@ -28,7 +28,7 @@ import {
   channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipFoldLabelOf, aipMoreLabelOf, aipSectionOf, aipShownRowsOf, channelSplitOf,
+  aipEmpDataOf, aipEmpSpecsOf, aipExtraOf, aipSectionOf, aipShownRowsOf, channelSplitOf,
   makeAipFold,
   makeAipMore, makeAppendRest, makeLoadAipEmp, makeLoadAipRest, makePickOf, normName,
 } from './functions'
@@ -302,7 +302,6 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
   const [busy, setBusy] = useState(false)
   const got = aipEmpDataOf(data)
   const restTotal = Math.max(0, got.total - got.rows.length)
-  const label = { t: x.t, open, restTotal, loaded: rest.length, busy }
   const load = makeLoadAipRest({ province, key, offset: rest.length, onRows: makeAppendRest(setRest), setBusy })
   return {
     matchRef,
@@ -311,9 +310,10 @@ export function useAipEmpCard(x: AipEmpCardHookIn): AipEmpCardPanel {
     rows: aipEmpSpecsOf(aipShownRowsOf({ top: got.rows, rest, open })),
     brandN: got.brandN,
     total: got.total,
-    moreLabel: aipMoreLabelOf(label),
+    hidden: restTotal,
+    extra: aipExtraOf({ open, loaded: rest.length }),
+    busy,
     onMore: makeAipMore({ open, loaded: rest.length, remain: restTotal - rest.length, busy, setOpen, load }),
-    foldLabel: aipFoldLabelOf(label),
     onFold: makeAipFold(setOpen),
   }
 }

@@ -48,8 +48,7 @@ import {
   PICK_NONE, PICK_PGWP, PICK_NO_PGWP,
   AIP_PATHWAY_KEY, AIP_CHANNEL_TEERS, AIP_F, AIP_TIER_PREFIX, AIP_TIER_SEP, AIP_EDU_HEAD, AIP_GRAD_NOTE,
   GATE_EXP_FACTORS, GATE_OP_NONE, GATE_WAGE_FACTORS, LANG_NOC_NOTE_MAX, CHAN_JOB_TAGS, CHAN_TAG_COMPLEMENT, AIP_APOS_RE,
-  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_OFFSET, P_AIP_PROV, URL_API_JOBS_AIP, AIP_EMP_DASH, AIP_EMP_PAGE, K_AIP_EMP_FOLD,
-  K_AIP_EMP_MORE, K_AIP_EMP_NEXT, K_LOADING,
+  CHAN_NOTE_TAGS, P_AIP_KEY, P_AIP_OFFSET, P_AIP_PROV, URL_API_JOBS_AIP, AIP_EMP_DASH,
   BASIS_ANY_NOC, BASIS_EXP_TEER, BASIS_FIELD, BASIS_ONE_NOC, BASIS_PAID, BASIS_RELATED,
   VALUE_CODE_SEP, URL_API_JOBS_PNP, K_KICKER_GROUP, K_KICKER_PROV,
   EXCL_KEY_SEP,
@@ -86,7 +85,7 @@ import type {
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn, AipMoreIn,
-  AipMoreLabelIn, AipRestJson, AipRestUrlIn, AipShownRowsIn, LoadAipRestIn, AipRowsFn, AipSetRestFn,
+  AipExtraIn, AipRestJson, AipRestUrlIn, AipShownRowsIn, LoadAipRestIn, AipRowsFn, AipSetRestFn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -4315,6 +4314,19 @@ export function aipEmpSpecsOf(rows: AipEmpRowJson[]): AipEmpRowSpec[] {
 }
 
 /**
+ * 卡底 FoldLine 的「已展开几家」:收着 0,展开着 = 已取到的其余家数(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」)。
+ *
+ * @param x 展开态与已取到的家数。
+ * @returns 已展开家数。
+ */
+export function aipExtraOf(x: AipExtraIn): number {
+  if (x.open) {
+    return x.loaded
+  }
+  return 0
+}
+
+/**
  * 表格这一刻要露的行:本岗雇主与同招牌那几家,展开着再接上已取到的其余各家。
  *
  * @param x 两段行与展开态。
@@ -4325,43 +4337,6 @@ export function aipShownRowsOf(x: AipShownRowsIn): AipEmpRowJson[] {
     return x.top.concat(x.rest)
   }
   return x.top
-}
-
-/**
- * 「展开其他 N 家 / 再展开 N 家」那只钮的字:收着写其余总家数;展开着还有没取的写下一页几家(一页 AIP_EMP_PAGE 家);
- * 取数中写加载中;都取完了不出钮。
- *
- * @param x 取词函数、展开态、其余总家数、已取家数与取数中。
- * @returns 钮上的字;'' = 不出钮。
- */
-export function aipMoreLabelOf(x: AipMoreLabelIn): string {
-  if (x.busy) {
-    return x.t(K_LOADING)
-  }
-  if (x.open === false) {
-    if (x.restTotal > 0) {
-      return x.t(K_AIP_EMP_MORE, { n: x.restTotal })
-    }
-    return TEXT_NONE
-  }
-  const remain = x.restTotal - x.loaded
-  if (remain > 0) {
-    return x.t(K_AIP_EMP_NEXT, { n: Math.min(AIP_EMP_PAGE, remain) })
-  }
-  return TEXT_NONE
-}
-
-/**
- * 「收起」钮的字:展开着才出。
- *
- * @param x 取词函数与展开态(同 aipMoreLabelOf 的入参,只读这两格)。
- * @returns 钮上的字;'' = 不出钮。
- */
-export function aipFoldLabelOf(x: AipMoreLabelIn): string {
-  if (x.open) {
-    return x.t(K_AIP_EMP_FOLD)
-  }
-  return TEXT_NONE
 }
 
 /**
