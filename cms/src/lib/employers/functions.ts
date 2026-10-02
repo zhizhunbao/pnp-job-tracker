@@ -42,6 +42,7 @@ import { CACHE } from './variables'
 import type {
   ApplySponsorFiltersIn, BoardPropsIn, BoardPropsOut, ClipIn, CompanyAggIn,
   CompanyBriefDbRow, CompanyBriefIn, CompanyResearch, CompanyRowIn, CompanyRowOut, CompareAgg, CompareCompanyDbRow,
+  CompanyBriefKeyIn, BriefSrcIn, BriefSrcOut,
   CompareIn, CompareOut, CompareRow, EmptyPoolPageIn, EntityNameHitsIn, GroupOfNocDbRow, GroupOfNocIn, InvestigateIn,
   InvestigateOut, LoadEmployerPageIn, LoadEmployerPageOut, MaybeNum, MaybeStrOut, MaybeTeer,
   GroupKeyOut, NormalizeFiltersIn, OccRowsOut, OrderOfIn, PageOfIn, ParamGetter, PoolAllIn, PoolDbRow, PoolDbRows,
@@ -1459,9 +1460,24 @@ function toDescCell(r: CompanyDescDbRow): MaybeStr {
  * @param input 连接与公司名。
  * @returns 简介;没有给 null。
  */
-export async function loadCompanyBrief(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_BY_NAME, params: [input.name], map: toBriefCell })
+export async function loadCompanyBrief(input: CompanyBriefKeyIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_BY_NAME, params: [input.name, input.slug],
+    map: toBriefCell })
   return firstOf(rows)
+}
+
+/**
+ * 送翻的简介原文:取这家在目标语种的译名,把简介里的英文公司名换成它(2026-10-02;不在库 / 没有译名原文照送)。
+ *
+ * @param x 连接、公司名、简介与目标语种。
+ * @returns 送翻的原文。
+ */
+export async function loadBriefSrc(x: BriefSrcIn): BriefSrcOut {
+  const alias = await loadCompanyAlias({ db: x.db, name: x.name })
+  if (alias == null) {
+    return x.brief
+  }
+  return briefNamedOf({ brief: x.brief, name: x.name, alias: aliasCellOf({ fact: alias, lang: x.lang }) })
 }
 
 /**
@@ -1525,7 +1541,7 @@ export function brandCellOf(x: BrandCellIn): string {
  * @param x 简介、公司名与译名。
  * @returns 送翻的原文。
  */
-export function briefNamedOf(x: BriefNamedIn): string {
+function briefNamedOf(x: BriefNamedIn): string {
   if (x.alias === ALIAS_NONE || x.name === '') {
     return x.brief
   }
@@ -1570,8 +1586,8 @@ export async function saveCompanyAlias(input: SaveAliasIn): DoneOut {
  * @param input 连接与公司名。
  * @returns 译文或 null。
  */
-export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
-  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name, TRANS_V],
+export async function loadCompanyBriefZh(input: CompanyBriefKeyIn): MaybeStrOut {
+  const rows = await queryRows({ db: input.db, sql: SQL.COMPANY_BRIEF_ZH_BY_NAME, params: [input.name, TRANS_V, input.slug],
     map: toBriefZhCell })
   return firstOf(rows)
 }
@@ -1583,7 +1599,7 @@ export async function loadCompanyBriefZh(input: CompanyBriefIn): MaybeStrOut {
  * @returns 无。
  */
 export async function saveCompanyBriefZh(input: SaveBriefZhIn): DoneOut {
-  await input.db.query(SQL.COMPANY_UPDATE_AI_BRIEF_ZH, [input.text, input.name, TRANS_V])
+  await input.db.query(SQL.COMPANY_UPDATE_AI_BRIEF_ZH, [input.text, input.name, TRANS_V, input.slug])
 }
 
 // =========================================================================

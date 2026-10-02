@@ -981,6 +981,11 @@ export const ALIAS_NONE = ''
 export const NAME_UNSET = ''
 
 /**
+ * 请求体里没给公司 slug(2026-10-02 简介懒翻按 slug 认公司;没有公司页的雇主没有 slug)—— 退回按名。
+ */
+export const SLUG_UNSET = ''
+
+/**
  * 请求体里没给目标语种。随后过 TRANS_LANGS 白名单必然落空 → 400。
  * 不给它挑一个默认语种:猜错语种等于把用户看不懂的译文当成他要的。
  */

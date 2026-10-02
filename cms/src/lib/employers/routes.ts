@@ -28,7 +28,7 @@ import {
   CSV_DISPOSITION, E_PRO, EMP_CACHE_CONTROL,
   EMP_PAGE_SIZE, EXPORT_PROVS, EXPORT_Q_LEN_MAX, HDR_HUMAN, HDR_UA, HUMAN_YES, NAME_LEN_MAX, NOC5_RE, UA_LOG_MAX, PAGE_SIZE_MAX, PARAM, SORT_OPEN,
   SORT_SKILLED, SPONSORS_CACHE_CONTROL, VIEW,
-  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
+  FETCHED_NONE, FILTER_UNSET, LANG_UNSET, NAME_UNSET, SLUG_UNSET, WD_LANG_ZH, ALIAS_KEY_SEP, ALIAS_LIMIT_PREFIX, ALIAS_MAX_LEN,
   ALIAS_PREFIX, NEWLINE, DESC_KEY_TAIL,
   EXPLORE_KEY_LEN_MAX, EXPLORE_KEYS_MAX, EXPLORE_TAKE_DEFAULT, EXPLORE_TAKE_MAX, P_EXPLORE_LIMIT,
   P_SITE_KIND, SEEN_TAKE_MAX, SITE_KIND_FIND, SITE_TAKE_DEFAULT, SITE_TAKE_MAX,
@@ -36,7 +36,7 @@ import {
 import {
   applySponsorFilters, buildSponsorBoards, companyRow, loadSponsorEmployers, investigateCompany,
   loadCompanyBrief, loadCompanyBriefZh, loadEmployerPage, normalizePoolFilters, saveCompanyBriefZh, sponsorCsvOf,
-  aliasCellOf, brandCellOf, briefNamedOf, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
+  aliasCellOf, brandCellOf, loadBriefSrc, loadCompanyAlias, saveCompanyAlias, loadCompanyDesc, loadCompanyDescZh, saveCompanyDescZh,
   resetCompanyTrans, enqueueExplore, loadExplorePending, loadPoolAliases, saveExploreResults,
   loadExploreSeen, loadSiteStage, loadSiteTodos, openExploreSite, saveSiteDone, isCrawlerHeaders,
 } from './functions'
@@ -443,7 +443,9 @@ function paramOf(sp: URLSearchParams, key: string): string {
  * 2026-09-16 Frank「可以,就这样做」(公司弹框不再等翻译):body 带 storedOnly 只查缓存与库,没存回 404 不翻。
  * 2026-09-17 Frank「清库 + 加检查」:译文过 translationOk 写入闸(不等于原文、真有目标语种文字)才回给前端、才缓存落库;
  * 过不了回 404,页面只是少一行对照。库里存量的坏译文另由 docs/sql/company-brief-bad-translation-cleanup.sql 清。
- * 2026-10-02 Frank「一起修」:送翻前简介里的英文公司名换成库里的译名(briefNamedOf),译文与卡上中文名同一叫法。
+ * 2026-10-02 Frank「一起修」:送翻前简介里的英文公司名换成库里的译名(loadBriefSrc),译文与卡上中文名同一叫法。
+ * 2026-10-02 Frank「都修吧」:body 带 slug 时按 slug 认公司(取简介、取存好的译文、写回都只认这一行)——
+ * Harvey's 同名两行,按名取到旧行,核定版英文底下挂的是旧行的中文。
  *
  * @param req 请求(body 是 { name, lang, storedOnly? })。
  * @returns { ok, text, cached };未配置 503、参数非法 400、查无 404、超限 429、翻挂 502。
@@ -454,11 +456,15 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   }
   let name = NAME_UNSET
   let lang = LANG_UNSET
+  let slug = SLUG_UNSET
   let storedOnly = false
   try {
     const b = await req.json() as EmployersTransBody
     if (typeof b.name === 'string') {
       name = b.name.trim()
+    }
+    if (typeof b.slug === 'string') {
+      slug = b.slug.trim()
     }
     if (typeof b.lang === 'string') {
       lang = b.lang
@@ -470,9 +476,9 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   if (name === '' || TRANS_LANGS.includes(lang) === false) {
     return Response.json({ ok: false, error: E_BAD_REQUEST }, { status: BAD_REQUEST })
   }
-  const ck = name.toLowerCase() + TRANS_KEY_SEP + lang
+  const ck = name.toLowerCase() + TRANS_KEY_SEP + slug + TRANS_KEY_SEP + lang
   const db = await getDb()
-  const brief = await loadCompanyBrief({ db: db, name: name })
+  const brief = await loadCompanyBrief({ db: db, name: name, slug: slug })
   if (brief == null) {
     return Response.json({ ok: false, error: E_NOT_FOUND }, { status: NOT_FOUND })
   }
@@ -481,7 +487,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
     return Response.json({ ok: true, text: hit.text, cached: true })
   }
   if (lang === WD_LANG_ZH) {
-    const stored = await loadCompanyBriefZh({ db: db, name: name })
+    const stored = await loadCompanyBriefZh({ db: db, name: name, slug: slug })
     if (stored != null) {
       CACHE.briefTransBy.set(ck, { src: brief, text: stored })
       return Response.json({ ok: true, text: stored, cached: true })
@@ -493,11 +499,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
   if (checkLimit([[CO_LIMIT_PREFIX + ipOf(req), CO_IP_DAILY]]) === false) {
     return Response.json({ ok: false, error: E_RATE_LIMITED }, { status: TOO_MANY })
   }
-  let src = brief
-  const alias = await loadCompanyAlias({ db: db, name: name })
-  if (alias != null) {
-    src = briefNamedOf({ brief: brief, name: name, alias: aliasCellOf({ fact: alias, lang: lang }) })
-  }
+  const src = await loadBriefSrc({ db: db, name: name, brief: brief, lang: lang })
   try {
     const r = await translateSectioned({
       text: src, lang: lang, signal: AbortSignal.timeout(TRANSLATE_ROUTE_TIMEOUT_MS),
@@ -509,7 +511,7 @@ export async function employersTranslateRoute(req: Request): Promise<Response> {
     if (r.full) {
       CACHE.briefTransBy.set(ck, { src: brief, text: r.text })
       if (lang === WD_LANG_ZH) {
-        await saveCompanyBriefZh({ db: db, name: name, text: r.text })
+        await saveCompanyBriefZh({ db: db, name: name, slug: slug, text: r.text })
       }
     }
     return Response.json({ ok: true, text: r.text, cached: false })

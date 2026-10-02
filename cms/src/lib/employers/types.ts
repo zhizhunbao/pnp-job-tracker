@@ -3637,6 +3637,26 @@ export type CompanyBriefIn = {
 }
 
 /**
+ * 简介 / 简介译文按公司取的入参(2026-10-02:同名多行时按 slug 认,slug 空才按名)。
+ */
+export type CompanyBriefKeyIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 公司名(slug 空时按它取)。
+   */
+  name: string
+
+  /**
+   * 公司 slug;'' = 没有(没有公司页的雇主),按名取。
+   */
+  slug: string
+}
+
+/**
  * 单列文本取数的返回。
  */
 export type MaybeStrOut = Promise<MaybeStr>
@@ -3659,6 +3679,11 @@ export type EmployersTransBody = {
    * 只查缓存与库不翻(2026-09-16 公司弹框开框首拍:存好的译文与正文一起铺,没存回 404 再另起翻译);不带当 false。
    */
   storedOnly: boolean | null
+
+  /**
+   * 公司 slug(2026-10-02:同名多行时按它认公司);不是字符串当没带,按名。
+   */
+  slug: string | null
 }
 
 /**
@@ -3681,9 +3706,14 @@ export type SaveBriefZhIn = {
   db: Db
 
   /**
-   * 公司名(按名写,同名多行一起)。
+   * 公司名(slug 空时按名写,同名多行一起)。
    */
   name: string
+
+  /**
+   * 公司 slug(非空只写这一行;2026-10-02)。
+   */
+  slug: string
 
   /**
    * 译文全文(五节标记保留)。
@@ -3830,6 +3860,36 @@ export type BrandCellIn = {
    */
   lang: string
 }
+
+/**
+ * `loadBriefSrc` 的入参。
+ */
+export type BriefSrcIn = {
+  /**
+   * 能查的连接(池由调用方注进来)。
+   */
+  db: Db
+
+  /**
+   * 公司英文名。
+   */
+  name: string
+
+  /**
+   * 简介原文(英文五节)。
+   */
+  brief: string
+
+  /**
+   * 目标语种(zh / ko)。
+   */
+  lang: string
+}
+
+/**
+ * `loadBriefSrc` 的出参:送翻的原文。
+ */
+export type BriefSrcOut = Promise<string>
 
 /**
  * `briefNamedOf` 的入参。

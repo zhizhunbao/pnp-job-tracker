@@ -2157,9 +2157,12 @@ export const NOC_DUTIES_BY_CODE = `SELECT duties, requirements FROM noc_descript
 export const JD_FORMATTED_BY_ID = `SELECT jd_formatted FROM jobs WHERE id = $1 LIMIT 1`
 
 /**
- * 按公司名取 AI 简报(有才回)。$1=公司名。
+ * 按公司名取 AI 简报(有才回)。$1=公司名,$2=slug。
+ * 2026-10-02 slug 非空按 slug 取(Frank「都修吧」:库里两行都叫 Harvey's —— 核定过的 harveys 与旧的 harvey-s,
+ * 按名 LIMIT 1 取到旧那行,核定版英文底下挂的是旧行的中文;同名的有 2,368 组);slug 空才按名。
  */
-export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower(name) = lower($1) AND ai_brief IS NOT NULL LIMIT 1`
+export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies
+    WHERE (CASE WHEN $2 <> '' THEN slug = $2 ELSE lower(name) = lower($1) END) AND ai_brief IS NOT NULL LIMIT 1`
 
 /**
  * 公司官网简介原文(懒翻用,2026-09-14 Frank「这个也没加翻译」)。
@@ -2167,18 +2170,20 @@ export const COMPANY_BRIEF_BY_NAME = `SELECT ai_brief FROM companies WHERE lower
 export const COMPANY_DESC_BY_NAME = `SELECT description FROM companies WHERE lower(name) = lower($1) AND description IS NOT NULL LIMIT 1`
 
 /**
- * AI 简介中文版(已落库的)。
+ * AI 简介中文版(已落库的)。$1=公司名,$2=译文版本号,$3=slug(非空按 slug 取,空才按名;2026-10-02,同 COMPANY_BRIEF_BY_NAME)。
  */
-export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies WHERE lower(name) = lower($1) AND trans_v = $2 AND ai_brief_zh IS NOT NULL LIMIT 1`
+export const COMPANY_BRIEF_ZH_BY_NAME = `SELECT ai_brief_zh FROM companies
+    WHERE (CASE WHEN $3 <> '' THEN slug = $3 ELSE lower(name) = lower($1) END) AND trans_v = $2 AND ai_brief_zh IS NOT NULL LIMIT 1`
 
 /**
  * 懒翻译翻完落库(同名多行一起写;下次直接读,不再过模型)。$1=译文,$2=公司名。
+ * 2026-10-02 $4=slug:非空只写这一行(同名多行简介各不相同,一起写 = 把这家的译文盖到别家头上);空才照旧按名写。
  */
 export const COMPANY_UPDATE_AI_BRIEF_ZH = `UPDATE companies
      SET ai_brief_zh = $1, trans_v = $3,
          alias_zh = CASE WHEN trans_v = $3 THEN alias_zh END, alias_ko = CASE WHEN trans_v = $3 THEN alias_ko END,
          description_zh = CASE WHEN trans_v = $3 THEN description_zh END
-     WHERE lower(name) = lower($2)`
+     WHERE (CASE WHEN $4 <> '' THEN slug = $4 ELSE lower(name) = lower($2) END)`
 
 /**
  * 官网简介中文版(版本对得上才算有)。

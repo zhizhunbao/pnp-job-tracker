@@ -32,14 +32,16 @@ export function CompanyInfoCard({ jobId, lang, onOpenCompany }: CompanyInfoCardI
   const t = makeT(lang)
   const p = useCompanyOfJob({ jobId })
   let name = TEXT_NONE
+  let slug = TEXT_NONE
   let brief = TEXT_NONE
   let hasDesc = false
   if (p.data != null) {
     name = p.data.company.name
+    slug = p.data.company.slug
     brief = p.data.company.aiBrief
     hasDesc = hasDescOf({ company: p.data.company })
   }
-  const tr = useCompanyTrans({ name, aiBrief: brief, hasDesc, lang })
+  const tr = useCompanyTrans({ name, slug, aiBrief: brief, hasDesc, lang })
   if (p.data == null) {
     return null
   }
