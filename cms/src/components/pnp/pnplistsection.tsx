@@ -92,8 +92,6 @@ export function PnpListSection({
       stream={s}
       noc={job.noc}
       nocRows={p.nocRows}
-      open={p.opened.has(key)}
-      onToggle={p.toggleOf(key)}
       matchRef={p.matchRef} />)
   }
   return (

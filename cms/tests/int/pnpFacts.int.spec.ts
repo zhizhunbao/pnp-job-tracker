@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipExtraOf, aipRestUrlOf, aipShownRowsOf, normName,
+  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, aipExtraOf, aipRestUrlOf, aipShownRowsOf, normName, hiddenCountOf, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -1540,5 +1540,30 @@ describe('AIP 指定雇主清单卡', () => {
     const tail = oa!.name.split(/ o\/a /i)[1]!
     expect(oa!.matchKeys.split('|')).toContain(normName(tail))
     expect(normName(tail)).not.toBe(normName(oa!.name))
+  })
+})
+
+// 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:省提名职业清单卡开合改走 pager 桶 FoldLine ——
+// streamRowsOf 从开 / 关改成「已展开几个」。金标:对上本岗默认只露本岗那一行;没对上露头 1 行、它不算折起来的;每展开一次多 20 行、封顶。
+describe('省提名职业清单卡的展开个数', () => {
+  const zh = makeT('zh')
+  const occs = Array.from({ length: 25 }, (_, i) => ({ noc: String(10000 + i), name: 'Occ ' + i, gtaRestricted: false }))
+  const stream: PnpStream = { stream: 'S', label: 'L', type: 'list', url: '', fetched: '', occupations: occs }
+  const rows = (noc: string, extra: number) =>
+    streamRowsOf({ t: zh, lang: 'zh', showZh: false, stream, noc, nocRows: new Map(), extra }).map((r) => r.noc)
+
+  it('对上本岗:默认只露本岗;折起来 24 个;展开 20 → 21 行,再展开到 25 行封顶', () => {
+    expect(rows('10007', 0)).toEqual(['10007'])
+    expect(hiddenCountOf({ stream, noc: '10007' })).toBe(24)
+    expect(rows('10007', 20)).toHaveLength(21)
+    expect(rows('10007', 20)[0]).toBe('10007')
+    expect(rows('10007', 24)).toHaveLength(25)
+  })
+
+  it('没对上本岗:露头 1 行、它不算折起来的(折 24 个);展开 20 → 21 行', () => {
+    expect(rows('99999', 0)).toEqual(['10000'])
+    expect(hiddenCountOf({ stream, noc: '99999' })).toBe(24)
+    expect(rows('99999', 20)).toHaveLength(21)
+    expect(rows('99999', 24)).toHaveLength(25)
   })
 })

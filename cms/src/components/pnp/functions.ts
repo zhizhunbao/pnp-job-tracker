@@ -66,7 +66,7 @@ import type {
   DrawsClsIn, EeDrawDateRow, CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp,
   EeCmpGroup, EeCmpIn, EeCmpLine, EeChannelsIn, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
   DrawSubIn,
-  AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, FoldLabelIn, HasProvDrawsIn, HiddenCountIn, HitClsIn,
+  AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, HasProvDrawsIn, HiddenCountIn, HitClsIn,
   HitRefFn, HitRefIn, LevelClsIn, LevelTextIn, FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn,
   MmNocListCellIn, MmProvCellIn, MmProvListCellIn, MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn,
   MmTeerCellIn, MmTone, NocRowMap, OccRowSpec, OccRowsIn, PnpDraw, PnpEeCat, PnpJob, PnpMatchIn, PnpMatchJob,
@@ -1081,7 +1081,7 @@ export function streamKeyOf(s: PnpStream): string {
  * 点末尾「展开其他」才全量;命中置顶,其余保持原序;兜底:即便无命中也至少显 1 条。
  * 2026-09-23 Frank「这个已经高亮了不用显示本岗了吧」:命中行已高亮,「本岗」标撤(EE 类别清单同批撤)。
  *
- * @param x 取词函数、界面语言、译名开关、这张清单、本岗职业码、职业名字典与展开态。
+ * @param x 取词函数、界面语言、译名开关、这张清单、本岗职业码、职业名字典与已展开个数。
  * @returns 展示行。
  */
 export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
@@ -1094,14 +1094,14 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
       others.push(o)
     }
   }
-  let picked = hits
-  if (x.open) {
-    picked = hits.concat(others)
-  }
-  if (picked.length === 0) {
-    picked = others.slice(0, ROWS_FALLBACK)
+  let base = hits
+  let rest = others
+  if (hits.length === 0) {
+    base = others.slice(0, ROWS_FALLBACK)
+    rest = others.slice(ROWS_FALLBACK)
   }
   const rows: StreamRowSpec[] = []
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:开合改走 pager 桶 FoldLine —— 入参从开 / 关改成「已展开几个」,露的是默认那几行 + 其余的前 extra 个。
   for (const o of picked) {
     const hit = o.noc === x.noc
     let gtaTag = TEXT_NONE
@@ -1115,7 +1115,7 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
 }
 
 /**
- * 折起来的条数(本岗之外的都算折起来的)。
+ * 折起来的条数(本岗之外的都算折起来的;2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:一条都没对上本岗时先露的那 ROWS_FALLBACK 行不算折起来的)。
  *
  * @param x 这张清单与本岗职业码。
  * @returns 折起来的条数。
@@ -1123,24 +1123,15 @@ export function streamRowsOf(x: StreamRowsIn): StreamRowSpec[] {
 export function hiddenCountOf(x: HiddenCountIn): number {
   let n = 0
   for (const o of x.stream.occupations) {
+  const picked = base.concat(rest.slice(0, x.extra))
     if (o.noc !== x.noc) {
       n += 1
     }
   }
-  return n
-}
-
-/**
- * 清单末尾那行开关的文案(Frank 走查#14:清单头改纯 title 不再作折叠开关,开关移到列表末尾)。
- *
- * @param x 取词函数、展开态与折起来的条数。
- * @returns 开关文案。
- */
-export function foldLabelOf(x: FoldLabelIn): string {
-  if (x.open) {
-    return x.t('pnplist.foldOther')
+  if (n === x.stream.occupations.length) {
+    return Math.max(0, n - ROWS_FALLBACK)
   }
-  return x.t('pnplist.showOther', { n: x.hidden })
+  return n
 }
 
 /**

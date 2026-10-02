@@ -2112,16 +2112,6 @@ export type StreamCardIn = {
   nocRows: NocRowMap
 
   /**
-   * 展开了没有(默认只显命中本岗那一条)。
-   */
-  open: boolean
-
-  /**
-   * 折叠开关。
-   */
-  onToggle: ClickFn
-
-  /**
    * 命中行的 ref 盒。
    */
   matchRef: HitRef
@@ -2425,17 +2415,6 @@ export type PnpListPanel = {
    * PNP 命中计算的结论。
    */
   match: PnpMatchOut
-
-  /**
-   * 展开了的清单键(2026-09-23 Frank「这个默认展开吧」起一度记收起的那些;2026-10-01 三弹框统一(效果图「可以,做吧」):清单挪到
-   * 配额 / 抽选之前,默认收起 —— 只露本岗那一行,「展开其他 N 个」才全量(同 AIP 指定雇主清单),这里又改回记展开的)。
-   */
-  opened: Set<string>
-
-  /**
-   * 折叠开关工厂。
-   */
-  toggleOf: ToggleOfFn
 
   /**
    * 本省抽选卡展开着的组(默认全收:组头一行就是最近一轮)。
@@ -2925,9 +2904,9 @@ export type StreamRowsIn = {
   nocRows: NocRowMap
 
   /**
-   * 展开了没有。
+   * 已展开了几个折起来的(2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」;收着为 0)。
    */
-  open: boolean
+  extra: number
 }
 
 /**
@@ -2943,26 +2922,6 @@ export type HiddenCountIn = {
    * 本岗职业码。
    */
   noc: string
-}
-
-/**
- * foldLabelOf 的入参。
- */
-export type FoldLabelIn = {
-  /**
-   * 取词函数。
-   */
-  t: TFn
-
-  /**
-   * 展开了没有。
-   */
-  open: boolean
-
-  /**
-   * 折起来的条数。
-   */
-  hidden: number
 }
 
 /**

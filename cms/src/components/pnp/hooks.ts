@@ -53,6 +53,7 @@ import { CACHE } from './variables'
  * 2026-09-27 Frank 勾「门槛卡」「用本岗通道的门槛」:多交门槛卡的开合(默认全收,值一行就是摘要,点开看原句)。
  * 2026-09-27 Frank「就门槛就只提门槛就行。不用提原文,不用提本岗」「如果需要提那是之后的时候,在单独用卡片分开」:门槛卡不再点开,开合随之不交。
  * 2026-10-01 三弹框统一(效果图「可以,做吧」):通道职业清单挪到配额 / 抽选之前,改默认收起(只露本岗那一行),折叠态改记展开的(opened)。
+ * 2026-10-02 Frank「全站统一 都改成 展开 20 和 收起。全部统一」:清单开合改由每张清单卡自己的 useFold(pager 桶)管,这里的 opened / toggleOf 撤。
  *
  * @param x 本岗、界面语言、扁平清单、职业名字典、译名开关与通道对照表。
  * @returns 取词函数、ref 盒、字典、命中结论、折叠状态与通道条目。
@@ -61,7 +62,6 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
   const t = makeT(x.lang)
   const tEn = makeT(LANG_EN)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [opened, setOpened] = useState<Set<string>>(new Set())
   const [drawOpen, setDrawOpen] = useState<Set<string>>(drawOpenInitOf())
 
   const nocRows = useMemo(function dictOf() {
@@ -85,8 +85,6 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     matchRef,
     nocRows,
     match,
-    opened,
-    toggleOf: makeToggleOf({ setKeys: setOpened }),
     drawOpen,
     drawToggleOf: makeToggleOf({ setKeys: setDrawOpen }),
     channels: channelListOf({
