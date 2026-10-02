@@ -34,7 +34,7 @@ from sites.constants import (
     JUDGE_OLD_MARK, JUDGE_PROMPT_TPL, JUDGE_REPLACE, K_DONE_BRIEF_JUDGED, K_TODO_BRIEF, PRINT_JUDGE_TPL,
     VERDICT_KEEP, VERDICT_PLAIN, VERDICT_REPLACE,
     K_DONE_BRIEF, K_DONE_HQ_ADDRESS, K_DONE_HQ_CITY, K_DONE_HQ_PROVINCE, K_DONE_HQ_QUOTE, K_DONE_HQ_SOURCE, K_DONE_SOURCES,
-    K_HOST, K_KEY, K_NOTE, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
+    K_AIP, K_HOST, K_KEY, K_NOTE, K_PILOT_EMPLOYER, K_SEEN_LAST, K_SEEN_OPENED, K_STAGE, K_TODOS, NOTE_DEAD_SITE, NOTE_DNS, NOTE_NAME_MISMATCH, NOTE_NO_CMS,
     P_LIMIT, PATH_SITE_DONE, PATH_SITE_TODO, PRINT_VISIT_ROW_TPL, PRINT_VISIT_TAKE_TPL, PROV_CODE_LEN,
     RETRY_TRANSIENT_DAYS, SECONDS_PER_HOUR, ST_DEAD, STAGE_DONE, STAGE_FACTS, STAGE_FETCH, STAGE_FIND, TRANSIENT_NOTES,
     VISIT_TAKE,
@@ -476,25 +476,29 @@ def site_targets() -> list:
         return out
     seen = read_seen()
     open_jobs: dict[str, int] = {}
+    designated: dict[str, int] = {}
     for j in json.loads(IN_MART_JOBS.read_text(encoding=TEXT_ENCODING)):
         if j.get(K_STATUS) not in OPEN_STATUSES:
             continue
         slug = str(j.get(K_COMPANY_SLUG) or FIELD_NONE)
         open_jobs[slug] = open_jobs.get(slug, 0) + 1
+        if j.get(K_AIP) is True or j.get(K_PILOT_EMPLOYER) is True:
+            designated[slug] = designated.get(slug, 0) + 1
     for c in json.loads(IN_MART_COMPANIES.read_text(encoding=TEXT_ENCODING)):
         slug = str(c.get(K_SLUG) or FIELD_NONE)
         site = str(c.get(K_WEBSITE) or FIELD_NONE)
         if slug == FIELD_NONE or site == FIELD_NONE or open_jobs.get(slug, 0) == 0:
             continue
         out.append(Target(slug=slug, name=str(c.get(K_NAME) or slug), website=site, open_jobs=open_jobs[slug],
-                          seen=seen_of(SeenIn(seen=seen, slug=slug))))
+                          seen=seen_of(SeenIn(seen=seen, slug=slug)), designated=designated.get(slug, 0)))
     out.sort(key=target_order_of)
     return out
 
 
 def target_order_of(t: Target) -> tuple:
-    """排队键:被用户看过的在前(最近看过的更前;2026-09-20 Frank「按用户点开过的公司优先抓取和纠错」),其后在招岗多的在前,同数按 slug。"""
-    return (-t.seen, -t.open_jobs, t.slug)
+    """排队键:被用户看过的在前(最近看过的更前;2026-09-20 Frank「按用户点开过的公司优先抓取和纠错」),其后在招岗多的在前,同数按 slug。
+    2026-10-01 Frank 拍「AIP、RCIP、FCIP 的指定雇主最先补」:看过的之后插一键,指定雇主岗多的在前(原键 `(-t.seen, -t.open_jobs, t.slug)`)。"""
+    return (-t.seen, -t.designated, -t.open_jobs, t.slug)
 
 
 def read_seen() -> dict:

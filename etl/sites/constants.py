@@ -90,6 +90,12 @@ K_STATUS = "status"
 OPEN_STATUSES = (None, "open", "campus")
 """算在招的状态(与 jdformat 同口径:缺键 / open / campus)。"""
 
+K_AIP = "aip"
+"""岗位行键:雇主是 AIP 指定雇主(true / false)。"""
+
+K_PILOT_EMPLOYER = "pilotEmployer"
+"""岗位行键:雇主是 RCIP / FCIP 试点指定雇主(true / false)。"""
+
 REFRESH_DAYS = 30
 """官网多少天重抓一轮(Frank 09-19 批:每月一轮)。"""
 

@@ -344,6 +344,9 @@ class NositeLead(BaseModel):
     rank: int = 0
     """在本大类里的名次(sites 步排队第一键:各行业头部先搜;老 enrich 步不排名次,恒 0)。"""
 
+    designated: int = 0
+    """在招指定雇主岗数(AIP / RCIP / FCIP;> 0 的在被看过的之后、名次之前先搜,2026-10-01;老 enrich 步恒 0)。"""
+
 
 class EnrichRecord(BaseModel):
     """官网富化缓存一行(company_enrich.json 的值;对外文件契约,09 汇装直读)。
@@ -1046,6 +1049,12 @@ class MartJob(BaseModel):
     broad: str = ""
     """NOC 大类(把脉页行业分表的依据;公司归多数派大类,2026-09-05 Frank「优先补我列表前面的公司」)。"""
 
+    aip: bool = False
+    """本岗雇主是 AIP 指定雇主(2026-10-01 起排队用:指定雇主最先补)。"""
+
+    pilot_employer: bool = Field(default=False, validation_alias=AliasChoices("pilotEmployer", "pilot_employer"))
+    """本岗雇主是 RCIP / FCIP 试点指定雇主(同上)。"""
+
     @field_validator("company_slug", "status", "teer", "broad", mode="before")
     @classmethod
     def none_as_empty(cls, v: object) -> object:
@@ -1053,6 +1062,14 @@ class MartJob(BaseModel):
         if v is None:
             return ""
         return str(v)
+
+    @field_validator("aip", "pilot_employer", mode="before")
+    @classmethod
+    def none_as_false(cls, v: object) -> object:
+        """两格缺格/null —— 折 False(这里只用来排队,没打标 = 不往前排,不是认定「不是指定雇主」)。"""
+        if v is None:
+            return False
+        return v
 
 
 @dataclass
@@ -1083,6 +1100,9 @@ class PlaceTarget:
     rank: int = 0
     """在本大类里按在招数的名次(优先级第一键:各行业头部先补,把脉页每张行业表第一页最先填满)。"""
 
+    designated: int = 0
+    """在招岗里打了 AIP / RCIP / FCIP 指定雇主标的岗数(> 0 的公司排在整个候选表最前,2026-10-01)。"""
+
 
 @dataclass
 class JobCounts:
@@ -1096,6 +1116,9 @@ class JobCounts:
 
     broad: dict
     """slug → Counter(大类 → 在招岗数);多数派大类 = 公司所属行业。"""
+
+    designated: dict
+    """slug → 在招岗里打了 AIP / RCIP / FCIP 指定雇主标的岗数(2026-10-01)。"""
 
 
 @dataclass

@@ -177,6 +177,9 @@ class Target:
     seen: float = 0.0
     """最近一次被用户看过的时刻(epoch 秒;点开优先于列出;0 = 没人看过。例行轮排队:看过的在前、最近的在前)。"""
 
+    designated: int = 0
+    """在招岗里打了 AIP / RCIP / FCIP 指定雇主标的岗数(排队第二键:没人看过的公司里,指定雇主在前;2026-10-01)。"""
+
 
 @dataclass
 class PickFetchIn:

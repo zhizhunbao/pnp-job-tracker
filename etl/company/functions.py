@@ -931,8 +931,10 @@ def dead_site_hosts() -> frozenset:
 
 def nosite_priority_of(kv: tuple) -> tuple:
     """无官网公司的搜索优先级键:先本大类名次(把脉页各行业表头部先填;老 enrich 步恒 0 退化为只看岗数),
-    再岗多的先搜=价值密度高(lambda 退役)。2026-09-20:被用户看过的排最前(最近看过的更前)。"""
-    return (-seen_stamps().get(kv[0], 0.0), kv[1].rank, -kv[1].jobs)
+    再岗多的先搜=价值密度高(lambda 退役)。2026-09-20:被用户看过的排最前(最近看过的更前)。
+    2026-10-01 Frank 拍「AIP、RCIP、FCIP 的指定雇主最先补」:看过的之后、名次之前插一键 —— 有指定雇主岗的先搜。
+    原键 `(-seen_stamps().get(kv[0], 0.0), kv[1].rank, -kv[1].jobs)`。"""
+    return (-seen_stamps().get(kv[0], 0.0), -min(kv[1].designated, 1), kv[1].rank, -kv[1].jobs)
 
 
 def find_websites(x: FindWebsitesIn) -> FindOut:
@@ -1581,7 +1583,8 @@ def sponsor_nosite_of(cands: list[PlaceTarget]) -> dict[str, NositeLead]:
     nosite: dict[str, NositeLead] = {}
     for t in cands:
         if t.website == "":
-            nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs, rank=t.rank)
+            nosite[t.slug] = NositeLead(name=t.name, province=t.region, jobs=t.open_jobs, rank=t.rank,
+                                        designated=t.designated)
     return nosite
 
 
@@ -1609,8 +1612,9 @@ def read_places_cache() -> dict[str, PlaceRecord]:
 
 
 def job_counts_by_slug() -> JobCounts:
-    """jobs.json 一遍扫出 slug → 在招岗数 与 slug → 在招 TEER 0-3 岗数(只数 status=open)。"""
-    counts = JobCounts(open=Counter(), skilled=Counter(), broad={})
+    """jobs.json 一遍扫出 slug → 在招岗数 与 slug → 在招 TEER 0-3 岗数(只数 status=open)。
+    2026-10-01 多一张:slug → 在招指定雇主岗数(AIP / RCIP / FCIP 打标,places_candidates 排队用)。"""
+    counts = JobCounts(open=Counter(), skilled=Counter(), broad={}, designated=Counter())
     for j in json.loads(IN_PLACES_JOBS.read_text(encoding=TEXT_ENCODING)):
         job = MartJob.model_validate(j)
         if job.status != STATUS_OPEN or job.company_slug == "":
@@ -1618,6 +1622,8 @@ def job_counts_by_slug() -> JobCounts:
         counts.open[job.company_slug] += 1
         if job.teer in TEER_SKILLED:
             counts.skilled[job.company_slug] += 1
+        if job.aip or job.pilot_employer:
+            counts.designated[job.company_slug] += 1
         if job.broad != "":
             votes = counts.broad.get(job.company_slug)
             if votes is None:
@@ -1636,6 +1642,8 @@ def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
     2026-09-15 Frank「1 推荐」扩到全部在招雇主:分类清洗要拿公司简介判行业,实测 35,254 家在招雇主
     只有 28% 有官网、19% 有简介,只跑担保雇主那批永远补不到尾巴。尾段名次从 PULSE_RANK_MAX 起排
     (rank_tail):搜官网按序轮得到,about 步的浏览器兜底仍只认前 PULSE_RANK_MAX 名,不放量烧浏览器。
+    2026-10-01 Frank 拍「AIP、RCIP、FCIP 的指定雇主最先补」(国内用户能走的主要是这两条,「可以,先改排队顺序」):
+    上面两段排好后,有指定雇主岗的公司整体挪到最前(designated_first),段内次序不变;名次不动(浏览器兜底特权照旧)。
     """
     out: list[PlaceTarget] = []
     tail: list[PlaceTarget] = []
@@ -1644,7 +1652,8 @@ def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
         if open_n <= 0:
             continue
         target = PlaceTarget(slug=c.slug, name=c.name, region=c.region, website=c.website,
-                             open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug)))
+                             open_jobs=open_n, lmia_4q=c.lmia_4q, broad=broad_of(x.counts.broad.get(c.slug)),
+                             designated=x.counts.designated.get(c.slug, 0))
         if c.lmia_4q <= 0 and x.counts.skilled.get(c.slug, 0) <= 0:
             tail.append(target)
             continue
@@ -1652,7 +1661,19 @@ def places_candidates(x: PlacesCandsIn) -> list[PlaceTarget]:
     rank_within_broad(out)
     out.sort(key=places_priority_of)
     rank_tail(tail)
-    return out + tail
+    return designated_first(out + tail)
+
+
+def designated_first(targets: list[PlaceTarget]) -> list[PlaceTarget]:
+    """有指定雇主岗的公司挪到最前,两拨各自保持原序(稳定分拨,2026-10-01)。"""
+    first: list[PlaceTarget] = []
+    rest: list[PlaceTarget] = []
+    for t in targets:
+        if t.designated > 0:
+            first.append(t)
+        else:
+            rest.append(t)
+    return first + rest
 
 
 def broad_of(votes: Counter | None) -> str:
