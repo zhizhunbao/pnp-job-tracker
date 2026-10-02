@@ -19,6 +19,9 @@
  * 2026-08-28 换装批收成标准形:SEO 头的芯在 lib/jobs 的 jobsIdMetaRoute(08-29 改 A 形一行转发),JSON-LD 拼装下沉
  * 进 lib/jobs 的 jobPostingJsonOf,脚本壳走通用件 JsonLd(08-29 收拢;门里不许有函数体、不许裸标签)。
  *
+ * 2026-10-02 Frank「可以」(Google 收录:公司信息卡开页后才取、robots 挡 `/api/`,爬虫拿到的职位页里一个字公司信息都没有):
+ * 公司详情在门里 SSR 取好递给正文,公司卡直出进 HTML。
+ *
  * @author Frank
  * @time 2026-08-28 19:15:06
  */
@@ -36,7 +39,9 @@ import { Frame } from '@/components/shell'
 import { JsonLd } from '@/components/jsonld'
 import { dbOf } from '@/lib/db/server'
 import { hasProfile, normalizeProfile, type ProfileJson } from '@/lib/jobs'
-import { checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadJdSsrById, loadJobById, loadRelatedJobs } from '@/lib/jobs/server'
+import {
+  checkedAt, jobPostingJsonOf, jobsIdMetaRoute, loadCompanyByJobId, loadJdSsrById, loadJobById, loadRelatedJobs,
+} from '@/lib/jobs/server'
 import { getUser, isPro } from '@/lib/quota/server'
 import type { NocCategoryDoc, NocDescDoc, RelatedJobs, SessionUser } from '@/components/jobs'
 
@@ -116,6 +121,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   })
 
   const jd = await loadJdSsrById({ db, id })
+  const company = await loadCompanyByJobId({ db, jobId: id })
 
   return (
     <>
@@ -124,7 +130,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         <Header loggedIn={user != null} />
         <Job job={job} plan={plan}
           dims={{ nocDesc: toNocDescList(nocDescDocs), nocCategories: toCatLabelList(nocCategoryDocs) }}
-          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} />
+          related={related} updatedAt={updatedAt} jdText={jd.text} jdFormatted={jd.formatted} company={company} />
         <Footer />
       </Frame>
     </>

@@ -51,7 +51,8 @@ import { cssOf } from '@/components/css'
 import { lazyTitleOf, titleSubOf } from '@/components/jobtitle'
 import type {
   ActiveTextIn, AiNoteClsIn, AliasJson, AliasOfIn, BaseZhIn, BriefJson, BriefSecsIn, CanTransIn, ChColorIn,
-  CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyJobFact, CompanyJobRow, CompanyOnlyIn, CompanyStream,
+  CityLocalIn, CompanyAiNoteKind, CompanyBriefFact, CompanyDetail, CompanyJobFact, CompanyJobRow, CompanyOnlyIn,
+  CompanyPanelData, CompanySeed, CompanyStream,
   DeadFlag, DisplayNameIn, FameTextIn, FetchCoTransIn, FlatIn, GoBackFn, HasIdIn, HttpSourcesIn, IsGovIn,
   JobNocNameIn, JobRowJson, JobsShownIn, LmiaNocNameIn, LmiaNocRow, LmiaRestIn, LoadAliasIn,
   LoadBriefIn, LoadDescTransIn, LoadFn, LoadPanelIn, LoadTransIn, NocRowsIn, OpenCompanyIn, OpenJobIn,
@@ -1466,6 +1467,20 @@ export function ignoreDone(): void {
  */
 export function nextRevOf(n: number): number {
   return n + 1
+}
+
+/**
+ * 服务端种子 → 卡的初始数据(2026-10-02 职位页公司卡直出):公司信息卡只读公司档案,相似雇主在公司弹框里另取,这里给空表。
+ * `as` 是跨域透传的收窄点:种子是 lib/jobs 的公司详情,与 `/api/jobs/company` 回的同一个对象(那条路 makeLoadPanel 同样直接认形)。
+ *
+ * @param seed 页面门取好的公司详情;null = 没有。
+ * @returns 初始数据;没有种子 null。
+ */
+export function seedPanelOf(seed: CompanySeed | null): CompanyPanelData | null {
+  if (seed == null) {
+    return null
+  }
+  return { company: seed as CompanyDetail, similar: [] }
 }
 
 /**

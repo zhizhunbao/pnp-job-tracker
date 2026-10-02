@@ -31,6 +31,7 @@
  * 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:日期行挂回译名行下面。
  * 2026-10-02 Frank「这个放到右边 和 灰字翻译在一行可以吗」「可以,按你说的做」:日期挪进译名行贴右、排在「查看原帖」前
  * (.titleMeta);手机宽度放不下时整块换到下一行仍贴右。
+ * 2026-10-02 Frank「可以」(Google 收录):公司信息卡吃页面门 SSR 取好的公司详情(company 原样透传,本域一格不读),卡直出进 HTML。
  *
  * @author Frank
  * @time 2026-08-28 19:15:06
@@ -57,8 +58,8 @@ import css from './jobs.module.css'
  * @param props 本岗、分层态、页面维度、相似职位与数据更新时刻。
  * @returns 正文轨里的窄读列。
  */
-export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }: JobIn) {
-  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted })
+export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company }: JobIn) {
+  const d = useJobDetail({ job, plan, dims, related, updatedAt, jdText, jdFormatted, company })
   const body = useJobBody({ job, lang: d.lang, plan, inModal: false, jdText, jdFormatted })
   const peek = useJobPeek()
   return (
@@ -78,7 +79,8 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted }
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
-        <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany} />
+        <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany}
+          seed={company} />
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (
           <JobRelated head={d.t('detail.related')}
             t={d.t}

@@ -28,7 +28,7 @@ export function JobModalCards({ job, lang, onOpenJob, onOpenCompany }: JobModalC
   const related = useRelatedOf({ id: Number(job.id) })
   return (
     <>
-      <CompanyInfoCard jobId={Number(job.id)} lang={lang} onOpenCompany={onOpenCompany} />
+      <CompanyInfoCard jobId={Number(job.id)} lang={lang} onOpenCompany={onOpenCompany} seed={null} />
       {related != null && showRelatedOf({ related, fallbackHref: TEXT_NONE }) && (
         <JobRelated head={t('detail.related')}
           t={t}

@@ -1619,7 +1619,18 @@ export type JobIn = {
    * null = 没生过,照旧客户端懒生成。
    */
   jdFormatted: string | null
+
+  /**
+   * 本岗雇主的公司详情,页面门 SSR 取(2026-10-02 职位页公司卡直出:爬虫拿到的 HTML 里就有公司信息);
+   * null = 没挂公司,公司卡照旧客户端取。
+   */
+  company: CompanySeedFact | null
 }
+
+/**
+ * 公司详情(外域形状,原样递给 companies 的公司信息卡当种子;本域一格都不读)。
+ */
+export type CompanySeedFact = object
 
 /**
  * 面包屑的一段(职业分类路径)。

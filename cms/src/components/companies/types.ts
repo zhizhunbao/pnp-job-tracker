@@ -945,7 +945,19 @@ export type CompanyInfoCardIn = {
    * 点公司名:开公司弹框。
    */
   onOpenCompany: OpenCompanyFn
+
+  /**
+   * 页面门服务端取好的公司详情(2026-10-02 职位页公司卡直出:卡进首屏 HTML,爬虫看得到);
+   * null = 手里没有,开卡后按岗位号现取(职位描述弹框)。
+   */
+  seed: CompanySeed | null
 }
+
+/**
+ * 页面门递来的公司详情(外域形状:取自 lib/jobs 的 loadCompanyByJobId,与 `/api/jobs/company` 回的是同一个对象,
+ * 也就与本域 CompanyDetail 同形;经职位正文透传,收窄只在 seedPanelOf 一处)。
+ */
+export type CompanySeed = object
 
 /**
  * useCompanyOfJob 的入参。
@@ -955,6 +967,11 @@ export type CompanyOfJobHookIn = {
    * 这一岗的岗位号(换了岗位要重取)。
    */
   jobId: number
+
+  /**
+   * 服务端取好的公司详情;有就先用它、首轮不再请求,null = 开卡现取。
+   */
+  seed: CompanySeed | null
 }
 
 /**

@@ -18,7 +18,7 @@ import { LANG_EN, MS_PER_SEC, TEXT_NONE, TICK_MS,
 } from './constants'
 import {
   ignoreFlag, isSiteActive, makeLoadAlias, makeLoadBrief, makeLoadDescTrans, makeLoadPanel,
-  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf,
+  makeLoadTrans, makeOpenSite, makePushCoLayer, makePushJobLayer, nextRevOf, seedPanelOf,
   simAnchorOf, simPageUrlOf, simTotalOf,
 } from './functions'
 import type {
@@ -243,18 +243,22 @@ export function useCompanyPanel(x: CompanyPanelHookIn): CompanyPanelState {
 /**
  * 按岗位号取公司(2026-09-21 职位页 / 职位弹框里的公司信息卡:手里只有岗位号;与公司弹框同一个接口、同一份数据)。
  * 换了岗位当场清空重取。
+ * 2026-10-02 职位页公司卡直出:页面门递来服务端种子时,首屏直接用它、不再请求(卡进 HTML,爬虫看得到);
+ * 换岗位或卡叫重取(官网那条活办完)才走接口。
  *
- * @param x 岗位号。
+ * @param x 岗位号与服务端种子。
  * @returns 加载态与取到的数据。
  */
 export function useCompanyOfJob(x: CompanyOfJobHookIn): CompanyPanelState {
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<CompanyPanelData | null>(null)
+  const [loading, setLoading] = useState(x.seed == null)
+  const [data, setData] = useState<CompanyPanelData | null>(seedPanelOf(x.seed))
+  const [seeded, setSeeded] = useState(x.seed != null)
   const [prevId, setPrevId] = useState(x.jobId)
   const [rev, setRev] = useState(0)
 
   if (prevId !== x.jobId) {
     setPrevId(x.jobId)
+    setSeeded(false)
     setLoading(true)
     setData(null)
   }
@@ -262,13 +266,16 @@ export function useCompanyOfJob(x: CompanyOfJobHookIn): CompanyPanelState {
 
   useEffect(function loadCompanyOfJob() {
     const flag: DeadFlag = { dead: false }
-    makeLoadPanel({ jobId, slug: TEXT_NONE, setData, setLoading })(flag)
+    if (seeded === false) {
+      makeLoadPanel({ jobId, slug: TEXT_NONE, setData, setLoading })(flag)
+    }
     return function stop(): void {
       flag.dead = true
     }
-  }, [jobId, rev])
+  }, [jobId, rev, seeded])
 
   function reload(): void {
+    setSeeded(false)
     setRev(nextRevOf)
   }
 

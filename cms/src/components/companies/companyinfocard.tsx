@@ -10,6 +10,8 @@
  * 撤掉,简介与探索进度(排队 → 抓官网 → 整理 → 翻译,查不到再联网现查兜底)与公司弹框一字不差。
  * 同日 Frank「都修」(Konverge:卡开着时工人办完了,卡还停在旧简介):官网那条活办完卡叫这里重取(onSiteDone = p.reload)。
  * 按岗位号取数,与公司弹框同一个接口;没取到(没挂公司 / 接口挂了)整卡不出。
+ * 2026-10-02 Frank「可以」(Google 收录:职位页公司卡是开页后才取,robots 挡 `/api/`,爬虫看不到):
+ * 职位详情页由页面门服务端取好递进来(seed),卡直出进 HTML;职位描述弹框照旧开卡现取。
  *
  * @author Frank
  * @time 2026-09-21 16:30:00
@@ -25,12 +27,12 @@ import css from './companies.module.css'
 /**
  * 渲染公司信息卡。
  *
- * @param props 岗位号、界面语言与点公司名的去处(逐格注释见 CompanyInfoCardIn)。
+ * @param props 岗位号、界面语言、点公司名的去处与服务端种子(逐格注释见 CompanyInfoCardIn)。
  * @returns 一张卡;没取到公司时不渲。
  */
-export function CompanyInfoCard({ jobId, lang, onOpenCompany }: CompanyInfoCardIn) {
+export function CompanyInfoCard({ jobId, lang, onOpenCompany, seed }: CompanyInfoCardIn) {
   const t = makeT(lang)
-  const p = useCompanyOfJob({ jobId })
+  const p = useCompanyOfJob({ jobId, seed })
   let name = TEXT_NONE
   let slug = TEXT_NONE
   let brief = TEXT_NONE
