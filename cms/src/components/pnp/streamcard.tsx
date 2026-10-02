@@ -13,9 +13,8 @@
  * @time 2026-08-28 17:59:16
  */
 import { FOLD_FIRST, FoldLine, useFold } from '@/components/pager'
-import { streamDisplay } from '@/lib/jobs'
-import { BOX_GAP_NONE, K_FOLD_UNIT_ITEM } from './constants'
-import { boxClsOf, streamRowsOf } from './functions'
+import { BOX_GAP_NONE, K_FOLD_UNIT_ITEM, TEXT_NONE } from './constants'
+import { boxClsOf, streamHeadOf, streamRowsOf } from './functions'
 import { StreamRow } from './streamrow'
 import type { StreamCardIn } from './types'
 import css from './pnp.module.css'
@@ -29,6 +28,7 @@ import css from './pnp.module.css'
 export function StreamCard({ t, lang, showZh, stream, noc, nocRows, matchRef }: StreamCardIn) {
   const hidden = Math.max(0, stream.occupations.length - FOLD_FIRST)
   const fold = useFold({ hidden })
+  const head = streamHeadOf({ t, lang, showZh, stream })
   const rows = []
   for (const r of streamRowsOf({ t, lang, showZh, stream, noc, nocRows, extra: fold.extra })) {
     rows.push(<StreamRow key={r.key} r={r} matchRef={matchRef} />)
@@ -36,7 +36,10 @@ export function StreamCard({ t, lang, showZh, stream, noc, nocRows, matchRef }: 
   return (
     <div className={css.card}>
       <div className={css.cardHead}>
-        {streamDisplay({ t, label: stream.label })}
+        <span>
+          {head.name}
+          {head.sub !== TEXT_NONE && <span className={css.headSub}>{head.sub}</span>}
+        </span>
         <span className={css.count}>{t('eelist.count', { n: stream.occupations.length })}</span>
       </div>
       <div className={boxClsOf({ clip: false, gap: BOX_GAP_NONE })}>{rows}</div>

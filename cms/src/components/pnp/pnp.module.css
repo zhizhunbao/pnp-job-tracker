@@ -1957,6 +1957,11 @@
    * 浅灰。
    */
   color: var(--text3);
+
+  /*
+   * 不折行(2026-10-02 类别标题改英文官方全名后变长,「11 个职业」被挤成两行)。
+   */
+  white-space: nowrap;
 }
 
 /*
@@ -2615,5 +2620,15 @@
 .empAlias {
   display: block;
   font-size: 12px;
+  color: var(--text2);
+}
+
+/*
+ * 卡头 / 类别标题下的界面语言名灰字(2026-10-02 Frank「除了 table 这部分,比如详情页面 英文在上 中文在下灰字」;一项一行)。
+ */
+.headSub {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text2);
 }

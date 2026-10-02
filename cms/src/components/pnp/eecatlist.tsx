@@ -11,9 +11,8 @@
  */
 import { Button } from '@/components/button'
 import { cssOf } from '@/components/css'
-import { eeDisplay } from '@/lib/jobs'
-import { PLAIN_BTN_KIND } from './constants'
-import { caretOf, catNameClsOf, occRowsOf } from './functions'
+import { PLAIN_BTN_KIND, TEXT_NONE } from './constants'
+import { caretOf, catNameClsOf, eeCatHeadOf, occRowsOf } from './functions'
 import { EeOccRow } from './eeoccrow'
 import type { EeCatListIn } from './types'
 import css from './pnp.module.css'
@@ -25,6 +24,7 @@ import css from './pnp.module.css'
  * @returns 类别清单。
  */
 export function EeCatList({ t, lang, showZh, cat, noc, nocRows, open, onToggle, matchRef }: EeCatListIn) {
+  const head = eeCatHeadOf({ t, lang, showZh, cat })
   const rows = []
   for (const r of occRowsOf({ lang, showZh, cat, noc, nocRows })) {
     rows.push(<EeOccRow key={r.key} r={r} matchRef={matchRef} />)
@@ -32,7 +32,10 @@ export function EeCatList({ t, lang, showZh, cat, noc, nocRows, open, onToggle, 
   return (
     <div className={css.cat}>
       <Button kind={PLAIN_BTN_KIND} className={cssOf(css.catHead)} onClick={onToggle}>
-        <span className={catNameClsOf({ lg: true })}>{eeDisplay({ t, label: cat.label })}</span>
+        <span className={catNameClsOf({ lg: true })}>
+          {head.name}
+          {head.sub !== TEXT_NONE && <span className={css.headSub}>{head.sub}</span>}
+        </span>
         <span className={css.catN}>{t('eelist.count', { n: cat.occupations.length })}</span>
         <span className={css.catCaret}>{caretOf(open)}</span>
       </Button>

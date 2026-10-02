@@ -480,6 +480,11 @@ export type PnpEeOcc = {
   category: string
 
   /**
+   * 官方英文类别名(ee_categories.name_en,2026-10-02 起;换版到重灌之间为空)。
+   */
+  nameEn: string
+
+  /**
    * 类别人话名。
    */
   label: string
@@ -558,6 +563,11 @@ export type PnpEeCat = {
    * 类别人话名。
    */
   label: string
+
+  /**
+   * 官方英文类别名;'' = 库里还没有(退回站内英文名)。
+   */
+  nameEn: string
 
   /**
    * 上次抽选 CRS;null=无记录。
@@ -2110,6 +2120,71 @@ export type PnpListSectionIn = {
    * 魁省岗这个职业的通道(2026-09-30 魁省门槛弹框;魁省岗每个通道一张门槛卡,其余卡不出)。
    */
   qcChannels: QcChannel[]
+}
+
+/**
+ * 卡头 / 组头的名字两行(2026-10-02 Frank「除了 table 这部分,比如详情页面 英文在上 中文在下灰字」)。
+ */
+export type HeadNames = {
+  /**
+   * 主文案:英文官方名。
+   */
+  name: string
+
+  /**
+   * 灰字:界面语言名;'' = 不出(英文界面、关了译名或与主文案同字)。
+   */
+  sub: string
+}
+
+/**
+ * streamHeadOf 的入参。
+ */
+export type StreamHeadIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 译名开关。
+   */
+  showZh: boolean
+
+  /**
+   * 这张清单。
+   */
+  stream: PnpStream
+}
+
+/**
+ * eeCatHeadOf 的入参。
+ */
+export type EeCatHeadIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 译名开关。
+   */
+  showZh: boolean
+
+  /**
+   * 这个类别。
+   */
+  cat: PnpEeCat
 }
 
 /**

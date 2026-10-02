@@ -87,7 +87,7 @@ import type {
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpData, AipEmpJson, AipEmpRowJson, AipEmpRowSpec, AipEmpUrlIn, LoadAipEmpIn, ExpScopeIn,
-  AipEmpAliasIn, OpenAipCoIn,
+  AipEmpAliasIn, OpenAipCoIn, EeCatHeadIn, HeadNames, StreamHeadIn,
   TeerBandsIn, TierLineIn,
   LoadQcChannelsIn, QcCardOfIn, QcCellMap, QcCellNameIn, QcCellRow, QcChannel, QcChannelsJson, QcFactorIn,
   HitStreamsIn, QcGateCardsIn, QcOwnRowsIn, QcReqMineIn, QcRowOfIn, QcSkillPartIn, QcTestLineIn,
@@ -1183,15 +1183,52 @@ export function eeChannelsOf(x: EeChannelsIn): ChannelSpec[] {
   const tEn = makeT(LANG_EN)
   const out: ChannelSpec[] = []
   for (const c of x.cats) {
-    const name = eeDisplay({ t: tEn, label: c.label })
-    let sub = TEXT_NONE
-    const local = eeDisplay({ t: x.t, label: c.label })
-    if (x.showZh && x.lang !== LANG_EN && local !== name) {
-      sub = local
-    }
-    out.push({ key: c.key, name, sub, tags: [] })
+    const h = eeCatHeadOf({ t: x.t, lang: x.lang, showZh: x.showZh, cat: c })
+    out.push({ key: c.key, name: h.name, sub: h.sub, tags: [] })
   }
   return out
+}
+
+/**
+ * EE 类别的两行名(2026-10-02 Frank「除了 table 这部分,比如详情页面 英文在上 中文在下灰字」):主文案官方英文类别名
+ * (ee_categories.name_en;库里还没有退回站内英文名),界面语言名灰字;英文界面、关了译名或两边同字不出灰字。
+ * 本岗通道条目、类别清单标题、抽选对比组头三处同一把尺子。
+ *
+ * @param x 取词函数、界面语言、译名开关与类别。
+ * @returns 两行名。
+ */
+export function eeCatHeadOf(x: EeCatHeadIn): HeadNames {
+  let name = x.cat.nameEn
+  if (name === TEXT_NONE) {
+    name = eeDisplay({ t: makeT(LANG_EN), label: x.cat.label })
+  }
+  let sub = TEXT_NONE
+  const local = eeDisplay({ t: x.t, label: x.cat.label })
+  if (x.showZh && x.lang !== LANG_EN && local !== name) {
+    sub = local
+  }
+  return { name, sub }
+}
+
+/**
+ * 省提名清单卡标题的两行名(2026-10-02 Frank「除了 table 这部分,比如详情页面 英文在上 中文在下灰字」):主文案清单官方名
+ * (清单表 stream 格,如「Nova Scotia Skilled Worker — Construction (NAICS 23)」;空着退回站内名),界面语言名灰字;
+ * 英文界面、关了译名或两边同字不出灰字。
+ *
+ * @param x 取词函数、界面语言、译名开关与清单。
+ * @returns 两行名。
+ */
+export function streamHeadOf(x: StreamHeadIn): HeadNames {
+  const local = streamDisplay({ t: x.t, label: x.stream.label })
+  let name = x.stream.stream
+  if (name === TEXT_NONE) {
+    name = local
+  }
+  let sub = TEXT_NONE
+  if (x.showZh && x.lang !== LANG_EN && local !== name) {
+    sub = local
+  }
+  return { name, sub }
 }
 
 /**
@@ -1208,6 +1245,7 @@ export function eeGroupOf(x: EeGroupIn): PnpEeCat[] {
       c = {
         key: r.category,
         label: r.label,
+        nameEn: r.nameEn,
         drawCrs: r.drawCrs,
         drawDate: r.drawDate,
         drawSize: r.drawSize,
@@ -1335,14 +1373,15 @@ export function eeCmpOf(x: EeCmpIn): EeCmp | null {
   for (const c of x.cats) {
     const dim = eeIsDormant(c.drawDate)
     const name = eeDisplay({ t: x.t, label: c.label })
+    const head = eeCatHeadOf({ t: x.t, lang: x.lang, showZh: true, cat: c })
     const draws = histAtOf({ hist, key: c.key })
     groups.push(cmpGroupOf({
       t: x.t,
       none: x.t('eecmp.none'),
-      sub: TEXT_NONE,
+      sub: head.sub,
       lang: x.lang,
       key: c.key,
-      name,
+      name: head.name,
       tip: TEXT_NONE,
       date: c.drawDate,
       score: c.drawCrs,
