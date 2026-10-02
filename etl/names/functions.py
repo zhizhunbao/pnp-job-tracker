@@ -13,7 +13,7 @@ company.norm_company_name(Wikidata facts 缓存键,已落盘改不起)各有设�
 """
 from fetch.constants import SPACE_SEP, WS_RE
 from names.constants import (
-    ALIAS_RE, ALIAS_SPLIT_RE, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
+    ALIAS_RE, ALIAS_SPLIT_MARK_RE, ALIAS_SPLIT_RE, ALIAS_TAIL_RE, ALIAS_TRIM, APOSTROPHE_RE, CATEGORY_GOV_ADMIN, CATEGORY_GOV_RULES, CATEGORY_GOV_SECTORS, CATEGORY_NONE,
     CATEGORY_PUBLIC_OTHER, CATEGORY_PUBLIC_RULES, KEEP_RE, SECTOR_CORP_RE, SECTOR_FEDERAL, SECTOR_FEDERAL_RE, SECTOR_GOVERNMENT,
     SECTOR_GOV_RE, SECTOR_INDIGENOUS, SECTOR_INDIGENOUS_RE, SECTOR_MUNICIPAL, SECTOR_MUNI_RE, SECTOR_PUBLIC,
     SECTOR_PUBLIC_RE, SECTOR_VET_RE, SUFFIX_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE,
@@ -78,11 +78,12 @@ def category_of(name: str) -> str:
 def aip_name_forms(raw: str) -> list:
     """名录一行的几种写法 → 待归一的名字:原样、o/a 后的经营名、「 - 」两边、去掉末尾括号的那段、括号里像法定名的那段
     (2026-10-01;括号里是地点的不收,见 LEGAL_HINT_RE)。
-    (函数体 2026-10-02 自 aip 域逐字迁入:mart 汇装指定雇主表拆招牌 / 门店 / 法人要用同一把尺子。)"""
+    (函数体 2026-10-02 自 aip 域逐字迁入:mart 汇装指定雇主表拆招牌 / 门店 / 法人要用同一把尺子。)
+    2026-10-02 Frank「这个 拆的对么」:o/a 那一步改走 alias_split —— a/o / dba / t/a / cob / Operating as 也认,法人那段与每段经营名都收。"""
     forms = [raw]
-    alias = ALIAS_RE.search(raw)
-    if alias:
-        forms.append(alias.group(1))
+    parts = alias_split(raw)
+    if len(parts) > 1:
+        forms.extend(parts)
     parts = raw.split(DASH_SPLIT)
     if len(parts) > 1:
         for part in parts:
@@ -95,3 +96,18 @@ def aip_name_forms(raw: str) -> list:
         if LEGAL_HINT_RE.search(m.group(PAREN_INNER)):
             forms.append(m.group(PAREN_INNER))
     return forms
+
+
+def alias_split(raw: str) -> list:
+    """名录一行按经营名标记切段 → [法人, 经营名段…];没有标记 = [原名](2026-10-02 Frank「这个 拆的对么」:原先只认 o/a)。
+    行尾孤零零一个标记只削掉;紧跟左括号的标记(「(DBA …)」)不在这里切,归括号那套;段里的空段(「o/a T/A」连写)丢掉。"""
+    name = ALIAS_TAIL_RE.sub("", raw).strip()
+    hit = ALIAS_RE.search(name)
+    if hit is None:
+        return [name]
+    out = [name[:hit.start()].strip(ALIAS_TRIM)]
+    for part in ALIAS_SPLIT_MARK_RE.split(name[hit.start():]):
+        part = part.strip(ALIAS_TRIM)
+        if part:
+            out.append(part)
+    return out

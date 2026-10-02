@@ -5396,6 +5396,30 @@ class MartDesignatedSplitTest(unittest.TestCase):
                          ("Yogi Restaurant and Bar Ltd", "Jungle Jim's", "Moncton"))
         self.assertEqual(self.parts("Diamond Nails", p), ("Diamond Nails", "Diamond Nails", ""))
 
+    def test_alias_marks_golden(self) -> None:
+        """金标(2026-10-02 Frank「这个 拆的对么」):a/o、dba、t/a、cob、Operating as 都拆;一行几个标记挑招牌;行尾空标记只削掉;括号里打头的 DBA 削掉。
+        探针:ALIAS_MARKS 去掉 a/o 时第一条整串不拆,红。"""
+        p = self.PLACES
+        self.assertEqual(self.parts("1342205 Ontario Ltd. a/o Surplus Furniture and Mattress Warehouse", p),
+                         ("1342205 Ontario Ltd.", "Surplus Furniture and Mattress Warehouse", ""))
+        self.assertEqual(self.parts("NL Gold Factory Inc. a/o NL Gold Factory a/o NLGF", p),
+                         ("NL Gold Factory Inc.", "NL Gold Factory", ""))
+        self.assertEqual(self.parts("Kidco Restaurant inc. cob Dairy Queen o/a Dairy Queen", p),
+                         ("Kidco Restaurant inc.", "Dairy Queen", ""))
+        self.assertEqual(self.parts("B & B Nepali Cuisine Ltd. o/a T/A PETER’S PIZZA", p),
+                         ("B & B Nepali Cuisine Ltd.", "PETER’S PIZZA", ""))
+        self.assertEqual(self.parts("Silverbirch Hotels & Resorts o/a Leadon Operations LP dba Hotel Halifax & The", p),
+                         ("Silverbirch Hotels & Resorts", "Hotel Halifax & The", ""))
+        self.assertEqual(self.parts("Universal Sales, Limited – Operating as Universal Truck and Trailer", p),
+                         ("Universal Sales, Limited", "Universal Truck and Trailer", ""))
+        self.assertEqual(self.parts("Filsoof Investment Corp dba", p), ("Filsoof Investment Corp", "Filsoof Investment Corp", ""))
+        self.assertEqual(self.parts("729371 NB LTD (DBA TACO BOYZ SAINT JOHN)", p), ("729371 NB LTD", "TACO BOYZ SAINT JOHN", ""))
+        self.assertEqual(self.parts("Wentech Solutions Inc (dba anessa)", p), ("Wentech Solutions Inc", "anessa", ""))
+        self.assertEqual(self.parts("Emily Hoffman Dba Mayfield Cleaning & Maintenance Inc. (Mayfield Cleaning & Maintenance Inc.)", p),
+                         ("Emily Hoffman", "Mayfield Cleaning & Maintenance Inc.", ""))
+        # 名字里本来就带标记词的不误拆:「Cobalt」「Dbase」不是 cob / dba
+        self.assertEqual(self.parts("Cobalt Dbase Ltd", p), ("Cobalt Dbase Ltd", "Cobalt Dbase Ltd", ""))
+
     def test_brand_and_store(self) -> None:
         """同招牌开头之后多出来的是地名才当门店(「Chicken」不算);最短开头是招牌键;家数按法人去重。"""
         got = self.group([

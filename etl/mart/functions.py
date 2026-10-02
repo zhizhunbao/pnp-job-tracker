@@ -48,8 +48,8 @@ import paths
 from crawl.functions import get_cached_page
 from log.functions import err, say
 from richtext.functions import md_head_of
-from names.constants import ALIAS_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE
-from names.functions import aip_name_forms, norm_name, sector_of
+from names.constants import ALIAS_LEAD_RE, DASH_SPLIT, LEGAL_HINT_RE, PAREN_HEAD, PAREN_INNER, PAREN_TAIL_RE
+from names.functions import aip_name_forms, alias_split, norm_name, sector_of
 from noc.constants import SLUGS as NOC_BROAD_SLUG
 from noc.functions import broad_of, bucket_broad_of, classify, group_of, noc_of_title, teer_of
 from mart.constants import (
@@ -3071,12 +3071,15 @@ def brand_prefix_ok(x: BrandPrefixIn) -> bool:
 def designated_parts_of(x: DesignatedPartsIn) -> DesignatedPartsOut:
     """名单一行 → 法人 / 招牌 / 门店(地点)。认法:o/a(前法人后招牌)→「 - 」(括号外的、带公司后缀或编号的那边是法人)→
     末尾括号(括号里像法定名 = 法人;括号外像法定名而括号里是地名 = 那是门店,招牌就是法人名;否则括号里是招牌);
-    都不是 = 法人与招牌都是原名。最后招牌末尾的括号 / 「 - 地名」挪去门店(place_split)。"""
+    都不是 = 法人与招牌都是原名。最后招牌末尾的括号 / 「 - 地名」挪去门店(place_split)。
+    2026-10-02 Frank「这个 拆的对么」:o/a 那一步改走 names 的 alias_split(a/o、dba、t/a、cob、Operating as 都认),经营名不止一段时挑 alias_trade_of。"""
     name = x.raw.strip()
-    alias = ALIAS_RE.search(name)
-    if alias is not None:
-        legal = paren_head_of(name[:alias.start()])
-        return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=legal, trade=alias.group(1), place=""), places=x.places))
+    parts = alias_split(name)
+    if len(parts) > 1:
+        legal = paren_head_of(parts[0])
+        trade = alias_trade_of(parts[1:])
+        return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=legal, trade=trade, place=""), places=x.places))
+    name = parts[0]
     halves = name.split(DASH_SPLIT)
     if len(halves) == 2 and halves[0].count(PAREN_OPEN) == halves[0].count(PAREN_CLOSE):
         if LEGAL_HINT_RE.search(halves[1]):
@@ -3096,11 +3099,27 @@ def designated_parts_of(x: DesignatedPartsIn) -> DesignatedPartsOut:
     return place_split(PlaceSplitIn(parts=DesignatedPartsOut(legal=name, trade=name, place=""), places=x.places))
 
 
+def alias_trade_of(pieces: list) -> str:
+    """经营名不止一段时挑哪段当招牌:头一段不像法定名的(「NL Gold Factory Inc. a/o NL Gold Factory a/o NLGF」→「NL Gold Factory」;
+    「… o/a Leadon Operations LP dba Hotel Halifax」跳过 LP 那段);都像法定名取最后一段;招牌与括号里一模一样的去掉括号
+    (「Mayfield Cleaning & Maintenance Inc. (Mayfield Cleaning & Maintenance Inc.)」)。(2026-10-02 Frank「这个 拆的对么」)"""
+    trade = pieces[-1]
+    for piece in pieces:
+        if LEGAL_HINT_RE.search(piece) is None:
+            trade = piece
+            break
+    m = PAREN_TAIL_RE.match(trade)
+    if m is not None and norm_name(m.group(PAREN_HEAD)) == norm_name(m.group(PAREN_INNER)):
+        return m.group(PAREN_HEAD)
+    return trade
+
+
 def place_split(x: PlaceSplitIn) -> DesignatedPartsOut:
     """招牌末尾的地点挪去门店:不像法定名的括号(「Kent Building Supplies (Saint John)」),或「 - 」后面是地名
-    (「Jungle Jim's - Moncton」);两头削逗号空格。"""
+    (「Jungle Jim's - Moncton」);两头削逗号空格。
+    2026-10-02 Frank「这个 拆的对么」:招牌开头挂着的经营名标记先削掉(括号里的「(DBA TACO BOYZ SAINT JOHN)」「(dba anessa)」)。"""
     legal = x.parts.legal.strip(LEGAL_TRIM)
-    trade = x.parts.trade.strip(LEGAL_TRIM)
+    trade = ALIAS_LEAD_RE.sub("", x.parts.trade).strip(LEGAL_TRIM)
     m = PAREN_TAIL_RE.match(trade)
     if m is not None and LEGAL_HINT_RE.search(m.group(PAREN_INNER)) is None:
         return DesignatedPartsOut(legal=legal, trade=m.group(PAREN_HEAD).strip(LEGAL_TRIM), place=m.group(PAREN_INNER).strip())

@@ -191,10 +191,28 @@ CATEGORY_GOV_SECTORS = frozenset((SECTOR_FEDERAL, SECTOR_GOVERNMENT, SECTOR_MUNI
 
 # 以下六个常量 2026-10-02 自 aip 域原样迁入(指定雇主名的几种写法 aip_name_forms 随迁:mart 汇装指定雇主表要拆招牌 / 门店 / 法人,
 # 与 AIP 打标同一把尺子;域之间不互借函数,尺子住基建叶)。
-ALIAS_RE = re.compile(r"\bo/a\b(.+)", re.I)
+ALIAS_MARKS = r"o/a|a/o|d/b/a|dba|t/a|cob|operating as|trading as"
+"""名录行里「法人 + 经营名」的标记词(2026-10-02 Frank「这个 拆的对么」:原先只认 o/a,NL 名单写 a/o 的 52 行、dba / t/a / cob / Operating as 的十来行
+整串没拆,招牌与法人两列一字不差)。"""
+
+ALIAS_RE = re.compile(r"(?<!\()\b(?:" + ALIAS_MARKS + r")\b", re.I)
 """名录行里的 o/a 别名(别名也单独入集合,两种写法都能匹配到)。
 (SUFFIX_RE / ALIAS_SPLIT_RE / KEEP_RE 三条归一正则 2026-08-31 随 norm_name 迁基建叶
-names 域 —— 洗名尺子收拢批,沿革注释随迁。)"""
+names 域 —— 洗名尺子收拢批,沿革注释随迁。)
+2026-10-02 Frank「这个 拆的对么」:扩成 ALIAS_MARKS 全套标记,只找位置不再带组(切段归 alias_split);紧跟左括号的(「(DBA TACO BOYZ)」)不算,
+归括号那套认法。"""
+
+ALIAS_SPLIT_MARK_RE = re.compile(r"\b(?:" + ALIAS_MARKS + r")\b", re.I)
+"""经营名段之间的切分(「cob Dairy Queen o/a Dairy Queen」「o/a T/A PETER'S PIZZA」一行里不止一个标记;2026-10-02 Frank「这个 拆的对么」)。"""
+
+ALIAS_TAIL_RE = re.compile(r"\s+(?:" + ALIAS_MARKS + r")\.?\s*$", re.I)
+"""行尾孤零零一个标记、后面没写经营名(「Filsoof Investment Corp dba」「Fort St. John Pizza 73 Inc. Dba」)—— 只削掉(2026-10-02 Frank「这个 拆的对么」)。"""
+
+ALIAS_LEAD_RE = re.compile(r"^\s*(?:" + ALIAS_MARKS + r")\b\s*", re.I)
+"""经营名开头挂着的标记(括号里的「(DBA TACO BOYZ SAINT JOHN)」「(dba anessa)」)—— 削掉(2026-10-02 Frank「这个 拆的对么」)。"""
+
+ALIAS_TRIM = " ,–-"
+"""切出来的法人 / 经营名两头要削的字符(「Universal Sales, Limited – Operating as …」法人尾巴上的长横;2026-10-02 Frank「这个 拆的对么」)。"""
 
 DASH_SPLIT = " - "
 """NB 名录「法定名 - 经营名」写法的分隔(如「J.D. Irving, Limited - Kent Building Supplies (Saint John)」;两边带空格,连字符地名
@@ -210,6 +228,7 @@ PAREN_HEAD = "head"
 PAREN_INNER = "inner"
 """PAREN_TAIL_RE 的组名:括号里那段。"""
 
-LEGAL_HINT_RE = re.compile(r"\b(?:inc|ltd|lt[ée]e|limited|corp|corporation|holdings?|enterprises?|company|group)\b|\d", re.I)
+LEGAL_HINT_RE = re.compile(r"\b(?:inc|ltd|lt[ée]e|limited|corp|corporation|holdings?|enterprises?|company|group|lp)\b|\d", re.I)
 """括号里那段像法定名(带公司后缀,或编号公司的数字)才单收;括号里是地点(Saint John、Head Office)的不收,免得「saint john」被当成
-雇主名(2026-10-01)。"""
+雇主名(2026-10-01)。
+2026-10-02 Frank「这个 拆的对么」:补 LP(有限合伙,「Silverbirch Hotels & Resorts o/a Leadon Operations LP dba Hotel Halifax」中间那段是法人不是招牌)。"""
