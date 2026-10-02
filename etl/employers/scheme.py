@@ -202,6 +202,17 @@ class PoolCtx:
 
 
 @dataclass
+class DesignatedKeyIn:
+    """designated_key_of 的入参(一行指定雇主 → 雇主池键;2026-10-02)。"""
+
+    ctx: PoolCtx
+    """聚合上下文(读公司表的归一名 → slug)。"""
+
+    row: dict
+    """指定雇主名单的一行(汇装 designated_employers 行)。"""
+
+
+@dataclass
 class KeyIn:
     """按池键取行的入参(聚合函数一参令)。"""
 

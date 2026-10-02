@@ -22,14 +22,15 @@ from log.functions import say
 from employers.constants import (BROAD_CATEGORY, BROAD_UNCAT, EE_SPLIT, ENTRY_LEVELS, PLACE_SEP, EXP_RANK, GROUP_NONE, GROUP_OTHER, GUARD_FEW_TPL, GUARD_MIN_POOL,
                                  IN_COMPANIES, IN_DESIGNATED, IN_JOBS, IN_LMIA, IN_POSTINGS,
                                  K_ACCESSIBILITY, K_APPRENTICE, K_BROAD, K_CITY, K_COMPANY_SLUG, K_DISTRICT, K_EE_CATEGORY,
-                                 K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LOCATION, K_NAME,
+                                 K_DATE_POSTED, K_EMPLOYER, K_EMPLOYERS_TABLE, K_LAST_QUARTER, K_LEGAL, K_LOCATION, K_NAME,
+                                 K_TRADE,
                                  K_NOC, K_NOCS, K_POSITIONS_SKILLED, K_PROVINCE, K_REGION, K_SECTORS,
                                  ENC_UTF8, K_SLUG, K_SOURCE, K_STATUS, K_TITLE, K_WAGE_MED, K_WEBSITE,
                                  LEGAL_SUFFIX_RE, LOC_PROV_SEP, NAME_JUNK_RE, NAME_SEP, NORM_KEY_PREFIX,
                                  PRINT_POOL_DONE_TPL, PRINT_SOURCES_TPL, SKILLED_TEER_MAX,
                                  STAR_ENTRY, STAR_LOW, STAR_MID, STAR_TOP, STAR_TRACE,
                                  STATUS_OPEN, TOP_TITLES_N, WAGE_INDEX_BASE, OUT_BUCKETS, OUT_POOL)
-from employers.scheme import (BucketIn, BucketRow, DesignatedOut, HistOut, HomeCityIn, HomeDistrictIn, HomeOut,
+from employers.scheme import (BucketIn, BucketRow, DesignatedKeyIn, DesignatedOut, HistOut, HomeCityIn, HomeDistrictIn, HomeOut,
                               KeyIn, PoolCtx, PoolRow, ScanOut, StarIn)
 
 
@@ -125,17 +126,37 @@ def load_jobs(ctx: PoolCtx) -> int:
 
 
 def load_designated(ctx: PoolCtx) -> int:
-    """指定雇主名单 → 归一挂靠(撞不上 companies 的自成 n: 行,残差不硬合)。"""
+    """指定雇主名单 → 归一挂靠(撞不上 companies 的自成 n: 行,残差不硬合)。
+
+    2026-10-02 Frank「名字以 雇主名为准吧」→ 选「经营名」:名单写「法定名 o/a 经营名」的,原先拿整串去对公司表,对不上就自成一行
+    (The Italian Market 的名单行挂到「g abato sons italian market o a the italian market」,公司页那家反而不算指定雇主,
+    译名也没挂上)。现在先拿经营名、再拿法定名、最后整串去对公司表;都对不上自成 n: 行,键与显示名都用经营名。
+    """
     designated = json.loads(IN_DESIGNATED.read_text(encoding=ENC_UTF8))
     for row in designated:
-        norm = norm_name_of(row.get(K_NAME) or "")
-        if not norm:
+        key = designated_key_of(DesignatedKeyIn(ctx=ctx, row=row))
+        if not key:
             continue
-        key = ctx.norm_to_slug.get(norm) or NORM_KEY_PREFIX + norm
         ctx.designated_by_key.setdefault(key, []).append(row)
         if key not in ctx.names:
-            ctx.names[key] = row.get(K_NAME) or norm
+            ctx.names[key] = row.get(K_TRADE) or row.get(K_NAME) or key
     return len(designated)
+
+
+def designated_key_of(x: DesignatedKeyIn) -> str:
+    """一行指定雇主 → 雇主池键:经营名 → 法定名 → 整串,谁先对上公司表用谁;都对不上用经营名(没有就整串)自成 n: 键;全空给空串。"""
+    first = ""
+    for raw in (x.row.get(K_TRADE), x.row.get(K_LEGAL), x.row.get(K_NAME)):
+        norm = norm_name_of(raw or "")
+        if not norm:
+            continue
+        if norm in x.ctx.norm_to_slug:
+            return x.ctx.norm_to_slug[norm]
+        if not first:
+            first = norm
+    if not first:
+        return ""
+    return NORM_KEY_PREFIX + first
 
 
 def load_lmia(ctx: PoolCtx) -> int:

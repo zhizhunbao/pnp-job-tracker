@@ -41,6 +41,12 @@ K_COMPANY_SLUG = "companySlug"
 K_NAME = "name"
 """雇主名。"""
 
+K_TRADE = "trade"
+"""指定雇主行的经营名(招牌;汇装 with_designated_split 拆好;2026-10-02 起挂靠与显示名都以它为准)。"""
+
+K_LEGAL = "legal"
+"""指定雇主行的法定名(法人;同上拆好)。"""
+
 K_SECTORS = "sectors"
 """companies 行业串。"""
 
