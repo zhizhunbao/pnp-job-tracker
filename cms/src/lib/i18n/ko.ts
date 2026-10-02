@@ -678,7 +678,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.groupTotalMin': '최소 {count}',
   'pnpdraws.invOne': '{n}개 초청',
   'pnpdraws.below': '{n}개 미만 초청',
-  'pnpdraws.pool': '주정부 추천과 AIP를 같은 풀에서 선발, 인원에 AIP 포함',
   'pnpdraws.direct': '고용주 오퍼가 있으면 추첨 없이 바로 신청',
   'pnpdraws.none': '{year}년 아직 추첨 없음',
   'pnpdraws.foot': '{year}년 {rounds}, 총 {count}',
@@ -686,7 +685,6 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.footRounds': '{year}년 {rounds}',
   'pnpreform.head': '개편 전 추첨',
   'pnpaip.head': 'AIP 추첨',
-  'pnpaip.pool': '주정부 추천과 같은 풀에서 선발, 인원은 주 추첨에 포함',
   'pnpaip.direct': '지정 고용주가 바로 추천 신청, 추첨 없음',
   // 2026-09-26 PNP 모달: 이 일자리의 스트림 카드, 해당 추첨 그룹, 온타리오 현황과 노바스코샤 월별 선정 카드
   // 2026-09-26 밤 (Frank: 강조 그룹도 아래 행과 같은 형식으로): 해당 그룹을 일반 그룹 행으로 표시, latest / people / apps / rounds90 와 합계 세 항목 삭제
@@ -772,7 +770,7 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'act.ai': 'AI 정리', 'act.aiNote': '원문 재배열, 추가 없음', 'act.aiQuota': '오늘 AI 사용량을 모두 사용했습니다. 내일 초기화됩니다', 'act.aiQuotaLogin': '로그인하면 일일 횟수가 늘어납니다', 'act.fmtTab': '정리본', 'act.origTab': '원문', 'act.viewOrig': '원문 보기', 'act.backFmt': '정리본으로', 'act.aiWorking': 'AI 정리 중, 원문 먼저 보기…', 'act.aiFail': 'AI 정리 실패',
   'act.f.role': '담당 업무', 'act.f.reqs': '필수 요건', 'act.f.pay': '급여·복지', 'act.f.hours': '근무 형태', 'act.f.loc': '근무지', 'act.f.apply': '지원 방법', 'act.f.none': '원문에 언급 없음',
   // 2026-09-27 날짜를 JD 본문의 별도 섹션으로 (줄 라벨은 col.datePosted / detail.closes 재사용)
-  'act.f.dates': '날짜',
+  // 2026-10-01 날짜 섹션 철회, 공고명 아래 한 줄로 복귀(act.f.dates 삭제)
   'co.f.what': '주요 사업', 'co.f.base': '소재지', 'co.f.size': '규모', 'co.f.founded': '설립 연도', 'co.f.note': '참고 사항',
   'co.f.offices': '기타 사무소', 'co.f.newcomers': '신규 이민자 및 외국인 직원', 'co.f.benefits': '복지 및 채용',
   'fact.aiIntro': 'AI 검색 정리(회사 공식 소개 아님)', 'fact.aiWorking': 'AI 조사 중…', 'fact.aiSite': 'AI 검색 결과, 디렉터리 원본 아님',
@@ -885,10 +883,8 @@ export const jobsKo: Record<keyof typeof jobsZh, string> = {
   'eefed.cat': '직업 카테고리',
   'ch.pnp.on': '가능: {label}', 'ch.pnp.generic': '고용주 오퍼로 지명 가능', 'ch.pnp.ex': '제외 목록, 불가', 'ch.pnp.no': '불가(제외 목록 또는 미분류)', 'ch.pnp.qc': 'QC 자체 시스템',
   'ch.ee.on': '카테고리 추첨 가능: {cats}', 'ch.ee.more': '{first} 등 {n}종', 'ch.ee.gen': 'CEC 일반 추첨 가능(커트라인 높음)', 'ch.ee.no': '불가(TEER {teer})',
-  'ch.aip.on': 'AIP 가능(지정 고용주)', 'ch.aip.miss': '불가(고용주 미지정)', 'ch.aip.na': '불가(대서양 4개 주만)',
   'ch.pilot.on': '시범 참여 커뮤니티 소재', 'ch.pilot.na': '시범 커뮤니티 아님', 'fact.pilotGate': '커뮤니티 추천제 시범으로 고용주가 먼저 커뮤니티 지정을 받아야 함; 해당 여부는 자격 판정이 아님', 'fact.pilotEmp': '해당 커뮤니티 공식 지정 고용주 명단에 있음', 'fact.pilotOccYes': '해당 커뮤니티 현재 모집 직업 목록에 있음', 'fact.pilotOccNo': '해당 커뮤니티 현재 모집 직업 목록에 없음',
-  'ch.pnp.exl': '불가: 「{label}」에 포함', 'ch.aip.blocked': '불가: 주정부가 이 직종 추천을 접수하지 않음', 'ch.aip.onBlocked': '지정 고용주이지만 이 직종은 접수 제외',
-  'fact.aipBlockedHit': '이 포지션 직종 「{name}」이 목록에 포함　NOC {noc}',
+  'ch.pnp.exl': '불가: 「{label}」에 포함',
   'sal.cardPosted': '공고 급여', 'sal.cardEsdc': 'ESDC 임금표(직업, 주)', 'sal.esdcMed': 'ESDC 중위',
   'sal.hrCol': '시급',
   'sal.low': '하위', 'sal.med': '중위', 'sal.high': '상위', 'sal.above': '중위보다 {p}% 높음', 'sal.below': '중위보다 {p}% 낮음',

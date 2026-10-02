@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIP 弹框改版</title>
+<style>
+  :root { --bg:#f3f4f6; --card:#fff; --line:#e5e7eb; --ink:#111827; --grey:#6b7280; --soft:#9ca3af; --hl:#dbeafe; --green:#dcfce7; --greenInk:#15803d; --red:#fee2e2; --redInk:#b91c1c; }
+  body { margin:0; background:var(--bg); font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color:var(--ink); }
+  .wrap { display:flex; gap:28px; flex-wrap:wrap; justify-content:center; padding:20px 16px; }
+  .col { width:375px; }
+  .cap { font-size:13px; color:var(--grey); margin:0 0 8px; }
+  .phone { width:375px; background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .mhead { padding:14px 16px 10px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:12px; color:var(--grey); }
+  .mtitle { font-size:18px; font-weight:700; margin-top:2px; }
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; background:#fafafa; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h3 { margin:0 0 10px; font-size:15px; }
+  .card h3 small { font-weight:400; color:var(--soft); font-size:13px; margin-left:6px; }
+  .sub { border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .sub .en { font-size:15px; }
+  .sub .zh { font-size:13px; color:var(--soft); margin-top:2px; }
+  .ph { color:var(--soft); font-size:13px; border:1px dashed var(--line); border-radius:10px; padding:14px; text-align:center; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; color:var(--grey); font-weight:500; padding:6px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:7px 6px; border-bottom:1px solid #f1f2f4; vertical-align:top; }
+  td.legal { color:var(--grey); }
+  tr.me td { background:var(--hl); }
+  tr.grp td { font-weight:600; }
+  tr.grp td .n { font-weight:400; color:var(--grey); }
+  tr.kid td:first-child { padding-left:16px; color:var(--grey); }
+  .tog { color:var(--soft); margin-right:4px; }
+  .more { text-align:center; color:#2563eb; font-size:13px; padding-top:8px; }
+  .drawhd { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+  .drawhd b { font-size:14px; }
+  .drawhd span { font-size:12px; color:var(--soft); }
+  .foot { font-size:12px; color:var(--grey); margin-top:8px; }
+  .src { font-size:12px; color:#2563eb; margin-top:4px; }
+  .num { text-align:right; white-space:nowrap; }
+  .pill { display:inline-block; border-radius:999px; padding:3px 10px; font-size:13px; font-weight:600; }
+  .pill.red { background:var(--red); color:var(--redInk); }
+  .del { text-decoration:line-through; color:var(--soft); }
+  .notes { max-width:780px; margin:6px auto 30px; padding:0 16px; font-size:14px; line-height:1.7; }
+  .notes h2 { font-size:16px; margin:16px 0 6px; }
+  .notes li { margin-bottom:4px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 改后:能走 -->
+  <div class="col">
+    <p class="cap">改后(本岗能走:DC Ventures,NS,餐厅副经理)</p>
+    <div class="phone">
+      <div class="mhead"><div class="kicker">AIP 指定雇主</div><div class="mtitle">restaurant assistant manager</div></div>
+      <div class="body">
+
+        <div class="card">
+          <h3>本岗能走的通道</h3>
+          <div class="sub"><div class="en">Atlantic Immigration Program</div><div class="zh">AIP</div></div>
+        </div>
+
+        <div class="card">
+          <h3>本岗雇主<small>新斯科舍省 AIP 指定雇主</small></h3>
+          <table>
+            <thead><tr><th>招牌</th><th>门店</th><th>法人</th></tr></thead>
+            <tbody>
+              <tr class="me"><td>Mary Browns Chicken</td><td>—</td><td class="legal">DC Ventures Inc</td></tr>
+              <tr class="kid"><td>Mary Browns</td><td>New Minas</td><td class="legal">4207591 Nova Scotia Ltd</td></tr>
+              <tr class="kid"><td>Mary Browns Chicken</td><td>Greenwood</td><td class="legal">4445465 Nova Scotia Limited</td></tr>
+              <tr class="kid"><td>Mary Browns</td><td>—</td><td class="legal">MBS Fairview Restaurant Limited</td></tr>
+            </tbody>
+          </table>
+          <div class="foot">同招牌 4 家加盟商是指定雇主</div>
+          <div class="more">本省全部指定雇主 1574 家 ›</div>
+        </div>
+
+        <div class="ph">门槛卡(不变)</div>
+
+        <div class="card">
+          <h3>AIP 抽选</h3>
+          <div class="drawhd"><b>NSNP + AIP</b><span>每月候选人抽选</span></div>
+          <table>
+            <thead><tr><th>月份</th><th class="num">入选</th></tr></thead>
+            <tbody>
+              <tr><td>2026-07</td><td class="num">671 人</td></tr>
+              <tr><td>2026-06</td><td class="num">531 人</td></tr>
+              <tr><td>2026-05</td><td class="num">789 人</td></tr>
+              <tr><td>2026-04</td><td class="num">161 人</td></tr>
+              <tr><td>2026-03</td><td class="num">370 人</td></tr>
+            </tbody>
+          </table>
+          <div class="foot">2026 年 7 轮,共 3242 人</div>
+          <div class="src">来源</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 改后:走不了 -->
+  <div class="col">
+    <p class="cap">改后(雇主是指定雇主,但本岗走不了:两种)</p>
+    <div class="phone">
+      <div class="body">
+        <div class="card">
+          <h3>本岗不满足的门槛</h3>
+          <div>季节工</div>
+        </div>
+        <div class="card">
+          <h3>本岗不满足的门槛</h3>
+          <div>职业不收</div>
+        </div>
+        <div class="ph">其余各卡同左</div>
+      </div>
+    </div>
+    <p class="cap" style="margin-top:20px">改后:AIP 单独抽选的省(NB)</p>
+    <div class="phone">
+      <div class="body">
+        <div class="card">
+          <h3>AIP 抽选</h3>
+          <div class="drawhd"><b>AIP</b><span>大西洋雇主担保移民</span></div>
+          <table>
+            <thead><tr><th>日期</th><th class="num">邀请</th></tr></thead>
+            <tbody>
+              <tr><td>2026-09-10</td><td class="num">60 份</td></tr>
+              <tr><td>2026-08-20</td><td class="num">68 份</td></tr>
+              <tr><td>2026-07-22</td><td class="num">114 份</td></tr>
+            </tbody>
+          </table>
+          <div class="foot">2026 年 7 轮,共 632 份</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h2>改了什么</h2>
+  <ol>
+    <li><b>删判定卡</b>:「判定:能走 AIP(雇主在指定名单)」整张删。能走时由「本岗能走的通道」说。弹框只在格子写「指定雇主」时打得开,所以「雇主不在名单」「仅大西洋四省」永远看不到,不写;只剩两种走不了:不出通道卡,改出省提名弹框现成的「本岗不满足的门槛」卡(PnpBlockCard,同一套原因词:兼职 / 定期合同 / 季节工 / 临时工 / 职业不收)。</li>
+    <li><b>通道卡放最上面</b>,子卡形态不动。</li>
+    <li><b>指定雇主拆表、只列相关的</b>:招牌、门店、法人三列;弹框里只列本岗雇主一行(高亮),连锁招牌再列同招牌的其他加盟商;开弹框时现查这几行。全省名单改成链接「本省全部指定雇主」跳雇主板(AIP + 本省筛选,分页)。职位板不再预载四省 3863 家。拆名字在数据层 aip 域做,前端只显示;表格照职位板形态。</li>
+    <li><b>AIP 抽选都列人数</b>:单独抽的省(NB、NL)列 AIP 自己的轮次;同池的省(NS)直接列「NSNP + AIP」那组的轮次,组名已说明是合池,不加说明句。PE 不抽选,照旧一行「由指定雇主直接为候选人递背书申请」。</li>
+    <li><b>删两句同池说明</b>:<span class="del">省提名与 AIP 同池选取,人数含 AIP</span>(省提名弹框)、<span class="del">与省提名同池选取,人数见本省抽选</span>(AIP 卡)。</li>
+  </ol>
+  <h2>不在这批</h2>
+  <ul>
+    <li>职位板 AIP 列的加盟店标签(「部分门店」),等你定用词再做;但「同一招牌几家法人」这个数,这批拆表时已经算出来,到时直接用。</li>
+  </ul>
+</div>
+</body>
+</html>

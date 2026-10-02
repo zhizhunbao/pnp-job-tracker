@@ -22,19 +22,19 @@ import { catName, pickName } from '@/lib/noc'
 import { daysSince } from '@/lib/time'
 import { track } from '@/lib/track'
 import {
-  ACC_UNKNOWN, AIP_ON, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD,
+  ACC_UNKNOWN, BAND_KEY_HIGH, BAND_KEY_LOW, BAND_KEY_MED, CARET_DOWN, CARET_RIGHT, CAT_NONE, CLS_DEPTH_BROAD,
   CLS_DEPTH_NONE, CLS_SEP, CREDENTIALS_INCLUDE, DASH, FIELD_ACCESSIBILITY, FIELD_BROAD, FIELD_COMPANY, FIELD_NOC,
   FIELD_NOC_CODE, FIELD_SALARY, FIELD_SCORE, FIELD_TEER, FIELD_VS_MEDIAN, FIELD_WAGE_MED_HR, GROUP_COMPANY,
-  K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_AIP_HEAD, K_BROAD_HEAD,
+  K_GROUP_HEAD, GROUP_SECTIONS, HDR_CONTENT_TYPE, HUNDRED, JOB_TEXT_LIMITED, K_ACC_HEAD, K_BROAD_HEAD,
   K_COL_HEAD, K_ELIG_HEAD, K_ORIGIN_HEAD, K_TEER_HEAD, LAYER_CO, LAYER_JOB, LEVEL_PROVINCE, METHOD_POST,
   MIME_JSON, MONEY_HEAD, NEWLINE, PAREN_CLOSE, PAREN_OPEN, PEEK_KEY_SEP, PER_HOUR_TAIL, PER_YEAR_TAIL, PILOT_OCC_YES,
   POOL_KEY_HEAD, ROW_KEY_BROAD, ROW_KEY_NOC, ROW_KEY_NOC_TITLE, ROW_KEY_OCC, ROW_KEY_TEER, STATUS_CLOSED, STATUS_OPEN,
-  TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_FAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
+  TEER_HEAD, TEXT_NONE, THOUSAND, THOUSAND_TAIL, TONE_NA, TONE_OK, TONE_WARN, TRACK_CAT_TRANSLATE,
   TRANS_ERROR, TRANS_IDLE, TRANS_LOADING, URL_API_EMPLOYERS_RETRANSLATE, URL_API_JOBS_COMPANY, URL_API_JOBS_RETRANSLATE,
   URL_API_NOC_TRANSLATE, URL_COMPANY_HEAD, URL_PAGE_FIRST, WAGE_HIGH, WAGE_LOW,
 } from './constants'
 import type {
-  AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, AipBlockedNameIn, AipPillIn, CardHeadIn, CatTextIn,
+  AdvisorJob, AdvisorJobIn, AdvisorNocDesc, AdvisorPillFact, CardHeadIn, CatTextIn,
   CompanyJobsJson, CompanyPeek, CompanyRefreshIn, DaysUpIn, DeadFlag,
   EsdcRowFact, FactsReadyIn, FieldFactsIn, FieldPageIn, FirstTextIn, GapClsIn, KickerIn, GroupFactsIn, HeadSubIn,
   IdRowFact, IdRowsIn, OccNameOfIn, JobRefreshIn, LmiaFeasibleFact, LmiaFeasibleIn, LoadCompanyJobsIn, LoadFn,
@@ -240,22 +240,6 @@ export function clsDepthOf(field: string): number {
     return CLS_DEPTH_BROAD
   }
   return CLS_DEPTH_NONE
-}
-
-/**
- * 省里点名不受理的那条职业叫什么(E6-09:省里逐条点名「这些职业的 AIP 背书不受理」
- * —— 与雇主是否指定雇主是两件事,两条都要说)。
- *
- * @param x 点名清单与这一岗的五位码。
- * @returns 职业名;清单里查不到名字就退回五位码(不留空)。
- */
-export function aipBlockedNameOf(x: AipBlockedNameIn): string {
-  for (const o of x.occupations) {
-    if (o.noc === x.noc) {
-      return o.name
-    }
-  }
-  return x.noc
 }
 
 /**
@@ -628,27 +612,6 @@ export function makeLoadNocTrans(x: LoadNocTransIn): () => void {
     x.setStatus(TRANS_LOADING)
     pump().catch(fail)
   }
-}
-
-/**
- * AIP 直判药丸(批A #134 三态直判,空壳修 —— 未命中也要说,是结论不是空)。
- * 省里点名不受理时一律 fail:那是官方明说的「这些岗不受理」,与雇主是不是指定雇主
- * 是两件事,两条都要说。
- *
- * @param x 取词函数、三态直判与省里点名没有。
- * @returns 药丸色档与话。
- */
-export function aipPillOf(x: AipPillIn): AdvisorPillFact {
-  if (x.blocked) {
-    if (x.verdict === AIP_ON) {
-      return { tone: TONE_FAIL, text: x.t('ch.aip.onBlocked') }
-    }
-    return { tone: TONE_FAIL, text: x.t('ch.aip.blocked') }
-  }
-  if (x.verdict === AIP_ON) {
-    return { tone: TONE_OK, text: x.t(K_AIP_HEAD + x.verdict) }
-  }
-  return { tone: TONE_NA, text: x.t(K_AIP_HEAD + x.verdict) }
 }
 
 /**

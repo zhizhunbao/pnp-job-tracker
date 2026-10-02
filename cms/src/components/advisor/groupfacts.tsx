@@ -11,7 +11,7 @@
  * @time 2026-08-28 22:40:00
  */
 import { makeT } from '@/lib/i18n'
-import { CARD_HEAD_CLS, CARD_MD_CLS, FIELD_EE } from './constants'
+import { CARD_HEAD_CLS, CARD_MD_CLS, SELF_CARD_FIELDS } from './constants'
 import { FieldFacts } from './fieldfacts'
 import { cardHeadOf, groupKeysOf } from './functions'
 import type { GroupFactsIn } from './types'
@@ -21,6 +21,7 @@ import type { GroupFactsIn } from './types'
  * EE 的 Frank「拆成三个卡片吧」),所以不给它们再包壳卡 —— 再包一层就是卡中卡;
  * 标题由判定卡自持,#173「每卡必有 title」不破。
  * 2026-09-28 省提名弹框自立(pnp 桶 PnpModal),这里只剩 EE 一节自己拆卡。
+ * 2026-10-01 三弹框统一:AIP 一节也自己拆卡(SELF_CARD_FIELDS),壳卡卡头「AIP」随之没了(Frank「先把这个嵌套删了」)。
  *
  * @param props 铺哪一组与取数包。
  * @returns 这一组的各张卡。
@@ -29,7 +30,7 @@ export function GroupFacts({ group, f }: GroupFactsIn) {
   const t = makeT(f.lang)
   const cards = []
   for (const k of groupKeysOf({ group, f })) {
-    if (k === FIELD_EE) {
+    if (SELF_CARD_FIELDS.includes(k)) {
       cards.push(<FieldFacts key={k} field={k} f={f} />)
       continue
     }

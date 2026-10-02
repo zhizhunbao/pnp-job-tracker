@@ -10,14 +10,17 @@
  * 只剩命中类别的清单卡(本岗高亮);判定卡上的「看全部类别」开关随之没了,未命中的岗这一区不出东西。
  * 同日 Frank「先改这个 EE 类别。加个卡,对比最近走 EE CEC 分和单独走医疗社服的分」:清单卡之上加「最近分数线」卡
  * (本岗类别最近一轮 vs CEC 最近一轮 + 分差),抽选行重新从 props 传进来。
+ * 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」,看过效果图「可以,做吧」):与省提名 / AIP 弹框同一骨架 ——
+ * 顶上加结论卡「本岗能走的通道」(命中的类别一类一张子卡,同省提名那张 PnpChannelCard),类别清单(③ 名单)挪到分数线卡(⑤ 抽选)之前。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
 import { EeCatList } from './eecatlist'
 import { EeCmpCard } from './eecmpcard'
-import { eeCmpOf } from './functions'
+import { eeChannelsOf, eeCmpOf } from './functions'
 import { useEeCategory } from './hooks'
+import { PnpChannelCard } from './pnpchannelcard'
 import type { EeCategorySectionIn } from './types'
 import css from './pnp.module.css'
 
@@ -25,11 +28,12 @@ import css from './pnp.module.css'
  * 渲染联邦 EE 类别区。
  *
  * @param props 本岗、界面语言、扁平类别、抽选行与两个显示开关(逐格注释见 EeCategorySectionIn)。
- * @returns 分数线对比卡 + 命中类别的清单卡;未命中不渲。
+ * @returns 结论卡 + 命中类别的清单卡 + 分数线对比卡;未命中不渲。
  */
 export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], showZh = true }: EeCategorySectionIn) {
   const p = useEeCategory({ job, lang, cats, nocDesc })
   const cmp = eeCmpOf({ t: p.t, lang, cats: p.shown, draws })
+  const channels = eeChannelsOf({ t: p.t, lang, showZh, cats: p.shown })
   const lists = []
   for (const c of p.shown) {
     lists.push(<EeCatList key={c.key}
@@ -45,8 +49,9 @@ export function EeCategorySection({ job, lang, cats, draws = [], nocDesc = [], s
   }
   return (
     <>
-      {cmp != null && <EeCmpCard t={p.t} cmp={cmp} open={p.cmpOpen} toggleOf={p.cmpToggleOf} />}
+      {channels.length > 0 && <PnpChannelCard t={p.t} channels={channels} />}
       {lists.length > 0 && <div className={css.card}>{lists}</div>}
+      {cmp != null && <EeCmpCard t={p.t} cmp={cmp} open={p.cmpOpen} toggleOf={p.cmpToggleOf} />}
     </>
   )
 }

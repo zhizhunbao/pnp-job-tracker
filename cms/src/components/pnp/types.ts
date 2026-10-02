@@ -2428,6 +2428,31 @@ export type PnpListPanel = {
 }
 
 /**
+ * eeChannelsOf 的入参(2026-10-01 三弹框统一)。
+ */
+export type EeChannelsIn = {
+  /**
+   * 界面语取词函数。
+   */
+  t: TFn
+
+  /**
+   * 界面语言。
+   */
+  lang: PnpLang
+
+  /**
+   * 出不出灰字。
+   */
+  showZh: boolean
+
+  /**
+   * 本岗职业命中的 EE 类别。
+   */
+  cats: PnpEeCat[]
+}
+
+/**
  * useEeCategory 的入参。
  */
 export type EeHookIn = {
@@ -3813,6 +3838,11 @@ export type AipSectionOfIn = {
  */
 export type AipSectionSpec = {
   /**
+   * 走不了 AIP 的原因词(2026-10-01 三弹框统一,出「本岗不满足的门槛」卡);'' = 走得了。
+   */
+  block: string
+
+  /**
    * AIP 那条通道(本岗能走才有一条)。
    */
   channels: ChannelSpec[]
@@ -3826,6 +3856,26 @@ export type AipSectionSpec = {
    * AIP 门槛卡(2026-10-01;本岗能走 AIP 才出);null = 不出。
    */
   gate: GateCardSpec | null
+}
+
+/**
+ * aipBlockTextOf 的入参(2026-10-01 三弹框统一)。
+ */
+export type AipBlockTextIn = {
+  /**
+   * 取词函数。
+   */
+  t: TFn
+
+  /**
+   * 本岗(读省码、NOC 与走不了的原因码)。
+   */
+  job: PnpJob
+
+  /**
+   * 职业清单整表(找省里点名 AIP 不受理的那份)。
+   */
+  occ: PnpOcc[]
 }
 
 /**
@@ -5288,6 +5338,11 @@ export type AipSectionIn = {
    * 界面语言。
    */
   lang: PnpLang
+
+  /**
+   * AIP 指定雇主名单(2026-10-01 三弹框统一:名单卡挪进这一块,排在结论卡与门槛卡之间)。
+   */
+  employers: AipEmp[]
 }
 
 /**

@@ -41,6 +41,9 @@
  * 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上加一行本岗雇主在不在本省 AIP 指定雇主名单(aipEmployerCardOf)。
  * 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框吗?」「都做吧」:AIP 抽选卡与通道卡末尾的 AIP 那条搬去 AIP 弹框(AipSection),
  * 这里只讲省提名;抽选卡的公共入参与配额卡收进 drawCtxOf(两个弹框同用,年份与本岗那组不岔),上面那行雇主句随之撤(aipEmployerCardOf 删)。
+ * 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「各个省都检查一下」,看过效果图「可以,做吧」;
+ * 效果图 docs/design/移民弹框统一效果图-20261001.html):省提名 / AIP / EE 同一骨架 ① 结论 → ② 门槛 → ③ 名单 → ④ 配额 → ⑤ 抽选。
+ * 这里通道职业清单从最后挪到门槛卡之后(③),配额与抽选殿后。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
@@ -62,7 +65,7 @@ import type { PnpListSectionIn } from './types'
  * 渲染省提名事实区块。
  *
  * @param props 本岗、界面语言、清单、抽选、动态、两个显示开关与通道对照表(逐格注释见 PnpListSectionIn)。
- * @returns 一组卡片。
+ * @returns 一组卡片(结论 → 门槛 → 职业清单 → 配额 → 抽选)。
  */
 export function PnpListSection({
   job, lang, occ, draws, ops, reqs, nocDesc = [], showZh = true, pathways, qcChannels,
@@ -97,10 +100,10 @@ export function PnpListSection({
       <PnpBlockCard t={p.t} text={p.block} />
       {p.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.channels} />}
       {gate != null && <PnpGateCard spec={gate} />}
+      {cards}
       {quota != null && <PnpQuotaCard spec={quota} />}
       {drawCard != null && <PnpDrawGroups t={p.t} card={drawCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
       {reformCard != null && <PnpDrawGroups t={p.t} card={reformCard} open={p.drawOpen} toggleOf={p.drawToggleOf} />}
-      {cards}
     </>
   )
 }

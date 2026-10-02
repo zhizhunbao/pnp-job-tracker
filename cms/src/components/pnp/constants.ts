@@ -395,6 +395,23 @@ export const PNP_GEN_HEAD = 'pnp.gen.'
 export const PNP_BLOCK_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
 
 /**
+ * 原因码:落在本省不受理清单(数据层 BLOCK_LIST;NB 叠加式不受理 / 排除式省的排除表)。
+ */
+export const PNP_BLOCK_LIST = 'list'
+
+/**
+ * 原因码:职业不在本省收的职业里(数据层 BLOCK_OCC)。
+ */
+export const PNP_BLOCK_OCC = 'occ'
+
+/**
+ * 弹框「本岗不满足的门槛」卡认的原因码(2026-10-01 Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」,看过效果图「可以,做吧」):
+ * 比格子那张(PNP_BLOCK_CODES)多一个清单排除 list —— 线上 NB 不受理清单上的岗点开没有这张卡也没有门槛卡,直接从配额开始。
+ * list 在卡上写「职业不收」(与 occ 同一个词);格子照旧走 pnpExcludedOf,不受这里影响。
+ */
+export const PNP_BLOCK_CARD_CODES = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ', 'list']
+
+/**
  * 原因码词条的键头(拼码取界面词)。
  */
 export const PNP_BLOCK_HEAD = 'pnp.block.'

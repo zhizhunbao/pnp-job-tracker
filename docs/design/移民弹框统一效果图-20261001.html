@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>移民弹框统一</title>
+<style>
+  :root { --bg:#f3f4f6; --card:#fff; --line:#e5e7eb; --ink:#111827; --grey:#6b7280; --soft:#9ca3af; --hl:#dbeafe; --link:#2563eb; --slot:#7c3aed; }
+  body { margin:0; background:var(--bg); font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color:var(--ink); }
+  .intro { max-width:1200px; margin:0 auto; padding:18px 16px 4px; font-size:14px; line-height:1.7; }
+  .intro h1 { font-size:18px; margin:0 0 6px; }
+  .skel { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+  .skel span { background:#ede9fe; color:var(--slot); border-radius:999px; padding:2px 10px; font-size:13px; }
+  .wrap { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; padding:14px 16px 30px; align-items:flex-start; }
+  .col { width:375px; }
+  .cap { font-size:13px; color:var(--grey); margin:0 0 8px; }
+  .phone { width:375px; background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .mhead { padding:12px 16px 10px; border-bottom:1px solid var(--line); }
+  .kicker { font-size:12px; color:var(--grey); }
+  .mtitle { font-size:17px; font-weight:700; margin-top:2px; }
+  .body { padding:12px; display:flex; flex-direction:column; gap:12px; background:#fafafa; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; position:relative; }
+  .slot { position:absolute; right:10px; top:10px; font-size:11px; color:var(--slot); }
+  .hd { display:flex; align-items:baseline; gap:6px; margin:0 0 8px; font-size:15px; font-weight:700; }
+  .hd small { font-weight:400; color:var(--soft); font-size:12px; }
+  .src { font-size:12px; color:var(--link); font-weight:400; margin-left:auto; margin-right:44px; }
+  .sub { border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin-top:6px; }
+  .sub .en { font-size:14px; }
+  .sub .zh { font-size:12px; color:var(--soft); margin-top:1px; }
+  .reason { font-size:15px; }
+  .kv { display:grid; grid-template-columns:72px 1fr; gap:4px 10px; font-size:13px; }
+  .kv .k { color:var(--grey); }
+  .sec { font-size:12px; color:var(--grey); margin:10px 0 4px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; color:var(--grey); font-weight:500; padding:5px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:6px 6px; border-bottom:1px solid #f1f2f4; vertical-align:top; }
+  td .zh { color:var(--soft); font-size:12px; }
+  td.code, td.legal { color:var(--grey); }
+  td.num { text-align:right; white-space:nowrap; }
+  tr.me td { background:var(--hl); }
+  tr.grp td { font-weight:600; background:#f9fafb; }
+  tr.grp td .zh { font-weight:400; }
+  .foot { font-size:12px; color:var(--grey); margin-top:8px; }
+  .more { text-align:center; color:var(--link); font-size:13px; padding-top:8px; }
+  .line { font-size:14px; }
+  .notes { max-width:900px; margin:0 auto 40px; padding:0 16px; font-size:14px; line-height:1.75; }
+  .notes h2 { font-size:16px; margin:18px 0 6px; }
+  .fix { color:#b45309; }
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>三个移民弹框(省提名 / AIP / EE)统一骨架</h1>
+  所有省、三个弹框同一顺序,没有的那项不出:
+  <div class="skel"><span>① 结论</span><span>② 申请门槛</span><span>③ 名单</span><span>④ 配额</span><span>⑤ 抽选</span></div>
+  右上角紫字标的是位置号(只在效果图里,上线不显示)。数据全是线上真实值。
+</div>
+
+<div class="wrap">
+
+<!-- ============ NS PNP 能走 ============ -->
+<div class="col">
+  <p class="cap">1. 新斯科舍 省提名(能走)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">新斯科舍省提名(PNP)</div><div class="mtitle">cook</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">Skilled Worker stream</div><div class="zh">NS 技术工人</div></div></div>
+      <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+        <div class="kv"><div class="k">雇主 offer</div><div>全职<br>不收兼职、临时工、季节工、定期合同</div>
+        <div class="k">雇主条件</div><div>在本省经营满 2 年</div>
+        <div class="k">语言</div><div>英语或法语每项 CLB 5</div>
+        <div class="k">工作经验</div><div>12 个月全职经验(近 5 年内)<br>须与这份工作相关</div>
+        <div class="k">其他</div><div>职业所需执照或注册</div></div></div>
+      <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th></th><th class="num">总数</th><th class="num">已发提名</th></tr></thead>
+        <tbody><tr><td>全省</td><td class="num">2,344</td><td class="num">819</td></tr></tbody></table>
+        <div class="foot">截至 2026-06</div></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>月份</th><th class="num">入选</th></tr></thead><tbody>
+        <tr class="grp"><td colspan="2">NSNP + AIP <span class="zh">每月候选人抽选</span></td></tr>
+        <tr><td>2026-07</td><td class="num">671 人</td></tr>
+        <tr><td>2026-06</td><td class="num">531 人</td></tr>
+        <tr><td>2026-05</td><td class="num">789 人</td></tr></tbody></table>
+        <div class="foot">2026 年 7 轮,共 3,242 人</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NB PNP 不符合 ============ -->
+<div class="col">
+  <p class="cap">2. 新不伦瑞克 省提名(走不了:职业不收)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">新不伦瑞克省提名(PNP)</div><div class="mtitle">food service supervisor</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗不满足的门槛</div>
+        <div class="reason">职业不收</div></div>
+      <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+        <div class="kv"><div class="k">雇主 offer</div><div>全职<br>不收兼职、季节工</div>
+        <div class="k">雇主条件</div><div>在本省经营满 24 个月</div>
+        <div class="k">…</div><div>(同 NB 技术工人现有门槛)</div></div></div>
+      <div class="card"><span class="slot">③</span><div class="hd">NB 餐饮住宿不符合<small>13 个职业</small></div>
+        <table><thead><tr><th>NOC</th><th>职业</th></tr></thead><tbody>
+        <tr class="me"><td class="code">62020</td><td>Food service supervisors<div class="zh">餐饮服务主管</div></td></tr>
+        <tr><td class="code">60030</td><td>Restaurant and food service managers<div class="zh">餐厅和餐饮服务经理</div></td></tr>
+        <tr><td class="code">62200</td><td>Chefs<div class="zh">厨师</div></td></tr></tbody></table>
+        <div class="more">展开其他 10 个</div></div>
+      <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th></th><th class="num">已发邀请</th></tr></thead>
+        <tbody><tr><td>全省</td><td class="num">3,538</td></tr></tbody></table>
+        <div class="foot">截至 2026-09-18</div></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>通道</th><th class="num">最近</th><th class="num">邀请</th></tr></thead><tbody>
+        <tr><td>NB Skilled Worker<div class="zh">NB 技术工人</div></td><td class="num">09-18</td><td class="num">8 轮 1,764</td></tr>
+        <tr><td>NB Express Entry<div class="zh">NB 快速通道</div></td><td class="num">09-17</td><td class="num">8 轮 553</td></tr>
+        <tr><td>NB Strategic Initiative<div class="zh">NB 法语专项</div></td><td class="num">09-11</td><td class="num">7 轮 1,221</td></tr></tbody></table>
+        <div class="foot">2026 年 23 轮,共 3,538 份邀请</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SK PNP ============ -->
+<div class="col">
+  <p class="cap">3. 萨斯喀彻温 省提名(不抽选的通道)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">萨斯喀彻温省提名(PNP)</div><div class="mtitle">Web site developer</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">Innovation and Tech Talent Pathway</div><div class="zh">SK 科技</div></div></div>
+      <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+        <div class="kv"><div class="k">雇主 offer</div><div>全职<br>不收兼职、临时工、季节工、定期合同</div>
+        <div class="k">语言</div><div>英语或法语每项 CLB 5</div>
+        <div class="k">…</div><div>(其余照旧)</div></div></div>
+      <div class="card"><span class="slot">③</span><div class="hd">SK 科技<small>32 个职业</small></div>
+        <table><thead><tr><th>NOC</th><th>职业</th></tr></thead><tbody>
+        <tr class="me"><td class="code">21234</td><td>Web developers and programmers<div class="zh">网页开发人员和程序员</div></td></tr>
+        <tr><td class="code">20012</td><td>Computer and information systems managers<div class="zh">计算机和信息系统经理</div></td></tr>
+        <tr><td class="code">21211</td><td>Data scientists<div class="zh">数据科学家</div></td></tr></tbody></table>
+        <div class="more">展开其他 29 个</div></div>
+      <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th></th><th class="num">总数</th><th class="num">已发提名</th></tr></thead>
+        <tbody><tr><td>全省</td><td class="num">4,761</td><td class="num">2,628</td></tr></tbody></table>
+        <div class="foot">截至 2026-06</div></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <div class="line">不经抽选</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ QC ============ -->
+<div class="col">
+  <p class="cap">4. 魁北克(改成同一骨架)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">魁北克省技术工人甄选(PSTQ)及 PEQ</div><div class="mtitle">auto body repairer</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">PSTQ – Stream 1: Highly qualified and specialized skills</div><div class="zh">PSTQ 高技能专才通道</div></div>
+        <div class="sub"><div class="en">PSTQ – Stream 3: Regulated professions</div><div class="zh">PSTQ 受监管职业通道</div></div>
+        <div class="sub"><div class="en">PEQ – Travailleurs étrangers temporaires</div><div class="zh">PEQ 临时工分支</div></div></div>
+      <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+        <div class="sec">PSTQ 高技能专才通道</div>
+        <div class="kv"><div class="k">职业档</div><div>TEER 0–2</div>
+        <div class="k">法语</div><div>TEF 口语 400、书面 300 分起</div>
+        <div class="k">工作经验</div><div>近 5 年内至少 12 个月</div></div>
+        <div class="sec">PSTQ 受监管职业通道</div>
+        <div class="kv"><div class="k">适用</div><div>仅限机动车损失评估员</div>
+        <div class="k">执照</div><div>监管机构发的执业许可</div></div>
+        <div class="sec">PEQ 临时工分支</div>
+        <div class="kv"><div class="k">职业档</div><div>TEER 0–3</div>
+        <div class="k">收件期</div><div>2026-07-02 至 2026-10-31</div></div></div>
+      <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th></th><th class="num">总数</th></tr></thead>
+        <tbody><tr><td>全省</td><td class="num">32,600–35,600</td></tr></tbody></table></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>通道</th><th class="num">最低分</th><th class="num">邀请</th></tr></thead><tbody>
+        <tr><td>Stream 1<div class="zh">PSTQ 高技能专才通道</div></td><td class="num">634</td><td class="num">9 轮 5,323</td></tr>
+        <tr><td>Stream 3<div class="zh">PSTQ 受监管职业通道</div></td><td class="num">380</td><td class="num">9 轮 5,204</td></tr>
+        <tr><td>Stream 2<div class="zh">PSTQ 中低技能通道</div></td><td class="num">611</td><td class="num">9 轮</td></tr></tbody></table>
+        <div class="foot">2026 年 36 轮</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ON ============ -->
+<div class="col">
+  <p class="cap">5. 安大略 省提名(有改制前抽选)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">安大略省提名(PNP)</div><div class="mtitle">licensed cook</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">Ontario Workforce Priority stream</div><div class="zh">ON 劳动力优先</div></div></div>
+      <div class="card"><span class="slot">②</span><div class="hd">申请门槛<span class="src">来源 ↗</span></div>
+        <div class="kv"><div class="k">雇主 offer</div><div>全职<br>不收兼职、临时工、季节工、定期合同</div>
+        <div class="k">雇主条件</div><div>在本省经营满 3 年<br>年收入 ≥ $1,000,000(大多伦多)…</div>
+        <div class="k">…</div><div>(其余照旧)</div></div></div>
+      <div class="card"><span class="slot">④</span><div class="hd">2026 年配额<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th></th><th class="num">总数</th><th class="num">已发邀请</th></tr></thead>
+        <tbody><tr><td>全省</td><td class="num">14,119</td><td class="num">13,278</td></tr></tbody></table>
+        <div class="foot">截至 2026-04-30</div></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>通道</th><th class="num">最近</th><th class="num">邀请</th></tr></thead><tbody>
+        <tr><td>Ontario Workforce Priority Stream<div class="zh">ON 劳动力优先</div></td><td class="num">08-04</td><td class="num">暂无邀请</td></tr></tbody></table></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">改制前的抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>通道</th><th class="num">最低分</th><th class="num">邀请</th></tr></thead><tbody>
+        <tr><td>Foreign Worker<div class="zh">雇主 offer:海外工人(已关停)</div></td><td class="num">57</td><td class="num">8 轮 4,905</td></tr>
+        <tr><td>International Student<div class="zh">雇主 offer:国际学生(已关停)</div></td><td class="num">81</td><td class="num">8 轮 4,427</td></tr></tbody></table>
+        <div class="more">展开其他 3 个</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AIP NS ============ -->
+<div class="col">
+  <p class="cap">6. AIP(新斯科舍,DC Ventures / Mary Brown's)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">AIP 指定雇主</div><div class="mtitle">restaurant assistant manager</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">Atlantic Immigration Program</div><div class="zh">AIP</div></div></div>
+      <div class="card"><span class="slot">③</span><div class="hd">本岗雇主<small>新斯科舍省 AIP 指定雇主</small></div>
+        <table><thead><tr><th>招牌</th><th>门店</th><th>法人</th></tr></thead><tbody>
+        <tr class="me"><td>Mary Browns Chicken</td><td>—</td><td class="legal">DC Ventures Inc</td></tr>
+        <tr><td>Mary Browns</td><td>New Minas</td><td class="legal">4207591 Nova Scotia Ltd</td></tr>
+        <tr><td>Mary Browns Chicken</td><td>Greenwood</td><td class="legal">4445465 Nova Scotia Limited</td></tr>
+        <tr><td>Mary Browns</td><td>—</td><td class="legal">MBS Fairview Restaurant Limited</td></tr></tbody></table>
+        <div class="foot">同招牌 4 家加盟商是指定雇主</div>
+        <div class="more">本省全部指定雇主 1574 家 ›</div></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>月份</th><th class="num">入选</th></tr></thead><tbody>
+        <tr class="grp"><td colspan="2">NSNP + AIP <span class="zh">每月候选人抽选</span></td></tr>
+        <tr><td>2026-07</td><td class="num">671 人</td></tr>
+        <tr><td>2026-06</td><td class="num">531 人</td></tr></tbody></table>
+        <div class="foot">2026 年 7 轮,共 3,242 人</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EE ============ -->
+<div class="col">
+  <p class="cap">7. EE(军职类别)</p>
+  <div class="phone">
+    <div class="mhead"><div class="kicker">联邦 EE</div><div class="mtitle">captain</div></div>
+    <div class="body">
+      <div class="card"><span class="slot">①</span><div class="hd">本岗能走的通道</div>
+        <div class="sub"><div class="en">Canadian Armed Forces occupations</div><div class="zh">军职类别抽选</div></div>
+        <div class="sub"><div class="en">Canadian Experience Class</div><div class="zh">CEC 经验类</div></div></div>
+      <div class="card"><span class="slot">③</span><div class="hd">军职<small>3 个职业</small></div>
+        <table><thead><tr><th>NOC</th><th>职业</th><th>TEER</th></tr></thead><tbody>
+        <tr class="me"><td class="code">40042</td><td>Commissioned officers of the Canadian Armed Forces<div class="zh">加拿大武装部队委任军官</div></td><td>0</td></tr>
+        <tr><td class="code">42102</td><td>Specialized members of the Canadian Armed Forces<div class="zh">加拿大武装部队专业人员</div></td><td>2</td></tr>
+        <tr><td class="code">43204</td><td>Operations Members of the Canadian Armed Forces<div class="zh">加拿大武装部队作战成员</div></td><td>3</td></tr></tbody></table></div>
+      <div class="card"><span class="slot">⑤</span><div class="hd">抽选<span class="src">来源 ↗</span></div>
+        <table><thead><tr><th>类别</th><th class="num">最低分</th><th class="num">最近</th></tr></thead><tbody>
+        <tr class="me"><td>军职</td><td class="num">368</td><td class="num">07-23 1 轮</td></tr>
+        <tr><td>CEC 经验类</td><td class="num">518</td><td class="num">09-29 12 轮</td></tr>
+        <tr><td>法语</td><td class="num">382</td><td class="num">08-19 12 轮</td></tr></tbody></table>
+        <div class="foot">军职比 CEC 经验类低 150 分</div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="notes">
+  <h2>统一规则</h2>
+  <ol>
+    <li><b>顺序固定</b>:① 结论 → ② 申请门槛 → ③ 名单 → ④ 配额 → ⑤ 抽选;没有的不出。</li>
+    <li><b>① 结论</b>:能走 =「本岗能走的通道」,一条通道一张子卡(英文官方名 + 中文灰字);走不了 =「本岗不满足的门槛」,只写原因词(兼职 / 定期合同 / 季节工 / 临时工 / 职业不收 / 工资低于中位)。三个弹框都有;<span class="fix">EE 新增,QC 新增</span>。</li>
+    <li><b>② 申请门槛</b>:标题统一「申请门槛」(原「本岗通道的门槛」);走不了的岗也照样显示。多条通道(QC)在一张卡里按通道分小节,不再一通道一张卡。</li>
+    <li><b>③ 名单</b>:职业清单 / 指定雇主 / EE 类别清单,一律表格,本岗那一行高亮置顶,其余折叠「展开其他 N 个」。<span class="fix">省提名的清单从最后挪到这里</span>;EE 的类别清单从第二挪到这里。</li>
+    <li><b>④ 配额</b>:照旧。</li>
+    <li><b>⑤ 抽选</b>:标题统一「抽选」(原「本省抽选」「AIP 抽选」「最近分数线」);一律表格。不抽选的只写一行「不经抽选」;<span class="fix">删掉「省提名与 AIP 同池选取…」「不设分数线,按本省劳动力需求…」「持雇主 offer 直接递申请…」这类说明句</span>。ON 的「改制前的抽选」作为第二张抽选卡放最后。</li>
+  </ol>
+  <h2>顺带修的</h2>
+  <ul>
+    <li><span class="fix">NB 走不了的岗缺「本岗不满足的门槛」和门槛卡</span>(线上实测 food service supervisor:直接从配额开始)—— 补上。</li>
+    <li>AIP:删判定卡;指定雇主只列本岗雇主 + 同招牌几家,全省名单跳雇主板;职位板不再预载 3863 家。</li>
+  </ul>
+  <h2>不在这批</h2>
+  <ul>
+    <li>育空、西北地区职位板 PNP 列是空的(弹框打不开),是数据层没接,另开。</li>
+    <li>职位板 AIP 列的加盟店标签(「部分门店」),等你定用词。</li>
+  </ul>
+</div>
+</body>
+</html>

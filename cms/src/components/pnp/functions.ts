@@ -39,7 +39,8 @@ import {
   BASIS_TENURE,
   BASIS_VALUE_CODE, BASIS_WINDOW, BASIS_WINDOW_YEARS, GATE_AREA_HEAD, GATE_COND_GRAD, GATE_COND_LOCAL,
   GATE_COND_OTHER_PROV, BASIS_PROV_GRADUATE, BASIS_FISCAL, GATE_EMP_FISCAL_KEY,
-  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_HEAD, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
+  GATE_REVENUE_AREA_KEY, GATE_STAFF_AREA_KEY, PNP_BLOCK_CODES, PNP_BLOCK_CARD_CODES, PNP_BLOCK_HEAD, PNP_BLOCK_LIST,
+  PNP_BLOCK_OCC, GATE_EMP_MONTHS_KEY, GATE_EMP_YEARS_KEY,
   GATE_F, GATE_FORM_HEAD, GATE_FORM_ORDER, GATE_OP_GE, GATE_ROW, GATE_SUBJECT_EMPLOYER, GATE_UNIT_CLB, GATE_UNIT_MONTHS,
   GATE_UNIT_YEARS, PNP_BLOCK_UNFIT_CODES, PNP_BLOCK_UNFIT_KEY, JOB_NATURE_BLOCKS, CHAN_TAG_HEAD, CHAN_TAG_WARN,
   BASIS_WHERE, BASIS_WHERE_IN_PROV, BASIS_WHERE_ANYWHERE, BASIS_PERMITS, BASIS_PERMIT_SEP, BASIS_NO_IMPLIED, BASIS_PGWP,
@@ -63,7 +64,8 @@ import type {
   SourceLink, SourceLinkIn, OpsPickIn, PnpOps, QuotaCardOfIn, QuotaCardSpec, QuotaRowIn, QuotaRowSpec, QuotaStreamIn,
   MonthRowsIn, RoundRowsIn, AipVerdict, BoxClsIn, CatNameClsIn, ClickFn, DimClsIn, DrawRowIn, DrawRowSpec, DrawRowsIn,
   DrawsClsIn, EeDrawDateRow, CmpGroupIn, CmpHeadClsIn, CmpLineClsIn, CmpScoreClsIn, CmpLineIn, DrawHist, EeCmp,
-  EeCmpGroup, EeCmpIn, EeCmpLine, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc, DrawSubIn,
+  EeCmpGroup, EeCmpIn, EeCmpLine, EeChannelsIn, EeGroupIn, HistAtIn, InvTextIn, PnpDrawGroupsOfIn, PnpEeCatOcc,
+  DrawSubIn,
   AsOfLinesIn, ColAsOfIn, SelectionLabelIn, EeHitIn, FedLabelIn, FoldLabelIn, HasProvDrawsIn, HiddenCountIn, HitClsIn,
   HitRefFn, HitRefIn, LevelClsIn, LevelTextIn, FactKeyIn, LocalTitleIn, MatchResultIn, MmCellSpec, MmNocCellIn,
   MmNocListCellIn, MmProvCellIn, MmProvListCellIn, MmRowOfIn, MmRowSpec, MmRowsIn, MmRuleIn, MmSalaryTextIn,
@@ -78,7 +80,8 @@ import type {
   CardYearIn, DrawLinesIn, EmptyCardIn, FootLinesIn, GroupsCardIn, LineCardIn, NoDrawReqIn, ReformSplitIn,
   ReformSplitOut, RoundsTextIn, YearDrawsIn, YtdCountIn, YtdPickIn, CountKeyIn, GroupTotalIn,
   ChannelListIn, ChannelTag, ChannelTagsIn, EmployerHitIn, ExtraFitsIn, JobDecidedIn, ListedIn,
-  AipSectionOfIn, AipSectionSpec, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn, ChannelHitIn, PickSetIn,
+  AipSectionOfIn, AipSectionSpec, AipBlockTextIn, DrawCtxIn, DrawCtx, AipGateCardIn, AipRowOfIn, AipTierHitIn,
+  ChannelHitIn, PickSetIn,
   LocalNameIn, PathwayChannelIn, StatusLinesIn,
   BandRowIn, GateWho, LangTierLineIn, NamedLangIn, NamedLangOut, ProvGateCardsIn, ProvStreamCardIn, ProvStreamRowsIn,
   AipEmpEntry, AipEmpHiddenIn, AipEmpHitIn, AipEmpListIn, AipEmpRowSpec, AipEmpRowsIn, ExpScopeIn,
@@ -1177,6 +1180,28 @@ export function localTitleOf(x: LocalTitleIn): string {
 }
 
 /**
+ * EE 弹框结论卡「本岗能走的通道」的条目(2026-10-01 三弹框统一):本岗职业命中的 EE 类别一类一条 —— 主文案英文名、界面语言名灰字
+ * (与职位板 EE 列同一套类别名,eeDisplay);英文界面、关了译名或两边同字不出灰字。类别抽选的人的条件(经验、语言)不进这里。
+ *
+ * @param x 取词函数、界面语言、灰字开关与命中的类别。
+ * @returns 条目;没命中给空列。
+ */
+export function eeChannelsOf(x: EeChannelsIn): ChannelSpec[] {
+  const tEn = makeT(LANG_EN)
+  const out: ChannelSpec[] = []
+  for (const c of x.cats) {
+    const name = eeDisplay({ t: tEn, label: c.label })
+    let sub = TEXT_NONE
+    const local = eeDisplay({ t: x.t, label: c.label })
+    if (x.showZh && x.lang !== LANG_EN && local !== name) {
+      sub = local
+    }
+    out.push({ key: c.key, name, sub, tags: [] })
+  }
+  return out
+}
+
+/**
  * 把扁平的 EE 维度表按 label 分组成类别(清单来自 DB 维度表 ee-categories,全国单一源)。
  *
  * @param x EE 类别的扁平清单。
@@ -1420,6 +1445,8 @@ export function hitStreamsOf(x: HitStreamsIn): string[] {
  * 门槛卡按哪条通道出:本岗走得了就是本岗那条(pnpChannelOf);走不了且有要显示的原因(兼职、工资低于中位……,
  * pnpBlockOf 那几个码)就出本省省默认通道的门槛 —— 「本岗不满足的门槛」卡写原因,门槛卡紧接着列这条路要什么,原因与门槛对得上
  * (2026-09-29 Frank「sk 省 没显示 门槛卡片啊」「都接上,开工吧」)。清单排除与没有原因的岗照旧不出。
+ * 2026-10-01 三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):清单排除(list)也出 —— 原因码表换弹框那张
+ * (PNP_BLOCK_CARD_CODES),与「本岗不满足的门槛」卡同一个判据。
  *
  * @param x 本岗与通道对照整表。
  * @returns 那一行;没有给 null。
@@ -1429,7 +1456,7 @@ export function gateChannelOf(x: PnpChannelOfIn): PnpPathway | null {
   if (own != null) {
     return own
   }
-  if (PNP_BLOCK_CODES.includes(x.job.pnpBlock) === false) {
+  if (PNP_BLOCK_CARD_CODES.includes(x.job.pnpBlock) === false) {
     return null
   }
   for (const p of x.pathways) {
@@ -1711,7 +1738,9 @@ export function preReformCardOf(x: DrawCardOfIn): DrawCard | null {
 /**
  * 「AIP 抽选」卡(2026-09-29 抽选卡重排,Frank「AIP 是不是应该单独的卡」「按你建议」):大西洋四省(AIP 的适用范围)各出一张 ——
  * 这一年有 AIP 的轮次(NB 的 AIP 组、NL 每批拆出来的 AIP 份数)就按组列、卡底写合计(汇装 AIP 那一份);没有轮次交 aipLineCardOf
- * 写一行说明(同池 / 不经抽选 / 今年还没有)。
+ * 写一行说明(不经抽选 / 今年还没有)。
+ * 2026-10-01 三弹框统一(Frank「这个应该 可以 家 展开 收起」「如果是 省提名同池,也列出来」「省提名与 AIP 同池选取,人数含 AIP 这个废话
+ * 也删了」):同池的省(NS)不再写「见本省抽选」,直接列同池那组(aipPoolCardOf)。
  *
  * @param x 同 drawCardOf。
  * @returns 这张卡;不在大西洋四省、或什么都说不出给 null。
@@ -1723,6 +1752,10 @@ export function aipCardOf(x: DrawCardOfIn): DrawCard | null {
   const rows = roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: true }))
   const first = rows[0]
   if (first == null) {
+    const pool = aipPoolCardOf(x)
+    if (pool != null) {
+      return pool
+    }
     return aipLineCardOf(x)
   }
   const groups = pnpDrawGroupsOf({
@@ -1755,18 +1788,50 @@ export function aipCardOf(x: DrawCardOfIn): DrawCard | null {
 }
 
 /**
- * 「AIP 抽选」卡这一年没有 AIP 轮次时写的那一行(2026-09-29 抽选卡重排):本省抽选的轮次是省提名与 AIP 同池(NS)→ 指回本省抽选;
+ * 同池省(NS)的「AIP 抽选」卡(2026-10-01 三弹框统一):这一年没有 AIP 自己的轮次、而本省抽选是省提名与 AIP 同池(program = PNP+AIP)
+ * 时,直接列本省抽选卡那几组(同一份组、合计与出处;NS 那组是按月选取人数,组名「NSNP + AIP」、组里通道名含 AIP,已说明是合池),
+ * 只换标题。
+ *
+ * @param x 同 drawCardOf。
+ * @returns 这张卡;不是同池给 null。
+ */
+function aipPoolCardOf(x: DrawCardOfIn): DrawCard | null {
+  let pooled = false
+  for (const d of roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false }))) {
+    if (d.program === PROGRAM_POOL) {
+      pooled = true
+    }
+  }
+  if (pooled === false) {
+    return null
+  }
+  const card = drawCardOf(x)
+  if (card == null) {
+    return null
+  }
+  return {
+    title: x.t('pnpaip.head'),
+    label: card.label,
+    hits: card.hits,
+    others: card.others,
+    total: card.total,
+    source: card.source,
+    lines: card.lines,
+    foot: card.foot,
+    allKey: card.allKey,
+  }
+}
+
+/**
+ * 「AIP 抽选」卡这一年没有 AIP 轮次时写的那一行(2026-09-29 抽选卡重排):
  * 门槛表有 AIP 的「不经抽选」行(PE:由指定雇主直接递背书申请)→ 写它、挂出处;往年有 AIP 轮次 → 今年还没有;都没有不出卡。
+ * 2026-10-01 同池(NS)那支撤:同池那组改由 aipRowsOf 直接列。
  *
  * @param x 同 drawCardOf。
  * @returns 只有一行说明的卡;说不出给 null。
  */
 function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
   const title = x.t('pnpaip.head')
-  const pnp = roundsOf(yearDrawsOf({ province: x.province, draws: x.draws, year: x.year, aip: false }))
-  if (hasPoolOf(pnp)) {
-    return lineCardOf({ title, lines: [x.t('pnpaip.pool')], source: null, allKey: DRAWS_ALL_KEY })
-  }
   const direct = noDrawReqOf({ reqs: x.reqs, province: x.province, program: PROGRAM_AIP })
   if (direct != null) {
     return lineCardOf({
@@ -1793,29 +1858,53 @@ function aipLineCardOf(x: DrawCardOfIn): DrawCard | null {
  * 抽选卡入参,drawCtxOf)。原卡顶上「本岗雇主是本省 AIP 指定雇主」那一行(09-30 aipEmployerCardOf)不搬:AIP 弹框的判定行与指定雇主清单卡
  * 已经说了。
  * 同日 Frank「AIP 也需要一个 门槛卡片吧」「格式需要 和 pnp 的保持一致吗」「可以,做吧」:多一张门槛卡(aipGateCardOf),本岗能走 AIP 才出。
+ * 同日三弹框统一(Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「这个嵌套删了」「改成这种不行吗」,看过效果图「可以,做吧」):
+ * 判定卡撤,走不了的岗改出「本岗不满足的门槛」卡(block,与省提名弹框同一张卡、同一套原因词),通道不列;门槛卡能走、走不了都出。
  *
  * @param x 取词函数、界面语言、灰字开关、本岗与几张整表。
- * @returns AIP 那条通道(能走才有)、AIP 抽选卡与门槛卡(不出给 null)。
+ * @returns 走不了的原因词、AIP 那条通道(能走才有)、AIP 抽选卡与门槛卡(不出给 null)。
  */
 export function aipSectionOf(x: AipSectionOfIn): AipSectionSpec {
   const ctx = drawCtxOf({
     t: x.t, lang: x.lang, job: x.job, draws: x.draws, ops: x.ops, reqs: x.reqs, pathways: x.pathways, qcChannels: [],
   })
-  const channels = aipChannelsOf({
-    t: x.t,
-    tEn: x.tEn,
-    lang: x.lang,
-    showZh: x.showZh,
-    job: x.job,
-    defaults: pnpDefaultProvsOf(x.pathways),
-    pathways: x.pathways,
-    occ: x.occ,
-  })
+  const block = aipBlockTextOf({ t: x.t, job: x.job, occ: x.occ })
+  let channels: ChannelSpec[] = []
+  if (block === TEXT_NONE) {
+    channels = aipChannelsOf({
+      t: x.t,
+      tEn: x.tEn,
+      lang: x.lang,
+      showZh: x.showZh,
+      job: x.job,
+      defaults: pnpDefaultProvsOf(x.pathways),
+      pathways: x.pathways,
+      occ: x.occ,
+    })
+  }
   let gate: GateCardSpec | null = null
-  if (channels.length > 0) {
+  if (channels.length > 0 || block !== TEXT_NONE) {
     gate = aipGateCardOf({ t: x.t, job: x.job, reqs: x.reqs })
   }
-  return { channels, card: aipCardOf(ctx.dx), gate }
+  return { block, channels, card: aipCardOf(ctx.dx), gate }
+}
+
+/**
+ * AIP 弹框「本岗不满足的门槛」卡的原因词(2026-10-01 三弹框统一):弹框只在雇主是本省指定雇主时打得开,走不了只剩两种 ——
+ * 省里点名这个职业的 AIP 背书不受理(aipBlockOf)写「职业不收」;工作性质卡住(兼职 / 定期合同 / 季节工 / 临时工,AIP 要全职、
+ * 非季节的 offer)写那个工作性质。词与省提名弹框同一套(pnp.block.*)。
+ *
+ * @param x 取词函数、本岗与职业清单整表。
+ * @returns 原因词;走得了给 ''。
+ */
+function aipBlockTextOf(x: AipBlockTextIn): string {
+  if (aipBlockOf(x.job, x.occ) != null) {
+    return x.t(PNP_BLOCK_HEAD + PNP_BLOCK_OCC)
+  }
+  if (JOB_NATURE_BLOCKS.includes(x.job.pnpBlock)) {
+    return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
+  }
+  return TEXT_NONE
 }
 
 /**
@@ -2147,8 +2236,8 @@ function reformSplitOf(x: ReformSplitIn): ReformSplitOut {
 }
 
 /**
- * 本省抽选卡标题下的灰字(2026-09-29 抽选卡重排):官方明说不按分数抽选的省(DRAW_NO_SCORE_PROVS,原在组件里判)、
- * 这一年的轮次是省提名与 AIP 同池(program = PNP+AIP,NS)注明人数含 AIP(Frank「本省抽选的和 等于 年度配额的 已邀请吗」)。
+ * 本省抽选卡标题下的灰字(2026-09-29 抽选卡重排):官方明说不按分数抽选的省(DRAW_NO_SCORE_PROVS,原在组件里判)。
+ * 原还有一行同池注明(NS「省提名与 AIP 同池选取,人数含 AIP」),2026-10-01 Frank「这个废话也删了」撤 —— 组里的通道名已列出 AIP。
  *
  * @param x 取词函数、省码与卡里列的轮次。
  * @returns 灰字(一行一条)。
@@ -2158,25 +2247,7 @@ function drawLinesOf(x: DrawLinesIn): string[] {
   if (DRAW_NO_SCORE_PROVS.has(x.province)) {
     lines.push(x.t('pnpdraws.noScore'))
   }
-  if (hasPoolOf(x.rows)) {
-    lines.push(x.t('pnpdraws.pool'))
-  }
   return lines
-}
-
-/**
- * 这些轮次里有没有省提名与 AIP 同池、官方只发合计的(program = PNP+AIP;2026-09-29 抽选卡重排)。
- *
- * @param rows 轮次。
- * @returns 有 = true。
- */
-function hasPoolOf(rows: PnpDraw[]): boolean {
-  for (const d of rows) {
-    if (d.program === PROGRAM_POOL) {
-      return true
-    }
-  }
-  return false
 }
 
 /**
@@ -5367,6 +5438,23 @@ export function pnpBlockCellOf(x: PnpBlockIn): string {
 export function pnpBlockOf(x: PnpBlockIn): string {
   if (PNP_BLOCK_CODES.includes(x.job.pnpBlock) === false) {
     return TEXT_NONE
+  }
+  return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
+}
+
+/**
+ * 弹框「本岗不满足的门槛」卡上的原因词(2026-10-01 三弹框统一,Frank「统一一下 ee pnp aip 弹框的顺序 和 格式」「可以,做吧」):
+ * 比 pnpBlockOf 多认清单排除(list),写「职业不收」—— 线上 NB 不受理清单上的岗点开既没有这张卡也没有门槛卡。格子与胶囊不走这里。
+ *
+ * @param x 本岗与取词函数。
+ * @returns 原因词;走得了或码不在弹框表里给 ''。
+ */
+export function pnpBlockCardOf(x: PnpBlockIn): string {
+  if (PNP_BLOCK_CARD_CODES.includes(x.job.pnpBlock) === false) {
+    return TEXT_NONE
+  }
+  if (x.job.pnpBlock === PNP_BLOCK_LIST) {
+    return x.t(PNP_BLOCK_HEAD + PNP_BLOCK_OCC)
   }
   return x.t(PNP_BLOCK_HEAD + x.job.pnpBlock)
 }

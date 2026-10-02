@@ -700,7 +700,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.groupTotalMin': 'at least {count}',
   'pnpdraws.invOne': '{n} invitation',
   'pnpdraws.below': 'Fewer than {n} invitations',
-  'pnpdraws.pool': 'Selected from one pool shared with AIP; counts include AIP',
   'pnpdraws.direct': 'Apply directly with an employer job offer; no draws',
   'pnpdraws.none': 'No draws yet in {year}',
   'pnpdraws.foot': '{year}: {rounds}, {count}',
@@ -708,7 +707,6 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'pnpdraws.footRounds': '{year}: {rounds}',
   'pnpreform.head': 'Draws before the reform',
   'pnpaip.head': 'AIP draws',
-  'pnpaip.pool': 'Selected from the same pool as provincial nominees; counts are under provincial draws',
   'pnpaip.direct': 'The designated employer applies for endorsement directly; no draws',
   // 2026-09-26 PNP modal: streams-for-this-job card, featured draw group, Ontario status and Nova Scotia monthly selection cards
   // 2026-09-26 late (Frank: the featured group should look like the rows below): featured group renders as a plain group row; latest / people / apps / rounds90 and the three totals removed
@@ -794,7 +792,7 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'act.ai': 'AI-organized', 'act.aiNote': 'rearranged from the posting, nothing added', 'act.aiQuota': 'Daily AI quota used up — resets tomorrow', 'act.aiQuotaLogin': 'Sign in for more daily uses', 'act.fmtTab': 'Organized', 'act.origTab': 'Original', 'act.viewOrig': 'View original', 'act.backFmt': 'Back to summary', 'act.aiWorking': 'AI organizing, showing original…', 'act.aiFail': 'AI organizing failed',
   'act.f.role': 'Duties', 'act.f.reqs': 'Hard requirements', 'act.f.pay': 'Pay & benefits', 'act.f.hours': 'Work format', 'act.f.loc': 'Work location', 'act.f.apply': 'How to apply', 'act.f.none': 'Not mentioned in posting',
   // 2026-09-27 dates become their own JD section (line labels reuse col.datePosted / detail.closes)
-  'act.f.dates': 'Dates',
+  // 2026-10-01 dates section withdrawn, back to the line under the job title (act.f.dates removed)
   'co.f.what': 'What it does', 'co.f.base': 'Based in', 'co.f.size': 'Size', 'co.f.founded': 'Founded', 'co.f.note': 'Worth knowing',
   'co.f.offices': 'Other offices', 'co.f.newcomers': 'Newcomers and foreign workers', 'co.f.benefits': 'Benefits and hiring',
   'fact.aiIntro': 'AI-researched (not company-authored)', 'fact.aiWorking': 'AI researching…', 'fact.aiSite': 'found by AI search, not from our directory',
@@ -907,10 +905,8 @@ export const jobsEn: Record<keyof typeof jobsZh, string> = {
   'eefed.cat': 'category',
   'ch.pnp.on': 'Eligible: {label}', 'ch.pnp.generic': 'Eligible via employer job offer', 'ch.pnp.ex': 'On exclusion list', 'ch.pnp.no': 'Not eligible (excluded or unclassified)', 'ch.pnp.qc': 'QC has its own system',
   'ch.ee.on': 'Category draws: {cats}', 'ch.ee.more': '{first} +{n}', 'ch.ee.gen': 'CEC general draws (high cut-off)', 'ch.ee.no': 'Not eligible (TEER {teer})',
-  'ch.aip.on': 'Eligible (designated employer)', 'ch.aip.miss': 'Not eligible (not designated)', 'ch.aip.na': 'Not eligible (Atlantic only)',
   'ch.pilot.on': 'In a participating community', 'ch.pilot.na': 'Not in a pilot community', 'fact.pilotGate': 'Community-driven pilots; employers must be designated by the community first. A hit is not an eligibility decision', 'fact.pilotEmp': 'On this community’s official designated employer list', 'fact.pilotOccYes': 'On this community’s current occupation list', 'fact.pilotOccNo': 'Not on this community’s current occupation list',
-  'ch.pnp.exl': 'Not eligible — on the {label} list', 'ch.aip.blocked': 'Not eligible — province not accepting this occupation', 'ch.aip.onBlocked': 'Employer designated, but this occupation is not accepted',
-  'fact.aipBlockedHit': 'This occupation, {name}, is on that list　NOC {noc}',
+  'ch.pnp.exl': 'Not eligible — on the {label} list',
   'sal.cardPosted': 'Posted salary', 'sal.cardEsdc': 'ESDC wage table (occupation, province)', 'sal.esdcMed': 'ESDC median',
   'sal.hrCol': 'Hourly',
   'sal.low': 'Low', 'sal.med': 'Median', 'sal.high': 'High', 'sal.above': '{p}% above median', 'sal.below': '{p}% below median',

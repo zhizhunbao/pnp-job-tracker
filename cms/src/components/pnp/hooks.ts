@@ -25,7 +25,7 @@ import {
   AIP_EMP_OPEN_KEY, LANG_EN, PICK_NONE, PROV_QC, TITLE_TRANS_GEN, TRACK_MODAL_PNP, TRACK_P_FIELD,
 } from './constants'
 import {
-  channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockOf,
+  channelListOf, drawOpenInitOf, eeGroupOf, eeHitOf, makeToggleOf, pnpBlockCardOf,
   matchResultOf, nocRowsOf, pnpMatchOf, scrollIntoHit,
   makeLoadPnpData, makeLoadQcChannels, pnpDataOf, pnpDefaultProvsOf, provGateCardsOf, qcChannelsOf,
   aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, aipSectionOf, channelSplitOf, makePickOf,
@@ -88,7 +88,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
     channels: channelListOf({
       t, tEn, lang: x.lang, showZh: x.showZh, job: x.job, defaults, pathways: x.pathways, occ: x.occ,
     }),
-    block: pnpBlockOf({ job: x.job, t }),
+    block: pnpBlockCardOf({ job: x.job, t }),
   }
 }
 

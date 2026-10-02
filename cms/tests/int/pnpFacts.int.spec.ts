@@ -31,7 +31,7 @@ import { describe, expect, it } from 'vitest'
 import {
   allGroupsLabelOf, channelListOf, channelsOf, drawCardOf, drawHitStreamsOf, drawsFormOf, hasProvDraws, monthRowsOf,
   aipCardOf, aipChannelsOf, aipGateCardOf, aipSectionOf, drawCtxOf, cardYearOf, channelHitOf, channelSplitOf, makePickOf, pnpKickerOf, preReformCardOf,
-  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
+  quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
   aipEmpHiddenOf, aipEmpListOf, aipEmpRowsOf, normName,
@@ -416,7 +416,11 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(sec(on).channels.map((c) => c.key)).toEqual(['aip'])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).channels).toEqual([])
     expect(sec(job({ province: 'NB', teer: 2, aip: false })).card).toEqual(sec(on).card)
-    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ channels: [], card: null, gate: null })
+    expect(sec(job({ province: 'AB', teer: 2, aip: true }))).toEqual({ block: '', channels: [], card: null, gate: null })
+    // 2026-10-01 三弹框统一:走不了的岗出「本岗不满足的门槛」卡(block),通道不列,门槛卡照出 —— 工作性质卡住写那个性质
+    const part = sec(job({ province: 'NB', teer: 2, aip: true, pnpBlock: 'part' }))
+    expect([part.block, part.channels]).toEqual(['兼职', []])
+    expect(sec(on).block).toBe('')
   })
 
   // 2026-10-01 Frank「AIP 也需要一个 门槛卡片吧」「可以,做吧」:与省提名门槛卡同形同行名,按本岗 TEER 挑档;金标照 IRCC 原句手推
@@ -825,6 +829,15 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     for (const c of ['', 'list', 'zzz']) {
       expect(pnpBlockOf({ job: { pnpBlock: c }, t: zh })).toBe('')
     }
+    // 2026-10-01 三弹框统一:弹框卡(pnpBlockCardOf)多认清单排除 list,写「职业不收」;其余码与 pnpBlockOf 逐个相同,空码与杂码给 ''
+    for (const c of ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']) {
+      expect(pnpBlockCardOf({ job: { pnpBlock: c }, t: zh })).toBe(pnpBlockOf({ job: { pnpBlock: c }, t: zh }))
+    }
+    expect(pnpBlockCardOf({ job: { pnpBlock: 'list' }, t: zh })).toBe('职业不收')
+    expect(pnpBlockCardOf({ job: { pnpBlock: 'list' }, t: en })).toBe(pnpBlockOf({ job: { pnpBlock: 'occ' }, t: en }))
+    for (const c of ['', 'zzz']) {
+      expect(pnpBlockCardOf({ job: { pnpBlock: c }, t: zh })).toBe('')
+    }
     // 2026-09-30 Frank「兼职 这种都改成不符合 可以吗」(选「五个都改」):格子与胶囊上工作性质四个与工资那个写「不符合」,职业不收照写;
     // 弹框卡(pnpBlockOf)照旧写具体原因(上面几条不变)
     const codes = ['part', 'term', 'seasonal', 'casual', 'wage', 'occ']
@@ -855,7 +868,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
   it('门槛卡通用件:走不了的岗按本省省默认通道出;经营年限按月写「个月」;经验近 N 年;积分行', () => {
     const blocked = job({ province: 'ON', noc: '65100', teer: 5, pnpEligible: false, pnpBlock: 'part' })
     expect(gateChannelOf({ job: blocked, pathways: PATHWAYS })?.isDefault).toBe(true)
-    expect(gateChannelOf({ job: { ...blocked, pnpBlock: 'list' }, pathways: PATHWAYS })).toBeNull()
+    // 2026-10-01 三弹框统一:清单排除(list)也出门槛卡(与「本岗不满足的门槛」卡同一个判据)
+    expect(gateChannelOf({ job: { ...blocked, pnpBlock: 'list' }, pathways: PATHWAYS })?.isDefault).toBe(true)
     expect(gateChannelOf({ job: { ...blocked, pnpBlock: '' }, pathways: PATHWAYS })).toBeNull()
     const skReq = (p: Partial<PnpReq>): PnpReq => req({ province: 'SK', stream: 'SK X', url: 'https://www.saskatchewan.ca/x', ...p })
     const skReqs = [
@@ -1058,7 +1072,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     expect(pnpKickerOf({ t: zh, province: 'NL' })).toBe('纽芬兰与拉布拉多省提名(PNP)')
   })
 
-  it('NS:本省抽选头一行注明同池含 AIP、卡底写「N 个月,共 X 人入选」;AIP 卡指回本省抽选', () => {
+  // 2026-10-01 三弹框统一(Frank「省提名与 AIP 同池选取,人数含 AIP 这个废话也删了」「如果是 省提名同池,也列出来」):两句同池说明撤,AIP 卡直接列同池那组
+  it('NS:本省抽选卡底写「N 个月,共 X 人入选」、不再写同池说明;AIP 卡直接列同池那组,卡底同一个数', () => {
     const month = (drawDate: string, invitations: number) => draw({
       province: 'NS', label: 'NSNP + AIP', stream: 'Monthly EOI selections', drawDate, score: null, invitations,
       program: 'PNP+AIP', unit: 'selection',
@@ -1067,11 +1082,13 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
     const ops = [ytd({ province: 'NS', metric: 'selections_ytd', value: 1202, asOf: '2026-07' })]
     const dx = { hitStreams: [], genDraw: genDrawOf({ province: 'NS', pathways: PATHWAYS }), ops, reqs: [], year: '2026' }
     const card = drawCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, ...dx })
-    expect(card?.lines).toEqual(['省提名与 AIP 同池选取,人数含 AIP'])
+    expect(card?.lines).toEqual([])
     expect(card?.foot).toEqual(['2026 年 2 个月,共 1,202 人入选'])
     expect(drawCardOf({ t: en, lang: 'en', province: 'NS', draws: ns, ...dx })?.foot).toEqual(['2026: 2 months, 1,202 selected'])
     const aip = aipCardOf({ t: zh, lang: 'zh', province: 'NS', draws: ns, ...dx })
-    expect([aip?.title, aip?.lines, aip?.total, aip?.source]).toEqual(['AIP 抽选', ['与省提名同池选取,人数见本省抽选'], 0, null])
+    expect([aip?.title, aip?.lines]).toEqual(['AIP 抽选', []])
+    expect([...(aip?.hits ?? []), ...(aip?.others ?? [])].map((g) => g.key)).toEqual([...(card?.hits ?? []), ...(card?.others ?? [])].map((g) => g.key))
+    expect(aip?.foot).toEqual(card?.foot)
   })
 
   it('没有抽选的也出卡写明:SK「持雇主 offer 直接递申请」、PE 的 AIP「由指定雇主直接递背书申请」,都挂出处;说不出才不出卡', () => {

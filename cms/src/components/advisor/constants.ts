@@ -306,11 +306,6 @@ export const ROW_KEY_BROAD = 'broad'
 export const ROW_KEY_OCC = 'occ'
 
 /**
- * AIP 直判的「命中」档(雇主在指定雇主名录里)。
- */
-export const AIP_ON = 'on'
-
-/**
  * 试点社区职业清单的「在清单内」档(RCIP 制度要求 offer 职业在清单内,官方清单为据)。
  */
 export const PILOT_OCC_YES = 'yes'
@@ -329,11 +324,6 @@ export const WAGE_LOW = 'low'
  * 直判药丸的「可以」档色。
  */
 export const TONE_OK = 'ok'
-
-/**
- * 直判药丸的「不可以」档色。
- */
-export const TONE_FAIL = 'fail'
 
 /**
  * 直判药丸的「未命中/不适用」档色(灰 —— 未命中不是坏消息,只是这条路不通)。
@@ -390,6 +380,12 @@ export const FIELD_EE = 'ee'
  * 大西洋试点(AIP)字段。
  */
 export const FIELD_AIP = 'aip'
+
+/**
+ * 自己拆多卡、不再包字段壳卡的字段(包了就是卡中卡):EE 一节原样;AIP 2026-10-01 三弹框统一起整块自出结论 / 门槛 / 名单 / 抽选各卡
+ * (Frank「先把这个嵌套删了」—— 壳卡卡头那个「AIP」)。
+ */
+export const SELF_CARD_FIELDS = ['ee', 'aip']
 
 /**
  * 乡村/法语社区试点(RCIP/FCIP)字段。
@@ -599,11 +595,6 @@ export const K_ACC_HEAD = 'acc.'
  * 担保红旗枚举的文案键前缀。
  */
 export const K_ELIG_HEAD = 'cell.elig.'
-
-/**
- * AIP 直判三态的文案键前缀。
- */
-export const K_AIP_HEAD = 'ch.aip.'
 
 /**
  * 埋点:四类弹框打开各记一事件(modal-immigration / company / category / location),

@@ -920,6 +920,11 @@ export type ActHeadIn = {
    * 译名行右端的切换控件(jobs 桶 JdSwitches;2026-09-16 Frank「放到一行」)。
    */
   ctl: React.ReactNode
+
+  /**
+   * 译名行下那行日期(jobs 桶 JobDates,与详情页 H1 下同一件;2026-09-26 立、09-27 撤、10-01 挂回)。
+   */
+  dates: React.ReactNode
 }
 
 /**
@@ -1329,21 +1334,6 @@ export type AipOccFact = {
 }
 
 /**
- * aipBlockedNameOf 的入参。
- */
-export type AipBlockedNameIn = {
-  /**
-   * 省里点名的职业清单。
-   */
-  occupations: AipOccFact[]
-
-  /**
-   * 这一岗的五位码。
-   */
-  noc: string
-}
-
-/**
  * LMIA 前瞻可行性的判词(E8-04:把「历史记录」升级为「今天这条路通不通」)。
  */
 export type LmiaFeasibleFact = {
@@ -1651,26 +1641,6 @@ export type AdvisorPillFact = {
    * 药丸里的话。
    */
   text: string
-}
-
-/**
- * aipPillOf 的入参。
- */
-export type AipPillIn = {
-  /**
-   * 取词函数。
-   */
-  t: AdvisorTFn
-
-  /**
-   * 三态直判(命中 / 在大西洋省但未命中 / 不适用)。
-   */
-  verdict: string
-
-  /**
-   * 省里点名不受理没有。
-   */
-  blocked: boolean
 }
 
 /**

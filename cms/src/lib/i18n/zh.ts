@@ -737,7 +737,6 @@ export const jobsZh = {
   'pnpdraws.groupTotalMin': '至少 {count}',
   'pnpdraws.invOne': '{n} 份邀请',
   'pnpdraws.below': '少于 {n} 份邀请',
-  'pnpdraws.pool': '省提名与 AIP 同池选取,人数含 AIP',
   'pnpdraws.direct': '持雇主 offer 直接递申请,不经抽选',
   'pnpdraws.none': '{year} 年还没有抽选',
   'pnpdraws.foot': '{year} 年 {rounds},共 {count}',
@@ -745,7 +744,6 @@ export const jobsZh = {
   'pnpdraws.footRounds': '{year} 年 {rounds}',
   'pnpreform.head': '改制前的抽选',
   'pnpaip.head': 'AIP 抽选',
-  'pnpaip.pool': '与省提名同池选取,人数见本省抽选',
   'pnpaip.direct': '由指定雇主直接为候选人递背书申请,不经抽选',
   // 2026-09-30 Frank「这个是一般雇主是不给你办的吧」(选「加」):AIP 卡顶上一行,本岗雇主在不在本省 AIP 指定雇主名单(判定同职位板 AIP 列)
   // 2026-10-01 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:AIP 卡搬去 AIP 弹框,这一行不搬(判定行与指定雇主清单卡已说),词条 pnpaip.employerOn 撤
@@ -846,7 +844,7 @@ export const jobsZh = {
   'act.ai': 'AI 整理', 'act.aiNote': '只搬运原帖信息,未添加', 'act.aiQuota': '今日 AI 次数已用完', 'act.aiQuotaLogin': '请登录', 'act.fmtTab': '整理版', 'act.origTab': '原文', 'act.viewOrig': '查看原帖', 'act.backFmt': '返回整理版', 'act.aiWorking': 'AI 整理中，先看原文…', 'act.aiFail': 'AI 整理没成功',
   'act.f.role': '工作内容', 'act.f.reqs': '硬性要求', 'act.f.pay': '薪资福利', 'act.f.hours': '工作形式', 'act.f.loc': '工作地点', 'act.f.apply': '怎么投', 'act.f.none': '原帖未提及',
   // 2026-09-27 Frank「放到 jd 正文部分如何」「格式不对啊 怎么是灰字」→ 看过效果图选 ①:日期改成正文里单独一节(两行标签复用 col.datePosted / detail.closes)
-  'act.f.dates': '日期',
+  // 2026-10-01 Frank「这种有点突兀」「这种也突兀」(没正文 / 整理版 / 原帖三档里那一节都不搭)→ 选「回到职位名下面」:正文里那一节撤,act.f.dates 词条随删
   'co.f.what': '主营业务', 'co.f.base': '所在地', 'co.f.size': '规模', 'co.f.founded': '成立时间', 'co.f.note': '其他要点',   // #158 公司简介分节(2026-07-21 增至五节)
   // 2026-09-20 官网整理记录的后三节(只认官网页面原句)
   'co.f.offices': '其他办公地点', 'co.f.newcomers': '新移民与外籍员工', 'co.f.benefits': '福利与招聘',
@@ -976,10 +974,8 @@ export const jobsZh = {
   'eefed.cat': '职业类别',
   'ch.pnp.on': '能走: {label}', 'ch.pnp.generic': '凭雇主 offer 可提名', 'ch.pnp.ex': '在排除清单,走不了', 'ch.pnp.no': '走不了(排除清单或未分类)', 'ch.pnp.qc': 'QC 走省独立体系',
   'ch.ee.on': '能进类别抽选: {cats}', 'ch.ee.more': '{first} 等 {n} 类', 'ch.ee.gen': '能走 CEC 通用抽选(分数线高)', 'ch.ee.no': '走不了(TEER {teer})',
-  'ch.aip.on': '能走 AIP(雇主在指定名单)', 'ch.aip.miss': '走不了(雇主不在名单)', 'ch.aip.na': '走不了(仅大西洋四省)',
   'ch.pilot.on': '所在社区参与试点', 'ch.pilot.na': '不在试点社区', 'fact.pilotGate': '试点为社区推荐制,雇主须先获社区指定;命中≠资格认定', 'fact.pilotEmp': '雇主在该社区官方指定名单', 'fact.pilotOccYes': '该职业在社区在收清单', 'fact.pilotOccNo': '不在该社区当前在收清单',
-  'ch.pnp.exl': '走不了:本岗在「{label}」内', 'ch.aip.blocked': '走不了:本省不受理本岗职业的背书', 'ch.aip.onBlocked': '雇主在指定名单,但本岗职业本省不受理',
-  'fact.aipBlockedHit': '本岗职业「{name}」在此清单内　NOC {noc}',
+  'ch.pnp.exl': '走不了:本岗在「{label}」内',
   'sal.cardPosted': '帖面薪资', 'sal.cardEsdc': 'ESDC 工资表(本职业,本省)', 'sal.esdcMed': 'ESDC 中位',
   'sal.hrCol': '时薪',
   'sal.low': '低位', 'sal.med': '中位', 'sal.high': '高位', 'sal.above': '比中位高 {p}%', 'sal.below': '比中位低 {p}%',

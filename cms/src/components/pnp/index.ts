@@ -35,11 +35,11 @@
  * 同日 Frank「这个弹框需要列表,然后高亮雇主」:桶门加一名 AipEmpCard(AIP 弹框的指定雇主清单卡,本岗雇主高亮);
  * normName 撤出桶门(唯一外部消费者 advisor 的按名字完全相等命中行随之删,域内照用)。
  * 同日 Frank「PNP 弹框 里面的 AIP 部分 提出来,放到 AIP 弹框」:桶门加一名 AipSection(AIP 弹框的通道卡与 AIP 抽选卡,自省提名弹框搬来)。
+ * 同日三弹框统一:AIP 弹框整块收进 AipSection(判定卡撤、清单卡挪进来),桶门撤 AipEmpCard、aipBlockOf、aipVerdictOf 三名(外部已无消费者)。
  *
  * @author Frank
  * @time 2026-08-28 17:59:16
  */
-export { AipEmpCard } from './aipempcard'
 export { AipSection } from './aipsection'
 export { EeCategorySection } from './eecategorysection'
 export { MeansForMe } from './meansforme'
@@ -50,7 +50,7 @@ export { SponsorLeadCard } from './sponsorleadcard'
 export { STREAM_REFORM } from './constants'
 export { VerdictPill } from './verdictpill'
 export {
-  aipBlockOf, aipVerdictOf, eeIsDormant, eeLastDraw, pnpBlockedKeysOf, pnpCellActiveOf,
+  eeIsDormant, eeLastDraw, pnpBlockedKeysOf, pnpCellActiveOf,
   pnpBlockCellOf, pnpChannelKeyOf, pnpExcludedOf, pnpFactsIndexOf, pnpFactsShownOf, pnpNameOf, qcCellNameOf,
 } from './functions'
 export { usePnpData } from './hooks'
