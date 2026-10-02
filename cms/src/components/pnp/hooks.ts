@@ -101,6 +101,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
  * (类别历史单开一个、职业清单一律默认展开、全类别全景默认收起)。
  * 2026-09-23 判定卡与最近抽选卡撤:历史轮次、全景开关、类别历史折叠随之撤,展示的就是命中类别。
  * 2026-10-01 三弹框统一:职业清单改默认收起(只露本岗那一行,「展开其他 N 个」才全量),折叠态改记展开的(opened)。
+ * 2026-10-02 Frank「EE 这部分默认都展开」:类别清单改回默认展开,折叠态改记收起的(closed)。
  *
  * @param x 本岗、界面语言、扁平类别与职业名字典。
  * @returns 取词函数、ref 盒、字典、命中类别与职业清单的折叠状态。
@@ -108,7 +109,7 @@ export function usePnpList(x: PnpListHookIn): PnpListPanel {
 export function useEeCategory(x: EeHookIn): EePanel {
   const t = makeT(x.lang)
   const matchRef = useRef<HTMLDivElement | null>(null)
-  const [opened, setOpened] = useState<Set<string>>(new Set())
+  const [closed, setClosed] = useState<Set<string>>(new Set())
   const [cmpOpen, setCmpOpen] = useState<Set<string>>(new Set())
 
   const nocRows = useMemo(function dictOf() {
@@ -131,8 +132,8 @@ export function useEeCategory(x: EeHookIn): EePanel {
     grouped,
     hit,
     shown: hit,
-    opened,
-    listToggleOf: makeToggleOf({ setKeys: setOpened }),
+    closed,
+    listToggleOf: makeToggleOf({ setKeys: setClosed }),
     cmpOpen,
     cmpToggleOf: makeToggleOf({ setKeys: setCmpOpen }),
   }
