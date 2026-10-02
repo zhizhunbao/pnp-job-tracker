@@ -81,6 +81,14 @@ CAT_MAP = (
 CAT_HEAD_TAGS = ["h2", "h3", "h4"]
 """表格上方回溯的标题标签(类别名住这三档里)。"""
 
+CAT_NAME_EN_RE = re.compile(r"^Who.s eligible for the (.+?) category$", re.IGNORECASE)
+"""类别表上方标题里的官方类别名(2026-10-02 Frank「可以」:职位页移民相关卡「英文黑字,中文灰字」要官方原名):
+官方标题形如「Who’s eligible for the healthcare and social services occupations category」,中间那段就是官方类别名;
+撇号有直有弯,用 `.` 吃掉。对不上 = 空串,不猜。"""
+
+K_NAME_EN = "nameEn"
+"""类别行的官方英文名键(raw federal-categories.json 与汇装 ee_categories 同名)。"""
+
 TAG_TD = "td"
 """数据格标签名(类别表只读 td)。"""
 

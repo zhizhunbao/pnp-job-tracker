@@ -34,7 +34,7 @@ import {
   quotaCardOf, gateCardOf, drawOpenInitOf, pnpBlockOf, pnpBlockCardOf, pnpBlockCellOf, pnpCellActiveOf, gateChannelOf,
   pnpDrawGroupsOf, pnpFactsIndexOf, pnpFactsShownOf, pnpMatchOf, shownStreamsOf,
   pnpBlockedKeysOf, pnpChannelKeyOf, pnpChannelOf, genDrawOf, quotaKeyOf, pnpDefaultProvsOf, provGateCardsOf,
-  aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
+  aipEmpAliasOf, aipEmpDataOf, aipEmpSpecsOf, aipEmpUrlOf, normName, streamRowsOf,
 } from '@/components/pnp/functions'
 import type {
   GateCardSpec, PnpDraw, PnpFactsIndex, PnpJob, PnpOcc, PnpOps, PnpPathway, PnpReq, PnpStream,
@@ -1485,7 +1485,8 @@ describe('补完整(2026-09-26):抽选卡三种形、本岗那一组、排除卡
 // 与同招牌的几家。这里锁三样:展示行的洗法、接口与链接地址、前端 normName 与数据层比对键在真数据上对得上(两边归一口径不岔)。
 // 同日 Frank「这个怎么改成跳转了啊」「之前设计的 表格呢?」「不是展开收起吗?」「展开如果太多就一次展开 20 个」:回到三列表,卡底跳转换成原地展开 / 收起,一次 20 家。
 describe('AIP 指定雇主清单卡', () => {
-  const row = (trade: string, legal: string, hit = false, store = '') => ({ trade, store, legal, hit })
+  const row = (trade: string, legal: string, hit = false, store = '') =>
+    ({ trade, store, legal, hit, poolKey: '', aliasZh: '', aliasKo: '' })
 
   it('展示行:招牌 / 门店 / 法人三格;门店认不出写长横;本岗那行的高亮照接口给', () => {
     const specs = aipEmpSpecsOf([
@@ -1501,6 +1502,20 @@ describe('AIP 指定雇主清单卡', () => {
     expect(new Set(specs.map((r) => r.key)).size).toBe(3)
     // 同招牌同法人两行(一家法人开几家店)键也不撞
     expect(new Set(aipEmpSpecsOf([row('A&W', 'X Inc'), row('A&W', 'X Inc')]).map((r) => r.key)).size).toBe(2)
+  })
+
+  // 2026-10-02 Frank「这个也要加灰字 和 点击吧」:招牌下的灰字译名按界面语言挑,英文界面不出
+  it('灰字译名:中文界面出中文、韩文界面出韩文、英文界面不出', () => {
+    const specs = aipEmpSpecsOf([
+      { trade: 'Mary Browns', store: '', legal: 'X', hit: false, poolKey: 'mary-browns', aliasZh: '玛丽布朗', aliasKo: '메리 브라운스' },
+    ])
+    expect(specs.length).toBe(1)
+    for (const r of specs) {
+      expect(aipEmpAliasOf({ r, lang: 'zh' })).toBe('玛丽布朗')
+      expect(aipEmpAliasOf({ r, lang: 'ko' })).toBe('메리 브라운스')
+      expect(aipEmpAliasOf({ r, lang: 'en' })).toBe('')
+      expect(r.poolKey).toBe('mary-browns')
+    }
   })
 
   it('接口地址查询串编码(含翻页);没到的数据给空', () => {

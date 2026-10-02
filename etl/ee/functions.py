@@ -29,7 +29,7 @@ from ee.constants import (
     AS_ON_ISO_TPL, AS_ON_RE, DRAWS_PRINT_POOL_TPL, K_AS_ON, K_BANDS, K_COUNT, K_DETAIL, K_POOL,
     K_POOL_AS_ON, K_POOL_TOTAL, K_RANGE, K_TOTAL, POOL_BANDS, POOL_MONTH_NUM,
     BENCHMARK_CLB, BENCHMARK_CLB_PREFIX, BENCHMARK_HEADERS, BENCHMARK_NCLC, BREAKDOWN_WORD,
-    CACHE_MISS_TPL, CAT_HEAD_TAGS, CAT_MAP, CAT_MIN_CELLS, CAT_PRINT_DONE_TPL, CAT_PRINT_EMPTY_TPL,
+    CACHE_MISS_TPL, CAT_HEAD_TAGS, CAT_MAP, CAT_NAME_EN_RE, K_NAME_EN, CAT_MIN_CELLS, CAT_PRINT_DONE_TPL, CAT_PRINT_EMPTY_TPL,
     CAT_PRINT_ROW_TPL, CAT_SOURCE, CAT_TIMEOUT_S, CAT_URL, CELL_TAGS, COMMA, CRS_LETTERS,
     CRS_MIN_ROWS, CRS_NOTE, CRS_PRINT_DONE_TPL, CRS_PROBLEM_TPL, CRS_SOURCE, DRAWS_CAT_MAP,
     DRAWS_OTHER_KEY, DRAWS_OTHER_SEP, DRAWS_PRINT_DONE_TPL, DRAWS_PRINT_OTHER_TPL,
@@ -99,6 +99,15 @@ def classify_category(heading: str) -> CatMatch:
     return CatMatch(key="", label="")
 
 
+def cat_name_en_of(heading: str) -> str:
+    """类别表上方标题 → 官方英文类别名(首字母大写);标题不是那个句式 = 空串(2026-10-02,见 CAT_NAME_EN_RE)。"""
+    m = CAT_NAME_EN_RE.match((heading or "").strip())
+    if not m:
+        return ""
+    name = m.group(1)
+    return name[:1].upper() + name[1:]
+
+
 def cell_texts(tr: SoupNodeLike) -> list:
     """一行 → 各 td 的压平文本。"""
     cells = []
@@ -160,7 +169,8 @@ def cat_buckets_of(soup: SoupNodeLike) -> dict:
             continue
         bucket = cats.get(matched.key)
         if bucket is None:
-            bucket = CatBucket(key=matched.key, label=matched.label, occupations=[], seen=set())
+            bucket = CatBucket(key=matched.key, label=matched.label, name_en=cat_name_en_of(heading), occupations=[],
+                               seen=set())
             cats[matched.key] = bucket
         fill_cat_bucket(BucketFillIn(bucket=bucket, table=table))
     return cats
@@ -177,7 +187,7 @@ def out_categories_of(cats: dict) -> list:
     for c in cats.values():
         if len(c.occupations) == 0:
             continue
-        out.append({K_KEY: c.key, K_LABEL: c.label,
+        out.append({K_KEY: c.key, K_LABEL: c.label, K_NAME_EN: c.name_en,
                     K_OCCUPATIONS: sorted(c.occupations, key=occupation_noc_of)})
     return out
 

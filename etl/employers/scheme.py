@@ -81,6 +81,11 @@ class PoolRow(BaseModel):
     """主区(2026-09-18 Frank「区的字段没有啊」「授权,加区字段」):主省主市的在招岗里出现最多的区;
     岗都没带区、或一处在招都没有 = None(不猜:指定名单与公司维表都不记区)。雇主板「区」可选列读它。"""
 
+    designatedNames: list = field(default_factory=list)
+    """吃进的指定雇主名单原名(逐字;2026-10-02 Frank「这个也要加灰字 和 点击吧」):AIP 弹框指定雇主名单按名单行原名
+    回找雇主池这一行(取译名、开公司弹框)—— 名单行 → 雇主池键的归一挂靠只在本域算,汇装那边没有。
+    DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql(GIN 索引)。非指定 = 空表。"""
+
     designatedPlaces: list = field(default_factory=list)
     """指定资格所在地(2026-09-19 Frank「指定雇主格写明所在地」):「项目|地点」清单 —— AIP 按省给资格(AIP|NB),
     RCIP / FCIP 按社区给(RCIP|Sudbury, ON)。板上只写「AIP、RCIP」、旁边又是在招最多的 Toronto,
@@ -264,6 +269,9 @@ class DesignatedOut:
 
     places: list
     """资格所在地清单(「项目|地点」;地点 = 名单上的社区,没有社区的用省码;去重,按项目与地点排序)。"""
+
+    names: list
+    """名单原名清单(逐字,去重,按名排序;2026-10-02 见 PoolRow.designatedNames)。"""
 
 
 @dataclass

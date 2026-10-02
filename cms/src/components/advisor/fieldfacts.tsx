@@ -47,7 +47,7 @@ import type { FieldFactsIn } from './types'
  * @param props 点开的是哪一格与取数包。
  * @returns 那一块事实;这一格还没接内容时给 null(不留空壳)。
  */
-export function FieldFacts({ field, f }: FieldFactsIn) {
+export function FieldFacts({ field, f, onOpenCompany }: FieldFactsIn) {
   if (field === FIELD_EE) {
     return (
       <EeCategorySection job={f.job} lang={f.lang} cats={f.eeOcc} draws={f.pnpDraws}
@@ -58,7 +58,7 @@ export function FieldFacts({ field, f }: FieldFactsIn) {
     return <TitleFacts job={f.job} lang={f.lang} />
   }
   if (field === FIELD_AIP) {
-    return <AipFacts f={f} />
+    return <AipFacts f={f} onOpenCompany={onOpenCompany} />
   }
   if (field === FIELD_PILOT) {
     return <PilotFacts f={f} />

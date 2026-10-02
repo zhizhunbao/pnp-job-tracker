@@ -22,10 +22,10 @@ import type { JobImmCardIn } from './types'
 /**
  * 渲染移民相关卡。
  *
- * @param props 本岗、服务端事实、界面语言、分层态与本岗职业描述(逐格注释见 JobImmCardIn)。
+ * @param props 本岗、服务端事实、界面语言、分层态、本岗职业描述与点公司名的去处(逐格注释见 JobImmCardIn)。
  * @returns 一张白卡;一行都没有不渲。
  */
-export function JobImmCard({ job, imm, lang, plan, nocDesc }: JobImmCardIn) {
+export function JobImmCard({ job, imm, lang, plan, nocDesc, onOpenCompany }: JobImmCardIn) {
   const t = makeT(lang)
   const rows = immRowsOf({ job, imm, lang, plan })
   const pop = useImmPopup()
@@ -54,6 +54,7 @@ export function JobImmCard({ job, imm, lang, plan, nocDesc }: JobImmCardIn) {
           eeOcc={imm.dims.eeCategories}
           nocDesc={nocDesc}
           fieldSources={imm.dims.fieldSources}
+          onOpenCompany={onOpenCompany}
           onClose={pop.close} />
       )}
     </div>

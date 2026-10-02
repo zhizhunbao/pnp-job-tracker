@@ -6506,6 +6506,31 @@ export type ImmCtxIn = {
 }
 
 /**
+ * immNameEnOf 的入参。
+ */
+export type ImmNameEnIn = {
+  /**
+   * 列键。
+   */
+  k: JobColKey
+
+  /**
+   * 本岗。
+   */
+  job: JobFact
+
+  /**
+   * 英文的格子上下文(EE 类别表在里头)。
+   */
+  cxEn: CellCtx
+
+  /**
+   * 职位板英文那一格的字。
+   */
+  cellEn: string
+}
+
+/**
  * immWageRowOf 的入参。
  */
 export type ImmWageIn = {
@@ -6613,6 +6638,11 @@ export type JobImmCardIn = {
    * 本岗职业的官方描述(弹框里职业名要它)。
    */
   nocDesc: NocDesc[]
+
+  /**
+   * 弹框里点公司名(AIP 指定雇主名单的招牌):往弹框栈上叠开公司弹框。
+   */
+  onOpenCompany: (peek: CompanyPeek) => void
 }
 
 /**

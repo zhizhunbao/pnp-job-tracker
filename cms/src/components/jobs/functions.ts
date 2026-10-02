@@ -88,7 +88,7 @@ import type {
   ShowRelatedIn, SlotIn, SortMarkIn, SortState, StickyOffsetsIn, SubTextIn, TFn, TextFn, ThWidthIn,
   TransLabelIn, TransShownIn, TransStatus, TransStatusShownIn, UpsellReasonIn, UserFilterIn, WantsIn, WidthsKeyIn,
   JobBodyPanel, JobDateCell, JobDatesOfIn,
-  CellCtx, ImmCtxIn, ImmMoneyIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
+  CellCtx, ImmCtxIn, ImmMoneyIn, ImmNameEnIn, PopupState, ImmRow, ImmRowsIn, ImmSignalIn, ImmWageIn, OpenImmIn,
 } from './types'
 import { CACHE } from './variables'
 import css from './jobs.module.css'
@@ -5357,10 +5357,11 @@ function immMoneyOf(x: ImmMoneyIn): string {
  * @returns 这一行;职位板上是长横给 null。
  */
 function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
-  const en = cellViewOf({ k: x.k, j: x.job, cx: x.cxEn }).text
-  if (en === TEXT_NONE || en === DASH) {
+  const cellEn = cellViewOf({ k: x.k, j: x.job, cx: x.cxEn }).text
+  if (cellEn === TEXT_NONE || cellEn === DASH) {
     return null
   }
+  const en = immNameEnOf({ k: x.k, job: x.job, cxEn: x.cxEn, cellEn })
   const local = cellViewOf({ k: x.k, j: x.job, cx: x.cx }).text
   const subs: string[] = []
   if (local !== en) {
@@ -5371,6 +5372,25 @@ function immSignalRowOf(x: ImmSignalIn): ImmRow | null {
     col = x.k
   }
   return { key: x.k, label: x.cx.t(K_COL + x.k), main: en, subs, col }
+}
+
+/**
+ * 信号行的英文主文案:EE 类别用官方英文类别名(ee_categories.name_en,2026-10-02 Frank「可以」加列;库里还没灌就退回职位板英文格),
+ * 其余两列就是职位板英文那一格。
+ *
+ * @param x 列键、本岗、英文格子上下文与职位板英文那一格的字。
+ * @returns 主文案。
+ */
+function immNameEnOf(x: ImmNameEnIn): string {
+  if (x.k !== COL.ee) {
+    return x.cellEn
+  }
+  for (const c of x.cxEn.eeCats) {
+    if (c.label === x.job.eeCategory && c.nameEn !== TEXT_NONE) {
+      return c.nameEn
+    }
+  }
+  return x.cellEn
 }
 
 /**

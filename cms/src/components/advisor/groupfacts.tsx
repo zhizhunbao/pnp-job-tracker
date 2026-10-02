@@ -26,18 +26,18 @@ import type { GroupFactsIn } from './types'
  * @param props 铺哪一组与取数包。
  * @returns 这一组的各张卡。
  */
-export function GroupFacts({ group, f }: GroupFactsIn) {
+export function GroupFacts({ group, f, onOpenCompany }: GroupFactsIn) {
   const t = makeT(f.lang)
   const cards = []
   for (const k of groupKeysOf({ group, f })) {
     if (SELF_CARD_FIELDS.includes(k)) {
-      cards.push(<FieldFacts key={k} field={k} f={f} />)
+      cards.push(<FieldFacts key={k} field={k} f={f} onOpenCompany={onOpenCompany} />)
       continue
     }
     cards.push(
       <div key={k} className={CARD_MD_CLS}>
         <div className={CARD_HEAD_CLS}>{cardHeadOf({ t, field: k })}</div>
-        <FieldFacts field={k} f={f} />
+        <FieldFacts field={k} f={f} onOpenCompany={onOpenCompany} />
       </div>,
     )
   }

@@ -81,7 +81,8 @@ export function Job({ job, plan, dims, related, updatedAt, jdText, jdFormatted, 
           </div>
           <JobBody job={job} lang={d.lang} plan={plan} d={body} />
         </div>
-        <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc} />
+        <JobImmCard job={job} imm={imm} lang={d.lang} plan={plan} nocDesc={dims.nocDesc}
+          onOpenCompany={peek.onOpenCompany} />
         <CompanyInfoCard jobId={Number(job.id)} lang={d.lang} onOpenCompany={peek.onOpenCompany}
           seed={company} />
         {showRelatedOf({ related, fallbackHref: d.view.fallbackHref }) && (

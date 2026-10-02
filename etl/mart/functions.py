@@ -4530,6 +4530,7 @@ def build_ee_language_grid(src: Path) -> list:
 def to_ee_category_row(x: EeCategoryIn) -> dict:
     """ee_categories 表的一行。"""
     return {"category": x.category.get("key", ""), "label": x.category.get("label", ""),
+            "nameEn": x.category.get("nameEn", ""),
             "url": x.table.get("url", ""), "fetched": x.table.get("fetched", ""),
             "noc": x.occupation["noc"], "teer": x.occupation.get("teer"),
             "title": x.occupation.get("title", ""),

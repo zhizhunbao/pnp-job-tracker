@@ -23,9 +23,9 @@ import type { AdvisorFactsIn } from './types'
 /**
  * 渲染 AIP 事实块。
  *
- * @param props 取数包。
+ * @param props 取数包与名单里点招牌的去处(2026-10-02)。
  * @returns AIP 弹框整块(结论卡、门槛卡、本省 AIP 指定雇主清单卡与抽选卡)。
  */
-export function AipFacts({ f }: AdvisorFactsIn) {
-  return <AipSection job={f.job} lang={f.lang} />
+export function AipFacts({ f, onOpenCompany }: AdvisorFactsIn) {
+  return <AipSection job={f.job} lang={f.lang} onOpenCompany={onOpenCompany} />
 }

@@ -309,6 +309,11 @@ export type AdvisorFactsIn = {
    * 取数包。
    */
   f: AdvisorFacts
+
+  /**
+   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
+   */
+  onOpenCompany?: OpenCompanyFn
 }
 
 /**
@@ -324,6 +329,11 @@ export type FieldFactsIn = {
    * 取数包。
    */
   f: AdvisorFacts
+
+  /**
+   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
+   */
+  onOpenCompany?: OpenCompanyFn
 }
 
 /**
@@ -339,6 +349,11 @@ export type GroupFactsIn = {
    * 取数包。
    */
   f: AdvisorFacts
+
+  /**
+   * AIP 指定雇主名单里点招牌:叠开公司弹框;没给 = 招牌不可点(2026-10-02)。
+   */
+  onOpenCompany?: OpenCompanyFn
 }
 
 /**

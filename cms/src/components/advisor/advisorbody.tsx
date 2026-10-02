@@ -36,5 +36,5 @@ export function AdvisorBody({
         onAlias={onCompanyAlias} showTrans={f.showZh} onTransBusy={onCompanyTransBusy} />
     )
   }
-  return <GroupFacts group={group} f={f} />
+  return <GroupFacts group={group} f={f} onOpenCompany={onOpenCompany} />
 }

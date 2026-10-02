@@ -8,6 +8,7 @@ export const EeCategories: CollectionConfig = {
   fields: [
     { name: 'category', type: 'text', index: true, admin: { description: '类别 key(healthcare/stem/…)' } },
     { name: 'label', type: 'text', index: true, admin: { description: '类别中文标签(医疗社服/STEM/…)' } },
+    { name: 'nameEn', type: 'text', admin: { description: '官方英文类别名(canada.ca 类别表上方标题里抽;2026-10-02 职位页移民相关卡「英文黑字,中文灰字」);DDL docs/sql/ee-name-en-pool-designated-names-20261002.sql' } },
     { name: 'noc', type: 'text', index: true },
     { name: 'teer', type: 'number' },
     { name: 'title', type: 'text' },

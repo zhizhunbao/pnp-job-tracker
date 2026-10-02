@@ -80,6 +80,9 @@ class CatBucket:
     label: str
     """中文标签。"""
 
+    name_en: str
+    """官方英文类别名(表格上方标题里抽出;抽不到 = 空串;2026-10-02)。"""
+
     occupations: list
     """已收的职业行(dict,键序即文件契约)。"""
 

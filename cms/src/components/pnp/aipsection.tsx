@@ -23,10 +23,10 @@ import type { AipSectionIn } from './types'
 /**
  * 渲染 AIP 弹框整块。
  *
- * @param props 本岗与界面语言(指定雇主清单卡自己懒取,2026-10-02)。
+ * @param props 本岗、界面语言(指定雇主清单卡自己懒取,2026-10-02)与名单里点招牌的去处。
  * @returns 结论卡、门槛卡、指定雇主名单卡与抽选卡(各自没有就不出;整表没到出加载行,取挂了出失败框)。
  */
-export function AipSection({ job, lang }: AipSectionIn) {
+export function AipSection({ job, lang, onOpenCompany }: AipSectionIn) {
   const p = useAipSection({ job, lang })
   return (
     <>
@@ -35,7 +35,7 @@ export function AipSection({ job, lang }: AipSectionIn) {
       {p.ready && <PnpBlockCard t={p.t} text={p.section.block} />}
       {p.ready && p.section.channels.length > 0 && <PnpChannelCard t={p.t} channels={p.section.channels} />}
       {p.ready && p.section.gate != null && <PnpGateCard spec={p.section.gate} />}
-      <AipEmpCard t={p.t} job={job} />
+      <AipEmpCard t={p.t} job={job} lang={lang} onOpenCompany={onOpenCompany} />
       {p.ready && p.section.card != null && (
         <PnpDrawGroups t={p.t} card={p.section.card} open={p.drawOpen} toggleOf={p.drawToggleOf} />
       )}

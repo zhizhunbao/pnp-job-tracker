@@ -33,10 +33,10 @@ import css from './pnp.module.css'
 /**
  * 渲染 AIP 指定雇主清单卡。
  *
- * @param props 取词函数与本岗。
+ * @param props 取词函数、本岗、界面语言与点招牌的去处(2026-10-02 加后两格)。
  * @returns 卡(本岗雇主与同招牌几家 + 卡底链接);没到出加载行,取挂了出失败框。
  */
-export function AipEmpCard({ t, job }: AipEmpCardIn) {
+export function AipEmpCard({ t, job, lang, onOpenCompany }: AipEmpCardIn) {
   const p = useAipEmpCard({ t, job })
   const title = t(K_AIP_EMP_TITLE, { prov: t(PROV_KEY_HEAD + job.province) })
   if (p.failed) {
@@ -61,7 +61,7 @@ export function AipEmpCard({ t, job }: AipEmpCardIn) {
   }
   const rows = []
   for (const r of p.rows) {
-    rows.push(<AipEmpRow key={r.key} r={r} matchRef={p.matchRef} />)
+    rows.push(<AipEmpRow key={r.key} r={r} matchRef={p.matchRef} lang={lang} onOpenCompany={onOpenCompany} />)
   }
   return (
     <div className={css.card}>

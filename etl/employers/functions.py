@@ -292,11 +292,15 @@ def home_city_of(x: HomeCityIn) -> str | None:
 
 
 def designated_summary_of(des_rows: list) -> DesignatedOut:
-    """指定行清单 → 项目 / 省 / 资格所在地三份去重有序清单。"""
+    """指定行清单 → 项目 / 省 / 资格所在地 / 名单原名四份去重有序清单(原名 2026-10-02 加,见 PoolRow.designatedNames)。"""
     programs = []
     provinces = []
     places = []
+    names = []
     for row in des_rows:
+        name = row.get(K_NAME) or ""
+        if name and name not in names:
+            names.append(name)
         src = row.get(K_SOURCE) or ""
         if src and src not in programs:
             programs.append(src)
@@ -306,7 +310,8 @@ def designated_summary_of(des_rows: list) -> DesignatedOut:
         place = row.get(K_LOCATION) or prov
         if src and place and src + PLACE_SEP + place not in places:
             places.append(src + PLACE_SEP + place)
-    return DesignatedOut(programs=sorted(programs), provinces=sorted(provinces), places=sorted(places))
+    return DesignatedOut(programs=sorted(programs), provinces=sorted(provinces), places=sorted(places),
+                         names=sorted(names))
 
 
 def hist_stats_of(hist: list) -> HistOut:
@@ -346,7 +351,7 @@ def pool_row_of(x: KeyIn) -> PoolRow:
         province=home.province, city=home.city, district=home.district, locations=locations,
         locProvs=loc_provs_of(x),
         designated=len(des_rows) > 0, designatedPrograms=des.programs,
-        designatedProvinces=des.provinces, designatedPlaces=des.places,
+        designatedProvinces=des.provinces, designatedPlaces=des.places, designatedNames=des.names,
         openJobsTotal=open_total, histJobs=hist.jobs,
         provincesActive=hist.provinces, citiesActive=hist.cities,
         websiteKnown=bool(comp.get(K_WEBSITE)),

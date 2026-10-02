@@ -3083,7 +3083,7 @@ export function toPnpOcc(r: Row): PnpOcc {
  */
 export function toEeCat(r: Row): EeOcc {
   return {
-    category: text(r.category), label: text(r.label), noc: text(r.noc), teer: numOrNull(r.teer),
+    category: text(r.category), label: text(r.label), nameEn: text(r.nameEn), noc: text(r.noc), teer: numOrNull(r.teer),
     title: text(r.title), url: text(r.url), fetched: text(r.fetched),
     drawCrs: numOrNull(r.drawCrs), drawDate: text(r.drawDate), drawSize: numOrNull(r.drawSize),
   }
@@ -3239,6 +3239,9 @@ function toAipEmp(r: AipEmpDbRow): AipEmpFact {
     legal: text(r.legal),
     brandN: count(r.brand_n),
     hit: r.hit === true,
+    poolKey: text(r.pool_key),
+    aliasZh: text(r.alias_zh),
+    aliasKo: text(r.alias_ko),
   }
 }
 

@@ -1990,3 +1990,8 @@ export const QC_FR_KEY = {
    */
   write: 'qcgate.fr.write',
 }
+
+/**
+ * 站内蓝链的全局类(main.css 的 link;AIP 指定雇主名单里对上雇主池的招牌;2026-10-02)。
+ */
+export const LINK_CLS = 'link'

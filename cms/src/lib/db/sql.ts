@@ -1914,15 +1914,26 @@ export const QC_NOC_CHANNELS = `SELECT channels FROM qc_noc_streams WHERE noc = 
  * 同招牌最多的是 NB 的 Tim Hortons(55 行),LIMIT 80 只是护栏。match_keys / brand 由 mart with_designated_split 算好。
  * 2026-10-02 Frank「这种全部默认显示 20 个可以吗?如果小于 20 全部显示?」(拍板「全站所有清单」):首屏要露满 20 家,原「本岗与同招牌」与「其余各家」两句(AIP_EMP_ROWS / AIP_EMP_REST)并成这一句排好序的分页 ——
  * 本岗雇主排最前,同招牌的接着,其余按招牌 / 门店 / 法人排;$3 = 跳过几家(从整表数起),$4 = 取几家。
+ * 2026-10-02 Frank「这个也要加灰字 和 点击吧」:每行再带雇主池键与译名(先分好这一页再按名单原名去雇主池找,designated_names 的 GIN 索引;
+ * 先接再分页实测一页要逐行查 1574 次,几十秒)。没对上雇主池的行三格为 NULL —— 那一行不出灰字、不可点。
  */
 export const AIP_EMP_PAGE = `WITH mine AS (
        SELECT DISTINCT brand FROM designated_employers
-       WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|')))
-     SELECT trade, store, legal, brand_n, $2 = ANY(string_to_array(match_keys, '|')) AS hit
-     FROM designated_employers
-     WHERE source = 'AIP' AND province = $1
-     ORDER BY hit DESC, COALESCE(brand IN (SELECT brand FROM mine), false) DESC, trade, store, legal
-     OFFSET $3 LIMIT $4`
+       WHERE source = 'AIP' AND province = $1 AND $2 = ANY(string_to_array(match_keys, '|'))),
+     page AS (
+       SELECT d.name, d.trade, d.store, d.legal, d.brand_n, $2 = ANY(string_to_array(d.match_keys, '|')) AS hit,
+              COALESCE(d.brand IN (SELECT brand FROM mine), false) AS same_brand
+       FROM designated_employers d
+       WHERE d.source = 'AIP' AND d.province = $1
+       ORDER BY hit DESC, same_brand DESC, d.trade, d.store, d.legal
+       OFFSET $3 LIMIT $4)
+     SELECT g.trade, g.store, g.legal, g.brand_n, g.hit, pk.key AS pool_key, pk.alias_zh, pk.alias_ko
+     FROM page g
+     LEFT JOIN LATERAL (
+       SELECT p.key, COALESCE(NULLIF(c.alias_zh, ''), x.alias_zh) AS alias_zh, COALESCE(NULLIF(c.alias_ko, ''), x.alias_ko) AS alias_ko
+       FROM employer_pool p LEFT JOIN companies c ON c.slug = p.slug LEFT JOIN employer_explore x ON x.key = p.key
+       WHERE p.designated_names ? g.name LIMIT 1) pk ON true
+     ORDER BY g.hit DESC, g.same_brand DESC, g.trade, g.store, g.legal`
 
 /**
  * AIP 弹框指定雇主卡底链接上的本省总家数(同上);$1 = 省码。
@@ -1932,7 +1943,7 @@ export const AIP_EMP_TOTAL = `SELECT count(*) AS n FROM designated_employers WHE
 /**
  * 首屏维度表·EE 类别。
  */
-export const DIMS_EE_CATEGORIES = `SELECT category, label, noc, teer, title, url, fetched,
+export const DIMS_EE_CATEGORIES = `SELECT category, label, name_en AS "nameEn", noc, teer, title, url, fetched,
        draw_crs AS "drawCrs", draw_date AS "drawDate", draw_size AS "drawSize"
      FROM ee_categories ORDER BY id LIMIT 2000`
 

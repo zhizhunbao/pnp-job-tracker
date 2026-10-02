@@ -1312,6 +1312,21 @@ export type AipEmpDbRow = {
    * 是本岗雇主那一行。
    */
   hit: boolean | null
+
+  /**
+   * 对上的雇主池键(2026-10-02;对不上 NULL)。
+   */
+  pool_key: string | null
+
+  /**
+   * 中文译名(公司表优先、探索表兜底;没有 NULL)。
+   */
+  alias_zh: string | null
+
+  /**
+   * 韩文译名(同上)。
+   */
+  alias_ko: string | null
 }
 
 /**
@@ -1342,6 +1357,21 @@ export type AipEmpFact = {
    * 是本岗雇主那一行。
    */
   hit: boolean
+
+  /**
+   * 对上的雇主池键(开公司弹框用);'' = 没对上。
+   */
+  poolKey: string
+
+  /**
+   * 中文译名;'' = 没有。
+   */
+  aliasZh: string
+
+  /**
+   * 韩文译名;'' = 没有。
+   */
+  aliasKo: string
 }
 
 /**
@@ -1442,6 +1472,11 @@ export type EeOcc = {
    * 类别人话名。
    */
   label: string
+
+  /**
+   * 官方英文类别名(「Healthcare and social services occupations」;2026-10-02 起;换版到重灌之间为空)。
+   */
+  nameEn: string
 
   /**
    * 职业码。
